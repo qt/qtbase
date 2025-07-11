@@ -471,28 +471,19 @@ private:
             {{"blue", Qt::blue, "0x0000ff"}, 3, "three"},
         };
 
-        Object row1;
-        Object row2;
-        Object row3;
         std::list<Object *> listOfObjects = {
             new Object, new Object, new Object
         };
 
-        MetaObjectTuple mot1;
-        MetaObjectTuple mot2;
-        MetaObjectTuple mot3;
         std::vector<QRangeModel::SingleColumn<MetaObjectTuple *>> listOfMetaObjectTuple = {
-            &mot1,
-            &mot2,
-            &mot3,
+            new MetaObjectTuple,
+            new MetaObjectTuple,
+            new MetaObjectTuple,
         };
-        MetaObjectTuple mot4;
-        MetaObjectTuple mot5;
-        MetaObjectTuple mot6;
-        std::vector<QRangeModel::MultiColumn<MetaObjectTuple *>> tableOfMetaObjectTuple = {
-            {&mot4},
-            {&mot5},
-            {&mot6},
+        std::vector<MetaObjectTuple *> tableOfMetaObjectTuple = {
+            new MetaObjectTuple,
+            new MetaObjectTuple,
+            new MetaObjectTuple,
         };
 
         // bad (but legal) get() overload that never returns a mutable reference
@@ -1284,7 +1275,6 @@ void tst_QRangeModel::insertRows()
 
     QEXPECT_FAIL("tableOfPointersPointer", "No item created", Continue);
     QEXPECT_FAIL("listOfMetaObjectTupleCopy", "No object created", Continue);
-    QEXPECT_FAIL("tableOfMetaObjectTupleRef", "No object created", Continue);
 
     QVERIFY(firstValue.isValid() && lastValue.isValid());
     QCOMPARE(model->setData(firstItem, lastValue), canSetData && lastValue.isValid());

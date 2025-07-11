@@ -428,11 +428,10 @@ QRangeModel::QRangeModel(QRangeModelImplBase *impl, QObject *parent)
     \note The implementation of \c{get} above requires C++23. A C++17 compliant
     implementation can be found in the unit test code for QRangeModel.
 
-    Types that have a meta objects, and implement the C++ tuple protocol, also
-    can cause compile-time ambiguity when used as the row type, as the framework
-    won't know which API to use to access the individual values. Use the
-    QRangeModel::SingleColumn and QRangeModel::MultiColumns wrapper
-    to disambiguate.
+    For types that have both a meta objects, and implement the C++ tuple
+    protocol, QRangeModel will prioritise the tuple protocol and represent the
+    items as rows with multiple columns. Use the QRangeModel::SingleColumn
+    wrapper override this behavior.
 
     \sa {Model/View Programming}
 */
@@ -440,15 +439,17 @@ QRangeModel::QRangeModel(QRangeModelImplBase *impl, QObject *parent)
 /*!
     \typedef QRangeModel::SingleColumn
 
-    Use this type to disambiguate when using the type \c{T} as the row type in
-    the range. If \c{T} provides a metaobject, then the framework will by
-    default represent the type as multiple columns, resulting in a table model.
+    Use this type to disambiguate when the type \c{T} has both a metaobject, and
+    implements \l{the C++ tuple protocol}. The type will be represented as
+    a single column of items, and each property is used for the corresponding
+    role.
+
+    QRangeModel will by default represent types that provide a metaobject as
+    multiple columns, resulting in a table model.
 
     \snippet qrangemodel/main.cpp color_gadget_0
 
-    When stored in a sequential range, this type will be interpreted as
-    multi-column rows with each property being one column. The range will be
-    represented as a table.
+    Each property will be represented as a column of a table.
 
     \code
     QList<ColorEntry> colors = {
@@ -457,8 +458,9 @@ QRangeModel::QRangeModel(QRangeModelImplBase *impl, QObject *parent)
     QRangeModel tableModel(colors); // columnCount() == 3
     \endcode
 
-    When wrapped into QRangeModel::SingleColumn, the model will be a list,
-    with each instance of \c{T} represented as an item with multiple roles.
+    When \c{T} is wrapped into QRangeModel::SingleColumn, then the model will be
+    a list, with each instance of \c{T} represented as an item with multiple
+    roles.
 
     \code
     QList<QRangeModel::SingleColumn<ColorEntry>> colors = {
@@ -467,38 +469,8 @@ QRangeModel::QRangeModel(QRangeModelImplBase *impl, QObject *parent)
     QRangeModel listModel(colors); // columnCount() == 1
     \endcode
 
-    \sa QRangeModel::MultiColumn
-*/
-
-/*!
-    \class QRangeModel::MultiColumn
-    \brief Represents the wrapped type \c{T} as multiple columns in a QRangeModel.
-    \inmodule QtCore
-    \ingroup model-view
-    \since 6.10
-
-    Use this type to disambiguate when the type \c{T} has both a metaobject, and
-    implements \l{the C++ tuple protocol}. The type will be represented as
-    multiple columns, and the individual values will be accessed through the
-    tuple protocol.
-
-    \snippet qrangemodel/main.cpp color_gadget_0
-    \code
-    namespace std {
-        template <> struct tuple_size<ColorEntry> : integral_constant<size_t, 3> {};
-        // ...
-    }
-
-    QList<QRangeModel::MultiColumn<ColorEntry>> colors = {
-        // ...
-    };
-    QRangeModel colorList(colors);
-    \endcode
-
-    To represent the type a single column value with multiple roles, use
-    QRangeModel::SingleColumn instead.
-
-    \sa QRangeModel::SingleColumn
+    This is particularly useful when using lists of gadgets or objects as a
+    model with Qt Quick.
 */
 
 /*!

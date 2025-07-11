@@ -14,32 +14,10 @@ class QRangeModelPrivate;
 class Q_CORE_EXPORT QRangeModel : public QAbstractItemModel
 {
     Q_OBJECT
+
 public:
     template <typename T>
     using SingleColumn = std::tuple<T>;
-
-    template <typename T>
-    struct MultiColumn
-    {
-        using type = std::remove_pointer_t<T>;
-        T data{};
-        template <typename X>
-        using if_get_matches = std::enable_if_t<std::is_same_v<q20::remove_cvref_t<X>,
-                                                               MultiColumn<T>>, bool>;
-        template <typename X>
-        using if_validatable = std::enable_if_t<QRangeModelDetails::is_validatable<X>::value, bool>;
-
-        template <typename V = T, if_validatable<V> = true>
-        constexpr explicit operator bool() const noexcept { return bool(data); }
-
-        // unconstrained on size_t I, gcc internal error #3280
-        template <std::size_t I, typename V, if_get_matches<V> = true>
-        friend inline decltype(auto) get(V &&multiColumn)
-        {
-            static_assert(I < std::tuple_size_v<type>, "Index out of bounds for wrapped type");
-            return get<I>(QRangeModelDetails::refTo(q23::forward_like<V>(multiColumn.data)));
-        }
-    };
 
     template <typename Range,
               QRangeModelDetails::if_table_range<Range> = true>
@@ -214,15 +192,5 @@ QRangeModel::QRangeModel(Range &&range, Protocol &&protocol, QObject *parent)
 
 QT_END_NAMESPACE
 
-namespace std {
-    template <typename T>
-    struct tuple_size<QT_PREPEND_NAMESPACE(QRangeModel)::MultiColumn<T>>
-        : tuple_size<typename QT_PREPEND_NAMESPACE(QRangeModel)::MultiColumn<T>::type>
-    {};
-    template <std::size_t I, typename T>
-    struct tuple_element<I, QT_PREPEND_NAMESPACE(QRangeModel)::MultiColumn<T>>
-        : tuple_element<I, typename QT_PREPEND_NAMESPACE(QRangeModel)::MultiColumn<T>::type>
-    {};
-}
 
 #endif // QRANGEMODEL_H

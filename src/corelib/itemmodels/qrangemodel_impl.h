@@ -104,6 +104,21 @@ namespace QRangeModelDetails
     template <typename T>
     using is_wrapped = std::negation<std::is_same<wrapped_t<T>, std::remove_reference_t<T>>>;
 
+    template <typename T, typename = void>
+    struct tuple_like : std::false_type {};
+    template <typename T>
+    struct tuple_like<T, std::void_t<std::tuple_element_t<0, wrapped_t<T>>>> : std::true_type {};
+    template <typename T>
+    [[maybe_unused]] static constexpr bool tuple_like_v = tuple_like<T>::value;
+
+    template <typename T, typename = void>
+    struct has_metaobject : std::false_type {};
+    template <typename T>
+    struct has_metaobject<T, std::void_t<decltype(wrapped_t<T>::staticMetaObject)>>
+        : std::true_type {};
+    template <typename T>
+    [[maybe_unused]] static constexpr bool has_metaobject_v = has_metaobject<T>::value;
+
     template <typename T>
     static constexpr bool isValid(const T &t) noexcept
     {
@@ -297,16 +312,22 @@ namespace QRangeModelDetails
         // represent static or dynamic range.
         static constexpr int static_size = is_range ? -1 : 0;
         static constexpr int fixed_size() { return 1; }
+        static constexpr bool hasMetaObject = false;
     };
 
     // Specialization for tuples, using std::tuple_size
     template <typename T>
-    struct row_traits<T, std::void_t<std::tuple_element_t<0, T>>> {
+    struct tuple_row_traits {
         static constexpr std::size_t size64 = std::tuple_size_v<T>;
         static_assert(q20::in_range<int>(size64));
         static constexpr int static_size = int(size64);
         static constexpr int fixed_size() { return 0; }
+        static constexpr bool hasMetaObject = false;
     };
+
+    template <typename T>
+    struct row_traits<T, std::enable_if_t<tuple_like_v<T> && !has_metaobject_v<T>>>
+        : tuple_row_traits<T> {};
 
     // Specialization for C arrays
     template <typename T, std::size_t N>
@@ -315,41 +336,39 @@ namespace QRangeModelDetails
         static_assert(q20::in_range<int>(N));
         static constexpr int static_size = int(N);
         static constexpr int fixed_size() { return 0; }
+        static constexpr bool hasMetaObject = false;
     };
 
-    // Specialization for gadgets
-    // clang doesn't accept multiple specializations using std::void_t directly
-    template <class... Ts> struct make_void { using type = void; };
-
     template <typename T>
-    struct row_traits<T, typename make_void<decltype(T::staticMetaObject)>::type>
+    struct metaobject_row_traits
     {
         static constexpr int static_size = 0;
         static int fixed_size() {
-            // Interpret a gadget in a list as a multi-column row item. To
-            // disambiguate, stick it into a SingleColumn wrapper.
+            // Interpret a gadget in a list as a multi-column row item. To make
+            // a list of multi-role items, wrap it into SingleColumn.
             static const int columnCount = []{
                 const QMetaObject &mo = T::staticMetaObject;
                 return mo.propertyCount() - mo.propertyOffset();
             }();
             return columnCount;
         }
+        static constexpr bool hasMetaObject = true;
     };
+
+    template <typename T>
+    struct row_traits<T, std::enable_if_t<has_metaobject_v<T> && !tuple_like_v<T>>>
+        : metaobject_row_traits<T>
+    {};
+
+    // types that are both tuple-like, and have a metaobject, default to tuple
+    // protocol.
+    template <typename T>
+    struct row_traits<T, std::enable_if_t<tuple_like_v<T> && has_metaobject_v<T>>>
+        : tuple_row_traits<T> {};
 
     template <typename T>
     [[maybe_unused]] static constexpr int static_size_v =
                             row_traits<std::remove_cv_t<wrapped_t<T>>>::static_size;
-
-    // we can't add this as a member to row_traits, as we'd end up with
-    // ambiguous specializations for gadgets implementing tuple protocol.
-    template <typename T, typename = void>
-    struct has_metaobject : std::false_type {};
-    template <typename T>
-    struct has_metaobject<T, std::void_t<decltype(wrapped_t<T>::staticMetaObject)>>
-        : std::true_type {};
-
-    template <typename T>
-    [[maybe_unused]] static constexpr bool has_metaobject_v = has_metaobject<T>::value;
 
     template <typename Range>
     struct ListProtocol
@@ -509,7 +528,7 @@ namespace QRangeModelDetails
 
         ModelStorage m_model;
     };
-}
+} // namespace QRangeModelDetails
 
 class QRangeModel;
 
@@ -855,7 +874,7 @@ public:
 
         Qt::ItemFlags f = Structure::defaultFlags();
 
-        if constexpr (has_metaobject<wrapped_row_type>) {
+        if constexpr (row_traits::hasMetaObject) {
             if (index.column() < row_traits::fixed_size()) {
                 const QMetaObject mo = wrapped_row_type::staticMetaObject;
                 const QMetaProperty prop = mo.property(index.column() + mo.propertyOffset());
@@ -895,7 +914,7 @@ public:
             return itemModel().QAbstractItemModel::headerData(section, orientation, role);
         }
 
-        if constexpr (has_metaobject<wrapped_row_type>) {
+        if constexpr (row_traits::hasMetaObject) {
             if (row_traits::fixed_size() == 1) {
                 const QMetaType metaType = QMetaType::fromType<wrapped_row_type>();
                 result = QString::fromUtf8(metaType.name());
@@ -1205,7 +1224,7 @@ public:
             });
 
             auto clearData = [column = index.column()](auto &&target) {
-                if constexpr (has_metaobject<row_type>) {
+                if constexpr (row_traits::hasMetaObject) {
                     if (row_traits::fixed_size() <= 1) {
                         // multi-role object/gadget: reset all properties
                         return resetProperty(-1, QRangeModelDetails::pointerTo(target));

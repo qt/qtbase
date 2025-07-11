@@ -499,7 +499,7 @@ void color_list() {
     QList<QRangeModel::SingleColumn<ColorEntry>> colors;
     colors.reserve(colorNames.size());
     for (const QString &name : colorNames)
-        colors << ColorEntry{name};
+        colors << name;
 
     QRangeModel colorModel(colors);
     QListView list;
