@@ -804,9 +804,18 @@ void QOpenGLContext::swapBuffers(QSurface *surface)
 }
 
 /*!
-    Resolves the function pointer to an OpenGL extension function, identified by \a procName
+    Resolves the function pointer to an OpenGL extension function, identified by \a procName.
 
-    Returns \nullptr if no such function can be found.
+    Use this function to access OpenGL extension functions or core functions
+    that may not be available as linked symbols on all platforms.
+
+    The returned pointer may be platform-dependent. Some systems may return a
+    pointer that is not \nullptr even if the function is not valid or supported.
+
+    To reliably check function availability, test for extension support by calling
+    \l QOpenGLContext::hasExtension(). For core functions, check the current context's
+    version via \l{QSurfaceFormat::}{version()} in the QSurfaceFormat returned by
+    \l QOpenGLContext::format().
 */
 QFunctionPointer QOpenGLContext::getProcAddress(const QByteArray &procName) const
 {
