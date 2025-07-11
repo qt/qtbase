@@ -1010,6 +1010,7 @@ qt_feature("wasm-jspi" PUBLIC
     LABEL "WebAssembly JSPI"
     PURPOSE "Enables WebAssembly JavaScript Promise Integration (JSPI)"
     AUTODETECT OFF
+    CONDITION QT_FEATURE_wasm_exceptions # JSPI requires wasm-exceptions
 )
 qt_feature_definition("wasm-jspi" "QT_WASM_JSPI" VALUE "1")
 qt_feature_config("wasm-jspi" QMAKE_PRIVATE_CONFIG)
