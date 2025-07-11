@@ -330,6 +330,7 @@ namespace QRangeModelDetails
         // A static size of 0 indicates that the specified type doesn't
         // represent static or dynamic range.
         static constexpr int static_size = is_range ? -1 : 0;
+        using item_type = std::conditional_t<is_range, typename range_traits<T>::value_type, void>;
         static constexpr int fixed_size() { return 1; }
         static constexpr bool hasMetaObject = false;
     };
@@ -340,6 +341,17 @@ namespace QRangeModelDetails
         static constexpr std::size_t size64 = std::tuple_size_v<T>;
         static_assert(q20::in_range<int>(size64));
         static constexpr int static_size = int(size64);
+
+        // are the types in a tuple all the same
+        template <std::size_t ...I>
+        static constexpr bool allSameTypes(std::index_sequence<I...>)
+        {
+            return (std::is_same_v<std::tuple_element_t<0, T>,
+                                   std::tuple_element_t<I, T>> && ...);
+        }
+
+        using item_type = std::conditional_t<allSameTypes(std::make_index_sequence<size64>{}),
+                                             std::tuple_element_t<0, T>, void>;
         static constexpr int fixed_size() { return 0; }
         static constexpr bool hasMetaObject = false;
     };
@@ -354,6 +366,7 @@ namespace QRangeModelDetails
     {
         static_assert(q20::in_range<int>(N));
         static constexpr int static_size = int(N);
+        using item_type = T;
         static constexpr int fixed_size() { return 0; }
         static constexpr bool hasMetaObject = false;
     };
@@ -362,6 +375,7 @@ namespace QRangeModelDetails
     struct metaobject_row_traits
     {
         static constexpr int static_size = 0;
+        using item_type = std::conditional_t<row_category<T>::isMultiRole, T, void>;
         static int fixed_size() {
             if constexpr (row_category<T>::isMultiRole) {
                 return 1;
@@ -629,6 +643,7 @@ public:
         HeaderData,
         Data,
         ItemData,
+        RoleNames,
     };
 
     enum Op {
@@ -831,6 +846,8 @@ public:
         case Data: makeCall(that, &Self::data, r, args);
             break;
         case ItemData: makeCall(that, &Self::itemData, r, args);
+            break;
+        case RoleNames: makeCall(that, &Self::roleNames, r, args);
             break;
         }
     }
@@ -1204,7 +1221,8 @@ public:
                                 }
                             }
                             if (!written) {
-                                qWarning("Failed to write value for %s", roleName.data());
+                                qWarning("Failed to write value '%s' to role '%s'",
+                                         qPrintable(QDebug::toString(value)), roleName.data());
                                 return false;
                             }
                         }
@@ -1264,6 +1282,29 @@ public:
             success = writeAt(index, clearData);
         }
         return success;
+    }
+
+    QHash<int, QByteArray> roleNames() const
+    {
+        // will be 'void' if columns don't all have the same type
+        using item_type = typename row_traits::item_type;
+        if constexpr (QRangeModelDetails::has_metaobject_v<item_type>) {
+            const QMetaObject &metaObject = QRangeModelDetails::wrapped_t<item_type>::staticMetaObject;
+            const auto defaults = itemModel().QAbstractItemModel::roleNames();
+            QHash<int, QByteArray> result;
+            const int offset = metaObject.propertyOffset();
+            for (int i = offset; i < metaObject.propertyCount(); ++i) {
+                const auto name = metaObject.property(i).name();
+                const int defaultRole = defaults.key(name, -1);
+                if (defaultRole != -1)
+                    result[defaultRole] = name;
+                else
+                    result[Qt::UserRole + i - offset] = name;
+            }
+            return result;
+        }
+
+        return itemModel().QAbstractItemModel::roleNames();
     }
 
     bool insertColumns(int column, int count, const QModelIndex &parent)

@@ -306,6 +306,7 @@ private slots:
     void ownership();
     void overrideRoleNames();
     void setRoleNames();
+    void defaultRoleNames();
 
     void dimensions_data() { createTestData(); }
     void dimensions();
@@ -1082,6 +1083,57 @@ void tst_QRangeModel::setRoleNames()
     QCOMPARE(model.roleNames(), roleNames);
 }
 
+void tst_QRangeModel::defaultRoleNames()
+{
+    []{
+        const QHash<int, QByteArray> expectedRoleNames = {
+            {Qt::UserRole, "string"},
+            {Qt::UserRole + 1, "number"},
+        };
+
+        QCOMPARE(QRangeModel(QList<QRangeModel::SingleColumn<Object *>>{}).roleNames(),
+                 expectedRoleNames);
+        QCOMPARE(QRangeModel(QList<std::tuple<Object *, Object *>>{}).roleNames(),
+                 expectedRoleNames);
+    }();
+
+    []{
+        const QHash<int, QByteArray> expectedRoleNames = {
+            {Qt::DisplayRole, "display"},
+            {Qt::DecorationRole, "decoration"},
+            {Qt::ToolTipRole, "toolTip"},
+        };
+        QCOMPARE(QRangeModel(QList<QRangeModel::SingleColumn<Item>>{}).roleNames(),
+                 expectedRoleNames);
+        QCOMPARE(QRangeModel(QList<std::tuple<Item, Item, Item>>{}).roleNames(),
+                 expectedRoleNames);
+        QCOMPARE(QRangeModel(QList<QList<Item>>{}).roleNames(),
+                 expectedRoleNames);
+    }();
+
+    []{
+        const QHash<int, QByteArray> expectedRoleNames = {
+            {Qt::DisplayRole, "display"},
+            {Qt::DecorationRole, "decoration"},
+        };
+        QCOMPARE(QRangeModel(QList<MultiRoleGadget>{}).roleNames(),
+                 expectedRoleNames);
+        QCOMPARE(QRangeModel(QList<QList<MultiRoleGadget>>{}).roleNames(),
+                 expectedRoleNames);
+        QCOMPARE(QRangeModel(std::vector<std::array<MultiRoleGadget, 5>>{}).roleNames(),
+                 expectedRoleNames);
+    }();
+
+    []{
+        const auto expectedRoleNames = QRangeModel(QList<Row>{}).QAbstractItemModel::roleNames();
+        QCOMPARE(QRangeModel(QList<Row>{}).roleNames(), expectedRoleNames);
+        QCOMPARE(QRangeModel(QList<std::tuple<Item, MultiRoleGadget>>{}).roleNames(),
+                 expectedRoleNames);
+        QCOMPARE(QRangeModel(QList<int>{}).roleNames(), expectedRoleNames);
+        QCOMPARE(QRangeModel(QList<QList<QString>>{}).roleNames(), expectedRoleNames);
+    }();
+}
+
 void tst_QRangeModel::dimensions()
 {
     QFETCH(Factory, factory);
@@ -1208,7 +1260,7 @@ void tst_QRangeModel::setItemData()
     for (int role : roles) {
         if (role == Qt::EditRole) // faked
             continue;
-        QVariant data = role != Qt::DecorationRole ? QVariant(QStringLiteral("Role %1").arg(role))
+        QVariant data = role != Qt::DecorationRole ? QVariant(QStringLiteral("%1").arg(role))
                                                    : QVariant(QColor(Qt::magenta));
         itemData.insert(role, data);
     }

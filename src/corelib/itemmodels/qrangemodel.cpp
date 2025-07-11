@@ -1023,6 +1023,15 @@ void QRangeModel::multiData(const QModelIndex &index, QModelRoleDataSpan roleDat
     \property QRangeModel::roleNames
     \brief the role names for the model.
 
+    If all columns in the range are of the same type, and if that type provides
+    a meta object (i.e., it is a gadget, or a QObject subclass), then this
+    property holds the names of the properties of that type, mapped to values of
+    Qt::ItemDataRole values from Qt::UserRole and up.
+
+    Override this default behavior by setting this property explicitly to a non-
+    empty mapping. Setting this property to an empty mapping, or using
+    resetRoleNames(), restores the default behavior.
+
     \sa QAbstractItemModel::roleNames()
 */
 
@@ -1036,7 +1045,8 @@ QHash<int, QByteArray> QRangeModel::roleNames() const
 {
     Q_D(const QRangeModel);
     if (d->m_roleNames.isEmpty())
-        d->m_roleNames = QAbstractItemModel::roleNames();
+        d->m_roleNames = d->call<QHash<int, QByteArray>>(QRangeModelImplBase::RoleNames);
+
     return d->m_roleNames;
 }
 
