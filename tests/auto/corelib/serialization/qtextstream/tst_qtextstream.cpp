@@ -1394,10 +1394,10 @@ void tst_QTextStream::pos3LargeFile()
     QFile file(testFileName);
     QVERIFY(file.open(QIODevice::ReadOnly | QIODevice::Text));
     QTextStream in( &file );
-    const int testValues[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+    constexpr int testValues[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
     while (true) {
         in.pos();
-        for ( int i = 0; i < 10; ++i ) {
+        for (size_t i = 0; i < std::size(testValues); ++i) {
             int value = -42;
             if (!(in >> value)) {
                 // End case, i == 0 && eof reached.
