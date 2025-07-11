@@ -23,6 +23,8 @@
 #include "../../../network-settings.h"
 #include <QtTest/private/qemulationdetector_p.h>
 
+using namespace Qt::StringLiterals;
+
 QT_BEGIN_NAMESPACE
 template<> struct QMetaTypeId<QIODevice::OpenModeFlag>
 { enum { Defined = 1 }; static inline int qt_metatype_id() { return QMetaType::Int; } };
@@ -1402,12 +1404,12 @@ void tst_QTextStream::pos2()
 // ------------------------------------------------------------------------------
 void tst_QTextStream::pos3LargeFile()
 {
+    // NOTE: The unusual spacing is to ensure non-1-character whitespace.
+    constexpr auto lineString = " 0  1  2\t3  4\t \t5  6  7  8   9 \n"_L1;
     {
         QFile file(testFileName);
         file.open(QIODevice::WriteOnly | QIODevice::Text);
         QTextStream out( &file );
-        // NOTE: The unusual spacing is to ensure non-1-character whitespace.
-        QString lineString = " 0  1  2\t3  4\t \t5  6  7  8   9 \n";
         // Approximately 5kb text file (more is too slow (QTBUG-138435))
         const int NbLines = (5 * 1024) / lineString.size() + 1;
         for (int line = 0; line < NbLines; ++line)
@@ -1418,8 +1420,15 @@ void tst_QTextStream::pos3LargeFile()
     file.open(QIODevice::ReadOnly | QIODevice::Text);
     QTextStream in( &file );
     constexpr int testValues[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+    qint64 expectedLineEnd = 0;
+#ifdef Q_OS_WIN // CRLF platform
+    constexpr int crlfAdjustment = 1;
+#else
+    constexpr int crlfAdjustment = 0;
+#endif
+    const auto expectedLineLength = lineString.size() + crlfAdjustment;
+    QCOMPARE(in.pos(), 0);
     while (true) {
-        in.pos();
         for (size_t i = 0; i < std::size(testValues); ++i) {
             int value = -42;
             in >> value;
@@ -1431,6 +1440,9 @@ void tst_QTextStream::pos3LargeFile()
             }
             QCOMPARE(value, testValues[i]);
         }
+        expectedLineEnd += expectedLineLength;
+        // Final space and newline are not consumed until next read.
+        QCOMPARE(in.pos(), expectedLineEnd - 2 - crlfAdjustment);
     }
 }
 
