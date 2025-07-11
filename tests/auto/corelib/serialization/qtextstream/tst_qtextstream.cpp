@@ -1379,17 +1379,14 @@ void tst_QTextStream::pos2()
 // ------------------------------------------------------------------------------
 void tst_QTextStream::pos3LargeFile()
 {
-    if (QTestPrivate::isRunningArmOnX86())
-        QSKIP("Running QTextStream::pos() in tight loop is too slow on emulator");
-
     {
         QFile file(testFileName);
         QVERIFY(file.open(QIODevice::WriteOnly | QIODevice::Text));
         QTextStream out( &file );
         // NOTE: The unusual spacing is to ensure non-1-character whitespace.
         QString lineString = " 0  1  2\t3  4\t \t5  6  7  8   9 \n";
-        // Approximate 50kb text file
-        const int NbLines = (50*1024) / lineString.size() + 1;
+        // Approximately 5kb text file (more is too slow (QTBUG-138435))
+        const int NbLines = (5 * 1024) / lineString.size() + 1;
         for (int line = 0; line < NbLines; ++line)
             QVERIFY(out << lineString);
         // File is automatically flushed and closed on destruction.
