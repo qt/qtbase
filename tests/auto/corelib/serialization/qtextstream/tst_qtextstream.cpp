@@ -1419,10 +1419,10 @@ void tst_QTextStream::pos3LargeFile()
     QVERIFY(file.open(QIODevice::ReadOnly | QIODevice::Text));
     QTextStream in( &file );
     const int testValues[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
-    int value;
     while (true) {
         in.pos();
         for ( int i = 0; i < 10; ++i ) {
+            int value = -42;
             in >> value;
             if (in.status() != QTextStream::Ok) {
                 // End case, i == 0 && eof reached.
