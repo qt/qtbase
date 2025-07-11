@@ -40,6 +40,7 @@ public:
 
 private:
     std::unique_ptr<QRangeModelImplBase, Deleter> impl;
+    mutable QHash<int, QByteArray> m_roleNames;
 };
 
 QRangeModel::QRangeModel(QRangeModelImplBase *impl, QObject *parent)
@@ -223,7 +224,7 @@ QRangeModel::QRangeModel(QRangeModelImplBase *impl, QObject *parent)
 
     Gadgets and QObject types can also be represented at multi-role items.
     The properties will be used for the role for which the
-    \l{QAbstractItemModel::roleNames()}{name of a role} matches.
+    \l{roleNames}{name of a role} matches.
 
     \snippet qrangemodel/main.cpp color_gadget_decl
     \snippet qrangemodel/main.cpp color_gadget_impl
@@ -1017,12 +1018,35 @@ void QRangeModel::multiData(const QModelIndex &index, QModelRoleDataSpan roleDat
     QAbstractItemModel::multiData(index, roleDataSpan);
 }
 
+
+/*!
+    \property QRangeModel::roleNames
+    \brief the role names for the model.
+
+    \sa QAbstractItemModel::roleNames()
+*/
+
 /*!
     \reimp
+
+    \note Overriding this function in a QRangeModel subclass is possible,
+    but might break the behavior of the property.
 */
 QHash<int, QByteArray> QRangeModel::roleNames() const
 {
-    return QAbstractItemModel::roleNames();
+    Q_D(const QRangeModel);
+    if (d->m_roleNames.isEmpty())
+        d->m_roleNames = QAbstractItemModel::roleNames();
+    return d->m_roleNames;
+}
+
+void QRangeModel::setRoleNames(const QHash<int, QByteArray> &names)
+{
+    Q_D(QRangeModel);
+    if (d->m_roleNames == names)
+        return;
+    d->m_roleNames = names;
+    Q_EMIT roleNamesChanged();
 }
 
 /*!

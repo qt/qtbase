@@ -14,6 +14,8 @@ class QRangeModelPrivate;
 class Q_CORE_EXPORT QRangeModel : public QAbstractItemModel
 {
     Q_OBJECT
+    Q_PROPERTY(QHash<int, QByteArray> roleNames READ roleNames WRITE setRoleNames RESET resetRoleNames
+                                                NOTIFY roleNamesChanged FINAL)
 
 public:
     enum class RowCategory {
@@ -62,6 +64,10 @@ public:
     bool moveRows(const QModelIndex &sourceParent, int sourceRow, int count,
                   const QModelIndex &destParent, int destRow) override;
 
+    QHash<int, QByteArray> roleNames() const override;
+    void setRoleNames(const QHash<int, QByteArray> &names);
+    void resetRoleNames() { setRoleNames({}); }
+
     bool canFetchMore(const QModelIndex &parent) const override;
     void fetchMore(const QModelIndex &parent) override;
 
@@ -76,11 +82,13 @@ public:
     QModelIndexList match(const QModelIndex &start, int role, const QVariant &value, int hits,
                           Qt::MatchFlags flags) const override;
     void multiData(const QModelIndex &index, QModelRoleDataSpan roleDataSpan) const override;
-    QHash<int, QByteArray> roleNames() const override;
     void sort(int column, Qt::SortOrder order = Qt::AscendingOrder) override;
     QSize span(const QModelIndex &index) const override;
     Qt::DropActions supportedDragActions() const override;
     Qt::DropActions supportedDropActions() const override;
+
+Q_SIGNALS:
+    void roleNamesChanged();
 
 protected Q_SLOTS:
     void resetInternalData() override;

@@ -5,6 +5,8 @@
 #include <QtCore/qrangemodel.h>
 #include <QtCore/qjsondocument.h>
 #include <QtCore/qjsonarray.h>
+#include <QtCore/qstringlistmodel.h>
+#include <QtTest/qsignalspy.h>
 
 #include <QtGui/qcolor.h>
 
@@ -303,6 +305,7 @@ private slots:
     void json();
     void ownership();
     void overrideRoleNames();
+    void setRoleNames();
 
     void dimensions_data() { createTestData(); }
     void dimensions();
@@ -1059,6 +1062,24 @@ void tst_QRangeModel::overrideRoleNames()
     QCOMPARE(itemData.value(Qt::UserRole + 1), 42);
 
     QVERIFY(model.setItemData(model.index(1, 0), itemData));
+}
+
+void tst_QRangeModel::setRoleNames()
+{
+    QRangeModel model(QStringList{});
+    QStringListModel stringListModel;
+
+    QSignalSpy spy(&model, &QRangeModel::roleNamesChanged);
+    QCOMPARE(model.roleNames(), stringListModel.roleNames());
+    QVERIFY(spy.isEmpty());
+
+    const QHash<int, QByteArray> roleNames = {
+        {Qt::UserRole, "one"},
+        {Qt::UserRole + 1, "two"},
+    };
+    model.setRoleNames(roleNames);
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(model.roleNames(), roleNames);
 }
 
 void tst_QRangeModel::dimensions()
