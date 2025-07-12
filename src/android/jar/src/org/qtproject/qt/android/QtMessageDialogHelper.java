@@ -123,10 +123,13 @@ class QtMessageDialogHelper
     {
         int[] attrs = { id };
         Drawable d;
-        try (TypedArray a = m_theme.obtainStyledAttributes(attrs)) {
+        TypedArray a = m_theme.obtainStyledAttributes(attrs);
+        try {
             d = a.getDrawable(0);
+        } finally {
             a.recycle();
         }
+
         return  d;
     }
 
