@@ -37,7 +37,7 @@
     access.
 
     \note This class is deprecated and may be removed in a Qt release. Use
-    QDirListing instead.
+    QDirListing instead, see \l {Porting QDirIterator to QDirListing}.
 
     \sa QDir, QDir::entryList()
 */
