@@ -63,8 +63,9 @@
     of QDirListing. Values from this enumerator can be bitwise OR'ed together.
 
     \value Default
-        List all files, directories and symbolic links, including broken
-        symlinks (where the target doesn't exist).
+        List all entries, that is, files, directories, symbolic links including broken
+        symbolic links (where the target doesn't exist) and special (\e other) system
+        files, see ExcludeOther for details.
         Hidden files and directories and the special entries \c{.} and \c{..}
         aren't listed by default.
 

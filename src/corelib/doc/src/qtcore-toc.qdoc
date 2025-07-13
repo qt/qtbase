@@ -50,6 +50,7 @@
         \endlist
     \li \l {Application Permissions}
     \li \l {Comparison types overview}
+    \li \l {Porting QDirIterator to QDirListing}
     \li \l {Changes to Qt Core}{Upgrading from Qt 5}
     \li \l{Qt Core Private C++ Classes}{Reference - Private C++ Classes}
     \li \l{Plugin Classes}{Reference - Plugin Classes}
