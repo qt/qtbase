@@ -52,6 +52,7 @@ set(java_sources
     src/org/qtproject/qt/android/QtSignalListener.java
     src/org/qtproject/qt/android/BackgroundActionsTracker.java
     src/org/qtproject/qt/android/QtApkFileEngine.java
+    src/org/qtproject/qt/android/QtContentFileEngine.java
 )
 
 qt_internal_add_jar(Qt${QtBase_VERSION_MAJOR}Android
