@@ -19,6 +19,7 @@ using namespace Qt::StringLiterals;
 
 Q_DECLARE_JNI_CLASS(ParcelFileDescriptorType, "android/os/ParcelFileDescriptor");
 Q_DECLARE_JNI_CLASS(CursorType, "android/database/Cursor");
+Q_DECLARE_JNI_CLASS(QtContentFileEngine, "org/qtproject/qt/android/QtContentFileEngine");
 
 static QJniObject &contentResolverInstance()
 {
@@ -76,11 +77,12 @@ bool AndroidContentFileEngine::open(QIODevice::OpenMode openMode,
         openModeStr += u'a';
     }
 
-    m_pfd = contentResolverInstance().callMethod<
-            QtJniTypes::ParcelFileDescriptorType, QtJniTypes::Uri, jstring>(
+    using namespace QtJniTypes;
+    m_pfd = QtContentFileEngine::callStaticMethod<ParcelFileDescriptorType>(
                 "openFileDescriptor",
-                m_documentFile->uri().object(),
-                QJniObject::fromString(openModeStr).object<jstring>());
+                contentResolverInstance().object<ContentResolver>(),
+                m_documentFile->uri().object<Uri>(),
+                openModeStr);
 
     if (!m_pfd.isValid())
         return false;
@@ -369,13 +371,14 @@ public:
                                             const QStringList &selectionArgs = {},
                                             const QString &sortOrder = {})
     {
-        auto cursor = contentResolverInstance().callMethod<QtJniTypes::CursorType>(
-            "query",
-            uri.object<QtJniTypes::Uri>(),
-            QJniArray(projection),
-            selection.isEmpty() ? nullptr : QJniObject::fromString(selection).object<jstring>(),
-            QJniArray(selectionArgs),
-            sortOrder.isEmpty() ? nullptr : QJniObject::fromString(sortOrder).object<jstring>());
+        using namespace QtJniTypes;
+        auto cursor = QtContentFileEngine::callStaticMethod<CursorType>("query",
+                contentResolverInstance().object<ContentResolver>(),
+                uri.object<Uri>(),
+                QJniArray(projection),
+                selection.isEmpty() ? nullptr : selection,
+                QJniArray(selectionArgs),
+                sortOrder.isEmpty() ? nullptr : sortOrder);
         if (!cursor.isValid())
             return {};
         return std::make_unique<Cursor>(cursor);

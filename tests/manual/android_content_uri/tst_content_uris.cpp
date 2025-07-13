@@ -37,7 +37,7 @@ void showInstructionsDialog(const QString &message)
 
 void tst_ContentUris::dirFacilities()
 {
-    showInstructionsDialog("Choose a folder with no content/files/subdirs");
+    showInstructionsDialog("Choose an empty directory...");
 
     auto url = QFileDialog::getExistingDirectory();
     QVERIFY(url.startsWith("content"_L1));
@@ -53,7 +53,6 @@ void tst_ContentUris::dirFacilities()
     const QDir subDir = dirList.first();
 
     QVERIFY(subDir.dirName() == "Sub"_L1);
-    qWarning() << "subDir.absolutePath()" << subDir.absolutePath() << dirList.first();
     QVERIFY(subDir.absolutePath() == dirList.first());
     QVERIFY(subDir.path() == dirList.first());
 
@@ -74,7 +73,7 @@ void tst_ContentUris::readWriteFile()
     const QString fileName = "new_file.txt";
 
     {
-        showInstructionsDialog("Choose a name for new file to create");
+        showInstructionsDialog("Type a name to create a new file...");
 
         auto url = QFileDialog::getSaveFileName(nullptr, tr("Save File"), fileName);
         QFile file(url);
@@ -97,7 +96,7 @@ void tst_ContentUris::readWriteFile()
     }
 
     {
-        showInstructionsDialog("Choose the file that was created");
+        showInstructionsDialog("Select the newly created file...");
 
         auto url = QFileDialog::getOpenFileName(nullptr, tr("Open File"), fileName);
         QFile file(url);
@@ -145,7 +144,7 @@ void tst_ContentUris::createFileFromDirUrl_data()
 {
     QTest::addColumn<QString>("path");
 
-    showInstructionsDialog("Choose a folder with no content/files/subdirs");
+    showInstructionsDialog("Choose an empty directory...");
 
     const QString treeUrl = QFileDialog::getExistingDirectory();
     const QString fileName = "text.txt";
@@ -186,7 +185,7 @@ void tst_ContentUris::createFileFromDirUrl()
 
 void tst_ContentUris::fileOperations()
 {
-    showInstructionsDialog("Choose a name for new file to create");
+    showInstructionsDialog("Type a name to create a new file...");
 
     const QString fileName = "new_file.txt";
     auto url = QFileDialog::getSaveFileName(nullptr, tr("Save File"), fileName);
@@ -202,7 +201,7 @@ void tst_ContentUris::fileOperations()
 
         // NOTE: The uri doesn't seem to stay usable after a rename and it needs to get
         // permission again via the SAF picker.
-        showInstructionsDialog("Choose the file that was renamed");
+        showInstructionsDialog("Select the file that was renamed...");
         QFileDialog::getOpenFileName(nullptr, tr("Open File"));
         QVERIFY(file.exists());
 
@@ -213,7 +212,7 @@ void tst_ContentUris::fileOperations()
 
         // NOTE: The uri doesn't seem to stay usable after a rename and it needs to get
         // permission again via the SAF picker.
-        showInstructionsDialog("Choose the file that was renamed");
+        showInstructionsDialog("Select the file that was renamed again...");
         QFileDialog::getOpenFileName(nullptr, tr("Open File"));
         QVERIFY(file.exists());
     }
@@ -224,7 +223,7 @@ void tst_ContentUris::fileOperations()
 
     // Move
     {
-        showInstructionsDialog("Choose source directory of file to move");
+        showInstructionsDialog("Choose an empty directory where a new file will be created...");
         const QString srcDir = QFileDialog::getExistingDirectory(nullptr, tr("Choose Directory"));
 
         const QString fileName = "file_to_move.txt"_L1;
@@ -234,21 +233,26 @@ void tst_ContentUris::fileOperations()
         QVERIFY(file.open(QFile::WriteOnly));
         QVERIFY(file.exists());
 
-        showInstructionsDialog("Choose target directory to where to move the file");
-        const QString destDir = QFileDialog::getExistingDirectory(nullptr, tr("Choose Directory"));
+        const auto moveToDir = "Move_Here"_L1;
+        QVERIFY(QDir(srcDir).mkdir(moveToDir));
+        showInstructionsDialog("Choose the destination directory where to move the file...");
+        const QString dest = QFileDialog::getExistingDirectory(nullptr, tr("Choose Directory"));
 
-        QVERIFY(file.rename(destDir  + u'/' + fileName));
+        QVERIFY(file.rename(dest  + u'/' + fileName));
 
         // NOTE: The uri doesn't seem to stay usable after a rename, but the file should
         // be already moved to the new path. To check and remove file need to use new url
         file.close();
-        showInstructionsDialog("Choose the file that was moved");
+        showInstructionsDialog("Select the file that was moved...");
         const auto url = QFileDialog::getOpenFileName(nullptr, tr("Open File"));
 
         file.setFileName(url);
         QVERIFY(file.exists());
         QVERIFY(file.remove());
         QVERIFY(!file.exists());
+
+        QVERIFY(QDir(srcDir).rmdir(moveToDir));
+        QVERIFY(!QDir(dest).exists());
     }
 }
 
