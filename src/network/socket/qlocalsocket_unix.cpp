@@ -356,8 +356,14 @@ bool QLocalSocket::setSocketDescriptor(qintptr socketDescriptor,
     QIODevice::open(openMode);
     d->state = socketState;
     d->describeSocket(socketDescriptor);
-    return d->unixSocket.setSocketDescriptor(socketDescriptor,
-                                             newSocketState, openMode);
+    const bool result = d->unixSocket.setSocketDescriptor(socketDescriptor,
+                                                          newSocketState, openMode);
+    // Since we directly assigned d->state above, any emission from unixSocket for
+    // state change emission is ignored because the state hasn't changed. So, we
+    // emit it directly here ourselves.
+    if (result)
+        emit stateChanged(d->state);
+    return result;
 }
 
 void QLocalSocketPrivate::describeSocket(qintptr socketDescriptor)
