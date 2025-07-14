@@ -15,6 +15,8 @@
 #include <QtCore/qvariant.h>
 #include <QtDBus/qdbusextratypes.h>
 
+#include <tuple>
+
 #ifndef QT_NO_DBUS
 
 QT_BEGIN_NAMESPACE
@@ -324,7 +326,7 @@ inline const QDBusArgument &operator>>(const QDBusArgument &arg, std::pair<T1, T
 template <typename... T>
 QDBusArgument &operator<<(QDBusArgument &argument, const std::tuple<T...> &tuple)
 {
-    static_assert(std::tuple_size_v<std::tuple<T...>> != 0, "D-Bus doesn't allow empty structs");
+    static_assert(sizeof...(T) != 0, "D-Bus doesn't allow empty structs");
     argument.beginStructure();
     std::apply([&argument](const auto &...elements) { (argument << ... << elements); }, tuple);
     argument.endStructure();
@@ -334,7 +336,7 @@ QDBusArgument &operator<<(QDBusArgument &argument, const std::tuple<T...> &tuple
 template <typename... T>
 const QDBusArgument &operator>>(const QDBusArgument &argument, std::tuple<T...> &tuple)
 {
-    static_assert(std::tuple_size_v<std::tuple<T...>> != 0, "D-Bus doesn't allow empty structs");
+    static_assert(sizeof...(T) != 0, "D-Bus doesn't allow empty structs");
     argument.beginStructure();
     std::apply([&argument](auto &...elements) { (argument >> ... >> elements); }, tuple);
     argument.endStructure();
