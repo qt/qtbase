@@ -630,8 +630,8 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &stream, QTextTableCellFormat &
     \value FontStyleName
     \value FontPointSize
     \value FontPixelSize
-    \value FontSizeAdjustment       Specifies the change in size given to the fontsize already set using
-                                    FontPointSize or FontPixelSize.
+    \value FontSizeAdjustment       Specifies an integer adjustment added to the base font size set using
+                                    \c FontPointSize or \c FontPixelSize.
     \value FontFixedPitch
     \omitvalue FontSizeIncrement
     \value FontWeight
