@@ -17,7 +17,6 @@ QT_BEGIN_NAMESPACE
 
 class QFont;
 class QPainterPathPrivate;
-struct QPainterPathPrivateDeleter;
 class QPainterPathStrokerPrivate;
 class QPen;
 class QPolygonF;
