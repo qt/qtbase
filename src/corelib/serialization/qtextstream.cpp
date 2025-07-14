@@ -833,29 +833,28 @@ QTextStreamPrivate::PaddingResult QTextStreamPrivate::padding(qsizetype len) con
 /*!
     \internal
 */
-void QTextStreamPrivate::putString(const QChar *data, qsizetype len, bool number)
+void QTextStreamPrivate::putString(QStringView data, bool number)
 {
-    if (Q_UNLIKELY(params.fieldWidth > len)) {
+    if (Q_UNLIKELY(params.fieldWidth > data.size())) {
 
         // handle padding:
 
-        const PaddingResult pad = padding(len);
+        const PaddingResult pad = padding(data.size());
 
         if (params.fieldAlignment == QTextStream::AlignAccountingStyle && number) {
-            const QChar sign = len > 0 ? data[0] : QChar();
+            const QChar sign = data.size() > 0 ? data.front() : QChar();
             if (sign == locale.negativeSign() || sign == locale.positiveSign()) {
                 // write the sign before the padding, then skip it later
                 write(sign);
-                ++data;
-                --len;
+                data = data.sliced(1);
             }
         }
 
         writePadding(pad.left);
-        write(data, len);
+        write(data);
         writePadding(pad.right);
     } else {
-        write(data, len);
+        write(data);
     }
 }
 

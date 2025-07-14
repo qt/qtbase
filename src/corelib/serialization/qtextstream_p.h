@@ -149,11 +149,9 @@ public:
     void write(const QChar *data, qsizetype len);
     void write(QLatin1StringView data);
     void writePadding(qsizetype len);
-    inline void putString(QStringView string, bool number = false)
-    {
-        putString(string.constData(), string.size(), number);
-    }
-    void putString(const QChar *data, qsizetype len, bool number = false);
+    void putString(QStringView string, bool number = false);
+    void putString(const QChar *data, qsizetype len, bool number = false)
+    { putString(QStringView{data, len}, number); }
     void putString(QLatin1StringView data, bool number = false);
     void putString(QUtf8StringView data, bool number = false);
     inline void putChar(QChar ch);
