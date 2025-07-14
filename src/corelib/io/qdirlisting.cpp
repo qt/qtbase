@@ -571,12 +571,19 @@ QDirListing::QDirListing(const QString &path, IteratorFlags flags)
     be iterated. By default, \a flags is IteratorFlag::Default.
 
     The listed entries will be filtered according to the file glob patterns
-    in \a nameFilters (see QDir::setNameFilters() for more details).
+    in \a nameFilters, which are converted to a regular expression using
+    QRegularExpression::fromWildcard (see QDir::setNameFilters() for more
+    details).
 
     For example, the following iterator could be used to iterate over audio
     files:
 
     \snippet code/src_corelib_io_qdirlisting.cpp 2
+
+    Sometimes you can filter by name more efficiently by iterating over the
+    entries with a range-for loop, using string comparison. For example:
+
+    \snippet code/src_corelib_io_qdirlisting.cpp 7
 
     \sa IteratorFlags, QDir::setNameFilters()
 */
