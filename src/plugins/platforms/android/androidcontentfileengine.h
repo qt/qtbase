@@ -79,11 +79,13 @@ public:
     static DocumentFilePtr parseFromAnyUri(const QString &filename);
     static DocumentFilePtr fromSingleUri(const QJniObject &uri);
     static DocumentFilePtr fromTreeUri(const QJniObject &treeUri);
+    static QStringList getPathSegments(const QJniObject &uri);
 
     DocumentFilePtr createFile(const QString &mimeType, const QString &displayName);
     DocumentFilePtr createDirectory(const QString &displayName);
     const QJniObject &uri() const;
     const DocumentFilePtr &parent() const;
+    QString initialName() const;
     QString name() const;
     QString id() const;
     QString mimeType() const;
@@ -100,9 +102,10 @@ public:
     bool rename(const QString &newName);
 
 protected:
-    DocumentFile(const QJniObject &uri, const std::shared_ptr<DocumentFile> &parent);
+    DocumentFile(const QJniObject &uri, const QString &displayName, const std::shared_ptr<DocumentFile> &parent);
 
 protected:
+    QString m_displayName;
     QJniObject m_uri;
     DocumentFilePtr m_parent;
 };
