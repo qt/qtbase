@@ -24,6 +24,7 @@ class QRegion;
 class QTransform;
 class QVectorPath;
 
+QT_DECLARE_QESDP_SPECIALIZATION_DTOR(QPainterPathPrivate)
 class Q_GUI_EXPORT QPainterPath
 {
 public:
@@ -55,6 +56,7 @@ public:
     explicit QPainterPath(const QPointF &startPoint);
     QPainterPath(const QPainterPath &other);
     QPainterPath &operator=(const QPainterPath &other);
+    QPainterPath(QPainterPath &&other) noexcept = default;
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QPainterPath)
     ~QPainterPath();
 

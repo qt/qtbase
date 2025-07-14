@@ -36,6 +36,8 @@
 
 QT_BEGIN_NAMESPACE
 
+QT_DEFINE_QESDP_SPECIALIZATION_DTOR(QPainterPathPrivate)
+
 static inline bool isValidCoord(qreal c)
 {
     if (sizeof(qreal) >= sizeof(double))
@@ -510,6 +512,15 @@ QPainterPath::QPainterPath() noexcept
     \sa operator=()
 */
 QPainterPath::QPainterPath(const QPainterPath &other) = default;
+
+/*!
+    \fn QPainterPath::QPainterPath(QPainterPath &&other)
+    \since 6.10
+
+    Move-constructs a new painter path from \a other.
+
+    The moved-from object \a other is placed in the default-constructed state.
+*/
 
 /*!
     Creates a QPainterPath object with the given \a startPoint as its
