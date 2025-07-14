@@ -120,6 +120,27 @@ protected:
     QDBusArgument(QDBusArgumentPrivate *d);
     friend class QDBusArgumentPrivate;
     mutable QDBusArgumentPrivate *d;
+
+private:
+    template <typename... T>
+    friend QDBusArgument &operator<<(QDBusArgument &argument, const std::tuple<T...> &tuple)
+    {
+        static_assert(sizeof...(T) != 0, "D-Bus doesn't allow empty structs");
+        argument.beginStructure();
+        std::apply([&argument](const auto &...elements) { (argument << ... << elements); }, tuple);
+        argument.endStructure();
+        return argument;
+    }
+
+    template <typename... T>
+    friend const QDBusArgument &operator>>(const QDBusArgument &argument, std::tuple<T...> &tuple)
+    {
+        static_assert(sizeof...(T) != 0, "D-Bus doesn't allow empty structs");
+        argument.beginStructure();
+        std::apply([&argument](auto &...elements) { (argument >> ... >> elements); }, tuple);
+        argument.endStructure();
+        return argument;
+    }
 };
 Q_DECLARE_SHARED(QDBusArgument)
 
@@ -322,26 +343,6 @@ inline const QDBusArgument &operator>>(const QDBusArgument &arg, std::pair<T1, T
     arg >> pair.first >> pair.second;
     arg.endStructure();
     return arg;
-}
-
-template <typename... T>
-QDBusArgument &operator<<(QDBusArgument &argument, const std::tuple<T...> &tuple)
-{
-    static_assert(sizeof...(T) != 0, "D-Bus doesn't allow empty structs");
-    argument.beginStructure();
-    std::apply([&argument](const auto &...elements) { (argument << ... << elements); }, tuple);
-    argument.endStructure();
-    return argument;
-}
-
-template <typename... T>
-const QDBusArgument &operator>>(const QDBusArgument &argument, std::tuple<T...> &tuple)
-{
-    static_assert(sizeof...(T) != 0, "D-Bus doesn't allow empty structs");
-    argument.beginStructure();
-    std::apply([&argument](auto &...elements) { (argument >> ... >> elements); }, tuple);
-    argument.endStructure();
-    return argument;
 }
 
 QT_END_NAMESPACE
