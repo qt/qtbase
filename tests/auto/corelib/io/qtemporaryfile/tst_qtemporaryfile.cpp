@@ -826,37 +826,26 @@ void tst_QTemporaryFile::autoRemoveAfterFailedRename()
 #if defined(Q_OS_VXWORKS)
     QSKIP("QTBUG-130066");
 #endif
-    struct CleanOnReturn
-    {
-        ~CleanOnReturn()
-        {
+
+    QString tempName;
+    auto cleaner = qScopeGuard([&] {
             if (!tempName.isEmpty())
                 QFile::remove(tempName);
-        }
-
-        void reset()
-        {
-            tempName.clear();
-        }
-
-        QString tempName;
-    };
-
-    CleanOnReturn cleaner;
+        });
 
     {
         QTemporaryFile file;
         QVERIFY( file.open() );
-        cleaner.tempName = file.fileName();
+        tempName = file.fileName();
 
-        QVERIFY( QFile::exists(cleaner.tempName) );
+        QVERIFY(QFile::exists(tempName));
         QVERIFY( !QFileInfo("i-do-not-exist").isDir() );
         QVERIFY( !file.rename("i-do-not-exist/file.txt") );
-        QVERIFY( QFile::exists(cleaner.tempName) );
+        QVERIFY(QFile::exists(tempName));
     }
 
-    QVERIFY( !QFile::exists(cleaner.tempName) );
-    cleaner.reset();
+    QVERIFY(!QFile::exists(tempName));
+    cleaner.dismiss(); // would fail: file is known to no longer exist
 }
 
 void tst_QTemporaryFile::createNativeFile_data()
