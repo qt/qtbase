@@ -604,7 +604,7 @@ public:
 
     void destroy()
     {
-        call<bool>(Destroy);
+        call_fn(Destroy, this, nullptr, nullptr);
     }
 
 private:
@@ -615,6 +615,7 @@ private:
     using CallConstFN = decltype(callConst);
     using CallTupleFN = decltype(call);
 
+    friend class QRangeModelPrivate;
     CallConstFN *callConst_fn;
     CallTupleFN *call_fn;
     QRangeModel *m_rangeModel;
@@ -647,25 +648,6 @@ protected:
     inline void endMoveRows();
     inline QAbstractItemModel &itemModel();
     inline const QAbstractItemModel &itemModel() const;
-
-public:
-    template <typename Ret, typename ...Args>
-    Ret callConst(ConstOp op, const Args &...args) const
-    {
-        Ret ret = {};
-        const auto tuple = std::tie(args...);
-        callConst_fn(op, this, &ret, &tuple);
-        return ret;
-    }
-
-    template <typename Ret, typename ...Args>
-    Ret call(Op op, const Args &...args)
-    {
-        Ret ret = {};
-        const auto tuple = std::tie(args...);
-        call_fn(op, this, &ret, &tuple);
-        return ret;
-    }
 };
 
 template <typename Structure, typename Range,

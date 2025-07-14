@@ -9,6 +9,8 @@
 
 QT_BEGIN_NAMESPACE
 
+class QRangeModelPrivate;
+
 class Q_CORE_EXPORT QRangeModel : public QAbstractItemModel
 {
     Q_OBJECT
@@ -103,10 +105,10 @@ protected:
 
 private:
     Q_DISABLE_COPY_MOVE(QRangeModel)
+    Q_DECLARE_PRIVATE(QRangeModel)
 
+    explicit QRangeModel(QRangeModelImplBase *impl, QObject *parent);
     friend class QRangeModelImplBase;
-    struct Deleter { void operator()(QRangeModelImplBase *that) { that->destroy(); } };
-    std::unique_ptr<QRangeModelImplBase, Deleter> impl;
 };
 
 // implementation of forwarders
@@ -193,21 +195,21 @@ const QAbstractItemModel &QRangeModelImplBase::itemModel() const
 
 template <typename Range, QRangeModelDetails::if_table_range<Range>>
 QRangeModel::QRangeModel(Range &&range, QObject *parent)
-    : QAbstractItemModel(parent)
-    , impl(new QGenericTableItemModelImpl<Range>(std::forward<Range>(range), this))
+    : QRangeModel(new QGenericTableItemModelImpl<Range>(std::forward<Range>(range), this), parent)
 {}
 
 template <typename Range, QRangeModelDetails::if_tree_range<Range>>
 QRangeModel::QRangeModel(Range &&range, QObject *parent)
-    : QRangeModel(std::forward<Range>(range),
-                        QRangeModelDetails::DefaultTreeProtocol<Range>{}, parent)
+    : QRangeModel(std::forward<Range>(range), QRangeModelDetails::DefaultTreeProtocol<Range>{},
+                  parent)
 {}
 
 template <typename Range, typename Protocol, QRangeModelDetails::if_tree_range<Range, Protocol>>
 QRangeModel::QRangeModel(Range &&range, Protocol &&protocol, QObject *parent)
-    : QAbstractItemModel(parent)
-   , impl(new QGenericTreeItemModelImpl<Range, Protocol>(std::forward<Range>(range),
-                                                         std::forward<Protocol>(protocol), this))
+    : QRangeModel(new QGenericTreeItemModelImpl<Range, Protocol>(std::forward<Range>(range),
+                                                                 std::forward<Protocol>(protocol),
+                                                                 this),
+                  parent)
 {}
 
 QT_END_NAMESPACE

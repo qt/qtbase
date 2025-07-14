@@ -5,7 +5,47 @@
 #include "qrangemodel.h"
 #include <QtCore/qsize.h>
 
+#include <QtCore/private/qabstractitemmodel_p.h>
+
 QT_BEGIN_NAMESPACE
+
+class QRangeModelPrivate : QAbstractItemModelPrivate
+{
+    Q_DECLARE_PUBLIC(QRangeModel)
+
+    struct Deleter { void operator()(QRangeModelImplBase *that) { that->destroy(); } };
+
+public:
+    explicit QRangeModelPrivate(std::unique_ptr<QRangeModelImplBase, Deleter> impl)
+        : impl(std::move(impl))
+    {}
+
+    template <typename Ret, typename ...Args>
+    Ret call(QRangeModelImplBase::ConstOp op, const Args &...args) const
+    {
+        Ret ret = {};
+        const auto tuple = std::tie(args...);
+        impl->callConst_fn(op, impl.get(), &ret, &tuple);
+        return ret;
+    }
+
+    template <typename Ret, typename ...Args>
+    Ret call(QRangeModelImplBase::Op op, const Args &...args)
+    {
+        Ret ret = {};
+        const auto tuple = std::tie(args...);
+        impl->call_fn(op, impl.get(), &ret, &tuple);
+        return ret;
+    }
+
+private:
+    std::unique_ptr<QRangeModelImplBase, Deleter> impl;
+};
+
+QRangeModel::QRangeModel(QRangeModelImplBase *impl, QObject *parent)
+    : QAbstractItemModel(*new QRangeModelPrivate({impl, {}}), parent)
+{
+}
 
 /*!
     \class QRangeModel
@@ -503,7 +543,8 @@ QRangeModel::~QRangeModel() = default;
 */
 QModelIndex QRangeModel::index(int row, int column, const QModelIndex &parent) const
 {
-    return impl->callConst<QModelIndex>(QRangeModelImplBase::Index, row, column, parent);
+    Q_D(const QRangeModel);
+    return d->call<QModelIndex>(QRangeModelImplBase::Index, row, column, parent);
 }
 
 /*!
@@ -520,7 +561,8 @@ QModelIndex QRangeModel::index(int row, int column, const QModelIndex &parent) c
 */
 QModelIndex QRangeModel::parent(const QModelIndex &child) const
 {
-    return impl->callConst<QModelIndex>(QRangeModelImplBase::Parent, child);
+    Q_D(const QRangeModel);
+    return d->call<QModelIndex>(QRangeModelImplBase::Parent, child);
 }
 
 /*!
@@ -536,7 +578,8 @@ QModelIndex QRangeModel::parent(const QModelIndex &child) const
 */
 QModelIndex QRangeModel::sibling(int row, int column, const QModelIndex &index) const
 {
-    return impl->callConst<QModelIndex>(QRangeModelImplBase::Sibling, row, column, index);
+    Q_D(const QRangeModel);
+    return d->call<QModelIndex>(QRangeModelImplBase::Sibling, row, column, index);
 }
 
 /*!
@@ -554,7 +597,8 @@ QModelIndex QRangeModel::sibling(int row, int column, const QModelIndex &index) 
 */
 int QRangeModel::rowCount(const QModelIndex &parent) const
 {
-    return impl->callConst<int>(QRangeModelImplBase::RowCount, parent);
+    Q_D(const QRangeModel);
+    return d->call<int>(QRangeModelImplBase::RowCount, parent);
 }
 
 /*!
@@ -572,7 +616,8 @@ int QRangeModel::rowCount(const QModelIndex &parent) const
 */
 int QRangeModel::columnCount(const QModelIndex &parent) const
 {
-    return impl->callConst<int>(QRangeModelImplBase::ColumnCount, parent);
+    Q_D(const QRangeModel);
+    return d->call<int>(QRangeModelImplBase::ColumnCount, parent);
 }
 
 /*!
@@ -589,7 +634,8 @@ int QRangeModel::columnCount(const QModelIndex &parent) const
 */
 Qt::ItemFlags QRangeModel::flags(const QModelIndex &index) const
 {
-    return impl->callConst<Qt::ItemFlags>(QRangeModelImplBase::Flags, index);
+    Q_D(const QRangeModel);
+    return d->call<Qt::ItemFlags>(QRangeModelImplBase::Flags, index);
 }
 
 /*!
@@ -606,8 +652,8 @@ Qt::ItemFlags QRangeModel::flags(const QModelIndex &index) const
 */
 QVariant QRangeModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
-    return impl->callConst<QVariant>(QRangeModelImplBase::HeaderData,
-                                     section, orientation, role);
+    Q_D(const QRangeModel);
+    return d->call<QVariant>(QRangeModelImplBase::HeaderData, section, orientation, role);
 }
 
 /*!
@@ -629,7 +675,8 @@ QVariant QRangeModel::headerData(int section, Qt::Orientation orientation, int r
 */
 QVariant QRangeModel::data(const QModelIndex &index, int role) const
 {
-    return impl->callConst<QVariant>(QRangeModelImplBase::Data, index, role);
+    Q_D(const QRangeModel);
+    return d->call<QVariant>(QRangeModelImplBase::Data, index, role);
 }
 
 /*!
@@ -654,7 +701,8 @@ QVariant QRangeModel::data(const QModelIndex &index, int role) const
 */
 bool QRangeModel::setData(const QModelIndex &index, const QVariant &data, int role)
 {
-    return impl->call<bool>(QRangeModelImplBase::SetData, index, data, role);
+    Q_D(QRangeModel);
+    return d->call<bool>(QRangeModelImplBase::SetData, index, data, role);
 }
 
 /*!
@@ -677,7 +725,8 @@ bool QRangeModel::setData(const QModelIndex &index, const QVariant &data, int ro
 */
 QMap<int, QVariant> QRangeModel::itemData(const QModelIndex &index) const
 {
-    return impl->callConst<QMap<int, QVariant>>(QRangeModelImplBase::ItemData, index);
+    Q_D(const QRangeModel);
+    return d->call<QMap<int, QVariant>>(QRangeModelImplBase::ItemData, index);
 }
 
 /*!
@@ -708,7 +757,8 @@ QMap<int, QVariant> QRangeModel::itemData(const QModelIndex &index) const
 */
 bool QRangeModel::setItemData(const QModelIndex &index, const QMap<int, QVariant> &data)
 {
-    return impl->call<bool>(QRangeModelImplBase::SetItemData, index, data);
+    Q_D(QRangeModel);
+    return d->call<bool>(QRangeModelImplBase::SetItemData, index, data);
 }
 
 /*!
@@ -721,7 +771,8 @@ bool QRangeModel::setItemData(const QModelIndex &index, const QMap<int, QVariant
 */
 bool QRangeModel::clearItemData(const QModelIndex &index)
 {
-    return impl->call<bool>(QRangeModelImplBase::ClearItemData, index);
+    Q_D(QRangeModel);
+    return d->call<bool>(QRangeModelImplBase::ClearItemData, index);
 }
 
 /*
@@ -746,7 +797,8 @@ bool QRangeModel::clearItemData(const QModelIndex &index)
 */
 bool QRangeModel::insertColumns(int column, int count, const QModelIndex &parent)
 {
-    return impl->call<bool>(QRangeModelImplBase::InsertColumns, column, count, parent);
+    Q_D(QRangeModel);
+    return d->call<bool>(QRangeModelImplBase::InsertColumns, column, count, parent);
 }
 
 /*!
@@ -760,7 +812,8 @@ bool QRangeModel::insertColumns(int column, int count, const QModelIndex &parent
 */
 bool QRangeModel::removeColumns(int column, int count, const QModelIndex &parent)
 {
-    return impl->call<bool>(QRangeModelImplBase::RemoveColumns, column, count, parent);
+    Q_D(QRangeModel);
+    return d->call<bool>(QRangeModelImplBase::RemoveColumns, column, count, parent);
 }
 
 /*!
@@ -775,9 +828,10 @@ bool QRangeModel::removeColumns(int column, int count, const QModelIndex &parent
 bool QRangeModel::moveColumns(const QModelIndex &sourceParent, int sourceColumn, int count,
                                     const QModelIndex &destinationParent, int destinationColumn)
 {
-    return impl->call<bool>(QRangeModelImplBase::MoveColumns,
-                            sourceParent, sourceColumn, count,
-                            destinationParent, destinationColumn);
+    Q_D(QRangeModel);
+    return d->call<bool>(QRangeModelImplBase::MoveColumns,
+                         sourceParent, sourceColumn, count,
+                         destinationParent, destinationColumn);
 }
 
 /*
@@ -804,7 +858,8 @@ bool QRangeModel::moveColumns(const QModelIndex &sourceParent, int sourceColumn,
 */
 bool QRangeModel::insertRows(int row, int count, const QModelIndex &parent)
 {
-    return impl->call<bool>(QRangeModelImplBase::InsertRows, row, count, parent);
+    Q_D(QRangeModel);
+    return d->call<bool>(QRangeModelImplBase::InsertRows, row, count, parent);
 }
 
 /*!
@@ -817,7 +872,8 @@ bool QRangeModel::insertRows(int row, int count, const QModelIndex &parent)
 */
 bool QRangeModel::removeRows(int row, int count, const QModelIndex &parent)
 {
-    return impl->call<bool>(QRangeModelImplBase::RemoveRows, row, count, parent);
+    Q_D(QRangeModel);
+    return d->call<bool>(QRangeModelImplBase::RemoveRows, row, count, parent);
 }
 
 /*!
@@ -832,9 +888,10 @@ bool QRangeModel::removeRows(int row, int count, const QModelIndex &parent)
 bool QRangeModel::moveRows(const QModelIndex &sourceParent, int sourceRow, int count,
                                  const QModelIndex &destinationParent, int destinationRow)
 {
-    return impl->call<bool>(QRangeModelImplBase::MoveRows,
-                            sourceParent, sourceRow, count,
-                            destinationParent, destinationRow);
+    Q_D(QRangeModel);
+    return d->call<bool>(QRangeModelImplBase::MoveRows,
+                         sourceParent, sourceRow, count,
+                         destinationParent, destinationRow);
 }
 
 /*!
