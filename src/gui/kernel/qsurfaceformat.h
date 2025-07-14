@@ -57,12 +57,6 @@ public:
     Q_ENUM(ColorSpace)
 #endif
 
-    enum ColorComponentType {
-        FixedColorComponentType,
-        FloatColorComponentType
-    };
-    Q_ENUM(ColorComponentType)
-
     QSurfaceFormat();
     Q_IMPLICIT QSurfaceFormat(FormatOptions options);
     QSurfaceFormat(const QSurfaceFormat &other);
@@ -83,9 +77,6 @@ public:
     int blueBufferSize() const;
     void setAlphaBufferSize(int size);
     int alphaBufferSize() const;
-
-    void setColorComponentType(ColorComponentType type);
-    ColorComponentType colorComponentType() const;
 
     void setSamples(int numSamples);
     int samples() const;

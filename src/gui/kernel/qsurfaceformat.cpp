@@ -38,7 +38,6 @@ public:
         , swapBehavior(QSurfaceFormat::DefaultSwapBehavior)
         , numSamples(-1)
         , renderableType(QSurfaceFormat::DefaultRenderableType)
-        , colorComponentType(QSurfaceFormat::FixedColorComponentType)
         , profile(QSurfaceFormat::NoProfile)
         , major(2)
         , minor(0)
@@ -58,7 +57,6 @@ public:
           swapBehavior(other->swapBehavior),
           numSamples(other->numSamples),
           renderableType(other->renderableType),
-          colorComponentType(other->colorComponentType),
           profile(other->profile),
           major(other->major),
           minor(other->minor),
@@ -78,7 +76,6 @@ public:
     QSurfaceFormat::SwapBehavior swapBehavior;
     int numSamples;
     QSurfaceFormat::RenderableType renderableType;
-    QSurfaceFormat::ColorComponentType colorComponentType;
     QSurfaceFormat::OpenGLContextProfile profile;
     int major;
     int minor;
@@ -540,40 +537,6 @@ void QSurfaceFormat::setAlphaBufferSize(int size)
         detach();
         d->alphaBufferSize = size;
     }
-}
-
-/*!
-    Sets the color component \a type.
-
-    The default is FixedColorComponentType. To request a floating-point color
-    buffer, set FloatColorComponentType. The red, green, and blue buffer sizes
-    should then be set either to \c 16 or \c 32, to specify either half
-    (16-bit) floating point components or 32-bit. The most commonly supported
-    and used choice is the former (16-bit), for example when high dynamic range
-    rendering is desired.
-
-    \since 6.10
-
-    \sa colorComponentType()
-*/
-void QSurfaceFormat::setColorComponentType(ColorComponentType type)
-{
-    if (d->colorComponentType != type) {
-        detach();
-        d->colorComponentType = type;
-    }
-}
-
-/*!
-    \return the color component type.
-
-    \since 6.10
-
-    \sa setColorComponentType()
-*/
-QSurfaceFormat::ColorComponentType QSurfaceFormat::colorComponentType() const
-{
-    return d->colorComponentType;
 }
 
 /*!
