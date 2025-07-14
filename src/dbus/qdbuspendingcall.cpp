@@ -229,7 +229,7 @@ void QDBusPendingCallPrivate::waitForFinishedWithGui()
 
 /*!
     \fn QDBusPendingCall::QDBusPendingCall(QDBusPendingCall &&other)
-    \since 6.11
+    \since 6.10
 
     Moves \a other into this object.
 
