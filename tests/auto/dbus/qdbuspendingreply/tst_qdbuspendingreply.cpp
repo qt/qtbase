@@ -68,7 +68,10 @@ private slots:
 
     void errors();
 
+    void getResultFromAnotherInstance_data();
     void getResultFromAnotherInstance();
+
+    void moveSemantics();
 };
 
 class TypesInterface: public QDBusAbstractAdaptor
@@ -563,13 +566,27 @@ void tst_QDBusPendingReply::errors()
     QCOMPARE(dummystring, QString());
 }
 
+void tst_QDBusPendingReply::getResultFromAnotherInstance_data()
+{
+    QTest::addColumn<bool>("shouldMove");
+
+    QTest::newRow("copy") << false;
+    QTest::newRow("move") << true;
+}
+
 void tst_QDBusPendingReply::getResultFromAnotherInstance()
 {
+    QFETCH(const bool, shouldMove);
+
     // void
     {
         QDBusPendingReply<> r = iface->asyncCall("retrieveVoid");
 
-        QDBusPendingReply<> other = r;
+        QDBusPendingReply<> other;
+        if (shouldMove)
+            other = std::move(r);
+        else
+            other = r;
         other.waitForFinished();
 
         QVERIFY(other.isFinished());
@@ -581,7 +598,11 @@ void tst_QDBusPendingReply::getResultFromAnotherInstance()
     {
         QDBusPendingReply<int, int> r = iface->asyncCall("retrieveIntInt");
 
-        QDBusPendingReply<int, int> other = r;
+        QDBusPendingReply<int, int> other;
+        if (shouldMove)
+            other = std::move(r);
+        else
+            other = r;
         other.waitForFinished();
 
         QVERIFY(other.isFinished());
@@ -600,13 +621,65 @@ void tst_QDBusPendingReply::getResultFromAnotherInstance()
     {
         QDBusPendingReply<IntStringMap> r = iface->asyncCall("retrieveIntStringMap");
 
-        QDBusPendingReply<IntStringMap> other = r;
+        QDBusPendingReply<IntStringMap> other;
+        if (shouldMove)
+            other = std::move(r);
+        else
+            other = r;
         other.waitForFinished();
 
         QVERIFY(other.isFinished());
         QVERIFY(!other.isError());
         QCOMPARE_EQ(other.count(), 1);
         QCOMPARE_EQ(other.value(), adaptor->retrieveIntStringMap());
+    }
+}
+
+void tst_QDBusPendingReply::moveSemantics()
+{
+    // void
+    {
+        QDBusPendingReply<> r = iface->asyncCall("retrieveVoid");
+        r.waitForFinished();
+        QVERIFY(r.isFinished());
+
+        QDBusPendingReply<> copy = r;
+
+        QDBusPendingReply<> other = std::move(copy);
+        QCOMPARE_EQ(other.d, r.d);
+
+        copy = std::move(other);
+        QCOMPARE_EQ(copy.d, r.d);
+    }
+
+    // multiple parameters
+    {
+        QDBusPendingReply<int, int> r = iface->asyncCall("retrieveIntInt");
+        r.waitForFinished();
+        QVERIFY(r.isFinished());
+
+        QDBusPendingReply<int, int> copy = r;
+
+        QDBusPendingReply<int, int> other = std::move(copy);
+        QCOMPARE_EQ(other.d, r.d);
+
+        copy = std::move(other);
+        QCOMPARE_EQ(copy.d, r.d);
+    }
+
+    // complex types
+    {
+        QDBusPendingReply<IntStringMap> r = iface->asyncCall("retrieveIntStringMap");
+        r.waitForFinished();
+        QVERIFY(r.isFinished());
+
+        QDBusPendingReply<IntStringMap> copy = r;
+
+        QDBusPendingReply<IntStringMap> other = std::move(copy);
+        QCOMPARE_EQ(other.d, r.d);
+
+        copy = std::move(other);
+        QCOMPARE_EQ(copy.d, r.d);
     }
 }
 

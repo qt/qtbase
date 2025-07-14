@@ -76,6 +76,13 @@
 */
 
 /*!
+    \fn template<typename... Types> QDBusPendingReply<Types...>::QDBusPendingReply(QDBusPendingReply &&other)
+    \since 6.10
+
+    Moves-constructs a new QDBusPendingReply from \a other.
+*/
+
+/*!
     \fn template<typename... Types> QDBusPendingReply<Types...>::QDBusPendingReply(const QDBusPendingCall &call)
 
     Creates a QDBusPendingReply object that will take its contents from
@@ -101,6 +108,17 @@
     call and this is the last reference, the pending call will be
     canceled and there will be no way of retrieving the reply's
     contents, when they arrive.
+*/
+
+/*!
+    \fn template<typename... Types> QDBusPendingReply &QDBusPendingReply<Types...>::operator=(QDBusPendingReply &&other)
+    \since 6.10
+
+    Move-assigns \a other to this QDBusPendingReply instance and drops
+    the reference to the current pending call. If the current reference
+    is to an unfinished pending call and this is the last reference, the
+    pending call will be canceled and there will be no way of retrieving
+    the reply's contents, when they arrive.
 */
 
 /*!

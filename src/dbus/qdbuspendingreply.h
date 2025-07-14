@@ -11,6 +11,8 @@
 
 #ifndef QT_NO_DBUS
 
+class tst_QDBusPendingReply;
+
 QT_BEGIN_NAMESPACE
 
 
@@ -22,6 +24,8 @@ protected:
     ~QDBusPendingReplyBase();
     QDBusPendingReplyBase(const QDBusPendingReplyBase &) = default;
     QDBusPendingReplyBase &operator=(const QDBusPendingReplyBase &) = default;
+    QDBusPendingReplyBase(QDBusPendingReplyBase &&) noexcept = default;
+    QDBusPendingReplyBase &operator=(QDBusPendingReplyBase &&) noexcept = default;
 #endif
 
     void assign(const QDBusPendingCall &call);
@@ -55,6 +59,7 @@ namespace QDBusPendingReplyTypes {
 template<typename... Types>
 class QDBusPendingReply : public QDBusPendingReplyBase
 {
+    friend class ::tst_QDBusPendingReply;
     template<int Index> using Select = QDBusPendingReplyTypes::Select<Index, Types...>;
 public:
     enum { Count = std::is_same_v<typename Select<0>::Type, void> ? 0 : sizeof...(Types) };
@@ -66,6 +71,7 @@ public:
     inline QDBusPendingReply(const QDBusPendingReply &other)
         : QDBusPendingReplyBase(other)
     { }
+    QDBusPendingReply(QDBusPendingReply &&other) noexcept = default;
     inline Q_IMPLICIT QDBusPendingReply(const QDBusPendingCall &call) // required by qdbusxml2cpp-generated code
     { *this = call; }
     inline Q_IMPLICIT QDBusPendingReply(const QDBusMessage &message)
@@ -73,6 +79,7 @@ public:
 
     inline QDBusPendingReply &operator=(const QDBusPendingReply &other)
     { assign(other); return *this; }
+    QDBusPendingReply &operator=(QDBusPendingReply &&other) noexcept = default;
     inline QDBusPendingReply &operator=(const QDBusPendingCall &call)
     { assign(call); return *this; }
     inline QDBusPendingReply &operator=(const QDBusMessage &message)
@@ -136,6 +143,7 @@ private:
 template<>
 class QDBusPendingReply<> : public QDBusPendingReplyBase
 {
+    friend class ::tst_QDBusPendingReply;
 public:
     enum { Count = 0 };
     inline int count() const { return Count; }
@@ -144,6 +152,7 @@ public:
     inline QDBusPendingReply(const QDBusPendingReply &other)
         : QDBusPendingReplyBase(other)
     { }
+    QDBusPendingReply(QDBusPendingReply &&other) noexcept = default;
     inline Q_IMPLICIT QDBusPendingReply(const QDBusPendingCall &call) // required by qdbusxml2cpp-generated code
     { *this = call; }
     inline Q_IMPLICIT QDBusPendingReply(const QDBusMessage &message)
@@ -151,6 +160,7 @@ public:
 
     inline QDBusPendingReply &operator=(const QDBusPendingReply &other)
     { assign(other); return *this; }
+    QDBusPendingReply &operator=(QDBusPendingReply &&other) noexcept = default;
     inline QDBusPendingReply &operator=(const QDBusPendingCall &call)
     { assign(call); return *this; }
     inline QDBusPendingReply &operator=(const QDBusMessage &message)
