@@ -14,6 +14,7 @@ endif()
 qt_internal_add_test(tst_qrangemodel
     SOURCES
         tst_qrangemodel.cpp
+        data.h
     LIBRARIES
         Qt::Gui
 )
