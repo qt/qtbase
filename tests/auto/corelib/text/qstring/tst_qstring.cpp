@@ -22,8 +22,9 @@
 #include <qstringmatcher.h>
 #include <qbytearraymatcher.h>
 #include <qvariant.h>
-
 #include <qlocale.h>
+#include <QtCore/qxptype_traits.h>
+
 #include <locale.h>
 #include <qhash.h>
 #include <private/qtools_p.h>
@@ -623,6 +624,7 @@ private slots:
     void fromUcs4();
     void toUcs4();
     void arg();
+    void arg_negative_tests();
     void number();
     void number_double_data();
     void number_double();
@@ -6979,6 +6981,26 @@ void tst_QString::arg()
              u"\u0660\u0661\u0662\u066c\u0663\u0664\u0665\u066b\u0666\u0668"); // "٠١٢٬٣٤٥٫٦٨"
     QCOMPARE(u"%L1"_s.arg(123456789, 13, 10, QLatin1Char('0')),
              u"\u0660\u0660\u0661\u0662\u0663\u066c\u0664\u0665\u0666\u066c\u0667\u0668\u0669"); // ٠٠١٢٣٬٤٥٦٬٧٨٩
+}
+
+template <typename S, typename...Ts>
+using arg_compile_test = decltype(std::declval<S>().arg(std::declval<Ts>()...));
+template <typename S, typename...Ts>
+constexpr bool arg_compiles_v = qxp::is_detected_v<arg_compile_test, S, Ts...>;
+
+void tst_QString::arg_negative_tests()
+{
+    static_assert(!arg_compiles_v<QString&, QObject*>);
+    // QLatin1StringView::arg() is unconstrained...
+    // static_assert(!arg_compiles_v<QLatin1StringView&, QObject*>);
+
+    // integral type called like an FP overload:
+    static_assert(!arg_compiles_v<QString&, int, int, char, int, QChar>);
+    static_assert(!arg_compiles_v<QString&, long, int, char, int, char16_t>);
+
+    // strong enums don't match:
+    enum class Strong {};
+    static_assert(!arg_compiles_v<QString&, Strong>);
 }
 
 void tst_QString::number()
