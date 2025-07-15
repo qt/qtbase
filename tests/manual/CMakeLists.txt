@@ -92,5 +92,5 @@ if(QT_FEATURE_vulkan)
 endif()
 
 if(ANDROID)
-    add_subdirectory(android_content_uri)
+    add_subdirectory(android/contenturis)
 endif()
