@@ -76,8 +76,8 @@ void MandelbrotWidget::paintEvent(QPaintEvent * /* event */)
         painter.translate(newX, newY);
         painter.scale(scaleFactor, scaleFactor);
 
-        const QRectF exposed = painter.transform().inverted().mapRect(rect())
-                                       .adjusted(-1, -1, 1, 1);
+        QRectF exposed = painter.transform().inverted().mapRect(rect());
+        exposed = exposed.adjusted(-1, -1, 1, 1);
         painter.drawPixmap(exposed, previewPixmap, exposed);
         painter.restore();
     }
