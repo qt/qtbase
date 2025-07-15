@@ -830,6 +830,24 @@ QTextStreamPrivate::PaddingResult QTextStreamPrivate::padding(qsizetype len) con
     return { left, right };
 }
 
+namespace {
+template <typename StringView>
+auto parseSign(StringView data, const QLocale &loc)
+{
+    struct R {
+        StringView sign, rest;
+        explicit operator bool() const noexcept { return !sign.isEmpty(); }
+    };
+    // This assumes that the size in UTF-16 (return value of QLocale functions)
+    // and StringView is the same; in particular, it doesn't work for UTF-8!
+    if (const QString sign = loc.negativeSign(); data.startsWith(sign))
+        return R{data.first(sign.size()), data.sliced(sign.size())};
+    if (const QString sign = loc.positiveSign(); data.startsWith(sign))
+        return R{data.first(sign.size()), data.sliced(sign.size())};
+    return R{nullptr, data};
+}
+} // unnamed namespace
+
 /*!
     \internal
 */
@@ -843,11 +861,10 @@ void QTextStreamPrivate::putStringImpl(StringView data, bool number)
         const PaddingResult pad = padding(data.size());
 
         if (params.fieldAlignment == QTextStream::AlignAccountingStyle && number) {
-            const QChar sign = data.size() > 0 ? data.front() : QChar();
-            if (sign == locale.negativeSign() || sign == locale.positiveSign()) {
+            if (const auto r = parseSign(data, locale)) {
                 // write the sign before the padding, then skip it later
-                write(sign);
-                data = data.sliced(1);
+                write(r.sign);
+                data = r.rest;
             }
         }
 

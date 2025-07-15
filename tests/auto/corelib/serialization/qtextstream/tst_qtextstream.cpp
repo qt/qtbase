@@ -3065,8 +3065,6 @@ void tst_QTextStream::int_write_with_locale()
         stream.setFieldWidth(fieldWidth);
 
     QVERIFY(stream << input);
-    QEXPECT_FAIL("ar_EG -123", "QTBUG-138484", Continue);
-    QEXPECT_FAIL("ar_EG +123", "QTBUG-138484", Continue);
     QCOMPARE(result, output);
 }
 
