@@ -46,6 +46,7 @@ void qtSuspendResumeControlClearJs() {
     EM_ASM({
         Module.qtSuspendResumeControl = ({
             resume: null,
+            asyncifyEnabled: false, // asyncify 1 or JSPI enabled
             eventHandlers: {},
             pendingEvents: [],
         });
@@ -67,16 +68,31 @@ void qtRegisterEventHandlerJs(int index) {
         let index = $0;
         let control = Module.qtSuspendResumeControl;
         let handler = (arg) => {
+
+            // Add event to event queue
             control.pendingEvents.push({
                 index: index,
                 arg: arg
             });
+
+            // Handle the event based on instance state and asyncify flag
             if (control.resume) {
+                // The instance is suspended in processEvents(), resume and process the event
                 const resume = control.resume;
                 control.resume = null;
                 resume();
             } else {
-                Module.qtSendPendingEvents(); // not suspended, call the handler directly
+                if (control.asyncifyEnabled) {
+                    // The instance is either not suspended or is supended outside of processEvents()
+                    // (e.g. on emscripten_sleep()). Currently there is no way to determine
+                    // which state the instance is in. Keep the event in the event queue to be
+                    // processed on the next processEvents() call.
+                    // FIXME: call event handler here if we can determine that the instance
+                    // is not suspended.
+                } else {
+                    // The instance is not suspended, call the handler directly
+                    Module.qtSendPendingEvents();
+                }
             }
         };
         control.eventHandlers[index] = handler;
@@ -89,6 +105,7 @@ QWasmSuspendResumeControl::QWasmSuspendResumeControl()
     Q_ASSERT(emscripten_is_main_runtime_thread());
 #endif
     qtSuspendResumeControlClearJs();
+    suspendResumeControlJs().set("asyncifyEnabled", qstdweb::haveAsyncify());
     Q_ASSERT(!QWasmSuspendResumeControl::s_suspendResumeControl);
     QWasmSuspendResumeControl::s_suspendResumeControl = this;
 }
