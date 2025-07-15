@@ -8877,6 +8877,13 @@ QString QString::arg_impl(QAnyStringView a, int fieldWidth, QChar fillChar) cons
   \snippet qstring/main.cpp 12
   \snippet qstring/main.cpp 14
 
+  \note In Qt versions prior to 6.10.1, this function accepted arguments of
+  types that implicitly convert to integral types. This is no longer supported,
+  except for (unscoped) enums, because it also accepted types convertible to
+  floating-point types, losing precision when those were printed as integers. A
+  backwards-compatible fix is to cast such types to a C++ type whose displayed
+  form matches your intent (\c int, \c float, ...).
+
   \note In Qt versions prior to 6.9, this function was overloaded on various
   integral types and sometimes incorrectly accepted \c char and \c char16_t
   arguments.

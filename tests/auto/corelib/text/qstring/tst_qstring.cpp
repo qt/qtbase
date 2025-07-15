@@ -6980,6 +6980,13 @@ using arg_compile_test = decltype(std::declval<S>().arg(std::declval<Ts>()...));
 template <typename S, typename...Ts>
 constexpr bool arg_compiles_v = qxp::is_detected_v<arg_compile_test, S, Ts...>;
 
+template <typename T>
+struct Wrapper { // QTBUG-138471
+    Q_IMPLICIT operator T() const {
+        return T(1);
+    }
+};
+
 void tst_QString::arg_negative_tests()
 {
     static_assert(!arg_compiles_v<QString&, QObject*>);
@@ -6993,6 +7000,12 @@ void tst_QString::arg_negative_tests()
     // strong enums don't match:
     enum class Strong {};
     static_assert(!arg_compiles_v<QString&, Strong>);
+
+    // types that merely implicitly convert to a supported type don't match:
+    static_assert(!arg_compiles_v<QString, Wrapper<float>>);
+    static_assert(!arg_compiles_v<QString, Wrapper<double>>);
+    static_assert(!arg_compiles_v<QString, Wrapper<int>>);
+    static_assert(!arg_compiles_v<QString, Wrapper<char16_t>>);
 }
 
 void tst_QString::number()

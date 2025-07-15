@@ -28,6 +28,7 @@
 #include <iterator>
 #include <QtCore/q20memory.h>
 #include <string_view>
+#include <QtCore/q23type_traits.h>
 
 #include <stdarg.h>
 
@@ -181,9 +182,12 @@ class Q_CORE_EXPORT QString
 
     template <typename T>
     using if_integral_non_char = std::enable_if_t<std::conjunction_v<
-            std::disjunction< // unlike is_integral, also covers unscoped enums
-                std::is_convertible<T, qulonglong>,
-                std::is_convertible<T, qlonglong>
+            std::disjunction<
+                std::is_integral<T>,
+                std::conjunction<
+                    std::is_enum<T>,                       // (unscoped) enums yes,
+                    std::negation<q23::is_scoped_enum<T>>  // but not scoped ones
+                >
             >,
             std::negation<is_floating_point_like<T>>, // has its own overload
             std::negation<is_string_like<T>>          // ditto
