@@ -8968,7 +8968,10 @@ QString QString::arg_impl(qulonglong a, int fieldWidth, int base, QChar fillChar
   \snippet code/src_corelib_text_qstring.cpp 2
 
   \note In Qt versions prior to 6.9, this function was a regular function
-  taking \c double.
+  taking \c double. As a consequence of being a template function now, it no
+  longer accepts arguments that merely implicitly convert to floating-point
+  types. A backwards-compatible fix is to cast such types to one of the C++
+  floating-point types.
 
   \sa QLocale::toString(), QLocale::FloatingPointPrecisionOption, {Number Formats}
 */
