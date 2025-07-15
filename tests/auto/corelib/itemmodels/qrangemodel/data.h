@@ -239,7 +239,7 @@ public:
 
     struct ProtocolWithChildrenVector {
         tree_row newRow() const { return tree_row{}; }
-        void deleteRow(tree_row& ) { }
+        void deleteRow(tree_row&& ) { }
         const tree_row *parentRow(const tree_row &row) const { return row.m_parent; }
         void setParentRow(tree_row &row, tree_row *parent) { row.m_parent = parent; }
 

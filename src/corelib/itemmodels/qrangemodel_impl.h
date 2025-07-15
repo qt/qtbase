@@ -1998,7 +1998,7 @@ protected:
     {
         if constexpr (tree_traits::has_deleteRow) {
             for (auto it = begin; it != end; ++it)
-                this->protocol().deleteRow(*it);
+                this->protocol().deleteRow(std::move(*it));
         }
     }
 
@@ -2207,7 +2207,7 @@ protected:
     {
         if constexpr (Base::protocol_traits::has_deleteRow) {
             for (auto it = begin; it != end; ++it)
-                this->protocol().deleteRow(*it);
+                this->protocol().deleteRow(std::move(*it));
         }
     }
 
