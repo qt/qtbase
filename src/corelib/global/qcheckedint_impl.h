@@ -302,14 +302,14 @@ public:
         QCheckedInt,
         AInt,
         template <typename AInt, if_is_same_int<AInt> = true>)
-};
 
-template <typename Int, typename I, typename P>
-Q_DECL_CONST_FUNCTION size_t constexpr inline qHash(QCheckedInt<Int, I, P> key, size_t seed = 0) noexcept
-{
-    using QT_PREPEND_NAMESPACE(qHash);
-    return qHash(key.value(), seed);
-}
+private:
+    friend size_t constexpr qHash(QCheckedInt key, size_t seed = 0) noexcept
+    {
+        using QT_PREPEND_NAMESPACE(qHash); // ### needed?
+        return qHash(key.value(), seed);
+    }
+};
 
 } // namespace QCheckedIntegers
 } // namespace QtPrivate
