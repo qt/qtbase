@@ -223,15 +223,16 @@ void QTimer::start()
     Starts or restarts the timer with a timeout interval of \a msec
     milliseconds.
 
-    \include qtimer.cpp stop-restart-timer
-
-    \include qtimer.cpp singleshot-activation
     This is equivalent to:
 
     \code
         timer.setInterval(msec);
         timer.start();
     \endcode
+
+    \include qtimer.cpp stop-restart-timer
+
+    \include qtimer.cpp singleshot-activation
 
     \include timers-common.qdocinc negative-intervals-not-allowed
 
@@ -264,15 +265,16 @@ checkInterval(const char *caller, std::chrono::milliseconds interval)
 
     Starts or restarts the timer with a timeout of duration \a interval milliseconds.
 
-    \include qtimer.cpp stop-restart-timer
-
-    \include qtimer.cpp singleshot-activation
     This is equivalent to:
 
     \code
         timer.setInterval(interval);
         timer.start();
     \endcode
+
+    \include qtimer.cpp stop-restart-timer
+
+    \include qtimer.cpp singleshot-activation
 
     \include timers-common.qdocinc negative-intervals-not-allowed
 */
