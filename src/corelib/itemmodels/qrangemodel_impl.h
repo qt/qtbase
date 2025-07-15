@@ -1997,8 +1997,18 @@ protected:
     void deleteRemovedRows(It &&begin, Sentinel &&end)
     {
         if constexpr (tree_traits::has_deleteRow) {
-            for (auto it = begin; it != end; ++it)
+            for (auto it = begin; it != end; ++it) {
+                if constexpr (is_mutable_impl) {
+                    decltype(auto) children = this->protocol().childRows(QRangeModelDetails::refTo(*it));
+                    if (QRangeModelDetails::isValid(children)) {
+                        deleteRemovedRows(QRangeModelDetails::begin(children),
+                                          QRangeModelDetails::end(children));
+                        QRangeModelDetails::refTo(children) = range_type{ };
+                    }
+                }
+
                 this->protocol().deleteRow(std::move(*it));
+            }
         }
     }
 
