@@ -54,8 +54,14 @@ static inline QVariant themeableHint(QPlatformTheme::ThemeHint th)
     An object of this class, obtained from QGuiApplication, provides access to certain global
     user interface parameters of the current platform.
 
-    Access to most settings is read only. The platform itself usually provides the user with
-    ways to tune these parameters. Authors of custom user interface components should read
+    The platform provides most of these settings, and they are typically read-only.
+    End users can usually adjust them through platform-specific configuration mechanisms.
+    However, you can also adjust some settings programmatically through dedicated setter
+    functions, (for example, setColorScheme() or setShowShortcutsInContextMenus()),
+    which can be useful for testing or specialized application behavior. Any such adjustments
+    apply only to the current application.
+
+    Authors of custom user interface components should read
     relevant settings to allow the components to exhibit the same behavior and feel as other
     components.
 
