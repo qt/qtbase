@@ -1339,7 +1339,7 @@ public:
 
     bool removeRows(int row, int count, const QModelIndex &parent = {})
     {
-        if constexpr (Structure::canRemoveRows()) {
+        if constexpr (canRemoveRows()) {
             const int prevRowCount = that().rowCount(parent);
             if (row < 0 || row + count > prevRowCount)
                 return false;
@@ -1458,8 +1458,13 @@ protected:
             // row elements.
             return false;
         } else {
-            return Structure::canInsertRows();
+            return Structure::canInsertRowsImpl();
         }
+    }
+
+    static constexpr bool canRemoveRows()
+    {
+        return Structure::canRemoveRowsImpl();
     }
 
     template <typename F>
@@ -1787,7 +1792,7 @@ protected:
         return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
     }
 
-    static constexpr bool canInsertRows()
+    static constexpr bool canInsertRowsImpl()
     {
         // We must not insert rows if we cannot adjust the parents of the
         // children of the following rows. We don't have to do that if the
@@ -1796,7 +1801,7 @@ protected:
              && Base::dynamicRows() && range_features::has_insert;
     }
 
-    static constexpr bool canRemoveRows()
+    static constexpr bool canRemoveRowsImpl()
     {
         // We must not remove rows if we cannot adjust the parents of the
         // children of the following rows. We don't have to do that if the
@@ -2072,12 +2077,12 @@ protected:
         return Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemNeverHasChildren;
     }
 
-    static constexpr bool canInsertRows()
+    static constexpr bool canInsertRowsImpl()
     {
         return Base::dynamicRows() && range_features::has_insert;
     }
 
-    static constexpr bool canRemoveRows()
+    static constexpr bool canRemoveRowsImpl()
     {
         return Base::dynamicRows() && range_features::has_erase;
     }
