@@ -2008,15 +2008,17 @@ protected:
             const auto begin = QRangeModelDetails::begin(*children);
             const auto end = QRangeModelDetails::end(*children);
             for (auto it = begin; it != end; ++it) {
-                if (auto &maybeChildren = this->protocol().childRows(*it)) {
+                decltype(auto) maybeChildren = this->protocol().childRows(*it);
+                if (QRangeModelDetails::isValid(maybeChildren)) {
+                    auto &childrenRef = QRangeModelDetails::refTo(maybeChildren);
                     QModelIndexList fromIndexes;
                     QModelIndexList toIndexes;
-                    fromIndexes.reserve(Base::size(*maybeChildren));
-                    toIndexes.reserve(Base::size(*maybeChildren));
+                    fromIndexes.reserve(Base::size(childrenRef));
+                    toIndexes.reserve(Base::size(childrenRef));
                     auto *parentRow = QRangeModelDetails::pointerTo(*it);
 
                     int row = 0;
-                    for (auto &child : *maybeChildren) {
+                    for (auto &child : childrenRef) {
                         const_row_ptr oldParent = this->protocol().parentRow(child);
                         if (oldParent != parentRow) {
                             fromIndexes.append(this->createIndex(row, 0, oldParent));
@@ -2026,7 +2028,7 @@ protected:
                         ++row;
                     }
                     this->changePersistentIndexList(fromIndexes, toIndexes);
-                    resetParentInChildren(QRangeModelDetails::pointerTo(*maybeChildren));
+                    resetParentInChildren(&childrenRef);
                 }
             }
         }
@@ -2067,11 +2069,11 @@ protected:
         decltype(auto) children = this->protocol().childRows(QRangeModelDetails::refTo(row));
         using Children = std::remove_reference_t<decltype(children)>;
 
-        if constexpr (QRangeModelDetails::is_any_of<Children, std::optional>()
-                   && std::is_default_constructible<typename Children::value_type>()) {
-            if (!children)
-                children.emplace(range_type{});
-        }
+        if constexpr (QRangeModelDetails::is_any_of<Children, std::optional>())
+            if constexpr (std::is_default_constructible<typename Children::value_type>()) {
+                if (!children)
+                    children.emplace(range_type{});
+            }
 
         return QRangeModelDetails::pointerTo(std::forward<decltype(children)>(children));
     }

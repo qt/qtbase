@@ -1053,7 +1053,14 @@ void tst_QRangeModel::inconsistentColumnCount()
     }
 }
 
-enum class TreeProtocol { ValueImplicit, ValueReadOnly, PointerExplicit, PointerExplicitMoved };
+enum class TreeProtocol {
+    ValueImplicit,
+    ValueReadOnly,
+    PointerExplicit,
+    PointerExplicitMoved,
+    ChildrenVector,
+    ChildrenVectorPtr,
+};
 
 void tst_QRangeModel::createTree()
 {
@@ -1125,6 +1132,14 @@ void tst_QRangeModel::tree_data()
         << TreeProtocol::PointerExplicitMoved
         << expectedRootRowCount << expectedColumnCount << rowsWithChildren
         << ChangeActions(ChangeAction::All);
+    QTest::addRow("ChildrenVector")
+        << TreeProtocol::ChildrenVector
+        << expectedRootRowCount << expectedColumnCount << rowsWithChildren
+        << ChangeActions(ChangeAction::All);
+    QTest::addRow("ChildrenVectorPtr")
+        << TreeProtocol::ChildrenVectorPtr
+        << expectedRootRowCount << expectedColumnCount << rowsWithChildren
+        << ChangeActions(ChangeAction::All);
 }
 
 std::unique_ptr<QAbstractItemModel> tst_QRangeModel::makeTreeModel()
@@ -1166,6 +1181,14 @@ std::unique_ptr<QAbstractItemModel> tst_QRangeModel::makeTreeModel()
                     tree_row::ProtocolPointerImpl{}));
         break;
     }
+    case TreeProtocol::ChildrenVector:
+        model.reset(new QRangeModel(m_data->m_tree.get(),
+                    tree_row::ProtocolWithChildrenVector{}));
+        break;
+    case TreeProtocol::ChildrenVectorPtr:
+        model.reset(new QRangeModel(m_data->m_tree.get(),
+                    tree_row::ProtocolWithChildrenVectorPtr{}));
+        break;
     }
 
     return model;

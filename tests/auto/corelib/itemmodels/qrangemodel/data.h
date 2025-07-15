@@ -237,6 +237,37 @@ public:
         }
     }
 
+    struct ProtocolWithChildrenVector {
+        tree_row newRow() const { return tree_row{}; }
+        void deleteRow(tree_row& ) { }
+        const tree_row *parentRow(const tree_row &row) const { return row.m_parent; }
+        void setParentRow(tree_row &row, tree_row *parent) { row.m_parent = parent; }
+
+        const value_tree &childRows(const tree_row &row) const
+        {
+            return const_cast<ProtocolWithChildrenVector*>(this)->childRows(const_cast<tree_row&>(row));
+        }
+
+        value_tree &childRows(tree_row &row)
+        {
+            if (!row.m_children)
+                row.m_children.emplace();
+            return *row.m_children;
+        }
+    };
+
+    struct ProtocolWithChildrenVectorPtr : ProtocolWithChildrenVector {
+        const value_tree *childRows(const tree_row &row) const
+        {
+            return row.m_children ? &*row.m_children : nullptr;
+        }
+
+        value_tree *childRows(tree_row &row)
+        {
+            return &ProtocolWithChildrenVector::childRows(row);
+        }
+    };
+
     struct ProtocolPointerImpl {
         tree_row *newRow() const { return new tree_row; }
         void deleteRow(tree_row *row) { delete row; }
