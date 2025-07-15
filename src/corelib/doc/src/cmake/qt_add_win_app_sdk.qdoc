@@ -16,7 +16,13 @@
 \section1 Synopsis
 
 \badcode
-qt_add_win_app_sdk(target)
+qt_add_win_app_sdk(<TARGET>)
+\endcode
+
+Since 6.10:
+
+\badcode
+qt_add_win_app_sdk(<TARGET> [<PROPAGATION>])
 \endcode
 
 \versionlessCMakeCommandsNote qt6_add_win_app_sdk()
@@ -24,7 +30,8 @@ qt_add_win_app_sdk(target)
 \section1 Description
 
 Adds Windows App SDK include files to the project, and links the necessary
-libraries to the given CMake target. Windows App SDK is provided as a \l{https://learn.microsoft.com/en-us/nuget/what-is-nuget}{NuGet}
+libraries to the given CMake target. Windows App SDK is provided as
+a \l{https://learn.microsoft.com/en-us/nuget/what-is-nuget}{NuGet}
 package so it can be easily used in managed apps. However, for unmanaged
 C++ applications we need header files.
 The function takes the following steps:
@@ -32,6 +39,44 @@ The function takes the following steps:
        \li Tries to find the Windows App SDK and cppwinrt.exe tool
        \li Generates Windows App SDK headers using the cppwinrt.exe tool
        \li Includes those header files and links the library to the given CMake target
+\endlist
+
+\section1 Arguments
+
+\c PROPAGATION
+
+Specifies the propagation visibility of include directories, link directories, and linked libraries
+for the target.
+This argument is passed directly to the following CMake commands:
+\list 1
+       \li target_include_directories()
+       \li target_link_directories()
+       \li target_link_libraries()
+\endlist
+
+It determines how these properties are applied to the target itself and whether they are propagated
+to other targets that link against it.
+\section2 Accepted values:
+\list 1
+       \li PRIVATE:
+        The settings (include directories, link directories, and linked libraries) are applied only
+        to the current target. They are not visible to targets that link against this one.
+        \li PUBLIC:
+        The settings are applied to the current target and are also propagated to any target that
+        links against it. Use this when the dependency is required both for building the target and
+        for its consumers.
+        \li INTERFACE:
+        The settings are not used when building the current target, but are propagated to targets
+        that link against it. This is typically used for header-only libraries or interface targets
+        that expose usage requirements without needing them for their own build.
+\endlist
+
+\section2 Notes
+\list 1
+       \li This argument is optional.
+       \li If omitted, the default behavior is equivalent to PRIVATE (or specify your actual default).
+       \li Use the appropriate propagation scope to accurately describe your target’s dependencies
+        and usage requirements.
 \endlist
 
 \warning This command is not supported on non-MSVC platforms.

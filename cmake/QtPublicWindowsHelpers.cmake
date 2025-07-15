@@ -8,6 +8,23 @@ function(qt6_add_win_app_sdk target)
         return()
     endif()
 
+    set(no_value_options INTERFACE PUBLIC PRIVATE)
+    set(single_value_options "")
+    set(multi_value_options "")
+    cmake_parse_arguments(PARSE_ARGV 1 arg
+        "${no_value_options}" "${single_value_options}" "${multi_value_options}"
+    )
+    if(arg_UNPARSED_ARGUMENTS)
+        message(FATAL_ERROR "Unexpected arguments: ${arg_UNPARSED_ARGUMENTS}")
+    endif()
+
+    set(propagation PRIVATE)
+    if(arg_PUBLIC)
+        set(propagation PUBLIC)
+    elseif(arg_INTERFACE)
+        set(propagation INTERFACE)
+    endif()
+
     if(CMAKE_SYSTEM_PROCESSOR STREQUAL "arm64" OR
        CMAKE_SYSTEM_PROCESSOR STREQUAL "ARM64")
         set(win_app_sdk_arch "arm64")
@@ -87,15 +104,15 @@ function(qt6_add_win_app_sdk target)
         endif()
     endif()
 
-    target_include_directories(${target} PRIVATE "${win_app_sdk_root}/include")
+    target_include_directories(${target} ${propagation} "${win_app_sdk_root}/include")
     target_include_directories(${target}
-                               PRIVATE "${generated_headers_path}")
+                               ${propagation} "${generated_headers_path}")
     target_link_directories(${target}
-                            PRIVATE "${win_app_sdk_root}/lib/win10-${win_app_sdk_arch}")
+                            ${propagation} "${win_app_sdk_root}/lib/win10-${win_app_sdk_arch}")
     target_link_directories(${target}
-                        PRIVATE "${win_app_sdk_root}/runtimes/win-${win_app_sdk_arch}/native")
+                        ${propagation} "${win_app_sdk_root}/runtimes/win-${win_app_sdk_arch}/native")
     target_link_libraries(${target}
-        PRIVATE Microsoft.WindowsAppRuntime.lib Microsoft.WindowsAppRuntime.Bootstrap.lib)
+        ${propagation} Microsoft.WindowsAppRuntime.lib Microsoft.WindowsAppRuntime.Bootstrap.lib)
 endfunction()
 
 if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
