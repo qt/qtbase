@@ -3009,14 +3009,41 @@ void tst_QTextStream::int_write_with_locale_data()
     QTest::addColumn<int>("numberFlags");
     QTest::addColumn<int>("input");
     QTest::addColumn<QString>("output");
+    QTest::addColumn<int>("fieldWidth");
+    QTest::addColumn<QTextStream::FieldAlignment>("fieldAlignment");
 
-    QTest::newRow("C -123") << QString("C") << 0 << -123 << QString("-123");
-    QTest::newRow("C +123") << QString("C") << (int)QTextStream::ForceSign << 123 << QString("+123");
-    QTest::newRow("C 12345") << QString("C") << 0 << 12345 << QString("12345");
+    const auto alignDefault = QTextStream().fieldAlignment();
+    constexpr int forceSign = QTextStream::ForceSign;
 
-    QTest::newRow("de_DE -123") << QString("de_DE") << 0 << -123 << QString("-123");
-    QTest::newRow("de_DE +123") << QString("de_DE") << (int)QTextStream::ForceSign << 123 << QString("+123");
-    QTest::newRow("de_DE 12345") << QString("de_DE") << 0 << 12345 << QString("12.345");
+    QTest::newRow("C -123") << u"C"_s << 0 << -123 << u"-123"_s << 0 << alignDefault;
+    QTest::newRow("C +123") << u"C"_s << forceSign << 123 << u"+123"_s << 0 << alignDefault;
+    QTest::newRow("C 12345") << u"C"_s << 0 << 12345 << u"12345"_s << 0 << alignDefault;
+
+    QTest::newRow("de_DE -123") << u"de_DE"_s << 0 << -123 << u"-123"_s << 0 << alignDefault;
+    QTest::newRow("de_DE +123") << u"de_DE"_s << forceSign << 123 << u"+123"_s << 0 << alignDefault;
+    QTest::newRow("de_DE 12345") << u"de_DE"_s << 0 << 12345 << u"12.345"_s << 0 << alignDefault;
+
+    constexpr auto alignAccountingStyle = QTextStream::FieldAlignment::AlignAccountingStyle;
+
+    {
+        const QLocale loc("ar_EG"_L1);
+        // Arabic as spoken in Egypt has a two-code-point negativeSign():
+        const auto minus = loc.negativeSign();
+        QCOMPARE(minus.size(), 2);
+        // ditto positiveSign():
+        const auto plus = loc.positiveSign();
+        QCOMPARE(plus.size(), 2);
+
+        QTest::addRow("ar_EG -123") << u"ar_EG"_s << 0 << -123
+                                    << (minus + u"     ١٢٣")
+                                    << 10 << alignAccountingStyle;
+        QTest::newRow("ar_EG +123") << u"ar_EG"_s << forceSign << 123
+                                    << (plus + u"     ١٢٣")
+                                    << 10 << alignAccountingStyle;
+        QTest::newRow("ar_EG 12345") << u"ar_EG"_s << 0 << 12345
+                                     << u"    ١٢٬٣٤٥"_s
+                                     << 10 << alignAccountingStyle;
+    }
 }
 
 void tst_QTextStream::int_write_with_locale()
@@ -3025,13 +3052,21 @@ void tst_QTextStream::int_write_with_locale()
     QFETCH(int, numberFlags);
     QFETCH(int, input);
     QFETCH(QString, output);
+    QFETCH(const int, fieldWidth);
+    QFETCH(const QTextStream::FieldAlignment, fieldAlignment);
 
     QString result;
     QTextStream stream(&result);
     stream.setLocale(QLocale(locale));
+    stream.setFieldAlignment(fieldAlignment);
     if (numberFlags)
         stream.setNumberFlags(QTextStream::NumberFlags(numberFlags));
+    if (fieldWidth)
+        stream.setFieldWidth(fieldWidth);
+
     QVERIFY(stream << input);
+    QEXPECT_FAIL("ar_EG -123", "QTBUG-138484", Continue);
+    QEXPECT_FAIL("ar_EG +123", "QTBUG-138484", Continue);
     QCOMPARE(result, output);
 }
 
