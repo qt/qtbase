@@ -833,7 +833,8 @@ QTextStreamPrivate::PaddingResult QTextStreamPrivate::padding(qsizetype len) con
 /*!
     \internal
 */
-void QTextStreamPrivate::putString(QStringView data, bool number)
+template <typename StringView>
+void QTextStreamPrivate::putStringImpl(StringView data, bool number)
 {
     if (Q_UNLIKELY(params.fieldWidth > data.size())) {
 
@@ -863,29 +864,20 @@ void QTextStreamPrivate::putString(QStringView data, bool number)
 */
 void QTextStreamPrivate::putString(QLatin1StringView data, bool number)
 {
-    if (Q_UNLIKELY(params.fieldWidth > data.size())) {
-
-        // handle padding
-
-        const PaddingResult pad = padding(data.size());
-
-        if (params.fieldAlignment == QTextStream::AlignAccountingStyle && number) {
-            const QChar sign = data.size() > 0 ? QLatin1Char(*data.data()) : QChar();
-            if (sign == locale.negativeSign() || sign == locale.positiveSign()) {
-                // write the sign before the padding, then skip it later
-                write(sign);
-                data = QLatin1StringView(data.data() + 1, data.size() - 1);
-            }
-        }
-
-        writePadding(pad.left);
-        write(data);
-        writePadding(pad.right);
-    } else {
-        write(data);
-    }
+    putStringImpl(data, number);
 }
 
+/*!
+    \internal
+*/
+void QTextStreamPrivate::putString(QStringView data, bool number)
+{
+    putStringImpl(data, number);
+}
+
+/*!
+    \internal
+*/
 void QTextStreamPrivate::putString(QUtf8StringView data, bool number)
 {
     putString(data.toString(), number);

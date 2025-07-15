@@ -166,6 +166,10 @@ public:
     bool fillReadBuffer(qint64 maxBytes = -1);
     void resetReadBuffer();
     void flushWriteBuffer();
+
+private:
+    template <typename StringView>
+    void putStringImpl(StringView view, bool number);
 };
 
 QT_END_NAMESPACE
