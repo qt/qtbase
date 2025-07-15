@@ -1911,7 +1911,8 @@ void QRhiMetal::setScissor(QRhiCommandBuffer *cb, const QRhiScissor &scissor)
 {
     QMetalCommandBuffer *cbD = QRHI_RES(QMetalCommandBuffer, cb);
     Q_ASSERT(cbD->recordingPass == QMetalCommandBuffer::RenderPass);
-    Q_ASSERT(cbD->currentGraphicsPipeline->m_flags.testFlag(QRhiGraphicsPipeline::UsesScissor));
+    Q_ASSERT(!cbD->currentGraphicsPipeline
+             || cbD->currentGraphicsPipeline->m_flags.testFlag(QRhiGraphicsPipeline::UsesScissor));
     const QSize outputSize = cbD->currentTarget->pixelSize();
 
     // x,y is top-left in MTLScissorRect but bottom-left in QRhiScissor

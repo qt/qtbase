@@ -6037,7 +6037,9 @@ void QRhiVulkan::setScissor(QRhiCommandBuffer *cb, const QRhiScissor &scissor)
 {
     QVkCommandBuffer *cbD = QRHI_RES(QVkCommandBuffer, cb);
     Q_ASSERT(cbD->recordingPass == QVkCommandBuffer::RenderPass);
-    Q_ASSERT(QRHI_RES(QVkGraphicsPipeline, cbD->currentGraphicsPipeline)->m_flags.testFlag(QRhiGraphicsPipeline::UsesScissor));
+    Q_ASSERT(!cbD->currentGraphicsPipeline
+             || QRHI_RES(QVkGraphicsPipeline, cbD->currentGraphicsPipeline)
+                        ->m_flags.testFlag(QRhiGraphicsPipeline::UsesScissor));
     const QSize outputSize = cbD->currentTarget->pixelSize();
 
     // x,y is top-left in VkRect2D but bottom-left in QRhiScissor
