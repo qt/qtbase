@@ -205,6 +205,11 @@ Qt::TimerId QTimer::id() const
 //! [singleshot-activation]
     If \l singleShot is true, the timer will be activated only once.
 //! [singleshot-activation]
+
+//! [eventloop-busy]
+    \note   Keeping the event loop busy with a zero-timer is bound to
+            cause trouble and highly erratic behavior of the UI.
+//! [eventloop-busy]
 */
 void QTimer::start()
 {
@@ -236,8 +241,7 @@ void QTimer::start()
 
     \include timers-common.qdocinc negative-intervals-not-allowed
 
-    \note   Keeping the event loop busy with a zero-timer is bound to
-            cause trouble and highly erratic behavior of the UI.
+    \include qtimer.cpp eventloop-busy
 */
 void QTimer::start(int msec)
 {
@@ -277,6 +281,8 @@ checkInterval(const char *caller, std::chrono::milliseconds interval)
     \include qtimer.cpp singleshot-activation
 
     \include timers-common.qdocinc negative-intervals-not-allowed
+
+    \include qtimer.cpp eventloop-busy
 */
 void QTimer::start(std::chrono::milliseconds interval)
 {
@@ -630,6 +636,8 @@ QBindable<bool> QTimer::bindableSingleShot()
     The default value for this property is 0.  A QTimer with a timeout
     interval of 0 will time out as soon as all the events in the window
     system's event queue have been processed.
+
+    \include qtimer.cpp eventloop-busy
 
     Setting the interval of a running timer will change the interval,
     stop() and then start() the timer, and acquire a new id().
