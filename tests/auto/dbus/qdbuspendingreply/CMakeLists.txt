@@ -16,4 +16,5 @@ qt_internal_add_test(tst_qdbuspendingreply
         tst_qdbuspendingreply.cpp
     LIBRARIES
         Qt::DBus
+        Qt::DBusPrivate
 )

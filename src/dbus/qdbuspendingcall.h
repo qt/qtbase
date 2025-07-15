@@ -12,6 +12,8 @@
 
 #ifndef QT_NO_DBUS
 
+class tst_QDBusPendingReply;
+
 QT_BEGIN_NAMESPACE
 
 
@@ -58,6 +60,8 @@ protected:
 
 private:
     QDBusPendingCall();         // not defined
+
+    friend class ::tst_QDBusPendingReply;
 };
 
 Q_DECLARE_SHARED(QDBusPendingCall)

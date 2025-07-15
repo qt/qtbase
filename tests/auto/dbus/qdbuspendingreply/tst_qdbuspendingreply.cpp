@@ -11,6 +11,8 @@
 #include <QDBusAbstractAdaptor>
 #include <QDBusPendingReply>
 
+#include <private/qdbuspendingcall_p.h>
+
 typedef QMap<int,QString> IntStringMap;
 Q_DECLARE_METATYPE(IntStringMap)
 
@@ -72,6 +74,9 @@ private slots:
     void getResultFromAnotherInstance();
 
     void moveSemantics();
+
+    void copyPreservesReplySignature();
+    void movePreservesReplySignature();
 };
 
 class TypesInterface: public QDBusAbstractAdaptor
@@ -680,6 +685,131 @@ void tst_QDBusPendingReply::moveSemantics()
 
         copy = std::move(other);
         QCOMPARE_EQ(copy.d, r.d);
+    }
+}
+
+void tst_QDBusPendingReply::copyPreservesReplySignature()
+{
+    // void
+    {
+        QDBusPendingCall c = iface->asyncCall("retrieveVoid");
+        c.waitForFinished();
+        QVERIFY(c.isFinished());
+
+        // QDBusPendingCall does not initialize reply signature
+        QVERIFY(c.d->expectedReplySignature.isNull());
+
+        // copy-construct
+        {
+            QDBusPendingReply<> r = c;
+            QVERIFY(!r.d->expectedReplySignature.isNull());
+            QVERIFY(r.d->expectedReplySignature.isEmpty());
+
+            QDBusPendingReply<> other = r;
+            QCOMPARE_EQ(other.d->expectedReplySignature, r.d->expectedReplySignature);
+        }
+
+        // copy-assign
+        {
+            QDBusPendingReply<> r;
+            r = c;
+            QVERIFY(!r.d->expectedReplySignature.isNull());
+            QVERIFY(r.d->expectedReplySignature.isEmpty());
+
+            QDBusPendingReply<> other;
+            other = r;
+            QCOMPARE_EQ(other.d->expectedReplySignature, r.d->expectedReplySignature);
+        }
+    }
+
+    // complex types
+    {
+        QDBusPendingCall c = iface->asyncCall("retrieveIntStringMap");
+        c.waitForFinished();
+        QVERIFY(c.isFinished());
+
+        // QDBusPendingCall does not initialize reply signature
+        QVERIFY(c.d->expectedReplySignature.isNull());
+
+        // copy-construct
+        {
+            QDBusPendingReply<IntStringMap> r = c;
+            QVERIFY(!r.d->expectedReplySignature.isEmpty());
+
+            QDBusPendingReply<IntStringMap> other = r;
+            QCOMPARE_EQ(other.d->expectedReplySignature, r.d->expectedReplySignature);
+        }
+
+        // copy-assign
+        {
+            QDBusPendingReply<IntStringMap> r;
+            r = c;
+            QVERIFY(!r.d->expectedReplySignature.isEmpty());
+
+            QDBusPendingReply<IntStringMap> other;
+            other = r;
+            QCOMPARE_EQ(other.d->expectedReplySignature, r.d->expectedReplySignature);
+        }
+    }
+}
+
+void tst_QDBusPendingReply::movePreservesReplySignature()
+{
+    // void
+    {
+        QDBusPendingCall c = iface->asyncCall("retrieveVoid");
+        c.waitForFinished();
+        QVERIFY(c.isFinished());
+
+        // QDBusPendingCall does not initialize reply signature
+        QVERIFY(c.d->expectedReplySignature.isNull());
+
+        QDBusPendingReply<> r = c;
+        QVERIFY(!r.d->expectedReplySignature.isNull());
+        QVERIFY(r.d->expectedReplySignature.isEmpty());
+
+        // move-construct
+        {
+            QDBusPendingReply<> copy = r;
+            QDBusPendingReply<> other = std::move(copy);
+            QCOMPARE_EQ(other.d->expectedReplySignature, r.d->expectedReplySignature);
+        }
+
+        // move-assign
+        {
+            QDBusPendingReply<> copy = r;
+            QDBusPendingReply<> other;
+            other = std::move(copy);
+            QCOMPARE_EQ(other.d->expectedReplySignature, r.d->expectedReplySignature);
+        }
+    }
+
+    // complex types
+    {
+        QDBusPendingCall c = iface->asyncCall("retrieveIntStringMap");
+        c.waitForFinished();
+        QVERIFY(c.isFinished());
+
+        // QDBusPendingCall does not initialize reply signature
+        QVERIFY(c.d->expectedReplySignature.isNull());
+
+        QDBusPendingReply<IntStringMap> r = c;
+        QVERIFY(!r.d->expectedReplySignature.isEmpty());
+
+        // move-construct
+        {
+            QDBusPendingReply<IntStringMap> copy = r;
+            QDBusPendingReply<IntStringMap> other = std::move(copy);
+            QCOMPARE_EQ(other.d->expectedReplySignature, r.d->expectedReplySignature);
+        }
+
+        // move-assign
+        {
+            QDBusPendingReply<IntStringMap> copy = r;
+            QDBusPendingReply<IntStringMap> other;
+            other = std::move(copy);
+            QCOMPARE_EQ(other.d->expectedReplySignature, r.d->expectedReplySignature);
+        }
     }
 }
 
