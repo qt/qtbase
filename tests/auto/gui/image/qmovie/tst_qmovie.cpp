@@ -332,7 +332,9 @@ void tst_QMovie::multiFrameImage()
     movie.start();
     QTRY_COMPARE(finishedSpy.size(), 1);
     QCOMPARE_GE(playTimer.elapsed(), 100 * expectedFrameCount);
-    QCOMPARE(movie.nextFrameDelay(), 100);
+    const int delay = movie.nextFrameDelay(); // delay is equal to 100ms minus processing time
+    QCOMPARE_GE(delay, 50);
+    QCOMPARE_LE(delay, 100);
     QCOMPARE(errorSpy.size(), 0);
     QCOMPARE(frameChangedSpy.size(), expectedFrameCount);
 }
