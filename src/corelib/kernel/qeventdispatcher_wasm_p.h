@@ -40,6 +40,7 @@ public:
     ~QEventDispatcherWasm();
 
     bool processEvents(QEventLoop::ProcessEventsFlags flags) override;
+    bool sendAllEvents(QEventLoop::ProcessEventsFlags flag);
 
     void registerTimer(Qt::TimerId timerId, Duration interval, Qt::TimerType timerType,
                        QObject *object) override final;
@@ -89,6 +90,7 @@ private:
     static std::shared_ptr<QWasmSuspendResumeControl> g_mainThreadSuspendResumeControl;
 
     bool m_interrupted = false;
+    bool m_wakeup = false;
 
     std::unique_ptr<QTimerInfoList> m_timerInfo;
     std::chrono::time_point<std::chrono::steady_clock> m_timerTargetTime;

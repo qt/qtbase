@@ -155,6 +155,27 @@ bool QEventDispatcherWasm::processEvents(QEventLoop::ProcessEventsFlags flags)
     if (!useAsyncify() && isMainThreadEventDispatcher())
         handleNonAsyncifyErrorCases(flags);
 
+    bool didSendEvents = sendAllEvents(flags);
+
+    if (!isValidEventDispatcher())
+        return false;
+
+    if (m_interrupted) {
+        m_interrupted = false;
+        return false;
+    }
+
+    bool shouldWait = flags.testFlag(QEventLoop::WaitForMoreEvents);
+    if (!shouldWait || didSendEvents)
+        return didSendEvents;
+
+    processEventsWait();
+
+    return sendAllEvents(flags);
+}
+
+bool QEventDispatcherWasm::sendAllEvents(QEventLoop::ProcessEventsFlags flags)
+{
     bool didSendEvents = false;
 
     didSendEvents |= sendPostedEvents();
@@ -168,14 +189,6 @@ bool QEventDispatcherWasm::processEvents(QEventLoop::ProcessEventsFlags flags)
     didSendEvents |= sendTimerEvents();
     if (!isValidEventDispatcher())
         return false;
-
-    if (m_interrupted) {
-        m_interrupted = false;
-        return false;
-    }
-
-    if (flags & QEventLoop::WaitForMoreEvents)
-        processEventsWait();
 
     return didSendEvents;
 }
@@ -193,14 +206,14 @@ bool QEventDispatcherWasm::sendNativeEvents(QEventLoop::ProcessEventsFlags flags
         return false;
 
     // Send any pending events, and
-    bool didSendEvents = false;
-    didSendEvents|= g_mainThreadSuspendResumeControl->sendPendingEvents();
+    int sentEventCount = 0;
+    sentEventCount += g_mainThreadSuspendResumeControl->sendPendingEvents();
 
     // if the processEvents() call is made from an exec() call then we assume
     // that the main thread has just resumed, and that it will suspend again
     // at the end of processEvents(). This makes the suspend loop below superfluous.
-    if (flags & QEventLoop::EventLoopExec)
-        return didSendEvents;
+    if (flags.testFlag(QEventLoop::EventLoopExec))
+        return sentEventCount > 0;
 
     // Run a suspend-resume loop until all pending native events have
     // been processed. Suspending returns control to the browsers'event
@@ -217,16 +230,25 @@ bool QEventDispatcherWasm::sendNativeEvents(QEventLoop::ProcessEventsFlags flags
         m_suspendTimer->setTimeout(0ms);
         g_mainThreadSuspendResumeControl->suspend();
         QScopedValueRollback scoped(m_isSendingNativeEvents, true);
-        didSendEvents |= g_mainThreadSuspendResumeControl->sendPendingEvents();
+        sentEventCount += g_mainThreadSuspendResumeControl->sendPendingEvents();
     } while (!m_wakeFromSuspendTimer);
 
-    return didSendEvents;
+    return sentEventCount > 1; // Don't count m_suspendTimer
 }
 
 bool QEventDispatcherWasm::sendPostedEvents()
 {
     QCoreApplication::sendPostedEvents();
-    return false;
+
+    // QCoreApplication::sendPostedEvents() returns void and does not tell us
+    // if it actually did send events. Use the wakeUp() state instead:
+    // QCoreApplication::postEvent() calls wakeUp(), so if wakeUp() was
+    // called there is a chance there was a posted event. This should never
+    // return false if a posted event was sent, but might return true also
+    // if there was no event sent.
+    bool didWakeup = m_wakeup;
+    m_wakeup = false;
+    return didWakeup;
 }
 
 bool QEventDispatcherWasm::sendTimerEvents()
@@ -321,6 +343,7 @@ void QEventDispatcherWasm::interrupt()
 
 void QEventDispatcherWasm::wakeUp()
 {
+    m_wakeup = true;
 #if QT_CONFIG(thread)
     if (isSecondaryThreadEventDispatcher()) {
         std::lock_guard<std::mutex> lock(m_mutex);
@@ -428,6 +451,12 @@ void QEventDispatcherWasm::onTimer()
     Q_ASSERT(emscripten_is_main_runtime_thread());
     if (!g_mainThreadEventDispatcher)
         return;
+
+    // If asyncify is in use then instance will resume and process timers
+    // in processEvents()
+    if (useAsyncify())
+        return;
+
     g_mainThreadEventDispatcher->sendTimerEvents();
 }
 
