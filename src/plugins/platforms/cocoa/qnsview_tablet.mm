@@ -8,8 +8,6 @@
 #include <QtGui/qpointingdevice.h>
 #include <QtCore/private/qflatmap_p.h>
 
-Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
-
 using QCocoaTabletDeviceMap = QFlatMap<qint64, const QPointingDevice*>;
 Q_GLOBAL_STATIC(QCocoaTabletDeviceMap, devicesInProximity)
 

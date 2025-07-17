@@ -271,6 +271,8 @@ static bool sendAsShortcut(const KeyEvent &keyEvent, QWindow *window)
 
 @end
 
+QT_BEGIN_NAMESPACE
+
 // -------------------------------------------------------------------------
 
 KeyEvent::KeyEvent(NSEvent *nsevent)
@@ -355,3 +357,5 @@ QDebug operator<<(QDebug debug, const KeyEvent &e)
     << ")";
     return debug;
 }
+
+QT_END_NAMESPACE

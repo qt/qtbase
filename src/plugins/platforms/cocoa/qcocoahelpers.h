@@ -182,6 +182,8 @@ QT_END_NAMESPACE
 
 QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSPanelContentsWrapper);
 
+QT_BEGIN_NAMESPACE
+
 // -------------------------------------------------------------------------
 
 struct InputMethodQueryResult : public QHash<int, QVariant>
@@ -222,6 +224,8 @@ QDebug operator<<(QDebug, const NSRange &);
 QDebug operator<<(QDebug, SEL);
 
 #endif // __OBJC__
+
+QT_END_NAMESPACE
 
 #endif //QCOCOAHELPERS_H
 

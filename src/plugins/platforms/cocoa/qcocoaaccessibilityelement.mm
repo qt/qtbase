@@ -16,7 +16,7 @@
 
 QT_USE_NAMESPACE
 
-Q_LOGGING_CATEGORY(lcAccessibilityTable, "qt.accessibility.table")
+Q_STATIC_LOGGING_CATEGORY(lcAccessibilityTable, "qt.accessibility.table")
 
 using namespace Qt::Literals::StringLiterals;
 

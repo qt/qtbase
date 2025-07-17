@@ -469,6 +469,8 @@ QT_END_NAMESPACE
 
 @end // QNSPanelContentsWrapper
 
+QT_BEGIN_NAMESPACE
+
 // -------------------------------------------------------------------------
 
 InputMethodQueryResult queryInputMethod(QObject *object, Qt::InputMethodQueries queries)
@@ -509,3 +511,5 @@ QDebug operator<<(QDebug debug, SEL selector)
     debug << NSStringFromSelector(selector);
     return debug;
 }
+
+QT_END_NAMESPACE

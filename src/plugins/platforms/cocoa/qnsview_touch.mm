@@ -3,7 +3,7 @@
 
 // This file is included from qnsview.mm, and only used to organize the code
 
-Q_LOGGING_CATEGORY(lcQpaTouch, "qt.qpa.input.touch")
+Q_STATIC_LOGGING_CATEGORY(lcQpaTouch, "qt.qpa.input.touch")
 
 @implementation QNSView (Touch)
 

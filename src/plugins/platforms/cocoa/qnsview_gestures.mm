@@ -5,7 +5,7 @@
 
 #ifndef QT_NO_GESTURES
 
-Q_LOGGING_CATEGORY(lcQpaGestures, "qt.qpa.input.gestures")
+Q_STATIC_LOGGING_CATEGORY(lcQpaGestures, "qt.qpa.input.gestures")
 
 @implementation QNSView (Gestures)
 
