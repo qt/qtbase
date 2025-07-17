@@ -2863,13 +2863,26 @@ void tst_QWindow::requestUpdate()
 void tst_QWindow::flags()
 {
     Window window;
+    QSignalSpy spy(&window, SIGNAL(flagsChanged(Qt::WindowFlags)));
+
     const auto baseFlags = window.flags();
     window.setFlags(window.flags() | Qt::FramelessWindowHint);
     QCOMPARE(window.flags(), baseFlags | Qt::FramelessWindowHint);
+    QCOMPARE(spy.size(), 1);
+    window.setFlags(window.flags());
+    QCOMPARE(spy.size(), 1);
+
     window.setFlag(Qt::WindowStaysOnTopHint, true);
     QCOMPARE(window.flags(), baseFlags | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
+    QCOMPARE(spy.size(), 2);
+    window.setFlags(window.flags());
+    QCOMPARE(spy.size(), 2);
+
     window.setFlag(Qt::FramelessWindowHint, false);
     QCOMPARE(window.flags(), baseFlags | Qt::WindowStaysOnTopHint);
+    QCOMPARE(spy.size(), 3);
+    window.setFlags(window.flags());
+    QCOMPARE(spy.size(), 3);
 }
 
 class EventWindow : public QWindow

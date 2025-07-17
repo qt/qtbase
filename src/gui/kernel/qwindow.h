@@ -76,7 +76,7 @@ class Q_GUI_EXPORT QWindow : public QObject, public QSurface
 
     Q_PROPERTY(QString title READ title WRITE setTitle NOTIFY windowTitleChanged)
     Q_PROPERTY(Qt::WindowModality modality READ modality WRITE setModality NOTIFY modalityChanged)
-    Q_PROPERTY(Qt::WindowFlags flags READ flags WRITE setFlags)
+    Q_PROPERTY(Qt::WindowFlags flags READ flags WRITE setFlags NOTIFY flagsChanged)
     Q_PROPERTY(int x READ x WRITE setX NOTIFY xChanged)
     Q_PROPERTY(int y READ y WRITE setY NOTIFY yChanged)
     Q_PROPERTY(int width READ width WRITE setWidth NOTIFY widthChanged)
@@ -297,6 +297,7 @@ public Q_SLOTS:
 Q_SIGNALS:
     void screenChanged(QScreen *screen);
     void modalityChanged(Qt::WindowModality modality);
+    Q_REVISION(6, 10) void flagsChanged(Qt::WindowFlags flags);
     void windowStateChanged(Qt::WindowState windowState);
     Q_REVISION(2, 2) void windowTitleChanged(const QString &title);
 
