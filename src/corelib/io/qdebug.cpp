@@ -84,7 +84,7 @@ QByteArray QtDebugUtils::toPrintable(const char *data, qint64 len, qsizetype max
     \snippet qdebug/qdebugsnippet.cpp 1
 
     This constructs a QDebug object using the constructor that accepts a QtMsgType
-    value of QtDebugMsg. Similarly, the qWarning(), qCritical() and qFatal()
+    value of QtDebugMsg. Similarly, the qInfo(), qWarning(), qCritical() and qFatal()
     functions also return QDebug objects for the corresponding message types.
 
     The class also provides several constructors for other situations, including
@@ -1548,6 +1548,141 @@ QDebug qt_QMetaEnum_flagDebugOperator(QDebug &debug, quint64 value, const QMetaO
 
     return debug;
 }
+
+/*!
+    \macro QDebug qDebug()
+    \relates QDebug
+    \threadsafe
+
+    Returns a QDebug object that logs a debug message to the central message handler.
+
+    Example:
+
+    \snippet code/src_corelib_global_qglobal.cpp 25
+
+    Using qDebug() is an alternative to \l{qDebug(const char *, ...)},
+    which follows the printf paradigm.
+
+    Note that QDebug and the type specific stream operators do add various
+    formatting to make the debug message easier to read. See the
+     \l{Formatting Options}{formatting options} documentation for more details.
+
+    This function does nothing if \c QT_NO_DEBUG_OUTPUT was defined during
+    compilation.
+
+    \sa {qDebug(const char *, ...)}, qCDebug()
+*/
+
+/*!
+    \macro QDebug qInfo()
+    \relates QDebug
+    \threadsafe
+
+    Returns a QDebug object that logs an informational message to the central message handler.
+
+    Example:
+
+    \snippet code/src_corelib_global_qglobal.cpp qInfo_stream
+
+    Using qInfo() is an alternative to \l{qInfo(const char *, ...)},
+    which follows the printf paradigm.
+
+    Note that QDebug and the type specific stream operators do add various
+    formatting to make the debug message easier to read. See the
+    \l{Formatting Options}{formatting options} documentation for more details.
+
+    This function does nothing if \c QT_NO_INFO_OUTPUT was defined during
+    compilation.
+
+    \sa {qInfo(const char *, ...)}, qCInfo()
+*/
+
+/*!
+    \macro QDebug qWarning()
+    \relates QDebug
+    \threadsafe
+
+    Returns a QDebug object that logs a warning message to the central message handler.
+
+    Example:
+
+    \snippet code/src_corelib_global_qglobal.cpp 27
+
+    Using qWarning() is an alternative to \l{qWarning(const char *, ...)},
+    which follows the printf paradigm.
+
+    Note that QDebug and the type specific stream operators do add various
+    formatting to make the debug message easier to read. See the
+    \l{Formatting Options}{formatting options} documentation for more details.
+
+    This function does nothing if \c QT_NO_WARNING_OUTPUT was defined during
+    compilation.
+
+    For debugging purposes, it is sometimes convenient to let the
+    program abort for warning messages. This allows you then
+    to inspect the core dump, or attach a debugger - see also \l{qFatal()}.
+    To enable this, set the environment variable \c{QT_FATAL_WARNINGS}
+    to a number \c n. The program terminates then for the n-th warning.
+    That is, if the environment variable is set to 1, it will terminate
+    on the first call; if it contains the value 10, it will exit on the 10th
+    call. Any non-numeric value in the environment variable is equivalent to 1.
+
+    \sa {qWarning(const char *, ...)}, qCWarning()
+*/
+
+/*!
+    \macro QDebug qCritical()
+    \relates QDebug
+    \threadsafe
+
+    Returns a QDebug object that logs a critical message to the central message handler.
+
+    Example:
+
+    \snippet code/src_corelib_global_qglobal.cpp 29
+
+    Using qCritical() is an alternative to \l{qCritical(const char *, ...)},
+    which follows the printf paradigm.
+
+    Note that QDebug and the type specific stream operators do add various
+    formatting to make the debug message easier to read. See the
+    \l{Formatting Options}{formatting options} documentation for more details.
+
+    For debugging purposes, it is sometimes convenient to let the
+    program abort for critical messages. This allows you then
+    to inspect the core dump, or attach a debugger - see also \l{qFatal()}.
+    To enable this, set the environment variable \c{QT_FATAL_CRITICALS}
+    to a number \c n. The program terminates then for the n-th critical
+    message.
+    That is, if the environment variable is set to 1, it will terminate
+    on the first call; if it contains the value 10, it will exit on the 10th
+    call. Any non-numeric value in the environment variable is equivalent to 1.
+
+    \sa {qCritical(const char *, ...)}, qCCritical()
+*/
+
+/*!
+    \macro QDebug qFatal()
+    \relates QDebug
+    \threadsafe
+
+    Returns a QDebug object that logs a fatal message to the central message handler.
+
+    Using qFatal() is an alternative to \l{qFatal(const char *, ...)},
+    which follows the printf paradigm.
+
+    Note that QDebug and the type specific stream operators do add various
+    formatting to make the debug message easier to read. See the
+    \l{Formatting Options}{formatting options} documentation for more details.
+
+    If you are using the \b{default message handler}, the returned stream will abort
+    to create a core dump. On Windows, for debug builds,
+    this function will report a _CRT_ERROR enabling you to connect a debugger
+    to the application.
+
+    \sa {qFatal(const char *, ...)}, qCFatal()
+*/
+
 #endif // !QT_NO_QOBJECT
 
 QT_END_NAMESPACE

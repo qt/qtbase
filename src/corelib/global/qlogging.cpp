@@ -2472,104 +2472,85 @@ QMessageLogContext &QMessageLogContext::copyContextFrom(const QMessageLogContext
 */
 
 /*!
-    \macro qDebug(const char *message, ...)
+    \macro qDebug(const char *format, ...)
     \relates <QtLogging>
     \threadsafe
 
-    Calls the message handler with the debug message \a message. If no
-    message handler has been installed, the message is printed to
-    stderr. Under Windows the message is sent to the console, if it is a
-    console application; otherwise, it is sent to the debugger. On QNX, the
-    message is sent to slogger2. This function does nothing if \c QT_NO_DEBUG_OUTPUT
-    was defined during compilation.
-
-    If you pass the function a format string and a list of arguments,
-    it works in similar way to the C printf() function. The format
-    should be a Latin-1 string.
+    Logs debug message \a format to the central message handler.
+    \a format can contain format specifiers that are
+    replaced by values specificed in additional arguments.
 
     Example:
 
     \snippet code/src_corelib_global_qglobal.cpp 24
 
-    If you include \c <QtDebug>, a more convenient syntax is also
-    available:
+    \a format can contain format specifiers like \c {%s} for UTF-8 strings, or
+    \c {%i} for integers. This is similar to how the C \c{printf()} function works.
+    For more details on the formatting, see \l QString::asprintf().
 
-    \snippet code/src_corelib_global_qglobal.cpp 25
+    For more convenience and further type support, you can also use
+    \l{QDebug::qDebug()}, which follows the streaming paradigm (similar to
+     \c{std::cout} or \c{std::cerr}).
 
-    With this syntax, the function returns a QDebug object that is
-    configured to use the QtDebugMsg message type. It automatically
-    puts a single space between each item, and outputs a newline at
-    the end. It supports many C++ and Qt types.
+    This function does nothing if \c QT_NO_DEBUG_OUTPUT was defined during compilation.
 
     To suppress the output at runtime, install your own message handler
     with qInstallMessageHandler().
 
-    \sa qCDebug(), qInfo(), qWarning(), qCritical(), qFatal(),
+    \sa QDebug::qDebug(), qCDebug(), qInfo(), qWarning(), qCritical(), qFatal(),
         qInstallMessageHandler(), {Debugging Techniques}
 */
 
 /*!
-    \macro qInfo(const char *message, ...)
+    \macro qInfo(const char *format, ...)
     \relates <QtLogging>
     \threadsafe
     \since 5.5
 
-    Calls the message handler with the informational message \a message. If no
-    message handler has been installed, the message is printed to
-    stderr. Under Windows, the message is sent to the console, if it is a
-    console application; otherwise, it is sent to the debugger. On QNX the
-    message is sent to slogger2. This function does nothing if \c QT_NO_INFO_OUTPUT
-    was defined during compilation.
-
-    If you pass the function a format string and a list of arguments,
-    it works in similar way to the C printf() function. The format
-    should be a Latin-1 string.
+    Logs informational message \a format to the central message handler.
+    \a format can contain format specifiers that are
+    replaced by values specificed in additional arguments.
 
     Example:
 
     \snippet code/src_corelib_global_qglobal.cpp qInfo_printf
 
-    If you include \c <QtDebug>, a more convenient syntax is also
-    available:
+    \a format can contain format specifiers like \c {%s} for UTF-8 strings, or
+    \c {%i} for integers. This is similar to how the C \c{printf()} function works.
+    For more details on the formatting, see \l QString::asprintf().
 
-    \snippet code/src_corelib_global_qglobal.cpp qInfo_stream
+    For more convenience and further type support, you can also use
+    \l{QDebug::qInfo()}, which follows the streaming paradigm (similar to
+    \c{std::cout} or \c{std::cerr}).
 
-    With this syntax, the function returns a QDebug object that is
-    configured to use the QtInfoMsg message type. It automatically
-    puts a single space between each item, and outputs a newline at
-    the end. It supports many C++ and Qt types.
+    This function does nothing if \c QT_NO_INFO_OUTPUT was defined during compilation.
 
     To suppress the output at runtime, install your own message handler
     using qInstallMessageHandler().
 
-    \sa qCInfo(), qDebug(), qWarning(), qCritical(), qFatal(),
+    \sa QDebug::qInfo(), qCInfo(), qDebug(), qWarning(), qCritical(), qFatal(),
         qInstallMessageHandler(), {Debugging Techniques}
 */
 
 /*!
-    \macro qWarning(const char *message, ...)
+    \macro qWarning(const char *format, ...)
     \relates <QtLogging>
     \threadsafe
 
-    Calls the message handler with the warning message \a message. If no
-    message handler has been installed, the message is printed to
-    stderr. Under Windows, the message is sent to the debugger.
-    On QNX the message is sent to slogger2.
-
-    This function takes a format string and a list of arguments,
-    similar to the C printf() function. The format should be a Latin-1
-    string.
+    Logs warning message \a format to the central message handler.
+    \a format can contain format specifiers that are
+    replaced by values specificed in additional arguments.
 
     Example:
     \snippet code/src_corelib_global_qglobal.cpp 26
 
-    If you include <QtDebug>, a more convenient syntax is
-    also available:
+    \a format can contain format specifiers like \c {%s} for UTF-8 strings, or
+    \c {%i} for integers. This is similar to how the C \c{printf()} function works.
+    For more details on the formatting, see \l QString::asprintf().
 
-    \snippet code/src_corelib_global_qglobal.cpp 27
-
-    This syntax inserts a space between each item, and
-    appends a newline at the end.
+    For more convenience and further type support, you can also use
+    \l{QDebug::qWarning()}, which follows the streaming paradigm (similar to
+     \c{std::cout} or \c{std::cerr}).
 
     This function does nothing if \c QT_NO_WARNING_OUTPUT was defined
     during compilation.
@@ -2578,7 +2559,7 @@ QMessageLogContext &QMessageLogContext::copyContextFrom(const QMessageLogContext
     \l{QLoggingCategory::installFilter()}{filter}.
 
     For debugging purposes, it is sometimes convenient to let the
-    program abort for warning messages. This allows you then
+    program abort for warning messages. This allows you
     to inspect the core dump, or attach a debugger - see also \l{qFatal()}.
     To enable this, set the environment variable \c{QT_FATAL_WARNINGS}
     to a number \c n. The program terminates then for the n-th warning.
@@ -2586,41 +2567,36 @@ QMessageLogContext &QMessageLogContext::copyContextFrom(const QMessageLogContext
     on the first call; if it contains the value 10, it will exit on the 10th
     call. Any non-numeric value in the environment variable is equivalent to 1.
 
-    \sa qCWarning(), qDebug(), qInfo(), qCritical(), qFatal(),
+    \sa QDebug::qWarning(), qCWarning(), qDebug(), qInfo(), qCritical(), qFatal(),
         qInstallMessageHandler(), {Debugging Techniques}
 */
 
 /*!
-    \macro qCritical(const char *message, ...)
+    \macro qCritical(const char *format, ...)
     \relates <QtLogging>
     \threadsafe
 
-    Calls the message handler with the critical message \a message. If no
-    message handler has been installed, the message is printed to
-    stderr. Under Windows, the message is sent to the debugger.
-    On QNX the message is sent to slogger2.
-
-    This function takes a format string and a list of arguments,
-    similar to the C printf() function. The format should be a Latin-1
-    string.
+    Logs critical message \a format to the central message handler.
+    \a format can contain format specifiers that are
+    replaced by values specificed in additional arguments.
 
     Example:
     \snippet code/src_corelib_global_qglobal.cpp 28
 
-    If you include <QtDebug>, a more convenient syntax is
-    also available:
+    \a format can contain format specifiers like \c {%s} for UTF-8 strings, or
+    \c {%i} for integers. This is similar to how the C \c{printf()} function works.
+    For more details on the formatting, see \l QString::asprintf().
 
-    \snippet code/src_corelib_global_qglobal.cpp 29
-
-    A space is inserted between the items, and a newline is
-    appended at the end.
+    For more convenience and further type support, you can also use
+    \l{QDebug::qCritical()}, which follows the streaming paradigm (similar to
+    \c{std::cout} or \c{std::cerr}).
 
     To suppress the output at runtime, you can define
     \l{QLoggingCategory}{logging rules} or register a custom
     \l{QLoggingCategory::installFilter()}{filter}.
 
     For debugging purposes, it is sometimes convenient to let the
-    program abort for critical messages. This allows you then
+    program abort for critical messages. This allows you
     to inspect the core dump, or attach a debugger - see also \l{qFatal()}.
     To enable this, set the environment variable \c{QT_FATAL_CRITICALS}
     to a number \c n. The program terminates then for the n-th critical
@@ -2629,29 +2605,25 @@ QMessageLogContext &QMessageLogContext::copyContextFrom(const QMessageLogContext
     on the first call; if it contains the value 10, it will exit on the 10th
     call. Any non-numeric value in the environment variable is equivalent to 1.
 
-    \sa qCCritical(), qDebug(), qInfo(), qWarning(), qFatal(),
+    \sa QDebug::qCritical, qCCritical(), qDebug(), qInfo(), qWarning(), qFatal(),
         qInstallMessageHandler(), {Debugging Techniques}
 */
 
 /*!
-    \macro qFatal(const char *message, ...)
+    \macro qFatal(const char *format, ...)
     \relates <QtLogging>
 
-    Calls the message handler with the fatal message \a message. If no
-    message handler has been installed, the message is printed to
-    stderr. Under Windows, the message is sent to the debugger.
-    On QNX the message is sent to slogger2.
+    Logs fatal message \a format to the central message handler.
+    \a format can contain format specifiers that are
+    replaced by values specificed in additional arguments.
+
+    Example:
+    \snippet code/src_corelib_global_qglobal.cpp 30
 
     If you are using the \b{default message handler} this function will
     abort to create a core dump. On Windows, for debug builds,
     this function will report a _CRT_ERROR enabling you to connect a debugger
     to the application.
-
-    This function takes a format string and a list of arguments,
-    similar to the C printf() function.
-
-    Example:
-    \snippet code/src_corelib_global_qglobal.cpp 30
 
     To suppress the output at runtime, install your own message handler
     with qInstallMessageHandler().

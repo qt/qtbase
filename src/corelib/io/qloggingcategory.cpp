@@ -401,7 +401,7 @@ void QLoggingCategory::setFilterRules(const QString &rules)
     \note Arguments aren't processed if the debug output for that \a category is not
     enabled, so don't rely on any side effects.
 
-    \sa qDebug()
+    \sa QDebug::qDebug()
 */
 
 /*!
@@ -421,7 +421,7 @@ void QLoggingCategory::setFilterRules(const QString &rules)
     \note Arguments aren't processed if the debug output for that \a category is not
     enabled, so don't rely on any side effects.
 
-    \sa qDebug()
+    \sa qDebug(const char *, ...)
 */
 
 /*!
@@ -444,7 +444,7 @@ void QLoggingCategory::setFilterRules(const QString &rules)
     \note If the debug output for a particular category isn't enabled, arguments
     won't be processed, so don't rely on any side effects.
 
-    \sa qInfo()
+    \sa QDebug::qInfo()
 */
 
 /*!
@@ -464,7 +464,7 @@ void QLoggingCategory::setFilterRules(const QString &rules)
     \note If the debug output for a particular category isn't enabled, arguments
     won't be processed, so don't rely on any side effects.
 
-    \sa qInfo()
+    \sa qInfo(const char *, ...)
 */
 
 /*!
@@ -487,7 +487,7 @@ void QLoggingCategory::setFilterRules(const QString &rules)
     \note If the warning output for a particular category isn't enabled, arguments
     won't be processed, so don't rely on any side effects.
 
-    \sa qWarning()
+    \sa QDebug::qWarning()
 */
 
 /*!
@@ -507,7 +507,7 @@ void QLoggingCategory::setFilterRules(const QString &rules)
     \note If the warning output for a particular category isn't enabled, arguments
     won't be processed, so don't rely on any side effects.
 
-    \sa qWarning()
+    \sa qWarning(const char *, ...)
 */
 
 /*!
@@ -531,7 +531,7 @@ void QLoggingCategory::setFilterRules(const QString &rules)
     \note If the critical output for a particular category isn't enabled, arguments
     won't be processed, so don't rely on any side effects.
 
-    \sa qCritical()
+    \sa QDebug::qCritical()
 */
 
 /*!
@@ -551,7 +551,7 @@ void QLoggingCategory::setFilterRules(const QString &rules)
     \note If the critical output for a particular category isn't enabled, arguments
     won't be processed, so don't rely on any side effects.
 
-    \sa qCritical()
+    \sa qCritical(const char *, ...)
 */
 
 /*!
@@ -570,7 +570,7 @@ void QLoggingCategory::setFilterRules(const QString &rules)
 
     \snippet qloggingcategory/main.cpp 16
 
-    \sa qFatal()
+    \sa QDebug::qFatal()
 */
 
 /*!
@@ -590,7 +590,7 @@ void QLoggingCategory::setFilterRules(const QString &rules)
     to create a core dump. On Windows, for debug builds, this function will
     report a \c _CRT_ERROR enabling you to connect a debugger to the application.
 
-    \sa qFatal()
+    \sa qFatal(const char *, ...)
 */
 
 /*!
