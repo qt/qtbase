@@ -152,7 +152,7 @@ private:
 
     void parseContentLength(State &st, QByteArrayView header)
     {
-        qsizetype index = header.indexOf("\r\ncontent-length:");
+        qsizetype index = header.toByteArray().toLower().indexOf("\r\ncontent-length:");
         if (index == -1)
             return;
         st.foundContentLength = true;

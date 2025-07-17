@@ -263,7 +263,7 @@ void tst_QNetworkReply_local::fullServerName()
     QVERIFY(receivedData.startsWith(expectedGet));
 
     const QByteArray expectedHost = "host: " % url.host().toUtf8() % "\r\n";
-    QVERIFY(receivedData.contains(expectedHost));
+    QVERIFY(receivedData.toLower().contains(expectedHost));
 }
 #endif
 

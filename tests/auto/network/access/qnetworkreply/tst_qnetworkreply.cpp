@@ -782,7 +782,7 @@ private:
 
     void parseContentLength()
     {
-        int index = receivedData.indexOf("content-length:");
+        int index = receivedData.toLower().indexOf("content-length:");
         if (index == -1)
             return;
 
@@ -3621,7 +3621,7 @@ void tst_QNetworkReply::connectToIPv6Address()
     QByteArray content = reply->readAll();
     //qDebug() << server.receivedData;
     QByteArray hostinfo = "\r\nhost: " + hostfield + ':' + QByteArray::number(server.serverPort()) + "\r\n";
-    QVERIFY(server.receivedData.contains(hostinfo));
+    QVERIFY(server.receivedData.toLower().contains(hostinfo));
     QCOMPARE(content, dataToSend);
     QCOMPARE(reply->url(), request.url());
     QCOMPARE(reply->error(), error);
@@ -8789,7 +8789,11 @@ void tst_QNetworkReply::httpUserAgent()
 
     QVERIFY(reply->isFinished());
     QCOMPARE(reply->error(), QNetworkReply::NoError);
-    QVERIFY(server.receivedData.contains("\r\nuser-agent: abcDEFghi\r\n"));
+    const char userAgentSearch[] = "\r\nuser-agent: ";
+    qsizetype userAgentIndex = server.receivedData.toLower().indexOf(userAgentSearch);
+    QCOMPARE_NE(userAgentIndex, -1);
+    userAgentIndex += sizeof(userAgentSearch) - 1;
+    QVERIFY(server.receivedData.slice(userAgentIndex).startsWith("abcDEFghi\r\n"));
 }
 
 void tst_QNetworkReply::synchronousAuthenticationCache()
@@ -8809,7 +8813,7 @@ void tst_QNetworkReply::synchronousAuthenticationCache()
                 "content-type: text/plain\r\n"
                 "\r\n"
                 "auth";
-            QRegularExpression rx("authorization: Basic ([^\r\n]*)\r\n");
+            QRegularExpression rx("[Aa]uthorization: Basic ([^\r\n]*)\r\n");
             QRegularExpressionMatch match = rx.match(receivedData);
             if (match.hasMatch()) {
                 if (QByteArray::fromBase64(match.captured(1).toLatin1()) == "login:password") {
@@ -9522,7 +9526,7 @@ void tst_QNetworkReply::ioHttpCookiesDuringRedirect()
     manager.setRedirectPolicy(oldRedirectPolicy);
 
     QVERIFY(waitForFinish(reply) == Success);
-    QVERIFY(target.receivedData.contains("\r\ncookie: hello=world\r\n"));
+    QVERIFY(target.receivedData.toLower().contains("\r\ncookie: hello=world\r\n"));
     QVERIFY(validateRedirectedResponseHeaders(reply));
 }
 
@@ -10435,7 +10439,7 @@ void tst_QNetworkReply::contentEncoding()
     {
         // Check that we included the content encoding method in our Accept-Encoding header
         const QByteArray &receivedData = server.receivedData;
-        int start = receivedData.indexOf("accept-encoding");
+        int start = receivedData.toLower().indexOf("accept-encoding");
         QVERIFY(start != -1);
         int end = receivedData.indexOf("\r\n", start);
         QVERIFY(end != -1);
