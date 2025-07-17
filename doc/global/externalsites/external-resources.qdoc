@@ -341,6 +341,11 @@
 */
 
 /*!
+    \externalpage https://en.cppreference.com/w/cpp/symbol_index/chrono_literals.html
+    \title std::literals::chrono_literals Symbol Index
+*/
+
+/*!
     \externalpage https://www.w3.org/TR/CSS2/selector.html
     \title Standard CSS2 selector
 */
