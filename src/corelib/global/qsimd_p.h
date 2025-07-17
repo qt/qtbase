@@ -276,14 +276,14 @@ static_assert(ARCH_SKX_MACROS, "Undeclared identifiers indicate which features a
 #endif
 
 #ifndef Q_PROCESSOR_ARM_64 // vaddv is only available on Aarch64
-inline uint16_t vaddvq_u16(uint16x8_t v8)
+static inline uint16_t vaddvq_u16(uint16x8_t v8)
 {
     const uint64x2_t v2 = vpaddlq_u32(vpaddlq_u16(v8));
     const uint64x1_t v1 = vadd_u64(vget_low_u64(v2), vget_high_u64(v2));
     return vget_lane_u16(vreinterpret_u16_u64(v1), 0);
 }
 
-inline uint8_t vaddv_u8(uint8x8_t v8)
+static inline uint8_t vaddv_u8(uint8x8_t v8)
 {
     const uint64x1_t v1 = vpaddl_u32(vpaddl_u16(vpaddl_u8(v8)));
     return vget_lane_u8(vreinterpret_u8_u64(v1), 0);
@@ -291,8 +291,9 @@ inline uint8_t vaddv_u8(uint8x8_t v8)
 #endif
 
 // Missing NEON intrinsics, needed due different type definitions:
-inline uint16x8_t qvsetq_n_u16(uint16_t v1, uint16_t v2, uint16_t v3, uint16_t v4,
-                               uint16_t v5, uint16_t v6, uint16_t v7, uint16_t v8) {
+static inline uint16x8_t qvsetq_n_u16(uint16_t v1, uint16_t v2, uint16_t v3, uint16_t v4,
+                                      uint16_t v5, uint16_t v6, uint16_t v7, uint16_t v8)
+{
 #if defined(Q_CC_MSVC) && !defined(Q_CC_CLANG)
     using u64 = uint64_t;
     const uint16x8_t vmask = {
@@ -304,8 +305,9 @@ inline uint16x8_t qvsetq_n_u16(uint16_t v1, uint16_t v2, uint16_t v3, uint16_t v
 #endif
     return vmask;
 }
-inline uint8x8_t qvset_n_u8(uint8_t v1, uint8_t v2, uint8_t v3, uint8_t v4,
-                            uint8_t v5, uint8_t v6, uint8_t v7, uint8_t v8) {
+static inline uint8x8_t qvset_n_u8(uint8_t v1, uint8_t v2, uint8_t v3, uint8_t v4, uint8_t v5,
+                                   uint8_t v6, uint8_t v7, uint8_t v8)
+{
 #if defined(Q_CC_MSVC) && !defined(Q_CC_CLANG)
     using u64 = uint64_t;
     const uint8x8_t vmask = {
@@ -317,10 +319,11 @@ inline uint8x8_t qvset_n_u8(uint8_t v1, uint8_t v2, uint8_t v3, uint8_t v4,
 #endif
     return vmask;
 }
-inline uint8x16_t qvsetq_n_u8(uint8_t v1,  uint8_t v2,  uint8_t v3,  uint8_t v4,
-                              uint8_t v5,  uint8_t v6,  uint8_t v7,  uint8_t v8,
-                              uint8_t v9,  uint8_t v10, uint8_t v11, uint8_t v12,
-                              uint8_t v13, uint8_t v14, uint8_t v15, uint8_t v16) {
+static inline uint8x16_t qvsetq_n_u8(uint8_t v1, uint8_t v2, uint8_t v3, uint8_t v4, uint8_t v5,
+                                     uint8_t v6, uint8_t v7, uint8_t v8, uint8_t v9, uint8_t v10,
+                                     uint8_t v11, uint8_t v12, uint8_t v13, uint8_t v14,
+                                     uint8_t v15, uint8_t v16)
+{
 #if defined(Q_CC_MSVC) && !defined(Q_CC_CLANG)
     using u64 = uint64_t;
     const uint8x16_t vmask = {
@@ -335,7 +338,7 @@ inline uint8x16_t qvsetq_n_u8(uint8_t v1,  uint8_t v2,  uint8_t v3,  uint8_t v4,
 #endif
     return vmask;
 }
-inline uint32x4_t qvsetq_n_u32(uint32_t a, uint32_t b, uint32_t c, uint32_t d)
+static inline uint32x4_t qvsetq_n_u32(uint32_t a, uint32_t b, uint32_t c, uint32_t d)
 {
 #if defined(Q_CC_MSVC) && !defined(Q_CC_CLANG)
     return uint32x4_t{ (uint64_t(b) << 32) | a, (uint64_t(d) << 32) | c };

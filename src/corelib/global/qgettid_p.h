@@ -25,7 +25,7 @@
 #  define SYS_gettid __NR_gettid
 # endif
 
-inline long qt_gettid()
+static inline long qt_gettid()
 {
     // no error handling
     // this syscall has existed since Linux 2.4.11 and cannot fail
@@ -33,7 +33,7 @@ inline long qt_gettid()
 }
 #elif defined(Q_OS_DARWIN)
 #  include <pthread.h>
-inline int qt_gettid()
+static inline int qt_gettid()
 {
     // no error handling: this call cannot fail
     __uint64_t tid;
@@ -42,7 +42,7 @@ inline int qt_gettid()
 }
 #elif defined(Q_OS_FREEBSD_KERNEL) && defined(__FreeBSD_version) && __FreeBSD_version >= 900031
 #  include <pthread_np.h>
-inline int qt_gettid()
+static inline int qt_gettid()
 {
     return pthread_getthreadid_np();
 }

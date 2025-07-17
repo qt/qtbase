@@ -1254,10 +1254,12 @@ QUuid QUuid::createUuidV5(const QUuid &ns, const QByteArray &baseData) noexcept
 
 #include "qexceptionhandling.h"
 
+QT_BEGIN_NAMESPACE
 Q_NORETURN void qTerminate() noexcept
 {
     std::terminate();
 }
+QT_END_NAMESPACE
 
 
 #include "qmetatype.h"

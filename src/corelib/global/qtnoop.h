@@ -9,9 +9,9 @@
 #endif
 
 #ifdef __cplusplus
-constexpr
+[[maybe_unused]] constexpr
 #endif
-inline void qt_noop(void)
+static inline void qt_noop(void)
 #ifdef __cplusplus
     noexcept
 #endif
