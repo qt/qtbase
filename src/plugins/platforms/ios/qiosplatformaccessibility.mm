@@ -43,6 +43,12 @@ void QIOSPlatformAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *even
     if (!isActive() || !accessibleInterface)
         return;
     switch (event->type()) {
+    case QAccessible::Announcement: {
+        auto *announcementEvent = static_cast<QAccessibleAnnouncementEvent *>(event);
+        UIAccessibilityPostNotification(UIAccessibilityAnnouncementNotification,
+                                        announcementEvent->message().toNSString());
+        break;
+    }
     case QAccessible::Focus: {
         auto *element = [QMacAccessibilityElement elementWithId:event->uniqueId()];
         Q_ASSERT(element);
