@@ -696,13 +696,13 @@ inline void QTextStreamPrivate::restoreToSavedConverterState()
 /*!
     \internal
 */
-void QTextStreamPrivate::write(const QChar *data, qsizetype len)
+void QTextStreamPrivate::write(QStringView s)
 {
     if (string) {
         // ### What about seek()??
-        string->append(data, len);
+        string->append(s);
     } else {
-        writeBuffer.append(data, len);
+        writeBuffer.append(s);
         if (writeBuffer.size() > QTEXTSTREAM_BUFFERSIZE)
             flushWriteBuffer();
     }

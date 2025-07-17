@@ -144,9 +144,8 @@ public:
     NumberParsingStatus getNumber(qulonglong *l);
     bool getReal(double *f);
 
-    inline void write(QStringView data) { write(data.begin(), data.size()); }
+    void write(QStringView data);
     void write(QChar ch);
-    void write(const QChar *data, qsizetype len);
     void write(QLatin1StringView data);
     void writePadding(qsizetype len);
     void putString(QStringView string, bool number = false);

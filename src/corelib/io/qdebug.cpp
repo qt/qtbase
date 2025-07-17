@@ -199,7 +199,8 @@ static inline bool isPrintable(uchar c)
 template <typename Char>
 static inline void putEscapedString(QTextStreamPrivate *d, const Char *begin, size_t length, bool isUnicode = true)
 {
-    QChar quote(u'"');
+    constexpr char16_t quotes[] = uR"("")";
+    constexpr char16_t quote = quotes[0];
     d->write(quote);
 
     bool lastWasHexEscape = false;
@@ -209,8 +210,7 @@ static inline void putEscapedString(QTextStreamPrivate *d, const Char *begin, si
         if (Q_UNLIKELY(lastWasHexEscape)) {
             if (fromHex(*p) != -1) {
                 // yes, insert it
-                QChar quotes[] = { quote, quote };
-                d->write(quotes, 2);
+                d->write(quotes);
             }
             lastWasHexEscape = false;
         }
