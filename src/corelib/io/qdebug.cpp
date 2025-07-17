@@ -215,14 +215,14 @@ static inline void putEscapedString(QTextStreamPrivate *d, const Char *begin, si
             lastWasHexEscape = false;
         }
 
-        if (sizeof(Char) == sizeof(QChar)) {
+        if constexpr (sizeof(Char) == sizeof(QChar)) {
             // Surrogate characters are category Cs (Other_Surrogate), so isPrintable = false for them
             qsizetype runLength = 0;
             while (p + runLength != end &&
                    isPrintable(p[runLength]) && p[runLength] != '\\' && p[runLength] != '"')
                 ++runLength;
             if (runLength) {
-                d->write(reinterpret_cast<const QChar *>(p), runLength);
+                d->write(QStringView{p, runLength});
                 p += runLength - 1;
                 continue;
             }
@@ -298,7 +298,7 @@ static inline void putEscapedString(QTextStreamPrivate *d, const Char *begin, si
             buf[5] = toHexUpper(*p);
             buflen = 6;
         }
-        d->write(reinterpret_cast<QChar *>(buf), buflen);
+        d->write(QStringView{buf, buflen});
     }
 
     d->write(quote);
