@@ -149,6 +149,7 @@ typedef ptrdiff_t  QT_FT_PtrDist;
 #include <private/qgrayraster_p.h>
 
 #include <qcompilerdetection.h>
+#include <qtconfigmacros.h>
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -298,7 +299,7 @@ QT_FT_END_STMNT
 
   } TRaster, *PRaster;
 
-  int q_gray_rendered_spans(TRaster *raster)
+  int QT_MANGLE_NAMESPACE(q_gray_rendered_spans)(TRaster *raster)
   {
     if ( raster && raster->worker )
       return raster->worker->skip_spans > 0 ? 0 : -raster->worker->skip_spans;
