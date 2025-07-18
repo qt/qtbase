@@ -867,8 +867,9 @@ auto parseSign(StringView data, const QLocale &loc)
     \internal
 */
 template <typename StringView>
-void QTextStreamPrivate::putStringImpl(StringView data, bool number)
+void QTextStreamPrivate::putStringImpl(StringView data, PutStringMode mode)
 {
+    const bool number = mode == PutStringMode::Number;
     if (Q_UNLIKELY(params.fieldWidth > data.size())) {
 
         // handle padding:
@@ -894,25 +895,25 @@ void QTextStreamPrivate::putStringImpl(StringView data, bool number)
 /*!
     \internal
 */
-void QTextStreamPrivate::putString(QLatin1StringView data, bool number)
+void QTextStreamPrivate::putString(QLatin1StringView data, PutStringMode mode)
 {
-    putStringImpl(data, number);
+    putStringImpl(data, mode);
 }
 
 /*!
     \internal
 */
-void QTextStreamPrivate::putString(QStringView data, bool number)
+void QTextStreamPrivate::putString(QStringView data, PutStringMode mode)
 {
-    putStringImpl(data, number);
+    putStringImpl(data, mode);
 }
 
 /*!
     \internal
 */
-void QTextStreamPrivate::putString(QUtf8StringView data, bool number)
+void QTextStreamPrivate::putString(QUtf8StringView data, PutStringMode mode)
 {
-    putString(data.toString(), number);
+    putString(data.toString(), mode);
 }
 
 /*!
@@ -2253,7 +2254,7 @@ void QTextStreamPrivate::putNumber(qulonglong number, bool negative)
         // a zero.
         result.prepend(u'0');
     }
-    putString(result, true);
+    putString(result, PutStringMode::Number);
 }
 
 /*!
@@ -2463,7 +2464,7 @@ QTextStream &QTextStream::operator<<(double f)
 
     const QLocaleData *dd = d->locale.d->m_data;
     QString num = dd->doubleToString(f, d->params.realNumberPrecision, form, -1, flags);
-    d->putString(num, true);
+    d->putString(num, QTextStreamPrivate::PutStringMode::Number);
     return *this;
 }
 

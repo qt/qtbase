@@ -121,11 +121,12 @@ public:
     void write(QChar ch);
     void write(QLatin1StringView data);
     void writePadding(qsizetype len);
-    void putString(QStringView string, bool number = false);
-    void putString(const QChar *data, qsizetype len, bool number = false)
-    { putString(QStringView{data, len}, number); }
-    void putString(QLatin1StringView data, bool number = false);
-    void putString(QUtf8StringView data, bool number = false);
+
+    enum class PutStringMode : bool { String, Number };
+    void putString(QStringView string, PutStringMode = PutStringMode::String);
+    void putString(QLatin1StringView data, PutStringMode = PutStringMode::String);
+    void putString(QUtf8StringView data, PutStringMode = PutStringMode::String);
+
     inline void putChar(QChar ch);
     void putNumber(qulonglong number, bool negative);
 
@@ -143,7 +144,7 @@ private:
     template <typename Appendable>
     void writeImpl(Appendable data);
     template <typename StringView>
-    void putStringImpl(StringView view, bool number);
+    void putStringImpl(StringView view, PutStringMode mode);
 };
 
 QT_END_NAMESPACE
