@@ -188,7 +188,7 @@ Symbols Preprocessor::tokenize(const QByteArray& input, int lineNum, Preprocesso
 
                         const QByteArray newString
                                 = '\"'
-                                + symbols.constLast().unquotedLexem()
+                                + symbols.constLast().unquotedLexemView()
                                 + input.mid(lexem - begin + 1, data - lexem - 2)
                                 + '\"';
                         symbols.last() = Symbol(symbols.constLast().lineNum,
@@ -655,7 +655,7 @@ Symbols Preprocessor::macroExpandIdentifier(Preprocessor *that, SymbolStack &sym
                 const Symbols &arg = arguments.at(index);
                 QByteArray stringified;
                 for (const Symbol &sym : arg)
-                    stringified += sym.lexem();
+                    stringified += sym.lexemView();
 
                 stringified.replace('"', "\\\"");
                 stringified.prepend('"');
