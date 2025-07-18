@@ -195,8 +195,10 @@ static qsizetype scriptIndex(QStringView code, Qt::CaseSensitivity cs) noexcept
     if (!c0 || !c1 || !c2 || !c3)
         return -1;
 
+    constexpr qsizetype NumScripts = QLocale::LastScript + 1;
+    static_assert(sizeof(script_code_list) == 4 * NumScripts + 1); // +1 for an extra NUL
     const unsigned char *c = script_code_list;
-    for (qsizetype i = 0; i < QLocale::LastScript; ++i, c += 4) {
+    for (qsizetype i = 0; i < NumScripts; ++i, c += 4) {
         if (c0 == c[0] && c1 == c[1] && c2 == c[2] && c3 == c[3])
             return i;
     }
