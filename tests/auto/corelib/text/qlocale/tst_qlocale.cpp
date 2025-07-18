@@ -4340,6 +4340,10 @@ void tst_QLocale::codeToLcs()
     QCOMPARE(QLocale::codeToScript(QString()), QLocale::AnyScript);
     QCOMPARE(QLocale::codeToScript(QString("Zzzz")), QLocale::AnyScript);
     QCOMPARE(QLocale::codeToScript(QString("Hans")), QLocale::SimplifiedHanScript);
+    // ensure we can find the last script, too:
+    QEXPECT_FAIL("", "QTBUG-138566", Continue);
+    QCOMPARE(QLocale::codeToScript(QLocale::scriptToCode(QLocale::LastScript)),
+             QLocale::LastScript);
 }
 
 QTEST_MAIN(tst_QLocale)
