@@ -1160,12 +1160,12 @@ void tst_QPluginLoader::staticPlugins()
 void tst_QPluginLoader::reregisteredStaticPlugins()
 {
     // the Q_IMPORT_PLUGIN macro will have already done this
-    qRegisterStaticPluginFunction(qt_static_plugin_StaticPlugin());
+    qRegisterStaticPluginFunction(QT_MANGLE_NAMESPACE(qt_static_plugin_StaticPlugin)());
     staticPlugins();
     if (QTest::currentTestFailed())
         return;
 
-    qRegisterStaticPluginFunction(qt_static_plugin_StaticPlugin());
+    qRegisterStaticPluginFunction(QT_MANGLE_NAMESPACE(qt_static_plugin_StaticPlugin)());
     staticPlugins();
 }
 
