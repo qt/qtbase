@@ -1415,7 +1415,7 @@ QDataStream &operator<<(QDataStream &out, QChar chr)
     \fn QDataStream::operator bool() const
     \since 6.10
 
-    Returns whether this stream has no errors (status() == \l{OK}).
+    Returns whether this stream has no errors (\l status() returns \l{Ok}).
 */
 
 /*!
