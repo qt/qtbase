@@ -1005,7 +1005,7 @@ void tst_QMenuBar::check_menuPosition()
 
     //the menu should be above the menubar item
     {
-        w.move(0,screenRect.bottom() - screenRect.height()/4); //just leave some place for the menubar
+        w.move(availRect.x(), screenRect.bottom() - screenRect.height()/4); //just leave some place for the menubar
         QRect mbItemRect = w.menuBar()->actionGeometry(menu_action);
         mbItemRect.moveTo(w.menuBar()->mapToGlobal(mbItemRect.topLeft()));
         QTest::keyClick(&w, Qt::Key_M, Qt::AltModifier );
@@ -1016,7 +1016,7 @@ void tst_QMenuBar::check_menuPosition()
 
     //the menu should be on the side of the menubar item and should be "stuck" to the bottom of the screen
     {
-        w.move(0,screenRect.y() + screenRect.height()/2); //put it in the middle
+        w.move(availRect.x(), screenRect.y() + screenRect.height()/2); //put it in the middle
         QRect mbItemRect = w.menuBar()->actionGeometry(menu_action);
         mbItemRect.moveTo(w.menuBar()->mapToGlobal(mbItemRect.topLeft()));
         QTest::keyClick(&w, Qt::Key_M, Qt::AltModifier );
