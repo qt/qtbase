@@ -777,7 +777,7 @@ inline void QTextStreamPrivate::ungetChar(QChar ch)
 inline void QTextStreamPrivate::putChar(QChar ch)
 {
     if (params.fieldWidth > 0)
-        putString(&ch, 1);
+        putString(QStringView{&ch, 1});
     else
         write(ch);
 }
@@ -2468,7 +2468,7 @@ QTextStream &QTextStream::operator<<(QStringView string)
 {
     Q_D(QTextStream);
     CHECK_VALID_STREAM(*this);
-    d->putString(string.cbegin(), int(string.size()));
+    d->putString(string);
     return *this;
 }
 
