@@ -696,7 +696,8 @@ inline void QTextStreamPrivate::restoreToSavedConverterState()
 /*!
     \internal
 */
-void QTextStreamPrivate::write(QStringView s)
+template <typename Appendable>
+void QTextStreamPrivate::writeImpl(Appendable s)
 {
     if (string) {
         // ### What about seek()??
@@ -711,16 +712,17 @@ void QTextStreamPrivate::write(QStringView s)
 /*!
     \internal
 */
+void QTextStreamPrivate::write(QStringView s)
+{
+    writeImpl(s);
+}
+
+/*!
+    \internal
+*/
 void QTextStreamPrivate::write(QChar ch)
 {
-    if (string) {
-        // ### What about seek()??
-        string->append(ch);
-    } else {
-        writeBuffer += ch;
-        if (writeBuffer.size() > QTEXTSTREAM_BUFFERSIZE)
-            flushWriteBuffer();
-    }
+    writeImpl(ch);
 }
 
 /*!
@@ -728,14 +730,7 @@ void QTextStreamPrivate::write(QChar ch)
 */
 void QTextStreamPrivate::write(QLatin1StringView data)
 {
-    if (string) {
-        // ### What about seek()??
-        string->append(data);
-    } else {
-        writeBuffer += data;
-        if (writeBuffer.size() > QTEXTSTREAM_BUFFERSIZE)
-            flushWriteBuffer();
-    }
+    writeImpl(data);
 }
 
 /*!

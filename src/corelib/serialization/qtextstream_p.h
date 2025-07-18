@@ -167,6 +167,8 @@ public:
     void flushWriteBuffer();
 
 private:
+    template <typename Appendable>
+    void writeImpl(Appendable data);
     template <typename StringView>
     void putStringImpl(StringView view, bool number);
 };
