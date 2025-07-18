@@ -20,6 +20,7 @@ import android.content.res.Resources;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Debug;
+import android.os.Process;
 import android.system.Os;
 import android.util.Log;
 
@@ -29,6 +30,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Objects;
+import java.util.HashSet;
+import java.util.Set;
 
 import dalvik.system.DexClassLoader;
 
@@ -38,7 +41,7 @@ abstract class QtLoader {
 
     private final Resources m_resources;
     private final String m_packageName;
-    private String m_preferredAbi = null;
+    private final String m_preferredAbi;
     private String m_extractedNativeLibsDir = null;
     /** @noinspection FieldCanBeLocal*/
     private ClassLoader m_classLoader;
@@ -79,6 +82,7 @@ abstract class QtLoader {
             throw new IllegalArgumentException("QtLoader: No ComponentInfo found for given " +
                                                "Context", e);
         }
+        m_preferredAbi = resolvePreferredAbi();
     }
 
     /**
@@ -128,30 +132,45 @@ abstract class QtLoader {
     }
 
     private ArrayList<String> preferredAbiLibs(String[] libs) {
-        HashMap<String, ArrayList<String>> abiLibs = new HashMap<>();
+        ArrayList<String> abiLibs = new ArrayList<>();
         for (String lib : libs) {
-            String[] archLib = lib.split(";", 2);
-            if (m_preferredAbi != null && !archLib[0].equals(m_preferredAbi))
+            String[] splits = lib.split(";", 2);
+            // Ensure we have both abi and lib name parts
+            if (splits == null || splits.length < 2)
                 continue;
-            if (!abiLibs.containsKey(archLib[0]))
-                abiLibs.put(archLib[0], new ArrayList<>());
-            Objects.requireNonNull(abiLibs.get(archLib[0])).add(archLib[1]);
+
+            if (!splits[0].equals(m_preferredAbi))
+                continue;
+
+            abiLibs.add(splits[1]);
         }
 
-        if (m_preferredAbi != null) {
-            if (abiLibs.containsKey(m_preferredAbi)) {
-                return abiLibs.get(m_preferredAbi);
-            }
-            return new ArrayList<>();
+        return abiLibs;
+    }
+
+    @SuppressLint("DiscouragedApi")
+    private String resolvePreferredAbi()
+    {
+        int id = m_resources.getIdentifier("qt_libs", "array", m_packageName);
+        String[] libs = m_resources.getStringArray(id);
+        Set<String> uniqueAbis = new HashSet<>();
+
+        for (String lib : libs) {
+            String[] splits = lib.split(";", 2);
+            // Ensure we have both abi and lib name parts
+            if (splits == null || splits.length < 2)
+                continue;
+
+            uniqueAbis.add(splits[0]);
         }
 
+        boolean is64Bit = Process.is64Bit();
         for (String abi : Build.SUPPORTED_ABIS) {
-            if (abiLibs.containsKey(abi)) {
-                m_preferredAbi = abi;
-                return abiLibs.get(abi);
-            }
+            if (uniqueAbis.contains(abi) && abi.contains("64") == is64Bit)
+                return abi;
         }
-        return new ArrayList<>();
+
+        return Build.SUPPORTED_ABIS[0];
     }
 
     /**
@@ -383,11 +402,6 @@ abstract class QtLoader {
      **/
     private String getApkNativeLibrariesDir()
     {
-        if (m_preferredAbi == null) {
-            // Workaround: getLocalLibrariesList() will call preferredAbiLibs()
-            // with valid library names which will assign m_preferredAbi.
-            getLocalLibrariesList();
-        }
         return QtApkFileEngine.getAppApkFilePath() + "!/lib/" + m_preferredAbi + "/";
     }
 
