@@ -15,7 +15,12 @@
 // We mean it.
 //
 
+#include <QtCore/qtconfigmacros.h>
+
+QT_BEGIN_NAMESPACE
+
 void register_qt_vfs();
 
+QT_END_NAMESPACE
 
 #endif // QSQL_SQLITE_VFS_H

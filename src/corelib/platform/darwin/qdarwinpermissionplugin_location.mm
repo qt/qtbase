@@ -11,7 +11,9 @@
 @property (nonatomic, retain) CLLocationManager *manager;
 @end
 
-Q_LOGGING_CATEGORY(lcLocationPermission, "qt.permissions.location");
+Q_STATIC_LOGGING_CATEGORY(lcLocationPermission, "qt.permissions.location");
+
+namespace {
 
 void warmUpLocationServices()
 {
@@ -34,6 +36,8 @@ struct PermissionRequest
     QPermission permission;
     PermissionCallback callback;
 };
+
+} // namespace
 
 @implementation QDarwinLocationPermissionHandler  {
     std::deque<PermissionRequest> m_requests;

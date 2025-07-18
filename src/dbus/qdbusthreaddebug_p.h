@@ -20,16 +20,16 @@
 
 #ifndef QT_NO_DBUS
 
+QT_BEGIN_NAMESPACE
+
 #if !defined(QDBUS_THREAD_DEBUG) && defined(QT_BUILD_INTERNAL)
 # define QDBUS_THREAD_DEBUG 1
 #endif
 
 #if QDBUS_THREAD_DEBUG
-QT_BEGIN_NAMESPACE
 typedef void (*qdbusThreadDebugFunc)(int, int, QDBusConnectionPrivate *);
 Q_DBUS_EXPORT void qdbusDefaultThreadDebug(int, int, QDBusConnectionPrivate *);
 extern Q_DBUS_EXPORT qdbusThreadDebugFunc qdbusThreadDebug;
-QT_END_NAMESPACE
 #endif
 
 enum ThreadAction {
@@ -149,6 +149,8 @@ struct QDBusWriteLocker: QDBusLockerBase
 # define SEM_ACQUIRE(action, sem)       sem.acquire()
 # define SEM_RELEASE(action, sem)       sem.release()
 #endif
+
+QT_END_NAMESPACE
 
 #endif // QT_NO_DBUS
 #endif

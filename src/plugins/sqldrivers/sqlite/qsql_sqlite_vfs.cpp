@@ -16,6 +16,8 @@
 typedef const char *sqlite3_filename;
 #endif
 
+QT_BEGIN_NAMESPACE
+
 namespace {
 struct Vfs : sqlite3_vfs {
     sqlite3_vfs *pVfs;
@@ -256,3 +258,5 @@ void register_qt_vfs()
 
     sqlite3_vfs_register(&vfs, 0);
 }
+
+QT_END_NAMESPACE
