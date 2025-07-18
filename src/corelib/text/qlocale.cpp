@@ -158,22 +158,25 @@ QLocale::Language QLocalePrivate::codeToLanguage(QStringView code,
     }
 
     if (codeTypes.testFlag(QLocale::LegacyLanguageCode) && uc3 == 0) {
-        // legacy codes
-        if (uc1 == 'n' && uc2 == 'o') // no -> nb
-            return QLocale::NorwegianBokmal;
-        if (uc1 == 't' && uc2 == 'l') // tl -> fil
-            return QLocale::Filipino;
-        if (uc1 == 's' && uc2 == 'h') // sh -> sr[_Latn]
-            return QLocale::Serbian;
-        if (uc1 == 'm' && uc2 == 'o') // mo -> ro
-            return QLocale::Romanian;
-        // Android uses the following deprecated codes
-        if (uc1 == 'i' && uc2 == 'w') // iw -> he
-            return QLocale::Hebrew;
-        if (uc1 == 'i' && uc2 == 'n') // in -> id
-            return QLocale::Indonesian;
-        if (uc1 == 'j' && uc2 == 'i') // ji -> yi
-            return QLocale::Yiddish;
+        constexpr struct LegacyCodes {
+            AlphaCode code;
+            QLocale::Language language;
+        } legacyCodes[] = {
+            { {'n', 'o'}, QLocale::NorwegianBokmal }, // no -> nb
+            { {'t', 'l'}, QLocale::Filipino },        // tl -> fil
+            { {'s', 'h'}, QLocale::Serbian },         // sh -> sr[_Latn]
+            { {'m', 'o'}, QLocale::Romanian },        // mo -> ro
+            // Android uses the following deprecated codes:
+            { {'i', 'w'}, QLocale::Hebrew },          // iw -> he
+            { {'i', 'n'}, QLocale::Indonesian },      // in -> id
+            { {'j', 'i'}, QLocale::Yiddish },         // ji -> yi
+        };
+        // We don't need binary search for seven entries (and they're not
+        // sorted), so search linearly:
+        for (const auto &e : legacyCodes) {
+            if (codeBuf == e.code)
+                return e.language;
+        }
     }
     return QLocale::AnyLanguage;
 }
