@@ -2510,7 +2510,7 @@ QTextStream &QTextStream::operator<<(const QByteArray &array)
 {
     Q_D(QTextStream);
     CHECK_VALID_STREAM(*this);
-    d->putString(QString::fromUtf8(array.constData(), array.size()));
+    d->putString(QUtf8StringView{array});
     return *this;
 }
 
