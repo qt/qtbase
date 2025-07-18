@@ -689,7 +689,7 @@ QT_BEGIN_NAMESPACE
 
     \note The behavior is undefined when \a length < 0 or \a length > size().
 
-    \sa mid(), left(), right(), chop(), truncate()
+    \sa sliced(), left(), right(), chop(), truncate()
 */
 
 /*!
@@ -701,7 +701,7 @@ QT_BEGIN_NAMESPACE
 
     \note The behavior is undefined when \a length < 0 or \a length > size().
 
-    \sa mid(), left(), right(), chopped(), chop()
+    \sa sliced(), left(), right(), chopped(), chop()
 */
 
 /*!
@@ -713,7 +713,7 @@ QT_BEGIN_NAMESPACE
 
     \note The behavior is undefined when \a length < 0 or \a length > size().
 
-    \sa mid(), left(), right(), chopped(), truncate()
+    \sa sliced(), left(), right(), chopped(), truncate()
 */
 
 /*!
