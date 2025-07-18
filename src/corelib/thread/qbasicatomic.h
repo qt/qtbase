@@ -1,6 +1,7 @@
 // Copyright (C) 2011 Thiago Macieira <thiago@kde.org>
 // Copyright (C) 2018 Intel Corporation.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+// Qt-Security score:significant reason:default
 
 #ifndef QBASICATOMIC_H
 #define QBASICATOMIC_H
