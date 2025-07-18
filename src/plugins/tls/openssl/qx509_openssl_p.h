@@ -28,7 +28,6 @@
 
 #include "qopenssl_p.h"
 
-#include <algorithm>
 
 QT_BEGIN_NAMESPACE
 
@@ -80,7 +79,7 @@ private:
     Q_DISABLE_COPY_MOVE(X509CertificateOpenSSL)
 };
 
-extern "C" int qt_X509Callback(int ok, X509_STORE_CTX *ctx);
+int qt_X509Callback(int ok, X509_STORE_CTX *ctx);
 
 } // namespace QTlsPrivate
 

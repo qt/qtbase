@@ -112,8 +112,6 @@ QSslCertificate findCertificateToFetch(const QList<QSslError> &tlsErrors, bool c
 
 namespace QTlsPrivate {
 
-extern "C" {
-
 int q_X509Callback(int ok, X509_STORE_CTX *ctx)
 {
     if (!ok) {
@@ -358,8 +356,6 @@ void qt_AlertInfoCallback(const SSL *connection, int from, int value)
     else
         crypto->alertMessageReceived(value);
 }
-
-} // extern "C"
 
 #if QT_CONFIG(ocsp)
 namespace {

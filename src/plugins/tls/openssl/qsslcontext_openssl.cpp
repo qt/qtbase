@@ -29,12 +29,16 @@ Q_GLOBAL_STATIC(bool, forceSecurityLevel)
 namespace QTlsPrivate
 {
 // These callback functions are defined in qtls_openssl.cpp.
-extern "C" int q_X509Callback(int ok, X509_STORE_CTX *ctx);
-extern "C" int q_X509CallbackDirect(int ok, X509_STORE_CTX *ctx);
+int q_X509Callback(int ok, X509_STORE_CTX *ctx);
+int q_X509CallbackDirect(int ok, X509_STORE_CTX *ctx);
 
 #if QT_CONFIG(ocsp)
-extern "C" int qt_OCSP_status_server_callback(SSL *ssl, void *);
+int qt_OCSP_status_server_callback(SSL *ssl, void *);
 #endif // ocsp
+
+#ifdef TLS1_3_VERSION
+int q_ssl_sess_set_new_cb(SSL *context, SSL_SESSION *session);
+#endif // TLS1_3_VERSION
 
 } // namespace QTlsPrivate
 
@@ -42,17 +46,11 @@ extern "C" int qt_OCSP_status_server_callback(SSL *ssl, void *);
 // defined in qdtls_openssl.cpp:
 namespace dtlscallbacks
 {
-extern "C" int q_X509DtlsCallback(int ok, X509_STORE_CTX *ctx);
-extern "C" int q_generate_cookie_callback(SSL *ssl, unsigned char *dst,
-                                          unsigned *cookieLength);
-extern "C" int q_verify_cookie_callback(SSL *ssl, const unsigned char *cookie,
-                                        unsigned cookieLength);
-}
+int q_X509DtlsCallback(int ok, X509_STORE_CTX *ctx);
+int q_generate_cookie_callback(SSL *ssl, unsigned char *dst, unsigned *cookieLength);
+int q_verify_cookie_callback(SSL *ssl, const unsigned char *cookie, unsigned cookieLength);
+} // namespace dtlscallbacks
 #endif // dtls
-
-#ifdef TLS1_3_VERSION
-extern "C" int q_ssl_sess_set_new_cb(SSL *context, SSL_SESSION *session);
-#endif // TLS1_3_VERSION
 
 static inline QString msgErrorSettingBackendConfig(const QString &why)
 {
@@ -667,7 +665,7 @@ QT_WARNING_POP
 #ifdef TLS1_3_VERSION
     // NewSessionTicket callback:
     if (mode == QSslSocket::SslClientMode && !isDtls) {
-        q_SSL_CTX_sess_set_new_cb(sslContext->ctx, q_ssl_sess_set_new_cb);
+        q_SSL_CTX_sess_set_new_cb(sslContext->ctx, QTlsPrivate::q_ssl_sess_set_new_cb);
         q_SSL_CTX_set_session_cache_mode(sslContext->ctx, SSL_SESS_CACHE_CLIENT);
     }
 

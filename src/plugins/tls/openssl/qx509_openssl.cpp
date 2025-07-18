@@ -353,7 +353,7 @@ QVariant x509ExtensionToValue(X509_EXTENSION *ext)
 
 } // Unnamed namespace
 
-extern "C" int qt_X509Callback(int ok, X509_STORE_CTX *ctx)
+int qt_X509Callback(int ok, X509_STORE_CTX *ctx)
 {
     if (!ok) {
         // Store the error and at which depth the error was detected.
