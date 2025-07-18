@@ -44,6 +44,8 @@ public:
     inline Token token() { return symbols.at(index-1).token;}
     inline QByteArray lexem() { return symbols.at(index-1).lexem();}
     inline QByteArray unquotedLexem() { return symbols.at(index-1).unquotedLexem();}
+    inline QByteArrayView lexemView() { return symbols.at(index-1).lexemView();}
+    inline QByteArrayView unquotedLexemView() { return symbols.at(index-1).unquotedLexemView();}
     inline const Symbol &symbol() { return symbols.at(index-1);}
     inline const Symbol &symbolAt(qsizetype idx) { return symbols.at(idx); }
 
