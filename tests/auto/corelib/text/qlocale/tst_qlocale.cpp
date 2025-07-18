@@ -165,6 +165,8 @@ private slots:
 
     void lcsToCode();
     void codeToLcs();
+    void codeToLang_data();
+    void codeToLang();
 
 #if QT_CONFIG(icu) || defined(Q_OS_WIN) || defined(Q_OS_APPLE)
     void toLowerUpper_data();
@@ -5033,37 +5035,126 @@ void tst_QLocale::lcsToCode()
     QCOMPARE(QLocale::scriptToCode(QLocale::SimplifiedHanScript), QString("Hans"));
 }
 
-void tst_QLocale::codeToLcs()
-{
-    QCOMPARE(QLocale::codeToLanguage(QString()), QLocale::AnyLanguage);
-    QCOMPARE(QLocale::codeToLanguage(QString(" ")), QLocale::AnyLanguage);
-    QCOMPARE(QLocale::codeToLanguage(QString("und")), QLocale::AnyLanguage);
-    QCOMPARE(QLocale::codeToLanguage(QString("e")), QLocale::AnyLanguage);
-    QCOMPARE(QLocale::codeToLanguage(QString("en")), QLocale::English);
-    QCOMPARE(QLocale::codeToLanguage(QString("EN")), QLocale::English);
-    QCOMPARE(QLocale::codeToLanguage(QString("eng")), QLocale::English);
-    QCOMPARE(QLocale::codeToLanguage(QString("ha")), QLocale::Hausa);
-    QCOMPARE(QLocale::codeToLanguage(QString("ha"), QLocale::ISO639Alpha3), QLocale::AnyLanguage);
-    QCOMPARE(QLocale::codeToLanguage(QString("haw")), QLocale::Hawaiian);
-    QCOMPARE(QLocale::codeToLanguage(QString("haw"), QLocale::ISO639Alpha2), QLocale::AnyLanguage);
+static constexpr auto AnyLanguageCode = QLocale::LanguageCodeType::AnyLanguageCode;
 
-    QCOMPARE(QLocale::codeToLanguage(u"sq"), QLocale::Albanian);
-    QCOMPARE(QLocale::codeToLanguage(u"alb"), QLocale::Albanian);
-    QCOMPARE(QLocale::codeToLanguage(u"sqi"), QLocale::Albanian);
-    QCOMPARE(QLocale::codeToLanguage(u"sq", QLocale::ISO639Part1), QLocale::Albanian);
-    QCOMPARE(QLocale::codeToLanguage(u"sq", QLocale::ISO639Part3), QLocale::AnyLanguage);
-    QCOMPARE(QLocale::codeToLanguage(u"alb", QLocale::ISO639Part2B), QLocale::Albanian);
-    QCOMPARE(QLocale::codeToLanguage(u"alb", QLocale::ISO639Part2T | QLocale::ISO639Part3),
-             QLocale::AnyLanguage);
-    QCOMPARE(QLocale::codeToLanguage(u"sqi", QLocale::ISO639Part2T), QLocale::Albanian);
-    QCOMPARE(QLocale::codeToLanguage(u"sqi", QLocale::ISO639Part3), QLocale::Albanian);
-    QCOMPARE(QLocale::codeToLanguage(u"sqi", QLocale::ISO639Part1 | QLocale::ISO639Part2B),
-             QLocale::AnyLanguage);
+void tst_QLocale::codeToLang_data()
+{
+    QTest::addColumn<QStringView>("input");
+    QTest::addColumn<QLocale::LanguageCodeTypes>("options");
+    QTest::addColumn<QLocale::Language>("expected");
+
+    auto row = [](const char *tag, QStringView in, QLocale::Language expected,
+                  QLocale::LanguageCodeTypes options = AnyLanguageCode)
+    {
+        QTest::addRow("%s", tag) << in << options << expected;
+    };
+    auto invalid = [](const char *tag, QStringView in,
+                      QLocale::LanguageCodeTypes options = AnyLanguageCode)
+    {
+        constexpr auto InvalidScript = QLocale::Language::AnyLanguage;
+        QTest::addRow("invalid:%s", tag) << in << options << InvalidScript;
+    };
+
+    constexpr bool QTBUG_138562 = QT_VERSION >= QT_VERSION_CHECK(6,6,0);
+    // (introduced by 3dcd6b7ec98b2edf9654bcefdb83134c4c3d2a38, to be precise)
+
+    invalid("null", nullptr);
+    invalid("empty", u"");
+    invalid("1*SP", u" ");
+    if constexpr (!QTBUG_138562) {
+    invalid("2*SP", u"  ");
+    invalid("3*SP", u"   ");
+    }
+    invalid("4*SP", u"    ");
+    invalid("und", u"und"); // does not exist
+    invalid("e", u"e");     // too short
+    row("en", u"en", QLocale::English);
+    row("eN", u"eN", QLocale::English);
+    row("EN", u"EN", QLocale::English);
+    row("En", u"En", QLocale::English);
+    row("eng", u"eng", QLocale::English);
+    row("Eng", u"Eng", QLocale::English);
+    row("eNg", u"eNg", QLocale::English);
+    row("enG", u"enG", QLocale::English);
+    row("ha", u"ha", QLocale::Hausa);
+    invalid("ha/alpha3", u"ha", QLocale::ISO639Alpha3);
+    row("haw", u"haw", QLocale::Hawaiian);
+    invalid("haw/alpha2", u"haw", QLocale::ISO639Alpha2);
+
+    row("sq", u"sq", QLocale::Albanian);
+    row("alb", u"alb", QLocale::Albanian);
+    row("sqi", u"sqi", QLocale::Albanian);
+    row("sq/part1", u"sq", QLocale::Albanian, QLocale::ISO639Part1);
+    invalid("sq/part3", u"sq", QLocale::ISO639Part3);
+    row("alb/part2b", u"alb", QLocale::Albanian, QLocale::ISO639Part2B);
+    invalid("alb/part2t/part3", u"alb", QLocale::ISO639Part2T | QLocale::ISO639Part3);
+    row("sqi/part2t", u"sqi", QLocale::Albanian, QLocale::ISO639Part2T);
+    row("sqi/part3", u"sqi", QLocale::Albanian, QLocale::ISO639Part3);
+    invalid("sqi/part1/part2b", u"sqi", QLocale::ISO639Part1 | QLocale::ISO639Part2B);
 
     // Legacy code
-    QCOMPARE(QLocale::codeToLanguage(u"no"), QLocale::NorwegianBokmal);
-    QCOMPARE(QLocale::codeToLanguage(u"no", QLocale::ISO639Part1), QLocale::AnyLanguage);
+    row("no", u"no", QLocale::NorwegianBokmal);
+    invalid("no (part 1)", u"no", QLocale::ISO639Part1);
 
+    invalid("aaaa", u"aaaa"); // too long
+    invalid("2*NUL", QStringView(u"\0\0", 2));
+    invalid("3*NUL", QStringView(u"\0\0\0", 3));
+
+    // Codes with invalid characters:
+
+    invalid("1", u"1"); // numeric
+    if constexpr (!QTBUG_138562) {
+    invalid("11", u"11");
+    invalid("111", u"111");
+    }
+    invalid("1111", u"1111");
+    if constexpr (!QTBUG_138562) {
+    invalid("a1", u"a1");
+    invalid("aa1", u"aa1");
+    }
+    invalid("aaa1", u"aaa1");
+
+    invalid("1*AUML", u"ä"); // non-ASCII
+    if constexpr (!QTBUG_138562) {
+    invalid("2*AUML", u"ää");
+    invalid("3*AUML", u"äää");
+    }
+    invalid("4*AUML", u"ääää");
+    if constexpr (!QTBUG_138562) {
+    invalid("1*a+AUML", u"aä");
+    invalid("2*a+AUML", u"aaä");
+    }
+    invalid("3*a+AUML", u"aaaä");
+
+    invalid("ar_1", u"١"); // Arabic 1...1234 (non-L1)
+    if constexpr (!QTBUG_138562) {
+    invalid("ar_12", u"١٢");
+    invalid("ar_123", u"١٢٣");
+    }
+    invalid("ar_1234", u"١٢٣٤");
+    if constexpr (!QTBUG_138562) {
+    invalid("ar_a1", u"a١"); // a...aaa + Arabic 1
+    invalid("ar_aa1", u"aa١");
+    }
+    invalid("ar_aaa1", u"aaa١");
+
+    if constexpr (!QTBUG_138562) {
+    invalid("hier-A042", u"𓀰"); // EGYPTIAN HIEROGLYPH A042 U13030 (non-BMP)
+    invalid("a+hier-A042", u"a𓀰");
+    }
+}
+
+void tst_QLocale::codeToLang()
+{
+    QFETCH(const QStringView, input);
+    QFETCH(const QLocale::LanguageCodeTypes, options);
+    QFETCH(const QLocale::Language, expected);
+
+    QCOMPARE(QLocale::codeToLanguage(input, options), expected);
+}
+
+void tst_QLocale::codeToLcs()
+{
     QCOMPARE(QLocale::codeToTerritory(QString()), QLocale::AnyTerritory);
     QCOMPARE(QLocale::codeToTerritory(QString("ZZ")), QLocale::AnyTerritory);
     QCOMPARE(QLocale::codeToTerritory(QString("US")), QLocale::UnitedStates);
