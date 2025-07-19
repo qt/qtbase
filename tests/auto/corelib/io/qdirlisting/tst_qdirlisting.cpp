@@ -730,10 +730,6 @@ void tst_QDirListing::dotNameFilters()
         QStringList entries;
         for (const auto &dirEntry : QDirListing(dirPath, nameFilters, flags))
             entries.append(dirEntry.fileName());
-        QEXPECT_FAIL("dirLister-IncludeDotAndDotDot",
-                     "QDirListing ignores name filters for '.' and '..' when IncludeDotAndDotDot "
-                     "is set",
-                     Continue);
         entries.sort();
         QCOMPARE_EQ(entries, expected);
     } else {
