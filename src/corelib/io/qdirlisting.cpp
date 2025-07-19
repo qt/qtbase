@@ -499,14 +499,14 @@ bool QDirListingPrivate::matchesFilters(QDirEntryInfo &entryInfo) const
     if (fileName.isEmpty())
         return false;
 
-    if (isDotOrDotDot(fileName)) // All done, other checks below don't matter in this case
-        return iteratorFlags.testAnyFlags(F::IncludeDotAndDotDot);
-
     // name filter
 #if QT_CONFIG(regularexpression)
     if (!regexMatchesName(fileName))
         return false;
 #endif // QT_CONFIG(regularexpression)
+
+    if (isDotOrDotDot(fileName))
+        return iteratorFlags.testFlags(F::IncludeDotAndDotDot);
 
     if (!iteratorFlags.testAnyFlag(F::IncludeHidden) && entryInfo.isHidden())
         return false;
