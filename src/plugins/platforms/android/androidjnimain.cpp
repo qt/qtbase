@@ -889,6 +889,6 @@ Q_DECL_EXPORT jint JNICALL JNI_OnLoad(JavaVM */*vm*/, void */*reserved*/)
         return JNI_ERR;
     }
 
-    __android_log_print(ANDROID_LOG_INFO, "Qt", "qt started");
+    __android_log_print(ANDROID_LOG_INFO, "Qt", "Qt platform plugin started");
     return JNI_VERSION_1_6;
 }
