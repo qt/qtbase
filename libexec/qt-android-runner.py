@@ -103,7 +103,10 @@ def get_package_name(build_path):
             with open(gradle_file) as f:
                 for line in f:
                     if line.strip().startswith("namespace"):
-                        return line.split('=')[1].strip().strip('"')
+                        potentialPackageName = line.split('=')[1].strip().strip('"')
+                        if (potentialPackageName == "androidPackageName"):
+                            break;
+                        return potentialPackageName
 
         properties_file = os.path.join(args.build_path, "gradle.properties")
         if os.path.isfile(properties_file):
