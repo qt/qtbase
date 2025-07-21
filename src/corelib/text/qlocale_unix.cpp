@@ -24,7 +24,7 @@ struct QSystemLocaleData
          ,lc_monetary(QLocale::C)
          ,lc_messages(QLocale::C)
     {
-        readEnvironment();
+        initFromEnvironmentUnprotected();
     }
 
     void readEnvironment();
@@ -39,12 +39,19 @@ struct QSystemLocaleData
     QByteArray lc_measurement_var;
     QByteArray lc_collate_var;
     QStringList uiLanguages;
+
+private:
+    void initFromEnvironmentUnprotected();
 };
 
 void QSystemLocaleData::readEnvironment()
 {
     QWriteLocker locker(&lock);
+    initFromEnvironmentUnprotected();
+}
 
+void QSystemLocaleData::initFromEnvironmentUnprotected()
+{
     // See https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap08.html#tag_08_02
     // for the semantics of each of these:
     QByteArray all = qgetenv("LC_ALL");
