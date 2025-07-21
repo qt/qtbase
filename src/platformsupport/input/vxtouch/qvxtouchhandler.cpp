@@ -276,7 +276,7 @@ QVxTouchScreenHandler::QVxTouchScreenHandler(const QString &device, const QStrin
         has_x_range = true;
     }
 
-    if (!rangeXOverride && ioctl(m_fd, EV_DEV_IO_GET_AXIS_VAL, (char *)&axisVal[1]) != ERROR) {
+    if (!rangeYOverride && ioctl(m_fd, EV_DEV_IO_GET_AXIS_VAL, (char *)&axisVal[1]) != ERROR) {
         qCDebug(qLcVxTouch, "vxtouch: %s: min Y: %d max Y: %d", qPrintable(device),
                 axisVal[1].minVal, axisVal[1].maxVal);
         d->hw_range_y_min = axisVal[1].minVal;
