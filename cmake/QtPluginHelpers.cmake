@@ -613,7 +613,11 @@ function(qt_internal_add_darwin_permission_plugin permission)
     set_property(TARGET ${plugin_target} APPEND PROPERTY
         EXPORT_PROPERTIES _qt_darwin_permissison_separate_request
     )
-    set(permission_request_symbol "_QDarwin${permission}PermissionRequest")
+    if (QT_NAMESPACE)
+        set(permission_request_symbol "_QDarwin${permission}PermissionRequest_${QT_NAMESPACE}")
+    else()
+        set(permission_request_symbol "_QDarwin${permission}PermissionRequest")
+    endif()
     set(permission_request_flag "-Wl,-u,${permission_request_symbol}")
     set(has_usage_description_property "_qt_has_${plugin_target}_usage_description")
     set(has_usage_description_genex "$<BOOL:$<TARGET_PROPERTY:${has_usage_description_property}>>")

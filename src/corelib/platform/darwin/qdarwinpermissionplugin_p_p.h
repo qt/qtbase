@@ -61,7 +61,9 @@ QT_END_NAMESPACE
 
 // Request
 #if defined(BUILDING_PERMISSION_REQUEST)
-extern "C" void PERMISSION_PLUGIN_NAME(Request)() {}
+// dummy symbol to be resolved by the linker to force loading of static library
+// (compare -Wl,-u)
+extern "C" void QT_MANGLE_NAMESPACE(PERMISSION_PLUGIN_NAME(Request))() { }
 #endif
 
 // -------------------------------------------------------
