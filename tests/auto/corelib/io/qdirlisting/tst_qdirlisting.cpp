@@ -82,6 +82,8 @@ private slots:
     void longPath();
     void dirorder();
     void relativePaths();
+    void dotNameFilters_data();
+    void dotNameFilters();
 #if defined(Q_OS_WIN)
     void uncPaths_data();
     void uncPaths();
@@ -665,6 +667,81 @@ void tst_QDirListing::relativePaths()
 {
     for (const auto &dirEntry : QDirListing(u"*"_s, ItFlag::Recursive))
         QCOMPARE(dirEntry.filePath(), QDir::cleanPath(dirEntry.filePath()));
+}
+
+void tst_QDirListing::dotNameFilters_data()
+{
+    QTest::addColumn<QStringList>("nameFilters");
+    QTest::addColumn<QDirListing::IteratorFlags>("flags");
+    QTest::addColumn<QDir::Filters>("dirFilters");
+    QTest::addColumn<QStringList>("expected");
+
+    using F = QDirListing::IteratorFlag;
+
+    QTest::newRow("dirLister-default-flags")
+        << QStringList{u"."_s}
+        << QDirListing::IteratorFlags{}
+        << QDir::Filters(QDir::NoFilter)
+        << QStringList{};
+
+    QTest::newRow("dirLister-IncludeDotAndDotDot")
+        << QStringList{u"."_s}
+        << QDirListing::IteratorFlags(F::IncludeDotAndDotDot)
+        << QDir::Filters(QDir::NoFilter)
+        << QStringList{u"."_s};
+
+    QTest::newRow("dirLister-IncludeDotAndDotDot-glob-everything")
+        << QStringList{u".*"_s}
+        << QDirListing::IteratorFlags(F::IncludeDotAndDotDot)
+        << QDir::Filters(QDir::NoFilter)
+        << QStringList{u"."_s, u".."_s};
+
+    // Test legacy filters code path
+    QTest::newRow("legacy-NoDotAndDotDot")
+        << QStringList{u"."_s}
+        << QDirListing::IteratorFlags{}
+        << QDir::Filters(QDir::AllEntries | QDir::NoDotAndDotDot)
+        << QStringList{};
+
+    QTest::newRow("legacy-default-dirfilters")
+        << QStringList{u"."_s}
+        << QDirListing::IteratorFlags{}
+        << QDir::Filters(QDir::AllEntries)
+        << QStringList{u"."_s};
+
+    QTest::newRow("legacy-glob-everything")
+        << QStringList{u".*"_s}
+        << QDirListing::IteratorFlags{}
+        << QDir::Filters(QDir::AllEntries)
+        << QStringList{u"."_s, u".."_s};
+}
+
+void tst_QDirListing::dotNameFilters()
+{
+    QFETCH(QStringList, nameFilters);
+    QFETCH(QDirListing::IteratorFlags, flags);
+    QFETCH(QDir::Filters, dirFilters);
+    QFETCH(QStringList, expected);
+
+    const auto dirPath = u"empty"_s;
+    QVERIFY(QFileInfo(dirPath).isDir());
+
+    if (dirFilters == QDir::NoFilter) {
+        QStringList entries;
+        for (const auto &dirEntry : QDirListing(dirPath, nameFilters, flags))
+            entries.append(dirEntry.fileName());
+        QEXPECT_FAIL("dirLister-IncludeDotAndDotDot",
+                     "QDirListing ignores name filters for '.' and '..' when IncludeDotAndDotDot "
+                     "is set",
+                     Continue);
+        entries.sort();
+        QCOMPARE_EQ(entries, expected);
+    } else {
+        // legacy filters code path
+        QStringList entries = QDir(dirPath).entryList(nameFilters, dirFilters);
+        entries.sort();
+        QCOMPARE_EQ(entries, expected);
+    }
 }
 
 #if defined(Q_OS_WIN)
