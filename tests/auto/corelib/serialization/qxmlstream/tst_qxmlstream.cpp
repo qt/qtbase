@@ -1364,8 +1364,9 @@ struct DataAndEncoding
             return QStringView{reinterpret_cast<const char16_t *>(data.data()), data.size() / 2};
         case Raw:
             // Impossible to convert to QASV in general case
-            Q_UNREACHABLE_RETURN({});
+            break;
         }
+        Q_UNREACHABLE_RETURN({});
     }
 
     // for next_permutation
