@@ -282,29 +282,33 @@ QT_DEFINE_QPA_EVENT_HANDLER(bool, handleApplicationTermination)
         QWindowSystemInterfacePrivate::ApplicationTermination);
 }
 
-QWindowSystemInterfacePrivate::GeometryChangeEvent::GeometryChangeEvent(QWindow *window, const QRect &newGeometry)
+QWindowSystemInterfacePrivate::GeometryChangeEvent::GeometryChangeEvent(QWindow *window,
+                                                                        QRect requestedGeometry,
+                                                                        QRect newGeometry)
     : WindowSystemEvent(GeometryChange)
     , window(window)
+    , requestedGeometry(requestedGeometry)
     , newGeometry(newGeometry)
 {
-    if (const QPlatformWindow *pw = window->handle()) {
-        const auto nativeGeometry = pw->QPlatformWindow::geometry();
-        requestedGeometry = QHighDpi::fromNativeWindowGeometry(nativeGeometry, window);
-    }
 }
 
 QT_DEFINE_QPA_EVENT_HANDLER(void, handleGeometryChange, QWindow *window, const QRect &newRect)
 {
     Q_ASSERT(window);
     const auto newRectDi = QHighDpi::fromNativeWindowGeometry(newRect, window);
-    if (window->handle()) {
+    QRect requestedGeometry;
+    if (auto *handle = window->handle()) {
+        requestedGeometry = QHighDpi::fromNativeWindowGeometry(handle->QPlatformWindow::geometry(),
+                                                               window);
         // Persist the new geometry so that QWindow::geometry() can be queried in the resize event
-        window->handle()->QPlatformWindow::setGeometry(newRect);
+        handle->QPlatformWindow::setGeometry(newRect);
         // FIXME: This does not work during platform window creation, where the QWindow does not
         // have its handle set up yet. Platforms that deliver events during window creation need
         // to handle the persistence manually, e.g. by overriding geometry().
     }
-    handleWindowSystemEvent<QWindowSystemInterfacePrivate::GeometryChangeEvent, Delivery>(window, newRectDi);
+    handleWindowSystemEvent<QWindowSystemInterfacePrivate::GeometryChangeEvent, Delivery>(window,
+                                                                                          requestedGeometry,
+                                                                                          newRectDi);
 }
 
 QWindowSystemInterfacePrivate::ExposeEvent::ExposeEvent(QWindow *window, const QRegion &region)

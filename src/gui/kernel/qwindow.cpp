@@ -240,8 +240,10 @@ void QWindowPrivate::init(QWindow *parent, QScreen *targetScreen)
         // except on Windows, where we send resize events during WM_DPICHANGED
         // event handling. FIXME: unify DPI change handling across all platforms.
 #ifndef Q_OS_WIN
-        if (q->handle()) {
-            QWindowSystemInterfacePrivate::GeometryChangeEvent gce(q, QHighDpi::fromNativePixels(q->handle()->geometry(), q));
+        if (const auto *handle = q->handle()) {
+            QWindowSystemInterfacePrivate::GeometryChangeEvent gce(q,
+                        QHighDpi::fromNativeWindowGeometry(handle->QPlatformWindow::geometry(), q),
+                        QHighDpi::fromNativePixels(handle->geometry(), q));
             QGuiApplicationPrivate::processGeometryChangeEvent(&gce);
         }
 #else
