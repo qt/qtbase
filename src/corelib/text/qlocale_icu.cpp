@@ -12,10 +12,12 @@
 
 QT_BEGIN_NAMESPACE
 
-typedef int32_t (*Ptr_u_strToCase)(UChar *dest, int32_t destCapacity, const UChar *src, int32_t srcLength, const char *locale, UErrorCode *pErrorCode);
+namespace QtIcuPrivate {
 
-// caseFunc can either be u_strToUpper or u_strToLower
-static bool qt_u_strToCase(const QString &str, QString *out, const char *localeID, Ptr_u_strToCase caseFunc)
+enum class CaseConversion : bool { Upper, Lower };
+
+static bool qt_u_strToCase(const QString &str, QString *out, const char *localeID,
+                           CaseConversion conv)
 {
     Q_ASSERT(out);
 
@@ -24,6 +26,18 @@ static bool qt_u_strToCase(const QString &str, QString *out, const char *localeI
     QString result(size, Qt::Uninitialized);
 
     UErrorCode status = U_ZERO_ERROR;
+
+    const auto caseFunc = [conv] (auto&&...args) {
+            // try to be a completely transparent wrapper:
+            using R [[maybe_unused]] = decltype(u_strToUpper(std::forward<decltype(args)>(args)...));
+            switch (conv) {
+            case CaseConversion::Upper:
+                return u_strToUpper(std::forward<decltype(args)>(args)...);
+            case CaseConversion::Lower:
+                return u_strToLower(std::forward<decltype(args)>(args)...);
+            };
+            Q_UNREACHABLE_RETURN(R{0});
+        };
 
     size = caseFunc(reinterpret_cast<UChar *>(result.data()), result.size(),
             reinterpret_cast<const UChar *>(str.constData()), str.size(),
@@ -55,19 +69,23 @@ static bool qt_u_strToCase(const QString &str, QString *out, const char *localeI
     return true;
 }
 
+} // namespace QtIcuPrivate
+
 QString QLocalePrivate::toUpper(const QString &str, bool *ok) const
 {
     Q_ASSERT(ok);
+    using namespace QtIcuPrivate;
     QString out;
-    *ok = qt_u_strToCase(str, &out, bcp47Name('_'), u_strToUpper);
+    *ok = qt_u_strToCase(str, &out, bcp47Name('_'), CaseConversion::Upper);
     return out;
 }
 
 QString QLocalePrivate::toLower(const QString &str, bool *ok) const
 {
     Q_ASSERT(ok);
+    using namespace QtIcuPrivate;
     QString out;
-    *ok = qt_u_strToCase(str, &out, bcp47Name('_'), u_strToLower);
+    *ok = qt_u_strToCase(str, &out, bcp47Name('_'), CaseConversion::Lower);
     return out;
 }
 
