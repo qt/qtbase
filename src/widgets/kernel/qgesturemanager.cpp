@@ -116,6 +116,14 @@ void QGestureManager::unregisterGestureRecognizer(Qt::GestureType type)
             }
         }
     }
+
+    for (QGestureRecognizer *recognizer : std::as_const(list)) {
+        const bool isObsolete = m_obsoleteGestures.contains(recognizer);
+        const bool isDeleted = m_deletedRecognizers.values().contains(recognizer);
+
+        if (!isObsolete && !isDeleted)
+            delete recognizer;
+    }
 }
 
 void QGestureManager::cleanupCachedGestures(QObject *target, Qt::GestureType type)
