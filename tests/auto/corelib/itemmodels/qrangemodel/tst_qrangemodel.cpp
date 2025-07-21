@@ -612,6 +612,13 @@ void tst_QRangeModel::defaultRoleNames()
     }();
 
     []{
+        using Tree = QList<MultiRoleGadget>;
+        struct EmptyTreeProtocol
+        {
+            const MultiRoleGadget *parentRow(const MultiRoleGadget &) const { return nullptr; }
+            const Tree &childRows(const MultiRoleGadget &) const { return empty; }
+            Tree empty;
+        };
         const QHash<int, QByteArray> expectedRoleNames = {
             {Qt::DisplayRole, "display"},
             {Qt::DecorationRole, "decoration"},
@@ -621,6 +628,8 @@ void tst_QRangeModel::defaultRoleNames()
         QCOMPARE(QRangeModel(QList<QList<MultiRoleGadget>>{}).roleNames(),
                  expectedRoleNames);
         QCOMPARE(QRangeModel(std::vector<std::array<MultiRoleGadget, 5>>{}).roleNames(),
+                 expectedRoleNames);
+        QCOMPARE(QRangeModel(Tree{}, EmptyTreeProtocol{}).roleNames(),
                  expectedRoleNames);
     }();
 
