@@ -12,6 +12,8 @@
 #include <tuple>
 #include <vector>
 
+using namespace Qt::StringLiterals;
+
 #if defined(__cpp_lib_ranges)
 #include <ranges>
 #endif
@@ -356,6 +358,11 @@ struct Data {
         {"red", Qt::red},
         {"green", Qt::green},
         {"blue", Qt::blue},
+    };
+    std::vector<std::shared_ptr<MultiRoleGadget>> listOfSharedMultiRoleGadgets = {
+        asSPtr(MultiRoleGadget{u"red"_s, Qt::red}),
+        asSPtr(MultiRoleGadget{u"green"_s, Qt::green}),
+        asSPtr(MultiRoleGadget{u"blue"_s, Qt::blue}),
     };
     std::vector<Row> vectorOfStructs = {
         {{"red", Qt::red, "0xff0000"}, 1, "one"},
