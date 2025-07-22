@@ -23,7 +23,7 @@
 
 QT_BEGIN_NAMESPACE
 
-// Storage for alpha codes, with length of up to 4, supporting efficient comparison.
+// Storage for alpha codes, with length of up to 3, supporting efficient comparison.
 struct AlphaCode
 {
     constexpr AlphaCode(char c1 = 0, char c2 = 0, char c3 = 0)
