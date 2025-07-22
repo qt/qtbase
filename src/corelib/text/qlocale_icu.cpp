@@ -51,7 +51,7 @@ static bool qt_u_strToCase(const QString &str, QString *out, const char *localeI
             return false;
     }
 
-    *out = result;
+    *out = std::move(result);
     return true;
 }
 
