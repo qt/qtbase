@@ -76,10 +76,6 @@ void QSystemLocaleData::readEnvironment()
 
 Q_GLOBAL_STATIC(QSystemLocaleData, qSystemLocaleData)
 
-#endif
-
-#ifndef QT_NO_SYSTEMLOCALE
-
 static bool contradicts(QStringView maybe, const QString &known)
 {
     if (maybe.isEmpty())
