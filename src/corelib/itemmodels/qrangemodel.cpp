@@ -235,19 +235,19 @@ QRangeModel::QRangeModel(QRangeModelImplBase *impl, QObject *parent)
     \snippet qrangemodel/main.cpp color_gadget_table
 
     When used in a list, these types are however by default represented as
-    multi-column rows, with each property represented as a separate column.
-    There are two ways to force a gadget to be represented as a multi-role item
-    in a list. You can either declare the gadget as a multi-role type by
-    specializing QRoleModel::RowOptions, and give it a
-    \c{static constexpr auto rowCategory} member variable set to MultiRoleItem.
+    multi-column rows, with each property represented as a separate column. To
+    force a gadget to be represented as a multi-role item in a list, declare
+    the gadget as a multi-role type by specializing QRoleModel::RowOptions,
+    with a \c{static constexpr auto rowCategory} member variable set to
+    MultiRoleItem.
 
     \snippet qrangemodel/main.cpp color_gadget_decl
     \dots
     \snippet qrangemodel/main.cpp color_gadget_end
     \snippet qrangemodel/main.cpp color_gadget_multi_role_gadget
 
-    Or, if you need to use the same type in different models, you can use the
-    SingleColumn wrapper:
+    You can also wrap such types into a single-element tuple, turning the list
+    into a table with a single column:
 
     \snippet qrangemodel/main.cpp color_gadget_single_column
 
@@ -276,20 +276,21 @@ QRangeModel::QRangeModel(QRangeModelImplBase *impl, QObject *parent)
     \snippet qrangemodel/main.cpp vector_of_objects_1
     \snippet qrangemodel/main.cpp vector_of_objects_2
 
-    As with values, the type of the row defines whether the range is represented
-    as a list, table, or tree. Rows that are QObjects will be represented as
-    multi-column rows, but can be wrapped into a QRangeModel::SingleColumn to map
-    the properties to the named roles:
+    As with values, the type of the row defines whether the range is
+    represented as a list, table, or tree. Rows that are QObjects will present
+    each property as a column, unless the QRangeModel::RowOptions template is
+    specialized to declare the type as a multi-role item.
 
     \snippet qrangemodel/main.cpp vector_of_multirole_objects_0
-    \dots
     \snippet qrangemodel/main.cpp vector_of_multirole_objects_1
+    \dots
+    \snippet qrangemodel/main.cpp vector_of_multirole_objects_2
 
-    \note If the range holds pointers, then we have to construct QRangeModel
-    from a pointer or reference wrapper of the range. Otherwise the ownership
-    of the data becomes ambiguous, and a copy of the range would still be
-    operating on the same actual row data, resulting in unexpected side
-    effects.
+    \note If the range holds raw pointers, then you have to construct
+    QRangeModel from a pointer or reference wrapper of the range. Otherwise the
+    ownership of the data becomes ambiguous, and a copy of the range would
+    still be operating on the same actual row data, resulting in unexpected
+    side effects.
 
     \section1 Trees of data
 
@@ -498,48 +499,7 @@ QRangeModel::QRangeModel(QRangeModelImplBase *impl, QObject *parent)
     variable \c{static constexpr auto rowCategory} with one of the values from
     this enum.
 
-    \sa RowOptions, SingleColumn
-*/
-
-/*!
-    \typedef QRangeModel::SingleColumn
-
-    Use this type to disambiguate when the type \c{T} has both a metaobject, and
-    implements \l{the C++ tuple protocol}. The type will be represented as
-    a single column of items, and each property is used for the corresponding
-    role.
-
-    QRangeModel will by default represent types that provide a metaobject as
-    multiple columns, resulting in a table model.
-
-    \snippet qrangemodel/main.cpp color_gadget_decl
-    \snippet qrangemodel/main.cpp color_gadget_impl
-    \snippet qrangemodel/main.cpp color_gadget_end
-
-    Each property will be represented as a column of a table.
-
-    \code
-    QList<ColorEntry> colors = {
-        // ...
-    };
-    QRangeModel tableModel(colors); // columnCount() == 3
-    \endcode
-
-    When \c{T} is wrapped into QRangeModel::SingleColumn, then the model will be
-    a list, with each instance of \c{T} represented as an item with multiple
-    roles.
-
-    \code
-    QList<QRangeModel::SingleColumn<ColorEntry>> colors = {
-        // ...
-    };
-    QRangeModel listModel(colors); // columnCount() == 1
-    \endcode
-
-    This is particularly useful when using lists of gadgets or objects as a
-    model with Qt Quick.
-
-    \sa RowCategory
+    \sa RowOptions
 */
 
 /*!

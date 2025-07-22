@@ -26,9 +26,6 @@ public:
     template <typename T>
     struct RowOptions {};
 
-    template <typename T>
-    using SingleColumn = std::tuple<T>;
-
     template <typename Range,
               QRangeModelDetails::if_table_range<Range> = true>
     explicit QRangeModel(Range &&range, QObject *parent = nullptr);

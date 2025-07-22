@@ -223,36 +223,48 @@ private:
 
 void vector_of_objects()
 {
-    {
-        //! [vector_of_objects_0]
-        std::vector<std::shared_ptr<Entry>> entries = {
-        //! [vector_of_objects_0]
-            std::make_shared<Entry>(),
-        //! [vector_of_objects_1]
-        };
-        //! [vector_of_objects_1]
+    //! [vector_of_objects_0]
+    std::vector<std::shared_ptr<Entry>> entries = {
+    //! [vector_of_objects_0]
+        std::make_shared<Entry>(),
+    //! [vector_of_objects_1]
+    };
+    //! [vector_of_objects_1]
 
-        //! [vector_of_objects_2]
-        QRangeModel model(std::ref(entries));
-        QListView listView;
-        listView.setModel(&model);
-        //! [vector_of_objects_2]
-    }
-
-    {
-        //! [vector_of_multirole_objects_0]
-        std::vector<QRangeModel::SingleColumn<std::shared_ptr<Entry>>> entries = {
-        //! [vector_of_multirole_objects_0]
-            {std::make_shared<Entry>()},
-        //! [vector_of_multirole_objects_1]
-        };
-        //! [vector_of_multirole_objects_1]
-
-        //! [vector_of_multirole_objects_2]
-        QRangeModel model(std::ref(entries));
-        //! [vector_of_multirole_objects_2]
-    }
+    //! [vector_of_objects_2]
+    QRangeModel model(std::ref(entries));
+    QListView listView;
+    listView.setModel(&model);
+    //! [vector_of_objects_2]
 }
+
+} // namespace object
+
+using Entry = Object::Entry;
+//! [vector_of_multirole_objects_0]
+template <>
+struct QRangeModel::RowOptions<Entry>
+{
+    static constexpr auto rowCategory = QRangeModel::RowCategory::MultiRoleItem;
+};
+//! [vector_of_multirole_objects_0]
+
+namespace Object
+{
+
+void vector_of_multirole_objects()
+{
+    //! [vector_of_multirole_objects_1]
+    std::vector<std::shared_ptr<Entry>> entries = {
+        std::make_shared<Entry>(),
+    //! [vector_of_multirole_objects_1]
+    //! [vector_of_multirole_objects_2]
+    };
+
+    QRangeModel model(std::ref(entries));
+    //! [vector_of_multirole_objects_2]
+}
+
 } // namespace object
 
 namespace tree_protocol
@@ -538,7 +550,7 @@ void color_list_multi_role() {
 void color_list_single_column() {
     //! [color_gadget_single_column]
     const QStringList colorNames = QColor::colorNames();
-    QList<QRangeModel::SingleColumn<ColorEntry>> colors;
+    QList<std::tuple<ColorEntry>> colors;
 
     // ...
 

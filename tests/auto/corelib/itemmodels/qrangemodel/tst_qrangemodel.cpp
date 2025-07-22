@@ -533,7 +533,7 @@ void tst_QRangeModel::overrideRoleNames()
     class RoleModel : public QRangeModel
     {
     public:
-        RoleModel() : QRangeModel(QList<SingleColumn<Object *>>{
+        RoleModel() : QRangeModel(QList<std::tuple<Object *>>{
             new Object,
             new Object,
             new Object,
@@ -592,7 +592,9 @@ void tst_QRangeModel::defaultRoleNames()
             {Qt::UserRole + 1, "number"},
         };
 
-        QCOMPARE(QRangeModel(QList<QRangeModel::SingleColumn<Object *>>{}).roleNames(),
+        QCOMPARE_NE(QRangeModel(QList<Object *>{}).roleNames(),
+                 expectedRoleNames);
+        QCOMPARE(QRangeModel(QList<std::tuple<Object *>>{}).roleNames(),
                  expectedRoleNames);
         QCOMPARE(QRangeModel(QList<std::tuple<Object *, Object *>>{}).roleNames(),
                  expectedRoleNames);
@@ -604,7 +606,9 @@ void tst_QRangeModel::defaultRoleNames()
             {Qt::DecorationRole, "decoration"},
             {Qt::ToolTipRole, "toolTip"},
         };
-        QCOMPARE(QRangeModel(QList<QRangeModel::SingleColumn<Item>>{}).roleNames(),
+        QCOMPARE_NE(QRangeModel(QList<Item>{}).roleNames(),
+                 expectedRoleNames);
+        QCOMPARE(QRangeModel(QList<std::tuple<Item>>{}).roleNames(),
                  expectedRoleNames);
         QCOMPARE(QRangeModel(QList<std::tuple<Item, Item, Item>>{}).roleNames(),
                  expectedRoleNames);

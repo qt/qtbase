@@ -349,7 +349,7 @@ struct Data {
         {"green", Qt::green, "0x00ff00"},
         {"blue", Qt::blue, "0x0000ff"},
     };
-    std::vector<QRangeModel::SingleColumn<Item>> listOfGadgets = {
+    std::vector<std::tuple<Item>> listOfGadgets = {
         {{"red", Qt::red, "0xff0000"}},
         {{"green", Qt::green, "0x00ff00"}},
         {{"blue", Qt::blue, "0x0000ff"}},
@@ -374,7 +374,7 @@ struct Data {
         new Object, new Object, new Object
     };
 
-    std::vector<QRangeModel::SingleColumn<MetaObjectTuple *>> listOfMetaObjectTuple = {
+    std::vector<std::tuple<MetaObjectTuple *>> listOfMetaObjectTuple = {
         new MetaObjectTuple,
         new MetaObjectTuple,
         new MetaObjectTuple,
