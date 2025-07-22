@@ -348,8 +348,14 @@ QGestureRecognizer::Result QSwipeGestureRecognizer::recognize(QGesture *state,
                 result = QGestureRecognizer::Ignore;
                 break;
             case QSwipeGesturePrivate::ThreePointsReached:
-                result = (ev->touchPointStates() & QEventPoint::State::Pressed)
-                    ? QGestureRecognizer::CancelGesture : QGestureRecognizer::Ignore;
+                if (ev->touchPointStates() & QEventPoint::State::Pressed) {
+                    result = QGestureRecognizer::CancelGesture;
+                } else if (d->verticalDirection != QSwipeGesture::NoDirection ||
+                           d->horizontalDirection != QSwipeGesture::NoDirection) {
+                    result = QGestureRecognizer::TriggerGesture;
+                } else {
+                    result = QGestureRecognizer::Ignore;
+                }
                 break;
             }
         }
