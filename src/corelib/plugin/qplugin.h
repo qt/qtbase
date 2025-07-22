@@ -191,15 +191,16 @@ public:
     }
 };
 
-#define Q_IMPORT_PLUGIN(PLUGIN) \
+#define Q_IMPORT_PLUGIN(PLUGIN)                                                                            \
         extern const QT_PREPEND_NAMESPACE(QStaticPlugin) QT_MANGLE_NAMESPACE(qt_static_plugin_##PLUGIN)(); \
-        class Static##PLUGIN##PluginInstance{ \
-        public: \
-                Static##PLUGIN##PluginInstance() { \
-                    qRegisterStaticPluginFunction(QT_MANGLE_NAMESPACE(qt_static_plugin_##PLUGIN)()); \
-                } \
-        }; \
-       static Static##PLUGIN##PluginInstance static##PLUGIN##Instance;
+        namespace {                                                                                        \
+            struct Static##PLUGIN##PluginInstance {                                                        \
+                Static##PLUGIN##PluginInstance() {                                                         \
+                    qRegisterStaticPluginFunction(QT_MANGLE_NAMESPACE(qt_static_plugin_##PLUGIN)());       \
+                }                                                                                          \
+            };                                                                                             \
+            Static##PLUGIN##PluginInstance static##PLUGIN##Instance;                                       \
+        } /* namespace */
 
 #if defined(QT_PLUGIN_RESOURCE_INIT_FUNCTION)
 #  define QT_PLUGIN_RESOURCE_INIT \

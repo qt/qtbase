@@ -69,8 +69,8 @@
     with the name of the class that declares metadata for the plugin with
     Q_PLUGIN_METADATA().
 
-    Inserting this macro into your application's source code will allow
-    you to make use of a static plugin.
+    Inserting this macro into your application's source code at file scope of
+    the root namespace will allow you to make use of a static plugin.
 
     Example:
 
