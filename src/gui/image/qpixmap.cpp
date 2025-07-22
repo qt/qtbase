@@ -1205,16 +1205,23 @@ QPixmap QPixmap::transformed(const QTransform &transform,
     \table
     \header \li Format \li Description                      \li Qt's support
     \row    \li BMP    \li Windows Bitmap                   \li Read/write
-    \row    \li GIF    \li Graphic Interchange Format (optional) \li Read
-    \row    \li JPG    \li Joint Photographic Experts Group \li Read/write
+    \row    \li CUR    \li Windows Cursor                   \li Read/write
+    \row    \li GIF    \li Graphic Interchange Format       \li Read
+    \row    \li ICO    \li Windows Icon                     \li Read/write
+    \row    \li JFIF   \li JPEG File Interchange Format     \li Read/write
     \row    \li JPEG   \li Joint Photographic Experts Group \li Read/write
+    \row    \li JPG    \li Joint Photographic Experts Group \li Read/write
+    \row    \li PBM    \li Portable Bitmap                  \li Read/write
+    \row    \li PGM    \li Portable Graymap                 \li Read/write
     \row    \li PNG    \li Portable Network Graphics        \li Read/write
-    \row    \li PBM    \li Portable Bitmap                  \li Read
-    \row    \li PGM    \li Portable Graymap                 \li Read
     \row    \li PPM    \li Portable Pixmap                  \li Read/write
+    \row    \li SVG    \li Scalable Vector Graphics         \li Read
+    \row    \li SVGZ   \li Scalable Vector Graphics (Compressed) \li Read
     \row    \li XBM    \li X11 Bitmap                       \li Read/write
     \row    \li XPM    \li X11 Pixmap                       \li Read/write
     \endtable
+
+    Further formats are supported if the \l{Qt Image Formats} module is installed.
 
     \section1 Pixmap Information
 
