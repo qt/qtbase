@@ -3741,6 +3741,14 @@ void QApplicationPrivate::cleanupMultitouch_sys()
 {
 }
 
+/*! \internal
+    Check the target widgets of the active touchpoints of the given \a device,
+    and choose the widget that is closest to any of the points. This widget
+    will then get all the touchpoints, even if it would not otherwise be the
+    target for some of them.
+
+    \sa translateRawTouchEvent()
+*/
 QWidget *QApplicationPrivate::findClosestTouchPointTarget(const QPointingDevice *device, const QEventPoint &touchPoint)
 {
     const QPointF globalPos = touchPoint.globalPosition();
@@ -3754,7 +3762,10 @@ QWidget *QApplicationPrivate::findClosestTouchPointTarget(const QPointingDevice 
             qreal dx = globalPos.x() - pt.globalPosition().x();
             qreal dy = globalPos.y() - pt.globalPosition().y();
             qreal distance = dx * dx + dy * dy;
-            if (closestTouchPointId == -1 || distance < closestDistance) {
+            // closestTouchPointId is -1 at the beginning.
+            // closestTouchPointId may be 0 if
+            // a synth-mouse eventPoint was found in activePoints: that's not relevant here.
+            if (closestTouchPointId <= 0 || distance < closestDistance) {
                 closestTouchPointId = pt.id();
                 closestDistance = distance;
                 closestTarget = QMutableEventPoint::target(pt);
