@@ -12,6 +12,9 @@
 
 QT_BEGIN_NAMESPACE
 
+static_assert(std::is_same_v<UChar, char16_t>,
+              "Hmm... in C++ mode, ICU's UChar ought to be char16_t");
+
 namespace QtIcuPrivate {
 
 enum class CaseConversion : bool { Upper, Lower };
@@ -39,8 +42,8 @@ static bool qt_u_strToCase(const QString &str, QString *out, const char *localeI
             Q_UNREACHABLE_RETURN(R{0});
         };
 
-    size = caseFunc(reinterpret_cast<UChar *>(result.data()), result.size(),
-            reinterpret_cast<const UChar *>(str.constData()), str.size(),
+    size = caseFunc(result.data_ptr().data(), result.size(),
+            str.data_ptr().data(), str.size(),
             localeID, &status);
 
     if (U_FAILURE(status) && status != U_BUFFER_OVERFLOW_ERROR)
@@ -53,8 +56,8 @@ static bool qt_u_strToCase(const QString &str, QString *out, const char *localeI
         result.resize(size);
 
         status = U_ZERO_ERROR;
-        size = caseFunc(reinterpret_cast<UChar *>(result.data()), result.size(),
-            reinterpret_cast<const UChar *>(str.constData()), str.size(),
+        size = caseFunc(result.data_ptr().data(), result.size(),
+            str.data_ptr().data(), str.size(),
             localeID, &status);
 
         if (U_FAILURE(status))
