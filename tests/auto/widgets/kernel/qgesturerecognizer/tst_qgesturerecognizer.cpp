@@ -9,10 +9,13 @@
 #include <QtGui/QScreen>
 #include <QtGui/QPointingDevice>
 #include <QtCore/QList>
+#include <QtCore/QLoggingCategory>
 #include <QtCore/QString>
 #include <QtCore/QHash>
 #include <QtCore/QDebug>
 #include <memory>
+
+Q_LOGGING_CATEGORY(lcTests, "qt.widgets.tests")
 
 class tst_QGestureRecognizer : public QObject
 {
@@ -60,13 +63,29 @@ public:
     bool gestureReceived(Qt::GestureType gestureType) const
         { return m_receivedGestures.value(gestureType); }
 
-protected:
-    bool event(QEvent * event) override;
+        void clearReceivedGestures();
 
-private:
-    typedef QHash<Qt::GestureType, bool> GestureTypeHash;
-    GestureTypeHash m_receivedGestures;
+        qreal lastSwipeAngle = 0;
+        QSwipeGesture::SwipeDirection lastHorizontalDirection = QSwipeGesture::NoDirection;
+        QSwipeGesture::SwipeDirection lastVerticalDirection = QSwipeGesture::NoDirection;
+        Qt::GestureState lastSwipeState = Qt::NoGesture;
+
+    protected:
+        bool event(QEvent *event) override;
+
+    private:
+        typedef QHash<Qt::GestureType, bool> GestureTypeHash;
+        GestureTypeHash m_receivedGestures;
 };
+
+void TestWidget::clearReceivedGestures()
+{
+    m_receivedGestures.clear();
+    lastSwipeAngle = {};
+    lastHorizontalDirection = QSwipeGesture::NoDirection;
+    lastVerticalDirection = QSwipeGesture::NoDirection;
+    lastSwipeState = Qt::NoGesture;
+}
 
 TestWidget::TestWidget(const GestureTypeVector &gestureTypes)
 {
@@ -95,8 +114,22 @@ bool TestWidget::event(QEvent * event)
                     it.value() = true;
             }
         }
-    }
+        for (const QGesture *gesture : gestureEvent->activeGestures()) {
+            switch (gesture->gestureType()) {
+            case Qt::SwipeGesture: {
+                const auto *swipe = static_cast<const QSwipeGesture *>(gesture);
+                lastSwipeAngle = swipe->swipeAngle();
+                lastHorizontalDirection = swipe->horizontalDirection();
+                lastVerticalDirection = swipe->verticalDirection();
+                lastSwipeState = gesture->state();
+                break;
+            }
+            default:
+                break;
+            }
+        }
         break;
+    }
     default:
         break;
     }
@@ -241,10 +274,26 @@ enum SwipeSubTest {
 void tst_QGestureRecognizer::swipeGesture_data()
 {
     QTest::addColumn<int>("swipeSubTest");
+    QTest::addColumn<QPoint>("moveDelta");
     QTest::addColumn<bool>("gestureExpected");
-    QTest::newRow("Line") << int(SwipeLineSubTest) << true;
-    QTest::newRow("DirectionChange") << int(SwipeDirectionChangeSubTest) << false;
-    QTest::newRow("SmallDirectionChange") << int(SwipeSmallDirectionChangeSubTest) << true;
+    QTest::addColumn<int>("expectedAngle");
+    QTest::addColumn<QSwipeGesture::SwipeDirection>("expectedHorizontalDirection");
+    QTest::addColumn<QSwipeGesture::SwipeDirection>("expectedVerticalDirection");
+
+    QTest::newRow("UpRight Line") << int(SwipeLineSubTest) << QPoint(42, -25)
+                    << true << 30 << QSwipeGesture::Right << QSwipeGesture::Up;
+    QTest::newRow("DownRight Line") << int(SwipeLineSubTest) << QPoint(42, 25)
+                    << true << 329 << QSwipeGesture::Right << QSwipeGesture::Down;
+    QTest::newRow("OutRight Line") << int(SwipeLineSubTest) << QPoint(42, 0)
+                    << true << 360 << QSwipeGesture::Right << QSwipeGesture::NoDirection;
+    QTest::newRow("DownLeft Line") << int(SwipeLineSubTest) << QPoint(-42, 25)
+                    << true << 211 << QSwipeGesture::Left << QSwipeGesture::Down;
+    QTest::newRow("Up Line") << int(SwipeLineSubTest) << QPoint(0, -25)
+                    << true << 90 << QSwipeGesture::NoDirection << QSwipeGesture::Up;
+    QTest::newRow("DirectionChange") << int(SwipeDirectionChangeSubTest) << QPoint(42, 25)
+                    << false << 0 << QSwipeGesture::NoDirection << QSwipeGesture::NoDirection;
+    QTest::newRow("SmallDirectionChange") << int(SwipeSmallDirectionChangeSubTest) << QPoint(42, -25)
+                    << true << 359 << QSwipeGesture::Right << QSwipeGesture::Down;
 }
 
 void tst_QGestureRecognizer::swipeGesture()
@@ -252,7 +301,11 @@ void tst_QGestureRecognizer::swipeGesture()
     enum { swipePoints = 3 };
 
     QFETCH(int, swipeSubTest);
+    QFETCH(QPoint, moveDelta);
     QFETCH(bool, gestureExpected);
+    QFETCH(int, expectedAngle);
+    QFETCH(QSwipeGesture::SwipeDirection, expectedHorizontalDirection);
+    QFETCH(QSwipeGesture::SwipeDirection, expectedVerticalDirection);
 
     const Qt::GestureType gestureType = Qt::SwipeGesture;
     TestWidget widget(GestureTypeVector(1, gestureType));
@@ -264,20 +317,27 @@ void tst_QGestureRecognizer::swipeGesture()
     // Start a swipe sequence with 2 points (QTBUG-15768)
     const QPoint fingerDistance(m_fingerDistance, m_fingerDistance);
     QList<QPoint> points;
-    for (int i = 0; i < swipePoints - 1; ++i)
+    for (int i = 1; i < swipePoints; ++i)
         points.append(fingerDistance + i * fingerDistance);
 
     QTest::QTouchEventWidgetSequence swipeSequence = QTest::touchEvent(&widget, m_touchDevice.get());
     pressSequence(swipeSequence, points, &widget);
+
+    // Move a little: nothing happens
+    points[0] += {1, 1};
+    points[1] += {1, 1};
+    swipeSequence.move(0, points[0], &widget).move(1, points[1], &widget).commit();
+    QCoreApplication::processEvents();
+    QVERIFY(!widget.gestureReceived(gestureType));
 
     // Press point #3
     points.append(points.last() + fingerDistance);
     swipeSequence.stationary(0).stationary(1).press(points.size() - 1, points.last(), &widget);
     swipeSequence.commit();
     Q_ASSERT(points.size() == swipePoints);
+    QCOMPARE(widget.lastSwipeState, Qt::NoGesture);
 
     // Move.
-    const QPoint moveDelta(60, 20);
     switch (swipeSubTest) {
     case SwipeLineSubTest:
         linearSequence(5, moveDelta, swipeSequence, points, &widget);
@@ -294,15 +354,37 @@ void tst_QGestureRecognizer::swipeGesture()
     }
         break;
     }
+    QCOMPARE(widget.lastSwipeState, Qt::GestureUpdated);
 
-    releaseSequence(swipeSequence, points, &widget);
-
+    // release any point: the gesture ends
+    swipeSequence.release(0, points[0], &widget).commit();
     if (gestureExpected) {
         QTRY_VERIFY(widget.gestureReceived(gestureType));
+        qCDebug(lcTests) << "started @" << fingerDistance
+                         << "; ended with angle" << widget.lastSwipeAngle
+                         << "expected" << expectedAngle
+                         << "dirns" << widget.lastHorizontalDirection << widget.lastVerticalDirection;
+        QCOMPARE(qRound(widget.lastSwipeAngle), expectedAngle);
+        QEXPECT_FAIL("Up Line", "90 degrees (up) should be NoDirection on horizontal axis", Continue);
+        QCOMPARE(widget.lastHorizontalDirection, expectedHorizontalDirection);
+        QEXPECT_FAIL("OutRight Line", "0 degrees (to the right) should be NoDirection on the vertical axis", Continue);
+        QCOMPARE(widget.lastVerticalDirection, expectedVerticalDirection);
+        QCOMPARE(widget.lastSwipeState, Qt::GestureFinished);
     } else {
         QCoreApplication::processEvents();
         QVERIFY(!widget.gestureReceived(gestureType));
+        QCOMPARE(widget.lastSwipeState, Qt::GestureUpdated);
     }
+
+    // move the others a little, then release: no further swipe (it needs 3 fingers)
+    widget.clearReceivedGestures();
+    points[1] += {1, 1};
+    points[2] += {1, 1};
+    swipeSequence.move(1, points[1], &widget).move(2, points[2], &widget).commit();
+    swipeSequence.release(1, points[1], &widget).release(2, points[2], &widget).commit();
+    QCoreApplication::processEvents();
+    QVERIFY(!widget.gestureReceived(gestureType));
+    QCOMPARE(widget.lastSwipeState, Qt::NoGesture);
 }
 
 void tst_QGestureRecognizer::touchReplay()
