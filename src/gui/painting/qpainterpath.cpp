@@ -3221,6 +3221,13 @@ QPainterPath QPainterPath::trimmed(qreal fromFraction, qreal toFraction, qreal o
     if (isEmpty())
         return *this;
 
+    // We need length caching enabled for the calculations.
+    if (!isCachingEnabled()) {
+        QPainterPath copy(*this);
+        copy.setCachingEnabled(true);
+        return copy.trimmed(fromFraction, toFraction, offset);
+    }
+
     qreal f1 = qBound(qreal(0), fromFraction, qreal(1));
     qreal f2 = qBound(qreal(0), toFraction, qreal(1));
     if (f1 > f2)
@@ -3232,11 +3239,6 @@ QPainterPath QPainterPath::trimmed(qreal fromFraction, qreal toFraction, qreal o
     if (qFuzzyCompare(f1, f2))
         return res;
     res.setFillRule(fillRule());
-
-    // We need length caching enabled for the calulations.
-    QPainterPath copy(*this); // At most meta data will be copied; path element list unchanged
-    copy.setCachingEnabled(true); // noop if caching already enabled on *this
-    QPainterPathPrivate *d = copy.d_func();
 
     if (offset) {
         qreal dummy;
@@ -3255,6 +3257,7 @@ QPainterPath QPainterPath::trimmed(qreal fromFraction, qreal toFraction, qreal o
     const bool wrapping = (f1 > f2);
     //qDebug() << "ADJ:" << f1 << f2 << wrapping << "(" << of1 << of2 << ")";
 
+    QPainterPathPrivate *d = d_func();
     if (d->dirtyRunLengths)
         d->computeRunLengths();
     const qreal totalLength = d->m_runLengths.last();
