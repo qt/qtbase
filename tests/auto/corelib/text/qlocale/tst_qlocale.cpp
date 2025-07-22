@@ -5605,6 +5605,14 @@ void tst_QLocale::toLowerUpper_data()
     QTest::newRow("4096 letters default locale") << QLocale() << zLowerString << zUpperString;
     QTest::newRow("4096 letters Turkish") << turkishLocale << zLowerString << zUpperString;
     QTest::newRow("4096 letters German") << germanLocale << zLowerString << zUpperString;
+
+    const QString iLowerString = QString(4096, u'i');
+    const QString iUpperString = QString(4096, u'İ');
+    QTest::newRow("4096 Turkiye dotted i") << turkishLocale << iLowerString << iUpperString;
+
+    const QString ILowerString = QString(4096, u'ı');
+    const QString IUpperString = QString(4096, u'I');
+    QTest::newRow("4096 Turkiye undotted I") << turkishLocale << ILowerString << IUpperString;
 }
 
 void tst_QLocale::toLowerUpper()
