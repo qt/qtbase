@@ -78,6 +78,8 @@ private slots:
     void longPath();
     void dirorder();
     void relativePaths();
+    void dotNameFilters_data();
+    void dotNameFilters();
 #if defined(Q_OS_WIN)
     void uncPaths_data();
     void uncPaths();
@@ -580,6 +582,45 @@ void tst_QDirIterator::relativePaths()
     while(iterator.hasNext()) {
         QCOMPARE(iterator.filePath(), QDir::cleanPath(iterator.filePath()));
     }
+}
+
+void tst_QDirIterator::dotNameFilters_data()
+{
+    QTest::addColumn<QStringList>("nameFilters");
+    QTest::addColumn<QDir::Filters>("dirFilters");
+    QTest::addColumn<QStringList>("expected");
+
+    QTest::newRow("NoDotAndDotDot")
+        << QStringList{u"."_s}
+        << QDir::Filters(QDir::AllEntries | QDir::NoDotAndDotDot)
+        << QStringList{};
+
+    QTest::newRow("default-dirfilters")
+        << QStringList{u"."_s}
+        << QDir::Filters(QDir::AllEntries)
+        << QStringList{u"."_s};
+
+    QTest::newRow("glob-everything")
+        << QStringList{u".*"_s}
+        << QDir::Filters(QDir::AllEntries)
+        << QStringList{u"."_s, u".."_s};
+}
+
+void tst_QDirIterator::dotNameFilters()
+{
+    QFETCH(QStringList, nameFilters);
+    QFETCH(QDir::Filters, dirFilters);
+    QFETCH(QStringList, expected);
+
+    const auto dirPath = u"empty"_s;
+    QVERIFY(QFileInfo(dirPath).isDir());
+
+    QDirIterator dit(dirPath, nameFilters, dirFilters);
+    QStringList entries;
+    while (dit.hasNext())
+        entries.append(dit.nextFileInfo().fileName());
+    entries.sort();
+    QCOMPARE_EQ(entries, expected);
 }
 
 #if defined(Q_OS_WIN)
