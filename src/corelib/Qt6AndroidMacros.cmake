@@ -1758,12 +1758,9 @@ function(_qt_internal_android_create_runner_wrapper target)
     set(qt_core_configure_file_contents "${script_content}")
     configure_file("${template_file}" "${wrapper_path}")
 
-    file(CHMOD "${wrapper_path}"
-        PERMISSIONS
-            OWNER_READ OWNER_EXECUTE
-            GROUP_READ GROUP_EXECUTE
-            WORLD_READ WORLD_EXECUTE
-    )
+    if(CMAKE_HOST_UNIX)
+        execute_process(COMMAND chmod +x ${wrapper_path})
+    endif()
 endfunction()
 
 # Get the android runner script path and its arguments for a target
