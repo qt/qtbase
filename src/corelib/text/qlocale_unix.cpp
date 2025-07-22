@@ -15,6 +15,7 @@ QT_BEGIN_NAMESPACE
 using namespace Qt::StringLiterals;
 
 #ifndef QT_NO_SYSTEMLOCALE
+namespace {
 struct QSystemLocaleData
 {
     QSystemLocaleData()
@@ -75,6 +76,8 @@ void QSystemLocaleData::readEnvironment()
 }
 
 Q_GLOBAL_STATIC(QSystemLocaleData, qSystemLocaleData)
+
+} // unnamed namespace
 
 static bool contradicts(QStringView maybe, const QString &known)
 {
