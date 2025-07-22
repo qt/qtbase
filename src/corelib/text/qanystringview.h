@@ -32,6 +32,10 @@ template <> struct is_compatible_utf32_char<wchar_t> : std::bool_constant<sizeof
 
 } // namespace QtPrivate
 
+#if QT_VERSION >= QT_VERSION_CHECK(7, 0, 0) || defined(QT_BOOTSTRAPPED)
+# define QT_ANYSTRINGVIEW_TAG_IN_LOWER_BITS
+#endif
+
 class QAnyStringView
 {
 public:
@@ -39,7 +43,7 @@ public:
     typedef qsizetype size_type;
 private:
     static constexpr size_t SizeMask = (std::numeric_limits<size_t>::max)() / 4;
-#if QT_VERSION >= QT_VERSION_CHECK(7, 0, 0) || defined(QT_BOOTSTRAPPED)
+#ifdef QT_ANYSTRINGVIEW_TAG_IN_LOWER_BITS
     static constexpr int SizeShift = 2;
     static constexpr size_t Latin1Flag = 1;
 #else
