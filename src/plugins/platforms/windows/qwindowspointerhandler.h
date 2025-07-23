@@ -47,6 +47,7 @@ private:
     bool translateMouseWheelEvent(QWindow *window, QWindow *currentWindowUnderPointer, MSG msg, QPoint globalPos, Qt::KeyboardModifiers keyModifiers);
     void handleCaptureRelease(QWindow *window, QWindow *currentWindowUnderPointer, HWND hwnd, QEvent::Type eventType, Qt::MouseButtons mouseButtons);
     void handleEnterLeave(QWindow *window, QWindow *currentWindowUnderPointer, QPoint globalPos);
+    void handleWindowActivation(QWindow *window, QEvent::Type eventType);
 
 #if QT_CONFIG(tabletevent)
     QPointingDevicePtr findTabletDevice(QPointingDevice::PointerType pointerType) const;
