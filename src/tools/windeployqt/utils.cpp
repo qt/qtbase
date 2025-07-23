@@ -137,7 +137,7 @@ static inline void appendToCommandLine(const QString &argument, QString *command
 bool runProcess(const QString &binary, const QStringList &args,
                 const QString &workingDirectory,
                 unsigned long *exitCode, QByteArray *stdOut, QByteArray *stdErr,
-                QString *errorMessage)
+                QString *errorMessage, int timeout)
 {
     if (exitCode)
         *exitCode = 0;
@@ -157,7 +157,7 @@ bool runProcess(const QString &binary, const QStringList &args,
     }
 
     process.start();
-    if (!process.waitForStarted() || !process.waitForFinished()) {
+    if (!process.waitForStarted() || !process.waitForFinished(timeout)) {
         if (errorMessage)
             *errorMessage = process.errorString();
         return false;

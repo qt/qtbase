@@ -194,6 +194,7 @@ struct Options {
     unsigned updateFileFlags = 0;
     QStringList qmlDirectories; // Project's QML files.
     QStringList qmlImportPaths; // Custom QML module locations.
+    int qmlImportTimeout = 30000;
     QString directory;
     QString qtpathsBinary;
     QString translationsDirectory; // Translations target directory
@@ -444,6 +445,12 @@ static inline int parseArguments(const QStringList &arguments, QCommandLineParse
                                        QStringLiteral("directory"));
     parser->addOption(qmlImportOption);
 
+    QCommandLineOption qmlImportTimeoutOption(QStringLiteral("qmlimporttimeout"),
+                                       QStringLiteral("Set timeout (in ms for) execution of "
+                                                             "qmlimportscanner."),
+                                       QStringLiteral("timeout"));
+    parser->addOption(qmlImportTimeoutOption);
+
     QCommandLineOption noQuickImportOption(QStringLiteral("no-quick-import"),
                                            QStringLiteral("Skip deployment of Qt Quick imports."));
     parser->addOption(noQuickImportOption);
@@ -692,6 +699,18 @@ static inline int parseArguments(const QStringList &arguments, QCommandLineParse
 
     if (parser->isSet(qmlImportOption))
         options->qmlImportPaths = parser->values(qmlImportOption);
+
+    if (parser->isSet(qmlImportTimeoutOption)) {
+        const QString timeoutString = parser->value(qmlImportTimeoutOption);
+        bool ok;
+        int timeout = timeoutString.toInt(&ok);
+        if (!ok) {
+            *errorMessage = u'"' + timeoutString + QStringLiteral("\" is not an acceptable timeout "
+                                                                  "value.");
+            return CommandLineParseError;
+        }
+        options->qmlImportTimeout = timeout;
+    }
 
     const QString &file = posArgs.front();
     const QFileInfo fi(QDir::cleanPath(file));
@@ -1624,7 +1643,8 @@ static DeployResult deploy(const Options &options, const QMap<QString, QString> 
             const QmlImportScanResult scanResult =
                 runQmlImportScanner(qmlDirectory, qmlImportPaths,
                                     result.directlyUsedQtLibraries.test(QtWidgetsModuleId),
-                                    options.platform, debugMatchMode, errorMessage);
+                                    options.platform, debugMatchMode, errorMessage,
+                                    options.qmlImportTimeout);
             if (!scanResult.ok)
                 return result;
             qmlScanResult.append(scanResult);

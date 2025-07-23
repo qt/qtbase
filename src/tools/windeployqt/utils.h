@@ -164,7 +164,7 @@ bool updateFile(const QString &sourceFileName, const QStringList &nameFilters,
 bool runProcess(const QString &binary, const QStringList &args,
                 const QString &workingDirectory = QString(),
                 unsigned long *exitCode = 0, QByteArray *stdOut = 0, QByteArray *stdErr = 0,
-                QString *errorMessage = 0);
+                QString *errorMessage = 0, int timeout = 30000);
 
 bool readPeExecutable(const QString &peExecutableFileName, QString *errorMessage,
                       QStringList *dependentLibraries = 0, unsigned *wordSize = 0,

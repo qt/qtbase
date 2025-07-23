@@ -33,7 +33,7 @@ bool operator==(const QmlImportScanResult::Module &m1, const QmlImportScanResult
 
 QmlImportScanResult runQmlImportScanner(const QString &directory, const QStringList &qmlImportPaths,
                                         bool usesWidgets, int platform, DebugMatchMode debugMatchMode,
-                                        QString *errorMessage);
+                                        QString *errorMessage, int timeout = 30000);
 
 QT_END_NAMESPACE
 
