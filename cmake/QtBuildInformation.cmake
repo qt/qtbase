@@ -47,6 +47,11 @@ function(qt_print_feature_summary)
         endforeach()
     endif()
 
+    # Print an SBOM section for a top-level build, or a single repo.
+    if(NOT QT_NO_SBOM_SUMMARY_INFO)
+        qt_internal_add_sbom_summary_info()
+    endif()
+
     # Show which packages were found.
     feature_summary(INCLUDE_QUIET_PACKAGES
                     WHAT PACKAGES_FOUND

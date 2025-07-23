@@ -44,10 +44,20 @@ function(_qt_internal_sbom_add_license)
         set(license_id "LicenseRef-${license_id}")
     endif()
 
-    _qt_internal_sbom_generate_add_license(
-        LICENSE_ID "${license_id}"
-        EXTRACTED_TEXT "<text>${text}</text>"
-    )
+
+    if(QT_SBOM_GENERATE_SPDX_V2)
+        _qt_internal_sbom_generate_add_license(
+            LICENSE_ID "${license_id}"
+            EXTRACTED_TEXT "<text>${text}</text>"
+        )
+    endif()
+
+    if(QT_SBOM_GENERATE_CYDX_V1_6)
+        _qt_internal_sbom_record_license_cydx(
+            LICENSE_ID "${license_id}"
+            EXTRACTED_TEXT "${text}"
+        )
+    endif()
 endfunction()
 
 # Get a qt spdx license expression given the id.

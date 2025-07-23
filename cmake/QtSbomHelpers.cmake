@@ -194,3 +194,101 @@ function(qt_internal_extend_qt_entity_sbom target)
     qt_internal_sbom_get_default_sbom_args("${target}" sbom_extra_args ${ARGN})
     _qt_internal_extend_sbom(${target} ${ARGN} ${sbom_extra_args})
 endfunction()
+
+# Helper function to convert a boolean SBOM option into a "yes" / "no" string.
+function(qt_internal_is_sbom_option_enabled var_name out_var)
+    if("${${var_name}}")
+        set(value "yes")
+    else()
+        set(value "no")
+    endif()
+    set(${out_var} "${value}" PARENT_SCOPE)
+endfunction()
+
+# Helper function to get a summary suffix for SBOM options that are enabled, but might be skipped
+# if their dependencies are missing.
+function(qt_internal_get_sbom_option_required_suffix var_name out_var)
+    if("${${var_name}}")
+        set(value "")
+    else()
+        set(value " (skipped if dependencies are missing)")
+    endif()
+    set(${out_var} "${value}" PARENT_SCOPE)
+endfunction()
+
+# Adds SBOM summary info to the configuration summary.
+function(qt_internal_add_sbom_summary_info)
+    qt_configure_add_summary_section(NAME "SBOM")
+
+    # Build SBOM info.
+    qt_internal_is_sbom_option_enabled(QT_GENERATE_SBOM value)
+    qt_configure_add_summary_entry(ARGS "Generate SBOM" TYPE "message" MESSAGE "${value}")
+
+    # Only show the details if generation is enabled.
+    if(QT_GENERATE_SBOM)
+        qt_internal_is_sbom_option_enabled(QT_SBOM_GENERATE_SPDX_V2 value)
+        qt_configure_add_summary_entry(ARGS "Generate SPDX v2.3"
+            TYPE "message" MESSAGE "${value}")
+
+        qt_internal_is_sbom_option_enabled(QT_SBOM_GENERATE_SPDX_V2_JSON value)
+        qt_internal_get_sbom_option_required_suffix(QT_SBOM_REQUIRE_GENERATE_SPDX_V2_JSON suffix)
+        qt_configure_add_summary_entry(ARGS "Generate SPDX v2.3 JSON"
+            TYPE "message" MESSAGE "${value}${suffix}")
+
+        qt_internal_is_sbom_option_enabled(QT_SBOM_VERIFY_SPDX_V2 value)
+        qt_internal_get_sbom_option_required_suffix(QT_SBOM_REQUIRE_VERIFY_SPDX_V2 suffix)
+        qt_configure_add_summary_entry(ARGS "Verify   SPDX v2.3 JSON"
+            TYPE "message" MESSAGE "${value}${suffix}")
+
+        qt_internal_is_sbom_option_enabled(QT_SBOM_GENERATE_CYDX_V1_6 value)
+        qt_internal_get_sbom_option_required_suffix(QT_SBOM_REQUIRE_GENERATE_CYDX_V1_6 suffix)
+        qt_configure_add_summary_entry(ARGS "Generate CyloneDX v1.6"
+            TYPE "message" MESSAGE "${value}${suffix}")
+
+        qt_internal_is_sbom_option_enabled(QT_SBOM_VERIFY_CYDX_V1_6 value)
+        qt_internal_get_sbom_option_required_suffix(QT_SBOM_REQUIRE_VERIFY_CYDX_V1_6 suffix)
+        qt_configure_add_summary_entry(ARGS "Verify   CyloneDX v1.6"
+            TYPE "message" MESSAGE "${value}${suffix}")
+
+        # Python interpreter info.
+        if(QT_INTERNAL_SBOM_PYTHON_EXECUTABLE)
+            set(value "${QT_INTERNAL_SBOM_PYTHON_EXECUTABLE}")
+            string(APPEND value " (version ${QT_INTERNAL_SBOM_PYTHON_VERSION})")
+        else()
+            set(value "Not found")
+        endif()
+        qt_configure_add_summary_entry(ARGS "SBOM Python interpreter"
+            TYPE "message" MESSAGE "${value}")
+
+        # These are kinda internal, so only show them when found.
+        if(QT_SBOM_PROGRAM_SBOM2DOC)
+            set(value "${QT_SBOM_PROGRAM_SBOM2DOC}")
+            qt_configure_add_summary_entry(ARGS "sbom2doc path" TYPE "message" MESSAGE "${value}")
+        endif()
+
+        if(QT_SBOM_PROGRAM_SBOMAUDIT)
+            set(value "${QT_SBOM_PROGRAM_SBOMAUDIT}")
+            qt_configure_add_summary_entry(ARGS "sbomaudit path" TYPE "message" MESSAGE "${value}")
+        endif()
+    endif()
+
+    # Source SBOM info.
+    qt_internal_is_sbom_option_enabled(QT_GENERATE_SOURCE_SBOM value)
+    qt_configure_add_summary_entry(ARGS "Generate source SPDX SBOM"
+        TYPE "message" MESSAGE "${value}")
+
+    if(QT_GENERATE_SOURCE_SBOM)
+        qt_internal_is_sbom_option_enabled(QT_LINT_SOURCE_SBOM value)
+        qt_configure_add_summary_entry(ARGS "Verify   source SPDX SBOM"
+            TYPE "message" MESSAGE "${value}")
+
+        if(QT_SBOM_PROGRAM_REUSE)
+            set(value "${QT_SBOM_PROGRAM_REUSE}")
+        else()
+            set(value "Not found")
+        endif()
+        qt_configure_add_summary_entry(ARGS "reuse path" TYPE "message" MESSAGE "${value}")
+    endif()
+
+    qt_configure_end_summary_section()
+endfunction()

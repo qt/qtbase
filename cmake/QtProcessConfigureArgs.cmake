@@ -349,12 +349,33 @@ endfunction()
 macro(qt_add_common_commandline_options)
     qt_commandline_option(headersclean TYPE boolean)
     qt_commandline_option(sbom TYPE boolean CMAKE_VARIABLE QT_GENERATE_SBOM)
-    qt_commandline_option(sbom-json TYPE boolean CMAKE_VARIABLE QT_SBOM_GENERATE_JSON)
+
+    # Semi-public, undocumented.
+    qt_commandline_option(sbom-all TYPE boolean CMAKE_VARIABLE QT_SBOM_GENERATE_AND_VERIFY_ALL)
+
+    qt_commandline_option(sbom-spdx-v2 TYPE boolean
+        CMAKE_VARIABLE QT_SBOM_GENERATE_SPDX_V2)
+
+    qt_commandline_option(sbom-cyclonedx-v1_6 TYPE boolean
+        CMAKE_VARIABLE QT_SBOM_GENERATE_CYDX_V1_6)
+
+    qt_commandline_option(sbom-cyclonedx-v1_6-required TYPE boolean
+        CMAKE_VARIABLE QT_SBOM_REQUIRE_GENERATE_CYDX_V1_6)
+
+    qt_commandline_option(sbom-cyclonedx-v1_6-verify-required TYPE boolean
+        CMAKE_VARIABLE QT_SBOM_REQUIRE_VERIFY_CYDX_V1_6)
+
+    qt_commandline_option(sbom-cyclonedx-v1_6-verbose TYPE boolean
+        CMAKE_VARIABLE QT_SBOM_VERBOSE_CYDX_V1_6)
+
+    qt_commandline_option(sbom-json TYPE boolean CMAKE_VARIABLE QT_SBOM_GENERATE_SPDX_V2_JSON)
     qt_commandline_option(sbom-json-required TYPE boolean
-        CMAKE_VARIABLE QT_SBOM_REQUIRE_GENERATE_JSON
+        CMAKE_VARIABLE QT_SBOM_REQUIRE_GENERATE_SPDX_V2_JSON
     )
-    qt_commandline_option(sbom-verify TYPE boolean CMAKE_VARIABLE QT_SBOM_VERIFY)
-    qt_commandline_option(sbom-verify-required TYPE boolean CMAKE_VARIABLE QT_SBOM_REQUIRE_VERIFY)
+
+    qt_commandline_option(sbom-verify TYPE boolean CMAKE_VARIABLE QT_SBOM_VERIFY_SPDX_V2)
+    qt_commandline_option(sbom-verify-required TYPE boolean
+        CMAKE_VARIABLE QT_SBOM_REQUIRE_VERIFY_SPDX_V2)
 endmacro()
 
 function(qt_commandline_prefix arg var)

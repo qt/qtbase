@@ -6,14 +6,28 @@
 # like NTIA validation, auditing, json generation, etc.
 function(_qt_internal_sbom_setup_project_ops_generation)
     set(opt_args
+        # spdx options
         GENERATE_JSON
         GENERATE_JSON_REQUIRED
+
+        # cydx options
+        GENERATE_CYCLONE_DX_V1_6
+        GENERATE_CYCLONE_DX_V1_6_REQUIRED
+        VERIFY_CYCLONE_DX_V1_6
+        VERIFY_CYCLONE_DX_V1_6_REQUIRED
+        VERBOSE_CYCLONE_DX_V1_6
+
+        # source spdx options
         GENERATE_SOURCE_SBOM
+        LINT_SOURCE_SBOM
+        LINT_SOURCE_SBOM_NO_ERROR
+
+        # Extra spdx verification
         VERIFY_SBOM
         VERIFY_SBOM_REQUIRED
         VERIFY_NTIA_COMPLIANT
-        LINT_SOURCE_SBOM
-        LINT_SOURCE_SBOM_NO_ERROR
+
+        # Extra spdx info
         SHOW_TABLE
         AUDIT
         AUDIT_NO_ERROR
@@ -35,6 +49,33 @@ function(_qt_internal_sbom_setup_project_ops_generation)
         _qt_internal_sbom_find_and_handle_sbom_op_dependencies(${op_args})
         if(deps_found)
             _qt_internal_sbom_generate_json()
+        endif()
+    endif()
+
+    if(arg_GENERATE_CYCLONE_DX_V1_6 AND NOT QT_INTERNAL_NO_SBOM_PYTHON_OPS)
+        set(op_args
+            OUT_VAR_DEPS_FOUND deps_found
+        )
+        if(arg_GENERATE_CYCLONE_DX_V1_6_REQUIRED)
+            list(APPEND op_args REQUIRED)
+        endif()
+
+        set(gen_args "")
+        if(arg_VERIFY_CYCLONE_DX_V1_6)
+            list(APPEND gen_args VERIFY)
+        endif()
+
+        if(arg_VERIFY_CYCLONE_DX_V1_6_REQUIRED)
+            list(APPEND gen_args VERIFY_REQUIRED)
+        endif()
+
+        if(arg_VERBOSE_CYCLONE_DX_V1_6)
+            list(APPEND gen_args VERBOSE)
+        endif()
+
+        _qt_internal_sbom_find_cydx_dependencies(${op_args})
+        if(deps_found)
+            _qt_internal_sbom_generate_cydx_json(${gen_args})
         endif()
     endif()
 
@@ -90,12 +131,119 @@ function(_qt_internal_sbom_setup_project_ops_generation)
     endif()
 endfunction()
 
+# Tries to find the dependencies for generating CycloneDX v1.6 SBOMs.
+# Sets OUT_VAR_DEPS_FOUND to TRUE if found, FALSE otherwise.
+function(_qt_internal_sbom_find_cydx_dependencies)
+    set(opt_args
+        REQUIRED
+    )
+    set(single_args
+        OUT_VAR_DEPS_FOUND
+    )
+    set(multi_args "")
+    cmake_parse_arguments(PARSE_ARGV 0 arg "${opt_args}" "${single_args}" "${multi_args}")
+
+    if(NOT arg_OUT_VAR_DEPS_FOUND)
+        message(FATAL_ERROR "OUT_VAR_DEPS_FOUND is required")
+    endif()
+
+    set(op_args
+        OP_KEY "GENERATE_CYCLONE_DX_V1_6"
+        OUT_VAR_DEPS_FOUND deps_found
+    )
+
+    if(arg_REQUIRED)
+        list(APPEND op_args REQUIRED)
+    endif()
+
+    _qt_internal_sbom_find_and_handle_sbom_op_dependencies(${op_args})
+
+    set(${arg_OUT_VAR_DEPS_FOUND} "${deps_found}" PARENT_SCOPE)
+endfunction()
+
+# Helper to output a debug or error message when python or one of its dependencies are not found.
+# When found, it also caches the found python interpreter path and version, as well as the
+# DEPS_FOUND_FOR_$OP_KEY var.
+function(_qt_internal_sbom_verify_if_sbom_op_dependencies_are_found)
+    set(opt_args
+        REQUIRED
+        PYTHON_FOUND
+        DEP_FOUND
+        EVERYTHING_FOUND
+    )
+    set(single_args
+        REQUIRED_VERSION
+        PYTHON_PATH
+        PYTHON_VERSION
+        DEP_PACKAGE_NAME
+        DEP_FIND_OUTPUT
+        OP_KEY
+    )
+    set(multi_args
+        PYTHON_COMMON_ARGS
+    )
+    cmake_parse_arguments(PARSE_ARGV 0 arg "${opt_args}" "${single_args}" "${multi_args}")
+
+    if(arg_EVERYTHING_FOUND)
+        message(DEBUG "Python Dependencies found. "
+            "Using Python '${arg_PYTHON_PATH}' for running SBOM op '${arg_OP_KEY}'.")
+
+        if(NOT QT_INTERNAL_SBOM_PYTHON_EXECUTABLE)
+            message(DEBUG "Setting QT_INTERNAL_SBOM_PYTHON_EXECUTABLE to ${arg_PYTHON_PATH}")
+            message(DEBUG "Setting QT_INTERNAL_SBOM_PYTHON_VERSION to ${arg_PYTHON_VERSION}")
+            set(QT_INTERNAL_SBOM_PYTHON_EXECUTABLE "${arg_PYTHON_PATH}" CACHE INTERNAL
+                "Python interpeter used for SBOM generation.")
+            set(QT_INTERNAL_SBOM_PYTHON_VERSION "${arg_PYTHON_VERSION}" CACHE INTERNAL
+                "Python interpeter version used for SBOM generation.")
+        endif()
+
+        set(QT_INTERNAL_SBOM_DEPS_FOUND_FOR_${arg_OP_KEY} "TRUE" CACHE INTERNAL
+            "All dependencies found to run SBOM op '${arg_OP_KEY}'")
+        return()
+    endif()
+
+    if(arg_REQUIRED)
+        set(message_type "FATAL_ERROR")
+    else()
+        set(message_type "DEBUG")
+    endif()
+
+    if(NOT arg_PYTHON_FOUND)
+        # Look for python one more time, this time without QUIET, to show an error why it
+        # wasn't found.
+        if(arg_REQUIRED)
+            _qt_internal_sbom_find_python_helper(${arg_PYTHON_COMMON_ARGS}
+                OUT_VAR_PYTHON_PATH unused_python
+                OUT_VAR_PYTHON_FOUND unused_found
+            )
+        endif()
+        message(${message_type}
+            "Python ${arg_REQUIRED_VERSION} for running SBOM op '${arg_OP_KEY}' NOT found.")
+    elseif(NOT arg_DEP_FOUND)
+
+        set(extra_install_message "")
+        if(message_type STREQUAL "FATAL_ERROR")
+            set(extra_install_message
+                "Install it using pip install '${arg_DEP_PACKAGE_NAME}' \n")
+        endif()
+        message(${message_type}
+            "Python dependency for running SBOM op '${arg_OP_KEY}' NOT found:\n"
+            ${extra_install_message}
+            "Details:\n"
+            "Python interpreter: ${arg_PYTHON_PATH}\n"
+            "Error output: \n${arg_DEP_FIND_OUTPUT}\n\n"
+        )
+    endif()
+endfunction()
+
 # Helper to find a python interpreter and a specific python dependency, e.g. to be able to generate
 # a SPDX JSON SBOM, or run post-installation steps like NTIA verification.
 # The exact dependency should be specified as the OP_KEY.
 #
 # Caches the found python executable in a separate cache var QT_INTERNAL_SBOM_PYTHON_EXECUTABLE, to
 # avoid conflicts with any other found python interpreter.
+# Also caches the python version found in QT_INTERNAL_SBOM_PYTHON_VERSION, so we can show it
+# in the configure summary.
 function(_qt_internal_sbom_find_and_handle_sbom_op_dependencies)
     set(opt_args
         REQUIRED
@@ -112,12 +260,22 @@ function(_qt_internal_sbom_find_and_handle_sbom_op_dependencies)
         message(FATAL_ERROR "OP_KEY is required")
     endif()
 
-    set(supported_ops "GENERATE_JSON" "VERIFY_SBOM" "RUN_NTIA")
+    set(supported_ops
+        "GENERATE_JSON"
+        "GENERATE_CYCLONE_DX_V1_6"
+        "VERIFY_SBOM"
+        "RUN_NTIA"
+    )
 
     if(arg_OP_KEY STREQUAL "GENERATE_JSON" OR arg_OP_KEY STREQUAL "VERIFY_SBOM")
         set(import_statement "import spdx_tools.spdx.clitools.pyspdxtools")
+        set(dep_package_name "spdx-tools")
+    elseif(arg_OP_KEY STREQUAL "GENERATE_CYCLONE_DX_V1_6")
+        set(import_statement "from cyclonedx.output.json import JsonV1Dot6")
+        set(dep_package_name "cyclonedx-python-lib[json-validation]")
     elseif(arg_OP_KEY STREQUAL "RUN_NTIA")
         set(import_statement "import ntia_conformance_checker.main")
+        set(dep_package_name "ntia-conformance-checker")
     else()
         message(FATAL_ERROR "OP_KEY must be one of ${supported_ops}")
     endif()
@@ -145,48 +303,81 @@ function(_qt_internal_sbom_find_and_handle_sbom_op_dependencies)
     # non-framework python found.
     if(CMAKE_HOST_APPLE)
         set(extra_python_args SEARCH_IN_FRAMEWORKS QUIET)
+        message(DEBUG "Looking for Python and dependencies for op '${arg_OP_KEY}' "
+            "in the system framework location first.")
         _qt_internal_sbom_find_python_and_dependency_helper_lambda()
+        if(NOT everything_found)
+            # Assemble args to show what wasn't found.
+            set(verify_args "")
+            if(python_found)
+                list(APPEND verify_args PYTHON_FOUND)
+            endif()
+            if(dep_found)
+                list(APPEND verify_args DEP_FOUND)
+            endif()
+            if(everything_found)
+                list(APPEND verify_args EVERYTHING_FOUND)
+            endif()
+            if(python_path)
+                list(APPEND verify_args PYTHON_PATH "${python_path}")
+            endif()
+            if(python_version)
+                list(APPEND verify_args PYTHON_VERSION "${python_version}")
+            endif()
+            if(dep_find_output)
+                list(APPEND verify_args DEP_FIND_OUTPUT "${dep_find_output}")
+            endif()
+
+            _qt_internal_sbom_verify_if_sbom_op_dependencies_are_found(
+                ${verify_args}
+                REQUIRED_VERSION "${required_version}"
+                OP_KEY "${arg_OP_KEY}"
+                DEP_PACKAGE_NAME "${dep_package_name}"
+                PYTHON_COMMON_ARGS ${python_common_args}
+            )
+
+            message(DEBUG "Initial Apple-specific SBOM Python search did not find all dependencies "
+                "for op ${arg_OP_KEY}, looking again outside of the system framework location.")
+        endif()
     endif()
 
+    # Looking again if something wasn't found, or a search was not done yet.
     if(NOT everything_found)
         set(extra_python_args QUIET)
+        message(DEBUG "Looking for Python and dependencies for op '${arg_OP_KEY}'.")
         _qt_internal_sbom_find_python_and_dependency_helper_lambda()
     endif()
 
-    # Always save the python interpreter path if it is found, even if the dependencies are not
-    # found. This improves the error message workflow.
-    if(python_found AND NOT QT_INTERNAL_SBOM_PYTHON_EXECUTABLE)
-        set(QT_INTERNAL_SBOM_PYTHON_EXECUTABLE "${python_path}" CACHE INTERNAL
-            "Python interpeter used for SBOM generation.")
+    # Assemble args to show what was or wasn't found.
+    set(verify_args "")
+    if(arg_REQUIRED)
+        list(APPEND verify_args REQUIRED)
     endif()
-
-    if(NOT everything_found)
-        if(arg_REQUIRED)
-            set(message_type "FATAL_ERROR")
-        else()
-            set(message_type "DEBUG")
-        endif()
-
-        if(NOT python_found)
-            # Look for python one more time, this time without QUIET, to show an error why it
-            # wasn't found.
-            if(arg_REQUIRED)
-                _qt_internal_sbom_find_python_helper(${python_common_args}
-                    OUT_VAR_PYTHON_PATH unused_python
-                    OUT_VAR_PYTHON_FOUND unused_found
-                )
-            endif()
-            message(${message_type} "Python ${required_version} for running SBOM ops not found.")
-        elseif(NOT dep_found)
-            message(${message_type} "Python dependency for running SBOM op ${arg_OP_KEY} "
-                "not found:\n Python: ${python_path} \n Output: \n${dep_find_output}")
-        endif()
-    else()
-        message(DEBUG "Using Python ${python_path} for running SBOM ops.")
-
-        set(QT_INTERNAL_SBOM_DEPS_FOUND_FOR_${arg_OP_KEY} "TRUE" CACHE INTERNAL
-            "All dependencies found to run SBOM OP ${arg_OP_KEY}")
+    if(python_found)
+        list(APPEND verify_args PYTHON_FOUND)
     endif()
+    if(dep_found)
+        list(APPEND verify_args DEP_FOUND)
+    endif()
+    if(everything_found)
+        list(APPEND verify_args EVERYTHING_FOUND)
+    endif()
+    if(python_path)
+        list(APPEND verify_args PYTHON_PATH "${python_path}")
+    endif()
+    if(python_version)
+        list(APPEND verify_args PYTHON_VERSION "${python_version}")
+    endif()
+    if(dep_find_output)
+        list(APPEND verify_args DEP_FIND_OUTPUT "${dep_find_output}")
+    endif()
+    _qt_internal_sbom_verify_if_sbom_op_dependencies_are_found(
+        ${verify_args}
+        REQUIRED_VERSION "${required_version}"
+        OP_KEY "${arg_OP_KEY}"
+        DEP_PACKAGE_NAME "${dep_package_name}"
+        PYTHON_COMMON_ARGS ${python_common_args}
+    )
 
     if(arg_OUT_VAR_DEPS_FOUND)
         set(${arg_OUT_VAR_DEPS_FOUND} "${QT_INTERNAL_SBOM_DEPS_FOUND_FOR_${arg_OP_KEY}}"
@@ -298,7 +489,7 @@ function(_qt_internal_sbom_check_python_dependency_available)
     _qt_internal_validate_all_args_are_parsed(arg)
 
     set(failure_message
-        "Required Python dependencies not found: ")
+        "Required Python dependencies NOT found: ")
 
     if(arg_FAILURE_MESSAGE_PREFIX)
         list(PREPEND failure_message ${arg_FAILURE_MESSAGE_PREFIX})
@@ -391,6 +582,67 @@ function(_qt_internal_sbom_generate_json)
     file(GENERATE OUTPUT "${verify_sbom}" CONTENT "${content}")
 
     set_property(GLOBAL APPEND PROPERTY _qt_sbom_cmake_verify_include_files "${verify_sbom}")
+endfunction()
+
+# Helper to generate a CycloneDX JSON file from the intermediate .toml file created by the build
+# system.
+function(_qt_internal_sbom_generate_cydx_json)
+    set(opt_args
+        VERIFY
+        VERIFY_REQUIRED
+        VERBOSE
+    )
+    set(single_args "")
+    set(multi_args "")
+    cmake_parse_arguments(PARSE_ARGV 0 arg "${opt_args}" "${single_args}" "${multi_args}")
+    _qt_internal_validate_all_args_are_parsed(arg)
+
+    set(error_message_prefix "Failed to generate a CycloneDX json file.")
+    _qt_internal_sbom_assert_python_interpreter_available("${error_message_prefix}")
+    _qt_internal_sbom_assert_python_dependency_available(GENERATE_CYCLONE_DX_V1_6
+        "cyclonedx" ${error_message_prefix})
+
+    _qt_internal_sbom_get_cyclone_dx_generator_path(generator_path)
+
+    set(extra_args "")
+    if(arg_VERIFY)
+        list(APPEND extra_args "--validate-json")
+    endif()
+    if(arg_VERIFY_REQUIRED)
+        list(APPEND extra_args "--validate-json-required")
+    endif()
+    if(arg_VERBOSE)
+        list(APPEND extra_args "--verbose")
+    endif()
+    list(JOIN extra_args " " extra_args)
+
+    set(content "
+        message(STATUS
+            \"Generating final CycloneDX JSON: \${QT_SBOM_OUTPUT_PATH_WITHOUT_EXT}.json\")
+        execute_process(
+            COMMAND \"${QT_INTERNAL_SBOM_PYTHON_EXECUTABLE}\" \"${generator_path}\"
+            --input-path \"\${QT_SBOM_OUTPUT_PATH}\"
+            --output-path \"\${QT_SBOM_OUTPUT_PATH_WITHOUT_EXT}.json\"
+            ${extra_args}
+            RESULT_VARIABLE res
+        )
+        if(NOT res EQUAL 0)
+            message(FATAL_ERROR \"CycloneDX JSON generation failed: \${res}\")
+        endif()
+        # Remove the intermediate toml file, there's no point in installing it.
+        # Keep the one in the build dir, it's useful for debugging.
+        if(NOT QT_SBOM_BUILD_TIME)
+            message(STATUS \"Removing intermediate TOML file  \${QT_SBOM_OUTPUT_PATH}\")
+            file(REMOVE \"\${QT_SBOM_OUTPUT_PATH}\")
+        endif()
+")
+
+    _qt_internal_get_current_project_sbom_dir(sbom_dir)
+    set(generate_cydx "${sbom_dir}/generate_cyclone_dx.cmake")
+    file(GENERATE OUTPUT "${generate_cydx}" CONTENT "${content}")
+
+    set_property(GLOBAL APPEND PROPERTY
+        _qt_sbom_cmake_post_generation_include_files_cydx "${generate_cydx}")
 endfunction()
 
 # Helper to query whether the all required dependencies are available to generate a tag / value

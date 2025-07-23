@@ -224,6 +224,7 @@ qtc-qmldbg/
 callgrind.out.*
 core
 Makefile*
+!/util/sbom/cyclonedx/Makefile
 !/qmake/Makefile.win32*
 !/qmake/Makefile.unix
 pcviewer.cfg

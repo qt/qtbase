@@ -86,20 +86,31 @@ endmacro()
 # default purls will be generated.
 #
 # There is no limit to the number of purls that can be added to a target.
+# The created purls are saved in:
+# - OUT_VAR_PURL_VALUES as plain purl values, to be used for CycloneDX genereation.
+# - OUT_VAR_SPDX_EXT_REF_VALUES as SPDX ExtRef entries, to be used for SPDX v2.3 generation.
 function(_qt_internal_sbom_handle_purl_values target)
     _qt_internal_get_sbom_purl_handling_options(opt_args single_args multi_args)
-    list(APPEND single_args OUT_VAR)
+    list(APPEND single_args
+        OUT_VAR_SPDX_EXT_REF_VALUES
+        OUT_VAR_PURL_VALUES
+    )
 
     cmake_parse_arguments(PARSE_ARGV 1 arg "${opt_args}" "${single_args}" "${multi_args}")
     _qt_internal_validate_all_args_are_parsed(arg)
 
-    if(NOT arg_OUT_VAR)
-        message(FATAL_ERROR "OUT_VAR must be set")
+    if(NOT arg_OUT_VAR_PURL_VALUES)
+        message(FATAL_ERROR "OUT_VAR_PURL_VALUES must be set")
+    endif()
+
+    if(NOT arg_OUT_VAR_SPDX_EXT_REF_VALUES)
+        message(FATAL_ERROR "OUT_VAR_SPDX_EXT_REF_VALUES must be set")
     endif()
 
     _qt_internal_get_sbom_purl_parsing_options(purl_opt_args purl_single_args purl_multi_args)
 
-    set(project_package_options "")
+    set(purl_values "")
+    set(spdx_ext_ref_values "")
 
     # Collect each PURL_ENTRY args into a separate variable.
     set(purl_idx -1)
@@ -140,6 +151,16 @@ function(_qt_internal_sbom_handle_purl_values target)
         endif()
     endif()
 
+    set(qt_entity_cydx_purl_values "")
+    set(qt_entity_spdx_purl_ext_refs "")
+
+    # When generating purls for Qt entities targeting Cyclone DX, we prefer the generic purl first,
+    # otherwise DependencyTrack gets confused with lots of components having the same purls,
+    # because it doesn't take into account the '#' part of the purl.
+    # Keep these separate and append them in the right order later.
+    set(qt_entity_cydx_purl_for_github_id "")
+    set(qt_entity_cydx_purl_for_generic_id "")
+
     foreach(purl_idx IN LISTS purl_entry_indices)
         # Clear previous values.
         foreach(option_name IN LISTS purl_opt_args purl_single_args purl_multi_args)
@@ -172,11 +193,13 @@ function(_qt_internal_sbom_handle_purl_values target)
                 ${purl_multi_args}
         )
 
+        set(is_qt_entity_purl FALSE)
         # Qt entity types get special treatment to gather the required args.
         if(arg___QT_INTERNAL_HANDLE_QT_ENTITY_TYPE_PURL
                 AND arg_PURL_ID
                 AND arg_PURL_ID IN_LIST qt_purl_ids)
 
+            set(is_qt_entity_purl TRUE)
             _qt_internal_sbom_handle_qt_entity_purl("${target}"
                 ${purl_handling_args}
                 PURL_ID "${arg_PURL_ID}"
@@ -189,29 +212,57 @@ function(_qt_internal_sbom_handle_purl_values target)
 
         _qt_internal_sbom_assemble_purl(${target}
             ${purl_args}
-            OUT_VAR package_manager_external_ref
+            OUT_VAR purl_bare
+            OUT_VAR_SPDX_EXT_REF package_manager_external_ref_purl
         )
-        list(APPEND project_package_options ${package_manager_external_ref})
+
+        if(is_qt_entity_purl)
+            if(arg_PURL_ID STREQUAL "GENERIC")
+                set(qt_entity_cydx_purl_for_generic_id "${purl_bare}")
+            elseif(arg_PURL_ID STREQUAL "GITHUB")
+                set(qt_entity_cydx_purl_for_github_id "${purl_bare}")
+            else()
+                list(APPEND purl_values "${purl_bare}")
+            endif()
+        else()
+            list(APPEND purl_values "${purl_bare}")
+        endif()
+
+        list(APPEND spdx_ext_ref_values ${package_manager_external_ref_purl})
     endforeach()
 
+    # Add the custom qt entity purls at the front in the right order for CycloneDX.
+    # If they are empty (for non-Qt entities), nothing will be prepended.
+    set(qt_entity_cydx_purl_values
+        ${qt_entity_cydx_purl_for_generic_id}
+        ${qt_entity_cydx_purl_for_github_id}
+    )
+    list(PREPEND purl_values ${qt_entity_cydx_purl_values})
+
     foreach(purl_value IN LISTS arg_PURL_VALUES)
-        _qt_internal_sbom_get_purl_value_extref(
-            VALUE "${purl_value}" OUT_VAR package_manager_external_ref)
+        _qt_internal_sbom_get_purl_value_extref(VALUE "${purl_value}"
+            OUT_VAR package_manager_external_ref_purl)
 
         # The order in which the purls are generated, matters for tools that consume the SBOM.
         # Some tools can only handle one PURL per package, so the first one should be the
         # important one.
         # For now, I deem that the directly specified ones (probably via a qt_attribution.json
         # file) are the more important ones. So we prepend them.
-        list(PREPEND project_package_options ${package_manager_external_ref})
+        list(PREPEND purl_values ${purl_value})
+        list(PREPEND spdx_ext_ref_values ${package_manager_external_ref_purl})
     endforeach()
 
-    set(${arg_OUT_VAR} "${project_package_options}" PARENT_SCOPE)
+    set(${arg_OUT_VAR_PURL_VALUES} "${purl_values}" PARENT_SCOPE)
+    set(${arg_OUT_VAR_SPDX_EXT_REF_VALUES} "${spdx_ext_ref_values}" PARENT_SCOPE)
 endfunction()
 
 # Assembles an external reference purl identifier.
+#
 # PURL_TYPE and PURL_NAME are required.
-# Stores the result in the OUT_VAR.
+#
+# Stores the bare purl in the OUT_VAR.
+# Stores the SPDX External Reference purl in the OUT_VAR_SPDX_EXT_REF.
+#
 # Accepted options:
 #    PURL_TYPE
 #    PURL_NAME
@@ -223,6 +274,7 @@ function(_qt_internal_sbom_assemble_purl target)
     set(opt_args "")
     set(single_args
         OUT_VAR
+        OUT_VAR_SPDX_EXT_REF
     )
     set(multi_args "")
 
@@ -273,9 +325,10 @@ function(_qt_internal_sbom_assemble_purl target)
         string(APPEND purl "#${arg_PURL_SUBPATH}")
     endif()
 
-    _qt_internal_sbom_get_purl_value_extref(VALUE "${purl}" OUT_VAR result)
+    _qt_internal_sbom_get_purl_value_extref(VALUE "${purl}" OUT_VAR ext_ref_result)
 
-    set(${arg_OUT_VAR} "${result}" PARENT_SCOPE)
+    set(${arg_OUT_VAR} "${purl}" PARENT_SCOPE)
+    set(${arg_OUT_VAR_SPDX_EXT_REF} "${ext_ref_result}" PARENT_SCOPE)
 endfunction()
 
 # Takes a PURL VALUE and returns an SBOM purl external reference in OUT_VAR.

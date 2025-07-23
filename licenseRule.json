@@ -377,6 +377,11 @@
                 "file type": "util",
                 "spdx": ["LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0"]
             },
+            "util/sbom/cyclonedx/pyproject.toml": {
+                "comment": "Default",
+                "file type": "util",
+                "spdx": ["LicenseRef-Qt-Commercial OR BSD-3-Clause"]
+            },
             "util/unicode/data/.*\\.txt": {
             "comment": "Exception.",
             "file type": "3rd party",

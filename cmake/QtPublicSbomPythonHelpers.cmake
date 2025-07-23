@@ -12,6 +12,7 @@ macro(_qt_internal_sbom_find_python_and_dependency_helper_lambda)
             DEPENDENCY_IMPORT_STATEMENT "${import_statement}"
         OUT_VAR_PYTHON_PATH python_path
         OUT_VAR_PYTHON_FOUND python_found
+        OUT_VAR_PYTHON_VERSION python_version
         OUT_VAR_DEP_FOUND dep_found
         OUT_VAR_PYTHON_AND_DEP_FOUND everything_found
         OUT_VAR_DEP_FIND_OUTPUT dep_find_output
@@ -27,6 +28,7 @@ function(_qt_internal_sbom_find_python_and_dependency_helper)
     set(single_args
         OUT_VAR_PYTHON_PATH
         OUT_VAR_PYTHON_FOUND
+        OUT_VAR_PYTHON_VERSION
         OUT_VAR_DEP_FOUND
         OUT_VAR_PYTHON_AND_DEP_FOUND
         OUT_VAR_DEP_FIND_OUTPUT
@@ -65,6 +67,7 @@ function(_qt_internal_sbom_find_python_and_dependency_helper)
         ${arg_PYTHON_ARGS}
         OUT_VAR_PYTHON_PATH python_path_inner
         OUT_VAR_PYTHON_FOUND python_found_inner
+        OUT_VAR_PYTHON_VERSION python_version_inner
     )
 
     if(python_found_inner AND python_path_inner)
@@ -82,6 +85,9 @@ function(_qt_internal_sbom_find_python_and_dependency_helper)
 
     set(${arg_OUT_VAR_PYTHON_PATH} "${python_path_inner}" PARENT_SCOPE)
     set(${arg_OUT_VAR_PYTHON_FOUND} "${python_found_inner}" PARENT_SCOPE)
+    if(arg_OUT_VAR_PYTHON_VERSION)
+        set(${arg_OUT_VAR_PYTHON_VERSION} "${python_version_inner}" PARENT_SCOPE)
+    endif()
     set(${arg_OUT_VAR_DEP_FOUND} "${dep_found_inner}" PARENT_SCOPE)
     set(${arg_OUT_VAR_PYTHON_AND_DEP_FOUND} "${everything_found_inner}" PARENT_SCOPE)
     set(${arg_OUT_VAR_DEP_FIND_OUTPUT} "${dep_find_output_inner}" PARENT_SCOPE)
@@ -90,7 +96,8 @@ endfunction()
 # Tries to find the python intrepreter, given the QT_SBOM_PYTHON_INTERP path hint, as well as
 # other options.
 # Ignores any previously found python.
-# Returns the python interpreter path and whether it was successfully found.
+# Returns the python interpreter path and whether it was successfully found, along with the version
+# found.
 #
 # This is intentionally a function, and not a macro, to prevent overriding the Python3_EXECUTABLE
 # non-cache variable in a global scope in case if a different python is found and used for a
@@ -109,6 +116,7 @@ function(_qt_internal_sbom_find_python_helper)
         VERSION
         OUT_VAR_PYTHON_PATH
         OUT_VAR_PYTHON_FOUND
+        OUT_VAR_PYTHON_VERSION
     )
     set(multi_args "")
     cmake_parse_arguments(PARSE_ARGV 0 arg "${opt_args}" "${single_args}" "${multi_args}")
@@ -154,6 +162,9 @@ function(_qt_internal_sbom_find_python_helper)
 
     set(${arg_OUT_VAR_PYTHON_PATH} "${Python3_EXECUTABLE}" PARENT_SCOPE)
     set(${arg_OUT_VAR_PYTHON_FOUND} "${Python3_Interpreter_FOUND}" PARENT_SCOPE)
+    if(arg_OUT_VAR_PYTHON_VERSION)
+        set(${arg_OUT_VAR_PYTHON_VERSION} "${Python3_VERSION}" PARENT_SCOPE)
+    endif()
 endfunction()
 
 # Helper that takes an python import statement to run using the given python interpreter path,
@@ -186,7 +197,7 @@ function(_qt_internal_sbom_find_python_dependency_helper)
     set(python_path "${arg_PYTHON_PATH}")
     execute_process(
         COMMAND
-            ${python_path} -c "${arg_DEPENDENCY_IMPORT_STATEMENT}"
+            "${python_path}" -c "${arg_DEPENDENCY_IMPORT_STATEMENT}"
         RESULT_VARIABLE res
         OUTPUT_VARIABLE output
         ERROR_VARIABLE output
@@ -197,7 +208,7 @@ function(_qt_internal_sbom_find_python_dependency_helper)
         set(output "${output}")
     else()
         set(found FALSE)
-        string(CONCAT output "SBOM Python dependency ${arg_DEPENDENCY_IMPORT_STATEMENT} not found. "
+        string(CONCAT output "SBOM Python dependency ${arg_DEPENDENCY_IMPORT_STATEMENT} NOT found. "
             "Error:\n${output}")
     endif()
 
@@ -245,6 +256,6 @@ function(_qt_internal_sbom_find_python_dependency_program)
             set(message_type "STATUS")
             set(prefix "Optional ")
         endif()
-        message(${message_type} "${prefix}SBOM python program '${program_name}' not found.")
+        message(${message_type} "${prefix}SBOM python program '${program_name}' NOT found.")
     endif()
 endfunction()

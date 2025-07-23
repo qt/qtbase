@@ -1,0 +1,54 @@
+[project]
+name = "qt-cyclonedx-generator"
+version = "0.1.0"
+description = "Tool to generate a CycloneDX v1.6 SBOM for a Qt project."
+readme = "README.md"
+
+requires-python = ">=3.9"
+
+dependencies = [
+    "cyclonedx-python-lib[json-validation]>=10.0.0",
+    'tomli ; python_version < "3.11"'
+]
+
+# Development dependencies.
+[dependency-groups]
+dev = [
+    "setuptools>=65",
+    "ruff>=0.11.2",
+    "tomli>=2.3.0",
+    "pyright>=1.1.406",
+]
+
+[project.scripts]
+qt_cyclonedx_generator = "qt_cyclonedx_generator.qt_cyclonedx_generator:main"
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.ruff.lint]
+ignore = ["E402"]
+
+[tool.pyright]
+# To find the imports created by uv
+venvPath = "."
+venv = ".venv"
+
+# Exclude the default folders, plus the build one.
+exclude = [
+    "**/node_modules",
+    "**/__pycache__",
+    "**/.*",
+    "build/*",
+]
+
+# Because some of the toml libraries might not be found
+reportMissingImports = "none"
+
+# Strict is too strict.
+typeCheckingMode = "basic"
+
+pythonVersion = "3.9"
+pythonPlatform = "All"
+

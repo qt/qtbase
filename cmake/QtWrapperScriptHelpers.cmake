@@ -235,6 +235,7 @@ export CMAKE_GENERATOR=Xcode
 
     qt_internal_create_qt_configure_part_wrapper_script("STANDALONE_TESTS")
     qt_internal_create_qt_configure_part_wrapper_script("STANDALONE_EXAMPLES")
+    qt_internal_create_cyclone_dx_sbom_generator_script()
 
     if(NOT CMAKE_CROSSCOMPILING)
         qt_internal_create_qt_android_runner_wrapper_script()
@@ -379,6 +380,23 @@ function(qt_internal_create_qt_configure_redo_script)
     configure_file("${input_script_path}" "${output_path}" @ONLY NEWLINE_STYLE ${newline_style})
 
     set_property(GLOBAL PROPERTY _qt_configure_redo_script_created TRUE)
+endfunction()
+
+function(qt_internal_create_cyclone_dx_sbom_generator_script)
+    _qt_internal_sbom_get_cyclone_dx_generator_script_name(generator_name generator_relative_dir)
+
+    qt_path_join(build_dir_destination "${QT_BUILD_DIR}" "${INSTALL_LIBEXECDIR}")
+    qt_path_join(install_destination "${QT_INSTALL_DIR}" "${INSTALL_LIBEXECDIR}")
+    qt_path_join(script_path
+        "${CMAKE_CURRENT_SOURCE_DIR}" "${generator_relative_dir}" "${generator_name}")
+
+    if(QT_WILL_INSTALL)
+        file(COPY "${script_path}"
+            DESTINATION "${build_dir_destination}"
+        )
+    endif()
+
+    qt_copy_or_install(PROGRAMS "${script_path}" DESTINATION "${install_destination}")
 endfunction()
 
 function(qt_internal_create_qt_android_runner_wrapper_script)
