@@ -57,6 +57,9 @@ private slots:
     void platformSurface();
     void isExposed();
     void isActive();
+#if defined(Q_OS_WIN)
+    void activateTopLevelOnClickWhenFocusInDescendant();
+#endif
     void testInputEvents();
     void touchToMouseTranslation();
     void touchToMouseTranslationForDevices();
@@ -1056,6 +1059,55 @@ void tst_QWindow::isActive()
     // parent has focus
     QVERIFY(child.isActive());
 }
+
+#if defined(Q_OS_WIN)
+// QTBUG-130754: with a native child window focused, clicking the parent
+// top-level must restore focus to the top-level. Windows does not send
+// WM_MOUSEACTIVATE to an already-active top-level, so the Windows QPA
+// has to detect this case on MouseButtonPress and activate the top-level
+// manually.
+void tst_QWindow::activateTopLevelOnClickWhenFocusInDescendant()
+{
+    if (QGuiApplication::platformName().compare(QStringLiteral("windows"), Qt::CaseInsensitive))
+        QSKIP("Windows-specific test");
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QSKIP("QWindow::requestActivate() is not supported.");
+
+    Window parent;
+    parent.setTitle(QLatin1String(QTest::currentTestFunction()));
+    parent.setGeometry(QRect(m_availableTopLeft + QPoint(80, 80), m_testWindowSize));
+    parent.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&parent));
+    QTRY_COMPARE(QGuiApplication::focusWindow(), &parent);
+
+    Window child;
+    child.setParent(&parent);
+    // Keep the child in a corner so the injected press below lands on
+    // the parent's client area, not on the child HWND.
+    child.setGeometry(10, 10, 40, 40);
+    child.show();
+    QTRY_VERIFY(child.isExposed());
+
+    child.requestActivate();
+    QTRY_COMPARE(QGuiApplication::focusWindow(), &child);
+    QVERIFY(parent.isActive());
+
+    parent.reset();
+
+    // PostMessage bypasses the cursor input subsystem, so Windows does
+    // not generate a WM_MOUSEACTIVATE for the parent - exactly the
+    // scenario that used to leave focus stuck on the child.
+    const HWND parentHwnd = reinterpret_cast<HWND>(parent.winId());
+    const QPoint clickPos(parent.width() / 2, parent.height() / 2);
+    const LPARAM lp = MAKELPARAM(clickPos.x(), clickPos.y());
+    PostMessage(parentHwnd, WM_LBUTTONDOWN, MK_LBUTTON, lp);
+    PostMessage(parentHwnd, WM_LBUTTONUP, 0, lp);
+
+    QTRY_COMPARE(QGuiApplication::focusWindow(), &parent);
+    QVERIFY(parent.isActive());
+    QVERIFY(parent.received(QEvent::FocusIn) >= 1);
+}
+#endif
 
 class InputTestWindow : public ColoredWindow
 {

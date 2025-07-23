@@ -339,10 +339,6 @@ void QWindowsPointerHandler::handleCaptureRelease(QWindow *window,
         platformWindow->setFlag(QWindowsWindow::AutoMouseCapture);
         qCDebug(lcQpaEvents) << "Automatic mouse capture " << window;
 
-        // Implement "Click to focus" for native child windows (unless it is a native widget window).
-        if (!window->isTopLevel() && !window->inherits("QWidgetWindow") && QGuiApplication::focusWindow() != window)
-            window->requestActivate();
-
     } else if (platformWindow->hasMouseCapture()
                && platformWindow->testFlag(QWindowsWindow::AutoMouseCapture)
                && eventType == QEvent::MouseButtonRelease
@@ -419,6 +415,27 @@ void QWindowsPointerHandler::handleEnterLeave(QWindow *window,
     }
 
     m_previousCaptureWindow = hasCapture ? window : nullptr;
+}
+
+void QWindowsPointerHandler::handleWindowActivation(QWindow *window,
+                                                    QEvent::Type eventType)
+{
+    if (eventType != QEvent::MouseButtonPress)
+        return;
+
+    auto *focusWindow = QGuiApplication::focusWindow();
+    if (window->isTopLevel()) {
+        // Windows does not send WM_MOUSEACTIVATE to an already-active top-level,
+        // so if focus currently sits in an embedded descendant (e.g. a native
+        // child window hosted via WindowContainer) we have to activate the
+        // top-level ourselves on mouse press.
+        if (focusWindow && window->isAncestorOf(focusWindow))
+            window->requestActivate();
+    } else if (!window->inherits("QWidgetWindow") && focusWindow != window) {
+        // "Click to focus" for native child windows. Skip QWidgetWindow, which
+        // handles focus at the widget level.
+        window->requestActivate();
+    }
 }
 
 bool QWindowsPointerHandler::translateTouchEvent(QWindow *window, HWND hwnd,
@@ -859,6 +876,7 @@ bool QWindowsPointerHandler::translateMouseEvent(QWindow *window,
         return true;
     }
 
+    handleWindowActivation(window, mouseEvent.type);
     handleCaptureRelease(window, currentWindowUnderPointer, hwnd, mouseEvent.type, mouseButtons);
     handleEnterLeave(window, currentWindowUnderPointer, globalPos);
 
