@@ -5142,6 +5142,17 @@ void tst_QLocale::codeToLang_data()
     invalid("hier-A042", u"𓀰"); // EGYPTIAN HIEROGLYPH A042 U13030 (non-BMP)
     invalid("a+hier-A042", u"a𓀰");
     }
+
+    // valid codes with invalid characters at the end should not match valid codes:
+
+    invalid("de+null", QStringView(u"de\0", 3));
+    invalid("de+space", u"de ");     // character below [A-z]
+    invalid("de1", u"de1");          // numeric character
+    invalid("de^", u"de^");          // character between [A-Z] and [a-z]
+    invalid("de~", u"de~");          // character above [A-z]
+    invalid("de+0x80", u"de\u0080"); // negative character (if char is signed)
+    invalid("de+0xff", u"de\u00ff"); // UCHAR_MAX (if char is signed)
+    invalid("de+non-L1", u"de١");      // Arabic 1
 }
 
 void tst_QLocale::codeToLang()
@@ -5150,6 +5161,7 @@ void tst_QLocale::codeToLang()
     QFETCH(const QLocale::LanguageCodeTypes, options);
     QFETCH(const QLocale::Language, expected);
 
+    QEXPECT_FAIL("invalid:de+null", "This should probably be rejected, too", Abort);
     QCOMPARE(QLocale::codeToLanguage(input, options), expected);
 }
 
