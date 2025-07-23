@@ -818,6 +818,9 @@ function(_qt_internal_sbom_map_path_to_reproducible_relative_path out_var)
             if(NOT is_in_source_dir)
                 _qt_internal_path_is_prefix(PROJECT_BINARY_DIR "${path}" is_in_build_dir)
             endif()
+            if(NOT is_in_source_dir AND NOT is_in_build_dir)
+                _qt_internal_path_is_prefix(CMAKE_INSTALL_PREFIX "${path}" is_in_prefix_dir)
+            endif()
         else()
             # We consider relative paths to be relative to the current source dir.
             set(is_in_source_dir TRUE)
@@ -839,9 +842,17 @@ function(_qt_internal_sbom_map_path_to_reproducible_relative_path out_var)
             set(marker "/build_dir")
             string(REPLACE "${PROJECT_BINARY_DIR}/" "${marker}/${repo_project_name}/"
                 path_out "${path_in_real}")
+        elseif(is_in_prefix_dir)
+            # In a non-prefix build, we put synced headers into the qtbase build dir, aka the prefix
+            # dir. We should match and replace such paths as well.
+            set(handled TRUE)
+            set(marker "/install_dir")
+            string(REPLACE "${CMAKE_INSTALL_PREFIX}/" "${marker}/" path_out "${path_in_real}")
         else()
-            # If it's not a source dir or a build dir, it might be some kind of weird genex
-            # or marker that we don't handle yet.
+            # If it's not a source dir, a build dir, or install dir, it might be some kind of
+            # weird genex or marker that we don't handle yet.
+            message(DEBUG "Couldn't map the path '${path_in_real}' to a reproducible relative "
+                "path, because it is not in the source, build or install dir.")
             set(path_out "${path_in_real}")
         endif()
     endif()
