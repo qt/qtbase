@@ -64,7 +64,7 @@ public:
     static const char *name;
 
     static QPalette systemPalette(Qt::ColorScheme);
-
+    static bool queryHighContrast();
 private:
     void clearPalettes();
     void refreshPalettes();
@@ -76,7 +76,6 @@ private:
 
     static Qt::ColorScheme queryColorScheme();
     static Qt::ColorScheme effectiveColorScheme();
-    static bool queryHighContrast();
 
     static QWindowsTheme *m_instance;
     static inline Qt::ColorScheme s_colorScheme = Qt::ColorScheme::Unknown;

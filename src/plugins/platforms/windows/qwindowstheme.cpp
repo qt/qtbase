@@ -95,6 +95,12 @@ static constexpr QColor getSysColor(winrt::Windows::UI::Color &&color)
 }
 #endif
 
+static inline QColor getSysColor(int index)
+{
+    COLORREF cr = GetSysColor(index);
+    return QColor(GetRValue(cr), GetGValue(cr), GetBValue(cr));
+}
+
 [[maybe_unused]] [[nodiscard]] static inline QColor qt_accentColor(AccentColorLevel level)
 {
 #if QT_CONFIG(cpp_winrt)
@@ -108,18 +114,28 @@ static constexpr QColor getSysColor(winrt::Windows::UI::Color &&color)
     const QColor accentDarker = getSysColor(settings.GetColorValue(UIColorType::AccentDark2));
     const QColor accentDarkest = getSysColor(settings.GetColorValue(UIColorType::AccentDark3));
 #else
-    const QWinRegistryKey registry(HKEY_CURRENT_USER, LR"(Software\Microsoft\Windows\DWM)");
-    if (!registry.isValid())
+    const QColor accent = []()->QColor {
+        // MS uses the aquatic contrast theme as an example in the URL below:
+        // https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getsyscolor#windows-1011-system-colors
+        if (QWindowsTheme::queryHighContrast())
+            return getSysColor(COLOR_HIGHLIGHT);
+        const QWinRegistryKey registry(HKEY_CURRENT_USER, LR"(Software\Microsoft\Windows\DWM)");
+        if (!registry.isValid())
+            return {};
+        const QVariant value = registry.value(L"AccentColor");
+        if (!value.isValid())
+            return {};
+        // The retrieved value is in the #AABBGGRR format, we need to
+        // convert it to the #AARRGGBB format which Qt expects.
+        const QColor abgr = QColor::fromRgba(qvariant_cast<DWORD>(value));
+        if (!abgr.isValid())
+            return {};
+        return QColor::fromRgb(abgr.blue(), abgr.green(), abgr.red(), abgr.alpha());
+
+    }();
+    if (!accent.isValid())
         return {};
-    const QVariant value = registry.value(L"AccentColor");
-    if (!value.isValid())
-        return {};
-    // The retrieved value is in the #AABBGGRR format, we need to
-    // convert it to the #AARRGGBB format which Qt expects.
-    const QColor abgr = QColor::fromRgba(qvariant_cast<DWORD>(value));
-    if (!abgr.isValid())
-        return {};
-    const QColor accent = QColor::fromRgb(abgr.blue(), abgr.green(), abgr.red(), abgr.alpha());
+
     const QColor accentLight = accent.lighter(120);
     const QColor accentLighter = accentLight.lighter(120);
     const QColor accentLightest = accentLighter.lighter(120);
@@ -143,12 +159,6 @@ static constexpr QColor getSysColor(winrt::Windows::UI::Color &&color)
     default:
         return accent;
     }
-}
-
-static inline QColor getSysColor(int index)
-{
-    COLORREF cr = GetSysColor(index);
-    return QColor(GetRValue(cr), GetGValue(cr), GetBValue(cr));
 }
 
 // QTBUG-48823/Windows 10: SHGetFileInfo() (as called by item views on file system
