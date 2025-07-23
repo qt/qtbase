@@ -44,7 +44,7 @@ QHttp2Stream::QHttp2Stream(QHttp2Connection *connection, quint32 streamID) noexc
 
 QHttp2Stream::~QHttp2Stream() noexcept {
     if (auto *connection = getConnection()) {
-        if (m_state == State::Open || m_state == State::HalfClosedRemote) {
+        if (m_state != State::Idle && m_state != State::Closed) {
             qCDebug(qHttp2ConnectionLog, "[%p] stream %u, destroyed while still open", connection,
                     m_streamID);
             // Check if we can still send data, then send RST_STREAM:
