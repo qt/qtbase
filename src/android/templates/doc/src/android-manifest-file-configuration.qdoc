@@ -273,11 +273,10 @@ Qt uses different methods to determine how Qt Widgets and Qt Quick Controls
 should be styled:
 
 \list
-    \li \c default or \c full: when using Qt Widgets or Qt Quick Controls 1.
-        \note This method uses some Android non-SDK interfaces, that are being
-        restricted and removed by Google starting from Android 9.0 (API 28).
-        For that reason, this is not recommended for Android 9.0 or greater.
-    \li \c minimal: when using Qt Quick Controls 2 and no Qt Widgets or Qt Quick
+    \li \c full: when using Qt Widgets or Qt Quick Controls 1.
+        \note This method is obsolete as it uses some Android non-SDK interfaces, that were
+        restricted by Google starting from Android 9.0 (API 28). You should use one of the other methods.
+    \li \c default or  \c minimal: when using Qt Quick Controls 2 and no Qt Widgets or Qt Quick
         Controls 1. This is faster than using the default or full options.
     \li \c none: no style extraction.
 \endlist
