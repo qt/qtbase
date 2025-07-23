@@ -645,7 +645,7 @@ void QWasmWindow::handleKeyEvent(const KeyEvent &event)
 {
     qCDebug(qLcQpaWasmInputContext) << "handleKeyEvent";
 
-    if (QWasmInputContext *inputContext = QWasmIntegration::get()->wasmInputContext(); inputContext->isActive()) {
+    if ((event.webEvent["target"] == m_inputElement) && QWasmIntegration::get()->wasmInputContext()) {
         handleKeyForInputContextEvent(event);
     } else {
         if (processKey(event)) {
@@ -758,26 +758,38 @@ bool QWasmWindow::processKeyForInputContext(const KeyEvent &event)
 
 void QWasmWindow::handleInputEvent(emscripten::val event)
 {
-    if (QWasmInputContext *inputContext = QWasmIntegration::get()->wasmInputContext(); inputContext->isActive())
+    if (QWasmInputContext *inputContext = QWasmIntegration::get()->wasmInputContext(); event["target"] == m_inputElement)
         inputContext->inputCallback(event);
+
+    if (event["target"] == m_focusHelper)
+        m_focusHelper.set("innerHTML", std::string());
 }
 
 void QWasmWindow::handleCompositionStartEvent(emscripten::val event)
 {
-    if (QWasmInputContext *inputContext = QWasmIntegration::get()->wasmInputContext(); inputContext->isActive())
+    if (QWasmInputContext *inputContext = QWasmIntegration::get()->wasmInputContext(); event["target"] == m_inputElement)
         inputContext->compositionStartCallback(event);
+
+    if (event["target"] == m_focusHelper)
+        m_focusHelper.set("innerHTML", std::string());
 }
 
 void QWasmWindow::handleCompositionUpdateEvent(emscripten::val event)
 {
-    if (QWasmInputContext *inputContext = QWasmIntegration::get()->wasmInputContext(); inputContext->isActive())
+    if (QWasmInputContext *inputContext = QWasmIntegration::get()->wasmInputContext(); event["target"] == m_inputElement)
         inputContext->compositionUpdateCallback(event);
+
+    if (event["target"] == m_focusHelper)
+        m_focusHelper.set("innerHTML", std::string());
 }
 
 void QWasmWindow::handleCompositionEndEvent(emscripten::val event)
 {
-    if (QWasmInputContext *inputContext = QWasmIntegration::get()->wasmInputContext(); inputContext->isActive())
+    if (QWasmInputContext *inputContext = QWasmIntegration::get()->wasmInputContext(); event["target"] == m_inputElement)
         inputContext->compositionEndCallback(event);
+
+    if (event["target"] == m_focusHelper)
+        m_focusHelper.set("innerHTML", std::string());
 }
 
 void QWasmWindow::handlePointerEnterLeaveEvent(const PointerEvent &event)

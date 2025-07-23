@@ -48,10 +48,6 @@ public:
 
     void updateGeometry();
 
-    bool isActive() const {
-        return m_focusObject && m_inputMethodAccepted;
-    }
-
 private:
     void updateInputElement();
 
