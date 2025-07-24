@@ -3292,7 +3292,15 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
                         }
                     }
 
-                    [tf.cell drawWithFrame:rect inView:tf];
+                    CGRect fixedRect = rect;
+                    if (qt_apple_runningWithLiquidGlass()) {
+                        // The text edit cell is drawn with a little offset to the left and
+                        // the size increase compared to the 'rect' we want it to be drawn in. As a
+                        // result, the cell's 'outline' is clipped away. Adjusting the rectangle
+                        // for this, so that it's inside the clip rect, as it was before Tahoe.
+                        fixedRect = CGRectInset(rect, 1., 1.);
+                    }
+                    [tf.cell drawWithFrame:fixedRect inView:tf];
                 });
             } else {
                 QCommonStyle::drawPrimitive(pe, opt, p, w);
