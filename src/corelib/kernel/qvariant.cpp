@@ -539,7 +539,7 @@ QVariant::QVariant(const QVariant &p)
 
     \since 6.6
     Constructs a new variant containing a value of type \c T. The contained
-    value is is initialized with the arguments
+    value is initialized with the arguments
     \c{std::forward<Args>(args)...}.
 
     This constructor is provided for STL/std::any compatibility.
