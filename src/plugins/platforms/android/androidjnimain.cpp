@@ -216,6 +216,12 @@ namespace QtAndroid
         m_backendRegister->callInterface<QtJniTypes::QtAccessibilityInterface, void>(
                 "notifyScrolledEvent", accessibilityObjectId);
     }
+
+    void notifyAnnouncementEvent(uint accessibilityObjectId, const QString &message)
+    {
+        m_backendRegister->callInterface<QtJniTypes::QtAccessibilityInterface, void>(
+                "notifyAnnouncementEvent", accessibilityObjectId, message);
+    }
 #endif //QT_CONFIG(accessibility)
 
     void notifyNativePluginIntegrationReady(bool ready)

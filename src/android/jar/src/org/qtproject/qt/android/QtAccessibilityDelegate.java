@@ -262,6 +262,31 @@ class QtAccessibilityDelegate extends View.AccessibilityDelegate
         });
     }
 
+    void notifyAnnouncementEvent(int viewId, String message)
+    {
+        QtNative.runAction(() -> {
+            if (m_view == null)
+                return;
+
+            if (viewId == INVALID_ID) {
+                Log.w(TAG, "notifyAnnouncementEvent() for invalid view");
+                return;
+            }
+
+            if (!m_manager.isEnabled()) {
+                Log.w(TAG, "notifyAnnouncementEvent for disabled AccessibilityManager");
+                return;
+            }
+
+            final AccessibilityEvent event =
+                    AccessibilityEvent.obtain(AccessibilityEvent.TYPE_ANNOUNCEMENT);
+            event.getText().add(message);
+            event.setClassName(getNodeForVirtualViewId(viewId).getClassName());
+            event.setPackageName(m_view.getContext().getPackageName());
+            sendAccessibilityEvent(event);
+        });
+    }
+
     void sendEventForVirtualViewId(int virtualViewId, int eventType)
     {
         final AccessibilityEvent event = getEventForVirtualViewId(virtualViewId, eventType);

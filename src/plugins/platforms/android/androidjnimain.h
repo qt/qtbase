@@ -59,6 +59,7 @@ namespace QtAndroid
     void notifyObjectFocus(uint accessibilityObjectId);
     void notifyValueChanged(uint accessibilityObjectId, jstring value);
     void notifyScrolledEvent(uint accessibilityObjectId);
+    void notifyAnnouncementEvent(uint accessibilityObjectId, const QString &message);
 #endif
     void notifyNativePluginIntegrationReady(bool ready);
 
