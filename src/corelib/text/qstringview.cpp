@@ -1499,8 +1499,8 @@ or the character \a ch
 /*!
     \fn Qt::Literals::StringLiterals::operator""_sv(const char16_t *str, size_t size)
 
+    \internal
     \relates QStringView
-    \since 6.10
 
     Literal operator that creates a QStringView out of the first
     \a size characters in the char16_t string literal \a str.
