@@ -762,7 +762,7 @@ void tst_QStandardItemModel::data()
     const QMap<int, QVariant> itmData = m_model->itemData(m_model->index(0, 0));
     QCOMPARE(itmData.value(Qt::DisplayRole), QLatin1String("initialitem"));
     QCOMPARE(itmData.value(Qt::ToolTipRole), QLatin1String("tooltip"));
-    QVERIFY(!itmData.contains(Qt::UserRole - 1)); // Qt::UserRole - 1 is used to store flags
+    QVERIFY(!itmData.contains(Qt::StandardItemFlagsRole));
     QVERIFY(m_model->itemData(QModelIndex()).isEmpty());
 }
 

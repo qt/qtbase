@@ -1034,8 +1034,8 @@ public:
             QStandardItem::setData(value, role);
             break;
         default:
-            // setFlags() uses "UserRole - 1" to store the flags, which is an
-            // implementation detail not exposed in the docs.
+            // setFlags() uses Qt::StandardItemFlagsRole to store the flags,
+            // which is an implementation detail not exposed in the docs.
             QStandardItem::setData(value, role);
             break;
         }
@@ -1047,8 +1047,8 @@ public:
         case Qt::DisplayRole:
             return QStandardItem::data(role);
         default:
-            // flags() uses "UserRole - 1" to get the flags, which is an implementation
-            // detail not exposed in the docs.
+            // flags() uses Qt::StandardItemFlagsRole to get the flags, which is
+            // an implementation detail not exposed in the docs.
             return QStandardItem::data(role);
         }
     }

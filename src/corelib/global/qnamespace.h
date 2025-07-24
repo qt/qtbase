@@ -1529,7 +1529,12 @@ namespace Qt {
         StatusTipPropertyRole = 30,
         WhatsThisPropertyRole = 31,
         // Reserved
-        UserRole = 0x0100
+        UserRole = 0x0100,
+
+        // Used by Qt models
+        StandardItemFlagsRole = UserRole - 1,  // QStandardItemModel
+        FileInfoRole = UserRole - 4,           // QFileSystemModel
+        RemoteObjectsCacheRole = UserRole - 1, // QtRemoteObjects::QAbstractItemModelReplica
     };
 
     enum ItemFlag {
