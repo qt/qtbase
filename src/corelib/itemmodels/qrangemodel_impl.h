@@ -1046,19 +1046,15 @@ public:
                 if (row_traits::fixed_size() <= 1) {
                     tried = true;
                     using meta_type = QRangeModelDetails::wrapped_t<value_type>;
-                    const QMetaObject &mo = meta_type::staticMetaObject;
                     for (auto &&[role, roleName] : itemModel().roleNames().asKeyValueRange()) {
                         QVariant data;
                         if constexpr (std::is_base_of_v<QObject, meta_type>) {
                             if (value)
                                 data = value->property(roleName);
                         } else {
-                            const int pi = mo.indexOfProperty(roleName.constData());
-                            if (pi >= 0) {
-                                const QMetaProperty prop = mo.property(pi);
-                                if (prop.isValid())
-                                    data = prop.readOnGadget(QRangeModelDetails::pointerTo(value));
-                            }
+                            const QMetaProperty prop = this->roleProperty<meta_type>(roleName);
+                            if (prop.isValid())
+                                data = prop.readOnGadget(QRangeModelDetails::pointerTo(value));
                         }
                         if (data.isValid())
                             result[role] = std::move(data);
@@ -1192,7 +1188,6 @@ public:
                     if (row_traits::fixed_size() <= 1) {
                         tried = true;
                         using meta_type = QRangeModelDetails::wrapped_t<value_type>;
-                        const QMetaObject &mo = meta_type::staticMetaObject;
                         // transactional: if possible, modify a copy and only
                         // update target if all values from data could be stored.
                         auto targetCopy = [](auto &&origin) {
@@ -1213,12 +1208,9 @@ public:
                                 if (targetCopy)
                                     written = targetCopy->setProperty(roleName, value);
                             } else {
-                                const int pi = mo.indexOfProperty(roleName.constData());
-                                if (pi >= 0) {
-                                    const QMetaProperty prop = mo.property(pi);
-                                    if (prop.isValid())
-                                        written = prop.writeOnGadget(QRangeModelDetails::pointerTo(targetCopy), value);
-                                }
+                                const QMetaProperty prop = this->roleProperty<meta_type>(roleName);
+                                if (prop.isValid())
+                                    written = prop.writeOnGadget(QRangeModelDetails::pointerTo(targetCopy), value);
                             }
                             if (!written) {
                                 qWarning("Failed to write value '%s' to role '%s'",
@@ -1631,13 +1623,18 @@ protected:
     }
 
     template <typename ItemType>
-    QMetaProperty roleProperty(int role) const
+    QMetaProperty roleProperty(const QByteArray &roleName) const
     {
         const QMetaObject *mo = &ItemType::staticMetaObject;
-        const QByteArray roleName = itemModel().roleNames().value(role);
         if (const int index = mo->indexOfProperty(roleName.data()); index >= 0)
             return mo->property(index);
         return {};
+    }
+
+    template <typename ItemType>
+    QMetaProperty roleProperty(int role) const
+    {
+        return roleProperty<ItemType>(itemModel().roleNames().value(role));
     }
 
     template <typename ItemType>
