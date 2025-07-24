@@ -18,10 +18,11 @@ qt_internal_add_module(ExamplesAssetDownloaderPrivate
         tasking/tcpsocket.cpp tasking/tcpsocket.h
     DEFINES
         QT_NO_CAST_FROM_ASCII
+    LIBRARIES
+        Qt6::CorePrivate
     PUBLIC_LIBRARIES
         Qt6::Concurrent
         Qt6::Core
-        Qt6::CorePrivate
         Qt6::Network
     NO_GENERATE_CPP_EXPORTS
 )
