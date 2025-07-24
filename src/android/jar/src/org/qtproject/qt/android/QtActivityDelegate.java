@@ -305,6 +305,12 @@ class QtActivityDelegate extends QtActivityDelegateBase
         });
     }
 
+    @Override
+    public void notifyAnnouncementEvent(int viewId, String message)
+    {
+        m_accessibilityDelegate.notifyAnnouncementEvent(viewId, message);
+    }
+
     // QtMenuInterface implementation begin
     @Override
     public void resetOptionsMenu()
