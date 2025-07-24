@@ -1005,7 +1005,8 @@ void QRangeModel::multiData(const QModelIndex &index, QModelRoleDataSpan roleDat
     If all columns in the range are of the same type, and if that type provides
     a meta object (i.e., it is a gadget, or a QObject subclass), then this
     property holds the names of the properties of that type, mapped to values of
-    Qt::ItemDataRole values from Qt::UserRole and up.
+    Qt::ItemDataRole values from Qt::UserRole and up. In addition, a role
+    "modelData" provides access to the gadget or QObject instance.
 
     Override this default behavior by setting this property explicitly to a non-
     empty mapping. Setting this property to an empty mapping, or using
@@ -1017,7 +1018,7 @@ void QRangeModel::multiData(const QModelIndex &index, QModelRoleDataSpan roleDat
 QHash<int, QByteArray> QRangeModelImplBase::roleNamesForMetaObject(const QMetaObject &metaObject) const
 {
     const auto defaults = itemModel().QAbstractItemModel::roleNames();
-    QHash<int, QByteArray> result;
+    QHash<int, QByteArray> result = {{Qt::RangeModelDataRole, "modelData"}};
     const int offset = metaObject.propertyOffset();
     for (int i = offset; i < metaObject.propertyCount(); ++i) {
         const auto name = metaObject.property(i).name();
@@ -1028,6 +1029,16 @@ QHash<int, QByteArray> QRangeModelImplBase::roleNamesForMetaObject(const QMetaOb
             result[Qt::UserRole + i - offset] = name;
     }
     return result;
+}
+
+QHash<int, QByteArray> QRangeModelImplBase::roleNamesForSimpleType() const
+{
+    // just a plain value
+    return QHash<int, QByteArray>{
+        {Qt::DisplayRole, "display"},
+        {Qt::EditRole, "edit"},
+        {Qt::RangeModelDataRole, "modelData"},
+    };
 }
 
 /*!

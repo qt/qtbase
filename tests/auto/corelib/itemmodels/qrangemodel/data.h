@@ -395,6 +395,11 @@ struct Data {
         new MetaObjectTuple,
         new MetaObjectTuple,
     };
+    std::array<std::tuple<std::unique_ptr<MetaObjectTuple>>, 3> arrayOfUniqueMultiObjectTuples {
+        std::make_unique<MetaObjectTuple>(),
+        std::make_unique<MetaObjectTuple>(),
+        std::make_unique<MetaObjectTuple>()
+    };
 
     // bad (but legal) get() overload that never returns a mutable reference
     std::vector<ConstRow> vectorOfConstStructs = {

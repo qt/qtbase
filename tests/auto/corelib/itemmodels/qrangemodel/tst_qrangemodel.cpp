@@ -47,6 +47,8 @@ private slots:
     void setItemData();
     void clearItemData_data() { createTestData(); }
     void clearItemData();
+    void modelData_data() { createTestData(); }
+    void modelData();
     void insertRows_data() { createTestData(); }
     void insertRows();
     void removeRows_data() { createTestData(); }
@@ -225,6 +227,10 @@ void tst_QRangeModel::createTestData()
     ADD_REF(tableOfMetaObjectTuple,
             std::tuple_size_v<MetaObjectTuple>,
             ChangeAction::ChangeRows | ChangeAction::SetData | ChangeAction::SetItemData);
+#if !defined(Q_OS_VXWORKS) && !defined(Q_OS_INTEGRITY)
+    // don't use the correct createBackup overload and fails to build
+    ADD_REF(arrayOfUniqueMultiObjectTuples, 1, ChangeAction::SetData | ChangeAction::SetItemData);
+#endif
 
     ADD_ALL(tableOfNumbers, 5, ChangeAction::All);
 
@@ -571,10 +577,15 @@ void tst_QRangeModel::overrideRoleNames()
 void tst_QRangeModel::setRoleNames()
 {
     QRangeModel model(QStringList{});
-    QStringListModel stringListModel;
+
+    const QHash<int, QByteArray> expectedRoleNames = {
+        {Qt::DisplayRole, "display"},
+        {Qt::EditRole, "edit"},
+        {Qt::RangeModelDataRole, "modelData"},
+    };
 
     QSignalSpy spy(&model, &QRangeModel::roleNamesChanged);
-    QCOMPARE(model.roleNames(), stringListModel.roleNames());
+    QCOMPARE(model.roleNames(), expectedRoleNames);
     QVERIFY(spy.isEmpty());
 
     const QHash<int, QByteArray> roleNames = {
@@ -584,32 +595,41 @@ void tst_QRangeModel::setRoleNames()
     model.setRoleNames(roleNames);
     QCOMPARE(spy.count(), 1);
     QCOMPARE(model.roleNames(), roleNames);
+
+    model.setRoleNames({});
+    QCOMPARE(spy.count(), 2);
+    QCOMPARE(model.roleNames(), expectedRoleNames);
 }
 
 void tst_QRangeModel::defaultRoleNames()
 {
-    []{
+    // default QAIM role names for anything that we didn't specialize roleNames for
+    const QHash<int, QByteArray> qaimRoleNames = QStringListModel().roleNames();
+
+    [qaimRoleNames]{
         const QHash<int, QByteArray> expectedRoleNames = {
+            {Qt::RangeModelDataRole, "modelData"},
             {Qt::UserRole, "string"},
             {Qt::UserRole + 1, "number"},
         };
 
-        QCOMPARE_NE(QRangeModel(QList<Object *>{}).roleNames(),
-                 expectedRoleNames);
+        QCOMPARE(QRangeModel(QList<Object *>{}).roleNames(),
+                 qaimRoleNames);
         QCOMPARE(QRangeModel(QList<std::tuple<Object *>>{}).roleNames(),
                  expectedRoleNames);
         QCOMPARE(QRangeModel(QList<std::tuple<Object *, Object *>>{}).roleNames(),
                  expectedRoleNames);
     }();
 
-    []{
+    [qaimRoleNames]{
         const QHash<int, QByteArray> expectedRoleNames = {
+            {Qt::RangeModelDataRole, "modelData"},
             {Qt::DisplayRole, "display"},
             {Qt::DecorationRole, "decoration"},
             {Qt::ToolTipRole, "toolTip"},
         };
-        QCOMPARE_NE(QRangeModel(QList<Item>{}).roleNames(),
-                 expectedRoleNames);
+        QCOMPARE(QRangeModel(QList<Item>{}).roleNames(),
+                 qaimRoleNames);
         QCOMPARE(QRangeModel(QList<std::tuple<Item>>{}).roleNames(),
                  expectedRoleNames);
         QCOMPARE(QRangeModel(QList<std::tuple<Item, Item, Item>>{}).roleNames(),
@@ -618,7 +638,7 @@ void tst_QRangeModel::defaultRoleNames()
                  expectedRoleNames);
     }();
 
-    []{
+    [qaimRoleNames]{
         using Tree = QList<MultiRoleGadget>;
         struct EmptyTreeProtocol
         {
@@ -627,6 +647,7 @@ void tst_QRangeModel::defaultRoleNames()
             Tree empty;
         };
         const QHash<int, QByteArray> expectedRoleNames = {
+            {Qt::RangeModelDataRole, "modelData"},
             {Qt::DisplayRole, "display"},
             {Qt::DecorationRole, "decoration"},
         };
@@ -640,13 +661,18 @@ void tst_QRangeModel::defaultRoleNames()
                  expectedRoleNames);
     }();
 
-    []{
-        const auto expectedRoleNames = QRangeModel(QList<Row>{}).QAbstractItemModel::roleNames();
-        QCOMPARE(QRangeModel(QList<Row>{}).roleNames(), expectedRoleNames);
+    [qaimRoleNames]{
+        const QHash<int, QByteArray> singleValueRoleNames = {
+            {Qt::DisplayRole, "display"},
+            {Qt::EditRole, "edit"},
+            {Qt::RangeModelDataRole, "modelData"},
+        };
+
+        QCOMPARE(QRangeModel(QList<Row>{}).roleNames(), qaimRoleNames);
         QCOMPARE(QRangeModel(QList<std::tuple<Item, MultiRoleGadget>>{}).roleNames(),
-                 expectedRoleNames);
-        QCOMPARE(QRangeModel(QList<int>{}).roleNames(), expectedRoleNames);
-        QCOMPARE(QRangeModel(QList<QList<QString>>{}).roleNames(), expectedRoleNames);
+                 qaimRoleNames);
+        QCOMPARE(QRangeModel(QList<int>{}).roleNames(), singleValueRoleNames);
+        QCOMPARE(QRangeModel(QList<QList<QString>>{}).roleNames(), singleValueRoleNames);
     }();
 }
 
@@ -751,7 +777,7 @@ void tst_QRangeModel::itemData()
     const QModelIndex index = model->index(0, 0);
     const QMap<int, QVariant> itemData = model->itemData(index);
     for (int role = 0; role < Qt::UserRole; ++role) {
-        if (role == Qt::EditRole) // we fake that in data()
+        if (role == Qt::EditRole || role == Qt::RangeModelDataRole) // we fake that in data()
             continue;
         QCOMPARE(itemData.value(role), index.data(role));
     }
@@ -769,12 +795,14 @@ void tst_QRangeModel::setItemData()
     QMap<int, QVariant> itemData = model->itemData(index);
     // we only care about multi-role models
     const auto roles = itemData.keys();
-    if (roles == QList<int>{Qt::DisplayRole, Qt::EditRole})
+    if (roles == QList<int>{Qt::DisplayRole, Qt::EditRole}
+     || roles == QList<int>{Qt::DisplayRole, Qt::EditRole, Qt::RangeModelDataRole}) {
         QSKIP("Can't test setItemData on models with single values!");
+     }
 
     itemData = {};
     for (int role : roles) {
-        if (role == Qt::EditRole) // faked
+        if (role == Qt::EditRole || role == Qt::RangeModelDataRole) // faked
             continue;
         QVariant data = role != Qt::DecorationRole ? QVariant(QStringLiteral("%1").arg(role))
                                                    : QVariant(QColor(Qt::magenta));
@@ -799,7 +827,7 @@ void tst_QRangeModel::setItemData()
     }
 
     for (int role = 0; role < Qt::UserRole; ++role) {
-        if (role == Qt::EditRole) // faked role
+        if (role == Qt::EditRole || role == Qt::RangeModelDataRole) // faked role
             continue;
 
         QVariant data = index.data(role);
@@ -828,6 +856,43 @@ void tst_QRangeModel::clearItemData()
     QCOMPARE(model->clearItemData(index0), changeActions.testFlags(ChangeAction::SetData));
     QCOMPARE(index0.data() == oldDataAt0, !changeActions.testFlags(ChangeAction::SetData));
     QCOMPARE(index1.data(), oldDataAt1);
+}
+
+void tst_QRangeModel::modelData()
+{
+    QFETCH(Factory, factory);
+    auto model = factory();
+    QFETCH(const ChangeActions, changeActions);
+
+    const auto roleNames = model->roleNames();
+    // models must support RangeModelDataRole if it's part of roleNames;
+    // otherwise, we still might support it for certain columns.
+    const bool promisesRangeModelData = roleNames.contains(Qt::RangeModelDataRole);
+    const QModelIndex index = model->index(0, 0);
+    const QVariant data = model->data(index, Qt::RangeModelDataRole);
+    QVERIFY(data.isValid() || !promisesRangeModelData);
+
+    bool setDataResult = false;
+    // we can not swap out QObjects, even if setData() is permitted and
+    // RangeModelDataRole is reported
+    if (changeActions.testFlag(ChangeAction::SetData) && data.isValid()) {
+        QEXPECT_FAIL("listOfMetaObjectTupleCopy", "Can't replace QObject items", Continue);
+        QEXPECT_FAIL("arrayOfUniqueMultiObjectTuplesRef", "Can't replace QObject items", Continue);
+        setDataResult = model->setData(index, data, Qt::RangeModelDataRole);
+        QVERIFY(setDataResult || !promisesRangeModelData);
+        if (setDataResult) {
+            // if we could setData (with an unchanged value), then try with a
+            // different row, and verify that the DisplayRole changes.
+            if (model->rowCount() > 1) {
+                const QModelIndex index2 = model->index(1, 0);
+                const QVariant data2 = model->data(index2, Qt::RangeModelDataRole);
+                QVERIFY(model->setData(index, data2, Qt::RangeModelDataRole));
+                QCOMPARE(model->data(index, Qt::DisplayRole), model->data(index2, Qt::DisplayRole));
+            } else {
+                QSKIP("Cannot test changing of modelData with a model with only one row");
+            }
+        }
+    }
 }
 
 void tst_QRangeModel::insertRows()

@@ -2827,6 +2827,7 @@
     \omitvalue ToolTipPropertyRole
     \omitvalue StatusTipPropertyRole
     \omitvalue WhatsThisPropertyRole
+    \omitvalue RangeModelDataRole
     \omitvalue StandardItemFlagsRole
     \omitvalue FileInfoRole
     \omitvalue RemoteObjectsCacheRole

@@ -1528,6 +1528,9 @@ namespace Qt {
         ToolTipPropertyRole = 29,
         StatusTipPropertyRole = 30,
         WhatsThisPropertyRole = 31,
+        // QRangeModel support for QML's required property var modelData
+        RangeModelDataRole = 40,
+
         // Reserved
         UserRole = 0x0100,
 
