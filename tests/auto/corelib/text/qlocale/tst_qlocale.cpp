@@ -186,6 +186,8 @@ private slots:
 
     void toLowerUpperEszett();
 #endif
+    void toLowerUpperFinalSigma_data();
+    void toLowerUpperFinalSigma();
 
     void defaulted_ctor();
     void legacyNames();
@@ -5660,6 +5662,73 @@ void tst_QLocale::toLowerUpperEszett()
     QCOMPARE(QLocale(u"tr_TR"_s).toUpper(eszettLowerString), eszettUpperString);
 }
 #endif // QT_HAS_LOCALE_CASE_CONVERSION
+
+void tst_QLocale::toLowerUpperFinalSigma_data()
+{
+    QTest::addColumn<QString>("lower");
+    QTest::addColumn<QString>("upper");
+
+    QTest::addRow("logos") << u"λογος"_s
+    //                  final sigma ↕
+                           << u"ΛΟΓΟΣ"_s;
+    QTest::addRow("music") << u"μουσικη"_s
+    //              "medial" sigma ↕
+                           << u"ΜΟΥΣΙΚΗ"_s;
+
+    //
+    // Now the same with "tonos" (stess marker):
+    //
+    //  Modern Greek uses them on lower-case, but not on upper-case words, but
+    //  Unicode/CLDR doesn't/can't have rules for adding or removing them when
+    //  case-converting.
+
+    QTest::addRow("logos+tonos") << u"λόγος"_s
+    //                        final sigma ↕
+                                 << u"ΛΌΓΟΣ"_s;
+    QTest::addRow("music+tonos") << u"μουσική"_s
+    //                    "medial" sigma ↕
+                                 << u"ΜΟΥΣΙΚΉ"_s;
+}
+
+void tst_QLocale::toLowerUpperFinalSigma()
+{
+    QFETCH(const QString, lower);
+    QFETCH(const QString, upper);
+
+    static const QLocale gr("gr_GR"_L1);
+    if constexpr (!QT_HAS_LOCALE_CASE_CONVERSION) {
+        // these fall back to QString::toLower/Upper(), so inherit QTBUG-2163
+        QEXPECT_FAIL("logos", "QTBUG-2163", Continue);
+        QEXPECT_FAIL("logos+tonos", "QTBUG-2163", Continue);
+    }
+#ifdef Q_OS_WIN
+    QEXPECT_FAIL("logos", "QTBUG-138705", Continue);
+    QEXPECT_FAIL("logos+tonos", "QTBUG-138705", Continue);
+#endif
+    QCOMPARE(gr.toLower(upper), lower);
+    QCOMPARE(gr.toUpper(lower), upper);
+
+    // This ought to be a property of the script, so locale-independent:
+    static const QLocale c("C"_L1);
+    if constexpr (!QT_HAS_LOCALE_CASE_CONVERSION) {
+        // these fall back to QString::toLower/Upper(), so inherit QTBUG-2163
+        QEXPECT_FAIL("logos", "QTBUG-2163", Continue);
+        QEXPECT_FAIL("logos+tonos", "QTBUG-2163", Continue);
+    }
+#ifdef Q_OS_WIN
+    QEXPECT_FAIL("logos", "QTBUG-138705", Continue);
+    QEXPECT_FAIL("logos+tonos", "QTBUG-138705", Continue);
+#endif
+    QCOMPARE(c.toLower(upper), lower);
+    QCOMPARE(c.toUpper(lower), upper);
+
+    // For comparison: locale-independent QString::toUpper/Lower():
+    // Qt's own implementation does it wrong:
+    QEXPECT_FAIL("logos", "QTBUG-2163", Continue);
+    QEXPECT_FAIL("logos+tonos", "QTBUG-2163", Continue);
+    QCOMPARE(upper.toLower(), lower);
+    QCOMPARE(lower.toUpper(), upper);
+}
 
 QTEST_MAIN(tst_QLocale)
 #include "tst_qlocale.moc"
