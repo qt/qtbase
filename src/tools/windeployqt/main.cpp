@@ -1559,46 +1559,6 @@ static DeployResult deploy(const Options &options, const QMap<QString, QString> 
         return result;
     }
 
-    // Some Windows-specific checks: Qt5Core depends on ICU when configured with "-icu". Other than
-    // that, Qt5WebKit has a hard dependency on ICU.
-    if (options.platform.testFlag(WindowsBased))  {
-        const QStringList qtLibs = dependentQtLibs.filter(QStringLiteral("Qt6Core"), Qt::CaseInsensitive)
-            + dependentQtLibs.filter(QStringLiteral("Qt5WebKit"), Qt::CaseInsensitive);
-        for (const QString &qtLib : qtLibs) {
-            QStringList icuLibs = findDependentLibraries(qtLib, errorMessage).filter(QStringLiteral("ICU"), Qt::CaseInsensitive);
-            if (!icuLibs.isEmpty()) {
-                // Find out the ICU version to add the data library icudtXX.dll, which does not show
-                // as a dependency.
-                const QString icuVersion = getIcuVersion(icuLibs.constFirst());
-                if (!icuVersion.isEmpty())  {
-                    if (optVerboseLevel > 1)
-                        std::wcout << "Adding ICU version " << icuVersion << '\n';
-                    QString icuLib = QStringLiteral("icudt") + icuVersion
-                            + QLatin1StringView(windowsSharedLibrarySuffix);
-                    // Some packages contain debug dlls of ICU libraries even though it's a C
-                    // library and the official packages do not differentiate (QTBUG-87677)
-                    if (result.isDebug) {
-                        const QString icuLibCandidate = QStringLiteral("icudtd") + icuVersion
-                                + QLatin1StringView(windowsSharedLibrarySuffix);
-                        if (!findInPath(icuLibCandidate).isEmpty()) {
-                            icuLib = icuLibCandidate;
-                        }
-                    }
-                    icuLibs.push_back(icuLib);
-                }
-                for (const QString &icuLib : std::as_const(icuLibs)) {
-                    const QString icuPath = findInPath(icuLib);
-                    if (icuPath.isEmpty()) {
-                        *errorMessage = QStringLiteral("Unable to locate ICU library ") + icuLib;
-                        return result;
-                    }
-                    dependentQtLibs.push_back(icuPath);
-                } // for each icuLib
-                break;
-            } // !icuLibs.isEmpty()
-        } // Qt6Core/Qt6WebKit
-    } // Windows
-
     // Scan Quick2 imports
     QmlImportScanResult qmlScanResult;
     if (options.quickImports && usesQml2) {
@@ -1660,6 +1620,46 @@ static DeployResult deploy(const Options &options, const QMap<QString, QString> 
         disabled[QtQmlModuleId] = 1;
         disabled[QtQuickModuleId] = 1;
     }
+
+    // Some Windows-specific checks: Qt5Core depends on ICU when configured with "-icu". Other than
+    // that, Qt5WebKit has a hard dependency on ICU.
+    if (options.platform.testFlag(WindowsBased))  {
+        const QStringList qtLibs = dependentQtLibs.filter(QStringLiteral("Qt6Core"), Qt::CaseInsensitive)
+        + dependentQtLibs.filter(QStringLiteral("Qt5WebKit"), Qt::CaseInsensitive);
+        for (const QString &qtLib : qtLibs) {
+            QStringList icuLibs = findDependentLibraries(qtLib, errorMessage).filter(QStringLiteral("ICU"), Qt::CaseInsensitive);
+            if (!icuLibs.isEmpty()) {
+                // Find out the ICU version to add the data library icudtXX.dll, which does not show
+                // as a dependency.
+                const QString icuVersion = getIcuVersion(icuLibs.constFirst());
+                if (!icuVersion.isEmpty())  {
+                    if (optVerboseLevel > 1)
+                        std::wcout << "Adding ICU version " << icuVersion << '\n';
+                    QString icuLib = QStringLiteral("icudt") + icuVersion
+                            + QLatin1StringView(windowsSharedLibrarySuffix);
+                    // Some packages contain debug dlls of ICU libraries even though it's a C
+                    // library and the official packages do not differentiate (QTBUG-87677)
+                    if (result.isDebug) {
+                        const QString icuLibCandidate = QStringLiteral("icudtd") + icuVersion
+                                + QLatin1StringView(windowsSharedLibrarySuffix);
+                        if (!findInPath(icuLibCandidate).isEmpty()) {
+                            icuLib = icuLibCandidate;
+                        }
+                    }
+                    icuLibs.push_back(icuLib);
+                }
+                for (const QString &icuLib : std::as_const(icuLibs)) {
+                    const QString icuPath = findInPath(icuLib);
+                    if (icuPath.isEmpty()) {
+                        *errorMessage = QStringLiteral("Unable to locate ICU library ") + icuLib;
+                        return result;
+                    }
+                    deployedQtLibraries.push_back(icuPath);
+                } // for each icuLib
+                break;
+            } // !icuLibs.isEmpty()
+        } // Qt6Core/Qt6WebKit
+    } // Windows
 
     QStringList openSslLibs;
     if (!options.openSslRootDirectory.isEmpty()) {
