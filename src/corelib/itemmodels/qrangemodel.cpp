@@ -1016,6 +1016,7 @@ void QRangeModel::setRoleNames(const QHash<int, QByteArray> &names)
     if (d->m_roleNames == names)
         return;
     beginResetModel();
+    d->impl->invalidateCaches();
     d->m_roleNames = names;
     endResetModel();
     Q_EMIT roleNamesChanged();

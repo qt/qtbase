@@ -554,15 +554,38 @@ namespace QRangeModelDetails
         static constexpr bool is_default = is_any_of<protocol, ListProtocol, TableProtocol, DefaultTreeProtocol>();
     };
 
+    template <bool cacheProperties>
+    struct PropertyData {
+        static constexpr bool cachesProperties = false;
+
+        void invalidateCaches() {}
+    };
+
+    template <>
+    struct PropertyData<true>
+    {
+        static constexpr bool cachesProperties = true;
+        mutable QHash<int, QMetaProperty> properties;
+
+        void invalidateCaches()
+        {
+            properties.clear();
+        }
+    };
+
     // The storage of the model data. We might store it as a pointer, or as a
     // (copied- or moved-into) value (or smart pointer). But we always return a
     // raw pointer.
-    template <typename ModelStorage>
-    struct ModelData
+    template <typename ModelStorage, typename ItemType>
+    struct ModelData : PropertyData<has_metaobject_v<ItemType>>
     {
         auto model() { return pointerTo(m_model); }
         auto model() const { return pointerTo(m_model); }
 
+        template <typename Model = ModelStorage>
+        ModelData(Model &&model)
+            : m_model(std::forward<Model>(model))
+        {}
         ModelStorage m_model;
     };
 } // namespace QRangeModelDetails
@@ -648,6 +671,7 @@ public:
 
     enum Op {
         Destroy,
+        InvalidateCaches,
         SetData,
         SetItemData,
         ClearItemData,
@@ -662,6 +686,11 @@ public:
     void destroy()
     {
         call_fn(Destroy, this, nullptr, nullptr);
+    }
+
+    void invalidateCaches()
+    {
+        call_fn(InvalidateCaches, this, nullptr, nullptr);
     }
 
 private:
@@ -782,8 +811,10 @@ protected:
                                                 std::remove_pointer_t<std::remove_reference_t<T>>>;
 
     using ModelData = QRangeModelDetails::ModelData<std::conditional_t<
-                                                    std::is_pointer_v<Range>,
-                                                    Range, std::remove_reference_t<Range>>
+                                                        std::is_pointer_v<Range>,
+                                                        Range, std::remove_reference_t<Range>
+                                                    >,
+                                                    typename row_traits::item_type
                                                 >;
 
     // A iterator type to use as the input iterator with the
@@ -856,6 +887,8 @@ public:
     {
         switch (op) {
         case Destroy: delete static_cast<Structure *>(that);
+            break;
+        case InvalidateCaches: static_cast<Self *>(that)->m_data.invalidateCaches();
             break;
         case SetData: makeCall(that, &Self::setData, r, args);
             break;
@@ -1634,7 +1667,18 @@ protected:
     template <typename ItemType>
     QMetaProperty roleProperty(int role) const
     {
-        return roleProperty<ItemType>(itemModel().roleNames().value(role));
+        struct {
+            operator QMetaProperty() const {
+                return that.roleProperty<ItemType>(that.itemModel().roleNames().value(role));
+            }
+            const QRangeModelImpl &that;
+            const int role;
+        } findProperty{*this, role};
+
+        if constexpr (ModelData::cachesProperties)
+            return *m_data.properties.tryEmplace(role, findProperty).iterator;
+        else
+            return findProperty;
     }
 
     template <typename ItemType>
