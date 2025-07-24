@@ -32,6 +32,14 @@ using namespace Qt::StringLiterals;
 
 Q_DECLARE_METATYPE(QLocale::FormatType)
 
+// These platforms implement a locale-dependent case conversion
+// (the others fall back to QString::toUpper/toLower()):
+#if QT_CONFIG(icu) || defined(Q_OS_WIN) || defined(Q_OS_APPLE)
+#  define QT_HAS_LOCALE_CASE_CONVERSION 1
+#else
+#  define QT_HAS_LOCALE_CASE_CONVERSION 0
+#endif
+
 class tst_QLocale : public QObject
 {
     Q_OBJECT
@@ -172,7 +180,7 @@ private slots:
     void codeToLang_data();
     void codeToLang();
 
-#if QT_CONFIG(icu) || defined(Q_OS_WIN) || defined(Q_OS_APPLE)
+#if QT_HAS_LOCALE_CASE_CONVERSION
     void toLowerUpper_data();
     void toLowerUpper();
 
@@ -5556,7 +5564,7 @@ void tst_QLocale::codeToLcs()
              QLocale::LastScript);
 }
 
-#if QT_CONFIG(icu) || defined(Q_OS_WIN) || defined(Q_OS_APPLE)
+#if QT_HAS_LOCALE_CASE_CONVERSION
 void tst_QLocale::toLowerUpper_data()
 {
     QTest::addColumn<QLocale>("locale");
@@ -5651,7 +5659,7 @@ void tst_QLocale::toLowerUpperEszett()
     QCOMPARE(QLocale(u"de_DE"_s).toUpper(eszettLowerString), eszettUpperString);
     QCOMPARE(QLocale(u"tr_TR"_s).toUpper(eszettLowerString), eszettUpperString);
 }
-#endif
+#endif // QT_HAS_LOCALE_CASE_CONVERSION
 
 QTEST_MAIN(tst_QLocale)
 #include "tst_qlocale.moc"
