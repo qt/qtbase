@@ -168,6 +168,17 @@ void QAndroidPlatformWindow::setVisible(bool visible)
 {
     if (isEmbeddingContainer())
         return;
+
+    if (!visible && window()->isTopLevel()) {
+        // Do not hide last Qt for Android window.
+        // We don't want the splash screen to be shown during the app's
+        // exit because it would be the foremost visible screen.
+        if (QtAndroid::isQtApplication()) {
+            visible = m_nativeQtWindow.callMethod<bool>("isLastVisibleTopLevelWindow");
+            m_nativeQtWindow.callMethod<void>("setToDestroy", !visible);
+        }
+    }
+
     m_nativeQtWindow.callMethod<void>("setVisible", visible);
 
     if (visible) {
