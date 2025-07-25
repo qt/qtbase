@@ -255,7 +255,7 @@
 
     \endomit
 
-    \sa Q_GLOBAL_STATIC_WITH_ARGS(), Q_APPLICATION_STATIC(), QGlobalStatic
+    \sa Q_APPLICATION_STATIC(), QGlobalStatic
 */
 
 /*!
@@ -318,7 +318,7 @@
     offers two methods to determine the current status of the global: exists()
     and isDestroyed().
 
-    \sa Q_GLOBAL_STATIC(), Q_GLOBAL_STATIC_WITH_ARGS()
+    \sa Q_GLOBAL_STATIC()
 */
 
 /*!
