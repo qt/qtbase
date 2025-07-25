@@ -1502,8 +1502,13 @@ QRectF QMacStylePrivate::CocoaControl::adjustedControlFrame(const QRectF &rect) 
             frameRect.translate(0, 0.5);
         else if (size == QStyleHelper::SizeMini)
             frameRect = frameRect.adjusted(0, 0, -8, 0).translated(4, -0.5);
-        frameRect = frameRect.adjusted(-pushButtonBevelRectOffsets[size], 0,
-                                        pushButtonBevelRectOffsets[size], 0);
+        if (!qt_apple_runningWithLiquidGlass()) {
+            // These adjustments needed because the actual button's bezel
+            // prior to Tahoe with the Liquid Glass enabled was smaller than requested.
+            // Starting from Tahoe the bezel exactly fits the rectangle we draw with.
+            frameRect = frameRect.adjusted(-pushButtonBevelRectOffsets[size], 0,
+                                            pushButtonBevelRectOffsets[size], 0);
+        }
     } else {
         // Center in the style option's rect.
         frameRect = QRectF(QPointF(0, (rect.height() - frameSize.height()) / 2.0),
@@ -6390,7 +6395,7 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
             else
                 sz.setHeight(pushButtonDefaultHeight[QStyleHelper::SizeLarge]);
         } else {
-            if (!isFlat)
+            if (!isFlat && !qt_apple_runningWithLiquidGlass())
                 sz.rwidth() -= 10;
             if (controlSize == QStyleHelper::SizeMini)
                 sz.setHeight(24);
