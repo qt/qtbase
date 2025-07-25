@@ -389,6 +389,11 @@ if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
     endfunction()
 endif()
 
+function(_qt_internal_get_qt_internal_process_resource_args option_args single_args multi_args)
+    set(${option_args} "BIG_RESOURCES" PARENT_SCOPE)
+    set(${single_args} "PREFIX;LANG;BASE;OUTPUT_TARGETS;DESTINATION" PARENT_SCOPE)
+    set(${multi_args} "FILES;OPTIONS" PARENT_SCOPE)
+endfunction()
 
 # qt6_add_resources(target resourcename ...
 # or
@@ -402,11 +407,39 @@ function(qt6_add_resources outfiles )
             set(${arg_OUTPUT_TARGETS} ${${arg_OUTPUT_TARGETS}} PARENT_SCOPE)
         endif()
     else()
-        set(options)
-        set(oneValueArgs)
-        set(multiValueArgs OPTIONS)
+        set(optional_args "")
+        set(single_args "")
+        set(multi_args OPTIONS)
 
-        cmake_parse_arguments(_RCC "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+        _qt_internal_get_qt_internal_process_resource_args(
+            process_resources_optional_args
+            process_resources_single_args
+            process_resources_multi_args
+        )
+        list(REMOVE_ITEM process_resources_optional_args ${optional_args})
+        list(REMOVE_ITEM process_resources_single_args ${single_args})
+        list(REMOVE_ITEM process_resources_multi_args ${multi_args})
+
+        set(contains_suspicious_args FALSE)
+        foreach(arg IN LISTS
+            process_resources_optional_args
+            process_resources_single_args
+            process_resources_multi_args)
+            if(${arg} IN_LIST ARGV)
+                set(contains_suspicious_args TRUE)
+                break()
+            endif()
+        endforeach()
+
+        if(contains_suspicious_args)
+            message(WARNING "qt6_add_resources uses arguments from the"
+                " 'qt6_add_resources(<target> ...)'  signature, but ${outfiles} is not a target."
+                " Make sure that the '${outfiles}' target is created before the respective"
+                " 'qt6_add_resources' call."
+            )
+        endif()
+
+        cmake_parse_arguments(_RCC "${optional_args}" "${single_args}" "${multi_args}" ${ARGN})
 
         set(rcc_files ${_RCC_UNPARSED_ARGUMENTS})
         set(rcc_options ${_RCC_OPTIONS})
@@ -2290,8 +2323,9 @@ endfunction()
 # targets pass a value to the OUTPUT_TARGETS parameter.
 #
 function(_qt_internal_process_resource target resourceName)
-    cmake_parse_arguments(rcc "BIG_RESOURCES"
-        "PREFIX;LANG;BASE;OUTPUT_TARGETS;DESTINATION" "FILES;OPTIONS" ${ARGN})
+    _qt_internal_get_qt_internal_process_resource_args(options oneValueArgs multiValueArgs)
+
+    cmake_parse_arguments(rcc "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
     if("${rcc_OPTIONS}" MATCHES "-binary")
         set(isBinary TRUE)
