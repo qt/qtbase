@@ -472,7 +472,7 @@ public:
         Custom,
     };
 
-    void raiseError(const QString &message);
+    void raiseError(QAnyStringView message);
     QString errorString() const;
     Error error() const;
     bool hasError() const;

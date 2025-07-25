@@ -3138,7 +3138,7 @@ public:
     }
 
     void raiseError(QXmlStreamWriter::Error error);
-    void raiseError(QXmlStreamWriter::Error error, const QString &message);
+    void raiseError(QXmlStreamWriter::Error error, QAnyStringView message);
     void write(QAnyStringView s);
     void writeEscaped(QAnyStringView, bool escapeWhitespace = false);
     bool finishStartElement(bool contents = true);
@@ -3206,10 +3206,10 @@ void QXmlStreamWriterPrivate::raiseError(QXmlStreamWriter::Error errorCode)
     }
 }
 
-void QXmlStreamWriterPrivate::raiseError(QXmlStreamWriter::Error errorCode, const QString &message)
+void QXmlStreamWriterPrivate::raiseError(QXmlStreamWriter::Error errorCode, QAnyStringView message)
 {
     error = errorCode;
-    errorString = message;
+    errorString = message.toString();
 }
 
 void QXmlStreamWriterPrivate::write(QAnyStringView s)
@@ -3720,7 +3720,7 @@ QString QXmlStreamWriter::errorString() const
     \since 6.10
     \sa errorString(), error(), hasError()
  */
-void QXmlStreamWriter::raiseError(const QString &message)
+void QXmlStreamWriter::raiseError(QAnyStringView message)
 {
     Q_D(QXmlStreamWriter);
     d->raiseError(QXmlStreamWriter::Error::Custom, message);
