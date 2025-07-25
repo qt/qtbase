@@ -487,7 +487,7 @@ bool QPixmapCache::insert(const QString &key, const QPixmap &pixmap)
     The oldest pixmaps (least recently accessed in the cache) are
     deleted when more space is needed.
 
-    \sa setCacheLimit(), replace()
+    \sa setCacheLimit()
 */
 QPixmapCache::Key QPixmapCache::insert(const QPixmap &pixmap)
 {
