@@ -447,7 +447,7 @@ const char *QtMetaTypePrivate::typedefNameForType(const QtPrivate::QMetaTypeInte
     Additional types can be registered using qRegisterMetaType() or by calling
     registerType().
 
-    \sa type(), typeName()
+    \sa type()
 */
 
 /*!
@@ -2857,7 +2857,7 @@ static const QtPrivate::QMetaTypeInterface *interfaceForTypeNoWarning(int typeId
     Returns \c true if the datatype with ID \a type is registered;
     otherwise returns \c false.
 
-    \sa type(), typeName(), Type
+    \sa type(), Type
 */
 bool QMetaType::isRegistered(int type)
 {
