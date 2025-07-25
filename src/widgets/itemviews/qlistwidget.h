@@ -167,7 +167,9 @@ class Q_WIDGETS_EXPORT QListWidget : public QListView
     Q_PROPERTY(int currentRow READ currentRow WRITE setCurrentRow NOTIFY currentRowChanged
                USER true)
     Q_PROPERTY(bool sortingEnabled READ isSortingEnabled WRITE setSortingEnabled)
+#if QT_CONFIG(draganddrop)
     Q_PROPERTY(Qt::DropActions supportedDragActions READ supportedDragActions WRITE setSupportedDragActions)
+#endif
 
     friend class QListWidgetItem;
     friend class QListModel;
