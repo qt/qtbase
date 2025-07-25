@@ -194,7 +194,9 @@ class Q_WIDGETS_EXPORT QTableWidget : public QTableView
     Q_OBJECT
     Q_PROPERTY(int rowCount READ rowCount WRITE setRowCount)
     Q_PROPERTY(int columnCount READ columnCount WRITE setColumnCount)
+#if QT_CONFIG(draganddrop)
     Q_PROPERTY(Qt::DropActions supportedDragActions READ supportedDragActions WRITE setSupportedDragActions)
+#endif
 
     friend class QTableModel;
 public:

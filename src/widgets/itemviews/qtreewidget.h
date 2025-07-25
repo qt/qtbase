@@ -227,7 +227,9 @@ class Q_WIDGETS_EXPORT QTreeWidget : public QTreeView
     Q_OBJECT
     Q_PROPERTY(int columnCount READ columnCount WRITE setColumnCount)
     Q_PROPERTY(int topLevelItemCount READ topLevelItemCount)
+#if QT_CONFIG(draganddrop)
     Q_PROPERTY(Qt::DropActions supportedDragActions READ supportedDragActions WRITE setSupportedDragActions)
+#endif
 
     friend class QTreeModel;
     friend class QTreeWidgetItem;

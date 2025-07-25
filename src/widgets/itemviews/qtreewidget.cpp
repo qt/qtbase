@@ -739,7 +739,11 @@ Qt::DropActions QTreeModel::supportedDropActions() const
 
 Qt::DropActions QTreeModel::supportedDragActions() const
 {
+#if QT_CONFIG(draganddrop)
     return view()->supportedDragActions();
+#else
+    return Qt::DropActions(Qt::IgnoreAction);
+#endif
 }
 
 void QTreeModel::itemChanged(QTreeWidgetItem *item)
@@ -3218,6 +3222,7 @@ Qt::DropActions QTreeWidget::supportedDropActions() const
     return model()->QAbstractItemModel::supportedDropActions() | Qt::MoveAction;
 }
 
+#if QT_CONFIG(draganddrop)
 /*!
     \property QTreeWidget::supportedDragActions
     \brief the drag actions supported by this view
@@ -3236,6 +3241,7 @@ void QTreeWidget::setSupportedDragActions(Qt::DropActions actions)
     Q_D(QTreeWidget);
     d->supportedDragActions = actions;
 }
+#endif // QT_CONFIG(draganddrop)
 
 /*!
     Returns the QModelIndex associated with the given \a item in the given \a column.

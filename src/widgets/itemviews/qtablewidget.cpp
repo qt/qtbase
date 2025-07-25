@@ -871,8 +871,12 @@ Qt::DropActions QTableModel::supportedDropActions() const
 
 Qt::DropActions QTableModel::supportedDragActions() const
 {
+#if QT_CONFIG(draganddrop)
     const QTableWidget *view = this->view();
     return (view ? view->supportedDragActions() : Qt::DropActions(Qt::IgnoreAction));
+#else
+    return Qt::DropActions(Qt::IgnoreAction);
+#endif
 }
 
 /*!
@@ -2637,6 +2641,7 @@ Qt::DropActions QTableWidget::supportedDropActions() const
     return d_func()->tableModel()->QAbstractTableModel::supportedDropActions() | Qt::MoveAction;
 }
 
+#if QT_CONFIG(draganddrop)
 /*!
     \property QTableWidget::supportedDragActions
     \brief the drag actions supported by this view
@@ -2655,6 +2660,7 @@ void QTableWidget::setSupportedDragActions(Qt::DropActions actions)
     Q_D(QTableWidget);
     d->supportedDragActions = actions;
 }
+#endif // QT_CONFIG(draganddrop)
 
 /*!
   Returns a list of pointers to the items contained in the \a data object.
