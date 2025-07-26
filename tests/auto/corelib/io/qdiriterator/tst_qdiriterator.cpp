@@ -152,15 +152,11 @@ void tst_QDirIterator::initTestCase()
 #  if defined(Q_OS_WIN)
     // ### Sadly, this is a platform difference right now.
     createLink("entrylist/file", "entrylist/linktofile.lnk");
-#    ifndef Q_NO_SYMLINKS_TO_DIRS
     createLink("entrylist/directory", "entrylist/linktodirectory.lnk");
-#    endif
     createLink("entrylist/nothing", "entrylist/brokenlink.lnk");
 #  else
     createLink("file", "entrylist/linktofile.lnk");
-#    ifndef Q_NO_SYMLINKS_TO_DIRS
     createLink("directory", "entrylist/linktodirectory.lnk");
-#    endif
     createLink("nothing", "entrylist/brokenlink.lnk");
 #  endif
 #endif
@@ -201,7 +197,7 @@ void tst_QDirIterator::iterateRelativeDirectory_data()
                    "entrylist/linktofile.lnk,"
 #endif
                    "entrylist/directory,"
-#if !defined(Q_NO_SYMLINKS) && !defined(Q_NO_SYMLINKS_TO_DIRS)
+#ifndef Q_NO_SYMLINKS
                    "entrylist/linktodirectory.lnk,"
 #endif
                    "entrylist/writable").split(',');
@@ -216,7 +212,7 @@ void tst_QDirIterator::iterateRelativeDirectory_data()
                    "entrylist/linktofile.lnk,"
 #endif
                    "entrylist/directory,"
-#if !defined(Q_NO_SYMLINKS) && !defined(Q_NO_SYMLINKS_TO_DIRS)
+#ifndef Q_NO_SYMLINKS
                    "entrylist/linktodirectory.lnk,"
 #endif
                    "entrylist/writable").split(',');
@@ -231,7 +227,7 @@ void tst_QDirIterator::iterateRelativeDirectory_data()
                    "entrylist/linktofile.lnk,"
 #endif
                    "entrylist/directory,"
-#if !defined(Q_NO_SYMLINKS) && !defined(Q_NO_SYMLINKS_TO_DIRS)
+#ifndef Q_NO_SYMLINKS
                    "entrylist/linktodirectory.lnk,"
 #endif
                    "entrylist/writable").split(',');
@@ -245,7 +241,7 @@ void tst_QDirIterator::iterateRelativeDirectory_data()
                    "entrylist/linktofile.lnk,"
 #endif
                    "entrylist/directory,"
-#if !defined(Q_NO_SYMLINKS) && !defined(Q_NO_SYMLINKS_TO_DIRS)
+#ifndef Q_NO_SYMLINKS
                    "entrylist/linktodirectory.lnk,"
 #endif
                    "entrylist/writable").split(',');
@@ -264,7 +260,7 @@ void tst_QDirIterator::iterateRelativeDirectory_data()
 #endif
                    "entrylist/directory,"
                    "entrylist/directory/dummy,"
-#if !defined(Q_NO_SYMLINKS) && !defined(Q_NO_SYMLINKS_TO_DIRS)
+#ifndef Q_NO_SYMLINKS
                    "entrylist/linktodirectory.lnk,"
 #endif
                    "entrylist/writable").split(',');

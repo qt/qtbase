@@ -639,10 +639,8 @@ void tst_QDir::removeRecursivelySymlink()
     QVERIFY(QFile("testfile").open(QIODevice::WriteOnly));
     const QString link = tmpdir + "linkToDir.lnk";
     const QString linkToFile = tmpdir + "linkToFile.lnk";
-#ifndef Q_NO_SYMLINKS_TO_DIRS
     QVERIFY(QFile::link("../myDir", link));
     QVERIFY(QFile::link("../testfile", linkToFile));
-#endif
 
     QDir dir(tmpdir);
     QVERIFY(dir.removeRecursively());
@@ -1096,33 +1094,25 @@ void tst_QDir::entryListSimple()
 void tst_QDir::entryListWithSymLinks()
 {
 #ifndef Q_NO_SYMLINKS
-#  ifndef Q_NO_SYMLINKS_TO_DIRS
     QFile::remove("myLinkToDir.lnk");
-#  endif
     QFile::remove("myLinkToFile.lnk");
     QFile::remove("testfile.cpp");
     QDir dir;
     dir.mkdir("myDir");
     QVERIFY(QFile("testfile.cpp").open(QIODevice::WriteOnly));
-#  ifndef Q_NO_SYMLINKS_TO_DIRS
     QVERIFY(QFile::link("myDir", "myLinkToDir.lnk"));
-#  endif
     QVERIFY(QFile::link("testfile.cpp", "myLinkToFile.lnk"));
 
     {
         QStringList entryList = QDir().entryList();
         QVERIFY(entryList.contains("myDir"));
-#  ifndef Q_NO_SYMLINKS_TO_DIRS
         QVERIFY(entryList.contains("myLinkToDir.lnk"));
-#endif
         QVERIFY(entryList.contains("myLinkToFile.lnk"));
     }
     {
         QStringList entryList = QDir().entryList(QDir::Dirs);
         QVERIFY(entryList.contains("myDir"));
-#  ifndef Q_NO_SYMLINKS_TO_DIRS
         QVERIFY(entryList.contains("myLinkToDir.lnk"));
-#endif
         QVERIFY(!entryList.contains("myLinkToFile.lnk"));
     }
     {

@@ -155,15 +155,11 @@ void tst_QDirListing::initTestCase()
 #  if defined(Q_OS_WIN)
     // ### Sadly, this is a platform difference right now.
     createLink("entrylist/file", "entrylist/linktofile.lnk");
-#    ifndef Q_NO_SYMLINKS_TO_DIRS
     createLink("entrylist/directory", "entrylist/linktodirectory.lnk");
-#    endif
     createLink("entrylist/nothing", "entrylist/brokenlink.lnk");
 #  else
     createLink("file", "entrylist/linktofile.lnk");
-#    ifndef Q_NO_SYMLINKS_TO_DIRS
     createLink("directory", "entrylist/linktodirectory.lnk");
-#    endif
     createLink("nothing", "entrylist/brokenlink.lnk");
 #  endif
 #endif
@@ -228,21 +224,17 @@ void tst_QDirListing::iterateRelativeDirectory_data()
     QTest::addColumn<QStringList>("entries");
 
     const QStringList allSymlinks = {
-#if !defined(Q_NO_SYMLINKS)
+#ifndef Q_NO_SYMLINKS
         "entrylist/linktofile.lnk"_L1,
         "entrylist/brokenlink.lnk"_L1,
-#  if !defined(Q_NO_SYMLINKS_TO_DIRS)
         "entrylist/linktodirectory.lnk"_L1,
-#  endif
 #endif
     };
 
     const QStringList nonBrokenSymlinks = {
-#if !defined(Q_NO_SYMLINKS)
+#ifndef Q_NO_SYMLINKS
         "entrylist/linktofile.lnk"_L1,
-#  if !defined(Q_NO_SYMLINKS_TO_DIRS)
         "entrylist/linktodirectory.lnk"_L1,
-#  endif
 #endif
     };
 
@@ -333,7 +325,7 @@ void tst_QDirListing::iterateRelativeDirectory_data()
             "entrylist/file"_L1,
             "entrylist/directory/dummy"_L1,
             "entrylist/writable"_L1,
-#if !defined(Q_NO_SYMLINKS)
+#ifndef Q_NO_SYMLINKS
             "entrylist/linktofile.lnk"_L1,
 #endif
         };
@@ -350,7 +342,7 @@ void tst_QDirListing::iterateRelativeDirectory_data()
         << QStringList("*")
         << QStringList{
             "entrylist/directory"_L1,
-#if !defined(Q_NO_SYMLINKS)
+#ifndef Q_NO_SYMLINKS
             "entrylist/linktodirectory.lnk"_L1,
 #endif
         };
