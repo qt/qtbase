@@ -243,6 +243,9 @@ private slots:
     void QTBUG_73286_data() { generic_data("QODBC"); }
     void QTBUG_73286();
 
+    void ODBC_FloatingPoint_data() { return generic_data("QODBC"); }
+    void ODBC_FloatingPoint();
+
     void insertVarChar1_data() { generic_data("QODBC"); }
     void insertVarChar1();
 
@@ -4411,7 +4414,7 @@ void tst_QSqlQuery::aggregateFunctionTypes()
         const auto &tableName = ts.tableName();
 
         QSqlQuery q(db);
-        QVERIFY_SQL(q, exec(QLatin1String("CREATE TABLE %1 (id REAL)").arg(tableName)));
+        QVERIFY_SQL(q, exec(QLatin1String("CREATE TABLE %1 (id DOUBLE PRECISION)").arg(tableName)));
 
         // First test without any entries
         QVERIFY_SQL(q, exec("SELECT SUM(id) FROM " + tableName));
@@ -4685,6 +4688,34 @@ void tst_QSqlQuery::QTBUG_73286()
     QCOMPARE(q.value(1).toString(), "12345678901234567890");
     QCOMPARE(q.value(2).toString(), "12345678901234567.890");
 }
+
+void tst_QSqlQuery::ODBC_FloatingPoint()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+    TableScope ts(db, "qtbug138642", __FILE__);
+
+    constexpr auto val1 = 0.015625; // more than 7 chars which is the length of real!
+    constexpr auto val2 = 0.09375;
+    QSqlQuery q(db);
+    QVERIFY_SQL(q, exec("CREATE TABLE %1 (Id INT, Column1 REAL, Column2 FLOAT)"_L1.arg(ts.tableName())));
+    QVERIFY_SQL(q, exec("INSERT INTO %1 (Id, Column1, Column2) Values (1, %2, %2)"_L1.arg(ts.tableName()).arg(val1)));
+    QVERIFY_SQL(q, exec("INSERT INTO %1 (Id, Column1, Column2) Values (2, %2, %2)"_L1.arg(ts.tableName()).arg(val2)));
+
+    const auto prec = {QSql::HighPrecision, QSql::LowPrecisionDouble};
+    for (const auto p  : prec) {
+        q.setNumericalPrecisionPolicy(p);
+        QVERIFY_SQL(q, exec("SELECT Column1, Column2 FROM %1 ORDER BY Id"_L1.arg(ts.tableName())));
+        QVERIFY_SQL(q, next());
+        QCOMPARE(q.value(0).toDouble(), val1);
+        QCOMPARE(q.value(1).toDouble(), val1);
+        QVERIFY_SQL(q, next());
+        QCOMPARE(q.value(0).toDouble(), val2);
+        QCOMPARE(q.value(1).toDouble(), val2);
+    }
+}
+
 
 void tst_QSqlQuery::insertVarChar1()
 {
