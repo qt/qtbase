@@ -981,8 +981,16 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
             }
         }
         break;
-    case QStyle::PE_Widget:
+    case QStyle::PE_Widget: {
+        if (widget && widget->palette().isBrushSet(QPalette::Active, widget->backgroundRole())) {
+            const QBrush bg = widget->palette().brush(widget->backgroundRole());
+            auto wp = QWidgetPrivate::get(widget);
+            QPainterStateGuard psg(painter);
+            wp->updateBrushOrigin(painter, bg);
+            painter->fillRect(option->rect, bg);
+        }
         break;
+    }
     case QStyle::PE_FrameWindow:
         if (const auto *frm = qstyleoption_cast<const QStyleOptionFrame *>(option)) {
 
@@ -2158,11 +2166,15 @@ void QWindows11Style::polish(QWidget* widget)
                && !qobject_cast<QMdiArea *>(widget)
 #endif
         ) {
-        QPalette pal = scrollarea->viewport()->palette();
-        const QPalette originalPalette = pal;
-        pal.setColor(scrollarea->viewport()->backgroundRole(), Qt::transparent);
-        scrollarea->viewport()->setPalette(pal);
-        scrollarea->viewport()->setProperty("_q_original_background_palette", originalPalette);
+        if (scrollarea->frameShape() == QFrame::StyledPanel) {
+            const auto vp = scrollarea->viewport();
+            const bool isAutoFillBackground = vp->autoFillBackground();
+            const bool isStyledBackground = vp->testAttribute(Qt::WA_StyledBackground);
+            vp->setProperty("_q_original_autofill_background", isAutoFillBackground);
+            vp->setProperty("_q_original_styled_background", isStyledBackground);
+            vp->setAutoFillBackground(false);
+            vp->setAttribute(Qt::WA_StyledBackground, true);
+        }
         // QTreeView & QListView are already set in the base windowsvista style
         if (auto table = qobject_cast<QTableView *>(widget))
             table->viewport()->setAttribute(Qt::WA_Hover, true);
@@ -2182,9 +2194,13 @@ void QWindows11Style::unpolish(QWidget *widget)
         && !qobject_cast<QMdiArea *>(widget)
 #endif
         ) {
-        const QPalette pal = scrollarea->viewport()->property("_q_original_background_palette").value<QPalette>();
-        scrollarea->viewport()->setPalette(pal);
-        scrollarea->viewport()->setProperty("_q_original_background_palette", QVariant());
+        const auto vp = scrollarea->viewport();
+        const auto wasAutoFillBackground = vp->property("_q_original_autofill_background").toBool();
+        vp->setAutoFillBackground(wasAutoFillBackground);
+        vp->setProperty("_q_original_autofill_background", QVariant());
+        const auto origStyledBackground = vp->property("_q_original_styled_background").toBool();
+        vp->setAttribute(Qt::WA_StyledBackground, origStyledBackground);
+        vp->setProperty("_q_original_styled_background", QVariant());
     }
 }
 
