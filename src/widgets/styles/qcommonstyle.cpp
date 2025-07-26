@@ -318,8 +318,9 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
         break;
     case PE_IndicatorHeaderArrow:
         if (const QStyleOptionHeader *header = qstyleoption_cast<const QStyleOptionHeader *>(opt)) {
-            QPen oldPen = p->pen();
+            QPainterStateGuard psg(p, QPainterStateGuard::InitialState::NoSave);
             if (header->sortIndicator & QStyleOptionHeader::SortUp) {
+                psg.save();
                 p->setPen(QPen(opt->palette.light(), 0));
                 p->drawLine(opt->rect.x() + opt->rect.width(), opt->rect.y(),
                             opt->rect.x() + opt->rect.width() / 2, opt->rect.y() + opt->rect.height());
@@ -331,6 +332,7 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
                 };
                 p->drawPolyline(points, sizeof points / sizeof *points);
             } else if (header->sortIndicator & QStyleOptionHeader::SortDown) {
+                psg.save();
                 p->setPen(QPen(opt->palette.light(), 0));
                 const QPoint points[] = {
                     QPoint(opt->rect.x(), opt->rect.y() + opt->rect.height()),
@@ -342,7 +344,6 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
                 p->drawLine(opt->rect.x(), opt->rect.y() + opt->rect.height(),
                             opt->rect.x() + opt->rect.width() / 2, opt->rect.y());
             }
-            p->setPen(oldPen);
         }
         break;
 #if QT_CONFIG(tabbar)
@@ -386,9 +387,7 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
         QIcon::Mode mode = opt->state & State_Enabled ?
                             (opt->state & State_Raised ? QIcon::Active : QIcon::Normal)
                             : QIcon::Disabled;
-        if (!(opt->state & State_Raised)
-            && !(opt->state & State_Sunken)
-            && !(opt->state & QStyle::State_Selected))
+        if (!opt->state.testAnyFlags(State_Raised | State_Sunken | State_Selected))
             mode = QIcon::Disabled;
 
         QIcon::State state = opt->state & State_Sunken ? QIcon::On : QIcon::Off;
@@ -573,13 +572,14 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
         if (const QStyleOptionTab *tab = qstyleoption_cast<const QStyleOptionTab *>(opt)) {
             bool rtl = tab->direction == Qt::RightToLeft;
             const bool horizontal = tab->rect.height() > tab->rect.width();
+            const bool isSelected = tab->state.testFlag(State_Selected);
             const int margin = 4;
             QPainterPath path;
 
             if (horizontal) {
                 QRect rect = tab->rect.adjusted(rtl ? margin : 0, 0, rtl ? 1 : -margin, 0);
-                rect.setTop(rect.top() + ((tab->state & State_Selected) ? 1 : 3));
-                rect.setBottom(rect.bottom() - ((tab->state & State_Selected) ? 0 : 2));
+                rect.setTop(rect.top() + (isSelected ? 1 : 3));
+                rect.setBottom(rect.bottom() - (isSelected ? 0 : 2));
 
                 path.moveTo(QPoint(rtl ? rect.right() : rect.left(), rect.top()));
                 int count = 4;
@@ -587,8 +587,8 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
                     path.lineTo(QPoint(rtl ? rect.left() : rect.right(), rect.top() + jags * rect.height()/count));
             } else {
                 QRect rect = tab->rect.adjusted(0, 0, 0, -margin);
-                rect.setLeft(rect.left() + ((tab->state & State_Selected) ? 1 : 3));
-                rect.setRight(rect.right() - ((tab->state & State_Selected) ? 0 : 2));
+                rect.setLeft(rect.left() + (isSelected ? 1 : 3));
+                rect.setRight(rect.right() - (isSelected ? 0 : 2));
 
                 path.moveTo(QPoint(rect.left(), rect.top()));
                 int count = 4;
@@ -1433,10 +1433,10 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
 
             if (!proxy()->styleHint(SH_UnderlineShortcut, btn, widget))
                 alignment |= Qt::TextHideMnemonic;
-            QPixmap pix;
             QRect textRect = btn->rect;
             if (!btn->icon.isNull()) {
-                pix = btn->icon.pixmap(btn->iconSize, QStyleHelper::getDpr(p), btn->state & State_Enabled ? QIcon::Normal : QIcon::Disabled);
+                const auto pix = btn->icon.pixmap(btn->iconSize, QStyleHelper::getDpr(p),
+                                                  btn->state & State_Enabled ? QIcon::Normal : QIcon::Disabled);
                 proxy()->drawItemPixmap(p, btn->rect, alignment, pix);
                 if (btn->direction == Qt::RightToLeft)
                     textRect.setRight(textRect.right() - btn->iconSize.width() - 4);
@@ -2165,7 +2165,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
 #endif // QT_CONFIG(dockwidget)
     case CE_Header:
         if (const QStyleOptionHeader *header = qstyleoption_cast<const QStyleOptionHeader *>(opt)) {
-            QRegion clipRegion = p->clipRegion();
+            QPainterStateGuard psg(p);
             p->setClipRect(opt->rect);
             proxy()->drawControl(CE_HeaderSection, header, p, widget);
             // opt can be a QStyleOptionHeaderV2 and we must pass it to the subcontrol drawings
@@ -2182,7 +2182,6 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
                 subopt.rect = subElementRect(SE_HeaderArrow, opt, widget);
                 proxy()->drawPrimitive(PE_IndicatorHeaderArrow, &subopt, p, widget);
             }
-            p->setClipRegion(clipRegion);
         }
         break;
     case CE_FocusFrame:
