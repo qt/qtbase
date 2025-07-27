@@ -852,9 +852,14 @@ QString QSysInfo::productType()
 */
 QString QSysInfo::productVersion()
 {
-#if defined(Q_OS_ANDROID) || defined(Q_OS_DARWIN)
+#if defined(Q_OS_ANDROID)
     const auto version = QOperatingSystemVersion::current();
     return QString::asprintf("%d.%d", version.majorVersion(), version.minorVersion());
+#elif defined(Q_OS_DARWIN)
+    const auto version = QOperatingSystemVersion::current();
+    return QString::asprintf("%d.%d.%d", version.majorVersion(),
+                                         version.minorVersion(),
+                                         version.microVersion());
 #elif defined(Q_OS_WIN)
     const char *version = osVer_helper();
     if (version) {
@@ -898,8 +903,16 @@ QString QSysInfo::prettyProductName()
 {
 #if defined(Q_OS_ANDROID) || defined(Q_OS_DARWIN) || defined(Q_OS_WIN)
     const auto version = QOperatingSystemVersion::current();
-    const int majorVersion = version.majorVersion();
-    const QString versionString = QString::asprintf("%d.%d", majorVersion, version.minorVersion());
+    QString versionString;
+#  if defined(Q_OS_DARWIN)
+    if (const int microVersion = version.microVersion(); microVersion > 0)
+        versionString = QString::asprintf("%d.%d.%d", version.majorVersion(),
+                                                      version.minorVersion(),
+                                                      microVersion);
+    else
+#  endif // Darwin
+        versionString = QString::asprintf("%d.%d", version.majorVersion(),
+                                                   version.minorVersion());
     QString result = version.name() + u' ';
     const char *name = osVer_helper(version);
     if (!name)
