@@ -961,7 +961,8 @@ QTextLayout *QTextCursorPrivate::blockLayout(QTextBlock &block) const{
     \value EndOfWord Move to the end of the current word.
     \value EndOfBlock Move to the end of the current block.
     \value NextBlock Move to the beginning of the next block.
-    \value NextCharacter Move to the next character.
+    \value NextCharacter Move to the next character. If text is selected, the first call
+    to \c{movePosition(NextCharacter, MoveAnchor)} deselects the text without moving the cursor.
     \value NextWord Move to the next word.
     \value Down Move down one line.
     \value Right Move right one character.
