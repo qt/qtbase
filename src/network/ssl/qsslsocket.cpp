@@ -2963,7 +2963,8 @@ QList<QByteArray> QSslSocketPrivate::unixRootCertDirectories()
     static const QByteArray dirs[] = {
         ba("/etc/ssl/certs/"), // (K)ubuntu, OpenSUSE, Mandriva ...
         ba("/usr/lib/ssl/certs/"), // Gentoo, Mandrake
-        ba("/usr/share/ssl/"), // Centos, Redhat, SuSE
+        ba("/usr/share/ssl/"), // Red Hat pre-2004, SuSE
+        ba("/etc/pki/ca-trust/extracted/pem/directory-hash/"), // Red Hat 2021+
         ba("/usr/local/ssl/"), // Normal OpenSSL Tarball
         ba("/var/ssl/certs/"), // AIX
         ba("/usr/local/ssl/certs/"), // Solaris
