@@ -547,7 +547,7 @@ const QOperatingSystemVersion QOperatingSystemVersion::MacOSCatalina =
     \since 6.0
  */
 const QOperatingSystemVersion QOperatingSystemVersion::MacOSBigSur =
-    QOperatingSystemVersion(QOperatingSystemVersion::MacOS, 11, 0);
+    QOperatingSystemVersion(QOperatingSystemVersion::MacOS, 11);
 
 /*!
     \variable QOperatingSystemVersion::MacOSMonterey
@@ -555,7 +555,7 @@ const QOperatingSystemVersion QOperatingSystemVersion::MacOSBigSur =
     \since 6.3
  */
 const QOperatingSystemVersion QOperatingSystemVersion::MacOSMonterey =
-    QOperatingSystemVersion(QOperatingSystemVersion::MacOS, 12, 0);
+    QOperatingSystemVersion(QOperatingSystemVersion::MacOS, 12);
 
 /*!
     \variable QOperatingSystemVersion::MacOSVentura
