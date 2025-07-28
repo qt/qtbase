@@ -115,12 +115,8 @@ public:
     QWeakPointer<T> &operator=(QWeakPointer<T> &&other) noexcept;
     QWeakPointer<T> &operator=(const QSharedPointer<T> &other);
 
-    QWeakPointer(const QObject *other);
-    QWeakPointer<T> &operator=(const QObject *other);
-
     void swap(QWeakPointer<T> &other) noexcept;
 
-    T *data() const;
     void clear();
 
     QSharedPointer<T> toStrongRef() const;
