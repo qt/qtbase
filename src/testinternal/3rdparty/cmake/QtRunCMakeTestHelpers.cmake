@@ -41,4 +41,5 @@ macro(add_RunCMake_test test)
     ${TEST_ARGS}
     -P "${QT_RUN_CMAKE_SCRIPT_PATH}"
     )
+  unset(QT_RUN_CMAKE_SCRIPT_PATH)
 endmacro()
