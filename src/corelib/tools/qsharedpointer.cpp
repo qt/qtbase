@@ -845,37 +845,6 @@
 */
 
 /*!
-    \fn template <class T> QWeakPointer<T>::QWeakPointer(const QObject *other)
-    \since 4.6
-    \deprecated
-
-    Creates a QWeakPointer that holds a weak reference directly to the
-    QObject \a other. This constructor is only available if the template type
-    \tt T is QObject or derives from it (otherwise a compilation error will
-    result).
-
-    You can use this constructor with any QObject, even if they were not
-    created with \l QSharedPointer.
-
-    Note that QWeakPointers created this way on arbitrary QObjects usually
-    cannot be promoted to QSharedPointer.
-
-    \sa QSharedPointer, QPointer
-*/
-
-/*!
-    \fn template <class T> QWeakPointer &QWeakPointer<T>::operator=(const QObject *other)
-    \since 4.6
-    \deprecated
-
-    Makes this QWeakPointer hold a weak reference directly to the QObject
-    \a other. This function is only available if the template type \tt T is
-    QObject or derives from it.
-
-    \sa QPointer
-*/
-
-/*!
     \fn template <class T> QWeakPointer &QWeakPointer<T>::operator=(const QWeakPointer<T> &other)
 
     Makes this object share \a other's pointer. The current pointer
@@ -944,36 +913,6 @@
     true from one call to the next.
 
     \sa isNull()
-*/
-
-/*!
-    \fn template <class T> T *QWeakPointer<T>::data() const
-    \since 4.6
-    \deprecated Use toStrongRef() instead, and data() on the returned QSharedPointer.
-
-    Returns the value of the pointer being tracked by this QWeakPointer,
-    \b without ensuring that it cannot get deleted. To have that guarantee,
-    use toStrongRef(), which returns a QSharedPointer object. If this
-    function can determine that the pointer has already been deleted, it
-    returns \nullptr.
-
-    It is ok to obtain the value of the pointer and using that value itself,
-    like for example in debugging statements:
-
-    \snippet code/src_corelib_tools_qsharedpointer.cpp 10
-
-    However, dereferencing the pointer is only allowed if you can guarantee
-    by external means that the pointer does not get deleted. For example,
-    if you can be certain that no other thread can delete it, nor the
-    functions that you may call.
-
-    If that is the case, then the following code is valid:
-
-    \snippet code/src_corelib_tools_qsharedpointer.cpp 11
-
-    Use this function with care.
-
-    \sa isNull(), toStrongRef()
 */
 
 /*!
