@@ -58,6 +58,7 @@
 
 using namespace QTestPrivate;
 using namespace Qt::StringLiterals;
+using namespace std::chrono_literals;
 
 #if defined(Q_OS_WIN)
 #  include <QtCore/qt_windows.h>
@@ -727,7 +728,7 @@ void tst_QWidget::initTestCase()
 void tst_QWidget::cleanup()
 {
     QTRY_COMPARE(QApplication::topLevelWidgets(), QWidgetList());
-    if (!QApplication::allWidgets().isEmpty())
+    if (!QTest::qWaitFor([]{ return QApplication::allWidgets().isEmpty(); }, 50ms))
         qWarning() << "Test function has leaked" << QApplication::allWidgets();
 }
 
