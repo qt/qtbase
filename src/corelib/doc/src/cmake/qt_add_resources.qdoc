@@ -15,15 +15,6 @@
 \section1 Synopsis
 
 \badcode
-qt_add_resources(<VAR> file1.qrc [file2.qrc ...]
-                  [OPTIONS ...])
-\endcode
-
-\versionlessCMakeCommandsNote qt6_add_resources()
-
-Since 6.0:
-
-\badcode
 qt_add_resources(<TARGET> <RESOURCE_NAME>
                   [PREFIX <PATH>]
                   [LANG <LANGUAGE>]
@@ -34,20 +25,27 @@ qt_add_resources(<TARGET> <RESOURCE_NAME>
                   [FILES ...] [OPTIONS ...])
 \endcode
 
+Variable-based variant:
+
+\badcode
+qt_add_resources(<VAR> file1.qrc [file2.qrc ...]
+                  [OPTIONS ...])
+\endcode
+
 \versionlessCMakeCommandsNote qt6_add_resources()
 
 \section1 Description
 
-To add resources, you can pass either a variable name or a target as the first
+To add resources, you can pass either a target or a variable name as the first
 argument of the command.
-
-When passing a variable name as first argument, \c qt_add_resources creates
-source code from Qt resource files using the \l{Resource Compiler (rcc)}. Paths
-to the generated source files are added to \c{<VAR>}.
 
 When passing a target as first argument, the function creates a resource with
 the name \c{RESOURCE_NAME}, containing the specified \c{FILES}. The resource is
 automatically linked into \c{TARGET}.
+
+When passing a variable name as first argument, \c qt_add_resources creates
+source code from Qt resource files using the \l{Resource Compiler (rcc)}. Paths
+to the generated source files are added to \c{<VAR>}.
 
 See \l{The Qt Resource System} for a general description of Qt resources.
 
@@ -57,7 +55,7 @@ See \l{The Qt Resource System} for a general description of Qt resources.
 accessible from C++ code. This corresponds to the XML attribute \c prefix of the
 \c .qrc file format. If \c PREFIX is not given, the target property
 \l{cmake-target-property-QT_RESOURCE_PREFIX}{QT_RESOURCE_PREFIX} is used. Since
-6.5, \c{PREFIX} is optional. If it is omitted and not specified by
+Qt 6.5, \c{PREFIX} is optional. If it is omitted and not specified by
 \c{QT_RESOURCE_PREFIX}, \c{"/"} will be used as the default path prefix.
 
 \c LANG specifies the locale of this resource. This corresponds to the XML
@@ -90,6 +88,12 @@ If \c DISCARD_FILE_CONTENTS is specified, the resource files will be added to
 the resource system without embedding their actual contents. Instead, these
 files will be stored as empty placeholders within the generated resource.
 
+\section1 Arguments of the variable-based variant
+
+When using the variable-based variant, you pass one or more \c{.qrc} files as
+arguments. The function generates source code from these Qt resource files and
+adds the paths to the generated source files to the specified variable.
+
 \section1 Arguments of both variants
 
 You can set additional \c{OPTIONS} that should be added to the \c{rcc} calls.
@@ -97,11 +101,11 @@ You can find possible options in the \l{rcc}{rcc documentation}.
 
 \section1 Examples
 
-Variable variant, using a .qrc file:
-\snippet cmake-macros/examples.cmake qt_add_resources
-
 Target variant, using immediate resources:
 \snippet cmake-macros/examples.cmake qt_add_resources_target
+
+Variable variant, using a .qrc file:
+\snippet cmake-macros/examples.cmake qt_add_resources
 
 \section1 Caveats
 
