@@ -672,6 +672,7 @@ public:
     enum Op {
         Destroy,
         InvalidateCaches,
+        SetHeaderData,
         SetData,
         SetItemData,
         ClearItemData,
@@ -889,6 +890,9 @@ public:
         case Destroy: delete static_cast<Structure *>(that);
             break;
         case InvalidateCaches: static_cast<Self *>(that)->m_data.invalidateCaches();
+            break;
+        case SetHeaderData:
+            // not implemented
             break;
         case SetData: makeCall(that, &Self::setData, r, args);
             break;

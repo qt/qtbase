@@ -659,6 +659,15 @@ QVariant QRangeModel::headerData(int section, Qt::Orientation orientation, int r
 
 /*!
     \reimp
+*/
+bool QRangeModel::setHeaderData(int section, Qt::Orientation orientation, const QVariant &data,
+                                int role)
+{
+    return QAbstractItemModel::setHeaderData(section, orientation, data, role);
+}
+
+/*!
+    \reimp
 
     Returns the data stored under the given \a role for the value in the
     range referred to by the \a index.
