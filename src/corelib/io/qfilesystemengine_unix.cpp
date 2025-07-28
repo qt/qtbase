@@ -336,10 +336,8 @@ flagsFromStMode(mode_t mode, [[maybe_unused]] quint64 attributes)
     // UF_COMPRESSED and STATX_ATTR_COMPRESSED
     // UF_IMMUTABLE and STATX_ATTR_IMMUTABLE
     // UF_NODUMP and STATX_ATTR_NODUMP
-#ifdef UF_HIDDEN
-    if (attributes & UF_HIDDEN)
-        entryFlags |= QFileSystemMetaData::HiddenAttribute;
-#elif defined(Q_OS_VXWORKS) && __has_include(<dosFsLib.h>)
+
+#if defined(Q_OS_VXWORKS) && __has_include(<dosFsLib.h>)
     if (attributes & DOS_ATTR_RDONLY) {
         // on a DOS FS, stat() always returns 0777 bits set in st_mode
         // when DOS FS is read only the write permissions are removed
@@ -907,11 +905,17 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
     }
     if (what & QFileSystemMetaData::AliasType)
         what |= QFileSystemMetaData::LinkType;
-#endif
+#endif // defined(Q_OS_DARWIN)
+
+    bool needLstat = what.testAnyFlag(QFileSystemMetaData::LinkType);
+
 #ifdef UF_HIDDEN
     if (what & QFileSystemMetaData::HiddenAttribute) {
-        // OS X >= 10.5: st_flags & UF_HIDDEN
-        what |= QFileSystemMetaData::PosixStatFlags;
+        // Some OSes (BSDs) have the ability to mark directory entries as
+        // hidden besides the usual Unix way of naming them with a leading dot.
+        // For those OSes, we must lstat() the entry itself so we can find
+        // out if a symlink is hidden or not.
+        needLstat = true;
     }
 #endif // defined(Q_OS_DARWIN)
 
@@ -942,7 +946,7 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
         struct statx statxBuffer;
     };
     int statResult = -1;
-    if (what & QFileSystemMetaData::LinkType) {
+    if (needLstat) {
         mode_t mode = 0;
         statResult = qt_lstatx(nativeFilePath, &statxBuffer);
         if (statResult == -ENOSYS) {
@@ -956,6 +960,14 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
         }
 
         if (statResult >= 0) {
+#ifdef UF_HIDDEN
+            // currently only supported on systems with no statx() call
+            Q_ASSERT(statResult == 0);
+            if (statBuffer.st_flags & UF_HIDDEN)
+                data.entryFlags |= QFileSystemMetaData::HiddenAttribute;
+            data.knownFlagsMask |= QFileSystemMetaData::HiddenAttribute;
+#endif
+
             if (S_ISLNK(mode)) {
                // it's a symlink, we don't know if the file "exists"
                 data.entryFlags |= QFileSystemMetaData::LinkType;
