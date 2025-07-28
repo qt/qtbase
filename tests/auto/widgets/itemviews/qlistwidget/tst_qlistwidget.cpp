@@ -107,7 +107,9 @@ private slots:
     void moveRowsInvalid_data();
     void moveRowsInvalid();
     void noopDragDrop();
+#if QT_CONFIG(draganddrop)
     void supportedDragActions();
+#endif
 
 protected slots:
     void rowsAboutToBeInserted(const QModelIndex &parent, int first, int last)
@@ -2021,6 +2023,7 @@ void tst_QListWidget::clearItemData()
     QCOMPARE(dataChangeSpy.size(), 0);
 }
 
+#if QT_CONFIG(draganddrop)
 class MoveOnlyListWidget : public QListWidget
 {
     Q_OBJECT
@@ -2039,6 +2042,7 @@ void tst_QListWidget::supportedDragActions()
     listWidget.setSupportedDragActions(Qt::CopyAction);
     QCOMPARE(listWidget.model()->supportedDragActions(), Qt::CopyAction);
 }
+#endif // QT_CONFIG(draganddrop)
 
 QTEST_MAIN(tst_QListWidget)
 #include "tst_qlistwidget.moc"

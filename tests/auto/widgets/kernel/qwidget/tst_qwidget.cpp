@@ -38,7 +38,9 @@
 #include <QtGui/qbackingstore.h>
 #include <QtGui/qguiapplication.h>
 #include <QtGui/qpa/qplatformwindow.h>
+#if QT_CONFIG(draganddrop)
 #include <QtGui/qpa/qplatformdrag.h>
+#endif
 #include <QtGui/qscreen.h>
 #include <qmenubar.h>
 #include <qcompleter.h>
@@ -470,7 +472,9 @@ private slots:
 
     void explicitShowHide();
 
+#if QT_CONFIG(draganddrop)
     void dragEnterLeaveSymmetry();
+#endif
 
     void reparentWindowHandles_data();
     void reparentWindowHandles();
@@ -13786,6 +13790,7 @@ void tst_QWidget::explicitShowHide()
     }
 }
 
+#if QT_CONFIG(draganddrop)
 /*!
     Verify that we deliver DragEnter/Leave events symmetrically, even if the
     widget entered didn't accept the DragEnter event.
@@ -13877,6 +13882,7 @@ void tst_QWidget::dragEnterLeaveSymmetry()
     QVERIFY(label.underMouse());
     QVERIFY(widget.underMouse());
 }
+#endif // QT_CONFIG(draganddrop)
 
 void tst_QWidget::reparentWindowHandles_data()
 {

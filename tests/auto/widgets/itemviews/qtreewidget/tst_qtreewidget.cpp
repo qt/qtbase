@@ -131,7 +131,9 @@ private slots:
     void createPersistentOnLayoutAboutToBeChanged();
     void createPersistentOnLayoutAboutToBeChangedAutoSort();
     void clearItemData();
+#if QT_CONFIG(draganddrop)
     void supportedDragActions();
+#endif
 
 public slots:
     void itemSelectionChanged();
@@ -3691,6 +3693,7 @@ void tst_QTreeWidget::createPersistentOnLayoutAboutToBeChangedAutoSort() // QTBU
     QCOMPARE(layoutChangedSpy.size(), 1);
 }
 
+#if QT_CONFIG(draganddrop)
 class MoveOnlyTreeWidget : public QTreeWidget
 {
     Q_OBJECT
@@ -3709,6 +3712,7 @@ void tst_QTreeWidget::supportedDragActions()
     treeWidget.setSupportedDragActions(Qt::CopyAction);
     QCOMPARE(treeWidget.model()->supportedDragActions(), Qt::CopyAction);
 }
+#endif // QT_CONFIG(draganddrop)
 
 QTEST_MAIN(tst_QTreeWidget)
 #include "tst_qtreewidget.moc"
