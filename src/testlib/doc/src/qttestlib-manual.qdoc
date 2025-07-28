@@ -63,6 +63,7 @@
     and build and run them directly from Qt Creator. For more information, see
     \l {Qt Creator: Build and run tests}.
 
+    \target qttest-creating-a-test
     \section1 Creating a Test
 
     To create a test, subclass QObject and add one or more private slots to it. Each
@@ -419,6 +420,7 @@
     added in Qt 6.1.
     \endlist
 
+    \target qttest-creating-a-benchmark
     \section1 Creating a Benchmark
 
     To create a benchmark, follow the instructions for creating a test and then add a
