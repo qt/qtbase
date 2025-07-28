@@ -21,6 +21,9 @@ private slots:
     void comparison2();
 
     void mixedComparison();
+
+    void constantsSemantics_data();
+    void constantsSemantics();
 };
 
 void tst_QOperatingSystemVersion::construction_data()
@@ -248,6 +251,62 @@ void tst_QOperatingSystemVersion::mixedComparison()
             >= QOperatingSystemVersionBase(QOperatingSystemVersionBase::Windows, 10, 0));
     QVERIFY(QOperatingSystemVersion::Windows10
             <= QOperatingSystemVersionBase(QOperatingSystemVersionBase::Windows, 10, 0));
+}
+
+void tst_QOperatingSystemVersion::constantsSemantics_data()
+{
+    QTest::addColumn<QOperatingSystemVersionBase>("referenceVersion");
+    QTest::addColumn<int>("segmentCount");
+
+    // OSX/macOS 10.x
+    QTest::newRow("Mavericks") << QOperatingSystemVersionBase(QOperatingSystemVersion::OSXMavericks) << 2;
+    QTest::newRow("Yosemite") << QOperatingSystemVersionBase(QOperatingSystemVersion::OSXYosemite) << 2;
+    QTest::newRow("El Capitan") << QOperatingSystemVersionBase(QOperatingSystemVersion::OSXElCapitan) << 2;
+    QTest::newRow("Sierra") << QOperatingSystemVersionBase(QOperatingSystemVersion::MacOSSierra) << 2;
+    QTest::newRow("High Sierra") << QOperatingSystemVersionBase(QOperatingSystemVersion::MacOSHighSierra) << 2;
+    QTest::newRow("Mojave") << QOperatingSystemVersionBase(QOperatingSystemVersion::MacOSMojave) << 2;
+    QTest::newRow("Catalina") << QOperatingSystemVersionBase(QOperatingSystemVersion::MacOSCatalina) << 2;
+
+    // macOS 11+
+    QTest::newRow("Big Sur") << QOperatingSystemVersionBase(QOperatingSystemVersion::MacOSBigSur) << 1;
+    QTest::newRow("Monterey") << QOperatingSystemVersionBase(QOperatingSystemVersion::MacOSMonterey) << 1;
+    QTest::newRow("Ventura") << QOperatingSystemVersion::MacOSVentura << 1;
+    QTest::newRow("Sonoma") << QOperatingSystemVersion::MacOSSonoma << 1;
+    QTest::newRow("Sequoia") << QOperatingSystemVersion::MacOSSequoia << 1;
+    QTest::newRow("Tahoe") << QOperatingSystemVersion::MacOSTahoe << 1;
+}
+
+void tst_QOperatingSystemVersion::constantsSemantics()
+{
+    QFETCH(QOperatingSystemVersionBase, referenceVersion);
+    QFETCH(int, segmentCount);
+
+    QCOMPARE(referenceVersion.segmentCount(), segmentCount);
+
+    auto adjustedVersion = [&](QOperatingSystemVersionBase referenceVersion, int segment, int adjustment) {
+        auto adjustedSegments = referenceVersion.version().segments();
+        adjustedSegments[segment] += adjustment;
+        return QOperatingSystemVersionBase(referenceVersion.type(), adjustedSegments.at(0),
+            qMax(adjustedSegments.at(1), 0), qMax(adjustedSegments.at(2), 0));
+
+    };
+
+    // Increases or decreases of the significant version part should contribute to
+    // a smaller or larger version
+    for (int segment = 0; segment < referenceVersion.segmentCount(); ++segment) {
+        auto smallerVersion = adjustedVersion(referenceVersion, segment, -1);
+        QCOMPARE_LT(smallerVersion, referenceVersion);
+        auto largerVersion = adjustedVersion(referenceVersion, segment, 1);
+        QCOMPARE_GT(largerVersion, referenceVersion);
+    }
+
+    // The non-significant parts of a version should never contribute to being
+    // larger or smaller than a reference version's significant segments.
+    for (int segment = referenceVersion.segmentCount(); segment < 3; ++segment) {
+        auto largerInsignificantVersion = adjustedVersion(referenceVersion, segment, 1);
+        QVERIFY(!(largerInsignificantVersion > referenceVersion));
+        QVERIFY(!(largerInsignificantVersion < referenceVersion));
+    }
 }
 
 QTEST_MAIN(tst_QOperatingSystemVersion)
