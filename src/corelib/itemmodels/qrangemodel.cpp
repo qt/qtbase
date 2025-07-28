@@ -667,6 +667,10 @@ QVariant QRangeModel::headerData(int section, Qt::Orientation orientation, int r
     either \c{int}, Qt::ItemDataRole, or QString to a QVariant, then the role
     data is looked up in that container and returned.
 
+    If the item is a gadget or QObject, then the implementation returns the
+    value of the item's property matching the \a role entry in the roleNames()
+    mapping.
+
     Otherwise, the implementation returns a QVariant constructed from the item
     via \c{QVariant::fromValue()} for \c{Qt::DisplayRole} or \c{Qt::EditRole}.
     For other roles, the implementation returns an \b invalid
@@ -688,6 +692,12 @@ QVariant QRangeModel::data(const QModelIndex &index, int role) const
     If the item type for that \a index is an associative container that maps
     from either \c{int}, Qt::ItemDataRole, or QString to a QVariant, then
     \a data is stored in that container for the key specified by \a role.
+
+    If the item is a gadget or QObject, then \a data is written to the item's
+    property matching the \a role entry in the the roleNames() mapping. The
+    function returns \c{true} if a property was found and if \a data stored a
+    value that could be converted to the required type, otherwise returns
+    \c{false}.
 
     Otherwise, this implementation assigns the value in \a data to the item at
     the \a index in the range for \c{Qt::DisplayRole} and \c{Qt::EditRole},
