@@ -1,0 +1,32 @@
+From efd7d97166544343ed572138dadd2f81f972c800 Mon Sep 17 00:00:00 2001
+From: Alexandru Croitor <alexandru.croitor@qt.io>
+Date: Mon, 28 Jul 2025 19:05:43 +0200
+Subject: [PATCH] CMake: Fix QT_RUN_CMAKE_SCRIPT_PATH not being unset
+
+Because add_RunCMake_test is a macro, QT_RUN_CMAKE_SCRIPT_PATH is only
+set once, which means only one test gets tested multiple times,
+instead of different tests.
+
+Make sure to unset it after each test run.
+
+Amends 0d2775af92b6e9e1a40cccfef02b3993494b1c8b
+
+Pick-to: 6.8 6.9 6.10
+Change-Id: I5a5568607f04e9f9196c347730b0dc1c323b9eba
+---
+ src/testinternal/3rdparty/cmake/QtRunCMakeTestHelpers.cmake | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/src/testinternal/3rdparty/cmake/QtRunCMakeTestHelpers.cmake b/src/testinternal/3rdparty/cmake/QtRunCMakeTestHelpers.cmake
+index fb92cdbec37..41a038a5d7b 100644
+--- a/src/testinternal/3rdparty/cmake/QtRunCMakeTestHelpers.cmake
++++ b/src/testinternal/3rdparty/cmake/QtRunCMakeTestHelpers.cmake
+@@ -41,4 +41,5 @@ macro(add_RunCMake_test test)
+     ${TEST_ARGS}
+     -P "${QT_RUN_CMAKE_SCRIPT_PATH}"
+     )
++  unset(QT_RUN_CMAKE_SCRIPT_PATH)
+ endmacro()
+-- 
+2.47.0
+
