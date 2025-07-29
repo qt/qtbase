@@ -15,12 +15,11 @@ private slots:
 
 void tst_QNetworkInformation_appless::reinit()
 {
-
     #if QT_CONFIG(cpp_winrt)
         if (QOperatingSystemVersion::current() >=
             QOperatingSystemVersion(QOperatingSystemVersion::Windows11_24H2) &&
             QOperatingSystemVersion::current() <
-            QOperatingSystemVersion(QOperatingSystemVersion::Windows, 10, 0, 26200)) {
+            QOperatingSystemVersion(QOperatingSystemVersion::Windows, 10, 0, 26300)) {
                 QSKIP("This test crashes on Windows 11 24H2. QTBUG-135599");
         }
     #endif
