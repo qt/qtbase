@@ -1769,11 +1769,10 @@ void tst_QStringApiSymmetry::localeAwareCompare_data()
     QTest::addColumn<int>("result");
 
 #if defined(Q_OS_WIN) || defined(Q_OS_DARWIN) || QT_CONFIG(icu)
-    // Although the test sets LC_ALL (and adds a suffix to wanted) test
-    // LC_COLLATE because setlocale(LC_ALL, nullptr) encodes the whole locale,
-    // it's not simply the value of LC_ALL. We need our own copy of the reported
-    // value, as later setlocale() calls may stomp the value:
-    const QByteArray current(setlocale(LC_COLLATE, nullptr));
+    // Pull out current system locale's collation locale using Qt APIs,
+    // so that we go though the relevant system backend, that will match
+    // the system collation logic in QString::localeAwareCompare_helper.
+    const QByteArray current = QLocale::system().collation().name().toUtf8();
     const auto canTest = [current](const char *wanted) {
 #  if QT_CONFIG(icu)
         // ICU will correctly use en when relevant environment variables are set
