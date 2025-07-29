@@ -12,7 +12,7 @@
 #include <QtCore/qshareddata.h>
 #include <QtCore/qstring.h>
 
-#include <limits>
+#include <climits>
 #include <chrono>
 
 #if defined(Q_OS_DARWIN) || defined(Q_QDOC)
