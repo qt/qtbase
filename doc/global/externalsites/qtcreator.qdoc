@@ -1710,3 +1710,8 @@
     \externalpage https://doc.qt.io/qtcreator/creator-sdk-tool.html
     \title \QC: SDK Tool
 */
+
+/*!
+    \externalpage https://doc.qt.io/qtcreator/creator-how-to-debug-vxworks.html
+    \title \QC: Debug C++ applications on VxWorks devices
+*/
