@@ -34,9 +34,9 @@ qt_wrap_cpp(myapp myapp.cpp)
 #! [qt_wrap_cpp_4]
 
 #! [qt_add_resources]
-set(SOURCES main.cpp)
-qt_add_resources(SOURCES example.qrc)
-qt_add_executable(myapp ${SOURCES})
+set(sources main.cpp)
+qt_add_resources(sources example.qrc)
+qt_add_executable(myapp ${sources})
 #! [qt_add_resources]
 
 #! [qt_add_resources_target]
