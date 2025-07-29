@@ -259,7 +259,6 @@ bool QWaylandShmBackingStore::scroll(const QRegion &region, int dx, int dy)
 
 void QWaylandShmBackingStore::flush(QWindow *window, const QRegion &region, const QPoint &offset)
 {
-    Q_UNUSED(offset)
     // Invoked when the window is of type RasterSurface or when the window is
     // RasterGLSurface and there are no child widgets requiring OpenGL composition.
 
@@ -268,9 +267,12 @@ void QWaylandShmBackingStore::flush(QWindow *window, const QRegion &region, cons
     // however so no need to reimplement that.
     if (window != this->window()) {
         auto waylandWindow = static_cast<QWaylandWindow *>(window->handle());
-        auto newBuffer = new QWaylandShmBuffer(mDisplay, window->size(), mBackBuffer->image()->format(), mBackBuffer->scale(), mEventQueue);
+        const auto scale = waylandWindow->scale();
+        auto newBuffer = new QWaylandShmBuffer(
+                mDisplay, window->size() * scale, mBackBuffer->image()->format(),
+                mBackBuffer->image()->devicePixelRatio(), mEventQueue);
         newBuffer->setDeleteOnRelease(true);
-        QRect sourceRect(window->position(), window->size());
+        QRect sourceRect(offset * scale, window->size() * scale);
         QPainter painter(newBuffer->image());
         painter.drawImage(QPoint(0, 0), *mBackBuffer->image(), sourceRect);
         waylandWindow->safeCommit(newBuffer, region);
