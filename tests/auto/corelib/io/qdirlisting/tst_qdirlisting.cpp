@@ -223,18 +223,22 @@ void tst_QDirListing::iterateRelativeDirectory_data()
     QTest::addColumn<QStringList>("nameFilters");
     QTest::addColumn<QStringList>("entries");
 
+    const auto linkToFile = u"entrylist/linktofile.lnk"_s;
+    const auto linkToDir = u"entrylist/linktodirectory.lnk"_s;
+    const auto brokenLink = u"entrylist/brokenlink.lnk"_s;
+
     const QStringList allSymlinks = {
 #ifndef Q_NO_SYMLINKS
-        "entrylist/linktofile.lnk"_L1,
-        "entrylist/brokenlink.lnk"_L1,
-        "entrylist/linktodirectory.lnk"_L1,
+        linkToFile,
+        brokenLink,
+        linkToDir,
 #endif
     };
 
     const QStringList nonBrokenSymlinks = {
 #ifndef Q_NO_SYMLINKS
-        "entrylist/linktofile.lnk"_L1,
-        "entrylist/linktodirectory.lnk"_L1,
+        linkToFile,
+        linkToDir,
 #endif
     };
 
@@ -326,7 +330,7 @@ void tst_QDirListing::iterateRelativeDirectory_data()
             "entrylist/directory/dummy"_L1,
             "entrylist/writable"_L1,
 #ifndef Q_NO_SYMLINKS
-            "entrylist/linktofile.lnk"_L1,
+            linkToFile,
 #endif
         };
 
@@ -343,7 +347,7 @@ void tst_QDirListing::iterateRelativeDirectory_data()
         << QStringList{
             "entrylist/directory"_L1,
 #ifndef Q_NO_SYMLINKS
-            "entrylist/linktodirectory.lnk"_L1,
+            linkToDir,
 #endif
         };
 
