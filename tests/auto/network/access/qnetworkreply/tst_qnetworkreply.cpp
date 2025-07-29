@@ -510,6 +510,7 @@ private Q_SLOTS:
 #endif
 
     void dontInsertPartialContentIntoTheCache();
+    void removeIncompleteCacheObjects();
 
     void httpUserAgent();
 #if QT_CONFIG(networkproxy)
@@ -974,6 +975,7 @@ public:
 
     QHash<QUrl, QIODevice*> m_buffers;
     QList<QUrl> m_insertedUrls;
+    QList<QUrl> m_removedUrls;
 
     QNetworkCacheMetaData metaData(const QUrl &) override
     {
@@ -998,6 +1000,7 @@ public:
     bool remove(const QUrl &url) override
     {
         delete m_buffers.take(url);
+        m_removedUrls.append(url);
         return m_insertedUrls.removeAll(url) > 0;
     }
 
@@ -8735,6 +8738,39 @@ void tst_QNetworkReply::dontInsertPartialContentIntoTheCache()
     QVERIFY(server.totalConnections > 0);
     QCOMPARE(reply->readAll().constData(), "load");
     QCOMPARE(memoryCache->m_insertedUrls.size(), 0);
+}
+
+void tst_QNetworkReply::removeIncompleteCacheObjects()
+{
+    const auto compressedHelloWorld = QByteArray::fromBase64("H4sIAAAAAAAAA8tIzcnJVyjPL8pJAQCFEUoNCwAAAA==");
+    const QByteArray reply404CompressedHelloWorld =
+            "HTTP/1.1 404\r\n"
+            "Content-Type: text/plain\r\n"
+            "Content-length: "_ba + QByteArray::number(compressedHelloWorld.size()) + "\r\n"
+            "Content-Encoding: gzip\r\n"
+            "\r\n"_ba +
+            compressedHelloWorld;
+
+    MiniHttpServer server(reply404CompressedHelloWorld);
+    server.doClose = false;
+
+    MySpyMemoryCache *memoryCache = new MySpyMemoryCache(&manager);
+    manager.setCache(memoryCache);
+
+    QUrl url = "http://localhost:" + QString::number(server.serverPort());
+    QNetworkRequest request(url);
+
+    QNetworkReplyPtr reply(manager.get(request));
+
+    QVERIFY2(waitForFinish(reply) == Failure, msgWaitForFinished(reply));
+    QCOMPARE(reply->error(), QNetworkReply::ContentNotFoundError);
+
+    QVERIFY(server.totalConnections > 0);
+    // We don't read the data, just delete the reply:
+    reply.reset();
+    QCOMPARE(memoryCache->m_insertedUrls.size(), 0);
+    QCOMPARE(memoryCache->m_removedUrls.size(), 1);
+    QCOMPARE(memoryCache->m_removedUrls[0], url);
 }
 
 void tst_QNetworkReply::httpUserAgent()
