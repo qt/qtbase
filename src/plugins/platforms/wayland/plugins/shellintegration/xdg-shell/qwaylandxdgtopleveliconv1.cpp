@@ -5,6 +5,7 @@
 #include "qwaylandshmbackingstore_p.h"
 #include "qwaylandxdgtopleveliconv1_p.h"
 
+#include <QtWaylandClient/private/qwaylanddisplay_p.h>
 #include <QtWaylandClient/private/qwaylandshmbackingstore_p.h>
 
 #include <QIcon>
@@ -29,6 +30,7 @@ public:
 
     void addPixmap(const QPixmap &pixmap)
     {
+        Q_ASSERT(!pixmap.isNull());
         const QSize squareSize = pixmap.size().expandedTo(pixmap.size().transposed());
         auto buffer = std::make_unique<QWaylandShmBuffer>(mDisplay, squareSize, QImage::Format_ARGB32, pixmap.devicePixelRatio());
         QRect targetRect = pixmap.rect();
@@ -72,7 +74,9 @@ void QWaylandXdgToplevelIconManagerV1::setIcon(const QIcon &icon, xdg_toplevel *
 
     auto toplevelIcon = std::make_unique<QWaylandXdgToplevelIconV1>(create_icon(), mDisplay);
 
-    if (const QString name = icon.name(); !name.isEmpty() && !QDir::isAbsolutePath(name)) {
+    const QString name = icon.name();
+    const bool validName = !name.isEmpty() && !QDir::isAbsolutePath(name);
+    if (validName) {
         toplevelIcon->set_name(name);
     }
 
@@ -89,12 +93,23 @@ void QWaylandXdgToplevelIconManagerV1::setIcon(const QIcon &icon, xdg_toplevel *
         iconSizes.append(QSize(64, 64));
     }
 
+    bool hasPixmaps = false;
     for (const QSize &size : std::as_const(iconSizes)) {
         const QPixmap pixmap = icon.pixmap(size, 1.0);
+        if (pixmap.isNull()) {
+            qCWarning(lcQpaWayland) << "QWaylandXdgToplevelIconManagerV1: Failed to get pixmap of size" << size << "for icon" << icon;
+            continue;
+        }
+
         toplevelIcon->addPixmap(pixmap);
+        hasPixmaps = true;
     }
 
-    set_icon(window, toplevelIcon->object());
+    if (validName || hasPixmaps) {
+        set_icon(window, toplevelIcon->object());
+    } else {
+        set_icon(window, nullptr);
+    }
 }
 
 } // namespace QtWaylandClient
