@@ -1003,33 +1003,69 @@ static QByteArray readOrMapFile(QFile *file)
     return rawInput ? QByteArray::fromRawData(rawInput, size) : file->readAll();
 }
 
+void Symbol::mergeStringLiteral(const Symbol &next)
+{
+    Q_ASSERT(len >= 2); // at least `""`
+    Q_ASSERT(from + len <= lex.size());
+    Q_ASSERT(next.len >= 2); // at least `""`
+    Q_ASSERT(next.from + next.len <= next.lex.size());
+
+    if (len != lex.size()) {
+        // "rubbish" around lexem() in `lex`: clean up (`lex` may be the whole file)
+        QByteArray l = lexemView().chopped(1) % next.lexemView().sliced(1);
+        lex = std::move(l); // lexemView() aliases `lex`; only clobber it now
+        from = 0;
+    } else {
+        // like QByteArray::append(), but dealing with the "" around each lexem:
+        const auto unquoted = next.unquotedLexemView();
+        lex.insert(from + len - 1, // before closing `"`
+                   unquoted);
+    }
+    len = lex.size();
+}
+
 static void mergeStringLiterals(Symbols &symbols)
 {
-    for (Symbols::iterator i = symbols.begin(); i != symbols.end(); ++i) {
-        if (i->token == STRING_LITERAL) {
-            Symbols::Iterator mergeSymbol = i;
-            qsizetype literalsLength = mergeSymbol->len;
-            while (++i != symbols.end() && i->token == STRING_LITERAL)
-                literalsLength += i->len - 2; // no quotes
+    // like std::unique, but merges instead of skips adjacent STRING_LITERALs:
 
-            if (literalsLength != mergeSymbol->len) {
-                QByteArray mergeSymbolOriginalLexem = mergeSymbol->unquotedLexem();
-                QByteArray &mergeSymbolLexem = mergeSymbol->lex;
-                mergeSymbolLexem.resize(0);
-                mergeSymbolLexem.reserve(literalsLength);
-                mergeSymbolLexem.append('"');
-                mergeSymbolLexem.append(mergeSymbolOriginalLexem);
-                for (Symbols::iterator j = mergeSymbol + 1; j != i; ++j)
-                    mergeSymbolLexem.append(j->lex.constData() + j->from + 1, j->len - 2); // append j->unquotedLexem()
-                mergeSymbolLexem.append('"');
-                mergeSymbol->len = mergeSymbol->lex.size();
-                mergeSymbol->from = 0;
-                i = symbols.erase(mergeSymbol + 1, i);
+    const auto mergeable = [](const Symbol &lhs, const Symbol &rhs) {
+        return lhs.token == STRING_LITERAL && rhs.token == STRING_LITERAL;
+    };
+
+    auto end = symbols.end();
+    auto it = std::adjacent_find(symbols.begin(), symbols.end(), mergeable);
+    if (it == end) // none found
+        return;
+
+    // we know `it`, `it + 1` are both STRING_LITERAL (adjacent_find post-condition)
+    // in particular: it + 1 < end
+
+    auto dst = it;
+    auto lit = dst;
+    ++it;
+    lit->mergeStringLiteral(*it);
+
+    while (++it != end) {
+        // Loop Invariants:
+        // - [begin(), dst] is already processed
+        // - `lit` is the last string literal
+        //   - we can merge if lit == dst
+        // - [it, end[ still to be checked
+        if (it->token == STRING_LITERAL) {
+            if (lit == dst) {            // can merge
+                lit->mergeStringLiteral(*it);
+            } else {                     // can't merge: not adjacent to previous STRING_LITERAL
+                *++dst = std::move(*it);
+                lit = dst;               // remember that this was a literal
             }
-            if (i == symbols.end())
-                break;
+        } else {
+            *++dst = std::move(*it);
         }
     }
+
+    ++dst;
+
+    symbols.erase(dst, end);
 }
 
 static QByteArray searchIncludePaths(const QList<Parser::IncludePath> &includepaths,
