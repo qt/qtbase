@@ -642,9 +642,9 @@ NSUInteger QCocoaWindow::windowStyleMask(Qt::WindowFlags flags)
     if (type == Qt::Tool)
         styleMask |= NSWindowStyleMaskUtilityWindow;
 
-    // FIXME: Remove use of deprecated style mask
+    // FIXME (QTBUG-138829)
     if (m_drawContentBorderGradient)
-        styleMask |= NSWindowStyleMaskTexturedBackground;
+        styleMask |= QT_IGNORE_DEPRECATIONS(NSWindowStyleMaskTexturedBackground);
 
     if (flags & Qt::ExpandedClientAreaHint)
         styleMask |= NSWindowStyleMaskFullSizeContentView;
@@ -768,6 +768,7 @@ void QCocoaWindow::setWindowFlags(Qt::WindowFlags flags)
     if (m_view.window.ignoresMouseEvents != ignoreMouse)
         m_view.window.ignoresMouseEvents = ignoreMouse;
 
+    // FIXME (QTBUG-138829)
     m_view.window.titlebarAppearsTransparent = (flags & Qt::NoTitleBarBackgroundHint)
         || (m_view.window.styleMask & QT_IGNORE_DEPRECATIONS(NSWindowStyleMaskTexturedBackground));
 }
@@ -2055,7 +2056,8 @@ void QCocoaWindow::applyContentBorderThickness(NSWindow *window)
         return;
 
     if (!m_drawContentBorderGradient) {
-        window.styleMask = window.styleMask & ~NSWindowStyleMaskTexturedBackground;
+        // FIXME (QTBUG-138829)
+        window.styleMask = window.styleMask & QT_IGNORE_DEPRECATIONS(~NSWindowStyleMaskTexturedBackground);
         setWindowFlags(QPlatformWindow::window()->flags());
         [window.contentView.superview setNeedsDisplay:YES];
         return;
@@ -2081,7 +2083,8 @@ void QCocoaWindow::applyContentBorderThickness(NSWindow *window)
 
     int effectiveBottomContentBorderThickness = 0;
 
-    [window setStyleMask:[window styleMask] | NSWindowStyleMaskTexturedBackground];
+    // FIXME (QTBUG-138829)
+    [window setStyleMask:[window styleMask] | QT_IGNORE_DEPRECATIONS(NSWindowStyleMaskTexturedBackground)];
     setWindowFlags(QPlatformWindow::window()->flags());
 
     // Setting titlebarAppearsTransparent to YES means that the border thickness has to account
