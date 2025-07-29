@@ -549,6 +549,7 @@ function(qt_internal_add_darwin_permission_plugin permission)
         DEFAULT_IF FALSE
         SOURCES
             ${permission_source_file}
+            platform/darwin/qdarwinpermissionplugin_p_p.h
         DEFINES
             QT_DARWIN_PERMISSION_PLUGIN=${permission}
         LIBRARIES

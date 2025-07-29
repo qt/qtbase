@@ -1299,6 +1299,7 @@ if(QT_FEATURE_permissions AND APPLE)
         SOURCES
             kernel/qpermissions_darwin.mm
             platform/darwin/qdarwinpermissionplugin.mm
+            platform/darwin/qdarwinpermissionplugin_p.h
         PLUGIN_TYPES
             permissions
     )
