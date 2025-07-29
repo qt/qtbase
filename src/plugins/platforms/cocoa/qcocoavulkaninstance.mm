@@ -28,11 +28,11 @@ VkSurfaceKHR *QCocoaVulkanInstance::surface(QWindow *window)
 {
     QCocoaWindow *cocoaWindow = static_cast<QCocoaWindow *>(window->handle());
     if (!cocoaWindow->m_vulkanSurface)
-        cocoaWindow->m_vulkanSurface = createSurface(cocoaWindow->m_view);
+        cocoaWindow->m_vulkanSurface = createSurface(cocoaWindow->contentLayer());
     return &cocoaWindow->m_vulkanSurface;
 }
 
-VkSurfaceKHR QCocoaVulkanInstance::createSurface(NSView *view)
+VkSurfaceKHR QCocoaVulkanInstance::createSurface(CALayer *layer)
 {
     VkSurfaceKHR surface = nullptr;
     if (!m_createMetalSurface) {
@@ -42,7 +42,7 @@ VkSurfaceKHR QCocoaVulkanInstance::createSurface(NSView *view)
     if (m_createMetalSurface) {
         VkMetalSurfaceCreateInfoEXT info = {};
         info.sType = VK_STRUCTURE_TYPE_METAL_SURFACE_CREATE_INFO_EXT;
-        info.pLayer = qt_objc_cast<CAMetalLayer*>(view.layer);
+        info.pLayer = qt_objc_cast<CAMetalLayer*>(layer);
         VkResult err = m_createMetalSurface(m_vkInst, &info, nullptr, &surface);
         if (err == VK_SUCCESS)
             return surface;
@@ -61,7 +61,7 @@ VkSurfaceKHR QCocoaVulkanInstance::createSurface(NSView *view)
     surfaceInfo.sType = VK_STRUCTURE_TYPE_MACOS_SURFACE_CREATE_INFO_MVK;
     surfaceInfo.pNext = nullptr;
     surfaceInfo.flags = 0;
-    surfaceInfo.pView = view.layer;
+    surfaceInfo.pView = layer;
 
     VkResult err = m_createSurface(m_vkInst, &surfaceInfo, nullptr, &surface);
     if (err != VK_SUCCESS)

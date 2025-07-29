@@ -26,7 +26,7 @@ public:
     VkSurfaceKHR *surface(QWindow *window);
 
 private:
-    VkSurfaceKHR createSurface(NSView *view);
+    VkSurfaceKHR createSurface(CALayer *layer);
 
     QVulkanInstance *m_instance = nullptr;
     QLibrary m_lib;
