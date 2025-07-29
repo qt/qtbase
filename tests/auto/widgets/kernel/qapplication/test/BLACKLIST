@@ -9,8 +9,6 @@ android
 android
 [desktopSettingsAware]
 android
-[touchEventPropagation]
-android
 [wheelEventPropagation]
 android
 [modalDialog]
