@@ -127,6 +127,7 @@ Qt sets the following manifest configuration by default:
         The default value is \c true.
 \endtable
 
+\target android-manifest-qt-specific-metadata
 \section1 Qt Specific Meta-data
 
 In addition to the default manifest configuration that Qt sets, Qt defines
