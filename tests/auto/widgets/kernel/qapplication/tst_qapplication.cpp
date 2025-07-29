@@ -2093,8 +2093,7 @@ void tst_QApplication::touchEventPropagation()
         QVERIFY(QTest::qWaitForWindowExposed(&window));
         // QPA always takes screen positions and since we map the TouchPoint back to QPA's structure first,
         // we must ensure there is a screen position in the TouchPoint that maps to a local 0, 0.
-        const QPoint deviceGlobalPos =
-            QHighDpi::toNativePixels(window.mapToGlobal(QPoint(0, 0)), window.windowHandle()->screen());
+        const QPoint deviceGlobalPos = window.mapToGlobal(QPoint(0, 0));
         auto pressedTouchPoints = QList<QEventPoint>() <<
             QEventPoint(0, QEventPoint::State::Pressed, QPointF(), deviceGlobalPos);
         auto releasedTouchPoints = QList<QEventPoint>() <<
@@ -2153,8 +2152,7 @@ void tst_QApplication::touchEventPropagation()
         window.show();
         auto handle = window.windowHandle();
         QVERIFY(QTest::qWaitForWindowExposed(&window));
-        const QPoint deviceGlobalPos =
-            QHighDpi::toNativePixels(window.mapToGlobal(QPoint(50, 150)), window.windowHandle()->screen());
+        const QPoint deviceGlobalPos = window.mapToGlobal(QPoint(50, 150));
         auto pressedTouchPoints = QList<QEventPoint>() <<
             QEventPoint(0, QEventPoint::State::Pressed, QPointF(), deviceGlobalPos);
         auto releasedTouchPoints = QList<QEventPoint>() <<
