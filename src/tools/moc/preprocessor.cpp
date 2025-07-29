@@ -1003,9 +1003,8 @@ static QByteArray readOrMapFile(QFile *file)
     return rawInput ? QByteArray::fromRawData(rawInput, size) : file->readAll();
 }
 
-static void mergeStringLiterals(Symbols *_symbols)
+static void mergeStringLiterals(Symbols &symbols)
 {
-    Symbols &symbols = *_symbols;
     for (Symbols::iterator i = symbols.begin(); i != symbols.end(); ++i) {
         if (i->token == STRING_LITERAL) {
             Symbols::Iterator mergeSymbol = i;
@@ -1299,7 +1298,7 @@ Symbols Preprocessor::preprocessed(const QByteArray &filename, QFile *file)
     // and calculating an average when running moc over FOSS projects.
     result.reserve(file->size() / 300000);
     preprocess(filename, result);
-    mergeStringLiterals(&result);
+    mergeStringLiterals(result);
 
 #if 0
     for (int j = 0; j < result.size(); ++j)
