@@ -461,6 +461,8 @@ QNetworkReplyHttpImplPrivate::QNetworkReplyHttpImplPrivate()
 
 QNetworkReplyHttpImplPrivate::~QNetworkReplyHttpImplPrivate()
 {
+    if (cacheSaveDevice)
+        managerPrivate->networkCache->remove(url);
 }
 
 /*
