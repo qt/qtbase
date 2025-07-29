@@ -38,7 +38,7 @@ static auto scanLangEnv()
     {
         QByteArray name; // empty means unknown; lookup from id may work
         LCID id = 0; // 0 means unknown; lookup from name may work
-    } result;
+    };
     const QByteArray lang = qgetenv("LANG");
     if (lang.size() && (lang == "C" || qt_splitLocaleName(QString::fromLocal8Bit(lang)))) {
         // See if we have a Windows locale code instead of a locale name:
