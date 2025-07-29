@@ -1164,7 +1164,6 @@ static QString winIso3116CtryName(LCID id)
 
 static QByteArray getWinLocaleName(LCID id)
 {
-    QByteArray result;
     if (id == LOCALE_USER_DEFAULT) {
         const auto [name, lcid] = scanLangEnv();
         if (!name.isEmpty())
