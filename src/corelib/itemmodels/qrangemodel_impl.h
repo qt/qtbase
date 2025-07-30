@@ -735,6 +735,9 @@ protected:
     inline void endMoveRows();
     inline QAbstractItemModel &itemModel();
     inline const QAbstractItemModel &itemModel() const;
+
+    // implemented in qrangemodel.cpp
+    Q_CORE_EXPORT QHash<int, QByteArray> roleNamesForMetaObject(const QMetaObject &metaObject) const;
 };
 
 template <typename Structure, typename Range,
@@ -1318,19 +1321,7 @@ public:
         // will be 'void' if columns don't all have the same type
         using item_type = typename row_traits::item_type;
         if constexpr (QRangeModelDetails::has_metaobject_v<item_type>) {
-            const QMetaObject &metaObject = QRangeModelDetails::wrapped_t<item_type>::staticMetaObject;
-            const auto defaults = itemModel().QAbstractItemModel::roleNames();
-            QHash<int, QByteArray> result;
-            const int offset = metaObject.propertyOffset();
-            for (int i = offset; i < metaObject.propertyCount(); ++i) {
-                const auto name = metaObject.property(i).name();
-                const int defaultRole = defaults.key(name, -1);
-                if (defaultRole != -1)
-                    result[defaultRole] = name;
-                else
-                    result[Qt::UserRole + i - offset] = name;
-            }
-            return result;
+            return roleNamesForMetaObject(QRangeModelDetails::wrapped_t<item_type>::staticMetaObject);
         }
 
         return itemModel().QAbstractItemModel::roleNames();
