@@ -730,8 +730,8 @@ void tst_QWidget::initTestCase()
     // XCB: Determine "safe" cursor position at bottom/right corner of screen.
     // Pushing the mouse rapidly to the top left corner can trigger KDE / KWin's
     // "Present all Windows" (Ctrl+F9) feature also programmatically.
-    if (m_platform == QLatin1String("xcb"))
-        m_safeCursorPos = availableGeometry.bottomRight() - QPoint(40, 40);
+    m_safeCursorPos = availableGeometry.bottomRight() - QPoint(40, 40);
+    QCursor::setPos(m_safeCursorPos);
     const int screenWidth = screen->geometry().width();
     if (screenWidth > 2000)
         width = 100 * ((screenWidth + 500) / 1000);
