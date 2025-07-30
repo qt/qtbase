@@ -662,6 +662,31 @@ function(_qt_internal_disable_autorcc_zstd_when_not_supported target)
     endif()
 endfunction()
 
+# Link given target to PlatformExampleInternal when the target is part of an example build.
+function(_qt_internal_link_to_platform_example_internal target)
+    # The first variable is set when examples are built using ExternalProject_Add.
+    # The second is set when examples are built in-tree, the scope is in the <repo>/examples subdir.
+    if(QT_INTERNAL_IS_EXAMPLE_EP_BUILD
+        OR QT_INTERNAL_IS_EXAMPLE_IN_TREE_BUILD)
+        target_link_libraries("${target}" PRIVATE
+            ${QT_CMAKE_EXPORT_NAMESPACE}::PlatformExampleInternal)
+    endif()
+endfunction()
+
+# Set up warnings as errors for targets built in example projects.
+function(_qt_internal_setup_warnings_are_errors_for_example_target target)
+    # Only enable warnings as errors when the global variable is enabled and the repo is known
+    # to have clean examples.
+    if(QT_INTERNAL_IS_EXAMPLE_EP_BUILD
+        OR QT_INTERNAL_IS_EXAMPLE_IN_TREE_BUILD)
+        if(WARNINGS_ARE_ERRORS AND QT_REPO_EXAMPLES_WARNINGS_CLEAN)
+            _qt_internal_set_skip_warnings_are_errors("${target}" FALSE)
+        else()
+            _qt_internal_set_skip_warnings_are_errors("${target}" TRUE)
+        endif()
+    endif()
+endfunction()
+
 function(_qt_internal_create_executable target)
     if(ANDROID)
         list(REMOVE_ITEM ARGN "WIN32" "MACOSX_BUNDLE")
@@ -691,6 +716,8 @@ function(_qt_internal_create_executable target)
     endif()
 
     _qt_internal_disable_autorcc_zstd_when_not_supported("${target}")
+    _qt_internal_link_to_platform_example_internal("${target}")
+    _qt_internal_setup_warnings_are_errors_for_example_target("${target}")
     _qt_internal_set_up_static_runtime_library("${target}")
 endfunction()
 
@@ -2785,6 +2812,8 @@ function(_qt_internal_add_library target)
     cmake_policy(POP)
 
     _qt_internal_disable_autorcc_zstd_when_not_supported("${target}")
+    _qt_internal_link_to_platform_example_internal("${target}")
+    _qt_internal_setup_warnings_are_errors_for_example_target("${target}")
     _qt_internal_set_up_static_runtime_library(${target})
 
     if(NOT type_to_create STREQUAL "INTERFACE" AND NOT type_to_create STREQUAL "OBJECT")

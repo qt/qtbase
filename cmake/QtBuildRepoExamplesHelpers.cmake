@@ -89,6 +89,9 @@ macro(qt_examples_build_begin)
         if(active_linker_flags)
             add_link_options(${active_linker_flags})
         endif()
+
+        # Marker for warnings_as_errors.
+        set(QT_INTERNAL_IS_EXAMPLE_IN_TREE_BUILD ON)
     endif()
 
     # TODO: Change this to TRUE when all examples in all repos are ported to use
@@ -467,6 +470,8 @@ function(qt_internal_add_example_external_project subdir)
         QT_ADDITIONAL_PACKAGES_PREFIX_PATH:STRING
         QT_ADDITIONAL_QML_PLUGIN_GLOB_PREFIXES:STRING
         QT_INTERNAL_SKIP_DEPLOYMENT:BOOL
+        QT_REPO_EXAMPLES_WARNINGS_CLEAN:BOOL
+        WARNINGS_ARE_ERRORS:BOOL
         CMAKE_FIND_ROOT_PATH:STRING
         CMAKE_MODULE_PATH:STRING
         BUILD_SHARED_LIBS:BOOL
@@ -608,6 +613,7 @@ function(qt_internal_add_example_external_project subdir)
         TEST_COMMAND     ""
         DEPENDS          ${deps}
         CMAKE_CACHE_ARGS ${var_defs}
+                         -DQT_INTERNAL_IS_EXAMPLE_EP_BUILD:BOOL=TRUE
                          -DCMAKE_INSTALL_PREFIX:STRING=<INSTALL_DIR>
                          -DQT_INTERNAL_SET_EXAMPLE_INSTALL_DIR_TO_DOT:BOOL=TRUE
         ${terminal_args}

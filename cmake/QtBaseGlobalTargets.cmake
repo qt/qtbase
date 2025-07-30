@@ -144,6 +144,7 @@ target_include_directories(GlobalConfigPrivate INTERFACE
 qt_internal_setup_public_platform_target()
 
 # defines PlatformCommonInternal PlatformModuleInternal PlatformPluginInternal PlatformToolInternal
+# PlatformExampleInternal
 include(QtInternalTargets)
 qt_internal_run_common_config_tests()
 
@@ -158,7 +159,9 @@ set(__export_targets Platform
                      PlatformModuleInternal
                      PlatformPluginInternal
                      PlatformAppInternal
-                     PlatformToolInternal)
+                     PlatformToolInternal
+                     PlatformExampleInternal
+                 )
 set(__export_name "${INSTALL_CMAKE_NAMESPACE}Targets")
 qt_install(TARGETS ${__export_targets} EXPORT "${__export_name}")
 qt_install(EXPORT ${__export_name}
