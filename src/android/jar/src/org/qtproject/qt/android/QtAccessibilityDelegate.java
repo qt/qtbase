@@ -569,6 +569,9 @@ class QtAccessibilityDelegate extends View.AccessibilityDelegate
             if (success)
                 sendEventForVirtualViewId(virtualViewId, AccessibilityEvent.TYPE_VIEW_CLICKED);
             break;
+        case AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS:
+            success = QtNativeAccessibility.focusAction(virtualViewId);
+            break;
         case AccessibilityNodeInfo.ACTION_SCROLL_FORWARD:
             success = QtNativeAccessibility.scrollForward(virtualViewId);
             if (success)
