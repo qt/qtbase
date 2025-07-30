@@ -1009,6 +1009,7 @@ static constexpr WindowsToISOListElt windows_to_iso_list[] = {
     { 0x0412, "ko"    },
     { 0x0413, "nl"    },
     { 0x0414, "no"    },
+    { 0x0414, "nb"    }, // alternative spelling; lower_bound will find the first one
     { 0x0415, "pl"    },
     { 0x0416, "pt_BR" },
     { 0x0418, "ro"    },
@@ -1044,6 +1045,7 @@ static constexpr WindowsToISOListElt windows_to_iso_list[] = {
     { 0x0812, "ko"    },
     { 0x0813, "nl_BE" },
     { 0x0814, "no"    },
+    { 0x0814, "nn"    }, // alternative spelling; lower_bound will find the first one
     { 0x0816, "pt"    },
     { 0x081a, "sr"    },
     { 0x081d, "sv_FI" },
@@ -1128,11 +1130,6 @@ LCID qt_inIsoNametoLCID(const char *name)
         return LOCALE_USER_DEFAULT;
     if (std::strlen(name) >= sizeof(WindowsToISOListElt::iso_name))
         return LOCALE_USER_DEFAULT; // cannot possibly match (too long)
-    // handle norwegian manually, the list above will fail
-    if (!strncmp(name, "nb", 2))
-        return 0x0414;
-    if (!strncmp(name, "nn", 2))
-        return 0x0814;
 
     // normalize separators:
     char n[sizeof(WindowsToISOListElt::iso_name)];
