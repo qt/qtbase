@@ -16,6 +16,7 @@ class QtNativeAccessibility
     static native Rect screenRect(int objectId);
     static native int hitTest(float x, float y);
     static native boolean clickAction(int objectId);
+    static native boolean focusAction(int objectId);
     static native boolean scrollForward(int objectId);
     static native boolean scrollBackward(int objectId);
 
