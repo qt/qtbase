@@ -88,8 +88,7 @@ static int indexOfHwnd(HWND hwnd)
     return -1;
 }
 
-extern "C" LRESULT QT_WIN_CALLBACK qWindowsTrayIconWndProc(HWND hwnd, UINT message,
-                                                           WPARAM wParam, LPARAM lParam)
+LRESULT QT_WIN_CALLBACK qWindowsTrayIconWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     if (message == MYWM_TASKBARCREATED || message == MYWM_NOTIFYICON
         || message == WM_INITMENU || message == WM_INITMENUPOPUP

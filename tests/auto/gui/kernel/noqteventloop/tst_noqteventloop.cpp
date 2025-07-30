@@ -74,7 +74,7 @@ protected:
 
 bool g_exit = false;
 
-extern "C" LRESULT QT_WIN_CALLBACK wndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
+LRESULT QT_WIN_CALLBACK wndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     if (message == WM_SHOWWINDOW && wParam == 0)
         g_exit = true;

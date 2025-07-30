@@ -34,7 +34,7 @@ enum {
     CursorTypeBitMask = 0x0F06 // bitmask to find the specific cursor type (see Wacom FAQ)
 };
 
-extern "C" LRESULT QT_WIN_CALLBACK qWindowsTabletSupportWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
+LRESULT QT_WIN_CALLBACK qWindowsTabletSupportWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     switch (message) {
     case WT_PROXIMITY:

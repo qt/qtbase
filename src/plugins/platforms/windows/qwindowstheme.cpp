@@ -491,7 +491,7 @@ static inline QPalette *menuBarPalette(const QPalette &menuPalette, bool light)
 const char *QWindowsTheme::name = "windows";
 QWindowsTheme *QWindowsTheme::m_instance = nullptr;
 
-extern "C" LRESULT QT_WIN_CALLBACK qThemeChangeObserverWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
+LRESULT QT_WIN_CALLBACK qThemeChangeObserverWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     switch (message) {
     case WM_SETTINGCHANGE:

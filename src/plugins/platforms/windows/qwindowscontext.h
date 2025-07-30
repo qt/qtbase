@@ -168,7 +168,7 @@ private:
     static QWindowsContext *m_instance;
 };
 
-extern "C" LRESULT QT_WIN_CALLBACK qWindowsWndProc(HWND, UINT, WPARAM, LPARAM);
+LRESULT QT_WIN_CALLBACK qWindowsWndProc(HWND, UINT, WPARAM, LPARAM);
 
 QT_END_NAMESPACE
 
