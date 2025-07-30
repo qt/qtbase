@@ -1126,15 +1126,18 @@ LCID qt_inIsoNametoLCID(const char *name)
 {
     if (!name)
         return LOCALE_USER_DEFAULT;
+    if (std::strlen(name) >= sizeof(WindowsToISOListElt::iso_name))
+        return LOCALE_USER_DEFAULT; // cannot possibly match (too long)
     // handle norwegian manually, the list above will fail
     if (!strncmp(name, "nb", 2))
         return 0x0414;
     if (!strncmp(name, "nn", 2))
         return 0x0814;
 
-    char n[64];
+    // normalize separators:
+    char n[sizeof(WindowsToISOListElt::iso_name)];
+    // we know it will fit (we checked at the top of the function)
     strncpy(n, name, sizeof(n));
-    n[sizeof(n)-1] = 0;
     char *c = n;
     while (*c) {
         if (*c == '-')
