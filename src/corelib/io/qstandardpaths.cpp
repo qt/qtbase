@@ -595,7 +595,7 @@ QString QStandardPaths::displayName(StandardLocation type)
     case GenericStateLocation:
         return QCoreApplication::translate("QStandardPaths", "Shared State");
     case DownloadLocation:
-        return QCoreApplication::translate("QStandardPaths", "Download");
+        return QCoreApplication::translate("QStandardPaths", "Downloads");
     case AppDataLocation:
     case AppConfigLocation:
         return QCoreApplication::translate("QStandardPaths", "Application Configuration");
