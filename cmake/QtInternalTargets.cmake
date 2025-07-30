@@ -162,6 +162,7 @@ function(qt_internal_add_global_definition definition)
     set(scope_PLUGIN PlatformPluginInternal)
     set(scope_TOOL PlatformToolInternal)
     set(scope_APP PlatformAppInternal)
+    set(scope_EXAMPLE PlatformExampleInternal)
 
     set(undef_property_name "QT_INTERNAL_UNDEF_${definition}")
 
@@ -199,6 +200,8 @@ target_link_libraries(PlatformAppInternal INTERFACE PlatformCommonInternal)
 qt_internal_add_platform_internal_target(PlatformToolInternal)
 target_link_libraries(PlatformToolInternal INTERFACE PlatformAppInternal)
 
+qt_internal_add_platform_internal_target(PlatformExampleInternal)
+
 qt_internal_add_global_definition(QT_NO_JAVA_STYLE_ITERATORS)
 qt_internal_add_global_definition(QT_NO_QASCONST)
 qt_internal_add_global_definition(QT_NO_QEXCHANGE)
@@ -212,6 +215,7 @@ qt_internal_add_global_definition(QT_NO_STD_FORMAT_SUPPORT SCOPE PLUGIN TOOL MOD
 qt_internal_set_warnings_are_errors_flags(PlatformModuleInternal INTERFACE)
 qt_internal_set_warnings_are_errors_flags(PlatformPluginInternal INTERFACE)
 qt_internal_set_warnings_are_errors_flags(PlatformAppInternal INTERFACE)
+qt_internal_set_warnings_are_errors_flags(PlatformExampleInternal INTERFACE)
 
 if(WIN32)
     # Needed for M_PI define. Same as mkspecs/features/qt_module.prf.

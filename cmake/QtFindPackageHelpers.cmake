@@ -466,6 +466,7 @@ function(qt_internal_is_lib_part_of_qt6_package lib out_var)
             OR lib STREQUAL "PlatformPluginInternal"
             OR lib STREQUAL "PlatformToolInternal"
             OR lib STREQUAL "PlatformCommonInternal"
+            OR lib STREQUAL "PlatformExampleInternal"
     )
         set(${out_var} "TRUE" PARENT_SCOPE)
     else()

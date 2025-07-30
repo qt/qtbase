@@ -480,6 +480,15 @@ function(_qt_internal_set_up_static_runtime_library target)
     endif()
 endfunction()
 
+# Controls the QT_SKIP_WARNINGS_ARE_ERRORS property for the given target.
+function(_qt_internal_set_skip_warnings_are_errors target value)
+    get_target_property(target_type "${target}" TYPE)
+    if(target_type STREQUAL "INTERFACE_LIBRARY")
+        return()
+    endif()
+    set_target_properties("${target}" PROPERTIES QT_SKIP_WARNINGS_ARE_ERRORS ${value})
+endfunction()
+
 function(_qt_internal_warn_about_example_add_subdirectory)
     # This is set by qt_build_repo_impl_examples() in QtBuildRepoHelpers.cmake, only for developer
     # builds, to catch examples that are added via add_subdirectory instead of via
