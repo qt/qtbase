@@ -215,8 +215,10 @@ void tst_QRangeModel::createTestData()
     ADD_ALL(listOfGadgets, 1, ChangeAction::ChangeRows | ChangeAction::SetData | ChangeAction::SetItemData);
     ADD_ALL(listOfMultiRoleGadgets, 1, ChangeAction::ChangeRows | ChangeAction::SetData | ChangeAction::SetItemData);
     ADD_COPY(listOfSharedMultiRoleGadgets, 1, ChangeAction::ChangeRows | ChangeAction::SetData | ChangeAction::SetItemData);
+    ADD_POINTER(arrayOfUniqueMultiRoleGadgets, 1, ChangeAction::SetData | ChangeAction::SetItemData);
 
-    ADD_COPY(listOfObjects, 2, ChangeAction::ChangeRows | ChangeAction::SetData);
+    ADD_COPY(listOfObjects, 2, ChangeAction::ChangeRows | ChangeAction::SetData | ChangeAction::SetItemData);
+    ADD_REF(arrayOfUniqueObjects, 2, ChangeAction::SetData | ChangeAction::SetItemData);
 
     ADD_COPY(listOfMetaObjectTuple, 1,
              ChangeAction::ChangeRows | ChangeAction::SetData | ChangeAction::SetItemData);

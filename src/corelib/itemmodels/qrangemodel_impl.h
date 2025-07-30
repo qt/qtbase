@@ -1231,14 +1231,14 @@ public:
                         // transactional: if possible, modify a copy and only
                         // update target if all values from data could be stored.
                         auto targetCopy = [](auto &&origin) {
-                            if constexpr (std::is_base_of_v<QObject, meta_type>)
-                                return origin; // can't copy, no transaction support
+                            if constexpr (!std::is_copy_assignable_v<meta_type>)
+                                return QRangeModelDetails::pointerTo(origin); // no transaction support
                             else if constexpr (std::is_pointer_v<decltype(target)>)
                                 return *origin;
                             else if constexpr (std::is_copy_assignable_v<value_type>)
                                 return origin;
-                            else // can't copy - targetCopy is now a pointer
-                                return &origin;
+                            else
+                                return QRangeModelDetails::pointerTo(origin);
                         }(target);
                         const auto roleNames = itemModel().roleNames();
                         for (auto &&[role, value] : data.asKeyValueRange()) {
@@ -1258,8 +1258,8 @@ public:
                                 return false;
                             }
                         }
-                        if constexpr (std::is_base_of_v<QObject, meta_type>)
-                            target = targetCopy; // nothing actually copied
+                        if constexpr (!std::is_copy_assignable_v<meta_type>)
+                            ; // nothing was actually copied
                         else if constexpr (std::is_pointer_v<decltype(target)>)
                             qSwap(*target, targetCopy);
                         else if constexpr (std::is_pointer_v<decltype(targetCopy)>)

@@ -364,6 +364,13 @@ struct Data {
         asSPtr(MultiRoleGadget{u"green"_s, Qt::green}),
         asSPtr(MultiRoleGadget{u"blue"_s, Qt::blue}),
     };
+
+    std::array<std::unique_ptr<MultiRoleGadget>, 3> arrayOfUniqueMultiRoleGadgets = {
+        std::make_unique<MultiRoleGadget>(MultiRoleGadget{u"red"_s, Qt::red}),
+        std::make_unique<MultiRoleGadget>(MultiRoleGadget{u"green"_s, Qt::green}),
+        std::make_unique<MultiRoleGadget>(MultiRoleGadget{u"blue"_s, Qt::blue}),
+    };
+
     std::vector<Row> vectorOfStructs = {
         {{"red", Qt::red, "0xff0000"}, 1, "one"},
         {{"green", Qt::green, "0x00ff00"}, 2, "two"},
@@ -372,6 +379,10 @@ struct Data {
 
     std::list<Object *> listOfObjects = {
         new Object, new Object, new Object
+    };
+
+    std::array<std::unique_ptr<Object>, 3> arrayOfUniqueObjects = {
+        std::make_unique<Object>(), std::make_unique<Object>(), std::make_unique<Object>()
     };
 
     std::vector<std::tuple<MetaObjectTuple *>> listOfMetaObjectTuple = {
