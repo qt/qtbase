@@ -193,9 +193,9 @@ public:
     bool createDecoration();
 
 #if QT_CONFIG(cursor)
-    void setMouseCursor(QWaylandInputDevice *device, const QCursor &cursor);
     void restoreMouseCursor(QWaylandInputDevice *device);
     void setStoredCursor(const QCursor &cursor);
+    void resetStoredCursor();
     void applyCursor(QWaylandInputDevice *device, const QCursor &cursor);
 #endif
 

@@ -1252,6 +1252,12 @@ void QWaylandWindow::handleMouse(QWaylandInputDevice *inputDevice, const QWaylan
         return;
     }
 
+#if QT_CONFIG(cursor)
+    if (e.type == QEvent::Enter) {
+        restoreMouseCursor(inputDevice);
+    }
+#endif
+
     if (mWindowDecorationEnabled) {
         handleMouseEventWithDecoration(inputDevice, e);
     } else {
@@ -1276,14 +1282,6 @@ void QWaylandWindow::handleMouse(QWaylandInputDevice *inputDevice, const QWaylan
             Q_UNREACHABLE();
         }
     }
-
-#if QT_CONFIG(cursor)
-    if (e.type == QEvent::Enter) {
-        QRect contentGeometry = QRect(QPoint(), surfaceSize()).marginsRemoved(clientSideMargins());
-        if (contentGeometry.contains(e.local.toPoint()))
-            restoreMouseCursor(inputDevice);
-    }
-#endif
 }
 
 #ifndef QT_NO_GESTURES
@@ -1558,23 +1556,24 @@ void QWaylandWindow::setScale(qreal newScale)
 }
 
 #if QT_CONFIG(cursor)
-void QWaylandWindow::setMouseCursor(QWaylandInputDevice *device, const QCursor &cursor)
-{
-    setStoredCursor(cursor);
-    applyCursor(device, cursor);
-}
-
 void QWaylandWindow::restoreMouseCursor(QWaylandInputDevice *device)
 {
-    if (const QCursor *overrideCursor = QGuiApplication::overrideCursor())
+    if (const QCursor *overrideCursor = QGuiApplication::overrideCursor()) {
         applyCursor(device, *overrideCursor);
-    else if (mHasStoredCursor)
+    } else if (mHasStoredCursor) {
         applyCursor(device, mStoredCursor);
+    } else {
+        applyCursor(device, QCursor(Qt::ArrowCursor));
+    }
 }
 
+void QWaylandWindow::resetStoredCursor()
+{
+    mHasStoredCursor = false;
+}
+
+// Keep track of application set cursors on each window
 void QWaylandWindow::setStoredCursor(const QCursor &cursor) {
-    if (mHasStoredCursor && mStoredCursor == cursor)
-        return;
     mStoredCursor = cursor;
     mHasStoredCursor = true;
 }

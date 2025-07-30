@@ -323,16 +323,17 @@ void QWaylandCursor::changeCursor(QCursor *cursor, QWindow *window)
     if (!waylandWindow)
         return;
 
-    if (cursor) {
+    if (cursor)
         waylandWindow->setStoredCursor(*cursor);
+    else
+        waylandWindow->resetStoredCursor();
 
-        for (QWaylandInputDevice *device : mDisplay->inputDevices()) {
-            if (device->pointer() && device->pointer()->focusWindow() == waylandWindow)
-                device->setCursor(cursor, bitmapBuffer, qCeil(waylandWindow->devicePixelRatio()));
-        }
-
-        wl_display_flush(mDisplay->wl_display());
+    for (QWaylandInputDevice *device : mDisplay->inputDevices()) {
+        if (device->pointer() && device->pointer()->focusWindow() == waylandWindow)
+            device->setCursor(cursor, bitmapBuffer, qCeil(waylandWindow->devicePixelRatio()));
     }
+
+    wl_display_flush(mDisplay->wl_display());
 }
 
 void QWaylandCursor::pointerEvent(const QMouseEvent &event)

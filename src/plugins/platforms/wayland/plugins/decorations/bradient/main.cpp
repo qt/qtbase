@@ -298,21 +298,21 @@ void QWaylandBradientDecoration::processPointerTop(QWaylandInputDevice *inputDev
             //top left bit
 #if QT_CONFIG(cursor)
             if (type == PointerType::Mouse)
-                waylandWindow()->setMouseCursor(inputDevice, Qt::SizeFDiagCursor);
+                waylandWindow()->applyCursor(inputDevice, Qt::SizeFDiagCursor);
 #endif
             startResize(inputDevice, Qt::TopEdge | Qt::LeftEdge, b);
         } else if (local.x() >= ss.width() - margins().right()) {
             //top right bit
 #if QT_CONFIG(cursor)
             if (type == PointerType::Mouse)
-                waylandWindow()->setMouseCursor(inputDevice, Qt::SizeBDiagCursor);
+                waylandWindow()->applyCursor(inputDevice, Qt::SizeBDiagCursor);
 #endif
             startResize(inputDevice, Qt::TopEdge | Qt::RightEdge, b);
         } else {
             //top resize bit
 #if QT_CONFIG(cursor)
             if (type == PointerType::Mouse)
-                waylandWindow()->setMouseCursor(inputDevice, Qt::SplitVCursor);
+                waylandWindow()->applyCursor(inputDevice, Qt::SplitVCursor);
 #endif
             startResize(inputDevice, Qt::TopEdge, b);
         }
@@ -356,21 +356,21 @@ void QWaylandBradientDecoration::processPointerBottom(QWaylandInputDevice *input
         //bottom left bit
 #if QT_CONFIG(cursor)
         if (type == PointerType::Mouse)
-            waylandWindow()->setMouseCursor(inputDevice, Qt::SizeBDiagCursor);
+            waylandWindow()->applyCursor(inputDevice, Qt::SizeBDiagCursor);
 #endif
         startResize(inputDevice, Qt::BottomEdge | Qt::LeftEdge, b);
     } else if (local.x() >= ss.width() - margins().right()) {
         //bottom right bit
 #if QT_CONFIG(cursor)
         if (type == PointerType::Mouse)
-            waylandWindow()->setMouseCursor(inputDevice, Qt::SizeFDiagCursor);
+            waylandWindow()->applyCursor(inputDevice, Qt::SizeFDiagCursor);
 #endif
         startResize(inputDevice, Qt::BottomEdge | Qt::RightEdge, b);
     } else {
         //bottom bit
 #if QT_CONFIG(cursor)
         if (type == PointerType::Mouse)
-            waylandWindow()->setMouseCursor(inputDevice, Qt::SizeVerCursor);
+            waylandWindow()->applyCursor(inputDevice, Qt::SizeVerCursor);
 #endif
         startResize(inputDevice, Qt::BottomEdge, b);
     }
@@ -386,7 +386,7 @@ void QWaylandBradientDecoration::processPointerLeft(QWaylandInputDevice *inputDe
     Q_UNUSED(mods);
 #if QT_CONFIG(cursor)
     if (type == PointerType::Mouse)
-        waylandWindow()->setMouseCursor(inputDevice, Qt::SizeHorCursor);
+        waylandWindow()->applyCursor(inputDevice, Qt::SizeHorCursor);
 #else
     Q_UNUSED(type);
 #endif
@@ -403,7 +403,7 @@ void QWaylandBradientDecoration::processPointerRight(QWaylandInputDevice *inputD
     Q_UNUSED(mods);
 #if QT_CONFIG(cursor)
     if (type == PointerType::Mouse)
-        waylandWindow()->setMouseCursor(inputDevice, Qt::SizeHorCursor);
+        waylandWindow()->applyCursor(inputDevice, Qt::SizeHorCursor);
 #else
     Q_UNUSED(type);
 #endif
