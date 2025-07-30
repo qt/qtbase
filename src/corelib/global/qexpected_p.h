@@ -253,7 +253,7 @@ template <typename E>
 #ifdef _MSC_VER
   __assume(0);
 #else
-  __builtin_unreachable();
+  Q_UNREACHABLE();
 #endif
 #endif
 }
