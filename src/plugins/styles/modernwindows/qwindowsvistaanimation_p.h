@@ -18,6 +18,8 @@
 #include <private/qstyleanimation_p.h>
 #include <QtWidgets/private/qwindowsstyle_p.h>
 
+QT_BEGIN_NAMESPACE
+
 class QWindowsVistaAnimation : public QBlendStyleAnimation
 {
     Q_OBJECT
@@ -45,5 +47,7 @@ class QWindowsVistaPulse: public QWindowsVistaAnimation
 public:
     QWindowsVistaPulse(QObject *target) : QWindowsVistaAnimation(Pulse, target) {}
 };
+
+QT_END_NAMESPACE
 
 #endif // QWINDOWSVISTAANIMATION_P_H

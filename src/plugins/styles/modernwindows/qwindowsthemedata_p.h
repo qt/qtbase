@@ -49,6 +49,8 @@
 #define CBS_INACTIVE 5
 #endif
 
+QT_BEGIN_NAMESPACE
+
 // Declarations -----------------------------------------------------------------------------------
 class QWindowsThemeData
 {
@@ -179,5 +181,7 @@ inline QMarginsF QWindowsThemeData::margins(int propId)
     }
     return result;
 }
+
+QT_END_NAMESPACE
 
 #endif // QWINDOWSTHEMEDATA_P_H
