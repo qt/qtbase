@@ -1176,17 +1176,17 @@ uchar *QDynamicFileResourceRoot::map_sys(QFile &file, qint64 offset, qsizetype s
     void *ptr = nullptr;
     if (size < 0)
         size = qMin(file.size() - offset, (std::numeric_limits<qsizetype>::max)());
-
+    int fd = file.handle();
+    if (fd < 0)
+        return nullptr;
     // We don't use QFile::map() here because we want to dispose of the QFile object
 #if defined(QT_USE_MMAP)
-    int fd = file.handle();
     int protection = PROT_READ;                 // read-only memory
     int flags = MAP_FILE | MAP_PRIVATE;         // swap-backed map from file
     ptr = QT_MMAP(nullptr, size, protection, flags, fd, offset);
     if (ptr == MAP_FAILED)
         ptr = nullptr;
 #elif defined(Q_OS_WIN)
-    int fd = file.handle();
     HANDLE fileHandle = reinterpret_cast<HANDLE>(_get_osfhandle(fd));
     if (fileHandle != INVALID_HANDLE_VALUE) {
         HANDLE mapHandle = CreateFileMapping(fileHandle, 0, PAGE_WRITECOPY, 0, 0, 0);

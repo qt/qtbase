@@ -42,6 +42,7 @@ private slots:
     void lastModified();
     void resourcesInStaticPlugins();
     void qtResourceEmpty();
+    void registerNestedRccFile();
 
 private:
     const QString m_runtimeResourceRcc;
@@ -188,6 +189,7 @@ void tst_QResourceEngine::checkStructure_data()
                  << QLatin1String("android_testdata")
 #endif
                  << QLatin1String("empty")
+                 << QLatin1String("nestedrcc")
                  << QLatin1String("otherdir")
                  << QLatin1String("runtime_resource")
                  << QLatin1String("searchpath1")
@@ -668,6 +670,16 @@ void tst_QResourceEngine::qtResourceEmpty()
     QVERIFY(f.exists());
     QVERIFY(f.open(QIODevice::ReadOnly));
     QVERIFY(f.readAll().isEmpty());
+}
+
+void tst_QResourceEngine::registerNestedRccFile()
+{
+    QVERIFY(QResource::registerResource(":/nestedrcc/runtime_resource.rcc",
+                                        "/registeredNestedRccFile"));
+    QVERIFY2(QResource::registerResource(":/nestedrcc/runtime_resource.rcc",
+                                         "/registeredNestedRccFile"),
+             "Second QResource::registerResource call failed.");
+    QVERIFY(QFile::exists(":/registeredNestedRccFile/runtime_resource/search_file.txt"));
 }
 
 QTEST_MAIN(tst_QResourceEngine)
