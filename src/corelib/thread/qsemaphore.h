@@ -87,7 +87,7 @@ public:
 
 private:
     QSemaphore *m_sem = nullptr;
-    int m_n;
+    int m_n = 0;
 };
 
 QT_END_NAMESPACE
