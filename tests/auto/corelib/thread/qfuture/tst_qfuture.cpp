@@ -180,6 +180,7 @@ private slots:
     void resultsAfterFinished();
     void resultsAsList();
     void iterators();
+    void valueInitializedIteratorsCompareEqual();
     void iteratorsThread();
 #if QT_DEPRECATED_SINCE(6, 0)
     void pause();
@@ -1511,6 +1512,19 @@ void tst_QFuture::iterators()
         }
     }
 }
+
+void tst_QFuture::valueInitializedIteratorsCompareEqual()
+{
+    {
+        QFuture<int>::const_iterator it = {}, jt = {};
+        QCOMPARE_EQ(it, jt);
+    }
+    {
+        QFuture<QString>::const_iterator it = {}, jt = {};
+        QCOMPARE_EQ(it, jt);
+    }
+}
+
 void tst_QFuture::iteratorsThread()
 {
 #if !QT_CONFIG(thread)

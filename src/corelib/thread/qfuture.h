@@ -176,7 +176,7 @@ QT_WARNING_POP
         typedef const T *pointer;
         typedef const T &reference;
 
-        inline const_iterator() {}
+        const_iterator() = default;
         inline const_iterator(QFuture const * const _future, int _index)
         : future(_future), index(advanceIndex(_index, 0)) { }
         inline const_iterator(const const_iterator &o) : future(o.future), index(o.index)  {}
