@@ -277,7 +277,12 @@ QVariant QSystemLocale::query(QueryType type, QVariant &&in) const
         return lc_messages.createSeparatedList(in.toStringList());
     case LocaleChanged:
         Q_UNREACHABLE(); // handled before the switch
-    default:
+    case LanguageId:
+    case TerritoryId:
+    case Weekdays:
+    case ScriptId:
+    case NativeLanguageName:
+    case NativeTerritoryName:
         break;
     }
     return QVariant();
