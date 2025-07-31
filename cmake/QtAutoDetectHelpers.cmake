@@ -248,6 +248,11 @@ function(qt_auto_detect_apple)
 
     if(QT_APPLE_SDK)
         set(CMAKE_OSX_SYSROOT "${QT_APPLE_SDK}" CACHE STRING "")
+    elseif(NOT CMAKE_SYSTEM_NAME)
+        # Persist SDK name for macOS builds, since CMake 4.x will pick arbitrary
+        # SDK paths, ignoring xcode-select, if not given an explicit SDK.
+        _qt_internal_get_apple_sdk_name(sdk_name)
+        set(CMAKE_OSX_SYSROOT "${sdk_name}" CACHE STRING "")
     endif()
 
     if(CMAKE_SYSTEM_NAME STREQUAL iOS OR CMAKE_SYSTEM_NAME STREQUAL visionOS)
