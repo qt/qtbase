@@ -703,7 +703,6 @@ static const QPointingDevice *pointingDeviceFor(qint64 deviceID)
             m_scrolling = false;
         }
     } else if (theEvent.momentumPhase == NSEventPhaseBegan) {
-        Q_ASSERT(!pixelDelta.isNull() && !angleDelta.isNull());
         // If we missed finding a momentum NSEventPhaseBegan when the non-momentum
         // phase ended we need to treat this as a scroll begin, to not confuse client
         // code. Otherwise we treat it as a continuation of the existing scroll.
