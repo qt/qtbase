@@ -122,10 +122,13 @@ QLocale QSystemLocale::fallbackLocale() const
 
     // ... otherwise, if the first part of LANGUAGE says more than or
     // contradicts what we have, use that:
-    for (const auto &language : qEnvironmentVariable("LANGUAGE").tokenize(u':')) {
+    {
+        QString language = qEnvironmentVariable("LANGUAGE");
+        // We only look at the first entry:
+        if (const auto colon = language.indexOf(u':'); colon >= 0)
+            language.truncate(colon); // unshared QString; this is cheap
         if (contradicts(language, lang))
             return QLocale(language);
-        break; // We only look at the first entry.
     }
 
     return QLocale(lang);
