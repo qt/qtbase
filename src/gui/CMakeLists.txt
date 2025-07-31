@@ -466,9 +466,9 @@ qt_internal_extend_target(Gui CONDITION WIN32
         platform/windows/qwindowsnativeinterface.cpp
         platform/windows/qwindowsthemecache.cpp platform/windows/qwindowsthemecache_p.h
         rhi/qrhid3d11.cpp rhi/qrhid3d11_p.h
+        rhi/qrhid3d12.cpp rhi/qrhid3d12_p.h
         rhi/qrhid3dhelpers.cpp rhi/qrhid3dhelpers_p.h
         rhi/vs_test_p.h
-        rhi/qrhid3d12.cpp rhi/qrhid3d12_p.h
         rhi/cs_mipmap_p.h rhi/cs_mipmap_3d_p.h
         ../3rdparty/D3D12MemoryAllocator/D3D12MemAlloc.h
         ../3rdparty/D3D12MemoryAllocator/D3D12MemAlloc.cpp
@@ -491,6 +491,7 @@ qt_internal_extend_target(Gui CONDITION WIN32
         dxguid
         d3d12
     NO_UNITY_BUILD_SOURCES
+        rhi/qrhid3d11.cpp rhi/qrhid3d12.cpp # duplicate aligned() etc
         text/windows/qwindowsfontdatabasebase.cpp # duplicate struct OS2Table
     ATTRIBUTION_FILE_DIR_PATHS
         ../3rdparty/D3D12MemoryAllocator
@@ -823,6 +824,8 @@ qt_internal_extend_target(Gui CONDITION QT_FEATURE_freetype AND WIN32
 qt_internal_extend_target(Gui CONDITION QT_FEATURE_direct2d AND QT_FEATURE_directwrite AND WIN32
     SOURCES
         text/windows/qwindowsfontenginedirectwrite.cpp text/windows/qwindowsfontenginedirectwrite_p.h
+    NO_UNITY_BUILD_SOURCES
+        text/windows/qwindowsfontenginedirectwrite.cpp # conflicts
     LIBRARIES
         d2d1
 )
