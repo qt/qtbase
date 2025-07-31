@@ -27,16 +27,18 @@ static constexpr bool UsingEventfd = true;
 static constexpr bool UsingEventfd = false;
 #endif
 
-#if defined(Q_OS_VXWORKS) && QT_CONFIG(vxpipedrv)
+#if defined(Q_OS_VXWORKS)
+#  include <taskLib.h>
+#if QT_CONFIG(vxpipedrv)
 #  include "qbytearray.h"
 #  include "qdatetime.h"
 #  include "qdir.h" // to get application name
 #  include "qrandom.h"
 #  include <pipeDrv.h>
 #  include <selectLib.h>
-#  include <taskLib.h>
 #  include <rtpLib.h>
 #  include <sysLib.h>
+#endif
 #endif
 
 using namespace std::chrono;
@@ -479,6 +481,12 @@ bool QEventDispatcherUNIX::processEvents(QEventLoop::ProcessEventsFlags flags)
     switch (qt_safe_poll(d->pollfds.data(), d->pollfds.size(), deadline)) {
     case -1:
         qErrnoWarning("qt_safe_poll");
+#if defined(Q_OS_VXWORKS) && defined(EDOOM)
+        if (errno == EDOOM) {
+            // being deleted, stop here and wait for the thread to go away
+            taskSuspend(0);
+        }
+#endif
         if (QT_CONFIG(poll_exit_on_error))
             abort();
         break;
