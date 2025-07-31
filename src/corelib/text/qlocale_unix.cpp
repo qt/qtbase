@@ -276,8 +276,7 @@ QVariant QSystemLocale::query(QueryType type, QVariant &&in) const
     case ListToSeparatedString:
         return lc_messages.createSeparatedList(in.toStringList());
     case LocaleChanged:
-        Q_ASSERT(false);
-        [[fallthrough]];
+        Q_UNREACHABLE(); // handled before the switch
     default:
         break;
     }
