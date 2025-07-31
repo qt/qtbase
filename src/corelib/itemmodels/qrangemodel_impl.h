@@ -1085,14 +1085,14 @@ public:
             } else if constexpr (has_metaobject<value_type>) {
                 if (row_traits::fixed_size() <= 1) {
                     tried = true;
-                    using meta_type = QRangeModelDetails::wrapped_t<value_type>;
+                    using wrapped_type = QRangeModelDetails::wrapped_t<value_type>;
                     for (auto &&[role, roleName] : itemModel().roleNames().asKeyValueRange()) {
                         QVariant data;
-                        if constexpr (std::is_base_of_v<QObject, meta_type>) {
+                        if constexpr (std::is_base_of_v<QObject, wrapped_type>) {
                             if (value)
                                 data = value->property(roleName);
                         } else {
-                            const QMetaProperty prop = this->roleProperty<meta_type>(roleName);
+                            const QMetaProperty prop = this->roleProperty<wrapped_type>(roleName);
                             if (prop.isValid())
                                 data = prop.readOnGadget(QRangeModelDetails::pointerTo(value));
                         }
@@ -1227,11 +1227,11 @@ public:
                 } else if constexpr (has_metaobject<value_type>) {
                     if (row_traits::fixed_size() <= 1) {
                         tried = true;
-                        using meta_type = QRangeModelDetails::wrapped_t<value_type>;
+                        using wrapped_type = QRangeModelDetails::wrapped_t<value_type>;
                         // transactional: if possible, modify a copy and only
                         // update target if all values from data could be stored.
                         auto targetCopy = [](auto &&origin) {
-                            if constexpr (!std::is_copy_assignable_v<meta_type>)
+                            if constexpr (!std::is_copy_assignable_v<wrapped_type>)
                                 return QRangeModelDetails::pointerTo(origin); // no transaction support
                             else if constexpr (std::is_pointer_v<decltype(target)>)
                                 return *origin;
@@ -1244,11 +1244,11 @@ public:
                         for (auto &&[role, value] : data.asKeyValueRange()) {
                             const QByteArray roleName = roleNames.value(role);
                             bool written = false;
-                            if constexpr (std::is_base_of_v<QObject, meta_type>) {
+                            if constexpr (std::is_base_of_v<QObject, wrapped_type>) {
                                 if (targetCopy)
                                     written = targetCopy->setProperty(roleName, value);
                             } else {
-                                const QMetaProperty prop = this->roleProperty<meta_type>(roleName);
+                                const QMetaProperty prop = this->roleProperty<wrapped_type>(roleName);
                                 if (prop.isValid())
                                     written = prop.writeOnGadget(QRangeModelDetails::pointerTo(targetCopy), value);
                             }
@@ -1258,12 +1258,10 @@ public:
                                 return false;
                             }
                         }
-                        if constexpr (!std::is_copy_assignable_v<meta_type>)
-                            ; // nothing was actually copied
+                        if constexpr (std::is_pointer_v<decltype(targetCopy)>)
+                            ; // couldn't copy
                         else if constexpr (std::is_pointer_v<decltype(target)>)
                             qSwap(*target, targetCopy);
-                        else if constexpr (std::is_pointer_v<decltype(targetCopy)>)
-                            ; // couldn't copy
                         else
                             qSwap(target, targetCopy);
                         return true;
