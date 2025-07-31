@@ -31,7 +31,7 @@ using namespace QtPrivate;
 using namespace Qt::StringLiterals;
 using namespace QtMiscUtils;
 
-enum { StreamEOF = ~0U };
+constexpr uint StreamEOF = ~0U;
 
 namespace {
 template <typename Range>
