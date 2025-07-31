@@ -1013,9 +1013,13 @@ bool readInputFile(Options *options)
     }
     dependenciesForDepfile << options->inputFileName;
 
-    QJsonDocument jsonDocument = QJsonDocument::fromJson(file.readAll());
+    QJsonParseError jsonParseError;
+    QJsonDocument jsonDocument = QJsonDocument::fromJson(file.readAll(), &jsonParseError);
     if (jsonDocument.isNull()) {
-        fprintf(stderr, "Invalid json file: %s\n", qPrintable(options->inputFileName));
+        fprintf(stderr, "Invalid json file: %s. Reason: %s at offset %i.\n",
+            qPrintable(options->inputFileName),
+            qPrintable(jsonParseError.errorString()),
+            jsonParseError.offset);
         return false;
     }
 
