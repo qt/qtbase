@@ -1437,6 +1437,7 @@ bool tst_QStandardItemModel::compareItems(QStandardItem *item1, QStandardItem *i
     return true;
 }
 
+#ifdef QT_BUILD_INTERNAL
 static QStandardItem *itemFromText(QStandardItem *parent, const QString &text)
 {
     QStandardItem *item = nullptr;
@@ -1463,7 +1464,6 @@ static QStandardItem *itemFromText(QStandardItem *parent, const QString &text)
     return item;
 }
 
-#ifdef QT_BUILD_INTERNAL
 static QModelIndex indexFromText(QStandardItemModel *model, const QString &text)
 {
     QStandardItem *item = itemFromText(model->invisibleRootItem(), text);
@@ -1477,9 +1477,6 @@ struct FriendlyTreeView : public QTreeView
     friend class tst_QStandardItemModel;
     Q_DECLARE_PRIVATE(QTreeView)
 };
-#endif
-
-#ifdef QT_BUILD_INTERNAL
 
 static void populateDragAndDropModel(QStandardItemModel &model, int nRow, int nCol)
 {
