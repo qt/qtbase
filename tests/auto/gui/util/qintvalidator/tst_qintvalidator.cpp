@@ -143,7 +143,6 @@ void tst_QIntValidator::validate_data()
     QTest::newRow("9.4") << -10 << 10 << QString("-00010") << ACC;
     QTest::newRow("9.5") << -10 << 10 << QString("00020") << INV;
     QTest::newRow("9.6") << -10 << 10 << QString("-00020") << INV;
-
 }
 
 void tst_QIntValidator::validateArabic()
@@ -156,9 +155,7 @@ void tst_QIntValidator::validateArabic()
     validator.setLocale(QLocale(QLocale::Arabic, QLocale::SaudiArabia));
     int i;
     QCOMPARE(validator.validate(arabicNum, i), QValidator::Acceptable);
-
 }
-
 
 void tst_QIntValidator::validateFrench()
 {
@@ -200,7 +197,7 @@ void tst_QIntValidator::validate()
     QIntValidator iv(minimum, maximum, 0);
     iv.setLocale(QLocale::C);
     int dummy;
-    QCOMPARE((int)iv.validate(value, dummy), (int)state);
+    QCOMPARE(iv.validate(value, dummy), state);
 }
 
 void tst_QIntValidator::notifySignals()
