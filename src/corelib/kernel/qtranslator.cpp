@@ -297,7 +297,7 @@ public:
     QString language;
     QString filePath;
 
-    bool load_translation(const QLocale &locale, const QString &filename, const QString &prefix,
+    bool load_translation(const QStringList &languages, const QString &filename, const QString &prefix,
                           const QString &directory, const QString &suffix);
     bool do_load(const QString &filename, const QString &directory);
     bool do_load(const uchar *data, qsizetype len, const QString &directory);
@@ -614,14 +614,14 @@ bool QTranslatorPrivate::do_load(const QString &realname, const QString &directo
     return false;
 }
 
-bool QTranslatorPrivate::load_translation(const QLocale &locale,
+bool QTranslatorPrivate::load_translation(const QStringList &languages,
                                           const QString &filename,
                                           const QString &prefix,
                                           const QString &directory,
                                           const QString &suffix)
 {
     qCDebug(lcTranslator).noquote().nospace() << "Searching translation for "
-                          << filename << prefix << locale << suffix
+                          << filename << prefix << languages << suffix
                           << " in " << directory;
     QString path;
     if (QFileInfo(filename).isRelative()) {
@@ -643,8 +643,6 @@ bool QTranslatorPrivate::load_translation(const QLocale &locale,
     // something like "prefix_en_us.qm" won't be found under the "en_US"
     // locale. Note that the Qt resource system is always case-sensitive, even
     // on Windows (in other words: this codepath is *not* UNIX-only).
-    const QStringList languages = locale.uiLanguages(QLocale::TagSeparator::Underscore);
-    qCDebug(lcTranslator) << "Requested UI languages" << languages;
 
     auto loadFile = [this, &realname, &directory] { return do_load(realname, directory); };
 
@@ -743,9 +741,11 @@ bool QTranslator::load(const QLocale & locale,
                        const QString & suffix)
 {
     Q_D(QTranslator);
+    const QStringList languages = locale.uiLanguages(QLocale::TagSeparator::Underscore);
+    qCDebug(lcTranslator) << "Requested UI languages" << languages;
     QMutexLocker locker(&d->lock);
     d->clear();
-    return d->load_translation(locale, filename, prefix, directory, suffix);
+    return d->load_translation(languages, filename, prefix, directory, suffix);
 }
 
 /*!
