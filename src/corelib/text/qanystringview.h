@@ -100,10 +100,6 @@ private:
         std::is_convertible<T, QStringOrQByteArray>
     >, bool>;
 
-    // confirm we don't make an accidental copy constructor:
-    static_assert(QtPrivate::IsContainerCompatibleWithQStringView<QAnyStringView>::value == false);
-    static_assert(QtPrivate::IsContainerCompatibleWithQUtf8StringView<QAnyStringView>::value == false);
-
     template<typename Char>
     static constexpr bool isAsciiOnlyCharsAtCompileTime(Char *str, qsizetype sz) noexcept
     {
@@ -391,6 +387,10 @@ private:
     friend class ::tst_QAnyStringView;
 };
 Q_DECLARE_TYPEINFO(QAnyStringView, Q_PRIMITIVE_TYPE);
+
+// confirm we don't make an accidental copy constructor:
+static_assert(QtPrivate::IsContainerCompatibleWithQStringView<QAnyStringView>::value == false);
+static_assert(QtPrivate::IsContainerCompatibleWithQUtf8StringView<QAnyStringView>::value == false);
 
 template <typename QStringLike, std::enable_if_t<std::disjunction_v<
         std::is_same<QStringLike, QString>,
