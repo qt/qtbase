@@ -353,6 +353,10 @@ QT_BEGIN_NAMESPACE
     \sa isNull(), isEmpty()
 */
 
+// confirm we don't make an accidental copy constructor:
+static_assert(QtPrivate::IsContainerCompatibleWithQStringView<QAnyStringView>::value == false);
+static_assert(QtPrivate::IsContainerCompatibleWithQUtf8StringView<QAnyStringView>::value == false);
+
 /*!
     \fn template <typename Char, size_t Size> static QAnyStringView fromArray(const Char (&string)[Size]) noexcept
 
