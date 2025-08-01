@@ -163,6 +163,7 @@ public:
     QString reasonPhrase;
 
     // upload
+    void maybeDropUploadDevice(const QNetworkRequest &newHttpRequest);
     QNonContiguousByteDevice* createUploadByteDevice();
     std::shared_ptr<QNonContiguousByteDevice> uploadByteDevice;
     qint64 uploadByteDevicePosition;

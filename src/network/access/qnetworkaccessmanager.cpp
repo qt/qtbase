@@ -1261,7 +1261,7 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
     auto h = request.headers();
 #ifndef Q_OS_WASM // Content-length header is not allowed to be set by user in wasm
     if (!h.contains(QHttpHeaders::WellKnownHeader::ContentLength) &&
-        outgoingData && !outgoingData->isSequential()) {
+        outgoingData && !outgoingData->isSequential() && outgoingData->size()) {
         // request has no Content-Length
         // but the data that is outgoing is random-access
         h.append(QHttpHeaders::WellKnownHeader::ContentLength,
