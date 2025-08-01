@@ -9,6 +9,7 @@ import base64
 import time
 import signal
 import argparse
+import re
 
 def status(msg):
     print(f"\n-- {msg}")
@@ -103,10 +104,16 @@ def get_package_name(build_path):
             with open(gradle_file) as f:
                 for line in f:
                     if line.strip().startswith("namespace"):
-                        potentialPackageName = line.split('=')[1].strip().strip('"')
-                        if (potentialPackageName == "androidPackageName"):
-                            break;
-                        return potentialPackageName
+                        # Match the following cases:
+                        #   namespace "org.qtproject.example.app"
+                        #   namespace 'org.qtproject.example.app'
+                        #   namespace = "org.qtproject.example.app"
+                        #   namespace = 'org.qtproject.example.app'
+                        match = re.search(r"namespace\s*=?\s*['\"]([^'\"]+)['\"]", line)
+                        if match:
+                            potentialPackageName = match.group(1)
+                            if (potentialPackageName != "androidPackageName"):
+                                return potentialPackageName
 
         properties_file = os.path.join(args.build_path, "gradle.properties")
         if os.path.isfile(properties_file):
