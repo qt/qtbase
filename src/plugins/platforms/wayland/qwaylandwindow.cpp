@@ -1934,6 +1934,13 @@ bool QWaylandWindow::windowEvent(QEvent *event)
         || event->type() == QEvent::ApplicationFontChange) {
         if (mWindowDecorationEnabled && window()->isVisible())
             mWindowDecoration->update();
+    } else if (event->type() == QEvent::WindowUnblocked) {
+        // QtGui sends leave event to window under cursor when modal window opens, so we have
+        // to send enter event when modal closes and window has cursor and gets unblocked.
+        if (auto *inputDevice = mDisplay->lastInputDevice(); inputDevice && inputDevice->pointerFocus() == this) {
+            const auto pos = mDisplay->waylandCursor()->pos();
+            QWindowSystemInterface::handleEnterEvent(window(), mapFromGlobalF(pos), pos);
+        }
     }
 
     return QPlatformWindow::windowEvent(event);
