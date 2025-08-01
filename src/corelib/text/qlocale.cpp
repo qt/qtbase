@@ -4430,8 +4430,8 @@ char NumericTokenizer::nextToken()
     // Must match qlocale_tools.h's unicodeForDigit()
     if (m_guide.zeroLen == 1) {
         if (!ch.isSurrogate()) {
-            const uint gap = asBmpDigit(ch.unicode());
-            if (gap < 10u) {
+            const int gap = asBmpDigit(ch.unicode());
+            if (gap >= 0 && gap < 10) {
                 ++m_index;
                 return '0' + gap;
             }
