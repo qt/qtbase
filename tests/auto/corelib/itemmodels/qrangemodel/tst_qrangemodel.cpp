@@ -816,7 +816,8 @@ void tst_QRangeModel::setItemData()
         return; // nothing more to test for those models
 
     {
-        const auto newItemData = model->itemData(index);
+        auto newItemData = model->itemData(index);
+        newItemData.take(Qt::EditRole); // faked
         auto diagnostics = qScopeGuard([&]{
             qDebug() << "Mismatch";
             qDebug() << "     Actual:" << newItemData;

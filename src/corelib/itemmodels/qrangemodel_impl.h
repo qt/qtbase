@@ -1097,19 +1097,13 @@ public:
             } else if constexpr (has_metaobject<value_type>) {
                 if (row_traits::fixed_size() <= 1) {
                     tried = true;
-                    using wrapped_type = QRangeModelDetails::wrapped_t<value_type>;
-                    for (auto &&[role, roleName] : itemModel().roleNames().asKeyValueRange()) {
+                    const auto roleNames = itemModel().roleNames();
+                    const auto end = roleNames.keyEnd();
+                    for (auto it = roleNames.keyBegin(); it != end; ++it) {
+                        const int role = *it;
                         if (role == Qt::RangeModelDataRole)
                             continue;
-                        QVariant data;
-                        if constexpr (std::is_base_of_v<QObject, wrapped_type>) {
-                            if (value)
-                                data = value->property(roleName);
-                        } else {
-                            const QMetaProperty prop = this->roleProperty<wrapped_type>(roleName);
-                            if (prop.isValid())
-                                data = prop.readOnGadget(QRangeModelDetails::pointerTo(value));
-                        }
+                        QVariant data = readRole(role, QRangeModelDetails::pointerTo(value));
                         if (data.isValid())
                             result[role] = std::move(data);
                     }
@@ -1286,17 +1280,8 @@ public:
                         for (auto &&[role, value] : data.asKeyValueRange()) {
                             if (role == Qt::RangeModelDataRole)
                                 continue;
-                            const QByteArray roleName = roleNames.value(role);
-                            bool written = false;
-                            if constexpr (std::is_base_of_v<QObject, wrapped_type>) {
-                                if (targetCopy)
-                                    written = targetCopy->setProperty(roleName, value);
-                            } else {
-                                const QMetaProperty prop = this->roleProperty<wrapped_type>(roleName);
-                                if (prop.isValid())
-                                    written = prop.writeOnGadget(QRangeModelDetails::pointerTo(targetCopy), value);
-                            }
-                            if (!written) {
+                            if (!writeRole(role, QRangeModelDetails::pointerTo(targetCopy), value)) {
+                                const QByteArray roleName = roleNames.value(role);
                                 qWarning("Failed to write value '%s' to role '%s'",
                                          qPrintable(QDebug::toString(value)), roleName.data());
                                 return false;
