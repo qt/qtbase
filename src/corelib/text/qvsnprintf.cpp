@@ -5,10 +5,10 @@
 #include "qplatformdefs.h"
 
 #include "qbytearray.h"
-#include <QtCore/private/qnumeric_p.h>
 #include "qstring.h"
 
 #include <cerrno>
+#include <QtCore/q26numeric.h>
 
 #include "string.h"
 
@@ -68,7 +68,7 @@ int qvsnprintf(char *str, size_t n, const char *fmt, va_list ap)
     const auto realSize = ba.size();
     int result;
     if constexpr (sizeof(int) != sizeof(realSize)) {
-        result = qt_saturate<int>(realSize);
+        result = q26::saturate_cast<int>(realSize);
         if (result != realSize) {
             errno = EOVERFLOW;
             return -1;
