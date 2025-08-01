@@ -1886,6 +1886,13 @@ QRhi::FrameOpResult QRhiD3D12::beginOffscreenFrame(QRhiCommandBuffer **cb, QRhi:
     for (QD3D12SwapChain *sc : std::as_const(swapchains))
         sc->waitCommandCompletionForFrameSlot(currentFrameSlot); // note: not sc's currentFrameSlot
 
+    HRESULT hr = cmdAllocators[currentFrameSlot]->Reset();
+    if (FAILED(hr)) {
+        qWarning("Failed to reset command allocator: %s",
+                 qPrintable(QSystemError::windowsComString(hr)));
+        return QRhi::FrameOpError;
+    }
+
     if (!offscreenCb[currentFrameSlot])
         offscreenCb[currentFrameSlot] = new QD3D12CommandBuffer(this);
     QD3D12CommandBuffer *cbD = offscreenCb[currentFrameSlot];
