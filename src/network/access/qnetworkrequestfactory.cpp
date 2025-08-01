@@ -638,13 +638,13 @@ QUrl QNetworkRequestFactoryPrivate::requestUrl(const QString *path,
 
     QUrl resultUrl = baseUrl;
     QUrlQuery resultQuery(providedQuery);
-    QString basePath = baseUrl.path();
+    QString basePath = baseUrl.path(QUrl::ComponentFormattingOption::FullyEncoded);
 
     resultUrl.setUserName(userName);
     resultUrl.setPassword(password);
 
     // Separate the path and query parameters components on the application-provided path
-    const QString requestPath{providedPath.path()};
+    const QString requestPath{providedPath.path(QUrl::ComponentFormattingOption::FullyEncoded)};
     const QUrlQuery pathQueryItems{providedPath};
 
     if (!pathQueryItems.isEmpty()) {
@@ -676,7 +676,8 @@ QUrl QNetworkRequestFactoryPrivate::requestUrl(const QString *path,
     else if (!requestPath.startsWith(u'/') && !basePath.endsWith(u'/'))
         basePath.append(u'/');
 
-    resultUrl.setPath(basePath.append(requestPath));
+    resultUrl.setPath(basePath.append(requestPath), QUrl::StrictMode);
+
     return resultUrl;
 }
 
