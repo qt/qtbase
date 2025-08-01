@@ -5330,13 +5330,10 @@ QStringList QLocale::uiLanguages(TagSeparator separator) const
     }
 
     // Second pass: deduplicate.
+    // Can't use QStringList::removeDuplicates() here, because we still need
+    // the QDuplicateTracker, later.
     QDuplicateTracker<QString> known(uiLanguages.size());
-    for (qsizetype i = 0; i < uiLanguages.size();) {
-        if (known.hasSeen(uiLanguages.at(i)))
-            uiLanguages.remove(i);
-        else
-            ++i;
-    }
+    uiLanguages.removeIf([&](const QString &s) { return known.hasSeen(s); });
 
     // Third pass: add truncations, when not already present.
     // Cubic in list length, but hopefully that's at most a dozen or so.
