@@ -5,7 +5,10 @@
 #include "qplatformdefs.h"
 
 #include "qbytearray.h"
+#include <QtCore/private/qnumeric_p.h>
 #include "qstring.h"
+
+#include <cerrno>
 
 #include "string.h"
 
@@ -62,13 +65,25 @@ int qvsnprintf(char *str, size_t n, const char *fmt, va_list ap)
 
     const QByteArray ba = QString::vasprintf(fmt, ap).toLocal8Bit();
 
+    const auto realSize = ba.size();
+    int result;
+    if constexpr (sizeof(int) != sizeof(realSize)) {
+        result = qt_saturate<int>(realSize);
+        if (result != realSize) {
+            errno = EOVERFLOW;
+            return -1;
+        }
+    } else {
+        result = realSize;
+    }
+
     if (n > 0) {
-        size_t blen = qMin(size_t(ba.length()), size_t(n - 1));
+        size_t blen = (std::min)(size_t(realSize), n - 1);
         memcpy(str, ba.constData(), blen);
         str[blen] = '\0'; // make sure str is always 0 terminated
     }
 
-    return ba.length();
+    return result;
 }
 
 #else
