@@ -3611,7 +3611,7 @@ QString QLocaleData::doubleToString(double d, int precision, DoubleForm form,
                 converted.append(QChar::highSurrogate(digit));
                 converted.append(QChar::lowSurrogate(digit));
             }
-            digits = converted;
+            digits = std::move(converted);
         } else {
             Q_ASSERT(zero.size() == 1);
             Q_ASSERT(!zero.at(0).isSurrogate());
