@@ -986,10 +986,6 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
         const QDialogButtonBox *buttonBox = nullptr;
         if (qobject_cast<const QMessageBox *> (widget))
             buttonBox = widget->findChild<const QDialogButtonBox *>(QLatin1String("qt_msgbox_buttonbox"));
-#if QT_CONFIG(inputdialog)
-        else if (qobject_cast<const QInputDialog *> (widget))
-            buttonBox = widget->findChild<const QDialogButtonBox *>(QLatin1String("qt_inputdlg_buttonbox"));
-#endif // QT_CONFIG(inputdialog)
         if (buttonBox) {
             painter->fillRect(option->rect,option->palette.window());
         }

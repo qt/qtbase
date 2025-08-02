@@ -2046,10 +2046,6 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
         const QDialogButtonBox *buttonBox = nullptr;
         if (qobject_cast<const QMessageBox *> (widget))
             buttonBox = widget->findChild<const QDialogButtonBox *>(QLatin1String("qt_msgbox_buttonbox"));
-#if QT_CONFIG(inputdialog)
-        else if (qobject_cast<const QInputDialog *> (widget))
-            buttonBox = widget->findChild<const QDialogButtonBox *>(QLatin1String("qt_inputdlg_buttonbox"));
-#endif // QT_CONFIG(inputdialog)
         if (buttonBox) {
             //draw white panel part
             QWindowsThemeData theme(widget, painter,
@@ -4673,16 +4669,6 @@ void QWindowsVistaStyle::polish(QWidget *widget)
                 buttonBox->setContentsMargins(0, 9, 0, 0);
 #endif
         }
-#if QT_CONFIG(inputdialog)
-        else if (qobject_cast<QInputDialog *> (widget)) {
-            widget->setAttribute(Qt::WA_StyledBackground);
-#if QT_CONFIG(dialogbuttonbox)
-            QDialogButtonBox *buttonBox = widget->findChild<QDialogButtonBox *>(QLatin1String("qt_inputdlg_buttonbox"));
-            if (buttonBox)
-                buttonBox->setContentsMargins(0, 9, 0, 0);
-#endif
-        }
-#endif // QT_CONFIG(inputdialog)
 }
 
 /*!
@@ -4754,16 +4740,6 @@ void QWindowsVistaStyle::unpolish(QWidget *widget)
                 buttonBox->setContentsMargins(0, 0, 0, 0);
 #endif
         }
-#if QT_CONFIG(inputdialog)
-        else if (qobject_cast<QInputDialog *> (widget)) {
-            widget->setAttribute(Qt::WA_StyledBackground, false);
-#if QT_CONFIG(dialogbuttonbox)
-            QDialogButtonBox *buttonBox = widget->findChild<QDialogButtonBox *>(QLatin1String("qt_inputdlg_buttonbox"));
-            if (buttonBox)
-                buttonBox->setContentsMargins(0, 0, 0, 0);
-#endif
-        }
-#endif // QT_CONFIG(inputdialog)
         else if (QTreeView *tree = qobject_cast<QTreeView *> (widget)) {
             tree->viewport()->setAttribute(Qt::WA_Hover, false);
         }
