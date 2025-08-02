@@ -1074,17 +1074,8 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
             }
         }
         break;
-    case QStyle::PE_Widget: {
-#if QT_CONFIG(dialogbuttonbox)
-        const QDialogButtonBox *buttonBox = nullptr;
-        if (qobject_cast<const QMessageBox *> (widget))
-            buttonBox = widget->findChild<const QDialogButtonBox *>(QLatin1String("qt_msgbox_buttonbox"));
-        if (buttonBox) {
-            painter->fillRect(option->rect,option->palette.window());
-        }
-#endif
+    case QStyle::PE_Widget:
         break;
-    }
     case QStyle::PE_FrameWindow:
         if (const auto *frm = qstyleoption_cast<const QStyleOptionFrame *>(option)) {
 
