@@ -3326,8 +3326,9 @@ static QString rawStandaloneMonthName(const QCalendarLocale &localeData,
                                       QLocale::FormatType type)
 {
     const QLocaleData::DataRange range = localeData.standaloneMonthName(type);
-    QString name = range.getListEntry(monthsData, month - 1);
-    return name.isEmpty() ? rawMonthName(localeData, monthsData, month, type) : name;
+    if (QString name = range.getListEntry(monthsData, month - 1); !name.isEmpty())
+        return name;
+    return rawMonthName(localeData, monthsData, month, type);
 }
 
 /*!
