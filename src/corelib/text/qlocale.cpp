@@ -3996,7 +3996,9 @@ QString QCalendarBackend::dateTimeToString(QStringView format, const QDateTime &
                         text = when.toOffsetFromUtc(when.offsetFromUtc()).timeZoneAbbreviation();
                     if (text.isEmpty()) // Notably including type != Offset
                         text = when.timeZoneAbbreviation();
-                    return type == Offset ? offsetFromAbbreviation(std::move(text)) : text;
+                    if (type == Offset)
+                        text = offsetFromAbbreviation(std::move(text));
+                    return text;
                 };
 
                 used = true;
