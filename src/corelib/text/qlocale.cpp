@@ -5113,7 +5113,7 @@ QStringList QLocale::uiLanguages(TagSeparator separator) const
         // We can't say the same for script or territory, though.
 
         // We have various candidates to consider.
-        const auto addIfEquivalent = [&j, &uiLanguages, max, sep, prior, faithful](QLocaleId cid) {
+        const auto addIfEquivalent = [&j, &uiLanguages, max, sep, &prior, faithful](QLocaleId cid) {
             if (cid.withLikelySubtagsAdded() == max) {
                 if (const QByteArray name = cid.name(sep); name != prior)
                     uiLanguages.insert(j, QString::fromLatin1(name));
