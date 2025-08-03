@@ -1681,20 +1681,17 @@ protected:
     }
 
     template <typename ItemType>
-    QMetaProperty roleProperty(const QByteArray &roleName) const
-    {
-        const QMetaObject *mo = &ItemType::staticMetaObject;
-        if (const int index = mo->indexOfProperty(roleName.data()); index >= 0)
-            return mo->property(index);
-        return {};
-    }
-
-    template <typename ItemType>
     QMetaProperty roleProperty(int role) const
     {
         struct {
             operator QMetaProperty() const {
-                return that.roleProperty<ItemType>(that.itemModel().roleNames().value(role));
+                const QByteArray roleName = that.itemModel().roleNames().value(role);
+                const QMetaObject &mo = ItemType::staticMetaObject;
+                if (const int index = mo.indexOfProperty(roleName.data());
+                    index >= 0) {
+                    return mo.property(index);
+                }
+                return {};
             }
             const QRangeModelImpl &that;
             const int role;
