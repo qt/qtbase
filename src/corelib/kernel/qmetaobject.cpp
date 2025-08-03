@@ -4266,7 +4266,7 @@ int QMetaProperty::notifySignalIndex() const
     if (!(methodIndex & IsUnresolvedSignal))
         return methodIndex + mobj->methodOffset();
     methodIndex &= ~IsUnresolvedSignal;
-    const QByteArray signalName = stringData(mobj, methodIndex);
+    const QByteArrayView signalName = stringDataView(mobj, methodIndex);
     const QMetaObject *m = mobj;
     // try 0-arg signal
     int idx = QMetaObjectPrivate::indexOfMethodRelative<MethodSignal>(&m, signalName, 0, nullptr);
