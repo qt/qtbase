@@ -8,6 +8,7 @@ import android.view.accessibility.AccessibilityNodeInfo;
 
 class QtNativeAccessibility
 {
+    static native boolean accessibilitySupported();
     static native void setActive(boolean enable);
     static native int[] childIdListForAccessibleObject(int objectId);
     static native int parentId(int objectId);

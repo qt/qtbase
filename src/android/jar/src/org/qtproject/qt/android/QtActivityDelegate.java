@@ -54,7 +54,8 @@ class QtActivityDelegate extends QtActivityDelegateBase
         super.initMembers();
         setActionBarVisibility(false);
         setActivityBackgroundDrawable();
-        m_accessibilityDelegate.initLayoutAccessibility(m_layout);
+        if (QtNativeAccessibility.accessibilitySupported())
+            m_accessibilityDelegate.initLayoutAccessibility(m_layout);
     }
 
     void registerBackends()

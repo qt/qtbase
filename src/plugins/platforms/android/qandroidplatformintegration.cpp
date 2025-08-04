@@ -512,6 +512,16 @@ QPlatformAccessibility *QAndroidPlatformIntegration::accessibility() const
 }
 #endif
 
+extern "C" JNIEXPORT bool JNICALL
+Java_org_qtproject_qt_android_QtNativeAccessibility_accessibilitySupported(JNIEnv *, jobject)
+{
+    #if QT_CONFIG(accessibility)
+        return true;
+    #endif // QT_CONFIG(accessibility)
+
+    return false;
+}
+
 void QAndroidPlatformIntegration::setAvailableGeometry(const QRect &availableGeometry)
 {
     if (m_primaryScreen)
