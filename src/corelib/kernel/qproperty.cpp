@@ -8,7 +8,7 @@
 #include <QScopeGuard>
 #include <QtCore/qalloc.h>
 #include <QtCore/qloggingcategory.h>
-#include <QThread>
+#include <QtCore/private/qthread_p.h>
 #include <QtCore/qmetaobject.h>
 
 #include "qobject_p.h"
@@ -166,7 +166,49 @@ struct QPropertyDelayedNotifications
     }
 };
 
-Q_CONSTINIT static thread_local QBindingStatus bindingStatus;
+/*
+    The binding status needs some care: Conceptually, it is a thread-local. However, we cache it
+    in QObjects via their QBindingStorage. Those QObjects might outlive the thread in which the
+    binding status was initially created  (e.g. when their QThread is stopped).
+    If they are not migrated to another (running) QThread, they would have a stale pointer if
+    a plain thread local were used for the QBindingStatus.
+
+    So instead of a normal thread_local, we use the following scheme:
+    - On first access, the QBindingStatus gets allocated on the heap, and stored in QThreadData
+    - It also gets cached in in a thread_local variable for faster access
+    - The QThreadData takes care of deleting the QBindingStatus in its destructor
+    - Moreover, if a QThread is restarted, the native thread's thread local gets initialized with
+      the QBindingStatus of the QThreadData. Otherwise, we'd somehow need to update all objects
+      whose affinity is pointing to that thread, which we can't easily do. Moreover, this avoids
+      freeing and reallocating a QBindingStatus instance.
+
+    Note that the lifetime is coupled to the QThreadData, which is kept alive by QObjects, even if
+    the corresponding QThread is gone.
+
+    The draw-back here is that even plain QProperty will cause the creation of QThreadData if used
+    in a thread which doesn't already have it; however that should be rare in practice.
+ */
+
+
+Q_CONSTINIT thread_local QBindingStatus *tl_status = nullptr;
+
+Q_NEVER_INLINE static void initBindingStatus()
+{
+    auto status = new QBindingStatus {};
+    /* needs to happen before setting it on the thread-data, as
+       setStatusAndClearList might need to actually update the objectt list, which would
+       end up calling into bindingStatus again
+    */
+    tl_status = status;
+    QThreadData::current()->m_statusOrPendingObjects.setStatusAndClearList(status);
+}
+
+static QBindingStatus &bindingStatus()
+{
+    if (!tl_status)
+        initBindingStatus();
+    return *tl_status;
+}
 
 /*!
     \since 6.2
@@ -190,7 +232,7 @@ Q_CONSTINIT static thread_local QBindingStatus bindingStatus;
 */
 void Qt::beginPropertyUpdateGroup()
 {
-    QPropertyDelayedNotifications *& groupUpdateData = bindingStatus.groupUpdateData;
+    QPropertyDelayedNotifications *& groupUpdateData = bindingStatus().groupUpdateData;
     if (!groupUpdateData)
         groupUpdateData = new QPropertyDelayedNotifications;
     ++groupUpdateData->ref;
@@ -210,7 +252,7 @@ void Qt::beginPropertyUpdateGroup()
 */
 void Qt::endPropertyUpdateGroup()
 {
-    auto status = &bindingStatus;
+    auto status = &bindingStatus();
     QPropertyDelayedNotifications *& groupUpdateData = status->groupUpdateData;
     auto *data = groupUpdateData;
     Q_ASSERT(data->ref);
@@ -318,7 +360,7 @@ void QPropertyBindingPrivate::unlinkAndDeref()
 bool QPropertyBindingPrivate::evaluateRecursive(PendingBindingObserverList &bindingObservers, QBindingStatus *status)
 {
     if (!status)
-        status = &bindingStatus;
+        status = &bindingStatus();
     return evaluateRecursive_inline(bindingObservers, status);
 }
 
@@ -559,14 +601,14 @@ CompatPropertySafePoint::CompatPropertySafePoint(QBindingStatus *status, QUntype
     previousState = *currentState;
     *currentState = this;
 
-    currentlyEvaluatingBindingList = &bindingStatus.currentlyEvaluatingBinding;
+    currentlyEvaluatingBindingList = &bindingStatus().currentlyEvaluatingBinding;
     bindingState = *currentlyEvaluatingBindingList;
     *currentlyEvaluatingBindingList = nullptr;
 }
 
 QPropertyBindingPrivate *QPropertyBindingPrivate::currentlyEvaluatingBinding()
 {
-    auto currentState = bindingStatus.currentlyEvaluatingBinding ;
+    auto currentState = bindingStatus().currentlyEvaluatingBinding ;
     return currentState ? currentState->binding : nullptr;
 }
 
@@ -594,7 +636,7 @@ void QPropertyBindingData::removeBinding_helper()
 
 void QPropertyBindingData::registerWithCurrentlyEvaluatingBinding() const
 {
-    auto currentState = bindingStatus.currentlyEvaluatingBinding;
+    auto currentState = bindingStatus().currentlyEvaluatingBinding;
     if (!currentState)
         return;
     registerWithCurrentlyEvaluatingBinding_helper(currentState);
@@ -658,10 +700,10 @@ QPropertyBindingData::NotificationResult QPropertyBindingData::notifyObserver_he
 #ifdef QT_HAS_FAST_CURRENT_THREAD_ID
     QBindingStatus *status = storage ? storage->bindingStatus : nullptr;
     if (!status || status->threadId != QThread::currentThreadId())
-        status = &bindingStatus;
+        status = &bindingStatus();
 #else
     Q_UNUSED(storage);
-    QBindingStatus *status = &bindingStatus;
+    QBindingStatus *status = &bindingStatus();
 #endif
     if (QPropertyDelayedNotifications *delay = status->groupUpdateData) {
         delay->addProperty(this, propertyDataPtr);
@@ -2300,7 +2342,7 @@ struct QBindingStoragePrivate
 
 QBindingStorage::QBindingStorage()
 {
-    bindingStatus = &QT_PREPEND_NAMESPACE(bindingStatus);
+    bindingStatus = &QT_PREPEND_NAMESPACE(bindingStatus)();
     Q_ASSERT(bindingStatus);
 }
 
@@ -2311,7 +2353,7 @@ QBindingStorage::~QBindingStorage()
 
 void QBindingStorage::reinitAfterThreadMove()
 {
-    bindingStatus = &QT_PREPEND_NAMESPACE(bindingStatus);
+    bindingStatus = &QT_PREPEND_NAMESPACE(bindingStatus)();
     Q_ASSERT(bindingStatus);
 }
 
@@ -2333,9 +2375,9 @@ void QBindingStorage::registerDependency_helper(const QUntypedPropertyData *data
     if (Q_LIKELY(threadMatches))
         currentBinding = bindingStatus->currentlyEvaluatingBinding;
     else
-        currentBinding = QT_PREPEND_NAMESPACE(bindingStatus).currentlyEvaluatingBinding;
+        currentBinding = QT_PREPEND_NAMESPACE(bindingStatus)().currentlyEvaluatingBinding;
 #else
-    currentBinding = QT_PREPEND_NAMESPACE(bindingStatus).currentlyEvaluatingBinding;
+    currentBinding = QT_PREPEND_NAMESPACE(bindingStatus)().currentlyEvaluatingBinding;
 #endif
     QUntypedPropertyData *dd = const_cast<QUntypedPropertyData *>(data);
     if (!currentBinding)
@@ -2368,19 +2410,19 @@ namespace QtPrivate {
 
 void initBindingStatusThreadId()
 {
-    bindingStatus.threadId = QThread::currentThreadId();
+    bindingStatus().threadId = QThread::currentThreadId();
 }
 
 BindingEvaluationState *suspendCurrentBindingStatus()
 {
-    auto ret = bindingStatus.currentlyEvaluatingBinding;
-    bindingStatus.currentlyEvaluatingBinding = nullptr;
+    auto ret = bindingStatus().currentlyEvaluatingBinding;
+    bindingStatus().currentlyEvaluatingBinding = nullptr;
     return ret;
 }
 
 void restoreBindingStatus(BindingEvaluationState *status)
 {
-    bindingStatus.currentlyEvaluatingBinding = status;
+    bindingStatus().currentlyEvaluatingBinding = status;
 }
 
 /*!
@@ -2393,13 +2435,13 @@ void restoreBindingStatus(BindingEvaluationState *status)
 */
 bool isAnyBindingEvaluating()
 {
-    return bindingStatus.currentlyEvaluatingBinding != nullptr;
+    return bindingStatus().currentlyEvaluatingBinding != nullptr;
 }
 
 bool isPropertyInBindingWrapper(const QUntypedPropertyData *property)
 {
     // Accessing bindingStatus is expensive because it's thread-local. Do it only once.
-    if (const auto current = bindingStatus.currentCompatProperty)
+    if (const auto current = bindingStatus().currentCompatProperty)
         return current->property == property;
     return false;
 }
@@ -2438,7 +2480,16 @@ void printMetaTypeMismatch(QMetaType actual, QMetaType expected)
     \internal
     Returns the binding statusof the current thread.
  */
-QBindingStatus* getBindingStatus(QtPrivate::QBindingStatusAccessToken) { return &QT_PREPEND_NAMESPACE(bindingStatus); }
+QBindingStatus* getBindingStatus(QtPrivate::QBindingStatusAccessToken)
+{
+    return &QT_PREPEND_NAMESPACE(bindingStatus)();
+}
+void setBindingStatus(QBindingStatus *status, QBindingStatusAccessToken)
+{
+    Q_ASSERT(!tl_status);
+    Q_ASSERT(status);
+    tl_status = status;
+}
 
 namespace PropertyAdaptorSlotObjectHelpers {
 void getter(const QUntypedPropertyData *d, void *value)

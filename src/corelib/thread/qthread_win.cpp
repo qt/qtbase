@@ -145,6 +145,8 @@ unsigned int __stdcall QT_ENSURE_STACK_ALIGNED_FOR_SSE QThreadPrivate::start(voi
 {
     QThread *thr = reinterpret_cast<QThread *>(arg);
     QThreadData *data = QThreadData::get2(thr);
+    // If a QThread is restarted, reuse the QBindingStatus, too
+    data->reuseBindingStatusForNewNativeThread();
 
     data->ref();
     set_thread_data(data);

@@ -32,6 +32,7 @@ struct QBindingStatus
 namespace QtPrivate {
 struct QBindingStatusAccessToken;
 Q_AUTOTEST_EXPORT QBindingStatus *getBindingStatus(QBindingStatusAccessToken);
+Q_AUTOTEST_EXPORT void setBindingStatus(QBindingStatus *, QBindingStatusAccessToken);
 }
 
 

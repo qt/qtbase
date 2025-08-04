@@ -1010,7 +1010,7 @@ void tst_QThread::adoptedThreadBindingStatus()
     nativeThread.startAndWait();
     QVERIFY(nativeThread.qthread);
     auto privThread = static_cast<QThreadPrivate *>(QObjectPrivate::get(nativeThread.qthread));
-    QVERIFY(privThread->m_statusOrPendingObjects.bindingStatus());
+    QVERIFY(privThread->data->m_statusOrPendingObjects.bindingStatus());
 
     nativeThread.stop();
     nativeThread.join();
@@ -2116,7 +2116,7 @@ void tst_QThread::bindingListCleanupAfterDelete()
     auto optr = std::make_unique<QObject>();
     optr->moveToThread(&t);
     auto threadPriv =  static_cast<QThreadPrivate *>(QObjectPrivate::get(&t));
-    auto list = threadPriv->m_statusOrPendingObjects.list();
+    auto list = threadPriv->data->m_statusOrPendingObjects.list();
     QVERIFY(list);
     optr.reset();
     QVERIFY(list->empty());

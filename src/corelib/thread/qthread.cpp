@@ -118,7 +118,7 @@ QAdoptedThread::QAdoptedThread(QThreadData *data)
 #if QT_CONFIG(thread)
     d_func()->threadState = QThreadPrivate::Running;
     init();
-    d_func()->m_statusOrPendingObjects.setStatusAndClearList(
+    d_func()->data->m_statusOrPendingObjects.setStatusAndClearList(
                 QtPrivate::getBindingStatus({}));
 #endif
     // fprintf(stderr, "new QAdoptedThread = %p\n", this);
@@ -173,7 +173,7 @@ QThreadPrivate::~QThreadPrivate()
     // access to m_statusOrPendingObjects cannot race with anything
     // unless there is already a potential use-after-free bug, as the
     // thread is in the process of being destroyed
-    delete m_statusOrPendingObjects.list();
+    delete data->m_statusOrPendingObjects.list();
     data->clearEvents();
     data->deref();
 }
@@ -625,7 +625,6 @@ QThread::QualityOfService QThread::serviceLevel() const
  */
 void QtPrivate::BindingStatusOrList::setStatusAndClearList(QBindingStatus *status) noexcept
 {
-
     if (auto pendingObjects = list()) {
         for (auto obj: *pendingObjects)
             QObjectPrivate::get(obj)->reinitBindingStorageAfterThreadMove();
@@ -654,7 +653,7 @@ int QThread::exec()
     const auto status = QtPrivate::getBindingStatus(QtPrivate::QBindingStatusAccessToken{});
 
     QMutexLocker locker(&d->mutex);
-    d->m_statusOrPendingObjects.setStatusAndClearList(status);
+    d->data->m_statusOrPendingObjects.setStatusAndClearList(status);
     d->data->quitNow = false;
     if (d->exited) {
         d->exited = false;
@@ -708,18 +707,18 @@ void QtPrivate::BindingStatusOrList::removeObject(QObject *object)
 
 QBindingStatus *QThreadPrivate::addObjectWithPendingBindingStatusChange(QObject *obj)
 {
-    if (auto status = m_statusOrPendingObjects.bindingStatus())
+    if (auto status = data->m_statusOrPendingObjects.bindingStatus())
         return status;
     QMutexLocker lock(&mutex);
-    return m_statusOrPendingObjects.addObjectUnlessAlreadyStatus(obj);
+    return data->m_statusOrPendingObjects.addObjectUnlessAlreadyStatus(obj);
 }
 
 void QThreadPrivate::removeObjectWithPendingBindingStatusChange(QObject *obj)
 {
-    if (m_statusOrPendingObjects.bindingStatus())
+    if (data->m_statusOrPendingObjects.bindingStatus())
         return;
     QMutexLocker lock(&mutex);
-    m_statusOrPendingObjects.removeObject(obj);
+    data->m_statusOrPendingObjects.removeObject(obj);
 }
 
 

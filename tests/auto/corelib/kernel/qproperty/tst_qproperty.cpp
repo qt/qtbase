@@ -72,6 +72,7 @@ private slots:
     void qobjectBindableManualNotify();
     void qobjectBindableReallocatedBindingStorage();
     void qobjectBindableSignalTakingNewValue();
+    void bindableStateAfterThreadRestart();
 
     void testNewStuff();
     void qobjectObservers();
@@ -1356,6 +1357,56 @@ void tst_QProperty::qobjectBindableSignalTakingNewValue()
     // and when the binding gets reevaluated to a new value
     i = 3;
     QCOMPARE(newValue, 3);
+}
+
+class TestWorker : public QObject
+{
+    Q_OBJECT
+public:
+    Q_INVOKABLE int work() {
+        // calling value will access the bindingStatus to see if we are in a binding
+        int old = testProp.value();
+        testProp.setValue(old+1);
+        return old;
+    }
+
+private:
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(TestWorker, int, testProp, 0);
+};
+
+void tst_QProperty::bindableStateAfterThreadRestart()
+{
+    auto workerThread = new QThread(this);
+    auto worker = std::unique_ptr<TestWorker, QScopedPointerDeleteLater>(new TestWorker);
+    worker->moveToThread(workerThread);
+    workerThread->start();
+    int returnValue = -1;
+    QMetaObject::invokeMethod(worker.get(), &TestWorker::work, Qt::BlockingQueuedConnection,
+                              qReturnArg(returnValue));
+    QCOMPARE(returnValue, 0);
+    workerThread->quit();
+    workerThread->wait(); // the native thread is gone now
+
+    // accessing a property should work even if there is no actively running native thread for its QThread
+    returnValue = worker->work();
+    QCOMPARE(returnValue, 1);
+
+    // it should also work if we restart the thread
+    workerThread->start();
+    QVERIFY(workerThread->isRunning());
+    QMetaObject::invokeMethod(worker.get(), &TestWorker::work, Qt::BlockingQueuedConnection,
+                              qReturnArg(returnValue));
+    QCOMPARE(returnValue, 2);
+
+    // accessing a property should work even if the thread is gone completely
+    workerThread->quit();
+    workerThread->wait();
+    delete workerThread;
+    returnValue = worker->work();
+    QCOMPARE(returnValue, 3);
+
+    // deleteLater no longer works, because the thread+eventloop are gone
+    delete worker.release();
 }
 
 void tst_QProperty::testNewStuff()
