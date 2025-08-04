@@ -76,7 +76,7 @@
     Furthermore, Qt D-Bus in Qt \QtVersion may contain third party
     modules under the following permissive licenses:
 
-    \generatelist{groupsbymodule attributions-qtdbus}
+    \annotatedlist attributions-qtdbus
 */
 
 /*!

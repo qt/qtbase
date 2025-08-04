@@ -62,7 +62,7 @@
     Furthermore, Qt SQL in Qt \QtVersion may contain third party
     modules under following permissive licenses:
 
-    \generatelist{groupsbymodule attributions-qtsql}
+    \annotatedlist attributions-qtsql
 */
 
 /*!

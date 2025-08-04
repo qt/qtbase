@@ -31,6 +31,6 @@
   Qt Wayland Compositor and the Qt Wayland integration plugin
   use protocol definitions under following permissive licenses:
 
-  \generatelist{groupsbymodule attributions-qtwaylandcompositor}
+  \annotatedlist attributions-qtwaylandcompositor
 
 */

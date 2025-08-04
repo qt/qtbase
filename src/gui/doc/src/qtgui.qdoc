@@ -107,5 +107,5 @@
     Furthermore, Qt GUI in Qt \QtVersion may contain third-party
     modules under following permissive licenses:
 
-    \generatelist{groupsbymodule attributions-qtgui}
+    \annotatedlist attributions-qtgui
  */

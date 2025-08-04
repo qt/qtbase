@@ -124,5 +124,5 @@
     Furthermore, Qt Core in Qt \QtVersion may contain third party
     modules under the following permissive licenses:
 
-    \generatelist{groupsbymodule attributions-qtcore}
+    \annotatedlist attributions-qtcore
 */

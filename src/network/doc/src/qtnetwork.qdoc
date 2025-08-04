@@ -54,7 +54,7 @@
     Furthermore, Qt Network in Qt \QtVersion may contain third-party
     modules under the following permissive licenses:
 
-    \generatelist{groupsbymodule attributions-qtnetwork}
+    \annotatedlist attributions-qtnetwork
 
     Qt Network can make use of the \l{OpenSSL Toolkit} as a back end.
     The library is then

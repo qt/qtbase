@@ -64,5 +64,5 @@
     Furthermore, Qt Test in Qt \QtVersion may contain third party
     modules under the following permissive licenses:
 
-    \generatelist{groupsbymodule attributions-qttestlib}
+    \annotatedlist attributions-qttestlib
 */
