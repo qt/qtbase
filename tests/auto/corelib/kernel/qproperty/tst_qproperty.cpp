@@ -1285,11 +1285,55 @@ struct ReallocObject : QObject {
     Q_OBJECT_BINDABLE_PROPERTY(ReallocObject, int, z)
 };
 
+struct ReallocCompatObject : QObject {
+    void setV(int val) {
+        v.removeBindingUnlessInWrapper();
+        v.setValueBypassingBindings(val);
+        v.notify();
+    }
+    ReallocCompatObject()
+    { x.setBinding([this] {
+            if (shouldRealloc) {
+                dummy1.value(),
+                dummy2.value(),
+                dummy3.value(),
+                dummy4.value(),
+                dummy5.value(),
+                dummy6.value(),
+                dummy7.value(),
+                dummy8.value();
+            }
+            return v.value() + y.value() + z.value();
+        }); }
+    Q_OBJECT_COMPAT_PROPERTY(ReallocCompatObject, int, v, &ReallocCompatObject::setV)
+    Q_OBJECT_BINDABLE_PROPERTY(ReallocCompatObject, int, x)
+    Q_OBJECT_BINDABLE_PROPERTY(ReallocCompatObject, int, y)
+    Q_OBJECT_BINDABLE_PROPERTY(ReallocCompatObject, int, z)
+    Q_OBJECT_BINDABLE_PROPERTY(ReallocCompatObject, int, dummy1)
+    Q_OBJECT_BINDABLE_PROPERTY(ReallocCompatObject, int, dummy2)
+    Q_OBJECT_BINDABLE_PROPERTY(ReallocCompatObject, int, dummy3)
+    Q_OBJECT_BINDABLE_PROPERTY(ReallocCompatObject, int, dummy4)
+    Q_OBJECT_BINDABLE_PROPERTY(ReallocCompatObject, int, dummy5)
+    Q_OBJECT_BINDABLE_PROPERTY(ReallocCompatObject, int, dummy6)
+    Q_OBJECT_BINDABLE_PROPERTY(ReallocCompatObject, int, dummy7)
+    Q_OBJECT_BINDABLE_PROPERTY(ReallocCompatObject, int, dummy8)
+    bool shouldRealloc = false;
+};
+
 void tst_QProperty::qobjectBindableReallocatedBindingStorage()
 {
-    ReallocObject object;
-    object.x = 1;
-    QCOMPARE(object.v.value(), 1);
+    {
+        ReallocObject object;
+        object.x = 1;
+        QCOMPARE(object.v.value(), 1);
+    }
+
+    {
+        ReallocCompatObject object;
+        object.shouldRealloc = true;
+        object.setV(1);
+        QCOMPARE(object.x.value(), 1);
+    }
 }
 
 void tst_QProperty::qobjectBindableSignalTakingNewValue()
