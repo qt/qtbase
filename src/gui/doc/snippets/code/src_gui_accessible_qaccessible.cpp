@@ -1,5 +1,9 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+
+#include <QtGui/qtguiglobal.h>
+
+#if QT_CONFIG(accessibility)
 #include <QAccessible>
 
 namespace src_gui_accessible_qaccessible {
@@ -23,3 +27,5 @@ void MyWidget::setFocus(Qt::FocusReason reason)
 //! [2]
 
 } // src_gui_accessible_qaccessible
+
+#endif // QT_CONFIG(accessibility)
