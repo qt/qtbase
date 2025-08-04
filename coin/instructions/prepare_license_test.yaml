@@ -17,6 +17,10 @@ instructions:
         env_var: TESTED_MODULE_BRANCH_COIN
         contains_value: "tqtc/"
 
+    # Tell Coin to fetch latest refs of required repos.
+    - type: UpdateRepo
+      repos: [qt/qtqa]
+
     # The command must not have whitespace directly after any piping,
     # as whitespace directly after pipes will be interpreted as part of the command.
     - type: ExecuteCommand

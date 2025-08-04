@@ -13,6 +13,10 @@ instructions:
     variableName: QT_CI_DOC_TOOLS_INSTALL_DIR
     variableValue: "{{.BuildDir}}/doc_tools_build/install"
 
+  # Tell Coin to fetch latest refs of required repos.
+  - type: UpdateRepo
+    repos: [qt/qt5, qt/qttools, qt/qtbase, qt/qtshadertools, qt/qtdeclarative, qt/qtsvg, qt/qtimageformats, qt/qtactiveqt, qt/qtlanguageserver]
+
   - type: ExecuteCommand
     command: "{{.Env.ENV_PREFIX}} cmake -P {{.SourceDir}}/cmake/QtBuildStaticDocToolsScript.cmake"
     executeCommandArgumentSplitingBehavior: SplitAfterVariableSubstitution
