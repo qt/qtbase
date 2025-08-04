@@ -190,7 +190,7 @@ QRangeModel::QRangeModel(QRangeModelImplBase *impl, QObject *parent)
 
     Using Qt gadgets or objects is more convenient and can be more flexible
     than implementing the tuple protocol. Those types are also directly
-    accessible from within QML. However, the access through the property system
+    accessible from within QML. However, the access through \l{the property system}
     comes with some runtime overhead. For performance critical models, consider
     implementing the tuple protocol for compile-time generation of the access
     code.
@@ -208,6 +208,8 @@ QRangeModel::QRangeModel(QRangeModelImplBase *impl, QObject *parent)
     \l{QVariant::canConvert}{convertible to and from a QString} (but a custom
     delegate might provide more flexibility).
 
+    \section3 Associative containers with multiple roles
+
     If the item is an associative container that uses \c{int},
     \l{Qt::ItemDataRole}, or QString as the key type, and QVariant as the
     mapped type, then QRangeModel interprets that container as the storage
@@ -222,9 +224,14 @@ QRangeModel::QRangeModel(QRangeModelImplBase *impl, QObject *parent)
     \c{int}. When using \c{int}, itemData() returns the container as is, and
     doesn't have to create a copy of the data.
 
-    Gadgets and QObject types can also be represented at multi-role items.
-    The properties will be used for the role for which the
-    \l{roleNames}{name of a role} matches.
+    \section3 Gadgets and Objects as multi-role items
+
+    Gadgets and QObject types can also be represented at multi-role items. The
+    \l{The Property System}{properties} of those items will be used for the
+    role for which the \l{roleNames()}{name of a role} matches. If all items
+    hold the same type of gadget or QObject, then the \l{roleNames()}
+    implementation in QRangeModel will return the list of properties of that
+    type.
 
     \snippet qrangemodel/main.cpp color_gadget_decl
     \snippet qrangemodel/main.cpp color_gadget_impl
