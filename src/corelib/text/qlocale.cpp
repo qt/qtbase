@@ -4790,7 +4790,6 @@ bool QLocaleData::numberToCLocale(QStringView s, QLocale::NumberOptions number_o
             return false;
     }
 
-    result->append('\0');
     return true;
 }
 
@@ -4900,7 +4899,7 @@ double QLocaleData::stringToDouble(QStringView str, bool *ok,
             *ok = false;
         return 0.0;
     }
-    auto r = qt_asciiToDouble(buff.constData(), buff.size() - 1);
+    auto r = qt_asciiToDouble(buff.constData(), buff.size());
     if (ok != nullptr)
         *ok = r.ok();
     return r.result;
