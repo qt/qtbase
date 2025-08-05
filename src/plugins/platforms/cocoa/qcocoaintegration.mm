@@ -75,6 +75,8 @@ static void logVersionInformation()
             qtDeploymentTarget.majorVersion(), qtDeploymentTarget.minorVersion(), qtDeploymentTarget.microVersion(),
             appBuildSDK.majorVersion(), appBuildSDK.minorVersion(), appBuildSDK.microVersion(),
             appDeploymentTarget.majorVersion(), appDeploymentTarget.minorVersion(), appDeploymentTarget.microVersion());
+
+    qCInfo(lcQpa) << "Running with Liquid Glass enabled:" << qt_apple_runningWithLiquidGlass();
 }
 
 
