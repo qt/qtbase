@@ -332,6 +332,32 @@ bool qt_mac_runningUnderRosetta()
     return false;
 }
 
+bool qt_apple_runningWithLiquidGlass()
+{
+    static const bool runningWithLiquidGlass = []{
+        if (QMacVersion::buildSDK(QMacVersion::ApplicationBinary).majorVersion() < 26)
+            return false;
+
+        if (QMacVersion::currentRuntime().majorVersion() < 26)
+            return false;
+
+        // Word on the street is that the opt out will only work for
+        // macOS 26, but it's not clear whether building against the
+        // Xcode 27 SDK is what will disable it, or simply running on
+        // macOS 27. Let's go with the latter for now.
+        if (QMacVersion::currentRuntime().majorVersion() < 27) {
+            const id liquidGlassOptOut = [NSBundle.mainBundle
+                objectForInfoDictionaryKey:@"UIDesignRequiresCompatibility"];
+            if (liquidGlassOptOut && [liquidGlassOptOut boolValue])
+                return false;
+        }
+
+        return true;
+    }();
+
+    return runningWithLiquidGlass;
+}
+
 std::optional<uint32_t> qt_mac_sipConfiguration()
 {
     static auto configuration = []() -> std::optional<uint32_t> {

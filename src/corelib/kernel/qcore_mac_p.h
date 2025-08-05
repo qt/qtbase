@@ -227,6 +227,7 @@ Q_CORE_EXPORT QDebug operator<<(QDebug debug, const QCFString &string);
 #endif
 
 Q_CORE_EXPORT bool qt_apple_isApplicationExtension();
+Q_CORE_EXPORT bool qt_apple_runningWithLiquidGlass();
 
 #if !defined(QT_BOOTSTRAPPED)
 Q_CORE_EXPORT bool qt_apple_isSandboxed();
