@@ -455,7 +455,7 @@ bool QLocalServer::removeServer(const QString &name)
 
 /*!
     Returns the server name if the server is listening for connections;
-    otherwise returns QString()
+    otherwise returns QString().
 
     \sa listen(), fullServerName()
  */
