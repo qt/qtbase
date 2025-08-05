@@ -917,7 +917,7 @@ bool QDtls::continueHandshake(QUdpSocket *socket, const QByteArray &datagram)
     \c true. \a socket must be a valid pointer. Returns \c false if
     the handshake could not be resumed.
 
-    \sa doHandshake(), abortHandshake() peerVerificationErrors(), ignoreVerificationErrors()
+    \sa doHandshake(), abortHandshake(), peerVerificationErrors(), ignoreVerificationErrors()
 */
 bool QDtls::resumeHandshake(QUdpSocket *socket)
 {
