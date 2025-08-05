@@ -49,10 +49,13 @@
 {
     qCDebug(lcQpaWindowScene) << "Connecting" << scene << "to" << session;
 
-    // Handle URL contexts, even if we return early
-    const auto handleUrlContexts = qScopeGuard([&]{
+    // Handle connection options, even if we return early
+    const auto handleConnectionOptions = qScopeGuard([&]{
         if (connectionOptions.URLContexts.count > 0)
             [self scene:scene openURLContexts:connectionOptions.URLContexts];
+        // Handle universal link (https) application cold-launch case
+        for (NSUserActivity *activity in connectionOptions.userActivities)
+            [self scene:scene continueUserActivity:activity];
     });
 
 #if defined(Q_OS_VISIONOS)
@@ -113,7 +116,7 @@
 
 - (void)scene:(UIScene *)scene continueUserActivity:(NSUserActivity *)userActivity
 {
-    qCDebug(lcQpaWindowScene) << "Handling continueUserActivity for scene" << scene;
+    qCDebug(lcQpaWindowScene) << "Handling user activity for scene" << scene;
 
     if ([userActivity.activityType isEqualToString:NSUserActivityTypeBrowsingWeb]) {
         QIOSIntegration *iosIntegration = QIOSIntegration::instance();
