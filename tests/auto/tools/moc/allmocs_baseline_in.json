@@ -2306,7 +2306,7 @@
                         "access": "public",
                         "index": 0,
                         "isConst": true,
-                        "lineNumber": 0,
+                        "lineNumber": 13,
                         "name": "foo",
                         "returnType": "const char*"
                     }
@@ -2327,14 +2327,14 @@
                     {
                         "access": "public",
                         "index": 0,
-                        "lineNumber": 0,
+                        "lineNumber": 20,
                         "name": "foo",
                         "returnType": "void"
                     },
                     {
                         "access": "public",
                         "index": 1,
-                        "lineNumber": 0,
+                        "lineNumber": 21,
                         "name": "bar",
                         "returnType": "void"
                     }
@@ -2400,7 +2400,7 @@
                     {
                         "access": "private",
                         "index": 1,
-                        "lineNumber": 0,
+                        "lineNumber": 22,
                         "name": "method1",
                         "returnType": "void"
                     }
@@ -3424,7 +3424,7 @@
                     {
                         "access": "public",
                         "index": 4,
-                        "lineNumber": 0,
+                        "lineNumber": 27,
                         "name": "myTPInvokable1",
                         "returnType": "void",
                         "tag": "QT_TECH_PREVIEW_API"
@@ -3432,7 +3432,7 @@
                     {
                         "access": "public",
                         "index": 5,
-                        "lineNumber": 0,
+                        "lineNumber": 28,
                         "name": "myTPInvokable2",
                         "returnType": "void",
                         "tag": "QT_TECH_PREVIEW_API"

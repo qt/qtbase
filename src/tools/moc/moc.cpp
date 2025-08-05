@@ -553,6 +553,7 @@ bool Moc::parseMaybeFunction(const ClassDef *cdef, FunctionDef *def)
     bool scopedFunctionName = false;
     if (test(LPAREN)) {
         def->name = def->type.name;
+        def->lineNumber = symbol().lineNum;
         scopedFunctionName = def->type.isScoped;
         if (def->name == cdef->classname) {
             def->isDestructor = tilde;
@@ -586,6 +587,7 @@ bool Moc::parseMaybeFunction(const ClassDef *cdef, FunctionDef *def)
         if (!test(LPAREN))
             return false;
         def->name = tempType.name;
+        def->lineNumber = symbol().lineNum;
         scopedFunctionName = tempType.isScoped;
     }
 
