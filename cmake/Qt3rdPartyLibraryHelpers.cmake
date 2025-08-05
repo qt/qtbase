@@ -263,6 +263,7 @@ function(qt_internal_add_3rdparty_library target)
     else()
         set(will_install FALSE)
     endif()
+    set_target_properties("${target}" PROPERTIES _qt_will_install ${will_install})
 
     if(will_install)
         qt_generate_3rdparty_lib_pri_file("${target}" "${arg_QMAKE_LIB_NAME}" pri_file)

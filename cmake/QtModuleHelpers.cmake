@@ -258,6 +258,9 @@ function(qt_internal_add_module target)
         set_property(TARGET ${target} APPEND PROPERTY EXPORT_PROPERTIES _qt_is_header_module)
     endif()
 
+    # Record whether the target will be installed. We don't have to export this property.
+    set_target_properties(${target} PROPERTIES _qt_will_install "${QT_WILL_INSTALL}")
+
     if(NOT arg_CONFIG_MODULE_NAME)
         set(arg_CONFIG_MODULE_NAME "${module_lower}")
     endif()
@@ -358,6 +361,9 @@ function(qt_internal_add_module target)
         )
         set_property(TARGET "${target_private}" APPEND PROPERTY
                      EXPORT_PROPERTIES "${export_properties}")
+
+        # Record whether the target will be installed. We don't have to export this property.
+        set_target_properties(${target_private} PROPERTIES _qt_will_install "${QT_WILL_INSTALL}")
 
         # Let find_package(Qt6FooPrivate) also find_package(Qt6Foo).
         qt_internal_register_target_dependencies("${target_private}" PUBLIC "Qt::${target}")

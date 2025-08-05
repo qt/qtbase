@@ -318,11 +318,14 @@ function(qt_internal_create_module_depends_file target)
             @ONLY
         )
 
-        qt_install(FILES
-            "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}Dependencies.cmake"
-            DESTINATION "${config_install_dir}"
-            COMPONENT Devel
-        )
+        get_target_property(will_install "${target}" _qt_will_install)
+        if(will_install)
+            qt_install(FILES
+                "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}Dependencies.cmake"
+                DESTINATION "${config_install_dir}"
+                COMPONENT Devel
+            )
+        endif()
 
         message(TRACE "Recorded dependencies for module: ${target}\n"
             "    Qt dependencies: ${target_deps}\n"
