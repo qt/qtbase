@@ -1164,6 +1164,12 @@ qt_feature("intelcet" PRIVATE
     LABEL "Using Intel CET"
     CONDITION ( INPUT_intelcet STREQUAL yes ) OR TEST_intelcet
 )
+qt_feature("android_16kb_pages"
+    LABEL "Using 16KB page sizes in Android"
+    CONDITION ANDROID AND (((CMAKE_ANDROID_NDK_VERSION VERSION_GREATER_EQUAL "25.0.0"))
+                          AND ((CMAKE_ANDROID_ARCH_ABI STREQUAL "arm64-v8a") OR
+                              (CMAKE_ANDROID_ARCH_ABI STREQUAL "x86_64")))
+)
 qt_configure_add_summary_build_type_and_config()
 qt_configure_add_summary_section(NAME "Build options")
 qt_configure_add_summary_build_mode(Mode)
@@ -1298,6 +1304,8 @@ qt_configure_add_summary_entry(ARGS "opensslv30")
 qt_configure_add_summary_entry(ARGS "system-zlib")
 qt_configure_add_summary_entry(ARGS "zstd")
 qt_configure_add_summary_entry(ARGS "thread")
+qt_configure_add_summary_entry(ARGS "android_16kb_pages")
+
 qt_configure_end_summary_section() # end of "Support enabled for" section
 qt_configure_add_report_entry(
     TYPE NOTE
@@ -1372,6 +1380,11 @@ qt_configure_add_report_entry(
     TYPE WARNING
     MESSAGE "You should use the recommended Emscripten version ${QT_EMCC_RECOMMENDED_VERSION} with this Qt. You have ${EMCC_VERSION}."
     CONDITION WASM AND NOT ${EMCC_VERSION} MATCHES ${QT_EMCC_RECOMMENDED_VERSION}
+)
+qt_configure_add_report_entry(
+    TYPE NOTE
+    MESSAGE "Building Qt for Android with 16KB page sizes."
+    CONDITION QT_FEATURE_android_16kb_pages AND (CMAKE_ANDROID_NDK_VERSION VERSION_LESS "28.0.0")
 )
 if(WASM)
     qt_extra_definition("QT_EMCC_VERSION" "\"${EMCC_VERSION}\"" PUBLIC)
