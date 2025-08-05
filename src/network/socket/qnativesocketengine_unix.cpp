@@ -204,7 +204,7 @@ bool QNativeSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType soc
     int type = (socketType == QAbstractSocket::UdpSocket) ? SOCK_DGRAM : SOCK_STREAM;
 
     int socket = qt_safe_socket(domain, type, protocol, O_NONBLOCK);
-    if (socket < 0 && socketProtocol == QAbstractSocket::AnyIPProtocol && errno == EAFNOSUPPORT) {
+    if (socket < 0 && socketProtocol == QAbstractSocket::AnyIPProtocol && (errno == EAFNOSUPPORT || errno == ENOTSUP )) {
         domain = AF_INET;
         socket = qt_safe_socket(domain, type, protocol, O_NONBLOCK);
         socketProtocol = QAbstractSocket::IPv4Protocol;
@@ -1153,6 +1153,8 @@ qint64 QNativeSocketEnginePrivate::nativeSendDatagram(const char *data, qint64 l
             sentBytes = -2;
             break;
         case EMSGSIZE:
+        // seen on VxWorks
+        case ENOMEM:
             setError(QAbstractSocket::DatagramTooLargeError, DatagramTooLargeErrorString);
             break;
         case ECONNRESET:
