@@ -226,7 +226,7 @@ QRangeModel::QRangeModel(QRangeModelImplBase *impl, QObject *parent)
 
     \section3 Gadgets and Objects as multi-role items
 
-    Gadgets and QObject types can also be represented at multi-role items. The
+    Gadgets and QObject types can also be represented as multi-role items. The
     \l{The Property System}{properties} of those items will be used for the
     role for which the \l{roleNames()}{name of a role} matches. If all items
     hold the same type of gadget or QObject, then the \l{roleNames()}
