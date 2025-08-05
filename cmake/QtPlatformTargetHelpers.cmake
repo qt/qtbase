@@ -31,6 +31,9 @@ function(qt_internal_setup_public_platform_target)
     # in order to satisfy linker dependencies. Both of these libraries are part of
     # the NDK.
     if (ANDROID)
+        if(QT_FEATURE_android_16kb_pages AND (CMAKE_ANDROID_NDK_VERSION VERSION_LESS "28.0.0"))
+            target_link_options(Platform INTERFACE "-Wl,-z,max-page-size=16384")
+        endif()
         target_link_libraries(Platform INTERFACE log)
     endif()
 
