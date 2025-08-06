@@ -301,6 +301,7 @@ private slots:
     void moveToTrashSymlinkToFile();
     void moveToTrashSymlinkToDirectory_data();
     void moveToTrashSymlinkToDirectory();
+    void moveToTrashXdgHomeTrashIsSymlink();
     void moveToTrashXdgSafety();
 
     void stdfilesystem();
@@ -4381,6 +4382,53 @@ void tst_QFile::moveToTrashSymlinkToDirectory()
     QVERIFY(QFile::exists(temp.path()));
     QVERIFY(!QFile::exists(linkName));
     cleanLink.dismiss();
+}
+
+void tst_QFile::moveToTrashXdgHomeTrashIsSymlink()
+{
+    if (!QFile::supportsMoveToTrash())
+        QSKIP("This platform doesn't implement a trash bin");
+
+#if defined(Q_OS_WIN) || defined(Q_OS_DARWIN) || defined(Q_OS_ANDROID) || defined(Q_OS_WEBOS)
+    QSKIP("This test is specific to XDG Unix systems");
+#else
+    if (!QStandardPaths::isTestModeEnabled())
+        QFAIL("Constructor should have enabled test mode");
+
+    QString xdgDataHome = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
+    Q_ASSERT(xdgDataHome.contains("qttest/"));
+    QString xdgHomeTrash = xdgDataHome + "/Trash"_L1;
+    QString tempPattern = xdgDataHome + "/tst_qfile_moveToTrashXdgHomeTrashIsSymlink.XXXXXX";
+    auto removeTrashAsSymlink = [&xdgHomeTrash] {
+        QFile::remove(xdgHomeTrash);
+    };
+
+    // create a file for us to trash
+    QTemporaryFile fileToTrash(tempPattern);
+    QVERIFY2(fileToTrash.open(), qPrintable(fileToTrash.errorString()));
+
+    // obliterate the test-mode home trash and create a symlink in its place
+    if (QFileInfo fi(xdgHomeTrash); fi.isSymLink() || !fi.isDir())
+        removeTrashAsSymlink();
+    else
+        QDir(xdgHomeTrash).removeRecursively();
+
+    QTemporaryDir otherTrash(tempPattern);
+    QVERIFY2(otherTrash.isValid(), qPrintable(otherTrash.errorString()));
+    if (QFile src(otherTrash.path()); true)
+        QVERIFY2(src.link(xdgHomeTrash), qPrintable(src.errorString()));
+    auto deleteSymlink = qScopeGuard(removeTrashAsSymlink);
+
+    // we should be able to trash an open file in XDG platforms (test above)
+
+    QFile f(fileToTrash.fileName());
+    QVERIFY2(f.moveToTrash(), qPrintable(f.errorString()));
+    QVERIFY(f.exists());
+
+    QVERIFY(!QFileInfo(fileToTrash.fileName()).exists());
+    QVERIFY(QFile(otherTrash.filePath("files")).exists());
+    QVERIFY(QFile(otherTrash.filePath("info")).exists());
+#endif
 }
 
 void tst_QFile::moveToTrashXdgSafety()
