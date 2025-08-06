@@ -1439,17 +1439,17 @@ struct FreeDesktopTrashOperation
     }
 
     // opens a directory and returns the file descriptor
-    static int openDirFd(int dfd, const char *path, int mode = 0)
+    static int openDirFd(int dfd, const char *path, int mode)
     {
-        mode |= QT_OPEN_RDONLY | O_NOFOLLOW | O_DIRECTORY;
+        mode |= QT_OPEN_RDONLY | O_DIRECTORY;
         return qt_safe_openat(dfd, path, mode);
     }
 
     // opens an XDG Trash directory that is a subdirectory of dfd, creating if necessary
-    static int openOrCreateDir(int dfd, const char *path)
+    static int openOrCreateDir(int dfd, const char *path, int openmode = 0)
     {
         // try to open it as a dir, first
-        int fd = openDirFd(dfd, path);
+        int fd = openDirFd(dfd, path, openmode);
         if (fd >= 0 || errno != ENOENT)
             return fd;
 
@@ -1458,19 +1458,19 @@ struct FreeDesktopTrashOperation
             return -1;
 
         // try to open it again
-        return openDirFd(dfd, path);
+        return openDirFd(dfd, path, openmode);
     }
 
     // opens or makes the XDG Trash hierarchy on parentfd (may be -1) called targetDir
     bool getTrashDir(int parentfd, QString targetDir, const QFileSystemEntry &source,
-                     QSystemError &error)
+                     int openmode, QSystemError &error)
     {
         if (parentfd == AT_FDCWD)
             trashPath = targetDir;
         QByteArray nativePath = QFile::encodeName(targetDir);
 
         // open the directory
-        int trashfd = openOrCreateDir(parentfd, nativePath);
+        int trashfd = openOrCreateDir(parentfd, nativePath, openmode);
         if (trashfd < 0 && errno != ENOENT) {
             error = QSystemError(errno, QSystemError::StandardLibraryError);
             return false;
@@ -1535,7 +1535,7 @@ struct FreeDesktopTrashOperation
         QFileSystemEntry dotTrashDir(sourceStorage.rootPath() + dotTrash);
 
         // we MUST check that the sticky bit is set, and that it is not a symlink
-        int genericTrashFd = openDirFd(AT_FDCWD, dotTrashDir.nativeFilePath());
+        int genericTrashFd = openDirFd(AT_FDCWD, dotTrashDir.nativeFilePath(), O_NOFOLLOW);
         QT_STATBUF st = {};
         if (genericTrashFd < 0 && errno != ENOENT && errno != EACCES) {
             // O_DIRECTORY + O_NOFOLLOW produces ENOTDIR on Linux
@@ -1563,7 +1563,7 @@ struct FreeDesktopTrashOperation
                      the implementation MUST immediately create it, without any warnings or
                      delays for the user."
                 */
-                if (getTrashDir(genericTrashFd, userID, source, error)) {
+                if (getTrashDir(genericTrashFd, userID, source, O_NOFOLLOW, error)) {
                     // recreate the resulting path
                     trashPath = dotTrashDir.filePath() + u'/' + userID;
                 }
@@ -1579,7 +1579,8 @@ struct FreeDesktopTrashOperation
              immediately create it, without any warnings or delays for the user."
         */
         if (!isTrashDirOpen())
-            getTrashDir(AT_FDCWD, sourceStorage.rootPath() + dotTrash + u'-' + userID, source, error);
+            getTrashDir(AT_FDCWD, sourceStorage.rootPath() + dotTrash + u'-' + userID, source,
+                        O_NOFOLLOW, error);
 
         if (isTrashDirOpen()) {
             volumePrefixLength = sourceStorage.rootPath().size();
@@ -1594,7 +1595,8 @@ struct FreeDesktopTrashOperation
     bool openHomeTrashLocation(const QFileSystemEntry &source, QSystemError &error)
     {
         QString topDir = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
-        return getTrashDir(AT_FDCWD, topDir + "/Trash"_L1, source, error);
+        int openmode = 0;   // do allow following symlinks
+        return getTrashDir(AT_FDCWD, topDir + "/Trash"_L1, source, openmode, error);
     }
 
     bool findTrashFor(const QFileSystemEntry &source, QSystemError &error)
