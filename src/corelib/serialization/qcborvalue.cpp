@@ -1475,6 +1475,15 @@ bool comparesEqual(const QCborValue &lhs,
     If each QCborValue contains an array or map, the comparison is recursive to
     elements contained in them.
 
+    \section3 Not-a-number (NaN) comparisons
+
+    QCborValue compares the exact bit representation of the NaN, as provided in
+    the constructor. This means NaNs will compare equal if they have the same
+    representation, unlike what one may expect for floating point comparisons.
+    However, NaNs with different payloads or sign will compare unequal.
+
+    This implies QCborValue provides strong and total ordering semantics.
+
     \section3 Extended types
 
     QCborValue compares equal a QCborValue containing an extended type, like
