@@ -16,6 +16,7 @@
 
 QT_BEGIN_NAMESPACE
 
+static_assert(!std::is_constructible_v<QTimeZone, Qt::TimeSpec>);
 using namespace Qt::StringLiterals;
 
 #if QT_CONFIG(timezone)
