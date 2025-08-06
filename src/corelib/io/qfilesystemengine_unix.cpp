@@ -1462,8 +1462,8 @@ struct FreeDesktopTrashOperation
     }
 
     // opens or makes the XDG Trash hierarchy on parentfd (may be -1) called targetDir
-    bool getTrashDir(int parentfd, QString targetDir, const QFileSystemEntry &source,
-                     int openmode, QSystemError &error)
+    QSystemError getTrashDir(int parentfd, QString targetDir, const QFileSystemEntry &source,
+                             int openmode)
     {
         if (parentfd == AT_FDCWD)
             trashPath = targetDir;
@@ -1471,19 +1471,14 @@ struct FreeDesktopTrashOperation
 
         // open the directory
         int trashfd = openOrCreateDir(parentfd, nativePath, openmode);
-        if (trashfd < 0 && errno != ENOENT) {
-            error = QSystemError(errno, QSystemError::StandardLibraryError);
-            return false;
-        }
+        if (trashfd < 0 && errno != ENOENT)
+            return QSystemError::stdError(errno);
 
         // check if it is ours (even if we've just mkdirat'ed it)
-        if (QT_STATBUF st; QT_FSTAT(trashfd, &st) < 0) {
-            error = QSystemError(errno, QSystemError::StandardLibraryError);
-            return false;
-        } else if (st.st_uid != getuid()) {
-            error = QSystemError(EPERM, QSystemError::StandardLibraryError);
-            return false;
-        }
+        if (QT_STATBUF st; QT_FSTAT(trashfd, &st) < 0)
+            return QSystemError::stdError(errno);
+        else if (st.st_uid != getuid())
+            return QSystemError::stdError(errno);
 
         filesDirFd = openOrCreateDir(trashfd, "files");
         if (filesDirFd >= 0) {
@@ -1509,15 +1504,20 @@ struct FreeDesktopTrashOperation
             if (!tempTrashFileName.isEmpty() || errno == EPERM || errno == EMLINK)
                 infoDirFd = openOrCreateDir(trashfd, "info");
         }
-        error = QSystemError(errno, QSystemError::StandardLibraryError);
-        if (infoDirFd < 0)
+
+        if (infoDirFd < 0) {
+            int saved_errno = errno;
             close();
+            QT_CLOSE(trashfd);
+            return QSystemError::stdError(saved_errno);
+        }
+
         QT_CLOSE(trashfd);
-        return infoDirFd >= 0;
+        return {};
     }
 
-    bool openMountPointTrashLocation(const QFileSystemEntry &source,
-                                     const QStorageInfo &sourceStorage, QSystemError &error)
+    QSystemError openMountPointTrashLocation(const QFileSystemEntry &source,
+                                             const QStorageInfo &sourceStorage)
     {
         /*
             Method 1:
@@ -1530,6 +1530,7 @@ struct FreeDesktopTrashOperation
             of $topdir/.Trash."
         */
 
+        QSystemError error;
         const auto dotTrash = "/.Trash"_L1;
         const QString userID = QString::number(::getuid());
         QFileSystemEntry dotTrashDir(sourceStorage.rootPath() + dotTrash);
@@ -1563,7 +1564,7 @@ struct FreeDesktopTrashOperation
                      the implementation MUST immediately create it, without any warnings or
                      delays for the user."
                 */
-                if (getTrashDir(genericTrashFd, userID, source, O_NOFOLLOW, error)) {
+                if (error = getTrashDir(genericTrashFd, userID, source, O_NOFOLLOW); error.ok()) {
                     // recreate the resulting path
                     trashPath = dotTrashDir.filePath() + u'/' + userID;
                 }
@@ -1579,8 +1580,8 @@ struct FreeDesktopTrashOperation
              immediately create it, without any warnings or delays for the user."
         */
         if (!isTrashDirOpen())
-            getTrashDir(AT_FDCWD, sourceStorage.rootPath() + dotTrash + u'-' + userID, source,
-                        O_NOFOLLOW, error);
+            error = getTrashDir(AT_FDCWD, sourceStorage.rootPath() + dotTrash + u'-' + userID, source,
+                                O_NOFOLLOW);
 
         if (isTrashDirOpen()) {
             volumePrefixLength = sourceStorage.rootPath().size();
@@ -1589,17 +1590,17 @@ struct FreeDesktopTrashOperation
             else
                 ++volumePrefixLength;           // to include the slash
         }
-        return isTrashDirOpen();
+        return isTrashDirOpen() ? QSystemError() : error;
     }
 
-    bool openHomeTrashLocation(const QFileSystemEntry &source, QSystemError &error)
+    QSystemError openHomeTrashLocation(const QFileSystemEntry &source)
     {
         QString topDir = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
         int openmode = 0;   // do allow following symlinks
-        return getTrashDir(AT_FDCWD, topDir + "/Trash"_L1, source, openmode, error);
+        return getTrashDir(AT_FDCWD, topDir + "/Trash"_L1, source, openmode);
     }
 
-    bool findTrashFor(const QFileSystemEntry &source, QSystemError &error)
+    QSystemError findTrashFor(const QFileSystemEntry &source)
     {
         /*
            First, try the standard Trash in $XDG_DATA_DIRS:
@@ -1607,16 +1608,16 @@ struct FreeDesktopTrashOperation
            QStandardPaths returns for GenericDataLocation. If that doesn't exist, then
            we are not running on a freedesktop.org-compliant environment, and give up.
          */
-        if (openHomeTrashLocation(source, error))
-            return true;
-        if (error.errorCode != EXDEV)
-            return false;
+        if (QSystemError error = openHomeTrashLocation(source); error.ok())
+            return QSystemError();
+        else if (error.errorCode != EXDEV)
+            return error;
 
         // didn't work, try to find the trash outside the home filesystem
         const QStorageInfo sourceStorage(source.filePath());
         if (!sourceStorage.isValid())
-            return false;
-        return openMountPointTrashLocation(source, sourceStorage, error);
+            return QSystemError::stdError(ENODEV);
+        return openMountPointTrashLocation(source, sourceStorage);
     }
 };
 } // unnamed namespace
@@ -1633,7 +1634,7 @@ bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &source,
         return absoluteName(source);
     }();
     FreeDesktopTrashOperation op;
-    if (!op.findTrashFor(sourcePath, error))
+    if (error = op.findTrashFor(sourcePath); !error.ok())
         return false;
 
     /*
