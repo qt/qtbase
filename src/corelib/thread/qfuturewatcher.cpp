@@ -663,7 +663,7 @@ QT_WARNING_POP
     \fn template <typename T> void QFutureWatcher<T>::progressRangeChanged(int minimum, int maximum)
 
     The progress range for the watched future has changed to \a minimum and
-    \a maximum
+    \a maximum.
 */
 
 /*!
