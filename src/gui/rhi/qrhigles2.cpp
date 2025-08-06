@@ -5790,6 +5790,8 @@ bool QGles2Texture::prepareCreate(QSize *adjustedSize)
     const QSize size = is1D ? QSize(qMax(1, m_pixelSize.width()), 1)
                             : (m_pixelSize.isEmpty() ? QSize(1, 1) : m_pixelSize);
 
+    samples = rhiD->effectiveSampleCount(m_sampleCount);
+
     if (is3D && !rhiD->caps.texture3D) {
         qWarning("3D textures are not supported");
         return false;
@@ -5829,7 +5831,7 @@ bool QGles2Texture::prepareCreate(QSize *adjustedSize)
     }
 
     target = isCube             ? GL_TEXTURE_CUBE_MAP
-            : m_sampleCount > 1 ? (isArray ? GL_TEXTURE_2D_MULTISAMPLE_ARRAY : GL_TEXTURE_2D_MULTISAMPLE)
+            : samples > 1 ? (isArray ? GL_TEXTURE_2D_MULTISAMPLE_ARRAY : GL_TEXTURE_2D_MULTISAMPLE)
                                 : (is3D ? GL_TEXTURE_3D
                                         : (is1D ? (isArray ? GL_TEXTURE_1D_ARRAY : GL_TEXTURE_1D)
                                                 : (isArray ? GL_TEXTURE_2D_ARRAY : GL_TEXTURE_2D)));
@@ -5936,9 +5938,9 @@ bool QGles2Texture::create()
             } else {
                 // 2D texture. For multisample textures the GLES 3.1
                 // glStorage2DMultisample must be used for portability.
-                if (m_sampleCount > 1 && rhiD->caps.multisampledTexture) {
+                if (samples > 1 && rhiD->caps.multisampledTexture) {
                     // internal format must be sized
-                    rhiD->f->glTexStorage2DMultisample(target, m_sampleCount, glsizedintformat,
+                    rhiD->f->glTexStorage2DMultisample(target, samples, glsizedintformat,
                                                        size.width(), size.height(), GL_TRUE);
                 } else {
                     rhiD->f->glTexImage2D(target, 0, GLint(glintformat), size.width(), size.height(),
@@ -5954,8 +5956,8 @@ bool QGles2Texture::create()
             else if (!is1D && (is3D || isArray))
                 rhiD->f->glTexStorage3D(target, mipLevelCount, glsizedintformat, size.width(), size.height(),
                                         is3D ? qMax(1, m_depth) : qMax(0, m_arraySize));
-            else if (m_sampleCount > 1)
-                rhiD->f->glTexStorage2DMultisample(target, m_sampleCount, glsizedintformat,
+            else if (samples > 1)
+                rhiD->f->glTexStorage2DMultisample(target, samples, glsizedintformat,
                                                    size.width(), size.height(), GL_TRUE);
             else
                 rhiD->f->glTexStorage2D(target, mipLevelCount, glsizedintformat, size.width(),
@@ -6199,7 +6201,7 @@ bool QGles2TextureRenderTarget::create()
                                                        colorAtt.level(), colorAtt.layer());
                 } else {
                     multiViewCount = colorAtt.multiViewCount();
-                    if (texD->sampleCount() > 1 && rhiD->caps.glesMultiviewMultisampleRenderToTexture && colorAtt.resolveTexture()) {
+                    if (texD->samples > 1 && rhiD->caps.glesMultiviewMultisampleRenderToTexture && colorAtt.resolveTexture()) {
                         // Special path for GLES and GL_OVR_multiview_multisampled_render_to_texture:
                         // ignore the color attachment's (multisample) texture
                         // array and give the resolve texture array to GL. (no
@@ -6209,7 +6211,7 @@ bool QGles2TextureRenderTarget::create()
                                                                           GL_COLOR_ATTACHMENT0 + uint(attIndex),
                                                                           resolveTexD->texture,
                                                                           colorAtt.resolveLevel(),
-                                                                          texD->sampleCount(),
+                                                                          texD->samples,
                                                                           colorAtt.resolveLayer(),
                                                                           multiViewCount);
                     } else {
@@ -6226,7 +6228,7 @@ bool QGles2TextureRenderTarget::create()
                                              texD->target + uint(colorAtt.layer()), texD->texture,
                                              colorAtt.level());
             } else {
-                if (texD->sampleCount() > 1 && rhiD->caps.glesMultisampleRenderToTexture && colorAtt.resolveTexture()) {
+                if (texD->samples > 1 && rhiD->caps.glesMultisampleRenderToTexture && colorAtt.resolveTexture()) {
                     // Special path for GLES and GL_EXT_multisampled_render_to_texture:
                     // ignore the color attachment's (multisample) texture and
                     // give the resolve texture to GL. (no explicit resolving is
@@ -6234,7 +6236,7 @@ bool QGles2TextureRenderTarget::create()
                     QGles2Texture *resolveTexD = QRHI_RES(QGles2Texture, colorAtt.resolveTexture());
                     const GLenum faceTargetBase = resolveTexD->flags().testFlag(QRhiTexture::CubeMap) ? GL_TEXTURE_CUBE_MAP_POSITIVE_X : resolveTexD->target;
                     rhiD->glFramebufferTexture2DMultisampleEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + uint(attIndex), faceTargetBase + uint(colorAtt.resolveLayer()),
-                                                               resolveTexD->texture, colorAtt.level(), texD->sampleCount());
+                                                               resolveTexD->texture, colorAtt.level(), texD->samples);
                 } else {
                     const GLenum faceTargetBase = texD->flags().testFlag(QRhiTexture::CubeMap) ? GL_TEXTURE_CUBE_MAP_POSITIVE_X : texD->target;
                     rhiD->f->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + uint(attIndex), faceTargetBase + uint(colorAtt.layer()),
@@ -6243,11 +6245,11 @@ bool QGles2TextureRenderTarget::create()
             }
             if (attIndex == 0) {
                 d.pixelSize = rhiD->q->sizeForMipLevel(colorAtt.level(), texD->pixelSize());
-                d.sampleCount = texD->sampleCount();
+                d.sampleCount = texD->samples;
             }
         } else if (renderBuffer) {
             QGles2RenderBuffer *rbD = QRHI_RES(QGles2RenderBuffer, renderBuffer);
-            if (rbD->sampleCount() > 1 && rhiD->caps.glesMultisampleRenderToTexture && colorAtt.resolveTexture()) {
+            if (rbD->samples > 1 && rhiD->caps.glesMultisampleRenderToTexture && colorAtt.resolveTexture()) {
                 // Special path for GLES and GL_EXT_multisampled_render_to_texture: ignore
                 // the (multisample) renderbuffer and give the resolve texture to GL. (so
                 // no explicit resolve; depending on GL implementation internals, this may
@@ -6255,7 +6257,7 @@ bool QGles2TextureRenderTarget::create()
                 QGles2Texture *resolveTexD = QRHI_RES(QGles2Texture, colorAtt.resolveTexture());
                 const GLenum faceTargetBase = resolveTexD->flags().testFlag(QRhiTexture::CubeMap) ? GL_TEXTURE_CUBE_MAP_POSITIVE_X : resolveTexD->target;
                 rhiD->glFramebufferTexture2DMultisampleEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + uint(attIndex), faceTargetBase + uint(colorAtt.resolveLayer()),
-                                                           resolveTexD->texture, colorAtt.level(), rbD->sampleCount());
+                                                           resolveTexD->texture, colorAtt.level(), rbD->samples);
             } else {
                 rhiD->f->glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + uint(attIndex), GL_RENDERBUFFER, rbD->renderbuffer);
             }
@@ -6291,16 +6293,16 @@ bool QGles2TextureRenderTarget::create()
         } else {
             QGles2Texture *depthTexD = QRHI_RES(QGles2Texture, m_desc.depthTexture());
             if (multiViewCount < 2) {
-                if (depthTexD->sampleCount() > 1 && rhiD->caps.glesMultisampleRenderToTexture && m_desc.depthResolveTexture()) {
+                if (depthTexD->samples > 1 && rhiD->caps.glesMultisampleRenderToTexture && m_desc.depthResolveTexture()) {
                     // Special path for GLES and
                     // GL_EXT_multisampled_render_to_texture, for depth-stencil.
                     // Relevant only when depthResolveTexture is set.
                     QGles2Texture *depthResolveTexD = QRHI_RES(QGles2Texture, m_desc.depthResolveTexture());
                     rhiD->glFramebufferTexture2DMultisampleEXT(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthResolveTexD->target,
-                                                               depthResolveTexD->texture, 0, depthTexD->sampleCount());
+                                                               depthResolveTexD->texture, 0, depthTexD->samples);
                     if (rhiD->isStencilSupportingFormat(depthResolveTexD->format())) {
                         rhiD->glFramebufferTexture2DMultisampleEXT(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, depthResolveTexD->target,
-                                                                   depthResolveTexD->texture, 0, depthTexD->sampleCount());
+                                                                   depthResolveTexD->texture, 0, depthTexD->samples);
                     }
                 } else {
                     rhiD->f->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTexD->target,
@@ -6311,7 +6313,7 @@ bool QGles2TextureRenderTarget::create()
                     }
                 }
             } else {
-                if (depthTexD->sampleCount() > 1 && rhiD->caps.glesMultiviewMultisampleRenderToTexture) {
+                if (depthTexD->samples > 1 && rhiD->caps.glesMultiviewMultisampleRenderToTexture) {
                     // And so it turns out
                     // https://registry.khronos.org/OpenGL/extensions/OVR/OVR_multiview.txt
                     // does not work with multisample 2D texture arrays. (at least
@@ -6340,7 +6342,7 @@ bool QGles2TextureRenderTarget::create()
                                                                           GL_DEPTH_ATTACHMENT,
                                                                           depthResolveTexD->texture,
                                                                           0,
-                                                                          depthTexD->sampleCount(),
+                                                                          depthTexD->samples,
                                                                           0,
                                                                           multiViewCount);
                         if (rhiD->isStencilSupportingFormat(depthResolveTexD->format())) {
@@ -6348,7 +6350,7 @@ bool QGles2TextureRenderTarget::create()
                                                                               GL_STENCIL_ATTACHMENT,
                                                                               depthResolveTexD->texture,
                                                                               0,
-                                                                              depthTexD->sampleCount(),
+                                                                              depthTexD->samples,
                                                                               0,
                                                                               multiViewCount);
                         }
@@ -6363,14 +6365,14 @@ bool QGles2TextureRenderTarget::create()
                                                                           GL_DEPTH_ATTACHMENT,
                                                                           nonMsaaThrowawayDepthTexture,
                                                                           0,
-                                                                          depthTexD->sampleCount(),
+                                                                          depthTexD->samples,
                                                                           0,
                                                                           multiViewCount);
                         rhiD->glFramebufferTextureMultisampleMultiviewOVR(GL_FRAMEBUFFER,
                                                                           GL_STENCIL_ATTACHMENT,
                                                                           nonMsaaThrowawayDepthTexture,
                                                                           0,
-                                                                          depthTexD->sampleCount(),
+                                                                          depthTexD->samples,
                                                                           0,
                                                                           multiViewCount);
                     }
@@ -6388,7 +6390,7 @@ bool QGles2TextureRenderTarget::create()
             }
             if (d.colorAttCount == 0) {
                 d.pixelSize = depthTexD->pixelSize();
-                d.sampleCount = depthTexD->sampleCount();
+                d.sampleCount = depthTexD->samples;
             }
         }
         d.dsAttCount = 1;

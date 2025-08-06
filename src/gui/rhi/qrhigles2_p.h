@@ -128,6 +128,7 @@ struct QGles2Texture : public QRhiTexture
     bool specified = false;
     bool zeroInitialized = false;
     int mipLevelCount = 0;
+    int samples;
 
     enum Access {
         AccessNone,
