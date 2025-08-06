@@ -101,6 +101,8 @@ private slots:
 #endif
     void fromCbor_data();
     void fromCbor();
+    void fromCborNaN_data();
+    void fromCborNaN();
     void fromCborStreamReaderByteArray_data() { fromCbor_data(); }
     void fromCborStreamReaderByteArray();
     void fromCborStreamReaderIODevice_data() { fromCbor_data(); }
@@ -139,6 +141,12 @@ private slots:
 
     void deeplyNestedContainerDoesNotCrash();
 };
+
+inline double makeNan(quint64 x)
+{
+    x |= Q_UINT64_C(0x7ff8000000000000);
+    return qFromUnaligned<double>(&x);
+}
 
 namespace SimpleEncodeToCbor {
 inline size_t lengthOf(int)
@@ -2444,6 +2452,38 @@ static void addCommonCborData()
                                   << raw("\xc4\x82\x21\x19\x6a\xb3") << noxfrm;
 }
 
+static void addNonPreservingNaNData()
+{
+    QCborValue::EncodingOptions noxfrm = QCborValue::NoTransformation;
+    QCborValue::EncodingOptions usefloat = QCborValue::UseFloat;
+    QCborValue::EncodingOptions usefloat16 = QCborValue::UseFloat16;
+
+    double payloadNanLsb = makeNan(0x5174);
+    double payloadNanMsb = makeNan(0x4000000000000);
+
+    QTest::newRow("Double:-nan") << QCborValue(-qQNaN()) << raw("\xfb\x7f\xf8\0\0""\0\0\0\0") << noxfrm;
+    QTest::newRow("Double:payloadnan-lsb") << QCborValue(payloadNanLsb) << raw("\xfb\x7f\xf8\0\0""\0\0\0\0") << noxfrm;
+    QTest::newRow("Double:payloadnan-msb") << QCborValue(payloadNanMsb) << raw("\xfb\x7f\xf8\0\0""\0\0\0\0") << noxfrm;
+
+    QTest::newRow("Float:-nan") << QCborValue(-qQNaN()) << raw("\xfa\x7f\xc0\0\0") << usefloat;
+    QTest::newRow("Float:payloadnan-lsb") << QCborValue(payloadNanLsb) << raw("\xfa\x7f\xc0\0\0") << usefloat;
+    QTest::newRow("Float:payloadnan-msb") << QCborValue(payloadNanMsb) << raw("\xfa\x7f\xc0\0\0") << usefloat;
+
+    QTest::newRow("Float16:-nan") << QCborValue(-qQNaN()) << raw("\xf9\x7e\0") << usefloat16;
+    QTest::newRow("Float16:payloadnan-lsb") << QCborValue(payloadNanLsb) << raw("\xf9\x7e\0") << usefloat16;
+    QTest::newRow("Float16:payloadnan-msb") << QCborValue(payloadNanMsb) << raw("\xf9\x7e\0") << usefloat16;
+
+#if QT_CONFIG(signaling_nan)
+    QTest::newRow("Double:snan") << QCborValue(qSNaN()) << raw("\xfb\x7f\xf8\0\0""\0\0\0\0") << noxfrm;
+    QTest::newRow("Double:-snan") << QCborValue(-qSNaN()) << raw("\xfb\x7f\xf8\0\0""\0\0\0\0") << noxfrm;
+
+    QTest::newRow("Float:snan") << QCborValue(qSNaN()) << raw("\xfa\x7f\xc0\0\0") << usefloat;
+    QTest::newRow("Float:-snan") << QCborValue(-qSNaN()) << raw("\xfa\x7f\xc0\0\0") << usefloat;
+    QTest::newRow("Float16:snan") << QCborValue(qSNaN()) << raw("\xf9\x7e\0") << usefloat16;
+    QTest::newRow("Float16:-snan") << QCborValue(-qSNaN()) << raw("\xf9\x7e\0") << usefloat16;
+#endif
+}
+
 void tst_QCborValue::toCbor_data()
 {
     addCommonCborData();
@@ -2451,12 +2491,7 @@ void tst_QCborValue::toCbor_data()
     // The rest of these tests are conversions whose decoding does not yield
     // back the same QCborValue.
 
-#if QT_CONFIG(signaling_nan)
-    // Signalling NaN get normalized to quiet ones
-    QTest::newRow("Double:snan") << QCborValue(qSNaN()) << raw("\xfb\x7f\xf8\0""\0\0\0\0\0") << QCborValue::EncodingOptions();
-    QTest::newRow("Float:snan") << QCborValue(qSNaN()) << raw("\xfa\x7f\xc0\0\0") << QCborValue::EncodingOptions(QCborValue::UseFloat);
-    QTest::newRow("Float16:snan") << QCborValue(qSNaN()) << raw("\xf9\x7e\0") << QCborValue::EncodingOptions(QCborValue::UseFloat16);
-#endif
+    addNonPreservingNaNData();
 
     // Floating point written as integers are read back as integers
     QTest::newRow("UseInteger:0") << QCborValue(0.) << raw("\x00") << QCborValue::EncodingOptions(QCborValue::UseIntegers);
@@ -2608,6 +2643,29 @@ void tst_QCborValue::fromCbor()
     };
 
     fromCbor_common(doCheck);
+}
+
+void tst_QCborValue::fromCborNaN_data()
+{
+    QTest::addColumn<QCborValue>("v");
+    QTest::addColumn<QByteArray>("result");
+    QTest::addColumn<QCborValue::EncodingOptions>("options");
+    addNonPreservingNaNData();
+}
+
+void tst_QCborValue::fromCborNaN()
+{
+    QFETCH(QCborValue, v);
+    QFETCH(QByteArray, result);
+    QFETCH(QCborValue::EncodingOptions, options);
+
+    QCborParserError error;
+    QCborValue decoded = QCborValue::fromCbor(result, &error);
+    QVERIFY2(error.error == QCborError(), qPrintable(error.errorString()));
+    QCOMPARE(error.offset, result.size());
+
+    double d = decoded.toDouble();
+    QVERIFY2(std::isnan(d), QByteArray(reinterpret_cast<char *>(&d), sizeof(d)).toHex());
 }
 
 void tst_QCborValue::fromCborStreamReaderByteArray()
