@@ -268,7 +268,7 @@ extern "C" void
 #ifdef QT_SHARED
 Q_DECL_EXPORT_OVERRIDABLE
 #endif
-qt_startup_hook()
+QT_MANGLE_NAMESPACE(qt_startup_hook)()
 {
 }
 
@@ -877,7 +877,7 @@ void Q_TRACE_INSTRUMENT(qtcore) QCoreApplicationPrivate::init()
     processCommandLineArguments();
 
     qt_call_pre_routines();
-    qt_startup_hook();
+    QT_MANGLE_NAMESPACE(qt_startup_hook)();
 #ifndef QT_BOOTSTRAPPED
     QtPrivate::initBindingStatusThreadId();
     if (Q_UNLIKELY(qtHookData[QHooks::Startup]))
