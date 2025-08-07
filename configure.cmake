@@ -311,6 +311,18 @@ int main(void)
     CXX_STANDARD 26
 )
 
+qt_config_compile_test(elf
+    LABEL "ELF system"
+    CODE
+"#ifdef __ELF__
+#include <elf.h>
+#else
+#error __ELF__ not defined
+#endif
+int main() { return 0; }
+"
+)
+
 qt_config_linker_supports_flag_test(linker_dynamic_list
     LABEL "--dynamic-list support"
     # doesn't matter that it's an .in, it just has to be the right syntax
@@ -652,10 +664,15 @@ qt_feature("rpath" PUBLIC
     CONDITION BUILD_SHARED_LIBS AND UNIX AND NOT WIN32 AND NOT ANDROID
 )
 qt_feature_config("rpath" QMAKE_PUBLIC_QT_CONFIG)
+qt_feature("elf"
+    LABEL "ELF system"
+    AUTODETECT UNIX AND NOT APPLE
+    CONDITION TEST_elf
+)
 qt_feature("elf_private_full_version" PRIVATE
     LABEL "Use Qt's full version number in ELF version symbols"
     AUTODETECT OFF
-    CONDITION BUILD_SHARED_LIBS AND UNIX AND NOT APPLE
+    CONDITION BUILD_SHARED_LIBS AND QT_FEATURE_elf
 )
 qt_feature_config("elf_private_full_version" QMAKE_PRIVATE_QT_CONFIG)
 qt_feature("force_asserts" PUBLIC
@@ -778,7 +795,7 @@ endif()
 
 qt_feature("enable_new_dtags"
     LABEL "Using new DTAGS"
-    CONDITION LINUX AND TEST_enable_new_dtags
+    CONDITION QT_FEATURE_elf AND TEST_enable_new_dtags
 )
 qt_feature_config("enable_new_dtags" QMAKE_PRIVATE_CONFIG)
 qt_feature("enable_gdb_index"
@@ -1325,7 +1342,7 @@ qt_configure_add_summary_entry(
 )
 qt_configure_add_summary_entry(
     ARGS "enable_new_dtags"
-    CONDITION LINUX
+    CONDITION QT_FEATURE_elf
 )
 qt_configure_add_summary_entry(
     ARGS "enable_gdb_index"
