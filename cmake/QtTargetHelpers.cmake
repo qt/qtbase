@@ -1842,7 +1842,7 @@ endfunction()
 # A small wrapper for passing --dynamic-list to the linker. It will ensure that the symbols will
 # be mangled when qt is compiled in a namespace
 function(qt_internal_apply_dynamic_list_linker_flags target dynlist_template)
-    if(NOT (QT_FEATURE_reduce_relocations AND UNIX AND GCC))
+    if(NOT QT_FEATURE_reduce_relocations)
         return()
     endif()
 

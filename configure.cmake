@@ -311,6 +311,18 @@ int main(void)
     CXX_STANDARD 26
 )
 
+qt_config_linker_supports_flag_test(linker_dynamic_list
+    LABEL "--dynamic-list support"
+    # doesn't matter that it's an .in, it just has to be the right syntax
+    FLAG "--dynamic-list=${CMAKE_CURRENT_SOURCE_DIR}/src/corelib/QtCore.dynlist.in"
+)
+
+qt_config_linker_supports_flag_test(linker_symbolic_functions
+    # Note: we infer the linker also supports -Bsymbolic if it supports this
+    LABEL "-Bsymbolic-functions support"
+    FLAG "-Bsymbolic-functions"
+)
+
 qt_config_compiler_supports_flag_test(optimize_debug
     LABEL "-Og support"
     FLAG "-Og"
@@ -331,22 +343,6 @@ qt_config_linker_supports_flag_test(gdb_index
     FLAG "--gdb-index"
 )
 
-# reduce_relocations
-qt_config_compile_test(reduce_relocations
-    LABEL "-Bsymbolic-functions support"
-    CODE
-"#if !(defined(__i386) || defined(__i386__) || defined(__x86_64) || defined(__x86_64__) || defined(__amd64)) || defined(__sun)
-#  error Symbolic function binding on this architecture may be broken, disabling it (see QTBUG-36129).
-#endif
-
-int main(void)
-{
-    /* BEGIN TEST: */
-    /* END TEST: */
-    return 0;
-}
-"# FIXME: qmake: ['TEMPLATE = lib', 'CONFIG += dll bsymbolic_functions', 'isEmpty(QMAKE_LFLAGS_BSYMBOLIC_FUNC): error("Nope")']
-)
 
 if(MSVC OR APPLE)
     # These platforms / toolchains support separate debug information. Skip the compile test.
@@ -806,7 +802,9 @@ qt_feature_definition("no_direct_extern_access" "QT_USE_PROTECTED_VISIBILITY")
 qt_feature_config("no_direct_extern_access" QMAKE_PUBLIC_QT_CONFIG)
 qt_feature("reduce_relocations" PUBLIC
     LABEL "Reduce amount of relocations"
-    CONDITION NOT WIN32 AND TEST_reduce_relocations
+    AUTODETECT NOT WIN32 AND
+        (TEST_architecture_arch STREQUAL i386) OR (TEST_architecture_arch STREQUAL x86_64) # See QTBUG-36129
+    CONDITION TEST_linker_symbolic_functions AND TEST_linker_dynamic_list
 )
 qt_feature_definition("reduce_relocations" "QT_REDUCE_RELOCATIONS")
 qt_feature_config("reduce_relocations" QMAKE_PUBLIC_QT_CONFIG)

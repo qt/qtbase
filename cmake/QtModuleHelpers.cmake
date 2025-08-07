@@ -302,17 +302,21 @@ function(qt_internal_add_module target)
         qt_internal_get_framework_info(fw ${target})
     endif()
 
-    if(NOT QT_FEATURE_no_direct_extern_access AND QT_FEATURE_reduce_relocations AND
-            UNIX AND NOT is_interface_lib)
-        # On x86 and x86-64 systems with ELF binaries (especially Linux), due to
-        # a new optimization in GCC 5.x in combination with a recent version of
-        # GNU binutils, compiling Qt applications with -fPIE is no longer
-        # enough.
-        # Applications now need to be compiled with the -fPIC option if the Qt option
-        # \"reduce relocations\" is active.
-        target_compile_options(${target} INTERFACE -fPIC)
-        if(GCC AND is_shared_lib)
-            target_link_options(${target} PRIVATE LINKER:-Bsymbolic-functions)
+    if(QT_FEATURE_reduce_relocations AND NOT is_interface_lib)
+        if(QT_FEATURE_no_direct_extern_access)
+            # Modern support, we don't need to add workarounds
+            if(is_shared_lib)
+                target_link_options(${target} PRIVATE LINKER:-Bsymbolic)
+            endif()
+        else()
+            if(is_shared_lib)
+                target_link_options(${target} PRIVATE LINKER:-Bsymbolic-functions)
+            endif()
+
+            # Without FEATURE_no_direct_extern_access, applications cannot use
+            # -fPIE any more and must use -fPIC. Even then, this may fail.
+            # Consider upgrading.
+            target_compile_options(${target} INTERFACE -fPIC)
         endif()
     endif()
 
