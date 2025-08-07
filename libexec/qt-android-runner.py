@@ -10,6 +10,7 @@ import time
 import signal
 import argparse
 import re
+import xml.etree.ElementTree as ET
 
 def status(msg):
     print(f"\n-- {msg}")
@@ -90,16 +91,42 @@ if args.apk and args.install:
         error(f"Failed to install the APK, received error: {e}")
 
 
-def get_package_name(build_path):
-    try:
-        manifest_file = os.path.join(args.build_path, "AndroidManifest.xml")
-        if os.path.isfile(manifest_file):
-            with open(manifest_file) as f:
-                for line in f:
-                    if 'package="' in line:
-                        return line.split('package="')[1].split('"')[0]
+def find_launcher_activity(root):
+    ns_android = 'http://schemas.android.com/apk/res/android'
+    android_name_attr = f'{{{ns_android}}}name'
 
-        gradle_file = os.path.join(args.build_path, "build.gradle")
+    for activity in root.findall('.//activity'):
+        for intent_filter in activity.findall('intent-filter'):
+            actions = {action.get(android_name_attr) for action in intent_filter.findall('action')}
+            categories = {cat.get(android_name_attr) for cat in intent_filter.findall('category')}
+            main_action = 'android.intent.action.MAIN'
+            launcher_category = 'android.intent.category.LAUNCHER'
+            if main_action in actions and launcher_category in categories:
+                return activity.get(android_name_attr)
+    return None
+
+def get_manifest_app_details(manifest_file):
+    try:
+        if not os.path.isfile(manifest_file):
+            return None, None
+
+        tree = ET.parse(manifest_file)
+        root = tree.getroot()
+        package_name = root.get("package")
+        activity_name = find_launcher_activity(root)
+
+        if activity_name and activity_name.startswith('.') and package_name:
+            activity_name = package_name + activity_name
+
+        return package_name, activity_name
+    except Exception as e:
+        error(f"Failed to parse AndroidManifest.xml, received error: {e}")
+        return None, None
+
+def get_package_from_gradle(build_path):
+    try:
+        # Check build.gradle for namespace
+        gradle_file = os.path.join(build_path, "build.gradle")
         if os.path.isfile(gradle_file):
             with open(gradle_file) as f:
                 for line in f:
@@ -111,11 +138,12 @@ def get_package_name(build_path):
                         #   namespace = 'org.qtproject.example.app'
                         match = re.search(r"namespace\s*=?\s*['\"]([^'\"]+)['\"]", line)
                         if match:
-                            potentialPackageName = match.group(1)
-                            if (potentialPackageName != "androidPackageName"):
-                                return potentialPackageName
+                            potential_package_name = match.group(1)
+                            if potential_package_name != "androidPackageName":
+                                return potential_package_name
 
-        properties_file = os.path.join(args.build_path, "gradle.properties")
+        # Check gradle.properties for androidPackageName
+        properties_file = os.path.join(build_path, "gradle.properties")
         if os.path.isfile(properties_file):
             with open(properties_file) as f:
                 for line in f:
@@ -126,12 +154,23 @@ def get_package_name(build_path):
 
     return None
 
+def get_app_details(build_path):
+    manifest_file = os.path.join(build_path, "AndroidManifest.xml")
+    package_name, activity_name = get_manifest_app_details(manifest_file)
+
+    if not package_name:
+        package_name = get_package_from_gradle(build_path)
+
+    return package_name, activity_name
+
+
 # Get app details
-package_name = get_package_name(args.build_path)
+package_name, activity_name = get_app_details(args.build_path)
 if not package_name:
     die("Failed to retrieve the package name of the app")
+if not activity_name:
+    die("Failed to retrieve the main activity name of the app")
 
-activity_name = "org.qtproject.qt.android.bindings.QtActivity"
 start_cmd = f"{adb} shell am start -n {package_name}/{activity_name}"
 
 # Get environment variables
