@@ -107,7 +107,7 @@ static qint64 add_saturate(qint64 t1, Duration1 dur, Durations... extra)
     QDeadlineTimer is compatible with the \c{std::chrono} API from C++11 and
     can be constructed from or compared to both \c{std::chrono::duration} and
     \c{std::chrono::time_point} objects. In addition, it is fully compatible
-    with the \l{std::literals::chrono_literals Symbol Index}{time literals
+    with the \l{chrono_literals Symbol Index}{time literals
     from C++14}, which allow one to write code such as:
 
     \snippet code/src_corelib_kernel_qdeadlinetimer.cpp 1
@@ -219,7 +219,7 @@ QDeadlineTimer::QDeadlineTimer(qint64 msecs, Qt::TimerType type) noexcept
 
     The QDeadlineTimer object will be constructed with the specified timer \a type.
 
-    This constructor can be used with \l{std::literals::chrono_literals Symbol Index}
+    This constructor can be used with \l{chrono_literals Symbol Index}
     {C++14's user-defined literals for time}, such as in:
 
     \snippet code/src_corelib_kernel_qdeadlinetimer.cpp 3
@@ -330,7 +330,7 @@ void QDeadlineTimer::setPreciseRemainingTime(qint64 secs, qint64 nsecs, Qt::Time
 
     The timer type for this QDeadlineTimer object will be set to the specified \a type.
 
-    This function can be used with \l{std::literals::chrono_literals Symbol Index}
+    This function can be used with \l{chrono_literals Symbol Index}
     {C++14's user-defined literals for time}, such as in:
 
     \snippet code/src_corelib_kernel_qdeadlinetimer.cpp 4

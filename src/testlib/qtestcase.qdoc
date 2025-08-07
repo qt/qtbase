@@ -391,7 +391,7 @@
 
    //![chrono-timeout]
    Since Qt 6.8, the \a timeout can also be a
-   \l{std::literals::chrono_literals Symbol Index}{\c{std::chrono} literal} such as \c{2s}.
+   \l{chrono_literals Symbol Index}{\c{std::chrono} literal} such as \c{2s}.
    //![chrono-timeout]
 
    \note This macro can only be used in a test function that is invoked
