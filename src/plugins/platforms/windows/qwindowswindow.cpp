@@ -3997,14 +3997,24 @@ QString QWindowsWindow::formatWindowTitle(const QString &title)
 
 void QWindowsWindow::requestUpdate()
 {
+    enum UpdateState {
+        Ready = 0,
+        Requested = 1,
+        Posted = 2
+    };
     QWindow *w = window();
     QDxgiVSyncService *vs = QDxgiVSyncService::instance();
     if (vs->supportsWindow(w)) {
         if (m_vsyncServiceCallbackId == 0) {
             m_vsyncServiceCallbackId = vs->registerCallback([this, w](const QDxgiVSyncService::CallbackWindowList &windowList, qint64) {
                 if (windowList.contains(w)) {
-                    if (m_vsyncUpdatePending.testAndSetAcquire(1, 0)) {
+                    // Make sure we only post one event at a time. If the state
+                    // isn't Requested, it means there either isn't a pending
+                    // request or we are waiting for the event loop to process
+                    // the Posted event on the GUI thread.
+                    if (m_vsyncUpdatePending.testAndSetAcquire(UpdateState::Requested, UpdateState::Posted)) {
                         QMetaObject::invokeMethod(w, [this, w] {
+                            m_vsyncUpdatePending.storeRelease(UpdateState::Ready);
                             if (w->handle() == this)
                                 deliverUpdateRequest();
                         });
@@ -4012,7 +4022,7 @@ void QWindowsWindow::requestUpdate()
                 }
             });
         }
-        m_vsyncUpdatePending.storeRelease(1);
+        m_vsyncUpdatePending.testAndSetRelease(UpdateState::Ready, UpdateState::Requested);
     } else {
         QPlatformWindow::requestUpdate();
     }
