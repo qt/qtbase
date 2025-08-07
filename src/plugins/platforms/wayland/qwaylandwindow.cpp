@@ -612,7 +612,7 @@ void QWaylandWindow::sendExposeEvent(const QRect &rect)
       *  This primarily is a workaround for Qt unit tests using QWindow directly and
       *  wanting focus.
     */
-    if (mExposeEventNeedsAttachedBuffer && !rect.isNull()) {
+    if (mExposed && mExposeEventNeedsAttachedBuffer && !rect.isNull()) {
         auto buffer = new QWaylandShmBuffer(mDisplay, rect.size(), QImage::Format_ARGB32);
         buffer->image()->fill(Qt::transparent);
         buffer->setDeleteOnRelease(true);
