@@ -382,6 +382,8 @@ qt_internal_add_module(Core
         ../3rdparty/sha3
         ../3rdparty/rfc6234
         ../3rdparty/tinycbor
+    ELF_LINKER_DYNAMIC_LIST
+        QtCore.dynlist.in
 )
 _qt_internal_setup_deploy_support()
 
@@ -472,11 +474,6 @@ qt_internal_add_simd_part(Core SIMD mips_dsp
         ../gui/painting/qt_mips_asm_dsp_p.h
         text/qstring_mips_dsp_asm.S
 )
-
-if(QT_FEATURE_reduce_relocations AND UNIX AND GCC)
-    target_link_options(Core PRIVATE
-                        "LINKER:--dynamic-list=${CMAKE_CURRENT_LIST_DIR}/QtCore.dynlist")
-endif()
 
 if(ANDROID)
     _qt_internal_add_android_executable_finalizer(Core)

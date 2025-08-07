@@ -1,0 +1,5 @@
+{
+     extern "C++" {
+         "@QT_NAMESPACE_PREFIX@QGuiApplication::notify(@QT_NAMESPACE_PREFIX@QObject*, @QT_NAMESPACE_PREFIX@QEvent*)";
+     };
+};

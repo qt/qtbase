@@ -69,6 +69,8 @@ qt_internal_add_module(Widgets
         "kernel/qt_widgets_pch.h"
     NO_PCH_SOURCES
         compat/removed_api.cpp
+    ELF_LINKER_DYNAMIC_LIST
+        QtWidgets.dynlist.in
 )
 
 qt_internal_extend_target(Widgets CONDITION APPLE
@@ -358,11 +360,6 @@ qt_internal_add_resource(Widgets "qstyle_fusion"
     FILES
         ${qstyle_resource_fusion_files}
 )
-
-if(QT_FEATURE_reduce_relocations AND UNIX AND GCC)
-    target_link_options(Widgets PRIVATE
-                        "LINKER:--dynamic-list=${CMAKE_CURRENT_LIST_DIR}/QtWidgets.dynlist")
-endif()
 
 ## Scopes:
 #####################################################################

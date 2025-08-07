@@ -1,8 +1,0 @@
-{
-     extern "C" {
-         "qt_startup_hook";
-     };
-     extern "C++" {
-         "QEventLoop::exec(QFlags<QEventLoop::ProcessEventsFlag>)";
-     };
-};

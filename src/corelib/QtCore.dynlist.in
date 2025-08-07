@@ -1,0 +1,8 @@
+{
+     extern "C" {
+         "qt_startup_hook@QT_NAMESPACE_MANGLE_SUFFIX@";
+     };
+     extern "C++" {
+         "@QT_NAMESPACE_PREFIX@QEventLoop::exec(@QT_NAMESPACE_PREFIX@QFlags<@QT_NAMESPACE_PREFIX@QEventLoop::ProcessEventsFlag>)";
+     };
+};

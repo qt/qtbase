@@ -8,6 +8,8 @@
 #     Name of the precompiled header that is used for the target.
 #   EXTRA_ELF_LINKER_SCRIPT_CONTENT
 #     Extra content that should be appended to a target linker script. Applicable for ld only.
+#   ELF_LINKER_DYNAMIC_LIST
+#     Pass --dynamic-list to the linker.
 # Multi-value Arguments:
 #   CONDITION
 #     The condition under which the target will be extended.
@@ -46,6 +48,7 @@ function(qt_internal_extend_target target)
     set(single_args
         PRECOMPILED_HEADER
         EXTRA_ELF_LINKER_SCRIPT_CONTENT
+        ELF_LINKER_DYNAMIC_LIST
         ${__qt_internal_sbom_single_args}
     )
     set(multi_args
@@ -329,6 +332,9 @@ function(qt_internal_extend_target target)
     if(arg_EXTRA_ELF_LINKER_SCRIPT_EXPORTS)
         set_target_properties(${target} PROPERTIES
             _qt_extra_elf_linker_script_exports "${arg_EXTRA_ELF_LINKER_SCRIPT_EXPORTS}")
+    endif()
+    if(arg_ELF_LINKER_DYNAMIC_LIST)
+        qt_internal_apply_dynamic_list_linker_flags(${target} "${arg_ELF_LINKER_DYNAMIC_LIST}")
     endif()
 
     if(is_executable)
@@ -1831,4 +1837,36 @@ function(qt_internal_add_platform_internal_target target)
         TYPE QT_MODULE
         IMMEDIATE_FINALIZATION
     )
+endfunction()
+
+# A small wrapper for passing --dynamic-list to the linker. It will ensure that the symbols will
+# be mangled when qt is compiled in a namespace
+function(qt_internal_apply_dynamic_list_linker_flags target dynlist_template)
+    if(NOT (QT_FEATURE_reduce_relocations AND UNIX AND GCC))
+        return()
+    endif()
+
+    string(REPLACE ".in" "" dynlist_file "${dynlist_template}")
+    set(dynlist_file_abspath "${CMAKE_CURRENT_BINARY_DIR}/${dynlist_file}")
+
+    if(QT_NAMESPACE)
+        set(QT_NAMESPACE_PREFIX "${QT_NAMESPACE}::")
+        set(QT_NAMESPACE_MANGLE_SUFFIX "_${QT_NAMESPACE}")
+    else()
+        set(QT_NAMESPACE_PREFIX "")
+        set(QT_NAMESPACE_MANGLE_SUFFIX "")
+    endif()
+
+    configure_file(
+        "${dynlist_template}"
+        "${dynlist_file_abspath}"
+    )
+
+    qt_internal_extend_target(${target}
+        SOURCES
+            "${dynlist_template}"
+            "${dynlist_file_abspath}"
+    )
+
+    target_link_options(${target} PRIVATE "LINKER:--dynamic-list=${dynlist_file_abspath}")
 endfunction()

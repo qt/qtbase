@@ -34,6 +34,7 @@ macro(qt_internal_get_internal_add_module_keywords option_args single_args multi
         RHI_HEADER_FILTERS
         SSG_HEADER_FILTERS
         HEADER_SYNC_SOURCE_DIRECTORY
+        ELF_LINKER_DYNAMIC_LIST
         ${__default_target_info_args}
         ${__qt_internal_sbom_single_args}
     )
@@ -648,6 +649,7 @@ function(qt_internal_add_module target)
         FORWARD_PREFIX arg
         FORWARD_OUT_VAR extend_target_args
         FORWARD_SINGLE
+            ELF_LINKER_DYNAMIC_LIST
             PRECOMPILED_HEADER
     )
 
