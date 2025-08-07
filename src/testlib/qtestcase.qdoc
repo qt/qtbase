@@ -1713,6 +1713,20 @@
 */
 
 /*!
+    \class QTest::QTouchEventWidgetSequence
+    \inmodule QtTest
+    \brief The QTouchEventWidgetSequence class is used to simulate a sequence
+           of touch events for a widget.
+
+    To simulate a sequence of touch events on a widget, call
+    \l {QTest::touchEvent(QWidget*, QPointingDevice*, bool)}{QTest::touchEvent()}
+    with a pointer to a QWidget instance. Add touch events to the returned
+    QTouchEventWidgetSequence object by calling \l press(),
+    \l move(), \l release() and \l stationary(), and let the instance run out of
+    scope to commit the sequence to the event system.
+*/
+
+/*!
     \fn QTest::QTouchEventSequence::~QTouchEventSequence()
 
     Commits this sequence of touch events, unless autoCommit was disabled, and frees allocated resources.
