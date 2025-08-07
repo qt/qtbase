@@ -34,10 +34,23 @@ set(__qt_chainload_toolchain_file \"\${__qt_initially_configured_toolchain_file}
         set(init_vcpkg "")
     endif()
 
-    if(CMAKE_SYSTEM_NAME STREQUAL "Windows" AND CMAKE_SYSTEM_PROCESSOR STREQUAL "arm64" AND CMAKE_SYSTEM_VERSION STREQUAL "10")
-        list(APPEND init_platform "set(CMAKE_SYSTEM_NAME Windows CACHE STRING \"\")")
-        list(APPEND init_platform "set(CMAKE_SYSTEM_VERSION 10 CACHE STRING \"\")")
-        list(APPEND init_platform "set(CMAKE_SYSTEM_PROCESSOR arm64 CACHE STRING \"\")")
+    if(CMAKE_SYSTEM_NAME STREQUAL "Windows" AND CMAKE_CROSSCOMPILING)
+        list(APPEND init_platform
+            "string(TOUPPER \"${CMAKE_SYSTEM_PROCESSOR}\" _qt_orig_target_system_processor_upper)"
+            "string(TOUPPER \"\${CMAKE_HOST_SYSTEM_PROCESSOR}\" _qt_host_system_processor_upper)"
+            "if(NOT _qt_orig_target_system_processor_upper STREQUAL _qt_host_system_processor_upper"
+            "    OR NOT CMAKE_HOST_SYSTEM_VERSION MATCHES \"^${CMAKE_SYSTEM_VERSION}(\\\\..+|$)\""
+            "    OR QT_FORCE_CROSSCOMPILING)"
+            ""
+            "    set(CMAKE_SYSTEM_NAME \"${CMAKE_SYSTEM_NAME}\" CACHE STRING \"\")"
+            "    set(CMAKE_SYSTEM_VERSION \"${CMAKE_SYSTEM_VERSION}\" CACHE STRING \"\")"
+            "    set(CMAKE_SYSTEM_PROCESSOR \"${CMAKE_SYSTEM_PROCESSOR}\" CACHE STRING \"\")"
+            "else()"
+            "   set(QT_REQUIRE_HOST_PATH_CHECK FALSE)"
+            "endif()"
+            "unset(_qt_host_system_processor_upper)"
+            "unset(_qt_orig_host_system_processor_upper)"
+        )
     endif()
 
     if(QT_QMAKE_TARGET_MKSPEC)
