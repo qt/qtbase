@@ -1076,7 +1076,6 @@ function(_qt_internal_sbom_add_target target)
     _qt_internal_sbom_generate_add_package(
         PACKAGE "${package_name_for_spdx_id}"
         SPDXID "${package_spdx_id}"
-        CONTAINS_FILES
         ${project_package_options}
     )
 
