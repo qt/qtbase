@@ -385,6 +385,9 @@ static bool setupSlider(NSSlider *slider, const QStyleOptionSlider *sl)
     if (sl->minimum >= sl->maximum)
         return false;
 
+    NSSliderCell *cell = static_cast<NSSliderCell *>(slider.cell);
+    const auto oldRect = [cell knobRectFlipped:slider.isFlipped];
+    const auto oldValue = slider.intValue;
     slider.frame = sl->rect.toCGRect();
 
     slider.minValue = sl->minimum;
@@ -415,6 +418,11 @@ static bool setupSlider(NSSlider *slider, const QStyleOptionSlider *sl)
     // Ensure the values set above are reflected when asking
     // the cell for its metrics and to draw itself.
     [slider layoutSubtreeIfNeeded];
+    const auto updatedRect = [cell knobRectFlipped:slider.isFlipped];
+    if (CGRectEqualToRect(oldRect, updatedRect) && slider.intValue != oldValue) {
+        // Apparently, some stale cached geometry ...
+        slider.cell = [cell copy];
+    }
 
     return true;
 }
@@ -579,6 +587,120 @@ void drawTabBase(QPainter *p, const QStyleOptionTabBarBase *tbb, const QWidget *
     p->fillRect(bottomLineRect, bottomLineColor);
 }
 #endif
+
+void drawTickMarks(CGContextRef ctx, NSSlider *nsSlider, const QStyleOptionSlider *sliderOpt)
+{
+    // With the Liquid Glass enabled NSSliderCell -drawTickMarks
+    // seems to be a noop. This method never gets called by the
+    // AppKit, even if the UI compatibility was requested (so we call it
+    // explicitly in this case). Without compatibility mode enabled
+    // we manually draw ticks in a new style (tiny circles, not lines).
+
+    // FIXME: for now we ignore 'ticks both sides' option - such ticks don't
+    // exist natively and the old hack was quite ugly looking, it's not worth
+    // reproducing it.
+
+    Q_UNUSED(sliderOpt);
+
+    Q_ASSERT(ctx);
+    Q_ASSERT(nsSlider);
+    Q_ASSERT(sliderOpt);
+
+    NSSliderCell *cell = static_cast<NSSliderCell *>(nsSlider.cell);
+    if (!cell.numberOfTickMarks)
+        return;
+
+    Q_ASSERT(cell.numberOfTickMarks > 1); // See the logic in the 'setupSlider'.
+
+    CGContextSaveGState(ctx); // [PUSH ...
+
+    [[NSColor.grayColor colorWithAlphaComponent:0.6] setFill];
+    // NOTE: with the new style slider ticks start not on the
+    // left on the slider's bar, but in the mid X of the slider's knob
+    // when the knob is at the slider's minimum. We draw them in 'old style'
+    // coordinates.
+    const auto barRect = [cell barRectFlipped:nsSlider.isFlipped];
+    const auto knobRect = [cell knobRectFlipped:nsSlider.isFlipped];
+    auto tickRect = [cell rectOfTickMarkAtIndex:0];
+    CGFloat step = (barRect.size.width - tickRect.size.width) / (nsSlider.numberOfTickMarks - 1);
+    // Note: tick position seems to be ignored, it is always 'below'.
+    tickRect.origin.y = CGRectGetMidY(knobRect);
+
+    const auto tickPos = sliderOpt->tickPosition;
+    // Native slider does not have 'Both Sides' and with the new style such ticks make
+    // little sense, so treat them as 'Below'.
+    if (tickPos == QSlider::TicksBelow || tickPos == QSlider::TicksBothSides)
+        tickRect.origin.y += knobRect.size.height / 2 * 0.8; // The knob overlaps ticks.
+    else // Above or Left, does not matter.
+        tickRect.origin.y -= knobRect.size.height / 2 * 0.8;
+
+    tickRect.origin.x = barRect.origin.x + tickRect.size.width / 2.;
+
+    if (nsSlider.isVertical) {
+        tickRect.origin.y = barRect.origin.y + tickRect.size.height / 2.;
+
+        tickRect.origin.x = CGRectGetMidX(barRect);
+        if (tickPos == QSlider::TicksRight)
+            tickRect.origin.x += knobRect.size.width / 2 * 0.8;
+        else // Left or both sides.
+            tickRect.origin.x -= knobRect.size.width / 2 * 0.8;
+        step = (barRect.size.height - tickRect.size.height) / (nsSlider.numberOfTickMarks - 1);
+    }
+
+    CGContextBeginPath(ctx);
+    for (NSInteger i = 0; i < cell.numberOfTickMarks; ++i) {
+        CGContextAddEllipseInRect(ctx, tickRect);
+        nsSlider.isVertical ? tickRect.origin.y += step : tickRect.origin.x += step;
+    }
+
+    CGContextClosePath(ctx);
+    CGContextFillPath(ctx);
+
+    CGContextRestoreGState(ctx); // POP]
+}
+
+void drawSliderKnob(CGContextRef ctx, NSSlider *slider)
+{
+    // Slider's knob/thumb with macOS Tahoe has a shadow, which is clipped
+    // on the min/max ends of a slider. Resetting/extending the current clip
+    // improves this, but gives a side-effect - shadow residuals around the
+    // slider's bar/groove after moving a knob - this area is not repainted
+    // when the knob is moving.
+    // The only solution for now is to manually draw the knob trying to
+    // reduce the clipping artefacts.
+
+    Q_ASSERT(ctx);
+    Q_ASSERT(slider);
+
+    NSSliderCell *cell = static_cast<NSSliderCell *>(slider.cell);
+
+    CGContextSaveGState(ctx); // [PUSH ...
+    const CGFloat blur = 3.; // More or less good-looking shadow ...
+    CGContextSetShadowWithColor(ctx, {}, blur, NSColor.grayColor.CGColor);
+    CGColorRef knobColor = NSColor.whiteColor.CGColor;
+    CGContextSetFillColorWithColor(ctx, knobColor);
+
+    // For a legacy-style 'tick slider' its knob is less square/round and
+    // more elongated. The slider cell reports a new style rect though
+    // so we always draw as a 'new style' slider.
+    auto knobRect = [cell knobRectFlipped:slider.isFlipped];
+    // Slider's knob has a slight shadow around it and it's clipped.
+    // We make the knob rectangle a bit smaller.
+    knobRect = CGRectInset(knobRect, 0.4, 0.4);
+
+    auto radius = knobRect.size.height;
+    if (radius > knobRect.size.width)
+        radius = knobRect.size.width;
+    radius /= 2.;
+
+    CGContextBeginPath(ctx);
+    QCFType<CGPathRef> knobPath = CGPathCreateWithRoundedRect(knobRect, radius, radius, nullptr);
+    CGContextAddPath(ctx, knobPath);
+
+    CGContextFillPath(ctx);
+
+    CGContextRestoreGState(ctx); // POP]
+}
 
 static QStyleHelper::WidgetSizePolicy getControlSize(const QStyleOption *option, const QWidget *widget)
 {
@@ -5519,7 +5641,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
             const bool drawKnob = sl->subControls & SC_SliderHandle;
             const bool drawBar = sl->subControls & SC_SliderGroove;
             const bool drawTicks = sl->subControls & SC_SliderTickmarks;
-            const bool isPressed = sl->state & State_Sunken;
+            const bool isPressed = qt_apple_runningWithLiquidGlass() ? false : sl->state & State_Sunken;
 
             CGPoint pressPoint;
             if (isPressed) {
@@ -5534,6 +5656,12 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                 // if we don't track twice, the state of one render-pass will affect
                 // the render pass of other sliders, even if we set up the shared
                 // NSSlider with a new slider value.
+                //
+                // Note: with the 'Liquid Glass' enabled, this trick is not working anymore (instead of pressed
+                // state macOS has a nice 'lensing' effect for a pressed thumb, which we don't see anyway)
+                // but potentially creates a problem for our baseline test, where the 'knob' is incorrectly
+                // placed related to the slider's groove (its filled area).
+
                 [slider.cell startTrackingAt:pressPoint inView:slider];
                 [slider.cell startTrackingAt:pressPoint inView:slider];
             }
@@ -5611,7 +5739,10 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                         if (!drawBar && hasDoubleTicks)
                             slider.numberOfTickMarks = numberOfTickMarks;
 
-                        [cell drawTickMarks];
+                        if (qt_apple_runningWithLiquidGlass())
+                            drawTickMarks(ctx, slider, sl);
+                        else
+                            [cell drawTickMarks];
 
                         if (hasDoubleTicks) {
                             // This ain't HIG kosher: just slap a set of tickmarks on each side, like we used to.
@@ -5634,7 +5765,10 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                         // This ain't HIG kosher: force round knob look.
                         if (hasDoubleTicks)
                             slider.numberOfTickMarks = 0;
-                        [cell drawKnob];
+                        if (qt_apple_runningWithLiquidGlass())
+                            drawSliderKnob(ctx, slider);
+                        else
+                            [cell drawKnob];
                     }
                 }
             });
