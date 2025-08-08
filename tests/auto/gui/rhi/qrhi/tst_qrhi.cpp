@@ -7281,6 +7281,9 @@ void tst_QRhi::storageBufferRuntimeSizeGraphics()
     if (!rhi)
         QSKIP("QRhi could not be created, skipping testing rendering");
 
+    if (!rhi->isFeatureSupported(QRhi::Compute)) // also indicates storage buffers and image load/store
+        QSKIP("Storage buffers are not supported with this graphics API, skipping test");
+
     if (!rhi->isFeatureSupported(QRhi::Tessellation)) {
         // From a Vulkan or Metal implementation we expect tessellation to work,
         // even though it is optional (as per spec) for Vulkan.
