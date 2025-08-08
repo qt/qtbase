@@ -106,17 +106,16 @@
     \sa direction
 */
 
-#include "qabstractanimation.h"
-#include "qanimationgroup.h"
-
-#include <QtCore/qdebug.h>
-
 #include "qabstractanimation_p.h"
 
-#include <QtCore/qmath.h>
+#include <QtCore/qanimationgroup.h>
+#include <QtCore/qcoreapplication.h>
 #include <QtCore/qcoreevent.h>
+#include <QtCore/qdebug.h>
+#include <QtCore/qmath.h>
 #include <QtCore/qpointer.h>
 #include <QtCore/qscopedvaluerollback.h>
+#include <QtCore/qthread.h>
 
 #define DEFAULT_TIMER_INTERVAL 16
 #define PAUSE_TIMER_COARSE_THRESHOLD 2000
@@ -199,6 +198,10 @@ QUnifiedTimer *QUnifiedTimer::instance(bool create)
     if (create && !unifiedTimer) {
         inst = new QUnifiedTimer;
         unifiedTimer.reset(inst);
+        if (QThread::isMainThread()) {
+            connect(qApp, &QCoreApplication::aboutToQuit, inst,
+                    []() { unifiedTimer.release()->deleteLater(); });
+        }
     } else {
         inst = unifiedTimer.get();
     }
