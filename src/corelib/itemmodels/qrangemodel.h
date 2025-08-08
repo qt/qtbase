@@ -40,11 +40,11 @@ public:
 
     ~QRangeModel() override;
 
-    QModelIndex index(int row, int column, const QModelIndex &parent = {}) const override;
-    QModelIndex parent(const QModelIndex &child) const override;
-    QModelIndex sibling(int row, int column, const QModelIndex &index) const override;
-    int rowCount(const QModelIndex &parent = {}) const override;
-    int columnCount(const QModelIndex &parent = {}) const override;
+    QModelIndex index(int row, int column, const QModelIndex &parent = {}) const final;
+    QModelIndex parent(const QModelIndex &child) const final;
+    QModelIndex sibling(int row, int column, const QModelIndex &index) const final;
+    int rowCount(const QModelIndex &parent = {}) const final;
+    int columnCount(const QModelIndex &parent = {}) const final;
     Qt::ItemFlags flags(const QModelIndex &index) const override;
     QVariant headerData(int section, Qt::Orientation orientation,
                         int role = Qt::DisplayRole) const override;
@@ -55,14 +55,14 @@ public:
     QMap<int, QVariant> itemData(const QModelIndex &index) const override;
     bool setItemData(const QModelIndex &index, const QMap<int, QVariant> &data) override;
     bool clearItemData(const QModelIndex &index) override;
-    bool insertColumns(int column, int count, const QModelIndex &parent = {}) override;
-    bool removeColumns(int column, int count, const QModelIndex &parent = {}) override;
+    bool insertColumns(int column, int count, const QModelIndex &parent = {}) final;
+    bool removeColumns(int column, int count, const QModelIndex &parent = {}) final;
     bool moveColumns(const QModelIndex &sourceParent, int sourceColumn, int count,
-                     const QModelIndex &destParent, int destColumn) override;
-    bool insertRows(int row, int count, const QModelIndex &parent = {}) override;
-    bool removeRows(int row, int count, const QModelIndex &parent = {}) override;
+                     const QModelIndex &destParent, int destColumn) final;
+    bool insertRows(int row, int count, const QModelIndex &parent = {}) final;
+    bool removeRows(int row, int count, const QModelIndex &parent = {}) final;
     bool moveRows(const QModelIndex &sourceParent, int sourceRow, int count,
-                  const QModelIndex &destParent, int destRow) override;
+                  const QModelIndex &destParent, int destRow) final;
 
     QHash<int, QByteArray> roleNames() const override;
     void setRoleNames(const QHash<int, QByteArray> &names);
@@ -71,7 +71,7 @@ public:
     bool canFetchMore(const QModelIndex &parent) const override;
     void fetchMore(const QModelIndex &parent) override;
 
-    bool hasChildren(const QModelIndex &parent = QModelIndex()) const override;
+    bool hasChildren(const QModelIndex &parent = QModelIndex()) const final;
     QModelIndex buddy(const QModelIndex &index) const override;
     bool canDropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column,
                          const QModelIndex &parent) const override;
