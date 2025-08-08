@@ -503,6 +503,10 @@ HRESULT QWindowsUiaMainProvider::GetPropertyValue(PROPERTYID idProp, VARIANT *pR
         // Accelerator key.
         *pRetVal = QComVariant{ accessible->text(QAccessible::Accelerator) }.release();
         break;
+    case UIA_AriaRolePropertyId:
+        if (accessible->role() == QAccessible::Heading)
+            *pRetVal = QComVariant{ QStringLiteral("heading") }.release();
+        break;
     case UIA_AriaPropertiesPropertyId:
         setAriaProperties(accessible, pRetVal);
         break;
