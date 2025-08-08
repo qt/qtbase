@@ -181,7 +181,7 @@ PackageLicenseDeclared: ${arg_LICENSE}
 PackageCopyrightText: ${arg_COPYRIGHT}
 PackageHomePage: ${arg_SUPPLIER_URL}
 PackageComment: ${project_comment}
-PackageVerificationCode: \${QT_SBOM_VERIFICATION_CODE}
+FilesAnalyzed: false
 BuiltDate: ${current_utc}
 Relationship: SPDXRef-DOCUMENT DESCRIBES ${project_spdx_id}
 ")
@@ -341,7 +341,8 @@ function(_qt_internal_sbom_end_project_generate)
             set(QT_SBOM_OUTPUT_PATH_WITHOUT_EXT \"${sbom_build_output_path_without_ext}\")
             file(MAKE_DIRECTORY \"${sbom_build_output_dir}\")
         endif()
-        set(QT_SBOM_VERIFICATION_CODES \"\")
+        set(QT_SBOM_PACKAGES \"\")
+        set(QT_SBOM_PACKAGES_WITH_VERIFICATION_CODES \"\")
         ${includes}
         if(QT_SBOM_BUILD_TIME)
             message(STATUS \"Finalizing SBOM generation in build dir: \${QT_SBOM_OUTPUT_PATH}\")
@@ -454,6 +455,27 @@ function(_qt_internal_sbom_end_project_generate)
             set(QT_SBOM_FAKE_CHECKSUM TRUE)")
     endif()
 
+    set(verification_codes_content "
+list(REMOVE_DUPLICATES QT_SBOM_PACKAGES_WITH_VERIFICATION_CODES)
+# Go through each package that has verification codes (a code for each file that is part of a
+# package), sort them, concatenate them, and calculate the sha1.
+# Prepend the value with the PackageVerificationCode: prefix, so it can be directly evaluated
+# in the spdx.in file via configure_file.
+foreach(_sbom_package IN LISTS QT_SBOM_PACKAGES_WITH_VERIFICATION_CODES)
+    set(_codes \${QT_SBOM_PACKAGES_WITH_VERIFICATION_CODES_\${_sbom_package}})
+    list(SORT _codes)
+    string(REPLACE \";\" \"\" _codes \"\${_codes}\")
+    string(SHA1 _verification_code \"\${_codes}\")
+    set(QT_SBOM_VERIFICATION_CODE_\${_sbom_package} \"
+PackageVerificationCode: \${_verification_code}\")
+endforeach()
+unset(_sbom_package)
+unset(_codes)
+unset(_verification_code)
+")
+    set(process_verification_codes "${sbom_dir}/process_verification_codes.cmake")
+    file(GENERATE OUTPUT "${process_verification_codes}" CONTENT "${verification_codes_content}")
+
     set(assemble_sbom_install "
         set(QT_SBOM_INSTALLED_ALL_CONFIGS TRUE)
         ${extra_code_begin}
@@ -465,10 +487,7 @@ function(_qt_internal_sbom_end_project_generate)
             file(MAKE_DIRECTORY \"${sbom_install_output_dir}\")
             include(\"${assemble_sbom}\")
             ${before_checksum_includes}
-            list(SORT QT_SBOM_VERIFICATION_CODES)
-            string(REPLACE \";\" \"\" QT_SBOM_VERIFICATION_CODES \"\${QT_SBOM_VERIFICATION_CODES}\")
-            file(WRITE \"${sbom_dir}/verification.txt\" \"\${QT_SBOM_VERIFICATION_CODES}\")
-            file(SHA1 \"${sbom_dir}/verification.txt\" QT_SBOM_VERIFICATION_CODE)
+            include(\"${process_verification_codes}\")
             ${after_checksum_includes}
             message(STATUS \"Finalizing SBOM generation in install dir: \${QT_SBOM_OUTPUT_PATH}\")
             configure_file(\"${staging_area_spdx_file}\" \"\${QT_SBOM_OUTPUT_PATH}\")
@@ -545,6 +564,7 @@ function(_qt_internal_sbom_generate_add_file)
         FILENAME
         FILETYPE
         RELATIONSHIP
+        PARENT_PACKAGE_SPDXID
         SPDXID
         CONFIG
         LICENSE
@@ -641,7 +661,14 @@ FileCopyrightText: NOASSERTION"
                 else()
                     file(SHA1 \"\$ENV{DESTDIR}${install_prefix}/${arg_FILENAME}\" sha1)
                 endif()
-                list(APPEND QT_SBOM_VERIFICATION_CODES \${sha1})
+
+                set(\"QT_SBOM_PACKAGE_HAS_FILES_${arg_PARENT_PACKAGE_SPDXID}\" true)
+
+                list(APPEND QT_SBOM_PACKAGES_WITH_VERIFICATION_CODES
+                    \"${arg_PARENT_PACKAGE_SPDXID}\")
+                list(APPEND
+                    \"QT_SBOM_PACKAGES_WITH_VERIFICATION_CODES_${arg_PARENT_PACKAGE_SPDXID}\"
+                    \"\${sha1}\")
             endif()
             file(APPEND \"${staging_area_spdx_file}\"
 \"
@@ -830,7 +857,7 @@ endfunction()
 # Helper to add info about a package to the sbom. Usually a package is a mapping to a cmake target.
 function(_qt_internal_sbom_generate_add_package)
     set(opt_args
-        CONTAINS_FILES
+        ""
     )
     set(single_args
         PACKAGE
@@ -901,16 +928,6 @@ ExternalRef: ${ext_ref}"
         )
     endforeach()
 
-    if(arg_CONTAINS_FILES)
-        set(fields "${fields}
-FilesAnalyzed: true"
-        )
-    else()
-        set(fields "${fields}
-FilesAnalyzed: false"
-        )
-    endif()
-
     if(arg_COPYRIGHT)
         set(fields "${fields}
 PackageCopyrightText: ${arg_COPYRIGHT}"
@@ -953,9 +970,15 @@ ExternalRef: SECURITY cpe23Type ${cpe}"
         string(REPLACE "@QT_SBOM_LAST_SPDXID@" "${arg_SPDXID}" arg_RELATIONSHIP "${arg_RELATIONSHIP}")
     endif()
 
+    set(fields "${fields}\\\${QT_SBOM_VERIFICATION_CODE_${arg_SPDXID}}")
+
     _qt_internal_get_staging_area_spdx_file_path(staging_area_spdx_file)
 
+    # QT_SBOM_PACKAGE_HAS_FILES_ gets overriden by any added file to 'true'.
     set(content "
+        list(APPEND QT_SBOM_PACKAGES \"${arg_SPDXID}\")
+        set(\"QT_SBOM_PACKAGE_HAS_FILES_${arg_SPDXID}\" false)
+
         file(APPEND \"${staging_area_spdx_file}\"
 \"
 PackageName: ${arg_PACKAGE}
@@ -963,6 +986,7 @@ SPDXID: ${arg_SPDXID}
 PackageDownloadLocation: ${arg_DOWNLOAD_LOCATION}
 PackageVersion: ${arg_VERSION}
 PackageSupplier: ${arg_SUPPLIER}${fields}
+FilesAnalyzed: \\\${QT_SBOM_PACKAGE_HAS_FILES_${arg_SPDXID}}
 Relationship: ${arg_RELATIONSHIP}
 \"
         )
