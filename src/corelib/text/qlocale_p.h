@@ -493,11 +493,43 @@ public:
             buff->append(digits.constData(), digits.size());
         }
 
+        // Subsequences (for when partitioning among fields).
+        // Sign, when present, is treated as entry 0, bumping digit indices up by 1.
+        // Generally, first(c) and sliced(c) abut but don't overlap.
+        DigitSequence first(qsizetype count) const
+        {
+            Q_PRE(count >= 0);
+            Q_PRE(count <= size());
+            const qsizetype n = hasSign() ? count - 1 : count;
+            // Stop at end of last included (sign or) digit:
+            return { digits.first(n), digitStart, digitWidth, count ? sign : '\0' };
+        }
+        DigitSequence last(qsizetype count) const
+        { return sliced(size() - count); }
+        DigitSequence sliced(qsizetype from) const
+        {
+            Q_PRE(from >= 0);
+            Q_PRE(from <= size());
+            const qsizetype n = hasSign() ? from - 1 : from;
+            Q_ASSERT(n <= digits.size());
+            return { digits.sliced(n), digitStart + digitWidth * n,
+                     digitWidth, from ? '\0' : sign };
+        }
+        DigitSequence sliced(qsizetype from, qsizetype count) const
+        { return sliced(from).first(count); }
+
         // Portion of the view from which it was constructed:
         [[nodiscard]] QStringView used(const QStringView text, qsizetype from) const
         { return text.first(endIndex()).sliced(from); }
         [[nodiscard]] QStringView used(const QStringView text) const // digits-only:
         { return text.sliced(digitStart, digits.size() * digitWidth); }
+        // (can apply to the first()/last()/sliced() of the result of parsing)
+    private:
+        // Used by first(), sliced():
+        DigitSequence(QByteArray &&digs, qsizetype dStart, qint8 dWidth, char sgn)
+            : digits(std::move(digs)), digitStart(dStart), digitWidth(dWidth), sign(sgn)
+        {
+        }
     };
 
     [[nodiscard]]

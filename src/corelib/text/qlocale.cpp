@@ -4642,13 +4642,20 @@ char NumericTokenizer::nextToken()
 
     This is the number of digits plus, if present, one for the sign. It is the
     number of characters \l transcribeTo() will transcribe. For the number of
-    digits found, use \c {digits.size()}
+    digits found, use \c {digits.size()}. Note that this may be less than the
+    length of the text parsed, for example when the digits are surrogate pairs
+    or the sign includes special Unicode markers, such as those for text
+    direction.
+
+    \sa isEmpty()
 */
 
 /*!
     \fn void QLocaleData::DigitSequence::transcribeTo(CharBuff *buff)
 
     Transcribes the ASCII form of this digit sequence to \a buff.
+
+    \sa size()
 */
 
 /*!
@@ -4678,9 +4685,14 @@ char NumericTokenizer::nextToken()
     Returns true precisely if this digit sequence represents nothing.
 
     This arises when the constructor found no digits and (when allowed) not even
-    a sign. It is equivalent to \l {QLocaleData::DigitSequence::}{size()} == 0.
-    To test whether any digits were found, use \c {digits.isEmpty()}, which may
-    be true even though a sign was found (making \c{size() == 1}).
+    a sign. It may also result from extracting an empty subsequence of a digit
+    sequence that was originally parsed. It is equivalent to \l
+    {QLocaleData::DigitSequence::}{size()} == 0. To test whether any digits were
+    found, use \c {digits.isEmpty()}, which may be true even though \c
+    {isEmpty()} is false. That arises when only a sign was found (making
+    \c{size() == 1}).
+
+    \sa size()
 */
 
 /*!
@@ -4696,9 +4708,16 @@ char NumericTokenizer::nextToken()
 
     Returns the slice of \a text described by this digit sequence.
 
-    The given \a text and \a from should be those passed to the constructor. If
-    \a from is omitted, this returns the text described by just the digits,
-    omitting the sign.
+    The given \a text should be the one passed to the constructor either of this
+    digit sequence or of one from which it was obtained by some combination of
+    \l first(), \l sliced() and \l last(). In the directly-constructed case, or
+    in the case of (optionally repeatedly) applying only \l first(), \a from may
+    be passed: it should be the like-named offset passed to the original
+    constructor, or 0 if no offset was passed. In that case, the whole text
+    parsed for this digit sequence (alibeit possibly a prefix of the text
+    originally parsed) is returned.  Otherwise, \a from should be omitted and
+    this function returns the text described by just the digits of this
+    sequence, omitting (even when relevant) the sign.
 
     \sa {QLocaleData::DigitSequence::}{DigitSequence()}
 */
