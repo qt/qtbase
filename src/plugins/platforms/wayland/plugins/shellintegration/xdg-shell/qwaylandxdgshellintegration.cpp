@@ -55,7 +55,7 @@ QWaylandShellSurface *QWaylandXdgShellIntegration::createShellSurface(QWaylandWi
         return new QWaylandShellSurface(window);
     }
 
-    if (type == Qt::Popup && (!transientParent || !display->lastInputDevice())) {
+    if ((type == Qt::Popup || type == Qt::Tool) && (!transientParent || !display->lastInputDevice())) {
         qCWarning(lcQpaWayland) << "Failed to create grabbing popup. Ensure popup " << window->window() << "has a transientParent set and that parent window has received input.";
         QWindowSystemInterface::handleCloseEvent<QWindowSystemInterface::AsynchronousDelivery>(window->window());
         return new QWaylandShellSurface(window);
