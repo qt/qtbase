@@ -4,3 +4,4 @@
 add_subdirectory(qdatastream)
 add_subdirectory(time)
 add_subdirectory(tools)
+add_subdirectory(itemmodels)
