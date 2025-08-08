@@ -16,22 +16,3 @@
     with Qt.
 
 */
-
-/*
-     \list
-    \li  \l{network/blockingfortuneclient}{Blocking Fortune Client}\raisedaster
-    \li  \l{network/broadcastreceiver}{Broadcast Receiver}
-    \li  \l{network/broadcastsender}{Broadcast Sender}
-    \li  \l{network/network-chat}{Network Chat}
-    \li  \l{network/fortuneclient}{Fortune Client}\raisedaster
-    \li  \l{network/fortuneserver}{Fortune Server}\raisedaster
-    \li  \l{network/http}{HTTP}
-    \li  \l{network/threadedfortuneserver}{Threaded Fortune Server}\raisedaster
-    \li  \l{network/torrent}{Torrent}
-    \li  \l{network/securesocketclient}{Secure Socket Client}
-    \li  \l{network/multicastreceiver}{Multicast Receiver}
-    \li  \l{network/multicastsender}{Multicast Sender}
-    \endlist
-
-    Examples marked with an asterisk (*) are fully documented.
-*/
