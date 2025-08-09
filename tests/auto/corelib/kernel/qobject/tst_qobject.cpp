@@ -7800,9 +7800,17 @@ void tst_QObject::nullReceiver()
 {
     QObject o;
     QObject *nullObj = nullptr; // Passing nullptr directly doesn't compile with gcc 4.8
+    auto ignoreMsg = [] {
+        QTest::ignoreMessage(QtWarningMsg, "QObject::connect(QObject, Unknown): invalid nullptr parameter");
+    };
+    ignoreMsg();
     QVERIFY(!connect(&o, &QObject::destroyed, nullObj, &QObject::deleteLater));
+    ignoreMsg();
     QVERIFY(!connect(&o, &QObject::destroyed, nullObj, [] {}));
+    ignoreMsg();
     QVERIFY(!connect(&o, &QObject::destroyed, nullObj, Functor_noexcept()));
+    QTest::ignoreMessage(QtWarningMsg,
+        "QObject::connect: Cannot connect QObject::destroyed() to (nullptr)::deleteLater()");
     QVERIFY(!connect(&o, SIGNAL(destroyed()), nullObj, SLOT(deleteLater())));
 }
 
