@@ -36,7 +36,7 @@ class ButtonStruct implements View.OnClickListener
     {
         m_dialog = dialog;
         m_id = id;
-        m_text = Html.fromHtml(text);
+        m_text = Html.fromHtml(text, Html.FROM_HTML_MODE_LEGACY);
     }
     final QtMessageDialogHelper m_dialog;
     private final int m_id;
@@ -50,7 +50,6 @@ class ButtonStruct implements View.OnClickListener
 
 class QtMessageDialogHelper
 {
-
     QtMessageDialogHelper(Activity activity)
     {
         m_activity = activity;
@@ -90,25 +89,25 @@ class QtMessageDialogHelper
     @UsedFromNativeCode
     void setTile(String title)
     {
-        m_title = Html.fromHtml(title);
+        m_title = Html.fromHtml(title, Html.FROM_HTML_MODE_LEGACY);
     }
 
     @UsedFromNativeCode
     void setText(String text)
     {
-        m_text = Html.fromHtml(text);
+        m_text = Html.fromHtml(text, Html.FROM_HTML_MODE_LEGACY);
     }
 
     @UsedFromNativeCode
     void setInformativeText(String informativeText)
     {
-        m_informativeText = Html.fromHtml(informativeText);
+        m_informativeText = Html.fromHtml(informativeText, Html.FROM_HTML_MODE_LEGACY);
     }
 
     @UsedFromNativeCode
     void setDetailedText(String text)
     {
-        m_detailedText = Html.fromHtml(text);
+        m_detailedText = Html.fromHtml(text, Html.FROM_HTML_MODE_LEGACY);
     }
 
     @UsedFromNativeCode
