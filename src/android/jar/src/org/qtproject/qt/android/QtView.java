@@ -200,6 +200,7 @@ abstract class QtView extends ViewGroup implements QtNative.AppStateDetailsListe
         if (m_parentWindowReference != 0L)
             deleteWindow(m_parentWindowReference);
         m_parentWindowReference = 0L;
+        setWindowReference(0L);
     }
 
     QtWindow getQtWindow() {
