@@ -175,7 +175,7 @@ inline void useVerifyThrowsException() {}
     if (!(expr)) { \
         QTest::qWait(0); \
     } \
-    int qt_test_i = 0; \
+    auto qt_test_i = std::chrono::milliseconds(0); \
     for (; qt_test_i < timeoutValue && !(QTest::runningTest() && QTest::currentTestResolved()) \
              && !(expr); qt_test_i += step) { \
         QTest::qWait(step); \
@@ -197,10 +197,11 @@ inline void useVerifyThrowsException() {}
             using namespace std::chrono_literals; \
             return std::chrono::milliseconds{timeoutAsGiven}; \
         }(); \
-    const int qt_test_step = qt_test_timeoutAsMs.count() < 350 ? qt_test_timeoutAsMs.count() / 7 + 1 : 50; \
-    const int qt_test_timeoutValue = qt_test_timeoutAsMs.count(); \
-    { QTRY_LOOP_IMPL(expr, qt_test_timeoutValue, qt_test_step) } \
-    QTRY_TIMEOUT_DEBUG_IMPL(expr, qt_test_timeoutValue, qt_test_step)
+    const auto qt_test_step = qt_test_timeoutAsMs < std::chrono::milliseconds(350) \
+                              ? qt_test_timeoutAsMs / 7 + std::chrono::milliseconds(1) \
+                              : std::chrono::milliseconds(50); \
+    { QTRY_LOOP_IMPL(expr, qt_test_timeoutAsMs, qt_test_step) } \
+    QTRY_TIMEOUT_DEBUG_IMPL(expr, qt_test_timeoutAsMs, qt_test_step)
 // Ends with an if-block, so doesn't want a following semicolon.
 
 // Will try to wait for the expression to become true while allowing event processing
@@ -341,7 +342,9 @@ namespace QTest
     Q_TESTLIB_EXPORT void maybeThrowOnSkip();
 
     Q_DECL_COLD_FUNCTION
-    Q_TESTLIB_EXPORT QString formatTryTimeoutDebugMessage(q_no_char8_t::QUtf8StringView expr, int timeout, int actual);
+    Q_TESTLIB_EXPORT QString formatTryTimeoutDebugMessage(q_no_char8_t::QUtf8StringView expr,
+                                                          std::chrono::milliseconds timeout,
+                                                          std::chrono::milliseconds actual);
     Q_TESTLIB_EXPORT Q_DECL_COLD_FUNCTION
     const char *formatPropertyTestHelperFailure(char *msg, size_t maxMsgLen,
                                                 const char *actual, const char *expected,

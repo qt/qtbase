@@ -375,11 +375,13 @@ void setThrowOnSkip(bool enable) noexcept
     g_throwOnSkip.fetchAndAddRelaxed(enable ? 1 : -1);
 }
 
-QString Internal::formatTryTimeoutDebugMessage(q_no_char8_t::QUtf8StringView expr, int timeout, int actual)
+QString Internal::formatTryTimeoutDebugMessage(q_no_char8_t::QUtf8StringView expr,
+                                               std::chrono::milliseconds timeout,
+                                               std::chrono::milliseconds actual)
 {
     return "QTestLib: This test case check (\"%1\") failed because the requested timeout (%2 ms) "
            "was too short, %3 ms would have been sufficient this time."_L1
-            .arg(expr, QString::number(timeout), QString::number(actual));
+            .arg(expr, QString::number(timeout.count()), QString::number(actual.count()));
 }
 
 extern Q_TESTLIB_EXPORT int lastMouseTimestamp;
