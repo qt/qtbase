@@ -226,14 +226,17 @@ bool QWaylandShmBackingStore::scroll(const QRegion &region, int dx, int dy)
     if (!mBackBuffer)
         return false;
 
-    QImage *backBufferImage = mBackBuffer->image();
-    const qreal devicePixelRatio = backBufferImage->devicePixelRatio();
+    const qreal devicePixelRatio = waylandWindow()->scale();
 
     // On Wayland, the window can have a device pixel ratio different from
     // the window/screen, therefore we cannot rely on QHighDpi here, cf. QBackingStore::scroll.
     // With fractional scaling we cannot easily scroll the existing pixels.
     if (!qFuzzyIsNull(devicePixelRatio - static_cast<int>(devicePixelRatio)))
         return false;
+
+    recreateBackBufferIfNeeded();
+
+    QImage *backBufferImage = mBackBuffer->image();
 
     const QPoint scrollDelta(dx, dy);
     const QMargins margins = windowDecorationMargins();
