@@ -407,8 +407,9 @@ QString qTzName(int dstIndex)
 #if defined(_UCRT)  // i.e., MSVC and MinGW-UCRT
     {
         const auto locker = qt_scoped_lock(environmentMutex);
-        ok = _get_tzname(&size, name, 512, dstIndex) != 0;
-        size -= 1; // It includes space for '\0'
+        ok = _get_tzname(&size, name, sizeof(name), dstIndex) == 0;
+        size -= 1; // It includes space for '\0' (or !ok => we're going to ignore it).
+        Q_ASSERT(!ok || size < sizeof(name));
     }
 #else
     {
