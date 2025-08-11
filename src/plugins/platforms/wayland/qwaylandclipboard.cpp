@@ -151,6 +151,8 @@ bool QWaylandClipboard::ownsMode(QClipboard::Mode mode) const
 
     switch (mode) {
     case QClipboard::Clipboard:
+        if (seat->dataControlDevice() && seat->dataControlDevice()->selectionSource() != nullptr)
+            return true;
         return seat->dataDevice() && seat->dataDevice()->selectionSource() != nullptr;
     case QClipboard::Selection:
         if (seat->dataControlDevice() && seat->dataControlDevice()->primarySelectionSource() != nullptr)
