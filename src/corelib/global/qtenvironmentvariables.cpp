@@ -403,22 +403,24 @@ QString qTzName(int dstIndex)
 {
     char name[512];
     bool ok;
+    size_t size = 0;
 #if defined(_UCRT)  // i.e., MSVC and MinGW-UCRT
-    size_t s = 0;
     {
         const auto locker = qt_scoped_lock(environmentMutex);
-        ok = _get_tzname(&s, name, 512, dstIndex) != 0;
+        ok = _get_tzname(&size, name, 512, dstIndex) != 0;
+        size -= 1; // It includes space for '\0'
     }
 #else
     {
         const auto locker = qt_scoped_lock(environmentMutex);
         const char *const src = tzname[dstIndex];
-        ok = src != nullptr;
+        size = strlen(src);
+        ok = src != nullptr && size < sizeof(name);
         if (ok)
-            memcpy(name, src, std::min(sizeof(name), strlen(src) + 1));
+            memcpy(name, src, size + 1);
     }
 #endif // Q_OS_WIN
-    return ok ? QString::fromLocal8Bit(name) : QString();
+    return ok ? QString::fromLocal8Bit(name, qsizetype(size)) : QString();
 }
 
 QT_END_NAMESPACE
