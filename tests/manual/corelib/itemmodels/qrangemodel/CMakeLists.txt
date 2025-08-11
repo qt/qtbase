@@ -11,6 +11,7 @@ find_package(Qt6 COMPONENTS
 
 find_package(Qt6 OPTIONAL_COMPONENTS
     Quick
+    QuickWidgets
 )
 
 if (TARGET Qt6::Quick)
@@ -34,6 +35,7 @@ target_link_libraries(rangemodel PRIVATE
 if (TARGET Qt6::Quick)
     target_link_libraries(rangemodel PRIVATE
        Qt6::Quick
+       Qt6::QuickWidgets
     )
 endif()
 

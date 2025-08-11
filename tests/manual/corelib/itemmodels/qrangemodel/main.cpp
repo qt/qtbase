@@ -3,6 +3,8 @@
 
 #include <QtCore>
 #include <QtWidgets>
+#include <QQuickWidget>
+#include <QQuickItem>
 
 #if __has_include(<QtQml>)
 #define QUICK_UI
@@ -410,111 +412,152 @@ private:
     const QMetaObject &m_metaobject;
 };
 
-int main(int argc, char *argv[])
+class MainWindow : public QMainWindow
 {
-    QApplication app(argc, argv);
+    Q_OBJECT
+public:
+    MainWindow(QWidget *parent = nullptr)
+        : QMainWindow(parent), model(nullptr)
+    {
+        QSplitter *splitter = new QSplitter;
+
+        treeview = new QTreeView;
+        treeview->setUniformRowHeights(true);
+        splitter->addWidget(treeview);
 
 #ifdef QUICK_UI
-    QQmlApplicationEngine engine;
-    engine.loadFromModule("Main", "Main");
+        quickWidget = new QQuickWidget;
+        quickWidget->loadFromModule("Main", "Main");
+        splitter->addWidget(quickWidget);
 #endif
 
-    QWidget widget;
-    widget.setWindowTitle("Qt Widgets");
-    QTreeView treeview;
-    treeview.setUniformRowHeights(true);
-    QToolBar toolbar;
-    QComboBox modelPicker;
-    ModelFactory factory;
+        setCentralWidget(splitter);
 
-    QObject::connect(&modelPicker, &QComboBox::currentIndexChanged, &modelPicker, [&treeview,
-#ifdef QUICK_UI
-                     rootObjects = engine.rootObjects(),
-#endif
-                     &factory](int index){
+        QComboBox *modelPicker = new QComboBox;
+        connect(modelPicker, &QComboBox::currentIndexChanged, this, &MainWindow::modelChanged);
+        // this will implicitly run modelChanged()
+        modelPicker->setModel(new QRangeModel(QMetaMethodEnumerator::fromType<ModelFactory>(),
+                                              modelPicker));
+        modelPicker->setModelColumn(1);
+
+        QToolBar *toolBar = addToolBar(tr("Model Operations"));
+        toolBar->addWidget(modelPicker);
+
+        QAction *addAction = toolBar->addAction(tr("Add"), this, &MainWindow::onAdd);
+        addAction->setIcon(QIcon::fromTheme(QIcon::ThemeIcon::ListAdd));
+        QAction *removeAction = toolBar->addAction(tr("Remove"), this, &MainWindow::onRemove);
+        removeAction->setIcon(QIcon::fromTheme(QIcon::ThemeIcon::ListRemove));
+        QAction *upAction = toolBar->addAction(tr("Move up"), this, &MainWindow::onUp);
+        upAction->setIcon(QIcon::fromTheme(QIcon::ThemeIcon::GoUp));
+        QAction *downAction = toolBar->addAction(tr("Move down"), this, &MainWindow::onDown);
+        downAction->setIcon(QIcon::fromTheme(QIcon::ThemeIcon::GoDown));
+        QAction *indentAction = toolBar->addAction(tr("Move in"), this, &MainWindow::onIn);
+        indentAction->setIcon(QIcon::fromTheme(QIcon::ThemeIcon::FormatIndentMore));
+        QAction *dedentAction = toolBar->addAction(tr("Move out"), this, &MainWindow::onOut);
+        dedentAction->setIcon(QIcon::fromTheme(QIcon::ThemeIcon::FormatIndentLess));
+    }
+
+private:
+    void modelChanged(int index)
+    {
+        QAbstractItemModel *oldModel = model;
+
         const QMetaObject &mo = ModelFactory::staticMetaObject;
         const QMetaMethod method = mo.method(index + mo.methodOffset());
-        if (QRangeModel *newModel; method.invoke(&factory, qReturnArg(newModel))) {
-            QAbstractItemModel *oldModel = treeview.model();
-            treeview.setModel(newModel);
+        if (method.invoke(&factory, qReturnArg(model))) {
+            treeview->setModel(model);
 #ifdef QUICK_UI
-            rootObjects.at(0)->setProperty("model", QVariant::fromValue(newModel));
+            if (!quickWidget->rootObject())
+                statusBar()->showMessage(tr("Failed to load QML"));
+            else
+                quickWidget->rootObject()->setProperty("model", QVariant::fromValue(model));
 #endif
-            delete oldModel;
         }
-    });
 
-    modelPicker.setModel(new QRangeModel(QMetaMethodEnumerator::fromType<ModelFactory>(),
-                                         &modelPicker));
-    modelPicker.setModelColumn(1);
-    toolbar.addWidget(&modelPicker);
-    QAction *addAction = toolbar.addAction("+", &treeview, [&treeview]{
-        auto *model = treeview.model();
-        const auto current = treeview.currentIndex();
+        delete oldModel;
+    }
+
+    void onAdd()
+    {
+        const auto current = treeview->currentIndex();
+        showMessage(tr("Inserting after '%1'").arg(current.data().toString()));
         if (!model->insertRows(current.row() + 1, 1, current.parent())) {
-            qDebug() << "Insertion failed";
+            showMessage(tr("Insertion failed"));
         } else {
             const auto newIndex = model->index(current.row() + 1, 0, current.parent());
             static int counter = 0;
             model->setData(newIndex, u"New Value %1"_s.arg(++counter));
         }
-    });
-    QAction *removeAction = toolbar.addAction("-", &treeview, [&treeview]{
-        auto *model = treeview.model();
-        const auto current = treeview.currentIndex();
-        qDebug() << "Removing" << current.data();
+    }
+
+    void onRemove()
+    {
+        const auto current = treeview->currentIndex();
+        showMessage(tr("Removing '%1'").arg(current.data().toString()));
         if (!model->removeRows(current.row(), 1, model->parent(current)))
-            qDebug() << "Removal failed";
-    });
-    QAction *upAction = toolbar.addAction("^", &treeview, [&treeview]{
-        auto *model = treeview.model();
-        const auto current = treeview.currentIndex();
-        qDebug() << "Moving up" << current.data();
+            showMessage(tr("Removal failed"));
+    }
+
+    void onUp()
+    {
+        const auto current = treeview->currentIndex();
+        showMessage(tr("Moving '%1' up").arg(current.data().toString()));
         const auto currentParent = current.parent();
         if (!model->moveRows(currentParent, current.row(), 1, currentParent, current.row() - 1))
-            qDebug() << "Failed to move up";
-    });
-    QAction *downAction = toolbar.addAction("v", &treeview, [&treeview]{
-        auto *model = treeview.model();
-        const auto current = treeview.currentIndex();
-        qDebug() << "Moving down" << current.data();
+            showMessage(tr("Failed to move up"));
+    }
+
+    void onDown()
+    {
+        const auto current = treeview->currentIndex();
+        showMessage(tr("Moving '%1' down").arg(current.data().toString()));
         const auto currentParent = current.parent();
         if (!model->moveRows(currentParent, current.row(), 1, currentParent, current.row() + 2))
-            qDebug() << "Failed to move down";
-    });
-    QAction *indentAction = toolbar.addAction(">", &treeview, [&treeview]{
-        auto *model = treeview.model();
-        const auto current = treeview.currentIndex();
-        qDebug() << "Moving in" << current.data();
+            showMessage(tr("Failed to move down"));
+    }
+
+    void onIn()
+    {
+        const auto current = treeview->currentIndex();
+        showMessage(tr("Moving '%1' in").arg(current.data().toString()));
         const auto currentParent = current.parent();
         const auto newParent = current.sibling(current.row() - 1, 0);
         // move the selected row under it's top-most sibling
 
         if (!model->moveRows(currentParent, current.row(), 1, newParent, model->rowCount(newParent)))
-            qDebug() << "Indentation failed";
-    });
-    QAction *dedentAction = toolbar.addAction("<", &treeview, [&treeview]{
-        auto *model = treeview.model();
-        const auto current = treeview.currentIndex();
-        qDebug() << "Moving out" << current.data();
+            showMessage(tr("Indentation failed"));
+    }
+
+    void onOut()
+    {
+        const auto current = treeview->currentIndex();
+        showMessage(tr("Moving '%1' out").arg(current.data().toString()));
         const auto currentParent = current.parent();
         const auto grandParent = currentParent.parent();
         // move the selected row under it's grandparent
-        QPersistentModelIndex guard = model->index(current.row(), 0, currentParent);
-        QPersistentModelIndex watch = model->index(current.row() - 1, 0, currentParent);
         if (!model->moveRows(currentParent, current.row(), 1, grandParent, currentParent.row()))
-            qDebug() << "Dedentation failed";
-    });
+            showMessage(tr("Dedentation failed"));
+    }
 
-    QVBoxLayout vbox;
-    vbox.addWidget(&treeview);
-    vbox.addWidget(&toolbar);
+    void showMessage(const QString &message, int timeout = 2000)
+    {
+        statusBar()->showMessage(message, timeout);
+    }
 
-    widget.setLayout(&vbox);
-    widget.show();
-    int res = app.exec();
+    ModelFactory factory;
+    QRangeModel *model;
+    QTreeView *treeview;
+    QQuickWidget *quickWidget;
+};
 
-    return res;
+int main(int argc, char *argv[])
+{
+    QApplication app(argc, argv);
+
+    MainWindow mainWindow;
+    mainWindow.show();
+
+    return app.exec();
 }
 
 #include "main.moc"
