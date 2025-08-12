@@ -6,6 +6,8 @@
 # One-value Arguments:
 #   PRECOMPILED_HEADER
 #     Name of the precompiled header that is used for the target.
+#   EXTRA_ELF_LINKER_SCRIPT_CONTENT
+#     Extra content that should be appended to a target linker script. Applicable for ld only.
 # Multi-value Arguments:
 #   CONDITION
 #     The condition under which the target will be extended.
@@ -14,8 +16,6 @@
 #     module, these files will raise a warning at configure time if the condition is not met.
 #   COMPILE_FLAGS
 #     Custom compilation flags.
-#   EXTRA_ELF_LINKER_SCRIPT_CONTENT
-#     Extra content that should be appended to a target linker script. Applicable for ld only.
 #   EXTRA_ELF_LINKER_SCRIPT_EXPORTS
 #     Extra content that should be added to export section of the linker script.
 #   NO_PCH_SOURCES
