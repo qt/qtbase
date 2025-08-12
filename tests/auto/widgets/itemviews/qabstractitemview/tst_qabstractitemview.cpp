@@ -156,6 +156,7 @@ private slots:
     void removeIndexWhileEditing();
     void focusNextOnHide();
     void shiftSelectionAfterModelSetCurrentIndex();
+    void QTBUG72333_isPersistentEditorOpen();
 
 private:
     static QAbstractItemView *viewFromString(const QByteArray &viewType, QWidget *parent = nullptr)
@@ -3602,6 +3603,30 @@ void tst_QAbstractItemView::shiftSelectionAfterModelSetCurrentIndex()
     selection = view.selectionModel()->selection();
     QCOMPARE(selection.first().top(), 2);
     QCOMPARE(selection.first().bottom(), 2);
+}
+
+void tst_QAbstractItemView::QTBUG72333_isPersistentEditorOpen()
+{
+    QStandardItemModel model(1, 1);
+    model.setData(model.index(0, 0), QStringLiteral("Test"));
+
+    QTableView view;
+    view.setModel(&model);
+    view.show();
+
+    const QModelIndex index = model.index(0, 0);
+
+    view.edit(index);
+    QVERIFY(view.state() == QAbstractItemView::EditingState);
+    QVERIFY(!view.isPersistentEditorOpen(index));
+
+    view.closeEditor(view.indexWidget(index), QAbstractItemDelegate::RevertModelCache);
+
+    view.openPersistentEditor(index);
+    QVERIFY(view.isPersistentEditorOpen(index));
+
+    view.closePersistentEditor(index);
+    QVERIFY(!view.isPersistentEditorOpen(index));
 }
 
 QTEST_MAIN(tst_QAbstractItemView)

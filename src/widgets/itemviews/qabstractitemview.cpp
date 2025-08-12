@@ -3298,7 +3298,8 @@ void QAbstractItemView::closePersistentEditor(const QModelIndex &index)
 bool QAbstractItemView::isPersistentEditorOpen(const QModelIndex &index) const
 {
     Q_D(const QAbstractItemView);
-    return d->editorForIndex(index).widget;
+    QWidget *editor = d->editorForIndex(index).widget;
+    return editor && d->persistent.contains(editor);
 }
 
 /*!
