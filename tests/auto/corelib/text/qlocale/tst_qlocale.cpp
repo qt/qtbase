@@ -1479,6 +1479,15 @@ void tst_QLocale::longlongToString_data()
     QTest::addColumn<bool>("grouped");
     QTest::addColumn<QString>("numStr");
 
+    QTest::newRow("C 0 0 'x' t")
+        << u"C"_s << qlonglong(0) << 0  << U'x' << true << u"0"_s;
+    QTest::newRow("C 0 0 'x' f")
+        << u"C"_s << qlonglong(0) << 0  << U'x' << false << u"0"_s;
+    QTest::newRow("en_US 0 0 'x' t")
+        << u"en_US"_s << qlonglong(0) << 0  << U'x' << true << u"0"_s;
+    QTest::newRow("en_US 0 0 'x' f")
+        << u"en_US"_s << qlonglong(0) << 0  << U'x' << false << u"0"_s;
+
     QTest::newRow("pl_PL 23500 0 x f")
             << u"pl_PL"_s << qlonglong(23500)  << 0   << U'x' << false << u"23500"_s;
     QTest::newRow("pl_PL 23500 0 x t")
@@ -1593,6 +1602,15 @@ void tst_QLocale::longlongToString_data()
     QTest::newRow("emoji -2300 -8 😀 t")
         << u"en_US"_s << qlonglong(-23000) << -8 << U'😀' << true  << u"-23,000😀"_s;
 
+    QTest::newRow("ar_EG 0 0 x f")
+        << u"ar_EG"_s << qlonglong(0) << 0 << U'x' << false << u"\u0660"_s;
+    QTest::newRow("ar_EG 0 0 x t")
+        << u"ar_EG"_s << qlonglong(0) << 0 << U'x' << true << u"\u0660"_s;
+
+    QTest::newRow("ccp_BD 0 0 𑄃 t")
+        << u"ccp_BD"_s << qlonglong(0) << 0  << U'𑄃' << false << u"𑄶"_s;
+    QTest::newRow("ccp_BD 0 0 𑄃 f")
+        << u"ccp_BD"_s << qlonglong(0) << 0  << U'𑄃' << true << u"𑄶"_s;
     QTest::newRow("ccp_BD -2300 6 𑄃 f")
         << u"ccp_BD"_s << qlonglong(-2300) << 6  << U'𑄃' << false << u"𑄃-𑄸𑄹𑄶𑄶"_s;
     QTest::newRow("ccp_BD -2300 -6 𑄃 f")
@@ -1606,11 +1624,11 @@ void tst_QLocale::longlongToString_data()
 void tst_QLocale::longlongToString()
 {
     QFETCH(QString, localeName);
-    QFETCH(QString, numStr);
     QFETCH(qlonglong, number);
     QFETCH(int, fieldWidth);
     QFETCH(char32_t, fillChar);
     QFETCH(bool, grouped);
+    QFETCH(QString, numStr);
 
     QLocale locale(localeName);
     auto toCompare = locale.toString(number, fieldWidth, fillChar);
@@ -1630,6 +1648,15 @@ void tst_QLocale::qulonglongToString_data()
     QTest::addColumn<char32_t>("fillChar");
     QTest::addColumn<bool>("grouped");
     QTest::addColumn<QString>("numStr");
+
+    QTest::newRow("C 0 0 x f")
+            << u"C"_s << qulonglong(0)  << 0   << U'x' << false << u"0"_s;
+    QTest::newRow("C 0 0 x t")
+            << u"C"_s << qulonglong(0)  << 0   << U'x' << true << u"0"_s;
+    QTest::newRow("en_US 0 0 x f")
+            << u"en_US"_s << qulonglong(0)  << 0   << U'x' << false << u"0"_s;
+    QTest::newRow("en_US 0 0 x t")
+            << u"en_US"_s << qulonglong(0)  << 0   << U'x' << true << u"0"_s;
 
     QTest::newRow("pl_PL 23500 0 x f")
             << u"pl_PL"_s << qulonglong(23500)  << 0   << U'x' << false << u"23500"_s;
@@ -1718,6 +1745,15 @@ void tst_QLocale::qulonglongToString_data()
     QTest::newRow("emoji 2300 -7 😀 t")
         << u"en_US"_s << qulonglong(23000) << -7 << U'😀' << true  << u"23,000😀"_s;
 
+    QTest::newRow("ar_EG 0 0 x f")
+        << u"ar_EG"_s << qulonglong(0) << 0 << U'x' << false << u"\u0660"_s;
+    QTest::newRow("ar_EG 0 0 x t")
+        << u"ar_EG"_s << qulonglong(0) << 0 << U'x' << true << u"\u0660"_s;
+
+    QTest::newRow("ccp_BD 0 0 𑄃 t")
+        << u"ccp_BD"_s << qulonglong(0) << 0  << U'𑄃' << false << u"𑄶"_s;
+    QTest::newRow("ccp_BD 0 0 𑄃 f")
+        << u"ccp_BD"_s << qulonglong(0) << 0  << U'𑄃' << true << u"𑄶"_s;
     QTest::newRow("ccp_BD 2300 5 𑄃 f")
         << u"ccp_BD"_s << qulonglong(2300) << 5  << U'𑄃' << false << u"𑄃𑄸𑄹𑄶𑄶"_s;
     QTest::newRow("ccp_BD 2300 -5 𑄃 f")
@@ -1888,6 +1924,8 @@ void tst_QLocale::long_long_conversion_data()
 
     QTest::newRow("C null")                   << QString("C")     << QString()       << false << (qlonglong) 0;
     QTest::newRow("C empty")                  << QString("C")     << QString("")     << false << (qlonglong) 0;
+    QTest::newRow("C 0")                      << QString("C")     << "0"             << true  << (qlonglong) 0;
+    QTest::newRow("C 0,")                     << QString("C")     << "0,"            << false << (qlonglong) 0;
     QTest::newRow("C 1")                      << QString("C")     << "1"             << true  << (qlonglong) 1;
     QTest::newRow("C 1,")                     << QString("C")     << "1,"            << false << (qlonglong) 0;
     QTest::newRow("C 1,2")                    << QString("C")     << "1,2"           << false << (qlonglong) 0;
@@ -1958,6 +1996,20 @@ void tst_QLocale::long_long_conversion()
 
     if (ok)
         QCOMPARE(l, num);
+
+    if (num >= 0) {
+        qulonglong ull = locale.toULongLong(num_str, &ok);
+        QCOMPARE(ok, good);
+
+        if (ok)
+            QCOMPARE(ull, num);
+
+        ull = locale.toULongLong(num_strRef, &ok);
+        QCOMPARE(ok, good);
+
+        if (ok)
+            QCOMPARE(ull, num);
+    }
 }
 
 void tst_QLocale::long_long_conversion_extra()
