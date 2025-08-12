@@ -415,6 +415,20 @@ QNetworkInformationBackendFactory::~QNetworkInformationBackendFactory()
     Various plugins can have various functionality supported, and so
     you can load() plugins based on which features are needed.
 
+    In most cases, the recommended approach is to load the
+    platform-specific backend by calling loadDefaultBackend(). This will
+    automatically select the most appropriate backend available on the
+    current platform and is suitable for the majority of applications.
+
+    \snippet code/src_network_kernel_qnetworkinformation.cpp file
+
+    For more advanced uses cases, developers may prefer to load a backend
+    based on specific capabilities or preferences. loadBackendByFeatures()
+    allows selecting a backend that supports a specific set of features,
+    such as reporting the transport mediom or signal strength. Alternatively,
+    loadBackendByName() allows loading a plugin by its name, which can include
+    platform-specific or custom backend implementations.
+
     QNetworkInformation is a singleton and stays alive from the first
     successful load() until destruction of the QCoreApplication object.
     If you destroy and re-create the QCoreApplication object you must call
@@ -765,7 +779,8 @@ QStringList QNetworkInformation::availableBackends()
 
 /*!
     Returns a pointer to the instance of the QNetworkInformation,
-    if any.
+    if any. If this method is called before a backend is loaded,
+    it returns a null pointer.
 
     \sa load()
 */
