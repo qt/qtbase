@@ -4184,9 +4184,7 @@ QString QLocaleData::longLongToString(qlonglong n, int precision,
 QString QLocaleData::unsLongLongToString(qulonglong l, int precision,
                                          int base, int width, unsigned flags) const
 {
-    const QString zero = zeroDigit();
-    QString resultZero = base == 10 ? zero : QStringLiteral("0");
-    return applyIntegerFormatting(l ? qulltoa(l, base, zero) : resultZero,
+    return applyIntegerFormatting(qulltoa(l, base, zeroDigit()),
                                   false, precision, base, width, flags);
 }
 
