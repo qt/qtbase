@@ -14,9 +14,9 @@
 #     module, these files will raise a warning at configure time if the condition is not met.
 #   COMPILE_FLAGS
 #     Custom compilation flags.
-#   EXTRA_LINKER_SCRIPT_CONTENT
+#   EXTRA_ELF_LINKER_SCRIPT_CONTENT
 #     Extra content that should be appended to a target linker script. Applicable for ld only.
-#   EXTRA_LINKER_SCRIPT_EXPORTS
+#   EXTRA_ELF_LINKER_SCRIPT_EXPORTS
 #     Extra content that should be added to export section of the linker script.
 #   NO_PCH_SOURCES
 #     Exclude the specified source files from PRECOMPILE_HEADERS and UNITY_BUILD builds.
@@ -45,7 +45,7 @@ function(qt_internal_extend_target target)
     )
     set(single_args
         PRECOMPILED_HEADER
-        EXTRA_LINKER_SCRIPT_CONTENT
+        EXTRA_ELF_LINKER_SCRIPT_CONTENT
         ${__qt_internal_sbom_single_args}
     )
     set(multi_args
@@ -55,7 +55,7 @@ function(qt_internal_extend_target target)
         CONDITION
         CONDITION_INDEPENDENT_SOURCES
         COMPILE_FLAGS
-        EXTRA_LINKER_SCRIPT_EXPORTS
+        EXTRA_ELF_LINKER_SCRIPT_EXPORTS
         ${__qt_internal_sbom_multi_args}
     )
 
@@ -322,13 +322,13 @@ function(qt_internal_extend_target target)
             ${sources_property} "${arg_CONDITION_INDEPENDENT_SOURCES}")
     endif()
 
-    if(arg_EXTRA_LINKER_SCRIPT_CONTENT)
+    if(arg_EXTRA_ELF_LINKER_SCRIPT_CONTENT)
         set_target_properties(${target} PROPERTIES
-            _qt_extra_linker_script_content "${arg_EXTRA_LINKER_SCRIPT_CONTENT}")
+            _qt_extra_elf_linker_script_content "${arg_EXTRA_ELF_LINKER_SCRIPT_CONTENT}")
     endif()
-    if(arg_EXTRA_LINKER_SCRIPT_EXPORTS)
+    if(arg_EXTRA_ELF_LINKER_SCRIPT_EXPORTS)
         set_target_properties(${target} PROPERTIES
-            _qt_extra_linker_script_exports "${arg_EXTRA_LINKER_SCRIPT_EXPORTS}")
+            _qt_extra_elf_linker_script_exports "${arg_EXTRA_ELF_LINKER_SCRIPT_EXPORTS}")
     endif()
 
     if(is_executable)

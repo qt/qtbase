@@ -422,7 +422,7 @@ endif()
 qt_internal_extend_target(Network
     # Workaround for QTBUG-118229:
     # Function called by inline methods taking a pointer to a private class as a parameter
-    EXTRA_LINKER_SCRIPT_EXPORTS
+    EXTRA_ELF_LINKER_SCRIPT_EXPORTS
         # QNetworkDatagram::destroy(QNetworkDatagramPrivate *d)
         "_ZN*16QNetworkDatagram7destroyEP*23QNetworkDatagramPrivate*"
 )

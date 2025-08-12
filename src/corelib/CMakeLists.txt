@@ -1573,7 +1573,7 @@ if(IOS)
         "${CMAKE_CURRENT_SOURCE_DIR}/platform/ios/PrivacyInfo.xcprivacy")
 endif()
 
-set(linker_script_contents "")
+set(elf_linker_script_contents "")
 if (QT_NAMESPACE STREQUAL "")
     set(tag_symbol "qt_version_tag")
 else()
@@ -1583,17 +1583,17 @@ foreach(minor_version RANGE ${PROJECT_VERSION_MINOR})
     set(previous "${current}")
     set(current "Qt_${PROJECT_VERSION_MAJOR}.${minor_version}")
     if (minor_version EQUAL ${PROJECT_VERSION_MINOR})
-        string(APPEND linker_script_contents "${current} { ${tag_symbol}; } ${previous};\n")
+        string(APPEND elf_linker_script_contents "${current} { ${tag_symbol}; } ${previous};\n")
     else()
-        string(APPEND linker_script_contents "${current} {} ${previous};\n")
+        string(APPEND elf_linker_script_contents "${current} {} ${previous};\n")
     endif()
 endforeach()
 qt_internal_extend_target(Core
-    EXTRA_LINKER_SCRIPT_CONTENT "${linker_script_contents}"
+    EXTRA_ELF_LINKER_SCRIPT_CONTENT "${elf_linker_script_contents}"
 
     # Workaround for QTBUG-117514:
     # Function called by inline methods taking a pointer to a private class as a parameter
-    EXTRA_LINKER_SCRIPT_EXPORTS
+    EXTRA_ELF_LINKER_SCRIPT_EXPORTS
         # QFutureInterfaceBase::setContinuation(std::function<void (QFutureInterfaceBase const&)>, QFutureInterfaceBasePrivate*)
         "_ZN*20QFutureInterfaceBase15setContinuationE*27QFutureInterfaceBasePrivate*"
         # QReadWriteLock::destroyRecursive(QReadWriteLockPrivate*)

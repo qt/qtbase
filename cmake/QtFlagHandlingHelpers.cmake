@@ -97,7 +97,7 @@ function(qt_internal_add_linker_version_script target)
             set(genex_glue "$<SEMICOLON>\n    ")
             set(genex_suffix "$<SEMICOLON>")
             qt_internal_genex_get_joined_property(
-                linker_exports "${target}" _qt_extra_linker_script_exports
+                linker_exports "${target}" _qt_extra_elf_linker_script_exports
                 "${genex_prefix}" "${genex_suffix}" "${genex_glue}"
             )
             string(APPEND contents "${linker_exports}")
@@ -105,7 +105,7 @@ function(qt_internal_add_linker_version_script target)
         string(APPEND contents "\n};\n")
 
         if(NOT target_type STREQUAL "INTERFACE_LIBRARY")
-            set(property_genex "$<TARGET_PROPERTY:${target},_qt_extra_linker_script_content>")
+            set(property_genex "$<TARGET_PROPERTY:${target},_qt_extra_elf_linker_script_content>")
             set(check_genex "$<BOOL:${property_genex}>")
             string(APPEND contents
                 "$<${check_genex}:${property_genex}>")
