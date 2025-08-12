@@ -3518,7 +3518,6 @@ QXmlStreamWriter::QXmlStreamWriter(QByteArray *array)
 
 
 /*!  Constructs a stream writer that writes into \a string.
- *
  */
 QXmlStreamWriter::QXmlStreamWriter(QString *string)
     : d_ptr(new QXmlStreamWriterPrivate(this))

@@ -102,7 +102,7 @@ Q_LOGGING_CATEGORY(lcPermissions, "qt.permissions", QtWarningMsg);
     application, please \l{Information Property List Files}
     {point the build system to your custom \c Info.plist}.
 
-    \sa {Information Property List Files}.
+    \sa {Information Property List Files}
 
     \section3 Android
     \target android-uses-permission
@@ -124,7 +124,7 @@ Q_LOGGING_CATEGORY(lcPermissions, "qt.permissions", QtWarningMsg);
     The relevant permission names are described in the documentation
     for each permission type.
 
-    \sa {Qt Creator: Editing Manifest Files}.
+    \sa {Qt Creator: Editing Manifest Files}
 
     \section1 Available Permissions
 
