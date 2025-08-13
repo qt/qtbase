@@ -280,23 +280,23 @@ Q_GLOBAL_STATIC(QTimeZoneSingleton, global_tz);
 /*!
     \enum QTimeZone::TimeType
 
-    The type of time zone time, for example when requesting the name.  In time
-    zones that do not apply DST, all three values may return the same result.
+    A timezone's name may vary seasonally to indicate whether it is using its
+    standard offset from UTC or applying a daylight-saving adjustment to that
+    offset. In such cases, it typically also has an overall name that applies to
+    it regardless of season. When requesting the display name of a zone, this
+    type identifies which of those names to use. In time zones that do not apply
+    DST, all three values may return the same result.
 
     \value StandardTime
-           The standard time in a time zone, i.e. when Daylight-Saving is not
-           in effect.
-           For example when formatting a display name this will show something
-           like "Pacific Standard Time".
+           The standard-time name of the zone.
+           For example, "Pacific Standard Time".
     \value DaylightTime
-           A time when Daylight-Saving is in effect.
-           For example when formatting a display name this will show something
-           like "Pacific daylight-saving time".
+           The name of the zone when Daylight-Saving is in effect.
+           For example, "Pacific Daylight Time".
     \value GenericTime
-           A time which is not specifically Standard or Daylight-Saving time,
-           either an unknown time or a neutral form.
-           For example when formatting a display name this will show something
-           like "Pacific Time".
+           The name by which the zone is described independent of whether it is
+           applying any daylight-saving adjustment.
+           For example, "Pacific Time".
 
     This type is only available when feature \c timezone is enabled.
 */
