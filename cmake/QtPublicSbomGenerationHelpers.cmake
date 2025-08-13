@@ -589,6 +589,8 @@ function(_qt_internal_sbom_generate_add_file)
         HINTS "SPDXRef-${arg_FILENAME}"
     )
 
+    _qt_internal_sbom_set_default_option_value_and_error_if_empty(PARENT_PACKAGE_SPDXID "")
+
     _qt_internal_sbom_set_default_option_value(LICENSE "NOASSERTION")
     _qt_internal_sbom_set_default_option_value(COPYRIGHT "NOASSERTION")
 
