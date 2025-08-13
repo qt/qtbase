@@ -2917,6 +2917,12 @@ static inline void check_and_warn_compat(const QMetaObject *sender, const QMetaM
     Returns a handle to the connection that can be used to disconnect
     it later.
 
+    \a signal must be a member function decleared as a signal in \a sender.
+
+    \a method must be a member function declared as a signal, slot, or
+    \l{Q_INVOKABLE}{invokable} in \a receiver, that is, functions registered
+    with the meta-object system.
+
     You must use the \c SIGNAL() and \c SLOT() macros when specifying
     the \a signal and the \a method, for example:
 
@@ -3202,6 +3208,13 @@ QMetaObject::Connection QObject::connect(const QObject *sender, const QMetaMetho
     Disconnects \a signal in object \a sender from \a method in object
     \a receiver. Returns \c true if the connection is successfully broken;
     otherwise returns \c false.
+
+    \a signal, if not \nullptr, must be a member function decleared as a signal
+    in \a sender.
+
+    \a method, if not \nullptr, must be a member function declared as a signal,
+    slot, or \l{Q_INVOKABLE}{invokable} in \a receiver, that is, functions
+    registered with the meta-object system.
 
     A signal-slot connection is removed when either of the objects
     involved are destroyed.
