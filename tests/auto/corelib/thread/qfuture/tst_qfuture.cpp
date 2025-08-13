@@ -216,6 +216,7 @@ private slots:
 #endif
     void takeResult();
     void runAndTake();
+    void takeResultWaitForStartedFinished();
     void resultsReadyAt_data();
     void resultsReadyAt();
     void takeResultWorksForTypesWithoutDefaultCtor();
@@ -3623,6 +3624,22 @@ void tst_QFuture::runAndTake()
     // TODO: enable when QFuture::takeResults() is enabled
     testTakeResults(gotcha, size_type(1));
 #endif
+}
+
+void tst_QFuture::takeResultWaitForStartedFinished()
+{
+    QPromise<int> promise{QFutureInterface<int>{QFutureInterfaceBase::State::Pending}};
+    auto future = promise.future();
+    const std::unique_ptr<QThread> thread(QThread::create(
+        [](QPromise<int> promise) {
+            QThread::msleep(100);
+            promise.start();
+            promise.addResult(11);
+            promise.finish();
+        },
+        std::move(promise)));
+    thread->start();
+    QCOMPARE(future.takeResult(), 11);
 }
 
 void tst_QFuture::resultsReadyAt_data()

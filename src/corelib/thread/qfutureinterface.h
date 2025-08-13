@@ -445,12 +445,11 @@ inline QList<T> QFutureInterface<T>::results()
 template<typename T>
 T QFutureInterface<T>::takeResult()
 {
-    Q_ASSERT(isValid());
-
     // Note: we wait for all, this is intentional,
     // not to mess with other unready results.
     waitForResult(-1);
 
+    Q_ASSERT(isValid());
     Q_ASSERT(!hasException());
 
     const QMutexLocker<QMutex> locker{&mutex()};
@@ -466,10 +465,9 @@ T QFutureInterface<T>::takeResult()
 template<typename T>
 std::vector<T> QFutureInterface<T>::takeResults()
 {
-    Q_ASSERT(isValid());
-
     waitForResult(-1);
 
+    Q_ASSERT(isValid());
     Q_ASSERT(!hasException());
 
     std::vector<T> res;
