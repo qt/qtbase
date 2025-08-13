@@ -92,7 +92,7 @@ void QWaylandDrag::setResponse(const QPlatformDropQtResponse &response)
 
 void QWaylandDrag::setDropResponse(const QPlatformDropQtResponse &response)
 {
-    setExecutedDropAction(response.acceptedAction());
+    setExecutedDropAction(response.isAccepted() ? response.acceptedAction() : Qt::IgnoreAction);
 }
 
 void QWaylandDrag::finishDrag()

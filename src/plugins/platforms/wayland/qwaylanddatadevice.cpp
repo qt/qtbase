@@ -132,7 +132,7 @@ bool QWaylandDataDevice::startDrag(QMimeData *mimeData, Qt::DropActions supporte
                     // from canceling mid-drag the drag is accepted here as the
                     // we know if the widget is over a zone where it can be
                     // incorporated or not
-                    response = { accepted, Qt::MoveAction };
+                    response = { true, Qt::MoveAction };
                 }
                 static_cast<QWaylandDrag *>(QGuiApplicationPrivate::platformIntegration()->drag())
                         ->setDropResponse(response);
