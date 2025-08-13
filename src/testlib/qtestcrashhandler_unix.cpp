@@ -652,8 +652,38 @@ printSentSignalInfo(T *info)
 }
 [[maybe_unused]] static void printSentSignalInfo(...) {}
 
+static bool printPlatformSpecificCrashInfo(siginfo_t *info, void *ucontext)
+{
+    auto ctx = static_cast<ucontext_t *>(ucontext);
+#if 0
+#elif defined(Q_PROCESSOR_X86)
+    Q_UNUSED(info)
+    int trapno = -1, errcode = 0;
+#  ifdef Q_OS_DARWIN
+    trapno = ctx->uc_mcontext->__es.__trapno;
+    errcode = ctx->uc_mcontext->__es.__err;
+#  elif defined(Q_OS_FREEBSD)
+    trapno = ctx->uc_mcontext.mc_trapno;
+    errcode = ctx->uc_mcontext.mc_err;
+#  elif defined(Q_OS_LINUX)
+    trapno = ctx->uc_mcontext.gregs[REG_TRAPNO];
+    errcode = ctx->uc_mcontext.gregs[REG_ERR];
+#  endif
+
+    if (trapno >= 0) {
+        writeToStderr(", trap ", asyncSafeToString(trapno), " code ", asyncSafeToString(errcode));
+
+        // si_addr contains CR2, which is only valid for #PF
+        return trapno == 14;
+    }
+#else
+    Q_UNUSED(info) Q_UNUSED(ctx)
+#endif
+    return true;
+}
+
 template <typename T> static std::enable_if_t<sizeof(std::declval<T>().si_addr) >= 1>
-printCrashingSignalInfo(T *info, quintptr pc)
+printCrashingSignalInfo(T *info, quintptr pc, void *ucontext)
 {
     using HexString = std::array<char, sizeof(quintptr) * 2 + 2>;
     auto toHexString = [](quintptr u, HexString &&r = {}) {
@@ -664,6 +694,9 @@ printCrashingSignalInfo(T *info, quintptr pc)
     writeToStderr(", code ", name.size() ? name : asyncSafeToString(info->si_code));
     if (pc)
         writeToStderr(", at instruction address ", toHexString(pc));
+
+    if (!printPlatformSpecificCrashInfo(info, ucontext))
+        return;
     writeToStderr(", accessing address ", toHexString(quintptr(info->si_addr)));
 }
 [[maybe_unused]] static void printCrashingSignalInfo(...) {}
@@ -796,7 +829,7 @@ void actionHandler(int signum, siginfo_t *info, void *ucontext)
     if (isCrashingSignal && (!info || info->si_code <= 0))
         isCrashingSignal = false;       // wasn't sent by the kernel, so it's not really a crash
     if (isCrashingSignal)
-        printCrashingSignalInfo(info, (pc = getProgramCounter(ucontext)));
+        printCrashingSignalInfo(info, (pc = getProgramCounter(ucontext)), ucontext);
     else if (info && (info->si_code == SI_USER || info->si_code == SI_QUEUE))
         printSentSignalInfo(info);
 
