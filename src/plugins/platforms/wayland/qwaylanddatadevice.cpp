@@ -199,10 +199,13 @@ void QWaylandDataDevice::data_device_drop()
     QPlatformDropQtResponse response = QWindowSystemInterface::handleDrop(m_dragWindow, dragData, m_dragPoint, supportedActions,
                                                                           QGuiApplication::mouseButtons(),
                                                                           m_inputDevice->modifiers());
+
+    // re-evaluate as it could have changed during user code above
+    drag = static_cast<QWaylandDrag *>(QGuiApplicationPrivate::platformIntegration()->drag())->currentDrag();
     if (drag) {
-        auto drag =  static_cast<QWaylandDrag *>(QGuiApplicationPrivate::platformIntegration()->drag());
-        drag->setDropResponse(response);
-        drag->finishDrag();
+        auto platformDrag =  static_cast<QWaylandDrag *>(QGuiApplicationPrivate::platformIntegration()->drag());
+        platformDrag->setDropResponse(response);
+        platformDrag->finishDrag();
     } else if (m_dragOffer) {
         m_dragOffer->finish();
     }
