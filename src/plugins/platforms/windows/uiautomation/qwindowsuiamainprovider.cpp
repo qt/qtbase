@@ -593,12 +593,7 @@ HRESULT QWindowsUiaMainProvider::GetPropertyValue(PROPERTYID idProp, VARIANT *pR
         *pRetVal = QComVariant{ accessible->text(QAccessible::Help) }.release();
         break;
     case UIA_HasKeyboardFocusPropertyId:
-        if (topLevelWindow) {
-            // Windows set the active state to true when they are focused
-            *pRetVal = QComVariant{ accessible->state().active ? true : false }.release();
-        } else {
-            *pRetVal = QComVariant{ accessible->state().focused ? true : false }.release();
-        }
+        *pRetVal = QComVariant{ accessible->state().focused ? true : false }.release();
         break;
     case UIA_IsKeyboardFocusablePropertyId:
         if (topLevelWindow) {
