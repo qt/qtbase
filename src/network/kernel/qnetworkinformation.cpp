@@ -440,6 +440,36 @@ QNetworkInformationBackendFactory::~QNetworkInformationBackendFactory()
     object will also be destroyed in this thread, and various backend-specific
     components may rely on being destroyed in the same thread as it is created.
 
+    One possible use case for QNetworkInformation is to monitor network
+    connectivity status. reachability() provides an indication of whether the
+    system is considered online, based on information reported by the
+    underlying operating system or plugin. However, this information may not
+    always be accurate. For example, on Windows, the online check may rely on
+    connectivity to a Microsoft-owned server; if that server is unreachable
+    (e.g., due to firewall rules), the system may incorrectly report that it is
+    offline. As such, reachability() should not be used as a definitive
+    pre-check before attempting a network connection, but rather as a general
+    signal of connectivity state.
+
+    To use reachability() effectively, the application must also understand
+    what kind of destination it is trying to reach. For example, if the target
+    is a local IP address, then Reachability::Local or Reachability::Site may
+    be sufficient. If the destination is on the public internet, then
+    Reachability::Online is required. Without this context, interpretring the
+    reported reachability may lead to incorrect assumptions about actual
+    network access.
+
+    \warning Only Linux and Windows provide support for the finer-grained
+    Reachability::Site and Reachability::Local options. On Android and Apple
+    platforms reachability() is limited to reporting only Online, Offline or
+    Unknown. Therefore, any logic that relies on detecting Local or Site level
+    connectivity must include appropriate platform checks or fallbacks.
+
+    \snippet code/src_network_kernel_qnetworkinformation_reachability.cpp 0
+    \dots
+    \snippet code/src_network_kernel_qnetworkinformation_reachability.cpp 1
+    \dots
+
     \sa QNetworkInformation::Feature
 */
 
