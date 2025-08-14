@@ -413,7 +413,7 @@ QNetworkInformationBackendFactory::~QNetworkInformationBackendFactory()
     network-related information through plugins.
 
     Various plugins can have various functionality supported, and so
-    you can load() plugins based on which features are needed.
+    you can load plugins based on which features are needed.
 
     In most cases, the recommended approach is to load the
     platform-specific backend by calling loadDefaultBackend(). This will
@@ -430,9 +430,9 @@ QNetworkInformationBackendFactory::~QNetworkInformationBackendFactory()
     platform-specific or custom backend implementations.
 
     QNetworkInformation is a singleton and stays alive from the first
-    successful load() until destruction of the QCoreApplication object.
-    If you destroy and re-create the QCoreApplication object you must call
-    load() again.
+    successful load until destruction of the QCoreApplication object.
+    If you destroy and re-create the QCoreApplication object you must load it
+    again to reinitialize the plugin.
 
     \note Because the class is a singleton while also relying on
     QCoreApplication, QNetworkInformation should always first be loaded
@@ -447,7 +447,7 @@ QNetworkInformationBackendFactory::~QNetworkInformationBackendFactory()
     \enum QNetworkInformation::Feature
 
     Lists all of the features that a plugin may currently support.
-    This can be used in QNetworkInformation::load().
+    This can be used in QNetworkInformation::loadBackendByFeatures().
 
     \value Reachability
         If the plugin supports this feature then the \c reachability property
@@ -685,7 +685,7 @@ QNetworkInformation::Features QNetworkInformation::supportedFeatures() const
     other backend has already been loaded, or if loading of the selected
     backend fails.
 
-    \sa instance(), load()
+    \sa instance(), loadBackendByName(), loadBackendByFeatures()
 */
 bool QNetworkInformation::loadDefaultBackend()
 {
@@ -782,7 +782,7 @@ QStringList QNetworkInformation::availableBackends()
     if any. If this method is called before a backend is loaded,
     it returns a null pointer.
 
-    \sa load()
+    \sa loadBackendByName(), loadDefaultBackend(), loadBackendByFeatures()
 */
 QNetworkInformation *QNetworkInformation::instance()
 {
