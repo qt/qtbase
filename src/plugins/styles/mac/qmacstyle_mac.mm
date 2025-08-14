@@ -43,6 +43,7 @@
 
 #include <QtGui/private/qmacstyle_p.h>
 
+#include <iterator>
 #include <cmath>
 
 QT_USE_NAMESPACE
@@ -329,6 +330,18 @@ static const QMarginsF pushButtonShadowMargins[3] = {
     { 1.5, -1, 1.5, 4 },
     { 1.5, 0.5, 1.5, 2.5 }
 };
+
+void adjustPushButtonShadowMargins(QRectF &rect, QStyleHelper::WidgetSizePolicy size)
+{
+    if (qt_apple_runningWithLiquidGlass()) {
+        static const QMarginsF margins[3] = {{1.5, -2.5, 1.5, 1.5},
+                                             {1.5, -1, 1.5, 4.0},
+                                             {1.5, -0.5, 1.5, 2.5}};
+        rect -= margins[size];
+    } else {
+        rect -= pushButtonShadowMargins[size];
+    }
+}
 
 // These are frame heights as reported by Xcode 9's Interface Builder
 // and determined experimentally.
@@ -1028,6 +1041,51 @@ static QSize qt_aqua_get_known_size(QStyle::ContentsType ct, const QStyleOption 
     return ret;
 }
 
+static CGRect qt_alignmentRectForFrame(CGRect rect, QStyleHelper::WidgetSizePolicy size,
+                                       QMacStylePrivate::CocoaControlType ct)
+{
+    // On macOS 26 with Liquid Glass, the NSView's -alignmentRectForFrame:
+    // returns (for NSButton) the value of 'rect' unchanged, making
+    // our focus ring too large and shifted vertically. All insets
+    // are 0.
+    // Here we don't touch horizontal coordinate/width - they are good as
+    // they are.
+
+    if (ct != QMacStylePrivate::Button_PushButton && ct != QMacStylePrivate::Button_PopupButton
+        && ct != QMacStylePrivate::Button_PullDown) {
+        return rect;
+    }
+
+    // Insets that we had from AppKit and that our focus calculations rely
+    // on.
+    // FIXME: further adjust them if needed in 'drawFocusRing'.
+    static const NSEdgeInsets buttonInsets[] = {
+        // top left bottom right
+        {7., 0., 5., 0.}, // Regular
+        {7., 0., 4., 0.}, // Small
+        {2., 0., 1., 0.}  // Mini
+        // Large (missing on macOS 15)
+        // ExtraLarge (missing on macOS 15)
+    };
+    // Button_PopupButton, Button_PullDown
+    static const NSEdgeInsets popupButtonInsets[] = {
+        // top left bottom right
+        {4., 0., 1., 0.}, // Regular
+        {4., 0., 2., 0.}, // Small
+        {3., 0., 1., 0.}  // Mini
+    };
+    static_assert(std::size(buttonInsets) == std::size(popupButtonInsets));
+
+    const auto *insets = ct == QMacStylePrivate::Button_PushButton ? buttonInsets : popupButtonInsets;
+    // SizeLarge = 0, SizeSmall = 1, SizeMini = 2
+    if (size >= 0 && size_t(size) < std::size(buttonInsets)) {
+        const auto &inset = insets[size];
+        rect.origin.y += inset.top;
+        rect.size.height -= inset.top + inset.bottom;
+    }
+
+    return rect;
+}
 
 #if defined(QMAC_QAQUASTYLE_SIZE_CONSTRAIN) || defined(DEBUG_SIZE_CONSTRAINT)
 static QStyleHelper::WidgetSizePolicy qt_aqua_guess_size(const QWidget *widg, QSize large, QSize small, QSize mini)
@@ -1086,9 +1144,15 @@ void QMacStylePrivate::drawFocusRing(QPainter *p, const QRectF &targetRect, int 
         const auto cbInnerRadius = (cw.size == QStyleHelper::SizeMini ? 2.0 : 3.0);
         const auto cbSize = cw.size == QStyleHelper::SizeLarge ? 13 :
                             cw.size == QStyleHelper::SizeSmall ? 11 : 9; // As measured
-        hOffset = hMargin + (cw.size == QStyleHelper::SizeLarge ? 2.5 :
-                             cw.size == QStyleHelper::SizeSmall ? 2.0 : 1.0); // As measured
+        hOffset = hMargin + (cw.size == QStyleHelper::SizeLarge ? (qt_apple_runningWithLiquidGlass() ? 1.5 : 2.5) :
+                             cw.size == QStyleHelper::SizeSmall ? (qt_apple_runningWithLiquidGlass() ? 1.5 : 2.0) : 1.0); // As measured
         vOffset = 0.5 * qreal(targetRect.height() - cbSize);
+        if (qt_apple_runningWithLiquidGlass()) {
+            if (cw.size == QStyleHelper::SizeSmall)
+                vOffset += 0.5;
+            if (cw.size == QStyleHelper::SizeMini)
+                vOffset -= 1.;
+        }
         const auto cbInnerRect = QRectF(0, 0, cbSize, cbSize);
         const auto cbOuterRadius = cbInnerRadius + focusRingWidth;
         const auto cbOuterRect = cbInnerRect.adjusted(-focusRingWidth, -focusRingWidth, focusRingWidth, focusRingWidth);
@@ -1099,8 +1163,8 @@ void QMacStylePrivate::drawFocusRing(QPainter *p, const QRectF &targetRect, int 
     case Button_RadioButton: {
         const auto rbSize = cw.size == QStyleHelper::SizeLarge ? 15 :
                             cw.size == QStyleHelper::SizeSmall ? 13 : 9; // As measured
-        hOffset = hMargin + (cw.size == QStyleHelper::SizeLarge ? 1.5 :
-                             cw.size == QStyleHelper::SizeSmall ? 1.0 : 1.0); // As measured
+        hOffset = hMargin + (cw.size == QStyleHelper::SizeLarge ? (qt_apple_runningWithLiquidGlass() ? 0.5 : 1.5) :
+                             cw.size == QStyleHelper::SizeSmall ? (qt_apple_runningWithLiquidGlass() ? 0.5 : 1.0) : 1.0); // As measured
         vOffset = 0.5 * qreal(targetRect.height() - rbSize);
         const auto rbInnerRect = QRectF(0, 0, rbSize, rbSize);
         const auto rbOuterRect = rbInnerRect.adjusted(-focusRingWidth, -focusRingWidth, focusRingWidth, focusRingWidth);
@@ -1114,9 +1178,14 @@ void QMacStylePrivate::drawFocusRing(QPainter *p, const QRectF &targetRect, int 
         auto *pb = static_cast<NSButton *>(cocoaControl(cw));
         const QRectF frameRect = cw.adjustedControlFrame(targetRect.adjusted(hMargin, vMargin, -hMargin, -vMargin));
         pb.frame = frameRect.toCGRect();
-        focusRect = QRectF::fromCGRect([pb alignmentRectForFrame:pb.frame]);
+
+        if (qt_apple_runningWithLiquidGlass())
+            focusRect = QRectF::fromCGRect(qt_alignmentRectForFrame(pb.frame, cw.size, cw.type));
+        else
+            focusRect = QRectF::fromCGRect([pb alignmentRectForFrame:pb.frame]);
+
         if (cw.type == QMacStylePrivate::Button_PushButton) {
-            focusRect -= pushButtonShadowMargins[cw.size];
+            adjustPushButtonShadowMargins(focusRect, cw.size);
             if (cw.size == QStyleHelper::SizeMini)
                 focusRect.adjust(0, 3, 0, -3);
         } else if (cw.type == QMacStylePrivate::Button_PullDown) {
@@ -1142,10 +1211,12 @@ void QMacStylePrivate::drawFocusRing(QPainter *p, const QRectF &targetRect, int 
     case Button_PopupButton:
     case SegmentedControl_Single: {
         QRectF focusRect = targetRect;
-        if (isBigSurOrAbove)
-            focusRect.translate(0, -1.5);
-        else if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSCatalina)
+        if (isBigSurOrAbove) { // These adjustments look bad on Tahoe with L. Glass.
+            if (!qt_apple_runningWithLiquidGlass())
+                focusRect.translate(0, -1.5);
+        } else if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSCatalina) {
             focusRect.adjust(0, 0, 0, -1);
+        }
         const qreal innerRadius = cw.type == Button_PushButton ? 3 : 4;
         const qreal outerRadius = innerRadius + focusRingWidth;
         hOffset = focusRect.left();
@@ -5676,7 +5747,10 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                 const int vMargin = proxy()->pixelMetric(QStyle::PM_FocusFrameVMargin, combo, widget);
                 QRectF focusRect;
                 if (cw.type == QMacStylePrivate::Button_PopupButton) {
-                    focusRect = QRectF::fromCGRect([cc alignmentRectForFrame:cc.frame]);
+                    if (qt_apple_runningWithLiquidGlass())
+                        focusRect = QRectF::fromCGRect(qt_alignmentRectForFrame(cc.frame, cw.size, cw.type));
+                    else
+                        focusRect = QRectF::fromCGRect([cc alignmentRectForFrame:cc.frame]);
                     focusRect -= pullDownButtonShadowMargins[cw.size];
                     if (cw.size == QStyleHelper::SizeSmall)
                         focusRect = focusRect.translated(0, 1);
