@@ -11,6 +11,12 @@
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qoperatingsystemversion.h>
 
+#if defined(Q_OS_MACOS)
+# include <AppKit/AppKit.h>
+#elif defined(QT_PLATFORM_UIKIT)
+# include <UIKit/UIKit.h>
+#endif
+
 QT_USE_NAMESPACE
 
 QT_BEGIN_NAMESPACE

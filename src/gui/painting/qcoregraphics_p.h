@@ -24,13 +24,16 @@
 
 #include <CoreGraphics/CoreGraphics.h>
 
-#if defined(__OBJC__)
-# if defined(Q_OS_MACOS)
-#  include <AppKit/AppKit.h>
-# elif defined(QT_PLATFORM_UIKIT)
-#  include <UIKit/UIKit.h>
+#if defined(Q_OS_MACOS)
+# if defined(__OBJC__)
+#  include <AppKit/NSImage.h>
+# else
+Q_FORWARD_DECLARE_OBJC_CLASS(NSImage);
 # endif
 #endif
+
+Q_FORWARD_DECLARE_OBJC_CLASS(UIImage);
+Q_FORWARD_DECLARE_OBJC_CLASS(NSColor);
 
 QT_BEGIN_NAMESPACE
 
@@ -43,6 +46,7 @@ Q_GUI_EXPORT QImage qt_mac_toQImage(const UIImage *image, QSizeF size);
 #ifdef Q_OS_MACOS
 Q_GUI_EXPORT QPixmap qt_mac_toQPixmap(const NSImage *image, const QSizeF &size);
 
+#if defined(__OBJC__)
 QT_END_NAMESPACE
 
 // @compatibility_alias doesn't work with categories or their methods
@@ -59,6 +63,7 @@ QT_END_NAMESPACE
                                            withState:(QT_PREPEND_NAMESPACE(QIcon)::State)state;
 @end
 QT_BEGIN_NAMESPACE
+#endif // __OBJC__
 
 #endif
 Q_GUI_EXPORT CGImageRef qt_mac_toCGImage(const QImage &qImage);
