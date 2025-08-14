@@ -6,6 +6,8 @@
 #include <private/qcore_mac_p.h>
 #include <private/qcoregraphics_p.h>
 
+#include <QtGui/qcolorspace.h>
+
 #import <Foundation/Foundation.h>
 #import <CoreGraphics/CoreGraphics.h>
 
@@ -56,7 +58,8 @@ QT_BEGIN_NAMESPACE
     convert the QImage to a supported format first, for example
     Format_ARGB32_Premultiplied.
 
-    The CGImageRef color space is set to the sRGB color space.
+    If the image does not have a color space set the resulting
+    CGImageRef color space is set to the sRGB color space.
 
     \ingroup platform-type-conversions
 */
@@ -77,7 +80,14 @@ CGImageRef QImage::toCGImage() const
     QCFType<CGDataProviderRef> dataProvider =
         CGDataProviderCreateWithData(new QImage(*this), bits(), sizeInBytes(), deleter);
 
-    QCFType<CGColorSpaceRef> colorSpace =  CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
+    QCFType<CGColorSpaceRef> cgColorSpace = [&]{
+        if (colorSpace().isValid()) {
+            QCFType<CFDataRef> iccData = colorSpace().iccProfile().toCFData();
+            return CGColorSpaceCreateWithICCData(iccData);
+        } else {
+            return CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
+        }
+    }();
 
     const size_t bitsPerComponent = 8;
     const size_t bitsPerPixel = 32;
@@ -85,7 +95,7 @@ CGImageRef QImage::toCGImage() const
     const bool shouldInterpolate = false;
 
     return CGImageCreate(width(), height(), bitsPerComponent, bitsPerPixel,
-                         this->bytesPerLine(), colorSpace, bitmapInfo, dataProvider,
+                         this->bytesPerLine(), cgColorSpace, bitmapInfo, dataProvider,
                          decode, shouldInterpolate, kCGRenderingIntentDefault);
 }
 
