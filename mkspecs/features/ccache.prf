@@ -8,7 +8,7 @@ launcher_prefix = ccache
     launcher_prefix = $$QMAKE_CACHE_LAUNCHER_PREFIX
 }
 
-precompile_header:contains(launcher_prefix, ccache) {
+precompile_header:contains(launcher_prefix, ccache):!equals(QMAKE_HOST.os, Windows) {
     CCACHE_SLOPPINESS += pch_defines time_macros
 
     launcher_prefix = \
@@ -19,5 +19,13 @@ precompile_header:contains(launcher_prefix, ccache) {
         $$launcher_prefix
 }
 
-for(tool, $$list(QMAKE_CC QMAKE_CXX QMAKE_LINK QMAKE_LINK_SHLIB QMAKE_LINK_C)): \
+# sccache doesn't recognize that link.exe is a linker, not a compiler, so when targeting msvc
+# only wrap the compiler tools.
+msvc {
+   tools = QMAKE_CC QMAKE_CXX
+} else {
+   tools = QMAKE_CC QMAKE_CXX QMAKE_LINK QMAKE_LINK_SHLIB QMAKE_LINK_C
+}
+
+for(tool, tools): \
     $$tool = $$launcher_prefix $$eval($$tool)
