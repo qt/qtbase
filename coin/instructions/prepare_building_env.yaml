@@ -540,6 +540,8 @@ instructions:
 
   # Always pass the location of the python intrepreter meant to be used for SBOM generation,
   # because the Qt default has changed to always generate an SBOM.
+  # Don't forget to adjust tests/auto/cmake/RunCMake/Sbom/RunCMakeTest.cmake
+  # in case of changing / removing these args.
   - type: EnvironmentVariable
     variableName: SBOM_PYTHON_ARGS
     variableValue: >-
