@@ -134,7 +134,7 @@ QSqlIndex QSQLiteDriverPrivate::getTableInfo(QSqlQuery &query, const QString &ta
         }
     }
 
-    query.exec("PRAGMA "_L1 + schema + "table_info ("_L1 + table + u')');
+    query.exec("PRAGMA "_L1 + schema + "table_xinfo ("_L1 + table + u')');
     QSqlIndex ind;
     while (query.next()) {
         bool isPk = query.value(5).toInt();
