@@ -413,25 +413,28 @@ void tst_QFiledialog::completer_data()
     QTest::addColumn<QString>("input");
     QTest::addColumn<int>("expected");
 
-    const QString rootPath = QDir::rootPath();
-
     QTest::newRow("r, 10")   << QString() << "r"   << 10;
     QTest::newRow("x, 0")    << QString() << "x"   << 0;
     QTest::newRow("../, -1") << QString() << "../" << -1;
 
+
+#ifndef Q_OS_ANDROID
+    const QString rootPath = QDir::rootPath();
     QTest::newRow("goto root")     << QString()        << rootPath << -1;
     QTest::newRow("start at root") << rootPath << QString()        << -1;
+#endif
 
-    QDir dir = QDir::root();
 #ifdef Q_OS_ANDROID
     const auto homePaths = QStandardPaths::standardLocations(QStandardPaths::HomeLocation);
     QVERIFY(!homePaths.isEmpty());
-    dir = QDir(homePaths.first());
-#endif
-
+    const QString folder = homePaths.first();
+#else
+    QDir dir = QDir::root();
     QFileInfoList list = dir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot);
     QVERIFY(!list.isEmpty());
     const QString folder = list.first().absoluteFilePath();
+#endif
+
     QTest::newRow("start at one below root r") << folder << "r" << -1;
     QTest::newRow("start at one below root ../") << folder << "../" << -1;
 }
