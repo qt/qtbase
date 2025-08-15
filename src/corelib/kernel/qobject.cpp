@@ -2982,10 +2982,15 @@ QMetaObject::Connection QObject::connect(const QObject *sender, const char *sign
                   (method && *method) ? method + 1 : "(nullptr)");
         return QMetaObject::Connection(nullptr);
     }
-    QByteArray pinnedSignal;
 
     if (!check_signal_macro(sender, signal, "connect", "bind"))
         return QMetaObject::Connection(nullptr);
+
+    int membcode = extract_code(method);
+    if (!check_method_code(membcode, receiver, method, "connect"))
+        return QMetaObject::Connection(nullptr);
+
+    QByteArray pinnedSignal;
     const QMetaObject *smeta = sender->metaObject();
     const char *signal_arg = signal;
     ++signal; // skip code
@@ -3014,10 +3019,6 @@ QMetaObject::Connection QObject::connect(const QObject *sender, const char *sign
     signal_index += QMetaObjectPrivate::signalOffset(smeta);
 
     QByteArray pinnedMethod;
-    int membcode = extract_code(method);
-
-    if (!check_method_code(membcode, receiver, method, "connect"))
-        return QMetaObject::Connection(nullptr);
     const char *method_arg = method;
     ++method; // skip code
 
@@ -3266,6 +3267,18 @@ bool QObject::disconnect(const QObject *sender, const char *signal,
         return false;
     }
 
+    if (signal) {
+        if (!check_signal_macro(sender, signal, "disconnect", "unbind"))
+            return false;
+    }
+
+    int membcode = -1;
+    if (method) {
+        membcode = extract_code(method);
+        if (!check_method_code(membcode, receiver, method, "disconnect"))
+            return false;
+    }
+
     const char *signal_arg = signal;
     QByteArray pinnedSignal;
     bool signal_found = false;
@@ -3279,14 +3292,11 @@ bool QObject::disconnect(const QObject *sender, const char *signal,
                 QT_RETHROW;
         }
 
-        if (!check_signal_macro(sender, signal, "disconnect", "unbind"))
-            return false;
         signal++; // skip code
     }
 
     QByteArray pinnedMethod;
     const char *method_arg = method;
-    int membcode = -1;
     bool method_found = false;
     if (method) {
         QT_TRY {
@@ -3298,9 +3308,6 @@ bool QObject::disconnect(const QObject *sender, const char *signal,
                 QT_RETHROW;
         }
 
-        membcode = extract_code(method);
-        if (!check_method_code(membcode, receiver, method, "disconnect"))
-            return false;
         method++; // skip code
     }
 
