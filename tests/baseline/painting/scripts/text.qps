@@ -223,3 +223,17 @@ save
     setFont "QtUnderlineTest2" 12 normal normal default underline
     drawText 0 20 "1234"
 restore
+
+translate 0 35.5
+save
+    setPen black
+    setFont "sansserif" 12 normal
+    drawAlignedText 0 0 1000 1000 2048 "&Hello"
+restore
+
+translate 0 35.5
+save
+    setPen black
+    setFont "sansserif" 12 normal
+    drawAlignedText 0 0 1000 1000 2048 "&مرحبًا"
+restore

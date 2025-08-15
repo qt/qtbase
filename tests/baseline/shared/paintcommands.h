@@ -177,6 +177,7 @@ private:
     void command_drawRoundedRect(QRegularExpressionMatch re);
     void command_drawRoundRect(QRegularExpressionMatch re);
     void command_drawText(QRegularExpressionMatch re);
+    void command_drawAlignedText(QRegularExpressionMatch re);
     void command_drawStaticText(QRegularExpressionMatch re);
     void command_drawGlyphRun(QRegularExpressionMatch re);
 #ifndef QT_NO_TEXTHTMLPARSER

@@ -442,6 +442,10 @@ void PaintCommands::staticInit()
                       "^drawText\\s+(-?\\w*)\\s+(-?\\w*)\\s+\"(.*)\"$",
                       "drawText <x> <y> <text>",
                       "drawText 10 10 \"my text\"");
+    DECL_PAINTCOMMAND("drawAlignedText", command_drawAlignedText,
+                      "^drawAlignedText\\s+(-?\\w*)\\s+(-?\\w*)\\s+(-?\\w*)\\s+(-?\\w*)\\s+(-?\\w*)\\s+\"(.*)\"$",
+                      "drawAlignedText <x> <y> <width> <height> <flags> <text>",
+                      "drawAlignedText 10 10 1000 1000 2 \"my text\"");
     DECL_PAINTCOMMAND("drawStaticText", command_drawStaticText,
                       "^drawStaticText\\s+(-?\\w*)\\s+(-?\\w*)\\s+\"(.*)\"$",
                       "drawStaticText <x> <y> <text>",
@@ -1357,6 +1361,27 @@ void PaintCommands::command_drawText(QRegularExpressionMatch re)
         printf(" -(lance) drawText(%d, %d, %s)\n", x, y, qPrintable(txt));
 
     m_painter->drawText(x, y, txt);
+}
+
+/***************************************************************************************************/
+void PaintCommands::command_drawAlignedText(QRegularExpressionMatch re)
+{
+    if (!m_shouldDrawText)
+        return;
+    QStringList caps = re.capturedTexts();
+    int x = convertToInt(caps.at(1));
+    int y = convertToInt(caps.at(2));
+    int width = convertToInt(caps.at(3));
+    int height = convertToInt(caps.at(4));
+    int flags = convertToInt(caps.at(5));
+    QString txt = caps.at(6);
+
+    if (m_verboseMode) {
+        printf(" -(lance) drawText(%d, %d, %d, %d, %d, %s)\n",
+               x, y, width, height, flags, qPrintable(txt));
+    }
+
+    m_painter->drawText(x, y, width, height, flags, txt);
 }
 
 void PaintCommands::command_drawStaticText(QRegularExpressionMatch re)
