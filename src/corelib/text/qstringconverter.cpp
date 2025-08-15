@@ -2788,7 +2788,8 @@ const char *QStringConverter::nameForEncoding(QStringConverter::Encoding e) noex
 
     \note \a out must be large enough to be able to hold all the decoded data. Use
     requiredSpace() to determine the maximum size requirement to be able to encode
-    \a in.
+    \a in. This function may write to any bytes between \a out and \c{out +
+    requiredSpace()}, including those past the returned end pointer.
 
     \sa requiredSpace()
 */
@@ -2884,7 +2885,9 @@ const char *QStringConverter::nameForEncoding(QStringConverter::Encoding e) noex
 
     \a out needs to be large enough to be able to hold all the decoded data. Use
     \l{requiredSpace} to determine the maximum size requirements to decode an encoded
-    data buffer of \c in.size() bytes.
+    data buffer of \c in.size() bytes. This function may write to any bytes
+    between \a out and \c{out + requiredSpace()}, including those past the
+    returned end pointer.
 
     \sa requiredSpace
 */
