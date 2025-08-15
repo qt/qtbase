@@ -253,7 +253,12 @@ function(qt_internal_extend_target target)
                 FORWARD_MULTI
                     ${__qt_internal_sbom_multi_args}
             )
-            _qt_internal_extend_sbom(${target} ${sbom_args})
+            # Don't call extend_sbom unless we actually have any SBOM args, to prevent
+            # recording of a target if it has no SBOM info. Relevant for QtFooModulePrivate targets
+            # which don't appear in the SBOM atm.
+            if(sbom_args)
+                _qt_internal_extend_sbom(${target} ${sbom_args})
+            endif()
         endif()
 
         set(target_private "${target}Private")

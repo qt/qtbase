@@ -1206,25 +1206,17 @@ function(_qt_internal_add_sbom target)
 
     set(forward_args ${ARGN})
 
-    # Remove the IMMEDIATE_FINALIZATION from the forwarded args.
-    list(REMOVE_ITEM forward_args IMMEDIATE_FINALIZATION)
-
     # If a target doesn't exist we create it.
     if(NOT TARGET "${target}")
         _qt_internal_create_sbom_target("${target}" ${forward_args})
     endif()
 
+    if(arg_IMMEDIATE_FINALIZATION)
+        list(APPEND forward_args IMMEDIATE_FINALIZATION)
+    endif()
+
     # Save the passed options.
     _qt_internal_extend_sbom("${target}" ${forward_args})
-
-    # Defer finalization. In case it was already deferred, it will be a no-op.
-    # Some targets need immediate finalization, like the PlatformInternal ones, because otherwise
-    # they would be finalized after the sbom was already generated.
-    set(immediate_finalization "")
-    if(arg_IMMEDIATE_FINALIZATION)
-        set(immediate_finalization IMMEDIATE_FINALIZATION)
-    endif()
-    _qt_internal_defer_sbom_finalization("${target}" ${immediate_finalization})
 endfunction()
 
 # Helper to add custom sbom information for some kind of dependency that is not backed by an
@@ -1274,7 +1266,10 @@ function(_qt_internal_extend_sbom target)
             "a target first, or call the function on any other exsiting target.")
     endif()
 
-    set(opt_args "")
+    set(opt_args
+        NO_FINALIZATION
+        IMMEDIATE_FINALIZATION
+    )
     set(single_args
         TYPE
         FRIENDLY_PACKAGE_NAME
@@ -1282,6 +1277,14 @@ function(_qt_internal_extend_sbom target)
     set(multi_args "")
     cmake_parse_arguments(PARSE_ARGV 1 arg "${opt_args}" "${single_args}" "${multi_args}")
     # No validation on purpose, the other options will be validated later.
+
+    set(forward_args ${ARGN})
+
+    # Remove NO_FINALIZATION, IMMEDIATE_FINALIZATION from the forwarded args.
+    list(REMOVE_ITEM forward_args
+        NO_FINALIZATION
+        IMMEDIATE_FINALIZATION
+    )
 
     # Make sure a spdx id is recorded for the target right now, so it is "known" when handling
     # relationships for other targets, even if the target was not yet finalized.
@@ -1297,8 +1300,24 @@ function(_qt_internal_extend_sbom target)
             ${package_name_option}
         )
     endif()
+    get_target_property(is_system_library "${target}" _qt_internal_sbom_is_system_library)
 
-    set_property(TARGET ${target} APPEND PROPERTY _qt_finalize_sbom_args "${ARGN}")
+    set_property(TARGET ${target} APPEND PROPERTY _qt_finalize_sbom_args "${forward_args}")
+
+    # If requested via NO_FINALIZATION or the target is a system library, don't run finalization.
+    # This is necessary for system libraries because those are handled in special code path just
+    # before finishing project sbom generation, and finalizing them would cause issues because they
+    # don't actually have a TYPE until a later point in time.
+    if(NOT arg_NO_FINALIZATION AND NOT is_system_library)
+        # Defer finalization. In case it was already deferred, it will be a no-op.
+        # Some targets need immediate finalization, like the PlatformInternal ones,
+        # because otherwise they would be finalized after the sbom was already generated.
+        set(immediate_finalization "")
+        if(arg_IMMEDIATE_FINALIZATION)
+            set(immediate_finalization IMMEDIATE_FINALIZATION)
+        endif()
+        _qt_internal_defer_sbom_finalization("${target}" ${immediate_finalization})
+    endif()
 endfunction()
 
 # Helper to add additional sbom information to targets created by qt_find_package.
@@ -1327,7 +1346,11 @@ function(_qt_find_package_extend_sbom)
     _qt_internal_validate_all_args_are_parsed(arg)
 
     # Make sure not to forward TARGETS.
-    set(sbom_args "")
+    # Also don't enable finalization, because system libraries are handled specially in a different
+    # code path.
+    set(sbom_args
+        NO_FINALIZATION
+    )
     _qt_internal_forward_function_args(
         FORWARD_APPEND
         FORWARD_PREFIX arg
