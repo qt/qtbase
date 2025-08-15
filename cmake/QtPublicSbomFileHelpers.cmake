@@ -61,7 +61,8 @@ function(_qt_internal_sbom_handle_target_binary_files target)
     )
 
     if(NOT arg_TYPE IN_LIST supported_types)
-        message(FATAL_ERROR "Unsupported target TYPE for SBOM creation: ${arg_TYPE}")
+        message(FATAL_ERROR
+            "Unsupported target TYPE '${arg_TYPE}' for target '${target}' during SBOM creation.")
     endif()
 
     set(types_without_binary_files
