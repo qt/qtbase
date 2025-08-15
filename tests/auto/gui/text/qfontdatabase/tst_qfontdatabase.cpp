@@ -64,6 +64,7 @@ private slots:
 
     void stretchRespected();
 
+    void variableFont_data();
     void variableFont();
 
 #ifdef Q_OS_WIN
@@ -542,17 +543,41 @@ void tst_QFontDatabase::findCourier()
 }
 #endif
 
+void tst_QFontDatabase::variableFont_data()
+{
+    QTest::addColumn<bool>("loadFromData");
+
+    QTest::newRow( "Load from file" ) << false;
+    QTest::newRow( "Load from data" ) << true;
+}
+
 void tst_QFontDatabase::variableFont()
 {
+    QFETCH(bool, loadFromData);
+
     {
         QPlatformFontDatabase *pfdb = QGuiApplicationPrivate::platformIntegration()->fontDatabase();
         if (!pfdb->supportsVariableApplicationFonts())
             QSKIP("Variable application fonts not supported on this platform");
     }
 
-    int id = QFontDatabase::addApplicationFont(m_testFontVariable);
+    int id = -1;
+    if (loadFromData) {
+        QFile file(m_testFontVariable);
+        QVERIFY(file.open(QIODevice::ReadOnly));
+
+        QByteArray data = file.readAll();
+        id = QFontDatabase::addApplicationFontFromData(data);
+    } else {
+        id = QFontDatabase::addApplicationFont(m_testFontVariable);
+    }
     if (id == -1)
         QSKIP("Skip the test since app fonts are not supported on this system");
+
+    auto cleanup = qScopeGuard([&id] {
+        if (id >= 0)
+            QFontDatabase::removeApplicationFont(id);
+    });
 
     QString family = QFontDatabase::applicationFontFamilies(id).first();
     {
@@ -579,7 +604,17 @@ void tst_QFontDatabase::variableFont()
         QVERIFY(regularFm.horizontalAdvance(QLatin1Char('1')) < extraBoldFm.horizontalAdvance(QLatin1Char('1')));
     }
 
-    QFontDatabase::removeApplicationFont(id);
+    {
+        QFont regularFont(family);
+        QFont extraBoldFont(family);
+        extraBoldFont.setStyleName(u"QtExtraBold"_s);
+        extraBoldFont.setVariableAxis("wght", 400);
+
+        QFontMetricsF regularFm(regularFont);
+        QFontMetricsF extraBoldFm(extraBoldFont);
+
+        QCOMPARE(extraBoldFm.horizontalAdvance(QLatin1Char('1')), regularFm.horizontalAdvance(QLatin1Char('1')));
+    }
 }
 
 void tst_QFontDatabase::addApplicationFontFallback()

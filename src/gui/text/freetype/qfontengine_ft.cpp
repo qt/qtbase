@@ -327,6 +327,15 @@ QFreetypeFace *QFreetypeFace::getFace(const QFontEngine::FaceId &face_id,
             }
         }
 
+#if (FREETYPE_MAJOR*10000 + FREETYPE_MINOR*100 + FREETYPE_PATCH) >= 20900
+        if (face_id.instanceIndex >= 0) {
+            qCDebug(lcFontMatch)
+            << "Selecting named instance" << (face_id.instanceIndex)
+            << "in" << face_id.filename;
+            FT_Set_Named_Instance(face, face_id.instanceIndex + 1);
+        }
+#endif
+
         // Due to a bug in Freetype 2.13.2 and earlier causing just a call to FT_Get_MM_Var() on
         // specific fonts to corrupt the FT_Face so that loading glyphs will later fail, we use a
         // temporary FT_Face here which can be thrown away after. The bug has been fixed in
@@ -373,14 +382,6 @@ QFreetypeFace *QFreetypeFace::getFace(const QFontEngine::FaceId &face_id,
             FT_Done_Face(tmpFace);
         }
 
-#if (FREETYPE_MAJOR*10000 + FREETYPE_MINOR*100 + FREETYPE_PATCH) >= 20900
-        if (face_id.instanceIndex >= 0) {
-            qCDebug(lcFontMatch)
-                    << "Selecting named instance" << (face_id.instanceIndex)
-                    << "in" << face_id.filename;
-            FT_Set_Named_Instance(face, face_id.instanceIndex + 1);
-        }
-#endif
         newFreetype->face = face;
         newFreetype->mm_var = nullptr;
         if (FT_IS_NAMED_INSTANCE(newFreetype->face)) {
