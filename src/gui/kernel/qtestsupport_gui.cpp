@@ -48,7 +48,12 @@ Q_GUI_EXPORT bool QTest::qWaitForWindowActive(QWindow *window, int timeout)
                    << "Falling back to qWaitForWindowExposed.";
         return qWaitForWindowExposed(window, timeout);
     }
-    return QTest::qWaitFor([&]() { return window->isActive(); }, timeout);
+    return QTest::qWaitFor([wp = QPointer(window)]() {
+        if (QWindow *w = wp.data(); !w)
+            return false;
+        else
+            return w->isActive();
+    }, timeout);
 }
 
 /*!
@@ -69,7 +74,12 @@ Q_GUI_EXPORT bool QTest::qWaitForWindowActive(QWindow *window, int timeout)
 */
 Q_GUI_EXPORT bool QTest::qWaitForWindowFocused(QWindow *window, QDeadlineTimer timeout)
 {
-    return QTest::qWaitFor([&]() { return qGuiApp->focusWindow() == window; }, timeout);
+    return QTest::qWaitFor([wp = QPointer(window)]() {
+        if (QWindow *w = wp.data(); !w)
+            return false;
+        else
+            return qGuiApp->focusWindow() == w;
+    }, timeout);
 }
 
 /*!
@@ -88,7 +98,12 @@ Q_GUI_EXPORT bool QTest::qWaitForWindowFocused(QWindow *window, QDeadlineTimer t
 */
 Q_GUI_EXPORT bool QTest::qWaitForWindowExposed(QWindow *window, int timeout)
 {
-    return QTest::qWaitFor([&]() { return window->isExposed(); }, timeout);
+    return QTest::qWaitFor([wp = QPointer(window)]() {
+        if (QWindow *w = wp.data(); !w)
+            return false;
+        else
+            return w->isExposed();
+    }, timeout);
 }
 
 namespace QTest {
