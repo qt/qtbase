@@ -4768,7 +4768,7 @@ bool QLocaleData::numberToCLocale(QStringView s, QLocale::NumberOptions number_o
     return true;
 }
 
-ParsingResult
+QLocaleData::ParsingResult
 QLocaleData::validateChars(QStringView str, NumberMode numMode, int decDigits,
                            QLocale::NumberOptions number_options) const
 {

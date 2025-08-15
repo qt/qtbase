@@ -364,8 +364,11 @@ static qlonglong pow10(int exp)
 }
 
 template <typename T> static inline
-std::optional<QValidator::State> initialResultCheck(T min, T max, const ParsingResult &result)
+std::optional<QValidator::State> initialResultCheck(T min, T max,
+                                                    const QLocaleData::ParsingResult &result)
 {
+
+    using ParsingResult = QLocaleData::ParsingResult;
     if (result.state == ParsingResult::Invalid)
         return QValidator::Invalid;
 
@@ -386,7 +389,7 @@ std::optional<QValidator::State> initialResultCheck(T min, T max, const ParsingR
 
 QValidator::State QIntValidator::validate(QString & input, int&) const
 {
-    ParsingResult result =
+    QLocaleData::ParsingResult result =
         locale().d->m_data->validateChars(input, QLocaleData::IntegerMode, -1,
                                           locale().numberOptions());
 
@@ -429,7 +432,7 @@ void QIntValidator::fixup(QString &input) const
     auto [parseState, buff] =
         locale().d->m_data->validateChars(input, QLocaleData::IntegerMode, -1,
                                           locale().numberOptions());
-    if (parseState == ParsingResult::Invalid)
+    if (parseState == QLocaleData::ParsingResult::Invalid)
         return;
 
     QSimpleParsedNumber r = QLocaleData::bytearrayToLongLong(buff, 10);
@@ -658,7 +661,7 @@ QValidator::State QDoubleValidator::validate(QString & input, int &) const
 QValidator::State QDoubleValidatorPrivate::validateWithLocale(QString &input, QLocaleData::NumberMode numMode, const QLocale &locale) const
 {
     Q_Q(const QDoubleValidator);
-    ParsingResult result =
+    QLocaleData::ParsingResult result =
             locale.d->m_data->validateChars(input, numMode, q->dec, locale.numberOptions());
 
     std::optional<QValidator::State> opt = initialResultCheck(q->b, q->t, result);
@@ -746,7 +749,7 @@ void QDoubleValidatorPrivate::fixupWithLocale(QString &input, QLocaleData::Numbe
     // an Intermediate value, if it can.
     auto [parseState, buff] =
             locale.d->m_data->validateChars(input, numMode, -1, locale.numberOptions());
-    if (parseState == ParsingResult::Invalid)
+    if (parseState == QLocaleData::ParsingResult::Invalid)
         return;
 
     // buff contains data in C locale.

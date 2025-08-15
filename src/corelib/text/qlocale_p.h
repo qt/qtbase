@@ -246,18 +246,6 @@ Q_DECLARE_TYPEINFO(QLocaleId, Q_PRIMITIVE_TYPE);
 
 using CharBuff = QVarLengthArray<char, 256>;
 
-struct ParsingResult
-{
-    enum State { // A duplicate of QValidator::State
-        Invalid,
-        Intermediate,
-        Acceptable
-    };
-
-    State state = Invalid;
-    CharBuff buff;
-};
-
 struct QLocaleData
 {
 public:
@@ -299,6 +287,18 @@ public:
         int higher = 0; // Each group between separators.
         int least = 0; // Least significant, when any separators appear.
         bool isValid() const { return least > 0 && higher > first && first > 0; }
+    };
+
+    struct ParsingResult
+    {
+        enum State { // A duplicate of QValidator::State
+            Invalid,
+            Intermediate,
+            Acceptable,
+        };
+
+        State state = Invalid;
+        CharBuff buff;
     };
 
 private:
