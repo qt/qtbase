@@ -103,10 +103,19 @@ function(_qt_internal_sbom_begin_project_generate)
     _qt_internal_sbom_set_default_option_value(NAMESPACE
         "${arg_SUPPLIER}/spdxdocs/${arg_PROJECT}-${QT_SBOM_GIT_VERSION}")
 
+    set(fields "")
     if(arg_CPE)
-        set(QT_SBOM_CPE "${arg_CPE}")
-    else()
-        set(QT_SBOM_CPE "")
+        set(fields "${fields}
+ExternalRef: SECURITY cpe23Type ${arg_CPE}")
+    endif()
+
+    set(purl_generic_id "pkg:generic/${arg_SUPPLIER}/${arg_PROJECT}@${QT_SBOM_GIT_VERSION}")
+    set(fields "${fields}
+ExternalRef: PACKAGE-MANAGER purl ${purl_generic_id}")
+
+    if(QT_SBOM_GIT_VERSION)
+        set(fields "${fields}
+PackageVersion: ${QT_SBOM_GIT_VERSION}")
     endif()
 
     string(REGEX REPLACE "[^A-Za-z0-9.]+" "-" arg_PROJECT_FOR_SPDX_ID "${arg_PROJECT_FOR_SPDX_ID}")
@@ -170,10 +179,8 @@ Relationship: SPDXRef-compiler BUILD_DEPENDENCY_OF ${project_spdx_id}
 RelationshipComment: <text>${project_spdx_id} is built by compiler ${CMAKE_CXX_COMPILER_ID} version ${CMAKE_CXX_COMPILER_VERSION}</text>
 
 PackageName: ${arg_PROJECT}
-SPDXID: ${project_spdx_id}
-ExternalRef: SECURITY cpe23Type ${QT_SBOM_CPE}
+SPDXID: ${project_spdx_id}${fields}
 ExternalRef: PACKAGE-MANAGER purl pkg:generic/${arg_SUPPLIER}/${arg_PROJECT}@${QT_SBOM_GIT_VERSION}
-PackageVersion: ${QT_SBOM_GIT_VERSION}
 PackageSupplier: Organization: ${arg_SUPPLIER}
 PackageDownloadLocation: ${arg_DOWNLOAD_LOCATION}
 PackageLicenseConcluded: ${arg_LICENSE}
