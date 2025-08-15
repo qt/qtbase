@@ -83,11 +83,15 @@ function(_qt_internal_sbom_begin_project)
     _qt_internal_sbom_get_root_project_name_for_spdx_id(repo_project_name_for_spdx_id)
     _qt_internal_sbom_get_root_project_name_lower_case(repo_project_name_lowercase)
 
-    set(repo_supplier_url "")
+    set(begin_project_generate_args "")
+
     if(arg_SUPPLIER_URL)
         set(repo_supplier_url "${arg_SUPPLIER_URL}")
     elseif(arg___QT_INTERNAL_HANDLE_QT_REPO)
         _qt_internal_sbom_get_default_supplier_url(repo_supplier_url)
+    endif()
+    if(repo_supplier_url)
+        list(APPEND begin_project_generate_args SUPPLIER_URL "${repo_supplier_url}")
     endif()
 
     # Manual override.
@@ -128,9 +132,13 @@ function(_qt_internal_sbom_begin_project)
     if(arg_DOCUMENT_NAMESPACE)
         set(repo_spdx_namespace "${arg_DOCUMENT_NAMESPACE}")
     else()
+        set(compute_project_namespace_args "")
+        if(repo_supplier_url)
+            list(APPEND compute_project_namespace_args SUPPLIER_URL "${repo_supplier_url}")
+        endif()
         _qt_internal_sbom_compute_project_namespace(repo_spdx_namespace
             PROJECT_NAME "${repo_project_name_lowercase}"
-            SUPPLIER_URL "${repo_supplier_url}"
+            ${compute_project_namespace_args}
         )
     endif()
 
@@ -150,9 +158,14 @@ function(_qt_internal_sbom_begin_project)
         set(install_prefix "\${CMAKE_INSTALL_PREFIX}")
     endif()
 
+    set(compute_project_file_name_args "")
+    if(not_git_version)
+        list(APPEND compute_project_file_name_args VERSION_SUFFIX "${not_git_version}")
+    endif()
+
     _qt_internal_sbom_compute_project_file_name(repo_project_file_name
         PROJECT_NAME "${repo_project_name_lowercase}"
-        VERSION_SUFFIX "${non_git_version}"
+        ${compute_project_file_name_args}
     )
 
     set(repo_spdx_relative_install_path
@@ -170,10 +183,8 @@ function(_qt_internal_sbom_begin_project)
         # It's better to rely on the more granular package licenses.
         set(repo_license "")
     endif()
-
-    set(repo_license_option "")
     if(repo_license)
-        set(repo_license_option "LICENSE" "${repo_license}")
+        list(APPEND begin_project_generate_args LICENSE "${repo_license}")
     endif()
 
     if(arg_COPYRIGHTS)
@@ -182,11 +193,18 @@ function(_qt_internal_sbom_begin_project)
     elseif(arg___QT_INTERNAL_HANDLE_QT_REPO)
         _qt_internal_sbom_get_default_qt_copyright_header(repo_copyright)
     endif()
+    if(repo_copyright)
+        list(APPEND begin_project_generate_args COPYRIGHT "${repo_copyright}")
+    endif()
 
     if(arg_SUPPLIER)
         set(repo_supplier "${arg_SUPPLIER}")
     elseif(arg___QT_INTERNAL_HANDLE_QT_REPO)
         _qt_internal_sbom_get_default_supplier(repo_supplier)
+    endif()
+    if(repo_supplier)
+        # This must not contain spaces!
+        list(APPEND begin_project_generate_args SUPPLIER "${repo_supplier}")
     endif()
 
     if(arg_CPE)
@@ -196,11 +214,17 @@ function(_qt_internal_sbom_begin_project)
     else()
         set(qt_cpe "")
     endif()
+    if(qt_cpe)
+        list(APPEND begin_project_generate_args CPE "${qt_cpe}")
+    endif()
 
     if(arg_DOWNLOAD_LOCATION)
         set(download_location "${arg_DOWNLOAD_LOCATION}")
     elseif(arg___QT_INTERNAL_HANDLE_QT_REPO)
         _qt_internal_sbom_get_qt_repo_source_download_location(download_location)
+    endif()
+    if(download_location)
+        list(APPEND begin_project_generate_args DOWNLOAD_LOCATION "${download_location}")
     endif()
 
     set(project_comment "")
@@ -223,16 +247,11 @@ function(_qt_internal_sbom_begin_project)
     _qt_internal_sbom_begin_project_generate(
         OUTPUT "${repo_spdx_install_path}"
         OUTPUT_RELATIVE_PATH "${repo_spdx_relative_install_path}"
-        ${repo_license_option}
-        COPYRIGHT "${repo_copyright}"
-        SUPPLIER "${repo_supplier}" # This must not contain spaces!
-        SUPPLIER_URL "${repo_supplier_url}"
-        DOWNLOAD_LOCATION "${download_location}"
         PROJECT "${repo_project_name_lowercase}"
         ${project_comment}
         PROJECT_FOR_SPDX_ID "${repo_project_name_for_spdx_id}"
         NAMESPACE "${repo_spdx_namespace}"
-        CPE "${qt_cpe}"
+        ${begin_project_generate_args}
         OUT_VAR_PROJECT_SPDX_ID repo_project_spdx_id
     )
 
