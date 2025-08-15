@@ -830,8 +830,9 @@ bool QChar::isPrint(char32_t ucs4) noexcept
 */
 bool QT_FASTCALL QChar::isSpace_helper(char32_t ucs4) noexcept
 {
-    if (ucs4 > LastValidCodePoint)
+    if (ucs4 > MaxSeparatorCodepoint)
         return false;
+
     const int test = FLAG(Separator_Space) |
                      FLAG(Separator_Line) |
                      FLAG(Separator_Paragraph);

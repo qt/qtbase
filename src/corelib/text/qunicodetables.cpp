@@ -8,6 +8,7 @@
 QT_BEGIN_NAMESPACE
 
 namespace QUnicodeTables {
+static constexpr char32_t MaxSeparatorCodepoint = 0x3000;
 
 static constexpr unsigned short uc_property_trie[] = {
     // [0x0..0x11000)

@@ -1306,6 +1306,7 @@ static QHash<int, int> combiningClassUsage;
 static int maxLowerCaseDiff = 0;
 static int maxUpperCaseDiff = 0;
 static int maxTitleCaseDiff = 0;
+static int maxSeparatorCodepoint = 0;
 
 static void readUnicodeData()
 {
@@ -1366,6 +1367,9 @@ static void readUnicodeData()
 
         UnicodeData &data = UnicodeData::valueRef(codepoint);
         data.p.category = categoryMap.value(properties[UD_Category], QChar::Other_NotAssigned);
+        if (data.p.category == QChar::Separator_Space || data.p.category == QChar::Separator_Line
+                || data.p.category == QChar::Separator_Paragraph)
+            maxSeparatorCodepoint = codepoint;
         data.p.combiningClass = properties[UD_CombiningClass].toInt();
         if (!combiningClassUsage.contains(data.p.combiningClass))
             combiningClassUsage[data.p.combiningClass] = 1;
@@ -2986,7 +2990,12 @@ static QByteArray createPropertyInfo()
     Q_ASSERT(blockMap.size() == BMP_END/BMP_BLOCKSIZE +(SMP_END-BMP_END)/SMP_BLOCKSIZE); // 0x1870
     Q_ASSERT(blockMap.last() + blockMap.size() < (1<<(sizeof(unsigned short)*8)));
 
-    QByteArray out = "static constexpr unsigned short uc_property_trie[] = {\n";
+    QByteArray out;
+    out += "static constexpr char32_t MaxSeparatorCodepoint = 0x";
+    out += QByteArray::number(maxSeparatorCodepoint, 16);
+    out += ";\n";
+
+    out += "\nstatic constexpr unsigned short uc_property_trie[] = {\n";
     // First write the map from blockId to indices of unique blocks:
     out += "    // [0x0..0x" + QByteArray::number(BMP_END, 16) + ")";
     for (int i = 0; i < BMP_END/BMP_BLOCKSIZE; ++i) {
@@ -3702,7 +3711,7 @@ int main(int, char **)
     f.write(note);
     f.write("#include \"qunicodetables_p.h\"\n\n");
     f.write("QT_BEGIN_NAMESPACE\n\n");
-    f.write("namespace QUnicodeTables {\n\n");
+    f.write("namespace QUnicodeTables {\n");
     f.write(properties);
     f.write(specialCases);
     f.write(compositions);
