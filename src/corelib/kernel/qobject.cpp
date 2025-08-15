@@ -2976,7 +2976,7 @@ QMetaObject::Connection QObject::connect(const QObject *sender, const char *sign
                   (method && *method) ? method + 1 : "(nullptr)");
         return QMetaObject::Connection(nullptr);
     }
-    QByteArray tmp_signal_name;
+    QByteArray pinnedSignal;
 
     if (!check_signal_macro(sender, signal, "connect", "bind"))
         return QMetaObject::Connection(nullptr);
@@ -2990,8 +2990,8 @@ QMetaObject::Connection QObject::connect(const QObject *sender, const char *sign
             &smeta, signalName, signalTypes.size(), signalTypes.constData());
     if (signal_index < 0) {
         // check for normalized signatures
-        tmp_signal_name = QMetaObject::normalizedSignature(signal - 1);
-        signal = tmp_signal_name.constData() + 1;
+        pinnedSignal = QMetaObject::normalizedSignature(signal - 1);
+        signal = pinnedSignal.constData() + 1;
 
         signalTypes.clear();
         signalName = QMetaObjectPrivate::decodeMethodSignature(signal, signalTypes);
@@ -3007,7 +3007,7 @@ QMetaObject::Connection QObject::connect(const QObject *sender, const char *sign
     signal_index = QMetaObjectPrivate::originalClone(smeta, signal_index);
     signal_index += QMetaObjectPrivate::signalOffset(smeta);
 
-    QByteArray tmp_method_name;
+    QByteArray pinnedMethod;
     int membcode = extract_code(method);
 
     if (!check_method_code(membcode, receiver, method, "connect"))
@@ -3032,8 +3032,8 @@ QMetaObject::Connection QObject::connect(const QObject *sender, const char *sign
     }
     if (method_index_relative < 0) {
         // check for normalized methods
-        tmp_method_name = QMetaObject::normalizedSignature(method);
-        method = tmp_method_name.constData();
+        pinnedMethod = QMetaObject::normalizedSignature(method);
+        method = pinnedMethod.constData();
 
         methodTypes.clear();
         methodName = QMetaObjectPrivate::decodeMethodSignature(method, methodTypes);
@@ -3254,12 +3254,12 @@ bool QObject::disconnect(const QObject *sender, const char *signal,
     }
 
     const char *signal_arg = signal;
-    QByteArray signal_name;
+    QByteArray pinnedSignal;
     bool signal_found = false;
     if (signal) {
         QT_TRY {
-            signal_name = QMetaObject::normalizedSignature(signal);
-            signal = signal_name.constData();
+            pinnedSignal = QMetaObject::normalizedSignature(signal);
+            signal = pinnedSignal.constData();
         } QT_CATCH (const std::bad_alloc &) {
             // if the signal is already normalized, we can continue.
             if (sender->metaObject()->indexOfSignal(signal + 1) == -1)
@@ -3271,14 +3271,14 @@ bool QObject::disconnect(const QObject *sender, const char *signal,
         signal++; // skip code
     }
 
-    QByteArray method_name;
+    QByteArray pinnedMethod;
     const char *method_arg = method;
     int membcode = -1;
     bool method_found = false;
     if (method) {
         QT_TRY {
-            method_name = QMetaObject::normalizedSignature(method);
-            method = method_name.constData();
+            pinnedMethod = QMetaObject::normalizedSignature(method);
+            method = pinnedMethod.constData();
         } QT_CATCH(const std::bad_alloc &) {
             // if the method is already normalized, we can continue.
             if (receiver->metaObject()->indexOfMethod(method + 1) == -1)
