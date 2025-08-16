@@ -11,6 +11,9 @@
 
 #include <QSignalSpy>
 
+#ifdef Q_OS_ANDROID
+#include <android/api-level.h>
+#endif
 
 class tst_QVulkan : public QObject
 {
@@ -90,10 +93,6 @@ void tst_QVulkan::vulkanCheckSupported()
 
 void tst_QVulkan::vulkan11()
 {
-#ifdef Q_OS_ANDROID
-    if (QNativeInterface::QAndroidApplication::sdkVersion() >= 31)
-        QSKIP("Fails on Android 12 (QTBUG-105739)");
-#endif
 #if VK_VERSION_1_1
     QVulkanInstance inst;
     if (inst.supportedApiVersion() < QVersionNumber(1, 1))
@@ -119,6 +118,11 @@ void tst_QVulkan::vulkan11()
         err = f->vkEnumeratePhysicalDeviceGroups(inst.vkInstance(), &count, groupProperties.data()); // 1.1 API
         QCOMPARE(err, VK_SUCCESS);
         for (const VkPhysicalDeviceGroupProperties &gp : groupProperties) {
+#ifdef Q_OS_ANDROID
+            QEXPECT_FAIL("",
+                "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_GROUP_PROPERTIES check fails on Android",
+                Continue);
+#endif
             QCOMPARE(gp.sType, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_GROUP_PROPERTIES);
             for (uint32_t i = 0; i != gp.physicalDeviceCount; ++i) {
                 VkPhysicalDevice physDev = gp.physicalDevices[i];
@@ -169,9 +173,9 @@ void tst_QVulkan::vulkan11()
 void tst_QVulkan::vulkanPlainWindow()
 {
 #ifdef Q_OS_ANDROID
-    QSKIP("Fails on Android 7 emulator (QTBUG-108328)");
+    if (QNativeInterface::QAndroidApplication::sdkVersion() < __ANDROID_API_Q__)
+        QSKIP ("Versions prior to Android 10 didn't have full Vulkan support.");
 #endif
-
     QVulkanInstance inst;
     if (!inst.create())
         QSKIP("Vulkan init failed; skip");
@@ -459,10 +463,6 @@ void tst_QVulkan::vulkanWindowRenderer()
 
 void tst_QVulkan::vulkanWindowGrab()
 {
-#ifdef Q_OS_ANDROID
-    if (QNativeInterface::QAndroidApplication::sdkVersion() >= 31)
-        QSKIP("Fails on Android 12 (QTBUG-105739)");
-#endif
     QVulkanInstance inst;
     inst.setLayers(QByteArrayList() << "VK_LAYER_KHRONOS_validation");
     if (!inst.create())
