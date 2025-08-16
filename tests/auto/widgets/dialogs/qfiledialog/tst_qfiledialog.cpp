@@ -1435,6 +1435,10 @@ void tst_QFiledialog::widgetlessNativeDialog()
 {
     if (!QGuiApplicationPrivate::platformTheme()->usePlatformNativeDialog(QPlatformTheme::FileDialog))
         QSKIP("This platform always uses widgets to realize its QFileDialog, instead of the native file dialog.");
+
+#ifdef Q_OS_ANDROID
+    QSKIP("It's not possible to hide the native file dialog because its owned by Android system.");
+#endif
     QApplication::setAttribute(Qt::AA_DontUseNativeDialogs, false);
     QFileDialog fd;
     fd.setWindowModality(Qt::ApplicationModal);
@@ -1453,8 +1457,7 @@ void tst_QFiledialog::hideNativeByDestruction()
         QSKIP("This platform always uses widgets to realize its QFileDialog, instead of the native file dialog.");
 
 #ifdef Q_OS_ANDROID
-    // QTBUG-101194
-    QSKIP("Android: This keeps the native window open. Figure out why.");
+    QSKIP("It's not possible to hide the native file dialog because its owned by Android system.");
 #endif
 
     QApplication::setAttribute(Qt::AA_DontUseNativeDialogs, false);
@@ -1591,9 +1594,11 @@ void tst_QFiledialog::rejectModalDialogs()
 {
     if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
         QSKIP("Wayland: This freezes. Figure out why.");
+
 #ifdef Q_OS_ANDROID
-    // QTBUG-101194
-    QSKIP("Android: This freezes. Figure out why.");
+    // This would require android.permission.INJECT_EVENTS which is a system permission,
+    // or running the test with as Instrumentation Test which is not supported by Qt.
+    QSKIP("Rejecting dialog with escape or back button is not supported on Android tests.");
 #endif
 
     // QTBUG-38672 , static functions should return empty Urls
@@ -1627,6 +1632,9 @@ void tst_QFiledialog::QTBUG49600_nativeIconProviderCrash()
     if (!QGuiApplicationPrivate::platformTheme()->usePlatformNativeDialog(QPlatformTheme::FileDialog))
         QSKIP("This platform always uses widgets to realize its QFileDialog, instead of the native file dialog.");
 
+#ifdef Q_OS_ANDROID
+    QSKIP("It's not possible to hide the native file dialog because its owned by Android system.");
+#endif
     QFileDialog fd;
     fd.iconProvider();
 }
@@ -1658,9 +1666,11 @@ void tst_QFiledialog::focusObjectDuringDestruction()
 {
     if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
         QSKIP("Wayland: This freezes. Figure out why.");
+
 #ifdef Q_OS_ANDROID
-    // QTBUG-101194
-    QSKIP("Android: This freezes. Figure out why.");
+    // This would require android.permission.INJECT_EVENTS which is a system permission,
+    // or running the test with as Instrumentation Test which is not supported by Qt.
+    QSKIP("Rejecting dialog with escape or back button is not supported on Android tests.");
 #endif
 
     QTRY_VERIFY(QGuiApplication::topLevelWindows().isEmpty());
