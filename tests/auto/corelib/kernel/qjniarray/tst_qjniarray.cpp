@@ -6,6 +6,8 @@
 #include <QtCore/qjnitypes.h>
 #include <QtCore/qjniarray.h>
 
+QT_BEGIN_NAMESPACE
+
 using namespace Qt::StringLiterals;
 
 class tst_QJniArray : public QObject
@@ -500,6 +502,8 @@ void tst_QJniArray::mutate()
         QCOMPARE(source.toContainer(), target.toContainer());
     }
 }
+
+QT_END_NAMESPACE
 
 QTEST_MAIN(tst_QJniArray)
 
