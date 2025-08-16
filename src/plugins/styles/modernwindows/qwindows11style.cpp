@@ -1108,7 +1108,7 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
                 rect.translate(shiftX, shiftY);
                 painter->setFont(toolbutton->font);
                 const QString text = d->toolButtonElideText(toolbutton, rect, alignment);
-                painter->setPen(buttonLabelColor(option, colorSchemeIndex));
+                painter->setPen(buttonLabelColor(option));
                 proxy()->drawItemText(painter, rect, alignment, toolbutton->palette,
                                       toolbutton->state & State_Enabled, text);
             } else {
@@ -1159,7 +1159,7 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
                     }
                     tr.translate(shiftX, shiftY);
                     const QString text = d->toolButtonElideText(toolbutton, tr, alignment);
-                    painter->setPen(buttonLabelColor(option, colorSchemeIndex));
+                    painter->setPen(buttonLabelColor(option));
                     proxy()->drawItemText(painter, QStyle::visualRect(toolbutton->direction, rect, tr), alignment, toolbutton->palette,
                                           toolbutton->state & State_Enabled, text);
                 } else {
@@ -1367,7 +1367,7 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
                 tf |= Qt::AlignHCenter;
             }
 
-            painter->setPen(buttonLabelColor(option, colorSchemeIndex));
+            painter->setPen(buttonLabelColor(option));
             proxy()->drawItemText(painter, textRect, tf, option->palette,btn->state & State_Enabled, btn->text);
         }
         break;
@@ -2312,19 +2312,19 @@ QBrush QWindows11Style::buttonFillBrush(const QStyleOption *option)
     return brush;
 }
 
-QColor QWindows11Style::buttonLabelColor(const QStyleOption *option, int colorSchemeIndex)
+QColor QWindows11Style::buttonLabelColor(const QStyleOption *option) const
 {
     if (option->palette.isBrushSet(QPalette::Current, QPalette::ButtonText))
         return option->palette.buttonText().color();
 
     const bool isOn = option->state & QStyle::State_On;
     if (option->state & QStyle::State_Sunken)
-        return isOn ? WINUI3Colors[colorSchemeIndex][textOnAccentSecondary]
-                    : WINUI3Colors[colorSchemeIndex][controlTextSecondary];
+        return isOn ? winUI3Color(textOnAccentSecondary)
+                    : winUI3Color(controlTextSecondary);
     if (!(option->state & QStyle::State_Enabled))
-        return isOn ? WINUI3Colors[colorSchemeIndex][textAccentDisabled]
+        return isOn ? winUI3Color(textAccentDisabled)
                     : option->palette.buttonText().color();
-    return isOn ? WINUI3Colors[colorSchemeIndex][textOnAccentPrimary]
+    return isOn ? winUI3Color(textOnAccentPrimary)
                 : option->palette.buttonText().color();
 }
 
