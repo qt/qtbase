@@ -26,12 +26,11 @@ enum WINUI3Color {
     subtleHighlightColor,             //Subtle highlight based on alpha used for hovered elements
     subtlePressedColor,               //Subtle highlight based on alpha used for pressed elements
     frameColorLight,                  //Color of frame around flyouts and controls except for Checkbox and Radiobutton
-    frameColorStrong,                 //Color of frame around Checkbox and Radiobuttons
+    frameColorStrong,                 //Color of frame around Checkbox and Radiobuttons (normal and hover)
+    frameColorStrongDisabled,         //Color of frame around Checkbox and Radiobuttons (pressed and disabled)
     controlStrongFill,                //Color of controls with strong filling such as the right side of a slider
     controlStrokeSecondary,
     controlStrokePrimary,
-    controlFillTertiary,              //Color of filled sunken controls
-    controlFillSecondary,             //Color of filled hovered controls
     menuPanelFill,                    //Color of menu panel
     textOnAccentPrimary,              //Color of text on controls filled in accent color
     textOnAccentSecondary,            //Color of text of sunken controls in accent color
@@ -39,10 +38,21 @@ enum WINUI3Color {
     controlStrokeOnAccentSecondary,   //Color of frame around Buttons in accent color
     controlFillSolid,                 //Color for solid fill
     surfaceStroke,                    //Color of MDI window frames
-    controlAccentDisabled,
     textAccentDisabled,
     focusFrameInnerStroke,
-    focusFrameOuterStroke
+    focusFrameOuterStroke,
+    fillControlDefault,               // button default color (alpha)
+    fillControlSecondary,             // button hover color (alpha)
+    fillControlTertiary,              // button pressed color (alpha)
+    fillControlDisabled,              // button disabled color (alpha)
+    fillControlAltSecondary,          // checkbox/RadioButton default color (alpha)
+    fillControlAltTertiary,           // checkbox/RadioButton hover color (alpha)
+    fillControlAltQuarternary,        // checkbox/RadioButton pressed color (alpha)
+    fillControlAltDisabled,           // checkbox/RadioButton disabled color (alpha)
+    fillAccentDefault,                // button default color (alpha)
+    fillAccentSecondary,              // button hover color (alpha)
+    fillAccentTertiary,               // button pressed color (alpha)
+    fillAccentDisabled,               // button disabled color (alpha)
 };
 
 class QWindows11Style : public QWindowsVistaStyle
@@ -75,7 +85,14 @@ protected:
     QWindows11Style(QWindows11StylePrivate &dd);
 
 private:
-    static inline QBrush buttonFillBrush(const QStyleOption *option);
+    QColor calculateAccentColor(const QStyleOption *option) const;
+    QPen borderPenControlAlt(const QStyleOption *option) const;
+    enum class ControlType
+    {
+        Control,
+        ControlAlt
+    };
+    QBrush controlFillBrush(const QStyleOption *option, ControlType controlType) const;
     QColor buttonLabelColor(const QStyleOption *option) const;
     void drawLineEditFrame(QPainter *p, const QRectF &rect, const QStyleOption *o, bool isEditable = true) const;
     inline QColor winUI3Color(enum WINUI3Color col) const;

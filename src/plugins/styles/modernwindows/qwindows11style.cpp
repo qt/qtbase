@@ -38,6 +38,43 @@ QT_BEGIN_NAMESPACE
 
 static constexpr int topLevelRoundingRadius    = 8; //Radius for toplevel items like popups for round corners
 static constexpr int secondLevelRoundingRadius = 4; //Radius for second level items like hovered menu item round corners
+
+namespace StyleOptionHelper
+{
+inline bool isChecked(const QStyleOption *option)
+{
+    return option->state.testAnyFlags(QStyle::State_On | QStyle::State_NoChange);
+}
+inline bool isDisabled(const QStyleOption *option)
+{
+    return !option->state.testFlag(QStyle::State_Enabled);
+}
+inline bool isPressed(const QStyleOption *option)
+{
+    return option->state.testFlag(QStyle::State_Sunken);
+}
+inline bool isHover(const QStyleOption *option)
+{
+    return option->state.testFlag(QStyle::State_MouseOver);
+}
+inline bool isAutoRaise(const QStyleOption *option)
+{
+    return option->state.testFlag(QStyle::State_AutoRaise);
+}
+enum class ControlState { Normal, Hover, Pressed, Disabled, Max = 4 };
+inline ControlState calcControlState(const QStyleOption *option)
+{
+    if (isDisabled(option))
+        return ControlState::Disabled;
+    if (isPressed(option))
+        return ControlState::Pressed;
+    if (isHover(option))
+        return ControlState::Hover;
+    return ControlState::Normal;
+};
+
+} // namespace StyleOptionHelper
+
 template <typename R, typename P, typename B>
 static inline void drawRoundedRect(QPainter *p, R &&rect, P &&pen, B &&brush)
 {
@@ -46,16 +83,20 @@ static inline void drawRoundedRect(QPainter *p, R &&rect, P &&pen, B &&brush)
     p->drawRoundedRect(rect, secondLevelRoundingRadius, secondLevelRoundingRadius);
 }
 
-static const QColor WINUI3ColorsLight [] {
+static constexpr int percentToAlpha(double percent)
+{
+    return qRound(percent * 255. / 100.);
+}
+
+static constexpr std::array<QColor, 30> WINUI3ColorsLight {
     QColor(0x00,0x00,0x00,0x09), //subtleHighlightColor
     QColor(0x00,0x00,0x00,0x06), //subtlePressedColor
     QColor(0x00,0x00,0x00,0x0F), //frameColorLight
-    QColor(0x00,0x00,0x00,0x9c), //frameColorStrong
+    QColor(0x00,0x00,0x00,percentToAlpha(60.63)),   //frameColorStrong
+    QColor(0x00,0x00,0x00,percentToAlpha(21.69)),   //frameColorStrongDisabled
     QColor(0x00,0x00,0x00,0x72), //controlStrongFill
     QColor(0x00,0x00,0x00,0x29), //controlStrokeSecondary
     QColor(0x00,0x00,0x00,0x14), //controlStrokePrimary
-    QColor(0xF9,0xF9,0xF9,0x00), //controlFillTertiary
-    QColor(0xF9,0xF9,0xF9,0x80), //controlFillSecondary
     QColor(0xFF,0xFF,0xFF,0xFF), //menuPanelFill
     QColor(0xFF,0xFF,0xFF,0xFF), //textOnAccentPrimary
     QColor(0xFF,0xFF,0xFF,0x7F), //textOnAccentSecondary
@@ -63,22 +104,32 @@ static const QColor WINUI3ColorsLight [] {
     QColor(0x00,0x00,0x00,0x66), //controlStrokeOnAccentSecondary
     QColor(0xFF,0xFF,0xFF,0xFF), //controlFillSolid
     QColor(0x75,0x75,0x75,0x66), //surfaceStroke
-    QColor(0x00,0x00,0x00,0x37), //controlAccentDisabled
     QColor(0xFF,0xFF,0xFF,0xFF), //textAccentDisabled
     QColor(0xFF,0xFF,0xFF,0xFF), //focusFrameInnerStroke
     QColor(0x00,0x00,0x00,0xFF), //focusFrameOuterStroke
+    QColor(0xFF,0xFF,0xFF,percentToAlpha(70)),      // fillControlDefault
+    QColor(0xF9,0xF9,0xF9,percentToAlpha(50)),      // fillControlSecondary
+    QColor(0xF9,0xF9,0xF9,percentToAlpha(30)),      // fillControlTertiary
+    QColor(0xF9,0xF9,0xF9,percentToAlpha(30)),      // fillControlDisabled
+    QColor(0x00,0x00,0x00,percentToAlpha(2.41)),    // fillControlAltSecondary
+    QColor(0x00,0x00,0x00,percentToAlpha(5.78)),    // fillControlAltTertiary
+    QColor(0x00,0x00,0x00,percentToAlpha(9.24)),    // fillControlAltQuarternary
+    QColor(0xFF,0xFF,0xFF,percentToAlpha(0.00)),    // fillControlAltDisabled
+    QColor(0x00,0x00,0x00,percentToAlpha(100)),     // fillAccentDefault
+    QColor(0x00,0x00,0x00,percentToAlpha(90)),      // fillAccentSecondary
+    QColor(0x00,0x00,0x00,percentToAlpha(80)),      // fillAccentTertiary
+    QColor(0x00,0x00,0x00,percentToAlpha(21.69)),   // fillAccentDisabled
 };
 
-static const QColor WINUI3ColorsDark[] {
+static constexpr std::array<QColor, 30> WINUI3ColorsDark {
     QColor(0xFF,0xFF,0xFF,0x0F), //subtleHighlightColor
     QColor(0xFF,0xFF,0xFF,0x0A), //subtlePressedColor
     QColor(0xFF,0xFF,0xFF,0x12), //frameColorLight
-    QColor(0xFF,0xFF,0xFF,0x8B), //frameColorStrong
+    QColor(0xFF,0xFF,0xFF,percentToAlpha(60.47)),   //frameColorStrong
+    QColor(0xFF,0xFF,0xFF,percentToAlpha(15.81)),   //frameColorStrongDisabled
     QColor(0xFF,0xFF,0xFF,0x8B), //controlStrongFill
     QColor(0xFF,0xFF,0xFF,0x18), //controlStrokeSecondary
     QColor(0xFF,0xFF,0xFF,0x12), //controlStrokePrimary
-    QColor(0xF9,0xF9,0xF9,0x00), //controlFillTertiary
-    QColor(0xF9,0xF9,0xF9,0x80), //controlFillSecondary
     QColor(0x0F,0x0F,0x0F,0xFF), //menuPanelFill
     QColor(0x00,0x00,0x00,0xFF), //textOnAccentPrimary
     QColor(0x00,0x00,0x00,0x80), //textOnAccentSecondary
@@ -86,13 +137,24 @@ static const QColor WINUI3ColorsDark[] {
     QColor(0xFF,0xFF,0xFF,0x14), //controlStrokeOnAccentSecondary
     QColor(0x45,0x45,0x45,0xFF), //controlFillSolid
     QColor(0x75,0x75,0x75,0x66), //surfaceStroke
-    QColor(0xFF,0xFF,0xFF,0x28), //controlAccentDisabled
     QColor(0xFF,0xFF,0xFF,0x87), //textAccentDisabled
     QColor(0x00,0x00,0x00,0xFF), //focusFrameInnerStroke
     QColor(0xFF,0xFF,0xFF,0xFF), //focusFrameOuterStroke
+    QColor(0xFF,0xFF,0xFF,percentToAlpha(6.05)),    // fillControlDefault
+    QColor(0xFF,0xFF,0xFF,percentToAlpha(8.37)),    // fillControlSecondary
+    QColor(0xFF,0xFF,0xFF,percentToAlpha(3.26)),    // fillControlTertiary
+    QColor(0xFF,0xFF,0xFF,percentToAlpha(4.19)),    // fillControlDisabled
+    QColor(0x00,0x00,0x00,percentToAlpha(10.0)),    // fillControlAltDefault
+    QColor(0xFF,0xFF,0xFF,percentToAlpha(4.19)),    // fillControlAltSecondary
+    QColor(0xFF,0xFF,0xFF,percentToAlpha(6.98)),    // fillControlAltTertiafillCy
+    QColor(0xFF,0xFF,0xFF,percentToAlpha(0.00)),    // controlAltDisabled
+    QColor(0x00,0x00,0x00,percentToAlpha(100)),     // fillAccentDefault
+    QColor(0x00,0x00,0x00,percentToAlpha(90)),      // fillAccentSecondary
+    QColor(0x00,0x00,0x00,percentToAlpha(80)),      // fillAccentTertiary
+    QColor(0xFF,0xFF,0xFF,percentToAlpha(15.81)),   // fillAccentDisabled
 };
 
-static const QColor* WINUI3Colors[] {
+static constexpr std::array<std::array<QColor,30>, 2> WINUI3Colors {
     WINUI3ColorsLight,
     WINUI3ColorsDark
 };
@@ -296,7 +358,7 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
                 }
 
                 painter->setPen(Qt::NoPen);
-                painter->setBrush(option->palette.accent());
+                painter->setBrush(calculateAccentColor(option));
                 painter->drawRoundedRect(leftRect,1,1);
                 painter->setBrush(WINUI3Colors[colorSchemeIndex][controlStrongFill]);
                 painter->drawRoundedRect(rightRect,1,1);
@@ -390,7 +452,7 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
                 painter->setPen(Qt::NoPen);
                 painter->setBrush(winUI3Color(controlFillSolid));
                 painter->drawEllipse(center, outerRadius, outerRadius);
-                painter->setBrush(option->palette.accent());
+                painter->setBrush(calculateAccentColor(option));
                 painter->drawEllipse(center, innerRadius, innerRadius);
 
                 painter->setPen(winUI3Color(controlStrokeSecondary));
@@ -788,12 +850,8 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
             rect.setHeight(15);
             rect.moveCenter(center);
 
-            QPen borderPen(Qt::NoPen);
-            if (!isOn && !isPartial) {
-                borderPen = highContrastTheme ? option->palette.buttonText().color()
-                                              : winUI3Color(frameColorStrong);
-            }
-            drawRoundedRect(painter, rect, borderPen, buttonFillBrush(option));
+            drawRoundedRect(painter, rect, borderPenControlAlt(option),
+                            controlFillBrush(option, ControlType::ControlAlt));
 
             if (isOn) {
                 painter->setFont(assetFont);
@@ -844,21 +902,17 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
             QRectF rect = isRtl ? option->rect.adjusted(0, 0, -2, 0) : option->rect.adjusted(2, 0, 0, 0);
             const QPointF center = rect.center();
 
+            painter->setPen(borderPenControlAlt(option));
+            painter->setBrush(controlFillBrush(option, ControlType::ControlAlt));
             if (isOn) {
-                painter->setPen(Qt::NoPen);
-                painter->setBrush(buttonFillBrush(option));
                 QPainterPath path;
                 path.addEllipse(center, 7.5, 7.5);
                 path.addEllipse(center, innerRadius, innerRadius);
                 painter->drawPath(path);
-                QColor fillColor = option->palette.window().color();
-                if (option->state & State_MouseOver && option->state & State_Enabled)
-                    fillColor = fillColor.darker(107);
-                painter->setBrush(fillColor);
+                // Text On Accent/Primary
+                painter->setBrush(option->palette.window().color());
                 painter->drawEllipse(center, innerRadius, innerRadius);
             } else {
-                painter->setPen(winUI3Color(frameColorStrong));
-                painter->setBrush(buttonFillBrush(option));
                 painter->drawEllipse(center, 7.5, 7.5);
             }
         }
@@ -873,7 +927,7 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
                 painter->setPen(Qt::NoPen);
             else
                 painter->setPen(WINUI3Colors[colorSchemeIndex][controlStrokePrimary]);
-            painter->setBrush(buttonFillBrush(option));
+            painter->setBrush(controlFillBrush(option, ControlType::Control));
             painter->drawRoundedRect(rect,
                                      secondLevelRoundingRadius, secondLevelRoundingRadius);
 
@@ -1423,16 +1477,7 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
                 }
                 painter->drawRoundedRect(rect, secondLevelRoundingRadius, secondLevelRoundingRadius);
             } else {
-                if (option->palette.isBrushSet(QPalette::Current, QPalette::Button))
-                    painter->setBrush(option->palette.button());
-                else if (flags & (State_Sunken))
-                    painter->setBrush(flags & State_On ? option->palette.accent().color().lighter(120) : WINUI3Colors[colorSchemeIndex][controlFillTertiary]);
-                else if (flags & State_MouseOver)
-                    painter->setBrush(flags & State_On ? option->palette.accent().color().lighter(110) : WINUI3Colors[colorSchemeIndex][controlFillSecondary]);
-                else if (!(flags & State_Enabled))
-                    painter->setBrush(flags & State_On ? WINUI3Colors[colorSchemeIndex][controlAccentDisabled] : option->palette.button());
-                else
-                    painter->setBrush(flags & State_On ? option->palette.accent() : option->palette.button());
+                painter->setBrush(controlFillBrush(option, ControlType::Control));
                 painter->drawRoundedRect(rect, secondLevelRoundingRadius, secondLevelRoundingRadius);
 
                 rect.adjust(0.5,0.5,-0.5,-0.5);
@@ -2346,18 +2391,56 @@ void QWindows11Style::polish(QPalette& result)
         result.setColor(QPalette::Active, QPalette::HighlightedText, result.windowText().color());
 }
 
-QBrush QWindows11Style::buttonFillBrush(const QStyleOption *option)
+QColor QWindows11Style::calculateAccentColor(const QStyleOption *option) const
 {
+    using namespace StyleOptionHelper;
+    if (isDisabled(option))
+        return winUI3Color(fillAccentDisabled);
+    const auto alphaColor = isPressed(option) ? fillAccentTertiary
+                                              : isHover(option) ? fillAccentSecondary
+                                                                : fillAccentDefault;
+    const auto alpha = winUI3Color(alphaColor);
+    QColor col = option->palette.accent().color();
+    col.setAlpha(alpha.alpha());
+    return col;
+}
+
+QPen QWindows11Style::borderPenControlAlt(const QStyleOption *option) const
+{
+    using namespace StyleOptionHelper;
+    if (isChecked(option))
+        return Qt::NoPen;   // same color as fill color, so no pen needed
+    if (highContrastTheme)
+        return option->palette.buttonText().color();
+    if (isDisabled(option) || isPressed(option))
+        return winUI3Color(frameColorStrongDisabled);
+    return winUI3Color(frameColorStrong);
+}
+
+QBrush QWindows11Style::controlFillBrush(const QStyleOption *option, ControlType controlType) const
+{
+    using namespace StyleOptionHelper;
+    static constexpr WINUI3Color colorEnums[2][int(ControlState::Max)] = {
+        // Light & Dark Control
+        { fillControlDefault, fillControlSecondary,
+          fillControlTertiary, fillControlDisabled },
+        // Light & Dark Control Alt
+        { fillControlAltSecondary, fillControlAltTertiary,
+          fillControlAltQuarternary, fillControlAltDisabled },
+    };
+
     if (option->palette.isBrushSet(QPalette::Current, QPalette::Button))
         return option->palette.button();
 
-    const bool isOn = (option->state & QStyle::State_On || option->state & QStyle::State_NoChange);
-    QBrush brush = isOn ? option->palette.accent() : option->palette.window();
-    if (!isOn && option->state & QStyle::State_AutoRaise)
+    if (!isChecked(option) && isAutoRaise(option))
         return Qt::NoBrush;
-    if (option->state & QStyle::State_MouseOver)
-        brush.setColor(isOn ? brush.color().lighter(115) : brush.color().darker(107));
-    return brush;
+
+    // checked is the same for Control (Buttons) and Control Alt (Radiobuttons/Checkboxes)
+    if (isChecked(option))
+        return calculateAccentColor(option);
+
+    const auto state = calcControlState(option);
+    return winUI3Color(colorEnums[int(controlType)][int(state)]);
 }
 
 QColor QWindows11Style::buttonLabelColor(const QStyleOption *option) const
