@@ -31,6 +31,202 @@
 
 QT_BEGIN_NAMESPACE
 
+namespace QtPrivate {
+
+// TODO: move to a separate header in Qt 6.11
+template <typename Interface>
+class QQuasiVirtualInterface
+{
+private:
+    template <typename Arg>
+    static constexpr bool passArgAsValue = sizeof(Arg) <= sizeof(size_t)
+                                        && std::is_trivially_destructible_v<Arg>;
+
+    template <typename ...>
+    struct MethodImpl;
+
+    template <typename M, typename R, typename I, typename... Args>
+    struct MethodImpl<M, R, I, Args...>
+    {
+        static_assert(std::is_base_of_v<I, Interface>, "The method must belong to the interface");
+        using return_type = R;
+        using call_args = std::tuple<std::conditional_t<passArgAsValue<Args>, Args, Args&&>...>;
+
+        static constexpr size_t index()
+        {
+            return index(std::make_index_sequence<std::tuple_size_v<Methods<>>>());
+        }
+
+    private:
+        template <size_t Ix>
+        static constexpr bool matchesAt()
+        {
+            return std::is_base_of_v<std::tuple_element_t<Ix, Methods<>>, M>;
+        }
+
+        template <size_t... Is>
+        static constexpr size_t index(std::index_sequence<Is...>)
+        {
+            constexpr size_t matchesCount = (size_t(matchesAt<Is>()) + ...);
+            static_assert(matchesCount == 1, "Expected exactly one match");
+            return ((size_t(matchesAt<Is>()) * Is) + ...);
+        }
+
+        static R invoke(I &intf /*const validation*/, Args... args)
+        {
+            Q_ASSERT(intf.m_callFN);
+
+            auto& baseIntf = static_cast<base_interface&>(const_cast<std::remove_const_t<I>&>(intf));
+            call_args callArgs(std::forward<Args>(args)...);
+            if constexpr (std::is_void_v<R>) {
+                intf.m_callFN(index(), baseIntf, nullptr, &callArgs);
+            } else {
+                alignas(R) std::byte buf[sizeof(R)];
+                intf.m_callFN(index(), baseIntf, buf, &callArgs);
+
+                R* result = std::launder(reinterpret_cast<R*>(buf));
+                QScopeGuard destroyBuffer([result]() { std::destroy_at(result); });
+                return std::forward<R>(*result);
+            }
+        }
+
+        friend class QQuasiVirtualInterface<Interface>;
+    };
+
+    template <typename M, typename R, typename I, typename... Args>
+    struct MethodImpl<M, R(I::*)(Args...)> : MethodImpl<M, R, I, Args...> {
+        template <typename Subclass>
+        using Overridden = R(Subclass::*)(Args...);
+    };
+
+    template <typename M, typename R, typename I, typename... Args>
+    struct MethodImpl<M, R(I::*)(Args...) const> : MethodImpl<M, R, const I, Args...> {
+        template <typename Subclass>
+        using Overridden = R(Subclass::*)(Args...) const;
+    };
+
+    template <typename C = Interface> using Methods = typename C::template MethodTemplates<C>;
+
+public:
+    template <typename Signature, Signature s = nullptr /*disambiguates Signature*/>
+    struct Method : MethodImpl<Method<Signature, s>, Signature> {};
+
+    template <typename Method, typename... Args>
+    auto call(Args &&... args) const
+    {
+        return Method::invoke(static_cast<const Interface &>(*this), std::forward<Args>(args)...);
+    }
+
+    template <typename Method, typename... Args>
+    auto call(Args &&... args)
+    {
+        return Method::invoke(static_cast<Interface &>(*this), std::forward<Args>(args)...);
+    }
+
+    void destroy(); // quasi-virtual pure destructor
+    using Destroy = Method<decltype(&QQuasiVirtualInterface::destroy)>;
+
+    struct Deleter
+    {
+        void operator () (QQuasiVirtualInterface* self) const { self->call<Destroy>(); }
+    };
+
+protected:
+    using base_interface = QQuasiVirtualInterface<Interface>;
+    using CallFN = void (*)(size_t index, base_interface &intf, void *ret, void *args);
+    void initCallFN(CallFN func) { m_callFN = func; }
+
+    QQuasiVirtualInterface() = default;
+    ~QQuasiVirtualInterface() = default;
+
+private:
+    Q_DISABLE_COPY_MOVE(QQuasiVirtualInterface)
+    CallFN m_callFN = nullptr;
+};
+
+template <typename Subclass, typename Interface>
+class QQuasiVirtualSubclass : public Interface
+{
+private:
+    template <typename C = Subclass> using Methods = typename C::template MethodTemplates<C>;
+
+    template <size_t OverriddenIndex>
+    static constexpr size_t interfaceMethodIndex() {
+        return std::tuple_element_t<OverriddenIndex, Methods<>>::index();
+    }
+
+    template <size_t... Is>
+    static void callImpl(size_t index, Subclass &subclass, void *ret, void *args, std::index_sequence<Is...>)
+    {
+        // TODO: come up with more sophisticated check if methods count becomes more than 64
+        static constexpr std::uint64_t methodIndexMask = ((uint64_t(1)
+                                                      << interfaceMethodIndex<Is>()) | ...);
+        static_assert(sizeof...(Is) == std::tuple_size_v<Methods<Interface>>,
+                      "Base and overridden methods count are different");
+        static_assert(methodIndexMask == (uint64_t(1) << sizeof...(Is)) - 1,
+                      "Mapping between base and overridden methods is not unique");
+
+        // TODO: check if it's optimized properly on gcc
+        ((interfaceMethodIndex<Is>() == index
+                                     ? std::tuple_element_t<Is, Methods<>>::doInvoke(subclass, ret, args)
+                                     : static_cast<void>(0))
+          , ...);
+    }
+
+    static void callImpl(size_t index, typename Interface::base_interface &intf, void *ret, void *args)
+    {
+        constexpr auto seq = std::make_index_sequence<std::tuple_size_v<Methods<>>>();
+        callImpl(index, static_cast<Subclass&>(intf), ret, args, seq);
+    }
+
+    template <typename BaseMethod>
+    using OverridenSignature = typename BaseMethod::template Overridden<Subclass>;
+
+protected:
+    template <typename... Args>
+    QQuasiVirtualSubclass(Args &&... args)
+        : Interface(std::forward<Args>(args)...)
+    {
+        Interface::initCallFN(&QQuasiVirtualSubclass::callImpl);
+    }
+
+public:
+    template <typename BaseMethod, OverridenSignature<BaseMethod> overridden>
+    struct Override : BaseMethod
+    {
+    private:
+        static constexpr void doInvoke(Subclass &subclass, void *ret, void *args)
+        {
+            using Return = typename BaseMethod::return_type;
+            using PackedArgs = typename BaseMethod::call_args;
+
+            Q_ASSERT(args);
+            Q_ASSERT(std::is_void_v<Return> == !ret);
+
+            auto invoke = [&subclass](auto &&...params)
+            {
+                return std::invoke(overridden, &subclass, std::forward<decltype(params)>(params)...);
+            };
+
+            if constexpr (std::is_void_v<Return>) {
+                std::apply(invoke, std::move(*static_cast<PackedArgs *>(args)));
+            } else {
+                // Note, that ::new Return(...) fails on Integrity.
+                // TODO: use std::construct_at for c++20
+                using Alloc = std::allocator<Return>;
+                Alloc alloc;
+                std::allocator_traits<Alloc>::construct(alloc, static_cast<Return *>(ret),
+                               std::apply(invoke, std::move(*static_cast<PackedArgs *>(args))));
+            }
+
+        }
+
+        friend class QQuasiVirtualSubclass<Subclass, Interface>;
+    };
+};
+
+}
+
 namespace QRangeModelDetails
 {
     template <typename T, template <typename...> typename... Templates>
@@ -592,9 +788,11 @@ namespace QRangeModelDetails
 
 class QRangeModel;
 
-class QRangeModelImplBase
+class QRangeModelImplBase : public QtPrivate::QQuasiVirtualInterface<QRangeModelImplBase>
 {
-    Q_DISABLE_COPY_MOVE(QRangeModelImplBase)
+private:
+    using Self = QRangeModelImplBase;
+    using QtPrivate::QQuasiVirtualInterface<Self>::Method;
 protected:
     // Helpers for calling a lambda with the tuple element at a runtime index.
     template <typename Tuple, typename F, size_t ...Is>
@@ -632,87 +830,91 @@ protected:
         return makeMetaTypes<type>(std::make_index_sequence<size>{}).at(idx);
     }
 
-    // Helpers to call a given member function with the correct arguments.
-    template <typename Class, typename T, typename F, size_t...I>
-    static auto apply(std::integer_sequence<size_t, I...>, Class* obj, F&& fn, T&& tuple)
-    {
-        return std::invoke(fn, obj, std::get<I>(tuple)...);
-    }
-    template <typename Ret, typename Class, typename ...Args>
-    static void makeCall(QRangeModelImplBase *obj, Ret(Class::* &&fn)(Args...),
-                              void *ret, const void *args)
-    {
-        const auto &tuple = *static_cast<const std::tuple<Args&...> *>(args);
-        *static_cast<Ret *>(ret) = apply(std::make_index_sequence<sizeof...(Args)>{},
-                                         static_cast<Class *>(obj), fn, tuple);
-    }
-    template <typename Ret, typename Class, typename ...Args>
-    static void makeCall(const QRangeModelImplBase *obj, Ret(Class::* &&fn)(Args...) const,
-                         void *ret, const void *args)
-    {
-        const auto &tuple = *static_cast<const std::tuple<Args&...> *>(args);
-        *static_cast<Ret *>(ret) = apply(std::make_index_sequence<sizeof...(Args)>{},
-                                         static_cast<const Class *>(obj), fn, tuple);
-    }
-
 public:
-    enum ConstOp {
-        Index,
-        Parent,
-        Sibling,
-        RowCount,
-        ColumnCount,
-        Flags,
-        HeaderData,
-        Data,
-        ItemData,
-        RoleNames,
-    };
+    // overridable prototypes (quasi-pure-virtual methods)
 
-    enum Op {
-        Destroy,
-        InvalidateCaches,
-        SetHeaderData,
-        SetData,
-        SetItemData,
-        ClearItemData,
-        InsertColumns,
-        RemoveColumns,
-        MoveColumns,
-        InsertRows,
-        RemoveRows,
-        MoveRows,
-    };
+    void invalidateCaches();
+    bool setHeaderData(int section, Qt::Orientation orientation, const QVariant &data, int role);
+    bool setData(const QModelIndex &index, const QVariant &data, int role);
+    bool setItemData(const QModelIndex &index, const QMap<int, QVariant> &data);
+    bool clearItemData(const QModelIndex &index);
+    bool insertColumns(int column, int count, const QModelIndex &parent);
+    bool removeColumns(int column, int count, const QModelIndex &parent);
+    bool moveColumns(const QModelIndex &sourceParent, int sourceColumn, int count, const QModelIndex &destParent, int destColumn);
+    bool insertRows(int row, int count, const QModelIndex &parent);
+    bool removeRows(int row, int count, const QModelIndex &parent);
+    bool moveRows(const QModelIndex &sourceParent, int sourceRow, int count, const QModelIndex &destParent, int destRow);
 
-    void destroy()
-    {
-        call_fn(Destroy, this, nullptr, nullptr);
-    }
+    QModelIndex index(int row, int column, const QModelIndex &parent) const;
+    QModelIndex sibling(int row, int column, const QModelIndex &index) const;
+    int rowCount(const QModelIndex &parent) const;
+    int columnCount(const QModelIndex &parent) const;
+    Qt::ItemFlags flags(const QModelIndex &index) const;
+    QVariant headerData(int section, Qt::Orientation orientation, int role) const;
+    QVariant data(const QModelIndex &index, int role) const;
+    QMap<int, QVariant> itemData(const QModelIndex &index) const;
+    inline QHash<int, QByteArray> roleNames() const;
+    QModelIndex parent(const QModelIndex &child) const;
 
-    void invalidateCaches()
-    {
-        call_fn(InvalidateCaches, this, nullptr, nullptr);
-    }
+    // bindings for overriding
+
+    using InvalidateCaches = Method<decltype(&Self::invalidateCaches)>;
+    using SetHeaderData = Method<decltype(&Self::setHeaderData)>;
+    using SetData = Method<decltype(&Self::setData)>;
+    using SetItemData = Method<decltype(&Self::setItemData)>;
+    using ClearItemData = Method<decltype(&Self::clearItemData)>;
+    using InsertColumns = Method<decltype(&Self::insertColumns), &Self::insertColumns>;
+    using RemoveColumns = Method<decltype(&Self::removeColumns), &Self::removeColumns>;
+    using MoveColumns = Method<decltype(&Self::moveColumns), &Self::moveColumns>;
+    using InsertRows = Method<decltype(&Self::insertRows), &Self::insertRows>;
+    using RemoveRows = Method<decltype(&Self::removeRows), &Self::removeRows>;
+    using MoveRows = Method<decltype(&Self::moveRows), &Self::moveRows>;
+
+    using Index = Method<decltype(&Self::index), &Self::index>;
+    using Sibling = Method<decltype(&Self::sibling), &Self::sibling>;
+    using RowCount = Method<decltype(&Self::rowCount), &Self::rowCount>;
+    using ColumnCount = Method<decltype(&Self::columnCount), &Self::columnCount>;
+    using Flags = Method<decltype(&Self::flags)>;
+    using HeaderData = Method<decltype(&Self::headerData)>;
+    using Data = Method<decltype(&Self::data)>;
+    using ItemData = Method<decltype(&Self::itemData)>;
+    using RoleNames = Method<decltype(&Self::roleNames)>;
+    using Parent = Method<decltype(&Self::parent)>;
+
+    template <typename C>
+    using MethodTemplates = std::tuple<
+        typename C::Destroy,
+        typename C::InvalidateCaches,
+        typename C::SetHeaderData,
+        typename C::SetData,
+        typename C::SetItemData,
+        typename C::ClearItemData,
+        typename C::InsertColumns,
+        typename C::RemoveColumns,
+        typename C::MoveColumns,
+        typename C::InsertRows,
+        typename C::RemoveRows,
+        typename C::MoveRows,
+        typename C::Index,
+        typename C::Parent,
+        typename C::Sibling,
+        typename C::RowCount,
+        typename C::ColumnCount,
+        typename C::Flags,
+        typename C::HeaderData,
+        typename C::Data,
+        typename C::ItemData,
+        typename C::RoleNames
+    >;
 
 private:
-    // prototypes
-    static void callConst(ConstOp, const QRangeModelImplBase *, void *, const void *);
-    static void call(Op, QRangeModelImplBase *, void *, const void *);
-
-    using CallConstFN = decltype(callConst);
-    using CallTupleFN = decltype(call);
-
     friend class QRangeModelPrivate;
-    CallConstFN *callConst_fn;
-    CallTupleFN *call_fn;
     QRangeModel *m_rangeModel;
 
 protected:
-    template <typename Impl> // type deduction
-    explicit QRangeModelImplBase(QRangeModel *itemModel, const Impl *)
-        : callConst_fn(&Impl::callConst), call_fn(&Impl::call), m_rangeModel(itemModel)
+    explicit QRangeModelImplBase(QRangeModel *itemModel)
+        : m_rangeModel(itemModel)
     {}
-    ~QRangeModelImplBase() = default;
 
     inline QModelIndex createIndex(int row, int column, const void *ptr = nullptr) const;
     inline void changePersistentIndexList(const QModelIndexList &from, const QModelIndexList &to);
@@ -742,9 +944,10 @@ protected:
 
 template <typename Structure, typename Range,
           typename Protocol = QRangeModelDetails::table_protocol_t<Range>>
-class QRangeModelImpl : public QRangeModelImplBase
+class QRangeModelImpl
+        : public QtPrivate::QQuasiVirtualSubclass<QRangeModelImpl<Structure, Range, Protocol>,
+                                                  QRangeModelImplBase>
 {
-    Q_DISABLE_COPY_MOVE(QRangeModelImpl)
 public:
     using range_type = QRangeModelDetails::wrapped_t<Range>;
     using row_reference = decltype(*QRangeModelDetails::begin(std::declval<range_type&>()));
@@ -759,7 +962,10 @@ public:
                   "std::optional for ranges and rows will be supported.");
 
 protected:
+
     using Self = QRangeModelImpl<Structure, Range, Protocol>;
+    using Ancestor = QtPrivate::QQuasiVirtualSubclass<Self, QRangeModelImplBase>;
+
     Structure& that() { return static_cast<Structure &>(*this); }
     const Structure& that() const { return static_cast<const Structure &>(*this); }
 
@@ -854,75 +1060,25 @@ protected:
 
 public:
     explicit QRangeModelImpl(Range &&model, Protocol&& protocol, QRangeModel *itemModel)
-        : QRangeModelImplBase(itemModel, static_cast<const Self*>(nullptr))
+        : Ancestor(itemModel)
         , m_data{std::forward<Range>(model)}
         , m_protocol(std::forward<Protocol>(protocol))
     {
     }
 
-    // static interface, called by QRangeModelImplBase
-    static void callConst(ConstOp op, const QRangeModelImplBase *that, void *r, const void *args)
-    {
-        switch (op) {
-        case Index: makeCall(that, &Self::index, r, args);
-            break;
-        case Parent: makeCall(that, &Structure::parent, r, args);
-            break;
-        case Sibling: makeCall(that, &Self::sibling, r, args);
-            break;
-        case RowCount: makeCall(that, &Structure::rowCount, r, args);
-            break;
-        case ColumnCount: makeCall(that, &Structure::columnCount, r, args);
-            break;
-        case Flags: makeCall(that, &Self::flags, r, args);
-            break;
-        case HeaderData: makeCall(that, &Self::headerData, r, args);
-            break;
-        case Data: makeCall(that, &Self::data, r, args);
-            break;
-        case ItemData: makeCall(that, &Self::itemData, r, args);
-            break;
-        case RoleNames: makeCall(that, &Self::roleNames, r, args);
-            break;
-        }
-    }
 
-    static void call(Op op, QRangeModelImplBase *that, void *r, const void *args)
-    {
-        switch (op) {
-        case Destroy: delete static_cast<Structure *>(that);
-            break;
-        case InvalidateCaches: static_cast<Self *>(that)->m_data.invalidateCaches();
-            break;
-        case SetHeaderData:
-            // not implemented
-            break;
-        case SetData: makeCall(that, &Self::setData, r, args);
-            break;
-        case SetItemData: makeCall(that, &Self::setItemData, r, args);
-            break;
-        case ClearItemData: makeCall(that, &Self::clearItemData, r, args);
-            break;
-        case InsertColumns: makeCall(that, &Self::insertColumns, r, args);
-            break;
-        case RemoveColumns: makeCall(that, &Self::removeColumns, r, args);
-            break;
-        case MoveColumns: makeCall(that, &Self::moveColumns, r, args);
-            break;
-        case InsertRows: makeCall(that, &Self::insertRows, r, args);
-            break;
-        case RemoveRows: makeCall(that, &Self::removeRows, r, args);
-            break;
-        case MoveRows: makeCall(that, &Self::moveRows, r, args);
-            break;
-        }
-    }
+    // static interface, called by QRangeModelImplBase
+
+    void invalidateCaches() { m_data.invalidateCaches(); }
+
+    // Not implemented
+    bool setHeaderData(int , Qt::Orientation , const QVariant &, int ) { return false; }
 
     // actual implementations
     QModelIndex index(int row, int column, const QModelIndex &parent) const
     {
-        if (row < 0 || column < 0 || column >= that().columnCount(parent)
-                                  || row >= that().rowCount(parent)) {
+        if (row < 0 || column < 0 || column >= columnCount(parent)
+                                  || row >= rowCount(parent)) {
             return {};
         }
 
@@ -934,17 +1090,17 @@ public:
         if (row == index.row() && column == index.column())
             return index;
 
-        if (column < 0 || column >= itemModel().columnCount())
+        if (column < 0 || column >= this->itemModel().columnCount())
             return {};
 
         if (row == index.row())
-            return createIndex(row, column, index.constInternalPointer());
+            return this->createIndex(row, column, index.constInternalPointer());
 
         const_row_ptr parentRow = static_cast<const_row_ptr>(index.constInternalPointer());
         const auto siblingCount = size(that().childrenOf(parentRow));
         if (row < 0 || row >= int(siblingCount))
             return {};
-        return createIndex(row, column, parentRow);
+        return this->createIndex(row, column, parentRow);
     }
 
     Qt::ItemFlags flags(const QModelIndex &index) const
@@ -970,7 +1126,7 @@ public:
             const_row_reference row = rowData(index);
             row_reference mutableRow = const_cast<row_reference>(row);
             if (QRangeModelDetails::isValid(mutableRow)) {
-                for_element_at(mutableRow, index.column(), [&f](auto &&ref){
+                QRangeModelImplBase::for_element_at(mutableRow, index.column(), [&f](auto &&ref){
                     using target_type = decltype(ref);
                     if constexpr (std::is_const_v<std::remove_reference_t<target_type>>)
                         f &= ~Qt::ItemIsEditable;
@@ -990,8 +1146,8 @@ public:
     {
         QVariant result;
         if (role != Qt::DisplayRole || orientation != Qt::Horizontal
-         || section < 0 || section >= that().columnCount({})) {
-            return itemModel().QAbstractItemModel::headerData(section, orientation, role);
+         || section < 0 || section >= columnCount({})) {
+            return this->itemModel().QAbstractItemModel::headerData(section, orientation, role);
         }
 
         if constexpr (row_traits::hasMetaObject) {
@@ -1004,12 +1160,12 @@ public:
                 result = QString::fromUtf8(prop.name());
             }
         } else if constexpr (static_column_count >= 1) {
-            const QMetaType metaType = meta_type_at<row_type>(section);
+            const QMetaType metaType = QRangeModelImplBase::meta_type_at<row_type>(section);
             if (metaType.isValid())
                 result = QString::fromUtf8(metaType.name());
         }
         if (!result.isValid())
-            result = itemModel().QAbstractItemModel::headerData(section, orientation, role);
+            result = this->itemModel().QAbstractItemModel::headerData(section, orientation, role);
         return result;
     }
 
@@ -1044,7 +1200,7 @@ public:
                     if constexpr (multi_role::int_key)
                         return std::as_const(value).find(Qt::ItemDataRole(role));
                     else
-                        return std::as_const(value).find(itemModel().roleNames().value(role));
+                        return std::as_const(value).find(this->itemModel().roleNames().value(role));
                 }();
                 if (it != value.cend())
                     result = QRangeModelDetails::value(it);
@@ -1076,7 +1232,7 @@ public:
                     const auto roleNames = [this]() -> QHash<int, QByteArray> {
                         Q_UNUSED(this);
                         if constexpr (!multi_role::int_key)
-                            return itemModel().roleNames();
+                            return this->itemModel().roleNames();
                         else
                             return {};
                     }();
@@ -1096,7 +1252,7 @@ public:
             } else if constexpr (has_metaobject<value_type>) {
                 if (row_traits::fixed_size() <= 1) {
                     tried = true;
-                    const auto roleNames = itemModel().roleNames();
+                    const auto roleNames = this->itemModel().roleNames();
                     const auto end = roleNames.keyEnd();
                     for (auto it = roleNames.keyBegin(); it != end; ++it) {
                         const int role = *it;
@@ -1114,7 +1270,7 @@ public:
             readAt(index, readItemData);
 
             if (!tried) // no multi-role item found
-                result = itemModel().QAbstractItemModel::itemData(index);
+                result = this->itemModel().QAbstractItemModel::itemData(index);
         }
         return result;
     }
@@ -1128,7 +1284,7 @@ public:
         if constexpr (isMutable()) {
             auto emitDataChanged = qScopeGuard([&success, this, &index, role]{
                 if (success) {
-                    Q_EMIT dataChanged(index, index,
+                    Q_EMIT this->dataChanged(index, index,
                                        role == Qt::EditRole || role == Qt::RangeModelDataRole
                                             ? QList<int>{} : QList<int>{role});
                 }
@@ -1185,7 +1341,7 @@ public:
                     const auto roleNames = [this]() -> QHash<int, QByteArray> {
                         Q_UNUSED(this);
                         if constexpr (!multi_role::int_key)
-                            return itemModel().roleNames();
+                            return this->itemModel().roleNames();
                         else
                             return {};
                     }();
@@ -1223,7 +1379,7 @@ public:
         if constexpr (isMutable()) {
             auto emitDataChanged = qScopeGuard([&success, this, &index, &data]{
                 if (success)
-                    Q_EMIT dataChanged(index, index, data.keys());
+                    Q_EMIT this->dataChanged(index, index, data.keys());
             });
 
             bool tried = false;
@@ -1234,7 +1390,7 @@ public:
                 if constexpr (multi_role()) {
                     using key_type = typename value_type::key_type;
                     tried = true;
-                    const auto roleName = [map = itemModel().roleNames()](int role) {
+                    const auto roleName = [map = this->itemModel().roleNames()](int role) {
                         return map.value(role);
                     };
 
@@ -1275,7 +1431,7 @@ public:
                             else
                                 return QRangeModelDetails::pointerTo(origin);
                         }(target);
-                        const auto roleNames = itemModel().roleNames();
+                        const auto roleNames = this->itemModel().roleNames();
                         for (auto &&[role, value] : data.asKeyValueRange()) {
                             if (role == Qt::RangeModelDataRole)
                                 continue;
@@ -1304,7 +1460,7 @@ public:
                 // setItemData will emit the dataChanged signal
                 Q_ASSERT(!success);
                 emitDataChanged.dismiss();
-                success = itemModel().QAbstractItemModel::setItemData(index, data);
+                success = this->itemModel().QAbstractItemModel::setItemData(index, data);
             }
         }
         return success;
@@ -1319,7 +1475,7 @@ public:
         if constexpr (isMutable()) {
             auto emitDataChanged = qScopeGuard([&success, this, &index]{
                 if (success)
-                    Q_EMIT dataChanged(index, index, {});
+                    Q_EMIT this->dataChanged(index, index, {});
             });
 
             auto clearData = [column = index.column()](auto &&target) {
@@ -1347,13 +1503,13 @@ public:
         // will be 'void' if columns don't all have the same type
         using item_type = typename row_traits::item_type;
         if constexpr (QRangeModelDetails::has_metaobject_v<item_type>) {
-            return roleNamesForMetaObject(QRangeModelDetails::wrapped_t<item_type>::staticMetaObject);
+            return this->roleNamesForMetaObject(QRangeModelDetails::wrapped_t<item_type>::staticMetaObject);
         } else if constexpr (std::negation_v<std::disjunction<std::is_void<item_type>,
                                              QRangeModelDetails::is_multi_role<item_type>>>) {
-            return roleNamesForSimpleType();
+            return this->roleNamesForSimpleType();
         }
 
-        return itemModel().QAbstractItemModel::roleNames();
+        return this->itemModel().QAbstractItemModel::roleNames();
     }
 
     bool insertColumns(int column, int count, const QModelIndex &parent)
@@ -1365,12 +1521,12 @@ public:
             if (!children)
                 return false;
 
-            beginInsertColumns(parent, column, column + count - 1);
+            this->beginInsertColumns(parent, column, column + count - 1);
             for (auto &child : *children) {
                 auto it = QRangeModelDetails::pos(child, column);
                 QRangeModelDetails::refTo(child).insert(it, count, {});
             }
-            endInsertColumns();
+            this->endInsertColumns();
             return true;
         }
         return false;
@@ -1379,19 +1535,19 @@ public:
     bool removeColumns(int column, int count, const QModelIndex &parent)
     {
         if constexpr (dynamicColumns() && isMutable() && row_features::has_erase) {
-            if (column < 0 || column + count > that().columnCount(parent))
+            if (column < 0 || column + count > columnCount(parent))
                 return false;
 
             range_type * const children = childRange(parent);
             if (!children)
                 return false;
 
-            beginRemoveColumns(parent, column, column + count - 1);
+            this->beginRemoveColumns(parent, column, column + count - 1);
             for (auto &child : *children) {
                 const auto start = QRangeModelDetails::pos(child, column);
                 QRangeModelDetails::refTo(child).erase(start, std::next(start, count));
             }
-            endRemoveColumns();
+            this->endRemoveColumns();
             return true;
         }
         return false;
@@ -1414,7 +1570,7 @@ public:
                 if (!children)
                     return false;
 
-                if (!beginMoveColumns(sourceParent, sourceColumn, sourceColumn + count - 1,
+                if (!this->beginMoveColumns(sourceParent, sourceColumn, sourceColumn + count - 1,
                                       destParent, destColumn)) {
                     return false;
                 }
@@ -1430,7 +1586,7 @@ public:
                         std::rotate(last, first, middle);
                 }
 
-                endMoveColumns();
+                this->endMoveColumns();
                 return true;
             }
         }
@@ -1446,7 +1602,7 @@ public:
 
             EmptyRowGenerator generator{0, &that(), &parent};
 
-            beginInsertRows(parent, row, row + count - 1);
+            this->beginInsertRows(parent, row, row + count - 1);
 
             const auto pos = QRangeModelDetails::pos(children, row);
             if constexpr (range_features::has_insert_range) {
@@ -1462,7 +1618,7 @@ public:
             // references back to the parent might have become invalid.
             that().resetParentInChildren(children);
 
-            endInsertRows();
+            this->endInsertRows();
             return true;
         } else {
             return false;
@@ -1472,7 +1628,7 @@ public:
     bool removeRows(int row, int count, const QModelIndex &parent = {})
     {
         if constexpr (canRemoveRows()) {
-            const int prevRowCount = that().rowCount(parent);
+            const int prevRowCount = rowCount(parent);
             if (row < 0 || row + count > prevRowCount)
                 return false;
 
@@ -1480,15 +1636,15 @@ public:
             if (!children)
                 return false;
 
-            beginRemoveRows(parent, row, row + count - 1);
+            this->beginRemoveRows(parent, row, row + count - 1);
             [[maybe_unused]] bool callEndRemoveColumns = false;
             if constexpr (dynamicColumns()) {
                 // if we remove the last row in a dynamic model, then we no longer
                 // know how many columns we should have, so they will be reported as 0.
                 if (prevRowCount == count) {
-                    if (const int columns = that().columnCount(parent)) {
+                    if (const int columns = columnCount(parent)) {
                         callEndRemoveColumns = true;
-                        beginRemoveColumns(parent, 0, columns - 1);
+                        this->beginRemoveColumns(parent, 0, columns - 1);
                     }
                 }
             }
@@ -1504,11 +1660,11 @@ public:
 
             if constexpr (dynamicColumns()) {
                 if (callEndRemoveColumns) {
-                    Q_ASSERT(that().columnCount(parent) == 0);
-                    endRemoveColumns();
+                    Q_ASSERT(columnCount(parent) == 0);
+                    this->endRemoveColumns();
                 }
             }
-            endRemoveRows();
+            this->endRemoveRows();
             return true;
         } else {
             return false;
@@ -1528,14 +1684,14 @@ public:
             }
 
             if (sourceRow == destRow || sourceRow == destRow - 1 || count <= 0
-             || sourceRow < 0 || sourceRow + count - 1 >= itemModel().rowCount(sourceParent)
-             || destRow < 0 || destRow > itemModel().rowCount(destParent)) {
+             || sourceRow < 0 || sourceRow + count - 1 >= this->itemModel().rowCount(sourceParent)
+             || destRow < 0 || destRow > this->itemModel().rowCount(destParent)) {
                 return false;
             }
 
             range_type *source = childRange(sourceParent);
             // moving within the same range
-            if (!beginMoveRows(sourceParent, sourceRow, sourceRow + count - 1, destParent, destRow))
+            if (!this->beginMoveRows(sourceParent, sourceRow, sourceRow + count - 1, destParent, destRow))
                 return false;
 
             const auto first = QRangeModelDetails::pos(source, sourceRow);
@@ -1549,12 +1705,47 @@ public:
 
             that().resetParentInChildren(source);
 
-            endMoveRows();
+            this->endMoveRows();
             return true;
         } else {
             return false;
         }
     }
+
+    QModelIndex parent(const QModelIndex &child) const { return that().parent(child); }
+
+    int rowCount(const QModelIndex &parent) const { return that().rowCount(parent); }
+
+    int columnCount(const QModelIndex &parent) const { return that().columnCount(parent); }
+
+    void destroy() { delete std::addressof(that()); }
+
+    template <typename BaseMethod, typename BaseMethod::template Overridden<Self> overridden>
+    using Override = typename Ancestor::template Override<BaseMethod, overridden>;
+
+    using Destroy = Override<QRangeModelImplBase::Destroy, &Self::destroy>;
+    using Index = Override<QRangeModelImplBase::Index, &Self::index>;
+    using Parent = Override<QRangeModelImplBase::Parent, &Self::parent>;
+    using Sibling = Override<QRangeModelImplBase::Sibling, &Self::sibling>;
+    using RowCount = Override<QRangeModelImplBase::RowCount, &Self::rowCount>;
+    using ColumnCount = Override<QRangeModelImplBase::ColumnCount, &Self::columnCount>;
+    using Flags = Override<QRangeModelImplBase::Flags, &Self::flags>;
+    using HeaderData = Override<QRangeModelImplBase::HeaderData, &Self::headerData>;
+
+    using Data = Override<QRangeModelImplBase::Data, &Self::data>;
+    using ItemData = Override<QRangeModelImplBase::ItemData, &Self::itemData>;
+    using RoleNames = Override<QRangeModelImplBase::RoleNames, &Self::roleNames>;
+    using InvalidateCaches = Override<QRangeModelImplBase::InvalidateCaches, &Self::invalidateCaches>;
+    using SetHeaderData = Override<QRangeModelImplBase::SetHeaderData, &Self::setHeaderData>;
+    using SetData = Override<QRangeModelImplBase::SetData, &Self::setData>;
+    using SetItemData = Override<QRangeModelImplBase::SetItemData, &Self::setItemData>;
+    using ClearItemData = Override<QRangeModelImplBase::ClearItemData, &Self::clearItemData>;
+    using InsertColumns = Override<QRangeModelImplBase::InsertColumns, &Self::insertColumns>;
+    using RemoveColumns = Override<QRangeModelImplBase::RemoveColumns, &Self::removeColumns>;
+    using MoveColumns = Override<QRangeModelImplBase::MoveColumns, &Self::moveColumns>;
+    using InsertRows = Override<QRangeModelImplBase::InsertRows, &Self::insertRows>;
+    using RemoveRows = Override<QRangeModelImplBase::RemoveRows, &Self::removeRows>;
+    using MoveRows = Override<QRangeModelImplBase::MoveRows, &Self::moveRows>;
 
 protected:
     ~QRangeModelImpl()
@@ -1611,7 +1802,7 @@ protected:
             if constexpr (dynamicColumns()) {
                 result = writer(*QRangeModelDetails::pos(row, index.column()));
             } else {
-                for_element_at(row, index.column(), [&writer, &result](auto &&target) {
+                QRangeModelImplBase::for_element_at(row, index.column(), [&writer, &result](auto &&target) {
                     using target_type = decltype(target);
                     // we can only assign to an lvalue reference
                     if constexpr (std::is_lvalue_reference_v<target_type>
@@ -1634,7 +1825,7 @@ protected:
             if constexpr (dynamicColumns())
                 reader(*QRangeModelDetails::cpos(row, index.column()));
             else
-                for_element_at(row, index.column(), std::forward<F>(reader));
+                QRangeModelImplBase::for_element_at(row, index.column(), std::forward<F>(reader));
         }
     }
 
