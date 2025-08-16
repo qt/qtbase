@@ -271,21 +271,39 @@ void tst_QFiledialog::directoryEnteredSignal()
 Q_DECLARE_METATYPE(QFileDialog::FileMode)
 void tst_QFiledialog::filesSelectedSignal_data()
 {
+#ifdef Q_OS_ANDROID
+    const auto homePaths = QStandardPaths::standardLocations(QStandardPaths::HomeLocation);
+    QVERIFY(!homePaths.isEmpty());
+    QDir testDir(homePaths.first());
+
+    // Create a dir and a file because Android's home dir is initially empty
+    testDir.mkdir("qtest");
+    QVERIFY(testDir.exists("qtest"));
+
+    QFile file(testDir.filePath("file.txt"));
+    if (file.open(QIODevice::WriteOnly))
+        file.close();
+#else
+    QDir testDir(QT_TESTCASE_SOURCEDIR);
+#endif
+
+    QTest::addColumn<QDir>("testDir");
     QTest::addColumn<QFileDialog::FileMode>("fileMode");
-    QTest::newRow("any") << QFileDialog::AnyFile;
-    QTest::newRow("existing") << QFileDialog::ExistingFile;
-    QTest::newRow("directory") << QFileDialog::Directory;
-    QTest::newRow("existingFiles") << QFileDialog::ExistingFiles;
+    QTest::newRow("any") << testDir << QFileDialog::AnyFile;
+    QTest::newRow("existing") << testDir << QFileDialog::ExistingFile;
+    QTest::newRow("directory") << testDir << QFileDialog::Directory;
+    QTest::newRow("existingFiles") << testDir << QFileDialog::ExistingFiles;
 }
 
 // emitted when the dialog closes with the selected files
 void tst_QFiledialog::filesSelectedSignal()
 {
+    QFETCH(QDir, testDir);
+    QFETCH(QFileDialog::FileMode, fileMode);
+
     QFileDialog fd;
     fd.setViewMode(QFileDialog::List);
-    QDir testDir(QT_TESTCASE_SOURCEDIR);
     fd.setDirectory(testDir);
-    QFETCH(QFileDialog::FileMode, fileMode);
     fd.setFileMode(fileMode);
     QSignalSpy spyFilesSelected(&fd, SIGNAL(filesSelected(QStringList)));
 
@@ -308,6 +326,7 @@ void tst_QFiledialog::filesSelectedSignal()
         }
         file = QModelIndex();
     }
+
     QVERIFY(file.isValid());
     listView->selectionModel()->select(file, QItemSelectionModel::Select | QItemSelectionModel::Rows);
     listView->setCurrentIndex(file);

@@ -1,5 +1,3 @@
-[filesSelectedSignal]
-android # QTBUG-101194
 [historyForward]
 android # QTBUG-101194
 [historyBack]
