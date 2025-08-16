@@ -8,6 +8,8 @@
 #include <QtCore/QJniObject>
 #include <QTest>
 
+QT_BEGIN_NAMESPACE
+
 using namespace Qt::StringLiterals;
 
 static constexpr const char testClassName[] = "org/qtproject/qt/android/testdatapackage/QtJniObjectTestClass";
@@ -2274,6 +2276,8 @@ void tst_QJniObject::callStaticOverloadResolution()
             "staticEchoMethod", str.object<jstring>()).toString();
     QCOMPARE(result, value);
 }
+
+QT_END_NAMESPACE
 
 QTEST_MAIN(tst_QJniObject)
 
