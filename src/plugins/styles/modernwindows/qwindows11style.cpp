@@ -910,17 +910,6 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
             painter->drawRoundedRect(rect,
                                      secondLevelRoundingRadius, secondLevelRoundingRadius);
 
-            if (!option->palette.isBrushSet(QPalette::Current, QPalette::Button)) {
-                painter->setPen(Qt::NoPen);
-                if (!isRaised)
-                    painter->setBrush(WINUI3Colors[colorSchemeIndex][controlFillTertiary]);
-                else if (isMouseOver)
-                    painter->setBrush(WINUI3Colors[colorSchemeIndex][controlFillSecondary]);
-                else
-                    painter->setBrush(option->palette.button());
-                painter->drawRoundedRect(rect, secondLevelRoundingRadius,
-                                         secondLevelRoundingRadius);
-            }
             if (isRaised) {
                 const qreal sublineOffset = secondLevelRoundingRadius - 0.5;
                 painter->setPen(WINUI3Colors[colorSchemeIndex][controlStrokeSecondary]);
