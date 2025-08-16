@@ -1,7 +1,3 @@
-[historyForward]
-android # QTBUG-101194
-[historyBack]
-android # QTBUG-101194
 [completer_data]
 vxworks # QTBUG-135963
 [completer]

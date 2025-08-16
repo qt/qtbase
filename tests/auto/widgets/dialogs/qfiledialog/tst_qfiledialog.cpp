@@ -1435,10 +1435,6 @@ void tst_QFiledialog::widgetlessNativeDialog()
 {
     if (!QGuiApplicationPrivate::platformTheme()->usePlatformNativeDialog(QPlatformTheme::FileDialog))
         QSKIP("This platform always uses widgets to realize its QFileDialog, instead of the native file dialog.");
-#ifdef Q_OS_ANDROID
-    // QTBUG-101194
-    QSKIP("Android: This keeps the window open. Figure out why.");
-#endif
     QApplication::setAttribute(Qt::AA_DontUseNativeDialogs, false);
     QFileDialog fd;
     fd.setWindowModality(Qt::ApplicationModal);
@@ -1630,11 +1626,6 @@ void tst_QFiledialog::QTBUG49600_nativeIconProviderCrash()
 {
     if (!QGuiApplicationPrivate::platformTheme()->usePlatformNativeDialog(QPlatformTheme::FileDialog))
         QSKIP("This platform always uses widgets to realize its QFileDialog, instead of the native file dialog.");
-
-#ifdef Q_OS_ANDROID
-    // QTBUG-101194
-    QSKIP("Android: This hangs. Figure out why.");
-#endif
 
     QFileDialog fd;
     fd.iconProvider();
