@@ -32,13 +32,9 @@ enum WINUI3Color {
     controlStrokeSecondary,
     controlStrokePrimary,
     menuPanelFill,                    //Color of menu panel
-    textOnAccentPrimary,              //Color of text on controls filled in accent color
-    textOnAccentSecondary,            //Color of text of sunken controls in accent color
-    controlTextSecondary,             //Color of text of sunken controls
     controlStrokeOnAccentSecondary,   //Color of frame around Buttons in accent color
     controlFillSolid,                 //Color for solid fill
     surfaceStroke,                    //Color of MDI window frames
-    textAccentDisabled,
     focusFrameInnerStroke,
     focusFrameOuterStroke,
     fillControlDefault,               // button default color (alpha)
@@ -53,6 +49,12 @@ enum WINUI3Color {
     fillAccentSecondary,              // button hover color (alpha)
     fillAccentTertiary,               // button pressed color (alpha)
     fillAccentDisabled,               // button disabled color (alpha)
+    textPrimary,                      // text of default/hovered control
+    textSecondary,                    // text of pressed control
+    textDisabled,                     // text of disabled control
+    textOnAccentPrimary,              // text of default/hovered control on accent color
+    textOnAccentSecondary,            // text of pressed control on accent color
+    textOnAccentDisabled,             // text of disabled control on accent color
 };
 
 class QWindows11Style : public QWindowsVistaStyle
@@ -93,7 +95,9 @@ private:
         ControlAlt
     };
     QBrush controlFillBrush(const QStyleOption *option, ControlType controlType) const;
-    QColor buttonLabelColor(const QStyleOption *option) const;
+    // ControlType::ControlAlt can be mapped to QPalette directly
+    QColor controlTextColor(const QStyleOption *option,
+                            QPalette::ColorRole role = QPalette::ButtonText) const;
     void drawLineEditFrame(QPainter *p, const QRectF &rect, const QStyleOption *o, bool isEditable = true) const;
     inline QColor winUI3Color(enum WINUI3Color col) const;
 

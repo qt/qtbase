@@ -88,7 +88,7 @@ static constexpr int percentToAlpha(double percent)
     return qRound(percent * 255. / 100.);
 }
 
-static constexpr std::array<QColor, 30> WINUI3ColorsLight {
+static constexpr std::array<QColor, 32> WINUI3ColorsLight {
     QColor(0x00,0x00,0x00,0x09), //subtleHighlightColor
     QColor(0x00,0x00,0x00,0x06), //subtlePressedColor
     QColor(0x00,0x00,0x00,0x0F), //frameColorLight
@@ -98,13 +98,9 @@ static constexpr std::array<QColor, 30> WINUI3ColorsLight {
     QColor(0x00,0x00,0x00,0x29), //controlStrokeSecondary
     QColor(0x00,0x00,0x00,0x14), //controlStrokePrimary
     QColor(0xFF,0xFF,0xFF,0xFF), //menuPanelFill
-    QColor(0xFF,0xFF,0xFF,0xFF), //textOnAccentPrimary
-    QColor(0xFF,0xFF,0xFF,0x7F), //textOnAccentSecondary
-    QColor(0x00,0x00,0x00,0x7F), //controlTextSecondary
     QColor(0x00,0x00,0x00,0x66), //controlStrokeOnAccentSecondary
     QColor(0xFF,0xFF,0xFF,0xFF), //controlFillSolid
     QColor(0x75,0x75,0x75,0x66), //surfaceStroke
-    QColor(0xFF,0xFF,0xFF,0xFF), //textAccentDisabled
     QColor(0xFF,0xFF,0xFF,0xFF), //focusFrameInnerStroke
     QColor(0x00,0x00,0x00,0xFF), //focusFrameOuterStroke
     QColor(0xFF,0xFF,0xFF,percentToAlpha(70)),      // fillControlDefault
@@ -119,9 +115,15 @@ static constexpr std::array<QColor, 30> WINUI3ColorsLight {
     QColor(0x00,0x00,0x00,percentToAlpha(90)),      // fillAccentSecondary
     QColor(0x00,0x00,0x00,percentToAlpha(80)),      // fillAccentTertiary
     QColor(0x00,0x00,0x00,percentToAlpha(21.69)),   // fillAccentDisabled
+    QColor(0x00,0x00,0x00,percentToAlpha(89.56)),   // textPrimary
+    QColor(0x00,0x00,0x00,percentToAlpha(60.63)),   // textSecondary
+    QColor(0x00,0x00,0x00,percentToAlpha(36.14)),   // textDisabled
+    QColor(0xFF,0xFF,0xFF,percentToAlpha(100)),     // textOnAccentPrimary
+    QColor(0xFF,0xFF,0xFF,percentToAlpha(70)),      // textOnAccentSecondary
+    QColor(0xFF,0xFF,0xFF,percentToAlpha(100)),     // textOnAccentDisabled
 };
 
-static constexpr std::array<QColor, 30> WINUI3ColorsDark {
+static constexpr std::array<QColor, 32> WINUI3ColorsDark {
     QColor(0xFF,0xFF,0xFF,0x0F), //subtleHighlightColor
     QColor(0xFF,0xFF,0xFF,0x0A), //subtlePressedColor
     QColor(0xFF,0xFF,0xFF,0x12), //frameColorLight
@@ -131,13 +133,9 @@ static constexpr std::array<QColor, 30> WINUI3ColorsDark {
     QColor(0xFF,0xFF,0xFF,0x18), //controlStrokeSecondary
     QColor(0xFF,0xFF,0xFF,0x12), //controlStrokePrimary
     QColor(0x0F,0x0F,0x0F,0xFF), //menuPanelFill
-    QColor(0x00,0x00,0x00,0xFF), //textOnAccentPrimary
-    QColor(0x00,0x00,0x00,0x80), //textOnAccentSecondary
-    QColor(0xFF,0xFF,0xFF,0x87), //controlTextSecondary
     QColor(0xFF,0xFF,0xFF,0x14), //controlStrokeOnAccentSecondary
     QColor(0x45,0x45,0x45,0xFF), //controlFillSolid
     QColor(0x75,0x75,0x75,0x66), //surfaceStroke
-    QColor(0xFF,0xFF,0xFF,0x87), //textAccentDisabled
     QColor(0x00,0x00,0x00,0xFF), //focusFrameInnerStroke
     QColor(0xFF,0xFF,0xFF,0xFF), //focusFrameOuterStroke
     QColor(0xFF,0xFF,0xFF,percentToAlpha(6.05)),    // fillControlDefault
@@ -152,9 +150,15 @@ static constexpr std::array<QColor, 30> WINUI3ColorsDark {
     QColor(0x00,0x00,0x00,percentToAlpha(90)),      // fillAccentSecondary
     QColor(0x00,0x00,0x00,percentToAlpha(80)),      // fillAccentTertiary
     QColor(0xFF,0xFF,0xFF,percentToAlpha(15.81)),   // fillAccentDisabled
+    QColor(0xFF,0xFF,0xFF,percentToAlpha(100)),     // textPrimary
+    QColor(0xFF,0xFF,0xFF,percentToAlpha(78.6)),    // textSecondary
+    QColor(0xFF,0xFF,0xFF,percentToAlpha(36.28)),   // textDisabled
+    QColor(0x00,0x00,0x00,percentToAlpha(100)),     // textOnAccentPrimary
+    QColor(0x00,0x00,0x00,percentToAlpha(70)),      // textOnAccentSecondary
+    QColor(0xFF,0xFF,0xFF,percentToAlpha(53.02)),   // textOnAccentDisabled
 };
 
-static constexpr std::array<std::array<QColor,30>, 2> WINUI3Colors {
+static constexpr std::array<std::array<QColor,32>, 2> WINUI3Colors {
     WINUI3ColorsLight,
     WINUI3ColorsDark
 };
@@ -855,7 +859,7 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
 
             if (isOn) {
                 painter->setFont(assetFont);
-                painter->setPen(option->palette.color(QPalette::Window));
+                painter->setPen(controlTextColor(option, QPalette::Window));
                 QNumberStyleAnimation *animation = qobject_cast<QNumberStyleAnimation *>(
                         d->animation(option->styleObject));
                 QFontMetrics fm(assetFont);
@@ -867,7 +871,7 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
                 painter->drawText(clipRect, Qt::AlignVCenter | Qt::AlignLeft, QStringLiteral(u"\uE73E"));
             } else if (isPartial) {
                 painter->setFont(assetFont);
-                painter->setPen(option->palette.color(QPalette::Window));
+                painter->setPen(controlTextColor(option, QPalette::Window));
                 painter->drawText(rect, Qt::AlignCenter, QStringLiteral(u"\uE73C"));
             }
         }
@@ -1199,7 +1203,8 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
                 rect.translate(shiftX, shiftY);
                 painter->setFont(toolbutton->font);
                 const QString text = d->toolButtonElideText(toolbutton, rect, alignment);
-                painter->setPen(buttonLabelColor(option));
+                // option->state has no State_Sunken here, windowsvistastyle/CC_ToolButton removes it
+                painter->setPen(controlTextColor(option));
                 proxy()->drawItemText(painter, rect, alignment, toolbutton->palette,
                                       toolbutton->state & State_Enabled, text);
             } else {
@@ -1250,7 +1255,7 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
                     }
                     tr.translate(shiftX, shiftY);
                     const QString text = d->toolButtonElideText(toolbutton, tr, alignment);
-                    painter->setPen(buttonLabelColor(option));
+                    painter->setPen(controlTextColor(option));
                     proxy()->drawItemText(painter, QStyle::visualRect(toolbutton->direction, rect, tr), alignment, toolbutton->palette,
                                           toolbutton->state & State_Enabled, text);
                 } else {
@@ -1458,7 +1463,7 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
                 tf |= Qt::AlignHCenter;
             }
 
-            painter->setPen(buttonLabelColor(option));
+            painter->setPen(controlTextColor(option));
             proxy()->drawItemText(painter, textRect, tf, option->palette,btn->state & State_Enabled, btn->text);
         }
         break;
@@ -2443,20 +2448,25 @@ QBrush QWindows11Style::controlFillBrush(const QStyleOption *option, ControlType
     return winUI3Color(colorEnums[int(controlType)][int(state)]);
 }
 
-QColor QWindows11Style::buttonLabelColor(const QStyleOption *option) const
+QColor QWindows11Style::controlTextColor(const QStyleOption *option, QPalette::ColorRole role) const
 {
+    using namespace StyleOptionHelper;
+    static constexpr WINUI3Color colorEnums[2][int(ControlState::Max)] = {
+        // Control, unchecked
+        { textPrimary, textPrimary, textSecondary, textDisabled },
+        // Control, checked
+        { textOnAccentPrimary, textOnAccentPrimary, textOnAccentSecondary, textOnAccentDisabled },
+    };
+
     if (option->palette.isBrushSet(QPalette::Current, QPalette::ButtonText))
         return option->palette.buttonText().color();
 
-    const bool isOn = option->state & QStyle::State_On;
-    if (option->state & QStyle::State_Sunken)
-        return isOn ? winUI3Color(textOnAccentSecondary)
-                    : winUI3Color(controlTextSecondary);
-    if (!(option->state & QStyle::State_Enabled))
-        return isOn ? winUI3Color(textAccentDisabled)
-                    : option->palette.buttonText().color();
-    return isOn ? winUI3Color(textOnAccentPrimary)
-                : option->palette.buttonText().color();
+    const int colorIndex = isChecked(option) ? 1 : 0;
+    const auto state = calcControlState(option);
+    const auto alpha = winUI3Color(colorEnums[colorIndex][int(state)]);
+    QColor col = option->palette.color(role);
+    col.setAlpha(alpha.alpha());
+    return col;
 }
 
 void QWindows11Style::drawLineEditFrame(QPainter *p, const QRectF &rect, const QStyleOption *o, bool isEditable) const
