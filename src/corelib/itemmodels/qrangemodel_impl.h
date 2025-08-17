@@ -716,7 +716,6 @@ protected:
 
     inline QModelIndex createIndex(int row, int column, const void *ptr = nullptr) const;
     inline void changePersistentIndexList(const QModelIndexList &from, const QModelIndexList &to);
-    inline QHash<int, QByteArray> roleNames() const;
     inline void dataChanged(const QModelIndex &from, const QModelIndex &to,
                             const QList<int> &roles);
     inline void beginInsertColumns(const QModelIndex &parent, int start, int count);
