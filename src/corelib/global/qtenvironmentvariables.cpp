@@ -401,6 +401,7 @@ bool qLocalTime(time_t utc, struct tm *local)
 */
 QString qTzName(int dstIndex)
 {
+    Q_DECL_UNINITIALIZED
     char name[512];
     bool ok;
     size_t size = 0;
