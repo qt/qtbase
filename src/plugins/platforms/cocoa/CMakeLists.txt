@@ -39,6 +39,16 @@ qt_internal_add_plugin(QCocoaIntegrationPlugin
         qmacclipboard.h qmacclipboard.mm
         qmultitouch_mac.mm qmultitouch_mac_p.h
         qnsview.h qnsview.mm
+        qnsview_drawing.mm
+        qnsview_mouse.mm
+        qnsview_touch.mm
+        qnsview_gestures.mm
+        qnsview_tablet.mm
+        qnsview_dragging.mm
+        qnsview_keys.mm
+        qnsview_complextext.mm
+        qnsview_menus.mm
+        qnsview_accessibility.mm
         qnswindow.h qnswindow.mm
         qnswindowdelegate.h qnswindowdelegate.mm
         qcocoacolordialoghelper.h qcocoacolordialoghelper.mm
@@ -62,6 +72,22 @@ qt_internal_add_plugin(QCocoaIntegrationPlugin
         Qt::CorePrivate
         Qt::Gui
         Qt::GuiPrivate
+)
+
+# compiled as part of qnsview.mm
+set_property(SOURCE
+    qnsview_drawing.mm
+    qnsview_mouse.mm
+    qnsview_touch.mm
+    qnsview_gestures.mm
+    qnsview_tablet.mm
+    qnsview_dragging.mm
+    qnsview_keys.mm
+    qnsview_complextext.mm
+    qnsview_menus.mm
+    qnsview_accessibility.mm
+    PROPERTY
+        HEADER_FILE_ONLY TRUE
 )
 
 qt_disable_apple_app_extension_api_only(QCocoaIntegrationPlugin)
