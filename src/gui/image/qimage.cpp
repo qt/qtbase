@@ -6164,7 +6164,7 @@ static constexpr QPixelFormat pixelformats[] = {
                      /*FIFTH*/              0,
                      /*ALPHA*/              4,
                      /*ALPHA USAGE*/       QPixelFormat::UsesAlpha,
-                     /*ALPHA POSITION*/    QPixelFormat::AtEnd,
+                     /*ALPHA POSITION*/    QPixelFormat::AtBeginning,
                      /*PREMULTIPLIED*/     QPixelFormat::Premultiplied,
                      /*INTERPRETATION*/    QPixelFormat::UnsignedShort,
                      /*BYTE ORDER*/        QPixelFormat::CurrentSystemEndian),
