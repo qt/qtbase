@@ -1987,6 +1987,7 @@ void QCoreApplication::removePostedEvents(QObject *receiver, int eventType)
   possible.
 
   \threadsafe
+  \internal
 */
 
 void QCoreApplicationPrivate::removePostedEvent(QEvent * event)
