@@ -642,6 +642,14 @@ QNetworkInformation::TransportMedium QNetworkInformation::transportMedium() cons
     application should perform certain network requests or uploads.
     For instance, you may not want to upload logs or diagnostics while this
     property is \c true.
+
+    \snippet code/src_network_kernel_qnetworkinformation_metering.cpp 0
+    \dots
+    \snippet code/src_network_kernel_qnetworkinformation_metering.cpp 1
+    \dots
+    \snippet code/src_network_kernel_qnetworkinformation_metering.cpp 2
+    \dots
+    \snippet code/src_network_kernel_qnetworkinformation_metering.cpp 3
 */
 bool QNetworkInformation::isMetered() const
 {
