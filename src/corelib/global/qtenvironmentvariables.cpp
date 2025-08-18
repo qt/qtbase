@@ -420,7 +420,7 @@ QString qTzName(int dstIndex)
         if (ok)
             memcpy(name, src, size + 1);
     }
-#endif // Q_OS_WIN
+#endif // _UCRT
     return ok ? QString::fromLocal8Bit(name, qsizetype(size)) : QString();
 }
 
