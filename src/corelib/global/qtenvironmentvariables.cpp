@@ -425,7 +425,7 @@ QString qTzName(int dstIndex)
     {
         const auto locker = qt_scoped_lock(environmentMutex);
         const char *const src = tzname[dstIndex];
-        size = strlen(src);
+        size = src ? strlen(src) : 0;
         ok = src != nullptr && size < sizeof(name);
         if (ok)
             memcpy(name, src, size + 1);
