@@ -639,7 +639,7 @@ static QWindowGeometrySpecification windowGeometrySpecification = Q_WINDOW_GEOME
     For more information about the platform-specific arguments available for
     embedded Linux platforms, see \l{Qt for Embedded Linux}.
 
-    \sa arguments() QGuiApplication::platformName
+    \sa arguments(), QGuiApplication::platformName
 */
 #ifdef Q_QDOC
 QGuiApplication::QGuiApplication(int &argc, char **argv)
