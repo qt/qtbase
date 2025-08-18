@@ -5158,10 +5158,8 @@ QString QString::section(const QString &sep, qsizetype start, qsizetype end, Sec
 }
 
 #if QT_CONFIG(regularexpression)
-class qt_section_chunk {
-public:
-    qt_section_chunk() {}
-    qt_section_chunk(qsizetype l, QStringView s) : length(l), string(std::move(s)) {}
+struct qt_section_chunk
+{
     qsizetype length;
     QStringView string;
 };
@@ -5261,11 +5259,11 @@ QString QString::section(const QRegularExpression &re, qsizetype start, qsizetyp
     while (iterator.hasNext()) {
         QRegularExpressionMatch match = iterator.next();
         m = match.capturedStart();
-        sections.append(qt_section_chunk(last_len, QStringView{ *this }.sliced(last_m, m - last_m)));
+        sections.append(qt_section_chunk{last_len, QStringView{*this}.sliced(last_m, m - last_m)});
         last_m = m;
         last_len = match.capturedLength();
     }
-    sections.append(qt_section_chunk(last_len, QStringView{ *this }.sliced(last_m, n - last_m)));
+    sections.append(qt_section_chunk{last_len, QStringView{*this}.sliced(last_m, n - last_m)});
 
     return extractSections(sections, start, end, flags);
 }
