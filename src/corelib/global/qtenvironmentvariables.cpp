@@ -412,7 +412,7 @@ QString qTzName(int dstIndex)
         Q_ASSERT(!ok || size < sizeof(name));
 #else
         const char *const src = tzname[dstIndex];
-        size = strlen(src);
+        size = src ? strlen(src) : 0;
         ok = src != nullptr && size < sizeof(name);
         if (ok)
             memcpy(name, src, size + 1);
