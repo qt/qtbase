@@ -800,13 +800,14 @@ struct QRegularExpressionMatchIteratorPrivate : QSharedData
     (pass it to qUtf16Printable, etc.), so we need to check for that.
 */
 Q_DECL_COLD_FUNCTION
-void qtWarnAboutInvalidRegularExpression(const QString &pattern, const char *where)
+void qtWarnAboutInvalidRegularExpression(const QString &pattern, const char *cls, const char *method)
 {
     if (pattern.isValidUtf16()) {
-        qWarning("%s(): called on an invalid QRegularExpression object "
-                 "(pattern is '%ls')", where, qUtf16Printable(pattern));
+        qWarning("%s::%s(): called on an invalid QRegularExpression object "
+                 "(pattern is '%ls')", cls, method, qUtf16Printable(pattern));
     } else {
-        qWarning("%s(): called on an invalid QRegularExpression object", where);
+        qWarning("%s::%s(): called on an invalid QRegularExpression object",
+                 cls, method);
     }
 }
 
@@ -1118,7 +1119,7 @@ void QRegularExpressionPrivate::doMatch(QRegularExpressionMatchPrivate *priv,
         return;
 
     if (Q_UNLIKELY(!compiledPattern)) {
-        qtWarnAboutInvalidRegularExpression(pattern, "QRegularExpressionPrivate::doMatch");
+        qtWarnAboutInvalidRegularExpression(pattern, "QRegularExpressionPrivate", "doMatch");
         return;
     }
 
