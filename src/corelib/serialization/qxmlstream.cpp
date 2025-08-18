@@ -3255,7 +3255,7 @@ void QXmlStreamWriterPrivate::writeEscaped(QAnyStringView s, bool escapeWhitespa
             // We can have '\0' in the text, and it should be reported as
             // Error::InvalidCharacter, not as Error::Encoding
             constexpr char32_t invalidValue = 0xFFFFFFFF;
-            Q_ASSERT(invalidValue > QChar::LastValidCodePoint);
+            static_assert(invalidValue > QChar::LastValidCodePoint);
             char32_t result = decoder.next(invalidValue);
             it = decoder.position();
             return result == invalidValue ? NextResult{U'\0', true}
