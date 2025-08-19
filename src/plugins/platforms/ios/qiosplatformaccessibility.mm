@@ -12,7 +12,13 @@
 #include "quiaccessibilityelement.h"
 
 QIOSPlatformAccessibility::QIOSPlatformAccessibility()
-{}
+{
+    m_focusObserver = QMacNotificationObserver(
+            nil, UIAccessibilityElementFocusedNotification, [&](NSNotification *notification) {
+                id element = notification.userInfo[UIAccessibilityFocusedElementKey];
+                m_focusElement = static_cast<QMacAccessibilityElement *>(element);
+            });
+}
 
 QIOSPlatformAccessibility::~QIOSPlatformAccessibility()
 {}
@@ -57,6 +63,13 @@ void QIOSPlatformAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *even
         // specifies that the optional argument to UIAccessibilityPostNotification is the
         // accessibility element for VoiceOver to move to after processing the notification.
         UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification, element);
+        break;
+    }
+    case QAccessible::DescriptionChanged:
+    case QAccessible::NameChanged: {
+        auto *element = [QMacAccessibilityElement elementWithId:event->uniqueId()];
+        if (element == m_focusElement)
+            UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification, element);
         break;
     }
     case QAccessible::ObjectCreated:
