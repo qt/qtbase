@@ -2409,9 +2409,8 @@ std::optional<QFont::Tag> QFont::Tag::fromString(QAnyStringView view) noexcept
 }
 
 /*!
-    \fn QDataStream &operator<<(QDataStream &, QFont::Tag)
-    \fn QDataStream &operator>>(QDataStream &, QFont::Tag &)
-    \relates QFont::Tag
+    \fn QDataStream &QFont::Tag::operator<<(QDataStream &, QFont::Tag)
+    \fn QDataStream &QFont::Tag::operator>>(QDataStream &, QFont::Tag &)
 
     Data stream operators for QFont::Tag.
 */
