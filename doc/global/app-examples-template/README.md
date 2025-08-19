@@ -64,9 +64,9 @@ angle brackets and check the links.
 
    - Explain the implementation of the feature in the code.
 
-### (Optional) Include squish testing information if applicable
+### (Optional) Include Squish testing information if applicable
 
-   - If example was tested with squish, include squish-tested-example.qdocinc
+   - If example was tested with Squish, include squish-tested-example.qdocinc
 
 ### (Optional) Create a Best practices section
    - Add any relevant best practices.

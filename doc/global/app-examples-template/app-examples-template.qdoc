@@ -52,7 +52,7 @@
 
     <Include best practices related to the example if applicable.>
 
-    <Optional - use this section if the example was tested with squish>
+    <Optional - use this section if the example was tested with Squish>
     \include squish-tested-example.qdocinc
 
     \section1 Source files
