@@ -7,8 +7,8 @@
 
     "Description": "HarfBuzz is an OpenType text shaping engine.",
     "Homepage": "http://harfbuzz.org",
-    "Version": "11.3.3",
-    "DownloadLocation": "https://github.com/harfbuzz/harfbuzz/releases/tag/11.3.3",
+    "Version": "11.4.1",
+    "DownloadLocation": "https://github.com/harfbuzz/harfbuzz/releases/tag/11.4.1",
     "PURL": "pkg:github/harfbuzz/harfbuzz@$<VERSION>",
     "CPE": "cpe:2.3:a:harfbuzz_project:harfbuzz:$<VERSION>:*:*:*:*:*:*:*",
     "License": "MIT License",
