@@ -1544,8 +1544,8 @@ qt_configure_add_report_entry(
 )
 qt_configure_add_report_entry(
     TYPE NOTE
-    MESSAGE "Building Qt for Android with 16KB page sizes."
-    CONDITION QT_FEATURE_android_16kb_pages AND (CMAKE_ANDROID_NDK_VERSION VERSION_LESS "28.0.0")
+    MESSAGE "Building Qt for Android and user projects with 16KB page sizes."
+    CONDITION QT_FEATURE_android_16kb_pages
 )
 if(WASM)
     qt_extra_definition("QT_EMCC_VERSION" "\"${EMCC_VERSION}\"" PUBLIC)
