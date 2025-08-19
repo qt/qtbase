@@ -28,11 +28,11 @@
 
     <Describe how to navigate and access different parts of the example/UI.>
 
-    \setion1 Relevant classes
+    \setion1 Relevant modules and classes
     <Optional - Use this section for more complicated examples.>
 
-    This example introduces the following Qt classes:
-    <Link the relevant classes>
+    This example introduces the following Qt <modules/classes>:
+    <Link the relevant modules/classes>
 
     \section2 Class Hierarchy
     <Optional - Use this section for more complicated examples.>

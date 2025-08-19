@@ -43,7 +43,7 @@ angle brackets and check the links.
    - The [Coffee Machine](https://doc.qt.io/qt-6/qtdoc-demos-coffee-example.html)
     example demonstrates this well.
 
-### (Optional) Provide a list of the main Qt classes the examples uses
+### (Optional) Provide a list of the main Qt classes and modules the examples uses
 
    - Use for more complicated examples.
    - The [Bluetooth Low Energy Heart Rate Game](https://doc.qt.io/qt-6/qtbluetooth-heartrate-game-example.html)
