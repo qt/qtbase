@@ -196,6 +196,7 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSViewMenuHelper);
 
 - (void)removeFromSuperview
 {
+    qCDebug(lcQpaWindow) << "Removing" << self << "from" <<  self.superview;
     QMacAutoReleasePool pool;
     [super removeFromSuperview];
 }
