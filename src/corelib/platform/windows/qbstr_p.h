@@ -1,5 +1,6 @@
 // Copyright (C) 2024 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+// Qt-Security score:significant reason:default
 
 #ifndef QBSTR_P_H
 #define QBSTR_P_H
@@ -141,4 +142,4 @@ QT_END_NAMESPACE
 
 #endif // Q_OS_WIN
 
-#endif // QCOMPTR_P_H
+#endif // QBSTR_P_H
