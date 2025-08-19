@@ -3280,8 +3280,8 @@ void QXmlStreamWriterPrivate::writeEscaped(QAnyStringView s, bool escapeWhitespa
 
             while (it != end) {
                 auto next_it = it;
-                auto [uc, encodingError] = decoder(next_it, end);
-                switch (uc) {
+                const auto decoded = decoder(next_it, end);
+                switch (decoded.value) {
                 case u'<':
                     replacement = "&lt;"_L1;
                     break;
@@ -3315,13 +3315,13 @@ void QXmlStreamWriterPrivate::writeEscaped(QAnyStringView s, bool escapeWhitespa
                     Q_ASSERT(!replacement.isNull());
                     break;
                 default:
-                    if (uc > 0x1F)
+                    if (decoded.value > 0x1F)
                         break;
                     // ASCII control characters
                     Q_FALLTHROUGH();
                 case 0xFFFE:
                 case 0xFFFF:
-                    raiseError(encodingError
+                    raiseError(decoded.encodingError
                                        ? QXmlStreamWriter::Error::Encoding
                                        : QXmlStreamWriter::Error::InvalidCharacter);
                     if (stopWritingOnError)
