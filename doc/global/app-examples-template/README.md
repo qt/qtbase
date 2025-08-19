@@ -32,10 +32,9 @@ angle brackets and check the links.
    - Include the [Launching Examples Template](https://github.com/qt/qtbase/blob/dev/doc/global/includes/examples-run.qdocinc).
    - Explain the expected application output after running the example.
 
-### Provide relevant platform information
+### (Optional) Provide relevant platform information
 
-   - Mention limitations of target platforms, if there are any.
-   - Mention which platforms the example can be used on.
+   - List any platform limitations or exceptions, if applicable.
 
 ### (Optional) Provide a UI walkthrough
 
@@ -64,6 +63,10 @@ angle brackets and check the links.
 ### Feature B... (Add a separate feature section for all relevant features)
 
    - Explain the implementation of the feature in the code.
+
+### (Optional) Include squish testing information if applicable
+
+   - If example was tested with squish, include squish-tested-example.qdocinc
 
 ### (Optional) Create a Best practices section
    - Add any relevant best practices.

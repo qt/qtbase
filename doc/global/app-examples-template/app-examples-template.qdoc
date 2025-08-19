@@ -21,8 +21,7 @@
     <Describe the expected application behavior after running the example.>
 
     \section1 Platform notes
-    <Mention which platforms the example is for.
-    Mention limitations of target platforms, if any.>
+    <Optional - Mention limitations of target platforms, if any.>
 
     \section1 UI walkthrough
     <Optional - Use this section for more complicated examples.>
@@ -52,6 +51,9 @@
     <Optional>
 
     <Include best practices related to the example if applicable.>
+
+    <Optional - use this section if the example was tested with squish>
+    \include squish-tested-example.qdocinc
 
     \section1 Source files
 
