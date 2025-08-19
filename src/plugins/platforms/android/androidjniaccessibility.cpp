@@ -485,9 +485,10 @@ namespace QtAndroidAccessibility
             return QStringLiteral("android.app.ActionBar.Tab");
         case QAccessible::Role::PageTabList:
             return QStringLiteral("android.widget.TabWidget");
-        case QAccessible::Role::ScrollBar: [[fallthrough]];
+        case QAccessible::Role::ScrollBar:
+            return QStringLiteral("android.widget.Scroller");
         case QAccessible::Role::Slider:
-            return QStringLiteral("android.widget.SeekBar");
+            return QStringLiteral("com.google.android.material.slider.Slider");
         case QAccessible::Role::Table:
             // #TODO Evaluate the usage of AccessibleNodeInfo.setCollectionItemInfo() to provide
             // infos about colums, rows und items.
