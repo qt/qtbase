@@ -69,6 +69,11 @@ qt_internal_add_3rdparty_library(BundledHarfbuzz
         src/hb-subset-plan-layout.cc
         src/hb-subset-plan-member-list.hh
         src/hb-subset-serialize.cc src/hb-subset-serialize.h
+        src/hb-subset-table-cff.cc
+        src/hb-subset-table-color.cc
+        src/hb-subset-table-layout.cc
+        src/hb-subset-table-other.cc
+        src/hb-subset-table-var.cc src/hb-subset-table.hh
         src/hb-subset-plan-var.cc
         src/hb-unicode.cc src/hb-unicode.h src/hb-unicode.hh
         src/hb-utf.hh

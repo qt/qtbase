@@ -136,6 +136,7 @@
 #pragma GCC diagnostic ignored "-Wformat-nonliteral"
 #pragma GCC diagnostic ignored "-Wformat-zero-length"
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
+#pragma GCC diagnostic ignored "-Wold-style-cast"
 #pragma GCC diagnostic ignored "-Wpacked" // Erratic impl in clang
 #pragma GCC diagnostic ignored "-Wrange-loop-analysis" // https://github.com/harfbuzz/harfbuzz/issues/2834
 #pragma GCC diagnostic ignored "-Wstrict-aliasing"
@@ -239,6 +240,8 @@
 // clang defines it so no need.
 #ifdef __has_builtin
 #define hb_has_builtin __has_builtin
+#elif defined(_MSC_VER)
+#define hb_has_builtin(x) 0
 #else
 #define hb_has_builtin(x) ((defined(__GNUC__) && __GNUC__ >= 5))
 #endif
@@ -556,5 +559,14 @@ extern "C" void  hb_free_impl(void *ptr);
 #include "hb-array.hh"	// Requires: hb-algs hb-iter hb-null
 #include "hb-vector.hh"	// Requires: hb-array hb-null
 #include "hb-object.hh"	// Requires: hb-atomic hb-mutex hb-vector
+
+
+/* Our src/test-*.cc use hb_assert(), such that it's not compiled out under NDEBUG.
+ * https://github.com/harfbuzz/harfbuzz/issues/5418 */
+#define hb_always_assert(x) \
+	HB_STMT_START { \
+	  if (!(x)) { fprintf(stderr, "Assertion failed: %s, at %s:%d\n", #x, __FILE__, __LINE__); abort(); } \
+	} HB_STMT_END
+
 
 #endif /* HB_HH */
