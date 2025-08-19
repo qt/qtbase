@@ -1325,8 +1325,10 @@ public:
                             targetRef = *data.value<value_type *>();
                             return true;
                         }
+#ifndef QT_NO_DEBUG
                         qCritical("Not able to assign %s to %s",
                                   qPrintable(QDebug::toString(data)), targetMetaType.name());
+#endif
                         return false;
                     } else if (row_traits::fixed_size() <= 1) {
                         return writeRole(role, QRangeModelDetails::pointerTo(target), data);
@@ -1403,7 +1405,9 @@ public:
                         );
 
                         if (invalid != data.keyEnd()) {
+#ifndef QT_NO_DEBUG
                             qWarning("No role name set for %d", *invalid);
+#endif
                             return false;
                         }
                     }
@@ -1437,8 +1441,10 @@ public:
                                 continue;
                             if (!writeRole(role, QRangeModelDetails::pointerTo(targetCopy), value)) {
                                 const QByteArray roleName = roleNames.value(role);
+#ifndef QT_NO_DEBUG
                                 qWarning("Failed to write value '%s' to role '%s'",
                                          qPrintable(QDebug::toString(value)), roleName.data());
+#endif
                                 return false;
                             }
                         }
@@ -2383,8 +2389,10 @@ protected:
         if constexpr (Base::dynamicColumns()) {
             if (column < int(Base::size(*QRangeModelDetails::cpos(*this->m_data.model(), row))))
                 return this->createIndex(row, column);
-            // if we got here, then column < columnCount(), but this row is to short
+#ifndef QT_NO_DEBUG
+            // if we got here, then column < columnCount(), but this row is too short
             qCritical("QRangeModel: Column-range at row %d is not large enough!", row);
+#endif
             return {};
         } else {
             return this->createIndex(row, column);

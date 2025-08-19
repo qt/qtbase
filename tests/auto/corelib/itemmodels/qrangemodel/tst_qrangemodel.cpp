@@ -1110,8 +1110,10 @@ void tst_QRangeModel::moveColumns()
 
 void tst_QRangeModel::inconsistentColumnCount()
 {
+#ifndef QT_NO_DEBUG
     QTest::ignoreMessage(QtCriticalMsg, "QRangeModel: "
         "Column-range at row 1 is not large enough!");
+#endif
 
     std::vector<std::vector<int>> fuzzyTable = {
         {0},
