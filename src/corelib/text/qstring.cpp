@@ -7344,7 +7344,7 @@ QString QString::asprintf(const char *cformat, ...)
 {
     va_list ap;
     va_start(ap, cformat);
-    const QString s = vasprintf(cformat, ap);
+    QString s = vasprintf(cformat, ap);
     va_end(ap);
     return s;
 }
