@@ -1049,17 +1049,10 @@ int QUtf8::compareUtf8(QByteArrayView utf8, QStringView utf16, Qt::CaseSensitivi
         simdCompareAscii(src1, end1, src2, end2);
 
         if (src1 < end1 && src2 < end2) {
-            char32_t uc1 = *src1++;
+            char32_t uc1 = QUtf8Functions::nextUcs4FromUtf8(src1, end1);
             char32_t uc2 = *src2++;
 
             if (uc1 >= 0x80) {
-                char32_t *output = &uc1;
-                qsizetype res = QUtf8Functions::fromUtf8<QUtf8BaseTraitsNoAscii>(uc1, output, src1, end1);
-                if (res < 0) {
-                    // decoding error
-                    uc1 = QChar::ReplacementCharacter;
-                }
-
                 // Only decode the UTF-16 surrogate pair if the UTF-8 code point
                 // wasn't US-ASCII (a surrogate cannot match US-ASCII).
                 if (QChar::isHighSurrogate(uc2) && src2 < end2 && QChar::isLowSurrogate(*src2))
