@@ -34,9 +34,8 @@ public:
     QVxMouseManager(const QString &key, const QString &specification, QObject *parent = nullptr);
     ~QVxMouseManager();
 
-    void handleMouseEvent(int x, int y, bool abs, Qt::MouseButtons buttons,
+    void handleMouseEvent(int x, int y, Qt::MouseButtons buttons,
                           Qt::MouseButton button, QEvent::Type type);
-    void handleWheelEvent(QPoint delta);
 
     void addMouse(const QString &deviceNode = QString());
     void removeMouse(const QString &deviceNode);

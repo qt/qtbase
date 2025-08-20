@@ -1,4 +1,4 @@
-// Copyright (C) 2024 The Qt Company Ltd.
+// Copyright (C) 2025 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #ifndef QVXMOUSEHANDLER_P_H
@@ -41,34 +41,24 @@ public:
     void readMouseData();
 
 signals:
-    void handleMouseEvent(int x, int y, bool abs, Qt::MouseButtons buttons,
+    void handleMouseEvent(int x, int y, Qt::MouseButtons buttons,
                           Qt::MouseButton button, QEvent::Type type);
-    void handleWheelEvent(QPoint delta);
 
 private:
-    QVxMouseHandler(const QString &device, int fd, bool abs, bool compression, int jitterLimit);
+    QVxMouseHandler(const QString &device, int fd, bool compression, int jitterLimit);
 
     void sendMouseEvent();
-    void detectHiResWheelSupport();
-
     QString m_device;
     int m_fd;
     QSocketNotifier *m_notify = nullptr;
     int m_x = 0, m_y = 0;
     int m_prevx = 0, m_prevy = 0;
-    bool m_abs;
     bool m_compression;
-    bool m_hiResWheel = false;
-    bool m_hiResHWheel = false;
     Qt::MouseButtons m_buttons;
     Qt::MouseButton m_button;
     QEvent::Type m_eventType;
     int m_jitterLimitSquared;
     bool m_prevInvalid = true;
-    int m_hardwareWidth;
-    int m_hardwareHeight;
-    qreal m_hardwareScalerY;
-    qreal m_hardwareScalerX;
 };
 
 QT_END_NAMESPACE
