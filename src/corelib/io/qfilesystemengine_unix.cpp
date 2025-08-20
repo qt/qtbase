@@ -1178,10 +1178,9 @@ auto QFileSystemEngine::cloneFile(int srcfd, int dstfd, const QFileSystemMetaDat
     // across mountpoints, Linux currently (6.12) can only if the source and
     // destination mountpoints are the same filesystem type.
     QT_OFF_T srcoffset = 0;
-    QT_OFF_T dstoffset = 0;
     ssize_t copied;
     do {
-        copied = ::copy_file_range(srcfd, &srcoffset, dstfd, &dstoffset, SSIZE_MAX, 0);
+        copied = ::copy_file_range(srcfd, &srcoffset, dstfd, nullptr, SSIZE_MAX, 0);
     } while (copied > 0 || (copied < 0 && errno == EINTR));
     if (copied == 0)
         return TriStateResult::Success;         // EOF -> success
