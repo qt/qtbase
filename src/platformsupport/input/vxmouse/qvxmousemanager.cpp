@@ -87,17 +87,11 @@ void QVxMouseManager::clampPosition()
         m_y = g.bottom() - m_yoffset;
 }
 
-void QVxMouseManager::handleMouseEvent(int x, int y, bool abs, Qt::MouseButtons buttons,
+void QVxMouseManager::handleMouseEvent(int x, int y, Qt::MouseButtons buttons,
                                           Qt::MouseButton button, QEvent::Type type)
 {
-    // update current absolute coordinates
-    if (!abs) {
-        m_x += x;
-        m_y += y;
-    } else {
-        m_x = x;
-        m_y = y;
-    }
+    m_x += x;
+    m_y += y;
 
     clampPosition();
 
@@ -107,12 +101,6 @@ void QVxMouseManager::handleMouseEvent(int x, int y, bool abs, Qt::MouseButtons 
     QWindowSystemInterface::handleMouseEvent(0, pos, pos, buttons, button, type, QGuiApplicationPrivate::inputDeviceManager()->keyboardModifiers());
 }
 
-void QVxMouseManager::handleWheelEvent(QPoint delta)
-{
-    QPoint pos(m_x + m_xoffset, m_y + m_yoffset);
-    QWindowSystemInterface::handleWheelEvent(0, pos, pos, QPoint(), delta, QGuiApplicationPrivate::inputDeviceManager()->keyboardModifiers());
-}
-
 void QVxMouseManager::addMouse(const QString &deviceNode)
 {
     qCDebug(qLcVxMouse, "Adding mouse at %ls", qUtf16Printable(deviceNode));
@@ -120,8 +108,6 @@ void QVxMouseManager::addMouse(const QString &deviceNode)
     if (handler) {
         connect(handler.get(), &QVxMouseHandler::handleMouseEvent,
                 this, &QVxMouseManager::handleMouseEvent);
-        connect(handler.get(), &QVxMouseHandler::handleWheelEvent,
-                this, &QVxMouseManager::handleWheelEvent);
         m_mice.add(deviceNode, std::move(handler));
         updateDeviceCount();
     } else {
