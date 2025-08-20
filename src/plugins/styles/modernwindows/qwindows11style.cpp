@@ -120,8 +120,8 @@ static constexpr int percentToAlpha(double percent)
 }
 
 static constexpr std::array<QColor, 33> WINUI3ColorsLight {
-    QColor(0x00,0x00,0x00,0x09), //subtleHighlightColor
-    QColor(0x00,0x00,0x00,0x06), //subtlePressedColor
+    QColor(0x00,0x00,0x00,percentToAlpha(3.73)), // subtleHighlightColor (fillSubtleSecondary)
+    QColor(0x00,0x00,0x00,percentToAlpha(2.41)), // subtlePressedColor (fillSubtleTertiary)
     QColor(0x00,0x00,0x00,0x0F), //frameColorLight
     QColor(0x00,0x00,0x00,percentToAlpha(60.63)),   //frameColorStrong
     QColor(0x00,0x00,0x00,percentToAlpha(21.69)),   //frameColorStrongDisabled
@@ -156,8 +156,8 @@ static constexpr std::array<QColor, 33> WINUI3ColorsLight {
 };
 
 static constexpr std::array<QColor, 33> WINUI3ColorsDark {
-    QColor(0xFF,0xFF,0xFF,0x0F), //subtleHighlightColor
-    QColor(0xFF,0xFF,0xFF,0x0A), //subtlePressedColor
+    QColor(0xFF,0xFF,0xFF,percentToAlpha(6.05)), // subtleHighlightColor (fillSubtleSecondary)
+    QColor(0xFF,0xFF,0xFF,percentToAlpha(4.19)), // subtlePressedColor (fillSubtleTertiary)
     QColor(0xFF,0xFF,0xFF,0x12), //frameColorLight
     QColor(0xFF,0xFF,0xFF,percentToAlpha(60.47)),   //frameColorStrong
     QColor(0xFF,0xFF,0xFF,percentToAlpha(15.81)),   //frameColorStrongDisabled
@@ -1504,32 +1504,30 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
         break;
     case CE_MenuBarItem:
         if (const auto *mbi = qstyleoption_cast<const QStyleOptionMenuItem *>(option))  {
+            using namespace StyleOptionHelper;
+
             constexpr int hPadding = 11;
             constexpr int topPadding = 4;
             constexpr int bottomPadding = 6;
-            bool active = mbi->state & State_Selected;
-            bool hasFocus = mbi->state & State_HasFocus;
-            bool down = mbi->state & State_Sunken;
-            bool enabled = mbi->state & State_Enabled;
             QStyleOptionMenuItem newMbi = *mbi;
+
             newMbi.font.setPointSize(10);
-            if (enabled && active) {
-                if (down)
-                    painter->setBrushOrigin(painter->brushOrigin() + QPoint(1, 1));
-                if (hasFocus) {
-                    if (highContrastTheme)
-                        painter->setPen(QPen(newMbi.palette.highlight().color(), 2));
-                    else
-                        painter->setPen(Qt::NoPen);
-                    painter->setBrush(highContrastTheme ? newMbi.palette.window().color() : WINUI3Colors[colorSchemeIndex][subtleHighlightColor]);
-                    QRect rect = mbi->rect.marginsRemoved(QMargins(5,0,5,0));
-                    painter->drawRoundedRect(rect,secondLevelRoundingRadius,secondLevelRoundingRadius, Qt::AbsoluteSize);
+            newMbi.palette.setColor(QPalette::ButtonText, controlTextColor(&newMbi));
+            if (!isDisabled(&newMbi)) {
+                QPen pen(Qt::NoPen);
+                QBrush brush(Qt::NoBrush);
+                if (highContrastTheme) {
+                    pen = QPen(newMbi.palette.highlight().color(), 2);
+                    brush = newMbi.palette.window();
+                } else if (isPressed(&newMbi)) {
+                    brush = winUI3Color(subtlePressedColor);
+                } else if (isHover(&newMbi)) {
+                    brush = winUI3Color(subtleHighlightColor);
                 }
-            } else if (enabled && highContrastTheme) {
-                painter->setPen(QPen(newMbi.palette.windowText().color(), 2));
-                painter->setBrush(newMbi.palette.window().color());
-                QRect rect = mbi->rect.marginsRemoved(QMargins(5,0,5,0));
-                painter->drawRoundedRect(rect,secondLevelRoundingRadius,secondLevelRoundingRadius, Qt::AbsoluteSize);
+                if (pen != Qt::NoPen || brush != Qt::NoBrush) {
+                    const QRect rect = mbi->rect.marginsRemoved(QMargins(5, 0, 5, 0));
+                    drawRoundedRect(painter, rect, pen, brush);
+                }
             }
             newMbi.rect.adjust(hPadding,topPadding,-hPadding,-bottomPadding);
             painter->setFont(newMbi.font);
