@@ -60,17 +60,6 @@ CGImageRef qt_mac_toCGImage(const QImage &inImage)
     return inImage.convertToFormat(QImage::Format_ARGB32_Premultiplied).toCGImage();
 }
 
-CGImageRef qt_mac_toCGImageMask(const QImage &image)
-{
-    static const auto deleter = [](void *image, const void *, size_t) { delete static_cast<QImage *>(image); };
-    QCFType<CGDataProviderRef> dataProvider =
-            CGDataProviderCreateWithData(new QImage(image), image.bits(),
-                                                    image.sizeInBytes(), deleter);
-
-    return CGImageMaskCreate(image.width(), image.height(), 8, image.depth(),
-                              image.bytesPerLine(), dataProvider, NULL, false);
-}
-
 void qt_mac_drawCGImage(CGContextRef inContext, const CGRect *inBounds, CGImageRef inImage)
 {
     CGContextSaveGState( inContext );
