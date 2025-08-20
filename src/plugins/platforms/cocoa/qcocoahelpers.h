@@ -26,6 +26,10 @@
 
 #if defined(__OBJC__)
 
+#import <AppKit/NSDragging.h>
+#import <AppKit/NSEvent.h>
+#import <AppKit/NSButton.h>
+
 Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QNSView));
 
 struct mach_header;

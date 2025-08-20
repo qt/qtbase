@@ -22,6 +22,8 @@
 
 #include "qcocoansmenu.h"
 
+#import <AppKit/NSApplication.h>
+
 QT_DECLARE_NAMESPACED_OBJC_INTERFACE(QCocoaApplicationDelegate, NSObject <NSApplicationDelegate>
 @property (nonatomic, retain) NSMenu *dockMenu;
 + (instancetype)sharedDelegate;

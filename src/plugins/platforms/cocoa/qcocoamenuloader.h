@@ -17,6 +17,8 @@
 
 #include <QtCore/private/qcore_mac_p.h>
 
+#import <AppKit/NSMenu.h>
+
 QT_FORWARD_DECLARE_CLASS(QCocoaMenuItem);
 
 QT_DECLARE_NAMESPACED_OBJC_INTERFACE(QCocoaMenuLoader, NSObject

@@ -11,6 +11,8 @@
 #include <QtCore/private/qcore_mac_p.h>
 #include <QtGui/qaccessible.h>
 
+#import <AppKit/NSAccessibilityElement.h>
+
 QT_DECLARE_NAMESPACED_OBJC_INTERFACE(QMacAccessibilityElement, NSObject <NSAccessibilityElement>
 - (instancetype)initWithId:(QAccessible::Id)anId;
 - (instancetype)initWithId:(QAccessible::Id)anId role:(NSAccessibilityRole)role;

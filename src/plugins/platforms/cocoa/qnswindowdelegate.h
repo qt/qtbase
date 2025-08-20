@@ -6,6 +6,8 @@
 
 #include <QtCore/private/qcore_mac_p.h>
 
+#import <AppKit/NSWindow.h>
+
 QT_BEGIN_NAMESPACE
 class QCocoaWindow;
 QT_END_NAMESPACE
