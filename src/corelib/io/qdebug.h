@@ -351,7 +351,8 @@ public:
     template<typename T>
     inline QNoDebug &operator<<(const T &) { return *this; }
 };
-inline QNoDebug QMessageLogger::noDebug(...) const noexcept
+
+QNoDebug QMessageLogger::noDebug(...) const noexcept
 { return {}; }
 
 inline QDebug &QDebug::operator=(const QDebug &other)
