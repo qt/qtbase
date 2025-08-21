@@ -699,6 +699,10 @@ function(qt_internal_add_test name)
             list(APPEND extra_test_args "--verbose")
         endif()
 
+        if(build_environment STREQUAL "ci")
+            list(APPEND extra_test_args "--show-logcat")
+        endif()
+
         if(arg_ANDROID_TESTRUNNER_PRE_TEST_ADB_COMMANDS)
             foreach(command IN LISTS arg_ANDROID_TESTRUNNER_PRE_TEST_ADB_COMMANDS)
                 list(APPEND extra_test_args "--pre-test-adb-command" "${command}")

@@ -251,7 +251,6 @@ static void printHelp()
                     "\n"
                     "    --show-logcat: Print Logcat output to stdout. If an ANR occurs during\n"
                     "       the test run, logs from the system_server process are included.\n"
-                    "       This argument is implied if a test crashes.\n"
                     "\n"
                     "    --ndk-stack: Path to ndk-stack tool that symbolizes crash stacktraces.\n"
                     "       By default, ANDROID_NDK_ROOT env var is used to deduce the tool path.\n"
@@ -744,7 +743,7 @@ void analyseLogcat(const QString &timeStamp, int *exitCode)
     // If we have a crash, attempt to print both logcat and the crash buffer which
     // includes the crash stacktrace that is not included in the default logcat.
     const bool testCrashed = *exitCode == EXIT_ERROR && !g_testInfo.isTestRunnerInterrupted.load();
-    if (g_options.showLogcatOutput || testCrashed) {
+    if (testCrashed) {
         qDebug() << "********** logcat dump **********";
         qDebug().noquote() << testLogcat.join(u'\n').trimmed();
         qDebug() << "********** End logcat dump **********";
@@ -922,7 +921,8 @@ int main(int argc, char *argv[])
 
     int exitCode = testExitCode();
 
-    analyseLogcat(formattedStartTime, &exitCode);
+    if (g_options.showLogcatOutput)
+        analyseLogcat(formattedStartTime, &exitCode);
 
     exitCode = pullResults() ? exitCode : EXIT_ERROR;
 
