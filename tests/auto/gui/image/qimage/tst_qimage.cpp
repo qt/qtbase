@@ -20,7 +20,7 @@
 #include <private/qdrawhelper_p.h>
 
 #ifdef Q_OS_DARWIN
-#include <CoreGraphics/CoreGraphics.h>
+#include <QtGui/private/qcoregraphics_p.h>
 #endif
 
 #if defined(Q_OS_WIN)
@@ -235,6 +235,9 @@ private slots:
 #ifdef Q_OS_DARWIN
     void toCGImage_data();
     void toCGImage();
+
+    void toFromCGImageColorSpace_data();
+    void toFromCGImageColorSpace();
 #endif
 
     void hugeQImage();
@@ -4391,7 +4394,44 @@ void tst_QImage::toCGImage()
     CGImageRelease(cgimage);
 }
 
-#endif
+void tst_QImage::toFromCGImageColorSpace_data()
+{
+    QTest::addColumn<QColorSpace>("colorSpace");
+
+    QTest::newRow("Untagged") << QColorSpace();
+
+    auto namedColorSpaces = QMetaEnum::fromType<QColorSpace::NamedColorSpace>();
+    for (int i = 0; i < namedColorSpaces.keyCount(); ++i) {
+        auto namedColorSpace = QColorSpace::NamedColorSpace(namedColorSpaces.value(i));
+        QTest::newRow(namedColorSpaces.key(i)) << QColorSpace(namedColorSpace);
+    }
+}
+
+void tst_QImage::toFromCGImageColorSpace()
+{
+    QFETCH(QColorSpace, colorSpace);
+
+    QImage baseline(50, 50, QImage::Format_ARGB32_Premultiplied);
+    baseline.fill(Qt::red);
+    baseline.setColorSpace(colorSpace);
+
+    if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSSonoma) {
+        QEXPECT_FAIL("Bt2100Pq", "We fail to convert images with this color space", Abort);
+        QEXPECT_FAIL("Bt2100Hlg", "We fail to convert images with this color space", Abort);
+    }
+
+    QCFType<CGImageRef> cgImage = baseline.toCGImage();
+    QVERIFY(cgImage);
+
+    QImage converted = qt_mac_toQImage(cgImage);
+
+    if (colorSpace.isValid())
+        QCOMPARE(converted.colorSpace(), colorSpace);
+    else
+        QCOMPARE(converted.colorSpace(), QColorSpace::SRgb);
+}
+
+#endif // Q_OS_DARWIN
 
 void tst_QImage::hugeQImage()
 {
