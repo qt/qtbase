@@ -1887,19 +1887,17 @@ static bool deployWebEngineCore(const QMap<QString, QString> &qtpathsVariables,
                                 const PluginInformation &pluginInfo, const Options &options,
                                 bool isDebug, QString *errorMessage)
 {
-    static const char *installDataFilesRelease[] = { "icudtl.dat",
-                                                     "qtwebengine_devtools_resources.pak",
-                                                     "qtwebengine_resources.pak",
-                                                     "qtwebengine_resources_100p.pak",
-                                                     "qtwebengine_resources_200p.pak",
-                                                     "v8_context_snapshot.bin" };
-    static const char *installDataFilesDebug[] = { "icudtl.dat",
-                                                   "qtwebengine_devtools_resources.debug.pak",
-                                                   "qtwebengine_resources.debug.pak",
-                                                   "qtwebengine_resources_100p.debug.pak",
-                                                   "qtwebengine_resources_200p.debug.pak",
-                                                   "v8_context_snapshot.debug.bin" };
+    static const char *installDataFilesRelease[] = {
+        "icudtl.dat", "qtwebengine_devtools_resources.pak", "qtwebengine_resources.pak",
+        "qtwebengine_resources_100p.pak", "qtwebengine_resources_200p.pak"
+    };
+    static const char *installDataFilesDebug[] = {
+        "icudtl.dat", "qtwebengine_devtools_resources.debug.pak", "qtwebengine_resources.debug.pak",
+        "qtwebengine_resources_100p.debug.pak", "qtwebengine_resources_200p.debug.pak"
+    };
     static const auto &installDataFiles = isDebug ? installDataFilesDebug : installDataFilesRelease;
+    static const auto installV8SnapshotFile =
+            isDebug ? "v8_context_snapshot.debug.bin" : "v8_context_snapshot.bin";
 
     QByteArray webEngineProcessName(webEngineProcessC);
     if (isDebug && platformHasDebugSuffix(options.platform))
@@ -1920,6 +1918,10 @@ static bool deployWebEngineCore(const QMap<QString, QString> &qtpathsVariables,
             return false;
         }
     }
+    // snapshot file is optional feature in qtwebengine, so it might be missing
+    updateFile(resourcesSourceDir + QLatin1StringView(installV8SnapshotFile), resourcesTargetDir,
+               options.updateFileFlags, options.json, errorMessage);
+    errorMessage->clear();
     const QFileInfo translations(qtpathsVariables.value(QStringLiteral("QT_INSTALL_TRANSLATIONS"))
                                  + QStringLiteral("/qtwebengine_locales"));
     if (!translations.isDir()) {
