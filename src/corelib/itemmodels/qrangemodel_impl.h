@@ -33,6 +33,21 @@ QT_BEGIN_NAMESPACE
 
 namespace QtPrivate {
 
+template <typename Applier, size_t ...Is>
+void applyIndexSwitch(size_t index, Applier&& applier, std::index_sequence<Is...>)
+{
+    // TODO: check if it's optimized properly on gcc.
+    // A superficial research reveals that gcc may compile this code into a linear search,
+    // whereas 'index' should be found in O(1) time like in a proper c++ switch.
+    ((Is == index ? applier(std::integral_constant<size_t, Is>{}) : static_cast<void>(0)), ...);
+}
+
+template <size_t IndexCount, typename Applier>
+void applyIndexSwitch(size_t index, Applier&& applier)
+{
+    applyIndexSwitch(index, std::forward<Applier>(applier), std::make_index_sequence<IndexCount>());
+}
+
 // TODO: move to a separate header in Qt 6.11
 template <typename Interface>
 class QQuasiVirtualInterface
@@ -166,11 +181,10 @@ private:
         static_assert(methodIndexMask == (uint64_t(1) << sizeof...(Is)) - 1,
                       "Mapping between base and overridden methods is not unique");
 
-        // TODO: check if it's optimized properly on gcc
-        ((interfaceMethodIndex<Is>() == index
-                                     ? std::tuple_element_t<Is, Methods<>>::doInvoke(subclass, ret, args)
-                                     : static_cast<void>(0))
-          , ...);
+        auto doInvoke = [&](auto idxConstant) {
+            std::tuple_element_t<idxConstant.value, Methods<>>::doInvoke(subclass, ret, args);
+        };
+        applyIndexSwitch(index, doInvoke, std::index_sequence<interfaceMethodIndex<Is>()...>{});
     }
 
     static void callImpl(size_t index, typename Interface::base_interface &intf, void *ret, void *args)
@@ -810,16 +824,6 @@ private:
 protected:
     // Helpers for calling a lambda with the element of a statically
     // sized range (tuple or array) with a runtime index.
-    template <typename Tuple, typename F, std::size_t ...Is>
-    static void call_at(Tuple &&tuple, std::size_t idx, std::index_sequence<Is...>, F &&function)
-    {
-        static_assert(QRangeModelDetails::tuple_like_v<q20::remove_cvref_t<Tuple>>);
-        if (QRangeModelDetails::isValid(tuple))
-            ((Is == idx ? static_cast<void>(function(get<Is>(
-                            QRangeModelDetails::refTo(std::forward<Tuple>(tuple)))))
-                        : static_cast<void>(0)), ...);
-    }
-
     template <typename T, typename F,
               std::enable_if_t<QRangeModelDetails::tuple_like_v<q20::remove_cvref_t<T>>, bool> = true>
     static auto for_element_at(T &&tuple, std::size_t idx, F &&function)
@@ -827,8 +831,11 @@ protected:
         using type = QRangeModelDetails::wrapped_t<T>;
         constexpr size_t size = std::tuple_size_v<type>;
         Q_ASSERT(idx < size);
-        return call_at(std::forward<T>(tuple), idx, std::make_index_sequence<size>{},
-                       std::forward<F>(function));
+        if (QRangeModelDetails::isValid(tuple)) {
+            QtPrivate::applyIndexSwitch<size>(idx, [&](auto idxConstant) {
+                function(get<idxConstant.value>(QRangeModelDetails::refTo(std::forward<T>(tuple))));
+            });
+        }
     }
 
     template <typename Array, typename F,
