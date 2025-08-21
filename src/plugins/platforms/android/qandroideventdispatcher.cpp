@@ -54,7 +54,7 @@ bool QAndroidEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags
 
     {
         AndroidDeadlockProtector protector;
-        if (protector.acquire() && m_stopRequest.testAndSetAcquire(StopRequest, Stopping)) {
+        if (m_stopRequest.testAndSetAcquire(StopRequest, Stopping) && protector.acquire()) {
             m_semaphore.acquire();
             wakeUp();
         }
