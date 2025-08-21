@@ -26,6 +26,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 namespace {
 
 class BatchEditLock
@@ -68,7 +70,8 @@ static jfieldID m_textFieldID = 0;
 
 static void runOnQtThread(const std::function<void()> &func)
 {
-    QtAndroidPrivate::AndroidDeadlockProtector protector;
+    QtAndroidPrivate::AndroidDeadlockProtector protector(
+        u"QAndroidInputContext::runOnQtThread()"_s);
     if (!protector.acquire())
         return;
     QMetaObject::invokeMethod(m_androidInputContext, "safeCall", Qt::BlockingQueuedConnection, Q_ARG(std::function<void()>, func));

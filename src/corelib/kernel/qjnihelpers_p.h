@@ -72,11 +72,15 @@ namespace QtAndroidPrivate
     class Q_CORE_EXPORT AndroidDeadlockProtector
     {
     public:
+        AndroidDeadlockProtector(const QString &lockedBy);
         ~AndroidDeadlockProtector();
         bool acquire();
 
     private:
         bool m_acquired = false;
+        QString m_lockedBy;
+
+        inline static QStringList s_lockers;
     };
 
     Q_CORE_EXPORT QtJniTypes::Activity activity();

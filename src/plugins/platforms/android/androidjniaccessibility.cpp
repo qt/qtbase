@@ -63,7 +63,8 @@ namespace QtAndroidAccessibility
     template <typename Func, typename Ret>
     void runInObjectContext(QObject *context, Func &&func, Ret *retVal)
     {
-        QtAndroidPrivate::AndroidDeadlockProtector protector;
+        QtAndroidPrivate::AndroidDeadlockProtector protector(
+            u"QtAndroidAccessibility::runInObjectContext()"_s);
         if (!protector.acquire()) {
             __android_log_print(ANDROID_LOG_WARN, m_qtTag,
                                 "Could not run accessibility call in object context, accessing "

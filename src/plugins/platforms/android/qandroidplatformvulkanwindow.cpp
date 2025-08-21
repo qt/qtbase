@@ -15,6 +15,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 QAndroidPlatformVulkanWindow::QAndroidPlatformVulkanWindow(QWindow *window)
     : QAndroidPlatformWindow(window),
       m_nativeWindow(nullptr),
@@ -88,7 +90,8 @@ VkSurfaceKHR *QAndroidPlatformVulkanWindow::vkSurface()
 
         QMutexLocker lock(&m_surfaceMutex);
         if (!m_surfaceCreated) {
-            QtAndroidPrivate::AndroidDeadlockProtector protector;
+            QtAndroidPrivate::AndroidDeadlockProtector protector(
+                u"QAndroidPlatformVulkanWindow::vkSurface()"_s);
             if (!protector.acquire())
                 return &m_vkSurface;
             createSurface();
