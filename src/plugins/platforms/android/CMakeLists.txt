@@ -13,7 +13,6 @@ qt_internal_add_plugin(QAndroidIntegrationPlugin
     SOURCES
         androidcontentfileengine.cpp androidcontentfileengine.h
         qandroidapkfileengine.h qandroidapkfileengine.cpp
-        androiddeadlockprotector.h
         androidjniinput.cpp androidjniinput.h
         androidjnimain.cpp androidjnimain.h
         androidjnimenu.cpp androidjnimenu.h

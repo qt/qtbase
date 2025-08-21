@@ -69,6 +69,16 @@ namespace QtAndroidPrivate
         virtual bool handleKeyEvent(jobject event) = 0;
     };
 
+    class Q_CORE_EXPORT AndroidDeadlockProtector
+    {
+    public:
+        ~AndroidDeadlockProtector();
+        bool acquire();
+
+    private:
+        bool m_acquired = false;
+    };
+
     Q_CORE_EXPORT QtJniTypes::Activity activity();
     Q_CORE_EXPORT QtJniTypes::Service service();
     Q_CORE_EXPORT QtJniTypes::Context context();

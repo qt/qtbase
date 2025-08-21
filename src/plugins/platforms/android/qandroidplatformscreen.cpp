@@ -12,7 +12,6 @@
 #include "qandroidplatformwindow.h"
 #include "androidjnimain.h"
 #include "androidjnimenu.h"
-#include "androiddeadlockprotector.h"
 
 #include <android/bitmap.h>
 #include <android/native_window_jni.h>

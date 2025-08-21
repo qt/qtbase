@@ -454,6 +454,16 @@ void QtAndroidPrivate::releaseAndroidDeadlockProtector()
     g_androidDeadlockProtector.storeRelease(0);
 }
 
+QtAndroidPrivate::AndroidDeadlockProtector::~AndroidDeadlockProtector() {
+    if (m_acquired)
+        QtAndroidPrivate::releaseAndroidDeadlockProtector();
+}
+
+bool QtAndroidPrivate::AndroidDeadlockProtector::acquire() {
+    m_acquired = QtAndroidPrivate::acquireAndroidDeadlockProtector();
+    return m_acquired;
+}
+
 QT_END_NAMESPACE
 
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved)

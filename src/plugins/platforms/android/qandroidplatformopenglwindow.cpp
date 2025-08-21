@@ -4,7 +4,6 @@
 
 #include "qandroidplatformopenglwindow.h"
 
-#include "androiddeadlockprotector.h"
 #include "androidjnimain.h"
 #include "qandroideventdispatcher.h"
 #include "qandroidplatformscreen.h"
@@ -61,7 +60,7 @@ EGLSurface QAndroidPlatformOpenGLWindow::eglSurface(EGLConfig config)
     // If we haven't called createSurface() yet, call it and wait until Android has created
     // the Surface
     if (!m_surfaceCreated) {
-        AndroidDeadlockProtector protector;
+        QtAndroidPrivate::AndroidDeadlockProtector protector;
         if (!protector.acquire()) {
             static constexpr char funcName[] = "QAndroidPlatformOpenGLWindow::eglSurface()";
             qFatal("Failed to acquire deadlock protector for %s.", funcName);

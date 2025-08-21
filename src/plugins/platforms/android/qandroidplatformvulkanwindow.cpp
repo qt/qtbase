@@ -1,7 +1,6 @@
 // Copyright (C) 2017 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#include "androiddeadlockprotector.h"
 #include "androidjnimain.h"
 #include "qandroideventdispatcher.h"
 #include "qandroidplatformscreen.h"
@@ -89,7 +88,7 @@ VkSurfaceKHR *QAndroidPlatformVulkanWindow::vkSurface()
 
         QMutexLocker lock(&m_surfaceMutex);
         if (!m_surfaceCreated) {
-            AndroidDeadlockProtector protector;
+            QtAndroidPrivate::AndroidDeadlockProtector protector;
             if (!protector.acquire())
                 return &m_vkSurface;
             createSurface();

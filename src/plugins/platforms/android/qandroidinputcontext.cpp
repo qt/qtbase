@@ -5,7 +5,6 @@
 
 #include <android/log.h>
 
-#include "androiddeadlockprotector.h"
 #include "androidjniinput.h"
 #include "androidjnimain.h"
 #include "qandroideventdispatcher.h"
@@ -69,7 +68,7 @@ static jfieldID m_textFieldID = 0;
 
 static void runOnQtThread(const std::function<void()> &func)
 {
-    AndroidDeadlockProtector protector;
+    QtAndroidPrivate::AndroidDeadlockProtector protector;
     if (!protector.acquire())
         return;
     QMetaObject::invokeMethod(m_androidInputContext, "safeCall", Qt::BlockingQueuedConnection, Q_ARG(std::function<void()>, func));

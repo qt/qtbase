@@ -1099,7 +1099,8 @@ requestPermissionsInternal(const QStringList &permissions)
         return QtFuture::makeReadyRangeFuture(result);
     }
 
-    if (!QtAndroidPrivate::acquireAndroidDeadlockProtector())
+    QtAndroidPrivate::AndroidDeadlockProtector protector;
+    if (!protector.acquire())
         return QtFuture::makeReadyValueFuture(QtAndroidPrivate::Denied);
 
     QSharedPointer<QPromise<QtAndroidPrivate::PermissionResult>> promise;

@@ -9,7 +9,6 @@
 
 #include "androidcontentfileengine.h"
 #include "qandroidapkfileengine.h"
-#include "androiddeadlockprotector.h"
 #include "androidjniinput.h"
 #include "androidjnimain.h"
 #include "androidjnimenu.h"
