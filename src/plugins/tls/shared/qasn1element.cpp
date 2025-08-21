@@ -338,7 +338,7 @@ QByteArray QAsn1Element::toObjectName() const
 QString QAsn1Element::toString() const
 {
     // Detect embedded NULs and reject
-    if (qstrlen(mValue) < uint(mValue.size()))
+    if (mValue.contains('\0'))
         return QString();
 
     if (mType == PrintableStringType || mType == TeletexStringType
