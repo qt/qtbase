@@ -818,7 +818,7 @@ static LoadedOpenSsl loadOpenSsl()
     for (const QString &crypto : cryptoList) {
 #ifdef Q_OS_DARWIN
         // Clients should not load the unversioned libcrypto dylib as it does not have a stable ABI
-        if (crypto.endsWith("libcrypto.dylib"))
+        if (crypto.endsWith("libcrypto.dylib"_L1))
             continue;
 #endif
         libcrypto->setFileNameAndVersion(crypto, -1);
