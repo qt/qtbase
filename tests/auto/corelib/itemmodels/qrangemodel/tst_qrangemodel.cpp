@@ -63,6 +63,7 @@ private slots:
     void moveColumns();
 
     void inconsistentColumnCount();
+    void largeArrays();
 
     void tree_data();
     void tree();
@@ -1134,6 +1135,31 @@ void tst_QRangeModel::inconsistentColumnCount()
         QCOMPARE(model.setData(index, row + 5), shouldWork);
         QCOMPARE(model.clearItemData(index), shouldWork);
         debug.dismiss();
+    }
+}
+
+void tst_QRangeModel::largeArrays()
+{
+    {
+        std::array<int, 10000> largeArray = {};
+        QRangeModel model(largeArray);
+        const QModelIndex index = model.index(int(largeArray.size() - 1), 0);
+        QCOMPARE(index.data(), 0);
+    }
+
+    {
+        int largeArray[10000] = {};
+        QRangeModel model(&largeArray);
+        const QModelIndex index = model.index(int(std::size(largeArray)) - 1, 0);
+        QCOMPARE(index.data(), 0);
+    }
+
+    {
+        std::array<std::array<int, 10000>, 1> largeColumn = {};
+        QRangeModel model(largeColumn);
+        const QModelIndex index = model.index(int(largeColumn.size() - 1),
+                                              int(largeColumn[0].size() - 1));
+        QCOMPARE(index.data(), 0);
     }
 }
 

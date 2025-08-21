@@ -302,10 +302,21 @@ namespace QRangeModelDetails
 
     template <typename T, typename = void>
     struct tuple_like : std::false_type {};
+    template <typename T, std::size_t N>
+    struct tuple_like<std::array<T, N>> : std::false_type {};
     template <typename T>
     struct tuple_like<T, std::void_t<std::tuple_element_t<0, wrapped_t<T>>>> : std::true_type {};
     template <typename T>
     [[maybe_unused]] static constexpr bool tuple_like_v = tuple_like<T>::value;
+
+    template <typename T, typename = void>
+    struct array_like : std::false_type {};
+    template <typename T, std::size_t N>
+    struct array_like<std::array<T, N>> : std::true_type {};
+    template <typename T, std::size_t N>
+    struct array_like<T[N]> : std::true_type {};
+    template <typename T>
+    [[maybe_unused]] static constexpr bool array_like_v = array_like<T>::value;
 
     template <typename T, typename = void>
     struct has_metaobject : std::false_type {};
@@ -556,9 +567,9 @@ namespace QRangeModelDetails
     struct row_traits<T, std::enable_if_t<tuple_like_v<T> && !has_metaobject_v<T>>>
         : tuple_row_traits<T> {};
 
-    // Specialization for C arrays
+    // Specialization for C arrays and std::array
     template <typename T, std::size_t N>
-    struct row_traits<T[N]>
+    struct row_traits<std::array<T, N>>
     {
         static_assert(q20::in_range<int>(N));
         static constexpr int static_size = int(N);
@@ -566,6 +577,9 @@ namespace QRangeModelDetails
         static constexpr int fixed_size() { return 0; }
         static constexpr bool hasMetaObject = false;
     };
+
+    template <typename T, std::size_t N>
+    struct row_traits<T[N]> : row_traits<std::array<T, N>> {};
 
     template <typename T>
     struct metaobject_row_traits
@@ -794,24 +808,35 @@ private:
     using Self = QRangeModelImplBase;
     using QtPrivate::QQuasiVirtualInterface<Self>::Method;
 protected:
-    // Helpers for calling a lambda with the tuple element at a runtime index.
-    template <typename Tuple, typename F, size_t ...Is>
-    static void call_at(Tuple &&tuple, size_t idx, std::index_sequence<Is...>, F &&function)
+    // Helpers for calling a lambda with the element of a statically
+    // sized range (tuple or array) with a runtime index.
+    template <typename Tuple, typename F, std::size_t ...Is>
+    static void call_at(Tuple &&tuple, std::size_t idx, std::index_sequence<Is...>, F &&function)
     {
+        static_assert(QRangeModelDetails::tuple_like_v<q20::remove_cvref_t<Tuple>>);
         if (QRangeModelDetails::isValid(tuple))
             ((Is == idx ? static_cast<void>(function(get<Is>(
                             QRangeModelDetails::refTo(std::forward<Tuple>(tuple)))))
                         : static_cast<void>(0)), ...);
     }
 
-    template <typename T, typename F>
-    static auto for_element_at(T &&tuple, size_t idx, F &&function)
+    template <typename T, typename F,
+              std::enable_if_t<QRangeModelDetails::tuple_like_v<q20::remove_cvref_t<T>>, bool> = true>
+    static auto for_element_at(T &&tuple, std::size_t idx, F &&function)
     {
         using type = QRangeModelDetails::wrapped_t<T>;
         constexpr size_t size = std::tuple_size_v<type>;
         Q_ASSERT(idx < size);
         return call_at(std::forward<T>(tuple), idx, std::make_index_sequence<size>{},
                        std::forward<F>(function));
+    }
+
+    template <typename Array, typename F,
+              std::enable_if_t<QRangeModelDetails::array_like_v<q20::remove_cvref_t<Array>>, bool> = true>
+    static auto for_element_at(Array &&array, std::size_t idx, F &&function)
+    {
+        Q_ASSERT(idx < array.size());
+        function(q23::forward_like<Array>(array[idx]));
     }
 
     // Get the QMetaType for a tuple-element at a runtime index.
@@ -825,9 +850,14 @@ protected:
     static constexpr QMetaType meta_type_at(size_t idx)
     {
         using type = QRangeModelDetails::wrapped_t<T>;
-        constexpr auto size = std::tuple_size_v<type>;
-        Q_ASSERT(idx < size);
-        return makeMetaTypes<type>(std::make_index_sequence<size>{}).at(idx);
+        if constexpr (QRangeModelDetails::array_like_v<type>) {
+            Q_UNUSED(idx);
+            return QMetaType::fromType<std::tuple_element_t<0, T>>();
+        } else {
+            constexpr auto size = std::tuple_size_v<type>;
+            Q_ASSERT(idx < size);
+            return makeMetaTypes<type>(std::make_index_sequence<size>{}).at(idx);
+        }
     }
 
 public:

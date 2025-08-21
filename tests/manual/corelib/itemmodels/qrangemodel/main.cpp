@@ -192,12 +192,19 @@ class ModelFactory : public QObject
 
     std::vector<int> numbers = {1, 2, 3, 4, 5};
     QList<QString> strings = {u"one"_s, u"two"_s, u"three"_s};
+    std::array<int, 1000000> largeArray = {};
 
 public slots:
     QRangeModel *makeNumbers()
     {
         return new QRangeModel(&numbers);
     }
+
+    QRangeModel *makeLargeArray()
+    {
+        return new QRangeModel(&largeArray);
+    }
+
 
     QRangeModel *makeStrings()
     {
