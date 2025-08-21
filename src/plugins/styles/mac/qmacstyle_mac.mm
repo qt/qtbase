@@ -1723,17 +1723,24 @@ QRectF QMacStylePrivate::comboboxEditBounds(const QRectF &outerBounds, const Coc
 {
     QRectF ret = outerBounds;
     if (cw.type == ComboBox) {
+        static auto shift = [](QStyleHelper::WidgetSizePolicy size) {
+            const double newButtonWs[] = {30, 25, 22};
+            const double buttonWs[] = {25, 22, 19};
+            static_assert(std::size(newButtonWs) == std::size(buttonWs));
+            assert(size >= 0 && std::size_t(size) < std::size(newButtonWs));
+            return qt_apple_runningWithLiquidGlass() ? newButtonWs[size] : buttonWs[size];
+        };
         switch (cw.size) {
         case QStyleHelper::SizeLarge:
-            ret = ret.adjusted(0, 0, -25, 0).translated(2, 4.5);
+            ret = ret.adjusted(0, 0, -shift(cw.size), 0).translated(2, 4.5);
             ret.setHeight(16);
             break;
         case QStyleHelper::SizeSmall:
-            ret = ret.adjusted(0, 0, -22, 0).translated(2, 3);
+            ret = ret.adjusted(0, 0, -shift(cw.size), 0).translated(2, 3);
             ret.setHeight(14);
             break;
         case QStyleHelper::SizeMini:
-            ret = ret.adjusted(0, 0, -19, 0).translated(2, 2.5);
+            ret = ret.adjusted(0, 0, -shift(cw.size), 0).translated(2, 2.5);
             ret.setHeight(10.5);
             break;
         default:
