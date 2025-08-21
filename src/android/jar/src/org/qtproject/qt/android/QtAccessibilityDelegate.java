@@ -262,6 +262,12 @@ class QtAccessibilityDelegate extends View.AccessibilityDelegate
         });
     }
 
+    void notifyDescriptionOrNameChanged(int viewId, String value)
+    {
+        if (viewId == m_focusedVirtualViewId)
+            notifyValueChanged(viewId, value);
+    }
+
     void notifyAnnouncementEvent(int viewId, String message)
     {
         QtNative.runAction(() -> {

@@ -285,6 +285,11 @@ class QtActivityDelegate extends QtActivityDelegateBase
         m_accessibilityDelegate.notifyValueChanged(viewId, value);
     }
 
+    @Override public void notifyDescriptionOrNameChanged(int viewId, String value)
+    {
+        m_accessibilityDelegate.notifyDescriptionOrNameChanged(viewId, value);
+    }
+
     @Override
     public void notifyScrolledEvent(int viewId)
     {

@@ -144,6 +144,18 @@ namespace QtAndroidAccessibility
         QtAndroid::notifyValueChanged(accessibilityObjectId, value);
     }
 
+    // Forward declaration
+    static QString descriptionForInterface(QAccessibleInterface *iface);
+
+    void notifyDescriptionOrNameChanged(uint accessibilityObjectId)
+    {
+        QAccessibleInterface *iface = interfaceFromId(accessibilityObjectId);
+        if (iface && iface->isValid()) {
+            const QString value = descriptionForInterface(iface);
+            QtAndroid::notifyDescriptionOrNameChanged(accessibilityObjectId, value);
+        }
+    }
+
     void notifyScrolledEvent(uint accessiblityObjectId)
     {
         QtAndroid::notifyScrolledEvent(accessiblityObjectId);

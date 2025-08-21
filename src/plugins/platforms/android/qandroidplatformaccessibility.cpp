@@ -34,6 +34,9 @@ void QAndroidPlatformAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *
         QtAndroidAccessibility::notifyValueChanged(event->uniqueId());
     } else if (event->type() == QAccessible::ScrollingEnd) {
         QtAndroidAccessibility::notifyScrolledEvent(event->uniqueId());
+    } else if (event->type() == QAccessible::NameChanged
+               || event->type() == QAccessible::DescriptionChanged) {
+        QtAndroidAccessibility::notifyDescriptionOrNameChanged(event->uniqueId());
     } else if (event->type() == QAccessible::Announcement) {
         auto *announcementEvent = static_cast<QAccessibleAnnouncementEvent *>(event);
         QtAndroidAccessibility::notifyAnnouncementEvent(announcementEvent->uniqueId(),
