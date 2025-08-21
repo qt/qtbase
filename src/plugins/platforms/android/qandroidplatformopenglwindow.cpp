@@ -62,8 +62,11 @@ EGLSurface QAndroidPlatformOpenGLWindow::eglSurface(EGLConfig config)
     // the Surface
     if (!m_surfaceCreated) {
         AndroidDeadlockProtector protector;
-        if (!protector.acquire())
+        if (!protector.acquire()) {
+            static constexpr char funcName[] = "QAndroidPlatformOpenGLWindow::eglSurface()";
+            qFatal("Failed to acquire deadlock protector for %s.", funcName);
             return m_eglSurface;
+        }
 
         createSurface();
         qCDebug(lcQpaWindow) << "called createSurface(), waiting for Surface to be ready...";
