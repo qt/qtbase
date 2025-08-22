@@ -36,10 +36,13 @@ namespace QtPrivate {
 template <typename Applier, size_t ...Is>
 void applyIndexSwitch(size_t index, Applier&& applier, std::index_sequence<Is...>)
 {
-    // TODO: check if it's optimized properly on gcc.
-    // A superficial research reveals that gcc may compile this code into a linear search,
-    // whereas 'index' should be found in O(1) time like in a proper c++ switch.
-    ((Is == index ? applier(std::integral_constant<size_t, Is>{}) : static_cast<void>(0)), ...);
+    // Performance considerations:
+    // The folding expression used here represents the same logic as a sequence of
+    // linear if/else if/... statements. Experiments show that Clang, GCC, and MSVC
+    // optimize it to essentially the same bytecode as a normal C++ switch,
+    // ensuring O(1) lookup complexity.
+    static_cast<void>(((Is == index ? (applier(std::integral_constant<size_t, Is>{}), true) : false)
+                       || ...));
 }
 
 template <size_t IndexCount, typename Applier>
