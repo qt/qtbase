@@ -851,11 +851,6 @@ protected:
 
     // Get the QMetaType for a tuple-element at a runtime index.
     // Used in the headerData implementation.
-    template <typename Tuple, std::size_t ...I>
-    static constexpr std::array<QMetaType, sizeof...(I)> makeMetaTypes(std::index_sequence<I...>)
-    {
-        return {{QMetaType::fromType<q20::remove_cvref_t<std::tuple_element_t<I, Tuple>>>()...}};
-    }
     template <typename T>
     static constexpr QMetaType meta_type_at(size_t idx)
     {
@@ -866,7 +861,12 @@ protected:
         } else {
             constexpr auto size = std::tuple_size_v<type>;
             Q_ASSERT(idx < size);
-            return makeMetaTypes<type>(std::make_index_sequence<size>{}).at(idx);
+            QMetaType metaType;
+            QtPrivate::applyIndexSwitch<size>(idx, [&metaType](auto idxConstant) {
+                using ElementType = std::tuple_element_t<idxConstant.value, type>;
+                metaType = QMetaType::fromType<q20::remove_cvref_t<ElementType>>();
+            });
+            return metaType;
         }
     }
 
