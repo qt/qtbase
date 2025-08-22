@@ -3,13 +3,13 @@
 
 #include <QtCore>
 #include <QtWidgets>
-#include <QQuickWidget>
-#include <QQuickItem>
 
 #if __has_include(<QtQml>)
 #define QUICK_UI
 #include <QtQml/QQmlApplicationEngine>
 #include <QtQml/QQmlContext>
+#include <QQuickWidget>
+#include <QQuickItem>
 #else
 #warning "Building without Quick UI"
 #endif
@@ -554,7 +554,9 @@ private:
     ModelFactory factory;
     QRangeModel *model;
     QTreeView *treeview;
+#ifdef QUICK_UI
     QQuickWidget *quickWidget;
+#endif
 };
 
 int main(int argc, char *argv[])
