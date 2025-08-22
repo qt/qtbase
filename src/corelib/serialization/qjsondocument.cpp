@@ -266,7 +266,7 @@ QByteArray QJsonDocument::toJson(JsonFormat format) const
  */
 QJsonDocument QJsonDocument::fromJson(const QByteArray &json, QJsonParseError *error)
 {
-    QJsonPrivate::Parser parser(json.constData(), json.size());
+    QJsonPrivate::Parser parser(json);
     QJsonDocument result;
     const QCborValue val = parser.parse(error);
     if (val.isArray() || val.isMap()) {

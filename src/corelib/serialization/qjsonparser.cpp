@@ -178,12 +178,11 @@ private:
     QExplicitlySharedDataPointer<QCborContainerPrivate> stashed;
 };
 
-Parser::Parser(const char *json, int length)
-    : head(json), json(json)
+Parser::Parser(QUtf8StringView json)
+    : head(json.data()), json(head), end(json.end())
     , nestingLevel(0)
     , lastError(QJsonParseError::NoError)
 {
-    end = json + length;
 }
 
 
