@@ -364,6 +364,7 @@ public:
                 break;
             case 2:
                 Q_ASSERT(zero.at(0).isHighSurrogate());
+                Q_ASSERT(zero.at(1).isLowSurrogate());
                 zeroUcs = QChar::surrogateToUcs4(zero.at(0), zero.at(1));
                 zeroLen = 2;
                 break;
