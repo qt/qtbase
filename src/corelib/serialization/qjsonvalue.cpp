@@ -618,7 +618,7 @@ QVariant QJsonValue::toVariant() const
  */
 QJsonValue QJsonValue::fromJson(QByteArrayView json, QJsonParseError *error)
 {
-    QJsonPrivate::Parser parser(json.constData(), json.size());
+    QJsonPrivate::Parser parser(json);
     QJsonValue result;
     result.value = parser.parse(error);
     return result;
