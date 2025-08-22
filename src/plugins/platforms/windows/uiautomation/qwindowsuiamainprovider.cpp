@@ -160,9 +160,9 @@ void QWindowsUiaMainProvider::notifyValueChange(QAccessibleValueChangeEvent *eve
 void QWindowsUiaMainProvider::notifyNameChange(QAccessibleEvent *event)
 {
     if (QAccessibleInterface *accessible = event->accessibleInterface()) {
-        // Restrict notification to combo boxes, which need it for accessibility,
-        // in order to avoid slowdowns with unnecessary notifications.
-        if (accessible->role() == QAccessible::ComboBox) {
+        // Restrict notification to combo boxes and the currently focused element, which
+        // need it for accessibility, in order to avoid slowdowns with unnecessary notifications.
+        if (accessible->role() == QAccessible::ComboBox || accessible->state().focused) {
             if (auto provider = providerForAccessible(accessible)) {
                 QComVariant oldVal;
                 QComVariant newVal{ accessible->text(QAccessible::Name) };
