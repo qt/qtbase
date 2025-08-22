@@ -126,8 +126,8 @@ private:
     template <typename C = Interface> using Methods = typename C::template MethodTemplates<C>;
 
 public:
-    template <typename Signature, Signature s = nullptr /*disambiguates Signature*/>
-    struct Method : MethodImpl<Method<Signature, s>, Signature> {};
+    template <auto prototype>
+    struct Method : MethodImpl<Method<prototype>, decltype(prototype)> {};
 
     template <typename Method, typename... Args>
     auto call(Args &&... args) const
@@ -142,7 +142,7 @@ public:
     }
 
     void destroy(); // quasi-virtual pure destructor
-    using Destroy = Method<decltype(&QQuasiVirtualInterface::destroy)>;
+    using Destroy = Method<&QQuasiVirtualInterface::destroy>;
 
     struct Deleter
     {
@@ -893,33 +893,33 @@ public:
     QVariant headerData(int section, Qt::Orientation orientation, int role) const;
     QVariant data(const QModelIndex &index, int role) const;
     QMap<int, QVariant> itemData(const QModelIndex &index) const;
-    inline QHash<int, QByteArray> roleNames() const;
+    QHash<int, QByteArray> roleNames() const;
     QModelIndex parent(const QModelIndex &child) const;
 
     // bindings for overriding
 
-    using InvalidateCaches = Method<decltype(&Self::invalidateCaches)>;
-    using SetHeaderData = Method<decltype(&Self::setHeaderData)>;
-    using SetData = Method<decltype(&Self::setData)>;
-    using SetItemData = Method<decltype(&Self::setItemData)>;
-    using ClearItemData = Method<decltype(&Self::clearItemData)>;
-    using InsertColumns = Method<decltype(&Self::insertColumns), &Self::insertColumns>;
-    using RemoveColumns = Method<decltype(&Self::removeColumns), &Self::removeColumns>;
-    using MoveColumns = Method<decltype(&Self::moveColumns), &Self::moveColumns>;
-    using InsertRows = Method<decltype(&Self::insertRows), &Self::insertRows>;
-    using RemoveRows = Method<decltype(&Self::removeRows), &Self::removeRows>;
-    using MoveRows = Method<decltype(&Self::moveRows), &Self::moveRows>;
+    using InvalidateCaches = Method<&Self::invalidateCaches>;
+    using SetHeaderData = Method<&Self::setHeaderData>;
+    using SetData = Method<&Self::setData>;
+    using SetItemData = Method<&Self::setItemData>;
+    using ClearItemData = Method<&Self::clearItemData>;
+    using InsertColumns = Method<&Self::insertColumns>;
+    using RemoveColumns = Method<&Self::removeColumns>;
+    using MoveColumns = Method<&Self::moveColumns>;
+    using InsertRows = Method<&Self::insertRows>;
+    using RemoveRows = Method<&Self::removeRows>;
+    using MoveRows = Method<&Self::moveRows>;
 
-    using Index = Method<decltype(&Self::index), &Self::index>;
-    using Sibling = Method<decltype(&Self::sibling), &Self::sibling>;
-    using RowCount = Method<decltype(&Self::rowCount), &Self::rowCount>;
-    using ColumnCount = Method<decltype(&Self::columnCount), &Self::columnCount>;
-    using Flags = Method<decltype(&Self::flags)>;
-    using HeaderData = Method<decltype(&Self::headerData)>;
-    using Data = Method<decltype(&Self::data)>;
-    using ItemData = Method<decltype(&Self::itemData)>;
-    using RoleNames = Method<decltype(&Self::roleNames)>;
-    using Parent = Method<decltype(&Self::parent)>;
+    using Index = Method<&Self::index>;
+    using Sibling = Method<&Self::sibling>;
+    using RowCount = Method<&Self::rowCount>;
+    using ColumnCount = Method<&Self::columnCount>;
+    using Flags = Method<&Self::flags>;
+    using HeaderData = Method<&Self::headerData>;
+    using Data = Method<&Self::data>;
+    using ItemData = Method<&Self::itemData>;
+    using RoleNames = Method<&Self::roleNames>;
+    using Parent = Method<&Self::parent>;
 
     template <typename C>
     using MethodTemplates = std::tuple<
