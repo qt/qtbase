@@ -645,7 +645,7 @@ void QWasmWindow::handleKeyEvent(const KeyEvent &event)
 {
     qCDebug(qLcQpaWasmInputContext) << "handleKeyEvent";
 
-    if ((event.webEvent["target"] == m_inputElement) && QWasmIntegration::get()->wasmInputContext()) {
+    if (QWasmInputContext *inputContext = QWasmIntegration::get()->wasmInputContext(); inputContext->isActive()) {
         handleKeyForInputContextEvent(event);
     } else {
         if (processKey(event)) {
