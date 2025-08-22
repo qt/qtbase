@@ -52,6 +52,7 @@ EGLSurface QAndroidPlatformOpenGLWindow::eglSurface(EGLConfig config)
 {
     if (QAndroidEventDispatcherStopper::stopped() ||
         QGuiApplication::applicationState() == Qt::ApplicationSuspended) {
+        qCDebug(lcQpaWindow) << "Application not active, return existing surface.";
         return m_eglSurface;
     }
     // If we haven't called createSurface() yet, call it and wait until Android has created

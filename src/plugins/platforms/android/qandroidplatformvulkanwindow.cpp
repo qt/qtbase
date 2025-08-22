@@ -81,8 +81,11 @@ void QAndroidPlatformVulkanWindow::destroyAndClearSurface()
 
 VkSurfaceKHR *QAndroidPlatformVulkanWindow::vkSurface()
 {
-    if (QAndroidEventDispatcherStopper::stopped())
+    if (QAndroidEventDispatcherStopper::stopped() ||
+        QGuiApplication::applicationState() == Qt::ApplicationSuspended) {
+        qDebug(lcQpaWindow) << "Application not active, return existing surface.";
         return &m_vkSurface;
+    }
 
     bool needsExpose = false;
     if (!m_vkSurface) {
