@@ -83,3 +83,16 @@ qt_configure_add_summary_section(NAME "Qt PrintSupport")
 qt_configure_add_summary_entry(ARGS "cpdb")
 qt_configure_add_summary_entry(ARGS "cups")
 qt_configure_end_summary_section() # end of "Qt PrintSupport" section
+
+# CPDB features (backend-agnostic flags)
+qt_feature("cpdb" PUBLIC
+    CONDITION TRUE
+    LABEL "Common Print Dialog Backends support"
+)
+qt_feature("cpdbjobwidget" PRIVATE
+    CONDITION TRUE
+    LABEL "CPDB print job options widget"
+)
+qt_configure_feature_definition("printjobwidget" "QT_FEATURE_printjobwidget")
+qt_configure_add_summary_entry(TYPE "bool" ARGS "cpdb")
+qt_configure_add_summary_entry(TYPE "bool" ARGS "cpdbjobwidget")
