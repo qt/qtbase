@@ -91,7 +91,6 @@ qt_internal_extend_target(PrintSupport CONDITION QT_FEATURE_printpreviewwidget
 
 qt_internal_extend_target(PrintSupport CONDITION QT_FEATURE_cpdbjobwidget AND UNIX AND NOT APPLE
     SOURCES
-        widgets/qcpdbjobwidget.cpp widgets/qcupsjobwidget.ui widgets/qcpdbjobwidget_p.h
     LIBRARIES
         WrapCPDB::WrapCPDB
     ENABLE_AUTOGEN_TOOLS
