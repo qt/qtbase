@@ -1,5 +1,5 @@
 find_package(PkgConfig REQUIRED)
-pkg_check_modules(CPDB REQUIRED cpdb-libs-common)
+pkg_check_modules(CPDB cpdb-libs-common)
 if(CPDB_FOUND)
     add_library(WrapCPDB::WrapCPDB INTERFACE IMPORTED)
     target_include_directories(WrapCPDB::WrapCPDB INTERFACE ${CPDB_INCLUDE_DIRS})
