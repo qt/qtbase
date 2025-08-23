@@ -117,7 +117,6 @@ endif()
 
 qt_internal_extend_target(PrintSupport CONDITION QT_FEATURE_cpdbjobwidget AND UNIX AND NOT APPLE
     SOURCES
-        widgets/qcupsjobwidget.cpp widgets/qcupsjobwidget.ui widgets/qcupsjobwidget_p.h
     ENABLE_AUTOGEN_TOOLS
         uic
 )
