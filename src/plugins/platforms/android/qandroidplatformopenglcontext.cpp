@@ -34,7 +34,8 @@ void QAndroidPlatformOpenGLContext::swapBuffers(QPlatformSurface *surface)
     // by Android
     window->lockSurface();
 
-    if (window->checkNativeSurface(eglConfig())) {
+    if (window->makeCurrentNeeded()) {
+        window->createEgl(eglConfig());
         // Call base class implementation directly since we are already locked
         QEGLPlatformContext::makeCurrent(surface);
     }

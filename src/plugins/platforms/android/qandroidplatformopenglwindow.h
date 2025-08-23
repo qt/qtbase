@@ -23,14 +23,13 @@ public:
 
     void setGeometry(const QRect &rect) override;
     EGLSurface eglSurface(EGLConfig config);
+    void createEgl(EGLConfig config);
     QSurfaceFormat format() const override;
-
-    bool checkNativeSurface(EGLConfig config);
+    bool makeCurrentNeeded() const;
 
     void applicationStateChanged(Qt::ApplicationState) override;
 
 protected:
-    void createEgl(EGLConfig config);
     void clearSurface() override;
 
 private:

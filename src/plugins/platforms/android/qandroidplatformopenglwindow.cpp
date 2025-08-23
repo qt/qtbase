@@ -69,26 +69,22 @@ EGLSurface QAndroidPlatformOpenGLWindow::eglSurface(EGLConfig config)
         m_surfaceWaitCondition.wait(&m_surfaceMutex);
     }
 
-    if (m_eglSurface == EGL_NO_SURFACE) {
-        checkNativeSurface(config);
-    }
+    if (m_eglSurface == EGL_NO_SURFACE)
+        createEgl(config);
+
     return m_eglSurface;
 }
 
-// Only called by eglSurface() and QAndroidPlatformOpenGLContext::swapBuffers(),
-// m_surfaceMutex already locked
-bool QAndroidPlatformOpenGLWindow::checkNativeSurface(EGLConfig config)
+// m_surfaceMutex already locked, called only by eglSurface()
+// and QAndroidPlatformOpenGLContext::swapBuffers().
+bool QAndroidPlatformOpenGLWindow::makeCurrentNeeded() const
 {
     // Either no surface created, or the m_eglSurface already wraps the active Surface
     // -> makeCurrent is NOT needed, and we should not create a new EGL surface
     if (!m_surfaceCreated || !m_androidSurfaceObject.isValid())
         return false;
 
-    createEgl(config);
-
-    // we've created another Surface, the window should be repainted
-    sendExpose();
-    return true; // makeCurrent is needed!
+    return true;
 }
 
 void QAndroidPlatformOpenGLWindow::applicationStateChanged(Qt::ApplicationState state)
@@ -102,6 +98,8 @@ void QAndroidPlatformOpenGLWindow::applicationStateChanged(Qt::ApplicationState 
     }
 }
 
+// m_surfaceMutex already locked, called only by eglSurface()
+// and QAndroidPlatformOpenGLContext::swapBuffers().
 void QAndroidPlatformOpenGLWindow::createEgl(EGLConfig config)
 {
     clearSurface();
@@ -115,6 +113,9 @@ void QAndroidPlatformOpenGLWindow::createEgl(EGLConfig config)
         eglTerminate(m_eglDisplay);
         qFatal("EGL Error : Could not create the egl surface: error = 0x%x\n", error);
     }
+
+    // we've created another Surface, the window should be repainted
+    sendExpose();
 }
 
 QSurfaceFormat QAndroidPlatformOpenGLWindow::format() const
