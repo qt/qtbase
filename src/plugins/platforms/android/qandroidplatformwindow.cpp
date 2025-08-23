@@ -327,7 +327,7 @@ void QAndroidPlatformWindow::onSurfaceChanged(QtJniTypes::Surface surface)
 {
     lockSurface();
     const bool surfaceIsValid = surface.isValid();
-    qCDebug(lcQpaWindow) << "onSurfaceChanged():, valid Surface received" << surfaceIsValid;
+    qCDebug(lcQpaWindow) << "onSurfaceChanged(): valid Surface received" << surfaceIsValid;
     m_androidSurfaceObject = surface;
     if (surfaceIsValid) {
         // wait until we have a valid surface to draw into
