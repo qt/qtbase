@@ -77,8 +77,20 @@ static void runOnQtThread(const std::function<void()> &func)
 
 static bool hasValidFocusObject()
 {
-    return m_androidInputContext && m_androidInputContext->focusObject()
-        && m_androidInputContext->isInputPanelVisible();
+    if (!m_androidInputContext)
+        return false;
+
+    if (!m_androidInputContext->isInputPanelVisible())
+        return false;
+
+    const auto focusObject = m_androidInputContext->focusObject();
+    if (!focusObject)
+        return false;
+
+    if (!focusObject->property("inputMethodHints").isValid())
+        return false;
+
+    return true;
 }
 
 static jboolean beginBatchEdit(JNIEnv */*env*/, jobject /*thiz*/)
