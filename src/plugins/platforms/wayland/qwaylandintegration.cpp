@@ -18,6 +18,7 @@
 #include "qwaylandplatformservices_p.h"
 #include "qwaylandscreen_p.h"
 #include "qwaylandcursor_p.h"
+#include "qwaylandeventdispatcher_p.h"
 
 #if defined(Q_OS_MACOS)
 #  include <QtGui/private/qcoretextfontdatabase_p.h>
@@ -25,7 +26,6 @@
 #else
 #  include <QtGui/private/qgenericunixfontdatabase_p.h>
 #endif
-#include <QtGui/private/qgenericunixeventdispatcher_p.h>
 #include <QtGui/private/qgenericunixtheme_p.h>
 
 #include <QtGui/private/qguiapplication_p.h>
@@ -171,7 +171,7 @@ QPlatformBackingStore *QWaylandIntegration::createPlatformBackingStore(QWindow *
 
 QAbstractEventDispatcher *QWaylandIntegration::createEventDispatcher() const
 {
-    return createUnixEventDispatcher();
+    return QWaylandEventDispatcher::createEventDispatcher();
 }
 
 QPlatformNativeInterface *QWaylandIntegration::createPlatformNativeInterface()
