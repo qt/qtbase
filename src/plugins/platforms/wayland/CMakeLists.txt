@@ -86,6 +86,7 @@ qt_internal_add_module(WaylandClient
         qwaylandviewport.cpp qwaylandviewport_p.h
         qwaylandwindow.cpp qwaylandwindow_p.h
         qwaylandwindowmanagerintegration.cpp qwaylandwindowmanagerintegration_p.h
+        qwaylandeventdispatcher.cpp qwaylandeventdispatcher_p.h
         shellintegration/qwaylandclientshellapi_p.h
         shellintegration/qwaylandshellintegration_p.h shellintegration/qwaylandshellintegration.cpp
         shellintegration/qwaylandshellintegrationfactory.cpp shellintegration/qwaylandshellintegrationfactory_p.h
