@@ -867,14 +867,14 @@ void tst_QMetaMethod::isConst()
     auto mo = MethodTestObject::staticMetaObject;
     {
         const auto normalized = QMetaObject::normalizedSignature("qrealInvokable()");
-        const int idx = mo.indexOfSlot(normalized);
+        const int idx = mo.indexOfMethod(normalized);
         QMetaMethod mm = mo.method(idx);
         QVERIFY(mm.isValid());
         QCOMPARE(mm.isConst(), false);
     }
     {
         const auto normalized = QMetaObject::normalizedSignature("voidInvokable()");
-        const int idx = mo.indexOfSlot(normalized);
+        const int idx = mo.indexOfMethod(normalized);
         QMetaMethod mm = mo.method(idx);
         QVERIFY(mm.isValid());
         QCOMPARE(mm.isConst(), true);
