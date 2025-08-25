@@ -2675,7 +2675,7 @@ struct OverlapGraphEdge
 
     As an optimization this function is allowed to destroy its inputs.
 */
-static QString buildSuperstring(QList<QString> &inputs)
+static QString buildSuperstring(QList<QString> &&inputs)
 {
     // Ensure that the inputs don't contain substrings.
     // First, sort the array by length to make substring removal easier.
@@ -2789,7 +2789,7 @@ static QByteArray createIdnaMapping()
         }
     }
 
-    QString idnaMappingData = buildSuperstring(values);
+    QString idnaMappingData = buildSuperstring(std::move(values));
     qDebug() << "    uncompressed size:" << uncompressedSize << "characters";
     qDebug() << "    consolidated size:" << idnaMappingData.size() << "characters";
 
