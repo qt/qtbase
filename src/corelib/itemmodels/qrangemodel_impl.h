@@ -262,8 +262,12 @@ namespace QRangeModelDetails
     template <typename T, template <typename...> typename... Templates>
     using is_any_of = is_any_of_impl<std::remove_cv_t<T>, Templates...>;
 
+    template <typename T, typename = void>
+    struct is_validatable : std::false_type {};
+
     template <typename T>
-    using is_validatable = std::is_constructible<bool, T>;
+    struct is_validatable<T, std::void_t<decltype(*std::declval<T>())>>
+        : std::is_constructible<bool, T> {};
 
     template <typename T, typename = void>
     struct is_smart_ptr : std::false_type {};
@@ -346,9 +350,7 @@ namespace QRangeModelDetails
     template <typename T>
     static constexpr bool isValid(const T &t) noexcept
     {
-        if constexpr (std::is_array_v<T>)
-            return true;
-        else if constexpr (is_validatable<T>())
+        if constexpr (is_validatable<T>())
             return bool(t);
         else
             return true;
