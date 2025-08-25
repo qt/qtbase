@@ -997,7 +997,9 @@ static const char *property_string =
     "    ushort idnaStatus          : 4; /* 3 used */\n"
     "    ushort script              : 8;\n"
     "};\n\n"
+    "Q_DECL_CONST_FUNCTION\n"
     "Q_CORE_EXPORT const Properties * QT_FASTCALL properties(char32_t ucs4) noexcept;\n"
+    "Q_DECL_CONST_FUNCTION\n"
     "Q_CORE_EXPORT const Properties * QT_FASTCALL properties(char16_t ucs2) noexcept;\n"
     "\n";
 
@@ -3150,12 +3152,12 @@ static QByteArray createPropertyInfo()
            + QByteArray::number(BMP_BLOCKSIZE - 1, 16) + ")];\n"
            "}\n"
            "\n"
-           "Q_DECL_CONST_FUNCTION Q_CORE_EXPORT const Properties * QT_FASTCALL properties(char32_t ucs4) noexcept\n"
+           "const Properties * QT_FASTCALL properties(char32_t ucs4) noexcept\n"
            "{\n"
            "    return qGetProp(ucs4);\n"
            "}\n"
            "\n"
-           "Q_DECL_CONST_FUNCTION Q_CORE_EXPORT const Properties * QT_FASTCALL properties(char16_t ucs2) noexcept\n"
+           "const Properties * QT_FASTCALL properties(char16_t ucs2) noexcept\n"
            "{\n"
            "    return qGetProp(ucs2);\n"
            "}\n\n";

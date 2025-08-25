@@ -10848,12 +10848,12 @@ Q_DECL_CONST_FUNCTION static inline const Properties *qGetProp(char16_t ucs2) no
     return uc_properties + uc_property_trie[uc_property_trie[ucs2 >> 5] + (ucs2 & 0x1f)];
 }
 
-Q_DECL_CONST_FUNCTION Q_CORE_EXPORT const Properties * QT_FASTCALL properties(char32_t ucs4) noexcept
+const Properties * QT_FASTCALL properties(char32_t ucs4) noexcept
 {
     return qGetProp(ucs4);
 }
 
-Q_DECL_CONST_FUNCTION Q_CORE_EXPORT const Properties * QT_FASTCALL properties(char16_t ucs2) noexcept
+const Properties * QT_FASTCALL properties(char16_t ucs2) noexcept
 {
     return qGetProp(ucs2);
 }
