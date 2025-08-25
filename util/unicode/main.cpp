@@ -985,6 +985,11 @@ static const char *property_string =
     "    NumCases\n"
     "};\n"
     "\n"
+    "struct CaseConversion {\n"
+    "    ushort special    : 1;\n"
+    "    signed short diff : 15;\n"
+    "};\n"
+    "\n"
     "struct Properties {\n"
     "    ushort category            : 5;\n"
     "    ushort direction           : 5;\n"
@@ -999,10 +1004,7 @@ static const char *property_string =
     "#ifdef Q_OS_WASM\n"
     "    unsigned char              : 0; //wasm 64 packing trick\n"
     "#endif\n"
-    "    struct {\n"
-    "        ushort special    : 1;\n"
-    "        signed short diff : 15;\n"
-    "    } cases[NumCases];\n"
+    "    std::array<CaseConversion, NumCases> cases;\n"
     "#ifdef Q_OS_WASM\n"
     "    unsigned char              : 0; //wasm 64 packing trick\n"
     "#endif\n"
@@ -1015,6 +1017,9 @@ static const char *property_string =
     "};\n\n"
     "Q_DECL_CONST_FUNCTION\n"
     "Q_CORE_EXPORT const Properties * QT_FASTCALL properties(char32_t ucs4) noexcept;\n"
+    "\n"
+    "Q_DECL_CONST_FUNCTION Q_CORE_EXPORT\n"
+    "QSpan<const CaseConversion, NumCases> QT_FASTCALL caseConversion(char32_t ucs4) noexcept;\n"
     "\n";
 
 static const char *methods =
@@ -2767,11 +2772,8 @@ static QByteArray createPropertyInfo()
 //     "        ushort nfQuickCheck        : 8;\n"
         out += QByteArray::number( p.nfQuickCheck );
         out += ", ";
-//     "        struct {\n"
-//     "            ushort special    : 1;\n"
-//     "            signed short diff : 15;\n"
-//     "        } cases[NumCases];\n"
-        out += "{ {";
+//     "        std::array<CaseConversion, NumCases> cases;\n"
+        out += "{ { { ";
         out += QByteArray::number( p.lowerCaseSpecial );
         out += ", ";
         out += QByteArray::number( p.lowerCaseDiff );
@@ -2787,7 +2789,7 @@ static QByteArray createPropertyInfo()
         out += QByteArray::number( p.caseFoldSpecial );
         out += ", ";
         out += QByteArray::number( p.caseFoldDiff );
-        out += "} }, ";
+        out += "} } }, ";
 //     "        ushort graphemeBreakClass  : 5; /* 5 used */\n"
 //     "        ushort wordBreakClass      : 5; /* 5 used */\n"
 //     "        ushort lineBreakClass      : 6; /* 6 used */\n"
@@ -2831,6 +2833,11 @@ static QByteArray createPropertyInfo()
            "const Properties * QT_FASTCALL properties(char32_t ucs4) noexcept\n"
            "{\n"
            "    return qGetProp(ucs4);\n"
+           "}\n"
+           "\n"
+           "QSpan<const CaseConversion, NumCases> QT_FASTCALL caseConversion(char32_t ucs4) noexcept\n"
+           "{\n"
+           "    return qGetProp(ucs4)->cases;\n"
            "}\n\n";
 
     out += "Q_CORE_EXPORT GraphemeBreakClass QT_FASTCALL graphemeBreakClass(char32_t ucs4) noexcept\n"
@@ -3408,6 +3415,9 @@ int main(int, char **)
             "#define QUNICODETABLES_P_H\n\n"
             "#include <QtCore/private/qglobal_p.h>\n\n"
             "#include <QtCore/qchar.h>\n\n"
+            "#include <QtCore/qspan.h>\n\n"
+            "#include <array>\n"
+            "\n"
             "QT_BEGIN_NAMESPACE\n\n");
     f.write("#define UNICODE_DATA_VERSION " DATA_VERSION_STR "\n\n");
     f.write("namespace QUnicodeTables {\n\n");

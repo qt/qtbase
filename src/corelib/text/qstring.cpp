@@ -5571,7 +5571,7 @@ static bool checkCase(QStringView s, QUnicodeTables::Case c) noexcept
     QStringIterator it(s);
     while (it.hasNext()) {
         const char32_t uc = it.next();
-        if (qGetProp(uc)->cases[c].diff)
+        if (caseConversion(uc)[c].diff)
             return false;
     }
     return true;
@@ -7281,7 +7281,7 @@ static QString convertCase(T &str, QUnicodeTables::Case which)
     QStringIterator it(p, e);
     while (it.hasNext()) {
         const char32_t uc = it.next();
-        if (qGetProp(uc)->cases[which].diff) {
+        if (caseConversion(uc)[which].diff) {
             it.recede();
             return detachAndConvertCase(str, it, which);
         }
