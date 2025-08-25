@@ -1281,7 +1281,7 @@ void QMatrix4x4::projectedRotate(float angle, float x, float y, float z)
 */
 
 /*!
-    \enum QMatrix4x4::Flags
+    \enum QMatrix4x4::Flag
     \internal
     \omitvalue Identity
     \omitvalue Translation
