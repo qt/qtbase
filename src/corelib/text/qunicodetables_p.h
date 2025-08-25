@@ -57,13 +57,14 @@ struct Properties {
     ushort unicodeVersion      : 5; /* 5 used */
     ushort eastAsianWidth      : 3; /* 3 used */
     ushort nfQuickCheck        : 8;
-    std::array<CaseConversion, NumCases> cases;
+    ushort caseIndex           : 16; /* 9 used */
     ushort graphemeBreakClass  : 5; /* 5 used */
     ushort wordBreakClass      : 5; /* 5 used */
     ushort lineBreakClass      : 6; /* 6 used */
     ushort sentenceBreakClass  : 4; /* 4 used */
     ushort idnaStatus          : 4; /* 3 used */
     ushort script              : 8;
+    ushort reserved            : 16; /* makes sizeof a nice round 16 bytes */
 };
 
 Q_DECL_CONST_FUNCTION
@@ -72,7 +73,7 @@ Q_CORE_EXPORT const Properties * QT_FASTCALL properties(char32_t ucs4) noexcept;
 Q_DECL_CONST_FUNCTION Q_CORE_EXPORT
 QSpan<const CaseConversion, NumCases> QT_FASTCALL caseConversion(char32_t ucs4) noexcept;
 
-static_assert(sizeof(Properties) == 20);
+static_assert(sizeof(Properties) == 16);
 
 enum class EastAsianWidth : unsigned int {
     A,
