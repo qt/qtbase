@@ -227,6 +227,7 @@ _qt_internal_test_expect_pass(test_wrap_cpp_moc)
 _qt_internal_test_expect_pass(test_wrap_cpp_moc_target)
 _qt_internal_test_expect_pass(test_platform_defs_include)
 _qt_internal_test_expect_pass(test_qtmainwin_library)
+_qt_internal_test_expect_pass(test_read_qt_namespace)
 
 if (CMAKE_GENERATOR STREQUAL Ninja AND UNIX AND NOT WIN32)
     _qt_internal_test_expect_pass(test_QFINDTESTDATA

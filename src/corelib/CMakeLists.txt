@@ -398,6 +398,9 @@ if (NOT QT_NAMESPACE STREQUAL "")
     target_compile_definitions(Core PUBLIC ${core_namespace_defs})
     set_target_properties(Core PROPERTIES _qt_namespace "${QT_NAMESPACE}")
     set_property(TARGET Core APPEND PROPERTY EXPORT_PROPERTIES _qt_namespace)
+
+    set_target_properties(Core PROPERTIES QT_NAMESPACE "${QT_NAMESPACE}")
+    set_property(TARGET Core APPEND PROPERTY EXPORT_PROPERTIES QT_NAMESPACE)
 endif()
 
 qt_generate_qconfig_cpp(global/qconfig.cpp.in global/qconfig.cpp)
