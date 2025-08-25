@@ -145,6 +145,8 @@
 #  define z_errmsg              z_z_errmsg
 
 /* all zlib typedefs in zlib.h and zconf.h */
+# if 0 // Byte clashes with MacTypes.h
+       // we do not need to redefine any typedefs, as they don't affect globally visible symbols
 #  define Byte                  z_Byte
 #  define Bytef                 z_Bytef
 #  define alloc_func            z_alloc_func
@@ -169,6 +171,7 @@
 /* all zlib structs in zlib.h and zconf.h */
 #  define gz_header_s           z_gz_header_s
 #  define internal_state        z_internal_state
+# endif
 
 #endif
 
