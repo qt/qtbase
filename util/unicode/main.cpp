@@ -18,6 +18,7 @@
 #define DATA_VERSION_S "16.0"
 #define DATA_VERSION_STR "QChar::Unicode_16_0"
 
+using namespace Qt::StringLiterals;
 
 static QHash<QByteArray, QChar::UnicodeVersion> age_map;
 
@@ -1310,6 +1311,28 @@ static int maxUpperCaseDiff = 0;
 static int maxTitleCaseDiff = 0;
 static int maxSeparatorCodepoint = 0;
 
+template <typename LineConsumer>
+void readUnicodeFile(const char *fileName, LineConsumer yield)
+{
+    qDebug("Reading %s", fileName);
+
+    QFile f("data/"_L1 % QLatin1StringView{fileName});
+    if (!f.open(QFile::ReadOnly))
+        qFatal("Couln't open %s: %ls", fileName, qUtf16Printable(f.errorString()));
+
+    int lineNo = 0;
+    QByteArray line;
+    while (f.readLineInto(&line)) {
+        ++lineNo;
+        const auto comment = line.indexOf('#');
+        if (comment >= 0)
+            line.truncate(comment);
+        line = std::move(line).trimmed();
+        if (!line.isEmpty())
+            yield(line, lineNo);
+    }
+}
+
 static void readUnicodeData()
 {
     qDebug("Reading UnicodeData.txt");
@@ -1473,25 +1496,11 @@ static int maxMirroredDiff = 0;
 
 static void readBidiMirroring()
 {
-    qDebug("Reading BidiMirroring.txt");
+    readUnicodeFile("BidiMirroring.txt",
+                    [] (QByteArray &line, int lineNo) {
+        Q_UNUSED(lineNo);
 
-    QFile f("data/BidiMirroring.txt");
-    if (!f.open(QFile::ReadOnly))
-        qFatal() << "Couldn't open BidiMirroring.txt:" << f.errorString();
-
-    while (!f.atEnd()) {
-        QByteArray line;
-        line.resize(1024);
-        int len = f.readLine(line.data(), 1024);
-        line.resize(len-1);
-
-        int comment = line.indexOf('#');
-        if (comment >= 0)
-            line = line.left(comment);
-
-        if (line.isEmpty())
-            continue;
-        line = line.replace(" ", "");
+        line.replace(" ", "");
 
         QList<QByteArray> pair = line.split(';');
         Q_ASSERT(pair.size() == 2);
@@ -1506,13 +1515,11 @@ static void readBidiMirroring()
         d.mirroredChar = mirror;
         d.p.mirrorDiff = d.mirroredChar - codepoint;
         maxMirroredDiff = qMax(maxMirroredDiff, qAbs(d.p.mirrorDiff));
-    }
+    });
 }
 
 static void readArabicShaping()
 {
-    qDebug("Reading ArabicShaping.txt");
-
     // Initialize defaults:
     // Code points that are not explicitly listed in ArabicShaping.txt are either of joining type T or U:
     // - Those that not explicitly listed that are of General Category Mn, Me, or Cf have joining type T.
@@ -1525,23 +1532,9 @@ static void readArabicShaping()
         }
     }
 
-    QFile f("data/ArabicShaping.txt");
-    if (!f.open(QFile::ReadOnly))
-        qFatal() << "Couldn't open ArabicShaping.txt:" << f.errorString();
-
-    while (!f.atEnd()) {
-        QByteArray line;
-        line.resize(1024);
-        int len = f.readLine(line.data(), 1024);
-        line.resize(len-1);
-
-        int comment = line.indexOf('#');
-        if (comment >= 0)
-            line = line.left(comment);
-        line = line.trimmed();
-
-        if (line.isEmpty())
-            continue;
+    readUnicodeFile("ArabicShaping.txt",
+                    [] (const QByteArray &line, int lineNo) {
+        Q_UNUSED(lineNo);
 
         QList<QByteArray> l = line.split(';');
         Q_ASSERT(l.size() == 4);
@@ -1573,30 +1566,16 @@ static void readArabicShaping()
             d.p.joining = QChar::JoiningType(joining);
             break;
         }
-    }
+    });
 }
 
 static void readDerivedAge()
 {
-    qDebug("Reading DerivedAge.txt");
+    readUnicodeFile("DerivedAge.txt",
+                    [] (QByteArray &line, int lineNo) {
+        Q_UNUSED(lineNo);
 
-    QFile f("data/DerivedAge.txt");
-    if (!f.open(QFile::ReadOnly))
-        qFatal() << "Couldn't open DerivedAge.txt:" << f.errorString();
-
-    while (!f.atEnd()) {
-        QByteArray line;
-        line.resize(1024);
-        int len = f.readLine(line.data(), 1024);
-        line.resize(len-1);
-
-        int comment = line.indexOf('#');
-        if (comment >= 0)
-            line = line.left(comment);
         line.replace(" ", "");
-
-        if (line.isEmpty())
-            continue;
 
         QList<QByteArray> l = line.split(';');
         Q_ASSERT(l.size() == 2);
@@ -1623,25 +1602,16 @@ static void readDerivedAge()
             UnicodeData &d = UnicodeData::valueRef(codepoint);
             d.p.age = age;
         }
-    }
+    });
 }
 
 static void readEastAsianWidth()
 {
-    qDebug("Reading EastAsianWidth.txt");
+    readUnicodeFile("EastAsianWidth.txt",
+                    [] (QByteArray &line, int lineNo) {
+        Q_UNUSED(lineNo);
 
-    QFile f("data/EastAsianWidth.txt");
-    if (!f.open(QFile::ReadOnly))
-        qFatal() << "Couldn't open EastAsianWidth.txt:" << f.errorString();
-
-    while (!f.atEnd()) {
-        QByteArray line = f.readLine().trimmed();
-
-        int comment = line.indexOf('#');
-        line = (comment < 0 ? line : line.left(comment)).simplified();
-
-        if (line.isEmpty())
-            continue;
+        line = std::move(line).simplified();
 
         QList<QByteArray> fields = line.split(';');
         Q_ASSERT(fields.size() == 2);
@@ -1669,29 +1639,14 @@ static void readEastAsianWidth()
             Q_ASSERT(ud.p.eastAsianWidth == EastAsianWidth::N);
             ud.p.eastAsianWidth = width;
         }
-    }
+    });
 }
 
 static void readDerivedNormalizationProps()
 {
-    qDebug("Reading DerivedNormalizationProps.txt");
-
-    QFile f("data/DerivedNormalizationProps.txt");
-    if (!f.open(QFile::ReadOnly))
-        qFatal() << "Couldn't open DerivedNormalizationProps.txt:" << f.errorString();
-
-    while (!f.atEnd()) {
-        QByteArray line;
-        line.resize(1024);
-        int len = f.readLine(line.data(), 1024);
-        line.resize(len-1);
-
-        int comment = line.indexOf('#');
-        if (comment >= 0)
-            line = line.left(comment);
-
-        if (line.trimmed().isEmpty())
-            continue;
+    readUnicodeFile("DerivedNormalizationProps.txt",
+                    [] (const QByteArray &line, int lineNo) {
+        Q_UNUSED(lineNo);
 
         QList<QByteArray> l = line.split(';');
         Q_ASSERT(l.size() >= 2);
@@ -1701,7 +1656,7 @@ static void readDerivedNormalizationProps()
             propName != "NFD_QC" && propName != "NFC_QC" &&
             propName != "NFKD_QC" && propName != "NFKC_QC") {
             // ###
-            continue;
+            return;
         }
 
         QByteArray codes = l[0].trimmed();
@@ -1749,7 +1704,7 @@ static void readDerivedNormalizationProps()
                 d.p.nfQuickCheck |= (ynm << (form << 1)); // 2 bits per NF
             }
         }
-    }
+    });
 
     for (int codepoint = 0; codepoint <= QChar::LastValidCodePoint; ++codepoint) {
         UnicodeData &d = UnicodeData::valueRef(codepoint);
@@ -1782,12 +1737,6 @@ struct NormalizationCorrection {
 
 static QByteArray createNormalizationCorrections()
 {
-    qDebug("Reading NormalizationCorrections.txt");
-
-    QFile f("data/NormalizationCorrections.txt");
-    if (!f.open(QFile::ReadOnly))
-        qFatal() << "Couldn't open NormalizationCorrections.txt:" << f.errorString();
-
     QByteArray out
          = "struct NormalizationCorrection {\n"
            "    uint ucs4;\n"
@@ -1799,19 +1748,10 @@ static QByteArray createNormalizationCorrections()
 
     int maxVersion = 0;
     int numCorrections = 0;
-    while (!f.atEnd()) {
-        QByteArray line;
-        line.resize(1024);
-        int len = f.readLine(line.data(), 1024);
-        line.resize(len-1);
-
-        int comment = line.indexOf('#');
-        if (comment >= 0)
-            line = line.left(comment);
+    readUnicodeFile("NormalizationCorrections.txt",
+                    [&] (QByteArray &line, int lineNo) {
+        Q_UNUSED(lineNo);
         line.replace(" ", "");
-
-        if (line.isEmpty())
-            continue;
 
         Q_ASSERT(!line.contains(".."));
 
@@ -1836,7 +1776,7 @@ static QByteArray createNormalizationCorrections()
                + QByteArray::number(c.version) + " },\n";
         ++numCorrections;
         maxVersion = qMax(c.version, maxVersion);
-    }
+    });
     if (out.endsWith(",\n"))
         out.chop(2);
 
@@ -1850,25 +1790,10 @@ static QByteArray createNormalizationCorrections()
 
 static void readLineBreak()
 {
-    qDebug("Reading LineBreak.txt");
-
-    QFile f("data/LineBreak.txt");
-    if (!f.open(QFile::ReadOnly))
-        qFatal() << "Couldn't open LineBreak.txt:" << f.errorString();
-
-    while (!f.atEnd()) {
-        QByteArray line;
-        line.resize(1024);
-        int len = f.readLine(line.data(), 1024);
-        line.resize(len-1);
-
-        int comment = line.indexOf('#');
-        if (comment >= 0)
-            line = line.left(comment);
+    readUnicodeFile("LineBreak.txt",
+                    [] (QByteArray &line, int lineNo) {
+        Q_UNUSED(lineNo);
         line.replace(" ", "");
-
-        if (line.isEmpty())
-            continue;
 
         QList<QByteArray> l = line.split(';');
         Q_ASSERT(l.size() == 2);
@@ -1894,36 +1819,21 @@ static void readLineBreak()
             UnicodeData &d = UnicodeData::valueRef(codepoint);
             d.p.lineBreakClass = lb;
         }
-    }
+    });
 }
 
 static void readSpecialCasing()
 {
-    qDebug("Reading SpecialCasing.txt");
-
-    QFile f("data/SpecialCasing.txt");
-    if (!f.open(QFile::ReadOnly))
-        qFatal() << "Couldn't open SpecialCasing.txt:" << f.errorString();
-
-    while (!f.atEnd()) {
-        QByteArray line;
-        line.resize(1024);
-        int len = f.readLine(line.data(), 1024);
-        line.resize(len-1);
-
-        int comment = line.indexOf('#');
-        if (comment >= 0)
-            line = line.left(comment);
-
-        if (line.isEmpty())
-            continue;
+    readUnicodeFile("SpecialCasing.txt",
+                    [] (const QByteArray &line, int lineNo) {
+        Q_UNUSED(lineNo);
 
         QList<QByteArray> l = line.split(';');
 
         QByteArray condition = l.size() < 5 ? QByteArray() : l[4].trimmed();
         if (!condition.isEmpty())
             // #####
-            continue;
+            return;
 
         bool ok;
         int codepoint = l[0].trimmed().toInt(&ok, 16);
@@ -1978,31 +1888,16 @@ static void readSpecialCasing()
             ud.p.upperCaseSpecial = true;
             ud.p.upperCaseDiff = appendToSpecialCaseMap(upperMap);
         }
-    }
+    });
 }
 
 static int maxCaseFoldDiff = 0;
 
 static void readCaseFolding()
 {
-    qDebug("Reading CaseFolding.txt");
-
-    QFile f("data/CaseFolding.txt");
-    if (!f.open(QFile::ReadOnly))
-        qFatal() << "Couldn't open CaseFolding.txt:" << f.errorString();
-
-    while (!f.atEnd()) {
-        QByteArray line;
-        line.resize(1024);
-        int len = f.readLine(line.data(), 1024);
-        line.resize(len-1);
-
-        int comment = line.indexOf('#');
-        if (comment >= 0)
-            line = line.left(comment);
-
-        if (line.isEmpty())
-            continue;
+    readUnicodeFile("CaseFolding.txt",
+                    [] (const QByteArray &line, int lineNo) {
+        Q_UNUSED(lineNo);
 
         QList<QByteArray> l = line.split(';');
 
@@ -2013,7 +1908,7 @@ static void readCaseFolding()
 
         l[1] = l[1].trimmed();
         if (l[1] == "F" || l[1] == "T")
-            continue;
+            return;
 
 //         qDebug() << "codepoint" << Qt::hex << codepoint;
 //         qDebug() << line;
@@ -2048,30 +1943,16 @@ static void readCaseFolding()
             ud.p.caseFoldSpecial = true;
             ud.p.caseFoldDiff = appendToSpecialCaseMap(foldMap);
         }
-    }
+    });
 }
 
 static void readGraphemeBreak()
 {
-    qDebug("Reading GraphemeBreakProperty.txt");
+    readUnicodeFile("GraphemeBreakProperty.txt",
+                    [] (QByteArray &line, int lineNo) {
+        Q_UNUSED(lineNo);
 
-    QFile f("data/GraphemeBreakProperty.txt");
-    if (!f.open(QFile::ReadOnly))
-        qFatal() << "Couldn't open GraphemeBreakProperty.txt:" << f.errorString();
-
-    while (!f.atEnd()) {
-        QByteArray line;
-        line.resize(1024);
-        int len = f.readLine(line.data(), 1024);
-        line.resize(len-1);
-
-        int comment = line.indexOf('#');
-        if (comment >= 0)
-            line = line.left(comment);
         line.replace(" ", "");
-
-        if (line.isEmpty())
-            continue;
 
         QList<QByteArray> l = line.split(';');
         Q_ASSERT(l.size() == 2);
@@ -2097,37 +1978,22 @@ static void readGraphemeBreak()
             UnicodeData &ud = UnicodeData::valueRef(codepoint);
             ud.p.graphemeBreakClass = brk;
         }
-    }
+    });
 }
 
 static void readEmojiData()
 {
-    qDebug("Reading emoji-data.txt");
-
-    QFile f("data/emoji-data.txt");
-    if (!f.open(QFile::ReadOnly))
-        qFatal() << "Couldn't open emoji-data.txt:" << f.errorString();
-
-    while (!f.atEnd()) {
-        QByteArray line;
-        line.resize(1024);
-        int len = f.readLine(line.data(), 1024);
-        line.resize(len-1);
-
-        int comment = line.indexOf('#');
-        if (comment >= 0)
-            line = line.left(comment);
+    readUnicodeFile("emoji-data.txt",
+                    [] (QByteArray &line, int lineNo) {
+        Q_UNUSED(lineNo);
         line.replace(" ", "");
-
-        if (line.isEmpty())
-            continue;
 
         QList<QByteArray> l = line.split(';');
         Q_ASSERT(l.size() == 2);
 
         EmojiFlags emojiFlags = emojiFlagsMap.value(l[1], EmojiFlags::NoEmoji);
         if (emojiFlags == EmojiFlags::NoEmoji)
-            continue;
+            return;
 
         QByteArray codes = l[0];
         codes.replace("..", ".");
@@ -2153,30 +2019,15 @@ static void readEmojiData()
             else
                 ud.p.emojiFlags |= int(emojiFlags);
         }
-    }
+    });
 }
 
 static void readWordBreak()
 {
-    qDebug("Reading WordBreakProperty.txt");
-
-    QFile f("data/WordBreakProperty.txt");
-    if (!f.open(QFile::ReadOnly))
-        qFatal() << "Couldn't open WordBreakProperty.txt:" << f.errorString();
-
-    while (!f.atEnd()) {
-        QByteArray line;
-        line.resize(1024);
-        int len = f.readLine(line.data(), 1024);
-        line.resize(len-1);
-
-        int comment = line.indexOf('#');
-        if (comment >= 0)
-            line = line.left(comment);
+    readUnicodeFile("WordBreakProperty.txt",
+                    [] (QByteArray &line, int lineNo) {
+        Q_UNUSED(lineNo);
         line.replace(" ", "");
-
-        if (line.isEmpty())
-            continue;
 
         QList<QByteArray> l = line.split(';');
         Q_ASSERT(l.size() == 2);
@@ -2211,30 +2062,15 @@ static void readWordBreak()
             UnicodeData &ud = UnicodeData::valueRef(codepoint);
             ud.p.wordBreakClass = brk;
         }
-    }
+    });
 }
 
 static void readSentenceBreak()
 {
-    qDebug("Reading SentenceBreakProperty.txt");
-
-    QFile f("data/SentenceBreakProperty.txt");
-    if (!f.open(QFile::ReadOnly))
-        qFatal() << "Couldn't open SentenceBreakProperty.txt:" << f.errorString();
-
-    while (!f.atEnd()) {
-        QByteArray line;
-        line.resize(1024);
-        int len = f.readLine(line.data(), 1024);
-        line.resize(len-1);
-
-        int comment = line.indexOf('#');
-        if (comment >= 0)
-            line = line.left(comment);
+    readUnicodeFile("SentenceBreakProperty.txt",
+                    [] (QByteArray &line, int lineNo) {
+        Q_UNUSED(lineNo);
         line.replace(" ", "");
-
-        if (line.isEmpty())
-            continue;
 
         QList<QByteArray> l = line.split(';');
         Q_ASSERT(l.size() == 2);
@@ -2260,7 +2096,7 @@ static void readSentenceBreak()
             UnicodeData &ud = UnicodeData::valueRef(codepoint);
             ud.p.sentenceBreakClass = brk;
         }
-    }
+    });
 }
 
 #if 0
@@ -2455,25 +2291,14 @@ static void readBlocks()
 
 static void readScripts()
 {
-    qDebug("Reading Scripts.txt");
-
-    QFile f("data/Scripts.txt");
-    if (!f.open(QFile::ReadOnly))
-        qFatal() << "Couldn't open Scripts.txt:" << f.errorString();
-
-    while (!f.atEnd()) {
-        QByteArray line = f.readLine();
-        line.resize(line.size() - 1);
-
-        int comment = line.indexOf("#");
-        if (comment >= 0)
-            line = line.left(comment);
-
+    readUnicodeFile("Scripts.txt",
+                    [] (QByteArray &line, int lineNo) {
+        Q_UNUSED(lineNo);
         line.replace(" ", "");
         line.replace("_", "");
 
         if (line.isEmpty())
-            continue;
+            return;
 
         int semicolon = line.indexOf(';');
         Q_ASSERT(semicolon >= 0);
@@ -2500,27 +2325,18 @@ static void readScripts()
             UnicodeData &ud = UnicodeData::valueRef(codepoint);
             ud.p.script = script;
         }
-    }
+    });
 }
 
 static QMap<char32_t, QString> idnaMappingTable;
 
 static void readIdnaMappingTable()
 {
-    qDebug("Reading IdnaMappingTable.txt");
+    readUnicodeFile("IdnaMappingTable.txt",
+                    [] (QByteArray &line, int lineNo) {
+        Q_UNUSED(lineNo);
 
-    QFile f("data/IdnaMappingTable.txt");
-    if (!f.open(QFile::ReadOnly))
-        qFatal() << "Couldn't open IdnaMappingTable.txt:" << f.errorString();
-
-    while (!f.atEnd()) {
-        QByteArray line = f.readLine().trimmed();
-
-        int comment = line.indexOf('#');
-        line = (comment < 0 ? line : line.left(comment)).simplified();
-
-        if (line.isEmpty())
-            continue;
+        line = std::move(line).simplified();
 
         QList<QByteArray> fields = line.split(';');
         Q_ASSERT(fields.size() >= 2);
@@ -2585,7 +2401,7 @@ static void readIdnaMappingTable()
             if (codepoint >= 0x80 && !mapping.isEmpty())
                 idnaMappingTable[codepoint] = mapping;
         }
-    }
+    });
 }
 
 /*
