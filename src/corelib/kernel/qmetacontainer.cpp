@@ -186,7 +186,7 @@ void QMetaSequence::addValueAtBegin(void *container, const void *value) const
 
 /*!
     Returns \c true if values can be removed from the beginning of the container
-    using \l removeValue() can be placed at the, otherwise returns \c false.
+    using \l removeValue(), otherwise returns \c false.
 
     \sa removeValueAtBegin(), canRemoveValueAtEnd()
  */
@@ -240,7 +240,7 @@ void QMetaSequence::addValueAtEnd(void *container, const void *value) const
 
 /*!
     Returns \c true if values can be removed from the end of the container
-    using \l removeValue() can be placed at the, otherwise returns \c false.
+    using \l removeValue(), otherwise returns \c false.
 
     \sa removeValueAtEnd(), canRemoveValueAtBegin()
  */
@@ -334,7 +334,7 @@ void QMetaSequence::valueAtIndex(const void *container, qsizetype index, void *r
 }
 
 /*!
-    Returns \c true if an value can be written to the container by index,
+    Returns \c true if a value can be written to the container by index,
     otherwise \c false.
 
     \sa setValueAtIndex()
@@ -406,7 +406,7 @@ bool QMetaSequence::canRemoveValue() const
 }
 
 /*!
-    Removes an value from the \a container if possible. If
+    Removes a value from the \a container if possible. If
     \l canRemoveValue() returns \c false, no value is removed. Else, if
     \l canRemoveValueAtEnd() returns \c true, the last value in
     the \a container is removed. Else, if \l canRemoveValueAtBegin()
