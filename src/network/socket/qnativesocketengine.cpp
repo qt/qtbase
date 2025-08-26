@@ -431,7 +431,7 @@ bool QNativeSocketEngine::initialize(QAbstractSocket::SocketType socketType, QAb
     if (socketType == QAbstractSocket::UdpSocket) {
         // Set the broadcasting flag if it's a UDP socket.
         // IPv6 does not support broadcast — only set option for IPv4
-        if (protocol == QAbstractSocket::IPv4Protocol) {
+        if (protocol != QAbstractSocket::IPv6Protocol) {
             if (!setOption(BroadcastSocketOption, 1)) {
                 d->setError(QAbstractSocket::UnsupportedSocketOperationError,
                             QNativeSocketEnginePrivate::BroadcastingInitFailedErrorString);
