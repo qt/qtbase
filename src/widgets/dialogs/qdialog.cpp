@@ -749,12 +749,7 @@ void QDialog::closeEvent(QCloseEvent *e)
 
 void QDialog::setVisible(bool visible)
 {
-    Q_D(QDialog);
-
-    if (testAttribute(Qt::WA_WState_ExplicitShowHide) && testAttribute(Qt::WA_WState_Hidden) != visible)
-        return;
-
-    d->setVisible(visible);
+    QWidget::setVisible(visible);
 }
 
 void QDialogPrivate::setVisible(bool visible)
