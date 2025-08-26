@@ -452,6 +452,16 @@ namespace QRangeModelDetails
         : std::true_type
     {};
 
+    // we use std::rotate in moveRows/Columns, which requires std::swap
+    template <typename It, typename = void>
+    struct test_rotate : std::false_type {};
+
+    template <typename It>
+    struct test_rotate<It, std::void_t<decltype(std::swap(*std::declval<It>(),
+                                                          *std::declval<It>()))>>
+        : std::true_type
+    {};
+
     // Test if a type is an associative container that we can use for multi-role
     // data, i.e. has a key_type and a mapped_type typedef, and maps from int,
     // Qt::ItemDataRole, or QString to QVariant. This excludes std::set (and
@@ -486,6 +496,7 @@ namespace QRangeModelDetails
         static constexpr bool has_insert_range = false;
         static constexpr bool has_erase = false;
         static constexpr bool has_resize = false;
+        static constexpr bool has_rotate = false;
     };
     template <typename C>
     struct range_traits<C, std::void_t<decltype(cbegin(std::declval<C&>())),
@@ -500,6 +511,7 @@ namespace QRangeModelDetails
         static constexpr bool has_insert_range = test_insert_range<C>();
         static constexpr bool has_erase = test_erase<C>();
         static constexpr bool has_resize = test_resize<C>();
+        static constexpr bool has_rotate = test_rotate<iterator>();
     };
 
     // Specializations for types that look like ranges, but should be
@@ -511,6 +523,7 @@ namespace QRangeModelDetails
         static constexpr bool has_insert = false;
         static constexpr bool has_erase = false;
         static constexpr bool has_resize = false;
+        static constexpr bool has_rotate = false;
     };
     template <> struct range_traits<QByteArray> : iterable_value<Mutable::Yes> {};
     template <> struct range_traits<QString> : iterable_value<Mutable::Yes> {};
@@ -1607,7 +1620,7 @@ public:
         // we only support moving columns within the same parent
         if (sourceParent != destParent)
             return false;
-        if constexpr (isMutable()) {
+        if constexpr (isMutable() && row_features::has_rotate) {
             if (!Structure::canMoveColumns(sourceParent, destParent))
                 return false;
 
@@ -1722,7 +1735,7 @@ public:
     bool moveRows(const QModelIndex &sourceParent, int sourceRow, int count,
                   const QModelIndex &destParent, int destRow)
     {
-        if constexpr (isMutable()) {
+        if constexpr (isMutable() && range_features::has_rotate) {
             if (!Structure::canMoveRows(sourceParent, destParent))
                 return false;
 

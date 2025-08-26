@@ -64,6 +64,7 @@ private slots:
 
     void inconsistentColumnCount();
     void largeArrays();
+    void mapsAsRange();
 
     void tree_data();
     void tree();
@@ -1160,6 +1161,37 @@ void tst_QRangeModel::largeArrays()
         const QModelIndex index = model.index(int(largeColumn.size() - 1),
                                               int(largeColumn[0].size() - 1));
         QCOMPARE(index.data(), 0);
+    }
+}
+
+void tst_QRangeModel::mapsAsRange()
+{
+    {
+        QRangeModel model(QMap<int, QString>{
+            {1, u"eins"_s}
+        });
+        QCOMPARE(model.columnCount(), 1);
+    }
+
+    {
+        QRangeModel model(QHash<int, QString>{
+            {1, u"eins"_s}
+        });
+        QCOMPARE(model.columnCount(), 1);
+    }
+
+    {
+        QRangeModel model(std::map<int, QString>{
+            {1, u"eins"_s}
+        });
+        QCOMPARE(model.columnCount(), 2);
+    }
+
+    {
+        QRangeModel model(std::unordered_map<int, QString>{
+            {1, u"eins"_s}
+        });
+        QCOMPARE(model.columnCount(), 2);
     }
 }
 

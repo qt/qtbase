@@ -266,6 +266,26 @@ public slots:
         return new QRangeModel(gadgetTable);
     }
 
+    QRangeModel *makeQtMap()
+    {
+        return new QRangeModel(QMap<QString, QString>{
+            {"one", "eins"},
+            {"two", "zwei"},
+            {"three", "drei"},
+            {"four", "vier"},
+        });
+    }
+
+    QRangeModel *makeStdMap()
+    {
+        return new QRangeModel(std::map<int, double>{
+            {1, 0.1},
+            {2, 0.2},
+            {3, 0.3},
+            {4, 0.4},
+        });
+    }
+
     QRangeModel *makeMultiRoleMap()
     {
         using ColorEntry = QMap<Qt::ItemDataRole, QVariant>;
