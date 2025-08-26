@@ -34,16 +34,22 @@
 
 #if defined(Q_OS_LINUX)
 #define SHOULD_CHECK_SYSCALL_SUPPORT
+#endif
+#ifdef Q_OS_UNIX
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <errno.h>
+#else
+#include <winsock2.h>
+#include <ws2tcpip.h>
 #endif
 
-#ifdef Q_OS_UNIX
-#  include <sys/socket.h>
-#endif
 #if defined(Q_OS_LINUX) || defined(Q_OS_WIN) || defined(SO_NREAD)
 #  define RELIABLE_BYTES_AVAILABLE
+#endif
+
+#ifndef INVALID_SOCKET
+#  define INVALID_SOCKET -1
 #endif
 
 using namespace Qt::StringLiterals;
@@ -62,6 +68,8 @@ private slots:
     void init();
     void cleanup();
     void constructing();
+    void setSocketDescriptor_data();
+    void setSocketDescriptor();
     void unconnectedServerAndClientTest();
     void broadcasting();
     void broadcastingDualSocket_data();
@@ -320,6 +328,105 @@ void tst_QUdpSocket::constructing()
 
     // Check the state of the socket api
 }
+
+//----------------------------------------------------------------------------------
+
+void tst_QUdpSocket::setSocketDescriptor_data()
+{
+    QTest::addColumn<QAbstractSocket::NetworkLayerProtocol>("protocol");
+    QTest::newRow("ipv4") << QAbstractSocket::IPv4Protocol;
+
+    bool hasIPv6 = true;
+#if defined(PF_INET6) && defined(Q_OS_UNIX)
+    if (int fd = socket(PF_INET6, SOCK_DGRAM, 0); fd >= 0)
+        close(fd);
+    else
+        hasIPv6 = false;
+#endif
+
+    if (hasIPv6) {
+        QTest::newRow("ipv6") << QAbstractSocket::IPv6Protocol;
+#  if defined(IPV6_V6ONLY) && !defined(Q_OS_VXWORKS)
+        QTest::newRow("dualstack") << QAbstractSocket::AnyIPProtocol;
+#  endif
+    }
+}
+
+void tst_QUdpSocket::setSocketDescriptor()
+{
+    QFETCH(QAbstractSocket::NetworkLayerProtocol, protocol);
+    qintptr descriptor = -1;
+    int port = -1;
+
+    int domain = (protocol == QAbstractSocket::IPv4Protocol) ? AF_INET : AF_INET6;
+    descriptor = socket(domain, SOCK_DGRAM, 0);
+
+    if (descriptor == INVALID_SOCKET)
+        QSKIP("Could not create native socket");
+
+#ifdef Q_OS_WIN
+    auto closeSocket = qScopeGuard([&descriptor] { closesocket(descriptor); });
+    using socklen_t = int;
+#else
+    auto closeSocket = qScopeGuard([&descriptor] { close(descriptor); });
+#endif
+
+    if (domain == AF_INET) {
+        sockaddr_in addr = {};
+        addr.sin_family = AF_INET;
+        if (bind(descriptor, reinterpret_cast<sockaddr *>(&addr), sizeof(addr)) < 0)
+            QSKIP("Could not bind IPv4 socket");
+
+        socklen_t len = sizeof(addr);
+        if (getsockname(descriptor, reinterpret_cast<sockaddr *>(&addr), &len) < 0)
+            QSKIP("Could not get local IPv4 port number");
+        port = qFromBigEndian(addr.sin_port);
+#ifdef PF_INET6
+    } else {
+#  ifdef IPV6_V6ONLY
+        int v6only = protocol == QAbstractSocket::IPv6Protocol;
+        if (setsockopt(descriptor, IPPROTO_IPV6, IPV6_V6ONLY, (char*)&v6only, sizeof(v6only)) < 0)
+            QSKIP("Could not set IPV6_V6ONLY");
+#  endif
+
+        sockaddr_in6 addr = {};
+        addr.sin6_family = AF_INET6;
+        if (bind(descriptor, reinterpret_cast<sockaddr *>(&addr), sizeof(addr)) < 0)
+            QSKIP("Could not bind IPv6 socket");
+
+        socklen_t len = sizeof(addr);
+        if (getsockname(descriptor, reinterpret_cast<sockaddr *>(&addr), &len) < 0)
+            QSKIP("Could not get local IPv6 port number");
+        port = qFromBigEndian(addr.sin6_port);
+#  endif // IPv6
+    }
+
+    QUdpSocket socket;
+    QSignalSpy spy(&socket, &QUdpSocket::stateChanged);
+    QVERIFY2(socket.setSocketDescriptor(descriptor, QAbstractSocket::BoundState),
+             qPrintable(socket.errorString()));
+    QCOMPARE(socket.socketDescriptor(), descriptor);
+    closeSocket.dismiss();
+
+    QVERIFY(socket.isValid());
+    QCOMPARE(socket.socketType(), QAbstractSocket::UdpSocket);
+
+    QCOMPARE(socket.state(), QAbstractSocket::BoundState);
+    QCOMPARE(spy.size(), 1);
+    QCOMPARE(spy.at(0), QVariantList{QVariant::fromValue(QAbstractSocket::BoundState)});
+
+    QCOMPARE(socket.localPort(), port);
+    if (protocol == QAbstractSocket::IPv4Protocol)
+        QCOMPARE(socket.localAddress(), QHostAddress::AnyIPv4);
+    else if (protocol == QAbstractSocket::IPv6Protocol)
+        QCOMPARE(socket.localAddress(), QHostAddress::AnyIPv6);
+    else
+        QCOMPARE(socket.localAddress(), QHostAddress::Any);
+    QCOMPARE(socket.bytesToWrite(), 0);
+    QCOMPARE(socket.bytesAvailable(), 0);
+}
+
+//----------------------------------------------------------------------------------
 
 void tst_QUdpSocket::unconnectedServerAndClientTest()
 {
