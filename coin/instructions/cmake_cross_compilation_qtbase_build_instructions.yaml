@@ -96,6 +96,18 @@ instructions:
         - condition: property
           property: features
           contains_value: Packaging
+  - type: Group
+    instructions:
+    - !include "{{qt/qtbase}}/build_android_javadocs.yaml"
+    enable_if:
+      condition: and
+      conditions:
+        - condition: property
+          property: features
+          contains_value: JavaDocs
+        - condition: property
+          property: target.osVersion
+          equals_value: "Android_ANY"
   - type: UploadArtifact
     archiveDirectory: "{{.InstallRoot}}/{{.AgentWorkingDir}}"
     transferType: UploadModuleBuildArtifact

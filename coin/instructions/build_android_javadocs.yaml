@@ -1,0 +1,22 @@
+type: Group
+instructions:
+  - type: ChangeDirectory
+    directory: "{{.BuildDir}}"
+
+  # Build HTML JavaDocs for Android
+  - type: ExecuteCommand
+    command: "{{.Env.TARGET_ENV_PREFIX}} cmake --build . --parallel -v --target docs_android"
+    executeCommandArgumentSplitingBehavior: SplitAfterVariableSubstitution
+    maxTimeInSeconds: 6000
+    maxTimeBetweenOutput: 1200
+    userMessageOnFailure: >
+      Failed to build Android JavaDocs (target: docs_android).
+
+  # Build source jars (used for IDEs)
+  - type: ExecuteCommand
+    command: "{{.Env.TARGET_ENV_PREFIX}} cmake --build . --parallel -v --target android_source_jars"
+    executeCommandArgumentSplitingBehavior: SplitAfterVariableSubstitution
+    maxTimeInSeconds: 6000
+    maxTimeBetweenOutput: 1200
+    userMessageOnFailure: >
+      Failed to build Android Java source jars (target: android_source_jars).
