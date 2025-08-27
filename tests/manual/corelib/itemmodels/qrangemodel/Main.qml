@@ -22,7 +22,7 @@ Rectangle {
             model: root.model
             delegate: RowLayout {
                 id: delegate
-                width: parent.width
+                width: ListView.view.width
                 required property string display
                 required property int row
                 required property int column
