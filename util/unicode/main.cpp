@@ -7,6 +7,7 @@
 #include <qfile.h>
 #include <qhash.h>
 #include <qlist.h>
+#include <qspan.h>
 #include <qstring.h>
 #include <qbitarray.h>
 #include <qvarlengtharray.h>
@@ -1113,11 +1114,10 @@ struct PropertyFlags {
 
 static QList<int> specialCaseMap;
 
-static int appendToSpecialCaseMap(const QList<int> &map)
+static int appendToSpecialCaseMap(QSpan<const int> map)
 {
     QList<int> utf16map;
-    for (int i = 0; i < map.size(); ++i) {
-        uint codepoint = map.at(i);
+    for (char32_t codepoint : map) {
         // if the condition below doesn't hold anymore we need to modify our special case mapping code
         Q_ASSERT(!QChar::requiresSurrogates(codepoint));
         if (QChar::requiresSurrogates(codepoint)) {
@@ -1418,7 +1418,7 @@ static void readUnicodeData()
             }
             if (qAbs(diff) >= (1<<13)) {
                 data.p.upperCaseSpecial = true;
-                data.p.upperCaseDiff = appendToSpecialCaseMap(QList<int>() << upperCase);
+                data.p.upperCaseDiff = appendToSpecialCaseMap({upperCase});
             } else {
                 data.p.upperCaseDiff = diff;
                 maxUpperCaseDiff = qMax(maxUpperCaseDiff, qAbs(diff));
@@ -1436,7 +1436,7 @@ static void readUnicodeData()
             }
             if (qAbs(diff) >= (1<<13)) {
                 data.p.lowerCaseSpecial = true;
-                data.p.lowerCaseDiff = appendToSpecialCaseMap(QList<int>() << lowerCase);
+                data.p.lowerCaseDiff = appendToSpecialCaseMap({lowerCase});
             } else {
                 data.p.lowerCaseDiff = diff;
                 maxLowerCaseDiff = qMax(maxLowerCaseDiff, qAbs(diff));
@@ -1457,7 +1457,7 @@ static void readUnicodeData()
             }
             if (qAbs(diff) >= (1<<13)) {
                 data.p.titleCaseSpecial = true;
-                data.p.titleCaseDiff = appendToSpecialCaseMap(QList<int>() << titleCase);
+                data.p.titleCaseDiff = appendToSpecialCaseMap({titleCase});
             } else {
                 data.p.titleCaseDiff = diff;
                 maxTitleCaseDiff = qMax(maxTitleCaseDiff, qAbs(diff));
