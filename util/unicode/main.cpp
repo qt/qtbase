@@ -1333,6 +1333,21 @@ void readUnicodeFile(const char *fileName, LineConsumer yield)
     }
 }
 
+static int parseHex(QByteArrayView input, int lineNo)
+{
+    bool ok;
+    const int result = input.trimmed().toUInt(&ok, 16); // uint to reject negative values
+    if (!ok) {
+        qFatal("Failed to parse \"%.*s\" as an unsigned hex number in line %d.",
+               int(input.size()), input.data(), lineNo);
+    }
+    if (result > QChar::LastValidCodePoint) {
+        qFatal("Code point U+%05x is larger than allowed by Unicode in line %d.",
+               result, lineNo);
+    }
+    return result;
+}
+
 static void readUnicodeData()
 {
     qDebug("Reading UnicodeData.txt");
@@ -1359,7 +1374,9 @@ static void readUnicodeData()
     if (!f.open(QFile::ReadOnly))
         qFatal() << "Couldn't open UnicodeData.txt:" << f.errorString();
 
+    int lineNo = 0;
     while (!f.atEnd()) {
+        ++lineNo;
         QByteArray line;
         line.resize(1024);
         int len = f.readLine(line.data(), 1024);
@@ -1372,9 +1389,7 @@ static void readUnicodeData()
             continue;
 
         QList<QByteArray> properties = line.split(';');
-        bool ok;
-        int codepoint = properties[UD_Value].toInt(&ok, 16);
-        Q_ASSERT(ok);
+        const int codepoint = parseHex(properties[UD_Value], lineNo);
         Q_ASSERT(codepoint <= QChar::LastValidCodePoint);
         int lastCodepoint = codepoint;
 
@@ -1383,10 +1398,10 @@ static void readUnicodeData()
             QByteArray nextLine;
             nextLine.resize(1024);
             f.readLine(nextLine.data(), 1024);
+            ++lineNo;
             QList<QByteArray> properties = nextLine.split(';');
             Q_ASSERT(properties[UD_Name].startsWith('<') && properties[UD_Name].contains("Last"));
-            lastCodepoint = properties[UD_Value].toInt(&ok, 16);
-            Q_ASSERT(ok);
+            lastCodepoint = parseHex(properties[UD_Value], lineNo);
             Q_ASSERT(lastCodepoint <= QChar::LastValidCodePoint);
         }
 
@@ -1407,8 +1422,7 @@ static void readUnicodeData()
         data.p.direction = QChar::Direction(dir);
 
         if (!properties[UD_UpperCase].isEmpty()) {
-            int upperCase = properties[UD_UpperCase].toInt(&ok, 16);
-            Q_ASSERT(ok);
+            const int upperCase = parseHex(properties[UD_UpperCase], lineNo);
             int diff = upperCase - codepoint;
             // if the conditions below doesn't hold anymore we need to modify our upper casing code
             Q_ASSERT(QChar::requiresSurrogates(codepoint) == QChar::requiresSurrogates(upperCase));
@@ -1425,8 +1439,7 @@ static void readUnicodeData()
             }
         }
         if (!properties[UD_LowerCase].isEmpty()) {
-            int lowerCase = properties[UD_LowerCase].toInt(&ok, 16);
-            Q_ASSERT(ok);
+            const int lowerCase = parseHex(properties[UD_LowerCase], lineNo);
             int diff = lowerCase - codepoint;
             // if the conditions below doesn't hold anymore we need to modify our lower casing code
             Q_ASSERT(QChar::requiresSurrogates(codepoint) == QChar::requiresSurrogates(lowerCase));
@@ -1446,8 +1459,7 @@ static void readUnicodeData()
         if (properties[UD_TitleCase].isEmpty())
             properties[UD_TitleCase] = properties[UD_UpperCase];
         if (!properties[UD_TitleCase].isEmpty()) {
-            int titleCase = properties[UD_TitleCase].toInt(&ok, 16);
-            Q_ASSERT(ok);
+            const int titleCase = parseHex(properties[UD_TitleCase], lineNo);
             int diff = titleCase - codepoint;
             // if the conditions below doesn't hold anymore we need to modify our title casing code
             Q_ASSERT(QChar::requiresSurrogates(codepoint) == QChar::requiresSurrogates(titleCase));
@@ -1480,10 +1492,8 @@ static void readUnicodeData()
             } else {
                 data.decompositionType = QChar::Canonical;
             }
-            for (int i = 0; i < d.size(); ++i) {
-                data.decomposition.append(d[i].toInt(&ok, 16));
-                Q_ASSERT(ok);
-            }
+            for (qsizetype i = 0; i < d.size(); ++i)
+                data.decomposition.append(parseHex(d[i], lineNo));
             ++decompositionLength[data.decomposition.size()];
         }
 
@@ -1497,19 +1507,12 @@ static int maxMirroredDiff = 0;
 static void readBidiMirroring()
 {
     readUnicodeFile("BidiMirroring.txt",
-                    [] (QByteArray &line, int lineNo) {
-        Q_UNUSED(lineNo);
-
-        line.replace(" ", "");
-
+                    [] (const QByteArray &line, int lineNo) {
         QList<QByteArray> pair = line.split(';');
         Q_ASSERT(pair.size() == 2);
 
-        bool ok;
-        int codepoint = pair[0].toInt(&ok, 16);
-        Q_ASSERT(ok);
-        int mirror = pair[1].toInt(&ok, 16);
-        Q_ASSERT(ok);
+        const int codepoint = parseHex(pair[0], lineNo);
+        const int mirror = parseHex(pair[1], lineNo);
 
         UnicodeData &d = UnicodeData::valueRef(codepoint);
         d.mirroredChar = mirror;
@@ -1534,14 +1537,10 @@ static void readArabicShaping()
 
     readUnicodeFile("ArabicShaping.txt",
                     [] (const QByteArray &line, int lineNo) {
-        Q_UNUSED(lineNo);
-
         QList<QByteArray> l = line.split(';');
         Q_ASSERT(l.size() == 4);
 
-        bool ok;
-        int codepoint = l[0].toInt(&ok, 16);
-        Q_ASSERT(ok);
+        const int codepoint = parseHex(l[0], lineNo);
 
         UnicodeData &d = UnicodeData::valueRef(codepoint);
         JoiningType joining = joining_map.value(l[2].trimmed(), Joining_Unassigned);
@@ -1750,7 +1749,6 @@ static QByteArray createNormalizationCorrections()
     int numCorrections = 0;
     readUnicodeFile("NormalizationCorrections.txt",
                     [&] (QByteArray &line, int lineNo) {
-        Q_UNUSED(lineNo);
         line.replace(" ", "");
 
         Q_ASSERT(!line.contains(".."));
@@ -1759,11 +1757,8 @@ static QByteArray createNormalizationCorrections()
         Q_ASSERT(fields.size() == 4);
 
         NormalizationCorrection c = { 0, 0, 0 };
-        bool ok;
-        c.codepoint = fields.at(0).toInt(&ok, 16);
-        Q_ASSERT(ok);
-        c.mapped = fields.at(1).toInt(&ok, 16);
-        Q_ASSERT(ok);
+        c.codepoint = parseHex(fields[0], lineNo);
+        c.mapped = parseHex(fields[1], lineNo);
         if (fields.at(3) == "3.2.0")
             c.version = QChar::Unicode_3_2;
         else if (fields.at(3) == "4.0.0")
@@ -1826,8 +1821,6 @@ static void readSpecialCasing()
 {
     readUnicodeFile("SpecialCasing.txt",
                     [] (const QByteArray &line, int lineNo) {
-        Q_UNUSED(lineNo);
-
         QList<QByteArray> l = line.split(';');
 
         QByteArray condition = l.size() < 5 ? QByteArray() : l[4].trimmed();
@@ -1835,9 +1828,7 @@ static void readSpecialCasing()
             // #####
             return;
 
-        bool ok;
-        int codepoint = l[0].trimmed().toInt(&ok, 16);
-        Q_ASSERT(ok);
+        const int codepoint = parseHex(l[0], lineNo);
 
         // if the condition below doesn't hold anymore we need to modify our
         // lower/upper/title casing code and case folding code
@@ -1897,14 +1888,9 @@ static void readCaseFolding()
 {
     readUnicodeFile("CaseFolding.txt",
                     [] (const QByteArray &line, int lineNo) {
-        Q_UNUSED(lineNo);
-
         QList<QByteArray> l = line.split(';');
 
-        bool ok;
-        int codepoint = l[0].trimmed().toInt(&ok, 16);
-        Q_ASSERT(ok);
-
+        const int codepoint = parseHex(l[0], lineNo);
 
         l[1] = l[1].trimmed();
         if (l[1] == "F" || l[1] == "T")
