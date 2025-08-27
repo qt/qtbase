@@ -1629,9 +1629,7 @@ static void readDerivedAge()
 static void readEastAsianWidth()
 {
     readUnicodeFile("EastAsianWidth.txt",
-                    [] (QByteArray &line, int lineNo) {
-        line = std::move(line).simplified();
-
+                    [] (const QByteArray &line, int lineNo) {
         QList<QByteArray> fields = line.split(';');
         Q_ASSERT(fields.size() == 2);
 
