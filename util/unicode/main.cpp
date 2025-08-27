@@ -17,6 +17,7 @@
 #endif
 
 #include <QtCore/qxpfunctional.h>
+#include <QtCore/q26numeric.h>
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 9, 0)
 // QSpan, QIODevice::readLineInto()
@@ -27,6 +28,11 @@
 #define DATA_VERSION_STR "QChar::Unicode_16_0"
 
 using namespace Qt::StringLiterals;
+
+#ifndef qPrintableView
+// expands to x.size(), x.data() for use with "%.*s"
+#  define qPrintableView(x) q26::saturate_cast<int>((x).size()), (x).data()
+#endif
 
 static QHash<QByteArray, QChar::UnicodeVersion> age_map;
 
@@ -1345,7 +1351,7 @@ static int parseHex(QByteArrayView input, int lineNo)
     const int result = input.trimmed().toUInt(&ok, 16); // uint to reject negative values
     if (!ok) {
         qFatal("Failed to parse \"%.*s\" as an unsigned hex number in line %d.",
-               int(input.size()), input.data(), lineNo);
+               qPrintableView(input), lineNo);
     }
     if (result > QChar::LastValidCodePoint) {
         qFatal("Code point U+%05x is larger than allowed by Unicode in line %d.",
@@ -1584,7 +1590,8 @@ static void readArabicShaping()
         JoiningType joining = joining_map.value(l[2].trimmed(), Joining_Unassigned);
         switch (joining) {
         case Joining_Unassigned:
-            qFatal("%x: unassigned or unhandled joining type: %s", codepoint, l[2].constData());
+            qFatal("%x: unassigned or unhandled joining type \"%.*s\" in line %d",
+                   codepoint, qPrintableView(l[2]), lineNo);
             break;
         case Joining_Transparent:
             switch (d.p.category) {
@@ -1594,9 +1601,9 @@ static void readArabicShaping()
             case QChar::Other_Format:
                 break;
             default:
-                qFatal("%x: joining type '%s' was met (category: %d); "
+                qFatal("%x: joining type '%.*s' was met (category: %d) in line %d; "
                        "the current implementation needs to be revised!",
-                       codepoint, l[2].constData(), d.p.category);
+                       codepoint, qPrintableView(l[2]), d.p.category, lineNo);
             }
             Q_FALLTHROUGH();
         default:
@@ -1617,8 +1624,10 @@ static void readDerivedAge()
 
         QChar::UnicodeVersion age = age_map.value(l[1].trimmed(), QChar::Unicode_Unassigned);
         //qDebug() << Qt::hex << from << ".." << to << ba << age;
-        if (age == QChar::Unicode_Unassigned)
-            qFatal("unassigned or unhandled age value: %s", l[1].constData());
+        if (age == QChar::Unicode_Unassigned) {
+            qFatal("unassigned or unhandled age value \"%.*s\" in line %d.",
+                   qPrintableView(l[1]), lineNo);
+        }
 
         for (int codepoint = from; codepoint <= to; ++codepoint) {
             UnicodeData &d = UnicodeData::valueRef(codepoint);
@@ -1638,8 +1647,8 @@ static void readEastAsianWidth()
 
         const QByteArray widthString = fields[1].trimmed();
         if (!eastAsianWidthMap.contains(widthString)) {
-            qFatal("Unhandled EastAsianWidth property value for %s: %s",
-                   fields[0].constData(), widthString.data());
+            qFatal("Unhandled EastAsianWidth property value \"%.*s\" for %.*s in line %d",
+                   qPrintableView(widthString), qPrintableView(fields[0]), lineNo);
         }
         auto width = eastAsianWidthMap.value(widthString);
 
@@ -1756,12 +1765,14 @@ static QByteArray createNormalizationCorrections()
         c.codepoint = parseHex(fields[0], lineNo);
         c.mapped = parseHex(fields[1], lineNo);
         fields[3] = std::move(fields[3]).trimmed();
-        if (fields.at(3) == "3.2.0")
+        if (fields[3] == "3.2.0") {
             c.version = QChar::Unicode_3_2;
-        else if (fields.at(3) == "4.0.0")
+        } else if (fields[3] == "4.0.0") {
             c.version = QChar::Unicode_4_0;
-        else
-            qFatal("unknown unicode version in NormalizationCorrection.txt");
+        } else {
+            qFatal("unknown unicode version \"%.*s\" in NormalizationCorrection.txt:%d",
+                   qPrintableView(fields[3]), lineNo);
+        }
 
         out += "    { 0x" + QByteArray::number(c.codepoint, 16) + ", 0x"
                + QByteArray::number(c.mapped, 16) + ", "
@@ -1790,8 +1801,10 @@ static void readLineBreak()
         const auto [from, to] = parseHexRange(l[0], lineNo);
 
         LineBreakClass lb = line_break_map.value(l[1].trimmed(), LineBreak_Unassigned);
-        if (lb == LineBreak_Unassigned)
-            qFatal("unassigned line break class: %s", l[1].constData());
+        if (lb == LineBreak_Unassigned) {
+            qFatal("unassigned line break class \"%.*s\" in line %d",
+                   qPrintableView(l[1]), lineNo);
+        }
 
         for (int codepoint = from; codepoint <= to; ++codepoint) {
             UnicodeData &d = UnicodeData::valueRef(codepoint);
@@ -1901,8 +1914,10 @@ static void readGraphemeBreak()
         const auto [from, to] = parseHexRange(l[0], lineNo);
 
         GraphemeBreakClass brk = grapheme_break_map.value(l[1].trimmed(), GraphemeBreak_Unassigned);
-        if (brk == GraphemeBreak_Unassigned)
-            qFatal("unassigned grapheme break class: %s", l[1].constData());
+        if (brk == GraphemeBreak_Unassigned) {
+            qFatal("unassigned grapheme break class \"%.*s\" in line %d",
+                   qPrintableView(l[1]), lineNo);
+        }
 
         for (int codepoint = from; codepoint <= to; ++codepoint) {
             UnicodeData &ud = UnicodeData::valueRef(codepoint);
@@ -1948,8 +1963,10 @@ static void readWordBreak()
         const auto [from, to] = parseHexRange(l[0], lineNo);
 
         WordBreakClass brk = word_break_map.value(l[1].trimmed(), WordBreak_Unassigned);
-        if (brk == WordBreak_Unassigned)
-            qFatal("unassigned word break class: %s", l[1].constData());
+        if (brk == WordBreak_Unassigned) {
+            qFatal("unassigned word break class \"%.*s\" in line %d",
+                   qPrintableView(l[1]), lineNo);
+        }
 
         for (int codepoint = from; codepoint <= to; ++codepoint) {
             // ### [
@@ -1977,8 +1994,10 @@ static void readSentenceBreak()
         const auto [from, to] = parseHexRange(l[0], lineNo);
 
         SentenceBreakClass brk = sentence_break_map.value(l[1].trimmed(), SentenceBreak_Unassigned);
-        if (brk == SentenceBreak_Unassigned)
-            qFatal("unassigned sentence break class: %s", l[1].constData());
+        if (brk == SentenceBreak_Unassigned) {
+            qFatal("unassigned sentence break class \"%.*s\" in line %d.",
+                   qPrintableView(l[1]), lineNo);
+        }
 
         for (int codepoint = from; codepoint <= to; ++codepoint) {
             UnicodeData &ud = UnicodeData::valueRef(codepoint);
@@ -2188,8 +2207,10 @@ static void readScripts()
 
         const auto [first, last] = parseHexRange(codePoints, lineNo);
 
-        if (!scriptMap.contains(scriptName))
-            qFatal("Unhandled script property value: %s", scriptName.constData());
+        if (!scriptMap.contains(scriptName)) {
+            qFatal("Unhandled script property value \"%.*s\" in line %d",
+                   qPrintableView(scriptName), lineNo);
+        }
         QChar::Script script = scriptMap.value(scriptName, QChar::Script_Unknown);
 
         for (int codepoint = first; codepoint <= last; ++codepoint) {
@@ -2211,9 +2232,10 @@ static void readIdnaMappingTable()
         const auto [first, last] = parseHexRange(fields[0], lineNo);
 
         const QByteArray statusString = fields[1].trimmed();
-        if (!idnaStatusMap.contains(statusString))
-            qFatal("Unhandled IDNA status property value for %s: %s",
-                   fields[0].constData(), statusString.data());
+        if (!idnaStatusMap.contains(statusString)) {
+            qFatal("Unhandled IDNA status property value \"%.*s\" for %.*s in line %d",
+                   qPrintableView(statusString), qPrintableView(fields[0]), lineNo);
+        }
         IdnaRawStatus rawStatus = idnaStatusMap.value(statusString);
 
         QString mapping;
