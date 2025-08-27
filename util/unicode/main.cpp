@@ -1348,6 +1348,16 @@ static int parseHex(QByteArrayView input, int lineNo)
     return result;
 }
 
+QVarLengthArray<int, 4> parseHexList(QByteArrayView input, int lineNo)
+{
+    QVarLengthArray<int, 4> result;
+    constexpr char16_t sep = u' ';
+    constexpr auto sb = Qt::SkipEmptyParts;
+    for (auto e : qTokenize(QLatin1StringView{input}, sep, sb))
+        result.push_back(parseHex(e, lineNo));
+    return result;
+}
+
 static void readUnicodeData()
 {
     qDebug("Reading UnicodeData.txt");
@@ -1837,29 +1847,9 @@ static void readSpecialCasing()
 //         qDebug() << "codepoint" << Qt::hex << codepoint;
 //         qDebug() << line;
 
-        QList<QByteArray> lower = l[1].trimmed().split(' ');
-        QList<int> lowerMap;
-        for (int i = 0; i < lower.size(); ++i) {
-            bool ok;
-            lowerMap.append(lower.at(i).toInt(&ok, 16));
-            Q_ASSERT(ok);
-        }
-
-        QList<QByteArray> title = l[2].trimmed().split(' ');
-        QList<int> titleMap;
-        for (int i = 0; i < title.size(); ++i) {
-            bool ok;
-            titleMap.append(title.at(i).toInt(&ok, 16));
-            Q_ASSERT(ok);
-        }
-
-        QList<QByteArray> upper = l[3].trimmed().split(' ');
-        QList<int> upperMap;
-        for (int i = 0; i < upper.size(); ++i) {
-            bool ok;
-            upperMap.append(upper.at(i).toInt(&ok, 16));
-            Q_ASSERT(ok);
-        }
+        const auto lowerMap = parseHexList(l[1], lineNo);
+        const auto titleMap = parseHexList(l[2], lineNo);
+        const auto upperMap = parseHexList(l[3], lineNo);
 
 
         UnicodeData &ud = UnicodeData::valueRef(codepoint);
@@ -1898,13 +1888,7 @@ static void readCaseFolding()
 
 //         qDebug() << "codepoint" << Qt::hex << codepoint;
 //         qDebug() << line;
-        QList<QByteArray> fold = l[2].trimmed().split(' ');
-        QList<int> foldMap;
-        for (int i = 0; i < fold.size(); ++i) {
-            bool ok;
-            foldMap.append(fold.at(i).toInt(&ok, 16));
-            Q_ASSERT(ok);
-        }
+        const auto foldMap = parseHexList(l[2], lineNo);
 
         UnicodeData &ud = UnicodeData::valueRef(codepoint);
         if (foldMap.size() == 1) {
