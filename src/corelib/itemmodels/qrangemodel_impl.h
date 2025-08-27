@@ -574,9 +574,10 @@ namespace QRangeModelDetails
         static constexpr bool hasMetaObject = false;
     };
 
-    // Specialization for tuples, using std::tuple_size
+    // Specialization for tuple-like semantics (prioritized over metaobject)
     template <typename T>
-    struct tuple_row_traits {
+    struct row_traits<T, std::enable_if_t<tuple_like_v<T>>>
+    {
         static constexpr std::size_t size64 = std::tuple_size_v<T>;
         static_assert(q20::in_range<int>(size64));
         static constexpr int static_size = int(size64);
@@ -595,10 +596,6 @@ namespace QRangeModelDetails
         static constexpr bool hasMetaObject = false;
     };
 
-    template <typename T>
-    struct row_traits<T, std::enable_if_t<tuple_like_v<T> && !has_metaobject_v<T>>>
-        : tuple_row_traits<T> {};
-
     // Specialization for C arrays and std::array
     template <typename T, std::size_t N>
     struct row_traits<std::array<T, N>>
@@ -613,8 +610,9 @@ namespace QRangeModelDetails
     template <typename T, std::size_t N>
     struct row_traits<T[N]> : row_traits<std::array<T, N>> {};
 
+    // prioritize tuple-like over metaobject
     template <typename T>
-    struct metaobject_row_traits
+    struct row_traits<T, std::enable_if_t<has_metaobject_v<T> && !tuple_like_v<T>>>
     {
         static constexpr int static_size = 0;
         using item_type = std::conditional_t<row_category<T>::isMultiRole, T, void>;
@@ -633,17 +631,6 @@ namespace QRangeModelDetails
         }
         static constexpr bool hasMetaObject = true;
     };
-
-    template <typename T>
-    struct row_traits<T, std::enable_if_t<has_metaobject_v<T> && !tuple_like_v<T>>>
-        : metaobject_row_traits<T>
-    {};
-
-    // types that are both tuple-like, and have a metaobject, default to tuple
-    // protocol.
-    template <typename T>
-    struct row_traits<T, std::enable_if_t<tuple_like_v<T> && has_metaobject_v<T>>>
-        : tuple_row_traits<T> {};
 
     template <typename T>
     [[maybe_unused]] static constexpr int static_size_v =
