@@ -1098,6 +1098,9 @@ int QUtf8::compareUtf8(QByteArrayView lhs, QByteArrayView rhs, Qt::CaseSensitivi
     if (lhs.isEmpty())
         return qt_lencmp(0, rhs.size());
 
+    if (rhs.isEmpty())
+        return qt_lencmp(lhs.size(), 0);
+
     if (cs == Qt::CaseSensitive) {
         const auto l = std::min(lhs.size(), rhs.size());
         int r = memcmp(lhs.data(), rhs.data(), l);
