@@ -1805,6 +1805,7 @@ static void readSpecialCasing()
     readUnicodeFile("SpecialCasing.txt",
                     [] (const QByteArray &line, int lineNo) {
         QList<QByteArray> l = line.split(';');
+        Q_ASSERT(l.size() >= 4);
 
         QByteArray condition = l.size() < 5 ? QByteArray() : l[4].trimmed();
         if (!condition.isEmpty())
@@ -1852,6 +1853,7 @@ static void readCaseFolding()
     readUnicodeFile("CaseFolding.txt",
                     [] (const QByteArray &line, int lineNo) {
         QList<QByteArray> l = line.split(';');
+        Q_ASSERT(l.size() >= 3);
 
         const int codepoint = parseHex(l[0], lineNo);
 
