@@ -1545,6 +1545,12 @@ static void readBidiMirroring()
         const int codepoint = parseHex(pair[0], lineNo);
         const int mirror = parseHex(pair[1], lineNo);
 
+        if (QChar::requiresSurrogates(codepoint) || QChar::requiresSurrogates(mirror)) {
+            qFatal("QTextEngine assumes that no mirrored pairs exist beyond the BMP, "
+                   "but U+%05x and U+%05x (line %d) do. Fix the implementation.",
+                   codepoint, mirror, lineNo);
+        }
+
         UnicodeData &d = UnicodeData::valueRef(codepoint);
         d.mirroredChar = mirror;
         d.p.mirrorDiff = d.mirroredChar - codepoint;

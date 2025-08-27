@@ -794,6 +794,7 @@ struct QBidiAlgorithm {
                 int pos = *it;
                 QChar::Direction dir = analysis[pos].bidiDirection;
                 if (dir == QChar::DirON) {
+                    // assumes no mirrored pirs outside BMP (util/unicode guarantees this):
                     const QUnicodeTables::Properties *p = QUnicodeTables::properties(char16_t{text[pos].unicode()});
                     if (p->mirrorDiff) {
                         // either opening or closing bracket
