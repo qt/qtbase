@@ -16,6 +16,11 @@
 #include <private/qunicodetables_p.h>
 #endif
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 9, 0)
+// QSpan, QIODevice::readLineInto()
+#  error This tool needs Qt >= 6.9, even if you are building tables for Qt 6.5 or 6.8.
+#endif
+
 #define DATA_VERSION_S "16.0"
 #define DATA_VERSION_STR "QChar::Unicode_16_0"
 
