@@ -267,6 +267,36 @@ void vector_of_multirole_objects()
 
 } // namespace object
 
+namespace Subclass
+{
+
+//! [subclass_header]
+class NumbersModel : public QRangeModel
+{
+    std::vector<int> m_numbers;
+
+public:
+    NumbersModel(const std::vector<int> &numbers)
+        : QRangeModel(std::ref(m_numbers))
+        , m_numbers(numbers)
+    {
+    }
+//! [subclass_header]
+//! [subclass_API]
+    void setNumber(int idx, int number)
+    {
+        setData(index(idx, 0), QVariant::fromValue(number));
+    }
+
+    int number(int idx) const
+    {
+        return m_numbers.at(idx);
+    }
+};
+//! [subclass_API]
+
+} // namespace Subclass
+
 namespace tree_protocol
 {
 //! [tree_protocol_0]

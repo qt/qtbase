@@ -87,10 +87,11 @@ QRangeModel::QRangeModel(QRangeModelImplBase *impl, QObject *parent)
     \c{insert()}, \c{erase()}, in addition to dereferencing a mutating iterator
     to set or clear the data.
 
-    \note Once the model has been constructed, the range that the model
-    operates on must no longer be modified directly. Views on the model
-    wouldn't be informed about the changes, and structural changes are likely
-    to corrupt instances of QPersistentModelIndex that the model maintains.
+    \note Once the model has been constructed and passed on to a view, the
+    range that the model operates on must no longer be modified directly. Views
+    on the model wouldn't be informed about the changes, and structural changes
+    are likely to corrupt instances of QPersistentModelIndex that the model
+    maintains.
 
     The caller must make sure that the range's lifetime exceeds the lifetime of
     the model.
@@ -278,6 +279,23 @@ QRangeModel::QRangeModel(QRangeModelImplBase *impl, QObject *parent)
     ownership of the data becomes ambiguous, and a copy of the range would
     still be operating on the same actual row data, resulting in unexpected
     side effects.
+
+    \section2 Subclassing QRangeModel
+
+    Subclassing QRangeModel makes it possible to add convenient APIs that take
+    the data type and structure of the range into account.
+
+    \snippet qrangemodel/main.cpp subclass_header
+
+    When doing so, add the range as a private member, and call the QRangeModel
+    constructor with a reference wrapper or pointer to that member. This
+    properly encapsulates the data and avoids direct access.
+
+    \snippet qrangemodel/main.cpp subclass_API
+
+    Add member functions to provide type-safe access to the data, using the
+    QAbstractItemModel API to perform any operation that modifies the range.
+    Read-only access can directly operate on the data structure.
 
     \section1 Trees of data
 
@@ -494,28 +512,38 @@ QRangeModel::QRangeModel(QRangeModelImplBase *impl, QObject *parent)
     \fn template <typename Range, QRangeModelDetails::if_tree_range<Range>> QRangeModel::QRangeModel(Range &&range, QObject *parent)
     \fn template <typename Range, typename Protocol, QRangeModelDetails::if_tree_range<Range, Protocol>> QRangeModel::QRangeModel(Range &&range, Protocol &&protocol, QObject *parent)
 
-    Constructs a generic item model instance that operates on the data in \a
-    range. The \a range has to be a sequential range for which \c{std::cbegin}
-    and \c{std::cend} are available. If \a protocol is provided, then the model
-    will represent the range as a tree using the protocol implementation.
-    The model instance becomes a child of \a parent.
+    Constructs a QRangeModel instance that operates on the data in \a range.
+    The \a range has to be a sequential range for which \c{std::cbegin} and
+    \c{std::cend} are available. If \a protocol is provided, then the model
+    will represent the range as a tree using the protocol implementation. The
+    model instance becomes a child of \a parent.
 
-    The \a range can be a pointer, in which case mutating model APIs will
-    modify the data in that range instance. If \a range is a value (or moved
-    into the model), then use the signals emitted by the model to respond to
+    The \a range can be a pointer or reference wrapper, in which case mutating
+    model APIs (such as \l{setData()} or \l{insertRow()}) will modify the data
+    in the referenced range instance. If \a range is a value (or moved into the
+    model), then connect to the signals emitted by the model to respond to
     changes to the data.
 
-    \note While the model does not take ownership of the range object, you
-    must not modify the \a range directly once the model has been
-    constructed. Such modifications will not emit signals necessary to keep
-    model users (other models or views) synchronized with the model, resulting
-    in inconsistent results, undefined behavior, and crashes.
+    QRangeModel will not access the \a range while being constructed. This
+    makes it legal to pass a pointer or reference to a range object that is not
+    fully constructed yet to this constructor, for example when \l{Subclassing
+    QRangeModel}{subclassing QRangeModel}.
+
+    If the \a range was moved into the model, then the range and all data in it
+    will be destroyed upon destruction of the model.
+
+    \note While the model does not take ownership of the range object otherwise,
+    you must not modify the \a range directly once the model has been constructed
+    and  and passed on to a view. Such modifications will not emit signals
+    necessary to keep model users (other models or views) synchronized with the
+    model, resulting in inconsistent results, undefined behavior, and crashes.
 */
 
 /*!
-    Destroys the generic item model.
+    Destroys the QRangeModel.
 
-    The range that the model was constructed from is not destroyed.
+    The range that the model was constructed from is not accessed, and only
+    destroyed if the model was constructed from a moved-in range.
 */
 QRangeModel::~QRangeModel() = default;
 
