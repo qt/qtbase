@@ -32,6 +32,9 @@
 #if QT_CONFIG(tabwidget)
 #  include <QtWidgets/qtabwidget.h>
 #endif
+#if QT_CONFIG(menubar)
+#  include <QtWidgets/qmenubar.h>
+#endif
 #include "qdrawutil.h"
 #include <chrono>
 
@@ -2359,6 +2362,15 @@ void QWindows11Style::polish(QWidget* widget)
 
     const bool isScrollBar = qobject_cast<QScrollBar *>(widget);
     const auto comboBoxContainer = qobject_cast<const QComboBoxPrivateContainer *>(widget);
+#if QT_CONFIG(menubar)
+    if (qobject_cast<QMenuBar *>(widget)) {
+        constexpr int itemHeight = 32;
+        if (widget->maximumHeight() < itemHeight) {
+            widget->setProperty("_q_original_menubar_maxheight", widget->maximumHeight());
+            widget->setMaximumHeight(itemHeight);
+        }
+    }
+#endif
     if (isScrollBar || qobject_cast<QMenu *>(widget) || comboBoxContainer) {
         bool wasCreated = widget->testAttribute(Qt::WA_WState_Created);
         bool layoutDirection = widget->testAttribute(Qt::WA_RightToLeft);
@@ -2414,6 +2426,13 @@ void QWindows11Style::unpolish(QWidget *widget)
     if (!qobject_cast<QCommandLinkButton *>(widget))
 #endif // QT_CONFIG(commandlinkbutton)
         QWindowsVistaStyle::unpolish(widget);
+
+#if QT_CONFIG(menubar)
+    if (qobject_cast<QMenuBar *>(widget) && !widget->property("_q_original_menubar_maxheight").isNull()) {
+        widget->setMaximumHeight(widget->property("_q_original_menubar_maxheight").toInt());
+        widget->setProperty("_q_original_menubar_maxheight", QVariant());
+    }
+#endif
 
     if (const auto *scrollarea = qobject_cast<QAbstractScrollArea *>(widget);
         scrollarea
