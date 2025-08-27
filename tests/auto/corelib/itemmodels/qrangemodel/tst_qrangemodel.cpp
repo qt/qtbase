@@ -206,6 +206,9 @@ void tst_QRangeModel::createTestData()
 
     ADD_ALL(vectorOfFixedColumns, 2, ChangeAction::ChangeRows | ChangeAction::SetData);
 
+    // TODO: create a new instance with shared pointers inside for each test
+    ADD_COPY(vectorOfFixedSPtrColumns, 2, ChangeAction::ChangeRows | ChangeAction::SetData);
+
     ADD_ALL(vectorOfArrays, 10, ChangeAction::ChangeRows | ChangeAction::SetData);
 
     ADD_ALL(vectorOfStructs,
@@ -1160,6 +1163,15 @@ void tst_QRangeModel::largeArrays()
         QRangeModel model(largeColumn);
         const QModelIndex index = model.index(int(largeColumn.size() - 1),
                                               int(largeColumn[0].size() - 1));
+        QCOMPARE(index.data(), 0);
+    }
+
+    {
+        using row = std::array<int, 10000>;
+        std::array<std::shared_ptr<row>, 1> largeColumn = { std::make_shared<row>() };
+        QRangeModel model(largeColumn);
+        const QModelIndex index = model.index(int(largeColumn.size() - 1),
+                                              int(largeColumn[0]->size() - 1));
         QCOMPARE(index.data(), 0);
     }
 }

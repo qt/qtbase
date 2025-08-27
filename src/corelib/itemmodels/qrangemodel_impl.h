@@ -840,28 +840,28 @@ private:
     using Self = QRangeModelImplBase;
     using QtPrivate::QQuasiVirtualInterface<Self>::Method;
 protected:
-    // Helpers for calling a lambda with the element of a statically
+    // Helper for calling a lambda with the element of a statically
     // sized range (tuple or array) with a runtime index.
-    template <typename T, typename F,
-              std::enable_if_t<QRangeModelDetails::tuple_like_v<q20::remove_cvref_t<T>>, bool> = true>
-    static auto for_element_at(T &&tuple, std::size_t idx, F &&function)
+    template <typename StaticContainer, typename F>
+    static auto for_element_at(StaticContainer &&container, std::size_t idx, F &&function)
     {
-        using type = QRangeModelDetails::wrapped_t<T>;
-        constexpr size_t size = std::tuple_size_v<type>;
-        Q_ASSERT(idx < size);
-        if (QRangeModelDetails::isValid(tuple)) {
-            QtPrivate::applyIndexSwitch<size>(idx, [&](auto idxConstant) {
-                function(get<idxConstant.value>(QRangeModelDetails::refTo(std::forward<T>(tuple))));
-            });
-        }
-    }
+        using type = std::remove_cv_t<QRangeModelDetails::wrapped_t<StaticContainer>>;
+        static_assert(QRangeModelDetails::array_like_v<type> || QRangeModelDetails::tuple_like_v<type>,
+                      "Internal error: expected an array-like or a tuple-like type");
 
-    template <typename Array, typename F,
-              std::enable_if_t<QRangeModelDetails::array_like_v<q20::remove_cvref_t<Array>>, bool> = true>
-    static auto for_element_at(Array &&array, std::size_t idx, F &&function)
-    {
-        Q_ASSERT(idx < array.size());
-        function(q23::forward_like<Array>(array[idx]));
+        if (QRangeModelDetails::isValid(container)) {
+            auto& ref = QRangeModelDetails::refTo(std::forward<StaticContainer>(container));
+            if constexpr (QRangeModelDetails::array_like_v<type>) {
+                Q_ASSERT(idx < std::size(ref));
+                function(ref[idx]);
+            } else {
+                constexpr size_t size = std::tuple_size_v<type>;
+                Q_ASSERT(idx < std::tuple_size_v<type>);
+                QtPrivate::applyIndexSwitch<size>(idx, [&](auto idxConstant) {
+                    function(get<idxConstant>(ref));
+                });
+            }
+        }
     }
 
     // Get the QMetaType for a tuple-element at a runtime index.
@@ -872,7 +872,7 @@ protected:
         using type = QRangeModelDetails::wrapped_t<T>;
         if constexpr (QRangeModelDetails::array_like_v<type>) {
             Q_UNUSED(idx);
-            return QMetaType::fromType<std::tuple_element_t<0, T>>();
+            return QMetaType::fromType<std::tuple_element_t<0, type>>();
         } else {
             constexpr auto size = std::tuple_size_v<type>;
             Q_ASSERT(idx < size);

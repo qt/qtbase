@@ -337,6 +337,16 @@ struct Data {
         {3, "three"},
         {4, "four"},
     };
+
+    // removable rows, fixed number of columns
+    std::vector<std::shared_ptr<std::tuple<int, QString>>> vectorOfFixedSPtrColumns = {
+        asSPtr(vectorOfFixedColumns[0]),
+        asSPtr(vectorOfFixedColumns[1]),
+        asSPtr(vectorOfFixedColumns[2]),
+        asSPtr(vectorOfFixedColumns[3]),
+        asSPtr(vectorOfFixedColumns[4]),
+    };
+
     std::vector<std::array<int, 10>> vectorOfArrays = {
         {1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
         {11, 12, 13, 14, 15, 16, 17, 18, 19, 20},
