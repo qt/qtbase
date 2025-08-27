@@ -1348,14 +1348,30 @@ static int parseHex(QByteArrayView input, int lineNo)
     return result;
 }
 
-QVarLengthArray<int, 4> parseHexList(QByteArrayView input, int lineNo)
+template <typename Sep = char16_t>
+QVarLengthArray<int, 4> parseHexList(QByteArrayView input, int lineNo, Sep sep = u' ')
 {
     QVarLengthArray<int, 4> result;
-    constexpr char16_t sep = u' ';
-    constexpr auto sb = Qt::SkipEmptyParts;
+    const auto sb = sep == u' ' ? Qt::SkipEmptyParts : Qt::KeepEmptyParts;
     for (auto e : qTokenize(QLatin1StringView{input}, sep, sb))
         result.push_back(parseHex(e, lineNo));
     return result;
+}
+
+static auto parseHexRange(QByteArrayView input, int lineNo)
+{
+    struct R { int from, to; };
+
+    const auto pair = parseHexList(input, lineNo, ".."_L1);
+    Q_ASSERT(pair.size() <= 2);
+    int from = pair[0];
+    int to = from;
+    if (pair.size() == 2) {
+        to = pair[1];
+        if (from > to)
+            qFatal("invalid range in line %d: %05x > %05x", lineNo, from, to);
+    }
+    return R{from, to};
 }
 
 static void readUnicodeData()
@@ -1582,25 +1598,12 @@ static void readDerivedAge()
 {
     readUnicodeFile("DerivedAge.txt",
                     [] (QByteArray &line, int lineNo) {
-        Q_UNUSED(lineNo);
-
         line.replace(" ", "");
 
         QList<QByteArray> l = line.split(';');
         Q_ASSERT(l.size() == 2);
 
-        QByteArray codes = l[0];
-        codes.replace("..", ".");
-        QList<QByteArray> cl = codes.split('.');
-
-        bool ok;
-        int from = cl[0].toInt(&ok, 16);
-        Q_ASSERT(ok);
-        int to = from;
-        if (cl.size() == 2) {
-            to = cl[1].toInt(&ok, 16);
-            Q_ASSERT(ok);
-        }
+        const auto [from, to] = parseHexRange(l[0], lineNo);
 
         QChar::UnicodeVersion age = age_map.value(l[1].trimmed(), QChar::Unicode_Unassigned);
         //qDebug() << Qt::hex << from << ".." << to << ba << age;
@@ -1618,17 +1621,12 @@ static void readEastAsianWidth()
 {
     readUnicodeFile("EastAsianWidth.txt",
                     [] (QByteArray &line, int lineNo) {
-        Q_UNUSED(lineNo);
-
         line = std::move(line).simplified();
 
         QList<QByteArray> fields = line.split(';');
         Q_ASSERT(fields.size() == 2);
 
-        // That would be split(".."), but that API does not exist.
-        const QByteArray codePoints = fields[0].trimmed().replace("..", ".");
-        QList<QByteArray> cl = codePoints.split('.');
-        Q_ASSERT(cl.size() >= 1 && cl.size() <= 2);
+        const auto [first, last] = parseHexRange(fields[0], lineNo);
 
         const QByteArray widthString = fields[1].trimmed();
         if (!eastAsianWidthMap.contains(widthString)) {
@@ -1636,11 +1634,6 @@ static void readEastAsianWidth()
                    fields[0].constData(), widthString.data());
         }
         auto width = eastAsianWidthMap.value(widthString);
-
-        bool ok;
-        const int first = cl[0].toInt(&ok, 16);
-        const int last = ok && cl.size() == 2 ? cl[1].toInt(&ok, 16) : first;
-        Q_ASSERT(ok);
 
         for (int codepoint = first; codepoint <= last; ++codepoint) {
             UnicodeData &ud = UnicodeData::valueRef(codepoint);
@@ -1655,8 +1648,6 @@ static void readDerivedNormalizationProps()
 {
     readUnicodeFile("DerivedNormalizationProps.txt",
                     [] (const QByteArray &line, int lineNo) {
-        Q_UNUSED(lineNo);
-
         QList<QByteArray> l = line.split(';');
         Q_ASSERT(l.size() >= 2);
 
@@ -1668,18 +1659,7 @@ static void readDerivedNormalizationProps()
             return;
         }
 
-        QByteArray codes = l[0].trimmed();
-        codes.replace("..", ".");
-        QList<QByteArray> cl = codes.split('.');
-
-        bool ok;
-        int from = cl[0].toInt(&ok, 16);
-        Q_ASSERT(ok);
-        int to = from;
-        if (cl.size() == 2) {
-            to = cl[1].toInt(&ok, 16);
-            Q_ASSERT(ok);
-        }
+        const auto [from, to] = parseHexRange(l[0], lineNo);
 
         for (int codepoint = from; codepoint <= to; ++codepoint) {
             UnicodeData &d = UnicodeData::valueRef(codepoint);
@@ -1797,24 +1777,12 @@ static void readLineBreak()
 {
     readUnicodeFile("LineBreak.txt",
                     [] (QByteArray &line, int lineNo) {
-        Q_UNUSED(lineNo);
         line.replace(" ", "");
 
         QList<QByteArray> l = line.split(';');
         Q_ASSERT(l.size() == 2);
 
-        QByteArray codes = l[0];
-        codes.replace("..", ".");
-        QList<QByteArray> cl = codes.split('.');
-
-        bool ok;
-        int from = cl[0].toInt(&ok, 16);
-        Q_ASSERT(ok);
-        int to = from;
-        if (cl.size() == 2) {
-            to = cl[1].toInt(&ok, 16);
-            Q_ASSERT(ok);
-        }
+        const auto [from, to] = parseHexRange(l[0], lineNo);
 
         LineBreakClass lb = line_break_map.value(l[1], LineBreak_Unassigned);
         if (lb == LineBreak_Unassigned)
@@ -1920,25 +1888,13 @@ static void readGraphemeBreak()
 {
     readUnicodeFile("GraphemeBreakProperty.txt",
                     [] (QByteArray &line, int lineNo) {
-        Q_UNUSED(lineNo);
 
         line.replace(" ", "");
 
         QList<QByteArray> l = line.split(';');
         Q_ASSERT(l.size() == 2);
 
-        QByteArray codes = l[0];
-        codes.replace("..", ".");
-        QList<QByteArray> cl = codes.split('.');
-
-        bool ok;
-        int from = cl[0].toInt(&ok, 16);
-        Q_ASSERT(ok);
-        int to = from;
-        if (cl.size() == 2) {
-            to = cl[1].toInt(&ok, 16);
-            Q_ASSERT(ok);
-        }
+        const auto [from, to] = parseHexRange(l[0], lineNo);
 
         GraphemeBreakClass brk = grapheme_break_map.value(l[1], GraphemeBreak_Unassigned);
         if (brk == GraphemeBreak_Unassigned)
@@ -1955,7 +1911,6 @@ static void readEmojiData()
 {
     readUnicodeFile("emoji-data.txt",
                     [] (QByteArray &line, int lineNo) {
-        Q_UNUSED(lineNo);
         line.replace(" ", "");
 
         QList<QByteArray> l = line.split(';');
@@ -1965,18 +1920,7 @@ static void readEmojiData()
         if (emojiFlags == EmojiFlags::NoEmoji)
             return;
 
-        QByteArray codes = l[0];
-        codes.replace("..", ".");
-        QList<QByteArray> cl = codes.split('.');
-
-        bool ok;
-        int from = cl[0].toInt(&ok, 16);
-        Q_ASSERT(ok);
-        int to = from;
-        if (cl.size() == 2) {
-            to = cl[1].toInt(&ok, 16);
-            Q_ASSERT(ok);
-        }
+        const auto [from, to] = parseHexRange(l[0], lineNo);
 
         for (int codepoint = from; codepoint <= to; ++codepoint) {
             UnicodeData &ud = UnicodeData::valueRef(codepoint);
@@ -1996,24 +1940,12 @@ static void readWordBreak()
 {
     readUnicodeFile("WordBreakProperty.txt",
                     [] (QByteArray &line, int lineNo) {
-        Q_UNUSED(lineNo);
         line.replace(" ", "");
 
         QList<QByteArray> l = line.split(';');
         Q_ASSERT(l.size() == 2);
 
-        QByteArray codes = l[0];
-        codes.replace("..", ".");
-        QList<QByteArray> cl = codes.split('.');
-
-        bool ok;
-        int from = cl[0].toInt(&ok, 16);
-        Q_ASSERT(ok);
-        int to = from;
-        if (cl.size() == 2) {
-            to = cl[1].toInt(&ok, 16);
-            Q_ASSERT(ok);
-        }
+        const auto [from, to] = parseHexRange(l[0], lineNo);
 
         WordBreakClass brk = word_break_map.value(l[1], WordBreak_Unassigned);
         if (brk == WordBreak_Unassigned)
@@ -2039,24 +1971,12 @@ static void readSentenceBreak()
 {
     readUnicodeFile("SentenceBreakProperty.txt",
                     [] (QByteArray &line, int lineNo) {
-        Q_UNUSED(lineNo);
         line.replace(" ", "");
 
         QList<QByteArray> l = line.split(';');
         Q_ASSERT(l.size() == 2);
 
-        QByteArray codes = l[0];
-        codes.replace("..", ".");
-        QList<QByteArray> cl = codes.split('.');
-
-        bool ok;
-        int from = cl[0].toInt(&ok, 16);
-        Q_ASSERT(ok);
-        int to = from;
-        if (cl.size() == 2) {
-            to = cl[1].toInt(&ok, 16);
-            Q_ASSERT(ok);
-        }
+        const auto [from, to] = parseHexRange(l[0], lineNo);
 
         SentenceBreakClass brk = sentence_break_map.value(l[1], SentenceBreak_Unassigned);
         if (brk == SentenceBreak_Unassigned)
@@ -2263,7 +2183,6 @@ static void readScripts()
 {
     readUnicodeFile("Scripts.txt",
                     [] (QByteArray &line, int lineNo) {
-        Q_UNUSED(lineNo);
         line.replace(" ", "");
         line.replace("_", "");
 
@@ -2275,17 +2194,7 @@ static void readScripts()
         QByteArray codePoints = line.left(semicolon);
         QByteArray scriptName = line.mid(semicolon + 1);
 
-        codePoints.replace("..", ".");
-        QList<QByteArray> cl = codePoints.split('.');
-
-        bool ok;
-        int first = cl[0].toInt(&ok, 16);
-        Q_ASSERT(ok);
-        int last = first;
-        if (cl.size() == 2) {
-            last = cl[1].toInt(&ok, 16);
-            Q_ASSERT(ok);
-        }
+        const auto [first, last] = parseHexRange(codePoints, lineNo);
 
         if (!scriptMap.contains(scriptName))
             qFatal("Unhandled script property value: %s", scriptName.constData());
@@ -2304,28 +2213,18 @@ static void readIdnaMappingTable()
 {
     readUnicodeFile("IdnaMappingTable.txt",
                     [] (QByteArray &line, int lineNo) {
-        Q_UNUSED(lineNo);
-
         line = std::move(line).simplified();
 
         QList<QByteArray> fields = line.split(';');
         Q_ASSERT(fields.size() >= 2);
 
-        // That would be split(".."), but that API does not exist.
-        const QByteArray codePoints = fields[0].trimmed().replace("..", ".");
-        QList<QByteArray> cl = codePoints.split('.');
-        Q_ASSERT(cl.size() >= 1 && cl.size() <= 2);
+        const auto [first, last] = parseHexRange(fields[0], lineNo);
 
         const QByteArray statusString = fields[1].trimmed();
         if (!idnaStatusMap.contains(statusString))
             qFatal("Unhandled IDNA status property value for %s: %s",
                    fields[0].constData(), statusString.data());
         IdnaRawStatus rawStatus = idnaStatusMap.value(statusString);
-
-        bool ok;
-        const int first = cl[0].toInt(&ok, 16);
-        const int last = ok && cl.size() == 2 ? cl[1].toInt(&ok, 16) : first;
-        Q_ASSERT(ok);
 
         QString mapping;
 
