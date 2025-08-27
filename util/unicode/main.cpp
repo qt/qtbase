@@ -1745,9 +1745,7 @@ static QByteArray createNormalizationCorrections()
     int maxVersion = 0;
     int numCorrections = 0;
     readUnicodeFile("NormalizationCorrections.txt",
-                    [&] (QByteArray &line, int lineNo) {
-        line.replace(" ", "");
-
+                    [&] (const QByteArray &line, int lineNo) {
         Q_ASSERT(!line.contains(".."));
 
         QList<QByteArray> fields = line.split(';');
@@ -1756,6 +1754,7 @@ static QByteArray createNormalizationCorrections()
         NormalizationCorrection c = { 0, 0, 0 };
         c.codepoint = parseHex(fields[0], lineNo);
         c.mapped = parseHex(fields[1], lineNo);
+        fields[3] = std::move(fields[3]).trimmed();
         if (fields.at(3) == "3.2.0")
             c.version = QChar::Unicode_3_2;
         else if (fields.at(3) == "4.0.0")
