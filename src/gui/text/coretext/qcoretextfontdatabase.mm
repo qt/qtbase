@@ -772,8 +772,8 @@ QStringList QCoreTextFontDatabase::addApplicationFont(const QByteArray &fontData
                 // There's no way to get the data back out of a font descriptor created with
                 // CTFontManagerCreateFontDescriptorFromData, so we attach the data manually.
                 NSDictionary *attributes = @{ kQtFontDataAttribute : [NSValue valueWithPointer:new QByteArray(fontData)] };
-                descriptor = CTFontDescriptorCreateCopyWithAttributes(descriptor, (CFDictionaryRef)attributes);
-                CFArrayAppendValue(array, descriptor);
+                QCFType<CTFontDescriptorRef> copiedDescriptor = CTFontDescriptorCreateCopyWithAttributes(descriptor, (CFDictionaryRef)attributes);
+                CFArrayAppendValue(array, copiedDescriptor);
             }
 
             fonts = array;
