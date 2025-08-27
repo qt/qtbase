@@ -2223,9 +2223,7 @@ static QMap<char32_t, QString> idnaMappingTable;
 static void readIdnaMappingTable()
 {
     readUnicodeFile("IdnaMappingTable.txt",
-                    [] (QByteArray &line, int lineNo) {
-        line = std::move(line).simplified();
-
+                    [] (const QByteArray &line, int lineNo) {
         QList<QByteArray> fields = line.split(';');
         Q_ASSERT(fields.size() >= 2);
 
@@ -2251,15 +2249,8 @@ static void readIdnaMappingTable()
         case IdnaRawStatus::DisallowedStd3Mapped:
             Q_ASSERT(fields.size() >= 3);
 
-            for (const auto &s : fields[2].trimmed().split(' ')) {
-                if (!s.isEmpty()) {
-                    bool ok;
-                    int val = s.toInt(&ok, 16);
-                    Q_ASSERT_X(ok, "readIdnaMappingTable", qPrintable(line));
-                    for (auto c : QChar::fromUcs4(val))
-                        mapping.append(c);
-                }
-            }
+            for (char32_t val : parseHexList(fields[2], lineNo))
+                mapping.append(QChar::fromUcs4(val));
 
             // Some deviations have empty mappings, others should not...
             if (mapping.isEmpty()) {
