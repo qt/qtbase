@@ -401,6 +401,7 @@ void tst_QUdpSocket::broadcasting()
     const QList<QHostAddress> broadcastAddresses = getBroadcastAddresses();
     if (broadcastAddresses.isEmpty())
         QSKIP("No interface can broadcast");
+    bool destinationsPrinted = false;
     for (int i = 0; i < 4; ++i) {
         QUdpSocket serverSocket;
         QVERIFY2(serverSocket.bind(QHostAddress(QHostAddress::AnyIPv4), 0), serverSocket.errorString().toLatin1().constData());
@@ -414,19 +415,31 @@ void tst_QUdpSocket::broadcasting()
         broadcastSocket.bind(QHostAddress(QHostAddress::AnyIPv4), 0);
 
         for (int j = 0; j < 10; ++j) {
-            for (int k = 0; k < 4; k++) {
-                for (const QHostAddress &addr : std::as_const(broadcastAddresses))
-                    broadcastSocket.writeDatagram(message[i], strlen(message[i]), addr, serverPort);
+            {
+                // qDebug() << "Broadcasting to" << broadcastAddresses;
+                QSet<QHostAddress> addresses;
+                QString lastErrorString;
+                for (int k = 0; k < 4; k++) {
+                    for (const QHostAddress &addr : broadcastAddresses) {
+                        qint64 written = broadcastSocket.writeDatagram(message[i], strlen(message[i]),
+                                                                       addr, serverPort);
+                        if (written < 0) {
+                            lastErrorString = broadcastSocket.errorString();
+                        } else {
+                            QCOMPARE(written, strlen(message[i]));
+                            addresses << addr;
+                        }
+                    }
+                }
+                QVERIFY2(!addresses.isEmpty(), qPrintable(lastErrorString));
+                if (!destinationsPrinted)
+                    qDebug() << "Successfully sent datagrams to" << addresses;
+                destinationsPrinted = true;
             }
+
             QTestEventLoop::instance().enterLoop(15);
-            if (QTestEventLoop::instance().timeout()) {
-#if defined(Q_OS_FREEBSD)
-                QEXPECT_FAIL("",
-                             "Broadcasting to 255.255.255.255 does not work on FreeBSD",
-                             Abort);
-#endif
+            if (QTestEventLoop::instance().timeout())
                 QFAIL("Network operation timed out");
-            }
             QVERIFY(serverSocket.hasPendingDatagrams());
 
             do {
