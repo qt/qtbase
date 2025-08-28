@@ -3595,6 +3595,9 @@ void tst_QFuture::runAndTake()
 
 void tst_QFuture::takeResultWaitForStartedFinished()
 {
+#if !QT_CONFIG(cxx11_future)
+    QSKIP("The test requires feature cxx11_future");
+#else
     QPromise<int> promise{QFutureInterface<int>{QFutureInterfaceBase::State::Pending}};
     auto future = promise.future();
     const std::unique_ptr<QThread> thread(QThread::create(
@@ -3607,6 +3610,7 @@ void tst_QFuture::takeResultWaitForStartedFinished()
         std::move(promise)));
     thread->start();
     QCOMPARE(future.takeResult(), 11);
+#endif
 }
 
 void tst_QFuture::resultsReadyAt_data()
