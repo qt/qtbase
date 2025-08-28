@@ -296,6 +296,57 @@
 
     \sa QLCDNumber, QObject::connect()
 
+    \target connecting-overloaded-signals
+    \target connecting-overloaded-slots
+    \section1 Connecting to Overloaded Signals and Slots
+
+    When signals or slots are overloaded (have multiple versions with different
+    parameters), you need to explicitly specify which version you want to
+    connect to using the function pointer syntax. You can use qOverload() or
+    \c {static_cast} to disambiguate:
+
+    \code
+    // Connect to the int overload of QComboBox::currentIndexChanged(int)
+    connect(comboBox, qOverload<int>(&QComboBox::currentIndexChanged),
+            this, &MyClass::handleIndexChanged);
+
+    // Or select QLCDNumber::display(int) when connecting from QSlider::valueChanged(int)
+    connect(slider, &QSlider::valueChanged,
+            lcd, qOverload<int>(&QLCDNumber::display));
+
+    // Using static_cast (more verbose):
+    connect(comboBox, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
+            this, &MyClass::handleIndexChanged);
+
+    // Or using a lambda to call the correct overload:
+    connect(slider, &QSlider::valueChanged,
+            this, [lcd](int value) { lcd->display(value); });
+    \endcode
+
+    \section1 Automatic Connection Management
+
+    Qt automatically manages the lifetime of connections between
+    \l {QObject}-derived types. When either the sender or receiver object is
+    destroyed, the connection is automatically removed, preventing calls to
+    deleted objects. This applies to both the function-pointer syntax and the
+    string-based SIGNAL/SLOT syntax.
+
+    For lambda connections, provide a context object (usually \c this) to ensure
+    the lambda is disconnected when the context is destroyed:
+
+    \code
+    connect(button, &QPushButton::clicked, this, [this]{ handleClick(); });
+    \endcode
+
+    While Qt protects against signal delivery to fully destroyed objects,
+    signals may still be delivered during object destruction after a derived
+    class destructor has finished but before reaching \c{~QObject}. This
+    limitation applies specifically to connections made with the
+    function-pointer syntax. It can occur when a base class destructor emits
+    signals that the already-destroyed derived class was connected to.
+    Consider explicitly disconnecting such signals in destructors if this
+    could be problematic for your class.
+
     \section1 Signals And Slots With Default Arguments
 
     The signatures of signals and slots may contain arguments, and the
