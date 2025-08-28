@@ -21,6 +21,7 @@ QT_BEGIN_NAMESPACE
 QT_ENABLE_P0846_SEMANTICS_FOR(get)
 
 class QDataStream;
+class QLine;
 class QPointF;
 class QRect;
 
@@ -96,6 +97,7 @@ private:
     using Representation = QtPrivate::QCheckedIntegers::QCheckedInt<int>;
 
     friend class QRect;
+    friend class QLine;
     constexpr QPoint(Representation xpos, Representation ypos) noexcept
         : xp(xpos), yp(ypos) {}
 
