@@ -104,8 +104,8 @@ void QAndroidPlatformOpenGLWindow::applicationStateChanged(Qt::ApplicationState 
 void QAndroidPlatformOpenGLWindow::createEgl(EGLConfig config)
 {
     clearSurface();
-    QJniEnvironment env;
-    m_nativeWindow = ANativeWindow_fromSurface(env.jniEnv(), m_androidSurfaceObject.object());
+    m_nativeWindow = ANativeWindow_fromSurface(
+        QJniEnvironment::getJniEnv(), m_androidSurfaceObject.object());
     m_androidSurfaceObject = QJniObject();
     m_eglSurface = eglCreateWindowSurface(m_eglDisplay, config, m_nativeWindow, NULL);
     m_format = q_glFormatFromConfig(m_eglDisplay, config, window()->requestedFormat());
