@@ -355,6 +355,29 @@ void tst_QUdpSocket::unconnectedServerAndClientTest()
 
 //----------------------------------------------------------------------------------
 
+static QList<QHostAddress> getBroadcastAddresses()
+{
+    QList<QHostAddress> broadcastAddresses;
+
+#ifndef Q_OS_BSD
+    broadcastAddresses << QHostAddress(0x7fffffff); // 127.255.255.255, on interface "lo"
+#endif
+    broadcastAddresses << QHostAddress::Broadcast;
+
+    const auto ifaces = QNetworkInterface::allInterfaces();
+    for (const QNetworkInterface &iface : ifaces) {
+        if ((iface.flags() & QNetworkInterface::CanBroadcast)
+            && iface.flags() & QNetworkInterface::IsUp) {
+            for (int i=0;i<iface.addressEntries().size();i++) {
+                QHostAddress broadcast = iface.addressEntries().at(i).broadcast();
+                if (broadcast.protocol() == QAbstractSocket::IPv4Protocol)
+                    broadcastAddresses.append(broadcast);
+            }
+        }
+    }
+    return broadcastAddresses;
+}
+
 void tst_QUdpSocket::broadcasting()
 {
     if (m_workaroundLinuxKernelBug)
@@ -375,18 +398,7 @@ void tst_QUdpSocket::broadcasting()
 #endif
     const char *message[] = {"Yo mista", "", "Yo", "Wassap"};
 
-    QList<QHostAddress> broadcastAddresses;
-    const auto ifaces = QNetworkInterface::allInterfaces();
-    for (const QNetworkInterface &iface : ifaces) {
-        if ((iface.flags() & QNetworkInterface::CanBroadcast)
-            && iface.flags() & QNetworkInterface::IsUp) {
-            for (int i=0;i<iface.addressEntries().size();i++) {
-                QHostAddress broadcast = iface.addressEntries().at(i).broadcast();
-                if (broadcast.protocol() == QAbstractSocket::IPv4Protocol)
-                    broadcastAddresses.append(broadcast);
-            }
-        }
-    }
+    const QList<QHostAddress> broadcastAddresses = getBroadcastAddresses();
     if (broadcastAddresses.isEmpty())
         QSKIP("No interface can broadcast");
     for (int i = 0; i < 4; ++i) {
@@ -403,8 +415,6 @@ void tst_QUdpSocket::broadcasting()
 
         for (int j = 0; j < 10; ++j) {
             for (int k = 0; k < 4; k++) {
-                broadcastSocket.writeDatagram(message[i], strlen(message[i]),
-                    QHostAddress::Broadcast, serverPort);
                 for (const QHostAddress &addr : std::as_const(broadcastAddresses))
                     broadcastSocket.writeDatagram(message[i], strlen(message[i]), addr, serverPort);
             }
