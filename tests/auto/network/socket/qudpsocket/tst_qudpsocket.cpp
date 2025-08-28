@@ -64,6 +64,8 @@ private slots:
     void constructing();
     void unconnectedServerAndClientTest();
     void broadcasting();
+    void broadcastingDualSocket_data();
+    void broadcastingDualSocket();
     void loop_data();
     void loop();
     void ipv6Loop_data();
@@ -471,6 +473,100 @@ void tst_QUdpSocket::broadcasting()
                     QVERIFY(ttl != 0);
             } while (serverSocket.hasPendingDatagrams());
         }
+    }
+}
+
+//----------------------------------------------------------------------------------
+
+void tst_QUdpSocket::broadcastingDualSocket_data()
+{
+    QTest::addColumn<bool>("explicitlyBind");
+    QTest::newRow("without-binding") << false;
+    QTest::newRow("explicitly-binding") << true;
+}
+
+void tst_QUdpSocket::broadcastingDualSocket()
+{
+#if defined(Q_OS_VXWORKS)
+    QSKIP("Broadcasting on dual-stack sockets not supported on this platform");
+#endif
+    if (m_workaroundLinuxKernelBug)
+        QSKIP("This test can fail due to linux kernel bug");
+
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        QSKIP("No sense in testing broadcasts with proxies");
+
+
+    QFETCH(bool, explicitlyBind);
+    QByteArray msg = "This is a message sent over broadcast";
+
+    QUdpSocket serverSocket;
+    QVERIFY2(serverSocket.bind(QHostAddress(QHostAddress::Any), 0),
+             serverSocket.errorString().toLatin1().constData());
+    quint16 serverPort = serverSocket.localPort();
+
+    QCOMPARE(serverSocket.state(), QUdpSocket::BoundState);
+
+    connect(&serverSocket, SIGNAL(readyRead()), SLOT(empty_readyReadSlot()));
+
+    QUdpSocket broadcastSocket;
+    if (explicitlyBind) {
+        QVERIFY2(broadcastSocket.bind(QHostAddress(QHostAddress::Any), 0),
+                 broadcastSocket.errorString().toLatin1().constData());
+        // qDebug() << "Bound server to" << serverSocket.localAddress() << serverPort
+        //          << "and will send from" << broadcastSocket.localAddress() << broadcastSocket.localPort();
+    } else {
+        // qDebug() << "Bound server to" << serverSocket.localAddress() << serverPort;
+    }
+
+    const QList<QHostAddress> broadcastAddresses = getBroadcastAddresses();
+    if (broadcastAddresses.isEmpty())
+        QSKIP("No interface can broadcast");
+
+    // send to all broadcast addresses and hope some messages arrive
+    {
+        // qDebug() << "Broadcasting to" << broadcastAddresses;
+        QList<QHostAddress> addresses;
+        QString lastErrorString;
+        for (const QHostAddress &address : broadcastAddresses) {
+            qint64 written = broadcastSocket.writeDatagram(msg, address, serverPort);
+            if (written < 0) {
+                lastErrorString = broadcastSocket.errorString();
+            } else {
+                QCOMPARE(written, msg.size());
+                addresses << address;
+            }
+        }
+        QVERIFY2(!addresses.isEmpty(), qPrintable(lastErrorString));
+        qDebug() << "Successfully sent datagrams to" << addresses;
+    }
+
+    QTestEventLoop::instance().enterLoop(3);
+    if (QTestEventLoop::instance().timeout())
+        QFAIL("Network operation timed out");
+
+    // Collect all datagrams
+    QList<QNetworkDatagram> datagrams;
+    QVERIFY(serverSocket.hasPendingDatagrams());
+    do {
+        datagrams << serverSocket.receiveDatagram();
+    } while (serverSocket.hasPendingDatagrams());
+
+    {
+        // collect the list of addresses first to print in debugging
+        QList<QHostAddress> addresses;
+        for (const QNetworkDatagram &dgram : std::as_const(datagrams))
+            addresses << dgram.destinationAddress();
+        qDebug() << "Received datagrams sent to" << addresses;
+    }
+
+    for (const QNetworkDatagram &dgram : std::as_const(datagrams)) {
+        QVERIFY(dgram.isValid());
+        QCOMPARE(dgram.data(), QByteArrayView(msg));
+
+        // verify sender
+        QCOMPARE(dgram.senderPort(), broadcastSocket.localPort());
     }
 }
 
