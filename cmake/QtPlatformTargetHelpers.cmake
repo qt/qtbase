@@ -70,7 +70,6 @@ function(qt_internal_setup_public_platform_target)
         ATTRIBUTION_FILE_DIR_PATHS
             "${PROJECT_SOURCE_DIR}/cmake/3rdparty/extra-cmake-modules"
             "${PROJECT_SOURCE_DIR}/cmake/3rdparty/kwin"
-        IMMEDIATE_FINALIZATION
     )
 endfunction()
 

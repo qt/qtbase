@@ -428,14 +428,44 @@ function(_qt_internal_sbom_end_project)
     # This can happen when _qt_internal_sbom_end_project is called within the same
     # subdirectory scope as where the targets are meant to be finalized, but that would be too late
     # and the targets wouldn't be added to the sbom.
-    # This would mostly happen in user projects, and not Qt repos, because in Qt repos we afaik
-    # never create targets in the root cmakelists (aside from the qtbase Platform targets).
-    get_cmake_property(targets _qt_internal_sbom_targets_waiting_for_finalization)
-    if(targets)
-        foreach(target IN LISTS targets)
+    # This can happen in user projects, but also it happens for qtbase with the Platform targets.
+    # Check the list of targets to finalize in a loop, because finalizing a target can schedule
+    # finalization of a different attribution target.
+    set(targets_to_finalize "")
+    get_cmake_property(new_targets _qt_internal_sbom_targets_waiting_for_finalization)
+    if(new_targets)
+        list(APPEND targets_to_finalize ${new_targets})
+    endif()
+
+    set(finalization_iterations 0)
+    while(targets_to_finalize)
+        # Make sure we don't accidentally create a never-ending loop.
+        math(EXPR finalization_iterations "${finalization_iterations} + 1")
+        if(finalization_iterations GREATER 500)
+            message(WARNING
+                "SBOM warning: Too many iterations while handling finalization of SBOM targets. "
+                "Possible circular dependency. "
+                "Please report to https://bugreports.qt.io with details "
+                "about the project and a trace log. "
+                "Targets left to finalize: '${targets_to_finalize}'"
+            )
+            break()
+        endif()
+
+        # Clear the list.
+        set_property(GLOBAL PROPERTY _qt_internal_sbom_targets_waiting_for_finalization "")
+
+        foreach(target IN LISTS targets_to_finalize)
             _qt_internal_finalize_sbom("${target}")
         endforeach()
-    endif()
+
+        # Retrieve any new targets.
+        set(targets_to_finalize "")
+        get_cmake_property(new_targets _qt_internal_sbom_targets_waiting_for_finalization)
+        if(new_targets)
+            list(APPEND targets_to_finalize ${new_targets})
+        endif()
+    endwhile()
 
     _qt_internal_sbom_end_project_generate()
 
