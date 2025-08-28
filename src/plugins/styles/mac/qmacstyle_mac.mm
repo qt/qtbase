@@ -865,6 +865,9 @@ static const int qt_mac_aqua_metrics[] = {
 
 static inline int qt_mac_aqua_get_metric(QAquaMetric m)
 {
+    if (qt_apple_runningWithLiquidGlass() && m == QAquaMetric::MiniRadioButtonWidth)
+        return 11;
+
     return qt_mac_aqua_metrics[m];
 }
 
