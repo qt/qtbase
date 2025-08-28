@@ -71,21 +71,9 @@ EGLSurface QAndroidPlatformOpenGLWindow::eglSurface(EGLConfig config)
     }
 
     if (m_eglSurface == EGL_NO_SURFACE)
-        createEgl(config);
+        ensureEglSurfaceCreated(config);
 
     return m_eglSurface;
-}
-
-// m_surfaceMutex already locked, called only by eglSurface()
-// and QAndroidPlatformOpenGLContext::swapBuffers().
-bool QAndroidPlatformOpenGLWindow::makeCurrentNeeded() const
-{
-    // Either no surface created, or the m_eglSurface already wraps the active Surface
-    // -> makeCurrent is NOT needed, and we should not create a new EGL surface
-    if (!m_surfaceCreated || !m_androidSurfaceObject.isValid())
-        return false;
-
-    return true;
 }
 
 void QAndroidPlatformOpenGLWindow::applicationStateChanged(Qt::ApplicationState state)
@@ -101,8 +89,15 @@ void QAndroidPlatformOpenGLWindow::applicationStateChanged(Qt::ApplicationState 
 
 // m_surfaceMutex already locked, called only by eglSurface()
 // and QAndroidPlatformOpenGLContext::swapBuffers().
-void QAndroidPlatformOpenGLWindow::createEgl(EGLConfig config)
+bool QAndroidPlatformOpenGLWindow::ensureEglSurfaceCreated(EGLConfig config)
 {
+    // Either no surface created, or the m_eglSurface already wraps the active Surface,
+    // so makeCurrent is NOT needed, and we should not create a new EGL surface.
+    if (!m_surfaceCreated || !m_androidSurfaceObject.isValid()) {
+        qCDebug(lcQpaWindow) << "Skipping create egl on invalid or not yet created surface";
+        return false;
+    }
+
     clearSurface();
     m_nativeWindow = ANativeWindow_fromSurface(
         QJniEnvironment::getJniEnv(), m_androidSurfaceObject.object());
@@ -117,6 +112,8 @@ void QAndroidPlatformOpenGLWindow::createEgl(EGLConfig config)
 
     // we've created another Surface, the window should be repainted
     sendExpose();
+
+    return true;
 }
 
 QSurfaceFormat QAndroidPlatformOpenGLWindow::format() const
