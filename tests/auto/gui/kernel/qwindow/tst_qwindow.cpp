@@ -3015,9 +3015,6 @@ void tst_QWindow::keepPendingUpdateRequests()
 
 void tst_QWindow::activateDeactivateEvent()
 {
-    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
-        QSKIP("QWindow::requestActivate() is not supported.");
-
     class Window : public QWindow
     {
     public:
@@ -3046,13 +3043,11 @@ void tst_QWindow::activateDeactivateEvent()
     Window w2;
 
     w1.show();
-    w1.requestActivate();
     QVERIFY(QTest::qWaitForWindowActive(&w1));
     QCOMPARE(w1.activateCount, 1);
     QCOMPARE(w1.deactivateCount, 0);
 
     w2.show();
-    w2.requestActivate();
     QVERIFY(QTest::qWaitForWindowActive(&w2));
     QCOMPARE(w1.deactivateCount, 1);
     QCOMPARE(w2.activateCount, 1);
