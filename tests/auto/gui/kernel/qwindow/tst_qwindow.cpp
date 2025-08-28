@@ -2622,7 +2622,6 @@ void tst_QWindow::modalWindowEnterEventOnHide_QTBUG35109()
         modal.setModality(Qt::ApplicationModal);
         modal.show();
         QVERIFY(QTest::qWaitForWindowExposed(&modal));
-        modal.requestActivate();
         QVERIFY(QTest::qWaitForWindowActive(&modal));
 
         QCoreApplication::processEvents();
@@ -2687,7 +2686,6 @@ void tst_QWindow::modalWindowEnterEventOnHide_QTBUG35109()
         modal.setModality(Qt::ApplicationModal);
         modal.show();
         QVERIFY(QTest::qWaitForWindowExposed(&modal));
-        modal.requestActivate();
         QVERIFY(QTest::qWaitForWindowActive(&modal));
 
         QCoreApplication::processEvents();
@@ -2716,7 +2714,6 @@ void tst_QWindow::modalWindowEnterEventOnHide_QTBUG35109()
         root.show();
 
         QVERIFY(QTest::qWaitForWindowExposed(&root));
-        root.requestActivate();
         QVERIFY(QTest::qWaitForWindowActive(&root));
         QVERIFY(!child.isVisible());
 
@@ -2737,7 +2734,6 @@ void tst_QWindow::modalWindowEnterEventOnHide_QTBUG35109()
         modal.setModality(Qt::ApplicationModal);
         modal.show();
         QVERIFY(QTest::qWaitForWindowExposed(&modal));
-        modal.requestActivate();
         QVERIFY(QTest::qWaitForWindowActive(&modal));
 
         QCoreApplication::processEvents();
