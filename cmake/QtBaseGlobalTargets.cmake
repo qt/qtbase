@@ -204,6 +204,14 @@ qt_internal_get_max_new_policy_cmake_version(max_new_policy_version)
 qt_internal_get_qt_build_public_helpers(__qt_cmake_public_helpers)
 list(JOIN __qt_cmake_public_helpers "\n    " QT_PUBLIC_FILES_TO_INCLUDE)
 
+set(__qt_cmake_extra_code_before_dependencies "")
+if(ANDROID)
+    list(APPEND __qt_cmake_extra_code_before_dependencies
+        "__qt_internal_workaround_android_cmp0155_issue()")
+endif()
+list(JOIN __qt_cmake_extra_code_before_dependencies
+    "\n    " QT_CONFIG_EXTRA_CODE_BEFORE_DEPENDENCIES)
+
 # Generate and install Qt6 config file. Make sure it happens after the global feature evaluation so
 # they can be accessed in the Config file if needed.
 configure_package_config_file(
