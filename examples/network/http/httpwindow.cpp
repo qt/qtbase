@@ -9,7 +9,6 @@
 #include <QtNetwork>
 #include <QUrl>
 
-#include <algorithm>
 #include <memory>
 
 #if QT_CONFIG(ssl)
