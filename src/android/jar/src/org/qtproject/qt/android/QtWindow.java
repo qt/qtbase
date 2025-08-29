@@ -15,8 +15,8 @@ import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.WindowInsets;
-
 import android.os.Build;
 
 import java.util.HashMap;
@@ -30,6 +30,7 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
     private GestureDetector m_gestureDetector;
     private final QtEditText m_editText;
     private final QtInputConnection.QtInputConnectionListener m_inputConnectionListener;
+    private boolean m_firstSafeMarginsDelivered = false;
 
     private static native void setSurface(int windowId, Surface surface);
     private static native void safeAreaMarginsChanged(Insets insets, int id);
@@ -75,46 +76,71 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
                 });
             m_gestureDetector.setIsLongpressEnabled(true);
         });
+
+        registerSafeAreaMarginsListener();
     }
 
-    @UsedFromNativeCode
-    void registerSafeAreaMarginsListner(boolean isTopLevel, boolean isSameWindowAndScreenSize)
+    void registerSafeAreaMarginsListener()
     {
         if (!(getContext() instanceof QtActivityBase))
             return;
 
         setOnApplyWindowInsetsListener((view, insets) -> {
-            Insets safeInsets = getSafeInsets(view, insets);
+            WindowInsets windowInsets = view.onApplyWindowInsets(insets);
+            Insets safeInsets = getSafeInsets(this, windowInsets);
             safeAreaMarginsChanged(safeInsets, getId());
-            return getConsumedInsets(insets);
+            m_firstSafeMarginsDelivered = true;
+
+            return windowInsets;
         });
 
-        // NOTE: if the window size fits the screen geometry (i.e. edge-to-edge case),
-        // assume this window is the main window and initialize its safe margins with
-        // the insets of the decor view.
-        if (isTopLevel && isSameWindowAndScreenSize) {
-            QtNative.runAction(() -> {
-                // NOTE: The callback onApplyWindowInsetsListener() is not being triggered during
-                // startup, so this is a Workaround to get the safe area margins at startup.
-                // Initially, set the root view insets to the current window, then if the insets
-                // change later, we can rely on setOnApplyWindowInsetsListener() being called.
-                View decorView = ((Activity) getContext()).getWindow().getDecorView();
-                WindowInsets rootInsets = decorView.getRootWindowInsets();
-                Insets rootSafeInsets = getSafeInsets(decorView, rootInsets);
-                safeAreaMarginsChanged(rootSafeInsets, getId());
+        // If the window is attached, try to directly deliver root insets
+        if (isAttachedToWindow()) {
+            WindowInsets insets = getRootWindowInsets();
+            if (insets != null) {
+                safeAreaMarginsChanged(getSafeInsets(this, insets), getId());
+                m_firstSafeMarginsDelivered = true;
+            }
+        } else { // Otherwise request it upon attachement
+            addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
+                @Override
+                public void onViewAttachedToWindow(View view) {
+                    view.removeOnAttachStateChangeListener(this);
+                    view.requestApplyInsets();
+                }
+
+                @Override
+                public void onViewDetachedFromWindow(View view) {}
             });
         }
 
-        QtNative.runAction(() -> requestApplyInsets());
-    }
+        // Further, tag into pre draw to deliver safe area margins early on
+        if (!m_firstSafeMarginsDelivered) {
+            ViewTreeObserver.OnPreDrawListener listener = new ViewTreeObserver.OnPreDrawListener() {
+                @Override
+                public boolean onPreDraw() {
+                    if (m_firstSafeMarginsDelivered) {
+                        getViewTreeObserver().removeOnPreDrawListener(this);
+                        return true;
+                    }
 
-    @SuppressWarnings("deprecation")
-    WindowInsets getConsumedInsets(WindowInsets insets)
-    {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)
-            return WindowInsets.CONSUMED;
-        else
-            return insets.consumeSystemWindowInsets();
+                    if (isAttachedToWindow()) {
+                        WindowInsets insets = getRootWindowInsets();
+                        if (insets != null) {
+                            getViewTreeObserver().removeOnPreDrawListener(this);
+                            safeAreaMarginsChanged(getSafeInsets(QtWindow.this, insets), getId());
+                            m_firstSafeMarginsDelivered = true;
+                            return true;
+                        }
+                    }
+
+                    requestApplyInsets();
+
+                    return true;
+                }
+            };
+            getViewTreeObserver().addOnPreDrawListener(listener);
+        }
     }
 
     @SuppressWarnings("deprecation")
