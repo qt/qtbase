@@ -2633,6 +2633,20 @@ static void err_info_about_objects(const char *func, const QObject *sender, cons
         qCWarning(lcConnect, "QObject::%s:  (receiver name: '%s')", func, b.toLocal8Bit().data());
 }
 
+Q_DECL_COLD_FUNCTION
+static void connectWarning(const QObject *sender,
+                           const QMetaObject *senderMetaObject,
+                           const QObject *receiver,
+                           const char *message)
+{
+    const char *senderString = sender ? sender->metaObject()->className()
+                                      : senderMetaObject ? senderMetaObject->className()
+                                      : "Unknown";
+    const char *receiverString = receiver ? receiver->metaObject()->className()
+                                          : "Unknown";
+    qCWarning(lcConnect, "QObject::connect(%s, %s): %s", senderString, receiverString, message);
+}
+
 /*!
     Returns a pointer to the object that sent the signal, if called in
     a slot activated by a signal; otherwise it returns \nullptr. The pointer
@@ -3999,8 +4013,9 @@ QMetaObject::Connection QMetaObject::connectImpl(const QObject *sender, const QM
 {
     QtPrivate::SlotObjUniquePtr slotObj(slotObjRaw);
 
+    const QMetaObject *senderMetaObject = sender->metaObject();
     if (!signal.isValid() || signal.methodType() != QMetaMethod::Signal) {
-        qCWarning(lcConnect, "QObject::connect: invalid signal parameter");
+        connectWarning(sender, senderMetaObject, receiver, "invalid signal parameter");
         return QMetaObject::Connection();
     }
 
@@ -4010,7 +4025,6 @@ QMetaObject::Connection QMetaObject::connectImpl(const QObject *sender, const QM
         QMetaObjectPrivate::memberIndexes(sender, signal, &signal_index, &dummy);
     }
 
-    const QMetaObject *senderMetaObject = sender->metaObject();
     if (signal_index == -1) {
         qCWarning(lcConnect, "QObject::connect: Can't find signal %s on instance of class %s",
                   signal.methodSignature().constData(), senderMetaObject->className());
@@ -5323,7 +5337,7 @@ QMetaObject::Connection QObject::connectImpl(const QObject *sender, void **signa
 {
     QtPrivate::SlotObjUniquePtr slotObj(slotObjRaw);
     if (!signal) {
-        qCWarning(lcConnect, "QObject::connect: invalid nullptr parameter");
+        connectWarning(sender, senderMetaObject, receiver, "invalid nullptr parameter");
         return QMetaObject::Connection();
     }
 
@@ -5335,24 +5349,11 @@ QMetaObject::Connection QObject::connectImpl(const QObject *sender, void **signa
             break;
     }
     if (!senderMetaObject) {
-        qCWarning(lcConnect, "QObject::connect: signal not found in %s", sender->metaObject()->className());
+        connectWarning(sender, senderMetaObject, receiver, "signal not found");
         return QMetaObject::Connection(nullptr);
     }
     signal_index += QMetaObjectPrivate::signalOffset(senderMetaObject);
     return QObjectPrivate::connectImpl(sender, signal_index, receiver, slot, slotObj.release(), type, types, senderMetaObject);
-}
-
-static void connectWarning(const QObject *sender,
-                           const QMetaObject *senderMetaObject,
-                           const QObject *receiver,
-                           const char *message)
-{
-    const char *senderString = sender ? sender->metaObject()->className()
-                                      : senderMetaObject ? senderMetaObject->className()
-                                      : "Unknown";
-    const char *receiverString = receiver ? receiver->metaObject()->className()
-                                          : "Unknown";
-    qCWarning(lcConnect, "QObject::connect(%s, %s): %s", senderString, receiverString, message);
 }
 
 /*!
@@ -5573,7 +5574,7 @@ QMetaObject::Connection QObjectPrivate::connect(const QObject *sender, int signa
 {
     QtPrivate::SlotObjUniquePtr slotObj(slotObjRaw);
     if (!sender) {
-        qCWarning(lcConnect, "QObject::connect: invalid nullptr parameter");
+        connectWarning(sender, nullptr, receiver, "invalid nullptr parameter");
         return QMetaObject::Connection();
     }
     const QMetaObject *senderMetaObject = sender->metaObject();

@@ -1706,7 +1706,7 @@ void tst_QMetaObjectBuilder::usage_templateConnect()
                                 testObject.data(), &TestObject::voidSlotInt));
 
     // Something that isn't a signal
-    QTest::ignoreMessage(QtWarningMsg, "QObject::connect: signal not found in TestObject");
+    QTest::ignoreMessage(QtWarningMsg, "QObject::connect(TestObject, TestObject): signal not found");
     con = QObject::connect(testObject.data(), &TestObject::setIntProp,
                            testObject.data(), &TestObject::intPropChanged);
     QVERIFY(!con);

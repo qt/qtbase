@@ -3998,7 +3998,7 @@ void tst_QFuture::signalConnect()
 #if defined(Q_CC_MSVC_ONLY) && (Q_CC_MSVC < 1940 || !defined(_DEBUG))
 #define EXPECT_FUTURE_CONNECT_FAIL() QEXPECT_FAIL("", "QTBUG-101761, test fails on Windows/MSVC", Continue)
 #else
-        QTest::ignoreMessage(QtWarningMsg, "QObject::connect: signal not found in SenderObject");
+        QTest::ignoreMessage(QtWarningMsg, "QObject::connect(SenderObject, SenderObject): signal not found");
 #define EXPECT_FUTURE_CONNECT_FAIL()
 #endif
 
