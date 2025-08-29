@@ -81,9 +81,6 @@ private:
 
 void tst_QFocusEvent::initTestCase()
 {
-    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
-        QSKIP("QWindow::requestActivate() is not supported on this platform.");
-
     testFocusWidget = new QWidget( nullptr );
     childFocusWidgetOne = new FocusLineEdit( testFocusWidget );
     childFocusWidgetOne->setGeometry( 10, 10, 180, 20 );
