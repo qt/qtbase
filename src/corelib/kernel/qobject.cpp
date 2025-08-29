@@ -4146,6 +4146,7 @@ QMetaObject::Connection QMetaObject::connectImpl(const QObject *sender, const QM
                                              QtPrivate::QSlotObjectBase *slotObjRaw, Qt::ConnectionType type)
 {
     QtPrivate::SlotObjUniquePtr slotObj(slotObjRaw);
+    Q_ASSERT_X(slotObjRaw, "QMetaObject::connect", "Internal error, caller must not pass null slotObj");
 
     const QMetaObject *senderMetaObject = sender->metaObject();
     if (!signal.isValid() || signal.methodType() != QMetaMethod::Signal) {
@@ -5488,6 +5489,7 @@ QMetaObject::Connection QObject::connectImpl(const QObject *sender, void **signa
                                              const int *types, const QMetaObject *senderMetaObject)
 {
     QtPrivate::SlotObjUniquePtr slotObj(slotObjRaw);
+    Q_ASSERT_X(slotObjRaw, "QObject::connect", "Internal error, caller must not pass null slotObj");
     if (!signal) {
         connectWarning(sender, senderMetaObject, receiver, "invalid nullptr parameter");
         return QMetaObject::Connection();
@@ -5522,8 +5524,9 @@ QMetaObject::Connection QObjectPrivate::connectImpl(const QObject *sender, int s
 {
     QtPrivate::SlotObjUniquePtr slotObj(slotObjRaw);
     Q_ASSERT(senderMetaObject);
+    Q_ASSERT(slotObj);
 
-    if (!sender || !receiver || !slotObj) {
+    if (!sender || !receiver) {
         connectWarning(sender, senderMetaObject, receiver, "invalid nullptr parameter");
         return QMetaObject::Connection();
     }
@@ -5760,6 +5763,7 @@ QMetaObject::Connection QObjectPrivate::connect(const QObject *sender, int signa
                                                 Qt::ConnectionType type)
 {
     QtPrivate::SlotObjUniquePtr slotObj(slotObjRaw);
+    Q_ASSERT_X(slotObjRaw, "QObjectPrivate::connect", "Internal error, caller must not pass null slotObj");
     if (!sender) {
         connectWarning(sender, nullptr, receiver, "invalid nullptr parameter");
         return QMetaObject::Connection();
