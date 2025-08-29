@@ -11,6 +11,9 @@
 #include <QtCore/qdebug.h>
 #include <QtCore/qdir.h>
 #include <QtCore/qdirlisting.h>
+#if QT_CONFIG(future)
+#include <QtCore/qexception.h>
+#endif
 #include <QtCore/qfile.h>
 #include <QtCore/qfileinfo.h>
 #include <QtCore/qfloat16.h>
@@ -163,22 +166,36 @@ namespace QTestPrivate
 
 namespace {
 
-class TestFailedException : public std::exception // clazy:exclude=copyable-polymorphic
+#if !QT_CONFIG(future)
+using QException = std::exception;
+#endif
+
+class TestFailedException : public QException // clazy:exclude=copyable-polymorphic
 {
 public:
     TestFailedException() = default;
     ~TestFailedException() override = default;
 
     const char *what() const noexcept override { return "QtTest: test failed"; }
+
+#if QT_CONFIG(future)
+    TestFailedException *clone() const override { return new TestFailedException(); }
+    void raise() const override { throw TestFailedException(); }
+#endif
 };
 
-class TestSkippedException : public std::exception // clazy:exclude=copyable-polymorphic
+class TestSkippedException : public QException // clazy:exclude=copyable-polymorphic
 {
 public:
     TestSkippedException() = default;
     ~TestSkippedException() override = default;
 
     const char *what() const noexcept override { return "QtTest: test was skipped"; }
+
+#if QT_CONFIG(future)
+    TestSkippedException *clone() const override { return new TestSkippedException(); }
+    void raise() const override { throw TestSkippedException(); }
+#endif
 };
 
 } // unnamed namespace

@@ -45,6 +45,7 @@ TESTS = ['assert', 'badxml', 'benchlibcallgrind', 'benchlibcounting',
          'subtest',
          'testlib',
          'threewaycompare',
+         'throwonfailandskip',
          'tuplediagnostics',
          'verbose1', 'verbose2', 'verifyexceptionthrown', 'warnings', 'watchdog',
          'junit', 'keyboard']
