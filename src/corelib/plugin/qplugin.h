@@ -199,8 +199,9 @@ public:
                     qRegisterStaticPluginFunction(QT_MANGLE_NAMESPACE(qt_static_plugin_##PLUGIN)());       \
                 }                                                                                          \
             };                                                                                             \
-            Static##PLUGIN##PluginInstance static##PLUGIN##Instance;                                       \
-        } /* namespace */
+        } /* namespace */                                                                                  \
+        /* QTBUG-139615: static, to work around bug in clazy-non-pod-global-static */                      \
+        static Static##PLUGIN##PluginInstance static##PLUGIN##Instance;                                    \
 
 #if defined(QT_PLUGIN_RESOURCE_INIT_FUNCTION)
 #  define QT_PLUGIN_RESOURCE_INIT \
