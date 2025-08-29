@@ -42,7 +42,8 @@ inline bool qt_no_assert_x(bool, const char *, const char *) noexcept { return f
 
 #if !defined(Q_ASSERT_X)
 #  if defined(QT_NO_DEBUG) && !defined(QT_FORCE_ASSERTS)
-#    define Q_ASSERT_X(cond, where, what) static_cast<void>(false && qt_no_assert_x(bool(cond), where, what))
+#    define Q_ASSERT_X(cond, where, what) \
+        static_cast<void>(false && QT_PREPEND_NAMESPACE(qt_no_assert_x)(bool(cond), where, what))
 #  else
 #    define Q_ASSERT_X(cond, where, what) ((cond) ? static_cast<void>(0) : QT_PREPEND_NAMESPACE(qt_assert_x)(where, what, __FILE__, __LINE__))
 #  endif
