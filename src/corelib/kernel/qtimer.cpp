@@ -366,6 +366,7 @@ void QTimer::singleShotImpl(std::chrono::nanoseconds ns, Qt::TimerType timerType
                             const QObject *receiver,
                             QtPrivate::QSlotObjectBase *slotObj)
 {
+    Q_ASSERT_X(slotObj, "QTimer::singleShot", "Internal error, caller must not pass null slotObj");
     if (ns == 0ns) {
         bool deleteReceiver = false;
         // Optimize: set a receiver context when none is given, such that we can use
