@@ -697,6 +697,12 @@ bool TestLogger::shouldIgnoreTest(const QString &test) const
         return true;
 #endif
 
+#if defined(QT_NO_EXCEPTIONS) || !QT_CONFIG(future) || defined(QT_NO_CONCURRENT)
+    // This test requires exceptions, QException, and QtConcurrent::run():
+    if (test == "throwonfailandskip")
+        return true;
+#endif
+
     if (test == "benchlibcallgrind") {
 #if defined(__GNUC__) && (defined(__i386) || defined(__x86_64)) && defined(Q_OS_LINUX)
 #  ifdef __AVX512F__

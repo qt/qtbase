@@ -119,6 +119,13 @@ if(NOT QT_FEATURE_sanitize_address)
     )
 endif()
 
+if(FEATURE_concurrent AND FEATURE_future)
+    list(APPEND subprograms
+        # This test needs exceptions, QException, and QtConcurrent::run()
+        throwonfailandskip
+    )
+endif()
+
 if(FEATURE_cxx20)
   list(APPEND subprograms
       threewaycompare
