@@ -97,11 +97,6 @@ void QAndroidPlatformWindow::initialize()
     }
     qCDebug(lcQpaWindow) << "Window" << m_nativeViewId << "using surface container type"
                          << static_cast<int>(m_surfaceContainerType);
-
-    const bool isSameWindowAndScreenSize = geometry().size() == screen()->geometry().size();
-    m_nativeQtWindow.callMethod("registerSafeAreaMarginsListner",
-                                window->isTopLevel(), isSameWindowAndScreenSize);
-
 }
 
 QAndroidPlatformWindow::~QAndroidPlatformWindow()
