@@ -313,14 +313,14 @@ void QAndroidPlatformWindow::createSurface()
 
     m_nativeQtWindow.callMethod<void>("createSurface", windowStaysOnTop, 32, isOpaque,
                                       m_surfaceContainerType);
-    m_surfaceCreated = true;
+    m_androidSurfaceCreated = true;
 }
 
 void QAndroidPlatformWindow::destroySurface()
 {
-    if (m_surfaceCreated) {
+    if (m_androidSurfaceCreated) {
         m_nativeQtWindow.callMethod<void>("destroySurface");
-        m_surfaceCreated = false;
+        m_androidSurfaceCreated = false;
     }
 }
 
@@ -378,7 +378,7 @@ void QAndroidPlatformWindow::setSurface(JNIEnv *env, jobject object, jint window
         QAndroidPlatformWindow *platformWindow =
                                 static_cast<QAndroidPlatformWindow *>(window->handle());
         const auto guard = platformWindow->destructionGuard();
-        if (!platformWindow->m_surfaceCreated)
+        if (!platformWindow->m_androidSurfaceCreated)
             continue;
         if (platformWindow->nativeViewId() == windowId)
             platformWindow->onSurfaceChanged(surface);

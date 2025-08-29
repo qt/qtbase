@@ -92,7 +92,7 @@ VkSurfaceKHR *QAndroidPlatformVulkanWindow::vkSurface()
         clearSurface();
 
         QMutexLocker lock(&m_surfaceMutex);
-        if (!m_surfaceCreated) {
+        if (!m_androidSurfaceCreated) {
             QtAndroidPrivate::AndroidDeadlockProtector protector(
                 u"QAndroidPlatformVulkanWindow::vkSurface()"_s);
             if (!protector.acquire())
@@ -101,7 +101,7 @@ VkSurfaceKHR *QAndroidPlatformVulkanWindow::vkSurface()
             m_surfaceWaitCondition.wait(&m_surfaceMutex);
         }
 
-        if (!m_surfaceCreated || !m_androidSurfaceObject.isValid())
+        if (!m_androidSurfaceCreated || !m_androidSurfaceObject.isValid())
             return &m_vkSurface;
 
         QJniEnvironment env;

@@ -57,7 +57,7 @@ EGLSurface QAndroidPlatformOpenGLWindow::eglSurface(EGLConfig config)
     }
     // If we haven't called createSurface() yet, call it and wait until Android has created
     // the Surface
-    if (!m_surfaceCreated) {
+    if (!m_androidSurfaceCreated) {
         static constexpr char funcName[] = "QAndroidPlatformOpenGLWindow::eglSurface()";
         QtAndroidPrivate::AndroidDeadlockProtector protector(funcName);
         if (!protector.acquire()) {
@@ -93,7 +93,7 @@ bool QAndroidPlatformOpenGLWindow::ensureEglSurfaceCreated(EGLConfig config)
 {
     // Either no surface created, or the m_eglSurface already wraps the active Surface,
     // so makeCurrent is NOT needed, and we should not create a new EGL surface.
-    if (!m_surfaceCreated || !m_androidSurfaceObject.isValid()) {
+    if (!m_androidSurfaceCreated || !m_androidSurfaceObject.isValid()) {
         qCDebug(lcQpaWindow) << "Skipping create egl on invalid or not yet created surface";
         return false;
     }
