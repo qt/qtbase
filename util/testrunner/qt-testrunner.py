@@ -152,12 +152,19 @@ Default flags: --max-repeats 5 --passes-needed 1
         args.test_basename = args.test_basename[:-4]
 
     # On Android emulated platforms, "androidtestrunner" is invoked by CMake
-    # to wrap the tests.  We have to append the test arguments to it after
-    # "--". Besides that we have to detect the basename to avoid saving the
-    # XML log as "androidtestrunner.xml" for all tests.
+    # to wrap the tests.  We have to invoke it with all its arguments, and
+    # then append "--" and append our QTest-specific arguments.
+    #
+    # Besides that we have to detect the basename to avoid saving the XML log
+    # as "androidtestrunner.xml" for all tests. To do that we look for the
+    # "--apk" or "--aab" option and read its argument.
     if args.test_basename == "androidtestrunner":
+        if "--" in args.testargs:
+            L.critical("qt-testrunner can't handle pre-existing '--' argument to androidtestrunner")
+            sys.exit(1)
         args.specific_extra_args = [ "--" ]
         apk_arg = False
+        aab_arg = False
         for a in args.testargs[1:]:
             if a == "--apk":
                 apk_arg = True
@@ -166,8 +173,19 @@ Default flags: --max-repeats 5 --passes-needed 1
                 if a.endswith(".apk"):
                     args.test_basename = os.path.basename(a)[:-4]
                     break
+            elif a == "--aab":
+                aab_arg = True
+            elif aab_arg:
+                aab_arg = False
+                if a.endswith(".aab"):
+                    args.test_basename = os.path.basename(a)[:-4]
+                    break
         L.info("Detected androidtestrunner, test will be handled specially. Detected test basename: %s",
                args.test_basename)
+        if args.test_basename == "androidtestrunner":
+            L.critical("Couldn't detect the test's basename")
+            sys.exit(1)
+
     # Test wrapper just needs to be skipped to figure out test_basename.
     elif args.test_basename in TEST_RUNNER_WRAPPERS:
         args.test_basename = os.path.basename(args.testargs[1])

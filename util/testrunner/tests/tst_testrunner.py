@@ -53,16 +53,24 @@ def run(*args, **kwargs):
     return proc
 
 # Helper to run qt-testrunner.py with proper testing arguments.
-def run_testrunner(xml_filename=None, wrapper_script=None, extra_args=None, env=None):
+def run_testrunner(xml_filename=None, testrunner_args=None,
+                   wrapper_script=None, wrapper_args=None,
+                   qttest_args=None, env=None):
 
     args = [ testrunner ]
-    if wrapper_script:
-        args += [ wrapper_script ]
-    args += [ mock_test ]
     if xml_filename:
         args += [ "--parse-xml-testlog", xml_filename ]
-    if extra_args:
-        args += extra_args
+    if testrunner_args:
+        args += testrunner_args
+
+    if wrapper_script:
+        args += [ wrapper_script ]
+    if wrapper_args:
+        args += wrapper_args
+
+    args += [ mock_test ]
+    if qttest_args:
+        args += qttest_args
 
     return run(args, env=env)
 
@@ -139,12 +147,12 @@ class Test_testrunner(unittest.TestCase):
         self.env = dict()
         self.env["QT_MOCK_TEST_XML_TEMPLATE_FILE"] = os.environ["QT_MOCK_TEST_XML_TEMPLATE_FILE"]
         self.env["QT_MOCK_TEST_STATE_FILE"]        = state_file
-        self.extra_args = [ "--log-dir", TEMPDIR.name ]
+        self.testrunner_args = [ "--log-dir", TEMPDIR.name ]
     def prepare_env(self, run_list=None):
         if run_list is not None:
             self.env['QT_MOCK_TEST_RUN_LIST'] = ",".join(run_list)
     def run2(self):
-        return run_testrunner(extra_args=self.extra_args, env=self.env)
+        return run_testrunner(testrunner_args=self.testrunner_args, env=self.env)
     def test_simple_invocation(self):
         # All tests pass.
         proc = self.run2()
@@ -229,17 +237,23 @@ class Test_testrunner(unittest.TestCase):
         proc = self.run2()
         self.assertEqual(proc.returncode, 3)
 
-    def create_wrapper(self, filename):
-        with open(os.path.join(TEMPDIR.name, filename), "w") as f:
-            f.write('#!/bin/sh\nexec "$@"\n')
+    def create_wrapper(self, filename, content=None):
+        if not content:
+            content='exec "$@"'
+        filename = os.path.join(TEMPDIR.name, filename)
+        # if os.path.exists(filename):
+        #     os.remove(filename)
+        with open(filename, "w") as f:
+            f.write(f'#!/bin/sh\n{content}\n')
             self.wrapper_script = f.name
-        os.chmod(self.wrapper_script, 0o500)
+        os.chmod(self.wrapper_script, 0o700)
+
     # Test that qt-testrunner detects the correct executable name even if we
     # use a special wrapper script, and that it uses that in the XML log filename.
     def test_wrapper(self):
         self.create_wrapper("coin_vxworks_qemu_runner.sh")
         proc = run_testrunner(wrapper_script=self.wrapper_script,
-                              extra_args=["--log-dir",TEMPDIR.name],
+                              testrunner_args=["--log-dir",TEMPDIR.name],
                               env=self.env)
         self.assertEqual(proc.returncode, 0)
         xml_output_files = glob.glob(os.path.basename(mock_test) + "-*[0-9].xml",
@@ -247,6 +261,57 @@ class Test_testrunner(unittest.TestCase):
         if DEBUG:
             print("XML output files found: ", xml_output_files)
         self.assertEqual(len(xml_output_files), 1)
+
+    # The "androidtestrunner" wrapper is special. It expects the QTest arguments after "--".
+    # So our mock androidtestrunner wrapper ignores everything before "--"
+    # and executes our hardcoded mock_test with the arguments that follow.
+    def create_mock_anroidtestrunner_wrapper(self):
+        self.create_wrapper("androidtestrunner", content=
+            'while [ "$1" != "--" ]; do shift; done; shift; exec {} "$@"'.format(mock_test))
+
+    def test_androidtestrunner_with_aab(self):
+        self.create_mock_anroidtestrunner_wrapper()
+        # Copied verbatim from our CI logs. The only relevant option is --aab.
+        androidtestrunner_args= ['--path', '/home/qt/work/qt/qtdeclarative_standalone_tests/tests/auto/quickcontrols/qquickpopup/android-build-tst_qquickpopup', '--adb', '/opt/android/sdk/platform-tools/adb', '--skip-install-root', '--ndk-stack', '/opt/android/android-ndk-r27c/ndk-stack', '--manifest', '/home/qt/work/qt/qtdeclarative_standalone_tests/tests/auto/quickcontrols/qquickpopup/android-build-tst_qquickpopup/app/AndroidManifest.xml', '--make', '"/opt/cmake-3.30.5/bin/cmake" --build /home/qt/work/qt/qtdeclarative_standalone_tests --target tst_qquickpopup_make_aab', '--aab', '/home/qt/work/qt/qtdeclarative_standalone_tests/tests/auto/quickcontrols/qquickpopup/android-build-tst_qquickpopup/tst_qquickpopup.aab', '--bundletool', '/opt/bundletool/bundletool', '--timeout', '1425']
+        # In COIN CI, TESTRUNNER="qt-testrunner.py --". That's why we append "--".
+        proc = run_testrunner(testrunner_args=["--log-dir", TEMPDIR.name, "--"],
+                              wrapper_script=self.wrapper_script,
+                              wrapper_args=androidtestrunner_args,
+                              env=self.env)
+        self.assertEqual(proc.returncode, 0)
+        xml_output_files = glob.glob("tst_qquickpopup-*[0-9].xml",
+                                     root_dir=TEMPDIR.name)
+        if DEBUG:
+            print("XML output files found: ", xml_output_files)
+        self.assertEqual(len(xml_output_files), 1)
+    # similar to above but with "--apk"
+    def test_androidtestrunner_with_apk(self):
+        self.create_mock_anroidtestrunner_wrapper()
+        androidtestrunner_args= ['--blah', '--apk', '/whatever/waza.apk', 'blue']
+        proc = run_testrunner(testrunner_args=["--log-dir", TEMPDIR.name, "--"],
+                              wrapper_script=self.wrapper_script,
+                              wrapper_args=androidtestrunner_args,
+                              env=self.env)
+        self.assertEqual(proc.returncode, 0)
+        xml_output_files = glob.glob("waza-*[0-9].xml",
+                                     root_dir=TEMPDIR.name)
+        if DEBUG:
+            print("XML output files found: ", xml_output_files)
+        self.assertEqual(len(xml_output_files), 1)
+    # similar to above but with neither "--apk" nor "--aab". qt-testrunner throws error.
+    def test_androidtestrunner_fail_to_detect_filename(self):
+        self.create_mock_anroidtestrunner_wrapper()
+        androidtestrunner_args= ['--blah', '--argh', '/whatever/waza.apk', 'waza.aab']
+        proc = run_testrunner(testrunner_args=["--log-dir", TEMPDIR.name, "--"],
+                              wrapper_script=self.wrapper_script,
+                              wrapper_args=androidtestrunner_args,
+                              env=self.env)
+        self.assertEqual(proc.returncode, 1)
+        xml_output_files = glob.glob("waza-*[0-9].xml",
+                                     root_dir=TEMPDIR.name)
+        if DEBUG:
+            print("XML output files found: ", xml_output_files)
+        self.assertEqual(len(xml_output_files), 0)
 
 
 # Test qt-testrunner script with an existing XML log file:
@@ -285,7 +350,7 @@ class Test_testrunner_with_xml_logfile(unittest.TestCase):
     def test_always_pass_failed_max_repeats_0(self):
         write_xml_log(self.xml_file, failure="always_pass")
         proc = run_testrunner(self.xml_file,
-                              extra_args=["--max-repeats", "0"])
+                              testrunner_args=["--max-repeats", "0"])
         self.assertEqual(proc.returncode, 2)
     def test_always_fail_failed(self):
         write_xml_log(self.xml_file, failure="always_fail")
