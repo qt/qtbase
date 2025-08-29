@@ -192,6 +192,29 @@ static void drawArrow(const QStyle *style, const QStyleOptionToolButton *toolbut
     style->drawPrimitive(pe, &arrowOpt, painter, widget);
 }
 #endif // QT_CONFIG(toolbutton)
+
+static qreal radioButtonInnerRadius(int state)
+{
+    qreal radius = 7.0;
+    if (state & QStyle::State_Sunken)
+        radius = 4.0f;
+    else if (state & QStyle::State_MouseOver && !(state & QStyle::State_On))
+        radius = 7.0f;
+    else if (state & QStyle::State_MouseOver && (state & QStyle::State_On))
+        radius = 5.0f;
+    else if (state & QStyle::State_On)
+        radius = 4.0f;
+    return radius;
+}
+
+static qreal sliderInnerRadius(QStyle::State state, bool insideHandle)
+{
+    if (state & QStyle::State_Sunken)
+        return 0.29;
+    else if (insideHandle)
+        return 0.71;
+    return 0.43;
+}
 /*!
   \class QWindows11Style
   \brief The QWindows11Style class provides a look and feel suitable for applications on Microsoft Windows 11.
@@ -245,7 +268,7 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
 
     painter->save();
     painter->setRenderHint(QPainter::Antialiasing);
-    if (d->transitionsEnabled()) {
+    if (d->transitionsEnabled() && option->styleObject) {
         if (control == CC_Slider) {
             if (const auto *slider = qstyleoption_cast<const QStyleOptionSlider *>(option)) {
                 QObject *styleObject = option->styleObject; // Can be widget or qquickitem
@@ -280,13 +303,7 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
                 if (doTransition) {
                     QNumberStyleAnimation *t = new QNumberStyleAnimation(styleObject);
                     t->setStartValue(styleObject->property("_q_inner_radius").toFloat());
-                    if (state & State_Sunken)
-                        t->setEndValue(outerRadius * 0.29);
-                    else if (isInsideHandle)
-                        t->setEndValue(outerRadius * 0.71);
-                    else
-                        t->setEndValue(outerRadius * 0.43);
-
+                    t->setEndValue(outerRadius * sliderInnerRadius(state, isInsideHandle));
                     styleObject->setProperty("_q_end_radius", t->endValue());
 
                     t->setStartTime(d->animationTime());
@@ -447,15 +464,19 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
                 const QRectF rect = proxy()->subControlRect(CC_Slider, option, SC_SliderHandle, widget);
                 const QPointF center = rect.center();
 
-                const QNumberStyleAnimation* animation = qobject_cast<QNumberStyleAnimation*>(d->animation(option->styleObject));
-
-                float innerRadius = 0;
-                if (animation != nullptr)
-                    innerRadius = animation->currentValue();
-                else
-                    innerRadius = option->styleObject->property("_q_end_radius").toFloat();
-                option->styleObject->setProperty("_q_inner_radius", innerRadius);
                 const qreal outerRadius = qMin(8.0,(slider->orientation == Qt::Horizontal ? rect.height() / 2.0 : rect.width() / 2.0) - 1);
+                float innerRadius = outerRadius * 0.43;
+
+                if (option->styleObject) {
+                    const QNumberStyleAnimation* animation = qobject_cast<QNumberStyleAnimation *>(d->animation(option->styleObject));
+                    if (animation != nullptr) {
+                        innerRadius = animation->currentValue();
+                        option->styleObject->setProperty("_q_inner_radius", innerRadius);
+                    } else {
+                        bool isInsideHandle = option->activeSubControls == SC_SliderHandle;
+                        innerRadius = outerRadius * sliderInnerRadius(state, isInsideHandle);
+                    }
+                }
 
                 painter->setPen(Qt::NoPen);
                 painter->setBrush(winUI3Color(controlFillSolid));
@@ -728,58 +749,35 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
     int state = option->state;
     painter->save();
     painter->setRenderHint(QPainter::Antialiasing);
-    if (d->transitionsEnabled() && (element == PE_IndicatorCheckBox || element == PE_IndicatorRadioButton)) {
+    if (d->transitionsEnabled() && option->styleObject && (element == PE_IndicatorCheckBox || element == PE_IndicatorRadioButton)) {
         QObject *styleObject = option->styleObject; // Can be widget or qquickitem
-        if (styleObject) {
-            int oldState = styleObject->property("_q_stylestate").toInt();
-            styleObject->setProperty("_q_stylestate", int(option->state));
-            styleObject->setProperty("_q_stylerect", option->rect);
-            bool doTransition = (((state & State_Sunken) != (oldState & State_Sunken)
-                                 || ((state & State_MouseOver) != (oldState & State_MouseOver))
-                                 || (state & State_On) != (oldState & State_On))
-                                 && state & State_Enabled);
-            if (doTransition) {
-                if (element == PE_IndicatorRadioButton) {
+        int oldState = styleObject->property("_q_stylestate").toInt();
+        styleObject->setProperty("_q_stylestate", int(option->state));
+        styleObject->setProperty("_q_stylerect", option->rect);
+        bool doTransition = (((state & State_Sunken) != (oldState & State_Sunken)
+                             || ((state & State_MouseOver) != (oldState & State_MouseOver))
+                             || (state & State_On) != (oldState & State_On))
+                             && state & State_Enabled);
+        if (doTransition) {
+            if (element == PE_IndicatorRadioButton) {
+                QNumberStyleAnimation *t = new QNumberStyleAnimation(styleObject);
+                t->setStartValue(styleObject->property("_q_inner_radius").toFloat());
+                t->setEndValue(radioButtonInnerRadius(state));
+                styleObject->setProperty("_q_end_radius", t->endValue());
+                t->setStartTime(d->animationTime());
+                t->setDuration(150);
+                d->startAnimation(t);
+            }
+            else if (element == PE_IndicatorCheckBox) {
+                if ((oldState & State_Off && state & State_On) || (oldState & State_NoChange && state & State_On)) {
                     QNumberStyleAnimation *t = new QNumberStyleAnimation(styleObject);
-                    t->setStartValue(styleObject->property("_q_inner_radius").toFloat());
-                    t->setEndValue(7.0f);
-                    if (option->state & State_Sunken)
-                        t->setEndValue(4.0f);
-                    else if (option->state & State_MouseOver && !(option->state & State_On))
-                        t->setEndValue(7.0f);
-                    else if (option->state & State_MouseOver && (option->state & State_On))
-                        t->setEndValue(5.0f);
-                    else if (option->state & State_On)
-                        t->setEndValue(4.0f);
-                    styleObject->setProperty("_q_end_radius", t->endValue());
+                    t->setStartValue(0.0f);
+                    t->setEndValue(1.0f);
                     t->setStartTime(d->animationTime());
                     t->setDuration(150);
                     d->startAnimation(t);
                 }
-                else if (element == PE_IndicatorCheckBox) {
-                    if ((oldState & State_Off && state & State_On) || (oldState & State_NoChange && state & State_On)) {
-                        QNumberStyleAnimation *t = new QNumberStyleAnimation(styleObject);
-                        t->setStartValue(0.0f);
-                        t->setEndValue(1.0f);
-                        t->setStartTime(d->animationTime());
-                        t->setDuration(150);
-                        d->startAnimation(t);
-                    }
-                }
             }
-        }
-    } else if (!d->transitionsEnabled() && element == PE_IndicatorRadioButton) {
-        QObject *styleObject = option->styleObject; // Can be widget or qquickitem
-        if (styleObject) {
-            styleObject->setProperty("_q_end_radius",7.0);
-            if (option->state & State_Sunken)
-                styleObject->setProperty("_q_end_radius",2.0);
-            else if (option->state & State_MouseOver && !(option->state & State_On))
-                styleObject->setProperty("_q_end_radius",7.0);
-            else if (option->state & State_MouseOver && (option->state & State_On))
-                styleObject->setProperty("_q_end_radius",5.0);
-            else if (option->state & State_On)
-                styleObject->setProperty("_q_end_radius",4.0);
         }
     }
 
@@ -864,11 +862,16 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
             if (isOn) {
                 painter->setFont(assetFont);
                 painter->setPen(controlTextColor(option, QPalette::Window));
-                QNumberStyleAnimation *animation = qobject_cast<QNumberStyleAnimation *>(
-                        d->animation(option->styleObject));
+                qreal clipWidth = 1.0;
                 QFontMetrics fm(assetFont);
-                float clipWidth = animation != nullptr ? animation->currentValue() : 1.0f;
                 QRectF clipRect = fm.boundingRect(QStringLiteral(u"\uE73E"));
+                if (d->transitionsEnabled() && option->styleObject) {
+                    QNumberStyleAnimation *animation = qobject_cast<QNumberStyleAnimation *>(
+                            d->animation(option->styleObject));
+                    if (animation)
+                        clipWidth = animation->currentValue();
+                }
+
                 clipRect.moveCenter(center);
                 clipRect.setLeft(rect.x() + (rect.width() - clipRect.width()) / 2.0);
                 clipRect.setWidth(clipWidth * clipRect.width());
@@ -898,13 +901,15 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
     case PE_IndicatorRadioButton: {
             const bool isRtl = option->direction == Qt::RightToLeft;
             const bool isOn = option->state & State_On;
-            qreal innerRadius = option->state & State_On ? 4.0f :7.0f;
-            if (option->styleObject) {
+            qreal innerRadius = 7.0f;
+            if (d->transitionsEnabled() && option->styleObject) {
                 if (option->styleObject->property("_q_end_radius").isNull())
                     option->styleObject->setProperty("_q_end_radius", innerRadius);
                 QNumberStyleAnimation *animation = qobject_cast<QNumberStyleAnimation *>(d->animation(option->styleObject));
                 innerRadius = animation ? animation->currentValue() : option->styleObject->property("_q_end_radius").toFloat();
                 option->styleObject->setProperty("_q_inner_radius", innerRadius);
+            } else {
+                innerRadius = radioButtonInnerRadius(state);
             }
 
             QRectF rect = isRtl ? option->rect.adjusted(0, 0, -2, 0) : option->rect.adjusted(2, 0, 0, 0);
@@ -1336,13 +1341,6 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
             const qreal offset = (orientation == Qt::Horizontal && int(rect.height()) % 2 == 0)
                             || (orientation == Qt::Vertical && int(rect.width()) % 2 == 0) ? 0.5 : 0.0;
 
-            if (isIndeterminate) {
-                if (!d->animation(option->styleObject))
-                    d->startAnimation(new QProgressStyleAnimation(d->animationFps, option->styleObject));
-            } else {
-                d->stopAnimation(option->styleObject);
-            }
-
             if (!isIndeterminate) {
                 fillPercentage = ((float(progbaropt->progress) - float(progbaropt->minimum)) / (float(progbaropt->maximum) - float(progbaropt->minimum)));
                 if (orientation == Qt::Horizontal) {
@@ -1357,23 +1355,22 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
                     rect.setHeight(oldHeight * fillPercentage);
                 }
             } else {
-                if (qobject_cast<QProgressStyleAnimation *>(d->animation(option->styleObject))) {
-                    auto elapsedTime = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
-                    fillPercentage = (elapsedTime.time_since_epoch().count() % 5000)/(5000.0f*0.75);
-                    if (orientation == Qt::Horizontal) {
-                        float barBegin = qMin(qMax(fillPercentage-0.25,0.0) * rect.width(), float(rect.width()));
-                        float barEnd = qMin(fillPercentage * rect.width(), float(rect.width()));
-                        rect = QRect(QPoint(rect.left() + barBegin, rect.top()), QPoint(rect.left() + barEnd, rect.bottom()));
-                        rect.setHeight(progressBarThickness);
-                        rect.moveTop(center.y() - progressBarHalfThickness - offset);
-                    } else {
-                        float barBegin = qMin(qMax(fillPercentage-0.25,0.0) * rect.height(), float(rect.height()));
-                        float barEnd = qMin(fillPercentage * rect.height(), float(rect.height()));
-                        rect = QRect(QPoint(rect.left(), rect.bottom() - barEnd), QPoint(rect.right(), rect.bottom() - barBegin));
-                        rect.setWidth(progressBarThickness);
-                        rect.moveLeft(center.x() - progressBarHalfThickness - offset);
-                    }
+                auto elapsedTime = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
+                fillPercentage = (elapsedTime.time_since_epoch().count() % 5000)/(5000.0f*0.75);
+                if (orientation == Qt::Horizontal) {
+                    float barBegin = qMin(qMax(fillPercentage-0.25,0.0) * rect.width(), float(rect.width()));
+                    float barEnd = qMin(fillPercentage * rect.width(), float(rect.width()));
+                    rect = QRect(QPoint(rect.left() + barBegin, rect.top()), QPoint(rect.left() + barEnd, rect.bottom()));
+                    rect.setHeight(progressBarThickness);
+                    rect.moveTop(center.y() - progressBarHalfThickness - offset);
+                } else {
+                    float barBegin = qMin(qMax(fillPercentage-0.25,0.0) * rect.height(), float(rect.height()));
+                    float barEnd = qMin(fillPercentage * rect.height(), float(rect.height()));
+                    rect = QRect(QPoint(rect.left(), rect.bottom() - barEnd), QPoint(rect.right(), rect.bottom() - barBegin));
+                    rect.setWidth(progressBarThickness);
+                    rect.moveLeft(center.x() - progressBarHalfThickness - offset);
                 }
+                const_cast<QWidget*>(widget)->update();
             }
             if (progbaropt->invertedAppearance && orientation == Qt::Horizontal)
                 rect.moveLeft(originalRect.width() * (1.0 - fillPercentage));
