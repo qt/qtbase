@@ -79,7 +79,7 @@ private:
         template <size_t Ix>
         static constexpr bool matchesAt()
         {
-            return std::is_base_of_v<std::tuple_element_t<Ix, Methods<>>, M>;
+            return std::is_base_of_v<M, std::tuple_element_t<Ix, Methods<>>>;
         }
 
         template <size_t... Is>
