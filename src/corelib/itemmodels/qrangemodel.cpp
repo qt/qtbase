@@ -50,7 +50,7 @@ QRangeModel::QRangeModel(QRangeModelImplBase *impl, QObject *parent)
     \section1 Constructing the model
 
     The range can be any C++ type for which the standard methods
-    \c{std::cbegin} and \c{std::cend} are implemented, and for which the
+    \c{std::begin} and \c{std::end} are implemented, and for which the
     returned iterator type satisfies \c{std::forward_iterator}. Certain model
     operations will perform better if \c{std::size} is available, and if the
     iterator satisfies \c{std::random_access_iterator}.
@@ -513,8 +513,8 @@ QRangeModel::QRangeModel(QRangeModelImplBase *impl, QObject *parent)
     \fn template <typename Range, typename Protocol, QRangeModelDetails::if_tree_range<Range, Protocol>> QRangeModel::QRangeModel(Range &&range, Protocol &&protocol, QObject *parent)
 
     Constructs a QRangeModel instance that operates on the data in \a range.
-    The \a range has to be a sequential range for which \c{std::cbegin} and
-    \c{std::cend} are available. If \a protocol is provided, then the model
+    The \a range has to be a sequential range for which \c{std::begin} and
+    \c{std::end} are available. If \a protocol is provided, then the model
     will represent the range as a tree using the protocol implementation. The
     model instance becomes a child of \a parent.
 

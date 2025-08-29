@@ -387,17 +387,8 @@ namespace QRangeModelDetails
     static auto end(C &&c) -> decltype(std::end(refTo(std::forward<C>(c))))
     { return std::end(refTo(std::forward<C>(c))); }
     template <typename C>
-    static auto cbegin(C &&c) -> decltype(std::cbegin(refTo(std::forward<C>(c))))
-    { return std::cbegin(refTo(std::forward<C>(c))); }
-    template <typename C>
-    static auto cend(C &&c) -> decltype(std::cend(refTo(std::forward<C>(c))))
-    { return std::cend(refTo(std::forward<C>(c))); }
-    template <typename C>
     static auto pos(C &&c, int i)
     { return std::next(QRangeModelDetails::begin(std::forward<C>(c)), i); }
-    template <typename C>
-    static auto cpos(C &&c, int i)
-    { return std::next(QRangeModelDetails::cbegin(std::forward<C>(c)), i); }
 
     // Test if a type is a range, and whether we can modify it using the
     // standard C++ container member functions insert, erase, and resize.
@@ -499,8 +490,8 @@ namespace QRangeModelDetails
         static constexpr bool has_rotate = false;
     };
     template <typename C>
-    struct range_traits<C, std::void_t<decltype(cbegin(std::declval<C&>())),
-                                       decltype(cend(std::declval<C&>())),
+    struct range_traits<C, std::void_t<decltype(begin(std::declval<C&>())),
+                                       decltype(end(std::declval<C&>())),
                                        std::enable_if_t<!is_multi_role_v<C>>
                                       >> : std::true_type
     {
@@ -993,7 +984,7 @@ class QRangeModelImpl
 public:
     using range_type = QRangeModelDetails::wrapped_t<Range>;
     using row_reference = decltype(*QRangeModelDetails::begin(std::declval<range_type&>()));
-    using const_row_reference = decltype(*QRangeModelDetails::cbegin(std::declval<range_type&>()));
+    using const_row_reference = decltype(*QRangeModelDetails::begin(std::declval<const range_type&>()));
     using row_type = std::remove_reference_t<row_reference>;
     using protocol_type = QRangeModelDetails::wrapped_t<Protocol>;
 
@@ -1244,7 +1235,7 @@ public:
                     else
                         return std::as_const(value).find(this->itemModel().roleNames().value(role));
                 }();
-                if (it != value.cend())
+                if (it != QRangeModelDetails::end(value))
                     result = QRangeModelDetails::value(it);
             } else if (role == Qt::DisplayRole || role == Qt::EditRole
                     || role == Qt::RangeModelDataRole) {
@@ -1262,7 +1253,7 @@ public:
     {
         QMap<int, QVariant> result;
         bool tried = false;
-        const auto readItemData = [this, &result, &tried](auto &&value){
+        const auto readItemData = [this, &result, &tried](const auto &value){
             Q_UNUSED(this);
             using value_type = q20::remove_cvref_t<decltype(value)>;
             using multi_role = QRangeModelDetails::is_multi_role<value_type>;
@@ -1278,7 +1269,7 @@ public:
                         else
                             return {};
                     }();
-                    for (auto it = std::cbegin(value); it != std::cend(value); ++it) {
+                    for (auto it = std::begin(value); it != std::end(value); ++it) {
                         const int role = [&roleNames, key = QRangeModelDetails::key(it)]() {
                             Q_UNUSED(roleNames);
                             if constexpr (multi_role::int_key)
@@ -1871,7 +1862,7 @@ protected:
             return reader(row);
         } else if (QRangeModelDetails::isValid(row)) {
             if constexpr (dynamicColumns())
-                reader(*QRangeModelDetails::cpos(row, index.column()));
+                reader(*QRangeModelDetails::pos(row, index.column()));
             else
                 QRangeModelImplBase::for_element_at(row, index.column(), std::forward<F>(reader));
         }
@@ -2128,7 +2119,7 @@ protected:
 
         const_row_ptr grandParent = static_cast<const_row_ptr>(parent.constInternalPointer());
         const auto &parentSiblings = childrenOf(grandParent);
-        const auto it = QRangeModelDetails::cpos(parentSiblings, parent.row());
+        const auto it = QRangeModelDetails::pos(parentSiblings, parent.row());
         return this->createIndex(row, column, QRangeModelDetails::pointerTo(*it));
     }
 
@@ -2146,8 +2137,8 @@ protected:
         auto &&grandParent = this->protocol().parentRow(QRangeModelDetails::refTo(parentRow));
         const range_type &parentSiblings = childrenOf(QRangeModelDetails::pointerTo(grandParent));
         // find the index of parentRow
-        const auto begin = QRangeModelDetails::cbegin(parentSiblings);
-        const auto end = QRangeModelDetails::cend(parentSiblings);
+        const auto begin = QRangeModelDetails::begin(parentSiblings);
+        const auto end = QRangeModelDetails::end(parentSiblings);
         const auto it = std::find_if(begin, end, [parentRow](auto &&s){
             return QRangeModelDetails::pointerTo(std::forward<decltype(s)>(s)) == parentRow;
         });
@@ -2350,7 +2341,7 @@ protected:
         const_row_ptr parentRow = static_cast<const_row_ptr>(index.constInternalPointer());
         const range_type &siblings = childrenOf(parentRow);
         Q_ASSERT(index.row() < int(Base::size(siblings)));
-        return *QRangeModelDetails::cpos(siblings, index.row());
+        return *QRangeModelDetails::pos(siblings, index.row());
     }
 
     decltype(auto) rowDataImpl(const QModelIndex &index)
@@ -2429,7 +2420,7 @@ protected:
     QModelIndex indexImpl(int row, int column, const QModelIndex &) const
     {
         if constexpr (Base::dynamicColumns()) {
-            if (column < int(Base::size(*QRangeModelDetails::cpos(*this->m_data.model(), row))))
+            if (column < int(Base::size(*QRangeModelDetails::pos(*this->m_data.model(), row))))
                 return this->createIndex(row, column);
 #ifndef QT_NO_DEBUG
             // if we got here, then column < columnCount(), but this row is too short
@@ -2462,7 +2453,7 @@ protected:
         if constexpr (Base::dynamicColumns()) {
             return int(Base::size(*this->m_data.model()) == 0
                        ? 0
-                       : Base::size(*QRangeModelDetails::cbegin(*this->m_data.model())));
+                       : Base::size(*QRangeModelDetails::begin(*this->m_data.model())));
         } else if constexpr (Base::one_dimensional_range) {
             return row_traits::fixed_size();
         } else {
@@ -2527,7 +2518,7 @@ protected:
     decltype(auto) rowDataImpl(const QModelIndex &index) const
     {
         Q_ASSERT(q20::cmp_less(index.row(), Base::size(*this->m_data.model())));
-        return *QRangeModelDetails::cpos(*this->m_data.model(), index.row());
+        return *QRangeModelDetails::pos(*this->m_data.model(), index.row());
     }
 
     decltype(auto) rowDataImpl(const QModelIndex &index)
