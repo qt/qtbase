@@ -3893,9 +3893,6 @@ void tst_QComboBox::cancelClosesPopupNotDialog()
     if (QGuiApplication::platformName() == "offscreen")
         QSKIP("The offscreen platform plugin doesn't activate popups.");
 
-    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
-        QSKIP("QWindow::requestActivate() is not supported.");
-
     QDialog dialog;
     QComboBox combobox;
     combobox.addItems({"A", "B", "C"});
