@@ -5521,8 +5521,9 @@ QMetaObject::Connection QObjectPrivate::connectImpl(const QObject *sender, int s
                                              const int *types, const QMetaObject *senderMetaObject)
 {
     QtPrivate::SlotObjUniquePtr slotObj(slotObjRaw);
+    Q_ASSERT(senderMetaObject);
 
-    if (!sender || !receiver || !slotObj || !senderMetaObject) {
+    if (!sender || !receiver || !slotObj) {
         connectWarning(sender, senderMetaObject, receiver, "invalid nullptr parameter");
         return QMetaObject::Connection();
     }
