@@ -26,9 +26,12 @@ Q_DECLARE_JNI_CLASS(Rect, "android/graphics/Rect")
 Q_DECLARE_JNI_CLASS(View, "android/view/View")
 Q_DECLARE_JNI_CLASS(Window, "android/view/Window")
 Q_DECLARE_JNI_CLASS(WindowInsets, "android/view/WindowInsets")
+Q_DECLARE_JNI_CLASS(Insets, "android/view/Insets")
+Q_DECLARE_JNI_CLASS(GraphicsInsets, "android/graphics/Insets")
 Q_DECLARE_JNI_CLASS(WindowManager, "android/view/WindowManager")
 Q_DECLARE_JNI_CLASS(WindowMetrics, "android/view/WindowMetrics")
 Q_DECLARE_JNI_CLASS(ApplicationInfo, "android/content/pm/ApplicationInfo")
+Q_DECLARE_JNI_CLASS(WindowInsetsType, "android/view/WindowInsets$Type")
 
 class tst_Android : public QObject
 {
@@ -41,6 +44,8 @@ private slots:
     void testAndroidActivity();
     void testRunOnAndroidMainThread();
 #if QT_CONFIG(widgets)
+    void safeAreaWithWindowFlagsAndStates_data();
+    void safeAreaWithWindowFlagsAndStates();
     void testFullScreenDimensions();
     void orientationChange();
 #endif
@@ -218,6 +223,101 @@ void tst_Android::testRunOnAndroidMainThread()
 }
 
 #if QT_CONFIG(widgets)
+void tst_Android::safeAreaWithWindowFlagsAndStates_data()
+{
+    QTest::addColumn<Qt::WindowStates>("windowStates");
+    QTest::addColumn<Qt::WindowFlags>("windowFlags");
+
+    QTest::newRow("Normal")
+        << Qt::WindowStates(Qt::WindowNoState)
+        << Qt::WindowFlags();
+
+    QTest::newRow("Fullscreen")
+        << Qt::WindowStates(Qt::WindowFullScreen)
+        << Qt::WindowFlags();
+
+    QTest::newRow("Expanded Client Area")
+        << Qt::WindowStates(Qt::WindowNoState)
+        << Qt::WindowFlags(Qt::ExpandedClientAreaHint);
+
+    QTest::newRow("Fullscreen and Expanded Client Area")
+        << Qt::WindowStates(Qt::WindowFullScreen)
+        << Qt::WindowFlags(Qt::ExpandedClientAreaHint);
+}
+
+void tst_Android::safeAreaWithWindowFlagsAndStates()
+{
+    QFETCH(Qt::WindowStates, windowStates);
+    QFETCH(Qt::WindowFlags, windowFlags);
+
+    QWidget widget;
+    QPalette palette = widget.palette();
+    palette.setColor(QPalette::Window, Qt::red);
+    widget.setAutoFillBackground(true);
+    widget.setPalette(palette);
+    widget.setWindowFlags(windowFlags);
+
+    const bool fullscreen = windowStates & Qt::WindowFullScreen;
+    if (fullscreen)
+        widget.showFullScreen();
+    else
+        widget.show();
+
+    QVERIFY(QTest::qWaitForWindowExposed(&widget));
+
+    const int sdkVersion = QNativeInterface::QAndroidApplication::sdkVersion();
+
+    // Android 15 enables edge-to-edge by default.
+    bool edgeToEdge = sdkVersion >= __ANDROID_API_V__;
+    // Assume phones, and phones have camera cutouts.
+    bool cameraCutout = true;
+
+    const bool runsOnCI = qgetenv("QTEST_ENVIRONMENT").split(' ').contains("ci");
+    if (sdkVersion == __ANDROID_API_V__ && runsOnCI) {
+        // Furthermore, it's not reporting camera cutout margins.
+        cameraCutout = false;
+    }
+
+    const bool portrait = widget.screen()->orientation() == Qt::PortraitOrientation;
+    const bool expandedClientArea = windowFlags & Qt::ExpandedClientAreaHint;
+    const bool normalMode = !expandedClientArea && !fullscreen;
+    const bool expectNoMargins = (portrait && normalMode && !edgeToEdge)
+                            ||   (portrait && fullscreen && !cameraCutout);
+    if (expectNoMargins) {
+        QTRY_COMPARE(widget.windowHandle()->safeAreaMargins(), QMargins());
+    } else {
+        QTRY_COMPARE_NE(widget.windowHandle()->safeAreaMargins(), QMargins());
+
+        // Make sure the margins we get are the same as the system bars sizes,
+        // that way we make sure we don't end up with margins bigger than expected.
+        // So, retrieve the static system bars height.
+        using namespace QtJniTypes;
+        Context activity = QNativeInterface::QAndroidApplication::context();
+        Window window = activity.callMethod<Window>("getWindow");
+        View decorView = window.callMethod<View>("getDecorView");
+        WindowInsets insets = decorView.callMethod<WindowInsets>("getRootWindowInsets");
+        QVERIFY(insets.isValid());
+
+        // Other margins can vary between Android versions, so let's only check for top
+        int top = 0;
+        if (sdkVersion >= __ANDROID_API_R__) {
+            jint systemBarsType = WindowInsetsType::callStaticMethod<jint>("systemBars");
+            jint displayCutoutType = WindowInsetsType::callStaticMethod<jint>("displayCutout");
+            jint combinedType = systemBarsType | displayCutoutType;
+
+            GraphicsInsets insetsIgnoreVisibility = insets.callMethod<GraphicsInsets>(
+                "getInsetsIgnoringVisibility", combinedType);
+            QVERIFY(insetsIgnoreVisibility.isValid());
+            top = insetsIgnoreVisibility.getField<jint>("top");
+        } else {
+            top    = insets.callMethod<jint>("getStableInsetTop");
+        }
+
+        qreal dpr = widget.devicePixelRatio();
+        QCOMPARE_LE(widget.windowHandle()->safeAreaMargins().top(), qRound(top / dpr));
+    }
+}
+
 // QTBUG-107604
 void tst_Android::testFullScreenDimensions()
 {
