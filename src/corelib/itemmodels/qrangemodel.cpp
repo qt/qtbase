@@ -1030,9 +1030,10 @@ void QRangeModel::multiData(const QModelIndex &index, QModelRoleDataSpan roleDat
     \sa QAbstractItemModel::roleNames()
 */
 
-QHash<int, QByteArray> QRangeModelImplBase::roleNamesForMetaObject(const QMetaObject &metaObject) const
+QHash<int, QByteArray> QRangeModelImplBase::roleNamesForMetaObject(const QAbstractItemModel &model,
+                                                                   const QMetaObject &metaObject)
 {
-    const auto defaults = itemModel().QAbstractItemModel::roleNames();
+    const auto defaults = model.QAbstractItemModel::roleNames();
     QHash<int, QByteArray> result = {{Qt::RangeModelDataRole, "modelData"}};
     const int offset = metaObject.propertyOffset();
     for (int i = offset; i < metaObject.propertyCount(); ++i) {
@@ -1046,7 +1047,7 @@ QHash<int, QByteArray> QRangeModelImplBase::roleNamesForMetaObject(const QMetaOb
     return result;
 }
 
-QHash<int, QByteArray> QRangeModelImplBase::roleNamesForSimpleType() const
+QHash<int, QByteArray> QRangeModelImplBase::roleNamesForSimpleType()
 {
     // just a plain value
     return QHash<int, QByteArray>{

@@ -971,8 +971,9 @@ protected:
     inline const QAbstractItemModel &itemModel() const;
 
     // implemented in qrangemodel.cpp
-    Q_CORE_EXPORT QHash<int, QByteArray> roleNamesForMetaObject(const QMetaObject &metaObject) const;
-    Q_CORE_EXPORT QHash<int, QByteArray> roleNamesForSimpleType() const;
+    Q_CORE_EXPORT static QHash<int, QByteArray> roleNamesForMetaObject(const QAbstractItemModel &model,
+                                                                       const QMetaObject &metaObject);
+    Q_CORE_EXPORT static QHash<int, QByteArray> roleNamesForSimpleType();
 };
 
 template <typename Structure, typename Range,
@@ -1542,10 +1543,11 @@ public:
         // will be 'void' if columns don't all have the same type
         using item_type = typename row_traits::item_type;
         if constexpr (QRangeModelDetails::has_metaobject_v<item_type>) {
-            return this->roleNamesForMetaObject(QRangeModelDetails::wrapped_t<item_type>::staticMetaObject);
+            return QRangeModelImplBase::roleNamesForMetaObject(this->itemModel(),
+                                        QRangeModelDetails::wrapped_t<item_type>::staticMetaObject);
         } else if constexpr (std::negation_v<std::disjunction<std::is_void<item_type>,
                                              QRangeModelDetails::is_multi_role<item_type>>>) {
-            return this->roleNamesForSimpleType();
+            return QRangeModelImplBase::roleNamesForSimpleType();
         }
 
         return this->itemModel().QAbstractItemModel::roleNames();
