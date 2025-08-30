@@ -5764,7 +5764,7 @@ void QRhiImplementation::updateLayoutDesc(QRhiShaderResourceBindings *srb)
 
     \value ImageLoadStore Image load and store
 
-    \value BufferLoad Storage buffer store (with GLSL this maps to reading from
+    \value BufferLoad Storage buffer load (with GLSL this maps to reading from
     a shader storage buffer)
 
     \value BufferStore Storage buffer store (with GLSL this maps to writing to
