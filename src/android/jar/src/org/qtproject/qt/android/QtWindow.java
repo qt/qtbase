@@ -87,9 +87,15 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
 
         setOnApplyWindowInsetsListener((view, insets) -> {
             WindowInsets windowInsets = view.onApplyWindowInsets(insets);
-            Insets safeInsets = getSafeInsets(this, windowInsets);
-            safeAreaMarginsChanged(safeInsets, getId());
-            m_firstSafeMarginsDelivered = true;
+            ViewTreeObserver.OnPreDrawListener listener = new ViewTreeObserver.OnPreDrawListener() {
+                @Override
+                public boolean onPreDraw() {
+                    reportSafeAreaMargins(windowInsets, getId());
+                    m_firstSafeMarginsDelivered = true;
+                    return true;
+                }
+            };
+            getViewTreeObserver().addOnPreDrawListener(listener);
 
             return windowInsets;
         });
@@ -98,7 +104,7 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
         if (isAttachedToWindow()) {
             WindowInsets insets = getRootWindowInsets();
             if (insets != null) {
-                safeAreaMarginsChanged(getSafeInsets(this, insets), getId());
+                getRootView().post(() -> reportSafeAreaMargins(insets, getId()));
                 m_firstSafeMarginsDelivered = true;
             }
         } else { // Otherwise request it upon attachement
@@ -128,7 +134,7 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
                         WindowInsets insets = getRootWindowInsets();
                         if (insets != null) {
                             getViewTreeObserver().removeOnPreDrawListener(this);
-                            safeAreaMarginsChanged(getSafeInsets(QtWindow.this, insets), getId());
+                            getRootView().post(() -> reportSafeAreaMargins(insets, getId()));
                             m_firstSafeMarginsDelivered = true;
                             return true;
                         }
@@ -152,18 +158,10 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
         }
 
         // Android R and older
-        int left = 0;
-        int top = 0;
-        int right = 0;
-        int bottom = 0;
-
-        int visibility = view.getSystemUiVisibility();
-        if ((visibility & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
-            left = insets.getSystemWindowInsetLeft();
-            top = insets.getSystemWindowInsetTop();
-            right = insets.getSystemWindowInsetRight();
-            bottom = insets.getSystemWindowInsetBottom();
-        }
+        int left = insets.getSystemWindowInsetLeft();
+        int top = insets.getSystemWindowInsetTop();
+        int right = insets.getSystemWindowInsetRight();
+        int bottom = insets.getSystemWindowInsetBottom();
 
         // Android 9 and 10 emulators don't seem to be able
         // to handle this, but let's have the logic here anyway
@@ -176,6 +174,36 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
         }
 
         return Insets.of(left, top, right, bottom);
+    }
+
+    private void reportSafeAreaMargins(WindowInsets insets, int id)
+    {
+        View rootView = getRootView();
+
+        int[] rootLocation = new int[2];
+        rootView.getLocationOnScreen(rootLocation);
+        int rootX = rootLocation[0];
+        int rootY = rootLocation[1];
+
+        int[] windowLocation = new int[2];
+        getLocationOnScreen(windowLocation);
+        int windowX = windowLocation[0];
+        int windowY = windowLocation[1];
+
+        // Offset values of window from root
+        int leftOffset = windowX - rootX;
+        int topOffset = windowY - rootY;
+        int rightOffset = (rootX + rootView.getWidth()) - (windowX + getWidth());
+        int bottomOffset = (rootY + rootView.getHeight()) - (windowY + getHeight());
+
+        // Find the remaining minimum safe margins
+        Insets safeInsets = getSafeInsets(this, insets);
+        int left = safeInsets.left > 0 ? Math.max(0, safeInsets.left - leftOffset) : 0;
+        int top = safeInsets.top > 0 ? Math.max(0, safeInsets.top - topOffset) : 0;
+        int right = safeInsets.right > 0 ? Math.max(0, safeInsets.right - rightOffset) : 0;
+        int bottom = safeInsets.bottom > 0 ? Math.max(0, safeInsets.bottom - bottomOffset) : 0;
+
+        safeAreaMarginsChanged(Insets.of(left, top, right, bottom), id);
     }
 
     @UsedFromNativeCode
