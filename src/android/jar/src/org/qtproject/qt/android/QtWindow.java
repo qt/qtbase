@@ -4,9 +4,10 @@
 package org.qtproject.qt.android;
 
 import android.annotation.SuppressLint;
+import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Context;
-
+import android.content.res.TypedArray;
 import android.graphics.Insets;
 
 import android.view.DisplayCutout;
@@ -31,6 +32,7 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
     private final QtEditText m_editText;
     private final QtInputConnection.QtInputConnectionListener m_inputConnectionListener;
     private boolean m_firstSafeMarginsDelivered = false;
+    private int m_actionBarHeight = -1;
 
     private static native void setSurface(int windowId, Surface surface);
     private static native void safeAreaMarginsChanged(Insets insets, int id);
@@ -173,6 +175,17 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
             bottom = Math.max(bottom, cutout.getSafeInsetBottom());
         }
 
+        // If a theme supports an action bar, sometimes it even if it's hidden
+        // the insets might report values including the bar's height, not entirely
+        // sure whether it's due to a delay or a bug, either way ensure the top
+        // margin doesn't include the action bar's height.
+        ActionBar actionBar = ((Activity) getContext()).getActionBar();
+        if (actionBar == null || !actionBar.isShowing()) {
+            int topWithoutActionBar = top - actionBarHeight();
+            if (topWithoutActionBar > 0)
+                top = topWithoutActionBar;
+        }
+
         return Insets.of(left, top, right, bottom);
     }
 
@@ -204,6 +217,20 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
         int bottom = safeInsets.bottom > 0 ? Math.max(0, safeInsets.bottom - bottomOffset) : 0;
 
         safeAreaMarginsChanged(Insets.of(left, top, right, bottom), id);
+    }
+
+    private int actionBarHeight()
+    {
+        if (m_actionBarHeight == -1) {
+            TypedArray ta = getContext().getTheme().obtainStyledAttributes(
+                new int[] { android.R.attr.actionBarSize });
+            try {
+                m_actionBarHeight = ta.getDimensionPixelSize(0, 0);
+            } finally {
+                ta.recycle();
+            }
+        }
+        return m_actionBarHeight;
     }
 
     @UsedFromNativeCode
