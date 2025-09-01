@@ -1,7 +1,8 @@
-<ui version="4.0" >
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
  <class>ConnectDialog</class>
- <widget class="QDialog" name="ConnectDialog" >
-  <property name="geometry" >
+ <widget class="QDialog" name="ConnectDialog">
+  <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
@@ -9,38 +10,38 @@
     <height>361</height>
    </rect>
   </property>
-  <property name="windowTitle" >
+  <property name="windowTitle">
    <string>Configure Connection</string>
   </property>
-  <layout class="QGridLayout" >
-   <item row="0" column="0" colspan="2" >
-    <widget class="QGroupBox" name="signalGroupBox" >
-     <property name="title" >
+  <layout class="QGridLayout">
+   <item row="0" column="0" colspan="2">
+    <widget class="QGroupBox" name="signalGroupBox">
+     <property name="title">
       <string>GroupBox</string>
      </property>
-     <layout class="QVBoxLayout" >
+     <layout class="QVBoxLayout">
       <item>
-       <widget class="QListWidget" name="signalList" >
-        <property name="textElideMode" >
-         <enum>Qt::ElideMiddle</enum>
+       <widget class="QListWidget" name="signalList">
+        <property name="textElideMode">
+         <enum>Qt::TextElideMode::ElideMiddle</enum>
         </property>
        </widget>
       </item>
       <item>
-       <layout class="QHBoxLayout" >
+       <layout class="QHBoxLayout">
         <item>
-         <widget class="QToolButton" name="editSignalsButton" >
-          <property name="text" >
+         <widget class="QToolButton" name="editSignalsButton">
+          <property name="text">
            <string>Edit...</string>
           </property>
          </widget>
         </item>
         <item>
          <spacer>
-          <property name="orientation" >
-           <enum>Qt::Horizontal</enum>
+          <property name="orientation">
+           <enum>Qt::Orientation::Horizontal</enum>
           </property>
-          <property name="sizeHint" >
+          <property name="sizeHint" stdset="0">
            <size>
             <width>40</width>
             <height>20</height>
@@ -53,34 +54,34 @@
      </layout>
     </widget>
    </item>
-   <item row="0" column="2" >
-    <widget class="QGroupBox" name="slotGroupBox" >
-     <property name="title" >
+   <item row="0" column="2">
+    <widget class="QGroupBox" name="slotGroupBox">
+     <property name="title">
       <string>GroupBox</string>
      </property>
-     <layout class="QVBoxLayout" >
+     <layout class="QVBoxLayout">
       <item>
-       <widget class="QListWidget" name="slotList" >
-        <property name="textElideMode" >
-         <enum>Qt::ElideMiddle</enum>
+       <widget class="QListWidget" name="slotList">
+        <property name="textElideMode">
+         <enum>Qt::TextElideMode::ElideMiddle</enum>
         </property>
        </widget>
       </item>
       <item>
-       <layout class="QHBoxLayout" >
+       <layout class="QHBoxLayout">
         <item>
-         <widget class="QToolButton" name="editSlotsButton" >
-          <property name="text" >
+         <widget class="QToolButton" name="editSlotsButton">
+          <property name="text">
            <string>Edit...</string>
           </property>
          </widget>
         </item>
         <item>
          <spacer>
-          <property name="orientation" >
-           <enum>Qt::Horizontal</enum>
+          <property name="orientation">
+           <enum>Qt::Orientation::Horizontal</enum>
           </property>
-          <property name="sizeHint" >
+          <property name="sizeHint" stdset="0">
            <size>
             <width>40</width>
             <height>20</height>
@@ -93,20 +94,20 @@
      </layout>
     </widget>
    </item>
-   <item row="1" column="0" >
-    <widget class="QCheckBox" name="showAllCheckBox" >
-     <property name="text" >
+   <item row="1" column="0">
+    <widget class="QCheckBox" name="showAllCheckBox">
+     <property name="text">
       <string>Show signals and slots inherited from QWidget</string>
      </property>
     </widget>
    </item>
-   <item row="2" column="1" colspan="2" >
-    <widget class="QDialogButtonBox" name="buttonBox" >
-     <property name="orientation" >
-      <enum>Qt::Horizontal</enum>
+   <item row="2" column="1" colspan="2">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Orientation::Horizontal</enum>
      </property>
-     <property name="standardButtons" >
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::NoButton|QDialogButtonBox::Ok</set>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok</set>
      </property>
     </widget>
    </item>
@@ -120,11 +121,11 @@
    <receiver>ConnectDialog</receiver>
    <slot>accept()</slot>
    <hints>
-    <hint type="sourcelabel" >
+    <hint type="sourcelabel">
      <x>248</x>
      <y>254</y>
     </hint>
-    <hint type="destinationlabel" >
+    <hint type="destinationlabel">
      <x>157</x>
      <y>274</y>
     </hint>
@@ -136,11 +137,11 @@
    <receiver>ConnectDialog</receiver>
    <slot>reject()</slot>
    <hints>
-    <hint type="sourcelabel" >
+    <hint type="sourcelabel">
      <x>316</x>
      <y>260</y>
     </hint>
-    <hint type="destinationlabel" >
+    <hint type="destinationlabel">
      <x>286</x>
      <y>274</y>
     </hint>

@@ -1,7 +1,8 @@
-<ui version="4.0" >
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
  <class>ChatDialog</class>
- <widget class="QDialog" name="ChatDialog" >
-  <property name="geometry" >
+ <widget class="QDialog" name="ChatDialog">
+  <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
@@ -9,66 +10,66 @@
     <height>349</height>
    </rect>
   </property>
-  <property name="windowTitle" >
+  <property name="windowTitle">
    <string>Chat</string>
   </property>
-  <layout class="QVBoxLayout" >
-   <property name="margin" >
-    <number>9</number>
-   </property>
-   <property name="spacing" >
+  <layout class="QVBoxLayout">
+   <property name="spacing">
     <number>6</number>
    </property>
+   <property name="margin" stdset="0">
+    <number>9</number>
+   </property>
    <item>
-    <layout class="QHBoxLayout" >
-     <property name="margin" >
-      <number>0</number>
-     </property>
-     <property name="spacing" >
+    <layout class="QHBoxLayout">
+     <property name="spacing">
       <number>6</number>
      </property>
+     <property name="margin" stdset="0">
+      <number>0</number>
+     </property>
      <item>
-      <widget class="QTextEdit" name="textEdit" >
-       <property name="focusPolicy" >
-        <enum>Qt::NoFocus</enum>
+      <widget class="QTextEdit" name="textEdit">
+       <property name="focusPolicy">
+        <enum>Qt::FocusPolicy::NoFocus</enum>
        </property>
-       <property name="readOnly" >
+       <property name="readOnly">
         <bool>true</bool>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QListWidget" name="listWidget" >
-       <property name="maximumSize" >
+      <widget class="QListWidget" name="listWidget">
+       <property name="maximumSize">
         <size>
          <width>180</width>
          <height>16777215</height>
         </size>
        </property>
-       <property name="focusPolicy" >
-        <enum>Qt::NoFocus</enum>
+       <property name="focusPolicy">
+        <enum>Qt::FocusPolicy::NoFocus</enum>
        </property>
       </widget>
      </item>
     </layout>
    </item>
    <item>
-    <layout class="QHBoxLayout" >
-     <property name="margin" >
-      <number>0</number>
-     </property>
-     <property name="spacing" >
+    <layout class="QHBoxLayout">
+     <property name="spacing">
       <number>6</number>
      </property>
+     <property name="margin" stdset="0">
+      <number>0</number>
+     </property>
      <item>
-      <widget class="QLabel" name="label" >
-       <property name="text" >
+      <widget class="QLabel" name="label">
+       <property name="text">
         <string>Message:</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QLineEdit" name="lineEdit" />
+      <widget class="QLineEdit" name="lineEdit"/>
      </item>
     </layout>
    </item>

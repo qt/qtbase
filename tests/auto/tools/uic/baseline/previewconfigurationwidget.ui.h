@@ -41,6 +41,7 @@ public:
     {
         if (PreviewConfigurationWidget->objectName().isEmpty())
             PreviewConfigurationWidget->setObjectName("PreviewConfigurationWidget");
+        PreviewConfigurationWidget->resize(335, 155);
         PreviewConfigurationWidget->setCheckable(true);
         formLayout = new QFormLayout(PreviewConfigurationWidget);
         formLayout->setObjectName("formLayout");

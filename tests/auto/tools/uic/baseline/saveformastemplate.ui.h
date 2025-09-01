@@ -46,30 +46,31 @@ public:
     {
         if (SaveFormAsTemplate->objectName().isEmpty())
             SaveFormAsTemplate->setObjectName("SaveFormAsTemplate");
+        SaveFormAsTemplate->resize(321, 138);
         vboxLayout = new QVBoxLayout(SaveFormAsTemplate);
         vboxLayout->setObjectName("vboxLayout");
         formLayout = new QFormLayout();
         formLayout->setObjectName("formLayout");
         label = new QLabel(SaveFormAsTemplate);
         label->setObjectName("label");
-        label->setFrameShape(QFrame::NoFrame);
-        label->setFrameShadow(QFrame::Plain);
-        label->setTextFormat(Qt::AutoText);
+        label->setFrameShape(QFrame::Shape::NoFrame);
+        label->setFrameShadow(QFrame::Shadow::Plain);
+        label->setTextFormat(Qt::TextFormat::AutoText);
 
         formLayout->setWidget(0, QFormLayout::ItemRole::LabelRole, label);
 
         templateNameEdit = new QLineEdit(SaveFormAsTemplate);
         templateNameEdit->setObjectName("templateNameEdit");
         templateNameEdit->setMinimumSize(QSize(222, 0));
-        templateNameEdit->setEchoMode(QLineEdit::Normal);
+        templateNameEdit->setEchoMode(QLineEdit::EchoMode::Normal);
 
         formLayout->setWidget(0, QFormLayout::ItemRole::FieldRole, templateNameEdit);
 
         label_2 = new QLabel(SaveFormAsTemplate);
         label_2->setObjectName("label_2");
-        label_2->setFrameShape(QFrame::NoFrame);
-        label_2->setFrameShadow(QFrame::Plain);
-        label_2->setTextFormat(Qt::AutoText);
+        label_2->setFrameShape(QFrame::Shape::NoFrame);
+        label_2->setFrameShadow(QFrame::Shadow::Plain);
+        label_2->setTextFormat(Qt::TextFormat::AutoText);
 
         formLayout->setWidget(1, QFormLayout::ItemRole::LabelRole, label_2);
 
@@ -83,15 +84,15 @@ public:
 
         horizontalLine = new QFrame(SaveFormAsTemplate);
         horizontalLine->setObjectName("horizontalLine");
-        horizontalLine->setFrameShape(QFrame::HLine);
-        horizontalLine->setFrameShadow(QFrame::Sunken);
+        horizontalLine->setFrameShape(QFrame::Shape::HLine);
+        horizontalLine->setFrameShadow(QFrame::Shadow::Sunken);
 
         vboxLayout->addWidget(horizontalLine);
 
         buttonBox = new QDialogButtonBox(SaveFormAsTemplate);
         buttonBox->setObjectName("buttonBox");
-        buttonBox->setOrientation(Qt::Horizontal);
-        buttonBox->setStandardButtons(QDialogButtonBox::Cancel|QDialogButtonBox::Ok);
+        buttonBox->setOrientation(Qt::Orientation::Horizontal);
+        buttonBox->setStandardButtons(QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok);
 
         vboxLayout->addWidget(buttonBox);
 

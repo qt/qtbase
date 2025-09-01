@@ -99,7 +99,7 @@ public:
 
         label_5 = new QLabel(groupBox);
         label_5->setObjectName("label_5");
-        label_5->setAlignment(Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop);
+        label_5->setAlignment(Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop);
 
         gridLayout->addWidget(label_5, 5, 0, 1, 1);
 
@@ -115,16 +115,16 @@ public:
 
         torrentContents = new QTextEdit(groupBox);
         torrentContents->setObjectName("torrentContents");
-        torrentContents->setFocusPolicy(Qt::NoFocus);
+        torrentContents->setFocusPolicy(Qt::FocusPolicy::NoFocus);
         torrentContents->setTabChangesFocus(true);
-        torrentContents->setLineWrapMode(QTextEdit::NoWrap);
+        torrentContents->setLineWrapMode(QTextEdit::LineWrapMode::NoWrap);
         torrentContents->setReadOnly(true);
 
         gridLayout->addWidget(torrentContents, 5, 1, 1, 3);
 
         destinationFolder = new QLineEdit(groupBox);
         destinationFolder->setObjectName("destinationFolder");
-        destinationFolder->setFocusPolicy(Qt::StrongFocus);
+        destinationFolder->setFocusPolicy(Qt::FocusPolicy::StrongFocus);
 
         gridLayout->addWidget(destinationFolder, 6, 1, 1, 2);
 

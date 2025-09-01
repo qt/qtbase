@@ -42,7 +42,7 @@ public:
     {
         if (DownloadItem->objectName().isEmpty())
             DownloadItem->setObjectName("DownloadItem");
-        DownloadItem->resize(423, 110);
+        DownloadItem->resize(423, 116);
         horizontalLayout = new QHBoxLayout(DownloadItem);
         horizontalLayout->setContentsMargins(0, 0, 0, 0);
         horizontalLayout->setObjectName("horizontalLayout");

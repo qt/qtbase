@@ -57,7 +57,7 @@ public:
     {
         if (TranslateDialog->objectName().isEmpty())
             TranslateDialog->setObjectName("TranslateDialog");
-        TranslateDialog->resize(407, 145);
+        TranslateDialog->resize(427, 209);
         QSizePolicy sizePolicy(QSizePolicy::Policy::Preferred, QSizePolicy::Policy::Maximum);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
@@ -75,8 +75,6 @@ public:
         gridLayout = new QGridLayout();
         gridLayout->setSpacing(6);
         gridLayout->setObjectName("gridLayout");
-        gridLayout->setHorizontalSpacing(6);
-        gridLayout->setVerticalSpacing(6);
         gridLayout->setContentsMargins(0, 0, 0, 0);
         ledTranslateTo = new QLineEdit(TranslateDialog);
         ledTranslateTo->setObjectName("ledTranslateTo");

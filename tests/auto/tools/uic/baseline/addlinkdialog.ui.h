@@ -40,6 +40,7 @@ public:
     {
         if (AddLinkDialog->objectName().isEmpty())
             AddLinkDialog->setObjectName("AddLinkDialog");
+        AddLinkDialog->resize(400, 137);
         AddLinkDialog->setSizeGripEnabled(false);
         AddLinkDialog->setModal(true);
         verticalLayout = new QVBoxLayout(AddLinkDialog);
@@ -83,8 +84,8 @@ public:
 
         buttonBox = new QDialogButtonBox(AddLinkDialog);
         buttonBox->setObjectName("buttonBox");
-        buttonBox->setOrientation(Qt::Horizontal);
-        buttonBox->setStandardButtons(QDialogButtonBox::Cancel|QDialogButtonBox::Ok);
+        buttonBox->setOrientation(Qt::Orientation::Horizontal);
+        buttonBox->setStandardButtons(QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok);
 
         verticalLayout->addWidget(buttonBox);
 

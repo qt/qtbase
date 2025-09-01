@@ -17,7 +17,7 @@
    <item>
     <widget class="QSlider" name="verticalSlider">
      <property name="orientation">
-      <enum>Qt::Vertical</enum>
+      <enum>Qt::Orientation::Vertical</enum>
      </property>
     </widget>
    </item>

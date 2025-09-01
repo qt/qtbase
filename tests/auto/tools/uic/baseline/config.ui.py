@@ -31,7 +31,7 @@ class Ui_Config(object):
     def setupUi(self, Config):
         if not Config.objectName():
             Config.setObjectName(u"Config")
-        Config.resize(600, 650)
+        Config.resize(600, 772)
         Config.setSizeGripEnabled(True)
         self.vboxLayout = QVBoxLayout(Config)
         self.vboxLayout.setSpacing(6)
@@ -236,8 +236,6 @@ class Ui_Config(object):
         self.gridLayout.setSpacing(6)
         self.gridLayout.setContentsMargins(11, 11, 11, 11)
         self.gridLayout.setObjectName(u"gridLayout")
-        self.gridLayout.setHorizontalSpacing(6)
-        self.gridLayout.setVerticalSpacing(6)
         self.gridLayout.setContentsMargins(11, 11, 11, 11)
         self.TextLabel3 = QLabel(self.GroupBox1)
         self.TextLabel3.setObjectName(u"TextLabel3")
@@ -323,7 +321,7 @@ class Ui_Config(object):
         self.bslider.setPalette(palette)
         self.bslider.setMaximum(400)
         self.bslider.setValue(100)
-        self.bslider.setOrientation(Qt.Horizontal)
+        self.bslider.setOrientation(Qt.Orientation.Horizontal)
 
         self.gridLayout.addWidget(self.bslider, 6, 1, 1, 1)
 
@@ -404,7 +402,7 @@ class Ui_Config(object):
         self.gslider.setPalette(palette1)
         self.gslider.setMaximum(400)
         self.gslider.setValue(100)
-        self.gslider.setOrientation(Qt.Horizontal)
+        self.gslider.setOrientation(Qt.Orientation.Horizontal)
 
         self.gridLayout.addWidget(self.gslider, 4, 1, 1, 1)
 
@@ -484,7 +482,7 @@ class Ui_Config(object):
         self.gammaslider.setPalette(palette2)
         self.gammaslider.setMaximum(400)
         self.gammaslider.setValue(100)
-        self.gammaslider.setOrientation(Qt.Horizontal)
+        self.gammaslider.setOrientation(Qt.Orientation.Horizontal)
 
         self.gridLayout.addWidget(self.gammaslider, 0, 1, 1, 1)
 
@@ -565,7 +563,7 @@ class Ui_Config(object):
         self.rslider.setPalette(palette3)
         self.rslider.setMaximum(400)
         self.rslider.setValue(100)
-        self.rslider.setOrientation(Qt.Horizontal)
+        self.rslider.setOrientation(Qt.Orientation.Horizontal)
 
         self.gridLayout.addWidget(self.rslider, 2, 1, 1, 1)
 

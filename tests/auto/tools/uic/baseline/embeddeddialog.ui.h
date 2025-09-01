@@ -37,7 +37,7 @@ public:
     {
         if (embeddedDialog->objectName().isEmpty())
             embeddedDialog->setObjectName("embeddedDialog");
-        embeddedDialog->resize(407, 134);
+        embeddedDialog->resize(458, 148);
         formLayout = new QFormLayout(embeddedDialog);
         formLayout->setObjectName("formLayout");
         label = new QLabel(embeddedDialog);
@@ -79,7 +79,7 @@ public:
 
         spacing = new QSlider(embeddedDialog);
         spacing->setObjectName("spacing");
-        spacing->setOrientation(Qt::Horizontal);
+        spacing->setOrientation(Qt::Orientation::Horizontal);
 
         formLayout->setWidget(3, QFormLayout::ItemRole::FieldRole, spacing);
 

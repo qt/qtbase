@@ -40,7 +40,7 @@ public:
 
         label = new QLabel(Dialog);
         label->setObjectName("label");
-        label->setAlignment(Qt::AlignCenter);
+        label->setAlignment(Qt::AlignmentFlag::AlignCenter);
         label->setWordWrap(true);
 
         gridLayout->addWidget(label, 1, 0, 1, 1);

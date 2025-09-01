@@ -62,77 +62,77 @@ public:
         gridLayout->setObjectName("gridLayout");
         startButton = new QPushButton(TetrixWindow);
         startButton->setObjectName("startButton");
-        startButton->setFocusPolicy(Qt::NoFocus);
+        startButton->setFocusPolicy(Qt::FocusPolicy::NoFocus);
 
         gridLayout->addWidget(startButton, 4, 0, 1, 1);
 
         linesLcd = new QLCDNumber(TetrixWindow);
         linesLcd->setObjectName("linesLcd");
-        linesLcd->setSegmentStyle(QLCDNumber::Filled);
+        linesLcd->setSegmentStyle(QLCDNumber::SegmentStyle::Filled);
 
         gridLayout->addWidget(linesLcd, 3, 2, 1, 1);
 
         linesRemovedLabel = new QLabel(TetrixWindow);
         linesRemovedLabel->setObjectName("linesRemovedLabel");
-        linesRemovedLabel->setAlignment(Qt::AlignBottom|Qt::AlignHCenter);
+        linesRemovedLabel->setAlignment(Qt::AlignmentFlag::AlignBottom|Qt::AlignmentFlag::AlignHCenter);
 
         gridLayout->addWidget(linesRemovedLabel, 2, 2, 1, 1);
 
         pauseButton = new QPushButton(TetrixWindow);
         pauseButton->setObjectName("pauseButton");
-        pauseButton->setFocusPolicy(Qt::NoFocus);
+        pauseButton->setFocusPolicy(Qt::FocusPolicy::NoFocus);
 
         gridLayout->addWidget(pauseButton, 5, 2, 1, 1);
 
         scoreLcd = new QLCDNumber(TetrixWindow);
         scoreLcd->setObjectName("scoreLcd");
-        scoreLcd->setSegmentStyle(QLCDNumber::Filled);
+        scoreLcd->setSegmentStyle(QLCDNumber::SegmentStyle::Filled);
 
         gridLayout->addWidget(scoreLcd, 1, 2, 1, 1);
 
         board = new TetrixBoard(TetrixWindow);
         board->setObjectName("board");
-        board->setFocusPolicy(Qt::StrongFocus);
-        board->setFrameShape(QFrame::Panel);
-        board->setFrameShadow(QFrame::Sunken);
+        board->setFocusPolicy(Qt::FocusPolicy::StrongFocus);
+        board->setFrameShape(QFrame::Shape::Panel);
+        board->setFrameShadow(QFrame::Shadow::Sunken);
 
         gridLayout->addWidget(board, 0, 1, 6, 1);
 
         levelLabel = new QLabel(TetrixWindow);
         levelLabel->setObjectName("levelLabel");
-        levelLabel->setAlignment(Qt::AlignBottom|Qt::AlignHCenter);
+        levelLabel->setAlignment(Qt::AlignmentFlag::AlignBottom|Qt::AlignmentFlag::AlignHCenter);
 
         gridLayout->addWidget(levelLabel, 2, 0, 1, 1);
 
         nextLabel = new QLabel(TetrixWindow);
         nextLabel->setObjectName("nextLabel");
-        nextLabel->setAlignment(Qt::AlignBottom|Qt::AlignHCenter);
+        nextLabel->setAlignment(Qt::AlignmentFlag::AlignBottom|Qt::AlignmentFlag::AlignHCenter);
 
         gridLayout->addWidget(nextLabel, 0, 0, 1, 1);
 
         levelLcd = new QLCDNumber(TetrixWindow);
         levelLcd->setObjectName("levelLcd");
-        levelLcd->setSegmentStyle(QLCDNumber::Filled);
+        levelLcd->setSegmentStyle(QLCDNumber::SegmentStyle::Filled);
 
         gridLayout->addWidget(levelLcd, 3, 0, 1, 1);
 
         scoreLabel = new QLabel(TetrixWindow);
         scoreLabel->setObjectName("scoreLabel");
-        scoreLabel->setAlignment(Qt::AlignBottom|Qt::AlignHCenter);
+        scoreLabel->setAlignment(Qt::AlignmentFlag::AlignBottom|Qt::AlignmentFlag::AlignHCenter);
 
         gridLayout->addWidget(scoreLabel, 0, 2, 1, 1);
 
         nextPieceLabel = new QLabel(TetrixWindow);
         nextPieceLabel->setObjectName("nextPieceLabel");
-        nextPieceLabel->setFrameShape(QFrame::Box);
-        nextPieceLabel->setFrameShadow(QFrame::Raised);
-        nextPieceLabel->setAlignment(Qt::AlignCenter);
+        nextPieceLabel->setFrameShape(QFrame::Shape::Box);
+        nextPieceLabel->setFrameShadow(QFrame::Shadow::Raised);
+        nextPieceLabel->setAlignment(Qt::AlignmentFlag::AlignCenter);
 
         gridLayout->addWidget(nextPieceLabel, 1, 0, 1, 1);
 
         quitButton = new QPushButton(TetrixWindow);
         quitButton->setObjectName("quitButton");
-        quitButton->setFocusPolicy(Qt::NoFocus);
+        quitButton->setFocusPolicy(Qt::FocusPolicy::NoFocus);
 
         gridLayout->addWidget(quitButton, 4, 2, 1, 1);
 

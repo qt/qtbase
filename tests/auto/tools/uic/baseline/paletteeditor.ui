@@ -1,78 +1,75 @@
-<ui version="4.0" >
-<comment>
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <comment>
 * Copyright (C) 2016 The Qt Company Ltd.
 * SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 </comment>
  <class>qdesigner_internal::PaletteEditor</class>
- <widget class="QDialog" name="qdesigner_internal::PaletteEditor" >
-  <property name="geometry" >
+ <widget class="QDialog" name="qdesigner_internal::PaletteEditor">
+  <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>365</width>
-    <height>409</height>
+    <width>397</width>
+    <height>422</height>
    </rect>
   </property>
-  <property name="sizePolicy" >
-   <sizepolicy>
-    <hsizetype>7</hsizetype>
-    <vsizetype>7</vsizetype>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
     <horstretch>0</horstretch>
     <verstretch>0</verstretch>
    </sizepolicy>
   </property>
-  <property name="windowTitle" >
+  <property name="windowTitle">
    <string>Edit Palette</string>
   </property>
-  <layout class="QVBoxLayout" >
-   <property name="margin" >
-    <number>9</number>
-   </property>
-   <property name="spacing" >
+  <layout class="QVBoxLayout">
+   <property name="spacing">
     <number>6</number>
    </property>
+   <property name="margin" stdset="0">
+    <number>9</number>
+   </property>
    <item>
-    <widget class="QGroupBox" name="advancedBox" >
-     <property name="minimumSize" >
+    <widget class="QGroupBox" name="advancedBox">
+     <property name="minimumSize">
       <size>
        <width>0</width>
        <height>0</height>
       </size>
      </property>
-     <property name="maximumSize" >
+     <property name="maximumSize">
       <size>
        <width>16777215</width>
        <height>16777215</height>
       </size>
      </property>
-     <property name="title" >
+     <property name="title">
       <string>Tune Palette</string>
      </property>
-     <layout class="QGridLayout" >
-      <property name="margin" >
+     <layout class="QGridLayout">
+      <property name="margin" stdset="0">
        <number>9</number>
       </property>
-      <property name="spacing" >
+      <property name="spacing">
        <number>6</number>
       </property>
-      <item row="0" column="1" >
-       <widget class="QtColorButton" name="buildButton" >
-        <property name="sizePolicy" >
-         <sizepolicy>
-          <hsizetype>7</hsizetype>
-          <vsizetype>13</vsizetype>
+      <item row="0" column="1">
+       <widget class="QtColorButton" name="buildButton">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Ignored">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
-        <property name="text" >
+        <property name="text">
          <string/>
         </property>
        </widget>
       </item>
-      <item row="1" column="0" colspan="4" >
-       <widget class="QTreeView" name="paletteView" >
-        <property name="minimumSize" >
+      <item row="1" column="0" colspan="4">
+       <widget class="QTreeView" name="paletteView">
+        <property name="minimumSize">
          <size>
           <width>0</width>
           <height>200</height>
@@ -80,26 +77,26 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="3" >
-       <widget class="QRadioButton" name="detailsRadio" >
-        <property name="text" >
+      <item row="0" column="3">
+       <widget class="QRadioButton" name="detailsRadio">
+        <property name="text">
          <string>Show Details</string>
         </property>
        </widget>
       </item>
-      <item row="0" column="2" >
-       <widget class="QRadioButton" name="computeRadio" >
-        <property name="text" >
+      <item row="0" column="2">
+       <widget class="QRadioButton" name="computeRadio">
+        <property name="text">
          <string>Compute Details</string>
         </property>
-        <property name="checked" >
+        <property name="checked">
          <bool>true</bool>
         </property>
        </widget>
       </item>
-      <item row="0" column="0" >
-       <widget class="QLabel" name="label" >
-        <property name="text" >
+      <item row="0" column="0">
+       <widget class="QLabel" name="label">
+        <property name="text">
          <string>Quick</string>
         </property>
        </widget>
@@ -108,55 +105,51 @@
     </widget>
    </item>
    <item>
-    <widget class="QGroupBox" name="GroupBox126" >
-     <property name="sizePolicy" >
-      <sizepolicy>
-       <hsizetype>5</hsizetype>
-       <vsizetype>7</vsizetype>
+    <widget class="QGroupBox" name="GroupBox126">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
-     <property name="title" >
+     <property name="title">
       <string>Preview</string>
      </property>
-     <layout class="QGridLayout" >
-      <property name="margin" >
+     <layout class="QGridLayout">
+      <property name="margin" stdset="0">
        <number>8</number>
       </property>
-      <property name="spacing" >
+      <property name="spacing">
        <number>6</number>
       </property>
-      <item row="0" column="2" >
-       <widget class="QRadioButton" name="disabledRadio" >
-        <property name="text" >
+      <item row="0" column="2">
+       <widget class="QRadioButton" name="disabledRadio">
+        <property name="text">
          <string>Disabled</string>
         </property>
        </widget>
       </item>
-      <item row="0" column="1" >
-       <widget class="QRadioButton" name="inactiveRadio" >
-        <property name="text" >
+      <item row="0" column="1">
+       <widget class="QRadioButton" name="inactiveRadio">
+        <property name="text">
          <string>Inactive</string>
         </property>
        </widget>
       </item>
-      <item row="0" column="0" >
-       <widget class="QRadioButton" name="activeRadio" >
-        <property name="text" >
+      <item row="0" column="0">
+       <widget class="QRadioButton" name="activeRadio">
+        <property name="text">
          <string>Active</string>
         </property>
-        <property name="checked" >
+        <property name="checked">
          <bool>true</bool>
         </property>
        </widget>
       </item>
-      <item row="1" column="0" colspan="3" >
-       <widget class="qdesigner_internal::PreviewFrame" native="1" name="previewFrame" >
-        <property name="sizePolicy" >
-         <sizepolicy>
-          <hsizetype>7</hsizetype>
-          <vsizetype>7</vsizetype>
+      <item row="1" column="0" colspan="3">
+       <widget class="qdesigner_internal::PreviewFrame" name="previewFrame" native="true">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
@@ -167,12 +160,12 @@
     </widget>
    </item>
    <item>
-    <widget class="QDialogButtonBox" name="buttonBox" >
-     <property name="orientation" >
-      <enum>Qt::Horizontal</enum>
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Orientation::Horizontal</enum>
      </property>
-     <property name="standardButtons" >
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::NoButton|QDialogButtonBox::Ok</set>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok</set>
      </property>
     </widget>
    </item>
@@ -198,11 +191,11 @@
    <receiver>qdesigner_internal::PaletteEditor</receiver>
    <slot>accept()</slot>
    <hints>
-    <hint type="sourcelabel" >
+    <hint type="sourcelabel">
      <x>180</x>
      <y>331</y>
     </hint>
-    <hint type="destinationlabel" >
+    <hint type="destinationlabel">
      <x>134</x>
      <y>341</y>
     </hint>
@@ -214,11 +207,11 @@
    <receiver>qdesigner_internal::PaletteEditor</receiver>
    <slot>reject()</slot>
    <hints>
-    <hint type="sourcelabel" >
+    <hint type="sourcelabel">
      <x>287</x>
      <y>329</y>
     </hint>
-    <hint type="destinationlabel" >
+    <hint type="destinationlabel">
      <x>302</x>
      <y>342</y>
     </hint>

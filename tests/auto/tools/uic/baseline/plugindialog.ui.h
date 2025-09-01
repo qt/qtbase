@@ -56,7 +56,7 @@ public:
 
         treeWidget = new QTreeWidget(PluginDialog);
         treeWidget->setObjectName("treeWidget");
-        treeWidget->setTextElideMode(Qt::ElideNone);
+        treeWidget->setTextElideMode(Qt::TextElideMode::ElideNone);
 
         vboxLayout->addWidget(treeWidget);
 
@@ -75,8 +75,8 @@ public:
 
         buttonBox = new QDialogButtonBox(PluginDialog);
         buttonBox->setObjectName("buttonBox");
-        buttonBox->setOrientation(Qt::Horizontal);
-        buttonBox->setStandardButtons(QDialogButtonBox::Close);
+        buttonBox->setOrientation(Qt::Orientation::Horizontal);
+        buttonBox->setStandardButtons(QDialogButtonBox::StandardButton::Close);
 
         vboxLayout->addWidget(buttonBox);
 

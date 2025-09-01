@@ -55,7 +55,7 @@ public:
     {
         if (FindDialog->objectName().isEmpty())
             FindDialog->setObjectName("FindDialog");
-        FindDialog->resize(414, 170);
+        FindDialog->resize(430, 200);
         QSizePolicy sizePolicy(QSizePolicy::Policy::Preferred, QSizePolicy::Policy::Maximum);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);

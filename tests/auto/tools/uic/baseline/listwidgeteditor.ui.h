@@ -58,7 +58,7 @@ public:
     {
         if (qdesigner_internal__ListWidgetEditor->objectName().isEmpty())
             qdesigner_internal__ListWidgetEditor->setObjectName("qdesigner_internal__ListWidgetEditor");
-        qdesigner_internal__ListWidgetEditor->resize(223, 245);
+        qdesigner_internal__ListWidgetEditor->resize(232, 245);
         vboxLayout = new QVBoxLayout(qdesigner_internal__ListWidgetEditor);
 #ifndef Q_OS_MAC
         vboxLayout->setSpacing(6);
@@ -129,8 +129,8 @@ public:
 
         buttonBox = new QDialogButtonBox(qdesigner_internal__ListWidgetEditor);
         buttonBox->setObjectName("buttonBox");
-        buttonBox->setOrientation(Qt::Horizontal);
-        buttonBox->setStandardButtons(QDialogButtonBox::Cancel|QDialogButtonBox::Ok);
+        buttonBox->setOrientation(Qt::Orientation::Horizontal);
+        buttonBox->setStandardButtons(QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok);
 
         vboxLayout->addWidget(buttonBox);
 

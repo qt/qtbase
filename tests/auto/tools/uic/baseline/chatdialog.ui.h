@@ -55,7 +55,7 @@ public:
         hboxLayout->setObjectName("hboxLayout");
         textEdit = new QTextEdit(ChatDialog);
         textEdit->setObjectName("textEdit");
-        textEdit->setFocusPolicy(Qt::NoFocus);
+        textEdit->setFocusPolicy(Qt::FocusPolicy::NoFocus);
         textEdit->setReadOnly(true);
 
         hboxLayout->addWidget(textEdit);
@@ -63,7 +63,7 @@ public:
         listWidget = new QListWidget(ChatDialog);
         listWidget->setObjectName("listWidget");
         listWidget->setMaximumSize(QSize(180, 16777215));
-        listWidget->setFocusPolicy(Qt::NoFocus);
+        listWidget->setFocusPolicy(Qt::FocusPolicy::NoFocus);
 
         hboxLayout->addWidget(listWidget);
 

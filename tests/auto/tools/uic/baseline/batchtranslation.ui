@@ -1,65 +1,63 @@
-<ui version="4.0" >
-<comment>
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <comment>
 * Copyright (C) 2016 The Qt Company Ltd.
 * SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 </comment>
- <exportmacro></exportmacro>
  <class>databaseTranslationDialog</class>
- <widget class="QDialog" name="databaseTranslationDialog" >
-  <property name="geometry" >
+ <widget class="QDialog" name="databaseTranslationDialog">
+  <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
     <width>425</width>
-    <height>370</height>
+    <height>460</height>
    </rect>
   </property>
-  <property name="windowTitle" >
+  <property name="windowTitle">
    <string>Qt Linguist - Batch Translation</string>
   </property>
-  <layout class="QVBoxLayout" >
-   <property name="margin" >
-    <number>9</number>
-   </property>
-   <property name="spacing" >
+  <layout class="QVBoxLayout">
+   <property name="spacing">
     <number>6</number>
    </property>
+   <property name="margin" stdset="0">
+    <number>9</number>
+   </property>
    <item>
-    <widget class="QGroupBox" name="groupBox" >
-     <property name="sizePolicy" >
-      <sizepolicy>
-       <hsizetype>5</hsizetype>
-       <vsizetype>4</vsizetype>
+    <widget class="QGroupBox" name="groupBox">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
-     <property name="title" >
+     <property name="title">
       <string>Options</string>
      </property>
-     <layout class="QVBoxLayout" >
-      <property name="margin" >
-       <number>9</number>
-      </property>
-      <property name="spacing" >
+     <layout class="QVBoxLayout">
+      <property name="spacing">
        <number>6</number>
       </property>
+      <property name="margin" stdset="0">
+       <number>9</number>
+      </property>
       <item>
-       <widget class="QCheckBox" name="ckOnlyUntranslated" >
-        <property name="text" >
+       <widget class="QCheckBox" name="ckOnlyUntranslated">
+        <property name="text">
          <string>Only translate entries with no translation</string>
         </property>
-        <property name="checked" >
+        <property name="checked">
          <bool>true</bool>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QCheckBox" name="ckMarkFinished" >
-        <property name="text" >
+       <widget class="QCheckBox" name="ckMarkFinished">
+        <property name="text">
          <string>Set translated entries to finished</string>
         </property>
-        <property name="checked" >
+        <property name="checked">
          <bool>true</bool>
         </property>
        </widget>
@@ -68,68 +66,66 @@
     </widget>
    </item>
    <item>
-    <widget class="QGroupBox" name="groupBox_2" >
-     <property name="sizePolicy" >
-      <sizepolicy>
-       <hsizetype>5</hsizetype>
-       <vsizetype>1</vsizetype>
+    <widget class="QGroupBox" name="groupBox_2">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
-     <property name="title" >
+     <property name="title">
       <string>Phrase book preference</string>
      </property>
-     <layout class="QVBoxLayout" >
-      <property name="margin" >
-       <number>9</number>
-      </property>
-      <property name="spacing" >
+     <layout class="QVBoxLayout">
+      <property name="spacing">
        <number>6</number>
       </property>
+      <property name="margin" stdset="0">
+       <number>9</number>
+      </property>
       <item>
-       <layout class="QHBoxLayout" >
-        <property name="margin" >
-         <number>0</number>
-        </property>
-        <property name="spacing" >
+       <layout class="QHBoxLayout">
+        <property name="spacing">
          <number>6</number>
         </property>
+        <property name="margin" stdset="0">
+         <number>0</number>
+        </property>
         <item>
-         <widget class="QListView" name="phrasebookList" >
-          <property name="uniformItemSizes" >
+         <widget class="QListView" name="phrasebookList">
+          <property name="uniformItemSizes">
            <bool>true</bool>
           </property>
          </widget>
         </item>
         <item>
-         <layout class="QVBoxLayout" >
-          <property name="margin" >
-           <number>0</number>
-          </property>
-          <property name="spacing" >
+         <layout class="QVBoxLayout">
+          <property name="spacing">
            <number>6</number>
           </property>
+          <property name="margin" stdset="0">
+           <number>0</number>
+          </property>
           <item>
-           <widget class="QPushButton" name="moveUpButton" >
-            <property name="text" >
+           <widget class="QPushButton" name="moveUpButton">
+            <property name="text">
              <string>Move up</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="moveDownButton" >
-            <property name="text" >
+           <widget class="QPushButton" name="moveDownButton">
+            <property name="text">
              <string>Move down</string>
             </property>
            </widget>
           </item>
           <item>
            <spacer>
-            <property name="orientation" >
-             <enum>Qt::Vertical</enum>
+            <property name="orientation">
+             <enum>Qt::Orientation::Vertical</enum>
             </property>
-            <property name="sizeHint" >
+            <property name="sizeHint" stdset="0">
              <size>
               <width>20</width>
               <height>40</height>
@@ -142,11 +138,11 @@
        </layout>
       </item>
       <item>
-       <widget class="QLabel" name="label" >
-        <property name="text" >
+       <widget class="QLabel" name="label">
+        <property name="text">
          <string>The batch translator will search through the selected phrasebooks in the order given above.</string>
         </property>
-        <property name="wordWrap" >
+        <property name="wordWrap">
          <bool>true</bool>
         </property>
        </widget>
@@ -155,19 +151,19 @@
     </widget>
    </item>
    <item>
-    <layout class="QHBoxLayout" >
-     <property name="margin" >
-      <number>0</number>
-     </property>
-     <property name="spacing" >
+    <layout class="QHBoxLayout">
+     <property name="spacing">
       <number>6</number>
+     </property>
+     <property name="margin" stdset="0">
+      <number>0</number>
      </property>
      <item>
       <spacer>
-       <property name="orientation" >
-        <enum>Qt::Horizontal</enum>
+       <property name="orientation">
+        <enum>Qt::Orientation::Horizontal</enum>
        </property>
-       <property name="sizeHint" >
+       <property name="sizeHint" stdset="0">
         <size>
          <width>40</width>
          <height>20</height>
@@ -176,15 +172,15 @@
       </spacer>
      </item>
      <item>
-      <widget class="QPushButton" name="runButton" >
-       <property name="text" >
+      <widget class="QPushButton" name="runButton">
+       <property name="text">
         <string>&amp;Run</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="cancelButton" >
-       <property name="text" >
+      <widget class="QPushButton" name="cancelButton">
+       <property name="text">
         <string>&amp;Cancel</string>
        </property>
       </widget>
@@ -193,7 +189,6 @@
    </item>
   </layout>
  </widget>
- <pixmapfunction></pixmapfunction>
  <resources/>
  <connections/>
 </ui>

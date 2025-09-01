@@ -30,8 +30,8 @@ public:
         buttonBox = new QDialogButtonBox(Dialog);
         buttonBox->setObjectName("buttonBox");
         buttonBox->setGeometry(QRect(290, 20, 81, 241));
-        buttonBox->setOrientation(Qt::Vertical);
-        buttonBox->setStandardButtons(QDialogButtonBox::Cancel|QDialogButtonBox::Ok);
+        buttonBox->setOrientation(Qt::Orientation::Vertical);
+        buttonBox->setStandardButtons(QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok);
 
         retranslateUi(Dialog);
         QObject::connect(buttonBox, &QDialogButtonBox::accepted, Dialog, qOverload<>(&QDialog::accept));

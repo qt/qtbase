@@ -75,7 +75,7 @@ public:
 
         buttonBox = new QDialogButtonBox(CertificateInfo);
         buttonBox->setObjectName("buttonBox");
-        buttonBox->setStandardButtons(QDialogButtonBox::Close);
+        buttonBox->setStandardButtons(QDialogButtonBox::StandardButton::Close);
 
         hboxLayout2->addWidget(buttonBox);
 

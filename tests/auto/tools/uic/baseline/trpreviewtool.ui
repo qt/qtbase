@@ -1,12 +1,12 @@
-<ui version="4.0" >
-<comment>
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <comment>
 * Copyright (C) 2016 The Qt Company Ltd.
 * SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 </comment>
- <exportmacro></exportmacro>
  <class>TrPreviewToolClass</class>
- <widget class="QMainWindow" name="TrPreviewToolClass" >
-  <property name="geometry" >
+ <widget class="QMainWindow" name="TrPreviewToolClass">
+  <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
@@ -14,87 +14,90 @@
     <height>466</height>
    </rect>
   </property>
-  <property name="windowTitle" >
+  <property name="windowTitle">
    <string>Qt Translation Preview Tool</string>
   </property>
-  <widget class="QWidget" name="centralWidget" />
-  <widget class="QMenuBar" name="menuBar" >
-   <property name="geometry" >
+  <widget class="QWidget" name="centralWidget"/>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
      <width>593</width>
-     <height>21</height>
+     <height>26</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menuView" >
-    <property name="title" >
+   <widget class="QMenu" name="menuView">
+    <property name="title">
      <string>&amp;View</string>
     </property>
-    <widget class="QMenu" name="menuViewViews" >
-     <property name="title" >
+    <widget class="QMenu" name="menuViewViews">
+     <property name="title">
       <string>&amp;Views</string>
      </property>
     </widget>
-    <addaction name="menuViewViews" />
+    <addaction name="menuViewViews"/>
    </widget>
-   <widget class="QMenu" name="menuHelp" >
-    <property name="title" >
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
      <string>&amp;Help</string>
     </property>
-    <addaction name="actionAbout" />
-    <addaction name="actionAbout_Qt" />
+    <addaction name="actionAbout"/>
+    <addaction name="actionAbout_Qt"/>
    </widget>
-   <widget class="QMenu" name="menuFile" >
-    <property name="title" >
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
      <string>&amp;File</string>
     </property>
-    <addaction name="actionOpenForm" />
-    <addaction name="actionLoadTranslation" />
-    <addaction name="actionReloadTranslations" />
-    <addaction name="separator" />
-    <addaction name="actionClose" />
+    <addaction name="actionOpenForm"/>
+    <addaction name="actionLoadTranslation"/>
+    <addaction name="actionReloadTranslations"/>
+    <addaction name="separator"/>
+    <addaction name="actionClose"/>
    </widget>
-   <addaction name="menuFile" />
-   <addaction name="menuView" />
-   <addaction name="menuHelp" />
+   <addaction name="menuFile"/>
+   <addaction name="menuView"/>
+   <addaction name="menuHelp"/>
   </widget>
-  <widget class="QToolBar" name="mainToolBar" >
-   <property name="orientation" >
-    <enum>Qt::Horizontal</enum>
+  <widget class="QToolBar" name="mainToolBar">
+   <property name="orientation">
+    <enum>Qt::Orientation::Horizontal</enum>
    </property>
-   <attribute name="toolBarArea" >
-    <number>4</number>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
    </attribute>
-   <addaction name="actionOpenForm" />
-   <addaction name="actionLoadTranslation" />
-   <addaction name="actionReloadTranslations" />
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actionOpenForm"/>
+   <addaction name="actionLoadTranslation"/>
+   <addaction name="actionReloadTranslations"/>
   </widget>
-  <widget class="QStatusBar" name="statusBar" />
-  <widget class="QDockWidget" name="dwForms" >
-   <property name="windowTitle" >
+  <widget class="QStatusBar" name="statusBar"/>
+  <widget class="QDockWidget" name="dwForms">
+   <property name="windowTitle">
     <string>Forms</string>
    </property>
-   <attribute name="dockWidgetArea" >
+   <attribute name="dockWidgetArea">
     <number>1</number>
    </attribute>
-   <widget class="QWidget" name="dockWidgetContents" >
-    <layout class="QVBoxLayout" >
-     <property name="margin" >
+   <widget class="QWidget" name="dockWidgetContents">
+    <layout class="QVBoxLayout">
+     <property name="spacing">
       <number>0</number>
      </property>
-     <property name="spacing" >
+     <property name="margin" stdset="0">
       <number>0</number>
      </property>
      <item>
-      <widget class="QListView" name="viewForms" >
-       <property name="editTriggers" >
-        <set>QAbstractItemView::NoEditTriggers</set>
+      <widget class="QListView" name="viewForms">
+       <property name="editTriggers">
+        <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
        </property>
-       <property name="alternatingRowColors" >
+       <property name="alternatingRowColors">
         <bool>true</bool>
        </property>
-       <property name="uniformItemSizes" >
+       <property name="uniformItemSizes">
         <bool>true</bool>
        </property>
       </widget>
@@ -102,51 +105,55 @@
     </layout>
    </widget>
   </widget>
-  <action name="actionOpenForm" >
-   <property name="icon" >
-    <iconset resource="qttrpreviewtool.qrc" >:/images/open_form.png</iconset>
+  <action name="actionOpenForm">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/images/open_form.png</normaloff>:/images/open_form.png</iconset>
    </property>
-   <property name="text" >
+   <property name="text">
     <string>&amp;Open Form...</string>
    </property>
   </action>
-  <action name="actionLoadTranslation" >
-   <property name="icon" >
-    <iconset resource="qttrpreviewtool.qrc" >:/images/load_translation.png</iconset>
+  <action name="actionLoadTranslation">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/images/load_translation.png</normaloff>:/images/load_translation.png</iconset>
    </property>
-   <property name="text" >
+   <property name="text">
     <string>&amp;Load Translation...</string>
    </property>
   </action>
-  <action name="actionReloadTranslations" >
-   <property name="icon" >
-    <iconset resource="qttrpreviewtool.qrc" >:/images/reload_translations.png</iconset>
+  <action name="actionReloadTranslations">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/images/reload_translations.png</normaloff>:/images/reload_translations.png</iconset>
    </property>
-   <property name="text" >
+   <property name="text">
     <string>&amp;Reload Translations</string>
    </property>
-   <property name="shortcut" >
+   <property name="shortcut">
     <string>F5</string>
    </property>
   </action>
-  <action name="actionClose" >
-   <property name="text" >
+  <action name="actionClose">
+   <property name="text">
     <string>&amp;Close</string>
    </property>
   </action>
-  <action name="actionAbout" >
-   <property name="text" >
+  <action name="actionAbout">
+   <property name="text">
     <string>About</string>
    </property>
   </action>
-  <action name="actionAbout_Qt" >
-   <property name="text" >
+  <action name="actionAbout_Qt">
+   <property name="text">
     <string>About Qt</string>
    </property>
   </action>
  </widget>
- <layoutdefault spacing="6" margin="11" />
- <pixmapfunction></pixmapfunction>
- <resources/>
+ <layoutdefault spacing="6" margin="11"/>
+ <resources>
+  <include location="qttrpreviewtool.qrc"/>
+ </resources>
  <connections/>
 </ui>

@@ -1,7 +1,8 @@
-<ui version="4.0" >
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
  <class>MainWindow</class>
- <widget class="QMainWindow" name="MainWindow" >
-  <property name="geometry" >
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
@@ -9,66 +10,66 @@
     <height>413</height>
    </rect>
   </property>
-  <property name="windowTitle" >
+  <property name="windowTitle">
    <string>MainWindow</string>
   </property>
-  <widget class="QWidget" name="centralwidget" >
-   <layout class="QGridLayout" >
-    <property name="margin" >
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QGridLayout">
+    <property name="margin" stdset="0">
      <number>9</number>
     </property>
-    <property name="spacing" >
+    <property name="spacing">
      <number>6</number>
     </property>
-    <item row="0" column="0" >
-     <widget class="QLabel" name="nameLabel" >
-      <property name="text" >
+    <item row="0" column="0">
+     <widget class="QLabel" name="nameLabel">
+      <property name="text">
        <string>&amp;Name:</string>
       </property>
-      <property name="buddy" >
+      <property name="buddy">
        <cstring>nameCombo</cstring>
       </property>
      </widget>
     </item>
-    <item row="0" column="1" colspan="3" >
-     <widget class="QComboBox" name="nameCombo" >
-      <property name="toolTip" >
+    <item row="0" column="1" colspan="3">
+     <widget class="QComboBox" name="nameCombo">
+      <property name="toolTip">
        <string>Specify your name</string>
       </property>
-      <property name="editable" >
+      <property name="editable">
        <bool>true</bool>
       </property>
-      <property name="currentIndex" >
+      <property name="currentIndex">
        <number>-1</number>
       </property>
       <item>
-       <property name="text" >
+       <property name="text">
         <string>Girish</string>
        </property>
       </item>
       <item>
-       <property name="text" >
+       <property name="text">
         <string>Jasmin</string>
        </property>
       </item>
       <item>
-       <property name="text" >
+       <property name="text">
         <string>Simon</string>
        </property>
       </item>
       <item>
-       <property name="text" >
+       <property name="text">
         <string>Zack</string>
        </property>
       </item>
      </widget>
     </item>
-    <item row="1" column="3" >
+    <item row="1" column="3">
      <spacer>
-      <property name="orientation" >
-       <enum>Qt::Horizontal</enum>
+      <property name="orientation">
+       <enum>Qt::Orientation::Horizontal</enum>
       </property>
-      <property name="sizeHint" >
+      <property name="sizeHint" stdset="0">
        <size>
         <width>40</width>
         <height>20</height>
@@ -76,189 +77,189 @@
       </property>
      </spacer>
     </item>
-    <item row="1" column="2" >
-     <widget class="QRadioButton" name="femaleRadioButton" >
-      <property name="toolTip" >
+    <item row="1" column="2">
+     <widget class="QRadioButton" name="femaleRadioButton">
+      <property name="toolTip">
        <string>Check this if you are female</string>
       </property>
-      <property name="text" >
+      <property name="text">
        <string>&amp;Female</string>
       </property>
      </widget>
     </item>
-    <item row="6" column="0" colspan="4" >
-     <widget class="QCheckBox" name="agreeCheckBox" >
-      <property name="toolTip" >
+    <item row="6" column="0" colspan="4">
+     <widget class="QCheckBox" name="agreeCheckBox">
+      <property name="toolTip">
        <string>Please read the license before checking this</string>
       </property>
-      <property name="text" >
+      <property name="text">
        <string>I &amp;accept the terms and conditions</string>
       </property>
      </widget>
     </item>
-    <item row="1" column="1" >
-     <widget class="QRadioButton" name="maleRadioButton" >
-      <property name="toolTip" >
+    <item row="1" column="1">
+     <widget class="QRadioButton" name="maleRadioButton">
+      <property name="toolTip">
        <string>Check this if you are male</string>
       </property>
-      <property name="text" >
+      <property name="text">
        <string>&amp;Male</string>
       </property>
      </widget>
     </item>
-    <item row="1" column="0" >
-     <widget class="QLabel" name="genderLabel" >
-      <property name="text" >
+    <item row="1" column="0">
+     <widget class="QLabel" name="genderLabel">
+      <property name="text">
        <string>Gender:</string>
       </property>
      </widget>
     </item>
-    <item row="2" column="1" colspan="3" >
-     <widget class="QSpinBox" name="ageSpinBox" >
-      <property name="toolTip" >
+    <item row="2" column="1" colspan="3">
+     <widget class="QSpinBox" name="ageSpinBox">
+      <property name="toolTip">
        <string>Specify your age</string>
       </property>
-      <property name="statusTip" >
+      <property name="statusTip">
        <string>Specify your age here</string>
       </property>
-      <property name="minimum" >
+      <property name="minimum">
        <number>12</number>
       </property>
-      <property name="value" >
+      <property name="value">
        <number>22</number>
       </property>
      </widget>
     </item>
-    <item row="7" column="2" colspan="2" >
-     <widget class="QDialogButtonBox" name="buttonBox" >
-      <property name="orientation" >
-       <enum>Qt::Horizontal</enum>
+    <item row="7" column="2" colspan="2">
+     <widget class="QDialogButtonBox" name="buttonBox">
+      <property name="orientation">
+       <enum>Qt::Orientation::Horizontal</enum>
       </property>
-      <property name="standardButtons" >
-       <set>QDialogButtonBox::Cancel|QDialogButtonBox::NoButton|QDialogButtonBox::Ok</set>
+      <property name="standardButtons">
+       <set>QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok</set>
       </property>
      </widget>
     </item>
-    <item row="2" column="0" >
-     <widget class="QLabel" name="ageLabel" >
-      <property name="text" >
+    <item row="2" column="0">
+     <widget class="QLabel" name="ageLabel">
+      <property name="text">
        <string>&amp;Age:</string>
       </property>
-      <property name="buddy" >
+      <property name="buddy">
        <cstring>ageSpinBox</cstring>
       </property>
      </widget>
     </item>
-    <item row="3" column="0" >
-     <widget class="QLabel" name="passwordLabel" >
-      <property name="text" >
+    <item row="3" column="0">
+     <widget class="QLabel" name="passwordLabel">
+      <property name="text">
        <string>&amp;Password:</string>
       </property>
-      <property name="buddy" >
+      <property name="buddy">
        <cstring>passwordEdit</cstring>
       </property>
      </widget>
     </item>
-    <item row="3" column="1" colspan="3" >
-     <widget class="QLineEdit" name="passwordEdit" >
-      <property name="toolTip" >
+    <item row="3" column="1" colspan="3">
+     <widget class="QLineEdit" name="passwordEdit">
+      <property name="toolTip">
        <string>Specify your password</string>
       </property>
-      <property name="statusTip" >
+      <property name="statusTip">
        <string>Specify your password here</string>
       </property>
-      <property name="text" >
+      <property name="text">
        <string>Password</string>
       </property>
-      <property name="echoMode" >
-       <enum>QLineEdit::Password</enum>
+      <property name="echoMode">
+       <enum>QLineEdit::EchoMode::Password</enum>
       </property>
      </widget>
     </item>
-    <item row="5" column="0" >
-     <widget class="QLabel" name="label" >
-      <property name="text" >
+    <item row="5" column="0">
+     <widget class="QLabel" name="label">
+      <property name="text">
        <string>Profession</string>
       </property>
-      <property name="buddy" >
+      <property name="buddy">
        <cstring>professionList</cstring>
       </property>
      </widget>
     </item>
-    <item row="4" column="0" >
-     <widget class="QLabel" name="countryLabel" >
-      <property name="text" >
+    <item row="4" column="0">
+     <widget class="QLabel" name="countryLabel">
+      <property name="text">
        <string>&amp;Country</string>
       </property>
-      <property name="buddy" >
+      <property name="buddy">
        <cstring>professionList</cstring>
       </property>
      </widget>
     </item>
-    <item row="5" column="1" colspan="3" >
-     <widget class="QListWidget" name="professionList" >
-      <property name="toolTip" >
+    <item row="5" column="1" colspan="3">
+     <widget class="QListWidget" name="professionList">
+      <property name="toolTip">
        <string>Select your profession</string>
       </property>
-      <property name="statusTip" >
+      <property name="statusTip">
        <string>Select your profession</string>
       </property>
-      <property name="whatsThis" >
+      <property name="whatsThis">
        <string>Select your profession</string>
       </property>
-      <property name="currentRow" >
+      <property name="currentRow">
        <number>1</number>
       </property>
       <item>
-       <property name="text" >
+       <property name="text">
         <string>Developer</string>
        </property>
       </item>
       <item>
-       <property name="text" >
+       <property name="text">
         <string>Student</string>
        </property>
       </item>
       <item>
-       <property name="text" >
+       <property name="text">
         <string>Fisherman</string>
        </property>
       </item>
      </widget>
     </item>
-    <item row="4" column="1" colspan="3" >
-     <widget class="QComboBox" name="countryCombo" >
-      <property name="toolTip" >
+    <item row="4" column="1" colspan="3">
+     <widget class="QComboBox" name="countryCombo">
+      <property name="toolTip">
        <string>Specify your country</string>
       </property>
-      <property name="statusTip" >
+      <property name="statusTip">
        <string>Specify your country here</string>
       </property>
-      <property name="currentIndex" >
+      <property name="currentIndex">
        <number>2</number>
       </property>
       <item>
-       <property name="text" >
+       <property name="text">
         <string>Germany</string>
        </property>
       </item>
       <item>
-       <property name="text" >
+       <property name="text">
         <string>India</string>
        </property>
       </item>
       <item>
-       <property name="text" >
+       <property name="text">
         <string>Norway</string>
        </property>
       </item>
       <item>
-       <property name="text" >
+       <property name="text">
         <string>United States Of America</string>
        </property>
       </item>
       <item>
-       <property name="text" >
+       <property name="text">
         <string>United Kingdom</string>
        </property>
       </item>
@@ -266,52 +267,52 @@
     </item>
    </layout>
   </widget>
-  <widget class="QMenuBar" name="menubar" >
-   <property name="geometry" >
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
      <width>388</width>
-     <height>21</height>
+     <height>26</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menu_File" >
-    <property name="title" >
+   <widget class="QMenu" name="menu_File">
+    <property name="title">
      <string>&amp;File</string>
     </property>
-    <addaction name="editStyleAction" />
-    <addaction name="separator" />
-    <addaction name="exitAction" />
+    <addaction name="editStyleAction"/>
+    <addaction name="separator"/>
+    <addaction name="exitAction"/>
    </widget>
-   <widget class="QMenu" name="menu_Help" >
-    <property name="title" >
+   <widget class="QMenu" name="menu_Help">
+    <property name="title">
      <string>&amp;Help</string>
     </property>
-    <addaction name="aboutAction" />
-    <addaction name="separator" />
-    <addaction name="aboutQtAction" />
+    <addaction name="aboutAction"/>
+    <addaction name="separator"/>
+    <addaction name="aboutQtAction"/>
    </widget>
-   <addaction name="menu_File" />
-   <addaction name="menu_Help" />
+   <addaction name="menu_File"/>
+   <addaction name="menu_Help"/>
   </widget>
-  <widget class="QStatusBar" name="statusbar" />
-  <action name="exitAction" >
-   <property name="text" >
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="exitAction">
+   <property name="text">
     <string>&amp;Exit</string>
    </property>
   </action>
-  <action name="aboutQtAction" >
-   <property name="text" >
+  <action name="aboutQtAction">
+   <property name="text">
     <string>About Qt</string>
    </property>
   </action>
-  <action name="editStyleAction" >
-   <property name="text" >
+  <action name="editStyleAction">
+   <property name="text">
     <string>Edit &amp;Style</string>
    </property>
   </action>
-  <action name="aboutAction" >
-   <property name="text" >
+  <action name="aboutAction">
+   <property name="text">
     <string>About</string>
    </property>
   </action>

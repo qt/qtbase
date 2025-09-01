@@ -1,40 +1,38 @@
-<ui version="4.0" >
- <author></author>
- <comment></comment>
- <exportmacro></exportmacro>
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
  <class>MyDialog</class>
- <widget class="QDialog" name="MyDialog" >
-  <property name="geometry" >
+ <widget class="QDialog" name="MyDialog">
+  <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>401</width>
-    <height>70</height>
+    <width>473</width>
+    <height>76</height>
    </rect>
   </property>
-  <property name="windowTitle" >
+  <property name="windowTitle">
    <string>Mach 2!</string>
   </property>
-  <layout class="QVBoxLayout" >
-   <property name="margin" >
-    <number>9</number>
-   </property>
-   <property name="spacing" >
+  <layout class="QVBoxLayout">
+   <property name="spacing">
     <number>6</number>
    </property>
+   <property name="margin" stdset="0">
+    <number>9</number>
+   </property>
    <item>
-    <widget class="QLabel" name="aLabel" >
-     <property name="text" >
+    <widget class="QLabel" name="aLabel">
+     <property name="text">
       <string>Join the life in the fastlane; - PCH enable your project today! -</string>
      </property>
     </widget>
    </item>
    <item>
-    <widget class="QPushButton" name="aButton" >
-     <property name="text" >
+    <widget class="QPushButton" name="aButton">
+     <property name="text">
       <string>&amp;Quit</string>
      </property>
-     <property name="shortcut" >
+     <property name="shortcut">
       <string>Alt+Q</string>
      </property>
     </widget>

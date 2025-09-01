@@ -68,7 +68,7 @@ public:
     {
         if (qdesigner_internal__PreviewWidget->objectName().isEmpty())
             qdesigner_internal__PreviewWidget->setObjectName("qdesigner_internal__PreviewWidget");
-        qdesigner_internal__PreviewWidget->resize(471, 251);
+        qdesigner_internal__PreviewWidget->resize(471, 337);
         QSizePolicy sizePolicy(QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Minimum);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
@@ -122,13 +122,13 @@ public:
 
         ScrollBar1 = new QScrollBar(qdesigner_internal__PreviewWidget);
         ScrollBar1->setObjectName("ScrollBar1");
-        ScrollBar1->setOrientation(Qt::Horizontal);
+        ScrollBar1->setOrientation(Qt::Orientation::Horizontal);
 
         vboxLayout->addWidget(ScrollBar1);
 
         Slider1 = new QSlider(qdesigner_internal__PreviewWidget);
         Slider1->setObjectName("Slider1");
-        Slider1->setOrientation(Qt::Horizontal);
+        Slider1->setOrientation(Qt::Orientation::Horizontal);
 
         vboxLayout->addWidget(Slider1);
 
@@ -147,7 +147,7 @@ public:
 
         ProgressBar1 = new QProgressBar(qdesigner_internal__PreviewWidget);
         ProgressBar1->setObjectName("ProgressBar1");
-        ProgressBar1->setOrientation(Qt::Horizontal);
+        ProgressBar1->setOrientation(Qt::Orientation::Horizontal);
 
         gridLayout->addWidget(ProgressBar1, 2, 0, 1, 1);
 

@@ -18,7 +18,7 @@
     <item>
      <widget class="QSlider" name="horizontalSlider">
       <property name="orientation">
-       <enum>Qt::Horizontal</enum>
+       <enum>Qt::Orientation::Horizontal</enum>
       </property>
      </widget>
     </item>
@@ -40,7 +40,7 @@
      <x>0</x>
      <y>0</y>
      <width>400</width>
-     <height>29</height>
+     <height>26</height>
     </rect>
    </property>
   </widget>

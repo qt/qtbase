@@ -33,6 +33,7 @@ public:
         pushButton_2 = new QPushButton(Form);
         pushButton_2->setObjectName("pushButton_2");
         pushButton_2->setGeometry(QRect(70, 110, 91, 29));
+        pushButton_2->setFocusPolicy(Qt::FocusPolicy::NoFocus);
 
         retranslateUi(Form);
 

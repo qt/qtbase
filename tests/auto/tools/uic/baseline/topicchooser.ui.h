@@ -18,18 +18,16 @@
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QSpacerItem>
 #include <QtWidgets/QVBoxLayout>
-#include <QtWidgets/QWidget>
 
 QT_BEGIN_NAMESPACE
 
 class Ui_TopicChooser
 {
 public:
-    QVBoxLayout *vboxLayout;
+    QVBoxLayout *unnamed;
     QLabel *label;
     QListWidget *listWidget;
-    QWidget *Layout16;
-    QHBoxLayout *hboxLayout;
+    QHBoxLayout *unnamed1;
     QSpacerItem *Horizontal_Spacing2;
     QPushButton *buttonDisplay;
     QPushButton *buttonCancel;
@@ -40,51 +38,46 @@ public:
             TopicChooser->setObjectName("TopicChooser");
         TopicChooser->resize(391, 223);
         TopicChooser->setSizeGripEnabled(true);
-        vboxLayout = new QVBoxLayout(TopicChooser);
+        unnamed = new QVBoxLayout(TopicChooser);
 #ifndef Q_OS_MAC
-        vboxLayout->setSpacing(6);
+        unnamed->setSpacing(6);
 #endif
-        vboxLayout->setContentsMargins(11, 11, 11, 11);
-        vboxLayout->setObjectName("vboxLayout");
-        vboxLayout->setObjectName(QString::fromUtf8("unnamed"));
+        unnamed->setContentsMargins(11, 11, 11, 11);
+        unnamed->setObjectName("unnamed");
         label = new QLabel(TopicChooser);
         label->setObjectName("label");
 
-        vboxLayout->addWidget(label);
+        unnamed->addWidget(label);
 
         listWidget = new QListWidget(TopicChooser);
         listWidget->setObjectName("listWidget");
 
-        vboxLayout->addWidget(listWidget);
+        unnamed->addWidget(listWidget);
 
-        Layout16 = new QWidget(TopicChooser);
-        Layout16->setObjectName("Layout16");
-        hboxLayout = new QHBoxLayout(Layout16);
+        unnamed1 = new QHBoxLayout();
 #ifndef Q_OS_MAC
-        hboxLayout->setSpacing(6);
+        unnamed1->setSpacing(6);
 #endif
-        hboxLayout->setContentsMargins(0, 0, 0, 0);
-        hboxLayout->setObjectName("hboxLayout");
-        hboxLayout->setObjectName(QString::fromUtf8("unnamed"));
-        hboxLayout->setContentsMargins(0, 0, 0, 0);
+        unnamed1->setContentsMargins(0, 0, 0, 0);
+        unnamed1->setObjectName("unnamed1");
         Horizontal_Spacing2 = new QSpacerItem(20, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
 
-        hboxLayout->addItem(Horizontal_Spacing2);
+        unnamed1->addItem(Horizontal_Spacing2);
 
-        buttonDisplay = new QPushButton(Layout16);
+        buttonDisplay = new QPushButton(TopicChooser);
         buttonDisplay->setObjectName("buttonDisplay");
         buttonDisplay->setAutoDefault(true);
 
-        hboxLayout->addWidget(buttonDisplay);
+        unnamed1->addWidget(buttonDisplay);
 
-        buttonCancel = new QPushButton(Layout16);
+        buttonCancel = new QPushButton(TopicChooser);
         buttonCancel->setObjectName("buttonCancel");
         buttonCancel->setAutoDefault(true);
 
-        hboxLayout->addWidget(buttonCancel);
+        unnamed1->addWidget(buttonCancel);
 
 
-        vboxLayout->addWidget(Layout16);
+        unnamed->addLayout(unnamed1);
 
 #if QT_CONFIG(shortcut)
         label->setBuddy(listWidget);

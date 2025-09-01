@@ -43,7 +43,7 @@ public:
     {
         if (FilterPage->objectName().isEmpty())
             FilterPage->setObjectName("FilterPage");
-        FilterPage->resize(419, 243);
+        FilterPage->resize(518, 243);
         gridLayout = new QGridLayout(FilterPage);
         gridLayout->setObjectName("gridLayout");
         label = new QLabel(FilterPage);

@@ -75,7 +75,7 @@ public:
     {
         if (qdesigner_internal__TreeWidgetEditor->objectName().isEmpty())
             qdesigner_internal__TreeWidgetEditor->setObjectName("qdesigner_internal__TreeWidgetEditor");
-        qdesigner_internal__TreeWidgetEditor->resize(619, 321);
+        qdesigner_internal__TreeWidgetEditor->resize(644, 321);
         gridLayout_3 = new QGridLayout(qdesigner_internal__TreeWidgetEditor);
         gridLayout_3->setObjectName("gridLayout_3");
         itemsBox = new QGroupBox(qdesigner_internal__TreeWidgetEditor);
@@ -84,7 +84,7 @@ public:
         gridLayout->setObjectName("gridLayout");
         treeWidget = new QTreeWidget(itemsBox);
         treeWidget->setObjectName("treeWidget");
-        treeWidget->setFocusPolicy(Qt::TabFocus);
+        treeWidget->setFocusPolicy(Qt::FocusPolicy::TabFocus);
 
         gridLayout->addWidget(treeWidget, 0, 0, 1, 1);
 
@@ -170,7 +170,7 @@ public:
         sizePolicy1.setVerticalStretch(0);
         sizePolicy1.setHeightForWidth(listWidget->sizePolicy().hasHeightForWidth());
         listWidget->setSizePolicy(sizePolicy1);
-        listWidget->setFocusPolicy(Qt::TabFocus);
+        listWidget->setFocusPolicy(Qt::FocusPolicy::TabFocus);
 
         gridLayout_2->addWidget(listWidget, 0, 0, 1, 1);
 
@@ -227,8 +227,8 @@ public:
 
         buttonBox = new QDialogButtonBox(qdesigner_internal__TreeWidgetEditor);
         buttonBox->setObjectName("buttonBox");
-        buttonBox->setOrientation(Qt::Horizontal);
-        buttonBox->setStandardButtons(QDialogButtonBox::Cancel|QDialogButtonBox::Ok);
+        buttonBox->setOrientation(Qt::Orientation::Horizontal);
+        buttonBox->setStandardButtons(QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok);
 
         gridLayout_3->addWidget(buttonBox, 1, 0, 1, 2);
 

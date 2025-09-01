@@ -42,7 +42,7 @@ public:
     {
         if (Form->objectName().isEmpty())
             Form->setObjectName("Form");
-        Form->resize(258, 224);
+        Form->resize(301, 228);
         vboxLayout = new QVBoxLayout(Form);
 #ifndef Q_OS_MAC
         vboxLayout->setSpacing(6);

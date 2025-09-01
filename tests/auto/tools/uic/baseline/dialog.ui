@@ -1,7 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0" connectslotsbyname="false">
  <class>Dialog</class>
- <widget class="QDialog" name="Dialog" >
-  <property name="geometry" >
+ <widget class="QDialog" name="Dialog">
+  <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
@@ -9,33 +10,33 @@
     <height>322</height>
    </rect>
   </property>
-  <property name="windowTitle" >
+  <property name="windowTitle">
    <string>Dialog</string>
   </property>
-  <layout class="QGridLayout" >
-   <item row="0" column="0" >
-    <widget class="QPushButton" name="loadFromFileButton" >
-     <property name="text" >
+  <layout class="QGridLayout">
+   <item row="0" column="0">
+    <widget class="QPushButton" name="loadFromFileButton">
+     <property name="text">
       <string>Load Image From File...</string>
      </property>
     </widget>
    </item>
-   <item row="1" column="0" >
-    <widget class="QLabel" name="label" >
-     <property name="text" >
+   <item row="1" column="0">
+    <widget class="QLabel" name="label">
+     <property name="text">
       <string>Launch two of these dialogs.  In the first, press the top button and load an image from a file.  In the second, press the bottom button and display the loaded image from shared memory.</string>
      </property>
-     <property name="alignment" >
-      <set>Qt::AlignCenter</set>
+     <property name="alignment">
+      <set>Qt::AlignmentFlag::AlignCenter</set>
      </property>
-     <property name="wordWrap" >
+     <property name="wordWrap">
       <bool>true</bool>
      </property>
     </widget>
    </item>
-   <item row="2" column="0" >
-    <widget class="QPushButton" name="loadFromSharedMemoryButton" >
-     <property name="text" >
+   <item row="2" column="0">
+    <widget class="QPushButton" name="loadFromSharedMemoryButton">
+     <property name="text">
       <string>Display Image From Shared Memory</string>
      </property>
     </widget>

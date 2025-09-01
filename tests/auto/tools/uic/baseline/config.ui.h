@@ -96,7 +96,7 @@ public:
     {
         if (Config->objectName().isEmpty())
             Config->setObjectName("Config");
-        Config->resize(600, 650);
+        Config->resize(600, 772);
         Config->setSizeGripEnabled(true);
         vboxLayout = new QVBoxLayout(Config);
         vboxLayout->setSpacing(6);
@@ -301,8 +301,6 @@ public:
         gridLayout->setSpacing(6);
         gridLayout->setContentsMargins(11, 11, 11, 11);
         gridLayout->setObjectName("gridLayout");
-        gridLayout->setHorizontalSpacing(6);
-        gridLayout->setVerticalSpacing(6);
         gridLayout->setContentsMargins(11, 11, 11, 11);
         TextLabel3 = new QLabel(GroupBox1);
         TextLabel3->setObjectName("TextLabel3");
@@ -388,7 +386,7 @@ public:
         bslider->setPalette(palette);
         bslider->setMaximum(400);
         bslider->setValue(100);
-        bslider->setOrientation(Qt::Horizontal);
+        bslider->setOrientation(Qt::Orientation::Horizontal);
 
         gridLayout->addWidget(bslider, 6, 1, 1, 1);
 
@@ -469,7 +467,7 @@ public:
         gslider->setPalette(palette1);
         gslider->setMaximum(400);
         gslider->setValue(100);
-        gslider->setOrientation(Qt::Horizontal);
+        gslider->setOrientation(Qt::Orientation::Horizontal);
 
         gridLayout->addWidget(gslider, 4, 1, 1, 1);
 
@@ -549,7 +547,7 @@ public:
         gammaslider->setPalette(palette2);
         gammaslider->setMaximum(400);
         gammaslider->setValue(100);
-        gammaslider->setOrientation(Qt::Horizontal);
+        gammaslider->setOrientation(Qt::Orientation::Horizontal);
 
         gridLayout->addWidget(gammaslider, 0, 1, 1, 1);
 
@@ -630,7 +628,7 @@ public:
         rslider->setPalette(palette3);
         rslider->setMaximum(400);
         rslider->setValue(100);
-        rslider->setOrientation(Qt::Horizontal);
+        rslider->setOrientation(Qt::Orientation::Horizontal);
 
         gridLayout->addWidget(rslider, 2, 1, 1, 1);
 

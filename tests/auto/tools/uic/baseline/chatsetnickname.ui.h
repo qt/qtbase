@@ -38,7 +38,7 @@ public:
     {
         if (NicknameDialog->objectName().isEmpty())
             NicknameDialog->setObjectName("NicknameDialog");
-        NicknameDialog->resize(396, 105);
+        NicknameDialog->resize(396, 113);
         QSizePolicy sizePolicy(QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Minimum);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);

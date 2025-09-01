@@ -76,8 +76,8 @@ public:
         gridLayout->setObjectName("gridLayout");
         buttonBox = new QDialogButtonBox(FormWindowSettings);
         buttonBox->setObjectName("buttonBox");
-        buttonBox->setOrientation(Qt::Horizontal);
-        buttonBox->setStandardButtons(QDialogButtonBox::Cancel|QDialogButtonBox::NoButton|QDialogButtonBox::Ok);
+        buttonBox->setOrientation(Qt::Orientation::Horizontal);
+        buttonBox->setStandardButtons(QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok);
 
         gridLayout->addWidget(buttonBox, 6, 0, 1, 2);
 

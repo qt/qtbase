@@ -61,9 +61,9 @@ public:
         pageList = new QListWidget(groupBox);
         pageList->setObjectName("pageList");
         pageList->setMinimumSize(QSize(344, 0));
-        pageList->setDragDropMode(QAbstractItemView::InternalMove);
-        pageList->setSelectionMode(QAbstractItemView::ContiguousSelection);
-        pageList->setMovement(QListView::Snap);
+        pageList->setDragDropMode(QAbstractItemView::DragDropMode::InternalMove);
+        pageList->setSelectionMode(QAbstractItemView::SelectionMode::ContiguousSelection);
+        pageList->setMovement(QListView::Movement::Snap);
 
         hboxLayout->addWidget(pageList);
 
@@ -93,8 +93,8 @@ public:
 
         buttonBox = new QDialogButtonBox(qdesigner_internal__OrderDialog);
         buttonBox->setObjectName("buttonBox");
-        buttonBox->setOrientation(Qt::Horizontal);
-        buttonBox->setStandardButtons(QDialogButtonBox::Cancel|QDialogButtonBox::Ok|QDialogButtonBox::Reset);
+        buttonBox->setOrientation(Qt::Orientation::Horizontal);
+        buttonBox->setStandardButtons(QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok|QDialogButtonBox::StandardButton::Reset);
 
         vboxLayout->addWidget(buttonBox);
 

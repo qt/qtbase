@@ -146,7 +146,7 @@ public:
         display->setObjectName("display");
         display->setGeometry(QRect(10, 10, 291, 31));
         display->setMaxLength(15);
-        display->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
+        display->setAlignment(Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter);
         display->setReadOnly(true);
 
         retranslateUi(Calculator);

@@ -1,38 +1,39 @@
-<ui version="4.0" >
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
  <class>BookmarkDialog</class>
- <widget class="QDialog" name="BookmarkDialog" >
-  <property name="geometry" >
+ <widget class="QDialog" name="BookmarkDialog">
+  <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
     <width>450</width>
-    <height>135</height>
+    <height>160</height>
    </rect>
   </property>
-  <property name="sizePolicy" >
-   <sizepolicy vsizetype="Preferred" hsizetype="Preferred" >
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
     <horstretch>0</horstretch>
     <verstretch>0</verstretch>
    </sizepolicy>
   </property>
-  <property name="windowTitle" >
+  <property name="windowTitle">
    <string>Add Bookmark</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_3" >
+  <layout class="QVBoxLayout" name="verticalLayout_3">
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout" >
+    <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
-      <layout class="QVBoxLayout" name="verticalLayout_2" >
+      <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
-        <widget class="QLabel" name="label" >
-         <property name="text" >
+        <widget class="QLabel" name="label">
+         <property name="text">
           <string>Bookmark:</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QLabel" name="label_2" >
-         <property name="text" >
+        <widget class="QLabel" name="label_2">
+         <property name="text">
           <string>Add in Folder:</string>
          </property>
         </widget>
@@ -40,75 +41,75 @@
       </layout>
      </item>
      <item>
-      <layout class="QVBoxLayout" name="verticalLayout" >
+      <layout class="QVBoxLayout" name="verticalLayout">
        <item>
-        <widget class="QLineEdit" name="bookmarkEdit" />
+        <widget class="QLineEdit" name="bookmarkEdit"/>
        </item>
        <item>
-        <widget class="QComboBox" name="bookmarkFolders" />
+        <widget class="QComboBox" name="bookmarkFolders"/>
        </item>
       </layout>
      </item>
     </layout>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_3" >
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
      <item>
-      <widget class="QToolButton" name="toolButton" >
-       <property name="minimumSize" >
+      <widget class="QToolButton" name="toolButton">
+       <property name="minimumSize">
         <size>
          <width>25</width>
          <height>20</height>
         </size>
        </property>
-       <property name="text" >
+       <property name="text">
         <string>+</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="Line" name="line" >
-       <property name="orientation" >
-        <enum>Qt::Horizontal</enum>
+      <widget class="Line" name="line">
+       <property name="orientation">
+        <enum>Qt::Orientation::Horizontal</enum>
        </property>
       </widget>
      </item>
     </layout>
    </item>
    <item>
-    <widget class="BookmarkWidget" name="bookmarkWidget" >
-     <property name="enabled" >
+    <widget class="BookmarkWidget" name="bookmarkWidget">
+     <property name="enabled">
       <bool>true</bool>
      </property>
-     <property name="sizePolicy" >
-      <sizepolicy vsizetype="Ignored" hsizetype="Expanding" >
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Ignored">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
      <column>
-      <property name="text" >
+      <property name="text">
        <string>1</string>
       </property>
      </column>
     </widget>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_4" >
+    <layout class="QHBoxLayout" name="horizontalLayout_4">
      <item>
-      <widget class="QPushButton" name="newFolderButton" >
-       <property name="text" >
+      <widget class="QPushButton" name="newFolderButton">
+       <property name="text">
         <string>New Folder</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QDialogButtonBox" name="buttonBox" >
-       <property name="orientation" >
-        <enum>Qt::Horizontal</enum>
+      <widget class="QDialogButtonBox" name="buttonBox">
+       <property name="orientation">
+        <enum>Qt::Orientation::Horizontal</enum>
        </property>
-       <property name="standardButtons" >
-        <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+       <property name="standardButtons">
+        <set>QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok</set>
        </property>
       </widget>
      </item>
@@ -131,11 +132,11 @@
    <receiver>BookmarkDialog</receiver>
    <slot>accept()</slot>
    <hints>
-    <hint type="sourcelabel" >
+    <hint type="sourcelabel">
      <x>248</x>
      <y>254</y>
     </hint>
-    <hint type="destinationlabel" >
+    <hint type="destinationlabel">
      <x>157</x>
      <y>274</y>
     </hint>
@@ -147,11 +148,11 @@
    <receiver>BookmarkDialog</receiver>
    <slot>reject()</slot>
    <hints>
-    <hint type="sourcelabel" >
+    <hint type="sourcelabel">
      <x>316</x>
      <y>260</y>
     </hint>
-    <hint type="destinationlabel" >
+    <hint type="destinationlabel">
      <x>286</x>
      <y>274</y>
     </hint>

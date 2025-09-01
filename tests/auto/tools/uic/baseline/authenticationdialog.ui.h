@@ -39,7 +39,7 @@ public:
     {
         if (Dialog->objectName().isEmpty())
             Dialog->setObjectName("Dialog");
-        Dialog->resize(389, 243);
+        Dialog->resize(514, 243);
         gridLayout = new QGridLayout(Dialog);
         gridLayout->setObjectName("gridLayout");
         label = new QLabel(Dialog);
@@ -70,8 +70,8 @@ public:
 
         buttonBox = new QDialogButtonBox(Dialog);
         buttonBox->setObjectName("buttonBox");
-        buttonBox->setOrientation(Qt::Horizontal);
-        buttonBox->setStandardButtons(QDialogButtonBox::Cancel|QDialogButtonBox::Ok);
+        buttonBox->setOrientation(Qt::Orientation::Horizontal);
+        buttonBox->setStandardButtons(QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok);
 
         gridLayout->addWidget(buttonBox, 5, 0, 1, 2);
 

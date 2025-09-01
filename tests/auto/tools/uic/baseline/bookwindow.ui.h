@@ -73,7 +73,7 @@ public:
         vboxLayout1->setObjectName("vboxLayout1");
         bookTable = new QTableView(groupBox);
         bookTable->setObjectName("bookTable");
-        bookTable->setSelectionBehavior(QAbstractItemView::SelectRows);
+        bookTable->setSelectionBehavior(QAbstractItemView::SelectionBehavior::SelectRows);
 
         vboxLayout1->addWidget(bookTable);
 
@@ -122,8 +122,8 @@ public:
         yearEdit = new QSpinBox(groupBox_2);
         yearEdit->setObjectName("yearEdit");
         yearEdit->setEnabled(true);
-        yearEdit->setMaximum(2100);
         yearEdit->setMinimum(-1000);
+        yearEdit->setMaximum(2100);
 
         formLayout->setWidget(3, QFormLayout::ItemRole::FieldRole, yearEdit);
 

@@ -143,14 +143,14 @@ public:
         progressBar->setSizePolicy(sizePolicy2);
         progressBar->setValue(0);
         progressBar->setTextVisible(false);
-        progressBar->setOrientation(Qt::Horizontal);
+        progressBar->setOrientation(Qt::Orientation::Horizontal);
 
         hboxLayout2->addWidget(progressBar);
 
         buttonBox = new QDialogButtonBox(PreviewDialogBase);
         buttonBox->setObjectName("buttonBox");
-        buttonBox->setOrientation(Qt::Horizontal);
-        buttonBox->setStandardButtons(QDialogButtonBox::Cancel|QDialogButtonBox::NoButton|QDialogButtonBox::Ok);
+        buttonBox->setOrientation(Qt::Orientation::Horizontal);
+        buttonBox->setStandardButtons(QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok);
 
         hboxLayout2->addWidget(buttonBox);
 

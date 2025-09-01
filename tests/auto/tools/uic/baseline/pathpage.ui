@@ -1,7 +1,8 @@
-<ui version="4.0" >
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
  <class>PathPage</class>
- <widget class="QWidget" name="PathPage" >
-  <property name="geometry" >
+ <widget class="QWidget" name="PathPage">
+  <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
@@ -9,35 +10,35 @@
     <height>243</height>
    </rect>
   </property>
-  <property name="windowTitle" >
+  <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QGridLayout" >
-   <item row="0" column="0" >
-    <widget class="QLabel" name="label_2" >
-     <property name="sizePolicy" >
-      <sizepolicy vsizetype="Preferred" hsizetype="Maximum" >
+  <layout class="QGridLayout">
+   <item row="0" column="0">
+    <widget class="QLabel" name="label_2">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
-     <property name="text" >
+     <property name="text">
       <string>File filters:</string>
      </property>
     </widget>
    </item>
-   <item row="0" column="1" colspan="2" >
-    <widget class="QLineEdit" name="filterLineEdit" />
+   <item row="0" column="1" colspan="2">
+    <widget class="QLineEdit" name="filterLineEdit"/>
    </item>
-   <item row="1" column="1" >
+   <item row="1" column="1">
     <spacer>
-     <property name="orientation" >
-      <enum>Qt::Vertical</enum>
+     <property name="orientation">
+      <enum>Qt::Orientation::Vertical</enum>
      </property>
-     <property name="sizeType" >
+     <property name="sizeType">
       <enum>QSizePolicy::Policy::Fixed</enum>
      </property>
-     <property name="sizeHint" >
+     <property name="sizeHint" stdset="0">
       <size>
        <width>20</width>
        <height>10</height>
@@ -45,48 +46,48 @@
      </property>
     </spacer>
    </item>
-   <item row="2" column="0" colspan="3" >
-    <widget class="QLabel" name="label" >
-     <property name="text" >
+   <item row="2" column="0" colspan="3">
+    <widget class="QLabel" name="label">
+     <property name="text">
       <string>Documentation source file paths:</string>
      </property>
     </widget>
    </item>
-   <item rowspan="3" row="3" column="0" colspan="3" >
-    <widget class="QListWidget" name="pathListWidget" />
+   <item row="3" column="0" rowspan="3" colspan="3">
+    <widget class="QListWidget" name="pathListWidget"/>
    </item>
-   <item row="3" column="3" >
-    <widget class="QPushButton" name="addButton" >
-     <property name="sizePolicy" >
-      <sizepolicy vsizetype="Fixed" hsizetype="Maximum" >
+   <item row="3" column="3">
+    <widget class="QPushButton" name="addButton">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
-     <property name="text" >
+     <property name="text">
       <string>Add</string>
      </property>
     </widget>
    </item>
-   <item row="4" column="3" >
-    <widget class="QPushButton" name="removeButton" >
-     <property name="sizePolicy" >
-      <sizepolicy vsizetype="Fixed" hsizetype="Maximum" >
+   <item row="4" column="3">
+    <widget class="QPushButton" name="removeButton">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
-     <property name="text" >
+     <property name="text">
       <string>Remove</string>
      </property>
     </widget>
    </item>
-   <item row="5" column="3" >
+   <item row="5" column="3">
     <spacer>
-     <property name="orientation" >
-      <enum>Qt::Vertical</enum>
+     <property name="orientation">
+      <enum>Qt::Orientation::Vertical</enum>
      </property>
-     <property name="sizeHint" >
+     <property name="sizeHint" stdset="0">
       <size>
        <width>20</width>
        <height>51</height>
@@ -94,12 +95,12 @@
      </property>
     </spacer>
    </item>
-   <item row="6" column="2" >
+   <item row="6" column="2">
     <spacer>
-     <property name="orientation" >
-      <enum>Qt::Vertical</enum>
+     <property name="orientation">
+      <enum>Qt::Orientation::Vertical</enum>
      </property>
-     <property name="sizeHint" >
+     <property name="sizeHint" stdset="0">
       <size>
        <width>20</width>
        <height>31</height>

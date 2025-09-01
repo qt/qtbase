@@ -1,206 +1,158 @@
-<ui version="4.0" stdsetdef="1" >
-<class>Statistics</class>
-<comment>
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <comment>
 * Copyright (C) 2016 The Qt Company Ltd.
 * SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 </comment>
-  <widget class="QDialog" name="Statistics" >
-    <property name="objectName" >
-      <string notr="true" >linguist_stats</string>
-    </property>
-    <property name="geometry" >
-      <rect>
-        <x>0</x>
-        <y>0</y>
-        <width>336</width>
-        <height>164</height>
-      </rect>
-    </property>
-    <property name="windowTitle" >
-      <string>Statistics</string>
-    </property>
-    <layout class="QGridLayout" >
-      <property name="objectName" >
-        <string notr="true" >unnamed</string>
-      </property>
-      <item row="1" column="0" >
-        <layout class="QHBoxLayout" >
-          <property name="objectName" >
-            <string notr="true" >unnamed</string>
-          </property>
-          <item>
-            <spacer name="spacer4_2" >
-              <property name="sizeHint" >
-                <size>
-                  <width>40</width>
-                  <height>20</height>
-                </size>
-              </property>
-              <property name="sizeType" >
-                <enum>Expanding</enum>
-              </property>
-              <property name="orientation" >
-                <enum>Horizontal</enum>
-              </property>
-            </spacer>
-          </item>
-          <item>
-            <widget class="QPushButton" name="closeBtn" >
-              <property name="objectName" >
-                <string notr="true" >closeBtn</string>
-              </property>
-              <property name="text" >
-                <string>&amp;Close</string>
-              </property>
-            </widget>
-          </item>
-          <item>
-            <spacer name="spacer4" >
-              <property name="sizeHint" >
-                <size>
-                  <width>40</width>
-                  <height>20</height>
-                </size>
-              </property>
-              <property name="sizeType" >
-                <enum>Expanding</enum>
-              </property>
-              <property name="orientation" >
-                <enum>Horizontal</enum>
-              </property>
-            </spacer>
-          </item>
-        </layout>
-      </item>
-      <item row="0" column="0" >
-        <widget class="QFrame" name="frame4" >
-          <property name="objectName" >
-            <string notr="true" >frame4</string>
-          </property>
-          <property name="frameShape" >
-            <enum>QFrame::StyledPanel</enum>
-          </property>
-          <property name="frameShadow" >
-            <enum>QFrame::Raised</enum>
-          </property>
-          <layout class="QGridLayout" >
-            <property name="objectName" >
-              <string notr="true" >unnamed</string>
-            </property>
-            <item row="0" column="2" >
-              <widget class="QLabel" name="textLabel4" >
-                <property name="objectName" >
-                  <string notr="true" >textLabel4</string>
-                </property>
-                <property name="text" >
-                  <string>Translation</string>
-                </property>
-              </widget>
-            </item>
-            <item row="0" column="1" >
-              <widget class="QLabel" name="textLabel5" >
-                <property name="objectName" >
-                  <string notr="true" >textLabel5</string>
-                </property>
-                <property name="text" >
-                  <string>Source</string>
-                </property>
-              </widget>
-            </item>
-            <item row="1" column="1" >
-              <widget class="QLabel" name="untrWords" >
-                <property name="objectName" >
-                  <string notr="true" >untrWords</string>
-                </property>
-                <property name="text" >
-                  <string>0</string>
-                </property>
-              </widget>
-            </item>
-            <item row="1" column="2" >
-              <widget class="QLabel" name="trWords" >
-                <property name="objectName" >
-                  <string notr="true" >trWords</string>
-                </property>
-                <property name="text" >
-                  <string>0</string>
-                </property>
-              </widget>
-            </item>
-            <item row="1" column="0" >
-              <widget class="QLabel" name="textLabel1" >
-                <property name="objectName" >
-                  <string notr="true" >textLabel1</string>
-                </property>
-                <property name="text" >
-                  <string>Words:</string>
-                </property>
-              </widget>
-            </item>
-            <item row="2" column="2" >
-              <widget class="QLabel" name="trChars" >
-                <property name="objectName" >
-                  <string notr="true" >trChars</string>
-                </property>
-                <property name="text" >
-                  <string>0</string>
-                </property>
-              </widget>
-            </item>
-            <item row="2" column="1" >
-              <widget class="QLabel" name="untrChars" >
-                <property name="objectName" >
-                  <string notr="true" >untrChars</string>
-                </property>
-                <property name="text" >
-                  <string>0</string>
-                </property>
-              </widget>
-            </item>
-            <item row="2" column="0" >
-              <widget class="QLabel" name="textLabel3" >
-                <property name="objectName" >
-                  <string notr="true" >textLabel3</string>
-                </property>
-                <property name="text" >
-                  <string>Characters:</string>
-                </property>
-              </widget>
-            </item>
-            <item row="3" column="0" >
-              <widget class="QLabel" name="textLabel6" >
-                <property name="objectName" >
-                  <string notr="true" >textLabel6</string>
-                </property>
-                <property name="text" >
-                  <string>Characters (with spaces):</string>
-                </property>
-              </widget>
-            </item>
-            <item row="3" column="2" >
-              <widget class="QLabel" name="trCharsSpc" >
-                <property name="objectName" >
-                  <string notr="true" >trCharsSpc</string>
-                </property>
-                <property name="text" >
-                  <string>0</string>
-                </property>
-              </widget>
-            </item>
-            <item row="3" column="1" >
-              <widget class="QLabel" name="untrCharsSpc" >
-                <property name="objectName" >
-                  <string notr="true" >untrCharsSpc</string>
-                </property>
-                <property name="text" >
-                  <string>0</string>
-                </property>
-              </widget>
-            </item>
-          </layout>
-        </widget>
-      </item>
+ <class>linguist_stats</class>
+ <widget class="QDialog" name="linguist_stats">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>373</width>
+    <height>182</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Statistics</string>
+  </property>
+  <layout class="QGridLayout" name="unnamed">
+   <item row="1" column="0">
+    <layout class="QHBoxLayout" name="unnamed">
+     <item>
+      <spacer name="spacer4_2">
+       <property name="orientation">
+        <enum>Qt::Orientation::Horizontal</enum>
+       </property>
+       <property name="sizeType">
+        <enum>QSizePolicy::Policy::Expanding</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="closeBtn">
+       <property name="text">
+        <string>&amp;Close</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="spacer4">
+       <property name="orientation">
+        <enum>Qt::Orientation::Horizontal</enum>
+       </property>
+       <property name="sizeType">
+        <enum>QSizePolicy::Policy::Expanding</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
     </layout>
-  </widget>
-  <layoutdefault spacing="6" margin="11" />
+   </item>
+   <item row="0" column="0">
+    <widget class="QFrame" name="frame4">
+     <property name="frameShape">
+      <enum>QFrame::Shape::StyledPanel</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Shadow::Raised</enum>
+     </property>
+     <layout class="QGridLayout" name="unnamed">
+      <item row="0" column="2">
+       <widget class="QLabel" name="textLabel4">
+        <property name="text">
+         <string>Translation</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QLabel" name="textLabel5">
+        <property name="text">
+         <string>Source</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QLabel" name="untrWords">
+        <property name="text">
+         <string>0</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="2">
+       <widget class="QLabel" name="trWords">
+        <property name="text">
+         <string>0</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="textLabel1">
+        <property name="text">
+         <string>Words:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="2">
+       <widget class="QLabel" name="trChars">
+        <property name="text">
+         <string>0</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QLabel" name="untrChars">
+        <property name="text">
+         <string>0</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="textLabel3">
+        <property name="text">
+         <string>Characters:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="textLabel6">
+        <property name="text">
+         <string>Characters (with spaces):</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="2">
+       <widget class="QLabel" name="trCharsSpc">
+        <property name="text">
+         <string>0</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QLabel" name="untrCharsSpc">
+        <property name="text">
+         <string>0</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <resources/>
+ <connections/>
 </ui>

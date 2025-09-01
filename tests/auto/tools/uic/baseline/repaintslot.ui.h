@@ -32,7 +32,7 @@ public:
         verticalLayout->setObjectName("verticalLayout");
         verticalSlider = new QSlider(Widget);
         verticalSlider->setObjectName("verticalSlider");
-        verticalSlider->setOrientation(Qt::Vertical);
+        verticalSlider->setOrientation(Qt::Orientation::Vertical);
 
         verticalLayout->addWidget(verticalSlider);
 

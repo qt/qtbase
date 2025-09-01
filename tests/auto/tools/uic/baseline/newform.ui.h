@@ -77,7 +77,7 @@ public:
         sizePolicy.setHeightForWidth(lblPreview->sizePolicy().hasHeightForWidth());
         lblPreview->setSizePolicy(sizePolicy);
         lblPreview->setLineWidth(1);
-        lblPreview->setAlignment(Qt::AlignCenter);
+        lblPreview->setAlignment(Qt::AlignmentFlag::AlignCenter);
         lblPreview->setMargin(5);
 
         hboxLayout->addWidget(lblPreview);
@@ -87,8 +87,8 @@ public:
 
         horizontalLine = new QFrame(NewForm);
         horizontalLine->setObjectName("horizontalLine");
-        horizontalLine->setFrameShape(QFrame::HLine);
-        horizontalLine->setFrameShadow(QFrame::Sunken);
+        horizontalLine->setFrameShape(QFrame::Shape::HLine);
+        horizontalLine->setFrameShadow(QFrame::Shadow::Sunken);
 
         vboxLayout->addWidget(horizontalLine);
 

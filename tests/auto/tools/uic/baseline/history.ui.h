@@ -76,7 +76,7 @@ public:
 
         buttonBox = new QDialogButtonBox(HistoryDialog);
         buttonBox->setObjectName("buttonBox");
-        buttonBox->setStandardButtons(QDialogButtonBox::Ok);
+        buttonBox->setStandardButtons(QDialogButtonBox::StandardButton::Ok);
 
         hboxLayout->addWidget(buttonBox);
 

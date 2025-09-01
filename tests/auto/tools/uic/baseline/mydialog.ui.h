@@ -29,7 +29,7 @@ public:
     {
         if (MyDialog->objectName().isEmpty())
             MyDialog->setObjectName("MyDialog");
-        MyDialog->resize(401, 70);
+        MyDialog->resize(473, 76);
         vboxLayout = new QVBoxLayout(MyDialog);
 #ifndef Q_OS_MAC
         vboxLayout->setSpacing(6);

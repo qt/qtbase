@@ -63,10 +63,10 @@ public:
         sizePolicy.setHeightForWidth(easingCurvePicker->sizePolicy().hasHeightForWidth());
         easingCurvePicker->setSizePolicy(sizePolicy);
         easingCurvePicker->setMaximumSize(QSize(16777215, 120));
-        easingCurvePicker->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-        easingCurvePicker->setMovement(QListView::Static);
+        easingCurvePicker->setVerticalScrollBarPolicy(Qt::ScrollBarPolicy::ScrollBarAlwaysOff);
+        easingCurvePicker->setMovement(QListView::Movement::Static);
         easingCurvePicker->setProperty("isWrapping", QVariant(false));
-        easingCurvePicker->setViewMode(QListView::IconMode);
+        easingCurvePicker->setViewMode(QListView::ViewMode::IconMode);
         easingCurvePicker->setSelectionRectVisible(false);
 
         gridLayout->addWidget(easingCurvePicker, 0, 0, 1, 2);
@@ -84,7 +84,7 @@ public:
         buttonGroup->addButton(lineRadio);
         lineRadio->setObjectName("lineRadio");
         lineRadio->setMaximumSize(QSize(16777215, 40));
-        lineRadio->setLayoutDirection(Qt::LeftToRight);
+        lineRadio->setLayoutDirection(Qt::LayoutDirection::LeftToRight);
         lineRadio->setChecked(true);
 
         gridLayout_2->addWidget(lineRadio, 0, 0, 1, 1);
@@ -108,7 +108,7 @@ public:
         groupBox->setSizePolicy(sizePolicy1);
         formLayout = new QFormLayout(groupBox);
         formLayout->setObjectName("formLayout");
-        formLayout->setFieldGrowthPolicy(QFormLayout::AllNonFixedFieldsGrow);
+        formLayout->setFieldGrowthPolicy(QFormLayout::FieldGrowthPolicy::AllNonFixedFieldsGrow);
         label = new QLabel(groupBox);
         label->setObjectName("label");
         QSizePolicy sizePolicy2(QSizePolicy::Policy::Preferred, QSizePolicy::Policy::Preferred);

@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'qoverload.ui'
 **
-** Created by: Qt User Interface Compiler version 6.8.0
+** Created by: Qt User Interface Compiler version 6.0.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -48,7 +48,7 @@ public:
         verticalLayout->setObjectName("verticalLayout");
         horizontalSlider = new QSlider(centralWidget);
         horizontalSlider->setObjectName("horizontalSlider");
-        horizontalSlider->setOrientation(Qt::Horizontal);
+        horizontalSlider->setOrientation(Qt::Orientation::Horizontal);
 
         verticalLayout->addWidget(horizontalSlider);
 
@@ -65,7 +65,7 @@ public:
         MainWindow->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(MainWindow);
         menuBar->setObjectName("menuBar");
-        menuBar->setGeometry(QRect(0, 0, 400, 29));
+        menuBar->setGeometry(QRect(0, 0, 400, 26));
         MainWindow->setMenuBar(menuBar);
         mainToolBar = new QToolBar(MainWindow);
         mainToolBar->setObjectName("mainToolBar");

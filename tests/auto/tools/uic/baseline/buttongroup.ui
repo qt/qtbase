@@ -29,16 +29,16 @@
       </size>
      </property>
      <property name="verticalScrollBarPolicy">
-      <enum>Qt::ScrollBarAlwaysOff</enum>
+      <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOff</enum>
      </property>
      <property name="movement">
-      <enum>QListView::Static</enum>
+      <enum>QListView::Movement::Static</enum>
      </property>
      <property name="isWrapping" stdset="0">
       <bool>false</bool>
      </property>
      <property name="viewMode">
-      <enum>QListView::IconMode</enum>
+      <enum>QListView::ViewMode::IconMode</enum>
      </property>
      <property name="selectionRectVisible">
       <bool>false</bool>
@@ -68,7 +68,7 @@
            </size>
           </property>
           <property name="layoutDirection">
-           <enum>Qt::LeftToRight</enum>
+           <enum>Qt::LayoutDirection::LeftToRight</enum>
           </property>
           <property name="text">
            <string>Line</string>
@@ -77,7 +77,7 @@
            <bool>true</bool>
           </property>
           <attribute name="buttonGroup">
-           <string>buttonGroup</string>
+           <string notr="true">buttonGroup</string>
           </attribute>
          </widget>
         </item>
@@ -93,7 +93,7 @@
            <string>Circle</string>
           </property>
           <attribute name="buttonGroup">
-           <string>buttonGroup</string>
+           <string notr="true">buttonGroup</string>
           </attribute>
          </widget>
         </item>
@@ -113,7 +113,7 @@
        </property>
        <layout class="QFormLayout" name="formLayout">
         <property name="fieldGrowthPolicy">
-         <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+         <enum>QFormLayout::FieldGrowthPolicy::AllNonFixedFieldsGrow</enum>
         </property>
         <item row="0" column="0">
          <widget class="QLabel" name="label">
@@ -238,7 +238,7 @@
      <item>
       <spacer name="verticalSpacer">
        <property name="orientation">
-        <enum>Qt::Vertical</enum>
+        <enum>Qt::Orientation::Vertical</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>

@@ -38,7 +38,7 @@ public:
     {
         if (PasswordDialog->objectName().isEmpty())
             PasswordDialog->setObjectName("PasswordDialog");
-        PasswordDialog->resize(399, 148);
+        PasswordDialog->resize(399, 150);
         gridLayout = new QGridLayout(PasswordDialog);
         gridLayout->setObjectName("gridLayout");
         hboxLayout = new QHBoxLayout();
@@ -78,14 +78,14 @@ public:
 
         passwordLineEdit = new QLineEdit(PasswordDialog);
         passwordLineEdit->setObjectName("passwordLineEdit");
-        passwordLineEdit->setEchoMode(QLineEdit::Password);
+        passwordLineEdit->setEchoMode(QLineEdit::EchoMode::Password);
 
         gridLayout->addWidget(passwordLineEdit, 2, 1, 1, 1);
 
         buttonBox = new QDialogButtonBox(PasswordDialog);
         buttonBox->setObjectName("buttonBox");
-        buttonBox->setOrientation(Qt::Horizontal);
-        buttonBox->setStandardButtons(QDialogButtonBox::Cancel|QDialogButtonBox::Ok);
+        buttonBox->setOrientation(Qt::Orientation::Horizontal);
+        buttonBox->setStandardButtons(QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok);
 
         gridLayout->addWidget(buttonBox, 3, 0, 1, 2);
 

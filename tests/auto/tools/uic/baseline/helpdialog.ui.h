@@ -95,7 +95,7 @@ public:
         vboxLayout1->setObjectName("vboxLayout1");
         listContents = new QTreeWidget(contentPage);
         listContents->setObjectName("listContents");
-        listContents->setContextMenuPolicy(Qt::CustomContextMenu);
+        listContents->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
         listContents->setRootIsDecorated(true);
         listContents->setUniformRowHeights(true);
 
@@ -123,7 +123,7 @@ public:
 
         listIndex = new QListView(indexPage);
         listIndex->setObjectName("listIndex");
-        listIndex->setContextMenuPolicy(Qt::CustomContextMenu);
+        listIndex->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
 
         vboxLayout2->addWidget(listIndex);
 
@@ -138,7 +138,7 @@ public:
         vboxLayout3->setObjectName("vboxLayout3");
         listBookmarks = new QTreeWidget(bookmarkPage);
         listBookmarks->setObjectName("listBookmarks");
-        listBookmarks->setContextMenuPolicy(Qt::CustomContextMenu);
+        listBookmarks->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
         listBookmarks->setUniformRowHeights(true);
 
         vboxLayout3->addWidget(listBookmarks);
@@ -191,7 +191,7 @@ public:
 
         resultBox = new QListWidget(searchPage);
         resultBox->setObjectName("resultBox");
-        resultBox->setContextMenuPolicy(Qt::CustomContextMenu);
+        resultBox->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
 
         gridLayout->addWidget(resultBox, 5, 0, 1, 1);
 
@@ -230,8 +230,8 @@ public:
 
         framePrepare = new QFrame(HelpDialog);
         framePrepare->setObjectName("framePrepare");
-        framePrepare->setFrameShape(QFrame::StyledPanel);
-        framePrepare->setFrameShadow(QFrame::Raised);
+        framePrepare->setFrameShape(QFrame::Shape::StyledPanel);
+        framePrepare->setFrameShadow(QFrame::Shadow::Raised);
         hboxLayout2 = new QHBoxLayout(framePrepare);
 #ifndef Q_OS_MAC
         hboxLayout2->setSpacing(6);

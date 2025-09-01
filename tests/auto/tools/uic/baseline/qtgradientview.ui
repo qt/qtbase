@@ -1,7 +1,8 @@
-<ui version="4.0" >
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
  <class>QtGradientView</class>
- <widget class="QWidget" name="QtGradientView" >
-  <property name="geometry" >
+ <widget class="QWidget" name="QtGradientView">
+  <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
@@ -9,106 +10,106 @@
     <height>228</height>
    </rect>
   </property>
-  <property name="windowTitle" >
+  <property name="windowTitle">
    <string>Gradient View</string>
   </property>
-  <layout class="QVBoxLayout" >
-   <property name="leftMargin" >
+  <layout class="QVBoxLayout">
+   <property name="leftMargin">
     <number>0</number>
    </property>
-   <property name="topMargin" >
+   <property name="topMargin">
     <number>0</number>
    </property>
-   <property name="rightMargin" >
+   <property name="rightMargin">
     <number>0</number>
    </property>
-   <property name="bottomMargin" >
+   <property name="bottomMargin">
     <number>0</number>
    </property>
    <item>
-    <layout class="QHBoxLayout" >
+    <layout class="QHBoxLayout">
      <item>
-      <widget class="QToolButton" name="newButton" >
-       <property name="sizePolicy" >
-        <sizepolicy vsizetype="Minimum" hsizetype="Minimum" >
+      <widget class="QToolButton" name="newButton">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
-       <property name="text" >
+       <property name="text">
         <string>New...</string>
        </property>
-       <property name="toolButtonStyle" >
-        <enum>Qt::ToolButtonTextBesideIcon</enum>
+       <property name="toolButtonStyle">
+        <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
        </property>
-       <property name="autoRaise" >
+       <property name="autoRaise">
         <bool>true</bool>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QToolButton" name="editButton" >
-       <property name="sizePolicy" >
-        <sizepolicy vsizetype="Minimum" hsizetype="Minimum" >
+      <widget class="QToolButton" name="editButton">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
-       <property name="text" >
+       <property name="text">
         <string>Edit...</string>
        </property>
-       <property name="toolButtonStyle" >
-        <enum>Qt::ToolButtonTextBesideIcon</enum>
+       <property name="toolButtonStyle">
+        <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
        </property>
-       <property name="autoRaise" >
+       <property name="autoRaise">
         <bool>true</bool>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QToolButton" name="renameButton" >
-       <property name="sizePolicy" >
-        <sizepolicy vsizetype="Minimum" hsizetype="Minimum" >
+      <widget class="QToolButton" name="renameButton">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
-       <property name="text" >
+       <property name="text">
         <string>Rename</string>
        </property>
-       <property name="toolButtonStyle" >
-        <enum>Qt::ToolButtonTextBesideIcon</enum>
+       <property name="toolButtonStyle">
+        <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
        </property>
-       <property name="autoRaise" >
+       <property name="autoRaise">
         <bool>true</bool>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QToolButton" name="removeButton" >
-       <property name="sizePolicy" >
-        <sizepolicy vsizetype="Minimum" hsizetype="Minimum" >
+      <widget class="QToolButton" name="removeButton">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
-       <property name="text" >
+       <property name="text">
         <string>Remove</string>
        </property>
-       <property name="toolButtonStyle" >
-        <enum>Qt::ToolButtonTextBesideIcon</enum>
+       <property name="toolButtonStyle">
+        <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
        </property>
-       <property name="autoRaise" >
+       <property name="autoRaise">
         <bool>true</bool>
        </property>
       </widget>
      </item>
      <item>
       <spacer>
-       <property name="orientation" >
-        <enum>Qt::Horizontal</enum>
+       <property name="orientation">
+        <enum>Qt::Orientation::Horizontal</enum>
        </property>
-       <property name="sizeHint" stdset="0" >
+       <property name="sizeHint" stdset="0">
         <size>
          <width>71</width>
          <height>26</height>
@@ -119,7 +120,7 @@
     </layout>
    </item>
    <item>
-    <widget class="QListWidget" name="listWidget" />
+    <widget class="QListWidget" name="listWidget"/>
    </item>
   </layout>
  </widget>

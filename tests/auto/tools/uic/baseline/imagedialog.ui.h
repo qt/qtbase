@@ -43,13 +43,12 @@ public:
     QPushButton *okButton;
     QPushButton *cancelButton;
 
-    void setupUi(QDialog *dialog)
+    void setupUi(QDialog *ImageDialog)
     {
-        if (dialog->objectName().isEmpty())
-            dialog->setObjectName("dialog");
-        dialog->setObjectName(QString::fromUtf8("ImageDialog"));
-        dialog->resize(320, 180);
-        vboxLayout = new QVBoxLayout(dialog);
+        if (ImageDialog->objectName().isEmpty())
+            ImageDialog->setObjectName("ImageDialog");
+        ImageDialog->resize(320, 204);
+        vboxLayout = new QVBoxLayout(ImageDialog);
 #ifndef Q_OS_MAC
         vboxLayout->setSpacing(6);
 #endif
@@ -57,95 +56,85 @@ public:
         vboxLayout->setContentsMargins(9, 9, 9, 9);
 #endif
         vboxLayout->setObjectName("vboxLayout");
-        vboxLayout->setObjectName(QString::fromUtf8(""));
         gridLayout = new QGridLayout();
 #ifndef Q_OS_MAC
         gridLayout->setSpacing(6);
 #endif
         gridLayout->setContentsMargins(1, 1, 1, 1);
         gridLayout->setObjectName("gridLayout");
-        gridLayout->setObjectName(QString::fromUtf8(""));
-        widthLabel = new QLabel(dialog);
+        widthLabel = new QLabel(ImageDialog);
         widthLabel->setObjectName("widthLabel");
-        widthLabel->setGeometry(QRect(1, 27, 67, 22));
-        widthLabel->setFrameShape(QFrame::NoFrame);
-        widthLabel->setFrameShadow(QFrame::Plain);
-        widthLabel->setTextFormat(Qt::AutoText);
+        widthLabel->setFrameShape(QFrame::Shape::NoFrame);
+        widthLabel->setFrameShadow(QFrame::Shadow::Plain);
+        widthLabel->setTextFormat(Qt::TextFormat::AutoText);
 
         gridLayout->addWidget(widthLabel, 1, 0, 1, 1);
 
-        heightLabel = new QLabel(dialog);
+        heightLabel = new QLabel(ImageDialog);
         heightLabel->setObjectName("heightLabel");
-        heightLabel->setGeometry(QRect(1, 55, 67, 22));
-        heightLabel->setFrameShape(QFrame::NoFrame);
-        heightLabel->setFrameShadow(QFrame::Plain);
-        heightLabel->setTextFormat(Qt::AutoText);
+        heightLabel->setFrameShape(QFrame::Shape::NoFrame);
+        heightLabel->setFrameShadow(QFrame::Shadow::Plain);
+        heightLabel->setTextFormat(Qt::TextFormat::AutoText);
 
         gridLayout->addWidget(heightLabel, 2, 0, 1, 1);
 
-        colorDepthCombo = new QComboBox(dialog);
+        colorDepthCombo = new QComboBox(ImageDialog);
         colorDepthCombo->setObjectName("colorDepthCombo");
-        colorDepthCombo->setGeometry(QRect(74, 83, 227, 22));
         QSizePolicy sizePolicy(QSizePolicy::Policy::Preferred, QSizePolicy::Policy::Fixed);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
         sizePolicy.setHeightForWidth(colorDepthCombo->sizePolicy().hasHeightForWidth());
         colorDepthCombo->setSizePolicy(sizePolicy);
-        colorDepthCombo->setInsertPolicy(QComboBox::InsertAtBottom);
+        colorDepthCombo->setInsertPolicy(QComboBox::InsertPolicy::InsertAtBottom);
 
         gridLayout->addWidget(colorDepthCombo, 3, 1, 1, 1);
 
-        nameLineEdit = new QLineEdit(dialog);
+        nameLineEdit = new QLineEdit(ImageDialog);
         nameLineEdit->setObjectName("nameLineEdit");
-        nameLineEdit->setGeometry(QRect(74, 83, 227, 22));
         QSizePolicy sizePolicy1(QSizePolicy::Policy::Preferred, QSizePolicy::Policy::Fixed);
         sizePolicy1.setHorizontalStretch(1);
         sizePolicy1.setVerticalStretch(0);
         sizePolicy1.setHeightForWidth(nameLineEdit->sizePolicy().hasHeightForWidth());
         nameLineEdit->setSizePolicy(sizePolicy1);
-        nameLineEdit->setEchoMode(QLineEdit::Normal);
+        nameLineEdit->setEchoMode(QLineEdit::EchoMode::Normal);
 
         gridLayout->addWidget(nameLineEdit, 0, 1, 1, 1);
 
-        spinBox = new QSpinBox(dialog);
+        spinBox = new QSpinBox(ImageDialog);
         spinBox->setObjectName("spinBox");
-        spinBox->setGeometry(QRect(74, 1, 227, 20));
         sizePolicy.setHeightForWidth(spinBox->sizePolicy().hasHeightForWidth());
         spinBox->setSizePolicy(sizePolicy);
-        spinBox->setButtonSymbols(QAbstractSpinBox::UpDownArrows);
-        spinBox->setValue(32);
-        spinBox->setMaximum(1024);
+        spinBox->setButtonSymbols(QAbstractSpinBox::ButtonSymbols::UpDownArrows);
         spinBox->setMinimum(1);
+        spinBox->setMaximum(1024);
+        spinBox->setValue(32);
 
         gridLayout->addWidget(spinBox, 1, 1, 1, 1);
 
-        spinBox_2 = new QSpinBox(dialog);
+        spinBox_2 = new QSpinBox(ImageDialog);
         spinBox_2->setObjectName("spinBox_2");
-        spinBox_2->setGeometry(QRect(74, 27, 227, 22));
         sizePolicy.setHeightForWidth(spinBox_2->sizePolicy().hasHeightForWidth());
         spinBox_2->setSizePolicy(sizePolicy);
-        spinBox_2->setButtonSymbols(QAbstractSpinBox::UpDownArrows);
-        spinBox_2->setValue(32);
-        spinBox_2->setMaximum(1024);
+        spinBox_2->setButtonSymbols(QAbstractSpinBox::ButtonSymbols::UpDownArrows);
         spinBox_2->setMinimum(1);
+        spinBox_2->setMaximum(1024);
+        spinBox_2->setValue(32);
 
         gridLayout->addWidget(spinBox_2, 2, 1, 1, 1);
 
-        nameLabel = new QLabel(dialog);
+        nameLabel = new QLabel(ImageDialog);
         nameLabel->setObjectName("nameLabel");
-        nameLabel->setGeometry(QRect(1, 1, 67, 20));
-        nameLabel->setFrameShape(QFrame::NoFrame);
-        nameLabel->setFrameShadow(QFrame::Plain);
-        nameLabel->setTextFormat(Qt::AutoText);
+        nameLabel->setFrameShape(QFrame::Shape::NoFrame);
+        nameLabel->setFrameShadow(QFrame::Shadow::Plain);
+        nameLabel->setTextFormat(Qt::TextFormat::AutoText);
 
         gridLayout->addWidget(nameLabel, 0, 0, 1, 1);
 
-        colorDepthLabel = new QLabel(dialog);
+        colorDepthLabel = new QLabel(ImageDialog);
         colorDepthLabel->setObjectName("colorDepthLabel");
-        colorDepthLabel->setGeometry(QRect(1, 83, 67, 22));
-        colorDepthLabel->setFrameShape(QFrame::NoFrame);
-        colorDepthLabel->setFrameShadow(QFrame::Plain);
-        colorDepthLabel->setTextFormat(Qt::AutoText);
+        colorDepthLabel->setFrameShape(QFrame::Shape::NoFrame);
+        colorDepthLabel->setFrameShadow(QFrame::Shadow::Plain);
+        colorDepthLabel->setTextFormat(Qt::TextFormat::AutoText);
 
         gridLayout->addWidget(colorDepthLabel, 3, 0, 1, 1);
 
@@ -162,20 +151,17 @@ public:
 #endif
         hboxLayout->setContentsMargins(1, 1, 1, 1);
         hboxLayout->setObjectName("hboxLayout");
-        hboxLayout->setObjectName(QString::fromUtf8(""));
         spacerItem1 = new QSpacerItem(0, 0, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
 
         hboxLayout->addItem(spacerItem1);
 
-        okButton = new QPushButton(dialog);
+        okButton = new QPushButton(ImageDialog);
         okButton->setObjectName("okButton");
-        okButton->setGeometry(QRect(135, 1, 80, 24));
 
         hboxLayout->addWidget(okButton);
 
-        cancelButton = new QPushButton(dialog);
+        cancelButton = new QPushButton(ImageDialog);
         cancelButton->setObjectName("cancelButton");
-        cancelButton->setGeometry(QRect(221, 1, 80, 24));
 
         hboxLayout->addWidget(cancelButton);
 
@@ -188,15 +174,15 @@ public:
         QWidget::setTabOrder(colorDepthCombo, okButton);
         QWidget::setTabOrder(okButton, cancelButton);
 
-        retranslateUi(dialog);
+        retranslateUi(ImageDialog);
         QObject::connect(nameLineEdit, &QLineEdit::returnPressed, okButton, qOverload<>(&QPushButton::animateClick));
 
-        QMetaObject::connectSlotsByName(dialog);
+        QMetaObject::connectSlotsByName(ImageDialog);
     } // setupUi
 
-    void retranslateUi(QDialog *dialog)
+    void retranslateUi(QDialog *ImageDialog)
     {
-        dialog->setWindowTitle(QCoreApplication::translate("ImageDialog", "Create Image", nullptr));
+        ImageDialog->setWindowTitle(QCoreApplication::translate("ImageDialog", "Create Image", nullptr));
         widthLabel->setText(QCoreApplication::translate("ImageDialog", "Width:", nullptr));
         heightLabel->setText(QCoreApplication::translate("ImageDialog", "Height:", nullptr));
         nameLineEdit->setText(QCoreApplication::translate("ImageDialog", "Untitled image", nullptr));

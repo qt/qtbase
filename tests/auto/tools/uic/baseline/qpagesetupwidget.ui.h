@@ -77,7 +77,7 @@ public:
     {
         if (QPageSetupWidget->objectName().isEmpty())
             QPageSetupWidget->setObjectName("QPageSetupWidget");
-        QPageSetupWidget->resize(416, 515);
+        QPageSetupWidget->resize(416, 670);
         gridLayout_3 = new QGridLayout(QPageSetupWidget);
         gridLayout_3->setContentsMargins(0, 0, 0, 0);
         gridLayout_3->setObjectName("gridLayout_3");
@@ -198,7 +198,7 @@ public:
         gridLayout->setObjectName("gridLayout");
         topMargin = new QDoubleSpinBox(groupBox);
         topMargin->setObjectName("topMargin");
-        topMargin->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
+        topMargin->setAlignment(Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter);
         topMargin->setMaximum(999.990000000000009);
 
         gridLayout->addWidget(topMargin, 0, 1, 1, 1);
@@ -211,7 +211,7 @@ public:
 
         leftMargin = new QDoubleSpinBox(groupBox);
         leftMargin->setObjectName("leftMargin");
-        leftMargin->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
+        leftMargin->setAlignment(Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter);
         leftMargin->setMaximum(999.990000000000009);
 
         horizontalLayout->addWidget(leftMargin);
@@ -222,7 +222,7 @@ public:
 
         rightMargin = new QDoubleSpinBox(groupBox);
         rightMargin->setObjectName("rightMargin");
-        rightMargin->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
+        rightMargin->setAlignment(Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter);
         rightMargin->setMaximum(999.990000000000009);
 
         horizontalLayout->addWidget(rightMargin);
@@ -240,7 +240,7 @@ public:
 
         bottomMargin = new QDoubleSpinBox(groupBox);
         bottomMargin->setObjectName("bottomMargin");
-        bottomMargin->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
+        bottomMargin->setAlignment(Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter);
         bottomMargin->setMaximum(999.990000000000009);
 
         gridLayout->addWidget(bottomMargin, 2, 1, 1, 1);
