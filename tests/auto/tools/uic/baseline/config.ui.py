@@ -638,7 +638,7 @@ class Ui_Config(object):
         self.TextLabel1_3.setText(QCoreApplication.translate("Config", u"Skin", None))
         self.skin.setItemText(0, QCoreApplication.translate("Config", u"None", None))
 
-        self.touchScreen.setText(QCoreApplication.translate("Config", u"Emulate touch screen (no mouse move)", None))
+        self.touchScreen.setText(QCoreApplication.translate("Config", u"Emulate touch screen (no mouse move)\U0001f680", None))
         self.lcdScreen.setText(QCoreApplication.translate("Config", u"Emulate LCD screen (Only with fixed zoom of 3.0 times magnification)", None))
         self.TextLabel1.setText(QCoreApplication.translate("Config", u"<p>Note that any applications using the virtual framebuffer will be terminated if you change the Size or Depth <i>above</i>. You may freely modify the Gamma <i>below</i>.", None))
         self.GroupBox1.setTitle(QCoreApplication.translate("Config", u"Gamma", None))
