@@ -381,7 +381,12 @@ void QAndroidPlatformWindow::windowFocusChanged(JNIEnv *env, jobject object,
     Q_UNUSED(env)
     Q_UNUSED(object)
     QWindow* window = QtAndroid::windowFromId(windowId);
-    Q_ASSERT_X(window, "QAndroidPlatformWindow", "windowFocusChanged event window should exist");
+    if (!window) {
+        qCWarning(lcQpaWindow,
+            "windowFocusChanged event received for non-existing window %d", windowId);
+        return;
+    }
+
     if (focus) {
         QWindowSystemInterface::handleFocusWindowChanged(window);
     } else if (!focus && window == qGuiApp->focusWindow()) {
