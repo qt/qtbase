@@ -59,89 +59,102 @@ Q_GLOBAL_STATIC(QUrl, lastVisitedDir)
 
 /*!
   \class QFileDialog
-  \brief The QFileDialog class provides a dialog that allows users to select files or directories.
+  \brief Provides a dialog that allows users to select files or directories.
   \ingroup standard-dialogs
   \inmodule QtWidgets
 
-  The QFileDialog class enables a user to traverse the file system
-  to select one or many files or a directory.
+  The QFileDialog class enables users to browse the file system and select one
+  or more files or directories.
 
-  \image qtquickdialogs-filedialog-gtk.png {Open file dialog}
+  \image qfiledialog.png {Open file dialog}
 
-  The easiest way to create a QFileDialog is to use the static functions,
-  such as \l getOpenFileName().
+  QFileDialog is commonly used to prompt users to open or save files, or to
+  select directories. The easiest way to use QFileDialog is through its static
+  convenience functions, such as \l getOpenFileName().
 
   \snippet code/src_gui_dialogs_qfiledialog.cpp 0
 
-  In the above example, a modal QFileDialog is created using a static
-  function. The dialog initially displays the contents of the "/home/jana"
-  directory, and displays files matching the patterns given in the
-  string "Image Files (*.png *.jpg *.bmp)". The parent of the file dialog
-  is set to \e this, and the window title is set to "Open Image".
+  In this example, a modal QFileDialog is created using a static function. The
+  dialog initially displays the contents of the \c{/home/jana} directory and
+  shows files matching the patterns in \c {"Image Files (*.png *.jpg *.bmp)"}.
+  The window title is set to \c{Open Image}.
 
-  If you want to use multiple filters, separate each one with
-  \e two semicolons. For example:
+  \section1 File filters
+
+  \section2 Filtering files by name or extension
+
+  To filter the displayed files by name or extension, use the setNameFilter()
+  or setNameFilters() functions. Multiple filters can be specified by
+  separating them with two semicolons (;;):
 
   \snippet code/src_gui_dialogs_qfiledialog.cpp 1
 
-  You can create your own QFileDialog without using the static
-  functions. By calling setFileMode(), you can specify what the user must
-  select in the dialog:
+  \section2 Filtering files by MIME type
+
+  To filter the displayed files by MIME type, use the setMimeTypeFilters()
+  function:
+
+  \snippet code/src_gui_dialogs_qfiledialog.cpp 13
+
+  \section2 File filter case sensitivity
+
+  Depending on target platform, file filters can be case-sensitive or
+  case-insensitive.
+
+  \section1 File modes
+
+  QFileDialog supports several file modes, which determine what the user can
+  select:
 
   \snippet code/src_gui_dialogs_qfiledialog.cpp 2
 
-  In the above example, the mode of the file dialog is set to
-  AnyFile, meaning that the user can select any file, or even specify a
-  file that doesn't exist. This mode is useful for creating a
-  "Save As" file dialog. Use ExistingFile if the user must select an
-  existing file, or \l Directory if only a directory can be selected.
+  \list
+  \li \b AnyFile: The user can select any file, including files that do not
+      exist (useful for \c{Save As} dialogs).
+  \li \b ExistingFile: The user must select an existing file.
+  \li \b Directory: The user can select a directory.
+  \endlist
+
   See the \l QFileDialog::FileMode enum for the complete list of modes.
 
-  The fileMode property contains the mode of operation for the dialog;
-  this indicates what types of objects the user is expected to select.
-  Use setNameFilter() to set the dialog's file filter. For example:
+  The fileMode property contains the current mode of operation. Use
+  setFileMode() to change it.
 
-  \snippet code/src_gui_dialogs_qfiledialog.cpp 3
+  \section1 View modes
 
-  In the above example, the filter is set to \c{"Images (*.png *.xpm *.jpg)"}.
-  This means that only files with the extension \c png, \c xpm,
-  or \c jpg are shown in the QFileDialog. You can apply
-  several filters by using setNameFilters(). Use selectNameFilter() to select
-  one of the filters you've given as the file dialog's default filter.
+  QFileDialog provides two view modes:
 
-  The file dialog has two view modes: \l{QFileDialog::}{List} and
-  \l{QFileDialog::}{Detail}.
-  \l{QFileDialog::}{List} presents the contents of the current directory
-  as a list of file and directory names. \l{QFileDialog::}{Detail} also
-  displays a list of file and directory names, but provides additional
-  information alongside each name, such as the file size and modification
-  date. Set the mode with setViewMode():
+  \list
+  \li \b List: Displays files and directories as a simple list.
+  \li \b Detail: Displays additional information such as file size and
+      modification date.
+  \endlist
+
+  Set the view mode with setViewMode():
 
   \snippet code/src_gui_dialogs_qfiledialog.cpp 4
 
-  The last important function you need to use when creating your
-  own file dialog is selectedFiles().
+  \section1 Retrieving selected files
+
+  After the dialog is accepted, use selectedFiles() to retrieve the user's
+  selection:
 
   \snippet code/src_gui_dialogs_qfiledialog.cpp 5
 
-  In the above example, a modal file dialog is created and shown. If
-  the user clicked OK, the file they selected is put in \c fileName.
+  The dialog's working directory can be set with setDirectory(). You can
+  pre-select a file using selectFile().
 
-  The dialog's working directory can be set with setDirectory().
-  Each file in the current directory can be selected using
-  the selectFile() function.
+  \section1 Platform notes
 
-  The \l{dialogs/standarddialogs}{Standard Dialogs} example shows
-  how to use QFileDialog as well as other built-in Qt dialogs.
+  By default, QFileDialog uses the platform's native file dialog if available.
+  In this case, some widget-specific APIs (such as layout() and itemDelegate())
+  may return \c null. Also, not all platforms display file dialogs with a title
+  bar, so the caption text may not be visible.
 
-  By default, a platform-native file dialog is used if the platform has
-  one. In that case, the widgets that would otherwise be used to construct the
-  dialog are not instantiated, so related accessors such as layout() and
-  itemDelegate() return null. Also, not all platforms show file dialogs
-  with a title bar, so be aware that the caption text might not be visible to
-  the user. You can set the \l DontUseNativeDialog option or set the
-  \l{Qt::AA_DontUseNativeDialogs}{AA_DontUseNativeDialogs} application attribute
-  to ensure that the widget-based implementation is used instead of the native dialog.
+  To force the use of the Qt widget-based dialog, set the
+  \l DontUseNativeDialog option or the
+  \l{Qt::AA_DontUseNativeDialogs}{AA_DontUseNativeDialogs} application
+  attribute.
 
   \sa QDir, QFileInfo, QFile, QColorDialog, QFontDialog, {Standard Dialogs Example}
 */
