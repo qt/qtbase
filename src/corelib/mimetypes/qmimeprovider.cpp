@@ -276,6 +276,8 @@ bool QMimeBinaryProvider::matchSuffixTree(QMimeGlobMatchResult &result,
                                           qsizetype charPos, bool caseSensitiveCheck)
 {
     QChar fileChar = fileName[charPos];
+    if (fileChar.isNull())
+        return false;
     int min = 0;
     int max = numEntries - 1;
     while (min <= max) {
