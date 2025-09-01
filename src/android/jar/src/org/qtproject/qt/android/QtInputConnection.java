@@ -15,6 +15,7 @@ import android.view.inputmethod.ExtractedText;
 import android.view.inputmethod.ExtractedTextRequest;
 import android.view.inputmethod.InputMethodManager;
 import android.view.KeyEvent;
+import android.view.inputmethod.InputConnection;
 
 class QtExtractedText
 {
@@ -66,6 +67,8 @@ class QtInputConnection extends BaseInputConnection
 
     private static final String QtTAG = "QtInputConnection";
 
+    private int m_extractedRequestToken = 0;
+    private boolean m_isComposing = false;
     private boolean m_duringBatchEdit = false;
     private final QtInputConnectionListener m_qtInputConnectionListener;
 
@@ -132,6 +135,20 @@ class QtInputConnection extends BaseInputConnection
 
     }
 
+    private void updateFullScreenExtractedText()
+    {
+        if (!QtNativeInputConnection.fullscreenMode())
+            return;
+
+        if (m_duringBatchEdit || m_extractedRequestToken == 0)
+            return;
+
+        ExtractedTextRequest request = new ExtractedTextRequest();
+        request.token = m_extractedRequestToken;
+        ExtractedText extractedText = getExtractedText(request, InputConnection.GET_EXTRACTED_TEXT_MONITOR);
+        m_imm.updateExtractedText(m_view, m_extractedRequestToken, extractedText);
+    }
+
     @Override
     public boolean beginBatchEdit()
     {
@@ -153,18 +170,19 @@ class QtInputConnection extends BaseInputConnection
     public boolean endBatchEdit()
     {
         setClosing(false);
-        boolean ret = QtNativeInputConnection.endBatchEdit();
+        boolean result = QtNativeInputConnection.endBatchEdit();
         if (m_duringBatchEdit) {
             m_duringBatchEdit = false;
-            restartImmInput();
+            updateFullScreenExtractedText();
         }
-        return ret;
+        return result;
     }
 
     @Override
     public boolean commitCompletion(CompletionInfo text)
     {
         setClosing(false);
+        updateFullScreenExtractedText();
         return QtNativeInputConnection.commitCompletion(text.getText().toString(), text.getPosition());
     }
 
@@ -173,7 +191,7 @@ class QtInputConnection extends BaseInputConnection
     {
         setClosing(false);
         boolean result = QtNativeInputConnection.commitText(text.toString(), newCursorPosition);
-        restartImmInput();
+        updateFullScreenExtractedText();
         return result;
     }
 
@@ -182,7 +200,7 @@ class QtInputConnection extends BaseInputConnection
     {
         setClosing(false);
         boolean result = QtNativeInputConnection.deleteSurroundingText(leftLength, rightLength);
-        restartImmInput();
+        updateFullScreenExtractedText();
         return result;
     }
 
@@ -191,6 +209,8 @@ class QtInputConnection extends BaseInputConnection
     {
         // on some/all android devices hide event is not coming, but instead finishComposingText() is called twice
         setClosing(true);
+        m_isComposing = false;
+        updateFullScreenExtractedText();
         return QtNativeInputConnection.finishComposingText();
     }
 
@@ -216,6 +236,10 @@ class QtInputConnection extends BaseInputConnection
         extractedText.selectionStart = qExtractedText.selectionStart;
         extractedText.startOffset = qExtractedText.startOffset;
         extractedText.text = qExtractedText.text;
+
+        if (flags == InputConnection.GET_EXTRACTED_TEXT_MONITOR)
+            m_extractedRequestToken = request.token;
+
         return extractedText;
     }
 
@@ -241,19 +265,14 @@ class QtInputConnection extends BaseInputConnection
     {
         switch (id) {
         case ID_SELECT_ALL:
-            restartImmInput();
             return QtNativeInputConnection.selectAll();
         case ID_COPY:
-            restartImmInput();
             return QtNativeInputConnection.copy();
         case ID_COPY_URL:
-            restartImmInput();
             return QtNativeInputConnection.copyURL();
         case ID_CUT:
-            restartImmInput();
             return QtNativeInputConnection.cut();
         case ID_PASTE:
-            restartImmInput();
             return QtNativeInputConnection.paste();
         case ID_SWITCH_INPUT_METHOD:
             if (m_imm != null)
@@ -316,8 +335,9 @@ class QtInputConnection extends BaseInputConnection
     public boolean setComposingText(CharSequence text, int newCursorPosition)
     {
         setClosing(false);
+        m_isComposing = true;
         boolean result = QtNativeInputConnection.setComposingText(text.toString(), newCursorPosition);
-        restartImmInput();
+        updateFullScreenExtractedText();
         return result;
     }
 
@@ -347,6 +367,7 @@ class QtInputConnection extends BaseInputConnection
     public boolean replaceText(int start, int end, CharSequence text, int newCursorPosition, TextAttribute textAttribute)
     {
         setClosing(false);
+        updateFullScreenExtractedText();
         return QtNativeInputConnection.replaceText(start, end, text.toString(), newCursorPosition);
     }
 
@@ -354,6 +375,7 @@ class QtInputConnection extends BaseInputConnection
     public boolean setComposingRegion(int start, int end)
     {
         setClosing(false);
+        updateFullScreenExtractedText();
         return QtNativeInputConnection.setComposingRegion(start, end);
     }
 
@@ -361,8 +383,10 @@ class QtInputConnection extends BaseInputConnection
     public boolean setSelection(int start, int end)
     {
         setClosing(false);
+        if (m_isComposing)
+            return true;
         boolean result = QtNativeInputConnection.setSelection(start, end);
-        restartImmInput();
+        updateFullScreenExtractedText();
         return result;
     }
 }
