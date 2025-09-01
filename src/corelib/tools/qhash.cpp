@@ -1529,18 +1529,23 @@ size_t qHash(long double key, size_t seed) noexcept
     QHash will not shrink automatically if items are removed from the
     table. To minimize the memory used by the hash, call squeeze().
 
-    If you want to navigate through all the (key, value) pairs stored
-    in a QHash, you can use an iterator. QHash provides both
-    \l{Java-style iterators} (QHashIterator and QMutableHashIterator)
-    and \l{STL-style iterators} (QHash::const_iterator and
-    QHash::iterator). Here's how to iterate over a QHash<QString,
-    int> using a Java-style iterator:
-
-    \snippet code/src_corelib_tools_qhash.cpp 7
-
-    Here's the same code, but using an STL-style iterator:
+    To iterate through all the (key, value) pairs stored in a
+    QHash, use \l {asKeyValueRange}():
 
     \snippet code/src_corelib_tools_qhash.cpp 8
+
+    This function returns a range object that can be used with structured
+    bindings. For manual iterator control, you can also use traditional
+    \l{STL-style iterators} (QHash::const_iterator and QHash::iterator):
+
+    \snippet code/src_corelib_tools_qhash.cpp qhash-iterator-stl-style
+
+    To modify values, use iterators:
+
+    \snippet code/src_corelib_tools_qhash.cpp qhash-iterator-modify-values
+
+    QHash also provides \l{Java-style iterators} (QHashIterator and
+    QMutableHashIterator) for compatibility.
 
     QHash is unordered, so an iterator's sequence cannot be assumed
     to be predictable. If ordering by key is required, use a QMap.

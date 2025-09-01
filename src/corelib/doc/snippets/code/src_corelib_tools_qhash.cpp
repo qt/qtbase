@@ -57,9 +57,21 @@ while (i.hasNext()) {
 
 
 //! [8]
-for (auto i = hash.cbegin(), end = hash.cend(); i != end; ++i)
-    cout << qPrintable(i.key()) << ": " << i.value() << endl;
+for (const auto &[key, value] : std::as_const(hash).asKeyValueRange())
+    cout << qPrintable(key) << ": " << value << endl;
 //! [8]
+
+
+//! [qhash-iterator-stl-style]
+for (auto it = hash.cbegin(); it != hash.cend(); ++it)
+    cout << qPrintable(it.key()) << ": " << it.value() << endl;
+//! [qhash-iterator-stl-style]
+
+
+//! [qhash-iterator-modify-values]
+for (auto it = hash.begin(); it != hash.end(); ++it)
+    it.value() += 1;
+//! [qhash-iterator-modify-values]
 
 
 //! [9]
