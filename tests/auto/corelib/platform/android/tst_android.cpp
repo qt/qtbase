@@ -349,6 +349,10 @@ void tst_Android::testFullScreenDimensions()
     display.callMethod<void>("getRealSize", realSize);
 
     QWidget widget;
+    QPalette palette = widget.palette();
+    palette.setColor(QPalette::Window, Qt::red);
+    widget.setAutoFillBackground(true);
+    widget.setPalette(palette);
     QPlatformScreen *screen = QGuiApplication::primaryScreen()->handle();
     {
         // Normal -
@@ -442,6 +446,10 @@ void tst_Android::orientationChange()
         QSKIP("Android 9 orientation changes callbacks are buggy (QTBUG-124890).");
 
     QWidget widget;
+    QPalette palette = widget.palette();
+    palette.setColor(QPalette::Window, Qt::red);
+    widget.setAutoFillBackground(true);
+    widget.setPalette(palette);
     widget.show();
 
     QScreen *screen = QGuiApplication::primaryScreen();
