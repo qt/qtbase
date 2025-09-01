@@ -329,7 +329,7 @@
    <item>
     <widget class="QCheckBox" name="touchScreen">
      <property name="text">
-      <string>Emulate touch screen (no mouse move)</string>
+      <string>Emulate touch screen (no mouse move)🚀</string>
      </property>
     </widget>
    </item>

@@ -704,7 +704,7 @@ public:
         TextLabel1_3->setText(QCoreApplication::translate("Config", "Skin", nullptr));
         skin->setItemText(0, QCoreApplication::translate("Config", "None", nullptr));
 
-        touchScreen->setText(QCoreApplication::translate("Config", "Emulate touch screen (no mouse move)", nullptr));
+        touchScreen->setText(QCoreApplication::translate("Config", "Emulate touch screen (no mouse move)\360\237\232\200", nullptr));
         lcdScreen->setText(QCoreApplication::translate("Config", "Emulate LCD screen (Only with fixed zoom of 3.0 times magnification)", nullptr));
         TextLabel1->setText(QCoreApplication::translate("Config", "<p>Note that any applications using the virtual framebuffer will be terminated if you change the Size or Depth <i>above</i>. You may freely modify the Gamma <i>below</i>.", nullptr));
         GroupBox1->setTitle(QCoreApplication::translate("Config", "Gamma", nullptr));
