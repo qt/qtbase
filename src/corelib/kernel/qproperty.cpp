@@ -10,6 +10,7 @@
 #include <QtCore/qloggingcategory.h>
 #include <QtCore/private/qthread_p.h>
 #include <QtCore/qmetaobject.h>
+#include <QtCore/qmutex.h>
 
 #include "qobject_p.h"
 
@@ -200,7 +201,17 @@ Q_NEVER_INLINE static void initBindingStatus()
        end up calling into bindingStatus again
     */
     tl_status = status;
-    QThreadData::current()->m_statusOrPendingObjects.setStatusAndClearList(status);
+    QThreadData *threadData = QThreadData::current();
+    QThread *currentThread = threadData->thread;
+    if (currentThread) {
+        QThreadPrivate *threadPriv = static_cast<QThreadPrivate *>(QObjectPrivate::get(currentThread));
+        QMutexLocker lock(&threadPriv->mutex);
+        threadData->m_statusOrPendingObjects.setStatusAndClearList(status);
+    } else {
+        // if QThreadData is in the process of being created, we don't need to synchronize, as there's
+        // no QThread to which another thread could move objects to
+        threadData->m_statusOrPendingObjects.setStatusAndClearList(status);
+    }
 }
 
 static QBindingStatus &bindingStatus()

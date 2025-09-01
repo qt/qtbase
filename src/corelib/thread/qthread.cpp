@@ -118,8 +118,11 @@ QAdoptedThread::QAdoptedThread(QThreadData *data)
 #if QT_CONFIG(thread)
     d_func()->threadState = QThreadPrivate::Running;
     init();
-    d_func()->data->m_statusOrPendingObjects.setStatusAndClearList(
+    {
+        QMutexLocker lock(&d_func()->mutex);
+        d_func()->data->m_statusOrPendingObjects.setStatusAndClearList(
                 QtPrivate::getBindingStatus({}));
+    }
 #endif
     // fprintf(stderr, "new QAdoptedThread = %p\n", this);
 }
