@@ -68,7 +68,7 @@ public:
     {
         if (RemoteControlClass->objectName().isEmpty())
             RemoteControlClass->setObjectName("RemoteControlClass");
-        RemoteControlClass->resize(344, 364);
+        RemoteControlClass->resize(344, 457);
         actionQuit = new QAction(RemoteControlClass);
         actionQuit->setObjectName("actionQuit");
         centralWidget = new QWidget(RemoteControlClass);
@@ -122,7 +122,8 @@ public:
 
         indexButton = new QToolButton(actionGroupBox);
         indexButton->setObjectName("indexButton");
-        const QIcon icon = QIcon(QString::fromUtf8(":/remotecontrol/enter.png"));
+        QIcon icon;
+        icon.addFile(QString::fromUtf8(":/remotecontrol/enter.png"), QSize(), QIcon::Mode::Normal, QIcon::State::Off);
         indexButton->setIcon(icon);
 
         hboxLayout->addWidget(indexButton);
@@ -204,7 +205,7 @@ public:
         RemoteControlClass->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(RemoteControlClass);
         menuBar->setObjectName("menuBar");
-        menuBar->setGeometry(QRect(0, 0, 344, 21));
+        menuBar->setGeometry(QRect(0, 0, 344, 26));
         menuFile = new QMenu(menuBar);
         menuFile->setObjectName("menuFile");
         RemoteControlClass->setMenuBar(menuBar);

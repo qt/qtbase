@@ -37,8 +37,8 @@ public:
     QVBoxLayout *vboxLayout2;
     QLabel *label_2_2_2;
     QLabel *outputWidget;
-    QSpacerItem *spacerItem;
-    QSpacerItem *spacerItem1;
+    QSpacerItem *verticalSpacer;
+    QSpacerItem *horizontalSpacer;
 
     void setupUi(QWidget *CalculatorForm)
     {
@@ -58,30 +58,25 @@ public:
         gridLayout->setContentsMargins(9, 9, 9, 9);
 #endif
         gridLayout->setObjectName("gridLayout");
-        gridLayout->setObjectName(QString::fromUtf8(""));
         hboxLayout = new QHBoxLayout();
 #ifndef Q_OS_MAC
         hboxLayout->setSpacing(6);
 #endif
         hboxLayout->setContentsMargins(1, 1, 1, 1);
         hboxLayout->setObjectName("hboxLayout");
-        hboxLayout->setObjectName(QString::fromUtf8(""));
         vboxLayout = new QVBoxLayout();
 #ifndef Q_OS_MAC
         vboxLayout->setSpacing(6);
 #endif
         vboxLayout->setContentsMargins(1, 1, 1, 1);
         vboxLayout->setObjectName("vboxLayout");
-        vboxLayout->setObjectName(QString::fromUtf8(""));
         label = new QLabel(CalculatorForm);
         label->setObjectName("label");
-        label->setGeometry(QRect(1, 1, 45, 19));
 
         vboxLayout->addWidget(label);
 
         inputSpinBox1 = new QSpinBox(CalculatorForm);
         inputSpinBox1->setObjectName("inputSpinBox1");
-        inputSpinBox1->setGeometry(QRect(1, 26, 45, 25));
         inputSpinBox1->setMouseTracking(true);
 
         vboxLayout->addWidget(inputSpinBox1);
@@ -91,8 +86,7 @@ public:
 
         label_3 = new QLabel(CalculatorForm);
         label_3->setObjectName("label_3");
-        label_3->setGeometry(QRect(54, 1, 7, 52));
-        label_3->setAlignment(Qt::AlignCenter);
+        label_3->setAlignment(Qt::AlignmentFlag::AlignCenter);
 
         hboxLayout->addWidget(label_3);
 
@@ -102,16 +96,13 @@ public:
 #endif
         vboxLayout1->setContentsMargins(1, 1, 1, 1);
         vboxLayout1->setObjectName("vboxLayout1");
-        vboxLayout1->setObjectName(QString::fromUtf8(""));
         label_2 = new QLabel(CalculatorForm);
         label_2->setObjectName("label_2");
-        label_2->setGeometry(QRect(1, 1, 45, 19));
 
         vboxLayout1->addWidget(label_2);
 
         inputSpinBox2 = new QSpinBox(CalculatorForm);
         inputSpinBox2->setObjectName("inputSpinBox2");
-        inputSpinBox2->setGeometry(QRect(1, 26, 45, 25));
         inputSpinBox2->setMouseTracking(true);
 
         vboxLayout1->addWidget(inputSpinBox2);
@@ -121,8 +112,7 @@ public:
 
         label_3_2 = new QLabel(CalculatorForm);
         label_3_2->setObjectName("label_3_2");
-        label_3_2->setGeometry(QRect(120, 1, 7, 52));
-        label_3_2->setAlignment(Qt::AlignCenter);
+        label_3_2->setAlignment(Qt::AlignmentFlag::AlignCenter);
 
         hboxLayout->addWidget(label_3_2);
 
@@ -132,19 +122,16 @@ public:
 #endif
         vboxLayout2->setContentsMargins(1, 1, 1, 1);
         vboxLayout2->setObjectName("vboxLayout2");
-        vboxLayout2->setObjectName(QString::fromUtf8(""));
         label_2_2_2 = new QLabel(CalculatorForm);
         label_2_2_2->setObjectName("label_2_2_2");
-        label_2_2_2->setGeometry(QRect(1, 1, 37, 17));
 
         vboxLayout2->addWidget(label_2_2_2);
 
         outputWidget = new QLabel(CalculatorForm);
         outputWidget->setObjectName("outputWidget");
-        outputWidget->setGeometry(QRect(1, 24, 37, 27));
-        outputWidget->setFrameShape(QFrame::Box);
-        outputWidget->setFrameShadow(QFrame::Sunken);
-        outputWidget->setAlignment(Qt::AlignAbsolute|Qt::AlignBottom|Qt::AlignCenter|Qt::AlignHCenter|Qt::AlignHorizontal_Mask|Qt::AlignJustify|Qt::AlignLeading|Qt::AlignLeft|Qt::AlignRight|Qt::AlignTop|Qt::AlignTrailing|Qt::AlignVCenter|Qt::AlignVertical_Mask);
+        outputWidget->setFrameShape(QFrame::Shape::Box);
+        outputWidget->setFrameShadow(QFrame::Shadow::Sunken);
+        outputWidget->setAlignment(Qt::AlignmentFlag::AlignAbsolute|Qt::AlignmentFlag::AlignBaseline|Qt::AlignmentFlag::AlignBottom|Qt::AlignmentFlag::AlignCenter|Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignHorizontal_Mask|Qt::AlignmentFlag::AlignJustify|Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTop|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter|Qt::AlignmentFlag::AlignVertical_Mask);
 
         vboxLayout2->addWidget(outputWidget);
 
@@ -154,13 +141,13 @@ public:
 
         gridLayout->addLayout(hboxLayout, 0, 0, 1, 1);
 
-        spacerItem = new QSpacerItem(20, 40, QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Expanding);
+        verticalSpacer = new QSpacerItem(20, 40, QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Expanding);
 
-        gridLayout->addItem(spacerItem, 1, 0, 1, 1);
+        gridLayout->addItem(verticalSpacer, 1, 0, 1, 1);
 
-        spacerItem1 = new QSpacerItem(40, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
+        horizontalSpacer = new QSpacerItem(40, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
 
-        gridLayout->addItem(spacerItem1, 0, 1, 1, 1);
+        gridLayout->addItem(horizontalSpacer, 0, 1, 1, 1);
 
 
         retranslateUi(CalculatorForm);

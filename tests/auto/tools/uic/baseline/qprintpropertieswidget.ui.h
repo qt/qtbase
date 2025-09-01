@@ -45,7 +45,6 @@ public:
         tabs->setObjectName("tabs");
         tabPage = new QWidget();
         tabPage->setObjectName("tabPage");
-        tabPage->setGeometry(QRect(0, 0, 392, 261));
         horizontalLayout = new QHBoxLayout(tabPage);
         horizontalLayout->setObjectName("horizontalLayout");
         pageSetup = new QPageSetupWidget(tabPage);

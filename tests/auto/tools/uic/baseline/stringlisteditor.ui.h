@@ -98,13 +98,13 @@ public:
         hboxLayout->setObjectName("hboxLayout");
         newButton = new QToolButton(groupBox);
         newButton->setObjectName("newButton");
-        newButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+        newButton->setToolButtonStyle(Qt::ToolButtonStyle::ToolButtonTextBesideIcon);
 
         hboxLayout->addWidget(newButton);
 
         deleteButton = new QToolButton(groupBox);
         deleteButton->setObjectName("deleteButton");
-        deleteButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+        deleteButton->setToolButtonStyle(Qt::ToolButtonStyle::ToolButtonTextBesideIcon);
 
         hboxLayout->addWidget(deleteButton);
 
@@ -174,8 +174,8 @@ public:
 
         buttonBox = new QDialogButtonBox(qdesigner_internal__Dialog);
         buttonBox->setObjectName("buttonBox");
-        buttonBox->setOrientation(Qt::Horizontal);
-        buttonBox->setStandardButtons(QDialogButtonBox::Cancel|QDialogButtonBox::NoButton|QDialogButtonBox::Ok);
+        buttonBox->setOrientation(Qt::Orientation::Horizontal);
+        buttonBox->setStandardButtons(QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok);
 
         vboxLayout->addWidget(buttonBox);
 

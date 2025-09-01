@@ -47,10 +47,9 @@ public:
     {
         if (QueryWidget->objectName().isEmpty())
             QueryWidget->setObjectName("QueryWidget");
-        QueryWidget->resize(545, 531);
+        QueryWidget->resize(568, 531);
         centralwidget = new QWidget(QueryWidget);
         centralwidget->setObjectName("centralwidget");
-        centralwidget->setGeometry(QRect(0, 29, 545, 480));
         verticalLayout = new QVBoxLayout(centralwidget);
         verticalLayout->setObjectName("verticalLayout");
         vboxLayout = new QVBoxLayout();
@@ -139,11 +138,10 @@ public:
         QueryWidget->setCentralWidget(centralwidget);
         menubar = new QMenuBar(QueryWidget);
         menubar->setObjectName("menubar");
-        menubar->setGeometry(QRect(0, 0, 545, 29));
+        menubar->setGeometry(QRect(0, 0, 568, 26));
         QueryWidget->setMenuBar(menubar);
         statusbar = new QStatusBar(QueryWidget);
         statusbar->setObjectName("statusbar");
-        statusbar->setGeometry(QRect(0, 509, 545, 22));
         QueryWidget->setStatusBar(statusbar);
 
         retranslateUi(QueryWidget);

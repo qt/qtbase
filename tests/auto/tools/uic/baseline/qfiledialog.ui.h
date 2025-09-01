@@ -133,14 +133,14 @@ public:
         sizePolicy1.setVerticalStretch(0);
         sizePolicy1.setHeightForWidth(splitter->sizePolicy().hasHeightForWidth());
         splitter->setSizePolicy(sizePolicy1);
-        splitter->setOrientation(Qt::Horizontal);
+        splitter->setOrientation(Qt::Orientation::Horizontal);
         sidebar = new QSidebar(splitter);
         sidebar->setObjectName("sidebar");
         splitter->addWidget(sidebar);
         frame = new QFrame(splitter);
         frame->setObjectName("frame");
-        frame->setFrameShape(QFrame::NoFrame);
-        frame->setFrameShadow(QFrame::Raised);
+        frame->setFrameShape(QFrame::Shape::NoFrame);
+        frame->setFrameShadow(QFrame::Shadow::Raised);
         vboxLayout = new QVBoxLayout(frame);
         vboxLayout->setSpacing(0);
         vboxLayout->setObjectName("vboxLayout");
@@ -201,8 +201,8 @@ public:
 
         buttonBox = new QDialogButtonBox(QFileDialog);
         buttonBox->setObjectName("buttonBox");
-        buttonBox->setOrientation(Qt::Vertical);
-        buttonBox->setStandardButtons(QDialogButtonBox::Cancel|QDialogButtonBox::NoButton|QDialogButtonBox::Ok);
+        buttonBox->setOrientation(Qt::Orientation::Vertical);
+        buttonBox->setStandardButtons(QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok);
 
         gridLayout->addWidget(buttonBox, 2, 2, 2, 1);
 

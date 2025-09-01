@@ -50,7 +50,7 @@ public:
     {
         if (BookmarkDialog->objectName().isEmpty())
             BookmarkDialog->setObjectName("BookmarkDialog");
-        BookmarkDialog->resize(450, 135);
+        BookmarkDialog->resize(450, 160);
         QSizePolicy sizePolicy(QSizePolicy::Policy::Preferred, QSizePolicy::Policy::Preferred);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
@@ -131,8 +131,8 @@ public:
 
         buttonBox = new QDialogButtonBox(BookmarkDialog);
         buttonBox->setObjectName("buttonBox");
-        buttonBox->setOrientation(Qt::Horizontal);
-        buttonBox->setStandardButtons(QDialogButtonBox::Cancel|QDialogButtonBox::Ok);
+        buttonBox->setOrientation(Qt::Orientation::Horizontal);
+        buttonBox->setStandardButtons(QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok);
 
         horizontalLayout_4->addWidget(buttonBox);
 

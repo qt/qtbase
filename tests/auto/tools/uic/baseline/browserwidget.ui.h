@@ -67,7 +67,7 @@ public:
         sizePolicy.setVerticalStretch(0);
         sizePolicy.setHeightForWidth(splitter_2->sizePolicy().hasHeightForWidth());
         splitter_2->setSizePolicy(sizePolicy);
-        splitter_2->setOrientation(Qt::Horizontal);
+        splitter_2->setOrientation(Qt::Orientation::Horizontal);
         connectionWidget = new ConnectionWidget(splitter_2);
         connectionWidget->setObjectName("connectionWidget");
         QSizePolicy sizePolicy1(QSizePolicy::Policy::Ignored, QSizePolicy::Policy::Expanding);
@@ -83,8 +83,8 @@ public:
         sizePolicy2.setVerticalStretch(0);
         sizePolicy2.setHeightForWidth(table->sizePolicy().hasHeightForWidth());
         table->setSizePolicy(sizePolicy2);
-        table->setContextMenuPolicy(Qt::ActionsContextMenu);
-        table->setSelectionBehavior(QAbstractItemView::SelectRows);
+        table->setContextMenuPolicy(Qt::ContextMenuPolicy::ActionsContextMenu);
+        table->setSelectionBehavior(QAbstractItemView::SelectionBehavior::SelectRows);
         splitter_2->addWidget(table);
 
         vboxLayout->addWidget(splitter_2);

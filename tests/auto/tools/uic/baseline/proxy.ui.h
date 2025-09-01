@@ -36,7 +36,7 @@ public:
     {
         if (ProxyDialog->objectName().isEmpty())
             ProxyDialog->setObjectName("ProxyDialog");
-        ProxyDialog->resize(369, 144);
+        ProxyDialog->resize(369, 148);
         gridLayout = new QGridLayout(ProxyDialog);
         gridLayout->setObjectName("gridLayout");
         iconLabel = new QLabel(ProxyDialog);
@@ -67,14 +67,14 @@ public:
 
         passwordLineEdit = new QLineEdit(ProxyDialog);
         passwordLineEdit->setObjectName("passwordLineEdit");
-        passwordLineEdit->setEchoMode(QLineEdit::Password);
+        passwordLineEdit->setEchoMode(QLineEdit::EchoMode::Password);
 
         gridLayout->addWidget(passwordLineEdit, 2, 2, 1, 1);
 
         buttonBox = new QDialogButtonBox(ProxyDialog);
         buttonBox->setObjectName("buttonBox");
-        buttonBox->setOrientation(Qt::Horizontal);
-        buttonBox->setStandardButtons(QDialogButtonBox::Cancel|QDialogButtonBox::Ok);
+        buttonBox->setOrientation(Qt::Orientation::Horizontal);
+        buttonBox->setStandardButtons(QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok);
 
         gridLayout->addWidget(buttonBox, 3, 0, 1, 3);
 

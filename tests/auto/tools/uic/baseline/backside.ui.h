@@ -82,7 +82,7 @@ public:
         horizontalSlider = new QSlider(groupBox);
         horizontalSlider->setObjectName("horizontalSlider");
         horizontalSlider->setValue(42);
-        horizontalSlider->setOrientation(Qt::Horizontal);
+        horizontalSlider->setOrientation(Qt::Orientation::Horizontal);
 
         horizontalLayout->addWidget(horizontalSlider);
 

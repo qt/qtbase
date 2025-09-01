@@ -47,7 +47,7 @@ public:
     {
         if (QPrintWidget->objectName().isEmpty())
             QPrintWidget->setObjectName("QPrintWidget");
-        QPrintWidget->resize(443, 175);
+        QPrintWidget->resize(443, 178);
         horizontalLayout_2 = new QHBoxLayout(QPrintWidget);
         horizontalLayout_2->setContentsMargins(0, 0, 0, 0);
         horizontalLayout_2->setObjectName("horizontalLayout_2");

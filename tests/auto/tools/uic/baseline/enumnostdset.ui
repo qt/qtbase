@@ -13,7 +13,7 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <widget class="WorldTimeClock" name="worldTimeClock">
+  <widget class="WorldTimeClock" name="worldTimeClock" native="true">
    <property name="geometry">
     <rect>
      <x>100</x>
@@ -21,9 +21,6 @@
      <width>100</width>
      <height>100</height>
     </rect>
-   </property>
-   <property name="penStyle" stdset="0">
-    <enum>Qt::DashDotLine</enum>
    </property>
   </widget>
  </widget>

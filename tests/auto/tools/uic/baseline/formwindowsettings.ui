@@ -1,11 +1,12 @@
-<ui version="4.0" >
-<comment>
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <comment>
 * Copyright (C) 2016 The Qt Company Ltd.
 * SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 </comment>
  <class>FormWindowSettings</class>
- <widget class="QDialog" name="FormWindowSettings" >
-  <property name="geometry" >
+ <widget class="QDialog" name="FormWindowSettings">
+  <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
@@ -13,116 +14,116 @@
     <height>465</height>
    </rect>
   </property>
-  <property name="windowTitle" >
+  <property name="windowTitle">
    <string>Form Settings</string>
   </property>
-  <layout class="QGridLayout" >
-   <item row="6" column="0" colspan="2" >
-    <widget class="QDialogButtonBox" name="buttonBox" >
-     <property name="orientation" >
-      <enum>Qt::Horizontal</enum>
+  <layout class="QGridLayout">
+   <item row="6" column="0" colspan="2">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Orientation::Horizontal</enum>
      </property>
-     <property name="standardButtons" >
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::NoButton|QDialogButtonBox::Ok</set>
-     </property>
-    </widget>
-   </item>
-   <item row="5" column="0" colspan="2" >
-    <widget class="Line" name="line" >
-     <property name="orientation" >
-      <enum>Qt::Horizontal</enum>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok</set>
      </property>
     </widget>
    </item>
-   <item row="2" column="0" colspan="2" >
-    <layout class="QHBoxLayout" >
-     <property name="margin" >
-      <number>0</number>
+   <item row="5" column="0" colspan="2">
+    <widget class="Line" name="line">
+     <property name="orientation">
+      <enum>Qt::Orientation::Horizontal</enum>
      </property>
-     <property name="spacing" >
+    </widget>
+   </item>
+   <item row="2" column="0" colspan="2">
+    <layout class="QHBoxLayout">
+     <property name="spacing">
       <number>6</number>
      </property>
+     <property name="margin" stdset="0">
+      <number>0</number>
+     </property>
      <item>
-      <widget class="QGroupBox" name="layoutDefaultGroupBox" >
-       <property name="title" >
+      <widget class="QGroupBox" name="layoutDefaultGroupBox">
+       <property name="title">
         <string>Layout &amp;Default</string>
        </property>
-       <property name="checkable" >
+       <property name="checkable">
         <bool>true</bool>
        </property>
-       <layout class="QGridLayout" >
-        <property name="margin" >
+       <layout class="QGridLayout">
+        <property name="margin" stdset="0">
          <number>8</number>
         </property>
-        <property name="spacing" >
+        <property name="spacing">
          <number>6</number>
         </property>
-        <item row="1" column="0" >
-         <widget class="QLabel" name="label_2" >
-          <property name="text" >
+        <item row="1" column="0">
+         <widget class="QLabel" name="label_2">
+          <property name="text">
            <string>&amp;Spacing:</string>
           </property>
-          <property name="buddy" >
+          <property name="buddy">
            <cstring>defaultSpacingSpinBox</cstring>
           </property>
          </widget>
         </item>
-        <item row="0" column="0" >
-         <widget class="QLabel" name="label" >
-          <property name="text" >
+        <item row="0" column="0">
+         <widget class="QLabel" name="label">
+          <property name="text">
            <string>&amp;Margin:</string>
           </property>
-          <property name="buddy" >
+          <property name="buddy">
            <cstring>defaultMarginSpinBox</cstring>
           </property>
          </widget>
         </item>
-        <item row="1" column="1" >
-         <widget class="QSpinBox" name="defaultSpacingSpinBox" />
+        <item row="1" column="1">
+         <widget class="QSpinBox" name="defaultSpacingSpinBox"/>
         </item>
-        <item row="0" column="1" >
-         <widget class="QSpinBox" name="defaultMarginSpinBox" />
+        <item row="0" column="1">
+         <widget class="QSpinBox" name="defaultMarginSpinBox"/>
         </item>
        </layout>
       </widget>
      </item>
      <item>
-      <widget class="QGroupBox" name="layoutFunctionGroupBox" >
-       <property name="title" >
+      <widget class="QGroupBox" name="layoutFunctionGroupBox">
+       <property name="title">
         <string>&amp;Layout Function</string>
        </property>
-       <property name="checkable" >
+       <property name="checkable">
         <bool>true</bool>
        </property>
-       <layout class="QGridLayout" >
-        <property name="margin" >
+       <layout class="QGridLayout">
+        <property name="margin" stdset="0">
          <number>8</number>
         </property>
-        <property name="spacing" >
+        <property name="spacing">
          <number>6</number>
         </property>
-        <item row="1" column="1" >
-         <widget class="QLineEdit" name="spacingFunctionLineEdit" />
+        <item row="1" column="1">
+         <widget class="QLineEdit" name="spacingFunctionLineEdit"/>
         </item>
-        <item row="0" column="1" >
-         <widget class="QLineEdit" name="marginFunctionLineEdit" />
+        <item row="0" column="1">
+         <widget class="QLineEdit" name="marginFunctionLineEdit"/>
         </item>
-        <item row="0" column="0" >
-         <widget class="QLabel" name="label_3" >
-          <property name="text" >
+        <item row="0" column="0">
+         <widget class="QLabel" name="label_3">
+          <property name="text">
            <string>Ma&amp;rgin:</string>
           </property>
-          <property name="buddy" >
+          <property name="buddy">
            <cstring>marginFunctionLineEdit</cstring>
           </property>
          </widget>
         </item>
-        <item row="1" column="0" >
-         <widget class="QLabel" name="label_3_2" >
-          <property name="text" >
+        <item row="1" column="0">
+         <widget class="QLabel" name="label_3_2">
+          <property name="text">
            <string>Spa&amp;cing:</string>
           </property>
-          <property name="buddy" >
+          <property name="buddy">
            <cstring>spacingFunctionLineEdit</cstring>
           </property>
          </widget>
@@ -132,79 +133,79 @@
      </item>
     </layout>
    </item>
-   <item row="0" column="0" colspan="2" >
-    <widget class="QGroupBox" name="pixmapFunctionGroupBox_2" >
-     <property name="title" >
+   <item row="0" column="0" colspan="2">
+    <widget class="QGroupBox" name="pixmapFunctionGroupBox_2">
+     <property name="title">
       <string>&amp;Author</string>
      </property>
-     <layout class="QVBoxLayout" >
-      <property name="margin" >
-       <number>8</number>
-      </property>
-      <property name="spacing" >
+     <layout class="QVBoxLayout">
+      <property name="spacing">
        <number>6</number>
       </property>
+      <property name="margin" stdset="0">
+       <number>8</number>
+      </property>
       <item>
-       <widget class="QLineEdit" name="authorLineEdit" />
+       <widget class="QLineEdit" name="authorLineEdit"/>
       </item>
      </layout>
     </widget>
    </item>
-   <item rowspan="2" row="3" column="0" >
-    <widget class="QGroupBox" name="includeHintsGroupBox" >
-     <property name="title" >
+   <item row="3" column="0" rowspan="2">
+    <widget class="QGroupBox" name="includeHintsGroupBox">
+     <property name="title">
       <string>&amp;Include Hints</string>
      </property>
-     <layout class="QVBoxLayout" >
-      <property name="margin" >
-       <number>8</number>
-      </property>
-      <property name="spacing" >
+     <layout class="QVBoxLayout">
+      <property name="spacing">
        <number>6</number>
       </property>
+      <property name="margin" stdset="0">
+       <number>8</number>
+      </property>
       <item>
-       <widget class="QTextEdit" name="includeHintsTextEdit" />
+       <widget class="QTextEdit" name="includeHintsTextEdit"/>
       </item>
      </layout>
     </widget>
    </item>
-   <item row="3" column="1" >
-    <layout class="QHBoxLayout" >
-     <property name="margin" >
-      <number>0</number>
-     </property>
-     <property name="spacing" >
+   <item row="3" column="1">
+    <layout class="QHBoxLayout">
+     <property name="spacing">
       <number>6</number>
      </property>
+     <property name="margin" stdset="0">
+      <number>0</number>
+     </property>
      <item>
-      <widget class="QGroupBox" name="pixmapFunctionGroupBox" >
-       <property name="title" >
+      <widget class="QGroupBox" name="pixmapFunctionGroupBox">
+       <property name="title">
         <string>&amp;Pixmap Function</string>
        </property>
-       <property name="checkable" >
+       <property name="checkable">
         <bool>true</bool>
        </property>
-       <layout class="QVBoxLayout" >
-        <property name="margin" >
-         <number>8</number>
-        </property>
-        <property name="spacing" >
+       <layout class="QVBoxLayout">
+        <property name="spacing">
          <number>6</number>
         </property>
+        <property name="margin" stdset="0">
+         <number>8</number>
+        </property>
         <item>
-         <widget class="QLineEdit" name="pixmapFunctionLineEdit" />
+         <widget class="QLineEdit" name="pixmapFunctionLineEdit"/>
         </item>
        </layout>
       </widget>
      </item>
     </layout>
    </item>
-   <item row="4" column="1" >
+   <item row="4" column="1">
     <spacer>
-     <property name="orientation" >
-      <enum>Qt::Vertical</enum>
+     <property name="orientation">
+      <enum>Qt::Orientation::Vertical</enum>
      </property>
-     <property name="sizeHint" >
+     <property name="sizeHint" stdset="0">
       <size>
        <width>111</width>
        <height>115</height>
@@ -212,9 +213,9 @@
      </property>
     </spacer>
    </item>
-   <item row="1" column="0" colspan="2" >
-    <widget class="qdesigner_internal::GridPanel" name="gridPanel" >
-     <property name="title" >
+   <item row="1" column="0" colspan="2">
+    <widget class="qdesigner_internal::GridPanel" name="gridPanel">
+     <property name="title">
       <string>Grid</string>
      </property>
     </widget>
@@ -225,7 +226,7 @@
   <customwidget>
    <class>qdesigner_internal::GridPanel</class>
    <extends>QGroupBox</extends>
-   <header location="global" >gridpanel_p.h</header>
+   <header location="global">gridpanel_p.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
@@ -245,11 +246,11 @@
    <receiver>FormWindowSettings</receiver>
    <slot>accept()</slot>
    <hints>
-    <hint type="sourcelabel" >
+    <hint type="sourcelabel">
      <x>294</x>
      <y>442</y>
     </hint>
-    <hint type="destinationlabel" >
+    <hint type="destinationlabel">
      <x>150</x>
      <y>459</y>
     </hint>
@@ -261,11 +262,11 @@
    <receiver>FormWindowSettings</receiver>
    <slot>reject()</slot>
    <hints>
-    <hint type="sourcelabel" >
+    <hint type="sourcelabel">
      <x>373</x>
      <y>444</y>
     </hint>
-    <hint type="destinationlabel" >
+    <hint type="destinationlabel">
      <x>357</x>
      <y>461</y>
     </hint>

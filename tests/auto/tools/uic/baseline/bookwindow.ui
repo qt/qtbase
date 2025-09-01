@@ -1,10 +1,8 @@
-<ui version="4.0" >
- <author></author>
- <comment></comment>
- <exportmacro></exportmacro>
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
  <class>BookWindow</class>
- <widget class="QMainWindow" name="BookWindow" >
- <property name="geometry" >
+ <widget class="QMainWindow" name="BookWindow">
+  <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
@@ -12,117 +10,117 @@
     <height>420</height>
    </rect>
   </property>
-  <property name="windowTitle" >
+  <property name="windowTitle">
    <string>Books</string>
   </property>
-  <widget class="QWidget" name="centralWidget" >
-   <layout class="QVBoxLayout" >
-    <property name="margin" >
-     <number>9</number>
-    </property>
-    <property name="spacing" >
+  <widget class="QWidget" name="centralWidget">
+   <layout class="QVBoxLayout">
+    <property name="spacing">
      <number>6</number>
     </property>
+    <property name="margin" stdset="0">
+     <number>9</number>
+    </property>
     <item>
-     <widget class="QGroupBox" name="groupBox" >
-      <property name="title" >
+     <widget class="QGroupBox" name="groupBox">
+      <property name="title">
        <string>Books</string>
       </property>
-      <layout class="QVBoxLayout" >
-       <property name="margin" >
-        <number>9</number>
-       </property>
-       <property name="spacing" >
+      <layout class="QVBoxLayout">
+       <property name="spacing">
         <number>6</number>
        </property>
+       <property name="margin" stdset="0">
+        <number>9</number>
+       </property>
        <item>
-        <widget class="QTableView" name="bookTable" >
-         <property name="selectionBehavior" >
-          <enum>QAbstractItemView::SelectRows</enum>
+        <widget class="QTableView" name="bookTable">
+         <property name="selectionBehavior">
+          <enum>QAbstractItemView::SelectionBehavior::SelectRows</enum>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QGroupBox" name="groupBox_2" >
-         <property name="title" >
+        <widget class="QGroupBox" name="groupBox_2">
+         <property name="title">
           <string>Details</string>
          </property>
-         <layout class="QFormLayout" >
-	   <item row="0" column="0" >
-           <widget class="QLabel" name="label_5" >
-            <property name="text" >
-             <string>&lt;b>Title:&lt;/b></string>
+         <layout class="QFormLayout">
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_5">
+            <property name="text">
+             <string>&lt;b&gt;Title:&lt;/b&gt;</string>
             </property>
            </widget>
           </item>
-          <item row="0" column="1" >
-           <widget class="QLineEdit" name="titleEdit" >
-            <property name="enabled" >
+          <item row="0" column="1">
+           <widget class="QLineEdit" name="titleEdit">
+            <property name="enabled">
              <bool>true</bool>
             </property>
            </widget>
           </item>
-          <item row="1" column="0" >
-           <widget class="QLabel" name="label_2_2_2_2" >
-            <property name="text" >
-             <string>&lt;b>Author: &lt;/b></string>
-            </property>
-           </widget>
-	    </item>
-	     <item row="1" column="1" >
-           <widget class="QComboBox" name="authorEdit" >
-            <property name="enabled" >
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>	   
-	  <item row="2" column="0" >
-           <widget class="QLabel" name="label_3" >
-            <property name="text" >
-             <string>&lt;b>Genre:&lt;/b></string>
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_2_2_2_2">
+            <property name="text">
+             <string>&lt;b&gt;Author: &lt;/b&gt;</string>
             </property>
            </widget>
           </item>
-          <item row="2" column="1" >
-           <widget class="QComboBox" name="genreEdit" >
-            <property name="enabled" >
+          <item row="1" column="1">
+           <widget class="QComboBox" name="authorEdit">
+            <property name="enabled">
              <bool>true</bool>
             </property>
            </widget>
           </item>
-          <item row="3" column="0" >
-           <widget class="QLabel" name="label_4" >
-            <property name="text" >
-             <string>&lt;b>Year:&lt;/b></string>
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_3">
+            <property name="text">
+             <string>&lt;b&gt;Genre:&lt;/b&gt;</string>
             </property>
            </widget>
-          </item>       
-          <item row="3" column="1" >
-           <widget class="QSpinBox" name="yearEdit" >
-            <property name="enabled" >
+          </item>
+          <item row="2" column="1">
+           <widget class="QComboBox" name="genreEdit">
+            <property name="enabled">
              <bool>true</bool>
             </property>
-            <property name="prefix" >
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="label_4">
+            <property name="text">
+             <string>&lt;b&gt;Year:&lt;/b&gt;</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QSpinBox" name="yearEdit">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="prefix">
              <string/>
             </property>
-            <property name="maximum" >
-             <number>2100</number>
-            </property>
-            <property name="minimum" >
+            <property name="minimum">
              <number>-1000</number>
             </property>
-           </widget>
-          </item>
-          <item row="4" column="0" >
-           <widget class="QLabel" name="label" >
-            <property name="text" >
-             <string>&lt;b>Rating:&lt;/b></string>
+            <property name="maximum">
+             <number>2100</number>
             </property>
            </widget>
           </item>
-          <item row="4" column="1" >
-           <widget class="QSpinBox" name="ratingEdit" >
-            <property name="maximum" >
+          <item row="4" column="0">
+           <widget class="QLabel" name="label">
+            <property name="text">
+             <string>&lt;b&gt;Rating:&lt;/b&gt;</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QSpinBox" name="ratingEdit">
+            <property name="maximum">
              <number>5</number>
             </property>
            </widget>
@@ -136,7 +134,6 @@
    </layout>
   </widget>
  </widget>
- <pixmapfunction></pixmapfunction>
  <tabstops>
   <tabstop>bookTable</tabstop>
   <tabstop>titleEdit</tabstop>

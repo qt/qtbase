@@ -100,7 +100,7 @@ public:
 
         cipherLabel = new QLabel(sessionBox);
         cipherLabel->setObjectName("cipherLabel");
-        cipherLabel->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
+        cipherLabel->setAlignment(Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter);
 
         hboxLayout->addWidget(cipherLabel);
 
@@ -110,7 +110,7 @@ public:
         sessionOutput = new QTextEdit(sessionBox);
         sessionOutput->setObjectName("sessionOutput");
         sessionOutput->setEnabled(false);
-        sessionOutput->setFocusPolicy(Qt::NoFocus);
+        sessionOutput->setFocusPolicy(Qt::FocusPolicy::NoFocus);
         sessionOutput->setReadOnly(true);
 
         vboxLayout1->addWidget(sessionOutput);
@@ -131,7 +131,7 @@ public:
         sendButton = new QPushButton(sessionBox);
         sendButton->setObjectName("sendButton");
         sendButton->setEnabled(false);
-        sendButton->setFocusPolicy(Qt::TabFocus);
+        sendButton->setFocusPolicy(Qt::FocusPolicy::TabFocus);
 
         hboxLayout1->addWidget(sendButton);
 
@@ -163,10 +163,14 @@ public:
         sessionBox->setTitle(QCoreApplication::translate("Form", "Active session", nullptr));
         cipherText->setText(QCoreApplication::translate("Form", "Cryptographic Cipher:", nullptr));
         cipherLabel->setText(QCoreApplication::translate("Form", "<none>", nullptr));
-        sessionOutput->setHtml(QCoreApplication::translate("Form", "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+        sessionOutput->setHtml(QCoreApplication::translate("Form", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><meta charset=\"utf-8\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
-"</style></head><body style=\" font-family:'Sans Serif'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"></p></body></html>", nullptr));
+"hr { height: 1px; border-width: 0; }\n"
+"li.unchecked::marker { content: \"\\2610\"; }\n"
+"li.checked::marker { content: \"\\2612\"; }\n"
+"</style></head><body style=\" font-family:'Noto Sans'; font-size:12pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Sans Serif'; font-size:9pt;\"><br /></p></body></html>", nullptr));
         sessionInputLabel->setText(QCoreApplication::translate("Form", "Input:", nullptr));
         sendButton->setText(QCoreApplication::translate("Form", "&Send", nullptr));
     } // retranslateUi

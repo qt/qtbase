@@ -107,7 +107,7 @@ public:
         progressBar = new QProgressBar(InstallDialog);
         progressBar->setObjectName("progressBar");
         progressBar->setValue(0);
-        progressBar->setOrientation(Qt::Horizontal);
+        progressBar->setOrientation(Qt::Orientation::Horizontal);
 
         gridLayout->addWidget(progressBar, 7, 2, 1, 3);
 

@@ -1,71 +1,72 @@
-<ui version="4.0" >
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
  <class>FilterPage</class>
- <widget class="QWidget" name="FilterPage" >
-  <property name="geometry" >
+ <widget class="QWidget" name="FilterPage">
+  <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>419</width>
+    <width>518</width>
     <height>243</height>
    </rect>
   </property>
-  <property name="windowTitle" >
+  <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QGridLayout" >
-   <item row="1" column="0" >
-    <widget class="QLabel" name="label" >
-     <property name="text" >
+  <layout class="QGridLayout">
+   <item row="1" column="0">
+    <widget class="QLabel" name="label">
+     <property name="text">
       <string>Filter attributes for current documentation (comma separated list):</string>
      </property>
     </widget>
    </item>
-   <item row="2" column="0" >
-    <widget class="QLineEdit" name="filterLineEdit" />
+   <item row="2" column="0">
+    <widget class="QLineEdit" name="filterLineEdit"/>
    </item>
-   <item row="4" column="0" >
-    <widget class="QGroupBox" name="groupBox" >
-     <property name="title" >
+   <item row="4" column="0">
+    <widget class="QGroupBox" name="groupBox">
+     <property name="title">
       <string>Custom Filters</string>
      </property>
-     <layout class="QGridLayout" >
-      <item rowspan="3" row="0" column="0" >
-       <widget class="QTreeWidget" name="customFilterWidget" >
-        <property name="columnCount" >
+     <layout class="QGridLayout">
+      <item row="0" column="0" rowspan="3">
+       <widget class="QTreeWidget" name="customFilterWidget">
+        <property name="columnCount">
          <number>2</number>
         </property>
         <column>
-         <property name="text" >
+         <property name="text">
           <string>1</string>
          </property>
         </column>
         <column>
-         <property name="text" >
+         <property name="text">
           <string>2</string>
          </property>
         </column>
        </widget>
       </item>
-      <item row="0" column="1" >
-       <widget class="QPushButton" name="addButton" >
-        <property name="text" >
+      <item row="0" column="1">
+       <widget class="QPushButton" name="addButton">
+        <property name="text">
          <string>Add</string>
         </property>
        </widget>
       </item>
-      <item row="1" column="1" >
-       <widget class="QPushButton" name="removeButton" >
-        <property name="text" >
+      <item row="1" column="1">
+       <widget class="QPushButton" name="removeButton">
+        <property name="text">
          <string>Remove</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="1" >
+      <item row="2" column="1">
        <spacer>
-        <property name="orientation" >
-         <enum>Qt::Vertical</enum>
+        <property name="orientation">
+         <enum>Qt::Orientation::Vertical</enum>
         </property>
-        <property name="sizeHint" >
+        <property name="sizeHint" stdset="0">
          <size>
           <width>20</width>
           <height>40</height>
@@ -76,12 +77,12 @@
      </layout>
     </widget>
    </item>
-   <item row="0" column="0" >
+   <item row="0" column="0">
     <spacer>
-     <property name="orientation" >
-      <enum>Qt::Vertical</enum>
+     <property name="orientation">
+      <enum>Qt::Orientation::Vertical</enum>
      </property>
-     <property name="sizeHint" >
+     <property name="sizeHint" stdset="0">
       <size>
        <width>20</width>
        <height>40</height>
@@ -89,12 +90,12 @@
      </property>
     </spacer>
    </item>
-   <item row="5" column="0" >
+   <item row="5" column="0">
     <spacer>
-     <property name="orientation" >
-      <enum>Qt::Vertical</enum>
+     <property name="orientation">
+      <enum>Qt::Orientation::Vertical</enum>
      </property>
-     <property name="sizeHint" >
+     <property name="sizeHint" stdset="0">
       <size>
        <width>20</width>
        <height>40</height>
@@ -102,15 +103,15 @@
      </property>
     </spacer>
    </item>
-   <item row="3" column="0" >
+   <item row="3" column="0">
     <spacer>
-     <property name="orientation" >
-      <enum>Qt::Vertical</enum>
+     <property name="orientation">
+      <enum>Qt::Orientation::Vertical</enum>
      </property>
-     <property name="sizeType" >
+     <property name="sizeType">
       <enum>QSizePolicy::Policy::Fixed</enum>
      </property>
-     <property name="sizeHint" >
+     <property name="sizeHint" stdset="0">
       <size>
        <width>20</width>
        <height>10</height>

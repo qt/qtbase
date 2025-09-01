@@ -38,7 +38,7 @@ public:
     {
         if (TranslationSettings->objectName().isEmpty())
             TranslationSettings->setObjectName("TranslationSettings");
-        TranslationSettings->resize(346, 125);
+        TranslationSettings->resize(346, 169);
         vboxLayout = new QVBoxLayout(TranslationSettings);
 #ifndef Q_OS_MAC
         vboxLayout->setSpacing(6);
@@ -82,8 +82,8 @@ public:
 
         buttonBox = new QDialogButtonBox(TranslationSettings);
         buttonBox->setObjectName("buttonBox");
-        buttonBox->setOrientation(Qt::Horizontal);
-        buttonBox->setStandardButtons(QDialogButtonBox::Cancel|QDialogButtonBox::NoButton|QDialogButtonBox::Ok);
+        buttonBox->setOrientation(Qt::Orientation::Horizontal);
+        buttonBox->setStandardButtons(QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok);
 
         vboxLayout->addWidget(buttonBox);
 

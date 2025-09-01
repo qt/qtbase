@@ -57,7 +57,7 @@ public:
         vboxLayout->setObjectName("vboxLayout");
         signalList = new QListWidget(signalGroupBox);
         signalList->setObjectName("signalList");
-        signalList->setTextElideMode(Qt::ElideMiddle);
+        signalList->setTextElideMode(Qt::TextElideMode::ElideMiddle);
 
         vboxLayout->addWidget(signalList);
 
@@ -84,7 +84,7 @@ public:
         vboxLayout1->setObjectName("vboxLayout1");
         slotList = new QListWidget(slotGroupBox);
         slotList->setObjectName("slotList");
-        slotList->setTextElideMode(Qt::ElideMiddle);
+        slotList->setTextElideMode(Qt::TextElideMode::ElideMiddle);
 
         vboxLayout1->addWidget(slotList);
 
@@ -112,8 +112,8 @@ public:
 
         buttonBox = new QDialogButtonBox(ConnectDialog);
         buttonBox->setObjectName("buttonBox");
-        buttonBox->setOrientation(Qt::Horizontal);
-        buttonBox->setStandardButtons(QDialogButtonBox::Cancel|QDialogButtonBox::NoButton|QDialogButtonBox::Ok);
+        buttonBox->setOrientation(Qt::Orientation::Horizontal);
+        buttonBox->setStandardButtons(QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok);
 
         gridLayout->addWidget(buttonBox, 2, 1, 1, 2);
 

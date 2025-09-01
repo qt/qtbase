@@ -98,8 +98,8 @@ public:
 
         spinBox = new QSpinBox(WorldTimeForm);
         spinBox->setObjectName("spinBox");
-        spinBox->setMaximum(12);
         spinBox->setMinimum(-12);
+        spinBox->setMaximum(12);
 
         hboxLayout2->addWidget(spinBox);
 

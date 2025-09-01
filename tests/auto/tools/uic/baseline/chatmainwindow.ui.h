@@ -116,7 +116,7 @@ public:
         ChatMainWindow->setCentralWidget(centralwidget);
         menubar = new QMenuBar(ChatMainWindow);
         menubar->setObjectName("menubar");
-        menubar->setGeometry(QRect(0, 0, 800, 31));
+        menubar->setGeometry(QRect(0, 0, 800, 26));
         menuQuit = new QMenu(menubar);
         menuQuit->setObjectName("menuQuit");
         menuFile = new QMenu(menubar);

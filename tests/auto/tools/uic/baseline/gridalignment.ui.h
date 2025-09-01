@@ -36,22 +36,22 @@ public:
         pushButton = new QPushButton(Form);
         pushButton->setObjectName("pushButton");
 
-        gridLayout->addWidget(pushButton, 0, 0, 1, 1, Qt::AlignLeft);
+        gridLayout->addWidget(pushButton, 0, 0, 1, 1, Qt::AlignmentFlag::AlignLeft);
 
         pushButton_3 = new QPushButton(Form);
         pushButton_3->setObjectName("pushButton_3");
 
-        gridLayout->addWidget(pushButton_3, 0, 1, 1, 1, Qt::AlignTop);
+        gridLayout->addWidget(pushButton_3, 0, 1, 1, 1, Qt::AlignmentFlag::AlignTop);
 
         pushButton_2 = new QPushButton(Form);
         pushButton_2->setObjectName("pushButton_2");
 
-        gridLayout->addWidget(pushButton_2, 1, 0, 1, 1, Qt::AlignRight);
+        gridLayout->addWidget(pushButton_2, 1, 0, 1, 1, Qt::AlignmentFlag::AlignRight);
 
         pushButton_4 = new QPushButton(Form);
         pushButton_4->setObjectName("pushButton_4");
 
-        gridLayout->addWidget(pushButton_4, 1, 1, 1, 1, Qt::AlignBottom);
+        gridLayout->addWidget(pushButton_4, 1, 1, 1, 1, Qt::AlignmentFlag::AlignBottom);
 
 
         retranslateUi(Form);

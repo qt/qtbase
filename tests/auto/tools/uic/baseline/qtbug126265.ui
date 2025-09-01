@@ -22,9 +22,6 @@
      <height>29</height>
     </rect>
    </property>
-   <property name="text(&quot;Hello world!&quot;); injected code;//">
-    <enum>Qt::FocusPolicy::WheelFocus</enum>
-   </property>
    <property name="text">
     <string>PushButton</string>
    </property>
@@ -39,7 +36,7 @@
     </rect>
    </property>
    <property name="focusPolicy">
-    <enum>Qt::FocusPolicy::WheelFocus); injected code;//</enum>
+    <enum>Qt::FocusPolicy::NoFocus</enum>
    </property>
    <property name="text">
     <string>PushButton</string>

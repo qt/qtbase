@@ -1,7 +1,8 @@
-<ui version="4.0" >
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
  <class>Calculator</class>
- <widget class="QWidget" name="Calculator" >
-  <property name="geometry" >
+ <widget class="QWidget" name="Calculator">
+  <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
@@ -9,29 +10,29 @@
     <height>301</height>
    </rect>
   </property>
-  <property name="sizePolicy" >
-   <sizepolicy vsizetype="Fixed" hsizetype="Fixed" >
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
     <horstretch>0</horstretch>
     <verstretch>0</verstretch>
    </sizepolicy>
   </property>
-  <property name="minimumSize" >
+  <property name="minimumSize">
    <size>
     <width>314</width>
     <height>301</height>
    </size>
   </property>
-  <property name="maximumSize" >
+  <property name="maximumSize">
    <size>
     <width>314</width>
     <height>301</height>
    </size>
   </property>
-  <property name="windowTitle" >
+  <property name="windowTitle">
    <string>Calculator</string>
   </property>
-  <widget class="QToolButton" name="backspaceButton" >
-   <property name="geometry" >
+  <widget class="QToolButton" name="backspaceButton">
+   <property name="geometry">
     <rect>
      <x>10</x>
      <y>50</y>
@@ -39,12 +40,12 @@
      <height>41</height>
     </rect>
    </property>
-   <property name="text" >
+   <property name="text">
     <string>Backspace</string>
    </property>
   </widget>
-  <widget class="QToolButton" name="clearButton" >
-   <property name="geometry" >
+  <widget class="QToolButton" name="clearButton">
+   <property name="geometry">
     <rect>
      <x>110</x>
      <y>50</y>
@@ -52,12 +53,12 @@
      <height>41</height>
     </rect>
    </property>
-   <property name="text" >
+   <property name="text">
     <string>Clear</string>
    </property>
   </widget>
-  <widget class="QToolButton" name="clearAllButton" >
-   <property name="geometry" >
+  <widget class="QToolButton" name="clearAllButton">
+   <property name="geometry">
     <rect>
      <x>210</x>
      <y>50</y>
@@ -65,12 +66,12 @@
      <height>41</height>
     </rect>
    </property>
-   <property name="text" >
+   <property name="text">
     <string>Clear All</string>
    </property>
   </widget>
-  <widget class="QToolButton" name="clearMemoryButton" >
-   <property name="geometry" >
+  <widget class="QToolButton" name="clearMemoryButton">
+   <property name="geometry">
     <rect>
      <x>10</x>
      <y>100</y>
@@ -78,12 +79,12 @@
      <height>41</height>
     </rect>
    </property>
-   <property name="text" >
+   <property name="text">
     <string>MC</string>
    </property>
   </widget>
-  <widget class="QToolButton" name="readMemoryButton" >
-   <property name="geometry" >
+  <widget class="QToolButton" name="readMemoryButton">
+   <property name="geometry">
     <rect>
      <x>10</x>
      <y>150</y>
@@ -91,12 +92,12 @@
      <height>41</height>
     </rect>
    </property>
-   <property name="text" >
+   <property name="text">
     <string>MR</string>
    </property>
   </widget>
-  <widget class="QToolButton" name="setMemoryButton" >
-   <property name="geometry" >
+  <widget class="QToolButton" name="setMemoryButton">
+   <property name="geometry">
     <rect>
      <x>10</x>
      <y>200</y>
@@ -104,12 +105,12 @@
      <height>41</height>
     </rect>
    </property>
-   <property name="text" >
+   <property name="text">
     <string>MS</string>
    </property>
   </widget>
-  <widget class="QToolButton" name="addToMemoryButton" >
-   <property name="geometry" >
+  <widget class="QToolButton" name="addToMemoryButton">
+   <property name="geometry">
     <rect>
      <x>10</x>
      <y>250</y>
@@ -117,12 +118,12 @@
      <height>41</height>
     </rect>
    </property>
-   <property name="text" >
+   <property name="text">
     <string>M+</string>
    </property>
   </widget>
-  <widget class="QToolButton" name="sevenButton" >
-   <property name="geometry" >
+  <widget class="QToolButton" name="sevenButton">
+   <property name="geometry">
     <rect>
      <x>60</x>
      <y>100</y>
@@ -130,12 +131,12 @@
      <height>41</height>
     </rect>
    </property>
-   <property name="text" >
+   <property name="text">
     <string>7</string>
    </property>
   </widget>
-  <widget class="QToolButton" name="eightButton" >
-   <property name="geometry" >
+  <widget class="QToolButton" name="eightButton">
+   <property name="geometry">
     <rect>
      <x>110</x>
      <y>100</y>
@@ -143,12 +144,12 @@
      <height>41</height>
     </rect>
    </property>
-   <property name="text" >
+   <property name="text">
     <string>8</string>
    </property>
   </widget>
-  <widget class="QToolButton" name="nineButton" >
-   <property name="geometry" >
+  <widget class="QToolButton" name="nineButton">
+   <property name="geometry">
     <rect>
      <x>160</x>
      <y>100</y>
@@ -156,12 +157,12 @@
      <height>41</height>
     </rect>
    </property>
-   <property name="text" >
+   <property name="text">
     <string>9</string>
    </property>
   </widget>
-  <widget class="QToolButton" name="fourButton" >
-   <property name="geometry" >
+  <widget class="QToolButton" name="fourButton">
+   <property name="geometry">
     <rect>
      <x>60</x>
      <y>150</y>
@@ -169,12 +170,12 @@
      <height>41</height>
     </rect>
    </property>
-   <property name="text" >
+   <property name="text">
     <string>4</string>
    </property>
   </widget>
-  <widget class="QToolButton" name="fiveButton" >
-   <property name="geometry" >
+  <widget class="QToolButton" name="fiveButton">
+   <property name="geometry">
     <rect>
      <x>110</x>
      <y>150</y>
@@ -182,12 +183,12 @@
      <height>41</height>
     </rect>
    </property>
-   <property name="text" >
+   <property name="text">
     <string>5</string>
    </property>
   </widget>
-  <widget class="QToolButton" name="sixButton" >
-   <property name="geometry" >
+  <widget class="QToolButton" name="sixButton">
+   <property name="geometry">
     <rect>
      <x>160</x>
      <y>150</y>
@@ -195,12 +196,12 @@
      <height>41</height>
     </rect>
    </property>
-   <property name="text" >
+   <property name="text">
     <string>6</string>
    </property>
   </widget>
-  <widget class="QToolButton" name="oneButton" >
-   <property name="geometry" >
+  <widget class="QToolButton" name="oneButton">
+   <property name="geometry">
     <rect>
      <x>60</x>
      <y>200</y>
@@ -208,12 +209,12 @@
      <height>41</height>
     </rect>
    </property>
-   <property name="text" >
+   <property name="text">
     <string>1</string>
    </property>
   </widget>
-  <widget class="QToolButton" name="twoButton" >
-   <property name="geometry" >
+  <widget class="QToolButton" name="twoButton">
+   <property name="geometry">
     <rect>
      <x>110</x>
      <y>200</y>
@@ -221,12 +222,12 @@
      <height>41</height>
     </rect>
    </property>
-   <property name="text" >
+   <property name="text">
     <string>2</string>
    </property>
   </widget>
-  <widget class="QToolButton" name="threeButton" >
-   <property name="geometry" >
+  <widget class="QToolButton" name="threeButton">
+   <property name="geometry">
     <rect>
      <x>160</x>
      <y>200</y>
@@ -234,12 +235,12 @@
      <height>41</height>
     </rect>
    </property>
-   <property name="text" >
+   <property name="text">
     <string>3</string>
    </property>
   </widget>
-  <widget class="QToolButton" name="zeroButton" >
-   <property name="geometry" >
+  <widget class="QToolButton" name="zeroButton">
+   <property name="geometry">
     <rect>
      <x>60</x>
      <y>250</y>
@@ -247,12 +248,12 @@
      <height>41</height>
     </rect>
    </property>
-   <property name="text" >
+   <property name="text">
     <string>0</string>
    </property>
   </widget>
-  <widget class="QToolButton" name="pointButton" >
-   <property name="geometry" >
+  <widget class="QToolButton" name="pointButton">
+   <property name="geometry">
     <rect>
      <x>110</x>
      <y>250</y>
@@ -260,12 +261,12 @@
      <height>41</height>
     </rect>
    </property>
-   <property name="text" >
+   <property name="text">
     <string>.</string>
    </property>
   </widget>
-  <widget class="QToolButton" name="changeSignButton" >
-   <property name="geometry" >
+  <widget class="QToolButton" name="changeSignButton">
+   <property name="geometry">
     <rect>
      <x>160</x>
      <y>250</y>
@@ -273,12 +274,12 @@
      <height>41</height>
     </rect>
    </property>
-   <property name="text" >
+   <property name="text">
     <string>+-</string>
    </property>
   </widget>
-  <widget class="QToolButton" name="plusButton" >
-   <property name="geometry" >
+  <widget class="QToolButton" name="plusButton">
+   <property name="geometry">
     <rect>
      <x>210</x>
      <y>250</y>
@@ -286,12 +287,12 @@
      <height>41</height>
     </rect>
    </property>
-   <property name="text" >
+   <property name="text">
     <string>+</string>
    </property>
   </widget>
-  <widget class="QToolButton" name="divisionButton" >
-   <property name="geometry" >
+  <widget class="QToolButton" name="divisionButton">
+   <property name="geometry">
     <rect>
      <x>210</x>
      <y>100</y>
@@ -299,12 +300,12 @@
      <height>41</height>
     </rect>
    </property>
-   <property name="text" >
+   <property name="text">
     <string>/</string>
    </property>
   </widget>
-  <widget class="QToolButton" name="timesButton" >
-   <property name="geometry" >
+  <widget class="QToolButton" name="timesButton">
+   <property name="geometry">
     <rect>
      <x>210</x>
      <y>150</y>
@@ -312,12 +313,12 @@
      <height>41</height>
     </rect>
    </property>
-   <property name="text" >
+   <property name="text">
     <string>*</string>
    </property>
   </widget>
-  <widget class="QToolButton" name="minusButton" >
-   <property name="geometry" >
+  <widget class="QToolButton" name="minusButton">
+   <property name="geometry">
     <rect>
      <x>210</x>
      <y>200</y>
@@ -325,12 +326,12 @@
      <height>41</height>
     </rect>
    </property>
-   <property name="text" >
+   <property name="text">
     <string>-</string>
    </property>
   </widget>
-  <widget class="QToolButton" name="squareRootButton" >
-   <property name="geometry" >
+  <widget class="QToolButton" name="squareRootButton">
+   <property name="geometry">
     <rect>
      <x>260</x>
      <y>100</y>
@@ -338,12 +339,12 @@
      <height>41</height>
     </rect>
    </property>
-   <property name="text" >
+   <property name="text">
     <string>Sqrt</string>
    </property>
   </widget>
-  <widget class="QToolButton" name="powerButton" >
-   <property name="geometry" >
+  <widget class="QToolButton" name="powerButton">
+   <property name="geometry">
     <rect>
      <x>260</x>
      <y>150</y>
@@ -351,12 +352,12 @@
      <height>41</height>
     </rect>
    </property>
-   <property name="text" >
+   <property name="text">
     <string>x^2</string>
    </property>
   </widget>
-  <widget class="QToolButton" name="reciprocalButton" >
-   <property name="geometry" >
+  <widget class="QToolButton" name="reciprocalButton">
+   <property name="geometry">
     <rect>
      <x>260</x>
      <y>200</y>
@@ -364,12 +365,12 @@
      <height>41</height>
     </rect>
    </property>
-   <property name="text" >
+   <property name="text">
     <string>1/x</string>
    </property>
   </widget>
-  <widget class="QToolButton" name="equalButton" >
-   <property name="geometry" >
+  <widget class="QToolButton" name="equalButton">
+   <property name="geometry">
     <rect>
      <x>260</x>
      <y>250</y>
@@ -377,12 +378,12 @@
      <height>41</height>
     </rect>
    </property>
-   <property name="text" >
+   <property name="text">
     <string>=</string>
    </property>
   </widget>
-  <widget class="QLineEdit" name="display" >
-   <property name="geometry" >
+  <widget class="QLineEdit" name="display">
+   <property name="geometry">
     <rect>
      <x>10</x>
      <y>10</y>
@@ -390,13 +391,13 @@
      <height>31</height>
     </rect>
    </property>
-   <property name="maxLength" >
+   <property name="maxLength">
     <number>15</number>
    </property>
-   <property name="alignment" >
-    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+   <property name="alignment">
+    <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
    </property>
-   <property name="readOnly" >
+   <property name="readOnly">
     <bool>true</bool>
    </property>
   </widget>

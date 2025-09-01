@@ -58,7 +58,7 @@ public:
     {
         if (qdesigner_internal__PaletteEditor->objectName().isEmpty())
             qdesigner_internal__PaletteEditor->setObjectName("qdesigner_internal__PaletteEditor");
-        qdesigner_internal__PaletteEditor->resize(365, 409);
+        qdesigner_internal__PaletteEditor->resize(397, 422);
         QSizePolicy sizePolicy(QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Expanding);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
@@ -160,8 +160,8 @@ public:
 
         buttonBox = new QDialogButtonBox(qdesigner_internal__PaletteEditor);
         buttonBox->setObjectName("buttonBox");
-        buttonBox->setOrientation(Qt::Horizontal);
-        buttonBox->setStandardButtons(QDialogButtonBox::Cancel|QDialogButtonBox::NoButton|QDialogButtonBox::Ok);
+        buttonBox->setOrientation(Qt::Orientation::Horizontal);
+        buttonBox->setStandardButtons(QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok);
 
         vboxLayout->addWidget(buttonBox);
 

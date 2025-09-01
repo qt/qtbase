@@ -1,81 +1,82 @@
-<ui version="4.0" >
-<comment>
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <comment>
 * Copyright (C) 2016 The Qt Company Ltd.
 * SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 </comment>
  <class>qdesigner_internal::TreeWidgetEditor</class>
- <widget class="QDialog" name="qdesigner_internal::TreeWidgetEditor" >
-  <property name="geometry" >
+ <widget class="QDialog" name="qdesigner_internal::TreeWidgetEditor">
+  <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>619</width>
+    <width>644</width>
     <height>321</height>
    </rect>
   </property>
-  <property name="windowTitle" >
+  <property name="windowTitle">
    <string>Edit Tree Widget</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout_3" >
-   <item row="0" column="0" >
-    <widget class="QGroupBox" name="itemsBox" >
-     <property name="title" >
+  <layout class="QGridLayout" name="gridLayout_3">
+   <item row="0" column="0">
+    <widget class="QGroupBox" name="itemsBox">
+     <property name="title">
       <string>Tree Items</string>
      </property>
-     <layout class="QGridLayout" name="gridLayout" >
-      <item row="0" column="0" >
-       <widget class="QTreeWidget" name="treeWidget" >
-        <property name="focusPolicy" >
-         <enum>Qt::TabFocus</enum>
+     <layout class="QGridLayout" name="gridLayout">
+      <item row="0" column="0">
+       <widget class="QTreeWidget" name="treeWidget">
+        <property name="focusPolicy">
+         <enum>Qt::FocusPolicy::TabFocus</enum>
         </property>
-        <property name="toolTip" >
+        <property name="toolTip">
          <string>Tree Items</string>
         </property>
         <column>
-         <property name="text" >
+         <property name="text">
           <string>1</string>
          </property>
         </column>
        </widget>
       </item>
-      <item row="1" column="0" >
-       <layout class="QHBoxLayout" name="horizontalLayout_4" >
+      <item row="1" column="0">
+       <layout class="QHBoxLayout" name="horizontalLayout_4">
         <item>
-         <widget class="QToolButton" name="newItemButton" >
-          <property name="toolTip" >
+         <widget class="QToolButton" name="newItemButton">
+          <property name="toolTip">
            <string>New Item</string>
           </property>
-          <property name="text" >
+          <property name="text">
            <string>&amp;New</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QToolButton" name="newSubItemButton" >
-          <property name="toolTip" >
+         <widget class="QToolButton" name="newSubItemButton">
+          <property name="toolTip">
            <string>New Subitem</string>
           </property>
-          <property name="text" >
+          <property name="text">
            <string>New &amp;Subitem</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QToolButton" name="deleteItemButton" >
-          <property name="toolTip" >
+         <widget class="QToolButton" name="deleteItemButton">
+          <property name="toolTip">
            <string>Delete Item</string>
           </property>
-          <property name="text" >
+          <property name="text">
            <string>&amp;Delete</string>
           </property>
          </widget>
         </item>
         <item>
          <spacer>
-          <property name="orientation" >
-           <enum>Qt::Horizontal</enum>
+          <property name="orientation">
+           <enum>Qt::Orientation::Horizontal</enum>
           </property>
-          <property name="sizeHint" stdset="0" >
+          <property name="sizeHint" stdset="0">
            <size>
             <width>28</width>
             <height>23</height>
@@ -84,65 +85,65 @@
          </spacer>
         </item>
         <item>
-         <widget class="QToolButton" name="moveItemLeftButton" >
-          <property name="toolTip" >
+         <widget class="QToolButton" name="moveItemLeftButton">
+          <property name="toolTip">
            <string>Move Item Left (before Parent Item)</string>
           </property>
-          <property name="text" >
+          <property name="text">
            <string>L</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QToolButton" name="moveItemRightButton" >
-          <property name="toolTip" >
+         <widget class="QToolButton" name="moveItemRightButton">
+          <property name="toolTip">
            <string>Move Item Right (as a First Subitem of the Next Sibling Item)</string>
           </property>
-          <property name="text" >
+          <property name="text">
            <string>R</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QToolButton" name="moveItemUpButton" >
-          <property name="toolTip" >
+         <widget class="QToolButton" name="moveItemUpButton">
+          <property name="toolTip">
            <string>Move Item Up</string>
           </property>
-          <property name="text" >
+          <property name="text">
            <string>U</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QToolButton" name="moveItemDownButton" >
-          <property name="toolTip" >
+         <widget class="QToolButton" name="moveItemDownButton">
+          <property name="toolTip">
            <string>Move Item Down</string>
           </property>
-          <property name="text" >
+          <property name="text">
            <string>D</string>
           </property>
          </widget>
         </item>
        </layout>
       </item>
-      <item row="2" column="0" >
-       <layout class="QHBoxLayout" name="horizontalLayout_2" >
+      <item row="2" column="0">
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
         <item>
-         <widget class="QLabel" name="label_2" >
-          <property name="text" >
+         <widget class="QLabel" name="label_2">
+          <property name="text">
            <string>Icon</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="qdesigner_internal::IconSelector" native="1" name="itemIconSelector" />
+         <widget class="qdesigner_internal::IconSelector" name="itemIconSelector" native="true"/>
         </item>
         <item>
-         <spacer name="horizontalSpacer" >
-          <property name="orientation" >
-           <enum>Qt::Horizontal</enum>
+         <spacer name="horizontalSpacer">
+          <property name="orientation">
+           <enum>Qt::Orientation::Horizontal</enum>
           </property>
-          <property name="sizeHint" stdset="0" >
+          <property name="sizeHint" stdset="0">
            <size>
             <width>288</width>
             <height>21</height>
@@ -155,62 +156,62 @@
      </layout>
     </widget>
    </item>
-   <item row="0" column="1" >
-    <widget class="QGroupBox" name="columnsBox" >
-     <property name="sizePolicy" >
-      <sizepolicy vsizetype="Preferred" hsizetype="Fixed" >
+   <item row="0" column="1">
+    <widget class="QGroupBox" name="columnsBox">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
-     <property name="title" >
+     <property name="title">
       <string>Columns</string>
      </property>
-     <layout class="QGridLayout" name="gridLayout_2" >
-      <item row="0" column="0" >
-       <widget class="QListWidget" name="listWidget" >
-        <property name="sizePolicy" >
-         <sizepolicy vsizetype="Expanding" hsizetype="Ignored" >
+     <layout class="QGridLayout" name="gridLayout_2">
+      <item row="0" column="0">
+       <widget class="QListWidget" name="listWidget">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Ignored" vsizetype="Expanding">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
-        <property name="focusPolicy" >
-         <enum>Qt::TabFocus</enum>
+        <property name="focusPolicy">
+         <enum>Qt::FocusPolicy::TabFocus</enum>
         </property>
-        <property name="toolTip" >
+        <property name="toolTip">
          <string>Tree Columns</string>
         </property>
        </widget>
       </item>
-      <item row="1" column="0" >
-       <layout class="QHBoxLayout" name="horizontalLayout_3" >
+      <item row="1" column="0">
+       <layout class="QHBoxLayout" name="horizontalLayout_3">
         <item>
-         <widget class="QToolButton" name="newColumnButton" >
-          <property name="toolTip" >
+         <widget class="QToolButton" name="newColumnButton">
+          <property name="toolTip">
            <string>New Column</string>
           </property>
-          <property name="text" >
+          <property name="text">
            <string>New</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QToolButton" name="deleteColumnButton" >
-          <property name="toolTip" >
+         <widget class="QToolButton" name="deleteColumnButton">
+          <property name="toolTip">
            <string>Delete Column</string>
           </property>
-          <property name="text" >
+          <property name="text">
            <string>Delete</string>
           </property>
          </widget>
         </item>
         <item>
          <spacer>
-          <property name="orientation" >
-           <enum>Qt::Horizontal</enum>
+          <property name="orientation">
+           <enum>Qt::Orientation::Horizontal</enum>
           </property>
-          <property name="sizeHint" stdset="0" >
+          <property name="sizeHint" stdset="0">
            <size>
             <width>13</width>
             <height>23</height>
@@ -219,45 +220,45 @@
          </spacer>
         </item>
         <item>
-         <widget class="QToolButton" name="moveColumnUpButton" >
-          <property name="toolTip" >
+         <widget class="QToolButton" name="moveColumnUpButton">
+          <property name="toolTip">
            <string>Move Column Up</string>
           </property>
-          <property name="text" >
+          <property name="text">
            <string>U</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QToolButton" name="moveColumnDownButton" >
-          <property name="toolTip" >
+         <widget class="QToolButton" name="moveColumnDownButton">
+          <property name="toolTip">
            <string>Move Column Down</string>
           </property>
-          <property name="text" >
+          <property name="text">
            <string>D</string>
           </property>
          </widget>
         </item>
        </layout>
       </item>
-      <item row="2" column="0" >
-       <layout class="QHBoxLayout" name="horizontalLayout" >
+      <item row="2" column="0">
+       <layout class="QHBoxLayout" name="horizontalLayout">
         <item>
-         <widget class="QLabel" name="label" >
-          <property name="text" >
+         <widget class="QLabel" name="label">
+          <property name="text">
            <string>Icon</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="qdesigner_internal::IconSelector" native="1" name="columnIconSelector" />
+         <widget class="qdesigner_internal::IconSelector" name="columnIconSelector" native="true"/>
         </item>
         <item>
          <spacer>
-          <property name="orientation" >
-           <enum>Qt::Horizontal</enum>
+          <property name="orientation">
+           <enum>Qt::Orientation::Horizontal</enum>
           </property>
-          <property name="sizeHint" stdset="0" >
+          <property name="sizeHint" stdset="0">
            <size>
             <width>0</width>
             <height>10</height>
@@ -270,13 +271,13 @@
      </layout>
     </widget>
    </item>
-   <item row="1" column="0" colspan="2" >
-    <widget class="QDialogButtonBox" name="buttonBox" >
-     <property name="orientation" >
-      <enum>Qt::Horizontal</enum>
+   <item row="1" column="0" colspan="2">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Orientation::Horizontal</enum>
      </property>
-     <property name="standardButtons" >
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok</set>
      </property>
     </widget>
    </item>
@@ -313,11 +314,11 @@
    <receiver>qdesigner_internal::TreeWidgetEditor</receiver>
    <slot>accept()</slot>
    <hints>
-    <hint type="sourcelabel" >
+    <hint type="sourcelabel">
      <x>450</x>
      <y>259</y>
     </hint>
-    <hint type="destinationlabel" >
+    <hint type="destinationlabel">
      <x>292</x>
      <y>272</y>
     </hint>
@@ -329,11 +330,11 @@
    <receiver>qdesigner_internal::TreeWidgetEditor</receiver>
    <slot>reject()</slot>
    <hints>
-    <hint type="sourcelabel" >
+    <hint type="sourcelabel">
      <x>539</x>
      <y>266</y>
     </hint>
-    <hint type="destinationlabel" >
+    <hint type="destinationlabel">
      <x>556</x>
      <y>275</y>
     </hint>

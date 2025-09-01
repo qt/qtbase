@@ -90,8 +90,8 @@ public:
         vboxLayout->setObjectName("vboxLayout");
         mainFrame = new QFrame(centralwidget);
         mainFrame->setObjectName("mainFrame");
-        mainFrame->setFrameShape(QFrame::StyledPanel);
-        mainFrame->setFrameShadow(QFrame::Raised);
+        mainFrame->setFrameShape(QFrame::Shape::StyledPanel);
+        mainFrame->setFrameShadow(QFrame::Shadow::Raised);
         gridLayout = new QGridLayout(mainFrame);
 #ifndef Q_OS_MAC
         gridLayout->setSpacing(6);
@@ -153,8 +153,8 @@ public:
 
         buttonBox = new QDialogButtonBox(mainFrame);
         buttonBox->setObjectName("buttonBox");
-        buttonBox->setOrientation(Qt::Horizontal);
-        buttonBox->setStandardButtons(QDialogButtonBox::Cancel|QDialogButtonBox::NoButton|QDialogButtonBox::Ok);
+        buttonBox->setOrientation(Qt::Orientation::Horizontal);
+        buttonBox->setStandardButtons(QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok);
 
         gridLayout->addWidget(buttonBox, 7, 2, 1, 2);
 
@@ -165,7 +165,7 @@ public:
 
         passwordEdit = new QLineEdit(mainFrame);
         passwordEdit->setObjectName("passwordEdit");
-        passwordEdit->setEchoMode(QLineEdit::Password);
+        passwordEdit->setEchoMode(QLineEdit::EchoMode::Password);
 
         gridLayout->addWidget(passwordEdit, 3, 1, 1, 3);
 
@@ -205,7 +205,7 @@ public:
         MainWindow->setCentralWidget(centralwidget);
         menubar = new QMenuBar(MainWindow);
         menubar->setObjectName("menubar");
-        menubar->setGeometry(QRect(0, 0, 392, 25));
+        menubar->setGeometry(QRect(0, 0, 392, 26));
         menu_File = new QMenu(menubar);
         menu_File->setObjectName("menu_File");
         menu_Help = new QMenu(menubar);

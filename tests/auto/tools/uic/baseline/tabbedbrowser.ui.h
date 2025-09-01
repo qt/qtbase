@@ -76,8 +76,8 @@ public:
 
         frameFind = new QFrame(TabbedBrowser);
         frameFind->setObjectName("frameFind");
-        frameFind->setFrameShape(QFrame::StyledPanel);
-        frameFind->setFrameShadow(QFrame::Raised);
+        frameFind->setFrameShape(QFrame::Shape::StyledPanel);
+        frameFind->setFrameShadow(QFrame::Shadow::Raised);
         hboxLayout = new QHBoxLayout(frameFind);
 #ifndef Q_OS_MAC
         hboxLayout->setSpacing(6);
@@ -86,7 +86,8 @@ public:
         hboxLayout->setObjectName("hboxLayout");
         toolClose = new QToolButton(frameFind);
         toolClose->setObjectName("toolClose");
-        const QIcon icon = QIcon(QString::fromUtf8(":/qt-project.org/assistant/images/close.png"));
+        QIcon icon;
+        icon.addFile(QString::fromUtf8(":/qt-project.org/assistant/images/close.png"), QSize(), QIcon::Mode::Normal, QIcon::State::Off);
         toolClose->setIcon(icon);
         toolClose->setAutoRaise(true);
 
@@ -105,9 +106,10 @@ public:
 
         toolPrevious = new QToolButton(frameFind);
         toolPrevious->setObjectName("toolPrevious");
-        const QIcon icon1 = QIcon(QString::fromUtf8(":/qt-project.org/assistant/images/win/previous.png"));
+        QIcon icon1;
+        icon1.addFile(QString::fromUtf8(":/qt-project.org/assistant/images/win/previous.png"), QSize(), QIcon::Mode::Normal, QIcon::State::Off);
         toolPrevious->setIcon(icon1);
-        toolPrevious->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+        toolPrevious->setToolButtonStyle(Qt::ToolButtonStyle::ToolButtonTextBesideIcon);
         toolPrevious->setAutoRaise(true);
 
         hboxLayout->addWidget(toolPrevious);
@@ -115,11 +117,12 @@ public:
         toolNext = new QToolButton(frameFind);
         toolNext->setObjectName("toolNext");
         toolNext->setMinimumSize(QSize(0, 0));
-        const QIcon icon2 = QIcon(QString::fromUtf8(":/qt-project.org/assistant/images/win/next.png"));
+        QIcon icon2;
+        icon2.addFile(QString::fromUtf8(":/qt-project.org/assistant/images/win/next.png"), QSize(), QIcon::Mode::Normal, QIcon::State::Off);
         toolNext->setIcon(icon2);
-        toolNext->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+        toolNext->setToolButtonStyle(Qt::ToolButtonStyle::ToolButtonTextBesideIcon);
         toolNext->setAutoRaise(true);
-        toolNext->setArrowType(Qt::NoArrow);
+        toolNext->setArrowType(Qt::ArrowType::NoArrow);
 
         hboxLayout->addWidget(toolNext);
 
@@ -137,9 +140,9 @@ public:
         labelWrapped->setObjectName("labelWrapped");
         labelWrapped->setMinimumSize(QSize(0, 20));
         labelWrapped->setMaximumSize(QSize(105, 20));
-        labelWrapped->setTextFormat(Qt::RichText);
+        labelWrapped->setTextFormat(Qt::TextFormat::RichText);
         labelWrapped->setScaledContents(true);
-        labelWrapped->setAlignment(Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter);
+        labelWrapped->setAlignment(Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter);
 
         hboxLayout->addWidget(labelWrapped);
 

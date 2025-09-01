@@ -1,74 +1,73 @@
-<ui version="4.0" >
-<comment>
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <comment>
 * Copyright (C) 2016 The Qt Company Ltd.
 * SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 </comment>
  <class>qdesigner_internal::PreviewWidget</class>
- <widget class="QWidget" name="qdesigner_internal::PreviewWidget" >
-  <property name="geometry" >
+ <widget class="QWidget" name="qdesigner_internal::PreviewWidget">
+  <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
     <width>471</width>
-    <height>251</height>
+    <height>337</height>
    </rect>
   </property>
-  <property name="sizePolicy" >
-   <sizepolicy>
-    <hsizetype>1</hsizetype>
-    <vsizetype>1</vsizetype>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
     <horstretch>0</horstretch>
     <verstretch>0</verstretch>
    </sizepolicy>
   </property>
-  <property name="windowTitle" >
+  <property name="windowTitle">
    <string>Preview Window</string>
   </property>
-  <layout class="QGridLayout" >
-   <property name="margin" >
+  <layout class="QGridLayout">
+   <property name="margin" stdset="0">
     <number>9</number>
    </property>
-   <property name="spacing" >
+   <property name="spacing">
     <number>6</number>
    </property>
-   <item rowspan="3" row="0" column="1" >
-    <layout class="QVBoxLayout" >
-     <property name="margin" >
-      <number>0</number>
-     </property>
-     <property name="spacing" >
+   <item row="0" column="1" rowspan="3">
+    <layout class="QVBoxLayout">
+     <property name="spacing">
       <number>6</number>
      </property>
+     <property name="margin" stdset="0">
+      <number>0</number>
+     </property>
      <item>
-      <widget class="QLineEdit" name="LineEdit1" >
-       <property name="text" >
+      <widget class="QLineEdit" name="LineEdit1">
+       <property name="text">
         <string>LineEdit</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QComboBox" name="ComboBox1" >
+      <widget class="QComboBox" name="ComboBox1">
        <item>
-        <property name="text" >
+        <property name="text">
          <string>ComboBox</string>
         </property>
        </item>
       </widget>
      </item>
      <item>
-      <layout class="QHBoxLayout" >
-       <property name="margin" >
-        <number>0</number>
-       </property>
-       <property name="spacing" >
+      <layout class="QHBoxLayout">
+       <property name="spacing">
         <number>6</number>
        </property>
+       <property name="margin" stdset="0">
+        <number>0</number>
+       </property>
        <item>
-        <widget class="QSpinBox" name="SpinBox1" />
+        <widget class="QSpinBox" name="SpinBox1"/>
        </item>
        <item>
-        <widget class="QPushButton" name="PushButton1" >
-         <property name="text" >
+        <widget class="QPushButton" name="PushButton1">
+         <property name="text">
           <string>PushButton</string>
          </property>
         </widget>
@@ -76,22 +75,22 @@
       </layout>
      </item>
      <item>
-      <widget class="QScrollBar" name="ScrollBar1" >
-       <property name="orientation" >
-        <enum>Qt::Horizontal</enum>
+      <widget class="QScrollBar" name="ScrollBar1">
+       <property name="orientation">
+        <enum>Qt::Orientation::Horizontal</enum>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QSlider" name="Slider1" >
-       <property name="orientation" >
-        <enum>Qt::Horizontal</enum>
+      <widget class="QSlider" name="Slider1">
+       <property name="orientation">
+        <enum>Qt::Orientation::Horizontal</enum>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QListWidget" name="listWidget" >
-       <property name="maximumSize" >
+      <widget class="QListWidget" name="listWidget">
+       <property name="maximumSize">
         <size>
          <width>32767</width>
          <height>50</height>
@@ -101,15 +100,15 @@
      </item>
     </layout>
    </item>
-   <item row="3" column="0" colspan="2" >
+   <item row="3" column="0" colspan="2">
     <spacer>
-     <property name="orientation" >
-      <enum>Qt::Vertical</enum>
+     <property name="orientation">
+      <enum>Qt::Orientation::Vertical</enum>
      </property>
-     <property name="sizeType" >
+     <property name="sizeType">
       <enum>QSizePolicy::Policy::Expanding</enum>
      </property>
-     <property name="sizeHint" >
+     <property name="sizeHint" stdset="0">
       <size>
        <width>20</width>
        <height>20</height>
@@ -117,38 +116,38 @@
      </property>
     </spacer>
    </item>
-   <item row="2" column="0" >
-    <widget class="QProgressBar" name="ProgressBar1" >
-     <property name="orientation" >
-      <enum>Qt::Horizontal</enum>
+   <item row="2" column="0">
+    <widget class="QProgressBar" name="ProgressBar1">
+     <property name="orientation">
+      <enum>Qt::Orientation::Horizontal</enum>
      </property>
     </widget>
    </item>
-   <item row="1" column="0" >
-    <widget class="QGroupBox" name="ButtonGroup2" >
-     <property name="title" >
+   <item row="1" column="0">
+    <widget class="QGroupBox" name="ButtonGroup2">
+     <property name="title">
       <string>ButtonGroup2</string>
      </property>
-     <layout class="QVBoxLayout" >
-      <property name="margin" >
-       <number>9</number>
-      </property>
-      <property name="spacing" >
+     <layout class="QVBoxLayout">
+      <property name="spacing">
        <number>6</number>
       </property>
+      <property name="margin" stdset="0">
+       <number>9</number>
+      </property>
       <item>
-       <widget class="QCheckBox" name="CheckBox1" >
-        <property name="text" >
+       <widget class="QCheckBox" name="CheckBox1">
+        <property name="text">
          <string>CheckBox1</string>
         </property>
-        <property name="checked" >
+        <property name="checked">
          <bool>true</bool>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QCheckBox" name="CheckBox2" >
-        <property name="text" >
+       <widget class="QCheckBox" name="CheckBox2">
+        <property name="text">
          <string>CheckBox2</string>
         </property>
        </widget>
@@ -156,38 +155,38 @@
      </layout>
     </widget>
    </item>
-   <item row="0" column="0" >
-    <widget class="QGroupBox" name="ButtonGroup1" >
-     <property name="title" >
+   <item row="0" column="0">
+    <widget class="QGroupBox" name="ButtonGroup1">
+     <property name="title">
       <string>ButtonGroup</string>
      </property>
-     <layout class="QVBoxLayout" >
-      <property name="margin" >
-       <number>9</number>
-      </property>
-      <property name="spacing" >
+     <layout class="QVBoxLayout">
+      <property name="spacing">
        <number>6</number>
       </property>
+      <property name="margin" stdset="0">
+       <number>9</number>
+      </property>
       <item>
-       <widget class="QRadioButton" name="RadioButton1" >
-        <property name="text" >
+       <widget class="QRadioButton" name="RadioButton1">
+        <property name="text">
          <string>RadioButton1</string>
         </property>
-        <property name="checked" >
+        <property name="checked">
          <bool>true</bool>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QRadioButton" name="RadioButton2" >
-        <property name="text" >
+       <widget class="QRadioButton" name="RadioButton2">
+        <property name="text">
          <string>RadioButton2</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QRadioButton" name="RadioButton3" >
-        <property name="text" >
+       <widget class="QRadioButton" name="RadioButton3">
+        <property name="text">
          <string>RadioButton3</string>
         </property>
        </widget>

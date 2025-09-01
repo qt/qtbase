@@ -37,7 +37,7 @@ public:
     {
         if (QtGradientViewDialog->objectName().isEmpty())
             QtGradientViewDialog->setObjectName("QtGradientViewDialog");
-        QtGradientViewDialog->resize(178, 72);
+        QtGradientViewDialog->resize(188, 72);
         vboxLayout = new QVBoxLayout(QtGradientViewDialog);
         vboxLayout->setObjectName("vboxLayout");
         gradientView = new QtGradientView(QtGradientViewDialog);
@@ -52,8 +52,8 @@ public:
 
         buttonBox = new QDialogButtonBox(QtGradientViewDialog);
         buttonBox->setObjectName("buttonBox");
-        buttonBox->setOrientation(Qt::Horizontal);
-        buttonBox->setStandardButtons(QDialogButtonBox::Cancel|QDialogButtonBox::Ok);
+        buttonBox->setOrientation(Qt::Orientation::Horizontal);
+        buttonBox->setStandardButtons(QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok);
 
         vboxLayout->addWidget(buttonBox);
 

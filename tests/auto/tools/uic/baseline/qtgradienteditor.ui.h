@@ -132,8 +132,8 @@ public:
         sizePolicy.setVerticalStretch(0);
         sizePolicy.setHeightForWidth(frame->sizePolicy().hasHeightForWidth());
         frame->setSizePolicy(sizePolicy);
-        frame->setFrameShape(QFrame::StyledPanel);
-        frame->setFrameShadow(QFrame::Raised);
+        frame->setFrameShape(QFrame::Shape::StyledPanel);
+        frame->setFrameShadow(QFrame::Shadow::Raised);
         vboxLayout = new QVBoxLayout(frame);
         vboxLayout->setSpacing(6);
         vboxLayout->setObjectName("vboxLayout");
@@ -225,8 +225,8 @@ public:
         sizePolicy2.setVerticalStretch(0);
         sizePolicy2.setHeightForWidth(frame_2->sizePolicy().hasHeightForWidth());
         frame_2->setSizePolicy(sizePolicy2);
-        frame_2->setFrameShape(QFrame::StyledPanel);
-        frame_2->setFrameShadow(QFrame::Raised);
+        frame_2->setFrameShape(QFrame::Shape::StyledPanel);
+        frame_2->setFrameShadow(QFrame::Shadow::Raised);
         hboxLayout = new QHBoxLayout(frame_2);
         hboxLayout->setObjectName("hboxLayout");
         hboxLayout->setContentsMargins(0, 0, 0, 0);
@@ -255,8 +255,8 @@ public:
         frame_5->setGeometry(QRect(48, 362, 155, 23));
         sizePolicy2.setHeightForWidth(frame_5->sizePolicy().hasHeightForWidth());
         frame_5->setSizePolicy(sizePolicy2);
-        frame_5->setFrameShape(QFrame::StyledPanel);
-        frame_5->setFrameShadow(QFrame::Raised);
+        frame_5->setFrameShape(QFrame::Shape::StyledPanel);
+        frame_5->setFrameShadow(QFrame::Shadow::Raised);
         hboxLayout1 = new QHBoxLayout(frame_5);
         hboxLayout1->setObjectName("hboxLayout1");
         hboxLayout1->setContentsMargins(0, 0, 0, 0);
@@ -282,8 +282,8 @@ public:
         frame_3->setGeometry(QRect(48, 391, 155, 23));
         sizePolicy2.setHeightForWidth(frame_3->sizePolicy().hasHeightForWidth());
         frame_3->setSizePolicy(sizePolicy2);
-        frame_3->setFrameShape(QFrame::StyledPanel);
-        frame_3->setFrameShadow(QFrame::Raised);
+        frame_3->setFrameShape(QFrame::Shape::StyledPanel);
+        frame_3->setFrameShadow(QFrame::Shadow::Raised);
         hboxLayout2 = new QHBoxLayout(frame_3);
         hboxLayout2->setObjectName("hboxLayout2");
         hboxLayout2->setContentsMargins(0, 0, 0, 0);
@@ -309,8 +309,8 @@ public:
         frame_4->setGeometry(QRect(48, 420, 155, 23));
         sizePolicy2.setHeightForWidth(frame_4->sizePolicy().hasHeightForWidth());
         frame_4->setSizePolicy(sizePolicy2);
-        frame_4->setFrameShape(QFrame::StyledPanel);
-        frame_4->setFrameShadow(QFrame::Raised);
+        frame_4->setFrameShape(QFrame::Shape::StyledPanel);
+        frame_4->setFrameShadow(QFrame::Shadow::Raised);
         hboxLayout3 = new QHBoxLayout(frame_4);
         hboxLayout3->setObjectName("hboxLayout3");
         hboxLayout3->setContentsMargins(0, 0, 0, 0);

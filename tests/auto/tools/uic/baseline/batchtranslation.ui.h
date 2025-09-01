@@ -56,7 +56,7 @@ public:
     {
         if (databaseTranslationDialog->objectName().isEmpty())
             databaseTranslationDialog->setObjectName("databaseTranslationDialog");
-        databaseTranslationDialog->resize(425, 370);
+        databaseTranslationDialog->resize(425, 460);
         vboxLayout = new QVBoxLayout(databaseTranslationDialog);
 #ifndef Q_OS_MAC
         vboxLayout->setSpacing(6);

@@ -23,9 +23,9 @@
 #include <QtWidgets/QSpacerItem>
 #include <QtWidgets/QToolButton>
 #include <QtWidgets/QVBoxLayout>
+#include <gridpanel_p.h>
 #include <previewconfigurationwidget_p.h>
 #include "fontpanel.h"
-#include "gridpanel_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -136,8 +136,8 @@ public:
 
         m_dialogButtonBox = new QDialogButtonBox(PreferencesDialog);
         m_dialogButtonBox->setObjectName("m_dialogButtonBox");
-        m_dialogButtonBox->setOrientation(Qt::Horizontal);
-        m_dialogButtonBox->setStandardButtons(QDialogButtonBox::Cancel|QDialogButtonBox::Ok);
+        m_dialogButtonBox->setOrientation(Qt::Orientation::Horizontal);
+        m_dialogButtonBox->setStandardButtons(QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok);
 
         vboxLayout->addWidget(m_dialogButtonBox);
 

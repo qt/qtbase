@@ -47,7 +47,7 @@ public:
     {
         if (qdesigner_internal__GridPanel->objectName().isEmpty())
             qdesigner_internal__GridPanel->setObjectName("qdesigner_internal__GridPanel");
-        qdesigner_internal__GridPanel->resize(393, 110);
+        qdesigner_internal__GridPanel->resize(393, 118);
         vboxLayout = new QVBoxLayout(qdesigner_internal__GridPanel);
         vboxLayout->setObjectName("vboxLayout");
         vboxLayout->setContentsMargins(0, 0, 0, 0);

@@ -66,7 +66,7 @@ public:
     {
         if (WateringConfigDialog->objectName().isEmpty())
             WateringConfigDialog->setObjectName("WateringConfigDialog");
-        WateringConfigDialog->resize(334, 550);
+        WateringConfigDialog->resize(372, 571);
         vboxLayout = new QVBoxLayout(WateringConfigDialog);
         vboxLayout->setObjectName("vboxLayout");
         gridLayout = new QGridLayout();
@@ -234,8 +234,8 @@ public:
 
         buttonBox = new QDialogButtonBox(WateringConfigDialog);
         buttonBox->setObjectName("buttonBox");
-        buttonBox->setOrientation(Qt::Horizontal);
-        buttonBox->setStandardButtons(QDialogButtonBox::Cancel|QDialogButtonBox::NoButton|QDialogButtonBox::Ok);
+        buttonBox->setOrientation(Qt::Orientation::Horizontal);
+        buttonBox->setStandardButtons(QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok);
 
         vboxLayout->addWidget(buttonBox);
 

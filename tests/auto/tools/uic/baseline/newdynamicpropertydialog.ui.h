@@ -44,7 +44,7 @@ public:
     {
         if (qdesigner_internal__NewDynamicPropertyDialog->objectName().isEmpty())
             qdesigner_internal__NewDynamicPropertyDialog->setObjectName("qdesigner_internal__NewDynamicPropertyDialog");
-        qdesigner_internal__NewDynamicPropertyDialog->resize(340, 118);
+        qdesigner_internal__NewDynamicPropertyDialog->resize(361, 130);
         verticalLayout = new QVBoxLayout(qdesigner_internal__NewDynamicPropertyDialog);
         verticalLayout->setObjectName("verticalLayout");
         formLayout = new QFormLayout();
@@ -95,8 +95,8 @@ public:
 
         m_buttonBox = new QDialogButtonBox(qdesigner_internal__NewDynamicPropertyDialog);
         m_buttonBox->setObjectName("m_buttonBox");
-        m_buttonBox->setOrientation(Qt::Horizontal);
-        m_buttonBox->setStandardButtons(QDialogButtonBox::Cancel|QDialogButtonBox::Ok);
+        m_buttonBox->setOrientation(Qt::Orientation::Horizontal);
+        m_buttonBox->setStandardButtons(QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok);
         m_buttonBox->setCenterButtons(false);
 
         verticalLayout->addWidget(m_buttonBox);

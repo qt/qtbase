@@ -119,8 +119,8 @@ public:
 
         buttonBox = new QDialogButtonBox(qdesigner_internal__TableWidgetEditor);
         buttonBox->setObjectName("buttonBox");
-        buttonBox->setOrientation(Qt::Horizontal);
-        buttonBox->setStandardButtons(QDialogButtonBox::Cancel|QDialogButtonBox::Ok);
+        buttonBox->setOrientation(Qt::Orientation::Horizontal);
+        buttonBox->setStandardButtons(QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok);
 
         gridLayout_4->addWidget(buttonBox, 1, 0, 1, 2);
 
@@ -145,7 +145,7 @@ public:
         sizePolicy1.setVerticalStretch(0);
         sizePolicy1.setHeightForWidth(columnsListWidget->sizePolicy().hasHeightForWidth());
         columnsListWidget->setSizePolicy(sizePolicy1);
-        columnsListWidget->setFocusPolicy(Qt::TabFocus);
+        columnsListWidget->setFocusPolicy(Qt::FocusPolicy::TabFocus);
 
         gridLayout_2->addWidget(columnsListWidget, 0, 0, 1, 1);
 
@@ -208,7 +208,7 @@ public:
         rowsListWidget->setObjectName("rowsListWidget");
         sizePolicy1.setHeightForWidth(rowsListWidget->sizePolicy().hasHeightForWidth());
         rowsListWidget->setSizePolicy(sizePolicy1);
-        rowsListWidget->setFocusPolicy(Qt::TabFocus);
+        rowsListWidget->setFocusPolicy(Qt::FocusPolicy::TabFocus);
 
         gridLayout_3->addWidget(rowsListWidget, 0, 0, 1, 1);
 
@@ -266,9 +266,6 @@ public:
 
         gridLayout_4->addWidget(widget, 0, 1, 1, 1);
 
-        itemsBox->raise();
-        buttonBox->raise();
-        widget->raise();
         QWidget::setTabOrder(tableWidget, columnsListWidget);
         QWidget::setTabOrder(columnsListWidget, newColumnButton);
         QWidget::setTabOrder(newColumnButton, deleteColumnButton);

@@ -1,7 +1,8 @@
-<ui version="4.0" >
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
  <class>LanguagesDialog</class>
- <widget class="QDialog" name="LanguagesDialog" >
-  <property name="geometry" >
+ <widget class="QDialog" name="LanguagesDialog">
+  <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
@@ -9,115 +10,115 @@
     <height>300</height>
    </rect>
   </property>
-  <property name="windowTitle" >
+  <property name="windowTitle">
    <string>Auxiliary Languages</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout" >
+  <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QTreeWidget" name="languagesList" >
-     <property name="indentation" >
+    <widget class="QTreeWidget" name="languagesList">
+     <property name="indentation">
       <number>0</number>
      </property>
      <column>
-      <property name="text" >
+      <property name="text">
        <string>Locale</string>
       </property>
      </column>
      <column>
-      <property name="text" >
+      <property name="text">
        <string>File</string>
       </property>
      </column>
     </widget>
    </item>
    <item>
-    <layout class="QHBoxLayout" >
+    <layout class="QHBoxLayout">
      <item>
-      <widget class="QToolButton" name="upButton" >
-       <property name="enabled" >
+      <widget class="QToolButton" name="upButton">
+       <property name="enabled">
         <bool>false</bool>
        </property>
-       <property name="toolTip" >
-        <string>&lt;html>&lt;head>&lt;meta name="qrichtext" content="1" />&lt;style type="text/css">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
-&lt;/style>&lt;/head>&lt;body style=" font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;">
-&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">Move selected language up&lt;/p>&lt;/body>&lt;/html></string>
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Move selected language up&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
-       <property name="text" >
+       <property name="text">
         <string>up</string>
        </property>
-       <property name="icon" >
-        <iconset resource="linguist.qrc" >
+       <property name="icon">
+        <iconset>
          <normaloff>:/images/up.png</normaloff>:/images/up.png</iconset>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QToolButton" name="downButton" >
-       <property name="enabled" >
+      <widget class="QToolButton" name="downButton">
+       <property name="enabled">
         <bool>false</bool>
        </property>
-       <property name="toolTip" >
-        <string>&lt;html>&lt;head>&lt;meta name="qrichtext" content="1" />&lt;style type="text/css">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
-&lt;/style>&lt;/head>&lt;body style=" font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;">
-&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8pt;">Move selected language down&lt;/p>&lt;/body>&lt;/html></string>
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8pt;&quot;&gt;Move selected language down&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
-       <property name="text" >
+       <property name="text">
         <string>down</string>
        </property>
-       <property name="icon" >
-        <iconset resource="linguist.qrc" >
+       <property name="icon">
+        <iconset>
          <normaloff>:/images/down.png</normaloff>:/images/down.png</iconset>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QToolButton" name="removeButton" >
-       <property name="enabled" >
+      <widget class="QToolButton" name="removeButton">
+       <property name="enabled">
         <bool>false</bool>
        </property>
-       <property name="toolTip" >
-        <string>&lt;html>&lt;head>&lt;meta name="qrichtext" content="1" />&lt;style type="text/css">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
-&lt;/style>&lt;/head>&lt;body style=" font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;">
-&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">Remove selected language&lt;/p>&lt;/body>&lt;/html></string>
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Remove selected language&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
-       <property name="text" >
+       <property name="text">
         <string>remove</string>
        </property>
-       <property name="icon" >
-        <iconset resource="linguist.qrc" >
+       <property name="icon">
+        <iconset>
          <normaloff>:/images/editdelete.png</normaloff>:/images/editdelete.png</iconset>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QToolButton" name="openFileButton" >
-       <property name="enabled" >
+      <widget class="QToolButton" name="openFileButton">
+       <property name="enabled">
         <bool>true</bool>
        </property>
-       <property name="toolTip" >
-        <string>&lt;html>&lt;head>&lt;meta name="qrichtext" content="1" />&lt;style type="text/css">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
-&lt;/style>&lt;/head>&lt;body style=" font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;">
-&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">Open auxiliary language files&lt;/p>&lt;/body>&lt;/html></string>
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Open auxiliary language files&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
-       <property name="text" >
+       <property name="text">
         <string>...</string>
        </property>
-       <property name="icon" >
-        <iconset resource="linguist.qrc" >
+       <property name="icon">
+        <iconset>
          <normaloff>:/images/mac/fileopen.png</normaloff>:/images/mac/fileopen.png</iconset>
        </property>
       </widget>
      </item>
      <item>
       <spacer>
-       <property name="orientation" >
-        <enum>Qt::Horizontal</enum>
+       <property name="orientation">
+        <enum>Qt::Orientation::Horizontal</enum>
        </property>
-       <property name="sizeHint" stdset="0" >
+       <property name="sizeHint" stdset="0">
         <size>
          <width>121</width>
          <height>20</height>
@@ -126,8 +127,8 @@ p, li { white-space: pre-wrap; }
       </spacer>
      </item>
      <item>
-      <widget class="QPushButton" name="okButton" >
-       <property name="text" >
+      <widget class="QPushButton" name="okButton">
+       <property name="text">
         <string>OK</string>
        </property>
       </widget>
@@ -137,7 +138,7 @@ p, li { white-space: pre-wrap; }
   </layout>
  </widget>
  <resources>
-  <include location="linguist.qrc" />
+  <include location="linguist.qrc"/>
  </resources>
  <connections>
   <connection>
@@ -146,11 +147,11 @@ p, li { white-space: pre-wrap; }
    <receiver>LanguagesDialog</receiver>
    <slot>accept()</slot>
    <hints>
-    <hint type="sourcelabel" >
+    <hint type="sourcelabel">
      <x>352</x>
      <y>39</y>
     </hint>
-    <hint type="destinationlabel" >
+    <hint type="destinationlabel">
      <x>233</x>
      <y>29</y>
     </hint>

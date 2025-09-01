@@ -49,7 +49,7 @@ public:
     {
         if (Dialog->objectName().isEmpty())
             Dialog->setObjectName("Dialog");
-        Dialog->resize(392, 176);
+        Dialog->resize(392, 182);
         verticalLayout = new QVBoxLayout(Dialog);
         verticalLayout->setObjectName("verticalLayout");
         hboxLayout = new QHBoxLayout();
@@ -62,7 +62,7 @@ public:
         sizePolicy.setHeightForWidth(label->sizePolicy().hasHeightForWidth());
         label->setSizePolicy(sizePolicy);
         label->setMinimumSize(QSize(90, 0));
-        label->setAlignment(Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop);
+        label->setAlignment(Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop);
 
         hboxLayout->addWidget(label);
 
@@ -86,7 +86,7 @@ public:
         sizePolicy.setHeightForWidth(label_6->sizePolicy().hasHeightForWidth());
         label_6->setSizePolicy(sizePolicy);
         label_6->setMinimumSize(QSize(90, 0));
-        label_6->setAlignment(Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop);
+        label_6->setAlignment(Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop);
 
         hboxLayout1->addWidget(label_6);
 
@@ -107,7 +107,7 @@ public:
         sizePolicy.setHeightForWidth(crossFadeLabel->sizePolicy().hasHeightForWidth());
         crossFadeLabel->setSizePolicy(sizePolicy);
         crossFadeLabel->setMinimumSize(QSize(90, 0));
-        crossFadeLabel->setAlignment(Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop);
+        crossFadeLabel->setAlignment(Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop);
 
         hboxLayout2->addWidget(crossFadeLabel);
 
@@ -122,8 +122,8 @@ public:
         crossFadeSlider->setSingleStep(1);
         crossFadeSlider->setPageStep(2);
         crossFadeSlider->setValue(0);
-        crossFadeSlider->setOrientation(Qt::Horizontal);
-        crossFadeSlider->setTickPosition(QSlider::TicksBelow);
+        crossFadeSlider->setOrientation(Qt::Orientation::Horizontal);
+        crossFadeSlider->setTickPosition(QSlider::TickPosition::TicksBelow);
 
         vboxLayout->addWidget(crossFadeSlider);
 
@@ -168,8 +168,8 @@ public:
 
         buttonBox = new QDialogButtonBox(Dialog);
         buttonBox->setObjectName("buttonBox");
-        buttonBox->setOrientation(Qt::Horizontal);
-        buttonBox->setStandardButtons(QDialogButtonBox::Cancel|QDialogButtonBox::Ok);
+        buttonBox->setOrientation(Qt::Orientation::Horizontal);
+        buttonBox->setStandardButtons(QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok);
 
         verticalLayout->addWidget(buttonBox);
 

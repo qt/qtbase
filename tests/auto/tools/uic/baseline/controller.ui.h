@@ -32,7 +32,7 @@ public:
     {
         if (Controller->objectName().isEmpty())
             Controller->setObjectName("Controller");
-        Controller->resize(255, 111);
+        Controller->resize(285, 120);
         gridLayout = new QGridLayout(Controller);
 #ifndef Q_OS_MAC
         gridLayout->setSpacing(6);
@@ -43,7 +43,7 @@ public:
         gridLayout->setObjectName("gridLayout");
         label = new QLabel(Controller);
         label->setObjectName("label");
-        label->setAlignment(Qt::AlignCenter);
+        label->setAlignment(Qt::AlignmentFlag::AlignCenter);
 
         gridLayout->addWidget(label, 1, 1, 1, 1);
 

@@ -55,7 +55,7 @@ public:
     {
         if (qdesigner_internal__NewActionDialog->objectName().isEmpty())
             qdesigner_internal__NewActionDialog->setObjectName("qdesigner_internal__NewActionDialog");
-        qdesigner_internal__NewActionDialog->resize(363, 156);
+        qdesigner_internal__NewActionDialog->resize(382, 165);
         verticalLayout = new QVBoxLayout(qdesigner_internal__NewActionDialog);
         verticalLayout->setObjectName("verticalLayout");
         formLayout = new QFormLayout();
@@ -116,8 +116,8 @@ public:
 
         buttonBox = new QDialogButtonBox(qdesigner_internal__NewActionDialog);
         buttonBox->setObjectName("buttonBox");
-        buttonBox->setOrientation(Qt::Horizontal);
-        buttonBox->setStandardButtons(QDialogButtonBox::Cancel|QDialogButtonBox::Ok);
+        buttonBox->setOrientation(Qt::Orientation::Horizontal);
+        buttonBox->setStandardButtons(QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok);
 
         verticalLayout->addWidget(buttonBox);
 

@@ -1,7 +1,8 @@
-<ui version="4.0" >
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
  <class>IdentifierPage</class>
- <widget class="QWidget" name="IdentifierPage" >
-  <property name="geometry" >
+ <widget class="QWidget" name="IdentifierPage">
+  <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
@@ -9,19 +10,19 @@
     <height>242</height>
    </rect>
   </property>
-  <property name="windowTitle" >
+  <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QGridLayout" >
-   <item row="0" column="1" >
+  <layout class="QGridLayout">
+   <item row="0" column="1">
     <spacer>
-     <property name="orientation" >
-      <enum>Qt::Vertical</enum>
+     <property name="orientation">
+      <enum>Qt::Orientation::Vertical</enum>
      </property>
-     <property name="sizeType" >
+     <property name="sizeType">
       <enum>QSizePolicy::Policy::Fixed</enum>
      </property>
-     <property name="sizeHint" >
+     <property name="sizeHint" stdset="0">
       <size>
        <width>20</width>
        <height>20</height>
@@ -29,19 +30,19 @@
      </property>
     </spacer>
    </item>
-   <item row="1" column="0" colspan="3" >
-    <widget class="QCheckBox" name="identifierCheckBox" >
-     <property name="text" >
+   <item row="1" column="0" colspan="3">
+    <widget class="QCheckBox" name="identifierCheckBox">
+     <property name="text">
       <string>Create identifiers</string>
      </property>
     </widget>
    </item>
-   <item row="1" column="3" >
+   <item row="1" column="3">
     <spacer>
-     <property name="orientation" >
-      <enum>Qt::Horizontal</enum>
+     <property name="orientation">
+      <enum>Qt::Orientation::Horizontal</enum>
      </property>
-     <property name="sizeHint" >
+     <property name="sizeHint" stdset="0">
       <size>
        <width>161</width>
        <height>20</height>
@@ -49,15 +50,15 @@
      </property>
     </spacer>
    </item>
-   <item row="2" column="0" >
+   <item row="2" column="0">
     <spacer>
-     <property name="orientation" >
-      <enum>Qt::Horizontal</enum>
+     <property name="orientation">
+      <enum>Qt::Orientation::Horizontal</enum>
      </property>
-     <property name="sizeType" >
+     <property name="sizeType">
       <enum>QSizePolicy::Policy::Fixed</enum>
      </property>
-     <property name="sizeHint" >
+     <property name="sizeHint" stdset="0">
       <size>
        <width>30</width>
        <height>20</height>
@@ -65,42 +66,42 @@
      </property>
     </spacer>
    </item>
-   <item row="2" column="1" >
-    <widget class="QRadioButton" name="globalButton" >
-     <property name="enabled" >
+   <item row="2" column="1">
+    <widget class="QRadioButton" name="globalButton">
+     <property name="enabled">
       <bool>false</bool>
      </property>
-     <property name="text" >
+     <property name="text">
       <string>Global prefix:</string>
      </property>
-     <property name="checked" >
+     <property name="checked">
       <bool>true</bool>
      </property>
     </widget>
    </item>
-   <item row="2" column="2" >
-    <widget class="QLineEdit" name="prefixLineEdit" >
-     <property name="enabled" >
+   <item row="2" column="2">
+    <widget class="QLineEdit" name="prefixLineEdit">
+     <property name="enabled">
       <bool>false</bool>
      </property>
     </widget>
    </item>
-   <item row="3" column="1" colspan="2" >
-    <widget class="QRadioButton" name="fileNameButton" >
-     <property name="enabled" >
+   <item row="3" column="1" colspan="2">
+    <widget class="QRadioButton" name="fileNameButton">
+     <property name="enabled">
       <bool>false</bool>
      </property>
-     <property name="text" >
+     <property name="text">
       <string>Inherit prefix from file names</string>
      </property>
     </widget>
    </item>
-   <item row="4" column="1" >
+   <item row="4" column="1">
     <spacer>
-     <property name="orientation" >
-      <enum>Qt::Vertical</enum>
+     <property name="orientation">
+      <enum>Qt::Orientation::Vertical</enum>
      </property>
-     <property name="sizeHint" >
+     <property name="sizeHint" stdset="0">
       <size>
        <width>20</width>
        <height>31</height>
@@ -118,11 +119,11 @@
    <receiver>prefixLineEdit</receiver>
    <slot>setEnabled(bool)</slot>
    <hints>
-    <hint type="sourcelabel" >
+    <hint type="sourcelabel">
      <x>122</x>
      <y>72</y>
     </hint>
-    <hint type="destinationlabel" >
+    <hint type="destinationlabel">
      <x>161</x>
      <y>71</y>
     </hint>

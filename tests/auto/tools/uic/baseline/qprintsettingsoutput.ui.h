@@ -71,7 +71,7 @@ public:
     {
         if (QPrintSettingsOutput->objectName().isEmpty())
             QPrintSettingsOutput->setObjectName("QPrintSettingsOutput");
-        QPrintSettingsOutput->resize(416, 166);
+        QPrintSettingsOutput->resize(457, 208);
         horizontalLayout_2 = new QHBoxLayout(QPrintSettingsOutput);
         horizontalLayout_2->setContentsMargins(0, 0, 0, 0);
         horizontalLayout_2->setObjectName("horizontalLayout_2");
@@ -79,7 +79,6 @@ public:
         tabs->setObjectName("tabs");
         copiesTab = new QWidget();
         copiesTab->setObjectName("copiesTab");
-        copiesTab->setGeometry(QRect(0, 0, 412, 139));
         horizontalLayout = new QHBoxLayout(copiesTab);
         horizontalLayout->setObjectName("horizontalLayout");
         gbPrintRange = new QGroupBox(copiesTab);
@@ -200,7 +199,6 @@ public:
         tabs->addTab(copiesTab, QString());
         optionsTab = new QWidget();
         optionsTab->setObjectName("optionsTab");
-        optionsTab->setGeometry(QRect(0, 0, 412, 139));
         gridLayout_2 = new QGridLayout(optionsTab);
         gridLayout_2->setObjectName("gridLayout_2");
         colorMode = new QGroupBox(optionsTab);

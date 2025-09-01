@@ -34,8 +34,7 @@
        <normaloff>buttonIconNormalOff</normaloff>
        <normalon>buttonIconNormalOn</normalon>
        <disabledoff>buttonIconDisabledOff</disabledoff>
-       <disabledon>buttonIconDisabledOn</disabledon>
-     </iconset>
+       <disabledon>buttonIconDisabledOn</disabledon>buttonIconNormalOff</iconset>
      </property>
     </widget>
    </item>
