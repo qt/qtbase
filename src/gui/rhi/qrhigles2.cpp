@@ -1561,7 +1561,12 @@ bool QRhiGles2::isFeatureSupported(QRhi::Feature feature) const
     case QRhi::BaseVertex:
         return caps.baseVertex;
     case QRhi::BaseInstance:
-        return false; // not in ES 3.2, so won't bother
+        // The glDraw*BaseInstance variants of draw calls are not in GLES 3.2,
+        // so won't bother, even though they would be available in GL 4.2+.
+        // Furthermore, not supporting this avoids having to deal with the
+        // gl_InstanceID vs gl_InstanceIndex mess in shaders and in the shader
+        // transpiling pipeline.
+        return false;
     case QRhi::TriangleFanTopology:
         return true;
     case QRhi::ReadBackNonUniformBuffer:
