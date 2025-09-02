@@ -32,6 +32,8 @@
 // We mean it.
 */
 
+#include <qtconfigmacros.h>
+
 #ifdef __cplusplus
   extern "C" {
 #endif
@@ -55,7 +57,7 @@
    for TWorker and TCell sizes.*/
 #define MINIMUM_POOL_SIZE 8192
 
-  QT_FT_EXPORT_VAR( const QT_FT_Raster_Funcs )  qt_ft_grays_raster;
+  QT_FT_EXPORT_VAR( const QT_FT_Raster_Funcs )  QT_MANGLE_NAMESPACE(qt_ft_grays_raster);
 
 
 #ifdef __cplusplus

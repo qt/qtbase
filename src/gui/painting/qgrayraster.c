@@ -1959,7 +1959,7 @@ QT_FT_END_STMNT
     }
   }
 
-  const QT_FT_Raster_Funcs  qt_ft_grays_raster =
+  const QT_FT_Raster_Funcs  QT_MANGLE_NAMESPACE(qt_ft_grays_raster) =
   {
     QT_FT_GLYPH_FORMAT_OUTLINE,
 

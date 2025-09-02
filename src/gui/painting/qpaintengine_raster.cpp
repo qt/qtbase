@@ -311,7 +311,7 @@ void QRasterPaintEngine::init()
     // The antialiasing raster.
     d->grayRaster.reset(new QT_FT_Raster);
     Q_CHECK_PTR(d->grayRaster.data());
-    if (qt_ft_grays_raster.raster_new(d->grayRaster.data()))
+    if (QT_MANGLE_NAMESPACE(qt_ft_grays_raster).raster_new(d->grayRaster.data()))
         QT_THROW(std::bad_alloc()); // an error creating the raster is caused by a bad malloc
 
 
@@ -376,7 +376,7 @@ QRasterPaintEngine::~QRasterPaintEngine()
 {
     Q_D(QRasterPaintEngine);
 
-    qt_ft_grays_raster.raster_done(*d->grayRaster.data());
+    QT_MANGLE_NAMESPACE(qt_ft_grays_raster).raster_done(*d->grayRaster.data());
 }
 
 /*!
@@ -3591,7 +3591,7 @@ void QRasterPaintEnginePrivate::rasterize(QT_FT_Outline *outline,
     uchar *rasterPoolBase = alignAddress(rasterPoolOnStack, 0xf);
     uchar *rasterPoolOnHeap = nullptr;
 
-    qt_ft_grays_raster.raster_reset(*grayRaster.data(), rasterPoolBase, rasterPoolSize);
+    QT_MANGLE_NAMESPACE(qt_ft_grays_raster).raster_reset(*grayRaster.data(), rasterPoolBase, rasterPoolSize);
 
     void *data = userData;
 
@@ -3621,7 +3621,7 @@ void QRasterPaintEnginePrivate::rasterize(QT_FT_Outline *outline,
         rasterParams.flags |= (QT_FT_RASTER_FLAG_AA | QT_FT_RASTER_FLAG_DIRECT);
         rasterParams.gray_spans = callback;
         rasterParams.skip_spans = rendered_spans;
-        error = qt_ft_grays_raster.raster_render(*grayRaster.data(), &rasterParams);
+        error = QT_MANGLE_NAMESPACE(qt_ft_grays_raster).raster_render(*grayRaster.data(), &rasterParams);
 
         // Out of memory, reallocate some more and try again...
         if (error == -6) { // ErrRaster_OutOfMemory from qgrayraster.c
@@ -3640,9 +3640,9 @@ void QRasterPaintEnginePrivate::rasterize(QT_FT_Outline *outline,
 
             rasterPoolBase = alignAddress(rasterPoolOnHeap, 0xf);
 
-            qt_ft_grays_raster.raster_done(*grayRaster.data());
-            qt_ft_grays_raster.raster_new(grayRaster.data());
-            qt_ft_grays_raster.raster_reset(*grayRaster.data(), rasterPoolBase, rasterPoolSize);
+            QT_MANGLE_NAMESPACE(qt_ft_grays_raster).raster_done(*grayRaster.data());
+            QT_MANGLE_NAMESPACE(qt_ft_grays_raster).raster_new(grayRaster.data());
+            QT_MANGLE_NAMESPACE(qt_ft_grays_raster).raster_reset(*grayRaster.data(), rasterPoolBase, rasterPoolSize);
         } else {
             done = true;
         }
