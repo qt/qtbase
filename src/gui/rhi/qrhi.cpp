@@ -829,8 +829,12 @@ Q_LOGGING_CATEGORY(QRHI_LOG_RUB, "qt.rhi.rub")
     \value BaseInstance Indicates that instanced draw commands support the \c
     firstInstance argument. When reported as not supported, the firstInstance
     value is ignored and the instance ID starts from 0. In practice this feature
-    will be unsupported with OpenGL, and with Metal on older iOS devices,
-    including the iOS Simulator.
+    will be unsupported with with Metal on older iOS devices, including the iOS
+    Simulator, and all versions of OpenGL. The latter is due to OpenGL ES not
+    supporting draw calls with a base instance at all. Currently QRhi's OpenGL
+    backend does not implement the functionality for OpenGL (non-ES) either,
+    because portable applications cannot rely on a non-zero base instance in
+    practice due to GLES.
 
     \value TriangleFanTopology Indicates that QRhiGraphicsPipeline::setTopology()
     supports QRhiGraphicsPipeline::TriangleFan. In practice this feature will be
@@ -10090,8 +10094,15 @@ void QRhiCommandBuffer::setShadingRate(const QSize &coarsePixelSize)
     first instance ID is specified by \a firstInstance.
 
     \note \a firstInstance may not be supported, and is ignored when the
-    QRhi::BaseInstance feature is reported as not supported. The first ID is
-    always 0 in that case.
+    QRhi::BaseInstance feature is reported as not supported. The first instance
+    ID is always 0 in that case. QRhi::BaseInstance is never supported with
+    OpenGL at the moment, mainly due to OpenGL ES limitations, and therefore
+    portable applications should not be designed to rely on this argument.
+
+    \note Shaders that need to access the index of the current vertex or
+    instance must use \c gl_VertexIndex and \c gl_InstanceIndex, i.e., the
+    Vulkan-compatible built-in variables, instead of \c gl_VertexID and \c
+    gl_InstanceID.
 
     \note This function can only be called inside a render pass, meaning
     between a beginPass() and endPass() call.
@@ -10117,18 +10128,25 @@ void QRhiCommandBuffer::draw(quint32 vertexCount,
     \l{QRhi::NonFourAlignedEffectiveIndexBufferOffset}{NonFourAlignedEffectiveIndexBufferOffset}
     feature will be reported as not-supported.
 
+    \a vertexOffset (also called \c{base vertex}) is a signed value that is
+    added to the element index before indexing into the vertex buffer. Support
+    for this is not always available, and the value is ignored when the feature
+    QRhi::BaseVertex is reported as unsupported.
+
     For instanced drawing set \a instanceCount to a value other than 1. When
     drawing multiple instances, the first instance ID is specified by \a
     firstInstance.
 
     \note \a firstInstance may not be supported, and is ignored when the
-    QRhi::BaseInstance feature is reported as not supported. The first ID is
-    always 0 in that case.
+    QRhi::BaseInstance feature is reported as not supported. The first instance
+    ID is always 0 in that case. QRhi::BaseInstance is never supported with
+    OpenGL at the moment, mainly due to OpenGL ES limitations, and therefore
+    portable applications should not be designed to rely on this argument.
 
-    \a vertexOffset (also called \c{base vertex}) is a signed value that is
-    added to the element index before indexing into the vertex buffer. Support
-    for this is not always available, and the value is ignored when the feature
-    QRhi::BaseVertex is reported as unsupported.
+    \note Shaders that need to access the index of the current vertex or
+    instance must use \c gl_VertexIndex and \c gl_InstanceIndex, i.e., the
+    Vulkan-compatible built-in variables, instead of \c gl_VertexID and \c
+    gl_InstanceID.
 
     \note This function can only be called inside a render pass, meaning
     between a beginPass() and endPass() call.
