@@ -283,6 +283,8 @@ private:
 
     bool isInvalidStream(quint32 streamID) noexcept;
     bool streamWasResetLocally(quint32 streamID) noexcept;
+    Q_ALWAYS_INLINE
+    bool streamIsIgnored(quint32 streamID) const noexcept;
 
     void connectionError(Http2::Http2Error errorCode,
                          const char *message); // Connection failed to be established?
@@ -400,6 +402,10 @@ private:
     bool m_goingAway = false;
     bool pushPromiseEnabled = false;
     quint32 m_lastIncomingStreamID = Http2::connectionStreamID;
+    // Gets lowered when/if we send GOAWAY:
+    quint32 m_lastStreamToProcess = Http2::lastValidStreamID;
+    static constexpr std::chrono::duration GoawayGracePeriod = std::chrono::seconds(60);
+    QDeadlineTimer m_goawayGraceTimer;
 
     bool m_prefaceSent = false;
 

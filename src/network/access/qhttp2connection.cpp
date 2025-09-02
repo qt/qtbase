@@ -454,7 +454,7 @@ void QHttp2Stream::internalSendDATA()
                 "[%p] stream %u, exhausted device %p, sent END_STREAM? %d, %ssending end stream "
                 "after DATA",
                 connection, m_streamID, m_uploadByteDevice, sentEND_STREAM,
-                m_endStreamAfterDATA ? "" : "not ");
+                !sentEND_STREAM && m_endStreamAfterDATA ? "" : "not ");
         if (!sentEND_STREAM && m_endStreamAfterDATA) {
             // We need to send an empty DATA frame with END_STREAM since we
             // have exhausted the device, but we haven't sent END_STREAM yet.
@@ -690,8 +690,9 @@ void QHttp2Stream::handleDATA(const Frame &inboundFrame)
 
     m_recvWindow -= qint32(inboundFrame.payloadSize());
     const bool endStream = inboundFrame.flags().testFlag(FrameFlag::END_STREAM);
+    const bool ignoreData = connection->streamIsIgnored(m_streamID);
     // Uncompress data if needed and append it ...
-    if (inboundFrame.dataSize() > 0 || endStream) {
+    if ((inboundFrame.dataSize() > 0 || endStream) && !ignoreData) {
         QByteArray fragment(reinterpret_cast<const char *>(inboundFrame.dataBegin()),
                             inboundFrame.dataSize());
         if (endStream)
@@ -1245,16 +1246,12 @@ void QHttp2Connection::connectionError(Http2Error errorCode, const char *message
 {
     Q_ASSERT(message);
     // RFC 9113, 6.8: An endpoint MAY send multiple GOAWAY frames if circumstances change.
-    // Anyway, we do not send multiple GOAWAY frames.
-    if (m_goingAway)
-        return;
 
     qCCritical(qHttp2ConnectionLog, "[%p] Connection error: %s (%d)", this, message,
                int(errorCode));
 
     // RFC 9113, 6.8: Endpoints SHOULD always send a GOAWAY frame before closing a connection so
     // that the remote peer can know whether a stream has been partially processed or not.
-    m_goingAway = true;
     sendGOAWAY(errorCode);
     auto messageView = QLatin1StringView(message);
 
@@ -1293,6 +1290,20 @@ bool QHttp2Connection::isInvalidStream(quint32 streamID) noexcept
 {
     auto stream = m_streams.value(streamID, nullptr);
     return (!stream || stream->wasResetbyPeer()) && !streamWasResetLocally(streamID);
+}
+
+/*!
+    When we send a GOAWAY we also send the ID of the last stream we know about
+    at the time. Any stream that starts after this one is ignored, but we still
+    have to process HEADERS due to compression state, and DATA due to stream and
+    connection window size changes.
+    Other than that - any \a streamID for which this returns true should be
+    ignored, and deleted at the earliest convenience.
+*/
+bool QHttp2Connection::streamIsIgnored(quint32 streamID) const noexcept
+{
+    const bool streamIsRemote = (streamID & 1) == (m_connectionType == Type::Client ? 0 : 1);
+    return Q_UNLIKELY(streamIsRemote && m_lastStreamToProcess < streamID);
 }
 
 bool QHttp2Connection::sendClientPreface()
@@ -1359,9 +1370,16 @@ bool QHttp2Connection::sendWINDOW_UPDATE(quint32 streamID, quint32 delta)
 
 bool QHttp2Connection::sendGOAWAY(Http2::Http2Error errorCode)
 {
+    m_goingAway = true;
+    // If this is the first time, start the timer:
+    if (m_lastStreamToProcess == Http2::lastValidStreamID)
+        m_goawayGraceTimer.setRemainingTime(GoawayGracePeriod);
+    m_lastStreamToProcess = std::min(m_lastIncomingStreamID, m_lastStreamToProcess);
+    qCDebug(qHttp2ConnectionLog, "[%p] Sending GOAWAY frame, error code %u, last stream %u", this,
+            errorCode, m_lastStreamToProcess);
     frameWriter.start(FrameType::GOAWAY, FrameFlag::EMPTY,
                       Http2PredefinedParameters::connectionStreamID);
-    frameWriter.append(quint32(m_lastIncomingStreamID));
+    frameWriter.append(m_lastStreamToProcess);
     frameWriter.append(quint32(errorCode));
     return frameWriter.write(*getSocket());
 }
@@ -1411,8 +1429,20 @@ void QHttp2Connection::handleDATA()
     if (stream)
         stream->handleDATA(inboundFrame);
 
-    if (inboundFrame.flags().testFlag(FrameFlag::END_STREAM))
-        emit receivedEND_STREAM(streamID);
+
+    if (inboundFrame.flags().testFlag(FrameFlag::END_STREAM)) {
+        const bool ignoreData = stream && streamIsIgnored(stream->streamID());
+        if (!ignoreData) {
+            emit receivedEND_STREAM(streamID);
+        } else {
+            // Stream opened after our GOAWAY cut-off. We would just drop the
+            // data, but needed to handle it enough to track sizes of streams and
+            // connection windows. Since we've now taken care of that, we can
+            // at last close and delete it.
+            stream->setState(QHttp2Stream::State::Closed);
+            delete stream;
+        }
+    }
 
     if (sessionReceiveWindowSize < maxSessionReceiveWindowSize / 2) {
         // @future[consider]: emit signal instead
@@ -1454,8 +1484,15 @@ void QHttp2Connection::handleHEADERS()
             return;
         }
 
-        qCDebug(qHttp2ConnectionLog, "[%p] Created new incoming stream %d", this, streamID);
-        emit newIncomingStream(newStream);
+        qCDebug(qHttp2ConnectionLog, "[%p] New incoming stream %d", this, streamID);
+        if (!streamIsIgnored(newStream->streamID())) {
+            emit newIncomingStream(newStream);
+        } else if (m_goawayGraceTimer.hasExpired()) {
+            // We gave the peer some time to handle the GOAWAY message, but they have started a new
+            // stream, so we error out.
+            connectionError(Http2Error::PROTOCOL_ERROR, "Peer refused to GOAWAY.");
+            return;
+        }
     } else if (streamWasResetLocally(streamID)) {
         qCDebug(qHttp2ConnectionLog,
                 "[%p] Received HEADERS on previously locally reset stream %d (must process but ignore)",
@@ -1500,6 +1537,9 @@ void QHttp2Connection::handlePRIORITY()
              || inboundFrame.type() == FrameType::HEADERS);
 
     const auto streamID = inboundFrame.streamID();
+    if (streamIsIgnored(streamID))
+        return;
+
     // RFC 9913, 6.3: If a PRIORITY frame is received with a stream identifier of 0x00, the
     // recipient MUST respond with a connection error
     if (streamID == connectionStreamID)
@@ -1534,11 +1574,14 @@ void QHttp2Connection::handleRST_STREAM()
 {
     Q_ASSERT(inboundFrame.type() == FrameType::RST_STREAM);
 
+    const auto streamID = inboundFrame.streamID();
+    if (streamIsIgnored(streamID))
+        return;
+
     // RFC 9113, 6.4: RST_STREAM frames MUST be associated with a stream.
     // If a RST_STREAM frame is received with a stream identifier of 0x0,
     // the recipient MUST treat this as a connection error (Section 5.4.1)
     // of type PROTOCOL_ERROR.
-    const auto streamID = inboundFrame.streamID();
     if (streamID == connectionStreamID)
         return connectionError(PROTOCOL_ERROR, "RST_STREAM on 0x0");
 
@@ -1765,31 +1808,32 @@ void QHttp2Connection::handleGOAWAY()
 
     const uchar *const src = inboundFrame.dataBegin();
     // RFC 9113, 4.1: 31-bit Stream ID; lastValidStreamID(0x7FFFFFFF) masks out the reserved MSB
-    quint32 lastStreamID = qFromBigEndian<quint32>(src) & lastValidStreamID;
+    const quint32 lastStreamID = qFromBigEndian<quint32>(src) & lastValidStreamID;
     const Http2Error errorCode = Http2Error(qFromBigEndian<quint32>(src + 4));
 
-    if (!lastStreamID) {
-        // "The last stream identifier can be set to 0 if no
-        // streams were processed."
-        lastStreamID = 1;
-    } else if (!(lastStreamID & 0x1)) {
-        // 5.1.1 - we (client) use only odd numbers as stream identifiers.
+    // 6.8 "the GOAWAY contains the stream identifier of the last peer-initiated stream that was
+    // or might be processed on the sending endpoint in this connection."
+    // Alternatively, they can specify 0 as the last stream ID, meaning they are not intending to
+    // process any remaining stream(s).
+    const quint32 LocalMask = m_connectionType == Type::Client ? 1 : 0;
+    // The stream must match the LocalMask, meaning we initiated it, for the last stream ID to make
+    // sense - they are not processing their own streams.
+    if (lastStreamID != 0 && (lastStreamID & 0x1) != LocalMask)
         return connectionError(PROTOCOL_ERROR, "GOAWAY with invalid last stream ID");
-    } else if (lastStreamID >= m_nextStreamID) {
-        // "A server that is attempting to gracefully shut down a connection SHOULD
-        // send an initial GOAWAY frame with the last stream identifier set to 2^31-1
-        // and a NO_ERROR code."
-        if (lastStreamID != lastValidStreamID || errorCode != HTTP2_NO_ERROR)
-            return connectionError(PROTOCOL_ERROR, "GOAWAY invalid stream/error code");
-    } else {
-        lastStreamID += 2;
-    }
 
+    qCDebug(qHttp2ConnectionLog, "[%p] Received GOAWAY frame, error code %u, last stream %u",
+            this, errorCode, lastStreamID);
     m_goingAway = true;
 
     emit receivedGOAWAY(errorCode, lastStreamID);
 
-    for (quint32 id = lastStreamID; id < m_nextStreamID; id += 2) {
+    // Since the embedded stream ID is the last one that was or _might be_ processed,
+    // we cancel anything that comes after it. 0 can be used in the special case that
+    // no streams at all were or will be processed.
+    const quint32 firstPossibleStream = m_connectionType == Type::Client ? 1 : 2;
+    const quint32 firstCancelledStream = lastStreamID ? lastStreamID + 2 : firstPossibleStream;
+    Q_ASSERT((firstCancelledStream & 0x1) == LocalMask);
+    for (quint32 id = firstCancelledStream; id < m_nextStreamID; id += 2) {
         QHttp2Stream *stream = m_streams.value(id, nullptr);
         if (stream && stream->isActive())
             stream->finishWithError(errorCode, "Received GOAWAY"_L1);
@@ -1810,7 +1854,8 @@ void QHttp2Connection::handleWINDOW_UPDATE()
     // errors on the connection flow-control window MUST be treated as a connection error
     const bool valid = delta && delta <= quint32(std::numeric_limits<qint32>::max());
     const auto streamID = inboundFrame.streamID();
-
+    if (streamIsIgnored(streamID))
+        return;
 
     // RFC 9113, 6.9: A WINDOW_UPDATE frame with a length other than 4 octets MUST be treated
     // as a connection error (Section 5.4.1) of type FRAME_SIZE_ERROR.
@@ -1940,6 +1985,18 @@ void QHttp2Connection::handleContinuedHEADERS()
 
     if (streamWasResetLocally(streamID) || streamIt == m_streams.cend())
         return; // No more processing without a stream from here on.
+    if (streamIsIgnored(streamID)) {
+        // Stream was established after GOAWAY cut-off, we ignore it, but we
+        // have to process things that alter state. That already happened, so we
+        // stop here.
+        if (continuedFrames[0].flags().testFlag(Http2::FrameFlag::END_STREAM)) {
+            if (QHttp2Stream *stream = streamIt.value()) {
+                stream->setState(QHttp2Stream::State::Closed);
+                delete stream;
+            }
+        }
+        return;
+    }
 
     switch (firstFrameType) {
     case FrameType::HEADERS:
