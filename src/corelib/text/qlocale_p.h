@@ -122,7 +122,6 @@ inline constexpr auto makeCharacterSetMatch() noexcept
 }
 } // QtPrivate
 
-struct QLocaleData;
 // Subclassed by Android platform plugin:
 class Q_CORE_EXPORT QSystemLocale
 {
