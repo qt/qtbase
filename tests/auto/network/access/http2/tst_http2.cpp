@@ -646,6 +646,8 @@ void tst_Http2::goaway()
 
     // No request processed, no 'replyFinished' slot calls:
     QCOMPARE(nRequests, 0);
+    for (const auto &reply : replies)
+        QCOMPARE(reply->error(), QNetworkReply::InternalServerError);
     // Our server did not bother to send anything except a single GOAWAY frame:
     QVERIFY(!prefaceOK);
     QVERIFY(!serverGotSettingsACK);
