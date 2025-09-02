@@ -241,12 +241,15 @@ class QtAccessibilityDelegate extends View.AccessibilityDelegate
                 return;
             }
 
-            final AccessibilityEvent event =
-                    obtainAccessibilityEvent(AccessibilityEvent.TYPE_ANNOUNCEMENT);
+            final CharSequence className = getNodeForVirtualViewId(viewId).getClassName();
+            final int eventType =
+                    className != null && className.equals("android.widget.ProgressBar")
+                    ? AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED
+                    : AccessibilityEvent.TYPE_ANNOUNCEMENT;
+            final AccessibilityEvent event = obtainAccessibilityEvent(eventType);
 
             event.setEnabled(true);
-            event.setClassName(getNodeForVirtualViewId(viewId).getClassName());
-
+            event.setClassName(className);
             event.setContentDescription(value);
 
             if (event.getText().isEmpty() && TextUtils.isEmpty(event.getContentDescription())) {
