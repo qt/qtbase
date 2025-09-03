@@ -44,7 +44,6 @@
 #include <QtCore/qoperatingsystemversion.h>
 
 #include <dwmapi.h>
-#include <gdiplus.h>
 
 #if QT_CONFIG(vulkan)
 #include "qwindowsvulkaninstance.h"
