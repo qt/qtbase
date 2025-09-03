@@ -60,7 +60,7 @@ void tst_android_deployment_settings::DeploymentSettings_data()
     QTest::addColumn<QString>("value");
 
     QTest::newRow("sdkBuildToolsRevision") << "sdkBuildToolsRevision"
-                                           << "23.0.2";
+                                           << "28.0.3";
     QTest::newRow("deployment-dependencies") << "deployment-dependencies"
                                              << "dep1.so,dep2.so,dep3.so";
     QTest::newRow("android-extra-plugins")
@@ -78,7 +78,7 @@ void tst_android_deployment_settings::DeploymentSettings_data()
     QTest::newRow("android-target-sdk-version") << "android-target-sdk-version"
                                                 << "2";
     QTest::newRow("android-compile-sdk-version") << "android-compile-sdk-version"
-                                                << "35";
+                                                << "36";
     QTest::newRow("android-package-name") << "android-package-name"
                                           << "org.qtproject.android_deployment_settings_test";
     QTest::newRow("android-app-name") << "android-app-name"

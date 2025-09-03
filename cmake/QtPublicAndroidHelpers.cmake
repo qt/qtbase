@@ -67,7 +67,7 @@ function(_qt_internal_locate_android_jar)
     # This variable specifies the API level used for building Java code, it can be the same as Qt
     # for Android's maximum supported Android version or higher.
     if(NOT QT_ANDROID_API_USED_FOR_JAVA)
-        set(QT_ANDROID_API_USED_FOR_JAVA "android-35")
+        set(QT_ANDROID_API_USED_FOR_JAVA "android-36")
     endif()
 
     set(jar_location "${ANDROID_SDK_ROOT}/platforms/${QT_ANDROID_API_USED_FOR_JAVA}/android.jar")
