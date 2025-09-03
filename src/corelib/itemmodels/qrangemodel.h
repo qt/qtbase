@@ -28,15 +28,25 @@ public:
 
     template <typename Range,
               QRangeModelDetails::if_table_range<Range> = true>
-    explicit QRangeModel(Range &&range, QObject *parent = nullptr);
+    explicit QRangeModel(Range &&range, QObject *parent = nullptr)
+        : QRangeModel(new QGenericTableItemModelImpl<Range>(std::forward<Range>(range), this), parent)
+    {}
 
     template <typename Range,
               QRangeModelDetails::if_tree_range<Range> = true>
-    explicit QRangeModel(Range &&range, QObject *parent = nullptr);
+    explicit QRangeModel(Range &&range, QObject *parent = nullptr)
+        : QRangeModel(std::forward<Range>(range), QRangeModelDetails::DefaultTreeProtocol<Range>{},
+                      parent)
+    {}
 
     template <typename Range, typename Protocol,
               QRangeModelDetails::if_tree_range<Range, Protocol> = true>
-    explicit QRangeModel(Range &&range, Protocol &&protocol, QObject *parent = nullptr);
+    explicit QRangeModel(Range &&range, Protocol &&protocol, QObject *parent = nullptr)
+        : QRangeModel(new QGenericTreeItemModelImpl<Range, Protocol>(std::forward<Range>(range),
+                                                                     std::forward<Protocol>(protocol),
+                                                                     this),
+                     parent)
+    {}
 
     ~QRangeModel() override;
 
@@ -182,25 +192,6 @@ const QAbstractItemModel &QRangeModelImplBase::itemModel() const
 {
     return *m_rangeModel;
 }
-
-template <typename Range, QRangeModelDetails::if_table_range<Range>>
-QRangeModel::QRangeModel(Range &&range, QObject *parent)
-    : QRangeModel(new QGenericTableItemModelImpl<Range>(std::forward<Range>(range), this), parent)
-{}
-
-template <typename Range, QRangeModelDetails::if_tree_range<Range>>
-QRangeModel::QRangeModel(Range &&range, QObject *parent)
-    : QRangeModel(std::forward<Range>(range), QRangeModelDetails::DefaultTreeProtocol<Range>{},
-                  parent)
-{}
-
-template <typename Range, typename Protocol, QRangeModelDetails::if_tree_range<Range, Protocol>>
-QRangeModel::QRangeModel(Range &&range, Protocol &&protocol, QObject *parent)
-    : QRangeModel(new QGenericTreeItemModelImpl<Range, Protocol>(std::forward<Range>(range),
-                                                                 std::forward<Protocol>(protocol),
-                                                                 this),
-                  parent)
-{}
 
 // Helper template that we can forward declare in the _impl header,
 // where QRangeModel is not yet defined.
