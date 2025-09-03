@@ -23,6 +23,18 @@
 
     This function is a part of the Qt Concurrent framework.
 
+    \section1 Optimize includes
+
+    If you include the \c <QtConcurrent> header, the entire Qt Concurrent
+    module with the entire Qt Core module will be included, which may increase
+    compilation times and binary sizes. To use the
+    \l {QtConcurrent::run}{QtConcurrent::run()} function, you can include a
+    more specific header:
+
+    \code
+    #include <QtConcurrentRun>
+    \endcode
+
     \section1 Concurrent Run (basic mode)
 
     The function passed to QtConcurrent::run() may report the result
