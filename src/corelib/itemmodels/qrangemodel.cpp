@@ -664,6 +664,15 @@ Qt::ItemFlags QRangeModel::flags(const QModelIndex &index) const
     number. Similarly, for vertical headers, the section number corresponds to
     the row number.
 
+    For the horizontal header and the Qt::DisplayRole \a role, models that
+    operate on a range that uses an array as the row type return \a section. If
+    the row type is a tuple, then the implementation returns the name of the
+    type at \a section. For rows that are a gadget or QObject type, this
+    function returns the name of the property at the index of \a section.
+
+    For the vertical header, this function always returns the result of the
+    default implementation in QAbstractItemModel.
+
     \sa Qt::ItemDataRole, setHeaderData(), QHeaderView
 */
 QVariant QRangeModel::headerData(int section, Qt::Orientation orientation, int role) const
