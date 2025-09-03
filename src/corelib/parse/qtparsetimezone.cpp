@@ -173,6 +173,150 @@ auto matchSystemName(QStringView text, const QLocale &locale)
     return best;
 }
 
+struct SizeOffset {
+    qsizetype length = 0;
+    int secondsEast = 0;
+    constexpr SizeOffset(qsizetype size, int offset) : length(size), secondsEast(offset) {}
+};
+
+// Locale-independent ISO 8601 offset forms
+QList<SizeOffset> matchIso8601(QStringView text, QtTemporalPattern::TemporalFieldFlags flags)
+{
+    constexpr int MaxOffsetHours
+        = (std::max)(-QTimeZone::MinUtcOffsetSecs, QTimeZone::MaxUtcOffsetSecs) / 3600;
+    QList<SizeOffset> matches;
+    using namespace QtTemporalPattern;
+    using namespace FieldGroup;
+    using Flag = TemporalFieldFlag;
+
+    if (flags.testFlag(Flag::AllowZSuffix) && text.startsWith(QLatin1Char('Z'))) {
+        matches.emplace_back(1, 0);
+        // No other ISO 8601 offset form starts with Z.
+        return matches;
+    }
+
+    qsizetype used = 0;
+    QStringView tail = text; // Invariant: is a prefix of text.sliced(used)
+    if (tail.startsWith(u"UTC")) {
+        if (!matchesFlagWithin(flags, Flag::AcceptUtcPrefix, UtcPrefixMask))
+            return matches;
+        used += 3;
+        tail = tail.sliced(3);
+    } else if (!matchesFlagWithin(flags, Flag::NeedNoUtcPrefix, UtcPrefixMask)) {
+        return matches;
+    }
+    const bool negate = tail.startsWith(u'-');
+    if (!negate && !tail.startsWith(u'+'))
+        return matches;
+    ++used;
+    tail = tail.sliced(1);
+
+    const auto extend = [&matches, negate](qsizetype length, int secondsEast) {
+        if (negate)
+            secondsEast = -secondsEast;
+        if (secondsEast >= QTimeZone::MinUtcOffsetSecs
+            && secondsEast <= QTimeZone::MaxUtcOffsetSecs) {
+            matches.emplace_back(length, secondsEast);
+        }
+    };
+
+    int hours = 0, minutes = 0, seconds = 0;
+    const bool zeroPad = flags.testFlag(Flag::ZeroPad);
+    constexpr TemporalFieldFlags WithColon = Flag::Verbal | Flag::Standalone;
+    qsizetype colon = tail.indexOf(u':');
+    if (colon == 0) // No digits in (first field of) offset.
+        return matches;
+
+    if (!matchesFlagsWithin(flags, WithColon, FormMask)) { // Colon forbidden.
+        if (colon > 0) {
+            // Treat as juxtaposed fields with cruft starting at the colon:
+            tail = tail.first(colon);
+            colon = -1;
+        }
+    } else if (!matchesFlagWithin(flags, Flag::Numeric, FormMask)) { // Colon required
+        if (colon > 2) {
+            // Too long for a single field. Treat as hour field followed by trailing
+            // cruft, since our colon is too late to separate it from a later field.
+            tail = tail.first(2);
+            colon = -1; // There is no longer a colon in tail.
+        } else if (colon < 0) {
+            // Lack of expected colon - we have, at most, an hour field:
+            if (tail.size() > 2)
+                tail = tail.first(2);
+        }
+    } // else: if a colon is there, read fields up to it.
+    // If we have a colon at the end of the hour field, each field must end in a
+    // colon. No field is wider than two digits, so a colon further out than
+    // that isn't the end of the hour field, just part of some dangling cruft.
+    const bool hasColon = colon > 0 && colon <= 2;
+    bool ok;
+    qsizetype fieldUsed = qMin(2, hasColon ? colon : tail.size());
+    hours = tail.first(fieldUsed).toInt(&ok);
+    if (!ok || hours > MaxOffsetHours || (zeroPad && fieldUsed < 2)) {
+        if (zeroPad) // Hour field must have full width.
+            return matches;
+        hours = tail.first(1).toInt(&ok);
+        fieldUsed = 1;
+        // Single-digit hour is only allowed in colon-separated form; if we
+        // don't have an actual colon, the parse must end after this field.
+        if (!ok)
+            return matches;
+    }
+    tail = tail.sliced(fieldUsed);
+    used += fieldUsed;
+
+    qsizetype fieldEnd[3] = { used, 0, 0 };
+    int fieldsSeen = 1; // Seen hour field
+    // If we're allowed more than just hour, see what we've got:
+    if ((flags & WidthMask) != QtTemporalPattern::TemporalFieldFlags{Flag::Narrow}) {
+        for (int i = 0; i < 2 && fieldUsed && !tail.isEmpty(); ++i) {
+            QStringView digits = tail;
+            qsizetype sepLen = 0;
+            if (hasColon || fieldUsed == 1) {
+                if (fieldUsed != colon)
+                    break;
+                Q_ASSERT(tail.startsWith(u':'));
+                digits = digits.sliced(1);
+                sepLen = 1;
+            }
+            int &field = i ? seconds : minutes;
+            colon = hasColon && !i ? digits.indexOf(u':') : -1;
+            if (colon == 0) // Empty field
+                break;
+            if ((colon == -1 ? digits.size() : colon) < 2) // Not enough digits for field.
+                break;
+            field = digits.first(2).toInt(&ok);
+            if (!ok)
+                break;
+            fieldUsed = 2; // So next iteration sees that to compare to colon.
+            tail = tail.sliced(sepLen + fieldUsed);
+            used += sepLen + fieldUsed;
+            fieldEnd[fieldsSeen++] = used;
+            // Quit loop after 1st iteration unless accepting seconds field:
+            if (!i && !matchesFlagsWithin(flags, Flag::Wide | Flag::Short, WidthMask))
+                break;
+        }
+    }
+    // Check we got enough fields, add entries, with longer matches earlier:
+    switch (fieldsSeen) {
+    case 3: // Would have exited loop early unless:
+        Q_ASSERT(matchesFlagsWithin(flags, Flag::Wide | Flag::Short, WidthMask));
+        // TODO: if Wide, check for fractional part.
+        extend(fieldEnd[--fieldsSeen], (hours * 60 + minutes) * 60 + seconds);
+        Q_FALLTHROUGH();
+    case 2: // Hour and minute supplied.
+        if (!zeroPad || matchesFlagWithin(flags, Flag::Abbreviated, WidthMask))
+            extend(fieldEnd[fieldsSeen - 1], (hours * 60 + minutes) * 60);
+        --fieldsSeen;
+        Q_FALLTHROUGH();
+    case 1: // Only hour supplied: need Narrow if ZeroPad:
+        if (zeroPad && !matchesFlagWithin(flags, Flag::Narrow, WidthMask))
+            break;
+        extend(fieldEnd[--fieldsSeen], hours * 60 * 60);
+    }
+    return matches;
+}
+
 }
 
 namespace QtParseTimeZone {
@@ -269,6 +413,16 @@ QList<ParsedZone> prefix(QStringView text, const QLocale &locale, qsizetype from
     using namespace QtTemporalPattern;
     using namespace FieldGroup;
     using Flag = TemporalFieldFlag;
+
+    if (matchesFlagWithin(flags, Flag::Iso8601, FieldGroup::LocalizationMask)) {
+        // Locale-independent offset forms:
+        const auto matches = matchIso8601(tail, flags);
+        for (const auto &match : matches) {
+            includeMatch(match.length,
+                         QTimeZone::fromSecondsAheadOfUtc(match.secondsEast),
+                         QTimeZone::GenericTime);
+        }
+    }
 
     // Locale-dependent forms:
 #if QT_CONFIG(timezone)

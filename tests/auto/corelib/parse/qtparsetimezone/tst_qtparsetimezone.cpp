@@ -113,6 +113,823 @@ void tst_QtParseTimeZone::prefix_data()
 #endif // timezone backends
     }
 
+    // Variations on (locale-independent) ISO offset format:
+    QTest::addRow("+0100/C/ISO-pfx+num+wide/0")
+        << u"+0100"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Numeric | Flag::Wide }
+        << 0 << 5 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("+0100/C/ISO-pfx+num+wide+0pad/0")
+        << u"+0100"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix
+                | Flag::Numeric | Flag::Wide | Flag::ZeroPad }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+    QTest::addRow("+0100/C/ISO-pfx+num+shrt/0")
+        << u"+0100"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Numeric | Flag::Short }
+        << 0 << 5 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("+0100/C/ISO-pfx+num+shrt+0pad/0")
+        << u"+0100"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix
+                | Flag::Numeric | Flag::Short | Flag::ZeroPad }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+    QTest::addRow("+0100/C/ISO-pfx+num+abbr/0")
+        << u"+0100"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Numeric | Flag::Abbreviated }
+        << 0 << 5 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("+0100/C/ISO-pfx+num+narr/0")
+        << u"+0100"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Numeric | Flag::Narrow }
+        << 0 << 3 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("+0100/C/ISO+num+wide/0")
+        << u"+0100"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::Numeric | Flag::Wide }
+        << 0 << 5 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("+0100/C/ISO+num+wide+0pad/0")
+        << u"+0100"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::Numeric | Flag::Wide | Flag::ZeroPad }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+    QTest::addRow("+0100/C/ISO+num+shrt/0")
+        << u"+0100"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::Numeric | Flag::Short }
+        << 0 << 5 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("+0100/C/ISO+num+shrt+0pad/0")
+        << u"+0100"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::Numeric | Flag::Short | Flag::ZeroPad }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+    QTest::addRow("+0100/C/ISO+num+abbr/0")
+        << u"+0100"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::Numeric | Flag::Abbreviated }
+        << 0 << 5 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("+0100/C/ISO+num+narr/0")
+        << u"+0100"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::Numeric | Flag::Narrow }
+        << 0 << 3 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("+0100/C/ISO+pfx+num+abbr/0")
+        << u"+0100"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Numeric | Flag::Abbreviated }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+    QTest::addRow("+0100/C/ISO+pfx+num+narr/0")
+        << u"+0100"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Numeric | Flag::Narrow }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone(3600);
+
+    QTest::addRow("UTC+0100/C/ISO-pfx+num+abbr/0")
+        << u"UTC+0100"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Numeric | Flag::Abbreviated }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+    QTest::addRow("UTC+0100/C/ISO+num+wide+0pad/0")
+        << u"UTC+0100"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::Numeric | Flag::Wide | Flag::ZeroPad }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+    QTest::addRow("UTC+0100/C/ISO+num+wide/0")
+        << u"UTC+0100"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::Numeric | Flag::Wide }
+        << 0 << 8 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("UTC+0100/C/ISO+num+shrt+0pad/0")
+        << u"UTC+0100"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::Numeric | Flag::Short | Flag::ZeroPad }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+    QTest::addRow("UTC+0100/C/ISO+num+shrt/0")
+        << u"UTC+0100"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::Numeric | Flag::Short }
+        << 0 << 8 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("UTC+0100/C/ISO+num+abbr/0")
+        << u"UTC+0100"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::Numeric | Flag::Abbreviated }
+        << 0 << 8 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("UTC+0100/C/ISO+num+narr/0")
+        << u"UTC+0100"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::Numeric | Flag::Narrow }
+        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("UTC+0100/C/ISO+pfx+num+wide/0")
+        << u"UTC+0100"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Numeric | Flag::Wide }
+        << 0 << 8 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("UTC+0100/C/ISO+pfx+num+wide+0pad/0")
+        << u"UTC+0100"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix
+                | Flag::Numeric | Flag::Wide | Flag::ZeroPad }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("UTC+0100/C/ISO+pfx+num+shrt/0")
+        << u"UTC+0100"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Numeric | Flag::Short }
+        << 0 << 8 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("UTC+0100/C/ISO+pfx+num+shrt+0pad/0")
+        << u"UTC+0100"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix
+                | Flag::Numeric | Flag::Short | Flag::ZeroPad }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("UTC+0100/C/ISO+pfx+num+abbr/0")
+        << u"UTC+0100"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Numeric | Flag::Abbreviated }
+        << 0 << 8 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("UTC+0100/C/ISO+pfx+num+narr/0")
+        << u"UTC+0100"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Numeric | Flag::Narrow }
+        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+
+    QTest::addRow("+01:00/C/ISO-pfx+num+wide/0")
+        << u"+01:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Numeric | Flag::Wide }
+        << 0 << 3 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("+01:00/C/ISO-pfx+num+wide+0pad/0")
+        << u"+01:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix
+                | Flag::Numeric | Flag::Wide | Flag::ZeroPad }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+    QTest::addRow("+01:00/C/ISO-pfx+num+shrt/0")
+        << u"+01:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Numeric | Flag::Short }
+        << 0 << 3 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("+01:00/C/ISO-pfx+num+shrt+0pad/0")
+        << u"+01:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix
+                | Flag::Numeric | Flag::Short | Flag::ZeroPad }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+    QTest::addRow("+01:00/C/ISO-pfx+num+abbr/0")
+        << u"+01:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Numeric | Flag::Abbreviated }
+        << 0 << 3 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("+01:00/C/ISO-pfx+num+abbr+0pad/0")
+        << u"+01:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix
+                | Flag::Numeric | Flag::Abbreviated | Flag::ZeroPad }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+    QTest::addRow("+01:00/C/ISO-pfx+num+narr/0")
+        << u"+01:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Numeric | Flag::Narrow }
+        << 0 << 3 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("+01:00/C/ISO+num+wide/0")
+        << u"+01:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::Numeric | Flag::Wide }
+        << 0 << 3 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("+01:00/C/ISO+num+wide+0pad/0")
+        << u"+01:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::Numeric | Flag::Wide | Flag::ZeroPad }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+    QTest::addRow("+01:00/C/ISO+num+shrt/0")
+        << u"+01:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::Numeric | Flag::Short }
+        << 0 << 3 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("+01:00/C/ISO+num+shrt+0pad/0")
+        << u"+01:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::Numeric | Flag::Short | Flag::ZeroPad }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+    QTest::addRow("+01:00/C/ISO+num+abbr/0")
+        << u"+01:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::Numeric | Flag::Abbreviated }
+        << 0 << 3 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("+01:00/C/ISO+num+abbr+0pad/0")
+        << u"+01:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::Numeric | Flag::Abbreviated | Flag::ZeroPad }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+    QTest::addRow("+01:00/C/ISO+num+narr/0")
+        << u"+01:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::Numeric | Flag::Narrow }
+        << 0 << 3 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("+01:00/C/ISO+pfx+num+narr/0")
+        << u"+01:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Numeric | Flag::Narrow }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+
+    QTest::addRow("UTC+01:00/C/ISO-pfx+num+narr/0")
+        << u"UTC+01:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Numeric | Flag::Narrow }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+    QTest::addRow("UTC+01:00/C/ISO+num+wide/0")
+        << u"UTC+01:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::Numeric | Flag::Wide }
+        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("UTC+01:00/C/ISO+num+wide+0pad/0")
+        << u"UTC+01:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::Numeric | Flag::Wide | Flag::ZeroPad }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+    QTest::addRow("UTC+01:00/C/ISO+num+shrt/0")
+        << u"UTC+01:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::Numeric | Flag::Short }
+        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("UTC+01:00/C/ISO+num+shrt+0pad/0")
+        << u"UTC+01:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::Numeric | Flag::Short | Flag::ZeroPad }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+    QTest::addRow("UTC+01:00/C/ISO+num+abbr/0")
+        << u"UTC+01:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::Numeric | Flag::Abbreviated }
+        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("UTC+01:00/C/ISO+num+abbr+0pad/0")
+        << u"UTC+01:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::Numeric | Flag::Abbreviated | Flag::ZeroPad }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+    QTest::addRow("UTC+01:00/C/ISO+num+narr/0")
+        << u"UTC+01:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::Numeric | Flag::Narrow }
+        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("UTC+01:00/C/ISO+pfx+num+wide/0")
+        << u"UTC+01:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Numeric | Flag::Wide }
+        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("UTC+01:00/C/ISO+pfx+num+wide+0pad/0")
+        << u"UTC+01:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix
+                | Flag::Numeric | Flag::Wide | Flag::ZeroPad }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+    QTest::addRow("UTC+01:00/C/ISO+pfx+num+shrt/0")
+        << u"UTC+01:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Numeric | Flag::Short }
+        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("UTC+01:00/C/ISO+pfx+num+shrt+0pad/0")
+        << u"UTC+01:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix
+                | Flag::Numeric | Flag::Short | Flag::ZeroPad }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+    QTest::addRow("UTC+01:00/C/ISO+pfx+num+abbr/0")
+        << u"UTC+01:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Numeric | Flag::Abbreviated }
+        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("UTC+01:00/C/ISO+pfx+num+abbr+0pad/0")
+        << u"UTC+01:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix
+                | Flag::Numeric | Flag::Abbreviated | Flag::ZeroPad }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+    QTest::addRow("UTC+01:00/C/ISO+pfx+num+narr/0")
+        << u"UTC+01:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Numeric | Flag::Narrow }
+        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("UTC+0100/C/ISO-pfx+num+narr/0")
+        << u"UTC+0100"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Numeric | Flag::Narrow }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+
+    // Seconds field present:
+    QTest::addRow("+010000/C/ISO-pfx+num+wide/0")
+        << u"+010000"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Numeric | Flag::Wide }
+        << 0 << 7 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("+010000/C/ISO-pfx+num+shrt/0")
+        << u"+010000"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Numeric | Flag::Short }
+        << 0 << 7 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("+010000/C/ISO-pfx+num+abbr/0")
+        << u"+010000"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Numeric | Flag::Abbreviated }
+        << 0 << 5 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("+010000/C/ISO-pfx+num+narr/0")
+        << u"+010000"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Numeric | Flag::Narrow }
+        << 0 << 3 << QTZ::GenericTime << QTimeZone(3600);
+
+    QTest::addRow("UTC+010000/C/ISO+pfx+num+wide/0")
+        << u"UTC+010000"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Numeric | Flag::Wide }
+        << 0 << 10 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("UTC+010000/C/ISO+pfx+num+shrt/0")
+        << u"UTC+010000"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Numeric | Flag::Short }
+        << 0 << 10 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("UTC+010000/C/ISO+pfx+num+abbr/0")
+        << u"UTC+010000"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Numeric | Flag::Abbreviated }
+        << 0 << 8 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("UTC+010000/C/ISO+pfx+num+narr/0")
+        << u"UTC+010000"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Numeric | Flag::Narrow }
+        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+
+    // Partial-width minutes should be ignored (when allowed) as cruft:
+    QTest::addRow("+017/C/ISO-pfx+num+wide/0")
+        << u"+017"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Numeric | Flag::Wide }
+        << 0 << 3 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("+017/C/ISO-pfx+num+wide+0pad/0")
+        << u"+017"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix
+                | Flag::Numeric | Flag::Wide | Flag::ZeroPad }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+    QTest::addRow("+017/C/ISO-pfx+num+shrt/0")
+        << u"+017"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Numeric | Flag::Short }
+        << 0 << 3 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("+017/C/ISO-pfx+num+shrt+0pad/0")
+        << u"+017"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix
+                | Flag::Numeric | Flag::Short | Flag::ZeroPad }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+    QTest::addRow("+017/C/ISO-pfx+num+abbr/0")
+        << u"+017"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Numeric | Flag::Abbreviated }
+        << 0 << 3 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("+017/C/ISO-pfx+num+abbr+0pad/0")
+        << u"+017"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix
+                | Flag::Numeric | Flag::Abbreviated | Flag::ZeroPad }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+    QTest::addRow("+017/C/ISO-pfx+num+narr/0")
+        << u"+017"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Numeric | Flag::Narrow }
+        << 0 << 3 << QTZ::GenericTime << QTimeZone(3600);
+
+    QTest::addRow("UTC+017/C/ISO+pfx+num+wide/0")
+        << u"UTC+017"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Numeric | Flag::Wide }
+        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("UTC+017/C/ISO+pfx+num+wide+0pad/0")
+        << u"UTC+017"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix
+                | Flag::Numeric | Flag::Wide | Flag::ZeroPad }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+    QTest::addRow("UTC+017/C/ISO+pfx+num+short/0")
+        << u"UTC+017"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Numeric | Flag::Short }
+        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("UTC+017/C/ISO+pfx+num+shrt+0pad/0")
+        << u"UTC+017"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix
+                | Flag::Numeric | Flag::Short | Flag::ZeroPad }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+    QTest::addRow("UTC+017/C/ISO+pfx+num+abbr/0")
+        << u"UTC+017"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Numeric | Flag::Abbreviated }
+        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("UTC+017/C/ISO+pfx+num+abbr+0pad/0")
+        << u"UTC+017"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix
+                | Flag::Numeric | Flag::Abbreviated | Flag::ZeroPad }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+    QTest::addRow("UTC+017/C/ISO+pfx+num+narr/0")
+        << u"UTC+017"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Numeric | Flag::Narrow }
+        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+
+    // And now all the same, but expecting colons (Verbal in place of Numeric):
+    QTest::addRow("+0100/C/ISO-pfx+verb+wide/0")
+        << u"+0100"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Verbal | Flag::Wide }
+        << 0 << 3 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("+0100/C/ISO-pfx+verb+wide+0pad/0")
+        << u"+0100"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix
+                | Flag::Verbal | Flag::Wide | Flag::ZeroPad }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+    QTest::addRow("+0100/C/ISO-pfx+verb+shrt/0")
+        << u"+0100"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Verbal | Flag::Short }
+        << 0 << 3 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("+0100/C/ISO-pfx+verb+shrt+0pad/0")
+        << u"+0100"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix
+                | Flag::Verbal | Flag::Short | Flag::ZeroPad }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+    QTest::addRow("+0100/C/ISO-pfx+verb+abbr/0")
+        << u"+0100"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Verbal | Flag::Abbreviated }
+        << 0 << 3 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("+0100/C/ISO-pfx+verb+abbr+0pad/0")
+        << u"+0100"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix
+                | Flag::Verbal | Flag::Abbreviated | Flag::ZeroPad }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+    QTest::addRow("+0100/C/ISO-pfx+verb+narr/0")
+        << u"+0100"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Verbal | Flag::Narrow }
+        << 0 << 3 << QTZ::GenericTime << QTimeZone(3600);
+
+    QTest::addRow("+0100/C/ISO+verb+wide/0")
+        << u"+0100"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::Verbal | Flag::Wide }
+        << 0 << 3 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("+0100/C/ISO+verb+wide+0pad/0")
+        << u"+0100"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::Verbal | Flag::Wide | Flag::ZeroPad }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+    QTest::addRow("+0100/C/ISO+verb+shrt/0")
+        << u"+0100"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::Verbal | Flag::Short }
+        << 0 << 3 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("+0100/C/ISO+verb+shrt+0pad/0")
+        << u"+0100"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::Verbal | Flag::Short | Flag::ZeroPad }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+    QTest::addRow("+0100/C/ISO+verb+abbr/0")
+        << u"+0100"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::Verbal | Flag::Abbreviated }
+        << 0 << 3 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("+0100/C/ISO+verb+abbr+0pad/0")
+        << u"+0100"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::Verbal | Flag::Abbreviated | Flag::ZeroPad }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+    QTest::addRow("+0100/C/ISO+verb+narr/0")
+        << u"+0100"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::Verbal | Flag::Narrow }
+        << 0 << 3 << QTZ::GenericTime << QTimeZone(3600);
+
+    QTest::addRow("+0100/C/ISO+pfx+verb+narr/0")
+        << u"+0100"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Verbal | Flag::Narrow }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+    QTest::addRow("UTC+0100/C/ISO-pfx+verb+narr/0")
+        << u"UTC+0100"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Verbal | Flag::Narrow }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+
+    QTest::addRow("UTC+0100/C/ISO+verb+wide/0")
+        << u"UTC+0100"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::Verbal | Flag::Wide }
+        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("UTC+0100/C/ISO+verb+wide+0pad/0")
+        << u"UTC+0100"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::Verbal | Flag::Wide | Flag::ZeroPad }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+    QTest::addRow("UTC+0100/C/ISO+verb+shrt/0")
+        << u"UTC+0100"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::Verbal | Flag::Short }
+        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("UTC+0100/C/ISO+verb+shrt+0pad/0")
+        << u"UTC+0100"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::Verbal | Flag::Short | Flag::ZeroPad }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+    QTest::addRow("UTC+0100/C/ISO+verb+abbr/0")
+        << u"UTC+0100"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::Verbal | Flag::Abbreviated }
+        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("UTC+0100/C/ISO+verb+abbr+0pad/0")
+        << u"UTC+0100"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::Verbal | Flag::Abbreviated | Flag::ZeroPad }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+    QTest::addRow("UTC+0100/C/ISO+verb+narr/0")
+        << u"UTC+0100"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::Verbal | Flag::Narrow }
+        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+
+    QTest::addRow("UTC+0100/C/ISO+pfx+verb+wide/0")
+        << u"UTC+0100"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Verbal | Flag::Wide }
+        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("UTC+0100/C/ISO+pfx+verb+wide+0pad/0")
+        << u"UTC+0100"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix
+                | Flag::Verbal | Flag::Wide | Flag::ZeroPad }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+    QTest::addRow("UTC+0100/C/ISO+pfx+verb+shrt/0")
+        << u"UTC+0100"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Verbal | Flag::Short }
+        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("UTC+0100/C/ISO+pfx+verb+shrt+0pad/0")
+        << u"UTC+0100"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix
+                | Flag::Verbal | Flag::Short | Flag::ZeroPad }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+    QTest::addRow("UTC+0100/C/ISO+pfx+verb+abbr/0")
+        << u"UTC+0100"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Verbal | Flag::Abbreviated }
+        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("UTC+0100/C/ISO+pfx+verb+abbr+0pad/0")
+        << u"UTC+0100"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix
+                | Flag::Verbal | Flag::Abbreviated | Flag::ZeroPad }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+    QTest::addRow("UTC+0100/C/ISO+pfx+verb+narr/0")
+        << u"UTC+0100"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Verbal | Flag::Narrow }
+        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+
+    QTest::addRow("+01:00/C/ISO-pfx+verb+wide/0")
+        << u"+01:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Verbal | Flag::Wide }
+        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("+01:00/C/ISO-pfx+verb+wide+0pad/0")
+        << u"+01:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix
+                | Flag::Verbal | Flag::Wide | Flag::ZeroPad }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+    QTest::addRow("+01:00/C/ISO-pfx+verb+shrt/0")
+        << u"+01:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Verbal | Flag::Short }
+        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("+01:00/C/ISO-pfx+verb+shrt+0pad/0")
+        << u"+01:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix
+                | Flag::Verbal | Flag::Short | Flag::ZeroPad }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+    QTest::addRow("+01:00/C/ISO-pfx+verb+abbr/0")
+        << u"+01:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Verbal | Flag::Abbreviated }
+        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("+01:00/C/ISO-pfx+verb+abbr+0pad/0")
+        << u"+01:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix
+                | Flag::Verbal | Flag::Abbreviated | Flag::ZeroPad }
+        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("+01:00/C/ISO-pfx+verb+narr/0")
+        << u"+01:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Verbal | Flag::Narrow }
+        << 0 << 3 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("+01:00/C/ISO-pfx+verb+narr+0pad/0")
+        << u"+01:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix
+                | Flag::Verbal | Flag::Narrow | Flag::ZeroPad }
+        << 0 << 3 << QTZ::GenericTime << QTimeZone(3600);
+
+    QTest::addRow("+1:00/C/ISO-pfx+verb+wide/0")
+        << u"+1:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Verbal | Flag::Wide }
+        << 0 << 5 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("+1:00/C/ISO-pfx+verb+wide+0pad/0")
+        << u"+1:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix
+                | Flag::Verbal | Flag::Wide | Flag::ZeroPad }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+    QTest::addRow("+1:00/C/ISO-pfx+verb+shrt/0")
+        << u"+1:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Verbal | Flag::Short }
+        << 0 << 5 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("+1:00/C/ISO-pfx+verb+shrt+0pad/0")
+        << u"+1:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix
+                | Flag::Verbal | Flag::Short | Flag::ZeroPad }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+    QTest::addRow("+1:00/C/ISO-pfx+verb+abbr/0")
+        << u"+1:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Verbal | Flag::Abbreviated }
+        << 0 << 5 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("+1:00/C/ISO-pfx+verb+abbr+0pad/0")
+        << u"+1:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix
+                | Flag::Verbal | Flag::Abbreviated | Flag::ZeroPad }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+    QTest::addRow("+1:00/C/ISO-pfx+verb+narr/0")
+        << u"+1:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Verbal | Flag::Narrow }
+        << 0 << 2 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("+1:00/C/ISO-pfx+verb+narr+0pad/0")
+        << u"+1:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix
+                | Flag::Verbal | Flag::Narrow | Flag::ZeroPad }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+
+    QTest::addRow("+01:00/C/ISO+verb+wide/0")
+        << u"+01:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::Verbal | Flag::Wide }
+        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("+01:00/C/ISO+verb+wide+0pad/0")
+        << u"+01:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::Verbal | Flag::Wide | Flag::ZeroPad }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+    QTest::addRow("+01:00/C/ISO+verb+shrt/0")
+        << u"+01:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::Verbal | Flag::Short }
+        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("+01:00/C/ISO+verb+shrt+0pad/0")
+        << u"+01:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::Verbal | Flag::Short | Flag::ZeroPad }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+    QTest::addRow("+01:00/C/ISO+verb+abbr/0")
+        << u"+01:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::Verbal | Flag::Abbreviated }
+        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("+01:00/C/ISO+verb+abbr+0pad/0")
+        << u"+01:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::Verbal | Flag::Abbreviated | Flag::ZeroPad }
+        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("+01:00/C/ISO+verb+narr/0")
+        << u"+01:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::Verbal | Flag::Narrow }
+        << 0 << 3 << QTZ::GenericTime << QTimeZone(3600);
+
+    QTest::addRow("+01:00/C/ISO+pfx+verb+narr/0")
+        << u"+01:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Verbal | Flag::Narrow }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+    QTest::addRow("UTC+01:00/C/ISO-pfx+verb+narr/0")
+        << u"UTC+01:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Verbal | Flag::Narrow }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+
+    QTest::addRow("UTC+01:00/C/ISO+verb+wide/0")
+        << u"UTC+01:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::Verbal | Flag::Wide }
+        << 0 << 9 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("UTC+01:00/C/ISO+verb+wide+0pad/0")
+        << u"UTC+01:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::Verbal | Flag::Wide | Flag::ZeroPad }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+    QTest::addRow("UTC+01:00/C/ISO+verb+shrt/0")
+        << u"UTC+01:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::Verbal | Flag::Short }
+        << 0 << 9 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("UTC+01:00/C/ISO+verb+shrt+0pad/0")
+        << u"UTC+01:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::Verbal | Flag::Short | Flag::ZeroPad }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+    QTest::addRow("UTC+01:00/C/ISO+verb+abbr/0")
+        << u"UTC+01:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::Verbal | Flag::Abbreviated }
+        << 0 << 9 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("UTC+01:00/C/ISO+verb+abbr+0pad/0")
+        << u"UTC+01:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::Verbal | Flag::Abbreviated | Flag::ZeroPad }
+        << 0 << 9 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("UTC+01:00/C/ISO+verb+narr/0")
+        << u"UTC+01:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::Verbal | Flag::Narrow }
+        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+
+    QTest::addRow("UTC+01:00/C/ISO+pfx+verb+wide/0")
+        << u"UTC+01:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Verbal | Flag::Wide }
+        << 0 << 9 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("UTC+01:00/C/ISO+pfx+verb+wide+0pad/0")
+        << u"UTC+01:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix
+                | Flag::Verbal | Flag::Wide | Flag::ZeroPad }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+    QTest::addRow("UTC+01:00/C/ISO+pfx+verb+shrt/0")
+        << u"UTC+01:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Verbal | Flag::Short }
+        << 0 << 9 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("UTC+01:00/C/ISO+pfx+verb+shrt+0pad/0")
+        << u"UTC+01:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix
+                | Flag::Verbal | Flag::Short | Flag::ZeroPad }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+    QTest::addRow("UTC+01:00/C/ISO+pfx+verb+abbr/0")
+        << u"UTC+01:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Verbal | Flag::Abbreviated }
+        << 0 << 9 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("UTC+01:00/C/ISO+pfx+verb+abbr+0pad/0")
+        << u"UTC+01:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix
+                | Flag::Verbal | Flag::Abbreviated | Flag::ZeroPad }
+        << 0 << 9 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("UTC+01:00/C/ISO+pfx+verb+narr/0")
+        << u"UTC+01:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Verbal | Flag::Narrow }
+        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+
+    // Seconds field present:
+    QTest::addRow("+01:00:00/C/ISO-pfx+verb+wide/0")
+        << u"+01:00:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Verbal | Flag::Wide }
+        << 0 << 9 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("+01:00:00/C/ISO-pfx+verb+short/0")
+        << u"+01:00:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Verbal | Flag::Short }
+        << 0 << 9 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("+01:00:00/C/ISO-pfx+verb+abbr/0")
+        << u"+01:00:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Verbal | Flag::Abbreviated }
+        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("+01:00:00/C/ISO-pfx+verb+narr/0")
+        << u"+01:00:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Verbal | Flag::Narrow }
+        << 0 << 3 << QTZ::GenericTime << QTimeZone(3600);
+
+    QTest::addRow("+1:00:00/C/ISO-pfx+verb+wide/0")
+        << u"+1:00:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Verbal | Flag::Wide }
+        << 0 << 8 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("+1:00:00/C/ISO-pfx+verb+wide+0pad/0")
+        << u"+1:00:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix
+                | Flag::Verbal | Flag::Wide | Flag::ZeroPad }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+    QTest::addRow("+1:00:00/C/ISO-pfx+verb+short/0")
+        << u"+1:00:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Verbal | Flag::Short }
+        << 0 << 8 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("+1:00:00/C/ISO-pfx+verb+short+0pad/0")
+        << u"+1:00:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix
+            | Flag::Verbal | Flag::Short | Flag::ZeroPad }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+    QTest::addRow("+1:00:00/C/ISO-pfx+verb+abbr/0")
+        << u"+1:00:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Verbal | Flag::Abbreviated }
+        << 0 << 5 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("+1:00:00/C/ISO-pfx+verb+abbr+0pad/0")
+        << u"+1:00:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix
+                | Flag::Verbal | Flag::Abbreviated | Flag::ZeroPad }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+    QTest::addRow("+1:00:00/C/ISO-pfx+verb+narr/0")
+        << u"+1:00:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Verbal | Flag::Narrow }
+        << 0 << 2 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("+1:00:00/C/ISO-pfx+verb+narr+0pad/0")
+        << u"+1:00:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix
+                | Flag::Verbal | Flag::Narrow | Flag::ZeroPad }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+
+    QTest::addRow("UTC+01:00:00/C/ISO+pfx+verb+wide/0")
+        << u"UTC+01:00:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Verbal | Flag::Wide }
+        << 0 << 12 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("UTC+01:00:00/C/ISO+pfx+verb+shrt/0")
+        << u"UTC+01:00:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Verbal | Flag::Short }
+        << 0 << 12 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("UTC+01:00:00/C/ISO+pfx+verb+abbr/0")
+        << u"UTC+01:00:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Verbal | Flag::Abbreviated }
+        << 0 << 9 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("UTC+01:00:00/C/ISO+pfx+verb+narr/0")
+        << u"UTC+01:00:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Verbal | Flag::Narrow }
+        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+
+    QTest::addRow("UTC+1:00:00/C/ISO+pfx+verb+wide/0")
+        << u"UTC+1:00:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Verbal | Flag::Wide }
+        << 0 << 11 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("UTC+1:00:00/C/ISO+pfx+verb+wide+0pad/0")
+        << u"UTC+1:00:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix
+                 | Flag::Verbal | Flag::Wide | Flag::ZeroPad }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+    QTest::addRow("UTC+1:00:00/C/ISO+pfx+verb+shrt/0")
+        << u"UTC+1:00:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Verbal | Flag::Short }
+        << 0 << 11 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("UTC+1:00:00/C/ISO+pfx+verb+shrt+0pad/0")
+        << u"UTC+1:00:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix
+                 | Flag::Verbal | Flag::Short | Flag::ZeroPad }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+    QTest::addRow("UTC+1:00:00/C/ISO+pfx+verb+abbr/0")
+        << u"UTC+1:00:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Verbal | Flag::Abbreviated }
+        << 0 << 8 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("UTC+1:00:00/C/ISO+pfx+verb+abbr+0pad/0")
+        << u"UTC+1:00:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix
+                 | Flag::Verbal | Flag::Abbreviated | Flag::ZeroPad }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+    QTest::addRow("UTC+1:00:00/C/ISO+pfx+verb+narr/0")
+        << u"UTC+1:00:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Verbal | Flag::Narrow }
+        << 0 << 5 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("UTC+1:00:00/C/ISO+pfx+verb+narr+0pad/0")
+        << u"UTC+1:00:00"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix
+                | Flag::Verbal | Flag::Narrow | Flag::ZeroPad }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+
+    // Partial-width minutes should be ignored (when allowed) as cruft:
+    QTest::addRow("+01:7/C/ISO-pfx+verb+wide/0")
+        << u"+01:7"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Verbal | Flag::Wide }
+        << 0 << 3 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("+01:7/C/ISO-pfx+verb+wide+0pad/0")
+        << u"+01:7"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix
+                | Flag::Verbal | Flag::Wide | Flag::ZeroPad }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+    QTest::addRow("+01:7/C/ISO-pfx+verb+shrt/0")
+        << u"+01:7"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Verbal | Flag::Short }
+        << 0 << 3 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("+01:7/C/ISO-pfx+verb+shrt+0pad/0")
+        << u"+01:7"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix
+                | Flag::Verbal | Flag::Short | Flag::ZeroPad }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+    QTest::addRow("+01:7/C/ISO-pfx+verb+abbr/0")
+        << u"+01:7"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Verbal | Flag::Abbreviated }
+        << 0 << 3 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("+01:7/C/ISO-pfx+verb+abbr+0pad/0")
+        << u"+01:7"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix
+                | Flag::Verbal | Flag::Abbreviated | Flag::ZeroPad }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+    QTest::addRow("+01:7/C/ISO-pfx+verb+narr/0")
+        << u"+01:7"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Verbal | Flag::Narrow }
+        << 0 << 3 << QTZ::GenericTime << QTimeZone(3600);
+
+    QTest::addRow("UTC+01:7/C/ISO+pfx+verb+shrt/0")
+        << u"UTC+01:7"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Verbal | Flag::Short }
+        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("UTC+01:7/C/ISO+pfx+verb+shrt+0pad/0")
+        << u"UTC+01:7"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix
+                | Flag::Verbal | Flag::Short | Flag::ZeroPad }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+    QTest::addRow("UTC+01:7/C/ISO+pfx+verb+abbr/0")
+        << u"UTC+01:7"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Verbal | Flag::Abbreviated }
+        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+    QTest::addRow("UTC+01:7/C/ISO+pfx+verb+abbr+0pad/0")
+        << u"UTC+01:7"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix
+                | Flag::Verbal | Flag::Abbreviated | Flag::ZeroPad }
+        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+    QTest::addRow("UTC+01:7/C/ISO+pfx+verb+narr/0")
+        << u"UTC+01:7"_s << QLocale::c()
+        << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Verbal | Flag::Narrow }
+        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+
     // Some UTC tests, with offsets.
     QTest::addRow("UTC+01:00/C/num+wide/0")
         << u"UTC+01:00"_s << QLocale::c()
