@@ -1194,9 +1194,13 @@ public:
                 result = QString::fromUtf8(prop.name());
             }
         } else if constexpr (static_column_count >= 1) {
-            const QMetaType metaType = QRangeModelImplBase::meta_type_at<row_type>(section);
-            if (metaType.isValid())
-                result = QString::fromUtf8(metaType.name());
+            if constexpr (QRangeModelDetails::array_like_v<row_type>) {
+                return section;
+            } else {
+                const QMetaType metaType = QRangeModelImplBase::meta_type_at<row_type>(section);
+                if (metaType.isValid())
+                    result = QString::fromUtf8(metaType.name());
+            }
         }
         if (!result.isValid())
             result = this->itemModel().QAbstractItemModel::headerData(section, orientation, role);

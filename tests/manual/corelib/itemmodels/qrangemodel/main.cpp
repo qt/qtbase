@@ -232,6 +232,17 @@ public slots:
         return new QRangeModel(data);
     }
 
+    QRangeModel *makeListOfArrays()
+    {
+        QList<std::array<double, 2000>> data = {
+            {0.0},
+            {1.1},
+            {2.2},
+        };
+
+        return new QRangeModel(std::move(data));
+    }
+
     QRangeModel *makeCustomFromEnum()
     {
         return new QRangeModel(QMetaEnumerator(Qt::ItemDataRole{}));
