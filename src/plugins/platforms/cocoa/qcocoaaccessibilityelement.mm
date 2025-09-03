@@ -723,6 +723,26 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
     return nil;
 }
 
+
+- (id) accessibilityMinValue {
+    if (QAccessibleInterface *iface = self.qtInterface) {
+        if (iface->valueInterface()) {
+            return iface->valueInterface()->minimumValue().toString().toNSString();
+        }
+    }
+    return nil;
+}
+
+
+- (id) accessibilityMaxValue {
+    if (QAccessibleInterface *iface = self.qtInterface) {
+        if (iface->valueInterface()) {
+            return iface->valueInterface()->maximumValue().toString().toNSString();
+        }
+    }
+    return nil;
+}
+
 - (NSInteger) accessibilityNumberOfCharacters {
     if (QAccessibleInterface *iface = self.qtInterface) {
         if (QAccessibleTextInterface *text = iface->textInterface())
