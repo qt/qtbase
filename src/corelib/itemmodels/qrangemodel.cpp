@@ -1084,6 +1084,11 @@ void QRangeModel::setRoleNames(const QHash<int, QByteArray> &names)
     Q_EMIT roleNamesChanged();
 }
 
+void QRangeModel::resetRoleNames()
+{
+    setRoleNames({});
+}
+
 /*!
     \reimp
 */

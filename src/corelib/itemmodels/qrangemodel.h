@@ -76,7 +76,7 @@ public:
 
     QHash<int, QByteArray> roleNames() const override;
     void setRoleNames(const QHash<int, QByteArray> &names);
-    void resetRoleNames() { setRoleNames({}); }
+    void resetRoleNames();
 
     bool canFetchMore(const QModelIndex &parent) const override;
     void fetchMore(const QModelIndex &parent) override;
