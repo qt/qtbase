@@ -594,6 +594,9 @@ void QXcbDrag::setActionList(Qt::DropAction requestedAction, Qt::DropActions sup
                             XCB_ATOM_ATOM, 32, actions.size(), actions.constData());
         current_actions = actions;
     }
+#else
+    Q_UNUSED(requestedAction)
+    Q_UNUSED(supportedActions)
 #endif
 }
 
