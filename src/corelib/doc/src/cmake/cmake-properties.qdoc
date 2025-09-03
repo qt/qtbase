@@ -239,7 +239,7 @@ precedence over this CMake property.
 
 \badcode
 set_target_properties(${target} PROPERTIES
-    QT_ANDROID_COMPILE_SDK_VERSION 35
+    QT_ANDROID_COMPILE_SDK_VERSION 36
 )
 \endcode
 
@@ -247,7 +247,7 @@ The following format also works:
 
 \badcode
 set_target_properties(${target} PROPERTIES
- QT_ANDROID_COMPILE_SDK_VERSION "android-35"
+ QT_ANDROID_COMPILE_SDK_VERSION "android-36"
 )
 \endcode
 

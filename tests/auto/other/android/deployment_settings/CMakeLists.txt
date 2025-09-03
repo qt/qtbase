@@ -33,11 +33,11 @@ set_target_properties(${target} PROPERTIES
     my_package_source_dir "path/to/source/dir"
     my_libs_property "some/path/to/lib2.so;some/path/to/lib3.so"
     my_plugins_property "some/path/to/plugin2.so;some/path/to/plugin3.so"
-
-    QT_ANDROID_SDK_BUILD_TOOLS_REVISION "23.0.2"
+    # Below build tools should match to minimum supported OS API level version
+    QT_ANDROID_SDK_BUILD_TOOLS_REVISION "28.0.3"
     QT_ANDROID_MIN_SDK_VERSION "1"
     QT_ANDROID_TARGET_SDK_VERSION "2"
-    QT_ANDROID_COMPILE_SDK_VERSION "35"
+    QT_ANDROID_COMPILE_SDK_VERSION "36"
     QT_ANDROID_APP_NAME "Android Deployment Settings Test"
     QT_ANDROID_PACKAGE_NAME "org.qtproject.android_deployment_settings_test"
     QT_ANDROID_DEPLOYMENT_DEPENDENCIES "dep1.so;dep2.so;dep3.so"
@@ -62,10 +62,11 @@ qt6_policy(SET QTP0002 OLD)
 set(target tst_android_deployment_settings_old)
 qt6_add_executable(${target} MANUAL_FINALIZATION EXCLUDE_FROM_ALL noop.cpp)
 set_target_properties(${target} PROPERTIES
-    QT_ANDROID_SDK_BUILD_TOOLS_REVISION "23.0.2"
+    # Below build tools should match to minimum supported OS API level version
+    QT_ANDROID_SDK_BUILD_TOOLS_REVISION "28.0.3"
     QT_ANDROID_MIN_SDK_VERSION "1"
     QT_ANDROID_TARGET_SDK_VERSION "2"
-    QT_ANDROID_COMPILE_SDK_VERSION "35"
+    QT_ANDROID_COMPILE_SDK_VERSION "36"
     QT_ANDROID_APP_NAME "Android Deployment Settings Test"
     QT_ANDROID_PACKAGE_NAME "org.qtproject.android_deployment_settings_test"
     QT_ANDROID_DEPLOYMENT_DEPENDENCIES "dep1.so;dep2.so;dep3.so"

@@ -193,7 +193,7 @@ function(_qt_internal_android_generate_target_build_gradle target)
         QT_ANDROID_MIN_SDK_VERSION "28")
 
     _qt_internal_android_get_gradle_property(target_sdk_version ${target}
-        QT_ANDROID_TARGET_SDK_VERSION "34")
+        QT_ANDROID_TARGET_SDK_VERSION "36")
 
     set(target_abis "$<TARGET_PROPERTY:${target},_qt_android_abis>")
     set(target_abi_list "$<JOIN:${target_abis};${CMAKE_ANDROID_ARCH_ABI},'$<COMMA> '>")
