@@ -339,7 +339,7 @@ function(qt_internal_add_3rdparty_library target)
 
     if(QT_GENERATE_SBOM)
         set(sbom_args "")
-        list(APPEND sbom_args TYPE QT_THIRD_PARTY_MODULE)
+        list(APPEND sbom_args DEFAULT_SBOM_ENTITY_TYPE QT_THIRD_PARTY_MODULE)
 
         if(NOT will_install)
             list(APPEND sbom_args NO_INSTALL)

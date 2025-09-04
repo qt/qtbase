@@ -9,7 +9,7 @@ function(_qt_internal_sbom_handle_target_binary_files target)
         FRAMEWORK
     )
     set(single_args
-        TYPE
+        SBOM_ENTITY_TYPE
         SPDX_ID
         LICENSE_EXPRESSION
         INSTALL_PREFIX
@@ -60,9 +60,10 @@ function(_qt_internal_sbom_handle_target_binary_files target)
         CUSTOM_NO_INFIX
     )
 
-    if(NOT arg_TYPE IN_LIST supported_types)
+    if(NOT arg_SBOM_ENTITY_TYPE IN_LIST supported_types)
         message(FATAL_ERROR
-            "Unsupported target TYPE '${arg_TYPE}' for target '${target}' during SBOM creation.")
+            "Unsupported target TYPE '${arg_SBOM_ENTITY_TYPE}' for target '${target}' during "
+            "SBOM creation.")
     endif()
 
     set(types_without_binary_files
@@ -82,9 +83,9 @@ function(_qt_internal_sbom_handle_target_binary_files target)
 
     get_target_property(target_type ${target} TYPE)
 
-    if(arg_TYPE IN_LIST types_without_binary_files)
+    if(arg_SBOM_ENTITY_TYPE IN_LIST types_without_binary_files)
         message(DEBUG "Target ${target} has no binary files to reference in the SBOM "
-            "because it has the ${arg_TYPE} type.")
+            "because it has the ${arg_SBOM_ENTITY_TYPE} type.")
         return()
     endif()
 
@@ -109,7 +110,7 @@ function(_qt_internal_sbom_handle_target_binary_files target)
     set(file_common_options "")
 
     list(APPEND file_common_options PACKAGE_SPDX_ID "${package_spdx_id}")
-    list(APPEND file_common_options PACKAGE_TYPE "${arg_TYPE}")
+    list(APPEND file_common_options PACKAGE_TYPE "${arg_SBOM_ENTITY_TYPE}")
 
     if(arg_COPYRIGHTS)
         list(APPEND file_common_options COPYRIGHTS "${arg_COPYRIGHTS}")
@@ -131,9 +132,9 @@ function(_qt_internal_sbom_handle_target_binary_files target)
         set(library_path_kind LIBRARY_PATH)
     endif()
 
-    if(arg_TYPE STREQUAL "QT_TOOL"
-            OR arg_TYPE STREQUAL "QT_APP"
-            OR arg_TYPE STREQUAL "EXECUTABLE")
+    if(arg_SBOM_ENTITY_TYPE STREQUAL "QT_TOOL"
+            OR arg_SBOM_ENTITY_TYPE STREQUAL "QT_APP"
+            OR arg_SBOM_ENTITY_TYPE STREQUAL "EXECUTABLE")
 
         set(valid_executable_types
             "EXECUTABLE"
@@ -156,7 +157,7 @@ function(_qt_internal_sbom_handle_target_binary_files target)
             PATH_SUFFIX "${path_suffix}"
             OPTIONS ${file_common_options}
         )
-    elseif(arg_TYPE STREQUAL "QT_PLUGIN")
+    elseif(arg_SBOM_ENTITY_TYPE STREQUAL "QT_PLUGIN")
         if(NOT (target_type STREQUAL "SHARED_LIBRARY"
                 OR target_type STREQUAL "STATIC_LIBRARY"
                 OR target_type STREQUAL "MODULE_LIBRARY"))
@@ -168,10 +169,10 @@ function(_qt_internal_sbom_handle_target_binary_files target)
             PATH_SUFFIX "${path_suffix}"
             OPTIONS ${file_common_options}
         )
-    elseif(arg_TYPE STREQUAL "QT_MODULE"
-            OR arg_TYPE STREQUAL "QT_THIRD_PARTY_MODULE"
-            OR arg_TYPE STREQUAL "LIBRARY"
-            OR arg_TYPE STREQUAL "THIRD_PARTY_LIBRARY_WITH_FILES"
+    elseif(arg_SBOM_ENTITY_TYPE STREQUAL "QT_MODULE"
+            OR arg_SBOM_ENTITY_TYPE STREQUAL "QT_THIRD_PARTY_MODULE"
+            OR arg_SBOM_ENTITY_TYPE STREQUAL "LIBRARY"
+            OR arg_SBOM_ENTITY_TYPE STREQUAL "THIRD_PARTY_LIBRARY_WITH_FILES"
         )
         if(WIN32 AND target_type STREQUAL "SHARED_LIBRARY")
             _qt_internal_sbom_handle_multi_config_target_binary_file(${target}

@@ -612,7 +612,7 @@ macro(_qt_internal_get_sbom_purl_handling_options opt_args single_args multi_arg
     set(${opt_args} "")
     set(${single_args}
         SUPPLIER
-        TYPE
+        SBOM_ENTITY_TYPE
         PACKAGE_VERSION
     )
     set(${multi_args} "")
@@ -650,6 +650,8 @@ macro(_qt_internal_get_sbom_add_target_common_options opt_args single_args multi
         __QT_INTERNAL_HANDLE_QT_ENTITY_ATTRIBUTION_FILES
     )
     set(${single_args}
+        DEFAULT_SBOM_ENTITY_TYPE
+        SBOM_ENTITY_TYPE
         PACKAGE_VERSION
         FRIENDLY_PACKAGE_NAME
         SUPPLIER
@@ -660,6 +662,7 @@ macro(_qt_internal_get_sbom_add_target_common_options opt_args single_args multi
         DOWNLOAD_LOCATION
         ATTRIBUTION_ENTRY_INDEX
         ATTRIBUTION_PARENT_TARGET
+        ATTRIBUTION_PARENT_TARGET_SBOM_ENTITY_TYPE
         SBOM_PACKAGE_COMMENT
     )
     set(${multi_args}
@@ -703,7 +706,7 @@ macro(_qt_internal_get_sbom_add_target_options opt_args single_args multi_args)
         NO_INSTALL
     )
     set(${single_args}
-        TYPE
+        TYPE # deprecated, use SBOM_ENTITY_TYPE or DEFAULT_SBOM_ENTITY_TYPE instead
     )
     set(${multi_args}
         LIBRARIES
@@ -716,6 +719,38 @@ macro(_qt_internal_get_sbom_add_target_options opt_args single_args multi_args)
     list(APPEND ${single_args} ${specific_single_args})
     list(APPEND ${multi_args} ${specific_multi_args})
 endmacro()
+
+# Chooses between SBOM_ENTITY_TYPE, TYPE (deprecated) or DEFAULT_SBOM_ENTITY_TYPE and assigns it to
+# out_var.
+function(_qt_internal_map_sbom_entity_type out_var)
+    set(opt_args "")
+    set(single_args
+        TYPE # deprecated
+        SBOM_ENTITY_TYPE
+        DEFAULT_SBOM_ENTITY_TYPE
+    )
+    set(multi_args "")
+    cmake_parse_arguments(PARSE_ARGV 1 arg "${opt_args}" "${single_args}" "${multi_args}")
+
+    # Previously only TYPE existed, now there is also SBOM_ENTITY_TYPE and DEFAULT_SBOM_ENTITY_TYPE.
+    # DEFAULT_SBOM_ENTITY_TYPE is the fallback value, TYPE is deprecated but left for compatibility
+    # and SBOM_ENTITY_TYPE has the highest priority.
+    if(arg_SBOM_ENTITY_TYPE)
+        set(sbom_entity_type "${arg_SBOM_ENTITY_TYPE}")
+    elseif(arg_TYPE)
+        # deprecated code path
+        if(QT_WARN_DEPRECATED_SBOM_TYPE_OPTION)
+            message(DEPRECATION "TYPE option is deprecated, use SBOM_ENTITY_TYPE instead.")
+        endif()
+        set(sbom_entity_type "${arg_TYPE}")
+    elseif(arg_DEFAULT_SBOM_ENTITY_TYPE)
+        set(sbom_entity_type "${arg_DEFAULT_SBOM_ENTITY_TYPE}")
+    else()
+        set(sbom_entity_type "")
+    endif()
+
+    set(${out_var} "${sbom_entity_type}" PARENT_SCOPE)
+endfunction()
 
 # Generate sbom information for a given target.
 # Creates:
@@ -739,10 +774,12 @@ function(_qt_internal_sbom_add_target target)
 
     get_target_property(target_type ${target} TYPE)
 
+    _qt_internal_map_sbom_entity_type(sbom_entity_type ${ARGN})
+
     # Mark the target as a Qt module for sbom processing purposes.
     # Needed for non-standard targets like Bootstrap and QtLibraryInfo, that don't have a Qt::
     # namespace prefix.
-    if(arg_TYPE STREQUAL QT_MODULE)
+    if(sbom_entity_type STREQUAL QT_MODULE)
         set_target_properties(${target} PROPERTIES _qt_sbom_is_qt_module TRUE)
     endif()
 
@@ -781,7 +818,7 @@ function(_qt_internal_sbom_add_target target)
     # Record the target spdx id right now, so we can refer to it in later attribution targets
     # if needed.
     _qt_internal_sbom_record_target_spdx_id(${target}
-        TYPE "${arg_TYPE}"
+        SBOM_ENTITY_TYPE "${sbom_entity_type}"
         PACKAGE_NAME "${package_name_for_spdx_id}"
         OUT_VAR package_spdx_id
     )
@@ -789,6 +826,7 @@ function(_qt_internal_sbom_add_target target)
     if(arg_USE_ATTRIBUTION_FILES)
         set(attribution_args
             ATTRIBUTION_PARENT_TARGET "${target}"
+            ATTRIBUTION_PARENT_TARGET_SBOM_ENTITY_TYPE "${sbom_entity_type}"
         )
 
         # Forward the sbom specific options when handling attribution files because those might
@@ -826,7 +864,7 @@ function(_qt_internal_sbom_add_target target)
     endif()
 
     if(arg___QT_INTERNAL_HANDLE_QT_ENTITY_TYPE_LICENSE)
-        _qt_internal_sbom_forward_sbom_add_target_options(sbom_add_target_args)
+        _qt_internal_sbom_forward_sbom_add_target_options_modified(sbom_add_target_args)
         _qt_internal_sbom_handle_qt_entity_license_expression(${target} ${sbom_add_target_args}
             OUT_VAR qt_entity_license_expression)
         if(qt_entity_license_expression)
@@ -860,7 +898,7 @@ function(_qt_internal_sbom_add_target target)
 
     if(license_expression AND
             arg___QT_INTERNAL_HANDLE_QT_ENTITY_TYPE_LICENSE)
-        _qt_internal_sbom_forward_sbom_add_target_options(sbom_add_target_args)
+        _qt_internal_sbom_forward_sbom_add_target_options_modified(sbom_add_target_args)
         _qt_internal_sbom_handle_qt_entity_license_declared_expression(${target}
             ${sbom_add_target_args}
             LICENSE_CONCLUDED_EXPRESSION "${license_expression}"
@@ -878,7 +916,7 @@ function(_qt_internal_sbom_add_target target)
     endif()
 
     if(arg___QT_INTERNAL_HANDLE_QT_ENTITY_TYPE_COPYRIGHTS)
-        _qt_internal_sbom_forward_sbom_add_target_options(sbom_add_target_args)
+        _qt_internal_sbom_forward_sbom_add_target_options_modified(sbom_add_target_args)
         _qt_internal_sbom_handle_qt_entity_copyrights(${target} ${sbom_add_target_args}
             OUT_VAR qt_copyrights)
         if(qt_copyrights)
@@ -902,7 +940,7 @@ function(_qt_internal_sbom_add_target target)
     endif()
 
     if(arg___QT_INTERNAL_HANDLE_QT_ENTITY_TYPE_PACKAGE_VERSION)
-        _qt_internal_sbom_forward_sbom_add_target_options(sbom_add_target_args)
+        _qt_internal_sbom_forward_sbom_add_target_options_modified(sbom_add_target_args)
         _qt_internal_sbom_handle_qt_entity_package_version(${target} ${sbom_add_target_args}
             OUT_VAR qt_entity_package_version)
         if(qt_entity_package_version)
@@ -920,7 +958,7 @@ function(_qt_internal_sbom_add_target target)
     endif()
 
     if(arg___QT_INTERNAL_HANDLE_QT_ENTITY_TYPE_SUPPLIER)
-        _qt_internal_sbom_forward_sbom_add_target_options(sbom_add_target_args)
+        _qt_internal_sbom_forward_sbom_add_target_options_modified(sbom_add_target_args)
         _qt_internal_sbom_handle_qt_entity_supplier(${target} ${sbom_add_target_args}
             OUT_VAR qt_entity_supplier)
         if(qt_entity_supplier)
@@ -938,7 +976,7 @@ function(_qt_internal_sbom_add_target target)
     endif()
 
     if(arg___QT_INTERNAL_HANDLE_QT_ENTITY_TYPE_DOWNLOAD_LOCATION)
-        _qt_internal_sbom_forward_sbom_add_target_options(sbom_add_target_args)
+        _qt_internal_sbom_forward_sbom_add_target_options_modified(sbom_add_target_args)
         _qt_internal_sbom_handle_qt_entity_download_location(${target} ${sbom_add_target_args}
             OUT_VAR qt_entity_download_location)
         if(qt_entity_download_location)
@@ -954,7 +992,7 @@ function(_qt_internal_sbom_add_target target)
         endif()
     endif()
 
-    if(arg_TYPE STREQUAL "SYSTEM_LIBRARY")
+    if(sbom_entity_type STREQUAL "SYSTEM_LIBRARY")
         # Try to get package url that was set using CMake's set_package_properties function.
         # Relies on querying the internal global property name that CMake sets in its
         # implementation.
@@ -973,7 +1011,7 @@ function(_qt_internal_sbom_add_target target)
         list(APPEND project_package_options DOWNLOAD_LOCATION "${download_location}")
     endif()
 
-    _qt_internal_sbom_get_package_purpose("${arg_TYPE}" package_purpose)
+    _qt_internal_sbom_get_package_purpose("${sbom_entity_type}" package_purpose)
     list(APPEND project_package_options PURPOSE "${package_purpose}")
 
     set(cpe_values "")
@@ -1004,7 +1042,7 @@ function(_qt_internal_sbom_add_target target)
     endif()
 
     if(arg___QT_INTERNAL_HANDLE_QT_ENTITY_TYPE_CPE)
-        _qt_internal_sbom_forward_sbom_add_target_options(sbom_add_target_args)
+        _qt_internal_sbom_forward_sbom_add_target_options_modified(sbom_add_target_args)
         _qt_internal_sbom_handle_qt_entity_cpe(${target} ${sbom_add_target_args}
             CPE "${cpe_values}"
             OUT_VAR qt_cpe_list)
@@ -1018,7 +1056,10 @@ function(_qt_internal_sbom_add_target target)
     endif()
 
     # Assemble arguments to forward to the function that handles purl options.
-    set(purl_args "")
+    set(purl_args
+        SBOM_ENTITY_TYPE ${sbom_entity_type}
+    )
+
     _qt_internal_get_sbom_purl_add_target_options(purl_opt_args purl_single_args purl_multi_args)
     _qt_internal_forward_function_args(
         FORWARD_APPEND
@@ -1028,7 +1069,6 @@ function(_qt_internal_sbom_add_target target)
             ${purl_opt_args}
         FORWARD_SINGLE
             ${purl_single_args}
-            TYPE
         FORWARD_MULTI
             ${purl_multi_args}
     )
@@ -1169,7 +1209,7 @@ function(_qt_internal_sbom_add_target target)
         ${no_install_option}
         ${framework_option}
         ${install_prefix_option}
-        TYPE "${arg_TYPE}"
+        SBOM_ENTITY_TYPE "${sbom_entity_type}"
         ${target_binary_multi_config_args}
         SPDX_ID "${package_spdx_id}"
         ${copyrights_option}
@@ -1179,7 +1219,7 @@ function(_qt_internal_sbom_add_target target)
     _qt_internal_sbom_handle_target_custom_files("${target}"
         ${no_install_option}
         ${install_prefix_option}
-        PACKAGE_TYPE "${arg_TYPE}"
+        PACKAGE_TYPE "${sbom_entity_type}"
         PACKAGE_SPDX_ID "${package_spdx_id}"
         ${copyrights_option}
         ${license_option}
@@ -1197,10 +1237,7 @@ function(_qt_internal_add_sbom target)
     set(opt_args
         IMMEDIATE_FINALIZATION
     )
-    set(single_args
-        TYPE
-        FRIENDLY_PACKAGE_NAME
-    )
+    set(single_args "")
     set(multi_args "")
     cmake_parse_arguments(PARSE_ARGV 1 arg "${opt_args}" "${single_args}" "${multi_args}")
     # No validation on purpose, the other options will be validated later.
@@ -1231,9 +1268,7 @@ function(_qt_internal_create_sbom_target target)
     endif()
 
     set(opt_args "")
-    set(single_args
-        TYPE
-    )
+    set(single_args "")
     set(multi_args "")
     cmake_parse_arguments(PARSE_ARGV 1 arg "${opt_args}" "${single_args}" "${multi_args}")
     # No validation on purpose, the other options will be validated later.
@@ -1247,10 +1282,6 @@ function(_qt_internal_create_sbom_target target)
         _qt_sbom_is_custom_sbom_target "TRUE"
         IMPORTED_GLOBAL TRUE
     )
-
-    if(NOT arg_TYPE)
-        message(FATAL_ERROR "No SBOM TYPE option was provided for target: ${target}")
-    endif()
 endfunction()
 
 # Helper to add additional sbom information for an existing target.
@@ -1272,7 +1303,9 @@ function(_qt_internal_extend_sbom target)
         IMMEDIATE_FINALIZATION
     )
     set(single_args
-        TYPE
+        TYPE # deprecated
+        SBOM_ENTITY_TYPE
+        DEFAULT_SBOM_ENTITY_TYPE
         FRIENDLY_PACKAGE_NAME
     )
     set(multi_args "")
@@ -1287,9 +1320,11 @@ function(_qt_internal_extend_sbom target)
         IMMEDIATE_FINALIZATION
     )
 
+    _qt_internal_map_sbom_entity_type(sbom_entity_type ${ARGN})
+
     # Make sure a spdx id is recorded for the target right now, so it is "known" when handling
     # relationships for other targets, even if the target was not yet finalized.
-    if(arg_TYPE)
+    if(sbom_entity_type)
         # Friendly package name is allowed to be empty.
         set(package_name_option "")
         if(arg_FRIENDLY_PACKAGE_NAME)
@@ -1297,7 +1332,7 @@ function(_qt_internal_extend_sbom target)
         endif()
 
         _qt_internal_sbom_record_target_spdx_id(${target}
-            TYPE "${arg_TYPE}"
+            SBOM_ENTITY_TYPE "${sbom_entity_type}"
             ${package_name_option}
         )
     endif()
@@ -1520,7 +1555,7 @@ function(_qt_internal_sbom_record_target_spdx_id target)
     set(opt_args "")
     set(single_args
         PACKAGE_NAME
-        TYPE
+        SBOM_ENTITY_TYPE
         OUT_VAR
     )
     set(multi_args "")
@@ -1544,12 +1579,12 @@ function(_qt_internal_sbom_record_target_spdx_id target)
     endif()
 
     _qt_internal_sbom_generate_target_package_spdx_id(package_spdx_id
-        TYPE "${arg_TYPE}"
+        SBOM_ENTITY_TYPE "${arg_SBOM_ENTITY_TYPE}"
         PACKAGE_NAME "${package_name_for_spdx_id}"
     )
     _qt_internal_sbom_save_spdx_id_for_target("${target}" "${package_spdx_id}")
 
-    _qt_internal_sbom_is_qt_entity_type("${arg_TYPE}" is_qt_entity_type)
+    _qt_internal_sbom_is_qt_entity_type("${arg_SBOM_ENTITY_TYPE}" is_qt_entity_type)
     _qt_internal_sbom_save_spdx_id_for_qt_entity_type(
         "${target}" "${is_qt_entity_type}" "${package_spdx_id}")
 
@@ -1563,7 +1598,7 @@ function(_qt_internal_sbom_generate_target_package_spdx_id out_var)
     set(opt_args "")
     set(single_args
         PACKAGE_NAME
-        TYPE
+        SBOM_ENTITY_TYPE
     )
     set(multi_args "")
     cmake_parse_arguments(PARSE_ARGV 1 arg "${opt_args}" "${single_args}" "${multi_args}")
@@ -1572,12 +1607,12 @@ function(_qt_internal_sbom_generate_target_package_spdx_id out_var)
     if(NOT arg_PACKAGE_NAME)
         message(FATAL_ERROR "PACKAGE_NAME must be set")
     endif()
-    if(NOT arg_TYPE)
-        message(FATAL_ERROR "TYPE must be set")
+    if(NOT arg_SBOM_ENTITY_TYPE)
+        message(FATAL_ERROR "SBOM_ENTITY_TYPE must be set")
     endif()
 
     _qt_internal_sbom_get_root_project_name_for_spdx_id(repo_project_name_spdx_id)
-    _qt_internal_sbom_get_package_infix("${arg_TYPE}" package_infix)
+    _qt_internal_sbom_get_package_infix("${arg_SBOM_ENTITY_TYPE}" package_infix)
 
     _qt_internal_sbom_get_sanitized_spdx_id(spdx_id
         "SPDXRef-${repo_project_name_spdx_id}-${package_infix}-${arg_PACKAGE_NAME}")

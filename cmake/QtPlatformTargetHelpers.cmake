@@ -66,7 +66,7 @@ function(qt_internal_setup_public_platform_target)
     qt_internal_generate_pkg_config_file(Platform)
 
     qt_internal_add_sbom(Platform
-        TYPE QT_MODULE
+        SBOM_ENTITY_TYPE QT_MODULE
         ATTRIBUTION_FILE_DIR_PATHS
             "${PROJECT_SOURCE_DIR}/cmake/3rdparty/extra-cmake-modules"
             "${PROJECT_SOURCE_DIR}/cmake/3rdparty/kwin"
