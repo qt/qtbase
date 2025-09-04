@@ -299,7 +299,7 @@ QDataStream &readArrayBasedContainer(QDataStream &s, Container &c)
 
     c.clear();
     qint64 size = QDataStream::readQSizeType(s);
-    qsizetype n = size;
+    const auto n = qsizetype(size);
     if (size != n || size < 0) {
         s.setStatus(QDataStream::SizeLimitExceeded);
         return s;
@@ -324,7 +324,7 @@ QDataStream &readListBasedContainer(QDataStream &s, Container &c)
 
     c.clear();
     qint64 size = QDataStream::readQSizeType(s);
-    qsizetype n = size;
+    const auto n = qsizetype(size);
     if (size != n || size < 0) {
         s.setStatus(QDataStream::SizeLimitExceeded);
         return s;
@@ -348,7 +348,7 @@ QDataStream &readAssociativeContainer(QDataStream &s, Container &c)
 
     c.clear();
     qint64 size = QDataStream::readQSizeType(s);
-    qsizetype n = size;
+    const auto n = qsizetype(size);
     if (size != n || size < 0) {
         s.setStatus(QDataStream::SizeLimitExceeded);
         return s;
