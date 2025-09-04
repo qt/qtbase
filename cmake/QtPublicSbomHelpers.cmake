@@ -533,7 +533,7 @@ function(_qt_internal_sbom_setup_fake_deterministic_build)
 
     if(QT_SBOM_FAKE_DETERMINISTIC_BUILD)
         set(value "ON")
-    elseif()
+    else()
         set(value "OFF")
     endif()
 
