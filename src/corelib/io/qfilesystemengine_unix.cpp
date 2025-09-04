@@ -1026,28 +1026,36 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
     // third, we try access(2)
     if (what & (QFileSystemMetaData::UserPermissions | QFileSystemMetaData::ExistsAttribute)) {
 #if defined(Q_OS_VXWORKS)
-        // on VxWorks if the filesystem is not POSIX, access() always returns false, despite the
-        // file is readable
         struct statfs statBuf;
-        if (statfs(nativeFilePath, &statBuf) != 0) {
-            what &= ~QFileSystemMetaData::LinkType; // don't clear link: could be broken symlink
-            data.clearFlags(what);
-            return false;
-        }
-        if (statBuf.f_type != NFSV2_MAGIC && statBuf.f_type != NFSV3_MAGIC &&
-            statBuf.f_type != HRFS_MAGIC) {
+        if (statfs(nativeFilePath, &statBuf) == 0) {
+            if (statBuf.f_type != NFSV2_MAGIC && statBuf.f_type != NFSV3_MAGIC &&
+                statBuf.f_type != HRFS_MAGIC) {
 #if __has_include(<dosFsLib.h>)
-            if (data.entryFlags & QFileSystemMetaData::OwnerWritePermission) {
-                data.entryFlags |= QFileSystemMetaData::UserWritePermission;
-            }
-            if (data.entryFlags & QFileSystemMetaData::OwnerExecutePermission) {
-                data.entryFlags |= QFileSystemMetaData::UserExecutePermission;
-            }
+                if (data.entryFlags & QFileSystemMetaData::OwnerWritePermission) {
+                    data.entryFlags |= QFileSystemMetaData::UserWritePermission;
+                }
+                if (data.entryFlags & QFileSystemMetaData::OwnerExecutePermission) {
+                    data.entryFlags |= QFileSystemMetaData::UserExecutePermission;
+                }
 #endif
-            data.entryFlags |= QFileSystemMetaData::UserReadPermission |
-                    QFileSystemMetaData::ExistsAttribute;
-            return true;
+                data.entryFlags |= QFileSystemMetaData::UserReadPermission |
+                        QFileSystemMetaData::ExistsAttribute;
+                return true;
+            }
         }
+#if defined(QT_DEBUG)
+        else {
+              //on VxWorks hostfs, used for debugging, failes on statfs and falsely reports
+              //WasDeleted
+              statResult = QT_STAT(nativeFilePath, &statBuffer);
+              if (statResult == 0) {
+                  data.entryFlags |= QFileSystemMetaData::UserReadPermission |
+                                     QFileSystemMetaData::ExistsAttribute;
+                  data.entryFlags &= ~QFileSystemMetaData::WasDeletedAttribute;
+                  return true;
+              }
+        }
+#endif
 #endif
         // calculate user permissions
         auto checkAccess = [&](QFileSystemMetaData::MetaDataFlag flag, int mode) {
