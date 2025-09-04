@@ -1966,8 +1966,12 @@ public:
     static QRhi *create(Implementation impl,
                         QRhiInitParams *params,
                         Flags flags = {},
-                        QRhiNativeHandles *importDevice = nullptr,
-                        QRhiAdapter *adapter = nullptr);
+                        QRhiNativeHandles *importDevice = nullptr);
+    static QRhi *create(Implementation impl,
+                        QRhiInitParams *params,
+                        Flags flags,
+                        QRhiNativeHandles *importDevice,
+                        QRhiAdapter *adapter);
     static bool probe(Implementation impl, QRhiInitParams *params);
     using AdapterList = QVector<QRhiAdapter *>;
     static AdapterList enumerateAdapters(Implementation impl,

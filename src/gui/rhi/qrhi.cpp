@@ -8905,6 +8905,16 @@ QRhi::AdapterList QRhiImplementation::enumerateAdaptersBeforeCreate(QRhiNativeHa
 }
 
 /*!
+    \overload
+
+    Equivalent to create(\a impl, \a params, \a flags, \a importDevice, \c nullptr).
+ */
+QRhi *QRhi::create(Implementation impl, QRhiInitParams *params, Flags flags, QRhiNativeHandles *importDevice)
+{
+    return create(impl, params, flags, importDevice, nullptr);
+}
+
+/*!
     \return a new QRhi instance with a backend for the graphics API specified
     by \a impl with the specified \a flags. \return \c nullptr if the
     function fails.
