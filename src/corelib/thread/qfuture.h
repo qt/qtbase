@@ -45,7 +45,7 @@ public:
     }
 
     template<typename U, typename V = T, typename = QtPrivate::EnableForVoid<V>>
-    explicit QFuture(const QFuture<U> &other) : d(other.d)
+    QFuture(const QFuture<U> &other) : d(other.d)
     {
     }
 

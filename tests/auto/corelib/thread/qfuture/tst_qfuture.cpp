@@ -791,8 +791,12 @@ void tst_QFuture::futureToVoid()
     p.setProgressValue(42);
     p.finish();
 
-    QFuture<void> voidFuture = QFuture<void>(future);
+    QFuture<void> voidFuture = future;
     QCOMPARE(voidFuture.progressValue(), 42);
+
+    QFuture<void> voidFuture2;
+    voidFuture2 = future;
+    QCOMPARE(voidFuture2.progressValue(), 42);
 }
 
 class IntResult : public QFutureInterface<int>
