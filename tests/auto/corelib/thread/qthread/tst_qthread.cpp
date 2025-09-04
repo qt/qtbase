@@ -1190,6 +1190,23 @@ void tst_QThread::wait3_slowDestructor()
     QVERIFY(thread.wait(one_minute));
 }
 
+class Barrier
+{
+    std::mutex mtx;
+    std::condition_variable cnd;
+    int current;
+public:
+    Barrier(int target) : current(target) {}
+    void arriveAndWait()
+    {
+        std::unique_lock l(mtx);
+        if (--current)
+            cnd.wait(l);
+        else
+            cnd.notify_all();
+    }
+};
+
 void tst_QThread::multiThreadWait_data()
 {
     QTest::addColumn<QList<int>>("deadlines");
@@ -1221,7 +1238,7 @@ void tst_QThread::multiThreadWait_data()
     // this is probably too fast and the Forever gets in too quickly
     addRow(0, -1);
 
-    // any time below 100ms (see below) is expected to timeout
+    // any positive time below 100ms (see below) is expected to timeout
     addRow(25, -1);
     addRow(25, 50, -1);
     addRow(50, 25, -1);
@@ -1246,20 +1263,67 @@ void tst_QThread::multiThreadWait()
         }
     };
 
+    // Design of this test:
+    //
+    // The WaiterThread class is used to test both threads that time out during
+    // QThread::wait() and those that succeed. Both the WaiterThread and the
+    // main thread operate two QElapsedTimers, each before and after the
+    // arriveAndWait() calls. The WaiterThread QElapsedTimer started after
+    // arriveAndWait() measures the time around QThread::wait().
+    //
+    // To avoid using QThread::wait() to wait on a thread that itself doing
+    // QThread::wait() in a test that is testing exactly that function, the
+    // main thread waits for the WaiterThreads first on a QSemaphore. If those
+    // tryAcquire() fail, there's a bug in QThread::wait().
+    //
+    // For wait() calls that are expected to timeout, the WaiterThread's
+    // QElapsedTimer around the wait() call will be compared against the
+    // QElapsedTimer from the main thread which was started before any thread
+    // was started (read: the main thread's starting time point is always
+    // earlier than that of the WaiterThreads). The main thread then waits for
+    // the WaiterThreads that time out, before ending measuring the
+    // QElapsedTimers. This implies the time measured around the
+    // QThread::wait() must strictly less than the time the main thread's
+    // QElapsedTimer.
+    //
+    // After this, the main thread causes the TargetThread to exit, which
+    // should cause QThread::wait() to return with success in the remaining
+    // WaiterThread.
+    //
+    // For wait() calls that are expected to succeed, the time measured around
+    // the QThread::wait() must be strictly less than or equal to the original
+    // timeout (though see note below). Additionally, we verify that
+    // QThread::wait() didn't return too soon (potentially before TargetThread
+    // had actually exited) by comparing the thread's total time to the
+    // QElapsedTimer on the main thread that was started after the
+    // arriveAndWait() (read: starting time point is strictly later than that
+    // of the WaiterThreads'). The threads must have waited a time greater than
+    // or equal to this time.
+    //
+    // Note on race condition: there's one race condition on a successful
+    // non-forever wait. It is possible the deadline calculated by the main
+    // thread has come and gone before QThread::wait() was called, meaning it
+    // is called with a deadline in the past and will thus return with failure.
+    // We mitigate this by only using a timeouts for success much greater than
+    // the expected runtime of the test (2s vs ~10 ms).
     class WaiterThread : public QThread {
     public:
-        QSemaphore *startSema, *endSema;
+        Barrier *barrier;
+        QSemaphore *endSema;
         QThread *target;
         QDeadlineTimer deadline;
+        QElapsedTimer::Duration totalDuration = {};
         QElapsedTimer::Duration waitedDuration = {};
         int result = -1;
         void run() override
         {
-            QElapsedTimer elapsed;
-            elapsed.start();
-            startSema->acquire();
+            QElapsedTimer total, waitOnly;
+            total.start();
+            barrier->arriveAndWait();
+            waitOnly.start();
             result = target->wait(deadline);
-            waitedDuration = elapsed.durationElapsed();
+            waitedDuration = waitOnly.durationElapsed();
+            totalDuration = total.durationElapsed();
             endSema->release();
         }
     };
@@ -1267,17 +1331,14 @@ void tst_QThread::multiThreadWait()
     QFETCH(QList<int>, deadlines);
     TargetThread target;
     target.start();
-    QElapsedTimer elapsedTimer;
-    elapsedTimer.start();
 
-    // we use a QSemaphore to wait on the WaiterThread::run() instead of
-    // QThread::wait() so it's easier to debug when the latter has a problem
-    QSemaphore startSema, timeoutSema, successSema;
+    Barrier barrier(deadlines.size() + 1);      // plus the main thread
+    QSemaphore timeoutSema, successSema;
     std::array<std::unique_ptr<WaiterThread>, 5> threads;   // 5 threads is enough
     int expectedTimeoutCount = 0;
     for (int i = 0; i < deadlines.size(); ++i) {
         threads[i] = std::make_unique<WaiterThread>();
-        threads[i]->startSema = &startSema;
+        threads[i]->barrier = &barrier;
         if (isExpectedToTimeout(deadlines.at(i))) {
             ++expectedTimeoutCount;
             threads[i]->endSema = &timeoutSema;
@@ -1285,19 +1346,25 @@ void tst_QThread::multiThreadWait()
             threads[i]->endSema = &successSema;
         }
         threads[i]->target = &target;
-        threads[i]->deadline = QDeadlineTimer(deadlines.at(i));
-        threads[i]->start();
     }
+    for (int i = 0; i < deadlines.size(); ++i)
+        threads[i]->deadline = QDeadlineTimer(deadlines.at(i));
 
-    // release the waiting threads first, so they begin waiting
-    startSema.release(deadlines.size());
+    // start the threads and synchronize everyone
+    QElapsedTimer timeoutTimer, waitTimer;
+    timeoutTimer.start();
+    for (int i = 0; i < deadlines.size(); ++i)
+        threads[i]->start();
+    barrier.arriveAndWait();
+    waitTimer.start();
 
     // then wait for the threads that are expected to timeout to do so
     QVERIFY(timeoutSema.tryAcquire(expectedTimeoutCount, QDeadlineTimer::Forever));
 
     // compute the elapsed time for timing comparisons
     std::this_thread::sleep_for(5ms);   // short, but long enough to avoid rounding errors
-    auto elapsed = elapsedTimer.durationElapsed();
+    auto waitElapsed = waitTimer.durationElapsed();
+    auto timeoutElapsed = timeoutTimer.durationElapsed();
     std::this_thread::sleep_for(5ms);
 
     // cause the target thread to exit, so the successful threads do succeed
@@ -1313,10 +1380,13 @@ void tst_QThread::multiThreadWait()
     for (int i = 0; i < deadlines.size(); ++i) {
         auto printI = qScopeGuard([i] { qWarning("i = %i", i); });
         if (isExpectedToTimeout(deadlines.at(i))) {
-            QCOMPARE_LT(threads[i]->waitedDuration, elapsed);
+            QCOMPARE_LT(threads[i]->waitedDuration, timeoutElapsed);
             QCOMPARE(threads[i]->result, false);
         } else {
-            QCOMPARE_GE(threads[i]->waitedDuration, elapsed);
+            // if it was a success, it must have waited less than the deadline
+            if (deadlines.at(i) >= 0)
+                QCOMPARE_LE(threads[i]->waitedDuration, deadlines.at(i) * 1ms);
+            QCOMPARE_GE(threads[i]->totalDuration, waitElapsed);
             QCOMPARE(threads[i]->result, true);
         }
         printI.dismiss();
