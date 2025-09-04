@@ -735,6 +735,7 @@ public:
     uint childrenHiddenByWState : 1;
     uint childrenShownByExpose : 1;
     uint dontSetExplicitShowHide : 1;
+    uint inheritStyleRecursionGuard : 1;
 
     // *************************** Focus abstraction ************************************
     enum class FocusDirection {

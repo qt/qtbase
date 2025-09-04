@@ -11,7 +11,9 @@
 #include <qlabel.h>
 #include <qlayout.h>
 #include <qlineedit.h>
-#include <qlistview.h>
+#if QT_CONFIG(listwidget)
+#include <qlistwidget.h>
+#endif
 #include <qmessagebox.h>
 #include <qmimedata.h>
 #include <qpainter.h>
@@ -22,6 +24,7 @@
 #include <qstylefactory.h>
 #include <private/qwidget_p.h>
 #include <private/qwidgetrepaintmanager_p.h>
+#include <private/qwindowsstyle_p.h>
 #include <private/qapplication_p.h>
 #include <private/qhighdpiscaling_p.h>
 #include <qcalendarwidget.h>
@@ -6806,7 +6809,32 @@ void tst_QWidget::deleteStyle()
     QCoreApplication::processEvents();
 }
 
-class TestStyle : public QCommonStyle
+
+#if QT_CONFIG(listwidget)
+class DontCrashOnSetStyleWidget : public QWidget
+{
+    Q_OBJECT
+public:
+    DontCrashOnSetStyleWidget()
+    {
+        lw = new QListWidget;
+        lwi = new QListWidgetItem;
+        lw->addItem(lwi);
+        lw->setItemWidget(lwi, new QLabel(u"test"_s));
+        auto l = new QVBoxLayout(this);
+        l->addWidget(lw);
+    }
+    bool testStyleSheetTarget() const
+    {
+        return lw->itemWidget(lwi)->testAttribute(Qt::WA_StyleSheetTarget);
+    }
+private:
+    QListWidget *lw = nullptr;
+    QListWidgetItem *lwi = nullptr;
+};
+#endif
+
+class TestStyle : public QWindowsStyle
 {
     void polish(QWidget *w) override
     {
@@ -6827,13 +6855,17 @@ void tst_QWidget::dontCrashOnSetStyle()
     });
     {
         qApp->setStyle(new TestStyle);
-        qApp->setStyleSheet("blub");
+        qApp->setStyleSheet(u"DontCrashOnSetStyleWidget QLabel {color:red;}"_s);
         QComboBox w;
         w.show();
         QVERIFY(QTest::qWaitForWindowExposed(&w));
         // this created an infinite loop / stack overflow inside setStyle_helper()
         // directly call polish instead waiting for the polish event
         qApp->style()->polish(&w);
+#if QT_CONFIG(listwidget)
+        DontCrashOnSetStyleWidget widget;
+        QVERIFY(widget.testStyleSheetTarget());
+#endif
     }
 }
 

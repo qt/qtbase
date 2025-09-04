@@ -160,6 +160,7 @@ QWidgetPrivate::QWidgetPrivate(decltype(QObjectPrivateVersion) version)
       , childrenHiddenByWState(0)
       , childrenShownByExpose(0)
       , dontSetExplicitShowHide(0)
+      , inheritStyleRecursionGuard(0)
 #if defined(Q_OS_WIN)
       , noPaintOnScreen(0)
 #endif
@@ -2680,7 +2681,7 @@ void QWidgetPrivate::setStyle_helper(QStyle *newStyle, bool propagate)
     extra->style = newStyle;
 
     // repolish
-    if (polished && q->windowType() != Qt::Desktop && oldStyle != q->style()) {
+    if (polished && q->windowType() != Qt::Desktop) {
         oldStyle->unpolish(q);
         q->style()->polish(q);
     }
@@ -2728,6 +2729,12 @@ void QWidgetPrivate::inheritStyle()
         proxy->repolish(q);
         return;
     }
+    if (inheritStyleRecursionGuard)
+        return;
+    inheritStyleRecursionGuard = true;
+    const auto resetGuard = qScopeGuard([&]() {
+            inheritStyleRecursionGuard = false;
+        });
 
     QStyle *origStyle = proxy ? proxy->base : extraStyle;
     QWidget *parent = q->parentWidget();
