@@ -4383,11 +4383,6 @@ QString QLocaleData::applyIntegerFormatting(QString &&numStr, bool negative, int
     return result;
 }
 
-// Most users of this class are in this file, but tests in developer builds also
-// instantiate it. So it needs to be out-of-line for those builds:
-#ifndef QT_BUILD_INTERNAL
-inline
-#endif // ... but can otherwise be inline.
 QLocaleData::NumericData::NumericData(const QLocaleData *data, QLocaleData::NumberMode mode)
     : grouping(data->groupSizes()), isC(data == c())
       // Note: actually test pointer equality to c(), not language == C, as
@@ -4610,6 +4605,204 @@ char NumericTokenizer::nextToken()
     return 0;
 }
 } // namespace with no name
+
+/*!
+    \internal
+    \since 6.12
+    \class QLocaleData::DigitSequence
+    \brief Descriptor for a digit sequence within a text.
+
+    Packages the ASCII equivalent (optional sign and) digit sequence, along with
+    a description of which parts come from where in the original text.
+
+    Supports construction or assignment by moving or copying. Modifying its
+    members, other than by assigning a newly constructed value or a result of
+    taking a subsequence, may lead to undefined behaviour.
+
+    \sa sliced(), first(), last()
+*/
+// Exists for the benefit of date-time parsing, but could be used for anything
+// else that doesn't do fractional parts, exponents or digit-grouping.
+
+/*!
+    \fn qsizetype QLocaleData::DigitSequence::size()
+
+    Returns the number of ASCII characters describing the digit sequence.
+
+    This is the number of digits plus, if present, one for the sign. It is the
+    number of characters \l transcribeTo() will transcribe. For the number of
+    digits found, use \c {digits.size()}
+*/
+
+/*!
+    \fn void QLocaleData::DigitSequence::transcribeTo(CharBuff *buff)
+
+    Transcribes the ASCII form of this digit sequence to \a buff.
+*/
+
+/*!
+    \since 6.12
+    \enum QLocaleData::DigitSequence::Option
+
+    Options to modify how digit sequences are parsed.
+
+    \value Default The null option value.
+    \value AllowSign A leading sign character may be present.
+
+    In the numeric fields of a date, only a year field ever has a sign, all
+    others use ungrouped digits. Zero-padding on the left of day and month
+    fields is common (and it may also appear in year fields). The hour field of
+    a zone-offset may also have a sign. Otherwise all numeric time fields are
+    similar to numeric month and day fields.
+
+    In numeric fields of a time, the least-significant given (be it hour, minute
+    or second) may have a fractional part in some formats. The handling of this
+    is left for the caller to take care of. Likewise, the caller is expected to
+    deal with leading and trailing space appropriately.
+*/
+
+/*!
+    \fn bool QLocaleData::DigitSequence::isEmpty() const
+
+    Returns true precisely if this digit sequence represents nothing.
+
+    This arises when the constructor found no digits and (when allowed) not even
+    a sign. It is equivalent to \l {QLocaleData::DigitSequence::}{size()} == 0.
+    To test whether any digits were found, use \c {digits.isEmpty()}, which may
+    be true even though a sign was found (making \c{size() == 1}).
+*/
+
+/*!
+    \fn bool QLocaleData::DigitSequence::hasSign() const
+
+    Returns true precisely if the digit sequence parsed includes a leading sign.
+    It is equivalent to \c{sign != '\0'}.
+*/
+
+/*!
+    \fn QStringView QLocaleData::DigitSequence::used(QStringView text, qsizetype from) const
+    \fn QStringView QLocaleData::DigitSequence::used(QStringView text) const
+
+    Returns the slice of \a text described by this digit sequence.
+
+    The given \a text and \a from should be those passed to the constructor. If
+    \a from is omitted, this returns the text described by just the digits,
+    omitting the sign.
+
+    \sa {QLocaleData::DigitSequence::}{DigitSequence()}
+*/
+
+/*!
+    \fn QLocaleData::DigitSequence QLocaleData::DigitSequence::first(qsizetype count) const
+
+    Returns a DigitSequence describing a prefix of this.
+
+    The result describes the first \a count ASCII characters to which the
+    sequence corresponds and their positions within the parsed text. The value
+    of \a count must not be negative or exceed \c size().
+*/
+
+/*!
+    \fn QLocaleData::DigitSequence QLocaleData::DigitSequence::last(qsizetype count) const
+
+    Returns a DigitSequence describing a tail of this.
+
+    The result describes the last \a count ASCII characters to which the
+    sequence corresponds. The value of \a count must not be negative or exceed
+    \c size(). The result is equivalent to \c{sliced(size() - count)}.
+*/
+
+/*!
+    \fn QLocaleData::DigitSequence QLocaleData::DigitSequence::sliced(qsizetype from) const
+
+    Returns a DigitSequence describing a tail of this.
+
+    This skips over the text to which the first \a from ASCII characters of the
+    sequence correspond, to describe the remainder and their positions within
+    the parsed text. The value of \a from must not be negative or exceed \c
+    size().
+*/
+
+/*!
+    \overload
+    \fn QLocaleData::DigitSequence QLocaleData::DigitSequence::sliced(qsizetype from, qsizetype count) const
+
+    Returns a DigitSequence describing a subsequence of this.
+
+    This skips over the portion of the text to which first \a from ASCII
+    characters correspond and describes the portion described by the next \a
+    count ASCII characters. The value of \a from must not be negative or exceed
+    \c size(). The value of \a count must not be negative or exceed \c{size() -
+    from}. The result is equivalent to \c{sliced(from).first(count)}.
+*/
+
+/*!
+    Scan \a text for an initial sequence of digits.
+
+    The given \a numeric provides data relevant to number-parsing, including
+    what constitute digits. Options in \a flags control whether a leading sign
+    may be included. If \a from is passed, the scan starts at this index in \a
+    text, otherwise from the start.
+
+    The resulting \l {QLocaleData::}{DigitSequence} contains the parsed digit
+    sequence, \c digits, describes the positions of digits within \a text, by \c
+    digitStart and \c digitWidth, and (where allowed) reports any sign.
+
+    When \c digits is empty, \c digitStart is the end of the text parsed: this
+    is either where the sign ended, when \c hasSign(), or the value of \c from
+    passed to the constructor. Otherwise, each \c{digits[i]} represents
+    \c{text.sliced(digitStart + i * digitWidth, digitWidth)} and the whole text
+    parsed is \c{text.first(digitStart + digits.size() *
+    digitWidth).sliced(from)}. Either way, if \c hasSign(), it represents
+    \c{text.first(endIndex()).sliced(from)}.
+
+    \sa {QLocaleData::DigitSequence::}{used()}
+*/
+QLocaleData::DigitSequence::DigitSequence(QStringView text, NumericData &&numeric,
+                                          Options flags, qsizetype from)
+    : digitStart(from), digitWidth(numeric.zeroWidth())
+{
+    NumericTokenizer tokens(text, std::move(numeric), IntegerMode, from);
+    if (tokens.done())
+        return;
+    char currentToken = tokens.nextToken();
+    if (!currentToken)
+        return;
+
+    // Handle any leading sign:
+    if (currentToken == '+' || currentToken == '-') {
+        if (!flags.testFlag(Option::AllowSign))
+            return;
+        digitStart = tokens.index();
+        sign = currentToken;
+        currentToken = '\0';
+    }
+
+    // Iterate what remains:
+    while (currentToken || !tokens.done()) {
+        if (!currentToken)
+            currentToken = tokens.nextToken();
+        if (!currentToken)
+            return;
+
+        if (currentToken < '0' || currentToken > '9')
+            return; // What we got was not a digit in our locale.
+
+        // We have a digit.
+        digits.push_back(currentToken);
+        currentToken = '\0';
+    }
+}
+
+/*!
+    \internal
+    QLocaleData::DigitSequence QLocaleData::digitSequence(QStringView text, QLocaleData::DigitSequence::Options, qsizetype from)
+    \brief Returns a DigitSequence describing some portion of \a text starting at \a from.
+
+    As for the \l{QLocaleData::}{DigitSequence} constructor, supplying the
+    \l{QLocaleData::}{NumericData} for this QLocaleData instance and the
+    IntegerMode as the relevant argument to it.
+*/
 
 /*
     Converts a number in locale representation to the C locale equivalent.

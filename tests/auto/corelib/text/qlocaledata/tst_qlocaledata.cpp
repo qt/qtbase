@@ -37,6 +37,9 @@ private slots:
     void strtod_data();
     void strtod();
 
+    void digitSequence_data();
+    void digitSequence();
+
 #ifndef QT_NO_SYSTEMLOCALE
     void mySystemLocale_data();
     void mySystemLocale();
@@ -370,7 +373,6 @@ void tst_QLocaleData::numericDataDigits_data()
 
     // No CLDR locale uses Suzhou digits: see suzhouDigits() below.
 }
-#undef LOCALE_DATA_PTR
 
 void tst_QLocaleData::numericDataDigits()
 {
@@ -549,6 +551,269 @@ void tst_QLocaleData::strtod()
     actualOk = false;
     QCOMPARE(QLocale::c().toDouble(num_strref, &actualOk), num);
     QCOMPARE(actualOk, ok);
+}
+
+void tst_QLocaleData::digitSequence_data()
+{
+    using O = QLocaleData::DigitSequence::Option;
+    using Os = QLocaleData::DigitSequence::Options;
+    QTest::addColumn<const QLocaleData *>("data");
+    QTest::addColumn<QString>("numStr");
+    QTest::addColumn<Os>("flags");
+    QTest::addColumn<qsizetype>("from");
+    QTest::addColumn<qsizetype>("endIndex");
+    QTest::addColumn<QByteArray>("parsed");
+    const auto addRow = [](const char *format, const char *name,
+                           const QLocaleData *locale, QString &&numStr,
+                           Os opt, qsizetype from, qsizetype end,
+                           QByteArray &&expect) {
+        QTest::addRow(format, name) << locale << numStr << opt << from << end << expect;
+    };
+
+    // Test both for C (which is special-cased) and en-US (which should be the same as it)
+    for (int i = 0; i < 2; ++i) {
+        const QLocaleData *loc = i == 0 ? QLocaleData::c()
+            : LOCALE_DATA_PTR(English, LatinScript, UnitedStates);
+        const char *name = i == 0 ? "C" : "en-US";
+
+        addRow("null/%s", name, loc, QString(), O::Default, 0, 0, ""_ba);
+        addRow("null/%s/sign", name, loc, QString(), O::AllowSign, 0, 0, ""_ba);
+        addRow("empty/%s", name, loc, u""_s, O::Default, 0, 0, ""_ba);
+        addRow("empty/%s/sign", name, loc, u""_s, O::AllowSign, 0, 0, ""_ba);
+        // Sign on its own does get read:
+        addRow("-/%s", name, loc, u"-"_s, O::Default, 0, 0, ""_ba);
+        addRow("+/%s", name, loc, u"+"_s, O::Default, 0, 0, ""_ba);
+        addRow("-/%s/sign", name, loc, u"-"_s, O::AllowSign, 0, 1, "-"_ba);
+        addRow("+/%s/sign", name, loc, u"+"_s, O::AllowSign, 0, 1, "+"_ba);
+        // Extra sign is ignored:
+        addRow("--/%s", name, loc, u"-"_s, O::Default, 0, 0, ""_ba);
+        addRow("++/%s", name, loc, u"+"_s, O::Default, 0, 0, ""_ba);
+        addRow("--/%s/sign", name, loc, u"-"_s, O::AllowSign, 0, 1, "-"_ba);
+        addRow("++/%s/sign", name, loc, u"+"_s, O::AllowSign, 0, 1, "+"_ba);
+        // Dangling cruft gets ignored:
+        addRow("-cruft/%s/sign", name, loc, u"-cruft"_s, O::AllowSign, 0, 1, "-"_ba);
+        addRow("+cruft/%s/sign", name, loc, u"+cruft"_s, O::AllowSign, 0, 1, "+"_ba);
+
+        // Digits get read:
+        addRow("0/%s", name, loc, u"0"_s, O::Default, 0, 1, "0"_ba);
+        // But must be at the start:
+        addRow(" 0/%s", name, loc, u" 0"_s, O::Default, 0, 0, ""_ba);
+        // ... or start at from:
+        addRow("0|after /%s", name, loc, u" 0"_s, O::Default, 1, 2, "0"_ba);
+        // Dangling cruft makes no difference:
+        addRow("0cruft/%s", name, loc, u"0cruft"_s, O::Default, 0, 1, "0"_ba);
+        addRow(" 0cruft/%s", name, loc, u" 0cruft"_s, O::Default, 0, 0, ""_ba);
+        addRow("0cruft|after /%s", name, loc, u" 0cruft"_s, O::Default, 1, 2, "0"_ba);
+        // Sign is not digit:
+        addRow("+0/%s", name, loc, u"+0"_s, O::Default, 0, 0, ""_ba);
+        addRow("-0/%s", name, loc, u"-0"_s, O::Default, 0, 0, ""_ba);
+        // Digit after sign can be read if from points at it:
+        addRow("0|after+/%s", name, loc, u"+0"_s, O::Default, 1, 2, "0"_ba);
+        addRow("0|after-/%s", name, loc, u"-0"_s, O::Default, 1, 2, "0"_ba);
+
+        // Sign and digit can be read together:
+        addRow("+0/%s/sign", name, loc, u"+0"_s, O::AllowSign, 0, 2, "+0"_ba);
+        addRow("-0/%s/sign", name, loc, u"-0"_s, O::AllowSign, 0, 2, "-0"_ba);
+        // Can still skip sign by setting from:
+        addRow("0|after+/%s/sign", name, loc, u"+0"_s, O::AllowSign, 1, 2, "0"_ba);
+        addRow("0|after-/%s/sign", name, loc, u"-0"_s, O::AllowSign, 1, 2, "0"_ba);
+        // Duplicate sign blocks reading:
+        addRow("++0/%s/sign", name, loc, u"++0"_s, O::AllowSign, 0, 1, "+"_ba);
+        addRow("--0/%s/sign", name, loc, u"--0"_s, O::AllowSign, 0, 1, "-"_ba);
+        // Unless from points after it:
+        addRow("+0|after+/%s/sign", name, loc, u"++0"_s, O::AllowSign, 1, 3, "+0"_ba);
+        addRow("-0|after-/%s/sign", name, loc, u"--0"_s, O::AllowSign, 1, 3, "-0"_ba);
+        // Cruft makes no difference:
+        addRow("+0cruft/%s/sign", name, loc, u"+0cruft"_s, O::AllowSign, 0, 2, "+0"_ba);
+        addRow("-0cruft/%s/sign", name, loc, u"-0cruft"_s, O::AllowSign, 0, 2, "-0"_ba);
+        addRow("0cruft|after+/%s/sign", name, loc, u"+0cruft"_s,
+               O::AllowSign, 1, 2, "0"_ba);
+        addRow("0cruft|after-/%s/sign", name, loc, u"-0cruft"_s,
+               O::AllowSign, 1, 2, "0"_ba);
+        addRow("++0cruft/%s/sign", name, loc, u"++0cruft"_s,
+               O::AllowSign, 0, 1, "+"_ba);
+        addRow("--0cruft/%s/sign", name, loc, u"--0cruft"_s,
+               O::AllowSign, 0, 1, "-"_ba);
+        addRow("+0cruft|after+/%s/sign", name, loc, u"++0cruft"_s,
+               O::AllowSign, 1, 3, "+0"_ba);
+        addRow("-0cruft|after-/%s/sign", name, loc, u"--0cruft"_s,
+               O::AllowSign, 1, 3, "-0"_ba);
+
+        // We can read many digits:
+        addRow("0123456789/%s", name, loc, u"0123456789"_s,
+               O::Default, 0, 10, "0123456789"_ba);
+        addRow("9012345678/%s/sign", name, loc, u"9012345678"_s,
+               O::AllowSign, 0, 10, "9012345678"_ba);
+        addRow("8901234567|after+/%s", name, loc, u"+8901234567"_s,
+               O::Default, 1, 11, "8901234567"_ba);
+        addRow("7890123456|after-/%s", name, loc, u"-7890123456"_s,
+               O::Default, 1, 11, "7890123456"_ba);
+        addRow("+6789012345/%s/sign", name, loc, u"+6789012345"_s,
+               O::AllowSign, 0, 11, "+6789012345"_ba);
+        addRow("-5678901234/%s/sign", name, loc, u"-5678901234"_s,
+               O::AllowSign, 0, 11, "-5678901234"_ba);
+        // Cruft makes no difference:
+        addRow("4567890123cruft/%s", name, loc, u"4567890123cruft"_s,
+               O::Default, 0, 10, "4567890123"_ba);
+        addRow("3456789012cruft/%s/sign", name, loc, u"3456789012cruft"_s,
+               O::AllowSign, 0, 10, "3456789012"_ba);
+        addRow("2345678901cruft|after+/%s", name, loc, u"+2345678901cruft"_s,
+               O::Default, 1, 11, "2345678901"_ba);
+        addRow("1234567890cruft|after-/%s", name, loc, u"-1234567890cruft"_s,
+               O::Default, 1, 11, "1234567890"_ba);
+        addRow("+0123456789cruft/%s/sign", name, loc, u"+0123456789cruft"_s,
+               O::AllowSign, 0, 11, "+0123456789"_ba);
+        addRow("-0123456789cruft/%s/sign", name, loc, u"-0123456789cruft"_s,
+               O::AllowSign, 0, 11, "-0123456789"_ba);
+
+        // Grouping not supported:
+        addRow("0,123,456,789/%s", name, loc, u"0,123,456,789"_s,
+               O::Default, 0, 1, "0"_ba);
+    }
+
+    const QLocaleData *svensk = LOCALE_DATA_PTR(Swedish, LatinScript, Sweden);
+    addRow("0123456789/%s", "sv-Latn-SE", svensk, u"0123456789"_s,
+           O::Default, 0, 10, "0123456789"_ba);
+    addRow("\u2212" "0123456789/%s/sign", "sv-Latn-SE", svensk, u"\u2212" "0123456789"_s,
+           O::AllowSign, 0, 11, "-0123456789"_ba);
+
+    const QLocaleData *spanish = LOCALE_DATA_PTR(Spanish, LatinScript, Spain);
+    addRow("0123456789/%s", "es-Latn-ES", spanish, u"0123456789"_s,
+           O::Default, 0, 10, "0123456789"_ba);
+    addRow("-0123456789/%s/sign", "es-Latn-ES", spanish, u"\u2212" "0123456789"_s,
+           O::AllowSign, 0, 11, "-0123456789"_ba);
+
+    const QLocaleData *tunisian = LOCALE_DATA_PTR(Arabic, ArabicScript, Tunisia);
+    addRow("0123456789/%s", "ar-Arab-TN", tunisian, u"0123456789"_s,
+           O::Default, 0, 10, "0123456789"_ba);
+    addRow("-0123456789/%s/sign", "ar-Arab-TN", tunisian, u"\u200E-0123456789"_s,
+           O::AllowSign, 0, 12, "-0123456789"_ba);
+
+    const QLocaleData *arabic = LOCALE_DATA_PTR(Arabic, ArabicScript, Egypt);
+    addRow("0123456789/%s", "ar-EG", arabic,
+           u"\u0660\u0661\u0662\u0663\u0664\u0665\u0666\u0667\u0668\u0669"_s,
+           O::Default, 0, 10, "0123456789"_ba);
+    addRow("-0123456789/%s/sign", "ar-EG", arabic,
+           u"\u061C-\u0660\u0661\u0662\u0663\u0664\u0665\u0666\u0667\u0668\u0669"_s,
+           O::AllowSign, 0, 12, "-0123456789"_ba);
+
+    const QLocaleData *punjabi = LOCALE_DATA_PTR(Punjabi, ArabicScript, Pakistan);
+    addRow("0123456789/%s", "pa-Arab-PK", punjabi,
+           u"\u06F0\u06F1\u06F2\u06F3\u06F4\u06F5\u06F6\u06F7\u06F8\u06F9"_s,
+           O::Default, 0, 10, "0123456789"_ba);
+    addRow("-0123456789/%s/sign", "pa-Arab-PK", punjabi,
+           u"\u200E-\u200E\u06F0\u06F1\u06F2\u06F3\u06F4\u06F5\u06F6\u06F7\u06F8\u06F9"_s,
+           O::AllowSign, 0, 13, "-0123456789"_ba);
+
+    const QLocaleData *persian = LOCALE_DATA_PTR(Persian, ArabicScript, Iran);
+    addRow("0123456789/%s", "fa-Arab-IR", persian,
+           u"\u06F0\u06F1\u06F2\u06F3\u06F4\u06F5\u06F6\u06F7\u06F8\u06F9"_s,
+           O::Default, 0, 10, "0123456789"_ba);
+    addRow("-0123456789/%s/sign", "fa-Arab-IR", persian,
+           u"\u200E\u2212\u06F0\u06F1\u06F2\u06F3\u06F4\u06F5\u06F6\u06F7\u06F8\u06F9"_s,
+           O::AllowSign, 0, 12, "-0123456789"_ba);
+
+    const QLocaleData *deva = LOCALE_DATA_PTR(Nepali, DevanagariScript, Nepal);
+    addRow("0123456789/%s", "ne-Deva-NP", deva,
+           u"\u0966\u0967\u0968\u0969\u096a\u096b\u096c\u096d\u096e\u096f"_s,
+           O::Default, 0, 10, "0123456789"_ba);
+    addRow("-0123456789/%s/sign", "ne-Deva-NP", deva,
+           u"-\u0966\u0967\u0968\u0969\u096a\u096b\u096c\u096d\u096e\u096f"_s,
+           O::AllowSign, 0, 11, "-0123456789"_ba);
+
+    const QLocaleData *beng = LOCALE_DATA_PTR(Manipuri, BanglaScript, India);
+    addRow("0123456789/%s", "mni-Beng-IN", beng,
+           u"\u09E6\u09E7\u09E8\u09E9\u09EA\u09EB\u09EC\u09ED\u09EE\u09EF"_s,
+           O::Default, 0, 10, "0123456789"_ba);
+    addRow("-0123456789/%s/sign", "mni-Beng-IN", beng,
+           u"-\u09E6\u09E7\u09E8\u09E9\u09EA\u09EB\u09EC\u09ED\u09EE\u09EF"_s,
+           O::AllowSign, 0, 11, "-0123456789"_ba);
+
+    const QLocaleData *meitei = LOCALE_DATA_PTR(Manipuri, MeiteiMayekScript, India);
+    addRow("0123456789/%s", "mni-Mtei-IN", meitei,
+           u"\uABF0\uABF1\uABF2\uABF3\uABF4\uABF5\uABF6\uABF7\uABF8\uABF9"_s,
+           O::Default, 0, 10, "0123456789"_ba);
+    addRow("-0123456789/%s/sign", "mni-Mtei-IN", meitei,
+           u"-\uABF0\uABF1\uABF2\uABF3\uABF4\uABF5\uABF6\uABF7\uABF8\uABF9"_s,
+           O::AllowSign, 0, 11, "-0123456789"_ba);
+
+    const QLocaleData *nkoo = LOCALE_DATA_PTR(Nko, NkoScript, Guinea);
+    addRow("0123456789/%s", "nqo-Nkoo-GN", nkoo,
+           u"\u07C0\u07C1\u07C2\u07C3\u07C4\u07C5\u07C6\u07C7\u07C8\u07C9"_s,
+           O::Default, 0, 10, "0123456789"_ba);
+    addRow("-0123456789/%s/sign", "nqo-Nkoo-GN", nkoo,
+           u"-\u07C0\u07C1\u07C2\u07C3\u07C4\u07C5\u07C6\u07C7\u07C8\u07C9"_s,
+           O::AllowSign, 0, 11, "-0123456789"_ba);
+
+    const QLocaleData *adlam = LOCALE_DATA_PTR(Fulah, AdlamScript, Guinea);
+    addRow("0123456789/%s", "ff-Adlm-GN", adlam,
+           u"\U0001E950\U0001E951\U0001E952\U0001E953\U0001E954"
+           "\U0001E955\U0001E956\U0001E957\U0001E958\U0001E959"_s,
+           O::Default, 0, 20, "0123456789"_ba);
+    addRow("-0123456789/%s/sign", "ff-Adlm-GN", adlam,
+           u"-\U0001E950\U0001E951\U0001E952\U0001E953\U0001E954"
+           "\U0001E955\U0001E956\U0001E957\U0001E958\U0001E959"_s,
+           O::AllowSign, 0, 21, "-0123456789"_ba);
+
+    const QLocaleData *chakma = LOCALE_DATA_PTR(Chakma, ChakmaScript, Bangladesh);
+    addRow("0123456789/%s", "ccp-Cakm-BD", chakma,
+           u"\U00011136\U00011137\U00011138\U00011139\U0001113a"
+           "\U0001113b\U0001113c\U0001113d\U0001113e\U0001113f"_s,
+           O::Default, 0, 20, "0123456789"_ba);
+    addRow("-0123456789/%s/sign", "ccp-Cakm-BD", chakma,
+           u"-\U00011136\U00011137\U00011138\U00011139\U0001113a"
+           "\U0001113b\U0001113c\U0001113d\U0001113e\U0001113f"_s,
+           O::AllowSign, 0, 21, "-0123456789"_ba);
+
+    const QLocaleData *tibetan = LOCALE_DATA_PTR(Dzongkha, TibetanScript, Bhutan);
+    addRow("0123456789/%s", "dz-Tibt-BT", tibetan,
+           u"\u0F20\u0F21\u0F22\u0F23\u0F24\u0F25\u0F26\u0F27\u0F28\u0F29"_s,
+           O::Default, 0, 10, "0123456789"_ba);
+    addRow("-0123456789/%s/sign", "dz-Tibt-BT", tibetan,
+           u"-\u0F20\u0F21\u0F22\u0F23\u0F24\u0F25\u0F26\u0F27\u0F28\u0F29"_s,
+           O::AllowSign, 0, 11, "-0123456789"_ba);
+
+    const QLocaleData *burmese = LOCALE_DATA_PTR(Burmese, MyanmarScript, Myanmar);
+    addRow("0123456789/%s", "my-Mimr-MM", burmese,
+           u"\u1040\u1041\u1042\u1043\u1044\u1045\u1046\u1047\u1048\u1049"_s,
+           O::Default, 0, 10, "0123456789"_ba);
+    addRow("-0123456789/%s/sign", "my-Mimr-MM", burmese,
+           u"-\u1040\u1041\u1042\u1043\u1044\u1045\u1046\u1047\u1048\u1049"_s,
+           O::AllowSign, 0, 11, "-0123456789"_ba);
+
+    const QLocaleData *olchiki = LOCALE_DATA_PTR(Santali, OlChikiScript, India);
+    addRow("0123456789/%s", "sat-Olck-IN", olchiki,
+           u"\u1C50\u1C51\u1C52\u1C53\u1C54\u1C55\u1C56\u1C57\u1C58\u1C59"_s,
+           O::Default, 0, 10, "0123456789"_ba);
+    addRow("-0123456789/%s/sign", "sat-Olck-IN", olchiki,
+           u"-\u1C50\u1C51\u1C52\u1C53\u1C54\u1C55\u1C56\u1C57\u1C58\u1C59"_s,
+           O::AllowSign, 0, 11, "-0123456789"_ba);
+}
+#undef LOCALE_DATA_PTR
+
+void tst_QLocaleData::digitSequence()
+{
+    QFETCH(const QLocaleData *, data);
+    QFETCH(const QString, numStr);
+    QFETCH(const QLocaleData::DigitSequence::Options, flags);
+    QFETCH(const qsizetype, from);
+    QFETCH(const qsizetype, endIndex);
+    QFETCH(const QByteArray, parsed);
+    const char sign = parsed.startsWith('-') || parsed.startsWith('+') ? parsed[0] : '\0';
+
+    QLocaleData::DigitSequence result = data->digitSequence(numStr, flags, from);
+    QCOMPARE(result.size(), parsed.size());
+    QCOMPARE(result.endIndex(), endIndex);
+    QCOMPARE(result.hasSign(), sign != '\0');
+    QCOMPARE(result.sign, sign);
+    QCOMPARE(result.used(numStr, from), numStr.first(endIndex).sliced(from));
+    QCOMPARE(result.digits.size(), parsed.size() - (sign == '\0' ? 0 : 1));
+
+    QLocaleData::CharBuff buffer;
+    result.transcribeTo(&buffer);
+    QByteArrayView actual(buffer);
+
+    QCOMPARE(actual, parsed);
 }
 
 #ifndef QT_NO_SYSTEMLOCALE
