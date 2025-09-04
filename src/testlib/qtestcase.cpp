@@ -204,6 +204,18 @@ void Internal::maybeThrowOnSkip()
         Internal::throwOnSkip();
 }
 
+/*
+//! [return-void]
+    Defining this macro is useful if you wish to use \1 in functions that have
+    a non-\c{void} return type. Without this macro defined, \2, for example,
+    expands to a statement including \c{return;}, so it cannot be used in
+    functions (or lambdas) that return something else than \c{void}, e.g.
+    \l{QString}. This includes the case where throwing exceptions is enabled
+    only at runtime (using \3). With this macro defined, \2 instead expands to
+    a statement without a \c{return;}, which is usable from any function.
+//! [return-void]
+*/
+
 /*!
     \since 6.8
     \macro QTEST_THROW_ON_FAIL
@@ -211,6 +223,8 @@ void Internal::maybeThrowOnSkip()
 
     When defined, QCOMPARE()/QVERIFY() etc always throw on failure.
     QTest::setThrowOnFail() then no longer has any effect.
+
+    \include qtestcase.cpp {return-void} {QCOMPARE() or QVERIFY()} {QCOMPARE()} {QTest::setThrowOnFail(true)}
 */
 
 /*!
@@ -220,6 +234,8 @@ void Internal::maybeThrowOnSkip()
 
     When defined, QSKIP() always throws. QTest::setThrowOnSkip() then no longer
     has any effect.
+
+    \include qtestcase.cpp {return-void} {QSKIP()} {QSKIP()} {QTest::setThrowOnSkip(true)}
 */
 
 /*!
