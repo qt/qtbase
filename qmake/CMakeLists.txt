@@ -17,7 +17,7 @@ if(QT_WILL_BUILD_TOOLS)
         qmakelibraryinfo.cpp qmakelibraryinfo.h
     )
     qt_internal_add_sbom(QtLibraryInfo
-        TYPE QT_MODULE
+        SBOM_ENTITY_TYPE QT_MODULE
         NO_INSTALL
     )
 

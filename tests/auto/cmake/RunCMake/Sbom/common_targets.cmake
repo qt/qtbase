@@ -59,3 +59,27 @@ endif()
 
 add_subdirectory(custom_files)
 
+# Exercise various sbom entity options.
+foreach(idx RANGE 2)
+    if(idx EQUAL "0")
+        set(option_name "TYPE")
+    elseif(idx EQUAL "1")
+        set(option_name "SBOM_ENTITY_TYPE")
+    else()
+        set(option_name "DEFAULT_SBOM_ENTITY_TYPE")
+    endif()
+    set(target lib_various_types_${idx})
+    add_library(${target} STATIC)
+    target_sources(${target} PRIVATE sources/core_helper.cpp)
+    install(TARGETS ${target}
+        RUNTIME DESTINATION bin
+        ARCHIVE DESTINATION lib
+        LIBRARY DESTINATION lib
+    )
+    _qt_internal_add_sbom(${target}
+        ${option_name} "LIBRARY"
+        RUNTIME_PATH bin
+        ARCHIVE_PATH lib
+        LIBRARY_PATH lib
+    )
+endforeach()
