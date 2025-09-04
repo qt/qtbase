@@ -1636,6 +1636,7 @@ QList<QByteArray> QMetaMethodBuilder::parameterNames() const
 void QMetaMethodBuilder::setParameterNames(const QList<QByteArray> &value)
 {
     QMetaMethodBuilderPrivate *d = d_func();
+    Q_ASSERT(d->parameterCount() >= value.size());
     if (d)
         d->parameterNames = value;
 }

@@ -45,6 +45,8 @@ private slots:
 
     void ownMetaTypeNoProperties();
 
+    // void tooLongParameterNamesList(); // QTBUG-139845
+
 private:
     static bool checkForSideEffects
         (const QMetaObjectBuilder& builder,
@@ -1743,6 +1745,36 @@ void tst_QMetaObjectBuilder::enumCloning()
         }
     }
 }
+
+// Can't use this unittest on the CI because it hits an assert
+// void tst_QMetaObjectBuilder::tooLongParameterNamesList()
+// {
+//     // QTBUG-139845
+//     QMetaObjectBuilder builder;
+//
+//     builder.setSuperClass(&QObject::staticMetaObject);
+//
+//     QMetaMethodBuilder methodBuilder = builder.addSignal("iChanged(int)");
+//     methodBuilder.setParameterNames({"i"});
+//     int icIdx = methodBuilder.index();
+//
+//     methodBuilder = builder.addSignal("fChanged(float)");
+//     methodBuilder.setParameterNames({"f"});
+//     int fcIdx = methodBuilder.index();
+//
+//     methodBuilder = builder.addSlot("pushI(int)");
+//     methodBuilder.setParameterNames({"i"});
+//     builder.addSlot("reset()");
+//     methodBuilder = builder.addSlot("add(int)");
+//     methodBuilder.setParameterNames({"", "i"});
+//
+//     methodBuilder.setReturnType("int");
+//
+//     builder.addProperty("i", "int", icIdx);
+//     builder.addProperty("f", "float", fcIdx);
+//
+//     builder.toMetaObject();
+// }
 
 void tst_QMetaObjectBuilder::ownMetaTypeNoProperties()
 {
