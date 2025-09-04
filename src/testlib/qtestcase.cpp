@@ -210,7 +210,7 @@ void Internal::maybeThrowOnSkip()
     \relates <QTest>
 
     When defined, QCOMPARE()/QVERIFY() etc always throw on failure.
-    QTest::throwOnFail() then no longer has any effect.
+    QTest::setThrowOnFail() then no longer has any effect.
 */
 
 /*!
@@ -218,7 +218,7 @@ void Internal::maybeThrowOnSkip()
     \macro QTEST_THROW_ON_SKIP
     \relates <QTest>
 
-    When defined, QSKIP() always throws. QTest::throwOnSkip() then no longer
+    When defined, QSKIP() always throws. QTest::setThrowOnSkip() then no longer
     has any effect.
 */
 
