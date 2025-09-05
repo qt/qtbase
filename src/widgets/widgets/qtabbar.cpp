@@ -618,8 +618,11 @@ QRect QTabBarPrivate::normalizedScrollRect(int index)
             bottomEdge = scrollButtonRightRect.top();
         }
 
+        const auto lastTab = lastVisibleTab();
+        if (!lastTab)
+            return {};
         bool tearTopVisible = index != 0 && topEdge != -scrollOffset;
-        bool tearBottomVisible = index != tabList.size() - 1 && bottomEdge != tabList.constLast()->rect.bottom() + 1 - scrollOffset;
+        bool tearBottomVisible = index != tabList.size() - 1 && bottomEdge != lastTab->rect.bottom() + 1 - scrollOffset;
         if (tearTopVisible && !tearLeftRect.isNull())
             topEdge = tearLeftRect.bottom() + 1;
         if (tearBottomVisible && !tearRightRect.isNull())
@@ -649,8 +652,11 @@ QRect QTabBarPrivate::normalizedScrollRect(int index)
             rightEdge = scrollButtonRightRect.left();
         }
 
+        const auto lastTab = lastVisibleTab();
+        if (!lastTab)
+            return {};
         bool tearLeftVisible = index != 0 && leftEdge != -scrollOffset;
-        bool tearRightVisible = index != tabList.size() - 1 && rightEdge != tabList.constLast()->rect.right() + 1 - scrollOffset;
+        bool tearRightVisible = index != tabList.size() - 1 && rightEdge != lastTab->rect.right() + 1 - scrollOffset;
         if (tearLeftVisible && !tearLeftRect.isNull())
             leftEdge = tearLeftRect.right() + 1;
         if (tearRightVisible && !tearRightRect.isNull())
@@ -675,13 +681,14 @@ void QTabBarPrivate::makeVisible(int index)
     if (!validIndex(index))
         return;
 
+    const auto lastTab = lastVisibleTab();
     const QRect tabRect = tabList.at(index)->rect;
     const int oldScrollOffset = scrollOffset;
     const bool horiz = !verticalTabs(shape);
     const int available = horiz ? q->width() : q->height();
     const int tabStart = horiz ? tabRect.left() : tabRect.top();
     const int tabEnd = horiz ? tabRect.right() : tabRect.bottom();
-    const int lastTabEnd = horiz ? tabList.constLast()->rect.right() : tabList.constLast()->rect.bottom();
+    const int lastTabEnd = lastTab ? (horiz ? lastTab->rect.right() : lastTab->rect.bottom()) : 0;
     const QRect scrollRect = normalizedScrollRect(index);
     const QRect entireScrollRect = normalizedScrollRect(0); // ignore tears
     const int scrolledTabBarStart = qMax(1, scrollRect.left() + scrollOffset);
@@ -798,19 +805,23 @@ void QTabBarPrivate::scrollTabs()
     const bool horizontal = !verticalTabs(shape);
     const QRect scrollRect = normalizedScrollRect().translated(scrollOffset, 0);
 
-    int i = -1;
-
     if (sender == leftB) {
-        for (i = tabList.size() - 1; i >= 0; --i) {
-            int start = horizontal ? tabList.at(i)->rect.left() : tabList.at(i)->rect.top();
+        for (qsizetype i = tabList.size() - 1; i >= 0; --i) {
+            const auto *tab = tabList.at(i);
+            if (!tab->visible)
+                continue;
+            int start = horizontal ? tab->rect.left() : tab->rect.top();
             if (start < scrollRect.left()) {
                 makeVisible(i);
                 return;
             }
         }
     } else if (sender == rightB) {
-        for (i = 0; i < tabList.size(); ++i) {
-            const auto tabRect = tabList.at(i)->rect;
+        for (qsizetype i = 0; i < tabList.size(); ++i) {
+            const auto *tab = tabList.at(i);
+            if (!tab->visible)
+                continue;
+            const auto &tabRect = tab->rect;
             int start = horizontal ? tabRect.left() : tabRect.top();
             int end = horizontal ? tabRect.right() : tabRect.bottom();
             if (end > scrollRect.right() && start > scrollOffset) {
