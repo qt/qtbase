@@ -7,3 +7,5 @@ android
 android
 [touchEventPropagation]
 android
+[windowOpacity]
+macos # QTBUG-139950
