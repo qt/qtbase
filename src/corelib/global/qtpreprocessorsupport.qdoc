@@ -2,6 +2,13 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
 
 /*!
+    \headerfile <QtPreprocessorSupport>
+    \inmodule QtCore
+    \ingroup funclists
+    \brief Preprocessor-specific macros.
+*/
+
+/*!
     \macro Q_UNUSED(name)
     \relates <QtPreprocessorSupport>
 

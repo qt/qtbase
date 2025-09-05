@@ -1,6 +1,13 @@
 // Copyright (C) 2022 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
 
+/*!
+    \headerfile <QOverload>
+    \inmodule QtCore
+    \ingroup funclists
+    \brief Functions for resolving overloads.
+*/
+
 /*! \fn template <typename T> auto qOverload(T functionPointer)
     \relates <QOverload>
     \since 5.7
