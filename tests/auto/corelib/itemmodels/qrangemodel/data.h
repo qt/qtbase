@@ -511,7 +511,7 @@ struct Data {
     std::unique_ptr<pointer_tree, TreeDeleter> m_pointer_tree;
 };
 
-#define ADD_HELPER(Model, Tag, Policy, ColumnCount, Actions) \
+#define ADD_HELPER(Model, Tag, Policy, ColumnCount, Actions, HeaderData) \
     { \
         Factory factory = [this]() -> std::unique_ptr<QAbstractItemModel> { \
             auto result = std::make_unique<QRangeModel>(Policy(m_data->Model)); \
@@ -519,20 +519,26 @@ struct Data {
             return result; \
         }; \
         QTest::addRow(#Model #Tag) << std::move(factory) << int(std::size(m_data->Model)) \
-                                   << int(ColumnCount) << ChangeActions(Actions); \
+                                   << int(ColumnCount) << ChangeActions(Actions) \
+                                   << QVariant::fromValue(HeaderData); \
     }
 
-#define ADD_POINTER(Model, ColumnCount, Actions) ADD_HELPER(Model, Pointer, &, ColumnCount, Actions)
-#define ADD_COPY(Model, ColumnCount, Actions) ADD_HELPER(Model, Copy, *&, ColumnCount, Actions)
-#define ADD_REF(Model, ColumnCount, Actions) ADD_HELPER(Model, Ref, std::ref, ColumnCount, Actions)
-#define ADD_UPTR(Model, ColumnCount, Actions) ADD_HELPER(Model, UPtr, asUPtr, ColumnCount, Actions)
-#define ADD_SPTR(Model, ColumnCount, Actions) ADD_HELPER(Model, SPtr, asSPtr, ColumnCount, Actions)
-#define ADD_ALL(Model, ColumnCount, Actions) \
-    ADD_COPY(Model, ColumnCount, Actions) \
-    ADD_REF(Model, ColumnCount, Actions) \
-    ADD_POINTER(Model, ColumnCount, Actions) \
-    ADD_UPTR(Model, ColumnCount, Actions) \
-    ADD_SPTR(Model, ColumnCount, Actions)
+#define ADD_POINTER(Model, ColumnCount, Actions, HeaderData) \
+    ADD_HELPER(Model, Pointer, &, ColumnCount, Actions, HeaderData)
+#define ADD_COPY(Model, ColumnCount, Actions, HeaderData) \
+    ADD_HELPER(Model, Copy, *&, ColumnCount, Actions, HeaderData)
+#define ADD_REF(Model, ColumnCount, Actions, HeaderData) \
+    ADD_HELPER(Model, Ref, std::ref, ColumnCount, Actions, HeaderData)
+#define ADD_UPTR(Model, ColumnCount, Actions, HeaderData) \
+    ADD_HELPER(Model, UPtr, asUPtr, ColumnCount, Actions, HeaderData)
+#define ADD_SPTR(Model, ColumnCount, Actions, HeaderData) \
+    ADD_HELPER(Model, SPtr, asSPtr, ColumnCount, Actions, HeaderData)
+#define ADD_ALL(Model, ColumnCount, Actions, HeaderData) \
+    ADD_COPY(Model, ColumnCount, Actions, HeaderData) \
+    ADD_REF(Model, ColumnCount, Actions, HeaderData) \
+    ADD_POINTER(Model, ColumnCount, Actions, HeaderData) \
+    ADD_UPTR(Model, ColumnCount, Actions, HeaderData) \
+    ADD_SPTR(Model, ColumnCount, Actions, HeaderData)
 
 class QRangeModelTest : public QObject
 {

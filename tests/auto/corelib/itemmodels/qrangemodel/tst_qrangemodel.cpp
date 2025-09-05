@@ -37,6 +37,8 @@ private slots:
     void sibling();
     void flags_data() { createTestData(); }
     void flags();
+    void headerData_data() { createTestData(); }
+    void headerData();
     void data_data() { createTestData(); }
     void data();
     void setData_data() { createTestData(); }
@@ -190,6 +192,7 @@ void tst_QRangeModel::createTestData()
     QTest::addColumn<int>("expectedRowCount");
     QTest::addColumn<int>("expectedColumnCount");
     QTest::addColumn<ChangeActions>("changeActions");
+    QTest::addColumn<QVariant>("headerValue");
 
     // The entire test data is recreated for each test function, but test
     // functions must not change data structures other than the one tested.
@@ -197,68 +200,83 @@ void tst_QRangeModel::createTestData()
     // references, only adding either pointer, ref, or copy, as they all operate
     // on the same data.
 
-    ADD_ALL(fixedArrayOfNumbers, 1, ChangeAction::SetData);
+    ADD_ALL(fixedArrayOfNumbers, 1, ChangeAction::SetData, 1);
 
-    ADD_POINTER(cArrayOfNumbers, 1, ChangeAction::SetData);
+    ADD_POINTER(cArrayOfNumbers, 1, ChangeAction::SetData, 1);
     ADD_REF(cArrayFixedColumns,
             std::tuple_size_v<Row>,
-            ChangeAction::SetData | ChangeAction::SetItemData);
+            ChangeAction::SetData | ChangeAction::SetItemData, u"Item"_s);
 
-    ADD_ALL(vectorOfFixedColumns, 2, ChangeAction::ChangeRows | ChangeAction::SetData);
+    ADD_ALL(vectorOfFixedColumns, 2, ChangeAction::ChangeRows | ChangeAction::SetData, u"int"_s);
 
     // TODO: create a new instance with shared pointers inside for each test
-    ADD_COPY(vectorOfFixedSPtrColumns, 2, ChangeAction::ChangeRows | ChangeAction::SetData);
+    ADD_COPY(vectorOfFixedSPtrColumns, 2, ChangeAction::ChangeRows | ChangeAction::SetData, u"int"_s);
 
-    ADD_ALL(vectorOfArrays, 10, ChangeAction::ChangeRows | ChangeAction::SetData);
+    ADD_ALL(vectorOfArrays, 10, ChangeAction::ChangeRows | ChangeAction::SetData, 0);
 
     ADD_ALL(vectorOfStructs,
             std::tuple_size_v<Row>,
-            ChangeAction::ChangeRows | ChangeAction::SetData | ChangeAction::SetItemData);
+            ChangeAction::ChangeRows | ChangeAction::SetData | ChangeAction::SetItemData,
+            u"Item"_s);
 
-    ADD_ALL(vectorOfConstStructs, std::tuple_size_v<ConstRow>, ChangeAction::ChangeRows);
+    ADD_ALL(vectorOfConstStructs, std::tuple_size_v<ConstRow>, ChangeAction::ChangeRows,
+            u"QString"_s);
 
-    ADD_ALL(vectorOfGadgets, 3, ChangeAction::ChangeRows | ChangeAction::SetData | ChangeAction::SetItemData);
+    ADD_ALL(vectorOfGadgets, 3, ChangeAction::ChangeRows | ChangeAction::SetData | ChangeAction::SetItemData,
+            u"display"_s);
 
-    ADD_ALL(listOfGadgets, 1, ChangeAction::ChangeRows | ChangeAction::SetData | ChangeAction::SetItemData);
-    ADD_ALL(listOfMultiRoleGadgets, 1, ChangeAction::ChangeRows | ChangeAction::SetData | ChangeAction::SetItemData);
-    ADD_COPY(listOfSharedMultiRoleGadgets, 1, ChangeAction::ChangeRows | ChangeAction::SetData | ChangeAction::SetItemData);
-    ADD_POINTER(arrayOfUniqueMultiRoleGadgets, 1, ChangeAction::SetData | ChangeAction::SetItemData);
+    ADD_ALL(listOfGadgets, 1, ChangeAction::ChangeRows | ChangeAction::SetData | ChangeAction::SetItemData,
+            u"Item"_s);
+    ADD_ALL(listOfMultiRoleGadgets, 1, ChangeAction::ChangeRows | ChangeAction::SetData | ChangeAction::SetItemData,
+            u"MultiRoleGadget"_s);
+    ADD_COPY(listOfSharedMultiRoleGadgets, 1, ChangeAction::ChangeRows | ChangeAction::SetData | ChangeAction::SetItemData,
+            u"MultiRoleGadget"_s);
+    ADD_POINTER(arrayOfUniqueMultiRoleGadgets, 1, ChangeAction::SetData | ChangeAction::SetItemData,
+            u"MultiRoleGadget"_s);
 
-    ADD_COPY(listOfObjects, 2, ChangeAction::ChangeRows | ChangeAction::SetData | ChangeAction::SetItemData);
-    ADD_REF(arrayOfUniqueObjects, 2, ChangeAction::SetData | ChangeAction::SetItemData);
+    ADD_COPY(listOfObjects, 2, ChangeAction::ChangeRows | ChangeAction::SetData | ChangeAction::SetItemData,
+             u"string"_s);
+    ADD_REF(arrayOfUniqueObjects, 2, ChangeAction::SetData | ChangeAction::SetItemData,
+            u"string"_s);
 
     ADD_COPY(listOfMetaObjectTuple, 1,
-             ChangeAction::ChangeRows | ChangeAction::SetData | ChangeAction::SetItemData);
+             ChangeAction::ChangeRows | ChangeAction::SetData | ChangeAction::SetItemData,
+             u"MetaObjectTuple"_s);
     ADD_REF(tableOfMetaObjectTuple,
             std::tuple_size_v<MetaObjectTuple>,
-            ChangeAction::ChangeRows | ChangeAction::SetData | ChangeAction::SetItemData);
+            ChangeAction::ChangeRows | ChangeAction::SetData | ChangeAction::SetItemData,
+            u"QString"_s);
 #if !defined(Q_OS_VXWORKS) && !defined(Q_OS_INTEGRITY)
     // don't use the correct createBackup overload and fails to build
-    ADD_REF(arrayOfUniqueMultiObjectTuples, 1, ChangeAction::SetData | ChangeAction::SetItemData);
+    ADD_REF(arrayOfUniqueMultiObjectTuples, 1, ChangeAction::SetData | ChangeAction::SetItemData,
+            u"MetaObjectTuple"_s);
 #endif
 
-    ADD_ALL(tableOfNumbers, 5, ChangeAction::All);
+    ADD_ALL(tableOfNumbers, 5, ChangeAction::All, 1);
 
-    ADD_POINTER(tableOfPointers, 2, ChangeAction::All | ChangeAction::SetItemData);
+    ADD_POINTER(tableOfPointers, 2, ChangeAction::All | ChangeAction::SetItemData, 1);
     ADD_REF(tableOfRowRefs,
             std::tuple_size_v<Row>,
-            ChangeAction::RemoveRows | ChangeAction::SetData | ChangeAction::SetItemData);
+            ChangeAction::RemoveRows | ChangeAction::SetData | ChangeAction::SetItemData,
+            u"Item"_s);
 
-    ADD_ALL(arrayOfConstNumbers, 1, ChangeAction::ReadOnly);
+    ADD_ALL(arrayOfConstNumbers, 1, ChangeAction::ReadOnly, 1);
 
-    ADD_ALL(constListOfNumbers, 1, ChangeAction::ReadOnly);
+    ADD_ALL(constListOfNumbers, 1, ChangeAction::ReadOnly, 1);
 
-    ADD_ALL(constTableOfNumbers, 5, ChangeAction::ReadOnly);
+    ADD_ALL(constTableOfNumbers, 5, ChangeAction::ReadOnly, 1);
 
-    ADD_ALL(listOfNamedRoles, 1, ChangeAction::ChangeRows | ChangeAction::SetData | ChangeAction::SetItemData);
+    ADD_ALL(listOfNamedRoles, 1, ChangeAction::ChangeRows | ChangeAction::SetData | ChangeAction::SetItemData,
+            1);
 
-    ADD_ALL(tableOfEnumRoles, 1, ChangeAction::All | ChangeAction::SetItemData);
+    ADD_ALL(tableOfEnumRoles, 1, ChangeAction::All | ChangeAction::SetItemData, 1);
 
-    ADD_ALL(tableOfIntRoles, 1, ChangeAction::All | ChangeAction::SetItemData);
+    ADD_ALL(tableOfIntRoles, 1, ChangeAction::All | ChangeAction::SetItemData, 1);
 
-    ADD_ALL(stdTableOfIntRoles, 1, ChangeAction::All | ChangeAction::SetItemData);
+    ADD_ALL(stdTableOfIntRoles, 1, ChangeAction::All | ChangeAction::SetItemData, 1);
 
-    ADD_COPY(stdTableOfIntRolesWithSharedRows, 1, ChangeAction::All | ChangeAction::SetItemData);
+    ADD_COPY(stdTableOfIntRolesWithSharedRows, 1, ChangeAction::All | ChangeAction::SetItemData,
+             1);
 
     QTest::addRow("Moved table") << Factory([]{
         QList<std::vector<QString>> movedTable = {
@@ -268,7 +286,7 @@ void tst_QRangeModel::createTestData()
             {"3/0", "3/1", "3/2", "3/3"},
         };
         return std::unique_ptr<QAbstractItemModel>(new QRangeModel(std::move(movedTable)));
-    }) << 4 << 4 << ChangeActions(ChangeAction::All);
+    }) << 4 << 4 << ChangeActions(ChangeAction::All) << QVariant(1);
 
     // moved list of pointers -> model takes ownership
     QTest::addRow("movedListOfObjects") << Factory([]{
@@ -280,20 +298,20 @@ void tst_QRangeModel::createTestData()
         return std::unique_ptr<QAbstractItemModel>(
             new QRangeModel(std::move(movedListOfObjects))
         );
-    }) << 6 << 2 << (ChangeAction::ChangeRows | ChangeAction::SetData);
+    }) << 6 << 2 << (ChangeAction::ChangeRows | ChangeAction::SetData) << QVariant(u"string"_s);
 
     // special case: tree
     QTest::addRow("value tree (ref)") << Factory([this]{
         return std::unique_ptr<QAbstractItemModel>(new QRangeModel(std::ref(*m_data->m_tree)));
     }) << int(std::size(*m_data->m_tree.get())) << int(std::tuple_size_v<tree_row>)
-       << (ChangeAction::ChangeRows | ChangeAction::SetData);
+       << (ChangeAction::ChangeRows | ChangeAction::SetData) << QVariant(u"QString"_s);
 
     QTest::addRow("pointer tree") << Factory([this]{
         return std::unique_ptr<QAbstractItemModel>(
             new QRangeModel(m_data->m_pointer_tree.get(), tree_row::ProtocolPointerImpl{})
         );
     }) << int(std::size(*m_data->m_pointer_tree.get())) << int(std::tuple_size_v<tree_row>)
-       << (ChangeAction::ChangeRows | ChangeAction::SetData);
+       << (ChangeAction::ChangeRows | ChangeAction::SetData) << QVariant(u"QString"_s);
 }
 
 void tst_QRangeModel::basics()
@@ -732,6 +750,15 @@ void tst_QRangeModel::flags()
              changeActions.testFlags(ChangeAction::SetData));
     QCOMPARE(last.flags().testFlag(Qt::ItemIsEditable),
              changeActions.testFlags(ChangeAction::SetData));
+}
+
+void tst_QRangeModel::headerData()
+{
+    QFETCH(Factory, factory);
+    QFETCH(QVariant, headerValue);
+    auto model = factory();
+
+    QCOMPARE(model->headerData(0, Qt::Horizontal), headerValue);
 }
 
 void tst_QRangeModel::data()

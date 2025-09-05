@@ -857,7 +857,7 @@ protected:
             QMetaType metaType;
             QtPrivate::applyIndexSwitch<size>(idx, [&metaType](auto idxConstant) {
                 using ElementType = std::tuple_element_t<idxConstant.value, type>;
-                metaType = QMetaType::fromType<q20::remove_cvref_t<ElementType>>();
+                metaType = QMetaType::fromType<QRangeModelDetails::wrapped_t<ElementType>>();
             });
             return metaType;
         }
@@ -1194,10 +1194,10 @@ public:
                 result = QString::fromUtf8(prop.name());
             }
         } else if constexpr (static_column_count >= 1) {
-            if constexpr (QRangeModelDetails::array_like_v<row_type>) {
+            if constexpr (QRangeModelDetails::array_like_v<wrapped_row_type>) {
                 return section;
             } else {
-                const QMetaType metaType = QRangeModelImplBase::meta_type_at<row_type>(section);
+                const QMetaType metaType = QRangeModelImplBase::meta_type_at<wrapped_row_type>(section);
                 if (metaType.isValid())
                     result = QString::fromUtf8(metaType.name());
             }
