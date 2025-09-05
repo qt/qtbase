@@ -2,6 +2,13 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
 
 /*!
+    \headerfile <QForeach>
+    \inmodule QtCore
+    \ingroup funclists
+    \brief Helper macros for performing for-loops.
+*/
+
+/*!
     \macro forever
     \relates <QForeach>
 

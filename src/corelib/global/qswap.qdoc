@@ -2,6 +2,13 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
 
 /*!
+    \headerfile <QtSwap>
+    \inmodule QtCore
+    \ingroup funclists
+    \brief Swapping the values of two variables.
+*/
+
+/*!
     \fn template <typename T> void qSwap(T &lhs, T &rhs)
     \relates <QtSwap>
 
