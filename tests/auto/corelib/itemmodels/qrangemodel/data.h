@@ -527,6 +527,8 @@ struct Data {
     ADD_HELPER(Model, Pointer, &, ColumnCount, Actions, HeaderData)
 #define ADD_COPY(Model, ColumnCount, Actions, HeaderData) \
     ADD_HELPER(Model, Copy, *&, ColumnCount, Actions, HeaderData)
+#define ADD_MOVE(Model, ColumnCount, Actions, HeaderData) \
+    ADD_HELPER(Model, Move, std::move, ColumnCount, Actions, HeaderData)
 #define ADD_REF(Model, ColumnCount, Actions, HeaderData) \
     ADD_HELPER(Model, Ref, std::ref, ColumnCount, Actions, HeaderData)
 #define ADD_UPTR(Model, ColumnCount, Actions, HeaderData) \

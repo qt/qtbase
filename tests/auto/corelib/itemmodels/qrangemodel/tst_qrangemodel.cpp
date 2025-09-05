@@ -234,7 +234,7 @@ void tst_QRangeModel::createTestData()
     ADD_POINTER(arrayOfUniqueMultiRoleGadgets, 1, ChangeAction::SetData | ChangeAction::SetItemData,
             u"MultiRoleGadget"_s);
 
-    ADD_COPY(listOfObjects, 2, ChangeAction::ChangeRows | ChangeAction::SetData | ChangeAction::SetItemData,
+    ADD_MOVE(listOfObjects, 2, ChangeAction::ChangeRows | ChangeAction::SetData | ChangeAction::SetItemData,
              u"string"_s);
     ADD_REF(arrayOfUniqueObjects, 2, ChangeAction::SetData | ChangeAction::SetItemData,
             u"string"_s);
@@ -446,6 +446,23 @@ void tst_QRangeModel::json()
 
 void tst_QRangeModel::ownership()
 {
+#if 0 // static assert expected
+    {
+        std::vector<std::vector<int> *> data;
+        QRangeModel modelOnCopy(data);
+    }
+
+    {
+        std::shared_ptr<std::vector<std::vector<int>*>> data;
+        QRangeModel modelOnMovedData(std::move(data));
+    }
+
+    {
+        QSharedPointer<std::vector<std::vector<int>*>> data;
+        QRangeModel modelOnMovedData(std::move(data));
+    }
+#endif
+
     { // a list of pointers to objects
         Object *object = new Object;
         QPointer guard = object;
@@ -453,10 +470,10 @@ void tst_QRangeModel::ownership()
             object
         };
         { // model takes ownership of its own copy of the vector (!)
-            QRangeModel modelOnCopy(objects);
+            QRangeModel modelOnMove(std::move(objects));
         }
         QVERIFY(!guard);
-        objects[0] = new Object;
+        objects = { new Object };
         guard = objects[0];
         { // model does not take ownership
             QRangeModel modelOnPointer(&objects);
@@ -984,6 +1001,7 @@ void tst_QRangeModel::insertRows()
 
     QEXPECT_FAIL("tableOfPointersPointer", "No item created", Continue);
     QEXPECT_FAIL("listOfMetaObjectTupleCopy", "No object created", Continue);
+    QEXPECT_FAIL("listOfMetaObjectTupleMoveOfCopy", "No object created", Continue);
 
     QVERIFY(firstValue.isValid() && lastValue.isValid());
     QCOMPARE(model->setData(firstItem, lastValue), canSetData && lastValue.isValid());
@@ -1630,6 +1648,7 @@ QTEST_MAIN(tst_QRangeModel)
 #include "tst_qrangemodel.moc"
 
 #undef ADD_COPY
+#undef ADD_MOVE
 #undef ADD_POINTER
 #undef ADD_UPTR
 #undef ADD_SPTR

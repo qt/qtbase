@@ -1802,6 +1802,23 @@ protected:
         // then adding rows will create row objects in the model's copy, and the
         // client can never delete those. But copied rows will be the same pointer,
         // which we must not delete (as we didn't create them).
+
+        static constexpr bool modelCopied = !QRangeModelDetails::is_wrapped<Range>() &&
+                (std::is_reference_v<Range> || std::is_const_v<std::remove_reference_t<Range>>);
+
+        static constexpr bool modelShared = QRangeModelDetails::is_any_shared_ptr<Range>();
+
+        static constexpr bool default_row_deleter = protocol_traits::is_default &&
+                protocol_traits::has_deleteRow;
+
+        static constexpr bool ambiguousRowOwnership = (modelCopied || modelShared) &&
+                rows_are_raw_pointers && default_row_deleter;
+
+        static_assert(!ambiguousRowOwnership,
+                "Using of copied and shared tree and table models with rows as raw pointers, "
+                "and the default protocol is not allowed due to ambiguity of rows ownership. "
+                "Move the model in, use another row type, or implement a custom tree protocol.");
+
         if constexpr (protocol_traits::has_deleteRow && !std::is_pointer_v<Range>
                    && !QRangeModelDetails::is_any_of<Range, std::reference_wrapper>()) {
             const auto begin = QRangeModelDetails::begin(*m_data.model());
