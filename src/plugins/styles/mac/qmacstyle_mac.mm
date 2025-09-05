@@ -17,6 +17,7 @@
 #include <QtCore/qoperatingsystemversion.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/qvarlengtharray.h>
+#include <QtCore/qloggingcategory.h>
 
 #include <QtCore/private/qcore_mac_p.h>
 
@@ -45,6 +46,8 @@
 #include <cmath>
 
 QT_USE_NAMESPACE
+
+Q_STATIC_LOGGING_CATEGORY(lcMacStyle, "qt.widgets.styles.macos");
 
 @interface QT_MANGLE_NAMESPACE(QIndeterminateProgressIndicator) : NSProgressIndicator
 
@@ -2167,6 +2170,10 @@ void QMacStylePrivate::drawNSViewInRect(NSView *view, const QRectF &rect, QPaint
                                         __attribute__((noescape)) DrawRectBlock drawRectBlock) const
 {
     QMacCGContext ctx(p);
+    if (!ctx) {
+        qCWarning(lcMacStyle) << "Invalid (nullptr) graphics context, cannot draw NSView.";
+        return;
+    }
     setupNSGraphicsContext(ctx, YES);
 
     // FIXME: The rect that we get in is relative to the widget that we're drawing
@@ -3109,6 +3116,9 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
     Q_D(const QMacStyle);
     const AppearanceSync appSync;
     QMacCGContext cg(p);
+    if (!cg)
+        qCWarning(lcMacStyle) << "drawPrimitive:" << pe << "invalid (nullptr) graphics context";
+
     QWindow *window = w && w->window() ? w->window()->windowHandle() : nullptr;
     d->resolveCurrentNSView(window);
     switch (pe) {
@@ -3343,6 +3353,8 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
         }
         break;
     case PE_IndicatorMenuCheckMark: {
+        if (!cg) // CoreGraphics does not like nullptr contexts.
+            break;
         QColor pc;
         if (opt->state & State_On)
             pc = opt->palette.highlightedText().color();
@@ -3428,6 +3440,8 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
         break;
     case PE_IndicatorBranch: {
         if (!(opt->state & State_Children))
+            break;
+        if (!cg)
             break;
         const auto cw = QMacStylePrivate::CocoaControl(QMacStylePrivate::Button_Disclosure, QStyleHelper::SizeLarge);
         NSButtonCell *triangleCell = static_cast<NSButtonCell *>(d->cocoaCell(cw));
@@ -3648,6 +3662,9 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
     const AppearanceSync sync;
     const QMacAutoReleasePool pool;
     QMacCGContext cg(p);
+    if (!cg)
+        qCWarning(lcMacStyle) << "drawControl:" << ce << "invalid (nullptr) graphics context";
+
     QWindow *window = w && w->window() ? w->window()->windowHandle() : nullptr;
     d->resolveCurrentNSView(window);
     switch (ce) {
@@ -4637,6 +4654,8 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             if (isIndeterminate || animation)
                 ipi = static_cast<QIndeterminateProgressIndicator *>(d->cocoaControl({ QMacStylePrivate::ProgressIndicator_Indeterminate, aquaSize }));
             if (isIndeterminate) {
+                if (!cg)
+                    break;
                 // QIndeterminateProgressIndicator derives from NSProgressIndicator. We use a single
                 // instance that we start animating as soon as one of the progress bars is indeterminate.
                 // Since they will be in sync (as it's the case in Cocoa), we just need to draw it with
@@ -5372,12 +5391,15 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
     Q_D(const QMacStyle);
     const AppearanceSync sync;
     QMacCGContext cg(p);
+    if (!cg)
+        qCWarning(lcMacStyle) << "drawComplexControl:" << cc << "invalid (nullptr) graphics context";
     QWindow *window = widget && widget->window() ? widget->window()->windowHandle() : nullptr;
     d->resolveCurrentNSView(window);
     switch (cc) {
     case CC_ScrollBar:
         if (const QStyleOptionSlider *sb = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
-
+            if (!cg) // Scroll bar rendering is either using NSControl or CoreGraphics directly ...
+                break;
             const bool drawTrack = sb->subControls & SC_ScrollBarGroove;
             const bool drawKnob = sb->subControls & SC_ScrollBarSlider && sb->minimum != sb->maximum;
             if (!drawTrack && !drawKnob)
@@ -5734,7 +5756,8 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
             if (sb->subControls & (SC_SpinBoxUp | SC_SpinBoxDown)) {
                 const QRect updown = proxy()->subControlRect(CC_SpinBox, sb, SC_SpinBoxUp, widget)
                                    | proxy()->subControlRect(CC_SpinBox, sb, SC_SpinBoxDown, widget);
-
+                if (!cg) // Using controls or CoreGraphics, needs a valid context.
+                    break;
                 d->setupNSGraphicsContext(cg, NO);
 
                 const auto aquaSize = d->effectiveAquaSizeConstrain(opt, widget);
