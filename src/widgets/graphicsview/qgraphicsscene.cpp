@@ -2718,8 +2718,7 @@ QGraphicsPolygonItem *QGraphicsScene::addPolygon(const QPolygonF &polygon,
     QGraphicsScene will emit changed() once control goes back to the event
     loop.
 
-    \sa addEllipse(), addLine(), addPixmap(), addPixmap(), addText(),
-    addItem(), addWidget()
+    \sa addEllipse(), addLine(), addPixmap(), addText(), addItem(), addWidget()
 */
 QGraphicsRectItem *QGraphicsScene::addRect(const QRectF &rect, const QPen &pen, const QBrush &brush)
 {
@@ -2749,8 +2748,7 @@ QGraphicsRectItem *QGraphicsScene::addRect(const QRectF &rect, const QPen &pen, 
     QGraphicsScene will emit changed() once control goes back to the event
     loop.
 
-    \sa addEllipse(), addLine(), addPixmap(), addPixmap(), addRect(),
-    addItem(), addWidget()
+    \sa addEllipse(), addLine(), addPixmap(), addRect(), addItem(), addWidget()
 */
 QGraphicsTextItem *QGraphicsScene::addText(const QString &text, const QFont &font)
 {
@@ -2771,8 +2769,7 @@ QGraphicsTextItem *QGraphicsScene::addText(const QString &text, const QFont &fon
     QGraphicsScene will emit changed() once control goes back to the event
     loop.
 
-    \sa addEllipse(), addLine(), addPixmap(), addPixmap(), addRect(),
-    addItem(), addWidget()
+    \sa addEllipse(), addLine(), addPixmap(), addRect(), addItem(), addWidget()
 */
 QGraphicsSimpleTextItem *QGraphicsScene::addSimpleText(const QString &text, const QFont &font)
 {
@@ -2797,7 +2794,7 @@ QGraphicsSimpleTextItem *QGraphicsScene::addSimpleText(const QString &text, cons
     set and widgets that wrap an external application or controller
     are not supported. Examples are QOpenGLWidget and QAxWidget.
 
-    \sa addEllipse(), addLine(), addPixmap(), addPixmap(), addRect(),
+    \sa addEllipse(), addLine(), addPixmap(), addRect(),
     addText(), addSimpleText(), addItem()
 */
 QGraphicsProxyWidget *QGraphicsScene::addWidget(QWidget *widget, Qt::WindowFlags wFlags)
