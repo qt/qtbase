@@ -207,6 +207,12 @@ public:
     void initBasicStyleOption(QStyleOptionTab *option, int tabIndex) const;
 
     void makeVisible(int index);
+    const Tab *lastVisibleTab() const
+    {
+        auto it = std::find_if(tabList.rbegin(), tabList.rend(),
+                               [](const Tab *tab) { return tab->visible; });
+        return it == tabList.rend() ? nullptr : *it;
+    }
 
     // shared by tabwidget and qtabbar
     static void initStyleBaseOption(QStyleOptionTabBarBase *optTabBase, QTabBar *tabbar, QSize size)
