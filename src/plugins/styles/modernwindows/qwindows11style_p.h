@@ -56,6 +56,7 @@ enum WINUI3Color {
     textOnAccentPrimary,              // text of default/hovered control on accent color
     textOnAccentSecondary,            // text of pressed control on accent color
     textOnAccentDisabled,             // text of disabled control on accent color
+    dividerStrokeDefault,             // divider color (alpha)
 };
 
 class QWindows11Style : public QWindowsVistaStyle

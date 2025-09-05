@@ -119,7 +119,7 @@ static constexpr int percentToAlpha(double percent)
     return qRound(percent * 255. / 100.);
 }
 
-static constexpr std::array<QColor, 32> WINUI3ColorsLight {
+static constexpr std::array<QColor, 33> WINUI3ColorsLight {
     QColor(0x00,0x00,0x00,0x09), //subtleHighlightColor
     QColor(0x00,0x00,0x00,0x06), //subtlePressedColor
     QColor(0x00,0x00,0x00,0x0F), //frameColorLight
@@ -152,9 +152,10 @@ static constexpr std::array<QColor, 32> WINUI3ColorsLight {
     QColor(0xFF,0xFF,0xFF,percentToAlpha(100)),     // textOnAccentPrimary
     QColor(0xFF,0xFF,0xFF,percentToAlpha(70)),      // textOnAccentSecondary
     QColor(0xFF,0xFF,0xFF,percentToAlpha(100)),     // textOnAccentDisabled
+    QColor(0x00,0x00,0x00,percentToAlpha(8.03)),    // dividerStrokeDefault
 };
 
-static constexpr std::array<QColor, 32> WINUI3ColorsDark {
+static constexpr std::array<QColor, 33> WINUI3ColorsDark {
     QColor(0xFF,0xFF,0xFF,0x0F), //subtleHighlightColor
     QColor(0xFF,0xFF,0xFF,0x0A), //subtlePressedColor
     QColor(0xFF,0xFF,0xFF,0x12), //frameColorLight
@@ -187,9 +188,10 @@ static constexpr std::array<QColor, 32> WINUI3ColorsDark {
     QColor(0x00,0x00,0x00,percentToAlpha(100)),     // textOnAccentPrimary
     QColor(0x00,0x00,0x00,percentToAlpha(70)),      // textOnAccentSecondary
     QColor(0xFF,0xFF,0xFF,percentToAlpha(53.02)),   // textOnAccentDisabled
+    QColor(0xFF,0xFF,0xFF,percentToAlpha(8.37)),    // dividerStrokeDefault
 };
 
-static constexpr std::array<std::array<QColor,32>, 2> WINUI3Colors {
+static constexpr std::array<std::array<QColor,33>, 2> WINUI3Colors {
     WINUI3ColorsLight,
     WINUI3ColorsDark
 };
@@ -1541,96 +1543,89 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
 
     case CE_MenuItem:
         if (const auto *menuitem = qstyleoption_cast<const QStyleOptionMenuItem *>(option)) {
-            int x, y, w, h;
-            menuitem->rect.getRect(&x, &y, &w, &h);
-            int tab = menuitem->reservedShortcutWidth;
+            const auto visualMenuRect = [&](const QRect &rect) {
+                return visualRect(option->direction, menuitem->rect, rect);
+            };
             bool dis = !(menuitem->state & State_Enabled);
             bool checked = menuitem->checkType != QStyleOptionMenuItem::NotCheckable
                     ? menuitem->checked : false;
             bool act = menuitem->state & State_Selected;
 
-            // windows always has a check column, regardless whether we have an icon or not
-            int checkcol = qMax<int>(menuitem->maxIconWidth, 32);
-
-            QBrush fill = (act == true && dis == false) ? (highContrastTheme ? menuitem->palette.brush(QPalette::Highlight) : QBrush(WINUI3Colors[colorSchemeIndex][subtleHighlightColor])) : menuitem->palette.brush(QPalette::Button);
-            painter->setBrush(fill);
-            painter->setPen(Qt::NoPen);
             const QRect rect = menuitem->rect.marginsRemoved(QMargins(2,2,2,2));
-            if (act && dis == false)
-                painter->drawRoundedRect(rect, secondLevelRoundingRadius, secondLevelRoundingRadius, Qt::AbsoluteSize);
-
-            if (menuitem->menuItemType == QStyleOptionMenuItem::Separator){
-                int yoff = 4;
-                painter->setPen(highContrastTheme == true ? menuitem->palette.buttonText().color() : WINUI3Colors[colorSchemeIndex][frameColorLight]);
-                painter->drawLine(x, y + yoff, x + w, y + yoff  );
+            if (act && dis == false) {
+                drawRoundedRect(painter, rect, Qt::NoPen, highContrastTheme ? menuitem->palette.brush(QPalette::Highlight)
+                                                                            : QBrush(winUI3Color(subtleHighlightColor)));
+            }
+            if (menuitem->menuItemType == QStyleOptionMenuItem::Separator) {
+                constexpr int yoff = 1;
+                painter->setPen(highContrastTheme ? menuitem->palette.buttonText().color() : winUI3Color(dividerStrokeDefault));
+                painter->drawLine(menuitem->rect.topLeft() + QPoint(0, yoff),
+                                  menuitem->rect.topRight() + QPoint(0, yoff));
                 break;
             }
 
-            QRect vCheckRect = visualRect(option->direction, menuitem->rect, QRect(menuitem->rect.x(), menuitem->rect.y(), checkcol, menuitem->rect.height()));
-            if (!menuitem->icon.isNull() && checked) {
-                if (act) {
-                    qDrawShadePanel(painter, vCheckRect,
-                                    menuitem->palette, true, 1,
-                                    &menuitem->palette.brush(QPalette::Button));
-                } else {
-                    QBrush fill(menuitem->palette.light().color(), Qt::Dense4Pattern);
-                    qDrawShadePanel(painter, vCheckRect, menuitem->palette, true, 1, &fill);
-                }
+            int xOffset = contentHMargin;
+            // WinUI3 draws, in contrast to former windows styles, the checkmark and icon separately
+            const auto checkMarkWidth = proxy()->pixelMetric(PM_IndicatorWidth, option, widget);
+            if (checked) {
+                QRect vRect(visualMenuRect(QRect(rect.x() + xOffset, rect.y(),
+                                                 checkMarkWidth, rect.height())));
+                QPainterStateGuard psg(painter);
+                painter->setFont(d->assetFont);
+                painter->setPen(option->palette.text().color());
+                const auto textToDraw = QStringLiteral(u"\uE73E");
+                painter->drawText(vRect, Qt::AlignCenter, textToDraw);
             }
-            // On Windows Style, if we have a checkable item and an icon we
-            // draw the icon recessed to indicate an item is checked. If we
-            // have no icon, we draw a checkmark instead.
+            if (menuitem->menuHasCheckableItems)
+                xOffset += checkMarkWidth + contentItemHMargin;
             if (!menuitem->icon.isNull()) {
+                // 4 is added to maxIconWidth in qmenu.cpp to PM_SmallIconSize
+                QRect vRect(visualMenuRect(QRect(rect.x() + xOffset,
+                                                 rect.y(),
+                                                 menuitem->maxIconWidth - 4,
+                                                 rect.height())));
                 QIcon::Mode mode = dis ? QIcon::Disabled : QIcon::Normal;
                 if (act && !dis)
                     mode = QIcon::Active;
                 const auto size = proxy()->pixelMetric(PM_SmallIconSize, option, widget);
                 QRect pmr(QPoint(0, 0), QSize(size, size));
-                pmr.moveCenter(vCheckRect.center());
+                pmr.moveCenter(vRect.center());
                 menuitem->icon.paint(painter, pmr, Qt::AlignCenter, mode,
                                      checked ? QIcon::On : QIcon::Off);
-            } else if (checked) {
-                painter->save();
-                if (dis)
-                    painter->setPen(menuitem->palette.text().color());
-                painter->setFont(d->assetFont);
-                const int text_flags = Qt::AlignVCenter | Qt::AlignHCenter | Qt::TextDontClip | Qt::TextSingleLine;
-                painter->setPen(option->palette.text().color());
-                painter->drawText(vCheckRect, text_flags, CheckMark);
-                painter->restore();
             }
-            painter->setPen(act ? menuitem->palette.highlightedText().color() : menuitem->palette.buttonText().color());
-
-            QColor discol = menuitem->palette.text().color();
-            if (dis)
-                discol = menuitem->palette.color(QPalette::Disabled, QPalette::WindowText);
+            if (menuitem->maxIconWidth > 0)
+                xOffset += menuitem->maxIconWidth - 4 + contentItemHMargin;
 
             QStringView s(menuitem->text);
             if (!s.isEmpty()) {                     // draw text
-                int xm = QWindowsStylePrivate::windowsItemFrame + checkcol + QWindowsStylePrivate::windowsItemHMargin;
-                int xpos = menuitem->rect.x() + xm;
-                QRect textRect(xpos, y + QWindowsStylePrivate::windowsItemVMargin,
-                               w - xm - QWindowsStylePrivate::windowsRightBorder - tab + 1, h - 2 * QWindowsStylePrivate::windowsItemVMargin);
-                QRect vTextRect = visualRect(option->direction, menuitem->rect, textRect);
+                QPoint tl(rect.left() + xOffset, rect.top());
+                QPoint br(rect.right() - menuitem->reservedShortcutWidth - contentHMargin,
+                          rect.bottom());
+                QRect textRect(tl, br);
+                QRect vRect(visualMenuRect(textRect));
 
-                painter->save();
                 qsizetype t = s.indexOf(u'\t');
                 int text_flags = Qt::AlignVCenter | Qt::TextShowMnemonic | Qt::TextDontClip | Qt::TextSingleLine;
                 if (!proxy()->styleHint(SH_UnderlineShortcut, menuitem, widget))
                     text_flags |= Qt::TextHideMnemonic;
                 text_flags |= Qt::AlignLeft;
-                if (t >= 0) {
-                    QRect vShortcutRect = visualRect(option->direction, menuitem->rect,
-                                                     QRect(textRect.topRight(), QPoint(menuitem->rect.right(), textRect.bottom())));
-                    const QString textToDraw = s.mid(t + 1).toString();
-                    if (dis && !act && proxy()->styleHint(SH_EtchDisabledText, option, widget)) {
-                        painter->setPen(menuitem->palette.light().color());
-                        painter->drawText(vShortcutRect.adjusted(1, 1, 1, 1), text_flags, textToDraw);
+                // a submenu doesn't paint a possible shortcut in WinUI3
+                if (t >= 0 && menuitem->menuItemType != QStyleOptionMenuItem::SubMenu) {
+                    QRect shortcutRect(QPoint(textRect.right(), textRect.top()),
+                                       QPoint(rect.right(), textRect.bottom()));
+                    QRect vShortcutRect(visualMenuRect(shortcutRect));
+                    QColor penColor;
+                    if (highContrastTheme) {
+                        penColor = menuitem->palette.color(act ? QPalette::HighlightedText
+                                                               : QPalette::Text);
+                    } else {
+                        penColor = menuitem->palette.color(dis ? QPalette::Disabled
+                                                               : QPalette::Active, QPalette::Text);
+                        if (!dis)
+                            penColor.setAlpha(percentToAlpha(60.63));   // fillColorTextSecondary
                     }
-                    if (highContrastTheme)
-                        painter->setPen(act ? menuitem->palette.highlightedText().color() : menuitem->palette.buttonText().color());
-                    else
-                        painter->setPen(menuitem->palette.color(QPalette::Disabled, QPalette::Text));
+                    painter->setPen(penColor);
+                    const QString textToDraw = s.mid(t + 1).toString();
                     painter->drawText(vShortcutRect, text_flags, textToDraw);
                     s = s.left(t);
                 }
@@ -1638,32 +1633,30 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
                 if (menuitem->menuItemType == QStyleOptionMenuItem::DefaultItem)
                     font.setBold(true);
                 painter->setFont(font);
+                QColor penColor;
+                if (highContrastTheme && act)
+                    penColor = menuitem->palette.color(QPalette::HighlightedText);
+                else
+                    penColor = menuitem->palette.color(dis ? QPalette::Disabled
+                                                           : QPalette::Current, QPalette::Text);
+                painter->setPen(penColor);
                 const QString textToDraw = s.left(t).toString();
-                painter->setPen(highContrastTheme && act ? menuitem->palette.highlightedText().color() : discol);
-                painter->drawText(vTextRect, text_flags, textToDraw);
-                painter->restore();
+                painter->drawText(vRect, text_flags, textToDraw);
             }
             if (menuitem->menuItemType == QStyleOptionMenuItem::SubMenu) {// draw sub menu arrow
-                int dim = (h - 2 * QWindowsStylePrivate::windowsItemFrame) / 2;
-                int xpos = x + w - QWindowsStylePrivate::windowsArrowHMargin - QWindowsStylePrivate::windowsItemFrame - dim;
-                QRect  vSubMenuRect = visualRect(option->direction, menuitem->rect, QRect(xpos, y + h / 2 - dim / 2, dim, dim));
-                QStyleOptionMenuItem newMI = *menuitem;
-                newMI.rect = vSubMenuRect;
-                newMI.state = dis ? State_None : State_Enabled;
-                if (act)
-                    newMI.palette.setColor(QPalette::ButtonText,
-                                           newMI.palette.highlightedText().color());
-                painter->save();
-                painter->setFont(d->assetFont);
-                int text_flags = Qt::AlignVCenter | Qt::TextShowMnemonic | Qt::TextDontClip | Qt::TextSingleLine;
-                if (!proxy()->styleHint(SH_UnderlineShortcut, menuitem, widget))
-                    text_flags |= Qt::TextHideMnemonic;
-                text_flags |= Qt::AlignLeft;
+                int fontSize = menuitem->font.pointSize();
+                QFont f(d->assetFont);
+                f.setPointSize(qRound(fontSize * 0.9f)); // a little bit smaller
+                painter->setFont(f);
+                int yOfs = qRound(fontSize / 3.0f); // an offset to align the '>' with the baseline of the text
+                QPoint tl(rect.right() - 2 * QWindowsStylePrivate::windowsArrowHMargin - contentItemHMargin,
+                          rect.top() + yOfs);
+                QRect submenuRect(tl, rect.bottomRight());
+                QRect vSubMenuRect = visualMenuRect(submenuRect);
                 painter->setPen(option->palette.text().color());
                 const bool isReverse = option->direction == Qt::RightToLeft;
                 const auto str = isReverse ? ChevronLeftMed : ChevronRightMed;
                 painter->drawText(vSubMenuRect, Qt::AlignCenter, str);
-                painter->restore();
             }
         }
         break;
@@ -2095,12 +2088,11 @@ QSize QWindows11Style::sizeFromContents(ContentsType type, const QStyleOption *o
 #if QT_CONFIG(menu)
     case CT_MenuItem:
         if (const auto *menuItem = qstyleoption_cast<const QStyleOptionMenuItem *>(option)) {
-            const int checkcol = qMax<int>(menuItem->maxIconWidth, 32);
             int width = size.width();
             int height;
             if (menuItem->menuItemType == QStyleOptionMenuItem::Separator) {
                 width = 10;
-                height = 6;
+                height = 3;
             } else {
                 height = menuItem->fontMetrics.height() + 8;
                 if (!menuItem->icon.isNull()) {
@@ -2110,22 +2102,29 @@ QSize QWindows11Style::sizeFromContents(ContentsType type, const QStyleOption *o
                 }
             }
             if (menuItem->text.contains(u'\t'))
-                width += menuItem->reservedShortcutWidth;
-            else if (menuItem->menuItemType == QStyleOptionMenuItem::SubMenu)
-                width += 2 * QWindowsStylePrivate::windowsArrowHMargin;
-            else if (menuItem->menuItemType == QStyleOptionMenuItem::DefaultItem) {
+                width += contentItemHMargin; // the text width is already in
+            if (menuItem->menuItemType == QStyleOptionMenuItem::SubMenu)
+                width += 2 * QWindowsStylePrivate::windowsArrowHMargin + contentItemHMargin;
+            if (menuItem->menuItemType == QStyleOptionMenuItem::DefaultItem) {
                 const QFontMetrics fm(menuItem->font);
                 QFont fontBold = menuItem->font;
                 fontBold.setBold(true);
                 const QFontMetrics fmBold(fontBold);
                 width += fmBold.horizontalAdvance(menuItem->text) - fm.horizontalAdvance(menuItem->text);
             }
-            width += checkcol;
-            width += 2 * QWindowsStylePrivate::windowsItemFrame;
-             if (!menuItem->text.isEmpty()) {
-                width += QWindowsStylePrivate::windowsItemHMargin;
-                width += QWindowsStylePrivate::windowsRightBorder;
+            // in contrast to windowsvista, the checkmark and icon are drawn separately
+            if (menuItem->menuHasCheckableItems) {
+                const auto checkMarkWidth = proxy()->pixelMetric(PM_IndicatorWidth, option, widget);
+                width += checkMarkWidth + contentItemHMargin * 2;
             }
+            // we have an icon and it's already in the given size, only add margins
+            // 4 is added in qmenu.cpp to PM_SmallIconSize
+            if (menuItem->maxIconWidth > 0)
+                width += contentItemHMargin * 2 + menuItem->maxIconWidth - 4;
+            width += 2 * 2; // margins for rounded border
+            width += 2 * contentHMargin;
+            if (width < 100)    // minimum size
+                width = 100;
             contentSize = QSize(width, height);
         }
         break;
