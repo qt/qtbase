@@ -20,6 +20,13 @@ QT_BEGIN_NAMESPACE
 Q_CONSTINIT static QBasicMutex environmentMutex;
 
 /*!
+    \headerfile <QtEnvironmentVariables>
+    \inmodule QtCore
+    \ingroup funclists
+    \brief Helper functions for working with environment variables.
+*/
+
+/*!
     \relates <QtEnvironmentVariables>
     \threadsafe
 

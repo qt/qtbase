@@ -753,6 +753,14 @@ QStringList QLibraryInfo::platformPluginArguments(const QString &platformName)
 */
 
 /*!
+    \headerfile <QtVersion>
+    \inmodule QtCore
+    \ingroup funclists
+    \brief Information about which Qt version the application is running on,
+           and the version it was compiled against.
+*/
+
+/*!
     \macro QT_VERSION_STR
     \relates <QtVersion>
 
