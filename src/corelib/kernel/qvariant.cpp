@@ -918,9 +918,8 @@ void *QVariant::prepareForEmplace(QMetaType type)
     \sa QVariant::fromMetaType, QVariant::fromValue(), QMetaType::Type
 */
 QVariant::QVariant(QMetaType type, const void *copy)
-    : d()
+    : QVariant(fromMetaType(type, copy))
 {
-    *this = fromMetaType(type, copy);
 }
 
 QVariant::QVariant(int val) noexcept : d(std::piecewise_construct_t{}, val) {}
