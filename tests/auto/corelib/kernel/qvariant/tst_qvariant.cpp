@@ -82,6 +82,10 @@ CHECK_GET(MyVariant, const &&);
 #include <QUrl>
 #include <QUuid>
 
+#if QT_CONFIG(library) && defined(QT_SHARED)
+#  include <QLibrary>
+#endif
+
 #include <private/qcomparisontesthelper_p.h>
 #include <private/qlocale_p.h>
 #include <private/qmetatype_p.h>
@@ -92,6 +96,9 @@ CHECK_GET(MyVariant, const &&);
 #include <cmath>
 #include <variant>
 #include <unordered_map>
+
+#define WHICH_TYPE_IS_RELOCATABLE RelocatableInAppType
+#include "relocatable_change.h"
 
 using namespace Qt::StringLiterals;
 
@@ -379,6 +386,9 @@ private slots:
     void saveInvalid_data();
     void saveInvalid();
     void saveNewBuiltinWithOldStream();
+
+    void relocatabilityChange_data();
+    void relocatabilityChange();
 
     void implicitConstruction();
 
@@ -4060,7 +4070,7 @@ struct MyNotMovable
         return ok;
     }
     // Make it too big to store it in the variant itself
-    void *dummy[4];
+    char dummy[QVariant::Private::MaxInternalSize * 2];
 };
 
 int MyNotMovable::count  = 0;
@@ -4071,6 +4081,7 @@ struct MyShared : QSharedData {
 
 QT_BEGIN_NAMESPACE
 Q_DECLARE_TYPEINFO(MyMovable, Q_RELOCATABLE_TYPE);
+Q_DECLARE_TYPEINFO(RelocatableInAppType, Q_RELOCATABLE_TYPE);
 QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(MyPrimitive)
@@ -4691,6 +4702,107 @@ void tst_QVariant::saveNewBuiltinWithOldStream()
     QCOMPARE(int(data.constData()[1]), 0);
     QCOMPARE(int(data.constData()[2]), 0);
     QCOMPARE(int(data.constData()[3]), 0);
+}
+
+using PluginCreateVariantFn = QVariant (*)(bool relocatable);
+static PluginCreateVariantFn pluginCreateVariant = nullptr;
+void tst_QVariant::relocatabilityChange_data()
+{
+#if defined(Q_OS_DARWIN) || (defined(Q_OS_LINUX) && !defined(Q_OS_ANDROID)) || defined(Q_OS_WIN)
+// plugin must be found and be loaded
+#  define SKIP    QFAIL
+#else
+#  define SKIP    QSKIP
+#endif
+#if !QT_CONFIG(library) || !defined(QT_SHARED)
+    QSKIP("Test needs to be able to load a plugin.");
+#else
+    QLibrary lib(QCoreApplication::applicationDirPath() + "/tst_qvariant_relocatabilitychange");
+    if (!lib.load())
+        SKIP("Could not find and load plugin: " + lib.errorString().toLocal8Bit());
+
+    pluginCreateVariant = (PluginCreateVariantFn)lib.resolve("pluginCreateVariant");
+    if (!pluginCreateVariant)
+        SKIP("Could not find entry point in plugin");
+
+    QTest::addColumn<bool>("pluginIsRelocatable");
+    QTest::newRow("becomes-relocatable") << false;
+    QTest::newRow("becomes-non-relocatable") << true;
+
+    // we invoke the plugin early to ensure it gets to register the metatype
+    // (shouldn't make a difference, but let's be consistent)
+    pluginCreateVariant(false);
+    pluginCreateVariant(true);
+#endif
+#undef SKIP
+}
+
+void tst_QVariant::relocatabilityChange()
+{
+    Q_ASSERT(pluginCreateVariant);
+    QFETCH(bool, pluginIsRelocatable);
+    const QVariant variant = pluginCreateVariant(pluginIsRelocatable);
+
+    // the plugin has the opposite of our setting
+    QMetaType expectedMetaType;
+    QVariant local;
+    if (pluginIsRelocatable) {
+        expectedMetaType = QMetaType::fromType<RelocatableInPluginType>();
+        local = relocatabilityChange_create<RelocatableInPluginType>();
+        QVERIFY(!QVariant::Private::canUseInternalSpace(expectedMetaType.iface()));
+    } else {
+        local = relocatabilityChange_create<RelocatableInAppType>();
+        expectedMetaType = QMetaType::fromType<RelocatableInAppType>();
+        QVERIFY(QVariant::Private::canUseInternalSpace(expectedMetaType.iface()));
+    }
+    QCOMPARE(local.typeName(), expectedMetaType.name());
+
+    // the plugin's variant must have the same type
+    QMetaType mt = variant.metaType();
+    QCOMPARE(mt.name(), expectedMetaType.name());
+    QCOMPARE(variant.typeId(), expectedMetaType.id());
+    QCOMPARE(mt, expectedMetaType);
+
+    // verify the address of the interface is *not* the same
+    // Note: this next line and the rest of the test depend on -fvisibility=hidden or equivalent
+    QCOMPARE_NE(mt.iface(), expectedMetaType.iface());
+    QCOMPARE(bool(mt.flags() & QMetaType::RelocatableType), pluginIsRelocatable);
+    QCOMPARE(QVariant::Private::canUseInternalSpace(mt.iface()), pluginIsRelocatable);
+
+    const QVariant::Private &d = variant.data_ptr();
+    if (pluginIsRelocatable) {
+        // check that we can access the expected values
+        auto value = get_if<RelocatableInPluginType>(&variant);
+        QCOMPARE(value->value, get_if<RelocatableInPluginType>(&local)->value);
+
+        // check that it copies correctly
+        QVariant copy(variant);
+        auto copied = get_if<RelocatableInPluginType>(&std::as_const(copy));
+        QCOMPARE(copied->value, value->value);
+        QCOMPARE(copied->ptr, value->ptr);
+
+        // check that it was stored inside the QVariant in both variables
+        // using internal API!
+        QVERIFY(!d.is_shared);
+        QCOMPARE_EQ(variant.constData(), static_cast<const void *>(d.data.data));
+        QCOMPARE_EQ(copy.constData(), &copy.data_ptr().data);
+    } else {
+        // check that we can access the expected values
+        auto value = get_if<RelocatableInAppType>(&variant);
+        QCOMPARE(value->value, get_if<RelocatableInAppType>(&local)->value);
+
+        // check that it copies correctly
+        QVariant copy(variant);
+        auto copied = get_if<RelocatableInAppType>(&std::as_const(copy));
+        QCOMPARE(copied->value, value->value);
+        QCOMPARE(copied->ptr, value->ptr);
+
+        // check that the address was shared (so copy-check above is redundant)
+        // using internal API!
+        QVERIFY(d.is_shared);
+        QCOMPARE_NE(variant.constData(), static_cast<const void *>(d.data.data));
+        QCOMPARE_EQ(copy.constData(), variant.constData());
+    }
 }
 
 template<typename Container, typename Value_Type = typename Container::value_type>

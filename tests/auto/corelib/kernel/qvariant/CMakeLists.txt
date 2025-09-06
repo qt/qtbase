@@ -42,3 +42,9 @@ qt_internal_extend_target(tst_qvariant CONDITION NOT QT_FEATURE_doubleconversion
     DEFINES
         QT_NO_DOUBLECONVERSION
 )
+
+if(BUILD_SHARED_LIBS AND QT_FEATURE_library)
+    qt_add_library(tst_qvariant_relocatabilitychange MODULE relocatable_change.cpp)
+    target_link_libraries(tst_qvariant_relocatabilitychange PRIVATE Qt6::Core)
+    add_dependencies(tst_qvariant tst_qvariant_relocatabilitychange)
+endif()
