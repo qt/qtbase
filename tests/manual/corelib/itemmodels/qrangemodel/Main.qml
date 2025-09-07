@@ -59,7 +59,10 @@ Rectangle {
             columnSpacing: 5
             clip: true
             selectionModel: ItemSelectionModel {}
-            delegate: TableViewDelegate {}
+            delegate: TableViewDelegate {
+                implicitWidth: 50
+                implicitHeight: 20
+            }
         }
 
         TreeView {
