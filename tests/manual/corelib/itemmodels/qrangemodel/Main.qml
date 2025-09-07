@@ -20,6 +20,7 @@ Rectangle {
             implicitWidth: 500
             implicitHeight: 500
             model: root.model
+            delegateModelAccess: DelegateModel.ReadWrite
             delegate: RowLayout {
                 id: delegate
                 width: ListView.view.width
@@ -37,6 +38,8 @@ Rectangle {
                         hoverEnabled: true
                         ToolTip.visible: containsMouse
                         ToolTip.text: delegate.modelData + " (" + delegate.model + ")"
+                        onClicked: !isNaN(delegate.display) ? ++delegate.display
+                                                            : delegate.display += "!"
                     }
                 }
                 Text {
