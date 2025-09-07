@@ -3036,14 +3036,17 @@ QLocale QLocale::system()
 */
 QList<QLocale> QLocale::matchingLocales(Language language, Script script, Territory territory)
 {
+    QList<QLocale> result;
+
     const QLocaleId filter { language, script, territory };
     if (!filter.isValid())
-        return QList<QLocale>();
+        return result;
 
-    if (language == C)
-        return QList<QLocale>{QLocale(C)};
+    if (language == C) {
+        result.emplace_back(C);
+        return result;
+    }
 
-    QList<QLocale> result;
     if (filter.matchesAll())
         result.reserve(locale_data_size);
 
