@@ -1248,12 +1248,36 @@ function(qt_feature_module_end)
 
     if (NOT ("${target}" STREQUAL "NO_MODULE") AND NOT arg_ONLY_EVALUATE_FEATURES)
         get_target_property(targetType "${target}" TYPE)
+
+        set(properties_to_export
+            QT_ENABLED_PUBLIC_FEATURES
+            QT_DISABLED_PUBLIC_FEATURES
+            QT_ENABLED_PRIVATE_FEATURES
+            QT_DISABLED_PRIVATE_FEATURES
+            QT_QMAKE_PUBLIC_CONFIG
+            QT_QMAKE_PRIVATE_CONFIG
+            QT_QMAKE_PUBLIC_QT_CONFIG
+
+        )
         if("${targetType}" STREQUAL "INTERFACE_LIBRARY")
             set(propertyPrefix "INTERFACE_")
+            list(TRANSFORM properties_to_export PREPEND "${propertyPrefix}")
+            # CMake doesn't allow us to export INTERFACE_* properties via EXPORT_PROPERTIES, it
+            # says INTERFACE_* properties are reserved.
+            # Instead, use our own property export infrastructure that places the values in the
+            # module-specific Qt6<Foo>ExtraProperties.cmake file.
+            # qt_internal_add_genex_properties_export was originally intended for properties with
+            # genexes, but we can use it for this use case as well.
+            # Before, we didn't use to export the properties at all for INTERFACE_ libraries,
+            # but we need to, because certain GlobalPrivate modules have features which are used
+            # in configure-time conditions for tests.
+            qt_internal_add_genex_properties_export("${target}" ${properties_to_export})
         else()
             set(propertyPrefix "")
-            set_property(TARGET "${target}" APPEND PROPERTY EXPORT_PROPERTIES "QT_ENABLED_PUBLIC_FEATURES;QT_DISABLED_PUBLIC_FEATURES;QT_ENABLED_PRIVATE_FEATURES;QT_DISABLED_PRIVATE_FEATURES;QT_QMAKE_PUBLIC_CONFIG;QT_QMAKE_PRIVATE_CONFIG;QT_QMAKE_PUBLIC_QT_CONFIG")
+            set_property(TARGET "${target}"
+                APPEND PROPERTY EXPORT_PROPERTIES ${properties_to_export})
         endif()
+
         foreach(visibility public private)
             string(TOUPPER "${visibility}" capitalVisibility)
             foreach(state enabled disabled)
