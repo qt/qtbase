@@ -326,6 +326,8 @@ void QAndroidPlatformWindow::onSurfaceChanged(QtJniTypes::Surface surface)
         clearSurface();
     }
 
+    sendExpose();
+
     unlockSurface();
 }
 
