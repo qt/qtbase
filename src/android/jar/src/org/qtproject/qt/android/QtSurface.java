@@ -36,7 +36,11 @@ class QtSurface extends SurfaceView implements SurfaceHolder.Callback
 
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height)
-    { }
+    {
+        // FIXME: this can sometimes cause flicker on orientation change
+        if (m_surfaceCallback != null)
+            m_surfaceCallback.onSurfaceChanged(holder.getSurface());
+    }
 
     @Override
     public void surfaceDestroyed(SurfaceHolder holder)

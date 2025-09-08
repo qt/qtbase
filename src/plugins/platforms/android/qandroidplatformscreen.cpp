@@ -260,6 +260,7 @@ void QAndroidPlatformScreen::setAvailableGeometry(const QRect &rect)
     QRect oldGeometry = m_availableGeometry;
 
     m_availableGeometry = rect;
+    m_size = sizeForDisplayId(m_displayId);
     QWindowSystemInterface::handleScreenGeometryChange(QPlatformScreen::screen(), geometry(), availableGeometry());
     resizeMaximizedWindows();
 
