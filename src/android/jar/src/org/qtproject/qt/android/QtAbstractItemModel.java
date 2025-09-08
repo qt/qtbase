@@ -7,9 +7,10 @@ import java.util.HashMap;
 
 /**
  * QtAbstractItemModel is a base class for implementing custom models in Java,
- * similar to the C++ QAbstractItemModel.
+ * similar to the <a href="https://doc.qt.io/qt-6/qabstractitemmodel.html">QAbstractItemModel</a>
+ * class.
  *
- * The QAbstractItemModel class defines the standard interface that item
+ * The QtAbstractItemModel class defines the standard interface that item
  * models must use to be able to interoperate with other components in the
  * model/view architecture. It is not supposed to be instantiated directly.
  * Instead, you should extend it to create new models.
@@ -24,7 +25,6 @@ import java.util.HashMap;
  * of tables. If you do not use the hierarchy, the model is a simple table of
  * rows and columns. Each item has a unique index specified by a {@link QtModelIndex}.
  *
- * @image modelindex-no-parent.png
  *
  * Every item of data that can be accessed via a model has an associated model
  * index. You can obtain this model index using the {@link #index(int, int, QtModelIndex)} method.
@@ -82,12 +82,13 @@ public abstract class QtAbstractItemModel
      * In most subclasses, the number of columns is independent of the parent.
      *
      * For example:
-     * @Override
+     * <pre>
+     * &#64;Override
      * int columnCount(const QtModelIndex parent)
      * {
      *   return 3;
      * }
-     *
+     * </pre>
      * When implementing a table-based model, columnCount() should return 0,
      * when the parent is valid.
      *
@@ -251,7 +252,7 @@ public abstract class QtAbstractItemModel
      *
      * The {@code roles} argument specifies which data roles have actually
      * been modified. An empty array in the roles argument means that all roles should be
-     * considered modified. The order of elements in the {@cpde roles} argument does not have any
+     * considered modified. The order of elements in the {@code roles} argument does not have any
      * relevance.
      *
      * @param topLeft The top-left index of changed items
