@@ -503,10 +503,10 @@ static_assert(sizeof(size_t) == sizeof(qsizetype)); // implied by the definition
 static_assert((std::is_same<qsizetype, qptrdiff>::value));
 static_assert(std::is_same_v<std::size_t, size_t>);
 
-#ifdef QT_COMPILER_SUPPORTS_INT128
+#if defined(QT_COMPILER_SUPPORTS_INT128) && !defined(QT_NO_INT128)
 # ifndef QT_SUPPORTS_INT128
 #  error Qt needs to be compiled in a mode that enables INT128 \
-    if the compiler supports it in principle.
+    if the compiler supports it in principle and QT_NO_INT128 is not defined.
 # endif
 #endif
 
