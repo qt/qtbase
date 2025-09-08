@@ -204,10 +204,10 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
 
         // Find the remaining minimum safe margins
         Insets safeInsets = getSafeInsets(this, insets);
-        int left = safeInsets.left > 0 ? Math.max(0, safeInsets.left - leftOffset) : 0;
-        int top = safeInsets.top > 0 ? Math.max(0, safeInsets.top - topOffset) : 0;
-        int right = safeInsets.right > 0 ? Math.max(0, safeInsets.right - rightOffset) : 0;
-        int bottom = safeInsets.bottom > 0 ? Math.max(0, safeInsets.bottom - bottomOffset) : 0;
+        int left = Math.max(0, Math.min(safeInsets.left, safeInsets.left - leftOffset));
+        int top = Math.max(0, Math.min(safeInsets.top, safeInsets.top - topOffset));
+        int right = Math.max(0, Math.min(safeInsets.right, safeInsets.right - rightOffset));
+        int bottom = Math.max(0, Math.min(safeInsets.bottom, safeInsets.bottom - bottomOffset));
 
         safeAreaMarginsChanged(Insets.of(left, top, right, bottom), id);
     }
