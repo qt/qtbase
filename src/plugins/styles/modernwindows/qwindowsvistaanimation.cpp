@@ -14,7 +14,10 @@ bool QWindowsVistaAnimation::isUpdateNeeded() const
 
 void QWindowsVistaAnimation::paint(QPainter *painter, const QStyleOption *option)
 {
-    painter->drawImage(option->rect, currentImage());
+    const auto img = currentImage();
+    const auto sz = QSizeF(option->rect.size()) * img.devicePixelRatio();
+    QRectF sourceRect(0, 0, sz.width(), sz.height());
+    painter->drawImage(option->rect, img, sourceRect);
 }
 
 QT_END_NAMESPACE
