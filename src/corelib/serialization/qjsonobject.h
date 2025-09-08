@@ -141,7 +141,7 @@ public:
         inline iterator operator-(qsizetype j) const { return operator+(-j); }
         inline iterator &operator+=(qsizetype j) { item.index += quint64(j); return *this; }
         inline iterator &operator-=(qsizetype j) { item.index -= quint64(j); return *this; }
-        qsizetype operator-(iterator j) const { return item.index - j.item.index; }
+        qsizetype operator-(iterator j) const { return qsizetype(item.index - j.item.index); }
 
     public:
 #if QT_CORE_REMOVED_SINCE(6, 8)
@@ -254,7 +254,7 @@ public:
         inline const_iterator operator-(qsizetype j) const { return operator+(-j); }
         inline const_iterator &operator+=(qsizetype j) { item.index += quint64(j); return *this; }
         inline const_iterator &operator-=(qsizetype j) { item.index -= quint64(j); return *this; }
-        qsizetype operator-(const_iterator j) const { return item.index - j.item.index; }
+        qsizetype operator-(const_iterator j) const { return qsizetype(item.index - j.item.index); }
 #if QT_CORE_REMOVED_SINCE(6, 8)
         inline bool operator==(const iterator &other) const
         { return item.d == other.item.d && item.index == other.item.index; }
