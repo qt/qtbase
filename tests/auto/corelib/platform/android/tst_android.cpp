@@ -232,13 +232,13 @@ void tst_Android::safeAreaWithWindowFlagsAndStates_data()
         << Qt::WindowStates(Qt::WindowNoState)
         << Qt::WindowFlags();
 
-    QTest::newRow("Fullscreen")
-        << Qt::WindowStates(Qt::WindowFullScreen)
-        << Qt::WindowFlags();
-
     QTest::newRow("Expanded Client Area")
         << Qt::WindowStates(Qt::WindowNoState)
         << Qt::WindowFlags(Qt::ExpandedClientAreaHint);
+
+    QTest::newRow("Fullscreen")
+        << Qt::WindowStates(Qt::WindowFullScreen)
+        << Qt::WindowFlags();
 
     QTest::newRow("Fullscreen and Expanded Client Area")
         << Qt::WindowStates(Qt::WindowFullScreen)
