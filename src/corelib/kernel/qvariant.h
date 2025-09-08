@@ -770,14 +770,19 @@ template<typename T> inline T qvariant_cast(QVariant &&v)
 {
     QMetaType targetType = QMetaType::fromType<T>();
     if (v.d.type() == targetType) {
-        if (!v.d.is_shared) {
-            return std::move(*reinterpret_cast<T *>(v.d.data.data));
-        } else {
-            if (v.d.data.shared->ref.loadRelaxed() == 1)
-                return std::move(*reinterpret_cast<T *>(v.d.data.shared->data()));
-            else
-                return v.d.get<T>();
+        if constexpr (QVariant::Private::FitsInInternalSize<sizeof(T)>) {
+            // If T in principle fits into the internal space, it may be using
+            // it (depending on e.g. QTypeInfo, which, generally, can change
+            // from version to version, so we need to check is_shared:
+            if (!v.d.is_shared)
+                return std::move(*reinterpret_cast<T *>(v.d.data.data));
         }
+        // Otherwise, it cannot possibly be using internal space:
+        Q_ASSERT(v.d.is_shared);
+        if (v.d.data.shared->ref.loadRelaxed() == 1)
+            return std::move(*reinterpret_cast<T *>(v.d.data.shared->data()));
+        else
+            return v.d.get<T>();
     }
     if constexpr (std::is_same_v<T, QVariant>) {
         // if the metatype doesn't match, but we want a QVariant, just return the current variant
