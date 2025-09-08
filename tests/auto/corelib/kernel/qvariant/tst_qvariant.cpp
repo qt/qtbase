@@ -51,7 +51,11 @@ CHECK_GET(MyVariant, const &&);
 
 #include <QTest>
 
+// In each group:
 // Please stick to alphabetic order.
+#include <QtGui/qtransform.h>
+
+// QtCore:
 #include <QAssociativeIterable>
 #include <QBitArray>
 #include <QBuffer>
@@ -275,6 +279,7 @@ private slots:
     void qvariant_cast_QObject_wrapper();
     void qvariant_cast_QSharedPointerQObject();
     void qvariant_cast_const();
+    void qvariant_cast_QTransform();
 
     void toLocale();
 
@@ -418,11 +423,13 @@ private slots:
 
     void getIf_int() { getIf_impl(42); }
     void getIf_QString() { getIf_impl(u"string"_s); };
+    void getIf_QTransform() { getIf_impl(QTransform{1, 2, 3, 4, 5, 6, 7, 8, 9}); } // too large
     void getIf_NonDefaultConstructible();
     void getIfSpecial();
 
     void get_int() { get_impl(42); }
     void get_QString() { get_impl(u"string"_s); }
+    void get_QTransform() { get_impl(QTransform{1, 2, 3, 4, 5, 6, 7, 8, 9}); } // too large
     void get_NonDefaultConstructible();
 
 private:
@@ -430,6 +437,7 @@ private:
             // list here all the types with which we instantiate getIf_impl:
             int,
             QString,
+            QTransform,
             NonDefaultConstructible
         >;
     template <typename T>
@@ -2934,6 +2942,14 @@ void tst_QVariant::qvariant_cast_const()
     QCOMPARE(v.value<const int *>(), &i);
     QCOMPARE(vConst.value<int *>(), nullptr);
     QCOMPARE(vConst.value<const int *>(), &i);
+}
+
+void tst_QVariant::qvariant_cast_QTransform()
+{
+    QTransform t{1, 2, 3, 4, 5, 6, 7, 8, 9};
+    // this basically checks that GCC doesn't emit -Warray-bound
+    const auto t2 = qvariant_cast<QTransform>(QVariant::fromValue(t));
+    QCOMPARE(t, t2);
 }
 
 void tst_QVariant::convertToQUint8() const
@@ -6184,6 +6200,11 @@ void tst_QVariant::get_NonDefaultConstructible()
 
 template <typename T>
 T mutate(const T &t) { return t + t; }
+template <>
+QTransform mutate(const QTransform &t)
+{
+    return t * 2;
+}
 template <>
 NonDefaultConstructible mutate(const NonDefaultConstructible &t)
 {
