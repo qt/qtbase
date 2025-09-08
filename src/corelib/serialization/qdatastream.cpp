@@ -1058,28 +1058,22 @@ QDataStream &QDataStream::readBytes(char *&s, uint &l)
 
     quint32 step = 1024 * 1024;
     quint32 allocated = 0;
-    char *prevBuf = nullptr;
-    char *curBuf = nullptr;
+    std::unique_ptr<char[]> curBuf = nullptr;
 
     constexpr quint32 MaxBlockSize = std::numeric_limits<int>::max();
     do {
         const quint32 sz = qMin(step, len - allocated);
         int blockSize = qMin(sz, MaxBlockSize);
-        prevBuf = curBuf;
-        curBuf = new char[allocated + blockSize + 1];
-        if (prevBuf) {
-            memcpy(curBuf, prevBuf, allocated);
-            delete [] prevBuf;
-        }
-        if (readBlock(curBuf + allocated, blockSize) != blockSize) {
-            delete [] curBuf;
+        const quint32 n = allocated + blockSize + 1;
+        if (const auto prevBuf = std::exchange(curBuf, std::make_unique<char[]>(n)))
+            memcpy(curBuf.get(), prevBuf.get(), allocated);
+        if (readBlock(curBuf.get() + allocated, blockSize) != blockSize)
             return *this;
-        }
         allocated += blockSize;
         step *= 2;
     } while (allocated < len);
 
-    s = curBuf;
+    s = curBuf.release();
     s[len] = '\0';
     l = (uint)len;
     return *this;

@@ -42,6 +42,7 @@ public:
 
     static QDistanceFieldData *create(const QSize &size);
     static QDistanceFieldData *create(const QPainterPath &path, bool doubleResolution);
+    static QDistanceFieldData *create(QSize size, const QPainterPath &path, bool doubleResolution);
 
     glyph_t glyph;
     int width;
@@ -58,6 +59,7 @@ public:
     QDistanceField(const QRawFont &font, glyph_t glyph, bool doubleResolution = false);
     QDistanceField(QFontEngine *fontEngine, glyph_t glyph, bool doubleResolution = false);
     QDistanceField(const QPainterPath &path, glyph_t glyph, bool doubleResolution = false);
+    QDistanceField(QSize size, const QPainterPath &path, glyph_t glyph, bool doubleResolution = false);
 
     bool isNull() const;
 

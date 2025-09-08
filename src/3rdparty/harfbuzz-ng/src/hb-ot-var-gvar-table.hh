@@ -102,9 +102,8 @@ struct glyph_variations_t
       }
 
       bool is_composite_glyph = false;
-#ifdef HB_EXPERIMENTAL_API
       is_composite_glyph = plan->composite_new_gids.has (new_gid);
-#endif
+
       if (!p->decompile_tuple_variations (all_contour_points->length, true /* is_gvar */,
                                           iterator, &(plan->axes_old_index_tag_map),
                                           shared_indices, shared_tuples,
@@ -120,9 +119,7 @@ struct glyph_variations_t
   {
     unsigned count = plan->new_to_old_gid_list.length;
     bool iup_optimize = false;
-#ifdef HB_EXPERIMENTAL_API
     iup_optimize = plan->flags & HB_SUBSET_FLAGS_OPTIMIZE_IUP_DELTAS;
-#endif
     for (unsigned i = 0; i < count; i++)
     {
       hb_codepoint_t new_gid = plan->new_to_old_gid_list[i].first;
@@ -621,7 +618,7 @@ struct gvar
 
     public:
     bool apply_deltas_to_points (hb_codepoint_t glyph,
-				 hb_array_t<int> coords,
+				 hb_array_t<const int> coords,
 				 const hb_array_t<contour_point_t> points,
 				 bool phantom_only = false) const
     {
@@ -676,16 +673,16 @@ struct gvar
 
 	bool has_private_points = iterator.current_tuple->has_private_points ();
 	if (has_private_points &&
-	    !GlyphVariationData::unpack_points (p, private_indices, end))
+	    !GlyphVariationData::decompile_points (p, private_indices, end))
 	  return false;
 	const hb_array_t<unsigned int> &indices = has_private_points ? private_indices : shared_indices;
 
 	bool apply_to_all = (indices.length == 0);
 	unsigned int num_deltas = apply_to_all ? points.length : indices.length;
 	if (unlikely (!x_deltas.resize (num_deltas, false))) return false;
-	if (unlikely (!GlyphVariationData::unpack_deltas (p, x_deltas, end))) return false;
+	if (unlikely (!GlyphVariationData::decompile_deltas (p, x_deltas, end))) return false;
 	if (unlikely (!y_deltas.resize (num_deltas, false))) return false;
-	if (unlikely (!GlyphVariationData::unpack_deltas (p, y_deltas, end))) return false;
+	if (unlikely (!GlyphVariationData::decompile_deltas (p, y_deltas, end))) return false;
 
 	if (!apply_to_all)
 	{

@@ -187,6 +187,12 @@ namespace QtAndroid
                                            accessibilityObjectId, parentObjectId);
     }
 
+    void notifyObjectShow(uint parentObjectId)
+    {
+        QJniObject::callStaticMethod<void>(m_applicationClass, "notifyObjectShow", "(I)V",
+                                           parentObjectId);
+    }
+
     void notifyObjectFocus(uint accessibilityObjectId)
     {
         QJniObject::callStaticMethod<void>(m_applicationClass, "notifyObjectFocus","(I)V", accessibilityObjectId);

@@ -7,6 +7,7 @@
 #include <qdom.h>
 #include <private/qglobal_p.h>
 
+QT_REQUIRE_CONFIG(dom);
 QT_BEGIN_NAMESPACE
 
 //

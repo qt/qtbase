@@ -1089,8 +1089,6 @@ void QAbstractItemView::setCurrentIndex(const QModelIndex &index)
         QItemSelectionModel::SelectionFlags command = selectionCommand(index, nullptr);
         d->selectionModel->setCurrentIndex(index, command);
         d->currentIndexSet = true;
-        if ((command & QItemSelectionModel::Current) == 0)
-            d->currentSelectionStartIndex = index;
     }
 }
 
@@ -3795,6 +3793,10 @@ void QAbstractItemView::currentChanged(const QModelIndex &current, const QModelI
             update(previous);
         }
     }
+
+    QItemSelectionModel::SelectionFlags command = selectionCommand(current, nullptr);
+    if ((command & QItemSelectionModel::Current) == 0)
+        d->currentSelectionStartIndex = current;
 
     if (current.isValid() && !d->autoScrollTimer.isActive()) {
         if (isVisible()) {

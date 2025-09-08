@@ -186,7 +186,10 @@ public:
     bool running;
     bool finished;
     bool isInFinish; //when in QThreadPrivate::finish
-    std::atomic<bool> interruptionRequested;
+    std::atomic<bool> interruptionRequested = false;
+#ifdef Q_OS_UNIX
+    bool terminated = false; // when (the first) terminate has been called
+#endif
 
     bool exited;
     int returnCode;

@@ -316,6 +316,10 @@ QT_BEGIN_NAMESPACE
 #define GL_MAP_WRITE_BIT                  0x0002
 #endif
 
+#ifndef GL_MAP_INVALIDATE_BUFFER_BIT
+#define GL_MAP_INVALIDATE_BUFFER_BIT      0x0008
+#endif
+
 #ifndef GL_TEXTURE_2D_MULTISAMPLE
 #define GL_TEXTURE_2D_MULTISAMPLE         0x9100
 #endif
@@ -3645,7 +3649,7 @@ void QRhiGles2::bindCombinedSampler(QGles2CommandBuffer *cbD, QGles2Texture *tex
         f->glTexParameteri(texD->target, GL_TEXTURE_MAG_FILTER, GLint(samplerD->d.glmagfilter));
         f->glTexParameteri(texD->target, GL_TEXTURE_WRAP_S, GLint(samplerD->d.glwraps));
         f->glTexParameteri(texD->target, GL_TEXTURE_WRAP_T, GLint(samplerD->d.glwrapt));
-        if (caps.texture3D)
+        if (caps.texture3D && texD->target == GL_TEXTURE_3D)
             f->glTexParameteri(texD->target, GL_TEXTURE_WRAP_R, GLint(samplerD->d.glwrapr));
         if (caps.textureCompareMode) {
             if (samplerD->d.gltexcomparefunc != GL_NEVER) {
@@ -4870,7 +4874,7 @@ char *QGles2Buffer::beginFullDynamicBufferUpdateForCurrentFrame()
         rhiD->f->glBindBuffer(targetForDataOps, buffer);
         if (rhiD->caps.properMapBuffer) {
             return static_cast<char *>(rhiD->f->glMapBufferRange(targetForDataOps, 0, nonZeroSize,
-                                                                 GL_MAP_READ_BIT | GL_MAP_WRITE_BIT));
+                                                                 GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT));
         } else {
             // Need some storage for the data, use the otherwise unused 'data' member.
             if (data.isEmpty())
@@ -4884,6 +4888,7 @@ void QGles2Buffer::endFullDynamicBufferUpdateForCurrentFrame()
 {
     if (!m_usage.testFlag(UniformBuffer)) {
         QRHI_RES_RHI(QRhiGles2);
+        rhiD->f->glBindBuffer(targetForDataOps, buffer);
         if (rhiD->caps.properMapBuffer)
             rhiD->f->glUnmapBuffer(targetForDataOps);
         else
@@ -5241,6 +5246,11 @@ bool QGles2Texture::create()
                 rhiD->f->glTexStorage2D(target, mipLevelCount, glsizedintformat, size.width(),
                                         is1D ? m_arraySize : size.height());
         }
+        // Make sure the min filter is set to something non-mipmap-based already
+        // here, given the ridiculous default of GL. It is changed based on
+        // the sampler later, but there could be cases when one pulls the native
+        // object out via nativeTexture() right away.
+        rhiD->f->glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         specified = true;
     } else {
         // Cannot use glCompressedTexImage2D without valid data, so defer.

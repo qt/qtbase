@@ -20,6 +20,7 @@ import android.graphics.Insets;
 import android.view.WindowMetrics;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.view.Surface;
 
 public class QtLayout extends ViewGroup
 {
@@ -27,16 +28,11 @@ public class QtLayout extends ViewGroup
 
     private int m_activityDisplayRotation = -1;
     private int m_ownDisplayRotation = -1;
-    private int m_nativeOrientation = -1;
+    private int m_previousRotation = -1;
 
     public void setActivityDisplayRotation(int rotation)
     {
         m_activityDisplayRotation = rotation;
-    }
-
-    public void setNativeOrientation(int orientation)
-    {
-        m_nativeOrientation = orientation;
     }
 
     public int displayRotation()
@@ -112,20 +108,38 @@ public class QtLayout extends ViewGroup
                                               refreshRate);
 
         int newRotation = display.getRotation();
-        if (m_ownDisplayRotation != m_activityDisplayRotation
-            && newRotation == m_activityDisplayRotation) {
-            // If the saved rotation value does not match the one from the
-            // activity, it means that we got orientation change before size
-            // change, and the value was cached. So we need to notify about
-            // orientation change now.
-            QtNative.handleOrientationChanged(newRotation, m_nativeOrientation);
-        }
+        handleOrientationChanges(activity);
         m_ownDisplayRotation = newRotation;
 
         if (m_startApplicationRunnable != null) {
             m_startApplicationRunnable.run();
             m_startApplicationRunnable = null;
         }
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration configuration)
+    {
+        Context context = getContext();
+        if (context instanceof Activity) {
+            Activity activity = (Activity)context;
+            //if orientation change is betwen invertedPortrait and portrait or
+            //invertedLandscape and landscape, we do not get sizeChanged callback.
+            if (QtActivityDelegate.isSimilarRotation(
+                    QtActivityDelegate.getDisplayRotation(activity),
+                    m_previousRotation))
+                handleOrientationChanges(activity);
+        }
+    }
+
+    private void handleOrientationChanges(Activity activity)
+    {
+        int currentRotation = QtActivityDelegate.getDisplayRotation(activity);
+        if (m_previousRotation == currentRotation)
+            return;
+        int nativeOrientation = QtActivityDelegate.getNativeOrientation(activity, currentRotation);
+        QtNative.handleOrientationChanged(currentRotation, nativeOrientation);
+        m_previousRotation = currentRotation;
     }
 
     @Override

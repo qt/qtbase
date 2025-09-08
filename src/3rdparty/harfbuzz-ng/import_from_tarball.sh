@@ -6,9 +6,10 @@
 # This is a small script to copy the required files from a harfbuzz tarball
 # into 3rdparty/harfbuzz-ng/ . Documentation, tests, demos etc. are not imported.
 # Steps:
-# 1. rm $QTDIR/src/3rdparty/harfbuzz-ng/src/* && rm $QTDIR/src/3rdparty/harfbuzz-ng/src/OT/Layout/GSUB
+# 1. rm -rf $QTDIR/src/3rdparty/harfbuzz-ng/src/ && mkdir src
 # 2. source import_from_tarball.sh harfbuzz_tarball_dir/ $QTDIR/src/3rdparty/harfbuzz-ng/
-# 3. Check that CMakeLists contains everything
+# 3. If there are new files, check if they need to be added (just source files and no test stuff)
+# 4. Check that CMakeLists contains everything new
 
 if [ $# -ne 2 ]; then
     echo "Usage: $0 harfbuzz_tarball_dir/ \$QTDIR/src/3rdparty/harfbuzz-ng/"

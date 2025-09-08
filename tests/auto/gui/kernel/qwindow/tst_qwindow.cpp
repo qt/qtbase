@@ -37,8 +37,9 @@ private slots:
     void resizeEventAfterResize();
     void exposeEventOnShrink_QTBUG54040();
     void mapGlobal();
-    void positioning_data();
     void positioning();
+    void framePositioning();
+    void framePositioning_data();
     void positioningDuringMinimized();
     void childWindowPositioning_data();
     void childWindowPositioning();
@@ -490,17 +491,6 @@ void tst_QWindow::exposeEventOnShrink_QTBUG54040()
     QTRY_VERIFY(window.received(QEvent::Expose) > exposeCount);
 }
 
-void tst_QWindow::positioning_data()
-{
-    QTest::addColumn<Qt::WindowFlags>("windowflags");
-
-    QTest::newRow("default") << (Qt::Window | Qt::WindowTitleHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint | Qt::WindowFullscreenButtonHint);
-
-#ifdef Q_OS_MACOS
-    QTest::newRow("fake") << (Qt::Window | Qt::WindowTitleHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
-#endif
-}
-
 // Compare a window position that may go through scaling in the platform plugin with fuzz.
 static inline bool qFuzzyCompareWindowPosition(const QPoint &p1, const QPoint p2, int fuzz)
 {
@@ -550,8 +540,7 @@ void tst_QWindow::positioning()
     // events, so set the width to suitably large value to avoid those.
     const QRect geometry(m_availableTopLeft + QPoint(80, 80), m_testWindowSize);
 
-    QFETCH(Qt::WindowFlags, windowflags);
-    Window window(windowflags);
+    Window window;
     window.setGeometry(QRect(m_availableTopLeft + QPoint(20, 20), m_testWindowSize));
     window.setFramePosition(m_availableTopLeft + QPoint(40, 40)); // Move window around before show, size must not change.
     QCOMPARE(window.geometry().size(), m_testWindowSize);
@@ -585,39 +574,64 @@ void tst_QWindow::positioning()
     QTRY_COMPARE(originalPos, window.position());
     QTRY_COMPARE(originalFramePos, window.framePosition());
     QTRY_COMPARE(originalMargins, window.frameMargins());
+}
 
-    // if our positioning is actually fully respected by the window manager
-    // test whether it correctly handles frame positioning as well
-    if (originalPos == geometry.topLeft() && (originalMargins.top() != 0 || originalMargins.left() != 0)) {
-        const QScreen *screen = window.screen();
-        const QRect availableGeometry = screen->availableGeometry();
-        const QPoint framePos = availableGeometry.center();
+void tst_QWindow::framePositioning_data()
+{
+    QTest::addColumn<bool>("showBeforePositioning");
 
-        window.reset();
-        const QPoint oldFramePos = window.framePosition();
-        window.setFramePosition(framePos);
+    QTest::newRow("before show") << false;
+    QTest::newRow("after show") << true;
+}
 
-        QTRY_VERIFY(window.received(QEvent::Move));
-        const int fuzz = int(QHighDpiScaling::factor(&window));
-        if (!qFuzzyCompareWindowPosition(window.framePosition(), framePos, fuzz)) {
-            qDebug() << "About to fail auto-test. Here is some additional information:";
-            qDebug() << "window.framePosition() == " << window.framePosition();
-            qDebug() << "old frame position == " << oldFramePos;
-            qDebug() << "We received " << window.received(QEvent::Move) << " move events";
-            qDebug() << "frame positions after each move event:" << window.m_framePositionsOnMove;
-        }
-        QTRY_VERIFY2(qFuzzyCompareWindowPosition(window.framePosition(), framePos, fuzz),
-                     qPrintable(msgPointMismatch(window.framePosition(), framePos)));
+void tst_QWindow::framePositioning()
+{
+    QFETCH(bool, showBeforePositioning);
+
+    Window window;
+    const QScreen *screen = window.screen();
+    const QRect availableGeometry = screen->availableGeometry();
+    const QPoint screenCenter = availableGeometry.center();
+
+    const QPoint oldFramePos = window.framePosition();
+    QMargins originalMargins;
+
+    if (showBeforePositioning) {
+        window.showNormal();
+        QVERIFY(QTest::qWaitForWindowExposed(&window));
+        originalMargins = window.frameMargins();
+        window.setFramePosition(screenCenter);
+    } else {
+        window.setFramePosition(screenCenter);
+        window.showNormal();
+        QVERIFY(QTest::qWaitForWindowExposed(&window));
+    }
+
+    QTRY_VERIFY(window.received(QEvent::Move));
+    const int fuzz = int(QHighDpiScaling::factor(&window));
+    if (!qFuzzyCompareWindowPosition(window.framePosition(), screenCenter, fuzz)) {
+        qDebug() << "About to fail auto-test. Here is some additional information:";
+        qDebug() << "window.framePosition() == " << window.framePosition();
+        qDebug() << "old frame position == " << oldFramePos;
+        qDebug() << "We received " << window.received(QEvent::Move) << " move events";
+        qDebug() << "frame positions after each move event:" << window.m_framePositionsOnMove;
+    }
+    QTRY_VERIFY2(qFuzzyCompareWindowPosition(window.framePosition(), screenCenter, fuzz),
+                 qPrintable(msgPointMismatch(window.framePosition(), screenCenter)));
+
+    if (showBeforePositioning) {
+        // Repositioning should not affect existing margins
         QTRY_COMPARE(originalMargins, window.frameMargins());
         QCOMPARE(window.position(), window.framePosition() + QPoint(originalMargins.left(), originalMargins.top()));
-
-        // and back to regular positioning
-
-        window.reset();
-        window.setPosition(originalPos);
-        QTRY_VERIFY(window.received(QEvent::Move));
-        QTRY_COMPARE(originalPos, window.position());
     }
+
+    // Check that regular positioning still works
+
+    const QPoint screenCenterAdjusted = screenCenter + QPoint(50, 50);
+    window.reset();
+    window.setPosition(screenCenterAdjusted);
+    QTRY_VERIFY(window.received(QEvent::Move));
+    QTRY_COMPARE(screenCenterAdjusted, window.position());
 }
 
 void tst_QWindow::positioningDuringMinimized()

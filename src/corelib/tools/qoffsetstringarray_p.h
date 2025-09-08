@@ -96,7 +96,8 @@ template <size_t Highest> constexpr auto minifyValue()
 template <size_t StringLength, typename Extractor, typename... T>
 constexpr auto makeStaticString(Extractor extract, const T &... entries)
 {
-    std::array<char, StringLength> result = {};
+    // append an extra null terminator
+    std::array<char, StringLength + 1> result = {};
     qptrdiff offset = 0;
 
     const char *strings[] = { extract(entries).operator const char *()... };

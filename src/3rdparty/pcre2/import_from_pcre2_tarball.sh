@@ -89,6 +89,7 @@ FILES="
     src/sljit/sljitNativeARM_32.c
     src/sljit/sljitNativeARM_64.c
     src/sljit/sljitNativeARM_T2_32.c
+    src/sljit/sljitNativeLOONGARCH_64.c
     src/sljit/sljitNativeMIPS_32.c
     src/sljit/sljitNativeMIPS_64.c
     src/sljit/sljitNativeMIPS_common.c
@@ -102,6 +103,8 @@ FILES="
     src/sljit/sljitNativeX86_32.c
     src/sljit/sljitNativeX86_64.c
     src/sljit/sljitNativeX86_common.c
+    src/sljit/sljitSerialize.c
+    src/sljit/sljitUtils.c
     src/sljit/allocator_src/sljitExecAllocatorPosix.c
     src/sljit/allocator_src/sljitProtExecAllocatorPosix.c
     src/sljit/allocator_src/sljitWXExecAllocatorPosix.c

@@ -70,3 +70,22 @@ function(__qt_internal_require_suitable_cmake_version_for_using_qt)
             "Use at your own risk.")
     endif()
 endfunction()
+
+function(__qt_internal_set_cmp0156)
+    if(POLICY CMP0156)
+        if(QT_FORCE_CMP0156_TO_NEW)
+            cmake_policy(SET CMP0156 "NEW")
+        else()
+            cmake_policy(GET CMP0156 policy_value)
+            if(NOT "${policy_value}" STREQUAL "OLD")
+                if("${policy_value}" STREQUAL "NEW" AND NOT QT_BUILDING_QT)
+                    message(WARNING "CMP0156 is set to '${policy_value}'. Qt forces the 'OLD'"
+                        " behavior of this policy by default. Set QT_FORCE_CMP0156_TO_NEW=ON to"
+                        " force the 'NEW' behavior for the Qt commands that create either"
+                        " library or executable targets.")
+                endif()
+                cmake_policy(SET CMP0156 "OLD")
+            endif()
+        endif()
+    endif()
+endfunction()

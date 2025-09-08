@@ -35,7 +35,7 @@ struct BitPattern
     uchar bitLength;
 };
 
-bool operator == (const BitPattern &lhs, const BitPattern &rhs)
+bool operator==(BitPattern lhs, BitPattern rhs)
 {
     return lhs.bitLength == rhs.bitLength && lhs.value == rhs.value;
 }
@@ -54,25 +54,25 @@ using StreamError = BitIStream::Error;
 
 // It's always 1 or 0 actually, but the number of bits to extract
 // from the input stream - differs.
-const BitPattern Indexed = {1, 1};
-const BitPattern LiteralIncrementalIndexing = {1, 2};
-const BitPattern LiteralNoIndexing = {0, 4};
-const BitPattern LiteralNeverIndexing = {1, 4};
-const BitPattern SizeUpdate = {1, 3};
+constexpr BitPattern Indexed = {1, 1};
+constexpr BitPattern LiteralIncrementalIndexing = {1, 2};
+constexpr BitPattern LiteralNoIndexing = {0, 4};
+constexpr BitPattern LiteralNeverIndexing = {1, 4};
+constexpr BitPattern SizeUpdate = {1, 3};
 
-bool is_literal_field(const BitPattern &pattern)
+bool is_literal_field(BitPattern pattern)
 {
     return pattern == LiteralIncrementalIndexing
            || pattern == LiteralNoIndexing
            || pattern == LiteralNeverIndexing;
 }
 
-void write_bit_pattern(const BitPattern &pattern, BitOStream &outputStream)
+void write_bit_pattern(BitPattern pattern, BitOStream &outputStream)
 {
     outputStream.writeBits(pattern.value, pattern.bitLength);
 }
 
-bool read_bit_pattern(const BitPattern &pattern, BitIStream &inputStream)
+bool read_bit_pattern(BitPattern pattern, BitIStream &inputStream)
 {
     uchar chunk = 0;
 
@@ -319,7 +319,7 @@ bool Encoder::encodeIndexedField(BitOStream &outputStream, quint32 index) const
     return true;
 }
 
-bool Encoder::encodeLiteralField(BitOStream &outputStream, const BitPattern &fieldType,
+bool Encoder::encodeLiteralField(BitOStream &outputStream, BitPattern fieldType,
                                  const QByteArray &name, const QByteArray &value,
                                  bool withCompression)
 {
@@ -347,7 +347,7 @@ bool Encoder::encodeLiteralField(BitOStream &outputStream, const BitPattern &fie
     return true;
 }
 
-bool Encoder::encodeLiteralField(BitOStream &outputStream, const BitPattern &fieldType,
+bool Encoder::encodeLiteralField(BitOStream &outputStream, BitPattern fieldType,
                                  quint32 nameIndex, const QByteArray &value,
                                  bool withCompression)
 {
@@ -451,7 +451,7 @@ bool Decoder::decodeSizeUpdate(BitIStream &inputStream)
     return false;
 }
 
-bool Decoder::decodeLiteralField(const BitPattern &fieldType, BitIStream &inputStream)
+bool Decoder::decodeLiteralField(BitPattern fieldType, BitIStream &inputStream)
 {
     // https://http2.github.io/http2-spec/compression.html
     // 6.2.1, 6.2.2, 6.2.3
@@ -481,7 +481,7 @@ bool Decoder::decodeLiteralField(const BitPattern &fieldType, BitIStream &inputS
     return false;
 }
 
-bool Decoder::processDecodedField(const BitPattern &fieldType,
+bool Decoder::processDecodedField(BitPattern fieldType,
                                  const QByteArray &name,
                                  const QByteArray &value)
 {

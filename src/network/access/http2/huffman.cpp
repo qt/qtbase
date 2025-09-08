@@ -316,7 +316,7 @@ const CodeEntry staticHuffmanCodeTable[]
     {256, 0xfffffffcul, 30}   // EOS 11111111|11111111|11111111|111111
 };
 
-void write_huffman_code(BitOStream &outputStream, const CodeEntry &code)
+void write_huffman_code(BitOStream &outputStream, CodeEntry code)
 {
     // Append octet by octet.
     auto bitLength = code.bitLength;
@@ -390,7 +390,7 @@ HuffmanDecoder::HuffmanDecoder()
     // Now we sort: by bit length first (in the descending order) and by the symbol
     // value (descending). Descending order: to make sure we do not create prefix tables with
     // short 'indexLength' first and having longer codes that do not fit into such tables later.
-    std::sort(symbols.begin(), symbols.end(), [](const CodeEntry &code1, const CodeEntry &code2) {
+    std::sort(symbols.begin(), symbols.end(), [](CodeEntry code1, CodeEntry code2) {
         if (code1.bitLength == code2.bitLength)
             return code1.byteValue > code2.byteValue;
         return code1.bitLength > code2.bitLength;
@@ -514,14 +514,14 @@ quint32 HuffmanDecoder::addTable(quint32 prefix, quint32 index)
     return quint32(prefixTables.size() - 1);
 }
 
-PrefixTableEntry HuffmanDecoder::tableEntry(const PrefixTable &table, quint32 index)
+PrefixTableEntry HuffmanDecoder::tableEntry(PrefixTable table, quint32 index)
 {
     Q_ASSERT(index < table.size());
     return tableData[table.offset + index];
 }
 
-void HuffmanDecoder::setTableEntry(const PrefixTable &table, quint32 index,
-                                   const PrefixTableEntry &entry)
+void HuffmanDecoder::setTableEntry(PrefixTable table, quint32 index,
+                                   PrefixTableEntry entry)
 {
     Q_ASSERT(index < table.size());
     tableData[table.offset + index] = entry;

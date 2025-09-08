@@ -383,6 +383,7 @@ public:
         Anii = 341,
         Kangri = 342,
         Venetian = 343,
+        Kuvi = 344,
 
         Afan = Oromo,
         Bengali = Bangla,
@@ -404,7 +405,7 @@ public:
         Uigur = Uyghur,
         Walamo = Wolaytta,
 
-        LastLanguage = Venetian
+        LastLanguage = Kuvi
     };
 
     enum Script : ushort {

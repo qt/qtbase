@@ -45,7 +45,7 @@ public:
     QNetworkAccessBackend::SecurityFeatures m_securityFeatures;
     QNetworkAccessBackend::IOFeatures m_ioFeatures;
     std::shared_ptr<QNonContiguousByteDevice> uploadByteDevice;
-    QIODevice *wrappedUploadByteDevice;
+    QIODevice *wrappedUploadByteDevice = nullptr;
     QNetworkReplyImplPrivate *m_reply = nullptr;
     QNetworkAccessManagerPrivate *m_manager = nullptr;
 

@@ -9,10 +9,10 @@
         <file>searchpath1/search_file.txt</file>
         <file>searchpath2/search_file.txt</file>
         <file>search_file.txt</file>
-    </qresource>
-    <qresource><file>test/testdir.txt</file>
+        <file>test/testdir.txt</file>
         <file>otherdir/otherdir.txt</file>
         <file alias="aliasdir/aliasdir.txt">test/testdir2.txt</file>
+        <file alias="uncompresseddir/uncompressed.txt" compression-algorithm="none">aliasdir/compressme.txt</file>
         <file>test/test</file>
     </qresource>
     <qresource lang="ko">
@@ -21,7 +21,7 @@
     <qresource lang="de_CH">
         <file alias="aliasdir/aliasdir.txt" compress="9" threshold="30">aliasdir/compressme.txt</file>
     </qresource>
-    <qresource lang="de">
+    <qresource lang="de" compression-algorithm="none">
         <file alias="aliasdir/aliasdir.txt">test/german.txt</file>
     </qresource>
     <qresource prefix="withoutslashes">

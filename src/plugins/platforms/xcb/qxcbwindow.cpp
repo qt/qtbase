@@ -556,8 +556,6 @@ void QXcbWindow::destroy()
 
 void QXcbWindow::setGeometry(const QRect &rect)
 {
-    setWindowState(Qt::WindowNoState);
-
     QPlatformWindow::setGeometry(rect);
 
     propagateSizeHints();
@@ -1310,6 +1308,7 @@ void QXcbWindow::setParent(const QPlatformWindow *parent)
         m_embedded = false;
     }
     xcb_reparent_window(xcb_connection(), xcb_window(), xcb_parent_id, topLeft.x(), topLeft.y());
+    connection()->sync();
 }
 
 void QXcbWindow::setWindowTitle(const QString &title)
@@ -1333,6 +1332,7 @@ void QXcbWindow::setWindowIconText(const QString &title)
 void QXcbWindow::setWindowIcon(const QIcon &icon)
 {
     QList<quint32> icon_data;
+    const uint32_t sizeLimit = xcb_get_maximum_request_length(xcb_connection());
     if (!icon.isNull()) {
         QList<QSize> availableSizes = icon.availableSizes();
         if (availableSizes.isEmpty()) {
@@ -1348,7 +1348,12 @@ void QXcbWindow::setWindowIcon(const QIcon &icon)
             if (!pixmap.isNull()) {
                 QImage image = pixmap.toImage().convertToFormat(QImage::Format_ARGB32);
                 int pos = icon_data.size();
-                icon_data.resize(pos + 2 + image.width()*image.height());
+                int newSize = pos + 2 + image.width()*image.height();
+                // In the absence of the BIG-REQUESTS extension, or with too big DPR,
+                // the size of icon data is too big for the xcb request very easily.
+                if (quint64(newSize) > quint64(sizeLimit))
+                    break;
+                icon_data.resize(newSize);
                 icon_data[pos++] = image.width();
                 icon_data[pos++] = image.height();
                 memcpy(icon_data.data() + pos, image.bits(), image.width()*image.height()*4);
@@ -1358,10 +1363,10 @@ void QXcbWindow::setWindowIcon(const QIcon &icon)
 
     if (!icon_data.isEmpty()) {
         // Ignore icon exceeding maximum xcb request length
-        if (quint64(icon_data.size()) > quint64(xcb_get_maximum_request_length(xcb_connection()))) {
+        if (quint64(icon_data.size()) > quint64(sizeLimit)) {
             qWarning() << "Ignoring window icon" << icon_data.size()
                        << "exceeds maximum xcb request length"
-                       << xcb_get_maximum_request_length(xcb_connection());
+                       << sizeLimit;
             return;
         }
         xcb_change_property(xcb_connection(),

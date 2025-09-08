@@ -19,6 +19,7 @@
 #include "QtCore/qobject.h"
 #include "QtCore/qbasictimer.h"
 #include "QtCore/qbytearray.h"
+#include <QtCore/qflags.h>
 #include "QtCore/qhash.h"
 #include "QtCore/qmetatype.h"
 
@@ -36,23 +37,25 @@ class QNetworkAccessCache: public QObject
 public:
     struct Node;
     typedef QHash<QByteArray, Node *> NodeHash;
-
     class CacheableObject
     {
         friend class QNetworkAccessCache;
         QByteArray key;
         bool expires;
         bool shareable;
-        qint64 expiryTimeoutSeconds;
+        qint64 expiryTimeoutSeconds = -1;
     public:
-        CacheableObject();
+        enum class Option {
+            Expires = 0x01,
+            Shareable = 0x02,
+        };
+        typedef QFlags<Option> Options; // #### QTBUG-127269
+
         virtual ~CacheableObject();
         virtual void dispose() = 0;
         inline QByteArray cacheKey() const { return key; }
-
     protected:
-        void setExpires(bool enable);
-        void setShareable(bool enable);
+        explicit CacheableObject(Options options);
     };
 
     ~QNetworkAccessCache();
@@ -84,6 +87,8 @@ private:
     void updateTimer();
     bool emitEntryReady(Node *node, QObject *target, const char *member);
 };
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(QNetworkAccessCache::CacheableObject::Options)
 
 QT_END_NAMESPACE
 

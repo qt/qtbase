@@ -27,6 +27,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.qtproject.qt.android.QtActivityDelegate;
+import org.qtproject.qt.android.QtNative;
 
 public class QtAccessibilityDelegate extends View.AccessibilityDelegate
 {
@@ -187,6 +188,13 @@ public class QtAccessibilityDelegate extends View.AccessibilityDelegate
         }
         // When the object is hidden, we need to notify its parent about
         // content change, not the hidden object itself
+        invalidateVirtualViewId(parentId);
+    }
+
+    public void notifyObjectShow(int parentId)
+    {
+        // When the object is shown, we need to notify its parent about
+        // content change, not the shown object itself
         invalidateVirtualViewId(parentId);
     }
 

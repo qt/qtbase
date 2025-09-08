@@ -602,7 +602,7 @@ bool QNetworkReplyHttpImplPrivate::loadFromCacheIfAllowed(QHttpNetworkRequest &h
     return sendCacheContents(metaData);
 }
 
-QHttpNetworkRequest::Priority QNetworkReplyHttpImplPrivate::convert(const QNetworkRequest::Priority& prio)
+QHttpNetworkRequest::Priority QNetworkReplyHttpImplPrivate::convert(QNetworkRequest::Priority prio)
 {
     switch (prio) {
     case QNetworkRequest::LowPriority:
@@ -610,9 +610,9 @@ QHttpNetworkRequest::Priority QNetworkReplyHttpImplPrivate::convert(const QNetwo
     case QNetworkRequest::HighPriority:
         return QHttpNetworkRequest::HighPriority;
     case QNetworkRequest::NormalPriority:
-    default:
         return QHttpNetworkRequest::NormalPriority;
     }
+    Q_UNREACHABLE_RETURN(QHttpNetworkRequest::NormalPriority);
 }
 
 void QNetworkReplyHttpImplPrivate::postRequest(const QNetworkRequest &newHttpRequest)

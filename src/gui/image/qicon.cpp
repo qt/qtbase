@@ -821,7 +821,9 @@ QPixmap QIcon::pixmap(const QSize &size, Mode mode, State state) const
   \since 6.0
 
   Returns a pixmap with the requested \a size, \a devicePixelRatio, \a mode, and \a
-  state, generating one if necessary.
+  state, generating one with the given \a mode and \a state if necessary. The pixmap
+  might be smaller than requested, but never larger, unless the device-pixel ratio
+  of the returned pixmap is larger than 1.
 
   \sa  actualSize(), paint()
 */
@@ -1363,6 +1365,9 @@ bool QIcon::hasThemeIcon(const QString &name)
 */
 void QIcon::setIsMask(bool isMask)
 {
+    if (isMask == (d && d->is_mask))
+        return;
+
     detach();
     if (!d)
         d = new QIconPrivate(new QPixmapIconEngine);

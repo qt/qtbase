@@ -130,11 +130,15 @@ QPoint IntersectionPoint::round() const
 
 // Return positive value if 'p' is to the right of the line 'v1'->'v2', negative if left of the
 // line and zero if exactly on the line.
-// The returned value is the z-component of the qCross product between 'v2-v1' and 'p-v1',
-// which is twice the signed area of the triangle 'p'->'v1'->'v2' (positive for CW order).
-inline int pointDistanceFromLine(const QPoint &p, const QPoint &v1, const QPoint &v2)
+// The returned value is the sign of the cross product between 'v2-v1' and 'p-v1'.
+inline int pointSideOfLine(const QPoint &p, const QPoint &v1, const QPoint &v2)
 {
-    return cross(v2 - v1, p - v1);
+    qint64 ux = qint64(v2.x()) - v1.x();
+    qint64 uy = qint64(v2.y()) - v1.y();
+    qint64 vx = qint64(p.x()) - v1.x();
+    qint64 vy = qint64(p.y()) - v1.y();
+    qint64 c = (ux * vy) - (uy * vx);
+    return (c > 0) ? 1 : (c < 0) ? -1 : 0;
 }
 
 IntersectionPoint intersectionPoint(const QPoint &u1, const QPoint &u2,
@@ -312,7 +316,7 @@ private:
 
     void initElements(const QVectorPath &path, const QTransform &matrix);
     void removeIntersections();
-    void connectElements();
+    bool connectElements();
     void fillIndices();
     BVHNode *buildTree(Element **elements, int elementCount);
     bool intersectNodes(QDataBuffer<Element *> &elements, BVHNode *elementNode, BVHNode *treeNode);
@@ -461,11 +465,17 @@ PathSimplifier::PathSimplifier(const QVectorPath &path, QDataBuffer<QPoint> &ver
 {
     m_points->reset();
     m_indices->reset();
+    bool ok = true;
     initElements(path, matrix);
     if (!m_elements.isEmpty()) {
         removeIntersections();
-        connectElements();
-        fillIndices();
+        ok = connectElements();
+        if (ok)
+            fillIndices();
+    }
+    if (!ok) {
+        m_points->reset();
+        m_indices->reset();
     }
 }
 
@@ -650,7 +660,7 @@ void PathSimplifier::removeIntersections()
     m_bvh.free(); // The bounding volume hierarchy is not needed anymore.
 }
 
-void PathSimplifier::connectElements()
+bool PathSimplifier::connectElements()
 {
     Q_ASSERT(!m_elements.isEmpty());
     QDataBuffer<Event> events(m_elements.size() * 2);
@@ -830,7 +840,8 @@ void PathSimplifier::connectElements()
         }
 
         if (!orderedElements.isEmpty()) {
-            Q_ASSERT((orderedElements.size() & 1) == 0);
+            if (orderedElements.size() & 1) // Unexpected path structure
+                return false;
             int i = 0;
             Element *firstElement = orderedElements.at(0);
             if (m_points->at(firstElement->indices[0]) != eventPoint) {
@@ -856,6 +867,7 @@ void PathSimplifier::connectElements()
         Q_ASSERT((element->next == nullptr) == (element->previous == nullptr));
     }
 #endif
+    return true;
 }
 
 void PathSimplifier::fillIndices()
@@ -1391,19 +1403,19 @@ bool PathSimplifier::elementIsLeftOf(const Element *left, const Element *right)
         return true;
     if (leftU.x() > qMax(rightL.x(), rightU.x()))
         return false;
-    int d = pointDistanceFromLine(leftU, rightL, rightU);
+    int d = pointSideOfLine(leftU, rightL, rightU);
     // d < 0: left, d > 0: right, d == 0: on top
     if (d == 0) {
-        d = pointDistanceFromLine(leftL, rightL, rightU);
+        d = pointSideOfLine(leftL, rightL, rightU);
         if (d == 0) {
             if (right->degree > Element::Line) {
-                d = pointDistanceFromLine(leftL, rightL, m_points->at(right->indices[1]));
+                d = pointSideOfLine(leftL, rightL, m_points->at(right->indices[1]));
                 if (d == 0)
-                    d = pointDistanceFromLine(leftL, rightL, m_points->at(right->indices[2]));
+                    d = pointSideOfLine(leftL, rightL, m_points->at(right->indices[2]));
             } else if (left->degree > Element::Line) {
-                d = pointDistanceFromLine(m_points->at(left->indices[1]), rightL, rightU);
+                d = pointSideOfLine(m_points->at(left->indices[1]), rightL, rightU);
                 if (d == 0)
-                    d = pointDistanceFromLine(m_points->at(left->indices[2]), rightL, rightU);
+                    d = pointSideOfLine(m_points->at(left->indices[2]), rightL, rightU);
             }
         }
     }
@@ -1423,13 +1435,13 @@ QPair<PathSimplifier::RBNode *, PathSimplifier::RBNode *> PathSimplifier::outerB
         Q_ASSERT(point >= v2 && point <= v1);
         if (point == v1 || point == v2)
             break;
-        int d = pointDistanceFromLine(point, v1, v2);
+        int d = pointSideOfLine(point, v1, v2);
         if (d == 0) {
             if (element->degree == Element::Line)
                 break;
-            d = pointDistanceFromLine(point, v1, m_points->at(element->indices[1]));
+            d = pointSideOfLine(point, v1, m_points->at(element->indices[1]));
             if (d == 0)
-                d = pointDistanceFromLine(point, v1, m_points->at(element->indices[2]));
+                d = pointSideOfLine(point, v1, m_points->at(element->indices[2]));
             Q_ASSERT(d != 0);
         }
         if (d < 0) {
@@ -1455,7 +1467,7 @@ QPair<PathSimplifier::RBNode *, PathSimplifier::RBNode *> PathSimplifier::outerB
         Q_ASSERT(point >= v2 && point <= v1);
         bool equal = (point == v1 || point == v2);
         if (!equal) {
-            int d = pointDistanceFromLine(point, v1, v2);
+            int d = pointSideOfLine(point, v1, v2);
             Q_ASSERT(d >= 0);
             equal = (d == 0 && element->degree == Element::Line);
         }
@@ -1476,7 +1488,7 @@ QPair<PathSimplifier::RBNode *, PathSimplifier::RBNode *> PathSimplifier::outerB
         Q_ASSERT(point >= v2 && point <= v1);
         bool equal = (point == v1 || point == v2);
         if (!equal) {
-            int d = pointDistanceFromLine(point, v1, v2);
+            int d = pointSideOfLine(point, v1, v2);
             Q_ASSERT(d <= 0);
             equal = (d == 0 && element->degree == Element::Line);
         }

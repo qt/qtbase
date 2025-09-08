@@ -127,6 +127,12 @@ namespace QtAndroidAccessibility
         QtAndroid::notifyObjectHide(accessibilityObjectId, parentObjectId);
     }
 
+    void notifyObjectShow(uint accessibilityObjectId)
+    {
+        const auto parentObjectId = parentId_helper(accessibilityObjectId);
+        QtAndroid::notifyObjectShow(parentObjectId);
+    }
+
     void notifyObjectFocus(uint accessibilityObjectId)
     {
         QtAndroid::notifyObjectFocus(accessibilityObjectId);

@@ -27,6 +27,7 @@ class Q_GUI_EXPORT QGenericUnixServices : public QPlatformServices
 {
 public:
     QGenericUnixServices();
+    ~QGenericUnixServices();
 
     QByteArray desktopEnvironment() const override;
 
@@ -41,6 +42,9 @@ public:
 private:
     QString m_webBrowser;
     QString m_documentLauncher;
+#if QT_CONFIG(dbus)
+    QMetaObject::Connection m_watcherConnection;
+#endif
     bool m_hasScreenshotPortalWithColorPicking = false;
 };
 

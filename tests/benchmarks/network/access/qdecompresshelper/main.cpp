@@ -51,13 +51,14 @@ void tst_QDecompressHelper::decompress()
         file.seek(0);
         QDecompressHelper helper;
         helper.setEncoding(encoding);
+        helper.setDecompressedSafetyCheckThreshold(-1);
         QVERIFY(helper.isValid());
 
         helper.feed(file.readAll());
 
         qsizetype bytes = 0;
+        QByteArray out(64 * 1024, Qt::Uninitialized);
         while (helper.hasData()) {
-            QByteArray out(64 * 1024, Qt::Uninitialized);
             qsizetype bytesRead = helper.read(out.data(), out.size());
             bytes += bytesRead;
         }

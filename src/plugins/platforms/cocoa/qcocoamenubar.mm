@@ -25,11 +25,6 @@ QCocoaMenuBar::QCocoaMenuBar()
 {
     static_menubars.append(this);
 
-    // clicks into the menu bar should close all popup windows
-    static QMacNotificationObserver menuBarClickObserver(nil, NSMenuDidBeginTrackingNotification, ^{
-        QGuiApplicationPrivate::instance()->closeAllPopups();
-    });
-
     m_nativeMenu = [[NSMenu alloc] init];
     qCDebug(lcQpaMenus) << "Constructed" << this << "with" << m_nativeMenu;
 }

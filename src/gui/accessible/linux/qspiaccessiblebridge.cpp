@@ -131,7 +131,7 @@ static RoleMapping map[] = {
     //: Role of an accessible object
     { QAccessible::Dialog, ATSPI_ROLE_DIALOG, QT_TRANSLATE_NOOP("QSpiAccessibleBridge", "dialog") },
     //: Role of an accessible object
-    { QAccessible::Border, ATSPI_ROLE_FRAME, QT_TRANSLATE_NOOP("QSpiAccessibleBridge", "frame") },
+    { QAccessible::Border, ATSPI_ROLE_PANEL, QT_TRANSLATE_NOOP("QSpiAccessibleBridge", "panel") },
     //: Role of an accessible object
     { QAccessible::Grouping, ATSPI_ROLE_PANEL, QT_TRANSLATE_NOOP("QSpiAccessibleBridge", "panel") },
     //: Role of an accessible object

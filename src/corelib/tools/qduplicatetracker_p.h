@@ -67,7 +67,7 @@ class QDuplicateTracker {
     };
     Set set{Prealloc};
 #endif
-    Q_DISABLE_COPY_MOVE(QDuplicateTracker);
+    Q_DISABLE_COPY_MOVE(QDuplicateTracker)
 public:
     static constexpr inline bool uses_pmr =
         #ifdef __cpp_lib_memory_resource

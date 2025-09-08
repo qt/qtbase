@@ -28,7 +28,8 @@ public:
     enum PathNormalization {
         DefaultNormalization = 0x00,
         AllowUncPaths = 0x01,
-        RemotePath = 0x02
+        RemotePath = 0x02,
+        KeepLocalTrailingSlash = 0x04,
     };
     Q_DECLARE_FLAGS(PathNormalizations, PathNormalization)
     Q_FLAGS(PathNormalizations)
@@ -74,6 +75,7 @@ public:
 Q_DECLARE_OPERATORS_FOR_FLAGS(QDirPrivate::PathNormalizations)
 
 Q_AUTOTEST_EXPORT QString qt_normalizePathSegments(const QString &name, QDirPrivate::PathNormalizations flags, bool *ok = nullptr);
+bool qt_normalizePathSegments(QString *path, QDirPrivate::PathNormalizations flags);
 
 QT_END_NAMESPACE
 

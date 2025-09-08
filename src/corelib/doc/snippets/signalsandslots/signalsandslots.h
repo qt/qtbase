@@ -33,6 +33,8 @@ class Counter : public QObject
 {
     Q_OBJECT
 
+// Note. The Q_OBJECT macro starts a private section.
+// To declare public members, use the 'public:' access modifier.
 public:
     Counter() { m_value = 0; }
 

@@ -96,7 +96,6 @@ public class QtActivityDelegate
     private static String m_applicationParameters = null;
 
     private int m_currentRotation = -1; // undefined
-    private int m_nativeOrientation = Configuration.ORIENTATION_UNDEFINED;
 
     private String m_mainLib;
     private long m_metaState;
@@ -126,6 +125,7 @@ public class QtActivityDelegate
     private boolean m_isPluginRunning = false;
 
     private QtAccessibilityDelegate m_accessibilityDelegate = null;
+
 
 
     public void setSystemUiVisibility(int systemUiVisibility)
@@ -567,6 +567,38 @@ public class QtActivityDelegate
         }
     }
 
+    static boolean isSimilarRotation(int r1, int r2)
+    {
+        return (r1 == r2) || (r1 == Surface.ROTATION_0 && r2 == Surface.ROTATION_180)
+                || (r1 == Surface.ROTATION_180 && r2 == Surface.ROTATION_0)
+                || (r1 == Surface.ROTATION_90 && r2 == Surface.ROTATION_270)
+                || (r1 == Surface.ROTATION_270 && r2 == Surface.ROTATION_90);
+    }
+
+    static Display getDisplay(Activity activity)
+    {
+        return Build.VERSION.SDK_INT < Build.VERSION_CODES.R
+                ? activity.getWindowManager().getDefaultDisplay()
+                : activity.getDisplay();
+    }
+
+    static int getDisplayRotation(Activity activity)
+    {
+        Display display = getDisplay(activity);
+        return display != null ? display.getRotation() : 0;
+    }
+
+    static int getNativeOrientation(Activity activity, int rotation)
+    {
+        int orientation = activity.getResources().getConfiguration().orientation;
+        boolean rot90 = (rotation == Surface.ROTATION_90 || rotation == Surface.ROTATION_270);
+        boolean isLandscape = (orientation == Configuration.ORIENTATION_LANDSCAPE);
+        if ((isLandscape && !rot90) || (!isLandscape && rot90))
+            return Configuration.ORIENTATION_LANDSCAPE;
+
+        return Configuration.ORIENTATION_PORTRAIT;
+    }
+
     private final DisplayManager.DisplayListener displayListener = new DisplayManager.DisplayListener()
     {
         @Override
@@ -574,30 +606,12 @@ public class QtActivityDelegate
             QtNative.handleScreenAdded(displayId);
         }
 
-        private boolean isSimilarRotation(int r1, int r2)
-        {
-         return (r1 == r2)
-                || (r1 == Surface.ROTATION_0 && r2 == Surface.ROTATION_180)
-                || (r1 == Surface.ROTATION_180 && r2 == Surface.ROTATION_0)
-                || (r1 == Surface.ROTATION_90 && r2 == Surface.ROTATION_270)
-                || (r1 == Surface.ROTATION_270 && r2 == Surface.ROTATION_90);
-        }
-
         @Override
         public void onDisplayChanged(int displayId)
         {
-            Display display = (Build.VERSION.SDK_INT < Build.VERSION_CODES.R)
-                 ? m_activity.getWindowManager().getDefaultDisplay()
-                 : m_activity.getDisplay();
-            m_currentRotation = display.getRotation();
+            m_currentRotation = getDisplayRotation(m_activity);
             m_layout.setActivityDisplayRotation(m_currentRotation);
-            // Process orientation change only if it comes after the size
-            // change, or if the screen is rotated by 180 degrees.
-            // Otherwise it will be processed in QtLayout.
-            if (isSimilarRotation(m_currentRotation, m_layout.displayRotation()))
-                QtNative.handleOrientationChanged(m_currentRotation, m_nativeOrientation);
-
-            float refreshRate = display.getRefreshRate();
+            float refreshRate = getDisplay(m_activity).getRefreshRate();
             QtNative.handleRefreshRateChanged(refreshRate);
             QtNative.handleScreenChanged(displayId);
         }
@@ -661,9 +675,6 @@ public class QtActivityDelegate
                 activityClass.getMethod("super_dispatchGenericMotionEvent", MotionEvent.class);
 
         m_softInputMode = m_activity.getPackageManager().getActivityInfo(m_activity.getComponentName(), 0).softInputMode;
-
-        DisplayManager displayManager = (DisplayManager)m_activity.getSystemService(Context.DISPLAY_SERVICE);
-        displayManager.registerDisplayListener(displayListener, null);
     }
 
     public boolean loadApplication(Activity activity, ClassLoader classLoader, Bundle loaderParams)
@@ -816,6 +827,9 @@ public class QtActivityDelegate
         }
         m_layout = new QtLayout(m_activity, startApplication);
 
+        DisplayManager displayManager = (DisplayManager)m_activity.getSystemService(Context.DISPLAY_SERVICE);
+        displayManager.registerDisplayListener(displayListener, null);
+
         int orientation = m_activity.getResources().getConfiguration().orientation;
 
         try {
@@ -849,15 +863,7 @@ public class QtActivityDelegate
                                                              ViewGroup.LayoutParams.MATCH_PARENT));
 
         int rotation = m_activity.getWindowManager().getDefaultDisplay().getRotation();
-        boolean rot90 = (rotation == Surface.ROTATION_90 || rotation == Surface.ROTATION_270);
-        boolean currentlyLandscape = (orientation == Configuration.ORIENTATION_LANDSCAPE);
-        if ((currentlyLandscape && !rot90) || (!currentlyLandscape && rot90))
-            m_nativeOrientation = Configuration.ORIENTATION_LANDSCAPE;
-        else
-            m_nativeOrientation = Configuration.ORIENTATION_PORTRAIT;
-
-        m_layout.setNativeOrientation(m_nativeOrientation);
-        QtNative.handleOrientationChanged(rotation, m_nativeOrientation);
+        QtNative.handleOrientationChanged(rotation, getNativeOrientation(m_activity, rotation));
         m_currentRotation = rotation;
 
         handleUiModeChange(m_activity.getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK);
@@ -938,6 +944,13 @@ public class QtActivityDelegate
         if (m_accessibilityDelegate == null)
             return;
         m_accessibilityDelegate.notifyObjectHide(viewId, parentId);
+    }
+
+    public void notifyObjectShow(int parentId)
+    {
+        if (m_accessibilityDelegate == null)
+           return;
+        m_accessibilityDelegate.notifyObjectShow(parentId);
     }
 
     public void notifyObjectFocus(int viewId)

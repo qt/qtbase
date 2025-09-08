@@ -202,6 +202,7 @@ public:
 
     static constexpr QOperatingSystemVersionBase MacOSVentura { QOperatingSystemVersionBase::MacOS, 13, 0 };
     static constexpr QOperatingSystemVersionBase MacOSSonoma { QOperatingSystemVersionBase::MacOS, 14, 0 };
+    static constexpr QOperatingSystemVersionBase MacOSSequoia { QOperatingSystemVersionBase::MacOS, 15, 0 };
 
     constexpr QOperatingSystemVersion(const QOperatingSystemVersionBase &osversion)
         : QOperatingSystemVersionBase(osversion) {}
@@ -212,13 +213,16 @@ public:
     {
     }
 
+#if QT_CORE_REMOVED_SINCE(6, 3) || defined(Q_QDOC)
     static QOperatingSystemVersion current();
+#endif
 
     static constexpr OSType currentType()
     {
         return OSType(QOperatingSystemVersionBase::currentType());
     }
 
+#if QT_CORE_REMOVED_SINCE(6, 3) || defined(Q_QDOC)
     QVersionNumber version() const { return QOperatingSystemVersionBase::version(); }
 
     constexpr int majorVersion() const { return QOperatingSystemVersionBase::majorVersion(); }
@@ -227,10 +231,13 @@ public:
 
     constexpr int segmentCount() const
     { return QOperatingSystemVersionBase::segmentCount(); }
+#endif // QT_CORE_REMOVED_SINCE(6, 3)
 
     constexpr OSType type() const { return OSType(QOperatingSystemVersionBase::type()); }
     bool isAnyOfType(std::initializer_list<OSType> types) const;
+#if QT_CORE_REMOVED_SINCE(6, 3) || defined(Q_QDOC)
     QString name() const;
+#endif
 
 private:
     QOperatingSystemVersion() = default;

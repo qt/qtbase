@@ -29,14 +29,20 @@
 #include "QtCore/qset.h"
 #include "private/qlayoutengine_p.h"
 #include "private/qwidgetanimator_p.h"
-#include "private/qdockwidget_p.h"
-
 #if QT_CONFIG(dockwidget)
+#include "private/qdockwidget_p.h"
 #include "qdockarealayout_p.h"
 #include "qdockwidget.h"
+#else
+struct QDockWidgetPrivate {
+    enum class DragScope {
+        Group
+    };
+};
 #endif
 #if QT_CONFIG(toolbar)
 #include "qtoolbararealayout_p.h"
+#include "qtoolbar.h"
 #endif
 #include <QtCore/qloggingcategory.h>
 
@@ -83,6 +89,9 @@ public:
     bool separatorMove(const QPoint &pos);
     bool endSeparatorMove(const QPoint &pos);
     bool windowEvent(QEvent *e);
+
+private:
+    QList<int> findSeparator(const QPoint &pos) const;
 
 #endif // QT_CONFIG(dockwidget)
 
@@ -134,7 +143,7 @@ void QMainWindowLayoutSeparatorHelper<Layout>::adjustCursor(const QPoint &pos)
                 w->unsetCursor();
         }
     } else if (movingSeparator.isEmpty()) { // Don't change cursor when moving separator
-        QList<int> pathToSeparator = layout()->dockAreaLayoutInfo()->findSeparator(pos);
+        QList<int> pathToSeparator = findSeparator(pos);
 
         if (pathToSeparator != hoverSeparator) {
             if (!hoverSeparator.isEmpty())
@@ -272,9 +281,34 @@ bool QMainWindowLayoutSeparatorHelper<Layout>::windowEvent(QEvent *event)
 }
 
 template <typename Layout>
+QList<int> QMainWindowLayoutSeparatorHelper<Layout>::findSeparator(const QPoint &pos) const
+{
+    Layout *layout = const_cast<Layout*>(this->layout());
+#if QT_CONFIG(toolbar)
+    QToolBarAreaLayout *toolBarAreaLayout = layout->toolBarAreaLayout();
+    if (!toolBarAreaLayout->isEmpty()) {
+        // We might have a toolbar that is currently expanded, covering
+        // parts of the dock area, in which case we don't want the dock
+        // area layout to treat mouse events for the expanded toolbar as
+        // hitting a separator.
+        const QWidget *widget = layout->window();
+        QWidget *childWidget = widget->childAt(pos);
+        while (childWidget && childWidget != widget) {
+            if (auto *toolBar = qobject_cast<QToolBar*>(childWidget)) {
+                if (!toolBarAreaLayout->indexOf(toolBar).isEmpty())
+                    return {};
+            }
+            childWidget = childWidget->parentWidget();
+        }
+    }
+#endif
+    return layout->dockAreaLayoutInfo()->findSeparator(pos);
+}
+
+template <typename Layout>
 bool QMainWindowLayoutSeparatorHelper<Layout>::startSeparatorMove(const QPoint &pos)
 {
-    movingSeparator = layout()->dockAreaLayoutInfo()->findSeparator(pos);
+    movingSeparator = findSeparator(pos);
 
     if (movingSeparator.isEmpty())
         return false;
@@ -442,6 +476,7 @@ public:
     bool restoreState(QDataStream &stream, const QMainWindowLayoutState &oldState);
 };
 
+class QMainWindowTabBar;
 class Q_AUTOTEST_EXPORT QMainWindowLayout
     : public QLayout,
       public QMainWindowLayoutSeparatorHelper<QMainWindowLayout>
@@ -484,6 +519,7 @@ public:
     void removeToolBar(QToolBar *toolbar);
     void toggleToolBarsVisible();
     void moveToolBar(QToolBar *toolbar, int pos);
+    QToolBarAreaLayout *toolBarAreaLayout() { return &layoutState.toolBarAreaLayout; }
 #endif
 
     // dock widgets
@@ -569,7 +605,11 @@ public:
 #if QT_CONFIG(dockwidget)
     QPointer<QDockWidgetGroupWindow> currentHoveredFloat; // set when dragging over a floating dock widget
     void setCurrentHoveredFloat(QDockWidgetGroupWindow *w);
+#if QT_CONFIG(tabbar)
     bool isDockWidgetTabbed(const QDockWidget *dockWidget) const;
+    QList<QDockWidget *> tabifiedDockWidgets(const QDockWidget *dockWidget) const;
+    QMainWindowTabBar *findTabBar(const QDockWidget *dockWidget) const;
+#endif
 #endif
     bool isInApplyState = false;
 

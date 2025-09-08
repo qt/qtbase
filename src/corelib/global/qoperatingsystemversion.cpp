@@ -111,15 +111,11 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn QOperatingSystemVersion::current()
     Returns a QOperatingSystemVersion indicating the current OS and its version number.
 
     \sa currentType()
 */
-QOperatingSystemVersion QOperatingSystemVersion::current()
-{
-    return QOperatingSystemVersionBase::current();
-}
-
 QOperatingSystemVersionBase QOperatingSystemVersionBase::current()
 {
     static const QOperatingSystemVersionBase v = current_impl();
@@ -306,11 +302,6 @@ int QOperatingSystemVersionBase::compare(QOperatingSystemVersionBase v1,
 
     \sa type()
 */
-QString QOperatingSystemVersion::name() const
-{
-    return QOperatingSystemVersionBase::name();
-}
-
 QString QOperatingSystemVersionBase::name(QOperatingSystemVersionBase osversion)
 {
     switch (osversion.type()) {
@@ -564,6 +555,13 @@ const QOperatingSystemVersionBase QOperatingSystemVersion::MacOSVentura;
     \since 6.5
 */
 const QOperatingSystemVersionBase QOperatingSystemVersion::MacOSSonoma;
+
+/*!
+    \variable QOperatingSystemVersion::MacOSSequoia
+    \brief a version corresponding to macOS Sequoia (version 15).
+    \since 6.8
+*/
+const QOperatingSystemVersionBase QOperatingSystemVersion::MacOSSequoia;
 
 /*!
     \variable QOperatingSystemVersion::AndroidJellyBean

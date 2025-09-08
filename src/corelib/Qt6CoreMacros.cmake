@@ -586,7 +586,10 @@ endfunction()
 function(_qt_internal_create_executable target)
     if(ANDROID)
         list(REMOVE_ITEM ARGN "WIN32" "MACOSX_BUNDLE")
+        cmake_policy(PUSH)
+        __qt_internal_set_cmp0156()
         add_library("${target}" MODULE ${ARGN})
+        cmake_policy(POP)
         # On our qmake builds we do don't compile the executables with
         # visibility=hidden. Not having this flag set will cause the
         # executable to have main() hidden and can then no longer be loaded
@@ -600,7 +603,10 @@ function(_qt_internal_create_executable target)
         qt6_android_apply_arch_suffix("${target}")
         set_property(TARGET "${target}" PROPERTY _qt_is_android_executable TRUE)
     else()
+        cmake_policy(PUSH)
+        __qt_internal_set_cmp0156()
         add_executable("${target}" ${ARGN})
+        cmake_policy(POP)
     endif()
 
     _qt_internal_disable_autorcc_zstd_when_not_supported("${target}")
@@ -1158,7 +1164,7 @@ function(qt6_extract_metatypes target)
         VERBATIM
     )
 
-    if(CMAKE_GENERATOR MATCHES " Makefiles" OR CMAKE_GENERATOR MATCHES "^Visual Studio")
+    if(CMAKE_GENERATOR MATCHES " Makefiles")
         # Work around https://gitlab.kitware.com/cmake/cmake/-/issues/19005 to trigger the command
         # that generates ${metatypes_file}.
         add_custom_command(
@@ -2355,7 +2361,11 @@ function(_qt_internal_add_library target)
         endif()
     endif()
 
+    cmake_policy(PUSH)
+    __qt_internal_set_cmp0156()
     add_library(${target} ${type_to_create} ${arg_UNPARSED_ARGUMENTS})
+    cmake_policy(POP)
+
     _qt_internal_disable_autorcc_zstd_when_not_supported("${target}")
     _qt_internal_set_up_static_runtime_library(${target})
 

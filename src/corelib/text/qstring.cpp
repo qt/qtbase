@@ -1549,6 +1549,8 @@ int QtPrivate::compareStrings(QLatin1StringView lhs, QLatin1StringView rhs, Qt::
 {
     if (lhs.isEmpty())
         return qt_lencmp(qsizetype(0), rhs.size());
+    if (rhs.isEmpty())
+        return qt_lencmp(lhs.size(), qsizetype(0));
     if (cs == Qt::CaseInsensitive)
         return latin1nicmp(lhs.data(), lhs.size(), rhs.data(), rhs.size());
     const auto l = std::min(lhs.size(), rhs.size());
@@ -6777,7 +6779,10 @@ QString QString::toCaseFolded_helper(QString &str)
     \snippet qstring/main.cpp 81
 
     The case conversion will always happen in the 'C' locale. For
-    locale-dependent case folding use QLocale::toUpper()
+    locale-dependent case folding use QLocale::toUpper().
+
+    \note In some cases the uppercase form of a string may be longer than the
+    original.
 
     \sa toLower(), QLocale::toLower()
 */
@@ -8807,9 +8812,6 @@ static qsizetype resolveStringRefsAndReturnTotalSize(ParseResult &parts, const A
 
 } // unnamed namespace
 
-Q_ALWAYS_INLINE QString to_string(QLatin1StringView s) noexcept { return s; }
-Q_ALWAYS_INLINE QString to_string(QStringView s) noexcept { return s.toString(); }
-
 template <typename StringView>
 static QString argToQStringImpl(StringView pattern, size_t numArgs, const QtPrivate::ArgBase **args)
 {
@@ -8823,7 +8825,7 @@ static QString argToQStringImpl(StringView pattern, size_t numArgs, const QtPriv
         argIndexToPlaceholderMap.resize(qsizetype(numArgs));
     else if (Q_UNLIKELY(static_cast<size_t>(argIndexToPlaceholderMap.size()) < numArgs)) // 3b
         qWarning("QString::arg: %d argument(s) missing in %ls",
-                 int(numArgs - argIndexToPlaceholderMap.size()), qUtf16Printable(to_string(pattern)));
+                 int(numArgs - argIndexToPlaceholderMap.size()), qUtf16Printable(pattern.toString()));
 
     // 5
     const qsizetype totalSize = resolveStringRefsAndReturnTotalSize(parts, argIndexToPlaceholderMap, args);

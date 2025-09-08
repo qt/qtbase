@@ -7,7 +7,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.0.2'
+        classpath 'com.android.tools.build:gradle:8.5.2'
     }
 }
 
@@ -23,12 +23,12 @@ repositories {
 }
 
 android {
-    compileSdkVersion 31
-    buildToolsVersion "31.0.3"
+    compileSdkVersion 34
+    buildToolsVersion "34.0.0"
 
     defaultConfig {
         minSdkVersion 23
-        targetSdkVersion 31
+        targetSdkVersion 34
     }
 
     sourceSets {

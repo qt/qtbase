@@ -138,7 +138,9 @@ bool QSqlDriver::isOpenError() const
     \enum QSqlDriver::DriverFeature
 
     This enum contains a list of features a driver might support. Use
-    hasFeature() to query whether a feature is supported or not.
+    hasFeature() to query whether a feature is supported or not. Some features
+    depend on the database server so they can only properly determined after
+    the database connection is successfully opened with QSqlDatabase::open().
 
     \value Transactions  Whether the driver supports SQL transactions.
     \value QuerySize  Whether the database is capable of reporting the size

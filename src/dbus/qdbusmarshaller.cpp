@@ -120,7 +120,7 @@ inline void QDBusMarshaller::append(const QDBusObjectPath &arg)
 inline void QDBusMarshaller::append(const QDBusSignature &arg)
 {
     QByteArray data = arg.signature().toUtf8();
-    if (!ba && data.isEmpty()) {
+    if (!ba && data.isNull()) {
         error("Invalid signature passed in arguments"_L1);
     } else {
         const char *cdata = data.constData();

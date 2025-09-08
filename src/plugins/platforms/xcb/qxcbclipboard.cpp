@@ -61,7 +61,7 @@ protected:
             // get the list of targets from the current clipboard owner - we do this
             // once so that multiple calls to this function don't require multiple
             // server round trips...
-            that->format_atoms = m_clipboard->getDataInFormat(modeAtom, m_clipboard->atom(QXcbAtom::AtomTARGETS));
+            that->format_atoms = m_clipboard->getDataInFormat(modeAtom, m_clipboard->atom(QXcbAtom::AtomTARGETS)).value_or(QByteArray());
 
             if (format_atoms.size() > 0) {
                 const xcb_atom_t *targets = (const xcb_atom_t *) format_atoms.data();
@@ -91,7 +91,7 @@ protected:
     {
         auto requestedType = type;
         if (fmt.isEmpty() || isEmpty())
-            return QByteArray();
+            return QVariant();
 
         (void)formats(); // trigger update of format list
 
@@ -108,7 +108,11 @@ protected:
         if (fmtatom == 0)
             return QVariant();
 
-        return mimeConvertToFormat(m_clipboard->connection(), fmtatom, m_clipboard->getDataInFormat(modeAtom, fmtatom), fmt, requestedType, hasUtf8);
+        const std::optional<QByteArray> result = m_clipboard->getDataInFormat(modeAtom, fmtatom);
+        if (!result.has_value())
+            return QVariant();
+
+        return mimeConvertToFormat(m_clipboard->connection(), fmtatom, result.value(), fmt, requestedType, hasUtf8);
     }
 private:
 
@@ -776,7 +780,7 @@ xcb_generic_event_t *QXcbClipboard::waitForClipboardEvent(xcb_window_t window, i
     return nullptr;
 }
 
-QByteArray QXcbClipboard::clipboardReadIncrementalProperty(xcb_window_t win, xcb_atom_t property, int nbytes, bool nullterm)
+std::optional<QByteArray> QXcbClipboard::clipboardReadIncrementalProperty(xcb_window_t win, xcb_atom_t property, int nbytes, bool nullterm)
 {
     QByteArray buf;
     QByteArray tmp_buf;
@@ -841,17 +845,16 @@ QByteArray QXcbClipboard::clipboardReadIncrementalProperty(xcb_window_t win, xcb
     // could consider next request to be still part of this timed out request
     setRequestor(0);
 
-    return QByteArray();
+    return std::nullopt;
 }
 
-QByteArray QXcbClipboard::getDataInFormat(xcb_atom_t modeAtom, xcb_atom_t fmtAtom)
+std::optional<QByteArray> QXcbClipboard::getDataInFormat(xcb_atom_t modeAtom, xcb_atom_t fmtAtom)
 {
     return getSelection(modeAtom, fmtAtom, atom(QXcbAtom::Atom_QT_SELECTION));
 }
 
-QByteArray QXcbClipboard::getSelection(xcb_atom_t selection, xcb_atom_t target, xcb_atom_t property, xcb_timestamp_t time)
+std::optional<QByteArray> QXcbClipboard::getSelection(xcb_atom_t selection, xcb_atom_t target, xcb_atom_t property, xcb_timestamp_t time)
 {
-    QByteArray buf;
     xcb_window_t win = requestor();
 
     if (time == 0) time = connection()->time();
@@ -866,17 +869,19 @@ QByteArray QXcbClipboard::getSelection(xcb_atom_t selection, xcb_atom_t target, 
     free(ge);
 
     if (no_selection)
-        return buf;
+        return std::nullopt;
 
     xcb_atom_t type;
+    QByteArray buf;
     if (clipboardReadProperty(win, property, true, &buf, nullptr, &type, nullptr)) {
         if (type == atom(QXcbAtom::AtomINCR)) {
             int nbytes = buf.size() >= 4 ? *((int*)buf.data()) : 0;
-            buf = clipboardReadIncrementalProperty(win, property, nbytes, false);
+            return clipboardReadIncrementalProperty(win, property, nbytes, false);
         }
+        return buf;
     }
 
-    return buf;
+    return std::nullopt;
 }
 
 #endif // QT_NO_CLIPBOARD

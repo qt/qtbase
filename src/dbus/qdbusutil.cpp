@@ -512,14 +512,14 @@ namespace QDBusUtil
     bool isValidSignature(const QString &signature)
     {
         QByteArray ba = signature.toLatin1();
-        const char *data = ba.constData();
-        while (true) {
+        const char *data = ba.constBegin();
+        const char *end = ba.constEnd();
+        while (data != end) {
             data = validateSingleType(data);
             if (!data)
                 return false;
-            if (*data == '\0')
-                return true;
         }
+        return true;
     }
 
     /*!

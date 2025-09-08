@@ -128,6 +128,7 @@ public:
 protected:
     HWND parentHwnd() const { return GetAncestor(handle(), GA_PARENT); }
     bool isTopLevel_sys() const;
+    inline bool hasMaximumSize() const;
     QRect frameGeometry_sys() const;
     QRect geometry_sys() const;
     void setGeometry_sys(const QRect &rect) const;

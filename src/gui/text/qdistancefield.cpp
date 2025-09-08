@@ -474,6 +474,11 @@ static void makeDistanceField(QDistanceFieldData *data, const QPainterPath &path
     QDataBuffer<quint32> pathIndices(0);
     QDataBuffer<QPoint> pathVertices(0);
     qSimplifyPath(path, pathVertices, pathIndices, transform);
+    if (pathVertices.isEmpty()) {
+        qCWarning(lcDistanceField) << "Unexpected glyph path structure, bailing out";
+        memset(data->data, 0, data->nbytes);
+        return;
+    }
 
     const qint32 interiorColor = -0x7f80; // 8:8 signed format, -127.5
     const qint32 exteriorColor = 0x7f80; // 8:8 signed format, 127.5
@@ -727,7 +732,7 @@ static void initialDistanceFieldFactor()
     }
     if (qEnvironmentVariableIsSet("QT_DISTANCEFIELD_DEFAULT_RADIUS")) {
         QT_DISTANCEFIELD_DEFAULT_RADIUS = qEnvironmentVariableIntValue("QT_DISTANCEFIELD_DEFAULT_RADIUS");
-        qDebug(lcDistanceField) << "set the QT_DISTANCEFIELD_DEFAULT_RADIUS:" << QT_DISTANCEFIELD_DEFAULT_RADIUS;
+        qCDebug(lcDistanceField) << "set the QT_DISTANCEFIELD_DEFAULT_RADIUS:" << QT_DISTANCEFIELD_DEFAULT_RADIUS;
     }
     if (qEnvironmentVariableIsSet("QT_DISTANCEFIELD_DEFAULT_HIGHGLYPHCOUNT")) {
         QT_DISTANCEFIELD_DEFAULT_HIGHGLYPHCOUNT = qEnvironmentVariableIntValue("QT_DISTANCEFIELD_DEFAULT_HIGHGLYPHCOUNT");
@@ -839,19 +844,24 @@ QDistanceFieldData *QDistanceFieldData::create(const QSize &size)
     return data;
 }
 
+QDistanceFieldData *QDistanceFieldData::create(QSize size, const QPainterPath &path, bool doubleResolution)
+{
+    QDistanceFieldData *data = create(size);
+    makeDistanceField(data,
+                      path,
+                      QT_DISTANCEFIELD_SCALE(doubleResolution),
+                      QT_DISTANCEFIELD_RADIUS(doubleResolution) / QT_DISTANCEFIELD_SCALE(doubleResolution));
+    return data;
+}
+
+
 QDistanceFieldData *QDistanceFieldData::create(const QPainterPath &path, bool doubleResolution)
 {
     int dfMargin = QT_DISTANCEFIELD_RADIUS(doubleResolution) / QT_DISTANCEFIELD_SCALE(doubleResolution);
     int glyphWidth = qCeil(path.boundingRect().width() / QT_DISTANCEFIELD_SCALE(doubleResolution)) + dfMargin * 2;
     int glyphHeight = qCeil(path.boundingRect().height() / QT_DISTANCEFIELD_SCALE(doubleResolution)) + dfMargin * 2;
 
-    QDistanceFieldData *data = create(QSize(glyphWidth, glyphHeight));
-
-    makeDistanceField(data,
-                      path,
-                      QT_DISTANCEFIELD_SCALE(doubleResolution),
-                      QT_DISTANCEFIELD_RADIUS(doubleResolution) / QT_DISTANCEFIELD_SCALE(doubleResolution));
-    return data;
+    return create(QSize(glyphWidth, glyphHeight), path, doubleResolution);
 }
 
 
@@ -873,6 +883,16 @@ QDistanceField::QDistanceField(const QRawFont &font, glyph_t glyph, bool doubleR
 QDistanceField::QDistanceField(QFontEngine *fontEngine, glyph_t glyph, bool doubleResolution)
 {
     setGlyph(fontEngine, glyph, doubleResolution);
+}
+
+QDistanceField::QDistanceField(QSize size, const QPainterPath &path, glyph_t glyph, bool doubleResolution)
+{
+    QPainterPath dfPath = path;
+    dfPath.translate(-dfPath.boundingRect().topLeft());
+    dfPath.setFillRule(Qt::WindingFill);
+
+    d = QDistanceFieldData::create(size, dfPath, doubleResolution);
+    d->glyph = glyph;
 }
 
 QDistanceField::QDistanceField(const QPainterPath &path, glyph_t glyph, bool doubleResolution)

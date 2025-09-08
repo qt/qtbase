@@ -25,6 +25,7 @@
 #include <QtCore/qobject.h>
 #include <QtCore/qthread.h>
 #include <QtCore/qurl.h>
+#include <QtCore/qset.h>
 
 #include <cstdlib>
 #include <memory>
@@ -93,6 +94,8 @@ private slots:
     void authenticationRequired_data();
     void authenticationRequired();
 
+    void unsupportedAuthenticateChallenge();
+
     void h2cAllowedAttribute_data();
     void h2cAllowedAttribute();
 
@@ -102,6 +105,8 @@ private slots:
     void trailingHEADERS();
 
     void duplicateRequestsWithAborts();
+
+    void abortOnEncrypted();
 
 protected slots:
     // Slots to listen to our in-process server:
@@ -119,6 +124,29 @@ protected slots:
     void replyFinishedWithError();
 
 private:
+    [[nodiscard]] auto useTemporaryKeychain()
+    {
+#if QT_CONFIG(securetransport)
+        // Normally on macOS we use plain text only for SecureTransport
+        // does not support ALPN on the server side. With 'direct encrytped'
+        // we have to use TLS sockets (== private key) and thus suppress a
+        // keychain UI asking for permission to use a private key.
+        // Our CI has this, but somebody testing locally - will have a problem.
+        auto value = qEnvironmentVariable("QT_SSL_USE_TEMPORARY_KEYCHAIN");
+        qputenv("QT_SSL_USE_TEMPORARY_KEYCHAIN", "1");
+        auto envRollback = qScopeGuard([value](){
+            if (value.isEmpty())
+                qunsetenv("QT_SSL_USE_TEMPORARY_KEYCHAIN");
+            else
+                qputenv("QT_SSL_USE_TEMPORARY_KEYCHAIN", value.toUtf8());
+        });
+        return envRollback;
+#else
+        // avoid maybe-unused warnings from callers
+        return qScopeGuard([]{});
+#endif // QT_CONFIG(securetransport)
+    }
+
     void clearHTTP2State();
     // Run event for 'ms' milliseconds.
     // The default value '5000' is enough for
@@ -243,17 +271,7 @@ void tst_Http2::singleRequest()
 {
     clearHTTP2State();
 
-#if QT_CONFIG(securetransport)
-    // Normally on macOS we use plain text only for SecureTransport
-    // does not support ALPN on the server side. With 'direct encrytped'
-    // we have to use TLS sockets (== private key) and thus suppress a
-    // keychain UI asking for permission to use a private key.
-    // Our CI has this, but somebody testing locally - will have a problem.
-    qputenv("QT_SSL_USE_TEMPORARY_KEYCHAIN", "1");
-    auto envRollback = qScopeGuard([](){
-        qunsetenv("QT_SSL_USE_TEMPORARY_KEYCHAIN");
-    });
-#endif
+    auto rollback = useTemporaryKeychain();
 
     serverPort = 0;
     nRequests = 1;
@@ -635,18 +653,7 @@ void tst_Http2::connectToHost()
 #if QT_CONFIG(ssl)
     Q_ASSERT(!clearTextHTTP2 || connectionType != H2Type::h2Alpn);
 
-#if QT_CONFIG(securetransport)
-    // Normally on macOS we use plain text only for SecureTransport
-    // does not support ALPN on the server side. With 'direct encrytped'
-    // we have to use TLS sockets (== private key) and thus suppress a
-    // keychain UI asking for permission to use a private key.
-    // Our CI has this, but somebody testing locally - will have a problem.
-    qputenv("QT_SSL_USE_TEMPORARY_KEYCHAIN", "1");
-    auto envRollback = qScopeGuard([](){
-        qunsetenv("QT_SSL_USE_TEMPORARY_KEYCHAIN");
-    });
-#endif // QT_CONFIG(securetransport)
-
+    auto rollback = useTemporaryKeychain();
 #else
     Q_ASSERT(connectionType == H2Type::h2c || connectionType == H2Type::h2cDirect);
     Q_ASSERT(targetServer->isClearText());
@@ -733,17 +740,7 @@ void tst_Http2::maxFrameSize()
     // 'SETTINGS'. If done properly, our server will not chunk
     // the payload into several DATA frames.
 
-#if QT_CONFIG(securetransport)
-    // Normally on macOS we use plain text only for SecureTransport
-    // does not support ALPN on the server side. With 'direct encrytped'
-    // we have to use TLS sockets (== private key) and thus suppress a
-    // keychain UI asking for permission to use a private key.
-    // Our CI has this, but somebody testing locally - will have a problem.
-    qputenv("QT_SSL_USE_TEMPORARY_KEYCHAIN", "1");
-    auto envRollback = qScopeGuard([](){
-        qunsetenv("QT_SSL_USE_TEMPORARY_KEYCHAIN");
-    });
-#endif // QT_CONFIG(securetransport)
+    auto rollback = useTemporaryKeychain();
 
     auto connectionType = H2Type::h2Alpn;
     auto attribute = QNetworkRequest::Http2AllowedAttribute;
@@ -898,15 +895,7 @@ void tst_Http2::moreActivitySignals()
 {
     clearHTTP2State();
 
-#if QT_CONFIG(securetransport)
-    // Normally on macOS we use plain text only for SecureTransport
-    // does not support ALPN on the server side. With 'direct encrytped'
-    // we have to use TLS sockets (== private key) and thus suppress a
-    // keychain UI asking for permission to use a private key.
-    // Our CI has this, but somebody testing locally - will have a problem.
-    qputenv("QT_SSL_USE_TEMPORARY_KEYCHAIN", "1");
-    auto envRollback = qScopeGuard([]() { qunsetenv("QT_SSL_USE_TEMPORARY_KEYCHAIN"); });
-#endif
+    auto rollback = useTemporaryKeychain();
 
     serverPort = 0;
     QFETCH(H2Type, connectionType);
@@ -1009,15 +998,7 @@ void tst_Http2::contentEncoding()
 {
     clearHTTP2State();
 
-#if QT_CONFIG(securetransport)
-    // Normally on macOS we use plain text only for SecureTransport
-    // does not support ALPN on the server side. With 'direct encrytped'
-    // we have to use TLS sockets (== private key) and thus suppress a
-    // keychain UI asking for permission to use a private key.
-    // Our CI has this, but somebody testing locally - will have a problem.
-    qputenv("QT_SSL_USE_TEMPORARY_KEYCHAIN", "1");
-    auto envRollback = qScopeGuard([]() { qunsetenv("QT_SSL_USE_TEMPORARY_KEYCHAIN"); });
-#endif
+    auto rollback = useTemporaryKeychain();
 
     QFETCH(H2Type, connectionType);
 
@@ -1175,6 +1156,89 @@ void tst_Http2::authenticationRequired()
     // in the next test running after this. In the `success` case we anyway expect it to have been
     // received.
     QTRY_VERIFY(serverGotSettingsACK);
+}
+
+void tst_Http2::unsupportedAuthenticateChallenge()
+{
+    clearHTTP2State();
+    serverPort = 0;
+
+    if (defaultConnectionType() == H2Type::h2c)
+        QSKIP("This test requires TLS with ALPN to work");
+
+    ServerPtr targetServer(newServer(defaultServerSettings, defaultConnectionType()));
+    QByteArray responseBody = "Hello"_ba;
+    targetServer->setResponseBody(responseBody);
+    targetServer->setAuthenticationHeader("Bearer realm=\"qt.io accounts\"");
+
+    QMetaObject::invokeMethod(targetServer.data(), "startServer", Qt::QueuedConnection);
+    runEventLoop();
+
+    QVERIFY(serverPort != 0);
+
+    nRequests = 1;
+
+    QUrl url = requestUrl(defaultConnectionType());
+    url.setPath("/index.html");
+    QNetworkRequest request(url);
+
+    QByteArray expectedBody = "Hello, World!";
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+    QScopedPointer<QNetworkReply> reply;
+    reply.reset(manager->post(request, expectedBody));
+
+    bool authenticationRequested = false;
+    connect(manager.get(), &QNetworkAccessManager::authenticationRequired, reply.get(),
+            [&](QNetworkReply *, QAuthenticator *) {
+                authenticationRequested = true;
+            });
+
+    bool finishedReceived = false;
+    connect(reply.get(), &QNetworkReply::finished, reply.get(),
+            [&]() { finishedReceived = true; });
+    bool errorReceived = false;
+    connect(reply.get(), &QNetworkReply::errorOccurred, reply.get(),
+            [&]() { errorReceived = true; });
+
+    QSet<quint32> receivedDataOnStreams;
+    connect(targetServer.get(), &Http2Server::receivedDATAFrame, reply.get(),
+            [&receivedDataOnStreams](quint32 streamID, const QByteArray &body) {
+                Q_UNUSED(body);
+                receivedDataOnStreams.insert(streamID);
+            });
+
+    // Use queued connection so that the finished signal can be emitted and the
+    // isFinished property can be set.
+    connect(reply.get(), &QNetworkReply::errorOccurred, this,
+            &tst_Http2::replyFinishedWithError, Qt::QueuedConnection);
+
+    // Since we're using self-signed certificates, ignore SSL errors:
+    reply->ignoreSslErrors();
+
+    runEventLoop();
+    STOP_ON_FAILURE
+    QVERIFY2(reply->isFinished(),
+             "The reply should error out if authentication fails, or finish if it succeeds");
+
+    QCOMPARE(reply->error(), QNetworkReply::AuthenticationRequiredError);
+    QVERIFY(reply->isFinished());
+    QVERIFY(errorReceived);
+    QVERIFY(finishedReceived);
+    QCOMPARE(receivedDataOnStreams.size(), 1);
+    QVERIFY(receivedDataOnStreams.contains(1)); // the original, failed, request
+
+    QVERIFY(!authenticationRequested);
+
+    // We should not have sent any authentication headers to the server, since
+    // we don't support the challenge.
+    const QByteArray reqAuthHeader = targetServer->requestAuthorizationHeader();
+    QVERIFY(reqAuthHeader.isEmpty());
+
+    // In the `!success` case we need to wait for the server to emit this or it might cause issues
+    // in the next test running after this. In the `success` case we anyway expect it to have been
+    // received.
+    QTRY_VERIFY(serverGotSettingsACK);
+
 }
 
 void tst_Http2::h2cAllowedAttribute_data()
@@ -1351,7 +1415,8 @@ void tst_Http2::duplicateRequestsWithAborts()
     clearHTTP2State();
     serverPort = 0;
 
-    ServerPtr targetServer(newServer(defaultServerSettings, defaultConnectionType()));
+    H2Type connectionType = H2Type::h2Direct;
+    ServerPtr targetServer(newServer(defaultServerSettings, connectionType));
 
     QMetaObject::invokeMethod(targetServer.data(), "startServer", Qt::QueuedConnection);
     runEventLoop();
@@ -1361,10 +1426,9 @@ void tst_Http2::duplicateRequestsWithAborts()
     constexpr int ExpectedSuccessfulRequests = 1;
     nRequests = ExpectedSuccessfulRequests;
 
-    const auto url = requestUrl(defaultConnectionType());
+    const auto url = requestUrl(connectionType);
     QNetworkRequest request(url);
-    // H2C might be used on macOS where SecureTransport doesn't support server-side ALPN
-    request.setAttribute(QNetworkRequest::Http2CleartextAllowedAttribute, true);
+    request.setAttribute(QNetworkRequest::Http2DirectAttribute, true);
 
     qint32 finishedCount = 0;
     auto connectToSlots = [this, &finishedCount](QNetworkReply *reply){
@@ -1391,6 +1455,51 @@ void tst_Http2::duplicateRequestsWithAborts()
 
     QCOMPARE(nRequests, 0);
     QCOMPARE(finishedCount, ExpectedSuccessfulRequests);
+}
+
+void tst_Http2::abortOnEncrypted()
+{
+#if !QT_CONFIG(ssl)
+    QSKIP("TLS support is needed for this test");
+#else
+
+    auto rollback = useTemporaryKeychain();
+
+    clearHTTP2State();
+    serverPort = 0;
+
+    ServerPtr targetServer(newServer(defaultServerSettings, H2Type::h2Direct));
+
+    QMetaObject::invokeMethod(targetServer.data(), "startServer", Qt::QueuedConnection);
+    runEventLoop();
+
+    nRequests = 1;
+    nSentRequests = 0;
+
+    const auto url = requestUrl(H2Type::h2Direct);
+    QNetworkRequest request(url);
+    request.setAttribute(QNetworkRequest::Http2DirectAttribute, true);
+
+    std::unique_ptr<QNetworkReply> reply{manager->get(request)};
+    reply->ignoreSslErrors();
+    connect(reply.get(), &QNetworkReply::encrypted, reply.get(), [reply = reply.get()](){
+        reply->abort();
+    });
+    connect(reply.get(), &QNetworkReply::errorOccurred, this, &tst_Http2::replyFinishedWithError);
+
+    runEventLoop();
+    STOP_ON_FAILURE
+
+    QCOMPARE(nRequests, 0);
+    QCOMPARE(reply->error(), QNetworkReply::OperationCanceledError);
+
+    const bool res = QTest::qWaitFor(
+            [this, server = targetServer.get()]() {
+                return serverGotSettingsACK || prefaceOK || nSentRequests > 0;
+            },
+            500);
+    QVERIFY(!res);
+#endif // QT_CONFIG(ssl)
 }
 
 void tst_Http2::serverStarted(quint16 port)

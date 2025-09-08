@@ -196,7 +196,8 @@ QStringList QCommandLineParserPrivate::aliases(const QString &optionName) const
     since the output is either discarded or not accessible.
 
     On Windows, QCommandLineParser uses message boxes to display usage information
-    and errors if no console window can be obtained.
+    and errors if no console window can be obtained. These message boxes can be omitted by setting
+    the \c QT_COMMAND_LINE_PARSER_NO_GUI_MESSAGE_BOXES environment variable.
 
     For other platforms, it is recommended to display help texts and error messages
     using a QMessageBox. To preserve the formatting of the help text, rich text

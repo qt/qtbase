@@ -148,7 +148,7 @@ public:
     bool http2Direct;
     bool h2cAllowed = false;
     bool withCredentials;
-    bool ssl;
+    bool ssl = false;
     bool preConnect;
     bool needResendWithCredentials = false;
     int redirectCount;

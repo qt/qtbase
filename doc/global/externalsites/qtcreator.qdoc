@@ -40,6 +40,11 @@
     \title Qt Creator: How-tos
 */
 /*!
+    \externalpage https://doc.qt.io/qtcreator/creator-how-to-build-and-run-tests.html
+    \title Qt Creator: Build and Run Tests
+*/
+
+/*!
     \externalpage https://doc.qt.io/qtcreator/creator-help.html
     \title Qt Creator: Using the Help Mode
 */
@@ -600,7 +605,7 @@
     \title Qt Creator: Visualizing Chrome Trace Events
 */
 /*!
-    \externalpage https://doc.qt.io/qtcreator/creator-autotest.html
+    \externalpage https://doc.qt.io/qtcreator/creator-how-to-build-and-run-tests.html
     \title Qt Creator: Running Autotests
 */
 /*!

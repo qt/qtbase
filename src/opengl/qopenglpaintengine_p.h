@@ -243,7 +243,7 @@ public:
     QOpenGLEngineShaderManager* shaderManager;
     QOpenGLPaintDevice* device;
     int width, height;
-    QOpenGLContext *ctx;
+    QPointer<QOpenGLContext> ctx;
     EngineMode mode;
     QFontEngine::GlyphFormat glyphCacheFormat;
 

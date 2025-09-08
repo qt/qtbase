@@ -21,6 +21,9 @@ See individual classes for further detail.
 from localetools import Error
 from dateconverter import convert_date
 
+# The github version of CLDR uses '↑↑↑' to indicate "inherit"
+INHERIT = '↑↑↑'
+
 class Node (object):
     """Wrapper for an arbitrary DOM node.
 
@@ -204,10 +207,7 @@ class LocaleScanner (object):
             for elt in self.__find(xpath):
                 try:
                     if draft is None or elt.draft <= draft:
-                        value = elt.dom.firstChild.nodeValue
-                        # The github version of CLDR uses '↑↑↑' to indicate "inherit"
-                        if value != '↑↑↑':
-                            return value
+                        return elt.dom.firstChild.nodeValue
                 except (AttributeError, KeyError):
                     pass
         except Error as e:
@@ -407,7 +407,7 @@ class LocaleScanner (object):
         ) # Used for month and day names
 
     def __find(self, xpath):
-        retries = [ xpath.split('/') ]
+        retries, foundNone = [ xpath.split('/') ], True
         while retries:
             tags, elts, roots = retries.pop(), self.nodes, (self.base.root,)
             for selector in tags:
@@ -417,6 +417,9 @@ class LocaleScanner (object):
                     break
 
             else: # Found matching elements
+                elts = tuple(self.__skipInheritors(elts))
+                if elts:
+                    foundNone = False
                 # Possibly filter elts to prefer the least drafty ?
                 for elt in elts:
                     yield elt
@@ -436,19 +439,33 @@ class LocaleScanner (object):
                 if not roots:
                     if retries: # Let outer loop fall back on an alias path:
                         break
-                    sought = '/'.join(tags)
-                    if sought != xpath:
-                        sought += f' (for {xpath})'
-                    raise Error(f'All lack child {selector} for {sought} in {self.name}')
+                    if foundNone:
+                        sought = '/'.join(tags)
+                        if sought != xpath:
+                            sought += f' (for {xpath})'
+                        raise Error(f'All lack child {selector} for {sought} in {self.name}')
 
             else: # Found matching elements
+                roots = tuple(self.__skipInheritors(roots))
+                if roots:
+                    foundNone = False
                 for elt in roots:
                     yield elt
 
-        sought = '/'.join(tags)
-        if sought != xpath:
-            sought += f' (for {xpath})'
-        raise Error(f'No {sought} in {self.name}')
+        if foundNone:
+            sought = '/'.join(tags)
+            if sought != xpath:
+                sought += f' (for {xpath})'
+            raise Error(f'No {sought} in {self.name}')
+
+    @staticmethod
+    def __skipInheritors(elts):
+        for elt in elts:
+            try:
+                if elt.dom.firstChild.nodeValue != INHERIT:
+                    yield elt
+            except (AttributeError, KeyError):
+                yield elt
 
     def __currencyDisplayName(self, stem):
         try:

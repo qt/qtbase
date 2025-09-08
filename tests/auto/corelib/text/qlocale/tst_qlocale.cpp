@@ -1038,7 +1038,8 @@ void tst_QLocale::stringToFloat()
     QLocale locale(locale_name);
     QCOMPARE(locale.name(), locale_name);
 
-    if constexpr (std::numeric_limits<float>::has_denorm != std::denorm_present) {
+    QT_IGNORE_DEPRECATIONS(constexpr bool float_has_denorm = std::numeric_limits<float>::has_denorm != std::denorm_present;)
+    if constexpr (float_has_denorm) {
         if (qstrcmp(QTest::currentDataTag(), "C float -min") == 0
                 || qstrcmp(QTest::currentDataTag(), "C float min") == 0)
             QSKIP("Skipping 'denorm' as this type lacks denormals on this system");
@@ -1048,7 +1049,8 @@ void tst_QLocale::stringToFloat()
     EXPECT_NONSINGLE_FAILURES;
     QCOMPARE(ok, good);
 
-    if constexpr (std::numeric_limits<double>::has_denorm != std::denorm_present) {
+    QT_IGNORE_DEPRECATIONS(constexpr bool double_has_denorm = std::numeric_limits<double>::has_denorm != std::denorm_present;)
+    if constexpr (double_has_denorm) {
         if (qstrcmp(QTest::currentDataTag(), "C double min") == 0
                 || qstrcmp(QTest::currentDataTag(), "C double -min") == 0
                 || qstrcmp(QTest::currentDataTag(), "C tiny") == 0
@@ -3057,8 +3059,7 @@ void tst_QLocale::ampm_data()
     QTest::newRow("tr_TR") << QString::fromUtf8("\303\226\303\226")
                            << QString::fromUtf8("\303\226\123");
     QTest::newRow("id_ID") << QStringLiteral("AM") << QStringLiteral("PM");
-    // CLDR v44 made Tamil's AM/PM inconsistent; AM was "முற்பகல்" before.
-    QTest::newRow("ta_LK") << QString::fromUtf8("AM") << QString::fromUtf8("பிற்பகல்");
+    QTest::newRow("ta_LK") << QString::fromUtf8("AM") << QString::fromUtf8("PM");
 }
 
 void tst_QLocale::ampm()

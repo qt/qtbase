@@ -312,6 +312,18 @@ static jboolean updateCursorPosition(JNIEnv */*env*/, jobject /*thiz*/)
     return true;
 }
 
+static void reportFullscreenMode(JNIEnv */*env*/, jobject /*thiz*/, jboolean enabled)
+{
+    if (!m_androidInputContext)
+        return;
+
+    runOnQtThread([&]{m_androidInputContext->reportFullscreenMode(enabled);});
+}
+
+static jboolean fullscreenMode(JNIEnv */*env*/, jobject /*thiz*/)
+{
+    return m_androidInputContext ? m_androidInputContext->fullscreenMode() : false;
+}
 
 static JNINativeMethod methods[] = {
     {"beginBatchEdit", "()Z", (void *)beginBatchEdit},
@@ -332,7 +344,9 @@ static JNINativeMethod methods[] = {
     {"copy", "()Z", (void *)copy},
     {"copyURL", "()Z", (void *)copyURL},
     {"paste", "()Z", (void *)paste},
-    {"updateCursorPosition", "()Z", (void *)updateCursorPosition}
+    {"updateCursorPosition", "()Z", (void *)updateCursorPosition},
+    {"reportFullscreenMode", "(Z)V", (void *)reportFullscreenMode},
+    {"fullscreenMode", "()Z", (void *)fullscreenMode}
 };
 
 static QRect screenInputItemRectangle()
@@ -349,6 +363,7 @@ QAndroidInputContext::QAndroidInputContext()
     , m_handleMode(Hidden)
     , m_batchEditNestingLevel(0)
     , m_focusObject(0)
+    , m_fullScreenMode(false)
 {
     QJniEnvironment env;
     jclass clazz = env.findClass(QtNativeInputConnectionClassName);
@@ -541,6 +556,10 @@ bool QAndroidInputContext::isImhNoTextHandlesSet()
 
 void QAndroidInputContext::updateSelectionHandles()
 {
+    if (m_fullScreenMode) {
+        QtAndroidInput::updateHandles(Hidden);
+        return;
+    }
     static bool noHandles = qEnvironmentVariableIntValue("QT_QPA_NO_TEXT_HANDLES");
     if (noHandles || !m_focusObject)
         return;
@@ -1099,6 +1118,25 @@ jboolean QAndroidInputContext::finishComposingText()
 
     clear();
     return JNI_TRUE;
+}
+
+void QAndroidInputContext::reportFullscreenMode(jboolean enabled)
+{
+    m_fullScreenMode = enabled;
+    BatchEditLock batchEditLock(this);
+    if (!focusObjectStopComposing())
+        return;
+
+    if (enabled)
+        m_handleMode = Hidden;
+
+    updateSelectionHandles();
+}
+
+// Called in calling thread's context
+jboolean QAndroidInputContext::fullscreenMode()
+{
+    return m_fullScreenMode;
 }
 
 bool QAndroidInputContext::focusObjectIsComposing() const

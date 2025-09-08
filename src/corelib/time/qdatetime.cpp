@@ -4635,11 +4635,20 @@ bool QDateTime::equals(const QDateTime &other) const
 /*!
     \fn bool QDateTime::operator==(const QDateTime &lhs, const QDateTime &rhs)
 
-    Returns \c true if \a lhs is the same as \a rhs; otherwise returns \c false.
+    Returns \c true if \a lhs represents the same moment in time as \a rhs;
+    otherwise returns \c false.
 
-    Two datetimes are different if either the date, the time, or the time zone
-    components are different. Since 5.14, all invalid datetime are equal (and
-    less than all valid datetimes).
+//! [datetime-order-details]
+    Two datetimes using different time representations can have different
+    offsets from UTC. In this case, they may compare equivalent even if their \l
+    date() and \l time() differ, if that difference matches the difference in
+    UTC offset. If their \c date() and \c time() coincide, the one with higher
+    offset from UTC is less (earlier) than the one with lower offset. As a
+    result, datetimes are only weakly ordered.
+
+    Since 5.14, all invalid datetimes are equivalent and less than all valid
+    datetimes.
+//! [datetime-order-details]
 
     \sa operator!=(), operator<(), operator<=(), operator>(), operator>=()
 */
@@ -4650,9 +4659,7 @@ bool QDateTime::equals(const QDateTime &other) const
     Returns \c true if \a lhs is different from \a rhs; otherwise returns \c
     false.
 
-    Two datetimes are different if either the date, the time, or the time zone
-    components are different. Since 5.14, all invalid datetime are equal (and
-    less than all valid datetimes).
+    \include qdatetime.cpp datetime-order-details
 
     \sa operator==()
 */
@@ -4685,6 +4692,8 @@ bool QDateTime::precedes(const QDateTime &other) const
     Returns \c true if \a lhs is earlier than \a rhs;
     otherwise returns \c false.
 
+    \include qdatetime.cpp datetime-order-details
+
     \sa operator==()
 */
 
@@ -4694,6 +4703,8 @@ bool QDateTime::precedes(const QDateTime &other) const
     Returns \c true if \a lhs is earlier than or equal to \a rhs; otherwise
     returns \c false.
 
+    \include qdatetime.cpp datetime-order-details
+
     \sa operator==()
 */
 
@@ -4701,6 +4712,8 @@ bool QDateTime::precedes(const QDateTime &other) const
     \fn bool QDateTime::operator>(const QDateTime &lhs, const QDateTime &rhs)
 
     Returns \c true if \a lhs is later than \a rhs; otherwise returns \c false.
+
+    \include qdatetime.cpp datetime-order-details
 
     \sa operator==()
 */
@@ -4710,6 +4723,8 @@ bool QDateTime::precedes(const QDateTime &other) const
 
     Returns \c true if \a lhs is later than or equal to \a rhs;
     otherwise returns \c false.
+
+    \include qdatetime.cpp datetime-order-details
 
     \sa operator==()
 */
