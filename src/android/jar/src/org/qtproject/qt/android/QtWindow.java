@@ -89,15 +89,7 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
 
         setOnApplyWindowInsetsListener((view, insets) -> {
             WindowInsets windowInsets = view.onApplyWindowInsets(insets);
-            ViewTreeObserver.OnPreDrawListener listener = new ViewTreeObserver.OnPreDrawListener() {
-                @Override
-                public boolean onPreDraw() {
-                    reportSafeAreaMargins(windowInsets, getId());
-                    m_firstSafeMarginsDelivered = true;
-                    return true;
-                }
-            };
-            getViewTreeObserver().addOnPreDrawListener(listener);
+            reportSafeAreaMargins(windowInsets, getId());
 
             return windowInsets;
         });
@@ -127,11 +119,6 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
             ViewTreeObserver.OnPreDrawListener listener = new ViewTreeObserver.OnPreDrawListener() {
                 @Override
                 public boolean onPreDraw() {
-                    if (m_firstSafeMarginsDelivered) {
-                        getViewTreeObserver().removeOnPreDrawListener(this);
-                        return true;
-                    }
-
                     if (isAttachedToWindow()) {
                         WindowInsets insets = getRootWindowInsets();
                         if (insets != null) {
@@ -149,6 +136,12 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
             };
             getViewTreeObserver().addOnPreDrawListener(listener);
         }
+
+        addOnLayoutChangeListener((view, l, t, r, b, oldl, oldt, oldr, oldb) -> {
+            WindowInsets insets = getRootWindowInsets();
+            if (insets != null)
+                getRootView().post(() -> reportSafeAreaMargins(insets, getId()));
+        });
     }
 
     @SuppressWarnings("deprecation")
