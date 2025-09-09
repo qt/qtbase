@@ -1762,8 +1762,11 @@ QMarginsF QMacStylePrivate::CocoaControl::titleMargins() const
                 return QMarginsF(12, 6, 12, 8);
             return QMarginsF(12, 5, 12, 9);
         }
-        if (size == QStyleHelper::SizeSmall)
+        if (size == QStyleHelper::SizeSmall) {
+            if (qt_apple_runningWithLiquidGlass())
+                return QMarginsF(12, 6, 12, 7);
             return QMarginsF(12, 4, 12, 9);
+        }
         if (size == QStyleHelper::SizeMini)
             return QMarginsF(10, 1, 10, 2);
     }
