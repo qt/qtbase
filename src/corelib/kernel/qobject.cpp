@@ -9,6 +9,7 @@
 #include "qmetaobject_p.h"
 
 #include <QtCore/private/qtclasshelper_p.h>
+#include <QtCore/qspan.h>
 #include "qabstracteventdispatcher.h"
 #include "qabstracteventdispatcher_p.h"
 #include "qcoreapplication.h"
