@@ -463,7 +463,7 @@ QPlatformBackingStore::FlushResult QBackingStoreDefaultCompositor::flush(QPlatfo
                                                                          bool translucentBackground,
                                                                          qreal sourceTransformFactor)
 {
-    if (!rhi)
+    if (!rhi || !swapchain)
         return QPlatformBackingStore::FlushFailed;
 
     // Note, the sourceTransformFactor is different from the sourceDevicePixelRatio,
