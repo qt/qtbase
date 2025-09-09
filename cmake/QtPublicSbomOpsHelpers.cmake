@@ -376,7 +376,8 @@ function(_qt_internal_sbom_generate_json)
     set(content "
         message(STATUS \"Generating JSON: \${QT_SBOM_OUTPUT_PATH}.json\")
         execute_process(
-            COMMAND ${QT_INTERNAL_SBOM_PYTHON_EXECUTABLE} -m spdx_tools.spdx.clitools.pyspdxtools
+            COMMAND \"${QT_INTERNAL_SBOM_PYTHON_EXECUTABLE}\"
+            -m spdx_tools.spdx.clitools.pyspdxtools
             -i \"\${QT_SBOM_OUTPUT_PATH}\" -o \"\${QT_SBOM_OUTPUT_PATH}.json\"
             RESULT_VARIABLE res
         )
@@ -554,7 +555,8 @@ function(_qt_internal_sbom_generate_tag_value_spdx_document)
             \"Generating tag/value SPDX document: ${output_path} from \"
         \"${arg_INPUT_JSON_FILE_PATH}\")
         execute_process(
-            COMMAND ${QT_INTERNAL_SBOM_PYTHON_EXECUTABLE} -m spdx_tools.spdx.clitools.pyspdxtools
+            COMMAND \"${QT_INTERNAL_SBOM_PYTHON_EXECUTABLE}\"
+            -m spdx_tools.spdx.clitools.pyspdxtools
             -i \"${arg_INPUT_JSON_FILE_PATH}\" -o \"${output_path}\"
             RESULT_VARIABLE res
         )
@@ -581,7 +583,8 @@ function(_qt_internal_sbom_verify_valid)
     set(content "
         message(STATUS \"Verifying: \${QT_SBOM_OUTPUT_PATH}\")
         execute_process(
-            COMMAND ${QT_INTERNAL_SBOM_PYTHON_EXECUTABLE} -m spdx_tools.spdx.clitools.pyspdxtools
+            COMMAND \"${QT_INTERNAL_SBOM_PYTHON_EXECUTABLE}\"
+            -m spdx_tools.spdx.clitools.pyspdxtools
             -i \"\${QT_SBOM_OUTPUT_PATH}\"
             RESULT_VARIABLE res
         )
@@ -607,7 +610,7 @@ function(_qt_internal_sbom_verify_ntia_compliant)
     set(content "
         message(STATUS \"Checking for NTIA compliance: \${QT_SBOM_OUTPUT_PATH}\")
         execute_process(
-            COMMAND ${QT_INTERNAL_SBOM_PYTHON_EXECUTABLE} -m ntia_conformance_checker.main
+            COMMAND \"${QT_INTERNAL_SBOM_PYTHON_EXECUTABLE}\" -m ntia_conformance_checker.main
             --file \"\${QT_SBOM_OUTPUT_PATH}\"
             RESULT_VARIABLE res
         )
@@ -644,7 +647,7 @@ set(ENV{COLUMNS} \${backup_env_columns})
 
         ${extra_code_begin}
         execute_process(
-            COMMAND ${QT_SBOM_PROGRAM_SBOM2DOC} -i \"\${QT_SBOM_OUTPUT_PATH}\"
+            COMMAND \"${QT_SBOM_PROGRAM_SBOM2DOC}\" -i \"\${QT_SBOM_OUTPUT_PATH}\"
             RESULT_VARIABLE res
         )
         ${extra_code_end}
@@ -680,7 +683,7 @@ function(_qt_internal_sbom_audit)
     set(content "
         message(STATUS \"Auditing SBOM: \${QT_SBOM_OUTPUT_PATH}\")
         execute_process(
-            COMMAND ${QT_SBOM_PROGRAM_SBOMAUDIT} -i \"\${QT_SBOM_OUTPUT_PATH}\"
+            COMMAND \"${QT_SBOM_PROGRAM_SBOMAUDIT}\" -i \"\${QT_SBOM_OUTPUT_PATH}\"
                     --disable-license-check --cpecheck --offline
             RESULT_VARIABLE res
         )
@@ -779,10 +782,10 @@ function(_qt_internal_sbom_generate_reuse_source_sbom)
         set(extra_reuse_args \"${extra_reuse_args}\")
         execute_process(
             COMMAND
-                ${QT_SBOM_PROGRAM_REUSE}
+                \"${QT_SBOM_PROGRAM_REUSE}\"
                 --root \"${PROJECT_SOURCE_DIR}\"
                 spdx
-                -o ${source_sbom_path}
+                -o \"${source_sbom_path}\"
                 \${extra_reuse_args}
             RESULT_VARIABLE res
         )
@@ -828,7 +831,7 @@ function(_qt_internal_sbom_run_reuse_lint)
     set(content "
         message(STATUS \"Running 'reuse lint' in '${PROJECT_SOURCE_DIR}'.\")
         execute_process(
-            COMMAND ${QT_SBOM_PROGRAM_REUSE} --root \"${PROJECT_SOURCE_DIR}\" lint
+            COMMAND \"${QT_SBOM_PROGRAM_REUSE}\" --root \"${PROJECT_SOURCE_DIR}\" lint
             RESULT_VARIABLE res
         )
         ${handle_error}
