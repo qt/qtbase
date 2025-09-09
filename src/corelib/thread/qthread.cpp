@@ -620,6 +620,8 @@ QThread::QualityOfService QThread::serviceLevel() const
     return d->serviceLevel;
 }
 
+#endif
+
 /*!
     \internal
     Transitions BindingStatusOrList to the binding status state. If we had a list of
@@ -636,6 +638,8 @@ void QtPrivate::BindingStatusOrList::setStatusAndClearList(QBindingStatus *statu
     // synchronizes-with the load-acquire in bindingStatus():
     data.store(encodeBindingStatus(status), std::memory_order_release);
 }
+
+#if QT_CONFIG(thread)
 
 /*!
     Enters the event loop and waits until exit() is called, returning the value
