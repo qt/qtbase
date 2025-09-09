@@ -1,3 +1,8 @@
 # QTBUG-87404
 [minMaxSize]
 android
+# QTBUG-140038
+[spacingsAndMargins]
+android
+[styleDependentSpacingsAndMargins]
+android
