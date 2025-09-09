@@ -13,5 +13,4 @@ if (ANDROID)
     qt_modules_process_android_dependencies()
 endif()
 
-qt_internal_install_prl_files()
 qt_internal_generate_user_facing_tools_info()
