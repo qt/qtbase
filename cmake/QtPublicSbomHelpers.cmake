@@ -43,6 +43,7 @@ function(_qt_internal_sbom_begin_project)
         SBOM_PROJECT_NAME
         QT_REPO_PROJECT_NAME
         CPE
+        DOCUMENT_CREATOR_TOOL
     )
     set(multi_args
         COPYRIGHTS
@@ -225,6 +226,11 @@ function(_qt_internal_sbom_begin_project)
     endif()
     if(download_location)
         list(APPEND begin_project_generate_args DOWNLOAD_LOCATION "${download_location}")
+    endif()
+
+    if(arg_DOCUMENT_CREATOR_TOOL)
+        list(APPEND begin_project_generate_args
+            DOCUMENT_CREATOR_TOOL "${arg_DOCUMENT_CREATOR_TOOL}")
     endif()
 
     set(project_comment "")

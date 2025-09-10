@@ -16,6 +16,7 @@ _qt_internal_sbom_begin_project(
     DOWNLOAD_LOCATION "https://download.qt.io/sbom"
     CPE "cpe:2.3:a:qt:qtprojecttest:1.0.0:*:*:*:*:*:*:*"
     VERSION "1.0.0"
+    DOCUMENT_CREATOR_TOOL "Test Build System Tool"
 )
 
 include(common_targets.cmake)
