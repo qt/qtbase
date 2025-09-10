@@ -243,9 +243,6 @@ struct QLocaleId
 };
 Q_DECLARE_TYPEINFO(QLocaleId, Q_PRIMITIVE_TYPE);
 
-
-using CharBuff = QVarLengthArray<char, 256>;
-
 struct QLocaleData
 {
 public:
@@ -288,6 +285,8 @@ public:
         int least = 0; // Least significant, when any separators appear.
         bool isValid() const { return least > 0 && higher > first && first > 0; }
     };
+
+    using CharBuff = QVarLengthArray<char, 256>;
 
     struct ParsingResult
     {
