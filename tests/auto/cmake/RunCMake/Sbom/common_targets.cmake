@@ -47,6 +47,12 @@ _qt_internal_add_sbom(app
     RUNTIME_PATH bin
 )
 
+if(IS_FULL_BUILD)
+    _qt_internal_extend_sbom(app
+        LICENSE_EXPRESSION "LicenseRef-TestLicense"
+    )
+endif()
+
 find_package(ZLIB)
 if(ZLIB_FOUND)
     _qt_internal_add_sbom(ZLIB::ZLIB

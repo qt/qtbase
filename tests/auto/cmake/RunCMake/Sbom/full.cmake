@@ -5,6 +5,8 @@ _qt_internal_setup_sbom(
     GENERATE_SBOM_DEFAULT "TRUE"
 )
 
+set(IS_FULL_BUILD "TRUE")
+
 _qt_internal_sbom_begin_project(
     SBOM_PROJECT_NAME "${PROJECT_NAME}Project"
     SUPPLIER "QtProjectTest"
@@ -17,6 +19,7 @@ _qt_internal_sbom_begin_project(
     CPE "cpe:2.3:a:qt:qtprojecttest:1.0.0:*:*:*:*:*:*:*"
     VERSION "1.0.0"
     DOCUMENT_CREATOR_TOOL "Test Build System Tool"
+    LICENSE_DIR_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/custom_licenses"
 )
 
 include(common_targets.cmake)
