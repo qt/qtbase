@@ -28,6 +28,7 @@ Q_DECLARE_JNI_CLASS(Window, "android/view/Window")
 Q_DECLARE_JNI_CLASS(WindowInsets, "android/view/WindowInsets")
 Q_DECLARE_JNI_CLASS(Insets, "android/view/Insets")
 Q_DECLARE_JNI_CLASS(GraphicsInsets, "android/graphics/Insets")
+Q_DECLARE_JNI_CLASS(DisplayCutout, "android/view/DisplayCutout")
 Q_DECLARE_JNI_CLASS(WindowManager, "android/view/WindowManager")
 Q_DECLARE_JNI_CLASS(WindowMetrics, "android/view/WindowMetrics")
 Q_DECLARE_JNI_CLASS(ApplicationInfo, "android/content/pm/ApplicationInfo")
@@ -265,12 +266,33 @@ void tst_Android::safeAreaWithWindowFlagsAndStates()
 
     QVERIFY(QTest::qWaitForWindowExposed(&widget));
 
+    using namespace QtJniTypes;
     const int sdkVersion = QNativeInterface::QAndroidApplication::sdkVersion();
+    auto activity = QNativeInterface::QAndroidApplication::context();
 
     // Android 15 enables edge-to-edge by default.
     bool edgeToEdge = sdkVersion >= __ANDROID_API_V__;
-    // Assume phones, and phones have camera cutouts.
-    bool cameraCutout = true;
+
+    // Detect camera cutout
+    bool cameraCutout = false;
+    if (sdkVersion >= __ANDROID_API_R__) {
+        Window window = activity.callMethod<Window>("getWindow");
+        View decorView = window.callMethod<View>("getDecorView");
+        WindowInsets insets = decorView.callMethod<WindowInsets>("getRootWindowInsets");
+        if (insets.isValid()) {
+            DisplayCutout cutout = insets.callMethod<DisplayCutout>("getDisplayCutout");
+            if (cutout.isValid()) {
+                const int top = cutout.callMethod<jint>("getSafeInsetTop");
+                const int left = cutout.callMethod<jint>("getSafeInsetLeft");
+                const int right = cutout.callMethod<jint>("getSafeInsetRight");
+                const int bottom = cutout.callMethod<jint>("getSafeInsetBottom");
+                cameraCutout = (top > 0) || (left > 0) || (right > 0) || (bottom > 0);
+            }
+        }
+    } else {
+        // Android 9 and 10 cutout API support was buggy
+        cameraCutout = true;
+    }
 
     const bool runsOnCI = qgetenv("QTEST_ENVIRONMENT").split(' ').contains("ci");
     if (sdkVersion == __ANDROID_API_V__ && runsOnCI) {
@@ -278,12 +300,9 @@ void tst_Android::safeAreaWithWindowFlagsAndStates()
         cameraCutout = false;
     }
 
-    const bool portrait = widget.screen()->orientation() == Qt::PortraitOrientation;
     const bool expandedClientArea = windowFlags & Qt::ExpandedClientAreaHint;
     const bool normalMode = !expandedClientArea && !fullscreen;
-    const bool expectNoMargins = (portrait && normalMode && !edgeToEdge)
-                            ||   (portrait && fullscreen && !cameraCutout);
-    if (expectNoMargins) {
+    if ((normalMode && !edgeToEdge) || (fullscreen && !cameraCutout)) {
         QTRY_COMPARE(widget.windowHandle()->safeAreaMargins(), QMargins());
     } else {
         QTRY_COMPARE_NE(widget.windowHandle()->safeAreaMargins(), QMargins());
@@ -291,8 +310,6 @@ void tst_Android::safeAreaWithWindowFlagsAndStates()
         // Make sure the margins we get are the same as the system bars sizes,
         // that way we make sure we don't end up with margins bigger than expected.
         // So, retrieve the static system bars height.
-        using namespace QtJniTypes;
-        Context activity = QNativeInterface::QAndroidApplication::context();
         Window window = activity.callMethod<Window>("getWindow");
         View decorView = window.callMethod<View>("getDecorView");
         WindowInsets insets = decorView.callMethod<WindowInsets>("getRootWindowInsets");
