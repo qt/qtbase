@@ -1,14 +1,5 @@
-add_library(core_helper STATIC)
-target_sources(core_helper PRIVATE sources/core_helper.cpp)
-install(TARGETS core_helper
-    ARCHIVE DESTINATION lib
-)
-_qt_internal_add_sbom(core_helper
-    TYPE "LIBRARY"
-    RUNTIME_PATH bin
-    ARCHIVE_PATH lib
-    LIBRARY_PATH lib
-)
+set(CORE_HELPER "core_helper")
+include(core_helper.cmake)
 
 add_library(utils_helper STATIC)
 target_sources(utils_helper PRIVATE sources/utils_helper.cpp)
