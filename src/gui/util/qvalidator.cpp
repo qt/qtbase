@@ -372,7 +372,7 @@ std::optional<QValidator::State> initialResultCheck(T min, T max,
     if (result.state == ParsingResult::Invalid)
         return QValidator::Invalid;
 
-    const CharBuff &buff = result.buff;
+    const QLocaleData::CharBuff &buff = result.buff;
     if (buff.isEmpty())
         return QValidator::Intermediate;
 
@@ -397,7 +397,7 @@ QValidator::State QIntValidator::validate(QString & input, int&) const
     if (opt)
         return *opt;
 
-    const CharBuff &buff = result.buff;
+    const QLocaleData::CharBuff &buff = result.buff;
     QSimpleParsedNumber r = QLocaleData::bytearrayToLongLong(buff, 10);
     if (!r.ok())
         return Invalid;
