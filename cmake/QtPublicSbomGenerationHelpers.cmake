@@ -85,10 +85,12 @@ function(_qt_internal_sbom_begin_project_generate)
 
     _qt_internal_sbom_get_git_version_vars()
 
-    set(default_sbom_file_name
-        "${arg_PROJECT}/${arg_PROJECT}-sbom-${QT_SBOM_GIT_VERSION_PATH}.spdx")
-    set(default_install_sbom_path
-        "\${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATAROOTDIR}/${default_sbom_file_name}")
+    _qt_internal_path_join(default_sbom_file_name
+        "${arg_PROJECT}" "${arg_PROJECT}-sbom-${QT_SBOM_GIT_VERSION_PATH}.spdx")
+
+    _qt_internal_path_join(default_install_sbom_path
+        "\${CMAKE_INSTALL_PREFIX}/" "${CMAKE_INSTALL_DATAROOTDIR}" "${default_sbom_file_name}"
+    )
 
     _qt_internal_sbom_set_default_option_value(OUTPUT "${default_install_sbom_path}")
     _qt_internal_sbom_set_default_option_value(OUTPUT_RELATIVE_PATH
