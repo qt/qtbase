@@ -5235,7 +5235,7 @@ void tst_QVariant::pairElements_data()
         if constexpr (std::is_integral_v<T> || std::is_floating_point_v<T>) {
             return QString::number(value);
         } else if constexpr (std::is_same_v<T, QVariant>) {
-            return value.toString();
+            return u"QVariant(" + value.toString() + u')';
         } else {
             return value;
         }
@@ -5383,6 +5383,7 @@ void tst_QVariant::enums_data()
     ADD(EnumTest_Enum0_negValue);
     ADD(EnumTest_Enum1_value);
     ADD(EnumTest_Enum1_bigValue);
+    ADD(EnumTest_Enum3_value);
     ADD(EnumTest_Enum3::EnumTest_Enum3_value);
     ADD(EnumTest_Enum3::EnumTest_Enum3_bigValue);
     ADD(EnumTest_Enum4::EnumTest_Enum4_value);
@@ -5391,7 +5392,6 @@ void tst_QVariant::enums_data()
     ADD(EnumTest_Enum6::EnumTest_Enum6_value);
     ADD(EnumTest_Enum7::EnumTest_Enum7_value);
     ADD(EnumTest_Enum8::EnumTest_Enum8_value);
-    ADD(EnumTest_Enum3::EnumTest_Enum3_value);
 #undef ADD
 }
 
