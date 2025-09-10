@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # Copyright (C) 2018 The Qt Company Ltd.
-# SPDX-License-Identifier: LicenseRef-Qt-Commercial
+# SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
 
 # Requires Python 3.7. The import statement needs to be the first line of code

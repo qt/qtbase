@@ -8,13 +8,7 @@ SPDX-FileCopyrightText = "Copyright (C) 20242 The Qt Company Ltd."
 SPDX-License-Identifier = "BSD-3-Clause"
 
 [[annotations]]
-path = ["**tools/**", "util/**"]
-precedence = "closest"
-SPDX-FileCopyrightText = "Copyright (C) 2024 The Qt Company Ltd."
-SPDX-License-Identifier = "LicenseRef-Qt-Commercial"
-
-[[annotations]]
-path = ["doc/global/template/scripts/extras.js",
+path = ["**tools/**", "util/**", "doc/global/template/scripts/extras.js",
         "doc/global/template/scripts/main.js"]
 precedence = "closest"
 SPDX-FileCopyrightText = "Copyright (C) 2024 The Qt Company Ltd."
@@ -90,7 +84,7 @@ path = ["src/assets/icons/**.png", "src/assets/icons/**.svg", "src/android/**.xm
         "src/opengl/doc/QtOpenGLDoc"]
 precedence = "closest"
 SPDX-FileCopyrightText = "Copyright (C) 2024 The Qt Company Ltd."
-SPDX-License-Identifier = "LicenseRef-Qt-Commercial"
+SPDX-License-Identifier = "LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only"
 
 [[annotations]]
 path = ["tests/auto/tools/rcc/data/legal/legal.qrc"]
