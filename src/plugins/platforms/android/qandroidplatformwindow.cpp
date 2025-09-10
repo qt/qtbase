@@ -263,12 +263,8 @@ void QAndroidPlatformWindow::updateSystemUiVisibility()
     if (!isNonRegularWindow) {
         const bool isFullScreen = (m_windowState & Qt::WindowFullScreen);
         const bool expandedToCutout = (flags & Qt::ExpandedClientAreaHint);
-        if (m_isFullscreen != isFullScreen || m_expandedToCutout != expandedToCutout) {
-            m_isFullscreen = isFullScreen;
-            m_expandedToCutout = expandedToCutout;
-            QtAndroid::backendRegister()->callInterface<QtJniTypes::QtWindowInterface, void>(
-                "setSystemUiVisibility", isFullScreen, expandedToCutout);
-        }
+        QtAndroid::backendRegister()->callInterface<QtJniTypes::QtWindowInterface, void>(
+            "setSystemUiVisibility", isFullScreen, expandedToCutout);
     }
 }
 
