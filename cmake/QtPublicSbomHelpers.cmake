@@ -161,8 +161,8 @@ function(_qt_internal_sbom_begin_project)
     endif()
 
     set(compute_project_file_name_args "")
-    if(not_git_version)
-        list(APPEND compute_project_file_name_args VERSION_SUFFIX "${not_git_version}")
+    if(non_git_version)
+        list(APPEND compute_project_file_name_args VERSION_SUFFIX "${non_git_version}")
     endif()
 
     _qt_internal_sbom_compute_project_file_name(repo_project_file_name
