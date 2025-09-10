@@ -1144,33 +1144,34 @@ public:
 
         Qt::ItemFlags f = Structure::defaultFlags();
 
-        if constexpr (row_traits::hasMetaObject) {
-            if (index.column() < row_traits::fixed_size()) {
-                const QMetaObject mo = wrapped_row_type::staticMetaObject;
-                const QMetaProperty prop = mo.property(index.column() + mo.propertyOffset());
-                if (prop.isWritable())
-                    f |= Qt::ItemIsEditable;
-            }
-        } else if constexpr (static_column_count <= 0) {
-            if constexpr (isMutable())
-                f |= Qt::ItemIsEditable;
-        } else if constexpr (std::is_reference_v<row_reference> && !std::is_const_v<row_reference>) {
-            // we want to know if the elements in the tuple are const; they'd always be, if
-            // we didn't remove the const of the range first.
-            const_row_reference row = rowData(index);
-            row_reference mutableRow = const_cast<row_reference>(row);
-            if (QRangeModelDetails::isValid(mutableRow)) {
-                QRangeModelImplBase::for_element_at(mutableRow, index.column(), [&f](auto &&ref){
-                    using target_type = decltype(ref);
-                    if constexpr (std::is_const_v<std::remove_reference_t<target_type>>)
-                        f &= ~Qt::ItemIsEditable;
-                    else if constexpr (std::is_lvalue_reference_v<target_type>)
+        if constexpr (isMutable()) {
+            if constexpr (row_traits::hasMetaObject) {
+                if (index.column() < row_traits::fixed_size()) {
+                    const QMetaObject mo = wrapped_row_type::staticMetaObject;
+                    const QMetaProperty prop = mo.property(index.column() + mo.propertyOffset());
+                    if (prop.isWritable())
                         f |= Qt::ItemIsEditable;
-                });
-            } else {
-                // If there's no usable value stored in the row, then we can't
-                // do anything with this item.
-                f &= ~Qt::ItemIsEditable;
+                }
+            } else if constexpr (static_column_count <= 0) {
+                f |= Qt::ItemIsEditable;
+            } else if constexpr (std::is_reference_v<row_reference> && !std::is_const_v<row_reference>) {
+                // we want to know if the elements in the tuple are const; they'd always be, if
+                // we didn't remove the const of the range first.
+                const_row_reference row = rowData(index);
+                row_reference mutableRow = const_cast<row_reference>(row);
+                if (QRangeModelDetails::isValid(mutableRow)) {
+                    QRangeModelImplBase::for_element_at(mutableRow, index.column(), [&f](auto &&ref){
+                        using target_type = decltype(ref);
+                        if constexpr (std::is_const_v<std::remove_reference_t<target_type>>)
+                            f &= ~Qt::ItemIsEditable;
+                        else if constexpr (std::is_lvalue_reference_v<target_type>)
+                            f |= Qt::ItemIsEditable;
+                    });
+                } else {
+                    // If there's no usable value stored in the row, then we can't
+                    // do anything with this item.
+                    f &= ~Qt::ItemIsEditable;
+                }
             }
         }
         return f;
@@ -2313,7 +2314,7 @@ protected:
     {
         if constexpr (tree_traits::has_deleteRow) {
             for (auto it = begin; it != end; ++it) {
-                if constexpr (is_mutable_impl) {
+                if constexpr (Base::isMutable()) {
                     decltype(auto) children = this->protocol().childRows(QRangeModelDetails::refTo(*it));
                     if (QRangeModelDetails::isValid(children)) {
                         deleteRemovedRows(QRangeModelDetails::begin(children),
