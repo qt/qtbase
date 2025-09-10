@@ -203,7 +203,7 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
         int bottomOffset = (rootY + rootView.getHeight()) - (windowY + getHeight());
 
         // Find the remaining minimum safe margins
-        Insets safeInsets = getSafeInsets(this, insets);
+        Insets safeInsets = getSafeInsets(rootView, insets);
         int left = Math.max(0, Math.min(safeInsets.left, safeInsets.left - leftOffset));
         int top = Math.max(0, Math.min(safeInsets.top, safeInsets.top - topOffset));
         int right = Math.max(0, Math.min(safeInsets.right, safeInsets.right - rightOffset));
