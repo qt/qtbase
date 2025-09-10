@@ -50,8 +50,8 @@ int main(int argc, char **argv)
         qDebug() << "to skip these plugins. Currently two SQL plugins are known to";
         qDebug() << "be incompatible: qsqlodbc and qsqlpsql.";
         qDebug() << "";
-        qDebug() << "See the \"Deploying Applications on OS X\" topic in the";
-        qDebug() << "documentation for more information about deployment on OS X.";
+        qDebug() << "See the \"Qt for macOS - Deployment\" topic in the";
+        qDebug() << "documentation for more information about deployment on macOS.";
 
         return 1;
     }
