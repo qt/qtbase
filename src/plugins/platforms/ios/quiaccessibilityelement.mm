@@ -109,10 +109,15 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QMacAccessibilityElement);
 
     QAccessible::State state = iface->state();
 
-    if (state.checkable)
+    if (state.checkable) {
+        if (iface->role() == QAccessible::CheckBox
+            || iface->role() == QAccessible::RadioButton)
+            return @"";
+
         return state.checked
                 ? QCoreApplication::translate(ACCESSIBILITY_ELEMENT, AE_CHECKED).toNSString()
                 : QCoreApplication::translate(ACCESSIBILITY_ELEMENT, AE_UNCHECKED).toNSString();
+    }
 
     QAccessibleValueInterface *val = iface->valueInterface();
     if (val) {
@@ -159,6 +164,10 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QMacAccessibilityElement);
     const auto accessibleRole = iface->role();
     if (accessibleRole == QAccessible::Button) {
         traits |= UIAccessibilityTraitButton;
+    } else if (accessibleRole == QAccessible::CheckBox
+               || accessibleRole == QAccessible::RadioButton) {
+        if (state.checked)
+            traits |= UIAccessibilityTraitSelected;
     } else if (accessibleRole == QAccessible::EditableText) {
         static auto defaultTextFieldTraits = []{
             auto *textField = [[[UITextField alloc] initWithFrame:CGRectZero] autorelease];
