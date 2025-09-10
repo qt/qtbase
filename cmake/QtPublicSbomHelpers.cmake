@@ -47,6 +47,7 @@ function(_qt_internal_sbom_begin_project)
     )
     set(multi_args
         COPYRIGHTS
+        LICENSE_DIR_PATHS
     )
 
     cmake_parse_arguments(PARSE_ARGV 0 arg "${opt_args}" "${single_args}" "${multi_args}")
@@ -285,15 +286,24 @@ function(_qt_internal_sbom_begin_project)
         list(APPEND license_dirs "${PROJECT_SOURCE_DIR}/LICENSES")
     endif()
 
+    set(license_dir_candidates "")
+    if(arg_LICENSE_DIR_PATHS)
+        list(APPEND license_dir_candidates ${arg_LICENSE_DIR_PATHS})
+    endif()
+
     # Allow specifying extra license dirs via a variable. Useful for standalone projects
     # like sqldrivers.
+    # Kept for backwards compatibility, the new LICENSE_DIR_PATHS option should be preferred.
     if(QT_SBOM_LICENSE_DIRS)
-        foreach(license_dir IN LISTS QT_SBOM_LICENSE_DIRS)
-            if(EXISTS "${license_dir}")
-                list(APPEND license_dirs "${license_dir}")
-            endif()
-        endforeach()
+        list(APPEND license_dir_candidates ${QT_SBOM_LICENSE_DIRS})
     endif()
+
+    foreach(license_dir IN LISTS license_dir_candidates)
+        if(EXISTS "${license_dir}")
+            list(APPEND license_dirs "${license_dir}")
+        endif()
+    endforeach()
+
     list(REMOVE_DUPLICATES license_dirs)
 
     set(license_file_wildcard "LicenseRef-*.txt")
