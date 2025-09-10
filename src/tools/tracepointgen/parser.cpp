@@ -416,9 +416,8 @@ void Parser::parseMetadata(const QString &data, qsizetype offset, const QStringL
             if (values.isEmpty()) {
                 if (flags && name.endsWith(QLatin1Char('s')))
                     values = findEnumValues(name.left(name.length() - 1), includes);
-                if (values.isEmpty()) {
-                    DEBUGPRINTF(printf("Unable to find values for %s\n", qPrintable(name)));
-                }
+                if (values.isEmpty())
+                    panic("Unable to find values for %s\n", qPrintable(name));
             }
             if (!values.isEmpty()) {
                 auto moreValues = enumsToValues(values);
@@ -505,7 +504,7 @@ void Parser::addIncludesRecursive(const QString &filename, QList<QString> &inclu
         data += line + QLatin1Char(QLatin1Char('\n'));
     }
 
-    QRegularExpression includeMacro(QStringLiteral("#include [\"<]([A-Za-z0-9_./-]*.h)[\">]"));
+    QRegularExpression includeMacro(QStringLiteral("#include [\"<]([A-Za-z0-9_./-:]*.h)[\">]"));
     QRegularExpressionMatchIterator i = includeMacro.globalMatch(data);
     while (i.hasNext()) {
         QRegularExpressionMatch match = i.next();
@@ -549,7 +548,7 @@ void Parser::parse(QIODevice &input, const QString &name)
 
     QStringList includes;
 
-    QRegularExpression includeMacro(QStringLiteral("#include [\"<]([A-Za-z0-9_./-]*.h)[\">]"));
+    QRegularExpression includeMacro(QStringLiteral("#include [\"<]([A-Za-z0-9_./-:]*.h)[\">]"));
     QRegularExpressionMatchIterator i = includeMacro.globalMatch(data);
     while (i.hasNext()) {
         QRegularExpressionMatch match = i.next();
