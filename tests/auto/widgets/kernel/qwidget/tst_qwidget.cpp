@@ -13562,7 +13562,7 @@ void tst_QWidget::setParentChangesFocus()
         secondary->setParent(targetParent ? &window : nullptr, targetType);
         secondary->show(); // reparenting hides, so show again
         QApplicationPrivate::setActiveWindow(secondary.get());
-        QTRY_VERIFY(QTest::qWaitForWindowActive(secondary.get()));
+        QVERIFY(QTest::qWaitForWindowActive(secondary.get()));
     }
     QVERIFY(QTest::qWaitFor([]{ return QApplication::focusWidget(); }));
     QCOMPARE(QApplication::focusWidget()->objectName(), focusWidget);
