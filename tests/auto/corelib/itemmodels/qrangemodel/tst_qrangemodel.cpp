@@ -1399,9 +1399,12 @@ void tst_QRangeModel::tree()
     QFETCH(const int, expectedRootRowCount);
     QFETCH(const int, expectedColumnCount);
     QFETCH(QList<int>, rowsWithChildren);
+    QFETCH(ChangeActions, changeActions);
 
     QCOMPARE(model->rowCount(), expectedRootRowCount);
     QCOMPARE(model->columnCount(), expectedColumnCount);
+    QCOMPARE(model->flags(model->index(0, 0)).testFlag(Qt::ItemIsEditable),
+             !!(changeActions & ChangeAction::SetData));
 
     for (int row = 0; row < model->rowCount(); ++row) {
         const bool expectedChildren = rowsWithChildren.contains(row);
