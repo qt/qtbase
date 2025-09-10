@@ -168,12 +168,12 @@ function(_qt_internal_sbom_begin_project)
         ${compute_project_file_name_args}
     )
 
-    set(repo_spdx_relative_install_path
-        "${arg_INSTALL_SBOM_DIR}/${repo_project_file_name}")
+    _qt_internal_path_join(repo_spdx_relative_install_path
+        "${arg_INSTALL_SBOM_DIR}" "${repo_project_file_name}")
 
     # Prepend DESTDIR, to allow relocating installed sbom. Needed for CI.
-    set(repo_spdx_install_path
-        "\$ENV{DESTDIR}${install_prefix}/${repo_spdx_relative_install_path}")
+    _qt_internal_path_join(repo_spdx_install_path
+        "\$ENV{DESTDIR}${install_prefix}" "${repo_spdx_relative_install_path}")
 
     if(arg_LICENSE_EXPRESSION)
         set(repo_license "${arg_LICENSE_EXPRESSION}")
