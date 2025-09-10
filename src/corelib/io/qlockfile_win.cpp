@@ -6,13 +6,16 @@
 
 #include "private/qlockfile_p.h"
 #include "private/qfilesystementry_p.h"
+#include "wcharhelpers_win_p.h"
+
+#include "QtCore/qdatetime.h"
+#include "QtCore/qdir.h"
+#include "QtCore/qdebug.h"
+#include "QtCore/qfileinfo.h"
+#include "QtCore/qthread.h"
+
 #include <qt_windows.h>
 #include <psapi.h>
-
-#include "QtCore/qfileinfo.h"
-#include "QtCore/qdatetime.h"
-#include "QtCore/qdebug.h"
-#include "QtCore/qthread.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -20,6 +23,11 @@ static inline bool fileExists(const wchar_t *fileName)
 {
     WIN32_FILE_ATTRIBUTE_DATA  data;
     return GetFileAttributesEx(fileName, GetFileExInfoStandard, &data);
+}
+
+static bool deleteFile(const QString &fileName)
+{
+    return DeleteFile(qt_castToWchar(QDir::toNativeSeparators(fileName)));
 }
 
 QLockFile::LockError QLockFilePrivate::tryLock_sys()
@@ -70,8 +78,8 @@ QLockFile::LockError QLockFilePrivate::tryLock_sys()
 
 bool QLockFilePrivate::removeStaleLock()
 {
-    // QFile::remove fails on Windows if the other process is still using the file, so it's not stale.
-    return QFile::remove(fileName);
+    // DeleteFile fails if the other process is still using the file, so it's not stale.
+    return deleteFile(fileName);
 }
 
 bool QLockFilePrivate::isProcessRunning(qint64 pid, const QString &appname)
@@ -124,7 +132,7 @@ void QLockFile::unlock()
     CloseHandle(d->fileHandle);
     int attempts = 0;
     static const int maxAttempts = 500; // 500ms
-    while (!QFile::remove(d->fileName) && ++attempts < maxAttempts) {
+    while (!deleteFile(d->fileName) && ++attempts < maxAttempts) {
         // Someone is reading the lock file right now (on Windows this prevents deleting it).
         QThread::msleep(1);
     }

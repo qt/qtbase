@@ -154,8 +154,9 @@ QLockFile::LockError QLockFilePrivate::tryLock_sys()
     QByteArray fileData = lockFileContents();
     if (qt_write_loop(fd, fileData.constData(), fileData.size()) < fileData.size()) {
         qt_safe_close(fd);
-        if (!QFile::remove(fileName))
-            qWarning("QLockFile: Could not remove our own lock file %ls.", qUtf16Printable(fileName));
+        if (unlink(lockFileName) != 0)
+            qWarning("QLockFile: Could not remove our own lock file %s: %ls.",
+                     lockFileName.constBegin(), qUtf16Printable(qt_error_string()));
         return QLockFile::UnknownError; // partition full
     }
 
@@ -289,12 +290,16 @@ void QLockFile::unlock()
     Q_D(QLockFile);
     if (!d->isLocked)
         return;
-    close(d->fileHandle);
-    d->fileHandle = -1;
-    if (!QFile::remove(d->fileName)) {
-        qWarning() << "Could not remove our own lock file" << d->fileName << "maybe permissions changed meanwhile?";
+
+    const QByteArray lockFileName = QFile::encodeName(d->fileName);
+    if (unlink(lockFileName) != 0) {
+        qWarning("Could not remove our own lock file %s: %ls (maybe permissions changed meanwhile?)",
+                 lockFileName.constBegin(), qUtf16Printable(qt_error_string()));
         // This is bad because other users of this lock file will now have to wait for the stale-lock-timeout...
     }
+
+    close(d->fileHandle);
+    d->fileHandle = -1;
     d->lockError = QLockFile::NoError;
     d->isLocked = false;
 }
