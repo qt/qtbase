@@ -3,6 +3,7 @@
 // Copyright (C) 2019 Mail.ru Group.
 // Copyright (C) 2020 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Marc Mutz <marc.mutz@kdab.com>
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+// Qt-Security score:critical reason:data-parser
 
 #ifndef QLATIN1STRINGVIEW_H
 #define QLATIN1STRINGVIEW_H
