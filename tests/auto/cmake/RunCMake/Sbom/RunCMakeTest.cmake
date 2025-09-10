@@ -47,3 +47,4 @@ endfunction()
 
 run_cmake_and_build(minimal)
 run_cmake_and_build(full)
+run_cmake_and_build(versions)

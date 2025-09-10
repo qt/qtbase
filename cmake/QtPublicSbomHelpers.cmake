@@ -96,40 +96,17 @@ function(_qt_internal_sbom_begin_project)
         list(APPEND begin_project_generate_args SUPPLIER_URL "${repo_supplier_url}")
     endif()
 
-    # Manual override.
-    if(arg_VERSION)
-        set(QT_SBOM_GIT_VERSION "${arg_VERSION}")
-        set(QT_SBOM_GIT_VERSION_PATH "${arg_VERSION}")
-        set(QT_SBOM_GIT_HASH "") # empty on purpose, no source of info
-        set(QT_SBOM_GIT_HASH_SHORT "") # empty on purpose, no source of info
-        set(non_git_version "${arg_VERSION}")
-    elseif(arg_USE_GIT_VERSION)
-        # Query git version info.
-        _qt_internal_find_git_package()
-        _qt_internal_query_git_version(
-            EMPTY_VALUE_WHEN_NOT_GIT_REPO
-            OUT_VAR_PREFIX __sbom_
-        )
-        set(QT_SBOM_GIT_VERSION "${__sbom_git_version}")
-        set(QT_SBOM_GIT_VERSION_PATH "${__sbom_git_version_path}")
-        set(QT_SBOM_GIT_HASH "${__sbom_git_hash}")
-        set(QT_SBOM_GIT_HASH_SHORT "${__sbom_git_hash_short}")
-
-        # Git version might not be available.
-        set(non_git_version "${QT_REPO_MODULE_VERSION}")
-        if(NOT QT_SBOM_GIT_VERSION)
-            set(QT_SBOM_GIT_VERSION "${non_git_version}")
-        endif()
-        if(NOT QT_SBOM_GIT_VERSION_PATH)
-            set(QT_SBOM_GIT_VERSION_PATH "${non_git_version}")
-        endif()
-    endif()
-
-    # Save the variables in a global property to later query them in other functions.
-    set_property(GLOBAL PROPERTY QT_SBOM_GIT_VERSION "${QT_SBOM_GIT_VERSION}")
-    set_property(GLOBAL PROPERTY QT_SBOM_GIT_VERSION_PATH "${QT_SBOM_GIT_VERSION_PATH}")
-    set_property(GLOBAL PROPERTY QT_SBOM_GIT_HASH "${QT_SBOM_GIT_HASH}")
-    set_property(GLOBAL PROPERTY QT_SBOM_GIT_HASH_SHORT "${QT_SBOM_GIT_HASH_SHORT}")
+    set(sbom_project_version_args "")
+    _qt_internal_forward_function_args(
+        FORWARD_APPEND
+        FORWARD_PREFIX arg
+        FORWARD_OUT_VAR sbom_project_version_args
+        FORWARD_OPTIONS
+            USE_GIT_VERSION
+        FORWARD_SINGLE
+            VERSION
+    )
+    _qt_internal_handle_sbom_project_version(${sbom_project_version_args})
 
     if(arg_DOCUMENT_NAMESPACE)
         set(repo_spdx_namespace "${arg_DOCUMENT_NAMESPACE}")
@@ -161,8 +138,9 @@ function(_qt_internal_sbom_begin_project)
     endif()
 
     set(compute_project_file_name_args "")
-    if(non_git_version)
-        list(APPEND compute_project_file_name_args VERSION_SUFFIX "${non_git_version}")
+    _qt_internal_sbom_get_project_explicit_version(explicit_version)
+    if(explicit_version)
+        list(APPEND compute_project_file_name_args VERSION_SUFFIX "${explicit_version}")
     endif()
 
     _qt_internal_sbom_compute_project_file_name(repo_project_file_name
@@ -1857,17 +1835,112 @@ function(_qt_internal_sbom_get_package_purpose type out_purpose)
     set(${out_purpose} "${package_purpose}" PARENT_SCOPE)
 endfunction()
 
+# Determines various version vars for the root SBOM package.
+# Options:
+#   QT_SBOM_GIT_VERSION - tries to query version info from the git repo that is in the current
+#     working dir.
+#   VERSION - overrides the git version info with the provided value.
+#
+# Stores the version vars in global properties. The following vars are set:
+#  QT_SBOM_GIT_VERSION - the version extracted from git, or the explicit version specified via
+#    VERSION. The git version is usually a tag or short sha1 + a branch + dirty flag.
+#  QT_SBOM_GIT_VERSION_PATH - the same as above, but the value is sanitized to be path safe
+#  QT_SBOM_GIT_HASH - the full git commit sha
+#  QT_SBOM_GIT_HASH_SHORT - the short git commit sha
+#  QT_SBOM_EXPLICIT_VERSION - the explicit version provided via VERSION or QT_SBOM_VERSION_OVERRIDE
+#    if set.
+#
+# TODO: Consider renaming QT_SBOM_GIT_VERSION and friends to QT_SBOM_VERSION, because the version
+# might not come from git, but from VERSION option, so the current naming is somewhat misleading.
+function(_qt_internal_handle_sbom_project_version)
+    set(opt_args
+        USE_GIT_VERSION
+    )
+    set(single_args
+        VERSION
+    )
+    set(multi_args "")
+
+    cmake_parse_arguments(PARSE_ARGV 0 arg "${opt_args}" "${single_args}" "${multi_args}")
+    _qt_internal_validate_all_args_are_parsed(arg)
+
+    # Query git version info if requested.
+    # The git version might not be available for multiple reasons even if requsted, due to e.g. the
+    # current working dir not being a git repo, or git not being installed, etc.
+    # Some of the values might be overridden further down even.
+    if(arg_USE_GIT_VERSION)
+        _qt_internal_find_git_package()
+        _qt_internal_query_git_version(
+            EMPTY_VALUE_WHEN_NOT_GIT_REPO
+            OUT_VAR_PREFIX __sbom_
+        )
+        set(QT_SBOM_GIT_VERSION "${__sbom_git_version}")
+        set(QT_SBOM_GIT_VERSION_PATH "${__sbom_git_version_path}")
+        set(QT_SBOM_GIT_HASH "${__sbom_git_hash}")
+        set(QT_SBOM_GIT_HASH_SHORT "${__sbom_git_hash_short}")
+    else()
+        # To be clean, set the variables to an empty value rather than keeping them undefined.
+        set(QT_SBOM_GIT_VERSION "")
+        set(QT_SBOM_GIT_VERSION_PATH "")
+        set(QT_SBOM_GIT_HASH "")
+        set(QT_SBOM_GIT_HASH_SHORT "")
+    endif()
+
+    # If an explicit version was passed, override the git version and the path-safe git version
+    # with the provided value.
+    if(arg_VERSION)
+        set(QT_SBOM_GIT_VERSION "${arg_VERSION}")
+        set(QT_SBOM_GIT_VERSION_PATH "${arg_VERSION}")
+    endif()
+
+    # Store the explicit version, aka the non-git version, if provided, in a separate variable.
+    # Allow overriding with the QT_SBOM_VERSION_OVERRIDE variable just in case, even if it's empty.
+    # In case of a qt build, for compatibility we still read the QT_REPO_MODULE_VERSION variable
+    if(DEFINED QT_SBOM_VERSION_OVERRIDE)
+        set(explicit_version "${QT_SBOM_VERSION_OVERRIDE}")
+    elseif(arg_VERSION)
+        set(explicit_version "${arg_VERSION}")
+    elseif(QT_REPO_MODULE_VERSION)
+        set(explicit_version "${QT_REPO_MODULE_VERSION}")
+    else()
+        set(explicit_version "")
+    endif()
+
+    # If the git version hasn't been set yet, set it to the explicit version, if available.
+    if(NOT QT_SBOM_GIT_VERSION)
+        set(QT_SBOM_GIT_VERSION "${explicit_version}")
+    endif()
+    if(NOT QT_SBOM_GIT_VERSION_PATH)
+        set(QT_SBOM_GIT_VERSION_PATH "${explicit_version}")
+    endif()
+
+    # Save the variables in a global property to later query them in other functions.
+    set_property(GLOBAL PROPERTY QT_SBOM_GIT_VERSION "${QT_SBOM_GIT_VERSION}")
+    set_property(GLOBAL PROPERTY QT_SBOM_GIT_VERSION_PATH "${QT_SBOM_GIT_VERSION_PATH}")
+    set_property(GLOBAL PROPERTY QT_SBOM_GIT_HASH "${QT_SBOM_GIT_HASH}")
+    set_property(GLOBAL PROPERTY QT_SBOM_GIT_HASH_SHORT "${QT_SBOM_GIT_HASH_SHORT}")
+    set_property(GLOBAL PROPERTY QT_SBOM_EXPLICIT_VERSION "${explicit_version}")
+endfunction()
+
 # Queries the current project git version variables and sets them in the parent scope.
 function(_qt_internal_sbom_get_git_version_vars)
     get_cmake_property(QT_SBOM_GIT_VERSION QT_SBOM_GIT_VERSION)
     get_cmake_property(QT_SBOM_GIT_VERSION_PATH QT_SBOM_GIT_VERSION_PATH)
     get_cmake_property(QT_SBOM_GIT_HASH QT_SBOM_GIT_HASH)
     get_cmake_property(QT_SBOM_GIT_HASH_SHORT QT_SBOM_GIT_HASH_SHORT)
+    get_cmake_property(QT_SBOM_EXPLICIT_VERSION QT_SBOM_EXPLICIT_VERSION)
 
     set(QT_SBOM_GIT_VERSION "${QT_SBOM_GIT_VERSION}" PARENT_SCOPE)
     set(QT_SBOM_GIT_VERSION_PATH "${QT_SBOM_GIT_VERSION_PATH}" PARENT_SCOPE)
     set(QT_SBOM_GIT_HASH "${QT_SBOM_GIT_HASH}" PARENT_SCOPE)
     set(QT_SBOM_GIT_HASH_SHORT "${QT_SBOM_GIT_HASH_SHORT}" PARENT_SCOPE)
+    set(QT_SBOM_EXPLICIT_VERSION "${QT_SBOM_EXPLICIT_VERSION}" PARENT_SCOPE)
+endfunction()
+
+# Queries the current project git version variables and sets them in the parent scope.
+function(_qt_internal_sbom_get_project_explicit_version out_var)
+    get_cmake_property(explicit_version QT_SBOM_EXPLICIT_VERSION)
+    set(${out_var} "${explicit_version}" PARENT_SCOPE)
 endfunction()
 
 # Returns the configure line used to configure the current repo or top-level build, by reading
