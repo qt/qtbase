@@ -203,6 +203,8 @@ class QtDisplayManager
             int defaultNavigationBarColor = typedValue.data;
             window.setNavigationBarColor(defaultNavigationBarColor);
         }
+
+        decorView.post(() -> decorView.requestApplyInsets());
     }
 
     boolean isFullScreen()
