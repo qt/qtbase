@@ -413,6 +413,9 @@ qt_internal_extend_target(Core CONDITION CMAKE_PROJECT_VERSION VERSION_LESS "7.0
         text/qstringconverter_base_deprecated.h
 )
 
+set_source_files_properties(text/qstringconverter_base_deprecated.h
+    PROPERTIES _qt_exclude_from_module_map TRUE)
+
 if (NOT QT_NAMESPACE STREQUAL "")
     set(core_namespace_defs "QT_NAMESPACE=${QT_NAMESPACE}")
     if(QT_INLINE_NAMESPACE)

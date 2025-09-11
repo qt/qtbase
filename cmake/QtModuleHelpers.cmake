@@ -299,6 +299,8 @@ function(qt_internal_add_module target)
         SOURCES "${module_config_header}" "${module_config_private_header}"
         SKIP_AUTOGEN
     )
+    set_source_files_properties("${module_config_header}" "${module_config_private_header}"
+        PROPERTIES _qt_utility_header TRUE)
 
     # Module define needs to take into account the config module name.
     string(TOUPPER "${arg_CONFIG_MODULE_NAME}" module_define_infix)
@@ -1331,6 +1333,12 @@ function(qt_finalize_module target)
         endif()
     endif()
 
+    qt_internal_generate_module_map(${target})
+
+    get_target_property(module_depends_header ${target} _qt_module_depends_header)
+    list(APPEND module_headers_all ${module_depends_header})
+    list(APPEND module_headers_generated ${module_depends_header})
+
     # qt_internal_install_module_headers needs to be called before
     # qt_finalize_framework_headers_copy, because the last uses the QT_COPIED_FRAMEWORK_HEADERS
     # property which supposed to be updated inside every qt_internal_install_module_headers
@@ -1341,7 +1349,6 @@ function(qt_finalize_module target)
         "${module_headers_generated}"
         "${module_headers_exclude_from_docs}"
     )
-    get_target_property(module_depends_header ${target} _qt_module_depends_header)
     qt_internal_install_module_headers(${target}
         PUBLIC ${module_headers_public} "${module_depends_header}"
         PRIVATE ${module_headers_private}
@@ -1485,6 +1492,27 @@ the different base name for the module info variables.")
         "${repo_build_interface_include_dir}/${${result}_ssg_include_dir}")
     set("${result}_build_interface_spi_include_dir"
         "${repo_build_interface_include_dir}/${${result}_spi_include_dir}")
+
+    if(QT_FEATURE_clang_module_maps)
+        # Intermediate module map file, shared across CMake units
+        get_target_property(module_binary_dir ${target} BINARY_DIR)
+        set("${result}_modulemap_intermediate_path"
+            "${module_binary_dir}/${module}.module.modulemap.in")
+
+        # Directory holding the module's Clang module map. For frameworks this
+        # is the bundle's 'Modules' directory; otherwise it's the module's
+        # include directory, where Clang looks up the module map alongside the
+        # headers.
+        get_target_property(is_framework ${target} FRAMEWORK)
+        if(is_framework)
+            set("${result}_clang_modules_dir"
+                "${QT_BUILD_DIR}/${INSTALL_LIBDIR}/${module}.framework/Modules")
+        else()
+            set("${result}_clang_modules_dir"
+                "${${result}_build_interface_include_dir}")
+        endif()
+    endif()
+
     # Module install interface directories
     set(repo_install_interface_include_dir "${INSTALL_INCLUDEDIR}")
     set("${result}_install_interface_include_dir"
@@ -1539,6 +1567,12 @@ the different base name for the module info variables.")
         "${${result}_build_interface_ssg_include_dir}" PARENT_SCOPE)
     set("${result}_build_interface_spi_include_dir"
         "${${result}_build_interface_spi_include_dir}" PARENT_SCOPE)
+    if(QT_FEATURE_clang_module_maps)
+        set("${result}_modulemap_intermediate_path"
+            "${${result}_modulemap_intermediate_path}" PARENT_SCOPE)
+        set("${result}_clang_modules_dir"
+            "${${result}_clang_modules_dir}" PARENT_SCOPE)
+    endif()
 
     # Setting module install interface directories in parent scope
     set(repo_install_interface_include_dir "${repo_install_interface_include_dir}" PARENT_SCOPE)
@@ -1742,7 +1776,9 @@ function(qt_internal_generate_cpp_global_exports target module_define_infix)
         CONFIGURE_GENERATED
     )
     # Make sure the file is installed when processed by `qt_internal_collect_module_headers`
-    set_source_files_properties("${generated_header_path}" PROPERTIES _qt_syncqt_force_include TRUE)
+    set_source_files_properties("${generated_header_path}" PROPERTIES
+        _qt_syncqt_force_include TRUE
+        _qt_utility_header TRUE)
 endfunction()
 
 function(qt_internal_install_module_headers target)

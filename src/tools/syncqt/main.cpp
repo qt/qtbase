@@ -222,6 +222,8 @@ public:
 
     const std::string &versionScriptFile() const { return m_versionScriptFile; }
 
+    const std::string &moduleMapFile() const { return m_moduleMapFile; }
+
     const std::set<std::string> &knownModules() const { return m_knownModules; }
 
     const std::regex &qpaHeadersRegex() const { return m_qpaHeadersRegex; }
@@ -300,6 +302,9 @@ public:
                      "  -knownModules                   list of known modules. syncqt uses the\n"
                      "                                  list to check the #include macros\n"
                      "                                  consistency.\n"
+                     "  -moduleMapFile                  Module maps file to generate.\n"
+                     "                                  syncqt uses the .in file path as the\n"
+                     "                                  template.\n"
                      "Optional arguments:\n"
                      "  -internal                       Indicates that the module is internal.\n"
                      "  -nonQt                          Indicates that the module is not a Qt\n"
@@ -376,6 +381,7 @@ private:
             { "-stagingDir", { &m_stagingDir, true } },
             { "-versionScript", { &m_versionScriptFile, true } },
             { "-publicNamespaceFilter", { &publicNamespaceFilter, true } },
+            { "-moduleMapFile", { &m_moduleMapFile, true } },
         };
 
         const std::unordered_map<std::string, CommandLineOption<std::set<std::string>>>
@@ -552,6 +558,7 @@ private:
     std::string m_spiIncludeDir;
     std::string m_stagingDir;
     std::string m_versionScriptFile;
+    std::string m_moduleMapFile;
     std::set<std::string> m_knownModules;
     std::set<std::string> m_headers;
     std::set<std::string> m_generatedHeaders;
@@ -624,6 +631,7 @@ class SyncScanner
     std::set<std::string> m_producedHeaders;
     std::set<std::string> m_publicHeaders;
     std::vector<std::string> m_headerCheckExceptions;
+    std::map<std::string,std::string> m_moduleMapContents;
     SymbolContainer m_symbols;
     std::ostream &scannerDebug() const
     {
@@ -736,9 +744,10 @@ public:
         for (auto it = m_symbols.begin(); it != m_symbols.end(); ++it) {
             const std::string &filename = it->second.file();
             if (!filename.empty()) {
-                if (generateForwardingHeader(
-                            m_commandLineArgs->includeDir() + '/' + it->first, filename)) {
+                const auto camelCaseFile = m_commandLineArgs->includeDir() + '/' + it->first;
+                if (generateForwardingHeader(camelCaseFile, filename)) {
                     m_producedHeaders.insert(it->first);
+                    m_moduleMapContents.insert({camelCaseFile, filename});
                 } else {
                     error = SyncFailed;
                 }
@@ -758,14 +767,17 @@ public:
                 originalStamp = FileStamp::clock::now();
 
             if (generateVersionHeader(versionFile)) {
-                if (!generateAliasedHeaderFileIfTimestampChanged(
-                            m_commandLineArgs->includeDir() + '/' + versionHeaderCamel,
-                            versionFile, originalStamp)) {
+                const auto camelCaseFile =
+                        m_commandLineArgs->includeDir() + '/' + versionHeaderCamel;
+                if (!generateAliasedHeaderFileIfTimestampChanged(camelCaseFile,
+                        versionFile, originalStamp)) {
                     error = SyncFailed;
                 }
                 m_masterHeaderContents[versionHeaderFilename] = {};
                 m_producedHeaders.insert(versionHeaderFilename);
                 m_producedHeaders.insert(versionHeaderCamel);
+                m_moduleMapContents.insert({versionFile, {}});
+                m_moduleMapContents.insert({camelCaseFile, versionFile});
             } else {
                 error = SyncFailed;
             }
@@ -788,6 +800,11 @@ public:
 
         if (!m_commandLineArgs->isNonQtModule()) {
             if (!generateMasterHeader())
+                error = SyncFailed;
+        }
+
+        if (!m_commandLineArgs->moduleMapFile().empty()) {
+            if (!generateModuleMapFile())
                 error = SyncFailed;
         }
 
@@ -911,6 +928,13 @@ public:
             scannerDebug() << "Header file: " << headerFile
                            << " is outside the sync directories. Skipping." << std::endl;
             m_headerCheckExceptions.push_back(m_currentFileString);
+
+            // For some reason we don't treat the export header or Depends header as
+            // "belonging to the module", as per the comment above. Yet we do need it
+            // in the module map if it's in the include dir.
+            if (m_currentFileString.find(m_commandLineArgs->includeDir()) == 0)
+                m_moduleMapContents.insert({m_currentFileString, {}});
+
             return true;
         }
 
@@ -1070,6 +1094,8 @@ public:
             // Hardcode generating of QtConfig alias
             updateSymbolDescriptor("QtConfig", "qconfig.h", SyncScanner::SymbolDescriptor::Pragma);
         }
+
+        m_moduleMapContents.insert({outputDir + "/" + m_currentFilename, {}});
 
         return true;
     }
@@ -1564,6 +1590,21 @@ public:
                 != std::string::npos;
     }
 
+    [[nodiscard]] bool isHeaderImpl(const std::string &headerFilename) const
+    {
+        static const std::string implSuffix("_impl.h");
+        return headerFilename.find(implSuffix, headerFilename.size() - implSuffix.size())
+                != std::string::npos;
+    }
+
+    [[nodiscard]] bool isHeaderDeprecated(const std::string &headerFilename) const
+    {
+        static const std::string deprecatedSuffix("_deprecated.h");
+        return headerFilename.find(deprecatedSuffix,
+                                   headerFilename.size() - deprecatedSuffix.size())
+                != std::string::npos;
+    }
+
     [[nodiscard]] bool isHeader(const std::filesystem::path &path)
     {
         return path.extension().string() == ".h";
@@ -1588,7 +1629,9 @@ public:
             const std::string &outputFilePath, const std::string &aliasedFilePath,
             const FileStamp &originalStamp = FileStamp::clock::now());
 
-    bool writeIfDifferent(const std::string &outputFile, const std::string &buffer);
+    [[nodiscard]] bool generateModuleMapFile();
+
+    bool writeIfDifferent(const std::string &outputFile, const std::string &buffer) const;
 
     [[nodiscard]] bool generateMasterHeader()
     {
@@ -1618,6 +1661,7 @@ public:
         buffer << "#endif\n";
 
         m_producedHeaders.insert(m_commandLineArgs->moduleName());
+        m_moduleMapContents.insert({outputFile, {}});
         return writeIfDifferent(outputFile, buffer.str());
     }
 
@@ -1874,7 +1918,61 @@ bool SyncScanner::generateAliasedHeaderFileIfTimestampChanged(const std::string 
     return true;
 }
 
-bool SyncScanner::writeIfDifferent(const std::string &outputFile, const std::string &buffer)
+bool SyncScanner::generateModuleMapFile()
+{
+    std::string content;
+    for (const auto& [header, aliasHeader] : m_moduleMapContents) {
+        auto relativePath = std::filesystem::relative(header, m_commandLineArgs->includeDir());
+        const auto nonCamelCaseHeader = aliasHeader.empty() ? header : aliasHeader;
+        resetCurrentFileInfoData(nonCamelCaseHeader);
+        const bool isPrivate = m_currentFileType & PrivateHeader;
+        const bool isDeprecated =
+                m_deprecatedHeaders.find(nonCamelCaseHeader) != m_deprecatedHeaders.end()
+                || isHeaderDeprecated(nonCamelCaseHeader);
+
+        content += "    ";
+        if (isPrivate || isDeprecated)
+            content += "exclude ";
+        if (isHeaderImpl(header))
+            content += "textual ";
+
+        content += "header \"";
+        content += relativePath.string();
+        content += "\"\n";
+    }
+
+    std::filesystem::path moduleMapsTemplatePath =
+            m_commandLineArgs->binaryDir() + "/" +
+            m_commandLineArgs->moduleName() + "." + "module.modulemap.in";
+    if (!std::filesystem::exists(moduleMapsTemplatePath)) {
+        std::cerr << "Unable to read the modulemaps template file: " << moduleMapsTemplatePath
+            << std::endl;
+        return false;
+    }
+
+    std::ifstream input(moduleMapsTemplatePath, std::ifstream::in);
+    if (!input.is_open()) {
+        std::cerr << "Unable to open " << moduleMapsTemplatePath << std::endl;
+        return false;
+    }
+
+    std::string output;
+    std::string tmpLine;
+    while (std::getline(input, tmpLine)) {
+        if (tmpLine == "@SYNCQT_GENERATED_HEADER_LIST@") {
+            output += content;
+        } else {
+            output += tmpLine;
+            output += "\n";
+        }
+    }
+
+    std::string moduleMapsPath = m_commandLineArgs->moduleMapFile();
+    return writeIfDifferent(moduleMapsPath, output);
+}
+
+
+bool SyncScanner::writeIfDifferent(const std::string &outputFile, const std::string &buffer) const
 {
     if (m_commandLineArgs->showOnly())
         return true;
