@@ -158,13 +158,14 @@ hb_segment_properties_overlay (hb_segment_properties_t *p,
 bool
 hb_buffer_t::enlarge (unsigned int size)
 {
-  if (unlikely (!successful))
-    return false;
   if (unlikely (size > max_len))
   {
     successful = false;
     return false;
   }
+
+  if (unlikely (!successful))
+    return false;
 
   unsigned int new_allocated = allocated;
   hb_glyph_position_t *new_pos = nullptr;
@@ -225,6 +226,13 @@ hb_buffer_t::shift_forward (unsigned int count)
 {
   assert (have_output);
   if (unlikely (!ensure (len + count))) return false;
+
+  max_ops -= len - idx;
+  if (unlikely (max_ops < 0))
+  {
+    successful = false;
+    return false;
+  }
 
   memmove (info + idx + count, info + idx, (len - idx) * sizeof (info[0]));
   if (idx + count > len)
@@ -297,7 +305,6 @@ hb_buffer_t::clear ()
   props = default_props;
 
   successful = true;
-  shaping_failed = false;
   have_output = false;
   have_positions = false;
 
@@ -320,7 +327,6 @@ hb_buffer_t::enter ()
 {
   deallocate_var_all ();
   serial = 0;
-  shaping_failed = false;
   scratch_flags = HB_BUFFER_SCRATCH_FLAG_DEFAULT;
   unsigned mul;
   if (likely (!hb_unsigned_mul_overflows (len, HB_BUFFER_MAX_LEN_FACTOR, &mul)))
@@ -339,7 +345,6 @@ hb_buffer_t::leave ()
   max_ops = HB_BUFFER_MAX_OPS_DEFAULT;
   deallocate_var_all ();
   serial = 0;
-  // Intentionally not reseting shaping_failed, such that it can be inspected.
 }
 
 
@@ -726,7 +731,6 @@ DEFINE_NULL_INSTANCE (hb_buffer_t) =
   HB_SEGMENT_PROPERTIES_DEFAULT,
 
   false, /* successful */
-  true, /* shaping_failed */
   false, /* have_output */
   true  /* have_positions */
 

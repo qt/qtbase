@@ -84,6 +84,33 @@ struct hb_vector_t
   }
   ~hb_vector_t () { fini (); }
 
+  template <unsigned n,
+	    typename T = Type,
+	    hb_enable_if (hb_is_trivially_constructible(T) &&
+			  hb_is_trivially_destructible(T))>
+  void
+  set_storage (Type (&array)[n])
+  {
+    set_storage (array, n);
+  }
+
+  template <typename T = Type,
+	    hb_enable_if (hb_is_trivially_constructible(T) &&
+			  hb_is_trivially_destructible(T))>
+  void
+  set_storage (Type *array, unsigned n)
+  {
+    if (unlikely (in_error ()))
+      return;
+
+    assert (n > 0);
+    assert (allocated == 0);
+    assert (length == 0);
+
+    arrayZ = array;
+    length = n;
+  }
+
   template <typename Iterable,
 	    hb_requires (hb_is_iterable (Iterable))>
   void extend (const Iterable &o)
@@ -139,7 +166,7 @@ struct hb_vector_t
     /* We allow a hack to make the vector point to a foreign array
      * by the user. In that case length/arrayZ are non-zero but
      * allocated is zero. Don't free anything. */
-    if (allocated)
+    if (is_owned ())
     {
       shrink_vector (0);
       hb_free (arrayZ);
@@ -260,6 +287,11 @@ struct hb_vector_t
     return new (p) Type (std::forward<Args> (args)...);
   }
 
+  bool is_owned () const
+  {
+    return allocated != 0 && allocated != -1;
+  }
+
   bool in_error () const { return allocated < 0; }
   void set_error ()
   {
@@ -272,26 +304,34 @@ struct hb_vector_t
     allocated = -(allocated + 1);
   }
 
-  template <typename T = Type,
-	    hb_enable_if (hb_is_trivially_copy_assignable(T))>
   Type *
-  realloc_vector (unsigned new_allocated, hb_priority<0>)
+  _realloc (unsigned new_allocated)
   {
     if (!new_allocated)
     {
-      hb_free (arrayZ);
+      if (is_owned ())
+	hb_free (arrayZ);
       return nullptr;
+    }
+    if (!allocated && arrayZ)
+    {
+      /* If we have a non-null arrayZ but allocated is 0, then we are
+       * reallocating from a foreign array. */
+      Type *new_array = (Type *) hb_malloc (new_allocated * sizeof (Type));
+      if (unlikely (!new_array))
+	return nullptr;
+      hb_memcpy ((void *) new_array, (const void *) arrayZ, length * sizeof (Type));
+      return new_array;
     }
     return (Type *) hb_realloc (arrayZ, new_allocated * sizeof (Type));
   }
-  template <typename T = Type,
-	    hb_enable_if (!hb_is_trivially_copy_assignable(T))>
   Type *
-  realloc_vector (unsigned new_allocated, hb_priority<0>)
+  _malloc_move (unsigned new_allocated)
   {
     if (!new_allocated)
     {
-      hb_free (arrayZ);
+      if (is_owned ())
+	hb_free (arrayZ);
       return nullptr;
     }
     Type *new_array = (Type *) hb_malloc (new_allocated * sizeof (Type));
@@ -303,9 +343,25 @@ struct hb_vector_t
 	new_array[i] = std::move (arrayZ[i]);
 	arrayZ[i].~Type ();
       }
-      hb_free (arrayZ);
+      if (is_owned ())
+	hb_free (arrayZ);
     }
     return new_array;
+  }
+
+  template <typename T = Type,
+	    hb_enable_if (hb_is_trivially_copy_assignable(T))>
+  Type *
+  realloc_vector (unsigned new_allocated, hb_priority<0>)
+  {
+    return _realloc (new_allocated);
+  }
+  template <typename T = Type,
+	    hb_enable_if (!hb_is_trivially_copy_assignable(T))>
+  Type *
+  realloc_vector (unsigned new_allocated, hb_priority<0>)
+  {
+    return _malloc_move (new_allocated);
   }
   /* Specialization for types that can be moved using realloc(). */
   template <typename T = Type,
@@ -313,12 +369,7 @@ struct hb_vector_t
   Type *
   realloc_vector (unsigned new_allocated, hb_priority<1>)
   {
-    if (!new_allocated)
-    {
-      hb_free (arrayZ);
-      return nullptr;
-    }
-    return (Type *) hb_realloc (arrayZ, new_allocated * sizeof (Type));
+    return _realloc (new_allocated);
   }
 
   template <typename T = Type,
@@ -398,12 +449,12 @@ struct hb_vector_t
   shrink_vector (unsigned size)
   {
     assert (size <= length);
-    if (!std::is_trivially_destructible<Type>::value)
+    if (!hb_is_trivially_destructible(Type))
     {
       unsigned count = length - size;
-      Type *p = arrayZ + length - 1;
+      Type *p = arrayZ + length;
       while (count--)
-        p--->~Type ();
+        (--p)->~Type ();
     }
     length = size;
   }
