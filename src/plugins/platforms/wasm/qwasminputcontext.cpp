@@ -147,15 +147,13 @@ void QWasmInputContext::inputCallback(emscripten::val event)
          }
 
         event.call<void>("stopImmediatePropagation");
-#if QT_CONFIG(clipboard)
     } else if (!inputTypeString.compare("insertFromPaste")) {
-        insertText(QGuiApplication::clipboard()->text());
+        insertText(inputStr);
         event.call<void>("stopImmediatePropagation");
     // These can be supported here,
     // But now, keyCallback in QWasmWindow
     // will take them as exceptions.
     //} else if (!inputTypeString.compare("deleteByCut")) {
-#endif
     } else {
         qCWarning(qLcQpaWasmInputContext) << Q_FUNC_INFO << "inputType \"" <<
             inputType.as<std::string>() << "\" is not supported in Qt yet";
