@@ -131,7 +131,11 @@ class Cleaner (object):
         scriptPath = os.path.dirname(os.path.abspath(__file__))
         hereNames, depth = scriptPath.split(os.path.sep), 5
         hereNames = hereNames[-depth:] # path components from qtbase down
-        assert hereNames[0] == 'qtbase', ('Script moved: please correct depth', hereNames)
+        # don't check hereNames[0]: the qtbase checkout might not be named 'qtbase'
+        assert hereNames[1] == 'tests', ('Script moved: please correct depth', hereNames)
+        assert hereNames[2] == 'auto', ('Script moved: please correct depth', hereNames)
+        assert hereNames[3] == 'testlib', ('Script moved: please correct depth', hereNames)
+        assert hereNames[4] == 'selftests', ('Script moved: please correct depth', hereNames)
         qtbase_dir = os.path.realpath(os.path.join(scriptPath, '..', '..', '..', '..'))
         qtver = Cleaner._read_qt_version(qtbase_dir)
         hereNames = tuple(hereNames)
