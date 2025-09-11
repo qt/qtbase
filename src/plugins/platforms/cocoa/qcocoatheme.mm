@@ -465,7 +465,7 @@ QVariant QCocoaTheme::themeHint(ThemeHint hint) const
     case QPlatformTheme::KeyboardAutoRepeatRate:
         return 1.0 / NSEvent.keyRepeatInterval;
     case QPlatformTheme::ShowIconsInMenus:
-        return false;
+        return QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSTahoe;
     default:
         break;
     }
