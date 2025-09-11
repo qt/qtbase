@@ -104,7 +104,6 @@ static void init(QTextBoundaryFinder::BoundaryType type, QStringView str, QCharA
 */
 QTextBoundaryFinder::QTextBoundaryFinder()
     : freeBuffer(true)
-    , unused{0}
 {
 }
 
@@ -117,7 +116,6 @@ QTextBoundaryFinder::QTextBoundaryFinder(const QTextBoundaryFinder &other)
     , sv(other.sv)
     , pos(other.pos)
     , freeBuffer(true)
-    , unused{0}
 {
     if (other.attributes) {
         Q_ASSERT(sv.size() > 0);
@@ -165,7 +163,6 @@ QTextBoundaryFinder &QTextBoundaryFinder::operator=(const QTextBoundaryFinder &o
 */
 QTextBoundaryFinder::~QTextBoundaryFinder()
 {
-    Q_UNUSED(unused);
     if (freeBuffer)
         free(attributes);
 }
@@ -178,7 +175,6 @@ QTextBoundaryFinder::QTextBoundaryFinder(BoundaryType type, const QString &strin
     , s(string)
     , sv(s)
     , freeBuffer(true)
-    , unused{0}
 {
     if (sv.size() > 0) {
         attributes = (QCharAttributes *) malloc((sv.size() + 1) * sizeof(QCharAttributes));
@@ -212,7 +208,6 @@ QTextBoundaryFinder::QTextBoundaryFinder(BoundaryType type, QStringView string, 
     : t(type)
     , sv(string)
     , freeBuffer(true)
-    , unused{0}
 {
     if (!sv.isEmpty()) {
         if (buffer && bufferSize / int(sizeof(QCharAttributes)) >= sv.size() + 1) {

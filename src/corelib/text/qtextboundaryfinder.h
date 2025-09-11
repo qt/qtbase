@@ -64,8 +64,7 @@ private:
     QString s;
     QStringView sv;
     qsizetype pos = 0;
-    uint freeBuffer : 1;
-    uint unused : 31;
+    uint freeBuffer; // this may be used to store another 31 bit of data in the future
     QCharAttributes *attributes = nullptr;
 };
 
