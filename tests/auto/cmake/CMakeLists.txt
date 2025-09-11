@@ -561,5 +561,10 @@ foreach(plugin_class_name IN LISTS invalid_plugin_class_names)
     )
 endforeach()
 
+if(QT_FEATURE_clang_module_maps AND QT_WILL_INSTALL
+        AND "${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+    add_subdirectory(test_clang_module_maps)
+endif()
+
 # Add all tests using CMake's RunCMake test module
 add_subdirectory(RunCMake)

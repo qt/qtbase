@@ -1345,6 +1345,11 @@ qt_feature("android_16kb_pages" PRIVATE
 # available automatically for testing with qtConfig() in all user projects.
 qt_feature_config("android_16kb_pages" QMAKE_PUBLIC_QT_CONFIG)
 
+qt_feature("clang_module_maps" PRIVATE
+    LABEL "Generate Clang header module maps"
+    AUTODETECT OFF
+)
+
 qt_configure_add_summary_build_type_and_config()
 qt_configure_add_summary_section(NAME "Build options")
 qt_configure_add_summary_build_mode(Mode)
@@ -1460,6 +1465,10 @@ qt_configure_add_summary_entry(ARGS "Install examples sources" TYPE "message"
 qt_configure_add_summary_entry(
     ARGS "appstore-compliant"
     CONDITION APPLE OR ANDROID OR WIN32
+)
+qt_configure_add_summary_entry(
+    ARGS "clang_module_maps"
+    CONDITION QT_FEATURE_clang_module_maps
 )
 qt_configure_end_summary_section() # end of "Build options" section
 qt_configure_add_summary_section(NAME "Qt modules and options")

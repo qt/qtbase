@@ -24,6 +24,8 @@ function(qt_internal_target_sync_headers target
     get_target_property(sync_source_directory ${target} _qt_sync_source_directory)
     set(syncqt_timestamp "${CMAKE_CURRENT_BINARY_DIR}/${target}_syncqt_timestamp")
     set(syncqt_outputs "${syncqt_timestamp}")
+    set(syncqt_buildtime_args "")
+    set(syncqt_deps "")
 
     set(is_interface_lib FALSE)
     get_target_property(type ${target} TYPE)
@@ -155,6 +157,13 @@ function(qt_internal_target_sync_headers target
         list(APPEND common_syncqt_arguments -debug)
     endif()
 
+    get_target_property(module_map_path ${target} _qt_module_map_build_path)
+    if(module_map_path)
+        list(APPEND syncqt_buildtime_args -moduleMapFile "${module_map_path}")
+        list(APPEND syncqt_outputs "${module_map_path}")
+        list(APPEND syncqt_deps "${module_modulemap_intermediate_path}")
+    endif()
+
     set(build_time_syncqt_arguments "")
     if(WARNINGS_ARE_ERRORS)
         if(is_interface_lib)
@@ -191,6 +200,14 @@ function(qt_internal_target_sync_headers target
     set(syncqt_args_rsp "${binary_dir_real}/${target}_syncqt_args")
     qt_configure_file(OUTPUT "${syncqt_args_rsp}" CONTENT "${syncqt_args_string}")
 
+    if(syncqt_buildtime_args)
+        list(JOIN syncqt_buildtime_args "\n" syncqt_buildtime_args_string)
+        set(syncqt_buildtime_args_rsp "${binary_dir_real}/${target}_buildtime_syncqt_args")
+        qt_configure_file(OUTPUT "${syncqt_buildtime_args_rsp}"
+            CONTENT "${syncqt_buildtime_args_string}")
+        list(APPEND build_time_syncqt_arguments "@${syncqt_buildtime_args_rsp}")
+    endif()
+
     get_target_property(external_headers_dir ${target} _qt_external_headers_dir)
     if(external_headers_dir)
         if(NOT IS_ABSOLUTE "${external_headers_dir}")
@@ -220,6 +237,7 @@ function(qt_internal_target_sync_headers target
             ${syncqt_args_rsp}
             ${module_headers}
             ${QT_CMAKE_EXPORT_NAMESPACE}::syncqt
+            ${syncqt_deps}
             "$<GENEX_EVAL:$<TARGET_PROPERTY:${target},_qt_internal_sync_headers_deps>>"
         COMMENT
             "Running syncqt.cpp for module: ${module}"

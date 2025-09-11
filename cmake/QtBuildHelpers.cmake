@@ -191,6 +191,7 @@ function(qt_internal_get_qt_build_private_helpers out_var)
         QtLalrHelpers
         QtMkspecHelpers
         QtModuleHelpers
+        QtModuleMapHelpers
         QtNoLinkTargetHelpers
         QtPkgConfigHelpers
         QtPlatformTargetHelpers
