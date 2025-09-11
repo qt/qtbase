@@ -7,8 +7,8 @@
 
     "Description": "The Independent JPEG Group's JPEG software",
     "Homepage": "http://libjpeg-turbo.virtualgl.org/",
-    "Version": "3.1.1",
-    "DownloadLocation": "https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/3.1.1/libjpeg-turbo-3.1.1.tar.gz",
+    "Version": "3.1.2",
+    "DownloadLocation": "https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/3.1.2/libjpeg-turbo-3.1.2.tar.gz",
     "PURL": "pkg:github/libjpeg-turbo/libjpeg-turbo@$<VERSION>",
     "CPE": "cpe:2.3:a:libjpeg-turbo:libjpeg-turbo:$<VERSION>:*:*:*:*:*:*:*",
 
