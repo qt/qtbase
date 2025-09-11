@@ -117,3 +117,19 @@ instructions:
   - !include "{{qt/qtbase}}/cmake_build_standalone_examples_target.yaml"
   - !include "{{qt/qtbase}}/qmake/get_qmake_location_target.yaml"
   - !include "{{qt/qtbase}}/qmake_examples/build_qmake_examples_instructions.yaml"
+
+  - type: Group
+    instructions:
+      - !include "{{qt/qtbase}}/build_android_javadocs.yaml"
+    enable_if:
+      condition: and
+      conditions:
+        - condition: property
+          property: features
+          contains_value: JavaDocs
+        - condition: property
+          property: target.osVersion
+          equals_value: "Android_ANY"
+        - condition: runtime
+          env_var: TESTED_MODULE_COIN
+          equals_value: "qtdeclarative"
