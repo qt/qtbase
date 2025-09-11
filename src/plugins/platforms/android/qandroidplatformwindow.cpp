@@ -139,15 +139,15 @@ void QAndroidPlatformWindow::setGeometry(const QRect &rect)
     if (!isEmbeddingContainer()) {
         Q_ASSERT(m_nativeQtWindow.isValid());
 
-        jint x = 0;
-        jint y = 0;
-        jint w = -1;
-        jint h = -1;
-        if (!rect.isNull()) {
-            x = rect.x();
-            y = rect.y();
-            w = rect.width();
-            h = rect.height();
+        jint x = rect.x();
+        jint y = rect.y();
+        jint w = rect.width();
+        jint h = rect.height();
+        if (rect == platformScreen()->availableGeometry()) {
+            // If the requested size is the same as all the available size,
+            // set the View's size to MATCH_PARENT (-1) so that the ViewGroup's
+            // layout logic takes of setting its geometry.
+            w = h = -1;
         }
         m_nativeQtWindow.callMethod<void>("setGeometry", x, y, w, h);
     }
@@ -315,8 +315,6 @@ void QAndroidPlatformWindow::onSurfaceChanged(QtJniTypes::Surface surface)
         clearSurface();
     }
 
-    sendExpose();
-
     unlockSurface();
 }
 
@@ -423,6 +421,35 @@ void QAndroidPlatformWindow::safeAreaMarginsChanged(JNIEnv *env, jobject object,
     }
 }
 
+void QAndroidPlatformWindow::surfaceSizeChanged(JNIEnv *env, jobject object,
+                                                jint windowId, jint width, jint height)
+{
+    Q_UNUSED(env)
+    Q_UNUSED(object)
+
+    if (!qGuiApp)
+        return;
+
+    for (QWindow *window : qGuiApp->allWindows()) {
+        if (!window->handle())
+            continue;
+        QAndroidPlatformWindow *pWindow = static_cast<QAndroidPlatformWindow *>(window->handle());
+        const auto guard = pWindow->destructionGuard();
+        if (pWindow->nativeViewId() != windowId)
+            continue;
+
+        const QPoint oldTopLeft = pWindow->geometry().topLeft();
+        const QRect newRect(oldTopLeft, QSize(width, height));
+        QWindowSystemInterface::handleGeometryChange(window, newRect);
+        const QRegion region(QRect(QPoint(), newRect.size()));
+        if (pWindow->isExposed()) {
+            QWindowSystemInterface::handleExposeEvent(window, region);
+            QWindowSystemInterface::flushWindowSystemEvents();
+        }
+        break;
+    }
+}
+
 static void updateWindows(JNIEnv *env, jobject object)
 {
     Q_UNUSED(env)
@@ -469,6 +496,7 @@ bool QAndroidPlatformWindow::registerNatives(QJniEnvironment &env)
             {
                 Q_JNI_NATIVE_METHOD(updateWindows),
                 Q_JNI_NATIVE_SCOPED_METHOD(setSurface, QAndroidPlatformWindow),
+                Q_JNI_NATIVE_SCOPED_METHOD(surfaceSizeChanged, QAndroidPlatformWindow),
                 Q_JNI_NATIVE_SCOPED_METHOD(windowFocusChanged, QAndroidPlatformWindow),
                 Q_JNI_NATIVE_SCOPED_METHOD(safeAreaMarginsChanged, QAndroidPlatformWindow)
             })) {
