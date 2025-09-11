@@ -175,7 +175,7 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QMacAccessibilityElement);
         traits |= UIAccessibilityTraitStaticText;
     }
 
-    if (iface->valueInterface())
+    if (iface->valueInterface() && iface->role() != QAccessible::ProgressBar)
         traits |= UIAccessibilityTraitAdjustable;
 
     return traits;
