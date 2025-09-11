@@ -91,17 +91,28 @@ void QAndroidPlatformOpenGLWindow::applicationStateChanged(Qt::ApplicationState 
 // and QAndroidPlatformOpenGLContext::swapBuffers().
 bool QAndroidPlatformOpenGLWindow::ensureEglSurfaceCreated(EGLConfig config)
 {
-    // Either no surface created, or the m_eglSurface already wraps the active Surface,
-    // so makeCurrent is NOT needed, and we should not create a new EGL surface.
     if (!m_androidSurfaceCreated || !m_androidSurfaceObject.isValid()) {
-        qCDebug(lcQpaWindow) << "Skipping create egl on invalid or not yet created surface";
+        qCDebug(lcQpaWindow) << "Skipping create egl on invalid or not yet created surface"
+                             << "androidSurfacecreated=" << m_androidSurfaceCreated
+                             << "androidSurfaceValid=" << m_androidSurfaceObject.isValid();
         return false;
     }
 
-    clearSurface();
-    m_nativeWindow = ANativeWindow_fromSurface(
+    // Check if the Android surface maps to the same ANativeWindow we already use
+    ANativeWindow *candidateWindow = ANativeWindow_fromSurface(
         QJniEnvironment::getJniEnv(), m_androidSurfaceObject.object());
-    m_androidSurfaceObject = QJniObject();
+
+    if (candidateWindow && m_nativeWindow && m_eglSurface != EGL_NO_SURFACE) {
+        if (candidateWindow == m_nativeWindow) {
+            // Same underlying native window, use the existing EGLSurface to avoid flicker
+            ANativeWindow_release(candidateWindow);
+            return false;
+        }
+    }
+
+    // The underlying native window changed or we had none, recreate EGL surface
+    clearSurface();
+    m_nativeWindow = candidateWindow;
     m_eglSurface = eglCreateWindowSurface(m_eglDisplay, config, m_nativeWindow, NULL);
     m_format = q_glFormatFromConfig(m_eglDisplay, config, window()->requestedFormat());
     if (Q_UNLIKELY(m_eglSurface == EGL_NO_SURFACE)) {
