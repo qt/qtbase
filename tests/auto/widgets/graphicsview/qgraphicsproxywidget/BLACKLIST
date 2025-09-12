@@ -7,3 +7,5 @@ android
 android
 [touchEventPropagation]
 android
+[createProxyForChildWidget]
+android # QTBUG-140133
