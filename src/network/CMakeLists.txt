@@ -170,7 +170,7 @@ qt_internal_extend_target(Network CONDITION NOT QT_FEATURE_system_zlib
         ../3rdparty/zlib
 )
 
-qt_internal_extend_target(Network CONDITION NOT QT_FEATURE_system_zlib AND NOT no_core_dep
+qt_internal_extend_target(Network CONDITION NOT QT_FEATURE_system_zlib
     LIBRARIES
         Qt::Core
 )
