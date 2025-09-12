@@ -1209,7 +1209,11 @@ void QWidget::create(WId window, bool initializeWindow, bool destroyOldWindow)
     if (QApplicationPrivate::testAttribute(Qt::AA_NativeWindows))
         setAttribute(Qt::WA_NativeWindow);
 
-    if (isWindow()) {
+    if (isWindow()
+#if QT_CONFIG(graphicsview)
+        && !graphicsProxyWidget()
+#endif
+    ) {
         // Make top levels automatically respect safe areas by default
         auto *topExtra = d->maybeTopData();
         if (!topExtra || !topExtra->explicitContentsMarginsRespectsSafeArea) {
@@ -7726,6 +7730,14 @@ QRect QWidget::contentsRect() const
 QMargins QWidgetPrivate::safeAreaMargins() const
 {
     Q_Q(const QWidget);
+
+#if QT_CONFIG(graphicsview)
+    // Don't report margins for proxied widgets, as the logic
+    // below doesn't handle that case (yet).
+    if (nearestGraphicsProxyWidget(q))
+        return QMargins();
+#endif
+
     QWidget *nativeWidget = q->window();
     if (!nativeWidget->windowHandle())
         return QMargins();
