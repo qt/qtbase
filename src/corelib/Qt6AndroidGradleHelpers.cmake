@@ -136,8 +136,8 @@ function(_qt_internal_set_android_application_gradle_defaults target)
         "$<$<BOOL:${target_dynamic_features}>:'com.google.android.play:feature-delivery:2.1.0'>"
     )
     # TODO: make androidx.core:core version configurable.
-    # Currently, it is hardcoded to 1.16.0.
-    list(APPEND implementation_dependencies "'androidx.core:core:1.16.0'")
+    # Currently, it is hardcoded to 1.17.0.
+    list(APPEND implementation_dependencies "'androidx.core:core:1.17.0'")
 
     set_target_properties(${target} PROPERTIES
         _qt_android_gradle_java_source_dirs "${android_java_dir}/src;src;java"
