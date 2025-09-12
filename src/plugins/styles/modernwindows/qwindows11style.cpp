@@ -41,7 +41,8 @@ using namespace Qt::StringLiterals;
 
 static constexpr int topLevelRoundingRadius    = 8; //Radius for toplevel items like popups for round corners
 static constexpr int secondLevelRoundingRadius = 4; //Radius for second level items like hovered menu item round corners
-
+static constexpr int contentItemHMargin = 4;        // margin between content items (e.g. text and icon)
+static constexpr int contentHMargin = 2 * 3;        // margin between rounded border and content (= rounded border margin * 3)
 namespace StyleOptionHelper
 {
 inline bool isChecked(const QStyleOption *option)
@@ -1416,80 +1417,57 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
         break;
 #endif // QT_CONFIG(progressbar)
     case CE_PushButtonLabel:
-        if (const QStyleOptionButton *btn = qstyleoption_cast<const QStyleOptionButton *>(option))  {
-            QRect textRect = btn->rect;
+        if (const QStyleOptionButton *btn = qstyleoption_cast<const QStyleOptionButton *>(option)) {
+            using namespace StyleOptionHelper;
+            const bool isEnabled = !isDisabled(option);
 
-            int tf = Qt::AlignVCenter|Qt::TextShowMnemonic;
+            QRect textRect = btn->rect.marginsRemoved(QMargins(contentHMargin, 0, contentHMargin, 0));
+            int tf = Qt::AlignCenter | Qt::TextShowMnemonic;
             if (!proxy()->styleHint(SH_UnderlineShortcut, btn, widget))
                 tf |= Qt::TextHideMnemonic;
 
             if (btn->features & QStyleOptionButton::HasMenu) {
-                int indicatorSize = proxy()->pixelMetric(PM_MenuButtonIndicator, btn, widget);
-                QLineF menuSplitter;
-                QRectF indicatorRect;
-                painter->save();
-                painter->setFont(d->assetFont);
+                QPainterStateGuard psg(painter);
 
-                if (btn->direction == Qt::LeftToRight) {
-                    indicatorRect = QRect(textRect.x() + textRect.width() - indicatorSize - 4, textRect.y(),2 * 4 + indicatorSize, textRect.height());
-                    indicatorRect.adjust(0.5,-0.5,0.5,0.5);
-                    menuSplitter = QLineF(indicatorRect.topLeft(),indicatorRect.bottomLeft());
-                    textRect = textRect.adjusted(0, 0, -indicatorSize, 0);
-                } else {
-                    indicatorRect = QRect(textRect.x(), textRect.y(), textRect.x() + indicatorSize + 4, textRect.height());
-                    indicatorRect.adjust(-0.5,-0.5,-0.5,0.5);
-                    menuSplitter = QLineF(indicatorRect.topRight(),indicatorRect.bottomRight());
-                    textRect = textRect.adjusted(indicatorSize, 0, 0, 0);
-                }
-                painter->drawText(indicatorRect, Qt::AlignCenter, ChevronDownMed);
-                painter->setPen(WINUI3Colors[colorSchemeIndex][controlStrokePrimary]);
-                painter->drawLine(menuSplitter);
-                painter->restore();
+                const auto indSize = proxy()->pixelMetric(PM_MenuButtonIndicator, btn, widget);
+                const auto indRect = QRect(btn->rect.right() - indSize - contentItemHMargin, textRect.top(),
+                                           indSize + contentItemHMargin, btn->rect.height());
+                const auto vindRect = visualRect(btn->direction, btn->rect, indRect);
+                textRect.setWidth(textRect.width() - indSize);
+
+                int fontSize = painter->font().pointSize();
+                QFont f(d->assetFont);
+                f.setPointSize(qRound(fontSize * 0.9f)); // a little bit smaller
+                painter->setFont(f);
+                QColor penColor = option->palette.color(isEnabled ? QPalette::Active : QPalette::Disabled,
+                                                        QPalette::Text);
+                if (isEnabled)
+                    penColor.setAlpha(percentToAlpha(60.63)); // fillColorTextSecondary
+                painter->setPen(penColor);
+                painter->drawText(vindRect, Qt::AlignCenter, ChevronDownMed);
             }
             if (!btn->icon.isNull()) {
                 //Center both icon and text
-                QIcon::Mode mode = btn->state & State_Enabled ? QIcon::Normal : QIcon::Disabled;
+                QIcon::Mode mode = isEnabled ? QIcon::Normal : QIcon::Disabled;
                 if (mode == QIcon::Normal && btn->state & State_HasFocus)
                     mode = QIcon::Active;
-                QIcon::State state = QIcon::Off;
-                if (btn->state & State_On)
-                    state = QIcon::On;
+                QIcon::State state = isChecked(btn) ? QIcon::On : QIcon::Off;
 
-                QPixmap pixmap = btn->icon.pixmap(btn->iconSize, painter->device()->devicePixelRatio(), mode, state);
-                int pixmapWidth = pixmap.width() / pixmap.devicePixelRatio();
-                int pixmapHeight = pixmap.height() / pixmap.devicePixelRatio();
-                int labelWidth = pixmapWidth;
-                int labelHeight = pixmapHeight;
                 int iconSpacing = 4;//### 4 is currently hardcoded in QPushButton::sizeHint()
-                if (!btn->text.isEmpty()) {
-                    int textWidth = btn->fontMetrics.boundingRect(option->rect, tf, btn->text).width();
-                    labelWidth += (textWidth + iconSpacing);
-                }
 
-                QRect iconRect = QRect(textRect.x() + (textRect.width() - labelWidth) / 2,
-                                       textRect.y() + (textRect.height() - labelHeight) / 2,
-                                       pixmapWidth, pixmapHeight);
+                QRect iconRect = QRect(textRect.x(), textRect.y(), btn->iconSize.width(), textRect.height());
+                QRect vIconRect = visualRect(btn->direction, btn->rect, iconRect);
+                textRect.setLeft(textRect.left() + iconRect.width() + iconSpacing);
 
-                iconRect = visualRect(btn->direction, textRect, iconRect);
-
-                if (btn->direction == Qt::RightToLeft) {
-                    tf |= Qt::AlignRight;
-                    textRect.setRight(iconRect.left() - iconSpacing / 2);
-                } else {
-                    tf |= Qt::AlignLeft; //left align, we adjust the text-rect instead
-                    textRect.setLeft(iconRect.left() + iconRect.width() + iconSpacing / 2);
-                }
-
-                if (btn->state & (State_On | State_Sunken))
-                    iconRect.translate(proxy()->pixelMetric(PM_ButtonShiftHorizontal, option, widget),
-                                       proxy()->pixelMetric(PM_ButtonShiftVertical, option, widget));
-                painter->drawPixmap(iconRect, pixmap);
-            } else {
-                tf |= Qt::AlignHCenter;
+                if (isChecked(btn) || isPressed(btn))
+                    vIconRect.translate(proxy()->pixelMetric(PM_ButtonShiftHorizontal, option, widget),
+                                        proxy()->pixelMetric(PM_ButtonShiftVertical, option, widget));
+                btn->icon.paint(painter, vIconRect, Qt::AlignCenter, mode, state);
             }
 
+            auto vTextRect = visualRect(btn->direction, btn->rect, textRect);
             painter->setPen(controlTextColor(option));
-            proxy()->drawItemText(painter, textRect, tf, option->palette,btn->state & State_Enabled, btn->text);
+            proxy()->drawItemText(painter, vTextRect, tf, option->palette, isEnabled, btn->text);
         }
         break;
     case CE_PushButtonBevel:
@@ -1519,8 +1497,6 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
 
                 painter->setPen(defaultButton ? WINUI3Colors[colorSchemeIndex][controlStrokeOnAccentSecondary]
                                               : WINUI3Colors[colorSchemeIndex][controlStrokeSecondary]);
-                if (flags & State_Raised)
-                    painter->drawLine(rect.bottomLeft() + QPointF(4.0,0.0), rect.bottomRight() + QPointF(-4,0.0));
             }
         }
         break;
@@ -1924,6 +1900,11 @@ QRect QWindows11Style::subElementRect(QStyle::SubElement element, const QStyleOp
     case QStyle::SE_HeaderArrow:
         ret = QCommonStyle::subElementRect(element, option, widget);
         break;
+    case SE_PushButtonContents: {
+        int border = proxy()->pixelMetric(PM_DefaultFrameWidth, option, widget);
+        ret = option->rect.marginsRemoved(QMargins(border, border, border, border));
+        break;
+    }
     default:
         ret = QWindowsVistaStyle::subElementRect(element, option, widget);
     }
@@ -2186,11 +2167,13 @@ QSize QWindows11Style::sizeFromContents(ContentsType type, const QStyleOption *o
         if (size.width() == 0)
             contentSize.rwidth() += 2;
         break;
-    case CT_PushButton:
+    case CT_PushButton: {
         contentSize = QWindowsVistaStyle::sizeFromContents(type, option, size, widget);
-        contentSize.rwidth() += 2 * 2; // the CE_PushButtonBevel draws a rounded rect with
-                                       // QMargins(2, 2, 2, 2) removed
+        // we want our own horizontal spacing
+        const int oldMargin = proxy()->pixelMetric(PM_ButtonMargin, option, widget);
+        contentSize.rwidth() += 2 * contentHMargin - oldMargin;
         break;
+    }
     default:
         contentSize = QWindowsVistaStyle::sizeFromContents(type, option, size, widget);
         break;
@@ -2205,6 +2188,7 @@ QSize QWindows11Style::sizeFromContents(ContentsType type, const QStyleOption *o
  */
 int QWindows11Style::pixelMetric(PixelMetric metric, const QStyleOption *option, const QWidget *widget) const
 {
+    Q_D(const QWindows11Style);
     int res = 0;
 
     switch (metric) {
@@ -2239,6 +2223,26 @@ int QWindows11Style::pixelMetric(PixelMetric metric, const QStyleOption *option,
         break;
     case QStyle::PM_SubMenuOverlap:
         res = -1;
+        break;
+    case PM_MenuButtonIndicator: {
+        res = contentItemHMargin;
+        if (widget) {
+            const int fontSize = widget->font().pointSize();
+            QFont f(d->assetFont);
+            f.setPointSize(qRound(fontSize * 0.9f)); // a little bit smaller
+            QFontMetrics fm(f);
+            res += fm.horizontalAdvance(ChevronDownMed);
+        } else {
+            res += 12;
+        }
+        break;
+    }
+    case PM_DefaultFrameWidth:
+        res = 2;
+        break;
+    case PM_ButtonShiftHorizontal:
+    case PM_ButtonShiftVertical:
+        res = 0;
         break;
     default:
         res = QWindowsVistaStyle::pixelMetric(metric, option, widget);
