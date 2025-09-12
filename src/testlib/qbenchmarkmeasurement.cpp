@@ -16,9 +16,18 @@ void QBenchmarkTimeMeasurer::start()
     time.start();
 }
 
+void QBenchmarkTimeMeasurer::updateMeasurement()
+{
+    const qreal value = std::chrono::duration<qreal, std::milli>(time.durationElapsed()).count();
+    accumulator.update(value);
+    time.restart();
+}
+
 QList<QBenchmarkMeasurerBase::Measurement> QBenchmarkTimeMeasurer::stop()
 {
-    return { { qreal(time.elapsed()), 0, QTest::WalltimeMilliseconds } };
+    return { { accumulator.total(),
+               accumulator.variance() / QBenchmarkTestMethodData::current->measurementBlockSize,
+               QTest::WalltimeMilliseconds } };
 }
 
 bool QBenchmarkTimeMeasurer::isMeasurementAccepted(Measurement measurement)
