@@ -46,8 +46,8 @@ function(_qt_internal_set_android_dynamic_feature_gradle_defaults target)
     _qt_internal_android_java_dir(android_java_dir)
 
     # TODO: make androidx.core:core versionc configurable.
-    # Currently, it is hardcoded to 1.16.0.
-    set(implementation_dependencies "project(':app')" "'androidx.core:core:1.16.0'")
+    # Currently, it is hardcoded to 1.17.0.
+    set(implementation_dependencies "project(':app')" "'androidx.core:core:1.17.0'")
 
     set_target_properties(${target} PROPERTIES
         _qt_android_gradle_java_source_dirs "src;java"
