@@ -62,7 +62,7 @@ inline bool isAutoRaise(const QStyleOption *option)
 {
     return option->state.testFlag(QStyle::State_AutoRaise);
 }
-enum class ControlState { Normal, Hover, Pressed, Disabled, Max = 4 };
+enum class ControlState { Normal, Hover, Pressed, Disabled };
 inline ControlState calcControlState(const QStyleOption *option)
 {
     if (isDisabled(option))
@@ -164,7 +164,13 @@ static constexpr std::array<std::array<QColor,32>, 2> WINUI3Colors {
     WINUI3ColorsDark
 };
 
-static const QColor shellCloseButtonColor(0xC4,0x2B,0x1C,0xFF); //Color of close Button in Titlebar
+// Color of close Button in Titlebar (default + hover)
+static constexpr QColor shellCaptionCloseFillColorPrimary(0xC4,0x2B,0x1C,0xFF);
+static constexpr QColor shellCaptionCloseTextFillColorPrimary(0xFF,0xFF,0xFF,0xFF);
+// Color of close Button in Titlebar (pressed + disabled)
+static constexpr QColor shellCaptionCloseFillColorSecondary(0xC4,0x2B,0x1C,0xE6);
+static constexpr QColor shellCaptionCloseTextFillColorSecondary(0xFF,0xFF,0xFF,0xB3);
+
 
 #if QT_CONFIG(toolbutton)
 static void drawArrow(const QStyle *style, const QStyleOptionToolButton *toolbutton,
@@ -259,6 +265,44 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
                                          QPainter *painter, const QWidget *widget) const
 {
     QWindows11StylePrivate *d = const_cast<QWindows11StylePrivate*>(d_func());
+
+    const auto drawTitleBarButton = [&](ComplexControl control, SubControl sc, const QString &str) {
+        using namespace StyleOptionHelper;
+        const QRect buttonRect = proxy()->subControlRect(control, option, sc, widget);
+        if (buttonRect.isValid()) {
+            const bool hover = option->activeSubControls == sc && isHover(option);
+            if (hover)
+                painter->fillRect(buttonRect, winUI3Color(subtleHighlightColor));
+            painter->setPen(option->palette.color(QPalette::WindowText));
+            painter->drawText(buttonRect, Qt::AlignCenter, str);
+        }
+    };
+    const auto drawTitleBarCloseButton = [&](ComplexControl control, SubControl sc, const QString &str) {
+        using namespace StyleOptionHelper;
+        const QRect buttonRect = proxy()->subControlRect(control, option, sc, widget);
+        if (buttonRect.isValid()) {
+            const auto state = (option->activeSubControls == sc) ? calcControlState(option)
+                                                                 : ControlState::Normal;
+            QPen pen;
+            switch (state) {
+            case ControlState::Hover:
+                painter->fillRect(buttonRect, shellCaptionCloseFillColorPrimary);
+                pen = shellCaptionCloseTextFillColorPrimary;
+                break;
+            case ControlState::Pressed:
+                painter->fillRect(buttonRect, shellCaptionCloseFillColorSecondary);
+                pen = shellCaptionCloseTextFillColorSecondary;
+                break;
+            case ControlState::Disabled:
+            case ControlState::Normal:
+                pen = option->palette.color(QPalette::WindowText);
+                break;
+            }
+            painter->setPen(pen);
+            painter->drawText(buttonRect, Qt::AlignCenter, str);
+        }
+    };
+
 
     State state = option->state;
     SubControls sub = option->subControls;
@@ -595,43 +639,10 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
     case CC_MdiControls:{
             QFont buttonFont = QFont(assetFont);
             buttonFont.setPointSize(8);
-            QPoint mousePos = widget->mapFromGlobal(QCursor::pos());
-            if (option->subControls.testFlag(SC_MdiCloseButton)) {
-                const QRect closeButtonRect = proxy()->subControlRect(QStyle::CC_MdiControls, option, SC_MdiCloseButton, widget);;
-                if (closeButtonRect.isValid()) {
-                    bool hover = closeButtonRect.contains(mousePos);
-                    if (hover)
-                        painter->fillRect(closeButtonRect,shellCloseButtonColor);
-                    const QString textToDraw(QStringLiteral(u"\uE8BB"));
-                    painter->setPen(hover ? option->palette.highlightedText().color() : option->palette.text().color());
-                    painter->setFont(buttonFont);
-                    painter->drawText(closeButtonRect, Qt::AlignVCenter | Qt::AlignHCenter, textToDraw);
-                }
-            }
-            if (option->subControls.testFlag(SC_MdiNormalButton)) {
-                const QRect normalButtonRect = proxy()->subControlRect(QStyle::CC_MdiControls, option, SC_MdiNormalButton, widget);;
-                if (normalButtonRect.isValid()) {
-                    bool hover = normalButtonRect.contains(mousePos);
-                    if (hover)
-                        painter->fillRect(normalButtonRect,WINUI3Colors[colorSchemeIndex][subtleHighlightColor]);
-                    const QString textToDraw(QStringLiteral(u"\uE923"));
-                    painter->setPen(option->palette.text().color());
-                    painter->setFont(buttonFont);
-                    painter->drawText(normalButtonRect, Qt::AlignVCenter | Qt::AlignHCenter, textToDraw);
-                }
-            }
-            if (option->subControls.testFlag(QStyle::SC_MdiMinButton)) {
-                const QRect minButtonRect = proxy()->subControlRect(QStyle::CC_MdiControls, option, SC_MdiMinButton, widget);
-                if (minButtonRect.isValid()) {
-                    bool hover = minButtonRect.contains(mousePos);
-                    if (hover)
-                        painter->fillRect(minButtonRect,WINUI3Colors[colorSchemeIndex][subtleHighlightColor]);
-                    const QString textToDraw(QStringLiteral(u"\uE921"));
-                    painter->setPen(option->palette.text().color());
-                    painter->setFont(buttonFont);
-                    painter->drawText(minButtonRect, Qt::AlignVCenter | Qt::AlignHCenter, textToDraw);
-                }
-            }
+            painter->setFont(buttonFont);
+            drawTitleBarCloseButton(CC_MdiControls, SC_MdiCloseButton, QStringLiteral(u"\uE8BB"));
+            drawTitleBarButton(CC_MdiControls, SC_MdiNormalButton, QStringLiteral(u"\uE923"));
+            drawTitleBarButton(CC_MdiControls, SC_MdiMinButton, QStringLiteral(u"\uE921"));
         }
         break;
     case CC_TitleBar:
@@ -651,22 +662,7 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
 
             QFont buttonFont = QFont(assetFont);
             buttonFont.setPointSize(8);
-            auto drawButton = [&](SubControl sc, const QString &str, QColor col = {}) {
-                const QRect buttonRect = proxy()->subControlRect(CC_TitleBar, option, sc, widget);
-                if (buttonRect.isValid()) {
-                    const bool hover = (option->activeSubControls & sc) &&
-                                       (option->state & State_MouseOver);
-                    if (hover) {
-                        if (!col.isValid())
-                            col = WINUI3Colors[colorSchemeIndex][subtleHighlightColor];
-                        painter->fillRect(buttonRect, col);
-                    }
-                    painter->setPen(hover ? option->palette.color(QPalette::Active, QPalette::WindowText)
-                                          : textColor);
-                    painter->setFont(buttonFont);
-                    painter->drawText(buttonRect, Qt::AlignVCenter | Qt::AlignHCenter, str);
-                }
-            };
+            painter->setFont(buttonFont);
             auto shouldDrawButton = [titlebar](SubControl sc, Qt::WindowType flag) {
                 return (titlebar->subControls & sc) && (titlebar->titleBarFlags & flag);
             };
@@ -674,18 +670,18 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
             // min button
             if (shouldDrawButton(SC_TitleBarMinButton, Qt::WindowMinimizeButtonHint) &&
                 !(titlebar->titleBarState & Qt::WindowMinimized)) {
-                drawButton(SC_TitleBarMinButton, QStringLiteral(u"\uE921"));
+                drawTitleBarButton(CC_TitleBar, SC_TitleBarMinButton, QStringLiteral(u"\uE921"));
             }
 
             // max button
             if (shouldDrawButton(SC_TitleBarMaxButton, Qt::WindowMaximizeButtonHint) &&
                 !(titlebar->titleBarState & Qt::WindowMaximized)) {
-                drawButton(SC_TitleBarMaxButton, QStringLiteral(u"\uE922"));
+                drawTitleBarButton(CC_TitleBar, SC_TitleBarMaxButton, QStringLiteral(u"\uE922"));
             }
 
             // close button
             if (shouldDrawButton(SC_TitleBarCloseButton, Qt::WindowSystemMenuHint))
-                drawButton(SC_TitleBarCloseButton, QStringLiteral(u"\uE8BB"), shellCloseButtonColor);
+                drawTitleBarCloseButton(CC_TitleBar, SC_TitleBarCloseButton, QStringLiteral(u"\uE8BB"));
 
             // normalize button
             if ((titlebar->subControls & SC_TitleBarNormalButton) &&
@@ -693,20 +689,20 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
                   (titlebar->titleBarState & Qt::WindowMinimized)) ||
                  ((titlebar->titleBarFlags & Qt::WindowMaximizeButtonHint) &&
                   (titlebar->titleBarState & Qt::WindowMaximized)))) {
-                drawButton(SC_TitleBarNormalButton, QStringLiteral(u"\uE923"));
+                drawTitleBarButton(CC_TitleBar, SC_TitleBarNormalButton, QStringLiteral(u"\uE923"));
             }
 
             // context help button
             if (shouldDrawButton(SC_TitleBarContextHelpButton, Qt::WindowContextHelpButtonHint))
-                drawButton(SC_TitleBarContextHelpButton, QStringLiteral(u"\uE897"));
+                drawTitleBarButton(CC_TitleBar, SC_TitleBarContextHelpButton, QStringLiteral(u"\uE897"));
 
             // shade button
             if (shouldDrawButton(SC_TitleBarShadeButton, Qt::WindowShadeButtonHint))
-                drawButton(SC_TitleBarShadeButton, QStringLiteral(u"\uE96D"));
+                drawTitleBarButton(CC_TitleBar, SC_TitleBarShadeButton, QStringLiteral(u"\uE96D"));
 
              // unshade button
             if (shouldDrawButton(SC_TitleBarUnshadeButton, Qt::WindowShadeButtonHint))
-                drawButton(SC_TitleBarUnshadeButton, QStringLiteral(u"\uE96E"));
+                drawTitleBarButton(CC_TitleBar, SC_TitleBarUnshadeButton, QStringLiteral(u"\uE96E"));
 
             // window icon for system menu
             if (shouldDrawButton(SC_TitleBarSysMenu, Qt::WindowSystemMenuHint)) {
@@ -2430,7 +2426,7 @@ QPen QWindows11Style::borderPenControlAlt(const QStyleOption *option) const
 QBrush QWindows11Style::controlFillBrush(const QStyleOption *option, ControlType controlType) const
 {
     using namespace StyleOptionHelper;
-    static constexpr WINUI3Color colorEnums[2][int(ControlState::Max)] = {
+    static constexpr WINUI3Color colorEnums[2][4] = {
         // Light & Dark Control
         { fillControlDefault, fillControlSecondary,
           fillControlTertiary, fillControlDisabled },
@@ -2456,7 +2452,7 @@ QBrush QWindows11Style::controlFillBrush(const QStyleOption *option, ControlType
 QColor QWindows11Style::controlTextColor(const QStyleOption *option, QPalette::ColorRole role) const
 {
     using namespace StyleOptionHelper;
-    static constexpr WINUI3Color colorEnums[2][int(ControlState::Max)] = {
+    static constexpr WINUI3Color colorEnums[2][4] = {
         // Control, unchecked
         { textPrimary, textPrimary, textSecondary, textDisabled },
         // Control, checked
