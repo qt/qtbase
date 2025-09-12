@@ -1015,8 +1015,6 @@ static const char *property_string =
     "};\n\n"
     "Q_DECL_CONST_FUNCTION\n"
     "Q_CORE_EXPORT const Properties * QT_FASTCALL properties(char32_t ucs4) noexcept;\n"
-    "Q_DECL_CONST_FUNCTION\n"
-    "Q_CORE_EXPORT const Properties * QT_FASTCALL properties(char16_t ucs2) noexcept;\n"
     "\n";
 
 static const char *methods =
