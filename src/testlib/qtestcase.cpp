@@ -2772,7 +2772,7 @@ void QTest::setMainSourcePath(const char *file, const char *builddir)
 
     If the caller creates a custom failure message showing the compared values,
     or if those values cannot be stringified, use the overload of the function
-    that takes no \a actualVal and \a expecetedVal parameters.
+    that takes no \a actualVal and \a expectedVal parameters.
 */
 bool QTest::compare_helper(bool success, const char *failureMsg,
                            char *actualVal, char *expectedVal,
