@@ -1,5 +1,8 @@
 type: Group
 instructions:
+  # Fetch a custom built cmake if the feature is set.
+  - !include "{{qt/qtbase}}/coin_fetch_custom_cmake_checked.yaml"
+
   - type: Group
     instructions:
     - !include "{{qt/qtbase}}/run_license_check.yaml"

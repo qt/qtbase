@@ -1,0 +1,29 @@
+type: Group
+instructions:
+  # Work around COIN-1189 by splitting the two types of conditions into separate checks, rather
+  # than using an 'or' condition.
+  - type: EnvironmentVariable
+    variableName: QT_CI_SHOULD_BUILD_CUSTOM_CMAKE
+    variableValue: "1"
+    enable_if:
+      condition: property
+      property: features
+      contains_value: BuildCMakeFromSources
+  - type: EnvironmentVariable
+    variableName: QT_CI_SHOULD_BUILD_CUSTOM_CMAKE
+    variableValue: "1"
+    enable_if:
+      condition: runtime
+      env_var: QT_CI_FORCE_USE_CUSTOM_CMAKE
+      equals_value: "ON"
+  - type: Group
+    instructions:
+      - !include "{{qt/qtbase}}/coin_build_custom_cmake.yaml"
+    enable_if:
+      condition: runtime
+      env_var: QT_CI_SHOULD_BUILD_CUSTOM_CMAKE
+      equals_value: "1"
+enable_if:
+  condition: property
+  property: host.os
+  equals_property: target.os

@@ -1,0 +1,54 @@
+type: Group
+instructions:
+  # This tells the script where to install the soon to be downloaded cmake.
+  # Weird windows case, where we have to specify an absolute path, otherwise
+  # cmake is installed into an incorrect nested dir like
+  # C:\Users\qt\work\Users\qt\work\cmake_build\install
+  - type: EnvironmentVariable
+    variableName: QT_CI_CUSTOM_CMAKE_INSTALL_DIR
+    variableValue: "C:{{.AgentWorkingDir}}/cmake_build/install"
+    enable_if:
+      condition: property
+      property: host.os
+      equals_value: Windows
+  - type: EnvironmentVariable
+    variableName: QT_CI_CUSTOM_CMAKE_INSTALL_DIR
+    variableValue: "{{.AgentWorkingDir}}/cmake_build/install"
+    disable_if:
+      condition: property
+      property: host.os
+      equals_value: Windows
+
+  # Define the custom cmake archive name when it is built by qtbase.
+  - type: EnvironmentVariable
+    variableName: QT_CI_CUSTOM_CMAKE_ARCHIVE_NAME
+    variableValue: "custom_cmake_qtbase.tar.gz"
+
+  # Downloads the custom cmake archive and extracts it to the install directory
+  - type: InstallBinaryArchive
+    directory: "{{.Env.QT_CI_CUSTOM_CMAKE_INSTALL_DIR}}"
+    regex: "{{.Env.QT_CI_CUSTOM_CMAKE_ARCHIVE_NAME}}"
+    maxTimeInSeconds: 1200
+    maxTimeBetweenOutput: 1200
+
+  # Prepends the custom cmake binary path to the PATH variable
+  - type: PrependToEnvironmentVariable
+    variableName: PATH
+    variableValue: "{{.Env.QT_CI_CUSTOM_CMAKE_INSTALL_DIR}}/bin:"
+    disable_if:
+      condition: property
+      property: host.os
+      equals_value: Windows
+
+  # On Windows we prepend the drive letter, because the install dir starts without one, and PATH
+  # env vars usually expect a drive letter.
+  # E.g. '\Users\qt\work/cmake_build/install\bin'
+  # This ensures that the cmake executable is found when it is called with as
+  # `cmake --build .` directly via the go agent process exeuction command.
+  - type: PrependToEnvironmentVariable
+    variableName: PATH
+    variableValue: "C:{{.Env.QT_CI_CUSTOM_CMAKE_INSTALL_DIR}}\\bin;"
+    enable_if:
+      condition: property
+      property: host.os
+      equals_value: Windows

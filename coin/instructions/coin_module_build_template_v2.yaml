@@ -1,6 +1,10 @@
 type: Group
 instructions:
   - !include "{{qt/qtbase}}/prepare_building_env.yaml"
+
+  # Fetch a custom built cmake if the feature is set.
+  - !include "{{qt/qtbase}}/coin_fetch_custom_cmake_checked.yaml"
+
   - !include "{{qt/qtbase}}/prepare_source_sbom_check.yaml"
   - type: Group
     instructions:

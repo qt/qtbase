@@ -4,6 +4,9 @@ instructions:
   - !include "{{qt/qtbase}}/prepare_source_sbom_check.yaml"
   - type: Group
     instructions:
+      # Build a custom cmake if the feature is set.
+      - !include "{{qt/qtbase}}/coin_build_custom_cmake_checked.yaml"
+
       - !include "{{qt/qtbase}}/cmake_qtbase_build_instructions.yaml"
       - !include "{{qt/qtbase}}/cmake_build_and_upload_test_artifacts_host.yaml"
     enable_if:
@@ -33,6 +36,9 @@ instructions:
       equals_value: "1"
   - type: Group
     instructions:
+      # Fetch a custom built cmake if the feature is set.
+      - !include "{{qt/qtbase}}/coin_fetch_custom_cmake_checked.yaml"
+
       - type: Group
         instructions:
           - !include "{{qt/qtbase}}/cmake_cross_compilation_qtbase_build_instructions.yaml"
