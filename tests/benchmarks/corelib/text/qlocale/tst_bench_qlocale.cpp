@@ -379,8 +379,14 @@ void toWholeCommon_data()
     QTest::addColumn<Integer>("expected");
 
     QTest::newRow("C: empty") << u""_s << u"C"_s << false << Integer(0ull);
+    QTest::newRow("C: spaces") << u" \t\n\r\f\v\u00A0\u202F "_s << u"C"_s << false << Integer(0ull);
     QTest::newRow("C: 0") << u"0"_s << u"C"_s << true << Integer(0ull);
+    QTest::newRow("C:  0 ") << u" 0 "_s << u"C"_s << true << Integer(0ull);
+    QTest::newRow("C: spaces0spaces") << u" \t\n\r\f\v\u00A0\u202F 0 \t\n\r\f\v\u00A0\u202F "_s
+                                      << u"C"_s << true << Integer(0ull);
     QTest::newRow("C: 1234") << u"1234"_s << u"C"_s << true << Integer(1234ull);
+    QTest::newRow("C:     1234") << u"    1234"_s << u"C"_s << true << Integer(1234ull);
+    QTest::newRow("C: 1234    ") << u"1234    "_s << u"C"_s << true << Integer(1234ull);
     // C locale omits grouping, but doesn't reject it.
     QTest::newRow("C: 1,234") << u"1,234"_s << u"C"_s << true << Integer(1234ull);
     QTest::newRow("C: 123456789")
@@ -389,8 +395,15 @@ void toWholeCommon_data()
             << u"123,456,789"_s << u"C"_s << true << Integer(123456789ull);
 
     QTest::newRow("en: empty") << u""_s << u"en"_s << false << Integer(0ull);
+    QTest::newRow("en: spaces") << u" \t\n\r\f\v "_s << u"en"_s << false << Integer(0ull);
     QTest::newRow("en: 0") << u"0"_s << u"en"_s << true << Integer(0ull);
+    QTest::newRow("en:  0") << u" 0"_s << u"en"_s << true << Integer(0ull);
+    QTest::newRow("en: 0 ") << u"0 "_s << u"en"_s << true << Integer(0ull);
+    QTest::newRow("en: spaces0spaces") << u" \t\n\r\f\v\u00A0\u202F 0 \t\n\r\f\v\u00A0\u202F "_s
+                                       << u"en"_s << true << Integer(0ull);
     QTest::newRow("en: 1234") << u"1234"_s << u"en"_s << true << Integer(1234ull);
+    QTest::newRow("en:     1234") << u"    1234"_s << u"en"_s << true << Integer(1234ull);
+    QTest::newRow("en: 1234    ") << u"1234    "_s << u"en"_s << true << Integer(1234ull);
     QTest::newRow("en: 1,234") << u"1,234"_s << u"en"_s << true << Integer(1234ull);
     QTest::newRow("en: 123,456,789")
             << u"123,456,789"_s << u"en"_s << true << Integer(123456789ull);
@@ -398,8 +411,15 @@ void toWholeCommon_data()
             << u"123456789"_s << u"en"_s << true << Integer(123456789ull);
 
     QTest::newRow("de: empty") << u""_s << u"de"_s << false << Integer(0ull);
+    QTest::newRow("de: spaces") << u" \t\n\r\f\v "_s << u"de"_s << false << Integer(0ull);
     QTest::newRow("de: 0") << u"0"_s << u"de"_s << true << Integer(0ull);
+    QTest::newRow("de:  0") << u" 0"_s << u"de"_s << true << Integer(0ull);
+    QTest::newRow("de: 0 ") << u"0 "_s << u"de"_s << true << Integer(0ull);
+    QTest::newRow("de: spaces0spaces") << u" \t\n\r\f\v\u00A0\u202F 0 \t\n\r\f\v\u00A0\u202F"_s
+                                       << u"de"_s << true << Integer(0ull);
     QTest::newRow("de: 1234") << u"1234"_s << u"de"_s << true << Integer(1234ull);
+    QTest::newRow("de:     1234") << u"    1234"_s << u"de"_s << true << Integer(1234ull);
+    QTest::newRow("de: 1234    ") << u"1234    "_s << u"de"_s << true << Integer(1234ull);
     QTest::newRow("de: 1.234") << u"1.234"_s << u"de"_s << true << Integer(1234ull);
     QTest::newRow("de: 123.456.789")
             << u"123.456.789"_s << u"de"_s << true << Integer(123456789ull);
@@ -422,6 +442,8 @@ void tst_QLocale::toLongLong_data()
     toWholeCommon_data<qlonglong>();
 
     QTest::newRow("C: -1234") << u"-1234"_s << u"C"_s << true << -1234ll;
+    QTest::newRow("C:     -1234") << u"    -1234"_s << u"C"_s << true << -1234ll;
+    QTest::newRow("C: -1234    ") << u"-1234    "_s << u"C"_s << true << -1234ll;
     QTest::newRow("C: -123456789") << u"-123456789"_s << u"C"_s << true << -123456789ll;
     QTest::newRow("C: qlonglong-max")
             << u"9223372036854775807"_s << u"C"_s << true
@@ -492,9 +514,18 @@ void tst_QLocale::toDouble_data()
     QTest::addColumn<double>("expected");
 
     QTest::newRow("C: empty") << u""_s << u"C"_s << false << 0.0;
+    QTest::newRow("C: spaces") << u" \t\n\r\f\v "_s << u"C"_s << false << 0.0;
     QTest::newRow("C: 0") << u"0"_s << u"C"_s << true << 0.0;
+    QTest::newRow("C:  0") << u" 0"_s << u"C"_s << true << 0.0;
+    QTest::newRow("C: 0 ") << u"0 "_s << u"C"_s << true << 0.0;
+    QTest::newRow("C: spaces0spaces") << u" \t\n\r\f\v\u00A0\u202F 0 \t\n\r\f\v\u00A0\u202F"_s
+                                      << u"C"_s << true << 0.0;
     QTest::newRow("C: 0.12340") << u"0.12340"_s << u"C"_s << true << 0.12340;
+    QTest::newRow("C:     0.12340") << u"    0.12340"_s << u"C"_s << true << 0.12340;
+    QTest::newRow("C: 0.12340    ") << u"0.12340    "_s << u"C"_s << true << 0.12340;
     QTest::newRow("C: -0.12340") << u"-0.12340"_s << u"C"_s << true << -0.12340;
+    QTest::newRow("C:     -0.12340") << u"    -0.12340"_s << u"C"_s << true << -0.12340;
+    QTest::newRow("C: -0.12340    ") << u"-0.12340    "_s << u"C"_s << true << -0.12340;
     QTest::newRow("C: &minus;0.12340") << u"\u2212" "0.12340"_s << u"C"_s << true << -0.12340;
     QTest::newRow("C: 1.0e-4") << u"1.0e-4"_s << u"C"_s << true << 1.0e-4;
     QTest::newRow("C: 1.0e&minus;4") << u"1.0e\u2212" "4"_s << u"C"_s << true << 1.0e-4;
