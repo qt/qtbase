@@ -44,6 +44,7 @@ public:
     void popupTimerDone();
     void updateButtonDown();
     void onMenuTriggered(QAction *);
+    void onDefaultActionChanged();
 #endif
     bool updateHoverControl(const QPoint &pos);
     void onActionTriggered();
@@ -823,6 +824,13 @@ void QToolButtonPrivate::onMenuTriggered(QAction *action)
         emit q->triggered(action);
 }
 
+void QToolButtonPrivate::onDefaultActionChanged()
+{
+    Q_Q(QToolButton);
+    if (defaultAction && defaultAction->menu())
+        q->setPopupMode(QToolButton::MenuButtonPopup);
+}
+
 /*! \enum QToolButton::ToolButtonPopupMode
 
     Describes how a menu should be popped up for tool buttons that has
@@ -914,8 +922,10 @@ void QToolButton::setDefaultAction(QAction *action)
 {
     Q_D(QToolButton);
 #if QT_CONFIG(menu)
-    bool hadMenu = false;
-    hadMenu = d->hasMenu();
+    if (d->defaultAction) {
+        QObjectPrivate::disconnect(d->defaultAction, &QAction::changed, d,
+                                   &QToolButtonPrivate::onDefaultActionChanged);
+    }
 #endif
     d->defaultAction = action;
     if (!action)
@@ -939,12 +949,15 @@ void QToolButton::setDefaultAction(QAction *action)
     setWhatsThis(action->whatsThis());
 #endif
 #if QT_CONFIG(menu)
-    if (action->menu() && !hadMenu) {
+    if (action->menu()) {
+        // ### Qt7 Fixme
         // new 'default' popup mode defined introduced by tool bar. We
         // should have changed QToolButton's default instead. Do that
         // in 4.2.
         setPopupMode(QToolButton::MenuButtonPopup);
     }
+    QObjectPrivate::connect(d->defaultAction, &QAction::changed, d,
+                            &QToolButtonPrivate::onDefaultActionChanged);
 #endif
     setCheckable(action->isCheckable());
     setChecked(action->isChecked());
