@@ -37,6 +37,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 static constexpr int topLevelRoundingRadius    = 8; //Radius for toplevel items like popups for round corners
 static constexpr int secondLevelRoundingRadius = 4; //Radius for second level items like hovered menu item round corners
 
@@ -75,6 +77,33 @@ inline ControlState calcControlState(const QStyleOption *option)
 };
 
 } // namespace StyleOptionHelper
+
+#define AcceptMedium      u"\uF78C"_s
+// QStringLiteral(u"\uE73C")
+#define Dash12            u"\uE629"_s
+#define CheckMark         u"\uE73E"_s
+
+#define CaretLeftSolid8   u"\uEDD9"_s
+#define CaretRightSolid8  u"\uEDDA"_s
+#define CaretUpSolid8     u"\uEDDB"_s
+#define CaretDownSolid8   u"\uEDDC"_s
+
+#define ChevronDown       u"\uE70D"_s
+#define ChevronUp         u"\uE70E"_s
+
+#define ChevronDownMed    u"\uE972"_s
+#define ChevronLeftMed    u"\uE973"_s
+#define ChevronRightMed   u"\uE974"_s
+
+#define ChevronUpSmall    u"\uE96D"_s
+#define ChevronDownSmall  u"\uE96E"_s
+
+#define ChromeMinimize    u"\uE921"_s
+#define ChromeMaximize    u"\uE922"_s
+#define ChromeRestore     u"\uE923"_s
+#define ChromeClose       u"\uE8BB"_s
+
+#define Help              u"\uE897"_s
 
 template <typename R, typename P, typename B>
 static inline void drawRoundedRect(QPainter *p, R &&rect, P &&pen, B &&brush)
@@ -386,8 +415,7 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
                     cp->setFont(assetFont);
                     cp->setPen(sb->palette.buttonText().color());
                     cp->setBrush(Qt::NoBrush);
-                    const auto str = isUp ? QStringLiteral(u"\uE70E") : QStringLiteral(u"\uE70D");
-                    cp->drawText(rect, str, Qt::AlignVCenter | Qt::AlignHCenter);
+                    cp->drawText(rect, Qt::AlignCenter, isUp ? ChevronUp : ChevronDown);
                 };
                 if (sub & SC_SpinBoxUp) drawUpDown(SC_SpinBoxUp);
                 if (sub & SC_SpinBoxDown) drawUpDown(SC_SpinBoxDown);
@@ -551,7 +579,7 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
                 QRectF rect = proxy()->subControlRect(CC_ComboBox, option, SC_ComboBoxArrow, widget).adjusted(4, 0, -4, 1);
                 painter->setFont(assetFont);
                 painter->setPen(combobox->palette.text().color());
-                painter->drawText(rect, QStringLiteral(u"\uE70D"), Qt::AlignVCenter | Qt::AlignHCenter);
+                painter->drawText(rect, Qt::AlignCenter, ChevronDownMed);
             }
             if (state & State_HasFocus) {
                 drawPrimitive(PE_FrameFocusRect, option, painter, widget);
@@ -616,9 +644,9 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
                         f.setPointSize(6);
                         cp->setFont(f);
                         cp->setPen(Qt::gray);
-                        const auto str = vertical ? QStringLiteral(u"\uEDDC")
-                                                  : (isRtl ? QStringLiteral(u"\uEDD9") : QStringLiteral(u"\uEDDA"));
-                        cp->drawText(rect, str, Qt::AlignVCenter | Qt::AlignHCenter);
+                        const auto str = vertical ? CaretDownSolid8
+                                                  : (isRtl ? CaretLeftSolid8 : CaretRightSolid8);
+                        cp->drawText(rect, Qt::AlignCenter, str);
                     }
                 }
                 if (sub & SC_ScrollBarSubLine) {
@@ -628,9 +656,9 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
                         f.setPointSize(6);
                         cp->setFont(f);
                         cp->setPen(Qt::gray);
-                        const auto str = vertical ? QStringLiteral(u"\uEDDB")
-                                                  : (isRtl ? QStringLiteral(u"\uEDDA") : QStringLiteral(u"\uEDD9"));
-                        cp->drawText(rect, str, Qt::AlignVCenter | Qt::AlignHCenter);
+                        const auto str = vertical ? CaretUpSolid8
+                                                  : (isRtl ? CaretRightSolid8 : CaretLeftSolid8);
+                        cp->drawText(rect, Qt::AlignCenter, str);
                     }
                 }
             }
@@ -640,9 +668,9 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
             QFont buttonFont = QFont(assetFont);
             buttonFont.setPointSize(8);
             painter->setFont(buttonFont);
-            drawTitleBarCloseButton(CC_MdiControls, SC_MdiCloseButton, QStringLiteral(u"\uE8BB"));
-            drawTitleBarButton(CC_MdiControls, SC_MdiNormalButton, QStringLiteral(u"\uE923"));
-            drawTitleBarButton(CC_MdiControls, SC_MdiMinButton, QStringLiteral(u"\uE921"));
+            drawTitleBarCloseButton(CC_MdiControls, SC_MdiCloseButton, ChromeClose);
+            drawTitleBarButton(CC_MdiControls, SC_MdiNormalButton, ChromeRestore);
+            drawTitleBarButton(CC_MdiControls, SC_MdiMinButton, ChromeMinimize);
         }
         break;
     case CC_TitleBar:
@@ -670,18 +698,18 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
             // min button
             if (shouldDrawButton(SC_TitleBarMinButton, Qt::WindowMinimizeButtonHint) &&
                 !(titlebar->titleBarState & Qt::WindowMinimized)) {
-                drawTitleBarButton(CC_TitleBar, SC_TitleBarMinButton, QStringLiteral(u"\uE921"));
+                drawTitleBarButton(CC_TitleBar, SC_TitleBarMinButton, ChromeMinimize);
             }
 
             // max button
             if (shouldDrawButton(SC_TitleBarMaxButton, Qt::WindowMaximizeButtonHint) &&
                 !(titlebar->titleBarState & Qt::WindowMaximized)) {
-                drawTitleBarButton(CC_TitleBar, SC_TitleBarMaxButton, QStringLiteral(u"\uE922"));
+                drawTitleBarButton(CC_TitleBar, SC_TitleBarMaxButton, ChromeMaximize);
             }
 
             // close button
             if (shouldDrawButton(SC_TitleBarCloseButton, Qt::WindowSystemMenuHint))
-                drawTitleBarCloseButton(CC_TitleBar, SC_TitleBarCloseButton, QStringLiteral(u"\uE8BB"));
+                drawTitleBarCloseButton(CC_TitleBar, SC_TitleBarCloseButton, ChromeClose);
 
             // normalize button
             if ((titlebar->subControls & SC_TitleBarNormalButton) &&
@@ -689,20 +717,20 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
                   (titlebar->titleBarState & Qt::WindowMinimized)) ||
                  ((titlebar->titleBarFlags & Qt::WindowMaximizeButtonHint) &&
                   (titlebar->titleBarState & Qt::WindowMaximized)))) {
-                drawTitleBarButton(CC_TitleBar, SC_TitleBarNormalButton, QStringLiteral(u"\uE923"));
+                drawTitleBarButton(CC_TitleBar, SC_TitleBarNormalButton, ChromeRestore);
             }
 
             // context help button
             if (shouldDrawButton(SC_TitleBarContextHelpButton, Qt::WindowContextHelpButtonHint))
-                drawTitleBarButton(CC_TitleBar, SC_TitleBarContextHelpButton, QStringLiteral(u"\uE897"));
+                drawTitleBarButton(CC_TitleBar, SC_TitleBarContextHelpButton, Help);
 
             // shade button
             if (shouldDrawButton(SC_TitleBarShadeButton, Qt::WindowShadeButtonHint))
-                drawTitleBarButton(CC_TitleBar, SC_TitleBarShadeButton, QStringLiteral(u"\uE96D"));
+                drawTitleBarButton(CC_TitleBar, SC_TitleBarShadeButton, ChevronUpSmall);
 
              // unshade button
             if (shouldDrawButton(SC_TitleBarUnshadeButton, Qt::WindowShadeButtonHint))
-                drawTitleBarButton(CC_TitleBar, SC_TitleBarUnshadeButton, QStringLiteral(u"\uE96E"));
+                drawTitleBarButton(CC_TitleBar, SC_TitleBarUnshadeButton, ChevronDownSmall);
 
             // window icon for system menu
             if (shouldDrawButton(SC_TitleBarSysMenu, Qt::WindowSystemMenuHint)) {
@@ -826,9 +854,9 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
             painter->setPen(header->palette.text().color());
             QRectF rect = option->rect;
             if (header->sortIndicator & QStyleOptionHeader::SortUp) {
-                painter->drawText(rect, Qt::AlignCenter, QStringLiteral(u"\uE96D"));
+                painter->drawText(rect, Qt::AlignCenter, ChevronUpSmall);
             } else if (header->sortIndicator & QStyleOptionHeader::SortDown) {
-                painter->drawText(rect, Qt::AlignCenter, QStringLiteral(u"\uE96E"));
+                painter->drawText(rect, Qt::AlignCenter, ChevronDownSmall);
             }
         }
         break;
@@ -851,7 +879,7 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
                 painter->setPen(controlTextColor(option, QPalette::Window));
                 qreal clipWidth = 1.0;
                 QFontMetrics fm(assetFont);
-                QRectF clipRect = fm.boundingRect(QStringLiteral(u"\uE73E"));
+                QRectF clipRect = fm.boundingRect(AcceptMedium);
                 if (d->transitionsEnabled() && option->styleObject) {
                     QNumberStyleAnimation *animation = qobject_cast<QNumberStyleAnimation *>(
                             d->animation(option->styleObject));
@@ -860,13 +888,13 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
                 }
 
                 clipRect.moveCenter(center);
-                clipRect.setLeft(rect.x() + (rect.width() - clipRect.width()) / 2.0);
+                clipRect.setLeft(rect.x() + (rect.width() - clipRect.width()) / 2.0 + 0.5);
                 clipRect.setWidth(clipWidth * clipRect.width());
-                painter->drawText(clipRect, Qt::AlignVCenter | Qt::AlignLeft, QStringLiteral(u"\uE73E"));
+                painter->drawText(clipRect, Qt::AlignVCenter | Qt::AlignLeft, AcceptMedium);
             } else if (isPartial) {
                 painter->setFont(assetFont);
                 painter->setPen(controlTextColor(option, QPalette::Window));
-                painter->drawText(rect, Qt::AlignCenter, QStringLiteral(u"\uE73C"));
+                painter->drawText(rect, Qt::AlignCenter, Dash12);
             }
         }
         break;
@@ -879,8 +907,7 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
                 painter->setFont(f);
                 painter->setPen(option->palette.color(isOpen ? QPalette::Active : QPalette::Disabled,
                                                       QPalette::WindowText));
-                const auto str = isOpen ? QStringLiteral(u"\uE96E") :
-                                          (isReverse ? QStringLiteral(u"\uE96F") : QStringLiteral(u"\uE970"));
+                const auto str = isOpen ? ChevronDownMed : (isReverse ? ChevronLeftMed : ChevronRightMed);
                 painter->drawText(option->rect, Qt::AlignCenter, str);
             }
         }
@@ -1412,7 +1439,7 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
                     menuSplitter = QLineF(indicatorRect.topRight(),indicatorRect.bottomRight());
                     textRect = textRect.adjusted(indicatorSize, 0, 0, 0);
                 }
-                painter->drawText(indicatorRect, QStringLiteral(u"\uE70D"), Qt::AlignVCenter | Qt::AlignHCenter);
+                painter->drawText(indicatorRect, Qt::AlignCenter, ChevronDownMed);
                 painter->setPen(WINUI3Colors[colorSchemeIndex][controlStrokePrimary]);
                 painter->drawLine(menuSplitter);
                 painter->restore();
@@ -1590,9 +1617,8 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
                     painter->setPen(menuitem->palette.text().color());
                 painter->setFont(assetFont);
                 const int text_flags = Qt::AlignVCenter | Qt::AlignHCenter | Qt::TextDontClip | Qt::TextSingleLine;
-                const auto textToDraw = QStringLiteral(u"\uE73E");
                 painter->setPen(option->palette.text().color());
-                painter->drawText(vCheckRect, text_flags, textToDraw);
+                painter->drawText(vCheckRect, text_flags, CheckMark);
                 painter->restore();
             }
             painter->setPen(act ? menuitem->palette.highlightedText().color() : menuitem->palette.buttonText().color());
@@ -1657,8 +1683,8 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
                 text_flags |= Qt::AlignLeft;
                 painter->setPen(option->palette.text().color());
                 const bool isReverse = option->direction == Qt::RightToLeft;
-                const auto str = isReverse ? QStringLiteral(u"\uE973") : QStringLiteral(u"\uE974");
-                painter->drawText(vSubMenuRect, text_flags, str);
+                const auto str = isReverse ? ChevronLeftMed : ChevronRightMed;
+                painter->drawText(vSubMenuRect, Qt::AlignCenter, str);
                 painter->restore();
             }
         }
