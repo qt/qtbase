@@ -36,8 +36,8 @@
 
 #include <QtCore/private/qglobal_p.h>
 #include <QtCore/qassert.h>
+#include <QtCore/qtconfiginclude.h>
 #include <QtCore/qtconfigmacros.h>
-#include <QtCore/qconfig.h>
 
 #include <exception>
 #include <functional>

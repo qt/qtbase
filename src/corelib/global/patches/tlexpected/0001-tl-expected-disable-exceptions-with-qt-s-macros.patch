@@ -15,8 +15,8 @@ index a54aea1f7d7..45c6196c947 100644
 @@ -34,6 +34,7 @@
  #include <QtCore/private/qglobal_p.h>
  #include <QtCore/qassert.h>
++#include <QtCore/qtconfiginclude.h>
  #include <QtCore/qtconfigmacros.h>
-+#include <QtCore/qconfig.h>
  
  #include <exception>
  #include <functional>
