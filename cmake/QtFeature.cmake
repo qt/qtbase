@@ -1137,13 +1137,20 @@ function(qt_internal_generate_feature_line line feature)
     endif()
 endfunction()
 
-function(qt_internal_feature_write_file file features extra)
+function(qt_internal_feature_write_file target file features extra)
+    file(RELATIVE_PATH relative_path "${CMAKE_BINARY_DIR}" "${file}")
+
+    string(MAKE_C_IDENTIFIER "${target}_${relative_path}" inclusion_guard_suffix)
+
     set(contents "")
+    string(APPEND contents "#ifndef QT_FEATURES_${inclusion_guard_suffix}_H\n")
+    string(APPEND contents "#define QT_FEATURES_${inclusion_guard_suffix}_H\n\n")
     foreach(it ${features})
         qt_internal_generate_feature_line(line "${it}")
         string(APPEND contents "${line}")
     endforeach()
-    string(APPEND contents "${extra}")
+    string(APPEND contents "${extra}\n")
+    string(APPEND contents "#endif // QT_FEATURES_${inclusion_guard_suffix}_H\n")
 
     file(GENERATE OUTPUT "${file}" CONTENT "${contents}")
 endfunction()
@@ -1237,11 +1244,13 @@ function(qt_feature_module_end)
     endforeach()
 
     if(NOT arg_ONLY_EVALUATE_FEATURES)
-        qt_internal_feature_write_file("${CMAKE_CURRENT_BINARY_DIR}/${__QtFeature_private_file}"
+        qt_internal_feature_write_file(${target}
+            "${CMAKE_CURRENT_BINARY_DIR}/${__QtFeature_private_file}"
             "${__QtFeature_private_features}" "${__QtFeature_private_extra}"
         )
 
-        qt_internal_feature_write_file("${CMAKE_CURRENT_BINARY_DIR}/${__QtFeature_public_file}"
+        qt_internal_feature_write_file(${target}
+            "${CMAKE_CURRENT_BINARY_DIR}/${__QtFeature_public_file}"
             "${__QtFeature_public_features}" "${__QtFeature_public_extra}"
         )
     endif()
