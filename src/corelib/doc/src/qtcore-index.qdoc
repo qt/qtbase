@@ -48,7 +48,7 @@
     useful paradigm for performing time-consuming operations without freezing
     the user interface of an application.
 
-    The \l{Thread Support in Qt} page contains information on implementing
+    The \l{Multi-threading in Qt} page contains information on implementing
     threads in applications. Additional concurrent classes are provided by the
     \l{Qt Concurrent} module.
 

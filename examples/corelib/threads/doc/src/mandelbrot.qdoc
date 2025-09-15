@@ -71,7 +71,7 @@
     \endlist
 
     If you are not already familiar with Qt's thread support, we
-    recommend that you start by reading the \l{Thread Support in Qt}
+    recommend that you start by reading the \l{Multi-threading in Qt}
     overview.
 
     \section1 RenderThread Class Definition
