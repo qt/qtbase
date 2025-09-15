@@ -1001,13 +1001,7 @@ static const char *property_string =
     "    ushort unicodeVersion      : 5; /* 5 used */\n"
     "    ushort eastAsianWidth      : 3; /* 3 used */\n"
     "    ushort nfQuickCheck        : 8;\n" // could be narrowed
-    "#ifdef Q_OS_WASM\n"
-    "    unsigned char              : 0; //wasm 64 packing trick\n"
-    "#endif\n"
     "    std::array<CaseConversion, NumCases> cases;\n"
-    "#ifdef Q_OS_WASM\n"
-    "    unsigned char              : 0; //wasm 64 packing trick\n"
-    "#endif\n"
     "    ushort graphemeBreakClass  : 5; /* 5 used */\n"
     "    ushort wordBreakClass      : 5; /* 5 used */\n"
     "    ushort lineBreakClass      : 6; /* 6 used */\n"

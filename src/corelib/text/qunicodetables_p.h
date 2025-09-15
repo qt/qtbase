@@ -56,13 +56,7 @@ struct Properties {
     ushort unicodeVersion      : 5; /* 5 used */
     ushort eastAsianWidth      : 3; /* 3 used */
     ushort nfQuickCheck        : 8;
-#ifdef Q_OS_WASM
-    unsigned char              : 0; //wasm 64 packing trick
-#endif
     std::array<CaseConversion, NumCases> cases;
-#ifdef Q_OS_WASM
-    unsigned char              : 0; //wasm 64 packing trick
-#endif
     ushort graphemeBreakClass  : 5; /* 5 used */
     ushort wordBreakClass      : 5; /* 5 used */
     ushort lineBreakClass      : 6; /* 6 used */
