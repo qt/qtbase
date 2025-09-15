@@ -699,8 +699,9 @@ namespace QtAndroidAccessibility
         env->CallVoidMethod(node, m_setClassNameMethodID, jrole);
 
         const bool hasClickableAction =
-                info.actions.contains(QAccessibleActionInterface::pressAction()) ||
-                info.actions.contains(QAccessibleActionInterface::toggleAction());
+                (info.actions.contains(QAccessibleActionInterface::pressAction())
+                 || info.actions.contains(QAccessibleActionInterface::toggleAction()))
+                && !(info.role == QAccessible::StaticText || info.role == QAccessible::Heading);
         const bool hasIncreaseAction =
                 info.actions.contains(QAccessibleActionInterface::increaseAction());
         const bool hasDecreaseAction =
