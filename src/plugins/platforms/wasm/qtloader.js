@@ -27,6 +27,10 @@
  *      should be hidden and the application window should be shown.
  * - entryFunction: (emscriptenConfig: object) => Promise<EmscriptenModule>
  *      Qt always uses emscripten's MODULARIZE option. This is the MODULARIZE entry function.
+ * - wasmFile: string
+ *      The wasm file to download and create the instance from. Specifing the wasm file
+ *      makes qtloader take control over the download, which allows it to provide progress
+ *      information.
  * - module: Promise<WebAssembly.Module>
  *      The module to create the instance from (optional). Specifying the module allows optimizing
  *      use cases where several instances are created from a single WebAssembly source.
@@ -35,6 +39,11 @@
  *      The path is set to 'qt' by default, and is relative to the path of the web page's html file.
  *      This property is not in use when static linking is used, since this build mode includes all
  *      libraries and plugins in the wasm file.
+ * - onProgress: (receivedBytes: number, totalBytes: number, percent: number) => void
+ *      Called as the wasm file and the preload files download. totalBytes grows as
+ *      each download reports its content-length, so percent can step backwards early
+ *      on; it is a progress indication, not a monotonic one. A server that does not
+ *      send content-length contributes received bytes but no total.
  * - preload: [string]: Array of file paths to json-encoded files which specifying which files to preload.
  *      The preloaded files will be downloaded at application startup and copied to the in-memory file
  *      system provided by Emscripten.
@@ -71,6 +80,155 @@
  */
 async function qtLoad(config)
 {
+    // DownloadTracker provides download progress by reading
+    // the content-length header and intercepting the the download
+    // stream. Use the fetch() and response() API to start and
+    // complete a download.
+    class DownloadTracker {
+
+        constructor() {
+            this.resources = new Map();
+            this.totalBytes = 0;
+            this.receivedBytes = 0;
+            this.callback = null;
+        }
+
+        clear() {
+            this.resources = null;
+            this.callback = null;
+        }
+
+        setProgressCallback(cb) {
+            this.callback = cb;
+        }
+
+        _notify() {
+            const completed = Math.floor((this.receivedBytes / this.totalBytes) * 100);
+            if (this.callback) {
+                this.callback(this.receivedBytes, this.totalBytes, completed);
+            }
+        }
+
+        // Initiates a resouce/file download from url
+        fetch(resource) {
+            if (this.resources.has(resource))
+                return;
+            const responsePromise = fetch(resource)
+                .then(res => {
+                    const len = res.headers.get("content-length");
+                    if (len) {
+                        this.totalBytes += parseInt(len, 10);
+                        this._notify();
+                    }
+                    return res;
+                });
+            this.resources.set(resource, responsePromise);
+        }
+
+        // Returrns the response object for the given tracked download url.
+        // Call fetch() first to initiate the download.
+        async response(resource) {
+            const res = await this.resources.get(resource);
+
+            const ts = new TransformStream({
+                transform: (chunk, controller) => {
+                    this.receivedBytes += chunk.length;
+                    this._notify();
+                    controller.enqueue(chunk);
+                }
+            });
+
+            res.body.pipeTo(ts.writable);
+            return new Response(ts.readable, {
+                headers: res.headers,
+                status: res.status,
+                statusText: res.statusText,
+            });
+        }
+    }
+
+    const downloadTracker = new DownloadTracker();
+    if (typeof config.qt.onProgress === 'function')
+        downloadTracker.setProgressCallback(config.qt.onProgress);
+
+    class Preloader {
+
+        constructor(downloadTracker) {
+            this.downloadTracker = downloadTracker
+            this.qtdir = "/";
+            this.preloadFileList = [];   // list of files to preload in {source, destinaton} pairs
+            this.preloadSourceList = []; // list of resolved sources
+            this.preloadDataList = []; // list of downloaded preload file data
+        }
+
+        // Initiates download of preload files
+        async fetchPreloadFiles() {
+            // First, fetch the preload .json file(s) which specifies which
+            // files to preload
+            this.preloadFileList = (await Promise.all(config.qt.preload.map(async path =>  {
+                const response = await fetch(path);
+                if (!response.ok)
+                    throw new Error("Could not fetch preload file: " + path +
+                        ". For a shared (dynamic) build, run wasmdeployqt on the app to " +
+                        "generate the Qt preload manifests before serving it.");
+                return response.json();
+            }))).flat();
+
+            // Then, start downloading each file
+            this.preloadSourceList = this.preloadFileList.map(file => {
+                const source = file.source.replace('$QTDIR', config.qt.qtdir); // ### take config as ctor arg?
+                downloadTracker.fetch(source); // kick off donwload
+                return source;
+            });
+        }
+
+        // Waits for preload file download completion, stores file data in preloadSourceList
+        async awaitPreloadFiles() {
+            this.preloadDataList = await Promise.all(
+              this.preloadSourceList.map(x =>
+                downloadTracker.response(x).then(res => res.arrayBuffer())
+              )
+            );
+            this.preloadSourceList = null;
+        }
+
+        // Creates Emscripten file system files for all preloaded files.
+        // Synchronous: preRun cannot await, and the data is already in memory
+        // by this point because awaitPreloadFiles() ran before instantiation.
+        createPreloadFiles(instance) {
+
+            // Recursively create directories in filePath
+            const makeDirs = (FS, filePath) => {
+                const parts = filePath.split("/");
+                let path = "/";
+                for (let i = 0; i < parts.length - 1; ++i) {
+                    const part = parts[i];
+                    if (part == "")
+                        continue;
+                    path += part + "/";
+                    try {
+                        FS.mkdir(path);
+                    } catch (error) {
+                        const EEXIST = 20;
+                        if (error.errno != EEXIST)
+                            throw error;
+                    }
+                }
+            }
+
+            for (let i = 0; i < this.preloadFileList.length; i++) {
+                const destination = this.preloadFileList[i].destination;
+                const data  = this.preloadDataList[i];
+                makeDirs(instance.FS, destination);
+                instance.FS.writeFile(destination, new Uint8Array(data));
+            }
+            this.preloadFileList = null;
+            this.preloadDataList = null;
+        }
+    }
+
+    const preloader = new Preloader(downloadTracker);
+
     const throwIfEnvUsedButNotExported = (instance, config) =>
     {
         const environment = config.qt.environment;
@@ -111,93 +269,43 @@ async function qtLoad(config)
     let circuitBreakerReject;
     const circuitBreaker = new Promise((_, reject) => { circuitBreakerReject = reject; });
 
-    // If module async getter is present, use it so that module reuse is possible.
-    if (config.qt.module) {
+    // Use a custom instantiateWasm function if either a module or wasm file as been specified.
+    if (config.qt.module || config.qt.wasmFile) {
         config.instantiateWasm = async (imports, successCallback) =>
         {
             try {
-                const module = await config.qt.module;
-                successCallback(
-                    await WebAssembly.instantiate(module, imports), module);
+                // Get the wasm module, either as a config property or by streaming
+                // download / compile.
+                let module;
+                if (config.qt.module) {
+                    module = await config.qt.module;
+                } else {
+                    let wasmFileResponse = downloadTracker.response(config.qt.wasmFile);
+                    module = await WebAssembly.compileStreaming(wasmFileResponse);
+                }
+
+                // Await preloaded files to make sure they are ready before main() is called.
+                await preloader.awaitPreloadFiles();
+
+                // Create the wasm instance
+                successCallback(await WebAssembly.instantiate(module, imports), module);
             } catch (e) {
                 circuitBreakerReject(e);
             }
         }
     }
-    const preloadFetchHelper = async (path) => {
-        const response = await fetch(path);
-        if (!response.ok)
-            throw new Error("Could not fetch preload file: " + path +
-                ". For a shared (dynamic) build, run wasmdeployqt on the app to " +
-                "generate the Qt preload manifests before serving it.");
-        return response.json();
-    }
-    const filesToPreload = (await Promise.all(config.qt.preload.map(preloadFetchHelper))).flat();
-
-    // Side modules must be instantiated identically on every thread. Emscripten's
-    // preload plugin instantiates each preloaded .so on the calling thread only,
-    // which leaves pthread workers with a shorter function table, so any cross
-    // thread indirect call traps with "table index is out of bounds". Route the
-    // shared objects through dynamicLibraries instead, which every thread loads
-    // at startup and which workers take from the main thread's compiled modules,
-    // and keep the plain files in the filesystem so plugin metadata scans still
-    // find them.
-    const preloadedSharedObjects = new Map();
-    for (const file of filesToPreload) {
-        if (file.destination.endsWith(".so"))
-            preloadedSharedObjects.set(file.destination,
-                file.source.replace("$QTDIR", config.qt.qtdir));
-    }
-    if (preloadedSharedObjects.size > 0) {
-        config.noWasmDecoding = true;
-        config.dynamicLibraries =
-            [...preloadedSharedObjects.keys()].concat(config.dynamicLibraries ?? []);
-    }
-
     const qtPreRun = (instance) => {
+
         // Copy qt.environment to instance.ENV
         throwIfEnvUsedButNotExported(instance, config);
         for (const [name, value] of Object.entries(config.qt.environment ?? {}))
             instance.ENV[name] = value;
 
-        // Preload files from qt.preload
-        const makeDirs = (FS, filePath) => {
-            const parts = filePath.split("/");
-            let path = "/";
-            for (let i = 0; i < parts.length - 1; ++i) {
-                const part = parts[i];
-                if (part == "")
-                    continue;
-                path += part + "/";
-                try {
-                    FS.mkdir(path);
-                } catch (error) {
-                    const EEXIST = 20;
-                    if (error.errno != EEXIST)
-                        throw error;
-                }
-            }
-        }
-
-        const extractFilenameAndDir = (path) => {
-            const parts = path.split('/');
-            const filename = parts.pop();
-            const dir = parts.join('/');
-            return {
-                filename: filename,
-                dir: dir
-            };
-        }
-        const preloadFile = (file) => {
-            makeDirs(instance.FS, file.destination);
-            const source = file.source.replace('$QTDIR', config.qt.qtdir);
-            const filenameAndDir = extractFilenameAndDir(file.destination);
-            instance.FS.createPreloadedFile(filenameAndDir.dir, filenameAndDir.filename, source, true, true);
-        }
+        // Copy preload files to the file syste
         const isFsExported = typeof instance.FS === 'object';
         if (!isFsExported)
             throw new Error('FS must be exported if preload is used');
-        filesToPreload.forEach(preloadFile);
+        preloader.createPreloadFiles(instance);
     }
 
     if (!config.preRun)
@@ -254,8 +362,45 @@ async function qtLoad(config)
         }
     };
 
-    // Call app/emscripten module entry function. It may either come from the emscripten
-    // runtime script or be customized as needed.
+    // Start all downloads using the download tracker which updates the download progress.
+    if (config.qt.wasmFile)
+        downloadTracker.fetch(config.qt.wasmFile)
+    await preloader.fetchPreloadFiles(); // Note: awaits fetch start only, not the complete download
+
+    // Side modules must be instantiated identically on every thread. Emscripten's
+    // preload plugin instantiates each preloaded .so on the calling thread only,
+    // which leaves pthread workers with a shorter function table, so any cross
+    // thread indirect call traps with "table index is out of bounds". Route the
+    // shared objects through dynamicLibraries instead, which every thread loads
+    // at startup and which workers take from the main thread's compiled modules,
+    // and keep the plain files in the filesystem so plugin metadata scans still
+    // find them. Runs here rather than before the Preloader, which is what now
+    // knows the file list, and still ahead of the entry function below, which
+    // is what reads config.dynamicLibraries.
+    const preloadedSharedObjects = new Map();
+    for (const file of preloader.preloadFileList) {
+        if (file.destination.endsWith(".so"))
+            preloadedSharedObjects.set(file.destination,
+                file.source.replace("$QTDIR", config.qt.qtdir));
+    }
+    if (preloadedSharedObjects.size > 0) {
+        config.noWasmDecoding = true;
+        config.dynamicLibraries =
+            [...preloadedSharedObjects.keys()].concat(config.dynamicLibraries ?? []);
+    }
+
+    // The instantiateWasm path awaits the preload downloads before creating the
+    // instance, but it only exists when a module or a wasm file was given. With
+    // neither, Emscripten does the wasm download itself and nothing waits for
+    // the preload data, so preRun would write empty files. Await here instead:
+    // preRun runs inside the entry function below.
+    if (!config.qt.module && !config.qt.wasmFile)
+        await preloader.awaitPreloadFiles();
+
+    // Call the emscripten instance entry (constructor)function which creates the instance.
+    // Pass the config ovject, which contains user config as well as config options set above.
+    // This will wait until all dowloads have completed and the WebAssembly module has been
+    // compiled, and then return the instance.
     let instance;
     try {
         instance = await Promise.race(
@@ -266,6 +411,7 @@ async function qtLoad(config)
         // issue where Emscripten suppresses all exceptions thrown during main.
         if (!originalNoInitialRun)
             instance.callMain(originalArguments);
+
     } catch (e) {
         // If this is the exception thrown by app.exec() then that is a normal
         // case and we suppress it.
@@ -280,6 +426,9 @@ async function qtLoad(config)
             });
         }
         throw e;
+
+    } finally {
+        downloadTracker.clear();
     }
 
     return instance;
