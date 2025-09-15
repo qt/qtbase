@@ -276,7 +276,7 @@ QThreadPrivate::~QThreadPrivate()
     \l{Mandelbrot} example, as that is the name of the QThread subclass).
     Note that this is currently not available with release builds on Windows.
 
-    \sa {Thread Support in Qt}, QThreadStorage, {Synchronizing Threads},
+    \sa {Multi-threading in Qt}, QThreadStorage, {Synchronizing Threads},
         Mandelbrot, {Producer and Consumer using Semaphores},
         {Producer and Consumer using Wait Conditions}
 */
