@@ -8,7 +8,7 @@
     "Homepage": "https://www.freedesktop.org/wiki/Software/dbus/",
     "Version": "Minimal supported is 1.2, compatible up to ...",
     "Version": "dbus-1.13.12",
-    "PURL": "pkg:github/d-bus/dbus@dbus-$<VERSION>",
+    "PURL": "pkg:github/d-bus/dbus@$<VERSION>",
     "LicenseId": "AFL-2.1 OR GPL-2.0-or-later",
     "License": "Academic Free License v2.1, or GNU General Public License v2.0 or later",
     "LicenseFile": "LICENSE.LIBDBUS-1.txt",
