@@ -594,8 +594,8 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
-    MainWindow mainWindow;
-    mainWindow.show();
+    auto mainWindow = std::make_unique<MainWindow>();
+    mainWindow->show();
 
     return app.exec();
 }
