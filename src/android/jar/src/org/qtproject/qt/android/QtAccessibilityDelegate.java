@@ -514,17 +514,6 @@ class QtAccessibilityDelegate extends View.AccessibilityDelegate
             boolean handled = false;
             //Log.i(TAG, "PERFORM ACTION: " + action + " on " + virtualViewId);
             switch (action) {
-                case AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS:
-                    // Only handle the FOCUS action if it's placing focus on
-                    // a different view that was previously focused.
-                    if (m_focusedVirtualViewId != virtualViewId) {
-                        m_focusedVirtualViewId = virtualViewId;
-                        m_view.invalidate();
-                        sendEventForVirtualViewId(virtualViewId,
-                                AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUSED);
-                        handled = true;
-                    }
-                    break;
                 case AccessibilityNodeInfo.ACTION_CLEAR_ACCESSIBILITY_FOCUS:
                     if (m_focusedVirtualViewId == virtualViewId) {
                         m_focusedVirtualViewId = INVALID_ID;
@@ -565,17 +554,19 @@ class QtAccessibilityDelegate extends View.AccessibilityDelegate
                 sendEventForVirtualViewId(virtualViewId, AccessibilityEvent.TYPE_VIEW_CLICKED);
             break;
         case AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS:
-            success = QtNativeAccessibility.focusAction(virtualViewId);
+            if (m_focusedVirtualViewId != virtualViewId) {
+                success = QtNativeAccessibility.focusAction(virtualViewId);
+                if (!success) {
+                    notifyObjectFocus(virtualViewId);
+                    success = true;
+                }
+            }
             break;
         case AccessibilityNodeInfo.ACTION_SCROLL_FORWARD:
             success = QtNativeAccessibility.scrollForward(virtualViewId);
-            if (success)
-                sendEventForVirtualViewId(virtualViewId, AccessibilityEvent.TYPE_VIEW_SCROLLED);
             break;
         case AccessibilityNodeInfo.ACTION_SCROLL_BACKWARD:
             success = QtNativeAccessibility.scrollBackward(virtualViewId);
-            if (success)
-                sendEventForVirtualViewId(virtualViewId, AccessibilityEvent.TYPE_VIEW_SCROLLED);
             break;
         }
         return success;
