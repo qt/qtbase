@@ -28,6 +28,8 @@ abstract class QtActivityDelegateBase
     private boolean m_membersInitialized = false;
     private boolean m_contextMenuVisible = false;
 
+    static native boolean canOverrideColorSchemeHint();
+
     // Subclass must implement these
     abstract void startNativeApplicationImpl(String appParams, String mainLib);
 
@@ -110,9 +112,12 @@ abstract class QtActivityDelegateBase
             QtDisplayManager.setNavigationBarColor(window, nav);
         }
 
-        boolean isLight = uiMode == Configuration.UI_MODE_NIGHT_NO;
-        QtDisplayManager.setStatusBarColorHint(m_activity, isLight);
-        QtDisplayManager.setNavigationBarColorHint(m_activity, isLight);
+        // Don't override color scheme if the app has it set explicitly.
+        if (canOverrideColorSchemeHint()) {
+            boolean isLight = uiMode == Configuration.UI_MODE_NIGHT_NO;
+            QtDisplayManager.setStatusBarColorHint(m_activity, isLight);
+            QtDisplayManager.setNavigationBarColorHint(m_activity, isLight);
+        }
 
         switch (uiMode) {
             case Configuration.UI_MODE_NIGHT_NO:

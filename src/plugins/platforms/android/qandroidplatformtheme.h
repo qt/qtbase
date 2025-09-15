@@ -40,6 +40,7 @@ public:
     QPlatformMenuItem *createPlatformMenuItem() const override;
     void showPlatformMenuBar() override;
     Qt::ColorScheme colorScheme() const override;
+    Qt::ColorScheme colorSchemeOverride() const { return m_colorSchemeOverride; };
     void requestColorScheme(Qt::ColorScheme scheme) override;
 
     const QPalette *palette(Palette type = SystemPalette) const override;

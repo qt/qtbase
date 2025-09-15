@@ -10,6 +10,7 @@
 #include "qandroidplatformmenuitem.h"
 #include "qandroidplatformdialoghelpers.h"
 #include "qandroidplatformfiledialoghelper.h"
+#include "qandroidplatformwindow.h"
 
 #include <QCoreApplication>
 #include <QDebug>
@@ -24,6 +25,8 @@
 QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(lcQpaMenus, "qt.qpa.menus")
+
+Q_DECLARE_JNI_CLASS(QtDisplayManager, "org/qtproject/qt/android/QtDisplayManager")
 
 using namespace Qt::StringLiterals;
 
@@ -437,6 +440,27 @@ void QAndroidPlatformTheme::requestColorScheme(Qt::ColorScheme scheme)
     QMetaObject::invokeMethod(qGuiApp, [this]{
         updateColorScheme();
     });
+
+    if (m_colorSchemeOverride == Qt::ColorScheme::Unknown)
+        return;
+
+    const auto iface = qGuiApp->nativeInterface<QNativeInterface::QAndroidApplication>();
+    iface->runOnAndroidMainThread([=]() {
+        bool isLight = scheme == Qt::ColorScheme::Light;
+        QtJniTypes::QtDisplayManager::callStaticMethod("setStatusBarColorHint",
+            iface->context().object<QtJniTypes::Activity>(), isLight);
+        QtJniTypes::QtDisplayManager::callStaticMethod("setNavigationBarColorHint",
+            iface->context().object<QtJniTypes::Activity>(), isLight);
+    });
+}
+
+extern "C" JNIEXPORT bool JNICALL
+Java_org_qtproject_qt_android_QtActivityDelegateBase_canOverrideColorSchemeHint(JNIEnv *, jobject)
+{
+    if (!QAndroidPlatformTheme::instance())
+        return true;
+
+    return QAndroidPlatformTheme::instance()->colorSchemeOverride() == Qt::ColorScheme::Unknown;
 }
 
 static inline int paletteType(QPlatformTheme::Palette type)
