@@ -533,6 +533,8 @@ private Q_SLOTS:
 
     void ioHttpSingleRedirect();
     void ioHttpChangeMaxRedirects();
+    void ioHttpErrorString_data();
+    void ioHttpErrorString();
     void ioHttpRedirectErrors_data();
     void ioHttpRedirectErrors();
     void ioHttpRedirectPolicy_data();
@@ -9174,6 +9176,53 @@ void tst_QNetworkReply::ioHttpChangeMaxRedirects()
     QCOMPARE(reply2->url(), server3Url);
     QCOMPARE(reply2->error(), QNetworkReply::NoError);
     QVERIFY(validateRedirectedResponseHeaders(reply2));
+}
+
+void tst_QNetworkReply::ioHttpErrorString_data()
+{
+    QTest::addColumn<int>("statusCode");
+    QTest::addColumn<QString>("reasonPhrase");
+
+    QTest::newRow("404 - page not found") << 404 << "page not found";
+    QTest::newRow("404 - <no reason provided>") << 404 << QString();
+    QTest::newRow("500 - internal error") << 500 << "internal error";
+    QTest::newRow("500 - <no reason provided>") << 500 << QString();
+}
+
+void tst_QNetworkReply::ioHttpErrorString()
+{
+    QFETCH(const int, statusCode);
+    QFETCH(const QString, reasonPhrase);
+
+    QString serverReply = uR"(HTTP/1.1 %1%2
+    content-type: text/plain
+
+    Hello world)"_s;
+    if (reasonPhrase.isEmpty())
+        serverReply = serverReply.arg(QString::number(statusCode), "");
+    else
+        serverReply = serverReply.arg(QString::number(statusCode), u" " % reasonPhrase);
+    MiniHttpServer server(serverReply.toUtf8());
+
+    QUrl serverAddress;
+    serverAddress.setScheme(u"http"_s);
+    serverAddress.setHost(u"127.0.0.1"_s);
+    serverAddress.setPort(server.serverPort());
+
+    QNetworkRequest request(serverAddress);
+    QNetworkReplyPtr reply(manager.get(request));
+
+    QTRY_VERIFY(reply->isFinished());
+    QCOMPARE_NE(reply->error(), QNetworkReply::NoError);
+    if (!reasonPhrase.isEmpty()) {
+        QCOMPARE(reply->errorString(),
+                 "Error transferring %1 - server replied: %2"_L1.arg(serverAddress.toString(),
+                                                                     reasonPhrase));
+    } else {
+        QCOMPARE(reply->errorString(),
+                 "Error transferring %1 - server replied with status code %2"_L1.arg(
+                         serverAddress.toString(), QString::number(statusCode)));
+    }
 }
 
 void tst_QNetworkReply::ioHttpRedirectErrors_data()

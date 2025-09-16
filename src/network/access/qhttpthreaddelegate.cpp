@@ -488,6 +488,21 @@ void QHttpThreadDelegate::readyReadSlot()
     }
 }
 
+static QString makeServerErrorString(int code, const QUrl &url, const QString &reasonPhrase)
+{
+    QString msg;
+    if (!reasonPhrase.isEmpty()) {
+        msg = QLatin1StringView(QT_TRANSLATE_NOOP("QNetworkReply",
+                                                  "Error transferring %1 - server replied: %2"))
+                      .arg(url.toString(), reasonPhrase);
+    } else {
+        msg = QLatin1StringView(QT_TRANSLATE_NOOP("QNetworkReply",
+                                                  "Error transferring %1 - server replied with status code %2"))
+                      .arg(url.toString(), QString::number(code));
+    }
+    return msg;
+}
+
 void QHttpThreadDelegate::finishedSlot()
 {
     if (!httpReply)
@@ -509,12 +524,11 @@ void QHttpThreadDelegate::finishedSlot()
 #endif
 
     if (httpReply->statusCode() >= 400) {
-            // it's an error reply
-            QString msg = QLatin1StringView(QT_TRANSLATE_NOOP("QNetworkReply",
-                                                              "Error transferring %1 - server replied: %2"));
-            msg = msg.arg(httpRequest.url().toString(), httpReply->reasonPhrase());
-            emit error(statusCodeFromHttp(httpReply->statusCode(), httpRequest.url()), msg);
-        }
+        // it's an error reply
+        QString msg = makeServerErrorString(httpReply->statusCode(), httpRequest.url(),
+                                            httpReply->reasonPhrase());
+        emit error(statusCodeFromHttp(httpReply->statusCode(), httpRequest.url()), msg);
+    }
 
     if (httpRequest.isFollowRedirects() && httpReply->isRedirecting())
         emit redirected(httpReply->redirectUrl(), httpReply->statusCode(), httpReply->request().redirectCount() - 1);
@@ -535,11 +549,10 @@ void QHttpThreadDelegate::synchronousFinishedSlot()
     qDebug() << "QHttpThreadDelegate::synchronousFinishedSlot() thread=" << QThread::currentThreadId() << "result=" << httpReply->statusCode();
 #endif
     if (httpReply->statusCode() >= 400) {
-            // it's an error reply
-            QString msg = QLatin1StringView(QT_TRANSLATE_NOOP("QNetworkReply",
-                                                              "Error transferring %1 - server replied: %2"));
-            incomingErrorDetail = msg.arg(httpRequest.url().toString(), httpReply->reasonPhrase());
-            incomingErrorCode = statusCodeFromHttp(httpReply->statusCode(), httpRequest.url());
+        // it's an error reply
+        incomingErrorDetail = makeServerErrorString(httpReply->statusCode(), httpRequest.url(),
+                                                    httpReply->reasonPhrase());
+        incomingErrorCode = statusCodeFromHttp(httpReply->statusCode(), httpRequest.url());
     }
 
     isCompressed = httpReply->isCompressed();
