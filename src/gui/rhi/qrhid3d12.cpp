@@ -6154,6 +6154,7 @@ bool QD3D12GraphicsPipeline::create()
     struct {
         QD3D12PipelineStateSubObject<ID3D12RootSignature *, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_ROOT_SIGNATURE> rootSig;
         QD3D12PipelineStateSubObject<D3D12_INPUT_LAYOUT_DESC, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_INPUT_LAYOUT> inputLayout;
+        QD3D12PipelineStateSubObject<D3D12_INDEX_BUFFER_STRIP_CUT_VALUE, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_IB_STRIP_CUT_VALUE> primitiveRestartValue;
         QD3D12PipelineStateSubObject<D3D12_PRIMITIVE_TOPOLOGY_TYPE, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_PRIMITIVE_TOPOLOGY> primitiveTopology;
         QD3D12PipelineStateSubObject<D3D12_SHADER_BYTECODE, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_VS> VS;
         QD3D12PipelineStateSubObject<D3D12_SHADER_BYTECODE, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_HS> HS;
@@ -6211,6 +6212,8 @@ bool QD3D12GraphicsPipeline::create()
 
     stream.inputLayout.object.NumElements = inputDescs.count();
     stream.inputLayout.object.pInputElementDescs = inputDescs.isEmpty() ? nullptr : inputDescs.constData();
+
+    stream.primitiveRestartValue.object = D3D12_INDEX_BUFFER_STRIP_CUT_VALUE_0xFFFFFFFF;
 
     stream.primitiveTopology.object = toD3DTopologyType(m_topology);
     topology = toD3DTopology(m_topology, m_patchControlPointCount);
