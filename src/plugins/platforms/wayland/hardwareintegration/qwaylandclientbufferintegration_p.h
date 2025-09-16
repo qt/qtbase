@@ -17,12 +17,16 @@
 
 #include <QtCore/private/qglobal_p.h>
 #include <QtWaylandClient/qtwaylandclientglobal.h>
+#if QT_CONFIG(opengl)
 #include <QtGui/private/qeglplatformcontext_p.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
 class QWindow;
+#if QT_CONFIG(opengl)
 class QOpenGLContext;
+#endif
 class QPlatformOpenGLContext;
 class QSurfaceFormat;
 
@@ -46,7 +50,9 @@ public:
 
     virtual QWaylandWindow *createEglWindow(QWindow *window) = 0;
     virtual QPlatformOpenGLContext *createPlatformOpenGLContext(const QSurfaceFormat &glFormat, QPlatformOpenGLContext *share) const = 0;
+#if QT_CONFIG(opengl)
     virtual QOpenGLContext *createOpenGLContext(EGLContext context, EGLDisplay contextDisplay, QOpenGLContext *shareContext) const = 0;
+#endif
 
     enum NativeResource {
         EglDisplay,
