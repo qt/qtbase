@@ -458,18 +458,7 @@ bool QLockFilePrivate::isApparentlyStale() const
     return staleLockTime > 0ms && abs(age) > staleLockTime;
 }
 
-int QLockFilePrivate::getLockFileHandle(QLockFile *f)
-{
-    int fd;
-#ifdef Q_OS_WIN
-    // Use of this function on Windows WILL leak a file descriptor.
-    fd = _open_osfhandle(intptr_t(f->d_func()->fileHandle), 0);
-#else
-    fd = f->d_func()->fileHandle;
-#endif
-    QT_LSEEK(fd, 0, SEEK_SET);
-    return fd;
-}
+
 
 /*!
     Attempts to forcefully remove an existing lock file.

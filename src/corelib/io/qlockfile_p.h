@@ -52,7 +52,10 @@ public:
     bool isLocked = false;
 
     // used in tst_QLockFile:
-    Q_CORE_EXPORT static int getLockFileHandle(QLockFile *f);
+    static auto getLockFileHandle(QLockFile *f)
+    {
+        return f->d_func()->fileHandle;
+    }
 };
 
 QT_END_NAMESPACE

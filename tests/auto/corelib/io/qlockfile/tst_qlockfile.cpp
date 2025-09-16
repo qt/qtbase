@@ -11,8 +11,10 @@
 #include <QFutureSynchronizer>
 
 #include <qlockfile.h>
-#include <qtemporarydir.h>
 #include <qsysinfo.h>
+#include <qplatformdefs.h>
+#include <qtemporarydir.h>
+
 #if defined(Q_OS_UNIX) && !defined(Q_OS_VXWORKS)
 #include <unistd.h>
 
@@ -544,6 +546,28 @@ void tst_QLockFile::corruptedLockFileInTheFuture()
 #endif
 }
 
+static bool openLockFile(QFile *f, QLockFile *lockfile)
+{
+    int fd;
+    QFile::FileHandleFlags flags = {};
+#ifdef Q_OS_WIN
+    // Since _open_osfhandle() takes ownership of the handle, we need to first
+    // duplicate the HANDLE from QLockFilePrivate.
+    HANDLE h = QLockFilePrivate::getLockFileHandle(lockfile);
+    bool bInheritHandle = false;
+    DWORD dwDesiredAccess = 0;
+    if (!DuplicateHandle(GetCurrentProcess(), h, GetCurrentProcess(), &h, dwDesiredAccess,
+                         bInheritHandle, DUPLICATE_SAME_ACCESS))
+        return false;
+    fd = _open_osfhandle(intptr_t(h), 0);
+    flags = QFile::AutoCloseHandle;
+#else
+    fd = QLockFilePrivate::getLockFileHandle(lockfile);
+#endif
+    QT_LSEEK(fd, 0, SEEK_SET);
+    return f->open(fd, QIODevice::ReadWrite | QIODevice::Text, flags);
+}
+
 void tst_QLockFile::hostnameChange()
 {
     const QByteArray hostid = QSysInfo::machineUniqueId();
@@ -557,9 +581,7 @@ void tst_QLockFile::hostnameChange()
     {
         // now modify it
         QFile f;
-        QVERIFY(f.open(QLockFilePrivate::getLockFileHandle(&lock1),
-                       QIODevice::ReadWrite | QIODevice::Text,
-                       QFile::DontCloseHandle));
+        QVERIFY(openLockFile(&f, &lock1));
         QVERIFY(overwriteLineInLockFile(f, 3, "this is not a hostname"));
     }
 
@@ -583,9 +605,7 @@ void tst_QLockFile::differentMachines()
     {
         // now modify it
         QFile f;
-        QVERIFY(f.open(QLockFilePrivate::getLockFileHandle(&lock1),
-                       QIODevice::ReadWrite | QIODevice::Text,
-                       QFile::DontCloseHandle));
+        QVERIFY(openLockFile(&f, &lock1));
         QVERIFY(overwriteLineInLockFile(f, 1, QT_STRINGIFY(INT_MAX)));
         QVERIFY(overwriteLineInLockFile(f, 4, "this is not a UUID"));
     }
