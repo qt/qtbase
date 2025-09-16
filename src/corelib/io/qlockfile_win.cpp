@@ -27,7 +27,25 @@ static inline bool fileExists(const wchar_t *fileName)
 
 static bool deleteFile(const QString &fileName)
 {
-    return DeleteFile(qt_castToWchar(QDir::toNativeSeparators(fileName)));
+    const DWORD dwShareMode = 0;    // no sharing
+    SECURITY_ATTRIBUTES securityAtts = { sizeof(SECURITY_ATTRIBUTES), NULL, FALSE };
+    HANDLE fh = CreateFile(qt_castToWchar(QDir::toNativeSeparators(fileName)),
+                           GENERIC_READ | GENERIC_WRITE,
+                           dwShareMode,
+                           &securityAtts,
+                           OPEN_EXISTING, // error if it doesn't exist
+                           FILE_ATTRIBUTE_NORMAL | FILE_FLAG_DELETE_ON_CLOSE,
+                           NULL);
+    bool success = (fh != INVALID_HANDLE_VALUE);
+    if (success) {
+        CloseHandle(fh);
+        // the file is now deleted
+    } else {
+        const DWORD lastError = GetLastError();
+        if (lastError == ERROR_FILE_NOT_FOUND)
+            success = true;
+    }
+    return success;
 }
 
 QLockFile::LockError QLockFilePrivate::tryLock_sys()
