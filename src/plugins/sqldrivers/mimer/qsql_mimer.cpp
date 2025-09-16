@@ -1,6 +1,8 @@
 // Copyright (C) 2022 The Qt Company Ltd.
 // Copyright (C) 2022 Mimer Information Technology
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+// Qt-Security score:critical reason:data-parser
+
 #include <qcoreapplication.h>
 #include <qvariant.h>
 #include <qmetatype.h>
