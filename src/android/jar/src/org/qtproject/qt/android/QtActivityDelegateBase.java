@@ -94,8 +94,10 @@ abstract class QtActivityDelegateBase
         hideSplashScreen(0);
     }
 
-    void handleUiModeChange(int uiMode)
+    void handleUiModeChange()
     {
+        Configuration config = m_activity.getResources().getConfiguration();
+        int uiMode = config.uiMode & Configuration.UI_MODE_NIGHT_MASK;
         // QTBUG-108365
         if (Build.VERSION.SDK_INT >= 30) {
             // Since 29 version we are using Theme_DeviceDefault_DayNight

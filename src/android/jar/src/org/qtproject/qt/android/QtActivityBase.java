@@ -198,9 +198,11 @@ public class QtActivityBase extends Activity
     public void onConfigurationChanged(Configuration newConfig)
     {
         super.onConfigurationChanged(newConfig);
-        m_delegate.handleUiModeChange(newConfig.uiMode & Configuration.UI_MODE_NIGHT_MASK);
 
         int diff = newConfig.diff(m_prevConfig);
+        if ((diff & ActivityInfo.CONFIG_UI_MODE) != 0)
+            m_delegate.handleUiModeChange();
+
         if ((diff & ActivityInfo.CONFIG_LOCALE) != 0)
             QtNative.updateLocale();
 

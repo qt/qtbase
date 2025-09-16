@@ -142,7 +142,7 @@ class QtActivityDelegate extends QtActivityDelegateBase
                                   new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                                                              ViewGroup.LayoutParams.MATCH_PARENT));
 
-        handleUiModeChange(m_activity.getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK);
+        handleUiModeChange();
 
         m_displayManager.initDisplayProperties();
 
