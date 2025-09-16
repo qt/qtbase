@@ -84,7 +84,7 @@ void tst_BenchAndroidItemModel::init()
 {
     m_jModel = QJniObject::construct<QtJniTypes::BenchQtAbstractItemModel>();
     QVERIFY(m_jModel.isValid());
-    qProxy = std::unique_ptr<QAbstractItemModel>(QAndroidItemModelProxy::createNativeProxy(jModel));
+    qProxy = std::unique_ptr<QAbstractItemModel>(QAndroidItemModelProxy::createNativeProxy(m_jModel));
     nativeModel = std::make_unique<BenchNativeAbstractItemModel>();
     QVERIFY(qProxy);
 }
