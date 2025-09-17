@@ -9,6 +9,7 @@ import android.app.Activity;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.os.Build;
 import android.view.Window;
@@ -96,21 +97,23 @@ abstract class QtActivityDelegateBase
 
     void handleUiModeChange()
     {
-        Configuration config = m_activity.getResources().getConfiguration();
+        Resources resources = m_activity.getResources();
+        Configuration config = resources.getConfiguration();
         int uiMode = config.uiMode & Configuration.UI_MODE_NIGHT_MASK;
-        // QTBUG-108365
-        if (Build.VERSION.SDK_INT >= 30) {
-            // Since 29 version we are using Theme_DeviceDefault_DayNight
+
+        if (m_displayManager.decorFitsSystemWindows()) {
             Window window = m_activity.getWindow();
-            WindowInsetsController controller = window.getInsetsController();
-            if (controller != null) {
-                // set APPEARANCE_LIGHT_STATUS_BARS if needed
-                int appearanceLight = Color.luminance(window.getStatusBarColor()) > 0.5 ?
-                        WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS : 0;
-                controller.setSystemBarsAppearance(appearanceLight,
-                    WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS);
-            }
+            QtDisplayManager.enableSystemBarsBackgroundDrawing(window);
+            int status = QtDisplayManager.getThemeDefaultStatusBarColor(m_activity);
+            QtDisplayManager.setStatusBarColor(window, status);
+            int nav = QtDisplayManager.getThemeDefaultNavigationBarColor(m_activity);
+            QtDisplayManager.setNavigationBarColor(window, nav);
         }
+
+        boolean isLight = uiMode == Configuration.UI_MODE_NIGHT_NO;
+        QtDisplayManager.setStatusBarColorHint(m_activity, isLight);
+        QtDisplayManager.setNavigationBarColorHint(m_activity, isLight);
+
         switch (uiMode) {
             case Configuration.UI_MODE_NIGHT_NO:
                 ExtractStyle.runIfNeeded(m_activity, false);
