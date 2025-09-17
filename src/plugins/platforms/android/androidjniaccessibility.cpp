@@ -725,9 +725,18 @@ namespace QtAndroidAccessibility
                 break;
             }
 
+            float min = info.minValue.toFloat();
+            float max = info.maxValue.toFloat();
+            float current = info.currentValue.toFloat();
+            if (info.role == QAccessible::ProgressBar) {
+                rangeType = 2; // RANGE_TYPE_PERCENT
+                current = 100 * (current - min) / (max - min);
+                min = 0.0f;
+                max = 100.0f;
+            }
+
             QJniObject rangeInfo("android/view/accessibility/AccessibilityNodeInfo$RangeInfo",
-                                 "(IFFF)V", rangeType, info.minValue.toFloat(),
-                                 info.maxValue.toFloat(), info.currentValue.toFloat());
+                                 "(IFFF)V", rangeType, min, max, current);
 
             if (rangeInfo.isValid()) {
                 env->CallVoidMethod(node, m_setRangeInfoMethodID, rangeInfo.object());
