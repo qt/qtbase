@@ -3445,7 +3445,12 @@ void tst_QWidget::resizeEvent()
         QCOMPARE (wTopLevel.m_resizeEventCount, 1);
         QTestPrivate::androidCompatibleShow(&wTopLevel);
         QVERIFY(QTest::qWaitForWindowExposed(&wTopLevel));
-        QCOMPARE (wTopLevel.m_resizeEventCount, 2);
+        // The top level widget can receive new margins after show
+        // if the size is big enough to end up overlapping safe areas.
+        int safeMarginsResizeCount = 0;
+        if (!wTopLevel.windowHandle()->safeAreaMargins().isNull())
+            safeMarginsResizeCount = 1;
+        QCOMPARE (wTopLevel.m_resizeEventCount, 2 + safeMarginsResizeCount);
     }
 }
 
