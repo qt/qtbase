@@ -3106,7 +3106,7 @@ void tst_QWindow::stateChangeSignal()
     // - wait for signal spy to have reached target count
     // - extract state from signal and compare to target
 #define CHECK_STATE(State)\
-    QTRY_VERIFY(QTest::qWaitFor([&w](){return (w.windowState() == State); }));\
+    QVERIFY(QTest::qWaitFor([&w](){return (w.windowState() == State); }));\
     CHECK_SIGNAL(State)
 #define CHECK_SIGNAL(State)\
     QTRY_COMPARE(spy.count(), signalCount);\
