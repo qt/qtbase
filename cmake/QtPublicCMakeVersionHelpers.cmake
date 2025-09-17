@@ -155,14 +155,20 @@ function(__qt_internal_set_cmp0156)
     if(APPLE)
         set(default_policy_value NEW)
         set(unsupported_policy_value OLD)
-        set(platform_string "Apple")
+    elseif(EMSCRIPTEN OR WASM)
+        # It's a similar story for Emscripten WebAssembly. If a project passes -sMAIN_MODULE=1,
+        # this will cause duplicate symbol errors when qt's static libraries are mentioned
+        # more than once on the link line, unless we let CMake deduplicate them. This only works
+        # for CMake 4.2+, which lets CMake know that the emscripten linker can resolve all symbols
+        # even if the library is not repeated.
+        set(default_policy_value NEW)
+        set(unsupported_policy_value OLD)
     else()
         # For non-Apple linkers, we keep the previous behavior of not deduplicating libraries,
         # because we haven't done the necessary testing to identify on which platforms
         # it is safe to deduplicate.
         set(default_policy_value OLD)
         set(unsupported_policy_value NEW)
-        set(platform_string "non-Apple")
     endif()
 
     # Force set the default policy value for the given platform, even if the policy value is
@@ -171,7 +177,7 @@ function(__qt_internal_set_cmp0156)
     get_cmake_property(debug_message_shown _qt_internal_cmp0156_debug_message_shown)
     if(NOT debug_message_shown)
         message(DEBUG "Force setting the CMP0156 policy to '${default_policy_value}' "
-            "for ${platform_string} platforms.")
+            "for platform '${CMAKE_SYSTEM_NAME}'.")
         set_property(GLOBAL PROPERTY _qt_internal_cmp0156_debug_message_shown TRUE)
     endif()
 
@@ -183,7 +189,7 @@ function(__qt_internal_set_cmp0156)
     if("${policy_value}" STREQUAL "${unsupported_policy_value}" AND NOT QT_BUILDING_QT)
         message(WARNING
             "CMP0156 is set to '${policy_value}'. Qt forces the '${default_policy_value}'"
-            " behavior of this policy for ${platform_string} platforms by default."
+            " behavior of this policy for the '${CMAKE_SYSTEM_NAME}' platform by default."
             " Set QT_FORCE_CMP0156_TO_VALUE=${unsupported_policy_value} to force"
             " the '${unsupported_policy_value}' behavior for Qt commands that create"
             " library or executable targets.")
