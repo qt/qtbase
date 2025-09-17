@@ -245,7 +245,7 @@ qt_feature("dtls" PUBLIC
     SECTION "Networking"
     LABEL "DTLS"
     PURPOSE "Provides a DTLS implementation"
-    CONDITION QT_FEATURE_openssl AND QT_FEATURE_udpsocket AND TEST_dtls
+    CONDITION QT_FEATURE_ssl AND QT_FEATURE_openssl AND QT_FEATURE_udpsocket AND TEST_dtls
 )
 qt_feature("ocsp" PUBLIC
     SECTION "Networking"
