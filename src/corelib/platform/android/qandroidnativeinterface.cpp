@@ -48,8 +48,9 @@ QT_DEFINE_NATIVE_INTERFACE(QAndroidApplication);
 /*!
     \fn QJniObject QNativeInterface::QAndroidApplication::context()
 
-    Returns the Android context as a \c QJniObject. The context is an \c Activity
-    if the most recently started activity object is valid. Otherwise, the context is a \c Service.
+    Returns the Android context as a \c QtJniTypes::Context. The context
+    is an \c Activity if the most recently started activity object is valid.
+    Otherwise, the context is a \c Service.
 
     \since 6.2
 */
