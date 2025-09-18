@@ -6,8 +6,9 @@
 #define QDBUSMETATYPE_H
 
 #include <QtDBus/qtdbusglobal.h>
-#include "QtCore/qmetatype.h"
 #include <QtDBus/qdbusargument.h>
+
+#include <QtCore/qmetatype.h>
 
 #ifndef QT_NO_DBUS
 

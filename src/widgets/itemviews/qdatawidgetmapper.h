@@ -6,7 +6,8 @@
 #define QDATAWIDGETMAPPER_H
 
 #include <QtWidgets/qtwidgetsglobal.h>
-#include "QtCore/qobject.h"
+
+#include <QtCore/qobject.h>
 
 QT_REQUIRE_CONFIG(datawidgetmapper);
 
