@@ -94,13 +94,11 @@ class QtInputDelegate implements QtInputConnection.QtInputConnectionListener, Qt
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             View rootView = activity.getWindow().getDecorView();
-            rootView.setOnApplyWindowInsetsListener(new View.OnApplyWindowInsetsListener() {
-                @Override
-                public WindowInsets onApplyWindowInsets(View v, WindowInsets insets) {
-                    if (m_keyboardIsVisible != insets.isVisible(WindowInsets.Type.ime()))
+            rootView.setOnApplyWindowInsetsListener((view, insets) -> {
+                    WindowInsets windowInsets = view.onApplyWindowInsets(insets);
+                    if (m_keyboardIsVisible != windowInsets.isVisible(WindowInsets.Type.ime()))
                         setKeyboardVisibility_internal(!m_keyboardIsVisible, System.nanoTime());
-                    return insets;
-                }
+                    return windowInsets;
             });
         }
     }
