@@ -477,11 +477,13 @@ void Promise::adoptPromise(emscripten::val promise, PromiseCallbacks callbacks)
             suspendResume->removeEventHandler(*thenIndex);
         if (catchIndex)
             suspendResume->removeEventHandler(*catchIndex);
-        suspendResume->removeEventHandler(*finallyIndex);
 
         // Call user finally
         if (finallyFunc)
             finallyFunc();
+
+        // Remove the finally (this) event handler last
+        suspendResume->removeEventHandler(*finallyIndex);
     };
 
     *finallyIndex = suspendResume->registerEventHandler(std::move(finally));
