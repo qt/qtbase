@@ -225,11 +225,6 @@ bool QFSFileEngine::open(QIODevice::OpenMode openMode,
     Opens the file handle \a fh in \a openMode mode. Returns \c true on
     success; otherwise returns \c false.
 */
-bool QFSFileEngine::open(QIODevice::OpenMode openMode, FILE *fh)
-{
-    return open(openMode, fh, QFile::DontCloseHandle);
-}
-
 bool QFSFileEngine::open(QIODevice::OpenMode openMode, FILE *fh, QFile::FileHandleFlags handleFlags)
 {
     Q_ASSERT_X(openMode & QIODevice::Unbuffered, "QFSFileEngine::open",
@@ -290,11 +285,6 @@ bool QFSFileEnginePrivate::openFh(QIODevice::OpenMode openMode, FILE *fh)
     Opens the file descriptor \a fd in \a openMode mode. Returns \c true
     on success; otherwise returns \c false.
 */
-bool QFSFileEngine::open(QIODevice::OpenMode openMode, int fd)
-{
-    return open(openMode, fd, QFile::DontCloseHandle);
-}
-
 bool QFSFileEngine::open(QIODevice::OpenMode openMode, int fd, QFile::FileHandleFlags handleFlags)
 {
     Q_D(QFSFileEngine);
