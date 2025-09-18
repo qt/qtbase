@@ -16,7 +16,9 @@
 // We mean it.
 //
 
+#include <QtNetwork/qtnetworkexports.h>
 #include <QtNetwork/private/qtnetworkglobal_p.h>
+
 #include <QtCore/private/qbytedata_p.h>
 
 #include <memory>
@@ -24,7 +26,7 @@
 QT_BEGIN_NAMESPACE
 
 class QIODevice;
-class Q_AUTOTEST_EXPORT QDecompressHelper
+class QDecompressHelper
 {
 public:
     enum ContentEncoding {
@@ -36,32 +38,32 @@ public:
     };
 
     QDecompressHelper() = default;
-    ~QDecompressHelper();
+    Q_NETWORK_EXPORT ~QDecompressHelper();
 
-    bool setEncoding(QByteArrayView contentEncoding);
+    Q_NETWORK_EXPORT bool setEncoding(QByteArrayView contentEncoding);
 
-    bool isCountingBytes() const;
-    void setCountingBytesEnabled(bool shouldCount);
+    Q_NETWORK_EXPORT bool isCountingBytes() const;
+    Q_NETWORK_EXPORT void setCountingBytesEnabled(bool shouldCount);
 
-    qint64 uncompressedSize() const;
+    Q_NETWORK_EXPORT qint64 uncompressedSize() const;
 
-    bool hasData() const;
-    void feed(const QByteArray &data);
-    void feed(QByteArray &&data);
-    void feed(const QByteDataBuffer &buffer);
-    void feed(QByteDataBuffer &&buffer);
-    qsizetype read(char *data, qsizetype maxSize);
+    Q_NETWORK_EXPORT bool hasData() const;
+    Q_NETWORK_EXPORT void feed(const QByteArray &data);
+    Q_NETWORK_EXPORT void feed(QByteArray &&data);
+    Q_NETWORK_EXPORT void feed(const QByteDataBuffer &buffer);
+    Q_NETWORK_EXPORT void feed(QByteDataBuffer &&buffer);
+    Q_NETWORK_EXPORT qsizetype read(char *data, qsizetype maxSize);
 
-    bool isValid() const;
+    Q_NETWORK_EXPORT bool isValid() const;
 
-    void clear();
+    Q_NETWORK_EXPORT void clear();
 
-    void setDecompressedSafetyCheckThreshold(qint64 threshold);
+    Q_NETWORK_EXPORT void setDecompressedSafetyCheckThreshold(qint64 threshold);
 
-    static bool isSupportedEncoding(QByteArrayView encoding);
-    static QByteArrayList acceptedEncoding();
+    Q_NETWORK_EXPORT static bool isSupportedEncoding(QByteArrayView encoding);
+    Q_NETWORK_EXPORT static QByteArrayList acceptedEncoding();
 
-    QString errorString() const;
+    Q_NETWORK_EXPORT QString errorString() const;
 
 private:
     bool isPotentialArchiveBomb() const;
