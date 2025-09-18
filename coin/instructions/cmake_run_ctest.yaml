@@ -118,56 +118,56 @@ instructions:
   # Run CTest, with or without ignoring exit code
   # FIXME: De-duplicate the CTest instruction when
   # ignoreExitCode expands environment variables.
-  - type: Group
+  - type: ExecuteCommand
+    command: "{{.Env.TESTS_ENV_PREFIX}} ctest {{.Env.CTEST_ARGS}}"
+    executeCommandArgumentSplitingBehavior: SplitAfterVariableSubstitution
+    ignoreExitCode: false
+    maxTimeInSeconds: 14400
+    maxTimeBetweenOutput: 14400
+    userMessageOnFailure: >
+      Failed to run tests.
     enable_if:
       condition: runtime
       env_var: COIN_CTEST_IGNORE_EXIT_CODE
       not_equals_value: "1"
-    instructions:
-      - type: ExecuteCommand
-        command: "{{.Env.TESTS_ENV_PREFIX}} ctest {{.Env.CTEST_ARGS}}"
-        executeCommandArgumentSplitingBehavior: SplitAfterVariableSubstitution
-        ignoreExitCode: false
-        maxTimeInSeconds: 14400
-        maxTimeBetweenOutput: 14400
-        userMessageOnFailure: >
-          Failed to run tests.
-      - type: ExecuteCommand
-        command: >
-          cmake -E copy
-            Testing{{.Env.CI_PATH_SEP}}Temporary{{.Env.CI_PATH_SEP}}LastTest.log
-            {{.Env.COIN_CTEST_RESULTSDIR}}{{.Env.CI_PATH_SEP}}CTest.log
-        executeCommandArgumentSplitingBehavior: SplitAfterVariableSubstitution
-        ignoreExitCode: false
-        userMessageOnFailure: >
-          Failed to copy LastTest.log to testresults directory.
-        executeOn: always
-        maxTimeInSeconds: 20
-        maxTimeBetweenOutput: 20
-  - type: Group
+  - type: ExecuteCommand
+    command: "{{.Env.TESTS_ENV_PREFIX}} ctest {{.Env.CTEST_ARGS}}"
+    executeCommandArgumentSplitingBehavior: SplitAfterVariableSubstitution
+    ignoreExitCode: true
+    maxTimeInSeconds: 14400
+    maxTimeBetweenOutput: 14400
+    userMessageOnFailure: >
+      Failed to run tests.
     enable_if:
       condition: runtime
       env_var: COIN_CTEST_IGNORE_EXIT_CODE
       equals_value: "1"
-    instructions:
-      - type: ExecuteCommand
-        command: "{{.Env.TESTS_ENV_PREFIX}} ctest {{.Env.CTEST_ARGS}}"
-        executeCommandArgumentSplitingBehavior: SplitAfterVariableSubstitution
-        ignoreExitCode: true
-        maxTimeInSeconds: 14400
-        maxTimeBetweenOutput: 14400
-        userMessageOnFailure: >
-          Failed to run tests.
-      - type: ExecuteCommand
-        command: >
-          cmake -E copy
-            Testing{{.Env.CI_PATH_SEP}}Temporary{{.Env.CI_PATH_SEP}}LastTest.log
-            {{.Env.COIN_CTEST_RESULTSDIR}}{{.Env.CI_PATH_SEP}}CTest.log
-        executeCommandArgumentSplitingBehavior: SplitAfterVariableSubstitution
-        ignoreExitCode: true
-        userMessageOnFailure: >
-          Failed to copy LastTest.log to testresults directory.
-        executeOn: always
+
+  - type: ExecuteCommand
+    instructionName: "Copy ctest log"
+    command: >
+      cmake -E copy
+        Testing{{.Env.CI_PATH_SEP}}Temporary{{.Env.CI_PATH_SEP}}LastTest.log
+        {{.Env.COIN_CTEST_RESULTSDIR}}
+    executeCommandArgumentSplitingBehavior: SplitAfterVariableSubstitution
+    userMessageOnFailure: >
+      Failed to copy LastTest.log to testresults directory.
+    executeOn: always
+    maxTimeInSeconds: 20
+    maxTimeBetweenOutput: 20
+  - type: ExecuteCommand
+    command: >
+      cmake -E copy
+        Testing{{.Env.CI_PATH_SEP}}Temporary{{.Env.CI_PATH_SEP}}LastTest.log.tmp
+        {{.Env.COIN_CTEST_RESULTSDIR}}
+    executeCommandArgumentSplitingBehavior: SplitAfterVariableSubstitution
+    userMessageOnFailure: >
+      Failed to copy LastTest.log.tmp to testresults directory.
+    executeOn: failure
+    executeOnTarget: Copy ctest log
+    resetError: target
+    maxTimeInSeconds: 20
+    maxTimeBetweenOutput: 20
 
   - type: Group
     instructions:
