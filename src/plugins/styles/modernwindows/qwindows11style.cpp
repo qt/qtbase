@@ -481,7 +481,7 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
             drawRoundedRect(painter, frameRect, Qt::NoPen, option->palette.brush(QPalette::Base));
 
             if (combobox->frame)
-                drawLineEditFrame(painter, frameRect, option);
+                drawLineEditFrame(painter, frameRect, combobox, combobox->editable);
 
             const bool isMouseOver = state & State_MouseOver;
             const bool hasFocus = state & State_HasFocus;
