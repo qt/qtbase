@@ -50,7 +50,11 @@ exists($$QMAKE_QT_CONFIG) {
     }
     EMCC_LFLAGS += -s INITIAL_MEMORY=$$INITIAL_MEMORY
     isEmpty(QT_WASM_MAXIMUM_MEMORY) {
-        MAXIMUM_MEMORY = 4GB # 32-bit max
+        contains(QMAKE_CFLAGS, -s MEMORY64=1) {
+            MAXIMUM_MEMORY = 16GB
+        } else {
+            MAXIMUM_MEMORY = 4GB
+        }
     } else {
         MAXIMUM_MEMORY = $$QT_WASM_MAXIMUM_MEMORY
     }
