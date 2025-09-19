@@ -982,7 +982,8 @@ template <typename Structure, typename Range,
           typename Protocol = QRangeModelDetails::table_protocol_t<Range>>
 class QRangeModelImpl
         : public QtPrivate::QQuasiVirtualSubclass<QRangeModelImpl<Structure, Range, Protocol>,
-                                                  QRangeModelImplBase>
+                                                  QRangeModelImplBase>,
+          private QtPrivate::CompactStorage<Protocol>
 {
 public:
     using range_type = QRangeModelDetails::wrapped_t<Range>;
@@ -990,6 +991,8 @@ public:
     using const_row_reference = decltype(*QRangeModelDetails::begin(std::declval<const range_type&>()));
     using row_type = std::remove_reference_t<row_reference>;
     using protocol_type = QRangeModelDetails::wrapped_t<Protocol>;
+
+    using ProtocolStorage = QtPrivate::CompactStorage<Protocol>;
 
     static_assert(!QRangeModelDetails::is_any_of<range_type, std::optional>() &&
                   !QRangeModelDetails::is_any_of<row_type, std::optional>(),
@@ -1097,8 +1100,8 @@ protected:
 public:
     explicit QRangeModelImpl(Range &&model, Protocol&& protocol, QRangeModel *itemModel)
         : Ancestor(itemModel)
+        , ProtocolStorage{std::forward<Protocol>(protocol)}
         , m_data{std::forward<Range>(model)}
-        , m_protocol(std::forward<Protocol>(protocol))
     {
     }
 
@@ -2100,11 +2103,10 @@ protected:
     }
 
 
-    const protocol_type& protocol() const { return QRangeModelDetails::refTo(m_protocol); }
-    protocol_type& protocol() { return QRangeModelDetails::refTo(m_protocol); }
+    const protocol_type& protocol() const { return QRangeModelDetails::refTo(ProtocolStorage::object()); }
+    protocol_type& protocol() { return QRangeModelDetails::refTo(ProtocolStorage::object()); }
 
     ModelData m_data;
-    Protocol m_protocol;
 };
 
 // Implementations that depends on the model structure (flat vs tree) that will
