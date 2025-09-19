@@ -690,6 +690,8 @@ void tst_QRangeModel::defaultRoleNames()
             {Qt::RangeModelDataRole, "modelData"},
             {Qt::DisplayRole, "display"},
             {Qt::DecorationRole, "decoration"},
+            {Qt::UserRole, "number"},
+            {Qt::UserRole + 1, "user"},
         };
         QCOMPARE(QRangeModel(QList<MultiRoleGadget>{}).roleNames(),
                  expectedRoleNames);

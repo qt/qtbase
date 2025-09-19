@@ -1044,14 +1044,16 @@ QHash<int, QByteArray> QRangeModelImplBase::roleNamesForMetaObject(const QAbstra
 {
     const auto defaults = model.QAbstractItemModel::roleNames();
     QHash<int, QByteArray> result = {{Qt::RangeModelDataRole, "modelData"}};
-    const int offset = metaObject.propertyOffset();
+    int offset = metaObject.propertyOffset();
     for (int i = offset; i < metaObject.propertyCount(); ++i) {
         const auto name = metaObject.property(i).name();
         const int defaultRole = defaults.key(name, -1);
-        if (defaultRole != -1)
+        if (defaultRole != -1) {
+            ++offset;
             result[defaultRole] = name;
-        else
+        } else {
             result[Qt::UserRole + i - offset] = name;
+        }
     }
     return result;
 }
