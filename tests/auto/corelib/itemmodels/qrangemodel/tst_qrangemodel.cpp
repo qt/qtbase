@@ -816,6 +816,10 @@ void tst_QRangeModel::setData()
     QCOMPARE(first.data(), oldValue);
     QCOMPARE(model->setData(first, newValue), changeActions.testFlag(ChangeAction::SetData));
     QCOMPARE(first.data() == oldValue, !changeActions.testFlag(ChangeAction::SetData));
+
+    // don't crash for invalid role values, but ignore return value - it will
+    // work with items that are backed by a map.
+    model->setData(first, oldValue, Qt::UserRole + 255);
 }
 
 void tst_QRangeModel::itemData()

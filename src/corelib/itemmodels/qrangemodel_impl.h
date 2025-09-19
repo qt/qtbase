@@ -2007,7 +2007,7 @@ protected:
         if (!prop.isValid() && role == Qt::EditRole)
             prop = roleProperty<item_type>(Qt::DisplayRole);
 
-        return writeProperty(prop, gadget, data);
+        return prop.isValid() ? writeProperty(prop, gadget, data) : false;
     }
 
     template <typename ItemType>
