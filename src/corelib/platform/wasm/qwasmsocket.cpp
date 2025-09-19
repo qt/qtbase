@@ -3,6 +3,8 @@
 
 #include "qwasmsocket_p.h"
 #include "qwasmglobal_p.h"
+
+#include <QtCore/qcoreapplication.h>
 #include <QtCore/qsocketnotifier.h>
 
 #include "emscripten.h"
