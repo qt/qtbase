@@ -1711,9 +1711,10 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
     }
     case CE_ItemViewItem: {
         if (const QStyleOptionViewItem *vopt = qstyleoption_cast<const QStyleOptionViewItem *>(option)) {
-            QRect checkRect = proxy()->subElementRect(SE_ItemViewItemCheckIndicator, vopt, widget);
-            QRect iconRect = proxy()->subElementRect(SE_ItemViewItemDecoration, vopt, widget);
-            QRect textRect = proxy()->subElementRect(SE_ItemViewItemText, vopt, widget);
+            const auto p = proxy();
+            QRect checkRect = p->subElementRect(SE_ItemViewItemCheckIndicator, vopt, widget);
+            QRect iconRect = p->subElementRect(SE_ItemViewItemDecoration, vopt, widget);
+            QRect textRect = p->subElementRect(SE_ItemViewItemText, vopt, widget);
 
             // draw the background
             proxy()->drawPrimitive(PE_PanelItemViewItem, option, painter, widget);
@@ -1814,16 +1815,17 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
             d->viewItemDrawText(painter, vopt, textRect);
 
             // paint a vertical marker for QListView
-            if (vopt->state & State_Selected) {
+            if (vopt->state & State_Selected && !highContrastTheme) {
                 if (const QListView *lv = qobject_cast<const QListView *>(widget);
-                    lv && lv->viewMode() != QListView::IconMode && !highContrastTheme) {
-                    painter->setPen(vopt->palette.accent().color());
-                    const auto xPos = isRtl ? rect.right() - 1 : rect.left();
-                    const QLineF lines[2] = {
-                        QLineF(xPos, rect.y() + 2, xPos, rect.y() + rect.height() - 2),
-                        QLineF(xPos + 1, rect.y() + 2, xPos + 1, rect.y() + rect.height() - 2),
-                    };
-                    painter->drawLines(lines, 2);
+                    lv && lv->viewMode() != QListView::IconMode) {
+                    const auto col = vopt->palette.accent().color();
+                    painter->setBrush(col);
+                    painter->setPen(col);
+                    const auto xPos = isRtl ? rect.right() - 4.5f : rect.left() + 3.5f;
+                    const auto yOfs = rect.height() / 4.;
+                    QRectF r(QPointF(xPos, rect.y() + yOfs),
+                             QPointF(xPos + 1, rect.y() + rect.height() - yOfs));
+                    painter->drawRoundedRect(r, 1, 1);
                 }
             }
         }
@@ -1874,22 +1876,29 @@ QRect QWindows11Style::subElementRect(QStyle::SubElement element, const QStyleOp
     case QStyle::SE_LineEditContents:
         ret = option->rect.adjusted(4,0,-4,0);
         break;
-    case QStyle::SE_ItemViewItemText:
-        if (const auto *item = qstyleoption_cast<const QStyleOptionViewItem *>(option)) {
-            const int decorationOffset = item->features.testFlag(QStyleOptionViewItem::HasDecoration) ? item->decorationSize.width() : 0;
-            const int checkboxOffset = item->features.testFlag(QStyleOptionViewItem::HasCheckIndicator) ? 16 : 0;
-            if (widget && qobject_cast<QComboBoxPrivateContainer *>(widget->parentWidget())) {
-                if (option->direction == Qt::LeftToRight)
-                    ret = option->rect.adjusted(decorationOffset + checkboxOffset + 5, 0, -5, 0);
-                else
-                    ret = option->rect.adjusted(5, 0, decorationOffset - checkboxOffset - 5, 0);
+    case SE_ItemViewItemCheckIndicator:
+    case SE_ItemViewItemDecoration:
+    case SE_ItemViewItemText: {
+        ret = QWindowsVistaStyle::subElementRect(element, option, widget);
+        if (!ret.isValid() || highContrastTheme)
+            return ret;
+
+        if (const QListView *lv = qobject_cast<const QListView *>(widget);
+            lv && lv->viewMode() != QListView::IconMode) {
+            const int xOfs = contentHMargin;
+            const bool isRtl = option->direction == Qt::RightToLeft;
+            if (isRtl) {
+                ret.moveRight(ret.right() - xOfs);
+                if (ret.left() < option->rect.left())
+                    ret.setLeft(option->rect.left());
             } else {
-                ret = QWindowsVistaStyle::subElementRect(element, option, widget);
+                ret.moveLeft(ret.left() + xOfs);
+                if (ret.right() > option->rect.right())
+                    ret.setRight(option->rect.right());
             }
-        } else {
-            ret = QWindowsVistaStyle::subElementRect(element, option, widget);
         }
         break;
+    }
 #if QT_CONFIG(progressbar)
     case SE_ProgressBarGroove:
     case SE_ProgressBarContents:
@@ -2236,6 +2245,25 @@ QSize QWindows11Style::sizeFromContents(ContentsType type, const QStyleOption *o
         // we want our own horizontal spacing
         const int oldMargin = proxy()->pixelMetric(PM_ButtonMargin, option, widget);
         contentSize.rwidth() += 2 * contentHMargin - oldMargin;
+        break;
+    }
+    case CT_ItemViewItem: {
+        if (const auto *viewItemOpt = qstyleoption_cast<const QStyleOptionViewItem *>(option)) {
+            if (const QListView *lv = qobject_cast<const QListView *>(widget);
+                lv && lv->viewMode() != QListView::IconMode) {
+                QStyleOptionViewItem vOpt(*viewItemOpt);
+                // viewItemSize only takes PM_FocusFrameHMargin into account but no additional
+                // margin, therefore adjust it here for a correct width during layouting when
+                // WrapText is enabled
+                vOpt.rect.setRight(vOpt.rect.right() - contentHMargin);
+                contentSize = QWindowsVistaStyle::sizeFromContents(type, &vOpt, size, widget);
+                contentSize.rwidth() += contentHMargin;
+                contentSize.rheight() += 2 * contentHMargin;
+
+            } else {
+                contentSize = QWindowsVistaStyle::sizeFromContents(type, option, size, widget);
+            }
+        }
         break;
     }
     default:
