@@ -2425,9 +2425,6 @@ void QWindows11Style::polish(QPalette& result)
     SET_IF_UNRESOLVED(QPalette::Inactive, QPalette::HighlightedText, result.highlightedText().color());
     SET_IF_UNRESOLVED(QPalette::Inactive, QPalette::Text, result.text().color());
     SET_IF_UNRESOLVED(QPalette::Inactive, QPalette::WindowText, result.windowText().color());
-
-    if (highContrastTheme)
-        result.setColor(QPalette::Active, QPalette::HighlightedText, result.windowText().color());
 }
 
 QColor QWindows11Style::calculateAccentColor(const QStyleOption *option) const
