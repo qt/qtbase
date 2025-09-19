@@ -576,21 +576,18 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
             if (combobox->frame)
                 drawLineEditFrame(painter, frameRect, combobox, combobox->editable);
 
-            const bool isMouseOver = state & State_MouseOver;
             const bool hasFocus = state & State_HasFocus;
-            if (isMouseOver && !hasFocus && !highContrastTheme)
-                drawRoundedRect(painter, frameRect, Qt::NoPen, winUI3Color(subtleHighlightColor));
+            QStyleOption opt(*option);
+            opt.state.setFlag(QStyle::State_On, false);
+            drawRoundedRect(painter, frameRect, Qt::NoPen, controlFillBrush(&opt, ControlType::Control));
 
             if (sub & SC_ComboBoxArrow) {
                 QRectF rect = proxy()->subControlRect(CC_ComboBox, option, SC_ComboBoxArrow, widget).adjusted(4, 0, -4, 1);
                 painter->setFont(d->assetFont);
-                painter->setPen(combobox->palette.text().color());
+                painter->setPen(controlTextColor(option));
                 painter->drawText(rect, Qt::AlignCenter, ChevronDownMed);
             }
-            if (state & State_HasFocus) {
-                drawPrimitive(PE_FrameFocusRect, option, painter, widget);
-            }
-            if (state & State_KeyboardFocusChange && state & State_HasFocus) {
+            if (state & State_KeyboardFocusChange && hasFocus) {
                 QStyleOptionFocusRect fropt;
                 fropt.QStyleOption::operator=(*option);
                 proxy()->drawPrimitive(PE_FrameFocusRect, &fropt, painter, widget);
@@ -1176,11 +1173,14 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
     painter->setRenderHint(QPainter::Antialiasing);
     switch (element) {
     case QStyle::CE_ComboBoxLabel:
+#if QT_CONFIG(combobox)
         if (const QStyleOptionComboBox *cb = qstyleoption_cast<const QStyleOptionComboBox *>(option)) {
+            painter->setPen(controlTextColor(option));
             QStyleOptionComboBox newOption = *cb;
             newOption.rect.adjust(4,0,-4,0);
             QCommonStyle::drawControl(element, &newOption, painter, widget);
         }
+#endif // QT_CONFIG(combobox)
         break;
     case QStyle::CE_TabBarTabShape:
 #if QT_CONFIG(tabbar)
@@ -2053,6 +2053,20 @@ QRect QWindows11Style::subControlRect(ComplexControl control, const QStyleOption
         }
         break;
     }
+    case CC_ComboBox: {
+        if (subControl == SC_ComboBoxArrow) {
+            const auto indicatorWidth =
+                    proxy()->pixelMetric(PM_MenuButtonIndicator, option, widget);
+            const int endX = option->rect.right() - contentHMargin - 2;
+            const int startX = endX - indicatorWidth;
+            const QRect rect(QPoint(startX, option->rect.top()),
+                             QPoint(endX, option->rect.bottom()));
+            ret = visualRect(option->direction, option->rect, rect);
+        } else {
+            ret = QWindowsVistaStyle::subControlRect(control, option, subControl, widget);
+        }
+        break;
+    }
     default:
         ret = QWindowsVistaStyle::subControlRect(control, option, subControl, widget);
     }
@@ -2143,14 +2157,18 @@ QSize QWindows11Style::sizeFromContents(ContentsType type, const QStyleOption *o
         break;
     }
 #endif
+#if QT_CONFIG(combobox)
     case CT_ComboBox:
         if (const auto *comboBoxOpt = qstyleoption_cast<const QStyleOptionComboBox *>(option)) {
             contentSize = QWindowsStyle::sizeFromContents(type, option, size, widget);  // don't rely on QWindowsThemeData
             contentSize += QSize(4, 4);     // default win11 style margins
-            if (comboBoxOpt->subControls & SC_ComboBoxArrow)
-                contentSize += QSize(8, 0); // arrow margins
+            if (comboBoxOpt->subControls & SC_ComboBoxArrow) {
+                const auto w = proxy()->pixelMetric(PM_MenuButtonIndicator, option, widget);
+                contentSize.rwidth() += w + contentItemHMargin;
+            }
         }
         break;
+#endif
     case CT_HeaderSection:
         // windows vista does not honor the indicator (as it was drawn above the text, not on the
         // side) so call QWindowsStyle::styleHint directly to get the correct size hint
