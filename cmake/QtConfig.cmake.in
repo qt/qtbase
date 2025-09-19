@@ -9,9 +9,11 @@ __qt_internal_save_directory_scope_policy_cmp0156()
 
 cmake_minimum_required(VERSION @min_new_policy_version@...@max_new_policy_version@)
 
+include("${CMAKE_CURRENT_LIST_DIR}/QtPublicCMakeHelpers.cmake")
+
+# ConfigExtras uses functions from QtPublicCMakeHelpers.cmake
 include("${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@ConfigExtras.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/QtPublicCMakeVersionHelpers.cmake")
-include("${CMAKE_CURRENT_LIST_DIR}/QtPublicCMakeHelpers.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/QtInstallPaths.cmake")
 
 __qt_internal_require_suitable_cmake_version_for_using_qt()

@@ -90,10 +90,9 @@ function (qt_internal_setup_wasm_target_properties wasmTarget)
         target_compile_definitions("${wasmTarget}" INTERFACE QT_HAVE_EMSCRIPTEN_ASYNCIFY)
     endif()
 
+    _qt_internal_handle_target_supports_shared_libs()
+
     if(QT_FEATURE_shared)
-
-        set_property(GLOBAL PROPERTY TARGET_SUPPORTS_SHARED_LIBS TRUE)
-
         set(side_modules
             MODULE_LIBRARY SHARED_LIBRARY)
         set(enable_side_module_if_needed

@@ -189,6 +189,30 @@ function(_qt_internal_get_check_cxx_source_compiles_out_var out_output_var out_f
     set(${out_func_args} "${extra_func_args}" PARENT_SCOPE)
 endfunction()
 
+# Sets TARGET_SUPPORTS_SHARED_LIBS to TRUE when using Emscripten to build Qt for WebAssembly
+# or user projects.
+# The upstream Emscripten cmake toolchain file sets TARGET_SUPPORTS_SHARED_LIBS to FALSE, claiming
+# true shared library support is not available.
+# See https://github.com/emscripten-core/emscripten/pull/8362#issuecomment-3050586255
+# Upstream CMake 4.2+ will set it to TRUE itself, when not using the Emscripten cmake toolchain
+# file directly.
+function(_qt_internal_handle_target_supports_shared_libs)
+    if(NOT EMSCRIPTEN)
+        return()
+    endif()
+
+    if(QT_NO_ENABLE_TARGET_SUPPORTS_SHARED_LIBS)
+        return()
+    endif()
+
+    get_property(target_supports_shared_libs GLOBAL PROPERTY TARGET_SUPPORTS_SHARED_LIBS)
+    if(target_supports_shared_libs)
+        return()
+    endif()
+
+    set_property(GLOBAL PROPERTY TARGET_SUPPORTS_SHARED_LIBS TRUE)
+endfunction()
+
 # This function gets all targets below this directory
 #
 # Multi-value Arguments:

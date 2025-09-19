@@ -47,7 +47,6 @@ if(QT_FEATURE_permissions AND APPLE)
 endif()
 
 if(EMSCRIPTEN)
-    set_property(GLOBAL PROPERTY TARGET_SUPPORTS_SHARED_LIBS TRUE)
     include("${CMAKE_CURRENT_LIST_DIR}/@QT_CMAKE_EXPORT_NAMESPACE@WasmMacros.cmake")
 endif()
 

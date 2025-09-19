@@ -220,7 +220,18 @@ configure_package_config_file(
     INSTALL_DESTINATION "${__GlobalConfig_install_dir}"
 )
 
-_qt_internal_export_apple_sdk_and_xcode_version_requirements(QT_CONFIG_EXTRAS_CODE)
+set(QT_CONFIG_EXTRAS_CODE "")
+
+_qt_internal_export_apple_sdk_and_xcode_version_requirements(apple_requirements)
+if(apple_requirements)
+    string(APPEND QT_CONFIG_EXTRAS_CODE "${apple_requirements}")
+endif()
+
+if(EMSCRIPTEN)
+    string(APPEND QT_CONFIG_EXTRAS_CODE "\n
+_qt_internal_handle_target_supports_shared_libs()
+")
+endif()
 
 configure_file(
     "${PROJECT_SOURCE_DIR}/cmake/QtConfigExtras.cmake.in"
