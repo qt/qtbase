@@ -59,10 +59,17 @@ class MultiRoleGadget
 {
     Q_GADGET
     Q_PROPERTY(QString display MEMBER m_display)
+    Q_PROPERTY(int number READ number WRITE setNumber)
     Q_PROPERTY(QColor decoration MEMBER m_decoration)
+    Q_PROPERTY(QVariant user MEMBER m_user)
 public:
+    int number() const { return m_number; }
+    void setNumber(int number) { m_number = number; }
+
     QString m_display;
     QColor m_decoration;
+    QVariant m_user;
+    int m_number = 0;
 };
 
 template <>
@@ -365,20 +372,20 @@ struct Data {
         {{"blue", Qt::blue, "0x0000ff"}},
     };
     std::vector<MultiRoleGadget> listOfMultiRoleGadgets = {
-        {"red", Qt::red},
-        {"green", Qt::green},
-        {"blue", Qt::blue},
+        {"red", Qt::red, {}},
+        {"green", Qt::green, {}},
+        {"blue", Qt::blue, {}},
     };
     std::vector<std::shared_ptr<MultiRoleGadget>> listOfSharedMultiRoleGadgets = {
-        asSPtr(MultiRoleGadget{u"red"_s, Qt::red}),
-        asSPtr(MultiRoleGadget{u"green"_s, Qt::green}),
-        asSPtr(MultiRoleGadget{u"blue"_s, Qt::blue}),
+        asSPtr(MultiRoleGadget{u"red"_s, Qt::red, {}}),
+        asSPtr(MultiRoleGadget{u"green"_s, Qt::green, {}}),
+        asSPtr(MultiRoleGadget{u"blue"_s, Qt::blue, {}}),
     };
 
     std::array<std::unique_ptr<MultiRoleGadget>, 3> arrayOfUniqueMultiRoleGadgets = {
-        std::make_unique<MultiRoleGadget>(MultiRoleGadget{u"red"_s, Qt::red}),
-        std::make_unique<MultiRoleGadget>(MultiRoleGadget{u"green"_s, Qt::green}),
-        std::make_unique<MultiRoleGadget>(MultiRoleGadget{u"blue"_s, Qt::blue}),
+        std::make_unique<MultiRoleGadget>(MultiRoleGadget{u"red"_s, Qt::red, {}}),
+        std::make_unique<MultiRoleGadget>(MultiRoleGadget{u"green"_s, Qt::green, {}}),
+        std::make_unique<MultiRoleGadget>(MultiRoleGadget{u"blue"_s, Qt::blue, {}}),
     };
 
     std::vector<Row> vectorOfStructs = {
