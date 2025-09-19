@@ -293,6 +293,7 @@ private slots:
     void fillDetachMovable() const { fillDetach<Movable>(); }
     void fillDetachCustom() const { fillDetach<Custom>(); }
     void first() const;
+    void freeSpaceAtBeginEventuallyShrinks() const;
     void fromListInt() const { fromList<int>(); }
     void fromListMovable() const { fromList<Movable>(); }
     void fromListCustom() const { fromList<Custom>(); }
@@ -1650,6 +1651,21 @@ void tst_QList::first() const
     QCOMPARE(myvec.first(1), (QList<int>{23}));
     QCOMPARE(myvec.first(2), (QList<int>{23, 42}));
     QCOMPARE(myvec.first(3), myvec);
+}
+
+void tst_QList::freeSpaceAtBeginEventuallyShrinks() const
+{
+    QList<int> list = {-10, -9, -8, -6, -5, -4, -3, -2, -1};
+    qsizetype last = list.d.freeSpaceAtBegin();
+    for (int i = 0; i < 10'000'000; ++i) {
+        list.push_back(i);
+        list.pop_front();
+        const qsizetype cur = list.d.freeSpaceAtBegin();
+        if (cur < last)
+            return; // success
+        last = cur;
+    }
+    QFAIL("The freeSpaceAtBegin() never shrank.");
 }
 
 void tst_QList::constFirst() const
