@@ -2614,7 +2614,8 @@ QString::QString(QChar ch)
 
 /*! \fn void QString::detach()
 
-    \internal
+    Ensures that this string's data is no longer
+    \l{Implicit Sharing}{shared} with other instances.
 */
 
 /*! \fn bool QString::isDetached() const
