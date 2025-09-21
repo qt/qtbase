@@ -46,6 +46,7 @@
 #include <mutex>
 #include <memory>
 #include <optional>
+#include <iterator>
 
 #include <ctype.h>
 #include <limits.h>
@@ -146,7 +147,7 @@ Q_CONSTINIT static QBasicMutex _q_ObjectMutexPool[131];
  */
 static inline QBasicMutex *signalSlotLock(const QObject *o)
 {
-    return &_q_ObjectMutexPool[uint(quintptr(o)) % sizeof(_q_ObjectMutexPool)/sizeof(QBasicMutex)];
+    return &_q_ObjectMutexPool[quintptr(o) % std::size(_q_ObjectMutexPool)];
 }
 
 void (*QAbstractDeclarativeData::destroyed)(QAbstractDeclarativeData *, QObject *) = nullptr;
