@@ -550,7 +550,8 @@
 
 /*! \fn template <typename T> void QList<T>::detach()
 
-    \internal
+    Ensures that this QList's data is no longer
+    \l{Implicit Sharing}{shared} with other instances.
 */
 
 /*! \fn template <typename T> bool QList<T>::isDetached() const
