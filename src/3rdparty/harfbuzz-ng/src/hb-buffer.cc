@@ -525,7 +525,19 @@ hb_buffer_t::set_masks (hb_mask_t    value,
   hb_mask_t not_mask = ~mask;
   value &= mask;
 
+  max_ops -= len;
+  if (unlikely (max_ops < 0))
+    successful = false;
+
   unsigned int count = len;
+
+  if (cluster_start == 0 && cluster_end == (unsigned int) -1)
+  {
+    for (unsigned int i = 0; i < count; i++)
+      info[i].mask = (info[i].mask & not_mask) | value;
+    return;
+  }
+
   for (unsigned int i = 0; i < count; i++)
     if (cluster_start <= info[i].cluster && info[i].cluster < cluster_end)
       info[i].mask = (info[i].mask & not_mask) | value;
@@ -540,6 +552,10 @@ hb_buffer_t::merge_clusters_impl (unsigned int start,
     unsafe_to_break (start, end);
     return;
   }
+
+  max_ops -= end - start;
+  if (unlikely (max_ops < 0))
+    successful = false;
 
   unsigned int cluster = info[start].cluster;
 
@@ -573,6 +589,10 @@ hb_buffer_t::merge_out_clusters (unsigned int start,
 
   if (unlikely (end - start < 2))
     return;
+
+  max_ops -= end - start;
+  if (unlikely (max_ops < 0))
+    successful = false;
 
   unsigned int cluster = out_info[start].cluster;
 
