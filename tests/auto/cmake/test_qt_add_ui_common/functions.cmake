@@ -8,7 +8,30 @@ function(generate_hash_folder target_name infile out_folder)
     set(${out_folder} "${short_hash}" PARENT_SCOPE)
 endfunction()
 
+function(check_generator_works out_var generator_name)
+    message(STATUS "Checking if generator '${generator_name}' works")
+    string(CONCAT source_dir
+        "${CMAKE_CURRENT_SOURCE_DIR}/../"
+        "test_qt_add_ui_common/vs_generator_test")
+    set(build_dir
+        "${CMAKE_CURRENT_BINARY_DIR}/vs_generator_test-build")
+    run_cmake_configure(SOURCE_DIR "${source_dir}"
+                        BUILD_DIR "${build_dir}"
+                        GENERATOR "${generator_name}"
+                        CLEAN_FIRST
+                        RESULT_VARIABLE cmake_result)
+
+    if("${cmake_result}" EQUAL 0)
+        set(generator_works "TRUE")
+    else()
+        set(generator_works "FALSE")
+    endif()
+    message(STATUS "Checking if generator '${generator_name}' works - ${generator_works}")
+    set(${out_var} "${generator_works}" PARENT_SCOPE)
+endfunction()
+
 function(get_latest_vs_generator output)
+    message(STATUS "Checking which latest Visual Studio generator can be used.")
     execute_process(COMMAND ${CMAKE_COMMAND} -G
         ERROR_VARIABLE CMAKE_GENERATORS_ERROR
         OUTPUT_STRIP_TRAILING_WHITESPACE)
@@ -23,7 +46,14 @@ function(get_latest_vs_generator output)
     set(last_generator "")
     foreach(generator IN LISTS vs_generators)
         string(REGEX MATCH "Visual Studio ([0-9]+) [0-9]+" unused "${generator}")
+
         if("${CMAKE_MATCH_1}" VERSION_GREATER "${last_version}")
+            # Skip Visual Studio 18 2026 because it's not installed in CI yet
+            check_generator_works(generator_works "${CMAKE_MATCH_0}")
+            if(NOT generator_works)
+                continue()
+            endif()
+
             set(last_version "${CMAKE_MATCH_1}")
             set(last_generator "${CMAKE_MATCH_0}")
         endif()
