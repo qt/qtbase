@@ -10597,6 +10597,10 @@ void QWidget::setWindowFlags(Qt::WindowFlags flags)
     Sets the window flag \a flag on this widget if \a on is true;
     otherwise clears the flag.
 
+    \note This function calls setParent() when changing the flags for
+    a window, causing the widget to be hidden. You must call show() to make
+    the widget visible again.
+
     \sa setWindowFlags(), windowFlags(), windowType()
 */
 void QWidget::setWindowFlag(Qt::WindowType flag, bool on)
