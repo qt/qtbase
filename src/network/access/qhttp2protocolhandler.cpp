@@ -337,9 +337,6 @@ void QHttp2ProtocolHandler::handleHeadersReceived(const HPack::HttpHeader &heade
             httpReply->setStatusCode(statusCode);
             m_channel->lastStatus = statusCode; // Mostly useless for http/2, needed for auth
             httpReply->setReasonPhrase(QString::fromLatin1(value.mid(4)));
-        } else if (name == ":version") {
-            httpReply->setMajorVersion(value.at(5) - '0');
-            httpReply->setMinorVersion(value.at(7) - '0');
         } else if (name == "content-length") {
             bool ok = false;
             const qlonglong length = value.toLongLong(&ok);
