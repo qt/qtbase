@@ -56,6 +56,7 @@ private slots:
     void restoreDockWidget();
     void restoreStateWhileStillFloating();
     void setWindowTitle();
+    void windowIcon();
 
     // task specific tests:
     void task165177_deleteFocusWidget();
@@ -1247,6 +1248,28 @@ void tst_QDockWidget::setWindowTitle()
     dock2.close();
     dock2.setWindowTitle(closedDock2);
     QCOMPARE(dock2.windowTitle(), closedDock2);
+}
+
+void tst_QDockWidget::windowIcon()
+{
+    QPixmap pm(5, 5);
+    pm.fill(Qt::red);
+    const QIcon icon(pm);
+    pm.fill(Qt::green);
+    const QIcon appIcon(pm);
+    qApp->setWindowIcon(appIcon);
+    QMainWindow mainWindow;
+    mainWindow.setCentralWidget(new QWidget);
+    auto *d1 = new QDockWidget;
+    auto *d2 = new QDockWidget;
+    d2->setWindowIcon(icon);
+    mainWindow.addDockWidget(Qt::TopDockWidgetArea, d1);
+    mainWindow.addDockWidget(Qt::TopDockWidgetArea, d2);
+    mainWindow.tabifyDockWidget(d1, d2);
+    auto *bar = mainWindow.findChild<QTabBar *>();
+    Q_ASSERT(bar->count() == 2);
+    QCOMPARE(bar->tabIcon(0), QIcon());
+    QCOMPARE(bar->tabIcon(1), icon);
 }
 
 // helpers for dockPermissions, hideAndShow, closeAndDelete
