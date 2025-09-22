@@ -45,6 +45,7 @@ public:
     void compositionEndCallback(emscripten::val event);
     void compositionStartCallback(emscripten::val event);
     void compositionUpdateCallback(emscripten::val event);
+    void beforeInputCallback(emscripten::val event);
 
     void updateGeometry();
 
@@ -62,6 +63,7 @@ private:
     bool m_inputMethodAccepted = false;
     QObject *m_focusObject = nullptr;
     emscripten::val m_inputElement = emscripten::val::null();
+    QPair<int, int> rangesPair;
 };
 
 QT_END_NAMESPACE

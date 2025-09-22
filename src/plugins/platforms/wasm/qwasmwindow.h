@@ -145,6 +145,7 @@ private:
     void handleCompositionStartEvent(emscripten::val event);
     void handleCompositionUpdateEvent(emscripten::val event);
     void handleCompositionEndEvent(emscripten::val event);
+    void handleBeforeInputEvent(emscripten::val event);
 
     void handlePointerEnterLeaveEvent(const PointerEvent &event);
     bool processPointerEnterLeave(const PointerEvent &event);
@@ -183,6 +184,7 @@ private:
     QWasmEventHandler m_compositionStartCallback;
     QWasmEventHandler m_compositionUpdateCallback;
     QWasmEventHandler m_compositionEndCallback;
+    QWasmEventHandler m_beforeInputCallback;
 
     QWasmEventHandler m_pointerDownCallback;
     QWasmEventHandler m_pointerMoveCallback;

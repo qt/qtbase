@@ -110,6 +110,7 @@ QWasmWindow::QWasmWindow(QWindow *w, QWasmDeadKeySupport *deadKeySupport,
     // Set up m_inputElement, which takes focus whenever a Qt text input UI element has
     // foucus.
     m_inputElement["classList"].call<void>("add", emscripten::val("qt-window-input-element"));
+    m_inputElement.call<void>("setAttribute", std::string("contenteditable"), std::string("true"));
     m_inputElement.set("type", "text");
     m_inputElement["style"].set("position", "absolute");
     m_inputElement["style"].set("left", 0);
@@ -227,6 +228,8 @@ void QWasmWindow::registerEventHandlers()
         [this](emscripten::val event){ handleCompositionStartEvent(event); });
     m_compositionEndCallback = QWasmEventHandler(m_window, "compositionend",
         [this](emscripten::val event){ handleCompositionEndEvent(event); });
+    m_beforeInputCallback = QWasmEventHandler(m_window, "beforeinput",
+        [this](emscripten::val event){ handleBeforeInputEvent(event); });
     }
 
 QWasmWindow::~QWasmWindow()
@@ -787,6 +790,16 @@ void QWasmWindow::handleCompositionEndEvent(emscripten::val event)
         inputContext->compositionEndCallback(event);
     else
         m_focusHelper.set("innerHTML", std::string());
+}
+
+void QWasmWindow::handleBeforeInputEvent(emscripten::val event)
+{
+    qWarning() << Q_FUNC_INFO;
+
+     if (QWasmInputContext *inputContext = QWasmIntegration::get()->wasmInputContext(); inputContext->isActive())
+        inputContext->beforeInputCallback(event);
+    // else
+    //     m_focusHelper.set("innerHTML", std::string());
 }
 
 void QWasmWindow::handlePointerEnterLeaveEvent(const PointerEvent &event)

@@ -39,8 +39,23 @@ void QWasmInputContext::inputCallback(emscripten::val event)
     // Some of them should be implemented here later.
     qCDebug(qLcQpaWasmInputContext) << Q_FUNC_INFO << "inputType : " << inputTypeString;
     if (!inputTypeString.compare("deleteContentBackward")) {
-        QWindowSystemInterface::handleKeyEvent(0, QEvent::KeyPress, Qt::Key_Backspace, Qt::NoModifier);
-        QWindowSystemInterface::handleKeyEvent(0, QEvent::KeyRelease, Qt::Key_Backspace, Qt::NoModifier);
+
+        QInputMethodQueryEvent queryEvent(Qt::ImQueryAll);
+        QCoreApplication::sendEvent(m_focusObject, &queryEvent);
+        int cursorPosition = queryEvent.value(Qt::ImCursorPosition).toInt();
+
+        int deleteLength = rangesPair.second - rangesPair.first;
+        int deleteFrom = -1;
+        if (cursorPosition > rangesPair.first) {
+            deleteFrom = -(cursorPosition - rangesPair.first);
+        }
+        QInputMethodEvent e;
+        e.setCommitString(QString(), deleteFrom, deleteLength);
+        QCoreApplication::sendEvent(m_focusObject, &e);
+
+        rangesPair.first = 0;
+        rangesPair.second = 0;
+
         event.call<void>("stopImmediatePropagation");
         return;
     } else if (!inputTypeString.compare("deleteContentForward")) {
@@ -137,39 +152,21 @@ void QWasmInputContext::compositionUpdateCallback(emscripten::val event)
     const auto compositionStr = QString::fromEcmaString(event["data"]);
     qCDebug(qLcQpaWasmInputContext) << Q_FUNC_INFO << compositionStr;
 
-    // WA for IOS.
-    // Not sure now because I cannot test it anymore.
-//    int replaceSize = 0;
-//    emscripten::val win = emscripten::val::global("window");
-//    emscripten::val sel = win.call<emscripten::val>("getSelection");
-//    if (!sel.isNull() && !sel.isUndefined()
-//            && sel["rangeCount"].as<int>() > 0) {
-//        QInputMethodQueryEvent queryEvent(Qt::ImQueryAll);
-//        QCoreApplication::sendEvent(QGuiApplication::focusObject(), &queryEvent);
-//        qCDebug(qLcQpaWasmInputContext) << "Qt surrounding text: " << queryEvent.value(Qt::ImSurroundingText).toString();
-//        qCDebug(qLcQpaWasmInputContext) << "Qt current selection: " << queryEvent.value(Qt::ImCurrentSelection).toString();
-//        qCDebug(qLcQpaWasmInputContext) << "Qt text before cursor: " << queryEvent.value(Qt::ImTextBeforeCursor).toString();
-//        qCDebug(qLcQpaWasmInputContext) << "Qt text after cursor: " << queryEvent.value(Qt::ImTextAfterCursor).toString();
-//
-//        const QString &selectedStr = QString::fromEcmaString(sel.call<emscripten::val>("toString"));
-//        const auto &preeditStr = preeditString();
-//        qCDebug(qLcQpaWasmInputContext) << "Selection.type : " << sel["type"].as<std::string>();
-//        qCDebug(qLcQpaWasmInputContext) << Q_FUNC_INFO << "Selected: " << selectedStr;
-//        qCDebug(qLcQpaWasmInputContext) << Q_FUNC_INFO << "PreeditString: " << preeditStr;
-//        if (!sel["type"].as<std::string>().compare("Range")) {
-//            QString surroundingTextBeforeCursor = queryEvent.value(Qt::ImTextBeforeCursor).toString();
-//            if (surroundingTextBeforeCursor.endsWith(selectedStr)) {
-//                replaceSize = selectedStr.size();
-//                qCDebug(qLcQpaWasmInputContext) << Q_FUNC_INFO << "Current Preedit: " << preeditStr << replaceSize;
-//            }
-//        }
-//        emscripten::val range = sel.call<emscripten::val>("getRangeAt", 0);
-//        qCDebug(qLcQpaWasmInputContext) << "Range.startOffset : " << range["startOffset"].as<int>();
-//        qCDebug(qLcQpaWasmInputContext) << "Range.endOffset : " << range["endOffset"].as<int>();
-//    }
-//
-//    setPreeditString(compositionStr, replaceSize);
     setPreeditString(compositionStr, 0);
+}
+
+void QWasmInputContext::beforeInputCallback(emscripten::val event)
+{
+    emscripten::val ranges = event.call<emscripten::val>("getTargetRanges");
+
+    auto length = ranges["length"].as<int>();
+    for (auto i = 0; i < length; i++) {
+        emscripten::val range = ranges[i];
+        qCDebug(qLcQpaWasmInputContext) << "startOffset" << range["startOffset"].as<int>();
+        qCDebug(qLcQpaWasmInputContext) << "endOffset" << range["endOffset"].as<int>();
+        rangesPair.first = range["startOffset"].as<int>();
+        rangesPair.second = range["endOffset"].as<int>();
+    }
 }
 
 QWasmInputContext::QWasmInputContext()
