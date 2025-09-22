@@ -321,6 +321,7 @@ void tst_QRhi::rhiTestDataWithParam(const char *paramName, QSpan<T, E> paramValu
 bool tst_QRhi::isAndroidOpenGLSwiftShader(QRhi::Implementation impl, const QRhi *rhi)
 {
 #ifdef Q_OS_ANDROID
+    qWarning() << rhi->driverInfo();
     if (impl == QRhi::OpenGLES2 && rhi->driverInfo().deviceName.contains("SwiftShader"))
         return true;
 #else
@@ -5599,6 +5600,12 @@ void tst_QRhi::threeDimTexture()
     QFETCH(QRhiInitParams *, initParams);
 
     QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams));
+
+#ifdef Q_OS_ANDROID
+    if (QNativeInterface::QAndroidApplication::sdkVersion() == 36)
+        QSKIP("Fails and crashes on Android 16 (QTBUG-140189)");
+#endif
+
     if (!rhi)
         QSKIP("QRhi could not be created, skipping testing 3D textures");
 
@@ -6286,6 +6293,11 @@ void tst_QRhi::leakedResourceDestroy()
 {
     QFETCH(QRhi::Implementation, impl);
     QFETCH(QRhiInitParams *, initParams);
+
+#ifdef Q_OS_ANDROID
+    if ((QNativeInterface::QAndroidApplication::sdkVersion() == 36) && (impl == QRhi::Vulkan))
+        QSKIP("Fails and crashes on Android 16 (QTBUG-140189)");
+#endif
 
     QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams));
     if (!rhi)
@@ -7156,6 +7168,12 @@ void tst_QRhi::storageBuffer()
 
     QFETCH(QRhi::Implementation, impl);
     QFETCH(QRhiInitParams *, initParams);
+
+#ifdef Q_OS_ANDROID
+    if (QNativeInterface::QAndroidApplication::sdkVersion() == 36)
+        QSKIP("pipeline->create()) Fails on Android 16 (QTBUG-140189)");
+#endif
+
 
     // we can't test with Null as there is no compute
     if (impl == QRhi::Null)
