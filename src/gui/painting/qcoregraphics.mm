@@ -11,6 +11,7 @@
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qoperatingsystemversion.h>
 #include <QtGui/qcolorspace.h>
+#include <QtGui/private/qicon_p.h>
 
 #if defined(Q_OS_MACOS)
 # include <AppKit/AppKit.h>
@@ -189,6 +190,19 @@ QT_END_NAMESPACE
 
     return nsImage;
 }
+
++ (instancetype)internalImageFromQIcon:(const QT_PREPEND_NAMESPACE(QIcon) &)icon
+{
+    if (icon.isNull())
+        return nil;
+
+    // Check if the icon is backed by an NSImage. If so, we can use that directly.
+    auto *iconPrivate = QIconPrivate::get(&icon);
+    NSImage *iconImage = nullptr;
+    iconPrivate->engine->virtual_hook(QIconPrivate::PlatformIconHook, &iconImage);
+    return iconImage;
+}
+
 @end
 
 QT_BEGIN_NAMESPACE

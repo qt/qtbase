@@ -34,6 +34,11 @@ public:
         delete engine;
     }
 
+    static QIconPrivate *get(QIcon *icon) { return icon->d; }
+    static const QIconPrivate *get(const QIcon *icon) { return icon->d; }
+
+    enum IconEngineHook { PlatformIconHook = 1000 };
+
     static qreal pixmapDevicePixelRatio(qreal displayDevicePixelRatio, const QSize &requestedSize, const QSize &actualSize);
 
     QIconEngine *engine;

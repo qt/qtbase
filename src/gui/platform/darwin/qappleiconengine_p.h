@@ -47,6 +47,8 @@ public:
 
     static QList<QSize> availableIconSizes(double aspectRatio = 1.0);
 
+    void virtual_hook(int hookIdentifier, void *data) override;
+
 private:
     const QString m_iconName;
 #if defined(Q_OS_MACOS)

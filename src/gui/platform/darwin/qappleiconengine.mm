@@ -15,6 +15,7 @@
 #include <QtGui/qstylehints.h>
 
 #include <QtGui/private/qcoregraphics_p.h>
+#include <QtGui/private/qicon_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -468,6 +469,16 @@ void QAppleIconEngine::paint(QPainter *painter, const QRect &rect, QIcon::Mode m
     [image drawInRect:cgrect];
     UIGraphicsPopContext();
 #endif
+}
+
+void QAppleIconEngine::virtual_hook(int hookIdentifier, void *data)
+{
+    // Expose underlying NSImage so we can pass it on to AppKit
+    // directly without flattening, preserving the symbol image.
+    if (hookIdentifier == QIconPrivate::PlatformIconHook)
+        *static_cast<decltype(m_image)*>(data) = m_image;
+    else
+        QIconEngine::virtual_hook(hookIdentifier, data);
 }
 
 QT_END_NAMESPACE

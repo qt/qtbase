@@ -261,6 +261,8 @@ private:
     friend Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QIcon &);
 #endif
 
+    friend class QIconPrivate;
+
 public:
     typedef QIconPrivate * DataPtr;
     inline DataPtr &data_ptr() { return d; }

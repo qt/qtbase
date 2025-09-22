@@ -64,6 +64,7 @@ QT_END_NAMESPACE
                       withSize:(const QT_PREPEND_NAMESPACE(QSize) &)size
                       withMode:(QT_PREPEND_NAMESPACE(QIcon)::Mode)mode
                      withState:(QT_PREPEND_NAMESPACE(QIcon)::State)state;
++ (instancetype)internalImageFromQIcon:(const QT_PREPEND_NAMESPACE(QIcon) &)icon;
 @end
 QT_BEGIN_NAMESPACE
 #endif // __OBJC__
