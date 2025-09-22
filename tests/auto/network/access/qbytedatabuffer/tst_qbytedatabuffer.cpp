@@ -2,7 +2,9 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QTest>
-#include <private/qbytedata_p.h>
+
+#include <QtNetwork/private/qbytedatabuffer_p.h>
+
 // for QIODEVICE_BUFFERSIZE macro (== 16384):
 #include <private/qiodevice_p.h>
 

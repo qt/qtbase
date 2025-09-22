@@ -15,5 +15,5 @@ qt_internal_add_test(tst_qbytedatabuffer
     SOURCES
         tst_qbytedatabuffer.cpp
     LIBRARIES
-        Qt::CorePrivate
+        Qt::NetworkPrivate
 )

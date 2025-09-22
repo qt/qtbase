@@ -16,7 +16,7 @@
 // We mean it.
 //
 
-#include <QtNetwork/private/qtnetworkglobal_p.h>
+#include <QtNetwork/private/qbytedatabuffer_p.h>
 
 #include <qplatformdefs.h>
 
@@ -34,7 +34,6 @@
 #include <private/qhttpnetworkrequest_p.h>
 #include <private/qauthenticator_p.h>
 #include <private/qringbuffer_p.h>
-#include <private/qbytedata_p.h>
 
 #ifndef QT_NO_NETWORKPROXY
 Q_MOC_INCLUDE(<QtNetwork/QNetworkProxy>)

@@ -17,9 +17,7 @@
 //
 
 #include <QtNetwork/qtnetworkexports.h>
-#include <QtNetwork/private/qtnetworkglobal_p.h>
-
-#include <QtCore/private/qbytedata_p.h>
+#include <QtNetwork/private/qbytedatabuffer_p.h>
 
 #include <memory>
 

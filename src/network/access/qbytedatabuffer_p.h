@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 // Qt-Security score:critical reason:data-parser
 
-#ifndef QBYTEDATA_P_H
-#define QBYTEDATA_P_H
+#ifndef QBYTEDATABUFFER_P_H
+#define QBYTEDATABUFFER_P_H
 
 //
 //  W A R N I N G
@@ -16,8 +16,9 @@
 // We mean it.
 //
 
-#include <QtCore/private/qglobal_p.h>
-#include <qbytearray.h>
+#include <QtNetwork/private/qtnetworkglobal_p.h>
+
+#include <QtCore/qbytearray.h>
 #include <QtCore/qlist.h>
 
 #include <climits>
@@ -283,4 +284,4 @@ public:
 
 QT_END_NAMESPACE
 
-#endif // QBYTEDATA_P_H
+#endif // QBYTEDATABUFFER_P_H

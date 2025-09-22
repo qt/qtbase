@@ -224,7 +224,6 @@ qt_internal_add_module(Core
         text/qbytearraylist.cpp text/qbytearraylist.h
         text/qbytearraymatcher.cpp text/qbytearraymatcher.h
         text/qbytearrayview.h
-        text/qbytedata_p.h
         text/qchar.h
         text/qcollator.cpp text/qcollator.h text/qcollator_p.h
         text/qdoublescanprint_p.h
