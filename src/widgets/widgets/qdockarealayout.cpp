@@ -2196,8 +2196,10 @@ bool QDockAreaLayoutInfo::updateTabBar() const
         QDockWidget *dw = qobject_cast<QDockWidget*>(item.widgetItem->widget());
         QString title = dw->d_func()->fixedWindowTitle;
         quintptr id = tabId(item);
+        const QIcon windowIcon = dw->testAttribute(Qt::WA_SetWindowIcon) ? dw->windowIcon()
+                                                                         : QIcon();
         if (tab_idx == tabBar->count()) {
-            tabBar->insertTab(tab_idx, dw->windowIcon(), title);
+            tabBar->insertTab(tab_idx, windowIcon, title);
 #if QT_CONFIG(tooltip)
             tabBar->setTabToolTip(tab_idx, title);
 #endif
@@ -2207,7 +2209,7 @@ bool QDockAreaLayoutInfo::updateTabBar() const
                     && qvariant_cast<quintptr>(tabBar->tabData(tab_idx + 1)) == id)
                 tabBar->removeTab(tab_idx);
             else {
-                tabBar->insertTab(tab_idx, dw->windowIcon(), title);
+                tabBar->insertTab(tab_idx, windowIcon, title);
 #if QT_CONFIG(tooltip)
                 tabBar->setTabToolTip(tab_idx, title);
 #endif
