@@ -11,6 +11,7 @@
 #include "qhostaddress.h"
 #include "qvarlengtharray.h"
 #include "qnetworkinterface.h"
+#include "qnetworkinterface_p.h"
 #include "qendian.h"
 #ifdef Q_OS_WASM
 #include <private/qeventdispatcher_wasm_p.h>
@@ -81,6 +82,9 @@ static void convertToLevelAndOption(QNativeSocketEngine::SocketOption opt,
     case QNativeSocketEngine::BindExclusively:          // not handled on Unix
     case QNativeSocketEngine::MaxStreamsSocketOption:
         Q_UNREACHABLE();
+
+    case QNativeSocketEngine::BindInterfaceIndex:
+        Q_UNREACHABLE(); // handled directly in setOption()
 
     case QNativeSocketEngine::BroadcastSocketOption:
         n = SO_BROADCAST;
@@ -373,7 +377,27 @@ bool QNativeSocketEnginePrivate::setOption(QNativeSocketEngine::SocketOption opt
 #endif
         return false;
     }
-
+    case QNativeSocketEngine::BindInterfaceIndex: {
+#if defined(SO_BINDTOIFINDEX) // seen on Linux
+        return ::setsockopt(socketDescriptor, SOL_SOCKET, SO_BINDTOIFINDEX,
+                            &v, sizeof(v)) == 0;
+#elif defined(IPV6_BOUND_IF) && defined(IP_BOUND_IF) // seen on Darwin
+        // note: on Darwin, this only limits sending the data, not receiving it
+        if (socketProtocol == QAbstractSocket::IPv6Protocol
+            || socketProtocol == QAbstractSocket::AnyIPProtocol) {
+            return ::setsockopt(socketDescriptor, IPPROTO_IPV6, IPV6_BOUND_IF, &v, sizeof(v)) == 0;
+        } else {
+            return ::setsockopt(socketDescriptor, IPPROTO_IP, IP_BOUND_IF, &v, sizeof(v)) == 0;
+        }
+#elif defined(SO_BINDTODEVICE) && QT_CONFIG(networkinterface)
+        // need to convert to interface name
+        const QByteArray name = QNetworkInterfaceManager::interfaceNameFromIndex(v).toLatin1();
+        return ::setsockopt(socketDescriptor, SOL_SOCKET, SO_BINDTODEVICE,
+                            name.data(), socklen_t(name.size())) == 0;
+#else
+        return false;
+#endif
+    }
     default:
         break;
     }

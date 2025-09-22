@@ -75,7 +75,8 @@ public:
         ReceivePacketInformation,
         ReceiveHopLimit,
         MaxStreamsSocketOption,
-        PathMtuInformation
+        PathMtuInformation,
+        BindInterfaceIndex,
     };
 
     enum PacketHeaderOption {

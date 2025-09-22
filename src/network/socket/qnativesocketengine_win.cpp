@@ -153,6 +153,9 @@ static void convertToLevelAndOption(QNativeSocketEngine::SocketOption opt,
     case QNativeSocketEngine::MaxStreamsSocketOption:
         Q_UNREACHABLE();
 
+    case QNativeSocketEngine::BindInterfaceIndex:
+        Q_UNREACHABLE(); // handled directly in setOption()
+
     case QNativeSocketEngine::ReceiveBufferSocketOption:
         n = SO_RCVBUF;
         break;
@@ -439,6 +442,64 @@ bool QNativeSocketEnginePrivate::setOption(QNativeSocketEngine::SocketOption opt
             }
         }
         return true;
+    }
+
+    case QNativeSocketEngine::BindInterfaceIndex: {
+        int ret = 0;
+        if (socketProtocol == QAbstractSocket::IPv6Protocol
+            || socketProtocol == QAbstractSocket::AnyIPProtocol) {
+            // IPv6 - uses host byte order
+            // Bind outgoing datagrams to the interface
+            if (!ret) {
+                ret = ::setsockopt(socketDescriptor, IPPROTO_IPV6, IPV6_UNICAST_IF,
+                                   reinterpret_cast<char *>(&v), sizeof(v));
+            }
+            if (!ret) {
+                ret = ::setsockopt(socketDescriptor, IPPROTO_IPV6, IPV6_MULTICAST_IF,
+                                   reinterpret_cast<char *>(&v), sizeof(v));
+            }
+            // Bind incoming datagrams to the interface
+            if (!ret) {
+                const int enable = 1;
+                ret = ::setsockopt(socketDescriptor, IPPROTO_IPV6, IPV6_IFLIST,
+                                   reinterpret_cast<const char *>(&enable), sizeof(enable));
+                if (!ret) {
+                    ret = ::setsockopt(socketDescriptor, IPPROTO_IPV6, IPV6_ADD_IFLIST,
+                                       reinterpret_cast<char *>(&v), sizeof(v));
+                }
+            }
+        }
+        bool result = !ret;
+        if (result) {
+            // Try to set the IPv4 options unconditionally, but ignore
+            // the result if the protocol is not IPv4-only
+
+            // IPv4 - uses network byte order
+            int netIdx = htonl(v);
+            // Bind outgoing datagrams to the interface
+            if (!ret) {
+                ret = ::setsockopt(socketDescriptor, IPPROTO_IP, IP_UNICAST_IF,
+                                   reinterpret_cast<char *>(&netIdx), sizeof(netIdx));
+            }
+            if (!ret) {
+                ret = ::setsockopt(socketDescriptor, IPPROTO_IP, IP_MULTICAST_IF,
+                                   reinterpret_cast<char *>(&netIdx), sizeof(netIdx));
+            }
+            // Bind incoming datagrams to the interface
+            if (!ret) {
+                const int enable = 1;
+                ret = ::setsockopt(socketDescriptor, IPPROTO_IP, IP_IFLIST,
+                                   reinterpret_cast<const char *>(&enable), sizeof(enable));
+                if (!ret) {
+                    // uses host byte order here
+                    ret = ::setsockopt(socketDescriptor, IPPROTO_IP, IP_ADD_IFLIST,
+                                       reinterpret_cast<char *>(&v), sizeof(v));
+                }
+            }
+            if (socketProtocol == QAbstractSocket::IPv4Protocol)
+                result = !ret;
+        }
+        return result;
     }
 
     default:
