@@ -1500,9 +1500,12 @@ bool QAbstractSocket::bind(const QHostAddress &address, quint16 port, BindMode m
     return d->bind(address, port, mode);
 }
 
-bool QAbstractSocketPrivate::bind(const QHostAddress &address, quint16 port, QAbstractSocket::BindMode mode)
+bool QAbstractSocketPrivate::bind(const QHostAddress &address, quint16 port, QAbstractSocket::BindMode mode,
+                                  const QNetworkInterface *iface)
 {
     Q_Q(QAbstractSocket);
+
+    Q_UNUSED(iface); // will be used in a follow-up patch
 
     // now check if the socket engine is initialized and to the right type
     if (!socketEngine || !socketEngine->isValid()) {

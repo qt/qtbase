@@ -28,8 +28,10 @@
 QT_BEGIN_NAMESPACE
 
 class QHostInfo;
+class QNetworkInterface;
 
-class QAbstractSocketPrivate : public QIODevicePrivate, public QAbstractSocketEngineReceiver
+class Q_NETWORK_EXPORT QAbstractSocketPrivate : public QIODevicePrivate,
+                                                public QAbstractSocketEngineReceiver
 {
     Q_DECLARE_PUBLIC(QAbstractSocket)
 public:
@@ -49,7 +51,8 @@ public:
     }
 #endif
 
-    virtual bool bind(const QHostAddress &address, quint16 port, QAbstractSocket::BindMode mode);
+    virtual bool bind(const QHostAddress &address, quint16 port, QAbstractSocket::BindMode mode,
+                      const QNetworkInterface *iface = nullptr);
 
     virtual bool canReadNotification();
     bool canWriteNotification();

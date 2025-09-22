@@ -2423,8 +2423,10 @@ void QSslSocketPrivate::setPaused(bool p)
     paused = p;
 }
 
-bool QSslSocketPrivate::bind(const QHostAddress &address, quint16 port, QAbstractSocket::BindMode mode)
+bool QSslSocketPrivate::bind(const QHostAddress &address, quint16 port, QAbstractSocket::BindMode mode,
+                             const QNetworkInterface *iface)
 {
+    Q_UNUSED(iface); // only relevant for QUdpSocket for now
     // this function is called from QAbstractSocket::bind
     if (!initialized)
         init();

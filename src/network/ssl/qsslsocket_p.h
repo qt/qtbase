@@ -99,7 +99,7 @@ public:
     static std::shared_ptr<QSslContext> sslContext(QSslSocket *socket);
     bool isPaused() const;
     void setPaused(bool p);
-    bool bind(const QHostAddress &address, quint16, QAbstractSocket::BindMode) override;
+    bool bind(const QHostAddress &address, quint16, QAbstractSocket::BindMode, const QNetworkInterface *iface = nullptr) override;
     void _q_connectedSlot();
     void _q_hostFoundSlot();
     void _q_disconnectedSlot();
