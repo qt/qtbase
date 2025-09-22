@@ -333,10 +333,16 @@ void QHttp2ProtocolHandler::handleHeadersReceived(const HPack::HttpHeader &heade
         // of parsing and related errors/bugs, but it would be nice to have
         // more detailed validation of headers.
         if (name == ":status") {
-            statusCode = value.left(3).toInt();
-            httpReply->setStatusCode(statusCode);
-            m_channel->lastStatus = statusCode; // Mostly useless for http/2, needed for auth
-            httpReply->setReasonPhrase(QString::fromLatin1(value.mid(4)));
+            bool ok = false;
+            if (int status = value.toInt(&ok); ok && status >= 0 && status <= 999) {
+                statusCode = status;
+                httpReply->setStatusCode(statusCode);
+                m_channel->lastStatus = statusCode; // Mostly useless for http/2, needed for auth
+            } else {
+                finishStreamWithError(stream, QNetworkReply::ProtocolInvalidOperationError,
+                                      "invalid :status value"_L1);
+                return;
+            }
         } else if (name == "content-length") {
             bool ok = false;
             const qlonglong length = value.toLongLong(&ok);
