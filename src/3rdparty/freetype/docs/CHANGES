@@ -1,3 +1,17 @@
+CHANGES BETWEEN 2.14.0 and 2.14.1 (2025-Sep-11)
+
+  I. IMPORTANT BUG FIXES
+
+  - This is  an emergency release that  fixes a couple of  severe bugs
+    introduced  in  version  2.14.0  and discovered  right  after  the
+    release; see issues  #1349, #1353, #1354, #1355, and  #1356 in our
+    bug tracker at
+
+      https://gitlab.freedesktop.org/freetype/freetype/-/issues
+
+
+======================================================================
+
 CHANGES BETWEEN 2.13.3 and 2.14.0 (2025-Sep-06)
 
   I. IMPORTANT CHANGES
