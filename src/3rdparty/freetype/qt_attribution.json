@@ -8,8 +8,8 @@
 
         "Description": "FreeType is a freely available software library to render fonts.",
         "Homepage": "http://www.freetype.org",
-        "Version": "2.14.0",
-        "DownloadLocation": "https://download.savannah.gnu.org/releases/freetype/freetype-2.14.0.tar.gz",
+        "Version": "2.14.1",
+        "DownloadLocation": "https://download.savannah.gnu.org/releases/freetype/freetype-2.14.1.tar.gz",
         "PURL": [
             "pkg:github/freetype/freetype@VER-$<VERSION_DASHED>"
         ],

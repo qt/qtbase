@@ -307,13 +307,16 @@
         FT_Bool  is_variation_old = FT_IS_VARIATION( face );
 
 
-	if ( error != -1 )
-	{
-	  if ( error == -2 ) /* -2 means is_variable. */
-	    face->face_flags |= FT_FACE_FLAG_VARIATION;
-	  else
-	    face->face_flags &= ~FT_FACE_FLAG_VARIATION;
-	}
+        if ( error != -1 )
+        {
+          if ( error == -2 ) /* -2 means is_variable. */
+          {
+            face->face_flags |= FT_FACE_FLAG_VARIATION;
+            error             = FT_Err_Ok;
+          }
+          else
+            face->face_flags &= ~FT_FACE_FLAG_VARIATION;
+        }
 
         if ( service_mm->construct_ps_name )
         {
@@ -485,13 +488,16 @@
         FT_Bool  is_variation_old = FT_IS_VARIATION( face );
 
 
-	if ( error != -1 )
-	{
-	  if ( error == -2 ) /* -2 means is_variable. */
-	    face->face_flags |= FT_FACE_FLAG_VARIATION;
-	  else
-	    face->face_flags &= ~FT_FACE_FLAG_VARIATION;
-	}
+        if ( error != -1 )
+        {
+          if ( error == -2 ) /* -2 means is_variable. */
+          {
+            face->face_flags |= FT_FACE_FLAG_VARIATION;
+            error             = FT_Err_Ok;
+          }
+          else
+            face->face_flags &= ~FT_FACE_FLAG_VARIATION;
+        }
 
         if ( service_mm->construct_ps_name )
         {

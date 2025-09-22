@@ -1355,6 +1355,7 @@
 
 #ifdef FT_CONFIG_OPTION_USE_HARFBUZZ
 
+    if ( ft_hb_enabled( globals ) )
     {
       hb_font_t  *hb_font;
       hb_face_t  *hb_face;
