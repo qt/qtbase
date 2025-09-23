@@ -4,6 +4,7 @@
 #include <qstring.h>
 #include <qstringlist.h>
 #include <qfile.h>
+#include <qfileinfo.h>
 
 #include "tracepointgen.h"
 #include "parser.h"
@@ -50,6 +51,8 @@ int main(int argc, char *argv[])
                     qPrintable(inputFile), qPrintable(in.errorString()));
         }
         DEBUGPRINTF(printf("tracepointgen: parse %s\n", qPrintable(inputFile)));
+        QFileInfo info(inputFile);
+        parser.addIncludeDirs({info.absolutePath()});
         parser.parse(in, inputFile);
     }
     if (parser.isEmpty())
