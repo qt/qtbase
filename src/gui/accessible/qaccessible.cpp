@@ -967,7 +967,7 @@ void QAccessible::updateAccessibility(QAccessibleEvent *event)
 
 /*!
     \internal
-    \brief getBoundaries is a helper function to find the accessible text boundaries for QTextCursor based documents.
+    \brief qAccessibleTextBoundaryHelper is a helper function to find the accessible text boundaries for QTextCursor based documents.
     \param documentCursor a valid cursor bound to the document (not null). It needs to ba at the position to look for the boundary
     \param boundaryType the type of boundary to find
     \return the boundaries as pair
