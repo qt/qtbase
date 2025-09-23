@@ -358,9 +358,11 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
                     rightRect = QRect(handlePos.x(), rect.top(), (rect.width() - handlePos.x()), rect.height());
                 } else {
                     rect = QRect(rect.center().x() - 2, slrect.top(), 4, slrect.height() - 5);
-                    rightRect = QRect(rect.left(), rect.top() + 1, rect.width(), (handlePos.y() - rect.top()));
-                    leftRect = QRect(rect.left(), handlePos.y(), rect.width(), (rect.height() - handlePos.y()));
+                    leftRect = QRect(rect.left(), rect.top() + 1, rect.width(), (handlePos.y() - rect.top()));
+                    rightRect = QRect(rect.left(), handlePos.y(), rect.width(), (rect.height() - handlePos.y()));
                 }
+                if (slider->upsideDown)
+                    qSwap(leftRect, rightRect);
 
                 painter->setPen(Qt::NoPen);
                 painter->setBrush(calculateAccentColor(option));
@@ -404,8 +406,9 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
                         break;
                     const int v_ = qMin(v, slider->maximum);
                     int tickLength = (v_ == slider->minimum || v_ >= slider->maximum) ? 4 : 3;
-                    pos = QStyle::sliderPositionFromValue(slider->minimum, slider->maximum,
-                                                          v_, available) + fudge;
+                    pos = QStyle::sliderPositionFromValue(slider->minimum, slider->maximum, v_,
+                                                          available, slider->upsideDown);
+                    pos += fudge;
                     if (slider->orientation == Qt::Horizontal) {
                         if (ticks & QSlider::TicksAbove) {
                             lines.append(QLineF(pos, tickOffset - 1 - bothOffset + 0.5,
