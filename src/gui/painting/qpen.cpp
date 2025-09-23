@@ -158,7 +158,8 @@ QT_BEGIN_NAMESPACE
 
     The default is Qt::BevelJoin.
 
-    \image qpen-miterlimit.png
+    \image qpen-miterlimit.png {Illustration showing how miterLimit controls
+           the length of the sharp corner for miterJoin}
 
     When the Qt::MiterJoin style is applied, it is possible to use the
     setMiterLimit() function to specify how far the miter join can

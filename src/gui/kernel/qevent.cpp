@@ -964,7 +964,8 @@ Qt::MouseEventFlags QMouseEvent::flags() const
     consider a top-level window A containing a child B which in turn contains a
     child C (all with mouse tracking enabled):
 
-    \image hoverevents.png
+    \image hoverevents.png {Screenshot showing widgets A, B, C stacked on top
+           of each other}
 
     Now, if you move the cursor from the top to the bottom in the middle of A,
     you will get the following QEvent::MouseMove events:
@@ -2613,7 +2614,8 @@ Q_IMPL_POINTER_EVENT(QTabletEvent)
     Positive values are towards the tablet's physical right. The angle
     is in the range -60 to +60 degrees.
 
-    \image qtabletevent-tilt.png
+    \image qtabletevent-tilt.png {Illustration of a device that is tilted
+           in a 3 Dimensional coordinate system}
 
     \note The value is stored as a single-precision float.
 

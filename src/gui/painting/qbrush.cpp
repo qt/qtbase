@@ -2421,7 +2421,8 @@ void QRadialGradient::setFocalPoint(const QPointF &focalPoint)
     Conical gradients interpolate interpolate colors counter-clockwise
     around a center point.
 
-    \image qconicalgradient.png
+    \image qconicalgradient.png {Screenshot that shows an example of
+           what a conical gradient looks like}
 
     The colors in a gradient is defined using stop points of the
     QGradientStop type, i.e. a position and a color. Use the

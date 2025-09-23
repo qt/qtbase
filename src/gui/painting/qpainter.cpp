@@ -2146,8 +2146,12 @@ void QPainter::setBrushOrigin(const QPointF &p)
     hint will effectively disable the RasterOp modes.
 
 
-     \image qpainter-compositionmode1.png
-     \image qpainter-compositionmode2.png
+     \image qpainter-compositionmode1.png {Illustration showing Source,
+            Destination, SourceOver, DestinationOver, SourceIn,
+            DestinationIn composition modes}
+     \image qpainter-compositionmode2.png {Illustration showing SourceOut,
+            DestinationOut, SourceAtop, DestinationAtop, Clear and Xor
+            composition modes}
 
     The most common type is SourceOver (often referred to as just
     alpha blending) where the source pixel is blended on top of the

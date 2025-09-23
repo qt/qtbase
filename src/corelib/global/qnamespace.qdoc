@@ -914,7 +914,8 @@
     This enum type defines what happens to the aspect ratio when
     scaling an rectangle.
 
-    \image qimage-scaling.png
+    \image qimage-scaling.png {Illustration showing three different
+           ways to scale images with Aspect Ratio Mode}
 
     \value IgnoreAspectRatio  The size is scaled freely. The aspect
                               ratio is not preserved.

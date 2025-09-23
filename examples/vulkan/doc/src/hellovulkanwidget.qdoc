@@ -13,7 +13,8 @@
     that embeds the QVulkanWindow into a QWidget-based user interface using
     QWidget::createWindowContainer().
 
-    \image hellovulkanwidget.png
+    \image hellovulkanwidget.png {Screenshot of example with window showing image contents
+           and label showing color format and buttons to grab and quit}
 
     The code to set up the Vulkan pipeline and render the triangle is the same
     as in \l hellovulkantriangle. In addition, this example demonstrates

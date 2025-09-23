@@ -441,7 +441,8 @@ static QStringList get_colornames()
 
     The code above produces the following output:
 
-    \image alphafill.png
+    \image alphafill.png {An image that contains four square sections,
+           with the colors purple, blue, red and white}
 
     The alpha channel of a color can be retrieved and set using the
     alpha() and setAlpha() functions if its value is an integer, and

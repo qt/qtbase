@@ -9,7 +9,7 @@
     \brief This example shows how to create a minimal QWindow-based
     application using QRhi.
 
-    \image rhiwindow_example.jpg
+    \image rhiwindow_example.jpg {Screenshot of example}
 
     Qt 6.6 starts offering its accelerated 3D API and shader abstraction layer
     for application use as well. Applications can now use the same 3D graphics

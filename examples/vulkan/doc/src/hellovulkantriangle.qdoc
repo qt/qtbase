@@ -12,7 +12,7 @@
     The \e{Hello Vulkan Triangle Example} creates a full graphics pipeline,
     including a vertex and fragment shader, to render a triangle.
 
-    \image hellovulkantriangle.png
+    \image hellovulkantriangle.png {Screenshot of example}
 
     \section1 Startup
 

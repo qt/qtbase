@@ -135,7 +135,8 @@ void QTransform::do_map(qreal x, qreal y, qreal &nx, qreal &ny) const
 
     \section1 Basic Matrix Operations
 
-    \image qtransform-representation.png
+    \image qtransform-representation.png {Illustration showing an object that
+           contains a 3x3 matrix where every row is a different element}
 
     A QTransform object contains a 3 x 3 matrix.  The \c m31 (\c dx) and
     \c m32 (\c dy) elements specify horizontal and vertical translation.

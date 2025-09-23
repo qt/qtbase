@@ -321,7 +321,9 @@
     still transformed to the viewport using the same linear algebraic
     approach.
 
-    \image coordinatesystem-transformations.png
+    \image coordinatesystem-transformations.png {Illustration showing
+           how coordinates are mapped using viewport, "window" and
+           transformation matrix}
 
     The viewport, "window" and transformation matrix determine how
     logical QPainter coordinates map to the paint device's physical

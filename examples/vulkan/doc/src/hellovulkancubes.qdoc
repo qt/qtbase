@@ -11,7 +11,8 @@
 
     The \e{Hello Vulkan Cubes Example} shows more advanced usage of QVulkanWindow.
 
-    \image hellovulkancubes.png
+    \image hellovulkancubes.png {Screenshot of example demonstrating instanced
+           drawing of mesh from a file}
 
     In this example there is a mesh loaded from a file and two different
     materials and corresponding graphics pipelines. The rounded cubes are drawn
