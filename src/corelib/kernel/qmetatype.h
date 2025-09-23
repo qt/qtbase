@@ -15,6 +15,7 @@
 #include <QtCore/qfloat16.h>
 #include <QtCore/qhashfunctions.h>
 #include <QtCore/qiterable.h>
+#include <QtCore/qmetacontainer.h>
 #ifndef QT_NO_QOBJECT
 #include <QtCore/qobjectdefs.h>
 #endif
