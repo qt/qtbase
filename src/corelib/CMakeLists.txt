@@ -168,7 +168,7 @@ qt_internal_add_module(Core
         kernel/qelapsedtimer.cpp kernel/qelapsedtimer.h
         kernel/qeventloop.cpp kernel/qeventloop.h kernel/qeventloop_p.h
         kernel/qfunctions_p.h
-        kernel/qiterable.cpp kernel/qiterable.h kernel/qiterable_p.h
+        kernel/qiterable.cpp kernel/qiterable.h kernel/qiterable_impl.h
         kernel/qmath.cpp kernel/qmath.h
         kernel/qmetacontainer.cpp kernel/qmetacontainer.h
         kernel/qmetaobject.cpp kernel/qmetaobject.h kernel/qmetaobject_p.h
