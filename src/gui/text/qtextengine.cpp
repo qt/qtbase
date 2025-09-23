@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 // Qt-Security score:critical reason:data-parser
 
+#include <QtCore/private/qflatmap_p.h>
 #include <QtGui/private/qtguiglobal_p.h>
 #include "qdebug.h"
 #include "qtextformat.h"
@@ -1671,26 +1672,26 @@ int QTextEngine::shapeTextWithHarfbuzzNG(const QScriptItem &si, const ushort *st
 
             bool dontLigate = hasLetterSpacing && !scriptRequiresOpenType;
 
-            QHash<QFont::Tag, quint32> features;
-            features.insert(QFont::Tag("kern"), !!kerningEnabled);
+            QVarLengthFlatMap<QFont::Tag, hb_feature_t, 16> features;
+            auto insertFeature = [&features](QFont::Tag tag, quint32 value) {
+                features.insert(tag, { tag.value(),
+                                       value,
+                                       HB_FEATURE_GLOBAL_START,
+                                       HB_FEATURE_GLOBAL_END });
+            };
+            // fontFeatures have precedence
+            for (const auto &[tag, value]: fontFeatures.asKeyValueRange())
+                insertFeature(tag, value);
+            insertFeature(QFont::Tag("kern"), !!kerningEnabled);
             if (dontLigate) {
-                features.insert(QFont::Tag("liga"), false);
-                features.insert(QFont::Tag("clig"), false);
-                features.insert(QFont::Tag("dlig"), false);
-                features.insert(QFont::Tag("hlig"), false);
-            }
-            features.insert(fontFeatures);
-
-            QVarLengthArray<hb_feature_t, 16> featureArray;
-            for (auto it = features.constBegin(); it != features.constEnd(); ++it) {
-                featureArray.append({ it.key().value(),
-                                      it.value(),
-                                      HB_FEATURE_GLOBAL_START,
-                                      HB_FEATURE_GLOBAL_END });
+                insertFeature(QFont::Tag("liga"), false);
+                insertFeature(QFont::Tag("clig"), false);
+                insertFeature(QFont::Tag("dlig"), false);
+                insertFeature(QFont::Tag("hlig"), false);
             }
 
             // whitelist cross-platforms shapers only
-            static const char *shaper_list[] = {
+            constexpr const char *shaper_list[] = {
                 "graphite2",
                 "ot",
                 "fallback",
@@ -1699,8 +1700,8 @@ int QTextEngine::shapeTextWithHarfbuzzNG(const QScriptItem &si, const ushort *st
 
             bool shapedOk = hb_shape_full(hb_font,
                                           buffer,
-                                          featureArray.constData(),
-                                          features.size(),
+                                          features.values().constData(),
+                                          features.values().size(),
                                           shaper_list);
             if (Q_UNLIKELY(!shapedOk)) {
                 hb_buffer_destroy(buffer);
