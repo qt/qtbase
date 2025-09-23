@@ -2262,13 +2262,16 @@ QString QAccessibleTextInterface::textBeforeOffset(int offset, QAccessible::Text
             break;
     } while (boundary.toPreviousBoundary() > 0);
     Q_ASSERT(boundary.position() >= 0);
-    *endOffset = boundary.position();
+    const int endPos = boundary.position();
 
     while (boundary.toPreviousBoundary() > 0) {
         if ((boundary.boundaryReasons() & (QTextBoundaryFinder::StartOfItem | QTextBoundaryFinder::EndOfItem)))
             break;
     }
-    Q_ASSERT(boundary.position() >= 0);
+    if (boundary.position() < 0)
+        return QString();
+
+    *endOffset = endPos;
     *startOffset = boundary.position();
 
     return txt.mid(*startOffset, *endOffset - *startOffset);

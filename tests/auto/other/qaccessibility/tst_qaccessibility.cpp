@@ -2301,6 +2301,12 @@ void tst_QAccessibility::lineEditTest()
     QCOMPARE(textIface->textAtOffset(5, QAccessible::LineBoundary,&start,&end), cite);
     QCOMPARE(textIface->textAtOffset(5, QAccessible::NoBoundary,&start,&end), cite);
 
+    le3->setText("Hello");
+    QCOMPARE(textIface->textAtOffset(1, QAccessible::WordBoundary, &start, &end),
+             QString::fromLatin1("Hello"));
+    QCOMPARE(textIface->textBeforeOffset(1, QAccessible::WordBoundary, &start, &end), QString());
+    QCOMPARE(textIface->textAfterOffset(1, QAccessible::WordBoundary, &start, &end), QString());
+
     QTestAccessibility::clearEvents();
     }
 
