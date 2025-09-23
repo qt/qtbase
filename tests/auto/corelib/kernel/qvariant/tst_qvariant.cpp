@@ -432,6 +432,9 @@ private slots:
     void get_QTransform() { get_impl(QTransform{1, 2, 3, 4, 5, 6, 7, 8, 9}); } // too large
     void get_NonDefaultConstructible();
 
+    void reference();
+    void pointer();
+
 private:
     using StdVariant = std::variant<std::monostate,
             // list here all the types with which we instantiate getIf_impl:
@@ -6195,6 +6198,73 @@ void tst_QVariant::getIfSpecial()
 void tst_QVariant::get_NonDefaultConstructible()
 {
     get_impl(NonDefaultConstructible{42});
+}
+
+struct QVariantWrapper
+{
+public:
+    static constexpr bool canNoexceptConvertToQVariant
+            = std::is_nothrow_copy_constructible_v<QVariant>;
+    static constexpr bool canNoexceptAssignQVariant
+            = std::is_nothrow_copy_assignable_v<QVariant>;
+
+    QVariantWrapper(QVariant *content = nullptr) noexcept : m_content(content) {}
+
+    QVariant content() const noexcept(canNoexceptConvertToQVariant)  {  return *m_content;  }
+    void setContent(const QVariant &content) noexcept(canNoexceptAssignQVariant)
+    {
+        *m_content = content;
+    }
+
+private:
+    QVariant *m_content = nullptr;
+};
+
+QT_BEGIN_NAMESPACE
+template<>
+QVariant::ConstReference<QVariantWrapper>::operator QVariant() const
+        noexcept(QVariantWrapper::canNoexceptConvertToQVariant)
+{
+    return m_referred.content();
+}
+
+template<>
+QVariant::Reference<QVariantWrapper> &QVariant::Reference<QVariantWrapper>::operator=(
+        const QVariant &content) noexcept(QVariantWrapper::canNoexceptAssignQVariant)
+{
+    m_referred.setContent(content);
+    return *this;
+}
+QT_END_NAMESPACE
+
+void tst_QVariant::reference()
+{
+    QVariant content(5);
+
+    QVariant::ConstReference<QVariantWrapper> constRef(&content);
+    QCOMPARE(QVariant(constRef), QVariant(5));
+
+    QVariant::Reference<QVariantWrapper> ref(&content);
+    QCOMPARE(QVariant(ref), QVariant(5));
+
+    ref = QVariant(12);
+    QCOMPARE(QVariant(ref), QVariant(12));
+    QCOMPARE(content, QVariant(12));
+}
+
+void tst_QVariant::pointer()
+{
+    QVariant content(5);
+
+    QVariant::ConstPointer<QVariantWrapper> constPtr(&content);
+    QCOMPARE(*constPtr, QVariant(5));
+
+    QVariant::Pointer<QVariantWrapper> ptr(&content);
+    QCOMPARE(*ptr, QVariant(5));
+
+    *ptr = QVariant(12);
+    QCOMPARE(*ptr, QVariant(12));
+    QCOMPARE(content, QVariant(12));
 }
 
 template <typename T>

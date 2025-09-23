@@ -2974,4 +2974,156 @@ const QVariant *QVariantConstPointer::operator->() const
     implement operator->().
  */
 
+/*!
+    \class QVariant::ConstReference
+    \since 6.11
+    \inmodule QtCore
+    \brief The QVariant::ConstReference acts as a const reference to a QVariant.
+
+    As the generic iterators don't actually instantiate a QVariant on each
+    step, they cannot return a reference to one from operator*().
+    QVariant::ConstReference provides the same functionality as an actual
+    reference to a QVariant would, but is backed a referred-to value given as
+    template parameter. The template is implemented for
+    QMetaSequence::ConstIterator, QMetaSequence::Iterator,
+    QMetaAssociation::ConstIterator, and QMetaAssociation::Iterator.
+*/
+
+/*!
+    \fn template<typename Referred> QVariant::ConstReference<Referred>::ConstReference(const Referred &referred)
+
+    Creates a QVariant::ConstReference from a \a referred.
+ */
+
+/*!
+    \fn template<typename Referred> QVariant::ConstReference<Referred>::ConstReference(Referred &&referred)
+
+    Creates a QVariant::ConstReference from a \a referred.
+ */
+
+/*!
+    \fn template<typename Referred> QVariant::ConstReference<Referred>::operator QVariant() const
+
+    Dereferences the reference to a QVariant.
+    This method needs to be specialized for each Referred type. It is
+    pre-defined for QMetaSequence::ConstIterator, QMetaSequence::Iterator,
+    QMetaAssociation::ConstIterator, and QMetaAssociation::Iterator.
+ */
+
+
+/*!
+    \class QVariant::Reference
+    \since 6.11
+    \inmodule QtCore
+    \brief The QVariant::Reference acts as a non-const reference to a QVariant.
+
+    As the generic iterators don't actually instantiate a QVariant on each
+    step, they cannot return a reference to one from operator*().
+    QVariant::Reference provides the same functionality as an actual reference
+    to a QVariant would, but is backed a referred-to value given as template
+    parameter. The template is implemented for QMetaSequence::Iterator and
+    QMetaAssociation::Iterator.
+*/
+
+/*!
+    \fn template<typename Referred> QVariant::Reference<Referred>::Reference(const Referred &referred)
+
+    Creates a QVariant::Reference from a \a referred.
+ */
+
+/*!
+    \fn template<typename Referred> QVariant::Reference<Referred>::Reference(Referred &&referred)
+
+    Creates a QVariant::Reference from a \a referred.
+ */
+
+/*!
+    \fn template<typename Referred> QVariant::Reference<Referred> &QVariant::Reference<Referred>::operator=(const Reference<Referred> &value)
+
+    Assigns a new \a value to the value referred to by this QVariant::Reference.
+ */
+
+/*!
+    \fn template<typename Referred> QVariant::Reference<Referred> &QVariant::Reference<Referred>::operator=(Reference<Referred> &&value)
+
+    Assigns a new \a value to the value referred to by this QVariant::Reference.
+*/
+
+/*!
+    \fn template<typename Referred> QVariant::Reference<Referred> &QVariant::Reference<Referred>::operator=(const QVariant &value)
+
+    Assigns a new \a value to the value referred to by this QVariant::Reference.
+    This method needs to be specialized for each Referred type. It is
+    pre-defined for QMetaSequence::Iterator and QMetaAssociation::Iterator.
+ */
+
+/*!
+    \fn template<typename Referred> QVariant::Reference<Referred>::operator QVariant() const
+
+    Dereferences the reference to a QVariant. By default this instantiates a
+    temporary QVariant::ConstReference and calls dereferences that. In cases
+    where instantiating a temporary ConstReference is expensive, this method
+    should be specialized.
+ */
+
+/*!
+    \class QVariant::ConstPointer
+    \since 6.11
+    \inmodule QtCore
+    \brief QVariant::ConstPointer is a template class that emulates a const pointer to QVariant.
+
+    QVariant::ConstPointer wraps pointed-to value and returns a
+    QVariant::ConstReference to it from its operator*(). This makes it suitable
+    as replacement for an actual pointer. We cannot return an actual pointer
+    from generic iterators as the iterators don't hold an actual QVariant.
+*/
+
+/*!
+    \fn template<typename Pointed> QVariant::ConstPointer<Pointed>::ConstPointer(const Pointed &pointed)
+
+    Constructs a QVariant::ConstPointer from the value \a pointed to.
+ */
+
+/*!
+    \fn template<typename Pointed> QVariant::ConstPointer<Pointed>::ConstPointer(Pointed &&pointed)
+
+    Constructs a QVariant::ConstPointer from the value \a pointed to.
+ */
+
+/*!
+    \fn template<typename Pointed> QVariant::ConstReference<Pointer> QVariant::ConstPointer<Pointed>::operator*() const
+
+    Dereferences the QVariant::ConstPointer to a QVariant::ConstReference.
+ */
+
+/*!
+    \class QVariant::Pointer
+    \since 6.11
+    \inmodule QtCore
+    \brief QVariant::Pointer is a template class that emulates a non-const pointer to QVariant.
+
+    QVariant::Pointer wraps pointed-to value and returns a QVariant::Reference
+    to it from its operator*(). This makes it suitable as replacement for an
+    actual pointer. We cannot return an actual pointer from generic iterators as
+    the iterators don't hold an actual QVariant.
+*/
+
+/*!
+    \fn template<typename Pointed> QVariant::Pointer<Pointed>::Pointer(const Pointed &pointed)
+
+    Constructs a QVariant::Pointer from the value \a pointed to.
+ */
+
+/*!
+    \fn template<typename Pointed> QVariant::Pointer<Pointed>::Pointer(Pointed &&pointed)
+
+    Constructs a QVariant::Pointer from the value \a pointed to.
+ */
+
+/*!
+    \fn template<typename Pointed> QVariant::Reference<Pointer> QVariant::Pointer<Pointed>::operator*() const
+
+    Dereferences the QVariant::Pointer to a QVariant::Reference.
+ */
+
 QT_END_NAMESPACE
