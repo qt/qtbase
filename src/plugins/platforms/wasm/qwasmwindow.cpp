@@ -761,12 +761,10 @@ void QWasmWindow::handleCompositionEndEvent(emscripten::val event)
 
 void QWasmWindow::handleBeforeInputEvent(emscripten::val event)
 {
-    qWarning() << Q_FUNC_INFO;
-
      if (QWasmInputContext *inputContext = QWasmIntegration::get()->wasmInputContext(); inputContext->isActive())
         inputContext->beforeInputCallback(event);
-    // else
-    //     m_focusHelper.set("innerHTML", std::string());
+    else
+        m_focusHelper.set("innerHTML", std::string());
 }
 
 void QWasmWindow::handlePointerEnterLeaveEvent(const PointerEvent &event)
