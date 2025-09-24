@@ -236,6 +236,20 @@ bool QNativeSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType soc
         return false;
     }
 
+    // Attempt to enable dual-stack
+    if (domain == AF_INET6) {
+        const int ipv6only = 0;
+        [[maybe_unused]] const int ret = ::setsockopt(socket, IPPROTO_IPV6, IPV6_V6ONLY,
+                                                      &ipv6only, sizeof(ipv6only));
+#if defined (QNATIVESOCKETENGINE_DEBUG)
+        if (ret != 0) {
+            qDebug("QNativeSocketEnginePrivate::createNewSocket(%d, %d): "
+                   "failed to set IPV6_V6ONLY to %d.",
+                   socketType, socketProtocol, ipv6only);
+        }
+#endif
+    }
+
 #if defined (QNATIVESOCKETENGINE_DEBUG)
     qDebug("QNativeSocketEnginePrivate::createNewSocket(%d, %d) == true",
            socketType, socketProtocol);

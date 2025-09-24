@@ -330,6 +330,13 @@ bool QNativeSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType soc
                  &sendmsg, sizeof(sendmsg), &bytesReturned, NULL, NULL) == SOCKET_ERROR)
         sendmsg = 0;
 
+    // Attempt to enable dual-stack
+    if (protocol == AF_INET6) {
+        int ipv6only = 0;
+        ::setsockopt(socket, IPPROTO_IPV6, IPV6_V6ONLY,
+                     reinterpret_cast<char *>(&ipv6only), sizeof(ipv6only));
+    }
+
     socketDescriptor = socket;
     this->socketProtocol = socketProtocol;
     this->socketType = socketType;
