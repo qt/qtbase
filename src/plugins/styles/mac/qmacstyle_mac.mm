@@ -769,6 +769,18 @@ static bool qt_macWindowMainWindow(const QWidget *window)
     return false;
 }
 
+static NSUserInterfaceLayoutDirection qt_macLayoutDirectionFromQt(Qt::LayoutDirection direction)
+{
+    switch (direction) {
+    case Qt::LeftToRight:
+        return NSUserInterfaceLayoutDirectionLeftToRight;
+    case Qt::RightToLeft:
+        return NSUserInterfaceLayoutDirectionRightToLeft;
+    case Qt::LayoutDirectionAuto:
+        return [NSApp userInterfaceLayoutDirection];
+    }
+}
+
 /*****************************************************************************
   QMacCGStyle globals
  *****************************************************************************/
@@ -3510,6 +3522,7 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
         [triangleCell setState:(opt->state & State_Open) ? NSControlStateValueOn : NSControlStateValueOff];
         bool viewHasFocus = (w && w->hasFocus()) || (opt->state & State_HasFocus);
         [triangleCell setBackgroundStyle:((opt->state & State_Selected) && viewHasFocus) ? NSBackgroundStyleEmphasized : NSBackgroundStyleNormal];
+        [triangleCell setUserInterfaceLayoutDirection:qt_macLayoutDirectionFromQt(opt->direction)];
 
         d->setupNSGraphicsContext(cg, NO);
 
