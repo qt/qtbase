@@ -386,7 +386,6 @@ private:
     mutable unsigned m_flags = WithinCreate;
     HDC m_hdc = nullptr;
     Qt::WindowStates m_windowState = Qt::WindowNoState;
-    bool m_windowWasArranged = false;
     QString m_windowTitle;
     qreal m_opacity = 1;
 #ifndef QT_NO_CURSOR
