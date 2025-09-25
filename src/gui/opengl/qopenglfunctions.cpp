@@ -234,11 +234,17 @@ static int qt_gl_resolve_features()
             QOpenGLFunctions::CompressedTextures |
             QOpenGLFunctions::Multisample |
             QOpenGLFunctions::StencilSeparate;
-        if (extensions.match("GL_IMG_texture_npot"))
-            features |= QOpenGLFunctions::NPOTTextures;
-        if (extensions.match("GL_OES_texture_npot"))
+
+        if (ctx->format().majorVersion() >= 3) {
             features |= QOpenGLFunctions::NPOTTextures |
                 QOpenGLFunctions::NPOTTextureRepeat;
+        } else {
+            if (extensions.match("GL_IMG_texture_npot"))
+                features |= QOpenGLFunctions::NPOTTextures;
+            if (extensions.match("GL_OES_texture_npot"))
+                features |= QOpenGLFunctions::NPOTTextures |
+                    QOpenGLFunctions::NPOTTextureRepeat;
+        }
         if (ctx->format().majorVersion() >= 3 || extensions.match("GL_EXT_texture_rg"))
             features |= QOpenGLFunctions::TextureRGFormats;
         if (ctx->format().majorVersion() >= 3) {
