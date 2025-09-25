@@ -55,6 +55,10 @@ QString QString::fromEcmaString(emscripten::val jsString)
 {
     Q_ASSERT_X(jsString.isString(), Q_FUNC_INFO, "Passed object is not a string");
 
+#ifdef __wasm64__
+    return QString::fromStdU16String(jsString.as<std::u16string>());
+#endif
+
     const double length = jsString["length"].as<double>();
 
     Q_ASSERT_X((double(uint64_t(length)) != double(uint64_t(length) - 1)
@@ -90,6 +94,9 @@ QString QString::fromEcmaString(emscripten::val jsString)
 */
 emscripten::val QString::toEcmaString() const
 {
+#ifdef __wasm64__
+    return emscripten::val::u16string(toStdU16String().c_str());
+#endif
     static const emscripten::val UTF16ToString(emscripten::val::module_property("UTF16ToString"));
     return UTF16ToString(emscripten::val(quintptr(utf16())));
 }
