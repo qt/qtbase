@@ -1737,6 +1737,14 @@ function(qt_get_platform_try_compile_vars out_var)
         list(APPEND flags_cmd_line "-DCMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH:BOOL=OFF")
     endif()
 
+    if(ANDROID)
+        qt_internal_get_android_cmake_policy_version_minimum_assignment(
+            android_cmake_policy_version_minimum TYPE COMMAND_LINE)
+        if(android_cmake_policy_version_minimum)
+            list(APPEND flags_cmd_line "${android_cmake_policy_version_minimum}")
+        endif()
+    endif()
+
     set("${out_var}" "${flags_cmd_line}" PARENT_SCOPE)
 endfunction()
 

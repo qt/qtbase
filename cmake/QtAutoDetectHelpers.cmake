@@ -64,6 +64,41 @@ function(qt_auto_detect_wasm)
     endif()
 endfunction()
 
+# Handle assignment of CMAKE_POLICY_VERSION_MINIMUM for Android NDK cmake toolchain files shipped
+# with NDK < r28, to avoid deprecation warnings.
+#
+# NOTE: If updating the version, also update
+# qt_internal_get_android_qt_default_cmake_policy_version_minimum.
+#
+# Use a macro, to make propagation of the variable in the parent scope of the calling function
+# easier.
+macro(qt_auto_detect_set_android_cmake_policy_version_minimum is_android_detected)
+    if("${is_android_detected}"
+            AND CMAKE_VERSION VERSION_GREATER_EQUAL "4.0"
+            AND NOT QT_NO_SET_ANDROID_CMAKE_POLICY_VERSION_MINIMUM
+        )
+
+        if(QT_ANDROID_CMAKE_POLICY_VERSION_MINIMUM)
+            set(min_policy_version "${QT_ANDROID_CMAKE_POLICY_VERSION_MINIMUM}")
+        elseif(CMAKE_POLICY_VERSION_MINIMUM)
+            set(min_policy_version "${CMAKE_POLICY_VERSION_MINIMUM}")
+        else()
+            set(min_policy_version "3.10")
+        endif()
+
+        message(DEBUG
+            "Setting CMAKE_POLICY_VERSION_MINIMUM to ${min_policy_version} for Android builds.")
+
+        # Set the variable in the qtbase directory scope for easier reading.
+        set(CMAKE_POLICY_VERSION_MINIMUM "${min_policy_version}" PARENT_SCOPE)
+
+        # Also set the environment variable, otherwise any try_compile project that's started
+        # by CMake itself, rather than Qt (e.g. compiler detection), will not inherit the
+        # assignment.
+        set(ENV{CMAKE_POLICY_VERSION_MINIMUM} "${min_policy_version}")
+    endif()
+endmacro()
+
 function(qt_auto_detect_android)
     # Don't assume an Android build if we're requesting to build Java documentation on the host.
     if(QT_BUILD_HOST_JAVA_DOCS)
@@ -154,6 +189,8 @@ function(qt_auto_detect_android)
     elseif (QT_AUTODETECT_ANDROID)
         message(STATUS "Android build detected")
     endif()
+
+    qt_auto_detect_set_android_cmake_policy_version_minimum("${android_detected}")
 endfunction()
 
 function(qt_auto_detect_vcpkg)

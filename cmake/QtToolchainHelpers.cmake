@@ -309,6 +309,13 @@ endif()")
             "            \"Please specify the toolchain file with -DQT_CHAINLOAD_TOOLCHAIN_FILE=<file>.\")")
         list(APPEND init_platform "    endif()")
         list(APPEND init_platform "endif()")
+
+        qt_internal_get_android_cmake_policy_version_minimum_assignment(
+            android_cmake_policy_version_minimum TYPE TOOLCHAIN_FILE_ASSIGNMENT)
+        if(android_cmake_policy_version_minimum)
+            list(APPEND init_platform "${android_cmake_policy_version_minimum}")
+        endif()
+
     elseif(EMSCRIPTEN)
         list(APPEND init_platform
 "include(\${CMAKE_CURRENT_LIST_DIR}/QtPublicWasmToolchainHelpers.cmake)

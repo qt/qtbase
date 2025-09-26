@@ -30,10 +30,24 @@ function(qt_internal_add_RunCMake_test test)
 
     string(JOIN "\n" pre_run_code ${_qt_internal_skip_build_test_pre_run})
 
+    set(android_code "")
+    if(ANDROID)
+        qt_internal_get_android_cmake_policy_version_minimum_value(version)
+        string(APPEND android_code "
+# Avoid cmake policy deprecation warnings with older android NDKs appearing in stderr, which
+# causes test failures if the test doesn't set
+# set(RunCMake_TEST_OUTPUT_MERGE 1)
+# to avoid stderr being polluted.
+if(NOT QT_NO_SET_RUN_CMAKE_TESTS_CMAKE_POLICY_VERSION_MINIMUM)
+    set(ENV{CMAKE_POLICY_VERSION_MINIMUM} ${version})
+endif()")
+    endif()
+
     _qt_internal_configure_file(CONFIGURE
         OUTPUT "${wrapper_file}"
         CONTENT "
 ${pre_run_code}
+${android_code}
 include(\"${script_path_to_include}\")
 ")
 
