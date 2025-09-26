@@ -3362,6 +3362,7 @@ int main(int, char **)
     QByteArray header =
         "// Copyright (C) 2020 The Qt Company Ltd.\n"
         "// SPDX-License-Identifier: Unicode-3.0\n"
+        "// Qt-Security score:significant reason:default\n"
         "\n";
 
     QByteArray note =
