@@ -175,6 +175,7 @@ qt_internal_add_module(Core
         kernel/qmetaobject.cpp kernel/qmetaobject.h kernel/qmetaobject_p.h
         kernel/qmetaobject_moc_p.h
         kernel/qmetaobjectbuilder.cpp kernel/qmetaobjectbuilder_p.h
+        kernel/qmetasequence.cpp
         kernel/qmetatype.cpp kernel/qmetatype.h kernel/qmetatype_p.h
         kernel/qmimedata.cpp kernel/qmimedata.h
         kernel/qtmetamacros.h kernel/qtmocconstants.h kernel/qtmochelpers.h
