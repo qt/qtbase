@@ -829,25 +829,4 @@ void QMetaSequence::valueAtConstIterator(const void *iterator, void *result) con
     type than the QMetaSequence \a rhs, otherwise returns \c false.
 */
 
-
-/*!
-    Returns the meta type for keys in the container.
- */
-QMetaType QMetaAssociation::keyMetaType() const
-{
-    if (auto iface = d())
-        return QMetaType(iface->keyMetaType);
-    return QMetaType();
-}
-
-/*!
-    Returns the meta type for mapped values in the container.
- */
-QMetaType QMetaAssociation::mappedMetaType() const
-{
-    if (auto iface = d())
-        return QMetaType(iface->mappedMetaType);
-    return QMetaType();
-}
-
 QT_END_NAMESPACE
