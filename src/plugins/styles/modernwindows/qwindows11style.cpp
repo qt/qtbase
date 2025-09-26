@@ -359,24 +359,29 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
 #if QT_CONFIG(slider)
     case CC_Slider:
         if (const auto *slider = qstyleoption_cast<const QStyleOptionSlider *>(option)) {
-            QRectF slrect = slider->rect;
-            QRegion tickreg = slrect.toRect();
+            const auto &slrect = slider->rect;
+            const bool isHorizontal = slider->orientation == Qt::Horizontal;
+            const QRectF handleRect(proxy()->subControlRect(CC_Slider, option, SC_SliderHandle, widget));
+            const QPointF handleCenter(handleRect.center());
 
             if (sub & SC_SliderGroove) {
                 QRectF rect = proxy()->subControlRect(CC_Slider, option, SC_SliderGroove, widget);
-                QRectF handleRect = proxy()->subControlRect(CC_Slider, option, SC_SliderHandle, widget);
-                QPointF handlePos = handleRect.center();
                 QRectF leftRect;
                 QRectF rightRect;
 
-                if (slider->orientation == Qt::Horizontal) {
-                    rect = QRect(slrect.left(), rect.center().y() - 2, slrect.width() - 5, 4);
-                    leftRect = QRect(rect.left() + 1, rect.top(), (handlePos.x() - rect.left()), rect.height());
-                    rightRect = QRect(handlePos.x(), rect.top(), (rect.width() - handlePos.x()), rect.height());
+                if (isHorizontal) {
+                    rect = QRectF(rect.left() + 2, rect.center().y() - 2, rect.width() - 2, 4);
+                    leftRect = QRectF(rect.left(), rect.top(), handleCenter.x() - rect.left(),
+                                      rect.height());
+                    rightRect = QRectF(handleCenter.x(), rect.top(),
+                                       rect.width() - handleCenter.x(),
+                                       rect.height());
                 } else {
-                    rect = QRect(rect.center().x() - 2, slrect.top(), 4, slrect.height() - 5);
-                    leftRect = QRect(rect.left(), rect.top() + 1, rect.width(), (handlePos.y() - rect.top()));
-                    rightRect = QRect(rect.left(), handlePos.y(), rect.width(), (rect.height() - handlePos.y()));
+                    rect = QRect(rect.center().x() - 2, rect.top() + 2, 4, rect.height() - 2);
+                    leftRect = QRectF(rect.left(), rect.top(), rect.width(),
+                                      handleCenter.y() - rect.top());
+                    rightRect = QRectF(rect.left(), handleCenter.y(), rect.width(),
+                                       rect.height() - handleCenter.y());
                 }
                 if (slider->upsideDown)
                     qSwap(leftRect, rightRect);
@@ -386,14 +391,6 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
                 painter->drawRoundedRect(leftRect,1,1);
                 painter->setBrush(WINUI3Colors[colorSchemeIndex][controlStrongFill]);
                 painter->drawRoundedRect(rightRect,1,1);
-
-                painter->setPen(highContrastTheme == true ? slider->palette.buttonText().color()
-                                                          : WINUI3Colors[colorSchemeIndex][frameColorLight]);
-                painter->setBrush(Qt::NoBrush);
-                painter->drawRoundedRect(leftRect,1.5,1.5);
-                painter->drawRoundedRect(rightRect,1.5,1.5);
-
-                tickreg -= rect.toRect();
             }
             if (sub & SC_SliderTickmarks) {
                 int tickOffset = proxy()->pixelMetric(PM_SliderTickmarkOffset, slider, widget);
@@ -413,8 +410,6 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
                 if (!interval)
                     interval = 1;
                 int fudge = len / 2;
-                int pos;
-                int bothOffset = (ticks & QSlider::TicksAbove && ticks & QSlider::TicksBelow) ? 1 : 0;
                 painter->setPen(slider->palette.text().color());
                 QVarLengthArray<QLineF, 32> lines;
                 int v = slider->minimum;
@@ -423,28 +418,28 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
                         break;
                     const int v_ = qMin(v, slider->maximum);
                     int tickLength = (v_ == slider->minimum || v_ >= slider->maximum) ? 4 : 3;
-                    pos = QStyle::sliderPositionFromValue(slider->minimum, slider->maximum, v_,
-                                                          available, slider->upsideDown);
+                    int pos = QStyle::sliderPositionFromValue(slider->minimum, slider->maximum, v_,
+                                                              available, slider->upsideDown);
                     pos += fudge;
-                    if (slider->orientation == Qt::Horizontal) {
+                    if (isHorizontal) {
                         if (ticks & QSlider::TicksAbove) {
-                            lines.append(QLineF(pos, tickOffset - 1 - bothOffset + 0.5,
-                                               pos, tickOffset - 1 - bothOffset - tickLength - 0.5));
+                            lines.append(QLineF(pos, tickOffset - 0.5,
+                                                pos, tickOffset - tickLength - 0.5));
                         }
 
                         if (ticks & QSlider::TicksBelow) {
-                            lines.append(QLineF(pos, tickOffset + thickness + bothOffset - 0.5,
-                                               pos, tickOffset + thickness + bothOffset + tickLength + 0.5));
+                            lines.append(QLineF(pos, tickOffset + thickness + 0.5,
+                                                pos, tickOffset + thickness + tickLength + 0.5));
                         }
                     } else {
                         if (ticks & QSlider::TicksAbove) {
-                            lines.append(QLineF(tickOffset - 1 - bothOffset + 0.5, pos,
-                                               tickOffset - 1 - bothOffset - tickLength - 0.5, pos));
+                            lines.append(QLineF(tickOffset - 0.5, pos,
+                                                tickOffset - tickLength - 0.5, pos));
                         }
 
                         if (ticks & QSlider::TicksBelow) {
-                            lines.append(QLineF(tickOffset + thickness + bothOffset - 0.5, pos,
-                                               tickOffset + thickness + bothOffset + tickLength + 0.5, pos));
+                            lines.append(QLineF(tickOffset + thickness + 0.5, pos,
+                                                tickOffset + thickness + tickLength + 0.5, pos));
                         }
                     }
                     // in the case where maximum is max int
@@ -461,10 +456,7 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
                 }
             }
             if (sub & SC_SliderHandle) {
-                const QRectF rect = proxy()->subControlRect(CC_Slider, option, SC_SliderHandle, widget);
-                const QPointF center = rect.center();
-
-                const qreal outerRadius = qMin(8.0,(slider->orientation == Qt::Horizontal ? rect.height() / 2.0 : rect.width() / 2.0) - 1);
+                const qreal outerRadius = qMin(8.0, (isHorizontal ? handleRect.height() / 2.0 : handleRect.width() / 2.0) - 1);
                 float innerRadius = outerRadius * 0.43;
 
                 if (option->styleObject) {
@@ -480,14 +472,13 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
 
                 painter->setPen(Qt::NoPen);
                 painter->setBrush(winUI3Color(controlFillSolid));
-                painter->drawEllipse(center, outerRadius, outerRadius);
+                painter->drawEllipse(handleCenter, outerRadius, outerRadius);
                 painter->setBrush(calculateAccentColor(option));
-                painter->drawEllipse(center, innerRadius, innerRadius);
+                painter->drawEllipse(handleCenter, innerRadius, innerRadius);
 
                 painter->setPen(winUI3Color(controlStrokeSecondary));
                 painter->setBrush(Qt::NoBrush);
-                painter->drawEllipse(center, outerRadius + 0.5, outerRadius + 0.5);
-                painter->drawEllipse(center, innerRadius + 0.5, innerRadius + 0.5);
+                painter->drawEllipse(handleCenter, outerRadius + 0.5, outerRadius + 0.5);
             }
             if (slider->state & State_HasFocus) {
                 QStyleOptionFocusRect fropt;
@@ -2186,8 +2177,19 @@ int QWindows11Style::pixelMetric(PixelMetric metric, const QStyleOption *option,
     case QStyle::PM_ExclusiveIndicatorHeight:
         res = 16;
         break;
-    case QStyle::PM_SliderLength:
-        res = int(QStyleHelper::dpiScaled(16, option));
+    case PM_SliderThickness:        // full height of a slider
+        if (auto opt = qstyleoption_cast<const QStyleOptionSlider *>(option)) {
+            // hard-coded in qslider.cpp, but we need a little bit more
+            constexpr auto TickSpace = 5;
+            if (opt->tickPosition & QSlider::TicksAbove)
+                res += 6 - TickSpace;
+            if (opt->tickPosition & QSlider::TicksBelow)
+                res += 6 - TickSpace;
+        }
+        Q_FALLTHROUGH();
+    case PM_SliderControlThickness: // size of the control handle
+    case PM_SliderLength:           // same because handle is a circle with r=8
+        res += 2 * 8;
         break;
     case QStyle::PM_TitleBarButtonIconSize:
         res = 16;
