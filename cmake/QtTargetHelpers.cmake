@@ -151,7 +151,9 @@ function(qt_internal_extend_target target)
 
         list(TRANSFORM arg_PUBLIC_LIBRARIES REPLACE "^Qt::" "${QT_CMAKE_EXPORT_NAMESPACE}::")
         list(TRANSFORM arg_LIBRARIES REPLACE "^Qt::" "${QT_CMAKE_EXPORT_NAMESPACE}::")
-        qt_internal_wrap_private_modules(arg_LIBRARIES ${arg_LIBRARIES})
+        qt_internal_wrap_private_modules("${target}"
+            OUT_VAR arg_LIBRARIES
+            LIBRARIES ${arg_LIBRARIES})
 
         # Set-up the target
 
@@ -357,7 +359,8 @@ function(qt_internal_extend_target target)
     endif()
 endfunction()
 
-# Takes an output variable and a list of libraries.
+# Takes the consuming target, an output variable and a list of libraries that the consuming target
+# links to.
 #
 # Every library that is a private module is wrapped in $<BUILD_INTERFACE> or
 # $<BUILD_LOCAL_INTERFACE> if CMake is new enough.
@@ -365,7 +368,28 @@ endfunction()
 # This is necessary for static builds, because if Qt6Foo links to Qt6BarPrivate, this link
 # dependency is purely internal. If we don't do this, CMake adds a target check for Qt6BarPrivate
 # in Qt6FooTargets.cmake. This breaks if Qt6BarPrivate is not find_package'ed before.
-function(qt_internal_wrap_private_modules out_var)
+#
+# Every library that is an internal module is wrapped in a similar way, unless the consuming target
+# is STATIC, in which case the internal module is added as-is, otherwise linking would fail.
+# That's because internal modules are private modules that don't have a public counterpart, so
+# if we don't export the linkage, user builds will fail. In this case it's preferable to find
+# the Private package, rather than fail the build.
+function(qt_internal_wrap_private_modules target)
+    set(option_args "")
+    set(single_args
+        OUT_VAR
+    )
+    set(multi_args
+        LIBRARIES
+    )
+
+    cmake_parse_arguments(PARSE_ARGV 1 arg
+        "${option_args}"
+        "${single_args}"
+        "${multi_args}"
+    )
+    _qt_internal_validate_all_args_are_parsed(arg)
+
     set(result "")
 
     if(CMAKE_VERSION VERSION_LESS "3.26")
@@ -374,24 +398,34 @@ function(qt_internal_wrap_private_modules out_var)
         set(wrapper_genex "BUILD_LOCAL_INTERFACE")
     endif()
 
-    foreach(lib IN LISTS ARGN)
+    get_target_property(target_type "${target}" TYPE)
+
+    foreach(lib IN LISTS arg_LIBRARIES)
         if(TARGET "${lib}")
             get_target_property(lib_is_private_module ${lib} _qt_is_private_module)
+            get_target_property(lib_is_internal_module ${lib} _qt_is_internal_module)
+
             if(lib_is_private_module)
                 # Add the public module as non-wrapped link dependency. This is necessary for
                 # targets that link only to the private module. Consumers of this target would then
                 # get a linker error about missing symbols from that Qt module.
                 get_target_property(lib_public_module_target ${lib} _qt_public_module_target_name)
                 list(APPEND result "${INSTALL_CMAKE_NAMESPACE}::${lib_public_module_target}")
+            endif()
 
-                # Wrap the private module in BUILD_LOCAL_INTERFACE.
+            if(lib_is_private_module
+                    OR
+                    (lib_is_internal_module
+                        AND NOT target_type STREQUAL "STATIC_LIBRARY")
+                )
+                # Wrap the private or internal module in BUILD_LOCAL_INTERFACE.
                 set(lib "$<${wrapper_genex}:${lib}>")
             endif()
         endif()
         list(APPEND result "${lib}")
     endforeach()
 
-    set("${out_var}" "${result}" PARENT_SCOPE)
+    set("${arg_OUT_VAR}" "${result}" PARENT_SCOPE)
 endfunction()
 
 # Given CMAKE_CONFIG and ALL_CMAKE_CONFIGS, determines if a directory suffix needs to be appended
