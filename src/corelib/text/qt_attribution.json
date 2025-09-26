@@ -4,6 +4,7 @@
     "Name": "Unicode Character Database (UCD)",
     "QDocModule": "qtcore",
     "QtUsage": "Qt Core uses data obtained from UCD files for working with characters and strings.",
+    "SecurityCritical": false,
     "Comment": {
         "Files": "For update, see qtbase/util/unicode/README",
         "General": "no relevant CPE and PURL found"
@@ -27,6 +28,7 @@
     "Name": "Unicode Common Locale Data Repository (CLDR)",
     "QDocModule": "qtcore",
     "QtUsage": "Used in Qt Core (QTimeZone, QLocale).",
+    "SecurityCritical": false,
     "Comment": {
         "Files": "For update, see qtbase/util/locale_database/cldr2qlocalexml.py",
         "General": "no relevant CPE and PURL found"
