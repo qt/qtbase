@@ -3513,6 +3513,17 @@ void tst_QTreeView::styleOptionViewItem()
         delegate.count = 0;
         QTRY_COMPARE_GE(delegate.count, 2);
     }
+
+    // special case, two column, first is hidden
+    model.clear();
+    model.appendRow({ new QStandardItem("Hidden"),
+                      new QStandardItem("OnlyOne Last") });
+    view.setColumnHidden(0, true);
+    view.setColumnHidden(1, false);
+    view.setModel(&model);
+
+    delegate.count = 0;
+    QTRY_COMPARE_GE(delegate.count, 1);
 }
 
 class task174627_TreeView : public QTreeView
