@@ -1785,13 +1785,15 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
             }
 
             // draw the icon
-            QIcon::Mode mode = QIcon::Normal;
-            if (!(vopt->state & QStyle::State_Enabled))
-                mode = QIcon::Disabled;
-            else if (vopt->state & QStyle::State_Selected)
-                mode = QIcon::Selected;
-            QIcon::State state = vopt->state & QStyle::State_Open ? QIcon::On : QIcon::Off;
-            vopt->icon.paint(painter, iconRect, vopt->decorationAlignment, mode, state);
+            if (iconRect.isValid()) {
+                QIcon::Mode mode = QIcon::Normal;
+                if (!(vopt->state & QStyle::State_Enabled))
+                    mode = QIcon::Disabled;
+                else if (vopt->state & QStyle::State_Selected)
+                    mode = QIcon::Selected;
+                QIcon::State state = vopt->state & QStyle::State_Open ? QIcon::On : QIcon::Off;
+                vopt->icon.paint(painter, iconRect, vopt->decorationAlignment, mode, state);
+            }
 
             painter->setPen(highlightCurrent && highContrastTheme ? vopt->palette.base().color()
                                                                   : vopt->palette.text().color());
