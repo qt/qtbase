@@ -256,7 +256,7 @@ public:
                           "The slot requires more arguments than the signal provides.");
 
         const int *types = nullptr;
-        if (type == Qt::QueuedConnection || type == Qt::BlockingQueuedConnection)
+        if (type == Qt::AutoConnection || type == Qt::QueuedConnection || type == Qt::BlockingQueuedConnection)
             types = QtPrivate::ConnectionTypes<typename SignalType::Arguments>::types();
 
         void **pSlot = nullptr;
