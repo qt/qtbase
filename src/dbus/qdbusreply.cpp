@@ -42,13 +42,6 @@ using namespace Qt::StringLiterals;
 */
 
 /*!
-    \fn template<typename T> QDBusReply<T>::QDBusReply(const QDBusReply &other)
-    \since 5.15
-
-    Constructs a copy of \a other.
-*/
-
-/*!
     \fn template<typename T> QDBusReply<T>::QDBusReply(const QDBusMessage &reply)
     Automatically construct a QDBusReply object from the reply message \a reply, extracting the
     first return value from it if it is a success reply.
@@ -73,11 +66,6 @@ using namespace Qt::StringLiterals;
 /*!
     \fn template <typename T> QDBusReply<T>::QDBusReply(const QDBusError &error)
     Constructs an error reply from the D-Bus error code given by \a error.
-*/
-
-/*!
-    \fn template <typename T> QDBusReply<T>::operator=(const QDBusReply &other)
-    Makes this object be a copy of the object \a other.
 */
 
 /*!

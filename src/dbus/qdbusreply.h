@@ -25,11 +25,12 @@ class QDBusReply
 {
     typedef T Type;
 public:
+    // Rule Of Zero applies!
+
     inline QDBusReply(const QDBusMessage &reply)
     {
         *this = reply;
     }
-    inline QDBusReply(const QDBusReply &) = default;
     inline QDBusReply& operator=(const QDBusMessage &reply)
     {
         QVariant data(QMetaType::fromType<Type>());
@@ -61,13 +62,6 @@ public:
     {
         m_error = dbusError;
         m_data = Type();
-        return *this;
-    }
-
-    inline QDBusReply& operator=(const QDBusReply& other)
-    {
-        m_error = other.m_error;
-        m_data = other.m_data;
         return *this;
     }
 
@@ -106,6 +100,8 @@ template<>
 class QDBusReply<void>
 {
 public:
+    // Rule Of Zero applies!
+
     inline QDBusReply(const QDBusMessage &reply)
         : m_error(reply)
     {
@@ -132,14 +128,6 @@ public:
     inline QDBusReply& operator=(const QDBusError& dbusError)
     {
         m_error = dbusError;
-        return *this;
-    }
-
-    inline QDBusReply(const QDBusReply &) = default;
-
-    inline QDBusReply& operator=(const QDBusReply& other)
-    {
-        m_error = other.m_error;
         return *this;
     }
 
