@@ -5822,6 +5822,7 @@ QIcon QCommonStylePrivate::iconFromMacTheme(QCommonStyle::StandardPixmap standar
         case QStyle::SP_MessageBoxWarning:
         case QStyle::SP_MessageBoxCritical:
         case QStyle::SP_DesktopIcon:
+        case QStyle::SP_DirHomeIcon:
         case QStyle::SP_TrashIcon:
         case QStyle::SP_ComputerIcon:
         case QStyle::SP_DriveFDIcon:
@@ -5832,6 +5833,7 @@ QIcon QCommonStylePrivate::iconFromMacTheme(QCommonStyle::StandardPixmap standar
         case QStyle::SP_DirOpenIcon:
         case QStyle::SP_DirClosedIcon:
         case QStyle::SP_DirLinkIcon:
+        case QStyle::SP_DirLinkOpenIcon:
         case QStyle::SP_FileLinkIcon:
         case QStyle::SP_FileIcon:
         case QStyle::SP_ToolBarHorizontalExtensionButton:

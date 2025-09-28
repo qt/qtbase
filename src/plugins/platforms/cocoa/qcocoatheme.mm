@@ -14,6 +14,7 @@
 #include "qcocoahelpers.h"
 
 #include <QtCore/qfileinfo.h>
+#include <QtCore/qstandardpaths.h>
 #include <QtCore/private/qcore_mac_p.h>
 #include <QtGui/private/qfont_p.h>
 #include <QtGui/private/qguiapplication_p.h>
@@ -34,6 +35,7 @@
 #include "qcocoamessagedialog.h"
 
 #include <CoreServices/CoreServices.h>
+#include <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -354,9 +356,16 @@ QPixmap QCocoaTheme::standardPixmap(StandardPixmap sp, const QSizeF &size) const
     case MessageBoxCritical:
         iconType = kAlertStopIcon;
         break;
-    case DesktopIcon:
-        iconType = kDesktopIcon;
-        break;
+    case DesktopIcon: {
+        auto desktop = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
+        NSImage *icon = [NSWorkspace.sharedWorkspace iconForFile:desktop.toNSString()];
+        return qt_mac_toQPixmap(icon, size);
+    }
+    case DirHomeIcon: {
+        auto home = QStandardPaths::writableLocation(QStandardPaths::HomeLocation);
+        NSImage *icon = [NSWorkspace.sharedWorkspace iconForFile:home.toNSString()];
+        return qt_mac_toQPixmap(icon, size);
+    }
     case TrashIcon:
         iconType = kTrashIcon;
         break;
@@ -377,12 +386,13 @@ QPixmap QCocoaTheme::standardPixmap(StandardPixmap sp, const QSizeF &size) const
         iconType = kGenericNetworkIcon;
         break;
     case DirOpenIcon:
-        iconType = kOpenFolderIcon;
-        break;
+    case DirLinkOpenIcon:
+    case DirIcon:
     case DirClosedIcon:
-    case DirLinkIcon:
-        iconType = kGenericFolderIcon;
-        break;
+    case DirLinkIcon: {
+        NSImage *icon = [NSWorkspace.sharedWorkspace iconForContentType:UTTypeFolder];
+        return qt_mac_toQPixmap(icon, size);
+    }
     case FileLinkIcon:
     case FileIcon:
         iconType = kGenericDocumentIcon;
