@@ -73,7 +73,6 @@ public:
 
     inline bool isValid() const { return !m_error.isValid(); }
 
-    inline const QDBusError& error() { return m_error; }
     inline const QDBusError& error() const { return m_error; }
 
     inline Type value() const
@@ -146,7 +145,6 @@ public:
 
     inline bool isValid() const { return !m_error.isValid(); }
 
-    inline const QDBusError& error() { return m_error; }
     inline const QDBusError& error() const { return m_error; }
 
 private:
