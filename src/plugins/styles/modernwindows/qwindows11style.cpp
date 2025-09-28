@@ -1046,6 +1046,18 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
                 painter->setBrush(vopt->palette.base());
             painter->drawRect(rect);
 
+            if (option->state & State_Selected && !highContrastTheme) {
+                // keep in sync with CE_ItemViewItem QListView indicator painting
+                const auto col = option->palette.accent().color();
+                painter->setBrush(col);
+                painter->setPen(col);
+                const auto xPos = isRtl ? rect.right() - 4.5f : rect.left() + 3.5f;
+                const auto yOfs = rect.height() / 4.;
+                QRectF r(QPointF(xPos, rect.y() + yOfs),
+                         QPointF(xPos + 1, rect.y() + rect.height() - yOfs));
+                painter->drawRoundedRect(r, 1, 1);
+            }
+
             const bool isTreeDecoration = vopt->features.testFlag(
                     QStyleOptionViewItem::IsDecorationForRootColumn);
             if (isTreeDecoration && vopt->state.testAnyFlags(State_Selected | State_MouseOver) &&
@@ -2283,6 +2295,9 @@ int QWindows11Style::pixelMetric(PixelMetric metric, const QStyleOption *option,
     case PM_ButtonShiftHorizontal:
     case PM_ButtonShiftVertical:
         res = 0;
+        break;
+    case PM_TreeViewIndentation:
+        res = 30;
         break;
     default:
         res = QWindowsVistaStyle::pixelMetric(metric, option, widget);
