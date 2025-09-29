@@ -350,7 +350,9 @@ namespace QRangeModelDetails
     template <typename T>
     static constexpr bool isValid(const T &t) noexcept
     {
-        if constexpr (is_validatable<T>())
+        if constexpr (std::is_array_v<T>)
+            return true;
+        else if constexpr (is_validatable<T>())
             return bool(t);
         else
             return true;
