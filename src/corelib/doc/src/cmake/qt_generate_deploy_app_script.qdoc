@@ -102,6 +102,8 @@ The options \c EXCLUDE_PLUGINS, \c EXCLUDE_PLUGIN_TYPES, \c INCLUDE_PLUGINS, and
 \l{qt6_deploy_runtime_dependencies}{qt_deploy_runtime_dependencies()} for their
 documentation.
 
+You can turn off plugin deployment altogether with the \c NO_PLUGINS option.
+
 \sa {qt6_standard_project_setup}{qt_standard_project_setup()},
     {qt6_generate_deploy_script}{qt_generate_deploy_script()},
     {qt6_generate_deploy_qml_app_script}{qt_generate_deploy_qml_app_script()}
