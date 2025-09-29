@@ -41,7 +41,7 @@ QT_DECLARE_EXPORTED_QT_LOGGING_CATEGORY(lcNativeInterface, Q_CORE_EXPORT)
                     "Match for interface %s. Comparing revisions (requested %d / available %d)",   \
                     name, revision, TypeInfo<NativeInterface>::revision());                        \
             if (revision == TypeInfo<NativeInterface>::revision()) {                               \
-                qCDebug(lcNativeInterface) << "Full match. Returning dynamic cast of" << baseType; \
+                qCDebug(lcNativeInterface, "Full match. Returning dynamic cast of %p", baseType);  \
                 return dynamic_cast<NativeInterface *>(baseType);                                  \
             } else {                                                                               \
                 qCWarning(lcNativeInterface,                                                       \

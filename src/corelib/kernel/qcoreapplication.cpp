@@ -193,7 +193,7 @@ QString QCoreApplicationPrivate::appVersion() const
     QString applicationVersion;
 #if defined(Q_OS_DARWIN)
     applicationVersion = infoDictionaryStringProperty(QStringLiteral("CFBundleVersion"));
-#elif defined(Q_OS_ANDROID)
+#elif defined(Q_OS_ANDROID) && !defined(QT_BOOTSTRAPPED)
     QJniObject context(QNativeInterface::QAndroidApplication::context());
     if (context.isValid()) {
         QJniObject pm = context.callObjectMethod(
@@ -814,7 +814,7 @@ void Q_TRACE_INSTRUMENT(qtcore) QCoreApplicationPrivate::init()
     if (!coreappdata()->applicationVersionSet)
         coreappdata()->applicationVersion = appVersion();
 
-#if defined(Q_OS_ANDROID)
+#if defined(Q_OS_ANDROID) && !defined(QT_BOOTSTRAPPED)
     // We've deferred initializing the logging registry due to not being
     // able to guarantee that logging happened on the same thread as the
     // Qt main thread, but now that the Qt main thread is set up, we can
