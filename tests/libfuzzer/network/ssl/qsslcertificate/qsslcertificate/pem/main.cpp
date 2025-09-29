@@ -13,7 +13,7 @@ extern "C" int LLVMFuzzerTestOneInput(const char *Data, size_t Size) {
     static int argc = 1;
     static char arg1[] = "fuzzer";
     static char *argv[] = { arg1, nullptr };
-    QCoreApplication app(argc, argv);
+    static QCoreApplication app(argc, argv);
     QSslCertificate ssl(QByteArray::fromRawData(Data, Size), QSsl::Pem);
     return 0;
 }
