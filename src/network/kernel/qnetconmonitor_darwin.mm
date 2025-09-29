@@ -8,7 +8,7 @@
 
 #include <Network/Network.h>
 
-#include <QtCore/qreadwritelock.h>
+#include <QtCore/qmutex.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -55,7 +55,13 @@ class QNetworkConnectionMonitorPrivate : public QObjectPrivate
 {
 public:
     nw_path_status_t status = nw_path_status_invalid;
-    mutable QReadWriteLock monitorLock;
+
+    struct QueueCallbackData
+    {
+        QMutex monitorMutex;
+        QNetworkConnectionMonitorPrivate *backend = nullptr;
+    } *callbackData = nullptr;
+
     nw_path_monitor_t monitor = nullptr;
     using InterfaceType = QNetworkConnectionMonitor::InterfaceType;
     InterfaceType interface = InterfaceType::Unknown;
@@ -74,12 +80,13 @@ public:
 
 void QNetworkConnectionMonitorPrivate::updateState(nw_path_t state)
 {
-    QReadLocker lock(&monitorLock);
-    if (monitor == nullptr)
-        return;
+    Q_Q(QNetworkConnectionMonitor);
+
+    Q_ASSERT(callbackData);
+
+    // Lock is acquired in the callback (which is calling us).
 
     // To be executed only on the reachability queue.
-    Q_Q(QNetworkConnectionMonitor);
 
     // NETMONTODO: for now, 'online' for us means nw_path_status_satisfied
     // is set. There are more possible flags that require more tests/some special
@@ -139,16 +146,16 @@ QNetworkConnectionMonitor::InterfaceType QNetworkConnectionMonitorPrivate::getIn
 
 bool QNetworkConnectionMonitorPrivate::startMonitoring()
 {
-    QWriteLocker lock(&monitorLock);
+    if (callbackData) {
+        qCWarning(lcNetMon, "Monitor is already active, call stopMonitoring() first");
+        return false;
+    }
+
     monitor = nw_path_monitor_create();
     if (monitor == nullptr) {
         qCWarning(lcNetMon, "Failed to create a path monitor, cannot determine current reachability.");
         return false;
     }
-
-    nw_path_monitor_set_update_handler(monitor, [this](nw_path_t path){
-        updateState(path);
-    });
 
     auto queue = qt_reachability_queue();
     if (!queue) {
@@ -158,6 +165,22 @@ bool QNetworkConnectionMonitorPrivate::startMonitoring()
         return false;
     }
 
+    callbackData = new QueueCallbackData;
+    auto *data = callbackData;
+    callbackData->backend = this;
+
+    nw_path_monitor_set_update_handler(monitor, [data](nw_path_t path){
+        const QMutexLocker lock(&data->monitorMutex);
+        if (data->backend)
+            data->backend->updateState(path);
+        // Else - we were cancelled and will delete 'data' in the callback below.
+        // Presumably, this never gets called after 'cancel handler'.
+    });
+
+    nw_path_monitor_set_cancel_handler(monitor, [data]{
+        delete data;
+    });
+
     nw_path_monitor_set_queue(monitor, queue);
     nw_path_monitor_start(monitor);
     return true;
@@ -165,8 +188,18 @@ bool QNetworkConnectionMonitorPrivate::startMonitoring()
 
 void QNetworkConnectionMonitorPrivate::stopMonitoring()
 {
-    QWriteLocker lock(&monitorLock);
-    if (monitor != nullptr) {
+    if (!callbackData) {
+        Q_ASSERT(!monitor);
+        return;
+    }
+
+    {
+        const QMutexLocker lock(&callbackData->monitorMutex); // Release the lock _before_ cancelling.
+        callbackData->backend = nullptr; // This will prevent updateState calls from the queue.
+        callbackData = nullptr; // To be deleted in the cancellation callback.
+    }
+
+    if (monitor) {
         nw_path_monitor_cancel(monitor);
         nw_release(monitor);
         monitor = nullptr;
@@ -181,7 +214,6 @@ void QNetworkConnectionMonitor::stopMonitoring()
 
 bool QNetworkConnectionMonitorPrivate::isMonitoring() const
 {
-    QReadLocker lock(&monitorLock);
     return monitor != nullptr;
 }
 
@@ -209,11 +241,6 @@ bool QNetworkConnectionMonitor::setTargets(const QHostAddress &/*local*/, const 
 bool QNetworkConnectionMonitor::startMonitoring()
 {
     Q_D(QNetworkConnectionMonitor);
-
-    if (d->isMonitoring()) {
-        qCWarning(lcNetMon, "Monitor is already active, call stopMonitoring() first");
-        return false;
-    }
 
     return d->startMonitoring();
 }
