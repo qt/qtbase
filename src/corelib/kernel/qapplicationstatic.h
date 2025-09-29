@@ -68,8 +68,10 @@ template <typename QAS> struct ApplicationHolder
     {
         // we only synchronize using the mutex here, not the guard
         QMutexLocker locker(&mutex);
-        realPointer()->~PlainType();
-        guard.storeRelaxed(QtGlobalStatic::Uninitialized);
+        if (guard.loadRelaxed() == QtGlobalStatic::Initialized) {
+            realPointer()->~PlainType();
+            guard.storeRelaxed(QtGlobalStatic::Uninitialized);
+        }
     }
 };
 } // namespace QtGlobalStatic
