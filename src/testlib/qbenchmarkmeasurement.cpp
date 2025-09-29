@@ -57,10 +57,18 @@ void QBenchmarkTickMeasurer::start()
     startTicks = getticks();
 }
 
+void QBenchmarkTickMeasurer::updateMeasurement()
+{
+    const qreal value = qreal(elapsed(getticks(), startTicks));
+    accumulator.update(value);
+    startTicks = getticks();
+}
+
 QList<QBenchmarkMeasurerBase::Measurement> QBenchmarkTickMeasurer::stop()
 {
-    CycleCounterTicks now = getticks();
-    return { { qreal(elapsed(now, startTicks)), 0, QTest::CPUTicks } };
+    return { { accumulator.total(),
+               accumulator.variance() / QBenchmarkTestMethodData::current->measurementBlockSize,
+               QTest::CPUTicks } };
 }
 
 bool QBenchmarkTickMeasurer::isMeasurementAccepted(QBenchmarkMeasurerBase::Measurement)
