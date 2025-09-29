@@ -37,6 +37,7 @@ public:
     QCoreTextFontEngine(CGFontRef font, const QFontDef &def);
     ~QCoreTextFontEngine();
 
+    int glyphCount() const override;
     glyph_t glyphIndex(uint ucs4) const override;
     QString glyphName(glyph_t index) const override;
     glyph_t findGlyph(QLatin1StringView name) const override;

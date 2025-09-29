@@ -301,6 +301,11 @@ void QCoreTextFontEngine::init()
     }
 }
 
+int QCoreTextFontEngine::glyphCount() const
+{
+    return CTFontGetGlyphCount(ctfont);
+}
+
 glyph_t QCoreTextFontEngine::glyphIndex(uint ucs4) const
 {
     int len = 0;

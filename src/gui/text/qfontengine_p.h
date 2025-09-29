@@ -453,6 +453,7 @@ public:
     explicit QFontEngineMulti(QFontEngine *engine, int script, const QStringList &fallbackFamilies = QStringList());
     ~QFontEngineMulti();
 
+    virtual int glyphCount() const override;
     virtual glyph_t glyphIndex(uint ucs4) const override;
     virtual int stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, ShaperFlags flags) const override;
 

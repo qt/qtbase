@@ -1933,6 +1933,11 @@ QFontEngine *QFontEngineMulti::loadEngine(int at)
     return nullptr;
 }
 
+int QFontEngineMulti::glyphCount() const
+{
+    return engine(0)->glyphCount();
+}
+
 glyph_t QFontEngineMulti::glyphIndex(uint ucs4) const
 {
     glyph_t glyph = engine(0)->glyphIndex(ucs4);
