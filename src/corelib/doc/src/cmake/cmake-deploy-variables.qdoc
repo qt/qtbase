@@ -239,7 +239,7 @@ to be deployed to different locations within the app bundle.
 
 \section1 Example
 
-\include cmake-deploy-modified-variable-values.qdocinc
+\include cmake-deploy-modified-qml-dir.qdocinc
 
 \sa QT_DEPLOY_SUPPORT, QT_DEPLOY_PREFIX, QT_DEPLOY_BIN_DIR,
     QT_DEPLOY_LIBEXEC_DIR, QT_DEPLOY_LIB_DIR, QT_DEPLOY_PLUGINS_DIR,

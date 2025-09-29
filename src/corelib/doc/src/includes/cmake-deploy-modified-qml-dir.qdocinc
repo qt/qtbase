@@ -2,27 +2,29 @@
 cmake_minimum_required(VERSION 3.16...3.22)
 project(MyThings)
 
-# The following CMAKE_INSTALL_*DIR variables are used to initialize their
-# QT_DEPLOY_*_DIR counterparts.
-set(CMAKE_INSTALL_BINDIR "mybindir")
-set(CMAKE_INSTALL_LIBDIR "mylibdir")
-set(CMAKE_INSTALL_LIBEXECDIR "mylibexecdir")
-
-find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Quick)
 qt_standard_project_setup()
 
 qt_add_executable(MyApp main.cpp)
+qt_add_qml_module(MyApp
+    URI myapp
+    QML_FILES main.qml
+)
 
 set(deploy_script "${CMAKE_CURRENT_BINARY_DIR}/deploy_MyApp.cmake")
 file(GENERATE OUTPUT ${deploy_script} CONTENT "
 
-set(QT_DEPLOY_PLUGINS_DIR \"mypluginsdir\")
-set(QT_DEPLOY_TRANSLATIONS_DIR \"i18n\")
+set(QT_DEPLOY_QML_DIR \"myqmldir\")
 
 include(\"${QT_DEPLOY_SUPPORT}\")
 
+qt_deploy_qml_imports(
+    TARGET MyApp
+    PLUGINS_FOUND plugins_found
+)
 qt_deploy_runtime_dependencies(
     EXECUTABLE \"\${QT_DEPLOY_BIN_DIR}/$<TARGET_FILE_NAME:MyApp>\"
+    ADDITIONAL_MODULES \${plugins_found}
 )")
 
 install(SCRIPT ${deploy_script})
