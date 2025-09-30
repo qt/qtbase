@@ -359,7 +359,7 @@ inline qfloat16::qfloat16(float f) noexcept
 #if defined(QT_COMPILER_SUPPORTS_F16C) && defined(__F16C__)
     __m128 packsingle = _mm_set_ss(f);
     __m128i packhalf = _mm_cvtps_ph(packsingle, 0);
-    b16 = _mm_extract_epi16(packhalf, 0);
+    b16 = quint16(_mm_extract_epi16(packhalf, 0));
 #elif defined (__ARM_FP16_FORMAT_IEEE)
     __fp16 f16 = __fp16(f);
     memcpy(&b16, &f16, sizeof(quint16));
