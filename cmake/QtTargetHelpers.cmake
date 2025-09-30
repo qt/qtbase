@@ -1299,9 +1299,12 @@ function(qt_internal_generate_tracepoints name provider)
             set(tracepointgen "${QT_CMAKE_EXPORT_NAMESPACE}::tracepointgen")
         endif()
 
+        add_custom_target(${name}_${provider_name}_sync)
+        qt_internal_add_sync_header_dependencies(${name}_${provider_name}_sync ${name})
+
         add_custom_command(OUTPUT "${tracepoints_path}"
             COMMAND ${tracepointgen} ${provider_name} "${tracepoints_path}"  "I$<JOIN:$<TARGET_PROPERTY:${name},INCLUDE_DIRECTORIES>,;>" ${absolute_file_paths}
-            DEPENDS ${absolute_file_paths}
+            DEPENDS ${absolute_file_paths} ${name}_${provider_name}_sync
             VERBATIM)
         add_custom_target(${name}_${provider_name}_tracepoints_file DEPENDS "${tracepoints_path}")
         add_dependencies(${name} ${name}_${provider_name}_tracepoints_file)
