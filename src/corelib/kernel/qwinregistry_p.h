@@ -32,7 +32,10 @@ class Q_CORE_EXPORT QWinRegistryKey : public QObject
 
 public:
     QWinRegistryKey(QObject *parent = nullptr);
-    explicit QWinRegistryKey(HKEY parentHandle, QStringView subKey,
+    explicit QWinRegistryKey(HKEY parentHandle, const wchar_t *subKey,
+                             REGSAM permissions = KEY_READ, REGSAM access = 0,
+                             QObject *parent = nullptr);
+    explicit QWinRegistryKey(HKEY parentHandle, const QString &subKey,
                              REGSAM permissions = KEY_READ, REGSAM access = 0,
                              QObject *parent = nullptr);
     ~QWinRegistryKey();
@@ -55,17 +58,23 @@ public:
 
     QString name() const;
 
-    [[nodiscard]] QVariant value(QStringView subKey) const;
+    [[nodiscard]] QVariant value(const wchar_t *subKey) const;
+    [[nodiscard]] QVariant value(const QString &subKey) const;
+
     template<typename T>
-    [[nodiscard]] std::optional<T> value(QStringView subKey) const
+    [[nodiscard]] std::optional<T> value(const wchar_t *subKey) const
     {
-        const QVariant var = value(subKey);
-        if (var.isValid())
-            return qvariant_cast<T>(var);
-        return std::nullopt;
+        return to_optional<T>(value(subKey));
     }
 
-    QString stringValue(QStringView subKey) const;
+    template<typename T>
+    [[nodiscard]] std::optional<T> value(const QString &subKey) const
+    {
+        return to_optional<T>(value(subKey));
+    }
+
+    QString stringValue(const wchar_t *subKey) const;
+    QString stringValue(const QString &subKey) const;
 
 #ifndef QT_NO_DEBUG_STREAM
     friend Q_CORE_EXPORT QDebug operator<<(QDebug dbg, const QWinRegistryKey &);
@@ -78,6 +87,14 @@ protected:
     void connectNotify(const QMetaMethod &signal) override;
 
 private:
+    template<typename T>
+    static std::optional<T> to_optional(QVariant v)
+    {
+        if (v.isValid())
+            return qvariant_cast<T>(std::move(v));
+        return std::nullopt;
+    }
+
     HKEY m_key = nullptr;
     QUniqueWin32NullHandle m_keyChangedEvent;
 };
