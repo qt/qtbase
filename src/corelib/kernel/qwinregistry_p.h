@@ -15,7 +15,6 @@
 // We mean it.
 //
 
-#include <QtCore/qpair.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qstringview.h>
 #include <QtCore/qt_windows.h>
