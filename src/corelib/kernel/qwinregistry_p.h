@@ -42,12 +42,17 @@ public:
     ~QWinRegistryKey();
 
     QWinRegistryKey(QWinRegistryKey &&other) noexcept
+#if 1 // QTBUG-140725
+        = delete;
+    void operator=(QWinRegistryKey &&) = delete;
+#else
         : m_key(std::exchange(other.m_key, nullptr)) {}
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QWinRegistryKey)
     void swap(QWinRegistryKey &other) noexcept
     {
         qt_ptr_swap(m_key, other.m_key);
     }
+#endif
 
     [[nodiscard]] bool isValid() const { return m_key != nullptr; }
 
