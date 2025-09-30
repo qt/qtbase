@@ -191,7 +191,9 @@ QVariant QWinRegistryKey::value(const QString &subKey) const
 // Otherwise, the resulting string (which may be empty) is returned.
 QString QWinRegistryKey::stringValue(const wchar_t *subKey) const
 {
-    return value<QString>(subKey).value_or(QString());
+    if (auto v = value<QString>(subKey))
+        return std::move(*v);
+    return QString();
 }
 
 QString QWinRegistryKey::stringValue(const QString &subKey) const
