@@ -1059,7 +1059,7 @@ QByteArray QSysInfo::machineUniqueId()
 #elif defined(Q_OS_WIN)
     // Let's poke at the registry
     const QString machineGuid = QWinRegistryKey(HKEY_LOCAL_MACHINE, LR"(SOFTWARE\Microsoft\Cryptography)")
-                                .stringValue(u"MachineGuid"_s);
+                                .stringValue(L"MachineGuid");
     if (!machineGuid.isEmpty())
         return machineGuid.toLatin1();
 #endif
