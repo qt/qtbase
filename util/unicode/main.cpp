@@ -3,10 +3,10 @@
 
 #include <qbytearray.h>
 #include <qchar.h>
-#include <qdebug.h>
 #include <qfile.h>
 #include <qhash.h>
 #include <qlist.h>
+#include <qmap.h>
 #include <qspan.h>
 #include <qstring.h>
 #include <qbitarray.h>
@@ -2256,7 +2256,7 @@ static void readIdnaMappingTable()
             // Some deviations have empty mappings, others should not...
             if (mapping.isEmpty()) {
                 Q_ASSERT(rawStatus == IdnaRawStatus::Deviation);
-                qDebug() << "    Empty IDNA mapping for" << fields[0];
+                qDebug("    Empty IDNA mapping for: %.*s", qPrintableView(fields[0]));
             }
 
             break;
@@ -2319,7 +2319,7 @@ static void resolveIdnaStatus()
             }
 
             if (allow) {
-                qDebug() << "    Allowing" << Qt::hex << codepoint;
+                qDebug("    Allowing %x", codepoint);
                 ud.p.idnaStatus = IdnaStatus::Mapped;
             } else {
                 ud.p.idnaStatus = IdnaStatus::Disallowed;
@@ -2480,8 +2480,8 @@ static QByteArray createIdnaMapping()
     }
 
     QString idnaMappingData = buildSuperstring(std::move(values));
-    qDebug() << "    uncompressed size:" << uncompressedSize << "characters";
-    qDebug() << "    consolidated size:" << idnaMappingData.size() << "characters";
+    qDebug("    uncompressed size: %lld characters", qlonglong(uncompressedSize));
+    qDebug("    consolidated size: %lld characters", qlonglong(idnaMappingData.size()));
 
     qsizetype memoryUsage = 0;
 
@@ -2536,7 +2536,7 @@ static QByteArray createIdnaMapping()
         memoryUsage += 8;
     }
 
-    qDebug() << "    memory usage:" << memoryUsage << "bytes";
+    qDebug("    memory usage: %lld bytes", qlonglong(memoryUsage));
 
     out +=
         "};\n\n"
@@ -3322,7 +3322,6 @@ QByteArray createCasingInfo()
     return out;
 }
 
-
 int main(int, char **)
 {
     initAgeMap();
@@ -3438,11 +3437,11 @@ int main(int, char **)
             "#endif // QUNICODETABLES_P_H\n");
     f.close();
 
-    qDebug() << "maxMirroredDiff  = " << Qt::hex << maxMirroredDiff;
-    qDebug() << "maxLowerCaseDiff = " << Qt::hex << maxLowerCaseDiff;
-    qDebug() << "maxUpperCaseDiff = " << Qt::hex << maxUpperCaseDiff;
-    qDebug() << "maxTitleCaseDiff = " << Qt::hex << maxTitleCaseDiff;
-    qDebug() << "maxCaseFoldDiff  = " << Qt::hex << maxCaseFoldDiff;
+    qDebug("maxMirroredDiff  = %x", maxMirroredDiff);
+    qDebug("maxLowerCaseDiff = %x", maxLowerCaseDiff);
+    qDebug("maxUpperCaseDiff = %x", maxUpperCaseDiff);
+    qDebug("maxTitleCaseDiff = %x", maxTitleCaseDiff);
+    qDebug("maxCaseFoldDiff  = %x", maxCaseFoldDiff);
 #if 0
 //     dump(0, 0x7f);
 //     dump(0x620, 0x640);
