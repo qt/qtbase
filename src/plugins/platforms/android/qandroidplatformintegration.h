@@ -40,8 +40,10 @@ protected:
 };
 
 class QAndroidPlatformIntegration : public QPlatformIntegration
+#if QT_CONFIG(egl)
                                   , QNativeInterface::Private::QEGLIntegration
                                   , QNativeInterface::Private::QAndroidOffScreenIntegration
+#endif
 {
     friend class QAndroidPlatformScreen;
 
@@ -56,12 +58,16 @@ public:
     QPlatformWindow *createPlatformWindow(QWindow *window) const override;
     QPlatformWindow *createForeignWindow(QWindow *window, WId nativeHandle) const override;
     QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const override;
+#if QT_CONFIG(egl)
     QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const override;
     QOpenGLContext *createOpenGLContext(EGLContext context, EGLDisplay display, QOpenGLContext *shareContext) const override;
+#endif
     QAbstractEventDispatcher *createEventDispatcher() const override;
     QAndroidPlatformScreen *screen() { return m_primaryScreen; }
+#if QT_CONFIG(egl)
     QPlatformOffscreenSurface *createPlatformOffscreenSurface(QOffscreenSurface *surface) const override;
     QOffscreenSurface *createOffscreenSurface(ANativeWindow *nativeSurface) const override;
+#endif
 
     void setAvailableGeometry(const QRect &availableGeometry);
     void setPhysicalSize(int width, int height);

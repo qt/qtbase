@@ -4,7 +4,6 @@
 
 #include "qandroidplatformwindow.h"
 #include "androidbackendregister.h"
-#include "qandroidplatformopenglcontext.h"
 #include "qandroidplatformscreen.h"
 
 #include "androidjnimain.h"
