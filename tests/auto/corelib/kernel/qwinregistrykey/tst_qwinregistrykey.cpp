@@ -3,7 +3,6 @@
 
 #include <QTest>
 #include <QObject>
-#include <QPair>
 #include <QScopeGuard>
 #include <private/qwinregistry_p.h>
 #include <qt_windows.h>
@@ -12,15 +11,15 @@ using namespace Qt::StringLiterals;
 
 static constexpr const wchar_t TEST_KEY[] = LR"(SOFTWARE\tst_qwinregistrykey)";
 
-static const QPair<QStringView, QString> TEST_STRING = qMakePair(u"string", u"string"_s);
-static const QPair<QStringView, QString> TEST_STRING_NULL = qMakePair(u"string_null", QString());
-static const QPair<QStringView, QStringList> TEST_STRINGLIST = qMakePair(u"stringlist", QStringList{ u"element1"_s, u"element2"_s, u"element3"_s });
-static const QPair<QStringView, QStringList> TEST_STRINGLIST_NULL = qMakePair(u"stringlist_null", QStringList());
-static const QPair<QStringView, quint32> TEST_DWORD = qMakePair(u"dword", 123);
-static const QPair<QStringView, quint64> TEST_QWORD = qMakePair(u"qword", 456);
-static const QPair<QStringView, QByteArray> TEST_BINARY = qMakePair(u"binary", "binary\0"_ba);
-static const QPair<QStringView, QVariant> TEST_NOT_EXIST = qMakePair(u"not_exist", QVariant());
-static const QPair<QStringView, QVariant> TEST_DEFAULT = qMakePair(u"", u"default"_s);
+const std::pair TEST_STRING{L"string", u"string"_s};
+const std::pair TEST_STRING_NULL{L"string_null", QString()};
+const std::pair TEST_STRINGLIST{L"stringlist", QStringList{u"element1"_s, u"element2"_s, u"element3"_s}};
+const std::pair TEST_STRINGLIST_NULL{L"stringlist_null", QStringList()};
+const std::pair TEST_DWORD{L"dword", 123};
+const std::pair TEST_QWORD{L"qword", 456};
+const std::pair TEST_BINARY{L"binary", "binary\0"_ba};
+const std::pair TEST_NOT_EXIST{L"not_exist", QVariant()};
+const std::pair TEST_DEFAULT{L"", u"default"_s};
 
 [[nodiscard]] static inline bool write(const HKEY key, const QStringView name, const QVariant &value)
 {
