@@ -30,7 +30,7 @@ public:
 
     WindowType windowType() const override;
 
-    void setWindowFlags(Qt::WindowFlags flags) override;
+    bool createDecoration() override;
 };
 
 }

@@ -190,7 +190,7 @@ public:
                                      const QPointF &global, Qt::MouseButtons buttons,
                                      Qt::KeyboardModifiers modifiers);
 
-    bool createDecoration();
+    virtual bool createDecoration();
 
 #if QT_CONFIG(cursor)
     void restoreMouseCursor(QWaylandInputDevice *device);
