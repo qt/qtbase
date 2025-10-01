@@ -374,7 +374,7 @@ NSMenuItem *QCocoaMenuItem::sync()
 
     const QIcon::Mode mode = m_enabled ? QIcon::Normal : QIcon::Disabled;
     const QIcon::State state = m_checked ? QIcon::On : QIcon::Off;
-    m_native.image = [NSImage imageFromQIcon:m_icon withSize:m_iconSize
+    m_native.image = [NSImage imageFromQIcon:m_icon withSize:QSize(m_iconSize, m_iconSize)
                                                     withMode:mode
                                                    withState:state];
 

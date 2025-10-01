@@ -17,6 +17,8 @@
 
 #include <QtCore/private/qcore_mac_p.h>
 
+#include <QtCore/qsize.h>
+
 #include <QtGui/private/qtguiglobal_p.h>
 #include <QtGui/qicon.h>
 #include <QtGui/qpalette.h>
@@ -56,11 +58,12 @@ QT_END_NAMESPACE
 @interface NSImage (QtExtras)
 + (instancetype)imageFromQImage:(const QT_PREPEND_NAMESPACE(QImage) &)image;
 + (instancetype)imageFromQIcon:(const QT_PREPEND_NAMESPACE(QIcon) &)icon;
-+ (instancetype)imageFromQIcon:(const QT_PREPEND_NAMESPACE(QIcon) &)icon withSize:(int)size;
 + (instancetype)imageFromQIcon:(const QT_PREPEND_NAMESPACE(QIcon) &)icon
-                                            withSize:(int)size
-                                            withMode:(QT_PREPEND_NAMESPACE(QIcon)::Mode)mode
-                                           withState:(QT_PREPEND_NAMESPACE(QIcon)::State)state;
+                      withSize:(const QT_PREPEND_NAMESPACE(QSize) &)size;
++ (instancetype)imageFromQIcon:(const QT_PREPEND_NAMESPACE(QIcon) &)icon
+                      withSize:(const QT_PREPEND_NAMESPACE(QSize) &)size
+                      withMode:(QT_PREPEND_NAMESPACE(QIcon)::Mode)mode
+                     withState:(QT_PREPEND_NAMESPACE(QIcon)::State)state;
 @end
 QT_BEGIN_NAMESPACE
 #endif // __OBJC__

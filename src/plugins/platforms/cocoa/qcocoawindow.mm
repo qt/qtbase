@@ -1072,8 +1072,9 @@ void QCocoaWindow::setWindowIcon(const QIcon &icon)
         iconButton.image = [NSWorkspace.sharedWorkspace iconForFile:m_view.window.representedFilename];
     } else {
         // Fall back to a size that looks good on the highest resolution screen available
-        auto fallbackSize = iconButton.frame.size.height * qGuiApp->devicePixelRatio();
-        iconButton.image = [NSImage imageFromQIcon:icon withSize:fallbackSize];
+        // for icon engines that don't have an intrinsic size (like SVG).
+        auto fallbackSize = QSizeF::fromCGSize(iconButton.frame.size) * qGuiApp->devicePixelRatio();
+        iconButton.image = [NSImage imageFromQIcon:icon withSize:fallbackSize.toSize()];
     }
 }
 

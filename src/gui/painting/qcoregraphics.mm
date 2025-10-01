@@ -119,24 +119,24 @@ QT_END_NAMESPACE
 
 + (instancetype)imageFromQIcon:(const QIcon &)icon
 {
-    return [NSImage imageFromQIcon:icon withSize:0];
+    return [NSImage imageFromQIcon:icon withSize:QSize()];
 }
 
-+ (instancetype)imageFromQIcon:(const QIcon &)icon withSize:(int)size
++ (instancetype)imageFromQIcon:(const QIcon &)icon withSize:(const QSize &)size
 {
     return [NSImage imageFromQIcon:icon withSize:size withMode:QIcon::Normal withState:QIcon::Off];
 }
 
-+ (instancetype)imageFromQIcon:(const QIcon &)icon withSize:(int)size withMode:(QIcon::Mode)mode
-                                                                     withState:(QIcon::State)state
++ (instancetype)imageFromQIcon:(const QIcon &)icon withSize:(const QSize &)size
+                    withMode:(QIcon::Mode)mode withState:(QIcon::State)state
 
 {
     if (icon.isNull())
         return nil;
 
     auto availableSizes = icon.availableSizes();
-    if (availableSizes.isEmpty() && size > 0)
-        availableSizes << QSize(size, size);
+    if (availableSizes.isEmpty() && !size.isNull())
+        availableSizes << size;
 
     auto nsImage = [[[NSImage alloc] initWithSize:NSZeroSize] autorelease];
 
@@ -162,8 +162,8 @@ QT_END_NAMESPACE
 
     [nsImage setTemplate:icon.isMask()];
 
-    if (size)
-        nsImage.size = CGSizeMake(size, size);
+    if (!size.isNull())
+        nsImage.size = QSizeF(size).toCGSize();
 
     return nsImage;
 }
