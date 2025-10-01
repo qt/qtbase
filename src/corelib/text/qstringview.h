@@ -10,7 +10,6 @@
 #include <QtCore/qcontainerfwd.h>
 #include <QtCore/qbytearray.h>
 #include <QtCore/qstringfwd.h>
-#include <QtCore/qstringliteral.h>
 #include <QtCore/qstringalgorithms.h>
 
 #include <string>
