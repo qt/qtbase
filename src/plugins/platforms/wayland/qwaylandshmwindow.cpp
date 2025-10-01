@@ -31,13 +31,15 @@ QWaylandWindow::WindowType QWaylandShmWindow::windowType() const
     return QWaylandWindow::Shm;
 }
 
-void QWaylandShmWindow::setWindowFlags(Qt::WindowFlags flags)
+bool QWaylandShmWindow::createDecoration()
 {
-    QWaylandWindow::setWindowFlags(flags);
+    bool rc = QWaylandWindow::createDecoration();
 
     const QSurfaceFormat format = window()->requestedFormat();
     if (!format.hasAlpha())
         mSurfaceFormat.setAlphaBufferSize(mWindowDecorationEnabled ? 8 : 0);
+
+    return rc;
 }
 
 }
