@@ -200,6 +200,8 @@ static ParsedRfcDateTime rfcDateImpl(QStringView s)
             monthIndex = 0;
             yearIndex = words.size() > 3 && words.at(2).contains(colon) ? 3 : 2;
         }
+        if (words.at(yearIndex).size() != 4)
+            return result;
 
         int dayOfWeek = 0;
         if (!dayName.isEmpty()) {

@@ -3066,6 +3066,12 @@ void tst_QDateTime::fromStringDateFormat_data()
         << Qt::RFC2822Date << QDateTime();
     QTest::newRow("RFC 2822 with day date only") << u"Fri, 01 Nov 2002"_s
         << Qt::RFC2822Date << QDateTime();
+    QTest::newRow("RFC 2822 with obsolete 2 digit year")
+            << u"Mon, 07 Feb 22 11:48:12 -0500"_s << Qt::RFC2822Date << QDateTime();
+    QTest::newRow("RFC 2822 with valid year")
+            << u"Mon, 07 Feb 2022 11:48:12 -0500"_s << Qt::RFC2822Date
+            << QDateTime(QDate(2022, 2, 7), QTime(11, 48, 12),
+                         QTimeZone::fromSecondsAheadOfUtc(-5 * 60 * 60));
 
     QTest::newRow("RFC 2822 malformed time (truncated)")
         << u"01 Nov 2002 0:"_s << Qt::RFC2822Date << QDateTime();
