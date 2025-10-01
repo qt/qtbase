@@ -504,7 +504,7 @@ void Parser::addIncludesRecursive(const QString &filename, QList<QString> &inclu
         data += line + QLatin1Char(QLatin1Char('\n'));
     }
 
-    QRegularExpression includeMacro(QStringLiteral("#include [\"<]([A-Za-z0-9_./-:]*.h)[\">]"));
+    QRegularExpression includeMacro(QStringLiteral("#include [\"<]([A-Za-z0-9_.:/-]*.h)[\">]"));
     QRegularExpressionMatchIterator i = includeMacro.globalMatch(data);
     while (i.hasNext()) {
         QRegularExpressionMatch match = i.next();
@@ -548,7 +548,7 @@ void Parser::parse(QIODevice &input, const QString &name)
 
     QStringList includes;
 
-    QRegularExpression includeMacro(QStringLiteral("#include [\"<]([A-Za-z0-9_./-:]*.h)[\">]"));
+    QRegularExpression includeMacro(QStringLiteral("#include [\"<]([A-Za-z0-9_.:/-]*.h)[\">]"));
     QRegularExpressionMatchIterator i = includeMacro.globalMatch(data);
     while (i.hasNext()) {
         QRegularExpressionMatch match = i.next();
