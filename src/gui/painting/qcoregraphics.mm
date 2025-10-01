@@ -124,9 +124,8 @@ QT_END_NAMESPACE
 
 + (instancetype)imageFromQIcon:(const QIcon &)icon withSize:(int)size
 {
-    return [NSImage imageFromQIcon:icon withSize:0 withMode:QIcon::Normal withState:QIcon::Off];
+    return [NSImage imageFromQIcon:icon withSize:size withMode:QIcon::Normal withState:QIcon::Off];
 }
-
 
 + (instancetype)imageFromQIcon:(const QIcon &)icon withSize:(int)size withMode:(QIcon::Mode)mode
                                                                      withState:(QIcon::State)state
