@@ -153,6 +153,9 @@ QT_END_NAMESPACE
         auto *imageRep = [[NSBitmapImageRep alloc] initWithCGImage:cgImage];
         imageRep.size = image.deviceIndependentSize().toCGSize();
         [nsImage addRepresentation:[imageRep autorelease]];
+        // Match behavior of loading icns files, where the NSImage size
+        // reflects the largest representation.
+        nsImage.size = imageRep.size;
     }
 
     if (!nsImage.representations.count)
