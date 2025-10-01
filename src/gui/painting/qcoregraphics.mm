@@ -162,8 +162,10 @@ QT_END_NAMESPACE
 
     [nsImage setTemplate:icon.isMask()];
 
-    if (!size.isNull())
-        nsImage.size = QSizeF(size).toCGSize();
+    if (!size.isNull()) {
+        auto imageSize = QSizeF::fromCGSize(nsImage.size);
+        nsImage.size = imageSize.scaled(size, Qt::KeepAspectRatio).toCGSize();
+    }
 
     return nsImage;
 }
