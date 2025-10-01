@@ -39,6 +39,7 @@ qt_internal_add_module(Network
         kernel/qnetworkinterface.cpp kernel/qnetworkinterface.h kernel/qnetworkinterface_p.h
         kernel/qnetworkinterface_unix_p.h
         kernel/qnetworkproxy.cpp kernel/qnetworkproxy.h
+        kernel/qtcontenttypeparser_p.h
         kernel/qtnetworkglobal.h kernel/qtnetworkglobal_p.h
         socket/qabstractsocket.cpp socket/qabstractsocket.h socket/qabstractsocket_p.h
         socket/qabstractsocketengine.cpp socket/qabstractsocketengine_p.h
