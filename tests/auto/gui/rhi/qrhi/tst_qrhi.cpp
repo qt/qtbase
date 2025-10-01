@@ -125,6 +125,8 @@ private slots:
     void renderToTextureIndexedDraw();
     void renderToTextureArrayMultiView_data();
     void renderToTextureArrayMultiView();
+    void renderToTextureSameSrbDifferentShaders_data();
+    void renderToTextureSameSrbDifferentShaders();
     void renderToWindowSimple_data();
     void renderToWindowSimple();
     void continuousReadbackFromWindow_data();
@@ -4197,6 +4199,128 @@ void tst_QRhi::renderToWindowSimple()
     if (rhi->isYUpInFramebuffer() == rhi->isYUpInNDC())
         result.flip();
     QCOMPARE(resultPartial.pixelColor(0, 0), result.pixelColor(100, 100));
+}
+
+void tst_QRhi::renderToTextureSameSrbDifferentShaders_data()
+{
+    rhiTestData();
+}
+
+void tst_QRhi::renderToTextureSameSrbDifferentShaders()
+{
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+    QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing rendering");
+
+    const QSize outputSize(1920, 1080);
+    QScopedPointer<QRhiTexture> texture(rhi->newTexture(QRhiTexture::RGBA8, outputSize, 1,
+                                                        QRhiTexture::RenderTarget | QRhiTexture::UsedAsTransferSource));
+    QVERIFY(texture->create());
+
+    QScopedPointer<QRhiTextureRenderTarget> rt(rhi->newTextureRenderTarget({ texture.data() }));
+    QScopedPointer<QRhiRenderPassDescriptor> rpDesc(rt->newCompatibleRenderPassDescriptor());
+    rt->setRenderPassDescriptor(rpDesc.data());
+    QVERIFY(rt->create());
+
+    QScopedPointer<QRhiBuffer> vbuf(rhi->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer, sizeof(triangleVertices)));
+    QVERIFY(vbuf->create());
+
+    QScopedPointer<QRhiBuffer> ubuf1(rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, 4));
+    QVERIFY(ubuf1->create());
+    QScopedPointer<QRhiBuffer> ubuf2(rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, 4));
+    QVERIFY(ubuf2->create());
+
+    // one srb, suitable for both vertex shaders (the samesrb_1.vert does not use the buffer at binding 2, that's fine)
+    QScopedPointer<QRhiShaderResourceBindings> srb(rhi->newShaderResourceBindings());
+    srb->setBindings({
+        QRhiShaderResourceBinding::uniformBuffer(1, QRhiShaderResourceBinding::VertexStage, ubuf1.data()),
+        QRhiShaderResourceBinding::uniformBuffer(2, QRhiShaderResourceBinding::VertexStage, ubuf2.data()),
+    });
+    QVERIFY(srb->create());
+
+    QScopedPointer<QRhiGraphicsPipeline> pipeline1(rhi->newGraphicsPipeline());
+    QShader vs = loadShader(":/data/samesrb_1.vert.qsb");
+    QVERIFY(vs.isValid());
+    QShader fs = loadShader(":/data/samesrb.frag.qsb");
+    QVERIFY(fs.isValid());
+    pipeline1->setShaderStages({ { QRhiShaderStage::Vertex, vs }, { QRhiShaderStage::Fragment, fs } });
+    QRhiVertexInputLayout inputLayout;
+    inputLayout.setBindings({ { 2 * sizeof(float) } });
+    inputLayout.setAttributes({ { 0, 0, QRhiVertexInputAttribute::Float2, 0 } });
+    pipeline1->setVertexInputLayout(inputLayout);
+    pipeline1->setShaderResourceBindings(srb.data());
+    pipeline1->setRenderPassDescriptor(rpDesc.data());
+    QVERIFY(pipeline1->create());
+
+    QScopedPointer<QRhiGraphicsPipeline> pipeline2(rhi->newGraphicsPipeline());
+    vs = loadShader(":/data/samesrb_2.vert.qsb");
+    QVERIFY(vs.isValid());
+    pipeline2->setShaderStages({ { QRhiShaderStage::Vertex, vs }, { QRhiShaderStage::Fragment, fs } });
+    pipeline2->setVertexInputLayout(inputLayout);
+    pipeline2->setShaderResourceBindings(srb.data());
+    pipeline2->setRenderPassDescriptor(rpDesc.data());
+    QVERIFY(pipeline2->create());
+
+    QRhiCommandBuffer *cb = nullptr;
+    QVERIFY(rhi->beginOffscreenFrame(&cb) == QRhi::FrameOpSuccess);
+    QVERIFY(cb);
+
+    QRhiResourceUpdateBatch *u = rhi->nextResourceUpdateBatch();
+    u->uploadStaticBuffer(vbuf.data(), triangleVertices);
+    float color1 = 1.0;
+    float color2 = 0.5;
+    u->updateDynamicBuffer(ubuf1.data(), 0, 4, &color1);
+    u->updateDynamicBuffer(ubuf2.data(), 0, 4, &color2);
+    cb->resourceUpdate(u);
+
+    cb->beginPass(rt.data(), Qt::black, { 1.0f, 0 });
+
+    for (int i = 0; i < 4; ++i) {
+        cb->setGraphicsPipeline(pipeline1.data());
+        cb->setViewport({ 0, 0, float(outputSize.width()), float(outputSize.height()) });
+        cb->setShaderResources(srb.data());
+        QRhiCommandBuffer::VertexInput vbindings(vbuf.data(), 0);
+        cb->setVertexInput(0, 1, &vbindings);
+        // triangle, color (1, 1, 1)
+        cb->draw(3);
+
+        // another pipeline, different vertex shader, same srb
+        cb->setGraphicsPipeline(pipeline2.data());
+        cb->setShaderResources(srb.data());
+        // triangle, color (0.5, 0.5, 0.5) (overwriting the previous one)
+        cb->draw(3);
+    }
+
+    QRhiReadbackResult readResult;
+    QImage result;
+    readResult.completed = [&readResult, &result] {
+        result = QImage(reinterpret_cast<const uchar *>(readResult.data.constData()),
+                        readResult.pixelSize.width(), readResult.pixelSize.height(),
+                        QImage::Format_RGBA8888_Premultiplied);
+    };
+    QRhiResourceUpdateBatch *readbackBatch = rhi->nextResourceUpdateBatch();
+    readbackBatch->readBackTexture({ texture.data() }, &readResult);
+    cb->endPass(readbackBatch);
+
+    rhi->endOffscreenFrame();
+    QCOMPARE(result.size(), texture->pixelSize());
+
+    if (impl == QRhi::Null)
+        return;
+
+    QImage image = result;
+    if (rhi->isYUpInFramebuffer())
+        image = result.flipped();
+
+    // before the fix for QTBUG-140795 D3D11 (and 12 in fact) does not render
+    // correctly, and instead of getting a triangle with color (0.5, 0.5, 0.5),
+    // it's just not there; should be with the patch in place, with all backends
+    const int maxFuzz = 4;
+    QRgb c = image.pixel(result.width() / 2, result.height() / 2);
+    QVERIFY(qAbs(qRed(c) - 127) <= maxFuzz && qAbs(qGreen(c) - 127) <= maxFuzz && qAbs(qBlue(c) - 127) <= maxFuzz);
 }
 
 void tst_QRhi::continuousReadbackFromWindow_data()

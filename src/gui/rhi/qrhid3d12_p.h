@@ -857,6 +857,9 @@ struct QD3D12TextureRenderTarget : public QRhiTextureRenderTarget
     friend class QRhiD3D12;
 };
 
+struct QD3D12GraphicsPipeline;
+struct QD3D12ComputePipeline;
+
 struct QD3D12ShaderResourceBindings : public QRhiShaderResourceBindings
 {
     QD3D12ShaderResourceBindings(QRhiImplementation *rhi);
@@ -905,6 +908,8 @@ struct QD3D12ShaderResourceBindings : public QRhiShaderResourceBindings
 
     bool hasDynamicOffset = false;
     uint generation = 0;
+    QD3D12GraphicsPipeline *lastUsedGraphicsPipeline = nullptr;
+    QD3D12ComputePipeline *lastUsedComputePipeline = nullptr;
 
     friend class QRhiD3D12;
     friend struct QD3D12ShaderResourceVisitor;

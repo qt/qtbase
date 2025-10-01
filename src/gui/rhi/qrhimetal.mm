@@ -1549,6 +1549,15 @@ void QRhiMetal::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
     bool hasDynamicOffsetInSrb = false;
     bool resNeedsRebind = false;
 
+    bool pipelineChanged = false;
+    if (gfxPsD) {
+        pipelineChanged = srbD->lastUsedGraphicsPipeline != gfxPsD;
+        srbD->lastUsedGraphicsPipeline = gfxPsD;
+    } else {
+        pipelineChanged = srbD->lastUsedComputePipeline != compPsD;
+        srbD->lastUsedComputePipeline = compPsD;
+    }
+
     // SPIRV-Cross buffer size buffers
     // Need to determine storage buffer sizes here as this is the last opportunity for storage
     // buffer bindings (offset, size) to be specified before draw / dispatch call
@@ -1771,7 +1780,7 @@ void QRhiMetal::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
     const bool srbRebuilt = cbD->currentSrbGeneration != srbD->generation;
 
     // dynamic uniform buffer offsets always trigger a rebind
-    if (hasDynamicOffsetInSrb || resNeedsRebind || srbChanged || srbRebuilt) {
+    if (hasDynamicOffsetInSrb || resNeedsRebind || srbChanged || srbRebuilt || pipelineChanged) {
         const QShader::NativeResourceBindingMap *resBindMaps[SUPPORTED_STAGES] = { nullptr, nullptr, nullptr, nullptr, nullptr };
         if (gfxPsD) {
             cbD->currentGraphicsSrb = srbD;

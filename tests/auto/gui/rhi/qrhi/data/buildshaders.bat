@@ -30,3 +30,6 @@ qsb --glsl 320es,430 --msl 21  --tess-vertex-count 3 tessinterfaceblocks.tese -o
 qsb --glsl 320es,430 --msl 21 simpletess.frag -o tessinterfaceblocks.frag.qsb
 qsb --view-count 2 --glsl "300 es,330" --hlsl 61 -c --msl 12 multiview.vert -o multiview.vert.qsb
 qsb --glsl "300 es,330" --hlsl 61 -c --msl 12 multiview.frag -o multiview.frag.qsb
+qsb --glsl "150,120,100 es" --hlsl 50 --msl 12 -o samesrb_1.vert.qsb samesrb_1.vert
+qsb --glsl "150,120,100 es" --hlsl 50 --msl 12 -o samesrb_2.vert.qsb samesrb_2.vert
+qsb --glsl "150,120,100 es" --hlsl 50 --msl 12 -o samesrb.frag.qsb samesrb.frag

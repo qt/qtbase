@@ -175,6 +175,9 @@ struct QMetalTextureRenderTarget : public QRhiTextureRenderTarget
     friend class QRhiMetal;
 };
 
+struct QMetalGraphicsPipeline;
+struct QMetalComputePipeline;
+
 struct QMetalShaderResourceBindings : public QRhiShaderResourceBindings
 {
     QMetalShaderResourceBindings(QRhiImplementation *rhi);
@@ -216,6 +219,8 @@ struct QMetalShaderResourceBindings : public QRhiShaderResourceBindings
         };
     };
     QVarLengthArray<BoundResourceData, 8> boundResourceData;
+    QMetalGraphicsPipeline *lastUsedGraphicsPipeline = nullptr;
+    QMetalComputePipeline *lastUsedComputePipeline = nullptr;
 
     uint generation = 0;
     friend class QRhiMetal;
