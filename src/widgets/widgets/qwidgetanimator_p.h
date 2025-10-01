@@ -37,11 +37,6 @@ public:
 
     void abort(QWidget *widget);
 
-#if QT_CONFIG(animation)
-private Q_SLOTS:
-    void animationFinished();
-#endif
-
 private:
     typedef QHash<QWidget*, QPointer<QPropertyAnimation> > AnimationMap;
     AnimationMap m_animation_map;

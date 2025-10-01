@@ -25,14 +25,9 @@ QWidgetAnimator::QWidgetAnimator(QMainWindowLayout *layout)
 void QWidgetAnimator::abort(QWidget *w)
 {
 #if QT_CONFIG(animation)
-    const auto it = m_animation_map.constFind(w);
-    if (it == m_animation_map.cend())
-        return;
-    QPropertyAnimation *anim = *it;
-    m_animation_map.erase(it);
-    if (anim) {
+    QPropertyAnimation *anim = m_animation_map.take(w);
+    if (anim)
         anim->stop();
-    }
 #if QT_CONFIG(mainwindow)
     m_mainWindowLayout->animationFinished(w);
 #endif
@@ -40,14 +35,6 @@ void QWidgetAnimator::abort(QWidget *w)
     Q_UNUSED(w); //there is no animation to abort
 #endif // animation
 }
-
-#if QT_CONFIG(animation)
-void QWidgetAnimator::animationFinished()
-{
-    QPropertyAnimation *anim = qobject_cast<QPropertyAnimation*>(sender());
-    abort(static_cast<QWidget*>(anim->targetObject()));
-}
-#endif // animation
 
 void QWidgetAnimator::animate(QWidget *widget, const QRect &_final_geometry, bool animate)
 {
@@ -73,8 +60,7 @@ void QWidgetAnimator::animate(QWidget *widget, const QRect &_final_geometry, boo
         anim->setEasingCurve(QEasingCurve::InOutQuad);
         anim->setEndValue(final_geometry);
         m_animation_map[widget] = anim;
-        connect(anim, &QPropertyAnimation::finished,
-                this, &QWidgetAnimator::animationFinished);
+        connect(anim, &QPropertyAnimation::destroyed, this, [this, widget]() { abort(widget); });
         anim->start(QPropertyAnimation::DeleteWhenStopped);
     } else
 #endif // animation
