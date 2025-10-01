@@ -17,9 +17,9 @@
 #include <QtCore/qbytearray.h>
 #include <QtCore/qbytearrayview.h>
 #include <QtCore/qarraydata.h>
+#include <QtCore/qarraydatapointer.h>
 #include <QtCore/qlatin1stringview.h>
 #include <QtCore/qnamespace.h>
-#include <QtCore/qstringliteral.h>
 #include <QtCore/qstringalgorithms.h>
 #include <QtCore/qanystringview.h>
 #include <QtCore/qstringtokenizer.h>
@@ -134,6 +134,7 @@ constexpr QChar QAnyStringView::back() const
     return visit([] (auto that) { return QAnyStringView::toQChar(that.back()); });
 }
 
+using QStringPrivate = QArrayDataPointer<char16_t>;
 
 class Q_CORE_EXPORT QString
 {
@@ -1764,6 +1765,25 @@ inline QString operator""_qs(const char16_t *str, size_t size) noexcept
 
 #endif // QT_DEPRECATED_SINCE(6, 8)
 } // QtLiterals
+
+// all our supported compilers support Unicode string literals,
+// even if their Q_COMPILER_UNICODE_STRING has been revoked due
+// to lacking stdlib support. But QStringLiteral only needs the
+// core language feature, so just use u"" here unconditionally:
+
+#define QT_UNICODE_LITERAL(str) u"" str
+
+namespace QtPrivate {
+template <qsizetype N>
+Q_ALWAYS_INLINE static QStringPrivate qMakeStringPrivate(const char16_t (&literal)[N])
+{
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+    auto str = const_cast<char16_t *>(literal);
+    return { nullptr, str, N - 1 };
+}
+} // namespace QtPrivate
+
+#define QStringLiteral(str) (QString(QtPrivate::qMakeStringPrivate(QT_UNICODE_LITERAL(str)))) /**/
 
 QT_END_NAMESPACE
 
