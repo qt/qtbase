@@ -6,6 +6,7 @@
 package org.qtproject.qt.android;
 
 import android.app.Activity;
+import android.app.UiModeManager;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
@@ -29,6 +30,7 @@ abstract class QtActivityDelegateBase
     private boolean m_contextMenuVisible = false;
 
     static native boolean canOverrideColorSchemeHint();
+    static native void updateUiContrast(float newUiContrast);
 
     // Subclass must implement these
     abstract void startNativeApplicationImpl(String appParams, String mainLib);
@@ -128,6 +130,13 @@ abstract class QtActivityDelegateBase
                 ExtractStyle.runIfNeeded(m_activity, true);
                 QtDisplayManager.handleUiDarkModeChanged(1);
                 break;
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            // FIXME: Handle contrast changes the same way as uiMode changes (QTBUG-140749).
+            UiModeManager uiModeManager =
+                (UiModeManager) m_activity.getSystemService(m_activity.UI_MODE_SERVICE);
+            updateUiContrast(uiModeManager.getContrast());
         }
     }
 }

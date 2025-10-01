@@ -463,6 +463,21 @@ Java_org_qtproject_qt_android_QtActivityDelegateBase_canOverrideColorSchemeHint(
     return QAndroidPlatformTheme::instance()->colorSchemeOverride() == Qt::ColorScheme::Unknown;
 }
 
+static Qt::ContrastPreference s_contrastPreference = Qt::ContrastPreference::NoPreference;
+
+Qt::ContrastPreference QAndroidPlatformTheme::contrastPreference() const
+{
+    return s_contrastPreference;
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_org_qtproject_qt_android_QtActivityDelegateBase_updateUiContrast(JNIEnv *, jobject,
+                                                                      jfloat newUiContrast)
+{
+    s_contrastPreference = newUiContrast > 0.5f ? Qt::ContrastPreference::HighContrast
+                                                : Qt::ContrastPreference::NoPreference;
+}
+
 static inline int paletteType(QPlatformTheme::Palette type)
 {
     switch (type) {

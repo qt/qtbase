@@ -42,6 +42,7 @@ public:
     Qt::ColorScheme colorScheme() const override;
     Qt::ColorScheme colorSchemeOverride() const { return m_colorSchemeOverride; };
     void requestColorScheme(Qt::ColorScheme scheme) override;
+    Qt::ContrastPreference contrastPreference() const override;
 
     const QPalette *palette(Palette type = SystemPalette) const override;
     const QFont *font(Font type = SystemFont) const override;
