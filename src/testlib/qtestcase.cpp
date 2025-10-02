@@ -1123,9 +1123,11 @@ void TestMethods::invokeTestOnData(int index) const
                     !QBenchmarkTestMethodData::current->results.isEmpty()) {
                 // we only print the first result
                 const QBenchmarkResult &first = QBenchmarkTestMethodData::current->results.constFirst();
-                QString pattern = i < 0 ? "warmup stage result      : %1"_L1
-                                        : "accumulation stage result: %1"_L1;
-                QTestLog::info(qPrintable(pattern.arg(first.measurement.value)), nullptr, 0);
+                QString pattern = i < 0 ? "warmup stage result      : %1    std.dev: %2"_L1
+                                        : "accumulation stage result: %1    std.dev: %2"_L1;
+                QTestLog::info(qPrintable(pattern.arg(first.measurement.value, 0,'f', 3)
+                                                 .arg(sqrt(first.measurement.variance), 0, 'e', 2)),
+                               nullptr, 0);
             }
         }
 

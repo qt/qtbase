@@ -18,6 +18,7 @@
 #include <QtTest/qbenchmark.h>
 #include <QtCore/qlist.h>
 #include <QtCore/private/qglobal_p.h>
+#include <QtTest/private/qmeanvarianceaccumulator_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -27,15 +28,19 @@ public:
     struct Measurement
     {
         qreal value;
+        qreal variance;
         QTest::QBenchmarkMetric metric;
     };
     virtual ~QBenchmarkMeasurerBase() = default;
     virtual void start() = 0;
+    virtual void resetMetricsResults() { accumulator.reset(); }
+    virtual void updateMeasurement() {}
     virtual QList<Measurement> stop() = 0;
     virtual bool isMeasurementAccepted(Measurement m) = 0;
     virtual int adjustIterationCount(int suggestion) = 0;
     virtual int adjustMedianCount(int suggestion) = 0;
     virtual bool needsWarmupIteration() { return false; }
+    QTestPrivate::MeanAndVarianceAccumulator accumulator;
 };
 
 QT_END_NAMESPACE

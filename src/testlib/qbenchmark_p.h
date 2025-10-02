@@ -61,7 +61,7 @@ class QBenchmarkResult
 {
 public:
     QBenchmarkContext context;
-    QBenchmarkMeasurerBase::Measurement measurement = { -1, QTest::FramesPerSecond };
+    QBenchmarkMeasurerBase::Measurement measurement = { -1, 0, QTest::FramesPerSecond };
     int iterations = -1;
     bool setByMacro = true;
 
@@ -138,12 +138,14 @@ public:
     void setResults(const QList<QBenchmarkMeasurerBase::Measurement> &m, bool setByMacro = true);
     void setResult(QBenchmarkMeasurerBase::Measurement m, bool setByMacro = true)
     { setResults({ m }, setByMacro); }
+    void setBlockSize(int split = 32);
 
     QList<QBenchmarkResult> results;
     bool valid = false;
     bool resultAccepted = false;
     bool runOnce = false;
     int iterationCount = -1;
+    int measurementBlockSize = 1;
 };
 
 // low-level API:

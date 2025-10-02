@@ -355,10 +355,19 @@ void QPlainTestLogger::printBenchmarkResults(const QList<QBenchmarkResult> &resu
         }
 
         Q_ASSERT(result.iterations > 0);
-        buf.appendf(" (total: %s, iterations: %d)\n",
-                    QTest::formatResult(result.measurement.value, significantDigits).constData(),
-                    result.iterations);
-
+        if (result.measurement.variance) {
+            buf.appendf(" (total: %s, std.dev: %s, iterations: %d)\n",
+                        QTest::formatResult(result.measurement.value,
+                                            significantDigits).constData(),
+                        QTest::formatResult(sqrt(result.measurement.variance),
+                                            significantDigits).constData(),
+                        result.iterations);
+        } else {
+            buf.appendf(" (total: %s, iterations: %d)\n",
+                        QTest::formatResult(result.measurement.value,
+                                            significantDigits).constData(),
+                        result.iterations);
+        }
         outputMessage(buf);
     }
 }

@@ -563,7 +563,7 @@ static quint64 rawReadValue(int fd)
 QBenchmarkMeasurerBase::Measurement QBenchmarkPerfEventsMeasurer::readValue(qsizetype idx)
 {
     quint64 raw = rawReadValue(fds.at(idx));
-    return { qreal(qint64(raw)), metricForEvent(eventTypes->at(idx)) };
+    return { qreal(qint64(raw)), 0, metricForEvent(eventTypes->at(idx)) };
 }
 
 QT_END_NAMESPACE

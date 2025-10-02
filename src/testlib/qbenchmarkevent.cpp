@@ -21,7 +21,7 @@ void QBenchmarkEvent::start()
 QList<QBenchmarkMeasurerBase::Measurement> QBenchmarkEvent::stop()
 {
     QAbstractEventDispatcher::instance()->removeNativeEventFilter(this);
-    return { { qreal(eventCounter), QTest::Events } };
+    return { { qreal(eventCounter), 0, QTest::Events } };
 }
 
 // It's very tempting to simply reject a measurement if 0 events

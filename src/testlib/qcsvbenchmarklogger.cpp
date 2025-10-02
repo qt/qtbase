@@ -63,10 +63,11 @@ void QCsvBenchmarkLogger::addBenchmarkResult(const QBenchmarkResult &result)
 
     char buf[1024];
     // "function","[globaltag:]tag","metric",value_per_iteration,total,iterations
-    std::snprintf(buf, sizeof(buf), "\"%s\",\"%s%s%s\",\"%s\",%.13g,%.13g,%u\n",
+    std::snprintf(buf, sizeof(buf), "\"%s\",\"%s%s%s\",\"%s\",%.13g,%.13g,%.13g,%u\n",
                   fn, gtag, filler, tag, metric,
                   result.measurement.value / result.iterations,
-                  result.measurement.value, result.iterations);
+                  result.measurement.value, sqrt(result.measurement.variance),
+                  result.iterations);
     outputString(buf);
 }
 

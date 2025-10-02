@@ -23,7 +23,7 @@
     <Incident type="pass" file="" line="0">
       <DataTag><![CDATA[pass end cdata ]]]><![CDATA[]> text ]]]><![CDATA[]> more text]]></DataTag>
     </Incident>
-  <BenchmarkResult metric="Events" tag="pass end cdata ]]&gt; text ]]&gt; more text" value="0" iterations="1" />
+  <BenchmarkResult metric="Events" tag="pass end cdata ]]&gt; text ]]&gt; more text" value="0" variance="0" iterations="1" />
   <Message type="qdebug" file="" line="0">
     <DataTag><![CDATA[fail quotes " text" more text]]></DataTag>
     <Description><![CDATA[a message]]></Description>
@@ -39,7 +39,7 @@
     <Incident type="pass" file="" line="0">
       <DataTag><![CDATA[pass quotes " text" more text]]></DataTag>
     </Incident>
-  <BenchmarkResult metric="Events" tag="pass quotes &quot; text&quot; more text" value="0" iterations="1" />
+  <BenchmarkResult metric="Events" tag="pass quotes &quot; text&quot; more text" value="0" variance="0" iterations="1" />
   <Message type="qdebug" file="" line="0">
     <DataTag><![CDATA[fail xml close > open < tags < text]]></DataTag>
     <Description><![CDATA[a message]]></Description>
@@ -55,7 +55,7 @@
     <Incident type="pass" file="" line="0">
       <DataTag><![CDATA[pass xml close > open < tags < text]]></DataTag>
     </Incident>
-  <BenchmarkResult metric="Events" tag="pass xml close &gt; open &lt; tags &lt; text" value="0" iterations="1" />
+  <BenchmarkResult metric="Events" tag="pass xml close &gt; open &lt; tags &lt; text" value="0" variance="0" iterations="1" />
   <Message type="qdebug" file="" line="0">
     <DataTag><![CDATA[fail all > " mixed ]]]><![CDATA[]> up > " in < the ]]]><![CDATA[]> hopes < of triggering "< ]]]><![CDATA[]> bugs]]></DataTag>
     <Description><![CDATA[a message]]></Description>
@@ -71,7 +71,7 @@
     <Incident type="pass" file="" line="0">
       <DataTag><![CDATA[pass all > " mixed ]]]><![CDATA[]> up > " in < the ]]]><![CDATA[]> hopes < of triggering "< ]]]><![CDATA[]> bugs]]></DataTag>
     </Incident>
-  <BenchmarkResult metric="Events" tag="pass all &gt; &quot; mixed ]]&gt; up &gt; &quot; in &lt; the ]]&gt; hopes &lt; of triggering &quot;&lt; ]]&gt; bugs" value="0" iterations="1" />
+  <BenchmarkResult metric="Events" tag="pass all &gt; &quot; mixed ]]&gt; up &gt; &quot; in &lt; the ]]&gt; hopes &lt; of triggering &quot;&lt; ]]&gt; bugs" value="0" variance="0" iterations="1" />
     <Duration msecs="0"/>
   </TestFunction>
   <TestFunction name="badMessage">

@@ -191,7 +191,7 @@ static const char *incidentFormatString(bool noDescription, bool noTag)
 
 static const char *benchmarkResultFormatString()
 {
-    return "  <BenchmarkResult metric=\"%s\" tag=\"%s\" value=\"%.6g\" iterations=\"%d\" />\n";
+    return "  <BenchmarkResult metric=\"%s\" tag=\"%s\" value=\"%.6g\" variance=\"%.6g\" iterations=\"%d\" />\n";
 }
 
 static const char *messageFormatString(bool noDescription, bool noTag)
@@ -263,6 +263,7 @@ void QXmlTestLogger::addBenchmarkResult(const QBenchmarkResult &result)
                            quotedMetric.constData(),
                            quotedTag.constData(),
                            result.measurement.value / double(result.iterations),
+                           result.measurement.variance,
                            result.iterations);
         outputString(buf.constData());
     }

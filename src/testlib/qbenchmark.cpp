@@ -120,6 +120,7 @@ void QBenchmarkTestMethodData::setResults(const QList<QBenchmarkMeasurerBase::Me
     else
         accepted = QBenchmarkGlobalData::current->measurer->isMeasurementAccepted(firstMeasurement);
 
+    QBenchmarkGlobalData::current->measurer->resetMetricsResults();
     // Accept the result or double the number of iterations.
     if (accepted)
         resultAccepted = true;
@@ -146,6 +147,7 @@ void QBenchmarkTestMethodData::setResults(const QList<QBenchmarkMeasurerBase::Me
 QTest::QBenchmarkIterationController::QBenchmarkIterationController(RunMode runMode)
 {
     i = 0;
+    QBenchmarkTestMethodData::current->setBlockSize();
     if (runMode == RunOnce)
         QBenchmarkTestMethodData::current->runOnce = true;
     QTest::beginBenchmarkMeasurement();
@@ -154,7 +156,25 @@ QTest::QBenchmarkIterationController::QBenchmarkIterationController(RunMode runM
 QTest::QBenchmarkIterationController::QBenchmarkIterationController()
 {
     i = 0;
+    QBenchmarkTestMethodData::current->setBlockSize();
     QTest::beginBenchmarkMeasurement();
+}
+
+/*!
+    \internal
+    Split up iterations into a statistically useful number of blocks.
+
+    Record data in blocks. \c split is the desired number of blocks which is a
+    power of 2 like \c iterationcount. As long as split is below 32 we treat
+    each iteration as a block. When split is greater than 32 \c split becomes
+    a divisor for \c iterationcount. The goal is to reduce overhead from
+    measurements while calculating variance. The default \c split 32 should be
+    sufficient to get stable block-variance, from which the per-iteration
+    variance (estimator) can be computed by dividing by the block size.
+*/
+void QBenchmarkTestMethodData::setBlockSize(int split)
+{
+    measurementBlockSize = iterationCount > split ? iterationCount / split : 1;
 }
 
 /*! \internal
@@ -178,6 +198,9 @@ bool QTest::QBenchmarkIterationController::isDone() const noexcept
 void QTest::QBenchmarkIterationController::next() noexcept
 {
     ++i;
+    // Record data once per block
+    if (i % QBenchmarkTestMethodData::current->measurementBlockSize == 0)
+        QBenchmarkGlobalData::current->measurer->updateMeasurement();
 }
 
 /*! \internal
@@ -237,7 +260,7 @@ QList<QBenchmarkMeasurerBase::Measurement> QTest::endBenchmarkMeasurement()
 */
 void QTest::setBenchmarkResult(qreal result, QTest::QBenchmarkMetric metric)
 {
-    QBenchmarkTestMethodData::current->setResult({ result, metric }, false);
+    QBenchmarkTestMethodData::current->setResult({ result, 0, metric }, false);
 }
 
 QT_END_NAMESPACE

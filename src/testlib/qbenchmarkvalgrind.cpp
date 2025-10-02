@@ -177,7 +177,7 @@ QList<QBenchmarkMeasurerBase::Measurement> QBenchmarkCallgrindMeasurer::stop()
 {
     CALLGRIND_DUMP_STATS;
     const qint64 result = QBenchmarkValgrindUtils::extractLastResult();
-    return { { qreal(result), QTest::InstructionReads } };
+    return { { qreal(result), 0, QTest::InstructionReads } };
 }
 
 bool QBenchmarkCallgrindMeasurer::isMeasurementAccepted(Measurement measurement)
