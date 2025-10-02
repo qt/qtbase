@@ -21,7 +21,7 @@
 QT_BEGIN_NAMESPACE
 
 using namespace QWindowsUiAutomation;
-using namespace Qt::Literals::StringLiterals;
+using namespace Qt::StringLiterals;
 
 bool QWindowsUiaAccessibility::m_accessibleActive = false;
 

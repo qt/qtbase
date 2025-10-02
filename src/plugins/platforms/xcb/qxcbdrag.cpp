@@ -28,7 +28,7 @@
 
 QT_BEGIN_NAMESPACE
 
-using namespace Qt::Literals::StringLiterals;
+using namespace Qt::StringLiterals;
 
 const int xdnd_version = 5;
 

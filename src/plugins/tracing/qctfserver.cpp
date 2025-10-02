@@ -9,7 +9,7 @@
 #include <zstd.h>
 #endif
 
-using namespace Qt::Literals::StringLiterals;
+using namespace Qt::StringLiterals;
 
 Q_LOGGING_CATEGORY(lcCtfInfoTrace, "qt.core.ctfserver", QtWarningMsg)
 

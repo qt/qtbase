@@ -23,7 +23,7 @@
 
 QT_BEGIN_NAMESPACE
 
-using namespace Qt::Literals::StringLiterals;
+using namespace Qt::StringLiterals;
 using emscripten::val;
 
 namespace qstdweb {

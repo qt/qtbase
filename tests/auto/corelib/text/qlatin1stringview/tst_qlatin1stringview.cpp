@@ -148,7 +148,7 @@ void tst_QLatin1StringView::construction()
 void tst_QLatin1StringView::userDefinedLiterals()
 {
     {
-        using namespace Qt::Literals::StringLiterals;
+        using namespace Qt::StringLiterals;
 
         auto str = "abcd"_L1;
         static_assert(std::is_same_v<decltype(str), QLatin1StringView>);
@@ -421,13 +421,13 @@ void tst_QLatin1StringView::count()
     QCOMPARE(emptyStr.count(QLatin1StringView()), 1);
     QCOMPARE(emptyStr.count(QLatin1StringView("")), 1);
 
-    using namespace Qt::Literals::StringLiterals;
+    using namespace Qt::StringLiterals;
     QCOMPARE("a\0b"_L1.count(QChar::SpecialCharacter::LineSeparator), 0);
 }
 
 void tst_QLatin1StringView::indexOf_data()
 {
-    using namespace Qt::Literals::StringLiterals;
+    using namespace Qt::StringLiterals;
 
     QTest::addColumn<QLatin1StringView>("needle");
     QTest::addColumn<QLatin1StringView>("haystack");

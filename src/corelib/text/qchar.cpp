@@ -1817,7 +1817,7 @@ char32_t QChar::toCaseFolded(char32_t ucs4) noexcept
 
     The following code creates a QLatin1Char:
     \code
-    using namespace Qt::Literals::StringLiterals;
+    using namespace Qt::StringLiterals;
 
     auto ch = 'a'_L1;
     \endcode

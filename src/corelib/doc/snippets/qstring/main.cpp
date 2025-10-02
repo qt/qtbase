@@ -5,6 +5,8 @@
 #include <QApplication>
 #include <stdio.h>
 
+using namespace Qt::StringLiterals;
+
 class Widget : public QWidget
 {
 public:

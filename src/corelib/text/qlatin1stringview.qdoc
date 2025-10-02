@@ -1331,7 +1331,7 @@
 
     The following code creates a QLatin1StringView:
     \code
-    using namespace Qt::Literals::StringLiterals;
+    using namespace Qt::StringLiterals;
 
     auto str = "hello"_L1;
     \endcode

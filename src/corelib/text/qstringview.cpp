@@ -1521,7 +1521,7 @@ or the character \a ch
     namespace(s):
 
     \code
-    using namespace Qt::Literals::StringLiterals;
+    using namespace Qt::StringLiterals;
     auto sv = u"peace"_sv;
     \endcode
 

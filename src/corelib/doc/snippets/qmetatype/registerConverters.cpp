@@ -5,6 +5,8 @@
 #include <QMetaType>
 #include <QString>
 
+using namespace Qt::StringLiterals;
+
 int main() {
   //! [member]
   struct Coordinates {

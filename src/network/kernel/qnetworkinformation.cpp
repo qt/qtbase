@@ -19,6 +19,9 @@
 #include <mutex>
 
 QT_BEGIN_NAMESPACE
+
+using namespace Qt::StringLiterals;
+
 Q_DECLARE_LOGGING_CATEGORY(lcNetInfo)
 Q_LOGGING_CATEGORY(lcNetInfo, "qt.network.info");
 
@@ -50,8 +53,6 @@ static void networkInfoCleanup()
 
     dataHolder->instanceHolder.reset();
 }
-
-using namespace Qt::Literals::StringLiterals;
 
 class QNetworkInformationDummyBackend : public QNetworkInformationBackend {
     Q_OBJECT

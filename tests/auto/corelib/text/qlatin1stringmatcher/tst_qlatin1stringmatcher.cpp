@@ -17,7 +17,7 @@
 #    undef interface
 #endif
 
-using namespace Qt::Literals::StringLiterals;
+using namespace Qt::StringLiterals;
 
 class tst_QLatin1StringMatcher : public QObject
 {

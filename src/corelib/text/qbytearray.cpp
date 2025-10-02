@@ -5110,7 +5110,7 @@ emscripten::val QByteArray::toEcmaUint8Array()
 
     The following code creates a QByteArray:
     \code
-    using namespace Qt::Literals::StringLiterals;
+    using namespace Qt::StringLiterals;
 
     auto str = "hello"_ba;
     \endcode

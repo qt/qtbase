@@ -10268,7 +10268,7 @@ QString QString::toHtmlEscaped() const
 
     The following code creates a QString:
     \code
-    using namespace Qt::Literals::StringLiterals;
+    using namespace Qt::StringLiterals;
 
     auto str = u"hello"_s;
     \endcode

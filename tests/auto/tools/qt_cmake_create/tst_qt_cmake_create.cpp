@@ -13,7 +13,7 @@
 
 #include <array>
 
-using namespace Qt::Literals::StringLiterals;
+using namespace Qt::StringLiterals;
 
 class tst_qt_cmake_create : public QObject
 {
