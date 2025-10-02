@@ -64,6 +64,7 @@ qt_internal_add_module(Test
         qtesttostring.h
         qtestwheel.h
         qttestglobal.h
+        qmeanvarianceaccumulator_p.h
         qxmltestlogger.cpp qxmltestlogger_p.h
     DEFINES
         QT_NO_CAST_FROM_ASCII
