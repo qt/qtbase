@@ -44,4 +44,8 @@
     // in the Qt namespace
     using namespace Qt;
     \endcode
+
+    The latter is discouraged, because it doesn't allow you to pick which literal
+    operators you want in case Qt adds conflicting operators in different
+    namespaces within Qt::Literals.
 */
