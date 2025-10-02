@@ -249,9 +249,11 @@ class QWizardHeader : public QWidget
 protected:
     enum RulerType { Ruler };
 
+    explicit
     inline QWizardHeader(RulerType /* ruler */, QWidget *parent = nullptr)
         : QWidget(parent) { setFixedHeight(2); }
 public:
+    explicit
     QWizardHeader(QWidget *parent = nullptr);
 
     void setup(const QWizardLayoutInfo &info, const QString &title,
