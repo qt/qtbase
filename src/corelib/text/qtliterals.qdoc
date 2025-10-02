@@ -31,6 +31,8 @@
 
     \code
     // Makes visible only the literal operators declared in StringLiterals
+    using namespace Qt::StringLiterals;
+    // same, but needlessly verbose:
     using namespace Qt::Literals::StringLiterals;
 
     // Makes visible literal operators declared in all inline namespaces
