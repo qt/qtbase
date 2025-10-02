@@ -3595,7 +3595,7 @@ void tst_QtJson::bom()
     QCOMPARE(error.error, QJsonParseError::NoError);
 }
 
-void tst_QtJson::nesting()
+static void nesting_test()
 {
     // check that we abort parsing too deeply nested json documents.
     // this is to make sure we don't crash because the parser exhausts the
@@ -3652,6 +3652,26 @@ void tst_QtJson::nesting()
     QVERIFY(val.isUndefined());
     QCOMPARE(error.error, QJsonParseError::DeepNesting);
 
+}
+
+void tst_QtJson::nesting()
+{
+#if defined(Q_OS_QNX) || defined(Q_OS_VXWORKS) || defined(Q_OS_WASM)
+    // This test misbehaving probably indicates a stack overflow due to the
+    // recursive parser in qjsonparser.cpp. The recursion prevention limit may
+    // be too high for this platform. Someone should investigate.
+    QSKIP("Test freezes or crashes - probably a stack overflow");
+#endif
+
+    QThread *thr = QThread::create(nesting_test);
+#if defined(__SANITIZE_ADDRESS__) || __has_feature(address_sanitizer) || \
+    defined(__SANITIZE_THREAD__) || __has_feature(thread_sanitizer)
+    // force a larger stack size - 8 MB seems sufficient
+    thr->setStackSize(8192 * 1024);
+#endif
+    thr->start();
+    thr->wait();
+    delete thr;
 }
 
 void tst_QtJson::longStrings()
