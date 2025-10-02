@@ -175,10 +175,12 @@ inline void useVerifyThrowsException() {}
     if (!(expr)) { \
         QTest::qWait(0); \
     } \
+    std::chrono::milliseconds timeoutValueMs(timeoutValue); \
+    std::chrono::milliseconds stepMs(step); \
     auto qt_test_i = std::chrono::milliseconds(0); \
-    for (; qt_test_i < timeoutValue && !(QTest::runningTest() && QTest::currentTestResolved()) \
-             && !(expr); qt_test_i += step) { \
-        QTest::qWait(step); \
+    for (; qt_test_i < timeoutValueMs && !(QTest::runningTest() && QTest::currentTestResolved()) \
+             && !(expr); qt_test_i += stepMs) { \
+        QTest::qWait(stepMs); \
     }
 // Ends in a for-block, so doesn't want a following semicolon.
 
