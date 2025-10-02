@@ -337,7 +337,6 @@ QAbstractEventDispatcher *QXcbIntegration::createEventDispatcher() const
     return QXcbEventDispatcher::createEventDispatcher(connection());
 }
 
-using namespace Qt::Literals::StringLiterals;
 static const auto xsNetCursorBlink = "Net/CursorBlink"_ba;
 static const auto xsNetCursorBlinkTime = "Net/CursorBlinkTime"_ba;
 static const auto xsNetDoubleClickTime = "Net/DoubleClickTime"_ba;
