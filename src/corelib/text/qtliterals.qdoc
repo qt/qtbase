@@ -21,11 +21,11 @@
     \inmodule QtCore
     \inheaderfile QString
 
-    \brief The StringLiterals namespace declares string literal operators
-    for Qt types.
+    \brief The StringLiterals namespace declares literal operators for Qt
+    string types.
 
-    The inline Qt::Literals::StringLiterals namespace declares string literal
-    operators for Qt types. Because both \c Literals and \c StringLiterals
+    The inline Qt::Literals::StringLiterals namespace declares literal operators
+    for Qt string types. Because both \c Literals and \c StringLiterals
     namespaces are declared as inline, the symbols from this namespace can be
     accessed by adding one of the following to your code:
 
