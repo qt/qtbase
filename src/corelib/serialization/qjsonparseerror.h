@@ -7,6 +7,7 @@
 
 #include <QtCore/qtconfigmacros.h>
 #include <QtCore/qtcoreexports.h>
+#include <QtCore/qtypes.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -34,7 +35,8 @@ struct Q_CORE_EXPORT QJsonParseError
 
     QString errorString() const;
 
-    int offset = -1;
+    std::conditional_t<QT_VERSION_MAJOR < 7, int, qint64>
+    offset = -1;
     ParseError error = NoError;
 };
 

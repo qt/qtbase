@@ -321,7 +321,9 @@ QCborValue Parser::parse(QJsonParseError *error)
 error:
     container.reset();
     if (error) {
-        error->offset = json - head;
+        using OffType = decltype(error->offset);
+        error->offset = OffType(json - head);
+        Q_ASSERT(error->offset == json - head);
         error->error  = lastError;
     }
     return QCborValue();
