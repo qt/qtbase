@@ -213,7 +213,7 @@ constexpr auto parse_parameter(QByteArrayView data, qxp::function_ref<void(char)
     }
 }
 
-auto parse_content_type(QByteArrayView data)
+inline auto parse_content_type(QByteArrayView data)
 {
     using namespace Qt::StringLiterals;
 
