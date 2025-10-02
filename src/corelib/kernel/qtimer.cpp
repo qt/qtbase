@@ -15,6 +15,8 @@
 #include "qproperty_p.h"
 #include "qthread.h"
 
+#include <q26numeric.h> // for q26::staturate_cast
+
 using namespace std::chrono_literals;
 
 QT_BEGIN_NAMESPACE
@@ -248,19 +250,21 @@ void QTimer::start(int msec)
     start(msec * 1ms);
 }
 
-static std::chrono::milliseconds
+static int
 checkInterval(const char *caller, std::chrono::milliseconds interval)
 {
-    constexpr auto maxInterval = INT_MAX * 1ms;
     if (interval < 0ms) {
         qWarning("%s: negative intervals aren't allowed; the interval will be set to 1ms.", caller);
-        interval = 1ms;
-    } else if (interval > maxInterval) {
+        return 1;
+    }
+
+    const auto msec = interval.count();
+    int ret = q26::saturate_cast<int>(msec);
+    if (ret != msec) {
         qWarning("%s: interval exceeds maximum allowed interval, it will be clamped to "
                  "INT_MAX ms (about 24 days).", caller);
-        interval = maxInterval;
     }
-    return interval;
+    return ret;
 }
 
 /*!
@@ -288,8 +292,7 @@ void QTimer::start(std::chrono::milliseconds interval)
 {
     Q_D(QTimer);
 
-    interval = checkInterval("QTimer::start", interval);
-    const int msec = interval.count();
+    const int msec = checkInterval("QTimer::start", interval);
     const bool intervalChanged = msec != d->inter;
     d->inter.setValue(msec);
     start();
@@ -656,8 +659,7 @@ void QTimer::setInterval(std::chrono::milliseconds interval)
 {
     Q_D(QTimer);
 
-    interval = checkInterval("QTimer::setInterval", interval);
-    const int msec = interval.count();
+    const int msec = checkInterval("QTimer::setInterval", interval);
     d->inter.removeBindingUnlessInWrapper();
     const bool intervalChanged = msec != d->inter.valueBypassingBindings();
     d->inter.setValueBypassingBindings(msec);
@@ -705,7 +707,10 @@ int QTimer::remainingTime() const
     if (d->isActive()) {
         using namespace std::chrono;
         auto remaining = QAbstractEventDispatcher::instance()->remainingTime(d->id);
-        return ceil<milliseconds>(remaining).count();
+        const auto msec = ceil<milliseconds>(remaining).count();
+        const int ret = q26::saturate_cast<int>(msec);
+        Q_ASSERT(ret == msec); // cannot overflow because the interval is clamped before it's set
+        return ret;
     }
 
     return -1;
