@@ -246,11 +246,12 @@ bool QWizardLayoutInfo::operator==(const QWizardLayoutInfo &other) const
 
 class QWizardHeader : public QWidget
 {
-public:
+protected:
     enum RulerType { Ruler };
 
     inline QWizardHeader(RulerType /* ruler */, QWidget *parent = nullptr)
         : QWidget(parent) { setFixedHeight(2); }
+public:
     QWizardHeader(QWidget *parent = nullptr);
 
     void setup(const QWizardLayoutInfo &info, const QString &title,
