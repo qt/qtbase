@@ -181,7 +181,7 @@ int qEnvironmentVariableIntValue(const char *varName, bool *ok) noexcept
         value = std::nullopt;
     if (ok)
         *ok = bool(value);
-    return value.value_or(0);
+    return int(value.value_or(0));
 }
 QT_WARNING_POP
 

@@ -339,7 +339,8 @@ void QFileSystemEntry::findFileNameSeparators() const
             stop = lastSeparator;
         }
 
-        int i = m_filePath.size() - 1;
+        Q_ASSERT(m_filePath.size() == int(m_filePath.size()));
+        int i = int(m_filePath.size() - 1);
         for (; i >= stop; --i) {
             if (m_filePath.at(i).unicode() == '.') {
                 firstDotInFileName = lastDotInFileName = i;

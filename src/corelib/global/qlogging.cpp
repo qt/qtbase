@@ -1445,7 +1445,8 @@ Q_NEVER_INLINE void QInternalMessageLogContext::populateBacktrace(int frameCount
 {
     assert(frameCount >= 0);
     BacktraceStorage &result = backtrace.emplace(TypicalBacktraceFrameCount + frameCount);
-    int n = ::backtrace(result.data(), result.size());
+    Q_ASSERT(frameCount == int(frameCount));
+    int n = ::backtrace(result.data(), int(result.size()));
     if (n <= 0)
         result.clear();
     else

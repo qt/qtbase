@@ -175,7 +175,8 @@ void QLoggingSettingsParser::setContent(FILE *stream)
 
         // fgets() always writes the terminating null into the buffer, so we'll
         // allow it to write to the QByteArray's null (thus the off by 1).
-        char *s = fgets(buffer.begin(), buffer.size() + 1, stream);
+        Q_ASSERT(buffer.size() + 1 == int(buffer.size() + 1));
+        char *s = fgets(buffer.begin(), int(buffer.size() + 1), stream);
         if (!s)
             return QByteArrayView{};
 
