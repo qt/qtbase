@@ -104,8 +104,9 @@ static int *queuedConnectionTypes(const QMetaMethod &method)
 }
 
 // ### Future work: replace with an array of QMetaType or QtPrivate::QMetaTypeInterface *
-static int *queuedConnectionTypes(const QArgumentType *argumentTypes, int argc)
+static int *queuedConnectionTypes(QSpan<const QArgumentType> argumentTypes)
 {
+    const int argc = int(argumentTypes.size());
     auto types = std::make_unique<int[]>(argc + 1);
     for (int i = 0; i < argc; ++i) {
         const QArgumentType &type = argumentTypes[i];
@@ -3072,8 +3073,7 @@ QMetaObject::Connection QObject::connect(const QObject *sender, const char *sign
     // ### Future work: attempt get the metatypes from the meta object first
     // because it's possible they're all registered.
     int *types = nullptr;
-    if ((type == Qt::QueuedConnection)
-            && !(types = queuedConnectionTypes(signalTypes.constData(), signalTypes.size()))) {
+    if (type == Qt::QueuedConnection && !(types = queuedConnectionTypes(signalTypes))) {
         return QMetaObject::Connection(nullptr);
     }
 
