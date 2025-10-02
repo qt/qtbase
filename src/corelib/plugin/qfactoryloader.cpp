@@ -275,6 +275,10 @@ inline void QFactoryLoader::Private::updateSinglePath(const QString &path)
 #endif
                 QDirListing::IteratorFlag::FilesOnly | QDirListing::IteratorFlag::ResolveSymlinks);
 
+    auto versionFromLib = [](const QLibraryPrivate *lib) {
+        return lib->metaData.value(QtPluginMetaDataKeys::QtVersion).toInteger();
+    };
+
     for (const auto &dirEntry : plugins) {
         const QString &fileName = dirEntry.fileName();
 #if defined(Q_PROCESSOR_X86)
@@ -313,7 +317,7 @@ inline void QFactoryLoader::Private::updateSinglePath(const QString &path)
             continue;
 
         static constexpr qint64 QtVersionNoPatch = QT_VERSION_CHECK(QT_VERSION_MAJOR, QT_VERSION_MINOR, 0);
-        int thisVersion = library->metaData.value(QtPluginMetaDataKeys::QtVersion).toInteger();
+        qint64 thisVersion = versionFromLib(library.get());
         if (iid.startsWith(QStringLiteral("org.qt-project.Qt.QPA"))) {
             // QPA plugins must match Qt Major.Minor
             if (thisVersion != QtVersionNoPatch) {
@@ -337,7 +341,7 @@ inline void QFactoryLoader::Private::updateSinglePath(const QString &path)
                 // If the existing library was built with a future Qt version,
                 // whereas the one we're considering has a Qt version that fits
                 // better, we prioritize the better match.
-                int existingVersion = existingLibrary->metaData.value(QtPluginMetaDataKeys::QtVersion).toInteger();
+                qint64 existingVersion = versionFromLib(existingLibrary);
                 if (existingVersion == QtVersionNoPatch)
                     continue; // Prefer exact Qt version match
                 if (existingVersion < QtVersionNoPatch && thisVersion > QtVersionNoPatch)
