@@ -905,12 +905,11 @@ qint64 QNativeSocketEngine::read(char *data, qint64 maxSize)
 
     qint64 readBytes = d->nativeRead(data, maxSize);
 
-    // Handle remote close
-    if (readBytes == 0 && (d->socketType == QAbstractSocket::TcpSocket
-#ifndef QT_NO_SCTP
-        || d->socketType == QAbstractSocket::SctpSocket
-#endif
-        )) {
+    // Handle remote close.
+    // Non-datagram socket types signal the EOF state with a zero read.
+    // Note that it is perfectly fine to have a 0-byte message with datagram
+    // sockets (SOCK_DGRAM or SOCK_SEQPACKET).
+    if (readBytes == 0 && d->socketType != QAbstractSocket::UdpSocket) {
         d->setError(QAbstractSocket::RemoteHostClosedError,
                     QNativeSocketEnginePrivate::RemoteHostClosedErrorString);
         close();
