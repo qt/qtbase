@@ -1926,7 +1926,7 @@ void QObject::killTimer(Qt::TimerId id)
         return;
     }
     if (id > Qt::TimerId::Invalid) {
-        int at = d->extraData ? d->extraData->runningTimers.indexOf(id) : -1;
+        qsizetype at = d->extraData ? d->extraData->runningTimers.indexOf(id) : -1;
         if (at == -1) {
             // timer isn't owned by this object
             qWarning("QObject::killTimer(): Error: timer id %d is not valid for object %p (%s, %ls), timer has not been killed",
@@ -2245,7 +2245,7 @@ void QObjectPrivate::setParent_helper(QObject *o)
             // don't do anything since QObjectPrivate::deleteChildren() already
             // cleared our entry in parentD->children.
         } else {
-            const int index = parentD->children.indexOf(q);
+            const qsizetype index = parentD->children.indexOf(q);
             if (index < 0) {
                 // we're probably recursing into setParent() from a ChildRemoved event, don't do anything
             } else if (parentD->isDeletingChildren) {
@@ -3793,7 +3793,7 @@ static QByteArray formatConnectionSignature(const char *className, const QMetaMe
 {
     const auto signature = method.methodSignature();
     Q_ASSERT(signature.endsWith(')'));
-    const int openParen = signature.indexOf('(');
+    const qsizetype openParen = signature.indexOf('(');
     const bool hasParameters = openParen >= 0 && openParen < signature.size() - 2;
     QByteArray result;
     if (hasParameters) {
@@ -3915,8 +3915,8 @@ void QMetaObject::connectSlotsByName(QObject *o)
                 ++i;
         } else if (!(mo->method(i).attributes() & QMetaMethod::Cloned)) {
             // check if the slot has the following signature: "on_..._...(..."
-            int iParen = slotSignature.indexOf('(');
-            int iLastUnderscore = slotSignature.lastIndexOf('_', iParen - 1);
+            qsizetype iParen = slotSignature.indexOf('(');
+            qsizetype iLastUnderscore = slotSignature.lastIndexOf('_', iParen - 1);
             if (iLastUnderscore > 3)
                 qCWarning(lcConnectSlotsByName,
                           "QMetaObject::connectSlotsByName: No matching signal for %s", slot);
@@ -4400,7 +4400,7 @@ bool QObject::doSetProperty(const char *name, const QVariant &value, QVariant *r
     if (id < 0) {
         d->ensureExtraData();
 
-        const int idx = d->extraData->propertyNames.indexOf(name);
+        const qsizetype idx = d->extraData->propertyNames.indexOf(name);
 
         if (!value.isValid()) {
             if (idx == -1)
@@ -4454,7 +4454,7 @@ QVariant QObject::property(const char *name) const
     if (id < 0) {
         if (!d->extraData)
             return QVariant();
-        const int i = d->extraData->propertyNames.indexOf(name);
+        const qsizetype i = d->extraData->propertyNames.indexOf(name);
         return d->extraData->propertyValues.value(i);
     }
     QMetaProperty p = meta->property(id);
