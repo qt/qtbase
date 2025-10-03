@@ -1060,6 +1060,11 @@ void tst_QRangeModel::moveRows()
     const QVariant second = model->index(1, 0).data();
     const QVariant last = model->index(expectedRowCount - 1, 0).data();
 
+    // various noops, should always fail
+    QVERIFY(!model->moveRows({}, 0, 1, {}, 0));
+    QVERIFY(!model->moveRows({}, 0, 1, {}, 1));
+    QVERIFY(!model->moveRows({}, 0, 0, {}, expectedRowCount));
+
     // try to move first to last
     QCOMPARE(model->moveRows({}, 0, 1, {}, expectedRowCount),
              changeActions != ChangeAction::ReadOnly);
@@ -1133,6 +1138,10 @@ void tst_QRangeModel::moveColumns()
     const QVariant first = model->index(0, 0).data();
     const QVariant second = model->index(0, 1).data();
     const QVariant last = model->index(0, expectedColumnCount - 1).data();
+
+    // various noops, should always fail
+    QVERIFY(!model->moveColumns({}, 0, 1, {}, 0));
+    QVERIFY(!model->moveColumns({}, 0, 1, {}, 1));
 
     QCOMPARE(model->moveColumns({}, 0, 1, {}, expectedColumnCount),
              bool(changeActions & ChangeAction::ChangeColumns));
