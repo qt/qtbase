@@ -94,6 +94,21 @@ public:
         }
     }
 
+    void clearPayload()
+    {
+        if (d && (d->ref.loadAcquire() == 1 || !d->ref.deref())) {
+            // reference was 1, so we can reuse the storage
+            d->ref.storeRelaxed(1);
+            d->clear();
+        } else {
+            // reference was >= 2 before we dropped the count
+            d.reset(nullptr);   // in case new or T::T() throws
+            T *x = create();
+            x->ref.ref();
+            d.reset(x);
+        }
+    }
+
     operator bool () const noexcept { return d != nullptr; }
     bool operator!() const noexcept { return d == nullptr; }
 
@@ -199,6 +214,7 @@ public:
 
 #ifdef Q_QDOC
     void reset(T *ptr = nullptr) noexcept;
+    void clearPayload();
 
     operator bool () const noexcept;
     bool operator!() const noexcept;
@@ -295,6 +311,7 @@ public:
 
 #ifdef Q_QDOC
     void reset(T *ptr = nullptr) noexcept;
+    void clearPayload();
 
     operator bool () const noexcept;
     bool operator!() const noexcept;
