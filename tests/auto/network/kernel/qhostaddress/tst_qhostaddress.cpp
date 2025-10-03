@@ -283,6 +283,7 @@ void tst_QHostAddress::specialAddresses()
     QFETCH(QHostAddress::SpecialAddress, address);
     QFETCH(bool, result);
     QCOMPARE(QHostAddress(text) == address, result);
+    size_t seed = QHashSeed::globalSeed();
 
     //check special address equal to itself (QTBUG-22898), note two overloads of operator==
     QVERIFY(QHostAddress(address) == QHostAddress(address));
@@ -296,11 +297,19 @@ void tst_QHostAddress::specialAddresses()
         QHostAddress ha;
         ha.setAddress(address);
         QVERIFY(ha == address);
+        QCOMPARE(qHash(ha, seed), qHash(QHostAddress(address), seed));
+        QCOMPARE(qHash(ha, 0), qHash(QHostAddress(address), 0));
     }
 
     QHostAddress setter;
     setter.setAddress(text);
-    QCOMPARE(setter == address, result);
+    if (result) {
+        QCOMPARE(setter, address);
+        QCOMPARE(qHash(setter, seed), qHash(QHostAddress(address), seed));
+        QCOMPARE(qHash(setter, 0), qHash(QHostAddress(address), 0));
+    } else {
+        QCOMPARE_NE(setter, address);
+    }
 }
 
 
@@ -332,8 +341,11 @@ void tst_QHostAddress::compare()
 
     QCOMPARE(first == second, result);
     QCOMPARE(second == first, result);
-    if (result == true)
-        QCOMPARE(qHash(first), qHash(second));
+    if (result == true) {
+        size_t seed = QHashSeed::globalSeed();
+        QCOMPARE(qHash(first, seed), qHash(second, seed));
+        QCOMPARE(qHash(first, 0), qHash(second, 0));
+    }
 }
 
 void tst_QHostAddress::isEqual_data()
