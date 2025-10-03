@@ -1048,12 +1048,6 @@ QList<QByteArray> QTimeZonePrivate::windowsIdToIanaIds(const QByteArray &windows
     return list;
 }
 
-// Define template for derived classes to reimplement so QSharedDataPointer clone() works correctly
-template<> QTimeZonePrivate *QSharedDataPointer<QTimeZonePrivate>::clone()
-{
-    return d->clone();
-}
-
 static bool isEntryInIanaList(QByteArrayView id, QByteArrayView ianaIds)
 {
     qsizetype cut;

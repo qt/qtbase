@@ -204,8 +204,6 @@ protected:
 };
 Q_DECLARE_TYPEINFO(QTimeZonePrivate::Data, Q_RELOCATABLE_TYPE);
 
-template<> QTimeZonePrivate *QSharedDataPointer<QTimeZonePrivate>::clone();
-
 class Q_AUTOTEST_EXPORT QUtcTimeZonePrivate final : public QTimeZonePrivate
 {
     bool operator=(const QUtcTimeZonePrivate &) const = delete;
