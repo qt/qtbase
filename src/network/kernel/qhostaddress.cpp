@@ -36,12 +36,6 @@ const QAbstractSocket::NetworkLayerProtocol QHostAddress::AnyIPProtocol;
 const QAbstractSocket::NetworkLayerProtocol QHostAddress::UnknownNetworkLayerProtocol;
 #endif
 
-QHostAddressPrivate::QHostAddressPrivate()
-    : a(0), protocol(QHostAddress::UnknownNetworkLayerProtocol)
-{
-    memset(&a6, 0, sizeof(a6));
-}
-
 QT_DEFINE_QESDP_SPECIALIZATION_DTOR(QHostAddressPrivate)
 
 void QHostAddressPrivate::setAddress(quint32 a_)

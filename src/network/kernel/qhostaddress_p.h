@@ -69,8 +69,6 @@ public:
 class QHostAddressPrivate : public QSharedData
 {
 public:
-    QHostAddressPrivate();
-
     void setAddress(quint32 a_ = 0);
     void setAddress(const quint8 *a_);
     void setAddress(const Q_IPV6ADDR &a_);
@@ -81,12 +79,12 @@ public:
     QString scopeId;
 
     union {
-        Q_IPV6ADDR a6; // IPv6 address
+        Q_IPV6ADDR a6 = {};     // IPv6 address
         struct { quint64 c[2]; } a6_64;
         struct { quint32 c[4]; } a6_32;
     };
-    quint32 a;    // IPv4 address
-    qint8 protocol;
+    quint32 a = 0;      // IPv4 address
+    qint8 protocol = QHostAddress::UnknownNetworkLayerProtocol;
 
     AddressClassification classify() const;
     static AddressClassification classify(const QHostAddress &address)
