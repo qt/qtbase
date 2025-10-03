@@ -140,13 +140,6 @@ bool QHostAddressPrivate::parse(const QString &ipString)
     return false;
 }
 
-void QHostAddressPrivate::clear()
-{
-    a = 0;
-    protocol = QHostAddress::UnknownNetworkLayerProtocol;
-    memset(&a6, 0, sizeof(a6));
-}
-
 AddressClassification QHostAddressPrivate::classify() const
 {
     if (a) {

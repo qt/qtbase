@@ -74,7 +74,13 @@ public:
     void setAddress(const Q_IPV6ADDR &a_);
 
     bool parse(const QString &ipString);
-    void clear();
+    void clear()
+    {
+        a6 = {};
+        a = 0;
+        protocol = QHostAddress::UnknownNetworkLayerProtocol;
+        scopeId.clear();
+    }
 
     QString scopeId;
 

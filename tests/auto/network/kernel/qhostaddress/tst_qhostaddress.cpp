@@ -30,6 +30,7 @@ public:
     tst_QHostAddress();
 
 private slots:
+    void constructor();
     void constructor_QString_data();
     void constructor_QString();
     void setAddress_QString_data();
@@ -60,6 +61,43 @@ Q_DECLARE_METATYPE(QHostAddress)
 tst_QHostAddress::tst_QHostAddress()
 {
     qRegisterMetaType<QHostAddress>("QHostAddress");
+}
+
+static void verifyClear(const QHostAddress &addr)
+{
+    QVERIFY(addr.isNull());
+    QVERIFY(!addr.isLoopback());
+    QVERIFY(!addr.isGlobal());
+    QVERIFY(!addr.isLinkLocal());
+    QVERIFY(!addr.isSiteLocal());
+    QVERIFY(!addr.isUniqueLocalUnicast());
+    QVERIFY(!addr.isMulticast());
+    QVERIFY(!addr.isBroadcast());
+    QVERIFY(!addr.isPrivateUse());
+    QCOMPARE(addr, QHostAddress());
+    QCOMPARE(addr, QHostAddress::Null);
+    QCOMPARE(addr.protocol(), QHostAddress::UnknownNetworkLayerProtocol);
+
+    bool ok = true;
+    QCOMPARE(addr.toIPv4Address(&ok), 0);
+    QVERIFY(!ok);
+
+    QCOMPARE(QByteArrayView::fromArray(addr.toIPv6Address().c),
+             QByteArrayView::fromArray(QIPv6Address{}.c));
+    QCOMPARE(addr.scopeId(), QString());
+
+    QCOMPARE(addr.toString(), QString());
+
+    size_t seed = QHashSeed::globalSeed();
+    QCOMPARE(qHash(addr, seed), qHash(QHostAddress(), seed));
+    seed = 0;
+    QCOMPARE(qHash(addr, seed), qHash(QHostAddress(), seed));
+}
+
+void tst_QHostAddress::constructor()
+{
+    QHostAddress addr;
+    verifyClear(addr);
 }
 
 void tst_QHostAddress::constructor_QString_data()
@@ -94,6 +132,9 @@ void tst_QHostAddress::constructor_QString()
         QVERIFY( hostAddr.isNull() );
         QVERIFY( hostAddr.protocol() == QHostAddress::UnknownNetworkLayerProtocol );
     }
+
+    hostAddr.clear();
+    verifyClear(hostAddr);
 }
 
 void tst_QHostAddress::setAddress_QString_data()
@@ -201,6 +242,9 @@ void tst_QHostAddress::setAddress_QString()
         QVERIFY( hostAddr.isNull() );
         QVERIFY( hostAddr.protocol() == QHostAddress::UnknownNetworkLayerProtocol );
     }
+
+    hostAddr.clear();
+    verifyClear(hostAddr);
 }
 
 void tst_QHostAddress::specialAddresses_data()
@@ -370,6 +414,11 @@ void tst_QHostAddress::scopeId()
     address2 = address;
     QCOMPARE(address2.scopeId(), QString("eth0"));
     QCOMPARE(address2.toString().toLower(), QString("fe80::2e0:4cff:fefb:662a%eth0"));
+
+    address.clear();
+    verifyClear(address);
+    address2.clear();
+    verifyClear(address2);
 }
 
 void tst_QHostAddress::hashKey()
