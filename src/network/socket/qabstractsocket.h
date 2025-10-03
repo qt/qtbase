@@ -23,7 +23,22 @@ class QNetworkProxy;
 class QAbstractSocketPrivate;
 class QAuthenticator;
 
+namespace QtPrivate {
+struct QAbstractSocketConstants
+{
+#if QT_VERSION >= QT_VERSION_CHECK(7, 0, 0)
+    // compatibility with Qt 4 to 6
+    using NetworkLayerProtocol = QHostAddress::NetworkLayerProtocol;
+    static constexpr auto IPv4Protocol = QHostAddress::IPv4Protocol;
+    static constexpr auto IPv6Protocol = QHostAddress::IPv6Protocol;
+    static constexpr auto AnyIPProtocol = QHostAddress::AnyIPProtocol;
+    static constexpr auto UnknownNetworkLayerProtocol = QHostAddress::UnknownNetworkLayerProtocol;
+#endif
+};
+}
+
 class Q_NETWORK_EXPORT QAbstractSocket : public QIODevice
+        QT7_ONLY(, public QtPrivate::QAbstractSocketConstants)
 {
     Q_OBJECT
     Q_MOC_INCLUDE(<QtNetwork/qauthenticator.h>)
@@ -45,13 +60,6 @@ public:
         UnknownNetworkLayerProtocol = -1
     };
     Q_ENUM(NetworkLayerProtocol)
-#else
-    // compatibility with Qt 4 to 6
-    using NetworkLayerProtocol = QHostAddress::NetworkLayerProtocol;
-    static constexpr auto IPv4Protocol = QHostAddress::IPv4Protocol;
-    static constexpr auto IPv6Protocol = QHostAddress::IPv6Protocol;
-    static constexpr auto AnyIPProtocol = QHostAddress::AnyIPProtocol;
-    static constexpr auto UnknownNetworkLayerProtocol = QHostAddress::UnknownNetworkLayerProtocol;
 #endif
 
     enum SocketError {
