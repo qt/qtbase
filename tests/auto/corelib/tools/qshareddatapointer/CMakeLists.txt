@@ -13,6 +13,7 @@ endif()
 
 qt_internal_add_test(tst_qshareddatapointer
     SOURCES
+        common.h
         tst_qshareddatapointer.cpp
     LIBRARIES
         Qt::TestPrivate

@@ -7,6 +7,8 @@
 
 #include <QtCore/QSharedData>
 
+#include "../qshareddatapointer/common.h"
+
 /*!
  \class tst_QExplicitlySharedDataPointer
  \internal
@@ -28,6 +30,7 @@ private Q_SLOTS:
     void swap() const;
     void compareCompiles() const;
     void compare() const;
+    void clearPayload() const;
 };
 
 class MyClass : public QSharedData
@@ -263,6 +266,11 @@ void tst_QExplicitlySharedDataPointer::compare() const
     QT_TEST_ALL_COMPARISON_OPS(val0, &myArray[1], Qt::strong_ordering::less);
     QT_TEST_ALL_COMPARISON_OPS(val1, val0, Qt::strong_ordering::greater);
     QT_TEST_ALL_COMPARISON_OPS(&myArray[1], val0, Qt::strong_ordering::greater);
+}
+
+void tst_QExplicitlySharedDataPointer::clearPayload() const
+{
+    clearPayloadTest<QExplicitlySharedDataPointer>();
 }
 
 QTEST_MAIN(tst_QExplicitlySharedDataPointer)

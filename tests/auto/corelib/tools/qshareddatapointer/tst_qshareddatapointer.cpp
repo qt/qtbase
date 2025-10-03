@@ -6,6 +6,8 @@
 
 #include <QtCore/QSharedData>
 
+#include "common.h"
+
 class tst_QSharedDataPointer : public QObject
 {
     Q_OBJECT
@@ -13,6 +15,7 @@ class tst_QSharedDataPointer : public QObject
 private slots:
     void compareCompiles();
     void compare();
+    void clearPayload();
 };
 
 class MyClass : public QSharedData
@@ -56,6 +59,11 @@ void tst_QSharedDataPointer::compare()
     QT_TEST_ALL_COMPARISON_OPS(val0, &myArray[1], Qt::strong_ordering::less);
     QT_TEST_ALL_COMPARISON_OPS(val1, val0, Qt::strong_ordering::greater);
     QT_TEST_ALL_COMPARISON_OPS(&myArray[1], val0, Qt::strong_ordering::greater);
+}
+
+void tst_QSharedDataPointer::clearPayload()
+{
+    clearPayloadTest<QSharedDataPointer>();
 }
 
 QTEST_MAIN(tst_QSharedDataPointer)

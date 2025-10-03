@@ -526,8 +526,7 @@ QHostAddress &QHostAddress::operator=(SpecialAddress address)
 */
 void QHostAddress::clear()
 {
-    d.detach();
-    d->clear();
+    d.clearPayload();
 }
 
 /*!
