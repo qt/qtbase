@@ -291,7 +291,7 @@ void QAndroidPlatformScreen::topVisibleWindowChanged()
     if (w && w->handle()) {
         QAndroidPlatformWindow *platformWindow = static_cast<QAndroidPlatformWindow *>(w->handle());
         if (platformWindow) {
-            platformWindow->updateSystemUiVisibility();
+            platformWindow->updateSystemUiVisibility(w->windowStates(), w->flags());
             platformWindow->updateFocusedEditText();
         }
     }

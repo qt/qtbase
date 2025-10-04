@@ -43,7 +43,6 @@ public:
 
     void setWindowState(Qt::WindowStates state) override;
     void setWindowFlags(Qt::WindowFlags flags) override;
-    Qt::WindowFlags windowFlags() const;
     void setParent(const QPlatformWindow *window) override;
 
     WId winId() const override;
@@ -58,7 +57,7 @@ public:
 
     void propagateSizeHints() override;
     void requestActivateWindow() override;
-    void updateSystemUiVisibility();
+    void updateSystemUiVisibility(Qt::WindowStates states, Qt::WindowFlags flags);
     void updateFocusedEditText();
     inline bool isRaster() const { return m_isRaster; }
     bool isExposed() const override;
@@ -82,8 +81,6 @@ protected:
     bool isEmbeddingContainer() const;
     virtual void clearSurface() {}
 
-    Qt::WindowFlags m_windowFlags;
-    Qt::WindowStates m_windowState;
     bool m_isRaster;
 
     int m_nativeViewId = -1;
