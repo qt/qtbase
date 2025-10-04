@@ -126,6 +126,9 @@ QXdgDesktopPortalTheme::QXdgDesktopPortalTheme()
         QDBusPendingReply<QVariant> reply = *watcher;
         if (reply.isValid()) {
             d->fileChooserPortalVersion = reply.value().toUInt();
+        } else {
+            qWarning() << "Call for getting org.freedesktop.portal.FileChooser version failed"
+                       << reply.error();
         }
         watcher->deleteLater();
     });
@@ -135,17 +138,21 @@ QXdgDesktopPortalTheme::QXdgDesktopPortalTheme()
                                              "/org/freedesktop/portal/desktop"_L1,
                                              "org.freedesktop.portal.Settings"_L1,
                                              "ReadAll"_L1);
-    message << appearanceInterface;
+
+    QStringList namespaces = { appearanceInterface };
+    message << namespaces;
 
     // this must not be asyncCall() because we have to set appearance now
-    QDBusReply<QVariant> reply = QDBusConnection::sessionBus().call(message);
+    QDBusReply<QMap<QString, QVariantMap>> reply = QDBusConnection::sessionBus().call(message);
     if (reply.isValid()) {
-        const QMap<QString, QVariantMap> settingsMap = qvariant_cast<QMap<QString, QVariantMap>>(reply.value());
+        const QMap<QString, QVariantMap> settingsMap = reply.value();
         if (!settingsMap.isEmpty()) {
             const auto xdgColorSchemePref = static_cast<QXdgDesktopPortalThemePrivate::XdgColorschemePref>(settingsMap.value(appearanceInterface).value(colorSchemeKey).toUInt());
             d->colorScheme = QXdgDesktopPortalThemePrivate::colorSchemeFromXdgPref(xdgColorSchemePref);
             d->contrast = static_cast<Qt::ContrastPreference>(settingsMap.value(appearanceInterface).value(contrastKey).toUInt());
         }
+    } else {
+        qWarning() << "Call to org.freedesktop.portal.Settings.ReadAll failed" << reply.error();
     }
 
     QDBusConnection::sessionBus().connect(

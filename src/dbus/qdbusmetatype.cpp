@@ -88,6 +88,7 @@ void QDBusMetaTypeId::init()
         qDBusRegisterMetaType<QList<qlonglong> >();
         qDBusRegisterMetaType<QList<qulonglong> >();
         qDBusRegisterMetaType<QList<double> >();
+        qDBusRegisterMetaType<QMap<QString, QVariantMap>>();
 
         // plus lists of our own types
         qDBusRegisterMetaType<QList<QDBusVariant> >();
