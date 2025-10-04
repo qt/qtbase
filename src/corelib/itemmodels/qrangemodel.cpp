@@ -337,9 +337,8 @@ QRangeModel::QRangeModel(QRangeModelImplBase *impl, QObject *parent)
 
     The tree traversal protocol can then be implemented as member functions of
     the row data type. A const \c{parentRow()} function has to return a pointer
-    to a const row item; and the \c{childRows()} function has to return a
-    reference to a const \c{std::optional} that can hold the optional child
-    range.
+    to a row item; and the \c{childRows()} function has to return a reference
+    to a const \c{std::optional} that can hold the optional child range.
 
     These two functions are sufficient for the model to navigate the tree as a
     read-only data structure. To allow the user to edit data in a view, and the

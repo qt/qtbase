@@ -131,7 +131,7 @@ public:
     }
 
     // tree traversal protocol implementation
-    const TreeRow *parentRow() const { return m_parent; }
+    TreeRow *parentRow() const { return m_parent; }
     void setParentRow(TreeRow *parent) { m_parent = parent; }
     const std::optional<Tree> &childRows() const { return m_children; }
     std::optional<Tree> &childRows() { return m_children; }
