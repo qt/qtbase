@@ -3794,11 +3794,11 @@ static QByteArray formatConnectionSignature(const char *className, const QMetaMe
     const auto signature = method.methodSignature();
     Q_ASSERT(signature.endsWith(')'));
     const qsizetype openParen = signature.indexOf('(');
-    const bool hasParameters = openParen >= 0 && openParen < signature.size() - 2;
+    const bool hasParameters = openParen > 0 && openParen < signature.size() - 2;
     QByteArray result;
     if (hasParameters) {
-        result += "qOverload<"
-            + signature.mid(openParen + 1, signature.size() - openParen - 2) + ">(";
+        const qsizetype len = signature.size() - openParen - 2;
+        result += "qOverload<" + QByteArrayView{signature}.slice(openParen + 1, len) + ">(";
     }
     result += '&';
     result += className + QByteArrayLiteral("::") + method.name();
