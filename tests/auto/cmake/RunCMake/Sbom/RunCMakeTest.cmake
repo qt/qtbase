@@ -137,5 +137,7 @@ foreach(format_case IN LISTS format_cases)
     # The next test depends on the previous one successfully passing.
     run_cmake_and_build(spdx_suffixes_external "${format_case}"
         SEARCH_CASE_PACKAGES spdx_suffixes)
+
+    run_cmake_and_build(build_tools "${format_case}")
 endforeach()
 
