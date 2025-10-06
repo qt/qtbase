@@ -364,22 +364,19 @@ auto *configuredImage(const NSImage *image, const QColor &color)
                                                weight:NSFontWeightRegular
                                                scale:NSImageSymbolScaleLarge];
 
-    NSImage *configuredImage = [image imageWithSymbolConfiguration:config];
+    // Apply tint color first, which switches the configuration to palette mode
+    config = [config configurationByApplyingConfiguration:
+        [NSImageSymbolConfiguration configurationWithPaletteColors:@[
+            [NSColor colorWithSRGBRed:color.redF() green:color.greenF()
+                blue:color.blueF() alpha:color.alphaF()]
+        ]]];
 
-    auto *primaryColor = [NSColor colorWithSRGBRed:color.redF()
-                                             green:color.greenF()
-                                              blue:color.blueF()
-                                             alpha:color.alphaF()];
+    // Then switch back to monochrome, as palette mode gives a different look
+    // than monochrome, even with a single color.
+    config = [config configurationByApplyingConfiguration:
+        [NSImageSymbolConfiguration configurationPreferringMonochrome]];
 
-    NSImage *tintedImage = [NSImage imageWithSize:configuredImage.size flipped:NO
-        drawingHandler:^BOOL(NSRect) {
-            [primaryColor set];
-            NSRect imageRect = {NSZeroPoint, configuredImage.size};
-            [configuredImage drawInRect:imageRect];
-            NSRectFillUsingOperation(imageRect, NSCompositingOperationSourceIn);
-            return YES;
-        }];
-    return tintedImage;
+    return [image imageWithSymbolConfiguration:config];
 }
 #elif defined(QT_PLATFORM_UIKIT)
 auto *configuredImage(const UIImage *image, const QColor &color)
