@@ -387,6 +387,10 @@ QPixmap QCocoaTheme::standardPixmap(StandardPixmap sp, const QSizeF &size) const
     case FileIcon:
         iconType = kGenericDocumentIcon;
         break;
+    case ToolBarHorizontalExtensionButton:
+        return QIcon::fromTheme("chevron.forward.2").pixmap(size.toSize());
+    case ToolBarVerticalExtensionButton:
+        return QIcon::fromTheme("chevron.down.2").pixmap(size.toSize());
     default:
         break;
     }

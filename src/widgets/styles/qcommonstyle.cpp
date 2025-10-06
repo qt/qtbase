@@ -5834,6 +5834,8 @@ QIcon QCommonStylePrivate::iconFromMacTheme(QCommonStyle::StandardPixmap standar
         case QStyle::SP_DirLinkIcon:
         case QStyle::SP_FileLinkIcon:
         case QStyle::SP_FileIcon:
+        case QStyle::SP_ToolBarHorizontalExtensionButton:
+        case QStyle::SP_ToolBarVerticalExtensionButton:
             if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme()) {
                 QPlatformTheme::StandardPixmap sp = static_cast<QPlatformTheme::StandardPixmap>(standardIcon);
                 QIcon retIcon;

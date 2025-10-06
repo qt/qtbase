@@ -76,8 +76,6 @@ public:
 
     bool event(QEvent *e);
 
-    QIcon standardIcon(StandardPixmap standardIcon, const QStyleOption *opt = nullptr,
-                       const QWidget *widget = nullptr) const;
     int layoutSpacing(QSizePolicy::ControlType control1, QSizePolicy::ControlType control2,
                       Qt::Orientation orientation, const QStyleOption *option = nullptr,
                       const QWidget *widget = nullptr) const;

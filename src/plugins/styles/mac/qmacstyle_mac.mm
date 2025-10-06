@@ -6955,30 +6955,6 @@ bool QMacStyle::event(QEvent *e)
     return false;
 }
 
-QIcon QMacStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption *opt,
-                              const QWidget *widget) const
-{
-    switch (standardIcon) {
-    default:
-        return QCommonStyle::standardIcon(standardIcon, opt, widget);
-    case SP_ToolBarHorizontalExtensionButton:
-    case SP_ToolBarVerticalExtensionButton: {
-        QPixmap pixmap(QLatin1String(":/qt-project.org/styles/macstyle/images/toolbar-ext-macstyle.png"));
-        if (standardIcon == SP_ToolBarVerticalExtensionButton) {
-            QPixmap pix2(pixmap.height(), pixmap.width());
-            pix2.setDevicePixelRatio(pixmap.devicePixelRatio());
-            pix2.fill(Qt::transparent);
-            QPainter p(&pix2);
-            p.translate(pix2.width(), 0);
-            p.rotate(90);
-            p.drawPixmap(0, 0, pixmap);
-            return pix2;
-        }
-        return pixmap;
-    }
-    }
-}
-
 int QMacStyle::layoutSpacing(QSizePolicy::ControlType control1,
                              QSizePolicy::ControlType control2,
                              Qt::Orientation orientation,
