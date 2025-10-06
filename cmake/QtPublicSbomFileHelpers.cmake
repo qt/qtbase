@@ -57,6 +57,7 @@ function(_qt_internal_sbom_handle_target_binary_files target)
         LIBRARY
         TRANSLATIONS
         RESOURCES
+        BUILD_TOOL
         CUSTOM
         CUSTOM_NO_INFIX
     )
@@ -79,6 +80,7 @@ function(_qt_internal_sbom_handle_target_binary_files target)
         SBOM_PROJECT
         TRANSLATIONS
         RESOURCES
+        BUILD_TOOL
         CUSTOM
         CUSTOM_NO_INFIX
     )
