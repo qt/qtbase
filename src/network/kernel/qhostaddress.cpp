@@ -29,6 +29,13 @@
 
 QT_BEGIN_NAMESPACE
 
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+const QAbstractSocket::NetworkLayerProtocol QHostAddress::IPv4Protocol;
+const QAbstractSocket::NetworkLayerProtocol QHostAddress::IPv6Protocol;
+const QAbstractSocket::NetworkLayerProtocol QHostAddress::AnyIPProtocol;
+const QAbstractSocket::NetworkLayerProtocol QHostAddress::UnknownNetworkLayerProtocol;
+#endif
+
 QHostAddressPrivate::QHostAddressPrivate()
     : a(0), protocol(QHostAddress::UnknownNetworkLayerProtocol)
 {
