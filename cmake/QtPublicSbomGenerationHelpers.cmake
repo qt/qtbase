@@ -154,20 +154,6 @@ CreatorComment: <text>This SPDX document was created from CMake ${CMAKE_VERSION}
 build system from https://code.qt.io/cgit/qt/qtbase.git/tree/cmake/QtPublicSbomHelpers.cmake</text>
 Created: ${current_utc}\${QT_SBOM_EXTERNAL_DOC_REFS}
 
-PackageName: ${CMAKE_CXX_COMPILER_ID}
-SPDXID: SPDXRef-compiler${spdx_id_unique_suffix}
-PackageVersion: ${CMAKE_CXX_COMPILER_VERSION}
-PackageDownloadLocation: NOASSERTION
-PackageLicenseConcluded: NOASSERTION
-PackageLicenseDeclared: NOASSERTION
-PackageCopyrightText: NOASSERTION
-PackageSupplier: Organization: Anonymous
-FilesAnalyzed: false
-PackageSummary: <text>The compiler as identified by CMake, running on ${CMAKE_HOST_SYSTEM_NAME} (${CMAKE_HOST_SYSTEM_PROCESSOR})</text>
-PrimaryPackagePurpose: APPLICATION
-Relationship: SPDXRef-compiler${spdx_id_unique_suffix} BUILD_DEPENDENCY_OF ${project_spdx_id}
-RelationshipComment: <text>${project_spdx_id} is built by compiler ${CMAKE_CXX_COMPILER_ID} version ${CMAKE_CXX_COMPILER_VERSION}</text>
-
 PackageName: ${arg_PROJECT}
 SPDXID: ${project_spdx_id}${fields}
 ExternalRef: PACKAGE-MANAGER purl pkg:generic/${arg_SUPPLIER}/${arg_PROJECT}@${QT_SBOM_GIT_VERSION}

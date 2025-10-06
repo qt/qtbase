@@ -33,6 +33,7 @@ function(_qt_internal_sbom_begin_project)
         NO_AUTO_DOCUMENT_NAMESPACE_INFIX
         NO_AUTO_SEARCH_EXTERNAL_DOCUMENTS_IN_CMAKE_PATHS
         NO_AUTO_SPDX_ID_SUFFIX
+        NO_AUTO_ADD_BUILD_TOOLS
     )
     set(single_args
         INSTALL_PREFIX
@@ -484,6 +485,10 @@ function(_qt_internal_sbom_begin_project)
     set_property(GLOBAL PROPERTY _qt_internal_sbom_repo_begin_called TRUE)
 
     _qt_internal_sbom_setup_project_ops()
+
+    if(NOT arg_NO_AUTO_ADD_BUILD_TOOLS)
+        _qt_internal_sbom_add_project_default_build_tools()
+    endif()
 endfunction()
 
 # Check various internal options to decide which sbom generation operations should be setup.
