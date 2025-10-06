@@ -133,11 +133,12 @@ void Http2Server::setSendTrailingHEADERS(bool enable)
     sendTrailingHEADERS = enable;
 }
 
-void Http2Server::emulateGOAWAY(int timeout)
+void Http2Server::emulateGOAWAY(int code, int timeout)
 {
     Q_ASSERT(timeout >= 0);
     testingGOAWAY = true;
     goawayTimeout = timeout;
+    goawayCode = code;
 }
 
 void Http2Server::redirectOpenStream(quint16 port)
@@ -414,7 +415,7 @@ void Http2Server::triggerGOAWAYEmulation()
     auto timer = new QTimer(this);
     timer->setSingleShot(true);
     connect(timer, &QTimer::timeout, [this]() {
-        sendGOAWAY(quint32(connectionStreamID), quint32(INTERNAL_ERROR), 0);
+        sendGOAWAY(quint32(connectionStreamID), quint32(goawayCode), 0);
     });
     timer->start(goawayTimeout);
 }

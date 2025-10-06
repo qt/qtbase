@@ -75,7 +75,7 @@ public:
     void setRedirect(const QByteArray &redirectUrl, int count);
     // Send a trailing HEADERS frame with PRIORITY and END_STREAM flag
     void setSendTrailingHEADERS(bool enable);
-    void emulateGOAWAY(int timeout);
+    void emulateGOAWAY(int goawayCode, int timeout);
     void redirectOpenStream(quint16 targetPort);
 
     bool isClearText() const;
@@ -186,6 +186,7 @@ private:
 
     bool testingGOAWAY = false;
     int goawayTimeout = 0;
+    int goawayCode = 0;
 
     // Clear text HTTP/2, we have to deal with the protocol upgrade request
     // from the initial HTTP/1.1 request.

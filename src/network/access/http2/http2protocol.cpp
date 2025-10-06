@@ -104,8 +104,8 @@ void qt_error(quint32 errorCode, QNetworkReply::NetworkError &error,
 
     switch (http2Error) {
     case HTTP2_NO_ERROR:
-        error = QNetworkReply::NoError;
-        errorMessage.clear();
+        error = QNetworkReply::RemoteHostClosedError;
+        errorMessage = "Remote host signaled shutdown"_L1;
         break;
     case PROTOCOL_ERROR:
         error = QNetworkReply::ProtocolFailure;

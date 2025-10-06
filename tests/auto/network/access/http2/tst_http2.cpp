@@ -604,8 +604,12 @@ void tst_Http2::goaway_data()
         QSKIP("This test requires TLS with ALPN to work");
 
     QTest::addColumn<int>("responseTimeoutMS");
-    QTest::newRow("ImmediateGOAWAY") << 0;
-    QTest::newRow("DelayedGOAWAY") << 1000;
+    QTest::addColumn<int>("goawayCode");
+    QTest::addColumn<QNetworkReply::NetworkError>("expectedError");
+    QTest::newRow("ImmediateGOAWAY") << 0 << int(Http2::INTERNAL_ERROR) << QNetworkReply::InternalServerError;
+    QTest::newRow("DelayedGOAWAY") << 1000 << int(Http2::INTERNAL_ERROR) << QNetworkReply::InternalServerError;
+    QTest::newRow("Graceful") << 0 << int(Http2::HTTP2_NO_ERROR) << QNetworkReply::RemoteHostClosedError;
+    QTest::newRow("Unknown") << 0 << 500000 << QNetworkReply::ProtocolFailure;
 }
 
 void tst_Http2::goaway()
@@ -613,6 +617,8 @@ void tst_Http2::goaway()
     using namespace Http2;
 
     QFETCH(const int, responseTimeoutMS);
+    QFETCH(const int, goawayCode);
+    QFETCH(const QNetworkReply::NetworkError, expectedError);
 
     clearHTTP2State();
 
@@ -620,7 +626,7 @@ void tst_Http2::goaway()
     nRequests = 3;
 
     ServerPtr srv(newServer(defaultServerSettings, defaultConnectionType()));
-    srv->emulateGOAWAY(responseTimeoutMS);
+    srv->emulateGOAWAY(goawayCode, responseTimeoutMS);
     QMetaObject::invokeMethod(srv.data(), "startServer", Qt::QueuedConnection);
     runEventLoop();
 
@@ -647,7 +653,7 @@ void tst_Http2::goaway()
     // No request processed, no 'replyFinished' slot calls:
     QCOMPARE(nRequests, 0);
     for (const auto &reply : replies)
-        QCOMPARE(reply->error(), QNetworkReply::InternalServerError);
+        QCOMPARE(reply->error(), expectedError);
     // Our server did not bother to send anything except a single GOAWAY frame:
     QVERIFY(!prefaceOK);
     QVERIFY(!serverGotSettingsACK);
