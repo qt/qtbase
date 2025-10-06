@@ -25,11 +25,11 @@ abstract class QtView extends ViewGroup implements QtNative.AppStateDetailsListe
         void onQtWindowLoaded();
     }
 
-    protected QtWindow m_window;
-    protected long m_windowReference;
-    protected long m_parentWindowReference;
-    protected QtWindowListener m_windowListener;
-    protected final QtEmbeddedViewInterface m_viewInterface;
+    private QtWindow m_window;
+    private long m_windowReference;
+    private long m_parentWindowReference;
+    private QtWindowListener m_windowListener;
+    private final QtEmbeddedViewInterface m_viewInterface;
     // Implement in subclass to handle the creation of the QWindow and its parent container.
     // TODO could we take care of the parent window creation and parenting outside of the
     // window creation method to simplify things if user would extend this? Preferably without
@@ -164,8 +164,41 @@ abstract class QtView extends ViewGroup implements QtNative.AppStateDetailsListe
         m_windowReference = windowReference;
     }
 
-    long windowReference() {
+    long getWindowReference() {
         return m_windowReference;
+    }
+
+    void setQtWindow(QtWindow qtWindow) {
+        m_window = qtWindow;
+    }
+
+    QtWindow getQtWindow() {
+        return m_window;
+    }
+
+    long getParentWindowReference()
+    {
+        return m_parentWindowReference;
+    }
+
+    void setParentWindowReference(long reference)
+    {
+        m_parentWindowReference = reference;
+    }
+
+    QtWindowListener getWindowListener()
+    {
+        return m_windowListener;
+    }
+
+    void setWindowListener(QtWindowListener listner)
+    {
+        m_windowListener = listner;
+    }
+
+    QtEmbeddedViewInterface getViewInterface()
+    {
+        return m_viewInterface;
     }
 
     // Set the visibility of the underlying QWindow. If visible is true, showNormal() is called.
@@ -201,10 +234,6 @@ abstract class QtView extends ViewGroup implements QtNative.AppStateDetailsListe
             deleteWindow(m_parentWindowReference);
         m_parentWindowReference = 0L;
         setWindowReference(0L);
-    }
-
-    QtWindow getQtWindow() {
-        return m_window;
     }
 
     @Override
