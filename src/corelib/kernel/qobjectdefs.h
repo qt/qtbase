@@ -640,11 +640,12 @@ private:
 
         auto h = QtPrivate::invokeMethodHelper(ret, std::forward<Args>(args)...);
 
-        // NOLINTNEXTLINE(clang-analyzer-cplusplus.NewDeleteLeaks)
+        // NOLINTBEGIN(clang-analyzer-cplusplus.NewDeleteLeaks)
         auto callable = new QtPrivate::QCallableObject<std::decay_t<Func>, ActualArguments,
                 typename Callable::ReturnType>(std::forward<Func>(function));
         return invokeMethodImpl(object, callable, type, h.parameterCount(), h.parameters.data(),
                 h.typeNames.data(), h.metaTypes.data());
+        // NOLINTEND(clang-analyzer-cplusplus.NewDeleteLeaks)
     }
 
     static bool invokeMethodImpl(QObject *object, const char *member, Qt::ConnectionType type,
