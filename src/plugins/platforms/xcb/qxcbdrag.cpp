@@ -995,10 +995,12 @@ void QXcbDrag::handleDrop(QPlatformWindow *, const xcb_client_message_event_t *e
         if (dropData && dropData->hasImage())
             dropData = 0;
     }
+
+    const QDrag *currentDragObject = currentDrag();
     // if we can't find it, then use the data in the drag manager
-    if (currentDrag()) {
+    if (currentDragObject) {
         if (!dropData)
-            dropData = currentDrag()->mimeData();
+            dropData = currentDragObject->mimeData();
         supported_drop_actions = Qt::DropActions(l[4]);
     } else {
         if (!dropData)
@@ -1009,8 +1011,8 @@ void QXcbDrag::handleDrop(QPlatformWindow *, const xcb_client_message_event_t *e
     if (!dropData)
         return;
 
-    auto buttons = currentDrag() ? b : connection()->queryMouseButtons();
-    auto modifiers = currentDrag() ? mods : connection()->keyboard()->queryKeyboardModifiers();
+    auto buttons = currentDragObject ? b : connection()->queryMouseButtons();
+    auto modifiers = currentDragObject ? mods : connection()->keyboard()->queryKeyboardModifiers();
 
     QPlatformDropQtResponse response = QWindowSystemInterface::handleDrop(
                 currentWindow.data(), dropData, currentPosition, supported_drop_actions,
