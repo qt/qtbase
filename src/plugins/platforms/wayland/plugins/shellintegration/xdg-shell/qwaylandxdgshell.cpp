@@ -59,9 +59,6 @@ QWaylandXdgSurface::Toplevel::~Toplevel()
 
 void QWaylandXdgSurface::Toplevel::applyConfigure()
 {
-    if (!(m_applied.states & (Qt::WindowMaximized|Qt::WindowFullScreen)))
-        m_normalSize = m_xdgSurface->m_window->windowContentGeometry().size();
-
     if ((m_pending.states & Qt::WindowActive) && !(m_applied.states & Qt::WindowActive)
         && !m_xdgSurface->m_window->display()->isKeyboardAvailable())
         m_xdgSurface->m_window->display()->handleWindowActivated(m_xdgSurface->m_window);
@@ -72,6 +69,9 @@ void QWaylandXdgSurface::Toplevel::applyConfigure()
 
     m_xdgSurface->m_window->handleToplevelWindowTilingStatesChanged(m_toplevelStates);
     m_xdgSurface->m_window->handleWindowStatesChanged(m_pending.states);
+
+    if (!(m_applied.states & (Qt::WindowMaximized|Qt::WindowFullScreen)))
+        m_normalSize = m_xdgSurface->m_window->windowContentGeometry().size();
 
     // If the width or height is zero, the client should decide the size on its own.
     QSize surfaceSize;
