@@ -48,7 +48,6 @@ private slots:
     void genericSystemProxy_data();
 
 private:
-    QString formatProxyName(const QNetworkProxy & proxy) const;
     QDebugProxyFactory *factory;
 };
 
@@ -58,17 +57,6 @@ tst_QNetworkProxyFactory::tst_QNetworkProxyFactory()
 {
     factory = new QDebugProxyFactory;
     QNetworkProxyFactory::setApplicationProxyFactory(factory);
-}
-
-QString tst_QNetworkProxyFactory::formatProxyName(const QNetworkProxy & proxy) const
-{
-    QString proxyName;
-    if (!proxy.user().isNull())
-        proxyName.append(QString("%1:%2@").arg(proxy.user(), proxy.password()));
-    proxyName.append(QString("%1:%2").arg(proxy.hostName()).arg(proxy.port()));
-    proxyName.append(QString(" (type=%1, capabilities=%2)").arg(proxy.type()).arg(proxy.capabilities()));
-
-    return proxyName;
 }
 
 void tst_QNetworkProxyFactory::systemProxyForQuery_data()
