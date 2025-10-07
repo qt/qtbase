@@ -401,15 +401,15 @@ void tst_QHashFunctions::qhash()
     }
 
     {
-        QPair<int, int> p12(1, 2);
-        QPair<int, int> p21(2, 1);
+        std::pair<int, int> p12(1, 2);
+        std::pair<int, int> p21(2, 1);
 
         QVERIFY(qHash(p12, seed) == qHash(p12, seed));
         QVERIFY(qHash(p21, seed) == qHash(p21, seed));
         QVERIFY(qHash(p12, seed) != qHash(p21, seed));  // not guaranteed
 
-        QPair<int, int> pA(0x12345678, 0x12345678);
-        QPair<int, int> pB(0x12345675, 0x12345675);
+        std::pair<int, int> pA(0x12345678, 0x12345678);
+        std::pair<int, int> pB(0x12345675, 0x12345675);
 
         QVERIFY(qHash(pA, seed) != qHash(pB, seed));    // not guaranteed
     }
