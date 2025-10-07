@@ -22,7 +22,6 @@
 #include <private/qabstractitemmodel_p.h>
 #include <qabstractitemmodel.h>
 #include "qfileinfogatherer_p.h"
-#include <qpair.h>
 #include <qdir.h>
 #include <qicon.h>
 #include <qfileinfo.h>
