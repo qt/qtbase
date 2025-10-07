@@ -31,7 +31,7 @@ private slots:
     void properties();
 };
 
-typedef QPair<QString,QString> StringPair;
+using StringPair = std::pair<QString, QString>;
 
 struct Struct1 { };             // (s)
 struct Struct4                  // (ssa(ss)sayasx)
