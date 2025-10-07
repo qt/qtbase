@@ -987,14 +987,14 @@ void tst_QDir::entryListWithTestFiles()
 #if defined(Q_OS_WIN)
     // ### Sadly, this is a platform difference right now.
     // Note we are using capital L in entryList on one side here, to test case-insensitivity
-    const QList<QPair<QString, QString> > symLinks =
+    const QList<std::pair<QString, QString>> symLinks =
     {
         {m_dataPath + "/entryList/file", entrylistPath + "linktofile.lnk"},
         {m_dataPath + "/entryList/directory", entrylistPath + "linktodirectory.lnk"},
         {m_dataPath + "/entryList/nothing", entrylistPath + "brokenlink.lnk"}
     };
 #else
-    const QList<QPair<QString, QString> > symLinks =
+    const QList<std::pair<QString, QString>> symLinks =
     {
         {"file", entrylistPath + "linktofile.lnk"},
         {"directory", entrylistPath + "linktodirectory.lnk"},
