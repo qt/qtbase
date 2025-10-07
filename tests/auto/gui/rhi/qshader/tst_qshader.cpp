@@ -279,7 +279,7 @@ void tst_QShader::mslResourceMapping()
 
     QCOMPARE(resMap.size(), 2);
     QCOMPARE(resMap.value(0).first, 0); // mapped to native buffer index 0
-    QCOMPARE(resMap.value(1), qMakePair(0, 0)); // mapped to native texture index 0 and sampler index 0
+    QCOMPARE(resMap.value(1), std::pair(0, 0)); // mapped to native texture index 0 and sampler index 0
 }
 
 void tst_QShader::serializeShaderDesc()
@@ -667,7 +667,8 @@ void tst_QShader::loadV7()
     QCOMPARE(tese.description().inputBuiltinVariables()[3].type, QShaderDescription::TessCoordBuiltin);
 
     QCOMPARE(tese.nativeResourceBindingMap(QShaderKey(QShader::MslShader, QShaderVersion(12))).size(), 1);
-    QCOMPARE(tese.nativeResourceBindingMap(QShaderKey(QShader::MslShader, QShaderVersion(12))).value(0), qMakePair(0, -1));
+    QCOMPARE(tese.nativeResourceBindingMap(QShaderKey(QShader::MslShader, QShaderVersion(12))).value(0),
+             std::pair(0, -1));
 
     QShader frag = getShader(QLatin1String(":/data/metal_enabled_tessellation_v7.frag.qsb"));
     QVERIFY(frag.isValid());

@@ -3525,7 +3525,7 @@ void tst_QRhi::renderToTextureMultipleUniformBuffersAndDynamicOffset()
     // "see" an all zero matrix and zero opacity, thus leading to different
     // rendering output. This way we can verify if using dynamic offsets, and
     // more than one at the same time, is functional.
-    QVarLengthArray<QPair<int, quint32>, 2> dynamicOffset = {
+    QVarLengthArray<std::pair<int, quint32>, 2> dynamicOffset = {
         { 0, quint32(ubufElemSize * 2) },
         { 1, quint32(ubuf2ElemSize * 3) },
     };

@@ -3842,26 +3842,23 @@ void tst_QPainter::linearGradientSymmetry_data()
     QTest::addColumn<QGradientStops>("stops");
 
     if (sizeof(qreal) != sizeof(float)) {
-        QGradientStops stops;
-        stops << qMakePair(qreal(0.0), QColor(Qt::blue));
-        stops << qMakePair(qreal(0.2), QColor(220, 220, 220, 0));
-        stops << qMakePair(qreal(0.6), QColor(Qt::red));
-        stops << qMakePair(qreal(0.9), QColor(220, 220, 220, 255));
-        stops << qMakePair(qreal(1.0), QColor(Qt::black));
+        QGradientStops stops = {{qreal(0.0), QColor(Qt::blue)},
+                                {qreal(0.2), QColor(220, 220, 220, 0)},
+                                {qreal(0.6), QColor(Qt::red)},
+                                {qreal(0.9), QColor(220, 220, 220, 255)},
+                                {qreal(1.0), QColor(Qt::black)}};
         QTest::newRow("multiple stops") << stops;
     }
 
     {
-        QGradientStops stops;
-        stops << qMakePair(qreal(0.0), QColor(Qt::blue));
-        stops << qMakePair(qreal(1.0), QColor(Qt::black));
+        QGradientStops stops = {{qreal(0.0), QColor(Qt::blue)},
+                                {qreal(1.0), QColor(Qt::black)}};
         QTest::newRow("two stops") << stops;
     }
 
     if (sizeof(qreal) != sizeof(float)) {
-        QGradientStops stops;
-        stops << qMakePair(qreal(0.3), QColor(Qt::blue));
-        stops << qMakePair(qreal(0.6), QColor(Qt::black));
+        QGradientStops stops = {{qreal(0.3), QColor(Qt::blue)},
+                                {qreal(0.6), QColor(Qt::black)}};
         QTest::newRow("two stops 2") << stops;
     }
 }
@@ -3912,12 +3909,10 @@ void tst_QPainter::gradientPixelFormat()
     QImage a(8, 64, QImage::Format_ARGB32_Premultiplied);
     QImage b(8, 64, format);
 
-
-    QGradientStops stops;
-    stops << qMakePair(qreal(0.0), QColor(Qt::blue));
-    stops << qMakePair(qreal(0.3), QColor(Qt::red));
-    stops << qMakePair(qreal(0.6), QColor(Qt::green));
-    stops << qMakePair(qreal(1.0), QColor(Qt::black));
+    QGradientStops stops = {{qreal(0.0), QColor(Qt::blue)},
+                            {qreal(0.3), QColor(Qt::red)},
+                            {qreal(0.6), QColor(Qt::green)},
+                            {qreal(1.0), QColor(Qt::black)}};
 
     a.fill(0);
     b.fill(0);
