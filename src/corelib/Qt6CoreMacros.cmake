@@ -941,6 +941,11 @@ function(_qt_internal_finalize_source_groups target)
         set(generated_source_group "Source Files/Generated")
     endif()
 
+    get_target_property(resource_source_files "${target}" _qt_resource_source_files)
+    if(NOT resource_source_files)
+        set(resource_source_files "")
+    endif()
+
     foreach(source IN LISTS sources)
         string(GENEX_STRIP "${source}" source)
 
@@ -962,6 +967,9 @@ function(_qt_internal_finalize_source_groups target)
         # due to https://gitlab.kitware.com/cmake/cmake/-/issues/25597
         if(${source_file_path} MATCHES "(\\.qml$)|(\\.js$)")
             source_group("Source Files" FILES ${source_file_path})
+
+            # Remove them from resources files, so they stay as source files.
+            list(REMOVE_ITEM resource_source_files ${source} ${source_file_path})
         endif()
 
         get_source_file_property(is_generated "${source_file_path}" GENERATED)
@@ -969,6 +977,10 @@ function(_qt_internal_finalize_source_groups target)
             source_group(${generated_source_group} FILES ${source_file_path})
         endif()
     endforeach()
+
+    if(NOT QT_NO_AUTO_RESOURCE_SOURCE_GROUPS)
+        source_group("Resources" FILES ${resource_source_files})
+    endif()
 endfunction()
 
 function(_qt_internal_darwin_permission_finalizer target)
@@ -2465,6 +2477,9 @@ function(_qt_internal_process_resource target resourceName)
         endif()
         _qt_internal_expose_source_file_to_ide(${target} "${file}")
     endforeach()
+
+    set_property(TARGET ${target}
+        APPEND PROPERTY _qt_resource_source_files ${resource_files})
 
     # </qresource></RCC>
     string(APPEND qrcContents "  </qresource>\n</RCC>\n")
