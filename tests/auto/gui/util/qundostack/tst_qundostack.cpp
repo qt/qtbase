@@ -93,6 +93,18 @@ private:
     QPoint m_newPoint;
 };
 
+class SingleRedoCommand : public QUndoCommand
+{
+public:
+    SingleRedoCommand(QUndoCommand *parent = nullptr);
+    ~SingleRedoCommand();
+
+    void redo() override;
+
+private:
+    bool m_firstRun = true;
+};
+
 InsertCommand::InsertCommand(QString *str, int idx, const QString &text,
                             QUndoCommand *parent)
     : QUndoCommand(parent)
@@ -253,6 +265,22 @@ bool MoveMouseCommand::mergeWith(const QUndoCommand *other)
         setObsolete(true);
 
     return true;
+}
+
+SingleRedoCommand::SingleRedoCommand(QUndoCommand *parent)
+    : QUndoCommand(parent)
+{
+    setText("single redo");
+}
+
+SingleRedoCommand::~SingleRedoCommand() = default;
+
+void SingleRedoCommand::redo()
+{
+    if (m_firstRun)
+        m_firstRun = false;
+    else
+        setObsolete(true);
 }
 
 /******************************************************************************
@@ -2637,10 +2665,76 @@ void tst_QUndoStack::obsolete()
                 "",           // undoText
                 false,        // canRedo
                 "",           // redoText
-                true,        // cleanChanged
+                true,         // cleanChanged
                 false,        // indexChanged
                 false,        // undoChanged
                 false);       // redoChanged
+
+    stack.push(new SingleRedoCommand());
+    checkState(redoTextChangedSpy,
+               canRedoChangedSpy,
+               undoTextChangedSpy,
+               redoAction,
+               undoAction,
+               canUndoChangedSpy,
+               cleanChangedSpy,
+               indexChangedSpy,
+               stack,
+               false,         // clean
+               1,             // count
+               1,             // index
+               true,          // canUndo
+               "single redo", // undoText
+               false,         // canRedo
+               "",            // redoText
+               false,         // cleanChanged
+               true,          // indexChanged
+               true,          // undoChanged
+               true);         // redoChanged
+
+    stack.undo();
+    checkState(redoTextChangedSpy,
+               canRedoChangedSpy,
+               undoTextChangedSpy,
+               redoAction,
+               undoAction,
+               canUndoChangedSpy,
+               cleanChangedSpy,
+               indexChangedSpy,
+               stack,
+               false,         // clean
+               1,             // count
+               0,             // index
+               false,         // canUndo
+               "",            // undoText
+               true,          // canRedo
+               "single redo", // redoText
+               false,         // cleanChanged
+               true,          // indexChanged
+               true,          // undoChanged
+               true);         // redoChanged
+
+    stack.redo();
+    checkState(redoTextChangedSpy,
+               canRedoChangedSpy,
+               undoTextChangedSpy,
+               redoAction,
+               undoAction,
+               canUndoChangedSpy,
+               cleanChangedSpy,
+               indexChangedSpy,
+               stack,
+               false,         // clean
+               0,             // count
+               0,             // index
+               false,         // canUndo
+               "",            // undoText
+               false,         // canRedo
+               "",            // redoText
+               false,         // cleanChanged
+               false,         // indexChanged
+               false,         // undoChanged
+               true);         // redoChanged
 
     stack.push(new MoveMouseCommand(&mouse, mouse, QPoint(0, 0))); // #1 should not merge but will be deleted (b/c oldPoint == newPoint)
     QCOMPARE(mouse, QPoint(0, 0));
@@ -3008,7 +3102,7 @@ void tst_QUndoStack::obsolete()
                 false,        // cleanChanged
                 false,        // indexChanged
                 false,        // undoChanged
-                false);       // redoChanged
+                true);        // redoChanged
     QCOMPARE(stack.cleanIndex(), -1);
 
     stack.redo();

@@ -419,13 +419,24 @@ void QUndoStackPrivate::setIndex(int idx, bool clean)
 
     bool was_clean = index == clean_index;
 
-    if (idx != index) {
+    const bool indexChanged = idx != index;
+    if (indexChanged) {
         index = idx;
         emit q->indexChanged(index);
-        emit q->canUndoChanged(q->canUndo());
-        emit q->undoTextChanged(q->undoText());
-        emit q->canRedoChanged(q->canRedo());
-        emit q->redoTextChanged(q->redoText());
+    }
+
+    const ActionState newUndoState{q->canUndo(), q->undoText()};
+    if (indexChanged || newUndoState != undoActionState) {
+        undoActionState = newUndoState;
+        emit q->canUndoChanged(undoActionState.enabled);
+        emit q->undoTextChanged(undoActionState.text);
+    }
+
+    const ActionState newRedoState{q->canRedo(), q->redoText()};
+    if (indexChanged || newRedoState != redoActionState) {
+        redoActionState = newRedoState;
+        emit q->canRedoChanged(redoActionState.enabled);
+        emit q->redoTextChanged(redoActionState.text);
     }
 
     if (clean)
@@ -796,6 +807,8 @@ void QUndoStack::redo()
 
         if (d->clean_index > idx)
             resetClean();
+
+        d->setIndex(idx, false);
     } else {
         d->setIndex(d->index + 1, false);
     }

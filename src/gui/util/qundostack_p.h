@@ -49,12 +49,30 @@ class QUndoStackPrivate : public QObjectPrivate
 public:
     QUndoStackPrivate() : index(0), clean_index(0), group(nullptr), undo_limit(0) {}
 
+    /*!
+     * \internal
+     * \brief Holds the presentation state for an Undo or Redo command.
+     * This structure serves a change-detection purpose.
+     */
+    struct ActionState
+    {
+        bool enabled = false;
+        QString text;
+
+        bool operator!=(const ActionState &other) const noexcept
+        {
+            return enabled != other.enabled || text != other.text;
+        }
+    };
+
     QList<QUndoCommand*> command_list;
     QList<QUndoCommand*> macro_stack;
     int index;
     int clean_index;
     QUndoGroup *group;
     int undo_limit;
+    ActionState undoActionState;
+    ActionState redoActionState;
 
     void setIndex(int idx, bool clean);
     bool checkUndoLimit();
