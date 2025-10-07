@@ -18,6 +18,8 @@
 #  include "qwindowsfontenginedirectwrite_p.h"
 #endif
 
+#include <utility> // for std::pair
+
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
@@ -363,7 +365,7 @@ namespace {
         inline void addKey(const QByteArray &fontData, const QString &filename)
         {
             if (!m_fontDatas.contains(fontData.data()))
-                m_fontDatas.insert(fontData.data(), qMakePair(fontData, filename));
+                m_fontDatas.insert(fontData.data(), {fontData, filename});
         }
 
         HRESULT STDMETHODCALLTYPE GetFilePathLengthFromKey(void const* fontFileReferenceKey,
@@ -433,7 +435,7 @@ namespace {
 
     private:
         ULONG m_referenceCount;
-        QHash<const void *, QPair<QByteArray, QString> > m_fontDatas;
+        QHash<const void *, std::pair<QByteArray, QString> > m_fontDatas;
     };
 
     HRESULT STDMETHODCALLTYPE DirectWriteFontFileLoader::QueryInterface(const IID &iid,

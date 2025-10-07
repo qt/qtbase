@@ -34,6 +34,8 @@
 #include <string.h>
 #include <qpainterpath.h>
 
+#include <utility> // for std::pair
+
 QT_BEGIN_NAMESPACE
 
 class QFontEngineFTRawFont;
@@ -333,7 +335,7 @@ private:
                            bool fetchMetricsOnly) const;
 
     bool traverseColr1(FT_OpaquePaint paint,
-                       QSet<QPair<FT_Byte *, FT_Bool> > *loops,
+                       QSet<std::pair<FT_Byte *, FT_Bool> > *loops,
                        QColor foregroundColor,
                        FT_Color *palette,
                        ushort paletteCount,
