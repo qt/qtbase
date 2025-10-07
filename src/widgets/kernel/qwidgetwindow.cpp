@@ -591,6 +591,10 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
             }
         }
 
+        // Event delivery above might have destroyed this object. See QTBUG-138419.
+        if (self.isNull())
+            return;
+
         if (QApplication::activePopupWidget() != activePopupWidget
             && QApplicationPrivate::replayMousePress
             && QGuiApplicationPrivate::platformIntegration()->styleHint(QPlatformIntegration::ReplayMousePressOutsidePopup).toBool()) {
