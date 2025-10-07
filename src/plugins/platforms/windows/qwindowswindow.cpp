@@ -2924,6 +2924,17 @@ void QWindowsWindow::propagateSizeHints()
     qCDebug(lcQpaWindow) << __FUNCTION__ << this << window();
 }
 
+static bool isResize(const WINDOWPOS *windowPos)
+{
+    bool result = false;
+    if ((windowPos->flags & SWP_NOSIZE) == 0) {
+        RECT rect;
+        GetWindowRect(windowPos->hwnd, &rect);
+        result = rect.right - rect.left != windowPos->cx || rect.bottom - rect.top != windowPos->cy;
+    }
+    return result;
+}
+
 bool QWindowsWindow::handleGeometryChangingMessage(MSG *message, const QWindow *qWindow, const QMargins &margins)
 {
     auto *windowPos = reinterpret_cast<WINDOWPOS *>(message->lParam);
@@ -2936,7 +2947,7 @@ bool QWindowsWindow::handleGeometryChangingMessage(MSG *message, const QWindow *
     // Check the suggestedGeometry against the current one to only discard during
     // resize, and not a plain move. We also look for SWP_NOSIZE since that, too,
     // implies an identical size, and comparing QRects wouldn't work with null cx/cy
-    if (!(windowPos->flags & SWP_NOSIZE) && suggestedGeometry.size() != qWindow->geometry().size())
+    if (isResize(windowPos))
         windowPos->flags |= SWP_NOCOPYBITS;
 
     if ((windowPos->flags & SWP_NOZORDER) == 0) {
