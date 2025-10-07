@@ -26,6 +26,8 @@
 
 #include <Metal/Metal.h>
 
+#include <utility> // for std::pair
+
 QT_BEGIN_NAMESPACE
 
 /*
@@ -1674,12 +1676,12 @@ void QRhiMetal::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
 
     if (needsBufferSizeBuffer) {
         QMetalBuffer *bufD = nullptr;
-        QVarLengthArray<QPair<QMetalShader *, QRhiShaderResourceBinding::StageFlag>, 4> shaders;
+        QVarLengthArray<std::pair<QMetalShader *, QRhiShaderResourceBinding::StageFlag>, 4> shaders;
 
         if (compPsD) {
             bufD = compPsD->d->bufferSizeBuffer;
             Q_ASSERT(compPsD->d->cs.nativeShaderInfo.extraBufferBindings.contains(QShaderPrivate::MslBufferSizeBufferBinding));
-            shaders.append(qMakePair(&compPsD->d->cs, QRhiShaderResourceBinding::StageFlag::ComputeStage));
+            shaders.append({&compPsD->d->cs, QRhiShaderResourceBinding::StageFlag::ComputeStage});
         } else {
             bufD = gfxPsD->d->bufferSizeBuffer;
             if (gfxPsD->d->tess.enabled) {
@@ -1706,24 +1708,24 @@ void QRhiMetal::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
                          == gfxPsD->d->tess.compVs[2].nativeShaderInfo.extraBufferBindings[QShaderPrivate::MslBufferSizeBufferBinding]);
 
                 if (gfxPsD->d->tess.compVs[0].nativeShaderInfo.extraBufferBindings.contains(QShaderPrivate::MslBufferSizeBufferBinding))
-                    shaders.append(qMakePair(&gfxPsD->d->tess.compVs[0], QRhiShaderResourceBinding::StageFlag::VertexStage));
+                    shaders.append({&gfxPsD->d->tess.compVs[0], QRhiShaderResourceBinding::StageFlag::VertexStage});
 
                 if (gfxPsD->d->tess.compTesc.nativeShaderInfo.extraBufferBindings.contains(QShaderPrivate::MslBufferSizeBufferBinding))
-                    shaders.append(qMakePair(&gfxPsD->d->tess.compTesc, QRhiShaderResourceBinding::StageFlag::TessellationControlStage));
+                    shaders.append({&gfxPsD->d->tess.compTesc, QRhiShaderResourceBinding::StageFlag::TessellationControlStage});
 
                 if (gfxPsD->d->tess.vertTese.nativeShaderInfo.extraBufferBindings.contains(QShaderPrivate::MslBufferSizeBufferBinding))
-                    shaders.append(qMakePair(&gfxPsD->d->tess.vertTese, QRhiShaderResourceBinding::StageFlag::TessellationEvaluationStage));
+                    shaders.append({&gfxPsD->d->tess.vertTese, QRhiShaderResourceBinding::StageFlag::TessellationEvaluationStage});
 
             } else {
                 if (gfxPsD->d->vs.nativeShaderInfo.extraBufferBindings.contains(QShaderPrivate::MslBufferSizeBufferBinding))
-                    shaders.append(qMakePair(&gfxPsD->d->vs, QRhiShaderResourceBinding::StageFlag::VertexStage));
+                    shaders.append({&gfxPsD->d->vs, QRhiShaderResourceBinding::StageFlag::VertexStage});
             }
             if (gfxPsD->d->fs.nativeShaderInfo.extraBufferBindings.contains(QShaderPrivate::MslBufferSizeBufferBinding))
-                shaders.append(qMakePair(&gfxPsD->d->fs, QRhiShaderResourceBinding::StageFlag::FragmentStage));
+                shaders.append({&gfxPsD->d->fs, QRhiShaderResourceBinding::StageFlag::FragmentStage});
         }
 
         quint32 offset = 0;
-        for (const QPair<QMetalShader *, QRhiShaderResourceBinding::StageFlag> &shader : shaders) {
+        for (const auto &shader : shaders) {
 
             const int binding = shader.first->nativeShaderInfo.extraBufferBindings[QShaderPrivate::MslBufferSizeBufferBinding];
 
@@ -6030,7 +6032,7 @@ bool QMetalGraphicsPipeline::create()
     for (QMetalShader *shader : shaders) {
         if (shader->nativeShaderInfo.extraBufferBindings.contains(QShaderPrivate::MslBufferSizeBufferBinding)) {
             const int binding = shader->nativeShaderInfo.extraBufferBindings[QShaderPrivate::MslBufferSizeBufferBinding];
-            shader->nativeResourceBindingMap[binding] = qMakePair(binding, -1);
+            shader->nativeResourceBindingMap[binding] = {binding, -1};
             int maxNativeBinding = 0;
             for (const QShaderDescription::StorageBlock &block : shader->desc.storageBlocks())
                 maxNativeBinding = qMax(maxNativeBinding, shader->nativeResourceBindingMap[block.binding].first);
@@ -6148,7 +6150,7 @@ bool QMetalComputePipeline::create()
         // SPIRV-Cross buffer size buffers
         if (d->cs.nativeShaderInfo.extraBufferBindings.contains(QShaderPrivate::MslBufferSizeBufferBinding)) {
             const int binding = d->cs.nativeShaderInfo.extraBufferBindings[QShaderPrivate::MslBufferSizeBufferBinding];
-            d->cs.nativeResourceBindingMap[binding] = qMakePair(binding, -1);
+            d->cs.nativeResourceBindingMap[binding] = {binding, -1};
         }
 
         if (rhiD->d->shaderCache.count() >= QRhiMetal::MAX_SHADER_CACHE_ENTRIES) {
