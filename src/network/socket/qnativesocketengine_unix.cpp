@@ -1244,6 +1244,7 @@ bool QNativeSocketEnginePrivate::fetchConnectionParameters()
     QT_SOCKOPTLEN_T valueSize = sizeof(int);
     if (::getsockopt(socketDescriptor, SOL_SOCKET, SO_TYPE, &value, &valueSize) == 0) {
         if (value == SOCK_STREAM) {
+            socketType = QAbstractSocket::TcpSocket;
 #ifndef QT_NO_SCTP
             if (option(QNativeSocketEngine::MaxStreamsSocketOption) != -1) {
                 socketType = QAbstractSocket::SctpSocket;
@@ -1266,17 +1267,23 @@ bool QNativeSocketEnginePrivate::fetchConnectionParameters()
                         return false;
                     }
                 }
-            } else {
-                socketType = QAbstractSocket::TcpSocket;
             }
-#else
-                socketType = QAbstractSocket::TcpSocket;
+#endif
+        } else if (value == SOCK_DGRAM) {
+            socketType = QAbstractSocket::UdpSocket;
+#ifdef SOCK_SEQPACKET
+        } else if (value == SOCK_SEQPACKET) {
+            // We approximate the SEQPACKET socket type to TCP, because
+            // this enum is actually used to determine if the socket type has
+            // a notion of connection. SOCK_DGRAM are connectionless, while
+            // SOCK_STREAM and SOCK_SEQPACKET are connection-orientired.
+            // This mapping is still suboptimal, because it is possible to send
+            // a 0-byte packet via SEQPACKET socket and Qt will treat it as
+            // a disconnect.
+            socketType = QAbstractSocket::TcpSocket;
 #endif
         } else {
-            if (value == SOCK_DGRAM)
-                socketType = QAbstractSocket::UdpSocket;
-            else
-                socketType = QAbstractSocket::UnknownSocketType;
+            socketType = QAbstractSocket::UnknownSocketType;
         }
     }
 #if defined (QNATIVESOCKETENGINE_DEBUG)
