@@ -28,6 +28,11 @@ def setUpModule():
     global TEMPDIR
     TEMPDIR = TemporaryDirectory(prefix="tst_testrunner-")
 
+    global EMPTY_FILE
+    EMPTY_FILE = os.path.join(TEMPDIR.name, "EMPTY")
+    with open(EMPTY_FILE, "w") as f:
+        pass
+
     filename = os.path.join(TEMPDIR.name, "file_1")
     print("setUpModule(): setting up temporary directory and env var"
           " QT_MOCK_TEST_STATE_FILE=" + filename + " and"
@@ -75,7 +80,7 @@ def run_testrunner(xml_filename=None, testrunner_args=None,
     return run(args, env=env)
 
 # Write the XML_TEMPLATE to filename, replacing the templated results.
-def write_xml_log(filename, failure=None):
+def write_xml_log(filename, failure=None, inject_message=None):
     data = XML_TEMPLATE
     # Replace what was asked to fail with "fail"
     if type(failure) in (list, tuple):
@@ -85,6 +90,10 @@ def write_xml_log(filename, failure=None):
         data = data.replace("{{"+failure+"_result}}", "fail")
     # Replace the rest with "pass"
     data = re.sub(r"{{[^}]+}}", "pass", data)
+    # Inject possible <Message> tags inside the first <TestFunction>
+    if inject_message:
+        i = data.index("</TestFunction>")
+        data = data[:i] + inject_message + data[i:]
     with open(filename, "w") as f:
         f.write(data)
 
@@ -132,6 +141,19 @@ class Test_qt_mock_test(unittest.TestCase):
         self.assertTrue(os.path.exists(filename))
         self.assertGreater(os.path.getsize(filename), 0)
         os.remove(filename)
+    # Test it will write an empty XML file if template is empty
+    def test_empty_xml_file_is_written(self):
+        my_env = {
+            "QT_MOCK_TEST_STATE_FILE": os.environ["QT_MOCK_TEST_STATE_FILE"],
+            "QT_MOCK_TEST_XML_TEMPLATE_FILE": EMPTY_FILE
+        }
+        filename = os.path.join(TEMPDIR.name, "testlog.xml")
+        proc = run([mock_test, "-o", filename+",xml"],
+                   env=my_env)
+        self.assertEqual(proc.returncode, 0)
+        self.assertTrue(os.path.exists(filename))
+        self.assertEqual(os.path.getsize(filename), 0)
+        os.remove(filename)
 
 # Test regular invocations of qt-testrunner.
 class Test_testrunner(unittest.TestCase):
@@ -153,6 +175,7 @@ class Test_testrunner(unittest.TestCase):
             self.env['QT_MOCK_TEST_RUN_LIST'] = ",".join(run_list)
     def run2(self):
         return run_testrunner(testrunner_args=self.testrunner_args, env=self.env)
+
     def test_simple_invocation(self):
         # All tests pass.
         proc = self.run2()
@@ -217,6 +240,80 @@ class Test_testrunner(unittest.TestCase):
     def test_no_xml_log_written_crash(self):
         del self.env["QT_MOCK_TEST_XML_TEMPLATE_FILE"]
         self.prepare_env(run_list=["fail_then_pass:2"])
+        proc = self.run2()
+        self.assertEqual(proc.returncode, 3)
+
+    def test_empty_xml_crash_1(self):
+        self.env["QT_MOCK_TEST_XML_TEMPLATE_FILE"] = EMPTY_FILE
+        self.prepare_env(run_list=["always_pass"])
+        proc = self.run2()
+        self.assertEqual(proc.returncode, 3)
+    def test_empty_xml_crash_2(self):
+        self.env["QT_MOCK_TEST_XML_TEMPLATE_FILE"] = EMPTY_FILE
+        self.prepare_env(run_list=["always_fail"])
+        proc = self.run2()
+        self.assertEqual(proc.returncode, 3)
+
+    # test qFatal should be a crash in all cases.
+    def test_qfatal_crash_1(self):
+        fatal_xml_message = """
+            <Message type="qfatal" file="" line="0">
+              <DataTag><![CDATA[modal]]></DataTag>
+              <Description><![CDATA[Failed to initialize graphics backend for OpenGL.]]></Description>
+            </Message>
+        """
+        logfile = os.path.join(TEMPDIR.name, os.path.basename(mock_test) + ".xml")
+        write_xml_log(logfile, failure=None, inject_message=fatal_xml_message)
+        del self.env["QT_MOCK_TEST_XML_TEMPLATE_FILE"]
+        self.env["QT_TESTRUNNER_DEBUG_NO_UNIQUE_OUTPUT_FILENAME"] = "1"
+        self.prepare_env(run_list=["always_pass"])
+        proc = self.run2()
+        self.assertEqual(proc.returncode, 3)
+    def test_qfatal_crash_2(self):
+        fatal_xml_message = """
+            <Message type="qfatal" file="" line="0">
+              <DataTag><![CDATA[modal]]></DataTag>
+              <Description><![CDATA[Failed to initialize graphics backend for OpenGL.]]></Description>
+            </Message>
+        """
+        logfile = os.path.join(TEMPDIR.name, os.path.basename(mock_test) + ".xml")
+        write_xml_log(logfile, failure="always_fail", inject_message=fatal_xml_message)
+        del self.env["QT_MOCK_TEST_XML_TEMPLATE_FILE"]
+        self.env["QT_TESTRUNNER_DEBUG_NO_UNIQUE_OUTPUT_FILENAME"] = "1"
+        self.prepare_env(run_list=["always_pass,always_fail"])
+        proc = self.run2()
+        self.assertEqual(proc.returncode, 3)
+
+    def test_qwarn_is_ignored_1(self):
+        qwarn_xml_message = """
+            <Message type="qwarn" file="" line="0">
+              <DataTag><![CDATA[modal]]></DataTag>
+              <Description><![CDATA[Failed to create RHI (backend 2)]]></Description>
+            </Message>
+        """
+        logfile = os.path.join(TEMPDIR.name, os.path.basename(mock_test) + ".xml")
+        write_xml_log(logfile, failure=None, inject_message=qwarn_xml_message)
+        del self.env["QT_MOCK_TEST_XML_TEMPLATE_FILE"]
+        self.env["QT_TESTRUNNER_DEBUG_NO_UNIQUE_OUTPUT_FILENAME"] = "1"
+        self.prepare_env(run_list=["always_pass"])
+        proc = self.run2()
+        self.assertEqual(proc.returncode, 0)
+    def test_qwarn_is_ignored_2(self):
+        fatal_xml_message = """
+            <Message type="qfatal" file="" line="0">
+              <DataTag><![CDATA[modal]]></DataTag>
+              <Description><![CDATA[Failed to initialize graphics backend for OpenGL.]]></Description>
+            </Message>
+            <Message type="qwarn" file="" line="0">
+              <DataTag><![CDATA[modal]]></DataTag>
+              <Description><![CDATA[Failed to create RHI (backend 2)]]></Description>
+            </Message>
+        """
+        logfile = os.path.join(TEMPDIR.name, os.path.basename(mock_test) + ".xml")
+        write_xml_log(logfile, failure=None, inject_message=fatal_xml_message)
+        del self.env["QT_MOCK_TEST_XML_TEMPLATE_FILE"]
+        self.env["QT_TESTRUNNER_DEBUG_NO_UNIQUE_OUTPUT_FILENAME"] = "1"
+        self.prepare_env(run_list=["always_pass"])
         proc = self.run2()
         self.assertEqual(proc.returncode, 3)
 
