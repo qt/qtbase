@@ -1225,7 +1225,7 @@ static inline QTransform FTAffineToQTransform(const FT_Affine23 &matrix)
 }
 
 bool QFontEngineFT::traverseColr1(FT_OpaquePaint opaquePaint,
-                                  QSet<QPair<FT_Byte *, FT_Bool> > *loops,
+                                  QSet<std::pair<FT_Byte *, FT_Bool> > *loops,
                                   QColor foregroundColor,
                                   FT_Color *palette,
                                   ushort paletteCount,
@@ -1233,7 +1233,7 @@ bool QFontEngineFT::traverseColr1(FT_OpaquePaint opaquePaint,
 {
     FT_Face face = freetype->face;
 
-    auto key = qMakePair(opaquePaint.p, opaquePaint.insert_root_transform);
+    auto key = std::pair{opaquePaint.p, opaquePaint.insert_root_transform};
     if (loops->contains(key)) {
         qCWarning(lcColrv1) << "Cycle detected in COLRv1 graph";
         return false;
@@ -1680,7 +1680,7 @@ QFontEngineFT::Glyph *QFontEngineFT::loadColrv1Glyph(QGlyphSet *set,
             // Do a pass over the graph to find the bounds
             QColrPaintGraphRenderer boundingRectCalculator;
             boundingRectCalculator.beginCalculateBoundingBox();
-            QSet<QPair<FT_Byte *, FT_Bool> > loops;
+            QSet<std::pair<FT_Byte *, FT_Bool> > loops;
             if (traverseColr1(opaquePaint,
                               &loops,
                               QColor{},
@@ -1735,7 +1735,7 @@ QFontEngineFT::Glyph *QFontEngineFT::loadColrv1Glyph(QGlyphSet *set,
                                        originalXform);
 
         // Render
-        QSet<QPair<FT_Byte *, FT_Bool> > loops;
+        QSet<std::pair<FT_Byte *, FT_Bool> > loops;
         if (!traverseColr1(opaquePaint,
                            &loops,
                            foregroundColor,

@@ -180,7 +180,7 @@ void QColrPaintGraphRenderer::setConicalGradient(QPointF center,
         adaptedStops.reserve(gradientStops.size());
 
         for (const QGradientStop &gradientStop : gradientStops)
-            adaptedStops.append(qMakePair(gradientStop.first * multiplier, gradientStop.second));
+            adaptedStops.append({gradientStop.first * multiplier, gradientStop.second});
 
         conicalGradient.setStops(adaptedStops);
         conicalGradient.setCoordinateMode(QGradient::LogicalMode);

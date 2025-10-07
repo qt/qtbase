@@ -1074,7 +1074,7 @@ bool QWindowsFontEngineDirectWrite::traverseColr1(IDWritePaintReader *paintReade
         for (int i = 0; i < stopCount; ++i) {
             const D2D1_GRADIENT_STOP &stop = stops[i];
             QColor color = QColor::fromRgbF(stop.color.r, stop.color.g, stop.color.b, stop.color.a);
-            ret.append(qMakePair(stop.position, color));
+            ret.append({stop.position, color});
         }
 
         return ret;
