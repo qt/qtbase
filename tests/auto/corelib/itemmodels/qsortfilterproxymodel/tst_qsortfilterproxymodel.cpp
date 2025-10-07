@@ -19,7 +19,7 @@
 
 Q_LOGGING_CATEGORY(lcItemModels, "qt.corelib.tests.itemmodels")
 
-using IntPair = QPair<int, int>;
+using IntPair = std::pair<int, int>;
 using IntList = QList<int>;
 using IntPairList = QList<IntPair>;
 
@@ -2377,10 +2377,7 @@ void tst_QSortFilterProxyModel::sortFilterRole()
     proxy.setSourceModel(&model);
     model.insertColumns(0, 1);
 
-    const QList<QPair<QVariant, QVariant>>
-        sourceItems({QPair<QVariant, QVariant>("b", 3),
-                     QPair<QVariant, QVariant>("c", 2),
-                     QPair<QVariant, QVariant>("a", 1)});
+    const QList<std::pair<QVariant, QVariant>> sourceItems = {{"b", 3}, {"c", 2}, {"a", 1}};
 
     const QList<int> orderedItems({2, 1});
 
