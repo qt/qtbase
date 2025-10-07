@@ -136,7 +136,7 @@ public:
 struct ItemDesc
 {
     ItemDesc(int row, int col)
-    : m_pos(qMakePair(row, col))
+    : m_pos({row, col})
     {
     }
 
@@ -249,7 +249,7 @@ struct ItemDesc
     }
 
 //private:
-    QPair<int,int> m_pos; // row,col
+    std::pair<int,int> m_pos; // row,col
     int m_rowSpan = 1;
     int m_colSpan = 1;
     QSizePolicy m_sizePolicy{QSizePolicy::Preferred, QSizePolicy::Preferred};

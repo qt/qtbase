@@ -1859,9 +1859,7 @@ enum WhichSize {
     None,
 };
 
-typedef QPair<int, QVariant> Inst;
-
-Q_DECLARE_METATYPE(Inst)
+using Inst = std::pair<int, QVariant>;
 
 void tst_QGraphicsWidget::setSizes_data()
 {

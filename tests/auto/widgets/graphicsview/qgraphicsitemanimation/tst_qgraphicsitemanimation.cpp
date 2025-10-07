@@ -89,12 +89,12 @@ void tst_QGraphicsItemAnimation::checkReturnedLists()
     animation.setScaleAt(0.3, 2.5, 1.8);
     animation.setShearAt(0.3, 5, 5);
 
-    QCOMPARE(animation.posList().at(0), (QPair<qreal, QPointF>(0.5, QPointF(5, -5))));
-    QCOMPARE(animation.posList().at(1), (QPair<qreal, QPointF>(1.0, QPointF(10, -10))));
-    QCOMPARE(animation.rotationList().at(0), (QPair<qreal, qreal>(0.3, 2.3)));
-    QCOMPARE(animation.translationList().at(0), (QPair<qreal, QPointF>(0.3, QPointF(15, 15))));
-    QCOMPARE(animation.scaleList().at(0), (QPair<qreal, QPointF>(0.3, QPointF(2.5, 1.8))));
-    QCOMPARE(animation.shearList().at(0), (QPair<qreal, QPointF>(0.3, QPointF(5, 5))));
+    QCOMPARE(animation.posList().at(0), (std::pair<qreal, QPointF>(0.5, QPointF(5, -5))));
+    QCOMPARE(animation.posList().at(1), (std::pair<qreal, QPointF>(1.0, QPointF(10, -10))));
+    QCOMPARE(animation.rotationList().at(0), (std::pair<qreal, qreal>(0.3, 2.3)));
+    QCOMPARE(animation.translationList().at(0), (std::pair<qreal, QPointF>(0.3, QPointF(15, 15))));
+    QCOMPARE(animation.scaleList().at(0), (std::pair<qreal, QPointF>(0.3, QPointF(2.5, 1.8))));
+    QCOMPARE(animation.shearList().at(0), (std::pair<qreal, QPointF>(0.3, QPointF(5, 5))));
 
     QCOMPARE(animation.posList().size(), 2);
     QCOMPARE(animation.rotationList().size(), 1);
