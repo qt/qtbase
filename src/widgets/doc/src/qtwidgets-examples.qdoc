@@ -164,3 +164,15 @@
     regular expressions for the Widget-based applications.
 
 */
+/*!
+    \group examples-user-input
+    \ingroup all-examples
+    \title User Input Examples
+    \brief Using user input in Qt Widgets applications.
+
+    \image imagegestures-example.png {Application handling touch gestures}
+
+    Qt provides the functionality for handling user input and drag-and-drop in
+    widget-based applications.
+
+*/

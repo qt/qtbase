@@ -4,6 +4,7 @@
 /*!
     \example draganddrop/dropsite
     \title Drop Site Example
+    \ingroup examples-user-input
     \examplecategory {User Interface Components}
 
     \brief The example shows how to distinguish the various MIME formats available

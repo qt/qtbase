@@ -4,6 +4,7 @@
 /*!
     \example draganddrop/draggableicons
     \title Draggable Icons Example
+    \ingroup examples-user-input
     \examplecategory {User Interface Components}
 
     \brief The Draggable Icons example shows how to drag and drop image data between widgets

@@ -5,7 +5,7 @@
     \example widgets/tablet
     \title Tablet Example
     \examplecategory {User Interface Components}
-    \ingroup examples-widgets
+    \ingroup examples-user-input
     \brief This example shows how to use a Wacom tablet in Qt applications.
 
     \image tabletexample.png {Application displaying a drawing area}

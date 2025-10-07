@@ -4,6 +4,7 @@
 /*!
     \example draganddrop/draggabletext
     \title Draggable Text Example
+    \ingroup examples-user-input
     \examplecategory {User Interface Components}
     \brief Illustrates how to drag and drop text between widgets.
 
