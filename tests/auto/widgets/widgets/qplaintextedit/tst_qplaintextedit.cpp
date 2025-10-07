@@ -25,7 +25,7 @@
 #include "../../../shared/platformclipboard.h"
 
 //Used in copyAvailable
-typedef QPair<Qt::Key, Qt::KeyboardModifier> keyPairType;
+using keyPairType = std::pair<Qt::Key, Qt::KeyboardModifier>;
 typedef QList<keyPairType> pairListType;
 Q_DECLARE_METATYPE(keyPairType);
 
@@ -923,71 +923,80 @@ void tst_QPlainTextEdit::copyAvailable_data()
     QTest::addColumn<QList<bool> >("copyAvailable");
     QTest::addColumn<QString>("function");
 
-    pairListType keystrokes;
     QList<bool> copyAvailable;
 
-    keystrokes << qMakePair(Qt::Key_B, Qt::NoModifier) <<  qMakePair(Qt::Key_B, Qt::NoModifier)
-               << qMakePair(Qt::Key_Left, Qt::ShiftModifier);
+    pairListType keystrokes = {{Qt::Key_B, Qt::NoModifier},
+                               {Qt::Key_B, Qt::NoModifier},
+                               {Qt::Key_Left, Qt::ShiftModifier}};
     copyAvailable << true ;
     QTest::newRow(QString("Case1 B,B, <- + shift | signals: true").toLatin1())
         << keystrokes << copyAvailable << QString();
 
-    keystrokes.clear();
     copyAvailable.clear();
 
-    keystrokes << qMakePair(Qt::Key_T, Qt::NoModifier) << qMakePair(Qt::Key_A, Qt::NoModifier)
-               <<  qMakePair(Qt::Key_A, Qt::NoModifier) << qMakePair(Qt::Key_Left, Qt::ShiftModifier);
+    keystrokes = {{Qt::Key_T, Qt::NoModifier},
+                  {Qt::Key_A, Qt::NoModifier},
+                  {Qt::Key_A, Qt::NoModifier},
+                  {Qt::Key_Left, Qt::ShiftModifier}};
     copyAvailable << true << false;
     QTest::newRow(QString("Case2 T,A,A, <- + shift, cut() | signals: true, false").toLatin1())
         << keystrokes << copyAvailable << QString("cut");
 
-    keystrokes.clear();
     copyAvailable.clear();
 
-    keystrokes << qMakePair(Qt::Key_T, Qt::NoModifier) << qMakePair(Qt::Key_A, Qt::NoModifier)
-               <<  qMakePair(Qt::Key_A, Qt::NoModifier) << qMakePair(Qt::Key_Left, Qt::ShiftModifier)
-               << qMakePair(Qt::Key_Left, Qt::ShiftModifier)  << qMakePair(Qt::Key_Left, Qt::ShiftModifier);
+    keystrokes = {{Qt::Key_T, Qt::NoModifier},
+                  {Qt::Key_A, Qt::NoModifier},
+                  {Qt::Key_A, Qt::NoModifier},
+                  {Qt::Key_Left, Qt::ShiftModifier},
+                  {Qt::Key_Left, Qt::ShiftModifier},
+                  {Qt::Key_Left, Qt::ShiftModifier}};
     copyAvailable << true;
     QTest::newRow(QString("Case3 T,A,A, <- + shift, <- + shift, <- + shift, copy() | signals: true").toLatin1())
         << keystrokes << copyAvailable << QString("copy");
 
-    keystrokes.clear();
     copyAvailable.clear();
 
-    keystrokes << qMakePair(Qt::Key_T, Qt::NoModifier) << qMakePair(Qt::Key_A, Qt::NoModifier)
-               <<  qMakePair(Qt::Key_A, Qt::NoModifier) << qMakePair(Qt::Key_Left, Qt::ShiftModifier)
-               << qMakePair(Qt::Key_Left, Qt::ShiftModifier)  << qMakePair(Qt::Key_Left, Qt::ShiftModifier)
-               << qMakePair(Qt::Key_X, Qt::ControlModifier);
+    keystrokes = {{Qt::Key_T, Qt::NoModifier},
+                  {Qt::Key_A, Qt::NoModifier},
+                  {Qt::Key_A, Qt::NoModifier},
+                  {Qt::Key_Left, Qt::ShiftModifier},
+                  {Qt::Key_Left, Qt::ShiftModifier},
+                  {Qt::Key_Left, Qt::ShiftModifier},
+                  {Qt::Key_X, Qt::ControlModifier}};
     copyAvailable << true << false;
     QTest::newRow(QString("Case4 T,A,A, <- + shift, <- + shift, <- + shift, ctrl + x, paste() | signals: true, false").toLatin1())
         << keystrokes << copyAvailable << QString("paste");
 
-    keystrokes.clear();
     copyAvailable.clear();
 
-    keystrokes << qMakePair(Qt::Key_B, Qt::NoModifier) <<  qMakePair(Qt::Key_B, Qt::NoModifier)
-               << qMakePair(Qt::Key_Left, Qt::ShiftModifier) << qMakePair(Qt::Key_Left, Qt::NoModifier);
+    keystrokes = {{Qt::Key_B, Qt::NoModifier},
+                  {Qt::Key_B, Qt::NoModifier},
+                  {Qt::Key_Left, Qt::ShiftModifier},
+                  {Qt::Key_Left, Qt::NoModifier}};
     copyAvailable << true << false;
     QTest::newRow(QString("Case5 B,B, <- + shift, <- | signals: true, false").toLatin1())
         << keystrokes << copyAvailable << QString();
 
-    keystrokes.clear();
     copyAvailable.clear();
 
-    keystrokes << qMakePair(Qt::Key_B, Qt::NoModifier) <<  qMakePair(Qt::Key_A, Qt::NoModifier)
-               << qMakePair(Qt::Key_Left, Qt::ShiftModifier) << qMakePair(Qt::Key_Left, Qt::NoModifier)
-               << qMakePair(Qt::Key_Right, Qt::ShiftModifier);
+    keystrokes = {{Qt::Key_B, Qt::NoModifier},
+                  {Qt::Key_A, Qt::NoModifier},
+                  {Qt::Key_Left, Qt::ShiftModifier},
+                  {Qt::Key_Left, Qt::NoModifier},
+                  {Qt::Key_Right, Qt::ShiftModifier}};
     copyAvailable << true << false << true << false;
     QTest::newRow(QString("Case6 B,A, <- + shift, ->, <- + shift | signals: true, false, true, false").toLatin1())
         << keystrokes << copyAvailable << QString("cut");
 
-    keystrokes.clear();
     copyAvailable.clear();
 
-    keystrokes << qMakePair(Qt::Key_T, Qt::NoModifier) << qMakePair(Qt::Key_A, Qt::NoModifier)
-               <<  qMakePair(Qt::Key_A, Qt::NoModifier) << qMakePair(Qt::Key_Left, Qt::ShiftModifier)
-               << qMakePair(Qt::Key_Left, Qt::ShiftModifier)  << qMakePair(Qt::Key_Left, Qt::ShiftModifier)
-               << qMakePair(Qt::Key_X, Qt::ControlModifier);
+    keystrokes = {{Qt::Key_T, Qt::NoModifier},
+                  {Qt::Key_A, Qt::NoModifier},
+                  {Qt::Key_A, Qt::NoModifier},
+                  {Qt::Key_Left, Qt::ShiftModifier},
+                  {Qt::Key_Left, Qt::ShiftModifier},
+                  {Qt::Key_Left, Qt::ShiftModifier},
+                  {Qt::Key_X, Qt::ControlModifier}};
     copyAvailable << true << false << true;
     QTest::newRow(QString("Case7 T,A,A, <- + shift, <- + shift, <- + shift, ctrl + x, undo() | signals: true, false, true").toLatin1())
         << keystrokes << copyAvailable << QString("undo");
