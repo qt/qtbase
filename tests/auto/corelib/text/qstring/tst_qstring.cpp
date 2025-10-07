@@ -132,7 +132,7 @@ public:
 };
 
 template <>
-class Arg<QPair<const QChar *, int> > : ArgBase
+class Arg<std::pair<const QChar *, int> > : ArgBase
 {
 public:
     explicit Arg(const char *str) : ArgBase(str) {}
@@ -426,7 +426,7 @@ private slots:
     void prepend_qlatin1string_data() { prepend_data({EmptyIsNoop, Latin1Encoded}); }
     void prepend_qutf8stringview()    { prepend_impl<QUtf8StringView, QString &(QString::*)(QUtf8StringView)>(); }
     void prepend_qutf8stringview_data() { prepend_data(EmptyIsNoop); }
-    void prepend_qcharstar_int()      { prepend_impl<QPair<const QChar *, int>, QString &(QString::*)(const QChar *, qsizetype)>(); }
+    void prepend_qcharstar_int()      { prepend_impl<std::pair<const QChar *, int>, QString &(QString::*)(const QChar *, qsizetype)>(); }
     void prepend_qcharstar_int_data() { prepend_data(EmptyIsNoop); }
     void prepend_qchar()              { prepend_impl<Reversed<QChar>, QString &(QString::*)(QChar)>(); }
     void prepend_qchar_data()         { prepend_data(EmptyIsNoop); }
@@ -455,7 +455,7 @@ private slots:
     void append_qlatin1string_data() { append_data(Latin1Encoded); }
     void append_qutf8stringview()    { append_impl<QUtf8StringView,  QString &(QString::*)(QUtf8StringView)>(); }
     void append_qutf8stringview_data() { append_data(); }
-    void append_qcharstar_int()      { append_impl<QPair<const QChar *, int>, QString&(QString::*)(const QChar *, qsizetype)>(); }
+    void append_qcharstar_int()      { append_impl<std::pair<const QChar *, int>, QString&(QString::*)(const QChar *, qsizetype)>(); }
     void append_qcharstar_int_data() { append_data(EmptyIsNoop); }
     void append_qchar()              { append_impl<QChar, QString &(QString::*)(QChar)>(); }
     void append_qchar_data()         { append_data(EmptyIsNoop); }
@@ -524,7 +524,7 @@ private slots:
     void insert_qlatin1string_data() { insert_data({EmptyIsNoop, Latin1Encoded}); }
     void insert_qutf8stringview()    { insert_impl<QUtf8StringView, QString &(QString::*)(qsizetype, QUtf8StringView)>(); }
     void insert_qutf8stringview_data() { insert_data(EmptyIsNoop); }
-    void insert_qcharstar_int()      { insert_impl<QPair<const QChar *, int>, QString &(QString::*)(qsizetype, const QChar*, qsizetype) >(); }
+    void insert_qcharstar_int()      { insert_impl<std::pair<const QChar *, int>, QString &(QString::*)(qsizetype, const QChar*, qsizetype) >(); }
     void insert_qcharstar_int_data() { insert_data(EmptyIsNoop); }
     void insert_qchar()              { insert_impl<Reversed<QChar>, QString &(QString::*)(qsizetype, QChar)>(); }
     void insert_qchar_data()         { insert_data(EmptyIsNoop); }
