@@ -2227,9 +2227,11 @@ static Qt::Alignment defaultPosition(int pe)
     case PseudoElement_ScrollBarAddLine:
     case PseudoElement_ScrollBarLast:
     case PseudoElement_SpinBoxDownButton:
-    case PseudoElement_PushButtonMenuIndicator:
     case PseudoElement_ToolButtonMenuIndicator:
         return Qt::AlignRight | Qt::AlignBottom;
+
+    case PseudoElement_PushButtonMenuIndicator:
+        return Qt::AlignRight | Qt::AlignVCenter; // Center vertically to align with other styles
 
     case PseudoElement_ScrollBarSubLine:
     case PseudoElement_ScrollBarFirst:
@@ -2291,11 +2293,14 @@ QSize QStyleSheetStyle::defaultSize(const QWidget *w, QSize sz, const QRect& rec
         break;
 
     case PseudoElement_PushButtonMenuIndicator: {
-        int pm = base->pixelMetric(PM_MenuButtonIndicator, nullptr, w);
+        // Reduce size of indicator to align with other styles
+        constexpr int sizeReduction = 6;
+
+        const int pm = base->pixelMetric(PM_MenuButtonIndicator, nullptr, w);
         if (sz.width() == -1)
-            sz.setWidth(pm);
+            sz.setWidth(pm - sizeReduction);
         if (sz.height() == -1)
-            sz.setHeight(pm);
+            sz.setHeight(pm - sizeReduction);
                                       }
         break;
 
@@ -3675,6 +3680,12 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                 QRenderRule subRule = renderRule(w, opt, PseudoElement_PushButtonMenuIndicator);
                 QRect ir = positionRect(w, rule, subRule, PseudoElement_PushButtonMenuIndicator,
                                         baseStyle()->subElementRect(SE_PushButtonBevel, btn, w), opt->direction);
+
+                // Move to the left to align with the other styles
+                const int mbi = pixelMetric(PM_MenuButtonIndicator, &btnOpt, w);
+                constexpr int horizontalExtraShift = -2;
+
+                ir = QRect(ir.right() - mbi + horizontalExtraShift, ir.y(), ir.width(), ir.height());
                 if (subRule.hasDrawable()) {
                     subRule.drawRule(p, ir);
                 } else {

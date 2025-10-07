@@ -86,6 +86,8 @@ private slots:
 #ifndef QT_NO_CURSOR
     void hoverColors();
 #endif
+    void QTBUG_139957_menuButton_data();
+    void QTBUG_139957_menuButton();
     void background();
     void tabAlignment();
     void tabFont_data();
@@ -1084,6 +1086,151 @@ void tst_QStyleSheetStyle::hoverColors()
     }
 }
 #endif
+
+/* We test that the position and size of the menu indicator does not
+change by adding border to the stylesheet */
+class ButtonDialog : public QDialog
+{
+public:
+    ButtonDialog(const QString &style);
+
+    QImage image1() const {
+        QImage image(m_button1->width(), m_button1->height(), QImage::Format_ARGB32);
+        m_button1->render(&image);
+        image.setColorSpace(QColorSpace::SRgb);
+        return image.copy(CLIP_BORDER, CLIP_BORDER, image.width() - 2*CLIP_BORDER, image.height() - 2*CLIP_BORDER);
+    }
+    QImage image2() const {
+        QImage image(m_button2->width(), m_button2->height(), QImage::Format_ARGB32);
+        m_button2->render(&image);
+        image.setColorSpace(QColorSpace::SRgb);
+        return image.copy(CLIP_BORDER, CLIP_BORDER, image.width() - 2*CLIP_BORDER, image.height() - 2*CLIP_BORDER);
+    }
+
+    bool diff(bool first) const {
+        QImage image_1 = image1();
+        QImage image_2 = image2();
+
+        // For some reason the images may have different sizes,
+        // Assuming the size difference is even, this will center
+        // the largest image.
+        if (image_1.size().width() > image_2.size().width())
+            image_1 = image_1.copy((image_1.size().width() - image_2.size().width()) / 2, 0,
+                                   image_2.size().width(), image_1.size().height());
+
+        if (image_2.size().width() > image_1.size().width())
+            image_2 = image_2.copy((image_2.size().width() - image_1.size().width()) / 2, 0,
+                                   image_1.size().width(), image_2.size().height());
+
+        if (image_1.size().height() > image_2.size().height())
+            image_1 = image_1.copy(0, (image_1.size().height() - image_2.size().height()) / 2, image_1.size().width(),
+                                   image_2.size().height());
+
+        if (image_2.size().height() > image_1.size().height())
+            image_2 = image_2.copy(0, (image_2.size().height() - image_1.size().height()) / 2, image_2.size().width(),
+                                   image_1.size().height());
+
+        if (image_1.size() != image_2.size()) {
+            if (first)
+                qWarning() << " Sizes" << image_1.size() << image_2.size();
+            return true;
+        }
+
+        for (int i = 0; i < image_1.width(); ++i) {
+            const int from_right = image_1.width() - i;
+            for (int j = 0; j < image_1.height(); ++j) {
+                const auto p1 = image_1.pixelColor(from_right <= ADD_COL ? i-1 : i , j);
+                const auto p2 = image_2.pixelColor(i, j);
+                const auto d = QColor(
+                    std::abs(p1.red() - p2.red()),
+                    std::abs(p1.green() - p2.green()),
+                    std::abs(p1.blue() - p2.blue()));
+                if (d.red() > 20 || d.green() > 20 || d.blue() > 20) {
+                    if (first)
+                        qWarning() << " Pixel " << i << j << p1 << p2 << d;
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+private:
+    const int CLIP_BORDER = 3;  /* Different styles for the edges, ignore */
+    int ADD_COL = 0; /* The arrow is relative to the border, so we need to add a column for the border case (image1) */
+
+    QString m_style;
+    QVBoxLayout* m_layout = nullptr;
+    QPushButton *m_dummyButton = nullptr;
+    QPushButton *m_button1 = nullptr;
+    QPushButton *m_button2 = nullptr;
+};
+
+ButtonDialog::ButtonDialog(const QString &style) : m_layout(new QVBoxLayout(this))
+{
+    m_style = style;
+
+    // For some reason the icon is closer to the border for 'macos'
+    // This is fine, as long as the distance is the same for both images
+    ADD_COL = (style.toLower() == "macos" ? 10 : 15);
+
+    // A dummy button to receive focus
+    m_dummyButton = new QPushButton();
+
+    // Create first push button with border
+    m_button1 = new QPushButton("Button");
+    QMenu *menu1 = new QMenu(m_button1);
+    menu1->addAction("Action 1");
+    m_button1->setMenu(menu1);
+    m_button1->setStyleSheet("QPushButton { background: white; border: 1px solid black; color: black; padding: 6; }");
+
+    // Create second push button without border
+    m_button2 = new QPushButton("Button");
+    QMenu *menu2 = new QMenu(m_button2);
+    menu2->addAction("Action 2");
+    m_button2->setMenu(menu2);
+    m_button2->setStyleSheet("QPushButton { background: white; color: black; padding: 6;}");
+    // Add buttons to layout
+    m_layout->addWidget(m_dummyButton);
+    m_layout->addWidget(m_button1);
+    m_layout->addWidget(m_button2);
+}
+
+void tst_QStyleSheetStyle::QTBUG_139957_menuButton_data()
+{
+    QTest::addColumn<QString>("style");
+    for (const auto &style : QStyleFactory::keys()) {
+        QString qstyle = style;
+        QTest::newRow(style.toStdString().c_str()) << style;
+    }
+}
+
+void tst_QStyleSheetStyle::QTBUG_139957_menuButton()
+{
+    QStringList blacklistedStyles;
+    blacklistedStyles
+        << QLatin1String("windows11"); // windows11 does not draw the arrow at all
+
+
+    QFETCH(QString, style);
+
+    auto currentStyle = QApplication::style()->objectName();
+
+    auto cleanup = qScopeGuard([currentStyle] { QApplication::setStyle(currentStyle); });
+
+    QApplication::setStyle(style);
+    ButtonDialog frame(style);
+    frame.setWindowTitle(QTest::currentTestFunction());
+    centerOnScreen(&frame);
+    frame.show();
+
+    bool first = true;
+    const bool ok = QTest::qWaitFor([&frame,&first]() { bool ok = !frame.diff(first); first=false; return ok; });
+
+    if (blacklistedStyles.contains(style.toLower()))
+        QEXPECT_FAIL("", "QTBUG-141499", Continue);
+
+    QVERIFY(ok);
+}
 
 class SingleInheritanceDialog : public QDialog
 {
