@@ -1010,9 +1010,9 @@ void tst_QMap::lowerUpperBound()
         QCOMPARE(emptyConstMap.upperBound(1), emptyConstMap.constEnd());
         QVERIFY(!emptyConstMap.isDetached());
 
-        const QMap<int, QString> constMap { qMakePair(1, "one"),
-                                            qMakePair(5, "five"),
-                                            qMakePair(10, "ten") };
+        const QMap<int, QString> constMap { {1, "one"},
+                                            {5, "five"},
+                                            {10, "ten"} };
 
         QCOMPARE(constMap.lowerBound(-1).key(), 1);
         QCOMPARE(constMap.lowerBound(1).key(), 1);
@@ -1057,9 +1057,9 @@ void tst_QMap::lowerUpperBound()
     QCOMPARE(emptyConstMap.upperBound(1), emptyConstMap.constEnd());
     QVERIFY(!emptyConstMap.isDetached());
 
-    const QMultiMap<int, QString> constMap { qMakePair(1, "one"),
-                                             qMakePair(5, "five"),
-                                             qMakePair(10, "ten") };
+    const QMultiMap<int, QString> constMap { {1, "one"},
+                                             {5, "five"},
+                                             {10, "ten"} };
 
     QCOMPARE(constMap.lowerBound(-1).key(), 1);
     QCOMPARE(constMap.lowerBound(1).key(), 1);
@@ -1804,11 +1804,11 @@ void tst_QMap::equal_range()
 {
     {
         const QMap<int, QString> constMap;
-        QCOMPARE(constMap.equal_range(1), qMakePair(constMap.constEnd(), constMap.constEnd()));
+        QCOMPARE(constMap.equal_range(1), std::pair(constMap.constEnd(), constMap.constEnd()));
         QVERIFY(!constMap.isDetached());
 
         QMap<int, QString> map;
-        QCOMPARE(map.equal_range(1), qMakePair(map.end(), map.end()));
+        QCOMPARE(map.equal_range(1), std::pair(map.end(), map.end()));
 
         map.insert(1, "value1");
         map.insert(5, "value5");
@@ -1819,28 +1819,30 @@ void tst_QMap::equal_range()
         QCOMPARE(pair.second.value(), "value5");
         auto b = map.find(1);
         auto e = map.find(5);
-        QCOMPARE(pair, qMakePair(b, e));
+        QCOMPARE(pair, std::pair(b, e));
 
         pair = map.equal_range(3);
         QCOMPARE(pair.first.value(), "value5");
         QCOMPARE(pair.second.value(), "value5");
-        QCOMPARE(pair, qMakePair(e, e));
+        QCOMPARE(pair, std::pair(e, e));
 
-        QCOMPARE(map.equal_range(10), qMakePair(map.end(), map.end()));
+        QCOMPARE(map.equal_range(10), std::pair(map.end(), map.end()));
     }
 
     const QMultiMap<int, QString> constMap;
-    QCOMPARE(constMap.equal_range(1), qMakePair(constMap.constEnd(), constMap.constEnd()));
+    QCOMPARE(constMap.equal_range(1), std::pair(constMap.constEnd(), constMap.constEnd()));
     QVERIFY(!constMap.isDetached());
 
     QMultiMap<int, QString> map;
     const QMultiMap<int, QString> &cmap = map;
 
-    QPair<QMultiMap<int, QString>::iterator, QMultiMap<int, QString>::iterator> result = map.equal_range(0);
+    using It = QMultiMap<int, QString>::iterator;
+    std::pair<It, It> result = map.equal_range(0);
     QCOMPARE(result.first, map.end());
     QCOMPARE(result.second, map.end());
 
-    QPair<QMultiMap<int, QString>::const_iterator, QMultiMap<int, QString>::const_iterator> cresult = cmap.equal_range(0);
+    using CIt = QMultiMap<int, QString>::const_iterator;
+    std::pair<CIt, CIt> cresult = cmap.equal_range(0);
     QCOMPARE(cresult.first, cmap.cend());
     QCOMPARE(cresult.second, cmap.cend());
 
