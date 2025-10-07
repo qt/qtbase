@@ -6,7 +6,6 @@
 #include <QtCore/qdatetime.h>
 #include <QtCore/qdir.h>
 #include <QtCore/qlist.h>
-#include <QtCore/qpair.h>
 #include <QtCore/qurl.h>
 
 #include <QtNetwork/qhttpheaders.h>

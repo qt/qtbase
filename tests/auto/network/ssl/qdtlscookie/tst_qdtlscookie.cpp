@@ -96,7 +96,7 @@ private:
     const int noiseTimeoutMS = 5;
 
     using SocketPtr = QSharedPointer<QUdpSocket>;
-    using ValidClient = QPair<SocketPtr, HandshakePtr>;
+    using ValidClient = std::pair<SocketPtr, HandshakePtr>;
     unsigned clientsToWait = 0;
     unsigned clientsToAdd = 0;
     std::vector<ValidClient> dtlsClients;

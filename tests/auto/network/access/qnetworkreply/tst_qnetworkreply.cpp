@@ -908,7 +908,7 @@ public:
 class MyMemoryCache: public QAbstractNetworkCache
 {
 public:
-    typedef QPair<QNetworkCacheMetaData, QByteArray> CachedContent;
+    using CachedContent = std::pair<QNetworkCacheMetaData, QByteArray>;
     typedef QHash<QByteArray, CachedContent> CacheData;
     CacheData cache;
 

@@ -545,7 +545,7 @@ void tst_QHostAddress::parseSubnet()
     QFETCH(QHostAddress, prefix);
     QFETCH(int, prefixLength);
 
-    QPair<QHostAddress, int> result = QHostAddress::parseSubnet(subnet);
+    std::pair<QHostAddress, int> result = QHostAddress::parseSubnet(subnet);
     QCOMPARE(result.first, prefix);
     QCOMPARE(result.second, prefixLength);
 }

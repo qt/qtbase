@@ -20,7 +20,7 @@ struct HttpData {
     QByteArray body;
     QByteArray method;
     quint16 port = 0;
-    QPair<quint8, quint8> version;
+    std::pair<quint8, quint8> version;
     QHttpHeaders headers;
 };
 
