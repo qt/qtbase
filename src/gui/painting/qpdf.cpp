@@ -3213,6 +3213,7 @@ int QPdfEnginePrivate::addImage(const QImage &img, bool *bitmap, bool lossless, 
             // a format without alpha channel first
 
             QImage alphaLessImage(image.width(), image.height(), QImage::Format_RGB32);
+            alphaLessImage.setDevicePixelRatio(image.devicePixelRatioF());
             alphaLessImage.fill(Qt::white);
 
             QPainter p(&alphaLessImage);
