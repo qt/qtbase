@@ -335,11 +335,11 @@ public:
     lower quality output than HighResolution and should only be used
     for drafts.
 
-    \value PrinterResolution This value is deprecated. It is
-    equivalent to ScreenResolution on Unix and HighResolution on
-    Windows and Mac. Due to the difference between ScreenResolution
-    and HighResolution, use of this value may lead to non-portable
-    printer code.
+    \value PrinterResolution This value is deprecated. For printers,
+    it is equivalent to ScreenResolution on Unix and HighResolution
+    on Windows and macOS. For PDF printing, it is not supported and
+    may result in undefined behavior. Using this value can lead to
+    non-portable printer code.
 
     \value HighResolution On Windows, sets the printer resolution to that
     defined for the printer in use. For PDF printing, sets the
