@@ -144,8 +144,13 @@ def no_args_run():
             fail_list.append(test)
         total_result = total_result and (test_exit_code == 0)
 
-    if XML_TEMPLATE and XML_OUTPUT_FILE:
-        write_xml_log(XML_OUTPUT_FILE, failure=fail_list)
+    if XML_OUTPUT_FILE:
+        if XML_TEMPLATE:
+            write_xml_log(XML_OUTPUT_FILE, failure=fail_list)
+        # If the template is an empty file, then write an empty output file
+        elif XML_TEMPLATE == "":
+            with open(XML_OUTPUT_FILE, "w"):
+                pass
 
     if total_result:
         sys.exit(0)

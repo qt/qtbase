@@ -22,6 +22,7 @@
 #   of the test failed.
 #   + If no XML file is found or was invalid, the test executable
 #     probably CRASHed, so we *re-run the full test once again*.
+#   + Same if the XML contained a QFatal message: <Message type="qfatal">
 # + If some testcases failed it executes only those individually
 #   until they pass, or until max-repeats times is reached.
 #
@@ -63,9 +64,12 @@ from pprint import pprint
 from typing import NamedTuple, Tuple, List, Optional
 
 # Define a custom type for returning a fail incident
-class WhatFailed(NamedTuple):
+class TestResult(NamedTuple):
     func: str
     tag: Optional[str] = None
+class WhatFailed(NamedTuple):
+    qfatal_message: Optional[str]    = None
+    failed_tests:   List[TestResult] = []
 
 
 # In the last test re-run, we add special verbosity arguments, in an attempt
@@ -198,11 +202,13 @@ Default flags: --max-repeats 5 --passes-needed 1
     return args
 
 
-def parse_log(results_file) -> List[WhatFailed]:
-    """Parse the XML test log file. Return the failed testcases, if any.
+def parse_log(results_file) -> WhatFailed:
+    """
+    Parse the XML test log file. Return the failed testcases, if any,
+    and the first qfatal message possibly printed.
 
     Failures are considered the "fail" and "xpass" incidents.
-    A testcase is a function with an optional data tag."""
+    """
     start_timer = timeit.default_timer()
 
     try:
@@ -226,6 +232,8 @@ def parse_log(results_file) -> List[WhatFailed]:
             f"The XML test log must have <TestCase> as root tag, but has: <{root.tag}>")
 
     failures = []
+    qfatal_message = None
+
     n_passes = 0
     for e1 in root:
         if e1.tag == "TestFunction":
@@ -233,20 +241,34 @@ def parse_log(results_file) -> List[WhatFailed]:
                 if e2.tag == "Incident":
                     if e2.attrib["type"] in ("fail", "xpass"):
                         func = e1.attrib["name"]
+                        datatag = None
                         e3 = e2.find("DataTag")    # every <Incident> might have a <DataTag>
                         if e3 is not None:
-                            failures.append(WhatFailed(func, tag=e3.text))
-                        else:
-                            failures.append(WhatFailed(func))
+                            datatag = e3.text
+                        failures.append(TestResult(func, datatag))
                     else:
                         n_passes += 1
+
+    # Use iter() here to _recursively_ search root for <Message>,
+    # as we don't trust that messages are always at the same depth.
+    for message_tag in root.iter(tag="Message"):
+        messagetype = message_tag.get("type")
+        if messagetype == "qfatal":
+            message_desc = message_tag.find("Description")
+            if message_desc is not None:
+                qfatal_message = message_desc.text
+            else:
+                qfatal_message = "--EMPTY QFATAL--"
+            L.warning("qFatal message ('%s') found in the XML, treating this run as a CRASH!",
+                      qfatal_message)
+            break
 
     end_timer = timeit.default_timer()
     t = end_timer - start_timer
     L.info(f"Parsed XML file {results_file} in {t:.3f} seconds")
     L.info(f"Found {n_passes} passes and {len(failures)} failures")
 
-    return failures
+    return WhatFailed(qfatal_message, failures)
 
 
 def run_test(arg_list: List[str], **kwargs):
@@ -257,6 +279,11 @@ def run_test(arg_list: List[str], **kwargs):
     return proc
 
 def unique_filename(test_basename: str) -> str:
+
+    # Hidden env var for testing, enforcing a predictable, non-unique filename.
+    if os.environ.get("QT_TESTRUNNER_DEBUG_NO_UNIQUE_OUTPUT_FILENAME"):
+        return f"{test_basename}"
+
     timestamp = round(time.time() * 1000)
     return f"{test_basename}-{timestamp}"
 
@@ -291,7 +318,7 @@ def run_full_test(test_basename, testargs: List[str], output_dir: str,
 
 
 def rerun_failed_testcase(test_basename, testargs: List[str], output_dir: str,
-                          what_failed: WhatFailed,
+                          testcase: TestResult,
                           max_repeats, passes_needed,
                           dryrun=False, timeout=None) -> bool:
     """Run a specific function:tag of a test, until it passes enough times, or
@@ -300,9 +327,9 @@ def rerun_failed_testcase(test_basename, testargs: List[str], output_dir: str,
     Return True if it passes eventually, False if it fails.
     """
     assert passes_needed <= max_repeats
-    failed_arg = what_failed.func
-    if what_failed.tag:
-        failed_arg += ":" + what_failed.tag
+    failed_arg = testcase.func
+    if testcase.tag:
+        failed_arg += ":" + testcase.tag
 
 
     n_passes = 0
@@ -354,20 +381,22 @@ def main():
 
         try:
             results_file = None
-            failed_functions = []
+            what_failed = WhatFailed()
             if args.parse_xml_testlog:      # do not run test, just parse file
-                failed_functions = parse_log(args.parse_xml_testlog)
+                what_failed = parse_log(args.parse_xml_testlog)
                 # Pretend the test returned correct exit code
-                retcode = len(failed_functions)
+                retcode = len(what_failed.failed_tests)
             else:                                # normal invocation, run test
                 (retcode, results_file) = \
                     run_full_test(args.test_basename, args.testargs, args.log_dir,
                                   args.no_extra_args, args.dry_run, args.timeout,
                                   args.specific_extra_args)
                 if results_file:
-                    failed_functions = parse_log(results_file)
+                    what_failed = parse_log(results_file)
 
-            if retcode < 0:
+            failed_functions = what_failed.failed_tests
+
+            if retcode < 0 or what_failed.qfatal_message:
                 L.warning("CRASH detected, re-running the whole executable")
                 continue
             if retcode == 0:
@@ -402,10 +431,10 @@ def main():
     L.info("Some tests failed, will re-run at most %d times.\n",
            args.max_repeats)
 
-    for what_failed in failed_functions:
+    for test_result in failed_functions:
         try:
             ret = rerun_failed_testcase(args.test_basename, args.testargs, args.log_dir,
-                                        what_failed, args.max_repeats, args.passes_needed,
+                                        test_result, args.max_repeats, args.passes_needed,
                                         dryrun=args.dry_run, timeout=args.timeout)
         except Exception as e:
             L.error("exception:%s %s", type(e).__name__, e)
