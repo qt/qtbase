@@ -7680,7 +7680,7 @@ class EventRecorder : public QObject
     Q_OBJECT
 
 public:
-    typedef QPair<QWidget *, QEvent::Type> WidgetEventTypePair;
+    using WidgetEventTypePair = std::pair<QWidget *, QEvent::Type>;
     typedef QList<WidgetEventTypePair> EventList;
 
     using QObject::QObject;
@@ -7707,7 +7707,7 @@ public:
             case QEvent::InputMethodQuery:
                 break;
             default:
-                events.append(qMakePair(widget, event->type()));
+                events.append(std::pair(widget, event->type()));
                 break;
             }
         }
@@ -7765,9 +7765,9 @@ void tst_QWidget::childEvents()
 
         expected =
             EventRecorder::EventList()
-            << qMakePair(&widget, QEvent::PolishRequest)
-            << qMakePair(&widget, QEvent::Polish)
-            << qMakePair(&widget, QEvent::Type(QEvent::User + 1));
+            << std::pair(&widget, QEvent::PolishRequest)
+            << std::pair(&widget, QEvent::Polish)
+            << std::pair(&widget, QEvent::Type(QEvent::User + 1));
         QVERIFY2(spy.eventList() == expected,
                  EventRecorder::msgEventListMismatch(expected, spy.eventList()).constData());
     }
@@ -7784,17 +7784,17 @@ void tst_QWidget::childEvents()
         widget.showNormal();
         expected =
             EventRecorder::EventList()
-            << qMakePair(&widget, QEvent::Polish)
-            << qMakePair(&widget, QEvent::PlatformSurface)
-            << qMakePair(&widget, QEvent::WinIdChange)
-            << qMakePair(&widget, QEvent::WindowIconChange)
-            << qMakePair(&widget, QEvent::Move)
-            << qMakePair(&widget, QEvent::Resize)
-            << qMakePair(&widget, QEvent::Show)
+            << std::pair(&widget, QEvent::Polish)
+            << std::pair(&widget, QEvent::PlatformSurface)
+            << std::pair(&widget, QEvent::WinIdChange)
+            << std::pair(&widget, QEvent::WindowIconChange)
+            << std::pair(&widget, QEvent::Move)
+            << std::pair(&widget, QEvent::Resize)
+            << std::pair(&widget, QEvent::Show)
 #ifndef Q_OS_ANDROID
-            << qMakePair(&widget, QEvent::CursorChange)
+            << std::pair(&widget, QEvent::CursorChange)
 #endif
-            << qMakePair(&widget, QEvent::ShowToParent);
+            << std::pair(&widget, QEvent::ShowToParent);
 
         QVERIFY2(spy.eventList() == expected,
                  EventRecorder::msgEventListMismatch(expected, spy.eventList()).constData());
@@ -7803,10 +7803,10 @@ void tst_QWidget::childEvents()
         QCoreApplication::sendPostedEvents();
         expected =
             EventRecorder::EventList()
-            << qMakePair(&widget, QEvent::PolishRequest)
-            << qMakePair(&widget, QEvent::Type(QEvent::User + 1))
-            << qMakePair(&widget, QEvent::UpdateLater)
-            << qMakePair(&widget, QEvent::UpdateRequest);
+            << std::pair(&widget, QEvent::PolishRequest)
+            << std::pair(&widget, QEvent::Type(QEvent::User + 1))
+            << std::pair(&widget, QEvent::UpdateLater)
+            << std::pair(&widget, QEvent::UpdateRequest);
 
         QVERIFY2(spy.eventList() == expected,
                  EventRecorder::msgEventListMismatch(expected, spy.eventList()).constData());
@@ -7829,8 +7829,8 @@ void tst_QWidget::childEvents()
 
         expected =
             EventRecorder::EventList()
-            << qMakePair(&widget, QEvent::ChildAdded)
-            << qMakePair(&widget, QEvent::ChildAdded);
+            << std::pair(&widget, QEvent::ChildAdded)
+            << std::pair(&widget, QEvent::ChildAdded);
         QVERIFY2(spy.eventList() == expected,
                  EventRecorder::msgEventListMismatch(expected, spy.eventList()).constData());
         spy.clear();
@@ -7838,12 +7838,12 @@ void tst_QWidget::childEvents()
         QCoreApplication::sendPostedEvents();
         expected =
             EventRecorder::EventList()
-            << qMakePair(&widget, QEvent::PolishRequest)
-            << qMakePair(&widget, QEvent::Polish)
-            << qMakePair(&widget, QEvent::ChildPolished)
-            << qMakePair(&widget, QEvent::ChildPolished)
-            << qMakePair(&widget, QEvent::Type(QEvent::User + 1))
-            << qMakePair(&widget, QEvent::Type(QEvent::User + 2));
+            << std::pair(&widget, QEvent::PolishRequest)
+            << std::pair(&widget, QEvent::Polish)
+            << std::pair(&widget, QEvent::ChildPolished)
+            << std::pair(&widget, QEvent::ChildPolished)
+            << std::pair(&widget, QEvent::Type(QEvent::User + 1))
+            << std::pair(&widget, QEvent::Type(QEvent::User + 2));
         QVERIFY2(spy.eventList() == expected,
                  EventRecorder::msgEventListMismatch(expected, spy.eventList()).constData());
     }
@@ -7865,27 +7865,27 @@ void tst_QWidget::childEvents()
 
         expected =
             EventRecorder::EventList()
-            << qMakePair(&widget, QEvent::ChildAdded)
-            << qMakePair(&widget, QEvent::ChildAdded);
+            << std::pair(&widget, QEvent::ChildAdded)
+            << std::pair(&widget, QEvent::ChildAdded);
         QCOMPARE(spy.eventList(), expected);
         spy.clear();
 
         widget.showNormal();
         expected =
             EventRecorder::EventList()
-            << qMakePair(&widget, QEvent::Polish)
-            << qMakePair(&widget, QEvent::ChildPolished)
-            << qMakePair(&widget, QEvent::ChildPolished)
-            << qMakePair(&widget, QEvent::PlatformSurface)
-            << qMakePair(&widget, QEvent::WinIdChange)
-            << qMakePair(&widget, QEvent::WindowIconChange)
-            << qMakePair(&widget, QEvent::Move)
-            << qMakePair(&widget, QEvent::Resize)
-            << qMakePair(&widget, QEvent::Show)
+            << std::pair(&widget, QEvent::Polish)
+            << std::pair(&widget, QEvent::ChildPolished)
+            << std::pair(&widget, QEvent::ChildPolished)
+            << std::pair(&widget, QEvent::PlatformSurface)
+            << std::pair(&widget, QEvent::WinIdChange)
+            << std::pair(&widget, QEvent::WindowIconChange)
+            << std::pair(&widget, QEvent::Move)
+            << std::pair(&widget, QEvent::Resize)
+            << std::pair(&widget, QEvent::Show)
 #ifndef Q_OS_ANDROID
-            << qMakePair(&widget, QEvent::CursorChange)
+            << std::pair(&widget, QEvent::CursorChange)
 #endif
-            << qMakePair(&widget, QEvent::ShowToParent);
+            << std::pair(&widget, QEvent::ShowToParent);
 
         QVERIFY2(spy.eventList() == expected,
                  EventRecorder::msgEventListMismatch(expected, spy.eventList()).constData());
@@ -7894,11 +7894,11 @@ void tst_QWidget::childEvents()
         QCoreApplication::sendPostedEvents();
         expected =
             EventRecorder::EventList()
-            << qMakePair(&widget, QEvent::PolishRequest)
-            << qMakePair(&widget, QEvent::Type(QEvent::User + 1))
-            << qMakePair(&widget, QEvent::Type(QEvent::User + 2))
-            << qMakePair(&widget, QEvent::UpdateLater)
-            << qMakePair(&widget, QEvent::UpdateRequest);
+            << std::pair(&widget, QEvent::PolishRequest)
+            << std::pair(&widget, QEvent::Type(QEvent::User + 1))
+            << std::pair(&widget, QEvent::Type(QEvent::User + 2))
+            << std::pair(&widget, QEvent::UpdateLater)
+            << std::pair(&widget, QEvent::UpdateRequest);
 
         QVERIFY2(spy.eventList() == expected,
                  EventRecorder::msgEventListMismatch(expected, spy.eventList()).constData());
@@ -7922,20 +7922,20 @@ void tst_QWidget::childEvents()
 
         expected =
             EventRecorder::EventList()
-            << qMakePair(&widget, QEvent::ChildAdded)
-            << qMakePair(&widget, QEvent::ChildAdded)
-            << qMakePair(&widget, QEvent::ChildRemoved);
+            << std::pair(&widget, QEvent::ChildAdded)
+            << std::pair(&widget, QEvent::ChildAdded)
+            << std::pair(&widget, QEvent::ChildRemoved);
         QCOMPARE(spy.eventList(), expected);
         spy.clear();
 
         QCoreApplication::sendPostedEvents();
         expected =
             EventRecorder::EventList()
-            << qMakePair(&widget, QEvent::PolishRequest)
-            << qMakePair(&widget, QEvent::Polish)
-            << qMakePair(&widget, QEvent::ChildPolished)
-            << qMakePair(&widget, QEvent::Type(QEvent::User + 1))
-            << qMakePair(&widget, QEvent::Type(QEvent::User + 2));
+            << std::pair(&widget, QEvent::PolishRequest)
+            << std::pair(&widget, QEvent::Polish)
+            << std::pair(&widget, QEvent::ChildPolished)
+            << std::pair(&widget, QEvent::Type(QEvent::User + 1))
+            << std::pair(&widget, QEvent::Type(QEvent::User + 2));
 
         QVERIFY2(spy.eventList() == expected,
                  EventRecorder::msgEventListMismatch(expected, spy.eventList()).constData());
@@ -7959,27 +7959,27 @@ void tst_QWidget::childEvents()
 
         expected =
             EventRecorder::EventList()
-            << qMakePair(&widget, QEvent::ChildAdded)
-            << qMakePair(&widget, QEvent::ChildAdded)
-            << qMakePair(&widget, QEvent::ChildRemoved);
+            << std::pair(&widget, QEvent::ChildAdded)
+            << std::pair(&widget, QEvent::ChildAdded)
+            << std::pair(&widget, QEvent::ChildRemoved);
         QCOMPARE(spy.eventList(), expected);
         spy.clear();
 
         widget.showNormal();
         expected =
             EventRecorder::EventList()
-            << qMakePair(&widget, QEvent::Polish)
-            << qMakePair(&widget, QEvent::ChildPolished)
-            << qMakePair(&widget, QEvent::PlatformSurface)
-            << qMakePair(&widget, QEvent::WinIdChange)
-            << qMakePair(&widget, QEvent::WindowIconChange)
-            << qMakePair(&widget, QEvent::Move)
-            << qMakePair(&widget, QEvent::Resize)
-            << qMakePair(&widget, QEvent::Show)
+            << std::pair(&widget, QEvent::Polish)
+            << std::pair(&widget, QEvent::ChildPolished)
+            << std::pair(&widget, QEvent::PlatformSurface)
+            << std::pair(&widget, QEvent::WinIdChange)
+            << std::pair(&widget, QEvent::WindowIconChange)
+            << std::pair(&widget, QEvent::Move)
+            << std::pair(&widget, QEvent::Resize)
+            << std::pair(&widget, QEvent::Show)
 #ifndef Q_OS_ANDROID
-            << qMakePair(&widget, QEvent::CursorChange)
+            << std::pair(&widget, QEvent::CursorChange)
 #endif
-            << qMakePair(&widget, QEvent::ShowToParent);
+            << std::pair(&widget, QEvent::ShowToParent);
 
         QVERIFY2(spy.eventList() == expected,
                  EventRecorder::msgEventListMismatch(expected, spy.eventList()).constData());
@@ -7988,11 +7988,11 @@ void tst_QWidget::childEvents()
         QCoreApplication::sendPostedEvents();
         expected =
             EventRecorder::EventList()
-            << qMakePair(&widget, QEvent::PolishRequest)
-            << qMakePair(&widget, QEvent::Type(QEvent::User + 1))
-            << qMakePair(&widget, QEvent::Type(QEvent::User + 2))
-            << qMakePair(&widget, QEvent::UpdateLater)
-            << qMakePair(&widget, QEvent::UpdateRequest);
+            << std::pair(&widget, QEvent::PolishRequest)
+            << std::pair(&widget, QEvent::Type(QEvent::User + 1))
+            << std::pair(&widget, QEvent::Type(QEvent::User + 2))
+            << std::pair(&widget, QEvent::UpdateLater)
+            << std::pair(&widget, QEvent::UpdateRequest);
 
         QVERIFY2(spy.eventList() == expected,
                  EventRecorder::msgEventListMismatch(expected, spy.eventList()).constData());

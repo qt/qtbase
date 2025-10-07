@@ -1199,7 +1199,7 @@ void tst_QWidget_window::tst_showhide_count()
             return QObject::eventFilter(receiver, event);
         }
     private:
-        using Entry = QPair<QWidget*, QEvent::Type>;
+        using Entry = std::pair<QWidget*, QEvent::Type>;
         QHash<Entry, int> counter;
     };
 

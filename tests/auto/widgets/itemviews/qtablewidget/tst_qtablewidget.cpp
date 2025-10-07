@@ -95,7 +95,7 @@ private:
     std::unique_ptr<QTableWidget> testWidget;
 };
 
-using IntPair = QPair<int, int>;
+using IntPair = std::pair<int, int>;
 using IntList = QList<int>;
 using IntIntList = QList<IntPair>;
 
@@ -1815,7 +1815,7 @@ void tst_QTableWidget::search()
         Qt::Key key;
         QString text;
     };
-    auto checkSeries = [](TestTableWidget &tw, const QList<QPair<KeyPress, int>> &series) {
+    auto checkSeries = [](TestTableWidget &tw, const QList<std::pair<KeyPress, int>> &series) {
         for (const auto &p : series) {
             QKeyEvent e(QEvent::KeyPress, p.first.key, Qt::NoModifier, p.first.text);
             tw.keyPressEvent(&e);
