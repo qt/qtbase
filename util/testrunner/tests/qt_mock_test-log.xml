@@ -21,6 +21,16 @@
     <Incident type="{{always_crash_result}}" file="" line="0" />
     <Duration msecs="0.828272"/>
   </TestFunction>
+
+  <!-- The strings like this one "{{fail_then_pass:2_result}}"
+       are just template strings that will be replaced by the test driver
+       before each test. The colon doesn't have a special meaning.
+       The datatags in the following tests are just "2", "5", "6".
+       We don't strictly need datatags because the tests don't include
+       specific testing for datatags. It's just that adding a couple
+       of datatags to this XML template, complicates it a bit and
+       tests somewhat that functionality as a side-effect.
+  -->
   <TestFunction name="fail_then_pass">
     <Incident type="{{fail_then_pass:2_result}}" file="" line="0">
       <DataTag><![CDATA[2]]></DataTag>

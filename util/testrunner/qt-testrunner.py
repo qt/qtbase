@@ -36,7 +36,8 @@
 #   until they pass, or until max-repeats (default: 5) times is reached.
 #
 # The regular way to use is to set the environment variable TESTRUNNER to
-# point to this script before invoking ctest.
+# point to this script before invoking ctest. In COIN CI it is set as
+# TESTRUNNER="qt-testrunner.py --" to stop it from parsing further args.
 #
 # NOTE: this script is crafted specifically for use with Qt tests and for
 #       using it in Qt's CI. For example it detects and acts specially if test
@@ -105,9 +106,11 @@ NO_RERUN_FUNCTIONS = {
 # not try to append "-o" to their command-line or re-run failed testcases.
 # Only add tests here if absolutely necessary!
 NON_XML_GENERATING_TESTS = {
-    "tst_selftests",                # qtestlib's selftests are using an external test framework (Catch) that does not support -o argument
-    "tst_QDoc",                     # Some of QDoc's tests are using an external test framework (Catch) that does not support -o argument
-    "tst_QDoc_Catch_Generators",    # Some of QDoc's tests are using an external test framework (Catch) that does not support -o argument
+    # These tests use an external test framework (Catch) that doesn't support
+    # QtTest's -o argument.
+    "tst_selftests",
+    "tst_QDoc",
+    "tst_QDoc_Catch_Generators",
 }
 # These are scripts that are used to wrap test execution for special platforms.
 # They need special handling (most times just skipping the wrapper name in argv[]).
@@ -153,6 +156,9 @@ Default flags: --max-repeats 5 --passes-needed 1
                         " -o log_file.xml -v2 -vs. This will disable some functionality like the"
                         " failed test repetition and the verbose output on failure. This is"
                         " activated by default when TESTARGS is tst_selftests.")
+    # TODO parser.parse_args(args=sys.argv[0:cmd_index]).
+    #   Where cmd_index is either the first positional argument, or the argument right after "--".
+    #   This way it won't interpet arguments after the first positional arg.
     args = parser.parse_args()
     args.self_name = os.path.basename(sys.argv[0])
     args.specific_extra_args = []
@@ -458,6 +464,7 @@ def main():
             L.error("exception:%s %s", type(e).__name__, e)
             L.error("The testcase re-run probably crashed, giving up")
             sys.exit(3)                                    # Test re-run CRASH
+            # TODO test that this works if the re-run of a testfunction crashes.
 
         if not ret:
             sys.exit(2)                                    # Test re-run FAIL
