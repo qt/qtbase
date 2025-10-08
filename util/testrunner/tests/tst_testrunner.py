@@ -322,6 +322,7 @@ class Test_testrunner(unittest.TestCase):
         logfile = os.path.join(TEMPDIR.name, os.path.basename(mock_test) + ".xml")
         write_xml_log(logfile, failure="always_fail")
         del self.env["QT_MOCK_TEST_XML_TEMPLATE_FILE"]
+        self.env["QT_TESTRUNNER_DEBUG_NO_UNIQUE_OUTPUT_FILENAME"] = "1"
         self.prepare_env(run_list=["always_pass"])
         proc = self.run2()
         self.assertEqual(proc.returncode, 3)
@@ -330,6 +331,7 @@ class Test_testrunner(unittest.TestCase):
         logfile = os.path.join(TEMPDIR.name, os.path.basename(mock_test) + ".xml")
         write_xml_log(logfile)
         del self.env["QT_MOCK_TEST_XML_TEMPLATE_FILE"]
+        self.env["QT_TESTRUNNER_DEBUG_NO_UNIQUE_OUTPUT_FILENAME"] = "1"
         self.prepare_env(run_list=["always_fail"])
         proc = self.run2()
         self.assertEqual(proc.returncode, 3)
