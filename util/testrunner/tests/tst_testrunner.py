@@ -349,6 +349,7 @@ class Test_testrunner(unittest.TestCase):
 
     # Test that qt-testrunner detects the correct executable name even if we
     # use a special wrapper script, and that it uses that in the XML log filename.
+    @unittest.skipUnless(os.name == "posix", "Wrapper script needs POSIX shell")
     def test_wrapper(self):
         self.create_wrapper("coin_vxworks_qemu_runner.sh")
         proc = run_testrunner(wrapper_script=self.wrapper_script,
@@ -368,6 +369,7 @@ class Test_testrunner(unittest.TestCase):
         self.create_wrapper("androidtestrunner", content=
             'while [ "$1" != "--" ]; do shift; done; shift; exec {} "$@"'.format(mock_test))
 
+    @unittest.skipUnless(os.name == "posix", "Wrapper script needs POSIX shell")
     def test_androidtestrunner_with_aab(self):
         self.create_mock_anroidtestrunner_wrapper()
         # Copied verbatim from our CI logs. The only relevant option is --aab.
@@ -384,6 +386,7 @@ class Test_testrunner(unittest.TestCase):
             print("XML output files found: ", xml_output_files)
         self.assertEqual(len(xml_output_files), 1)
     # similar to above but with "--apk"
+    @unittest.skipUnless(os.name == "posix", "Wrapper script needs POSIX shell")
     def test_androidtestrunner_with_apk(self):
         self.create_mock_anroidtestrunner_wrapper()
         androidtestrunner_args= ['--blah', '--apk', '/whatever/waza.apk', 'blue']
@@ -398,6 +401,7 @@ class Test_testrunner(unittest.TestCase):
             print("XML output files found: ", xml_output_files)
         self.assertEqual(len(xml_output_files), 1)
     # similar to above but with neither "--apk" nor "--aab". qt-testrunner throws error.
+    @unittest.skipUnless(os.name == "posix", "Wrapper script needs POSIX shell")
     def test_androidtestrunner_fail_to_detect_filename(self):
         self.create_mock_anroidtestrunner_wrapper()
         androidtestrunner_args= ['--blah', '--argh', '/whatever/waza.apk', 'waza.aab']
