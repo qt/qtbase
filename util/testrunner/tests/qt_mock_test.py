@@ -107,7 +107,7 @@ def run_test(testname):
     elif testname == "always_fail":
         exit_code = 1
     elif testname == "always_crash":
-        exit_code = 130
+        exit_code = 131
     elif testname.startswith("fail_then_pass"):
         wanted_fails   = int(testname.partition(":")[2])
         previous_fails = get_failures(testname)
@@ -139,7 +139,7 @@ def no_args_run():
     for test in run_list:
         test_exit_code = run_test(test)
         if test_exit_code not in (0, 1):
-            sys.exit(130)                                       # CRASH!
+            sys.exit(131)                                       # CRASH!
         if test_exit_code != 0:
             fail_list.append(test)
         total_result = total_result and (test_exit_code == 0)
