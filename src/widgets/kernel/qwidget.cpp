@@ -11135,6 +11135,7 @@ void QWidget::scroll(int dx, int dy)
         for (const QRect &rect : d->dirty)
             proxy->update(rect.translated(dx, dy));
         proxy->scroll(dx, dy, proxy->subWidgetRect(this));
+        d->scrollChildren(dx, dy); // QTBUG-138381: scroll item view cell widgets
         return;
     }
 #endif

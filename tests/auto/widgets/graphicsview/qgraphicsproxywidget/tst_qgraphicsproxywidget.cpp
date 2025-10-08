@@ -22,6 +22,7 @@
 #include <QtWidgets/qscrollbar.h>
 #include <QtWidgets/qspinbox.h>
 #include <QtWidgets/qstylefactory.h>
+#include <QtWidgets/qtablewidget.h>
 
 #include <QtGui/qevent.h>
 #include <QtGui/private/qhighdpiscaling_p.h>
@@ -173,6 +174,7 @@ private slots:
 #endif
     void forwardTouchEvent();
     void touchEventPropagation();
+    void itemViewScroll();
 };
 
 // Subclass that exposes the protected functions.
@@ -4068,6 +4070,31 @@ void tst_QGraphicsProxyWidget::touchEventPropagation()
     QCOMPARE(eventSpy.at(1, 3).receiver, touchWidget2);
     QCOMPARE(eventSpy.at(2, 3).receiver, touchWidget2);
     QCOMPARE(clickedSpy.size(), 0); // multi-touch event does not synthesize a mouse event
+}
+
+void tst_QGraphicsProxyWidget::itemViewScroll()
+{
+    // QTBUG-138381: When scrolling an embedded item view, the cell widgets should move as well.
+    QGraphicsScene scene;
+    QGraphicsView view(&scene);
+
+    QLabel *label{};
+    auto *table = new QTableWidget(1, 10);
+    for (int i = 0; i < 10; ++i) {
+        label = new QLabel(QString::number(1 + i));
+        table->setCellWidget(0, i, label);
+    }
+    scene.addWidget(table);
+    table->resize(300, 200);
+    table->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    table->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    view.resize(600, 600);
+    view.show();
+    QVERIFY(QTest::qWaitForWindowActive(&view));
+    const int oldPos = label->x();
+    auto *horizontalScrollBar = table->horizontalScrollBar();
+    horizontalScrollBar->setValue(horizontalScrollBar->maximum() * 3 / 2);
+    QTRY_VERIFY(label->x() < oldPos);
 }
 
 QTEST_MAIN(tst_QGraphicsProxyWidget)
