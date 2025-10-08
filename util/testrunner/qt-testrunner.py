@@ -15,16 +15,25 @@
 # tst_whatever, and tries to iron out unpredictable test failures.
 # In particular:
 #
-# + Appends output argument to it: "-o tst_whatever.xml,xml"
-# + Checks the exit code. If it is zero, the script exits with zero,
-#   otherwise proceeds.
-# + Reads the XML test log and Understands exactly which function
-#   of the test failed.
-#   + If no XML file is found or was invalid, the test executable
-#     probably CRASHed, so we *re-run the full test once again*.
-#   + Same if the XML contained a QFatal message: <Message type="qfatal">
-# + If some testcases failed it executes only those individually
-#   until they pass, or until max-repeats times is reached.
+# + Append output argument to it: "-o tst_whatever.xml,xml" and
+#   execute it.
+# + Save the exit code.
+#   - If it is <0 or >=128 (see NOTE_2), mark the test run as CRASH.
+# + Read the XML test log and find exactly which functions
+#   of the test FAILed.
+# + Mark the test run as CRASH, if:
+#   - no XML file is found,
+#   - or an invalid XML file is found,
+#   - or the XML contains a QFatal message: <Message type="qfatal">
+#   - or no test FAILures are listed in the XML but the saved
+#     exit code is not 0.
+# + If, based on the rules above, the test run is marked as CRASH,
+#   then *re-run the full test once again* and start this logic over.
+#   If we are on the 2nd run and CRASH happens again, then exit(3).
+# + Examine the saved exit code:
+#   if it is 0, then exit(0) (success, all tests have PASSed).
+# + Otherwise, some testcases failed, so execute only those individually
+#   until they pass, or until max-repeats (default: 5) times is reached.
 #
 # The regular way to use is to set the environment variable TESTRUNNER to
 # point to this script before invoking ctest.
@@ -33,6 +42,15 @@
 #       using it in Qt's CI. For example it detects and acts specially if test
 #       executable is "tst_selftests" or "androidtestrunner".  It also detects
 #       env var "COIN_CTEST_RESULTSDIR" and uses it as log-dir.
+#
+# NOTE_2: Why is qt-testrunner considering exit code outside [0,127] as CRASH?
+#         On Linux, Python subprocess module returns positive `returncode`
+#         (255 for example), even if the child does exit(-1 for example). It
+#         returns negative `returncode` only if the child is killed by a signal.
+#         Qt-testrunner wants to catch both of these cases as CRASH.
+#         On Windows, a crash is usually accompanied by exitcode >= 0xC0000000.
+#         Finally, QTest is limiting itself to exit codes in [0,127]
+#         so anything outside that range is abnormal, thus treated as CRASH.
 #
 # TODO implement --dry-run.
 
@@ -396,7 +414,7 @@ def main():
 
             failed_functions = what_failed.failed_tests
 
-            if retcode < 0 or what_failed.qfatal_message:
+            if retcode < 0 or retcode >= 128 or what_failed.qfatal_message:
                 L.warning("CRASH detected, re-running the whole executable")
                 continue
             if retcode == 0:
