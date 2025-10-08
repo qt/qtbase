@@ -319,12 +319,14 @@ void QTextStreamPrivate::setupDevice(QIODevice *device)
     disconnectFromDevice();
 
 #ifndef QT_NO_QOBJECT
-    // Explicitly set a direct connection (though it would have been so
-    // anyway) so that QTextStream can be used from multiple threads when the
-    // application code is handling synchronization (see also QTBUG-12055).
-    aboutToCloseConnection =
-            QObject::connect(device, &QIODevice::aboutToClose, device,
-                             [this] { flushWriteBuffer(); }, Qt::DirectConnection);
+    if (device) {
+        // Explicitly set a direct connection (though it would have been so
+        // anyway) so that QTextStream can be used from multiple threads when the
+        // application code is handling synchronization (see also QTBUG-12055).
+        aboutToCloseConnection = QObject::connect(
+                device, &QIODevice::aboutToClose, device, [this] { flushWriteBuffer(); },
+                Qt::DirectConnection);
+    }
 #else
     Q_UNUSED(device);
 #endif
