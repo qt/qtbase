@@ -24,6 +24,7 @@
 #include <QtWidgets/qstylefactory.h>
 
 #include <QtGui/qevent.h>
+#include <QtGui/private/qhighdpiscaling_p.h>
 
 #include <QtCore/qmimedata.h>
 #include <QtCore/qtimer.h>
@@ -3717,10 +3718,11 @@ void tst_QGraphicsProxyWidget::wheelEventPropagation()
 
     const QPoint wheelPosition(50, 25);
     auto wheelUp = [&view, wheelPosition](Qt::ScrollPhase phase) {
-        const QPoint global = view.mapToGlobal(wheelPosition);
-        const QPoint pixelDelta(0, -25);
+        auto *window = view.windowHandle();
+        const QPoint global = QHighDpi::toNativePixels(view.mapToGlobal(wheelPosition), window);
+        const QPoint pixelDelta = QHighDpi::toNativeLocalPosition(QPoint(0, -25), window);
         const QPoint angleDelta(0, -120);
-        QWindowSystemInterface::handleWheelEvent(view.windowHandle(), wheelPosition, global,
+        QWindowSystemInterface::handleWheelEvent(window, wheelPosition, global,
                                                 pixelDelta, angleDelta, Qt::NoModifier,
                                                 phase);
         QCoreApplication::processEvents();
