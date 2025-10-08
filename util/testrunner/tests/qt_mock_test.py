@@ -116,6 +116,13 @@ def run_test(testname):
         exit_code = 1
     elif testname == "always_crash":
         exit_code = 131
+    elif testname == "fail_then_crash":
+        previous_fails = get_failures(testname)
+        if previous_fails == 0:
+            put_failure(testname)
+            exit_code = 1
+        else:
+            exit_code = 131
     elif testname.startswith("fail_then_pass"):
         wanted_fails   = int(testname.partition(":")[2])
         previous_fails = get_failures(testname)

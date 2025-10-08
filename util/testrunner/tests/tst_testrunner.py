@@ -82,12 +82,13 @@ def run_testrunner(xml_filename=None, testrunner_args=None,
 # Write the XML_TEMPLATE to filename, replacing the templated results.
 def write_xml_log(filename, failure=None, inject_message=None):
     data = XML_TEMPLATE
+    if failure is None:
+        failure = []
+    elif isinstance(failure, str):
+        failure = [ failure ]
     # Replace what was asked to fail with "fail"
-    if type(failure) in (list, tuple):
-        for template in failure:
-            data = data.replace("{{"+template+"_result}}", "fail")
-    elif type(failure) is str:
-        data = data.replace("{{"+failure+"_result}}", "fail")
+    for x in failure:
+        data = data.replace("{{" + x + "_result}}", "fail")
     # Replace the rest with "pass"
     data = re.sub(r"{{[^}]+}}", "pass", data)
     # Inject possible <Message> tags inside the first <TestFunction>
@@ -105,6 +106,12 @@ class Test_qt_mock_test(unittest.TestCase):
         state_file = os.environ["QT_MOCK_TEST_STATE_FILE"]
         if os.path.exists(state_file):
             os.remove(state_file)
+    def assertProcessCrashed(self, proc):
+        if DEBUG:
+            print("process returncode is:", proc.returncode)
+        self.assertTrue(proc.returncode < 0 or
+                        proc.returncode >= 128)
+
     def test_always_pass(self):
         proc = run([mock_test, "always_pass"])
         self.assertEqual(proc.returncode, 0)
@@ -134,6 +141,11 @@ class Test_qt_mock_test(unittest.TestCase):
         self.assertEqual(proc.returncode, 1)
         proc = run([mock_test, "fail_then_pass:2"])
         self.assertEqual(proc.returncode, 0)
+    def test_fail_then_crash(self):
+        proc = run([mock_test, "fail_then_crash"])
+        self.assertEqual(proc.returncode, 1)
+        proc = run([mock_test, "fail_then_crash"])
+        self.assertProcessCrashed(proc)
     def test_xml_file_is_written(self):
         filename = os.path.join(TEMPDIR.name, "testlog.xml")
         proc = run([mock_test, "-o", filename+",xml"])
@@ -159,8 +171,7 @@ class Test_qt_mock_test(unittest.TestCase):
                    env= os.environ | {"QT_MOCK_TEST_CRASH_CLEANLY":"1"} )
         if DEBUG:
             print("returncode:", proc.returncode)
-        self.assertTrue(proc.returncode < 0 or
-                        proc.returncode >= 128)
+        self.assertProcessCrashed(proc)
 
 
 # Test regular invocations of qt-testrunner.
@@ -224,6 +235,10 @@ class Test_testrunner(unittest.TestCase):
         self.assertEqual(proc.returncode, 2)
     def test_initTestCase_fail_crash(self):
         self.prepare_env(run_list=["initTestCase,always_pass"])
+        proc = self.run2()
+        self.assertEqual(proc.returncode, 3)
+    def test_fail_then_crash(self):
+        self.prepare_env(run_list=["fail_then_crash"])
         proc = self.run2()
         self.assertEqual(proc.returncode, 3)
 
@@ -450,7 +465,8 @@ class Test_testrunner(unittest.TestCase):
 #   + No failure logged.                  qt-testrunner should exit(0)
 #   + The "always_pass" test has failed.  qt-testrunner should exit(0).
 #   + The "always_fail" test has failed.  qt-testrunner should exit(2).
-#   + The "always_crash" test has failed. qt-testrunner should exit(2).
+#   + The "always_crash" test has failed. qt-testrunner should exit(3)
+#                                         since the re-run will crash.
 #   + The "fail_then_pass:2" test failed. qt-testrunner should exit(0).
 #   + The "fail_then_pass:5" test failed. qt-testrunner should exit(2).
 #   + The "initTestCase" failed which is listed as NO_RERUN thus
@@ -490,10 +506,10 @@ class Test_testrunner_with_xml_logfile(unittest.TestCase):
         self.assertEqual(len(matches), 1)
         # Assert that the environment was altered too
         self.assertIn("QT_LOGGING_RULES", proc.stdout.decode())
-    def test_always_crash_failed(self):
+    def test_always_crash_crashed(self):
         write_xml_log(self.xml_file, failure="always_crash")
         proc = run_testrunner(self.xml_file)
-        self.assertEqual(proc.returncode, 2)
+        self.assertEqual(proc.returncode, 3)
     def test_fail_then_pass_2_failed(self):
         write_xml_log(self.xml_file, failure="fail_then_pass:2")
         proc = run_testrunner(self.xml_file)
