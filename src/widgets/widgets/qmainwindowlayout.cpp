@@ -1830,6 +1830,15 @@ void QMainWindowLayout::setTabPosition(Qt::DockWidgetAreas areas, QTabWidget::Ta
 QTabBar::Shape _q_tb_tabBarShapeFrom(QTabWidget::TabShape shape, QTabWidget::TabPosition position);
 #endif // QT_CONFIG(tabwidget)
 
+void QMainWindowLayout::showTabBars()
+{
+    const auto usedTabBarsCopy = usedTabBars; // list potentially modified by animations
+    for (QTabBar *tab_bar : usedTabBarsCopy) {
+        if (usedTabBars.contains(tab_bar)) // Showing a tab bar can cause another to be deleted.
+            tab_bar->show();
+    }
+}
+
 void QMainWindowLayout::updateTabBarShapes()
 {
 #if QT_CONFIG(tabwidget)
@@ -2672,11 +2681,7 @@ void QMainWindowLayout::animationFinished(QWidget *widget)
 #if QT_CONFIG(dockwidget)
         parentWidget()->update(layoutState.dockAreaLayout.separatorRegion());
 #if QT_CONFIG(tabbar)
-        const auto usedTabBarsCopy = usedTabBars; // list potentially modified by animations
-        for (QTabBar *tab_bar : usedTabBarsCopy) {
-            if (usedTabBars.contains(tab_bar)) // Showing a tab bar can cause another to be deleted.
-               tab_bar->show();
-        }
+        showTabBars();
 #endif // QT_CONFIG(tabbar)
 #endif // QT_CONFIG(dockwidget)
     }
@@ -3273,15 +3278,10 @@ bool QMainWindowLayout::restoreState(QDataStream &stream)
     savedState.deleteAllLayoutItems();
     savedState.clear();
 
-#if QT_CONFIG(dockwidget)
-    if (parentWidget()->isVisible()) {
-#if QT_CONFIG(tabbar)
-        for (QTabBar *tab_bar : std::as_const(usedTabBars))
-            tab_bar->show();
-
-#endif
-    }
-#endif // QT_CONFIG(dockwidget)
+#if QT_CONFIG(dockwidget) && QT_CONFIG(tabbar)
+    if (parentWidget()->isVisible())
+        showTabBars();
+#endif // QT_CONFIG(dockwidget)/QT_CONFIG(tabbar)
 
     return true;
 }
