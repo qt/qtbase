@@ -288,6 +288,9 @@ private slots:
     void hdrColors();
 #endif
 
+    void alphaBlitToNonAlphaFormats_data();
+    void alphaBlitToNonAlphaFormats();
+
 private:
     void fillData();
     void setPenColor(QPainter& p);
@@ -5605,6 +5608,105 @@ void tst_QPainter::hdrColors()
     QCOMPARE(img2.pixelColor(5, 5), color);
 }
 #endif
+
+void tst_QPainter::alphaBlitToNonAlphaFormats_data()
+{
+    QTest::addColumn<QImage::Format>("format");
+
+    for (int i = QImage::Format_Invalid; i < QImage::NImageFormats; ++i) {
+        auto imageFormat = QImage::Format(i);
+        auto pixelFormat = QImage::toPixelFormat(imageFormat);
+        if (pixelFormat.colorModel() != QPixelFormat::RGB)
+            continue;
+        if (pixelFormat.alphaUsage() == QPixelFormat::UsesAlpha)
+            continue;
+        QTest::addRow("%s", QDebug::toBytes(imageFormat).mid(15).data()) << imageFormat;
+    }
+}
+
+void tst_QPainter::alphaBlitToNonAlphaFormats()
+{
+    QFETCH(QImage::Format, format);
+
+    {
+        // Test consistent reporting of alpha 1.0 with different ways of
+        // filling (or not filling) the image.
+
+        QColor fillColors[] = {
+            QColor(),
+            QColor::fromRgbF(0, 0, 0, 1),
+            QColor::fromRgbF(1, 1, 1, 1),
+            QColor::fromRgbF(0, 0, 0, 0),
+            QColor::fromRgbF(1, 1, 1, 0),
+        };
+
+        for (auto fillColor : fillColors) {
+            QImage image(1, 1, format);
+            if (fillColor.isValid())
+                // Filling with an explicit color should always report an alpha
+                // of 1.0 for non-alpha formats, regardless of the fill.
+                image.fill(fillColor);
+            else {
+                // Test that the logic for ensuring alpha 1.0 isn't only handled
+                // during the fill, by zero-initializing the underlying data. In
+                // this case we should still report an alpha of 1.0.
+                memset(image.bits(), 0, image.sizeInBytes());
+            }
+
+            QCOMPARE(qAlpha(image.pixel(0, 0)), 255);
+            QCOMPARE(image.pixelColor(0, 0).alphaF(), 1.0);
+        }
+    }
+
+    for (int i = 0; i < 2; ++i) {
+        // Attempt to test both non-SIMD and SIMD paths. The latter is
+        // chosen for images wider than 4-16 pixels according to Allan.
+        auto size = i ? 32 : 1;
+        QImage image(size, size, format);
+        image.fill(Qt::black);
+        QCOMPARE(image.pixelColor(0, 0).alphaF(), 1.0);
+
+        static const auto semiTransparentColor = QColor::fromRgbF(0.2, 0.4, 0.6, 0.8);
+
+        auto testAlpha = [&](std::function<void(QPainter*)> paintFunction) {
+            QImage paintedImage = image;
+            QPainter painter(&paintedImage);
+            QVERIFY(painter.isActive());
+
+            painter.setCompositionMode(QPainter::CompositionMode_Source);
+            paintFunction(&painter);
+
+            QCOMPARE(paintedImage.pixelColor(0, 0).alphaF(), 1.0);
+
+            // Try reading the raw data, to not be affected by pixelColor/pixel()
+            auto argbImage = paintedImage.convertToFormat(QImage::Format_ARGB32_Premultiplied);
+            QCOMPARE(qAlpha(reinterpret_cast<const QRgb *>(argbImage.constBits())[0]), 255);
+        };
+
+        QTest::ThrowOnFailEnabler throwOnFail;
+
+        // Test consistent reporting of alpha 1.0 after drawLine with
+        // semi-transparent pen color and source composition mode.
+        testAlpha([&](QPainter *painter) {
+            painter->setPen(semiTransparentColor);
+            painter->drawLine(QPoint(0, 0), QPoint(size, size));
+        });
+
+        // Test consistent reporting of alpha 1.0 after fillRect with
+        // semi-transparent fill color and source composition mode.
+        testAlpha([&](QPainter *painter) {
+            painter->fillRect(QRect(0, 0, size, size), semiTransparentColor);
+        });
+
+        // Test consistent reporting of alpha 1.0 after drawImage with
+        // semi-transparent image and source composition mode.
+        testAlpha([&](QPainter *painter) {
+            QImage alphaImage(size, size, QImage::Format_ARGB32_Premultiplied);
+            alphaImage.fill(semiTransparentColor);
+            painter->drawImage(QPoint(0, 0), alphaImage);
+        });
+    }
+}
 
 QTEST_MAIN(tst_QPainter)
 
