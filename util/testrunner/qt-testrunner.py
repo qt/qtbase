@@ -90,6 +90,9 @@ class WhatFailed(NamedTuple):
     qfatal_message: Optional[str]    = None
     failed_tests:   List[TestResult] = []
 
+class ReRunCrash(Exception):
+    pass
+
 
 # In the last test re-run, we add special verbosity arguments, in an attempt
 # to log more information about the failure
@@ -349,6 +352,7 @@ def rerun_failed_testcase(test_basename, testargs: List[str], output_dir: str,
     until max_repeats is reached.
 
     Return True if it passes eventually, False if it fails.
+    Raise ReRunCrash Exception if it crashes.
     """
     assert passes_needed <= max_repeats
     failed_arg = testcase.func
@@ -376,6 +380,8 @@ def rerun_failed_testcase(test_basename, testargs: List[str], output_dir: str,
             proc = run_test(testargs + output_args + VERBOSE_ARGS + [failed_arg],
                             timeout=timeout,
                             env={**os.environ, **VERBOSE_ENV})
+        if proc.returncode < 0 or proc.returncode >= 128:
+            raise ReRunCrash(f"CRASH! returncode:{proc.returncode}")
         if proc.returncode == 0:
             n_passes += 1
         if n_passes == passes_needed:
@@ -460,11 +466,10 @@ def main():
             ret = rerun_failed_testcase(args.test_basename, args.testargs, args.log_dir,
                                         test_result, args.max_repeats, args.passes_needed,
                                         dryrun=args.dry_run, timeout=args.timeout)
-        except Exception as e:
-            L.error("exception:%s %s", type(e).__name__, e)
-            L.error("The testcase re-run probably crashed, giving up")
+        except ReRunCrash as e:
+            L.error("exception:%s", e)
+            L.error("The testcase re-run crashed, giving up")
             sys.exit(3)                                    # Test re-run CRASH
-            # TODO test that this works if the re-run of a testfunction crashes.
 
         if not ret:
             sys.exit(2)                                    # Test re-run FAIL

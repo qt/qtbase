@@ -42,5 +42,9 @@
       <DataTag><![CDATA[6]]></DataTag>
     </Incident>
   </TestFunction>
+  <TestFunction name="fail_then_crash">
+    <Incident type="{{fail_then_crash_result}}" file="" line="0" />
+    <Duration msecs="0.828272"/>
+  </TestFunction>
   <Duration msecs="1904.9"/>
 </TestCase>
