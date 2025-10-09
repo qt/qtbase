@@ -802,7 +802,7 @@ static DestStoreProc64 destStoreProc64[] =
     destStore64,        // Format_A2RGB30_Premultiplied
     destStore64,        // Format_Alpha8
     destStore64Gray8,   // Format_Grayscale8
-    nullptr,            // Format_RGBX64
+    destStore64,        // Format_RGBX64
     destStore64RGBA64,  // Format_RGBA64
     nullptr,            // Format_RGBA64_Premultiplied
     destStore64Gray16,  // Format_Grayscale16
@@ -3904,6 +3904,9 @@ static inline Operator getOperator(const QSpanData *data, const QT_FT_Span *span
     op.destStore64 = destStoreProc64[data->rasterBuffer->format];
     op.funcSolid64 = functionForModeSolid64[op.mode];
     op.func64 = functionForMode64[op.mode];
+    // RGBx64 do not need conversion on writeback if all pixels are opaque
+    if (data->rasterBuffer->format == QImage::Format_RGBX64 && solidSource)
+        op.destStore64 = nullptr;
 #else
     op.destStore64 = nullptr;
     op.funcSolid64 = nullptr;
