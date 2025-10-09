@@ -27,6 +27,7 @@
 #include <QtWidgets/QToolTip>
 #include <QtWidgets/QTreeView>
 #include <QtWidgets/QVBoxLayout>
+#include <QtWidgets/QProxyStyle>
 
 #include <QtGui/QPainter>
 #include <QtGui/QScreen>
@@ -94,6 +95,7 @@ private slots:
     void task206238_twice();
     void transparent();
     void proxyStyle();
+    void useProxyandStyleSheetStyleInTabBar();
     void dialogButtonBox();
     void emptyStyleSheet();
     void toolTip_data();
@@ -1591,6 +1593,51 @@ void tst_QStyleSheetStyle::proxyStyle()
     delete w;
     delete proxy;
     delete newProxy;
+}
+
+void tst_QStyleSheetStyle::useProxyandStyleSheetStyleInTabBar()
+{
+#ifdef Q_OS_MACOS
+    // Since macOS style doesn't support tabbar scroll buttons, skip this case
+    QSKIP("TabBar doesn't support scroll button in macOS");
+#endif
+
+    class CustomProxy : public QProxyStyle
+    {
+        public:
+            QRect subElementRect(SubElement subElement,
+                                 const QStyleOption *option,
+                                 const QWidget *widget) const override  {
+                auto r = QProxyStyle::subElementRect(subElement, option, widget);
+                if (subElement == SE_TabBarScrollLeftButton)
+                    r.moveLeft(0);
+                return r;
+            }
+    };
+
+    qApp->setStyleSheet("QTabBar::scroller { width: 50px; }");
+
+    QTabBar tabBar;
+    tabBar.setMaximumWidth(150);
+    tabBar.setStyle(new CustomProxy);
+    int totalWidth = 0;
+    for (int tabIndex = 0; tabIndex < 10; ++tabIndex) {
+        tabBar.addTab("Tab " + QString::number(tabIndex));
+        totalWidth += tabBar.tabRect(tabIndex).width();
+    }
+    if (totalWidth < 200)
+        tabBar.resize(totalWidth / 2, 30);
+    tabBar.show();
+    QVERIFY(QTest::qWaitForWindowActive(&tabBar));
+
+    QToolButton *scrollLeftButton = qobject_cast<QToolButton *>(tabBar.children().at(0));
+    QVERIFY(scrollLeftButton);
+    QCOMPARE(scrollLeftButton->pos(), QPoint(0, 0));
+    QCOMPARE(scrollLeftButton->width(), 25);
+
+    QToolButton *scrollRightButton = qobject_cast<QToolButton *>(tabBar.children().at(1));
+    QVERIFY(scrollRightButton);
+    QCOMPARE(scrollRightButton->width(), 25);
 }
 
 void tst_QStyleSheetStyle::dialogButtonBox()

@@ -6304,8 +6304,10 @@ QRect QStyleSheetStyle::subElementRect(SubElement se, const QStyleOption *opt, c
 
     case SE_TabBarScrollLeftButton:
     case SE_TabBarScrollRightButton:
-        if (hasStyleRule(w, PseudoElement_TabBarScroller))
-            return ParentStyle::subElementRect(se, opt, w);
+        if (hasStyleRule(w, PseudoElement_TabBarScroller)) {
+            QStyleSheetProxySaver proxySaver(this);
+            return baseStyle()->subElementRect(se, opt, w);
+        }
         break;
 
     case SE_TabBarTearIndicator: {
