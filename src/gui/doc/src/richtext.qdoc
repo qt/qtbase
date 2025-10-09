@@ -650,7 +650,7 @@
     the QTextLayout class, to help developers perform word-wrapping and
     layout tasks without the need to create a document first.
 
-    \image plaintext-layout.png {Screenshot of a text that flows around a
+    \image plaintext-layout.webp {Screenshot of a text that flows around a
            circle.}
 
     Formatting and drawing a paragraph of plain text is straightforward.
