@@ -115,7 +115,7 @@ QVariant QAccessibleAbstractSpinBox::minimumValue() const
 
 QVariant QAccessibleAbstractSpinBox::minimumStepSize() const
 {
-    return abstractSpinBox()->property("stepSize");
+    return abstractSpinBox()->property("singleStep");
 }
 
 void QAccessibleAbstractSpinBox::addSelection(int startOffset, int endOffset)
