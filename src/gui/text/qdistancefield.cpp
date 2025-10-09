@@ -495,7 +495,8 @@ static void makeDistanceField(QDistanceFieldData *data, const QPainterPath &path
     const quint32 *indices = pathIndices.data();
     QVarLengthArray<QPoint> normals;
     QVarLengthArray<QPoint> vertices;
-    QVarLengthArray<bool> isConvex;
+
+    QVarLengthArray<int> crossProducts;
     QVarLengthArray<bool> needsClipping;
 
     drawPolygons(bits.data(), imgWidth, imgHeight, pathVertices.data(),
@@ -536,10 +537,10 @@ static void makeDistanceField(QDistanceFieldData *data, const QPainterPath &path
                                  || (to.y() < offs << 8) || (to.y() >= (imgHeight - offs) << 8));
         }
 
-        isConvex.resize(normals.size());
+        crossProducts.resize(normals.size());
         for (int next = 0, prev = normals.size() - 1; next < normals.size(); prev = next++) {
-            isConvex[prev] = normals.at(prev).x() * normals.at(next).y()
-                           - normals.at(prev).y() * normals.at(next).x() < 0;
+            crossProducts[prev] = normals.at(prev).x() * normals.at(next).y()
+                                - normals.at(prev).y() * normals.at(next).x();
         }
 
         // Draw quads.
@@ -571,7 +572,8 @@ static void makeDistanceField(QDistanceFieldData *data, const QPainterPath &path
                                       exteriorColor);
             }
 
-            if (isConvex.at(prev)) {
+            const int crossProduct = crossProducts.at(prev);
+            if (crossProduct < 0) {
                 QPoint p = extPrev;
                 if (needsClipping[prev]) {
                     for (;;) {
@@ -612,7 +614,7 @@ static void makeDistanceField(QDistanceFieldData *data, const QPainterPath &path
                         extPrev = p;
                     }
                 }
-            } else {
+            } else if (crossProduct > 0) {
                 QPoint p = intPrev;
                 if (needsClipping[prev]) {
                     for (;;) {
