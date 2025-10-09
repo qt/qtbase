@@ -6162,6 +6162,14 @@ static void qt_rectfill_nonpremul_argb32(QRasterBuffer *rasterBuffer,
                          color.unpremultiplied().toArgb32(), x, y, width, height, rasterBuffer->bytesPerLine());
 }
 
+static void qt_rectfill_rgbx(QRasterBuffer *rasterBuffer,
+                             int x, int y, int width, int height,
+                             const QRgba64 &color)
+{
+    qt_rectfill<quint32>(reinterpret_cast<quint32 *>(rasterBuffer->buffer()),
+                         ARGB2RGBA(color.toArgb32() | 0xff000000), x, y, width, height, rasterBuffer->bytesPerLine());
+}
+
 static void qt_rectfill_rgba(QRasterBuffer *rasterBuffer,
                              int x, int y, int width, int height,
                              const QRgba64 &color)
@@ -6353,7 +6361,7 @@ DrawHelper qDrawHelper[] =
         qt_bitmapblit_rgba8888,
         qt_alphamapblit_generic,
         qt_alphargbblit_generic,
-        qt_rectfill_rgba
+        qt_rectfill_rgbx
     },
     // Format_RGBA8888
     {
