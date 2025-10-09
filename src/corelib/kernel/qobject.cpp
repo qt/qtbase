@@ -1828,8 +1828,8 @@ int QObject::startTimer(int interval, Qt::TimerType timerType)
 
     A timer event will occur every \a interval until killTimer()
     is called. If \a interval is equal to \c{std::chrono::duration::zero()},
-    then the timer event occurs once every time there are no more window
-    system events to process.
+    then the timer event occurs once every time control returns to the event
+    loop, that is, there are no more native window system events to process.
 
     \include timers-common.qdocinc negative-intervals-not-allowed
 
