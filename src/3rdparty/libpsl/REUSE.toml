@@ -10,6 +10,6 @@ SPDX-License-Identifier = "BSD-3-Clause"
 [[annotations]]
 path = ["psl_data.cpp"]
 precedence = "closest"
-SPDX-FileCopyrightText = ["The list was originally provided by Jo Hermans <jo.hermans@gmail.com>.\nIt is now maintained on github (https://github.com/publicsuffix/list)."]
+SPDX-FileCopyrightText = ["The list was originally provided by Jo Hermans <jo.hermans@gmail.com>.It is now maintained on github (https://github.com/publicsuffix/list)."]
 SPDX-License-Identifier = "MPL-2.0"
 

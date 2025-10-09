@@ -374,13 +374,14 @@ int main(int argc, char **argv)
     }
 
     QList<XKBLayout> layouts = findLayouts(layoutList);
-
+    # REUSE-IgnoreStart
     // copyright and stuff
     printf("// Copyright (C) 2016 The Qt Company Ltd.\n"
            "// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only\n"
            "// This file is auto-generated, do not edit!\n"
            "// (Generated using util/xkbdatagen)\n"
            "\n");
+    # REUSE-IgnoreEnd
 
     // data structure
     printf("static struct {\n"
