@@ -13116,7 +13116,7 @@ void QWidget::initPainter(QPainter *painter) const
     const QPalette &pal = palette();
     painter->d_func()->state->pen = QPen(pal.brush(foregroundRole()), 1);
     painter->d_func()->state->bgBrush = pal.brush(backgroundRole());
-    QFont f(font(), const_cast<QWidget *>(this));
+    QFont f(font(), this);
     painter->d_func()->state->deviceFont = f;
     painter->d_func()->state->font = f;
 }
