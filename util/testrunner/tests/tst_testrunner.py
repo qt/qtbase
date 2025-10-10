@@ -242,9 +242,33 @@ class Test_testrunner(unittest.TestCase):
         proc = self.run2()
         self.assertEqual(proc.returncode, 3)
 
+    # By testing --no-extra-args, we ensure qt-testrunner works for
+    # tst_selftests and the other NON_XML_GENERATING_TESTS.
+    def test_no_extra_args_pass(self):
+        self.testrunner_args += ["--no-extra-args"]
+        proc = self.run2()
+        self.assertEqual(proc.returncode, 0)
+    def test_no_extra_args_fail(self):
+        self.prepare_env(run_list=["always_fail"])
+        self.testrunner_args += ["--no-extra-args"]
+        proc = self.run2()
+        self.assertEqual(proc.returncode, 3)
+    def test_no_extra_args_reruns_only_once_1(self):
+        self.prepare_env(run_list=["fail_then_pass:1"])
+        self.testrunner_args += ["--no-extra-args"]
+        proc = self.run2()
+        # The 1st rerun PASSed.
+        self.assertEqual(proc.returncode, 0)
+    def test_no_extra_args_reruns_only_once_2(self):
+        self.prepare_env(run_list=["fail_then_pass:2"])
+        self.testrunner_args += ["--no-extra-args"]
+        proc = self.run2()
+        # We never re-run more than once, so the exit code shows FAIL.
+        self.assertEqual(proc.returncode, 3)
+
     # If no XML file is found by qt-testrunner, it is usually considered a
     # CRASH and the whole test is re-run. Even when the return code is zero.
-    # It is a PASS only if the test is not capable of XML output (see no_extra_args, TODO test it).
+    # It is a PASS only if the test is not capable of XML output (see no_extra_args above).
     def test_no_xml_log_written_pass_crash(self):
         del self.env["QT_MOCK_TEST_XML_TEMPLATE_FILE"]
         self.prepare_env(run_list=["always_pass"])
