@@ -270,7 +270,7 @@ void QWaylandShmBackingStore::flush(QWindow *window, const QRegion &region, cons
         const auto scale = waylandWindow->scale();
         auto newBuffer = new QWaylandShmBuffer(
                 mDisplay, window->size() * scale, mBackBuffer->image()->format(),
-                mBackBuffer->image()->devicePixelRatio(), mEventQueue);
+                mBackBuffer->image()->devicePixelRatio());
         newBuffer->setDeleteOnRelease(true);
         QRect sourceRect(offset * scale, window->size() * scale);
         QPainter painter(newBuffer->image());
