@@ -363,8 +363,6 @@ class Test_testrunner(unittest.TestCase):
         if not content:
             content='exec "$@"'
         filename = os.path.join(TEMPDIR.name, filename)
-        # if os.path.exists(filename):
-        #     os.remove(filename)
         with open(filename, "w") as f:
             f.write(f'#!/bin/sh\n{content}\n')
             self.wrapper_script = f.name
@@ -412,8 +410,16 @@ class Test_testrunner(unittest.TestCase):
     @unittest.skipUnless(os.name == "posix", "Wrapper script needs POSIX shell")
     def test_androidtestrunner_with_aab(self):
         self.create_mock_anroidtestrunner_wrapper()
-        # Copied verbatim from our CI logs. The only relevant option is --aab.
-        androidtestrunner_args= ['--path', '/home/qt/work/qt/qtdeclarative_standalone_tests/tests/auto/quickcontrols/qquickpopup/android-build-tst_qquickpopup', '--adb', '/opt/android/sdk/platform-tools/adb', '--skip-install-root', '--ndk-stack', '/opt/android/android-ndk-r27c/ndk-stack', '--manifest', '/home/qt/work/qt/qtdeclarative_standalone_tests/tests/auto/quickcontrols/qquickpopup/android-build-tst_qquickpopup/app/AndroidManifest.xml', '--make', '"/opt/cmake-3.30.5/bin/cmake" --build /home/qt/work/qt/qtdeclarative_standalone_tests --target tst_qquickpopup_make_aab', '--aab', '/home/qt/work/qt/qtdeclarative_standalone_tests/tests/auto/quickcontrols/qquickpopup/android-build-tst_qquickpopup/tst_qquickpopup.aab', '--bundletool', '/opt/bundletool/bundletool', '--timeout', '1425']
+        # Copied from our CI logs. The only relevant option is --aab.
+        androidtestrunner_args= [
+            '--path', '/home/qt/work/qt/qtdeclarative_standalone_tests/tests/auto/quickcontrols/qquickpopup/android-build-tst_qquickpopup',
+            '--adb', '/opt/android/sdk/platform-tools/adb', '--skip-install-root',
+            '--ndk-stack', '/opt/android/android-ndk-r27c/ndk-stack',
+            '--manifest', '/home/qt/work/qt/qtdeclarative_standalone_tests/tests/auto/quickcontrols/qquickpopup/android-build-tst_qquickpopup/app/AndroidManifest.xml',
+            '--make', '"/opt/cmake-3.30.5/bin/cmake" --build /home/qt/work/qt/qtdeclarative_standalone_tests --target tst_qquickpopup_make_aab',
+            '--aab', '/home/qt/work/qt/qtdeclarative_standalone_tests/tests/auto/quickcontrols/qquickpopup/android-build-tst_qquickpopup/tst_qquickpopup.aab',
+            '--bundletool', '/opt/bundletool/bundletool', '--timeout', '1425'
+        ]
         # In COIN CI, TESTRUNNER="qt-testrunner.py --". That's why we append "--".
         proc = run_testrunner(testrunner_args=["--log-dir", TEMPDIR.name, "--"],
                               wrapper_script=self.wrapper_script,
