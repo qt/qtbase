@@ -71,7 +71,10 @@ public:
         }
         if (pal.window().style() == Qt::TexturePattern)
             return QColor(0, 0, 0, 160);
-        return pal.window().color().darker(140);
+        auto windowColor = pal.window().color();
+        if (!windowColor.isValid())
+            windowColor = QPalette().window().color();
+        return windowColor.darker(140);
     }
 
     QColor highlightedOutline(const QPalette &pal) const {
