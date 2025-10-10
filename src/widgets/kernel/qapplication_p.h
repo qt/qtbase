@@ -124,7 +124,7 @@ public:
 #endif
 
     QBasicTimer toolTipWakeUp, toolTipFallAsleep;
-    QPoint toolTipPos, toolTipGlobalPos, hoverGlobalPos;
+    QPoint toolTipPos, toolTipGlobalPos;
     QPointer<QWidget> toolTipWidget;
 
     static QSize app_strut;

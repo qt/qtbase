@@ -2768,7 +2768,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
 
             QPointer<QWidget> pw = w;
             while (w) {
-                QMouseEvent me(mouse->type(), relpos, mouse->scenePosition(), mouse->globalPosition().toPoint(),
+                QMouseEvent me(mouse->type(), relpos, mouse->scenePosition(), mouse->globalPosition(),
                                mouse->button(), mouse->buttons(), mouse->modifiers(), mouse->source(),
                                mouse->pointingDevice());
                 me.m_spont = mouse->spontaneous();
@@ -2802,7 +2802,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
 
                 w = static_cast<QWidget *>(receiver);
                 relpos = mouse->position().toPoint();
-                QPoint diff = relpos - w->mapFromGlobal(mouse->globalPosition().toPoint());
+                QPoint diff = relpos - w->mapFromGlobal(mouse->globalPosition()).toPoint();
                 while (w) {
                     if (w->testAttribute(Qt::WA_Hover) &&
                         (!QApplication::activePopupWidget() || QApplication::activePopupWidget() == w->window())) {
@@ -2816,8 +2816,6 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                     w = w->parentWidget();
                 }
             }
-
-            d->hoverGlobalPos = mouse->globalPosition().toPoint();
             break;
         }
 #if QT_CONFIG(wheelevent)
@@ -3836,7 +3834,7 @@ bool QApplicationPrivate::translateRawTouchEvent(QWidget *window, const QTouchEv
                     window = QApplication::topLevelAt(touchPoint.globalPosition().toPoint());
                 if (!window)
                     continue;
-                target = window->childAt(window->mapFromGlobal(touchPoint.globalPosition().toPoint()));
+                target = window->childAt(window->mapFromGlobal(touchPoint.globalPosition()));
                 if (!target)
                     target = window;
             }
