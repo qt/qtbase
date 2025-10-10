@@ -407,8 +407,13 @@ QList<QSslCertificate> systemCaCertificates()
         for (const QByteArray &directory : directories) {
             for (const auto &dirEntry : QDirListing(QFile::decodeName(directory), flags)) {
                 // use canonical path here to not load the same certificate twice if symlinked
-                if (hasMatchingExtension(dirEntry.fileName()))
-                    certFiles.insert(dirEntry.canonicalFilePath());
+                if (hasMatchingExtension(dirEntry.fileName())) {
+                    QString canonicalPath = dirEntry.canonicalFilePath();
+                    // skip broken symlinks to not end up adding "" to the list which will then
+                    // just be rejected by `QSslCertificate::fromFile`
+                    if (!canonicalPath.isEmpty())
+                        certFiles.insert(canonicalPath);
+                }
             }
         }
         for (const QString& file : std::as_const(certFiles))
