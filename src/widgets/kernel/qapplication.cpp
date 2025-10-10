@@ -1442,8 +1442,8 @@ void QApplicationPrivate::notifyWindowIconChanged()
 
     // in case there are any plain QWindows in this QApplication-using
     // application, also send the notification to them
-    for (int i = 0; i < windowList.size(); ++i)
-        QCoreApplication::sendEvent(windowList.at(i), &ev);
+    for (QWindow *w : std::as_const(windowList))
+        QCoreApplication::sendEvent(w, &ev);
 }
 
 /*!
@@ -1787,9 +1787,9 @@ void QApplicationPrivate::notifyLayoutDirectionChange()
 
     // in case there are any plain QWindows in this QApplication-using
     // application, also send the notification to them
-    for (int i = 0; i < windowList.size(); ++i) {
+    for (QWindow *w: std::as_const(windowList)) {
         QEvent ev(QEvent::ApplicationLayoutDirectionChange);
-        QCoreApplication::sendEvent(windowList.at(i), &ev);
+        QCoreApplication::sendEvent(w, &ev);
     }
 }
 
@@ -1876,14 +1876,12 @@ void QApplicationPrivate::setActiveWindow(QWidget* act)
     QEvent windowActivate(QEvent::WindowActivate);
     QEvent windowDeactivate(QEvent::WindowDeactivate);
 
-    for (int i = 0; i < toBeActivated.size(); ++i) {
-        QWidget *w = toBeActivated.at(i);
+    for (QWidget *w : std::as_const(toBeActivated)) {
         QApplication::sendSpontaneousEvent(w, &windowActivate);
         QApplication::sendSpontaneousEvent(w, &activationChange);
     }
 
-    for(int i = 0; i < toBeDeactivated.size(); ++i) {
-        QWidget *w = toBeDeactivated.at(i);
+    for (QWidget *w : std::as_const(toBeDeactivated)) {
         QApplication::sendSpontaneousEvent(w, &windowDeactivate);
         QApplication::sendSpontaneousEvent(w, &activationChange);
     }
@@ -2095,8 +2093,7 @@ void QApplicationPrivate::dispatchEnterLeave(QWidget* enter, QWidget* leave, con
     }
 
     QEvent leaveEvent(QEvent::Leave);
-    for (int i = 0; i < leaveList.size(); ++i) {
-        auto *w = leaveList.at(i);
+    for (QWidget *w : std::as_const(leaveList)) {
         if (!QApplication::activeModalWidget() || QApplicationPrivate::tryModalHelper(w, nullptr)) {
             QCoreApplication::sendEvent(w, &leaveEvent);
             if (w->testAttribute(Qt::WA_Hover) &&
@@ -2138,8 +2135,7 @@ void QApplicationPrivate::dispatchEnterLeave(QWidget* enter, QWidget* leave, con
     // Whenever we leave an alien widget on X11/QPA, we need to reset its nativeParentWidget()'s cursor.
     // This is not required on Windows as the cursor is reset on every single mouse move.
     QWidget *parentOfLeavingCursor = nullptr;
-    for (int i = 0; i < leaveList.size(); ++i) {
-        auto *w = leaveList.at(i);
+    for (QWidget *w : std::as_const(leaveList)) {
         if (!isAlien(w))
             break;
         if (w->testAttribute(Qt::WA_SetCursor)) {
@@ -3120,7 +3116,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                 const QPoint offset = w->pos();
                 w = w->parentWidget();
                 QMutableTouchEvent::setTarget(touchEvent, w);
-                for (int i = 0; i < touchEvent->pointCount(); ++i) {
+                for (qsizetype cnt = touchEvent->pointCount(), i = 0; i < cnt; ++i) {
                     auto &pt = touchEvent->point(i);
                     QMutableEventPoint::setPosition(pt, pt.position() + offset);
                 }
@@ -3199,8 +3195,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                     res = d->notify_helper(w, &ge);
                     gestureEvent->m_spont = false;
                     eventAccepted = ge.isAccepted();
-                    for (int i = 0; i < gestures.size(); ++i) {
-                        QGesture *g = gestures.at(i);
+                    for (QGesture *g : std::as_const(gestures)) {
                         // Ignore res [event return value] because handling of multiple gestures
                         // packed into a single QEvent depends on not consuming the event
                         if (eventAccepted || ge.isAccepted(g)) {
@@ -3741,7 +3736,7 @@ bool QApplicationPrivate::updateTouchPointsForWidget(QWidget *widget, QTouchEven
 {
     bool containsPress = false;
 
-    for (int i = 0; i < touchEvent->pointCount(); ++i) {
+    for (qsizetype cnt = touchEvent->pointCount(), i = 0; i < cnt; ++i) {
         auto &pt = touchEvent->point(i);
         QMutableEventPoint::setPosition(pt, widget->mapFromGlobal(pt.globalPosition()));
 
@@ -3801,7 +3796,7 @@ void QApplicationPrivate::activateImplicitTouchGrab(QWidget *widget, QTouchEvent
     // If the widget dispatched the event further (see QGraphicsProxyWidget), then
     // there might already be an implicit grabber. Don't override that. A widget that
     // has partially recognized a gesture needs to grab all points.
-    for (int i = 0; i < touchEvent->pointCount(); ++i) {
+    for (qsizetype cnt = touchEvent->pointCount(), i = 0; i < cnt; ++i) {
         auto &ep = touchEvent->point(i);
         if (!QMutableEventPoint::target(ep) && (ep.isAccepted() || grabMode == GrabAllPoints))
             QMutableEventPoint::setTarget(ep, widget);
