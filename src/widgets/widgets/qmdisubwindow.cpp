@@ -2220,7 +2220,7 @@ QMdiSubWindow::QMdiSubWindow(QWidget *parent, Qt::WindowFlags flags)
     d->titleBarPalette = d->desktopPalette();
     d->font = QApplication::font("QMdiSubWindowTitleBar");
     // We don't want the menu icon by default on mac.
-#ifndef Q_OS_MAC
+#ifndef Q_OS_DARWIN
     if (windowIcon().isNull())
         d->menuIcon = style()->standardIcon(QStyle::SP_TitleBarMenuButton, nullptr, this);
     else
@@ -2847,8 +2847,11 @@ bool QMdiSubWindow::event(QEvent *event)
         break;
     case QEvent::WindowIconChange:
         d->menuIcon = windowIcon();
+        // We don't want the default menu icon on mac.
+#ifndef Q_OS_DARWIN
         if (d->menuIcon.isNull())
             d->menuIcon = style()->standardIcon(QStyle::SP_TitleBarMenuButton, nullptr, this);
+#endif
         if (d->controlContainer)
             d->controlContainer->updateWindowIcon(d->menuIcon);
         if (!maximizedSystemMenuIconWidget())
