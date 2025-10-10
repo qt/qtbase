@@ -4147,7 +4147,7 @@ static void blend_color_generic_fp(int count, const QT_FT_Span *spans, void *use
     };
     QT_THREAD_PARALLEL_FILLS(function);
 #else
-    blend_color_generic(count, spans, userData);
+    blend_color_generic_rgb64(count, spans, userData);
 #endif
 }
 
