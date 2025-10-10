@@ -51,6 +51,8 @@ private slots:
     void clearItemData();
     void modelData_data() { createTestData(); }
     void modelData();
+    void rangeModelDataInTable();
+
     void insertRows_data() { createTestData(); }
     void insertRows();
     void removeRows_data() { createTestData(); }
@@ -949,6 +951,26 @@ void tst_QRangeModel::modelData()
             }
         }
     }
+}
+
+void tst_QRangeModel::rangeModelDataInTable()
+{
+    std::vector<Object *> table = {
+        new Object,
+        new Object,
+        new Object
+    };
+    QRangeModel model(std::ref(table));
+    QCOMPARE(model.rowCount(), 3);
+    QCOMPARE(model.columnCount(), 2);
+
+    const QModelIndex topLeft = model.index(0, 0);
+    const QModelIndex bottomRight = model.index(2, 1);
+    QCOMPARE(model.data(topLeft), table.at(topLeft.row())->string());
+    QCOMPARE(model.data(bottomRight), table.at(bottomRight.row())->number());
+
+    QVERIFY(model.setData(topLeft, "fortyTwo", Qt::RangeModelDataRole));
+    QVERIFY(model.setData(bottomRight, 42, Qt::RangeModelDataRole));
 }
 
 void tst_QRangeModel::insertRows()

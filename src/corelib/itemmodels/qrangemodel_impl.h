@@ -1336,45 +1336,47 @@ public:
                 using wrapped_value_type = QRangeModelDetails::wrapped_t<value_type>;
                 using multi_role = QRangeModelDetails::is_multi_role<value_type>;
                 if constexpr (has_metaobject<value_type>) {
-                    if (role == Qt::RangeModelDataRole) {
-                        auto &targetRef = QRangeModelDetails::refTo(target);
-                        constexpr auto targetMetaType = QMetaType::fromType<value_type>();
-                        const auto dataMetaType = data.metaType();
-                        if constexpr (!std::is_copy_assignable_v<wrapped_value_type>) {
-                            // This covers move-only types, but also polymorph types like QObject.
-                            // We don't support replacing a stored object with another one, as this
-                            // makes object ownership very messy.
-                            // fall through to error handling
-                        } else if constexpr (QRangeModelDetails::is_wrapped<value_type>()) {
-                            if (QRangeModelDetails::isValid(target)) {
-                                // we need to get a wrapped value type out of the QVariant, which
-                                // might carry a pointer. We have to try all alternatives.
-                                if (const auto mt = QMetaType::fromType<wrapped_value_type>();
-                                    data.canConvert(mt)) {
-                                    targetRef = data.value<wrapped_value_type>();
-                                    return true;
-                                } else if (const auto mtp = QMetaType::fromType<wrapped_value_type *>();
-                                           data.canConvert(mtp)) {
-                                    targetRef = *data.value<wrapped_value_type *>();
-                                    return true;
+                    if (row_traits::fixed_size() <= 1) { // multi-role value
+                        if (role == Qt::RangeModelDataRole) {
+                            auto &targetRef = QRangeModelDetails::refTo(target);
+                            constexpr auto targetMetaType = QMetaType::fromType<value_type>();
+                            const auto dataMetaType = data.metaType();
+                            if constexpr (!std::is_copy_assignable_v<wrapped_value_type>) {
+                                // This covers move-only types, but also polymorph types like QObject.
+                                // We don't support replacing a stored object with another one, as this
+                                // makes object ownership very messy.
+                                // fall through to error handling
+                            } else if constexpr (QRangeModelDetails::is_wrapped<value_type>()) {
+                                if (QRangeModelDetails::isValid(target)) {
+                                    // we need to get a wrapped value type out of the QVariant, which
+                                    // might carry a pointer. We have to try all alternatives.
+                                    if (const auto mt = QMetaType::fromType<wrapped_value_type>();
+                                        data.canConvert(mt)) {
+                                        targetRef = data.value<wrapped_value_type>();
+                                        return true;
+                                    } else if (const auto mtp = QMetaType::fromType<wrapped_value_type *>();
+                                            data.canConvert(mtp)) {
+                                        targetRef = *data.value<wrapped_value_type *>();
+                                        return true;
+                                    }
                                 }
+                            } else if (targetMetaType == dataMetaType) {
+                                targetRef = data.value<value_type>();
+                                return true;
+                            } else if (dataMetaType.flags() & QMetaType::PointerToGadget) {
+                                targetRef = *data.value<value_type *>();
+                                return true;
                             }
-                        } else if (targetMetaType == dataMetaType) {
-                            targetRef = data.value<value_type>();
-                            return true;
-                        } else if (dataMetaType.flags() & QMetaType::PointerToGadget) {
-                            targetRef = *data.value<value_type *>();
-                            return true;
+    #ifndef QT_NO_DEBUG
+                            qCritical("Not able to assign %s to %s",
+                                      qPrintable(QDebug::toString(data)), targetMetaType.name());
+    #endif
+                            return false;
                         }
-#ifndef QT_NO_DEBUG
-                        qCritical("Not able to assign %s to %s",
-                                  qPrintable(QDebug::toString(data)), targetMetaType.name());
-#endif
-                        return false;
-                    } else if (row_traits::fixed_size() <= 1) {
                         return writeRole(role, QRangeModelDetails::pointerTo(target), data);
-                    } else if (column <= row_traits::fixed_size()
-                            && (role == Qt::DisplayRole || role == Qt::EditRole)) {
+                    } else if (column <= row_traits::fixed_size() // multi-column
+                            && (role == Qt::DisplayRole || role == Qt::EditRole
+                                || role == Qt::RangeModelDataRole)) {
                         return writeProperty(column, QRangeModelDetails::pointerTo(target), data);
                     }
                 } else if constexpr (multi_role::value) {
