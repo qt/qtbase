@@ -867,17 +867,13 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
         }
         break;
     case PE_IndicatorCheckBox: {
-            const bool isRtl = option->direction == Qt::RightToLeft;
             const bool isOn = option->state & State_On;
             const bool isPartial = option->state & State_NoChange;
 
-            QRectF rect = isRtl ? option->rect.adjusted(0, 0, -2, 0) : option->rect.adjusted(2, 0, 0, 0);
+            const QRectF rect = option->rect;
             const QPointF center = rect.center();
-            rect.setWidth(15);
-            rect.setHeight(15);
-            rect.moveCenter(center);
 
-            drawRoundedRect(painter, rect, borderPenControlAlt(option),
+            drawRoundedRect(painter, option->rect, borderPenControlAlt(option),
                             controlFillBrush(option, ControlType::ControlAlt));
 
             if (isOn) {
@@ -919,7 +915,6 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
         }
         break;
     case PE_IndicatorRadioButton: {
-            const bool isRtl = option->direction == Qt::RightToLeft;
             const bool isOn = option->state & State_On;
             qreal innerRadius = radioButtonInnerRadius(state);
             if (d->transitionsEnabled() && option->styleObject) {
@@ -930,7 +925,7 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
                 option->styleObject->setProperty("_q_inner_radius", innerRadius);
             }
 
-            QRectF rect = isRtl ? option->rect.adjusted(0, 0, -2, 0) : option->rect.adjusted(2, 0, 0, 0);
+            const QRectF rect = option->rect;
             const QPointF center = rect.center();
 
             painter->setPen(borderPenControlAlt(option));
@@ -1848,7 +1843,7 @@ QRect QWindows11Style::subElementRect(QStyle::SubElement element, const QStyleOp
     case QStyle::SE_RadioButtonIndicator:
     case QStyle::SE_CheckBoxIndicator:
         ret = QWindowsVistaStyle::subElementRect(element, option, widget);
-        ret = ret.marginsRemoved(QMargins(4,0,0,0));
+        ret.moveLeft(contentItemHMargin);
         break;
     case QStyle::SE_ComboBoxFocusRect:
     case QStyle::SE_CheckBoxFocusRect:
@@ -2158,6 +2153,27 @@ QSize QWindows11Style::sizeFromContents(ContentsType type, const QStyleOption *o
         break;
     case CT_RadioButton:
     case CT_CheckBox:
+        if (const auto *buttonOpt = qstyleoption_cast<const QStyleOptionButton *>(option)) {
+            const auto p = proxy();
+            const bool isRadio = (type == CT_RadioButton);
+
+            const int width = p->pixelMetric(
+                    isRadio ? PM_ExclusiveIndicatorWidth : PM_IndicatorWidth, option, widget);
+            const int height = p->pixelMetric(
+                    isRadio ? PM_ExclusiveIndicatorHeight : PM_IndicatorHeight, option, widget);
+
+            int margins = 2 * contentItemHMargin;
+            if (!buttonOpt->icon.isNull() || !buttonOpt->text.isEmpty()) {
+                margins += p->pixelMetric(isRadio ? PM_RadioButtonLabelSpacing
+                                                  : PM_CheckBoxLabelSpacing,
+                                          option, widget);
+            }
+
+            contentSize += QSize(width + margins, 4);
+            contentSize.setHeight(qMax(size.height(), height + 2 * contentItemHMargin));
+        }
+        break;
+
         // the indicator needs 2px more in width when there is no text, not needed when
         // the style draws the text
         contentSize = QWindowsVistaStyle::sizeFromContents(type, option, size, widget);
@@ -2208,6 +2224,10 @@ int QWindows11Style::pixelMetric(PixelMetric metric, const QStyleOption *option,
     case PM_SliderControlThickness: // size of the control handle
     case PM_SliderLength:           // same because handle is a circle with r=8
         res += 2 * 8;
+        break;
+    case PM_RadioButtonLabelSpacing:
+    case PM_CheckBoxLabelSpacing:
+        res = 2 * contentItemHMargin;
         break;
     case QStyle::PM_TitleBarButtonIconSize:
         res = 16;
