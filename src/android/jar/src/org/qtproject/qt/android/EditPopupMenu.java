@@ -141,16 +141,16 @@ class EditPopupMenu implements ViewTreeObserver.OnPreDrawListener, View.OnLayout
     public void contextButtonClicked(int buttonId) {
         switch (buttonId) {
         case android.R.string.cut:
-            QtNativeInputConnection.cut();
+            QtInputConnection.QtNativeInputConnection.cut();
             break;
         case android.R.string.copy:
-            QtNativeInputConnection.copy();
+            QtInputConnection.QtNativeInputConnection.copy();
             break;
         case android.R.string.paste:
-            QtNativeInputConnection.paste();
+            QtInputConnection.QtNativeInputConnection.paste();
             break;
         case android.R.string.selectAll:
-            QtNativeInputConnection.selectAll();
+            QtInputConnection.QtNativeInputConnection.selectAll();
             break;
         }
         hide();

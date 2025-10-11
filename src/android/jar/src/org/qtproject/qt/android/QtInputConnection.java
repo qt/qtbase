@@ -27,35 +27,35 @@ class QtExtractedText
     String text;
 }
 
-class QtNativeInputConnection
-{
-    static native boolean beginBatchEdit();
-    static native boolean endBatchEdit();
-    static native boolean commitText(String text, int newCursorPosition);
-    static native boolean commitCompletion(String text, int position);
-    static native boolean deleteSurroundingText(int leftLength, int rightLength);
-    static native boolean finishComposingText();
-    static native int getCursorCapsMode(int reqModes);
-    static native QtExtractedText getExtractedText(int hintMaxChars, int hintMaxLines, int flags);
-    static native String getSelectedText(int flags);
-    static native String getTextAfterCursor(int length, int flags);
-    static native String getTextBeforeCursor(int length, int flags);
-    static native boolean replaceText(int start, int end, String text, int newCursorPosition);
-    static native boolean setComposingText(String text, int newCursorPosition);
-    static native boolean setComposingRegion(int start, int end);
-    static native boolean setSelection(int start, int end);
-    static native boolean selectAll();
-    static native boolean cut();
-    static native boolean copy();
-    static native boolean copyURL();
-    static native boolean paste();
-    static native boolean updateCursorPosition();
-    static native void reportFullscreenMode(boolean enabled);
-    static native boolean fullscreenMode();
-}
-
 class QtInputConnection extends BaseInputConnection
 {
+    static class QtNativeInputConnection
+    {
+        static native boolean beginBatchEdit();
+        static native boolean endBatchEdit();
+        static native boolean commitText(String text, int newCursorPosition);
+        static native boolean commitCompletion(String text, int position);
+        static native boolean deleteSurroundingText(int leftLength, int rightLength);
+        static native boolean finishComposingText();
+        static native int getCursorCapsMode(int reqModes);
+        static native QtExtractedText getExtractedText(int hintMaxChars, int hintMaxLines, int flags);
+        static native String getSelectedText(int flags);
+        static native String getTextAfterCursor(int length, int flags);
+        static native String getTextBeforeCursor(int length, int flags);
+        static native boolean replaceText(int start, int end, String text, int newCursorPosition);
+        static native boolean setComposingText(String text, int newCursorPosition);
+        static native boolean setComposingRegion(int start, int end);
+        static native boolean setSelection(int start, int end);
+        static native boolean selectAll();
+        static native boolean cut();
+        static native boolean copy();
+        static native boolean copyURL();
+        static native boolean paste();
+        static native boolean updateCursorPosition();
+        static native void reportFullscreenMode(boolean enabled);
+        static native boolean fullscreenMode();
+    }
+
     private static final int ID_SELECT_ALL = android.R.id.selectAll;
     private static final int ID_CUT = android.R.id.cut;
     private static final int ID_COPY = android.R.id.copy;

@@ -174,7 +174,7 @@ class QtInputDelegate implements QtInputConnection.QtInputConnectionListener, Qt
                         public void onEnd(WindowInsetsAnimation animation) {
                             decorView.setWindowInsetsAnimationCallback(null);
                             if ((animation.getTypeMask() & WindowInsets.Type.ime()) == 0) {
-                                QtNativeInputConnection.updateCursorPosition();
+                                QtInputConnection.QtNativeInputConnection.updateCursorPosition();
                                 if (m_softInputMode == 0) {
                                     probeForKeyboardHeight(activity, x, y, width, height,
                                                             inputHints, enterKeyType);
@@ -192,7 +192,7 @@ class QtInputDelegate implements QtInputConnection.QtInputConnectionListener, Qt
                 protected void onReceiveResult(int resultCode, Bundle resultData) {
                     switch (resultCode) {
                         case InputMethodManager.RESULT_SHOWN:
-                            QtNativeInputConnection.updateCursorPosition();
+                            QtInputConnection.QtNativeInputConnection.updateCursorPosition();
                             //FALLTHROUGH
                         case InputMethodManager.RESULT_UNCHANGED_SHOWN:
                             setKeyboardVisibility(true, System.nanoTime());
