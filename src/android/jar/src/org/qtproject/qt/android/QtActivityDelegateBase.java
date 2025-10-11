@@ -144,7 +144,7 @@ abstract class QtActivityDelegateBase
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             // FIXME: Handle contrast changes the same way as uiMode changes (QTBUG-140749).
             UiModeManager uiModeManager =
-                (UiModeManager) m_activity.getSystemService(m_activity.UI_MODE_SERVICE);
+                (UiModeManager) m_activity.getSystemService(Activity.UI_MODE_SERVICE);
             updateUiContrast(uiModeManager.getContrast());
         }
     }
