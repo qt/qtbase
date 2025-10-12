@@ -186,6 +186,8 @@ private slots:
     void testEscapes();
     void testEscapedKeys_data();
     void testEscapedKeys();
+    void testUnescapedKeys_data();
+    void testUnescapedKeys();
     void testNormalizedKey_data();
     void testNormalizedKey();
     void testVariantTypes_data() { populateWithFormats(); }
@@ -2832,11 +2834,6 @@ void tst_QSettings::testEscapes()
 {
     QSettings settings(QSettings::UserScope, "software.org", "KillerAPP");
 
-#define testUnescapedKey(escKey, plainKey, reescKey) \
-    QCOMPARE(iniUnescapedKey(escKey), QString(plainKey)); \
-    QCOMPARE(iniEscapedKey(plainKey), QByteArray(reescKey)); \
-    QCOMPARE(iniUnescapedKey(reescKey), QString(plainKey));
-
 #define testEscapedStringList(plainStrList, escStrList) \
     { \
         QStringList plainList(plainStrList); \
@@ -2871,15 +2868,6 @@ void tst_QSettings::testEscapes()
         QVariant v = QSettingsPrivate::stringToVariant(QString(escStr)); \
         QCOMPARE(v.toString(), QString(vStr)); \
     }
-
-    testUnescapedKey("", "", "");
-    testUnescapedKey("%20", " ", "%20");
-    testUnescapedKey("/alpha/beta", "/alpha/beta", "\\alpha\\beta");
-    testUnescapedKey("\\alpha\\beta", "/alpha/beta", "\\alpha\\beta");
-    testUnescapedKey("%5Calpha%5Cbeta", "\\alpha\\beta", "%5Calpha%5Cbeta");
-    testUnescapedKey("%", "%", "%25");
-    testUnescapedKey("%f%!%%%%1x%x1%U%Uz%U123%U1234%1234%", QString("%f%!%%%%1x%x1%U%Uz%U123") + QChar(0x1234) + "\x12" + "34%",
-                     "%25f%25%21%25%25%25%251x%25x1%25U%25Uz%25U123%U1234%1234%25");
 
     testEscapedStringList("", "");
     testEscapedStringList(" ", "\" \"");
@@ -2969,6 +2957,39 @@ void tst_QSettings::testEscapedKeys()
 
     QCOMPARE(iniEscapedKey(plainKey), escKey);
     QCOMPARE(iniUnescapedKey(escKey), plainKey);
+}
+
+void tst_QSettings::testUnescapedKeys_data()
+{
+    QTest::addColumn<QByteArray>("escKey");
+    QTest::addColumn<QString>("plainKey");
+    QTest::addColumn<QByteArray>("reescKey");
+
+    QTest::newRow("empty-string") << ""_ba << u""_s << ""_ba;
+    QTest::newRow("space") << "%20"_ba << u" "_s << "%20"_ba;
+    QTest::newRow("%") << "%"_ba << u"%"_s << "%25"_ba;
+
+    QTest::newRow("/alpha/beta")     << "/alpha/beta"_ba     << "/alpha/beta" << "\\alpha\\beta"_ba;
+    QTest::newRow("\\alpha\\beta")   << "\\alpha\\beta"_ba   << "/alpha/beta" << "\\alpha\\beta"_ba;
+    QTest::newRow("%5Calpha%5Cbeta") << "%5Calpha%5Cbeta"_ba << "\\alpha\\beta" << "%5Calpha%5Cbeta"_ba;
+
+    QTest::newRow("many-percent")
+        << "%f%!%%%%1x%x1%U%Uz%U123%U1234%1234%"_ba
+        << QString("%f%!%%%%1x%x1%U%Uz%U123"_L1 + QChar(0x1234) + "\x12" + "34%")
+        << "%25f%25%21%25%25%25%251x%25x1%25U%25Uz%25U123%U1234%1234%25"_ba;
+}
+
+void tst_QSettings::testUnescapedKeys()
+{
+    QFETCH(QByteArray, escKey);
+    QFETCH(QString, plainKey);
+    QFETCH(QByteArray, reescKey);
+
+    QSettings settings(QSettings::UserScope, "example.org", "KillerAPP");
+
+    QCOMPARE(iniUnescapedKey(escKey), plainKey);
+    QCOMPARE(iniEscapedKey(plainKey), reescKey);
+    QCOMPARE(iniUnescapedKey(reescKey), plainKey);
 }
 
 #endif
