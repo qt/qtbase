@@ -1323,11 +1323,12 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
             }
         }
         break;
-    case QStyle::CE_ProgressBarGroove:{
-        if (const QStyleOptionProgressBar* progbaropt = qstyleoption_cast<const QStyleOptionProgressBar*>(option)) {
-            QRect rect = subElementRect(SE_ProgressBarContents, progbaropt, widget);
+#if QT_CONFIG(progressbar)
+    case CE_ProgressBarGroove:
+        if (const auto baropt = qstyleoption_cast<const QStyleOptionProgressBar*>(option)) {
+            QRect rect = option->rect;
             QPointF center = rect.center();
-            if (progbaropt->state & QStyle::State_Horizontal) {
+            if (baropt->state & QStyle::State_Horizontal) {
                 rect.setHeight(1);
                 rect.moveTop(center.y());
             } else {
@@ -1339,11 +1340,10 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
             painter->drawRect(rect);
         }
         break;
-    }
-    case QStyle::CE_ProgressBarContents:
+    case CE_ProgressBarContents:
         if (const auto baropt = qstyleoption_cast<const QStyleOptionProgressBar *>(option)) {
             QPainterStateGuard psg(painter);
-            QRectF rect = subElementRect(SE_ProgressBarContents, baropt, widget);
+            QRectF rect = option->rect;
             painter->translate(rect.topLeft());
             rect.translate(-rect.topLeft());
 
@@ -1403,16 +1403,17 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
             drawRoundedRect(painter, rect, Qt::NoPen, baropt->palette.accent());
         }
         break;
-    case QStyle::CE_ProgressBarLabel:
-        if (const QStyleOptionProgressBar* progbaropt = qstyleoption_cast<const QStyleOptionProgressBar*>(option)) {
-            const bool vertical = !(progbaropt->state & QStyle::State_Horizontal);
+    case CE_ProgressBarLabel:
+        if (const auto baropt = qstyleoption_cast<const QStyleOptionProgressBar *>(option)) {
+            const bool vertical = !(baropt->state & QStyle::State_Horizontal);
             if (!vertical) {
-                QRect rect = subElementRect(SE_ProgressBarLabel, progbaropt, widget);
-                painter->setPen(progbaropt->palette.text().color());
-                painter->drawText(rect, progbaropt->text, progbaropt->textAlignment);
+                proxy()->drawItemText(painter, baropt->rect, Qt::AlignCenter | Qt::TextSingleLine,
+                                      baropt->palette, baropt->state & State_Enabled, baropt->text,
+                                      QPalette::Text);
             }
         }
         break;
+#endif // QT_CONFIG(progressbar)
     case CE_PushButtonLabel:
         if (const QStyleOptionButton *btn = qstyleoption_cast<const QStyleOptionButton *>(option))  {
             QRect textRect = btn->rect;
@@ -1906,15 +1907,18 @@ QRect QWindows11Style::subElementRect(QStyle::SubElement element, const QStyleOp
             ret = QWindowsVistaStyle::subElementRect(element, option, widget);
         }
         break;
-    case QStyle::SE_ProgressBarLabel:
-        if (const QStyleOptionProgressBar *pb = qstyleoption_cast<const QStyleOptionProgressBar *>(option)) {
-            if (pb->textAlignment.testFlags(Qt::AlignVCenter)) {
-                ret = option->rect.adjusted(0, 6, 0, 0);
-            } else {
-                ret = QWindowsVistaStyle::subElementRect(element, option, widget);
-            }
+#if QT_CONFIG(progressbar)
+    case SE_ProgressBarGroove:
+    case SE_ProgressBarContents:
+    case SE_ProgressBarLabel:
+        if (const auto *pb = qstyleoption_cast<const QStyleOptionProgressBar *>(option)) {
+            QStyleOptionProgressBar optCopy(*pb);
+            // we only support label right from content
+            optCopy.textAlignment = Qt::AlignRight;
+            return QWindowsVistaStyle::subElementRect(element, &optCopy, widget);
         }
         break;
+#endif // QT_CONFIG(progressbar)
     case QStyle::SE_HeaderLabel:
     case QStyle::SE_HeaderArrow:
         ret = QCommonStyle::subElementRect(element, option, widget);
