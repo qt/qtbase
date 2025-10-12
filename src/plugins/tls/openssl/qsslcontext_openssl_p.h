@@ -30,6 +30,7 @@ QT_BEGIN_NAMESPACE
 class QSslContext
 {
 public:
+    Q_DISABLE_COPY_MOVE(QSslContext)
 
     ~QSslContext();
 
@@ -80,7 +81,7 @@ private:
     SSL_SESSION *session;
     QByteArray m_sessionASN1;
     int m_sessionTicketLifeTimeHint;
-    QSslError::SslError errorCode;
+    QSslError::SslError errorCode = {};
     QString errorStr;
     QSslConfiguration sslConfiguration;
 #ifndef OPENSSL_NO_NEXTPROTONEG

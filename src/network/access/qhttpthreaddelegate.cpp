@@ -9,6 +9,7 @@
 #include <QAuthenticator>
 #include <QEventLoop>
 #include <QCryptographicHash>
+#include <QtCore/qscopedvaluerollback.h>
 
 #include "private/qhttpnetworkreply_p.h"
 #include "private/qnetworkaccesscache_p.h"
@@ -148,9 +149,9 @@ public:
     QNetworkAccessCachedHttpConnection(quint16 connectionCount, const QString &hostName, quint16 port, bool encrypt,
                                        QHttpNetworkConnection::ConnectionType connectionType)
         : QHttpNetworkConnection(connectionCount, hostName, port, encrypt, /*parent=*/nullptr, connectionType)
+        ,CacheableObject(Option::Expires | Option::Shareable)
     {
-        setExpires(true);
-        setShareable(true);
+
     }
 
     virtual void dispose() override
@@ -213,7 +214,7 @@ void QHttpThreadDelegate::startRequestSynchronously()
     synchronous = true;
 
     QEventLoop synchronousRequestLoop;
-    this->synchronousRequestLoop = &synchronousRequestLoop;
+    QScopedValueRollback<QEventLoop*> guard(this->synchronousRequestLoop, &synchronousRequestLoop);
 
     // Worst case timeout
     QTimer::singleShot(30*1000, this, SLOT(abortRequest()));

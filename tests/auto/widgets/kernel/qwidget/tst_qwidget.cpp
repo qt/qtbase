@@ -182,7 +182,6 @@ private slots:
     void reparent();
     void setScreen();
     void windowState();
-    void resizePropagation();
     void showMaximized();
     void showFullScreen();
     void showMinimized();
@@ -396,6 +395,7 @@ private slots:
     void touchUpdateOnNewTouch();
     void touchCancel();
     void touchEventsForGesturePendingWidgets();
+    void synthMouseDoubleClick();
 
     void styleSheetPropagation();
 
@@ -2985,119 +2985,6 @@ void tst_QWidget::windowState()
     QTRY_VERIFY2(HighDpi::fuzzyCompare(widget1.pos(), pos, m_fuzz),
                  qPrintable(HighDpi::msgPointMismatch(widget1.pos(), pos)));
     QTRY_COMPARE(widget1.size(), size);
-}
-
-// Test propagation of size and state from platform window to QWidget
-// Windows and linux/XCB only
-void tst_QWidget::resizePropagation()
-{
-#if !defined(Q_OS_LINUX) && !defined(Q_OS_WIN)
-    QSKIP("resizePropagation test is designed for Linux/XCB and Windows only");
-#endif
-    const bool xcb = (m_platform == QStringLiteral("xcb"));
-#ifdef Q_OS_LINUX
-    if (!xcb)
-        QSKIP("resizePropagation test is designed for XCB only");
-#endif
-
-    // Windows:
-    // When a widget is maximized after it has been resized, the widget retains its original size,
-    // while the window shows maximum size.
-    // windowStateChanged signal gets fired on a no-op change from/to WindowNoState
-
-    // Initialize widget and signal spy for window handle
-    QWidget widget;
-    widget.showMaximized();
-    QVERIFY(QTest::qWaitForWindowExposed(&widget));
-    QWindow *window = widget.windowHandle();
-    QTRY_VERIFY(window);
-    QSignalSpy spy(window, &QWindow::windowStateChanged);
-    int count = 0;
-
-    const QSize screenSize = QGuiApplication::primaryScreen()->size();
-    const QSize size1 = QSize(screenSize.width() * 0.5, screenSize.height() * 0.5);
-    const QSize size2 = QSize(screenSize.width() * 0.625, screenSize.height() * 0.833);
-
-    enum CountIncrementCheck {Equal, Greater};
-    enum TargetSizeCheck {Fail, Warn};
-    auto verifyResize = [&](const QSize &size, Qt::WindowState windowState,
-                            CountIncrementCheck checkCountIncrement,
-                            TargetSizeCheck checkTargetSize)
-    {
-        // Capture count of latest async signals
-        if (checkCountIncrement == Equal)
-            count = spy.count();
-
-        // Resize if required
-        if (size.isValid())
-            widget.resize(size);
-
-        // Wait for the widget anyway
-        QVERIFY(QTest::qWaitForWindowExposed(&widget));
-
-        // Check signal count and qDebug output for fail analysis
-        switch (checkCountIncrement) {
-        case Greater: {
-                auto logger = qScopeGuard([&](){
-                    qDebug() << "spy count:" << spy.count() << "previous count:" << count;
-                });
-                QTRY_VERIFY(spy.count() > count);
-                logger.dismiss();
-                count = spy.count();
-            }
-            break;
-        case Equal: {
-                auto logger = qScopeGuard([&](){
-                   qDebug() << spy << widget.windowState() << window->windowState();
-                });
-                QCOMPARE(spy.count(), count);
-                logger.dismiss();
-            }
-            break;
-        }
-
-        // QTRY necessary because state changes are propagated async
-        QTRY_COMPARE(widget.windowState(), windowState);
-        QTRY_COMPARE(window->windowState(), windowState);
-
-        // Check target size with fail or warning
-        switch (checkTargetSize) {
-        case Fail:
-            QCOMPARE(widget.size(), window->size());
-            break;
-        case Warn:
-            if (widget.size() != window->size()) {
-                qWarning() << m_platform << "size mismtach tolerated. Widget:"
-                           << widget.size() << "Window:" << window->size();
-            }
-            break;
-        }
-    };
-
-    // test state and size consistency of maximized window
-    verifyResize(QSize(), Qt::WindowMaximized, Equal, Fail);
-    if (QTest::currentTestFailed())
-        return;
-
-    // test state transition, state and size consistency after resize
-    verifyResize(size1, Qt::WindowNoState, Greater, xcb ? Warn : Fail );
-    if (QTest::currentTestFailed())
-        return;
-
-    // test unchanged state, state and size consistency after resize
-    verifyResize(size2, Qt::WindowNoState, Equal, xcb ? Warn : Fail);
-    if (QTest::currentTestFailed())
-        return;
-
-    // test state transition, state and size consistency after maximize
-    widget.showMaximized();
-    verifyResize(QSize(), Qt::WindowMaximized, Greater, xcb ? Fail : Warn);
-    if (QTest::currentTestFailed())
-        return;
-
-#ifdef Q_OS_WIN
-    QCOMPARE(widget.size(), size2);
-#endif
 }
 
 void tst_QWidget::showMaximized()
@@ -10882,6 +10769,10 @@ void tst_QWidget::hoverPosition()
     QVERIFY(QTest::qWaitForWindowExposed(&root));
 
     const QPoint middle(50, 50);
+    // wait until we got the correct global pos
+    QPoint expectedGlobalPos = root.geometry().topLeft() + QPoint(100, 100) + middle;
+    if (!QTest::qWaitFor([&]{ return expectedGlobalPos == h.mapToGlobal(middle); }))
+        QSKIP("Can't move cursor");
     QPoint curpos = h.mapToGlobal(middle);
     QCursor::setPos(curpos);
     if (!QTest::qWaitFor([curpos]{ return QCursor::pos() == curpos; }))
@@ -11983,7 +11874,24 @@ protected:
         case QEvent::MouseMove:
         case QEvent::MouseButtonRelease:
             ++m_mouseEventCount;
-            m_lastMouseEventPos = static_cast<QMouseEvent *>(e)->position();
+            {
+                QMouseEvent *me = static_cast<QMouseEvent *>(e);
+                m_lastMouseEventPos = me->position();
+                m_lastMouseTimestamp = me->timestamp();
+            }
+            if (m_acceptMouse)
+                e->accept();
+            else
+                e->ignore();
+            return true;
+
+        case QEvent::MouseButtonDblClick:
+            ++m_mouseEventCount;
+            {
+                QMouseEvent *me = static_cast<QMouseEvent *>(e);
+                m_lastMouseEventPos = me->position();
+                m_doubleClickTimestamp = me->timestamp();
+            }
             if (m_acceptMouse)
                 e->accept();
             else
@@ -12009,6 +11917,8 @@ public:
     int m_mouseEventCount = 0;
     bool m_acceptMouse = true;
     QPointF m_lastMouseEventPos;
+    quint64 m_lastMouseTimestamp = 0;
+    quint64 m_doubleClickTimestamp = 0;
 };
 
 void tst_QWidget::touchEventSynthesizedMouseEvent()
@@ -12248,6 +12158,50 @@ void tst_QWidget::touchEventsForGesturePendingWidgets()
     QCOMPARE(parent.m_touchUpdateCount, 0);
     QCOMPARE(parent.m_touchEndCount, 0);
     QVERIFY(parent.m_gestureEventCount > 0);
+}
+
+void tst_QWidget::synthMouseDoubleClick()
+{
+    TouchMouseWidget widget;
+    widget.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
+    widget.show();
+    QWindow* window = widget.windowHandle();
+    QVERIFY(QTest::qWaitForWindowExposed(window));
+
+    // tap once; move slightly from press to release
+    QPoint p(20, 20);
+    int expectedMouseEventCount = 0;
+    QTest::touchEvent(window, m_touchScreen).press(1, p, window);
+    QCOMPARE(widget.m_touchBeginCount, 0);
+    QCOMPARE(widget.m_mouseEventCount, ++expectedMouseEventCount);
+    QCOMPARE(widget.m_lastMouseEventPos.toPoint(), p);
+    quint64 mouseTimestamp = widget.m_lastMouseTimestamp;
+    p += {1, 0};
+    QTest::touchEvent(window, m_touchScreen).move(1, p, window);
+    QCOMPARE(widget.m_mouseEventCount, ++expectedMouseEventCount);
+    QCOMPARE(widget.m_lastMouseEventPos.toPoint(), p);
+    QCOMPARE_GT(widget.m_lastMouseTimestamp, mouseTimestamp);
+    mouseTimestamp = widget.m_lastMouseTimestamp;
+    QTest::touchEvent(window, m_touchScreen).release(1, p, window);
+    QCOMPARE(widget.m_mouseEventCount, ++expectedMouseEventCount);
+    QCOMPARE(widget.m_lastMouseEventPos.toPoint(), p);
+    QCOMPARE_GT(widget.m_lastMouseTimestamp, mouseTimestamp);
+    mouseTimestamp = widget.m_lastMouseTimestamp;
+
+    // tap again nearby: a double-click event should be synthesized
+    p += {0, 1};
+    QTest::touchEvent(window, m_touchScreen).press(2, p, window);
+    QCOMPARE(widget.m_touchBeginCount, 0);
+    QCOMPARE(widget.m_mouseEventCount, ++expectedMouseEventCount);
+    QCOMPARE(widget.m_lastMouseEventPos.toPoint(), p);
+    QCOMPARE_GT(widget.m_doubleClickTimestamp, mouseTimestamp);
+    mouseTimestamp = widget.m_doubleClickTimestamp;
+
+    QTest::touchEvent(window, m_touchScreen).release(2, p, window);
+    QCOMPARE(widget.m_mouseEventCount, ++expectedMouseEventCount);
+    QCOMPARE(widget.m_lastMouseEventPos.toPoint(), p);
+    QCOMPARE_GT(widget.m_lastMouseTimestamp, mouseTimestamp);
+    mouseTimestamp = widget.m_lastMouseTimestamp;
 }
 
 void tst_QWidget::styleSheetPropagation()
@@ -13410,6 +13364,7 @@ void tst_QWidget::reparentWindowHandles_data()
     QTest::addRow("top level to child") << 2;
     QTest::addRow("transient parent") << 3;
     QTest::addRow("window container") << 4;
+    QTest::addRow("popup") << 5;
 }
 
 void tst_QWidget::reparentWindowHandles()
@@ -13545,6 +13500,31 @@ void tst_QWidget::reparentWindowHandles()
 
         child->setParent(&anotherTopLevel);
         QCOMPARE(window->parent(), anotherTopLevel.windowHandle());
+    }
+    case 5: {
+        // Popup window that's a child of a widget that is
+        // reparented should keep being a (top level) popup.
+
+        QWidget topLevel;
+        topLevel.setAttribute(Qt::WA_NativeWindow);
+        QVERIFY(topLevel.windowHandle());
+
+        QPointer<QWidget> child = new QWidget(&topLevel);
+        QVERIFY(!child->windowHandle());
+
+        QPointer<QWidget> leaf = new QWidget(child, Qt::Popup);
+        leaf->setAttribute(Qt::WA_DontCreateNativeAncestors);
+        leaf->setAttribute(Qt::WA_NativeWindow);
+        QVERIFY(leaf->windowHandle());
+
+        QWidget anotherTopLevel;
+        anotherTopLevel.setAttribute(Qt::WA_NativeWindow);
+        QVERIFY(anotherTopLevel.windowHandle());
+
+        child->setParent(&anotherTopLevel);
+        QCOMPARE(leaf->windowHandle()->parent(), nullptr);
+        QCOMPARE(leaf->windowHandle()->transientParent(),
+            anotherTopLevel.windowHandle());
     }
         break;
     default:

@@ -601,7 +601,8 @@ QModelIndex QPersistentModelIndex::sibling(int row, int column) const
 
 /*!
     Returns the data for the given \a role for the item referred to by the
-    index.
+    index, or a default-constructed QVariant if this persistent model index
+    is \l{isValid()}{invalid}.
 
     \sa Qt::ItemDataRole, QAbstractItemModel::setData()
 */
@@ -1308,7 +1309,8 @@ void QAbstractItemModel::resetInternalData()
     \fn QVariant QModelIndex::data(int role) const
 
     Returns the data for the given \a role for the item referred to by the
-    index.
+    index, or a default-constructed QVariant if this model index is
+    \l{isValid()}{invalid}.
 */
 
 /*!

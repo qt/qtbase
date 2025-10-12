@@ -18,7 +18,7 @@ qt_internal_add_plugin(QGtk3ThemePlugin
     SOURCES
         main.cpp
         qgtk3dialoghelpers.cpp qgtk3dialoghelpers.h
-        qgtk3menu.cpp qgtk3menu.h
+
         qgtk3theme.cpp qgtk3theme.h
         qgtk3interface.cpp qgtk3interface_p.h
         qgtk3storage.cpp qgtk3storage_p.h

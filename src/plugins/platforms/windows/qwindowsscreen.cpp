@@ -19,6 +19,7 @@
 #include <private/qhighdpiscaling_p.h>
 #include <private/qwindowsfontdatabasebase_p.h>
 #include <private/qpixmap_win_p.h>
+#include <private/quniquehandle_p.h>
 
 #include <QtGui/qscreen.h>
 
@@ -127,6 +128,18 @@ struct RegistryHandleDeleter
 
 using RegistryHandlePtr = std::unique_ptr<std::remove_pointer_t<HKEY>, RegistryHandleDeleter>;
 
+struct DevInfoHandleTraits
+{
+    using Type = HDEVINFO;
+    static Type invalidValue()
+    {
+        return reinterpret_cast<HDEVINFO>(INVALID_HANDLE_VALUE);
+    }
+    static bool close(Type handle) { return SetupDiDestroyDeviceInfoList(handle) == TRUE; }
+};
+
+using DevInfoHandle = QUniqueHandle<DevInfoHandleTraits>;
+
 static void setMonitorDataFromSetupApi(QWindowsScreenData &data,
                                        const std::vector<DISPLAYCONFIG_PATH_INFO> &pathGroup)
 {
@@ -174,13 +187,16 @@ static void setMonitorDataFromSetupApi(QWindowsScreenData &data,
         constexpr GUID GUID_DEVINTERFACE_MONITOR = {
             0xe6f07b5f, 0xee97, 0x4a90, { 0xb0, 0x76, 0x33, 0xf5, 0x7b, 0xf4, 0xea, 0xa7 }
         };
-        const HDEVINFO devInfo = SetupDiGetClassDevs(&GUID_DEVINTERFACE_MONITOR, nullptr, nullptr,
-                                                     DIGCF_DEVICEINTERFACE);
+        const DevInfoHandle devInfo{ SetupDiGetClassDevs(
+                &GUID_DEVINTERFACE_MONITOR, nullptr, nullptr, DIGCF_DEVICEINTERFACE) };
+
+        if (!devInfo.isValid())
+            continue;
 
         SP_DEVICE_INTERFACE_DATA deviceInterfaceData{};
         deviceInterfaceData.cbSize = sizeof(deviceInterfaceData);
 
-        if (!SetupDiOpenDeviceInterfaceW(devInfo, deviceName.monitorDevicePath, DIODI_NO_ADD,
+        if (!SetupDiOpenDeviceInterfaceW(devInfo.get(), deviceName.monitorDevicePath, DIODI_NO_ADD,
                                          &deviceInterfaceData)) {
             qCWarning(lcQpaScreen)
                     << u"Unable to open monitor interface to %1:"_s.arg(data.deviceName)
@@ -189,7 +205,7 @@ static void setMonitorDataFromSetupApi(QWindowsScreenData &data,
         }
 
         DWORD requiredSize{ 0 };
-        if (SetupDiGetDeviceInterfaceDetailW(devInfo, &deviceInterfaceData, nullptr, 0,
+        if (SetupDiGetDeviceInterfaceDetailW(devInfo.get(), &deviceInterfaceData, nullptr, 0,
                                              &requiredSize, nullptr)
             || GetLastError() != ERROR_INSUFFICIENT_BUFFER) {
             continue;
@@ -200,7 +216,7 @@ static void setMonitorDataFromSetupApi(QWindowsScreenData &data,
         devicePath->cbSize = sizeof(std::remove_pointer_t<decltype(devicePath)>);
         SP_DEVINFO_DATA deviceInfoData{};
         deviceInfoData.cbSize = sizeof(deviceInfoData);
-        if (!SetupDiGetDeviceInterfaceDetailW(devInfo, &deviceInterfaceData, devicePath,
+        if (!SetupDiGetDeviceInterfaceDetailW(devInfo.get(), &deviceInterfaceData, devicePath,
                                               requiredSize, nullptr, &deviceInfoData)) {
             qCDebug(lcQpaScreen) << u"Unable to get monitor metadata for %1:"_s.arg(data.deviceName)
                                  << QSystemError::windowsString();
@@ -208,7 +224,7 @@ static void setMonitorDataFromSetupApi(QWindowsScreenData &data,
         }
 
         const RegistryHandlePtr edidRegistryKey{ SetupDiOpenDevRegKey(
-                devInfo, &deviceInfoData, DICS_FLAG_GLOBAL, 0, DIREG_DEV, KEY_READ) };
+                devInfo.get(), &deviceInfoData, DICS_FLAG_GLOBAL, 0, DIREG_DEV, KEY_READ) };
 
         if (!edidRegistryKey || edidRegistryKey.get() == INVALID_HANDLE_VALUE)
             continue;
@@ -691,10 +707,14 @@ void QWindowsScreenManager::initialize()
     handleScreenChanges();
 }
 
-QWindowsScreenManager::~QWindowsScreenManager()
+void QWindowsScreenManager::destroyWindow()
 {
+    qCDebug(lcQpaScreen) << "Destroying display change observer" << m_displayChangeObserver;
     DestroyWindow(m_displayChangeObserver);
+    m_displayChangeObserver = nullptr;
 }
+
+QWindowsScreenManager::~QWindowsScreenManager() = default;
 
 bool QWindowsScreenManager::isSingleScreen()
 {

@@ -377,7 +377,8 @@ void tst_QtJson::testNumbers_2()
     // Validate the last actual value is min denorm
     QVERIFY2(floatValues_1[1074] == 4.9406564584124654417656879286822e-324, QString("Min denorm value is incorrect: %1").arg(floatValues_1[1074]).toLatin1());
 
-    if constexpr (std::numeric_limits<double>::has_denorm == std::denorm_present) {
+    QT_IGNORE_DEPRECATIONS(constexpr bool has_denorm = std::numeric_limits<double>::has_denorm == std::denorm_present;)
+    if constexpr (has_denorm) {
         // Validate that every value is half the value before it up to 1
         for (int index = 1074; index > 0; index--) {
             QVERIFY2(floatValues_1[index] != 0, QString("2**- %1 should not be 0").arg(index).toLatin1());
@@ -1925,7 +1926,8 @@ void tst_QtJson::toJsonLargeNumericValues()
 
 void tst_QtJson::toJsonDenormalValues()
 {
-    if constexpr (std::numeric_limits<double>::has_denorm == std::denorm_present) {
+    QT_IGNORE_DEPRECATIONS(constexpr bool has_denorm = std::numeric_limits<double>::has_denorm == std::denorm_present;)
+    if constexpr (has_denorm) {
         QJsonObject object;
         QJsonArray array;
         array.append(QJsonValue(5e-324));                  // JS Number.MIN_VALUE
@@ -2323,7 +2325,8 @@ void tst_QtJson::parseNumbers()
             QCOMPARE(val.toDouble(), numbers[i].n);
         }
     }
-    if constexpr (std::numeric_limits<double>::has_denorm == std::denorm_present) {
+    QT_IGNORE_DEPRECATIONS(constexpr bool has_denorm = std::numeric_limits<double>::has_denorm == std::denorm_present;)
+    if constexpr (has_denorm) {
         Numbers numbers [] = {
             { "1.1e-308", 1.1e-308 },
             { "-1.1e-308", -1.1e-308 }

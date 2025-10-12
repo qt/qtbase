@@ -1,0 +1,26 @@
+[
+    {
+        "Id": "tika-mimetypes",
+        "Name": "Apache Tika MimeType Definitions",
+        "QDocModule": "qtcore",
+        "QtUsage":
+                "Qt Core uses a copy of the Apache Tika MimeType Definitions if shared-mime-info isn't installed on the system.",
+        "Comment": {
+            "Files":
+                    "For update, see qtbase/src/corelib/mimetypes/3rdparty/process_tika_mimetypes.py"
+        },
+        "Files": [
+            "tika-mimetypes.xml"
+        ],
+        "Description":
+                "The Apache Tika MimeTypes list many known MIME types and how to match files (using globs and/or 'magic' rules for the file contents)",
+        "Homepage":
+                "https://github.com/apache/tika/tree/main/tika-core/src/main/resources/org/apache/tika/mime",
+        "Version": "5101bc7fb090ed7deffe56837d7633c9485a1e5d",
+        "DownloadLocation":
+                "https://github.com/apache/tika/blob/5101bc7fb090ed7deffe56837d7633c9485a1e5d/tika-core/src/main/resources/org/apache/tika/mime/tika-mimetypes.xml",
+        "License": "Apache License 2.0",
+        "LicenseId": "Apache-2.0",
+        "Copyright": "Copyright 2024 The Apache Software Foundation"
+    }
+]

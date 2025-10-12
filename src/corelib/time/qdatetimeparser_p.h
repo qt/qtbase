@@ -24,6 +24,7 @@
 #include "QtCore/qlist.h"
 #include "QtCore/qlocale.h"
 #include "QtCore/qstringlist.h"
+#include "QtCore/qtimezone.h"
 #ifndef QT_BOOTSTRAPPED
 # include "QtCore/qvariant.h"
 #endif
@@ -93,13 +94,12 @@ public:
         FirstSection         = 0x20000 | Internal,
         LastSection          = 0x40000 | Internal,
         CalendarPopupSection = 0x80000 | Internal,
-
-        NoSectionIndex = -1,
-        FirstSectionIndex = -2,
-        LastSectionIndex = -3,
-        CalendarPopupIndex = -4
     }; // extending qdatetimeedit.h's equivalent
     Q_DECLARE_FLAGS(Sections, Section)
+
+    static constexpr int NoSectionIndex = -1;
+    static constexpr int FirstSectionIndex = -2;
+    static constexpr int LastSectionIndex = -3;
 
     struct Q_CORE_EXPORT SectionNode {
         Section type;
@@ -230,8 +230,8 @@ protected: // for the benefit of QDateTimeEditPrivate
     }
     QString stateName(State s) const;
 
-    virtual QDateTime getMinimum() const;
-    virtual QDateTime getMaximum() const;
+    virtual QDateTime getMinimum(const QTimeZone &zone) const;
+    virtual QDateTime getMaximum(const QTimeZone &zone) const;
     virtual int cursorPosition() const { return -1; }
     virtual QLocale locale() const { return defaultLocale; }
 

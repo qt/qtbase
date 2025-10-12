@@ -18,7 +18,9 @@
 #include <QtNetwork/private/qtnetworkglobal_p.h>
 #include "QtCore/qshareddata.h"
 #include "qnetworkrequest_p.h" // for deriving QHttpPartPrivate from QNetworkHeadersPrivate
+
 #include "private/qobject_p.h"
+#include <QtCore/qiodevice.h>
 
 #ifndef Q_OS_WASM
 QT_REQUIRE_CONFIG(http);
@@ -89,8 +91,7 @@ public:
             QIODevice(), multiPart(parentMultiPart), readPointer(0), deviceSize(-1) {
     }
 
-    ~QHttpMultiPartIODevice() {
-    }
+    ~QHttpMultiPartIODevice() override;
 
     virtual bool atEnd() const override {
         return readPointer == size();
@@ -130,11 +131,7 @@ class QHttpMultiPartPrivate: public QObjectPrivate
 public:
 
     QHttpMultiPartPrivate();
-
-    ~QHttpMultiPartPrivate()
-    {
-        delete device;
-    }
+    ~QHttpMultiPartPrivate() override;
 
     QList<QHttpPart> parts;
     QByteArray boundary;

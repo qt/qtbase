@@ -253,9 +253,9 @@ struct QSocks5ConnectData : public QSocks5Data
 struct QSocks5BindData : public QSocks5Data
 {
     QHostAddress localAddress;
-    quint16 localPort;
+    quint16 localPort = 0;
     QHostAddress peerAddress;
-    quint16 peerPort;
+    quint16 peerPort = 0;
     QElapsedTimer timeStamp;
 };
 
@@ -263,15 +263,15 @@ struct QSocks5RevivedDatagram
 {
     QByteArray data;
     QHostAddress address;
-    quint16 port;
+    quint16 port = 0;
 };
 
 #ifndef QT_NO_UDPSOCKET
 struct QSocks5UdpAssociateData : public QSocks5Data
 {
-    QUdpSocket *udpSocket;
+    QUdpSocket *udpSocket = nullptr;
     QHostAddress associateAddress;
-    quint16 associatePort;
+    quint16 associatePort = 0;
     QQueue<QSocks5RevivedDatagram> pendingDatagrams;
 };
 #endif
@@ -1460,7 +1460,7 @@ qint64 QSocks5SocketEngine::read(char *data, qint64 maxlen)
                 //imitate remote closed
                 close();
                 setError(QAbstractSocket::RemoteHostClosedError,
-                         "Remote host closed connection###"_L1);
+                         "Remote host closed connection"_L1);
                 setState(QAbstractSocket::UnconnectedState);
                 return -1;
             } else {

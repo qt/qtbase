@@ -88,7 +88,7 @@ static_assert(sizeof(QScopedPointer<QSslErrorPrivate>) == sizeof(std::unique_ptr
 class QSslErrorPrivate
 {
 public:
-    QSslError::SslError error;
+    QSslError::SslError error = QSslError::NoError;
     QSslCertificate certificate;
 };
 
@@ -102,8 +102,6 @@ public:
 QSslError::QSslError()
     : d(new QSslErrorPrivate)
 {
-    d->error = QSslError::NoError;
-    d->certificate = QSslCertificate();
 }
 
 /*!
@@ -115,7 +113,6 @@ QSslError::QSslError(SslError error)
     : d(new QSslErrorPrivate)
 {
     d->error = error;
-    d->certificate = QSslCertificate();
 }
 
 /*!

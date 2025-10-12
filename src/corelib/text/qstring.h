@@ -1301,7 +1301,7 @@ QString QAnyStringView::toString() const
 // QString inline members
 //
 QString::QString(QLatin1StringView latin1)
-{ *this = QString::fromLatin1(latin1.data(), latin1.size()); }
+    : QString{QString::fromLatin1(latin1.data(), latin1.size())} {}
 const QChar QString::at(qsizetype i) const
 { Q_ASSERT(size_t(i) < size_t(size())); return QChar(d.data()[i]); }
 const QChar QString::operator[](qsizetype i) const

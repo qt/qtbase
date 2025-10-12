@@ -12,6 +12,7 @@ qt_internal_add_test(tst_android
         Qt::CorePrivate
         Qt::Gui
         Qt::GuiPrivate
+        Qt::Widgets
 )
 
 if(ANDROID)

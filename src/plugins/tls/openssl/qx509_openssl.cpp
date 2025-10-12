@@ -256,7 +256,7 @@ QVariant x509ExtensionToValue(X509_EXTENSION *ext)
         else if (meth->ext_free)
             meth->ext_free(ext_internal);
         else
-            qWarning(lcTlsBackend, "Cannot free an extension, a potential memory leak?");
+            qCWarning(lcTlsBackend, "Cannot free an extension, a potential memory leak?");
     });
 
     const char * hexString = nullptr; // The value returned by meth->i2s.

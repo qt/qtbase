@@ -30,7 +30,7 @@ function(__qt_internal_query_emsdk_version emroot_path is_fatal out_var)
         set(EXECUTE_COMMANDPATH "$ENV{EMSDK}/${emroot_path}/emcc")
     endif()
 
-    file(TO_NATIVE_PATH "${EXECUTE_COMMANDPATH}" EXECUTE_COMMAND)
+    file(TO_CMAKE_PATH "${EXECUTE_COMMANDPATH}" EXECUTE_COMMAND)
     execute_process(COMMAND ${EXECUTE_COMMAND} --version
         OUTPUT_VARIABLE emOutput
         OUTPUT_STRIP_TRAILING_WHITESPACE

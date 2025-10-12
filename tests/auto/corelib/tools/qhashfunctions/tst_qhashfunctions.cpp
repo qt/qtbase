@@ -31,6 +31,7 @@ public slots:
 
 private Q_SLOTS:
     void consistent();
+    void boolIntegerConsistency();
     void qhash();
     void qhash_of_empty_and_null_qstring();
     void qhash_of_empty_and_null_qbytearray();
@@ -154,6 +155,19 @@ void tst_QHashFunctions::init()
 {
     QFETCH_GLOBAL(quint64, seedValue);
     seed = size_t(seedValue);
+}
+
+void tst_QHashFunctions::boolIntegerConsistency()
+{
+    if (seed) QEXPECT_FAIL("", "QTBUG-126674", Continue);
+    QCOMPARE(qHash(0, seed), qHash(false, seed));
+    if (seed) QEXPECT_FAIL("", "QTBUG-126674", Continue);
+    QCOMPARE(qHash(1, seed), qHash(true, seed));
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+    // check consistency with pre-6.9 incidental implementation:
+    QCOMPARE(qHash(true,  seed), qHash(int(true)) ^ seed);
+    QCOMPARE(qHash(false, seed), qHash(int(false)) ^ seed);
+#endif
 }
 
 void tst_QHashFunctions::qhash()

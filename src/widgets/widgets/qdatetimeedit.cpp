@@ -303,12 +303,28 @@ void QDateTimeEdit::setTime(QTime time)
     }
 }
 
+/*!
+    \since 5.14
+    Report the calendar system in use by this widget.
+
+    \sa setCalendar()
+*/
 
 QCalendar QDateTimeEdit::calendar() const
 {
     Q_D(const QDateTimeEdit);
     return d->calendar;
 }
+
+/*!
+    \since 5.14
+    Set \a calendar as the calendar system to be used by this widget.
+
+    The widget can use any supported calendar system.
+    By default, it uses the Gregorian calendar.
+
+    \sa calendar()
+*/
 
 void QDateTimeEdit::setCalendar(QCalendar calendar)
 {
@@ -1780,26 +1796,30 @@ void QDateTimeEditPrivate::updateEdit()
     }
 }
 
-QDateTime QDateTimeEditPrivate::getMinimum() const
+QDateTime QDateTimeEditPrivate::getMinimum(const QTimeZone &zone) const
 {
     if (keyboardTracking)
-        return minimum.toDateTime();
+        return minimum.toDateTime().toTimeZone(zone);
 
+    // QDTP's min is the local-time start of QDATETIMEEDIT_DATE_MIN, cached
+    // (along with its conversion to UTC).
     if (timeZone.timeSpec() == Qt::LocalTime)
-        return QDateTimeParser::getMinimum();
+        return QDateTimeParser::getMinimum(zone);
 
-    return QDATETIMEEDIT_DATE_MIN.startOfDay(timeZone);
+    return QDATETIMEEDIT_DATE_MIN.startOfDay(timeZone).toTimeZone(zone);
 }
 
-QDateTime QDateTimeEditPrivate::getMaximum() const
+QDateTime QDateTimeEditPrivate::getMaximum(const QTimeZone &zone) const
 {
     if (keyboardTracking)
-        return maximum.toDateTime();
+        return maximum.toDateTime().toTimeZone(zone);
 
+    // QDTP's max is the local-time end of QDATETIMEEDIT_DATE_MAX, cached
+    // (along with its conversion to UTC).
     if (timeZone.timeSpec() == Qt::LocalTime)
-        return QDateTimeParser::getMaximum();
+        return QDateTimeParser::getMaximum(zone);
 
-    return QDATETIMEEDIT_DATE_MAX.endOfDay(timeZone);
+    return QDATETIMEEDIT_DATE_MAX.endOfDay(timeZone).toTimeZone(zone);
 }
 
 /*!

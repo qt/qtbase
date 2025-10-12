@@ -287,6 +287,17 @@ void tst_QKeyCombination::operator_or()
     QCOMPARE(Qt::ControlModifier | Qt::Key_Escape, QKeyCombination(Qt::ControlModifier, Qt::Key_Escape));
 }
 
+namespace QTBUG_126820 {
+struct S {};
+S operator|(S, S);
+S operator+(S, S);
+
+[[maybe_unused]] constexpr QKeyCombination kc1 = Qt::SHIFT | Qt::Key_A;
+#if QT_DEPRECATED_SINCE(6, 0)
+[[maybe_unused]] constexpr QKeyCombination kc2 = Qt::SHIFT + Qt::Key_A;
+#endif
+}
+
 QTEST_APPLESS_MAIN(tst_QKeyCombination)
 
 #include "tst_qkeycombination.moc"

@@ -274,6 +274,14 @@ public:
 
     QDockAreaLayoutInfo *dockAreaLayoutInfo() { return &layoutState; }
 
+#if QT_CONFIG(toolbar)
+    QToolBarAreaLayout *toolBarAreaLayout()
+    {
+        auto *mainWindow = static_cast<QMainWindow*>(parentWidget());
+        return qt_mainwindow_layout(mainWindow)->toolBarAreaLayout();
+    }
+#endif
+
     bool nativeWindowDeco() const
     {
         return groupWindow()->hasNativeDecos();
@@ -1883,15 +1891,27 @@ class QMainWindowTabBar : public QTabBar
     QPointer<QDockWidget> draggingDock; // Currently dragging (detached) dock widget
 public:
     QMainWindowTabBar(QMainWindow *parent);
+    ~QMainWindowTabBar();
     QDockWidget *dockAt(int index) const;
     QList<QDockWidget *> dockWidgets() const;
-    ~QMainWindowTabBar();
+    bool contains(const QDockWidget *dockWidget) const;
 protected:
     bool event(QEvent *e) override;
     void mouseReleaseEvent(QMouseEvent*) override;
     void mouseMoveEvent(QMouseEvent*) override;
 
 };
+
+QMainWindowTabBar *QMainWindowLayout::findTabBar(const QDockWidget *dockWidget) const
+{
+     for (auto *bar : usedTabBars) {
+        Q_ASSERT(qobject_cast<QMainWindowTabBar *>(bar));
+        auto *tabBar = static_cast<QMainWindowTabBar *>(bar);
+        if (tabBar->contains(dockWidget))
+            return tabBar;
+    }
+    return nullptr;
+}
 
 QMainWindowTabBar::QMainWindowTabBar(QMainWindow *parent)
     : QTabBar(parent), mainWindow(parent)
@@ -1909,6 +1929,20 @@ QList<QDockWidget *> QMainWindowTabBar::dockWidgets() const
     return docks;
 }
 
+bool QMainWindowTabBar::contains(const QDockWidget *dockWidget) const
+{
+    for (int i = 0; i < count(); ++i) {
+        if (dockAt(i) == dockWidget)
+            return true;
+    }
+    return false;
+}
+
+// When a dock widget is removed from a floating tab,
+// Events need to be processed for the tab bar to realize that the dock widget is gone.
+// In this case count() counts the dock widget in transition and accesses dockAt
+// with an out-of-bounds index.
+// => return nullptr in contrast to other xxxxxAt() functions
 QDockWidget *QMainWindowTabBar::dockAt(int index) const
 {
     QMainWindowTabBar *that = const_cast<QMainWindowTabBar *>(this);
@@ -1916,10 +1950,39 @@ QDockWidget *QMainWindowTabBar::dockAt(int index) const
     QDockAreaLayoutInfo *info = mlayout->dockInfo(that);
     if (!info)
         return nullptr;
+
     const int itemIndex = info->tabIndexToListIndex(index);
-    Q_ASSERT(itemIndex >= 0 && itemIndex < info->item_list.count());
-    const QDockAreaLayoutItem &item = info->item_list.at(itemIndex);
-    return item.widgetItem ? qobject_cast<QDockWidget *>(item.widgetItem->widget()) : nullptr;
+    if (itemIndex >= 0) {
+        Q_ASSERT(itemIndex < info->item_list.count());
+        const QDockAreaLayoutItem &item = info->item_list.at(itemIndex);
+        return item.widgetItem ? qobject_cast<QDockWidget *>(item.widgetItem->widget()) : nullptr;
+    }
+
+    return nullptr;
+}
+
+/*!
+   \internal
+   Move \a dockWidget to its ideal unplug position.
+   \list
+   \li If \a dockWidget has a title bar widget, place its center under the mouse cursor.
+   \li Otherwise place it in the middle of the title bar's long side, with a
+       QApplication::startDragDistance() offset on the short side.
+   \endlist
+ */
+static void moveToUnplugPosition(QPoint mouse, QDockWidget *dockWidget)
+{
+    Q_ASSERT(dockWidget);
+
+    if (auto *tbWidget = dockWidget->titleBarWidget()) {
+        dockWidget->move(mouse - tbWidget->rect().center());
+        return;
+    }
+
+    const bool vertical = dockWidget->features().testFlag(QDockWidget::DockWidgetVerticalTitleBar);
+    const int deltaX = vertical ? QApplication::startDragDistance() : dockWidget->width() / 2;
+    const int deltaY = vertical ? dockWidget->height() / 2 : QApplication::startDragDistance();
+    dockWidget->move(mouse - QPoint(deltaX, deltaY));
 }
 
 void QMainWindowTabBar::mouseMoveEvent(QMouseEvent *e)
@@ -1959,9 +2022,8 @@ void QMainWindowTabBar::mouseMoveEvent(QMouseEvent *e)
     if (draggingDock) {
         QDockWidgetPrivate *dockPriv = static_cast<QDockWidgetPrivate *>(QObjectPrivate::get(draggingDock));
         if (dockPriv->state && dockPriv->state->dragging) {
-            QPoint pos = e->globalPosition().toPoint() - dockPriv->state->pressPos;
-            draggingDock->move(pos);
             // move will call QMainWindowLayout::hover
+            moveToUnplugPosition(e->globalPosition().toPoint(), draggingDock);
         }
     }
     QTabBar::mouseMoveEvent(e);
@@ -2012,21 +2074,26 @@ bool QMainWindowTabBar::event(QEvent *e)
     return true;
 }
 
+QList<QDockWidget *> QMainWindowLayout::tabifiedDockWidgets(const QDockWidget *dockWidget) const
+{
+    const auto *bar = findTabBar(dockWidget);
+    if (!bar)
+        return {};
+
+    QList<QDockWidget *> buddies = bar->dockWidgets();
+    // Return only other dock widgets associated with dockWidget in a tab bar.
+    // If dockWidget is alone in a tab bar, return an empty list.
+    buddies.removeOne(dockWidget);
+    return buddies;
+}
+
 bool QMainWindowLayout::isDockWidgetTabbed(const QDockWidget *dockWidget) const
 {
-    for (auto *bar : std::as_const(usedTabBars)) {
-        // A single dock widget in a tab bar is not considered to be tabbed.
-        // This is to make sure, we don't drag an empty QDockWidgetGroupWindow around.
-        // => only consider tab bars with two or more tabs.
-        if (bar->count() <= 1)
-            continue;
-        auto *tabBar = qobject_cast<QMainWindowTabBar *>(bar);
-        Q_ASSERT(tabBar);
-        const auto dockWidgets = tabBar->dockWidgets();
-        if (std::find(dockWidgets.begin(), dockWidgets.end(), dockWidget) != dockWidgets.end())
-            return true;
-    }
-    return false;
+    // A single dock widget in a tab bar is not considered to be tabbed.
+    // This is to make sure, we don't drag an empty QDockWidgetGroupWindow around.
+    // => only consider tab bars with two or more tabs.
+    const auto *bar = findTabBar(dockWidget);
+    return bar && bar->count() > 1;
 }
 
 QTabBar *QMainWindowLayout::getTabBar()
@@ -2864,7 +2931,7 @@ QLayoutItem *QMainWindowLayout::unplug(QWidget *widget, QDockWidgetPrivate::Drag
 #endif
 
 #if !QT_CONFIG(dockwidget) || !QT_CONFIG(tabbar)
-    Q_UNUSED(group);
+    Q_UNUSED(scope);
 #endif
 
     layoutState.unplug(path ,&savedState);

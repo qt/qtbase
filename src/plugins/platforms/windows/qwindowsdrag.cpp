@@ -252,8 +252,9 @@ void QWindowsOleDropSource::createCursors()
         if (const QScreen *primaryScreen = QGuiApplication::primaryScreen())
             platformScreen = primaryScreen->handle();
     }
-    Q_ASSERT(platformScreen);
-    QPlatformCursor *platformCursor = platformScreen->cursor();
+    QPlatformCursor *platformCursor = nullptr;
+    if (platformScreen)
+        platformCursor = platformScreen->cursor();
 
     if (GetSystemMetrics (SM_REMOTESESSION) != 0) {
         /* Workaround for RDP issues with large cursors.
@@ -270,7 +271,7 @@ void QWindowsOleDropSource::createCursors()
         hotSpotScaleFactor = QHighDpiScaling::factor(platformScreen);
         pixmapScaleFactor = hotSpotScaleFactor / pixmap.devicePixelRatio();
     }
-    QPixmap scaledPixmap = qFuzzyCompare(pixmapScaleFactor, 1.0)
+    QPixmap scaledPixmap = (!hasPixmap || qFuzzyCompare(pixmapScaleFactor, 1.0))
         ? pixmap
         :  pixmap.scaled((QSizeF(pixmap.size()) * pixmapScaleFactor).toSize(),
                          Qt::KeepAspectRatio, Qt::SmoothTransformation);

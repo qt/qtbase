@@ -62,7 +62,7 @@ public:
         WordWrap,
         ManualWrap,
         WrapAnywhere,
-        WrapAtWordBoundaryOrAnywhere
+        WrapAtWordBoundaryOrAnywhere,
     };
     inline void setWrapMode(WrapMode wrap) { wordWrap = wrap; }
     inline WrapMode wrapMode() const { return static_cast<WrapMode>(wordWrap); }
@@ -73,7 +73,7 @@ public:
         AddSpaceForLineAndParagraphSeparators = 0x4,
         SuppressColors = 0x8,
         ShowDocumentTerminator = 0x10,
-        IncludeTrailingSpaces = 0x80000000
+        IncludeTrailingSpaces = 0x80000000,
     };
     Q_DECLARE_FLAGS(Flags, Flag)
     inline void setFlags(Flags flags);

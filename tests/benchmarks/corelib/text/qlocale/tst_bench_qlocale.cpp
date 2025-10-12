@@ -237,21 +237,16 @@ void tst_QLocale::fromScriptLand_data()
     ROW("Guru-IN", GurmukhiScript, India);
     ROW("Latn-MA", LatinScript, Morocco);
     ROW("Tfng-MA", TifinaghScript, Morocco);
-    ROW("Cyrl-BA", CyrillicScript, BosniaAndHerzegowina);
     ROW("Cyrl-RS", CyrillicScript, Serbia);
-    ROW("Latn-BA", LatinScript, BosniaAndHerzegowina);
     ROW("Latn-ME", LatinScript, Montenegro);
     ROW("Arab-AF", ArabicScript, Afghanistan);
     ROW("Cyrl-UZ", CyrillicScript, Uzbekistan);
     ROW("Latn-UZ", LatinScript, Uzbekistan);
-    ROW("Latn-LR", LatinScript, Liberia);
     ROW("Vaii-LR", VaiScript, Liberia);
     ROW("Hans-CN", SimplifiedHanScript, China);
     ROW("Hant-HK", TraditionalHanScript, HongKong);
-    ROW("Hans-CN", SimplifiedHanScript, China);
     ROW("Hans-HK", SimplifiedHanScript, HongKong);
     ROW("Hans-SG", SimplifiedHanScript, Singapore);
-    ROW("Hant-HK", TraditionalHanScript, HongKong);
     ROW("Hant-TW", TraditionalHanScript, Taiwan);
 #undef ROW
 }
@@ -566,13 +561,13 @@ void tst_QLocale::toDouble_data()
     QTest::newRow("se_NO: 4x-3") // Only first character of exponent
             << u"4\u00b7\u2212" "03"_s << u"se_NO"_s << false << 0.0;
     QTest::newRow("ar_EG: 4e-3") // Arabic, Egypt
-            << u"\u0664\u0627\u0633\u061c-\u0660\u0663"_s << u"ar_EG"_s << true << 4e-3;
+            << u"\u0664\u0623\u0633\u061c-\u0660\u0663"_s << u"ar_EG"_s << true << 4e-3;
     QTest::newRow("ar_EG: 4x-3") // Only first character of exponent
-            << u"\u0664\u0627\u061c-\u0660\u0663"_s << u"ar_EG"_s << false << 0.0;
+            << u"\u0664\u0623\u061c-\u0660\u0663"_s << u"ar_EG"_s << false << 0.0;
     QTest::newRow("ar_EG: 4e!3") // Only first character of sign
-            << u"\u0664\u0627\u0633\u061c\u0660\u0663"_s << u"ar_EG"_s << false << 0.0;
+            << u"\u0664\u0623\u0633\u061c\u0660\u0663"_s << u"ar_EG"_s << false << 0.0;
     QTest::newRow("ar_EG: 4x!3") // Only first character of sign and exponent
-            << u"\u0664\u0627\u061c\u0660\u0663"_s << u"ar_EG"_s << false << 0.0;
+            << u"\u0664\u0623\u061c\u0660\u0663"_s << u"ar_EG"_s << false << 0.0;
 }
 
 void tst_QLocale::toDouble()

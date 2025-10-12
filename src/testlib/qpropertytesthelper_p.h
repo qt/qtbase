@@ -44,19 +44,15 @@ namespace QTestPrivate {
 */
 #define QPROPERTY_TEST_COMPARISON_HELPER(actual, expected, comparator, represent)                  \
     do {                                                                                           \
-        const size_t maxMsgLen = 1024;                                                             \
-        char msg[maxMsgLen] = { '\0' };                                                            \
-        auto actualStr = represent(actual);                                                        \
-        auto expectedStr = represent(expected);                                                    \
-        const size_t len1 = mbstowcs(nullptr, #actual, maxMsgLen);                                 \
-        const size_t len2 = mbstowcs(nullptr, #expected, maxMsgLen);                               \
-        qsnprintf(msg, maxMsgLen, "\n%s\n   Actual   (%s)%*s %s\n   Expected (%s)%*s %s\n",        \
-                  "Comparison failed!", #actual, qMax(len1, len2) - len1 + 1, ":",                 \
-                  actualStr ? actualStr : "<null>", #expected, qMax(len1, len2) - len2 + 1, ":",   \
-                  expectedStr ? expectedStr : "<null>");                                           \
-        delete[] actualStr;                                                                        \
-        delete[] expectedStr;                                                                      \
-        QVERIFY2(comparator(actual, expected), msg);                                               \
+        char qprop_tst_cmp_hlp_buf[1024]; \
+        const auto qprop_tst_cmp_hlp_act = std::unique_ptr<char[]>(represent(actual)); \
+        const auto qprop_tst_cmp_hlp_exp = std::unique_ptr<char[]>(represent(expected)); \
+        QVERIFY2(comparator(actual, expected), \
+                 QTest::Internal::formatPropertyTestHelperFailure(qprop_tst_cmp_hlp_buf, \
+                                                                  sizeof qprop_tst_cmp_hlp_buf, \
+                                                                  qprop_tst_cmp_hlp_act.get(), \
+                                                                  qprop_tst_cmp_hlp_exp.get(), \
+                                                                  #actual, #expected)); \
     } while (false)
 
 /*!

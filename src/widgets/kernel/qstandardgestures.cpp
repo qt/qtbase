@@ -6,7 +6,9 @@
 #include "qgesture_p.h"
 #include "qevent.h"
 #include "qwidget.h"
+#if QT_CONFIG(scrollarea)
 #include "qabstractscrollarea.h"
+#endif
 #if QT_CONFIG(graphicsview)
 #include <qgraphicssceneevent.h>
 #endif
@@ -24,7 +26,7 @@ static const qreal kSingleStepScaleMin = 0.1;
 QGesture *QPanGestureRecognizer::create(QObject *target)
 {
     if (target && target->isWidgetType()) {
-#if (defined(Q_OS_MACOS) || defined(Q_OS_WIN)) && !defined(QT_NO_NATIVE_GESTURES)
+#if (defined(Q_OS_MACOS) || defined(Q_OS_WIN)) && !defined(QT_NO_NATIVE_GESTURES) && QT_CONFIG(scrollarea)
         // for scroll areas on Windows and OS X we want to use native gestures instead
         if (!qobject_cast<QAbstractScrollArea *>(target->parent()))
             static_cast<QWidget *>(target)->setAttribute(Qt::WA_AcceptTouchEvents);

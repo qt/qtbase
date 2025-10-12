@@ -50,6 +50,8 @@ Qt sets the following manifest configuration by default:
     \li {1, 5} \l {Android: App Manifest <manifest>}{<manifest>}
     \li package
     \li Sets the package name. The default value is \c {org.qtproject.example.app_name}.
+        \warning This field is deprecated and moved to \c build.gradle. It will be removed
+        in an upcoming release.
 \row
     \li \c {android:installLocation}
     \li Sets the app's installation location, whether internal or external storage.

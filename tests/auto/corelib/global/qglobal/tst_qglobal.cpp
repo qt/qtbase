@@ -11,6 +11,37 @@
 #include <QtVersion>
 
 #include <cmath>
+#include <QtCore/qxptype_traits.h>
+
+template <typename T>
+using AdlSwappableTest = decltype(swap(std::declval<T&>(), std::declval<T&>()));
+
+template <typename T>
+constexpr bool q_is_adl_swappable_v = qxp::is_detected_v<AdlSwappableTest, T>;
+
+QT_BEGIN_NAMESPACE
+
+//
+// Check Q_DECLARE_SHARED
+//
+#define MAKE_CLASS(C) \
+    struct C \
+    { \
+        std::string s; \
+        explicit C(std::string s = {}) : s{std::move(s)} {} \
+        void swap(C &other) noexcept { std::swap(s, other.s); } \
+    } \
+    /* end */
+
+MAKE_CLASS(NotQDeclareShared);
+static_assert(!q_is_adl_swappable_v<NotQDeclareShared>);
+
+MAKE_CLASS(Terry); // R.I.P.
+Q_DECLARE_SHARED(Terry)
+
+#undef MAKE_CLASS
+
+QT_END_NAMESPACE
 
 class tst_QGlobal: public QObject
 {
@@ -27,6 +58,8 @@ private slots:
     void qConstructorFunction();
     void qCoreAppStartupFunction();
     void qCoreAppStartupFunctionRestart();
+    void qDeclareSharedMarksTheTypeRelocatable();
+    void qDeclareSharedMakesTheTypeAdlSwappable();
     void integerForSize();
     void buildAbiEndianness();
     void testqOverload();
@@ -249,7 +282,7 @@ void tst_QGlobal::qtry()
 
 void tst_QGlobal::checkptr()
 {
-    int i;
+    int i = 0;
     QCOMPARE(q_check_ptr(&i), &i);
 
     const char *c = "hello";
@@ -381,6 +414,32 @@ void tst_QGlobal::qCoreAppStartupFunctionRestart()
     qCoreAppStartupFunction();
     qStartupFunctionValue = 0;
     qCoreAppStartupFunction();
+}
+
+void tst_QGlobal::qDeclareSharedMarksTheTypeRelocatable()
+{
+    static_assert(!QTypeInfo<QT_PREPEND_NAMESPACE(NotQDeclareShared)>::isRelocatable);
+    static_assert( QTypeInfo<QT_PREPEND_NAMESPACE(Terry)>::isRelocatable);
+}
+
+void tst_QGlobal::qDeclareSharedMakesTheTypeAdlSwappable()
+{
+    static_assert(!q_is_adl_swappable_v<QT_PREPEND_NAMESPACE(NotQDeclareShared)>);
+    static_assert( q_is_adl_swappable_v<QT_PREPEND_NAMESPACE(Terry)>);
+
+    #define CHECK(Class) do { \
+        using C = QT_PREPEND_NAMESPACE(Class); \
+        C lhs("lhs"); \
+        C rhs("rhs"); \
+        QCOMPARE_EQ(lhs.s, "lhs"); \
+        QCOMPARE_EQ(rhs.s, "rhs"); \
+        /* no using std::swap - we're checking whether the ADL swap works */ \
+        swap(lhs, rhs); \
+        QCOMPARE_EQ(lhs.s, "rhs"); \
+        QCOMPARE_EQ(rhs.s, "lhs"); \
+    } while (false)
+    CHECK(Terry);
+    #undef CHECK
 }
 
 struct isEnum_A {

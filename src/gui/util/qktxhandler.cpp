@@ -106,24 +106,24 @@ QTextureFileData QKtxHandler::read()
 
     const QByteArray buf = device()->readAll();
     if (static_cast<size_t>(buf.size()) > std::numeric_limits<quint32>::max()) {
-        qWarning(lcQtGuiTextureIO, "Too big KTX file %s", logName().constData());
+        qCWarning(lcQtGuiTextureIO, "Too big KTX file %s", logName().constData());
         return QTextureFileData();
     }
 
     if (!canRead(QByteArray(), buf)) {
-        qWarning(lcQtGuiTextureIO, "Invalid KTX file %s", logName().constData());
+        qCWarning(lcQtGuiTextureIO, "Invalid KTX file %s", logName().constData());
         return QTextureFileData();
     }
 
     if (buf.size() < qsizetype(qktxh_headerSize)) {
-        qWarning(lcQtGuiTextureIO, "Invalid KTX header size in %s", logName().constData());
+        qCWarning(lcQtGuiTextureIO, "Invalid KTX header size in %s", logName().constData());
         return QTextureFileData();
     }
 
     KTXHeader header;
     memcpy(&header, buf.data(), qktxh_headerSize);
     if (!checkHeader(header)) {
-        qWarning(lcQtGuiTextureIO, "Unsupported KTX file format in %s", logName().constData());
+        qCWarning(lcQtGuiTextureIO, "Unsupported KTX file format in %s", logName().constData());
         return QTextureFileData();
     }
 
@@ -141,13 +141,13 @@ QTextureFileData QKtxHandler::read()
     const quint32 bytesOfKeyValueData = decode(header.bytesOfKeyValueData);
     quint32 headerKeyValueSize;
     if (qAddOverflow(qktxh_headerSize, bytesOfKeyValueData, &headerKeyValueSize)) {
-        qWarning(lcQtGuiTextureIO, "Overflow in size of key value data in header of KTX file %s",
+        qCWarning(lcQtGuiTextureIO, "Overflow in size of key value data in header of KTX file %s",
                  logName().constData());
         return QTextureFileData();
     }
 
     if (headerKeyValueSize >= quint32(buf.size())) {
-        qWarning(lcQtGuiTextureIO, "OOB request in KTX file %s", logName().constData());
+        qCWarning(lcQtGuiTextureIO, "OOB request in KTX file %s", logName().constData());
         return QTextureFileData();
     }
 
@@ -155,13 +155,13 @@ QTextureFileData QKtxHandler::read()
     if (bytesOfKeyValueData > 0) {
         auto keyValueDataView = safeView(buf, qktxh_headerSize, bytesOfKeyValueData);
         if (keyValueDataView.isEmpty()) {
-            qWarning(lcQtGuiTextureIO, "Invalid view in KTX file %s", logName().constData());
+            qCWarning(lcQtGuiTextureIO, "Invalid view in KTX file %s", logName().constData());
             return QTextureFileData();
         }
 
         auto keyValues = decodeKeyValues(keyValueDataView);
         if (!keyValues) {
-            qWarning(lcQtGuiTextureIO, "Could not parse key values in KTX file %s",
+            qCWarning(lcQtGuiTextureIO, "Could not parse key values in KTX file %s",
                      logName().constData());
             return QTextureFileData();
         }
@@ -177,12 +177,12 @@ QTextureFileData QKtxHandler::read()
                     { header.pixelWidth, header.pixelHeight, header.pixelDepth }));
 
     if (texData.numLevels() > maxLevels) {
-        qWarning(lcQtGuiTextureIO, "Too many levels in KTX file %s", logName().constData());
+        qCWarning(lcQtGuiTextureIO, "Too many levels in KTX file %s", logName().constData());
         return QTextureFileData();
     }
 
     if (texData.numFaces() != 1 && texData.numFaces() != 6) {
-        qWarning(lcQtGuiTextureIO, "Invalid number of faces in KTX file %s", logName().constData());
+        qCWarning(lcQtGuiTextureIO, "Invalid number of faces in KTX file %s", logName().constData());
         return QTextureFileData();
     }
 
@@ -190,7 +190,7 @@ QTextureFileData QKtxHandler::read()
     for (int level = 0; level < texData.numLevels(); level++) {
         const auto imageSizeView = safeView(buf, offset, sizeof(quint32));
         if (imageSizeView.isEmpty()) {
-            qWarning(lcQtGuiTextureIO, "OOB request in KTX file %s", logName().constData());
+            qCWarning(lcQtGuiTextureIO, "OOB request in KTX file %s", logName().constData());
             return QTextureFileData();
         }
 
@@ -204,13 +204,13 @@ QTextureFileData QKtxHandler::read()
             // Add image data and padding to offset
             const auto padded = nearestMultipleOf4(imageSize);
             if (!padded) {
-                qWarning(lcQtGuiTextureIO, "Overflow in KTX file %s", logName().constData());
+                qCWarning(lcQtGuiTextureIO, "Overflow in KTX file %s", logName().constData());
                 return QTextureFileData();
             }
 
             quint32 offsetNext;
             if (qAddOverflow(offset, *padded, &offsetNext)) {
-                qWarning(lcQtGuiTextureIO, "OOB request in KTX file %s", logName().constData());
+                qCWarning(lcQtGuiTextureIO, "OOB request in KTX file %s", logName().constData());
                 return QTextureFileData();
             }
 
@@ -219,7 +219,7 @@ QTextureFileData QKtxHandler::read()
     }
 
     if (!texData.isValid()) {
-        qWarning(lcQtGuiTextureIO, "Invalid values in header of KTX file %s",
+        qCWarning(lcQtGuiTextureIO, "Invalid values in header of KTX file %s",
                  logName().constData());
         return QTextureFileData();
     }
@@ -273,7 +273,7 @@ std::optional<QMap<QByteArray, QByteArray>> QKtxHandler::decodeKeyValues(QByteAr
     while (offset < quint32(view.size())) {
         const auto keyAndValueByteSizeView = safeView(view, offset, sizeof(quint32));
         if (keyAndValueByteSizeView.isEmpty()) {
-            qWarning(lcQtGuiTextureIO, "Invalid view in KTX key-value");
+            qCWarning(lcQtGuiTextureIO, "Invalid view in KTX key-value");
             return std::nullopt;
         }
 
@@ -282,19 +282,19 @@ std::optional<QMap<QByteArray, QByteArray>> QKtxHandler::decodeKeyValues(QByteAr
 
         quint32 offsetKeyAndValueStart;
         if (qAddOverflow(offset, quint32(sizeof(quint32)), &offsetKeyAndValueStart)) {
-            qWarning(lcQtGuiTextureIO, "Overflow in KTX key-value");
+            qCWarning(lcQtGuiTextureIO, "Overflow in KTX key-value");
             return std::nullopt;
         }
 
         quint32 offsetKeyAndValueEnd;
         if (qAddOverflow(offsetKeyAndValueStart, keyAndValueByteSize, &offsetKeyAndValueEnd)) {
-            qWarning(lcQtGuiTextureIO, "Overflow in KTX key-value");
+            qCWarning(lcQtGuiTextureIO, "Overflow in KTX key-value");
             return std::nullopt;
         }
 
         const auto keyValueView = safeView(view, offsetKeyAndValueStart, keyAndValueByteSize);
         if (keyValueView.isEmpty()) {
-            qWarning(lcQtGuiTextureIO, "Invalid view in KTX key-value");
+            qCWarning(lcQtGuiTextureIO, "Invalid view in KTX key-value");
             return std::nullopt;
         }
 
@@ -304,13 +304,13 @@ std::optional<QMap<QByteArray, QByteArray>> QKtxHandler::decodeKeyValues(QByteAr
 
         const int idx = keyValueView.indexOf('\0');
         if (idx == -1) {
-            qWarning(lcQtGuiTextureIO, "Invalid key in KTX key-value");
+            qCWarning(lcQtGuiTextureIO, "Invalid key in KTX key-value");
             return std::nullopt;
         }
 
         const QByteArrayView keyView = safeView(view, offsetKeyAndValueStart, idx);
         if (keyView.isEmpty()) {
-            qWarning(lcQtGuiTextureIO, "Overflow in KTX key-value");
+            qCWarning(lcQtGuiTextureIO, "Overflow in KTX key-value");
             return std::nullopt;
         }
 
@@ -318,19 +318,19 @@ std::optional<QMap<QByteArray, QByteArray>> QKtxHandler::decodeKeyValues(QByteAr
 
         quint32 offsetValueStart;
         if (qAddOverflow(offsetKeyAndValueStart, keySize, &offsetValueStart)) {
-            qWarning(lcQtGuiTextureIO, "Overflow in KTX key-value");
+            qCWarning(lcQtGuiTextureIO, "Overflow in KTX key-value");
             return std::nullopt;
         }
 
         quint32 valueSize;
         if (qSubOverflow(keyAndValueByteSize, keySize, &valueSize)) {
-            qWarning(lcQtGuiTextureIO, "Underflow in KTX key-value");
+            qCWarning(lcQtGuiTextureIO, "Underflow in KTX key-value");
             return std::nullopt;
         }
 
         const QByteArrayView valueView = safeView(view, offsetValueStart, valueSize);
         if (valueView.isEmpty()) {
-            qWarning(lcQtGuiTextureIO, "Invalid view in KTX key-value");
+            qCWarning(lcQtGuiTextureIO, "Invalid view in KTX key-value");
             return std::nullopt;
         }
 
@@ -338,7 +338,7 @@ std::optional<QMap<QByteArray, QByteArray>> QKtxHandler::decodeKeyValues(QByteAr
 
         const auto offsetNext = nearestMultipleOf4(offsetKeyAndValueEnd);
         if (!offsetNext) {
-            qWarning(lcQtGuiTextureIO, "Overflow in KTX key-value");
+            qCWarning(lcQtGuiTextureIO, "Overflow in KTX key-value");
             return std::nullopt;
         }
 

@@ -19,7 +19,8 @@
 #include <qcoreapplication.h>
 #include <qcommandlineoption.h>
 #include <qcommandlineparser.h>
-#include <qscopedpointer.h>
+
+#include <memory>
 
 QT_BEGIN_NAMESPACE
 
@@ -58,10 +59,21 @@ void error(const char *msg = "Invalid argument")
         fprintf(stderr, "moc: %s\n", msg);
 }
 
-struct ScopedPointerFileCloser
+static auto openFileForWriting(const QString &name)
 {
-    static inline void cleanup(FILE *handle) { if (handle) fclose(handle); }
-};
+    struct Closer { void operator()(FILE *handle) const { fclose(handle); } };
+    using R = std::unique_ptr<FILE, Closer>;
+
+#ifdef _MSC_VER
+    FILE *file;
+    if (_wfopen_s(&file, reinterpret_cast<const wchar_t *>(name.utf16()), L"w") != 0)
+        return R{};
+    return R{file};
+#else
+    return R{fopen(QFile::encodeName(name).constData(), "w")};
+#endif
+}
+using File = decltype(openFileForWriting({}));
 
 static inline bool hasNext(const Symbols &symbols, int i)
 { return (i < symbols.size()); }
@@ -178,7 +190,7 @@ int runMoc(int argc, char **argv)
     QString filename;
     QString output;
     QFile in;
-    FILE *out = nullptr;
+    File out;
 
     // Note that moc isn't translated.
     // If you use this code as an example for a translated app, make sure to translate the strings.
@@ -525,16 +537,12 @@ int runMoc(int argc, char **argv)
 
     // 3. and output meta object code
 
-    QScopedPointer<FILE, ScopedPointerFileCloser> jsonOutput;
+    File jsonOutput;
 
     bool outputToFile = true;
     if (output.size()) { // output file specified
-#if defined(_MSC_VER)
-        if (_wfopen_s(&out, reinterpret_cast<const wchar_t *>(output.utf16()), L"w") != 0)
-#else
-        out = fopen(QFile::encodeName(output).constData(), "w"); // create output file
+        out = openFileForWriting(output);
         if (!out)
-#endif
         {
             const auto fopen_errno = errno;
             fprintf(stderr, "moc: Cannot create %s. Error: %s\n",
@@ -545,37 +553,29 @@ int runMoc(int argc, char **argv)
 
         if (parser.isSet(jsonOption)) {
             const QString jsonOutputFileName = output + ".json"_L1;
-            FILE *f;
-#if defined(_MSC_VER)
-            if (_wfopen_s(&f, reinterpret_cast<const wchar_t *>(jsonOutputFileName.utf16()), L"w") != 0)
-#else
-            f = fopen(QFile::encodeName(jsonOutputFileName).constData(), "w");
-            if (!f)
-#endif
-            {
+            jsonOutput = openFileForWriting(jsonOutputFileName);
+            if (!jsonOutput) {
                 const auto fopen_errno = errno;
                 fprintf(stderr, "moc: Cannot create JSON output file %s. Error: %s\n",
                         QFile::encodeName(jsonOutputFileName).constData(),
                         strerror(fopen_errno));
             }
-            jsonOutput.reset(f);
         }
     } else { // use stdout
-        out = stdout;
+        out.reset(stdout);
         outputToFile = false;
     }
 
     if (pp.preprocessOnly) {
-        fprintf(out, "%s\n", composePreprocessorOutput(moc.symbols).constData());
+        fprintf(out.get(), "%s\n", composePreprocessorOutput(moc.symbols).constData());
     } else {
         if (moc.classList.isEmpty())
             moc.note("No relevant classes found. No output generated.");
         else
-            moc.generate(out, jsonOutput.data());
+            moc.generate(out.get(), jsonOutput.get());
     }
 
-    if (output.size())
-        fclose(out);
+    out.reset();
 
     if (parser.isSet(depFileOption)) {
         // 4. write a Make-style dependency file (can also be consumed by Ninja).
@@ -593,26 +593,17 @@ int runMoc(int argc, char **argv)
             fprintf(stderr, "moc: Writing to stdout, but no depfile path specified.\n");
         }
 
-        QScopedPointer<FILE, ScopedPointerFileCloser> depFileHandle;
-        FILE *depFileHandleRaw;
-#if defined(_MSC_VER)
-        if (_wfopen_s(&depFileHandleRaw,
-                      reinterpret_cast<const wchar_t *>(depOutputFileName.utf16()), L"w") != 0)
-#else
-        depFileHandleRaw = fopen(QFile::encodeName(depOutputFileName).constData(), "w");
-        if (!depFileHandleRaw)
-#endif
-        {
+        File depFileHandle = openFileForWriting(depOutputFileName);
+        if (!depFileHandle) {
             const auto fopen_errno = errno;
             fprintf(stderr, "moc: Cannot create dep output file '%s'. Error: %s\n",
                     QFile::encodeName(depOutputFileName).constData(),
                     strerror(fopen_errno));
         }
-        depFileHandle.reset(depFileHandleRaw);
 
-        if (!depFileHandle.isNull()) {
+        if (depFileHandle) {
             // First line is the path to the generated file.
-            fprintf(depFileHandle.data(), "%s: ",
+            fprintf(depFileHandle.get(), "%s: ",
                     escapeAndEncodeDependencyPath(depRuleName).constData());
 
             QByteArrayList dependencies;
@@ -644,7 +635,7 @@ int runMoc(int argc, char **argv)
 
             // Join dependencies, output them, and output a final new line.
             const auto dependenciesJoined = dependencies.join(QByteArrayLiteral(" \\\n  "));
-            fprintf(depFileHandle.data(), "%s\n", dependenciesJoined.constData());
+            fprintf(depFileHandle.get(), "%s\n", dependenciesJoined.constData());
         }
     }
 

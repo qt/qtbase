@@ -27,6 +27,7 @@ private slots:
     void native_activeModalWidget();
     void task247349_alpha();
     void QTBUG_43548_initialColor();
+    void noCrashWhenParentIsDeleted();
     void hexColor_data();
     void hexColor();
 
@@ -130,6 +131,18 @@ void tst_QColorDialog::QTBUG_43548_initialColor()
     dialog.setCurrentColor(QColor(Qt::red));
     QColor a(Qt::red);
     QCOMPARE(a, dialog.currentColor());
+}
+
+void tst_QColorDialog::noCrashWhenParentIsDeleted()
+{
+    QPointer<QWidget> mainWindow = new QWidget();
+    QTimer::singleShot(1000, mainWindow, [mainWindow]
+                       { if (mainWindow.get()) mainWindow->deleteLater(); });
+    const QColor color = QColorDialog::getColor(QColor::fromRgba(0xffffffff), mainWindow.get(),
+                                                QString(), QColorDialog::DontUseNativeDialog);
+
+    QVERIFY(!color.isValid());
+    QVERIFY(!mainWindow.get());
 }
 
 void tst_QColorDialog::hexColor_data()

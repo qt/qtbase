@@ -91,32 +91,30 @@ using namespace Qt::StringLiterals;
 static const char *osVer_helper(QOperatingSystemVersion version = QOperatingSystemVersion::current())
 {
 #ifdef Q_OS_MACOS
-    if (version.majorVersion() == 13)
-        return "Ventura";
-    if (version.majorVersion() == 12)
-        return "Monterey";
-    // Compare against predefined constant to handle 10.16/11.0
-    if (QOperatingSystemVersion::MacOSBigSur.version().isPrefixOf(version.version()))
-        return "Big Sur";
-    if (version.majorVersion() == 10) {
+    switch (version.majorVersion()) {
+    case 10: {
         switch (version.minorVersion()) {
-        case 9:
-            return "Mavericks";
-        case 10:
-            return "Yosemite";
-        case 11:
-            return "El Capitan";
-        case 12:
-            return "Sierra";
-        case 13:
-            return "High Sierra";
-        case 14:
-            return "Mojave";
-        case 15:
-            return "Catalina";
+        case 9: return "Mavericks";
+        case 10: return "Yosemite";
+        case 11: return "El Capitan";
+        case 12: return "Sierra";
+        case 13: return "High Sierra";
+        case 14: return "Mojave";
+        case 15: return "Catalina";
+        case 16: return "Big Sur";
+        default:
+            Q_UNREACHABLE();
         }
     }
-    // unknown, future version
+    case 11: return "Big Sur";
+    case 12: return "Monterey";
+    case 13: return "Ventura";
+    case 14: return "Sonoma";
+    case 15: return "Sequoia";
+    default:
+        // Unknown, future version
+        break;
+    }
 #else
     Q_UNUSED(version);
 #endif

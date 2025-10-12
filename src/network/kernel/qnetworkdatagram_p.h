@@ -24,8 +24,7 @@ class QIpPacketHeader
 {
 public:
     QIpPacketHeader(const QHostAddress &dstAddr = QHostAddress(), quint16 port = 0)
-        : destinationAddress(dstAddr), ifindex(0), hopLimit(-1), streamNumber(-1),
-          destinationPort(port), endOfRecord(false)
+        : destinationAddress(dstAddr), destinationPort(port)
     {}
 
     void clear()
@@ -41,12 +40,12 @@ public:
     QHostAddress senderAddress;
     QHostAddress destinationAddress;
 
-    uint ifindex;
-    int hopLimit;
-    int streamNumber;
-    quint16 senderPort;
+    uint ifindex = 0;
+    int hopLimit = -1;
+    int streamNumber = -1;
+    quint16 senderPort = 0;
     quint16 destinationPort;
-    bool endOfRecord;
+    bool endOfRecord = false;
 };
 
 class QNetworkDatagramPrivate

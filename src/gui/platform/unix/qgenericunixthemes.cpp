@@ -78,17 +78,14 @@ static const char defaultFixedFontNameC[] = "monospace";
 enum { defaultSystemFontSize = 9 };
 
 #if !defined(QT_NO_DBUS) && !defined(QT_NO_SYSTEMTRAYICON)
-static bool isDBusTrayAvailable() {
-    static bool dbusTrayAvailable = false;
-    static bool dbusTrayAvailableKnown = false;
-    if (!dbusTrayAvailableKnown) {
-        QDBusMenuConnection conn;
-        if (conn.isWatcherRegistered())
-            dbusTrayAvailable = true;
-        dbusTrayAvailableKnown = true;
-        qCDebug(qLcTray) << "D-Bus tray available:" << dbusTrayAvailable;
-    }
-    return dbusTrayAvailable;
+static bool shouldUseDBusTray() {
+    // There's no other tray implementation to fallback to on non-X11
+    // and QDBusTrayIcon can register the icon on the fly after creation
+    if (QGuiApplication::platformName() != "xcb"_L1)
+        return true;
+    const bool result = QDBusMenuConnection().isWatcherRegistered();
+    qCDebug(qLcTray) << "D-Bus tray available:" << result;
+    return result;
 }
 #endif
 
@@ -476,7 +473,7 @@ QPlatformMenuBar *QGenericUnixTheme::createPlatformMenuBar() const
 #if !defined(QT_NO_DBUS) && !defined(QT_NO_SYSTEMTRAYICON)
 QPlatformSystemTrayIcon *QGenericUnixTheme::createPlatformSystemTrayIcon() const
 {
-    if (isDBusTrayAvailable())
+    if (shouldUseDBusTray())
         return new QDBusTrayIcon();
     return nullptr;
 }
@@ -672,6 +669,10 @@ void QKdeThemePrivate::refresh()
     const QVariant singleClickValue = readKdeSetting(QStringLiteral("KDE/SingleClick"), kdeDirs, kdeVersion, kdeSettings);
     if (singleClickValue.isValid())
         singleClick = singleClickValue.toBool();
+    else if (kdeVersion >= 6) // Plasma 6 defaults to double-click
+        singleClick = false;
+    else // earlier version to single-click
+        singleClick = true;
 
     const QVariant showIconsOnPushButtonsValue = readKdeSetting(QStringLiteral("KDE/ShowIconsOnPushButtons"), kdeDirs, kdeVersion, kdeSettings);
     if (showIconsOnPushButtonsValue.isValid())
@@ -957,13 +958,13 @@ Qt::ColorScheme QKdeTheme::colorScheme() const
 
 /*!
    \internal
-   \brief QKdeTheme::setColorScheme - guess and set appearance for unix themes.
-   KDE themes do not have an appearance property.
-   The key words "dark" or "light" should be part of the theme name.
+   \brief QKdeTheme::updateColorScheme - guess and set a color scheme for unix themes.
+   KDE themes do not have a color scheme property.
+   The key words "dark" or "light" are usually part of the theme name.
    This is, however, not a mandatory convention.
 
-   If \param themeName contains a key word, the respective appearance is set.
-   If it doesn't, the appearance is heuristically determined by comparing text and base color
+   If \param themeName contains a valid key word, the respective color scheme is set.
+   If it doesn't, the color scheme is heuristically determined by comparing text and base color
    of the system palette.
  */
 void QKdeThemePrivate::updateColorScheme(const QString &themeName)
@@ -1071,7 +1072,7 @@ QPlatformMenuBar *QKdeTheme::createPlatformMenuBar() const
 #if !defined(QT_NO_DBUS) && !defined(QT_NO_SYSTEMTRAYICON)
 QPlatformSystemTrayIcon *QKdeTheme::createPlatformSystemTrayIcon() const
 {
-    if (isDBusTrayAvailable())
+    if (shouldUseDBusTray())
         return new QDBusTrayIcon();
     return nullptr;
 }
@@ -1266,7 +1267,7 @@ Qt::ColorScheme QGnomeTheme::colorScheme() const
 #if !defined(QT_NO_DBUS) && !defined(QT_NO_SYSTEMTRAYICON)
 QPlatformSystemTrayIcon *QGnomeTheme::createPlatformSystemTrayIcon() const
 {
-    if (isDBusTrayAvailable())
+    if (shouldUseDBusTray())
         return new QDBusTrayIcon();
     return nullptr;
 }
@@ -1317,6 +1318,7 @@ QStringList QGenericUnixTheme::themeNames()
         QList<QByteArray> gtkBasedEnvironments;
         gtkBasedEnvironments << "GNOME"
                              << "X-CINNAMON"
+                             << "PANTHEON"
                              << "UNITY"
                              << "MATE"
                              << "XFCE"

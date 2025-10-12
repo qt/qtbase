@@ -10,7 +10,8 @@ function(_qt_internal_android_get_sdk_build_tools_revision out_var)
             LIST_DIRECTORIES true
             RELATIVE "${ANDROID_SDK_ROOT}/build-tools"
             "${ANDROID_SDK_ROOT}/build-tools/*")
-        if (NOT android_build_tools)
+        list(FILTER android_build_tools INCLUDE REGEX "[0-9]+\.[0-9]+(\.[0-9]+)?")
+        if(NOT android_build_tools)
             message(FATAL_ERROR "Could not locate Android SDK build tools under \"${ANDROID_SDK_ROOT}/build-tools\"")
         endif()
         list(SORT android_build_tools)
@@ -1205,6 +1206,11 @@ function(_qt_internal_configure_android_multiabi_target target)
             compiler_launcher)
         list(APPEND extra_cmake_args
             "-DCMAKE_CXX_COMPILER_LAUNCHER=${compiler_launcher}")
+    endif()
+
+    if(DEFINED QT_USE_TARGET_ANDROID_BUILD_DIR)
+        list(APPEND extra_cmake_args
+            "-DQT_USE_TARGET_ANDROID_BUILD_DIR=${QT_USE_TARGET_ANDROID_BUILD_DIR}")
     endif()
 
     unset(user_cmake_args)
