@@ -182,7 +182,10 @@ private slots:
     void childKeys();
     void testIniParsing_data();
     void testIniParsing();
+
     void testEscapes();
+    void testEscapedKeys_data();
+    void testEscapedKeys();
     void testNormalizedKey_data();
     void testNormalizedKey();
     void testVariantTypes_data() { populateWithFormats(); }
@@ -2829,10 +2832,6 @@ void tst_QSettings::testEscapes()
 {
     QSettings settings(QSettings::UserScope, "software.org", "KillerAPP");
 
-#define testEscapedKey(plainKey, escKey) \
-    QCOMPARE(iniEscapedKey(plainKey), QByteArray(escKey)); \
-    QCOMPARE(iniUnescapedKey(escKey), QString(plainKey));
-
 #define testUnescapedKey(escKey, plainKey, reescKey) \
     QCOMPARE(iniUnescapedKey(escKey), QString(plainKey)); \
     QCOMPARE(iniEscapedKey(plainKey), QByteArray(reescKey)); \
@@ -2872,13 +2871,6 @@ void tst_QSettings::testEscapes()
         QVariant v = QSettingsPrivate::stringToVariant(QString(escStr)); \
         QCOMPARE(v.toString(), QString(vStr)); \
     }
-
-    testEscapedKey("", "");
-    testEscapedKey(" ", "%20");
-    testEscapedKey(" 0123 abcd ", "%200123%20abcd%20");
-    testEscapedKey("~!@#$%^&*()_+.-/\\=", "%7E%21%40%23%24%25%5E%26%2A%28%29_%2B.-\\%5C%3D");
-    testEscapedKey(QString() + QChar(0xabcd) + QChar(0x1234) + QChar(0x0081), "%UABCD%U1234%81");
-    testEscapedKey(QString() + QChar(0xFE) + QChar(0xFF) + QChar(0x100) + QChar(0x101), "%FE%FF%U0100%U0101");
 
     testUnescapedKey("", "", "");
     testUnescapedKey("%20", " ", "%20");
@@ -2947,6 +2939,38 @@ void tst_QSettings::testEscapes()
     testBadEscape("@Rect(1 2 3)", "@Rect(1 2 3)");
     testBadEscape("@@Rect(1 2 3)", "@Rect(1 2 3)");
 }
+
+void tst_QSettings::testEscapedKeys_data()
+{
+    QTest::addColumn<QString>("plainKey");
+    QTest::addColumn<QByteArray>("escKey");
+
+    QTest::newRow("empty-string") << u""_s << ""_ba;
+    QTest::newRow("space") << u" "_s << "%20"_ba;
+    QTest::newRow(" 0123 abcd ") << " 0123 abcd " << "%200123%20abcd%20"_ba;
+
+    QTest::newRow("special-characters")
+        << "~!@#$%^&*()_+.-/\\="
+        << "%7E%21%40%23%24%25%5E%26%2A%28%29_%2B.-\\%5C%3D"_ba;
+
+    const std::array arr1 = {QChar(0xabcd), QChar(0x1234), QChar(0x0081)};
+    QTest::newRow("qchar-array1") << QString(arr1) << "%UABCD%U1234%81"_ba;
+
+    const std::array arr2 = {QChar(0xFE), QChar(0xFF), QChar(0x100), QChar(0x101)};
+    QTest::newRow("qchar-array2") << QString(arr2) << "%FE%FF%U0100%U0101"_ba;
+}
+
+void tst_QSettings::testEscapedKeys()
+{
+    QFETCH(QString, plainKey);
+    QFETCH(QByteArray, escKey);
+
+    QSettings settings(QSettings::UserScope, "example.org", "KillerAPP");
+
+    QCOMPARE(iniEscapedKey(plainKey), escKey);
+    QCOMPARE(iniUnescapedKey(escKey), plainKey);
+}
+
 #endif
 
 void tst_QSettings::testCaseSensitivity()
