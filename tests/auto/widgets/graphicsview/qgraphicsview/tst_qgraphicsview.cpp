@@ -2053,28 +2053,21 @@ void tst_QGraphicsView::mapFromSceneRect()
     QWidget topLevel;
     QGraphicsView view(&scene,&topLevel);
     view.rotate(90);
-    view.setFixedSize(200, 200);
-    view.setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    view.setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    const auto fw = view.frameWidth() * 2;
+    view.setFixedSize(200 + fw, 200 + fw);
     topLevel.show();
-    QVERIFY(QTest::qWaitForWindowActive(&view));
+    QVERIFY(QTest::qWaitForWindowActive(&topLevel));
+    QVERIFY(!view.horizontalScrollBar()->isVisible());
+    QVERIFY(!view.verticalScrollBar()->isVisible());
 
-    QPolygon polygon;
-    polygon << QPoint(98, 98);
-    polygon << QPoint(98, 108);
-    polygon << QPoint(88, 108);
-    polygon << QPoint(88, 98);
-
-
-    QPolygon viewPolygon = view.mapFromScene(0, 0, 10, 10);
-    for (int i = 0; i < 4; ++i) {
-        QVERIFY(qAbs(viewPolygon[i].x() - polygon[i].x()) < 3);
-        QVERIFY(qAbs(viewPolygon[i].y() - polygon[i].y()) < 3);
-    }
+    const QRectF input(0, 0, 10, 10);
+    // fixed size is 200x200 so center is 100x100
+    const QPolygon polygon{ QPoint(100, 100), QPoint(100, 110), QPoint(90, 110), QPoint(90, 100) };
+    const QPolygon viewPolygon = view.mapFromScene(input);
+    QCOMPARE(viewPolygon, polygon);
 
     QPoint pt = view.mapFromScene(QPointF());
-    QPolygon p;
-    p << pt << pt << pt << pt;
+    QPolygon p{ pt, pt, pt, pt };
     QCOMPARE(view.mapFromScene(QRectF()), p);
 }
 
@@ -2083,28 +2076,18 @@ void tst_QGraphicsView::mapFromScenePoly()
     QGraphicsScene scene;
     QGraphicsView view(&scene);
     view.rotate(90);
-    view.setFixedSize(200, 200);
-    view.setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    view.setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    const auto fw = view.frameWidth() * 2;
+    view.setFixedSize(200 + fw, 200 + fw);
     view.show();
+    QVERIFY(QTest::qWaitForWindowActive(&view));
+    QVERIFY(!view.horizontalScrollBar()->isVisible());
+    QVERIFY(!view.verticalScrollBar()->isVisible());
 
-    QPolygonF polygon;
-    polygon << QPoint(0, 0);
-    polygon << QPoint(10, 0);
-    polygon << QPoint(10, 10);
-    polygon << QPoint(0, 10);
-
-    QPolygon polygon2;
-    polygon2 << QPoint(98, 98);
-    polygon2 << QPoint(98, 108);
-    polygon2 << QPoint(88, 108);
-    polygon2 << QPoint(88, 98);
-
-    QPolygon viewPolygon = view.mapFromScene(polygon);
-    for (int i = 0; i < 4; ++i) {
-        QVERIFY(qAbs(viewPolygon[i].x() - polygon2[i].x()) < 3);
-        QVERIFY(qAbs(viewPolygon[i].y() - polygon2[i].y()) < 3);
-    }
+    const QPolygonF input{ QPoint(0, 0), QPoint(10, 0), QPoint(10, 10), QPoint(0, 10) };
+    // fixed size is 200x200 so center is 100x100
+    const QPolygon polygon{ QPoint(100, 100), QPoint(100, 110), QPoint(90, 110), QPoint(90, 100) };
+    const QPolygon viewPolygon = view.mapFromScene(input);
+    QCOMPARE(viewPolygon, polygon);
 }
 
 void tst_QGraphicsView::mapFromScenePath()
@@ -2112,34 +2095,22 @@ void tst_QGraphicsView::mapFromScenePath()
     QGraphicsScene scene;
     QGraphicsView view(&scene);
     view.rotate(90);
-    view.setFixedSize(200, 200);
-    view.setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    view.setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    const auto fw = view.frameWidth() * 2;
+    view.setFixedSize(200 + fw, 200 + fw);
     view.show();
+    QVERIFY(QTest::qWaitForWindowActive(&view));
+    QVERIFY(!view.horizontalScrollBar()->isVisible());
+    QVERIFY(!view.verticalScrollBar()->isVisible());
 
-    QPolygonF polygon;
-    polygon << QPoint(0, 0);
-    polygon << QPoint(10, 0);
-    polygon << QPoint(10, 10);
-    polygon << QPoint(0, 10);
+    const QPolygonF input{ QPoint(0, 0), QPoint(10, 0), QPoint(10, 10), QPoint(0, 10) };
+    QPainterPath inputPath;
+    inputPath.addPolygon(input);
+    // fixed size is 200x200 so center is 100x100
+    const QPolygon polygon{ QPoint(100, 100), QPoint(100, 110), QPoint(90, 110), QPoint(90, 100) };
     QPainterPath path;
     path.addPolygon(polygon);
-
-    QPolygon polygon2;
-    polygon2 << QPoint(98, 98);
-    polygon2 << QPoint(98, 108);
-    polygon2 << QPoint(88, 108);
-    polygon2 << QPoint(88, 98);
-    QPainterPath path2;
-    path2.addPolygon(polygon2);
-
-    QPolygonF pathPoly = view.mapFromScene(path).toFillPolygon();
-    QPolygonF path2Poly = path2.toFillPolygon();
-
-    for (int i = 0; i < pathPoly.size(); ++i) {
-        QVERIFY(qAbs(pathPoly[i].x() - path2Poly[i].x()) < 3);
-        QVERIFY(qAbs(pathPoly[i].y() - path2Poly[i].y()) < 3);
-    }
+    QPainterPath viewPath = view.mapFromScene(inputPath);
+    QCOMPARE(viewPath, path);
 }
 
 void tst_QGraphicsView::sendEvent()
