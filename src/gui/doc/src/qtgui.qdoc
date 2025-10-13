@@ -27,7 +27,7 @@
     private Qt GUI APIs:
 
     \badcode
-    find_package(Qt6 REQUIRED COMPONENTS Gui)
+    find_package(Qt6 REQUIRED COMPONENTS GuiPrivate)
     target_link_libraries(mytarget PRIVATE Qt6::GuiPrivate)
     \endcode
 */
