@@ -1628,19 +1628,19 @@ void tst_QGraphicsView::itemsInRect_cosmeticAdjust_data()
     QTest::newRow("0, 201, 300, 99") << QRect(0, 201, 300, 99) << 0 << false;
 
     // Anti-aliased.
-    QTest::newRow("nil") << QRect() << 1 << true;
-    QTest::newRow("0, 0, 300, 100") << QRect(0, 0, 300, 100) << 1 << true;
-    QTest::newRow("0, 0, 100, 300") << QRect(0, 0, 100, 300) << 1 << true;
-    QTest::newRow("200, 0, 100, 300") << QRect(200, 0, 100, 300) << 1 << true;
-    QTest::newRow("0, 200, 300, 100") << QRect(0, 200, 300, 100) << 1 << true;
-    QTest::newRow("0, 0, 300, 99") << QRect(0, 0, 300, 99) << 1 << true;
-    QTest::newRow("0, 0, 99, 300") << QRect(0, 0, 99, 300) << 1 << true;
-    QTest::newRow("201, 0, 99, 300") << QRect(201, 0, 99, 300) << 1 << true;
-    QTest::newRow("0, 201, 300, 99") << QRect(0, 201, 300, 99) << 1 << true;
-    QTest::newRow("0, 0, 300, 98") << QRect(0, 0, 300, 98) << 0 << false;
-    QTest::newRow("0, 0, 98, 300") << QRect(0, 0, 98, 300) << 0 << false;
-    QTest::newRow("202, 0, 98, 300") << QRect(202, 0, 98, 300) << 0 << false;
-    QTest::newRow("0, 202, 300, 98") << QRect(0, 202, 300, 98) << 0 << false;
+    QTest::newRow("nil, antiAliased") << QRect() << 1 << true;
+    QTest::newRow("0, 0, 300, 100, antiAliased") << QRect(0, 0, 300, 100) << 1 << true;
+    QTest::newRow("0, 0, 100, 300, antiAliased") << QRect(0, 0, 100, 300) << 1 << true;
+    QTest::newRow("200, 0, 100, 300, antiAliased") << QRect(200, 0, 100, 300) << 1 << true;
+    QTest::newRow("0, 200, 300, 100, antiAliased") << QRect(0, 200, 300, 100) << 1 << true;
+    QTest::newRow("0, 0, 300, 99, antiAliased") << QRect(0, 0, 300, 99) << 1 << true;
+    QTest::newRow("0, 0, 99, 300, antiAliased") << QRect(0, 0, 99, 300) << 1 << true;
+    QTest::newRow("201, 0, 99, 300, antiAliased") << QRect(201, 0, 99, 300) << 1 << true;
+    QTest::newRow("0, 201, 300, 99, antiAliased") << QRect(0, 201, 300, 99) << 1 << true;
+    QTest::newRow("0, 0, 300, 98, antiAliased") << QRect(0, 0, 300, 98) << 0 << false;
+    QTest::newRow("0, 0, 98, 300, antiAliased") << QRect(0, 0, 98, 300) << 0 << false;
+    QTest::newRow("202, 0, 98, 300, antiAliased") << QRect(202, 0, 98, 300) << 0 << false;
+    QTest::newRow("0, 202, 300, 98, antiAliased") << QRect(0, 202, 300, 98) << 0 << false;
 }
 
 void tst_QGraphicsView::itemsInRect_cosmeticAdjust()
@@ -1836,11 +1836,7 @@ void tst_QGraphicsView::itemAt2()
 
 void tst_QGraphicsView::mapToScene()
 {
-    // Uncomment the commented-out code to see what's going on. It doesn't
-    // affect the test; it just slows it down.
-
     QGraphicsScene scene;
-    scene.addPixmap(QPixmap("3D-Qt-1-2.png"));
 
     QWidget topLevel;
     QGraphicsView view(&topLevel);
@@ -1850,16 +1846,11 @@ void tst_QGraphicsView::mapToScene()
 
     view.setFixedSize(viewSize);
     topLevel.show();
-    QApplication::processEvents();
-    QVERIFY(view.isVisible());
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QCOMPARE(view.size(), viewSize);
 
     // First once without setting the scene rect
-#ifdef Q_PROCESSOR_ARM
-    const int step = 20;
-#else
     const int step = 5;
-#endif
 
     for (int x = 0; x < view.width(); x += step) {
         for (int y = 0; y < view.height(); y += step) {
@@ -1923,20 +1914,21 @@ void tst_QGraphicsView::mapToSceneRect_data()
     QTest::addColumn<QPolygonF>("scenePoly");
     QTest::addColumn<qreal>("rotation");
 
-    QTest::newRow("nil") << QRect() << QPolygonF() << qreal(0);
-    QTest::newRow("0, 0, 1, 1") << QRect(0, 0, 1, 1) << QPolygonF(QRectF(0, 0, 1, 1)) << qreal(0);
-    QTest::newRow("0, 0, 10, 10") << QRect(0, 0, 10, 10) << QPolygonF(QRectF(0, 0, 10, 10)) << qreal(0);
-    QTest::newRow("nil") << QRect() << QPolygonF() << qreal(90);
-    QPolygonF p;
-    p << QPointF(0, 0) << QPointF(0, -1) << QPointF(1, -1) << QPointF(1, 0) << QPointF(0, 0);
-    QTest::newRow("0, 0, 1, 1") << QRect(0, 0, 1, 1)
-                                << p
-                                << qreal(90);
-    p.clear();
-    p << QPointF(0, 0) << QPointF(0, -10) << QPointF(10, -10) << QPointF(10, 0) << QPointF(0, 0);
-    QTest::newRow("0, 0, 10, 10") << QRect(0, 0, 10, 10)
-                                  << p
-                                  << qreal(90);
+    const auto translate90 = [&](const QPolygonF &poly) -> QPolygonF {
+        const QTransform mat = QTransform().rotate(-90); // the view is rotated
+        return mat.map(QPolygonF(poly));
+    };
+
+    constexpr QRect r1(0, 0, 1, 1);
+    constexpr QRect r2(0, 0, 10, 10);
+    const QPolygonF p1 = QPolygonF(QRectF(r1));
+    const QPolygonF p2 = QPolygonF(QRectF(r2));
+    QTest::newRow("nil, no rotation") << QRect() << QPolygonF() << qreal(0);
+    QTest::newRow("0, 0, 1, 1, no rotation") << r1 << p1 << qreal(0);
+    QTest::newRow("0, 0, 10, 10, no rotation") << r2 << p2 << qreal(0);
+    QTest::newRow("nil, 90 degree") << QRect() << QPolygonF() << qreal(90);
+    QTest::newRow("0, 0, 1, 1, 90 degree") << r1 << translate90(p1) << qreal(90);
+    QTest::newRow("0, 0, 10, 10, 90 degree") << r2 << translate90(p2) << qreal(90);
 }
 
 void tst_QGraphicsView::mapToSceneRect()
@@ -1957,6 +1949,7 @@ void tst_QGraphicsView::mapToSceneRect()
     view.setTransformationAnchor(QGraphicsView::NoAnchor);
     view.setResizeAnchor(QGraphicsView::NoAnchor);
     view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     view.rotate(rotation);
 
@@ -1975,20 +1968,16 @@ void tst_QGraphicsView::mapToScenePoly()
     view.translate(100, 100);
     view.setFixedSize(117, 117);
     view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QPoint center = view.viewport()->rect().center();
     QRect rect(center + QPoint(10, 0), QSize(10, 10));
 
-    QPolygon poly;
-    poly << rect.topLeft();
-    poly << rect.topRight();
-    poly << rect.bottomRight();
-    poly << rect.bottomLeft();
-
-    QPolygonF poly2;
-    poly2 << view.mapToScene(rect.topLeft());
-    poly2 << view.mapToScene(rect.topRight());
-    poly2 << view.mapToScene(rect.bottomRight());
-    poly2 << view.mapToScene(rect.bottomLeft());
+    const QPolygon poly = { rect.topLeft(), rect.topRight(),
+                            rect.bottomRight(), rect.bottomLeft() };
+    const QPolygonF poly2 = { view.mapToScene(rect.topLeft()),
+                              view.mapToScene(rect.topRight()),
+                              view.mapToScene(rect.bottomRight()),
+                              view.mapToScene(rect.bottomLeft()) };
 
     QCOMPARE(view.mapToScene(poly), poly2);
 }
@@ -2001,6 +1990,7 @@ void tst_QGraphicsView::mapToScenePath()
     view.translate(10, 10);
     view.setFixedSize(300, 300);
     view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QRect rect(QPoint(10, 0), QSize(10, 10));
 
     QPainterPath path;
@@ -2022,6 +2012,7 @@ void tst_QGraphicsView::mapFromScenePoint()
         view.setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         view.setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         view.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&view));
 
         QPoint mapped = view.mapFromScene(0, 0);
         QPoint center = view.viewport()->rect().center();
@@ -2041,6 +2032,7 @@ void tst_QGraphicsView::mapFromScenePoint()
         view.ensurePolished();
         view.resize(view.sizeHint());
         toplevel.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&toplevel));
 
         QCOMPARE(view.mapFromScene(0, 0), QPoint(0, 0));
         QCOMPARE(view.mapFromScene(0.4, 0.4), QPoint(0, 0));
@@ -2831,15 +2823,15 @@ void tst_QGraphicsView::levelOfDetail_data()
 
     QTest::newRow("1:4, 1:4") << QTransform().scale(0.25, 0.25) << qreal(0.25);
     QTest::newRow("1:2, 1:4") << QTransform().scale(0.5, 0.25) << qreal(::sqrt(0.125));
-    QTest::newRow("4:1, 1:2") << QTransform().scale(0.25, 0.5) << qreal(::sqrt(0.125));
+    QTest::newRow("1:4, 1:2") << QTransform().scale(0.25, 0.5) << qreal(::sqrt(0.125));
 
     QTest::newRow("1:2, 1:2") << QTransform().scale(0.5, 0.5) << qreal(0.5);
     QTest::newRow("1:1, 1:2") << QTransform().scale(1, 0.5) << qreal(::sqrt(0.5));
-    QTest::newRow("2:1, 1:1") << QTransform().scale(0.5, 1) << qreal(::sqrt(0.5));
+    QTest::newRow("1:2, 1:1") << QTransform().scale(0.5, 1) << qreal(::sqrt(0.5));
 
     QTest::newRow("1:1, 1:1") << QTransform().scale(1, 1) << qreal(1.0);
     QTest::newRow("2:1, 1:1") << QTransform().scale(2, 1) << qreal(::sqrt(2.0));
-    QTest::newRow("1:1, 2:1") << QTransform().scale(2, 1) << qreal(::sqrt(2.0));
+    QTest::newRow("1:1, 2:1") << QTransform().scale(1, 2) << qreal(::sqrt(2.0));
     QTest::newRow("2:1, 2:1") << QTransform().scale(2, 2) << qreal(2.0);
     QTest::newRow("2:1, 4:1") << QTransform().scale(2, 4) << qreal(::sqrt(8.0));
     QTest::newRow("4:1, 2:1") << QTransform().scale(4, 2) << qreal(::sqrt(8.0));
