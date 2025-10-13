@@ -2353,7 +2353,7 @@ QDateTime QDateTimeParser::getMaximum(const QTimeZone &zone) const
 
     // Cache the only case
     static const QDateTime localTimeMax(QDATETIMEEDIT_DATE_MAX.endOfDay());
-    static const QDateTime utcTimeMax = localTimeMax.toUTC();
+    static const QDateTime utcTimeMax(QDATETIMEEDIT_DATE_MAX.endOfDay(QTimeZone::UTC));
     switch (zone.timeSpec()) {
     case Qt::LocalTime:
         return localTimeMax;
