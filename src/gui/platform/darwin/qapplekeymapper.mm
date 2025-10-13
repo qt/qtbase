@@ -94,60 +94,10 @@ static CarbonModifiers toCarbonModifiers(Qt::KeyboardModifiers qtModifiers)
     return carbonModifiers;
 }
 
-// Keyboard keys (non-modifiers)
-static QHash<char16_t, Qt::Key> standardKeys = {
-    { kHomeCharCode, Qt::Key_Home },
-    { kEnterCharCode, Qt::Key_Enter },
-    { kEndCharCode, Qt::Key_End },
-    { kBackspaceCharCode, Qt::Key_Backspace },
-    { kTabCharCode, Qt::Key_Tab },
-    { kPageUpCharCode, Qt::Key_PageUp },
-    { kPageDownCharCode, Qt::Key_PageDown },
-    { kReturnCharCode, Qt::Key_Return },
-    { kEscapeCharCode, Qt::Key_Escape },
-    { kLeftArrowCharCode, Qt::Key_Left },
-    { kRightArrowCharCode, Qt::Key_Right },
-    { kUpArrowCharCode, Qt::Key_Up },
-    { kDownArrowCharCode, Qt::Key_Down },
-    { kHelpCharCode, Qt::Key_Help },
-    { kDeleteCharCode, Qt::Key_Delete },
-    // ASCII maps, for debugging
-    { ':', Qt::Key_Colon },
-    { ';', Qt::Key_Semicolon },
-    { '<', Qt::Key_Less },
-    { '=', Qt::Key_Equal },
-    { '>', Qt::Key_Greater },
-    { '?', Qt::Key_Question },
-    { '@', Qt::Key_At },
-    { ' ', Qt::Key_Space },
-    { '!', Qt::Key_Exclam },
-    { '"', Qt::Key_QuoteDbl },
-    { '#', Qt::Key_NumberSign },
-    { '$', Qt::Key_Dollar },
-    { '%', Qt::Key_Percent },
-    { '&', Qt::Key_Ampersand },
-    { '\'', Qt::Key_Apostrophe },
-    { '(', Qt::Key_ParenLeft },
-    { ')', Qt::Key_ParenRight },
-    { '*', Qt::Key_Asterisk },
-    { '+', Qt::Key_Plus },
-    { ',', Qt::Key_Comma },
-    { '-', Qt::Key_Minus },
-    { '.', Qt::Key_Period },
-    { '/', Qt::Key_Slash },
-    { '[', Qt::Key_BracketLeft },
-    { ']', Qt::Key_BracketRight },
-    { '\\', Qt::Key_Backslash },
-    { '_', Qt::Key_Underscore },
-    { '`', Qt::Key_QuoteLeft },
-    { '{', Qt::Key_BraceLeft },
-    { '}', Qt::Key_BraceRight },
-    { '|', Qt::Key_Bar },
-    { '~', Qt::Key_AsciiTilde },
-    { '^', Qt::Key_AsciiCircum }
-};
-
-static QHash<char16_t, Qt::Key> virtualKeys = {
+// NSEvent.keyCode codes for keys that are independent of keyboard layout.
+// Some of these are technically possible to add custom key maps for, but
+// doing so would be unexpected.
+static QHash<char16_t, Qt::Key> layoutIndependentKeyCodes = {
     { kVK_F1, Qt::Key_F1 },
     { kVK_F2, Qt::Key_F2 },
     { kVK_F3, Qt::Key_F3 },
@@ -164,16 +114,57 @@ static QHash<char16_t, Qt::Key> virtualKeys = {
     { kVK_F14, Qt::Key_F14 },
     { kVK_F15, Qt::Key_F15 },
     { kVK_F16, Qt::Key_F16 },
+    { kVK_F17, Qt::Key_F17 },
+    { kVK_F18, Qt::Key_F18 },
+    { kVK_F19, Qt::Key_F19 },
+    { kVK_F20, Qt::Key_F20 },
+
     { kVK_Return, Qt::Key_Return },
     { kVK_Tab, Qt::Key_Tab },
+    { kVK_Space, Qt::Key_Space },
     { kVK_Escape, Qt::Key_Escape },
-    { kVK_Help, Qt::Key_Help },
+    { kVK_Delete, Qt::Key_Backspace },
+    { kVK_ForwardDelete, Qt::Key_Delete },
+
+    { kVK_Home, Qt::Key_Home },
+    { kVK_End, Qt::Key_End },
+    { kVK_PageUp, Qt::Key_PageUp },
+    { kVK_PageDown, Qt::Key_PageDown },
+
     { kVK_UpArrow, Qt::Key_Up },
     { kVK_DownArrow, Qt::Key_Down },
     { kVK_LeftArrow, Qt::Key_Left },
     { kVK_RightArrow, Qt::Key_Right },
-    { kVK_PageUp, Qt::Key_PageUp },
-    { kVK_PageDown, Qt::Key_PageDown }
+
+    { kVK_CapsLock, Qt::Key_CapsLock },
+    { kVK_Shift, Qt::Key_Shift },
+    { kVK_RightShift, Qt::Key_Shift },
+
+#if 0
+    // FIXME: Map these here instead of relying on
+    // custom logic in [QNSView flagsChanged:]
+
+    { kVK_Command, Qt::Key_unknown },
+    { kVK_RightCommand, Qt::Key_unknown },
+    { kVK_Option, Qt::Key_unknown },
+    { kVK_RightOption, Qt::Key_unknown },
+    { kVK_Control, Qt::Key_unknown },
+    { kVK_RightControl, Qt::Key_unknown },
+    { kVK_Function, Qt::Key_unknown },
+#endif
+
+    { kVK_VolumeUp, Qt::Key_VolumeUp },
+    { kVK_VolumeDown, Qt::Key_VolumeDown },
+    { kVK_Mute, Qt::Key_VolumeMute },
+
+#if 0
+    // FIXME: Figure out which Qt::Key this maps to
+    { kVK_ContextualMenu, Qt::Key_unknown },
+#endif
+    { kVK_Help, Qt::Key_Help },
+
+    { kVK_ANSI_KeypadClear, Qt::Key_Clear },
+    { kVK_ANSI_KeypadEnter, Qt::Key_Enter },
 };
 
 static QHash<char16_t, Qt::Key> functionKeys = {
@@ -211,8 +202,29 @@ static int toKeyCode(const QChar &key, int virtualKey, int modifiers)
     qCDebug(lcQpaKeyMapperKeys, "Mapping key: %d (0x%04x) / vk %d (0x%04x)",
         key.unicode(), key.unicode(), virtualKey, virtualKey);
 
-    if (key == char16_t(kClearCharCode) && virtualKey == 0x47)
-        return Qt::Key_Clear;
+    // Check first if we have a virtual key that should be treated as layout
+    // independent. If so, we want to return early without inspecting the key.
+    if (auto qtKey = layoutIndependentKeyCodes.value(virtualKey)) {
+        qCDebug(lcQpaKeyMapperKeys) << "Got" << qtKey << "based on layout independent virtual key";
+        // To work like Qt for X11 we issue Backtab when Shift + Tab are pressed
+        if (qtKey == Qt::Key_Tab && (modifiers & Qt::ShiftModifier)) {
+            qCDebug(lcQpaKeyMapperKeys, "Transformed into Qt::Key_Backtab");
+            return Qt::Key_Backtab;
+        }
+        return qtKey;
+    }
+
+    // Then check if the key is one of the functions keys in the private Unicode range
+    if (key >= char16_t(NSUpArrowFunctionKey) && key <= char16_t(NSModeSwitchFunctionKey)) {
+        if (auto qtKey = functionKeys.value(key.unicode())) {
+            qCDebug(lcQpaKeyMapperKeys) << "Got" << qtKey;
+            return qtKey;
+        } else if (key >= char16_t(NSF1FunctionKey) && key <= char16_t(NSF35FunctionKey)) {
+            auto functionKey = Qt::Key_F1 + (key.unicode() - NSF1FunctionKey) ;
+            qCDebug(lcQpaKeyMapperKeys) << "Got" << functionKey;
+            return functionKey;
+        }
+    }
 
     if (key.isDigit()) {
         qCDebug(lcQpaKeyMapperKeys, "Got digit key: %d", key.digitValue());
@@ -226,35 +238,6 @@ static int toKeyCode(const QChar &key, int virtualKey, int modifiers)
     if (key.isSymbol()) {
         qCDebug(lcQpaKeyMapperKeys, "Got symbol key: %d", (key.unicode()));
         return key.unicode();
-    }
-
-    if (auto qtKey = standardKeys.value(key.unicode())) {
-        // To work like Qt for X11 we issue Backtab when Shift + Tab are pressed
-        if (qtKey == Qt::Key_Tab && (modifiers & Qt::ShiftModifier)) {
-            qCDebug(lcQpaKeyMapperKeys, "Got key: Qt::Key_Backtab");
-            return Qt::Key_Backtab;
-        }
-
-        qCDebug(lcQpaKeyMapperKeys) << "Got" << qtKey;
-        return qtKey;
-    }
-
-    // Last ditch try to match the scan code
-    if (auto qtKey = virtualKeys.value(virtualKey)) {
-        qCDebug(lcQpaKeyMapperKeys) << "Got scancode" << qtKey;
-        return qtKey;
-    }
-
-    // Check if they belong to key codes in private unicode range
-    if (key >= char16_t(NSUpArrowFunctionKey) && key <= char16_t(NSModeSwitchFunctionKey)) {
-        if (auto qtKey = functionKeys.value(key.unicode())) {
-            qCDebug(lcQpaKeyMapperKeys) << "Got" << qtKey;
-            return qtKey;
-        } else if (key >= char16_t(NSF1FunctionKey) && key <= char16_t(NSF35FunctionKey)) {
-            auto functionKey = Qt::Key_F1 + (key.unicode() - NSF1FunctionKey) ;
-            qCDebug(lcQpaKeyMapperKeys) << "Got" << functionKey;
-            return functionKey;
-        }
     }
 
     qCDebug(lcQpaKeyMapperKeys, "Unknown case.. %d[%d] %d", key.unicode(), key.toLatin1(), virtualKey);
