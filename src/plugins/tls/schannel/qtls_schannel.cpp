@@ -1238,9 +1238,10 @@ bool TlsCryptographSchannel::createContext()
     };
 #endif
 
+    const QString encodedTargetName = QUrl::fromUserInput(targetName()).host(QUrl::EncodeUnicode);
     auto status = InitializeSecurityContext(&credentialHandle, // phCredential
                                             nullptr, // phContext
-                                            const_reinterpret_cast<SEC_WCHAR *>(targetName().utf16()), // pszTargetName
+                                            const_reinterpret_cast<SEC_WCHAR *>(encodedTargetName.utf16()), // pszTargetName
                                             contextReq, // fContextReq
                                             0, // Reserved1
                                             0, // TargetDataRep (unused)
