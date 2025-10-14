@@ -455,8 +455,9 @@ function(qt_internal_create_source_jar)
     add_dependencies(android_source_jars ${jar_target})
 
     if(QT_WILL_INSTALL)
+        qt_path_join(destination "${INSTALL_DATADIR}" "android" "${module}")
         install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${jar_name}-${PROJECT_VERSION}.jar"
-            DESTINATION "${INSTALL_DATADIR}/android/${module}"
+            DESTINATION "${destination}"
             COMPONENT _install_android_source_jar_${module}
             EXCLUDE_FROM_ALL
         )
