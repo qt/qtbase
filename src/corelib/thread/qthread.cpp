@@ -1291,6 +1291,9 @@ bool QThread::event(QEvent *event)
     This function does not stop any event loop running on the thread and
     does not terminate it in any way.
 
+    This function has no effect on the main thread, and does nothing if the thread
+    is not currently running.
+
     \sa isInterruptionRequested()
 */
 
