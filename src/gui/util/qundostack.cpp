@@ -425,16 +425,16 @@ void QUndoStackPrivate::setIndex(int idx, bool clean)
         emit q->indexChanged(index);
     }
 
-    const ActionState newUndoState{q->canUndo(), q->undoText()};
-    if (indexChanged || newUndoState != undoActionState) {
-        undoActionState = newUndoState;
+    if (ActionState newUndoState{q->canUndo(), q->undoText()};
+        indexChanged || newUndoState != undoActionState) {
+        undoActionState = std::move(newUndoState);
         emit q->canUndoChanged(undoActionState.enabled);
         emit q->undoTextChanged(undoActionState.text);
     }
 
-    const ActionState newRedoState{q->canRedo(), q->redoText()};
-    if (indexChanged || newRedoState != redoActionState) {
-        redoActionState = newRedoState;
+    if (ActionState newRedoState{q->canRedo(), q->redoText()};
+        indexChanged || newRedoState != redoActionState) {
+        redoActionState = std::move(newRedoState);
         emit q->canRedoChanged(redoActionState.enabled);
         emit q->redoTextChanged(redoActionState.text);
     }
