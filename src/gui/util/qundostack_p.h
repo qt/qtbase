@@ -59,10 +59,17 @@ public:
         bool enabled = false;
         QString text;
 
-        bool operator!=(const ActionState &other) const noexcept
-        {
-            return enabled != other.enabled || text != other.text;
-        }
+        friend bool operator==(const ActionState &lhs, const ActionState &rhs) noexcept
+#ifdef __cpp_impl_three_way_comparison
+            = default;
+#else
+        { return lhs.enabled == rhs.enabled && lhs.text == rhs.text; }
+        friend bool operator!=(const ActionState &lhs, const ActionState &rhs) noexcept
+        { return !(lhs == rhs); }
+#endif
+        // some compiler's reject seed = 0) = delete, overload instead:
+        friend void qHash(const ActionState &key, size_t seed) = delete;
+        friend void qHash(const ActionState &key) = delete;
     };
 
     QList<QUndoCommand*> command_list;
