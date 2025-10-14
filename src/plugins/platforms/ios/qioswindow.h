@@ -9,9 +9,6 @@
 
 #import <UIKit/UIKit.h>
 
-class QIOSContext;
-class QIOSWindow;
-
 @class QUIView;
 
 QT_BEGIN_NAMESPACE
@@ -83,7 +80,7 @@ private:
 QDebug operator<<(QDebug debug, const QIOSWindow *window);
 #endif
 
-QT_MANGLE_NAMESPACE(QUIView) *quiview_cast(UIView *view);
+QUIView *quiview_cast(UIView *view);
 
 QT_END_NAMESPACE
 
