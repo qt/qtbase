@@ -33,7 +33,7 @@ instructions:
           conditions:
             - condition: property
               property: id
-              contains_value: "macos-15"
+              equals_value: "macos-26-arm64-tests"
         - condition: runtime
           env_var: COIN_CTEST_FORCE_IGNORE_EXIT_CODE
           equals_value: null
