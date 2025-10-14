@@ -19,8 +19,7 @@
     \module QtCorePrivate
     \title Qt Core Private C++ Classes
     \qtvariable core-private
-    \qtcmakepackage Core
-    \qtcmaketargetitem CorePrivate
+    \qtcmakepackage CorePrivate
     \preliminary
     \brief Provides private core functionality.
 

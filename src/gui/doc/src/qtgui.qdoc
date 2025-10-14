@@ -17,8 +17,7 @@
 /*!
     \module QtGuiPrivate
     \title Qt GUI Private C++ Classes
-    \qtcmakepackage Gui
-    \qtcmaketargetitem GuiPrivate
+    \qtcmakepackage GuiPrivate
     \qtvariable gui-private
 
     \brief Provides access to private GUI functionality.
