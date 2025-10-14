@@ -1,6 +1,9 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
+#ifndef QIOSTEXTRESPONDER_H
+#define QIOSTEXTRESPONDER_H
+
 #import <UIKit/UIKit.h>
 
 #include <QtCore/qstring.h>
@@ -49,3 +52,5 @@ QT_END_NAMESPACE
 @property(nonatomic, assign) id<UITextInputDelegate> inputDelegate;
 
 @end
+
+#endif // QIOSTEXTRESPONDER_H
