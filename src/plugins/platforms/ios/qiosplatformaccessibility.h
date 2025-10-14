@@ -22,7 +22,7 @@ public:
 
 private:
     QMacNotificationObserver m_focusObserver;
-    QMacAccessibilityElement *m_focusElement;
+    QT_MANGLE_NAMESPACE(QMacAccessibilityElement) *m_focusElement;
 };
 
 QT_END_NAMESPACE

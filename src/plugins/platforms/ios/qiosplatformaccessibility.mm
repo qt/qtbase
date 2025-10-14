@@ -11,6 +11,8 @@
 #include "qioswindow.h"
 #include "quiaccessibilityelement.h"
 
+QT_NAMESPACE_ALIAS_OBJC_CLASS(QMacAccessibilityElement);
+
 QIOSPlatformAccessibility::QIOSPlatformAccessibility()
 {
     m_focusObserver = QMacNotificationObserver(
