@@ -303,7 +303,7 @@ QRangeModel::QRangeModel(QRangeModelImplBase *impl, QObject *parent)
     tree data structure needs to be homomorphic: on all levels of the tree, the
     list of child rows needs to use the exact same representation as the tree
     itself. In addition, the row type needs be of a static size: either a gadget
-    or QObject type, or a type that implements the {C++ tuple protocol}.
+    or QObject type, or a type that implements \l{the C++ tuple protocol}.
 
     To represent such data as a tree, QRangeModel has to be able to traverse the
     data structure: for any given row, the model needs to be able to retrieve
