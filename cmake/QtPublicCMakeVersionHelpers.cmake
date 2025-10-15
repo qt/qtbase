@@ -107,10 +107,9 @@ endfunction()
 # Handle force-assignment of CMP0156 policy when using CMake 3.29+.
 #
 # For Apple-platforms we set it to NEW, to avoid duplicate linker issues when using -ObjC flag.
+# For Emscripten / WebAssembly we also set it to NEW, to avoid duplicate linker issues.
 #
-# For non-Apple platforms we set it to OLD, because we haven't done the necessary testing to
-# see which platforms / linkers can handle the new deduplication behavior, without breaking the
-# various linking techniques that Qt uses for object library propagation.
+# For other platforms, we leave the policy value as-is, without showing any warnings.
 function(__qt_internal_set_cmp0156)
     # Exit early if not using CMake 3.29+
     if(NOT POLICY CMP0156)
@@ -164,29 +163,32 @@ function(__qt_internal_set_cmp0156)
         set(default_policy_value NEW)
         set(unsupported_policy_value OLD)
     else()
-        # For non-Apple linkers, we keep the previous behavior of not deduplicating libraries,
-        # because we haven't done the necessary testing to identify on which platforms
-        # it is safe to deduplicate.
-        set(default_policy_value OLD)
-        set(unsupported_policy_value NEW)
+        # For other platforms we don't enforce any policy values and keep them as-is.
+        set(default_policy_value "")
+        set(unsupported_policy_value "")
     endif()
 
     # Force set the default policy value for the given platform, even if the policy value is
     # the same or empty. That's because in the calling function scope, the value can be empty
     # due to the cmake_minimum_required call in Qt6Config.cmake resetting the policy value.
-    get_cmake_property(debug_message_shown _qt_internal_cmp0156_debug_message_shown)
-    if(NOT debug_message_shown)
-        message(DEBUG "Force setting the CMP0156 policy to '${default_policy_value}' "
-            "for platform '${CMAKE_SYSTEM_NAME}'.")
-        set_property(GLOBAL PROPERTY _qt_internal_cmp0156_debug_message_shown TRUE)
+    if(default_policy_value)
+        get_cmake_property(debug_message_shown _qt_internal_cmp0156_debug_message_shown)
+        if(NOT debug_message_shown)
+            message(DEBUG "Force setting the CMP0156 policy to '${default_policy_value}' "
+                "for platform '${CMAKE_SYSTEM_NAME}'.")
+            set_property(GLOBAL PROPERTY _qt_internal_cmp0156_debug_message_shown TRUE)
+        endif()
+
+        cmake_policy(SET CMP0156 "${default_policy_value}")
     endif()
 
-    cmake_policy(SET CMP0156 "${default_policy_value}")
-
-    # If the policy is explicitly set to a value other than the default, issue a warning.
+    # If the policy is explicitly set to a value other than the (non-empty) default, issue a
+    # warning.
     # Don't show the warning if the policy is unset, which would be the default for most
     # projects, because it's too much noise. Also don't show it for Qt builds.
-    if("${policy_value}" STREQUAL "${unsupported_policy_value}" AND NOT QT_BUILDING_QT)
+    if(unsupported_policy_value
+            AND "${policy_value}" STREQUAL "${unsupported_policy_value}"
+            AND NOT QT_BUILDING_QT)
         message(WARNING
             "CMP0156 is set to '${policy_value}'. Qt forces the '${default_policy_value}'"
             " behavior of this policy for the '${CMAKE_SYSTEM_NAME}' platform by default."
