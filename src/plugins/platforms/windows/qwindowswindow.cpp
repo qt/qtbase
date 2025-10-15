@@ -4024,9 +4024,11 @@ void QWindowsWindow::requestUpdate()
                     // request or we are waiting for the event loop to process
                     // the Posted event on the GUI thread.
                     if (m_vsyncUpdatePending.testAndSetAcquire(UpdateState::Requested, UpdateState::Posted)) {
-                        QMetaObject::invokeMethod(w, [w] {
+                        QWindowsWindow *oldSelf = this;
+                        QMetaObject::invokeMethod(w, [w, oldSelf] {
+                            // 'oldSelf' is only used for comparison, don't access it directly!
                             auto *self = static_cast<QWindowsWindow *>(w->handle());
-                            if (self) {
+                            if (self && self == oldSelf) {
                                 // The platform window is still alive
                                 self->m_vsyncUpdatePending.storeRelease(UpdateState::Ready);
                                 self->deliverUpdateRequest();
