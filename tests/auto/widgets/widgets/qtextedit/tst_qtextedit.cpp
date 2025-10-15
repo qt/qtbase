@@ -201,6 +201,7 @@ private slots:
     void dontCrashWithCss();
 
     void linkSelectionArtifact();
+    void linkSelectionHighlightArtifact();
 
 private:
     void createSelection();
@@ -3143,6 +3144,54 @@ void tst_QTextEdit::linkSelectionArtifact()
         }
     }
 }
+
+void tst_QTextEdit::linkSelectionHighlightArtifact()
+{
+    QTextEdit e;
+    e.resize(800, 600);
+    e.show();
+
+    e.setAutoFormatting(QTextEdit::AutoNone);
+    e.setTextInteractionFlags(Qt::TextEditorInteraction | Qt::TextSelectableByMouse | Qt::LinksAccessibleByMouse);
+
+    QTextCursor c = e.textCursor();
+    QTextCharFormat fmt = c.charFormat();
+    fmt.setAnchor(true);
+    fmt.setAnchorHref("https://www.google.com");
+    c.setCharFormat(fmt);
+    c.insertText("Google");
+
+    QVERIFY(QTest::qWaitForWindowExposed(&e));
+
+    // Find the link position from cursor rect instead of hardcoded coordinates
+    c.setPosition(3); // middle of "Google"
+    const QPoint clickPos = e.cursorRect(c).center();
+    const QPoint viewportPos = e.viewport()->mapFromGlobal(e.mapToGlobal(clickPos));
+
+    // Track update regions emitted by the text control
+    auto *control = e.findChild<QWidgetTextControl *>();
+    QVERIFY(control);
+    QRectF updateRegion;
+    connect(control, &QWidgetTextControl::updateRequest,
+                        [&](const QRectF &rect) { updateRegion |= rect; });
+
+    // Single click to activate the link (sets focus indicator with outline)
+    QTest::mouseClick(e.viewport(), Qt::LeftButton, Qt::NoModifier, viewportPos);
+    QCoreApplication::processEvents();
+
+    // Reset tracking — we only care about what the double-click triggers
+    updateRegion = QRectF();
+
+    // Double-click to select the word (should switch from outline to background)
+    QTest::mouseDClick(e.viewport(), Qt::LeftButton, Qt::NoModifier, viewportPos);
+
+    // The double-click must trigger an update covering the full selection rect,
+    // not just the difference (which would be empty for a single-word link).
+    const QRectF selectionRect = control->selectionRect();
+    QVERIFY(!selectionRect.isEmpty());
+    QVERIFY(updateRegion.contains(selectionRect));
+}
+
 
 QTEST_MAIN(tst_QTextEdit)
 #include "tst_qtextedit.moc"

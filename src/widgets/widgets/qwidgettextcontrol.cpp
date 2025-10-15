@@ -1888,7 +1888,17 @@ void QWidgetTextControlPrivate::mouseDoubleClickEvent(QEvent *e, Qt::MouseButton
             cursor.select(QTextCursor::WordUnderCursor);
             doEmit = true;
         }
-        repaintOldAndNewSelection(oldSelection);
+        if (!cursorIsFocusIndicator)
+            repaintOldAndNewSelection(oldSelection);
+        else {
+            // When the focus indicator is active (link selected with outline style),
+            // we need to repaint the entire old and new selection areas rather than
+            // just the difference. The visual style changes from outline to background
+            // highlight, but repaintOldAndNewSelection's optimization would skip the
+            // repaint when the text range is unchanged.
+            emit q->updateRequest(q->selectionRect(oldSelection));
+            repaintSelection();
+        }
 
         cursorIsFocusIndicator = false;
         selectedWordOnDoubleClick = cursor;
