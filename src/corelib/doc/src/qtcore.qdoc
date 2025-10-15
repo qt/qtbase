@@ -28,7 +28,7 @@
     private Qt Core APIs:
 
     \badcode
-    find_package(Qt6 REQUIRED COMPONENTS Core)
+    find_package(Qt6 REQUIRED COMPONENTS CorePrivate)
     target_link_libraries(mytarget PRIVATE Qt6::CorePrivate)
     \endcode
 */
