@@ -134,12 +134,14 @@ abstract class QtLoader {
     private ArrayList<String> preferredAbiLibs(String[] libs) {
         ArrayList<String> abiLibs = new ArrayList<>();
         for (String lib : libs) {
+            // We expect each line to be in the form "<abi>;<libName>"
             String[] splits = lib.split(";", 2);
             // Ensure we have both abi and lib name parts
             if (splits == null || splits.length < 2)
                 continue;
 
-            if (!splits[0].equals(m_preferredAbi))
+            // Ensure the lib name for the preferred abi is not empty
+            if (!splits[0].equals(m_preferredAbi) || splits[1].isEmpty())
                 continue;
 
             abiLibs.add(splits[1]);
