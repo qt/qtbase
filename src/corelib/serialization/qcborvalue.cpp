@@ -1102,20 +1102,20 @@ static auto nextUtf32Character(const char16_t *&ptr, const char16_t *end) noexce
     Q_ASSERT(ptr != end);
     struct R {
         char32_t c;
-        qsizetype len = 1;  // in UTF-8 code units (bytes)
-    } r = { *ptr++ };
+        qsizetype len;  // in UTF-8 code units (bytes)
+    };
 
-    if (r.c < 0x0800) {
-        if (r.c >= 0x0080)
-            ++r.len;
-    } else if (!QChar::isHighSurrogate(r.c) || ptr == end) {
-        r.len += 2;
+    const char16_t c = *ptr++;
+
+    if (c < 0x0800) {
+        if (c < 0x0080)
+            return R{c, 1};
+        return R{c, 2};
+    } else if (!QChar::isHighSurrogate(c) || ptr == end) {
+        return R{c, 3};
     } else {
-        r.len += 3;
-        r.c = QChar::surrogateToUcs4(r.c, *ptr++);
+        return R{QChar::surrogateToUcs4(c, *ptr++), 4};
     }
-
-    return r;
 }
 
 static qsizetype stringLengthInUtf8(const char16_t *ptr, const char16_t *end) noexcept
