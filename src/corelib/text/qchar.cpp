@@ -1996,13 +1996,10 @@ static void canonicalOrderHelper(QString *str, QChar::UnicodeVersion version, qs
     QString &s = *str;
     const qsizetype l = s.size()-1;
 
-    char32_t u1, u2;
-    char16_t c1, c2;
-
     qsizetype pos = from;
     while (pos < l) {
         qsizetype p2 = pos+1;
-        u1 = s.at(pos).unicode();
+        char32_t u1 = s.at(pos).unicode();
         if (QChar::isHighSurrogate(u1)) {
             const char16_t low = s.at(p2).unicode();
             if (QChar::isLowSurrogate(low)) {
@@ -2012,10 +2009,10 @@ static void canonicalOrderHelper(QString *str, QChar::UnicodeVersion version, qs
                 ++p2;
             }
         }
-        c1 = 0;
+        ushort c1 = 0;
 
     advance:
-        u2 = s.at(p2).unicode();
+        char32_t u2 = s.at(p2).unicode();
         if (QChar::isHighSurrogate(u2) && p2 < l) {
             const char16_t low = s.at(p2+1).unicode();
             if (QChar::isLowSurrogate(low)) {
@@ -2024,7 +2021,7 @@ static void canonicalOrderHelper(QString *str, QChar::UnicodeVersion version, qs
             }
         }
 
-        c2 = 0;
+        ushort c2 = 0;
         {
             const QUnicodeTables::Properties *p = qGetProp(u2);
             if (p->unicodeVersion <= version)
