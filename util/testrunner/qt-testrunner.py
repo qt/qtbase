@@ -4,10 +4,9 @@
 
 
 # !!!IMPORTANT!!!  If you change anything to this script, run the testsuite
-#    manually and make sure it still passes, as it doesn't run automatically.
-#    Just execute the command line as such:
+#   and make sure it still passes:
 #
-#      ./util/testrunner/tests/tst_testrunner.py -v [--debug]
+#       qtbase/tests/auto/util/testrunner/tst_qt_testrunner.py -v [--debug]
 #
 # ======== qt-testrunner ========
 #
