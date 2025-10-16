@@ -168,7 +168,7 @@ class Test_qt_mock_test(unittest.TestCase):
         os.remove(filename)
     def test_crash_cleanly(self):
         proc = run(mock_test,
-                   env= os.environ | {"QT_MOCK_TEST_CRASH_CLEANLY":"1"} )
+                   env={ **os.environ, "QT_MOCK_TEST_CRASH_CLEANLY":"1" })
         if DEBUG:
             print("returncode:", proc.returncode)
         self.assertProcessCrashed(proc)
