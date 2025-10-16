@@ -1443,6 +1443,10 @@ QT_WARNING_DISABLE_MSVC(4706) /* assignment within conditional expression */
 QT_WARNING_DISABLE_MSVC(4355) /* 'this' : used in base member initializer list */
 QT_WARNING_DISABLE_MSVC(4710) /* function not inlined */
 QT_WARNING_DISABLE_MSVC(4530) /* C++ exception handler used, but unwind semantics are not enabled. Specify /EHsc */
+#  elif defined(Q_CC_CLANG_ONLY)
+#    if Q_CC_CLANG >= 2100
+        QT_WARNING_DISABLE_CLANG("-Wcharacter-conversion") /* until https://github.com/llvm/llvm-project/issues/163719 is fixed */
+#    endif
 #  elif defined(Q_CC_BOR)
 #    pragma option -w-inl
 #    pragma option -w-aus
