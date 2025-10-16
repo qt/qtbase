@@ -1678,11 +1678,13 @@ char32_t QChar::toTitleCase(char32_t ucs4) noexcept
     return convertCase_helper(ucs4, QUnicodeTables::TitleCase);
 }
 
-static inline char32_t foldCase(const char16_t *ch, const char16_t *start)
+static inline char32_t foldCase(const char16_t *cur, const char16_t *start)
 {
-    char32_t ucs4 = *ch;
-    if (QChar::isLowSurrogate(ucs4) && ch > start && QChar::isHighSurrogate(*(ch - 1)))
-        ucs4 = QChar::surrogateToUcs4(*(ch - 1), ucs4);
+    char32_t ucs4;
+    if (QChar::isLowSurrogate(*cur) && cur > start && QChar::isHighSurrogate(cur[-1]))
+        ucs4 = QChar::surrogateToUcs4(cur[-1], *cur);
+    else
+        ucs4 = *cur;
     return convertCase_helper(ucs4, QUnicodeTables::CaseFold);
 }
 
