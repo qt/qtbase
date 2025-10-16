@@ -1839,13 +1839,18 @@ static void decomposeHelper(QString *str, bool canonical, QChar::UnicodeVersion 
     const unsigned short *utf16 = reinterpret_cast<unsigned short *>(s.data());
     const unsigned short *uc = utf16 + s.size();
     while (uc != utf16 + from) {
-        char32_t ucs4 = *(--uc);
-        if (QChar(ucs4).isLowSurrogate() && uc != utf16) {
+        const char16_t c = *(--uc);
+        char32_t ucs4;
+        if (QChar::isLowSurrogate(c) && uc != utf16) {
             ushort high = *(uc - 1);
             if (QChar(high).isHighSurrogate()) {
                 --uc;
-                ucs4 = QChar::surrogateToUcs4(high, ucs4);
+                ucs4 = QChar::surrogateToUcs4(high, c);
+            } else {
+                ucs4 = c; // keep lone surrogate
             }
+        } else {
+            ucs4 = c;
         }
 
         if (QChar::unicodeVersion(ucs4) > version)
@@ -1943,13 +1948,18 @@ static void composeHelper(QString *str, QChar::UnicodeVersion version, qsizetype
     qsizetype pos = from;
     while (pos < s.size()) {
         qsizetype i = pos;
-        char32_t uc = s.at(pos).unicode();
-        if (QChar(uc).isHighSurrogate() && pos < s.size()-1) {
+        char32_t uc;
+        const char16_t c = s.at(pos).unicode();
+        if (QChar::isHighSurrogate(c) && pos < s.size() - 1) {
             ushort low = s.at(pos+1).unicode();
             if (QChar(low).isLowSurrogate()) {
-                uc = QChar::surrogateToUcs4(uc, low);
+                uc = QChar::surrogateToUcs4(c, low);
                 ++pos;
+            } else {
+                uc = c; // keep lone surrogate
             }
+        } else {
+            uc = c;
         }
 
         const QUnicodeTables::Properties *p = qGetProp(uc);
