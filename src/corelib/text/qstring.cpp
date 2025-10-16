@@ -1197,15 +1197,13 @@ Q_NEVER_INLINE static int ucstricmp(qsizetype alen, const char16_t *a, qsizetype
     if (a == b)
         return qt_lencmp(alen, blen);
 
-    char16_t alast = 0;
-    char16_t blast = 0;
     qsizetype l = qMin(alen, blen);
     qsizetype i;
     for (i = 0; i < l; ++i) {
 //         qDebug() << Qt::hex << alast << blast;
 //         qDebug() << Qt::hex << "*a=" << *a << "alast=" << alast << "folded=" << foldCase (*a, alast);
 //         qDebug() << Qt::hex << "*b=" << *b << "blast=" << blast << "folded=" << foldCase (*b, blast);
-        int diff = foldCase(a[i], alast) - foldCase(b[i], blast);
+        int diff = foldCase(a + i, a) - foldCase(b + i, b);
         if ((diff))
             return diff;
     }
