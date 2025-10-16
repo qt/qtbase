@@ -2092,7 +2092,7 @@ static bool normalizationQuickCheckHelper(QString *str, QString::NormalizationFo
     uchar lastCombining = 0;
     for (qsizetype i = from; i < length; ++i) {
         qsizetype pos = i;
-        char32_t uc = string[i];
+        const char16_t uc = string[i];
         if (uc < 0x80) {
             // ASCII characters are stable code points
             lastCombining = 0;
@@ -2100,6 +2100,7 @@ static bool normalizationQuickCheckHelper(QString *str, QString::NormalizationFo
             continue;
         }
 
+        char32_t ucs4;
         if (QChar::isHighSurrogate(uc)) {
             ushort low = string[i + 1];
             if (!QChar::isLowSurrogate(low)) {
@@ -2109,10 +2110,12 @@ static bool normalizationQuickCheckHelper(QString *str, QString::NormalizationFo
                 continue;
             }
             ++i;
-            uc = QChar::surrogateToUcs4(uc, low);
+            ucs4 = QChar::surrogateToUcs4(uc, low);
+        } else {
+            ucs4 = uc;
         }
 
-        const QUnicodeTables::Properties *p = qGetProp(uc);
+        const QUnicodeTables::Properties *p = qGetProp(ucs4);
 
         if (p->combiningClass < lastCombining && p->combiningClass > 0)
             return false;
