@@ -1197,8 +1197,8 @@ Q_NEVER_INLINE static int ucstricmp(qsizetype alen, const char16_t *a, qsizetype
     if (a == b)
         return qt_lencmp(alen, blen);
 
-    char32_t alast = 0;
-    char32_t blast = 0;
+    char16_t alast = 0;
+    char16_t blast = 0;
     qsizetype l = qMin(alen, blen);
     qsizetype i;
     for (i = 0; i < l; ++i) {

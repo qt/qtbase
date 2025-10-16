@@ -1686,11 +1686,11 @@ static inline char32_t foldCase(const char16_t *ch, const char16_t *start)
     return convertCase_helper(ucs4, QUnicodeTables::CaseFold);
 }
 
-static inline char32_t foldCase(char32_t ch, char32_t &last) noexcept
+static inline char32_t foldCase(char16_t ch, char16_t &last) noexcept
 {
     char32_t ucs4 = ch;
-    if (QChar::isLowSurrogate(ucs4) && QChar::isHighSurrogate(last))
-        ucs4 = QChar::surrogateToUcs4(last, ucs4);
+    if (QChar::isLowSurrogate(ch) && QChar::isHighSurrogate(last))
+        ucs4 = QChar::surrogateToUcs4(last, ch);
     last = ch;
     return convertCase_helper(ucs4, QUnicodeTables::CaseFold);
 }
