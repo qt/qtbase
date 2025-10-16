@@ -6511,6 +6511,13 @@ bool QGles2TextureRenderTarget::create()
                         rhiD->glFramebufferTexture2DMultisampleEXT(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, depthResolveTexD->target,
                                                                    depthResolveTexD->texture, 0, depthTexD->samples);
                     }
+                } else if (rhiD->caps.ctxMajor >= 3 && depthTexD->flags().testFlag(QRhiTexture::TextureArray) && m_desc.depthLayer() >= 0) {
+                    rhiD->f->glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTexD->texture,
+                                                       /*level*/0, m_desc.depthLayer());
+                    if (rhiD->isStencilSupportingFormat(depthTexD->format())) {
+                        rhiD->f->glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, depthTexD->texture,
+                                                           /*level*/0, m_desc.depthLayer());
+                    }
                 } else {
                     rhiD->f->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTexD->target,
                                                     depthTexD->texture, 0);

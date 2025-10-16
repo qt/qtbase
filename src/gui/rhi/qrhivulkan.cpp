@@ -2079,6 +2079,7 @@ bool QRhiVulkan::createOffscreenRenderPass(QVkRenderPassDescriptor *rpD,
                                            QRhiRenderBuffer *depthStencilBuffer,
                                            QRhiTexture *depthTexture,
                                            QRhiTexture *depthResolveTexture,
+                                           int depthLayer,
                                            QRhiShadingRateMap *shadingRateMap)
 {
     // attachment list layout is color (0-8), ds (0-1), resolve (0-8), ds resolve (0-1)
@@ -2136,7 +2137,7 @@ bool QRhiVulkan::createOffscreenRenderPass(QVkRenderPassDescriptor *rpD,
         attDesc.initialLayout = preserveDs ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL : VK_IMAGE_LAYOUT_UNDEFINED;
         attDesc.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
         rpD->attDescs.append(attDesc);
-        if (depthTexture && depthTexture->arraySize() >= 2 && colorAttachmentsBegin == colorAttachmentsEnd) {
+        if (depthTexture && depthTexture->arraySize() >= 2 && depthLayer == -1 && colorAttachmentsBegin == colorAttachmentsEnd) {
             multiViewCount = depthTexture->arraySize();
             rpD->multiViewCount = multiViewCount;
         }
@@ -8225,6 +8226,7 @@ QRhiRenderPassDescriptor *QVkTextureRenderTarget::newCompatibleRenderPassDescrip
                                          m_desc.depthStencilBuffer(),
                                          m_desc.depthTexture(),
                                          m_desc.depthResolveTexture(),
+                                         m_desc.depthLayer(),
                                          m_desc.shadingRateMap()))
     {
         delete rp;
@@ -8315,7 +8317,12 @@ bool QVkTextureRenderTarget::create()
             viewInfo.components.a = VK_COMPONENT_SWIZZLE_A;
             viewInfo.subresourceRange.aspectMask = aspectMaskForTextureFormat(depthTexD->format());
             viewInfo.subresourceRange.levelCount = 1;
-            viewInfo.subresourceRange.layerCount = qMax<uint32_t>(1, d.multiViewCount);
+            if (m_desc.depthLayer() >= 0 && depthTexD->arraySize() >= 2) {
+                viewInfo.subresourceRange.baseArrayLayer = uint32_t(m_desc.depthLayer());
+                viewInfo.subresourceRange.layerCount = 1;
+            }
+            else
+                viewInfo.subresourceRange.layerCount = qMax<uint32_t>(1, d.multiViewCount);
             VkResult err = rhiD->df->vkCreateImageView(rhiD->dev, &viewInfo, nullptr, &dsv);
             if (err != VK_SUCCESS) {
                 qWarning("Failed to create depth-stencil image view for rt: %d", err);

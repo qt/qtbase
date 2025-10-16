@@ -2827,6 +2827,38 @@ QRhiTextureRenderTargetDescription::QRhiTextureRenderTargetDescription(const QRh
  */
 
 /*!
+    \fn int QRhiTextureRenderTargetDescription::depthLayer() const
+    \return the array slice index to be used for the depth/stencil attachment,
+    or -1 by default.
+
+    \since 6.12
+    \sa setDepthLayer(), setDepthTexture()
+ */
+
+/*!
+    \fn void QRhiTextureRenderTargetDescription::setDepthLayer(int depthLayer)
+
+    Sets the array slice index to be used for the depth/stencil attachment.
+
+    Pass -1 (the default) to not target a particular layer. When set to a
+    non-negative value, the render target attaches a view that targets exactly
+    that layer (slice) of the depth texture. This is only effective when a 2D
+    array depth texture is provided via setDepthTexture(); otherwise the value
+    is ignored.
+
+    The value must be within the array size of the depth texture; passing an
+    out-of-range index leads to undefined behavior. The index is absolute
+    with respect to the underlying texture, regardless of any array range
+    that may have been specified when creating the texture.
+
+    Specifying a \a depthLayer disables layered/multiview rendering for the
+    depth attachment.
+
+    \since 6.12
+    \sa depthLayer(), setDepthTexture()
+ */
+
+/*!
     \fn QRhiTexture *QRhiTextureRenderTargetDescription::depthResolveTexture() const
 
     \return the texture to which a multisample depth (or depth-stencil) texture

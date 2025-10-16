@@ -874,6 +874,7 @@ public:
                                    QRhiRenderBuffer *depthStencilBuffer,
                                    QRhiTexture *depthTexture,
                                    QRhiTexture *depthResolveTexture,
+                                   int depthLayer,
                                    QRhiShadingRateMap *shadingRateMap);
     bool ensurePipelineCache(const void *initialData = nullptr, size_t initialDataSize = 0);
     VkShaderModule createShader(const QByteArray &spirv);

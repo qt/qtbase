@@ -3452,8 +3452,17 @@ void QRhiMetal::beginPass(QRhiCommandBuffer *cb,
         if (rtTex->m_desc.depthTexture()) {
             QMetalTexture *depthTexture = QRHI_RES(QMetalTexture, rtTex->m_desc.depthTexture());
             depthTexture->lastActiveFrameSlot = currentFrameSlot;
-            if (colorAttCount == 0 && depthTexture->arraySize() >= 2)
-                cbD->d->currentPassRpDesc.renderTargetArrayLength = NSUInteger(depthTexture->arraySize());
+            if (depthTexture->arraySize() >= 2) {
+                const int depthLayer = rtTex->m_desc.depthLayer();
+                if (depthLayer >= 0) {
+                    cbD->d->currentPassRpDesc.depthAttachment.slice = NSUInteger(depthLayer);
+                    cbD->d->currentPassRpDesc.stencilAttachment.slice = NSUInteger(depthLayer);
+                    if (colorAttCount == 0)
+                        cbD->d->currentPassRpDesc.renderTargetArrayLength = 1;
+                } else if (colorAttCount == 0) {
+                    cbD->d->currentPassRpDesc.renderTargetArrayLength = NSUInteger(depthTexture->arraySize());
+                }
+            }
         }
         if (rtTex->m_desc.depthResolveTexture())
             QRHI_RES(QMetalTexture, rtTex->m_desc.depthResolveTexture())->lastActiveFrameSlot = currentFrameSlot;

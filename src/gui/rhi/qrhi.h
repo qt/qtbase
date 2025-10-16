@@ -644,6 +644,9 @@ public:
     QRhiTexture *depthTexture() const { return m_depthTexture; }
     void setDepthTexture(QRhiTexture *texture) { m_depthTexture = texture; }
 
+    int depthLayer() const { return m_depthLayer; }
+    void setDepthLayer(int depthLayer) { m_depthLayer = depthLayer; }
+
     QRhiTexture *depthResolveTexture() const { return m_depthResolveTexture; }
     void setDepthResolveTexture(QRhiTexture *tex) { m_depthResolveTexture = tex; }
 
@@ -656,6 +659,7 @@ private:
     QRhiTexture *m_depthTexture = nullptr;
     QRhiTexture *m_depthResolveTexture = nullptr;
     QRhiShadingRateMap *m_shadingRateMap = nullptr;
+    int m_depthLayer = -1;
 };
 
 class Q_GUI_EXPORT QRhiTextureSubresourceUploadDescription

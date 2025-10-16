@@ -5408,12 +5408,14 @@ bool QD3D12TextureRenderTarget::create()
             }
             D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
             dsvDesc.Format = depthTexD->rtFormat;
-            dsvDesc.ViewDimension = depthTexD->sampleDesc.Count > 1 ? D3D12_DSV_DIMENSION_TEXTURE2DMS
-                                                                    : D3D12_DSV_DIMENSION_TEXTURE2D;
+            const bool isMultisample = depthTexD->sampleDesc.Count > 1;
             if (depthTexD->flags().testFlag(QRhiTexture::TextureArray)) {
-                if (depthTexD->sampleDesc.Count > 1) {
+                if (isMultisample) {
                     dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2DMSARRAY;
-                    if (depthTexD->arrayRangeStart() >= 0 && depthTexD->arrayRangeLength() >= 0) {
+                    if (m_desc.depthLayer() >= 0) {
+                        dsvDesc.Texture2DMSArray.FirstArraySlice = UINT(m_desc.depthLayer());
+                        dsvDesc.Texture2DMSArray.ArraySize = 1;
+                    } else if (depthTexD->arrayRangeStart() >= 0 && depthTexD->arrayRangeLength() >= 0) {
                         dsvDesc.Texture2DMSArray.FirstArraySlice = UINT(depthTexD->arrayRangeStart());
                         dsvDesc.Texture2DMSArray.ArraySize = UINT(depthTexD->arrayRangeLength());
                     } else {
@@ -5422,7 +5424,10 @@ bool QD3D12TextureRenderTarget::create()
                     }
                 } else {
                     dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2DARRAY;
-                    if (depthTexD->arrayRangeStart() >= 0 && depthTexD->arrayRangeLength() >= 0) {
+                    if (m_desc.depthLayer() >= 0) {
+                        dsvDesc.Texture2DArray.FirstArraySlice = UINT(m_desc.depthLayer());
+                        dsvDesc.Texture2DArray.ArraySize = 1;
+                    } else if (depthTexD->arrayRangeStart() >= 0 && depthTexD->arrayRangeLength() >= 0) {
                         dsvDesc.Texture2DArray.FirstArraySlice = UINT(depthTexD->arrayRangeStart());
                         dsvDesc.Texture2DArray.ArraySize = UINT(depthTexD->arrayRangeLength());
                     } else {
@@ -5430,6 +5435,10 @@ bool QD3D12TextureRenderTarget::create()
                         dsvDesc.Texture2DArray.ArraySize = UINT(qMax(0, depthTexD->arraySize()));
                     }
                 }
+            }
+            else {
+                dsvDesc.ViewDimension = isMultisample ? D3D12_DSV_DIMENSION_TEXTURE2DMS
+                                                      : D3D12_DSV_DIMENSION_TEXTURE2D;
             }
             dsv = rhiD->dsvPool.allocate(1);
             if (!dsv.isValid()) {
