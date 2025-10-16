@@ -1999,26 +1999,34 @@ static void canonicalOrderHelper(QString *str, QChar::UnicodeVersion version, qs
     qsizetype pos = from;
     while (pos < l) {
         qsizetype p2 = pos+1;
-        char32_t u1 = s.at(pos).unicode();
-        if (QChar::isHighSurrogate(u1)) {
+        char32_t u1;
+        if (const char16_t hi = s.at(pos).unicode(); QChar::isHighSurrogate(hi)) {
             const char16_t low = s.at(p2).unicode();
             if (QChar::isLowSurrogate(low)) {
-                u1 = QChar::surrogateToUcs4(u1, low);
+                u1 = QChar::surrogateToUcs4(hi, low);
                 if (p2 >= l)
                     break;
                 ++p2;
+            } else {
+                u1 = hi;
             }
+        } else {
+            u1 = hi;
         }
         ushort c1 = 0;
 
     advance:
-        char32_t u2 = s.at(p2).unicode();
-        if (QChar::isHighSurrogate(u2) && p2 < l) {
+        char32_t u2;
+        if (const char16_t hi = s.at(p2).unicode(); QChar::isHighSurrogate(hi) && p2 < l) {
             const char16_t low = s.at(p2+1).unicode();
             if (QChar::isLowSurrogate(low)) {
-                u2 = QChar::surrogateToUcs4(u2, low);
+                u2 = QChar::surrogateToUcs4(hi, low);
                 ++p2;
+            } else {
+                u2 = hi;
             }
+        } else {
+            u2 = hi;
         }
 
         ushort c2 = 0;
