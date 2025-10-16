@@ -160,17 +160,27 @@ abstract class QtLoader {
         for (String lib : libs) {
             String[] splits = lib.split(";", 2);
             // Ensure we have both abi and lib name parts
-            if (splits == null || splits.length < 2)
+            if (splits.length < 2)
                 continue;
 
-            uniqueAbis.add(splits[0]);
+            uniqueAbis.add(splits[0].trim());
         }
 
+        String fallbackAbi = null;
         boolean is64Bit = Process.is64Bit();
         for (String abi : Build.SUPPORTED_ABIS) {
-            if (uniqueAbis.contains(abi) && abi.contains("64") == is64Bit)
+            if (!uniqueAbis.contains(abi))
+                continue;
+
+            if (abi.contains("64") == is64Bit) // best match
                 return abi;
+
+            if (fallbackAbi == null)
+                fallbackAbi = abi;
         }
+
+        if (fallbackAbi != null)
+            return fallbackAbi;
 
         return Build.SUPPORTED_ABIS[0];
     }
