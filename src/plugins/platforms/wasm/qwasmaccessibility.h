@@ -32,6 +32,7 @@ public:
     static void addAccessibilityEnableButton(QWindow *window);
     static void onShowWindow(QWindow *);
     static void onRemoveWindow(QWindow *);
+    static bool isEnabled();
 
 private:
     void addAccessibilityEnableButtonImpl(QWindow *window);

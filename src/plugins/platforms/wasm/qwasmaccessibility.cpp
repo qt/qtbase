@@ -73,6 +73,11 @@ void QWasmAccessibility::onRemoveWindow(QWindow *window)
     get()->onRemoveWindowImpl(window);
 }
 
+bool QWasmAccessibility::isEnabled()
+{
+    return get()->m_accessibilityEnabled;
+}
+
 void QWasmAccessibility::addAccessibilityEnableButtonImpl(QWindow *window)
 {
     if (m_accessibilityEnabled)
@@ -139,6 +144,8 @@ void QWasmAccessibility::enableAccessibility()
     for (const auto& [key, value] : m_enableButtons) {
         const auto &[element, callback] = value;
         Q_UNUSED(callback);
+        if (auto wasmWindow = QWasmWindow::fromWindow(key))
+            wasmWindow->onAccessibilityEnable();
         onShowWindowImpl(key);
         element["parentElement"].call<void>("removeChild", element);
     }

@@ -90,6 +90,7 @@ public:
     void setMask(const QRegion &region) final;
     void setParent(const QPlatformWindow *window) final;
     void focus();
+    void onAccessibilityEnable();
 
     QWasmScreen *platformScreen() const;
     void setBackingStore(QWasmBackingStore *store) { m_backingStore = store; }

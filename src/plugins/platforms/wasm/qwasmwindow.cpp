@@ -97,7 +97,6 @@ QWasmWindow::QWasmWindow(QWindow *w, QWasmDeadKeySupport *deadKeySupport,
     // Set inputMode=none set to prevent the virtual keyboard from popping up.
     m_focusHelper["classList"].call<void>("add", emscripten::val("qt-window-focus-helper"));
     m_focusHelper.set("inputMode", std::string("none"));
-    m_focusHelper.call<void>("setAttribute", std::string("aria-hidden"), std::string("true"));
     m_focusHelper.call<void>("setAttribute", std::string("contenteditable"), std::string("true"));
     m_focusHelper["style"].set("position", "absolute");
     m_focusHelper["style"].set("left", 0);
@@ -112,7 +111,6 @@ QWasmWindow::QWasmWindow(QWindow *w, QWasmDeadKeySupport *deadKeySupport,
     // foucus.
     m_inputElement["classList"].call<void>("add", emscripten::val("qt-window-input-element"));
     m_inputElement.set("type", "text");
-    m_inputElement.call<void>("setAttribute", std::string("aria-hidden"), std::string("true"));
     m_inputElement["style"].set("position", "absolute");
     m_inputElement["style"].set("left", 0);
     m_inputElement["style"].set("top", 0);
@@ -129,6 +127,9 @@ QWasmWindow::QWasmWindow(QWindow *w, QWasmDeadKeySupport *deadKeySupport,
 
     m_a11yContainer["classList"].call<void>("add", emscripten::val("qt-window-a11y-container"));
     m_window.call<void>("appendChild", m_a11yContainer);
+
+    if (QWasmAccessibility::isEnabled())
+        onAccessibilityEnable();
 
     const bool rendersTo2dContext = w->surfaceType() != QSurface::OpenGLSurface;
     if (rendersTo2dContext)
@@ -1100,6 +1101,12 @@ void QWasmWindow::requestActivateWindow()
 void QWasmWindow::focus()
 {
     m_focusHelper.call<void>("focus");
+}
+
+void QWasmWindow::onAccessibilityEnable()
+{
+    m_focusHelper.call<void>("setAttribute", std::string("aria-hidden"), std::string("true"));
+    m_inputElement.call<void>("setAttribute", std::string("aria-hidden"), std::string("true"));
 }
 
 bool QWasmWindow::setMouseGrabEnabled(bool grab)
