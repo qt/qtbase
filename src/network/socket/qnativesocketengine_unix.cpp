@@ -326,6 +326,11 @@ int QNativeSocketEnginePrivate::option(QNativeSocketEngine::SocketOption opt) co
 */
 bool QNativeSocketEnginePrivate::setOption(QNativeSocketEngine::SocketOption opt, int v)
 {
+#ifdef QNATIVESOCKETENGINE_DEBUG
+#  define perrorDebug(msg)  perror("QNativeSocketEnginePrivate::setOption(): " msg)
+#else
+#  define perrorDebug(msg)  (void)0
+#endif
     Q_Q(QNativeSocketEngine);
     if (!q->isValid())
         return false;
@@ -337,25 +342,16 @@ bool QNativeSocketEnginePrivate::setOption(QNativeSocketEngine::SocketOption opt
 #if !defined(Q_OS_VXWORKS)
         int flags = ::fcntl(socketDescriptor, F_GETFL, 0);
         if (flags == -1) {
-#ifdef QNATIVESOCKETENGINE_DEBUG
-            perror("QNativeSocketEnginePrivate::setOption(): fcntl(F_GETFL) failed");
-#endif
+            perrorDebug("fcntl(F_GETFL) failed");
             return false;
         }
         if (::fcntl(socketDescriptor, F_SETFL, flags | O_NONBLOCK) == -1) {
-#ifdef QNATIVESOCKETENGINE_DEBUG
-            perror("QNativeSocketEnginePrivate::setOption(): fcntl(F_SETFL) failed");
-#endif
+            perrorDebug("fcntl(F_SETFL) failed");
             return false;
         }
 #else // Q_OS_VXWORKS
-        int onoff = 1;
-
-        if (qt_safe_ioctl(socketDescriptor, FIONBIO, &onoff) < 0) {
-
-#ifdef QNATIVESOCKETENGINE_DEBUG
-            perror("QNativeSocketEnginePrivate::setOption(): ioctl(FIONBIO, 1) failed");
-#endif
+        if (qt_safe_ioctl(socketDescriptor, FIONBIO, &v) < 0) {
+            perrorDebug("ioctl(FIONBIO, 1) failed");
             return false;
         }
 #endif // Q_OS_VXWORKS
@@ -417,6 +413,7 @@ bool QNativeSocketEnginePrivate::setOption(QNativeSocketEngine::SocketOption opt
     if (n == -1)
         return false;
     return ::setsockopt(socketDescriptor, level, n, (char *) &v, sizeof(v)) == 0;
+#undef perrorDebug
 }
 
 bool QNativeSocketEnginePrivate::nativeConnect(const QHostAddress &addr, quint16 port)
