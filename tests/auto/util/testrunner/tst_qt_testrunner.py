@@ -14,7 +14,8 @@ from tempfile   import TemporaryDirectory, mkstemp
 
 MY_NAME          = os.path.basename(__file__)
 my_dir           = os.path.dirname(__file__)
-testrunner       = os.path.join(my_dir, "..", "qt-testrunner.py")
+testrunner       = os.path.join(my_dir, "..", "..", "..", "..",
+                                "util", "testrunner", "qt-testrunner.py")
 mock_test        = os.path.join(my_dir, "qt_mock_test.py")
 xml_log_template = os.path.join(my_dir, "qt_mock_test-log.xml")
 
@@ -26,7 +27,7 @@ import unittest
 
 def setUpModule():
     global TEMPDIR
-    TEMPDIR = TemporaryDirectory(prefix="tst_testrunner-")
+    TEMPDIR = TemporaryDirectory(prefix="tst_qt_testrunner-")
 
     global EMPTY_FILE
     EMPTY_FILE = os.path.join(TEMPDIR.name, "EMPTY")

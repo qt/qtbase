@@ -15,10 +15,4 @@ It offers the following functionality
 
 The script itself has a testsuite that is simply run by invoking
 
-qtbase/util/testrunner/tests/tst_testrunner.py
-
-Please *run this manually* before submitting a change to qt-testrunner and
-make sure it's passing. The reason it does not run automatically during the
-usual qtbase test run, is because
-+ the test run should not depend on Python
-+ we don't want to wrap the testrunner tests with testrunner.
+qtbase/tests/auto/util/testrunner/tst_qt_testrunner.py

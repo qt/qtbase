@@ -4,6 +4,9 @@
 # Order by dependency [*], then alphabetic. [*] If bugs in part A of
 # our source would break tests of part B, then test A before B.
 
+
+add_subdirectory(util/testrunner)
+
 set(run_dbus_tests OFF)
 if (QT_FEATURE_dbus)
     set(run_dbus_tests ON)

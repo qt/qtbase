@@ -42,7 +42,7 @@
 import sys
 import os
 import traceback
-from tst_testrunner import write_xml_log
+from tst_qt_testrunner import write_xml_log
 
 
 MY_NAME         = os.path.basename(sys.argv[0])
