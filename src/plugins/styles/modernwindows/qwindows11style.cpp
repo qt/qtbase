@@ -915,15 +915,13 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
     case PE_IndicatorRadioButton: {
             const bool isRtl = option->direction == Qt::RightToLeft;
             const bool isOn = option->state & State_On;
-            qreal innerRadius = 7.0f;
+            qreal innerRadius = radioButtonInnerRadius(state);
             if (d->transitionsEnabled() && option->styleObject) {
                 if (option->styleObject->property("_q_end_radius").isNull())
                     option->styleObject->setProperty("_q_end_radius", innerRadius);
                 QNumberStyleAnimation *animation = qobject_cast<QNumberStyleAnimation *>(d->animation(option->styleObject));
                 innerRadius = animation ? animation->currentValue() : option->styleObject->property("_q_end_radius").toFloat();
                 option->styleObject->setProperty("_q_inner_radius", innerRadius);
-            } else {
-                innerRadius = radioButtonInnerRadius(state);
             }
 
             QRectF rect = isRtl ? option->rect.adjusted(0, 0, -2, 0) : option->rect.adjusted(2, 0, 0, 0);
