@@ -49,10 +49,14 @@ def tearDownModule():
 
 
 # Helper to run a command and always capture output
-def run(*args, **kwargs):
+def run(args : list, **kwargs):
+    if args[0].endswith(".py"):
+        # Make sure we run python executables with the same python version.
+        # It also helps on Windows, that .py files are not directly executable.
+        args = [ sys.executable, *args ]
     if DEBUG:
         print("Running: ", args, flush=True)
-    proc = subprocess.run(*args, stdout=PIPE, stderr=STDOUT, **kwargs)
+    proc = subprocess.run(args, stdout=PIPE, stderr=STDOUT, **kwargs)
     if DEBUG and proc.stdout:
         print(proc.stdout.decode(), flush=True)
     return proc
@@ -156,7 +160,7 @@ class Test_qt_mock_test(unittest.TestCase):
     # Test it will write an empty XML file if template is empty
     def test_empty_xml_file_is_written(self):
         my_env = {
-            "QT_MOCK_TEST_STATE_FILE": os.environ["QT_MOCK_TEST_STATE_FILE"],
+            **os.environ,
             "QT_MOCK_TEST_XML_TEMPLATE_FILE": EMPTY_FILE
         }
         filename = os.path.join(TEMPDIR.name, "testlog.xml")
@@ -167,7 +171,7 @@ class Test_qt_mock_test(unittest.TestCase):
         self.assertEqual(os.path.getsize(filename), 0)
         os.remove(filename)
     def test_crash_cleanly(self):
-        proc = run(mock_test,
+        proc = run([mock_test],
                    env={ **os.environ, "QT_MOCK_TEST_CRASH_CLEANLY":"1" })
         if DEBUG:
             print("returncode:", proc.returncode)
@@ -197,9 +201,7 @@ class Test_testrunner(unittest.TestCase):
         old_logfiles = find_test_logs(pattern="*.xml")
         for fname in old_logfiles:
             os.remove(os.path.join(TEMPDIR.name, fname))
-        self.env = dict()
-        self.env["QT_MOCK_TEST_XML_TEMPLATE_FILE"] = os.environ["QT_MOCK_TEST_XML_TEMPLATE_FILE"]
-        self.env["QT_MOCK_TEST_STATE_FILE"]        = state_file
+        self.env = dict(os.environ)
         self.testrunner_args = [ "--log-dir", TEMPDIR.name ]
     def prepare_env(self, run_list=None):
         if run_list is not None:
@@ -500,6 +502,7 @@ class Test_testrunner_with_xml_logfile(unittest.TestCase):
         (_handle, self.xml_file) = mkstemp(
             suffix=".xml", prefix="qt_mock_test-log-",
             dir=TEMPDIR.name)
+        os.close(_handle)
         if os.path.exists(os.environ["QT_MOCK_TEST_STATE_FILE"]):
             os.remove(os.environ["QT_MOCK_TEST_STATE_FILE"])
     def tearDown(self):
