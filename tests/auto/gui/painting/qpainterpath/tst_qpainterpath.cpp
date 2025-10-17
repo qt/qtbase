@@ -86,6 +86,9 @@ private slots:
     void intersectionPointOnEdge();
 
     void boundsAtStartPoint();
+
+    void percentAtEmptyPath_data();
+    void percentAtEmptyPath();
 };
 
 void tst_QPainterPath::cleanupTestCase()
@@ -1635,6 +1638,29 @@ void tst_QPainterPath::boundsAtStartPoint()
 
     QCOMPARE(constructedPath.boundingRect(), defaultPath.boundingRect());
     QCOMPARE(constructedPath.controlPointRect(), defaultPath.controlPointRect());
+}
+
+void tst_QPainterPath::percentAtEmptyPath_data()
+{
+    const QPointF qpf(2., 2.);
+    QTest::addColumn<QPainterPath>("path");
+
+    QTest::newRow("defaultConstructed") << QPainterPath();
+    QTest::newRow("withStartPoint") << QPainterPath(qpf);
+    QPainterPath pp(qpf);
+    pp.lineTo(qpf);
+    QTest::newRow("equalPoints") << pp;
+}
+
+void tst_QPainterPath::percentAtEmptyPath()
+{
+    QFETCH(QPainterPath, path);
+
+    path.angleAtPercent(0.5);
+    path.pointAtPercent(0.5);
+    path.slopeAtPercent(0.5);
+
+    path.percentAtLength(0);
 }
 
 QTEST_APPLESS_MAIN(tst_QPainterPath)
