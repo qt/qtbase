@@ -1,6 +1,6 @@
 {
     "Id": "libdbus-1-headers",
-    "Name": "libdus-1 headers",
+    "Name": "libdbus-1 headers",
     "QDocModule": "qtdbus",
     "QtUsage": "Qt D-Bus uses constants and typedefs from libdbus-1 headers.",
 
