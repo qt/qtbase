@@ -845,7 +845,7 @@ struct UnwrapHandler
         using NestedType = typename QtPrivate::Future<ResultType>::type;
         QFutureInterface<NestedType> promise(QFutureInterfaceBase::State::Pending);
 
-        outer->then([promise](const QFuture<ResultType> &outerFuture) mutable {
+        auto chain = outer->then([promise](const QFuture<ResultType> &outerFuture) mutable {
             // We use the .then([](QFuture<ResultType> outerFuture) {...}) version
             // (where outerFuture == *outer), to propagate the exception if the
             // outer future has failed.
@@ -883,6 +883,13 @@ struct UnwrapHandler
             promise.reportCanceled();
             promise.reportFinished();
         });
+
+        // Inject the promise into the chain.
+        // We use a fake function as a continuation, since the promise is
+        // managed by the outer future
+        chain.d.setContinuation(ContinuationWrapper(std::move([](const QFutureInterfaceBase &) {})),
+                                promise.d, QFutureInterfaceBase::ContinuationType::Then);
+
         return promise.future();
     }
 };

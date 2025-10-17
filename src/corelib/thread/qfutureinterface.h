@@ -42,6 +42,8 @@ template<class Function, class ResultType>
 class FailureHandler;
 #endif
 
+struct UnwrapHandler;
+
 #if QT_CORE_REMOVED_SINCE(6, 10)
 void Q_CORE_EXPORT watchContinuationImpl(const QObject *context,
                                          QtPrivate::QSlotObjectBase *slotObj,
@@ -186,6 +188,8 @@ private:
     template<class Function, class ResultType>
     friend class QtPrivate::FailureHandler;
 #endif
+
+    friend struct QtPrivate::UnwrapHandler;
 
 #if QT_CORE_REMOVED_SINCE(6, 10)
     friend Q_CORE_EXPORT void QtPrivate::watchContinuationImpl(
