@@ -12,6 +12,9 @@
 #include "qwaitcondition_p.h"
 
 #include <chrono>
+#if !QT_CONFIG(thread)
+#include <limits>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -684,7 +687,7 @@ bool QSemaphore::tryAcquire(int n, QDeadlineTimer timer)
 // the calling thread (which is the only thread in the no-thread
 // configuraton)
 
-QSemaphore::QSemaphore(int n)
+QSemaphore::QSemaphore(int)
 {
 
 }
@@ -702,6 +705,21 @@ void QSemaphore::acquire(int)
 void QSemaphore::release(int)
 {
 
+}
+
+int QSemaphore::available() const
+{
+    return std::numeric_limits<int>::max();
+}
+
+bool QSemaphore::tryAcquire(int)
+{
+    return true;
+}
+
+bool QSemaphore::tryAcquire(int, QDeadlineTimer)
+{
+    return true;
 }
 
 #endif
