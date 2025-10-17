@@ -1154,7 +1154,8 @@ void QDashStroker::processCurrentSubpath()
             elen -= std::floor(elen * invSumLength) * sumLength;
             // Update dash offset.
             while (!done) {
-                qreal dpos = pos + dashes[idash] - doffset - estart;
+                // parentheses to avoid float rounding issues: qreal(4) + 0.1 - 0.1 - 4 < 0
+                qreal dpos = (pos + dashes[idash]) - (doffset + estart);
 
                 Q_ASSERT(dpos >= 0);
 
@@ -1189,7 +1190,8 @@ void QDashStroker::processCurrentSubpath()
 
             bool has_offset = doffset > 0;
             bool evenDash = (idash & 1) == 0;
-            qreal dpos = pos + dashes[idash] - doffset - estart;
+            // parentheses to avoid float rounding issues: qreal(4) + 0.1 - 0.1 - 4 < 0
+            qreal dpos = (pos + dashes[idash]) - (doffset + estart);
 
             Q_ASSERT(dpos >= 0);
 
