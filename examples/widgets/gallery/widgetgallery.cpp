@@ -419,7 +419,8 @@ void WidgetGallery::updateSystemInfo()
     QString systemInfo;
     QTextStream str(&systemInfo);
     str << "<html><head/><body><h3>Build</h3><p>" << QLibraryInfo::build() << "</p>"
-        << "<h3>Operating System</h3><p>" << QSysInfo::prettyProductName() << "</p>"
+        << "<h3>Operating System</h3><p>\"" << QSysInfo::prettyProductName() << "\" / "
+        << QGuiApplication::platformName() << "</p>"
         << "<h3>Screens</h3><p>High DPI scale factor rounding policy: "
         << highDpiScaleFactorRoundingPolicy() << "</p><ol>";
     const auto screens = QGuiApplication::screens();
