@@ -9,7 +9,7 @@
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
-    app.styleHints()->setColorScheme(Qt::ColorScheme::Dark);
+    QGuiApplication::styleHints()->setColorScheme(Qt::ColorScheme::Dark);
     WidgetGallery gallery;
     gallery.show();
     return QCoreApplication::exec();

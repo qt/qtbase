@@ -13,10 +13,10 @@
 #include <QFileSystemModel>
 #include <QGridLayout>
 #include <QGroupBox>
-#include <QMenu>
 #include <QLabel>
 #include <QLineEdit>
 #include <QListWidget>
+#include <QMenu>
 #include <QPlainTextEdit>
 #include <QProgressBar>
 #include <QPushButton>
@@ -26,25 +26,29 @@
 #include <QSpinBox>
 #include <QStandardItemModel>
 #include <QStyle>
-#include <QStyleHints>
 #include <QStyleFactory>
-#include <QTextBrowser>
-#include <QTreeView>
+#include <QStyleHints>
 #include <QTableWidget>
+#include <QTextBrowser>
 #include <QTextEdit>
 #include <QToolBox>
 #include <QToolButton>
+#include <QTreeView>
 
-#include <QIcon>
 #include <QDesktopServices>
+#include <QIcon>
 #include <QScreen>
 #include <QWindow>
 
+#include <QAnyStringView>
 #include <QDebug>
 #include <QLibraryInfo>
+#include <QStringView>
 #include <QSysInfo>
 #include <QTextStream>
 #include <QTimer>
+
+using namespace Qt::StringLiterals;
 
 static inline QString className(const QObject *o)
 {
@@ -56,7 +60,7 @@ static inline void setClassNameToolTip(QWidget *w)
     w->setToolTip(className(w));
 }
 
-static QString helpUrl(const QString &page)
+static QString helpUrl(QStringView page)
 {
     QString result;
     QTextStream(&result) << "https://doc.qt.io/qt-" << QT_VERSION_MAJOR
@@ -76,23 +80,23 @@ static void launchHelp(const QWidget *w)
 
 static void launchModuleHelp()
 {
-    QDesktopServices::openUrl(helpUrl(QLatin1String("qtwidgets-index")));
+    QDesktopServices::openUrl(helpUrl(u"qtwidgets-index"));
 }
 
 template <class Widget>
-Widget *createWidget(const char *name, QWidget *parent = nullptr)
+Widget *createWidget(QAnyStringView name, QWidget *parent = nullptr)
 {
-    auto result = new Widget(parent);
-    result->setObjectName(QLatin1String(name));
+    auto *result = new Widget(parent);
+    result->setObjectName(name);
     setClassNameToolTip(result);
     return result;
 }
 
 template <class Widget, class Parameter>
-Widget *createWidget1(const Parameter &p1, const char *name, QWidget *parent = nullptr)
+Widget *createWidget1(const Parameter &p1, QAnyStringView name, QWidget *parent = nullptr)
 {
-    auto result = new Widget(p1, parent);
-    result->setObjectName(QLatin1String(name));
+    auto *result = new Widget(p1, parent);
+    result->setObjectName(name);
     setClassNameToolTip(result);
     return result;
 }
@@ -108,9 +112,9 @@ static QString highDpiScaleFactorRoundingPolicy()
 {
     QString result;
     QDebug(&result) << QGuiApplication::highDpiScaleFactorRoundingPolicy();
-    if (result.endsWith(QLatin1Char(')')))
+    if (result.endsWith(u')'))
         result.chop(1);
-    const int lastSep = result.lastIndexOf(QLatin1String("::"));
+    const auto lastSep = result.lastIndexOf("::"_L1);
     if (lastSep != -1)
         result.remove(0, lastSep + 2);
     return result;
@@ -122,10 +126,10 @@ WidgetGallery::WidgetGallery(QWidget *parent)
 {
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
-    auto styleComboBox = createWidget<QComboBox>("styleComboBox");
+    auto *styleComboBox = createWidget<QComboBox>("styleComboBox");
     const QString defaultStyleName = QApplication::style()->objectName();
     QStringList styleNames = QStyleFactory::keys();
-    for (int i = 1, size = styleNames.size(); i < size; ++i) {
+    for (qsizetype i = 1, size = styleNames.size(); i < size; ++i) {
         if (defaultStyleName.compare(styleNames.at(i), Qt::CaseInsensitive) == 0) {
             styleNames.swapItemsAt(0, i);
             break;
@@ -133,16 +137,16 @@ WidgetGallery::WidgetGallery(QWidget *parent)
     }
     styleComboBox->addItems(styleNames);
 
-    auto styleLabel = createWidget1<QLabel>(tr("&Style:"), "styleLabel");
+    auto *styleLabel = createWidget1<QLabel>(tr("&Style:"), "styleLabel");
     styleLabel->setBuddy(styleComboBox);
 
-    auto colorSchemeComboBox = createWidget<QComboBox>("colorSchemeComboBox");
+    auto *colorSchemeComboBox = createWidget<QComboBox>("colorSchemeComboBox");
     colorSchemeComboBox->addItem(tr("Auto"));
     colorSchemeComboBox->addItem(tr("Light"));
     colorSchemeComboBox->addItem(tr("Dark"));
     colorSchemeComboBox->setCurrentIndex(static_cast<int>(qApp->styleHints()->colorScheme()));
 
-    auto colorSchemeLabel = createWidget1<QLabel>(tr("&Color Scheme:"), "colorSchemeLabel");
+    auto *colorSchemeLabel = createWidget1<QLabel>(tr("&Color Scheme:"), "colorSchemeLabel");
     colorSchemeLabel->setBuddy(colorSchemeComboBox);
 
     connect(colorSchemeComboBox, &QComboBox::currentIndexChanged, this, [](int index){
@@ -150,15 +154,16 @@ WidgetGallery::WidgetGallery(QWidget *parent)
     });
 
     const QKeySequence helpKeySequence(QKeySequence::HelpContents);
-    auto helpLabel = createWidget1<QLabel>(tr("Press <kbd>%1</kbd> over a widget to see Documentation")
-                                            .arg(helpKeySequence.toString(QKeySequence::NativeText)), "helpLabel");
+    const QString helpText = tr("Press <kbd>%1</kbd> over a widget to see Documentation")
+                                     .arg(helpKeySequence.toString(QKeySequence::NativeText));
+    auto *helpLabel = createWidget1<QLabel>(helpText, "helpLabel");
 
-    auto disableWidgetsCheckBox = createWidget1<QCheckBox>(tr("&Disable widgets"), "disableWidgetsCheckBox");
+    auto *disableWidgetsCheckBox = createWidget1<QCheckBox>(tr("&Disable widgets"), "disableWidgetsCheckBox");
 
-    auto buttonsGroupBox = createButtonsGroupBox();
-    auto itemViewTabWidget = createItemViewTabWidget();
-    auto simpleInputWidgetsGroupBox = createSimpleInputWidgetsGroupBox();
-    auto textToolBox = createTextToolBox();
+    auto *buttonsGroupBox = createButtonsGroupBox();
+    auto *itemViewTabWidget = createItemViewTabWidget();
+    auto *simpleInputWidgetsGroupBox = createSimpleInputWidgetsGroupBox();
+    auto *textToolBox = createTextToolBox();
 
     connect(styleComboBox, &QComboBox::textActivated,
             this, &WidgetGallery::changeStyle);
@@ -171,8 +176,8 @@ WidgetGallery::WidgetGallery(QWidget *parent)
     connect(disableWidgetsCheckBox, &QCheckBox::toggled,
             simpleInputWidgetsGroupBox, &QWidget::setDisabled);
 
-    auto topLayout = new QHBoxLayout;
-    auto appearanceLayout = new QGridLayout;
+    auto *topLayout = new QHBoxLayout;
+    auto *appearanceLayout = new QGridLayout;
     appearanceLayout->addWidget(styleLabel, 0, 0);
     appearanceLayout->addWidget(styleComboBox, 0, 1);
     appearanceLayout->addWidget(colorSchemeLabel, 1, 0);
@@ -183,12 +188,12 @@ WidgetGallery::WidgetGallery(QWidget *parent)
     topLayout->addStretch(1);
     topLayout->addWidget(disableWidgetsCheckBox);
 
-    auto dialogButtonBox = createWidget1<QDialogButtonBox>(QDialogButtonBox::Help | QDialogButtonBox::Close,
-                                                           "dialogButtonBox");
+    auto *dialogButtonBox = createWidget1<QDialogButtonBox>(
+            QDialogButtonBox::Help | QDialogButtonBox::Close, "dialogButtonBox");
     connect(dialogButtonBox, &QDialogButtonBox::helpRequested, this, launchModuleHelp);
     connect(dialogButtonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
 
-    auto mainLayout = new QGridLayout(this);
+    auto *mainLayout = new QGridLayout(this);
     mainLayout->addLayout(topLayout, 0, 0, 1, 2);
     mainLayout->addWidget(buttonsGroupBox, 1, 0);
     mainLayout->addWidget(simpleInputWidgetsGroupBox, 1, 1);
@@ -225,38 +230,38 @@ void WidgetGallery::advanceProgressBar()
 
 QGroupBox *WidgetGallery::createButtonsGroupBox()
 {
-    auto result = createWidget1<QGroupBox>(tr("Buttons"), "buttonsGroupBox");
+    auto *result = createWidget1<QGroupBox>(tr("Buttons"), "buttonsGroupBox");
 
-    auto defaultPushButton = createWidget1<QPushButton>(tr("Default Push Button"), "defaultPushButton");
+    auto *defaultPushButton = createWidget1<QPushButton>(tr("Default Push Button"), "defaultPushButton");
     defaultPushButton->setDefault(true);
 
-    auto togglePushButton = createWidget1<QPushButton>(tr("Toggle Push Button"), "togglePushButton");
+    auto *togglePushButton = createWidget1<QPushButton>(tr("Toggle Push Button"), "togglePushButton");
     togglePushButton->setCheckable(true);
     togglePushButton->setChecked(true);
 
-    auto flatPushButton = createWidget1<QPushButton>(tr("Flat Push Button"), "flatPushButton");
+    auto *flatPushButton = createWidget1<QPushButton>(tr("Flat Push Button"), "flatPushButton");
     flatPushButton->setFlat(true);
 
-    auto toolButton = createWidget<QToolButton>("toolButton");
+    auto *toolButton = createWidget<QToolButton>("toolButton");
     toolButton->setText(tr("Tool Button"));
 
-    auto menuToolButton = createWidget<QToolButton>("menuButton");
+    auto *menuToolButton = createWidget<QToolButton>("menuButton");
     menuToolButton->setText(tr("Menu Button"));
-    auto toolMenu = new QMenu(menuToolButton);
+    auto *toolMenu = new QMenu(menuToolButton);
     menuToolButton->setPopupMode(QToolButton::InstantPopup);
     toolMenu->addAction("Option");
     toolMenu->addSeparator();
-    auto action = toolMenu->addAction("Checkable Option");
+    auto *action = toolMenu->addAction("Checkable Option");
     action->setCheckable(true);
     menuToolButton->setMenu(toolMenu);
-    auto toolLayout = new QHBoxLayout;
+    auto *toolLayout = new QHBoxLayout;
     toolLayout->addWidget(toolButton);
     toolLayout->addWidget(menuToolButton);
 
-    auto commandLinkButton = createWidget1<QCommandLinkButton>(tr("Command Link Button"), "commandLinkButton");
+    auto *commandLinkButton = createWidget1<QCommandLinkButton>(tr("Command Link Button"), "commandLinkButton");
     commandLinkButton->setDescription(tr("Description"));
 
-    auto buttonLayout = new QVBoxLayout;
+    auto *buttonLayout = new QVBoxLayout;
     buttonLayout->addWidget(defaultPushButton);
     buttonLayout->addWidget(togglePushButton);
     buttonLayout->addWidget(flatPushButton);
@@ -264,23 +269,23 @@ QGroupBox *WidgetGallery::createButtonsGroupBox()
     buttonLayout->addWidget(commandLinkButton);
     buttonLayout->addStretch(1);
 
-    auto radioButton1 = createWidget1<QRadioButton>(tr("Radio button 1"), "radioButton1");
-    auto radioButton2 = createWidget1<QRadioButton>(tr("Radio button 2"), "radioButton2");
-    auto radioButton3 = createWidget1<QRadioButton>(tr("Radio button 3"), "radioButton3");
+    auto *radioButton1 = createWidget1<QRadioButton>(tr("Radio button 1"), "radioButton1");
+    auto *radioButton2 = createWidget1<QRadioButton>(tr("Radio button 2"), "radioButton2");
+    auto *radioButton3 = createWidget1<QRadioButton>(tr("Radio button 3"), "radioButton3");
     radioButton1->setChecked(true);
 
-    auto checkBox =  createWidget1<QCheckBox>(tr("Tri-state check box"), "checkBox");
+    auto *checkBox =  createWidget1<QCheckBox>(tr("Tri-state check box"), "checkBox");
     checkBox->setTristate(true);
     checkBox->setCheckState(Qt::PartiallyChecked);
 
-    auto checkableLayout = new QVBoxLayout;
+    auto *checkableLayout = new QVBoxLayout;
     checkableLayout->addWidget(radioButton1);
     checkableLayout->addWidget(radioButton2);
     checkableLayout->addWidget(radioButton3);
     checkableLayout->addWidget(checkBox);
     checkableLayout->addStretch(1);
 
-    auto mainLayout = new QHBoxLayout(result);
+    auto *mainLayout = new QHBoxLayout(result);
     mainLayout->addLayout(buttonLayout);
     mainLayout->addLayout(checkableLayout);
     mainLayout->addStretch();
@@ -289,8 +294,8 @@ QGroupBox *WidgetGallery::createButtonsGroupBox()
 
 static QWidget *embedIntoHBoxLayout(QWidget *w, int margin = 5)
 {
-    auto result = new QWidget;
-    auto layout = new QHBoxLayout(result);
+    auto *result = new QWidget;
+    auto *layout = new QHBoxLayout(result);
     layout->setContentsMargins(margin, margin, margin, margin);
     layout->addWidget(w);
     return result;
@@ -298,7 +303,7 @@ static QWidget *embedIntoHBoxLayout(QWidget *w, int margin = 5)
 
 QToolBox *WidgetGallery::createTextToolBox()
 {
-    auto result = createWidget<QToolBox>("toolBox");
+    auto *result = createWidget<QToolBox>("toolBox");
 
     const QString plainText = tr("Twinkle, twinkle, little star,\n"
                             "How I wonder what you are.\n"
@@ -307,13 +312,13 @@ QToolBox *WidgetGallery::createTextToolBox()
                             "Twinkle, twinkle, little star,\n"
                             "How I wonder what you are!\n");
     // Create centered/italic HTML rich text
-    QString richText = QLatin1String("<html><head/><body><i>");
-    for (const auto &line : QStringView{ plainText }.split(QLatin1Char('\n')))
-        richText += QString::fromLatin1("<center>%1</center>").arg(line);
-    richText += QLatin1String("</i></body></html>");
+    QString richText = "<html><head/><body><i>"_L1;
+    for (const auto &line : QStringView{ plainText }.split(u'\n'))
+        richText += "<center>"_L1 + line + "</center>"_L1;
+    richText += "</i></body></html>"_L1;
 
-    auto textEdit = createWidget1<QTextEdit>(richText, "textEdit");
-    auto plainTextEdit = createWidget1<QPlainTextEdit>(plainText, "plainTextEdit");
+    auto *textEdit = createWidget1<QTextEdit>(richText, "textEdit");
+    auto *plainTextEdit = createWidget1<QPlainTextEdit>(plainText, "plainTextEdit");
 
     systemInfoTextBrowser = createWidget<QTextBrowser>("systemInfoTextBrowser");
 
@@ -325,28 +330,28 @@ QToolBox *WidgetGallery::createTextToolBox()
 
 QTabWidget *WidgetGallery::createItemViewTabWidget()
 {
-    auto result = createWidget<QTabWidget>("bottomLeftTabWidget");
+    auto *result = createWidget<QTabWidget>("bottomLeftTabWidget");
     result->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Ignored);
 
-    auto treeView = createWidget<QTreeView>("treeView");
-    auto fileSystemModel = new QFileSystemModel(treeView);
+    auto *treeView = createWidget<QTreeView>("treeView");
+    auto *fileSystemModel = new QFileSystemModel(treeView);
     fileSystemModel->setRootPath(QDir::rootPath());
     treeView->setModel(fileSystemModel);
 
-    auto tableWidget = createWidget<QTableWidget>("tableWidget");
+    auto *tableWidget = createWidget<QTableWidget>("tableWidget");
     tableWidget->setRowCount(10);
     tableWidget->setColumnCount(10);
 
-    auto listModel = new QStandardItemModel(0, 1, result);
-    listModel->appendRow(new QStandardItem(QIcon(QLatin1String(":/qt-project.org/styles/commonstyle/images/diropen-128.png")),
+    auto *listModel = new QStandardItemModel(0, 1, result);
+    listModel->appendRow(new QStandardItem(QIcon(":/qt-project.org/styles/commonstyle/images/diropen-128.png"_L1),
                                            tr("Directory")));
-    listModel->appendRow(new QStandardItem(QIcon(QLatin1String(":/qt-project.org/styles/commonstyle/images/computer-32.png")),
+    listModel->appendRow(new QStandardItem(QIcon(":/qt-project.org/styles/commonstyle/images/computer-32.png"_L1),
                                            tr("Computer")));
 
-    auto listView = createWidget<QListView>("listView");
+    auto *listView = createWidget<QListView>("listView");
     listView->setModel(listModel);
 
-    auto iconModeListView = createWidget<QListView>("iconModeListView");
+    auto *iconModeListView = createWidget<QListView>("iconModeListView");
     iconModeListView->setViewMode(QListView::IconMode);
     iconModeListView->setModel(listModel);
 
@@ -359,34 +364,34 @@ QTabWidget *WidgetGallery::createItemViewTabWidget()
 
 QGroupBox *WidgetGallery::createSimpleInputWidgetsGroupBox()
 {
-    auto result = createWidget1<QGroupBox>(tr("Simple Input Widgets"), "bottomRightGroupBox");
+    auto *result = createWidget1<QGroupBox>(tr("Simple Input Widgets"), "bottomRightGroupBox");
     result->setCheckable(true);
     result->setChecked(true);
 
-    auto lineEdit = createWidget1<QLineEdit>("s3cRe7", "lineEdit");
+    auto *lineEdit = createWidget1<QLineEdit>("s3cRe7", "lineEdit");
     lineEdit->setClearButtonEnabled(true);
     lineEdit->setEchoMode(QLineEdit::Password);
 
-    auto spinBox = createWidget<QSpinBox>("spinBox", result);
+    auto *spinBox = createWidget<QSpinBox>("spinBox", result);
     spinBox->setValue(50);
 
-    auto dateTimeEdit = createWidget<QDateTimeEdit>("dateTimeEdit", result);
+    auto *dateTimeEdit = createWidget<QDateTimeEdit>("dateTimeEdit", result);
     dateTimeEdit->setDateTime(QDateTime::currentDateTime());
 
-    auto slider = createWidget<QSlider>("slider", result);
+    auto *slider = createWidget<QSlider>("slider", result);
     slider->setOrientation(Qt::Horizontal);
     slider->setValue(40);
 
-    auto scrollBar = createWidget<QScrollBar>("scrollBar", result);
+    auto *scrollBar = createWidget<QScrollBar>("scrollBar", result);
     scrollBar->setOrientation(Qt::Horizontal);
     setClassNameToolTip(scrollBar);
     scrollBar->setValue(60);
 
-    auto dial = createWidget<QDial>("dial", result);
+    auto *dial = createWidget<QDial>("dial", result);
     dial->setValue(30);
     dial->setNotchesVisible(true);
 
-    auto layout = new QGridLayout(result);
+    auto *layout = new QGridLayout(result);
     layout->addWidget(lineEdit, 0, 0, 1, 2);
     layout->addWidget(spinBox, 1, 0, 1, 2);
     layout->addWidget(dateTimeEdit, 2, 0, 1, 2);
@@ -399,11 +404,11 @@ QGroupBox *WidgetGallery::createSimpleInputWidgetsGroupBox()
 
 QProgressBar *WidgetGallery::createProgressBar()
 {
-    auto result = createWidget<QProgressBar>("progressBar");
+    auto *result = createWidget<QProgressBar>("progressBar");
     result->setRange(0, 10000);
     result->setValue(0);
 
-    auto timer = new QTimer(this);
+    auto *timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &WidgetGallery::advanceProgressBar);
     timer->start(1000);
     return result;
@@ -418,7 +423,7 @@ void WidgetGallery::updateSystemInfo()
         << "<h3>Screens</h3><p>High DPI scale factor rounding policy: "
         << highDpiScaleFactorRoundingPolicy() << "</p><ol>";
     const auto screens = QGuiApplication::screens();
-    for (auto screen : screens) {
+    for (const auto *screen : screens) {
         const bool current = screen == this->screen();
         str << "<li>";
         if (current)
@@ -437,9 +442,9 @@ void WidgetGallery::updateSystemInfo()
 void WidgetGallery::helpOnCurrentWidget()
 {
     // Skip over internal widgets
-    for (auto w = QApplication::widgetAt(QCursor::pos(screen())); w; w = w->parentWidget()) {
+    for (const auto *w = QApplication::widgetAt(QCursor::pos(screen())); w; w = w->parentWidget()) {
         const QString name = w->objectName();
-        if (!name.isEmpty() && !name.startsWith(QLatin1String("qt_"))) {
+        if (!name.isEmpty() && !name.startsWith("qt_"_L1)) {
             launchHelp(w);
             break;
         }

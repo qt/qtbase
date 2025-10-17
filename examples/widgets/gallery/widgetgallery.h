@@ -37,7 +37,7 @@ private:
     QProgressBar *createProgressBar();
 
     QProgressBar *progressBar;
-    QTextBrowser *systemInfoTextBrowser;
+    QTextBrowser *systemInfoTextBrowser{};
 };
 
 #endif // WIDGETGALLERY_H
