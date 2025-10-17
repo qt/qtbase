@@ -174,6 +174,19 @@ class Test_qt_mock_test(unittest.TestCase):
         self.assertProcessCrashed(proc)
 
 
+# Find in @path, files that start with @testname and end with @pattern,
+# where @pattern is a glob-like string.
+def find_test_logs(testname=None, path=None, pattern="-*[0-9].xml"):
+    if testname is None:
+        testname = os.path.basename(mock_test)
+    if path is None:
+        path = TEMPDIR.name
+    pattern = os.path.join(path, testname + pattern)
+    logfiles = glob.glob(pattern)
+    if DEBUG:
+        print(f"Test ({testname}) logfiles found: ", logfiles)
+    return logfiles
+
 # Test regular invocations of qt-testrunner.
 class Test_testrunner(unittest.TestCase):
     def setUp(self):
@@ -181,8 +194,7 @@ class Test_testrunner(unittest.TestCase):
         if os.path.exists(state_file):
             os.remove(state_file)
         # The mock_test honors only the XML output arguments, the rest are ignored.
-        old_logfiles = glob.glob(os.path.basename(mock_test) + "*.xml",
-                                 root_dir=TEMPDIR.name)
+        old_logfiles = find_test_logs(pattern="*.xml")
         for fname in old_logfiles:
             os.remove(os.path.join(TEMPDIR.name, fname))
         self.env = dict()
@@ -205,11 +217,7 @@ class Test_testrunner(unittest.TestCase):
         self.assertEqual(proc.returncode, 0)
     def test_output_files_are_generated(self):
         proc = self.run2()
-        xml_output_files = glob.glob(os.path.basename(mock_test) + "-*[0-9].xml",
-                                     root_dir=TEMPDIR.name)
-        if DEBUG:
-            print("Output files found: ",
-                  xml_output_files)
+        xml_output_files = find_test_logs()
         self.assertEqual(len(xml_output_files), 1)
     def test_always_fail(self):
         self.prepare_env(run_list=["always_fail"])
@@ -403,10 +411,7 @@ class Test_testrunner(unittest.TestCase):
         self.assertEqual(proc.returncode, 3)
         # Verify that a full executable re-run happened that re-runs 2 times,
         # instead of individual functions that re-run 5 times.
-        xml_output_files = glob.glob(os.path.basename(mock_test) + "-*[0-9].xml",
-                                     root_dir=TEMPDIR.name)
-        if DEBUG:
-            print("XML output files found: ", xml_output_files)
+        xml_output_files = find_test_logs()
         self.assertEqual(len(xml_output_files), 2)
 
     # Test that qt-testrunner detects the correct executable name even if we
@@ -418,10 +423,7 @@ class Test_testrunner(unittest.TestCase):
                               testrunner_args=["--log-dir",TEMPDIR.name],
                               env=self.env)
         self.assertEqual(proc.returncode, 0)
-        xml_output_files = glob.glob(os.path.basename(mock_test) + "-*[0-9].xml",
-                                     root_dir=TEMPDIR.name)
-        if DEBUG:
-            print("XML output files found: ", xml_output_files)
+        xml_output_files = find_test_logs()
         self.assertEqual(len(xml_output_files), 1)
 
     # The "androidtestrunner" wrapper is special. It expects the QTest arguments after "--".
@@ -450,10 +452,7 @@ class Test_testrunner(unittest.TestCase):
                               wrapper_args=androidtestrunner_args,
                               env=self.env)
         self.assertEqual(proc.returncode, 0)
-        xml_output_files = glob.glob("tst_qquickpopup-*[0-9].xml",
-                                     root_dir=TEMPDIR.name)
-        if DEBUG:
-            print("XML output files found: ", xml_output_files)
+        xml_output_files = find_test_logs("tst_qquickpopup")
         self.assertEqual(len(xml_output_files), 1)
     # similar to above but with "--apk"
     @unittest.skipUnless(os.name == "posix", "Wrapper script needs POSIX shell")
@@ -465,10 +464,7 @@ class Test_testrunner(unittest.TestCase):
                               wrapper_args=androidtestrunner_args,
                               env=self.env)
         self.assertEqual(proc.returncode, 0)
-        xml_output_files = glob.glob("waza-*[0-9].xml",
-                                     root_dir=TEMPDIR.name)
-        if DEBUG:
-            print("XML output files found: ", xml_output_files)
+        xml_output_files = find_test_logs("waza")
         self.assertEqual(len(xml_output_files), 1)
     # similar to above but with neither "--apk" nor "--aab". qt-testrunner throws error.
     @unittest.skipUnless(os.name == "posix", "Wrapper script needs POSIX shell")
@@ -480,10 +476,7 @@ class Test_testrunner(unittest.TestCase):
                               wrapper_args=androidtestrunner_args,
                               env=self.env)
         self.assertEqual(proc.returncode, 1)
-        xml_output_files = glob.glob("waza-*[0-9].xml",
-                                     root_dir=TEMPDIR.name)
-        if DEBUG:
-            print("XML output files found: ", xml_output_files)
+        xml_output_files = find_test_logs("waza")
         self.assertEqual(len(xml_output_files), 0)
 
 
