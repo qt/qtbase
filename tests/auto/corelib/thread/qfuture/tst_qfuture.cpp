@@ -5656,6 +5656,12 @@ void tst_QFuture::cancelChainWithContext()
         int onCancelCnt = 0;
         bool unexpectedThread = false;
 
+        // For in-other-thread case we need a semaphore to make sure that
+        // the needed continuation is executed.
+        // Fot the in-main-thread case it's guaranteed by the unwrap()
+        // implementation.
+        QSemaphore sem;
+
         auto f = p1.future()
                          .then(context, [&]() {
                              if (QThread::currentThread() != thread)
@@ -5666,6 +5672,8 @@ void tst_QFuture::cancelChainWithContext()
                              if (QThread::currentThread() != thread)
                                  unexpectedThread = true;
                              ++thenCnt;
+                             if (inOtherThread)
+                                 sem.release();
                              return f;
                          }).unwrap()
                          .then(context, [&]{
@@ -5685,6 +5693,8 @@ void tst_QFuture::cancelChainWithContext()
                          });
 
         p1.finish();
+        if (inOtherThread)
+            sem.acquire();
         f.cancelChain();
         p2.finish();
         f.waitForFinished();
@@ -5736,6 +5746,75 @@ void tst_QFuture::cancelChainWithContext()
         QVERIFY(!unexpectedThread);
         QCOMPARE_EQ(thenCnt, 4);
         QCOMPARE_EQ(onCancelCnt, 0);
+    }
+    // cancelling propagates through unwrap()
+    {
+        QPromise<void> p1, p2;
+        p1.start();
+        p2.start();
+
+        int thenCnt = 0;
+        int onCancelCnt = 0;
+        bool unexpectedThread = false;
+
+        // For in-other-thread case we need a semaphore to make sure that
+        // the first continuation is executed.
+        // Fot the in-main-thread case it's guaranteed by the unwrap()
+        // implementation.
+        QSemaphore sem;
+
+        auto f = p1.future()
+                         .then(context, [&, f2 = p2.future()]() {
+                             if (QThread::currentThread() != thread)
+                                 unexpectedThread = true;
+                             ++thenCnt;
+                             if (inOtherThread)
+                                 sem.release();
+                             return f2;
+                         }).unwrap()
+                         .onCanceled(context, [&] {
+                             if (QThread::currentThread() != thread)
+                                 unexpectedThread = true;
+                             ++onCancelCnt;
+                         })
+                         .then([&]() {
+                             if (QThread::currentThread() != thread)
+                                 unexpectedThread = true;
+                             ++thenCnt;
+                             return QtFuture::makeReadyVoidFuture();
+                         }).unwrap()
+                         .onCanceled([&] {
+                             if (QThread::currentThread() != thread)
+                                 unexpectedThread = true;
+                             ++onCancelCnt;
+                         })
+                         .then(context, [&]{
+                             if (QThread::currentThread() != thread)
+                                 unexpectedThread = true;
+                             ++thenCnt;
+                             return QtFuture::makeReadyVoidFuture();
+                         }).unwrap()
+                         .onCanceled([&] {
+                             if (QThread::currentThread() != thread)
+                                 unexpectedThread = true;
+                             ++onCancelCnt;
+                         })
+                         .then(context, [&]{
+                             if (QThread::currentThread() != thread)
+                                 unexpectedThread = true;
+                             ++thenCnt;
+                         });
+
+        p1.finish();
+        if (inOtherThread)
+            sem.acquire();
+        f.cancelChain();
+        p2.finish();
+        f.waitForFinished();
+
+        QVERIFY(!unexpectedThread);
+        QCOMPARE_EQ(thenCnt, 1);
+        QCOMPARE_EQ(onCancelCnt, 3);
     }
 }
 
