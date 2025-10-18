@@ -42,6 +42,7 @@ public:
     explicit QAccessibleAbstractSpinBox(QWidget *w);
     virtual ~QAccessibleAbstractSpinBox();
 
+    QAccessible::State state() const override;
     QString text(QAccessible::Text t) const override;
     void *interface_cast(QAccessible::InterfaceType t) override;
 

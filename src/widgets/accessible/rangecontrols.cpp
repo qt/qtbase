@@ -65,6 +65,16 @@ QAccessibleInterface *QAccessibleAbstractSpinBox::lineEditIface() const
 #endif
 }
 
+QAccessible::State QAccessibleAbstractSpinBox::state() const
+{
+    QAccessible::State state = QAccessibleWidgetV2::state();
+    if (abstractSpinBox()->isReadOnly())
+        state.readOnly = true;
+    else
+        state.editable = true;
+    return state;
+}
+
 QString QAccessibleAbstractSpinBox::text(QAccessible::Text t) const
 {
     if (t == QAccessible::Value)
