@@ -40,6 +40,7 @@ def setUpModule():
 
     os.environ["QT_MOCK_TEST_STATE_FILE"]        = filename
     os.environ["QT_MOCK_TEST_XML_TEMPLATE_FILE"] = xml_log_template
+    os.environ["QT_TESTRUNNER_TESTING"] = "1"
 
 def tearDownModule():
     print("\ntearDownModule(): Cleaning up temporary directory:",
