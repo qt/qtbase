@@ -3422,29 +3422,28 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
             }
 
             QRect gr = subControlRect(cc, opt, SC_SliderGroove, w);
-            if (slider->subControls & SC_SliderGroove) {
+            if (slider->subControls & SC_SliderGroove)
                 grooveSubRule.drawRule(p, gr);
-            }
 
             if (slider->subControls & SC_SliderHandle) {
                 QRect hr = subControlRect(cc, opt, SC_SliderHandle, w);
 
-                QRenderRule subRule1 = renderRule(w, opt, PseudoElement_SliderSubPage);
-                if (subRule1.hasDrawable()) {
-                    QRect r(gr.topLeft(),
-                            slider->orientation == Qt::Horizontal
-                                ? QPoint(hr.x()+hr.width()/2, gr.y()+gr.height() - 1)
-                                : QPoint(gr.x()+gr.width() - 1, hr.y()+hr.height()/2));
-                    subRule1.drawRule(p, r);
-                }
-
-                QRenderRule subRule2 = renderRule(w, opt, PseudoElement_SliderAddPage);
-                if (subRule2.hasDrawable()) {
-                    QRect r(slider->orientation == Qt::Horizontal
-                                ? QPoint(hr.x()+hr.width()/2+1, gr.y())
-                                : QPoint(gr.x(), hr.y()+hr.height()/2+1),
-                            gr.bottomRight());
-                    subRule2.drawRule(p, r);
+                if (slider->subControls & SC_SliderGroove) {
+                    const bool isHor = slider->orientation == Qt::Horizontal;
+                    QRenderRule subRule1 = renderRule(w, opt, PseudoElement_SliderSubPage);
+                    if (subRule1.hasDrawable()) {
+                        QRect r(gr.topLeft(),
+                                isHor ? QPoint(hr.x() + hr.width() / 2, gr.y() + gr.height() - 1)
+                                      : QPoint(gr.x() + gr.width() - 1, hr.y() + hr.height() / 2));
+                        subRule1.drawRule(p, r);
+                    }
+                    QRenderRule subRule2 = renderRule(w, opt, PseudoElement_SliderAddPage);
+                    if (subRule2.hasDrawable()) {
+                        QRect r(isHor ? QPoint(hr.x() + hr.width() / 2 + 1, gr.y())
+                                      : QPoint(gr.x(), hr.y() + hr.height() / 2 + 1),
+                                gr.bottomRight());
+                        subRule2.drawRule(p, r);
+                    }
                 }
 
                 handleSubRule.drawRule(p, handleSubRule.boxRect(hr, Margin));
