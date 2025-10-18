@@ -299,6 +299,12 @@ def parse_log(results_file) -> WhatFailed:
 
 
 def run_test(arg_list: List[str], **kwargs):
+    if (os.environ.get("QT_TESTRUNNER_TESTING", "0") == "1"
+        and os.name == "nt"
+        and arg_list[0].endswith(".py")
+    ):
+        # For executing qt_mock_test.py under the same Python interpreter when testing.
+        arg_list = [ sys.executable ] + arg_list
     L.debug("Running test command line: %s", arg_list)
     proc = subprocess.run(arg_list, **kwargs)
     L.info("Test process exited with code: %d", proc.returncode)
