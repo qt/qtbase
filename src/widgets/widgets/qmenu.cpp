@@ -2945,7 +2945,7 @@ void QMenu::mouseReleaseEvent(QMouseEvent *e)
 #endif
                 d->activateAction(action, QAction::Trigger);
         }
-    } else if ((!action || action->isEnabled()) && !action->isSeparator()) {
+    } else if (!action || (action->isEnabled() && !action->isSeparator())) {
         d->hideUpToMenuBar();
     }
 }
