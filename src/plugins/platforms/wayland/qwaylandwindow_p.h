@@ -247,7 +247,9 @@ public:
 
     virtual void reinit();
     void reset();
-    void initializeWlSurface();
+    void initializeWlSurface(bool colorSpace = true);
+
+    void initializeColorSpace();
 
     bool windowEvent(QEvent *event) override;
 

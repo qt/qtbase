@@ -20,7 +20,7 @@
 #include <QColorSpace>
 #include <QList>
 
-#include "qwayland-xx-color-management-v4.h"
+#include "qwayland-color-management-v1.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -28,7 +28,7 @@ namespace QtWaylandClient {
 
 class ImageDescription;
 
-class ColorManager : public QObject, public QtWayland::xx_color_manager_v4
+class ColorManager : public QObject, public QtWayland::wp_color_manager_v1
 {
     Q_OBJECT
 public:
@@ -48,22 +48,22 @@ public:
     ~ColorManager() override;
 
     Features supportedFeatures() const;
-    bool supportsNamedPrimary(QtWayland::xx_color_manager_v4::primaries primaries) const;
-    bool supportsTransferFunction(QtWayland::xx_color_manager_v4::transfer_function transferFunction) const;
+    bool supportsNamedPrimary(QtWayland::wp_color_manager_v1::primaries primaries) const;
+    bool supportsTransferFunction(QtWayland::wp_color_manager_v1::transfer_function transferFunction) const;
 
     std::unique_ptr<ImageDescription> createImageDescription(const QColorSpace &colorspace);
 
 private:
-    void xx_color_manager_v4_supported_feature(uint32_t feature) override;
-    void xx_color_manager_v4_supported_primaries_named(uint32_t primaries) override;
-    void xx_color_manager_v4_supported_tf_named(uint32_t transferFunction) override;
+    void wp_color_manager_v1_supported_feature(uint32_t feature) override;
+    void wp_color_manager_v1_supported_primaries_named(uint32_t primaries) override;
+    void wp_color_manager_v1_supported_tf_named(uint32_t transferFunction) override;
 
     Features mFeatures;
-    QList<QtWayland::xx_color_manager_v4::primaries> mPrimaries;
-    QList<QtWayland::xx_color_manager_v4::transfer_function> mTransferFunctions;
+    QList<QtWayland::wp_color_manager_v1::primaries> mPrimaries;
+    QList<QtWayland::wp_color_manager_v1::transfer_function> mTransferFunctions;
 };
 
-class ImageDescriptionInfo : public QObject, public QtWayland::xx_image_description_info_v4
+class ImageDescriptionInfo : public QObject, public QtWayland::wp_image_description_info_v1
 {
     Q_OBJECT
 public:
@@ -88,34 +88,34 @@ public:
     double mTargetMaxLuminance;
 
 private:
-    void xx_image_description_info_v4_done() override;
-    void xx_image_description_info_v4_icc_file(int32_t icc, uint32_t icc_size) override;
-    void xx_image_description_info_v4_primaries(int32_t r_x, int32_t r_y, int32_t g_x, int32_t g_y, int32_t b_x, int32_t b_y, int32_t w_x, int32_t w_y) override;
-    void xx_image_description_info_v4_tf_named(uint32_t transferFunction) override;
-    void xx_image_description_info_v4_luminances(uint32_t min_lum, uint32_t max_lum, uint32_t reference_lum) override;
-    void xx_image_description_info_v4_target_primaries(int32_t r_x, int32_t r_y, int32_t g_x, int32_t g_y, int32_t b_x, int32_t b_y, int32_t w_x, int32_t w_y) override;
-    void xx_image_description_info_v4_target_luminance(uint32_t min_lum, uint32_t max_lum) override;
+    void wp_image_description_info_v1_done() override;
+    void wp_image_description_info_v1_icc_file(int32_t icc, uint32_t icc_size) override;
+    void wp_image_description_info_v1_primaries(int32_t r_x, int32_t r_y, int32_t g_x, int32_t g_y, int32_t b_x, int32_t b_y, int32_t w_x, int32_t w_y) override;
+    void wp_image_description_info_v1_tf_named(uint32_t transferFunction) override;
+    void wp_image_description_info_v1_luminances(uint32_t min_lum, uint32_t max_lum, uint32_t reference_lum) override;
+    void wp_image_description_info_v1_target_primaries(int32_t r_x, int32_t r_y, int32_t g_x, int32_t g_y, int32_t b_x, int32_t b_y, int32_t w_x, int32_t w_y) override;
+    void wp_image_description_info_v1_target_luminance(uint32_t min_lum, uint32_t max_lum) override;
 };
 
-class ImageDescription : public QObject, public QtWayland::xx_image_description_v4
+class ImageDescription : public QObject, public QtWayland::wp_image_description_v1
 {
     Q_OBJECT
 public:
-    explicit ImageDescription(::xx_image_description_v4 *descr);
+    explicit ImageDescription(::wp_image_description_v1 *descr);
     ~ImageDescription();
 
     Q_SIGNAL void ready();
 
 private:
-    void xx_image_description_v4_failed(uint32_t cause, const QString &msg) override;
-    void xx_image_description_v4_ready(uint32_t identity) override;
+    void wp_image_description_v1_failed(uint32_t cause, const QString &msg) override;
+    void wp_image_description_v1_ready(uint32_t identity) override;
 };
 
-class ColorManagementFeedback : public QObject, public QtWayland::xx_color_management_feedback_surface_v4
+class ColorManagementFeedback : public QObject, public QtWayland::wp_color_management_surface_feedback_v1
 {
     Q_OBJECT
 public:
-    explicit ColorManagementFeedback(::xx_color_management_feedback_surface_v4 *obj);
+    explicit ColorManagementFeedback(::wp_color_management_surface_feedback_v1 *obj);
     ~ColorManagementFeedback();
 
     Q_SIGNAL void preferredChanged();
@@ -123,7 +123,7 @@ public:
     std::unique_ptr<ImageDescriptionInfo> mPreferredInfo;
 
 private:
-    void xx_color_management_feedback_surface_v4_preferred_changed() override;
+    void wp_color_management_surface_feedback_v1_preferred_changed(uint32_t identity) override;
     void handlePreferredDone();
 
     std::unique_ptr<ImageDescription> mPreferred;
@@ -131,11 +131,11 @@ private:
 
 };
 
-class ColorManagementSurface : public QObject, public QtWayland::xx_color_management_surface_v4
+class ColorManagementSurface : public QObject, public QtWayland::wp_color_management_surface_v1
 {
     Q_OBJECT
 public:
-    explicit ColorManagementSurface(::xx_color_management_surface_v4 *obj);
+    explicit ColorManagementSurface(::wp_color_management_surface_v1 *obj);
     ~ColorManagementSurface();
 
     void setImageDescription(ImageDescription *descr);

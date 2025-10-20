@@ -484,9 +484,13 @@ void QWaylandDisplay::reconnect()
 
     connect(
             this, &QWaylandDisplay::connected, this,
-            [&allPlatformWindows] {
+            [this, &allPlatformWindows] {
                 for (auto &window : std::as_const(allPlatformWindows)) {
-                    window->initializeWlSurface();
+                    window->initializeWlSurface(false);
+                }
+                forceRoundTrip(); // we need a roundtrip to receive the color space features the compositor supports
+                for (auto &window : std::as_const(allPlatformWindows)) {
+                    window->initializeColorSpace();
                 }
             },
             Qt::SingleShotConnection);
@@ -796,10 +800,8 @@ void QWaylandDisplay::registry_global(uint32_t id, const QString &interface, uin
             inputDevice->setDataControlDevice(mGlobals.dataControlManager->createDevice(inputDevice));
         }
 #endif
-    } else if (interface == QLatin1String(QtWayland::xx_color_manager_v4::interface()->name)) {
+    } else if (interface == QLatin1String(QtWayland::wp_color_manager_v1::interface()->name)) {
         mGlobals.colorManager = std::make_unique<ColorManager>(registry, id, 1);
-        // we need a roundtrip to receive the features the compositor supports
-        forceRoundTrip();
     } else if (interface == QLatin1String(QtWayland::wp_pointer_warp_v1::interface()->name)) {
         mGlobals.pointerWarp.reset(new WithDestructor<QtWayland::wp_pointer_warp_v1, wp_pointer_warp_v1_destroy>(
                 registry, id, 1));
