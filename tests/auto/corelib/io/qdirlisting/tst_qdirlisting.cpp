@@ -770,14 +770,13 @@ void tst_QDirListing::uncPaths()
 void tst_QDirListing::hiddenFiles()
 {
     QStringList expected = {
-        "hiddenDirs_hiddenFiles/normalFile"_L1,
-        "hiddenDirs_hiddenFiles/.hiddenFile"_L1,
-        "hiddenDirs_hiddenFiles/normalDirectory/normalFile"_L1,
-        "hiddenDirs_hiddenFiles/normalDirectory/.hiddenFile"_L1,
-        "hiddenDirs_hiddenFiles/.hiddenDirectory/normalFile"_L1,
         "hiddenDirs_hiddenFiles/.hiddenDirectory/.hiddenFile"_L1,
+        "hiddenDirs_hiddenFiles/.hiddenDirectory/normalFile"_L1,
+        "hiddenDirs_hiddenFiles/.hiddenFile"_L1,
+        "hiddenDirs_hiddenFiles/normalDirectory/.hiddenFile"_L1,
+        "hiddenDirs_hiddenFiles/normalDirectory/normalFile"_L1,
+        "hiddenDirs_hiddenFiles/normalFile"_L1,
     };
-    expected.sort();
 
     constexpr auto flags = ItFlag::ExcludeDirs | ItFlag::IncludeHidden | ItFlag::Recursive;
     QStringList list;
@@ -794,14 +793,13 @@ void tst_QDirListing::hiddenFiles()
 void tst_QDirListing::hiddenDirs()
 {
     QStringList expected = {
-        "hiddenDirs_hiddenFiles/normalDirectory"_L1,
-        "hiddenDirs_hiddenFiles/normalDirectory/subdir"_L1,
-        "hiddenDirs_hiddenFiles/normalDirectory/.hidden-subdir"_L1,
         "hiddenDirs_hiddenFiles/.hiddenDirectory"_L1,
-        "hiddenDirs_hiddenFiles/.hiddenDirectory/subdir"_L1,
         "hiddenDirs_hiddenFiles/.hiddenDirectory/.hidden-subdir"_L1,
+        "hiddenDirs_hiddenFiles/.hiddenDirectory/subdir"_L1,
+        "hiddenDirs_hiddenFiles/normalDirectory"_L1,
+        "hiddenDirs_hiddenFiles/normalDirectory/.hidden-subdir"_L1,
+        "hiddenDirs_hiddenFiles/normalDirectory/subdir"_L1,
     };
-    expected.sort();
 
     constexpr auto flags = ItFlag::ExcludeFiles | ItFlag::IncludeHidden | ItFlag::Recursive;
     QStringList list;
