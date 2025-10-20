@@ -159,6 +159,7 @@ static void populateRoleMap()
     roleMap[QAccessible::Graphic] = NSAccessibilityImageRole;
     roleMap[QAccessible::Tree] = NSAccessibilityOutlineRole;
     roleMap[QAccessible::BlockQuote] = NSAccessibilityGroupRole;
+    roleMap[QAccessible::LayeredPane] = NSAccessibilityGroupRole;
 }
 
 /*
