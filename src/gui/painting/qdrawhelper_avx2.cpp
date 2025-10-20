@@ -1525,7 +1525,7 @@ void QT_FASTCALL storeRGBA16FFromARGB32PM_avx2(uchar *dest, const uint *src, int
             const __m128 vsa = _mm_permute_ps(vsf, _MM_SHUFFLE(3, 3, 3, 3));
             __m128 vsr = _mm_rcp_ps(vsa);
             vsr = _mm_sub_ps(_mm_add_ps(vsr, vsr), _mm_mul_ps(vsr, _mm_mul_ps(vsr, vsa)));
-            vsr = _mm_insert_ps(vsr, _mm_set_ss(1.0f), 0x30);
+            vsr = _mm_insert_ps(vsr, vf, 0x30);
             vsf = _mm_mul_ps(vsf, vsr);
         }
         _mm_storel_epi64((__m128i *)(d + i), _mm_cvtps_ph(vsf, 0));
