@@ -1326,7 +1326,7 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
 
         [[maybe_unused]] int flags = prop.flags;
 
-        if (isBuiltinType(prop.type))
+        if (!isBuiltinType(prop.type))
             flags |= EnumOrFlag;
 
         if constexpr (mode == Construct) {

@@ -22,6 +22,7 @@ private slots:
     void variantProperty();
     void notifySignal();
     void enumerator();
+    void enumProperty();
     void classInfo();
     void relatedMetaObject();
     void staticMetacall();
@@ -991,6 +992,26 @@ void tst_QMetaObjectBuilder::enumerator()
 
     // Check that nothing else changed.
     QVERIFY(checkForSideEffects(builder, QMetaObjectBuilder::Enumerators));
+}
+
+void tst_QMetaObjectBuilder::enumProperty()
+{
+    // When adding property with an enumeration type, QMetaProperty::isEnumType()
+    // should return true.
+    QMetaObjectBuilder builder;
+    builder.setSuperClass(QObject::metaObject());
+
+    auto enumMetaType = QMetaType::fromType<Qt::Orientation>();
+    QVERIFY(enumMetaType.isValid());
+
+    builder.addProperty("orientation", "Qt::Orientation", enumMetaType);
+
+    auto *mo = builder.toMetaObject();
+    QVERIFY(mo != nullptr);
+    const int index = mo->indexOfProperty("orientation");
+    QVERIFY(index != -1);
+    QVERIFY(mo->property(index).isEnumType());
+    free(mo);
 }
 
 void tst_QMetaObjectBuilder::classInfo()
