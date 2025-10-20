@@ -21,6 +21,7 @@
 #include <QtCore/qtypeinfo.h>
 
 #include <cstddef>
+#include <cstdlib>
 
 QT_BEGIN_NAMESPACE
 
