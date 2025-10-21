@@ -498,18 +498,25 @@ instructions:
       property: features
       contains_value: GenerateSBOM
     instructions:
+    - type: EnvironmentVariable
+      variableName: SBOM_COMMON_ARGS
+      variableValue: >-
+        -DQT_GENERATE_SBOM=ON
+        -DQT_GENERATE_SOURCE_SBOM=ON
+        -DQT_SBOM_REQUIRE_GENERATE_CYDX_V1_6=ON
+        -DQT_SBOM_VERIFY_CYDX_V1_6=ON
     - type: AppendToEnvironmentVariable
       variableName: COMMON_CMAKE_ARGS
-      variableValue: " -DQT_GENERATE_SBOM=ON -DQT_GENERATE_SOURCE_SBOM=ON"
+      variableValue: " {{.Env.SBOM_COMMON_ARGS}} "
     - type: AppendToEnvironmentVariable
       variableName: COMMON_NON_QTBASE_CMAKE_ARGS
-      variableValue: " -DQT_GENERATE_SBOM=ON -DQT_GENERATE_SOURCE_SBOM=ON"
+      variableValue: " {{.Env.SBOM_COMMON_ARGS}} "
     - type: AppendToEnvironmentVariable
       variableName: COMMON_TARGET_CMAKE_ARGS
-      variableValue: " -DQT_GENERATE_SBOM=ON -DQT_GENERATE_SOURCE_SBOM=ON"
+      variableValue: " {{.Env.SBOM_COMMON_ARGS}} "
     - type: AppendToEnvironmentVariable
       variableName: COMMON_NON_QTBASE_TARGET_CMAKE_ARGS
-      variableValue: " -DQT_GENERATE_SBOM=ON -DQT_GENERATE_SOURCE_SBOM=ON"
+      variableValue: " {{.Env.SBOM_COMMON_ARGS}} "
 
   # SBOM Python apps path. On Windows python-installed apps are
   # in the same directory where pip is, aka Scripts sub-directory.
