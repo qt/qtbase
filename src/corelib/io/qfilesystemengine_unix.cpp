@@ -1197,8 +1197,18 @@ auto QFileSystemEngine::cloneFile(int srcfd, int dstfd, const QFileSystemMetaDat
         copied = ftruncate(dstfd, 0);
         return TriStateResult::Failed;
     }
-    if (errno != EXDEV)
+
+    // We failed with no bytes copied, so is this a real filesystem failure
+    // that will remain with sendfile() or the copy pump? Or is it a
+    // copy_file_range() condition?
+    switch (errno) {
+    case EINVAL: // observed with some obscure filesystem combinations
+    case EXDEV: // Linux can't do xdev file copies (FreeBSD can)
+        break;
+
+    default:
         return TriStateResult::Failed;
+    }
 #endif
 
 #if defined(Q_OS_LINUX)
