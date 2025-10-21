@@ -242,16 +242,10 @@ static void getWordBreaks(const char16_t *string, qsizetype len, QCharAttributes
     QUnicodeTables::WordBreakClass cls = QUnicodeTables::WordBreak_LF; // to meet WB1
     auto real_cls = cls; // Unaffected by WB4
 
-    for (qsizetype i = 0; i != len; ++i) {
-        const qsizetype pos = i;
-        char32_t ucs4 = string[i];
-        if (QChar::isHighSurrogate(ucs4) && i + 1 != len) {
-            ushort low = string[i + 1];
-            if (QChar::isLowSurrogate(low)) {
-                ucs4 = QChar::surrogateToUcs4(ucs4, low);
-                ++i;
-            }
-        }
+    QStringIterator it(QStringView{string, len});
+    while (it.hasNext()) {
+        const qsizetype pos = it.index();
+        const char32_t ucs4 = it.nextOrRawCodeUnit();
 
         const auto prop = QUnicodeTables::properties(ucs4);
         QUnicodeTables::WordBreakClass ncls = (QUnicodeTables::WordBreakClass) prop->wordBreakClass;
@@ -294,15 +288,8 @@ static void getWordBreaks(const char16_t *string, qsizetype len, QCharAttributes
             break;
         case WB::Lookup:
         case WB::LookupW:
-            for (qsizetype lookahead = i + 1; lookahead < len; ++lookahead) {
-                char32_t ucs4 = string[lookahead];
-                if (QChar::isHighSurrogate(ucs4) && lookahead + 1 != len) {
-                    ushort low = string[lookahead + 1];
-                    if (QChar::isLowSurrogate(low)) {
-                        ucs4 = QChar::surrogateToUcs4(ucs4, low);
-                        ++lookahead;
-                    }
-                }
+            for (auto lookahead = it; lookahead.hasNext(); /**/) {
+                const char32_t ucs4 = lookahead.nextOrRawCodeUnit();
 
                 const auto prop = QUnicodeTables::properties(ucs4);
                 QUnicodeTables::WordBreakClass tcls = (QUnicodeTables::WordBreakClass) prop->wordBreakClass;
@@ -314,7 +301,7 @@ static void getWordBreaks(const char16_t *string, qsizetype len, QCharAttributes
 
                 if (Q_LIKELY(tcls == cls || (action == WB::LookupW && (tcls == QUnicodeTables::WordBreak_HebrewLetter
                                                                        || tcls == QUnicodeTables::WordBreak_ALetter)))) {
-                    i = lookahead;
+                    it = lookahead;
                     ncls = tcls;
                     action = WB::NoBreak;
                 }
