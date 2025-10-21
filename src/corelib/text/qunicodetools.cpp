@@ -4,6 +4,7 @@
 
 #include "qunicodetools_p.h"
 
+#include <QtCore/private/qstringiterator_p.h>
 #include "qunicodetables_p.h"
 #include "qvarlengtharray.h"
 #if QT_CONFIG(library)
@@ -122,16 +123,10 @@ static void getGraphemeBreaks(const char16_t *string, qsizetype len, QCharAttrib
 {
     QUnicodeTables::GraphemeBreakClass lcls = QUnicodeTables::GraphemeBreak_LF; // to meet GB1
     GB::State state = GB::State::Normal;
-    for (qsizetype i = 0; i != len; ++i) {
-        qsizetype pos = i;
-        char32_t ucs4 = string[i];
-        if (QChar::isHighSurrogate(ucs4) && i + 1 != len) {
-            ushort low = string[i + 1];
-            if (QChar::isLowSurrogate(low)) {
-                ucs4 = QChar::surrogateToUcs4(ucs4, low);
-                ++i;
-            }
-        }
+    QStringIterator it(QStringView{string, len});
+    while (it.hasNext()) {
+        const qsizetype pos = it.index();
+        const char32_t ucs4 = it.nextOrRawCodeUnit();
 
         const QUnicodeTables::Properties *prop = QUnicodeTables::properties(ucs4);
         QUnicodeTables::GraphemeBreakClass cls = (QUnicodeTables::GraphemeBreakClass) prop->graphemeBreakClass;
@@ -1121,18 +1116,10 @@ static void getLineBreaks(const char16_t *string, qsizetype len, QCharAttributes
 
 static void getWhiteSpaces(const char16_t *string, qsizetype len, QCharAttributes *attributes)
 {
-    for (qsizetype i = 0; i != len; ++i) {
-        const auto pos = i;
-        uint ucs4 = string[i];
-        if (QChar::isHighSurrogate(ucs4) && i + 1 != len) {
-            ushort low = string[i + 1];
-            if (QChar::isLowSurrogate(low)) {
-                ucs4 = QChar::surrogateToUcs4(ucs4, low);
-                ++i;
-            }
-        }
-
-        if (Q_UNLIKELY(QChar::isSpace(ucs4)))
+    QStringIterator it(QStringView{string, len});
+    while (it.hasNext()) {
+        const auto pos = it.index();
+        if (Q_UNLIKELY(QChar::isSpace(it.nextOrRawCodeUnit())))
             attributes[pos].whiteSpace = true;
     }
 }
