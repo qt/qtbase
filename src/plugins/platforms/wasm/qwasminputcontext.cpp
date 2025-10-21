@@ -221,8 +221,8 @@ void QWasmInputContext::updateGeometry()
         qCDebug(qLcQpaWasmInputContext) << Q_FUNC_INFO << "propagating inputItemRectangle:" << inputItemRectangle;
         m_inputElement["style"].set("left", std::to_string(inputItemRectangle.x()) + "px");
         m_inputElement["style"].set("top", std::to_string(inputItemRectangle.y()) + "px");
-        m_inputElement["style"].set("width", std::to_string(inputItemRectangle.width()) + "px");
-        m_inputElement["style"].set("height", std::to_string(inputItemRectangle.height()) + "px");
+        m_inputElement["style"].set("width", "1px");
+        m_inputElement["style"].set("height", "1px");
     }
 }
 
