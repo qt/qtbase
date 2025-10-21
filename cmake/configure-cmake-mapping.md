@@ -128,7 +128,6 @@ The following table describes the mapping of configure options to CMake argument
 | -glib                                 | -DFEATURE_glib=ON                                 |                                                                 |
 | -inotify                              | -DFEATURE_inotify=ON                              |                                                                 |
 | -icu                                  | -DFEATURE_icu=ON                                  |                                                                 |
-| -pcre                                 | -DFEATURE_pcre2=ON                                |                                                                 |
 | -pcre [system/qt]                     | -DFEATURE_system_pcre2=ON/OFF                     |                                                                 |
 | -pps                                  | n/a                                               | QNX feature. Not available for 6.0.                             |
 | -zlib [system/qt]                     | -DFEATURE_system_zlib=ON/OFF                      |                                                                 |

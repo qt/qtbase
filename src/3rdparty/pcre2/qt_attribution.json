@@ -3,7 +3,7 @@
     "Id": "pcre2",
     "Name": "PCRE2",
     "QDocModule": "qtcore",
-    "QtUsage": "Optionally used in Qt Core (QRegularExpression). Configure with -system-pcre or -no-pcre to avoid.",
+    "QtUsage": "Used in Qt Core (QRegularExpression).",
     "SecurityCritical": true,
 
     "Description": "The PCRE library is a set of functions that implement regular expression pattern matching using the same syntax and semantics as Perl 5.",
@@ -23,7 +23,7 @@
     "Id": "pcre2-sljit",
     "Name": "PCRE2 - Stack-less Just-In-Time Compiler",
     "QDocModule": "qtcore",
-    "QtUsage": "Optionally used in Qt Core (QRegularExpression). Configure with -system-pcre or -no-pcre to avoid.",
+    "QtUsage": "Used in Qt Core (QRegularExpression).",
 
     "Path": "deps/sljit",
     "Description": "The PCRE library is a set of functions that implement regular expression pattern matching using the same syntax and semantics as Perl 5.",

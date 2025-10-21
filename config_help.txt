@@ -273,7 +273,7 @@ Core options:
   -inotify ............. Enable inotify support
   -icu ................. Enable ICU support [auto]
   -jemalloc ............ Enable jemalloc support and cooperation [no]
-  -pcre ................ Select used libpcre2 [system/qt/no]
+  -pcre ................ Select used libpcre2 [system/qt]
   -zlib ................ Select used zlib [system/qt]
 
   Logging backends:
