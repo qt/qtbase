@@ -401,16 +401,11 @@ static const uchar breakTable[BAfter + 1][QUnicodeTables::NumSentenceBreakClasse
 static void getSentenceBreaks(const char16_t *string, qsizetype len, QCharAttributes *attributes)
 {
     uchar state = SB::BAfter; // to meet SB1
-    for (qsizetype i = 0; i != len; ++i) {
-        const qsizetype pos = i;
-        char32_t ucs4 = string[i];
-        if (QChar::isHighSurrogate(ucs4) && i + 1 != len) {
-            ushort low = string[i + 1];
-            if (QChar::isLowSurrogate(low)) {
-                ucs4 = QChar::surrogateToUcs4(ucs4, low);
-                ++i;
-            }
-        }
+
+    QStringIterator it(QStringView{string, len});
+    while (it.hasNext()) {
+        const qsizetype pos = it.index();
+        const char32_t ucs4 = it.nextOrRawCodeUnit();
 
         const auto prop = QUnicodeTables::properties(ucs4);
         QUnicodeTables::SentenceBreakClass ncls = (QUnicodeTables::SentenceBreakClass) prop->sentenceBreakClass;
@@ -419,15 +414,8 @@ static void getSentenceBreaks(const char16_t *string, qsizetype len, QCharAttrib
         state = SB::breakTable[state][ncls];
         if (Q_UNLIKELY(state == SB::Lookup)) { // SB8
             state = SB::Break;
-            for (qsizetype lookahead = i + 1; lookahead < len; ++lookahead) {
-                char32_t ucs4 = string[lookahead];
-                if (QChar::isHighSurrogate(ucs4) && lookahead + 1 != len) {
-                    ushort low = string[lookahead + 1];
-                    if (QChar::isLowSurrogate(low)) {
-                        ucs4 = QChar::surrogateToUcs4(ucs4, low);
-                        ++lookahead;
-                    }
-                }
+            for (auto lookahead = it; lookahead.hasNext(); /**/) {
+                const char32_t ucs4 = lookahead.nextOrRawCodeUnit();
 
                 const auto prop = QUnicodeTables::properties(ucs4);
                 QUnicodeTables::SentenceBreakClass tcls = (QUnicodeTables::SentenceBreakClass) prop->sentenceBreakClass;
@@ -440,7 +428,7 @@ static void getSentenceBreaks(const char16_t *string, qsizetype len, QCharAttrib
                 case QUnicodeTables::SentenceBreak_Close:
                     continue;
                 case QUnicodeTables::SentenceBreak_Lower:
-                    i = lookahead;
+                    it = lookahead;
                     state = SB::Initial;
                     break;
                 default:
