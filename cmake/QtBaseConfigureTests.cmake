@@ -306,6 +306,36 @@ function(qt_internal_print_cmake_host_and_target_info)
     message(STATUS "CMAKE_SYSTEM_PROCESSOR: \"${CMAKE_SYSTEM_PROCESSOR}\"")
 
     message(STATUS "CMAKE_CROSSCOMPILING: \"${CMAKE_CROSSCOMPILING}\"")
+
+    message(STATUS "CMAKE_CXX_COMPILER_ID: \"${CMAKE_CXX_COMPILER_ID}\"")
+    message(STATUS "CMAKE_CXX_COMPILER_VERSION: \"${CMAKE_CXX_COMPILER_VERSION}\"")
+
+    # The variables might not be defined depending on platform and CMake version.
+    if(CMAKE_CXX_COMPILER_TARGET)
+        message(STATUS "CMAKE_CXX_COMPILER_TARGET: \"${CMAKE_CXX_COMPILER_TARGET}\"")
+    endif()
+    if(CMAKE_CXX_COMPILER_ARCHITECTURE_ID)
+        message(STATUS
+            "CMAKE_CXX_COMPILER_ARCHITECTURE_ID: \"${CMAKE_CXX_COMPILER_ARCHITECTURE_ID}\"")
+    endif()
+    if(CMAKE_CXX_COMPILER_FRONTEND_VARIANT)
+        message(STATUS
+            "CMAKE_CXX_COMPILER_FRONTEND_VARIANT: \"${CMAKE_CXX_COMPILER_FRONTEND_VARIANT}\"")
+    endif()
+
+    if(CMAKE_CXX_COMPILER_LINKER_ID)
+        message(STATUS "CMAKE_CXX_COMPILER_LINKER_ID: \"${CMAKE_CXX_COMPILER_LINKER_ID}\"")
+    endif()
+
+    if(CMAKE_CXX_COMPILER_LINKER_VERSION)
+        message(STATUS
+            "CMAKE_CXX_COMPILER_LINKER_VERSION: \"${CMAKE_CXX_COMPILER_LINKER_VERSION}\"")
+    endif()
+
+    if(CMAKE_CXX_COMPILER_LINKER_FRONTEND_VARIANT)
+        message(STATUS "CMAKE_CXX_COMPILER_LINKER_FRONTEND_VARIANT: "
+            "\"${CMAKE_CXX_COMPILER_LINKER_FRONTEND_VARIANT}\"")
+    endif()
 endfunction()
 qt_internal_print_cmake_host_and_target_info()
 
