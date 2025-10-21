@@ -3417,6 +3417,15 @@ void QGuiApplicationPrivate::processExposeEvent(QWindowSystemInterfacePrivate::E
         return;
     QWindowPrivate *p = qt_window_private(window);
 
+    if (e->isExposed) {
+        // If the window has been automatically positioned or resized by the
+        // window manager, we now assume those have taken effect, even for
+        // asynchronous window managers. From this point on we want the window
+        // to keep its geometry, even when recreated.
+        p->positionAutomatic = false;
+        p->resizeAutomatic = false;
+    }
+
     if (!p->receivedExpose) {
         if (p->resizeEventPending) {
             // as a convenience for plugins, send a resize event before the first expose event if they haven't done so

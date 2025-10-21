@@ -586,12 +586,6 @@ void QWindowPrivate::create(bool recursive)
 
     platformWindow->initialize();
 
-    // Now that the window is created and initialized the platform has had
-    // a chance to position and size it automatically. From this point on
-    // we want the window to keep its geometry, even when recreated.
-    positionAutomatic = false;
-    resizeAutomatic = false;
-
     QObjectList childObjects = q->children();
     for (int i = 0; i < childObjects.size(); i ++) {
         QObject *object = childObjects.at(i);
