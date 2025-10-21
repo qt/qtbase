@@ -513,11 +513,7 @@ function(qt6_android_add_apk_target target)
     endif()
     # Use genex to get path to the deployment settings, the above check only to confirm that
     # qt6_android_add_apk_target is called on an android executable target.
-    string(JOIN "" deployment_file
-        "$<GENEX_EVAL:"
-            "$<TARGET_PROPERTY:${target},QT_ANDROID_DEPLOYMENT_SETTINGS_FILE>"
-        ">"
-    )
+    _qt_internal_android_get_deployment_settings_file_genex(deployment_file)
 
     # Make global apk and aab targets depend on the current apk target.
     if(TARGET aab)
@@ -1956,6 +1952,17 @@ endfunction()
 # Returns the path to the Android platform-tools(adb is located there).
 function(_qt_internal_android_get_platform_tools_path out_var)
     set(${out_var} "${ANDROID_SDK_ROOT}/platform-tools" PARENT_SCOPE)
+endfunction()
+
+# Returns path to the android deployment settings
+function(_qt_internal_android_get_deployment_settings_file_genex out_var)
+    string(JOIN "" deployment_file
+        "$<GENEX_EVAL:"
+            "$<TARGET_PROPERTY:${target},QT_ANDROID_DEPLOYMENT_SETTINGS_FILE>"
+        ">"
+    )
+
+    set(${out_var} "${deployment_file}" PARENT_SCOPE)
 endfunction()
 
 set(QT_INTERNAL_ANDROID_TARGET_BUILD_DIR_SUPPORT ON CACHE INTERNAL
