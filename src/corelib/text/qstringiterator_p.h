@@ -148,6 +148,17 @@ public:
         return uc.unicode();
     }
 
+    char32_t nextOrRawCodeUnit()
+    {
+        Q_ASSERT_X(hasNext(), Q_FUNC_INFO, "iterator hasn't a next item");
+
+        const QChar uc = *pos++;
+        if (uc.isHighSurrogate() && hasNext() && pos->isLowSurrogate())
+            return QChar::surrogateToUcs4(uc, *pos++);
+
+        return uc.unicode();
+    }
+
     // backwards iteration
 
     inline bool hasPrevious() const
@@ -225,6 +236,17 @@ public:
                 return QChar::surrogateToUcs4(*--pos, uc);
             return invalidAs;
         }
+
+        return uc.unicode();
+    }
+
+    char32_t previousOrRawCodeUnit()
+    {
+        Q_ASSERT_X(hasPrevious(), Q_FUNC_INFO, "iterator hasn't a previous item");
+
+        const QChar uc = *--pos;
+        if (uc.isLowSurrogate() && hasPrevious() && pos[-1].isHighSurrogate())
+            return QChar::surrogateToUcs4(*--pos, uc);
 
         return uc.unicode();
     }

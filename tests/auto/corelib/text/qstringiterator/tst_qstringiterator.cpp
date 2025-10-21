@@ -11,6 +11,8 @@ class tst_QStringIterator : public QObject
 private slots:
     void sweep_data();
     void sweep();
+    void nextOrRawCodeUnitEquivalenceWithOldCode_data() { sweep_data(); }
+    void nextOrRawCodeUnitEquivalenceWithOldCode();
 
     void position();
 };
@@ -251,6 +253,65 @@ void tst_QStringIterator::sweep()
 
         QCOMPARE(count, 0);
     }
+}
+
+void tst_QStringIterator::nextOrRawCodeUnitEquivalenceWithOldCode()
+{
+    QFETCH(const QString, string);
+    // QFETCH(bool, valid);
+
+    const auto s = string.data_ptr().data(); // avoids QChar
+
+    // this is the old code, used before we had nextOrRawCodeUnit():
+    const auto oldResult = [&] {
+        QList<char32_t> result;
+        result.reserve(string.size());
+
+        const auto len = string.size();
+        for (qsizetype i = 0; i < len; ++i) {
+            QT_WARNING_PUSH
+            QT_WARNING_DISABLE_CLANG("-Wcharacter-conversion")
+            char32_t ucs4;
+            const char16_t c = s[i];
+            if (QChar::isHighSurrogate(c) && i + 1 < len && QChar::isLowSurrogate(s[i + 1]))
+                ucs4 = QChar::surrogateToUcs4(c, s[++i]);
+            else
+                ucs4 = c;
+            QT_WARNING_POP
+            result.push_back(ucs4);
+        }
+        return result;
+    }();
+
+    // now the same with nextOrRawCodeUnit():
+    const auto newResult = [&] {
+        QList<char32_t> result;
+        result.reserve(string.size());
+
+        QStringIterator it(string);
+        while (it.hasNext())
+            result.push_back(it.nextOrRawCodeUnit());
+
+        return result;
+    }();
+
+    // they should yield the equivalent series of code points:
+    QCOMPARE_EQ(newResult, oldResult);
+
+    // also check next/previousOrRawCodeUnit() consistency:
+    const auto fromBack = [&] {
+        QList<char32_t> result;
+        result.reserve(string.size());
+
+        QStringIterator it(string, string.size());
+        while (it.hasPrevious())
+            result.push_back(it.previousOrRawCodeUnit());
+
+        std::reverse(result.begin(), result.end());
+        return result;
+    }();
+
+    QCOMPARE_EQ(fromBack, newResult);
 }
 
 void tst_QStringIterator::position()
