@@ -871,6 +871,19 @@ void QVulkanWindowPrivate::init()
         }
     }
 
+#if QT_CONFIG(wayland)
+    // On Wayland, only one color management surface can be created at a time without
+    // triggering a protocol error, and we create one ourselves in some situations.
+    // To avoid this problem, use VK_COLOR_SPACE_PASS_THROUGH_EXT when supported,
+    // so that the driver doesn't create a color management surface as well.
+    const bool hasPassthrough = std::any_of(formats.cbegin(), formats.cend(), [this](const VkSurfaceFormatKHR &format) {
+        return format.format == colorFormat && format.colorSpace == VK_COLOR_SPACE_PASS_THROUGH_EXT;
+    });
+    if (hasPassthrough) {
+        colorSpace = VK_COLOR_SPACE_PASS_THROUGH_EXT;
+    }
+#endif
+
     const VkFormat dsFormatCandidates[] = {
         VK_FORMAT_D24_UNORM_S8_UINT,
         VK_FORMAT_D32_SFLOAT_S8_UINT,

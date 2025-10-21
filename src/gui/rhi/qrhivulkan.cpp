@@ -8822,6 +8822,18 @@ bool QVkSwapChain::ensureSurface()
             if (ok) {
                 colorFormat = formats[i].format;
                 colorSpace = formats[i].colorSpace;
+#if QT_CONFIG(wayland)
+                // On Wayland, only one color management surface can be created at a time without
+                // triggering a protocol error, and we create one ourselves in some situations.
+                // To avoid this problem, use VK_COLOR_SPACE_PASS_THROUGH_EXT when supported,
+                // so that the driver doesn't create a color management surface as well.
+                const bool hasPassThrough = std::any_of(formats.begin(), formats.end(), [this](const VkSurfaceFormatKHR &fmt) {
+                    return fmt.format == colorFormat && fmt.colorSpace == VK_COLOR_SPACE_PASS_THROUGH_EXT;
+                });
+                if (hasPassThrough) {
+                    colorSpace = VK_COLOR_SPACE_PASS_THROUGH_EXT;
+                }
+#endif
                 break;
             }
         }
