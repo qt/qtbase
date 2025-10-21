@@ -2428,13 +2428,17 @@ QString QAccessibleTextInterface::textAtOffset(int offset, QAccessible::TextBoun
             break;
     } while (boundary.toPreviousBoundary() > 0);
     Q_ASSERT(boundary.position() >= 0);
-    *startOffset = boundary.position();
+    const int startPos = boundary.position();
 
     while (boundary.toNextBoundary() < txt.size()) {
         if ((boundary.boundaryReasons() & (QTextBoundaryFinder::StartOfItem | QTextBoundaryFinder::EndOfItem)))
             break;
+        if (boundary.position() == -1)
+            return QString();
     }
+
     Q_ASSERT(boundary.position() <= txt.size());
+    *startOffset = startPos;
     *endOffset = boundary.position();
 
     return txt.mid(*startOffset, *endOffset - *startOffset);
