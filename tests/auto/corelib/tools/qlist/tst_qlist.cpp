@@ -121,6 +121,84 @@ Q_DECLARE_TYPEINFO(Movable, Q_RELOCATABLE_TYPE);
 QT_END_NAMESPACE
 Q_DECLARE_METATYPE(Movable);
 
+struct NoexceptMovable
+{
+    NoexceptMovable(char input = 'j') noexcept
+        : i(input)
+    {
+        counter.fetchAndAddRelaxed(1);
+    }
+    NoexceptMovable(const NoexceptMovable &other) noexcept
+        : i(other.i)
+    {
+        check(other.state, Constructed);
+        counter.fetchAndAddRelaxed(1);
+    }
+    NoexceptMovable(NoexceptMovable &&other) noexcept
+        : i(other.i)
+    {
+        check(other.state, Constructed);
+        counter.fetchAndAddRelaxed(1);
+        other.that = nullptr;
+    }
+
+    ~NoexceptMovable() // implicitly noexcept
+    {
+        check(state, Constructed);
+        i = 0;
+        counter.fetchAndAddRelaxed(-1);
+        state = Destructed;     // this is likely a dead store
+    }
+
+    bool operator ==(const NoexceptMovable &other) const noexcept
+    {
+        check(state, Constructed);
+        check(other.state, Constructed);
+        return i == other.i;
+    }
+
+    NoexceptMovable &operator=(const NoexceptMovable &other) noexcept
+    {
+        check(state, Constructed);
+        check(other.state, Constructed);
+        i = other.i;
+        that = this;
+        return *this;
+    }
+    NoexceptMovable &operator=(NoexceptMovable &&other) noexcept
+    {
+        check(state, Constructed);
+        check(other.state, Constructed);
+        i = other.i;
+        that = other.that;
+        other.that = nullptr;
+        return *this;
+    }
+    bool wasConstructedAt(const NoexceptMovable *other) const noexcept
+    {
+        return that == other;
+    }
+    char i;
+    static inline QAtomicInt counter;
+private:
+    NoexceptMovable *that = this;   // used to check if an instance was moved
+
+    enum State { Constructed = 106, Destructed = 110 };
+    State state = Constructed;
+
+    static void check(const State state1, const State state2) noexcept
+    {
+        QCOMPARE(state1, state2);
+    }
+
+    friend inline size_t qHash(const NoexceptMovable &key, size_t seed) noexcept
+    { return qHash(key.i, seed); }
+};
+
+QT_BEGIN_NAMESPACE
+Q_DECLARE_TYPEINFO(NoexceptMovable, Q_RELOCATABLE_TYPE);
+QT_END_NAMESPACE
+
 struct Custom {
     Custom(char input = 'j')
         : i(input)
@@ -225,37 +303,47 @@ private slots:
     void constructors_reserveAndInitialize() const;
     void copyConstructorInt() const { copyConstructor<int>(); }
     void copyConstructorMovable() const { copyConstructor<Movable>(); }
+    void copyConstructorNoexceptMovable() const { copyConstructor<NoexceptMovable>(); }
     void copyConstructorCustom() const { copyConstructor<Custom>(); }
     void assignmentInt() const { testAssignment<int>(); }
     void assignmentMovable() const { testAssignment<Movable>(); }
+    void assignmentNoexceptMovable() const { testAssignment<NoexceptMovable>(); }
     void assignmentCustom() const { testAssignment<Custom>(); }
     void assignFromInitializerListInt() const { assignFromInitializerList<int>(); }
     void assignFromInitializerListMovable() const { assignFromInitializerList<Movable>(); }
+    void assignFromInitializerListNoexceptMovable() const { assignFromInitializerList<NoexceptMovable>(); }
     void assignFromInitializerListCustom() const { assignFromInitializerList<Custom>(); }
     void addInt() const { add<int>(); }
     void addMovable() const { add<Movable>(); }
+    void addNoexceptMovable() const { add<NoexceptMovable>(); }
     void addCustom() const { add<Custom>(); }
     void appendInt() const { append<int>(); }
     void appendMovable() const { append<Movable>(); }
+    void appendNoexceptMovable() const { append<NoexceptMovable>(); }
     void appendCustom() const { append<Custom>(); }
     void appendRvalue() const;
     void appendList() const;
     void assignEmpty() const;
     void assignInt() const { assign<int>(); }
     void assignMovable() const { assign<Movable>(); }
+    void assignNoexceptMovable() const { assign<NoexceptMovable>(); }
     void assignCustom() const { assign<Custom>(); }
     void assignUsesPrependBuffer_int_data() { assignUsesPrependBuffer_data(); }
     void assignUsesPrependBuffer_int() const { assignUsesPrependBuffer<int>(); }
     void assignUsesPrependBuffer_Movable_data() { assignUsesPrependBuffer_data(); }
     void assignUsesPrependBuffer_Movable() const { assignUsesPrependBuffer<Movable>(); }
+    void assignUsesPrependBuffer_NoexceptMovable_data() { assignUsesPrependBuffer_data(); }
+    void assignUsesPrependBuffer_NoexceptMovable() const { assignUsesPrependBuffer<NoexceptMovable>(); }
     void assignUsesPrependBuffer_Custom_data() { assignUsesPrependBuffer_data(); }
     void assignUsesPrependBuffer_Custom() const { assignUsesPrependBuffer<Custom>(); }
     void at() const;
     void capacityInt() const { capacity<int>(); }
     void capacityMovable() const { capacity<Movable>(); }
+    void capacityNoexceptMovable() const { capacity<NoexceptMovable>(); }
     void capacityCustom() const { capacity<Custom>(); }
     void clearInt() const { clear<int>(); }
     void clearMovable() const { clear<Movable>(); }
+    void clearNoexceptMovable() const { clear<NoexceptMovable>(); }
     void clearCustom() const { clear<Custom>(); }
     void constData() const;
     void constFirst() const;
@@ -263,43 +351,54 @@ private slots:
     void contains() const;
     void countInt() const { count<int>(); }
     void countMovable() const { count<Movable>(); }
+    void countNoexceptMovable() const { count<NoexceptMovable>(); }
     void countCustom() const { count<Custom>(); }
     void cpp17ctad() const;
     void data() const;
     void reinterpreted() const;
     void emptyInt() const { empty<int>(); }
     void emptyMovable() const { empty<Movable>(); }
+    void emptyNoexceptMovable() const { empty<NoexceptMovable>(); }
     void emptyCustom() const { empty<Custom>(); }
     void endsWith() const;
     void eraseEmptyInt() const { eraseEmpty<int>(); }
     void eraseEmptyMovable() const { eraseEmpty<Movable>(); }
+    void eraseEmptyNoexceptMovable() const { eraseEmpty<NoexceptMovable>(); }
     void eraseEmptyCustom() const { eraseEmpty<Custom>(); }
     void eraseEmptyReservedInt() const { eraseEmptyReserved<int>(); }
     void eraseEmptyReservedMovable() const { eraseEmptyReserved<Movable>(); }
+    void eraseEmptyReservedNoexceptMovable() const { eraseEmptyReserved<NoexceptMovable>(); }
     void eraseEmptyReservedCustom() const { eraseEmptyReserved<Custom>(); }
     void eraseInt() const { erase<int>(false); }
     void eraseIntShared() const { erase<int>(true); }
     void eraseMovable() const { erase<Movable>(false); }
+    void eraseNoexceptMovable() const { erase<NoexceptMovable>(false); }
     void eraseMovableShared() const { erase<Movable>(true); }
+    void eraseNoexceptMovableShared() const { erase<NoexceptMovable>(true); }
     void eraseCustom() const { erase<Custom>(false); }
     void eraseCustomShared() const { erase<Custom>(true); }
     void eraseReservedInt() const { eraseReserved<int>(); }
     void eraseReservedMovable() const { eraseReserved<Movable>(); }
+    void eraseReservedNoexceptMovable() const { eraseReserved<NoexceptMovable>(); }
     void eraseReservedCustom() const { eraseReserved<Custom>(); }
     void fillInt() const { fill<int>(); }
     void fillMovable() const { fill<Movable>(); }
+    void fillNoexceptMovable() const { fill<NoexceptMovable>(); }
     void fillCustom() const { fill<Custom>(); }
     void fillDetachInt() const { fillDetach<int>(); }
     void fillDetachMovable() const { fillDetach<Movable>(); }
+    void fillDetachNoexceptMovable() const { fillDetach<NoexceptMovable>(); }
     void fillDetachCustom() const { fillDetach<Custom>(); }
     void first() const;
     void freeSpaceAtBeginEventuallyShrinks() const;
     void fromListInt() const { fromList<int>(); }
     void fromListMovable() const { fromList<Movable>(); }
+    void fromListNoexceptMovable() const { fromList<NoexceptMovable>(); }
     void fromListCustom() const { fromList<Custom>(); }
     void indexOf() const;
     void insertInt() const { insert<int>(); }
     void insertMovable() const { insert<Movable>(); }
+    void insertNoexceptMovable() const { insert<NoexceptMovable>(); }
     void insertCustom() const { insert<Custom>(); }
     void insertZeroCount_data();
     void insertZeroCount() const;
@@ -310,17 +409,21 @@ private slots:
     void sliced() const;
     void moveInt() const { move<int>(); }
     void moveMovable() const { move<Movable>(); }
+    void moveNoexceptMovable() const { move<NoexceptMovable>(); }
     void moveCustom() const { move<Custom>(); }
     void prependInt() const { prepend<int>(); }
     void prependMovable() const { prepend<Movable>(); }
+    void prependNoexceptMovable() const { prepend<NoexceptMovable>(); }
     void prependCustom() const { prepend<Custom>(); }
     void prependRvalue() const;
     void qhashInt() const { qhash<int>(); }
     void qhashMovable() const { qhash<Movable>(); }
+    void qhashNoexceptMovable() const { qhash<NoexceptMovable>(); }
     void qhashCustom() const { qhash<Custom>(); }
     void removeAllWithAlias() const;
     void removeInt() const { remove<int>(); }
     void removeMovable() const { remove<Movable>(); }
+    void removeNoexceptMovable() const { remove<NoexceptMovable>(); }
     void removeCustom() const { remove<Custom>(); }
     void removeFirstLast() const;
     void resizePOD_data() const;
@@ -339,10 +442,12 @@ private slots:
     void reverseIterators() const;
     void sizeInt() const { size<int>(); }
     void sizeMovable() const { size<Movable>(); }
+    void sizeNoexceptMovable() const { size<NoexceptMovable>(); }
     void sizeCustom() const { size<Custom>(); }
     void startsWith() const;
     void swapInt() const { swap<int>(); }
     void swapMovable() const { swap<Movable>(); }
+    void swapNoexceptMovable() const { swap<NoexceptMovable>(); }
     void swapCustom() const { swap<Custom>(); }
     void toAddress() const;
     void toList() const;
@@ -356,10 +461,12 @@ private slots:
     void reserveZero();
     void initializeListInt() { initializeList<int>(); }
     void initializeListMovable() { initializeList<Movable>(); }
+    void initializeListNoexceptMovable() { initializeList<NoexceptMovable>(); }
     void initializeListCustom() { initializeList<Custom>(); }
     void const_shared_null();
     void detachInt() const { detach<int>(); }
     void detachMovable() const { detach<Movable>(); }
+    void detachNoexceptMovable() const { detach<NoexceptMovable>(); }
     void detachCustom() const { detach<Custom>(); }
     void detachThreadSafetyInt() const;
     void detachThreadSafetyMovable() const;
@@ -369,9 +476,11 @@ private slots:
     void emplaceInt() { emplaceImpl<int>(); }
     void emplaceCustom() { emplaceImpl<Custom>(); }
     void emplaceMovable() { emplaceImpl<Movable>(); }
+    void emplaceNoexceptMovable() { emplaceImpl<NoexceptMovable>(); }
     void emplaceConsistentWithStdVectorInt() { emplaceConsistentWithStdVectorImpl<int>(); }
     void emplaceConsistentWithStdVectorCustom() { emplaceConsistentWithStdVectorImpl<Custom>(); }
     void emplaceConsistentWithStdVectorMovable() { emplaceConsistentWithStdVectorImpl<Movable>(); }
+    void emplaceConsistentWithStdVectorNoexceptMovable() { emplaceConsistentWithStdVectorImpl<NoexceptMovable>(); }
     void emplaceConsistentWithStdVectorQString() { emplaceConsistentWithStdVectorImpl<QString>(); }
     void emplaceReturnsIterator();
     void emplaceFront() const;
@@ -383,35 +492,45 @@ private slots:
     void replaceInt() const { replace<int>(); }
     void replaceCustom() const { replace<Custom>(); }
     void replaceMovable() const { replace<Movable>(); }
+    void replaceNoexceptMovable() const { replace<NoexceptMovable>(); }
     void fromReadOnlyData() const;
     void reallocateCustomAlignedType_qtbug90359() const;
     void reinsertToBeginInt_qtbug91360() const { reinsertToBegin<int>(); }
     void reinsertToBeginMovable_qtbug91360() const { reinsertToBegin<Movable>(); }
+    void reinsertToBeginNoexceptMovable_qtbug91360() const { reinsertToBegin<NoexceptMovable>(); }
     void reinsertToBeginCustom_qtbug91360() const { reinsertToBegin<Custom>(); }
     void reinsertToEndInt_qtbug91360() const { reinsertToEnd<int>(); }
     void reinsertToEndMovable_qtbug91360() const { reinsertToEnd<Movable>(); }
+    void reinsertToEndNoexceptMovable_qtbug91360() const { reinsertToEnd<NoexceptMovable>(); }
     void reinsertToEndCustom_qtbug91360() const { reinsertToEnd<Custom>(); }
     void reinsertRangeToEndInt_qtbug91360() const { reinsertRangeToEnd<int>(); }
     void reinsertRangeToEndMovable_qtbug91360() const { reinsertRangeToEnd<Movable>(); }
+    void reinsertRangeToEndNoexceptMovable_qtbug91360() const { reinsertRangeToEnd<NoexceptMovable>(); }
     void reinsertRangeToEndCustom_qtbug91360() const { reinsertRangeToEnd<Custom>(); }
     // QList reference stability tests:
     void stability_reserveInt() const { stability_reserve<int>(); }
     void stability_reserveMovable() const { stability_reserve<Movable>(); }
+    void stability_reserveNoexceptMovable() const { stability_reserve<NoexceptMovable>(); }
     void stability_reserveCustom() const { stability_reserve<Custom>(); }
     void stability_eraseInt() const { stability_erase<int>(); }
     void stability_eraseMovable() const { stability_erase<Movable>(); }
+    void stability_eraseNoexceptMovable() const { stability_erase<NoexceptMovable>(); }
     void stability_eraseCustom() const { stability_erase<Custom>(); }
     void stability_appendInt() const { stability_append<int>(); }
     void stability_appendMovable() const { stability_append<Movable>(); }
+    void stability_appendNoexceptMovable() const { stability_append<NoexceptMovable>(); }
     void stability_appendCustom() const { stability_append<Custom>(); }
     void stability_insertElementInt() const { stability_insertElement<int>(); }
     void stability_insertElementMovable() const { stability_insertElement<Movable>(); }
+    void stability_insertElementNoexceptMovable() const { stability_insertElement<NoexceptMovable>(); }
     void stability_insertElementCustom() const { stability_insertElement<Custom>(); }
     void stability_emplaceInt() const { stability_emplace<int>(); }
     void stability_emplaceMovable() const { stability_emplace<Movable>(); }
+    void stability_emplaceNoexceptMovable() const { stability_emplace<NoexceptMovable>(); }
     void stability_emplaceCustom() const { stability_emplace<Custom>(); }
     void stability_resizeInt() const { stability_resize<int>(); }
     void stability_resizeMovable() const { stability_resize<Movable>(); }
+    void stability_resizeNoexceptMovable() const { stability_resize<NoexceptMovable>(); }
     void stability_resizeCustom() const { stability_resize<Custom>(); }
 
 private:
@@ -515,15 +634,8 @@ template<typename T> struct SimpleValue
     }
 
     static const uint MaxIndex = 6;
-    static const T Values[MaxIndex];
+    static inline const T Values[MaxIndex] = { 110, 105, 101, 114, 111, 98 };
 };
-
-template<>
-const int SimpleValue<int>::Values[] = { 110, 105, 101, 114, 111, 98 };
-template<>
-const Movable SimpleValue<Movable>::Values[] = { 110, 105, 101, 114, 111, 98 };
-template<>
-const Custom SimpleValue<Custom>::Values[] = { 110, 105, 101, 114, 111, 98 };
 
 // Make some macros for the tests to use in order to be slightly more readable...
 #define T_FOO SimpleValue<T>::at(0)
