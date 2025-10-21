@@ -413,14 +413,14 @@ qHashMultiCommutative(size_t seed, const T &... args)
 
 template <typename InputIterator>
 inline size_t qHashRange(InputIterator first, InputIterator last, size_t seed = 0)
-    noexcept(noexcept(qHash(*first))) // assume iterator operations don't throw
+    noexcept(noexcept(qHash(*first, 0))) // assume iterator operations don't throw
 {
     return std::accumulate(first, last, seed, QtPrivate::QHashCombine(seed));
 }
 
 template <typename InputIterator>
 inline size_t qHashRangeCommutative(InputIterator first, InputIterator last, size_t seed = 0)
-    noexcept(noexcept(qHash(*first))) // assume iterator operations don't throw
+    noexcept(noexcept(qHash(*first, 0))) // assume iterator operations don't throw
 {
     return std::accumulate(first, last, seed, QtPrivate::QHashCombineCommutative(seed));
 }

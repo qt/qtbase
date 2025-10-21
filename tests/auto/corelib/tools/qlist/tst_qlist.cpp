@@ -2108,10 +2108,15 @@ void tst_QList::qhash() const
     TST_QLIST_CHECK_LEAKS(T)
 
     QList<T> l1, l2;
-    QCOMPARE(qHash(l1), qHash(l2));
+    QCOMPARE(qHash(l1, 0), qHash(l2, 0));
     l1 << SimpleValue<T>::at(0);
     l2 << SimpleValue<T>::at(0);
-    QCOMPARE(qHash(l1), qHash(l2));
+    QCOMPARE(qHash(l1, 0), qHash(l2, 0));
+
+    QCOMPARE(qHash(l1, 1), qHash(l2, 1));
+    l1.clear();
+    l2.clear();
+    QCOMPARE(qHash(l1, 1), qHash(l2, 1));
 }
 
 template <typename T>
