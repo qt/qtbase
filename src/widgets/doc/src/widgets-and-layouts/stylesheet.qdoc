@@ -536,21 +536,20 @@
     to preview style sheets. You can right-click on any widget in Designer
     and select \uicontrol{Change styleSheet...} to set the style sheet.
 
-    \image designer-stylesheet-options.png
+    \image designer-stylesheet-options.webp
            {Editing a form in Qt Widgets Designer}
 
-    In Qt 4.2 and later, \QD also includes a
-    style sheet syntax highlighter and validator. The validator indicates
-    if the syntax is valid or invalid, at the bottom left of the \uicontrol{Edit
-    Style Sheet} dialog.
+    \QD also includes a style sheet syntax highlighter and validator. The
+    validator indicates if the syntax is valid or invalid, at the bottom left
+    of the \uicontrol{Edit Style Sheet} dialog.
 
-    \image designer-validator-highlighter.png
+    \image designer-validator-highlighter.webp
            {Editing and validating a stylesheet}
 
     When you click \uicontrol{OK} or \uicontrol{Apply}, \QD will automatically display
     the widget with its new stylesheet.
 
-    \image designer-stylesheet-usage.png
+    \image designer-stylesheet-usage.webp
            {Preview of a form with the new stylesheet}
     */
 
