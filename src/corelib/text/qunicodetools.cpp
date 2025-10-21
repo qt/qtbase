@@ -407,7 +407,7 @@ static void getSentenceBreaks(const char16_t *string, qsizetype len, QCharAttrib
 {
     uchar state = SB::BAfter; // to meet SB1
     for (qsizetype i = 0; i != len; ++i) {
-        qsizetype pos = i;
+        const qsizetype pos = i;
         char32_t ucs4 = string[i];
         if (QChar::isHighSurrogate(ucs4) && i + 1 != len) {
             ushort low = string[i + 1];
@@ -417,7 +417,7 @@ static void getSentenceBreaks(const char16_t *string, qsizetype len, QCharAttrib
             }
         }
 
-        const QUnicodeTables::Properties *prop = QUnicodeTables::properties(ucs4);
+        const auto prop = QUnicodeTables::properties(ucs4);
         QUnicodeTables::SentenceBreakClass ncls = (QUnicodeTables::SentenceBreakClass) prop->sentenceBreakClass;
 
         Q_ASSERT(state <= SB::BAfter);
@@ -425,7 +425,7 @@ static void getSentenceBreaks(const char16_t *string, qsizetype len, QCharAttrib
         if (Q_UNLIKELY(state == SB::Lookup)) { // SB8
             state = SB::Break;
             for (qsizetype lookahead = i + 1; lookahead < len; ++lookahead) {
-                ucs4 = string[lookahead];
+                char32_t ucs4 = string[lookahead];
                 if (QChar::isHighSurrogate(ucs4) && lookahead + 1 != len) {
                     ushort low = string[lookahead + 1];
                     if (QChar::isLowSurrogate(low)) {
@@ -434,7 +434,7 @@ static void getSentenceBreaks(const char16_t *string, qsizetype len, QCharAttrib
                     }
                 }
 
-                prop = QUnicodeTables::properties(ucs4);
+                const auto prop = QUnicodeTables::properties(ucs4);
                 QUnicodeTables::SentenceBreakClass tcls = (QUnicodeTables::SentenceBreakClass) prop->sentenceBreakClass;
                 switch (tcls) {
                 case QUnicodeTables::SentenceBreak_Any:
