@@ -160,7 +160,8 @@ typedef QSharedPointer<QFileDialogOptions> SharedPointerFileDialogOptions;
     bool selectable = (m_options->acceptMode() == QFileDialogOptions::AcceptSave)
         || [self panel:m_panel shouldEnableURL:url];
 
-    m_panel.nameFieldStringValue = selectable ? info.fileName().toNSString() : @"";
+    if (!openpanel_cast(m_panel))
+        m_panel.nameFieldStringValue = selectable ? info.fileName().toNSString() : @"";
 
     [self updateProperties];
 
