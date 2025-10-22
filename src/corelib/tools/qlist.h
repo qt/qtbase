@@ -581,7 +581,12 @@ public:
     { d.assign(first, last); return *this; }
 
     QList &assign(std::initializer_list<T> l)
-    { return assign(l.begin(), l.end()); }
+    {
+        if (l.size())
+            return assign(l.begin(), l.end());
+        clear();
+        return *this;
+    }
 
     template <typename ...Args>
     iterator emplace(const_iterator before, Args&&... args)
