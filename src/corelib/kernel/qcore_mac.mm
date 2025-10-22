@@ -50,6 +50,8 @@ extern char **environ;
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 // --------------------------------------------------------------------------
 
 #if defined(Q_OS_MACOS)
@@ -489,55 +491,11 @@ AppleApplication *qt_apple_sharedApplication()
 
 #if !defined(QT_BOOTSTRAPPED)
 
-#if defined(Q_OS_MACOS)
-namespace {
-struct SandboxChecker
-{
-    SandboxChecker() : m_thread([this]{
-            m_isSandboxed = []{
-                QCFType<SecStaticCodeRef> staticCode = nullptr;
-                NSURL *executableUrl = NSBundle.mainBundle.executableURL;
-                if (SecStaticCodeCreateWithPath((__bridge CFURLRef)executableUrl,
-                    kSecCSDefaultFlags, &staticCode) != errSecSuccess)
-                    return false;
-
-                QCFType<SecRequirementRef> sandboxRequirement;
-                if (SecRequirementCreateWithString(CFSTR("entitlement[\"com.apple.security.app-sandbox\"] exists"),
-                    kSecCSDefaultFlags, &sandboxRequirement) != errSecSuccess)
-                    return false;
-
-                if (SecStaticCodeCheckValidityWithErrors(staticCode,
-                    kSecCSBasicValidateOnly, sandboxRequirement, nullptr) != errSecSuccess)
-                    return false;
-
-                return true;
-            }();
-        })
-    {}
-    ~SandboxChecker() {
-        std::scoped_lock lock(m_mutex);
-        if (m_thread.joinable())
-            m_thread.detach();
-    }
-    bool isSandboxed() const {
-        std::scoped_lock lock(m_mutex);
-        if (m_thread.joinable())
-            m_thread.join();
-        return m_isSandboxed;
-    }
-private:
-    bool m_isSandboxed;
-    mutable std::thread m_thread;
-    mutable std::mutex m_mutex;
-};
-} // namespace
-static SandboxChecker sandboxChecker;
-#endif // Q_OS_MACOS
-
 bool qt_apple_isSandboxed()
 {
 #if defined(Q_OS_MACOS)
-    return sandboxChecker.isSandboxed();
+    static bool isSandboxed = qt_mac_processHasEntitlement(u"com.apple.security.app-sandbox"_s);
+    return isSandboxed;
 #else
     return true; // All other Apple platforms
 #endif
