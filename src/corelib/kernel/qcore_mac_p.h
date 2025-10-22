@@ -216,6 +216,7 @@ public:
 #ifdef Q_OS_MACOS
 Q_CORE_EXPORT bool qt_mac_runningUnderRosetta();
 Q_CORE_EXPORT std::optional<uint32_t> qt_mac_sipConfiguration();
+Q_CORE_EXPORT bool qt_mac_processHasEntitlement(const QString &entitlement);
 #ifdef QT_BUILD_INTERNAL
 Q_AUTOTEST_EXPORT void qt_mac_ensureResponsible();
 #endif

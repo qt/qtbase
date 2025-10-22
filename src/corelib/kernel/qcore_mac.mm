@@ -396,6 +396,21 @@ std::optional<uint32_t> qt_mac_sipConfiguration()
     return configuration;
 }
 
+bool qt_mac_processHasEntitlement(const QString &entitlement)
+{
+    if (QCFType<SecTaskRef> task = SecTaskCreateFromSelf(kCFAllocatorDefault)) {
+        if (QCFType<CFTypeRef> value = SecTaskCopyValueForEntitlement(task,
+            entitlement.toCFString(), nullptr)) {
+
+            if (CFGetTypeID(value) != CFBooleanGetTypeID())
+                return false;
+
+            return CFBooleanGetValue(value.as<CFBooleanRef>());
+        }
+    }
+    return false;
+}
+
 #define CHECK_SPAWN(expr) \
     if ((expr) != 0) { \
         posix_spawnattr_destroy(&attr); \
