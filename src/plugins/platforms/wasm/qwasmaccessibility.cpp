@@ -198,7 +198,9 @@ emscripten::val QWasmAccessibility::getA11yContainer(QWindow *window)
         return emscripten::val::undefined();
 
     auto elementContainer = document.call<emscripten::val>("createElement", std::string("div"));
+    elementContainer["classList"].call<void>("add", emscripten::val("qt-window-a11y-elements-container"));
     auto describedByContainer = document.call<emscripten::val>("createElement", std::string("div"));
+    describedByContainer["classList"].call<void>("add", emscripten::val("qt-window-a11y-describedby-container"));
 
     a11yContainer.call<void>("appendChild", elementContainer);
     a11yContainer.call<void>("appendChild", describedByContainer);
