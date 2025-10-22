@@ -2821,10 +2821,10 @@ Q_CORE_EXPORT void initCharAttributes(QStringView string,
 Q_CORE_EXPORT void initScripts(QStringView string, ScriptItemArray *scripts)
 {
     qsizetype sor = 0;
-    qsizetype eor = 0;
     QChar::Script script = QChar::Script_Common;
 
-    for (qsizetype i = 0; i < string.size(); ++i, eor = i) {
+    for (qsizetype i = 0; i < string.size(); ++i) {
+        const auto eor = i;
         char32_t ucs4 = string[i].unicode();
         if (QChar::isHighSurrogate(ucs4) && i + 1 < string.size()) {
             ushort low = string[i + 1].unicode();
@@ -2865,7 +2865,6 @@ Q_CORE_EXPORT void initScripts(QStringView string, ScriptItemArray *scripts)
     }
 
     Q_ASSERT(script >= QChar::Script_Common);
-    Q_ASSERT(eor == string.size());
     scripts->append(ScriptItem{sor, script});
 }
 
