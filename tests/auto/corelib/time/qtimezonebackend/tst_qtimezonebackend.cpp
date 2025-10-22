@@ -28,6 +28,9 @@ private Q_SLOTS:
     void isValidId();
     void roundtripDisplayNames_data();
     void roundtripDisplayNames();
+    void findOffsetPrefix_data();
+    void findOffsetPrefix();
+
     // Tests of specific backends (see also ../qtimezone/):
     void icuTest();
     void tzTest();
@@ -278,6 +281,135 @@ void tst_QTimeZoneBackend::roundtripDisplayNames()
 #endif // Debug code
     } else if (type != QTimeZone::DaylightTime) { /* Zones with no DST have no DST-name */
         qDebug("Empty display name");
+    }
+}
+
+static void addOffsetPrefixCase(int mins, QByteArrayView name, const QLocale &loc)
+{
+    constexpr QTimeZone::TimeType seasons[] = {
+        QTimeZone::GenericTime, QTimeZone::StandardTime, QTimeZone::DaylightTime
+    };
+    const auto typeTag = [](QTimeZone::TimeType type) {
+        switch (type) {
+        case QTimeZone::GenericTime: return "gen";
+        case QTimeZone::StandardTime: return "std";
+        case QTimeZone::DaylightTime: return "dst";
+        }
+        Q_UNREACHABLE_RETURN("<unknown season>");
+    };
+    const auto flagsFor = [](QTimeZone::TimeType season) {
+        using Flag = QtTemporalPattern::TemporalFieldFlag;
+        switch (season) {
+        case QTimeZone::GenericTime:
+            return Flag::Numeric | Flag::GenericTime;
+        case QTimeZone::StandardTime:
+            return Flag::Numeric | Flag::StandardTime;
+        case QTimeZone::DaylightTime:
+            return Flag::Numeric | Flag::DaylightSavingTime;
+        }
+        Q_UNREACHABLE_RETURN(QtTemporalPattern::TemporalFieldFlags{});
+    };
+    constexpr QtTemporalPattern::TemporalFieldFlags NoFlags = {};
+    constexpr auto AllSeasons = QtTemporalPattern::TemporalFieldFlag::GenericTime
+        | QtTemporalPattern::TemporalFieldFlag::StandardTime
+        | QtTemporalPattern::TemporalFieldFlag::DaylightSavingTime
+        | QtTemporalPattern::TemporalFieldFlag::Numeric;
+    const char sign = mins < 0 ? '-' : '+';
+    const int absMin = qAbs(mins);
+    const int hour = absMin / 60;
+    const int min = absMin % 60;
+    for (const auto type : seasons) {
+        QTest::addRow("%s/%c%02d:%02d/%s/only", name.data(),
+                      sign, hour, min, typeTag(type))
+            << loc << mins << type << flagsFor(type);
+        QTest::addRow("%s/%c%02d:%02d/%s/none", name.data(),
+                      sign, hour, min, typeTag(type))
+            << loc << mins << type << NoFlags;
+        QTest::addRow("%s/%c%02d:%02d/%s/all", name.data(),
+                      sign, hour, min, typeTag(type))
+            << loc << mins << type << AllSeasons;
+    }
+}
+
+void tst_QTimeZoneBackend::findOffsetPrefix_data()
+{
+    QTest::addColumn<QLocale>("locale");
+    QTest::addColumn<int>("offsetMinutes");
+    QTest::addColumn<QTimeZone::TimeType>("season");
+    QTest::addColumn<QtTemporalPattern::TemporalFieldFlags>("flags");
+
+#ifdef EXHAUSTIVE_ZONE_DISPLAY
+    bool ok = QLocaleData::allLocaleDataRows([](qsizetype, const QLocaleData &item) {
+        const QLocale loc(QLocale::Language(item.m_language_id),
+                          QLocale::Script(item.m_script_id),
+                          QLocale::Territory(item.m_territory_id));
+        const QByteArray name = item.id().name();
+        // We only consider whole numbers of minutes, as locales usually only
+        // support HH:mm offsets.
+        for (int mins = QTimeZone::MinUtcOffsetSecs / 60;
+             mins <= QTimeZone::MaxUtcOffsetSecs / 60; ++mins) {
+            addOffsetPrefixCase(mins, name, loc);
+        }
+        return true;
+    });
+    Q_ASSERT(ok); // Function called for each locale always returns true.
+#else
+    addOffsetPrefixCase(-120, "kl-GL", QLocale(QLocale::Kalaallisut, QLocale::Greenland));
+    addOffsetPrefixCase(-30, "en-GB", QLocale(QLocale::English, QLocale::UnitedKingdom));
+    addOffsetPrefixCase(0, "en-GB", QLocale(QLocale::English, QLocale::UnitedKingdom));
+    addOffsetPrefixCase(30, "en-GB", QLocale(QLocale::English, QLocale::UnitedKingdom));
+    addOffsetPrefixCase(-16 * 60, "en", QLocale(QLocale::English));
+    addOffsetPrefixCase(-15 * 60, "en", QLocale(QLocale::English));
+    addOffsetPrefixCase(-11 * 60, "en", QLocale(QLocale::English));
+    addOffsetPrefixCase(-4 * 60, "en", QLocale(QLocale::English));
+    addOffsetPrefixCase(15 * 60, "en", QLocale(QLocale::English));
+    addOffsetPrefixCase(16 * 60, "en", QLocale(QLocale::English));
+    addOffsetPrefixCase(120, "ar-SD", QLocale(QLocale::Arabic, QLocale::Sudan));
+    addOffsetPrefixCase(180, "am-ET", QLocale(QLocale::Amharic, QLocale::Ethiopia));
+    addOffsetPrefixCase(-30, "eu-ES", QLocale(QLocale::Basque, QLocale::Spain));
+    addOffsetPrefixCase(-30, "ee-GH", QLocale(QLocale::Ewe, QLocale::Ghana));
+    addOffsetPrefixCase(+30, "ee-TG", QLocale(QLocale::Ewe, QLocale::Togo));
+    addOffsetPrefixCase(180, "he-IL", QLocale(QLocale::Hebrew, QLocale::Israel));
+    addOffsetPrefixCase(120, "se-FI", QLocale(QLocale::Swedish, QLocale::Finland));
+    addOffsetPrefixCase(210, "fa-IR", QLocale(QLocale::Persian, QLocale::Iran));
+    addOffsetPrefixCase(270, "fa-AF", QLocale(QLocale::Persian, QLocale::Afghanistan));
+    addOffsetPrefixCase(60, "blo-BJ", QLocale(QLocale::Anii, QLocale::Benin));
+#endif
+}
+
+void tst_QTimeZoneBackend::findOffsetPrefix()
+{
+    // Round-trip test
+    QFETCH(const QLocale, locale);
+    QFETCH(const int, offsetMinutes);
+    QFETCH(const QTimeZone::TimeType, season);
+    QFETCH(const QtTemporalPattern::TemporalFieldFlags, flags);
+
+    const QTimeZone zone(offsetMinutes * 60);
+    const QString text = zone.displayName(season, QTimeZone::OffsetName, locale);
+    auto parsed = QTimeZonePrivate::findOffsetPrefix(text, locale, flags);
+    {
+        auto report = qScopeGuard([text]() { qDebug() << "Offset name was:" << text; });
+        QVERIFY2(parsed, "Failed to round-trip parsing of offset zone");
+        // We may parse std or dst as generic, since fixed-offset zones are
+        // typically the same for all three.
+        if (parsed.timeType != QTimeZone::GenericTime)
+            QCOMPARE(parsed.timeType, season);
+        QCOMPARE(parsed.nameLength, text.size());
+        QCOMPARE(parsed.ianaId, zone.id());
+        report.dismiss();
+    }
+
+    {
+        QString extended = text + " s0me+dang1ing-cruft"_L1;
+        auto report = qScopeGuard([extended]() { qDebug() << "Extended name was:" << extended; });
+        parsed = QTimeZonePrivate::findOffsetPrefix(extended, locale, flags);
+        QVERIFY2(parsed, "Round-trip parsing of offset zone ran afoul of dangling cruft");
+        if (parsed.timeType != QTimeZone::GenericTime)
+            QCOMPARE(parsed.timeType, season);
+        QCOMPARE(parsed.nameLength, text.size());
+        QCOMPARE(parsed.ianaId, zone.id());
+        report.dismiss();
     }
 }
 

@@ -22,6 +22,7 @@
 #include "qtimezone.h"
 #include "private/qlocale_p.h"
 #include "private/qdatetime_p.h"
+#include "private/qttemporalpattern_p.h" // For its flags type
 
 #if QT_CONFIG(timezone_tzdb)
 #include <chrono>
@@ -169,6 +170,10 @@ public:
     static NamePrefixMatch findLongNamePrefix(QStringView text, const QLocale &locale,
                                               std::optional<qint64> atEpochMillis = std::nullopt);
     static NamePrefixMatch findNarrowOffsetPrefix(QStringView text, const QLocale &locale);
+    // Implement in backends where possible, with #if-ery on base-class to
+    // suppress its expensive brute force when better is available.
+    static NamePrefixMatch findOffsetPrefix(QStringView text, const QLocale &locale,
+                                            QtTemporalPattern::TemporalFieldFlags flags = {});
     // Match the unlocalized long form of QUtcTimeZonePrivate:
     static NamePrefixMatch findLongUtcPrefix(QStringView text);
 
