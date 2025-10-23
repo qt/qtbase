@@ -291,7 +291,7 @@ void tst_QProcessEnvironment::putenv()
     static bool testRan = false;
 
     if (testRan)
-        QFAIL("You cannot run this test more than once, since we modify the environment");
+        QSKIP("You cannot run this test more than once, since we modify the environment");
     testRan = true;
 
     QByteArray valBefore = qgetenv(envname);
