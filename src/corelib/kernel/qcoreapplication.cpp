@@ -2913,7 +2913,6 @@ void QCoreApplication::requestPermissionImpl(const QPermission &requestedPermiss
                 void *args[] = { nullptr, const_cast<QPermission *>(&permission) };
                 slotObject->call(const_cast<QObject *>(context.data()), args);
             }
-            deleteLater();
         }
 
     private:
@@ -2921,9 +2920,11 @@ void QCoreApplication::requestPermissionImpl(const QPermission &requestedPermiss
         QPointer<const QObject> context;
     };
 
-    PermissionReceiver *receiver = new PermissionReceiver(std::move(slotObj), context);
+    // ### use unique_ptr once PermissionCallback is a move_only function
+    auto receiver = std::make_shared<PermissionReceiver>(std::move(slotObj), context);
 
-    QPermissions::Private::requestPermission(requestedPermission, [=](Qt::PermissionStatus status) {
+    QPermissions::Private::requestPermission(requestedPermission,
+                         [=, receiver = std::move(receiver)](Qt::PermissionStatus status) mutable {
         if (status == Qt::PermissionStatus::Undetermined) {
             Q_ASSERT_X(false, "QPermission",
                 "Internal error: requestPermission() should never return Undetermined");
@@ -2933,10 +2934,11 @@ void QCoreApplication::requestPermissionImpl(const QPermission &requestedPermiss
         if (QCoreApplication::self) {
             QPermission permission = requestedPermission;
             permission.m_status = status;
-            QMetaObject::invokeMethod(receiver,
-                                      &PermissionReceiver::finalizePermissionRequest,
-                                      Qt::QueuedConnection,
-                                      permission);
+            auto receiverObject = receiver.get();
+            QMetaObject::invokeMethod(receiverObject,
+                                      [receiver = std::move(receiver), permission] {
+                receiver->finalizePermissionRequest(permission);
+            }, Qt::QueuedConnection);
         }
     });
 }
