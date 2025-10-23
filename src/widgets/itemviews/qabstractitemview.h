@@ -204,7 +204,7 @@ public:
 
     virtual QVariant inputMethodQuery(Qt::InputMethodQuery query) const override;
 
-    using QAbstractScrollArea::update;
+    using QWidget::update;
 
 public Q_SLOTS:
     virtual void reset();
