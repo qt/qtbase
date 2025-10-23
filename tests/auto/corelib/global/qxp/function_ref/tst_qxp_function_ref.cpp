@@ -54,6 +54,7 @@ void tst_qxp_function_ref::basics()
 
     {
         Q_CONSTINIT static int invoked = 0;
+        invoked = 0;
         auto lambda = [](int i) noexcept { ++invoked; return i; };
         const qxp::function_ref<int(int)> f = lambda;
         QCOMPARE(invoked, 0);
@@ -85,6 +86,7 @@ void tst_qxp_function_ref::basics()
     }
     {
         Q_CONSTINIT static int invoked = 0;
+        invoked = 0;
         auto lambda = [] { ++invoked; return 42; };
         const qxp::function_ref<int()> f = lambda;
         QCOMPARE(invoked, 0);
@@ -106,6 +108,7 @@ void tst_qxp_function_ref::basics()
     }
     {
         Q_CONSTINIT static int invoked = 0;
+        invoked = 0;
         auto lambda = [] { ++invoked; };
         const qxp::function_ref<void()> f = lambda;
         QCOMPARE(invoked, 0);
@@ -157,6 +160,7 @@ void tst_qxp_function_ref::constOverloads()
 void tst_qxp_function_ref::constExpr()
 {
     Q_CONSTINIT static int invoked = 0;
+    invoked = 0;
     {
         Q_CONSTINIT static auto lambda = [] (int i) { ++invoked; return i; };
         // the function object constructor is constexpr, so this should be constinit:
