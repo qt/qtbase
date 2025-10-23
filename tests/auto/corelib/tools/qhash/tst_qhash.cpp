@@ -3153,6 +3153,8 @@ qHash(const StdHashKeyType<HasQHash> &s, size_t seed)
 template <typename T>
 void stdHashImpl()
 {
+    T::StdHashUsed = false;
+
     QHash<T, int> hash;
     for (int i = 0; i < 1000; ++i)
         hash.insert(T{i}, i);
