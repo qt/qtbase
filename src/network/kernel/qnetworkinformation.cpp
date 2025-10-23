@@ -16,7 +16,6 @@
 
 #include <algorithm>
 #include <memory>
-#include <mutex>
 
 QT_BEGIN_NAMESPACE
 
