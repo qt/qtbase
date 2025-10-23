@@ -2814,16 +2814,10 @@ Q_CORE_EXPORT void initScripts(QStringView string, ScriptItemArray *scripts)
     qsizetype sor = 0;
     QChar::Script script = QChar::Script_Common;
 
-    for (qsizetype i = 0; i < string.size(); ++i) {
-        const auto eor = i;
-        char32_t ucs4 = string[i].unicode();
-        if (QChar::isHighSurrogate(ucs4) && i + 1 < string.size()) {
-            ushort low = string[i + 1].unicode();
-            if (QChar::isLowSurrogate(low)) {
-                ucs4 = QChar::surrogateToUcs4(ucs4, low);
-                ++i;
-            }
-        }
+    QStringIterator it(string);
+    while (it.hasNext()) {
+        const auto eor = it.index();
+        const char32_t ucs4 = it.nextOrRawCodeUnit();
 
         const QUnicodeTables::Properties *prop = QUnicodeTables::properties(ucs4);
 
