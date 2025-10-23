@@ -423,8 +423,8 @@ static bool getLockInfo_helper(const QString &fileName, LockFileInfo *info)
     bool ok;
     info->appname = QString::fromUtf8(appNameLine);
     info->hostname = QString::fromUtf8(hostNameLine);
-    info->hostid = hostId;
-    info->bootid = bootId;
+    info->hostid = std::move(hostId);
+    info->bootid = std::move(bootId);
     info->pid = pidLine.toLongLong(&ok);
     return ok && info->pid > 0;
 }
