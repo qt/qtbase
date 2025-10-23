@@ -45,11 +45,11 @@ using namespace std::chrono_literals;
 class tst_QTimer : public QObject
 {
     Q_OBJECT
-public:
-    static void initMain();
 
 private slots:
+    void initTestCase();
     void cleanupTestCase();
+
     void zeroTimer();
     void singleShotTimeout();
     void timeout();
@@ -1678,11 +1678,11 @@ struct StaticSingleShotUser
 };
 
 // NOTE: to prevent any static initialization order fiasco, we implement
-//       initMain() to instantiate staticSingleShotUser before qApp
+//       initTestCase() to instantiate staticSingleShotUser before qApp
 
 static StaticSingleShotUser *s_staticSingleShotUser = nullptr;
 
-void tst_QTimer::initMain()
+void tst_QTimer::initTestCase()
 {
     s_staticSingleShotUser = new StaticSingleShotUser;
 }
