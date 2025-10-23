@@ -678,8 +678,20 @@ void tst_QResourceEngine::registerNestedRccFile()
                                         "/registeredNestedRccFile"));
     QVERIFY2(QResource::registerResource(":/nestedrcc/runtime_resource.rcc",
                                          "/registeredNestedRccFile"),
-             "Second QResource::registerResource call failed.");
+             "Second QResource::registerResource call does not failed.");
     QVERIFY(QFile::exists(":/registeredNestedRccFile/runtime_resource/search_file.txt"));
+
+    // clean up
+    QVERIFY(QResource::unregisterResource(":/nestedrcc/runtime_resource.rcc",
+                                          "/registeredNestedRccFile"));
+
+    QVERIFY(QFile::exists(":/registeredNestedRccFile/runtime_resource/search_file.txt"));
+
+    QVERIFY(QResource::unregisterResource(":/nestedrcc/runtime_resource.rcc",
+                                          "/registeredNestedRccFile"));
+
+    // verify clean up
+    QVERIFY(!QFile::exists(":/registeredNestedRccFile/runtime_resource/search_file.txt"));
 }
 
 QTEST_MAIN(tst_QResourceEngine)
