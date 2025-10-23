@@ -71,14 +71,6 @@ QSaveFilePrivate::~QSaveFilePrivate()
     \sa QTextStream, QDataStream, QFileInfo, QDir, QFile, QTemporaryFile
 */
 
-#ifdef QT_NO_QOBJECT
-QSaveFile::QSaveFile(const QString &name)
-    : QFileDevice(*new QSaveFilePrivate)
-{
-    Q_D(QSaveFile);
-    d->fileName = name;
-}
-#else
 /*!
     Constructs a new file object to represent the file with the given \a name.
 */
@@ -97,6 +89,7 @@ QSaveFile::QSaveFile(QObject *parent)
     : QFileDevice(*new QSaveFilePrivate, parent)
 {
 }
+
 /*!
     Constructs a new file object with the given \a parent to represent the
     file with the specified \a name.
@@ -107,7 +100,6 @@ QSaveFile::QSaveFile(const QString &name, QObject *parent)
     Q_D(QSaveFile);
     d->fileName = name;
 }
-#endif
 
 /*!
     Destroys the file object, discarding the saved contents unless commit() was called.
@@ -417,8 +409,6 @@ bool QSaveFile::directWriteFallback() const
 
 QT_END_NAMESPACE
 
-#ifndef QT_NO_QOBJECT
 #include "moc_qsavefile.cpp"
-#endif
 
 #endif // QT_CONFIG(temporaryfile)
