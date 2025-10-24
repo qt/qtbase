@@ -240,7 +240,7 @@ static bool checkCondition(const QByteArray &condition)
 }
 
 static bool ignoreAll = false;
-static std::set<QByteArray> *ignoredTests = nullptr;
+static std::unique_ptr<std::set<QByteArray>> ignoredTests;
 
 namespace QTestPrivate {
 
@@ -273,7 +273,7 @@ void parseBlackList()
                 ignoreAll = true;
             } else {
                 if (!ignoredTests)
-                    ignoredTests = new std::set<QByteArray>;
+                    ignoredTests = std::make_unique<std::set<QByteArray>>();
                 ignoredTests->insert(function);
             }
         }
