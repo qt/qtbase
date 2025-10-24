@@ -1821,6 +1821,8 @@ static void readLineBreak()
             loc.die("Unassigned line break class \"%.*s\"", qPrintableView(l[1]));
 
         for (int codepoint = from; codepoint <= to; ++codepoint) {
+            if (QChar::isSurrogate(codepoint) && lb != LineBreak_SG)
+                loc.die("Surrogate with line-break class != SG, fix line-break detection in QUnicodeTools");
             UnicodeData &d = UnicodeData::valueRef(codepoint);
             d.p.lineBreakClass = lb;
         }

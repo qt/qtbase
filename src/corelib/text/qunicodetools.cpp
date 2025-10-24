@@ -767,17 +767,19 @@ static void getLineBreaks(const char16_t *string, qsizetype len, QCharAttributes
                 // even after spaces.
                 //   × [\p{Pf}&QU] ( SP | GL | WJ | CL | QU | CP | EX | IS
                 //     | SY | BK | CR | LF | NL | ZW | eot)
-                auto nncls = QUnicodeTables::LineBreak_LF;
-
-                if (i + 1 < len) {
+                const auto nncls = [&] {
+                    if (i + 1 >= len)
+                        return QUnicodeTables::LineBreak_LF;
                     char32_t c = string[i + 1];
                     if (QChar::isHighSurrogate(c) && i + 2 < len) {
                         ushort low = string[i + 2];
                         if (QChar::isLowSurrogate(low))
                             c = QChar::surrogateToUcs4(c, low);
+                        else
+                            return QUnicodeTables::LineBreak_SG; // all surrogates
                     }
-                    nncls = QUnicodeTables::lineBreakClass(c);
-                }
+                    return QUnicodeTables::lineBreakClass(c);
+                }();
 
                 constexpr QUnicodeTables::LineBreakClass lb15b[] = {
                         QUnicodeTables::LineBreak_SP,    QUnicodeTables::LineBreak_GL,
@@ -867,13 +869,17 @@ static void getLineBreaks(const char16_t *string, qsizetype len, QCharAttributes
             // ‘subtract .5’.
             if (Q_UNLIKELY(lcls == QUnicodeTables::LineBreak_SP)) {
                 if (i + 1 < len) {
+                    constexpr char32_t Invalid = ~U'\0';
                     char32_t ch = string[i + 1];
                     if (QChar::isHighSurrogate(ch) && i + 2 < len) {
                         ushort low = string[i + 2];
                         if (QChar::isLowSurrogate(low))
                             ch = QChar::surrogateToUcs4(ch, low);
+                        else
+                            ch = Invalid;
                     }
-                    if (QUnicodeTables::lineBreakClass(ch) == QUnicodeTables::LineBreak_NU) {
+                    if (ch != Invalid // surrogates won't match (ensured by util/unicode)
+                        && QUnicodeTables::lineBreakClass(ch) == QUnicodeTables::LineBreak_NU) {
                         attributes[pos].lineBreak = true;
                         goto next;
                     }
