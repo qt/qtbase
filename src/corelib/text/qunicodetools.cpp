@@ -781,8 +781,7 @@ static void getLineBreaks(const char16_t *string, qsizetype len, QCharAttributes
                         if (QChar::isLowSurrogate(low))
                             c = QChar::surrogateToUcs4(c, low);
                     }
-                    nncls = QUnicodeTables::LineBreakClass(
-                            QUnicodeTables::properties(c)->lineBreakClass);
+                    nncls = QUnicodeTables::lineBreakClass(c);
                 }
 
                 constexpr QUnicodeTables::LineBreakClass lb15b[] = {
@@ -879,8 +878,7 @@ static void getLineBreaks(const char16_t *string, qsizetype len, QCharAttributes
                         if (QChar::isLowSurrogate(low))
                             ch = QChar::surrogateToUcs4(ch, low);
                     }
-                    if (QUnicodeTables::properties(ch)->lineBreakClass
-                        == QUnicodeTables::LineBreak_NU) {
+                    if (QUnicodeTables::lineBreakClass(ch) == QUnicodeTables::LineBreak_NU) {
                         attributes[pos].lineBreak = true;
                         goto next;
                     }
