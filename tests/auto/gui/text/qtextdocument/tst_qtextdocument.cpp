@@ -295,6 +295,8 @@ void tst_QTextDocument::cleanup()
     cursor = QTextCursor();
     delete doc;
     doc = 0;
+
+    QTextDocument::setDefaultResourceProvider({});
 }
 
 void tst_QTextDocument::cleanupTestCase()

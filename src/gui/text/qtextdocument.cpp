@@ -49,7 +49,7 @@ Q_CORE_EXPORT Q_DECL_CONST_FUNCTION unsigned int qt_int_sqrt(unsigned int n);
 
 namespace {
     QTextDocument::ResourceProvider qt_defaultResourceProvider;
-};
+}
 
 QAbstractUndoItem::~QAbstractUndoItem()
     = default;
