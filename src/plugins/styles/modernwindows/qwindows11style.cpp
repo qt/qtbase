@@ -1423,26 +1423,6 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
             if (!proxy()->styleHint(SH_UnderlineShortcut, btn, widget))
                 tf |= Qt::TextHideMnemonic;
 
-            if (btn->features & QStyleOptionButton::HasMenu) {
-                QPainterStateGuard psg(painter);
-
-                const auto indSize = proxy()->pixelMetric(PM_MenuButtonIndicator, btn, widget);
-                const auto indRect = QRect(btn->rect.right() - indSize - contentItemHMargin, textRect.top(),
-                                           indSize + contentItemHMargin, btn->rect.height());
-                const auto vindRect = visualRect(btn->direction, btn->rect, indRect);
-                textRect.setWidth(textRect.width() - indSize);
-
-                int fontSize = painter->font().pointSize();
-                QFont f(d->assetFont);
-                f.setPointSize(qRound(fontSize * 0.9f)); // a little bit smaller
-                painter->setFont(f);
-                QColor penColor = option->palette.color(isEnabled ? QPalette::Active : QPalette::Disabled,
-                                                        QPalette::Text);
-                if (isEnabled)
-                    penColor.setAlpha(percentToAlpha(60.63)); // fillColorTextSecondary
-                painter->setPen(penColor);
-                painter->drawText(vindRect, Qt::AlignCenter, ChevronDownMed);
-            }
             if (!btn->icon.isNull()) {
                 //Center both icon and text
                 QIcon::Mode mode = isEnabled ? QIcon::Normal : QIcon::Disabled;
@@ -1469,6 +1449,8 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
         break;
     case CE_PushButtonBevel:
         if (const QStyleOptionButton *btn = qstyleoption_cast<const QStyleOptionButton *>(option))  {
+            using namespace StyleOptionHelper;
+
             QRectF rect = btn->rect.marginsRemoved(QMargins(2, 2, 2, 2));
             painter->setPen(Qt::NoPen);
             if (btn->features.testFlag(QStyleOptionButton::Flat)) {
@@ -1494,6 +1476,29 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
 
                 painter->setPen(defaultButton ? WINUI3Colors[colorSchemeIndex][controlStrokeOnAccentSecondary]
                                               : WINUI3Colors[colorSchemeIndex][controlStrokeSecondary]);
+            }
+            if (btn->features.testFlag(QStyleOptionButton::HasMenu)) {
+                QPainterStateGuard psg(painter);
+
+                const bool isEnabled = !isDisabled(option);
+                QRect textRect = btn->rect.marginsRemoved(QMargins(contentHMargin, 0, contentHMargin, 0));
+                const auto indSize = proxy()->pixelMetric(PM_MenuButtonIndicator, btn, widget);
+                const auto indRect =
+                        QRect(btn->rect.right() - indSize - contentItemHMargin, textRect.top(),
+                              indSize + contentItemHMargin, btn->rect.height());
+                const auto vindRect = visualRect(btn->direction, btn->rect, indRect);
+                textRect.setWidth(textRect.width() - indSize);
+
+                int fontSize = painter->font().pointSize();
+                QFont f(d->assetFont);
+                f.setPointSize(qRound(fontSize * 0.9f)); // a little bit smaller
+                painter->setFont(f);
+                QColor penColor = option->palette.color(
+                        isEnabled ? QPalette::Active : QPalette::Disabled, QPalette::Text);
+                if (isEnabled)
+                    penColor.setAlpha(percentToAlpha(60.63)); // fillColorTextSecondary
+                painter->setPen(penColor);
+                painter->drawText(vindRect, Qt::AlignCenter, ChevronDownMed);
             }
         }
         break;
