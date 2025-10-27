@@ -32,6 +32,10 @@ The following environment variables are used in Coin instructions when building 
                                  that will be passed to a non-qtbase qt-configure-module call
 `NON_QTBASE_CMAKE_ARGS`        - contains platform-specific ``CMake-style`` arguments
                                  that will be passed to a non-qtbase qt-configure-module call
+`<MODULE>_CONFIGURE_ARGS`      - contains platform-specific ``configure-style`` arguments
+                                 that will be passed to the specified module's qt-configure-module call
+`<MODULE>_CMAKE_ARGS`          - contains platform-specific ``CMake-style`` arguments
+                                 that will be passed to the specified module's qt-configure-module call
 `COMMON_CMAKE_ARGS`            - platform-independent ``CMake-style`` args set in
                                  `prepare_building_env.yaml` that apply to qtbase configurations
                                   only.
@@ -51,6 +55,8 @@ mirror the ones above. They are:
 `TARGET_CMAKE_ARGS`
 `NON_QTBASE_TARGET_CONFIGURE_ARGS`
 `NON_QTBASE_TARGET_CMAKE_ARGS`
+`<MODULE>_TARGET_CONFIGURE_ARGS`
+`<MODULE>_TARGET_CMAKE_ARGS`
 
 `COMMON_TARGET_CMAKE_ARGS`
 `COMMON_NON_QTBASE_TARGET_CMAKE_ARGS`

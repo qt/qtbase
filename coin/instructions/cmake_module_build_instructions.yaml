@@ -17,6 +17,20 @@ instructions:
   - type: EnvironmentVariable
     variableName: COIN_CMAKE_ARGS
     variableValue: "{{.Env.NON_QTBASE_CMAKE_ARGS}} {{.Env.COMMON_NON_QTBASE_CMAKE_ARGS}}"
+  - type: AppendToEnvironmentVariable
+    variableName: CONFIGURE_ARGS
+    variableValue: " ${{ToUpper .Env.TESTED_MODULE_COIN}}_CONFIGURE_ARGS"
+    enable_if:
+      condition: runtime
+      env_var: "{{ToUpper .Env.TESTED_MODULE_COIN}}_CONFIGURE_ARGS"
+      not_equals_value: null
+  - type: AppendToEnvironmentVariable
+    variableName: COIN_CMAKE_ARGS
+    variableValue: " ${{ToUpper .Env.TESTED_MODULE_COIN}}_CMAKE_ARGS"
+    enable_if:
+      condition: runtime
+      env_var: "{{ToUpper .Env.TESTED_MODULE_COIN}}_CMAKE_ARGS"
+      not_equals_value: null
   - type: EnvironmentVariable
     variableName: CONFIGURE_ENV_PREFIX
     variableValue: "{{.Env.ENV_PREFIX}}"
