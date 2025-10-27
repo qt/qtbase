@@ -74,13 +74,13 @@ class TestAnimation : public QVariantAnimation
 {
     Q_OBJECT
 public:
-    virtual void updateCurrentValue(const QVariant &value) override { Q_UNUSED(value)};
+    virtual void updateCurrentValue(const QVariant &value) override { Q_UNUSED(value)}
     virtual void updateState(QAbstractAnimation::State newState,
                              QAbstractAnimation::State oldState) override
     {
         Q_UNUSED(oldState);
         Q_UNUSED(newState);
-    };
+    }
 };
 
 class TestAnimation2 : public QVariantAnimation
@@ -90,13 +90,13 @@ public:
     TestAnimation2(QAbstractAnimation *animation) : QVariantAnimation(animation) {}
     TestAnimation2(int duration, QAbstractAnimation *animation) : QVariantAnimation(animation), m_duration(duration) {}
 
-    virtual void updateCurrentValue(const QVariant &value) override { Q_UNUSED(value)};
+    virtual void updateCurrentValue(const QVariant &value) override { Q_UNUSED(value)}
     virtual void updateState(QAbstractAnimation::State newState,
                              QAbstractAnimation::State oldState) override
     {
         Q_UNUSED(oldState);
         Q_UNUSED(newState);
-    };
+    }
 
     virtual int duration() const override {
         return m_duration;
@@ -463,8 +463,9 @@ void tst_QParallelAnimationGroup::deleteChildrenWithRunningGroup()
     QCOMPARE(group.state(), QAnimationGroup::Running);
     QCOMPARE(anim1->state(), QAnimationGroup::Running);
 
-    QTest::qWait(80);
-    QVERIFY(group.currentLoopTime() > 0);
+    QTest::qWaitFor([&]{
+        return group.currentLoopTime() > 0;
+    }, 200ms);
 
     delete anim1;
     QCOMPARE(group.animationCount(), 0);
