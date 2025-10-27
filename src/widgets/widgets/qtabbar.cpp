@@ -1003,7 +1003,7 @@ int QTabBar::insertTab(int index, const QIcon& icon, const QString &text)
             ++tab->lastTab;
     }
 
-    if (tabAt(d->mousePosition) == index) {
+    if (isVisible() && tabAt(d->mousePosition) == index) {
         d->hoverIndex = index;
         d->hoverRect = tabRect(index);
     }
