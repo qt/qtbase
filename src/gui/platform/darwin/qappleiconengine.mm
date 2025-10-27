@@ -302,6 +302,11 @@ QAppleIconEngine::~QAppleIconEngine()
         [m_image release];
 }
 
+QIcon QAppleIconEngine::fromTheme(const QString &iconName)
+{
+    return QIcon(new QAppleIconEngine(iconName));
+}
+
 QIconEngine *QAppleIconEngine::clone() const
 {
     return new QAppleIconEngine(m_iconName);

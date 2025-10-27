@@ -31,6 +31,9 @@ class Q_GUI_EXPORT QAppleIconEngine : public QIconEngine
 public:
     QAppleIconEngine(const QString &iconName);
     ~QAppleIconEngine();
+
+    static QIcon fromTheme(const QString &iconName);
+
     QIconEngine *clone() const override;
     QString key() const override;
     QString iconName() override;
