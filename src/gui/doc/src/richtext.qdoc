@@ -1047,6 +1047,12 @@
     \li \c type (\c 1, \c a, \c A, \c square, \c disc, \c circle)
     \endlist
 
+    Additionally, the following attribute is supported by the \c ol tag:
+
+    \list
+    \li \c start
+    \endlist
+
     \section1 Table Cell Attributes
 
     The following attributes are supported by the \c td and \c th
