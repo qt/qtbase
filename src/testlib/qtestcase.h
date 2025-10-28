@@ -15,6 +15,7 @@
 #include <QtCore/qtemporarydir.h>
 #include <QtCore/qthread.h>
 
+#include <chrono>
 #ifdef __cpp_concepts
 #include <concepts>
 #endif
