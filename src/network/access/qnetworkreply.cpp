@@ -474,7 +474,7 @@ void QNetworkReply::close()
 }
 
 /*!
-    \internal
+    \reimp
 */
 bool QNetworkReply::isSequential() const
 {
@@ -817,7 +817,7 @@ void QNetworkReply::ignoreSslErrors()
 }
 
 /*!
-    \internal
+    \reimp
 */
 qint64 QNetworkReply::writeData(const char *, qint64)
 {

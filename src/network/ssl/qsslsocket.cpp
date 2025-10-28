@@ -1844,7 +1844,7 @@ void QSslSocket::continueInterruptedHandshake()
 }
 
 /*!
-    \internal
+    \reimp
 */
 void QSslSocket::connectToHost(const QString &hostName, quint16 port, OpenMode openMode, NetworkLayerProtocol protocol)
 {
@@ -1875,7 +1875,7 @@ void QSslSocket::connectToHost(const QString &hostName, quint16 port, OpenMode o
 }
 
 /*!
-    \internal
+    \reimp
 */
 void QSslSocket::disconnectFromHost()
 {
