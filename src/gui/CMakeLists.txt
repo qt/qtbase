@@ -878,6 +878,8 @@ qt_internal_extend_target(Gui CONDITION APPLE AND QT_FEATURE_freetype
 qt_internal_extend_target(Gui CONDITION QT_FEATURE_freetype AND WIN32
     SOURCES
         text/windows/qwindowsfontdatabase_ft.cpp text/windows/qwindowsfontdatabase_ft_p.h
+    NO_UNITY_BUILD_SOURCES
+        text/windows/qwindowsfontdatabase_ft.cpp # conflicts: writingSystemFromCharSet, storeFont, populateFontFamilies
     LIBRARIES
         WrapFreetype::WrapFreetype
 )
