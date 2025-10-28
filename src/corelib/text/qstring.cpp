@@ -7328,6 +7328,12 @@ QString QString::toCaseFolded_helper(QString &str)
     \note In some cases the uppercase form of a string may be longer than the
     original.
 
+    \note Since 2024, the German language officially prefers to uppercase ß
+    (U+00DF LATIN SMALL LETTER SHARP S) as ẞ (U+1E9E LATIN CAPITAL LETTER SHARP S).
+    Qt's implementation follows Unicode, which still mandates the use of "SS".
+    If you need to implement the new German rules, you need to manually do
+    \c{replace(u'ß', u'ẞ')} \e{before} calling this function.
+
     \sa toLower(), QLocale::toLower()
 */
 
