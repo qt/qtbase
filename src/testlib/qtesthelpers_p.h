@@ -95,6 +95,10 @@ static inline void androidCompatibleShow(QWidget *widget)
 #ifdef QT_GUI_LIB
 bool ensurePositionTopLeft(QWindow *window)
 {
+    // Wayland: QQuickWindow::setPos() and QQuickWindow::setFramePosition() doesn't work.
+    if (!QGuiApplication::platformName().compare(QLatin1String("wayland"), Qt::CaseInsensitive))
+        return true;
+
     const QPoint availableTopLeft = QGuiApplication::primaryScreen()->availableGeometry().topLeft();
     window->setFramePosition(availableTopLeft);
 #ifdef Q_OS_ANDROID
