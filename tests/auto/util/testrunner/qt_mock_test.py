@@ -106,6 +106,15 @@ def log_test(testcase, result,
              testsuite=MY_NAME.rpartition(".")[0]):
     print("%-7s: %s::%s()" % (result, testsuite, testcase))
 
+def log_xml(fail_list):
+    if XML_OUTPUT_FILE and XML_TEMPLATE is not None:
+        if XML_TEMPLATE == "":
+            # If the template is an empty file, then write an empty output file
+            with open(XML_OUTPUT_FILE, "w"):
+                pass
+        else:
+            write_xml_log(XML_OUTPUT_FILE, failure=fail_list)
+
 # Return the exit code
 def run_test(testname):
     if   testname == "initTestCase":
@@ -159,13 +168,7 @@ def no_args_run():
             fail_list.append(test)
         total_result = total_result and (test_exit_code == 0)
 
-    if XML_OUTPUT_FILE:
-        if XML_TEMPLATE:
-            write_xml_log(XML_OUTPUT_FILE, failure=fail_list)
-        # If the template is an empty file, then write an empty output file
-        elif XML_TEMPLATE == "":
-            with open(XML_OUTPUT_FILE, "w"):
-                pass
+    log_xml(fail_list)
 
     if CRASH_CLEANLY:
         # Crash despite all going well and writing all output files cleanly.
@@ -198,8 +201,14 @@ def main():
     if len(args) == 0:
         no_args_run()
         assert False, "Unreachable!"
-    else:
-        sys.exit(run_test(args[0]))
+    else:                                           # run single test function
+        exit_code = run_test(args[0])
+        # Write "fail" in the XML log only if the specific run has failed.
+        if exit_code != 0:
+            log_xml([args[0]])
+        else:
+            log_xml([])
+        sys.exit(exit_code)
 
 
 # TODO write XPASS test that does exit(1)

@@ -385,8 +385,19 @@ def rerun_failed_testcase(test_basename, testargs: List[str], output_dir: str,
             proc = run_test(testargs + output_args + VERBOSE_ARGS + [failed_arg],
                             timeout=timeout,
                             env={**os.environ, **VERBOSE_ENV})
+        # There are platforms that run tests wrapped with some test-runner
+        # script, that can possibly fail to extract a process exit code.
+        # Because of these cases, we *also* parse the XML file and signify
+        # CRASH in case of QFATAL/empty/corrupt result.
+        what_failed = parse_log(f"{pathname_stem}.xml")
+        if what_failed.qfatal_message:
+            raise ReRunCrash(f"CRASH! returncode:{proc.returncode} "
+                             f"QFATAL:'{what_failed.qfatal_message}'")
         if proc.returncode < 0 or proc.returncode >= 128:
             raise ReRunCrash(f"CRASH! returncode:{proc.returncode}")
+        if proc.returncode == 0 and len(what_failed.failed_tests) > 0:
+            raise ReRunCrash("CRASH! returncode:0 but failures were found: "
+                             + what_failed.failed_tests)
         if proc.returncode == 0:
             n_passes += 1
         if n_passes == passes_needed:
@@ -471,9 +482,9 @@ def main():
             ret = rerun_failed_testcase(args.test_basename, args.testargs, args.log_dir,
                                         test_result, args.max_repeats, args.passes_needed,
                                         dryrun=args.dry_run, timeout=args.timeout)
-        except ReRunCrash as e:
+        except Exception as e:
             L.error("exception:%s", e)
-            L.error("The testcase re-run crashed, giving up")
+            L.error("The testcase re-run probably crashed, giving up")
             sys.exit(3)                                    # Test re-run CRASH
 
         if not ret:
