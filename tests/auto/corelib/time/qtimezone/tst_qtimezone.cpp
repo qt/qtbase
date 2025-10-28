@@ -1408,7 +1408,8 @@ void tst_QTimeZone::utcTest()
 
 void tst_QTimeZone::icuTest()
 {
-#if defined(QT_BUILD_INTERNAL) && QT_CONFIG(icu) && !QT_CONFIG(timezone_tzdb) && !defined(Q_OS_UNIX)
+#if defined(QT_BUILD_INTERNAL) && QT_CONFIG(icu) && !QT_CONFIG(timezone_tzdb) \
+    && (defined(Q_OS_VXWORKS) || !defined(Q_OS_UNIX))
     // Known datetimes
     qint64 std = QDateTime(QDate(2012, 1, 1), QTime(0, 0), QTimeZone::UTC).toMSecsSinceEpoch();
     qint64 dst = QDateTime(QDate(2012, 6, 1), QTime(0, 0), QTimeZone::UTC).toMSecsSinceEpoch();
@@ -1456,8 +1457,9 @@ void tst_QTimeZone::icuTest()
 
 void tst_QTimeZone::tzTest()
 {
-#if defined QT_BUILD_INTERNAL && defined Q_OS_UNIX \
-        && !QT_CONFIG(timezone_tzdb) && !defined Q_OS_DARWIN && !defined Q_OS_ANDROID
+#if defined QT_BUILD_INTERNAL && defined Q_OS_UNIX  \
+    && !(QT_CONFIG(timezone_tzdb) || defined(Q_OS_DARWIN) \
+         || defined(Q_OS_ANDROID) || defined(Q_OS_VXWORKS))
     const auto UTC = QTimeZone::UTC;
     // Known datetimes
     qint64 std = QDateTime(QDate(2012, 1, 1), QTime(0, 0), UTC).toMSecsSinceEpoch();

@@ -67,6 +67,7 @@ instructions:
       env_vars["QTEST_FUNCTION_TIMEOUT"]="600000"
       env_vars["QT_PLUGIN_PATH"]="/home/qt/work/install/target/plugins"
       env_vars["QT_QPA_PLATFORM_PLUGIN_PATH"]="/home/qt/work/install/target/plugins/platforms"
+      env_vars["TZ"]="UTC"
 
       for i in "${!hosts[@]}"
       do

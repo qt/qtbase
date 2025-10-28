@@ -384,7 +384,7 @@ private:
 
     QJniObject androidTimeZone;
 };
-#elif defined(Q_OS_UNIX)
+#elif defined(Q_OS_UNIX) && !defined(Q_OS_VXWORKS)
 struct QTzTransitionTime
 {
     qint64 atMSecsSinceEpoch;
