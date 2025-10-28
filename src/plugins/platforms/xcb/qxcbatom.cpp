@@ -9,6 +9,7 @@
 #include <string.h>
 
 #include <algorithm>
+#include <cstdlib>
 
 static const char *xcb_atomnames = {
     // window-manager <-> client protocols
