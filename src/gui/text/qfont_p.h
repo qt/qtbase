@@ -163,6 +163,11 @@ private:
 class Q_GUI_EXPORT QFontPrivate
 {
 public:
+    enum class EngineQueryOption {
+        Default = 0,
+        IgnoreSmallCapsEngine = 0x1,
+    };
+    Q_DECLARE_FLAGS(EngineQueryOptions, EngineQueryOption)
 
     QFontPrivate();
     QFontPrivate(const QFontPrivate &other);
@@ -170,6 +175,7 @@ public:
     ~QFontPrivate();
 
     QFontEngine *engineForScript(int script) const;
+    QFontEngine *engineForCharacter(char32_t c, EngineQueryOptions opt = {}) const;
     void alterCharForCapitalization(QChar &c) const;
 
     QAtomicInt ref;
@@ -208,6 +214,7 @@ public:
     void unsetVariableAxis(QFont::Tag tag);
     bool hasVariableAxis(QFont::Tag tag, float value) const;
 };
+Q_DECLARE_OPERATORS_FOR_FLAGS(QFontPrivate::EngineQueryOptions)
 
 
 class Q_GUI_EXPORT QFontCache : public QObject

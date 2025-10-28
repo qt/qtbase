@@ -410,9 +410,8 @@ bool QFontMetrics::inFont(QChar ch) const
 */
 bool QFontMetrics::inFontUcs4(uint ucs4) const
 {
-    const int script = QChar::script(ucs4);
-    QFontEngine *engine = d->engineForScript(script);
-    Q_ASSERT(engine != nullptr);
+    constexpr auto Ignore = QFontPrivate::EngineQueryOption::IgnoreSmallCapsEngine;
+    QFontEngine *engine = d->engineForCharacter(ucs4, Ignore);
     if (engine->type() == QFontEngine::Box)
         return false;
     return engine->canRender(ucs4);
@@ -432,13 +431,7 @@ bool QFontMetrics::inFontUcs4(uint ucs4) const
 */
 int QFontMetrics::leftBearing(QChar ch) const
 {
-    const int script = ch.script();
-    QFontEngine *engine;
-    if (d->capital == QFont::SmallCaps && ch.isLower())
-        engine = d->smallCapsFontPrivate()->engineForScript(script);
-    else
-        engine = d->engineForScript(script);
-    Q_ASSERT(engine != nullptr);
+    QFontEngine *engine = d->engineForCharacter(ch.unicode());
     if (engine->type() == QFontEngine::Box)
         return 0;
 
@@ -465,12 +458,7 @@ int QFontMetrics::leftBearing(QChar ch) const
 */
 int QFontMetrics::rightBearing(QChar ch) const
 {
-    const int script = ch.script();
-    QFontEngine *engine;
-    if (d->capital == QFont::SmallCaps && ch.isLower())
-        engine = d->smallCapsFontPrivate()->engineForScript(script);
-    else
-        engine = d->engineForScript(script);
+    QFontEngine *engine = d->engineForCharacter(ch.unicode());
     Q_ASSERT(engine != nullptr);
     if (engine->type() == QFontEngine::Box)
         return 0;
@@ -574,13 +562,7 @@ int QFontMetrics::horizontalAdvance(QChar ch) const
     if (QChar::category(ch.unicode()) == QChar::Mark_NonSpacing)
         return 0;
 
-    const int script = ch.script();
-    QFontEngine *engine;
-    if (d->capital == QFont::SmallCaps && ch.isLower())
-        engine = d->smallCapsFontPrivate()->engineForScript(script);
-    else
-        engine = d->engineForScript(script);
-    Q_ASSERT(engine != nullptr);
+    QFontEngine *engine = d->engineForCharacter(ch.unicode());
 
     d->alterCharForCapitalization(ch);
 
@@ -684,13 +666,7 @@ QRect QFontMetrics::boundingRect(const QString &text, const QTextOption &option)
 */
 QRect QFontMetrics::boundingRect(QChar ch) const
 {
-    const int script = ch.script();
-    QFontEngine *engine;
-    if (d->capital == QFont::SmallCaps && ch.isLower())
-        engine = d->smallCapsFontPrivate()->engineForScript(script);
-    else
-        engine = d->engineForScript(script);
-    Q_ASSERT(engine != nullptr);
+    QFontEngine *engine = d->engineForCharacter(ch.unicode());
 
     d->alterCharForCapitalization(ch);
 
@@ -1345,13 +1321,7 @@ bool QFontMetricsF::inFontUcs4(uint ucs4) const
 */
 qreal QFontMetricsF::leftBearing(QChar ch) const
 {
-    const int script = ch.script();
-    QFontEngine *engine;
-    if (d->capital == QFont::SmallCaps && ch.isLower())
-        engine = d->smallCapsFontPrivate()->engineForScript(script);
-    else
-        engine = d->engineForScript(script);
-    Q_ASSERT(engine != nullptr);
+    QFontEngine *engine = d->engineForCharacter(ch.unicode());
     if (engine->type() == QFontEngine::Box)
         return 0;
 

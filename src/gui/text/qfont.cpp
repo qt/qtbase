@@ -257,6 +257,19 @@ QFontEngine *QFontPrivate::engineForScript(int script) const
     return QT_FONT_ENGINE_FROM_DATA(engineData, script);
 }
 
+QFontEngine *QFontPrivate::engineForCharacter(char32_t c, EngineQueryOptions opt) const
+{
+    const bool smallCaps = !(opt & EngineQueryOption::IgnoreSmallCapsEngine);
+    const auto script = QChar::script(c);
+    QFontEngine *engine;
+    if (smallCaps && capital == QFont::SmallCaps && QChar::isLower(c))
+        engine = smallCapsFontPrivate()->engineForScript(script);
+    else
+        engine = engineForScript(script);
+    Q_ASSERT(engine != nullptr);
+    return engine;
+}
+
 void QFontPrivate::alterCharForCapitalization(QChar &c) const {
     switch (capital) {
     case QFont::AllUppercase:
