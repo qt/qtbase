@@ -650,14 +650,14 @@ QT_WARNING_POP
     {
         QList<int *> list;
         QVERIFY(list.value(0) == 0);
-        int i;
+        int i = 42;
         list.append(&i);
         QVERIFY(list.value(0) == &i);
     }
     {
         QList<const int *> list;
         QVERIFY(list.value(0) == 0);
-        int i;
+        int i = 42;
         list.append(&i);
         QVERIFY(list.value(0) == &i);
     }
