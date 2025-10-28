@@ -2842,15 +2842,6 @@ const bool block_some_signals = true; // The test should also work with this set
 const int rowcount = 500;
 const int colcount = 10;
 
-static inline QString istr(int n, bool comma = true)
-{
-    QString s;
-    s.setNum(n);
-    if (comma)
-        s += ", ";
-    return s;
-}
-
 void tst_QHeaderView::setupTestData()
 {
     QTest::addColumn<bool>("updates_enabled");
