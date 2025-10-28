@@ -8,6 +8,7 @@
 #include <qlocale.h>
 #include <qloggingcategory.h>
 #include <qvalidator.h>
+#include <QtCore/private/qstringiterator_p.h>
 
 #include <algorithm>
 #include <cmath>
@@ -1247,10 +1248,12 @@ QVariant QDoubleSpinBoxPrivate::validateAndInterpret(QString &input, int &pos,
     const bool minus = min <= 0;
 
     const QString group(locale.groupSeparator());
-    const uint groupUcs = (group.isEmpty() ? 0 :
-                           (group.size() > 1 && group.at(0).isHighSurrogate()
-                            ? QChar::surrogateToUcs4(group.at(0), group.at(1))
-                            : group.at(0).unicode()));
+    const char32_t groupUcs = [&] {
+        QStringIterator it(group);
+        if (!it.hasNext())
+            return U'\0';
+        return it.nextOrRawCodeUnit();
+    }();
     switch (len) {
     case 0:
         state = max != min ? QValidator::Intermediate : QValidator::Invalid;
