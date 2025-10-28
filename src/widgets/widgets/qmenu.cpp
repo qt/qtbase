@@ -2921,15 +2921,19 @@ void QMenu::mouseReleaseEvent(QMouseEvent *e)
     Q_D(QMenu);
     if (d->aboutToHide || d->mouseEventTaken(e))
         return;
-    if (QMenuPrivate::mouseDown != this) {
+
+    if (QMenuPrivate::mouseDown && QMenuPrivate::mouseDown != this) {
         QMenuPrivate::mouseDown = nullptr;
         return;
     }
 
+    // If no mouse press was seen before this is the release event that caused the menu to open
+    const bool sawMousePress = QMenuPrivate::mouseDown;
     QMenuPrivate::mouseDown = nullptr;
+
     d->setSyncAction();
 
-    if (!d->hasMouseMoved(e->globalPosition().toPoint())) {
+    if (sawMousePress && !d->hasMouseMoved(e->globalPosition().toPoint())) {
         // We don't want to trigger a menu item if the mouse hasn't moved
         // since the popup was opened. Instead we want to close the menu.
         d->hideUpToMenuBar();
@@ -2945,7 +2949,7 @@ void QMenu::mouseReleaseEvent(QMouseEvent *e)
 #endif
                 d->activateAction(action, QAction::Trigger);
         }
-    } else if (!action || (action->isEnabled() && !action->isSeparator())) {
+    } else if (sawMousePress && (!action || (action->isEnabled() && !action->isSeparator()))) {
         d->hideUpToMenuBar();
     }
 }
