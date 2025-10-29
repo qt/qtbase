@@ -841,13 +841,12 @@ function(qt_internal_export_additional_targets_file)
 
     qt_internal_append_export_additional_targets()
 
-    set_property(GLOBAL APPEND PROPERTY _qt_export_additional_targets_ids "${id}")
     set_property(GLOBAL APPEND
         PROPERTY _qt_export_additional_targets_export_name_prefix_${id} "${arg_EXPORT_NAME_PREFIX}")
     set_property(GLOBAL APPEND
         PROPERTY _qt_export_additional_targets_config_install_dir_${id} "${arg_CONFIG_INSTALL_DIR}")
 
-    qt_add_list_file_finalizer(qt_internal_export_additional_targets_file_finalizer)
+    qt_add_list_file_finalizer(qt_internal_export_additional_targets_file_finalizer "${id}")
 endfunction()
 
 function(qt_internal_get_export_additional_targets_id export_name out_var)
@@ -913,19 +912,9 @@ function(qt_internal_validate_export_additional_targets)
     set(arg_TARGET_EXPORT_NAMES "${arg_TARGET_EXPORT_NAMES}" PARENT_SCOPE)
 endfunction()
 
-# The finalizer might be called multiple times in the same scope, but only the first one will
-# process all the ids.
-function(qt_internal_export_additional_targets_file_finalizer)
-    get_property(ids GLOBAL PROPERTY _qt_export_additional_targets_ids)
-
-    foreach(id ${ids})
-        qt_internal_export_additional_targets_file_handler("${id}")
-    endforeach()
-
-    set_property(GLOBAL PROPERTY _qt_export_additional_targets_ids "")
-endfunction()
-
-function(qt_internal_export_additional_targets_file_handler id)
+# The finalizer might be called multiple times in the same directory scope, but it will only process
+# one specific id.
+function(qt_internal_export_additional_targets_file_finalizer id)
     get_property(arg_EXPORT_NAME_PREFIX GLOBAL PROPERTY
         _qt_export_additional_targets_export_name_prefix_${id})
     get_property(arg_CONFIG_INSTALL_DIR GLOBAL PROPERTY
