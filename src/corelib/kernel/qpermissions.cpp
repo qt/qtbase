@@ -132,6 +132,10 @@ Q_LOGGING_CATEGORY(lcPermissions, "qt.permissions", QtWarningMsg);
 
     \annotatedlist permissions
 
+    \note The available permission types cover core functionality of Qt modules
+    like Qt Multimedia and Qt Positioning, but do not encompass all platform-specific
+    permissions. Custom permission types are not currently supported.
+
     \section1 Best Practices
 
     To ensure the best possible user experience for the end user we recommend
