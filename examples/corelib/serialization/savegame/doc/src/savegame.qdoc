@@ -92,7 +92,7 @@
 
     \snippet serialization/savegame/level.h 0
 
-    We want the levels in our game to each each have several NPCs, so we keep a QList
+    We want the levels in our game to each have several NPCs, so we keep a QList
     of Character objects. We also provide the familiar fromJson() and toJson()
     functions.
 
