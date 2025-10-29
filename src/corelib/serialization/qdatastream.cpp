@@ -508,49 +508,49 @@ void QDataStream::setByteOrder(ByteOrder bo)
     This enum provides symbolic synonyms for the data serialization
     format version numbers.
 
-    \value Qt_1_0 Version 1 (Qt 1.x)
-    \value Qt_2_0 Version 2 (Qt 2.0)
-    \value Qt_2_1 Version 3 (Qt 2.1, 2.2, 2.3)
-    \value Qt_3_0 Version 4 (Qt 3.0)
-    \value Qt_3_1 Version 5 (Qt 3.1, 3.2)
-    \value Qt_3_3 Version 6 (Qt 3.3)
-    \value Qt_4_0 Version 7 (Qt 4.0, Qt 4.1)
-    \value Qt_4_1 Version 7 (Qt 4.0, Qt 4.1)
-    \value Qt_4_2 Version 8 (Qt 4.2)
-    \value Qt_4_3 Version 9 (Qt 4.3)
-    \value Qt_4_4 Version 10 (Qt 4.4)
-    \value Qt_4_5 Version 11 (Qt 4.5)
-    \value Qt_4_6 Version 12 (Qt 4.6, Qt 4.7, Qt 4.8)
-    \value Qt_4_7 Same as Qt_4_6.
-    \value Qt_4_8 Same as Qt_4_6.
-    \value Qt_4_9 Same as Qt_4_6.
-    \value Qt_5_0 Version 13 (Qt 5.0)
-    \value Qt_5_1 Version 14 (Qt 5.1)
-    \value Qt_5_2 Version 15 (Qt 5.2)
-    \value Qt_5_3 Same as Qt_5_2
-    \value Qt_5_4 Version 16 (Qt 5.4)
-    \value Qt_5_5 Same as Qt_5_4
-    \value Qt_5_6 Version 17 (Qt 5.6)
-    \value Qt_5_7 Same as Qt_5_6
-    \value Qt_5_8 Same as Qt_5_6
-    \value Qt_5_9 Same as Qt_5_6
-    \value Qt_5_10 Same as Qt_5_6
-    \value Qt_5_11 Same as Qt_5_6
-    \value Qt_5_12 Version 18 (Qt 5.12)
-    \value Qt_5_13 Version 19 (Qt 5.13)
-    \value Qt_5_14 Same as Qt_5_13
-    \value Qt_5_15 Same as Qt_5_13
-    \value Qt_6_0 Version 20 (Qt 6.0)
-    \value Qt_6_1 Same as Qt_6_0
-    \value Qt_6_2 Same as Qt_6_0
-    \value Qt_6_3 Same as Qt_6_0
-    \value Qt_6_4 Same as Qt_6_0
-    \value Qt_6_5 Same as Qt_6_0
-    \value Qt_6_6 Version 21 (Qt 6.6)
-    \value Qt_6_7 Version 22 (Qt 6.7)
-    \value Qt_6_8 Same as Qt_6_7
-    \value Qt_6_9 Same as Qt_6_7
-    \value Qt_6_10 Same as Qt_6_7
+    \value Qt_1_0
+    \value Qt_2_0
+    \value Qt_2_1
+    \value Qt_3_0
+    \value Qt_3_1
+    \value Qt_3_3
+    \value Qt_4_0
+    \value Qt_4_1
+    \value Qt_4_2
+    \value Qt_4_3
+    \value Qt_4_4
+    \value Qt_4_5
+    \value Qt_4_6
+    \value Qt_4_7
+    \value Qt_4_8
+    \value Qt_4_9
+    \value Qt_5_0
+    \value Qt_5_1
+    \value Qt_5_2
+    \value Qt_5_3
+    \value Qt_5_4
+    \value Qt_5_5
+    \value Qt_5_6
+    \value Qt_5_7
+    \value Qt_5_8
+    \value Qt_5_9
+    \value Qt_5_10
+    \value Qt_5_11
+    \value Qt_5_12
+    \value Qt_5_13
+    \value Qt_5_14
+    \value Qt_5_15
+    \value Qt_6_0
+    \value Qt_6_1
+    \value Qt_6_2
+    \value Qt_6_3
+    \value Qt_6_4
+    \value Qt_6_5
+    \value Qt_6_6
+    \value Qt_6_7
+    \value Qt_6_8
+    \value Qt_6_9
+    \value Qt_6_10
     \omitvalue Qt_DefaultCompiledVersion
 
     \sa setVersion(), version()
