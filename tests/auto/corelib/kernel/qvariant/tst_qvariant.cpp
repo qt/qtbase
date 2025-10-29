@@ -455,7 +455,6 @@ private:
 };
 
 const qlonglong intMax1 = (qlonglong)INT_MAX + 1;
-const qulonglong uintMax1 = (qulonglong)UINT_MAX + 1;
 
 void tst_QVariant::constructor()
 {
