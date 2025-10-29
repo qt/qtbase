@@ -6,6 +6,7 @@
 #include <qdir.h>
 #include <qlibrary.h>
 #include <QtCore/QRegularExpression>
+#include <QtCore/private/qlibrary_p.h>
 
 
 // Helper macros to let us know if some suffixes and prefixes are valid
@@ -162,7 +163,12 @@ void tst_QLibrary::cleanup()
 
     };
     for (const auto &entry : libs) {
-        do {} while (QLibrary(entry.name, entry.version).unload());
+        bool unloaded = false;
+        do {
+            QLibrary lib(entry.name, entry.version);
+            auto libPrivate = QLibraryPrivate::get(&lib);
+            unloaded = libPrivate->unload();
+        } while (unloaded);
     }
 }
 

@@ -67,7 +67,7 @@ public:
 
     bool load();
     QtPluginInstanceFunction loadPlugin(); // loads and resolves instance
-    bool unload(UnloadFlag flag = UnloadSys);
+    Q_AUTOTEST_EXPORT bool unload(UnloadFlag flag = UnloadSys);
     void release();
     QFunctionPointer resolve(const char *);
 
@@ -102,6 +102,11 @@ public:
 
     void updatePluginState();
     bool isPlugin();
+
+    static QLibraryPrivate* get(QLibrary* lib)
+    {
+        return lib->d.data();
+    }
 
 private:
     explicit QLibraryPrivate(const QString &canonicalFileName, const QString &version, QLibrary::LoadHints loadHints);

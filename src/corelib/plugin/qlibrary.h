@@ -63,6 +63,7 @@ private:
         Loaded
     };
 
+    friend class QLibraryPrivate;
     QTaggedPointer<QLibraryPrivate, LoadStatusTag> d = nullptr;
     Q_DISABLE_COPY(QLibrary)
 };
