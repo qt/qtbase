@@ -1790,10 +1790,11 @@ function(_qt_internal_android_app_runner_arguments target out_runner_path out_ar
     set(${out_runner_path} "${runner_dir}/qt-android-runner.py" PARENT_SCOPE)
 
     _qt_internal_android_get_target_android_build_dir(android_build_dir ${target})
+    _qt_internal_android_get_target_deployment_dir(android_deployment_dir ${target})
     _qt_internal_android_get_platform_tools_path(platform_tools)
     set(${out_arguments}
         "--adb" "${platform_tools}/adb"
-        "--build-path" "${android_build_dir}"
+        "--build-path" "${android_deployment_dir}"
         "--apk" "${android_build_dir}/${target}.apk"
         PARENT_SCOPE
     )
