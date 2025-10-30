@@ -2507,7 +2507,7 @@ QString QCoreApplication::applicationFilePath()
 
     Returns the current process ID for the application.
 */
-qint64 QCoreApplication::applicationPid()
+qint64 QCoreApplication::applicationPid() noexcept
 {
 #if defined(Q_OS_WIN)
     return GetCurrentProcessId();
