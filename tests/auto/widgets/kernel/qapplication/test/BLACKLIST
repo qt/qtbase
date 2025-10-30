@@ -3,8 +3,6 @@
 # QTBUG-87025
 [setFont]
 android
-[libraryPaths_qt_plugin_path_2]
-android
 [desktopSettingsAware]
 android
 [wheelEventPropagation]
