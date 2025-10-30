@@ -1623,6 +1623,12 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
         break;
 
     case PE_Frame:
+        if (widget && widget->inherits("QComboBoxPrivateContainer")){
+            QStyleOption copy = *option;
+            copy.state |= State_Raised;
+            proxy()->drawPrimitive(PE_PanelMenu, &copy, painter, widget);
+            break;
+        }
 #if QT_CONFIG(accessibility)
         if (QStyleHelper::isInstanceOf(option->styleObject, QAccessible::EditableText)
              || QStyleHelper::isInstanceOf(option->styleObject, QAccessible::StaticText) ||
@@ -1700,6 +1706,14 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
         d->drawBackground(theme);
         return;
     }
+
+    case PE_PanelMenu:
+        if (widget && widget->inherits("QComboBoxPrivateContainer")){
+            //fill combobox popup background
+            QWindowsThemeData popupbackgroundTheme(widget, painter, QWindowsVistaStylePrivate::MenuTheme,
+                             MENU_POPUPBACKGROUND, stateId, option->rect);
+            d->drawBackground(popupbackgroundTheme);
+        }
 
     case PE_PanelMenuBar:
         break;

@@ -2433,6 +2433,13 @@ void QWindows11Style::unpolish(QWidget *widget)
         widget->setProperty("_q_original_menubar_maxheight", QVariant());
     }
 #endif
+    const auto comboBoxContainer = qobject_cast<const QComboBoxPrivateContainer *>(widget);
+    if (comboBoxContainer) {
+        widget->setAttribute(Qt::WA_OpaquePaintEvent, true);
+        widget->setAttribute(Qt::WA_TranslucentBackground, false);
+        widget->setWindowFlag(Qt::FramelessWindowHint, false);
+        widget->setWindowFlag(Qt::NoDropShadowWindowHint, false);
+    }
 
     if (const auto *scrollarea = qobject_cast<QAbstractScrollArea *>(widget);
         scrollarea
