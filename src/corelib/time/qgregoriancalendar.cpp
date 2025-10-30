@@ -31,6 +31,7 @@ static_assert(qDivMod<86400>(-172800).remainder == 0);
 
 /*!
     \since 5.14
+    \internal
 
     \class QGregorianCalendar
     \inmodule QtCore

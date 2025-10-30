@@ -13,6 +13,7 @@ using namespace QRoundingDown;
 
 /*!
     \since 5.14
+    \internal
 
     \class QMilankovicCalendar
     \inmodule QtCore

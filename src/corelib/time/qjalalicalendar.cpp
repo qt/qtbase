@@ -39,6 +39,7 @@ qint64 firstDayOfYear(int year, int cycleNo)
 
 /*!
     \since 5.14
+    \internal
 
     \class QJalaliCalendar
     \inmodule QtCore
