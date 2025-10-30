@@ -415,10 +415,6 @@ function(_qt_internal_sbom_end_project)
         return()
     endif()
 
-    # Now that we know which system libraries are linked against because we added all
-    # subdirectories, we can add the recorded system libs to the sbom.
-    _qt_internal_sbom_add_recorded_system_libraries()
-
     # Run sbom finalization for targets that had it scheduled, but haven't run yet.
     # This can happen when _qt_internal_sbom_end_project is called within the same
     # subdirectory scope as where the targets are meant to be finalized, but that would be too late
@@ -461,6 +457,10 @@ function(_qt_internal_sbom_end_project)
             list(APPEND targets_to_finalize ${new_targets})
         endif()
     endwhile()
+
+    # Now that we know which system libraries are linked against because we added all
+    # subdirectories and finalized all targets, we can add the recorded system libs to the sbom.
+    _qt_internal_sbom_add_recorded_system_libraries()
 
     _qt_internal_sbom_end_project_generate()
 
