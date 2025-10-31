@@ -6189,17 +6189,17 @@ QPixmap QCommonStyle::generatedIconPixmap(QIcon::Mode iconMode, const QPixmap &p
         return QPixmap::fromImage(std::move(im));
     }
     case QIcon::Selected: {
-        QImage img = pixmap.toImage().convertToFormat(QImage::Format_ARGB32_Premultiplied);
         QColor color = opt->palette.color(QPalette::Normal, QPalette::Highlight);
         color.setAlphaF(0.3f);
-        QPainter painter(&img);
+        QPixmap ret(pixmap);
+        QPainter painter(&ret);
         painter.setCompositionMode(QPainter::CompositionMode_SourceAtop);
-        painter.fillRect(0, 0, img.width(), img.height(), color);
+        painter.fillRect(0, 0, pixmap.width(), pixmap.height(), color);
         painter.end();
-        return QPixmap::fromImage(std::move(img)); }
+        return ret;
+    }
     case QIcon::Active:
-        return pixmap;
-    default:
+    case QIcon::Normal:
         break;
     }
     return pixmap;
