@@ -84,6 +84,19 @@ void QCocoaSystemTrayIcon::updateIcon(const QIcon &icon)
     if (!m_statusItem)
         return;
 
+    if (auto *image = [NSImage internalImageFromQIcon:icon]) {
+        // The icon is backed by QAppleIconEngine, in which case we
+        // want to pass on the underlying NSImage instead of flattening
+        // to a QImage. This preserves the isTemplate property of the
+        // image, and allows AppKit to size and configure the icon for
+        // the status bar. We also enable NSVariableStatusItemLength,
+        // to match the behavior of SwiftUI's MenuBarExtra.
+        m_statusItem.button.image = [[image copy] autorelease];
+        m_statusItem.button.imageScaling = NSImageScaleProportionallyDown;
+        m_statusItem.length = NSVariableStatusItemLength;
+        return;
+    }
+
     // The recommended maximum title bar icon height is 18 points
     // (device independent pixels). The menu height on past and
     // current OS X versions is 22 points. Provide some future-proofing
