@@ -353,17 +353,16 @@ QLineEditPrivate *QLineEditIconButton::lineEditPrivate() const
 void QLineEditIconButton::paintEvent(QPaintEvent *)
 {
     QPainter painter(this);
-    QIcon::Mode state = QIcon::Disabled;
+    QIcon::Mode mode = QIcon::Disabled;
     if (isEnabled())
-        state = isDown() ? QIcon::Active : QIcon::Normal;
+        mode = isDown() ? QIcon::Active : QIcon::Normal;
     const QLineEditPrivate *lep = lineEditPrivate();
     const int iconWidth = lep ? lep->sideWidgetParameters().iconSize : 16;
     const QSize iconSize(iconWidth, iconWidth);
-    const QPixmap iconPixmap = icon().pixmap(iconSize, devicePixelRatio(), state, QIcon::Off);
     QRect pixmapRect = QRect(QPoint(0, 0), iconSize);
     pixmapRect.moveCenter(rect().center());
     painter.setOpacity(m_opacity);
-    painter.drawPixmap(pixmapRect, iconPixmap);
+    icon().paint(&painter, pixmapRect, Qt::AlignCenter, mode, QIcon::Off);
 }
 
 void QLineEditIconButton::actionEvent(QActionEvent *e)
