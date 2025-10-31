@@ -1039,12 +1039,15 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
             if (rect.width() <= 0)
                 break;
 
-            painter->setPen(Qt::NoPen);
-            if (vopt->features & QStyleOptionViewItem::Alternate)
-                painter->setBrush(vopt->palette.alternateBase());
-            else
-                painter->setBrush(vopt->palette.base());
-            painter->drawRect(rect);
+            if (vopt->features & QStyleOptionViewItem::Alternate) {
+                QPalette::ColorGroup cg =
+                        (widget ? widget->isEnabled() : (vopt->state & QStyle::State_Enabled))
+                        ? QPalette::Normal
+                        : QPalette::Disabled;
+                if (cg == QPalette::Normal && !(vopt->state & QStyle::State_Active))
+                    cg = QPalette::Inactive;
+                painter->fillRect(rect, option->palette.brush(cg, QPalette::AlternateBase));
+            }
 
             if (option->state & State_Selected && !highContrastTheme) {
                 // keep in sync with CE_ItemViewItem QListView indicator painting
