@@ -367,6 +367,9 @@ static const char *ppdOptionProperty = "_q_ppd_option";
 // Used to store the originally selected choice index for each QComboBox that represents an advanced option
 static const char *ppdOriginallySelectedChoiceProperty = "_q_ppd_originally_selected_choice";
 
+// Used to store the QLineEdit pointer for each advanced option that supports custom values
+static const char *customValueLineEditProperty = "_q_custom_value_lineedit";
+
 // Used to store the warning label pointer for each QComboBox that represents an advanced option
 static const char *warningLabelProperty = "_q_warning_label";
 
@@ -427,10 +430,15 @@ bool QPrintPropertiesDialog::createAdvancedOptionsWidget()
                             // because some of them may not be present in the list because they conflict with the
                             // installable options so use the index passed on addItem
                             const int selectedChoiceIndex = choicesCb->currentData().toInt();
-                            const auto values = QStringList{} << QString::fromLatin1(option->keyword)
-                                                                << QString::fromLatin1(option->choices[selectedChoiceIndex].choice);
+                            const QString &choice = QString::fromLatin1(
+                                    option->choices[selectedChoiceIndex].choice);
+                            const QStringList &values { QString::fromLatin1(option->keyword), choice };
                             m_currentPrintDevice->setProperty(PDPK_PpdOption, values);
                             widget.conflictsLabel->setVisible(anyPpdOptionConflict());
+
+                            if (auto *customValueEdit = qvariant_cast<QLineEdit *>(
+                                        choicesCb->property(customValueLineEditProperty)))
+                                customValueEdit->setVisible(choice == u"Custom");
                         };
 
                         bool foundMarkedChoice = false;
@@ -471,9 +479,24 @@ bool QPrintPropertiesDialog::createAdvancedOptionsWidget()
                             choicesCbWithLabelLayout->setContentsMargins(0, 0, 0, 0);
                             QLabel *warningLabel = new QLabel();
                             choicesCbWithLabelLayout->addWidget(choicesCb);
+
+                            const QString &optionText = toUnicode(option->text);
+                            const QStringList &params{ QString::fromLatin1(option->keyword) };
+                            const bool hasCustomOption = m_currentPrintDevice->isFeatureAvailable(
+                                    PDPK_PpdCustomOption, params);
+                            if (hasCustomOption) {
+                                auto *customValueEdit = new QLineEdit;
+                                customValueEdit->setAccessibleName(
+                                        tr("Custom value for %1").arg(optionText));
+                                choicesCbWithLabelLayout->addWidget(customValueEdit);
+                                choicesCb->setProperty(customValueLineEditProperty,
+                                                       QVariant::fromValue(customValueEdit));
+                                // ensure line edit is shown/hidden as needed
+                                setPpdOptionFromCombo();
+                            }
                             choicesCbWithLabelLayout->addWidget(warningLabel);
 
-                            QLabel *optionLabel = new QLabel(toUnicode(option->text));
+                            QLabel *optionLabel = new QLabel(optionText);
                             optionLabel->setBuddy(choicesCb);
                             groupLayout->addRow(optionLabel, choicesCbWithLabel);
                             anyWidgetCreated = true;
@@ -512,13 +535,24 @@ void QPrintPropertiesDialog::setPrinterAdvancedCupsOptions() const
         // because some of them may not be present in the list because they conflict with the
         // installable options so use the index passed on addItem
         const int selectedChoiceIndex = choicesCb->currentData().toInt();
-        const char *selectedChoice = option->choices[selectedChoiceIndex].choice;
+        QString selectedChoice = QString::fromLatin1(option->choices[selectedChoiceIndex].choice);
+
+        if (selectedChoice == u"Custom") {
+            if (auto *customValueEdit = qvariant_cast<QLineEdit *>(
+                        choicesCb->property(customValueLineEditProperty))) {
+                const QString &customValue = customValueEdit->text();
+                if (!customValue.isEmpty())
+                    selectedChoice = u"Custom." + customValue;
+            }
+        }
 
         if (qstrcmp(option->keyword, "ColorModel") == 0)
-            m_printer->setColorMode(qstrcmp(selectedChoice, "Gray") == 0 ? QPrinter::GrayScale : QPrinter::Color);
+            m_printer->setColorMode(selectedChoice == u"Gray" ? QPrinter::GrayScale
+                                                              : QPrinter::Color);
 
-        if (qstrcmp(option->defchoice, selectedChoice) != 0)
-            QCUPSSupport::setCupsOption(m_printer, QString::fromLatin1(option->keyword), QString::fromLatin1(selectedChoice));
+        if (qstrcmp(option->defchoice, selectedChoice.toLatin1().constData()) != 0)
+            QCUPSSupport::setCupsOption(m_printer, QString::fromLatin1(option->keyword),
+                                        selectedChoice);
     }
 }
 

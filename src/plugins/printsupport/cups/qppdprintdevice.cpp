@@ -443,6 +443,10 @@ bool QPpdPrintDevice::isFeatureAvailable(QPrintDevice::PrintDevicePropertyKey ke
         const QStringList values = params.toStringList();
         if (values.size() == 2)
             return ppdInstallableConflict(m_ppd, values[0].toLatin1(), values[1].toLatin1());
+    } else if (key == PDPK_PpdCustomOption) {
+        const auto &values = params.toStringList();
+        if (values.size() == 1)
+            return ppdFindCustomOption(m_ppd, values[0].toLatin1()) != nullptr;
     }
 
     return QPlatformPrintDevice::isFeatureAvailable(key, params);
