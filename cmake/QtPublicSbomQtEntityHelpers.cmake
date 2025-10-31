@@ -234,9 +234,8 @@ function(_qt_internal_sbom_handle_qt_entity_cpe target)
 
     set(cpe_list "")
 
-    # Add the qt-specific CPE if the target is a Qt entity type, or if it's a 3rd party entity type
-    # without any CPE specified.
-    if(is_qt_entity_type OR (is_qt_3rd_party_entity_type AND NOT arg_CPE))
+    # Add the qt-specific CPE if the target is a Qt entity type
+    if(is_qt_entity_type)
         _qt_internal_sbom_compute_security_cpe_for_qt(cpe_list)
     endif()
 
