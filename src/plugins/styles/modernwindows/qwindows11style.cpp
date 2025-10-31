@@ -2082,6 +2082,19 @@ QRect QWindows11Style::subControlRect(ComplexControl control, const QStyleOption
         }
         break;
     }
+#if QT_CONFIG(groupbox)
+    case CC_GroupBox: {
+        ret = QWindowsVistaStyle::subControlRect(control, option, subControl, widget);
+        switch (subControl) {
+        case SC_GroupBoxCheckBox:
+            ret.moveTop(1);
+            break;
+        default:
+            break;
+        }
+        break;
+    }
+#endif // QT_CONFIG(groupbox)
     default:
         ret = QWindowsVistaStyle::subControlRect(control, option, subControl, widget);
     }
