@@ -88,7 +88,8 @@ public:
     virtual QPrint::ColorMode defaultColorMode() const;
     virtual QList<QPrint::ColorMode> supportedColorModes() const;
 
-    virtual QVariant property(QPrintDevice::PrintDevicePropertyKey key) const;
+    virtual QVariant property(QPrintDevice::PrintDevicePropertyKey key,
+                              const QVariant &params = QVariant()) const;
     virtual bool setProperty(QPrintDevice::PrintDevicePropertyKey key, const QVariant &value);
     virtual bool isFeatureAvailable(QPrintDevice::PrintDevicePropertyKey key, const QVariant &params) const;
 

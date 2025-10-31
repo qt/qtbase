@@ -328,9 +328,11 @@ void QPlatformPrintDevice::loadMimeTypes() const
 }
 #endif // mimetype
 
-QVariant QPlatformPrintDevice::property(QPrintDevice::PrintDevicePropertyKey key) const
+QVariant QPlatformPrintDevice::property(QPrintDevice::PrintDevicePropertyKey key,
+                                        const QVariant &params) const
 {
     Q_UNUSED(key);
+    Q_UNUSED(params);
 
     return QVariant();
 }

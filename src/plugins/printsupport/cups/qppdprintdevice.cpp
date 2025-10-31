@@ -408,7 +408,8 @@ QPrint::ColorMode QPpdPrintDevice::defaultColorMode() const
     return QPrint::GrayScale;
 }
 
-QVariant QPpdPrintDevice::property(QPrintDevice::PrintDevicePropertyKey key) const
+QVariant QPpdPrintDevice::property(QPrintDevice::PrintDevicePropertyKey key,
+                                   const QVariant &params) const
 {
     if (key == PDPK_PpdFile)
         return QVariant::fromValue<ppd_file_t *>(m_ppd);
@@ -420,8 +421,22 @@ QVariant QPpdPrintDevice::property(QPrintDevice::PrintDevicePropertyKey key) con
         return printerOption(QStringLiteral("job-billing"));
     else if (key == PDPK_CupsJobHoldUntil)
         return printerOption(QStringLiteral("job-hold-until"));
+    if (key == PDPK_OptionValue) {
+        const auto &values = params.toStringList();
+        if (values.size() == 1) {
+            // try to retrieve value set for the option (e.g. set in ~/.cups/lpoptions) first
+            const QString optionValue = printerOption(values.at(0));
+            if (!optionValue.isEmpty())
+                return optionValue;
+            // fall back to PPD's default value
+            ppd_option_t *option = ppdFindOption(m_ppd, values.at(0).toLatin1());
+            if (option)
+                return QString::fromLatin1(option->defchoice);
+            return QVariant();
+        }
+    }
 
-    return QPlatformPrintDevice::property(key);
+    return QPlatformPrintDevice::property(key, params);
 }
 
 bool QPpdPrintDevice::setProperty(QPrintDevice::PrintDevicePropertyKey key, const QVariant &value)

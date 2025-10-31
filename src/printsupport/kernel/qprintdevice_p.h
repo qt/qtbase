@@ -20,6 +20,7 @@
 #include "private/qprint_p.h"
 
 #include <QtCore/qsharedpointer.h>
+#include <QtCore/qvariant.h>
 #include <QtGui/qpagelayout.h>
 
 QT_BEGIN_NAMESPACE
@@ -98,7 +99,7 @@ public:
         PDPK_CustomBase = 0xff00
     };
 
-    QVariant property(PrintDevicePropertyKey key) const;
+    QVariant property(PrintDevicePropertyKey key, const QVariant &params = QVariant()) const;
     bool setProperty(PrintDevicePropertyKey key, const QVariant &value);
     bool isFeatureAvailable(PrintDevicePropertyKey key, const QVariant &params) const;
 

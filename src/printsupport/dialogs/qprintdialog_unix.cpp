@@ -437,8 +437,19 @@ bool QPrintPropertiesDialog::createAdvancedOptionsWidget()
                             widget.conflictsLabel->setVisible(anyPpdOptionConflict());
 
                             if (auto *customValueEdit = qvariant_cast<QLineEdit *>(
-                                        choicesCb->property(customValueLineEditProperty)))
-                                customValueEdit->setVisible(choice == u"Custom");
+                                        choicesCb->property(customValueLineEditProperty))) {
+                                const bool customSelected = choice == u"Custom";
+                                customValueEdit->setVisible(customSelected);
+                                if (customSelected) {
+                                    const QStringList params{ QString::fromLatin1(
+                                            option->keyword) };
+                                    QString value =
+                                            m_currentPrintDevice->property(PDPK_OptionValue, params)
+                                                    .toString();
+                                    if (value.startsWith(u"Custom."))
+                                        customValueEdit->setText(value.mid(7));
+                                }
+                            }
                         };
 
                         bool foundMarkedChoice = false;

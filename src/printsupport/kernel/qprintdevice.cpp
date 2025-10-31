@@ -210,9 +210,9 @@ QList<QPrint::ColorMode> QPrintDevice::supportedColorModes() const
     return isValid() ? d->supportedColorModes() : QList<QPrint::ColorMode>{};
 }
 
-QVariant QPrintDevice::property(PrintDevicePropertyKey key) const
+QVariant QPrintDevice::property(PrintDevicePropertyKey key, const QVariant &params) const
 {
-    return isValid() ? d->property(key) : QVariant();
+    return isValid() ? d->property(key, params) : QVariant();
 }
 
 bool QPrintDevice::setProperty(PrintDevicePropertyKey key, const QVariant &value)

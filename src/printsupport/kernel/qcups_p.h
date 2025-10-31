@@ -43,6 +43,7 @@ class QPrintDevice;
 #define PDPK_CupsJobHoldUntil QPrintDevice::PrintDevicePropertyKey(QPrintDevice::PDPK_CustomBase + 5)
 #define PDPK_PpdChoiceIsInstallableConflict QPrintDevice::PrintDevicePropertyKey(QPrintDevice::PDPK_CustomBase + 6)
 #define PDPK_PpdCustomOption  QPrintDevice::PrintDevicePropertyKey(QPrintDevice::PDPK_CustomBase + 7)
+#define PDPK_OptionValue      QPrintDevice::PrintDevicePropertyKey(QPrintDevice::PDPK_CustomBase + 8)
 
 class Q_PRINTSUPPORT_EXPORT QCUPSSupport
 {
