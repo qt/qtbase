@@ -7,14 +7,14 @@
     "Description": "D-Bus is a message bus system, a simple way for applications to talk to one another.",
     "Homepage": "https://www.freedesktop.org/wiki/Software/dbus/",
     "Version": "Minimal supported is 1.2, compatible up to ...",
-    "Version": "dbus-1.13.12",
-    "PURL": "pkg:github/d-bus/dbus@$<VERSION>",
+    "Version": "1.13.12",
+    "PURL": "pkg:github/d-bus/dbus@dbus-$<VERSION>",
+    "CPE": "cpe:2.3:a:freedesktop:dbus:$<VERSION>:*:*:*:*:*:*:*",
     "LicenseId": "AFL-2.1 OR GPL-2.0-or-later",
     "License": "Academic Free License v2.1, or GNU General Public License v2.0 or later",
     "LicenseFile": "LICENSE.LIBDBUS-1.txt",
     "Comment": "Fragments from various upstream files, see comments in ...",
     "Files": "dbus_minimal_p.h",
     "Copyright": ["Copyright (C) 2002, 2003 CodeFactory AB",
-    "Copyright (C) 2004, 2005 Red Hat, Inc."],
-    "Comment": "no relevant CPE found"
+    "Copyright (C) 2004, 2005 Red Hat, Inc."]
 }
