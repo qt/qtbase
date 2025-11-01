@@ -6,7 +6,7 @@
 function(_qt_internal_android_get_template_path out_var target template_name)
     if(template_name STREQUAL "")
         message(FATAL_ERROR "Template name is empty."
-            " This is the Qt issue, please report a bug at https://bugreports.qt.io.")
+            " This is a Qt issue, please report a bug at https://bugreports.qt.io.")
     endif()
 
     _qt_internal_android_template_dir(template_directory)
@@ -36,7 +36,7 @@ function(_qt_internal_android_get_template_path out_var target template_name)
 
     if(template_path STREQUAL "")
         message(FATAL_ERROR "'${template_name}' is not found."
-            " This is the Qt issue, please report a bug at https://bugreports.qt.io.")
+            " This is a Qt issue, please report a bug at https://bugreports.qt.io.")
     endif()
 
     set(${out_var} "${template_path}" PARENT_SCOPE)
