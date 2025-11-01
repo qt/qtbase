@@ -72,6 +72,8 @@ QT_BEGIN_NAMESPACE
 Q_GUI_EXPORT CGImageRef qt_mac_toCGImage(const QImage &qImage);
 Q_GUI_EXPORT QImage qt_mac_toQImage(CGImageRef image);
 
+Q_GUI_EXPORT QImage qt_mac_padToSquareImage(const QImage &image);
+
 Q_GUI_EXPORT void qt_mac_drawCGImage(CGContextRef inContext, const CGRect *inBounds, CGImageRef inImage);
 
 Q_GUI_EXPORT void qt_mac_clip_cg(CGContextRef hd, const QRegion &rgn, CGAffineTransform *orig_xform);

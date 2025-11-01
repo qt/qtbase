@@ -423,10 +423,22 @@ QPlatformKeyMapper *QCocoaIntegration::keyMapper() const
 
 void QCocoaIntegration::setApplicationIcon(const QIcon &icon) const
 {
-    // Fall back to a size that looks good on the highest resolution screen available
+    if (icon.isNull()) {
+        NSApp.applicationIconImage = nil;
+        return;
+    }
+
+    // Request a size that looks good on the highest resolution screen available
     // for icon engines that don't have an intrinsic size (like SVG).
-    auto fallbackSize = QSizeF::fromCGSize(NSApp.dockTile.size) * qGuiApp->devicePixelRatio();
-    NSApp.applicationIconImage = [NSImage imageFromQIcon:icon withSize:fallbackSize.toSize()];
+    const auto dockTitleSize = QSizeF::fromCGSize(NSApp.dockTile.size).toSize();
+    auto image = icon.pixmap(dockTitleSize, qGuiApp->devicePixelRatio()).toImage();
+
+    // The assigned image is scaled by the system to fit into the tile,
+    // but without taking aspect ratio into account, so let's pad the
+    // image up front if it's not already square.
+    image = qt_mac_padToSquareImage(image);
+
+    NSApp.applicationIconImage = [NSImage imageFromQImage:image];
 }
 
 void QCocoaIntegration::setApplicationBadge(qint64 number)

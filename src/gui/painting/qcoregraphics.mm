@@ -89,6 +89,26 @@ QImage qt_mac_toQImage(CGImageRef image)
     return ret;
 }
 
+QImage qt_mac_padToSquareImage(const QImage &image)
+{
+    if (image.width() == image.height())
+        return image;
+
+    const int size = std::max(image.width(), image.height());
+    QImage squareImage(size, size, image.format());
+    squareImage.setDevicePixelRatio(image.devicePixelRatio());
+    squareImage.fill(Qt::transparent);
+
+    QPoint pos((size - image.width()) / (2.0 * image.devicePixelRatio()),
+               (size - image.height()) / (2.0 * image.devicePixelRatio()));
+
+    QPainter painter(&squareImage);
+    painter.drawImage(pos, image);
+    painter.end();
+
+    return squareImage;
+}
+
 #ifdef Q_OS_MACOS
 
 QT_END_NAMESPACE
