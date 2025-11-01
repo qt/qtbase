@@ -205,7 +205,17 @@ void QCocoaSystemTrayIcon::showMessage(const QString &title, const QString &mess
     auto *notification = [[NSUserNotification alloc] init];
     notification.title = title.toNSString();
     notification.informativeText = message.toNSString();
-    notification.contentImage = [NSImage imageFromQIcon:icon];
+
+    // Request a size that looks good on the highest resolution screen available
+    // for icon engines that don't have an intrinsic size (like SVG).
+    auto image = icon.pixmap(QSize(64, 64), qGuiApp->devicePixelRatio()).toImage();
+
+    // The assigned image is scaled by the system to fit into the tile,
+    // but without taking aspect ratio into account, so let's pad the
+    // image up front if it's not already square.
+    image = qt_mac_padToSquareImage(image);
+
+    notification.contentImage = [NSImage imageFromQImage:image];
 
     NSUserNotificationCenter *center = NSUserNotificationCenter.defaultUserNotificationCenter;
     center.delegate = m_delegate;
