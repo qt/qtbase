@@ -1202,10 +1202,10 @@ void tst_QTimer::singleShotDestructionBeforeEventDispatcher()
     // would be deleted by the QObject destructor, which is too late to
     // unregister the timer.
 
-    auto thr = QThread::create([] {
+    std::unique_ptr<QThread> thr{QThread::create([] {
         QObject o;
         QTimer::singleShot(300s, &o, [] {});
-    });
+    })};
     thr->start();
     thr->wait();
 }
