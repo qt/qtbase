@@ -326,7 +326,7 @@ void tst_QChronoTimer::remainingTimeDuringActivation()
 
     if (!singleShot) {
         // do it again - see QTBUG-46940
-        remainingTime = std::chrono::milliseconds::min();
+        remainingTime = std::chrono::nanoseconds::min();
         QVERIFY(timeoutSpy.wait());
         QCOMPARE_LE(remainingTime, timeout);
         QCOMPARE_GT(remainingTime, 0ns);
