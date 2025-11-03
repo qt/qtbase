@@ -108,5 +108,6 @@ foreach(format_case IN LISTS format_cases)
     run_cmake_and_build(full "${format_case}")
     run_cmake_and_build(versions "${format_case}")
     run_cmake_and_build(target_relationships "${format_case}")
+    run_cmake_and_build(project_relationships "${format_case}")
 endforeach()
 
