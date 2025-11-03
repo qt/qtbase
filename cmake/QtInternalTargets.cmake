@@ -24,10 +24,6 @@ function(qt_internal_set_warnings_are_errors_flags target target_scope)
                     OPTIONS
                     -Werror -Wno-error=\#warnings -Wno-error=deprecated-declarations
             COMPILERS CLANG
-                CONDITIONS VERSION_GREATER_EQUAL 10
-                    OPTIONS
-                    # We do mixed enum arithmetic all over the place:
-                    -Wno-error=deprecated-enum-enum-conversion
                 CONDITIONS VERSION_GREATER_EQUAL 14
                     OPTIONS
                     # Clang 14 introduced these two but we are not clean for it.
@@ -61,9 +57,6 @@ function(qt_internal_set_warnings_are_errors_flags target target_scope)
                     OPTIONS
                     # Ditto
                     -Wno-error=stringop-overread
-                    # We do mixed enum arithmetic all over the place:
-                    -Wno-error=deprecated-enum-enum-conversion
-                    -Wno-error=deprecated-enum-float-conversion
                 CONDITIONS VERSION_GREATER_EQUAL 11.0 AND VERSION_LESS 11.2
                     OPTIONS
                     # GCC 11.1 has a regression in the integrated preprocessor, so disable it as a
