@@ -240,7 +240,9 @@ function(_qt_internal_sbom_create_sbom_staging_file)
         REPO_PROJECT_NAME_LOWERCASE
         SBOM_DIR
     )
-    set(multi_args "")
+    set(multi_args
+        RELATIONSHIP_STRINGS
+    )
     cmake_parse_arguments(PARSE_ARGV 0 arg "${opt_args}" "${single_args}" "${multi_args}")
     _qt_internal_validate_all_args_are_parsed(arg)
 
@@ -258,6 +260,14 @@ function(_qt_internal_sbom_create_sbom_staging_file)
 ")
         _qt_internal_get_staging_area_spdx_file_path(staging_area_file)
         set(starting_message "Starting SPDX SBOM generation in build dir: ${staging_area_file}")
+        set(extra_intro_content "")
+        set(project_relationship_strings "")
+        if(arg_RELATIONSHIP_STRINGS)
+            list(JOIN arg_RELATIONSHIP_STRINGS "\n" arg_RELATIONSHIP_STRINGS)
+
+            # Prepend a newline to separate from the very first always there relationship.
+            string(APPEND extra_intro_content "\n${arg_RELATIONSHIP_STRINGS}")
+        endif()
     elseif(arg_SBOM_FORMAT STREQUAL "CYDX_V1_6")
         set(doc_base_name "cydx-document")
         set(doc_extension "cdx.in.toml")
@@ -266,11 +276,34 @@ function(_qt_internal_sbom_create_sbom_staging_file)
         _qt_internal_get_staging_area_cydx_file_path(staging_area_file)
         set(starting_message
             "Starting CycloneDX SBOM TOML file generation in build dir: ${staging_area_file}")
+        set(extra_intro_content "")
+
+        if(arg_RELATIONSHIP_STRINGS)
+            list(JOIN arg_RELATIONSHIP_STRINGS "\n" arg_RELATIONSHIP_STRINGS)
+            set(project_relationship_strings "${arg_RELATIONSHIP_STRINGS}")
+        else()
+            set(project_relationship_strings "")
+        endif()
     endif()
 
+    # Assemble final intro content.
     get_property(intro_content GLOBAL PROPERTY _qt_sbom_project_intro_content${suffix})
     if(NOT intro_content)
         message(FATAL_ERROR "Missing intro content for SBOM generation.")
+    endif()
+
+    if(arg_SBOM_FORMAT STREQUAL "CYDX_V1_6")
+        string(REPLACE "<PROJECT_RELATIONSHIP_PLACEHOLDER>" "${project_relationship_strings}"
+            intro_content "${intro_content}")
+    endif()
+
+    if(extra_intro_content)
+        string(APPEND intro_content "${extra_intro_content}")
+    endif()
+
+    # Final new line to separate the main package from rest of info.
+    if(arg_SBOM_FORMAT STREQUAL "SPDX_V2")
+        string(APPEND intro_content "\n")
     endif()
 
     # Generate project document intro file.

@@ -34,7 +34,9 @@ endfunction()
 # Parses a relationship entry and outputs an appropriately formatted relationship string.
 # FROM and TO should list target names enriched with sbom info.
 function(_qt_internal_sbom_serialize_sbom_relationship_entry)
-    set(opt_args "")
+    set(opt_args
+        ESCAPE_CYDX_QUOTES
+    )
     set(single_args
         SBOM_RELATIONSHIP_FROM
         SBOM_RELATIONSHIP_TYPE
@@ -161,6 +163,13 @@ function(_qt_internal_sbom_serialize_sbom_relationship_entry)
         if(arg_CYDX_TOML_KEY)
             set(cydx_toml_key "${arg_CYDX_TOML_KEY}")
         endif()
+
+        if(arg_ESCAPE_CYDX_QUOTES)
+            set(quote "\\\"")
+        else()
+            set(quote "\"")
+        endif()
+
         set(cydx_relationship_list "")
         foreach(relationship_to IN LISTS arg_SBOM_RELATIONSHIP_TO)
             _qt_internal_sbom_get_spdx_id_for_target_in_relationship(to_spdx_id
@@ -170,10 +179,10 @@ function(_qt_internal_sbom_serialize_sbom_relationship_entry)
 
             list(APPEND cydx_relationship_list "
 [[${cydx_toml_key}relationships]]
-relationship_from = \\\"${from_spdx_id}\\\"
-relationship_type = \\\"${arg_SBOM_RELATIONSHIP_TYPE}\\\"
-relationship_to = \\\"${to_spdx_id}\\\"
-relationship_comment = \\\"${arg_SBOM_RELATIONSHIP_COMMENT}\\\"
+relationship_from = ${quote}${from_spdx_id}${quote}
+relationship_type = ${quote}${arg_SBOM_RELATIONSHIP_TYPE}${quote}
+relationship_to = ${quote}${to_spdx_id}${quote}
+relationship_comment = ${quote}${arg_SBOM_RELATIONSHIP_COMMENT}${quote}
 ")
         endforeach()
 
@@ -269,8 +278,12 @@ endfunction()
 
 
 # Processes a list of relationships entries and outputs a list of strings.
+# ESCAPE_CYDX_QUOTES needs to be passed when the output is meant to be used in a
+# file(APPEND staging_area_spdx_file block.
 function(_qt_internal_sbom_serialize_relationship_entries)
-    set(opt_args "")
+    set(opt_args
+        ESCAPE_CYDX_QUOTES
+    )
     set(single_args
         OUTPUT_SBOM_FORMAT
         CYDX_TOML_KEY
@@ -311,6 +324,9 @@ function(_qt_internal_sbom_serialize_relationship_entries)
     set(extra_entry_args "")
     if(arg_CYDX_TOML_KEY)
         list(APPEND extra_entry_args CYDX_TOML_KEY "${arg_CYDX_TOML_KEY}")
+    endif()
+    if(arg_ESCAPE_CYDX_QUOTES)
+        list(APPEND extra_entry_args ESCAPE_CYDX_QUOTES)
     endif()
 
     foreach(entry_idx IN LISTS entry_indices)
@@ -415,4 +431,72 @@ function(_qt_internal_sbom_handle_target_relationships target)
 
     set(${arg_OUT_VAR_SBOM_RELATIONSHIP_ENTRIES} "${sbom_relationship_entries}" PARENT_SCOPE)
     set(${arg_OUT_VAR_SPDX_V2_RELATIONSHIPS} "${spdx_relationships}" PARENT_SCOPE)
+endfunction()
+
+function(_qt_internal_sbom_get_current_project_relationships out_var)
+    set(opt_args "")
+    set(single_args "")
+    set(multi_args
+        SBOM_RELATIONSHIP_ENTRIES
+    )
+    cmake_parse_arguments(PARSE_ARGV 1 arg "${opt_args}" "${single_args}" "${multi_args}")
+    # No validation on purpose, there might be more options set.
+
+    set(values "")
+    if(arg_SBOM_RELATIONSHIP_ENTRIES)
+        set(values ${arg_SBOM_RELATIONSHIP_ENTRIES})
+    endif()
+
+    set(${out_var} "${values}" PARENT_SCOPE)
+endfunction()
+
+# Collects relationships for the currently active project, and serializes them for each supported
+# format.
+function(_qt_internal_sbom_handle_project_relationships)
+    set(opt_args "")
+    set(single_args
+        OUTPUT_SBOM_FORMAT
+        OUT_VAR_RELATIONSHIP_STRINGS
+    )
+    set(multi_args "")
+    cmake_parse_arguments(PARSE_ARGV 0 arg "${opt_args}" "${single_args}" "${multi_args}")
+    _qt_internal_validate_all_args_are_parsed(arg)
+
+    if(NOT arg_OUTPUT_SBOM_FORMAT)
+        message(FATAL_ERROR "OUTPUT_SBOM_FORMAT is required.")
+    endif()
+
+    if(NOT arg_OUT_VAR_RELATIONSHIP_STRINGS)
+        message(FATAL_ERROR "OUT_VAR_RELATIONSHIP_STRINGS is required.")
+    endif()
+
+    _qt_internal_sbom_get_current_project_target(project_target)
+
+    get_target_property(project_finalize_args "${project_target}" _qt_finalize_sbom_args)
+    if(NOT project_finalize_args)
+        set(project_finalize_args "")
+    endif()
+
+    _qt_internal_sbom_get_current_project_relationships(entries
+        ${project_finalize_args}
+    )
+
+    if(NOT entries)
+        set(${arg_OUT_VAR_RELATIONSHIP_STRINGS} "" PARENT_SCOPE)
+        return()
+    endif()
+
+    set(relationship_entries_args "")
+    if(arg_OUTPUT_SBOM_FORMAT MATCHES "CYDX")
+        list(APPEND relationship_entries_args CYDX_TOML_KEY "root_component.")
+    endif()
+
+    _qt_internal_sbom_serialize_relationship_entries(
+        ${relationship_entries_args}
+        OUTPUT_SBOM_FORMAT "${arg_OUTPUT_SBOM_FORMAT}"
+        OUT_VAR_RELATIONSHIPS_STRINGS relationships_strings
+        SBOM_RELATIONSHIP_ENTRIES ${entries}
+    )
+
+    set(${arg_OUT_VAR_RELATIONSHIP_STRINGS} "${relationships_strings}" PARENT_SCOPE)
 endfunction()

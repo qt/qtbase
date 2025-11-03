@@ -2349,6 +2349,12 @@ function(_qt_internal_sbom_get_spdx_id_for_target target out_var)
     set(${out_var} "${spdx_id}" PARENT_SCOPE)
 endfunction()
 
+# Retrieves a saved spdx id for the current project. Might be empty.
+function(_qt_internal_sbom_get_current_project_spdx_id out_var)
+    get_cmake_property(spdx_id _qt_internal_sbom_project_spdx_id)
+    set(${out_var} "${spdx_id}" PARENT_SCOPE)
+endfunction()
+
 # Returns a package infix for a given target sbom type to be used in spdx package id generation.
 function(_qt_internal_sbom_get_package_infix type out_infix)
     if(type STREQUAL "QT_MODULE")
