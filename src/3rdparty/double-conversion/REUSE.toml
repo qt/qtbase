@@ -1,7 +1,7 @@
 version = 1
 
 [[annotations]]
-path = ["double-conversion/*"]
+path = ["double-conversion/*", "0001-fix-decimal_point-initialization-to-suppress-warning.patch"]
 precedence = "closest"
 SPDX-FileCopyrightText = "Copyright 2006-2012, the V8 project authors"
 SPDX-License-Identifier = "BSD-3-Clause"

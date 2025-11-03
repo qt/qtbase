@@ -1,0 +1,40 @@
+From c75f7f48c8a3d9c6aaaeb13a48fb3c051b46ccab Mon Sep 17 00:00:00 2001
+From: Ivan Solovev <ivan.solovev@qt.io>
+Date: Mon, 3 Nov 2025 12:33:26 +0100
+Subject: [PATCH] fix decimal_point initialization to suppress warnings in GCC
+ 14
+
+This patch was submitted upstream as [0], but there was no new release
+yet.
+
+[0]: https://github.com/google/double-conversion/commit/4aecc844c566d84a939fc35f4e62d58bd693f18d
+
+Change-Id: I97cc3103ff758f4c65b23d2f4c0fd82932e36df7
+---
+ .../double-conversion/double-conversion/double-to-string.cc    | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/src/3rdparty/double-conversion/double-conversion/double-to-string.cc b/src/3rdparty/double-conversion/double-conversion/double-to-string.cc
+index 215eaa96d47..9ea3d18d5f7 100644
+--- a/src/3rdparty/double-conversion/double-conversion/double-to-string.cc
++++ b/src/3rdparty/double-conversion/double-conversion/double-to-string.cc
+@@ -180,7 +180,7 @@ bool DoubleToStringConverter::ToShortestIeeeNumber(
+     return HandleSpecialValues(value, result_builder);
+   }
+ 
+-  int decimal_point;
++  int decimal_point = 0;
+   bool sign;
+   const int kDecimalRepCapacity = kBase10MaximalLength + 1;
+   char decimal_rep[kDecimalRepCapacity];
+@@ -405,6 +405,7 @@ void DoubleToStringConverter::DoubleToAscii(double v,
+   if (mode == PRECISION && requested_digits == 0) {
+     vector[0] = '\0';
+     *length = 0;
++    *point = 0;
+     return;
+   }
+ 
+-- 
+2.44.0
+
