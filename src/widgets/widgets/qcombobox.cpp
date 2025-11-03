@@ -57,6 +57,56 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
+//
+// QComboBoxListView
+//
+
+QComboBoxListView::QComboBoxListView(QComboBox *cmb) : combo(cmb)
+{
+    if (cmb)
+        setScreen(cmb->screen());
+}
+
+QComboBoxListView::~QComboBoxListView()
+    = default;
+
+void QComboBoxListView::resizeEvent(QResizeEvent *event)
+{
+    resizeContents(viewport()->width(), contentsSize().height());
+    QListView::resizeEvent(event);
+}
+
+void QComboBoxListView::initViewItemOption(QStyleOptionViewItem *option) const
+{
+    QListView::initViewItemOption(option);
+    option->showDecorationSelected = true;
+    if (combo)
+        option->font = combo->font();
+}
+
+void QComboBoxListView::paintEvent(QPaintEvent *e)
+{
+    if (combo) {
+        QStyleOptionComboBox opt;
+        opt.initFrom(combo);
+        opt.editable = combo->isEditable();
+        if (combo->style()->styleHint(QStyle::SH_ComboBox_Popup, &opt, combo)) {
+            //we paint the empty menu area to avoid having blank space that can happen when scrolling
+            QStyleOptionMenuItem menuOpt;
+            menuOpt.initFrom(this);
+            menuOpt.palette = palette();
+            menuOpt.state = QStyle::State_None;
+            menuOpt.checkType = QStyleOptionMenuItem::NotCheckable;
+            menuOpt.menuRect = e->rect();
+            menuOpt.maxIconWidth = 0;
+            menuOpt.reservedShortcutWidth = 0;
+            QPainter p(viewport());
+            combo->style()->drawControl(QStyle::CE_MenuEmptyArea, &menuOpt, &p, this);
+        }
+    }
+    QListView::paintEvent(e);
+}
+
 QComboBoxPrivate::QComboBoxPrivate()
     : QWidgetPrivate(),
       shownOnce(false),
