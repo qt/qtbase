@@ -890,8 +890,11 @@ QTimeZonePrivate::findLongNamePrefix(QStringView text, const QLocale &locale,
     if (best.ianaIdIndex != invalidIanaId)
         return { QByteArray(ianaIdData + best.ianaIdIndex), best.nameLength, best.timeType };
 
-    // Now try for a region format:
-    best = {};
+    // Now try for a region format.
+    // Since we may get the IANA ID directly from a zone, we may not need an
+    // ianaIdIndex from CLDR-derived tables: and the active backend may know
+    // some zones newer than our latest CLDR.
+    NamePrefixMatch found;
     for (const qsizetype locInd : indices) {
         const LocaleZoneData &locData = localeZoneData[locInd];
         const LocaleZoneData &nextData = localeZoneData[locInd + 1];
@@ -927,11 +930,11 @@ QTimeZonePrivate::findLongNamePrefix(QStringView text, const QLocale &locale,
                 QStringView city = row.exemplarCity().viewData(exemplarCityTable);
                 if (textMatches(city)) {
                     qsizetype length = cut + city.size() + suffix.size();
-                    if (length > best.nameLength) {
-                        bool gotZone = row.ianaIdIndex == best.ianaIdIndex
+                    if (length > found.nameLength) {
+                        bool gotZone = row.ianaId() == found.ianaId // (cheap pre-test)
                             || QTimeZone::isTimeZoneIdAvailable(row.ianaId().toByteArray());
                         if (gotZone)
-                            best = { length, timeType, row.ianaIdIndex };
+                            found = { row.ianaId().toByteArray(), length, timeType };
                     }
                 }
             }
@@ -944,36 +947,17 @@ QTimeZonePrivate::findLongNamePrefix(QStringView text, const QLocale &locale,
                 QString city = QString::fromLatin1(local.replace('_', ' '));
                 if (textMatches(city)) {
                     qsizetype length = cut + city.size() + suffix.size();
-                    if (length > best.nameLength) {
-                        // Have to find iana in ianaIdData. Although its entries
-                        // from locale-independent data are nicely sorted, the
-                        // rest are (sadly) not.
-                        QByteArrayView run(ianaIdData, qstrlen(ianaIdData));
-                        // std::size includes the trailing '\0', so subtract one:
-                        const char *stop = ianaIdData + std::size(ianaIdData) - 1;
-                        while (run != iana) {
-                            if (run.end() < stop) { // Step to the next:
-                                run = QByteArrayView(run.end() + 1);
-                            } else {
-                                run = QByteArrayView();
-                                break;
-                            }
-                        }
-                        if (!run.isEmpty()) {
-                            Q_ASSERT(run == iana);
-                            const auto ianaIdIndex = run.begin() - ianaIdData;
-                            Q_ASSERT(ianaIdIndex <= (std::numeric_limits<quint16>::max)());
-                            best = { length, timeType, quint16(ianaIdIndex) };
-                        }
-                    }
+                    if (length > found.nameLength)
+                        found = { iana, length, timeType };
                 }
             }
             // TODO: similar for territories, at least once localeName() does so.
         }
     }
-    if (best.ianaIdIndex != invalidIanaId)
-        return { QByteArray(ianaIdData + best.ianaIdIndex), best.nameLength, best.timeType };
 #undef localeRows
+
+    if (found.nameLength > 0)
+        return found;
 
     // (We don't want offset format to match 'tttt', so do need to limit this.)
     // The final fall-back for localeName() is a zoneOffsetFormat(,,NarrowFormat,,):

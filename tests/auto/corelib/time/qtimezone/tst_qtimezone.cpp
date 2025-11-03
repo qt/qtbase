@@ -1885,12 +1885,13 @@ void tst_QTimeZone::roundtripDisplayNames_data()
 #else
     const QList<QByteArray> idList = {
         "Africa/Casablanca"_ba, "Africa/Lagos"_ba, "Africa/Tunis"_ba,
-        "America/Caracas"_ba, "America/Indiana/Tell_City"_ba, "America/Managua"_ba,
+        "America/Caracas"_ba, "America/Coyhaique"_ba,
+        "America/Indiana/Tell_City"_ba, "America/Managua"_ba,
         "Asia/Bangkok"_ba, "Asia/Colombo"_ba, "Asia/Tokyo"_ba,
         "Atlantic/Bermuda"_ba, "Atlantic/Faroe"_ba, "Atlantic/Madeira"_ba,
         "Australia/Broken_Hill"_ba, "Australia/NSW"_ba, "Australia/Tasmania"_ba,
-        "Brazil/Acre"_ba, "CST6CDT"_ba, "Canada/Atlantic"_ba,
-        "Chile/EasterIsland"_ba, "Etc/Greenwich"_ba, "Etc/Universal"_ba,
+        "Brazil/Acre"_ba, "Canada/Atlantic"_ba, "Chile/EasterIsland"_ba,
+        "CST6CDT"_ba, "Etc/Greenwich"_ba, "Etc/Universal"_ba,
         "Europe/Guernsey"_ba, "Europe/Kaliningrad"_ba, "Europe/Kyiv"_ba,
         "Europe/Prague"_ba, "Europe/Vatican"_ba,
         "Indian/Comoro"_ba, "Mexico/BajaSur"_ba,
@@ -1904,7 +1905,7 @@ void tst_QTimeZone::roundtripDisplayNames_data()
         "America/New_York"_ba, "America/Sao_Paulo"_ba, "America/Vancouver"_ba,
         "Asia/Kathmandu"_ba, "Asia/Singapore"_ba,
         "Australia/Brisbane"_ba, "Australia/Eucla"_ba, "Australia/Sydney"_ba,
-        "Europe/Berlin"_ba, "Europe/Helsinki"_ba, "Europe/Rome"_ba, "Europe/Oslo"_ba,
+        "Europe/Berlin"_ba, "Europe/Helsinki"_ba, "Europe/Oslo"_ba, "Europe/Rome"_ba,
         "Pacific/Apia"_ba, "Pacific/Auckland"_ba, "Pacific/Kiritimati"_ba,
         "Vulcan/ShiKahr"_ba // Invalid: also worth testing.
     };
