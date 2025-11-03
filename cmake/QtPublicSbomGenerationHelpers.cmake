@@ -707,7 +707,6 @@ function(_qt_internal_sbom_generate_add_package)
         LICENSE_CONCLUDED
         COPYRIGHT
         DOWNLOAD_LOCATION
-        RELATIONSHIP
         SPDXID
         SUPPLIER
         PURPOSE
@@ -716,6 +715,8 @@ function(_qt_internal_sbom_generate_add_package)
     set(multi_args
         EXTREF
         CPE
+        RELATIONSHIPS # Deprecated, SBOM_RELATIONSHIP_ENTRIES is preferred
+        SBOM_RELATIONSHIP_ENTRIES
     )
     cmake_parse_arguments(PARSE_ARGV 0 arg "${opt_args}" "${single_args}" "${multi_args}")
     _qt_internal_validate_all_args_are_parsed(arg)
@@ -805,11 +806,32 @@ ExternalRef: SECURITY cpe23Type ${cpe}"
     if(NOT sbom_project_spdx_id)
         message(FATAL_ERROR "Call _qt_internal_sbom_begin_project() first")
     endif()
-    if(NOT arg_RELATIONSHIP)
-        set(arg_RELATIONSHIP "${sbom_project_spdx_id} CONTAINS ${arg_SPDXID}")
-    else()
-        string(REPLACE "@QT_SBOM_LAST_SPDXID@" "${arg_SPDXID}" arg_RELATIONSHIP "${arg_RELATIONSHIP}")
+
+    set(relationship_strings "")
+    if(arg_SBOM_RELATIONSHIP_ENTRIES)
+        _qt_internal_sbom_serialize_relationship_entries(
+            OUTPUT_SBOM_FORMAT "SPDX_V2"
+            OUT_VAR_RELATIONSHIPS_STRINGS entries_relationships_strings
+            SBOM_RELATIONSHIP_ENTRIES ${arg_SBOM_RELATIONSHIP_ENTRIES}
+        )
+        if(entries_relationships_strings)
+            list(APPEND relationship_strings ${entries_relationships_strings})
+        endif()
     endif()
+
+    # TODO: This is deprecated, SBOM_RELATIONSHIP_ENTRIES is preferred, remove it once qtwebengine
+    # is ported over.
+    if(arg_RELATIONSHIPS)
+        string(REPLACE
+            "@QT_SBOM_LAST_SPDXID@" "${arg_SPDXID}" arg_RELATIONSHIPS "${arg_RELATIONSHIPS}")
+        list(APPEND relationship_strings ${arg_RELATIONSHIPS})
+    endif()
+
+    # Remove duplicates, because apparently we sometimes get them for some system libraries.
+    list(REMOVE_DUPLICATES relationship_strings)
+
+    list(JOIN relationship_strings "\n" relationships_str)
+    string(PREPEND relationships_str "\n")
 
     set(fields "${fields}\\\${QT_SBOM_VERIFICATION_CODE_${arg_SPDXID}}")
 
@@ -827,8 +849,7 @@ SPDXID: ${arg_SPDXID}
 PackageDownloadLocation: ${arg_DOWNLOAD_LOCATION}
 PackageVersion: ${arg_VERSION}
 PackageSupplier: ${arg_SUPPLIER}${fields}
-FilesAnalyzed: \\\${QT_SBOM_PACKAGE_HAS_FILES_${arg_SPDXID}}
-Relationship: ${arg_RELATIONSHIP}
+FilesAnalyzed: \\\${QT_SBOM_PACKAGE_HAS_FILES_${arg_SPDXID}}${relationships_str}
 \"
         )
 ")

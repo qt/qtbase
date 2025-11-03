@@ -994,6 +994,9 @@ macro(_qt_internal_get_sbom_add_target_common_options opt_args single_args multi
         ATTRIBUTION_FILE_PATHS
         ATTRIBUTION_FILE_DIR_PATHS
         ATTRIBUTION_IDS
+        SBOM_RELATIONSHIP_ENTRIES
+        # deprecated, previously used for SPDX v2 string-ified relationships
+        # still used by WebEngine.
         SBOM_RELATIONSHIPS
     )
 
@@ -1489,35 +1492,34 @@ function(_qt_internal_sbom_add_target target)
         list(APPEND project_package_options_cydx COMMENT "\n${package_comment}")
     endif()
 
-    _qt_internal_sbom_handle_target_dependencies("${target}"
-        SPDX_ID "${package_spdx_id}"
-        LIBRARIES "${arg_LIBRARIES}"
-        PUBLIC_LIBRARIES "${arg_PUBLIC_LIBRARIES}"
-        OUT_CYDX_DEPENDENCIES cydx_dependencies
-        OUT_SPDX_RELATIONSHIPS spdx_relationships
-        OUT_EXTERNAL_TARGET_DEPENDENCIES external_target_dependencies
-    )
-    if(cydx_dependencies)
-        list(APPEND project_package_options_cydx DEPENDENCIES ${cydx_dependencies})
-    endif()
-
-    # These are processed at the end of document generation.
-    if(external_target_dependencies)
-        _qt_internal_sbom_record_external_target_dependecies(
-            TARGETS ${external_target_dependencies}
-        )
-    endif()
-
     get_cmake_property(project_spdx_id _qt_internal_sbom_project_spdx_id)
-    list(APPEND spdx_relationships "${project_spdx_id} CONTAINS ${package_spdx_id}")
 
-    if(arg_SBOM_RELATIONSHIPS)
-        list(APPEND spdx_relationships "${arg_SBOM_RELATIONSHIPS}")
+    _qt_internal_forward_function_args(
+        FORWARD_PREFIX arg
+        FORWARD_OUT_VAR relationship_args
+        FORWARD_MULTI
+            LIBRARIES
+            PUBLIC_LIBRARIES
+            SBOM_RELATIONSHIP_ENTRIES
+            SBOM_RELATIONSHIPS # deprecated, still used by WebEngine
+    )
+
+    _qt_internal_sbom_handle_target_relationships("${target}"
+        SPDX_ID "${package_spdx_id}"
+        PROJECT_SPDX_ID "${project_spdx_id}"
+        ${relationship_args}
+        OUT_VAR_SBOM_RELATIONSHIP_ENTRIES sbom_relationship_entries
+        OUT_VAR_SPDX_V2_RELATIONSHIPS spdx_relationships # deprecated, still used by WebEngine
+    )
+    if(sbom_relationship_entries)
+        list(APPEND project_package_options_cydx
+            SBOM_RELATIONSHIP_ENTRIES ${sbom_relationship_entries})
+        list(APPEND project_package_options_spdx
+            SBOM_RELATIONSHIP_ENTRIES ${sbom_relationship_entries})
     endif()
-
-    list(REMOVE_DUPLICATES spdx_relationships)
-    list(JOIN spdx_relationships "\nRelationship: " relationships)
-    list(APPEND project_package_options_spdx RELATIONSHIP "${relationships}")
+    if(spdx_relationships)
+        list(APPEND project_package_options_spdx RELATIONSHIPS ${spdx_relationships})
+    endif()
 
     if(QT_SBOM_GENERATE_SPDX_V2)
         _qt_internal_sbom_generate_add_package(
