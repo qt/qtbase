@@ -125,6 +125,34 @@ QComboBoxPrivate::~QComboBoxPrivate()
 #endif
 }
 
+//
+// QComboMenuDelegate
+//
+
+QComboMenuDelegate::QComboMenuDelegate(QObject *parent, QComboBox *cmb)
+    : QAbstractItemDelegate(parent), mCombo(cmb), pressedIndex(-1)
+{
+}
+
+QComboMenuDelegate::~QComboMenuDelegate()
+    = default;
+
+void QComboMenuDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option,
+                               const QModelIndex &index) const
+{
+    const QStyleOptionMenuItem opt = getStyleOption(option, index);
+    painter->fillRect(option.rect, opt.palette.window());
+    mCombo->style()->drawControl(QStyle::CE_MenuItem, &opt, painter, mCombo);
+}
+
+QSize QComboMenuDelegate::sizeHint(const QStyleOptionViewItem &option,
+                                   const QModelIndex &index) const
+{
+    const QStyleOptionMenuItem opt = getStyleOption(option, index);
+    return mCombo->style()->sizeFromContents(QStyle::CT_MenuItem, &opt,
+                                             option.rect.size(), mCombo);
+}
+
 QStyleOptionMenuItem QComboMenuDelegate::getStyleOption(const QStyleOptionViewItem &option,
                                                         const QModelIndex &index) const
 {

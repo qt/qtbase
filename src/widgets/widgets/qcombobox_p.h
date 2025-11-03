@@ -198,24 +198,15 @@ class Q_AUTOTEST_EXPORT QComboMenuDelegate : public QAbstractItemDelegate
 {
     Q_OBJECT
 public:
-    QComboMenuDelegate(QObject *parent, QComboBox *cmb)
-    : QAbstractItemDelegate(parent), mCombo(cmb), pressedIndex(-1)
-    {}
+    explicit QComboMenuDelegate(QObject *parent, QComboBox *cmb);
+    ~QComboMenuDelegate() override;
 
 protected:
     void paint(QPainter *painter,
                const QStyleOptionViewItem &option,
-               const QModelIndex &index) const override {
-        QStyleOptionMenuItem opt = getStyleOption(option, index);
-        painter->fillRect(option.rect, opt.palette.window());
-        mCombo->style()->drawControl(QStyle::CE_MenuItem, &opt, painter, mCombo);
-    }
+               const QModelIndex &index) const override;
     QSize sizeHint(const QStyleOptionViewItem &option,
-                   const QModelIndex &index) const override {
-        QStyleOptionMenuItem opt = getStyleOption(option, index);
-        return mCombo->style()->sizeFromContents(
-            QStyle::CT_MenuItem, &opt, option.rect.size(), mCombo);
-    }
+                   const QModelIndex &index) const override;
     bool editorEvent(QEvent *event, QAbstractItemModel *model,
                      const QStyleOptionViewItem &option, const QModelIndex &index) override;
 
