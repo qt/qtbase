@@ -2984,8 +2984,6 @@ void QFusionStyle::polish(QWidget *widget)
 #if QT_CONFIG(spinbox)
             || qobject_cast<QAbstractSpinBox *>(widget)
 #endif
-            || (widget->inherits("QDockSeparator"))
-            || (widget->inherits("QDockWidgetSeparator"))
             ) {
         widget->setAttribute(Qt::WA_Hover, true);
         widget->setAttribute(Qt::WA_OpaquePaintEvent, false);
@@ -3028,8 +3026,6 @@ void QFusionStyle::unpolish(QWidget *widget)
 #if QT_CONFIG(spinbox)
             || qobject_cast<QAbstractSpinBox *>(widget)
 #endif
-            || (widget->inherits("QDockSeparator"))
-            || (widget->inherits("QDockWidgetSeparator"))
             ) {
         widget->setAttribute(Qt::WA_Hover, false);
     }
