@@ -4,16 +4,14 @@
 # Walks a target's direct dependencies and assembles a list of relationships between the packages
 # of the target dependencies.
 # Currently handles various Qt targets and system libraries.
-# For SPDX documents, it collects the relationships in OUT_SPDX_RELATIONSHIPS.
-# For CYDX documents, it collects the dependencies (not relationship info) in OUT_CYDX_DEPENDENCIES.
+# Collects the relationships in OUT_SBOM_RELATIONSHIP_ENTRIES.
 # If a CYDX dependency is in an external docuemnt, the dependency is added to
-# OUT_EXTERNAL_TARGET_DEPENDENCIES instead.
+# OUT_EXTERNAL_TARGET_DEPENDENCIES as well.
 function(_qt_internal_sbom_handle_target_dependencies target)
     set(opt_args "")
     set(single_args
         SPDX_ID
-        OUT_CYDX_DEPENDENCIES
-        OUT_SPDX_RELATIONSHIPS
+        OUT_SBOM_RELATIONSHIP_ENTRIES
         OUT_EXTERNAL_TARGET_DEPENDENCIES
     )
     set(multi_args
@@ -81,11 +79,8 @@ function(_qt_internal_sbom_handle_target_dependencies target)
     set(all_direct_libraries ${libraries} ${public_libraries} ${sbom_dependencies})
     list(REMOVE_DUPLICATES all_direct_libraries)
 
-    set(regular_cydx_dependencies "")
-    set(regular_spdx_dependencies "")
-
-    set(external_cydx_dependencies "")
-    set(external_spdx_dependencies "")
+    set(regular_relationship_entries "")
+    set(external_relationship_entries "")
     set(external_target_dependencies "")
 
     # Go through each direct linked lib.
@@ -114,12 +109,19 @@ function(_qt_internal_sbom_handle_target_dependencies target)
                 foreach(lib_walked_target IN LISTS lib_walked_targets)
                     get_target_property(is_3rdparty_bundled_lib
                         "${lib_walked_target}" _qt_module_is_3rdparty_library)
-                    _qt_internal_sbom_get_spdx_id_for_target("${lib_walked_target}" lib_spdx_id)
 
                     # Add a dependency on the vendored lib instead of the Wrap target.
                     if(is_3rdparty_bundled_lib AND lib_spdx_id)
-                        list(APPEND regular_cydx_dependencies "${lib_spdx_id}")
-                        list(APPEND regular_spdx_dependencies "${lib_spdx_id}")
+                        set(relationship_entry
+                            SBOM_RELATIONSHIP_ENTRY
+                                SBOM_RELATIONSHIP_FROM
+                                    "${target}"
+                                SBOM_RELATIONSHIP_TYPE
+                                    DEPENDS_ON
+                                SBOM_RELATIONSHIP_TO
+                                    "${lib_walked_target}"
+                        )
+                        list(APPEND regular_relationship_entries ${relationship_entry})
                         set(bundled_targets_found TRUE)
                     endif()
                 endforeach()
@@ -159,37 +161,36 @@ function(_qt_internal_sbom_handle_target_dependencies target)
         if(NOT is_dependency_in_external_document)
             # If the target is not in the external document, it must be one built as part of the
             # current project.
-            list(APPEND regular_cydx_dependencies "${lib_spdx_id}")
-            list(APPEND regular_spdx_dependencies "${lib_spdx_id}")
+            set(relationship_entry
+                SBOM_RELATIONSHIP_ENTRY
+                    SBOM_RELATIONSHIP_FROM
+                        "${target}"
+                    SBOM_RELATIONSHIP_TYPE
+                        DEPENDS_ON
+                    SBOM_RELATIONSHIP_TO
+                        "${direct_lib}"
+            )
+            list(APPEND regular_relationship_entries ${relationship_entry})
         else()
             # Refer to the package in the external document. This can be the case
             # in a top-level build, where a system library is reused across repos, or for any
             # regular dependency that was built as part of a different project.
-            _qt_internal_sbom_add_external_target_dependency("${direct_lib}"
-                OUT_CYDX_DEPENDENCIES extra_cydx_dependencies
-                OUT_SPDX_DEPENDENCIES extra_spdx_dependencies
+            _qt_internal_sbom_add_external_target_dependency(
+                TARGET "${target}"
+                DEPENDENCY_TARGET "${direct_lib}"
+                OUT_SBOM_RELATIONSHIP_ENTRIES extra_relationship_entries
                 OUT_TARGET_DEPENDENCIES extra_target_dependencies
             )
-            if(extra_spdx_dependencies)
-                list(APPEND external_cydx_dependencies ${extra_cydx_dependencies})
-                list(APPEND external_spdx_dependencies ${extra_spdx_dependencies})
+            if(extra_relationship_entries)
+                list(APPEND external_relationship_entries ${extra_relationship_entries})
                 list(APPEND external_target_dependencies ${extra_target_dependencies})
             endif()
         endif()
     endforeach()
 
-    set(spdx_relationships "")
+    set(all_relationship_entries ${external_relationship_entries} ${regular_relationship_entries})
 
-    # Keep the external dependencies first, so they are neatly ordered.
-    foreach(dep_spdx_id IN LISTS external_spdx_dependencies regular_spdx_dependencies)
-        set(relationship "${package_spdx_id} DEPENDS_ON ${dep_spdx_id}")
-        list(APPEND spdx_relationships "${relationship}")
-    endforeach()
-
-    set(all_cydx_dependencies ${external_cydx_dependencies} ${regular_cydx_dependencies})
-
-    set(${arg_OUT_CYDX_DEPENDENCIES} "${all_cydx_dependencies}" PARENT_SCOPE)
-    set(${arg_OUT_SPDX_RELATIONSHIPS} "${spdx_relationships}" PARENT_SCOPE)
+    set(${arg_OUT_SBOM_RELATIONSHIP_ENTRIES} "${all_relationship_entries}" PARENT_SCOPE)
     set(${arg_OUT_EXTERNAL_TARGET_DEPENDENCIES} "${external_target_dependencies}" PARENT_SCOPE)
 endfunction()
 
@@ -223,25 +224,39 @@ function(_qt_internal_sbom_is_external_target_dependency target)
     set(${arg_OUT_VAR} "${part_of_other_repo}" PARENT_SCOPE)
 endfunction()
 
-# Handles generating an external document reference SDPX element for each target package that is
-# located in a different spdx document, and collects the reference in OUT_SPDX_DEPENDENCIES.
-# In case of CycloneDX, we just collect the dependency spdx id (bom-ref) and the target name,
-# which are added to OUT_CYDX_DEPENDENCIES and OUT_TARGET_DEPENDENCIES respectively.
-function(_qt_internal_sbom_add_external_target_dependency target)
+# Handles generating an external document reference SDPX element for each ${arg_DEPENDENCY_TARGET}
+# package that is located in a different spdx document, and collects the relationship in
+# OUT_SBOM_RELATIONSHIP_ENTRIES.
+# In case of CycloneDX, we also collect the dependency target name in OUT_TARGET_DEPENDENCIES.
+function(_qt_internal_sbom_add_external_target_dependency)
     set(opt_args "")
     set(single_args
-        OUT_CYDX_DEPENDENCIES
-        OUT_SPDX_DEPENDENCIES
+        TARGET
+        DEPENDENCY_TARGET
+        OUT_SBOM_RELATIONSHIP_ENTRIES
         OUT_TARGET_DEPENDENCIES
     )
     set(multi_args "")
-    cmake_parse_arguments(PARSE_ARGV 1 arg "${opt_args}" "${single_args}" "${multi_args}")
+    cmake_parse_arguments(PARSE_ARGV 0 arg "${opt_args}" "${single_args}" "${multi_args}")
     _qt_internal_validate_all_args_are_parsed(arg)
 
-    _qt_internal_sbom_get_spdx_id_for_target("${target}" dep_spdx_id)
+    if(NOT arg_TARGET)
+        message(FATAL_ERROR "TARGET is required.")
+    endif()
+    if(NOT arg_DEPENDENCY_TARGET)
+        message(FATAL_ERROR "DEPENDENCY_TARGET is required.")
+    endif()
+    if(NOT arg_OUT_SBOM_RELATIONSHIP_ENTRIES)
+        message(FATAL_ERROR "OUT_SBOM_RELATIONSHIP_ENTRIES is required.")
+    endif()
+    if(NOT arg_OUT_TARGET_DEPENDENCIES)
+        message(FATAL_ERROR "OUT_TARGET_DEPENDENCIES is required.")
+    endif()
+
+    _qt_internal_sbom_get_spdx_id_for_target("${arg_DEPENDENCY_TARGET}" dep_spdx_id)
 
     if(NOT dep_spdx_id)
-        message(DEBUG "Could not add external target dependency on ${target} "
+        message(DEBUG "Could not add external target dependency on ${arg_DEPENDENCY_TARGET} "
             "because no spdx id could be found")
         set(${arg_OUT_CYDX_DEPENDENCIES} "" PARENT_SCOPE)
         set(${arg_OUT_SPDX_DEPENDENCIES} "" PARENT_SCOPE)
@@ -249,15 +264,14 @@ function(_qt_internal_sbom_add_external_target_dependency target)
         return()
     endif()
 
-    set(cydx_dependencies "")
-    set(spdx_dependencies "")
+    set(relationship_entries "")
     set(target_depdendencies "")
 
     # Get the external document path and the repo it belongs to for the given target.
-    get_property(relative_installed_repo_document_path TARGET ${target}
+    get_property(relative_installed_repo_document_path TARGET "${arg_DEPENDENCY_TARGET}"
         PROPERTY _qt_sbom_spdx_relative_installed_repo_document_path)
 
-    get_property(project_name_lowercase TARGET ${target}
+    get_property(project_name_lowercase TARGET "${arg_DEPENDENCY_TARGET}"
         PROPERTY _qt_sbom_spdx_repo_project_name_lowercase)
 
     if(relative_installed_repo_document_path AND project_name_lowercase)
@@ -267,11 +281,18 @@ function(_qt_internal_sbom_add_external_target_dependency target)
         get_cmake_property(known_external_document
             _qt_known_external_documents_${external_document_ref})
 
-        set(spdx_dependency "${external_document_ref}:${dep_spdx_id}")
+        set(relationship_entry
+            SBOM_RELATIONSHIP_ENTRY
+                SBOM_RELATIONSHIP_FROM
+                    "${arg_TARGET}"
+                SBOM_RELATIONSHIP_TYPE
+                    DEPENDS_ON
+                SBOM_RELATIONSHIP_TO
+                    "${arg_DEPENDENCY_TARGET}"
+        )
 
-        list(APPEND cydx_dependencies "${dep_spdx_id}")
-        list(APPEND spdx_dependencies "${spdx_dependency}")
-        list(APPEND target_depdendencies "${target}")
+        list(APPEND relationship_entries "${relationship_entry}")
+        list(APPEND target_depdendencies "${arg_DEPENDENCY_TARGET}")
 
         # Only add a reference to the external document package, if we haven't done so already.
         if(NOT known_external_document)
@@ -295,10 +316,9 @@ function(_qt_internal_sbom_add_external_target_dependency target)
         endif()
     else()
         message(AUTHOR_WARNING
-            "Missing spdx document path for external target dependency: ${target}")
+            "Missing spdx document path for external target dependency: ${arg_DEPENDENCY_TARGET}")
     endif()
 
-    set(${arg_OUT_CYDX_DEPENDENCIES} "${cydx_dependencies}" PARENT_SCOPE)
-    set(${arg_OUT_SPDX_DEPENDENCIES} "${spdx_dependencies}" PARENT_SCOPE)
+    set(${arg_OUT_SBOM_RELATIONSHIP_ENTRIES} "${relationship_entries}" PARENT_SCOPE)
     set(${arg_OUT_TARGET_DEPENDENCIES} "${target_depdendencies}" PARENT_SCOPE)
 endfunction()

@@ -244,8 +244,8 @@ function(_qt_internal_sbom_generate_cyclone_add_package)
 
         # Additions compared to spdx function signature.
         PURL_VALUES
-        DEPENDENCIES
         CYDX_PROPERTIES
+        SBOM_RELATIONSHIP_ENTRIES
     )
     cmake_parse_arguments(PARSE_ARGV 0 arg "${opt_args}" "${single_args}" "${multi_args}")
     _qt_internal_validate_all_args_are_parsed(arg)
@@ -301,14 +301,20 @@ function(_qt_internal_sbom_generate_cyclone_add_package)
         set(version_field "version = \\\"${arg_VERSION}\\\"")
     endif()
 
-    set(dependency_field "")
-    set(dependency_list ${arg_DEPENDENCIES})
-    if(dependency_list)
-        # Wrap values in double quotes.
-        list(TRANSFORM dependency_list PREPEND "\\\"")
-        list(TRANSFORM dependency_list APPEND "\\\"")
-        list(JOIN dependency_list ", " dependency_string)
-        set(dependency_field "dependencies = [${dependency_string}]")
+    set(relationships_field "")
+    if(arg_SBOM_RELATIONSHIP_ENTRIES)
+        _qt_internal_sbom_serialize_relationship_entries(
+            OUTPUT_SBOM_FORMAT "CYDX_V1_6"
+            CYDX_TOML_KEY "components."
+            OUT_VAR_RELATIONSHIPS_STRINGS entries_relationships_strings
+            SBOM_RELATIONSHIP_ENTRIES ${arg_SBOM_RELATIONSHIP_ENTRIES}
+        )
+        if(entries_relationships_strings)
+            # Remove duplicates, because apparently we sometimes get them for some system libraries.
+            list(REMOVE_DUPLICATES entries_relationships_strings)
+
+            list(JOIN entries_relationships_strings "\n" relationships_field)
+        endif()
     endif()
 
     set(copyright_field "")
@@ -370,8 +376,8 @@ ${external_bom_link_field}
 ${cpe_field}
 ${purl_field}
 ${license_concluded_field}
-${dependency_field}
 ${properties_field}
+${relationships_field}
 \"
 )
 ")
