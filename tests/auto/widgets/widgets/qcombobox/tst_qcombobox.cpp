@@ -2233,10 +2233,11 @@ void tst_QComboBox::ignoreWheelEvents()
 
     QFETCH(bool, allowWheelScrolling);
 
+    AllowWheelScrollStyle style(allowWheelScrolling);
     WheelEventTestWidget widget;
     QComboBox *comboBox = new QComboBox(&widget);
     comboBox->addItems({ "0", "1" });
-    comboBox->setStyle(new AllowWheelScrollStyle(allowWheelScrolling));
+    comboBox->setStyle(&style);
     widget.show();
     QVERIFY(QTest::qWaitForWindowExposed(&widget));
 
