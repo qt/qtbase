@@ -151,6 +151,14 @@ class RootComponentDict(TypedDict):
     serial_number_uuid: str
 
 
+class RelationshipDict(TypedDict):
+    # Optional fields
+    relationship_from: str
+    relationship_type: str
+    relationship_to: str
+    relationship_comment: str
+
+
 class ComponentDict(TypedDict):
     name: str
     spdx_id: str
@@ -163,7 +171,7 @@ class ComponentDict(TypedDict):
     purl_list: list[str]
     cpe_list: list[str]
     properties: list[CyclonePropertyDict]
-    dependencies: list[str]
+    relationships: list[RelationshipDict]
 
 
 class BuildToolDict(TypedDict):
@@ -685,20 +693,26 @@ def handle_component_dependencies(
     if component_id not in external_components_spdx_ids:
         cydx_bom.register_dependency(root_component_object, [component_object])  # pyright: ignore [reportAttributeAccessIssue, reportArgumentType]
 
-    # Register dependencies declared in the toml.
-    # CycloneDX does not support different dependency types, like SPDX does.
-    if dependencies := component_toml.get("dependencies"):
-        for dependency_spdx_id in dependencies:
-            if dependency_spdx_id not in components:
+    # Register relationships declared in the toml.
+    # CycloneDX does not support different relationship types, like SPDX does.
+    if relationships := component_toml.get("relationships"):
+        for relationship in relationships:
+            from_spdx_id = relationship["relationship_from"]
+            to_spdx_id = relationship["relationship_to"]
+            if from_spdx_id not in components:
                 log.warning(
-                    f"Component {component_id} has a dependency on unknown component {dependency_spdx_id}, skipping."
+                    f"Component {component_id} has a 'from' dependency on unknown component {from_spdx_id}, skipping."
                 )
                 continue
-            dep_component = components[dependency_spdx_id]
-            cydx_bom.register_dependency(component_object, [dep_component])  # pyright: ignore [reportAttributeAccessIssue, reportArgumentType]
-            log.debug(
-                f"Created dependency from '{component_id}' to '{dependency_spdx_id}'."
-            )
+            if to_spdx_id not in components:
+                log.warning(
+                    f"Component {component_id} has a 'to' dependency on unknown component {to_spdx_id}, skipping."
+                )
+                continue
+            from_component = components[from_spdx_id]
+            to_component = components[to_spdx_id]
+            cydx_bom.register_dependency(from_component, [to_component])  # pyright: ignore [reportAttributeAccessIssue, reportArgumentType]
+            log.debug(f"Created dependency from '{from_spdx_id}' to '{to_spdx_id}'.")
 
 
 # Handles PURL and CPE entries for a component.
