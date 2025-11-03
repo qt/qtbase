@@ -243,6 +243,7 @@ function(_qt_internal_android_prepare_gradle_build target)
     _qt_internal_android_get_target_deployment_dir(deployment_dir ${target})
 
     _qt_internal_android_copy_gradle_files(${target} "${android_build_dir}")
+    _qt_internal_android_copy_android_resources(${target} "${deployment_dir}")
     _qt_internal_android_copy_target_package_sources(${target})
 
     _qt_internal_android_generate_bundle_gradle_properties(${target})
@@ -318,6 +319,7 @@ function(_qt_internal_android_add_gradle_build target type)
             ${target}
             ${gradle_scripts}
             ${target}_copy_gradle_files
+            ${target}_copy_android_res_files
             ${target}_android_deploy_aux
             ${extra_deps}
         WORKING_DIRECTORY
@@ -414,6 +416,23 @@ function(_qt_internal_android_gradle_template_dir out_var)
     else()
         set(${out_var} "${QT6_INSTALL_PREFIX}/${QT6_INSTALL_DATA}/src/3rdparty/gradle" PARENT_SCOPE)
     endif()
+endfunction()
+
+# Returns the path to the Android templates resource directory.
+function(_qt_internal_android_template_res_dir out_var)
+    if(PROJECT_NAME STREQUAL "QtBase" OR QT_SUPERBUILD)
+        set(android_templates_root "${QtBase_SOURCE_DIR}/src/android")
+    else()
+        set(android_templates_root
+            "${QT6_INSTALL_PREFIX}/${QT6_INSTALL_DATA}/src/android")
+    endif()
+
+    set(template_res_dir "${android_templates_root}/templates/res")
+    if(NOT EXISTS "${template_res_dir}")
+        message(FATAL_ERROR "Android template resource directory '${template_res_dir}' is not found."
+            " Please check your Qt installation.")
+    endif()
+    set(${out_var} "${template_res_dir}" PARENT_SCOPE)
 endfunction()
 
 # Returns the path to the android java dir.
@@ -696,4 +715,34 @@ function(_qt_internal_android_copy_gradle_files target output_directory)
             "${gradlew_file_dst}"
             "${gradle_dir_dst}"
     )
+endfunction()
+
+# Copies default Android resource templates to a build directory.
+function(_qt_internal_android_copy_android_resources target deployment_dir)
+    _qt_internal_android_template_res_dir(template_res_dir)
+
+    set(res_dir_dst "${deployment_dir}/res")
+    file(GLOB_RECURSE template_res_files_rel RELATIVE "${template_res_dir}" CONFIGURE_DEPENDS
+        LIST_DIRECTORIES false
+        "${template_res_dir}/*"
+    )
+    if(NOT template_res_files_rel)
+        return()
+    endif()
+
+    list(TRANSFORM template_res_files_rel PREPEND "${template_res_dir}/"
+        OUTPUT_VARIABLE template_res_files)
+    list(TRANSFORM template_res_files_rel PREPEND "${res_dir_dst}/"
+        OUTPUT_VARIABLE dst_res_files)
+
+    add_custom_command(OUTPUT ${dst_res_files}
+        COMMAND ${CMAKE_COMMAND} -E copy_directory "${template_res_dir}" "${res_dir_dst}"
+        DEPENDS
+            "${template_res_dir}"
+            ${template_res_files}
+        COMMENT "Copying Android app res templates for ${target}"
+        VERBATIM
+    )
+
+    add_custom_target(${target}_copy_android_res_files DEPENDS ${dst_res_files})
 endfunction()
