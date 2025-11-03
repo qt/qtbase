@@ -46,11 +46,6 @@ function(qt_internal_set_warnings_are_errors_flags target target_scope)
                     # error: assuming signed overflow does not occur when assuming that (X + c) < X
                     #        is always false
                     -Wno-error=strict-overflow
-                CONDITIONS VERSION_GREATER_EQUAL 7
-                    OPTIONS
-                    # GCC 7 includes -Wimplicit-fallthrough in -Wextra, but Qt is not yet free of
-                    # implicit fallthroughs.
-                    -Wno-error=implicit-fallthrough
                 CONDITIONS VERSION_GREATER_EQUAL 9
                     OPTIONS
                     # GCC 9 introduced these but we are not clean for it.
