@@ -1787,14 +1787,17 @@ bool QFileSystemModel::event(QEvent *event)
 
 bool QFileSystemModel::rmdir(const QModelIndex &aindex)
 {
+    Q_D(QFileSystemModel);
+
     QString path = filePath(aindex);
     const bool success = QDir().rmdir(path);
-#if QT_CONFIG(filesystemwatcher)
     if (success) {
-        QFileSystemModelPrivate * d = const_cast<QFileSystemModelPrivate*>(d_func());
+#if QT_CONFIG(filesystemwatcher)
         d->fileInfoGatherer->removePath(path);
-    }
 #endif
+        QFileSystemModelPrivate::QFileSystemNode *parentNode = d->node(aindex.parent());
+        d->removeNode(parentNode, fileName(aindex));
+    }
     return success;
 }
 
