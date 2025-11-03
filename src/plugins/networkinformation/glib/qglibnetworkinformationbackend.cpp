@@ -110,7 +110,8 @@ QGlibNetworkInformationBackend::QGlibNetworkInformationBackend()
     connectivityHandlerId = g_signal_connect_swapped(networkMonitor, "notify::connectivity",
                                                      G_CALLBACK(updateConnectivity), this);
 
-    networkHandlerId = g_signal_connect_swapped(networkMonitor, "network-changed",
+    // needed until GLib 2.86 for netlink support
+    networkHandlerId = g_signal_connect_swapped(networkMonitor, "notify::network-available",
                                                      G_CALLBACK(updateConnectivity), this);
 
     meteredHandlerId = g_signal_connect_swapped(networkMonitor, "notify::network-metered",
