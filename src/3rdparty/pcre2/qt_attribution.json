@@ -30,7 +30,7 @@
     "Homepage": "http://www.pcre.org/",
     "Version": "10.47",
     "DownloadLocation": "https://github.com/PCRE2Project/pcre2/releases/download/pcre2-10.47/pcre2-10.47.tar.bz2",
-    "PURL": "pkg:github/PCRE2Project/pcre2@$<VERSION>",
+    "PURL": "pkg:github/PCRE2Project/pcre2@pcre2-$<VERSION>",
     "CPE": "cpe:2.3:a:pcre:pcre2:$<VERSION>:*:*:*:*:*:*:*",
     "License": "BSD 2-clause \"Simplified\" License",
     "LicenseId": "BSD-2-Clause",
