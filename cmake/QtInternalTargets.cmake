@@ -48,10 +48,6 @@ function(qt_internal_set_warnings_are_errors_flags target target_scope)
                     -Wno-error=strict-overflow
                 CONDITIONS VERSION_GREATER_EQUAL 9
                     OPTIONS
-                    # GCC 9 introduced these but we are not clean for it.
-                    -Wno-error=deprecated-copy
-                    -Wno-error=redundant-move
-                    -Wno-error=init-list-lifetime
                     # GCC 9 introduced -Wformat-overflow in -Wall, but it is buggy:
                     -Wno-error=format-overflow
                 CONDITIONS VERSION_GREATER_EQUAL 10
