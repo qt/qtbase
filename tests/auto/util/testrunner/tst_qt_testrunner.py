@@ -64,13 +64,19 @@ def run(args : list, **kwargs):
     return proc
 
 # Helper to run qt-testrunner.py with proper testing arguments.
-def run_testrunner(xml_filename=None, testrunner_args=None,
+# Always append --log-dir=TEMPDIR unless specifically told not to.
+def run_testrunner(xml_filename=None, log_dir=None,
+                   testrunner_args=None,
                    wrapper_script=None, wrapper_args=None,
                    qttest_args=None, env=None):
 
     args = [ testrunner ]
     if xml_filename:
         args += [ "--parse-xml-testlog", xml_filename ]
+    if log_dir == None:
+        args += [ "--log-dir", TEMPDIR.name ]
+    elif log_dir != "":
+        args += [ "--log-dir", log_dir ]
     if testrunner_args:
         args += testrunner_args
 
@@ -204,7 +210,7 @@ class Test_testrunner(unittest.TestCase):
         for fname in old_logfiles:
             os.remove(os.path.join(TEMPDIR.name, fname))
         self.env = dict(os.environ)
-        self.testrunner_args = [ "--log-dir", TEMPDIR.name ]
+        self.testrunner_args = []
     def prepare_env(self, run_list=None):
         if run_list is not None:
             self.env['QT_MOCK_TEST_RUN_LIST'] = ",".join(run_list)
@@ -424,7 +430,6 @@ class Test_testrunner(unittest.TestCase):
     def test_wrapper(self):
         self.create_wrapper("coin_vxworks_qemu_runner.sh")
         proc = run_testrunner(wrapper_script=self.wrapper_script,
-                              testrunner_args=["--log-dir",TEMPDIR.name],
                               env=self.env)
         self.assertEqual(proc.returncode, 0)
         xml_output_files = find_test_logs()
@@ -451,7 +456,7 @@ class Test_testrunner(unittest.TestCase):
             '--bundletool', '/opt/bundletool/bundletool', '--timeout', '1425'
         ]
         # In COIN CI, TESTRUNNER="qt-testrunner.py --". That's why we append "--".
-        proc = run_testrunner(testrunner_args=["--log-dir", TEMPDIR.name, "--"],
+        proc = run_testrunner(testrunner_args=["--"],
                               wrapper_script=self.wrapper_script,
                               wrapper_args=androidtestrunner_args,
                               env=self.env)
@@ -463,7 +468,7 @@ class Test_testrunner(unittest.TestCase):
     def test_androidtestrunner_with_apk(self):
         self.create_mock_anroidtestrunner_wrapper()
         androidtestrunner_args= ['--blah', '--apk', '/whatever/waza.apk', 'blue']
-        proc = run_testrunner(testrunner_args=["--log-dir", TEMPDIR.name, "--"],
+        proc = run_testrunner(testrunner_args=["--"],
                               wrapper_script=self.wrapper_script,
                               wrapper_args=androidtestrunner_args,
                               env=self.env)
@@ -475,7 +480,7 @@ class Test_testrunner(unittest.TestCase):
     def test_androidtestrunner_fail_to_detect_filename(self):
         self.create_mock_anroidtestrunner_wrapper()
         androidtestrunner_args= ['--blah', '--argh', '/whatever/waza.apk', 'waza.aab']
-        proc = run_testrunner(testrunner_args=["--log-dir", TEMPDIR.name, "--"],
+        proc = run_testrunner(testrunner_args=["--"],
                               wrapper_script=self.wrapper_script,
                               wrapper_args=androidtestrunner_args,
                               env=self.env)
@@ -510,23 +515,26 @@ class Test_testrunner_with_xml_logfile(unittest.TestCase):
     def tearDown(self):
         os.remove(self.xml_file)
         del self.xml_file
+    # Run testrunner specifically for the tests here, with --parse-xml-testlog.
+    def run3(self, testrunner_args=None):
+        return run_testrunner(self.xml_file,
+                              testrunner_args=testrunner_args)
 
     def test_no_failure(self):
         write_xml_log(self.xml_file, failure=None)
-        proc = run_testrunner(self.xml_file)
+        proc = self.run3()
         self.assertEqual(proc.returncode, 0)
     def test_always_pass_failed(self):
         write_xml_log(self.xml_file, failure="always_pass")
-        proc = run_testrunner(self.xml_file)
+        proc = self.run3()
         self.assertEqual(proc.returncode, 0)
     def test_always_pass_failed_max_repeats_0(self):
         write_xml_log(self.xml_file, failure="always_pass")
-        proc = run_testrunner(self.xml_file,
-                              testrunner_args=["--max-repeats", "0"])
+        proc = self.run3(testrunner_args=["--max-repeats", "0"])
         self.assertEqual(proc.returncode, 2)
     def test_always_fail_failed(self):
         write_xml_log(self.xml_file, failure="always_fail")
-        proc = run_testrunner(self.xml_file)
+        proc = self.run3()
         self.assertEqual(proc.returncode, 2)
         # Assert that one of the re-runs was in verbose mode
         matches = re.findall("VERBOSE RUN",
@@ -536,20 +544,20 @@ class Test_testrunner_with_xml_logfile(unittest.TestCase):
         self.assertIn("QT_LOGGING_RULES", proc.stdout.decode())
     def test_always_crash_crashed(self):
         write_xml_log(self.xml_file, failure="always_crash")
-        proc = run_testrunner(self.xml_file)
+        proc = self.run3()
         self.assertEqual(proc.returncode, 3)
     def test_fail_then_pass_2_failed(self):
         write_xml_log(self.xml_file, failure="fail_then_pass:2")
-        proc = run_testrunner(self.xml_file)
+        proc = self.run3()
         self.assertEqual(proc.returncode, 0)
     def test_fail_then_pass_5_failed(self):
         write_xml_log(self.xml_file, failure="fail_then_pass:5")
-        proc = run_testrunner(self.xml_file)
+        proc = self.run3()
         self.assertEqual(proc.returncode, 2)
     def test_with_two_failures(self):
         write_xml_log(self.xml_file,
                       failure=["always_pass", "fail_then_pass:2"])
-        proc = run_testrunner(self.xml_file)
+        proc = self.run3()
         self.assertEqual(proc.returncode, 0)
         # Check that test output is properly interleaved with qt-testrunner's logging.
         matches = re.findall(r"(PASS|FAIL!).*\n.*Test process exited with code",
@@ -557,7 +565,7 @@ class Test_testrunner_with_xml_logfile(unittest.TestCase):
         self.assertEqual(len(matches), 4)
     def test_initTestCase_fail_crash(self):
         write_xml_log(self.xml_file, failure="initTestCase")
-        proc = run_testrunner(self.xml_file)
+        proc = self.run3()
         self.assertEqual(proc.returncode, 3)
 
 
