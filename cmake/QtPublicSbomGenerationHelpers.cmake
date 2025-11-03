@@ -178,8 +178,7 @@ PackageHomePage: ${arg_SUPPLIER_URL}
 PackageComment: ${project_comment}
 FilesAnalyzed: false
 BuiltDate: ${current_utc}
-Relationship: SPDXRef-DOCUMENT DESCRIBES ${project_spdx_id}
-")
+Relationship: SPDXRef-DOCUMENT DESCRIBES ${project_spdx_id}")
 
     set(sbom_format "SPDX_V2")
     _qt_internal_sbom_save_intro_content(
@@ -231,10 +230,21 @@ function(_qt_internal_sbom_end_project_generate)
     _qt_internal_sbom_get_qt_repo_project_name_lower_case(real_qt_repo_project_name_lowercase)
     _qt_internal_get_current_project_sbom_dir(sbom_dir)
 
+    _qt_internal_sbom_handle_project_relationships(
+        OUTPUT_SBOM_FORMAT "${sbom_format}"
+        OUT_VAR_RELATIONSHIP_STRINGS relationship_strings
+    )
+
+    set(staging_file_args "")
+    if(relationship_strings)
+        list(APPEND staging_file_args RELATIONSHIP_STRINGS "${relationship_strings}")
+    endif()
+
     _qt_internal_sbom_create_sbom_staging_file(
         SBOM_FORMAT "${sbom_format}"
         SBOM_DIR "${sbom_dir}"
         REPO_PROJECT_NAME_LOWERCASE "${repo_project_name_lowercase}"
+        ${staging_file_args}
     )
 
     _qt_internal_sbom_get_cmake_include_files(

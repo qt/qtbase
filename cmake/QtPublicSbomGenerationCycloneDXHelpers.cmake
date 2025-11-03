@@ -85,6 +85,8 @@ serial_number_uuid = \"${arg_BOM_SERIAL_NUMBER_UUID}\" # Required
 description = '''${project_comment}
 '''
 
+<PROJECT_RELATIONSHIP_PLACEHOLDER>
+
 [[project_build_tools]]
 name = \"cmake\"
 version = \"${CMAKE_VERSION}\"
@@ -137,10 +139,21 @@ function(_qt_internal_sbom_end_project_generate_cyclone)
     _qt_internal_sbom_get_qt_repo_project_name_lower_case(real_qt_repo_project_name_lowercase)
     _qt_internal_get_current_project_sbom_dir(sbom_dir)
 
+    _qt_internal_sbom_handle_project_relationships(
+        OUTPUT_SBOM_FORMAT "${sbom_format}"
+        OUT_VAR_RELATIONSHIP_STRINGS relationship_strings
+    )
+
+    set(staging_file_args "")
+    if(relationship_strings)
+        list(APPEND staging_file_args RELATIONSHIP_STRINGS "${relationship_strings}")
+    endif()
+
     _qt_internal_sbom_create_sbom_staging_file(
         SBOM_FORMAT "${sbom_format}"
         SBOM_DIR "${sbom_dir}"
         REPO_PROJECT_NAME_LOWERCASE "${repo_project_name_lowercase}"
+        ${staging_file_args}
     )
 
     # Process licenses before getting the includes.
@@ -306,6 +319,7 @@ function(_qt_internal_sbom_generate_cyclone_add_package)
         _qt_internal_sbom_serialize_relationship_entries(
             OUTPUT_SBOM_FORMAT "CYDX_V1_6"
             CYDX_TOML_KEY "components."
+            ESCAPE_CYDX_QUOTES
             OUT_VAR_RELATIONSHIPS_STRINGS entries_relationships_strings
             SBOM_RELATIONSHIP_ENTRIES ${arg_SBOM_RELATIONSHIP_ENTRIES}
         )

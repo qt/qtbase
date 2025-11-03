@@ -103,7 +103,7 @@ function(qt_internal_sbom_get_project_spdx_id out_var)
     set(result "")
 
     if(QT_GENERATE_SBOM)
-        get_cmake_property(project_spdx_id _qt_internal_sbom_project_spdx_id)
+        _qt_internal_sbom_get_current_project_spdx_id(project_spdx_id)
         if(project_spdx_id)
             set(result "${project_spdx_id}")
         endif()
