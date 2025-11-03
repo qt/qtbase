@@ -863,6 +863,7 @@ void QWindowsStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, 
             proxy()->drawPrimitive(PE_PanelMenu, &copy, p, w);
             break;
         }
+        Q_FALLTHROUGH();
     case PE_FrameMenu:
         if (const QStyleOptionFrame *frame = qstyleoption_cast<const QStyleOptionFrame *>(opt)) {
             if (frame->lineWidth == 2 || pe == PE_Frame) {
@@ -917,7 +918,10 @@ void QWindowsStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, 
             const QBrush menuBackground = opt->palette.base().color();
             QColor borderColor = opt->palette.window().color();
             qDrawPlainRect(p, opt->rect, borderColor, 1, &menuBackground);
+        } else {
+            QCommonStyle::drawPrimitive(pe, opt, p, w);
         }
+        break;
     case PE_FrameWindow: {
          QPalette popupPal = opt->palette;
          popupPal.setColor(QPalette::Light, opt->palette.window().color());

@@ -1713,7 +1713,9 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
             QWindowsThemeData popupbackgroundTheme(widget, painter, QWindowsVistaStylePrivate::MenuTheme,
                              MENU_POPUPBACKGROUND, stateId, option->rect);
             d->drawBackground(popupbackgroundTheme);
+            return;
         }
+        break;
 
     case PE_PanelMenuBar:
         break;
