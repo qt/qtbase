@@ -65,72 +65,21 @@ class Q_AUTOTEST_EXPORT QComboBoxPrivateScroller : public QWidget
     Q_OBJECT
 
 public:
-    QComboBoxPrivateScroller(QAbstractSlider::SliderAction action, QWidget *parent)
-        : QWidget(parent), sliderAction(action)
-    {
-        setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
-        setAttribute(Qt::WA_NoMousePropagation);
-    }
-    QSize sizeHint() const override {
-        return QSize(20, style()->pixelMetric(QStyle::PM_MenuScrollerHeight, nullptr, this));
-    }
+    explicit QComboBoxPrivateScroller(QAbstractSlider::SliderAction action, QWidget *parent);
+    ~QComboBoxPrivateScroller() override;
+
+    QSize sizeHint() const override;
 
 protected:
-    inline void stopTimer() {
-        timer.stop();
-    }
+    void stopTimer();
+    void startTimer();
 
-    inline void startTimer() {
-        timer.start(100, this);
-        fast = false;
-    }
-
-    void enterEvent(QEnterEvent *) override {
-        startTimer();
-    }
-
-    void leaveEvent(QEvent *) override {
-        stopTimer();
-    }
-    void timerEvent(QTimerEvent *e) override {
-        if (e->timerId() == timer.timerId()) {
-            emit doScroll(sliderAction);
-            if (fast) {
-                emit doScroll(sliderAction);
-                emit doScroll(sliderAction);
-            }
-        }
-    }
-    void hideEvent(QHideEvent *) override {
-        stopTimer();
-    }
-
-    void mouseMoveEvent(QMouseEvent *e) override
-    {
-        // Enable fast scrolling if the cursor is directly above or below the popup.
-        const int mouseX = e->position().toPoint().x();
-        const int mouseY = e->position().toPoint().y();
-        const bool horizontallyInside = pos().x() < mouseX && mouseX < rect().right() + 1;
-        const bool verticallyOutside = (sliderAction == QAbstractSlider::SliderSingleStepAdd) ?
-                                        rect().bottom() + 1 < mouseY : mouseY < pos().y();
-
-        fast = horizontallyInside && verticallyOutside;
-    }
-
-    void paintEvent(QPaintEvent *) override {
-        QPainter p(this);
-        QStyleOptionMenuItem menuOpt;
-        menuOpt.initFrom(this);
-        menuOpt.checkType = QStyleOptionMenuItem::NotCheckable;
-        menuOpt.menuRect = rect();
-        menuOpt.maxIconWidth = 0;
-        menuOpt.reservedShortcutWidth = 0;
-        menuOpt.menuItemType = QStyleOptionMenuItem::Scroller;
-        if (sliderAction == QAbstractSlider::SliderSingleStepAdd)
-            menuOpt.state |= QStyle::State_DownArrow;
-        p.eraseRect(rect());
-        style()->drawControl(QStyle::CE_MenuScroller, &menuOpt, &p);
-    }
+    void enterEvent(QEnterEvent *) override;
+    void leaveEvent(QEvent *) override;
+    void timerEvent(QTimerEvent *e) override;
+    void hideEvent(QHideEvent *) override;
+    void mouseMoveEvent(QMouseEvent *e) override;
+    void paintEvent(QPaintEvent *) override;
 
 Q_SIGNALS:
     void doScroll(int action);

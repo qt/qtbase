@@ -49,13 +49,17 @@
 #if QT_CONFIG(accessibility)
 #include "qaccessible.h"
 #endif
+
 #include <array>
 
 #include <QtCore/qpointer.h>
 
+#include <chrono>
+
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
+using namespace std::chrono_literals;
 
 //
 // QComboBoxListView
@@ -105,6 +109,91 @@ void QComboBoxListView::paintEvent(QPaintEvent *e)
         }
     }
     QListView::paintEvent(e);
+}
+
+//
+// QComboBoxPrivateScroller
+//
+
+QComboBoxPrivateScroller::QComboBoxPrivateScroller(QAbstractSlider::SliderAction action,
+                                                   QWidget *parent)
+    : QWidget(parent),
+      sliderAction(action)
+{
+    setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
+    setAttribute(Qt::WA_NoMousePropagation);
+}
+
+QComboBoxPrivateScroller::~QComboBoxPrivateScroller()
+    = default;
+
+QSize QComboBoxPrivateScroller::sizeHint() const
+{
+    return QSize(20, style()->pixelMetric(QStyle::PM_MenuScrollerHeight, nullptr, this));
+}
+
+void QComboBoxPrivateScroller::stopTimer()
+{
+    timer.stop();
+}
+
+void QComboBoxPrivateScroller::startTimer() {
+    timer.start(100ms, this);
+    fast = false;
+}
+
+void QComboBoxPrivateScroller::enterEvent(QEnterEvent *)
+{
+    startTimer();
+}
+
+void QComboBoxPrivateScroller::leaveEvent(QEvent *)
+{
+    stopTimer();
+}
+
+void QComboBoxPrivateScroller::timerEvent(QTimerEvent *e)
+{
+    if (e->timerId() == timer.timerId()) {
+        emit doScroll(sliderAction);
+        if (fast) {
+            emit doScroll(sliderAction);
+            emit doScroll(sliderAction);
+        }
+    }
+}
+
+void QComboBoxPrivateScroller::hideEvent(QHideEvent *)
+{
+    stopTimer();
+}
+
+void QComboBoxPrivateScroller::mouseMoveEvent(QMouseEvent *e)
+{
+    // Enable fast scrolling if the cursor is directly above or below the popup.
+    const int mouseX = e->position().toPoint().x();
+    const int mouseY = e->position().toPoint().y();
+    const bool horizontallyInside = pos().x() < mouseX && mouseX < rect().right() + 1;
+    const bool verticallyOutside = (sliderAction == QAbstractSlider::SliderSingleStepAdd) ?
+                rect().bottom() + 1 < mouseY : mouseY < pos().y();
+
+    fast = horizontallyInside && verticallyOutside;
+}
+
+void QComboBoxPrivateScroller::paintEvent(QPaintEvent *)
+{
+    QPainter p(this);
+    QStyleOptionMenuItem menuOpt;
+    menuOpt.initFrom(this);
+    menuOpt.checkType = QStyleOptionMenuItem::NotCheckable;
+    menuOpt.menuRect = rect();
+    menuOpt.maxIconWidth = 0;
+    menuOpt.reservedShortcutWidth = 0;
+    menuOpt.menuItemType = QStyleOptionMenuItem::Scroller;
+    if (sliderAction == QAbstractSlider::SliderSingleStepAdd)
+        menuOpt.state |= QStyle::State_DownArrow;
+    p.eraseRect(rect());
+    style()->drawControl(QStyle::CE_MenuScroller, &menuOpt, &p);
 }
 
 QComboBoxPrivate::QComboBoxPrivate()
