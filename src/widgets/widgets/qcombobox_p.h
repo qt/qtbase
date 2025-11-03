@@ -170,45 +170,19 @@ class Q_AUTOTEST_EXPORT QComboBoxDelegate : public QStyledItemDelegate
 {
     Q_OBJECT
 public:
-    QComboBoxDelegate(QObject *parent, QComboBox *cmb)
-        : QStyledItemDelegate(parent), mCombo(cmb)
-    {}
+    explicit QComboBoxDelegate(QObject *parent, QComboBox *cmb);
+    ~QComboBoxDelegate() override;
 
-    static bool isSeparator(const QModelIndex &index) {
-        return index.data(Qt::AccessibleDescriptionRole).toString()
-                == QLatin1StringView("separator");
-    }
-    static void setSeparator(QAbstractItemModel *model, const QModelIndex &index) {
-        model->setData(index, QString::fromLatin1("separator"), Qt::AccessibleDescriptionRole);
-        if (QStandardItemModel *m = qobject_cast<QStandardItemModel*>(model))
-            if (QStandardItem *item = m->itemFromIndex(index))
-                item->setFlags(item->flags() & ~(Qt::ItemIsSelectable|Qt::ItemIsEnabled));
-    }
+    static bool isSeparator(const QModelIndex &index);
+    static void setSeparator(QAbstractItemModel *model, const QModelIndex &index);
 
 protected:
     void paint(QPainter *painter,
                const QStyleOptionViewItem &option,
-               const QModelIndex &index) const override {
-        if (isSeparator(index)) {
-            QRect rect = option.rect;
-            if (const QAbstractItemView *view = qobject_cast<const QAbstractItemView*>(option.widget))
-                rect.setWidth(view->viewport()->width());
-            QStyleOption opt;
-            opt.rect = rect;
-            mCombo->style()->drawPrimitive(QStyle::PE_IndicatorToolBarSeparator, &opt, painter, mCombo);
-        } else {
-            QStyledItemDelegate::paint(painter, option, index);
-        }
-    }
+               const QModelIndex &index) const override;
 
     QSize sizeHint(const QStyleOptionViewItem &option,
-                   const QModelIndex &index) const override {
-        if (isSeparator(index)) {
-            int pm = mCombo->style()->pixelMetric(QStyle::PM_DefaultFrameWidth, nullptr, mCombo);
-            return QSize(pm, pm);
-        }
-        return QStyledItemDelegate::sizeHint(option, index);
-    }
+                   const QModelIndex &index) const override;
 private:
     QComboBox *mCombo;
 };

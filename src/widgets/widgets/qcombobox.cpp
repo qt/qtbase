@@ -371,6 +371,60 @@ bool QComboMenuDelegate::editorEvent(QEvent *event, QAbstractItemModel *model,
     return model->setData(index, newState, Qt::CheckStateRole);
 }
 
+//
+// QComboBoxDelegate
+//
+
+QComboBoxDelegate::QComboBoxDelegate(QObject *parent, QComboBox *cmb)
+    : QStyledItemDelegate(parent),
+      mCombo(cmb)
+{}
+
+QComboBoxDelegate::~QComboBoxDelegate()
+    = default;
+
+bool QComboBoxDelegate::isSeparator(const QModelIndex &index)
+{
+    return index.data(Qt::AccessibleDescriptionRole).toString() == "separator"_L1;
+}
+
+void QComboBoxDelegate::setSeparator(QAbstractItemModel *model, const QModelIndex &index)
+{
+    // don't use u""_s; model (QtCore) may outlive QtWidgets DLL, alloc dynamically:
+    static const QString sepString = "separator"_L1;
+    model->setData(index, sepString, Qt::AccessibleDescriptionRole);
+    if (QStandardItemModel *m = qobject_cast<QStandardItemModel*>(model))
+        if (QStandardItem *item = m->itemFromIndex(index))
+            item->setFlags(item->flags() & ~(Qt::ItemIsSelectable|Qt::ItemIsEnabled));
+}
+
+void QComboBoxDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option,
+                              const QModelIndex &index) const
+{
+    if (isSeparator(index)) {
+        QRect rect = option.rect;
+        if (const QAbstractItemView *view = qobject_cast<const QAbstractItemView*>(option.widget))
+            rect.setWidth(view->viewport()->width());
+        QStyleOption opt;
+        opt.rect = rect;
+        mCombo->style()->drawPrimitive(QStyle::PE_IndicatorToolBarSeparator,
+                                       &opt, painter, mCombo);
+    } else {
+        QStyledItemDelegate::paint(painter, option, index);
+    }
+}
+
+QSize QComboBoxDelegate::sizeHint(const QStyleOptionViewItem &option,
+                                  const QModelIndex &index) const
+{
+    if (isSeparator(index)) {
+        const int pm = mCombo->style()->pixelMetric(QStyle::PM_DefaultFrameWidth, nullptr, mCombo);
+        return QSize(pm, pm);
+    }
+    return QStyledItemDelegate::sizeHint(option, index);
+}
+
+
 #if QT_CONFIG(completer)
 void QComboBoxPrivate::completerActivated(const QModelIndex &index)
 {
