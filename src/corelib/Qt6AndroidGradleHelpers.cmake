@@ -245,6 +245,7 @@ function(_qt_internal_android_prepare_gradle_build target)
     _qt_internal_android_copy_gradle_files(${target} "${android_build_dir}")
     _qt_internal_android_copy_android_resources(${target} "${deployment_dir}")
     _qt_internal_android_copy_stdlib(${target} "${deployment_dir}")
+    _qt_internal_android_copy_extra_libs(${target} "${deployment_dir}")
     _qt_internal_android_copy_target_package_sources(${target})
 
     _qt_internal_android_generate_bundle_gradle_properties(${target})
@@ -322,6 +323,7 @@ function(_qt_internal_android_add_gradle_build target type)
             ${target}_copy_gradle_files
             ${target}_copy_android_res_files
             ${target}_copy_stdlib
+            ${target}_copy_extra_libs
             ${target}_android_deploy_aux
             ${extra_deps}
         WORKING_DIRECTORY
@@ -785,4 +787,67 @@ function(_qt_internal_android_copy_stdlib target deployment_dir)
     )
 
     add_custom_target(${target}_copy_stdlib DEPENDS "${stdlib_dst}")
+endfunction()
+
+# Copies additional native libraries requested via QT_ANDROID_EXTRA_LIBS.
+function(_qt_internal_android_copy_extra_libs target deployment_dir)
+    get_target_property(no_deploy_qt_libs ${target} QT_ANDROID_NO_DEPLOY_QT_LIBS)
+    if(no_deploy_qt_libs)
+        return()
+    endif()
+
+    if(TARGET ${target}_copy_extra_libs)
+        return()
+    endif()
+
+    get_target_property(extra_libs ${target} QT_ANDROID_EXTRA_LIBS)
+    if(NOT extra_libs)
+        add_custom_target(${target}_copy_extra_libs)
+        return()
+    endif()
+
+    set(extra_libs_dst_dir "${deployment_dir}/libs/${CMAKE_ANDROID_ARCH_ABI}")
+    set(copy_outputs "")
+    set(copy_depends "")
+    set(copy_commands
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${extra_libs_dst_dir}"
+    )
+
+    foreach(lib IN LISTS extra_libs)
+        if(lib MATCHES "^\\$<")
+            message(FATAL_ERROR
+                "QT_ANDROID_EXTRA_LIBS entry '${lib}' for ${target} is a generator expression. "
+                "This copy implementation uses add_custom_command(OUTPUT) and requires absolute "
+                "paths so outputs can be tracked reliably.")
+        endif()
+
+        file(TO_CMAKE_PATH "${lib}" lib_path)
+        if(NOT IS_ABSOLUTE "${lib_path}")
+            message(FATAL_ERROR
+                "QT_ANDROID_EXTRA_LIBS entry '${lib}' for ${target} must be an absolute path.")
+        endif()
+
+        get_filename_component(lib_name "${lib_path}" NAME)
+        if(NOT lib_name MATCHES "\\.so$")
+            message(FATAL_ERROR
+                "QT_ANDROID_EXTRA_LIBS entry '${lib}' for ${target} must be a shared library.")
+        endif()
+
+        set(dst "${extra_libs_dst_dir}/${lib_name}")
+        list(APPEND copy_outputs "${dst}")
+        list(APPEND copy_depends "${lib_path}")
+        list(APPEND copy_commands
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different "${lib_path}" "${dst}"
+        )
+    endforeach()
+
+    add_custom_command(
+        OUTPUT ${copy_outputs}
+        ${copy_commands}
+        DEPENDS ${copy_depends}
+        COMMENT "Copying extra native libraries for ${target}"
+        VERBATIM
+    )
+
+    add_custom_target(${target}_copy_extra_libs DEPENDS ${copy_outputs})
 endfunction()
