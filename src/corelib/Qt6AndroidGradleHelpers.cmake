@@ -246,6 +246,7 @@ function(_qt_internal_android_prepare_gradle_build target)
     _qt_internal_android_copy_android_resources(${target} "${deployment_dir}")
     _qt_internal_android_copy_stdlib(${target} "${deployment_dir}")
     _qt_internal_android_copy_extra_libs(${target} "${deployment_dir}")
+    _qt_internal_android_copy_qt_dependencies(${target} "${deployment_dir}")
     _qt_internal_android_copy_target_package_sources(${target})
 
     _qt_internal_android_generate_bundle_gradle_properties(${target})
@@ -324,6 +325,7 @@ function(_qt_internal_android_add_gradle_build target type)
             ${target}_copy_android_res_files
             ${target}_copy_stdlib
             ${target}_copy_extra_libs
+            ${target}_copy_qt_files
             ${target}_android_deploy_aux
             ${extra_deps}
         WORKING_DIRECTORY
@@ -850,4 +852,420 @@ function(_qt_internal_android_copy_extra_libs target deployment_dir)
     )
 
     add_custom_target(${target}_copy_extra_libs DEPENDS ${copy_outputs})
+endfunction()
+
+function(_qt_internal_android_extract_link_target raw_entry out_entry)
+    set(entry "${raw_entry}")
+
+    if(entry MATCHES "^\$<.*>$")
+        if(entry MATCHES "^\$<LINK_ONLY:([^>]+)>$")
+            set(entry "${CMAKE_MATCH_1}")
+        elseif(entry MATCHES "^\$<TARGET_NAME_IF_EXISTS:([^>]+)>$")
+            set(entry "${CMAKE_MATCH_1}")
+        else()
+            string(REGEX MATCH "(Qt[0-9]*::[A-Za-z0-9_]+)" extracted_target "${entry}")
+            if(extracted_target)
+                set(entry "${extracted_target}")
+            else()
+                set(entry "")
+            endif()
+        endif()
+    endif()
+
+    set(${out_entry} "${entry}" PARENT_SCOPE)
+endfunction()
+
+function(_qt_internal_android_collect_qt_modules target out_qt_modules)
+    set(queue "${target}")
+    set(processed "")
+    set(collected "")
+
+    while(queue)
+        list(POP_FRONT queue current_target)
+
+        get_target_property(current_alias "${current_target}" ALIASED_TARGET)
+        if(current_alias)
+            set(current_target "${current_alias}")
+        endif()
+
+        if(current_target IN_LIST processed)
+            continue()
+        endif()
+        list(APPEND processed "${current_target}")
+
+        foreach(property_name IN ITEMS LINK_LIBRARIES INTERFACE_LINK_LIBRARIES)
+            get_target_property(link_entries "${current_target}" ${property_name})
+            if(NOT link_entries OR link_entries STREQUAL "${property_name}-NOTFOUND")
+                continue()
+            endif()
+
+            foreach(raw_entry IN LISTS link_entries)
+                _qt_internal_android_extract_link_target("${raw_entry}" entry)
+                if(NOT entry OR NOT TARGET "${entry}")
+                    continue()
+                endif()
+
+                if(entry MATCHES "^(Qt[0-9]*::.+)$")
+                    get_target_property(entry_alias "${entry}" ALIASED_TARGET)
+                    if(entry_alias)
+                        set(entry "${entry_alias}")
+                    endif()
+
+                    get_target_property(entry_type "${entry}" TYPE)
+                    if(entry_type AND entry_type MATCHES "^(SHARED|MODULE)_LIBRARY$")
+                        list(APPEND collected "${entry}")
+                    endif()
+                endif()
+
+                if(NOT entry IN_LIST processed AND NOT entry IN_LIST queue)
+                    list(APPEND queue "${entry}")
+                endif()
+            endforeach()
+        endforeach()
+    endwhile()
+
+    list(REMOVE_DUPLICATES collected)
+    set(${out_qt_modules} "${collected}" PARENT_SCOPE)
+endfunction()
+
+function(_qt_internal_android_get_module_binary_name target out_binary_name)
+    get_target_property(output_name "${target}" OUTPUT_NAME)
+    if(output_name)
+        set(${out_binary_name} "${output_name}" PARENT_SCOPE)
+        return()
+    endif()
+
+    if("${target}" MATCHES "^Qt([0-9]*)(::)(.+)$")
+        set(version_part "${CMAKE_MATCH_1}")
+        set(module_part "${CMAKE_MATCH_3}")
+        if(version_part)
+            set(module_prefix "Qt${version_part}")
+        else()
+            set(module_prefix "${QT_CMAKE_EXPORT_NAMESPACE}")
+        endif()
+        set(${out_binary_name} "${module_prefix}${module_part}" PARENT_SCOPE)
+        return()
+    endif()
+
+    set(${out_binary_name} "" PARENT_SCOPE)
+endfunction()
+
+function(_qt_internal_android_get_qt_paths out_qt_prefix out_qt_libs_dir out_qt_data_dir)
+    _qt_internal_get_android_abi_prefix_path(qt_prefix ${CMAKE_ANDROID_ARCH_ABI})
+    _qt_internal_get_android_abi_subdir_path(qt_libs_subdir QT6_INSTALL_LIBS ${CMAKE_ANDROID_ARCH_ABI})
+    _qt_internal_get_android_abi_subdir_path(qt_data_subdir QT6_INSTALL_DATA ${CMAKE_ANDROID_ARCH_ABI})
+
+    _qt_internal_path_join(qt_libs_dir "${qt_prefix}" "${qt_libs_subdir}")
+    _qt_internal_path_join(qt_data_dir "${qt_prefix}" "${qt_data_subdir}")
+
+    set(${out_qt_prefix} "${qt_prefix}" PARENT_SCOPE)
+    set(${out_qt_libs_dir} "${qt_libs_dir}" PARENT_SCOPE)
+    set(${out_qt_data_dir} "${qt_data_dir}" PARENT_SCOPE)
+endfunction()
+
+function(_qt_internal_android_dependency_xml_path target out_xml_path)
+    _qt_internal_android_get_module_binary_name("${target}" module_binary_name)
+    if(module_binary_name STREQUAL "")
+        set(${out_xml_path} "" PARENT_SCOPE)
+        return()
+    endif()
+
+    _qt_internal_android_get_qt_paths(qt_prefix qt_libs_dir qt_data_dir)
+
+    _qt_internal_path_join(candidate "${qt_libs_dir}"
+        "${module_binary_name}_${CMAKE_ANDROID_ARCH_ABI}-android-dependencies.xml")
+    if(EXISTS "${candidate}")
+        set(${out_xml_path} "${candidate}" PARENT_SCOPE)
+    else()
+        set(${out_xml_path} "" PARENT_SCOPE)
+    endif()
+endfunction()
+
+function(_qt_internal_android_extract_xml_file_attrs nodes_var out_attrs)
+    set(filter "${ARGN}")
+    set(files "")
+    foreach(node IN LISTS ${nodes_var})
+        if(filter AND NOT node MATCHES "${filter}")
+            continue()
+        endif()
+        if(node MATCHES "file=\"([^\"]+)\"")
+            list(APPEND files "${CMAKE_MATCH_1}")
+        endif()
+    endforeach()
+    set(${out_attrs} "${files}" PARENT_SCOPE)
+endfunction()
+
+function(_qt_internal_android_read_dependency_xml target out_jars out_libs out_files out_plugin_dirs)
+    _qt_internal_android_dependency_xml_path("${target}" dependency_xml)
+    if(NOT dependency_xml)
+        set(${out_jars} "" PARENT_SCOPE)
+        set(${out_libs} "" PARENT_SCOPE)
+        set(${out_files} "" PARENT_SCOPE)
+        set(${out_plugin_dirs} "" PARENT_SCOPE)
+        return()
+    endif()
+
+    file(READ "${dependency_xml}" xml_contents)
+
+    string(REGEX MATCHALL "<jar[^>]*/>" jar_nodes "${xml_contents}")
+    string(REGEX MATCHALL "<lib[^>]*/>" lib_nodes "${xml_contents}")
+    string(REGEX MATCHALL "<bundled[^>]*/>" bundled_nodes "${xml_contents}")
+
+    _qt_internal_android_extract_xml_file_attrs(jar_nodes parsed_jars)
+    _qt_internal_android_extract_xml_file_attrs(lib_nodes parsed_libs)
+
+    set(parsed_files "")
+    set(parsed_plugin_dirs "")
+    foreach(node IN LISTS bundled_nodes)
+        if(NOT node MATCHES "file=\"([^\"]+)\"")
+            continue()
+        endif()
+        set(file "${CMAKE_MATCH_1}")
+        if(node MATCHES "type=\"plugin_dir\"")
+            list(APPEND parsed_plugin_dirs "${file}")
+        else()
+            list(APPEND parsed_files "${file}")
+        endif()
+    endforeach()
+
+    list(REMOVE_DUPLICATES parsed_jars)
+    list(REMOVE_DUPLICATES parsed_libs)
+    list(REMOVE_DUPLICATES parsed_files)
+    list(REMOVE_DUPLICATES parsed_plugin_dirs)
+
+    set(${out_jars} "${parsed_jars}" PARENT_SCOPE)
+    set(${out_libs} "${parsed_libs}" PARENT_SCOPE)
+    set(${out_files} "${parsed_files}" PARENT_SCOPE)
+    set(${out_plugin_dirs} "${parsed_plugin_dirs}" PARENT_SCOPE)
+endfunction()
+
+function(_qt_internal_android_get_module_jar_dependencies target xml_jars out_var)
+    get_target_property(module_jar_dependencies "${target}"
+        QT_ANDROID_BUNDLED_JAR_DEPENDENCIES)
+    if(module_jar_dependencies STREQUAL "module_jar_dependencies-NOTFOUND")
+        set(module_jar_dependencies "")
+    endif()
+    list(APPEND module_jar_dependencies ${xml_jars})
+    list(REMOVE_DUPLICATES module_jar_dependencies)
+    set(${out_var} "${module_jar_dependencies}" PARENT_SCOPE)
+endfunction()
+
+function(_qt_internal_android_get_module_lib_dependencies target xml_libs out_var)
+    get_target_property(module_lib_dependencies "${target}"
+        QT_ANDROID_LIB_DEPENDENCIES)
+    if(module_lib_dependencies STREQUAL "module_lib_dependencies-NOTFOUND")
+        set(module_lib_dependencies "")
+    endif()
+    list(APPEND module_lib_dependencies ${xml_libs})
+    list(REMOVE_DUPLICATES module_lib_dependencies)
+    set(${out_var} "${module_lib_dependencies}" PARENT_SCOPE)
+endfunction()
+
+function(_qt_internal_android_get_module_file_dependencies target xml_files out_var)
+    get_target_property(module_file_dependencies "${target}"
+        QT_ANDROID_BUNDLED_FILES)
+    if(module_file_dependencies STREQUAL "module_file_dependencies-NOTFOUND")
+        set(module_file_dependencies "")
+    endif()
+    list(APPEND module_file_dependencies ${xml_files})
+    list(REMOVE_DUPLICATES module_file_dependencies)
+    set(${out_var} "${module_file_dependencies}" PARENT_SCOPE)
+endfunction()
+
+function(_qt_internal_android_get_module_plugin_dirs xml_plugin_dirs out_var)
+    set(module_plugin_directories "${xml_plugin_dirs}")
+    list(REMOVE_DUPLICATES module_plugin_directories)
+    set(${out_var} "${module_plugin_directories}" PARENT_SCOPE)
+endfunction()
+
+function(_qt_internal_android_get_clean_dependency dependency out_dependency)
+    if(dependency MATCHES "^\$<.*>$")
+        set(${out_dependency} "" PARENT_SCOPE)
+        return()
+    endif()
+
+    string(REGEX MATCH "^[^:]*" cleaned_dependency "${dependency}")
+    if(NOT cleaned_dependency)
+        set(cleaned_dependency "${dependency}")
+    endif()
+    set(${out_dependency} "${cleaned_dependency}" PARENT_SCOPE)
+endfunction()
+
+function(_qt_internal_android_get_dependency_abs_path target dependency out_abs_path)
+    if(dependency STREQUAL "")
+        set(${out_abs_path} "" PARENT_SCOPE)
+        return()
+    endif()
+
+    _qt_internal_android_get_qt_paths(qt_prefix qt_libs_dir qt_data_dir)
+
+    if(IS_ABSOLUTE "${dependency}")
+        set(abs_path "${dependency}")
+    else()
+        set(base_dir "${qt_prefix}")
+        if(dependency MATCHES "^lib/")
+            string(REGEX REPLACE "^lib/" "" dependency "${dependency}")
+            set(base_dir "${qt_libs_dir}")
+        elseif(dependency MATCHES "^jar/")
+            set(base_dir "${qt_data_dir}")
+        endif()
+        _qt_internal_path_join(abs_path "${base_dir}" "${dependency}")
+    endif()
+
+    # Add abi suffix if file name doesn't have it.
+    set(abi_so_suffix "_${CMAKE_ANDROID_ARCH_ABI}.so")
+    if(NOT abs_path MATCHES "${abi_so_suffix}$")
+        string(REGEX REPLACE "\\.so$" "${abi_so_suffix}" abs_path "${abs_path}")
+    endif()
+
+    if(NOT EXISTS "${abs_path}")
+        message(WARNING "Qt Android deployment: dependency '${abs_path}' is missing for ${target}.")
+        set(${out_abs_path} "" PARENT_SCOPE)
+        return()
+    endif()
+
+    set(${out_abs_path} "${abs_path}" PARENT_SCOPE)
+endfunction()
+
+# Copy Qt dependencies (libs, jars, plugins, other files, assets) to the deployment dir.
+function(_qt_internal_android_copy_qt_dependencies target deployment_dir)
+    set(copy_commands "")
+    set(copy_depends "")
+    set(seen_destinations "")
+
+    set(libs_root_dir "${deployment_dir}/libs")
+    set(libs_abi_dir "${libs_root_dir}/${CMAKE_ANDROID_ARCH_ABI}")
+    list(APPEND copy_commands COMMAND ${CMAKE_COMMAND} -E make_directory "${libs_abi_dir}")
+
+    get_target_property(no_deploy_qt_libs ${target} QT_ANDROID_NO_DEPLOY_QT_LIBS)
+
+    _qt_internal_android_collect_qt_modules(${target} qt_modules)
+    foreach(module IN LISTS qt_modules)
+        if(NOT no_deploy_qt_libs)
+            set(module_dst "${libs_abi_dir}/$<TARGET_FILE_NAME:${module}>")
+            if(module_dst IN_LIST seen_destinations)
+                continue()
+            endif()
+
+            list(APPEND seen_destinations "${module_dst}")
+            list(APPEND copy_commands
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                    "$<TARGET_FILE:${module}>"
+                    "${module_dst}")
+            list(APPEND copy_depends "${module}")
+        endif()
+
+        _qt_internal_android_read_dependency_xml("${module}"
+            xml_jars xml_libs xml_files xml_plugin_dirs)
+
+        _qt_internal_android_get_module_jar_dependencies("${module}" "${xml_jars}" module_jar_deps)
+        foreach(dep IN LISTS module_jar_deps)
+            _qt_internal_android_get_clean_dependency("${dep}" jar_dep)
+            _qt_internal_android_get_dependency_abs_path("${module}" "${jar_dep}" jar_absolute)
+            if(NOT jar_absolute)
+                continue()
+            endif()
+
+            string(REGEX REPLACE "^jar/" "" jar_relative "${jar_dep}")
+            _qt_internal_path_join(destination "${libs_root_dir}" "${jar_relative}")
+            get_filename_component(destination_dir "${destination}" DIRECTORY)
+            if(destination IN_LIST seen_destinations)
+                continue()
+            endif()
+
+            list(APPEND seen_destinations "${destination}")
+            list(APPEND copy_commands
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different "${jar_absolute}" "${destination}")
+            list(APPEND copy_depends "${jar_absolute}")
+        endforeach()
+
+        if(no_deploy_qt_libs)
+            continue()
+        endif()
+
+        _qt_internal_android_get_module_lib_dependencies("${module}" "${xml_libs}" module_lib_deps)
+        foreach(lib IN LISTS module_lib_deps)
+            _qt_internal_android_get_clean_dependency("${lib}" lib_dep)
+            _qt_internal_android_get_dependency_abs_path("${module}" "${lib_dep}" lib_absolute)
+            if(NOT lib_absolute)
+                continue()
+            endif()
+
+            get_filename_component(filename "${lib_absolute}" NAME)
+            _qt_internal_path_join(destination "${libs_abi_dir}" "${filename}")
+            if(destination IN_LIST seen_destinations)
+                continue()
+            endif()
+
+            list(APPEND seen_destinations "${destination}")
+            list(APPEND copy_commands
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different "${lib_absolute}" "${destination}")
+            list(APPEND copy_depends "${lib_absolute}")
+        endforeach()
+
+        set(assets_bundle_dir "${deployment_dir}/assets/android_rcc_bundle")
+        list(APPEND copy_commands COMMAND ${CMAKE_COMMAND} -E make_directory "${assets_bundle_dir}")
+
+        _qt_internal_android_get_module_file_dependencies("${module}" "${xml_files}" module_file_deps)
+        foreach(file IN LISTS module_file_deps)
+            _qt_internal_android_get_clean_dependency("${file}" file_dep)
+            _qt_internal_android_get_dependency_abs_path("${module}" "${file_dep}" file_absolute)
+            if(NOT file_absolute)
+                continue()
+            endif()
+
+            _qt_internal_path_join(destination "${assets_bundle_dir}" "${file_dep}")
+            if(destination IN_LIST seen_destinations)
+                continue()
+            endif()
+
+            list(APPEND seen_destinations "${destination}")
+            if(IS_DIRECTORY "${file_absolute}")
+                list(APPEND copy_commands
+                    COMMAND ${CMAKE_COMMAND} -E copy_directory "${file_absolute}" "${destination}")
+            else()
+                get_filename_component(destination_dir "${destination}" DIRECTORY)
+                list(APPEND copy_commands
+                    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${file_absolute}" "${destination}")
+            endif()
+            list(APPEND copy_depends "${file_absolute}")
+        endforeach()
+
+        _qt_internal_android_get_module_plugin_dirs("${xml_plugin_dirs}" module_plugin_dirs)
+        foreach(plugin IN LISTS module_plugin_dirs)
+            _qt_internal_android_get_clean_dependency("${plugin}" plugin_dep)
+            _qt_internal_android_get_dependency_abs_path("${module}" "${plugin_dep}" plugin_absolute)
+            if(NOT plugin_absolute)
+                continue()
+            endif()
+
+            file(GLOB plugin_files LIST_DIRECTORIES false "${plugin_absolute}/libplugins_*.so")
+            foreach(plugin_file IN LISTS plugin_files)
+                get_filename_component(plugin_name "${plugin_file}" NAME)
+                _qt_internal_path_join(destination "${libs_abi_dir}" "${plugin_name}")
+                if(destination IN_LIST seen_destinations)
+                    continue()
+                endif()
+
+                list(APPEND seen_destinations "${destination}")
+                list(APPEND copy_commands
+                    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${plugin_file}" "${destination}")
+                list(APPEND copy_depends "${plugin_file}")
+            endforeach()
+        endforeach()
+    endforeach()
+
+    list(REMOVE_DUPLICATES copy_depends)
+    list(FILTER copy_depends EXCLUDE REGEX "^$")
+
+    if(copy_commands)
+        add_custom_target(${target}_copy_qt_files
+            ${copy_commands}
+            DEPENDS ${copy_depends}
+            COMMENT "Copying Qt deployment files for ${target}"
+            VERBATIM
+        )
+    else()
+        add_custom_target(${target}_copy_qt_files)
+    endif()
 endfunction()
