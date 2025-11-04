@@ -244,6 +244,7 @@ function(_qt_internal_android_prepare_gradle_build target)
 
     _qt_internal_android_copy_gradle_files(${target} "${android_build_dir}")
     _qt_internal_android_copy_android_resources(${target} "${deployment_dir}")
+    _qt_internal_android_copy_stdlib(${target} "${deployment_dir}")
     _qt_internal_android_copy_target_package_sources(${target})
 
     _qt_internal_android_generate_bundle_gradle_properties(${target})
@@ -320,6 +321,7 @@ function(_qt_internal_android_add_gradle_build target type)
             ${gradle_scripts}
             ${target}_copy_gradle_files
             ${target}_copy_android_res_files
+            ${target}_copy_stdlib
             ${target}_android_deploy_aux
             ${extra_deps}
         WORKING_DIRECTORY
@@ -745,4 +747,42 @@ function(_qt_internal_android_copy_android_resources target deployment_dir)
     )
 
     add_custom_target(${target}_copy_android_res_files DEPENDS ${dst_res_files})
+endfunction()
+
+# Copies the libc++ shared runtime to a build directory.
+function(_qt_internal_android_copy_stdlib target deployment_dir)
+    get_target_property(no_deploy_qt_libs ${target} QT_ANDROID_NO_DEPLOY_QT_LIBS)
+    if(no_deploy_qt_libs)
+        return()
+    endif()
+
+    set(stdlib_triple_by_abi_arm64_v8a "aarch64-linux-android")
+    set(stdlib_triple_by_abi_armeabi_v7a "arm-linux-androideabi")
+    set(stdlib_triple_by_abi_x86 "i686-linux-android")
+    set(stdlib_triple_by_abi_x86_64 "x86_64-linux-android")
+    string(REPLACE "-" "_" cmake_abi "${CMAKE_ANDROID_ARCH_ABI}")
+    set(stdlib_triple "${stdlib_triple_by_abi_${cmake_abi}}")
+    if(NOT stdlib_triple)
+        message(FATAL_ERROR "Unsupported ABI '${CMAKE_ANDROID_ARCH_ABI}' for libc++_shared.")
+    endif()
+
+    set(stdlib_src "${CMAKE_SYSROOT}/usr/lib/${stdlib_triple}/libc++_shared.so")
+    if(NOT EXISTS "${stdlib_src}")
+        message(FATAL_ERROR
+            "The libc++ runtime library was not found at '${stdlib_src}'. "
+            "Check your Android NDK installation.")
+    endif()
+
+    set(stdlib_dst_dir "${deployment_dir}/libs/${CMAKE_ANDROID_ARCH_ABI}")
+    set(stdlib_dst "${stdlib_dst_dir}/libc++_shared.so")
+
+    add_custom_command(OUTPUT "${stdlib_dst}"
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${stdlib_dst_dir}"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${stdlib_src}" "${stdlib_dst}"
+        DEPENDS "${stdlib_src}"
+        COMMENT "Copying libc++_shared for ${target}"
+        VERBATIM
+    )
+
+    add_custom_target(${target}_copy_stdlib DEPENDS "${stdlib_dst}")
 endfunction()
