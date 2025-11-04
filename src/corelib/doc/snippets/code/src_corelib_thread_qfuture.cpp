@@ -464,3 +464,25 @@ auto f = QtConcurrent::run(...)
 ...
 f.cancelChain();
 //! [38]
+
+auto createFuture = [] { return QtFuture::makeReadyVoidFuture(); };
+auto runNestedComputation = [] { return QtFuture::makeReadyVoidFuture(); };
+//! [39]
+QFuture<void> nested;
+auto f = createFuture()
+            .then([&]{
+                nested = runNestedComputation();
+                // do some other work
+                return nested;
+            })
+            .unwrap()
+            .then([]{
+                // other continuation
+            })
+            .onCanceled([]{
+                // handle cancellation
+            });
+//...
+f.cancelChain();
+nested.cancel();
+//! [39]

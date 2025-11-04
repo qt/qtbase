@@ -215,6 +215,20 @@
     It's recommended to use it on the QFuture object that represents the entire
     continuation chain, like it's shown in the example above.
 
+    If any of the continuations in the chain executes an asynchronous
+    computation and returns a QFuture representing it, the \c cancelChain() call
+    will not be propagated into such nested computation once it is started.
+    The reason for that is that the future will be available in the continuation
+    chain only when the outer future is fulfilled, but the cancellation might
+    happen when both an outer and a nested futures are still waiting for their
+    computations to be finished. In such cases, the nested future needs to be
+    captured and canceled explicitly.
+
+    \snippet code/src_corelib_thread_qfuture.cpp 39
+
+    In this example, if \c runNestedComputation() is already in progress,
+    it can only be canceled by calling \c {nested.cancel()}.
+
     \sa cancel()
 */
 
