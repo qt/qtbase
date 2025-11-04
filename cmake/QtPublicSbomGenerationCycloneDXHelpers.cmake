@@ -93,14 +93,11 @@ description = \"Build system tool used to build the project.\"
 ")
 
     set(sbom_format "CYDX_V1_6")
-    _qt_internal_sbom_get_root_project_name_lower_case(repo_project_name_lowercase)
-    _qt_internal_sbom_create_sbom_staging_file(
-        CONTENT "${content}"
+    _qt_internal_sbom_save_intro_content(
         SBOM_FORMAT "${sbom_format}"
-        REPO_PROJECT_NAME_LOWERCASE "${repo_project_name_lowercase}"
-        OUT_VAR_CREATE_STAGING_FILE create_staging_file
-        OUT_VAR_SBOM_DIR sbom_dir
-    )
+        CONTENT "${content}")
+
+    _qt_internal_sbom_create_sbom_staging_dir(OUT_VAR_SBOM_DIR sbom_dir)
 
     _qt_internal_sbom_save_project_info_in_global_properties(
         SUPPLIER "${arg_SUPPLIER}"
@@ -116,8 +113,6 @@ description = \"Build system tool used to build the project.\"
         SBOM_DIR "${sbom_dir}"
         SBOM_FORMAT "${sbom_format}"
     )
-
-    set_property(GLOBAL APPEND PROPERTY _qt_sbom_cmake_include_files_cydx "${create_staging_file}")
 endfunction()
 
 # Finalizes the CycloneDX sbom generation for a project.
@@ -140,6 +135,13 @@ function(_qt_internal_sbom_end_project_generate_cyclone)
 
     _qt_internal_sbom_get_root_project_name_lower_case(repo_project_name_lowercase)
     _qt_internal_sbom_get_qt_repo_project_name_lower_case(real_qt_repo_project_name_lowercase)
+    _qt_internal_get_current_project_sbom_dir(sbom_dir)
+
+    _qt_internal_sbom_create_sbom_staging_file(
+        SBOM_FORMAT "${sbom_format}"
+        SBOM_DIR "${sbom_dir}"
+        REPO_PROJECT_NAME_LOWERCASE "${repo_project_name_lowercase}"
+    )
 
     # Process licenses before getting the includes.
     _qt_internal_sbom_add_recorded_licenses_cydx()
@@ -149,8 +151,6 @@ function(_qt_internal_sbom_end_project_generate_cyclone)
         OUT_VAR_INCLUDES includes
         OUT_VAR_POST_GENERATION_INCLUDES post_generation_includes
     )
-
-    _qt_internal_get_current_project_sbom_dir(sbom_dir)
 
     set(build_time_args "")
     if(includes)
