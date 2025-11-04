@@ -182,15 +182,11 @@ Relationship: SPDXRef-DOCUMENT DESCRIBES ${project_spdx_id}
 ")
 
     set(sbom_format "SPDX_V2")
-    _qt_internal_sbom_get_root_project_name_lower_case(repo_project_name_lowercase)
-    _qt_internal_sbom_create_sbom_staging_file(
-        CONTENT "${content}"
+    _qt_internal_sbom_save_intro_content(
         SBOM_FORMAT "${sbom_format}"
-        REPO_PROJECT_NAME_LOWERCASE "${repo_project_name_lowercase}"
-        OUT_VAR_CREATE_STAGING_FILE create_staging_file
-        OUT_VAR_SBOM_DIR sbom_dir
-    )
+        CONTENT "${content}")
 
+    _qt_internal_sbom_create_sbom_staging_dir(OUT_VAR_SBOM_DIR sbom_dir)
 
     _qt_internal_sbom_save_project_info_in_global_properties(
         SUPPLIER "${arg_SUPPLIER}"
@@ -207,8 +203,6 @@ Relationship: SPDXRef-DOCUMENT DESCRIBES ${project_spdx_id}
         SBOM_DIR "${sbom_dir}"
         SBOM_FORMAT "${sbom_format}"
     )
-
-    set_property(GLOBAL APPEND PROPERTY _qt_sbom_cmake_include_files "${create_staging_file}")
 
     set_property(GLOBAL PROPERTY _qt_sbom_spdx_id_count 0)
     set_property(GLOBAL PROPERTY _qt_sbom_relationship_counter 0)
@@ -235,6 +229,13 @@ function(_qt_internal_sbom_end_project_generate)
 
     _qt_internal_sbom_get_root_project_name_lower_case(repo_project_name_lowercase)
     _qt_internal_sbom_get_qt_repo_project_name_lower_case(real_qt_repo_project_name_lowercase)
+    _qt_internal_get_current_project_sbom_dir(sbom_dir)
+
+    _qt_internal_sbom_create_sbom_staging_file(
+        SBOM_FORMAT "${sbom_format}"
+        SBOM_DIR "${sbom_dir}"
+        REPO_PROJECT_NAME_LOWERCASE "${repo_project_name_lowercase}"
+    )
 
     _qt_internal_sbom_get_cmake_include_files(
         SBOM_FORMAT "${sbom_format}"
@@ -244,8 +245,6 @@ function(_qt_internal_sbom_end_project_generate)
         OUT_VAR_POST_GENERATION_INCLUDES post_generation_includes
         OUT_VAR_VERIFY_INCLUDES verify_includes
     )
-
-    _qt_internal_get_current_project_sbom_dir(sbom_dir)
 
     set(build_time_args "")
     if(includes)
