@@ -25,6 +25,7 @@ public:
 
     Qt::ColorScheme colorScheme() const override;
     void requestColorScheme(Qt::ColorScheme scheme) override;
+    Qt::ContrastPreference contrastPreference() const override;
 
 #if !defined(Q_OS_TVOS) && !defined(Q_OS_VISIONOS)
     QPlatformMenuItem* createPlatformMenuItem() const override;

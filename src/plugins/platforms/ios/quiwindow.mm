@@ -53,7 +53,9 @@
     if (self.screen == UIScreen.mainScreen) {
         // Check if the current userInterfaceStyle reports a different appearance than
         // the platformTheme's appearance. We might have set that one based on the UIScreen
+        // Check for changes in the "Increase contrast" setting too.
         if (previousTraitCollection.userInterfaceStyle != self.traitCollection.userInterfaceStyle
+            || previousTraitCollection.accessibilityContrast != self.traitCollection.accessibilityContrast
             || QGuiApplicationPrivate::platformTheme()->colorScheme() != colorScheme) {
             QIOSTheme::initializeSystemPalette();
             QWindowSystemInterface::handleThemeChange<QWindowSystemInterface::SynchronousDelivery>();
