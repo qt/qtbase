@@ -1764,7 +1764,8 @@ void QHttp2Connection::handleGOAWAY()
     Q_ASSERT(inboundFrame.payloadSize() >= 8);
 
     const uchar *const src = inboundFrame.dataBegin();
-    quint32 lastStreamID = qFromBigEndian<quint32>(src);
+    // RFC 9113, 4.1: 31-bit Stream ID; lastValidStreamID(0x7FFFFFFF) masks out the reserved MSB
+    quint32 lastStreamID = qFromBigEndian<quint32>(src) & lastValidStreamID;
     const Http2Error errorCode = Http2Error(qFromBigEndian<quint32>(src + 4));
 
     if (!lastStreamID) {

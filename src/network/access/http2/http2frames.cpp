@@ -34,7 +34,8 @@ FrameType Frame::type() const
 quint32 Frame::streamID() const
 {
     Q_ASSERT(buffer.size() >= frameHeaderSize);
-    return qFromBigEndian<quint32>(&buffer[5]);
+    // RFC 9113, 4.1: 31-bit Stream ID; lastValidStreamID(0x7FFFFFFF) masks out the reserved MSB
+    return qFromBigEndian<quint32>(&buffer[5]) & lastValidStreamID;
 }
 
 FrameFlags Frame::flags() const
