@@ -291,7 +291,9 @@ function(_qt_internal_sbom_save_project_info_in_global_properties)
         PROJECT
         PROJECT_SPDX_ID
     )
-    set(multi_args "")
+    set(multi_args
+        EXTERNAL_REFERENCE_SBOM_DIRS
+    )
     cmake_parse_arguments(PARSE_ARGV 0 arg "${opt_args}" "${single_args}" "${multi_args}")
     _qt_internal_validate_all_args_are_parsed(arg)
 
@@ -301,6 +303,12 @@ function(_qt_internal_sbom_save_project_info_in_global_properties)
 
     set_property(GLOBAL PROPERTY _qt_sbom_project_name "${arg_PROJECT}")
     set_property(GLOBAL PROPERTY _qt_sbom_project_spdx_id "${arg_PROJECT_SPDX_ID}")
+
+    # Used for finding external reference spdx documents.
+    if(arg_EXTERNAL_REFERENCE_SBOM_DIRS)
+        set_property(GLOBAL APPEND PROPERTY _qt_internal_sbom_dirs
+            ${arg_EXTERNAL_REFERENCE_SBOM_DIRS})
+    endif()
 endfunction()
 
 # Helper function to get cmake include files for SBOM generation from global properties.

@@ -191,7 +191,6 @@ Relationship: SPDXRef-DOCUMENT DESCRIBES ${project_spdx_id}
         OUT_VAR_SBOM_DIR sbom_dir
     )
 
-    set_property(GLOBAL APPEND PROPERTY _qt_internal_sbom_dirs "${sbom_dir}")
 
     _qt_internal_sbom_save_project_info_in_global_properties(
         SUPPLIER "${arg_SUPPLIER}"
@@ -199,6 +198,7 @@ Relationship: SPDXRef-DOCUMENT DESCRIBES ${project_spdx_id}
         NAMESPACE "${arg_NAMESPACE}"
         PROJECT "${arg_PROJECT}"
         PROJECT_SPDX_ID "${project_spdx_id}"
+        EXTERNAL_REFERENCE_SBOM_DIRS "${sbom_dir}"
     )
 
     _qt_internal_sbom_save_common_path_variables_in_global_properties(
