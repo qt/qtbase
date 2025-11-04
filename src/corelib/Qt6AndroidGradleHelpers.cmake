@@ -249,6 +249,7 @@ function(_qt_internal_android_prepare_gradle_build target)
     _qt_internal_android_copy_extra_libs(${target} "${deployment_dir}")
     _qt_internal_android_copy_qt_dependencies(${target} "${deployment_dir}")
     _qt_internal_android_copy_target_package_sources(${target})
+    _qt_internal_android_generate_libs_xml(${target} "${deployment_dir}")
 
     _qt_internal_android_generate_bundle_gradle_properties(${target})
     _qt_internal_android_generate_bundle_settings_gradle(${target})
@@ -328,6 +329,7 @@ function(_qt_internal_android_add_gradle_build target type)
             ${target}_copy_stdlib
             ${target}_copy_extra_libs
             ${target}_copy_qt_files
+            ${target}_update_libs_xml
             ${target}_android_deploy_aux
             ${extra_deps}
         WORKING_DIRECTORY
@@ -781,6 +783,7 @@ function(_qt_internal_android_copy_stdlib target deployment_dir)
 
     set(stdlib_dst_dir "${deployment_dir}/libs/${CMAKE_ANDROID_ARCH_ABI}")
     set(stdlib_dst "${stdlib_dst_dir}/libc++_shared.so")
+    _qt_internal_android_append_to_libs_xml_section(${target} qt_libs "${stdlib_dst}")
 
     add_custom_command(OUTPUT "${stdlib_dst}"
         COMMAND ${CMAKE_COMMAND} -E make_directory "${stdlib_dst_dir}"
@@ -837,6 +840,7 @@ function(_qt_internal_android_copy_extra_libs target deployment_dir)
                 "QT_ANDROID_EXTRA_LIBS entry '${lib}' for ${target} must be a shared library.")
         endif()
 
+        _qt_internal_android_append_to_libs_xml_section(${target} extra_libs "${lib_path}")
         set(dst "${extra_libs_dst_dir}/${lib_name}")
         list(APPEND copy_outputs "${dst}")
         list(APPEND copy_depends "${lib_path}")
@@ -949,10 +953,10 @@ function(_qt_internal_android_collect_qt_modules target out_qt_modules)
     set(${out_qt_modules} "${collected}" PARENT_SCOPE)
 endfunction()
 
-function(_qt_internal_android_get_module_binary_name target out_binary_name)
+function(_qt_internal_android_get_module_library_name target out_lib_name)
     get_target_property(output_name "${target}" OUTPUT_NAME)
     if(output_name)
-        set(${out_binary_name} "${output_name}" PARENT_SCOPE)
+        set(${out_lib_name} "${output_name}" PARENT_SCOPE)
         return()
     endif()
 
@@ -964,11 +968,11 @@ function(_qt_internal_android_get_module_binary_name target out_binary_name)
         else()
             set(module_prefix "${QT_CMAKE_EXPORT_NAMESPACE}")
         endif()
-        set(${out_binary_name} "${module_prefix}${module_part}" PARENT_SCOPE)
+        set(${out_lib_name} "${module_prefix}${module_part}" PARENT_SCOPE)
         return()
     endif()
 
-    set(${out_binary_name} "" PARENT_SCOPE)
+    set(${out_lib_name} "" PARENT_SCOPE)
 endfunction()
 
 function(_qt_internal_android_get_qt_paths out_qt_prefix out_qt_libs_dir out_qt_data_dir)
@@ -985,8 +989,8 @@ function(_qt_internal_android_get_qt_paths out_qt_prefix out_qt_libs_dir out_qt_
 endfunction()
 
 function(_qt_internal_android_dependency_xml_path target out_xml_path)
-    _qt_internal_android_get_module_binary_name("${target}" module_binary_name)
-    if(module_binary_name STREQUAL "")
+    _qt_internal_android_get_module_library_name("${target}" module_lib_name)
+    if(module_lib_name STREQUAL "")
         set(${out_xml_path} "" PARENT_SCOPE)
         return()
     endif()
@@ -994,7 +998,7 @@ function(_qt_internal_android_dependency_xml_path target out_xml_path)
     _qt_internal_android_get_qt_paths(qt_prefix qt_libs_dir qt_data_dir)
 
     _qt_internal_path_join(candidate "${qt_libs_dir}"
-        "${module_binary_name}_${CMAKE_ANDROID_ARCH_ABI}-android-dependencies.xml")
+        "${module_lib_name}_${CMAKE_ANDROID_ARCH_ABI}-android-dependencies.xml")
     if(EXISTS "${candidate}")
         set(${out_xml_path} "${candidate}" PARENT_SCOPE)
     else()
@@ -1164,6 +1168,17 @@ function(_qt_internal_android_copy_qt_dependencies target deployment_dir)
     foreach(module IN LISTS qt_modules)
         if(NOT no_deploy_qt_libs)
             set(module_dst "${libs_abi_dir}/$<TARGET_FILE_NAME:${module}>")
+            _qt_internal_android_get_module_library_name("${module}" module_lib_name)
+            if(NOT module_lib_name)
+                get_target_property(module_output_name "${module}" OUTPUT_NAME)
+                if(module_output_name)
+                    set(module_lib_name "${module_output_name}")
+                else()
+                    set(module_lib_name "${module}")
+                endif()
+            endif()
+            set(module_lib_name "${module_lib_name}_${CMAKE_ANDROID_ARCH_ABI}")
+            _qt_internal_android_append_to_libs_xml_section(${target} qt_libs "${module_lib_name}")
             if(module_dst IN_LIST seen_destinations)
                 continue()
             endif()
@@ -1213,6 +1228,9 @@ function(_qt_internal_android_copy_qt_dependencies target deployment_dir)
             endif()
 
             get_filename_component(filename "${lib_absolute}" NAME)
+            if(NOT filename MATCHES "^libplugins_")
+                _qt_internal_android_append_to_libs_xml_section(${target} qt_libs "${filename}")
+            endif()
             _qt_internal_path_join(destination "${libs_abi_dir}" "${filename}")
             if(destination IN_LIST seen_destinations)
                 continue()
@@ -1263,6 +1281,10 @@ function(_qt_internal_android_copy_qt_dependencies target deployment_dir)
             file(GLOB plugin_files LIST_DIRECTORIES false "${plugin_absolute}/libplugins_*.so")
             foreach(plugin_file IN LISTS plugin_files)
                 get_filename_component(plugin_name "${plugin_file}" NAME)
+                # Only Add the Android platform plugin
+                if(plugin_name MATCHES "^libplugins_platforms_qtforandroid_")
+                    _qt_internal_android_append_to_libs_xml_section(${target} local_libs "${plugin_name}")
+                endif()
                 _qt_internal_path_join(destination "${libs_abi_dir}" "${plugin_name}")
                 if(destination IN_LIST seen_destinations)
                     continue()
@@ -1289,4 +1311,98 @@ function(_qt_internal_android_copy_qt_dependencies target deployment_dir)
     else()
         add_custom_target(${target}_copy_qt_files)
     endif()
+endfunction()
+
+# Appends a unique lib name for the target to the libs.xml section.
+function(_qt_internal_android_append_to_libs_xml_section target section_name lib_name)
+    if(NOT lib_name)
+        return()
+    endif()
+
+    set(normalized_lib_name "${lib_name}")
+    if(NOT section_name STREQUAL "local_libs")
+        get_filename_component(file_name "${normalized_lib_name}" NAME)
+        if(file_name MATCHES "^lib(.+)\.so$")
+            set(normalized_lib_name "${CMAKE_MATCH_1}")
+        else()
+            string(REGEX REPLACE "\.so$" "" normalized_lib_name "${file_name}")
+        endif()
+    endif()
+
+    set(full_section_name "_android_libs_xml_${section_name}")
+    get_target_property(current_libs ${target} ${full_section_name})
+    if(NOT current_libs OR current_libs STREQUAL "${full_section_name}-NOTFOUND")
+        set(current_libs "")
+    endif()
+
+    list(FIND current_libs "${normalized_lib_name}" _qt_append_index)
+    if(_qt_append_index EQUAL -1)
+        list(APPEND current_libs "${normalized_lib_name}")
+        set_target_properties(${target} PROPERTIES ${full_section_name} "${current_libs}")
+    endif()
+endfunction()
+
+# Collects the target's libs.xml section and returns the XML string.
+function(_qt_internal_android_assemble_libs_xml_section target section_name out_section)
+    set(property_name "_android_libs_xml_${section_name}")
+    get_target_property(libs ${target} ${property_name})
+    if(NOT libs OR libs STREQUAL "${property_name}-NOTFOUND")
+        set(libs "")
+    endif()
+
+    list(REMOVE_ITEM libs "")
+    list(REMOVE_DUPLICATES libs)
+    list(SORT libs)
+    set(entries "")
+    foreach(lib IN LISTS libs)
+        string(APPEND entries "
+        <item>${abi};${lib}</item>")
+    endforeach()
+    string(REGEX REPLACE "^
+        " "" entries "${entries}") # fix indentation of first item
+
+    set(${out_section} "${entries}" PARENT_SCOPE)
+endfunction()
+
+# Generate a populated libs.xml file.
+function(_qt_internal_android_generate_libs_xml target deployment_dir)
+    set(abi "${CMAKE_ANDROID_ARCH_ABI}")
+    _qt_internal_android_assemble_libs_xml_section(${target} "qt_libs" qt_libs)
+    _qt_internal_android_assemble_libs_xml_section(${target} "local_libs" local_libs)
+    _qt_internal_android_assemble_libs_xml_section(${target} "extra_libs" extra_libs)
+
+    _qt_internal_android_template_res_dir(template_res_dir)
+    set(libs_xml_template "${template_res_dir}/values/libs.xml")
+    if(NOT EXISTS "${libs_xml_template}")
+        message(FATAL_ERROR "Android libs.xml template file not found at '${libs_xml_template}'.")
+    endif()
+    file(READ "${libs_xml_template}" content)
+
+    string(REPLACE "<!-- %%INSERT_QT_LIBS%% -->" "${qt_libs}" content "${content}")
+    string(REPLACE "<!-- %%INSERT_LOCAL_LIBS%% -->" "${local_libs}" content "${content}")
+    string(REPLACE "<!-- %%INSERT_EXTRA_LIBS%% -->" "${extra_libs}" content "${content}")
+    string(REPLACE "<!-- %%USE_LOCAL_QT_LIBS%% -->" "1" content "${content}")
+    string(REPLACE "<!-- %%BUNDLE_LOCAL_QT_LIBS%% -->" "1" content "${content}")
+    string(REPLACE "<!-- %%SYSTEM_LIBS_PREFIX%% -->" "" content "${content}")
+
+    set(libs_xml_dst "${deployment_dir}/res/values/libs.xml")
+    set(libs_xml_dst_tmp "${deployment_dir}/res/values/libs.xml.tmp")
+
+    string(REPLACE "::" "_" sanitized_target "${target}")
+    set(cmake_files_dir "${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles")
+    set(libs_xml_update_script "${cmake_files_dir}/${sanitized_target}_update_libs_xml.cmake")
+    file(GENERATE OUTPUT "${libs_xml_update_script}" CONTENT
+"file(MAKE_DIRECTORY \"${deployment_dir}/res/values\")
+file(WRITE \"${libs_xml_dst}\" [=[${content}]=])
+")
+
+    add_custom_target(${target}_update_libs_xml
+        COMMAND ${CMAKE_COMMAND} -P "${libs_xml_update_script}"
+        DEPENDS
+            ${target}_copy_android_res_files
+        COMMENT "Updating libs.xml for ${target}"
+        VERBATIM
+    )
+
+    set_property(TARGET ${target} APPEND PROPERTY _qt_android_deployment_files "${libs_xml_dst}")
 endfunction()
