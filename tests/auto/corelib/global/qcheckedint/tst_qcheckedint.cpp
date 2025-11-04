@@ -347,7 +347,7 @@ void tst_QCheckedInt::division()
 
 // This causes an internal compiler error on MSVC, so skipping it there
 // Integrity's compiler says this code isn't constexpr.
-#if (!defined(Q_CC_MSVC) || Q_CC_MSVC > 1944) && !defined(Q_CC_GHS)
+#if (!defined(Q_CC_MSVC) || Q_CC_MSVC > 1950) && !defined(Q_CC_GHS)
 
 template <typename T>
 constexpr bool checkedIntTypeProperties()
