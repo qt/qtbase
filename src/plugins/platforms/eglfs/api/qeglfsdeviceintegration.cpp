@@ -28,6 +28,10 @@
 #include <sys/ioctl.h>
 #endif
 
+#if defined(Q_OS_VXWORKS)
+#include <fbdev.h>
+#endif
+
 #include <private/qfactoryloader_p.h>
 #include <private/qcore_unix_p.h>
 
@@ -268,6 +272,13 @@ void QEglFSDeviceIntegration::waitForVSync(QPlatformSurface *surface) const
     if (forceSync && framebuffer != -1) {
         int arg = 0;
         if (ioctl(framebuffer, FBIO_WAITFORVSYNC, &arg) == -1)
+            qWarning("Could not wait for vsync.");
+    }
+#elif defined(Q_OS_VXWORKS) && defined(FB_IOCTL_VSYNC)
+    static const bool forceSync = qEnvironmentVariableIntValue("QT_QPA_EGLFS_FORCEVSYNC");
+    if (forceSync && framebuffer != -1) {
+        int arg = 0;
+        if (ioctl(framebuffer, FB_IOCTL_VSYNC, &arg) == -1)
             qWarning("Could not wait for vsync.");
     }
 #endif
