@@ -1865,7 +1865,7 @@ QRect QWindows11Style::subElementRect(QStyle::SubElement element, const QStyleOp
     case QStyle::SE_RadioButtonIndicator:
     case QStyle::SE_CheckBoxIndicator:
         ret = QWindowsVistaStyle::subElementRect(element, option, widget);
-        ret.moveLeft(contentItemHMargin);
+        ret.moveLeft(ret.left() + contentItemHMargin);
         break;
     case QStyle::SE_ComboBoxFocusRect:
     case QStyle::SE_CheckBoxFocusRect:
