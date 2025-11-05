@@ -251,6 +251,11 @@ void QNetworkReplyHttpImpl::close()
 
 void QNetworkReplyHttpImpl::abort()
 {
+    abortImpl(QNetworkReply::OperationCanceledError);
+}
+
+void QNetworkReplyHttpImpl::abortImpl(QNetworkReply::NetworkError error)
+{
     Q_D(QNetworkReplyHttpImpl);
     // FIXME
     if (d->state == QNetworkReplyPrivate::Finished || d->state == QNetworkReplyPrivate::Aborted)
@@ -261,7 +266,8 @@ void QNetworkReplyHttpImpl::abort()
     if (d->state != QNetworkReplyPrivate::Finished) {
         // call finished which will emit signals
         // FIXME shouldn't this be emitted Queued?
-        d->error(OperationCanceledError, tr("Operation canceled"));
+        d->error(error,
+                 error == TimeoutError ? tr("Operation timed out") : tr("Operation canceled"));
         d->finished();
     }
 
@@ -2103,7 +2109,7 @@ void QNetworkReplyHttpImplPrivate::_q_bufferOutgoingData()
 void QNetworkReplyHttpImplPrivate::_q_transferTimedOut()
 {
     Q_Q(QNetworkReplyHttpImpl);
-    q->abort();
+    q->abortImpl(QNetworkReply::TimeoutError);
 }
 
 void QNetworkReplyHttpImplPrivate::setupTransferTimeout()
@@ -2225,8 +2231,10 @@ void QNetworkReplyHttpImplPrivate::error(QNetworkReplyImpl::NetworkError code, c
     // Can't set and emit multiple errors.
     if (errorCode != QNetworkReply::NoError) {
         // But somewhat unavoidable if we have cancelled the request:
-        if (errorCode != QNetworkReply::OperationCanceledError)
+        if (errorCode != QNetworkReply::OperationCanceledError
+            && errorCode != QNetworkReply::TimeoutError) {
             qWarning("QNetworkReplyImplPrivate::error: Internal problem, this method must only be called once.");
+        }
         return;
     }
 

@@ -58,6 +58,7 @@ public:
 
     void close() override;
     void abort() override;
+    void abortImpl(QNetworkReply::NetworkError error);
     qint64 bytesAvailable() const override;
     bool isSequential () const override;
     qint64 size() const override;
