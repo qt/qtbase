@@ -16,11 +16,13 @@
     \note This example renders two images to two separate buffers. When you
     view the images through 3D glasses, they give a 3D holographic effect.
 
-    \image stereoexample-leftbuffer.png
+    \image stereoexample-leftbuffer.png {Screenshot of a symbol aligned to the left
+           side of the screen}
 
     The above image is what will be rendered to the left buffer.
 
-    \image stereoexample-rightbuffer.png
+    \image stereoexample-rightbuffer.png {Screenshot of a symbol aligned to the right
+           side of the screen}
 
     The above image is what will be rendered to the right buffer.
 

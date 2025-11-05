@@ -96,7 +96,8 @@
   rectangle, and painting operations will be clipped to the bounds of the
   drawable part of the page.
 
-  \li \inlineimage printer-rects.png
+  \li \inlineimage printer-rects.png {Illustration of how the with and height
+                   of paperRect() and pageRect() are determined}
   \endtable
 
   The paint system automatically uses the correct device metrics when painting

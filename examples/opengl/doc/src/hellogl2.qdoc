@@ -10,7 +10,7 @@
     \brief The Hello GL2 example demonstrates the basic use of the OpenGL-related classes
     provided with Qt.
 
-    \image hellogl2-example.png
+    \image hellogl2-example.png {Screenshot of Window displaying a 3d object}
 
     Qt provides the QOpenGLWidget class to enable OpenGL graphics to be rendered
     within a standard application user interface. By subclassing this class, and

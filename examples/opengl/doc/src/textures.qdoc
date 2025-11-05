@@ -9,5 +9,6 @@
     \brief The Textures example demonstrates the use of Qt's image classes as textures in
     applications that use both OpenGL and Qt to display graphics.
 
-    \image textures-example.png
+    \image textures-example.png {Screenshot showing six cubes and each cube has
+           a different background color}
 */

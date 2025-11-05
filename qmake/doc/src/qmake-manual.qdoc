@@ -5139,7 +5139,7 @@
     The following image displays the mydialog.ui file in Qt Creator Design mode.
     You can view the code in the Edit mode.
 
-    \image qmake-precompile-ui.png
+    \image qmake-precompile-ui.png {Screenshot of the dialog in design mode}
 
     \section2 \c stable.h
 

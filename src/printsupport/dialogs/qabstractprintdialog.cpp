@@ -283,8 +283,10 @@ void QAbstractPrintDialogPrivate::setPrinter(QPrinter *newPrinter)
 
     \table
     \row
-    \li \inlineimage plastique-printdialog.png
-    \li \inlineimage plastique-printdialog-properties.png
+    \li \inlineimage plastique-printdialog.png {Screenshot of menu to print a
+                     document}
+    \li \inlineimage plastique-printdialog-properties.png {Screenshot of settings
+                     in which the document will be printed}
     \endtable
 
     The printer dialog (shown above in Plastique style) enables access to common

@@ -10,7 +10,8 @@
 
     \brief Demonstrates OpenGL ES 3.0 functions via QOpenGLExtraFunctions.
 
-    \image hellogles3-example.png
+    \image hellogles3-example.png {Screenshot showing multiple 3d objects forming
+           a symbol}
     \section1 Overview
 
     This example demonstrates easy, cross-platform usage of OpenGL ES 3.0

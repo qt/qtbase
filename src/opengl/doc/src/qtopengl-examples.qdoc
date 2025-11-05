@@ -7,7 +7,8 @@
     \brief Accessing OpenGL from Qt.
     \group examples-widgets-opengl
 
-    \image opengl-examples.png
+    \image opengl-examples.png {Screenshot of multiple 3d objects spreaded
+           across the screen}
 
     These examples describe how to use the \l {Qt OpenGL} module.
 

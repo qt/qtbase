@@ -10,7 +10,8 @@
     \brief The 2D Painting example shows how QPainter and QOpenGLWidget can be
     used together to display accelerated 2D graphics on supported hardware.
 
-    \image 2dpainting-example.png
+    \image 2dpainting-example.png {Screenshot showing a comparison of an image
+           between Native and OpenGL}
 
     The QPainter class is used to draw 2D graphics primitives onto
     paint devices provided by QPaintDevice subclasses, such as QWidget
