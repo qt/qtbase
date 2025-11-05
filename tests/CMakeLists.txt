@@ -20,6 +20,7 @@ if(QT_BUILD_STANDALONE_TESTS)
     qt_find_package(WrapOpenSSLHeaders MODULE PROVIDED_TARGETS WrapOpenSSLHeaders::WrapOpenSSLHeaders)
 endif()
 qt_build_tests()
-if(FEATURE_test_squish)
+
+if(QT_FEATURE_test_squish)
     add_subdirectory(squish)
 endif()
