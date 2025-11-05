@@ -4317,6 +4317,7 @@ void tst_QSslSocket::ephemeralServerKey()
     QFETCH(QString, cipher);
     QFETCH(bool, emptyKey);
     SslServer server;
+    server.protocol = QSsl::TlsV1_2; // OpenSSL has TLS 1.3 and older ciphers separate.
     server.config.setCiphers(QList<QSslCipher>() << QSslCipher(cipher));
     QVERIFY(server.listen());
     QSslSocketPtr client = newSocket();
@@ -4329,6 +4330,8 @@ void tst_QSslSocket::ephemeralServerKey()
 
     QCOMPARE(spy.size(), 1);
     QVERIFY(server.config.ephemeralServerKey().isNull());
+    if (client->sessionCipher() != QSslCipher(cipher))
+        QSKIP(QLatin1String("Failed to negotiate the required ciphersuite (%1)").arg(cipher).toUtf8());
     QCOMPARE(client->sslConfiguration().ephemeralServerKey().isNull(), emptyKey);
 }
 
