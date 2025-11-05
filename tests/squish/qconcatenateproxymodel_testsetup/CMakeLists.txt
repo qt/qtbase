@@ -1,5 +1,7 @@
 # Copyright (C) 2025 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-add_subdirectory(suite_qconcatenateproxymodel)
-add_subdirectory(qconcatenateproxymodel)
+add_subdirectory(qconcatenatetablesproxymodel)
+
+file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/suite_qconcatenateproxymodel"
+     DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/suite_qconcatenateproxymodel")
