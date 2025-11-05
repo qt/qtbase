@@ -31,6 +31,8 @@ set(__qt_third_party_deps "@third_party_deps@")
 # set _NOT_FOUND_MESSAGE which will be displayed by the includer of the Dependencies file.
 set(${CMAKE_FIND_PACKAGE_NAME}_FIND_REQUIRED FALSE)
 
-_qt_internal_find_third_party_dependencies(@INSTALL_CMAKE_NAMESPACE@ __qt_third_party_deps)
+if(__qt_third_party_deps)
+    _qt_internal_find_third_party_dependencies(@INSTALL_CMAKE_NAMESPACE@ __qt_third_party_deps)
+endif()
 
 set(@INSTALL_CMAKE_NAMESPACE@_FOUND TRUE)
