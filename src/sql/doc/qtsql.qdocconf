@@ -58,3 +58,6 @@ manifestmeta.highlighted.names = \
 
 # Enforce zero documentation warnings
 warninglimit = 0
+
+# Report warnings for images without alt text
+reportmissingalttextforimages = true
