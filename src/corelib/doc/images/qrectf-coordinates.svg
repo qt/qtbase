@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="400"
+   height="220"
+   version="1.1"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+
+<style>
+  svg .box-style { stroke: black; fill: none; stroke-width: 2 }
+  svg .line-style { stroke: red; fill: none }
+  svg .text-style { font: 20px arial; fill: black }
+  svg .fill-style { stroke: none; fill: red }
+  svg .fn-text-style { font: 12px monospace; fill: black }
+
+  svg.dark .box-style { stroke: #f2f2f2; fill: none; stroke-width: 2 }
+  svg.dark .line-style { stroke: orange; fill: none }
+  svg.dark .text-style { font: 20px arial; fill: #f2f2f2 }
+  svg.dark .fill-style { stroke: none; fill: orange }
+  svg.dark .fn-text-style { font: 12px monospace; fill: #f2f2f2 }
+
+  [data-theme="dark"] svg .box-style { stroke: #f2f2f2; fill: none; stroke-width: 2 }
+  [data-theme="dark"] svg .line-style { stroke: orange; fill: none }
+  [data-theme="dark"] svg .text-style { font: 20px arial; fill: #f2f2f2 }
+  [data-theme="dark"] svg .fill-style { stroke: none; fill: orange }
+  [data-theme="dark"] svg .fn-text-style { font: 12px monospace; fill: #f2f2f2 }
+
+  [data-theme="light"] svg .box-style { stroke: black; fill: none; stroke-width: 2 }
+  [data-theme="light"] svg .line-style { stroke: red; fill: none }
+  [data-theme="light"] svg .text-style { font: 20px arial; fill: black }
+  [data-theme="light"] svg .fill-style { stroke: none; fill: red }
+  [data-theme="light"] svg .fn-text-style { font: 12px monospace; fill: black }
+</style>
+
+<text x="5" y="148" font-family="monospace" font-size="12px"
+      class="fn-text-style">bottomLeft()</text>
+<text x="25" y="22" font-family="monospace" font-size="12px"
+      class="fn-text-style">topLeft()</text>
+<text x="75" y="207" font-family="monospace" font-size="12px"
+      class="fn-text-style">left()</text>
+<text x="107" y="49" font-family="monospace" font-size="12px"
+      class="fn-text-style">x(), y()</text>
+<text x="167" y="85" font-family="monospace" font-size="12px"
+      class="fn-text-style">center()</text>
+<text x="196" y="148" font-family="monospace" font-size="12px"
+      class="fn-text-style">bottomRight()</text>
+<text x="220" y="22" font-family="monospace" font-size="12px"
+      class="fn-text-style">topRight()</text>
+<text x="271" y="207" font-family="monospace" font-size="12px"
+      class="fn-text-style">right()</text>
+<text x="339" y="34" font-family="monospace" font-size="12px"
+      class="fn-text-style">top()</text>
+<text x="339" y="160" font-family="monospace" font-size="12px"
+      class="fn-text-style">bottom()</text>
+
+<path d="m 100.5,3.5 v 190" stroke="red" stroke-dasharray="3,3"
+      class="line-style" />
+<path d="m 0.5,30.5 h 335" stroke="red" stroke-dasharray="3,3"
+      class="line-style" />
+<path d="m 300.5,0.5 v 190" stroke="red" stroke-dasharray="3,3"
+      class="line-style" />
+<path d="m 0.5,160.5 h 335" stroke="red" stroke-dasharray="3,3"
+      class="line-style" />
+
+<rect x="100.5" y="30.5" width="200" height="130"
+      class="box-style" />
+
+<circle cx="100.5" cy="30.5" r="4" stroke="none" fill="red"
+        class="fill-style" />
+<circle cx="300.5" cy="30.5" r="4" stroke="none" fill="red"
+        class="fill-style" />
+<circle cx="100.5" cy="160.5" r="4" stroke="none" fill="red"
+        class="fill-style" />
+<circle cx="300.5" cy="160.5" r="4" stroke="none" fill="red"
+        class="fill-style" />
+<circle cx="200.5" cy="95.5" r="4" stroke="none" fill="red"
+        class="fill-style" />
+</svg>

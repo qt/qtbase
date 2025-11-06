@@ -99,17 +99,17 @@
     \header
     \li {2,1} QRectF
     \row
-    \li \inlineimage qrect-diagram-zero.png
+    \li \inlineimage qrect-diagram-zero.svg
                      {Rectangle showing width() and height() dimensions}
-    \li \inlineimage qrectf-diagram-one.png
+    \li \inlineimage qrectf-diagram-one.svg
                      {Rectangle with one-pixel pen showing corner coordinates}
     \row
     \li Logical representation
     \li One pixel wide pen
     \row
-    \li \inlineimage qrectf-diagram-two.png
+    \li \inlineimage qrectf-diagram-two.svg
                      {Rectangle with two-pixel pen showing corner coordinates}
-    \li \inlineimage qrectf-diagram-three.png
+    \li \inlineimage qrectf-diagram-three.svg
                      {Rectangle with three-pixel pen showing corner coordinates}
     \row
     \li Two pixel wide pen

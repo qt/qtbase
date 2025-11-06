@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="350"
+   height="250"
+   version="1.1"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+
+<style>
+  svg .line-style { stroke: black; fill: none; stroke-width: 1 }
+  svg .high-style { stroke: red; fill: none; stroke-width: 2 }
+  svg .text-style { font: 20px arial; fill: black }
+  svg .fill-style { stroke: none; fill: black }
+  svg .inner-style { stroke: none; fill: white }
+  svg .point-style { stroke: black; fill: #40cf40 }
+  svg .fn-text-style { font: 12px monospace; fill: black }
+
+  svg.dark .line-style { stroke: #f2f2f2; fill: none; stroke-width: 1 }
+  svg.dark .high-style { stroke: orange; fill: none; stroke-width: 2 }
+  svg.dark .text-style { font: 20px arial; fill: #f2f2f2 }
+  svg.dark .fill-style { stroke: none; fill: #828282 }
+  svg.dark .inner-style { stroke: none; fill: black }
+  svg.dark .point-style { stroke: black; fill: #40cf40 }
+  svg.dark .fn-text-style { font: 12px monospace; fill: #f2f2f2 }
+
+  [data-theme="dark"] svg .line-style { stroke: #f2f2f2; fill: none; stroke-width: 1 }
+  [data-theme="dark"] svg .high-style { stroke: orange; fill: none; stroke-width: 2 }
+  [data-theme="dark"] svg .text-style { font: 20px arial; fill: #f2f2f2 }
+  [data-theme="dark"] svg .fill-style { stroke: none; fill: #828282 }
+  [data-theme="dark"] svg .inner-style { stroke: none; fill: black }
+  [data-theme="dark"] svg .point-style { stroke: black; fill: #40cf40 }
+  [data-theme="dark"] svg .fn-text-style { font: 12px monospace; fill: #f2f2f2 }
+
+  [data-theme="light"] svg .line-style { stroke: black; fill: none; stroke-width: 1 }
+  [data-theme="light"] svg .high-style { stroke: red; fill: none; stroke-width: 2 }
+  [data-theme="light"] svg .text-style { font: 20px arial; fill: black }
+  [data-theme="light"] svg .fill-style { stroke: none; fill: black }
+  [data-theme="light"] svg .inner-style { stroke: none; fill: white }
+  [data-theme="light"] svg .point-style { stroke: black; fill: #40cf40 }
+  [data-theme="light"] svg .fn-text-style { font: 12px monospace; fill: black }
+</style>
+
+<g transform="translate(0,30)">
+<rect x="72.5" y="-0.5" width="235" height="168" stroke="none" fill="black"
+      class="fill-style" />
+<rect x="98.5" y="25.5" width="183" height="116" stroke="none" fill="white"
+      class="inner-style" />
+
+<path d="m 85.5,175.5 v 22 h 70" stroke="black" fill="none"
+      class="line-style" />
+<path d="m 293.5,175.5 v 22 h -70" stroke="black" fill="none"
+      class="line-style" />
+<path d="m 69.5,154.5 h -29 v -50" stroke="black" fill="none"
+      class="line-style" />
+<path d="m 40.5,73.5 v -60 h 29" stroke="black" fill="none"
+      class="line-style" />
+<path d="m 85.5,12.5 h 209 v 142 h -209 z" stroke="red" fill="none"
+      class="high-style" />
+
+<text x="166" y="202" font-family="monospace" font-size="12px"
+      class="fn-text-style">width()</text>
+<text x="10" y="93" font-family="monospace" font-size="12px"
+      class="fn-text-style">height()</text>
+
+<circle cx="85.5" cy="12.5" r="8" stroke="black" fill="#40cf40"
+        class="point-style" />
+<text x="36" y="-7" font-family="monospace" font-size="12px"
+      class="fn-text-style">left(), top()</text>
+<circle cx="281.5" cy="141.5" r="8" stroke="black" fill="#40cf40"
+        class="point-style" />
+<text x="154" y="125" font-family="monospace" font-size="12px"
+      class="fn-text-style">right(), bottom()</text>
+
+</g>
+</svg>

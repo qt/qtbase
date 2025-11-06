@@ -67,12 +67,12 @@ QT_BEGIN_NAMESPACE
 
     \table
     \row
-    \li \inlineimage qrect-intersect.png {Diagram showing intersection
+    \li \inlineimage qrect-intersect.svg {Diagram showing intersection
                      of two rectangles r and s with the overlapping area
                      highlighted. It's also showing how the width and
                      height of the highlighted area is determined with
                      r.intersect(s).width() and r.intersect(s).height().}
-    \li \inlineimage qrect-unite.webp {Diagram showing two overlapped
+    \li \inlineimage qrect-unite.svg {Diagram showing two overlapped
                      rectangles r and s and their united size which is
                      determined with r.united(s).width() and
                      r.united(s).height().}
@@ -112,17 +112,17 @@ QT_BEGIN_NAMESPACE
 
     \table
     \row
-        \li \inlineimage qrect-diagram-zero.png
+        \li \inlineimage qrect-diagram-zero.svg
                          {Rectangle showing width and height dimensions}
-        \li \inlineimage qrect-diagram-one.png
+        \li \inlineimage qrect-diagram-one.svg
                          {Rectangle with one-pixel pen showing corner coordinates}
     \row
         \li Logical representation
         \li One pixel wide pen
     \row
-        \li \inlineimage qrect-diagram-two.png
+        \li \inlineimage qrect-diagram-two.svg
                          {Rectangle with two-pixel pen showing corner coordinates}
-        \li \inlineimage qrect-diagram-three.png
+        \li \inlineimage qrect-diagram-three.svg
                          {Rectangle with three-pixel pen showing corner coordinates}
     \row
         \li Two pixel wide pen
@@ -144,7 +144,7 @@ QT_BEGIN_NAMESPACE
     horizontally, leaving the rectangle's left edge at the given x
     coordinate and its size unchanged.
 
-    \image qrect-coordinates.png {Diagram of a rectangle showing QRect
+    \image qrect-coordinates.svg {Diagram of a rectangle showing QRect
            methods for positions: x(), y(), center(), corners (topLeft(),
            topRight(), bottomLeft(), bottomRight()), and edges (top(),
            bottom(), left(), right()).}
@@ -992,7 +992,7 @@ QRect QRect::operator|(const QRect &r) const noexcept
 
     Returns the bounding rectangle of this rectangle and the given \a rectangle.
 
-    \image qrect-unite.webp {Diagram showing two overlapped rectangles r and s
+    \image qrect-unite.svg {Diagram showing two overlapped rectangles r and s
            and their united size which is determined with r.united(s).width and
            r.united(s).height().}
 
@@ -1063,7 +1063,7 @@ QRect QRect::operator&(const QRect &r) const noexcept
     Returns the intersection of this rectangle and the given \a
     rectangle. Note that \c{r.intersected(s)} is equivalent to \c{r & s}.
 
-    \image qrect-intersect.png {Diagram showing intersection of two
+    \image qrect-intersect.svg {Diagram showing intersection of two
            rectangles r and s with the overlapping area highlighted.
            It also shows how the width and height of the highlighted area
            is determined with r.intersect(s).width and
@@ -1353,12 +1353,12 @@ QDebug operator<<(QDebug dbg, const QRect &r)
 
     \table
     \row
-    \li \inlineimage qrect-intersect.png {Diagram showing intersection
+    \li \inlineimage qrect-intersect.svg {Diagram showing intersection
                      of two rectangles r and s with the overlapping area
                      highlighted. It's also showing how the width and
                      height of the highlighted area is determined with
                      r.intersect(s).width and r.intersect(s).height().}
-    \li \inlineimage qrect-unite.webp {Diagram showing two overlapped
+    \li \inlineimage qrect-unite.svg {Diagram showing two overlapped
                      rectangles r and s and their united size which is
                      determined with r.united(s).width and
                      r.united(s).height()}
@@ -1398,17 +1398,17 @@ QDebug operator<<(QDebug dbg, const QRect &r)
 
     \table
     \row
-        \li \inlineimage qrect-diagram-zero.png
+        \li \inlineimage qrect-diagram-zero.svg
                          {Rectangle showing width and height dimensions}
-        \li \inlineimage qrectf-diagram-one.png
+        \li \inlineimage qrectf-diagram-one.svg
                          {Rectangle with one-pixel pen showing corner coordinates}
     \row
         \li Logical representation
         \li One pixel wide pen
     \row
-        \li \inlineimage qrectf-diagram-two.png
+        \li \inlineimage qrectf-diagram-two.svg
                          {Rectangle with two-pixel pen showing corner coordinates}
-        \li \inlineimage qrectf-diagram-three.png
+        \li \inlineimage qrectf-diagram-three.svg
                          {Rectangle with three-pixel pen showing corner coordinates}
     \row
         \li Two pixel wide pen
@@ -1430,7 +1430,7 @@ QDebug operator<<(QDebug dbg, const QRect &r)
     vertically, leaving the rectangle's bottom edge at the given y
     coordinate and its size unchanged.
 
-    \image qrectf-coordinates.png {Diagram of a rectangle showing QRect
+    \image qrectf-coordinates.svg {Diagram of a rectangle showing QRect
            methods for positions: x(), y(), center(), corners (topLeft(),
            topRight(), bottomLeft(), bottomRight()), and edges (top(),
            bottom(), left(), right()).}
@@ -2206,7 +2206,7 @@ QRectF QRectF::operator|(const QRectF &r) const noexcept
     Returns the bounding rectangle of this rectangle and the given \a
     rectangle.
 
-    \image qrect-unite.webp {Diagram showing two overlapped rectangles
+    \image qrect-unite.svg {Diagram showing two overlapped rectangles
            r and s and their united size which is determined with
            r.united(s).width and r.united(s).height()}
 
@@ -2283,7 +2283,7 @@ QRectF QRectF::operator&(const QRectF &r) const noexcept
     rectangle. Note that \c {r.intersected(s)} is equivalent to \c
     {r & s}.
 
-    \image qrect-intersect.png {Diagram showing intersection of two
+    \image qrect-intersect.svg {Diagram showing intersection of two
            rectangles r and s with the overlapping area highlighted.
            It's also showing how the width and height of the
            highlighted area is determined with r.intersect(s).width

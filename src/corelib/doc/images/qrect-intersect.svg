@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="360"
+   height="280"
+   version="1.1"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+
+<style>
+  svg .line-style { stroke: black; fill: none; stroke-width: 1 }
+  svg .high-style { stroke: red; fill: #c0c0e0; stroke-width: 2 }
+  svg .r-style { stroke: black; fill: #60c465 }
+  svg .s-style { stroke: black; fill: #c0c0b0 }
+  svg .fn-text-style { font: 12px monospace; fill: black }
+
+  svg.dark .line-style { stroke: #f2f2f2; fill: none; stroke-width: 1 }
+  svg.dark .high-style { stroke: orange; fill: #7070c0; stroke-width: 2 }
+  svg.dark .r-style { stroke: #f2f2f2; fill: #308435 }
+  svg.dark .s-style { stroke: #f2f2f2; fill: #505040 }
+  svg.dark .fn-text-style { font: 12px monospace; fill: #f2f2f2 }
+
+  [data-theme="dark"] svg .line-style { stroke: #f2f2f2; fill: none; stroke-width: 1 }
+  [data-theme="dark"] svg .high-style { stroke: orange; fill: #7070c0; stroke-width: 2 }
+  [data-theme="dark"] svg .r-style { stroke: #f2f2f2; fill: #308435 }
+  [data-theme="dark"] svg .s-style { stroke: #f2f2f2; fill: #505040 }
+  [data-theme="dark"] svg .fn-text-style { font: 12px monospace; fill: #f2f2f2 }
+
+  [data-theme="light"] svg .line-style { stroke: black; fill: none; stroke-width: 1 }
+  [data-theme="light"] svg .high-style { stroke: red; fill: #c0c0e0; stroke-width: 2 }
+  [data-theme="light"] svg .r-style { stroke: black; fill: #60c465 }
+  [data-theme="light"] svg .s-style { stroke: black; fill: #c0c0b0 }
+  [data-theme="light"] svg .fn-text-style { font: 12px monospace; fill: black }
+</style>
+
+<g transform="translate(10,20)">
+<path d="m 50.5,80.5 h 220 v 150 h -220 z" stroke="black" fill="#c0c0b0"
+      class="s-style" />
+<text x="250" y="220" font-family="monospace" font-size="12px"
+      class="fn-text-style">s</text>
+<path d="m 10.5,40.5 h 220 v 150 h -220 z" stroke="black" fill="#60c465"
+      class="r-style" />
+<text x="20" y="60" font-family="monospace" font-size="12px"
+      class="fn-text-style">r</text>
+
+<path d="m 50.5,30.5 v -15 h 180 v 15" stroke="black" fill="none"
+      class="line-style" />
+<text x="55" y="0" font-family="monospace" font-size="12px"
+      class="fn-text-style">r.intersected(s).width()</text>
+<path d="m 280.5,80.5 h 20 v 110 h -20" stroke="black" fill="none"
+      class="line-style" />
+
+<path d="m 50.5,80.5 h 180 v 110 h -180 z" stroke="red" stroke-width="2" fill="#c0c0e0"
+      class="high-style" />
+</g>
+
+<g transform="translate(325,65) rotate(90)">
+<text x="0" y="0" font-family="monospace" font-size="12px"
+      class="fn-text-style">r.intersected(s).height()</text>
+</g>
+</svg>
