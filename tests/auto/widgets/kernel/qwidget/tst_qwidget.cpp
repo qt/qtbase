@@ -1390,9 +1390,6 @@ void tst_QWidget::ignoreKeyEventsWhenDisabled_QTBUG27417()
 
 void tst_QWidget::properTabHandlingWhenDisabled_QTBUG27417()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     QWidget widget;
     widget.setWindowTitle(__FUNCTION__);
     widget.setMinimumWidth(m_testWidgetSize.width());
@@ -2242,9 +2239,6 @@ void tst_QWidget::focusAbstraction()
 
 void tst_QWidget::defaultTabOrder()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     const int compositeCount = 2;
     Container container;
     Composite *composite[compositeCount];
@@ -2298,9 +2292,6 @@ void tst_QWidget::defaultTabOrder()
 
 void tst_QWidget::reverseTabOrder()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1StringView("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     const int compositeCount = 2;
     Container container;
     container.setObjectName(QLatin1StringView("Container"));
@@ -2498,9 +2489,6 @@ void tst_QWidget::tabOrderComboBox()
 
 void tst_QWidget::tabOrderWithProxy()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     const int compositeCount = 2;
     Container container;
     container.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
@@ -2615,9 +2603,6 @@ void tst_QWidget::tabOrderWithProxyDisabled()
 
 void tst_QWidget::tabOrderWithCompoundWidgets()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     const int compositeCount = 4;
     Container container;
     container.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
@@ -2998,9 +2983,6 @@ void tst_QWidget::tabOrderNoChange2()
 
 void tst_QWidget::appFocusWidgetWithFocusProxyLater()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     // Given a lineedit without a focus proxy
     QWidget window;
     window.setWindowTitle(QTest::currentTestFunction());
@@ -3024,9 +3006,6 @@ void tst_QWidget::appFocusWidgetWithFocusProxyLater()
 
 void tst_QWidget::appFocusWidgetWhenLosingFocusProxy()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     // Given a lineedit with a focus proxy
     QWidget window;
     window.setWindowTitle(QTest::currentTestFunction());
@@ -5209,9 +5188,6 @@ void tst_QWidget::setMaximumSize()
 
 void tst_QWidget::setFixedSize()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     QWidget w;
     QSize defaultSize = w.size();
 
@@ -10467,9 +10443,6 @@ public slots:
 
 void tst_QWidget::setClearAndResizeMask()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     UpdateWidget topLevel;
     topLevel.setPalette(simplePalette());
     topLevel.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
@@ -11276,9 +11249,6 @@ void tst_QWidget::updateOnDestroyedSignal()
 
 void tst_QWidget::toplevelLineEditFocus()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     QLineEdit w;
     w.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     w.setMinimumWidth(m_testWidgetSize.width());
@@ -12211,9 +12181,6 @@ void tst_QWidget::grabMouse()
 
 void tst_QWidget::grabKeyboard()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     QWidget w;
     w.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     w.setObjectName(QLatin1String("tst_qwidget_grabKeyboard"));
