@@ -729,11 +729,12 @@ void tst_Http2::earlyError()
             : QHttpNetworkConnection::ConnectionTypeHTTP2;
     QHttpNetworkConnection connection(1, "127.0.0.1", serverPort, true, false, nullptr,
                                       connectionType);
+#if QT_CONFIG(ssl)
     QSslConfiguration config = QSslConfiguration::defaultConfiguration();
     config.setAllowedNextProtocols({"h2"});
     connection.setSslConfiguration(config);
     connection.ignoreSslErrors();
-
+#endif
     // SETUP manually setup the QHttpNetworkRequest
     QHttpNetworkRequest req;
     req.setSsl(true);
@@ -809,11 +810,12 @@ void tst_Http2::abortReply()
             : QHttpNetworkConnection::ConnectionTypeHTTP2;
     QHttpNetworkConnection connection(1, "127.0.0.1", serverPort, true, false, nullptr,
                                       connectionType);
+#if QT_CONFIG(ssl)
     QSslConfiguration config = QSslConfiguration::defaultConfiguration();
     config.setAllowedNextProtocols({"h2"});
     connection.setSslConfiguration(config);
     connection.ignoreSslErrors();
-
+#endif
     // SETUP manually setup the QHttpNetworkRequest
     QHttpNetworkRequest req;
     req.setSsl(true);
