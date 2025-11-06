@@ -87,6 +87,11 @@ bool QCocoaMessageDialog::show(Qt::WindowFlags windowFlags, Qt::WindowModality w
         return false;
     }
 
+    // Tahoe has issues with window-modal alert buttons not responding to mouse
+    if (windowModality == Qt::WindowModal
+        && QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSTahoe)
+        return false;
+
     // And without options we don't know what to show
     if (!options())
         return false;
