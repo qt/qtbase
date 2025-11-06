@@ -13,6 +13,7 @@ class QtNativeAccessibility
     static native int[] childIdListForAccessibleObject(int objectId);
     static native int parentId(int objectId);
     static native String descriptionForAccessibleObject(int objectId);
+    static native String languageTag(int objectId);
     static native Rect screenRect(int objectId);
     static native int hitTest(float x, float y);
     static native boolean clickAction(int objectId);

@@ -8,6 +8,9 @@ import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
 import android.system.Os;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.style.LocaleSpan;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -19,6 +22,7 @@ import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.AccessibilityNodeInfo.CollectionInfo;
 import android.view.accessibility.AccessibilityNodeProvider;
+import java.util.Locale;
 
 class QtAccessibilityDelegate extends View.AccessibilityDelegate
 {
@@ -165,6 +169,15 @@ class QtAccessibilityDelegate extends View.AccessibilityDelegate
         return true;
     }
 
+    SpannableString addLocaleSpan(int viewId, String value)
+    {
+        SpannableString localeValue = new SpannableString(value);
+        LocaleSpan localeSpan =
+                new LocaleSpan(Locale.forLanguageTag(QtNativeAccessibility.languageTag(viewId)));
+        localeValue.setSpan(localeSpan, 0, localeValue.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        return localeValue;
+    }
+
     void notifyScrolledEvent(int viewId)
     {
         QtNative.runAction(() -> sendEventForVirtualViewId(viewId,
@@ -250,7 +263,7 @@ class QtAccessibilityDelegate extends View.AccessibilityDelegate
 
             event.setEnabled(true);
             event.setClassName(className);
-            event.setContentDescription(value);
+            event.setContentDescription(addLocaleSpan(viewId, value));
 
             if (event.getText().isEmpty() && TextUtils.isEmpty(event.getContentDescription())) {
                 Log.w(TAG, "No value to announce for " + event.getClassName());
@@ -357,7 +370,9 @@ class QtAccessibilityDelegate extends View.AccessibilityDelegate
         event.setEnabled(true);
         event.setClassName(getNodeForVirtualViewId(virtualViewId).getClassName());
 
-        event.setContentDescription(QtNativeAccessibility.descriptionForAccessibleObject(virtualViewId));
+        String description = QtNativeAccessibility.descriptionForAccessibleObject(virtualViewId);
+        event.setContentDescription(addLocaleSpan(virtualViewId, description));
+
         if (event.getText().isEmpty() && TextUtils.isEmpty(event.getContentDescription()))
             Log.w(TAG, "AccessibilityEvent with empty description");
 
@@ -459,6 +474,7 @@ class QtAccessibilityDelegate extends View.AccessibilityDelegate
 
         // set only if valid, otherwise we return a node that is invalid and will crash when accessed
         node.setSource(m_view, virtualViewId);
+        node.setContentDescription(addLocaleSpan(virtualViewId, node.getContentDescription().toString()));
 
         if (TextUtils.isEmpty(node.getText()) && TextUtils.isEmpty(node.getContentDescription()))
             Log.w(TAG, "AccessibilityNodeInfo with empty contentDescription: " + virtualViewId);

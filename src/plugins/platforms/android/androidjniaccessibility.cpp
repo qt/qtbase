@@ -647,6 +647,29 @@ namespace QtAndroidAccessibility
         return env->NewString((jchar*) desc.constData(), (jsize) desc.size());
     }
 
+    static QString languageTag_helper(int objectId)
+    {
+        QAccessibleInterface *iface = interfaceFromId(objectId);
+        if (!iface || !iface->isValid())
+            return QString();
+
+        QAccessibleAttributesInterface *attributesIface = iface->attributesInterface();
+        if (!attributesIface || !attributesIface->attributeKeys().contains(QAccessible::Attribute::Locale))
+            return QString();
+
+        return attributesIface->attributeValue(QAccessible::Attribute::Locale).toLocale().bcp47Name();
+    }
+
+    static jstring languageTag(JNIEnv *env, jobject /*thiz*/, jint objectId)
+    {
+        QString tag;
+        if (m_accessibilityContext) {
+            runInObjectContext(m_accessibilityContext, [objectId]() {
+                return languageTag_helper(objectId);
+            }, &tag);
+        }
+        return env->NewString((jchar*)tag.constData(), (jsize)tag.size());
+    }
 
     struct NodeInfo
     {
@@ -796,6 +819,7 @@ namespace QtAndroidAccessibility
         {"childIdListForAccessibleObject", "(I)[I", (jintArray)childIdListForAccessibleObject},
         {"parentId", "(I)I", (void*)parentId},
         {"descriptionForAccessibleObject", "(I)Ljava/lang/String;", (jstring)descriptionForAccessibleObject},
+        {"languageTag", "(I)Ljava/lang/String;", (jstring)languageTag},
         {"screenRect", "(I)Landroid/graphics/Rect;", (jobject)screenRect},
         {"hitTest", "(FF)I", (void*)hitTest},
         {"populateNode", "(ILandroid/view/accessibility/AccessibilityNodeInfo;)Z", (void*)populateNode},
