@@ -7,8 +7,8 @@
 # sqlite.c and sqlite.h and updates qt_attribution.json
 
 version_maj=3
-version_min=50
-version_patch=4
+version_min=51
+version_patch=0
 year=2025
 
 version=${version_maj}.${version_min}.${version_patch}
