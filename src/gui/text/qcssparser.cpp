@@ -118,7 +118,7 @@ static constexpr QCssKnownValue properties[] = {
     { "bottom", Bottom },
     { "color", Color },
     { "float", Float },
-    { "font", Font },
+    { "font", Property::Font },
     { "font-family", FontFamily },
     { "font-kerning", FontKerning },
     { "font-size", FontSize },
@@ -406,7 +406,7 @@ static quint64 findKnownValue(const QString &name, const QCssKnownValue *start, 
 static inline bool isInheritable(Property propertyId)
 {
     switch (propertyId) {
-    case Font:
+    case Property::Font:
     case FontKerning:
     case FontFamily:
     case FontSize:
