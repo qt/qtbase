@@ -1136,9 +1136,6 @@ bool waitForPolished(QWidgetList widgets)
 
 void tst_QWidget::palettePropagation2()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     // ! Note, the code below is executed in tst_QWidget's constructor.
     // QPalette palette;
     // palette.setColor(QPalette::ToolTipBase, QColor(12, 13, 14));
@@ -1208,9 +1205,6 @@ void tst_QWidget::palettePropagation2()
 }
 
 void tst_QWidget::palettePropagation3() {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     QWidget root;
     root.setObjectName(QTest::currentTestFunction());
     root.setWindowTitle(root.objectName());
