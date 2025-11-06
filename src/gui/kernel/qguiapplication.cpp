@@ -243,6 +243,7 @@ static void initThemeHints()
     touchDoubleTapDistance = QGuiApplicationPrivate::platformTheme()->themeHint(QPlatformTheme::TouchDoubleTapDistance).toInt();
 }
 
+#if defined(Q_OS_UNIX) && !defined(Q_OS_DARWIN)
 static bool checkNeedPortalSupport()
 {
 #if QT_CONFIG(dbus)
@@ -251,6 +252,7 @@ static bool checkNeedPortalSupport()
     return false;
 #endif // QT_CONFIG(dbus)
 }
+#endif
 
 // Using aggregate initialization instead of ctor so we can have a POD global static
 #define Q_WINDOW_GEOMETRY_SPECIFICATION_INITIALIZER { Qt::TopLeftCorner, -1, -1, -1, -1 }
@@ -1355,11 +1357,13 @@ static void init_platform(const QString &pluginNamesWithArguments, const QString
         themeNames.append(platformThemeName);
     }
 
+#if defined(Q_OS_UNIX) && !defined(Q_OS_DARWIN)
     // 2) Special case - check whether it's a flatpak or snap app to use xdg-desktop-portal platform theme for portals support
     if (checkNeedPortalSupport()) {
         qCDebug(lcQpaTheme) << "Adding xdgdesktopportal to list of theme names";
         themeNames.append(QStringLiteral("xdgdesktopportal"));
     }
+#endif
 
     // 3) Ask the platform integration for a list of theme names
     const auto platformIntegrationThemeNames = QGuiApplicationPrivate::platform_integration->themeNames();
