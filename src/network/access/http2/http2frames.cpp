@@ -266,18 +266,19 @@ FrameStatus FrameReader::read(QIODevice &socket)
     if (offset < frameHeaderSize) {
         if (!readHeader(socket))
             return FrameStatus::incompleteFrame;
-
-        const auto status = frame.validateHeader();
-        if (status != FrameStatus::goodFrame) {
-            // No need to read any payload.
-            return status;
-        }
-
-        if (Http2PredefinedParameters::maxPayloadSize < frame.payloadSize())
-            return FrameStatus::sizeError;
-
-        frame.buffer.resize(frame.payloadSize() + frameHeaderSize);
     }
+
+    const auto status = frame.validateHeader();
+    if (status != FrameStatus::goodFrame) {
+        if (status == FrameStatus::sizeError && frame.streamID() != connectionStreamID) {
+            if (!discardPayload(socket))
+                return FrameStatus::incompleteFrame;
+        }
+        return status;
+    }
+
+    Q_ASSERT(maxPayloadSize >= frame.payloadSize());
+    frame.buffer.resize(frame.payloadSize() + frameHeaderSize);
 
     if (offset < frame.buffer.size() && !readPayload(socket))
         return FrameStatus::incompleteFrame;
@@ -318,6 +319,32 @@ bool FrameReader::readPayload(QIODevice &socket)
         offset += quint32(chunkSize);
 
     return offset == buffer.size();
+}
+
+// Returns true if there is nothing more to discard
+bool FrameReader::discardPayload(QIODevice &socket)
+{
+    Q_ASSERT(offset >= frameHeaderSize); // Frame header is already read when this is called
+
+    using namespace Http2;
+    auto frameType = frame.type();
+    if (frameType != FrameType::DATA && frameType != FrameType::PRIORITY &&
+        frameType != FrameType::WINDOW_UPDATE)
+        return true; // Connection will be closed, nothing needs to be discarded
+
+    const quint32 payload = frame.payloadSize();
+    Q_ASSERT(maxPayloadSize >= payload);
+    const quint32 totalFrameSize = frameHeaderSize + payload;
+    while (totalFrameSize > offset) {
+        const quint32 remainingSize = totalFrameSize - offset;
+        const auto skipped = socket.skip(remainingSize);
+        if (skipped > 0)
+            offset += quint32(skipped);
+        else
+            return false;
+    }
+    offset = 0;
+    return true;
 }
 
 FrameWriter::FrameWriter()

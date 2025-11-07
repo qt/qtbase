@@ -73,6 +73,7 @@ public:
 private:
     bool readHeader(QIODevice &socket);
     bool readPayload(QIODevice &socket);
+    bool discardPayload(QIODevice &socket);
 
     quint32 offset = 0;
     Frame frame;
