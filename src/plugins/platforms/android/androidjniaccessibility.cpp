@@ -615,7 +615,7 @@ namespace QtAndroidAccessibility
         case QAccessible::Role::ScrollBar:
             return QStringLiteral("android.widget.Scroller");
         case QAccessible::Role::Slider:
-            return QStringLiteral("com.google.android.material.slider.Slider");
+            return QStringLiteral("android.widget.SeekBar");
         case QAccessible::Role::Table:
             // #TODO Evaluate the usage of AccessibleNodeInfo.setCollectionItemInfo() to provide
             // infos about colums, rows und items.
