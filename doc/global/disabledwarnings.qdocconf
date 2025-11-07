@@ -4,4 +4,5 @@ spurious = \
     "Unable to parse (QML|JavaScript).*"
 
 # New in 6.11, disabled on <= 6.10
-spurious += "Undocumented property .*"
+spurious += "Undocumented property .*" \
+    "Redundant link to self in .*"
