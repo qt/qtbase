@@ -3960,7 +3960,7 @@ QDateTime::Data QDateTimePrivate::create(QDate toDate, QTime toTime, const QTime
     \c{'compatible'} option corresponds to \c RelativeToBefore (and Python's
     \c{fold = True}).
 
-    \sa {Timezone transitions}, QDateTime::TransitionResolution
+    \sa {Timezone transitions}
 */
 
 /*!
