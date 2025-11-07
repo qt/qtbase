@@ -6450,8 +6450,8 @@ void QPainter::drawTiledPixmap(const QRectF &r, const QPixmap &pixmap, const QPo
     qt_painter_thread_test(d->device->devType(), d->engine->type(), "drawTiledPixmap()");
 #endif
 
-    qreal sw = pixmap.width();
-    qreal sh = pixmap.height();
+    const qreal sw = pixmap.width() / pixmap.devicePixelRatio();
+    const qreal sh = pixmap.height() / pixmap.devicePixelRatio();
     qreal sx = sp.x();
     qreal sy = sp.y();
     if (sx < 0)
