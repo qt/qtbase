@@ -377,7 +377,7 @@ public:
                     >::value)
         : QVariant(std::in_place, QMetaType::fromType<q20::remove_cvref_t<T>>())
     {
-        char *data = static_cast<char *>(const_cast<void *>(constData()));
+        void *data = const_cast<void *>(constData());
         new (data) T(il, std::forward<Args>(args)...);
     }
 
