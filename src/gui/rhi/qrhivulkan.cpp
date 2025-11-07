@@ -406,7 +406,9 @@ static inline VmaAllocator toVmaAllocator(QVkAllocator a)
 QByteArrayList QRhiVulkanInitParams::preferredInstanceExtensions()
 {
     return {
-        QByteArrayLiteral("VK_KHR_get_physical_device_properties2")
+        QByteArrayLiteral("VK_KHR_get_physical_device_properties2"),
+        // to silence validation when e.g. on Wayland a surface format's colorspace is VK_COLOR_SPACE_PASS_THROUGH_EXT
+        QByteArrayLiteral("VK_EXT_swapchain_colorspace")
     };
 }
 
