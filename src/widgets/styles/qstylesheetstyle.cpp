@@ -4661,7 +4661,14 @@ void QStyleSheetStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *op
 #if QT_CONFIG(scrollarea)
         if (const QAbstractScrollArea *sa = qobject_cast<const QAbstractScrollArea *>(w)) {
             const QAbstractScrollAreaPrivate *sap = sa->d_func();
-            rule.drawBackground(p, opt->rect, sap->contentsOffset());
+            bool callBaseClass = true;
+            if (rule.hasBackground()) {
+                if (rule.baseStyleCanDraw())
+                    baseStyle()->drawPrimitive(pe, opt, p, w);
+                else
+                    rule.drawBackground(p, opt->rect, sap->contentsOffset());
+                callBaseClass = false;
+            }
             if (rule.hasBorder()) {
                 QRect brect = rule.borderRect(opt->rect);
                 if (styleHint(QStyle::SH_ScrollView_FrameOnlyAroundContents, opt, w)) {
@@ -4670,7 +4677,10 @@ void QStyleSheetStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *op
                     brect = QStyle::visualRect(opt->direction, brect, r);
                 }
                 rule.drawBorder(p, brect);
+                callBaseClass = false;
             }
+            if (!callBaseClass)
+                return;
             break;
         }
 #endif
