@@ -14,64 +14,94 @@
   svg .bold-style { font: 12px arial; fill: black; font-weight: bold }
   svg .item-style { font: 16px arial; fill: black }
 
+  svg.dark .line-style { stroke: #f2f2f2; fill: none }
+  svg.dark .text-style { font: 12px arial; fill: #f2f2f2 }
+  svg.dark .bold-style { font: 12px arial; fill: #f2f2f2; font-weight: bold }
+  svg.dark .item-style { font: 16px arial; fill: #f2f2f2 }
+
   [data-theme="dark"] svg .line-style { stroke: #f2f2f2; fill: none }
   [data-theme="dark"] svg .text-style { font: 12px arial; fill: #f2f2f2 }
   [data-theme="dark"] svg .bold-style { font: 12px arial; fill: #f2f2f2; font-weight: bold }
-  [data-theme="dark"] svg .item-style { font: 14px arial; fill: #f2f2f2 }
+  [data-theme="dark"] svg .item-style { font: 16px arial; fill: #f2f2f2 }
 
   [data-theme="light"] svg .line-style { stroke: black; fill: none }
   [data-theme="light"] svg .text-style { font: 12px arial; fill: black }
   [data-theme="light"] svg .bold-style { font: 12px arial; fill: black; font-weight: bold }
-  [data-theme="light"] svg .item-style { font: 14px arial; fill: black }
+  [data-theme="light"] svg .item-style { font: 16px arial; fill: black }
 </style>
 
 <!-- Root node -->
-<text x="50" y="29" class="bold-style">Root item (empty)</text>
-<path d="M 10,10 L 40,10 L 40,40 L 10,40 Z" class="line-style"
-      stroke-dasharray="5 5" />
+<text x="50" y="29" font-family="arial" font-size="12px" font-weight="bold"
+      class="bold-style">Root item (empty)</text>
+<path d="M 10,10 L 40,10 L 40,40 L 10,40 Z" stroke="black" fill="none"
+      stroke-dasharray="5 5" class="line-style" />
 
 <!-- Root spine vertical line solid part -->
-<path d="M 25,40 L 25,265" class="line-style" />
+<path d="M 25,40 L 25,265" stroke="black"
+      class="line-style" />
 <!-- Root spine vertical line dotted continuation -->
-<path d="M 25,265 L 25,290" class="line-style" stroke-dasharray="3 3" />
+<path d="M 25,265 L 25,290" stroke="black"
+      class="line-style" stroke-dasharray="3 3" />
 
 <!-- Horizontal lines from Root spine to children A, C, ... -->
-<path d="M 25,65 L 45,65" class="line-style" />
-<path d="M 25,225 L 45,225" class="line-style" />
-<path d="M 25,265 L 45,265" class="line-style" />
+<path d="M 25,65 L 45,65" stroke="black"
+      class="line-style" />
+<path d="M 25,225 L 45,225" stroke="black"
+      class="line-style" />
+<path d="M 25,265 L 45,265" stroke="black"
+      class="line-style" />
 
 <!-- Node A with label [0] -->
-<path d="M 45,50 L 75,50 L 75,80 L 45,80 Z" class="line-style" />
-<text x="55" y="70" class="item-style">A</text>
-<text x="82" y="69" class="text-style">row = 0</text>
+<path d="M 45,50 L 75,50 L 75,80 L 45,80 Z" stroke="black" fill="none"
+      class="line-style" />
+<text x="55" y="70" font-family="arial" font-size="16px"
+      class="item-style">A</text>
+<text x="82" y="69" font-family="arial" font-size="12px"
+      class="text-style">row = 0</text>
 
 <!-- Vertical line from A to its children -->
-<path d="M 60,80 L 60,185" class="line-style" />
+<path d="M 60,80 L 60,185" stroke="black"
+      class="line-style" />
 
 <!-- Horizontal lines from A's spine to ..., B, ... -->
-<path d="M 60,105 L 80,105" class="line-style" />
-<path d="M 60,145 L 80,145" class="line-style" />
-<path d="M 60,185 L 80,185" class="line-style" />
+<path d="M 60,105 L 80,105" stroke="black"
+      class="line-style" />
+<path d="M 60,145 L 80,145" stroke="black"
+      class="line-style" />
+<path d="M 60,185 L 80,185" stroke="black"
+      class="line-style" />
 
 <!-- First unnamed child node of A -->
-<path d="M 80,90 L 110,90 L 110,120 L 80,120 Z" class="line-style" />
-<text x="117" y="109" class="text-style">row = 0</text>
+<path d="M 80,90 L 110,90 L 110,120 L 80,120 Z" stroke="black" fill="none"
+      class="line-style" />
+<text x="117" y="109" font-family="arial" font-size="12px"
+      class="text-style">row = 0</text>
 
 <!-- Node B -->
-<path d="M 80,130 L 110,130 L 110,160 L 80,160 Z" class="line-style" />
-<text x="90" y="150" class="item-style">B</text>
-<text x="117" y="149" class="text-style">row = 1</text>
+<path d="M 80,130 L 110,130 L 110,160 L 80,160 Z" stroke="black" fill="none"
+      class="line-style" />
+<text x="90" y="150" font-family="arial" font-size="16px"
+      class="item-style">B</text>
+<text x="117" y="149" font-family="arial" font-size="12px"
+      class="text-style">row = 1</text>
 
 <!-- Last unnamed child node of A -->
-<path d="M 80,170 L 110,170 L 110,200 L 80,200 Z" class="line-style" />
-<text x="117" y="189" class="text-style">row = 2</text>
+<path d="M 80,170 L 110,170 L 110,200 L 80,200 Z" stroke="black" fill="none"
+      class="line-style" />
+<text x="117" y="189" font-family="arial" font-size="12px"
+      class="text-style">row = 2</text>
 
 <!-- Node C -->
-<path d="M 45,210 L 75,210 L 75,240 L 45,240 Z" class="line-style" />
-<text x="55" y="230" class="item-style">C</text>
-<text x="82" y="229" class="text-style">row = 1</text>
+<path d="M 45,210 L 75,210 L 75,240 L 45,240 Z" stroke="black" fill="none"
+      class="line-style" />
+<text x="55" y="230" font-family="arial" font-size="16px"
+      class="item-style">C</text>
+<text x="82" y="229" font-family="arial" font-size="12px"
+      class="text-style">row = 1</text>
 
 <!-- Last visible child node of the root node -->
-<path d="M 45,250 L 75,250 L 75,280 L 45,280 Z" class="line-style" />
-<text x="82" y="269" class="text-style">row = 2</text>
+<path d="M 45,250 L 75,250 L 75,280 L 45,280 Z" stroke="black" fill="none"
+      class="line-style" />
+<text x="82" y="269" font-family="arial" font-size="12px"
+      class="text-style">row = 2</text>
 </svg>
