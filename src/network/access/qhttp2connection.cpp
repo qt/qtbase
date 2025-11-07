@@ -286,8 +286,11 @@ void QHttp2Stream::streamError(Http2::Http2Error errorCode,
 */
 bool QHttp2Stream::sendRST_STREAM(Http2::Http2Error errorCode)
 {
-    if (m_state == State::Closed || m_state == State::Idle)
+    if (m_state == State::Closed || m_state == State::Idle) {
+        qCDebug(qHttp2ConnectionLog, "[%p] could not send RST_STREAM on %s stream %u",
+                getConnection(), QDebug::toBytes(m_state).constData(), m_streamID);
         return false;
+    }
     // Never respond to a RST_STREAM with a RST_STREAM or looping might occur.
     if (m_RST_STREAM_received.has_value())
         return false;
