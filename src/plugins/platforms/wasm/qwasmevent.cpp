@@ -120,6 +120,8 @@ KeyEvent::KeyEvent(EventType type, emscripten::val event, QWasmDeadKeySupport *d
     autoRepeat = event["repeat"].as<bool>();
     modifiers = getKeyboardModifiers(event);
     key = webKeyToQtKey(code, webKey, deadKey, modifiers);
+    isComposing = event["isComposing"].as<bool>();
+    keyCode = event["keyCode"].as<int>();
 
     text = QString::fromUtf8(webKey);
 

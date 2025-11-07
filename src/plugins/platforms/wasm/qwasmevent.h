@@ -72,6 +72,8 @@ struct KeyEvent : public Event
     bool deadKey;
     QString text;
     bool autoRepeat;
+    bool isComposing;
+    int keyCode;
 };
 
 struct MouseEvent : public Event
