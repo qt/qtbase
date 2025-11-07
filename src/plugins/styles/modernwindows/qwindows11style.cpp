@@ -1396,6 +1396,13 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
             const qreal offset = (int(rect.height()) % 2 == 0) ? 0.5f : 0.0f;
 
             if (isIndeterminate) {
+#if QT_CONFIG(animation)
+                auto anim = d->animation(option->styleObject);
+                if (!anim) {
+                    auto anim = new QStyleAnimation(option->styleObject);
+                    anim->setFrameRate(QStyleAnimation::SixtyFps);
+                    d->startAnimation(anim);
+                }
                 constexpr auto loopDurationMSec = 4000;
                 const auto elapsedTime = std::chrono::time_point_cast<std::chrono::milliseconds>(
                         std::chrono::system_clock::now());
@@ -1403,14 +1410,20 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
                 const auto handleCenter = (elapsed % loopDurationMSec) / float(loopDurationMSec);
                 const auto isLongHandle = (elapsed / loopDurationMSec) % 2 == 0;
                 const auto lengthFactor = (isLongHandle ? 33.0f : 25.0f) / 100.0f;
+#else
+                constexpr auto handleCenter = 0.5f;
+                constexpr auto lengthFactor = 1;
+#endif
                 const auto begin = qMax(handleCenter * (1 + lengthFactor) - lengthFactor, 0.0f);
                 const auto end = qMin(handleCenter * (1 + lengthFactor), 1.0f);
                 const auto barBegin = begin * rect.width();
                 const auto barEnd = end * rect.width();
                 rect = QRectF(QPointF(rect.left() + barBegin, rect.top()),
                               QPointF(rect.left() + barEnd, rect.bottom()));
-                const_cast<QWidget *>(widget)->update();
             } else {
+#if QT_CONFIG(animation)
+                d->stopAnimation(option->styleObject);
+#endif
                 const auto fillPercentage = (float(baropt->progress - baropt->minimum))
                         / (float(baropt->maximum - baropt->minimum));
                 rect.setWidth(rect.width() * fillPercentage);
