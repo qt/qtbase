@@ -9,6 +9,8 @@
 #include <QtCore/QDebug>
 #include <QtGui/QBackingStore>
 
+#include <private/qhighdpiscaling_p.h>
+
 #include <errno.h>
 
 QT_BEGIN_NAMESPACE
@@ -79,7 +81,8 @@ bool QQnxRasterBackingStore::scroll(const QRegion &area, int dx, int dy)
         platformWindow()->scroll(area, dx, dy, true);
 #else
         platformWindow()->scroll(area, dx, dy, false);
-        QRegion remainder = QRect(QPoint(0, 0), backingStore()->size());
+        const QSize backingStoreSize = QHighDpi::toNativePixels(backingStore()->size(), window());
+        QRegion remainder = QRect(QPoint(0, 0), backingStoreSize);
         remainder -= area.translated(dx, dy);
         platformWindow()->scroll(remainder, 0, 0, true);
 #endif
@@ -119,8 +122,10 @@ void QQnxRasterBackingStore::beginPaint(const QRegion &region)
                     SCREEN_WAIT_IDLE), "failed to flush blits");
     }
 #else
-    if (!m_scrolled)
-        platformWindow()->scroll(QRect(QPoint(0, 0), backingStore()->size()), 0, 0, true);
+    if (!m_scrolled) {
+        const QSize backingStoreSize = QHighDpi::toNativePixels(backingStore()->size(), window());
+        platformWindow()->scroll(QRect(QPoint(0, 0), backingStoreSize), 0, 0, true);
+    }
 #endif
 }
 

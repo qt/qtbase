@@ -16,6 +16,7 @@
 #include <qpa/qwindowsysteminterface.h>
 
 #include "private/qguiapplication_p.h"
+#include "private/qhighdpiscaling_p.h"
 
 #include <QtCore/QDebug>
 
@@ -376,7 +377,8 @@ void QQnxWindow::setVisible(bool visible)
 
     root->updateVisibility(root->m_visible);
 
-    QWindowSystemInterface::handleExposeEvent(window(), QRect(QPoint(0, 0), window()->geometry().size()));
+    const QSize windowSize = QHighDpi::toNativePixels(window()->geometry().size(), window());
+    QWindowSystemInterface::handleExposeEvent(window(), QRect(QPoint(0, 0), windowSize));
 
     if (visible) {
         applyWindowState();
@@ -427,7 +429,8 @@ void QQnxWindow::setExposed(bool exposed)
 
     if (m_exposed != exposed) {
         m_exposed = exposed;
-        QWindowSystemInterface::handleExposeEvent(window(), QRect(QPoint(0, 0), window()->geometry().size()));
+        const QSize windowSize = QHighDpi::toNativePixels(window()->geometry().size(), window());
+        QWindowSystemInterface::handleExposeEvent(window(), QRect(QPoint(0, 0), windowSize));
     }
 }
 
@@ -817,7 +820,9 @@ void QQnxWindow::initWindow()
     if (window()->parent() && window()->parent()->handle())
         setParent(window()->parent()->handle());
 
-    setGeometryHelper(shouldMakeFullScreen() ? screen()->geometry() : window()->geometry());
+    setGeometryHelper(shouldMakeFullScreen()
+                              ? screen()->geometry()
+                              : QHighDpi::toNativePixels(window()->geometry(), window()));
 }
 
 void QQnxWindow::collectWindowGroup()
