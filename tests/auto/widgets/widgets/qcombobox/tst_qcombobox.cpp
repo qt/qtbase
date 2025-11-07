@@ -863,9 +863,6 @@ void tst_QComboBox::virtualAutocompletion()
 
 void tst_QComboBox::autoCompletionCaseSensitivity()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     //we have put the focus because the completer
     //is only used when the widget actually has the focus
     TestWidget topLevel;
@@ -2044,9 +2041,6 @@ void tst_QComboBox::flaggedItems_data()
 
 void tst_QComboBox::flaggedItems()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     QFETCH(QStringList, itemList);
     QFETCH(const IntList, deselectFlagList);
     QFETCH(const IntList, disableFlagList);
@@ -2619,9 +2613,6 @@ void tst_QComboBox::task247863_keyBoardSelection()
 
 void tst_QComboBox::task220195_keyBoardSelection2()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     QComboBox combo;
     setFrameless(&combo);
     combo.move(200, 200);
@@ -2953,9 +2944,6 @@ void tst_QComboBox::keyBoardNavigationWithMouse()
 
 void tst_QComboBox::task_QTBUG_1071_changingFocusEmitsActivated()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     QWidget w;
     w.move(200, 200);
     QVBoxLayout layout(&w);
@@ -3222,9 +3210,6 @@ void tst_QComboBox::itemData()
 
 void tst_QComboBox::task_QTBUG_31146_popupCompletion()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     QComboBox comboBox;
     comboBox.setEditable(true);
     comboBox.setInsertPolicy(QComboBox::NoInsert);
@@ -3258,9 +3243,6 @@ void tst_QComboBox::task_QTBUG_31146_popupCompletion()
 
 void tst_QComboBox::task_QTBUG_41288_completerChangesCurrentIndex()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     QComboBox comboBox;
     comboBox.setEditable(true);
 
@@ -3609,9 +3591,6 @@ void tst_QComboBox::popupPositionAfterStyleChange()
 
 void tst_QComboBox::inputMethodUpdate()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     TestWidget topLevel;
     topLevel.show();
     QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
@@ -3666,9 +3645,6 @@ void tst_QComboBox::inputMethodUpdate()
 
 void tst_QComboBox::task_QTBUG_52027_mapCompleterIndex()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     QStringList words;
     words << "" << "foobar1" << "foobar2";
 
