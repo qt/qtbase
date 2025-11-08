@@ -293,10 +293,7 @@ Q_NEVER_INLINE void QRandomGenerator::SystemGenerator::generate(quint32 *begin, 
     }
 
     qsizetype filled = 0;
-    if (qHasHwrng() && (uint(qt_randomdevice_control.loadAcquire()) & SkipHWRNG) == 0)
-        filled += qRandomCpu(buffer, count);
-
-    if (filled != count && (uint(qt_randomdevice_control.loadAcquire()) & SkipSystemRNG) == 0) {
+    if ((uint(qt_randomdevice_control.loadAcquire()) & SkipSystemRNG) == 0) {
         qsizetype bytesFilled =
                 fillBuffer(buffer + filled, (count - filled) * qsizetype(sizeof(*buffer)));
         filled += bytesFilled / qsizetype(sizeof(*buffer));

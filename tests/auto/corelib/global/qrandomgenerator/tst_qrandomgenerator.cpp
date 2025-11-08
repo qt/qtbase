@@ -304,11 +304,9 @@ void tst_QRandomGenerator::generate32_data()
     QTest::newRow("fixed") << (RandomValue32 & RandomDataMask);
     QTest::newRow("global") << 0U;
 #ifdef QT_BUILD_INTERNAL
-    if (qHasHwrng())
-        QTest::newRow("hwrng") << uint(UseSystemRNG);
-    QTest::newRow("system") << uint(UseSystemRNG | SkipHWRNG);
+    QTest::newRow("system") << uint(UseSystemRNG);
 #  ifdef HAVE_FALLBACK_ENGINE
-    QTest::newRow("system-fallback") << uint(UseSystemRNG | SkipHWRNG | SkipSystemRNG);
+    QTest::newRow("system-fallback") << uint(UseSystemRNG | SkipSystemRNG);
 #  endif
 #endif
 }
@@ -553,7 +551,7 @@ void tst_QRandomGenerator::bounded()
     QCOMPARE(ivalue, int(expected));
 
     // confirm only the bound now
-    setRNGControl(control & (SkipHWRNG|SkipSystemRNG|UseSystemRNG));
+    setRNGControl(control & (SkipSystemRNG|UseSystemRNG));
     value = rng.bounded(sup);
     QVERIFY(value < sup);
 
@@ -685,7 +683,7 @@ void tst_QRandomGenerator::bounded64()
     QCOMPARE(ivalue, int(expected));
 
     // confirm only the bound now
-    setRNGControl(control & (SkipHWRNG|SkipSystemRNG|UseSystemRNG));
+    setRNGControl(control & (SkipSystemRNG|UseSystemRNG));
     value = rng.bounded(sup);
     QVERIFY(value < sup);
 
@@ -810,11 +808,9 @@ void tst_QRandomGenerator::stdUniformIntDistribution_data()
 
     auto newRow = [&](quint32 max) {
 #ifdef QT_BUILD_INTERNAL
-        if (qHasHwrng())
-            QTest::addRow("hwrng:%u", max) << uint(UseSystemRNG) << max;
-        QTest::addRow("system:%u", max) << uint(UseSystemRNG | SkipHWRNG) << max;
+        QTest::addRow("system:%u", max) << uint(UseSystemRNG) << max;
 #  ifdef HAVE_FALLBACK_ENGINE
-        QTest::addRow("system-fallback:%u", max) << uint(UseSystemRNG | SkipHWRNG | SkipSystemRNG) << max;
+        QTest::addRow("system-fallback:%u", max) << uint(UseSystemRNG | SkipSystemRNG) << max;
 #  endif
 #endif
         QTest::addRow("global:%u", max) << 0U << max;
@@ -925,11 +921,9 @@ void tst_QRandomGenerator::stdUniformRealDistribution_data()
 
     auto newRow = [&](double min, double sup) {
 #ifdef QT_BUILD_INTERNAL
-        if (qHasHwrng())
-            QTest::addRow("hwrng:%g-%g", min, sup) << uint(UseSystemRNG) << min << sup;
-        QTest::addRow("system:%g-%g", min, sup) << uint(UseSystemRNG | SkipHWRNG) << min << sup;
+        QTest::addRow("system:%g-%g", min, sup) << uint(UseSystemRNG) << min << sup;
 #  ifdef HAVE_FALLBACK_ENGINE
-        QTest::addRow("system-fallback:%g-%g", min, sup) << uint(UseSystemRNG | SkipHWRNG | SkipSystemRNG) << min << sup;
+        QTest::addRow("system-fallback:%g-%g", min, sup) << uint(UseSystemRNG | SkipSystemRNG) << min << sup;
 #  endif
 #endif
         QTest::addRow("global:%g-%g", min, sup) << 0U << min << sup;
@@ -948,7 +942,7 @@ void tst_QRandomGenerator::stdUniformRealDistribution()
     QFETCH(uint, control);
     QFETCH(double, min);
     QFETCH(double, sup);
-    RandomGenerator rng(control & (SkipHWRNG|SkipSystemRNG|UseSystemRNG));
+    RandomGenerator rng(control & (SkipSystemRNG|UseSystemRNG));
 
     {
         QRandomGenerator rd;

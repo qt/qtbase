@@ -24,8 +24,7 @@ QT_BEGIN_NAMESPACE
 enum QRandomGeneratorControl {
     UseSystemRNG = 1,
     SkipSystemRNG = 2,
-    SkipHWRNG = 4,
-    SetRandomData = 8,
+    SetRandomData = 4,
 
     // 28 bits
     RandomDataMask = 0xfffffff0
