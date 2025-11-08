@@ -1447,6 +1447,17 @@ QSet<QString> codesignBundle(const QString &identity,
     QString appBundleAbsolutePath = QFileInfo(appBundlePath).absoluteFilePath();
     QString rootBinariesPath = appBundleAbsolutePath + "/Contents/MacOS/";
     QStringList foundRootBinaries = QDir(rootBinariesPath).entryList(QStringList() << "*", QDir::Files);
+
+    // The app binary must be signed last.
+    QString appBinary = findAppBinary(appBundleAbsolutePath);
+    QString appBinaryName = QFileInfo(appBinary).fileName();
+    if (int appBinaryIdx = foundRootBinaries.indexOf(appBinaryName); appBinaryIdx > 0) {
+      foundRootBinaries.swapItemsAt(0, appBinaryIdx);
+      LogDebug() << "swapped appBinary to start of list";
+    }
+    LogDebug() << "app binary is" << appBinaryName;
+    LogDebug() << "binaries in" << rootBinariesPath << "are" << foundRootBinaries;
+
     for (const QString &binary : foundRootBinaries) {
         QString binaryPath = rootBinariesPath + binary;
         pendingBinaries.push(binaryPath);
