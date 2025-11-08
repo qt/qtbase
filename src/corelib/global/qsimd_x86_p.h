@@ -35,41 +35,39 @@
 #define cpu_feature_aes                             (UINT64_C(1) << 8)
 #define cpu_feature_avx                             (UINT64_C(1) << 9)
 #define cpu_feature_f16c                            (UINT64_C(1) << 10)
-#define cpu_feature_rdrnd                           (UINT64_C(1) << 11)
 
 // in CPUID Leaf 7, Sub-leaf 0, EBX:
-#define cpu_feature_bmi                             (UINT64_C(1) << 12)
-#define cpu_feature_avx2                            (UINT64_C(1) << 13)
-#define cpu_feature_bmi2                            (UINT64_C(1) << 14)
-#define cpu_feature_avx512f                         (UINT64_C(1) << 15)
-#define cpu_feature_avx512dq                        (UINT64_C(1) << 16)
-#define cpu_feature_rdseed                          (UINT64_C(1) << 17)
-#define cpu_feature_avx512ifma                      (UINT64_C(1) << 18)
-#define cpu_feature_avx512cd                        (UINT64_C(1) << 19)
-#define cpu_feature_sha                             (UINT64_C(1) << 20)
-#define cpu_feature_avx512bw                        (UINT64_C(1) << 21)
-#define cpu_feature_avx512vl                        (UINT64_C(1) << 22)
+#define cpu_feature_bmi                             (UINT64_C(1) << 11)
+#define cpu_feature_avx2                            (UINT64_C(1) << 12)
+#define cpu_feature_bmi2                            (UINT64_C(1) << 13)
+#define cpu_feature_avx512f                         (UINT64_C(1) << 14)
+#define cpu_feature_avx512dq                        (UINT64_C(1) << 15)
+#define cpu_feature_avx512ifma                      (UINT64_C(1) << 16)
+#define cpu_feature_avx512cd                        (UINT64_C(1) << 17)
+#define cpu_feature_sha                             (UINT64_C(1) << 18)
+#define cpu_feature_avx512bw                        (UINT64_C(1) << 19)
+#define cpu_feature_avx512vl                        (UINT64_C(1) << 20)
 
 // in CPUID Leaf 7, Sub-leaf 0, ECX:
-#define cpu_feature_avx512vbmi                      (UINT64_C(1) << 23)
-#define cpu_feature_waitpkg                         (UINT64_C(1) << 24)
-#define cpu_feature_avx512vbmi2                     (UINT64_C(1) << 25)
-#define cpu_feature_shstk                           (UINT64_C(1) << 26)
-#define cpu_feature_gfni                            (UINT64_C(1) << 27)
-#define cpu_feature_vaes                            (UINT64_C(1) << 28)
-#define cpu_feature_avx512bitalg                    (UINT64_C(1) << 29)
-#define cpu_feature_avx512vpopcntdq                 (UINT64_C(1) << 30)
+#define cpu_feature_avx512vbmi                      (UINT64_C(1) << 21)
+#define cpu_feature_waitpkg                         (UINT64_C(1) << 22)
+#define cpu_feature_avx512vbmi2                     (UINT64_C(1) << 23)
+#define cpu_feature_shstk                           (UINT64_C(1) << 24)
+#define cpu_feature_gfni                            (UINT64_C(1) << 25)
+#define cpu_feature_vaes                            (UINT64_C(1) << 26)
+#define cpu_feature_avx512bitalg                    (UINT64_C(1) << 27)
+#define cpu_feature_avx512vpopcntdq                 (UINT64_C(1) << 28)
 
 // in CPUID Leaf 7, Sub-leaf 0, EDX:
-#define cpu_feature_hybrid                          (UINT64_C(1) << 31)
-#define cpu_feature_ibt                             (UINT64_C(1) << 32)
-#define cpu_feature_avx512fp16                      (UINT64_C(1) << 33)
+#define cpu_feature_hybrid                          (UINT64_C(1) << 29)
+#define cpu_feature_ibt                             (UINT64_C(1) << 30)
+#define cpu_feature_avx512fp16                      (UINT64_C(1) << 31)
 
 // in CPUID Leaf 7, Sub-leaf 1, EAX:
-#define cpu_feature_raoint                          (UINT64_C(1) << 34)
-#define cpu_feature_cmpccxadd                       (UINT64_C(1) << 35)
-#define cpu_feature_avxifma                         (UINT64_C(1) << 36)
-#define cpu_feature_lam                             (UINT64_C(1) << 37)
+#define cpu_feature_raoint                          (UINT64_C(1) << 32)
+#define cpu_feature_cmpccxadd                       (UINT64_C(1) << 33)
+#define cpu_feature_avxifma                         (UINT64_C(1) << 34)
+#define cpu_feature_lam                             (UINT64_C(1) << 35)
 
 // CPU architectures
 #define cpu_x86_64              (0 \
@@ -120,10 +118,8 @@
 #define cpu_rpc                 (cpu_glc)
 #define cpu_rwc                 (cpu_rpc)
 #define cpu_slm                 (cpu_wsm \
-                                 | cpu_feature_rdrnd \
                                  | cpu_feature_movbe)
-#define cpu_glm                 (cpu_slm \
-                                 | cpu_feature_rdseed)
+#define cpu_glm                 (cpu_slm)
 #define cpu_tnt                 (cpu_glm \
                                  | cpu_feature_gfni \
                                  | cpu_feature_waitpkg)
@@ -203,13 +199,11 @@
 #define QT_FUNCTION_TARGET_STRING_AES               "aes,sse4.2"
 #define QT_FUNCTION_TARGET_STRING_AVX               "avx"
 #define QT_FUNCTION_TARGET_STRING_F16C              "f16c,avx"
-#define QT_FUNCTION_TARGET_STRING_RDRND             "rdrnd"
 #define QT_FUNCTION_TARGET_STRING_BMI               "bmi"
 #define QT_FUNCTION_TARGET_STRING_AVX2              "avx2,avx"
 #define QT_FUNCTION_TARGET_STRING_BMI2              "bmi2"
 #define QT_FUNCTION_TARGET_STRING_AVX512F           "avx512f,avx"
 #define QT_FUNCTION_TARGET_STRING_AVX512DQ          "avx512dq,avx512f"
-#define QT_FUNCTION_TARGET_STRING_RDSEED            "rdseed"
 #define QT_FUNCTION_TARGET_STRING_AVX512IFMA        "avx512ifma,avx512f"
 #define QT_FUNCTION_TARGET_STRING_AVX512CD          "avx512cd,avx512f"
 #define QT_FUNCTION_TARGET_STRING_SHA               "sha"
@@ -340,9 +334,6 @@ static const uint64_t _compilerCpuFeatures = 0
 #ifdef __F16C__
          | cpu_feature_f16c
 #endif
-#ifdef __RDRND__
-         | cpu_feature_rdrnd
-#endif
 #ifdef __BMI__
          | cpu_feature_bmi
 #endif
@@ -357,9 +348,6 @@ static const uint64_t _compilerCpuFeatures = 0
 #endif
 #ifdef __AVX512DQ__
          | cpu_feature_avx512dq
-#endif
-#ifdef __RDSEED__
-         | cpu_feature_rdseed
 #endif
 #ifdef __AVX512IFMA__
          | cpu_feature_avx512ifma
@@ -436,13 +424,11 @@ enum X86CpuFeatures : uint64_t {
     CpuFeatureAES = cpu_feature_aes,                         ///< Advenced Encryption Standard
     CpuFeatureAVX = cpu_feature_avx,                         ///< Advanced Vector Extensions
     CpuFeatureF16C = cpu_feature_f16c,                       ///< 16-bit Float Conversion
-    CpuFeatureRDRND = cpu_feature_rdrnd,                     ///< Random number generator
     CpuFeatureBMI = cpu_feature_bmi,                         ///< Bit Manipulation Instructions
     CpuFeatureAVX2 = cpu_feature_avx2,                       ///< Advanced Vector Extensions 2
     CpuFeatureBMI2 = cpu_feature_bmi2,                       ///< Bit Manipulation Instructions 2
     CpuFeatureAVX512F = cpu_feature_avx512f,                 ///< AVX512 Foundation
     CpuFeatureAVX512DQ = cpu_feature_avx512dq,               ///< AVX512 Double & Quadword
-    CpuFeatureRDSEED = cpu_feature_rdseed,                   ///< Random number generator for seeding
     CpuFeatureAVX512IFMA = cpu_feature_avx512ifma,           ///< AVX512 Integer Fused Multiply-Add
     CpuFeatureAVX512CD = cpu_feature_avx512cd,               ///< AVX512 Conflict Detection
     CpuFeatureSHA = cpu_feature_sha,                         ///< SHA-1 and SHA-256 instructions

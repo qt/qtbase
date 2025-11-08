@@ -473,24 +473,6 @@ static inline uint64_t qCpuFeatures()
 #ifdef __cplusplus
 } // extern "C"
 
-#  if defined(Q_PROCESSOR_X86) && QT_COMPILER_SUPPORTS_HERE(RDRND) && !defined(QT_BOOTSTRAPPED)
-Q_CORE_EXPORT qsizetype qRandomCpu(void *, qsizetype) noexcept;
-
-static inline bool qHasHwrng()
-{
-    return qCpuHasFeature(RDRND);
-}
-#  else
-static inline qsizetype qRandomCpu(void *, qsizetype) noexcept
-{
-    return 0;
-}
-static inline bool qHasHwrng()
-{
-    return false;
-}
-#  endif
-
 QT_END_NAMESPACE
 
 #endif // __cplusplus

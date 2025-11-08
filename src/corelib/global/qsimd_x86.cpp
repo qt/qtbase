@@ -17,13 +17,11 @@ static const char features_string[] =
     " aes\0"
     " avx\0"
     " f16c\0"
-    " rdrnd\0"
     " bmi\0"
     " avx2\0"
     " bmi2\0"
     " avx512f\0"
     " avx512dq\0"
-    " rdseed\0"
     " avx512ifma\0"
     " avx512cd\0"
     " sha\0"
@@ -48,10 +46,10 @@ static const char features_string[] =
 
 static const uint16_t features_indices[] = {
       0,   6,  12,  19,  24,  32,  40,  47,
-     55,  60,  65,  71,  78,  83,  89,  95,
-    104, 114, 122, 134, 144, 149, 159, 169,
-    181, 190, 203, 210, 216, 222, 236, 253,
-    261, 266, 278, 286, 297, 306,
+     55,  60,  65,  71,  76,  82,  88,  97,
+    107, 119, 129, 134, 144, 154, 166, 175,
+    188, 195, 201, 207, 221, 238, 246, 251,
+    263, 271, 282, 291,
 };
 
 enum X86CpuidLeaves {
@@ -80,13 +78,11 @@ static const uint16_t x86_locators[] = {
     Leaf01ECX*32 + 25,                // aes
     Leaf01ECX*32 + 28,                // avx
     Leaf01ECX*32 + 29,                // f16c
-    Leaf01ECX*32 + 30,                // rdrnd
     Leaf07_00EBX*32 +  3,             // bmi
     Leaf07_00EBX*32 +  5,             // avx2
     Leaf07_00EBX*32 +  8,             // bmi2
     Leaf07_00EBX*32 + 16,             // avx512f
     Leaf07_00EBX*32 + 17,             // avx512dq
-    Leaf07_00EBX*32 + 18,             // rdseed
     Leaf07_00EBX*32 + 21,             // avx512ifma
     Leaf07_00EBX*32 + 28,             // avx512cd
     Leaf07_00EBX*32 + 29,             // sha
