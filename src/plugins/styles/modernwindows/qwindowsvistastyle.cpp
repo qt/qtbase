@@ -3988,7 +3988,7 @@ void QWindowsVistaStyle::drawComplexControl(ComplexControl control, const QStyle
                 d->drawBackground(ftheme);
             }
             if (sub & SC_SpinBoxUp) {
-                theme.rect = proxy()->subControlRect(CC_SpinBox, option, SC_SpinBoxUp, widget).adjusted(0, 0, 0, 1);
+                theme.rect = proxy()->subControlRect(CC_SpinBox, option, SC_SpinBoxUp, widget);
                 partId = SPNP_UP;
                 if (!(sb->stepEnabled & QAbstractSpinBox::StepUpEnabled) || !(flags & State_Enabled))
                     stateId = UPS_DISABLED;
