@@ -358,26 +358,28 @@ static void setCurrentThreadName(const char *name)
 #endif
 
 namespace {
+#if defined(__GLIBCXX__) && !defined(QT_NO_EXCEPTIONS)
 template <typename T>
 void terminate_on_exception(T &&t)
 {
-#ifndef QT_NO_EXCEPTIONS
     try {
-#endif
         std::forward<T>(t)();
-#ifndef QT_NO_EXCEPTIONS
-#ifdef __GLIBCXX__
-    // POSIX thread cancellation under glibc is implemented by throwing an exception
-    // of this type. Do what libstdc++ is doing and handle it specially in order not to
-    // abort the application if user's code calls a cancellation function.
     } catch (abi::__forced_unwind &) {
+        // POSIX thread cancellation under glibc is implemented by throwing an exception
+        // of this type. Do what libstdc++ is doing and handle it specially in order not to
+        // abort the application if user's code calls a cancellation function.
         throw;
-#endif // __GLIBCXX__
     } catch (...) {
         std::terminate();
     }
-#endif // QT_NO_EXCEPTIONS
 }
+#else
+template <typename T>
+void terminate_on_exception(T &&t) noexcept
+{
+    std::forward<T>(t)();
+}
+#endif // defined(__GLIBCXX__) && !defined(QT_NO_EXCEPTIONS)
 } // unnamed namespace
 
 void *QThreadPrivate::start(void *arg)
