@@ -67,13 +67,13 @@ QT_BEGIN_NAMESPACE
 #define Q_ENUM_IMPL(ENUM) \
     friend constexpr const QMetaObject *qt_getEnumMetaObject(ENUM) noexcept { return &staticMetaObject; } \
     friend constexpr const char *qt_getEnumName(ENUM) noexcept { return #ENUM; }
-#define Q_ENUM(x) Q_ENUMS(x) Q_ENUM_IMPL(x)
-#define Q_FLAG(x) Q_FLAGS(x) Q_ENUM_IMPL(x)
+#define Q_ENUM(x) QT_ANNOTATE_CLASS(qt_enums, x) Q_ENUM_IMPL(x)
+#define Q_FLAG(x) QT_ANNOTATE_CLASS(qt_enums, x) Q_ENUM_IMPL(x)
 #define Q_ENUM_NS_IMPL(ENUM) \
     inline constexpr const QMetaObject *qt_getEnumMetaObject(ENUM) noexcept { return &staticMetaObject; } \
     inline constexpr const char *qt_getEnumName(ENUM) noexcept { return #ENUM; }
-#define Q_ENUM_NS(x) Q_ENUMS(x) Q_ENUM_NS_IMPL(x)
-#define Q_FLAG_NS(x) Q_FLAGS(x) Q_ENUM_NS_IMPL(x)
+#define Q_ENUM_NS(x) QT_ANNOTATE_CLASS(qt_enums, x) Q_ENUM_NS_IMPL(x)
+#define Q_FLAG_NS(x) QT_ANNOTATE_CLASS(qt_enums, x) Q_ENUM_NS_IMPL(x)
 #define Q_SCRIPTABLE QT_ANNOTATE_FUNCTION(qt_scriptable)
 #define Q_INVOKABLE  QT_ANNOTATE_FUNCTION(qt_invokable)
 #define Q_SIGNAL QT_ANNOTATE_FUNCTION(qt_signal)
