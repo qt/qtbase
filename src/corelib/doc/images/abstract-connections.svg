@@ -6,16 +6,25 @@
   svg .line-style { stroke: black; fill: none }
   svg .text-style { font: 16px arial; fill: black }
   svg .bold-style { font: 16px arial; fill: black; font-weight: bold }
+  svg .arrow-style { stroke: none; fill: black }
+
+  svg.dark .box-style { fill: #1A8550; stroke: #F2F2F2; }
+  svg.dark .line-style { stroke: #F2F2F2; }
+  svg.dark .text-style { font: 16px arial; fill: #F2F2F2; }
+  svg.dark .bold-style { font: 16px arial; fill: #F2F2F2; font-weight: bold }
+  svg.dark .arrow-style { stroke: none; fill: #f2f2f2 }
 
   [data-theme="dark"] svg .box-style { fill: #1A8550; stroke: #F2F2F2; }
   [data-theme="dark"] svg .line-style { stroke: #F2F2F2; }
   [data-theme="dark"] svg .text-style { font: 16px arial; fill: #F2F2F2; }
   [data-theme="dark"] svg .bold-style { font: 16px arial; fill: #F2F2F2; font-weight: bold }
+  [data-theme="dark"] svg .arrow-style { stroke: none; fill: #f2f2f2 }
 
-  [data-theme="light"] svg .box-style { fill: #56E59D; stroke: #333333; }
-  [data-theme="light"] svg .line-style { stroke: #333333; }
-  [data-theme="light"] svg .text-style { font: 16px arial; fill: #333333; }
-  [data-theme="light"] svg .bold-style { font: 16px arial; fill: #333333; font-weight: bold }
+  [data-theme="light"] svg .box-style { stroke: black; fill: #c0f0c0 }
+  [data-theme="light"] svg .line-style { stroke: black; fill: none }
+  [data-theme="light"] svg .text-style { font: 16px arial; fill: black }
+  [data-theme="light"] svg .bold-style { font: 16px arial; fill: black; font-weight: bold }
+  [data-theme="light"] svg .arrow-style { stroke: none; fill: black }
 </style>
 
 <defs>
@@ -28,69 +37,109 @@
 <!-- Object1 -->
 <g transform="translate(60,10)">
 <path d="M 10,0 l 80,0 c 5,0 10,5 10,10 l 0,140 c 0,5 -5,10 -10,10
-         l -80,0 c -5,0 -10,-5 -10,-10 l 0,-140 c 0,-5 5,-10 10,-10 z" class="box-style" />
-<text x="50" y="25" text-anchor="middle" class="bold-style">Object1</text>
+         l -80,0 c -5,0 -10,-5 -10,-10 l 0,-140 c 0,-5 5,-10 10,-10 z"
+      fill="#c0f0c0" stroke="black" class="box-style" />
+<text x="50" y="25" text-anchor="middle"
+      font-family="arial" font-size="16px" font-weight="bold"
+      class="bold-style">Object1</text>
 
-<path d="M 0,40 l 100,0" class="line-style" />
+<path d="M 0,40 l 100,0" stroke="black" fill="none" class="line-style" />
 
-<text x="50" y="65" text-anchor="middle" class="text-style">signal1</text>
-<text x="50" y="90" text-anchor="middle" class="text-style">signal2</text>
+<text x="50" y="65" text-anchor="middle"
+      font-family="arial" font-size="16px"
+      class="text-style">signal1</text>
+<text x="50" y="90" text-anchor="middle"
+      font-family="arial" font-size="16px"
+      class="text-style">signal2</text>
 
-<path d="M 0,110 l 100,0" class="line-style" />
+<path d="M 0,110 l 100,0" stroke="black" fill="none" class="line-style" />
 </g>
 
 <!-- Object2 -->
 <g transform="translate(340,80)">
 <path d="M 10,0 l 80,0 c 5,0 10,5 10,10 l 0,140 c 0,5 -5,10 -10,10
-         l -80,0 c -5,0 -10,-5 -10,-10 l 0,-140 c 0,-5 5,-10 10,-10 z" class="box-style" />
-<text x="50" y="25" text-anchor="middle" class="bold-style" font-weight="bold">Object2</text>
-<path d="M 0,40 l 100,0" class="line-style" />
+         l -80,0 c -5,0 -10,-5 -10,-10 l 0,-140 c 0,-5 5,-10 10,-10 z"
+      fill="#c0f0c0" stroke="black" class="box-style" />
+<text x="50" y="25" text-anchor="middle"
+      font-family="arial" font-size="16px" font-weight="bold"
+      class="bold-style">Object2</text>
+<path d="M 0,40 l 100,0" stroke="black" fill="none" class="line-style" />
 
-<text x="50" y="65" text-anchor="middle" class="text-style">signal1</text>
+<text x="50" y="65" text-anchor="middle"
+      font-family="arial" font-size="16px"
+      class="text-style">signal1</text>
 
-<path d="M 0,85 l 100,0" class="line-style" />
+<path d="M 0,85 l 100,0" stroke="black" fill="none" class="line-style" />
 
-<text x="50" y="110" text-anchor="middle" class="text-style">slot1</text>
-<text x="50" y="135" text-anchor="middle" class="text-style">slot2</text>
+<text x="50" y="110" text-anchor="middle"
+      font-family="arial" font-size="16px"
+      class="text-style">slot1</text>
+<text x="50" y="135" text-anchor="middle"
+      font-family="arial" font-size="16px"
+      class="text-style">slot2</text>
 </g>
 
 <!-- Object3 -->
 <g transform="translate(40,240)">
 <path d="M 10,0 l 80,0 c 5,0 10,5 10,10 l 0,140 c 0,5 -5,10 -10,10
-         l -80,0 c -5,0 -10,-5 -10,-10 l 0,-140 c 0,-5 5,-10 10,-10 z" class="box-style" />
-<text x="50" y="25" text-anchor="middle" class="bold-style" font-weight="bold">Object3</text>
-<path d="M 0,40 l 100,0" class="line-style" />
+         l -80,0 c -5,0 -10,-5 -10,-10 l 0,-140 c 0,-5 5,-10 10,-10 z"
+      fill="#c0f0c0" stroke="black" class="box-style" />
+<text x="50" y="25" text-anchor="middle"
+      font-family="arial" font-size="16px" font-weight="bold"
+      class="bold-style">Object3</text>
+<path d="M 0,40 l 100,0" stroke="black" fill="none" class="line-style" />
 
-<text x="50" y="65" text-anchor="middle" class="text-style">signal1</text>
-<path d="M 0,85 l 100,0" class="line-style" />
+<text x="50" y="65" text-anchor="middle"
+      font-family="arial" font-size="16px"
+      class="text-style">signal1</text>
+<path d="M 0,85 l 100,0" stroke="black" fill="none" class="line-style" />
 
-<text x="50" y="110" text-anchor="middle" class="text-style">slot1</text>
+<text x="50" y="110" text-anchor="middle"
+      font-family="arial" font-size="16px"
+      class="text-style">slot1</text>
 </g>
 
 <!-- Object4 -->
 <g transform="translate(320,310)">
 <path d="M 10,0 l 80,0 c 5,0 10,5 10,10 l 0,140 c 0,5 -5,10 -10,10
-         l -80,0 c -5,0 -10,-5 -10,-10 l 0,-140 c 0,-5 5,-10 10,-10 z" class="box-style" />
-<text x="50" y="25" text-anchor="middle" class="bold-style" font-weight="bold">Object4</text>
-<path d="M 0,40 l 100,0" class="line-style" />
-<path d="M 0,70 l 100,0" class="line-style" />
+         l -80,0 c -5,0 -10,-5 -10,-10 l 0,-140 c 0,-5 5,-10 10,-10 z"
+      fill="#c0f0c0" stroke="black" class="box-style" />
+<text x="50" y="25" text-anchor="middle"
+      font-family="arial" font-size="16px" font-weight="bold"
+      class="bold-style">Object4</text>
+<path d="M 0,40 l 100,0" stroke="black" fill="none" class="line-style" />
+<path d="M 0,70 l 100,0" stroke="black" fill="none" class="line-style" />
 
-<text x="50" y="95" text-anchor="middle" class="text-style">slot1</text>
-<text x="50" y="120" text-anchor="middle" class="text-style">slot2</text>
-<text x="50" y="145" text-anchor="middle" class="text-style">slot3</text>
+<text x="50" y="95" text-anchor="middle"
+      font-family="arial" font-size="16px"
+      class="text-style">slot1</text>
+<text x="50" y="120" text-anchor="middle"
+      font-family="arial" font-size="16px"
+      class="text-style">slot2</text>
+<text x="50" y="145" text-anchor="middle"
+      font-family="arial" font-size="16px"
+      class="text-style">slot3</text>
 </g>
 
 <!-- Object1.signal1 to Object2.slot1 -->
 <path d="M 145,70 l 105,0 q 5,0 5,5 l 0,105 q 0,5 5,5 l 90,0"
-      stroke-width="2" class="line-style" marker-end="url(#arrow)" />
+      stroke="black" fill="none" stroke-width="2" class="line-style" />
+<path d="m 360,185 l -10,-5 l 0,10 z" stroke="none" fill="black"
+      class="arrow-style" />
 <path d="M 255,180 l 0,25 q 0,5 5,5 l 90,0"
-      stroke-width="2" class="line-style" marker-end="url(#arrow)" />
+      stroke="black" fill="none" stroke-width="2" class="line-style" />
+<path d="m 360,210 l -10,-5 l 0,10 z" stroke="none" fill="black"
+      class="arrow-style" />
 
 <!-- Object1.signal2 to Object4.slot1 -->
 <path d="M 145,95 l 45,0 q 5,0 5,5 l 0,295 q 0,5 5,5 l 130,0"
-      stroke-width="2" class="line-style" marker-end="url(#arrow)" />
+      stroke="black" fill="none" stroke-width="2" class="line-style" />
+<path d="m 340,400 l -10,-5 l 0,10 z" stroke="none" fill="black"
+      class="arrow-style" />
 
 <!-- Object3.signal1 to Object4.slot3 -->
 <path d="M 125,300 l 45,0 q 5,0 5,5 l 0,140 q 0,5 5,5 l 150,0"
-      stroke-width="2" class="line-style" marker-end="url(#arrow)" />
+      stroke="black" fill="none" stroke-width="2" class="line-style" />
+<path d="m 340,450 l -10,-5 l 0,10 z" stroke="none" fill="black"
+      class="arrow-style" />
 </svg>
