@@ -5,19 +5,38 @@
 
   <style>
     svg path.node { fill: inherit; stroke: inherit; }
+
+    svg .node-style { fill: #56E59D; stroke: #333333; }
+    svg #footnotes { fill: #333333; }
+    svg #arrow-tip { fill: #333333; }
+    svg .arrow-style { stroke: #333333; }
+    svg .text-style { font: 12px arial; fill: #333333; }
+    svg .text-style-arrows { font: 12px arial; fill: #333333; }
+    svg .small-style { font: 8px arial; fill: #333333; }
+
+    svg.dark .node-style { fill: #1A8550; stroke: #F2F2F2; }
+    svg.dark #footnotes { fill: #F2F2F2; }
+    svg.dark #arrow-tip { fill: #F2F2F2; }
+    svg.dark .arrow-style { stroke: #F2F2F2; }
+    svg.dark .text-style { font: 12px arial; fill: #F2F2F2; }
+    svg.dark .text-style-arrows { font: 12px arial; fill: #F2F2F2; }
+    svg.dark .small-style { font: 8px arial; fill: #F2F2F2; }
+
     [data-theme="dark"] svg .node-style { fill: #1A8550; stroke: #F2F2F2; }
     [data-theme="dark"] svg #footnotes { fill: #F2F2F2; }
     [data-theme="dark"] svg #arrow-tip { fill: #F2F2F2; }
     [data-theme="dark"] svg .arrow-style { stroke: #F2F2F2; }
     [data-theme="dark"] svg .text-style { font: 12px arial; fill: #F2F2F2; }
     [data-theme="dark"] svg .text-style-arrows { font: 12px arial; fill: #F2F2F2; }
+    [data-theme="dark"] svg .small-style { font: 8px arial; fill: #F2F2F2; }
 
     [data-theme="light"] svg .node-style { fill: #56E59D; stroke: #333333; }
     [data-theme="light"] svg #footnotes { fill: #333333; }
     [data-theme="light"] svg #arrow-tip { fill: #333333; }
     [data-theme="light"] svg .arrow-style { stroke: #333333; }
-    [data-theme="light"] svg .text-style { font: 11px arial; fill: #333333; }
-    [data-theme="light"] svg .text-style-arrows { font: 11px arial; fill: #333333; }
+    [data-theme="light"] svg .text-style { font: 12px arial; fill: #333333; }
+    [data-theme="light"] svg .text-style-arrows { font: 12px arial; fill: #333333; }
+    [data-theme="light"] svg .small-style { font: 8px arial; fill: #333333; }
   </style>
 
   <defs>
@@ -63,85 +82,78 @@
 
   <g id="start" transform="translate(-160, 0)">
     <use class="node-style" href="#lozenge" fill="#56E59D" stroke="#333333" />
-    <text
-      font-size="12" font-family="Arial" fill="#333333"
-      text-anchor="middle" dominant-baseline="middle"
-      transform="translate(0, -6)"
-      class="text-style">
-      <tspan x="0" dy="0em">Choosing a string class</tspan>
-      <tspan x="0" dy="1.2em">for creating an API</tspan>
-    </text>
+    <text font-size="12" font-family="Arial" fill="#333333"
+          text-anchor="middle"
+          x="0" y="-3"
+          class="text-style">Choosing a string class</text>
+    <text font-size="12" font-family="Arial" fill="#333333"
+          text-anchor="middle"
+          x="0" y="11"
+          class="text-style">for creating an API</text>
   </g>
 
   <g id="param_or_return" transform="translate(-160, 100)">
    <use class="node-style" href="#raute" fill="#56E59D" stroke="#333333" />
-   <text
-      font-size="12" font-family="Arial" fill="#333333"
-      text-anchor="middle" dominant-baseline="middle"
-      transform="translate(0, -6)"
-      class="text-style">
-      <tspan x="0" dy="0em">For a parameter</tspan>
-      <tspan x="0" dy="1.2em">or the return value?</tspan>
-  </text>
+   <text font-size="12" font-family="Arial" fill="#333333"
+         text-anchor="middle"
+         x="0" y="-4" class="text-style">For a parameter</text>
+   <text font-size="12" font-family="Arial" fill="#333333"
+         text-anchor="middle"
+         x="0" y="10" class="text-style">or the return value?</text>
   </g>
 
   <g id="make_copy" transform="translate(-320, 200)">
     <use class="node-style" href="#raute" fill="#56E59D" stroke="#333333" />
-    <text
-      font-size="12" font-family="Arial" fill="#333333"
-      text-anchor="middle" dominant-baseline="middle"
-      transform="translate(0, -6)"
-      class="text-style">
-      <tspan x="0" dy="0em">Will you make</tspan>
-      <tspan x="0" dy="1.2em">a persistent copy?</tspan>
-    </text>
+    <text font-size="12px" font-family="Arial" fill="#333333"
+          text-anchor="middle"
+          x="0" y="-4" class="text-style">Will you make</text>
+    <text font-size="12px" font-family="Arial" fill="#333333"
+          text-anchor="middle"
+          x="0" y="10" class="text-style">a persistent copy?</text>
   </g>
 
   <g id="ref_or_perm" transform="translate(40, 200)">
     <use class="node-style" href="#raute" fill="#56E59D" stroke="#333333" />
-     <text
-      font-size="12" font-family="Arial" fill="#333333"
-      text-anchor="middle" dominant-baseline="middle"
-      transform="translate(0, -12)"
-      class="text-style">
-      <tspan x="0" dy="0em">Reference to</tspan>
-      <tspan x="0" dy="1.2em">permanent or</tspan>
-      <tspan x="0" dy="1.2em">temporary?</tspan>
-  </text>
+    <text font-size="12" font-family="Arial" fill="#333333"
+          text-anchor="middle"
+          x="0" y="-10" class="text-style">Reference to</text>
+    <text font-size="12" font-family="Arial" fill="#333333"
+          text-anchor="middle"
+          x="0" y="4" class="text-style">permanent or</text>
+    <text font-size="12" font-family="Arial" fill="#333333"
+          text-anchor="middle"
+          x="0" y="18" class="text-style">temporary?</text>
   </g>
 
   <g id="make_copy" transform="translate(-80, 300)">
     <use class="node-style" href="#raute" fill="#56E59D" stroke="#333333" />
-    <text
-      font-size="12" font-family="Arial" fill="#333333"
-      text-anchor="middle" dominant-baseline="middle"
-      transform="translate(0, -6)"
-      class="text-style">
-      <tspan x="0" dy="0em">Reference to full</tspan>
-      <tspan x="0" dy="1.2em">or part?</tspan>
-    </text>
+    <text font-size="12" font-family="Arial" fill="#333333"
+          text-anchor="middle"
+          x="0" y="-2" class="text-style">Reference to full</text>
+    <text font-size="12" font-family="Arial" fill="#333333"
+          text-anchor="middle"
+          x="0" y="12" class="text-style">or part?</text>
   </g>
 
   <g id="const_ref" transform="translate(-320, 300)">
     <use class="node-style" href="#lozenge" fill="#56E59D" stroke="#333333" />
     <text
-      font-size="12" font-family="Arial" fill="#333333"
-      text-anchor="middle" dominant-baseline="middle"
-      class="text-style">
-      <tspan x="0" dy="0em">const QString&amp;¹</tspan>
-    </text>
+      font-size="12" font-family="arial" fill="#333333"
+      text-anchor="middle"
+      x="0" y="3" class="text-style">const QString&amp;¹</text>
   </g>
 
   <g id="anystringview" transform="translate(-200, 380)">
     <use class="node-style" href="#lozenge" fill="#56E59D" stroke="#333333" />
-    <text
-      font-size="12" font-family="Arial" fill="#333333"
-      text-anchor="middle" dominant-baseline="middle"
-      transform="translate(0, -8)"
-      class="text-style">
-      <tspan x="0" dy="0em">Q*StringView</tspan>
-      <tspan font-size="8" x="0" dy="1.4em">Parameters: preferably QAnyStringView</tspan>
-      <tspan font-size="8" x="0" dy="1.2em">Generally: any of L1, UTF-8, or UTF-16</tspan>
+    <text font-size="12" font-family="Arial" fill="#333333"
+          text-anchor="middle"
+          x="0" y="-6" class="text-style">Q*StringView</text>
+    <text font-size="8" font-family="Arial" text-anchor="middle"
+          x="0" y="5"
+          class="small-style">Parameters: preferably QAnyStringView</text>
+    <text font-size="8" font-family="Arial" text-anchor="middle"
+          x="0" y="15"
+          class="small-style">Generally: any of L1, UTF-8, or UTF-16
     </text>
   </g>
 
@@ -150,10 +162,8 @@
     <use class="node-style" href="#lozenge" fill="#56E59D" stroke="#333333" />
     <text
       font-size="12" font-family="Arial" fill="#333333"
-      text-anchor="middle" dominant-baseline="middle"
-      class="text-style">
-      <tspan x="0" dy="0em">QString</tspan>
-    </text>
+      text-anchor="middle"
+      class="text-style" x="0" y="3">QString</text>
   </g>
 
   <g transform="translate(-160, 20)">
@@ -269,14 +279,16 @@
 
   <g transform="translate(-400, 415)">
     <text id="footnotes" x="5" y="5"
-      font-size="9" font-family="Arial" fill="#333333"
-      text-anchor="left" dominant-baseline="middle">
-      <tspan x="0" dy="0em">1:</tspan>
-      <tspan x="1em" dy="0em">If you return a QString in full, you can choose
-        to return a value instead of a reference, allowing you to return a
-        temporary in the</tspan>
-      <tspan x="1em" dy="1.2em">future without breaking source code compatibility. This is
-        also done for all Qt APIs.</tspan>
-    </text>
+          font-size="9" font-family="Arial" fill="#333333"
+          text-anchor="left">1:</text>
+    <text id="footnotes" x="15" y="5"
+          font-size="9" font-family="Arial" fill="#333333"
+          text-anchor="left">If you return a QString in full, you can choose
+          to return a value instead of a reference, allowing you to return a
+          temporary in the</text>
+    <text id="footnotes" x="15" y="15"
+          font-size="9" font-family="Arial" fill="#333333"
+          text-anchor="left">future without breaking source code compatibility.
+          This is also done for all Qt APIs.</text>
   </g>
 </svg>
