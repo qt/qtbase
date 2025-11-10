@@ -163,11 +163,12 @@
 
     \section2 Building with CMake and CTest
 
-    You can use \l {Building with CMake and CTest} to create a test.
-    \l{https://cmake.org/cmake/help/latest/manual/ctest.1.html}{CTest} enables
-    you to include or exclude tests based on a regular expression that is
-    matched against the test name. You can further apply the \c LABELS property
-    to a test and CTest can then include or exclude tests based on those labels.
+    You can use CMake and
+    \l{https://cmake.org/cmake/help/latest/manual/ctest.1.html}{CTest} to create
+    a test. CTest enables you to include or exclude tests based on a regular
+    expression that is matched against the test name. You can further apply the
+    \c LABELS property to a test and CTest can then include or exclude tests
+    based on those labels.
     All labeled targets will be run when \c {test} target is called on the
     command line.
 
