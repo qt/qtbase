@@ -17,6 +17,7 @@ qt_internal_add_plugin(QModernWindowsStylePlugin
         qwindowsthemedata.cpp qwindowsthemedata_p.h
 
     LIBRARIES
+        dwmapi
         gdi32
         user32
         uxtheme

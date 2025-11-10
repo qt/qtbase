@@ -4860,6 +4860,11 @@ void QWindowsVistaStyle::polish(QApplication *app)
     QWindowsStyle::polish(app);
 }
 
+void QWindowsVistaStyle::unpolish(QApplication *app)
+{
+    QWindowsStyle::unpolish(app);
+}
+
 /*!
  \internal
  */

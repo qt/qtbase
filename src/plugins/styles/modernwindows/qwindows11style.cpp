@@ -14,6 +14,7 @@
 #include <qpainterstateguard.h>
 #include <QGraphicsDropShadowEffect>
 #include <QLatin1StringView>
+#include <QtCore/qoperatingsystemversion.h>
 #include <QtWidgets/qcombobox.h>
 #if QT_CONFIG(commandlinkbutton)
 #include <QtWidgets/qcommandlinkbutton.h>
@@ -36,8 +37,12 @@
 #if QT_CONFIG(menubar)
 #  include <QtWidgets/qmenubar.h>
 #endif
+#if QT_CONFIG(tooltip)
+#include "private/qtooltip_p.h"
+#endif
 #include "qdrawutil.h"
 #include <chrono>
+#include <dwmapi.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -47,6 +52,8 @@ static constexpr int topLevelRoundingRadius    = 8; //Radius for toplevel items 
 static constexpr int secondLevelRoundingRadius = 4; //Radius for second level items like hovered menu item round corners
 static constexpr int contentItemHMargin = 4;        // margin between content items (e.g. text and icon)
 static constexpr int contentHMargin = 2 * 3;        // margin between rounded border and content (= rounded border margin * 3)
+
+
 namespace StyleOptionHelper
 {
 inline bool isChecked(const QStyleOption *option)
@@ -281,6 +288,11 @@ static qreal sliderInnerRadius(QStyle::State state, bool insideHandle)
 
   \sa QWindows11Style QWindowsVistaStyle, QMacStyle, QFusionStyle
 */
+QWindows11StylePrivate::QWindows11StylePrivate()
+{
+    nativeRoundedTopLevelWindows =
+            QOperatingSystemVersion::current() >= QOperatingSystemVersion::Windows11_21H2;
+}
 
 /*!
   Constructs a QWindows11Style object.
@@ -986,11 +998,13 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
     case PE_FrameMenu:
         break;
     case PE_PanelMenu: {
-        const QRect rect = option->rect.marginsRemoved(QMargins(2, 2, 2, 2));
-        painter->setPen(highContrastTheme ? QPen(option->palette.windowText().color(), 2)
-                                          : winUI3Color(frameColorLight));
-        painter->setBrush(winUI3Color(menuPanelFill));
-        painter->drawRoundedRect(rect, topLevelRoundingRadius, topLevelRoundingRadius);
+        if (!d->nativeRoundedTopLevelWindows) {
+            const QRect rect = option->rect.marginsRemoved(QMargins(2, 2, 2, 2));
+            painter->setPen(highContrastTheme ? QPen(option->palette.windowText().color(), 2)
+                                              : winUI3Color(frameColorLight));
+            painter->setBrush(winUI3Color(menuPanelFill));
+            painter->drawRoundedRect(rect, topLevelRoundingRadius, topLevelRoundingRadius);
+        }
         break;
     }
     case PE_PanelLineEdit:
@@ -1022,6 +1036,8 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
         if (const auto *frame = qstyleoption_cast<const QStyleOptionFrame *>(option)) {
             const auto rect = QRectF(option->rect).marginsRemoved(QMarginsF(1.5, 1.5, 1.5, 1.5));
             if (qobject_cast<const QComboBoxPrivateContainer *>(widget)) {
+                if (d->nativeRoundedTopLevelWindows)
+                    break;
                 QPen pen;
                 if (highContrastTheme)
                     pen = QPen(option->palette.windowText().color(), 2);
@@ -2400,6 +2416,8 @@ int QWindows11Style::pixelMetric(PixelMetric metric, const QStyleOption *option,
 
 void QWindows11Style::polish(QWidget* widget)
 {
+    Q_D(QWindows11Style);
+
 #if QT_CONFIG(commandlinkbutton)
     if (!qobject_cast<QCommandLinkButton *>(widget))
 #endif // QT_CONFIG(commandlinkbutton)
@@ -2407,6 +2425,9 @@ void QWindows11Style::polish(QWidget* widget)
 
     const bool isScrollBar = qobject_cast<QScrollBar *>(widget);
     const auto comboBoxContainer = qobject_cast<const QComboBoxPrivateContainer *>(widget);
+    const auto isComboBoxContainer = !d->nativeRoundedTopLevelWindows && comboBoxContainer != nullptr;
+    const auto isMenu = !d->nativeRoundedTopLevelWindows && qobject_cast<QMenu *>(widget) != nullptr;
+
 #if QT_CONFIG(menubar)
     if (qobject_cast<QMenuBar *>(widget)) {
         constexpr int itemHeight = 32;
@@ -2416,7 +2437,12 @@ void QWindows11Style::polish(QWidget* widget)
         }
     }
 #endif
-    if (isScrollBar || qobject_cast<QMenu *>(widget) || comboBoxContainer) {
+    if (comboBoxContainer && d->nativeRoundedTopLevelWindows) {
+        auto view = comboBoxContainer->itemView();
+        if (view && view->viewport())
+            view->viewport()->setAutoFillBackground(false);
+    }
+    if (isScrollBar || isMenu || isComboBoxContainer) {
         bool wasCreated = widget->testAttribute(Qt::WA_WState_Created);
         bool layoutDirection = widget->testAttribute(Qt::WA_RightToLeft);
         widget->setAttribute(Qt::WA_OpaquePaintEvent,false);
@@ -2467,6 +2493,7 @@ void QWindows11Style::polish(QWidget* widget)
 
 void QWindows11Style::unpolish(QWidget *widget)
 {
+    Q_D(QWindows11Style);
 #if QT_CONFIG(commandlinkbutton)
     if (!qobject_cast<QCommandLinkButton *>(widget))
 #endif // QT_CONFIG(commandlinkbutton)
@@ -2478,8 +2505,18 @@ void QWindows11Style::unpolish(QWidget *widget)
         widget->setProperty("_q_original_menubar_maxheight", QVariant());
     }
 #endif
+    const bool isScrollBar = qobject_cast<QScrollBar *>(widget);
     const auto comboBoxContainer = qobject_cast<const QComboBoxPrivateContainer *>(widget);
-    if (comboBoxContainer) {
+    const auto isComboBoxContainer = !d->nativeRoundedTopLevelWindows && comboBoxContainer != nullptr;
+    const auto isMenu = !d->nativeRoundedTopLevelWindows && qobject_cast<QMenu *>(widget) != nullptr;
+
+    if (comboBoxContainer && d->nativeRoundedTopLevelWindows) {
+        auto view = comboBoxContainer->itemView();
+        // see QAbstractScrollAreaPrivate::init()
+        if (view && view->viewport())
+            view->viewport()->setAutoFillBackground(true);
+    }
+    if (isScrollBar || isMenu || isComboBoxContainer) {
         widget->setAttribute(Qt::WA_OpaquePaintEvent, true);
         widget->setAttribute(Qt::WA_TranslucentBackground, false);
         widget->setWindowFlag(Qt::FramelessWindowHint, false);
@@ -2499,6 +2536,66 @@ void QWindows11Style::unpolish(QWidget *widget)
         const auto origStyledBackground = vp->property("_q_original_styled_background").toBool();
         vp->setAttribute(Qt::WA_StyledBackground, origStyledBackground);
         vp->setProperty("_q_original_styled_background", QVariant());
+    }
+    dwmSetWindowCornerPreference(widget, false);
+}
+
+void QWindows11Style::polish(QApplication *app)
+{
+    Q_D(const QWindows11Style);
+    if (d->nativeRoundedTopLevelWindows)
+        app->installEventFilter(this);
+    QWindowsVistaStyle::polish(app);
+}
+
+void QWindows11Style::unpolish(QApplication *app)
+{
+    Q_D(const QWindows11Style);
+    if (d->nativeRoundedTopLevelWindows)
+        app->removeEventFilter(this);
+    QWindowsVistaStyle::unpolish(app);
+}
+
+bool QWindows11Style::eventFilter(QObject *obj, QEvent *event)
+{
+    // QEvent::WinIdChange is to early so we have to wait for QEvent::Show
+    if (event->type() == QEvent::Show)
+        dwmSetWindowCornerPreference(qobject_cast<QWidget *>(obj), true);
+    return QWindowsVistaStyle::eventFilter(obj, event);
+}
+
+void QWindows11Style::dwmSetWindowCornerPreference(const QWidget *widget, bool bSet) const
+{
+    Q_D(const QWindows11Style);
+    if (!d->nativeRoundedTopLevelWindows)
+        return;
+#ifdef Q_CC_MSVC
+    static constexpr auto dmwmaWindowCornerPreference = DWMWA_WINDOW_CORNER_PREFERENCE;
+    static constexpr auto dwmcpRound = DWMWCP_ROUND;
+    static constexpr auto dwmcpRoundSmall = DWMWCP_ROUNDSMALL;
+    static constexpr auto dwmcpDefault = DWMWCP_DEFAULT;
+#else
+    // MinGW 13.1.0 does not provide this
+    static constexpr auto dmwmaWindowCornerPreference = 33;
+    static constexpr auto dwmcpRound = 2;
+    static constexpr auto dwmcpRoundSmall = 3;
+    static constexpr auto dwmcpDefault = 0;
+#endif
+    if (widget && widget->isWindow() && widget->testAttribute(Qt::WA_WState_Created)) {
+        const auto window = widget->windowHandle();
+        if (window && window->handle()) {
+            const auto wId = reinterpret_cast<HWND>(widget->winId());
+            if (wId != 0) {
+                const bool isToolTip =
+#if QT_CONFIG(tooltip)
+                        qobject_cast<const QTipLabel *>(widget) != nullptr;
+#else
+                        false;
+#endif
+                uint32_t pref = bSet ? (isToolTip ? dwmcpRoundSmall : dwmcpRound) : dwmcpDefault;
+                DwmSetWindowAttribute(wId, dmwmaWindowCornerPreference, &pref, sizeof(pref));
+            }
+        }
     }
 }
 

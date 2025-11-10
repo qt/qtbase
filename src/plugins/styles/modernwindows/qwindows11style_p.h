@@ -90,10 +90,15 @@ public:
                            const QWidget *widget = nullptr) const override;
     QIcon standardIcon(StandardPixmap standardIcon, const QStyleOption *option = nullptr,
                        const QWidget *widget = nullptr) const override;
+    void polish(QApplication *app) override;
+    void unpolish(QApplication *app) override;
+    bool eventFilter(QObject *obj, QEvent *event) override;
+
 protected:
     QWindows11Style(QWindows11StylePrivate &dd);
 
 private:
+    void dwmSetWindowCornerPreference(const QWidget *widget, bool bSet) const;
     QColor calculateAccentColor(const QStyleOption *option) const;
     QPen borderPenControlAlt(const QStyleOption *option) const;
     enum class ControlType
@@ -122,10 +127,13 @@ private:
 class QWindows11StylePrivate : public QWindowsVistaStylePrivate {
     Q_DECLARE_PUBLIC(QWindows11Style)
 
+    QWindows11StylePrivate();
+
 protected:
     QIcon m_toolbarExtensionButton;
     QIcon m_lineEditClearButton;
     QIcon m_tabCloseButton;
+    bool nativeRoundedTopLevelWindows;
 };
 
 QT_END_NAMESPACE
