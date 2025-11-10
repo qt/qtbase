@@ -6,12 +6,22 @@
 #include <qpixmap.h>
 #include <qbitmap.h>
 
+#if defined(Q_OS_WIN)
+#include <QtCore/qscopeguard.h>
+#include <QtCore/qt_windows.h>
+#include <QtGui/qguiapplication.h>
+#include <QtGui/qscreen.h>
+#endif
+
 class tst_QCursor : public QObject
 {
     Q_OBJECT
 
 private slots:
     void equality();
+#if defined(Q_OS_WIN)
+    void overrideCursorScalesOnMixedDpiScreens();
+#endif
 };
 
 #define VERIFY_EQUAL(lhs, rhs) \
@@ -96,6 +106,54 @@ void tst_QCursor::equality()
 
 #undef VERIFY_EQUAL
 #undef VERIFY_DIFFERENT
+
+#if defined(Q_OS_WIN)
+// QTBUG-132709: setOverrideCursor for pixmap cursors must produce an HCURSOR
+// sized for the DPI of the screen under the pointer.
+void tst_QCursor::overrideCursorScalesOnMixedDpiScreens()
+{
+    const auto screens = QGuiApplication::screens();
+    QScreen *a = screens.value(0);
+    QScreen *b = nullptr;
+    for (QScreen *s : screens) {
+        if (s != a && !qFuzzyCompare(s->devicePixelRatio(), a->devicePixelRatio())) {
+            b = s;
+            break;
+        }
+    }
+    if (!b)
+        QSKIP("Needs two screens with different device pixel ratios.");
+
+    auto hcursorWidth = [] {
+        ICONINFO info{};
+        if (!GetIconInfo(GetCursor(), &info))
+            return 0;
+        BITMAP bm{};
+        GetObject(info.hbmMask ? info.hbmMask : info.hbmColor, sizeof(bm), &bm);
+        if (info.hbmColor) DeleteObject(info.hbmColor);
+        if (info.hbmMask)  DeleteObject(info.hbmMask);
+        return int(bm.bmWidth);
+    };
+
+    QCursor::setPos(a->geometry().center());
+    QGuiApplication::setOverrideCursor(QCursor(Qt::SplitVCursor));
+    const int wa = hcursorWidth();
+    QGuiApplication::restoreOverrideCursor();
+
+    QCursor::setPos(b->geometry().center());
+    QGuiApplication::setOverrideCursor(QCursor(Qt::SplitVCursor));
+    const int wb = hcursorWidth();
+    auto guard = qScopeGuard([]{ QGuiApplication::restoreOverrideCursor(); });
+
+    QVERIFY(wa > 0 && wb > 0);
+    const qreal expected = b->devicePixelRatio() / a->devicePixelRatio();
+    const qreal measured = qreal(wb) / qreal(wa);
+    QVERIFY2(qAbs(measured - expected) / expected < 0.15,
+             qPrintable(QString("dpr %1->%2, width %3->%4")
+                        .arg(a->devicePixelRatio()).arg(b->devicePixelRatio())
+                        .arg(wa).arg(wb)));
+}
+#endif // Q_OS_WIN
 
 QTEST_MAIN(tst_QCursor)
 #include "tst_qcursor.moc"

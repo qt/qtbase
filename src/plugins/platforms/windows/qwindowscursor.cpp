@@ -525,7 +525,7 @@ CursorHandlePtr QWindowsCursor::standardWindowCursor(Qt::CursorShape shape)
 }
 
 HCURSOR QWindowsCursor::m_overriddenCursor = nullptr;
-HCURSOR QWindowsCursor::m_overrideCursor = nullptr;
+QCursor QWindowsCursor::m_overrideCursor = QCursor();
 POINT QWindowsCursor::m_cursorPositionCache = {0,0};
 
 /*!
@@ -599,19 +599,38 @@ void QWindowsCursor::changeCursor(QCursor *cursorIn, QWindow *window)
     }
 }
 
+static QWindowsCursor *cursorForPointerScreen()
+{
+    QScreen *qscreen = QGuiApplication::screenAt(QCursor::pos());
+    if (!qscreen)
+        qscreen = QGuiApplication::primaryScreen();
+    if (!qscreen || !qscreen->handle())
+        return nullptr;
+    return static_cast<QWindowsCursor *>(qscreen->handle()->cursor());
+}
+
 // QTBUG-69637: Override cursors can get reset externally when moving across
 // window borders. Enforce the cursor again (to be called from enter event).
 void QWindowsCursor::enforceOverrideCursor()
 {
-    if (hasOverrideCursor() && m_overrideCursor != GetCursor())
-        SetCursor(m_overrideCursor);
+    if (!hasOverrideCursor())
+        return;
+    QWindowsCursor *cursor = cursorForPointerScreen();
+    if (!cursor)
+        return;
+    const CursorHandlePtr wcursor = cursor->cursorHandle(m_overrideCursor);
+    if (wcursor->handle() && wcursor->handle() != GetCursor())
+        SetCursor(wcursor->handle());
 }
 
 void QWindowsCursor::setOverrideCursor(const QCursor &cursor)
 {
-    const CursorHandlePtr wcursor = cursorHandle(cursor);
+    QWindowsCursor *screenCursor = cursorForPointerScreen();
+    if (!screenCursor)
+        screenCursor = this;
+    const CursorHandlePtr wcursor = screenCursor->cursorHandle(cursor);
     if (const auto overrideCursor = wcursor->handle()) {
-        m_overrideCursor = overrideCursor;
+        m_overrideCursor = cursor;
         const HCURSOR previousCursor = SetCursor(overrideCursor);
         if (m_overriddenCursor == nullptr)
             m_overriddenCursor = previousCursor;
@@ -625,7 +644,7 @@ void QWindowsCursor::clearOverrideCursor()
 {
     if (m_overriddenCursor) {
         SetCursor(m_overriddenCursor);
-        m_overriddenCursor = m_overrideCursor = nullptr;
+        m_overriddenCursor = nullptr;
     }
     auto &windows = QWindowsContext::instance()->windows();
     for (auto it = windows.cbegin(), end = windows.cend(); it != end; ++it) {

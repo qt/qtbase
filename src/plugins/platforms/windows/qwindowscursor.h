@@ -122,7 +122,7 @@ private:
     mutable QPixmap m_ignoreDragCursor;
 
     static HCURSOR m_overriddenCursor;
-    static HCURSOR m_overrideCursor;
+    static QCursor m_overrideCursor;
     static POINT m_cursorPositionCache;
 };
 
