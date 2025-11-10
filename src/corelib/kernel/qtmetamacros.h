@@ -192,7 +192,9 @@ private: \
 #define Q_ENUMS(x) Q_ENUMS(x)
 #define Q_FLAGS(x) Q_FLAGS(x)
 #define Q_ENUM(x) Q_ENUM(x)
-#define Q_FLAGS(x) Q_FLAGS(x)
+#define Q_FLAG(x) Q_FLAG(x)
+#define Q_ENUM_NS(x) Q_ENUM_NS(x)
+#define Q_FLAG_NS(x) Q_FLAG_NS(x)
  /* qmake ignore Q_OBJECT */
 #define Q_OBJECT Q_OBJECT
  /* qmake ignore Q_OBJECT */
