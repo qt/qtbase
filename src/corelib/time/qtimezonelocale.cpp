@@ -383,7 +383,7 @@ struct OffsetFormatMatch
 {
     qsizetype size = 0;
     int offset = 0;
-    operator bool() { return size != 0; }
+    operator bool() const { return size != 0; }
 };
 
 OffsetFormatMatch matchOffsetText(QStringView text, QStringView format, const QLocale &locale,
@@ -477,9 +477,9 @@ OffsetFormatMatch matchOffsetFormat(QStringView text, const QLocale &locale, qsi
     if (scale == QLocale::ShortFormat) {
         if (auto match = matchOffsetText(text, posHourForm, locale, scale))
             return match;
-        if (auto match = matchOffsetText(text, negHourForm, locale, scale)) {
+        if (auto match = matchOffsetText(text, negHourForm, locale, scale))
             return { match.size, -match.offset };
-        } else if (mapNeg) {
+        if (mapNeg) {
             const QString mapped = negHourForm.toString()
                 .replace(u'\u2212', u'-').replace(locale.negativeSign(), "-"_L1);
             if (auto match = matchOffsetText(text, mapped, locale, scale))
@@ -487,8 +487,7 @@ OffsetFormatMatch matchOffsetFormat(QStringView text, const QLocale &locale, qsi
         }
     } else {
         const QStringView offsetFormat = locData.offsetGmtFormat().viewData(gmtFormatTable);
-        qsizetype cut = offsetFormat.indexOf(u"%0"); // Should be present
-        if (cut >= 0) {
+        if (const qsizetype cut = offsetFormat.indexOf(u"%0"); cut >= 0) { // Should be present
             const QStringView gmtPrefix = offsetFormat.first(cut);
             const QStringView gmtSuffix = offsetFormat.sliced(cut + 2); // After %0
             const qsizetype gmtSize = cut + gmtSuffix.size();
@@ -554,6 +553,9 @@ QString zoneOffsetFormat(const QLocale &locale, qsizetype locInd, QLocale::Forma
     // QLocale::ShortFormat gets just the hour offset (with full with).
     // QLocale::NarrowFormat gets the GMT-prefix plus the pruned hour format.
     // The last drops :00 for zero minutes and removes leading 0 from the hour.
+    // See the final "zone" section of the table
+    // https://www.unicode.org/reports/tr35/tr35-dates.html#table-date-field-symbol-table
+    // for the full range of LDML-specified formats.
     const LocaleZoneData &locData = localeZoneData[locInd];
 
     auto hourFormatR = offsetSeconds < 0 ? locData.negHourFormat() : locData.posHourFormat();
@@ -665,6 +667,8 @@ QString QTimeZonePrivate::localeName(qint64 atMSecsSinceEpoch, int offsetFromUtc
                     ianaAbbrev = ianaAbbrev.replace('+', '-');
             }
         }
+        // See https://www.unicode.org/reports/tr35/tr35-dates.html#Time_Zone_Goals
+        // under "Composition", point 3:
         if (maybeCityName)
             ianaTail = tail.toByteArray().replace('_', ' ');
     }; // end scanIana
@@ -961,7 +965,8 @@ QTimeZonePrivate::findLongNamePrefix(QStringView text, const QLocale &locale,
 
     // (We don't want offset format to match 'tttt', so do need to limit this.)
     // The final fall-back for localeName() is a zoneOffsetFormat(,,NarrowFormat,,):
-    if (auto match = matchOffsetFormat(text, locale, locale.d->m_index, QLocale::NarrowFormat)) {
+    if (const auto match = matchOffsetFormat(text, locale, locale.d->m_index,
+                                             QLocale::NarrowFormat)) {
         // Check offset is sane:
         if (QTimeZone::MinUtcOffsetSecs <= match.offset
             && match.offset <= QTimeZone::MaxUtcOffsetSecs) {
