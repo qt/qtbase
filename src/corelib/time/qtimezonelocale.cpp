@@ -1053,6 +1053,30 @@ QTimeZonePrivate::findNarrowOffsetPrefix(QStringView text, const QLocale &locale
     }
     return {};
 }
+
+QTimeZonePrivate::NamePrefixMatch
+QTimeZonePrivate::findOffsetPrefix(QStringView text, const QLocale &locale,
+                                   QtTemporalPattern::TemporalFieldFlags flags)
+{
+    NamePrefixMatch best;
+    if (text.isEmpty())
+        return best;
+
+    const auto idForOffset = [](int offsetSeconds) -> QByteArray {
+        if (!offsetSeconds)
+            return "UTC";
+        return isoOffsetFormat(offsetSeconds, QTimeZone::OffsetName).toLatin1();
+    };
+
+    const auto match = matchOffsetFormat(text, locale, locale.d->m_index, flags);
+    if (match && match.size > best.nameLength
+        && QTimeZone::MinUtcOffsetSecs <= match.offset
+        && match.offset <= QTimeZone::MaxUtcOffsetSecs) {
+        best = { idForOffset(match.offset), match.size, QTimeZone::GenericTime };
+    }
+
+    return best;
+}
 #endif // ICU or not
 
 QT_END_NAMESPACE

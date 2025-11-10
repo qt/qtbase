@@ -1074,8 +1074,17 @@ QTimeZonePrivate::findNarrowOffsetPrefix(QStringView, const QLocale &)
 // Implemented in qtimezonelocale.cpp
 #endif // icu || !timezone_locale
 
+#if QT_CONFIG(timezone_locale) && !QT_CONFIG(icu)
+// The timezone_locale-without-ICU backend's data suffices to do better than
+// this brute force solution:
+#  define BACKEND_PROVIDES_OFFSET_PREFIX
+#endif
+// Hopefully we can do similar for some other backends.
+
+#ifdef BACKEND_PROVIDES_OFFSET_PREFIX
+#  undef BACKEND_PROVIDES_OFFSET_PREFIX
+#else // Need the brute force implementation of findOffsetPrefix():
 namespace {
-// Helpers for findOffsetPrefix:
 
 struct NumericPattern
 {
@@ -1770,6 +1779,8 @@ QTimeZonePrivate::findOffsetPrefix(QStringView text, const QLocale &locale,
     }
     return best;
 }
+
+#endif // BACKEND_PROVIDES_OFFSET_PREFIX
 
 QTimeZonePrivate::NamePrefixMatch
 QTimeZonePrivate::findLongUtcPrefix(QStringView text)
