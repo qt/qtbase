@@ -399,79 +399,79 @@ OffsetFormatMatch matchOffsetText(QStringView text, QStringView format, const QL
     // None have single m. All have H or HH before mm. (None has anything after mm.)
     // In narrow format, mm and its preceding separator are elided for 0
     // minutes; and hour may be single digit even if the format says HH.
-    const QString zero = locale.zeroDigit();
     qsizetype cut = format.indexOf(u'H');
     if (cut < 0 || !text.startsWith(format.first(cut)) || !format.endsWith(u"mm"))
         return res;
-    text = text.sliced(cut);
     QStringView sep = format.sliced(cut).chopped(2); // Prune prefix and "mm".
     int hlen = 1; // We already know we have one 'H' at the start of sep.
     while (hlen < sep.size() && sep[hlen] == u'H')
         ++hlen;
+    Q_ASSERT(hlen <= 2);
     sep = sep.sliced(hlen);
 
-    const auto hasDigitAt = [digitWidth = zero.size(), text](qsizetype index) {
-        if (digitWidth == 1)
-            return index < text.size() && text[index].isDigit();
-        Q_ASSERT(digitWidth == 2);
-        const qsizetype offset = index * 2;
-        if (offset + 1 >= text.size())
-            return false;
-        if (!text[offset].isHighSurrogate() || !text[offset + 1].isLowSurrogate())
-            return false;
-        const char32_t ch = QChar::surrogateToUcs4(text[offset], text[offset + 1]);
-        return QChar::isDigit(ch);
-    };
-    int digits = 0; // Count of digits: multiply by zero.size() for indexing.
-    while (digits < 4 && hasDigitAt(digits))
-        ++digits;
+    const QLocaleData *const locDat = QLocalePrivate::get(locale)->m_data;
+    using Digits = QLocaleData::DigitSequence;
+    const Digits early = locDat->digitSequence(text, {}, cut);
+    Q_ASSERT(!early.sign);
+    int digits = qMin(early.digits.size(), 4);
 
-    QStringView minStr;
+    Digits mins = early.sliced(qMin(2, digits)); // Initial guess.
+    qsizetype endIndex = mins.endIndex();
     if (sep.isEmpty()) {
         if (digits > hlen) {
             // Even ZeroPad formats allow short hour match when hlen < 2. TODO: revisit
-            if (!zeroPad || (hlen < 2 && !text.startsWith(zero)))
+            if (!zeroPad || (hlen < 2 && !early.digits.startsWith('0')))
                 hlen = digits - 2;
             else if (digits < hlen + 2)
                 return res;
-            minStr = text.sliced(hlen * zero.size()).first(2 * zero.size());
+            mins = early.sliced(hlen).first(2);
+            endIndex = mins.endIndex();
         } else if (!zeroPad) {
             hlen = digits;
+            Q_ASSERT(mins.isEmpty()); // and its endIndex() is in the right place.
         } else if (hlen != digits) {
             return res;
         }
     } else {
-        const qsizetype sepAt = text.indexOf(sep); // May be -1; digits isn't < -1.
-        if (digits * zero.size() < sepAt) // Separator doesn't immediately follow hour.
+        const qsizetype sepAt = text.indexOf(sep, cut); // May be -1; endIndex isn't < -1.
+        if (endIndex < sepAt) // Separator doesn't immediately follow hour digits.
             return res;
-        if (!zeroPad || (hlen < 2 && !text.startsWith(zero)))
+        if (!zeroPad || (hlen < 2 && !early.digits.startsWith('0')))
             hlen = digits;
         else if (digits != hlen)
             return res;
-        if (sepAt >= 0 && text.size() >= sepAt + sep.size() + 2 * zero.size())
-            minStr = text.sliced(sepAt + sep.size()).first(2 * zero.size());
-        else if (zeroPad)
+        const qsizetype hourEnd = early.first(hlen).endIndex();
+        if (sepAt < 0 || sepAt > hourEnd) {
+            endIndex = hourEnd;
+        } else {
+            const Digits late = locDat->digitSequence(text, {}, sepAt + sep.size());
+            Q_ASSERT(!late.sign);
+            if (late.digits.size() >= 2) // Minutes require zero-padding ...
+                mins = late.first(2);
+            else if (!zeroPad) // ... but be forgiving ? TODO: revisit
+                mins = late;
+            endIndex = mins.isEmpty() ? sepAt : mins.endIndex();
+        }
+        // ZeroPad requires minute field even when zero:
+        if (mins.isEmpty() && zeroPad)
             return res;
-        else if (sepAt >= 0) // Allow minutes without zero-padding in narrow format.
-            minStr = text.sliced(sepAt + sep.size());
     }
-    if (hlen < 1)
+    if (hlen < 1) // There must be an hour field.
         return res;
+    Digits hrs = early.first(hlen);
 
     bool ok = true;
-    uint minute = minStr.isEmpty() ? 0 : locale.toUInt(minStr, &ok);
+    uint minute = mins.isEmpty() ? 0 : mins.digits.toUInt(&ok);
     if (!ok && !zeroPad) {
         // Fall back to matching hour-only form:
-        minStr = {};
+        endIndex = hrs.endIndex();
         ok = true;
     }
     if (ok && minute < 60) {
-        uint hour = locale.toUInt(text.first(hlen * zero.size()), &ok);
+        uint hour = hrs.digits.toUInt(&ok);
         if (ok) {
             res.offset = (hour * 60 + minute) * 60;
-            res.size = cut + hlen * zero.size();
-            if (!minStr.isEmpty())
-                res.size += sep.size() + minStr.size();
+            res.size = endIndex;
         }
     }
     return res;
