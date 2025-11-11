@@ -1208,10 +1208,11 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
     case QStyle::CE_TabBarTabShape:
 #if QT_CONFIG(tabbar)
         if (const QStyleOptionTab *tab = qstyleoption_cast<const QStyleOptionTab *>(option)) {
+            const bool isEnabled = tab->state & QStyle::State_Enabled;
             QRectF tabRect = tab->rect.marginsRemoved(QMargins(2,2,0,0));
             painter->setPen(Qt::NoPen);
             painter->setBrush(tab->palette.base());
-            if (tab->state & State_MouseOver){
+            if (isEnabled && tab->state & State_MouseOver) {
                 painter->setBrush(WINUI3Colors[colorSchemeIndex][subtleHighlightColor]);
             } else if (tab->state & State_Selected) {
                 painter->setBrush(tab->palette.base());
