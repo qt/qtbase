@@ -277,6 +277,18 @@
     \row    \li \c{constexpr} \li C++11 \li yes       \li required
     \row    \li \c{constinit} \li C++20 \li no        \li required
     \endtable
+
+    If declaration and definition of a Q_CONSTINIT variable are separate, this
+    macro goes only on the definition, and not on the declaration:
+
+    \code
+    class C {
+        ~~~~
+        static int count; // declaration, no Q_CONSTINIT here
+    };
+    ~~~
+    Q_CONSTINIT int C::count = 0; // definition
+    \endcode
 */
 
 /*!
