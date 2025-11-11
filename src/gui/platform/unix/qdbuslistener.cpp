@@ -7,7 +7,8 @@
 #include <private/qguiapplication_p.h>
 #include <qpa/qplatformintegration.h>
 #include <qpa/qplatformservices.h>
-#include <private/qdbustrayicon_p.h>
+#include <qdbusconnection.h>
+#include <qfile.h>
 #include <qjsonarray.h>
 #include <qjsondocument.h>
 #include <qjsonobject.h>

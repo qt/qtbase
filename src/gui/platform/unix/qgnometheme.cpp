@@ -5,8 +5,10 @@
 #include "qgnometheme_p.h"
 #include <qpa/qplatformdialoghelper.h>
 #include <qpa/qplatformfontdatabase.h>
-#if QT_CONFIG(dbus)
+#if QT_CONFIG(dbus) && QT_CONFIG(systemtrayicon)
 #  include <private/qdbustrayicon_p.h>
+#endif
+#if QT_CONFIG(dbus)
 #  include <private/qdbusmenubar_p.h>
 #endif
 #include <qpa/qwindowsysteminterface.h>

@@ -39,10 +39,10 @@
 #include <QJsonObject>
 #include <QJsonValue>
 #include <QJsonParseError>
-#ifndef QT_NO_SYSTEMTRAYICON
-#include <private/qdbustrayicon_p.h>
 #include <private/qdbusmenubar_p.h>
 #endif
+#if QT_CONFIG(dbus) && QT_CONFIG(systemtrayicon)
+#include <private/qdbustrayicon_p.h>
 #endif
 
 #include <private/qguiapplication_p.h>
@@ -50,7 +50,6 @@
 #include <QtCore/QStandardPaths>
 #if QT_CONFIG(dbus)
 #include <QtDBus/QDBusConnectionInterface>
-#include <private/qdbustrayicon_p.h>
 #endif
 #if QT_CONFIG(mimetype)
 #include <QtCore/QMimeDatabase>

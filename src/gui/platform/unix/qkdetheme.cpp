@@ -9,7 +9,9 @@
 #include <QPalette>
 #include <qpa/qwindowsysteminterface.h>
 #include "qdbuslistener_p.h"
+#if QT_CONFIG(dbus) && QT_CONFIG(systemtrayicon)
 #include <private/qdbustrayicon_p.h>
+#endif
 #include <private/qdbusplatformmenu_p.h>
 #include <private/qdbusmenubar_p.h>
 #include <QSettings>
