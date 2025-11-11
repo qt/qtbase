@@ -2718,8 +2718,8 @@ void QComboBox::showPopup()
 #ifdef Q_OS_MAC
     if (usePopup
         && (!d->container
-            || (view()->metaObject()->className() == QByteArray("QComboBoxListView")
-                && view()->itemDelegate()->metaObject()->className() == QByteArray("QComboMenuDelegate")))
+            || (qobject_cast<QComboBoxListView*>(view())
+                && qobject_cast<QComboMenuDelegate*>(view()->itemDelegate())))
         && style->styleHint(QStyle::SH_ComboBox_UseNativePopup, &opt, this)
         && d->showNativePopup())
         return;
