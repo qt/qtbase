@@ -38,6 +38,7 @@ BYTE_MUL_AVX2(__m256i &pixelVector, __m256i alphaChannel, __m256i colorMask, __m
     pixelVector = _mm256_blendv_epi8(pixelVectorAG, pixelVectorRB, colorMask);
 }
 
+#if QT_CONFIG(raster_64bit)
 inline static void Q_DECL_VECTORCALL
 BYTE_MUL_RGB64_AVX2(__m256i &pixelVector, __m256i alphaChannel, __m256i colorMask, __m256i half)
 {
@@ -55,6 +56,7 @@ BYTE_MUL_RGB64_AVX2(__m256i &pixelVector, __m256i alphaChannel, __m256i colorMas
     pixelVectorRB = _mm256_srli_epi32(pixelVectorRB, 16);
     pixelVector = _mm256_blendv_epi8(pixelVectorAG, pixelVectorRB, colorMask);
 }
+#endif
 
 // See INTERPOLATE_PIXEL_255_SSE2 for details.
 inline static void Q_DECL_VECTORCALL
@@ -79,6 +81,7 @@ INTERPOLATE_PIXEL_255_AVX2(__m256i srcVector, __m256i &dstVector, __m256i alphaC
     dstVector = _mm256_blendv_epi8(finalAG, finalRB, colorMask);
 }
 
+#if QT_CONFIG(raster_64bit)
 inline static void Q_DECL_VECTORCALL
 INTERPOLATE_PIXEL_RGB64_AVX2(__m256i srcVector, __m256i &dstVector, __m256i alphaChannel, __m256i oneMinusAlphaChannel, __m256i colorMask, __m256i half)
 {
@@ -99,6 +102,7 @@ INTERPOLATE_PIXEL_RGB64_AVX2(__m256i srcVector, __m256i &dstVector, __m256i alph
     finalRB = _mm256_srli_epi32(finalRB, 16);
     dstVector = _mm256_blendv_epi8(finalAG, finalRB, colorMask);
 }
+#endif
 
 // See BLEND_SOURCE_OVER_ARGB32_SSE2 for details.
 inline static void Q_DECL_VECTORCALL BLEND_SOURCE_OVER_ARGB32_AVX2(quint32 *dst, const quint32 *src, const int length)
