@@ -250,10 +250,13 @@ static qreal radioButtonInnerRadius(int state)
 
 static qreal sliderInnerRadius(QStyle::State state, bool insideHandle)
 {
-    if (state & QStyle::State_Sunken)
-        return 0.29;
-    else if (insideHandle)
-        return 0.71;
+    const bool isEnabled = state & QStyle::State_Enabled;
+    if (isEnabled) {
+        if (state & QStyle::State_Sunken)
+            return 0.29;
+        else if (insideHandle)
+            return 0.71;
+    }
     return 0.43;
 }
 /*!
