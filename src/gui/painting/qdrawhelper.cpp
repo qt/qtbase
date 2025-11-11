@@ -930,7 +930,7 @@ static inline bool canUseFastMatrixPath(const qreal cx, const qreal cy, const qs
     minc = std::min(minc, std::min(fx, fy));
     maxc = std::max(maxc, std::max(fx, fy));
 
-    return minc >= std::numeric_limits<int>::min() && maxc <= std::numeric_limits<int>::max();
+    return minc >= std::numeric_limits<int>::min() && maxc <= qreal(std::numeric_limits<int>::max());
 }
 
 template<TextureBlendType blendType, QPixelLayout::BPP bpp, typename T>
@@ -5179,7 +5179,7 @@ static inline bool calculate_fixed_gradient_factors(int count, const QT_FT_Span 
     const int gss = GRADIENT_STOPTABLE_SIZE - 1;
     qreal ryinc = linear.dy * data->m22 * gss * FIXPT_SIZE;
     qreal roff = (linear.dy * (data->m22 * qreal(0.5) + data->dy) + linear.off) * gss * FIXPT_SIZE;
-    const int limit = std::numeric_limits<int>::max() - FIXPT_SIZE;
+    const qreal limit = qreal(std::numeric_limits<int>::max() - FIXPT_SIZE);
     if (count && (std::fabs(ryinc) < limit) && (std::fabs(roff) < limit)
         && (std::fabs(ryinc * spans->y + roff) < limit)
         && (std::fabs(ryinc * (spans + count - 1)->y + roff) < limit)) {

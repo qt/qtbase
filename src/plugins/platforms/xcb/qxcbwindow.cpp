@@ -2573,7 +2573,7 @@ void QXcbWindow::setOpacity(qreal level)
     if (!m_window)
         return;
 
-    quint32 value = qRound64(qBound(qreal(0), level, qreal(1)) * 0xffffffff);
+    quint32 value = qRound64(qBound(qreal(0), level, qreal(1)) * qreal(0xffffffff));
 
     xcb_change_property(xcb_connection(),
                         XCB_PROP_MODE_REPLACE,

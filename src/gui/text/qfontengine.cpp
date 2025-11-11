@@ -402,7 +402,7 @@ bool QFontEngine::processHheaTable() const
 
         const qreal unitsPerEm = emSquareSize().toReal();
         // Bail out if values are too large for QFixed
-        const auto limitForQFixed = std::numeric_limits<int>::max() / (fontDef.pixelSize * 64);
+        const auto limitForQFixed = qreal(std::numeric_limits<int>::max() / 64) / fontDef.pixelSize;
         if (ascent > limitForQFixed || descent > limitForQFixed || leading > limitForQFixed)
             return false;
         m_ascent = QFixed::fromReal(ascent * fontDef.pixelSize / unitsPerEm);
@@ -470,7 +470,7 @@ bool QFontEngine::processOS2Table() const
             if (typoAscent == 0 && typoDescent == 0)
                 return false;
             // Bail out if values are too large for QFixed
-            const auto limitForQFixed = std::numeric_limits<int>::max() / (fontDef.pixelSize * 64);
+            const auto limitForQFixed = qreal(std::numeric_limits<int>::max() / 64) / fontDef.pixelSize;
             if (typoAscent > limitForQFixed || typoDescent > limitForQFixed
                     || typoLineGap > limitForQFixed)
                 return false;
@@ -481,7 +481,7 @@ bool QFontEngine::processOS2Table() const
             // Some fonts may have invalid OS/2 data. We detect this and bail out.
             if (winAscent == 0 && winDescent == 0)
                 return false;
-            const auto limitForQFixed = std::numeric_limits<int>::max() / (fontDef.pixelSize * 64);
+            const auto limitForQFixed = qreal(std::numeric_limits<int>::max() / 64) / fontDef.pixelSize;
             if (winAscent > limitForQFixed || winDescent > limitForQFixed)
                 return false;
             m_ascent = QFixed::fromReal(winAscent * fontDef.pixelSize / unitsPerEm);
