@@ -27,6 +27,19 @@
         docTypes = [self computeAllowedFileTypes:results];
     }
 
+    // FIXME: Handle security scoped URLs instead of copying resource
+    bool asCopy = [&]{
+        switch (fileDialog->options()->fileMode()) {
+        case QFileDialogOptions::AnyFile:
+        case QFileDialogOptions::ExistingFile:
+        case QFileDialogOptions::ExistingFiles:
+            return true;
+        default:
+            // Folders can't be imported
+            return false;
+        }
+    }();
+
     if (!docTypes.count) {
         switch (fileDialog->options()->fileMode()) {
         case QFileDialogOptions::AnyFile:
@@ -44,7 +57,7 @@
         }
     }
 
-    if (self = [super initForOpeningContentTypes:docTypes]) {
+    if (self = [super initForOpeningContentTypes:docTypes asCopy:asCopy]) {
         m_fileDialog = fileDialog;
         self.modalPresentationStyle = UIModalPresentationFormSheet;
         self.delegate = self;
