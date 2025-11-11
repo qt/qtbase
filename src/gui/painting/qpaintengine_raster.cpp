@@ -2952,9 +2952,9 @@ inline bool QRasterPaintEnginePrivate::isUnclipped(const QRectF &rect,
                                                    int penWidth) const
 {
     const QRectF norm = rect.normalized();
-    if (norm.left() <= INT_MIN || norm.top() <= INT_MIN
-            || norm.right() > INT_MAX || norm.bottom() > INT_MAX
-            || norm.width() > INT_MAX || norm.height() > INT_MAX)
+    if (norm.left() <= qreal(INT_MIN) || norm.top() <= qreal(INT_MIN)
+            || norm.right() > qreal(INT_MAX) || norm.bottom() > qreal(INT_MAX)
+            || norm.width() > qreal(INT_MAX) || norm.height() > qreal(INT_MAX))
         return false;
     return isUnclipped(norm.toAlignedRect(), penWidth);
 }

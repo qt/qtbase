@@ -1976,7 +1976,7 @@ void QTextDocument::print(QPagedPaintDevice *printer) const
         return;
 
     bool documentPaginated = d->pageSize.isValid() && !d->pageSize.isNull()
-                             && d->pageSize.height() != INT_MAX;
+                             && d->pageSize.height() != qreal(INT_MAX);
 
     // ### set page size to paginated size?
     QMarginsF m = printer->pageLayout().margins(QPageLayout::Millimeter);
