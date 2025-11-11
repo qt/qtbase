@@ -209,16 +209,16 @@ namespace QtAndroid
                 "notifyObjectFocus", accessibilityObjectId);
     }
 
-    void notifyValueChanged(uint accessibilityObjectId, jstring value)
+    void notifyValueChanged(uint accessibilityObjectId)
     {
         m_backendRegister->callInterface<QtJniTypes::QtAccessibilityInterface, void>(
-                "notifyValueChanged", accessibilityObjectId, value);
+                "notifyValueChanged", accessibilityObjectId);
     }
 
-    void notifyDescriptionOrNameChanged(uint accessibilityObjectId, const QString &value)
+    void notifyDescriptionOrNameChanged(uint accessibilityObjectId)
     {
         m_backendRegister->callInterface<QtJniTypes::QtAccessibilityInterface, void>(
-                "notifyDescriptionOrNameChanged", accessibilityObjectId, value);
+                "notifyDescriptionOrNameChanged", accessibilityObjectId);
     }
 
     void notifyScrolledEvent(uint accessibilityObjectId)

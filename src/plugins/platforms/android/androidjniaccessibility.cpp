@@ -170,24 +170,14 @@ namespace QtAndroidAccessibility
         QtAndroid::notifyObjectFocus(accessibilityObjectId);
     }
 
-    static jstring jvalueForAccessibleObject(int objectId); // forward declaration
-
     void notifyValueChanged(uint accessibilityObjectId)
     {
-        jstring value = jvalueForAccessibleObject(accessibilityObjectId);
-        QtAndroid::notifyValueChanged(accessibilityObjectId, value);
+        QtAndroid::notifyValueChanged(accessibilityObjectId);
     }
-
-    // Forward declaration
-    static QString descriptionForInterface(QAccessibleInterface *iface);
 
     void notifyDescriptionOrNameChanged(uint accessibilityObjectId)
     {
-        QAccessibleInterface *iface = interfaceFromId(accessibilityObjectId);
-        if (iface && iface->isValid()) {
-            const QString value = descriptionForInterface(iface);
-            QtAndroid::notifyDescriptionOrNameChanged(accessibilityObjectId, value);
-        }
+        QtAndroid::notifyDescriptionOrNameChanged(accessibilityObjectId);
     }
 
     void notifyScrolledEvent(uint accessiblityObjectId)
@@ -542,17 +532,6 @@ namespace QtAndroidAccessibility
             }
         }
         return valueStr;
-    }
-
-    static jstring jvalueForAccessibleObject(int objectId)
-    {
-        QAccessibleInterface *iface = interfaceFromId(objectId);
-        const QString value = textFromValue(iface);
-        QJniEnvironment env;
-        jstring jstr = env->NewString((jchar*)value.constData(), (jsize)value.size());
-        if (env.checkAndClearExceptions())
-            __android_log_print(ANDROID_LOG_WARN, m_qtTag, "Failed to create jstring");
-        return jstr;
     }
 
     static QString classNameForRole(QAccessible::Role role, QAccessible::State state) {

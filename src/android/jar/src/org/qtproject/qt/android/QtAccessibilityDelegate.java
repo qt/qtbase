@@ -232,7 +232,12 @@ class QtAccessibilityDelegate extends View.AccessibilityDelegate
         });
     }
 
-    void notifyValueChanged(int viewId, String value)
+    void notifyValueChanged(int viewId)
+    {
+        notifyContentChanged(viewId, AccessibilityEvent.CONTENT_CHANGE_TYPE_UNDEFINED);
+    }
+
+    private void notifyContentChanged(int viewId, int contentChangeType)
     {
         if (m_manager == null)
             return;
@@ -241,29 +246,19 @@ class QtAccessibilityDelegate extends View.AccessibilityDelegate
             if (m_view == null)
                 return;
 
-            // Send a TYPE_ANNOUNCEMENT event with the new value
-
             if ((viewId == INVALID_ID) || !m_manager.isEnabled()) {
-                Log.w(TAG, "notifyValueChanged() for invalid view");
+                Log.w(TAG, "notifyContentChanged() for invalid view");
                 return;
             }
 
-            final ViewGroup group = (ViewGroup) m_view.getParent();
-            if (group == null) {
-                Log.w(TAG, "Could not announce value because ViewGroup was null.");
-                return;
-            }
-
-            final CharSequence className = getNodeForVirtualViewId(viewId).getClassName();
-            final int eventType =
-                    className != null && className.equals("android.widget.ProgressBar")
-                    ? AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED
-                    : AccessibilityEvent.TYPE_ANNOUNCEMENT;
-            final AccessibilityEvent event = obtainAccessibilityEvent(eventType);
+            final AccessibilityNodeInfo node = getNodeForVirtualViewId(viewId);
+            final AccessibilityEvent event =
+                    obtainAccessibilityEvent(AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
 
             event.setEnabled(true);
-            event.setClassName(className);
-            event.setContentDescription(addLocaleSpan(viewId, value));
+            event.setClassName(node.getClassName());
+            event.setContentDescription(node.getContentDescription());
+            event.setContentChangeTypes(contentChangeType);
 
             if (event.getText().isEmpty() && TextUtils.isEmpty(event.getContentDescription())) {
                 Log.w(TAG, "No value to announce for " + event.getClassName());
@@ -273,15 +268,16 @@ class QtAccessibilityDelegate extends View.AccessibilityDelegate
             event.setPackageName(m_view.getContext().getPackageName());
             event.setSource(m_view, viewId);
 
-            if (!group.requestSendAccessibilityEvent(m_view, event))
-                Log.w(TAG, "Failed to send value change announcement for " + event.getClassName());
+            sendAccessibilityEvent(event);
         });
     }
 
-    void notifyDescriptionOrNameChanged(int viewId, String value)
+    void notifyDescriptionOrNameChanged(int viewId)
     {
-        if (viewId == m_focusedVirtualViewId)
-            notifyValueChanged(viewId, value);
+        if (viewId == m_focusedVirtualViewId) {
+            notifyContentChanged(viewId,
+                                 AccessibilityEvent.CONTENT_CHANGE_TYPE_CONTENT_DESCRIPTION);
+        }
     }
 
     void notifyAnnouncementEvent(int viewId, String message)
