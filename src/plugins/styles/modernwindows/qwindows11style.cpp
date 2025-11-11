@@ -411,13 +411,14 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
 
                 const bool isMouseOver = state & State_MouseOver;
                 const bool hasFocus = state & State_HasFocus;
-                if (isMouseOver && !hasFocus && !highContrastTheme)
+                const bool isEnabled = state & QStyle::State_Enabled;
+                if (isEnabled && isMouseOver && !hasFocus && !highContrastTheme)
                     drawRoundedRect(cp.painter(), frameRect, Qt::NoPen, winUI3Color(subtleHighlightColor));
 
                 const auto drawUpDown = [&](QStyle::SubControl sc) {
                     const bool isUp = sc == SC_SpinBoxUp;
                     const QRect rect = proxy()->subControlRect(CC_SpinBox, option, sc, widget);
-                    if (sb->activeSubControls & sc)
+                    if (isEnabled && sb->activeSubControls & sc)
                         drawRoundedRect(cp.painter(), rect.adjusted(1, 1, -1, -2), Qt::NoPen,
                                         winUI3Color(subtleHighlightColor));
 
