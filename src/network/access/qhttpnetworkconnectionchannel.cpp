@@ -5,7 +5,6 @@
 
 #include "qhttpnetworkconnectionchannel_p.h"
 #include "qhttpnetworkconnection_p.h"
-#include "qhttp2configuration.h"
 #include "private/qnoncontiguousbytedevice_p.h"
 
 #include <qdebug.h>
