@@ -187,10 +187,6 @@ private: \
 #define Q_INTERFACES(x) Q_INTERFACES(x)
 #define Q_PROPERTY(text) Q_PROPERTY(text)
 #define Q_PRIVATE_PROPERTY(d, text) Q_PRIVATE_PROPERTY(d, text)
-#define Q_PRIVATE_QPROPERTY(accessor, type, name, setter, ...) Q_PRIVATE_QPROPERTY(accessor, type, name, setter, __VA_ARGS__)
-#define Q_PRIVATE_QPROPERTIES_BEGIN
-#define Q_PRIVATE_QPROPERTY_IMPL(name)
-#define Q_PRIVATE_QPROPERTIES_END
 #define Q_REVISION(...) Q_REVISION(__VA_ARGS__)
 #define Q_OVERRIDE(text) Q_OVERRIDE(text)
 #define Q_ENUMS(x) Q_ENUMS(x)
