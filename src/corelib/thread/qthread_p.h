@@ -265,10 +265,16 @@ public:
     QBindingStatus *addObjectWithPendingBindingStatusChange(QObject *obj);
     void removeObjectWithPendingBindingStatusChange(QObject *obj);
 
-#ifndef Q_OS_INTEGRITY
 private:
+#ifdef Q_OS_INTEGRITY
+    // On INTEGRITY we set the thread name before starting it, so just fake a string
+    struct FakeString {
+        bool isEmpty() const { return true; }
+        const char *toLocal8Bit() const { return nullptr; }
+    } objectName;
+#else
     // Used in QThread(Private)::start to avoid racy access to QObject::objectName,
-    // unset afterwards. On INTEGRITY we set the thread name before starting it.
+    // unset afterwards.
     QString objectName;
 #endif
 };
