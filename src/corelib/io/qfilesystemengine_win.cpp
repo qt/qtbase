@@ -1600,7 +1600,7 @@ bool QFileSystemEngine::rmpath(const QFileSystemEntry &entry)
 //static
 QString QFileSystemEngine::rootPath()
 {
-    QString ret = QString::fromLatin1(qgetenv("SystemDrive"));
+    QString ret = qEnvironmentVariable("SystemDrive");
     if (ret.isEmpty())
         ret = "c:"_L1;
     ret.append(u'/');
@@ -1634,12 +1634,12 @@ QString QFileSystemEngine::homePath()
     }
 #endif
     if (ret.isEmpty() || !QFile::exists(ret)) {
-        ret = QString::fromLocal8Bit(qgetenv("USERPROFILE"));
+        ret = qEnvironmentVariable("USERPROFILE");
         if (ret.isEmpty() || !QFile::exists(ret)) {
-            ret = QString::fromLocal8Bit(qgetenv("HOMEDRIVE"))
-                  + QString::fromLocal8Bit(qgetenv("HOMEPATH"));
+            ret = qEnvironmentVariable("HOMEDRIVE")
+                  + qEnvironmentVariable("HOMEPATH");
             if (ret.isEmpty() || !QFile::exists(ret)) {
-                ret = QString::fromLocal8Bit(qgetenv("HOME"));
+                ret = qEnvironmentVariable("HOME");
                 if (ret.isEmpty() || !QFile::exists(ret))
                     ret = rootPath();
             }
