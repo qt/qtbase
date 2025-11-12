@@ -389,11 +389,12 @@ void *QThreadPrivate::start(void *arg)
 #endif
     QThread *thr = reinterpret_cast<QThread *>(arg);
     QThreadData *data = QThreadData::get2(thr);
-    // If a QThread is restarted, reuse the QBindingStatus, too
-    data->reuseBindingStatusForNewNativeThread();
 
     // this ensures the thread-local is created as early as possible
     set_thread_data(data);
+
+    // If a QThread is restarted, reuse the QBindingStatus, too
+    data->reuseBindingStatusForNewNativeThread();
 
     pthread_cleanup_push([](void *arg) { static_cast<QThread *>(arg)->d_func()->finish(); }, arg);
     terminate_on_exception([&] {
