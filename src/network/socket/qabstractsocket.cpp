@@ -454,8 +454,6 @@
 #include <private/qdebug_p.h>
 #endif
 
-#include <time.h>
-
 #define Q_CHECK_SOCKETENGINE(returnValue) do { \
     if (!d->socketEngine) { \
         return returnValue; \
