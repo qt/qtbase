@@ -344,18 +344,25 @@ QAbstractEventDispatcher *QThreadPrivate::createEventDispatcher(QThreadData *dat
 
 #if QT_CONFIG(thread)
 
-#if (defined(Q_OS_LINUX) || defined(Q_OS_DARWIN) || defined(Q_OS_QNX))
-static void setCurrentThreadName(const char *name)
+template <typename String>
+static void setCurrentThreadName(QThread *thr, String &objectName)
 {
+    auto setit = [](const char *name) {
 #  if defined(Q_OS_LINUX) && !defined(QT_LINUXBASE)
-    prctl(PR_SET_NAME, (unsigned long)name, 0, 0, 0);
+        prctl(PR_SET_NAME, (unsigned long)name, 0, 0, 0);
 #  elif defined(Q_OS_DARWIN)
-    pthread_setname_np(name);
+        pthread_setname_np(name);
 #  elif defined(Q_OS_QNX)
-    pthread_setname_np(pthread_self(), name);
+        pthread_setname_np(pthread_self(), name);
+#  else
+        Q_UNUSED(name)
 #  endif
+    };
+    if (Q_LIKELY(objectName.isEmpty()))
+        setit(thr->metaObject()->className());
+    else
+        setit(std::exchange(objectName, {}).toLocal8Bit());
 }
-#endif
 
 namespace {
 #if defined(__GLIBCXX__) && !defined(QT_NO_EXCEPTIONS)
@@ -435,17 +442,10 @@ void *QThreadPrivate::start(void *arg)
         data->ensureEventDispatcher();
         data->eventDispatcher.loadRelaxed()->startingUp();
 
-#if (defined(Q_OS_LINUX) || defined(Q_OS_DARWIN) || defined(Q_OS_QNX))
-        {
-            // Sets the name of the current thread. We can only do this
-            // when the thread is starting, as we don't have a cross
-            // platform way of setting the name of an arbitrary thread.
-            if (Q_LIKELY(thr->d_func()->objectName.isEmpty()))
-                setCurrentThreadName(thr->metaObject()->className());
-            else
-                setCurrentThreadName(std::exchange(thr->d_func()->objectName, {}).toLocal8Bit());
-        }
-#endif
+        // Sets the name of the current thread. We can only do this
+        // when the thread is starting, as we don't have a cross
+        // platform way of setting the name of an arbitrary thread.
+        setCurrentThreadName(thr, thr->d_func()->objectName);
 
         emit thr->started(QThread::QPrivateSignal());
         setCancellationEnabled(true);
