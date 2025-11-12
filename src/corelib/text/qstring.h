@@ -604,7 +604,7 @@ public:
                 d.data()[d.size] = u'\0';
             return *this;
         } else {
-            d.assign(first, last, [](QChar ch) -> char16_t { return ch.unicode(); });
+            d.assign(first, last, [](QChar ch) noexcept -> char16_t { return ch.unicode(); });
             if (d.constAllocatedCapacity())
                 d.data()[d.size] = u'\0';
             return *this;
