@@ -18,7 +18,6 @@ class Test1 : public QObject
     Q_PROPERTY(int numProperty1 READ numProperty1 CONSTANT)
     Q_PROPERTY(int numProperty2 READ numProperty2 WRITE setNumProperty2)
     Q_PROPERTY(int numProperty3 MEMBER m_numProperty3)
-    Q_ENUMS(Salaries)
 public:
     // C++1y allows use of single quote as a digit separator, useful for large
     // numbers. http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2013/n3781.pdf
@@ -29,6 +28,7 @@ public:
         = 1'234'567
 #endif
     };
+    Q_ENUM(Salaries)
 
     Test1(QObject *parent = nullptr) : QObject(parent) {}
 
