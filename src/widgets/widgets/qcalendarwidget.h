@@ -20,7 +20,6 @@ class QCalendarWidgetPrivate;
 class Q_WIDGETS_EXPORT QCalendarWidget : public QWidget
 {
     Q_OBJECT
-    Q_ENUMS(Qt::DayOfWeek)
     Q_PROPERTY(QDate selectedDate READ selectedDate WRITE setSelectedDate)
     Q_PROPERTY(QDate minimumDate READ minimumDate WRITE setMinimumDate RESET clearMinimumDate)
     Q_PROPERTY(QDate maximumDate READ maximumDate WRITE setMaximumDate RESET clearMaximumDate)

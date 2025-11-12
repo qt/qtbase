@@ -20,7 +20,6 @@ class QStyleOptionToolButton;
 class Q_WIDGETS_EXPORT QToolButton : public QAbstractButton
 {
     Q_OBJECT
-    Q_ENUMS(Qt::ToolButtonStyle Qt::ArrowType)
 #if QT_CONFIG(menu)
     Q_PROPERTY(ToolButtonPopupMode popupMode READ popupMode WRITE setPopupMode)
 #endif
