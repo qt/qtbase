@@ -319,6 +319,31 @@ private:
     }
 };
 
+struct GadgetTreeItem;
+using GadgetTree = std::list<GadgetTreeItem>;
+
+struct GadgetTreeItem
+{
+    Q_GADGET
+    Q_PROPERTY(QString country MEMBER m_country)
+    Q_PROPERTY(QString capital MEMBER m_capital)
+    Q_PROPERTY(int inhabitants MEMBER m_inhabitants)
+
+public:
+    GadgetTreeItem() = default;
+
+    GadgetTreeItem *parentRow() const { return m_parent; }
+    const std::optional<GadgetTree> &childRows() const { return m_children; }
+
+private:
+    QString m_country;
+    QString m_capital;
+    int m_inhabitants = 0;
+
+    GadgetTreeItem *m_parent;
+    std::optional<GadgetTree> m_children = std::nullopt;
+};
+
 namespace std {
     template <> struct tuple_size<tree_row> : std::integral_constant<size_t, 2> {};
     template <size_t I> struct tuple_element<I, tree_row>

@@ -1769,6 +1769,13 @@ public:
 
     int rowCount(const QModelIndex &parent) const { return that().rowCount(parent); }
 
+    static constexpr int fixedColumnCount()
+    {
+        if constexpr (one_dimensional_range)
+            return row_traits::fixed_size();
+        else
+            return static_column_count;
+    }
     int columnCount(const QModelIndex &parent) const { return that().columnCount(parent); }
 
     void destroy() { delete std::addressof(that()); }
@@ -2185,11 +2192,9 @@ protected:
 
     int columnCount(const QModelIndex &) const
     {
-        // all levels of a tree have to have the same, static, column count
-        if constexpr (Base::one_dimensional_range)
-            return 1;
-        else
-            return Base::static_column_count; // if static_column_count is -1, static assert fires
+        // All levels of a tree have to have the same, fixed, column count.
+        // If static_column_count is -1 for a tree, static assert fires
+        return Base::fixedColumnCount();
     }
 
     static constexpr Qt::ItemFlags defaultFlags()
@@ -2484,10 +2489,8 @@ protected:
             return int(Base::size(*this->m_data.model()) == 0
                        ? 0
                        : Base::size(*QRangeModelDetails::begin(*this->m_data.model())));
-        } else if constexpr (Base::one_dimensional_range) {
-            return row_traits::fixed_size();
         } else {
-            return Base::static_column_count;
+            return Base::fixedColumnCount();
         }
     }
 
