@@ -914,9 +914,6 @@ void tst_QSpinBox::locale()
 
 void tst_QSpinBox::editingFinished()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     QWidget testFocusWidget;
     testFocusWidget.setObjectName(QLatin1String("tst_qspinbox"));
     testFocusWidget.setWindowTitle(objectName());
@@ -1098,9 +1095,6 @@ void tst_QSpinBox::undoRedo()
 
 void tst_QSpinBox::specialValue()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     QString specialText="foo";
 
     QWidget topWidget;
@@ -1191,9 +1185,6 @@ void tst_QSpinBox::sizeHint()
 
 void tst_QSpinBox::taskQTBUG_5008_textFromValueAndValidate()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     class DecoratedSpinBox : public QSpinBox
     {
     public:
@@ -1271,9 +1262,6 @@ void tst_QSpinBox::lineEditReturnPressed()
 
 void tst_QSpinBox::positiveSign()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     QSpinBox spinBox;
     spinBox.setRange(-20, 20);
     spinBox.setValue(-20);
@@ -1289,9 +1277,6 @@ void tst_QSpinBox::positiveSign()
 
 void tst_QSpinBox::interpretOnLosingFocus()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     // QTBUG-55249: When typing an invalid value after QSpinBox::clear(),
     // it should be fixed up on losing focus.
 
@@ -1649,9 +1634,6 @@ void tst_QSpinBox::stepModifierKeys_data()
 
 void tst_QSpinBox::stepModifierKeys()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     QFETCH(int, startValue);
     QFETCH(int, stepModifier);
     QFETCH(QTestEventList, keys);
@@ -1735,9 +1717,6 @@ void tst_QSpinBox::stepModifierButtons_data()
 
 void tst_QSpinBox::stepModifierButtons()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     QFETCH(QStyle::SubControl, subControl);
     QFETCH(int, stepModifier);
     QFETCH(Qt::KeyboardModifiers, modifiers);
@@ -1823,9 +1802,6 @@ void tst_QSpinBox::stepModifierPressAndHold_data()
 
 void tst_QSpinBox::stepModifierPressAndHold()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     QFETCH(QStyle::SubControl, subControl);
     QFETCH(int, stepModifier);
     QFETCH(Qt::KeyboardModifiers, modifiers);
