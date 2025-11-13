@@ -8,6 +8,7 @@
 
 #include <QtCore/qglobal.h>
 #include <QtCore/qtclasshelpermacros.h>
+#include <QtCore/qtdeprecationmarkers.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -63,8 +64,12 @@ QT_BEGIN_NAMESPACE
 #endif
 #define Q_OVERRIDE(text) QT_ANNOTATE_CLASS(qt_override, text)
 #define QDOC_PROPERTY(text) QT_ANNOTATE_CLASS(qt_qdoc_property, text)
+#if QT_DEPRECATED_SINCE(6, 12)
 #define Q_ENUMS(x) QT_ANNOTATE_CLASS(qt_enums, x)
+QT_DEPRECATED_MACRO_6_12(Q_ENUMS, "Use Q_ENUM instead.")
 #define Q_FLAGS(x) QT_ANNOTATE_CLASS(qt_enums, x)
+QT_DEPRECATED_MACRO_6_12(Q_FLAGS, "Use Q_FLAG instead.")
+#endif // QT_DEPRECATED_SINCE(6, 12)
 #define Q_ENUM_IMPL(ENUM) \
     friend constexpr const QMetaObject *qt_getEnumMetaObject(ENUM) noexcept { return &staticMetaObject; } \
     friend constexpr const char *qt_getEnumName(ENUM) noexcept { return #ENUM; }

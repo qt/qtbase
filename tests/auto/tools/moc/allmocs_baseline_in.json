@@ -195,7 +195,7 @@
                     {
                         "isClass": true,
                         "isFlag": false,
-                        "lineNumber": 40,
+                        "lineNumber": 41,
                         "name": "EnumClass",
                         "values": [
                             "A0",
@@ -207,7 +207,7 @@
                     {
                         "isClass": false,
                         "isFlag": false,
-                        "lineNumber": 41,
+                        "lineNumber": 42,
                         "name": "TypedEnum",
                         "type": "char",
                         "values": [
@@ -220,7 +220,7 @@
                     {
                         "isClass": true,
                         "isFlag": false,
-                        "lineNumber": 42,
+                        "lineNumber": 43,
                         "name": "TypedEnumClass",
                         "type": "char",
                         "values": [
@@ -233,7 +233,7 @@
                     {
                         "isClass": false,
                         "isFlag": false,
-                        "lineNumber": 43,
+                        "lineNumber": 44,
                         "name": "NormalEnum",
                         "values": [
                             "D2",
@@ -246,7 +246,7 @@
                         "alias": "ClassFlag",
                         "isClass": true,
                         "isFlag": true,
-                        "lineNumber": 44,
+                        "lineNumber": 45,
                         "name": "ClassFlags",
                         "values": [
                             "F0",
@@ -257,7 +257,7 @@
                     }
                 ],
                 "gadget": true,
-                "lineNumber": 36,
+                "lineNumber": 37,
                 "qualifiedClassName": "CXX11Enums2"
             },
             {
@@ -266,7 +266,7 @@
                     {
                         "isClass": true,
                         "isFlag": false,
-                        "lineNumber": 54,
+                        "lineNumber": 59,
                         "name": "EnumClass",
                         "values": [
                             "A0",
@@ -278,7 +278,7 @@
                     {
                         "isClass": false,
                         "isFlag": false,
-                        "lineNumber": 55,
+                        "lineNumber": 60,
                         "name": "TypedEnum",
                         "type": "char",
                         "values": [
@@ -291,7 +291,7 @@
                     {
                         "isClass": true,
                         "isFlag": false,
-                        "lineNumber": 56,
+                        "lineNumber": 61,
                         "name": "TypedEnumClass",
                         "type": "char",
                         "values": [
@@ -304,7 +304,7 @@
                     {
                         "isClass": false,
                         "isFlag": false,
-                        "lineNumber": 57,
+                        "lineNumber": 62,
                         "name": "NormalEnum",
                         "values": [
                             "D2",
@@ -314,7 +314,7 @@
                         ]
                     }
                 ],
-                "lineNumber": 50,
+                "lineNumber": 55,
                 "object": true,
                 "qualifiedClassName": "CXX11Enums3",
                 "superClasses": [

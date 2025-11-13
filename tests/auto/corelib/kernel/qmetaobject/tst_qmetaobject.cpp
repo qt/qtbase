@@ -146,6 +146,7 @@ namespace MyNamespace {
     Q_DECLARE_OPERATORS_FOR_FLAGS(MyClass::MyFlags)
 
 
+#if QT_DEPRECATED_SINCE(6, 12)
     // test the old Q_ENUMS macro
     class MyClass2 : public QObject
     {
@@ -183,12 +184,16 @@ namespace MyNamespace {
               m_flags(MyFlag1|MyFlag2)
         { }
     private:
+        QT_WARNING_PUSH
+        QT_WARNING_DISABLE_DEPRECATED
         Q_ENUMS(MyEnum MyAnotherEnum)
         Q_FLAGS(MyFlags)
+        QT_WARNING_POP
 
         MyEnum m_enum;
         MyFlags m_flags;
     };
+#endif // QT_DEPRECATED_SINCE(6, 12)
 
     // Test inherits
     class MyClassSubclass : public MyClass
@@ -196,10 +201,12 @@ namespace MyNamespace {
         Q_OBJECT
     };
 
+#if QT_DEPRECATED_SINCE(6, 12)
     class MyClassSubclass2 : public MyClass2
     {
         Q_OBJECT
     };
+#endif // QT_DEPRECATED_SINCE(6, 12)
 
     class MyClass2Subclass : public MyClass
     {
@@ -2530,10 +2537,14 @@ void tst_QMetaObject::keysToValue_data()
     QTest::addColumn<QByteArray>("name");
 
     static MyNamespace::MyClass obj1;
+#if QT_DEPRECATED_SINCE(6, 12)
     static MyNamespace::MyClass2 obj2;
+#endif // QT_DEPRECATED_SINCE(6, 12)
 
     QTest::newRow("MyClass") << static_cast<QObject*>(&obj1) << QByteArray("MyClass");
+#if QT_DEPRECATED_SINCE(6, 12)
     QTest::newRow("MyClass2") << static_cast<QObject*>(&obj2) << QByteArray("MyClass2");
+#endif // QT_DEPRECATED_SINCE(6, 12)
 
 }
 
@@ -3272,10 +3283,12 @@ void tst_QMetaObject::inherits_data()
         << &MyNamespace::MyClass::staticMetaObject << &MyNamespace::MyClass::staticMetaObject << true;
     QTest::newRow("MyClassSubclass inherits QObject")
         << &MyNamespace::MyClassSubclass::staticMetaObject << &QObject::staticMetaObject << true;
+#if QT_DEPRECATED_SINCE(6, 12)
     QTest::newRow("MyClassSubclass2 inherits QObject")
         << &MyNamespace::MyClassSubclass2::staticMetaObject << &QObject::staticMetaObject << true;
     QTest::newRow("MyClassSubclass2 inherits MyClass2")
         << &MyNamespace::MyClassSubclass2::staticMetaObject << &MyNamespace::MyClass2Subclass::staticMetaObject << false;
+#endif // QT_DEPRECATED_SINCE(6, 12)
 }
 
 void tst_QMetaObject::inherits()

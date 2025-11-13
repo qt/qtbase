@@ -32,6 +32,7 @@ public:
     Q_FLAG(StructFlags)
 };
 
+#if QT_DEPRECATED_SINCE(6, 12)
 // Also test the Q_ENUMS macro
 class CXX11Enums2
 {
@@ -43,9 +44,13 @@ public:
     enum NormalEnum { D2 = 2, D3, D0 =0 , D1 };
     enum class ClassFlag { F0 = 1, F1 = 2, F2 = 4, F3 = 8 };
     Q_DECLARE_FLAGS(ClassFlags, ClassFlag)
+    QT_WARNING_PUSH
+    QT_WARNING_DISABLE_DEPRECATED
     Q_ENUMS(EnumClass TypedEnum TypedEnumClass NormalEnum)
     Q_FLAGS(ClassFlags)
+    QT_WARNING_POP
 };
+#endif // QT_DEPRECATED_SINCE(6, 12)
 
 class CXX11Enums3 : public QObject
 {
