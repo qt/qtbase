@@ -382,11 +382,26 @@ void terminate_on_exception(T &&t) noexcept
 #endif // defined(__GLIBCXX__) && !defined(QT_NO_EXCEPTIONS)
 } // unnamed namespace
 
-void *QThreadPrivate::start(void *arg)
+static void setCancellationEnabled(bool enable)
 {
 #ifdef PTHREAD_CANCEL_DISABLE
-    pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, nullptr);
+    if (enable) {
+        // may unwind the stack, see above
+        pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, nullptr);
+        pthread_testcancel();
+    } else {
+        // this doesn't unwind the stack
+        pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, nullptr);
+    }
+#else
+    Q_UNUSED(enable)
 #endif
+}
+
+void *QThreadPrivate::start(void *arg)
+{
+    setCancellationEnabled(false);
+
     QThread *thr = reinterpret_cast<QThread *>(arg);
     QThreadData *data = QThreadData::get2(thr);
 
@@ -433,10 +448,7 @@ void *QThreadPrivate::start(void *arg)
 #endif
 
         emit thr->started(QThread::QPrivateSignal());
-#ifdef PTHREAD_CANCEL_DISABLE
-        pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, nullptr);
-        pthread_testcancel();
-#endif
+        setCancellationEnabled(true);
         thr->run();
     });
 
@@ -455,9 +467,7 @@ void QThreadPrivate::finish()
         // Disable cancellation; we're already in the finishing touches of this
         // thread, and we don't want cleanup to be disturbed by
         // abi::__forced_unwind being thrown from all kinds of functions.
-#ifdef PTHREAD_CANCEL_DISABLE
-        pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, nullptr);
-#endif
+        setCancellationEnabled(false);
 
         QMutexLocker locker(&d->mutex);
 
@@ -480,9 +490,7 @@ void QThreadPrivate::cleanup()
 
         // Disable cancellation again: we did it above, but some user code
         // running between finish() and cleanup() may have turned them back on.
-#ifdef PTHREAD_CANCEL_DISABLE
-        pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, nullptr);
-#endif
+        setCancellationEnabled(false);
 
         QMutexLocker locker(&d->mutex);
         d->priority = QThread::InheritPriority;
@@ -996,13 +1004,7 @@ void QThread::setTerminationEnabled(bool enabled)
                "Current thread was not started with QThread.");
 
     Q_UNUSED(thr);
-#if defined(Q_OS_ANDROID)
-    Q_UNUSED(enabled);
-#else
-    pthread_setcancelstate(enabled ? PTHREAD_CANCEL_ENABLE : PTHREAD_CANCEL_DISABLE, nullptr);
-    if (enabled)
-        pthread_testcancel();
-#endif
+    setCancellationEnabled(enabled);
 }
 
 // Caller must lock the mutex
