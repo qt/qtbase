@@ -3,6 +3,7 @@
 
 package org.qtproject.qt.android;
 
+import java.util.List;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Rect;
@@ -19,8 +20,9 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.WindowInsets;
 import android.view.WindowInsets.Type;
-import android.view.WindowInsetsAnimationController;
-import android.view.WindowInsetsAnimationControlListener;
+import android.view.Window;
+import android.view.WindowInsetsAnimation;
+import android.view.WindowInsetsAnimation.Callback;
 import android.view.WindowManager;
 import android.view.View;
 import android.view.ViewTreeObserver;
@@ -145,24 +147,29 @@ class QtInputDelegate implements QtInputConnection.QtInputConnectionListener, Qt
                               final int inputHints, final int enterKeyType)
     {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            activity.getWindow().getInsetsController().controlWindowInsetsAnimation(
-                WindowInsets.Type.ime(), -1, null, null,
-                    new WindowInsetsAnimationControlListener() {
+            Window window = activity.getWindow();
+            View decorView = window.getDecorView();
+            decorView.setWindowInsetsAnimationCallback(
+                new WindowInsetsAnimation.Callback(
+                    WindowInsetsAnimation.Callback.DISPATCH_MODE_CONTINUE_ON_SUBTREE) {
                         @Override
-                        public void onCancelled(WindowInsetsAnimationController controller) { }
-
-                        @Override
-                        public void onReady(WindowInsetsAnimationController controller, int types) { }
-
-                        @Override
-                        public void onFinished(WindowInsetsAnimationController controller) {
-                            QtNativeInputConnection.updateCursorPosition();
-                            if (m_softInputMode == 0)
-                                probeForKeyboardHeight(activity, x, y, width, height,
-                                                       inputHints, enterKeyType);
+                        public WindowInsets onProgress(
+                            WindowInsets insets, List<WindowInsetsAnimation> animationList) {
+                                return insets;
                         }
-                    });
-            activity.getWindow().getInsetsController().show(Type.ime());
+                        @Override
+                        public void onEnd(WindowInsetsAnimation animation) {
+                            decorView.setWindowInsetsAnimationCallback(null);
+                            if ((animation.getTypeMask() & WindowInsets.Type.ime()) == 0) {
+                                QtNativeInputConnection.updateCursorPosition();
+                                if (m_softInputMode == 0) {
+                                    probeForKeyboardHeight(activity, x, y, width, height,
+                                                            inputHints, enterKeyType);
+                                }
+                            }
+                        }
+                });
+            window.getInsetsController().show(Type.ime());
         } else {
             if (m_imm == null)
                 return;
