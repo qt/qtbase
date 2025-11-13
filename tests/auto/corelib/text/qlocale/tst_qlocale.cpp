@@ -3846,7 +3846,7 @@ void tst_QLocale::dateFormat()
     QCOMPARE(ja.dateFormat(QLocale::ShortFormat), QLatin1String("yyyy/MM/dd"));
 
     const QLocale ir("ga_IE");
-    QCOMPARE(ir.dateFormat(QLocale::ShortFormat), QLatin1String("dd/MM/yyyy"));
+    QCOMPARE(ir.dateFormat(QLocale::ShortFormat), QLatin1String("d/M/yy"));
 
     QT_TEST_EQUALITY_OPS(c, no, false);
     QT_TEST_EQUALITY_OPS(ca, ja, false);

@@ -54,7 +54,7 @@
 
     \section1 Appropriateness of the formats
 
-    QLocale's data is based on Common Locale Data Repository v47.
+    QLocale's data is based on Common Locale Data Repository v48.
 
     This data is published by The Unicode Consortium, who aim to follow
     customary, common use by writers of each language, in each script, in each

@@ -19,8 +19,8 @@ struct LocaleListItem
 // GENERATED PART STARTS HERE
 
 /*
-    This part of the file was generated on 2025-06-17 from the
-    Common Locale Data Repository v47
+    This part of the file was generated on 2025-11-13 from the
+    Common Locale Data Repository v48
 
     http://www.unicode.org/cldr/
 
@@ -172,6 +172,7 @@ const LocaleListItem g_locale_list[] = {
     {     75,    66 }, // English/Diego Garcia
     {     75,    68 }, // English/Dominica
     {     75,    74 }, // English/Eritrea
+    {     75,    75 }, // English/Estonia
     {     75,    76 }, // English/Eswatini
     {     75,    78 }, // English/Europe
     {     75,    80 }, // English/Falkland Islands
@@ -179,6 +180,7 @@ const LocaleListItem g_locale_list[] = {
     {     75,    83 }, // English/Finland
     {     75,    84 }, // English/France
     {     75,    89 }, // English/Gambia
+    {     75,    90 }, // English/Georgia
     {     75,    91 }, // English/Germany
     {     75,    92 }, // English/Ghana
     {     75,    93 }, // English/Gibraltar
@@ -195,11 +197,14 @@ const LocaleListItem g_locale_list[] = {
     {     75,   116 }, // English/Israel
     {     75,   117 }, // English/Italy
     {     75,   119 }, // English/Jamaica
+    {     75,   120 }, // English/Japan
     {     75,   121 }, // English/Jersey
     {     75,   124 }, // English/Kenya
     {     75,   125 }, // English/Kiribati
+    {     75,   131 }, // English/Latvia
     {     75,   133 }, // English/Lesotho
     {     75,   134 }, // English/Liberia
+    {     75,   137 }, // English/Lithuania
     {     75,   139 }, // English/Macao
     {     75,   141 }, // English/Madagascar
     {     75,   142 }, // English/Malawi
@@ -255,6 +260,7 @@ const LocaleListItem g_locale_list[] = {
     {     75,   241 }, // English/Turks and Caicos Islands
     {     75,   242 }, // English/Tuvalu
     {     75,   243 }, // English/Uganda
+    {     75,   244 }, // English/Ukraine
     {     75,   245 }, // English/United Arab Emirates
     {     75,   246 }, // English/United Kingdom
     {     75,   247 }, // English/United States Outlying Islands
@@ -402,6 +408,9 @@ const LocaleListItem g_locale_list[] = {
     {    146,   134 }, // Kpelle/Liberia
     {    146,   102 }, // Kpelle/Guinea
     {    148,   239 }, // Kurdish/Turkey
+    {    148,   112 }, // Kurdish/Iran
+    {    148,   113 }, // Kurdish/Iraq
+    {    148,   227 }, // Kurdish/Syria
     {    149,    40 }, // Kwasio/Cameroon
     {    150,   128 }, // Kyrgyz/Kyrgyzstan
     {    151,   248 }, // Lakota/United States
@@ -481,6 +490,7 @@ const LocaleListItem g_locale_list[] = {
     {    221,   248 }, // Osage/United States
     {    222,    90 }, // Ossetic/Georgia
     {    222,   193 }, // Ossetic/Russia
+    {    225,   246 }, // Pali/United Kingdom
     {    226,    62 }, // Papiamento/Curacao
     {    226,    13 }, // Papiamento/Aruba
     {    227,     1 }, // Pashto/Afghanistan
