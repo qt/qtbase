@@ -140,9 +140,6 @@ void tst_QWindowContainer::testSizeHints()
 
 void tst_QWindowContainer::testExposeObscure()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     Window *window = new Window();
 
     QScopedPointer<QWidget> container(QWidget::createWindowContainer(window));
@@ -385,9 +382,6 @@ void tst_QWindowContainer::testDockWidget()
 
 void tst_QWindowContainer::testNativeContainerParent()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     QWidget root;
     root.setWindowTitle(QTest::currentTestFunction());
     root.setGeometry(m_availableGeometry.x() + 50, m_availableGeometry.y() + 50, 200, 200);
