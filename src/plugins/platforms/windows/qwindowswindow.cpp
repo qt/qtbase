@@ -1732,8 +1732,10 @@ void QWindowsWindow::destroyWindow()
             m_surface = nullptr;
         }
 #endif
+        DestroyWindow(m_data.hwndTitlebar);
         DestroyWindow(m_data.hwnd);
         context->removeWindow(m_data.hwnd);
+        m_data.hwndTitlebar = nullptr;
         m_data.hwnd = nullptr;
     }
 }
