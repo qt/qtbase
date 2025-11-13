@@ -1382,9 +1382,6 @@ private:
 
 void tst_QCompleter::task250064_lostFocus()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     task250064_Widget widget;
     widget.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     widget.show();
@@ -1413,9 +1410,6 @@ void tst_QCompleter::task253125_lineEditCompletion_data()
 
 void tst_QCompleter::task253125_lineEditCompletion()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     QFETCH(QStringList, list);
     QFETCH(QCompleter::CompletionMode, completionMode);
 
@@ -1573,9 +1567,6 @@ void tst_QCompleter::task253125_lineEditCompletion()
 
 void tst_QCompleter::task247560_keyboardNavigation()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     QStandardItemModel model;
 
     for (int i = 0; i < 5; i++) {
@@ -1808,9 +1799,6 @@ void tst_QCompleter::QTBUG_52028_tabAutoCompletes()
 
 void tst_QCompleter::QTBUG_51889_activatedSentTwice()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     QWidget w;
     w.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     w.setLayout(new QVBoxLayout);
