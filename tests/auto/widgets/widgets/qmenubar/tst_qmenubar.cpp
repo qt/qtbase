@@ -331,9 +331,6 @@ inline TestMenu tst_QMenuBar::initWindowWithComplexMenuBar(QMainWindow &w)
 #if !defined(Q_OS_DARWIN)
 void tst_QMenuBar::accel()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     // create a popup menu with menu items set the accelerators later...
     QMainWindow w;
     const TestMenu menu = initWindowWithSimpleMenuBar(w);
@@ -351,9 +348,6 @@ void tst_QMenuBar::accel()
 #if !defined(Q_OS_DARWIN)
 void tst_QMenuBar::activatedCount()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     // create a popup menu with menu items set the accelerators later...
     QMainWindow w;
     QFETCH( bool, forceNonNative );
@@ -552,9 +546,6 @@ void tst_QMenuBar::insertItem_QString_QObject()
 #if !defined(Q_OS_DARWIN)
 void tst_QMenuBar::check_accelKeys()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     QMainWindow w;
     initWindowWithComplexMenuBar(w);
     w.show();
@@ -876,9 +867,6 @@ void tst_QMenuBar::allowActiveAndDisabled()
 
 void tst_QMenuBar::check_altPress()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     if ( !qApp->style()->styleHint(QStyle::SH_MenuBar_AltKeyNavigation) ) {
         QSKIP(QString( "this is not supposed to work in the %1 style. Skipping." ).
               arg(qApp->style()->objectName()).toLatin1());
@@ -898,9 +886,6 @@ void tst_QMenuBar::check_altPress()
 // should close it and QMenuBar::activeAction() should be 0.
 void tst_QMenuBar::check_altClosePress()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     const QStyle *style = QApplication::style();
     if (!style->styleHint(QStyle::SH_MenuBar_AltKeyNavigation) ) {
         QSKIP(("This test is not supposed to work in the " + style->objectName().toLatin1()
@@ -930,9 +915,6 @@ void tst_QMenuBar::check_altClosePress()
 #if !defined(Q_OS_DARWIN)
 void tst_QMenuBar::check_shortcutPress()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     QMainWindow w;
     const TestMenu menu = initWindowWithComplexMenuBar(w);
     w.show();
@@ -1264,9 +1246,6 @@ private:
 
 void tst_QMenuBar::taskQTBUG11823_crashwithInvisibleActions()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     QMenuBar menubar;
 #ifdef Q_OS_LINUX
     ResizeCounter counter(&menubar);
@@ -1662,9 +1641,6 @@ void tst_QMenuBar::slotForTaskQTBUG53205()
 #if !defined(Q_OS_DARWIN)
 void tst_QMenuBar::taskQTBUG46812_doNotLeaveMenubarHighlighted()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     QMainWindow mainWindow;
     QWidget *centralWidget = new QWidget;
     centralWidget->setFocusPolicy(Qt::StrongFocus);
@@ -1770,9 +1746,6 @@ void tst_QMenuBar::defaultEditMenuItems()
 
 void tst_QMenuBar::taskQTBUG55966_subMenuRemoved()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     QMainWindow window;
     QMenuBar *menubar = window.menuBar();
     QMenu *parentMenu = menubar->addMenu("Parent menu");
