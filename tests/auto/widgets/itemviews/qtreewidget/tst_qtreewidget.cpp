@@ -438,9 +438,6 @@ void tst_QTreeWidget::editItem_data()
 
 void tst_QTreeWidget::editItem()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     QFETCH(TreeItemList, topLevelItems);
 
     QTreeWidget tree;
@@ -3031,9 +3028,6 @@ void tst_QTreeWidget::defaultRowSizes()
 
 void tst_QTreeWidget::task191552_rtl()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     Qt::LayoutDirection oldDir = QGuiApplication::layoutDirection();
     QGuiApplication::setLayoutDirection(Qt::RightToLeft);
 
@@ -3147,9 +3141,6 @@ void tst_QTreeWidget::task245280_sortChildren()
 
 void tst_QTreeWidget::task253109_itemHeight()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     QTreeWidget treeWidget;
     treeWidget.setColumnCount(1);
     treeWidget.show();
@@ -3377,9 +3368,6 @@ void tst_QTreeWidget::setTextUpdate()
 
 void tst_QTreeWidget::taskQTBUG2844_visualItemRect()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     PublicTreeWidget tree;
     tree.resize(150, 100);
     tree.setColumnCount(3);
@@ -3475,9 +3463,6 @@ void tst_QTreeWidget::taskQTBUG_34717_collapseAtBottom()
 
 void tst_QTreeWidget::task20345_sortChildren()
 {
-    if (!QGuiApplication::platformName().compare(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This causes a crash triggered by setVisible(false)");
-
     // This test case is considered successful if it is executed (no crash in sorting)
     QTreeWidget tw;
     tw.setColumnCount(3);
@@ -3518,9 +3503,6 @@ void tst_QTreeWidget::getMimeDataWithInvalidItem()
 // (-> logical index != visual index). see QTBUG-28733
 void tst_QTreeWidget::testVisualItemRect()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     QTreeWidget tw;
     tw.setColumnCount(2);
     QTreeWidgetItem *item = new QTreeWidgetItem(&tw);
