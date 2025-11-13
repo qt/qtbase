@@ -1688,12 +1688,13 @@ inline QString &&asString(QString &&s)              { return std::move(s); }
 #endif
 
 /*
-    Wrap QString::utf16() with enough casts to allow passing it
+    Wrap QString::constData() with enough casts to allow passing it
     to QString::asprintf("%ls") without warnings.
 */
 #ifndef qUtf16Printable
 #  define qUtf16Printable(string) \
-    static_cast<const wchar_t*>(static_cast<const void*>(QtPrivate::asString(string).utf16()))
+    static_cast<const wchar_t *>( \
+        static_cast<const void *>(QtPrivate::asString(string).nullTerminated().constData()))
 #endif
 
 //
