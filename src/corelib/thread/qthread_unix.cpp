@@ -24,10 +24,6 @@
 #  endif
 #endif
 
-#ifdef __GLIBCXX__
-#include <cxxabi.h>
-#endif
-
 #include <sched.h>
 #include <errno.h>
 #if __has_include(<pthread_np.h>)
@@ -364,30 +360,40 @@ static void setCurrentThreadName(QThread *thr, String &objectName)
         setit(std::exchange(objectName, {}).toLocal8Bit());
 }
 
-namespace {
-#if defined(__GLIBCXX__) && !defined(QT_NO_EXCEPTIONS)
-template <typename T>
-void terminate_on_exception(T &&t)
-{
-    try {
-        std::forward<T>(t)();
-    } catch (abi::__forced_unwind &) {
-        // POSIX thread cancellation under glibc is implemented by throwing an exception
-        // of this type. Do what libstdc++ is doing and handle it specially in order not to
-        // abort the application if user's code calls a cancellation function.
-        throw;
-    } catch (...) {
-        std::terminate();
-    }
-}
-#else
-template <typename T>
-void terminate_on_exception(T &&t) noexcept
-{
-    std::forward<T>(t)();
-}
-#endif // defined(__GLIBCXX__) && !defined(QT_NO_EXCEPTIONS)
-} // unnamed namespace
+// Handling of exceptions and cancellations for start(), finish() and cleanup()
+//
+// These routines expect that the user code throw no exceptions. Exiting
+// start() with an exception should cause std::terminate to be called. Thread
+// cancellations are allowed: if one is detected, the implementation is
+// expected to cleanly call QThreadPrivate::finish(), emit the necessary
+// signals and notifications, and clean up after itself. [Note there's a small
+// race between QThread::start() returning and QThreadPrivate::start() turning
+// cancellations off, during which time no finish() is called.]
+//
+// These routines implement application termination by unexpected exceptions by
+// simply not having any try/catch block at all. As start() is called directly
+// from the C library's PThread runtime, there should be no active C++
+// try/catch block (### if we ever change this to std::thread, the assumption
+// needs to be rechecked, though both libc++ and libstdc++ at the time of
+// writing are try/catch-free). [except.handle]/8 says:
+//
+// > If no matching handler is found, the function std::terminate is invoked;
+// > whether or not the stack is unwound before this invocation of std::terminate
+// > is implementation-defined.
+//
+// Both major implementations of Unix C++ Standard Libraries terminate without
+// unwinding, which is useful to detect the unhandled exception in post-mortem
+// debugging. This code adds no try/catch to retain that ability.
+//
+// Because of that, we could have marked these functions noexcept and ignored
+// exception safety. We don't because of PThread cancellations. The GNU libc
+// implements PThread cancellations using stack unwinding, so a cancellation
+// *will* unwind the stack and *will* execute our C++ destructors, unlike
+// exceptions. Therefore, our code in start() must be exception-safe after we
+// turn cancellations back on, and until we turn them off again in finish().
+//
+// Everywhere else, PThread cancellations are handled without unwinding the
+// stack.
 
 static void setCancellationEnabled(bool enable)
 {
@@ -419,7 +425,10 @@ void *QThreadPrivate::start(void *arg)
     data->reuseBindingStatusForNewNativeThread();
 
     pthread_cleanup_push([](void *arg) { static_cast<QThread *>(arg)->d_func()->finish(); }, arg);
-    terminate_on_exception([&] {
+    { // pthread cancellation protection
+
+        // The functions called in this block do not usually throw (but have
+        // qWarning/qCDebug, which may throw std::bad_alloc).
         {
             QMutexLocker locker(&thr->d_func()->mutex);
 
@@ -453,7 +462,7 @@ void *QThreadPrivate::start(void *arg)
         emit thr->started(QThread::QPrivateSignal());
 
         thr->run();
-    });
+    }
 
     // This calls finish(); later, the currentThreadCleanup thread-local
     // destructor will call cleanup().
@@ -463,24 +472,22 @@ void *QThreadPrivate::start(void *arg)
 
 void QThreadPrivate::finish()
 {
-    terminate_on_exception([&] {
-        QThreadPrivate *d = this;
-        QThread *thr = q_func();
+    QThreadPrivate *d = this;
+    QThread *thr = q_func();
 
-        // Disable cancellation; we're already in the finishing touches of this
-        // thread, and we don't want cleanup to be disturbed by
-        // abi::__forced_unwind being thrown from all kinds of functions.
-        setCancellationEnabled(false);
+    // Disable cancellation; we're already in the finishing touches of this
+    // thread, and we don't want cleanup to be disturbed by
+    // abi::__forced_unwind being thrown from all kinds of functions.
+    setCancellationEnabled(false);
 
-        QMutexLocker locker(&d->mutex);
+    QMutexLocker locker(&d->mutex);
 
-        d->threadState = QThreadPrivate::Finishing;
-        locker.unlock();
-        emit thr->finished(QThread::QPrivateSignal());
-        QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
+    d->threadState = QThreadPrivate::Finishing;
+    locker.unlock();
+    emit thr->finished(QThread::QPrivateSignal());
+    QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
 
-        QThreadStoragePrivate::finish(&d->data->tls);
-    });
+    QThreadStoragePrivate::finish(&d->data->tls);
 
     if constexpr (QT_CONFIG(broken_threadlocal_dtors))
         cleanup();
@@ -488,29 +495,27 @@ void QThreadPrivate::finish()
 
 void QThreadPrivate::cleanup()
 {
-    terminate_on_exception([&] {
-        QThreadPrivate *d = this;
+    QThreadPrivate *d = this;
 
-        // Disable cancellation again: we did it above, but some user code
-        // running between finish() and cleanup() may have turned them back on.
-        setCancellationEnabled(false);
+    // Disable cancellation again: we did it above, but some user code
+    // running between finish() and cleanup() may have turned them back on.
+    setCancellationEnabled(false);
 
-        QMutexLocker locker(&d->mutex);
-        d->priority = QThread::InheritPriority;
+    QMutexLocker locker(&d->mutex);
+    d->priority = QThread::InheritPriority;
 
-        QAbstractEventDispatcher *eventDispatcher = d->data->eventDispatcher.loadRelaxed();
-        if (eventDispatcher) {
-            d->data->eventDispatcher = nullptr;
-            locker.unlock();
-            eventDispatcher->closingDown();
-            delete eventDispatcher;
-            locker.relock();
-        }
+    QAbstractEventDispatcher *eventDispatcher = d->data->eventDispatcher.loadRelaxed();
+    if (eventDispatcher) {
+        d->data->eventDispatcher = nullptr;
+        locker.unlock();
+        eventDispatcher->closingDown();
+        delete eventDispatcher;
+        locker.relock();
+    }
 
-        d->interruptionRequested.store(false, std::memory_order_relaxed);
+    d->interruptionRequested.store(false, std::memory_order_relaxed);
 
-        d->wakeAll();
-    });
+    d->wakeAll();
 }
 
 
