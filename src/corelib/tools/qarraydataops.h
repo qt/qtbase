@@ -74,7 +74,7 @@ public:
     {
         Q_ASSERT(this->isMutable());
         Q_ASSERT(!this->isShared());
-        Q_ASSERT(newSize < size_t(this->size));
+        Q_ASSERT(newSize <= size_t(this->size));
 
         this->size = qsizetype(newSize);
     }
@@ -333,7 +333,7 @@ public:
     {
         Q_ASSERT(this->isMutable());
         Q_ASSERT(!this->isShared());
-        Q_ASSERT(newSize < size_t(this->size));
+        Q_ASSERT(newSize <= size_t(this->size));
 
         std::destroy(this->begin() + newSize, this->end());
         this->size = newSize;

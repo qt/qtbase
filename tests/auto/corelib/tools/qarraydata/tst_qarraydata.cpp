@@ -1466,6 +1466,11 @@ void tst_QArrayData::arrayOpsExtra()
         };
 
         auto [intData, strData, objData] = setupDataPointers(inputSize, inputSize);
+        // truncate nothing
+        RUN_TEST_FUNC(testTruncate, intData, inputSize);
+        RUN_TEST_FUNC(testTruncate, strData, inputSize);
+        RUN_TEST_FUNC(testTruncate, objData, inputSize);
+
         // truncate one
         RUN_TEST_FUNC(testTruncate, intData, inputSize - 1);
         RUN_TEST_FUNC(testTruncate, strData, inputSize - 1);
