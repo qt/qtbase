@@ -858,15 +858,16 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
         break;
     case PE_IndicatorHeaderArrow:
         if (const QStyleOptionHeader *header = qstyleoption_cast<const QStyleOptionHeader *>(option)) {
-            QFont f(d->assetFont);
-            f.setPointSize(6);
-            painter->setFont(f);
-            painter->setPen(header->palette.text().color());
-            QRectF rect = option->rect;
-            if (header->sortIndicator & QStyleOptionHeader::SortUp) {
-                painter->drawText(rect, Qt::AlignCenter, ChevronUpSmall);
-            } else if (header->sortIndicator & QStyleOptionHeader::SortDown) {
-                painter->drawText(rect, Qt::AlignCenter, ChevronDownSmall);
+            const auto indicator = header->sortIndicator;
+            if (indicator != QStyleOptionHeader::None) {
+                QPainterStateGuard psg(painter);
+                QFont f(d->assetFont);
+                f.setPointSize(6);
+                painter->setFont(f);
+                painter->setPen(header->palette.text().color());
+                painter->drawText(option->rect, Qt::AlignCenter,
+                                  indicator == QStyleOptionHeader::SortUp ? ChevronDown
+                                                                          : ChevronUp);
             }
         }
         break;
@@ -1935,7 +1936,7 @@ QRect QWindows11Style::subElementRect(QStyle::SubElement element, const QStyleOp
 #endif // QT_CONFIG(progressbar)
     case QStyle::SE_HeaderLabel:
     case QStyle::SE_HeaderArrow:
-        ret = QCommonStyle::subElementRect(element, option, widget);
+        ret = QWindowsVistaStyle::subElementRect(element, option, widget);
         break;
     case SE_PushButtonContents: {
         int border = proxy()->pixelMetric(PM_DefaultFrameWidth, option, widget);
