@@ -757,13 +757,18 @@ public:
     Q_ENUM(TestEnum)
 };
 
+#if QT_DEPRECATED_SINCE(6, 12)
 class EnumUserClass : public QObject
 {
     Q_OBJECT
 
 public:
+    QT_WARNING_PUSH
+    QT_WARNING_DISABLE_DEPRECATED
     Q_ENUMS(EnumSourceClass::TestEnum)
+    QT_WARNING_POP
 };
+#endif // QT_DEPRECATED_SINCE(6, 12)
 
 class CtorTestClass : public QObject
 {
@@ -837,7 +842,9 @@ private slots:
     void slotWithSillyConst();
     void slotTakingCRefViaTypedef();
     void testExtraData();
+#if QT_DEPRECATED_SINCE(6, 12)
     void testExtraDataForEnum();
+#endif // QT_DEPRECATED_SINCE(6, 12)
     void namespaceTypeProperty();
     void slotsWithVoidTemplate();
     void structQObject();
@@ -1360,6 +1367,7 @@ void tst_Moc::testExtraData()
     const QMetaEnum en = prop.enumerator();
     QCOMPARE(QByteArray(en.name()), QByteArray("TestEnum"));
 }
+#if QT_DEPRECATED_SINCE(6, 12)
 
 // QTBUG-20639 - Accept non-local enums for QML signal/slot parameters.
 void tst_Moc::testExtraDataForEnum()
@@ -1376,6 +1384,7 @@ void tst_Moc::testExtraDataForEnum()
     QCOMPARE(objects[0], mobjSource);
     QVERIFY(!objects[1]);
 }
+#endif // QT_DEPRECATED_SINCE(6, 12)
 
 void tst_Moc::namespaceTypeProperty()
 {
@@ -3010,23 +3019,35 @@ void tst_Moc::cxx11Enums_data()
     QTest::addColumn<bool>("isTyped");
 
     const QMetaObject *meta1 = &CXX11Enums::staticMetaObject;
+#if QT_DEPRECATED_SINCE(6, 12)
     const QMetaObject *meta2 = &CXX11Enums2::staticMetaObject;
+#endif // QT_DEPRECATED_SINCE(6, 12)
     const QMetaObject *meta3 = &CXX11Enums3::staticMetaObject;
 
     QTest::newRow("EnumClass") << meta1 << QByteArray("EnumClass") << QByteArray("EnumClass") << 'A' << true << false;
+#if QT_DEPRECATED_SINCE(6, 12)
     QTest::newRow("EnumClass 2") << meta2 << QByteArray("EnumClass") << QByteArray("EnumClass") << 'A' << true << false;
+#endif // QT_DEPRECATED_SINCE(6, 12)
     QTest::newRow("EnumClass 3") << meta3 << QByteArray("EnumClass") << QByteArray("EnumClass") << 'A' << true << false;
     QTest::newRow("TypedEnum") << meta1 << QByteArray("TypedEnum") << QByteArray("TypedEnum") << 'B' << false << true;
+#if QT_DEPRECATED_SINCE(6, 12)
     QTest::newRow("TypedEnum 2") << meta2 << QByteArray("TypedEnum") << QByteArray("TypedEnum") << 'B' << false << true;
+#endif // QT_DEPRECATED_SINCE(6, 12)
     QTest::newRow("TypedEnum 3") << meta3 << QByteArray("TypedEnum") << QByteArray("TypedEnum") << 'B' << false << true;
     QTest::newRow("TypedEnumClass") << meta1 << QByteArray("TypedEnumClass") << QByteArray("TypedEnumClass") << 'C' << true << true;
+#if QT_DEPRECATED_SINCE(6, 12)
     QTest::newRow("TypedEnumClass 2") << meta2 << QByteArray("TypedEnumClass") << QByteArray("TypedEnumClass") << 'C' << true << true;
+#endif // QT_DEPRECATED_SINCE(6, 12)
     QTest::newRow("TypedEnumClass 3") << meta3 << QByteArray("TypedEnumClass") << QByteArray("TypedEnumClass") << 'C' << true << true;
     QTest::newRow("NormalEnum") << meta1 << QByteArray("NormalEnum") << QByteArray("NormalEnum") << 'D' << false << false;
+#if QT_DEPRECATED_SINCE(6, 12)
     QTest::newRow("NormalEnum 2") << meta2 << QByteArray("NormalEnum") << QByteArray("NormalEnum") << 'D' << false << false;
+#endif // QT_DEPRECATED_SINCE(6, 12)
     QTest::newRow("NormalEnum 3") << meta3 << QByteArray("NormalEnum") << QByteArray("NormalEnum") << 'D' << false << false;
     QTest::newRow("ClassFlags") << meta1 << QByteArray("ClassFlags") << QByteArray("ClassFlag") << 'F' << true << false;
+#if QT_DEPRECATED_SINCE(6, 12)
     QTest::newRow("ClassFlags 2") << meta2 << QByteArray("ClassFlags") << QByteArray("ClassFlag") << 'F' << true << false;
+#endif // QT_DEPRECATED_SINCE(6, 12)
     QTest::newRow("EnumStruct") << meta1 << QByteArray("EnumStruct") << QByteArray("EnumStruct") << 'G' << true << false;
     QTest::newRow("TypedEnumStruct") << meta1 << QByteArray("TypedEnumStruct") << QByteArray("TypedEnumStruct") << 'H' << true << true;
     QTest::newRow("StructFlags") << meta1 << QByteArray("StructFlags") << QByteArray("StructFlag") << 'I' << true << false;

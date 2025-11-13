@@ -1021,6 +1021,12 @@
 #define Q_DECL_ENUMERATOR_DEPRECATED Q_DECL_DEPRECATED
 #define Q_DECL_ENUMERATOR_DEPRECATED_X(x) Q_DECL_DEPRECATED_X(x)
 
+#ifdef Q_CC_CLANG /* preferred, since Clang's supports `text` and MSVC's doesn't */
+#  define Q_DECL_DEPRECATED_MACRO(macro, text) QT_DO_PRAGMA(clang deprecated(macro, text))
+#elif defined(Q_CC_MSVC)
+#  define Q_DECL_DEPRECATED_MACRO(macro, text) __pragma(deprecated(#macro))
+#endif
+
 #ifndef Q_DECL_CONSTEXPR_DTOR
 #  if __cpp_constexpr >= 201907L
 #    define Q_DECL_CONSTEXPR_DTOR constexpr
@@ -1125,6 +1131,9 @@
 #endif
 #ifndef Q_DECL_DEPRECATED_X
 #  define Q_DECL_DEPRECATED_X(text) Q_DECL_DEPRECATED
+#endif
+#ifndef Q_DECL_DEPRECATED_MACRO
+#  define Q_DECL_DEPRECATED_MACRO(macro, text)
 #endif
 #ifndef Q_DECL_EXPORT
 #  define Q_DECL_EXPORT

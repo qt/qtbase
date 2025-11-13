@@ -12,11 +12,13 @@ public:
     enum E { A, B, C, D };
     enum F { None = 0x0, One = 0x1, Two = 0x2, Three = 0x4 };
     Q_DECLARE_FLAGS(Flags, F)
+#if QT_DEPRECATED_SINCE(6, 12)
     QT_WARNING_PUSH
     QT_WARNING_DISABLE_DEPRECATED
     Q_ENUMS(E)
     Q_FLAGS(Flags)
     QT_WARNING_POP
+#endif
 };
 } // namespace DisableDeprecatedMacro
 
