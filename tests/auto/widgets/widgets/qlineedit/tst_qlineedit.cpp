@@ -1496,9 +1496,6 @@ void tst_QLineEdit::undo_keypressevents()
 #ifndef QT_NO_CLIPBOARD
 void tst_QLineEdit::QTBUG5786_undoPaste()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     if (!PlatformClipboard::isAvailable())
         QSKIP("this machine doesn't support the clipboard");
     QString initial("initial");
@@ -1750,9 +1747,6 @@ void tst_QLineEdit::passwordEchoOnEdit()
 
 void tst_QLineEdit::passwordEchoDelay()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     QLineEdit *testWidget = ensureTestWidget();
     int delay = qGuiApp->styleHints()->passwordMaskDelay();
 #if defined QT_BUILD_INTERNAL
@@ -3046,9 +3040,6 @@ void tst_QLineEdit::setSelection()
 #if QT_CONFIG(clipboard) && QT_CONFIG(shortcut)
 void tst_QLineEdit::cut()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     if (!PlatformClipboard::isAvailable())
         QSKIP("Autotests run from cron and pasteboard don't get along quite ATM");
 
@@ -3413,9 +3404,6 @@ void tst_QLineEdit::inlineCompletion()
 #ifdef Q_OS_ANDROID
     QSKIP("QCompleter does not work on Android, see QTBUG-77174");
 #endif
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     QLineEdit *testWidget = ensureTestWidget();
     testWidget->clear();
     QStandardItemModel *model = new QStandardItemModel;
@@ -3687,9 +3675,6 @@ public:
 
 void tst_QLineEdit::task180999_focus()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     task180999_Widget widget;
 
     widget.lineEdit1.setFocus();
@@ -4615,9 +4600,6 @@ void tst_QLineEdit::clearButtonVisibleAfterSettingText_QTBUG_45518()
 #ifndef QT_BUILD_INTERNAL
     QSKIP("This test requires a developer build");
 #else
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     QLineEdit edit;
     edit.setMinimumWidth(200);
     centerOnScreen(&edit);
@@ -5116,9 +5098,6 @@ void tst_QLineEdit::testQuickSelectionWithMouse()
 
 void tst_QLineEdit::inputRejected()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     QLineEdit *testWidget = ensureTestWidget();
     QSignalSpy spyInputRejected(testWidget, SIGNAL(inputRejected()));
 
