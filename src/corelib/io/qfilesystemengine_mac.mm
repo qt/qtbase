@@ -24,18 +24,13 @@ QT_BEGIN_NAMESPACE
 //static
 bool QFileSystemEngine::supportsMoveFileToTrash()
 {
-#ifdef Q_OS_MACOS // desktop macOS has a trash can
     return true;
-#else // watch, tv, iOS don't have a trash can
-    return false;
-#endif
 }
 
 //static
 bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &source,
                                         QFileSystemEntry &newLocation, QSystemError &error)
 {
-#ifdef Q_OS_MACOS // desktop macOS has a trash can
     QMacAutoReleasePool pool;
 
     QFileInfo info(source.filePath());
@@ -50,12 +45,6 @@ bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &source,
     }
     newLocation = QFileSystemEntry(QUrl::fromNSURL(resultingUrl).path());
     return true;
-#else // watch, tv, iOS don't have a trash can
-    Q_UNUSED(source);
-    Q_UNUSED(newLocation);
-    error = QSystemError(ENOSYS, QSystemError::StandardLibraryError);
-    return false;
-#endif
 }
 
 QT_END_NAMESPACE
