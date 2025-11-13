@@ -439,13 +439,13 @@ void *QThreadPrivate::start(void *arg)
             data->quitNow = thr->d_func()->exited;
         }
 
-        data->ensureEventDispatcher();
-        data->eventDispatcher.loadRelaxed()->startingUp();
-
         // Sets the name of the current thread. We can only do this
         // when the thread is starting, as we don't have a cross
         // platform way of setting the name of an arbitrary thread.
         setCurrentThreadName(thr, thr->d_func()->objectName);
+
+        data->ensureEventDispatcher();
+        data->eventDispatcher.loadRelaxed()->startingUp();
 
         emit thr->started(QThread::QPrivateSignal());
         setCancellationEnabled(true);
