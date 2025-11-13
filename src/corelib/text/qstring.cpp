@@ -7358,9 +7358,9 @@ QString QString::toUpper_helper(QString &str)
     string and \c{%s} arguments must be UTF-8 encoded.
 
     \note The \c{%lc} escape sequence expects a unicode character of type
-    \c char16_t, or \c ushort (as returned by QChar::unicode()).
+    \c char16_t (as returned by QChar::unicode()), or \c ushort.
     The \c{%ls} escape sequence expects a pointer to a zero-terminated array
-    of unicode characters of type \c char16_t, or ushort (as returned by
+    of unicode characters of type \c char16_t, or \c ushort (as returned by
     QString::utf16()). This is at odds with the printf() in the standard C++
     library, which defines \c {%lc} to print a wchar_t and \c{%ls} to print
     a \c{wchar_t*}, and might also produce compiler warnings on platforms
