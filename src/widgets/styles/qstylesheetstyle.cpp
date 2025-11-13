@@ -5277,12 +5277,8 @@ QSize QStyleSheetStyle::sizeFromContents(ContentsType ct, const QStyleOption *op
 #if QT_CONFIG(spinbox)
     case CT_SpinBox:
         if (const QStyleOptionSpinBox *spinbox = qstyleoption_cast<const QStyleOptionSpinBox *>(opt)) {
-            if (rule.baseStyleCanDraw()) {
+            if (rule.baseStyleCanDraw())
                 sz = baseStyle()->sizeFromContents(ct, opt, sz, w);
-                if (rule.hasBox() || !rule.hasNativeBorder())
-                    sz = rule.boxSize(sz);
-                return sz;
-            }
             if (spinbox->buttonSymbols != QAbstractSpinBox::NoButtons) {
                 // Add some space for the up/down buttons
                 QRenderRule subRule = renderRule(w, opt, PseudoElement_SpinBoxUpButton);
@@ -5295,7 +5291,8 @@ QSize QStyleSheetStyle::sizeFromContents(ContentsType ct, const QStyleOption *op
                     sz.rwidth() += defaultUpSize.width();
                 }
             }
-            if (rule.hasBox() || rule.hasBorder() || !rule.hasNativeBorder())
+            const bool honorBorder = !rule.baseStyleCanDraw() && rule.hasBorder();
+            if (rule.hasBox() || honorBorder || !rule.hasNativeBorder())
                 sz = rule.boxSize(sz);
             return sz;
         }
