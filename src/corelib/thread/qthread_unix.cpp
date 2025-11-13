@@ -440,11 +440,18 @@ void *QThreadPrivate::start(void *arg)
         // platform way of setting the name of an arbitrary thread.
         setCurrentThreadName(thr, thr->d_func()->objectName);
 
+        // Re-enable cancellations before calling out to user code in run(),
+        // allowing the event dispatcher to abort this thread starting (exceptions
+        // aren't allowed to do that). This will also deliver a pending
+        // cancellation queued either by a slot connected to started() or by
+        // another thread using QThread::terminate().
+        setCancellationEnabled(true);
+
         data->ensureEventDispatcher();
         data->eventDispatcher.loadRelaxed()->startingUp();
 
         emit thr->started(QThread::QPrivateSignal());
-        setCancellationEnabled(true);
+
         thr->run();
     });
 
