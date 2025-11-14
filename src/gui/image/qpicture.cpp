@@ -938,7 +938,8 @@ QPicture& QPicture::operator=(const QPicture &p)
   Constructs a QPicturePrivate
 */
 QPicturePrivate::QPicturePrivate()
-    : in_memory_only(false)
+    : pictb(&pictbData),
+      in_memory_only(false)
 {
 }
 
@@ -948,7 +949,8 @@ QPicturePrivate::QPicturePrivate()
   Copy-Constructs a QPicturePrivate. Needed when detaching.
 */
 QPicturePrivate::QPicturePrivate(const QPicturePrivate &other)
-    : trecs(other.trecs),
+    : pictb(&pictbData),
+      trecs(other.trecs),
       formatOk(other.formatOk),
       formatMinor(other.formatMinor),
       brect(other.brect),

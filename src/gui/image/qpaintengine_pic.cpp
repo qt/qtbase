@@ -31,6 +31,7 @@ public:
     QDataStream s;
     QPainter *pt;
     QPicturePrivate *pic_d;
+    bool sizeLimitExceeded = false;
 };
 
 QPicturePaintEngine::QPicturePaintEngine()
@@ -68,6 +69,7 @@ bool QPicturePaintEngine::begin(QPaintDevice *pd)
     d->s.setVersion(d->pic_d->formatMajor);
 
     d->pic_d->pictb.open(QIODevice::WriteOnly | QIODevice::Truncate);
+    d->sizeLimitExceeded = false;
     d->s.writeRawData(qt_mfhdr_tag, 4);
     d->s << (quint16) 0 << (quint16) d->pic_d->formatMajor << (quint16) d->pic_d->formatMinor;
     d->s << (quint8) QPicturePrivate::PdcBegin << (quint8) sizeof(qint32);
@@ -109,7 +111,7 @@ bool QPicturePaintEngine::end()
     d->s << cs;                                // write checksum
     d->pic_d->pictb.close();
     setActive(false);
-    return true;
+    return !d->sizeLimitExceeded;
 }
 
 #define SERIALIZE_CMD(c) \
@@ -286,6 +288,19 @@ void QPicturePaintEngine::updateRenderHints(QPainter::RenderHints hints)
 void QPicturePaintEngine::writeCmdLength(int pos, const QRectF &r, bool corr)
 {
     Q_D(QPicturePaintEngine);
+
+    constexpr int sizeLimit = std::numeric_limits<int>::max() - 8; // Leave room for ending bytes
+    if (d->sizeLimitExceeded || d->pic_d->pictb.pos() > sizeLimit) {
+        d->pic_d->trecs--;  // Remove last command added, started by SERIALIZE_CMD
+        d->pic_d->pictb.seek(pos - 2);
+        d->pic_d->pictbData.resize(pos - 2);
+        if (!d->sizeLimitExceeded) {
+            d->sizeLimitExceeded = true;
+            qWarning("QPicture: size limit exceeded, will be truncated");
+        }
+        return;
+    }
+
     int newpos = d->pic_d->pictb.pos();            // new position
     int length = newpos - pos;
     QRectF br(r);

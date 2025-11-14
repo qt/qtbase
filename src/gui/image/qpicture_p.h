@@ -113,6 +113,7 @@ public:
     bool checkFormat();
     void resetFormat();
 
+    QByteArray pictbData;
     QBuffer pictb;
     int trecs;
     bool formatOk;
