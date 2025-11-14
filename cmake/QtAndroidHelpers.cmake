@@ -94,13 +94,13 @@ function(qt_internal_locate_qt_android_base_jar out_var)
     if(NOT DEFINED datadir OR datadir STREQUAL "")
         set(datadir ".")
     endif()
-
+    set(qt_ns "${QT_CMAKE_EXPORT_NAMESPACE}")
     qt_path_join(
         jar
         "${QT_TOOLCHAIN_RELOCATABLE_INSTALL_PREFIX}"
         "${datadir}"
         "jar"
-        "Qt${PROJECT_VERSION_MAJOR}Android.jar"
+        "${qt_ns}Android.jar"
     )
 
     # Optional override
@@ -119,14 +119,17 @@ function(qt_internal_compute_android_javadoc_classpath out_var)
         set(sep ":")
     endif()
 
-    # qtbase: use build-tree jar and exit early
-    if(PROJECT_NAME STREQUAL "QtBase")
-        set(jar "${QT_BUILD_DIR}/jar/Qt${QtBase_VERSION_MAJOR}Android.jar")
+    # The target Qt6Android is already defined = use its build-dir jar.
+    # The target may not yet exist in some qtbase configuration order =
+    # still set the jar path in advance.
+    set(qt_ns "${QT_CMAKE_EXPORT_NAMESPACE}")
+    if(TARGET ${qt_ns}Android OR (QT_BUILDING_QT AND PROJECT_NAME STREQUAL "QtBase"))
+        set(jar "${QT_BUILD_DIR}/jar/${qt_ns}Android.jar")
         set(${out_var} "${QT_ANDROID_JAR}${sep}${jar}" PARENT_SCOPE)
         return()
     endif()
 
-    # Downstream: use installed jar from the shared locator
+    # Downstream module: use installed jar from the shared locator
     qt_internal_locate_qt_android_base_jar(qt_classes_jar)
     if(NOT EXISTS "${qt_classes_jar}")
         message(FATAL_ERROR
@@ -142,16 +145,16 @@ function(qt_internal_write_android_javadoc_args
                     source_paths
                     package_names_space_separated)
 
-  qt_internal_compute_android_javadoc_classpath(class_path)
+    qt_internal_compute_android_javadoc_classpath(class_path)
 
-  file(CONFIGURE
-    OUTPUT  "${response_file}"
-    CONTENT "${package_names_space_separated}
+    file(CONFIGURE
+        OUTPUT  "${response_file}"
+        CONTENT "${package_names_space_separated}
 --class-path \"${class_path}\"
 -d \"${output_dir}\"
 --source-path \"${source_paths}\"
 "
-  )
+    )
 endfunction()
 
 function(qt_internal_add_android_permission target)
@@ -478,9 +481,10 @@ function(qt_internal_add_javadoc_target)
         VERBATIM
     )
 
-    if(PROJECT_NAME STREQUAL "QtBase")
-        if(TARGET Qt${QtBase_VERSION_MAJOR}Android)
-            add_dependencies(${javadoc_target} Qt${QtBase_VERSION_MAJOR}Android)
+    set(qt_ns "${QT_CMAKE_EXPORT_NAMESPACE}")
+    if(QT_BUILDING_QT OR PROJECT_NAME STREQUAL "QtBase")
+        if(TARGET ${qt_ns}Android)
+            add_dependencies(${javadoc_target} ${qt_ns}Android)
         endif()
     endif()
 
