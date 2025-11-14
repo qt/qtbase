@@ -713,6 +713,7 @@ private slots:
     void vasprintfWithPrecision();
 
     void rawData();
+    void testUtf16();
     void clear();
     void first();
     void last();
@@ -9403,6 +9404,28 @@ void tst_QString::rawData()
 
     // utf pointer is valid while the string is not changed
     QCOMPARE(QString::fromUtf16(char16Ptr), s);
+}
+
+void tst_QString::testUtf16()
+{
+    {
+        const char16_t arr[] = {'a', 'b', 'c'};
+        QString s = QString::fromRawData(arr, 3); // doesn't guarantee null-termination
+        QCOMPARE(s.size(), qsizetype(std::size(arr)));
+        // The string points to the raw data
+        QCOMPARE(static_cast<const void *>(s.constData()), static_cast<const void *>(arr));
+        const ushort *p = s.utf16();
+        // the data was deep-copied
+        QCOMPARE_NE(static_cast<const void *>(p), static_cast<const void *>(arr));
+        QCOMPARE(s.constData()[3], u'\0'); // and null-terminated
+    }
+
+    {
+        QString s = QString::fromUtf16(u"abc");
+        const QChar *ptr = s.constData();
+        // calling utf16() doesn't modify the string
+        QCOMPARE(static_cast<const void *>(ptr), static_cast<const void *>(s.utf16()));
+    }
 }
 
 void tst_QString::clear()
