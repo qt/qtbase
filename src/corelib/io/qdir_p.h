@@ -88,6 +88,7 @@ public:
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QDirPrivate::PathNormalizations)
 
+bool qt_isPathNormalized(const QString &path, QDirPrivate::PathNormalizations flags) noexcept;
 Q_AUTOTEST_EXPORT bool qt_normalizePathSegments(QString *path, QDirPrivate::PathNormalizations flags);
 
 QT_END_NAMESPACE

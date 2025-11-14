@@ -2321,6 +2321,38 @@ bool QDir::match(const QString &filter, const QString &fileName)
 }
 #endif // QT_CONFIG(regularexpression)
 
+static qsizetype findStartOfNonNormalizedPath(const QChar *in, qsizetype i, qsizetype n,
+                                              QDirPrivate::PathNormalizations flags) noexcept
+{
+    // Scan the input for a "." or ".." segment. If there isn't any, we may not
+    // need to modify this path at all. Also scan for "//" segments, which
+    // will be normalized if the path is local.
+    const bool isRemote = flags.testAnyFlag(QDirPrivate::RemotePath);
+    for (bool lastWasSlash = true; i < n; ++i) {
+        if (lastWasSlash && in[i] == u'.') {
+            if (i + 1 == n || in[i + 1] == u'/')
+                break;
+            if (in[i + 1] == u'.' && (i + 2 == n || in[i + 2] == u'/'))
+                break;
+        }
+        if (!isRemote && lastWasSlash && in[i] == u'/' && i > 0) {
+            // backtrack one, so the algorithm below gobbles up the remaining
+            // slashes
+            --i;
+            break;
+        }
+        lastWasSlash = in[i] == u'/';
+    }
+    return i;
+}
+
+bool qt_isPathNormalized(const QString &path, QDirPrivate::PathNormalizations flags) noexcept
+{
+    const qsizetype prefixLength = rootLength(path, flags);
+    qsizetype where = findStartOfNonNormalizedPath(path.constBegin(), prefixLength, path.size(), flags);
+    return where == path.size();
+}
+
 /*!
     \internal
 
@@ -2353,26 +2385,8 @@ bool qt_normalizePathSegments(QString *path, QDirPrivate::PathNormalizations fla
     // string."
     const QChar *in = path->constBegin();
 
-    // Scan the input for a "." or ".." segment. If there isn't any, we may not
-    // need to modify this path at all. Also scan for "//" segments, which
-    // will be normalized if the path is local.
-    qsizetype i = prefixLength;
     qsizetype n = path->size();
-    for (bool lastWasSlash = true; i < n; ++i) {
-        if (lastWasSlash && in[i] == u'.') {
-            if (i + 1 == n || in[i + 1] == u'/')
-                break;
-            if (in[i + 1] == u'.' && (i + 2 == n || in[i + 2] == u'/'))
-                break;
-        }
-        if (!isRemote && lastWasSlash && in[i] == u'/' && i > 0) {
-            // backtrack one, so the algorithm below gobbles up the remaining
-            // slashes
-            --i;
-            break;
-        }
-        lastWasSlash = in[i] == u'/';
-    }
+    qsizetype i = findStartOfNonNormalizedPath(in, prefixLength, n, flags);
     if (i == n)
         return true;
 
