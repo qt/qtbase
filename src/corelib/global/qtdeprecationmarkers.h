@@ -18,6 +18,7 @@
 QT_BEGIN_NAMESPACE
 
 #if defined(QT_NO_DEPRECATED)
+/* undef, so as to cause compile-errors when they're used outside #if QT_DEPRECATED_SINCE blocks */
 #  undef QT_DEPRECATED
 #  undef QT_DEPRECATED_X
 #  undef QT_DEPRECATED_VARIABLE
