@@ -759,6 +759,7 @@ void QJniObject::callVoidMethodV(JNIEnv *env, jmethodID id, va_list args) const
 #endif // Q_OS_ANDROID
 
 #include "qlocale.h"
+#include "qlist.h"
 
 QStringList QLocale::uiLanguages() const
 {
@@ -1299,6 +1300,7 @@ void QBasicMutex::destroyInternal(QMutexPrivate *d)
 
 
 #include "qobject.h"
+#include "private/qobject_p.h"
 
 #ifdef Q_COMPILER_MANGLES_RETURN_TYPE
 QMetaObject *QObjectData::dynamicMetaObject() const
