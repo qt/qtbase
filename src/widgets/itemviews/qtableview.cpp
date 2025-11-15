@@ -2042,6 +2042,25 @@ void QTableView::setSelection(const QRect &rect, QItemSelectionModel::SelectionF
     int left = tl.column();
     int right = br.column();
 
+    const auto updateVisualIndices = [&]() {
+        if (verticalMoved && horizontalMoved) {
+            top = d->visualRow(tl.row());
+            bottom = d->visualRow(br.row());
+            left = d->visualColumn(tl.column());
+            right = d->visualColumn(br.column());
+        } else if (horizontalMoved) {
+            top = tl.row();
+            bottom = br.row();
+            left = d->visualColumn(tl.column());
+            right = d->visualColumn(br.column());
+        } else if (verticalMoved) {
+            top = d->visualRow(tl.row());
+            bottom = d->visualRow(br.row());
+            left = tl.column();
+            right = br.column();
+        }
+    };
+
     if (d->hasSpans()) {
         bool expanded;
         // when the current selection does not intersect with any spans of merged cells,
@@ -2083,30 +2102,14 @@ void QTableView::setSelection(const QRect &rect, QItemSelectionModel::SelectionF
             }
         } while (expanded);
         if (!intersectsSpan) {
-            top = tl.row();
-            bottom = br.row();
-            left = tl.column();
-            right = br.column();
+            updateVisualIndices();
         } else if (!verticalMoved && !horizontalMoved) {
             // top/left/bottom/right are visual, update indexes
             tl = d->model->index(top, left, d->root);
             br = d->model->index(bottom, right, d->root);
         }
-    } else if (verticalMoved && horizontalMoved) {
-         top = d->visualRow(tl.row());
-         bottom = d->visualRow(br.row());
-         left = d->visualColumn(tl.column());
-         right = d->visualColumn(br.column());
-    } else if (horizontalMoved) {
-        top = tl.row();
-        bottom = br.row();
-        left = d->visualColumn(tl.column());
-        right = d->visualColumn(br.column());
-    } else if (verticalMoved) {
-        top = d->visualRow(tl.row());
-        bottom = d->visualRow(br.row());
-        left = tl.column();
-        right = br.column();
+    } else {
+        updateVisualIndices();
     }
 
     if (horizontalMoved && verticalMoved) {
