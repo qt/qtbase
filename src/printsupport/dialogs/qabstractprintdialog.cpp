@@ -288,7 +288,6 @@ void QAbstractPrintDialogPrivate::setPrinter(QPrinter *newPrinter)
     \endtable
 
     The printer dialog (shown above in Plastique style) enables access to common
-    printing properties. On X11 platforms that use the CUPS printing system, the
     settings for each available printer can be modified via the dialog's
     \uicontrol{Properties} push button.
 
@@ -375,6 +374,8 @@ void QPrintDialog::done(int result)
         }, Qt::SingleShotConnection);
     }
     QDialog::done(result);
+    if (result == Accepted)
+        Q_EMIT accepted(printer());
     if (d->receiverToDisconnectOnClose) {
         disconnect(this, SIGNAL(accepted(QPrinter*)),
                    d->receiverToDisconnectOnClose, d->memberToDisconnectOnClose);

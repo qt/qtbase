@@ -1,3 +1,4 @@
 {
-    "Keys": [ "cupsprintersupport" ]
+    "Keys": [ "cupsprintersupport" ],
+    "Priority": 50
 }

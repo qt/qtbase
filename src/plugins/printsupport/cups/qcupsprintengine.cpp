@@ -10,7 +10,7 @@
 #include <qfile.h>
 #include <qdebug.h>
 #include <qbuffer.h>
-#include "private/qcups_p.h" // Only needed for PPK_CupsOptions
+#include "qcups_p.h" // Only needed for PPK_CupsOptions
 #include <QtGui/qpagelayout.h>
 
 #include <cups/cups.h>

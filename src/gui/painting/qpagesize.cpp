@@ -692,6 +692,8 @@ public:
                      const QString &name,
                      QPageSize::SizeMatchPolicy matchPolicy);
     QPageSizePrivate(const QString &key, const QSize &size, const QString &name);
+    QPageSizePrivate(const QString &key, const QSizeF &size,
+                     QPageSize::Unit units, const QString &name);
     QPageSizePrivate(int windowsId, const QSize &pointSize, const QString &name);
     ~QPageSizePrivate();
 
@@ -771,6 +773,15 @@ QPageSizePrivate::QPageSizePrivate(const QString &key, const QSize &pointSize, c
         id == QPageSize::Custom ? init(pointSize, name) : init(id, name);
         m_key = key;
     }
+}
+
+QPageSizePrivate::QPageSizePrivate(const QString &key, const QSizeF &size,
+                                   QPageSize::Unit units, const QString &name)
+    : m_id(QPageSize::Custom),
+      m_windowsId(0)
+{
+    init(size, units, name);
+    m_key = key;
 }
 
 QPageSizePrivate::QPageSizePrivate(int windowsId, const QSize &pointSize, const QString &name)
@@ -1153,6 +1164,18 @@ QPageSize::QPageSize(const QSizeF &size, Unit units,
 
 QPageSize::QPageSize(const QString &key, const QSize &pointSize, const QString &name)
     : d(new QPageSizePrivate(key, pointSize, name))
+{
+}
+
+/*!
+    \internal
+
+    Create page with given key, size, units and name, for use by printer plugin.
+*/
+
+QPageSize::QPageSize(const QString &key, const QSizeF &size,
+                     QPageSize::Unit units, const QString &name)
+    : d(new QPageSizePrivate(key, size, units, name))
 {
 }
 

@@ -4,11 +4,13 @@
 #include "qppdprintdevice.h"
 
 #include "qcupsprintersupport_p.h"
-#include "private/qcups_p.h" // Only needed for PDPK_*
+#include "qcups_p.h" // Only needed for PDPK_*
 
 #if QT_CONFIG(mimetype)
 #include <QtCore/QMimeDatabase>
 #endif
+
+#include <QPrintDialog>
 
 #ifndef QT_LINUXBASE // LSB merges everything into cups.h
 #include <cups/language.h>
@@ -410,28 +412,342 @@ QPrint::ColorMode QPpdPrintDevice::defaultColorMode() const
 
 QVariant QPpdPrintDevice::property(QPrintDevice::PrintDevicePropertyKey key) const
 {
-    if (key == PDPK_PpdFile)
+    if (key == PDPK_PpdFile) {
         return QVariant::fromValue<ppd_file_t *>(m_ppd);
-    else if (key == PDPK_CupsJobPriority)
-        return printerOption(QStringLiteral("job-priority"));
-    else if (key == PDPK_CupsJobSheets)
-        return printerOption(QStringLiteral("job-sheets"));
-    else if (key == PDPK_CupsJobBilling)
-        return printerOption(QStringLiteral("job-billing"));
-    else if (key == PDPK_CupsJobHoldUntil)
-        return printerOption(QStringLiteral("job-hold-until"));
+    }
+
+    if (key == QPrintDevice::PDPK_PageSet) {
+        QPrint::OptionCombo option;
+        option.name = "page-set";
+        option.displayName = QPrintDialog::tr("Page Set");
+        option.choices
+                << "all"
+                << "odd"
+                << "even";
+        option.displayChoices
+                << QPrintDialog::tr("All Pages")
+                << QPrintDialog::tr("Odd Pages")
+                << QPrintDialog::tr("Even Pages");
+        option.defaultChoice = 0;
+        return QVariant::fromValue(option);
+    }
+
+    if (key == QPrintDevice::PDPK_JobHold) {
+        QPrint::OptionCombo option;
+        option.name = "job-hold-until";
+        option.choices
+                << "no-hold"
+                << "indefinite"
+                << "day-time"
+                << "night"
+                << "second-shift"
+                << "third-shift"
+                << "weekend";
+        option.displayChoices
+                << QPrintDialog::tr("Print Immediately")
+                << QPrintDialog::tr("Hold Indefinitely")
+                << QPrintDialog::tr("Day (06:00 to 17:59)")
+                << QPrintDialog::tr("Night (18:00 to 05:59)")
+                << QPrintDialog::tr("Second Shift (16:00 to 23:59)")
+                << QPrintDialog::tr("Third Shift (00:00 to 07:59)")
+                << QPrintDialog::tr("Weekend (Saturday to Sunday)")
+                << QPrintDialog::tr("Specific Time");
+
+        QByteArray defaultVal = printerOption(QString(option.name)).toUtf8();
+        option.defaultChoice = qMax(option.choices.indexOf(defaultVal), 0);
+        return QVariant::fromValue(option);
+    }
+
+    if (key == QPrintDevice::PDPK_JobBillingInfo) {
+        return QVariant::fromValue(printerOption(QStringLiteral("job-billing")));
+    }
+
+    if (key == QPrintDevice::PDPK_JobPriority) {
+        bool ok;
+        int defaultVal = printerOption(QStringLiteral("job-priority")).toInt(&ok);
+        if (!ok || defaultVal > 100 || defaultVal < 0)
+            defaultVal = 50;
+        return QVariant(defaultVal);
+    }
+
+    if (key == QPrintDevice::PDPK_JobStartCoverPage) {
+        QPrint::OptionCombo option;
+        option.name = "job-sheets";
+        option.choices
+                << "none"
+                << "standard"
+                << "unclassified"
+                << "confidential"
+                << "classified"
+                << "secret"
+                << "topsecret";
+        option.displayChoices
+                << QPrintDialog::tr("None", "CUPS Banner page")
+                << QPrintDialog::tr("Standard", "CUPS Banner page")
+                << QPrintDialog::tr("Unclassified", "CUPS Banner page")
+                << QPrintDialog::tr("Confidential", "CUPS Banner page")
+                << QPrintDialog::tr("Classified", "CUPS Banner page")
+                << QPrintDialog::tr("Secret", "CUPS Banner page")
+                << QPrintDialog::tr("Top Secret", "CUPS Banner page");
+
+        QByteArray defaultVal = printerOption(QString(option.name)).toUtf8();
+        option.defaultChoice = qMax(option.choices.indexOf(defaultVal), 0);
+        return QVariant::fromValue(option);
+    }
+
+    if (key == QPrintDevice::PDPK_JobEndCoverPage) {
+        QPrint::OptionCombo option;
+        option.name = "job-sheets";
+        option.choices
+                << "none"
+                << "standard"
+                << "unclassified"
+                << "confidential"
+                << "classified"
+                << "secret"
+                << "topsecret";
+        option.displayChoices
+                << QPrintDialog::tr("None", "CUPS Banner page")
+                << QPrintDialog::tr("Standard", "CUPS Banner page")
+                << QPrintDialog::tr("Unclassified", "CUPS Banner page")
+                << QPrintDialog::tr("Confidential", "CUPS Banner page")
+                << QPrintDialog::tr("Classified", "CUPS Banner page")
+                << QPrintDialog::tr("Secret", "CUPS Banner page")
+                << QPrintDialog::tr("Top Secret", "CUPS Banner page");
+
+        QByteArray defaultVal = printerOption(QString(option.name)).toUtf8();
+        option.defaultChoice = qMax(option.choices.indexOf(defaultVal), 0);
+        return QVariant::fromValue(option);
+    }
+
+    if (key == QPrintDevice::PDPK_AdvancedOptions) {
+        QList<QPrint::OptionCombosGroup> optionsGroups;
+        if (!m_ppd)
+            return QVariant::fromValue(optionsGroups);
+
+        auto toUnicode = QStringDecoder(m_ppd->lang_encoding, QStringDecoder::Flag::Stateless);
+        if (!toUnicode.isValid()) {
+            qWarning() << "QPrinSupport: Cups uses unsupported encoding" << m_ppd->lang_encoding;
+            toUnicode = QStringDecoder(QStringDecoder::Utf8, QStringDecoder::Flag::Stateless);
+        }
+        for (int i = 0; i < m_ppd->num_groups; ++i) {
+
+            const ppd_group_t *group = &m_ppd->groups[i];
+            if (QCUPSSupport::isBlacklistedGroup(group))
+                continue;
+
+            QPrint::OptionCombosGroup optionsGroup;
+            optionsGroup.groupName = group->name;
+            optionsGroup.displayGroup = toUnicode(group->text);
+
+            for (int i = 0; i < group->num_options; ++i) {
+                const ppd_option_t *option = &group->options[i];
+
+                if (QCUPSSupport::isBlacklistedOption(option->keyword) || option->num_choices <= 1)
+                    continue;
+
+                QPrint::OptionCombo optionCombo;
+                optionCombo.name = option->keyword;
+                optionCombo.displayName = option->text;
+
+                optionCombo.choices.reserve(option->num_choices);
+                optionCombo.displayChoices.reserve(option->num_choices);
+                optionCombo.defaultChoice = -1;
+
+                bool foundMarkedChoice = false;
+                bool markedChoiceNotAvailable = false;
+                for (int i = 0; i < option->num_choices; ++i) {
+                    const ppd_choice_t *choice = &option->choices[i];
+                    const bool choiceIsInstallableConflict = ppdInstallableConflict(m_ppd, option->keyword, choice->choice);
+                    if (choiceIsInstallableConflict && static_cast<int>(choice->marked) == 1) {
+                        markedChoiceNotAvailable = true;
+                    } else if (!choiceIsInstallableConflict) {
+                        optionCombo.choices.push_back(choice->choice);
+                        optionCombo.displayChoices.push_back(toUnicode(choice->text));
+                        if (static_cast<int>(choice->marked) == 1) {
+                            optionCombo.defaultChoice = optionCombo.choices.size() - 1;
+                            foundMarkedChoice = true;
+                        } else if (!foundMarkedChoice && qstrcmp(choice->choice, option->defchoice) == 0) {
+                            optionCombo.defaultChoice = optionCombo.choices.size() - 1;
+                        }
+                    }
+                }
+
+                if (markedChoiceNotAvailable) {
+                    // If the user default option is not available because of it conflicting with
+                    // the installed options, we need to set the internal ppd value to the value
+                    // being shown in the combo
+                    optionCombo.defaultChoice = qMax(optionCombo.defaultChoice, 0);
+                    ppdMarkOption(m_ppd, optionCombo.name, optionCombo.choices[optionCombo.defaultChoice]);
+                }
+
+                optionsGroup.options.push_back(optionCombo);
+            }
+            optionsGroups.push_back(optionsGroup);
+        }
+        return QVariant::fromValue(optionsGroups);
+    }
+
+    if (key == QPrintDevice::PDPK_OptionConflict) {
+        QByteArray pagesPerSheet = this->getCupsOption(QStringLiteral("number-up")).toUtf8();
+        QByteArray pageSet = this->getCupsOption(QStringLiteral("page-set")).toUtf8();
+        if (pagesPerSheet != "1x1" && pageSet != "all")
+            return QVariant(QPrintDialog::tr("Options 'Pages Per Sheet' and 'Page Set' cannot be used together.\nPlease turn one of those options off."));
+
+        return QVariant::fromValue(nullptr);
+    }
+
+    if (key == QPrintDevice::PDPK_NumberUp) {
+        QPrint::OptionCombo option;
+        option.name = "number-up";
+        option.choices
+                << "1x1"
+                << "2x1"
+                << "2x2"
+                << "2x3"
+                << "3x3"
+                << "4x4";
+        option.displayChoices
+                << QPrintDialog::tr("1 (1x1)")
+                << QPrintDialog::tr("2 (2x1)")
+                << QPrintDialog::tr("4 (2x2)")
+                << QPrintDialog::tr("6 (2x3)")
+                << QPrintDialog::tr("9 (3x3)")
+                << QPrintDialog::tr("16 (4x4)");
+
+        option.defaultChoice = 0;
+        return QVariant::fromValue(option);
+    }
+    if (key == QPrintDevice::PDPK_NumberUpLayout) {
+        QPrint::OptionCombo option;
+        option.name = "number-up-layout";
+        option.choices
+                << "lrtb"
+                << "lrbt"
+                << "rlbt"
+                << "rltb"
+                << "btlr"
+                << "btrl"
+                << "tblr"
+                << "tbrl";
+        option.displayChoices
+                << QPrintDialog::tr("Left to Right, Top to Bottom")
+                << QPrintDialog::tr("Left to Right, Bottom to Top")
+                << QPrintDialog::tr("Right to Left, Bottom to Top")
+                << QPrintDialog::tr("Right to Left, Top to Bottom")
+                << QPrintDialog::tr("Bottom to Top, Left to Right")
+                << QPrintDialog::tr("Bottom to Top, Right to Left")
+                << QPrintDialog::tr("Top to Bottom, Left to Right")
+                << QPrintDialog::tr("Top to Bottom, Right to Left");
+
+        option.defaultChoice = 0;
+        return QVariant::fromValue(option);
+    }
 
     return QPlatformPrintDevice::property(key);
 }
 
 bool QPpdPrintDevice::setProperty(QPrintDevice::PrintDevicePropertyKey key, const QVariant &value)
 {
-    if (key == PDPK_PpdOption) {
-        const QStringList values = value.toStringList();
-        if (values.size() == 2) {
-            ppdMarkOption(m_ppd, values[0].toLatin1(), values[1].toLatin1());
+    if (key == QPrintDevice::PDPK_Duplex) {
+        auto choice = qvariant_cast<QPrint::DuplexMode>(value);
+        bool marked = false;
+        if (choice == QPrint::DuplexNone) {
+            ppdMarkOption(m_ppd, "Duplex", "None");
+            marked = true;
+        } else if (choice == QPrint::DuplexLongSide) {
+            ppdMarkOption(m_ppd, "Duplex", "DuplexNoTumble");
+            marked = true;
+        } else if (choice == QPrint::DuplexShortSide) {
+            ppdMarkOption(m_ppd, "Duplex", "DuplexTumble");
+            marked = true;
+        }
+        return marked;
+    }
+
+    if (key == QPrintDevice::PDPK_PageSet) {
+        auto choice = qvariant_cast<QByteArray>(value);
+        setCupsOption(QStringLiteral("page-set"), choice);
+        return true;
+    }
+
+    if (key == QPrintDevice::PDPK_PageRange) {
+        auto choice = qvariant_cast<QString>(value);
+        setCupsOption(QStringLiteral("page-ranges"), choice);
+        return true;
+    }
+
+    if (key == QPrintDevice::PDPK_JobHold) {
+        auto choice = qvariant_cast<QByteArray>(value);
+        setCupsOption(QStringLiteral("job-hold-until"), choice);
+        return true;
+    }
+
+    if (key == QPrintDevice::PDPK_JobBillingInfo) {
+        auto choice = qvariant_cast<QString>(value);
+        setCupsOption(QStringLiteral("job-billing"), choice);
+        return true;
+    }
+
+    if (key == QPrintDevice::PDPK_JobPriority) {
+        int priority = qvariant_cast<int>(value);
+        setCupsOption(QStringLiteral("job-priority"), QString::number(priority));
+        return true;
+    }
+
+    if (key == QPrintDevice::PDPK_JobStartCoverPage) {
+        auto choice = qvariant_cast<QByteArray>(value);
+        QString currentSetting = this->getCupsOption(QStringLiteral("job-sheets"));
+        if (!currentSetting.contains(u',')) {
+            QString defaultSheet = printerOption(QStringLiteral("job-sheets"));
+            currentSetting = defaultSheet + u',' + defaultSheet;
+        }
+        QString newSetting = choice + u',' + currentSetting.split(u',')[1];
+        setCupsOption(QStringLiteral("job-sheets"), newSetting);
+        return true;
+    }
+
+    if (key == QPrintDevice::PDPK_JobEndCoverPage) {
+        auto choice = qvariant_cast<QByteArray>(value);
+        QString currentSetting = this->getCupsOption(QStringLiteral("job-sheets"));
+        if (!currentSetting.contains(u',')) {
+            QString defaultSheet = printerOption(QStringLiteral("job-sheets"));
+            currentSetting = defaultSheet + u',' + defaultSheet;
+        }
+        QString newSetting = currentSetting.split(u',')[0] + u',' + choice;
+        setCupsOption(QStringLiteral("job-sheets"), newSetting.toUtf8());
+        return true;
+    }
+
+    if (key == QPrintDevice::PDPK_AdvancedOptions) {
+        if (value.canConvert<QByteArray>() && value.toByteArray() == "#clear#") {
+            m_cupsOptions = QStringList();
             return true;
         }
+        auto setting = qvariant_cast<QPrint::OptionSetting>(value);
+        ppdMarkOption(m_ppd, setting.name, setting.choice);
+        return true;
+    }
+
+    if (key == QPrintDevice::PDPK_NumberUp) {
+        auto choice = qvariant_cast<QByteArray>(value);
+        setCupsOption(QStringLiteral("number-up"), choice);
+    }
+
+    if (key == QPrintDevice::PDPK_NumberUpLayout) {
+        auto choice = qvariant_cast<QByteArray>(value);
+        setCupsOption(QStringLiteral("number-up-layout"), choice);
+        return true;
+    }
+
+    if (key == QPrintDevice::PDPK_PageSize) {
+        auto choice = qvariant_cast<QByteArray>(value);
+        if (choice == "#custom#") {
+            ppdMarkOption(m_ppd, "PageSize", "Custom");
+        } else {
+            ppdMarkOption(m_ppd, "PageSize", choice);
+        }
+        return true;
     }
 
     return QPlatformPrintDevice::setProperty(key, value);
@@ -439,10 +755,41 @@ bool QPpdPrintDevice::setProperty(QPrintDevice::PrintDevicePropertyKey key, cons
 
 bool QPpdPrintDevice::isFeatureAvailable(QPrintDevice::PrintDevicePropertyKey key, const QVariant &params) const
 {
-    if (key == PDPK_PpdChoiceIsInstallableConflict) {
-        const QStringList values = params.toStringList();
-        if (values.size() == 2)
-            return ppdInstallableConflict(m_ppd, values[0].toLatin1(), values[1].toLatin1());
+    if (key == QPrintDevice::PDPK_Duplex) {
+        auto duplexPpdOption = findPpdOption("Duplex");
+        if (params.toByteArray() == "conflict")
+            return (duplexPpdOption && duplexPpdOption->conflicted);
+        return (duplexPpdOption != nullptr);
+    }
+
+    if (key == QPrintDevice::PDPK_PageSet
+            || key == QPrintDevice::PDPK_PageRange
+            || key == QPrintDevice::PDPK_JobHold
+            || key == QPrintDevice::PDPK_JobBillingInfo
+            || key == QPrintDevice::PDPK_JobPriority
+            || key == QPrintDevice::PDPK_JobStartCoverPage
+            || key == QPrintDevice::PDPK_JobEndCoverPage
+            || key == QPrintDevice::PDPK_AdvancedOptions
+            || key == QPrintDevice::PDPK_NumberUp
+            || key == QPrintDevice::PDPK_NumberUpLayout
+            || key == QPrintDevice::PDPK_AdvancedColorMode) {
+        return true;
+    }
+
+    if (key == QPrintDevice::PDPK_AdvancedOptions) {
+        return (m_ppd != nullptr);
+    }
+
+    if (key == QPrintDevice::PDPK_OptionConflict) {
+        auto setting = qvariant_cast<QPrint::OptionSetting>(params);
+        return ppdInstallableConflict(m_ppd, setting.name, setting.choice);
+    }
+
+    if (key == QPrintDevice::PDPK_PageSize) {
+        auto pageSizePpdOption = findPpdOption("PageSize");
+        if (params.toByteArray() == "conflict")
+            return (pageSizePpdOption && pageSizePpdOption->conflicted);
+        return (pageSizePpdOption != nullptr);
     }
 
     return QPlatformPrintDevice::isFeatureAvailable(key, params);
@@ -466,9 +813,45 @@ void QPpdPrintDevice::loadMimeTypes() const
 }
 #endif
 
+void QPpdPrintDevice::setCupsOption(const QString &option, const QString &value)
+{
+    if (m_cupsOptions.contains(option)) {
+        m_cupsOptions.replace(m_cupsOptions.indexOf(option) + 1, value);
+    } else {
+        m_cupsOptions.append(option);
+        m_cupsOptions.append(value);
+    }
+}
+
+QString QPpdPrintDevice::getCupsOption(const QString &option) const
+{
+    if (m_cupsOptions.contains(option)) {
+        return m_cupsOptions.at(m_cupsOptions.indexOf(option) + 1);
+    }
+    return QString();
+}
+
 QString QPpdPrintDevice::printerOption(const QString &key) const
 {
     return cupsGetOption(key.toUtf8(), m_cupsDest->num_options, m_cupsDest->options);
+}
+
+ppd_option_t *QPpdPrintDevice::findPpdOption(const char *optionName) const
+{
+    if (m_ppd) {
+        for (int i = 0; i < m_ppd->num_groups; ++i) {
+            ppd_group_t *group = &m_ppd->groups[i];
+
+            for (int i = 0; i < group->num_options; ++i) {
+                ppd_option_t *option = &group->options[i];
+
+                if (qstrcmp(option->keyword, optionName) == 0)
+                    return option;
+            }
+        }
+    }
+
+    return nullptr;
 }
 
 cups_ptype_e QPpdPrintDevice::printerTypeFlags() const

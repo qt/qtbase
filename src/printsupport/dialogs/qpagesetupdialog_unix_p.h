@@ -43,14 +43,15 @@ public:
     void updateSavedValues();
     void revertToSavedValues();
 
-#if QT_CONFIG(cups)
-    bool hasPpdConflict() const;
+    bool hasOptionConflict() const;
+//#if QT_CONFIG(cups)
+//    bool hasPpdConflict() const;
 
-signals:
-    void ppdOptionChanged();
-#endif
+//Q_SIGNALS:
+//    void ppdOptionChanged();
+//#endif
 
-private slots:
+private Q_SLOTS:
     void pageSizeChanged();
     void pageOrientationChanged();
     void pagesPerSheetChanged();
@@ -72,9 +73,12 @@ private:
     QPagePreview *m_pagePreview;
     QPrinter *m_printer;
     QPrintDevice *m_printDevice;
-#if QT_CONFIG(cups)
-    ppd_option_t *m_pageSizePpdOption;
-#endif
+//#if QT_CONFIG(cpdb)
+//    cpdb_printer_obj_t *m_printerObj;
+//#endif
+//#if QT_CONFIG(cups)
+//    ppd_option_t *m_pageSizePpdOption;
+//#endif
     QPrinter::OutputFormat m_outputFormat;
     QString m_printerName;
     QPageLayout m_pageLayout;
