@@ -2124,16 +2124,20 @@ void QTableView::setSelection(const QRect &rect, QItemSelectionModel::SelectionF
         for (int visual = left; visual <= right; ++visual) {
             int column = d->logicalColumn(visual);
             QModelIndex topLeft = d->model->index(top, column, d->root);
-            QModelIndex bottomRight = d->model->index(bottom, column, d->root);
-            selection.append(QItemSelectionRange(topLeft, bottomRight));
+            if (top == bottom)
+                selection.append(QItemSelectionRange(topLeft));
+            else
+                selection.append({ topLeft, topLeft.siblingAtRow(bottom) });
         }
     } else if (verticalMoved) {
         selection.reserve(bottom - top + 1);
         for (int visual = top; visual <= bottom; ++visual) {
             int row = d->logicalRow(visual);
             QModelIndex topLeft = d->model->index(row, left, d->root);
-            QModelIndex bottomRight = d->model->index(row, right, d->root);
-            selection.append(QItemSelectionRange(topLeft, bottomRight));
+            if (left == right)
+                selection.append(QItemSelectionRange(topLeft));
+            else
+                selection.append({ topLeft, topLeft.siblingAtColumn(right) });
         }
     } else { // nothing moved
         QItemSelectionRange range(tl, br);
