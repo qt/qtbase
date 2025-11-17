@@ -1302,7 +1302,10 @@ function(qt_feature_module_end)
             # Before, we didn't use to export the properties at all for INTERFACE_ libraries,
             # but we need to, because certain GlobalPrivate modules have features which are used
             # in configure-time conditions for tests.
-            qt_internal_add_genex_properties_export("${target}" ${properties_to_export})
+            qt_internal_add_custom_properties_to_export("${target}"
+                PROPERTIES_WITHOUT_GENEXES
+                    ${properties_to_export}
+            )
         else()
             set(propertyPrefix "")
             set_property(TARGET "${target}"
