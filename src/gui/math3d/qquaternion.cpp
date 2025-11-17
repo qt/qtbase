@@ -13,6 +13,79 @@ QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_QUATERNION
 
+//
+// QQuaternion::Axis
+//
+
+/*!
+    \since 6.11
+    \class QQuaternion::Axis
+    \ingroup painting-3D
+    \inmodule QtGui
+
+    A struct representing a 3D axis used to define \l{QQuaternion}{quaternions},
+    through \l{QQuaternion::Axes}{three (orthonormal) axes}.
+
+    The struct itself does not constrain the values of its \l{x}, \l{y} and \l{z}
+    members, though QQuaternion functions using this type may. In particular, Axis
+    objects need not be normalized.
+
+    This type is very similar to QVector3D, to and from which it can be readily
+    converted, but has a narrower focus. You may call it a "strong typedef" for
+    QVector3D.
+
+    \sa QQuaternion::Axes
+*/
+
+/*!
+    \fn QQuaternion::Axis QQuaternion::Axis::fromVector3D(QVector3D v)
+
+    Constructs an Axis from \a v, as if by
+    \code
+    return Axis{v.x(), v.y(), v.z()}}
+    \endcode
+*/
+
+/*!
+    \fn QVector3D QQuaternion::Axis::toVector3D() const
+
+    Returns this Axis as a QVector3D, as if by
+    \code
+    Axis a = *this;
+    return QVector3D{a.x, a.y, a.z}
+    \endcode
+*/
+
+/*!
+    \since 6.11
+    \fn bool QQuaternion::Axis::qFuzzyIsNull(QQuaternion::Axis axis)
+
+    Returns \c true if \a axis is degenerate, that is, equal to \c{(0, 0, 0)},
+    allowing for a small fuzziness factor for floating-point comparisons; \c false
+    otherwise.
+*/
+
+/*!
+    \variable QQuaternion::Axis::x
+
+    Contains the x-component of the 3D axis.
+*/
+
+/*!
+    \variable QQuaternion::Axis::y
+
+    Contains the y-component of the 3D axis.
+*/
+/*!
+    \variable QQuaternion::Axis::z
+
+    Contains the z-component of the 3D axis.
+*/
+
+//
+// QQuaternion
+//
+
 /*!
     \class QQuaternion
     \brief The QQuaternion class represents a quaternion consisting of a vector and scalar.
@@ -707,15 +780,13 @@ QQuaternion QQuaternion::fromRotationMatrix(const QMatrix3x3 &rot3x3)
     return QQuaternion(scalar, axis[0], axis[1], axis[2]);
 }
 
-#ifndef QT_NO_VECTOR3D
-
 /*!
     \since 6.11
     \class QQuaternion::Axes
     \ingroup painting-3D
     \inmodule QtGui
 
-    A struct containing the three orthonormal axes that define a
+    A struct containing the three orthonormal \l{QQuaternion::Axis}{axes} that define a
     \l{QQuaternion}{quaternion}.
 
 
@@ -759,7 +830,6 @@ auto QQuaternion::toAxes() const -> Axes
              {rot3x3(0, 2), rot3x3(1, 2), rot3x3(2, 2)} };
 }
 
-
 /*!
     \fn void QQuaternion::getAxes(QVector3D *xAxis, QVector3D *yAxis, QVector3D *zAxis) const
     \since 5.5
@@ -776,40 +846,38 @@ auto QQuaternion::toAxes() const -> Axes
 */
 
 /*!
-    \since 5.5
+    \since 6.11
 
-    Constructs the quaternion using 3 axes (\a xAxis, \a yAxis, \a zAxis).
+    Constructs the quaternion using axes contained in \a axes.
 
     \note The axes are assumed to be orthonormal.
 
     \sa toAxes(), fromRotationMatrix()
 */
-QQuaternion QQuaternion::fromAxes(const QVector3D &xAxis, const QVector3D &yAxis, const QVector3D &zAxis)
+QQuaternion QQuaternion::fromAxes(Axes axes) // clazy:exclude=function-args-by-ref
 {
     QMatrix3x3 rot3x3(Qt::Uninitialized);
-    rot3x3(0, 0) = xAxis.x();
-    rot3x3(1, 0) = xAxis.y();
-    rot3x3(2, 0) = xAxis.z();
-    rot3x3(0, 1) = yAxis.x();
-    rot3x3(1, 1) = yAxis.y();
-    rot3x3(2, 1) = yAxis.z();
-    rot3x3(0, 2) = zAxis.x();
-    rot3x3(1, 2) = zAxis.y();
-    rot3x3(2, 2) = zAxis.z();
+    rot3x3(0, 0) = axes.x.x;
+    rot3x3(1, 0) = axes.x.y;
+    rot3x3(2, 0) = axes.x.z;
+    rot3x3(0, 1) = axes.y.x;
+    rot3x3(1, 1) = axes.y.y;
+    rot3x3(2, 1) = axes.y.z;
+    rot3x3(0, 2) = axes.z.x;
+    rot3x3(1, 2) = axes.z.y;
+    rot3x3(2, 2) = axes.z.z;
 
     return QQuaternion::fromRotationMatrix(rot3x3);
 }
 
 /*!
-    \since 6.11
-    \overload
+    \fn QQuaternion QQuaternion::fromAxes(const QVector3D &xAxis, const QVector3D &yAxis, const QVector3D &zAxis)
+    \since 5.5
 
-    \sa toAxes(), fromRotationMatrix()
+    \overload
 */
-QQuaternion QQuaternion::fromAxes(Axes axes) // clazy:exclude=function-args-by-ref
-{
-    return fromAxes(axes.x, axes.y, axes.z);
-}
+
+#ifndef QT_NO_VECTOR3D
 
 /*!
     \since 5.5
