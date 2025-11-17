@@ -2507,7 +2507,7 @@ public:
         }
         auto it = other.d->begin();
         for (const auto end = other.d->end(); it != end; ++it)
-            emplace(std::move(it.node()->key), std::move(it.node()->takeValue()));
+            emplace(std::move(it.node()->key), it.node()->takeValue());
         other.clear();
         return *this;
     }
