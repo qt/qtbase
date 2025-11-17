@@ -384,7 +384,7 @@ void QWellArray::setCurrent(int row, int col)
     if ((curRow == row) && (curCol == col))
         return;
 
-    if (row < 0 || col < 0)
+    if (row < 0 || col < 0 || row >= nrows || col >= ncols)
         row = col = -1;
 
     int oldRow = curRow;
