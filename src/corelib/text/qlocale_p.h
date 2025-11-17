@@ -456,7 +456,7 @@ public:
         qsizetype digitStart;
         // digits.sliced(n, m), comes from
         // text.sliced(digitStart + n * digitWidth, m * digitWidth)
-        const qint8 digitWidth; // Width within text of each digit.
+        qint8 digitWidth; // Width within text of each digit.
         char sign = '\0'; // '\0' for unspecified, or '-' or '+' if specified.
 
         enum class Option {
@@ -469,6 +469,10 @@ public:
         DigitSequence(QStringView text, NumericData &&numeric,
                       DigitSequence::Options flags = DigitSequence::Option::Default,
                       qsizetype from = 0);
+        DigitSequence(const DigitSequence &) = default;
+        DigitSequence(DigitSequence &&) = default;
+        DigitSequence &operator=(const DigitSequence &) = default;
+        DigitSequence &operator=(DigitSequence &&) = default;
         ~DigitSequence() = default;
 
         // Where in text did the parse end:
