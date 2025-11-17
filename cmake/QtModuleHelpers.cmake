@@ -708,7 +708,6 @@ function(qt_internal_add_module target)
         PUBLIC_LIBRARIES ${arg_PUBLIC_LIBRARIES}
         LIBRARIES ${arg_LIBRARIES}
         PRIVATE_MODULE_INTERFACE ${arg_PRIVATE_MODULE_INTERFACE}
-        FEATURE_DEPENDENCIES ${arg_FEATURE_DEPENDENCIES}
         DBUS_ADAPTOR_SOURCES ${arg_DBUS_ADAPTOR_SOURCES}
         DBUS_ADAPTOR_FLAGS ${arg_DBUS_ADAPTOR_FLAGS}
         DBUS_INTERFACE_SOURCES ${arg_DBUS_INTERFACE_SOURCES}
@@ -744,8 +743,6 @@ function(qt_internal_add_module target)
             LIBRARY "${target}"
             PUBLIC_FILE "${module_config_header}"
             PRIVATE_FILE "${module_config_private_header}"
-            PUBLIC_DEPENDENCIES ${arg_FEATURE_DEPENDENCIES}
-            PRIVATE_DEPENDENCIES ${arg_FEATURE_DEPENDENCIES}
         )
         include(${configureFile})
         qt_feature_module_end("${target}")

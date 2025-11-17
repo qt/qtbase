@@ -14,10 +14,7 @@ function(qt_feature_module_begin)
         PRIVATE_FILE
         PUBLIC_FILE
     )
-    set(multi_args
-        PUBLIC_DEPENDENCIES
-        PRIVATE_DEPENDENCIES
-    )
+    set(multi_args "")
     cmake_parse_arguments(PARSE_ARGV 0 arg "${opt_args}" "${single_args}" "${multi_args}")
     _qt_internal_validate_all_args_are_parsed(arg)
 

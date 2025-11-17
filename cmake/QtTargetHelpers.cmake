@@ -506,7 +506,6 @@ macro(qt_internal_setup_default_target_function_options)
         DBUS_INTERFACE_BASENAME
         DBUS_INTERFACE_FLAGS
         DBUS_INTERFACE_SOURCES
-        FEATURE_DEPENDENCIES
         COMPILE_OPTIONS
         LINK_OPTIONS
         MOC_OPTIONS

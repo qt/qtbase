@@ -59,8 +59,6 @@ endif()
 
 qt_internal_add_module(Gui
     PLUGIN_TYPES accessiblebridge platforms platforms/darwin xcbglintegrations platformthemes platforminputcontexts generic iconengines imageformats egldeviceintegrations
-    FEATURE_DEPENDENCIES
-        Qt::Network
     QMAKE_MODULE_CONFIG "${qmake_module_config}"
     SOURCES
         compat/removed_api.cpp
