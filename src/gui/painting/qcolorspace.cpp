@@ -1205,11 +1205,13 @@ QByteArray QColorSpace::iccProfile() const
 */
 QColorSpace QColorSpace::fromIccProfile(const QByteArray &iccProfile)
 {
+    // Must detach if input is fromRawData(); nullTerminated() is trick to do that and nothing else
+    const QByteArray ownedIccProfile(iccProfile.nullTerminated());
     QColorSpace colorSpace;
-    if (QIcc::fromIccProfile(iccProfile, &colorSpace))
+    if (QIcc::fromIccProfile(ownedIccProfile, &colorSpace))
         return colorSpace;
     colorSpace.detach();
-    colorSpace.d_ptr->iccProfile = iccProfile;
+    colorSpace.d_ptr->iccProfile = ownedIccProfile;
     return colorSpace;
 }
 
