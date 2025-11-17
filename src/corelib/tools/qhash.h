@@ -87,7 +87,7 @@ struct Node
     {
         value = T(std::forward<Args>(args)...);
     }
-    T &&takeValue() noexcept(std::is_nothrow_move_assignable_v<T>)
+    T &&takeValue() noexcept
     {
         return std::move(value);
     }
@@ -110,7 +110,7 @@ struct Node<Key, QHashDummyValue> {
     void emplaceValue(Args &&...)
     {
     }
-    ValueType takeValue() { return QHashDummyValue(); }
+    ValueType takeValue() noexcept { return QHashDummyValue(); }
     bool valuesEqual(const Node *) const { return true; }
 };
 
