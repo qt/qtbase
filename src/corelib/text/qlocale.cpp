@@ -3957,10 +3957,11 @@ QString QCalendarBackend::dateTimeToString(QStringView format, const QDateTime &
                 // so ms == 2 is always printed as "002", but ms == 200 can be either "2" or "200"
                 appendToResult(time.msec(), 3);
                 if (repeat != 3) {
-                    if (result.endsWith(locale.zeroDigit()))
-                        result.chop(1);
-                    if (result.endsWith(locale.zeroDigit()))
-                        result.chop(1);
+                    const QString zero = locale.zeroDigit();
+                    if (result.endsWith(zero))
+                        result.chop(zero.size());
+                    if (result.endsWith(zero))
+                        result.chop(zero.size());
                 }
                 break;
 

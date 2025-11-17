@@ -2351,6 +2351,13 @@ void tst_QLocale::formatTime_data()
         << QTime(1, 2, 3) << "cs_CZ" << "h:m:s AP" << "1:2:3 DOP.";
     QTest::newRow("cs_CZ-h:m:s+aP-am")
         << QTime(1, 2, 3) << "cs_CZ" << "h:m:s aP" << "1:2:3 dop.";
+
+    QTest::newRow("ff_Adlm-h:m:s.z") // Fulah, Adlam script: digits are surrogate pairs.
+        << QTime(1, 2, 3, 400) << u"ff_Adlm"_s << u"h:m:s.z"_s
+        << u"\U0001E951:\U0001E952:\U0001E953.\U0001E954"_s; // No trailing zeros
+    QTest::newRow("ff_Adlm-h:m:s.zzz")
+        << QTime(1, 2, 3, 400) << u"ff_Adlm"_s << u"h:m:s.zzz"_s
+        << u"\U0001E951:\U0001E952:\U0001E953.\U0001E954\U0001E950\U0001E950"_s;
 }
 
 void tst_QLocale::formatTime()
