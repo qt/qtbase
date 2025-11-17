@@ -6,6 +6,7 @@ include(CheckCXXCompilerFlag)
 function(qt_feature_module_begin)
     set(opt_args
         NO_MODULE
+        NO_HEADERS
         ONLY_EVALUATE_FEATURES
     )
     set(single_args
@@ -21,16 +22,22 @@ function(qt_feature_module_begin)
     _qt_internal_validate_all_args_are_parsed(arg)
 
     if(NOT arg_ONLY_EVALUATE_FEATURES)
-        if ("${arg_LIBRARY}" STREQUAL "" AND (NOT ${arg_NO_MODULE}))
+        if("${arg_LIBRARY}" STREQUAL "" AND (NOT ${arg_NO_MODULE}))
             message(FATAL_ERROR
                     "qt_feature_begin_module needs a LIBRARY name! (or specify NO_MODULE)")
         endif()
-        if ("${arg_PUBLIC_FILE}" STREQUAL "")
-            message(FATAL_ERROR "qt_feature_begin_module needs a PUBLIC_FILE name!")
+        if(NOT arg_NO_HEADERS)
+            if("${arg_PUBLIC_FILE}" STREQUAL "")
+                message(FATAL_ERROR
+                    "qt_feature_begin_module needs a PUBLIC_FILE value "
+                    "(or specify NO_HEADERS)")
+            endif()
+            if("${arg_PRIVATE_FILE}" STREQUAL "")
+                message(FATAL_ERROR "qt_feature_begin_module needs a value "
+                    "(or specify NO_HEADERS)")
+            endif()
         endif()
-        if ("${arg_PRIVATE_FILE}" STREQUAL "")
-            message(FATAL_ERROR "qt_feature_begin_module needs a PRIVATE_FILE name!")
-        endif()
+
         set(__QtFeature_only_evaluate_features OFF PARENT_SCOPE)
     else()
         set(__QtFeature_only_evaluate_features ON PARENT_SCOPE)
@@ -43,6 +50,9 @@ function(qt_feature_module_begin)
 
     set(__QtFeature_private_file "${arg_PRIVATE_FILE}" PARENT_SCOPE)
     set(__QtFeature_public_file "${arg_PUBLIC_FILE}" PARENT_SCOPE)
+    if(arg_NO_HEADERS)
+        set(__QtFeature_no_headers "TRUE" PARENT_SCOPE)
+    endif()
 
     set(__QtFeature_private_extra "" PARENT_SCOPE)
     set(__QtFeature_public_extra "" PARENT_SCOPE)
@@ -1258,7 +1268,7 @@ function(qt_feature_module_end)
         unset(_QT_FEATURE_ALIASES_${feature} PARENT_SCOPE)
     endforeach()
 
-    if(NOT arg_ONLY_EVALUATE_FEATURES)
+    if(NOT arg_ONLY_EVALUATE_FEATURES AND NOT __QtFeature_no_headers)
         qt_internal_feature_write_file(${target}
             "${CMAKE_CURRENT_BINARY_DIR}/${__QtFeature_private_file}"
             "${__QtFeature_private_features}" "${__QtFeature_private_extra}"
@@ -1354,6 +1364,7 @@ macro(qt_feature_unset_state_vars)
 
     unset(__QtFeature_private_file PARENT_SCOPE)
     unset(__QtFeature_public_file PARENT_SCOPE)
+    unset(__QtFeature_no_headers PARENT_SCOPE)
 
     unset(__QtFeature_private_extra PARENT_SCOPE)
     unset(__QtFeature_public_extra PARENT_SCOPE)
