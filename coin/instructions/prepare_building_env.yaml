@@ -604,7 +604,7 @@ instructions:
   - type: EnvironmentVariable
     variableName: SBOM_PYTHON_ARGS
     variableValue: >-
-      -DQT_SBOM_PYTHON_INTERP={{.Env.PYTHON3_PATH}}
+      -DQT_SBOM_PYTHON_INTERP={{.Env.SBOM_PYTHON_INTERP_PATH}}
       -DQT_SBOM_PYTHON_APPS_PATH={{.Env.SBOM_PYTHON_APPS_PATH}}
   - type: AppendToEnvironmentVariable
     variableName: COMMON_CMAKE_ARGS

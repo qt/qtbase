@@ -65,7 +65,7 @@ function(run_cmake_and_build case format_case)
 
     # Need to pass the python interpreter paths, to avoid sbom2doc not found errors.
     # This mirrors what coin/instructions/prepare_building_env.yaml does.
-    set(maybe_python3_path "$ENV{PYTHON3_PATH}")
+    set(maybe_python3_path "$ENV{SBOM_PYTHON_INTERP_PATH}")
     if(maybe_python3_path)
         list(APPEND options "-DQT_SBOM_PYTHON_INTERP=${maybe_python3_path}")
     endif()
