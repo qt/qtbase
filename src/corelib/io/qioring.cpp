@@ -30,8 +30,17 @@ auto QIORing::queueRequestInternal(GenericRequestType &request) -> QueuedRequest
         addrItMap.remove(&request);
         return QueuedRequestStatus::CompletedImmediately;
     }
-    if (!lastUnqueuedIterator)
+    if (!lastUnqueuedIterator) {
         lastUnqueuedIterator.emplace(addrItMap[&request]);
+    } else if (request.operation() == QtPrivate::Operation::Cancel) {
+        // We want to fast-track cancellations because they may be cancelling
+        // unqueued things, so we push it up front in the queue:
+        auto &it = addrItMap[&request];
+        const auto where = *lastUnqueuedIterator;
+        pendingRequests.splice(where, pendingRequests, it);
+        it = std::prev(where);
+        lastUnqueuedIterator.emplace(it);
+    }
 
     qCDebug(lcQIORing) << "Trying to submit request" << request.operation()
                        << "user data:" << std::addressof(request);
