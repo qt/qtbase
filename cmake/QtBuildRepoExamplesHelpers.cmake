@@ -164,6 +164,13 @@ macro(qt_examples_build_end)
             "${CMAKE_CURRENT_SOURCE_DIR}" EXCLUDE UTILITY ALIAS)
 
     foreach(target ${targets})
+        # Skip re-enabling AUTMOC for object libraries created by _qt_internal_add_rcc_pass2,
+        # to avoid build errors.
+        get_target_property(is_rcc_pass2_obj_lib "${target}" _qt_internal_is_rcc_pass2_obj_lib)
+        if(is_rcc_pass2_obj_lib)
+            continue()
+        endif()
+
         qt_autogen_tools(${target} ENABLE_AUTOGEN_TOOLS "moc" "rcc")
         if(TARGET Qt::Widgets)
             qt_autogen_tools(${target} ENABLE_AUTOGEN_TOOLS "uic")
