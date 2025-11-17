@@ -21,7 +21,6 @@
 #include "QtCore/private/qduplicatetracker_p.h"
 #include "QtCore/private/qtools_p.h"
 
-#include <ctype.h>
 #if QT_CONFIG(datestring)
 # include <stdio.h>
 #endif
