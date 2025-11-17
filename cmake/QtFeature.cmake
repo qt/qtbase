@@ -4,10 +4,20 @@
 include(CheckCXXCompilerFlag)
 
 function(qt_feature_module_begin)
-    cmake_parse_arguments(PARSE_ARGV 0 arg
-        "NO_MODULE;ONLY_EVALUATE_FEATURES"
-        "LIBRARY;PRIVATE_FILE;PUBLIC_FILE"
-        "PUBLIC_DEPENDENCIES;PRIVATE_DEPENDENCIES")
+    set(opt_args
+        NO_MODULE
+        ONLY_EVALUATE_FEATURES
+    )
+    set(single_args
+        LIBRARY
+        PRIVATE_FILE
+        PUBLIC_FILE
+    )
+    set(multi_args
+        PUBLIC_DEPENDENCIES
+        PRIVATE_DEPENDENCIES
+    )
+    cmake_parse_arguments(PARSE_ARGV 0 arg "${opt_args}" "${single_args}" "${multi_args}")
     _qt_internal_validate_all_args_are_parsed(arg)
 
     if(NOT arg_ONLY_EVALUATE_FEATURES)
@@ -1180,10 +1190,15 @@ function(qt_feature_record_summary_entries list_of_paths)
 endfunction()
 
 function(qt_feature_module_end)
-    set(flags ONLY_EVALUATE_FEATURES)
-    set(options OUT_VAR_PREFIX)
-    set(multiopts)
-    cmake_parse_arguments(arg "${flags}" "${options}" "${multiopts}" ${ARGN})
+    set(opt_args
+        ONLY_EVALUATE_FEATURES
+    )
+    set(single_args
+        OUT_VAR_PREFIX
+    )
+    set(multi_args "")
+    cmake_parse_arguments(PARSE_ARGV 0 arg "${opt_args}" "${single_args}" "${multi_args}")
+
     set(target ${arg_UNPARSED_ARGUMENTS})
 
     # The value of OUT_VAR_PREFIX is used as a prefix for output variables that should be
