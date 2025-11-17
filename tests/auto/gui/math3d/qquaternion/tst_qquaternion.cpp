@@ -27,6 +27,11 @@ static inline bool myFuzzyCompare(const QQuaternion &q1, const QQuaternion &q2)
     return myFuzzyCompare(d * d, 1.0f);
 }
 
+static inline bool myFuzzyCompare(QQuaternion::Axis lhs, QVector3D rhs)
+{
+    return myFuzzyCompare(lhs.toVector3D(), rhs);
+}
+
 static inline bool myFuzzyCompareRadians(float p1, float p2)
 {
     static const float fPI = float(M_PI);
@@ -995,10 +1000,10 @@ void tst_QQuaternion::fromDirection_data()
         const auto [xAxis, yAxis, zAxis] = q.toAxes();
 
         QTest::addRow("ortho dirs: (%.1f,%.1f,%.1f), (%.1f,%.1f,%.1f), (%.1f,%.1f,%.1f)",
-                      xAxis.x(), xAxis.y(), xAxis.z(),
-                      yAxis.x(), yAxis.y(), yAxis.z(),
-                      zAxis.x(), zAxis.y(), zAxis.z())
-            << zAxis * 10.0f << yAxis * 10.0f;
+                      xAxis.x, xAxis.y, xAxis.z,
+                      yAxis.x, yAxis.y, yAxis.z,
+                      zAxis.x, zAxis.y, zAxis.z)
+            << zAxis.toVector3D() * 10.0f << yAxis.toVector3D() * 10.0f;
     }
 
     // collinear up and dir
@@ -1016,10 +1021,10 @@ void tst_QQuaternion::fromDirection_data()
         const auto [xAxis, yAxis, zAxis] = q.toAxes();
 
         QTest::addRow("bad dirs: (%.1f,%.1f,%.1f), (%.1f,%.1f,%.1f), (%.1f,%.1f,%.1f)",
-                      xAxis.x(), xAxis.y(), xAxis.z(),
-                      yAxis.x(), yAxis.y(), yAxis.z(),
-                      zAxis.x(), zAxis.y(), zAxis.z())
-            << zAxis * 10.0f << QVector3D();
+                      xAxis.x, xAxis.y, xAxis.z,
+                      yAxis.x, yAxis.y, yAxis.z,
+                      zAxis.x, zAxis.y, zAxis.z)
+            << zAxis.toVector3D() * 10.0f << QVector3D();
     }
 }
 void tst_QQuaternion::fromDirection()

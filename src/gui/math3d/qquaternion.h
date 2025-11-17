@@ -99,6 +99,32 @@ QT_WARNING_POP
 
     QT7_ONLY(Q_GUI_EXPORT) operator QVariant() const;
 
+    struct Axis {
+        float x, y, z;
+        // prevent users from defining them themselves, until we do:
+        friend constexpr bool comparesEqual(Axis lhs, Axis rhs) noexcept
+            Q_DECL_EQ_DELETE_X("Deliberately not implemented. Don't implement it yourself!");
+        friend bool operator==(Axis, Axis)
+            Q_DECL_EQ_DELETE_X("Deliberately not implemented. Don't implement it yourself!");
+        friend bool operator!=(Axis, Axis)
+            Q_DECL_EQ_DELETE_X("Deliberately not implemented. Don't implement it yourself!");
+        friend size_t qHash(const Axis &, size_t) noexcept
+            Q_DECL_EQ_DELETE_X("Deliberately not implemented. Don't implement it yourself!");
+        friend size_t qHash(const Axis &) noexcept
+            Q_DECL_EQ_DELETE_X("Deliberately not implemented. Don't implement it yourself!");
+        friend bool qFuzzyIsNull(Axis axis) noexcept
+        { return qFuzzyIsNull(axis.x) && qFuzzyIsNull(axis.y) && qFuzzyIsNull(axis.z); }
+        friend bool qFuzzyCompare(Axis lhs, Axis rhs) noexcept
+            Q_DECL_EQ_DELETE_X("Deliberately not implemented. Don't implement it yourself!");
+#ifndef QT_NO_VECTOR3D
+        static constexpr Axis fromVector3D(QVector3D v) noexcept
+        { return {v.x(), v.y(), v.z()}; }
+        constexpr QVector3D toVector3D() const noexcept { return {x, y, z}; }
+        friend constexpr bool comparesEqual(Axis lhs, QVector3D rhs) noexcept
+            Q_DECL_EQ_DELETE_X("Deliberately not implemented. Don't implement it yourself!");
+#endif
+    };
+
 #ifndef QT_NO_VECTOR3D
     inline void getAxisAndAngle(QVector3D *axis, float *angle) const;
     QT7_ONLY(Q_GUI_EXPORT) static QQuaternion fromAxisAndAngle(const QVector3D &axis, float angle);
@@ -132,18 +158,19 @@ QT_WARNING_POP
     QT7_ONLY(Q_GUI_EXPORT) QMatrix3x3 toRotationMatrix() const;
     QT7_ONLY(Q_GUI_EXPORT) static QQuaternion fromRotationMatrix(const QMatrix3x3 &rot3x3);
 
-#ifndef QT_NO_VECTOR3D
     struct Axes
     {
-        QVector3D x, y, z;
+        Axis x, y, z;
     };
     QT7_ONLY(Q_GUI_EXPORT) Axes toAxes() const;
     QT7_ONLY(Q_GUI_EXPORT) static QQuaternion fromAxes(Axes axes); // clazy:exclude=function-args-by-ref
+#ifndef QT_NO_VECTOR3D
     QT_GUI_INLINE_SINCE(6, 11)
     void getAxes(QVector3D *xAxis, QVector3D *yAxis, QVector3D *zAxis) const;
-    QT7_ONLY(Q_GUI_EXPORT) static QQuaternion fromAxes(const QVector3D &xAxis,
-                                                       const QVector3D &yAxis,
-                                                       const QVector3D &zAxis);
+    QT_GUI_INLINE_SINCE(6, 11)
+    static QQuaternion fromAxes(const QVector3D &xAxis,
+                                const QVector3D &yAxis,
+                                const QVector3D &zAxis);
 
     QT7_ONLY(Q_GUI_EXPORT) static QQuaternion fromDirection(const QVector3D &direction,
                                                             const QVector3D &up);
@@ -366,9 +393,16 @@ void QQuaternion::getAxes(QVector3D *xAxis, QVector3D *yAxis, QVector3D *zAxis) 
     Q_PRE(yAxis);
     Q_PRE(zAxis);
     const Axes axes = toAxes();
-    *xAxis = axes.x;
-    *yAxis = axes.y;
-    *zAxis = axes.z;
+    *xAxis = axes.x.toVector3D();
+    *yAxis = axes.y.toVector3D();
+    *zAxis = axes.z.toVector3D();
+}
+
+QQuaternion QQuaternion::fromAxes(const QVector3D &xAxis, const QVector3D &yAxis, const QVector3D &zAxis)
+{
+    return fromAxes(Axes{Axis::fromVector3D(xAxis),
+                         Axis::fromVector3D(yAxis),
+                         Axis::fromVector3D(zAxis)});
 }
 #endif // QT_GUI_INLINE_IMPL_SINCE(6, 11)
 
