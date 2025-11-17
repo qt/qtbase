@@ -398,6 +398,7 @@ OffsetFormatMatch matchOffsetText(QStringView text, QStringView format, const QL
     // None have single m. All have H or HH before mm. (None has anything after mm.)
     // In narrow format, mm and its preceding separator are elided for 0
     // minutes; and hour may be single digit even if the format says HH.
+    const QString zero = locale.zeroDigit();
     qsizetype cut = format.indexOf(u'H');
     if (cut < 0 || !text.startsWith(format.first(cut)) || !format.endsWith(u"mm"))
         return res;
@@ -408,8 +409,20 @@ OffsetFormatMatch matchOffsetText(QStringView text, QStringView format, const QL
         ++hlen;
     sep = sep.sliced(hlen);
 
-    int digits = 0;
-    while (digits < text.size() && digits < 4 && text[digits].isDigit())
+    const auto hasDigitAt = [digitWidth = zero.size(), text](qsizetype index) {
+        if (digitWidth == 1)
+            return index < text.size() && text[index].isDigit();
+        Q_ASSERT(digitWidth == 2);
+        const qsizetype offset = index * 2;
+        if (offset + 1 >= text.size())
+            return false;
+        if (!text[offset].isHighSurrogate() || !text[offset + 1].isLowSurrogate())
+            return false;
+        const char32_t ch = QChar::surrogateToUcs4(text[offset], text[offset + 1]);
+        return QChar::isDigit(ch);
+    };
+    int digits = 0; // Count of digits: multiply by zero.size() for indexing.
+    while (digits < 4 && hasDigitAt(digits))
         ++digits;
 
     // See zoneOffsetFormat() for the eccentric meaning of scale.
@@ -417,11 +430,11 @@ OffsetFormatMatch matchOffsetText(QStringView text, QStringView format, const QL
     if (sep.isEmpty()) {
         if (digits > hlen) {
             // Long and Short formats allow two-digit match when hlen < 2.
-            if (scale == QLocale::NarrowFormat || (hlen < 2 && text[0] != u'0'))
+            if (scale == QLocale::NarrowFormat || (hlen < 2 && !text.startsWith(zero)))
                 hlen = digits - 2;
             else if (digits < hlen + 2)
                 return res;
-            minStr = text.sliced(hlen).first(2);
+            minStr = text.sliced(hlen * zero.size()).first(2 * zero.size());
         } else if (scale == QLocale::NarrowFormat) {
             hlen = digits;
         } else if (hlen != digits) {
@@ -429,14 +442,14 @@ OffsetFormatMatch matchOffsetText(QStringView text, QStringView format, const QL
         }
     } else {
         const qsizetype sepAt = text.indexOf(sep); // May be -1; digits isn't < -1.
-        if (digits < sepAt) // Separator doesn't immediately follow hour.
+        if (digits * zero.size() < sepAt) // Separator doesn't immediately follow hour.
             return res;
-        if (scale == QLocale::NarrowFormat || (hlen < 2 && text[0] != u'0'))
+        if (scale == QLocale::NarrowFormat || (hlen < 2 && !text.startsWith(zero)))
             hlen = digits;
         else if (digits != hlen)
             return res;
-        if (sepAt >= 0 && text.size() >= sepAt + sep.size() + 2)
-            minStr = text.sliced(sepAt + sep.size()).first(2);
+        if (sepAt >= 0 && text.size() >= sepAt + sep.size() + 2 * zero.size())
+            minStr = text.sliced(sepAt + sep.size()).first(2 * zero.size());
         else if (scale != QLocale::NarrowFormat)
             return res;
         else if (sepAt >= 0) // Allow minutes without zero-padding in narrow format.
@@ -453,10 +466,10 @@ OffsetFormatMatch matchOffsetText(QStringView text, QStringView format, const QL
         ok = true;
     }
     if (ok && minute < 60) {
-        uint hour = locale.toUInt(text.first(hlen), &ok);
+        uint hour = locale.toUInt(text.first(hlen * zero.size()), &ok);
         if (ok) {
             res.offset = (hour * 60 + minute) * 60;
-            res.size = cut + hlen;
+            res.size = cut + hlen * zero.size();
             if (!minStr.isEmpty())
                 res.size += sep.size() + minStr.size();
         }

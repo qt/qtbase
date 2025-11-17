@@ -1918,6 +1918,7 @@ void tst_QTimeZone::roundtripDisplayNames_data()
 #endif // Exhaustive
     const QLocale fr(QLocale::French, QLocale::France);
     const QLocale hi(QLocale::Hindi, QLocale::India);
+    const QLocale ff(QLocale::Fulah, QLocale::AdlamScript); // Digits are surrogate pairs.
     for (const QByteArray &id : idList) {
         if (id == "localtime"_ba || id == "posixrules"_ba || !allList.contains(id))
             continue;
@@ -1929,6 +1930,8 @@ void tst_QTimeZone::roundtripDisplayNames_data()
                 << zone << fr << type;
             QTest::addRow("%s@hi_IN/%s", id.constData(), typeName(type))
                 << zone << hi << type;
+            QTest::addRow("%s@ff_Adlm/%s", id.constData(), typeName(type))
+                << zone << ff << type;
         }
     }
 #else
