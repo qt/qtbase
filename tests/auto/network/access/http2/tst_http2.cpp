@@ -1144,7 +1144,7 @@ void tst_Http2::moreActivitySignals()
     QFETCH(H2Type, connectionType);
     ServerPtr srv(newServer(defaultServerSettings, connectionType));
     QMetaObject::invokeMethod(srv.data(), "startServer", Qt::QueuedConnection);
-    runEventLoop(100);
+    runEventLoop();
     QVERIFY(serverPort != 0);
     auto url = requestUrl(connectionType);
     url.setPath(QString("/stream1.html"));
