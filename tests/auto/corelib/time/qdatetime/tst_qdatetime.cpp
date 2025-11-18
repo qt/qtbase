@@ -2416,7 +2416,14 @@ void tst_QDateTime::springForward_data()
         QTest::newRow("ET from day after")
             << eastern << QDate(2015, 3, 8) << QTime(2, 30) << -1 << -240;
     }
-#endif
+    if (const QTimeZone brt("America/Sao_Paulo"); brt.isValid()) {
+        // A spring forward at midnight, skipping the first hour of the day:
+        QTest::newRow("BRT from before")
+            << brt << QDate(2008, 10, 19) << QTime(0, 30) << 1 << -180;
+        QTest::newRow("BRT from after")
+            << brt << QDate(2008, 10, 19) << QTime(0, 30) << -1 << -120;
+    }
+#endif // timezone
 }
 
 void tst_QDateTime::springForward()
@@ -2425,17 +2432,28 @@ void tst_QDateTime::springForward()
     QFETCH(QDate, day);
     QFETCH(QTime, time);
     QFETCH(int, step);
+    // adjust is the offset on the other side of the gap, in minutes:
     QFETCH(int, adjust);
 
     QDateTime direct = QDateTime(day.addDays(-step), time, zone).addDays(step);
     QVERIFY(direct.isValid());
-    QCOMPARE(direct.date(), day);
-    QCOMPARE(direct.time().minute(), time.minute());
-    QCOMPARE(direct.time().second(), time.second());
+
+    if (time.hour() >= 23 && step > 0) {
+        // When it's the last hour (or half hour) of the day that's skipped,
+        // stepping from before lands us on the next day:
+        QCOMPARE(direct.date(), day.addDays(1));
+    } else if (time.hour() < 1 && step < 0) {
+        // Likewise, skipping the first hour lands the day before when stepping
+        // from after.
+        QCOMPARE(direct.date(), day.addDays(-1));
+    } else {
+        QCOMPARE(direct.date(), day);
+    }
+
     const int off = step < 0 ? -1 : 1;
-    QCOMPARE(direct.time().hour() - time.hour(), off);
-    // adjust is the offset on the other side of the gap:
-    QCOMPARE(direct.offsetFromUtc(), (adjust + off * 60) * 60);
+    int offsetChange = off * 60 * 60; // In seconds; assume 1 hour change, by default.
+    QCOMPARE(direct.time(), time.addSecs(offsetChange));
+    QCOMPARE(direct.offsetFromUtc(), adjust * 60 + offsetChange);
 
     // Repeat, but getting there via .toTimeZone(). Apply adjust to datetime,
     // not time, as the time wraps round if the adjustment crosses midnight.
