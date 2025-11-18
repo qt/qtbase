@@ -22,6 +22,7 @@ add_dependencies(tst_qprocess
     testProcessEcho2
     testProcessEcho3
     testProcessEnvironment
+    testProcessGrandchild
     testProcessHang
     testProcessNormal
     testProcessOutput

@@ -26,6 +26,8 @@
 #  include <sys/wait.h>
 #endif
 #ifdef Q_OS_WIN
+#  define WIN32_LEAN_AND_MEAN
+#  include <windows.h>
 #  include <winerror.h>
 #endif
 
@@ -161,6 +163,8 @@ private slots:
     void processEventsInAReadyReadSlot();
     void startFromCurrentWorkingDir_data();
     void startFromCurrentWorkingDir();
+    void syscallsAreRestartedInParent_data();
+    void syscallsAreRestartedInParent();
 
     // keep these at the end, since they use lots of processes and sometimes
     // caused obscure failures to occur in tests that followed them (esp. on the Mac)
@@ -3284,6 +3288,68 @@ void tst_QProcess::startFromCurrentWorkingDir()
     } else {
         QCOMPARE(process.error(), QProcess::FailedToStart);
     }
+}
+
+void tst_QProcess::syscallsAreRestartedInParent_data()
+{
+    QTest::addColumn<QString>("mode");
+    QTest::newRow("normal") << "normal";
+    QTest::newRow("detached") << "detached";
+}
+
+void tst_QProcess::syscallsAreRestartedInParent()
+{
+#ifdef Q_OS_WIN
+    auto kill = [](qint64 pid, int sig) {
+        HANDLE hnd = OpenProcess(PROCESS_TERMINATE, false, pid);
+        TerminateProcess(hnd, sig);
+        CloseHandle(hnd);
+    };
+#endif
+#ifndef SIGTERM
+    constexpr int SIGTERM = 1;      // doesn't matter
+#endif
+
+    // This is a test to ensure that an interruptible system call in the parent
+    // process is restarted by the OS, instead of producing an EINTR error,
+    // when a SIGCHLD gets delivered.
+    // This applies to Unix systems, but it won't hurt doing it on Windows too.
+    QFETCH(QString, mode);
+
+    QProcess proc;
+    auto stderrPrinter = qScopeGuard([&proc] {
+        if (proc.state() == QProcess::Running) {
+            proc.kill();
+            proc.waitForFinished();
+        }
+        qWarning() << "stderr was:" << proc.readAllStandardError();
+    });
+    proc.setProgram("testProcessGrandchild/testProcessGrandchild");
+    proc.setArguments({ mode, "testProcessEcho/testProcessEcho" });
+    proc.start(QIODevice::ReadWrite | QIODevice::Text);
+    QVERIFY(proc.waitForReadyRead());
+
+    qint64 grandchildPid = proc.readAll().toLongLong(nullptr, 10);
+    QCOMPARE_NE(grandchildPid, 0);
+
+    // RACE CONDITION: we need the child to be in a system call
+    constexpr std::chrono::milliseconds wait(100);
+    QTest::qSleep(wait);
+    kill(grandchildPid, SIGTERM);
+    QTest::qSleep(wait);
+
+    const char msg[] = "Content from parent\n";
+    proc.write(msg, strlen(msg));
+    proc.closeWriteChannel();
+    QVERIFY(proc.waitForFinished());
+
+#if defined(Q_OS_UNIX) && !defined(SA_RESTART)
+    // Mandatory as of POSIX.1-2018 though
+    QEXPECT_FAIL("normal", "Some OSes don't have SA_RESTART, so the system call gets interrupted", Continue);
+#endif
+    QByteArray all = proc.readAll();
+    QVERIFY2(all.startsWith(QByteArray("from parent: ") + msg), all.constData());
+    stderrPrinter.dismiss();
 }
 
 QTEST_MAIN(tst_QProcess)

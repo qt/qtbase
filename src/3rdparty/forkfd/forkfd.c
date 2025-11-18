@@ -535,6 +535,10 @@ static void forkfd_initialize()
     memset(&action, 0, sizeof action);
     sigemptyset(&action.sa_mask);
     action.sa_flags = SA_NOCLDSTOP | SA_SIGINFO;
+#ifdef SA_RESTART
+    /* ask the OS to restart syscalls we may have interrupted */
+    action.sa_flags |= SA_RESTART;
+#endif
     action.sa_sigaction = sigchld_handler;
 
     /* ### RACE CONDITION
