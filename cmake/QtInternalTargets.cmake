@@ -23,6 +23,9 @@ function(qt_internal_set_warnings_are_errors_flags target target_scope)
             COMPILERS CLANG AppleClang
                     OPTIONS
                     -Werror -Wno-error=\#warnings -Wno-error=deprecated-declarations
+                CONDITIONS VERSION_GREATER_EQUAL 14
+                    OPTIONS
+                    -Wno-error=deprecated-pragma
             COMMON_CONDITIONS
                 ${common_conditions}
                 ${clang_msvc_frontend_args}
