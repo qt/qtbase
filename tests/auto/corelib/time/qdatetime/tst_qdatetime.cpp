@@ -2416,7 +2416,23 @@ void tst_QDateTime::springForward_data()
         QTest::newRow("ET from day after")
             << eastern << QDate(2015, 3, 8) << QTime(2, 30) << -1 << -240;
     }
-#endif
+    if (const QTimeZone brt("America/Sao_Paulo"); brt.isValid()) {
+        // A spring forward at midnight, skipping the first hour of the day:
+        QTest::newRow("BRT from before")
+            << brt << QDate(2008, 10, 19) << QTime(0, 30) << 1 << -180;
+        QTest::newRow("BRT from after")
+            << brt << QDate(2008, 10, 19) << QTime(0, 30) << -1 << -120;
+    }
+    // Test-case depends on 2022g or later of the IANA DB (and our source of
+    // truth caring about zone changes as long ago as 1981):
+    if (const QTimeZone sgt("Asia/Singapore"); sgt.isValid()) {
+        // A non-DST adjustment to standard time, skipping the last half hour of the day:
+        QTest::newRow("SGT from before +00:30")
+            << sgt << QDate(1981, 12, 31) << QTime(23, 45) << 1 << 450;
+        QTest::newRow("SGT from after +00:30")
+            << sgt << QDate(1981, 12, 31) << QTime(23, 45) << -1 << 480;
+    }
+#endif // timezone
 }
 
 void tst_QDateTime::springForward()
@@ -2425,17 +2441,47 @@ void tst_QDateTime::springForward()
     QFETCH(QDate, day);
     QFETCH(QTime, time);
     QFETCH(int, step);
+    // adjust is the offset on the other side of the gap, in minutes:
     QFETCH(int, adjust);
 
     QDateTime direct = QDateTime(day.addDays(-step), time, zone).addDays(step);
     QVERIFY(direct.isValid());
-    QCOMPARE(direct.date(), day);
-    QCOMPARE(direct.time().minute(), time.minute());
-    QCOMPARE(direct.time().second(), time.second());
+    const auto maybeExpectFail = [](const char *rowId) {
+# ifdef Q_OS_QNX
+        // Has pre-2022g zone info, at least until we get a more recent QNX release:
+        QEXPECT_FAIL(rowId, "QTBUG-145768: we need a post-2022 QNX", Abort);
+# elif defined(USING_WIN_TZ)
+        QEXPECT_FAIL(rowId, "QTBUG-145768: system historical zone data is limited", Abort);
+# elif defined(INADEQUATE_TZ_DATA) && Q_PROCESSOR_WORDSIZE < 8
+        // It seems CI has better data on 64-bit Android than on 32-bit.
+        QEXPECT_FAIL(rowId, "QTBUG-145768: system historical zone data is limited", Abort);
+# else
+        Q_UNUSED(rowId);
+# endif // Support for 2022g IANA DB's knowledge of a 1981 transition.
+    };
+
+    if (time.hour() >= 23 && step > 0) {
+        // When it's the last hour (or half hour) of the day that's skipped,
+        // stepping from before lands us on the next day:
+        maybeExpectFail("SGT from before +00:30");
+        QCOMPARE(direct.date(), day.addDays(1));
+    } else if (time.hour() < 1 && step < 0) {
+        // Likewise, skipping the first hour lands the day before when stepping
+        // from after.
+        QCOMPARE(direct.date(), day.addDays(-1));
+    } else {
+        QCOMPARE(direct.date(), day);
+    }
+
     const int off = step < 0 ? -1 : 1;
-    QCOMPARE(direct.time().hour() - time.hour(), off);
-    // adjust is the offset on the other side of the gap:
-    QCOMPARE(direct.offsetFromUtc(), (adjust + off * 60) * 60);
+    int offsetChange = off * 60 * 60; // In seconds; assume 1 hour change, by default.
+    if (const auto tag = QByteArrayView(QTest::currentDataTag());
+            tag.startsWith("SGT from ") && tag.endsWith(" +00:30")) {
+        offsetChange /= 2; // Half-hour change in offset
+    }
+    maybeExpectFail("SGT from after +00:30");
+    QCOMPARE(direct.time(), time.addSecs(offsetChange));
+    QCOMPARE(direct.offsetFromUtc(), adjust * 60 + offsetChange);
 
     // Repeat, but getting there via .toTimeZone(). Apply adjust to datetime,
     // not time, as the time wraps round if the adjustment crosses midnight.
