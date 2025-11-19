@@ -104,8 +104,7 @@ private:
     QBrush controlFillBrush(const QStyleOption *option, ControlType controlType) const;
     QBrush inputFillBrush(const QStyleOption *option, const QWidget *widget) const;
     // ControlType::ControlAlt can be mapped to QPalette directly
-    QColor controlTextColor(const QStyleOption *option,
-                            QPalette::ColorRole role = QPalette::ButtonText) const;
+    QColor controlTextColor(const QStyleOption *option, bool ignoreIsChecked = false) const;
     void drawLineEditFrame(QPainter *p, const QRectF &rect, const QStyleOption *o, bool isEditable = true) const;
     inline QColor winUI3Color(enum WINUI3Color col) const;
 
