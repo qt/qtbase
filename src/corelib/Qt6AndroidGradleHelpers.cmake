@@ -248,6 +248,7 @@ function(_qt_internal_android_prepare_gradle_build target)
     _qt_internal_android_copy_stdlib(${target} "${deployment_dir}")
     _qt_internal_android_copy_extra_libs(${target} "${deployment_dir}")
     _qt_internal_android_copy_qt_dependencies(${target} "${deployment_dir}")
+    _qt_internal_android_copy_qml_dependencies(${target} "${deployment_dir}")
     _qt_internal_android_copy_target_package_sources(${target})
     _qt_internal_android_generate_libs_xml(${target} "${deployment_dir}")
 
@@ -311,6 +312,12 @@ function(_qt_internal_android_add_gradle_build target type)
     if(TARGET ${target}_deploy_dynamic_features)
         list(APPEND extra_deps ${target}_deploy_dynamic_features)
     endif()
+
+    foreach(qml_dep_target ${target}_copy_qml_plugins ${target}_build_qml_bundle)
+        if(TARGET ${qml_dep_target})
+            list(APPEND extra_deps ${qml_dep_target})
+        endif()
+    endforeach()
 
     set(gradle_scripts "$<TARGET_PROPERTY:${target},_qt_android_deployment_files>")
     add_custom_command(OUTPUT "${package_file_path}"
@@ -1405,4 +1412,431 @@ file(WRITE \"${libs_xml_dst}\" [=[${content}]=])
     )
 
     set_property(TARGET ${target} APPEND PROPERTY _qt_android_deployment_files "${libs_xml_dst}")
+endfunction()
+
+function(_qt_internal_android_find_subdir_parent child parents out_parent)
+    if(NOT child OR NOT parents)
+        set(${out_parent} "" PARENT_SCOPE)
+        return()
+    endif()
+
+    get_filename_component(child_abs "${child}" ABSOLUTE)
+    set(found "")
+    foreach(parent IN LISTS parents)
+        if(NOT parent)
+            continue()
+        endif()
+        get_filename_component(parent_abs "${parent}" ABSOLUTE)
+        file(RELATIVE_PATH relative_path "${parent_abs}" "${child_abs}")
+        if(NOT relative_path MATCHES "^\\.\\.")
+            set(found "${parent}")
+            break()
+        endif()
+    endforeach()
+    set(${out_parent} "${found}" PARENT_SCOPE)
+endfunction()
+
+function(_qt_internal_android_get_llvm_readobj_path out_path)
+    set(ndk_host "${CMAKE_ANDROID_NDK}/toolchains/llvm/prebuilt/${ANDROID_NDK_HOST_SYSTEM_NAME}")
+    set(${out_path} "${ndk_host}/bin/llvm-readobj" PARENT_SCOPE)
+endfunction()
+
+function(_qt_internal_android_read_needed_libraries llvm_readobj_path library_path out_needed_libs)
+    if(NOT llvm_readobj_path)
+        set(${out_needed_libs} "" PARENT_SCOPE)
+        return()
+    endif()
+
+    execute_process(
+        COMMAND "${llvm_readobj_path}" --needed-libs "${library_path}"
+        RESULT_VARIABLE readobj_result
+        OUTPUT_VARIABLE readobj_output
+        ERROR_VARIABLE readobj_error
+    )
+    if(NOT readobj_result EQUAL 0)
+        message(WARNING
+            "llvm-readobj: failed to query dependencies for ${library_path}: ${readobj_error}")
+        set(${out_needed_libs} "" PARENT_SCOPE)
+        return()
+    endif()
+
+    set(dependencies "")
+    string(REGEX MATCHALL "\n  ([^ \n]+\\.so)" needed_matches "${readobj_output}")
+    foreach(match IN LISTS needed_matches)
+        string(REGEX REPLACE "^\n\\s+" "" dep "${match}")
+        string(STRIP "${dep}" dep)
+        if(dep)
+            list(APPEND dependencies "${dep}")
+        endif()
+    endforeach()
+    list(REMOVE_DUPLICATES dependencies)
+    set(${out_needed_libs} "${dependencies}" PARENT_SCOPE)
+endfunction()
+
+function(_qt_internal_android_library_base_name path out_base_name)
+    get_filename_component(file_name "${path}" NAME)
+    string(REGEX REPLACE "^lib(.+)\\.so$" "\\1" trimmed "${file_name}")
+    string(REGEX REPLACE "\\.so$" "" trimmed "${trimmed}")
+    set(${out_base_name} "${trimmed}" PARENT_SCOPE)
+endfunction()
+
+function(_qt_internal_android_resolve_absolute_paths paths out_paths)
+    set(abs_paths "")
+    foreach(path IN LISTS paths)
+        if(path)
+            get_filename_component(abs_path "${path}" ABSOLUTE)
+            if(EXISTS "${abs_path}")
+                list(APPEND abs_paths "${abs_path}")
+            endif()
+        endif()
+    endforeach()
+    set(${out_paths} "${abs_paths}" PARENT_SCOPE)
+endfunction()
+
+function(_qt_internal_android_get_absolute_qml_paths target out_import_paths out_root_paths)
+    get_target_property(qml_import_paths ${target} _qt_native_qml_import_paths)
+    if(qml_import_paths STREQUAL "_qt_native_qml_import_paths-NOTFOUND")
+        set(qml_import_paths "")
+    endif()
+
+    get_target_property(qml_root_paths ${target} _qt_android_native_qml_root_paths)
+    if(qml_root_paths STREQUAL "_qt_android_native_qml_root_paths-NOTFOUND")
+        set(qml_root_paths "")
+    endif()
+
+    _qt_internal_android_resolve_absolute_paths("${qml_import_paths}" qml_import_paths_abs)
+    _qt_internal_android_resolve_absolute_paths("${qml_root_paths}" qml_root_paths_abs)
+
+    _qt_internal_get_android_abi_prefix_path(qt_prefix ${CMAKE_ANDROID_ARCH_ABI})
+    if(DEFINED QT6_INSTALL_QML)
+        set(qt_qml_dir "${qt_prefix}/${QT6_INSTALL_QML}")
+    else()
+        set(qt_qml_dir "${qt_prefix}/qml")
+    endif()
+    if(EXISTS "${qt_qml_dir}")
+        list(APPEND qml_import_paths_abs "${qt_qml_dir}")
+    endif()
+
+    foreach(root_path IN LISTS qml_root_paths_abs)
+        list(APPEND qml_import_paths_abs "${root_path}")
+    endforeach()
+    list(REMOVE_DUPLICATES qml_import_paths_abs)
+
+    set(${out_import_paths} "${qml_import_paths_abs}" PARENT_SCOPE)
+    set(${out_root_paths} "${qml_root_paths_abs}" PARENT_SCOPE)
+endfunction()
+
+function(_qt_internal_android_get_qmlimportscanner_scan
+    target qmlimportscanner_path qml_root_paths qml_import_paths out_scan_output)
+    if(NOT qmlimportscanner_path)
+        set(${out_scan_output} "" PARENT_SCOPE)
+        return()
+    endif()
+
+    set(qmlimportscanner_command "${qmlimportscanner_path}")
+    foreach(root_path IN LISTS qml_root_paths)
+        list(APPEND qmlimportscanner_command "-rootPath" "${root_path}")
+    endforeach()
+    foreach(import_path IN LISTS qml_import_paths)
+        list(APPEND qmlimportscanner_command "-importPath" "${import_path}")
+    endforeach()
+
+    execute_process(
+        COMMAND ${qmlimportscanner_command}
+        RESULT_VARIABLE qml_scan_result
+        OUTPUT_VARIABLE qml_scan_output
+        ERROR_VARIABLE qml_scan_error
+    )
+    if(NOT qml_scan_result EQUAL 0)
+        message(WARNING "qmlimportscanner failed for ${target}: ${qml_scan_error}")
+        set(${out_scan_output} "" PARENT_SCOPE)
+        return()
+    endif()
+
+    string(STRIP "${qml_scan_output}" qml_scan_output)
+    set(${out_scan_output} "${qml_scan_output}" PARENT_SCOPE)
+endfunction()
+
+function(_qt_internal_android_json_get_string json index key out_value)
+    string(JSON value_type ERROR_VARIABLE type_error TYPE "${json}" ${index} ${key})
+    if(type_error OR NOT value_type STREQUAL "STRING")
+        set(${out_value} "" PARENT_SCOPE)
+        return()
+    endif()
+    string(JSON value ERROR_VARIABLE value_error GET "${json}" ${index} ${key})
+    if(value_error OR value STREQUAL "")
+        set(${out_value} "" PARENT_SCOPE)
+        return()
+    endif()
+
+    set(${out_value} "${value}" PARENT_SCOPE)
+endfunction()
+
+function(_qt_internal_android_json_get_bool json index key out_value)
+    string(JSON value_type ERROR_VARIABLE type_error TYPE "${json}" ${index} ${key})
+    if(type_error OR NOT value_type STREQUAL "BOOL")
+        set(${out_value} FALSE PARENT_SCOPE)
+        return()
+    endif()
+    string(JSON value ERROR_VARIABLE value_error GET "${json}" ${index} ${key})
+    if(value_error)
+        set(${out_value} FALSE PARENT_SCOPE)
+        return()
+    endif()
+    string(TOLOWER "${value}" value_lower)
+    if(value_lower STREQUAL "true")
+        set(${out_value} TRUE PARENT_SCOPE)
+    else()
+        set(${out_value} FALSE PARENT_SCOPE)
+    endif()
+endfunction()
+
+function(_qt_internal_android_parse_qmlimportscanner_output
+        target qml_scan qml_import_paths qml_root_paths out_qml_modules out_qml_plugins)
+    set(qml_modules "")
+    set(qml_plugins "")
+
+    if(qml_scan STREQUAL "")
+        set(${out_qml_modules} "" PARENT_SCOPE)
+        set(${out_qml_plugins} "" PARENT_SCOPE)
+        return()
+    endif()
+
+    string(JSON module_count LENGTH "${qml_scan}")
+    if(NOT module_count GREATER 0)
+        set(${out_qml_modules} "" PARENT_SCOPE)
+        set(${out_qml_plugins} "" PARENT_SCOPE)
+        return()
+    endif()
+
+    math(EXPR module_last_index "${module_count} - 1")
+    foreach(mod_index RANGE 0 ${module_last_index})
+        _qt_internal_android_json_get_string("${qml_scan}" ${mod_index} path module_path)
+        if(NOT module_path)
+            continue()
+        endif()
+        get_filename_component(module_abs "${module_path}" ABSOLUTE)
+
+        _qt_internal_android_find_subdir_parent("${module_abs}" "${qml_root_paths}" skip_root)
+        if(skip_root)
+            continue()
+        endif()
+
+        _qt_internal_android_find_subdir_parent("${module_abs}" "${qml_import_paths}" import_root)
+        if(NOT import_root)
+            continue()
+        endif()
+
+        file(RELATIVE_PATH module_relative "${import_root}" "${module_abs}")
+        file(TO_CMAKE_PATH "${module_relative}" module_relative)
+
+        set(skip_module FALSE)
+        _qt_internal_android_json_get_string("${qml_scan}" ${mod_index} plugin plugin_name)
+        if(plugin_name)
+            _qt_internal_android_json_get_bool("${qml_scan}" ${mod_index} pluginIsOptional optional)
+            set(plugin_path "${module_abs}/lib${plugin_name}_${CMAKE_ANDROID_ARCH_ABI}.so")
+            if(EXISTS "${plugin_path}")
+                list(APPEND qml_plugins "${plugin_path}")
+            elseif(NOT optional)
+                message(WARNING "QML plugin '${plugin_name}' not found for ${target}.")
+                set(skip_module TRUE)
+            endif()
+        endif()
+
+        _qt_internal_android_json_get_string("${qml_scan}" ${mod_index} prefer module_prefer)
+        if(module_prefer MATCHES "^:/")
+            set(skip_module TRUE)
+        endif()
+
+        if(NOT skip_module)
+            list(APPEND qml_modules "${module_abs}::${module_relative}")
+        endif()
+    endforeach()
+
+    list(REMOVE_DUPLICATES qml_modules)
+    list(REMOVE_DUPLICATES qml_plugins)
+
+    set(${out_qml_modules} "${qml_modules}" PARENT_SCOPE)
+    set(${out_qml_plugins} "${qml_plugins}" PARENT_SCOPE)
+endfunction()
+
+function(_qt_internal_android_copy_qml_modules_outputs target qml_bundle_dir qml_modules out_outputs)
+    set(bundle_outputs "")
+    foreach(entry IN LISTS qml_modules)
+        string(REPLACE "::" ";" entry_parts "${entry}")
+        list(GET entry_parts 0 module_abs)
+        list(GET entry_parts 1 module_rel)
+        if(NOT module_abs OR NOT module_rel)
+            continue()
+        endif()
+        set(destination_dir "${qml_bundle_dir}/${module_rel}")
+        set(marker "${destination_dir}/.qt_qml_module_copied")
+        add_custom_command(OUTPUT "${marker}"
+            COMMAND ${CMAKE_COMMAND} -E make_directory "${destination_dir}"
+            COMMAND ${CMAKE_COMMAND} -E copy_directory "${module_abs}" "${destination_dir}"
+            COMMAND ${CMAKE_COMMAND} -E touch "${marker}"
+            COMMENT "Copying QML module ${module_rel} for ${target}"
+            VERBATIM
+        )
+        list(APPEND bundle_outputs "${marker}")
+    endforeach()
+
+    set(${out_outputs} "${bundle_outputs}" PARENT_SCOPE)
+endfunction()
+
+function(_qt_internal_android_copy_qml_plugins_outputs target deployment_dir qml_plugins out_outputs)
+    if(NOT qml_plugins)
+        set(${out_outputs} "" PARENT_SCOPE)
+        return()
+    endif()
+
+    set(plugin_copy_outputs "")
+    set(libs_abi_dir "${deployment_dir}/libs/${CMAKE_ANDROID_ARCH_ABI}")
+    foreach(qml_plugin IN LISTS qml_plugins)
+        get_filename_component(plugin_name "${qml_plugin}" NAME)
+        set(plugin_destination "${libs_abi_dir}/${plugin_name}")
+        add_custom_command(OUTPUT "${plugin_destination}"
+            COMMAND ${CMAKE_COMMAND} -E make_directory "${libs_abi_dir}"
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "${qml_plugin}" "${plugin_destination}"
+            DEPENDS "${qml_plugin}"
+            COMMENT "Copying QML plugin ${plugin_name} for ${target}"
+            VERBATIM
+        )
+        list(APPEND plugin_copy_outputs "${plugin_destination}")
+        _qt_internal_android_append_to_libs_xml_section(${target} qt_libs "${qml_plugin}")
+    endforeach()
+
+    _qt_internal_android_get_llvm_readobj_path(llvm_readobj_path)
+    if(NOT llvm_readobj_path)
+        message(WARNING "llvm-readobj not found. Skipping QML plugins dependency scan for ${target}.")
+        set(${out_outputs} "${plugin_copy_outputs}" PARENT_SCOPE)
+        return()
+    endif()
+
+    _qt_internal_get_android_abi_prefix_path(qt_prefix ${CMAKE_ANDROID_ARCH_ABI})
+    _qt_internal_get_android_abi_subdir_path(libs_subdir QT6_INSTALL_LIBS ${CMAKE_ANDROID_ARCH_ABI})
+    _qt_internal_path_join(qt_libs_dir "${qt_prefix}" "${libs_subdir}")
+
+    if(NOT EXISTS "${qt_libs_dir}")
+        set(${out_outputs} "${plugin_copy_outputs}" PARENT_SCOPE)
+        return()
+    endif()
+
+    # We need this to check if a new dependency was already handled as Qt module dependency
+    get_target_property(existing_qt_libs ${target} _android_libs_xml_qt_libs)
+    if(NOT existing_qt_libs OR existing_qt_libs STREQUAL "_android_libs_xml_qt_libs-NOTFOUND")
+        set(existing_qt_libs "")
+    endif()
+
+    set(libs_to_scan_queue "${qml_plugins}")
+    set(processed_plugins "")
+    set(qml_plugins_deps_to_copy "")
+
+    # Scan each plugin's dependencies and add each of those dependencies to the queue themselves.
+    while(libs_to_scan_queue)
+        list(POP_FRONT libs_to_scan_queue qml_plugin)
+        if(qml_plugin IN_LIST processed_plugins)
+            continue()
+        endif()
+        list(APPEND processed_plugins "${qml_plugin}")
+
+        _qt_internal_android_read_needed_libraries("${llvm_readobj_path}" "${qml_plugin}" needed_libs)
+        foreach(needed_lib IN LISTS needed_libs)
+            set(needed_lib_path "${qt_libs_dir}/${needed_lib}")
+            if(NOT EXISTS "${needed_lib_path}")
+                continue()
+            endif()
+
+            _qt_internal_android_library_base_name("${needed_lib_path}" needed_lib_base)
+            if(needed_lib_base IN_LIST existing_qt_libs)
+                continue()
+            endif()
+
+            if(NOT needed_lib IN_LIST qml_plugins_deps_to_copy)
+                list(APPEND qml_plugins_deps_to_copy "${needed_lib}")
+                list(APPEND libs_to_scan_queue "${needed_lib_path}")
+                list(APPEND existing_qt_libs "${needed_lib_base}")
+
+                set(need_lib_dst "${libs_abi_dir}/${needed_lib}")
+                add_custom_command(OUTPUT "${need_lib_dst}"
+                    COMMAND ${CMAKE_COMMAND} -E make_directory "${libs_abi_dir}"
+                    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${needed_lib_path}"
+                        "${need_lib_dst}"
+                    DEPENDS "${needed_lib_path}"
+                    COMMENT "Copying QML plugin dependency ${needed_lib} for ${target}"
+                    VERBATIM
+                )
+                list(APPEND plugin_copy_outputs "${need_lib_dst}")
+            endif()
+        endforeach()
+    endwhile()
+
+    set(${out_outputs} "${plugin_copy_outputs}" PARENT_SCOPE)
+endfunction()
+
+function(_qt_internal_android_copy_qml_dependencies target deployment_dir)
+    _qt_internal_android_get_absolute_qml_paths(${target} qml_import_paths qml_root_paths)
+    if(NOT qml_import_paths OR NOT qml_root_paths)
+        return()
+    endif()
+
+    __qt_internal_get_tool_imported_location(qmlimportscanner_path "qmlimportscanner")
+    if(NOT qmlimportscanner_path)
+        message(WARNING "qmlimportscanner not found. Skipping QML dependency scanning for ${target}.")
+        return()
+    endif()
+
+    __qt_internal_get_tool_imported_location(rcc_path "rcc")
+    if(NOT rcc_path)
+        message(WARNING "rcc not found. Skipping QML dependency bundling for ${target}.")
+        return()
+    endif()
+
+    _qt_internal_android_get_qmlimportscanner_scan(${target} "${qmlimportscanner_path}"
+        "${qml_root_paths}" "${qml_import_paths}" qml_scan_output)
+    if(qml_scan_output STREQUAL "")
+        return()
+    endif()
+
+    _qt_internal_android_parse_qmlimportscanner_output(${target} "${qml_scan_output}"
+        "${qml_import_paths}" "${qml_root_paths}" qml_modules qml_plugins)
+
+    if(NOT qml_modules AND NOT qml_plugins)
+        return()
+    endif()
+
+    set(qml_bundle_dir "${deployment_dir}/assets/android_rcc_bundle")
+    _qt_internal_android_copy_qml_modules_outputs(${target} "${qml_bundle_dir}" "${qml_modules}"
+        copy_qml_modules_outputs)
+    if(copy_qml_modules_outputs)
+        add_custom_target(${target}_copy_qml_modules DEPENDS ${copy_qml_modules_outputs})
+    endif()
+
+    _qt_internal_android_copy_qml_plugins_outputs(${target} "${deployment_dir}" "${qml_plugins}"
+        copy_qml_plugin_outputs)
+    if(copy_qml_plugin_outputs)
+        add_custom_target(${target}_copy_qml_plugins DEPENDS ${copy_qml_plugin_outputs})
+    endif()
+
+    if(copy_qml_modules_outputs)
+        set(bundle_rcc "${deployment_dir}/assets/android_rcc_bundle.rcc")
+        add_custom_command(OUTPUT "${bundle_rcc}"
+            COMMAND ${CMAKE_COMMAND} -E make_directory "${qml_bundle_dir}"
+            COMMAND ${CMAKE_COMMAND} -E chdir "${qml_bundle_dir}"
+                "${rcc_path}" --project -o "${qml_bundle_dir}/android_rcc_bundle.qrc"
+            COMMAND "${rcc_path}" --binary --root=/android_rcc_bundle/ -o "${bundle_rcc}"
+                "${qml_bundle_dir}/android_rcc_bundle.qrc"
+            COMMAND ${CMAKE_COMMAND} -E remove_directory "${qml_bundle_dir}"
+            DEPENDS ${copy_qml_modules_outputs}
+            COMMENT "Generating QML resource bundle for ${target}"
+            VERBATIM
+        )
+
+        set_property(TARGET ${target} APPEND PROPERTY _qt_android_deployment_files "${bundle_rcc}")
+        add_custom_target(${target}_build_qml_bundle DEPENDS "${bundle_rcc}")
+        if(TARGET ${target}_copy_qml_modules)
+            add_dependencies(${target}_build_qml_bundle ${target}_copy_qml_modules)
+        endif()
+    endif()
 endfunction()
