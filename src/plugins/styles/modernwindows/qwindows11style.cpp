@@ -597,7 +597,7 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
             if (sub & SC_ComboBoxArrow) {
                 QRectF rect = proxy()->subControlRect(CC_ComboBox, option, SC_ComboBoxArrow, widget);
                 painter->setFont(d->assetFont);
-                painter->setPen(controlTextColor(option));
+                painter->setPen(controlTextColor(option, true));
                 painter->drawText(rect, Qt::AlignCenter, fluentIcon(Icon::ChevronDownMed));
             }
             if (state & State_KeyboardFocusChange && hasFocus) {
@@ -925,7 +925,7 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
 
             if (isOn) {
                 painter->setFont(d->assetFont);
-                painter->setPen(controlTextColor(option, QPalette::Window));
+                painter->setPen(controlTextColor(option));
                 qreal clipWidth = 1.0;
                 const QString str = fluentIcon(Icon::AcceptMedium);
                 QFontMetrics fm(d->assetFont);
@@ -942,8 +942,10 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
                 clipRect.setWidth(clipWidth * clipRect.width());
                 painter->drawText(clipRect, Qt::AlignVCenter | Qt::AlignLeft, str);
             } else if (isPartial) {
-                painter->setFont(d->assetFont);
-                painter->setPen(controlTextColor(option, QPalette::Window));
+                QFont f(d->assetFont);
+                f.setPointSize(6);
+                painter->setFont(f);
+                painter->setPen(controlTextColor(option));
                 painter->drawText(rect, Qt::AlignCenter, fluentIcon(Icon::Dash12));
             }
         }
@@ -1243,7 +1245,7 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
     case QStyle::CE_ComboBoxLabel:
 #if QT_CONFIG(combobox)
         if (const QStyleOptionComboBox *cb = qstyleoption_cast<const QStyleOptionComboBox *>(option)) {
-            painter->setPen(controlTextColor(option));
+            painter->setPen(controlTextColor(option, true));
             QStyleOptionComboBox newOption = *cb;
             newOption.rect.adjust(4,0,-4,0);
             QCommonStyle::drawControl(element, &newOption, painter, widget);
@@ -2698,7 +2700,7 @@ QBrush QWindows11Style::inputFillBrush(const QStyleOption *option, const QWidget
     return winUI3Color(fillControlDefault);
 }
 
-QColor QWindows11Style::controlTextColor(const QStyleOption *option, QPalette::ColorRole role) const
+QColor QWindows11Style::controlTextColor(const QStyleOption *option, bool ignoreIsChecked) const
 {
     using namespace StyleOptionHelper;
     static constexpr WINUI3Color colorEnums[2][4] = {
@@ -2711,12 +2713,9 @@ QColor QWindows11Style::controlTextColor(const QStyleOption *option, QPalette::C
     if (option->palette.isBrushSet(QPalette::Current, QPalette::ButtonText))
         return option->palette.buttonText().color();
 
-    const int colorIndex = isChecked(option) ? 1 : 0;
+    const int colorIndex = !ignoreIsChecked && isChecked(option) ? 1 : 0;
     const auto state = calcControlState(option);
-    const auto alpha = winUI3Color(colorEnums[colorIndex][int(state)]);
-    QColor col = option->palette.color(role);
-    col.setAlpha(alpha.alpha());
-    return col;
+    return winUI3Color(colorEnums[colorIndex][int(state)]);
 }
 
 void QWindows11Style::drawLineEditFrame(QPainter *p, const QRectF &rect, const QStyleOption *o, bool isEditable) const
