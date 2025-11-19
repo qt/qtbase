@@ -341,7 +341,6 @@ function(_qt_internal_android_add_gradle_build target type)
             ${target}_copy_extra_plugins
             ${target}_copy_qt_files
             ${target}_update_libs_xml
-            ${target}_android_deploy_aux
             ${extra_deps}
         WORKING_DIRECTORY
             "${android_build_dir}"
@@ -565,7 +564,6 @@ function(_qt_internal_android_generate_target_android_manifest target)
         DEPENDS
             "${template_file}"
             "${temporary_file}"
-            ${target}_android_deploy_aux
     )
 
     _qt_internal_android_get_manifest_property(APP_PACKAGE_NAME ${target}

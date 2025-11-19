@@ -120,7 +120,7 @@ function(_qt_internal_android_generate_dynamic_feature_names target)
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
             "${output_file}"
             "${output_file_in_deployment_dir}"
-        DEPENDS "${output_file}" ${target}_android_deploy_aux
+        DEPENDS "${output_file}"
         VERBATIM
     )
     add_custom_target(${target}_copy_feature_names

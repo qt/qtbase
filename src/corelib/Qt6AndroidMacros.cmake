@@ -1701,7 +1701,6 @@ function(_qt_internal_android_executable_finalizer target)
         _qt_internal_android_add_dynamic_feature_deployment("${target}")
 
         _qt_internal_android_prepare_gradle_build("${target}")
-        _qt_internal_android_add_aux_deployment("${target}")
 
         _qt_internal_collect_apk_dependencies_defer()
         _qt_internal_collect_apk_imported_dependencies_defer("${target}")
