@@ -91,6 +91,7 @@ class tst_QGlobal: public QObject
 private slots:
     void accessibleStateBC();
     void cMode();
+    void warnings() { extern void warnings_linker_hook(); warnings_linker_hook(); }
     void qIsNull();
     void for_each();
     void qassert();
