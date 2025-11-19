@@ -124,7 +124,9 @@
       // define to verify the Clang version we hard-code the versions
       // based on the best available info we have about the actual
       // version: http://en.wikipedia.org/wiki/Xcode#Toolchain_Versions
-#      if __apple_build_version__   >= 17000013 // Xcode 16.3
+#      if __apple_build_version__   >= 17000319 // Xcode 26.0
+#        define Q_CC_CLANG 1915
+#      elif __apple_build_version__ >= 17000013 // Xcode 16.3
 #        define Q_CC_CLANG 1914
 #      elif __apple_build_version__ >= 16000026 // Xcode 16.0
 #        define Q_CC_CLANG 1706
