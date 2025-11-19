@@ -1192,7 +1192,8 @@
 #  define QT_WARNING_DISABLE_INTEL(number)
 #  define QT_WARNING_DISABLE_CLANG(text)
 #  define QT_WARNING_DISABLE_GCC(text)
-#  define QT_WARNING_DISABLE_DEPRECATED         QT_WARNING_DISABLE_MSVC(4996)
+#  define QT_WARNING_DISABLE_DEPRECATED         QT_WARNING_DISABLE_MSVC(4996) \
+                                                QT_WARNING_DISABLE_MSVC(4995)
 #  define QT_WARNING_DISABLE_FLOAT_COMPARE
 #  define QT_WARNING_DISABLE_INVALID_OFFSETOF
 #elif defined(Q_CC_CLANG)
@@ -1202,7 +1203,13 @@
 #  define QT_WARNING_DISABLE_GCC(text)
 #  define QT_WARNING_DISABLE_INTEL(number)
 #  define QT_WARNING_DISABLE_MSVC(number)
-#  define QT_WARNING_DISABLE_DEPRECATED         QT_WARNING_DISABLE_CLANG("-Wdeprecated-declarations")
+# if defined(__has_warning) && __has_warning("-Wdeprecated-pragma")
+#  define QT_WARNING_DISABLE_DEPRECATED_MACRO  QT_WARNING_DISABLE_CLANG("-Wdeprecated-pragma")
+# else
+#  define QT_WARNING_DISABLE_DEPRECATED_MACRO
+# endif
+#  define QT_WARNING_DISABLE_DEPRECATED         QT_WARNING_DISABLE_CLANG("-Wdeprecated-declarations") \
+                                                QT_WARNING_DISABLE_DEPRECATED_MACRO
 #  define QT_WARNING_DISABLE_FLOAT_COMPARE      QT_WARNING_DISABLE_CLANG("-Wfloat-equal")
 #  define QT_WARNING_DISABLE_INVALID_OFFSETOF   QT_WARNING_DISABLE_CLANG("-Winvalid-offsetof")
 #elif defined(Q_CC_GNU) && (__GNUC__ * 100 + __GNUC_MINOR__ >= 406)
