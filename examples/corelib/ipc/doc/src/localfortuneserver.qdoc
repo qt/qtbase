@@ -6,6 +6,7 @@
     \examplecategory {Connectivity}
     \title Local Fortune Server
     \ingroup examples-ipc
+    \ingroup corelib_examples
     \brief Demonstrates using QLocalServer and QLocalSocket for serving a simple local service.
 
     The Local Fortune Server example shows how to create a server for a simple

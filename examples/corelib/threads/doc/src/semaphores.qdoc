@@ -6,6 +6,7 @@
     \examplecategory {Data Processing & I/O}
     \title Producer and Consumer using Semaphores
     \ingroup qtconcurrent-mtexamples
+    \ingroup corelib_examples
 
     \brief The Producer and Consumer using Semaphores example shows how
     to use QSemaphore to control access to a circular buffer shared

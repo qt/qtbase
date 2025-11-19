@@ -5,6 +5,7 @@
     \example serialization/savegame
     \examplecategory {Data Processing & I/O}
     \title Saving and Loading a Game
+    \ingroup corelib_examples
 
     \brief How to save and load a game using Qt's JSON or CBOR classes.
 

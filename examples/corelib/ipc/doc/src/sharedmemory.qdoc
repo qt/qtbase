@@ -6,6 +6,7 @@
   \examplecategory {Data Processing & I/O}
   \title IPC: Shared Memory
   \ingroup examples-ipc
+  \ingroup corelib_examples
   \brief Demonstrates how to share image data between different processes
   using the Shared Memory IPC mechanism.
 

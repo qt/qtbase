@@ -4,6 +4,7 @@
 /*!
     \example bindableproperties
     \examplecategory {Data Processing & I/O}
+    \ingroup corelib_examples
     \title Bindable Properties
     \brief Demonstrates how the usage of bindable properties can simplify
     your C++ code.

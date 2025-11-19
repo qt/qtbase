@@ -6,6 +6,7 @@
     \examplecategory {Data Processing & I/O}
     \title Queued Custom Type
     \ingroup qtconcurrent-mtexamples
+    \ingroup corelib_examples
 
     \brief The Queued Custom Type example shows how to send custom types between
     threads with queued signals and slots.

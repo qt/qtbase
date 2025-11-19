@@ -31,3 +31,12 @@
     target_link_libraries(mytarget PRIVATE Qt6::CorePrivate)
     \endcode
 */
+
+/*!
+    \group corelib_examples
+    \title Qt Core Examples
+
+    \brief Examples for the Qt Core.
+
+    To learn how to use features of the Qt Core module, see examples:
+*/

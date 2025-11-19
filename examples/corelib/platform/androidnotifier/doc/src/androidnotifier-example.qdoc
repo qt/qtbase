@@ -7,6 +7,7 @@
     \meta tag {widgets,android,notification}
     \brief Demonstrates calling Java code from Qt in an Android application.
     \ingroup androidplatform
+    \ingroup corelib_examples
 
     \image androidnotifier.png
 

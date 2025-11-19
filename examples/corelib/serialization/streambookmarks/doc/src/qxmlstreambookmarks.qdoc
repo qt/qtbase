@@ -8,6 +8,7 @@
     \title QXmlStream Bookmarks Example
     \brief Demonstrates how to read and write XBEL files.
     \ingroup xml-examples
+    \ingroup corelib_examples
 
     The QXmlStream Bookmarks example provides a viewer for XML Bookmark Exchange
     Language (XBEL) files. It can read bookmarks using Qt's QXmlStreamReader and

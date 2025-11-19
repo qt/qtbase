@@ -5,6 +5,7 @@
     \example serialization/cbordump
     \examplecategory {Data Processing & I/O}
     \meta tag {network}
+    \ingroup corelib_examples
     \title Parsing and displaying CBOR data
 
     \brief A demonstration of how to parse files in CBOR format.

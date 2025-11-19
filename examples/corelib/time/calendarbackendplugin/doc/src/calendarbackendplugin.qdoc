@@ -6,6 +6,7 @@
     \title Calendar Backend Plugin Example
     \examplecategory {Data Processing & I/O}
     \ingroup examples-time
+    \ingroup corelib_examples
     \brief QCalendar example illustrating user-supplied custom calendars.
 
     \image calendarwindow_transition.png

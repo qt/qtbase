@@ -6,6 +6,7 @@
     \examplecategory {Data Processing & I/O}
     \title Mandelbrot
     \ingroup qtconcurrent-mtexamples
+    \ingroup corelib_examples
 
     \brief The Mandelbrot example demonstrates multi-thread programming
     using Qt. It shows how to use a worker thread to

@@ -5,6 +5,7 @@
     \example mimetypes/mimetypebrowser
     \examplecategory {Data Processing & I/O}
     \ingroup examples-mimetype
+    \ingroup corelib_examples
     \title MIME Type Browser
 
     \brief Shows the hierarchy of MIME types and

@@ -5,6 +5,7 @@
     \example serialization/convert
     \examplecategory {Data Processing & I/O}
     \meta tag {network}
+    \ingroup corelib_examples
     \title Serialization Converter
 
     \brief How to convert between different serialization formats.

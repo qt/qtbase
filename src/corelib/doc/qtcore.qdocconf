@@ -21,7 +21,7 @@ qhp.QtCore.virtualFolder       = qtcore
 qhp.QtCore.indexTitle          = Qt Core
 qhp.QtCore.indexRoot           =
 
-qhp.QtCore.subprojects = manual classes
+qhp.QtCore.subprojects = manual examples classes
 qhp.QtCore.subprojects.manual.title = Qt Core
 qhp.QtCore.subprojects.manual.indexTitle = Qt Core module topics
 qhp.QtCore.subprojects.manual.type = manual
@@ -30,6 +30,11 @@ qhp.QtCore.subprojects.classes.title = C++ Classes
 qhp.QtCore.subprojects.classes.indexTitle = Qt Core C++ Classes
 qhp.QtCore.subprojects.classes.selectors = class fake:headerfile
 qhp.QtCore.subprojects.classes.sortPages = true
+
+qhp.QtCore.subprojects.examples.title = Examples
+qhp.QtCore.subprojects.examples.indexTitle = Qt Core Examples
+qhp.QtCore.subprojects.examples.selectors = example
+qhp.QtCore.subprojects.examples.sortPages = true
 
 tagfile                 = ../../../doc/qtcore/qtcore.tags
 
