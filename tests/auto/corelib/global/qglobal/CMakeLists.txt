@@ -16,6 +16,7 @@ qt_internal_add_test(tst_qglobal
         expansion_to_defined_check.h
         qglobal.c
         tst_qglobal.cpp
+        warnings.cpp
     NO_PCH_SOURCES
         tst_qglobal.cpp # undef QT_NO_FOREACH
 )
@@ -26,12 +27,20 @@ qt_internal_add_test(tst_qglobal_strict
         expansion_to_defined_check.h
         qglobal.c
         tst_qglobal.cpp
+        warnings.cpp
     DEFINES
         tst_QGlobal=tst_QGlobal_strict
     NO_PCH_SOURCES
         tst_qglobal.cpp # undef QT_NO_FOREACH
 )
 _qt_internal_apply_strict_cpp(tst_qglobal_strict)
+
+# enable -Werror for just the warnings.cpp TU (applies to both targets):
+if (MSVC)
+    set_source_files_properties(warnings.cpp PROPERTIES COMPILE_FLAGS "/WX")
+else()
+    set_source_files_properties(warnings.cpp PROPERTIES COMPILE_FLAGS "-Werror")
+endif()
 
 ## Scopes:
 #####################################################################
