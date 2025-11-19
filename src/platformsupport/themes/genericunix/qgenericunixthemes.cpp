@@ -854,6 +854,7 @@ QStringList QGenericUnixTheme::themeNames()
         QList<QByteArray> gtkBasedEnvironments;
         gtkBasedEnvironments << "GNOME"
                              << "X-CINNAMON"
+                             << "PANTHEON"
                              << "UNITY"
                              << "MATE"
                              << "XFCE"

@@ -841,7 +841,7 @@ Q_CORE_EXPORT Q_DECL_CONST_FUNCTION bool qSharedBuild() noexcept;
 */
 #ifndef qUtf16Printable
 #  define qUtf16Printable(string) \
-    static_cast<const wchar_t*>(static_cast<const void*>(QString(string).utf16()))
+    static_cast<const wchar_t*>(static_cast<const void*>(QtPrivate::asString(string).utf16()))
 #endif
 
 class QString;
@@ -893,6 +893,9 @@ Q_CORE_EXPORT void qBadAlloc();
 template <typename T>
 inline T *q_check_ptr(T *p) { Q_CHECK_PTR(p); return p; }
 
+#if 0
+#pragma qt_class(QFunctionPointer)
+#endif
 typedef void (*QFunctionPointer)();
 
 #if !defined(Q_UNIMPLEMENTED)

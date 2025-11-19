@@ -172,9 +172,15 @@
         "lttng-ust": {
             "label": "lttng-ust",
             "test": {
-                "main": "lttng_session_destroy(nullptr);"
+                "main": [
+                    "#if (LTTNG_UST_MINOR_VERSION <= 12)",
+                    "    lttng_session_destroy(nullptr);",
+                    "#else",
+                    "    lttng_ust_session session;",
+                    "#endif"
+                ]
             },
-            "headers": "lttng/ust-events.h",
+            "headers": [ "lttng/ust-version.h", "lttng/ust-events.h" ],
             "sources": [
                 { "type": "pkgConfig", "args": "lttng-ust" },
                 "-llttng-ust"

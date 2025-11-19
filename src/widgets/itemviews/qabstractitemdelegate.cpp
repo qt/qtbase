@@ -400,12 +400,7 @@ bool QAbstractItemDelegate::helpEvent(QHelpEvent *event,
         const QString tooltip = index.isValid() ?
               d->textForRole(Qt::ToolTipRole, index.data(Qt::ToolTipRole), option.locale, precision) :
               QString();
-        QRect rect;
-        if (index.isValid()) {
-            const QRect r = view->visualRect(index);
-            rect = QRect(view->mapToGlobal(r.topLeft()), r.size());
-        }
-        QToolTip::showText(he->globalPos(), tooltip, view, rect);
+        QToolTip::showText(he->globalPos(), tooltip, view->viewport(), option.rect);
         event->setAccepted(!tooltip.isEmpty());
         break;
         }

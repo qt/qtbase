@@ -66,15 +66,19 @@ SOURCES += \
     $$PWD/src/hb-subset-instancer-iup.cc \
     $$PWD/src/hb-subset-instancer-solver.cc \
     $$PWD/src/hb-subset-plan.cc \
-    $$PWD/src/hb-subset-repacker.cc \
+    $$PWD/src/hb-subset-plan-layout.cc \
+    $$PWD/src/hb-subset-plan-var.cc \
+    $$PWD/src/hb-subset-serialize.cc \
     $$PWD/src/hb-unicode.cc \
     $$PWD/src/hb-buffer-verify.cc
 
 HEADERS += \
+    $$PWD/src/hb-bit-vector.hh \
     $$PWD/src/hb-buffer-deserialize-json.hh \
     $$PWD/src/hb-buffer-deserialize-text-glyphs.hh \
     $$PWD/src/hb-buffer-deserialize-text-unicode.hh \
     $$PWD/src/hb-debug.hh \
+    $$PWD/src/hb-decycler.hh \
     $$PWD/src/hb-face.hh \
     $$PWD/src/hb-mutex.hh \
     $$PWD/src/hb-ot-cmap-table.hh \
@@ -86,6 +90,7 @@ HEADERS += \
     $$PWD/src/hb-ot-name-table.hh \
     $$PWD/src/hb-ot-os2-table.hh \
     $$PWD/src/hb-ot-post-table.hh \
+    $$PWD/src/hb-script-list.hh \
     $$PWD/src/hb-set.hh \
     $$PWD/src/hb-set-digest.hh \
     $$PWD/src/hb-shape-plan.hh \
@@ -95,7 +100,7 @@ HEADERS += \
     $$PWD/src/hb-string-array.hh \
     $$PWD/src/hb-subset-instancer-iup.hh \
     $$PWD/src/hb-subset-plan-member-list.hh \
-    $$PWD/src/hb-subset-repacker.h \
+    $$PWD/src/hb-subset-serialize.h \
     $$PWD/src/hb-unicode.hh
 
 HEADERS += \
@@ -233,18 +238,18 @@ contains(SHAPERS, coretext) {
     DEFINES += HAVE_CORETEXT
 
     SOURCES += \
-        $$PWD/src/hb-coretext.cc
+        $$PWD/src/hb-coretext.cc \
+        $$PWD/src/hb-coretext-font.cc \
+        $$PWD/src/hb-coretext-shape.cc
 
     HEADERS += \
         $$PWD/src/hb-coretext.h
 
-    uikit: \
-        # On iOS/tvOS/watchOS CoreText and CoreGraphics are stand-alone frameworks
-        LIBS_PRIVATE += -framework CoreText -framework CoreGraphics
-    else: \
-        # On Mac OS they are part of the ApplicationServices umbrella framework,
-        # even in 10.8 where they were also made available stand-alone.
-        LIBS_PRIVATE += -framework ApplicationServices
+    # On iOS/tvOS/watchOS CoreText and CoreGraphics are stand-alone frameworks
+    # On Mac OS they are part of the ApplicationServices umbrella framework,
+    # even in 10.8 where they were also made available stand-alone.
+    uikit: LIBS_PRIVATE += -framework CoreText -framework CoreGraphics
+    else: LIBS_PRIVATE += -framework ApplicationServices
 
     CONFIG += watchos_coretext
 }

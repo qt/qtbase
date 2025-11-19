@@ -86,6 +86,8 @@ Q_STATIC_ASSERT(CanConvert<const ushort*>::value);
 
 Q_STATIC_ASSERT(!CanConvert<char16_t>::value);
 
+Q_STATIC_ASSERT(CanConvert<char16_t[123]>::value);
+
 Q_STATIC_ASSERT(CanConvert<      char16_t*>::value);
 Q_STATIC_ASSERT(CanConvert<const char16_t*>::value);
 
@@ -114,6 +116,8 @@ Q_CONSTEXPR bool CanConvertFromWCharT =
         ;
 
 Q_STATIC_ASSERT(!CanConvert<wchar_t>::value);
+
+Q_STATIC_ASSERT(CanConvert<wchar_t[123]>::value == CanConvertFromWCharT);
 
 Q_STATIC_ASSERT(CanConvert<      wchar_t*>::value == CanConvertFromWCharT);
 Q_STATIC_ASSERT(CanConvert<const wchar_t*>::value == CanConvertFromWCharT);

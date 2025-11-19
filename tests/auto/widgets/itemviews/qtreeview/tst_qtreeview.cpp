@@ -50,6 +50,8 @@
 #include <private/qtreeview_p.h>
 #include <private/qtesthelpers_p.h>
 
+#include <QtCore/private/qmemory_p.h>
+
 using namespace QTestPrivate;
 
 #if QT_CONFIG(draganddrop)
@@ -5004,7 +5006,7 @@ void tst_QTreeView::fetchUntilScreenFull()
             rootData.append(rootData1);
             rootData.append(rootData2);
 
-            m_root = new TreeItem(rootData, nullptr);
+            m_root = qt_make_unique<TreeItem>(rootData, nullptr);
 
             QVariant childData1("Col 1");
             QVariant childData2("Col 2");
@@ -5012,7 +5014,7 @@ void tst_QTreeView::fetchUntilScreenFull()
             childData.append(childData1);
             childData.append(childData2);
 
-            TreeItem* item_1 = new TreeItem(childData, m_root);
+            TreeItem* item_1 = new TreeItem(childData, m_root.get());
             m_root->children.append(item_1);
 
             TreeItem* item_2 = new TreeItem(childData, item_1);
@@ -5026,7 +5028,7 @@ void tst_QTreeView::fetchUntilScreenFull()
                 return QModelIndex();
 
             TreeItem* parentItem =
-                parent.isValid() ? static_cast<TreeItem*>(parent.internalPointer()) : m_root;
+                parent.isValid() ? static_cast<TreeItem*>(parent.internalPointer()) : m_root.get();
             TreeItem* childItem = parentItem->children.at(row);
             return createIndex(row, column, childItem);
         }
@@ -5037,7 +5039,7 @@ void tst_QTreeView::fetchUntilScreenFull()
                 return 0;
 
             TreeItem* parentItem = parent.isValid() ? static_cast<TreeItem*>(parent.internalPointer())
-                : m_root;
+                                                    : m_root.get();
             return parentItem->children.count();
         }
 
@@ -5050,7 +5052,7 @@ void tst_QTreeView::fetchUntilScreenFull()
 
             TreeItem* parentItem =
                 static_cast<TreeItem*>(childIndex.internalPointer())->parent;
-            return parentItem == m_root ? QModelIndex()
+            return parentItem == m_root.get() ? QModelIndex()
                 : createIndex(parentItem->rowInParent(), 0, parentItem);
         }
 
@@ -5114,7 +5116,7 @@ void tst_QTreeView::fetchUntilScreenFull()
             QVector<TreeItem*> children;
             TreeItem* parent = nullptr;
         };
-        TreeItem* m_root;
+        std::unique_ptr<TreeItem> m_root;
     };
 
     QTreeView tv;

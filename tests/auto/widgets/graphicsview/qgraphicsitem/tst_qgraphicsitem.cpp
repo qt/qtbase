@@ -3077,13 +3077,14 @@ void tst_QGraphicsItem::mapRectFromToParent()
     QFETCH(QRectF, inputRect);
     QFETCH(QRectF, outputRect);
 
-    QGraphicsRectItem *rect = new QGraphicsRectItem;
+    std::unique_ptr<QGraphicsRectItem> rectParent; // keep this first
+    const auto rect = std::make_unique<QGraphicsRectItem>();
     rect->setPos(pos);
     rect->setTransform(transform);
 
     if (parent) {
-        QGraphicsRectItem *rectParent = new QGraphicsRectItem;
-        rect->setParentItem(rectParent);
+        rectParent = std::make_unique<QGraphicsRectItem>();
+        rect->setParentItem(rectParent.get());
         rectParent->setPos(parentPos);
         rectParent->setTransform(parentTransform);
     }
@@ -5070,12 +5071,12 @@ void tst_QGraphicsItem::sceneEventFilter()
     //Let check if the items are correctly removed from the sceneEventFilters array
     //to avoid stale pointers.
     QGraphicsView gv;
-    QGraphicsScene *anotherScene = new QGraphicsScene;
-    QGraphicsTextItem *ti = anotherScene->addText("This is a test #1");
+    QGraphicsScene anotherScene;
+    QGraphicsTextItem *ti = anotherScene.addText("This is a test #1");
     ti->moveBy(50, 50);
-    QGraphicsTextItem *ti2 = anotherScene->addText("This is a test #2");
-    QGraphicsTextItem *ti3 = anotherScene->addText("This is a test #3");
-    gv.setScene(anotherScene);
+    QGraphicsTextItem *ti2 = anotherScene.addText("This is a test #2");
+    QGraphicsTextItem *ti3 = anotherScene.addText("This is a test #3");
+    gv.setScene(&anotherScene);
     gv.show();
     QVERIFY(QTest::qWaitForWindowExposed(&gv));
     ti->installSceneEventFilter(ti2);
@@ -11706,6 +11707,8 @@ void tst_QGraphicsItem::itemDiesDuringDraggingOperation()
     QCoreApplication::sendEvent(&scene, &dragEnter);
     QGraphicsSceneDragDropEvent event(QEvent::GraphicsSceneDragMove);
     event.setScenePos(item->boundingRect().center());
+    event.setProposedAction(Qt::DropAction::CopyAction); // prevent uninit'ed copy in...
+    event.setDropAction(Qt::DropAction::CopyAction);     // ...QGraphicsScenePrivate::cloneDragDropEvent()
     QCoreApplication::sendEvent(&scene, &event);
     QCOMPARE(QGraphicsScenePrivate::get(&scene)->dragDropItem, item);
     delete item;

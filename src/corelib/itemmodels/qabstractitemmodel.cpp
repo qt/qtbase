@@ -215,7 +215,7 @@ bool QPersistentModelIndex::operator<(const QPersistentModelIndex &other) const
     if (d && other.d)
         return d->index < other.d->index;
 
-    return std::less<>{}(d, other.d);
+    return std::less<QPersistentModelIndexData *>{}(d, other.d);
 }
 
 /*!

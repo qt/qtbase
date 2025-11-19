@@ -70,10 +70,10 @@ public:
 
 protected:
     void surfaceChanged(JNIEnv *jniEnv, jobject surface, int w, int h) override;
+    void clearSurface() override;
 
 private:
     void sendExpose();
-    void clearSurface();
 
     int m_nativeSurfaceId;
     ANativeWindow *m_nativeWindow;

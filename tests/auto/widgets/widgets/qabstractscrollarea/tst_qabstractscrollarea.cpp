@@ -341,7 +341,10 @@ void tst_QAbstractScrollArea::task214488_layoutDirection()
     scrollArea.setLayoutDirection(dir);
 
     int refValue = hbar->value();
-    qApp->sendEvent(&scrollArea, new QKeyEvent(QEvent::KeyPress, key, Qt::NoModifier));
+    {
+        QKeyEvent ke(QEvent::KeyPress, key, Qt::NoModifier);
+        qApp->sendEvent(&scrollArea, &ke);
+    }
 #ifdef Q_OS_WINRT
     QEXPECT_FAIL("", "WinRT: Scrollbar is not guaranteed to be visible, as QWidget::resize does not"
                  "work", Abort);

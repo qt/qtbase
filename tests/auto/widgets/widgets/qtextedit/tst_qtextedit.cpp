@@ -56,6 +56,8 @@
 #include "../../../shared/platforminputcontext.h"
 #include <private/qinputmethod_p.h>
 
+#include <QtCore/private/qmemory_p.h>
+
 //Used in copyAvailable
 typedef QPair<Qt::Key, Qt::KeyboardModifier> keyPairType;
 typedef QList<keyPairType> pairListType;
@@ -2202,13 +2204,6 @@ void tst_QTextEdit::setDocumentPreservesPalette()
 }
 #endif
 
-class PublicTextEdit : public QTextEdit
-{
-public:
-    void publicInsertFromMimeData(const QMimeData *source)
-    { insertFromMimeData(source); }
-};
-
 void tst_QTextEdit::pasteFromQt3RichText()
 {
     QByteArray richtext("<!--StartFragment--><p>  QTextEdit is an  ");
@@ -2216,7 +2211,7 @@ void tst_QTextEdit::pasteFromQt3RichText()
     QMimeData mimeData;
     mimeData.setData("application/x-qrichtext", richtext);
 
-    static_cast<PublicTextEdit *>(ed)->publicInsertFromMimeData(&mimeData);
+    ed->insertFromMimeData(&mimeData);
 
     QCOMPARE(ed->toPlainText(), QString::fromLatin1("  QTextEdit is an  "));
     ed->clear();
@@ -2224,7 +2219,7 @@ void tst_QTextEdit::pasteFromQt3RichText()
     richtext = "<!--StartFragment-->  QTextEdit is an  ";
     mimeData.setData("application/x-qrichtext", richtext);
 
-    static_cast<PublicTextEdit *>(ed)->publicInsertFromMimeData(&mimeData);
+    ed->insertFromMimeData(&mimeData);
 
     QCOMPARE(ed->toPlainText(), QString::fromLatin1("  QTextEdit is an  "));
 }
@@ -2749,14 +2744,14 @@ namespace {
     class MyPaintDevice : public QPaintDevice
     {
     public:
-        MyPaintDevice() : m_paintEngine(new MyPaintEngine)
+        MyPaintDevice() : m_paintEngine(qt_make_unique<MyPaintEngine>())
         {
         }
 
 
         QPaintEngine *paintEngine () const
         {
-            return m_paintEngine;
+            return m_paintEngine.get();
         }
 
         int metric (QPaintDevice::PaintDeviceMetric metric) const {
@@ -2781,7 +2776,7 @@ namespace {
             return 0;
         }
 
-        MyPaintEngine *m_paintEngine;
+        std::unique_ptr<MyPaintEngine> m_paintEngine;
     };
 }
 

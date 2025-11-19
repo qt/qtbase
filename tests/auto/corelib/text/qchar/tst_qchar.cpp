@@ -32,6 +32,67 @@
 #include <qstringlist.h>
 #include <private/qunicodetables_p.h>
 
+#include <type_traits>
+
+template <typename C>
+constexpr inline bool implicitly() { return std::is_convertible<C, QChar>::value; }
+template <typename C>
+constexpr inline bool explicitly() { return std::is_constructible<QChar, C>::value; }
+template <typename C>
+constexpr inline bool disabled() { return !explicitly<C>(); }
+
+//
+// Conversion from character types
+//
+Q_STATIC_ASSERT(implicitly<char>());
+#ifdef __cpp_char8_t
+Q_STATIC_ASSERT(explicitly<char8_t>()); // via integer promotion
+#endif
+Q_STATIC_ASSERT(implicitly<char16_t>());
+#ifdef Q_OS_WIN
+Q_STATIC_ASSERT(implicitly<wchar_t>());
+#else
+Q_STATIC_ASSERT(explicitly<wchar_t>());
+#endif
+Q_STATIC_ASSERT(explicitly<char32_t>());
+
+//
+// Conversion from others
+//
+Q_STATIC_ASSERT(explicitly<uchar>());
+Q_STATIC_ASSERT(implicitly<short>());
+Q_STATIC_ASSERT(implicitly<ushort>());
+Q_STATIC_ASSERT(explicitly<int>());
+Q_STATIC_ASSERT(explicitly<uint>());
+
+//
+// Disabled conversions (from Qt 6.9)
+//
+Q_STATIC_ASSERT(explicitly<bool>()); // via integer promotion
+#ifdef __cpp_lib_byte
+Q_STATIC_ASSERT(disabled<std::byte>());
+#endif
+Q_STATIC_ASSERT(explicitly<signed char>()); // via integer promotion
+#ifndef Q_OS_WIN // ### why? ¯\_(ツ)_/¯
+Q_STATIC_ASSERT(disabled<long>());
+Q_STATIC_ASSERT(disabled<long long>());
+Q_STATIC_ASSERT(disabled<unsigned long>());
+Q_STATIC_ASSERT(disabled<unsigned long long>());
+#endif
+Q_STATIC_ASSERT(explicitly<Qt::Key>()); // via promotion to underlying_type_t
+enum E1 {};
+Q_STATIC_ASSERT(explicitly<E1>());      // ditto
+enum class E2 {};
+Q_STATIC_ASSERT(disabled<E2>());
+#ifndef Q_OS_QNX // ¯\_(ツ)_/¯
+#ifndef Q_OS_DARWIN // ### why? ¯\_(ツ)_/¯
+enum E1C : char16_t {};
+Q_STATIC_ASSERT(explicitly<E1C>());
+#endif
+#endif
+enum class E2C : char16_t {};
+Q_STATIC_ASSERT(disabled<E2C>());
+
 class tst_QChar : public QObject
 {
     Q_OBJECT

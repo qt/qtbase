@@ -80,7 +80,7 @@ class QDuplicateTracker {
 #endif
     Q_DISABLE_COPY_MOVE(QDuplicateTracker)
 public:
-    QDuplicateTracker() = default;
+    QDuplicateTracker() {} // don't `= default`, lest we value-initialize `buffer`
     void reserve(int n) { set.reserve(n); }
     Q_REQUIRED_RESULT bool hasSeen(const T &s)
     {

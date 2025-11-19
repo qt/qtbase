@@ -1809,7 +1809,7 @@ QPolygon QTransform::mapToPolygon(const QRect &rect) const
 */
 bool QTransform::squareToQuad(const QPolygonF &quad, QTransform &trans)
 {
-    if (quad.count() != 4)
+    if (quad.count() != (quad.isClosed() ? 5 : 4))
         return false;
 
     qreal dx0 = quad[0].x();

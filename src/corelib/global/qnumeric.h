@@ -67,6 +67,17 @@ Q_CORE_EXPORT quint64 qFloatDistance(double a, double b);
 #endif
 #define Q_QNAN (QT_PREPEND_NAMESPACE(qQNaN)())
 
+namespace QtPrivate {
+template <typename T,
+          typename std::enable_if<std::is_integral<T>::value, bool>::type = true>
+constexpr inline auto qUnsignedAbs(T t)
+    -> typename std::make_unsigned<T>::type
+{
+    using U = typename std::make_unsigned<T>::type;
+    return (t >= 0) ? U(t) : U(~U(t) + U(1));
+}
+} // namespace QtPrivate
+
 QT_END_NAMESPACE
 
 #endif // QNUMERIC_H

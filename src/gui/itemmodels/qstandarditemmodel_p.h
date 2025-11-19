@@ -51,6 +51,8 @@
 // We mean it.
 //
 
+#include <QtGui/qstandarditemmodel.h>
+
 #include <QtGui/private/qtguiglobal_p.h>
 #include "private/qabstractitemmodel_p.h"
 

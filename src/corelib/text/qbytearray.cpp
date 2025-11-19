@@ -2738,12 +2738,12 @@ int QByteArray::indexOf(char ch, int from) const
 static int lastIndexOfHelper(const char *haystack, int l, const char *needle, int ol, int from)
 {
     int delta = l - ol;
-    if (from < 0)
-        from = delta;
-    if (from < 0 || from > l)
+    if (from > l)
         return -1;
-    if (from > delta)
+    if (from < 0 || from > delta)
         from = delta;
+    if (from < 0)
+        return -1;
 
     const char *end = haystack;
     haystack += from;

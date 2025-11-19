@@ -91,6 +91,7 @@ public:
 
 protected:
     void setGeometry(const QRect &rect) override;
+    virtual void clearSurface() {}
 
 protected:
     Qt::WindowFlags m_windowFlags;

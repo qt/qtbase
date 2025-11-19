@@ -269,10 +269,10 @@ QModelIndex QFileSystemModel::index(int row, int column, const QModelIndex &pare
     if (i >= parentNode->visibleChildren.size())
         return QModelIndex();
     const QString &childName = parentNode->visibleChildren.at(i);
-    const QFileSystemModelPrivate::QFileSystemNode *indexNode = parentNode->children.value(childName);
+    QFileSystemModelPrivate::QFileSystemNode *indexNode = parentNode->children.value(childName);
     Q_ASSERT(indexNode);
 
-    return createIndex(row, column, const_cast<QFileSystemModelPrivate::QFileSystemNode*>(indexNode));
+    return createIndex(row, column, indexNode);
 }
 
 /*!

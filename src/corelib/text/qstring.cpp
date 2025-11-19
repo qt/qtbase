@@ -1505,7 +1505,8 @@ const QString::Null QString::null = { };
     constructor. Similarly, you can pass a QString to a function that
     takes a \c{const char *} argument using the \l qPrintable() macro
     which returns the given QString as a \c{const char *}. This is
-    equivalent to calling <QString>.toLocal8Bit().constData().
+    equivalent to calling toLocal8Bit().\l{QByteArray::}{constData()}
+    on the QString.
 
     \section1 Manipulating String Data
 
@@ -1676,7 +1677,7 @@ const QString::Null QString::null = { };
     \snippet qstring/main.cpp 8
 
     All functions except isNull() treat null strings the same as empty
-    strings. For example, toUtf8().constData() returns a valid pointer
+    strings. For example, toUtf8().\l{QByteArray::}{constData()} returns a valid pointer
     (\e not nullptr) to a '\\0' character for a null string. We
     recommend that you always use the isEmpty() function and avoid isNull().
 

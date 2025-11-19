@@ -1,0 +1,26 @@
+From 5333ed1bf63572739152bae5f8301a07f32e800a Mon Sep 17 00:00:00 2001
+From: Eskil Abrahamsen Blomfeldt <eskil.abrahamsen-blomfeldt@qt.io>
+Date: Tue, 29 Apr 2025 13:45:56 +0200
+Subject: [PATCH] Work around build failure on old MacOS SDKs
+
+The CTFontManagerCreateFontDescriptorsFromData() function is missing
+from the header so we need to add the declaration ourselves.
+---
+ src/3rdparty/harfbuzz-ng/src/hb-coretext.cc | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/src/3rdparty/harfbuzz-ng/src/hb-coretext.cc b/src/3rdparty/harfbuzz-ng/src/hb-coretext.cc
+index 6c0525b3a07..f8770fafb6f 100644
+--- a/src/3rdparty/harfbuzz-ng/src/hb-coretext.cc
++++ b/src/3rdparty/harfbuzz-ng/src/hb-coretext.cc
+@@ -34,6 +34,7 @@
+ 
+ #include "hb-coretext.hh"
+ 
++extern "C" CFArrayRef CTFontManagerCreateFontDescriptorsFromData(CFDataRef data) CT_AVAILABLE(macos(10.13), ios(7.0), watchos(2.0), tvos(9.0));
+ 
+ /**
+  * SECTION:hb-coretext
+-- 
+2.39.5 (Apple Git-154)
+

@@ -36,7 +36,7 @@ defineTest(qtConfCommandline_cxxstd) {
             qtConfCommandlineSetInput("c++1z", "yes")
             qtConfCommandlineSetInput("c++2a", "no")
             qtConfCommandlineSetInput("c++2b", "no")
-        } else: contains(val, "(c\+\+)?(2a)") {
+        } else: contains(val, "(c\+\+)?(2a|20)") {
             qtConfCommandlineSetInput("c++14", "yes")
             qtConfCommandlineSetInput("c++17", "yes")
             qtConfCommandlineSetInput("c++1z", "yes")

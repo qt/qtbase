@@ -30,6 +30,9 @@
 #include <QtTest/QtTest>
 #include <QtGui>
 #include <QtWidgets>
+
+#include <QtCore/private/qmemory_p.h>
+
 #include <math.h>
 
 class tst_QGraphicsLayout : public QObject
@@ -720,16 +723,16 @@ void tst_QGraphicsLayout::alternativeLayoutItems()
     lout->setSpacing(0);
 
     QGraphicsRectItem *item1 = new QGraphicsRectItem;
-    AnimatedLayoutItem *li1 = new AnimatedLayoutItem(item1);
-    lout->addItem(li1);
+    const auto li1 = qt_make_unique<AnimatedLayoutItem>(item1);
+    lout->addItem(li1.get());
 
     QGraphicsRectItem *item2 = new QGraphicsRectItem;
-    AnimatedLayoutItem *li2 = new AnimatedLayoutItem(item2);
-    lout->addItem(li2);
+    const auto li2 = qt_make_unique<AnimatedLayoutItem>(item2);
+    lout->addItem(li2.get());
 
     QGraphicsRectItem *item3 = new QGraphicsRectItem;
-    AnimatedLayoutItem *li3 = new AnimatedLayoutItem(item3);
-    lout->addItem(li3);
+    const auto li3 = qt_make_unique<AnimatedLayoutItem>(item3);
+    lout->addItem(li3.get());
 
     window->setLayout(lout);
 

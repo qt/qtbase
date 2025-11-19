@@ -34,6 +34,7 @@
 
 #include <math.h>
 #include <float.h>
+#include <limits.h>
 
 namespace {
     template <typename F> struct Fuzzy {};
@@ -694,6 +695,51 @@ void tst_QNumeric::signedOverflow()
     QCOMPARE(mul_overflow(maxInt, int(2), &r), true);
     QCOMPARE(mul_overflow(maxInt, maxInt, &r), true);
 }
+
+namespace UnsignedAbsTest {
+using QtPrivate::qUnsignedAbs;
+
+Q_STATIC_ASSERT((std::is_same<decltype(qUnsignedAbs((char)0)), unsigned char>::value));
+Q_STATIC_ASSERT((std::is_same<decltype(qUnsignedAbs((signed char)0)), unsigned char>::value));
+Q_STATIC_ASSERT((std::is_same<decltype(qUnsignedAbs((unsigned char)0)), unsigned char>::value));
+Q_STATIC_ASSERT((std::is_same<decltype(qUnsignedAbs((short)0)), unsigned short>::value));
+Q_STATIC_ASSERT((std::is_same<decltype(qUnsignedAbs((unsigned short)0)), unsigned short>::value));
+Q_STATIC_ASSERT((std::is_same<decltype(qUnsignedAbs((int)0)), unsigned int>::value));
+Q_STATIC_ASSERT((std::is_same<decltype(qUnsignedAbs((unsigned int)0)), unsigned int>::value));
+Q_STATIC_ASSERT((std::is_same<decltype(qUnsignedAbs((long)0)), unsigned long>::value));
+Q_STATIC_ASSERT((std::is_same<decltype(qUnsignedAbs((unsigned long)0)), unsigned long>::value));
+Q_STATIC_ASSERT((std::is_same<decltype(qUnsignedAbs((long long)0)), unsigned long long>::value));
+Q_STATIC_ASSERT((std::is_same<decltype(qUnsignedAbs((unsigned long long)0)), unsigned long long>::value));
+
+template <typename T> constexpr bool isEqual(T a, T b) { return a == b; }
+
+#define TEST_TYPE(type, utype, minimal, maximal) \
+    Q_STATIC_ASSERT(isEqual(qUnsignedAbs(type(minimal)), (utype)((utype)(maximal) + (utype)1))); \
+    Q_STATIC_ASSERT(isEqual(qUnsignedAbs(type(0)), (utype)(0))); \
+    Q_STATIC_ASSERT(isEqual(qUnsignedAbs(type(1)), (utype)(1))); \
+    Q_STATIC_ASSERT(isEqual(qUnsignedAbs(type(-1)), (utype)(1))); \
+    Q_STATIC_ASSERT(isEqual(qUnsignedAbs(type(10)), (utype)(10))); \
+    Q_STATIC_ASSERT(isEqual(qUnsignedAbs(type(-10)), (utype)(10))); \
+    Q_STATIC_ASSERT(isEqual(qUnsignedAbs(type(maximal)), (utype)(maximal))); \
+
+using schar = signed char;
+using uchar = unsigned char;
+using ushort = unsigned short;
+using uint = unsigned int;
+using ulong = unsigned long;
+
+#if CHAR_MAX == 127
+// char is signed
+TEST_TYPE(char, uchar, CHAR_MIN, CHAR_MAX)
+#endif
+TEST_TYPE(schar, uchar, SCHAR_MIN, SCHAR_MAX)
+TEST_TYPE(short, ushort, SHRT_MIN, SHRT_MAX)
+TEST_TYPE(int, uint, INT_MIN, INT_MAX)
+TEST_TYPE(long, ulong, LONG_MIN, LONG_MAX)
+TEST_TYPE(qlonglong, qulonglong, LLONG_MIN, LLONG_MAX)
+
+#undef TEST_TYPE
+} // namespace UnsignedAbsTest
 
 QTEST_APPLESS_MAIN(tst_QNumeric)
 #include "tst_qnumeric.moc"

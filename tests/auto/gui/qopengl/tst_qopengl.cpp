@@ -26,7 +26,7 @@
 **
 ****************************************************************************/
 
-
+#include <QtCore/private/qmemory_p.h>
 #include <QtGui/private/qopenglcontext_p.h>
 #include <QtGui/QOpenGLFramebufferObject>
 #include <QtGui/QOpenGLFunctions>
@@ -60,6 +60,8 @@
 #if defined(Q_OS_WIN32) && !defined(QT_OPENGL_ES_2)
 #include <QtPlatformHeaders/QWGLNativeContext>
 #endif
+
+#include <memory>
 
 Q_DECLARE_METATYPE(QImage::Format)
 
@@ -519,7 +521,7 @@ void tst_QOpenGL::fboTextureOwnership()
     QOpenGLFramebufferObjectFormat fboFormat;
     fboFormat.setAttachment(QOpenGLFramebufferObject::NoAttachment);
 
-    QOpenGLFramebufferObject *fbo = new QOpenGLFramebufferObject(200, 100, fboFormat);
+    const auto fbo = qt_make_unique<QOpenGLFramebufferObject>(200, 100, fboFormat);
     QVERIFY(fbo->texture() != 0);
     fbo->bind();
 
@@ -543,7 +545,6 @@ void tst_QOpenGL::fboTextureOwnership()
     QFUZZY_COMPARE_IMAGES(fb, reference);
 
     ctx.functions()->glDeleteTextures(1, &texture);
-    delete fbo;
 }
 
 void tst_QOpenGL::fboRendering_data()
@@ -795,7 +796,7 @@ void tst_QOpenGL::fboHandleNulledAfterContextDestroyed()
     window.setGeometry(0, 0, 10, 10);
     window.create();
 
-    QOpenGLFramebufferObject *fbo = 0;
+    std::unique_ptr<QOpenGLFramebufferObject> fbo;
 
     {
         QOpenGLContext ctx;
@@ -806,11 +807,12 @@ void tst_QOpenGL::fboHandleNulledAfterContextDestroyed()
         if (!QOpenGLFramebufferObject::hasOpenGLFramebufferObjects())
             QSKIP("QOpenGLFramebufferObject not supported on this platform");
 
-        fbo = new QOpenGLFramebufferObject(128, 128);
+        fbo.reset(new QOpenGLFramebufferObject(128, 128));
 
         QVERIFY(fbo->handle() != 0);
     }
 
+    QVERIFY(fbo);
     QCOMPARE(fbo->handle(), 0U);
 }
 
@@ -1578,30 +1580,30 @@ void tst_QOpenGL::wglContextWrap()
 void tst_QOpenGL::vaoCreate()
 {
     QScopedPointer<QSurface> surface(createSurface(QSurface::Window));
-    QOpenGLContext *ctx = new QOpenGLContext;
-    ctx->create();
-    ctx->makeCurrent(surface.data());
+    QOpenGLContext ctx;
+    ctx.create();
+    ctx.makeCurrent(surface.data());
 
     QOpenGLVertexArrayObject vao;
     bool success = vao.create();
-    if (ctx->isOpenGLES()) {
-        if (ctx->format().majorVersion() >= 3 || ctx->hasExtension(QByteArrayLiteral("GL_OES_vertex_array_object")))
+    if (ctx.isOpenGLES()) {
+        if (ctx.format().majorVersion() >= 3 || ctx.hasExtension(QByteArrayLiteral("GL_OES_vertex_array_object")))
             QVERIFY(success);
     } else {
-        if (ctx->format().majorVersion() >= 3 || ctx->hasExtension(QByteArrayLiteral("GL_ARB_vertex_array_object")))
+        if (ctx.format().majorVersion() >= 3 || ctx.hasExtension(QByteArrayLiteral("GL_ARB_vertex_array_object")))
             QVERIFY(success);
     }
 
     vao.destroy();
-    ctx->doneCurrent();
+    ctx.doneCurrent();
 }
 
 void tst_QOpenGL::bufferCreate()
 {
     QScopedPointer<QSurface> surface(createSurface(QSurface::Window));
-    QOpenGLContext *ctx = new QOpenGLContext;
-    ctx->create();
-    ctx->makeCurrent(surface.data());
+    QOpenGLContext ctx;
+    ctx.create();
+    ctx.makeCurrent(surface.data());
 
     QOpenGLBuffer buf;
 
@@ -1621,17 +1623,17 @@ void tst_QOpenGL::bufferCreate()
     buf.destroy();
     QVERIFY(!buf.isCreated());
 
-    ctx->doneCurrent();
+    ctx.doneCurrent();
 }
 
 void tst_QOpenGL::bufferMapRange()
 {
     QScopedPointer<QSurface> surface(createSurface(QSurface::Window));
-    QOpenGLContext *ctx = new QOpenGLContext;
-    ctx->create();
-    ctx->makeCurrent(surface.data());
+    QOpenGLContext ctx;
+    ctx.create();
+    ctx.makeCurrent(surface.data());
 
-    QOpenGLExtensions funcs(ctx);
+    QOpenGLExtensions funcs(&ctx);
     if (!funcs.hasOpenGLExtension(QOpenGLExtensions::MapBufferRange))
         QSKIP("glMapBufferRange not supported");
 
@@ -1657,7 +1659,7 @@ void tst_QOpenGL::bufferMapRange()
     buf.unmap();
 
     buf.destroy();
-    ctx->doneCurrent();
+    ctx.doneCurrent();
 }
 
 void tst_QOpenGL::defaultQGLCurrentBuffer()

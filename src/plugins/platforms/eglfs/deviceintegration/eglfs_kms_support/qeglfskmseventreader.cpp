@@ -179,7 +179,7 @@ void QEglFSKmsEventReader::create(QEglFSKmsDevice *device)
 
     m_device = device;
 
-    qCDebug(qLcEglfsKmsDebug, "Initalizing event reader for device %p fd %d",
+    qCDebug(qLcEglfsKmsDebug, "Initializing event reader for device %p fd %d",
             m_device, m_device->fd());
 
     m_thread = new QEglFSKmsEventReaderThread(m_device->fd());
