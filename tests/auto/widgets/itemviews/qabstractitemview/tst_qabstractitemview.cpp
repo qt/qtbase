@@ -2016,9 +2016,6 @@ void tst_QAbstractItemView::shiftSelectionAfterChangingModelContents()
 
 void tst_QAbstractItemView::QTBUG48968_reentrant_updateEditorGeometries()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     QTreeView tree;
     QStandardItemModel *m = new QStandardItemModel(&tree);
     for (int i = 0; i < 10; ++i) {
@@ -2352,9 +2349,6 @@ public:
 
 void tst_QAbstractItemView::QTBUG46785_mouseout_hover_state()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     HoverItemDelegate delegate;
 
     QTableWidget table(5, 5);
