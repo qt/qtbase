@@ -176,18 +176,6 @@ void QNetworkAccessCache::updateTimer()
     timer.start(interval + 10, this);
 }
 
-bool QNetworkAccessCache::emitEntryReady(Node *node, QObject *target, const char *member)
-{
-    if (!connect(this, SIGNAL(entryReady(QNetworkAccessCache::CacheableObject*)),
-                 target, member, Qt::QueuedConnection))
-        return false;
-
-    emit entryReady(node->object);
-    disconnect(SIGNAL(entryReady(QNetworkAccessCache::CacheableObject*)));
-
-    return true;
-}
-
 void QNetworkAccessCache::timerEvent(QTimerEvent *)
 {
     while (firstExpiringNode && firstExpiringNode->timer.hasExpired()) {
