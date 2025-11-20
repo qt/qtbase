@@ -9,6 +9,8 @@
     "Homepage": "https://github.com/google/emoji-segmenter",
     "Version": "0.4.0",
     "DownloadLocation": "https://github.com/google/emoji-segmenter/releases/tag/0.4.0",
+    "PURL": "pkg:github/google/emoji-segmenter@$<VERSION>",
+    "Comment": "no relevant CPE found",
 
     "License": "Apache License 2.0",
     "LicenseId": "Apache-2.0",
