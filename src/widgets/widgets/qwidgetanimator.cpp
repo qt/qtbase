@@ -53,7 +53,7 @@ void QWidgetAnimator::animate(QWidget *widget, const QRect &_final_geometry, boo
     //If the QStyle has animations, animate
     if (const int animationDuration = widget->style()->styleHint(QStyle::SH_Widget_Animation_Duration, nullptr, widget)) {
         AnimationMap::const_iterator it = m_animation_map.constFind(widget);
-        if (it != m_animation_map.constEnd() && (*it)->endValue().toRect() == final_geometry)
+        if (it != m_animation_map.constEnd() && *it && (*it)->endValue().toRect() == final_geometry)
             return;
 
         QPropertyAnimation *anim = new QPropertyAnimation(widget, "geometry", widget);
@@ -76,7 +76,8 @@ void QWidgetAnimator::animate(QWidget *widget, const QRect &_final_geometry, boo
 
 bool QWidgetAnimator::animating() const
 {
-    return !m_animation_map.isEmpty();
+    auto isActiveAnimation = [](const QPointer<QPropertyAnimation> &p) { return !p.isNull(); };
+    return !std::all_of(m_animation_map.begin(), m_animation_map.end(), isActiveAnimation);
 }
 
 QT_END_NAMESPACE
