@@ -611,13 +611,13 @@ inline QMatrix4x4 operator*(const QMatrix4x4& m1, const QMatrix4x4& m2)
     QMatrix4x4::Flags flagBits = m1.flagBits | m2.flagBits;
     if (flagBits.toInt() < QMatrix4x4::Rotation2D) {
         QMatrix4x4 m = m1;
-        m.m[3][0] = m1.m[3][0] + m1.m[0][0] * m2.m[3][0];
-        m.m[3][1] = m1.m[3][1] + m1.m[1][1] * m2.m[3][1];
-        m.m[3][2] = m1.m[3][2] + m1.m[2][2] * m2.m[3][2];
-
         m.m[0][0] = m1.m[0][0] * m2.m[0][0];
         m.m[1][1] = m1.m[1][1] * m2.m[1][1];
         m.m[2][2] = m1.m[2][2] * m2.m[2][2];
+
+        m.m[3][0] = m1.m[3][0] + m1.m[0][0] * m2.m[3][0];
+        m.m[3][1] = m1.m[3][1] + m1.m[1][1] * m2.m[3][1];
+        m.m[3][2] = m1.m[3][2] + m1.m[2][2] * m2.m[3][2];
         m.flagBits = flagBits;
         return m;
     }
