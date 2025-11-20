@@ -1,4 +1,3 @@
 #include <QtCore/QtCore>
 #include "../../platform/android/qandroidextras_p.h"
 #include "../../kernel/qpermissions.h"
-#include "../../tools/qatomicscopedvaluerollback_p.h"
