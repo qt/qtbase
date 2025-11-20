@@ -234,7 +234,7 @@ static void drawArrow(const QStyle *style, const QStyleOptionToolButton *toolbut
 }
 #endif // QT_CONFIG(toolbutton)
 
-static qreal radioButtonInnerRadius(int state)
+static qreal radioButtonInnerRadius(QStyle::State state)
 {
     qreal radius = 7.0;
     if (state & QStyle::State_Sunken)
@@ -769,7 +769,7 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
                                     const QWidget *widget) const {
     QWindows11StylePrivate *d = const_cast<QWindows11StylePrivate*>(d_func());
 
-    int state = option->state;
+    const State state = option->state;
     QPainterStateGuard psg(painter);
     painter->setRenderHint(QPainter::Antialiasing);
     if (d->transitionsEnabled() && option->styleObject && (element == PE_IndicatorCheckBox || element == PE_IndicatorRadioButton)) {
