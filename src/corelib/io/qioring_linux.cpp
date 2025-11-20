@@ -17,11 +17,6 @@ QT_REQUIRE_CONFIG(liburing);
 #include <sys/stat.h>
 
 QT_BEGIN_NAMESPACE
-// From man write.2:
-// On Linux, write() (and similar system calls) will transfer at most 0x7ffff000 (2,147,479,552)
-// bytes, returning the number of bytes actually transferred. (This is true on both 32-bit and
-// 64-bit systems.)
-constexpr qsizetype MaxReadWriteLen = 0x7ffff000; // aka. MAX_RW_COUNT
 
 // We pretend that iovec and QSpans are the same, assert that size and alignment match:
 static_assert(sizeof(iovec)
@@ -32,8 +27,6 @@ static_assert(alignof(iovec)
                                           .destinations)));
 
 static io_uring_op toUringOp(QIORing::Operation op);
-static void prepareFileReadWrite(io_uring_sqe *sqe, const QIORingRequestOffsetFdBase &request,
-                                 const void *address, qsizetype size);
 
 QIORing::~QIORing()
 {
@@ -119,122 +112,13 @@ bool QIORing::initializeIORing()
     return true;
 }
 
-template <QIORing::Operation Op>
-Q_ALWAYS_INLINE QIORing::ReadWriteStatus QIORing::handleReadCompletion(const io_uring_cqe *cqe, GenericRequestType *request)
+QFileDevice::FileError QIORing::mapFileError(NativeResultType error,
+                                             QFileDevice::FileError defaultValue)
 {
-    auto *readRequest = request->requestData<Op>();
-    Q_ASSERT(readRequest);
-    auto *destinations = [&readRequest]() {
-        if constexpr (Op == Operation::Read)
-            return &readRequest->destination;
-        else
-            return &readRequest->destinations[0];
-    }();
-
-    if (cqe->res < 0) {
-        if (-cqe->res == ECANCELED)
-            readRequest->result.template emplace<QFileDevice::FileError>(QFileDevice::AbortError);
-        else
-            readRequest->result.template emplace<QFileDevice::FileError>(QFileDevice::ReadError);
-    } else if (auto *extra = request->getExtra<QtPrivate::ReadWriteExtra>()) {
-        const qint32 bytesRead = cqe->res;
-        qCDebug(lcQIORing) << "Partial read of" << bytesRead << "bytes completed";
-        auto &readResult = [&readRequest]() -> QIORingResult<Op> & {
-            if (auto *result = std::get_if<QIORingResult<Op>>(&readRequest->result))
-                return *result;
-            return readRequest->result.template emplace<QIORingResult<Op>>();
-        }();
-        readResult.bytesRead += bytesRead;
-        extra->spanOffset += qsizetype(bytesRead);
-        qCDebug(lcQIORing) << "Read operation progress: span" << extra->spanIndex << "offset"
-                           << extra->spanOffset << "of" << destinations[extra->spanIndex].size()
-                           << "bytes. Total read:" << readResult.bytesRead << "bytes";
-        // The while loop is in case there is an empty span, we skip over it:
-        while (extra->spanOffset == destinations[extra->spanIndex].size()) {
-            // Move to next span
-            if (++extra->spanIndex == extra->numSpans) {
-                --ongoingSplitOperations;
-                return ReadWriteStatus::Finished;
-            }
-            extra->spanOffset = 0;
-        }
-
-        QSpan<std::byte> span = destinations[extra->spanIndex].subspan(extra->spanOffset);
-        if (span.size() > MaxReadWriteLen)
-            span = span.first(MaxReadWriteLen);
-
-        // Move the request such that it is next in the list to be processed:
-        auto &it = addrItMap[request];
-        const auto where = lastUnqueuedIterator.value_or(pendingRequests.end());
-        pendingRequests.splice(where, pendingRequests, it);
-        it = std::prev(where);
-        lastUnqueuedIterator = it;
-
-        return ReadWriteStatus::MoreToDo;
-    } else {
-        auto &result = readRequest->result.template emplace<QIORingResult<Op>>();
-        result.bytesRead = cqe->res;
-    }
-    return ReadWriteStatus::Finished;
-}
-
-template <QIORing::Operation Op>
-Q_ALWAYS_INLINE QIORing::ReadWriteStatus QIORing::handleWriteCompletion(const io_uring_cqe *cqe, GenericRequestType *request)
-{
-    auto *writeRequest = request->requestData<Op>();
-    Q_ASSERT(writeRequest);
-    auto *sources = [&writeRequest]() {
-        if constexpr (Op == Operation::Write)
-            return &writeRequest->source;
-        else
-            return &writeRequest->sources[0];
-    }();
-
-    if (cqe->res < 0) {
-        if (-cqe->res == ECANCELED)
-            writeRequest->result.template emplace<QFileDevice::FileError>(QFileDevice::AbortError);
-        else
-            writeRequest->result.template emplace<QFileDevice::FileError>(QFileDevice::WriteError);
-    } else if (auto *extra = request->getExtra<QtPrivate::ReadWriteExtra>()) {
-        const qint32 bytesWritten = cqe->res;
-        qCDebug(lcQIORing) << "Partial write of" << bytesWritten << "bytes completed";
-        auto &writeResult = [&writeRequest]() -> QIORingResult<Op> & {
-            if (auto *result = std::get_if<QIORingResult<Op>>(&writeRequest->result))
-                return *result;
-            return writeRequest->result.template emplace<QIORingResult<Op>>();
-        }();
-        writeResult.bytesWritten += bytesWritten;
-        extra->spanOffset += qsizetype(bytesWritten);
-        qCDebug(lcQIORing) << "Write operation progress: span" << extra->spanIndex << "offset"
-                           << extra->spanOffset << "of" << sources[extra->spanIndex].size()
-                           << "bytes. Total written:" << writeResult.bytesWritten << "bytes";
-        // The while loop is in case there is an empty span, we skip over it:
-        while (extra->spanOffset == sources[extra->spanIndex].size()) {
-            // Move to next span
-            if (++extra->spanIndex == extra->numSpans) {
-                --ongoingSplitOperations;
-                return ReadWriteStatus::Finished;
-            }
-            extra->spanOffset = 0;
-        }
-
-        QSpan<const std::byte> span = sources[extra->spanIndex].subspan(extra->spanOffset);
-        if (span.size() > MaxReadWriteLen)
-            span = span.first(MaxReadWriteLen);
-
-        // Move the request such that it is next in the list to be processed:
-        auto &it = addrItMap[request];
-        const auto where = lastUnqueuedIterator.value_or(pendingRequests.end());
-        pendingRequests.splice(where, pendingRequests, it);
-        it = std::prev(where);
-        lastUnqueuedIterator = it;
-
-        return ReadWriteStatus::MoreToDo;
-    } else {
-        auto &result = writeRequest->result.template emplace<QIORingResult<Op>>();
-        result.bytesWritten = cqe->res;
-    }
-    return ReadWriteStatus::Finished;
+    Q_ASSERT(error < 0);
+    if (-error == ECANCELED)
+        return QFileDevice::AbortError;
+    return defaultValue;
 }
 
 void QIORing::completionReady()
@@ -291,7 +175,8 @@ void QIORing::completionReady()
             break;
         }
         case Operation::Read: {
-            const ReadWriteStatus status = handleReadCompletion<Operation::Read>(cqe, request);
+            const ReadWriteStatus status = handleReadCompletion<Operation::Read>(
+                    cqe->res, size_t(cqe->res), request);
             if (status == ReadWriteStatus::MoreToDo)
                 continue;
             auto readRequest = request->takeRequestData<Operation::Read>();
@@ -299,7 +184,8 @@ void QIORing::completionReady()
             break;
         }
         case Operation::Write: {
-            const ReadWriteStatus status = handleWriteCompletion<Operation::Write>(cqe, request);
+            const ReadWriteStatus status = handleWriteCompletion<Operation::Write>(
+                    cqe->res, size_t(cqe->res), request);
             if (status == ReadWriteStatus::MoreToDo)
                 continue;
             auto writeRequest = request->takeRequestData<Operation::Write>();
@@ -307,7 +193,8 @@ void QIORing::completionReady()
             break;
         }
         case Operation::VectoredRead: {
-            const ReadWriteStatus status = handleReadCompletion<Operation::VectoredRead>(cqe, request);
+            const ReadWriteStatus status = handleReadCompletion<Operation::VectoredRead>(
+                    cqe->res, size_t(cqe->res), request);
             if (status == ReadWriteStatus::MoreToDo)
                 continue;
             auto readvRequest = request->takeRequestData<Operation::VectoredRead>();
@@ -315,7 +202,8 @@ void QIORing::completionReady()
             break;
         }
         case Operation::VectoredWrite: {
-            const ReadWriteStatus status = handleWriteCompletion<Operation::VectoredWrite>(cqe, request);
+            const ReadWriteStatus status = handleWriteCompletion<Operation::VectoredWrite>(
+                    cqe->res, size_t(cqe->res), request);
             if (status == ReadWriteStatus::MoreToDo)
                 continue;
             auto writevRequest = request->takeRequestData<Operation::VectoredWrite>();
@@ -533,17 +421,17 @@ static io_uring_op toUringOp(QIORing::Operation op)
 }
 
 Q_ALWAYS_INLINE
-static void prepareFileIOCommon(io_uring_sqe *sqe, const QIORingRequestOffsetFdBase &request)
+static void prepareFileIOCommon(io_uring_sqe *sqe, const QIORingRequestOffsetFdBase &request, quint64 offset)
 {
     sqe->fd = qint32(request.fd);
-    sqe->off = request.offset;
+    sqe->off = offset;
 }
 
 Q_ALWAYS_INLINE
 static void prepareFileReadWrite(io_uring_sqe *sqe, const QIORingRequestOffsetFdBase &request,
-                                 const void *address, qsizetype size)
+                                 const void *address, quint64 offset, qsizetype size)
 {
-    prepareFileIOCommon(sqe, request);
+    prepareFileIOCommon(sqe, request, offset);
     sqe->len = quint32(size);
     sqe->addr = quint64(address);
 }
@@ -612,33 +500,41 @@ auto QIORing::prepareRequest(io_uring_sqe *sqe, GenericRequestType &request) -> 
         const QIORingRequest<Operation::Read>
                 *readRequest = request.template requestData<Operation::Read>();
         auto span = readRequest->destination;
+        auto offset = readRequest->offset;
         if (span.size() >= MaxReadWriteLen) {
+            qCDebug(lcQIORing) << "Requested Read of size" << span.size() << "has to be split";
             auto *extra = request.getOrInitializeExtra<QtPrivate::ReadWriteExtra>();
+            if (extra->spanOffset == 0) // First time setup
+                ++ongoingSplitOperations;
             qsizetype remaining = span.size() - extra->spanOffset;
             span.slice(extra->spanOffset, std::min(remaining, MaxReadWriteLen));
-            ++ongoingSplitOperations;
+            offset += extra->totalProcessed;
         }
-        prepareFileReadWrite(sqe, *readRequest, span.data(), span.size());
+        prepareFileReadWrite(sqe, *readRequest, span.data(), offset, span.size());
         break;
     }
     case Operation::Write: {
         const QIORingRequest<Operation::Write>
                 *writeRequest = request.template requestData<Operation::Write>();
         auto span = writeRequest->source;
+        auto offset = writeRequest->offset;
         if (span.size() >= MaxReadWriteLen) {
+            qCDebug(lcQIORing) << "Requested Write of size" << span.size() << "has to be split";
             auto *extra = request.getOrInitializeExtra<QtPrivate::ReadWriteExtra>();
+            if (extra->spanOffset == 0) // First time setup
+                ++ongoingSplitOperations;
             qsizetype remaining = span.size() - extra->spanOffset;
             span.slice(extra->spanOffset, std::min(remaining, MaxReadWriteLen));
-            ++ongoingSplitOperations;
+            offset += extra->totalProcessed;
         }
-        prepareFileReadWrite(sqe, *writeRequest, span.data(), span.size());
+        prepareFileReadWrite(sqe, *writeRequest, span.data(), offset, span.size());
         break;
     }
     case Operation::VectoredRead: {
         // @todo Apply the split read/write concept that will apply above to this too
         const QIORingRequest<Operation::VectoredRead>
                 *readvRequest = request.template requestData<Operation::VectoredRead>();
-        prepareFileReadWrite(sqe, *readvRequest, readvRequest->destinations.data(),
+        prepareFileReadWrite(sqe, *readvRequest, readvRequest->destinations.data(), readvRequest->offset,
                              readvRequest->destinations.size());
         break;
     }
@@ -646,7 +542,7 @@ auto QIORing::prepareRequest(io_uring_sqe *sqe, GenericRequestType &request) -> 
         // @todo Apply the split read/write concept that will apply above to this too
         const QIORingRequest<Operation::VectoredWrite>
                 *writevRequest = request.template requestData<Operation::VectoredWrite>();
-        prepareFileReadWrite(sqe, *writevRequest, writevRequest->sources.data(),
+        prepareFileReadWrite(sqe, *writevRequest, writevRequest->sources.data(), writevRequest->offset,
                              writevRequest->sources.size());
         break;
     }

@@ -190,8 +190,16 @@ private:
         Finished,
     };
 #ifdef Q_OS_LINUX
+    // From man write.2:
+    // On Linux, write() (and similar system calls) will transfer at most 0x7ffff000 (2,147,479,552)
+    // bytes, returning the number of bytes actually transferred. (This is true on both 32-bit and
+    // 64-bit systems.)
+    static constexpr qsizetype MaxReadWriteLen = 0x7ffff000; // aka. MAX_RW_COUNT
+    using NativeResultType = qint32;
+    static constexpr bool isResultFailure(NativeResultType result) { return result < 0; }
+
     std::optional<QSocketNotifier> notifier;
-    // io_uring 'sq', 'sqe', 'cq', and 'cqe' pointers:
+    // io_uring 'sq', 'sqe', and 'cqe' pointers:
     void *submissionQueue = nullptr;
     io_uring_sqe *submissionQueueEntries = nullptr;
     const io_uring_cqe *completionQueueEntries = nullptr;
@@ -215,13 +223,15 @@ private:
     int eventDescriptor = -1;
     [[nodiscard]]
     RequestPrepResult prepareRequest(io_uring_sqe *sqe, GenericRequestType &request);
-    template <Operation Op>
-    ReadWriteStatus handleReadCompletion(const io_uring_cqe *cqe, GenericRequestType *request);
-    template <Operation Op>
-    ReadWriteStatus handleWriteCompletion(const io_uring_cqe *cqe, GenericRequestType *request);
 #elif defined(Q_OS_WIN)
     // We use UINT32 because that's the type used for size parameters in their API.
     static constexpr qsizetype MaxReadWriteLen = std::numeric_limits<UINT32>::max();
+    using NativeResultType = HRESULT;
+    static constexpr bool isResultFailure(NativeResultType result)
+    {
+        return FAILED(result) && result != HRESULT_FROM_WIN32(ERROR_HANDLE_EOF);
+    }
+
     std::optional<QWinEventNotifier> notifier;
     HIORING ioRingHandle = nullptr;
     HANDLE eventHandle = INVALID_HANDLE_VALUE;
@@ -232,18 +242,22 @@ private:
 
     [[nodiscard]]
     RequestPrepResult prepareRequest(GenericRequestType &request);
-    QIORing::ReadWriteStatus handleReadCompletion(
-            HRESULT result, quintptr information, QSpan<std::byte> *destinations, void *voidExtra,
-            qxp::function_ref<qint64(std::variant<QFileDevice::FileError, qint64>)> setResult);
-    template <Operation Op>
-    ReadWriteStatus handleReadCompletion(const IORING_CQE *cqe, GenericRequestType *request);
-    ReadWriteStatus handleWriteCompletion(
-            HRESULT result, quintptr information, const QSpan<const std::byte> *sources,
-            void *voidExtra,
-            qxp::function_ref<qint64(std::variant<QFileDevice::FileError, qint64>)> setResult);
-    template <Operation Op>
-    ReadWriteStatus handleWriteCompletion(const IORING_CQE *cqe, GenericRequestType *request);
 #endif
+    static QFileDevice::FileError mapFileError(NativeResultType result,
+                                               QFileDevice::FileError defaultValue);
+    using SetResultFn = qxp::function_ref<qint64(qint64)>;
+    static ReadWriteStatus handleReadCompletion(size_t value, QSpan<std::byte> *destinations,
+                                                void *voidExtra, SetResultFn setResult);
+    template <Operation Op>
+    ReadWriteStatus handleReadCompletion(NativeResultType result, size_t value,
+                                         GenericRequestType *request);
+    static ReadWriteStatus handleWriteCompletion(size_t value,
+                                                 const QSpan<const std::byte> *sources,
+                                                 void *voidExtra, SetResultFn setResult);
+    template <Operation Op>
+    ReadWriteStatus handleWriteCompletion(NativeResultType result, size_t value,
+                                          GenericRequestType *request);
+    void finalizeReadWriteCompletion(GenericRequestType *request, ReadWriteStatus rwstatus);
 };
 
 struct QIORingRequestEmptyBase
@@ -509,6 +523,78 @@ case QIORing::Operation::Op:                       \
 
     Q_UNREACHABLE();
 #undef INVOKE_ON_OP
+}
+
+template <QIORing::Operation Op>
+QIORing::ReadWriteStatus QIORing::handleReadCompletion(NativeResultType result, size_t value,
+                                                       GenericRequestType *request)
+{
+    static_assert(Op == Operation::Read || Op == Operation::VectoredRead);
+    QIORingRequest<Op> *readRequest = request->requestData<Op>();
+    Q_ASSERT(readRequest);
+
+    if (isResultFailure(result)) { // error
+        QFileDevice::FileError fileError = mapFileError(result, QFileDevice::ReadError);
+        QIORing::setFileErrorResult(*readRequest, fileError);
+        return ReadWriteStatus::Finished;
+    }
+
+    auto setResult = [readRequest](qint64 bytesRead) {
+        auto &readResult = [&readRequest]() -> QIORingResult<Op> & {
+            if (auto *result = std::get_if<QIORingResult<Op>>(&readRequest->result))
+                return *result;
+            return readRequest->result.template emplace<QIORingResult<Op>>();
+        }();
+        readResult.bytesRead += bytesRead;
+        return readResult.bytesRead;
+    };
+
+    auto *destinations = [&readRequest]() {
+        if constexpr (Op == Operation::Read)
+            return &readRequest->destination;
+        else
+            return &readRequest->destinations[0];
+    }();
+
+    QIORing::ReadWriteStatus rwstatus = handleReadCompletion(value, destinations,
+                                                             request->getExtra<void>(), setResult);
+    finalizeReadWriteCompletion(request, rwstatus);
+    return rwstatus;
+}
+
+template <QIORing::Operation Op>
+QIORing::ReadWriteStatus QIORing::handleWriteCompletion(NativeResultType result, size_t value,
+                                                        GenericRequestType *request)
+{
+    static_assert(Op == Operation::Write || Op == Operation::VectoredWrite);
+    QIORingRequest<Op> *writeRequest = request->requestData<Op>();
+    Q_ASSERT(writeRequest);
+
+    if (isResultFailure(result)) { // error
+        QFileDevice::FileError fileError = mapFileError(result, QFileDevice::WriteError);
+        QIORing::setFileErrorResult(*writeRequest, fileError);
+        return ReadWriteStatus::Finished;
+    }
+
+    auto setResult = [writeRequest](qint64 bytesWritten) {
+        auto &writeResult = [&writeRequest]() -> QIORingResult<Op> & {
+            if (auto *result = std::get_if<QIORingResult<Op>>(&writeRequest->result))
+                return *result;
+            return writeRequest->result.template emplace<QIORingResult<Op>>();
+        }();
+        writeResult.bytesWritten += bytesWritten;
+        return writeResult.bytesWritten;
+    };
+    auto *sources = [&writeRequest]() {
+        if constexpr (Op == Operation::Write)
+            return &writeRequest->source;
+        else
+            return &writeRequest->sources[0];
+    }();
+    QIORing::ReadWriteStatus rwstatus = handleWriteCompletion(value, sources,
+                                                              request->getExtra<void>(), setResult);
+    finalizeReadWriteCompletion(request, rwstatus);
+    return rwstatus;
 }
 
 namespace QtPrivate {

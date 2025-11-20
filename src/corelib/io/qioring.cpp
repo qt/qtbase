@@ -4,6 +4,8 @@
 
 #include "qioring_p.h"
 
+#include <QtCore/q26numeric.h>
+
 QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(lcQIORing, "qt.core.ioring", QtCriticalMsg)
@@ -103,6 +105,81 @@ void QIORing::finishRequestWithError(QIORing::GenericRequestType &req, QFileDevi
             setFileErrorResult(*concreteRequest, error);
         invokeCallback(*concreteRequest);
     });
+}
+
+QIORing::ReadWriteStatus QIORing::handleReadCompletion(size_t value, QSpan<std::byte> *destinations,
+                                                       void *voidExtra, SetResultFn setResultFn)
+{
+    if (value == 0) {
+        // Since we are reading, presumably this indicates EOF.
+        // In case this is our only callback, notify that it at least wasn't a
+        // failure:
+        setResultFn(qint64(0));
+        return ReadWriteStatus::Finished;
+    }
+    if (auto *extra = static_cast<QtPrivate::ReadWriteExtra *>(voidExtra)) {
+        const qsizetype bytesRead = q26::saturate_cast<qsizetype>(value);
+        qCDebug(lcQIORing) << "Partial read of" << bytesRead << "bytes completed";
+        extra->totalProcessed = setResultFn(bytesRead);
+        extra->spanOffset += bytesRead;
+        qCDebug(lcQIORing) << "Read operation progress: span" << extra->spanIndex << "offset"
+                           << extra->spanOffset << "of" << destinations[extra->spanIndex].size()
+                           << "bytes. Total read:" << extra->totalProcessed << "bytes";
+        // The while loop is in case there is an empty span, we skip over it:
+        while (extra->spanOffset == destinations[extra->spanIndex].size()) {
+            // Move to next span
+            if (++extra->spanIndex == extra->numSpans)
+                return ReadWriteStatus::Finished;
+            extra->spanOffset = 0;
+        }
+        return ReadWriteStatus::MoreToDo;
+    }
+    setResultFn(q26::saturate_cast<qsizetype>(value));
+    return ReadWriteStatus::Finished;
+}
+
+QIORing::ReadWriteStatus QIORing::handleWriteCompletion(size_t value,
+                                                        const QSpan<const std::byte> *sources,
+                                                        void *voidExtra, SetResultFn setResultFn)
+{
+    if (auto *extra = static_cast<QtPrivate::ReadWriteExtra *>(voidExtra)) {
+        const qsizetype bytesWritten = q26::saturate_cast<qsizetype>(value);
+        qCDebug(lcQIORing) << "Partial write of" << bytesWritten << "bytes completed";
+        extra->totalProcessed = setResultFn(bytesWritten);
+        extra->spanOffset += bytesWritten;
+        qCDebug(lcQIORing) << "Write operation progress: span" << extra->spanIndex << "offset"
+                           << extra->spanOffset << "of" << sources[extra->spanIndex].size()
+                           << "bytes. Total written:" << extra->totalProcessed << "bytes";
+        // The while loop is in case there is an empty span, we skip over it:
+        while (extra->spanOffset == sources[extra->spanIndex].size()) {
+            // Move to next span
+            if (++extra->spanIndex == extra->numSpans)
+                return ReadWriteStatus::Finished;
+            extra->spanOffset = 0;
+        }
+        return ReadWriteStatus::MoreToDo;
+    }
+    setResultFn(q26::saturate_cast<qsizetype>(value));
+    return ReadWriteStatus::Finished;
+}
+
+void QIORing::finalizeReadWriteCompletion(GenericRequestType *request, ReadWriteStatus rwstatus)
+{
+    switch (rwstatus) {
+    case ReadWriteStatus::Finished:
+        if (request->getExtra<void>())
+            --ongoingSplitOperations;
+        break;
+    case ReadWriteStatus::MoreToDo: {
+        // Move the request such that it is next in the list to be processed:
+        auto &it = addrItMap[request];
+        const auto where = lastUnqueuedIterator.value_or(pendingRequests.end());
+        pendingRequests.splice(where, pendingRequests, it);
+        it = std::prev(where);
+        lastUnqueuedIterator = it;
+        break;
+    }
+    }
 }
 
 QT_END_NAMESPACE
