@@ -20,6 +20,7 @@ private Q_SLOTS:
     void exceptions();
     void earlyExitScope();
     void mixedTypes();
+    void sharedPtr();
 private:
     void earlyExitScope_helper(int exitpoint, std::atomic<int> &member);
 };
@@ -219,6 +220,34 @@ void tst_QAtomicScopedValueRollback::mixedTypes()
         }
         QCOMPARE(a.loadRelaxed(), &i);
     }
+}
+
+void tst_QAtomicScopedValueRollback::sharedPtr()
+{
+#ifdef __cpp_lib_atomic_shared_ptr
+    std::atomic<std::shared_ptr<int>> a{std::make_shared<int>(42)};
+    QCOMPARE_NE(a.load(), nullptr);
+    QCOMPARE_EQ(*a.load(), 42);
+    {
+        QAtomicScopedValueRollback rb(a, nullptr);
+        QCOMPARE_EQ(a.load(), nullptr);
+    }
+    QCOMPARE_NE(a.load(), nullptr);
+    QCOMPARE_EQ(*a.load(), 42);
+    {
+        QAtomicScopedValueRollback rb{a, std::make_shared<int>(123)};
+        QCOMPARE_NE(a.load(), nullptr);
+        QCOMPARE_EQ(*a.load(), 123);
+        rb.commit();
+        a.store(std::make_shared<int>(256));
+        QCOMPARE_NE(a.load(), nullptr);
+        QCOMPARE_EQ(*a.load(), 256);
+    }
+    QCOMPARE_NE(a.load(), nullptr);
+    QCOMPARE_EQ(*a.load(), 123);
+#else
+    QSKIP("This test requires atomic<shared_ptr> support enabled in the C++ standard library.");
+#endif
 }
 
 static void operator*=(std::atomic<int> &lhs, int rhs)
