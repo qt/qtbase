@@ -274,6 +274,21 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QMacAccessibilityElement);
     return NO;
 }
 
+- (NSString *)accessibilityLanguage
+{
+    QAccessibleInterface *iface = QAccessible::accessibleInterface(self.axid);
+    if (!iface || !iface->isValid()) {
+        qWarning() << "invalid accessible interface for: " << self.axid;
+        return @"";
+    }
+    QAccessibleAttributesInterface *attributesIface = iface->attributesInterface();
+    if (!attributesIface || !attributesIface->attributeKeys().contains(QAccessible::Attribute::Locale))
+        return @"";
+
+    const auto &localeVariant = attributesIface->attributeValue(QAccessible::Attribute::Locale);
+    return localeVariant.toLocale().bcp47Name().toNSString();
+}
+
 @end
 
 #endif
