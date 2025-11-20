@@ -351,7 +351,7 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
     if (widget && widget->testAttribute(Qt::WA_UnderMouse) && widget->isActiveWindow())
         flags |= State_MouseOver;
 
-    painter->save();
+    QPainterStateGuard psg(painter);
     painter->setRenderHint(QPainter::Antialiasing);
     if (d->transitionsEnabled() && option->styleObject) {
         if (control == CC_Slider) {
@@ -534,10 +534,9 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
                     v = nextInterval;
                 }
                 if (!lines.isEmpty()) {
-                    painter->save();
+                    QPainterStateGuard psg(painter);
                     painter->translate(slrect.topLeft());
                     painter->drawLines(lines.constData(), lines.size());
-                    painter->restore();
                 }
             }
             if (sub & SC_SliderHandle) {
@@ -763,7 +762,6 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
     default:
         QWindowsVistaStyle::drawComplexControl(control, option, painter, widget);
     }
-    painter->restore();
 }
 
 void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption *option,
@@ -772,7 +770,7 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
     QWindows11StylePrivate *d = const_cast<QWindows11StylePrivate*>(d_func());
 
     int state = option->state;
-    painter->save();
+    QPainterStateGuard psg(painter);
     painter->setRenderHint(QPainter::Antialiasing);
     if (d->transitionsEnabled() && option->styleObject && (element == PE_IndicatorCheckBox || element == PE_IndicatorRadioButton)) {
         QObject *styleObject = option->styleObject; // Can be widget or qquickitem
@@ -1091,17 +1089,15 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
                 painter->setBrush(view->alternatingRowColors() ? vopt->palette.highlight() : WINUI3Colors[colorSchemeIndex][subtleHighlightColor]);
                 painter->setPen(Qt::NoPen);
                 if (isFirst) {
-                    painter->save();
+                    QPainterStateGuard psg(painter);
                     painter->setClipRect(rect);
                     painter->drawRoundedRect(rect.marginsRemoved(QMargins(2, 2, -secondLevelRoundingRadius, 2)),
                                              secondLevelRoundingRadius, secondLevelRoundingRadius);
-                    painter->restore();
                 } else if (isLast) {
-                    painter->save();
+                    QPainterStateGuard psg(painter);
                     painter->setClipRect(rect);
                     painter->drawRoundedRect(rect.marginsRemoved(QMargins(-secondLevelRoundingRadius, 2, 2, 2)),
                                              secondLevelRoundingRadius, secondLevelRoundingRadius);
-                    painter->restore();
                 } else {
                     painter->drawRect(vopt->rect.marginsRemoved(QMargins(0, 2, 0, 2)));
                 }
@@ -1181,7 +1177,6 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
     default:
         QWindowsVistaStyle::drawPrimitive(element, option, painter, widget);
     }
-    painter->restore();
 }
 
 /*!
@@ -1193,7 +1188,7 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
     Q_D(const QWindows11Style);
     State flags = option->state;
 
-    painter->save();
+    QPainterStateGuard psg(painter);
     painter->setRenderHint(QPainter::Antialiasing);
     switch (element) {
     case QStyle::CE_ComboBoxLabel:
@@ -1787,17 +1782,15 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
                 painter->drawRoundedRect(rect.marginsRemoved(QMargins(2, 2, 2, 2)),
                                          secondLevelRoundingRadius, secondLevelRoundingRadius);
             } else if (isFirst) {
-                painter->save();
+                QPainterStateGuard psg(painter);
                 painter->setClipRect(rect);
                 painter->drawRoundedRect(rect.marginsRemoved(QMargins(2, 2, -secondLevelRoundingRadius, 2)),
                                          secondLevelRoundingRadius, secondLevelRoundingRadius);
-                painter->restore();
             } else if (isLast) {
-                painter->save();
+                QPainterStateGuard psg(painter);
                 painter->setClipRect(rect);
                 painter->drawRoundedRect(rect.marginsRemoved(QMargins(-secondLevelRoundingRadius, 2, 2, 2)),
                                          secondLevelRoundingRadius, secondLevelRoundingRadius);
-                painter->restore();
             } else {
                 painter->drawRect(rect.marginsRemoved(QMargins(0, 2, 0, 2)));
             }
@@ -1857,7 +1850,6 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
     default:
         QWindowsVistaStyle::drawControl(element, option, painter, widget);
     }
-    painter->restore();
 }
 
 int QWindows11Style::styleHint(StyleHint hint, const QStyleOption *opt,
