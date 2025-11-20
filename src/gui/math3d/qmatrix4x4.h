@@ -608,9 +608,9 @@ inline QMatrix4x4 operator-(const QMatrix4x4& m1, const QMatrix4x4& m2)
 
 inline QMatrix4x4 operator*(const QMatrix4x4& m1, const QMatrix4x4& m2)
 {
+    QMatrix4x4 m(Qt::Uninitialized);
     QMatrix4x4::Flags flagBits = m1.flagBits | m2.flagBits;
     if (flagBits.toInt() < QMatrix4x4::Rotation2D) {
-        QMatrix4x4 m(Qt::Uninitialized);
         m.m[0][0] = m1.m[0][0] * m2.m[0][0];
         m.m[0][1] = 0.0f;
         m.m[0][2] = 0.0f;
@@ -634,7 +634,6 @@ inline QMatrix4x4 operator*(const QMatrix4x4& m1, const QMatrix4x4& m2)
         return m;
     }
 
-    QMatrix4x4 m(Qt::Uninitialized);
     m.m[0][0] = m1.m[0][0] * m2.m[0][0]
               + m1.m[1][0] * m2.m[0][1]
               + m1.m[2][0] * m2.m[0][2]
