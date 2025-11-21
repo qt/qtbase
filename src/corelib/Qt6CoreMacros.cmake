@@ -3209,41 +3209,63 @@ function(_qt_internal_setup_deploy_support)
         endif()
     endif()
 
-    # Generate path to the target (not host) qtpaths file. Needed for windeployqt when
-    # cross-compiling from an x86_64 host to an arm64 target, so it knows which architecture
-    # libraries should be deployed.
-    if(CMAKE_HOST_WIN32)
-        if(CMAKE_CROSSCOMPILING)
-            set(qt_paths_ext ".bat")
-        else()
-            set(qt_paths_ext ".exe")
-        endif()
-    else()
-        set(qt_paths_ext "")
-    endif()
+    # Generate path to the qtpaths executable or script, that will give info about the target
+    # platform, but which can run on the host. Needed for windeployqt when cross-compiling from
+    # an x86_64 host to an arm64 target, so it knows which architecture libraries should be
+    # deployed.
+    set(base_name "qtpaths")
+    set(base_names "")
 
-
-
-    set(target_qtpaths_path "")
-    set(qtpaths_prefix "${QT6_INSTALL_PREFIX}/${QT6_INSTALL_BINS}")
     get_property(qt_major_version TARGET "${target}" PROPERTY INTERFACE_QT_MAJOR_VERSION)
     if(qt_major_version)
-        set(target_qtpaths_with_major_version_path
-            "${qtpaths_prefix}/qtpaths${qt_major_version}${qt_paths_ext}")
-        if(EXISTS "${target_qtpaths_with_major_version_path}")
-            set(target_qtpaths_path "${target_qtpaths_with_major_version_path}")
-        endif()
+        list(APPEND base_names "${base_name}${qt_major_version}")
     endif()
+    list(APPEND base_names "${base_name}")
 
-    if(NOT target_qtpaths_path)
-        set(target_qtpaths_path_without_version "${qtpaths_prefix}/qtpaths${qt_paths_ext}")
-        if(EXISTS "${target_qtpaths_path_without_version}")
-            set(target_qtpaths_path "${target_qtpaths_path_without_version}")
+    set(qtpaths_name_candidates "")
+    foreach(base_name IN LISTS base_names)
+        if(CMAKE_HOST_WIN32)
+            if(CMAKE_CROSSCOMPILING)
+                set(qt_paths_ext ".bat")
+                # Depending on whether QT_FORCE_BUILD_TOOLS was set when building Qt, a 'host-'
+                # prefix is prepended to the created qtpaths wrapper, not to collide with the
+                # cross-compiled excutable.
+                # Rather than exporting that QT_FORCE_BUILD_TOOLS to be available during user
+                # project configuration, search for both, with the bare one searched first.
+                list(APPEND qtpaths_name_candidates "${base_name}${qt_paths_ext}")
+                list(APPEND qtpaths_name_candidates "host-${base_name}${qt_paths_ext}")
+            else()
+                set(qt_paths_ext ".exe")
+                list(APPEND qtpaths_name_candidates "${base_name}${qt_paths_ext}")
+            endif()
+        else()
+            list(APPEND qtpaths_name_candidates "${base_name}")
         endif()
-    endif()
+    endforeach()
 
-    if(NOT target_qtpaths_path)
-        message(DEBUG "No qtpaths executable found for deployment purposes.")
+    set(qtpaths_prefix "${QT6_INSTALL_PREFIX}/${QT6_INSTALL_BINS}")
+
+    set(candidate_paths "")
+    foreach(qtpaths_name_candidate IN LISTS qtpaths_name_candidates)
+        set(candidate_path "${qtpaths_prefix}/${qtpaths_name_candidate}")
+        list(APPEND candidate_paths "${candidate_path}")
+    endforeach()
+
+    set(target_qtpaths_path "")
+    foreach(candidate_path IN LISTS candidate_paths)
+        if(EXISTS "${candidate_path}")
+            set(target_qtpaths_path "${candidate_path}")
+            break()
+        endif()
+    endforeach()
+
+    list(JOIN candidate_paths "\n    " candidate_paths_joined)
+
+    if(NOT QT_NO_QTPATHS_DEPLOYMENT_WARNING AND NOT target_qtpaths_path)
+        message(WARNING
+            "No qtpaths executable found for deployment purposes. Candidates searched: \n    "
+            "${candidate_paths_joined}"
+        )
     endif()
 
     file(GENERATE OUTPUT "${QT_DEPLOY_SUPPORT}" CONTENT

@@ -771,6 +771,8 @@ function(qt6_deploy_runtime_dependencies)
 
         # Specify path to target Qt's qtpaths .exe or .bat file, so windeployqt deploys the correct
         # libraries when cross-compiling from x86_64 to arm64 windows.
+        # We need to point to a qtpaths that will give info about the target platform, but which
+        # can run on the host.
         if(__QT_DEPLOY_TARGET_QT_PATHS_PATH AND EXISTS "${__QT_DEPLOY_TARGET_QT_PATHS_PATH}")
             list(APPEND tool_options --qtpaths "${__QT_DEPLOY_TARGET_QT_PATHS_PATH}")
         else()
