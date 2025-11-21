@@ -2069,16 +2069,31 @@ QRect QWindows11Style::subControlRect(ComplexControl control, const QStyleOption
         break;
     }
     case CC_ComboBox: {
-        if (subControl == SC_ComboBoxArrow) {
+        if (const auto *cb = qstyleoption_cast<const QStyleOptionComboBox *>(option)) {
             const auto indicatorWidth =
                     proxy()->pixelMetric(PM_MenuButtonIndicator, option, widget);
-            const int endX = option->rect.right() - contentHMargin - 2;
-            const int startX = endX - indicatorWidth;
-            const QRect rect(QPoint(startX, option->rect.top()),
-                             QPoint(endX, option->rect.bottom()));
-            ret = visualRect(option->direction, option->rect, rect);
-        } else {
-            ret = QWindowsVistaStyle::subControlRect(control, option, subControl, widget);
+            switch (subControl) {
+            case SC_ComboBoxArrow: {
+                const int endX = option->rect.right() - contentHMargin - 2;
+                const int startX = endX - indicatorWidth;
+                const QRect rect(QPoint(startX, option->rect.top()),
+                                 QPoint(endX, option->rect.bottom()));
+                ret = visualRect(option->direction, option->rect, rect);
+                break;
+            }
+            case SC_ComboBoxEditField: {
+                ret = option->rect;
+                if (cb->frame) {
+                    const int fw = proxy()->pixelMetric(PM_ComboBoxFrameWidth, cb, widget);
+                    ret = ret.marginsRemoved(QMargins(fw, fw, fw, fw));
+                }
+                ret.setWidth(ret.width() - indicatorWidth - contentHMargin * 2);
+                break;
+            }
+            default:
+                ret = QWindowsVistaStyle::subControlRect(control, option, subControl, widget);
+                break;
+            }
         }
         break;
     }
