@@ -732,6 +732,26 @@ bool QCocoaFileDialogHelper::show(Qt::WindowFlags windowFlags, Qt::WindowModalit
         return false;
     }
 
+    if (qt_apple_isSandboxed()) {
+        static bool canRead = qt_mac_processHasEntitlement(
+            u"com.apple.security.files.user-selected.read-only"_s);
+        static bool canReadWrite = qt_mac_processHasEntitlement(
+            u"com.apple.security.files.user-selected.read-write"_s);
+
+        if (options()->acceptMode() == QFileDialogOptions::AcceptSave
+            && !canReadWrite) {
+            qWarning() << "Sandboxed application is missing user-selected files"
+                << "read-write entitlement. Falling back to non-native dialog";
+            return false;
+        }
+
+        if (!canReadWrite && !canRead) {
+            qWarning() << "Sandboxed application is missing user-selected files"
+                       << "entitlement. Falling back to non-native dialog";
+            return false;
+        }
+    }
+
     createNSOpenSavePanelDelegate();
 
     return [m_delegate showPanel:windowModality withParent:parent];
