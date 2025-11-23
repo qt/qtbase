@@ -934,7 +934,7 @@ void QBoxLayout::insertLayout(int index, QLayout *layout, int stretch)
 
     If the stretch factor is 0 and nothing else in the QBoxLayout has
     a stretch factor greater than zero, the space is distributed
-    according to the QWidget:sizePolicy() of each widget that's
+    according to the QWidget::sizePolicy() of each widget that's
     involved.
 
     The alignment is specified by \a alignment. The default alignment
@@ -1008,7 +1008,7 @@ void QBoxLayout::addSpacerItem(QSpacerItem *spacerItem)
 
     If the stretch factor is 0 and nothing else in the QBoxLayout has
     a stretch factor greater than zero, the space is distributed
-    according to the QWidget:sizePolicy() of each widget that's
+    according to the QWidget::sizePolicy() of each widget that's
     involved.
 
     The alignment is specified by \a alignment. The default
