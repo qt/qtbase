@@ -24,6 +24,7 @@
 #if QT_CONFIG(mdiarea)
 #include <QtWidgets/qmdiarea.h>
 #endif
+#include <QtWidgets/qplaintextedit.h>
 #include <QtWidgets/qtextedit.h>
 #include <QtWidgets/qtreeview.h>
 #if QT_CONFIG(datetimeedit)
@@ -1023,7 +1024,9 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
             if (frame->frameShape == QFrame::NoFrame)
                 break;
 
-            drawLineEditFrame(painter, rect, option, qobject_cast<const QTextEdit *>(widget) != nullptr);
+            const bool isEditable = qobject_cast<const QTextEdit *>(widget) != nullptr
+                    || qobject_cast<const QPlainTextEdit *>(widget) != nullptr;
+            drawLineEditFrame(painter, rect, option, isEditable);
         }
         break;
     }
