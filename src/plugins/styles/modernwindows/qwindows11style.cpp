@@ -1448,36 +1448,10 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
 #endif // QT_CONFIG(progressbar)
     case CE_PushButtonLabel:
         if (const QStyleOptionButton *btn = qstyleoption_cast<const QStyleOptionButton *>(option)) {
-            using namespace StyleOptionHelper;
-            const bool isEnabled = !isDisabled(option);
-
-            QRect textRect = btn->rect.marginsRemoved(QMargins(contentHMargin, 0, contentHMargin, 0));
-            int tf = Qt::AlignCenter | Qt::TextShowMnemonic;
-            if (!proxy()->styleHint(SH_UnderlineShortcut, btn, widget))
-                tf |= Qt::TextHideMnemonic;
-
-            if (!btn->icon.isNull()) {
-                //Center both icon and text
-                QIcon::Mode mode = isEnabled ? QIcon::Normal : QIcon::Disabled;
-                if (mode == QIcon::Normal && btn->state & State_HasFocus)
-                    mode = QIcon::Active;
-                QIcon::State state = isChecked(btn) ? QIcon::On : QIcon::Off;
-
-                int iconSpacing = 4;//### 4 is currently hardcoded in QPushButton::sizeHint()
-
-                QRect iconRect = QRect(textRect.x(), textRect.y(), btn->iconSize.width(), textRect.height());
-                QRect vIconRect = visualRect(btn->direction, btn->rect, iconRect);
-                textRect.setLeft(textRect.left() + iconRect.width() + iconSpacing);
-
-                if (isChecked(btn) || isPressed(btn))
-                    vIconRect.translate(proxy()->pixelMetric(PM_ButtonShiftHorizontal, option, widget),
-                                        proxy()->pixelMetric(PM_ButtonShiftVertical, option, widget));
-                btn->icon.paint(painter, vIconRect, Qt::AlignCenter, mode, state);
-            }
-
-            auto vTextRect = visualRect(btn->direction, btn->rect, textRect);
-            painter->setPen(controlTextColor(option));
-            proxy()->drawItemText(painter, vTextRect, tf, option->palette, isEnabled, btn->text);
+            QStyleOptionButton btnCopy(*btn);
+            btnCopy.rect = btn->rect.marginsRemoved(QMargins(contentHMargin, 0, contentHMargin, 0));
+            btnCopy.palette.setBrush(QPalette::ButtonText, controlTextColor(option));
+            QCommonStyle::drawControl(element, &btnCopy, painter, widget);
         }
         break;
     case CE_PushButtonBevel:
