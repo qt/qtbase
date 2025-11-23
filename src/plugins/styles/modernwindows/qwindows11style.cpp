@@ -3123,15 +3123,20 @@ void QWindows11Style::drawLineEditFrame(QPainter *p, const QRectF &rect, const Q
     if (!isEditable || StyleOptionHelper::isDisabled(o))
         return;
 
-    QPainterStateGuard psg(p);
-    p->setClipRect(rect.marginsRemoved(QMarginsF(0, rect.height() - 0.5, 0, -1)));
     const bool hasFocus = o->state & State_HasFocus;
     const auto underlineCol = hasFocus
             ? o->palette.color(QPalette::Accent)
             : colorSchemeIndex == 0 ? QColor(0x80, 0x80, 0x80)
                                     : QColor(0xa0, 0xa0, 0xa0);
-    const auto penUnderline = QPen(underlineCol, hasFocus ? 2 : 1);
-    drawRoundedRect(p, rect, penUnderline, Qt::NoBrush);
+    QPainterStateGuard psg(p);
+    if (hasFocus) {
+        p->setClipRect(rect.marginsRemoved(QMarginsF(0, rect.height() - 1.5, 0, -1)));
+        const QRectF r(rect.top(), rect.left(), rect.width(), rect.height() - 1);
+        drawRoundedRect(p, r, QPen(underlineCol, 2), Qt::NoBrush);
+    } else {
+        p->setClipRect(rect.marginsRemoved(QMarginsF(0, rect.height() - 0.5, 0, -1)));
+        drawRoundedRect(p, rect, underlineCol, Qt::NoBrush);
+    }
 }
 
 QColor QWindows11Style::winUI3Color(enum WINUI3Color col) const
