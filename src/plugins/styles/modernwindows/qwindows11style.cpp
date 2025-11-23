@@ -414,18 +414,13 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
                               sb, sb->rect.size());
             if (cp.needsPainting()) {
                 const auto frameRect = QRectF(option->rect).marginsRemoved(QMarginsF(1.5, 1.5, 1.5, 1.5));
-                drawRoundedRect(cp.painter(), frameRect, Qt::NoPen, option->palette.brush(QPalette::Base));
+                drawRoundedRect(cp.painter(), frameRect, Qt::NoPen, inputFillBrush(option, widget));
 
                 if (sb->frame && (sub & SC_SpinBoxFrame))
                     drawLineEditFrame(cp.painter(), frameRect, option);
 
-                const bool isMouseOver = state & State_MouseOver;
-                const bool hasFocus = state & State_HasFocus;
-                const bool isEnabled = state & QStyle::State_Enabled;
-                if (isEnabled && isMouseOver && !hasFocus && !highContrastTheme)
-                    drawRoundedRect(cp.painter(), frameRect, Qt::NoPen, winUI3Color(subtleHighlightColor));
-
                 const auto drawUpDown = [&](QStyle::SubControl sc) {
+                    const bool isEnabled = state & QStyle::State_Enabled;
                     const bool isUp = sc == SC_SpinBoxUp;
                     const QRect rect = proxy()->subControlRect(CC_SpinBox, option, sc, widget);
                     if (isEnabled && sb->activeSubControls & sc)
@@ -584,18 +579,19 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
     case CC_ComboBox:
         if (const QStyleOptionComboBox *combobox = qstyleoption_cast<const QStyleOptionComboBox *>(option)) {
             const auto frameRect = QRectF(option->rect).marginsRemoved(QMarginsF(1.5, 1.5, 1.5, 1.5));
-            drawRoundedRect(painter, frameRect, Qt::NoPen, option->palette.brush(QPalette::Base));
+            QStyleOption opt(*option);
+            opt.state.setFlag(QStyle::State_On, false);
+            drawRoundedRect(painter, frameRect, Qt::NoPen,
+                            combobox->editable ? inputFillBrush(option, widget)
+                                               : controlFillBrush(&opt, ControlType::Control));
 
             if (combobox->frame)
                 drawLineEditFrame(painter, frameRect, combobox, combobox->editable);
 
             const bool hasFocus = state & State_HasFocus;
-            QStyleOption opt(*option);
-            opt.state.setFlag(QStyle::State_On, false);
-            drawRoundedRect(painter, frameRect, Qt::NoPen, controlFillBrush(&opt, ControlType::Control));
 
             if (sub & SC_ComboBoxArrow) {
-                QRectF rect = proxy()->subControlRect(CC_ComboBox, option, SC_ComboBoxArrow, widget).adjusted(4, 0, -4, 1);
+                QRectF rect = proxy()->subControlRect(CC_ComboBox, option, SC_ComboBoxArrow, widget);
                 painter->setFont(d->assetFont);
                 painter->setPen(controlTextColor(option));
                 painter->drawText(rect, Qt::AlignCenter, ChevronDownMed);
@@ -991,10 +987,17 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
     }
     case PE_PanelLineEdit:
         if (const auto *panel = qstyleoption_cast<const QStyleOptionFrame *>(option)) {
-            const auto frameRect = QRectF(option->rect).marginsRemoved(QMarginsF(1.5, 1.5, 1.5, 1.5));
-            drawRoundedRect(painter, frameRect, Qt::NoPen, inputFillBrush(option, widget));
-            if (panel->lineWidth > 0)
-                proxy()->drawPrimitive(PE_FrameLineEdit, panel, painter, widget);
+            const bool isInSpinBox =
+                    widget && qobject_cast<const QAbstractSpinBox *>(widget->parent()) != nullptr;
+            const bool isInComboBox =
+                    widget && qobject_cast<const QComboBox *>(widget->parent()) != nullptr;
+            if (!isInSpinBox && !isInComboBox) {
+                const auto frameRect =
+                        QRectF(option->rect).marginsRemoved(QMarginsF(1.5, 1.5, 1.5, 1.5));
+                drawRoundedRect(painter, frameRect, Qt::NoPen, inputFillBrush(option, widget));
+                if (panel->lineWidth > 0)
+                    proxy()->drawPrimitive(PE_FrameLineEdit, panel, painter, widget);
+            }
         }
         break;
     case PE_FrameLineEdit: {
@@ -1929,32 +1932,31 @@ QRect QWindows11Style::subControlRect(ComplexControl control, const QStyleOption
 #if QT_CONFIG(spinbox)
     case CC_SpinBox:
         if (const QStyleOptionSpinBox *spinbox = qstyleoption_cast<const QStyleOptionSpinBox *>(option)) {
-            QSize bs;
-            int fw = spinbox->frame ? proxy()->pixelMetric(PM_SpinBoxFrameWidth, spinbox, widget) : 0;
-            bs.setHeight(qMax(8, spinbox->rect.height() - fw));
-            bs.setWidth(16);
-            int y = fw + spinbox->rect.y();
-            int x, lx, rx;
-            x = spinbox->rect.x() + spinbox->rect.width() - fw - 2 * bs.width();
-            lx = fw;
-            rx = x - fw;
+            const bool hasButtons = spinbox->buttonSymbols != QAbstractSpinBox::NoButtons;
+            const int fw = spinbox->frame
+                    ? proxy()->pixelMetric(PM_SpinBoxFrameWidth, spinbox, widget)
+                    : 0;
+            const int buttonHeight = hasButtons
+                    ? qMin(spinbox->rect.height() - 3 * fw, spinbox->fontMetrics.height() * 5 / 4)
+                    : 0;
+            const QSize buttonSize(buttonHeight * 6 / 5, buttonHeight);
+            const int textFieldLength = spinbox->rect.width() - 2 * fw - 2 * buttonSize.width();
+            const QPoint topLeft(spinbox->rect.topLeft() + QPoint(fw, fw));
             switch (subControl) {
             case SC_SpinBoxUp:
-                if (spinbox->buttonSymbols == QAbstractSpinBox::NoButtons)
+            case SC_SpinBoxDown: {
+                if (!hasButtons)
                     return QRect();
-                ret = QRect(x, y, bs.width(), bs.height());
+                const int yOfs = ((spinbox->rect.height() - 2 * fw) - buttonSize.height()) / 2;
+                ret = QRect(topLeft.x() + textFieldLength, topLeft.y() + yOfs, buttonSize.width(),
+                            buttonSize.height());
+                if (subControl == SC_SpinBoxDown)
+                    ret.moveRight(ret.right() + buttonSize.width());
                 break;
-            case SC_SpinBoxDown:
-                if (spinbox->buttonSymbols == QAbstractSpinBox::NoButtons)
-                    return QRect();
-                ret = QRect(x + bs.width(), y, bs.width(), bs.height());
-                break;
+            }
             case SC_SpinBoxEditField:
-                if (spinbox->buttonSymbols == QAbstractSpinBox::NoButtons) {
-                    ret = QRect(lx, fw, spinbox->rect.width() - 2*fw, spinbox->rect.height() - 2*fw);
-                } else {
-                    ret = QRect(lx, fw, rx, spinbox->rect.height() - 2*fw);
-                }
+                ret = QRect(topLeft,
+                            spinbox->rect.bottomRight() - QPoint(fw + 2 * buttonSize.width(), fw));
                 break;
             case SC_SpinBoxFrame:
                 ret = spinbox->rect;
@@ -2074,11 +2076,17 @@ QRect QWindows11Style::subControlRect(ComplexControl control, const QStyleOption
                     proxy()->pixelMetric(PM_MenuButtonIndicator, option, widget);
             switch (subControl) {
             case SC_ComboBoxArrow: {
-                const int endX = option->rect.right() - contentHMargin - 2;
-                const int startX = endX - indicatorWidth;
-                const QRect rect(QPoint(startX, option->rect.top()),
-                                 QPoint(endX, option->rect.bottom()));
-                ret = visualRect(option->direction, option->rect, rect);
+                const int fw =
+                        cb->frame ? proxy()->pixelMetric(PM_ComboBoxFrameWidth, cb, widget) : 0;
+                const int buttonHeight =
+                        qMin(cb->rect.height() - 3 * fw, cb->fontMetrics.height() * 5 / 4);
+                const QSize buttonSize(buttonHeight * 6 / 5, buttonHeight);
+                const int textFieldLength = cb->rect.width() - 2 * fw - buttonSize.width();
+                const QPoint topLeft(cb->rect.topLeft() + QPoint(fw, fw));
+                const int yOfs = ((cb->rect.height() - 2 * fw) - buttonSize.height()) / 2;
+                ret = QRect(topLeft.x() + textFieldLength, topLeft.y() + yOfs, buttonSize.width(),
+                            buttonSize.height());
+                ret = visualRect(option->direction, option->rect, ret);
                 break;
             }
             case SC_ComboBoxEditField: {
@@ -2185,15 +2193,15 @@ QSize QWindows11Style::sizeFromContents(ContentsType type, const QStyleOption *o
         break;
 #endif // QT_CONFIG(menu)
 #if QT_CONFIG(spinbox)
-    case QStyle::CT_SpinBox: {
+    case CT_SpinBox: {
         if (const auto *spinBoxOpt = qstyleoption_cast<const QStyleOptionSpinBox *>(option)) {
             // Add button + frame widths
-            const qreal dpi = QStyleHelper::dpi(option);
             const bool hasButtons = (spinBoxOpt->buttonSymbols != QAbstractSpinBox::NoButtons);
             const int margins = 8;
-            const int buttonWidth = hasButtons ? qRound(QStyleHelper::dpiScaled(16, dpi)) : 0;
-            const int frameWidth = spinBoxOpt->frame ? proxy()->pixelMetric(PM_SpinBoxFrameWidth,
-                                                                            spinBoxOpt, widget) : 0;
+            const int buttonWidth = hasButtons ? 16 + contentItemHMargin : 0;
+            const int frameWidth = spinBoxOpt->frame
+                    ? proxy()->pixelMetric(PM_SpinBoxFrameWidth, option, widget)
+                    : 0;
 
             contentSize += QSize(2 * buttonWidth + 2 * frameWidth + 2 * margins, 2 * frameWidth);
         }
@@ -2204,7 +2212,7 @@ QSize QWindows11Style::sizeFromContents(ContentsType type, const QStyleOption *o
     case CT_ComboBox:
         if (const auto *comboBoxOpt = qstyleoption_cast<const QStyleOptionComboBox *>(option)) {
             contentSize = QWindowsStyle::sizeFromContents(type, option, size, widget);  // don't rely on QWindowsThemeData
-            contentSize += QSize(4, 4);     // default win11 style margins
+            contentSize += QSize(0, 4); // for the lineedit frame
             if (comboBoxOpt->subControls & SC_ComboBoxArrow) {
                 const auto w = proxy()->pixelMetric(PM_MenuButtonIndicator, option, widget);
                 contentSize.rwidth() += w + contentItemHMargin;
@@ -2212,6 +2220,13 @@ QSize QWindows11Style::sizeFromContents(ContentsType type, const QStyleOption *o
         }
         break;
 #endif
+    case CT_LineEdit: {
+        if (qstyleoption_cast<const QStyleOptionFrame *>(option)) {
+            contentSize = QWindowsStyle::sizeFromContents(type, option, size, widget); // don't rely on QWindowsThemeData
+            contentSize += QSize(0, 4); // for the lineedit frame
+        }
+        break;
+    }
     case CT_HeaderSection:
         // windows vista does not honor the indicator (as it was drawn above the text, not on the
         // side) so call QWindowsStyle::styleHint directly to get the correct size hint
@@ -2339,6 +2354,8 @@ int QWindows11Style::pixelMetric(PixelMetric metric, const QStyleOption *option,
         }
         break;
     }
+    case PM_ComboBoxFrameWidth:
+    case PM_SpinBoxFrameWidth:
     case PM_DefaultFrameWidth:
         res = 2;
         break;
