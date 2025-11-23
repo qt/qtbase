@@ -42,6 +42,7 @@ enum WINUI3Color {
     fillControlSecondary,             // button hover color (alpha)
     fillControlTertiary,              // button pressed color (alpha)
     fillControlDisabled,              // button disabled color (alpha)
+    fillControlInputActive,           // input active
     fillControlAltSecondary,          // checkbox/RadioButton default color (alpha)
     fillControlAltTertiary,           // checkbox/RadioButton hover color (alpha)
     fillControlAltQuarternary,        // checkbox/RadioButton pressed color (alpha)
@@ -97,6 +98,7 @@ private:
         ControlAlt
     };
     QBrush controlFillBrush(const QStyleOption *option, ControlType controlType) const;
+    QBrush inputFillBrush(const QStyleOption *option, const QWidget *widget) const;
     // ControlType::ControlAlt can be mapped to QPalette directly
     QColor controlTextColor(const QStyleOption *option,
                             QPalette::ColorRole role = QPalette::ButtonText) const;

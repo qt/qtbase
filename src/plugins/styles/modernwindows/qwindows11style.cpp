@@ -69,6 +69,10 @@ inline bool isAutoRaise(const QStyleOption *option)
 {
     return option->state.testFlag(QStyle::State_AutoRaise);
 }
+inline bool hasFocus(const QStyleOption *option)
+{
+    return option->state.testFlag(QStyle::State_HasFocus);
+}
 enum class ControlState { Normal, Hover, Pressed, Disabled };
 inline ControlState calcControlState(const QStyleOption *option)
 {
@@ -123,7 +127,7 @@ static constexpr int percentToAlpha(double percent)
     return qRound(percent * 255. / 100.);
 }
 
-static constexpr std::array<QColor, 33> WINUI3ColorsLight {
+static constexpr std::array<QColor, 34> WINUI3ColorsLight {
     QColor(0x00,0x00,0x00,percentToAlpha(3.73)), // subtleHighlightColor (fillSubtleSecondary)
     QColor(0x00,0x00,0x00,percentToAlpha(2.41)), // subtlePressedColor (fillSubtleTertiary)
     QColor(0x00,0x00,0x00,0x0F), //frameColorLight
@@ -142,6 +146,7 @@ static constexpr std::array<QColor, 33> WINUI3ColorsLight {
     QColor(0xF9,0xF9,0xF9,percentToAlpha(50)),      // fillControlSecondary
     QColor(0xF9,0xF9,0xF9,percentToAlpha(30)),      // fillControlTertiary
     QColor(0xF9,0xF9,0xF9,percentToAlpha(30)),      // fillControlDisabled
+    QColor(0xFF,0xFF,0xFF,percentToAlpha(100)),     // fillControlInputActive
     QColor(0x00,0x00,0x00,percentToAlpha(2.41)),    // fillControlAltSecondary
     QColor(0x00,0x00,0x00,percentToAlpha(5.78)),    // fillControlAltTertiary
     QColor(0x00,0x00,0x00,percentToAlpha(9.24)),    // fillControlAltQuarternary
@@ -159,7 +164,7 @@ static constexpr std::array<QColor, 33> WINUI3ColorsLight {
     QColor(0x00,0x00,0x00,percentToAlpha(8.03)),    // dividerStrokeDefault
 };
 
-static constexpr std::array<QColor, 33> WINUI3ColorsDark {
+static constexpr std::array<QColor, 34> WINUI3ColorsDark {
     QColor(0xFF,0xFF,0xFF,percentToAlpha(6.05)), // subtleHighlightColor (fillSubtleSecondary)
     QColor(0xFF,0xFF,0xFF,percentToAlpha(4.19)), // subtlePressedColor (fillSubtleTertiary)
     QColor(0xFF,0xFF,0xFF,0x12), //frameColorLight
@@ -178,6 +183,7 @@ static constexpr std::array<QColor, 33> WINUI3ColorsDark {
     QColor(0xFF,0xFF,0xFF,percentToAlpha(8.37)),    // fillControlSecondary
     QColor(0xFF,0xFF,0xFF,percentToAlpha(3.26)),    // fillControlTertiary
     QColor(0xFF,0xFF,0xFF,percentToAlpha(4.19)),    // fillControlDisabled
+    QColor(0x1E,0x1E,0x1E,percentToAlpha(70)),      // fillControlInputActive
     QColor(0x00,0x00,0x00,percentToAlpha(10.0)),    // fillControlAltDefault
     QColor(0xFF,0xFF,0xFF,percentToAlpha(4.19)),    // fillControlAltSecondary
     QColor(0xFF,0xFF,0xFF,percentToAlpha(6.98)),    // fillControlAltTertiafillCy
@@ -195,7 +201,7 @@ static constexpr std::array<QColor, 33> WINUI3ColorsDark {
     QColor(0xFF,0xFF,0xFF,percentToAlpha(8.37)),    // dividerStrokeDefault
 };
 
-static constexpr std::array<std::array<QColor,33>, 2> WINUI3Colors {
+static constexpr std::array<std::array<QColor,34>, 2> WINUI3Colors {
     WINUI3ColorsLight,
     WINUI3ColorsDark
 };
@@ -986,16 +992,9 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
     case PE_PanelLineEdit:
         if (const auto *panel = qstyleoption_cast<const QStyleOptionFrame *>(option)) {
             const auto frameRect = QRectF(option->rect).marginsRemoved(QMarginsF(1.5, 1.5, 1.5, 1.5));
-            drawRoundedRect(painter, frameRect, Qt::NoPen, option->palette.brush(QPalette::Base));
-
+            drawRoundedRect(painter, frameRect, Qt::NoPen, inputFillBrush(option, widget));
             if (panel->lineWidth > 0)
                 proxy()->drawPrimitive(PE_FrameLineEdit, panel, painter, widget);
-
-            const bool isMouseOver = state & State_MouseOver;
-            const bool hasFocus = state & State_HasFocus;
-            const bool isEnabled = state & State_Enabled;
-            if (isMouseOver && isEnabled && hasFocus && !highContrastTheme)
-                drawRoundedRect(painter, frameRect, Qt::NoPen, winUI3Color(subtleHighlightColor));
         }
         break;
     case PE_FrameLineEdit: {
@@ -2598,6 +2597,23 @@ QBrush QWindows11Style::controlFillBrush(const QStyleOption *option, ControlType
 
     const auto state = calcControlState(option);
     return winUI3Color(colorEnums[int(controlType)][int(state)]);
+}
+
+QBrush QWindows11Style::inputFillBrush(const QStyleOption *option, const QWidget *widget) const
+{
+    // slightly different states than in controlFillBrush
+    using namespace StyleOptionHelper;
+    const auto role = widget ? widget->backgroundRole() : QPalette::Window;
+    if (option->palette.isBrushSet(QPalette::Current, role))
+        return option->palette.button();
+
+    if (isDisabled(option))
+        return winUI3Color(fillControlDisabled);
+    if (hasFocus(option))
+        return winUI3Color(fillControlInputActive);
+    if (isHover(option))
+        return winUI3Color(fillControlSecondary);
+    return winUI3Color(fillControlDefault);
 }
 
 QColor QWindows11Style::controlTextColor(const QStyleOption *option, QPalette::ColorRole role) const
