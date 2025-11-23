@@ -116,6 +116,8 @@ public:
     bool hasPendingData = false;
     bool hasPendingDatagram = false;
 
+    quint32 bytesWrittenEmissionCount = 0;
+
     QTimer *connectTimer = nullptr;
 
     int hostLookupId = -1;

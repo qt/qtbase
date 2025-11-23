@@ -1029,7 +1029,7 @@ void QAbstractSocketPrivate::_q_connectToNextAddress()
         host = addresses.takeFirst();
 #if defined(QABSTRACTSOCKET_DEBUG)
         qDebug("QAbstractSocketPrivate::_q_connectToNextAddress(), connecting to %s:%i, %d left to try",
-               host.toString().toLatin1().constData(), port, addresses.count());
+               host.toString().toLatin1().constData(), port, int(addresses.count()));
 #endif
 
         if (cachedSocketDescriptor == -1 && !initSocketLayer(host.protocol())) {
@@ -1232,6 +1232,9 @@ void QAbstractSocketPrivate::emitReadyRead(int channel)
 void QAbstractSocketPrivate::emitBytesWritten(qint64 bytes, int channel)
 {
     Q_Q(QAbstractSocket);
+
+    bytesWrittenEmissionCount++;
+
     // Only emit bytesWritten() when not recursing.
     if (!emittedBytesWritten && channel == currentWriteChannel) {
         QScopedValueRollback<bool> r(emittedBytesWritten);
@@ -2226,6 +2229,8 @@ bool QAbstractSocket::waitForBytesWritten(int msecs)
     if (d->writeBuffer.isEmpty())
         return false;
 
+    const quint32 bwEmissionCountAtEntry = d->bytesWrittenEmissionCount;
+
     QDeadlineTimer deadline{msecs};
 
     // handle a socket in connecting state
@@ -2263,6 +2268,13 @@ bool QAbstractSocket::waitForBytesWritten(int msecs)
             if (d->canWriteNotification()) {
 #if defined (QABSTRACTSOCKET_DEBUG)
                 qDebug("QAbstractSocket::waitForBytesWritten returns true");
+#endif
+                return true;
+            } else if (d->bytesWrittenEmissionCount != bwEmissionCountAtEntry) {
+                // A slot connected to any signal emitted by this method has written data, which
+                // fulfills the condition to return true that at least one byte has been written.
+#if defined (QABSTRACTSOCKET_DEBUG)
+                qDebug("QAbstractSocket::waitForBytesWritten returns true (write in signal handler)");
 #endif
                 return true;
             }
