@@ -492,6 +492,12 @@ static QWindowGeometrySpecification windowGeometrySpecification = Q_WINDOW_GEOME
 */
 
 /*!
+    \class QGuiApplicationPrivate
+    \inmodule QtGui
+    \internal
+*/
+
+/*!
     Initializes the window system and constructs an application object with
     \a argc command line arguments in \a argv.
 

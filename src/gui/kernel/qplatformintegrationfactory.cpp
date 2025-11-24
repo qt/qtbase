@@ -24,6 +24,7 @@ QPlatformIntegration *QPlatformIntegrationFactory::create(const QString &platfor
 }
 
 /*!
+    \internal
     Returns the list of valid keys, i.e. the keys this factory can
     create styles for.
 

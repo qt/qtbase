@@ -2385,6 +2385,11 @@ static QString colorValue(QColor color)
     return result;
 }
 
+/*!
+    \class QTextHtmlExporter
+    \inmodule QtGui
+    \internal
+*/
 QTextHtmlExporter::QTextHtmlExporter(const QTextDocument *_doc)
     : doc(_doc), fragmentMarkers(false)
 {

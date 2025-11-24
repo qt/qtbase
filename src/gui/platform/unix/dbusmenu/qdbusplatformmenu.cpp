@@ -48,6 +48,7 @@ void QDBusPlatformMenuItem::setIcon(const QIcon &icon)
 }
 
 /*!
+    \internal
     Set a submenu under this menu item.
 */
 void QDBusPlatformMenuItem::setMenu(QPlatformMenu *menu)

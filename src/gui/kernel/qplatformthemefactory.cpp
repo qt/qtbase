@@ -31,6 +31,7 @@ QPlatformTheme *QPlatformThemeFactory::create(const QString& key, const QString 
 }
 
 /*!
+    \internal
     Returns the list of valid keys, i.e. the keys this factory can
     create styles for.
 

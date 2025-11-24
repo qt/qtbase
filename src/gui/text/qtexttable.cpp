@@ -394,11 +394,9 @@ void QTextTablePrivate::fragmentRemoved(QChar type, uint fragment)
 }
 
 /*!
-    /fn void QTextTablePrivate::update() const
-
+    \internal
     This function is usually called when the table is "dirty".
     It seems to update all kind of table information.
-
 */
 void QTextTablePrivate::update() const
 {

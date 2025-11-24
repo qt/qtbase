@@ -1006,6 +1006,7 @@ int QTextDocumentPrivate::undoRedo(bool undo)
 }
 
 /*!
+    \internal
     Appends a custom undo \a item to the undo stack.
 */
 void QTextDocumentPrivate::appendUndoItem(QAbstractUndoItem *item)

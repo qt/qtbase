@@ -192,6 +192,12 @@ QOpenGLFunctions::QOpenGLFunctions(QOpenGLContext *context)
         qWarning("QOpenGLFunctions created with non-current context");
 }
 
+/*!
+    \class QOpenGLExtensions
+    \inmodule QtGui
+    \internal
+*/
+
 QOpenGLExtensions::QOpenGLExtensions()
 {
 }

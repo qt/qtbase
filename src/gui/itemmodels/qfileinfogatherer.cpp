@@ -46,6 +46,12 @@ static QString translateDriveName(const QFileInfo &drive)
 }
 
 /*!
+    \class QFileInfoGatherer
+    \inmodule QtGui
+    \internal
+*/
+
+/*!
     Creates thread
 */
 QFileInfoGatherer::QFileInfoGatherer(QObject *parent)

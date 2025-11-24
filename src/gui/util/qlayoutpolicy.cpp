@@ -8,6 +8,11 @@
 
 QT_BEGIN_NAMESPACE
 
+/*!
+    \class QLayoutPolicy
+    \inmodule QtGui
+    \internal
+*/
 void QLayoutPolicy::setControlType(ControlType type)
 {
     /*

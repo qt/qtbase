@@ -2881,6 +2881,7 @@ bool QRasterPaintEngine::drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs,
 
 
 /*!
+ * \internal
  * Returns \c true if the rectangle is completely within the current clip
  * state of the paint engine.
  */

@@ -145,6 +145,11 @@ static inline qreal adapted_angle_on_x(const QLineF &line)
     return QLineF(0, 0, 1, 0).angleTo(line);
 }
 
+/*!
+    \class QStrokerOps
+    \inmodule QtGui
+    \internal
+*/
 QStrokerOps::QStrokerOps()
     : m_elements(0)
     , m_curveThreshold(qt_real_to_fixed(0.25))
@@ -373,6 +378,7 @@ QStroker::LineJoinMode QStroker::joinModeForJoin(Qt::PenJoinStyle joinStyle)
 
 
 /*!
+    \internal
     This function is called to stroke the currently built up
     subpath. The subpath is cleared when the function completes.
 */
