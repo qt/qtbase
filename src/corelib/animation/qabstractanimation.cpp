@@ -858,6 +858,7 @@ qint64 QAnimationDriver::elapsed() const
  */
 
 /*!
+   \internal
    The default animation driver just spins the timer...
  */
 QDefaultAnimationDriver::QDefaultAnimationDriver(QUnifiedTimer *timer)

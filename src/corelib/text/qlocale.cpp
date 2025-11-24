@@ -301,6 +301,7 @@ bool operator<(LikelyPair lhs, LikelyPair rhs)
 } // anonymous namespace
 
 /*!
+    \internal
     Fill in blank fields of a locale ID.
 
     An ID in which some fields are zero stands for any locale that agrees with

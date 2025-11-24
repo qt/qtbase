@@ -14,6 +14,11 @@ using namespace Qt::StringLiterals;
 
 static const DWORD minReadBufferSize = 4096;
 
+/*!
+    \class QWindowsPipeReader
+    \inmodule QtCore
+    \internal
+*/
 QWindowsPipeReader::QWindowsPipeReader(QObject *parent)
     : QObject(parent),
       handle(INVALID_HANDLE_VALUE),

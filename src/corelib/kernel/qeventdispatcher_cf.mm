@@ -207,6 +207,7 @@ QEventLoop *QEventDispatcherCoreFoundation::currentEventLoop() const
 }
 
 /*!
+    \internal
     Processes all pending events that match \a flags until there are no
     more events to process. Returns \c true if pending events were handled;
     otherwise returns \c false.

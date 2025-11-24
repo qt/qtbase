@@ -249,6 +249,12 @@ bool QFSFileEngine::open(QIODevice::OpenMode openMode, FILE *fh, QFile::FileHand
 }
 
 /*!
+    \class QFSFileEnginePrivate
+    \inmodule QtCore
+    \internal
+*/
+
+/*!
     Opens the file handle \a fh using the open mode \a flags.
 */
 bool QFSFileEnginePrivate::openFh(QIODevice::OpenMode openMode, FILE *fh)

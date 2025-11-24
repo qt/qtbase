@@ -975,6 +975,7 @@ QCborContainerPrivate *QCborContainerPrivate::detach(QCborContainerPrivate *d, q
 }
 
 /*!
+  \internal
   Prepare for an insertion at position \a index
 
   Detaches and ensures there are at least index entries in the array, padding

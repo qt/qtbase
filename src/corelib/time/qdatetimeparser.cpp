@@ -2389,6 +2389,7 @@ bool operator==(QDateTimeParser::SectionNode s1, QDateTimeParser::SectionNode s2
 }
 
 /*!
+  \internal
   Sets \a cal as the calendar to use. The default is Gregorian.
 */
 
