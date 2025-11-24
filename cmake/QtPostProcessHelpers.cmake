@@ -817,7 +817,7 @@ function(qt_internal_create_config_file_for_standalone_tests)
     # standalone tests, and it can happen that Core or Gui features are not
     # imported early enough, which means FindWrapPNG will try to find a system PNG library instead
     # of the bundled one.
-    set(modules)
+    set(modules "")
     foreach(m ${QT_REPO_KNOWN_MODULES})
         get_target_property(target_type "${m}" TYPE)
 
@@ -833,12 +833,9 @@ function(qt_internal_create_config_file_for_standalone_tests)
         endif()
     endforeach()
 
-    list(JOIN modules " " QT_REPO_KNOWN_MODULES_STRING)
-    string(STRIP "${QT_REPO_KNOWN_MODULES_STRING}" QT_REPO_KNOWN_MODULES_STRING)
-
     # Skip generating and installing file if no modules were built. This make sure not to install
     # anything when build qtx11extras on macOS for example.
-    if(NOT QT_REPO_KNOWN_MODULES_STRING)
+    if(NOT modules)
         return()
     endif()
 
@@ -846,8 +843,8 @@ function(qt_internal_create_config_file_for_standalone_tests)
     # of the current repo. This is used for standalone tests.
     qt_internal_get_standalone_parts_config_file_name(tests_config_file_name)
 
-    # Standalone tests Config files should follow the main versioning scheme.
-    qt_internal_get_package_version_of_target(Platform main_qt_package_version)
+    # Substitution variables.
+    list(JOIN modules "\n        " QT_MODULE_PACKAGES)
 
     configure_file(
         "${QT_CMAKE_DIR}/QtStandaloneTestsConfig.cmake.in"

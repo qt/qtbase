@@ -722,6 +722,41 @@ macro(qt_internal_find_standalone_test_config_file)
     endif()
 endmacro()
 
+# Used inside the standalone parts config file to find all requested Qt module packages.
+# standalone_parts_args_var_name should be the var name in the outer scope that contains
+# all the arguments for this function.
+macro(qt_internal_find_standalone_parts_qt_packages standalone_parts_args_var_name)
+    set(__standalone_parts_opt_args "")
+    set(__standalone_parts_single_args "")
+    set(__standalone_parts_multi_args
+        QT_MODULE_PACKAGES
+    )
+    cmake_parse_arguments(__standalone_parts
+        "${__standalone_parts_opt_args}"
+        "${__standalone_parts_single_args}"
+        "${__standalone_parts_multi_args}"
+        ${${standalone_parts_args_var_name}})
+
+    # Packages looked up in standalone tests Config files should use the same version as
+    # the one recorded on the Platform target.
+    qt_internal_get_package_version_of_target(Platform __standalone_parts_main_qt_package_version)
+
+    if(__standalone_parts_QT_MODULE_PACKAGES)
+        foreach(__standalone_parts_package_name IN LISTS __standalone_parts_QT_MODULE_PACKAGES)
+            find_package(${QT_CMAKE_EXPORT_NAMESPACE}
+                "${__standalone_parts_main_qt_package_version}"
+                COMPONENTS "${__standalone_parts_package_name}")
+        endforeach()
+    endif()
+
+    unset(__standalone_parts_opt_args)
+    unset(__standalone_parts_single_args)
+    unset(__standalone_parts_multi_args)
+    unset(__standalone_parts_QT_MODULE_PACKAGES)
+    unset(__standalone_parts_main_qt_package_version)
+    unset(__standalone_parts_package_name)
+endmacro()
+
 # Used by standalone tests and standalone non-ExternalProject examples to find all installed qt
 # packages.
 macro(qt_internal_find_standalone_parts_config_files)
