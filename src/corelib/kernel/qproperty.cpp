@@ -402,6 +402,16 @@ QPropertyBindingPrivate::NotificationState QPropertyBindingPrivate::notifyNonRec
 }
 
 /*!
+    \class QUntypedPropertyBinding
+    \inmodule QtCore
+    \since 6.0
+    \ingroup tools
+    \brief Represents a type-erased property binding.
+
+    \sa QUntypedBindable
+*/
+
+/*!
   Constructs a null QUntypedPropertyBinding.
 
   \sa isNull()
@@ -409,8 +419,8 @@ QPropertyBindingPrivate::NotificationState QPropertyBindingPrivate::notifyNonRec
 QUntypedPropertyBinding::QUntypedPropertyBinding() = default;
 
 /*!
-  \fn template<typename Functor>
-  QUntypedPropertyBinding(QMetaType metaType, Functor &&f, const QPropertyBindingSourceLocation &location)
+  \fn template<typename Functor> QUntypedPropertyBinding(
+        QMetaType metaType, Functor &&f, const QPropertyBindingSourceLocation &location)
 
   \internal
 */
@@ -448,7 +458,6 @@ QUntypedPropertyBinding::QUntypedPropertyBinding(const QUntypedPropertyBinding &
     : d(other.d)
 {
 }
-
 /*!
     Copy-assigns \a other to this QUntypedPropertyBinding.
 */
@@ -1183,7 +1192,7 @@ QString QPropertyBindingError::description() const
 
   \return \c true when the binding was successfully set.
 
-  //! \sa QUntypedPropertyBinding::valueMetaType()
+  \sa QUntypedPropertyBinding::valueMetaType()
 */
 
 /*!
@@ -1199,8 +1208,7 @@ QString QPropertyBindingError::description() const
   Returns the metatype of the property from which the QUntypedBindable was created.
   If the bindable is invalid, an invalid metatype will be returned.
 
-  \sa isValid()
-  //! \sa QUntypedPropertyBinding::valueMetaType()
+  \sa isValid(), QUntypedPropertyBinding::valueMetaType()
 */
 
 /*!
