@@ -1554,7 +1554,6 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
             if (btn->features.testFlag(QStyleOptionButton::HasMenu)) {
                 QPainterStateGuard psg(painter);
 
-                const bool isEnabled = !isDisabled(option);
                 QRect textRect = btn->rect.marginsRemoved(QMargins(contentHMargin, 0, contentHMargin, 0));
                 const auto indSize = proxy()->pixelMetric(PM_MenuButtonIndicator, btn, widget);
                 const auto indRect =
@@ -1567,11 +1566,7 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
                 QFont f(d->assetFont);
                 f.setPointSize(qRound(fontSize * 0.9f)); // a little bit smaller
                 painter->setFont(f);
-                QColor penColor = option->palette.color(
-                        isEnabled ? QPalette::Active : QPalette::Disabled, QPalette::Text);
-                if (isEnabled)
-                    penColor.setAlpha(percentToAlpha(60.63)); // fillColorTextSecondary
-                painter->setPen(penColor);
+                painter->setPen(controlTextColor(option));
                 painter->drawText(vindRect, Qt::AlignCenter, fluentIcon(Icon::ChevronDownMed));
             }
         }
@@ -1678,6 +1673,15 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
                 QRect textRect(tl, br);
                 QRect vRect(visualMenuRect(textRect));
 
+                QColor penColor;
+                if (highContrastTheme) {
+                    penColor = menuitem->palette.color(act ? QPalette::HighlightedText
+                                                           : QPalette::Text);
+                } else {
+                    penColor = controlTextColor(option);
+                }
+                painter->setPen(penColor);
+
                 qsizetype t = s.indexOf(u'\t');
                 int text_flags = Qt::AlignVCenter | Qt::TextShowMnemonic | Qt::TextDontClip | Qt::TextSingleLine;
                 if (!proxy()->styleHint(SH_UnderlineShortcut, menuitem, widget))
@@ -1688,17 +1692,6 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
                     QRect shortcutRect(QPoint(textRect.right(), textRect.top()),
                                        QPoint(rect.right(), textRect.bottom()));
                     QRect vShortcutRect(visualMenuRect(shortcutRect));
-                    QColor penColor;
-                    if (highContrastTheme) {
-                        penColor = menuitem->palette.color(act ? QPalette::HighlightedText
-                                                               : QPalette::Text);
-                    } else {
-                        penColor = menuitem->palette.color(dis ? QPalette::Disabled
-                                                               : QPalette::Active, QPalette::Text);
-                        if (!dis)
-                            penColor.setAlpha(percentToAlpha(60.63));   // fillColorTextSecondary
-                    }
-                    painter->setPen(penColor);
                     const QString textToDraw = s.mid(t + 1).toString();
                     painter->drawText(vShortcutRect, text_flags, textToDraw);
                     s = s.left(t);
@@ -1707,13 +1700,6 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
                 if (menuitem->menuItemType == QStyleOptionMenuItem::DefaultItem)
                     font.setBold(true);
                 painter->setFont(font);
-                QColor penColor;
-                if (highContrastTheme && act)
-                    penColor = menuitem->palette.color(QPalette::HighlightedText);
-                else
-                    penColor = menuitem->palette.color(dis ? QPalette::Disabled
-                                                           : QPalette::Current, QPalette::Text);
-                painter->setPen(penColor);
                 const QString textToDraw = s.left(t).toString();
                 painter->drawText(vRect, text_flags, textToDraw);
             }
