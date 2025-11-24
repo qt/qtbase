@@ -2435,7 +2435,7 @@
                     {
                         "isClass": false,
                         "isFlag": false,
-                        "lineNumber": 14,
+                        "lineNumber": 13,
                         "name": "SomeEnum",
                         "values": [
                             "SomeEnumValue"

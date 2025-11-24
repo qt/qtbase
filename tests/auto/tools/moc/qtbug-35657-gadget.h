@@ -9,9 +9,9 @@
 namespace QTBUG_35657 {
     class A {
         Q_GADGET
-        Q_ENUMS(SomeEnum)
     public:
         enum SomeEnum { SomeEnumValue = 0 };
+        Q_ENUM(SomeEnum)
     };
 }
 
