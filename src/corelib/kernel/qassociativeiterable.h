@@ -145,10 +145,12 @@ inline QVariantRef<QAssociativeIterator>::operator QVariant() const
     if (!metaType.isValid())
         return m_pointer->key();
 
+    return [&] {
     QVariant v(metaType);
     metaAssociation.mappedAtIterator(m_pointer->constIterator(),
                                      metaType == QMetaType::fromType<QVariant>() ? &v : v.data());
     return v;
+    }();
 }
 
 template<>

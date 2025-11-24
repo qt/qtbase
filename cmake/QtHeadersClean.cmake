@@ -137,6 +137,10 @@ function(qt_internal_add_headersclean_target module_target module_headers)
         if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
             list(APPEND hcleanFLAGS -Wzero-as-null-pointer-constant
                 -Wdouble-promotion -Wfloat-conversion)
+            if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "14.0.0")
+                list(APPEND hcleanFLAGS
+                    -Wnrvo)
+            endif()
         endif()
 
         if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang|IntelLLVM")

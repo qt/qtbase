@@ -131,10 +131,13 @@ inline QVariantRef<QSequentialIterator>::operator QVariant() const
     if (m_pointer == nullptr)
         return QVariant();
     const QMetaType metaType(m_pointer->metaContainer().valueMetaType());
+
+    return [&] {
     QVariant v(metaType);
     void *dataPtr = metaType == QMetaType::fromType<QVariant>() ? &v : v.data();
     m_pointer->metaContainer().valueAtIterator(m_pointer->constIterator(), dataPtr);
     return v;
+    }();
 }
 
 template<>
