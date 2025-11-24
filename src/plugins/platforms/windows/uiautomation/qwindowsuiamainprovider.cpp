@@ -596,6 +596,16 @@ HRESULT QWindowsUiaMainProvider::GetPropertyValue(PROPERTYID idProp, VARIANT *pR
         *pRetVal = QComVariant{ accessible->text(QAccessible::Help) }.release();
         break;
     case UIA_HasKeyboardFocusPropertyId:
+        // If the top-level window has no focused child, report the top-level
+        // widget (window). If it already has a focused widget, it will be
+        // reported automatically.
+        if (topLevelWindow) {
+            QAccessibleInterface *focusacc = accessible->focusChild();
+            if (!focusacc) {
+                *pRetVal = QComVariant{ accessible->state().active ? true : false }.release();
+                break;
+            }
+        }
         *pRetVal = QComVariant{ accessible->state().focused ? true : false }.release();
         break;
     case UIA_IsKeyboardFocusablePropertyId:
