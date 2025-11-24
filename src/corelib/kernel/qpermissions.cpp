@@ -124,7 +124,11 @@ Q_LOGGING_CATEGORY(lcPermissions, "qt.permissions", QtWarningMsg);
     The relevant permission names are described in the documentation
     for each permission type.
 
-    \sa {Qt Creator: Editing Manifest Files}
+    \note When using this API, the \c{<!-- %%INSERT_PERMISSIONS -->} tag must be present in
+    the AndroidManifest.xml. For further information on the use of this tag,
+    see \l {Qt Permissions and Features}
+
+    \sa {Qt Creator: Editing Manifest Files}.
 
     \section1 Available Permissions
 

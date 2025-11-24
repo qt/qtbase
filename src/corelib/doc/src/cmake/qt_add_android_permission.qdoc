@@ -14,6 +14,10 @@
 
 \cmakecommandsince 6.9
 
+\note When using this API, the \c{<!-- %%INSERT_PERMISSIONS -->} tag must be present
+in the AndroidManifest.xml. For further information on the use of this tag,
+see \l {Qt Permissions and Features}
+
 \section1 Synopsis
 
 \badcode
