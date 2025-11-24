@@ -9,9 +9,9 @@
 namespace QTBUG_2151 {
     class A : public QObject {
         Q_OBJECT
-        Q_ENUMS(SomeEnum)
     public:
         enum SomeEnum { SomeEnumValue = 0 };
+        Q_ENUM(SomeEnum)
     };
 
     class B : public QObject

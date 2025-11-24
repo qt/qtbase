@@ -9,15 +9,15 @@
 #define DECLARE_GADGET_AND_OBJECT_CLASSES \
     class Gadget { \
         Q_GADGET \
-        Q_ENUMS(SomeEnum) \
     public: \
         enum SomeEnum { SomeEnumValue = 0 }; \
+        Q_ENUM(SomeEnum) \
     }; \
     class Object : public QObject{ \
         Q_OBJECT \
-        Q_ENUMS(SomeEnum) \
     public: \
         enum SomeEnum { SomeEnumValue = 0 }; \
+        Q_ENUM(SomeEnum) \
     };
 
 #define DECLARE_DEPENDING_CLASSES \
