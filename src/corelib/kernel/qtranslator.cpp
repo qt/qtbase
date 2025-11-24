@@ -392,8 +392,8 @@ public:
     translation files may contain misleading or malicious translations.
 
     \sa QCoreApplication::installTranslator(), QCoreApplication::removeTranslator(),
-        QObject::tr(), QCoreApplication::translate(), {I18N Example},
-        {Hello tr() Example}, {Arrow Pad Example}, {Troll Print Example}
+        QObject::tr(), QCoreApplication::translate(),
+        {Localized Clock Example}, {Arrow Pad Example}, {Troll Print Example}
 */
 
 /*!

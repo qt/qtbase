@@ -3678,7 +3678,7 @@ void QXmlStreamWriter::setStopWritingOnError(bool stop)
     The error status is never reset. Writes happening after the error
     occurred may be ignored, even if the error condition is cleared.
 
-    \sa error(), errorString(), raiseError(const QString &message),
+    \sa error(), errorString(), raiseError()
  */
 bool QXmlStreamWriter::hasError() const
 {
@@ -3692,7 +3692,7 @@ bool QXmlStreamWriter::hasError() const
     QXmlStreamWriter::Error::None.
 
     \since 6.10
-    \sa errorString(), raiseError(const QString &message), hasError()
+    \sa errorString(), raiseError(), hasError()
  */
 QXmlStreamWriter::Error QXmlStreamWriter::error() const
 {
@@ -3708,7 +3708,7 @@ QXmlStreamWriter::Error QXmlStreamWriter::error() const
     a null string.
 
     \since 6.10
-    \sa error(), raiseError(const QString &message), hasError()
+    \sa error(), raiseError(), hasError()
  */
 QString QXmlStreamWriter::errorString() const
 {

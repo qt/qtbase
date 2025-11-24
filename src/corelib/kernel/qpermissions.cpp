@@ -119,7 +119,7 @@ Q_LOGGING_CATEGORY(lcPermissions, "qt.permissions", QtWarningMsg);
     To ensure the relevant permission backend is included with your
     application, please \l {QT_ANDROID_PACKAGE_SOURCE_DIR}
     {point the build system to your custom \c AndroidManifest.xml}
-    or use \l {qt_add_android_permission()}.
+    or use \l {qt_add_android_permission}().
 
     The relevant permission names are described in the documentation
     for each permission type.

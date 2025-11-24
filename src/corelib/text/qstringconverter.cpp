@@ -2739,7 +2739,7 @@ QStringList QStringConverter::availableCodecs()
 
     May also provide data from residual content that was pending decoding.
     When there is no residual data to account for, the return's \c error
-    field will be set to \l {QCharConverter::FinalizeResult::Error::}
+    field will be set to \l {QStringConverter::FinalizeResultChar::error}
     {NoError}.
 
     If \a out is supplied and non-null, it must have space in which up to
@@ -2793,7 +2793,7 @@ auto QStringDecoder::finalize(char16_t *out, qsizetype maxlen) -> FinalizeResult
 
     May also provide data from residual content that was pending decoding.
     When there is no residual data to account for, the return's \c error
-    field will be set to \l {QCharConverter::FinalizeResult::Error::}
+    field will be set to \l {QStringConverter::FinalizeResultChar::error}
     {NoError}.
 
     If \a out is supplied and non-null, it must have space in which up to
