@@ -23,6 +23,7 @@ QT_REQUIRE_CONFIG(systemtrayicon);
 #include <QIcon>
 #include <QTemporaryFile>
 #include <QTimer>
+#include <QSet>
 #include "QtGui/qpa/qplatformsystemtrayicon.h"
 #include "private/qdbusmenuconnection_p.h"
 
@@ -125,6 +126,7 @@ private:
     QString m_attentionIconName;
     QTimer m_attentionTimer;
     bool m_registered;
+    QSet<uint> m_ownMessageIDs;
 };
 
 struct QDBusTrayImage
