@@ -41,6 +41,9 @@ android
 android
 [hoverPosition]
 macos-14 x86
+macos-26 # QTBUG-142157
 # QTBUG-124291
 [setParentChangesFocus:make dialog parentless, after]
 android
+[enterLeaveOnWindowShowHide]
+macos-26 # QTBUG-142157

@@ -26,5 +26,6 @@ windows-10
 windows-11
 android
 rhel
+macos-26 # QTBUG-142157
 [windowExposedAfterReparent]
 xcb ubuntu-24.04 # QTBUG-129023
