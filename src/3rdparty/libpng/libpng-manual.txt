@@ -9,7 +9,7 @@ libpng-manual.txt - A description on how to use and modify libpng
 
  Based on:
 
- libpng version 1.6.36, December 2018, through 1.6.50 - July 2025
+ libpng version 1.6.36, December 2018, through 1.6.51 - November 2025
  Updated and distributed by Cosmin Truta
  Copyright (c) 2018-2025 Cosmin Truta
 
@@ -3355,19 +3355,6 @@ Here is an example of writing two private chunks, prVt and miNE:
     /* Needed because miNE is not safe-to-copy */
     png_set_keep_unknown_chunks(png, PNG_HANDLE_CHUNK_ALWAYS,
        (png_bytep) "miNE", 1);
-    # if PNG_LIBPNG_VER < 10600
-      /* Deal with unknown chunk location bug in 1.5.x and earlier */
-      png_set_unknown_chunk_location(png, info, 0, PNG_HAVE_IHDR);
-      png_set_unknown_chunk_location(png, info, 1, PNG_AFTER_IDAT);
-    # endif
-    # if PNG_LIBPNG_VER < 10500
-      /* PNG_AFTER_IDAT writes two copies of the chunk prior to libpng-1.5.0,
-       * one before IDAT and another after IDAT, so don't use it; only use
-       * PNG_HAVE_IHDR location.  This call resets the location previously
-       * set by assignment and png_set_unknown_chunk_location() for chunk 1.
-       */
-      png_set_unknown_chunk_location(png, info, 1, PNG_HAVE_IHDR);
-    # endif
     #endif
 
 The high-level write interface
