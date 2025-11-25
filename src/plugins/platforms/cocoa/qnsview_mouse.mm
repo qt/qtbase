@@ -289,8 +289,7 @@ static const QPointingDevice *pointingDeviceFor(qint64 deviceID)
         if (qIsNaN(windowPoint.x) || qIsNaN(windowPoint.y)) {
             screenPoint = [NSEvent mouseLocation];
         } else {
-            NSRect screenRect = [[theEvent window] convertRectToScreen:NSMakeRect(windowPoint.x, windowPoint.y, 1, 1)];
-            screenPoint = screenRect.origin;
+            screenPoint = [theEvent.window convertPointToScreen:windowPoint];
         }
     } else {
         screenPoint = [NSEvent mouseLocation];
