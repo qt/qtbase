@@ -4,8 +4,6 @@
 
 #include "qhttpnetworkheader_p.h"
 
-#include <algorithm>
-
 QT_BEGIN_NAMESPACE
 
 QHttpNetworkHeader::~QHttpNetworkHeader()
