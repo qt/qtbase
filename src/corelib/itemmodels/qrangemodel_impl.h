@@ -25,7 +25,7 @@
 #include <functional>
 #include <iterator>
 #include <type_traits>
-#include <QtCore/q20type_traits.h>
+#include <QtCore/qxptype_traits.h>
 #include <tuple>
 #include <QtCore/q23utility.h>
 
@@ -697,35 +697,30 @@ namespace QRangeModelDetails
         }
     };
 
-    template <typename P, typename R, typename = void>
-    struct protocol_parentRow : std::false_type {};
     template <typename P, typename R>
-    struct protocol_parentRow<P, R,
-            std::void_t<decltype(std::declval<P&>().parentRow(std::declval<wrapped_t<R>&>()))>>
-        : std::true_type {};
+    using protocol_parentRow_test = decltype(std::declval<P&>()
+            .parentRow(std::declval<QRangeModelDetails::wrapped_t<R>&>()));
+    template <typename P, typename R>
+    using protocol_parentRow = qxp::is_detected<protocol_parentRow_test, P, R>;
 
-    template <typename P, typename R, typename = void>
-    struct protocol_childRows : std::false_type {};
     template <typename P, typename R>
-    struct protocol_childRows<P, R,
-            std::void_t<decltype(std::declval<P&>().childRows(std::declval<wrapped_t<R>&>()))>>
-        : std::true_type {};
+    using protocol_childRows_test = decltype(std::declval<P&>()
+            .childRows(std::declval<QRangeModelDetails::wrapped_t<R>&>()));
+    template <typename P, typename R>
+    using protocol_childRows = qxp::is_detected<protocol_childRows_test, P, R>;
 
-    template <typename P, typename R, typename = void>
-    struct protocol_setParentRow : std::false_type {};
     template <typename P, typename R>
-    struct protocol_setParentRow<P, R,
-            std::void_t<decltype(std::declval<P&>().setParentRow(std::declval<wrapped_t<R>&>(),
-                                                                 std::declval<wrapped_t<R>*>()))>>
-        : std::true_type {};
+    using protocol_setParentRow_test = decltype(std::declval<P&>()
+            .setParentRow(std::declval<QRangeModelDetails::wrapped_t<R>&>(),
+                          std::declval<QRangeModelDetails::wrapped_t<R>*>()));
+    template <typename P, typename R>
+    using protocol_setParentRow = qxp::is_detected<protocol_setParentRow_test, P, R>;
 
-    template <typename P, typename R, typename = void>
-    struct protocol_mutable_childRows : std::false_type {};
     template <typename P, typename R>
-    struct protocol_mutable_childRows<P, R,
-            std::void_t<decltype(refTo(std::declval<P&>().childRows(std::declval<wrapped_t<R>&>()))
-                                                                                            = {}) >>
-        : std::true_type {};
+    using protocol_mutable_childRows_test = decltype(refTo(std::declval<P&>()
+            .childRows(std::declval<wrapped_t<R>&>())) = {});
+    template <typename P, typename R>
+    using protocol_mutable_childRows = qxp::is_detected<protocol_mutable_childRows_test, P, R>;
 
     template <typename P, typename = void>
     struct protocol_newRow : std::false_type {};
