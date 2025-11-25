@@ -1533,6 +1533,7 @@ qt_internal_extend_target(Core CONDITION WASM
         platform/wasm/qstdweb.cpp platform/wasm/qstdweb_p.h
         platform/wasm/qwasmsocket.cpp platform/wasm/qwasmsocket_p.h
         platform/wasm/qwasmsuspendresumecontrol.cpp platform/wasm/qwasmsuspendresumecontrol_p.h
+        platform/wasm/qwasmlocalfileengine.cpp platform/wasm/qwasmlocalfileengine_p.h
         kernel/qeventdispatcher_wasm.cpp kernel/qeventdispatcher_wasm_p.h
 )
 

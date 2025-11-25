@@ -57,6 +57,9 @@ public:
     Qt::ContrastPreference contrastPreference() const override;
     QVariant themeHint(ThemeHint hint) const override;
     const QFont *font(Font type) const override;
+    bool usePlatformNativeDialog(DialogType type) const override;
+    QPlatformDialogHelper *createPlatformDialogHelper(DialogType type) const override;
+
     QFont *fixedFont = nullptr;
 
     void onColorSchemeChange();

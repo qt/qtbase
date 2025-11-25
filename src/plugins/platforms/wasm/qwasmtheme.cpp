@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include "qwasmtheme.h"
+#include "qwasmfiledialoghelper.h"
 #include <QtCore/qvariant.h>
 #include <QFontDatabase>
 #include <QList>
@@ -124,6 +125,18 @@ const QFont *QWasmTheme::font(Font type) const
     if (type == QPlatformTheme::FixedFont) {
         return fixedFont;
     }
+    return nullptr;
+}
+
+bool QWasmTheme::usePlatformNativeDialog(DialogType type) const
+{
+    return (type == DialogType::FileDialog);
+}
+
+QPlatformDialogHelper *QWasmTheme::createPlatformDialogHelper(DialogType type) const
+{
+    if (type == DialogType::FileDialog)
+        return new QWasmFileDialogHelper();
     return nullptr;
 }
 
