@@ -188,8 +188,9 @@ bool is_protocol_upgraded(const QHttpNetworkReply &reply)
     if (reply.statusCode() != 101)
         return false;
 
+    const auto values = reply.header().values(QHttpHeaders::WellKnownHeader::Upgrade);
     // Do some minimal checks here - we expect 'Upgrade: h2c' to be found.
-    for (const auto &v : reply.header().values(QHttpHeaders::WellKnownHeader::Upgrade)) {
+    for (const auto &v : values) {
         if (v.compare("h2c", Qt::CaseInsensitive) == 0)
             return true;
     }
