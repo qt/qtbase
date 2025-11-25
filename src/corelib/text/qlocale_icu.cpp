@@ -17,10 +17,10 @@ static_assert(std::is_same_v<UChar, char16_t>,
 
 namespace QtIcuPrivate {
 
-enum class CaseConversion : bool { Upper, Lower };
+enum class IcuCaseConversion : bool { Upper, Lower };
 
 static bool qt_u_strToCase(const QString &str, QString *out, const char *localeID,
-                           CaseConversion conv)
+                           IcuCaseConversion conv)
 {
     Q_ASSERT(out);
 
@@ -34,9 +34,9 @@ static bool qt_u_strToCase(const QString &str, QString *out, const char *localeI
             // try to be a completely transparent wrapper:
             using R [[maybe_unused]] = decltype(u_strToUpper(std::forward<decltype(args)>(args)...));
             switch (conv) {
-            case CaseConversion::Upper:
+            case IcuCaseConversion::Upper:
                 return u_strToUpper(std::forward<decltype(args)>(args)...);
-            case CaseConversion::Lower:
+            case IcuCaseConversion::Lower:
                 return u_strToLower(std::forward<decltype(args)>(args)...);
             };
             Q_UNREACHABLE_RETURN(R{0});
@@ -79,7 +79,7 @@ QString QLocalePrivate::toUpper(const QString &str, bool *ok) const
     Q_ASSERT(ok);
     using namespace QtIcuPrivate;
     QString out;
-    *ok = qt_u_strToCase(str, &out, bcp47Name('_'), CaseConversion::Upper);
+    *ok = qt_u_strToCase(str, &out, bcp47Name('_'), IcuCaseConversion::Upper);
     return out;
 }
 
@@ -88,7 +88,7 @@ QString QLocalePrivate::toLower(const QString &str, bool *ok) const
     Q_ASSERT(ok);
     using namespace QtIcuPrivate;
     QString out;
-    *ok = qt_u_strToCase(str, &out, bcp47Name('_'), CaseConversion::Lower);
+    *ok = qt_u_strToCase(str, &out, bcp47Name('_'), IcuCaseConversion::Lower);
     return out;
 }
 
