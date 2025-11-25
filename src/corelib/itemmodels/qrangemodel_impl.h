@@ -319,14 +319,17 @@ namespace QRangeModelDetails
     using wrapped_t = std::remove_pointer_t<decltype(pointerTo(std::declval<T&>()))>;
 
     template <typename T>
-    using is_wrapped = std::negation<std::is_same<wrapped_t<T>, std::remove_reference_t<T>>>;
+    using is_wrapped = std::negation<std::is_same<
+            QRangeModelDetails::wrapped_t<T>, std::remove_reference_t<T>
+        >>;
 
     template <typename T, typename = void>
     struct tuple_like : std::false_type {};
     template <typename T, std::size_t N>
     struct tuple_like<std::array<T, N>> : std::false_type {};
     template <typename T>
-    struct tuple_like<T, std::void_t<std::tuple_element_t<0, wrapped_t<T>>>> : std::true_type {};
+    struct tuple_like<T, std::void_t<std::tuple_element_t<0, QRangeModelDetails::wrapped_t<T>>>>
+        : std::true_type {};
     template <typename T>
     [[maybe_unused]] static constexpr bool tuple_like_v = tuple_like<T>::value;
 
@@ -342,7 +345,7 @@ namespace QRangeModelDetails
     template <typename T, typename = void>
     struct has_metaobject : std::false_type {};
     template <typename T>
-    struct has_metaobject<T, std::void_t<decltype(wrapped_t<T>::staticMetaObject)>>
+    struct has_metaobject<T, std::void_t<decltype(QRangeModelDetails::wrapped_t<T>::staticMetaObject)>>
         : std::true_type {};
     template <typename T>
     [[maybe_unused]] static constexpr bool has_metaobject_v = has_metaobject<T>::value;
@@ -627,12 +630,12 @@ namespace QRangeModelDetails
 
     template <typename T>
     [[maybe_unused]] static constexpr int static_size_v =
-                            row_traits<std::remove_cv_t<wrapped_t<T>>>::static_size;
+            row_traits<std::remove_cv_t<QRangeModelDetails::wrapped_t<T>>>::static_size;
 
     template <typename Range>
     struct ListProtocol
     {
-        using row_type = typename range_traits<wrapped_t<Range>>::value_type;
+        using row_type = typename range_traits<QRangeModelDetails::wrapped_t<Range>>::value_type;
 
         template <typename R = row_type>
         auto newRow() -> decltype(R{}) { return R{}; }
@@ -641,16 +644,16 @@ namespace QRangeModelDetails
     template <typename Range>
     struct TableProtocol
     {
-        using row_type = typename range_traits<wrapped_t<Range>>::value_type;
+        using row_type = typename range_traits<QRangeModelDetails::wrapped_t<Range>>::value_type;
 
         template <typename R = row_type,
                   std::enable_if_t<std::conjunction_v<std::is_destructible<wrapped_t<R>>,
                                                       is_owning_or_raw_pointer<R>>, bool> = true>
-        auto newRow() -> decltype(R(new wrapped_t<R>)) {
+        auto newRow() -> decltype(R(new QRangeModelDetails::wrapped_t<R>)) {
             if constexpr (is_any_of<R, std::shared_ptr>())
-                return std::make_shared<wrapped_t<R>>();
+                return std::make_shared<QRangeModelDetails::wrapped_t<R>>();
             else
-                return R(new wrapped_t<R>);
+                return R(new QRangeModelDetails::wrapped_t<R>);
         }
 
         template <typename R = row_type,
@@ -662,7 +665,8 @@ namespace QRangeModelDetails
         auto deleteRow(R&& row) -> decltype(delete row) { delete row; }
     };
 
-    template <typename Range, typename R = typename range_traits<wrapped_t<Range>>::value_type>
+    template <typename Range,
+              typename R = typename range_traits<QRangeModelDetails::wrapped_t<Range>>::value_type>
     using table_protocol_t = std::conditional_t<static_size_v<R> == 0 && !has_metaobject_v<R>,
                                                 ListProtocol<Range>, TableProtocol<Range>>;
 
@@ -748,20 +752,23 @@ namespace QRangeModelDetails
             > : std::true_type {};
 
     template <typename Range>
-    using if_table_range = std::enable_if_t<std::conjunction_v<is_range<wrapped_t<Range>>,
-                                                    std::negation<is_tree_range<wrapped_t<Range>>>>,
-                                            bool>;
+    using if_table_range = std::enable_if_t<std::conjunction_v<
+            is_range<QRangeModelDetails::wrapped_t<Range>>,
+            std::negation<is_tree_range<QRangeModelDetails::wrapped_t<Range>>>
+        >, bool>;
 
     template <typename Range, typename Protocol = DefaultTreeProtocol<Range>>
-    using if_tree_range = std::enable_if_t<std::conjunction_v<is_range<wrapped_t<Range>>,
-                                              is_tree_range<wrapped_t<Range>, wrapped_t<Protocol>>>,
-                                           bool>;
+    using if_tree_range = std::enable_if_t<std::conjunction_v<
+            is_range<QRangeModelDetails::wrapped_t<Range>>,
+            is_tree_range<QRangeModelDetails::wrapped_t<Range>,
+                          QRangeModelDetails::wrapped_t<Protocol>>
+        >, bool>;
 
     template <typename Range, typename Protocol>
     struct protocol_traits
     {
-        using protocol = wrapped_t<Protocol>;
-        using row = typename range_traits<wrapped_t<Range>>::value_type;
+        using protocol = QRangeModelDetails::wrapped_t<Protocol>;
+        using row = typename range_traits<QRangeModelDetails::wrapped_t<Range>>::value_type;
 
         static constexpr bool has_newRow = protocol_newRow<protocol>();
         static constexpr bool has_deleteRow = protocol_deleteRow<protocol, row>();
