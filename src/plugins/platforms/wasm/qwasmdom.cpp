@@ -10,6 +10,7 @@
 #include <QtCore/qrect.h>
 #include <QtGui/qimage.h>
 #include <private/qstdweb_p.h>
+#include <private/qwasmlocalfileengine_p.h>
 #include <QtCore/qurl.h>
 
 #include <utility>
@@ -112,11 +113,14 @@ void DataTransfer::toMimeDataWithFile(std::function<void(QMimeData *)> callback)
 
             m_callback(mimeData);
 
-            // Delete files; we expect that the user callback reads/copies
-            // file content before returning.
-            // Fixme: tie file lifetime to lifetime of the QMimeData?
-            for (QUrl fileUrl: fileUrls)
-                QFile(fileUrl.toLocalFile()).remove();
+            // Delete temporary files; we expect that the user callback reads/copies
+            // file content before returning.// Fixme: tie file lifetime to lifetime of the QMimeData?
+            // Note: QWasmFileEngine files (weblocalfile://) are managed by QWasmFileEngine
+            // and are not deleted here
+            for (QUrl fileUrl: fileUrls) {
+                if (!QWasmFileEngineHandler::isWasmFileName(fileUrl.toString()))
+                    QFile(fileUrl.toLocalFile()).remove();
+            }
 
             delete this;
         }
@@ -144,49 +148,56 @@ void DataTransfer::toMimeDataWithFile(std::function<void(QMimeData *)> callback)
         case ItemKind::File: {
             qstdweb::File webfile(item.call<emscripten::val>("getAsFile"));
 
-            if (webfile.size() > 1e+9) { // limit file size to 1 GB
-                qWarning() << "File is too large (> 1GB) and will be skipped. File size is" << webfile.size();
+            // Add a file access url for the local file. If asyncify is available,
+            // add a QWasmFileEngine managed url. Else fall back to placing a copy
+            // of the file at /tmp on Emsripten's in-memory file system.
+            if (qstdweb::haveAsyncify()) {
+                QUrl fileUrl(QWasmFileEngineHandler::addFile(webfile));
+                mimeContext->fileUrls.append(fileUrl);
                 mimeContext->deref();
-                continue;
-            }
+            } else {
+                // Limit in-memory file size to 1 GB
+                if (webfile.size() > 1e+9) {
+                    qWarning() << "File is too large (> 1GB) and will be skipped. File size is" << webfile.size();
+                    mimeContext->deref();
+                    continue;
+                }
 
-            QString mimeFormat = QString::fromStdString(webfile.type());
-            QString fileName = QString::fromStdString(webfile.name());
+                // Read file content
+                QByteArray fileContent(webfile.size(), Qt::Uninitialized);
+                webfile.stream(fileContent.data(), [=]() {
+                    QDir qtTmpDir("/qt/tmp/"); // "tmp": indicate that these files won't stay around
+                    qtTmpDir.mkpath(qtTmpDir.path());
 
-            // there's a file, now read it
-            QByteArray fileContent(webfile.size(), Qt::Uninitialized);
-            webfile.stream(fileContent.data(), [=]() {
-                
+                    QUrl fileUrl = QUrl::fromLocalFile(qtTmpDir.filePath(QString::fromStdString(webfile.name())));
+                    mimeContext->fileUrls.append(fileUrl);
+
+                    QFile file(fileUrl.toLocalFile());
+                    if (!file.open(QFile::WriteOnly)) {
+                        qWarning() << "File was not opened";
+                        mimeContext->deref();
+                        return;
+                    }
+                    if (file.write(fileContent) < 0)
+                        qWarning() << "Write failed";
+                    file.close();
+                    mimeContext->deref();
+                });
+
                 // If we get a single file, and that file is an image, then
                 // try to decode the image data. This handles the case where
                 // image data (i.e. not an image file) is pasted. The browsers
                 // will then create a fake "image.png" file which has the image
-                // data. As a side effect Qt will also decode the image for 
+                // data. As a side effect Qt will also decode the image for
                 // single-image-file drops, since there is no way to differentiate
                 // the fake "image.png" from a real one.
+                QString mimeFormat = QString::fromStdString(webfile.type());
                 if (fileCount == 1 && mimeFormat.contains("image/")) {
                     QImage image;
                     if (image.loadFromData(fileContent))
                         mimeContext->mimeData->setImageData(image);
                 }
-
-                QDir qtTmpDir("/qt/tmp/"); // "tmp": indicate that these files won't stay around
-                qtTmpDir.mkpath(qtTmpDir.path());
-
-                QUrl fileUrl = QUrl::fromLocalFile(qtTmpDir.filePath(QString::fromStdString(webfile.name())));
-                mimeContext->fileUrls.append(fileUrl);
-
-                QFile file(fileUrl.toLocalFile());
-                if (!file.open(QFile::WriteOnly)) {
-                    qWarning() << "File was not opened";
-                    mimeContext->deref();
-                    return;
-                }
-                if (file.write(fileContent) < 0)
-                    qWarning() << "Write failed";
-                file.close();
-                mimeContext->deref();
-            });
+            }
             break;
         }
         case ItemKind::String:
