@@ -3621,6 +3621,9 @@ QPoint QWidget::pos() const
     \brief the geometry of the widget relative to its parent and
     excluding the window frame
 
+    If the widget is a top-level widget (a window) its geometry is
+    given in global screen coordinates.
+
     When changing the geometry, the widget, if visible, receives a
     move event (moveEvent()) and/or a resize event (resizeEvent())
     immediately. If the widget is not currently visible, it is

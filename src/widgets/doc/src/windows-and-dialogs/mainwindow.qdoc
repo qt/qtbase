@@ -86,7 +86,7 @@
     widget's client geometry.
 
     This diagram shows most of the functions in use:
-    \image geometry.png
+    \image geometry.svg
            {Window geometry with size dimensions and positions labeled}
 
     \section2 X11 Peculiarities
