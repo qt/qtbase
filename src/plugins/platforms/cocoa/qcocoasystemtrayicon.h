@@ -28,7 +28,7 @@ Q_FORWARD_DECLARE_OBJC_CLASS(NSStatusItem);
 
 QT_BEGIN_NAMESPACE
 
-class Q_GUI_EXPORT QCocoaSystemTrayIcon : public QPlatformSystemTrayIcon
+class QCocoaSystemTrayIcon : public QPlatformSystemTrayIcon
 {
 public:
     QCocoaSystemTrayIcon() {}
