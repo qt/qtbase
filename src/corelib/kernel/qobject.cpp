@@ -2614,23 +2614,38 @@ static void err_method_notfound(const QObject *object,
         case QSIGNAL_CODE: type = "signal"; break;
     }
     const char *loc = extract_location(method);
+    const char *err;
     if (strchr(method, ')') == nullptr) // common typing mistake
-        qCWarning(lcConnect, "QObject::%s: Parentheses expected, %s %s::%s%s%s", func, type,
-                  object->metaObject()->className(), method + 1, loc ? " in " : "", loc ? loc : "");
+        err = "Parentheses expected,";
     else
-        qCWarning(lcConnect, "QObject::%s: No such %s %s::%s%s%s", func, type,
-                  object->metaObject()->className(), method + 1, loc ? " in " : "", loc ? loc : "");
+        err = "No such";
+    qCWarning(lcConnect, "QObject::%s: %s %s %s::%s%s%s", func, err, type,
+              object->metaObject()->className(), method + 1, loc ? " in " : "", loc ? loc : "");
+}
+
+enum class ConnectionEnd : bool { Sender, Receiver };
+Q_DECL_COLD_FUNCTION
+static void err_info_about_object(const char *func, const QObject *o, ConnectionEnd end)
+{
+    if (!o)
+        return;
+    const QString name = o->objectName();
+    if (name.isEmpty())
+        return;
+    const bool sender = end == ConnectionEnd::Sender;
+    qCWarning(lcConnect, "QObject::%s:  (%s name:%*s'%ls')",
+              func,
+              sender ? "sender" : "receiver",
+              sender ? 3 : 1, // ← length of generated whitespace
+              "",
+              qUtf16Printable(name));
 }
 
 Q_DECL_COLD_FUNCTION
 static void err_info_about_objects(const char *func, const QObject *sender, const QObject *receiver)
 {
-    QString a = sender ? sender->objectName() : QString();
-    QString b = receiver ? receiver->objectName() : QString();
-    if (!a.isEmpty())
-        qCWarning(lcConnect, "QObject::%s:  (sender name:   '%s')", func, a.toLocal8Bit().data());
-    if (!b.isEmpty())
-        qCWarning(lcConnect, "QObject::%s:  (receiver name: '%s')", func, b.toLocal8Bit().data());
+    err_info_about_object(func, sender, ConnectionEnd::Sender);
+    err_info_about_object(func, receiver, ConnectionEnd::Receiver);
 }
 
 Q_DECL_COLD_FUNCTION
