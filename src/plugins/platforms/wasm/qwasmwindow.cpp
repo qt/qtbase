@@ -925,7 +925,7 @@ bool QWasmWindow::deliverPointerEvent(const PointerEvent &event)
                    std::back_inserter(touchPointList),
                    [](const QWindowSystemInterface::TouchPoint &val) { return val; });
 
-    if (event.type == EventType::PointerUp)
+    if (event.type == EventType::PointerUp || event.type == EventType::PointerCancel)
         m_pointerIdToTouchPoints.remove(event.pointerId);
 
     return event.type == EventType::PointerCancel
