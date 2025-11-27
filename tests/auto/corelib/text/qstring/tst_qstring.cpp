@@ -9409,7 +9409,7 @@ void tst_QString::rawData()
 void tst_QString::testUtf16()
 {
     {
-        const char16_t arr[] = {'a', 'b', 'c'};
+        constexpr char16_t arr[] = {u'a', u'b', u'c'};
         QString s = QString::fromRawData(arr, 3); // doesn't guarantee null-termination
         QCOMPARE(s.size(), qsizetype(std::size(arr)));
         // The string points to the raw data
