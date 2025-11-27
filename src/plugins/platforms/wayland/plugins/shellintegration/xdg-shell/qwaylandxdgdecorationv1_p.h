@@ -56,8 +56,7 @@ private:
     bool m_configured = false;
 };
 
+} // namespace QtWaylandClient
+
 QT_END_NAMESPACE
-
-}
-
 #endif // QWAYLANDXDGDECORATIONV1_P_H

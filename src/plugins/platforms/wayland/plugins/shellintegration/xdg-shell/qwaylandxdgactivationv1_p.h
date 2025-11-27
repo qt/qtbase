@@ -52,8 +52,7 @@ public:
                                                             const QString &app_id);
 };
 
+} // namespace QtWaylandClient
+
 QT_END_NAMESPACE
-
-}
-
 #endif // QWAYLANDXDGACTIVATIONV1_P_H

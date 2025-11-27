@@ -82,8 +82,8 @@ private:
     friend class QWaylandWindow;
 };
 
-QT_END_NAMESPACE
+} // namespace QtWaylandClient
 
-}
+QT_END_NAMESPACE
 
 #endif // QWAYLANDSHELLSURFACE_H
