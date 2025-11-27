@@ -58,8 +58,14 @@ class AmbiguousBase1 : public IntermediateDerived, public Base {};
 class AmbiguousBase2 : public IntermediateDerived, public virtual Base {};
 
 static_assert(!qxp::is_virtual_base_of_v<Base, AmbiguousBase1>);
+#ifdef __cpp_lib_is_virtual_base_of
+// Our own implementation cannot handle ambiguous bases correctly;
+// the stdlib one does.
+static_assert(qxp::is_virtual_base_of_v<Base, AmbiguousBase2>);
+#else
 #ifndef Q_CC_MSVC_ONLY // https://developercommunity.visualstudio.com/t/c-templates-multiple-inheritance-ambiguous-access/185674
 static_assert(!qxp::is_virtual_base_of_v<Base, AmbiguousBase2>);
+#endif
 #endif
 QT_WARNING_POP
 
