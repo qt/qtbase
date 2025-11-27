@@ -1,0 +1,914 @@
+From 5676e5f83597dc1fb32b551c863633eff102e879 Mon Sep 17 00:00:00 2001
+From: Marc Mutz <marc.mutz@qt.io>
+Date: Thu, 27 Nov 2025 07:51:19 +0100
+Subject: [PATCH] Namespace TL_ macros with Q23_
+
+Change-Id: Ib5762ec8ebe81e0c750da84be29531b7179c5025
+---
+ src/corelib/global/qexpected_p.h | 312 +++++++++++++++----------------
+ 1 file changed, 156 insertions(+), 156 deletions(-)
+
+diff --git a/src/corelib/global/qexpected_p.h b/src/corelib/global/qexpected_p.h
+index 24ea5be1e5e..54bcae51102 100644
+--- a/src/corelib/global/qexpected_p.h
++++ b/src/corelib/global/qexpected_p.h
+@@ -16,8 +16,8 @@
+ // <http://creativecommons.org/publicdomain/zero/1.0/>.
+ ///
+ 
+-#ifndef TL_EXPECTED_HPP
+-#define TL_EXPECTED_HPP
++#ifndef Q23_TL_EXPECTED_HPP
++#define Q23_TL_EXPECTED_HPP
+ 
+ //
+ //  W A R N I N G
+@@ -30,9 +30,9 @@
+ // We mean it.
+ //
+ 
+-#define TL_EXPECTED_VERSION_MAJOR 1
+-#define TL_EXPECTED_VERSION_MINOR 1
+-#define TL_EXPECTED_VERSION_PATCH 0
++#define Q23_TL_EXPECTED_VERSION_MAJOR 1
++#define Q23_TL_EXPECTED_VERSION_MINOR 1
++#define Q23_TL_EXPECTED_VERSION_PATCH 0
+ 
+ #include <QtCore/private/qglobal_p.h>
+ #include <QtCore/qassert.h>
+@@ -44,45 +44,45 @@
+ #include <type_traits>
+ #include <utility>
+ 
+-#define TL_ASSERT Q_ASSERT
++#define Q23_TL_ASSERT Q_ASSERT
+ 
+ #if defined(__EXCEPTIONS) || defined(_CPPUNWIND)
+-#define TL_EXPECTED_EXCEPTIONS_ENABLED
++#define Q23_TL_EXPECTED_EXCEPTIONS_ENABLED
+ #endif
+ 
+-#if defined(TL_EXPECTED_EXCEPTIONS_ENABLED) && defined(QT_NO_EXCEPTIONS)
+-#  undef TL_EXPECTED_EXCEPTIONS_ENABLED
++#if defined(Q23_TL_EXPECTED_EXCEPTIONS_ENABLED) && defined(QT_NO_EXCEPTIONS)
++#  undef Q23_TL_EXPECTED_EXCEPTIONS_ENABLED
+ #endif
+ 
+ #if (defined(_MSC_VER) && _MSC_VER == 1900)
+-#define TL_EXPECTED_MSVC2015
+-#define TL_EXPECTED_MSVC2015_CONSTEXPR
++#define Q23_TL_EXPECTED_MSVC2015
++#define Q23_TL_EXPECTED_MSVC2015_CONSTEXPR
+ #else
+-#define TL_EXPECTED_MSVC2015_CONSTEXPR constexpr
++#define Q23_TL_EXPECTED_MSVC2015_CONSTEXPR constexpr
+ #endif
+ 
+ #if (defined(__GNUC__) && __GNUC__ == 4 && __GNUC_MINOR__ <= 9 &&              \
+      !defined(__clang__))
+-#define TL_EXPECTED_GCC49
++#define Q23_TL_EXPECTED_GCC49
+ #endif
+ 
+ #if (defined(__GNUC__) && __GNUC__ == 5 && __GNUC_MINOR__ <= 4 &&              \
+      !defined(__clang__))
+-#define TL_EXPECTED_GCC54
++#define Q23_TL_EXPECTED_GCC54
+ #endif
+ 
+ #if (defined(__GNUC__) && __GNUC__ == 5 && __GNUC_MINOR__ <= 5 &&              \
+      !defined(__clang__))
+-#define TL_EXPECTED_GCC55
++#define Q23_TL_EXPECTED_GCC55
+ #endif
+ 
+-#if !defined(TL_ASSERT)
++#if !defined(Q23_TL_ASSERT)
+ //can't have assert in constexpr in C++11 and GCC 4.9 has a compiler bug
+-#if (TL_CPLUSPLUS > 201103L) && !defined(TL_EXPECTED_GCC49)
++#if (Q23_TL_CPLUSPLUS > 201103L) && !defined(Q23_TL_EXPECTED_GCC49)
+ #include <cassert>
+-#define TL_ASSERT(x) assert(x)
++#define Q23_TL_ASSERT(x) assert(x)
+ #else 
+-#define TL_ASSERT(x)
++#define Q23_TL_ASSERT(x)
+ #endif
+ #endif
+ 
+@@ -90,22 +90,22 @@
+      !defined(__clang__))
+ // GCC < 5 doesn't support overloading on const&& for member functions
+ 
+-#define TL_EXPECTED_NO_CONSTRR
++#define Q23_TL_EXPECTED_NO_CONSTRR
+ // GCC < 5 doesn't support some standard C++11 type traits
+-#define TL_EXPECTED_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(T)                         \
++#define Q23_TL_EXPECTED_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(T)                         \
+   std::has_trivial_copy_constructor<T>
+-#define TL_EXPECTED_IS_TRIVIALLY_COPY_ASSIGNABLE(T)                            \
++#define Q23_TL_EXPECTED_IS_TRIVIALLY_COPY_ASSIGNABLE(T)                            \
+   std::has_trivial_copy_assign<T>
+ 
+ // This one will be different for GCC 5.7 if it's ever supported
+-#define TL_EXPECTED_IS_TRIVIALLY_DESTRUCTIBLE(T)                               \
++#define Q23_TL_EXPECTED_IS_TRIVIALLY_DESTRUCTIBLE(T)                               \
+   std::is_trivially_destructible<T>
+ 
+ // GCC 5 < v < 8 has a bug in is_trivially_copy_constructible which breaks
+ // std::vector for non-copyable types
+ #elif (defined(__GNUC__) && __GNUC__ < 8 && !defined(__clang__))
+-#ifndef TL_GCC_LESS_8_TRIVIALLY_COPY_CONSTRUCTIBLE_MUTEX
+-#define TL_GCC_LESS_8_TRIVIALLY_COPY_CONSTRUCTIBLE_MUTEX
++#ifndef Q23_TL_GCC_LESS_8_TRIVIALLY_COPY_CONSTRUCTIBLE_MUTEX
++#define Q23_TL_GCC_LESS_8_TRIVIALLY_COPY_CONSTRUCTIBLE_MUTEX
+ QT_BEGIN_NAMESPACE
+ namespace q23 {
+ namespace detail {
+@@ -121,50 +121,50 @@ struct is_trivially_copy_constructible<std::vector<T, A>> : std::false_type {};
+ QT_END_NAMESPACE
+ #endif
+ 
+-#define TL_EXPECTED_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(T)                         \
++#define Q23_TL_EXPECTED_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(T)                         \
+   q23::detail::is_trivially_copy_constructible<T>
+-#define TL_EXPECTED_IS_TRIVIALLY_COPY_ASSIGNABLE(T)                            \
++#define Q23_TL_EXPECTED_IS_TRIVIALLY_COPY_ASSIGNABLE(T)                            \
+   std::is_trivially_copy_assignable<T>
+-#define TL_EXPECTED_IS_TRIVIALLY_DESTRUCTIBLE(T)                               \
++#define Q23_TL_EXPECTED_IS_TRIVIALLY_DESTRUCTIBLE(T)                               \
+   std::is_trivially_destructible<T>
+ #else
+-#define TL_EXPECTED_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(T)                         \
++#define Q23_TL_EXPECTED_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(T)                         \
+   std::is_trivially_copy_constructible<T>
+-#define TL_EXPECTED_IS_TRIVIALLY_COPY_ASSIGNABLE(T)                            \
++#define Q23_TL_EXPECTED_IS_TRIVIALLY_COPY_ASSIGNABLE(T)                            \
+   std::is_trivially_copy_assignable<T>
+-#define TL_EXPECTED_IS_TRIVIALLY_DESTRUCTIBLE(T)                               \
++#define Q23_TL_EXPECTED_IS_TRIVIALLY_DESTRUCTIBLE(T)                               \
+   std::is_trivially_destructible<T>
+ #endif
+ 
+ #ifdef _MSVC_LANG
+-#define TL_CPLUSPLUS _MSVC_LANG
++#define Q23_TL_CPLUSPLUS _MSVC_LANG
+ #else
+-#define TL_CPLUSPLUS __cplusplus
++#define Q23_TL_CPLUSPLUS __cplusplus
+ #endif
+ 
+-#if TL_CPLUSPLUS > 201103L
+-#define TL_EXPECTED_CXX14
++#if Q23_TL_CPLUSPLUS > 201103L
++#define Q23_TL_EXPECTED_CXX14
+ #endif
+ 
+-#ifdef TL_EXPECTED_GCC49
+-#define TL_EXPECTED_GCC49_CONSTEXPR
++#ifdef Q23_TL_EXPECTED_GCC49
++#define Q23_TL_EXPECTED_GCC49_CONSTEXPR
+ #else
+-#define TL_EXPECTED_GCC49_CONSTEXPR constexpr
++#define Q23_TL_EXPECTED_GCC49_CONSTEXPR constexpr
+ #endif
+ 
+-#if (TL_CPLUSPLUS == 201103L || defined(TL_EXPECTED_MSVC2015) ||                \
+-     defined(TL_EXPECTED_GCC49))
+-#define TL_EXPECTED_11_CONSTEXPR
++#if (Q23_TL_CPLUSPLUS == 201103L || defined(Q23_TL_EXPECTED_MSVC2015) ||                \
++     defined(Q23_TL_EXPECTED_GCC49))
++#define Q23_TL_EXPECTED_11_CONSTEXPR
+ #else
+-#define TL_EXPECTED_11_CONSTEXPR constexpr
++#define Q23_TL_EXPECTED_11_CONSTEXPR constexpr
+ #endif
+ 
+ QT_BEGIN_NAMESPACE
+ namespace q23 {
+ template <class T, class E> class expected;
+ 
+-#ifndef TL_MONOSTATE_INPLACE_MUTEX
+-#define TL_MONOSTATE_INPLACE_MUTEX
++#ifndef Q23_TL_MONOSTATE_INPLACE_MUTEX
++#define Q23_TL_MONOSTATE_INPLACE_MUTEX
+ class monostate {};
+ 
+ struct in_place_t {
+@@ -196,8 +196,8 @@ public:
+       : m_val(l, std::forward<Args>(args)...) {}
+ 
+   constexpr const E &error() const & { return m_val; }
+-  TL_EXPECTED_11_CONSTEXPR E &error() & { return m_val; }
+-  TL_EXPECTED_11_CONSTEXPR E &&error() && { return std::move(m_val); }
++  Q23_TL_EXPECTED_11_CONSTEXPR E &error() & { return m_val; }
++  Q23_TL_EXPECTED_11_CONSTEXPR E &&error() && { return std::move(m_val); }
+   constexpr const E &&error() const && { return std::move(m_val); }
+ 
+ private:
+@@ -245,8 +245,8 @@ static constexpr unexpect_t unexpect{};
+ 
+ namespace detail {
+ template <typename E>
+-[[noreturn]] TL_EXPECTED_11_CONSTEXPR void throw_exception(E &&e) {
+-#ifdef TL_EXPECTED_EXCEPTIONS_ENABLED
++[[noreturn]] Q23_TL_EXPECTED_11_CONSTEXPR void throw_exception(E &&e) {
++#ifdef Q23_TL_EXPECTED_EXCEPTIONS_ENABLED
+   throw std::forward<E>(e);
+ #else
+   (void)e;
+@@ -258,8 +258,8 @@ template <typename E>
+ #endif
+ }
+ 
+-#ifndef TL_TRAITS_MUTEX
+-#define TL_TRAITS_MUTEX
++#ifndef Q23_TL_TRAITS_MUTEX
++#define Q23_TL_TRAITS_MUTEX
+ // C++14-style aliases for brevity
+ template <class T> using remove_const_t = typename std::remove_const<T>::type;
+ template <class T>
+@@ -278,13 +278,13 @@ struct conjunction<B, Bs...>
+     : std::conditional<bool(B::value), conjunction<Bs...>, B>::type {};
+ 
+ #if defined(_LIBCPP_VERSION) && __cplusplus == 201103L
+-#define TL_TRAITS_LIBCXX_MEM_FN_WORKAROUND
++#define Q23_TL_TRAITS_LIBCXX_MEM_FN_WORKAROUND
+ #endif
+ 
+ // In C++11 mode, there's an issue in libc++'s std::mem_fn
+ // which results in a hard-error when using it in a noexcept expression
+ // in some cases. This is a check to workaround the common failing case.
+-#ifdef TL_TRAITS_LIBCXX_MEM_FN_WORKAROUND
++#ifdef Q23_TL_TRAITS_LIBCXX_MEM_FN_WORKAROUND
+ template <class T>
+ struct is_pointer_to_non_const_member_func : std::false_type {};
+ template <class T, class Ret, class... Args>
+@@ -315,7 +315,7 @@ template <class T> struct is_const_or_const_ref<T const> : std::true_type {};
+ // https://stackoverflow.com/questions/38288042/c11-14-invoke-workaround
+ template <
+     typename Fn, typename... Args,
+-#ifdef TL_TRAITS_LIBCXX_MEM_FN_WORKAROUND
++#ifdef Q23_TL_TRAITS_LIBCXX_MEM_FN_WORKAROUND
+     typename = enable_if_t<!(is_pointer_to_non_const_member_func<Fn>::value &&
+                              is_const_or_const_ref<Args...>::value)>,
+ #endif
+@@ -574,7 +574,7 @@ template <class T, class E> struct expected_storage_base<T, E, true, true> {
+ // T is trivial, E is not.
+ template <class T, class E> struct expected_storage_base<T, E, true, false> {
+   constexpr expected_storage_base() : m_val(T{}), m_has_val(true) {}
+-  TL_EXPECTED_MSVC2015_CONSTEXPR expected_storage_base(no_init_t)
++  Q23_TL_EXPECTED_MSVC2015_CONSTEXPR expected_storage_base(no_init_t)
+       : m_no_init(), m_has_val(false) {}
+ 
+   template <class... Args,
+@@ -675,7 +675,7 @@ template <class E> struct expected_storage_base<void, E, false, true> {
+   #if __GNUC__ <= 5
+   //no constexpr for GCC 4/5 bug
+   #else
+-  TL_EXPECTED_MSVC2015_CONSTEXPR
++  Q23_TL_EXPECTED_MSVC2015_CONSTEXPR
+   #endif 
+   expected_storage_base() : m_has_val(true) {}
+      
+@@ -770,7 +770,7 @@ struct expected_operations_base : expected_storage_base<T, E> {
+     this->m_has_val = false;
+   }
+ 
+-#ifdef TL_EXPECTED_EXCEPTIONS_ENABLED
++#ifdef Q23_TL_EXPECTED_EXCEPTIONS_ENABLED
+ 
+   // These assign overloads ensure that the most efficient assignment
+   // implementation is used while maintaining the strong exception guarantee.
+@@ -820,7 +820,7 @@ struct expected_operations_base : expected_storage_base<T, E> {
+       auto tmp = std::move(geterr());
+       geterr().~unexpected<E>();
+ 
+-#ifdef TL_EXPECTED_EXCEPTIONS_ENABLED
++#ifdef Q23_TL_EXPECTED_EXCEPTIONS_ENABLED
+       try {
+         construct(rhs.get());
+       } catch (...) {
+@@ -855,7 +855,7 @@ struct expected_operations_base : expected_storage_base<T, E> {
+     if (!this->m_has_val && rhs.m_has_val) {
+       auto tmp = std::move(geterr());
+       geterr().~unexpected<E>();
+-#ifdef TL_EXPECTED_EXCEPTIONS_ENABLED
++#ifdef Q23_TL_EXPECTED_EXCEPTIONS_ENABLED
+       try {
+         construct(std::move(rhs).get());
+       } catch (...) {
+@@ -911,27 +911,27 @@ struct expected_operations_base : expected_storage_base<T, E> {
+ 
+   bool has_value() const { return this->m_has_val; }
+ 
+-  TL_EXPECTED_11_CONSTEXPR T &get() & { return this->m_val; }
++  Q23_TL_EXPECTED_11_CONSTEXPR T &get() & { return this->m_val; }
+   constexpr const T &get() const & { return this->m_val; }
+-  TL_EXPECTED_11_CONSTEXPR T &&get() && { return std::move(this->m_val); }
+-#ifndef TL_EXPECTED_NO_CONSTRR
++  Q23_TL_EXPECTED_11_CONSTEXPR T &&get() && { return std::move(this->m_val); }
++#ifndef Q23_TL_EXPECTED_NO_CONSTRR
+   constexpr const T &&get() const && { return std::move(this->m_val); }
+ #endif
+ 
+-  TL_EXPECTED_11_CONSTEXPR unexpected<E> &geterr() & {
++  Q23_TL_EXPECTED_11_CONSTEXPR unexpected<E> &geterr() & {
+     return this->m_unexpect;
+   }
+   constexpr const unexpected<E> &geterr() const & { return this->m_unexpect; }
+-  TL_EXPECTED_11_CONSTEXPR unexpected<E> &&geterr() && {
++  Q23_TL_EXPECTED_11_CONSTEXPR unexpected<E> &&geterr() && {
+     return std::move(this->m_unexpect);
+   }
+-#ifndef TL_EXPECTED_NO_CONSTRR
++#ifndef Q23_TL_EXPECTED_NO_CONSTRR
+   constexpr const unexpected<E> &&geterr() const && {
+     return std::move(this->m_unexpect);
+   }
+ #endif
+ 
+-  TL_EXPECTED_11_CONSTEXPR void destroy_val() { get().~T(); }
++  Q23_TL_EXPECTED_11_CONSTEXPR void destroy_val() { get().~T(); }
+ };
+ 
+ // This base class provides some handy member functions which can be used in
+@@ -971,20 +971,20 @@ struct expected_operations_base<void, E> : expected_storage_base<void, E> {
+ 
+   bool has_value() const { return this->m_has_val; }
+ 
+-  TL_EXPECTED_11_CONSTEXPR unexpected<E> &geterr() & {
++  Q23_TL_EXPECTED_11_CONSTEXPR unexpected<E> &geterr() & {
+     return this->m_unexpect;
+   }
+   constexpr const unexpected<E> &geterr() const & { return this->m_unexpect; }
+-  TL_EXPECTED_11_CONSTEXPR unexpected<E> &&geterr() && {
++  Q23_TL_EXPECTED_11_CONSTEXPR unexpected<E> &&geterr() && {
+     return std::move(this->m_unexpect);
+   }
+-#ifndef TL_EXPECTED_NO_CONSTRR
++#ifndef Q23_TL_EXPECTED_NO_CONSTRR
+   constexpr const unexpected<E> &&geterr() const && {
+     return std::move(this->m_unexpect);
+   }
+ #endif
+ 
+-  TL_EXPECTED_11_CONSTEXPR void destroy_val() {
++  Q23_TL_EXPECTED_11_CONSTEXPR void destroy_val() {
+     // no-op
+   }
+ };
+@@ -992,8 +992,8 @@ struct expected_operations_base<void, E> : expected_storage_base<void, E> {
+ // This class manages conditionally having a trivial copy constructor
+ // This specialization is for when T and E are trivially copy constructible
+ template <class T, class E,
+-          bool = is_void_or<T, TL_EXPECTED_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(T)>::
+-              value &&TL_EXPECTED_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(E)::value,
++          bool = is_void_or<T, Q23_TL_EXPECTED_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(T)>::
++              value &&Q23_TL_EXPECTED_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(E)::value,
+           bool = (is_copy_constructible_or_void<T>::value &&
+                   std::is_copy_constructible<E>::value)>
+ struct expected_copy_base : expected_operations_base<T, E> {
+@@ -1025,7 +1025,7 @@ struct expected_copy_base<T, E, false, true> : expected_operations_base<T, E> {
+ // doesn't implement an analogue to std::is_trivially_move_constructible. We
+ // have to make do with a non-trivial move constructor even if T is trivially
+ // move constructible
+-#ifndef TL_EXPECTED_GCC49
++#ifndef Q23_TL_EXPECTED_GCC49
+ template <class T, class E,
+           bool = is_void_or<T, std::is_trivially_move_constructible<T>>::value
+               &&std::is_trivially_move_constructible<E>::value>
+@@ -1058,12 +1058,12 @@ struct expected_move_base<T, E, false> : expected_copy_base<T, E> {
+ // This class manages conditionally having a trivial copy assignment operator
+ template <class T, class E,
+           bool = is_void_or<
+-              T, conjunction<TL_EXPECTED_IS_TRIVIALLY_COPY_ASSIGNABLE(T),
+-                             TL_EXPECTED_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(T),
+-                             TL_EXPECTED_IS_TRIVIALLY_DESTRUCTIBLE(T)>>::value
+-              &&TL_EXPECTED_IS_TRIVIALLY_COPY_ASSIGNABLE(E)::value
+-                  &&TL_EXPECTED_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(E)::value
+-                      &&TL_EXPECTED_IS_TRIVIALLY_DESTRUCTIBLE(E)::value,
++              T, conjunction<Q23_TL_EXPECTED_IS_TRIVIALLY_COPY_ASSIGNABLE(T),
++                             Q23_TL_EXPECTED_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(T),
++                             Q23_TL_EXPECTED_IS_TRIVIALLY_DESTRUCTIBLE(T)>>::value
++              &&Q23_TL_EXPECTED_IS_TRIVIALLY_COPY_ASSIGNABLE(E)::value
++                  &&Q23_TL_EXPECTED_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(E)::value
++                      &&Q23_TL_EXPECTED_IS_TRIVIALLY_DESTRUCTIBLE(E)::value,
+           bool = (is_copy_constructible_or_void<T>::value &&
+              std::is_copy_constructible<E>::value &&
+              is_copy_assignable_or_void<T>::value &&
+@@ -1093,7 +1093,7 @@ struct expected_copy_assign_base<T, E, false, true> : expected_move_base<T, E> {
+ // doesn't implement an analogue to std::is_trivially_move_assignable. We have
+ // to make do with a non-trivial move assignment operator even if T is trivially
+ // move assignable
+-#ifndef TL_EXPECTED_GCC49
++#ifndef Q23_TL_EXPECTED_GCC49
+ template <class T, class E,
+           bool =
+               is_void_or<T, conjunction<std::is_trivially_destructible<T>,
+@@ -1330,10 +1330,10 @@ class expected : private detail::expected_move_assign_base<T, E>,
+ 
+   template <class U = T,
+             detail::enable_if_t<!std::is_void<U>::value> * = nullptr>
+-  TL_EXPECTED_11_CONSTEXPR U &val() {
++  Q23_TL_EXPECTED_11_CONSTEXPR U &val() {
+     return this->m_val;
+   }
+-  TL_EXPECTED_11_CONSTEXPR unexpected<E> &err() { return this->m_unexpect; }
++  Q23_TL_EXPECTED_11_CONSTEXPR unexpected<E> &err() { return this->m_unexpect; }
+ 
+   template <class U = T,
+             detail::enable_if_t<!std::is_void<U>::value> * = nullptr>
+@@ -1350,19 +1350,19 @@ public:
+   typedef E error_type;
+   typedef unexpected<E> unexpected_type;
+ 
+-#if defined(TL_EXPECTED_CXX14) && !defined(TL_EXPECTED_GCC49) &&               \
+-    !defined(TL_EXPECTED_GCC54) && !defined(TL_EXPECTED_GCC55)
+-  template <class F> TL_EXPECTED_11_CONSTEXPR auto and_then(F &&f) & {
++#if defined(Q23_TL_EXPECTED_CXX14) && !defined(Q23_TL_EXPECTED_GCC49) &&               \
++    !defined(Q23_TL_EXPECTED_GCC54) && !defined(Q23_TL_EXPECTED_GCC55)
++  template <class F> Q23_TL_EXPECTED_11_CONSTEXPR auto and_then(F &&f) & {
+     return and_then_impl(*this, std::forward<F>(f));
+   }
+-  template <class F> TL_EXPECTED_11_CONSTEXPR auto and_then(F &&f) && {
++  template <class F> Q23_TL_EXPECTED_11_CONSTEXPR auto and_then(F &&f) && {
+     return and_then_impl(std::move(*this), std::forward<F>(f));
+   }
+   template <class F> constexpr auto and_then(F &&f) const & {
+     return and_then_impl(*this, std::forward<F>(f));
+   }
+ 
+-#ifndef TL_EXPECTED_NO_CONSTRR
++#ifndef Q23_TL_EXPECTED_NO_CONSTRR
+   template <class F> constexpr auto and_then(F &&f) const && {
+     return and_then_impl(std::move(*this), std::forward<F>(f));
+   }
+@@ -1370,13 +1370,13 @@ public:
+ 
+ #else
+   template <class F>
+-  TL_EXPECTED_11_CONSTEXPR auto
++  Q23_TL_EXPECTED_11_CONSTEXPR auto
+   and_then(F &&f) & -> decltype(and_then_impl(std::declval<expected &>(),
+                                               std::forward<F>(f))) {
+     return and_then_impl(*this, std::forward<F>(f));
+   }
+   template <class F>
+-  TL_EXPECTED_11_CONSTEXPR auto
++  Q23_TL_EXPECTED_11_CONSTEXPR auto
+   and_then(F &&f) && -> decltype(and_then_impl(std::declval<expected &&>(),
+                                                std::forward<F>(f))) {
+     return and_then_impl(std::move(*this), std::forward<F>(f));
+@@ -1387,7 +1387,7 @@ public:
+     return and_then_impl(*this, std::forward<F>(f));
+   }
+ 
+-#ifndef TL_EXPECTED_NO_CONSTRR
++#ifndef Q23_TL_EXPECTED_NO_CONSTRR
+   template <class F>
+   constexpr auto and_then(F &&f) const && -> decltype(and_then_impl(
+       std::declval<expected const &&>(), std::forward<F>(f))) {
+@@ -1396,12 +1396,12 @@ public:
+ #endif
+ #endif
+ 
+-#if defined(TL_EXPECTED_CXX14) && !defined(TL_EXPECTED_GCC49) &&               \
+-    !defined(TL_EXPECTED_GCC54) && !defined(TL_EXPECTED_GCC55)
+-  template <class F> TL_EXPECTED_11_CONSTEXPR auto map(F &&f) & {
++#if defined(Q23_TL_EXPECTED_CXX14) && !defined(Q23_TL_EXPECTED_GCC49) &&               \
++    !defined(Q23_TL_EXPECTED_GCC54) && !defined(Q23_TL_EXPECTED_GCC55)
++  template <class F> Q23_TL_EXPECTED_11_CONSTEXPR auto map(F &&f) & {
+     return expected_map_impl(*this, std::forward<F>(f));
+   }
+-  template <class F> TL_EXPECTED_11_CONSTEXPR auto map(F &&f) && {
++  template <class F> Q23_TL_EXPECTED_11_CONSTEXPR auto map(F &&f) && {
+     return expected_map_impl(std::move(*this), std::forward<F>(f));
+   }
+   template <class F> constexpr auto map(F &&f) const & {
+@@ -1412,13 +1412,13 @@ public:
+   }
+ #else
+   template <class F>
+-  TL_EXPECTED_11_CONSTEXPR decltype(expected_map_impl(
++  Q23_TL_EXPECTED_11_CONSTEXPR decltype(expected_map_impl(
+       std::declval<expected &>(), std::declval<F &&>()))
+   map(F &&f) & {
+     return expected_map_impl(*this, std::forward<F>(f));
+   }
+   template <class F>
+-  TL_EXPECTED_11_CONSTEXPR decltype(expected_map_impl(std::declval<expected>(),
++  Q23_TL_EXPECTED_11_CONSTEXPR decltype(expected_map_impl(std::declval<expected>(),
+                                                       std::declval<F &&>()))
+   map(F &&f) && {
+     return expected_map_impl(std::move(*this), std::forward<F>(f));
+@@ -1430,7 +1430,7 @@ public:
+     return expected_map_impl(*this, std::forward<F>(f));
+   }
+ 
+-#ifndef TL_EXPECTED_NO_CONSTRR
++#ifndef Q23_TL_EXPECTED_NO_CONSTRR
+   template <class F>
+   constexpr decltype(expected_map_impl(std::declval<const expected &&>(),
+                                        std::declval<F &&>()))
+@@ -1440,12 +1440,12 @@ public:
+ #endif
+ #endif
+ 
+-#if defined(TL_EXPECTED_CXX14) && !defined(TL_EXPECTED_GCC49) &&               \
+-    !defined(TL_EXPECTED_GCC54) && !defined(TL_EXPECTED_GCC55)
+-  template <class F> TL_EXPECTED_11_CONSTEXPR auto transform(F &&f) & {
++#if defined(Q23_TL_EXPECTED_CXX14) && !defined(Q23_TL_EXPECTED_GCC49) &&               \
++    !defined(Q23_TL_EXPECTED_GCC54) && !defined(Q23_TL_EXPECTED_GCC55)
++  template <class F> Q23_TL_EXPECTED_11_CONSTEXPR auto transform(F &&f) & {
+     return expected_map_impl(*this, std::forward<F>(f));
+   }
+-  template <class F> TL_EXPECTED_11_CONSTEXPR auto transform(F &&f) && {
++  template <class F> Q23_TL_EXPECTED_11_CONSTEXPR auto transform(F &&f) && {
+     return expected_map_impl(std::move(*this), std::forward<F>(f));
+   }
+   template <class F> constexpr auto transform(F &&f) const & {
+@@ -1456,13 +1456,13 @@ public:
+   }
+ #else
+   template <class F>
+-  TL_EXPECTED_11_CONSTEXPR decltype(expected_map_impl(
++  Q23_TL_EXPECTED_11_CONSTEXPR decltype(expected_map_impl(
+       std::declval<expected &>(), std::declval<F &&>()))
+   transform(F &&f) & {
+     return expected_map_impl(*this, std::forward<F>(f));
+   }
+   template <class F>
+-  TL_EXPECTED_11_CONSTEXPR decltype(expected_map_impl(std::declval<expected>(),
++  Q23_TL_EXPECTED_11_CONSTEXPR decltype(expected_map_impl(std::declval<expected>(),
+                                                       std::declval<F &&>()))
+   transform(F &&f) && {
+     return expected_map_impl(std::move(*this), std::forward<F>(f));
+@@ -1474,7 +1474,7 @@ public:
+     return expected_map_impl(*this, std::forward<F>(f));
+   }
+ 
+-#ifndef TL_EXPECTED_NO_CONSTRR
++#ifndef Q23_TL_EXPECTED_NO_CONSTRR
+   template <class F>
+   constexpr decltype(expected_map_impl(std::declval<const expected &&>(),
+                                        std::declval<F &&>()))
+@@ -1484,12 +1484,12 @@ public:
+ #endif
+ #endif
+ 
+-#if defined(TL_EXPECTED_CXX14) && !defined(TL_EXPECTED_GCC49) &&               \
+-    !defined(TL_EXPECTED_GCC54) && !defined(TL_EXPECTED_GCC55)
+-  template <class F> TL_EXPECTED_11_CONSTEXPR auto map_error(F &&f) & {
++#if defined(Q23_TL_EXPECTED_CXX14) && !defined(Q23_TL_EXPECTED_GCC49) &&               \
++    !defined(Q23_TL_EXPECTED_GCC54) && !defined(Q23_TL_EXPECTED_GCC55)
++  template <class F> Q23_TL_EXPECTED_11_CONSTEXPR auto map_error(F &&f) & {
+     return map_error_impl(*this, std::forward<F>(f));
+   }
+-  template <class F> TL_EXPECTED_11_CONSTEXPR auto map_error(F &&f) && {
++  template <class F> Q23_TL_EXPECTED_11_CONSTEXPR auto map_error(F &&f) && {
+     return map_error_impl(std::move(*this), std::forward<F>(f));
+   }
+   template <class F> constexpr auto map_error(F &&f) const & {
+@@ -1500,13 +1500,13 @@ public:
+   }
+ #else
+   template <class F>
+-  TL_EXPECTED_11_CONSTEXPR decltype(map_error_impl(std::declval<expected &>(),
++  Q23_TL_EXPECTED_11_CONSTEXPR decltype(map_error_impl(std::declval<expected &>(),
+                                                    std::declval<F &&>()))
+   map_error(F &&f) & {
+     return map_error_impl(*this, std::forward<F>(f));
+   }
+   template <class F>
+-  TL_EXPECTED_11_CONSTEXPR decltype(map_error_impl(std::declval<expected &&>(),
++  Q23_TL_EXPECTED_11_CONSTEXPR decltype(map_error_impl(std::declval<expected &&>(),
+                                                    std::declval<F &&>()))
+   map_error(F &&f) && {
+     return map_error_impl(std::move(*this), std::forward<F>(f));
+@@ -1518,7 +1518,7 @@ public:
+     return map_error_impl(*this, std::forward<F>(f));
+   }
+ 
+-#ifndef TL_EXPECTED_NO_CONSTRR
++#ifndef Q23_TL_EXPECTED_NO_CONSTRR
+   template <class F>
+   constexpr decltype(map_error_impl(std::declval<const expected &&>(),
+                                     std::declval<F &&>()))
+@@ -1527,12 +1527,12 @@ public:
+   }
+ #endif
+ #endif
+-#if defined(TL_EXPECTED_CXX14) && !defined(TL_EXPECTED_GCC49) &&               \
+-    !defined(TL_EXPECTED_GCC54) && !defined(TL_EXPECTED_GCC55)
+-  template <class F> TL_EXPECTED_11_CONSTEXPR auto transform_error(F &&f) & {
++#if defined(Q23_TL_EXPECTED_CXX14) && !defined(Q23_TL_EXPECTED_GCC49) &&               \
++    !defined(Q23_TL_EXPECTED_GCC54) && !defined(Q23_TL_EXPECTED_GCC55)
++  template <class F> Q23_TL_EXPECTED_11_CONSTEXPR auto transform_error(F &&f) & {
+     return map_error_impl(*this, std::forward<F>(f));
+   }
+-  template <class F> TL_EXPECTED_11_CONSTEXPR auto transform_error(F &&f) && {
++  template <class F> Q23_TL_EXPECTED_11_CONSTEXPR auto transform_error(F &&f) && {
+     return map_error_impl(std::move(*this), std::forward<F>(f));
+   }
+   template <class F> constexpr auto transform_error(F &&f) const & {
+@@ -1543,13 +1543,13 @@ public:
+   }
+ #else
+   template <class F>
+-  TL_EXPECTED_11_CONSTEXPR decltype(map_error_impl(std::declval<expected &>(),
++  Q23_TL_EXPECTED_11_CONSTEXPR decltype(map_error_impl(std::declval<expected &>(),
+                                                    std::declval<F &&>()))
+   transform_error(F &&f) & {
+     return map_error_impl(*this, std::forward<F>(f));
+   }
+   template <class F>
+-  TL_EXPECTED_11_CONSTEXPR decltype(map_error_impl(std::declval<expected &&>(),
++  Q23_TL_EXPECTED_11_CONSTEXPR decltype(map_error_impl(std::declval<expected &&>(),
+                                                    std::declval<F &&>()))
+   transform_error(F &&f) && {
+     return map_error_impl(std::move(*this), std::forward<F>(f));
+@@ -1561,7 +1561,7 @@ public:
+     return map_error_impl(*this, std::forward<F>(f));
+   }
+ 
+-#ifndef TL_EXPECTED_NO_CONSTRR
++#ifndef Q23_TL_EXPECTED_NO_CONSTRR
+   template <class F>
+   constexpr decltype(map_error_impl(std::declval<const expected &&>(),
+                                     std::declval<F &&>()))
+@@ -1570,11 +1570,11 @@ public:
+   }
+ #endif
+ #endif
+-  template <class F> expected TL_EXPECTED_11_CONSTEXPR or_else(F &&f) & {
++  template <class F> expected Q23_TL_EXPECTED_11_CONSTEXPR or_else(F &&f) & {
+     return or_else_impl(*this, std::forward<F>(f));
+   }
+ 
+-  template <class F> expected TL_EXPECTED_11_CONSTEXPR or_else(F &&f) && {
++  template <class F> expected Q23_TL_EXPECTED_11_CONSTEXPR or_else(F &&f) && {
+     return or_else_impl(std::move(*this), std::forward<F>(f));
+   }
+ 
+@@ -1582,7 +1582,7 @@ public:
+     return or_else_impl(*this, std::forward<F>(f));
+   }
+ 
+-#ifndef TL_EXPECTED_NO_CONSTRR
++#ifndef Q23_TL_EXPECTED_NO_CONSTRR
+   template <class F> expected constexpr or_else(F &&f) const && {
+     return or_else_impl(std::move(*this), std::forward<F>(f));
+   }
+@@ -1664,7 +1664,7 @@ public:
+                 nullptr,
+             detail::expected_enable_from_other<T, E, U, G, const U &, const G &>
+                 * = nullptr>
+-  explicit TL_EXPECTED_11_CONSTEXPR expected(const expected<U, G> &rhs)
++  explicit Q23_TL_EXPECTED_11_CONSTEXPR expected(const expected<U, G> &rhs)
+       : ctor_base(detail::default_constructor_tag{}) {
+     if (rhs.has_value()) {
+       this->construct(*rhs);
+@@ -1679,7 +1679,7 @@ public:
+                 nullptr,
+             detail::expected_enable_from_other<T, E, U, G, const U &, const G &>
+                 * = nullptr>
+-  TL_EXPECTED_11_CONSTEXPR expected(const expected<U, G> &rhs)
++  Q23_TL_EXPECTED_11_CONSTEXPR expected(const expected<U, G> &rhs)
+       : ctor_base(detail::default_constructor_tag{}) {
+     if (rhs.has_value()) {
+       this->construct(*rhs);
+@@ -1693,7 +1693,7 @@ public:
+       detail::enable_if_t<!(std::is_convertible<U &&, T>::value &&
+                             std::is_convertible<G &&, E>::value)> * = nullptr,
+       detail::expected_enable_from_other<T, E, U, G, U &&, G &&> * = nullptr>
+-  explicit TL_EXPECTED_11_CONSTEXPR expected(expected<U, G> &&rhs)
++  explicit Q23_TL_EXPECTED_11_CONSTEXPR expected(expected<U, G> &&rhs)
+       : ctor_base(detail::default_constructor_tag{}) {
+     if (rhs.has_value()) {
+       this->construct(std::move(*rhs));
+@@ -1707,7 +1707,7 @@ public:
+       detail::enable_if_t<(std::is_convertible<U &&, T>::value &&
+                            std::is_convertible<G &&, E>::value)> * = nullptr,
+       detail::expected_enable_from_other<T, E, U, G, U &&, G &&> * = nullptr>
+-  TL_EXPECTED_11_CONSTEXPR expected(expected<U, G> &&rhs)
++  Q23_TL_EXPECTED_11_CONSTEXPR expected(expected<U, G> &&rhs)
+       : ctor_base(detail::default_constructor_tag{}) {
+     if (rhs.has_value()) {
+       this->construct(std::move(*rhs));
+@@ -1720,14 +1720,14 @@ public:
+       class U = T,
+       detail::enable_if_t<!std::is_convertible<U &&, T>::value> * = nullptr,
+       detail::expected_enable_forward_value<T, E, U> * = nullptr>
+-  explicit TL_EXPECTED_MSVC2015_CONSTEXPR expected(U &&v)
++  explicit Q23_TL_EXPECTED_MSVC2015_CONSTEXPR expected(U &&v)
+       : expected(in_place, std::forward<U>(v)) {}
+ 
+   template <
+       class U = T,
+       detail::enable_if_t<std::is_convertible<U &&, T>::value> * = nullptr,
+       detail::expected_enable_forward_value<T, E, U> * = nullptr>
+-  TL_EXPECTED_MSVC2015_CONSTEXPR expected(U &&v)
++  Q23_TL_EXPECTED_MSVC2015_CONSTEXPR expected(U &&v)
+       : expected(in_place, std::forward<U>(v)) {}
+ 
+   template <
+@@ -1773,7 +1773,7 @@ public:
+       auto tmp = std::move(err());
+       err().~unexpected<E>();
+ 
+-#ifdef TL_EXPECTED_EXCEPTIONS_ENABLED
++#ifdef Q23_TL_EXPECTED_EXCEPTIONS_ENABLED
+       try {
+         ::new (valptr()) T(std::forward<U>(v));
+         this->m_has_val = true;
+@@ -1842,7 +1842,7 @@ public:
+       auto tmp = std::move(err());
+       err().~unexpected<E>();
+ 
+-#ifdef TL_EXPECTED_EXCEPTIONS_ENABLED
++#ifdef Q23_TL_EXPECTED_EXCEPTIONS_ENABLED
+       try {
+         ::new (valptr()) T(std::forward<Args>(args)...);
+         this->m_has_val = true;
+@@ -1882,7 +1882,7 @@ public:
+       auto tmp = std::move(err());
+       err().~unexpected<E>();
+ 
+-#ifdef TL_EXPECTED_EXCEPTIONS_ENABLED
++#ifdef Q23_TL_EXPECTED_EXCEPTIONS_ENABLED
+       try {
+         ::new (valptr()) T(il, std::forward<Args>(args)...);
+         this->m_has_val = true;
+@@ -1943,7 +1943,7 @@ private:
+       move_constructing_e_can_throw) {
+     auto temp = std::move(val());
+     val().~T();
+-#ifdef TL_EXPECTED_EXCEPTIONS_ENABLED
++#ifdef Q23_TL_EXPECTED_EXCEPTIONS_ENABLED
+     try {
+       ::new (errptr()) unexpected_type(std::move(rhs.err()));
+       rhs.err().~unexpected_type();
+@@ -1966,7 +1966,7 @@ private:
+       e_is_nothrow_move_constructible) {
+     auto temp = std::move(rhs.err());
+     rhs.err().~unexpected_type();
+-#ifdef TL_EXPECTED_EXCEPTIONS_ENABLED
++#ifdef Q23_TL_EXPECTED_EXCEPTIONS_ENABLED
+     try {
+       ::new (rhs.valptr()) T(std::move(val()));
+       val().~T();
+@@ -2008,36 +2008,36 @@ public:
+   }
+ 
+   constexpr const T *operator->() const {
+-    TL_ASSERT(has_value());
++    Q23_TL_ASSERT(has_value());
+     return valptr();
+   }
+-  TL_EXPECTED_11_CONSTEXPR T *operator->() {
+-    TL_ASSERT(has_value());
++  Q23_TL_EXPECTED_11_CONSTEXPR T *operator->() {
++    Q23_TL_ASSERT(has_value());
+     return valptr();
+   }
+ 
+   template <class U = T,
+             detail::enable_if_t<!std::is_void<U>::value> * = nullptr>
+   constexpr const U &operator*() const & {
+-    TL_ASSERT(has_value());
++    Q23_TL_ASSERT(has_value());
+     return val();
+   }
+   template <class U = T,
+             detail::enable_if_t<!std::is_void<U>::value> * = nullptr>
+-  TL_EXPECTED_11_CONSTEXPR U &operator*() & {
+-    TL_ASSERT(has_value());
++  Q23_TL_EXPECTED_11_CONSTEXPR U &operator*() & {
++    Q23_TL_ASSERT(has_value());
+     return val();
+   }
+   template <class U = T,
+             detail::enable_if_t<!std::is_void<U>::value> * = nullptr>
+   constexpr const U &&operator*() const && {
+-    TL_ASSERT(has_value());
++    Q23_TL_ASSERT(has_value());
+     return std::move(val());
+   }
+   template <class U = T,
+             detail::enable_if_t<!std::is_void<U>::value> * = nullptr>
+-  TL_EXPECTED_11_CONSTEXPR U &&operator*() && {
+-    TL_ASSERT(has_value());
++  Q23_TL_EXPECTED_11_CONSTEXPR U &&operator*() && {
++    Q23_TL_ASSERT(has_value());
+     return std::move(val());
+   }
+ 
+@@ -2046,47 +2046,47 @@ public:
+ 
+   template <class U = T,
+             detail::enable_if_t<!std::is_void<U>::value> * = nullptr>
+-  TL_EXPECTED_11_CONSTEXPR const U &value() const & {
++  Q23_TL_EXPECTED_11_CONSTEXPR const U &value() const & {
+     if (!has_value())
+       detail::throw_exception(bad_expected_access<E>(err().error()));
+     return val();
+   }
+   template <class U = T,
+             detail::enable_if_t<!std::is_void<U>::value> * = nullptr>
+-  TL_EXPECTED_11_CONSTEXPR U &value() & {
++  Q23_TL_EXPECTED_11_CONSTEXPR U &value() & {
+     if (!has_value())
+       detail::throw_exception(bad_expected_access<E>(err().error()));
+     return val();
+   }
+   template <class U = T,
+             detail::enable_if_t<!std::is_void<U>::value> * = nullptr>
+-  TL_EXPECTED_11_CONSTEXPR const U &&value() const && {
++  Q23_TL_EXPECTED_11_CONSTEXPR const U &&value() const && {
+     if (!has_value())
+       detail::throw_exception(bad_expected_access<E>(std::move(err()).error()));
+     return std::move(val());
+   }
+   template <class U = T,
+             detail::enable_if_t<!std::is_void<U>::value> * = nullptr>
+-  TL_EXPECTED_11_CONSTEXPR U &&value() && {
++  Q23_TL_EXPECTED_11_CONSTEXPR U &&value() && {
+     if (!has_value())
+       detail::throw_exception(bad_expected_access<E>(std::move(err()).error()));
+     return std::move(val());
+   }
+ 
+   constexpr const E &error() const & {
+-    TL_ASSERT(!has_value());
++    Q23_TL_ASSERT(!has_value());
+     return err().error();
+   }
+-  TL_EXPECTED_11_CONSTEXPR E &error() & {
+-    TL_ASSERT(!has_value());
++  Q23_TL_EXPECTED_11_CONSTEXPR E &error() & {
++    Q23_TL_ASSERT(!has_value());
+     return err().error();
+   }
+   constexpr const E &&error() const && {
+-    TL_ASSERT(!has_value());
++    Q23_TL_ASSERT(!has_value());
+     return std::move(err().error());
+   }
+-  TL_EXPECTED_11_CONSTEXPR E &&error() && {
+-    TL_ASSERT(!has_value());
++  Q23_TL_EXPECTED_11_CONSTEXPR E &&error() && {
++    Q23_TL_ASSERT(!has_value());
+     return std::move(err().error());
+   }
+ 
+@@ -2096,7 +2096,7 @@ public:
+                   "T must be copy-constructible and convertible to from U&&");
+     return bool(*this) ? **this : static_cast<T>(std::forward<U>(v));
+   }
+-  template <class U> TL_EXPECTED_11_CONSTEXPR T value_or(U &&v) && {
++  template <class U> Q23_TL_EXPECTED_11_CONSTEXPR T value_or(U &&v) && {
+     static_assert(std::is_move_constructible<T>::value &&
+                       std::is_convertible<U &&, T>::value,
+                   "T must be move-constructible and convertible to from U&&");
+@@ -2109,7 +2109,7 @@ template <class Exp> using exp_t = typename detail::decay_t<Exp>::value_type;
+ template <class Exp> using err_t = typename detail::decay_t<Exp>::error_type;
+ template <class Exp, class Ret> using ret_t = expected<Ret, err_t<Exp>>;
+ 
+-#ifdef TL_EXPECTED_CXX14
++#ifdef Q23_TL_EXPECTED_CXX14
+ template <class Exp, class F,
+           detail::enable_if_t<!std::is_void<exp_t<Exp>>::value> * = nullptr,
+           class Ret = decltype(detail::invoke(std::declval<F>(),
+@@ -2156,7 +2156,7 @@ constexpr auto and_then_impl(Exp &&exp, F &&f) -> Ret {
+ }
+ #endif
+ 
+-#ifdef TL_EXPECTED_CXX14
++#ifdef Q23_TL_EXPECTED_CXX14
+ template <class Exp, class F,
+           detail::enable_if_t<!std::is_void<exp_t<Exp>>::value> * = nullptr,
+           class Ret = decltype(detail::invoke(std::declval<F>(),
+@@ -2266,8 +2266,8 @@ auto expected_map_impl(Exp &&exp, F &&f) -> expected<void, err_t<Exp>> {
+ }
+ #endif
+ 
+-#if defined(TL_EXPECTED_CXX14) && !defined(TL_EXPECTED_GCC49) &&               \
+-    !defined(TL_EXPECTED_GCC54) && !defined(TL_EXPECTED_GCC55)
++#if defined(Q23_TL_EXPECTED_CXX14) && !defined(Q23_TL_EXPECTED_GCC49) &&               \
++    !defined(Q23_TL_EXPECTED_GCC54) && !defined(Q23_TL_EXPECTED_GCC55)
+ template <class Exp, class F,
+           detail::enable_if_t<!std::is_void<exp_t<Exp>>::value> * = nullptr,
+           class Ret = decltype(detail::invoke(std::declval<F>(),
+@@ -2382,7 +2382,7 @@ auto map_error_impl(Exp &&exp, F &&f) -> expected<exp_t<Exp>, monostate> {
+ }
+ #endif
+ 
+-#ifdef TL_EXPECTED_CXX14
++#ifdef Q23_TL_EXPECTED_CXX14
+ template <class Exp, class F,
+           class Ret = decltype(detail::invoke(std::declval<F>(),
+                                               std::declval<Exp>().error())),
+-- 
+2.25.1
+
