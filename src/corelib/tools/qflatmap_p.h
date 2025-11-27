@@ -42,19 +42,6 @@ QT_BEGIN_NAMESPACE
       QFlatMap<float, int, std::less<float>, std::vector<float>, std::vector<int>>
 */
 
-// Qt 6.4:
-// - removed QFlatMap API which was incompatible with STL semantics
-// - will be released with said API disabled, to catch any out-of-tree users
-// - also allows opting in to the new API using QFLATMAP_ENABLE_STL_COMPATIBLE_INSERT
-// Qt 6.5
-// - will make QFLATMAP_ENABLE_STL_COMPATIBLE_INSERT the default:
-
-#ifndef QFLATMAP_ENABLE_STL_COMPATIBLE_INSERT
-# if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
-#  define QFLATMAP_ENABLE_STL_COMPATIBLE_INSERT
-# endif
-#endif
-
 namespace Qt {
 
 struct OrderedUniqueRange_t {};
@@ -415,7 +402,6 @@ private:
 public:
     QFlatMap() = default;
 
-#ifdef QFLATMAP_ENABLE_STL_COMPATIBLE_INSERT
     explicit QFlatMap(const key_container_type &keys, const mapped_container_type &values)
         : c{keys, values}
     {
@@ -451,7 +437,6 @@ public:
         initWithRange(first, last);
         ensureOrderedUnique();
     }
-#endif
 
     explicit QFlatMap(Qt::OrderedUniqueRange_t, const key_container_type &keys,
                       const mapped_container_type &values)
@@ -493,7 +478,6 @@ public:
     {
     }
 
-#ifdef QFLATMAP_ENABLE_STL_COMPATIBLE_INSERT
     explicit QFlatMap(const key_container_type &keys, const mapped_container_type &values,
                       const Compare &compare)
         : value_compare(compare), c{keys, values}
@@ -534,7 +518,6 @@ public:
         initWithRange(first, last);
         ensureOrderedUnique();
     }
-#endif
 
     explicit QFlatMap(Qt::OrderedUniqueRange_t, const key_container_type &keys,
                       const mapped_container_type &values, const Compare &compare)
@@ -674,7 +657,6 @@ public:
         return value(key);
     }
 
-#ifdef QFLATMAP_ENABLE_STL_COMPATIBLE_INSERT
     std::pair<iterator, bool> insert(const Key &key, const T &value)
     {
         return try_emplace(key, value);
@@ -694,7 +676,6 @@ public:
     {
         return try_emplace(std::move(key), std::move(value));
     }
-#endif
 
     template <typename...Args>
     std::pair<iterator, bool> try_emplace(const Key &key, Args&&...args)
@@ -738,7 +719,6 @@ public:
         return r;
     }
 
-#ifdef QFLATMAP_ENABLE_STL_COMPATIBLE_INSERT
     template <class InputIt, is_compatible_iterator<InputIt> = nullptr>
     void insert(InputIt first, InputIt last)
     {
@@ -764,7 +744,6 @@ public:
     {
         insertOrderedUniqueRange(first, last);
     }
-#endif
 
     iterator begin() { return { &c, 0 }; }
     const_iterator begin() const { return { &c, 0 }; }

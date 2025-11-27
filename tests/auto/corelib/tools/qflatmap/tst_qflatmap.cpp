@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #define QT_USE_QSTRINGBUILDER
-#define QFLATMAP_ENABLE_STL_COMPATIBLE_INSERT
 
 #include <QTest>
 
