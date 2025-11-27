@@ -32,7 +32,6 @@
 #include "qwaylandtextinputv3_p.h"
 #include "qwaylandinputcontext_p.h"
 #include "qwaylandinputmethodcontext_p.h"
-#include "qwaylandeventdispatcher_p.h"
 
 #include "qwaylandwindowmanagerintegration_p.h"
 #include "qwaylandshellintegration_p.h"
@@ -524,7 +523,6 @@ void QWaylandDisplay::reconnect()
 void QWaylandDisplay::flushRequests()
 {
     m_eventThread->readAndDispatchEvents();
-    QWindowSystemInterface::flushWindowSystemEvents(QWaylandEventDispatcher::eventDispatcher->flags());
 }
 
 // We have to wait until we have an eventDispatcher before creating the eventThread,
