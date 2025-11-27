@@ -20,7 +20,7 @@ private Q_SLOTS:
 void tst_q23_expected::value_throw_exception_unreachable_data()
 {
     QTest::addColumn<bool>("unexpected");
-    QTest::addRow("") << false;
+    QTest::addRow("expected") << false;
 }
 
 void tst_q23_expected::value_throw_exception_unreachable()
