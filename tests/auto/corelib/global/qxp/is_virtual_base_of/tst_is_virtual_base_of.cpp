@@ -63,7 +63,7 @@ static_assert(!qxp::is_virtual_base_of_v<Base, AmbiguousBase1>);
 // the stdlib one does.
 static_assert(qxp::is_virtual_base_of_v<Base, AmbiguousBase2>);
 #else
-#ifndef Q_CC_MSVC_ONLY // https://developercommunity.visualstudio.com/t/c-templates-multiple-inheritance-ambiguous-access/185674
+#if !defined(Q_CC_MSVC_ONLY) || Q_CC_MSVC_ONLY >= 1940 // https://developercommunity.visualstudio.com/t/c-templates-multiple-inheritance-ambiguous-access/185674
 static_assert(!qxp::is_virtual_base_of_v<Base, AmbiguousBase2>);
 #endif
 #endif
