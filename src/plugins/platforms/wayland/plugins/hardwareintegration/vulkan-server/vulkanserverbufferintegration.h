@@ -8,7 +8,6 @@
 #include "qwayland-qt-vulkan-server-buffer-unstable-v1.h"
 #include <QtWaylandClient/private/qwaylandserverbufferintegration_p.h>
 
-#include "vulkanserverbufferintegration.h"
 #include <QtWaylandClient/private/qwaylanddisplay_p.h>
 #include <QtCore/QTextStream>
 

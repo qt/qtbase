@@ -8,7 +8,6 @@
 #include "qwayland-shm-emulation-server-buffer.h"
 #include <QtWaylandClient/private/qwaylandserverbufferintegration_p.h>
 
-#include "shmserverbufferintegration.h"
 #include <QtWaylandClient/private/qwaylanddisplay_p.h>
 #include <QtCore/QTextStream>
 

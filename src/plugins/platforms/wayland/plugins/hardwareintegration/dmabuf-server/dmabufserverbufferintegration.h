@@ -9,7 +9,6 @@
 #include "qwayland-qt-dmabuf-server-buffer.h"
 #include <QtWaylandClient/private/qwaylandserverbufferintegration_p.h>
 
-#include "dmabufserverbufferintegration.h"
 #include <QtWaylandClient/private/qwaylanddisplay_p.h>
 #include <QtCore/QTextStream>
 
