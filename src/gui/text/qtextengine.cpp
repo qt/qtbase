@@ -1414,7 +1414,7 @@ void QTextEngine::shapeText(int item) const
 #endif
     bool letterSpacingIsAbsolute;
     bool shapingEnabled = false;
-    QHash<QFont::Tag, quint32> features;
+    QMap<QFont::Tag, quint32> features;
     QFixed letterSpacing, wordSpacing;
 #ifndef QT_NO_RAWFONT
     if (useRawFont) {
@@ -1610,7 +1610,7 @@ int QTextEngine::shapeTextWithHarfbuzzNG(const QScriptItem &si, const ushort *st
                                          int stringBaseIndex, int stringLength, int itemLength,
                                          QFontEngine *fontEngine, QSpan<uint> itemBoundaries,
                                          bool kerningEnabled, bool hasLetterSpacing,
-                                         const QHash<QFont::Tag, quint32> &fontFeatures) const
+                                         const QMap<QFont::Tag, quint32> &fontFeatures) const
 {
     uint glyphs_shaped = 0;
 

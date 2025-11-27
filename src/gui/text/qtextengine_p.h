@@ -624,7 +624,7 @@ private:
                                 int stringLength, int itemLength, QFontEngine *fontEngine,
                                 QSpan<uint> itemBoundaries, bool kerningEnabled,
                                 bool hasLetterSpacing,
-                                const QHash<QFont::Tag, quint32> &features) const;
+                                const QMap<QFont::Tag, quint32> &features) const;
 #endif
 
     int endOfLine(int lineNum);

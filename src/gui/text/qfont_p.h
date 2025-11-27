@@ -192,7 +192,7 @@ public:
 
     QFixed letterSpacing;
     QFixed wordSpacing;
-    QHash<QFont::Tag, quint32> features;
+    QMap<QFont::Tag, quint32> features;
 
     mutable QFontPrivate *scFont;
     QFont smallCapsFont() const { return QFont(smallCapsFontPrivate()); }
