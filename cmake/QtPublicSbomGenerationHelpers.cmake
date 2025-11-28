@@ -181,10 +181,11 @@ BuiltDate: ${current_utc}
 Relationship: SPDXRef-DOCUMENT DESCRIBES ${project_spdx_id}
 ")
 
+    set(sbom_format "SPDX_V2")
     _qt_internal_sbom_get_root_project_name_lower_case(repo_project_name_lowercase)
     _qt_internal_sbom_create_sbom_staging_file(
         CONTENT "${content}"
-        SBOM_FORMAT "SPDX_V2"
+        SBOM_FORMAT "${sbom_format}"
         REPO_PROJECT_NAME_LOWERCASE "${repo_project_name_lowercase}"
         OUT_VAR_CREATE_STAGING_FILE create_staging_file
         OUT_VAR_SBOM_DIR sbom_dir
@@ -204,6 +205,7 @@ Relationship: SPDXRef-DOCUMENT DESCRIBES ${project_spdx_id}
         OUTPUT "${arg_OUTPUT}"
         OUTPUT_RELATIVE_PATH "${arg_OUTPUT_RELATIVE_PATH}"
         SBOM_DIR "${sbom_dir}"
+        SBOM_FORMAT "${sbom_format}"
     )
 
     set_property(GLOBAL APPEND PROPERTY _qt_sbom_cmake_include_files "${create_staging_file}")
@@ -216,8 +218,9 @@ endfunction()
 # Creates an 'sbom' custom target to generate an incomplete sbom at build time (no checksums).
 # Creates install rules to install a complete (with checksums) sbom.
 function(_qt_internal_sbom_end_project_generate)
+    set(sbom_format "SPDX_V2")
     _qt_internal_sbom_get_common_path_variables_from_global_properties(
-        SBOM_FORMAT "SPDX_V2"
+        SBOM_FORMAT "${sbom_format}"
         OUT_VAR_SBOM_BUILD_OUTPUT_PATH sbom_build_output_path
         OUT_VAR_SBOM_BUILD_OUTPUT_PATH_WITHOUT_EXT sbom_build_output_path_without_ext
         OUT_VAR_SBOM_BUILD_OUTPUT_DIR sbom_build_output_dir
@@ -234,7 +237,7 @@ function(_qt_internal_sbom_end_project_generate)
     _qt_internal_sbom_get_qt_repo_project_name_lower_case(real_qt_repo_project_name_lowercase)
 
     _qt_internal_sbom_get_cmake_include_files(
-        SBOM_FORMAT "SPDX_V2"
+        SBOM_FORMAT "${sbom_format}"
         OUT_VAR_INCLUDES includes
         OUT_VAR_BEFORE_CHECKSUM_INCLUDES before_checksum_includes
         OUT_VAR_AFTER_CHECKSUM_INCLUDES after_checksum_includes
@@ -252,7 +255,7 @@ function(_qt_internal_sbom_end_project_generate)
         list(APPEND build_time_args POST_GENERATION_INCLUDES "${post_generation_includes}")
     endif()
     _qt_internal_sbom_create_build_time_sbom_targets(
-        SBOM_FORMAT "SPDX_V2"
+        SBOM_FORMAT "${sbom_format}"
         REPO_PROJECT_NAME_LOWERCASE "${repo_project_name_lowercase}"
         REAL_QT_REPO_PROJECT_NAME_LOWERCASE "${real_qt_repo_project_name_lowercase}"
         SBOM_BUILD_OUTPUT_PATH "${sbom_build_output_path}"
@@ -280,7 +283,7 @@ function(_qt_internal_sbom_end_project_generate)
 
     _qt_internal_sbom_setup_multi_config_install_markers(
         SBOM_DIR "${sbom_dir}"
-        SBOM_FORMAT "SPDX_V2"
+        SBOM_FORMAT "${sbom_format}"
         REPO_PROJECT_NAME_LOWERCASE "${repo_project_name_lowercase}"
         OUT_VAR_EXTRA_CODE_BEGIN extra_code_begin
         OUT_VAR_EXTRA_CODE_INNER_END extra_code_inner_end
@@ -335,7 +338,7 @@ unset(_verification_code)
     endif()
 
     _qt_internal_sbom_setup_sbom_install_code(
-        SBOM_FORMAT "SPDX_V2"
+        SBOM_FORMAT "${sbom_format}"
         REPO_PROJECT_NAME_LOWERCASE "${repo_project_name_lowercase}"
         SBOM_INSTALL_OUTPUT_PATH "${sbom_install_output_path}"
         SBOM_INSTALL_OUTPUT_PATH_WITHOUT_EXT "${sbom_install_output_path_without_ext}"
@@ -346,7 +349,7 @@ unset(_verification_code)
     )
 
     _qt_internal_sbom_clear_cmake_include_files(
-        SBOM_FORMAT "SPDX_V2"
+        SBOM_FORMAT "${sbom_format}"
     )
 endfunction()
 
