@@ -1301,7 +1301,7 @@ bool QMYSQLDriver::open(const QString &db,
         {"MYSQL_OPT_SSL_CIPHER"_L1,      MYSQL_OPT_SSL_CIPHER,      setOptionString},
         {"MYSQL_OPT_SSL_CRL"_L1,         MYSQL_OPT_SSL_CRL,         setOptionString},
         {"MYSQL_OPT_SSL_CRLPATH"_L1,     MYSQL_OPT_SSL_CRLPATH,     setOptionString},
-#if defined(MYSQL_VERSION_ID) && MYSQL_VERSION_ID >= 50710
+#if defined(MYSQL_VERSION_ID) && MYSQL_VERSION_ID >= 50710 || defined(MARIADB_VERSION_ID)
         {"MYSQL_OPT_TLS_VERSION"_L1,     MYSQL_OPT_TLS_VERSION,     setOptionString},
 #endif
 #if defined(MYSQL_VERSION_ID) && MYSQL_VERSION_ID >= 50711 && !defined(MARIADB_VERSION_ID)

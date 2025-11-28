@@ -227,7 +227,7 @@
           a combination of 'TLSv1' ,' TLSv1.1', 'TLSv1.2' or 'TLSv1.3' depending on the used \l
           {https://dev.mysql.com/doc/refman/8.0/en/encrypted-connection-protocols-ciphers.html#encrypted-connection-protocol-configuration}
           {MySQL server} version.
-          Only available when linked against MySQL 5.7.11 or higher. Not available for MariaDB.
+          Only available when linked against MySQL 5.7.11 or higher or MariaDB C Connector 3.1.10.
     \row
       \li MYSQL_OPT_SSL_KEY / SSL_KEY (deprecated)
       \li The path name of the client private key file
