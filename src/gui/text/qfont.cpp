@@ -31,6 +31,7 @@
 #include <QtCore/QMutexLocker>
 #include <QtCore/QMutex>
 
+#include <algorithm>
 #include <array>
 
 // #define QFONTCACHE_DEBUG
@@ -1853,35 +1854,13 @@ bool QFont::operator<(const QFont &f) const
     int f2attrs = (d->underline << 3) + (d->overline << 2) + (d->strikeOut<<1) + d->kerning;
     if (f1attrs != f2attrs) return f1attrs < f2attrs;
 
-    if (d->features.size() != f.d->features.size())
-        return f.d->features.size() < d->features.size();
-
-    {
-        auto it = d->features.constBegin();
-        auto jt = f.d->features.constBegin();
-        for (; it != d->features.constEnd(); ++it, ++jt) {
-            if (it.key() != jt.key())
-                return jt.key() < it.key();
-            if (it.value() != jt.value())
-                return jt.value() < it.value();
-        }
+    if (d->features != f.d->features) {
+        return std::lexicographical_compare(f.d->features.keyValueBegin(), f.d->features.keyValueEnd(),
+                                            d->features.keyValueBegin(), d->features.keyValueEnd());
     }
 
-    if (r1.variableAxisValues.size() != r2.variableAxisValues.size())
-        return r1.variableAxisValues.size() < r2.variableAxisValues.size();
-
-    {
-        auto it = r1.variableAxisValues.constBegin();
-        auto jt = r2.variableAxisValues.constBegin();
-        for (; it != r1.variableAxisValues.constEnd(); ++it, ++jt) {
-            if (it.key() != jt.key())
-                return jt.key() < it.key();
-            if (it.value() != jt.value())
-                return jt.value() < it.value();
-        }
-    }
-
-    return false;
+    return std::lexicographical_compare(r1.variableAxisValues.keyValueBegin(), r1.variableAxisValues.keyValueEnd(),
+                                        r2.variableAxisValues.keyValueBegin(), r2.variableAxisValues.keyValueEnd());
 }
 
 
