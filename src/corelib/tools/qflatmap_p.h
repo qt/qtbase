@@ -609,14 +609,18 @@ public:
     T value(const Key &key) const
     {
         auto it = find(key);
-        return it == end() ? T() : it.value();
+        if (it == end())
+            return T();
+        return it.value();
     }
 
     template <class X, class Y = Compare, is_marked_transparent<Y> = nullptr>
     T value(const X &key) const
     {
         auto it = find(key);
-        return it == end() ? T() : it.value();
+        if (it == end())
+            return T();
+        return it.value();
     }
 
     T &operator[](const Key &key)
