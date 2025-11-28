@@ -903,12 +903,13 @@ private:
 
     T do_take(iterator it)
     {
-        if (it != end()) {
+        if (it == end())
+            return {};
+        return [&] {
             T result = std::move(it.value());
             erase(it);
             return result;
-        }
-        return {};
+        }();
     }
 
     template <class InputIt, is_compatible_iterator<InputIt> = nullptr>
