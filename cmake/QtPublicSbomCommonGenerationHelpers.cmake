@@ -105,7 +105,7 @@ function(_qt_internal_sbom_save_common_path_variables_in_global_properties)
         OUTPUT
         OUTPUT_RELATIVE_PATH
         SBOM_DIR
-        PROPERTY_SUFFIX
+        SBOM_FORMAT
     )
     set(multi_args "")
     cmake_parse_arguments(PARSE_ARGV 0 arg "${opt_args}" "${single_args}" "${multi_args}")
@@ -137,7 +137,13 @@ function(_qt_internal_sbom_save_common_path_variables_in_global_properties)
     get_filename_component(install_sbom_dir "${install_sbom_path}" DIRECTORY)
     set(install_sbom_path_without_ext "${install_sbom_dir}/${output_file_name_without_ext}")
 
-    set(suffix "${arg_PROPERTY_SUFFIX}")
+    if(arg_SBOM_FORMAT STREQUAL "SPDX_V2")
+        set(suffix "")
+    elseif(arg_SBOM_FORMAT STREQUAL "CYDX_V1_6")
+        set(suffix "_cydx")
+    else()
+        message(FATAL_ERROR "Unknown SBOM_FORMAT: ${arg_SBOM_FORMAT}")
+    endif()
 
     set_property(GLOBAL PROPERTY _qt_sbom_build_output_path${suffix} "${build_sbom_path}")
     set_property(GLOBAL PROPERTY _qt_sbom_build_output_path_without_ext${suffix}

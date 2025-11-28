@@ -92,10 +92,11 @@ component_type = \"application\"
 description = \"Build system tool used to build the project.\"
 ")
 
+    set(sbom_format "CYDX_V1_6")
     _qt_internal_sbom_get_root_project_name_lower_case(repo_project_name_lowercase)
     _qt_internal_sbom_create_sbom_staging_file(
         CONTENT "${content}"
-        SBOM_FORMAT "CYDX_V1_6"
+        SBOM_FORMAT "${sbom_format}"
         REPO_PROJECT_NAME_LOWERCASE "${repo_project_name_lowercase}"
         OUT_VAR_CREATE_STAGING_FILE create_staging_file
         OUT_VAR_SBOM_DIR sbom_dir
@@ -113,7 +114,7 @@ description = \"Build system tool used to build the project.\"
         OUTPUT "${arg_OUTPUT}"
         OUTPUT_RELATIVE_PATH "${arg_OUTPUT_RELATIVE_PATH}"
         SBOM_DIR "${sbom_dir}"
-        PROPERTY_SUFFIX _cydx
+        SBOM_FORMAT "${sbom_format}"
     )
 
     set_property(GLOBAL APPEND PROPERTY _qt_sbom_cmake_include_files_cydx "${create_staging_file}")
@@ -121,8 +122,10 @@ endfunction()
 
 # Finalizes the CycloneDX sbom generation for a project.
 function(_qt_internal_sbom_end_project_generate_cyclone)
+    set(sbom_format "CYDX_V1_6")
+
     _qt_internal_sbom_get_common_path_variables_from_global_properties(
-        SBOM_FORMAT "CYDX_V1_6"
+        SBOM_FORMAT "${sbom_format}"
         OUT_VAR_SBOM_BUILD_OUTPUT_PATH sbom_build_output_path
         OUT_VAR_SBOM_BUILD_OUTPUT_PATH_WITHOUT_EXT sbom_build_output_path_without_ext
         OUT_VAR_SBOM_BUILD_OUTPUT_DIR sbom_build_output_dir
@@ -142,7 +145,7 @@ function(_qt_internal_sbom_end_project_generate_cyclone)
     _qt_internal_sbom_add_recorded_licenses_cydx()
 
     _qt_internal_sbom_get_cmake_include_files(
-        SBOM_FORMAT "CYDX_V1_6"
+        SBOM_FORMAT "${sbom_format}"
         OUT_VAR_INCLUDES includes
         OUT_VAR_POST_GENERATION_INCLUDES post_generation_includes
     )
@@ -157,7 +160,7 @@ function(_qt_internal_sbom_end_project_generate_cyclone)
         list(APPEND build_time_args POST_GENERATION_INCLUDES "${post_generation_includes}")
     endif()
     _qt_internal_sbom_create_build_time_sbom_targets(
-        SBOM_FORMAT "CYDX_V1_6"
+        SBOM_FORMAT "${sbom_format}"
         REPO_PROJECT_NAME_LOWERCASE "${repo_project_name_lowercase}"
         REAL_QT_REPO_PROJECT_NAME_LOWERCASE "${real_qt_repo_project_name_lowercase}"
         SBOM_BUILD_OUTPUT_PATH "${sbom_build_output_path}"
@@ -169,7 +172,7 @@ function(_qt_internal_sbom_end_project_generate_cyclone)
 
     _qt_internal_sbom_setup_multi_config_install_markers(
         SBOM_DIR "${sbom_dir}"
-        SBOM_FORMAT "CYDX_V1_6"
+        SBOM_FORMAT "${sbom_format}"
         REPO_PROJECT_NAME_LOWERCASE "${repo_project_name_lowercase}"
         OUT_VAR_EXTRA_CODE_BEGIN extra_code_begin
         OUT_VAR_EXTRA_CODE_INNER_END extra_code_inner_end
@@ -203,7 +206,7 @@ function(_qt_internal_sbom_end_project_generate_cyclone)
     endif()
 
     _qt_internal_sbom_setup_sbom_install_code(
-        SBOM_FORMAT "CYDX_V1_6"
+        SBOM_FORMAT "${sbom_format}"
         REPO_PROJECT_NAME_LOWERCASE "${repo_project_name_lowercase}"
         SBOM_INSTALL_OUTPUT_PATH "${sbom_install_output_path}"
         SBOM_INSTALL_OUTPUT_PATH_WITHOUT_EXT "${sbom_install_output_path_without_ext}"
@@ -213,7 +216,7 @@ function(_qt_internal_sbom_end_project_generate_cyclone)
     )
 
     _qt_internal_sbom_clear_cmake_include_files(
-        SBOM_FORMAT "CYDX_V1_6"
+        SBOM_FORMAT "${sbom_format}"
     )
 endfunction()
 
