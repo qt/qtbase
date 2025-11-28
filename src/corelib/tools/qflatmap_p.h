@@ -16,6 +16,7 @@
 //
 
 #include "qlist.h"
+#include <QtCore/qtclasshelpermacros.h>
 #include "private/qglobal_p.h"
 
 #include <algorithm>
@@ -44,8 +45,7 @@ QT_BEGIN_NAMESPACE
 
 namespace Qt {
 
-struct OrderedUniqueRange_t {};
-constexpr OrderedUniqueRange_t OrderedUniqueRange = {};
+QT_DEFINE_TAG(OrderedUniqueRange);
 
 } // namespace Qt
 
