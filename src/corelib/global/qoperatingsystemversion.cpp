@@ -486,6 +486,12 @@ const QOperatingSystemVersionBase QOperatingSystemVersion::Windows11_22H2;
  */
 
 /*!
+    \variable QOperatingSystemVersion::Windows11_25H2
+    \brief a version corresponding to Windows 11 Version 25H2 (version 10.0.26200).
+    \since 6.11
+ */
+
+/*!
     \variable QOperatingSystemVersion::OSXMavericks
     \brief a version corresponding to OS X Mavericks (version 10.9).
     \since 5.9

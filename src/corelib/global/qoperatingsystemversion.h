@@ -148,6 +148,7 @@ public:
     static constexpr QOperatingSystemVersionBase Android14 { QOperatingSystemVersionBase::Android, 14, 0 };
     static constexpr QOperatingSystemVersionBase Windows11_23H2 { QOperatingSystemVersionBase::Windows, 10, 0, 22631 };
     static constexpr QOperatingSystemVersionBase Windows11_24H2 { QOperatingSystemVersionBase::Windows, 10, 0, 26100 };
+    static constexpr QOperatingSystemVersionBase Windows11_25H2 { QOperatingSystemVersionBase::Windows, 10, 0, 26200 };
 
 #if QT_VERSION < QT_VERSION_CHECK(7, 0, 0) && !defined(QT_BOOTSTRAPPED) && !defined(Q_QDOC)
 };
