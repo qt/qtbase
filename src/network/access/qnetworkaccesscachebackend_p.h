@@ -18,8 +18,6 @@
 
 #include <QtNetwork/private/qtnetworkglobal_p.h>
 #include "qnetworkaccessbackend_p.h"
-#include "qnetworkrequest.h"
-#include "qnetworkreply.h"
 
 QT_BEGIN_NAMESPACE
 
