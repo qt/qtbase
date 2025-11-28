@@ -153,8 +153,8 @@ instructions:
     userMessageOnFailure: >
       Failed to copy LastTest.log to testresults directory.
     executeOn: always
-    maxTimeInSeconds: 20
-    maxTimeBetweenOutput: 20
+    maxTimeInSeconds: 60
+    maxTimeBetweenOutput: 60
   - type: ExecuteCommand
     command: >
       cmake -E copy
@@ -166,8 +166,8 @@ instructions:
     executeOn: failure
     executeOnTarget: Copy ctest log
     resetError: target
-    maxTimeInSeconds: 20
-    maxTimeBetweenOutput: 20
+    maxTimeInSeconds: 60
+    maxTimeBetweenOutput: 60
 
   - type: Group
     instructions:
