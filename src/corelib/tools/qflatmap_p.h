@@ -15,6 +15,7 @@
 // We mean it.
 //
 
+#include <QtCore/qcontainertools_impl.h>
 #include "qlist.h"
 #include <QtCore/qtclasshelpermacros.h>
 #include "private/qglobal_p.h"
@@ -70,35 +71,11 @@ public:
     }
 };
 
-namespace qflatmap {
-namespace detail {
-template <class T>
-class QFlatMapMockPointer
-{
-    T ref;
-public:
-    QFlatMapMockPointer(T r)
-        : ref(r)
-    {
-    }
-
-    T *operator->()
-    {
-        return &ref;
-    }
-};
-} // namespace detail
-} // namespace qflatmap
-
 template<class Key, class T, class Compare = std::less<Key>, class KeyContainer = QList<Key>,
          class MappedContainer = QList<T>>
 class QFlatMap : private QFlatMapValueCompare<Key, T, Compare>
 {
     static_assert(std::is_nothrow_destructible_v<T>, "Types with throwing destructors are not supported in Qt containers.");
-
-    template<class U>
-    using mock_pointer = qflatmap::detail::QFlatMapMockPointer<U>;
-
 public:
     using key_type = Key;
     using mapped_type = T;
@@ -121,7 +98,7 @@ public:
         using difference_type = ptrdiff_t;
         using value_type = std::pair<const Key, T>;
         using reference = std::pair<const Key &, T &>;
-        using pointer = mock_pointer<reference>;
+        using pointer = QtPrivate::ArrowProxy<reference>;
         using iterator_category = std::random_access_iterator_tag;
 
         iterator() = default;
@@ -253,7 +230,7 @@ public:
         using difference_type = ptrdiff_t;
         using value_type = std::pair<const Key, const T>;
         using reference = std::pair<const Key &, const T &>;
-        using pointer = mock_pointer<reference>;
+        using pointer = QtPrivate::ArrowProxy<reference>;
         using iterator_category = std::random_access_iterator_tag;
 
         const_iterator() = default;
