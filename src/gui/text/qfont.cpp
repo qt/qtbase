@@ -1829,6 +1829,8 @@ bool QFont::operator==(const QFont &f) const
 */
 bool QFont::operator<(const QFont &f) const
 {
+    // NB: This operator actually implements greater-than, because it consistently
+    //     swaps LHS (should be *this, but is `f`) and RHS (should be `f`, but is *this)
     if (f.d == d) return false;
     // the < operator for fontdefs ignores point sizes.
     const QFontDef &r1 = f.d->request;
