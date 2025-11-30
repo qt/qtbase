@@ -217,9 +217,7 @@
 
 /*! \fn template <class Key, class T> void QMultiMap<Key, T>::swap(QMultiMap<Key, T> &other)
     \since 4.8
-
-    Swaps multi map \a other with this multi map. This operation is very
-    fast and never fails.
+    \memberswap{multi map}
 */
 
 /*! \fn template<class Key, class T> bool QMultiMap<Key, T>::operator==(const QMultiMap<Key, T> &lhs, const QMultiMap<Key, T> &rhs)

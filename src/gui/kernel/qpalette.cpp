@@ -728,9 +728,7 @@ QPalette &QPalette::operator=(const QPalette &p)
 /*!
     \fn void QPalette::swap(QPalette &other)
     \since 5.0
-
-    Swaps this palette instance with \a other. This function is very
-    fast and never fails.
+    \memberswap{palette instance}
 */
 
 /*!

@@ -314,8 +314,7 @@ QDebug operator<<(QDebug dbg, const QDBusError &msg)
 
 /*!
     \fn void QDBusError::swap(QDBusError &other)
-
-    Swaps this QDBusError instance with \a other.
+    \memberswap{error}
 */
 
 QT_END_NAMESPACE

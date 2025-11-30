@@ -90,9 +90,7 @@ QHttpPart &QHttpPart::operator=(const QHttpPart &other)
 /*!
     \fn void QHttpPart::swap(QHttpPart &other)
     \since 5.0
-
-    Swaps this HTTP part with \a other. This function is very fast and
-    never fails.
+    \memberswap{HTTP part}
 */
 
 /*!

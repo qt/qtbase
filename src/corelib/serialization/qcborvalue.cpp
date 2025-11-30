@@ -463,8 +463,7 @@ Q_DECL_UNUSED static constexpr quint64 MaximumPreallocatedElementCount =
 
 /*!
     \fn void QCborValue::swap(QCborValue &other)
-
-    Swaps the contents of this QCborValue object and \a other.
+    \memberswap{value}
  */
 
 /*!

@@ -1,5 +1,6 @@
 // Copyright (C) 2019 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+// Copyright © 2004-2023 Unicode, Inc.
+// SPDX-License-Identifier: Unicode-3.0
 
 #ifndef QHIJRI_CALENDAR_DATA_P_H
 #define QHIJRI_CALENDAR_DATA_P_H

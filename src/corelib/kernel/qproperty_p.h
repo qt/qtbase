@@ -58,7 +58,7 @@ public:
     inline QPropertyObserver *operator ->();
 };
 
-using PendingBindingObserverList = QVarLengthArray<QBindingObserverPtr>;
+using PendingBindingObserverList = QVarLengthArray<QPropertyBindingPrivatePtr>;
 
 // Keep all classes related to QProperty in one compilation unit. Performance of this code is crucial and
 // we need to allow the compiler to inline where it makes sense.
@@ -234,21 +234,12 @@ struct CompatPropertySafePoint
 struct CurrentCompatPropertyThief
 {
     Q_DISABLE_COPY_MOVE(CurrentCompatPropertyThief)
+    QScopedValueRollback<CompatPropertySafePoint *> m_guard;
 public:
     CurrentCompatPropertyThief(QBindingStatus *status)
-        : status(&status->currentCompatProperty)
-        , stolen(std::exchange(status->currentCompatProperty, nullptr))
+        : m_guard(status->currentCompatProperty, nullptr)
     {
     }
-
-    ~CurrentCompatPropertyThief()
-    {
-        *status = stolen;
-    }
-
-private:
-    CompatPropertySafePoint **status = nullptr;
-    CompatPropertySafePoint *stolen = nullptr;
 };
 
 }
@@ -386,11 +377,11 @@ public:
     QPropertyBindingSourceLocation sourceLocation() const
     {
         if (!hasCustomVTable())
-            return this->location;
-        QPropertyBindingSourceLocation location;
+            return location;
+        QPropertyBindingSourceLocation result;
         constexpr auto msg = "Custom location";
-        location.fileName = msg;
-        return location;
+        result.fileName = msg;
+        return result;
     }
     QPropertyBindingError bindingError() const { return m_error; }
     QMetaType valueMetaType() const { return metaType; }
@@ -666,8 +657,10 @@ public:
                             // evaluateBindings() can trash the observers. We need to re-fetch here.
                             if (QPropertyObserverPointer observer = d.firstObserver())
                                 observer.notifyOnlyChangeHandler(this);
-                            for (auto&& bindingObserver: bindingObservers)
-                                bindingObserver.binding()->notifyNonRecursive();
+                            for (auto&& bindingPtr: bindingObservers) {
+                                auto *binding = static_cast<QPropertyBindingPrivate *>(bindingPtr.get());
+                                binding->notifyNonRecursive();
+                            }
                         }
                     }
                 }

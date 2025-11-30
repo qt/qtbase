@@ -486,7 +486,7 @@ void QNetworkDatagram::destroy(QNetworkDatagramPrivate *d)
 }
 
 /*! \fn  void QNetworkDatagram::swap(QNetworkDatagram &other)
-  Swaps this instance with \a other.
+    \memberswap{datagram}
 */
 
 

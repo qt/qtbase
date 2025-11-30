@@ -372,9 +372,7 @@ QPixmap &QPixmap::operator=(const QPixmap &pixmap)
 /*!
     \fn void QPixmap::swap(QPixmap &other)
     \since 4.8
-
-    Swaps pixmap \a other with this pixmap. This operation is very
-    fast and never fails.
+    \memberswap{pixmap}
 */
 
 /*!

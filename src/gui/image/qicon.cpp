@@ -747,9 +747,7 @@ QIcon &QIcon::operator=(const QIcon &other)
 /*!
     \fn void QIcon::swap(QIcon &other)
     \since 4.8
-
-    Swaps icon \a other with this icon. This operation is very
-    fast and never fails.
+    \memberswap{icon}
 */
 
 /*!

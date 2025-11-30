@@ -1083,9 +1083,7 @@ QTextCursor &QTextCursor::operator=(const QTextCursor &cursor)
 /*!
     \fn void QTextCursor::swap(QTextCursor &other)
     \since 5.0
-
-    Swaps this text cursor instance with \a other. This function is
-    very fast and never fails.
+    \memberswap{text cursor instance}
 */
 
 /*!

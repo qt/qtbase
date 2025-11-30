@@ -2022,7 +2022,12 @@ function(_qt_internal_process_resource target resourceName)
         list(APPEND rccArgsAllPasses "--no-zstd")
     endif()
 
-    set_property(SOURCE "${generatedResourceFile}" PROPERTY SKIP_AUTOGEN ON)
+    # Disable AUTOGEN on the generated .qrc file.
+    set(scope_args "")
+    if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.18")
+        set(scope_args TARGET_DIRECTORY ${target})
+    endif()
+    set_property(SOURCE "${generatedResourceFile}" ${scope_args} PROPERTY SKIP_AUTOGEN ON)
 
     # Set output file name for rcc command
     if(isBinary)

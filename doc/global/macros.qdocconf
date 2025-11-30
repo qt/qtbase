@@ -145,3 +145,5 @@ macro.cmakevariableiosonly = "\\note This variable is used only if targeting iOS
 #group.
 #Must be placed directly under a \brief command
 macro.techpreview = "(Technical preview)\n\n\\meta status {Technical preview}\n\\ingroup tech_preview\n"
+
+include(cpp-doc-macros.qdocconf)

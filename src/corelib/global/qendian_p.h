@@ -21,7 +21,7 @@
 QT_BEGIN_NAMESPACE
 
 enum class QSpecialIntegerBitfieldInitializer {};
-constexpr QSpecialIntegerBitfieldInitializer QSpecialIntegerBitfieldZero{};
+constexpr inline QSpecialIntegerBitfieldInitializer QSpecialIntegerBitfieldZero{};
 
 template<class S>
 class QSpecialIntegerStorage
@@ -51,16 +51,16 @@ public:
     operator Type() const noexcept
     {
         if constexpr (std::is_signed_v<Type>) {
-            UnsignedType i = S::fromSpecial(storage->val);
+            UnsignedType i = S::fromSpecial(m_storage->val);
             i <<= (sizeof(Type) * 8) - width - pos;
             Type t = Type(i);
             t >>= (sizeof(Type) * 8) - width;
             return t;
         }
-        return (S::fromSpecial(storage->val) & mask()) >> pos;
+        return (S::fromSpecial(m_storage->val) & mask()) >> pos;
     }
 
-    bool operator!() const noexcept { return !(storage->val & S::toSpecial(mask())); }
+    bool operator!() const noexcept { return !(m_storage->val & S::toSpecial(mask())); }
 
     static constexpr UnsignedType mask() noexcept
     {
@@ -77,21 +77,21 @@ private:
     friend class QSpecialIntegerBitfieldUnion;
     friend class QSpecialIntegerAccessor<S, pos, width, T>;
 
-    explicit QSpecialIntegerConstAccessor(Storage *storage) : storage(storage) {}
+    explicit QSpecialIntegerConstAccessor(Storage *storage) : m_storage(storage) {}
 
     friend bool operator==(const QSpecialIntegerConstAccessor<S, pos, width, T> &i,
                            const QSpecialIntegerConstAccessor<S, pos, width, T> &j) noexcept
     {
-        return ((i.storage->val ^ j.storage->val) & S::toSpecial(mask())) == 0;
+        return ((i.m_storage->val ^ j.m_storage->val) & S::toSpecial(mask())) == 0;
     }
 
     friend bool operator!=(const QSpecialIntegerConstAccessor<S, pos, width, T> &i,
                            const QSpecialIntegerConstAccessor<S, pos, width, T> &j) noexcept
     {
-        return ((i.storage->val ^ j.storage->val) & S::toSpecial(mask())) != 0;
+        return ((i.m_storage->val ^ j.m_storage->val) & S::toSpecial(mask())) != 0;
     }
 
-    Storage *storage;
+    Storage *m_storage;
 };
 
 template<class S, int pos, int width, class T>
@@ -106,22 +106,22 @@ public:
 
     QSpecialIntegerAccessor &operator=(Type t)
     {
-        UnsignedType i = S::fromSpecial(storage->val);
+        UnsignedType i = S::fromSpecial(m_storage->val);
         i &= ~Const::mask();
         i |= (UnsignedType(t) << pos) & Const::mask();
-        storage->val = S::toSpecial(i);
+        m_storage->val = S::toSpecial(i);
         return *this;
     }
 
-    operator Const() { return Const(storage); }
+    operator Const() { return Const(m_storage); }
 
 private:
     template<class Storage, typename... Accessors>
     friend class QSpecialIntegerBitfieldUnion;
 
-    explicit QSpecialIntegerAccessor(Storage *storage) : storage(storage) {}
+    explicit QSpecialIntegerAccessor(Storage *storage) : m_storage(storage) {}
 
-    Storage *storage;
+    Storage *m_storage;
 };
 
 template<class S, typename... Accessors>

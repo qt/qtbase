@@ -171,9 +171,7 @@ QSslDiffieHellmanParameters &QSslDiffieHellmanParameters::operator=(const QSslDi
 
 /*!
     \fn void QSslDiffieHellmanParameters::swap(QSslDiffieHellmanParameters &other)
-
-    Swaps this QSslDiffieHellmanParameters with \a other. This function is very fast and
-    never fails.
+    \memberswap{QSslDiffieHellmanParameters}
 */
 
 /*!

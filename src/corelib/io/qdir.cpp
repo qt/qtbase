@@ -1819,9 +1819,7 @@ QDir &QDir::operator=(const QDir &dir)
 /*!
     \fn void QDir::swap(QDir &other)
     \since 5.0
-
-    Swaps this QDir instance with \a other. This function is very fast
-    and never fails.
+    \memberswap{QDir instance}
 */
 
 /*!

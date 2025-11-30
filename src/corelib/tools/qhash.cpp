@@ -1824,16 +1824,12 @@ size_t qHash(long double key, size_t seed) noexcept
 
 /*! \fn template <class Key, class T> void QHash<Key, T>::swap(QHash &other)
     \since 4.8
-
-    Swaps hash \a other with this hash. This operation is very
-    fast and never fails.
+    \memberswap{hash}
 */
 
 /*! \fn template <class Key, class T> void QMultiHash<Key, T>::swap(QMultiHash &other)
     \since 4.8
-
-    Swaps hash \a other with this hash. This operation is very
-    fast and never fails.
+    \memberswap{multi-hash}
 */
 
 /*! \fn template <class Key, class T> bool QHash<Key, T>::operator==(const QHash &other) const

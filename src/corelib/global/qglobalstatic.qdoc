@@ -21,7 +21,7 @@
     outside of any function bodies):
 
     \code
-        Q_GLOBAL_STATIC(MyType, staticType)
+        Q_GLOBAL_STATIC(MyType, myGlobal)
     \endcode
 
     This macro is intended to replace global static objects that are not POD
@@ -29,7 +29,7 @@
     name. For example, the following C++ code creates a global static:
 
     \code
-        static MyType staticType;
+        static MyType myGlobal;
     \endcode
 
     Compared to Q_GLOBAL_STATIC, and assuming that \c MyType is a class or
@@ -75,7 +75,7 @@
 
     \code
         class MyType : public MyOtherType { };
-        Q_GLOBAL_STATIC(MyType, staticType)
+        Q_GLOBAL_STATIC(MyType, myGlobal)
     \endcode
 
     No body for \c MyType is required since the destructor is an implicit
@@ -89,7 +89,7 @@
         public:
             MyType(int i) : MyOtherType(i) {}
         };
-        Q_GLOBAL_STATIC_WITH_ARGS(MyType, staticType, (42))
+        Q_GLOBAL_STATIC_WITH_ARGS(MyType, myGlobal, (42))
    \endcode
 
    Alternatively, if the compiler supports C++11 inheriting constructors, one could write:
@@ -100,7 +100,7 @@
         public:
             using MyOtherType::MyOtherType;
         };
-        Q_GLOBAL_STATIC_WITH_ARGS(MyType, staticType, (42))
+        Q_GLOBAL_STATIC_WITH_ARGS(MyType, myGlobal, (42))
     \endcode
 
     \section1 Placement
@@ -246,7 +246,7 @@
 
     The QGlobalStatic::exists() and QGlobalStatic::isDestroyed() functions
     operate solely on the guard variable: the former returns \c true if the guard
-    is negative, whereas the latter returns \c true only if it is -2.
+    is -1, the latter returns \c true if it is -2.
 
     \endomit
 
@@ -270,7 +270,7 @@
     outside of any function bodies):
 
     \code
-        Q_GLOBAL_STATIC_WITH_ARGS(MyType, staticType, (42, "Hello", "World"))
+        Q_GLOBAL_STATIC_WITH_ARGS(MyType, myGlobal, (42, "Hello", "World"))
     \endcode
 
     The \a Arguments macro parameter must always include the parentheses or, if
@@ -278,7 +278,7 @@
     equivalent to
 
     \code
-        Q_GLOBAL_STATIC(MyType, staticType, 42, "Hello", "World")
+        Q_GLOBAL_STATIC(MyType, myGlobal, 42, "Hello", "World")
     \endcode
 
     Aside from the actual initialization of the contents with the supplied
@@ -304,11 +304,11 @@
     follows:
 
     \code
-        Q_GLOBAL_STATIC(MyType, staticType)
+        Q_GLOBAL_STATIC(MyType, myGlobal)
     \endcode
 
     The above example creates an object of type QGlobalStatic called \c
-    staticType. After the above declaration, the \c staticType object may be
+    myGlobal. After the above declaration, the \c myGlobal object may be used as
     used as if it were a pointer, guaranteed to be initialized exactly once. In
     addition to the use as a pointer, the object offers two methods to
     determine the current status of the global: exists() and isDestroyed().
@@ -359,12 +359,13 @@
 
     This function returns \c true if the global static object has already
     completed initialization (that is, if the constructor for the type has
-    already returned). In specific, note that this function returns \c false if
-    the initialization is still in progress.
+    already returned) and has not yet completed destruction. In particular, note
+    that this function returns \c false if the initialization is still in
+    progress.
 
     Once this function has returned true once, it will never return false again
-    until either the program is restarted or the plugin or library containing
-    the global static is unloaded and reloaded.
+    until the global static object is destroyed. The latter happens on program
+    exit or when the plugin or library containing the global static is unloaded.
 
     This function is safe to call at any point in the program execution: it
     cannot fail and cannot cause a deadlock. Additionally, it will not cause

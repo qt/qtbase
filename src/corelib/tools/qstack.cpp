@@ -43,9 +43,7 @@
 /*!
     \fn template<class T> void QStack<T>::swap(QStack<T> &other)
     \since 4.8
-
-    Swaps stack \a other with this stack. This operation is very fast and
-    never fails.
+    \memberswap{stack}
 */
 
 /*!

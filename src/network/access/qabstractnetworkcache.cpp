@@ -115,9 +115,7 @@ QNetworkCacheMetaData &QNetworkCacheMetaData::operator=(const QNetworkCacheMetaD
 /*!
     \fn void QNetworkCacheMetaData::swap(QNetworkCacheMetaData &other)
     \since 5.0
-
-    Swaps this metadata instance with \a other. This function is very
-    fast and never fails.
+    \memberswap{metadata instance}
  */
 
 /*!

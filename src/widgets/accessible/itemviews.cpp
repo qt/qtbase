@@ -533,6 +533,8 @@ QAccessibleInterface *QAccessibleTable::focusChild() const
 int QAccessibleTable::childCount() const
 {
     const QAbstractItemView *theView = view();
+    if (!theView)
+        return 0;
     const QAbstractItemModel *theModel = theView->model();
     if (!theModel)
         return 0;
@@ -545,6 +547,8 @@ int QAccessibleTable::childCount() const
 int QAccessibleTable::indexOfChild(const QAccessibleInterface *iface) const
 {
     const QAbstractItemView *theView = view();
+    if (!theView)
+        return -1;
     const QAbstractItemModel *theModel = theView->model();
     if (!theModel)
         return -1;
@@ -602,6 +606,9 @@ QAccessibleInterface *QAccessibleTable::parent() const
 QAccessibleInterface *QAccessibleTable::child(int logicalIndex) const
 {
     QAbstractItemView *theView = view();
+    if (!theView)
+        return nullptr;
+
     const QAbstractItemModel *theModel = theView->model();
     if (!theModel)
         return nullptr;
@@ -792,11 +799,13 @@ QModelIndex QAccessibleTree::indexFromLogical(int row, int column) const
 QAccessibleInterface *QAccessibleTree::childAt(int x, int y) const
 {
     const QAbstractItemView *theView = view();
+    if (!theView)
+        return nullptr;
     const QAbstractItemModel *theModel = theView->model();
     if (!theModel)
         return nullptr;
 
-    const QPoint viewportOffset = theView->viewport()->mapTo(view(), QPoint(0, 0));
+    const QPoint viewportOffset = theView->viewport()->mapTo(theView, QPoint(0, 0));
     const QPoint indexPosition = theView->mapFromGlobal(QPoint(x, y) - viewportOffset);
 
     const QModelIndex index = theView->indexAt(indexPosition);
@@ -814,6 +823,8 @@ QAccessibleInterface *QAccessibleTree::childAt(int x, int y) const
 QAccessibleInterface *QAccessibleTree::focusChild() const
 {
     const QAbstractItemView *theView = view();
+    if (!theView)
+        return nullptr;
     const QAbstractItemModel *theModel = theView->model();
     const QModelIndex index = theView->currentIndex();
     if (!index.isValid())
@@ -830,7 +841,8 @@ QAccessibleInterface *QAccessibleTree::focusChild() const
 int QAccessibleTree::childCount() const
 {
     const QTreeView *treeView = qobject_cast<const QTreeView*>(view());
-    Q_ASSERT(treeView);
+    if (!treeView)
+        return 0;
     const QAbstractItemModel *theModel = treeView->model();
     if (!theModel)
         return 0;
@@ -842,7 +854,9 @@ int QAccessibleTree::childCount() const
 
 QAccessibleInterface *QAccessibleTree::child(int logicalIndex) const
 {
-    const QAbstractItemView *theView = view();
+    QAbstractItemView *theView = view();
+    if (!theView)
+        return nullptr;
     const QAbstractItemModel *theModel = theView->model();
     const QModelIndex rootIndex = theView->rootIndex();
     if (logicalIndex < 0 || !theModel || !theModel->columnCount(rootIndex))
@@ -853,7 +867,7 @@ QAccessibleInterface *QAccessibleTree::child(int logicalIndex) const
 
     if (horizontalHeader()) {
         if (index < theModel->columnCount(rootIndex))
-            iface = new QAccessibleTableHeaderCell(view(), index, Qt::Horizontal);
+            iface = new QAccessibleTableHeaderCell(theView, index, Qt::Horizontal);
         else
             index -= theModel->columnCount(rootIndex);
     }
@@ -864,7 +878,7 @@ QAccessibleInterface *QAccessibleTree::child(int logicalIndex) const
         const QModelIndex modelIndex = indexFromLogical(row, column);
         if (!modelIndex.isValid())
             return nullptr;
-        iface = new QAccessibleTableCell(view(), modelIndex, cellRole());
+        iface = new QAccessibleTableCell(theView, modelIndex, cellRole());
     }
     QAccessible::registerAccessibleInterface(iface);
     // ### FIXME: get interfaces from the cache instead of re-creating them
@@ -874,18 +888,21 @@ QAccessibleInterface *QAccessibleTree::child(int logicalIndex) const
 int QAccessibleTree::rowCount() const
 {
     const QTreeView *treeView = qobject_cast<const QTreeView*>(view());
-    Q_ASSERT(treeView);
+    if (!treeView)
+        return 0;
     return treeView->d_func()->viewItems.size();
 }
 
 int QAccessibleTree::indexOfChild(const QAccessibleInterface *iface) const
 {
     const QAbstractItemView *theView = view();
+    if (!theView)
+        return -1;
     const QAbstractItemModel *theModel = theView->model();
     if (!theModel)
         return -1;
     QAccessibleInterface *parent = iface->parent();
-    if (parent->object() != view())
+    if (parent->object() != theView)
         return -1;
 
     if (iface->role() == QAccessible::TreeItem) {
