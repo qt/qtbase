@@ -40,15 +40,6 @@ public:
     QWindowsVistaTransition(QObject *target) : QWindowsVistaAnimation(Transition, target) {}
 };
 
-
-// Handles pulse animations (default buttons)
-class QWindowsVistaPulse: public QWindowsVistaAnimation
-{
-    Q_OBJECT
-public:
-    QWindowsVistaPulse(QObject *target) : QWindowsVistaAnimation(Pulse, target) {}
-};
-
 QT_END_NAMESPACE
 
 #endif // QWINDOWSVISTAANIMATION_P_H

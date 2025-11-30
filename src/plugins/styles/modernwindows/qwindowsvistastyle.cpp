@@ -2469,48 +2469,8 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
                 stateId = PBS_NORMAL;
 
             if (!justFlat) {
-
-                if (d->transitionsEnabled() && (btn->features & QStyleOptionButton::DefaultButton) &&
-                        !(state & (State_Sunken | State_On)) && !(state & State_MouseOver) &&
-                        (state & State_Enabled) && (state & State_Active))
-                {
-                    QWindowsVistaAnimation *anim = qobject_cast<QWindowsVistaAnimation *>(d->animation(styleObject(option)));
-
-                    if (!anim) {
-                        QImage startImage = createAnimationBuffer(option, widget);
-                        QImage alternateImage = createAnimationBuffer(option, widget);
-
-                        QWindowsVistaPulse *pulse = new QWindowsVistaPulse(styleObject(option));
-
-                        QPainter startPainter(&startImage);
-                        stateId = PBS_DEFAULTED;
-                        QWindowsThemeData theme(widget, &startPainter, themeNumber, partId, stateId, rect);
-                        d->drawBackground(theme);
-
-                        QPainter alternatePainter(&alternateImage);
-                        theme.stateId = PBS_DEFAULTED_ANIMATING;
-                        theme.painter = &alternatePainter;
-                        d->drawBackground(theme);
-
-                        pulse->setStartImage(startImage);
-                        pulse->setEndImage(alternateImage);
-                        pulse->setStartTime(d->animationTime());
-                        pulse->setDuration(2000);
-                        d->startAnimation(pulse);
-                        anim = pulse;
-                    }
-
-                    if (anim)
-                        anim->paint(painter, option);
-                    else {
-                        QWindowsThemeData theme(widget, painter, themeNumber, partId, stateId, rect);
-                        d->drawBackground(theme);
-                    }
-                }
-                else {
-                    QWindowsThemeData theme(widget, painter, themeNumber, partId, stateId, rect);
-                    d->drawBackground(theme);
-                }
+                QWindowsThemeData theme(widget, painter, themeNumber, partId, stateId, rect);
+                d->drawBackground(theme);
             }
 
             if (btn->features & QStyleOptionButton::HasMenu) {
