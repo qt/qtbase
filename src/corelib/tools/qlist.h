@@ -301,21 +301,27 @@ public:
     explicit QList(qsizetype size)
         : d(size)
     {
-        if (size)
+        if (size) {
+            Q_CHECK_PTR(d.data());
             d->appendInitialize(size);
+        }
     }
     QList(qsizetype size, parameter_type t)
         : d(size)
     {
-        if (size)
+        if (size) {
+            Q_CHECK_PTR(d.data());
             d->copyAppend(size, t);
+        }
     }
 
     inline QList(std::initializer_list<T> args)
         : d(qsizetype(args.size()))
     {
-        if (args.size())
+        if (args.size()) {
+            Q_CHECK_PTR(d.data());
             d->copyAppend(args.begin(), args.end());
+        }
     }
 
     QList<T> &operator=(std::initializer_list<T> args)
@@ -332,6 +338,7 @@ public:
             const auto distance = std::distance(i1, i2);
             if (distance) {
                 d = DataPointer(qsizetype(distance));
+                Q_CHECK_PTR(d.data());
                 // appendIteratorRange can deal with contiguous iterators on its own,
                 // this is an optimization for C++17 code.
                 if constexpr (std::is_same_v<std::decay_t<InputIterator>, iterator> ||
@@ -352,8 +359,10 @@ public:
     QList(qsizetype size, Qt::Initialization)
         : d(size)
     {
-        if (size)
+        if (size) {
+            Q_CHECK_PTR(d.data());
             d->appendUninitialized(size);
+        }
     }
 
     // compiler-generated special member functions are fine!
@@ -823,7 +832,10 @@ void QList<T>::reserve(qsizetype asize)
         }
     }
 
-    DataPointer detached(qMax(asize, size()));
+    qsizetype newSize = qMax(asize, size());
+    DataPointer detached(newSize);
+    if (newSize)
+        Q_CHECK_PTR(detached.data());
     detached->copyAppend(d->begin(), d->end());
     if (detached.d_ptr())
         detached->setFlag(Data::CapacityReserved);
@@ -839,6 +851,7 @@ inline void QList<T>::squeeze()
         // must allocate memory
         DataPointer detached(size());
         if (size()) {
+            Q_CHECK_PTR(detached.data());
             if (d.needsDetach())
                 detached->copyAppend(d.data(), d.data() + d.size);
             else

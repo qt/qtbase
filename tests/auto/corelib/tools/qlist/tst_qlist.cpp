@@ -301,6 +301,7 @@ private slots:
     void constructors_emptyReserveZero() const;
     void constructors_emptyReserve() const;
     void constructors_reserveAndInitialize() const;
+    void constructorsThrowOnSillySize() const;
     void copyConstructorInt() const { copyConstructor<int>(); }
     void copyConstructorMovable() const { copyConstructor<Movable>(); }
     void copyConstructorNoexceptMovable() const { copyConstructor<NoexceptMovable>(); }
@@ -702,6 +703,38 @@ void tst_QList::constructors_reserveAndInitialize() const
     // make sure all items are initialised ok
     for (Custom meaningoflife : myCustom)
         QCOMPARE(meaningoflife.i, 'n');
+}
+
+void tst_QList::constructorsThrowOnSillySize() const
+{
+#ifdef QT_NO_EXCEPTIONS
+    QSKIP("Compiled without exception support");
+#else
+    // Only testing primitives for this; it should be enough.
+    using T = int;
+    QList<T> dummy(4, 1);
+
+    // This should cause QArrayData::allocate() to overflow and thus return
+    // nullptr.
+    constexpr size_t MaxMemory = std::numeric_limits<size_t>::max() / 4 * 3;
+    static_assert(MaxMemory > size_t(std::numeric_limits<ptrdiff_t>::max()));
+    static_assert(MaxMemory / sizeof(T) < size_t(std::numeric_limits<ptrdiff_t>::max() - 1));
+    constexpr qsizetype NumElements = MaxMemory / sizeof(T);
+
+    QVERIFY_THROWS_EXCEPTION(std::bad_alloc, QList<T> l(NumElements));
+    QVERIFY_THROWS_EXCEPTION(std::bad_alloc, QList<T> l(NumElements, 0));
+    QVERIFY_THROWS_EXCEPTION(std::bad_alloc, QList<T> l(NumElements, Qt::Uninitialized));
+
+    // Since we're here, we might as well test resize() and reserve().
+    QVERIFY_THROWS_EXCEPTION(std::bad_alloc, QList<T> l; l.reserve(NumElements));
+    QVERIFY_THROWS_EXCEPTION(std::bad_alloc, QList<T> l; l.resize(NumElements));
+    QVERIFY_THROWS_EXCEPTION(std::bad_alloc, QList<T> l; l.resize(NumElements, 0));
+    QVERIFY_THROWS_EXCEPTION(std::bad_alloc, QList<T> l; l.resizeForOverwrite(NumElements));
+
+    // The reversed iterators will cause QList to pass a negative size to
+    // QArrayData::allocate(), which is also silly.
+    QVERIFY_THROWS_EXCEPTION(std::bad_alloc, QList<T> l(dummy.constEnd(), dummy.constBegin()));
+#endif
 }
 
 template<typename T>
