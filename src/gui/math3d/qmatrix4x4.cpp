@@ -298,10 +298,10 @@ double QMatrix4x4::determinant() const
 {
     if ((flagBits & ~(Translation | Rotation2D | Rotation)) == Identity)
         return 1.0;
+    if (flagBits < Rotation2D)
+        return 1.0 * m[0][0] * m[1][1] * m[2][2]; // Translation | Scale
 
     const Double4x4 mm = copyToDoubles(m);
-    if (flagBits < Rotation2D)
-        return mm[0][0] * mm[1][1] * mm[2][2]; // Translation | Scale
     if (flagBits < Perspective)
         return matrixDet3(mm, 0, 1, 2, 0, 1, 2);
     return matrixDet4(mm);
