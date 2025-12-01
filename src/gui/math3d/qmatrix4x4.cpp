@@ -934,36 +934,7 @@ void QMatrix4x4::scale(float factor)
 
 void QMatrix4x4::translate(const QVector3D& vector)
 {
-    float vx = vector.x();
-    float vy = vector.y();
-    float vz = vector.z();
-    if (flagBits == Identity) {
-        m[3][0] = vx;
-        m[3][1] = vy;
-        m[3][2] = vz;
-    } else if (flagBits == Translation) {
-        m[3][0] += vx;
-        m[3][1] += vy;
-        m[3][2] += vz;
-    } else if (flagBits == Scale) {
-        m[3][0] = m[0][0] * vx;
-        m[3][1] = m[1][1] * vy;
-        m[3][2] = m[2][2] * vz;
-    } else if (flagBits == (Translation | Scale)) {
-        m[3][0] += m[0][0] * vx;
-        m[3][1] += m[1][1] * vy;
-        m[3][2] += m[2][2] * vz;
-    } else if (flagBits < Rotation) {
-        m[3][0] += m[0][0] * vx + m[1][0] * vy;
-        m[3][1] += m[0][1] * vx + m[1][1] * vy;
-        m[3][2] += m[2][2] * vz;
-    } else {
-        m[3][0] += m[0][0] * vx + m[1][0] * vy + m[2][0] * vz;
-        m[3][1] += m[0][1] * vx + m[1][1] * vy + m[2][1] * vz;
-        m[3][2] += m[0][2] * vx + m[1][2] * vy + m[2][2] * vz;
-        m[3][3] += m[0][3] * vx + m[1][3] * vy + m[2][3] * vz;
-    }
-    flagBits |= Translation;
+    translate(vector.x(), vector.y(), vector.z());
 }
 #endif
 
