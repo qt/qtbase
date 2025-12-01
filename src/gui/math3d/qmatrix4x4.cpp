@@ -241,7 +241,7 @@ QMatrix4x4::QMatrix4x4(const QTransform& transform)
 /*!
     \fn void QMatrix4x4::fill(float value)
 
-    Fills all elements of this matrx with \a value.
+    Fills all elements of this matrix with \a value.
 */
 
 static inline double matrixDet2(const double m[4][4], int col0, int col1, int row0, int row1)
