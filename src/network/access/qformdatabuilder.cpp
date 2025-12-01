@@ -9,6 +9,7 @@
 #include "QtCore/qmimedatabase.h"
 #endif
 
+#include <variant>
 #include <vector>
 
 QT_BEGIN_NAMESPACE

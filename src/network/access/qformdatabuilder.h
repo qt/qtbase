@@ -15,7 +15,6 @@
 #include <QtCore/qstring.h>
 
 #include <memory>
-#include <variant>
 
 #ifndef Q_OS_WASM
 QT_REQUIRE_CONFIG(http);
