@@ -444,17 +444,16 @@ QFileSystemModelPrivate::QFileSystemNode *QFileSystemModelPrivate::node(const QS
 
         QFileSystemModelPrivate::QFileSystemNode *node;
         if (!alreadyExisted) {
+            QString ePath = elementPath;
 #ifdef Q_OS_WIN
             // Special case: elementPath is a drive root path (C:). If we do not have the trailing
             // '/' it will be read as a relative path (QTBUG-133746)
-            if (elementPath.length() == 2 && elementPath.at(0).isLetter()
-                && elementPath.at(1) == u':') {
-                elementPath.append(u'/');
-            }
+            if (ePath.length() == 2 && ePath.at(0).isLetter() && ePath.at(1) == u':')
+                ePath.append(u'/');
 #endif
             // Someone might call ::index("file://cookie/monster/doesn't/like/veggies"),
             // a path that doesn't exists, I.E. don't blindly create directories.
-            QFileInfo info(elementPath);
+            QFileInfo info(ePath);
             if (!info.exists())
                 return const_cast<QFileSystemModelPrivate::QFileSystemNode*>(&root);
             QFileSystemModelPrivate *p = const_cast<QFileSystemModelPrivate*>(this);
