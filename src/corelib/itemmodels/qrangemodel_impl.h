@@ -647,8 +647,12 @@ namespace QRangeModelDetails
         using row_type = typename range_traits<QRangeModelDetails::wrapped_t<Range>>::value_type;
 
         template <typename R = row_type,
-                  std::enable_if_t<std::conjunction_v<std::is_destructible<wrapped_t<R>>,
-                                                      is_owning_or_raw_pointer<R>>, bool> = true>
+                  std::enable_if_t<
+                      std::conjunction_v<
+                          std::is_destructible<QRangeModelDetails::wrapped_t<R>>,
+                          is_owning_or_raw_pointer<R>
+                      >,
+                  bool> = true>
         auto newRow() -> decltype(R(new QRangeModelDetails::wrapped_t<R>)) {
             if constexpr (is_any_of<R, std::shared_ptr>())
                 return std::make_shared<QRangeModelDetails::wrapped_t<R>>();
@@ -722,7 +726,7 @@ namespace QRangeModelDetails
 
     template <typename P, typename R>
     using protocol_mutable_childRows_test = decltype(refTo(std::declval<P&>()
-            .childRows(std::declval<wrapped_t<R>&>())) = {});
+            .childRows(std::declval<QRangeModelDetails::wrapped_t<R>&>())) = {});
     template <typename P, typename R>
     using protocol_mutable_childRows = qxp::is_detected<protocol_mutable_childRows_test, P, R>;
 
