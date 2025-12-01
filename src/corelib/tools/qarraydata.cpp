@@ -162,7 +162,7 @@ allocateHelper(QArrayData **dptr, qsizetype objectSize, qsizetype alignment, qsi
                QArrayData::AllocationOption option) noexcept
 {
     *dptr = nullptr;
-    if (capacity == 0)
+    if (capacity <= 0)
         return {};
 
     const qsizetype headerSize = calculateHeaderSize(alignment);
