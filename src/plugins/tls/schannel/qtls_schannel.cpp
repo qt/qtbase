@@ -2267,14 +2267,19 @@ static void attachPrivateKeyToCertificate(const QSslCertificate &certificate,
     }
     const auto freeProvider = qScopeGuard([provider]() { NCryptFreeObject(provider); });
 
-    const QString certName = certificate.subjectInfo(QSslCertificate::CommonName).front();
+    const QString certName = [certificate]() {
+        if (auto cn = certificate.subjectInfo(QSslCertificate::CommonName); !cn.isEmpty())
+            return cn.front();
+        return QString();
+    }();
     QSpan<const QChar> nameSpan(certName);
     NCryptBuffer nbuffer{ ULONG(nameSpan.size_bytes() + sizeof(char16_t)),
                           NCRYPTBUFFER_PKCS_KEY_NAME,
                           const_reinterpret_cast<void *>(nameSpan.data()) };
     NCryptBufferDesc bufferDesc{ NCRYPTBUFFER_VERSION, 1, &nbuffer };
+    auto *bufferDescPtr = nameSpan.isEmpty() ? nullptr : &bufferDesc;
     NCRYPT_KEY_HANDLE ncryptKey = 0;
-    status = NCryptImportKey(provider, 0, NCRYPT_PKCS8_PRIVATE_KEY_BLOB, &bufferDesc, &ncryptKey,
+    status = NCryptImportKey(provider, 0, NCRYPT_PKCS8_PRIVATE_KEY_BLOB, bufferDescPtr, &ncryptKey,
                              PBYTE(buffer.data()), buffer.size(), 0);
     if (status != SEC_E_OK) {
         qCWarning(lcTlsBackendSchannel())

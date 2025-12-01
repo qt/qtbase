@@ -155,6 +155,7 @@ private slots:
     void connectToHostEncrypted();
     void connectToHostEncryptedWithVerificationPeerName();
     void sessionCipher();
+    void localCertificate_data();
     void localCertificate();
     void mode();
     void peerCertificate();
@@ -1206,10 +1207,21 @@ void tst_QSslSocket::sessionCipher()
     QVERIFY(socket->waitForDisconnected());
 }
 
+void tst_QSslSocket::localCertificate_data()
+{
+    QTest::addColumn<QString>("certificatePath");
+    QTest::addColumn<QString>("keyPath");
+    QTest::newRow("fluke") << (testDataDir + "certs/fluke.cert") << (testDataDir + "certs/fluke.key");
+    QTest::newRow("no-common-name") << (testDataDir + "certs/no_common_name.crt") << (testDataDir + "certs/no_common_name.key");
+}
+
 void tst_QSslSocket::localCertificate()
 {
     if (!QSslSocket::supportsSsl())
         return;
+
+    QFETCH(QString, certificatePath);
+    QFETCH(QString, keyPath);
 
     // This test does not make 100% sense yet. We just set some local CA/cert/key and use it
     // to authenticate ourselves against the server. The server does not actually check this
@@ -1222,8 +1234,10 @@ void tst_QSslSocket::localCertificate()
     sslConfig.setCaCertificates(localCert);
     socket->setSslConfiguration(sslConfig);
 
-    socket->setLocalCertificate(testDataDir + "certs/fluke.cert");
-    socket->setPrivateKey(testDataDir + "certs/fluke.key");
+    socket->setLocalCertificate(certificatePath);
+    socket->setPrivateKey(keyPath);
+    QVERIFY(!socket->localCertificateChain().isEmpty());
+    QVERIFY(!socket->privateKey().isNull());
 
     socket->connectToHostEncrypted(QtNetworkSettings::httpServerName(), 443);
     QFETCH_GLOBAL(bool, setProxy);
