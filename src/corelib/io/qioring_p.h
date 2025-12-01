@@ -223,6 +223,10 @@ private:
     int eventDescriptor = -1;
     [[nodiscard]]
     RequestPrepResult prepareRequest(io_uring_sqe *sqe, GenericRequestType &request);
+
+    template <typename SpanOfBytes>
+    auto getVectoredOpAddressAndSize(QIORing::GenericRequestType &request,
+                                     QSpan<SpanOfBytes> spans);
 #elif defined(Q_OS_WIN)
     // We use UINT32 because that's the type used for size parameters in their API.
     static constexpr qsizetype MaxReadWriteLen = std::numeric_limits<UINT32>::max();

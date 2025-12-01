@@ -140,6 +140,7 @@ void QIORing::completionReady()
         /* Get the entry */
         const io_uring_cqe *cqe = &completionQueueEntries[head & *cqIndexMask];
         ++head;
+        --inFlightRequests;
         GenericRequestType *request = reinterpret_cast<GenericRequestType *>(cqe->user_data);
         qCDebug(lcQIORing) << "Got completed entry. Operation:" << request->operation()
                            << "- user_data pointer:" << request;
@@ -247,7 +248,6 @@ void QIORing::completionReady()
             Q_UNREACHABLE_RETURN();
             break;
         }
-        --inFlightRequests;
         auto it = addrItMap.take(request);
         pendingRequests.erase(it);
     }
@@ -465,6 +465,100 @@ static inline int openModeToOpenFlags(QIODevice::OpenMode mode)
     return oflags;
 }
 
+/*!
+    \internal
+    Because vectored operations are also affected by the maximum size
+    limitation, and we don't want that limitation to bubble its way up to users,
+    we may have to split a vectored operation into multiple parts.
+
+    This function will return what operation needs to be used, along with the
+    parameter to pass for address and size.
+
+    The logic is such:
+
+    Given the initial span of spans, ignore any already-processed span from the
+    front, using \c{extra->spanIndex}. Then sum up the size of all spans until
+    we reach the end \e{or} the total sum exceeds \c{MaxReadWriteLen}.
+    Depending on the result one of three things happens:
+
+    1. We reached the end of the span-of-spans. Nothing needs to be split up,
+    we issue a vectored read/write for the whole, remaining, sequence.
+    2. The sum exceeded \c{MaxReadWriteLen} at an index n, n > 0. We issue a
+    vectored read/write for indices [0, n).
+    3. The sum exceeded \c{MaxReadWriteLen} at index == 0. We have to change to
+    a standard read/write operation, operating on just a subset of spans[0].
+    If this happens once, it will happen again for the same span, since we don't
+    permanently adjust them in any way. Because of that, the second (or third,
+    or fourth, etc.) time that we try to issue a read/write with the same span
+    we have to adjust the offset into spans[0].
+    For this we use \c{extra->spanOffset}.
+*/
+template <typename SpanOfBytes>
+auto QIORing::getVectoredOpAddressAndSize(QIORing::GenericRequestType &request, QSpan<SpanOfBytes> spans)
+{
+    using TypeErasedPtr = std::conditional_t<
+            std::is_const_v<std::remove_pointer_t<typename SpanOfBytes::pointer>>, const void *,
+            void *>;
+    struct R {
+        QIORing::Operation op;
+        TypeErasedPtr address;
+        qsizetype size;
+    } r;
+
+    // Skip the spans we have already processed, if any:
+    if (auto *extra = request.getExtra<QtPrivate::ReadWriteExtra>())
+        spans.slice(extra->spanIndex);
+
+    // Defaults, may change:
+    r.op = request.operation();
+    r.address = spans.data();
+    r.size = spans.size();
+
+    // Find the next span at which we would exhaust the MaxReadWriteLen limit:
+    const qsizetype exceedAtIndex = [&]() {
+        qint64 total = 0;
+        qsizetype i = 0;
+        for (; i < spans.size(); ++i) {
+            total += spans[i].size();
+            if (total > MaxReadWriteLen)
+                break;
+        }
+        return i;
+    }();
+    if (exceedAtIndex != spans.size()) {
+        // We have to split up the read/write a bit:
+        auto *extra = request.getOrInitializeExtra<QtPrivate::ReadWriteExtra>();
+        if (extra->spanIndex == 0 && extra->spanOffset == 0) { // First time setup
+            ++ongoingSplitOperations;
+            extra->numSpans = spans.size();
+        }
+        if (exceedAtIndex == 0) { // The first span by itself is already too large!
+            // Change to single Read/Write:
+            const bool isWrite = r.op == QIORing::Operation::VectoredWrite;
+            r.op = isWrite ? QIORing::Operation::Write : QIORing::Operation::Read;
+            auto singleSpan = spans.front();
+            // Since we know that spans.front() in its _entirety_ is too large
+            // for a single read/write operation, we have to take into
+            // consideration that we may have _already_ processed a part of it:
+            const qsizetype remaining = singleSpan.size() - extra->spanOffset;
+            singleSpan.slice(extra->spanOffset, std::min(remaining, MaxReadWriteLen));
+            r.address = singleSpan.data();
+            r.size = singleSpan.size();
+        } else {
+            // Unlike the branch above, we don't have to (and shouldn't) care
+            // about extra->spanOffset. Firstly, since we are giving an address
+            // to a span of spans, not a single span, we cannot influence the
+            // size of any singular span in itself.
+            // Secondly, we know, by virtue of checking the size above, that all
+            // these spans, in their entirety, fit inside the size limitation.
+            auto limitedSpans = spans.first(exceedAtIndex);
+            r.address = limitedSpans.data();
+            r.size = limitedSpans.size();
+        }
+    }
+    return r;
+}
+
 auto QIORing::prepareRequest(io_uring_sqe *sqe, GenericRequestType &request) -> RequestPrepResult
 {
     sqe->user_data = qint64(&request);
@@ -531,19 +625,25 @@ auto QIORing::prepareRequest(io_uring_sqe *sqe, GenericRequestType &request) -> 
         break;
     }
     case Operation::VectoredRead: {
-        // @todo Apply the split read/write concept that will apply above to this too
         const QIORingRequest<Operation::VectoredRead>
                 *readvRequest = request.template requestData<Operation::VectoredRead>();
-        prepareFileReadWrite(sqe, *readvRequest, readvRequest->destinations.data(), readvRequest->offset,
-                             readvRequest->destinations.size());
+        quint64 offset = readvRequest->offset;
+        if (auto *extra = request.getExtra<QtPrivate::ReadWriteExtra>())
+            offset += extra->totalProcessed;
+        const auto r = getVectoredOpAddressAndSize(request, readvRequest->destinations);
+        sqe->opcode = toUringOp(r.op);
+        prepareFileReadWrite(sqe, *readvRequest, r.address, offset, r.size);
         break;
     }
     case Operation::VectoredWrite: {
-        // @todo Apply the split read/write concept that will apply above to this too
         const QIORingRequest<Operation::VectoredWrite>
                 *writevRequest = request.template requestData<Operation::VectoredWrite>();
-        prepareFileReadWrite(sqe, *writevRequest, writevRequest->sources.data(), writevRequest->offset,
-                             writevRequest->sources.size());
+        quint64 offset = writevRequest->offset;
+        if (auto *extra = request.getExtra<QtPrivate::ReadWriteExtra>())
+            offset += extra->totalProcessed;
+        const auto r = getVectoredOpAddressAndSize(request, writevRequest->sources);
+        sqe->opcode = toUringOp(r.op);
+        prepareFileReadWrite(sqe, *writevRequest, r.address, offset, r.size);
         break;
     }
     case Operation::Flush: {
@@ -607,14 +707,14 @@ void QIORing::GenericRequestType::cleanupExtra(Operation op, void *extra)
     switch (op) {
     case Operation::Open:
     case Operation::Close:
-    case Operation::VectoredRead:
-    case Operation::VectoredWrite:
     case Operation::Cancel:
     case Operation::Flush:
     case Operation::NumOperations:
         break;
     case Operation::Read:
     case Operation::Write:
+    case Operation::VectoredRead:
+    case Operation::VectoredWrite:
         delete static_cast<QtPrivate::ReadWriteExtra *>(extra);
         return;
     case Operation::Stat:

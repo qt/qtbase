@@ -26,8 +26,10 @@ private slots:
     void open();
     void read();
     void write();
+    void vectoredOperations();
     void stat();
     void fiveGiBReadWrite();
+    void tenGiBReadWriteVectored();
     void cancel();
     void cancelFullQueue();
 
@@ -208,6 +210,73 @@ void tst_QIORing::write()
     QVERIFY(std::all_of(buffer.begin(), buffer.end(), [](char ch) { return ch == 'a'; }));
 }
 
+void tst_QIORing::vectoredOperations()
+{
+    QIORing ring;
+    QVERIFY(ring.ensureInitialized());
+
+    QTemporaryDir dir;
+    auto path = dir.filePath("out");
+
+    auto fd = openHelper(&ring, path, QIODevice::ReadWrite);
+    auto cleanup = qScopeGuard([fd](){
+        closeFile(fd);
+    });
+
+    QIORingRequest<QIORing::Operation::VectoredWrite> writeRequest;
+    writeRequest.fd = fd;
+    writeRequest.offset = 0;
+    std::array<QByteArray, 256> buffers;
+    constexpr qsizetype BufferSize = 1024 * 1024;
+    constexpr qsizetype TotalWrittenSize = qsizetype(buffers.size()) * BufferSize;
+    for (auto &b : buffers)
+        b = QByteArray(BufferSize, Qt::Uninitialized); // Initialize with garbage
+    std::array<QSpan<const std::byte>, buffers.size()> readonlySpans;
+    for (size_t i = 0; i < buffers.size(); ++i)
+        readonlySpans[i] = as_bytes(QSpan(buffers[i]));
+    writeRequest.sources = readonlySpans;
+
+    qint64 bytesWritten = 0;
+    writeRequest.setCallback( //
+            [&bytesWritten](const QIORingRequest<QIORing::Operation::VectoredWrite> &request) {
+                const auto *result = std::get_if<QIORingResult<QIORing::Operation::VectoredWrite>>(
+                        &request.result);
+                QVERIFY(result);
+                bytesWritten = result->bytesWritten;
+            });
+    QIORing::RequestHandle handle = ring.queueRequest(std::move(writeRequest));
+    QVERIFY(ring.waitForRequest(handle));
+    QCOMPARE(bytesWritten, TotalWrittenSize);
+
+    // And read back again:
+    QIORingRequest<QIORing::Operation::VectoredRead> readRequest;
+    readRequest.fd = fd;
+    readRequest.offset = 0;
+    std::array<QByteArray, buffers.size()> readBuffers;
+    for (auto &rb : readBuffers)
+        rb = QByteArray(BufferSize, '\0');
+    std::array<QSpan<std::byte>, buffers.size()> writableSpans;
+    for (size_t i = 0; i < buffers.size(); ++i)
+        writableSpans[i] = as_writable_bytes(QSpan(readBuffers[i]));
+    readRequest.destinations = writableSpans;
+
+    qint64 bytesRead = 0;
+    readRequest.setCallback(
+            [&bytesRead](const QIORingRequest<QIORing::Operation::VectoredRead> &request) {
+                const auto *result = std::get_if<QIORingResult<QIORing::Operation::VectoredRead>>(
+                        &request.result);
+                QVERIFY(result);
+                bytesRead = result->bytesRead;
+            });
+    handle = ring.queueRequest(std::move(readRequest));
+    QVERIFY(ring.waitForRequest(handle));
+    QCOMPARE(bytesRead, TotalWrittenSize);
+    for (size_t i = 0; i < readBuffers.size(); ++i) {
+        QVERIFY2(readBuffers[i] == buffers[i],
+                 qPrintable("Failed on index %1"_L1.arg(QString::number(i))));
+    }
+}
+
 void tst_QIORing::stat()
 {
     QIORing ring;
@@ -286,6 +355,70 @@ void tst_QIORing::fiveGiBReadWrite()
     size_t counter = 0;
     QVERIFY(std::all_of(bytes.get(), bytes.get() + Size,
                         [&](std::byte ch) { return ch == std::byte(counter++ % SmallPrime); }));
+#endif
+}
+
+void tst_QIORing::tenGiBReadWriteVectored()
+{
+#if Q_PROCESSOR_WORDSIZE < 8
+    QSKIP("Can't test this on 32-bit.");
+#else
+    static constexpr qsizetype Size = 10ll * 1024 * 1024 * 1024;
+    static constexpr qsizetype Slices = 4;
+    std::unique_ptr<std::byte[]> bytes(new (std::nothrow) std::byte[Size / Slices]);
+    if (!bytes)
+        QSKIP("Failed to allocate the buffer (not enough memory?)");
+    std::fill_n(bytes.get(), Size / Slices, std::byte(242));
+
+    QIORing ring;
+    QVERIFY(ring.ensureInitialized());
+
+    QTemporaryDir dir;
+    auto path = dir.filePath("largefile");
+
+    auto fd = openHelper(&ring, path, QIODevice::ReadWrite);
+    auto cleanup = qScopeGuard([fd]() { closeFile(fd); });
+
+    QIORingRequest<QIORing::Operation::VectoredWrite> writevRequest;
+    writevRequest.fd = fd;
+    writevRequest.offset = 0;
+    QSpan span = QSpan(bytes.get(), Size / Slices);
+    std::array<QSpan<const std::byte>, Slices> slices;
+    std::fill_n(slices.begin(), slices.size(), span);
+    writevRequest.sources = slices;
+
+    quint64 bytesWritten = 0;
+    writevRequest.setCallback( //
+            [&bytesWritten](const QIORingRequest<QIORing::Operation::VectoredWrite> &request) {
+                auto *result = std::get_if<QIORingResult<QIORing::Operation::VectoredWrite>>(
+                        &request.result);
+                QVERIFY(result);
+                bytesWritten = result->bytesWritten;
+                QCOMPARE(bytesWritten, Size);
+            });
+    QIORing::RequestHandle handle = ring.queueRequest(std::move(writevRequest));
+    QVERIFY(ring.waitForRequest(handle));
+
+    // And read back again:
+    QIORingRequest<QIORing::Operation::VectoredRead> readvRequest;
+    readvRequest.fd = fd;
+    readvRequest.offset = 0;
+    std::fill_n(bytes.get(), Size / Slices, std::byte('\0'));
+    std::array<QSpan<std::byte>, Slices> writeableSlices;
+    std::fill_n(writeableSlices.begin(), writeableSlices.size(), span);
+    readvRequest.destinations = writeableSlices;
+
+    quint64 bytesRead = 0;
+    readvRequest.setCallback(
+            [&bytesRead](const QIORingRequest<QIORing::Operation::VectoredRead> &request) {
+                const auto *result = std::get_if<QIORingResult<QIORing::Operation::VectoredRead>>(
+                        &request.result);
+                QVERIFY(result);
+                bytesRead = result->bytesRead;
+                QCOMPARE(bytesRead, Size);
+            });
+    handle = ring.queueRequest(std::move(readvRequest));
+    QVERIFY(ring.waitForRequest(handle));
 #endif
 }
 

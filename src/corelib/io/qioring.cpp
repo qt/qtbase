@@ -121,16 +121,20 @@ QIORing::ReadWriteStatus QIORing::handleReadCompletion(size_t value, QSpan<std::
         const qsizetype bytesRead = q26::saturate_cast<qsizetype>(value);
         qCDebug(lcQIORing) << "Partial read of" << bytesRead << "bytes completed";
         extra->totalProcessed = setResultFn(bytesRead);
+        // [0/1] Add the number of bytes processed to the spanOffset - we use this to test how many
+        // spans were fully processed, and/or how far into the last span we have data.
         extra->spanOffset += bytesRead;
         qCDebug(lcQIORing) << "Read operation progress: span" << extra->spanIndex << "offset"
                            << extra->spanOffset << "of" << destinations[extra->spanIndex].size()
                            << "bytes. Total read:" << extra->totalProcessed << "bytes";
-        // The while loop is in case there is an empty span, we skip over it:
-        while (extra->spanOffset == destinations[extra->spanIndex].size()) {
+        // [1/1] We subtract the size of the spans, in order, here. When a span's size is larger
+        // than the "spanOffset" it means we have a partially-used span. Otherwise it stops
+        // processing when we run out of spans to check, or we hit spanOffset == 0.
+        while (extra->spanOffset >= destinations[extra->spanIndex].size()) {
+            extra->spanOffset -= destinations[extra->spanIndex].size();
             // Move to next span
             if (++extra->spanIndex == extra->numSpans)
                 return ReadWriteStatus::Finished;
-            extra->spanOffset = 0;
         }
         return ReadWriteStatus::MoreToDo;
     }
@@ -146,16 +150,20 @@ QIORing::ReadWriteStatus QIORing::handleWriteCompletion(size_t value,
         const qsizetype bytesWritten = q26::saturate_cast<qsizetype>(value);
         qCDebug(lcQIORing) << "Partial write of" << bytesWritten << "bytes completed";
         extra->totalProcessed = setResultFn(bytesWritten);
+        // [0/1] Add the number of bytes processed to the spanOffset - we use this to test how many
+        // spans were fully processed, and/or how far into the last span we have data.
         extra->spanOffset += bytesWritten;
         qCDebug(lcQIORing) << "Write operation progress: span" << extra->spanIndex << "offset"
                            << extra->spanOffset << "of" << sources[extra->spanIndex].size()
                            << "bytes. Total written:" << extra->totalProcessed << "bytes";
-        // The while loop is in case there is an empty span, we skip over it:
-        while (extra->spanOffset == sources[extra->spanIndex].size()) {
+        // [1/1] We subtract the size of the spans, in order, here. When a span's size is larger
+        // than the "spanOffset" it means we have a partially-used span. Otherwise it stops
+        // processing when we run out of spans to check, or we hit spanOffset == 0.
+        while (extra->spanOffset >= sources[extra->spanIndex].size()) {
+            extra->spanOffset -= sources[extra->spanIndex].size();
             // Move to next span
             if (++extra->spanIndex == extra->numSpans)
                 return ReadWriteStatus::Finished;
-            extra->spanOffset = 0;
         }
         return ReadWriteStatus::MoreToDo;
     }
