@@ -564,6 +564,7 @@ inline bool QMatrix4x4::operator!=(const QMatrix4x4& other) const
 
 inline QMatrix4x4 operator+(const QMatrix4x4& m1, const QMatrix4x4& m2)
 {
+    Q_DECL_UNINITIALIZED
     QMatrix4x4 m(Qt::Uninitialized);
     m.m[0][0] = m1.m[0][0] + m2.m[0][0];
     m.m[0][1] = m1.m[0][1] + m2.m[0][1];
@@ -586,6 +587,7 @@ inline QMatrix4x4 operator+(const QMatrix4x4& m1, const QMatrix4x4& m2)
 
 inline QMatrix4x4 operator-(const QMatrix4x4& m1, const QMatrix4x4& m2)
 {
+    Q_DECL_UNINITIALIZED
     QMatrix4x4 m(Qt::Uninitialized);
     m.m[0][0] = m1.m[0][0] - m2.m[0][0];
     m.m[0][1] = m1.m[0][1] - m2.m[0][1];
@@ -608,6 +610,7 @@ inline QMatrix4x4 operator-(const QMatrix4x4& m1, const QMatrix4x4& m2)
 
 inline QMatrix4x4 operator*(const QMatrix4x4& m1, const QMatrix4x4& m2)
 {
+    Q_DECL_UNINITIALIZED
     QMatrix4x4 m(Qt::Uninitialized);
     QMatrix4x4::Flags flagBits = m1.flagBits | m2.flagBits;
     if (flagBits.toInt() < QMatrix4x4::Rotation2D) {
@@ -855,6 +858,7 @@ inline QPointF operator*(const QMatrix4x4& matrix, const QPointF& point)
 
 inline QMatrix4x4 operator-(const QMatrix4x4& matrix)
 {
+    Q_DECL_UNINITIALIZED
     QMatrix4x4 m(Qt::Uninitialized);
     m.m[0][0] = -matrix.m[0][0];
     m.m[0][1] = -matrix.m[0][1];
@@ -877,6 +881,7 @@ inline QMatrix4x4 operator-(const QMatrix4x4& matrix)
 
 inline QMatrix4x4 operator*(float factor, const QMatrix4x4& matrix)
 {
+    Q_DECL_UNINITIALIZED
     QMatrix4x4 m(Qt::Uninitialized);
     m.m[0][0] = matrix.m[0][0] * factor;
     m.m[0][1] = matrix.m[0][1] * factor;
@@ -899,6 +904,7 @@ inline QMatrix4x4 operator*(float factor, const QMatrix4x4& matrix)
 
 inline QMatrix4x4 operator*(const QMatrix4x4& matrix, float factor)
 {
+    Q_DECL_UNINITIALIZED
     QMatrix4x4 m(Qt::Uninitialized);
     m.m[0][0] = matrix.m[0][0] * factor;
     m.m[0][1] = matrix.m[0][1] * factor;
