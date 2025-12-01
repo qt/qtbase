@@ -878,14 +878,6 @@ function(_qt_internal_path_is_prefix path_var input out_var)
     set(${out_var} "${${out_var}}" PARENT_SCOPE)
 endfunction()
 
-function(qt_set01 result)
-    if (${ARGN})
-        set("${result}" 1 PARENT_SCOPE)
-    else()
-        set("${result}" 0 PARENT_SCOPE)
-    endif()
-endfunction()
-
 # Configures the file using either the input template or the CONTENT.
 # Behaves as either file(CONFIGURE or configure_file( command, but do not depend
 # on CMake version.

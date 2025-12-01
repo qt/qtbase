@@ -1,46 +1,161 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-function(qt_set01 result)
-    if (${ARGN})
-        set("${result}" 1 PARENT_SCOPE)
-    else()
-        set("${result}" 0 PARENT_SCOPE)
-    endif()
-endfunction()
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    set(LINUX 1)
+else()
+    set(LINUX 0)
+endif()
 
-qt_set01(LINUX CMAKE_SYSTEM_NAME STREQUAL "Linux")
-qt_set01(HPUX CMAKE_SYSTEM_NAME STREQUAL "HPUX")
-qt_set01(ANDROID CMAKE_SYSTEM_NAME STREQUAL "Android")  # FIXME: How to identify this?
-qt_set01(INTEGRITY CMAKE_SYSTEM_NAME STREQUAL "Integrity") # FIXME: How to identify this?
-qt_set01(VXWORKS CMAKE_SYSTEM_NAME STREQUAL "VxWorks") # FIXME: How to identify this?
-qt_set01(QNX CMAKE_SYSTEM_NAME STREQUAL "QNX") # FIXME: How to identify this?
-qt_set01(OPENBSD CMAKE_SYSTEM_NAME STREQUAL "OpenBSD") # FIXME: How to identify this?
-qt_set01(FREEBSD CMAKE_SYSTEM_NAME STREQUAL "FreeBSD") # FIXME: How to identify this?
-qt_set01(NETBSD CMAKE_SYSTEM_NAME STREQUAL "NetBSD") # FIXME: How to identify this?
-qt_set01(WASM CMAKE_SYSTEM_NAME STREQUAL "Emscripten" OR EMSCRIPTEN)
-qt_set01(WASM64 QT_QMAKE_TARGET_MKSPEC STREQUAL "wasm-emscripten-64")
-qt_set01(SOLARIS CMAKE_SYSTEM_NAME STREQUAL "SunOS")
-qt_set01(HURD CMAKE_SYSTEM_NAME STREQUAL "GNU")
+if(CMAKE_SYSTEM_NAME STREQUAL "HPUX")
+    set(HPUX 1)
+else()
+    set(HPUX 0)
+endif()
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Android")
+    set(ANDROID 1)
+else()
+    set(ANDROID 0)
+endif()
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Integrity")
+    set(INTEGRITY 1)
+else()
+    set(INTEGRITY 0)
+endif()
+
+if(CMAKE_SYSTEM_NAME STREQUAL "VxWorks")
+    set(VXWORKS 1)
+else()
+    set(VXWORKS 0)
+endif()
+
+if(CMAKE_SYSTEM_NAME STREQUAL "QNX")
+    set(QNX 1)
+else()
+    set(QNX 0)
+endif()
+
+if(CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
+    set(OPENBSD 1)
+else()
+    set(OPENBSD 0)
+endif()
+
+if(CMAKE_SYSTEM_NAME STREQUAL "FreeBSD")
+    set(FREEBSD 1)
+else()
+    set(FREEBSD 0)
+endif()
+
+if(CMAKE_SYSTEM_NAME STREQUAL "NetBSD")
+    set(NETBSD 1)
+else()
+    set(NETBSD 0)
+endif()
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Emscripten" OR EMSCRIPTEN)
+    set(WASM 1)
+else()
+    set(WASM 0)
+endif()
+
+if(QT_QMAKE_TARGET_MKSPEC STREQUAL "wasm-emscripten-64")
+    set(WASM64 1)
+else()
+    set(WASM64 0)
+endif()
+
+if(CMAKE_SYSTEM_NAME STREQUAL "SunOS")
+    set(SOLARIS 1)
+else()
+    set(SOLARIS 0)
+endif()
+
+if(CMAKE_SYSTEM_NAME STREQUAL "GNU")
+    set(HURD 1)
+else()
+    set(HURD 0)
+endif()
 
 # This is the only reliable way we can determine the webOS platform as the yocto recipe adds this
 # compile definition into its generated toolchain.cmake file
-qt_set01(WEBOS CMAKE_CXX_FLAGS MATCHES "-D__WEBOS__")
+if(CMAKE_CXX_FLAGS MATCHES "-D__WEBOS__")
+    set(WEBOS 1)
+else()
+    set(WEBOS 0)
+endif()
 
-qt_set01(BSD APPLE OR OPENBSD OR FREEBSD OR NETBSD)
+if(APPLE OR OPENBSD OR FREEBSD OR NETBSD)
+    set(BSD 1)
+else()
+    set(BSD 0)
+endif()
 
-qt_set01(IOS APPLE AND CMAKE_SYSTEM_NAME STREQUAL "iOS")
-qt_set01(TVOS APPLE AND CMAKE_SYSTEM_NAME STREQUAL "tvOS")
-qt_set01(WATCHOS APPLE AND CMAKE_SYSTEM_NAME STREQUAL "watchOS")
-qt_set01(VISIONOS APPLE AND CMAKE_SYSTEM_NAME STREQUAL "visionOS")
-qt_set01(UIKIT APPLE AND (IOS OR TVOS OR WATCHOS OR VISIONOS))
-qt_set01(MACOS APPLE AND NOT UIKIT)
+if(APPLE)
+    if(CMAKE_SYSTEM_NAME STREQUAL "iOS")
+        set(IOS 1)
+    else()
+        set(IOS 0)
+    endif()
 
-qt_set01(GCC CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-qt_set01(CLANG CMAKE_CXX_COMPILER_ID MATCHES "Clang|IntelLLVM")
-qt_set01(APPLECLANG CMAKE_CXX_COMPILER_ID MATCHES "AppleClang")
-qt_set01(IntelLLVM CMAKE_CXX_COMPILER_ID STREQUAL "IntelLLVM")
-qt_set01(QCC CMAKE_CXX_COMPILER_ID STREQUAL "QCC") # CMP0047
+    if(CMAKE_SYSTEM_NAME STREQUAL "tvOS")
+        set(TVOS 1)
+    else()
+        set(TVOS 0)
+    endif()
+
+    if(CMAKE_SYSTEM_NAME STREQUAL "watchOS")
+        set(WATCHOS 1)
+    else()
+        set(WATCHOS 0)
+    endif()
+
+    if(CMAKE_SYSTEM_NAME STREQUAL "visionOS")
+        set(VISIONOS 1)
+    else()
+        set(VISIONOS 0)
+    endif()
+
+    if(IOS OR TVOS OR WATCHOS OR VISIONOS)
+        set(UIKIT 1)
+        set(MACOS 0)
+    else()
+        set(UIKIT 0)
+        set(MACOS 1)
+    endif()
+endif()
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    set(GCC 1)
+else()
+    set(GCC 0)
+endif()
+
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang|IntelLLVM")
+    set(CLANG 1)
+else()
+    set(CLANG 0)
+endif()
+
+if(CMAKE_CXX_COMPILER_ID MATCHES "AppleClang")
+    set(APPLECLANG 1)
+else()
+    set(APPLECLANG 0)
+endif()
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "IntelLLVM")
+    set(IntelLLVM 1)
+else()
+    set(IntelLLVM 0)
+endif()
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "QCC")
+    set(QCC 1)
+else()
+    set(QCC 0)
+endif()
 
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
     set(QT_64BIT TRUE)
