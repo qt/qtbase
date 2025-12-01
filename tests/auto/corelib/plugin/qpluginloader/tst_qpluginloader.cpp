@@ -63,11 +63,11 @@ using namespace Qt::StringLiterals;
 #elif defined(Q_OS_WIN)
 # undef dll_VALID
 # define dll_VALID      true
-//# ifdef QT_NO_DEBUG
+# if !defined(QT_NO_DEBUG) && defined(Q_CC_MSVC)
+#  define SUFFIX         "d.dll"
+# else
 #  define SUFFIX         ".dll"
-//# else
-//#  define SUFFIX         "d.dll"
-//# endif
+# endif
 # define PREFIX         ""
 
 #else  // all other Unix
