@@ -244,7 +244,9 @@ QMatrix4x4::QMatrix4x4(const QTransform& transform)
     Fills all elements of this matrix with \a value.
 */
 
-static inline double matrixDet2(const double m[4][4], int col0, int col1, int row0, int row1)
+using Double4x4 = std::array<std::array<double, 4>, 4>;
+
+static double matrixDet2(const Double4x4 &m, int col0, int col1, int row0, int row1)
 {
     return m[col0][row0] * m[col1][row1] - m[col0][row1] * m[col1][row0];
 }
@@ -259,9 +261,9 @@ static inline double matrixDet2(const double m[4][4], int col0, int col1, int ro
 //     | A B C |
 // M = | D E F |   det(M) = A * (EI - HF) - B * (DI - GF) + C * (DH - GE)
 //     | G H I |
-static inline double matrixDet3
-    (const double m[4][4], int col0, int col1, int col2,
-     int row0, int row1, int row2)
+static double matrixDet3(const Double4x4 &m,
+                         int col0, int col1, int col2,
+                         int row0, int row1, int row2)
 {
     return m[col0][row0] * matrixDet2(m, col1, col2, row1, row2)
             - m[col1][row0] * matrixDet2(m, col0, col2, row1, row2)
@@ -269,7 +271,7 @@ static inline double matrixDet3
 }
 
 // Calculate the determinant of a 4x4 matrix.
-static inline double matrixDet4(const double m[4][4])
+static double matrixDet4(const Double4x4 &m)
 {
     double det;
     det  = m[0][0] * matrixDet3(m, 1, 2, 3, 1, 2, 3);
@@ -279,11 +281,14 @@ static inline double matrixDet4(const double m[4][4])
     return det;
 }
 
-static inline void copyToDoubles(const float m[4][4], double mm[4][4])
+static Double4x4 copyToDoubles(const float m[4][4])
 {
+    Q_DECL_UNINITIALIZED
+    Double4x4 mm;
     for (int i = 0; i < 4; ++i)
         for (int j = 0; j < 4; ++j)
             mm[i][j] = double(m[i][j]);
+    return mm;
 }
 
 /*!
@@ -294,9 +299,7 @@ double QMatrix4x4::determinant() const
     if ((flagBits & ~(Translation | Rotation2D | Rotation)) == Identity)
         return 1.0;
 
-    Q_DECL_UNINITIALIZED
-    double mm[4][4];
-    copyToDoubles(m, mm);
+    const Double4x4 mm = copyToDoubles(m);
     if (flagBits < Rotation2D)
         return mm[0][0] * mm[1][1] * mm[2][2]; // Translation | Scale
     if (flagBits < Perspective)
@@ -359,9 +362,7 @@ QMatrix4x4 QMatrix4x4::inverted(bool *invertible) const
         Q_DECL_UNINITIALIZED
         QMatrix4x4 inv(Qt::Uninitialized);
 
-        Q_DECL_UNINITIALIZED
-        double mm[4][4];
-        copyToDoubles(m, mm);
+        const Double4x4 mm = copyToDoubles(m);
 
         double det = matrixDet3(mm, 0, 1, 2, 0, 1, 2);
         if (det == 0.0f) {
@@ -397,9 +398,7 @@ QMatrix4x4 QMatrix4x4::inverted(bool *invertible) const
     Q_DECL_UNINITIALIZED
     QMatrix4x4 inv(Qt::Uninitialized);
 
-    Q_DECL_UNINITIALIZED
-    double mm[4][4];
-    copyToDoubles(m, mm);
+    const Double4x4 mm = copyToDoubles(m);
 
     double det = matrixDet4(mm);
     if (det == 0.0f) {
@@ -470,9 +469,7 @@ QMatrix3x3 QMatrix4x4::normalMatrix() const
         return inv;
     }
 
-    Q_DECL_UNINITIALIZED
-    double mm[4][4];
-    copyToDoubles(m, mm);
+    const Double4x4 mm = copyToDoubles(m);
     double det = matrixDet3(mm, 0, 1, 2, 0, 1, 2);
     if (det == 0.0f)
         return inv;
@@ -1960,9 +1957,7 @@ void QMatrix4x4::optimize()
                 flagBits &= ~Scale;
         } else {
             // If the columns are orthonormal and form a right-handed system, then there is no scale.
-            Q_DECL_UNINITIALIZED
-            double mm[4][4];
-            copyToDoubles(m, mm);
+            const Double4x4 mm = copyToDoubles(m);
             double det = matrixDet2(mm, 0, 1, 0, 1);
             double lenX = mm[0][0] * mm[0][0] + mm[0][1] * mm[0][1];
             double lenY = mm[1][0] * mm[1][0] + mm[1][1] * mm[1][1];
@@ -1975,9 +1970,7 @@ void QMatrix4x4::optimize()
         }
     } else {
         // If the columns are orthonormal and form a right-handed system, then there is no scale.
-        Q_DECL_UNINITIALIZED
-        double mm[4][4];
-        copyToDoubles(m, mm);
+        const Double4x4 mm = copyToDoubles(m);
         double det = matrixDet3(mm, 0, 1, 2, 0, 1, 2);
         double lenX = mm[0][0] * mm[0][0] + mm[0][1] * mm[0][1] + mm[0][2] * mm[0][2];
         double lenY = mm[1][0] * mm[1][0] + mm[1][1] * mm[1][1] + mm[1][2] * mm[1][2];
