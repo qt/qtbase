@@ -2988,6 +2988,10 @@ void tst_QAccessibility::listTest()
     model->appendRow({new QStandardItem("Norway"), new QStandardItem("Oslo"), new QStandardItem("NOK")});
     model->appendRow({new QStandardItem("Germany"), new QStandardItem("Berlin"), new QStandardItem("EUR")});
     model->appendRow({new QStandardItem("Australia"), new QStandardItem("Brisbane"), new QStandardItem("AUD")});
+    model->item(0, 1)->setCheckable(true);
+    model->item(1, 1)->setCheckable(true);
+    model->item(2, 1)->setCheckable(true);
+    model->item(2, 1)->setCheckState(Qt::Checked);
     auto lvHolder = std::make_unique<QListView>();
     auto listView = lvHolder.get();
     listView->setModel(model);
@@ -3016,16 +3020,19 @@ void tst_QAccessibility::listTest()
     QCOMPARE(iface->indexOfChild(child1), 0);
     QCOMPARE(child1->text(QAccessible::Name), QString("Oslo"));
     QCOMPARE(child1->role(), QAccessible::ListItem);
+    QVERIFY(child1->state().checkable);
 
     QAccessibleInterface *child2 = iface->child(1);
     QVERIFY(child2);
     QCOMPARE(iface->indexOfChild(child2), 1);
     QCOMPARE(child2->text(QAccessible::Name), QString("Berlin"));
+    QVERIFY(child2->state().checkable);
 
     QAccessibleInterface *child3 = iface->child(2);
     QVERIFY(child3);
     QCOMPARE(iface->indexOfChild(child3), 2);
     QCOMPARE(child3->text(QAccessible::Name), QString("Brisbane"));
+    QVERIFY(child3->state().checkable);
     }
 
     // Check that application is accessible parent, since it's a top-level widget
@@ -3044,9 +3051,21 @@ void tst_QAccessibility::listTest()
     // skip focus event tests on platforms where window focus cannot be ensured
     const bool checkFocus = QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation);
     if (checkFocus) {
+        QVERIFY(QTest::qWaitForWindowActive(listView));
+
         QAccessibleEvent focusEvent(listView, QAccessible::Focus);
         focusEvent.setChild(1);
         QVERIFY(QTestAccessibility::containsEvent(&focusEvent));
+
+        // check the item
+        QVERIFY(!iface->child(1)->state().checked);
+        QTest::keyClick(listView, Qt::Key_Space);
+        QVERIFY(iface->child(1)->state().checked);
+        QAccessible::State s;
+        s.checked = true;
+        QAccessibleStateChangeEvent checkedStateChangedEvent(listView, s);
+        checkedStateChangedEvent.setChild(1);
+        QVERIFY(QTestAccessibility::containsEvent(&checkedStateChangedEvent));
     }
 
     QTest::mouseClick(listView->viewport(), Qt::LeftButton, { }, listView->visualRect(model->index(2, listView->modelColumn())).center());
@@ -3058,6 +3077,16 @@ void tst_QAccessibility::listTest()
         QAccessibleEvent focusEvent2(listView, QAccessible::Focus);
         focusEvent2.setChild(2);
         QVERIFY(QTestAccessibility::containsEvent(&focusEvent2));
+
+        // uncheck the item
+        QVERIFY(iface->child(2)->state().checked);
+        QTest::keyClick(listView, Qt::Key_Space);
+        QVERIFY(!iface->child(2)->state().checked);
+        QAccessible::State s;
+        s.checked = true;
+        QAccessibleStateChangeEvent checkedStateChangedEvent(listView, s);
+        checkedStateChangedEvent.setChild(2);
+        QVERIFY(QTestAccessibility::containsEvent(&checkedStateChangedEvent));
     }
 
     QAccessibleTableInterface *table = iface->tableInterface();
@@ -3174,6 +3203,7 @@ void tst_QAccessibility::treeTest()
     QTreeWidgetItem *item1 = new QTreeWidgetItem;
     item1->setText(0, "Picasso");
     item1->setText(1, "Guernica");
+    item1->setCheckState(0, Qt::Unchecked);
     root1->addChild(item1);
 
     QTreeWidgetItem *item2 = new QTreeWidgetItem;
@@ -3188,6 +3218,7 @@ void tst_QAccessibility::treeTest()
     QTreeWidgetItem *item3 = new QTreeWidgetItem;
     item3->setText(0, "Klimt");
     item3->setText(1, "The Kiss");
+    item3->setCheckState(0, Qt::Checked);
     root2->addChild(item3);
 
     treeView->resize(400,400);
@@ -3291,6 +3322,40 @@ void tst_QAccessibility::treeTest()
     QCOMPARE(table2->columnDescription(0), QString("Artist"));
     QCOMPARE(table2->columnDescription(1), QString("Work"));
 
+    // skip accessible state change event tests on platforms where window focus cannot be ensured
+    if (QGuiApplicationPrivate::platformIntegration()->hasCapability(
+                QPlatformIntegration::WindowActivation)) {
+        QVERIFY(QTest::qWaitForWindowActive(treeView.get()));
+
+        // check item1 (Picasso)
+        QVERIFY(cell1->state().checkable);
+        QVERIFY(!cell1->state().checked);
+        treeView->setCurrentItem(item1);
+        QTest::keyClick(treeView.get(), Qt::Key_Space);
+        QVERIFY(cell1->state().checked);
+        {
+            QAccessible::State s;
+            s.checked = true;
+            QAccessibleStateChangeEvent checkedStateChangedEvent(treeView.get(), s);
+            checkedStateChangedEvent.setChild(iface->indexOfChild(cell1));
+            QVERIFY(QTestAccessibility::containsEvent(&checkedStateChangedEvent));
+        }
+
+        // uncheck item3 (Klimt)
+        QVERIFY(cell2->state().checkable);
+        QVERIFY(cell2->state().checked);
+        treeView->setCurrentItem(item3);
+        QTest::keyClick(treeView.get(), Qt::Key_Space);
+        QVERIFY(!cell2->state().checked);
+        {
+            QAccessible::State s;
+            s.checked = true;
+            QAccessibleStateChangeEvent checkedStateChangedEvent(treeView.get(), s);
+            checkedStateChangedEvent.setChild(iface->indexOfChild(cell2));
+            QVERIFY(QTestAccessibility::containsEvent(&checkedStateChangedEvent));
+        }
+    }
+
     QTestAccessibility::clearEvents();
 }
 
@@ -3315,6 +3380,7 @@ void tst_QAccessibility::tableTest()
     for (int i = 0; i<9; ++i) {
         QTableWidgetItem *item = new QTableWidgetItem;
         item->setText(QString::number(i/3) + QString(".") + QString::number(i%3));
+        item->setCheckState(Qt::Unchecked);
         tableView->setItem(i/3, i%3, item);
     }
 
@@ -3582,6 +3648,40 @@ void tst_QAccessibility::tableTest()
         tableView->horizontalHeader()->setVisible(false);
 
     }
+
+    // skip accessible state change event tests on platforms where window focus cannot be ensured
+    if (QGuiApplicationPrivate::platformIntegration()->hasCapability(
+                QPlatformIntegration::WindowActivation)) {
+        QVERIFY(QTest::qWaitForWindowActive(tableView));
+
+        // check cell (0, 0)
+        tableView->setCurrentItem(tableView->item(0, 0));
+        QVERIFY(cell00->state().checkable);
+        QVERIFY(!cell00->state().checked);
+        QTest::keyClick(tableView, Qt::Key_Space);
+        QVERIFY(cell00->state().checked);
+        {
+            QAccessible::State s;
+            s.checked = true;
+            QAccessibleStateChangeEvent checkedStateChangedEvent(tableView, s);
+            checkedStateChangedEvent.setChild(iface->indexOfChild(cell00));
+            QVERIFY(QTestAccessibility::containsEvent(&checkedStateChangedEvent));
+        }
+
+        QTestAccessibility::clearEvents();
+
+        // uncheck cell (0, 0) again
+        QTest::keyClick(tableView, Qt::Key_Space);
+        QVERIFY(!cell00->state().checked);
+        {
+            QAccessible::State s;
+            s.checked = true;
+            QAccessibleStateChangeEvent checkedStateChangedEvent(tableView, s);
+            checkedStateChangedEvent.setChild(iface->indexOfChild(cell00));
+            QVERIFY(QTestAccessibility::containsEvent(&checkedStateChangedEvent));
+        }
+    }
+
     {
         QTestAccessibility::clearEvents();
         auto cell0 = table2->cellAt(0, 2);
