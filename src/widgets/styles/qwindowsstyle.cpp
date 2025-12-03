@@ -116,8 +116,7 @@ bool QWindowsStyle::eventFilter(QObject *o, QEvent *e)
             // Alt has been pressed - find all widgets that care
             const QList<QWidget *> children = widget->findChildren<QWidget *>();
             auto ignorable = [](QWidget *w) {
-                return w->isWindow() || !w->isVisible()
-                        || w->style()->styleHint(SH_UnderlineShortcut, nullptr, w);
+                return w->isWindow() || !w->isVisible();
             };
             // Update states before repainting
             d->seenAlt.append(widget);
