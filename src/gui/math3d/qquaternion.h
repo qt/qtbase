@@ -283,10 +283,10 @@ constexpr QQuaternion operator/(const QQuaternion &quaternion, float divisor)
 
 constexpr bool qFuzzyCompare(const QQuaternion &q1, const QQuaternion &q2) noexcept
 {
-    return qFuzzyCompare(q1.wp, q2.wp) &&
-           qFuzzyCompare(q1.xp, q2.xp) &&
-           qFuzzyCompare(q1.yp, q2.yp) &&
-           qFuzzyCompare(q1.zp, q2.zp);
+    return QtPrivate::fuzzyCompare(q1.wp, q2.wp)
+        && QtPrivate::fuzzyCompare(q1.xp, q2.xp)
+        && QtPrivate::fuzzyCompare(q1.yp, q2.yp)
+        && QtPrivate::fuzzyCompare(q1.zp, q2.zp);
 }
 
 #ifndef QT_NO_VECTOR3D
