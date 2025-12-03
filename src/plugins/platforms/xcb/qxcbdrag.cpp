@@ -861,7 +861,7 @@ void QXcbDrag::handle_xdnd_status(const xcb_client_message_event_t *event)
     if (event->data.data32[0] && event->data.data32[0] != current_target)
         return;
 
-    const bool dropPossible = event->data.data32[1];
+    const bool dropPossible = event->data.data32[1] & 1;
     setCanDrop(dropPossible);
 
     if (dropPossible) {
