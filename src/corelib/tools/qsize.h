@@ -258,10 +258,9 @@ private:
     QT_WARNING_DISABLE_FLOAT_COMPARE
     friend constexpr bool qFuzzyCompare(const QSizeF &s1, const QSizeF &s2) noexcept
     {
-        // Cannot use qFuzzyCompare(), because it will give incorrect results
         // if one of the arguments is 0.0.
-        return ((!s1.wd || !s2.wd) ? qFuzzyIsNull(s1.wd - s2.wd) : qFuzzyCompare(s1.wd, s2.wd))
-            && ((!s1.ht || !s2.ht) ? qFuzzyIsNull(s1.ht - s2.ht) : qFuzzyCompare(s1.ht, s2.ht));
+        return QtPrivate::fuzzyCompare(s1.wd, s2.wd)
+            && QtPrivate::fuzzyCompare(s1.ht, s2.ht);
     }
     QT_WARNING_POP
     friend constexpr bool qFuzzyIsNull(const QSizeF &size) noexcept

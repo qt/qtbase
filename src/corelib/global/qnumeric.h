@@ -620,6 +620,27 @@ QT_WARNING_DISABLE_FLOAT_COMPARE
 
 QT_WARNING_POP
 
+namespace QtPrivate {
+/*
+    A version of qFuzzyCompare that works for all values (qFuzzyCompare()
+    requires that neither argument is numerically 0).
+
+    It's private because we need a fix for the many qFuzzyCompare() uses that
+    ignore the precondition, even for older branches.
+
+    See QTBUG-142020 for discussion of a longer-term solution.
+*/
+template <typename T, typename S>
+[[nodiscard]] constexpr bool fuzzyCompare(const T &lhs, const S &rhs) noexcept
+{
+    static_assert(noexcept(qIsNull(lhs) && qIsNull(rhs) && qFuzzyIsNull(lhs - rhs) && qFuzzyCompare(lhs, rhs)),
+                  "The operations qIsNull(), qFuzzyIsNull() and qFuzzyCompare() must be noexcept"
+                  "for both argument types!");
+    return qIsNull(lhs) || qIsNull(rhs) ? qFuzzyIsNull(lhs - rhs) : qFuzzyCompare(lhs, rhs);
+}
+} // namespace QtPrivate
+
+
 inline int qIntCast(double f) { return int(f); }
 inline int qIntCast(float f) { return int(f); }
 
