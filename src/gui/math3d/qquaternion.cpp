@@ -409,7 +409,7 @@ QQuaternion QQuaternion::fromAxisAndAngle
         (float x, float y, float z, float angle)
 {
     float length = qHypot(x, y, z);
-    if (!qFuzzyCompare(length, 1.0f) && !qFuzzyIsNull(length)) {
+    if (!qFuzzyIsNull(length) && !qFuzzyCompare(length, 1.0f)) {
         x /= length;
         y /= length;
         z /= length;
