@@ -47,8 +47,12 @@ public:
 
         operator QPointF () const { return QPointF(x, y); }
 
-        bool operator==(const Element &e) const { return qFuzzyCompare(x, e.x)
-            && qFuzzyCompare(y, e.y) && type == e.type; }
+        bool operator==(const Element &e) const
+        {
+            return type == e.type
+                && QtPrivate::fuzzyCompare(x, e.x)
+                && QtPrivate::fuzzyCompare(y, e.y);
+        }
         inline bool operator!=(const Element &e) const { return !operator==(e); }
     };
 
