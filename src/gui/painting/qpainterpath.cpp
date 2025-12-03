@@ -1740,7 +1740,7 @@ static void qt_painterpath_isect_line(const QPointF &p1,
 
     int dir = 1;
 
-    if (qFuzzyCompare(y1, y2)) {
+    if (QtPrivate::fuzzyCompare(y1, y2)) {
         // ignore horizontal lines according to scan conversion rule
         return;
     } else if (y2 < y1) {
@@ -1995,8 +1995,8 @@ static bool qt_painterpath_check_crossing(const QPainterPath *path, const QRectF
 
         case QPainterPath::MoveToElement:
             if (i > 0
-                && qFuzzyCompare(last_pt.x(), last_start.x())
-                && qFuzzyCompare(last_pt.y(), last_start.y())
+                && QtPrivate::fuzzyCompare(last_pt.x(), last_start.x())
+                && QtPrivate::fuzzyCompare(last_pt.y(), last_start.y())
                 && qt_painterpath_isect_line_rect(last_pt.x(), last_pt.y(),
                                                   last_start.x(), last_start.y(), rect))
                 return true;
