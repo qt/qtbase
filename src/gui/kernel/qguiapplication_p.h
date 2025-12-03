@@ -228,8 +228,8 @@ public:
         // to use single-point precision.
         friend constexpr bool operator==(const QLastCursorPosition &p1, const QPointF &p2) noexcept
         {
-            return qFuzzyCompare(float(p1.x()), float(p2.x()))
-                && qFuzzyCompare(float(p1.y()), float(p2.y()));
+            return QtPrivate::fuzzyCompare(float(p1.x()), float(p2.x()))
+                && QtPrivate::fuzzyCompare(float(p1.y()), float(p2.y()));
         }
         friend constexpr bool operator!=(const QLastCursorPosition &p1, const QPointF &p2) noexcept
         {
