@@ -738,22 +738,22 @@ QMatrix4x4 operator/(const QMatrix4x4& matrix, float divisor)
 */
 bool qFuzzyCompare(const QMatrix4x4& m1, const QMatrix4x4& m2) noexcept
 {
-    return qFuzzyCompare(m1.m[0][0], m2.m[0][0]) &&
-            qFuzzyCompare(m1.m[0][1], m2.m[0][1]) &&
-            qFuzzyCompare(m1.m[0][2], m2.m[0][2]) &&
-            qFuzzyCompare(m1.m[0][3], m2.m[0][3]) &&
-            qFuzzyCompare(m1.m[1][0], m2.m[1][0]) &&
-            qFuzzyCompare(m1.m[1][1], m2.m[1][1]) &&
-            qFuzzyCompare(m1.m[1][2], m2.m[1][2]) &&
-            qFuzzyCompare(m1.m[1][3], m2.m[1][3]) &&
-            qFuzzyCompare(m1.m[2][0], m2.m[2][0]) &&
-            qFuzzyCompare(m1.m[2][1], m2.m[2][1]) &&
-            qFuzzyCompare(m1.m[2][2], m2.m[2][2]) &&
-            qFuzzyCompare(m1.m[2][3], m2.m[2][3]) &&
-            qFuzzyCompare(m1.m[3][0], m2.m[3][0]) &&
-            qFuzzyCompare(m1.m[3][1], m2.m[3][1]) &&
-            qFuzzyCompare(m1.m[3][2], m2.m[3][2]) &&
-            qFuzzyCompare(m1.m[3][3], m2.m[3][3]);
+    return QtPrivate::fuzzyCompare(m1.m[0][0], m2.m[0][0])
+        && QtPrivate::fuzzyCompare(m1.m[0][1], m2.m[0][1])
+        && QtPrivate::fuzzyCompare(m1.m[0][2], m2.m[0][2])
+        && QtPrivate::fuzzyCompare(m1.m[0][3], m2.m[0][3])
+        && QtPrivate::fuzzyCompare(m1.m[1][0], m2.m[1][0])
+        && QtPrivate::fuzzyCompare(m1.m[1][1], m2.m[1][1])
+        && QtPrivate::fuzzyCompare(m1.m[1][2], m2.m[1][2])
+        && QtPrivate::fuzzyCompare(m1.m[1][3], m2.m[1][3])
+        && QtPrivate::fuzzyCompare(m1.m[2][0], m2.m[2][0])
+        && QtPrivate::fuzzyCompare(m1.m[2][1], m2.m[2][1])
+        && QtPrivate::fuzzyCompare(m1.m[2][2], m2.m[2][2])
+        && QtPrivate::fuzzyCompare(m1.m[2][3], m2.m[2][3])
+        && QtPrivate::fuzzyCompare(m1.m[3][0], m2.m[3][0])
+        && QtPrivate::fuzzyCompare(m1.m[3][1], m2.m[3][1])
+        && QtPrivate::fuzzyCompare(m1.m[3][2], m2.m[3][2])
+        && QtPrivate::fuzzyCompare(m1.m[3][3], m2.m[3][3]);
 }
 
 
