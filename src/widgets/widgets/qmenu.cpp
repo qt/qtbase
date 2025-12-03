@@ -1537,8 +1537,12 @@ void QMenuPrivate::_q_actionTriggered()
             }
             activateCausedStack(list, action, QAction::Trigger, false);
             // if a widget action fires, we need to hide the menu explicitly
-            if (qobject_cast<QWidgetAction*>(action))
+            if (qobject_cast<QWidgetAction*>(action)) {
+                // make sure QMenu::exec returns the triggered widget action
+                currentAction = action;
+                setSyncAction();
                 hideUpToMenuBar();
+            }
         }
     }
 }

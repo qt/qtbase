@@ -127,6 +127,7 @@ private slots:
 #endif
 
     void invisibleActions();
+    void execReturnsWidgetAction();
 
 protected slots:
     void onActivated(QAction*);
@@ -2334,6 +2335,27 @@ void tst_QMenu::dontSelectDisabledActionByShortcut()
     QCOMPARE(spy.count(), 1);
 }
 #endif
+
+void tst_QMenu::execReturnsWidgetAction()
+{
+    QWidget window;
+
+    QMenu menu(&window);
+    QWidgetAction *widgetAction = new QWidgetAction(&menu);
+    QPushButton *menuButton = new QPushButton("Button", &menu);
+    widgetAction->setDefaultWidget(menuButton);
+    QObject::connect(menuButton, &QPushButton::clicked, widgetAction, &QAction::trigger);
+
+    menu.addAction("First");
+    menu.addAction(widgetAction);
+    menu.addAction("Last");
+
+    window.show();
+    QVERIFY(QTest::qWaitForWindowActive(&window));
+
+    QTimer::singleShot(0, menuButton, &QPushButton::click);
+    QCOMPARE(menu.exec(window.geometry().center()), widgetAction);
+}
 
 QTEST_MAIN(tst_QMenu)
 #include "tst_qmenu.moc"
