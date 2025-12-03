@@ -467,7 +467,6 @@ QDataStream &operator>>(QDataStream &stream, QVector2D &vector)
     float x, y;
     stream >> x;
     stream >> y;
-    Q_ASSERT(qIsFinite(x) && qIsFinite(y));
     vector.setX(x);
     vector.setY(y);
     return stream;
@@ -1098,7 +1097,6 @@ QDataStream &operator>>(QDataStream &stream, QVector3D &vector)
     stream >> x;
     stream >> y;
     stream >> z;
-    Q_ASSERT(qIsFinite(x) && qIsFinite(y) && qIsFinite(z));
     vector.setX(x);
     vector.setY(y);
     vector.setZ(z);
@@ -1627,7 +1625,6 @@ QDataStream &operator>>(QDataStream &stream, QVector4D &vector)
     stream >> y;
     stream >> z;
     stream >> w;
-    Q_ASSERT(qIsFinite(x) && qIsFinite(y) && qIsFinite(z) && qIsFinite(w));
     vector.setX(x);
     vector.setY(y);
     vector.setZ(z);

@@ -4,6 +4,9 @@
 #include <QVector2D>
 #include <QVector3D>
 #include <QVector4D>
+
+#include <QtCore/qdatastream.h>
+
 #ifdef QVARIANT_H
 # error "This test requires qvector{2,3,4}d.h to not include qvariant.h"
 #endif
@@ -162,6 +165,8 @@ private slots:
     void metaTypes();
 
     void structuredBinding();
+    void nonFiniteValuesStreamingRoundTrip_data();
+    void nonFiniteValuesStreamingRoundTrip();
 };
 
 // Test the creation of QVector2D objects in various ways:
@@ -2756,6 +2761,78 @@ void tst_QVectorND::structuredBinding()
         QCOMPARE(v.y(), 20.0f);
         QCOMPARE(v.z(), 30.0f);
         QCOMPARE(v.w(), 40.0f);
+    }
+}
+
+void tst_QVectorND::nonFiniteValuesStreamingRoundTrip_data()
+{
+    QTest::addColumn<float>("value");
+
+    constexpr auto inf = std::numeric_limits<float>::infinity();
+    constexpr auto NaN = std::numeric_limits<float>::quiet_NaN();
+
+    QTest::addRow("+∞") << +inf;
+    QTest::addRow("-∞") << -inf;
+    QTest::addRow("NaN") << NaN;
+
+}
+
+void tst_QVectorND::nonFiniteValuesStreamingRoundTrip()
+{
+    QFETCH(const float, value);
+
+    const QVector2D i2{value, value};
+    const QVector3D i3{value, value, value};
+    const QVector4D i4{value, value, value, value};
+
+    QByteArray buffer;
+
+    {
+        QDataStream s(&buffer, QIODevice::WriteOnly);
+        s << i2 << i3 << i4;
+        QCOMPARE(s.status(), QDataStream::Status::Ok);
+    }
+
+    {
+        QVector2D o2 = {0, 0};
+        QVector3D o3 = {1, 0, -1};
+        QVector4D o4 = {0, 1, 2, 3};
+
+        QDataStream s(&buffer, QIODevice::ReadOnly);
+        s >> o2;
+        QCOMPARE(s.status(), QDataStream::Status::Ok);
+        s >> o3;
+        QCOMPARE(s.status(), QDataStream::Status::Ok);
+        s >> o4;
+        QCOMPARE(s.status(), QDataStream::Status::Ok);
+
+        constexpr auto convert_to_binary = [](float v) {
+            uint r;
+            static_assert(sizeof v == sizeof r);
+            memcpy(&r, &v, sizeof v);
+            return r;
+        };
+
+        #define CHECK(n, what) \
+            do { \
+                const auto i ## n ## what = convert_to_binary(i ## n . what ()); \
+                const auto o ## n ## what = convert_to_binary(o ## n . what ()); \
+                QCOMPARE(i ## n ## what, o ## n ## what); \
+            } while (false)
+
+        CHECK(2, x);
+        CHECK(2, y);
+
+        CHECK(3, x);
+        CHECK(3, y);
+        CHECK(3, z);
+
+        CHECK(4, x);
+        CHECK(4, y);
+        CHECK(4, z);
+        CHECK(4, w);
+
+        #undef CHECK
     }
 }
 
