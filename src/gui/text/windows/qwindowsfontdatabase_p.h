@@ -78,10 +78,14 @@ public:
 
     struct FontHandle {
         FontHandle(const QString &name) : faceName(name) {}
+#if QT_CONFIG(directwrite)
         FontHandle(IDWriteFontFace *face, const QString &name);
+#endif // !QT_NO_DIRECTWRITE
         ~FontHandle();
 
+#if QT_CONFIG(directwrite)
         IDWriteFontFace *fontFace = nullptr;
+#endif // !QT_NO_DIRECTWRITE
         QString faceName;
     };
 

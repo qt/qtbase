@@ -1113,17 +1113,21 @@ void QWindowsFontDatabase::removeApplicationFonts()
     m_eudcFonts.clear();
 }
 
+#if QT_CONFIG(directwrite)
 QWindowsFontDatabase::FontHandle::FontHandle(IDWriteFontFace *face, const QString &name)
     : fontFace(face), faceName(name)
 {
     fontFace->AddRef();
 }
+#endif // !QT_NO_DIRECTWRITE
 
 
 QWindowsFontDatabase::FontHandle::~FontHandle()
 {
+#if QT_CONFIG(directwrite)
     if (fontFace != nullptr)
         fontFace->Release();
+#endif // !QT_NO_DIRECTWRITE
 }
 
 void QWindowsFontDatabase::releaseHandle(void *handle)
