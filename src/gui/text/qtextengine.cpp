@@ -1746,7 +1746,7 @@ int QTextEngine::shapeTextWithHarfbuzzNG(const QScriptItem &si, const ushort *st
 
                     // fix up clusters so that the cluster indices will be monotonic
                     // and thus we never return out-of-order indices
-                    while (last_cluster++ < cluster && str_pos < item_length)
+                    for (uint j = last_cluster; j < cluster && str_pos < item_length; ++j)
                         log_clusters[str_pos++] = last_glyph_pos;
                     last_glyph_pos = i + glyphs_shaped;
                     last_cluster = cluster;
