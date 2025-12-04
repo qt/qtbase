@@ -18,6 +18,15 @@
     The main work of this example is done in the HttpWindow class.
     Thus we will focus on that.
 
+    \snippet http/httpwindow.cpp qnam-tcpkeepalive
+
+    Since Qt 6.11, it is possible to explicitly specify the TCP keepalive
+    parameters for a QNetworkRequest. In the snippet above, we are overriding
+    the defaults used by QNetworkAccessManager to follow a more aggressive
+    strategy. This can be useful, for example, in early detection of network
+    hangs caused by network changes on Linux. In this particular example, the
+    connection will be closed after thirty seconds of inactivity.
+
     \snippet http/httpwindow.cpp qnam-download
 
     Using QNetworkAccessManager, we begin the download of a resource as

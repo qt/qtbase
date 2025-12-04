@@ -10,6 +10,8 @@
 #include <QUrl>
 
 #include <memory>
+#include <chrono>
+using namespace std::chrono_literals;
 
 #if QT_CONFIG(ssl)
 const char defaultUrl[] = "https://www.qt.io/";
@@ -95,8 +97,15 @@ void HttpWindow::startRequest(const QUrl &requestedUrl)
     url = requestedUrl;
     httpRequestAborted = false;
 
+    //! [qnam-tcpkeepalive]
+    QNetworkRequest networkRequest(url);
+    networkRequest.setTcpKeepAliveIdleTimeBeforeProbes(20s);
+    networkRequest.setTcpKeepAliveIntervalBetweenProbes(2s);
+    networkRequest.setTcpKeepAliveProbeCount(5);
+    //! [qnam-tcpkeepalive]
+
     //! [qnam-download]
-    reply.reset(qnam.get(QNetworkRequest(url)));
+    reply.reset(qnam.get(networkRequest));
     //! [qnam-download]
     //! [connecting-reply-to-slots]
     connect(reply.get(), &QNetworkReply::finished, this, &HttpWindow::httpFinished);

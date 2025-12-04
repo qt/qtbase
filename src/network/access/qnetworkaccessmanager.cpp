@@ -216,6 +216,19 @@ static void ensureInitialized()
     can be:
     \snippet code/src_network_access_qnetworkaccessmanager.cpp 1
 
+    Since Qt 6.11 the defaults of the TCP Keepalive parameters used by
+    QNetworkAccessManager have been changed. With the current settings
+    the connection will be terminated after 2 minutes of inactivity.
+
+    These settings can be changed the individual requests, to make
+    them more lenient, or even more aggressive via the QNetworkRequest API.
+    \snippet http/httpwindow.cpp qnam-tcpkeepalive
+
+    In the above snippet we are picking a more aggressive strategy, to
+    terminate the connection after thirty seconds of inactivity. This can
+    be useful, for example, in early detection of network hangs caused
+    by network changes on Linux.
+
     \sa QNetworkRequest, QNetworkReply, QNetworkProxy
 */
 
