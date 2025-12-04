@@ -925,7 +925,7 @@ void tst_QUrl::resolving_data()
     QTest::newRow("/-on-empty-no-authority") << "scheme:" << "/" << "scheme:/";
     QTest::newRow(".-on-empty-no-authority") << "scheme:" << "." << "scheme:";
     QTest::newRow("./-on-empty-no-authority") << "scheme:" << "./" << "scheme:";
-    QTest::newRow(".//-on-empty-no-authority") << "scheme:" << "./" << "scheme:";
+    QTest::newRow(".//-on-empty-no-authority") << "scheme:" << ".//" << "scheme:";
     QTest::newRow("..-on-empty-no-authority") << "scheme:" << ".." << "scheme:";
     QTest::newRow("../-on-empty-no-authority") << "scheme:" << "../" << "scheme:";
 
