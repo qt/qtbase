@@ -492,6 +492,12 @@ endif()
 # Install CI support files to libexec.
 if(QT_INSTALL_CI_FILES)
     qt_path_join(__qt_libexec_install_dir "${QT_INSTALL_DIR}" "${INSTALL_LIBEXECDIR}")
+    qt_internal_find_modified_test_functions()
+    set(mod_functions "${CMAKE_SOURCE_DIR}/util/testrunner/qt-modified-testfunctions.txt")
+    if(EXISTS ${mod_functions})
+        qt_copy_or_install(FILES "${mod_functions}"
+             DESTINATION "${__qt_libexec_install_dir}")
+    endif()
     qt_copy_or_install(FILES coin/instructions/qmake/ensure_pro_file.cmake
         DESTINATION "${__qt_libexec_install_dir}")
     qt_copy_or_install(PROGRAMS "util/testrunner/qt-testrunner.py"
