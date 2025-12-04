@@ -7,8 +7,8 @@
 
     "Description": "libpng is the official PNG reference library.",
     "Homepage": "http://www.libpng.org/pub/png/libpng.html",
-    "Version": "1.6.51",
-    "DownloadLocation": "https://download.sourceforge.net/libpng/libpng-1.6.51.tar.xz",
+    "Version": "1.6.52",
+    "DownloadLocation": "https://download.sourceforge.net/libpng/libpng-1.6.52.tar.xz",
     "PURL": "pkg:github/pnggroup/libpng@v$<VERSION>",
     "CPE": "cpe:2.3:a:libpng:libpng:$<VERSION>:*:*:*:*:*:*:*",
 
