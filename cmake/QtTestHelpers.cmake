@@ -1340,3 +1340,27 @@ function(qt_internal_add_default_tests)
         )
     endif()
 endfunction()
+
+# Detect new/modified test functions
+function(qt_internal_find_modified_test_functions)
+    # opt out if need be
+    if(QT_NO_FIND_MODIFIED_TEST_FUNCTIONS)
+        return()
+    endif()
+
+    # Some systems (e.g. openSuSE 15.6) provide Python 3.5, while the script needs 3.11 which.
+    # Its path is usually in PYTHON3_EXECUTABLE.
+    if(DEFINED ENV{PYTHON3_EXECUTABLE})
+        set(python $ENV{PYTHON3_EXECUTABLE})
+    else()
+        set(python "python")
+    endif()
+
+    set(parser "${CMAKE_SOURCE_DIR}/util/testrunner/qt-modified-testfunctions.py")
+    message(STATUS "Parsing new/modified test functions: ${python} ${parser} in ${CMAKE_SOURCE_DIR}")
+
+    execute_process(
+        COMMAND "${python}" "${parser}"
+        WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+    )
+endfunction()
