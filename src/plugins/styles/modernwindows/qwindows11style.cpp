@@ -915,7 +915,7 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
                 const bool isReverse = option->direction == Qt::RightToLeft;
                 const bool isOpen = option->state & QStyle::State_Open;
                 QFont f(d->assetFont);
-                f.setPointSize(6);
+                f.setPointSize(8);
                 painter->setFont(f);
                 painter->setPen(option->palette.color(isOpen ? QPalette::Active : QPalette::Disabled,
                                                       QPalette::WindowText));
