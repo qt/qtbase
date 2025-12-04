@@ -175,11 +175,15 @@ public:
         // quint64 alertMedium : 1;
         // quint64 alertHigh : 1;
 
+        Q_DECL_UNUSED_MEMBER quint64 qt_reserved : 27;
+
         State() {
             std::memset(this, 0, sizeof(State));
         }
         friend inline bool operator==(const QAccessible::State &first, const QAccessible::State &second)
         {
+            static_assert(std::has_unique_object_representations_v<State>,
+                          "memcmp() cannot be used on types with padding");
             return std::memcmp(&first, &second, sizeof(QAccessible::State)) == 0;
         }
     };
