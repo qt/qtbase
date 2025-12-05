@@ -896,6 +896,26 @@
                 "lineNumber": 8,
                 "object": true,
                 "qualifiedClassName": "CXX11TrailingReturn",
+                "methods": [
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "i",
+                                "type": "int"
+                            },
+                            {
+                                "name": "d",
+                                "type": "double"
+                            }
+                        ],
+                        "index": 16,
+                        "isConst": true,
+                        "lineNumber": 37,
+                        "name": "invokable",
+                        "returnType": "double"
+                    }
+                ],
                 "signals": [
                     {
                         "access": "public",
@@ -906,17 +926,31 @@
                             }
                         ],
                         "index": 0,
-                        "lineNumber": 30,
-                        "name": "trailingSignalReturn",
+                        "lineNumber": 32,
+                        "name": "signal",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "i",
+                                "type": "int"
+                            }
+                        ],
+                        "index": 1,
+                        "isConst": true,
+                        "lineNumber": 35,
+                        "name": "signalMacro",
                         "returnType": "void"
                     }
                 ],
                 "slots": [
                     {
                         "access": "public",
-                        "index": 1,
+                        "index": 2,
                         "lineNumber": 12,
-                        "name": "fun",
+                        "name": "f",
                         "returnType": "void"
                     },
                     {
@@ -931,9 +965,9 @@
                                 "type": "char"
                             }
                         ],
-                        "index": 2,
+                        "index": 3,
                         "lineNumber": 13,
-                        "name": "arguments",
+                        "name": "args",
                         "returnType": "int"
                     },
                     {
@@ -944,24 +978,106 @@
                                 "type": "int"
                             }
                         ],
-                        "index": 3,
-                        "lineNumber": 14,
+                        "index": 4,
+                        "lineNumber": 15,
                         "name": "inlineFunc",
                         "returnType": "int"
                     },
                     {
                         "access": "public",
-                        "index": 4,
-                        "lineNumber": 19,
+                        "index": 5,
+                        "lineNumber": 16,
+                        "name": "inlineFuncVoid",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "index": 6,
+                        "isConst": true,
+                        "lineNumber": 17,
+                        "name": "constFunc",
+                        "returnType": "double"
+                    },
+                    {
+                        "access": "public",
+                        "index": 7,
+                        "lineNumber": 18,
                         "name": "constRefReturn",
                         "returnType": "void"
                     },
                     {
                         "access": "public",
-                        "index": 5,
+                        "index": 8,
                         "isConst": true,
-                        "lineNumber": 24,
+                        "lineNumber": 19,
                         "name": "constConstRefReturn",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "index": 9,
+                        "lineNumber": 22,
+                        "name": "fMacro",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "i",
+                                "type": "int"
+                            },
+                            {
+                                "name": "b",
+                                "type": "char"
+                            }
+                        ],
+                        "index": 10,
+                        "lineNumber": 23,
+                        "name": "argsMacro",
+                        "returnType": "int"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "i",
+                                "type": "int"
+                            }
+                        ],
+                        "index": 11,
+                        "lineNumber": 25,
+                        "name": "inlineFuncMacro",
+                        "returnType": "int"
+                    },
+                    {
+                        "access": "public",
+                        "index": 12,
+                        "lineNumber": 26,
+                        "name": "inlineFuncVoidMacro",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "index": 13,
+                        "isConst": true,
+                        "lineNumber": 27,
+                        "name": "constFuncMacro",
+                        "returnType": "double"
+                    },
+                    {
+                        "access": "public",
+                        "index": 14,
+                        "lineNumber": 28,
+                        "name": "constRefReturnMacro",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "index": 15,
+                        "isConst": true,
+                        "lineNumber": 29,
+                        "name": "constConstRefReturnMacro",
                         "returnType": "void"
                     }
                 ],
@@ -974,7 +1090,7 @@
             }
         ],
         "hashes": {
-            "CXX11TrailingReturn": "0$UrmUM8dix1r2pcj94cUzTALq0x8"
+            "CXX11TrailingReturn": "0$neQlOl+UXv3j3WBfYThJnODlY+A"
         },
         "inputFile": "cxx11-trailing-return.h",
         "outputRevision": 69

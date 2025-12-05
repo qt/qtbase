@@ -599,6 +599,41 @@ bool Moc::parseMaybeFunction(const ClassDef *cdef, FunctionDef *def)
         scopedFunctionName = tempType.isScoped;
     }
 
+    if (!test(RPAREN)) {
+        parseFunctionArguments(def);
+        if (!test(RPAREN))
+            return false;
+    }
+
+    def->isConst = test(CONST);
+
+    while (test(IDENTIFIER))
+        ;
+
+    if (test(THROW)) {
+        next(LPAREN);
+        until(RPAREN);
+    }
+
+    if (def->type.name == "auto" && test(ARROW))
+        def->type = parseType(); // Parse trailing return-type
+
+    if (scopedFunctionName
+        && (def->isSignal || def->isSlot || def->isInvokable)) {
+        const QByteArray msg = "parsemaybe: Function declaration " + def->name
+                + " contains extra qualification. Ignoring as signal or slot.";
+        warning(msg.constData());
+        return false;
+    }
+
+    if (def->isSlot || def->isSignal || def->isInvokable) {
+        QList<QByteArray> typeNameParts = normalizeType(def->type.name).split(' ');
+        if (typeNameParts.contains("auto")) {
+            // We expected a trailing return type but we haven't seen one
+            error("Function declared with auto as return type but missing trailing return type. "
+                  "Return type deduction is not supported.");
+        }
+    }
     // we don't support references as return types, it's too dangerous
     if (def->type.referenceType == Type::Reference) {
         QByteArray rawName = def->type.rawName;
@@ -607,20 +642,6 @@ bool Moc::parseMaybeFunction(const ClassDef *cdef, FunctionDef *def)
     }
 
     def->normalizedType = normalizeType(def->type.name);
-
-    if (!test(RPAREN)) {
-        parseFunctionArguments(def);
-        if (!test(RPAREN))
-            return false;
-    }
-    def->isConst = test(CONST);
-    if (scopedFunctionName
-        && (def->isSignal || def->isSlot || def->isInvokable)) {
-        const QByteArray msg = "parsemaybe: Function declaration " + def->name
-                + " contains extra qualification. Ignoring as signal or slot.";
-        warning(msg.constData());
-        return false;
-    }
     return true;
 }
 

@@ -860,6 +860,7 @@ private slots:
     void privateClass();
     void cxx11Enums_data();
     void cxx11Enums();
+    void cxx11TrailingReturn_data();
     void cxx11TrailingReturn();
     void returnRefs();
     void memberProperties_data();
@@ -2787,16 +2788,54 @@ void tst_Moc::cxx11Enums()
     QCOMPARE(metaEnum.isScoped(), isScoped);
 }
 
+void tst_Moc::cxx11TrailingReturn_data()
+{
+    QTest::addColumn<QString>("name");
+    QTest::addColumn<bool>("isSlot");
+    QTest::addColumn<int>("returnTypeId");
+
+    QTest::newRow("f()") << "f()" << true << qMetaTypeId<void>();
+    QTest::newRow("args(int,char)") << "args(int,char)" << true << qMetaTypeId<int>();
+    QTest::newRow("inlineFunc(int)") << "inlineFunc(int)" << true << qMetaTypeId<int>();
+    QTest::newRow("inlineFuncVoid()") << "inlineFuncVoid()" << true << qMetaTypeId<void>();
+    QTest::newRow("constFunc()") << "constFunc()" << true << qMetaTypeId<double>();
+    QTest::newRow("fMacro()") << "fMacro()" << true << qMetaTypeId<void>();
+    QTest::newRow("argsMacro(int,char)") << "argsMacro(int,char)" << true << qMetaTypeId<int>();
+    QTest::newRow("inlineFuncMacro(int)") << "inlineFuncMacro(int)" << true << qMetaTypeId<int>();
+    QTest::newRow("inlineFuncVoidMacro()")
+            << "inlineFuncVoidMacro()" << true << qMetaTypeId<void>();
+    QTest::newRow("constFuncMacro()") << "constFuncMacro()" << true << qMetaTypeId<double>();
+
+    // we don't support references as return types, it's too dangerous
+    QTest::newRow("constRefReturn()") << "constRefReturn()" << true << qMetaTypeId<void>();
+    QTest::newRow("constConstRefReturn()")
+            << "constConstRefReturn()" << true << qMetaTypeId<void>();
+    QTest::newRow("constRefReturnMacro()")
+            << "constRefReturnMacro()" << true << qMetaTypeId<void>();
+    QTest::newRow("constConstRefReturnMacro()")
+            << "constConstRefReturnMacro()" << true << qMetaTypeId<void>();
+
+    QTest::newRow("signal(int)") << "signal(int)" << false << qMetaTypeId<void>();
+    QTest::newRow("signalMacro(int)") << "signalMacro(int)" << false << qMetaTypeId<void>();
+}
+
 void tst_Moc::cxx11TrailingReturn()
 {
     CXX11TrailingReturn retClass;
     const QMetaObject *mobj = retClass.metaObject();
-    QVERIFY(mobj->indexOfSlot("fun()") != -1);
-    QVERIFY(mobj->indexOfSlot("arguments(int,char)") != -1);
-    QVERIFY(mobj->indexOfSlot("inlineFunc(int)") != -1);
-    QVERIFY(mobj->indexOfSlot("constRefReturn()") != -1);
-    QVERIFY(mobj->indexOfSlot("constConstRefReturn()") != -1);
-    QVERIFY(mobj->indexOfSignal("trailingSignalReturn(int)") != -1);
+
+    QFETCH(QString, name);
+    QFETCH(bool, isSlot);
+    QFETCH(int, returnTypeId);
+
+    auto const index = [&] {
+        if (isSlot) {
+            return mobj->indexOfSlot(name.toUtf8());
+        }
+        return mobj->indexOfSignal(name.toUtf8());
+    }();
+    QVERIFY(index != -1);
+    QCOMPARE(mobj->method(index).returnType(), returnTypeId);
 }
 
 void tst_Moc::returnRefs()
