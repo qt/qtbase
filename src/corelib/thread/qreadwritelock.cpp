@@ -243,14 +243,14 @@ Q_NEVER_INLINE static bool contendedTryLockForRead(QAtomicPointer<QReadWriteLock
             return d->recursiveLockForRead(timeout);
 
         auto lock = qt_unique_lock(d->mutex);
-        if (d != d_ptr.loadRelaxed()) {
+        if (QReadWriteLockPrivate *dd = d_ptr.loadAcquire(); d != dd) {
             // d_ptr has changed: this QReadWriteLock was unlocked before we had
             // time to lock d->mutex.
             // We are holding a lock to a mutex within a QReadWriteLockPrivate
             // that is already released (or even is already re-used). That's ok
             // because the QFreeList never frees them.
             // Just unlock d->mutex (at the end of the scope) and retry.
-            d = d_ptr.loadAcquire();
+            d = dd;
             continue;
         }
         return d->lockForRead(lock, timeout);
@@ -354,11 +354,11 @@ Q_NEVER_INLINE static bool contendedTryLockForWrite(QAtomicPointer<QReadWriteLoc
             return d->recursiveLockForWrite(timeout);
 
         auto lock = qt_unique_lock(d->mutex);
-        if (d != d_ptr.loadRelaxed()) {
+        if (QReadWriteLockPrivate *dd = d_ptr.loadAcquire(); d != dd) {
             // The mutex was unlocked before we had time to lock the mutex.
             // We are holding to a mutex within a QReadWriteLockPrivate that is already released
             // (or even is already re-used) but that's ok because the QFreeList never frees them.
-            d = d_ptr.loadAcquire();
+            d = dd;
             continue;
         }
         return d->lockForWrite(lock, timeout);
