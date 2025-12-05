@@ -57,6 +57,7 @@ private slots:
     void multipleReadersLoop();
     void multipleWritersLoop();
     void multipleReadersWritersLoop();
+    void heavyLoadLocks();
     void countingTest();
     void limitedReaders();
     void deleteOnUnlock();
@@ -603,6 +604,111 @@ public:
     }
 };
 
+class HeavyLoadLockThread : public QThread
+{
+public:
+    QReadWriteLock &testRwlock;
+    const qsizetype iterations;
+    const int numThreads;
+    inline HeavyLoadLockThread(QReadWriteLock &l, qsizetype iters, int numThreads, QVector<QAtomicInt *> &counters):
+        testRwlock(l),
+        iterations(iters),
+        numThreads(numThreads),
+        counters(counters)
+    { }
+
+private:
+    QVector<QAtomicInt *> &counters;
+    QAtomicInt *getCounter(qsizetype index)
+    {
+        QReadLocker locker(&testRwlock);
+        /*
+          The index is increased monotonically, so the index
+          being requested should be always within or at the end of the
+          counters vector.
+        */
+        Q_ASSERT(index <= counters.size());
+        if (counters.size() <= index || counters[index] == nullptr) {
+            locker.unlock();
+            QWriteLocker wlocker(&testRwlock);
+            if (counters.size() <= index)
+                counters.resize(index + 1, nullptr);
+            if (counters[index] == nullptr)
+                counters[index] = new QAtomicInt(0);
+            return counters[index];
+        }
+        return counters[index];
+    }
+    void releaseCounter(qsizetype index)
+    {
+        QWriteLocker locker(&testRwlock);
+        delete counters[index];
+        counters[index] = nullptr;
+    }
+
+public:
+    void run() override
+    {
+        for (qsizetype i = 0; i < iterations; ++i) {
+            QAtomicInt *counter = getCounter(i);
+            /*
+                Here each counter is accessed by each thread
+                and increaed only once. As a result, when the
+                counter reaches numThreads, i.e. the fetched
+                value before the increment is numThreads-1,
+                we know all threads have accessed this counter
+                and we can delete it safely.
+            */
+            int prev = counter->fetchAndAddRelaxed(1);
+            if (prev == numThreads - 1) {
+#ifdef QT_BUILDING_UNDER_TSAN
+            /*
+                Under TSAN, deleting and freeing an object
+                will trigger a write operation on the memory
+                of the object. Since we used fetchAndAddRelaxed
+                to update the counter, TSAN will report a data
+                race when deleting the counter here. To avoid
+                the false positive, we simply reset the counter
+                to 0 here, with ordered semantics to establish
+                the sequence to ensure the the free-ing option
+                happens after all fetchAndAddRelaxed operations
+                in other threads.
+
+                When not building under TSAN, deleting the counter
+                will not result in any data read or written to the
+                memory region of the counter, so no data race will
+                happen.
+            */
+                counter->fetchAndStoreOrdered(0);
+#endif
+                releaseCounter(i);
+            }
+        }
+    }
+};
+
+/*
+    Multiple threads racing acquiring and releasing
+    locks on the same indices.
+*/
+
+void tst_QReadWriteLock::heavyLoadLocks()
+{
+    constexpr qsizetype iterations = 65536 * 4;
+    constexpr int numThreads = 8;
+    QVector<QAtomicInt *> counters;
+    QReadWriteLock testLock;
+    std::array<std::unique_ptr<HeavyLoadLockThread>, numThreads> threads;
+    for (auto &thread : threads)
+        thread = std::make_unique<HeavyLoadLockThread>(testLock, iterations, numThreads, counters);
+    for (auto &thread : threads)
+        thread->start();
+    for (auto &thread : threads)
+        thread->wait();
+    QVERIFY(counters.size() == iterations);
+    for (qsizetype i = 0; i < iterations; ++i)
+        QVERIFY(counters[i] == nullptr);
+}
 
 /*
     A writer acquires a read-lock, a reader locks
