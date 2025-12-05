@@ -29,6 +29,7 @@
 #include <qtooltip.h>
 
 #include <QtCore/qbasictimer.h>
+#include <QtWidgets/private/qtooltip_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -93,57 +94,6 @@ using namespace Qt::StringLiterals;
     \sa QWidget::toolTip, QAction::toolTip
 */
 
-class QTipLabel : public QLabel
-{
-    Q_OBJECT
-public:
-    QTipLabel(const QString &text, const QPoint &pos, QWidget *w, int msecDisplayTime);
-    ~QTipLabel();
-    static QTipLabel *instance;
-
-    void adjustTooltipScreen(const QPoint &pos);
-    void updateSize(const QPoint &pos);
-
-    bool eventFilter(QObject *, QEvent *) override;
-
-    QBasicTimer hideTimer, expireTimer;
-
-    bool fadingOut;
-
-    void reuseTip(const QString &text, int msecDisplayTime, const QPoint &pos);
-    void hideTip();
-    void hideTipImmediately();
-    void setTipRect(QWidget *w, const QRect &r);
-    void restartExpireTimer(int msecDisplayTime);
-    bool tipChanged(const QPoint &pos, const QString &text, QObject *o);
-    void placeTip(const QPoint &pos, QWidget *w);
-
-    static QScreen *getTipScreen(const QPoint &pos, QWidget *w);
-protected:
-    void timerEvent(QTimerEvent *e) override;
-    void paintEvent(QPaintEvent *e) override;
-    void mouseMoveEvent(QMouseEvent *e) override;
-    void resizeEvent(QResizeEvent *e) override;
-
-#if QT_CONFIG(style_stylesheet)
-public slots:
-    /** \internal
-      Cleanup the _q_stylesheet_parent property.
-     */
-    void styleSheetParentDestroyed() {
-        setProperty("_q_stylesheet_parent", QVariant());
-        styleSheetParent = nullptr;
-    }
-
-private:
-    QWidget *styleSheetParent;
-#endif
-
-private:
-    QWidget *widget;
-    QRect rect;
-};
-
 QTipLabel *QTipLabel::instance = nullptr;
 
 QTipLabel::QTipLabel(const QString &text, const QPoint &pos, QWidget *w, int msecDisplayTime)
@@ -152,6 +102,7 @@ QTipLabel::QTipLabel(const QString &text, const QPoint &pos, QWidget *w, int mse
     , styleSheetParent(nullptr)
 #endif
     , widget(nullptr)
+    , fadingOut(false)
 {
     delete instance;
     instance = this;
@@ -166,7 +117,6 @@ QTipLabel::QTipLabel(const QString &text, const QPoint &pos, QWidget *w, int mse
     qApp->installEventFilter(this);
     setWindowOpacity(style()->styleHint(QStyle::SH_ToolTipLabel_Opacity, nullptr, this) / 255.0);
     setMouseTracking(true);
-    fadingOut = false;
     reuseTip(text, msecDisplayTime, pos);
 }
 
@@ -433,6 +383,15 @@ bool QTipLabel::tipChanged(const QPoint &pos, const QString &text, QObject *o)
        return false;
 }
 
+/** \internal
+  Cleanup the _q_stylesheet_parent property.
+ */
+void QTipLabel::styleSheetParentDestroyed()
+{
+    setProperty("_q_stylesheet_parent", QVariant());
+    styleSheetParent = nullptr;
+}
+
 /*!
     Shows \a text as a tool tip, with the global position \a pos as
     the point of interest. The tool tip will be shown with a platform
@@ -594,4 +553,4 @@ void QToolTip::setFont(const QFont &font)
 
 QT_END_NAMESPACE
 
-#include "qtooltip.moc"
+#include "moc_qtooltip_p.cpp"

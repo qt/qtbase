@@ -412,7 +412,7 @@ qt_internal_extend_target(Widgets CONDITION QT_FEATURE_shortcut
 
 qt_internal_extend_target(Widgets CONDITION QT_FEATURE_tooltip
     SOURCES
-        kernel/qtooltip.cpp kernel/qtooltip.h
+        kernel/qtooltip.cpp kernel/qtooltip.h kernel/qtooltip_p.h
 )
 
 qt_internal_extend_target(Widgets CONDITION QT_FEATURE_whatsthis
