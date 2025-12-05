@@ -1012,9 +1012,6 @@ void tst_QItemDelegate::decoration_data()
 
 void tst_QItemDelegate::decoration()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     Q_CHECK_PAINTEVENTS
 
     QFETCH(int, type);
@@ -1266,9 +1263,6 @@ void tst_QItemDelegate::enterKey_data()
 
 void tst_QItemDelegate::enterKey()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     QFETCH(WidgetType, widget);
     QFETCH(int, key);
     QFETCH(bool, expectedFocus);
@@ -1432,9 +1426,6 @@ void tst_QItemDelegate::testLineEditValidation_data()
 
 void tst_QItemDelegate::testLineEditValidation()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     QFETCH(int, key);
 
     struct TestDelegate : public QItemDelegate
