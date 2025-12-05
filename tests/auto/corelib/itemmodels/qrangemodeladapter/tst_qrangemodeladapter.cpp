@@ -1533,7 +1533,7 @@ void tst_QRangeModelAdapter::tableWriteAccess()
         QTest::ignoreMessage(QtCriticalMsg,
                              QRegularExpression("Not able to assign QVariant"));
         QTest::ignoreMessage(QtWarningMsg, QRegularExpression("Writing value of type Object\\* to "
-                             "role Qt::RangeModelAdapterRole at index .* of the model failed"));
+                             "role Qt::RangeModelAdapterRole at index .* failed"));
 #endif
         adapter.at(0, 0) = new Object;
         QCOMPARE(dataChangedSpy.count(), 0);

@@ -141,9 +141,16 @@ public:
         }
 
         DataReference(const DataReference &other) = default;
+        DataReference(DataReference &&other) = default;
 
         // reference (not std::reference_wrapper) semantics
         DataReference &operator=(const DataReference &other)
+        {
+            *this = other.get();
+            return *this;
+        }
+
+        DataReference &operator=(DataReference &&other)
         {
             *this = other.get();
             return *this;
@@ -153,25 +160,13 @@ public:
 
         DataReference &operator=(const value_type &value)
         {
-            constexpr Qt::ItemDataRole dataRole = Qt::RangeModelAdapterRole;
+            assign(value);
+            return *this;
+        }
 
-            if (m_index.isValid()) {
-                auto model = const_cast<QAbstractItemModel *>(m_index.model());
-                [[maybe_unused]] bool couldWrite = false;
-                if constexpr (std::is_same_v<q20::remove_cvref_t<value_type>, QVariant>)
-                    couldWrite = model->setData(m_index, value, dataRole);
-                else
-                    couldWrite = model->setData(m_index, QVariant::fromValue(value), dataRole);
-#ifndef QT_NO_DEBUG
-                if (!couldWrite) {
-                    qWarning() << "Writing value of type" << QMetaType::fromType<value_type>().name()
-                               << "to role" << dataRole << "at index" << m_index
-                               << "of the model failed";
-                }
-            } else {
-                qCritical("Data reference for invalid index, can't write to model");
-#endif
-            }
+        DataReference &operator=(value_type &&value)
+        {
+            assign(std::move(value));
             return *this;
         }
 
@@ -195,6 +190,33 @@ public:
 
     private:
         QModelIndex m_index;
+
+        template <typename Value>
+        void assign(Value &&value)
+        {
+            constexpr Qt::ItemDataRole dataRole = Qt::RangeModelAdapterRole;
+
+            if (m_index.isValid()) {
+                auto model = const_cast<QAbstractItemModel *>(m_index.model());
+                [[maybe_unused]] bool couldWrite = false;
+                if constexpr (std::is_same_v<q20::remove_cvref_t<Value>, QVariant>) {
+                    couldWrite = model->setData(m_index, value, dataRole);
+                } else {
+                    couldWrite = model->setData(m_index,
+                                                QVariant::fromValue(std::forward<Value>(value)),
+                                                dataRole);
+                }
+#ifndef QT_NO_DEBUG
+                if (!couldWrite) {
+                    qWarning() << "Writing value of type"
+                               << QMetaType::fromType<q20::remove_cvref_t<Value>>().name()
+                               << "to role" << dataRole << "at index" << m_index << "failed";
+                }
+            } else {
+                qCritical("Data reference for invalid index, can't write to model");
+#endif
+            }
+        }
 
         friend inline bool comparesEqual(const DataReference &lhs, const DataReference &rhs)
         {
