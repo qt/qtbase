@@ -127,9 +127,6 @@ void tst_QAbstractSpinBox::task228728_cssselector()
 
 void tst_QAbstractSpinBox::inputMethodUpdate()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     QSpinBox box;
 
     box.setRange(0, 1);
