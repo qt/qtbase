@@ -25,12 +25,17 @@
     timer event there.
 
     For this mechanism to work, the application must run in an event
-    loop. You cat start an event loop with QApplication::exec(). When a
+    loop. You can start an event loop with QCoreApplication::exec(). For
+    \l {Qt Widgets} applications, see QApplication::exec(). When a
     timer fires, the application sends a QTimerEvent, and the flow of
     control leaves the event loop until the timer event is processed.
     This implies that a timer cannot fire while your application is
     busy doing something else. In other words: the accuracy of timers
-    depends on the granularity of your application.
+    depends on the granularity of your application. The accuracy of timers also
+    depends on the underlying operating system and hardware. Short intervals may
+    be rounded or delayed by the system scheduler, and all timer types may time
+    out later than requested if the system is busy. For more information about
+    timer resolution and Qt::TimerType, see the QTimer documentation.
 
     In multithreaded applications, you can use the timer mechanism in
     any thread that has an event loop. To start an event loop from a
@@ -53,10 +58,6 @@
     you can continue to use \l QTimer. Note that QChronoTimer exists mainly
     because QTimer's precision couldn't be changed to \c std::chrono::nanoseconds
     without breaking binary-compatibility.
-
-    The accuracy of the timers depends on the underlying operating system.
-    Windows 2000 has 15ms accuracy; other systems that we have tested can
-    handle 1ms intervals.
 
     QTimer provides regular timers that emit a signal when the timer
     fires, and inherits from QObject so that it fits well into the ownership
