@@ -35,7 +35,7 @@
 #include <qabstractscrollarea.h>
 #include "private/qabstractscrollarea_p.h"
 #if QT_CONFIG(tooltip)
-#include <qtooltip.h>
+#include "private/qtooltip_p.h"
 #endif
 #include <qshareddata.h>
 #if QT_CONFIG(toolbutton)
@@ -950,7 +950,7 @@ QRenderRule::QRenderRule(const QList<Declaration> &declarations, const QObject *
     hasFont = v.extractFont(&font, &adj);
 
 #if QT_CONFIG(tooltip)
-    if (object && qstrcmp(object->metaObject()->className(), "QTipLabel") == 0)
+    if (qobject_cast<const QTipLabel *>(object) != nullptr)
         palette = QToolTip::palette();
 #endif
 
@@ -1495,7 +1495,7 @@ bool QRenderRule::hasModification() const
 static inline QObject *parentObject(const QObject *obj)
 {
 #if QT_CONFIG(tooltip)
-    if (qobject_cast<const QLabel *>(obj) && qstrcmp(obj->metaObject()->className(), "QTipLabel") == 0) {
+    if (qobject_cast<const QTipLabel *>(obj) != nullptr) {
         QObject *p = qvariant_cast<QObject *>(obj->property("_q_stylesheet_parent"));
         if (p)
             return p;
@@ -1515,7 +1515,7 @@ public:
             return QStringList();
         const QMetaObject *metaObject = OBJECT_PTR(node)->metaObject();
 #if QT_CONFIG(tooltip)
-        if (qstrcmp(metaObject->className(), "QTipLabel") == 0)
+        if (metaObject == &QTipLabel::staticMetaObject)
             return QStringList("QToolTip"_L1);
 #endif
         QStringList result;
@@ -1581,7 +1581,7 @@ public:
             return false;
         const QMetaObject *metaObject = OBJECT_PTR(node)->metaObject();
 #if QT_CONFIG(tooltip)
-        if (qstrcmp(metaObject->className(), "QTipLabel") == 0)
+        if (metaObject == &QTipLabel::staticMetaObject)
             return nodeName == "QToolTip"_L1;
 #endif
         do {
@@ -1747,7 +1747,7 @@ int QStyleSheetStyle::nativeFrameWidth(const QWidget *w)
     }
 #endif
 
-    if (qstrcmp(w->metaObject()->className(), "QTipLabel") == 0)
+    if (w->metaObject() == &QTipLabel::staticMetaObject)
         return base->pixelMetric(QStyle::PM_ToolTipLabelFrameWidth, nullptr, w);
 
     return base->pixelMetric(QStyle::PM_DefaultFrameWidth, nullptr, w);

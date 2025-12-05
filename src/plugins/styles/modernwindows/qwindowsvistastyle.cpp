@@ -16,6 +16,9 @@
 #include <private/qapplication_p.h>
 #include <private/qsystemlibrary_p.h>
 #include <private/qwindowsthemecache_p.h>
+#if QT_CONFIG(tooltip)
+#include "private/qtooltip_p.h"
+#endif
 
 #include "qdrawutil.h" // for now
 #include <qbackingstore.h>
@@ -4676,7 +4679,7 @@ void QWindowsVistaStyle::polish(QWidget *widget)
                 widget->setPalette(pal);
         } else
 #endif // QT_CONFIG(commandlinkbutton)
-        if (widget->inherits("QTipLabel")) {
+        if (qobject_cast<const QTipLabel *>(widget)) {
             //note that since tooltips are not reused
             //we do not have to care about unpolishing
             widget->setContentsMargins(3, 0, 4, 0);

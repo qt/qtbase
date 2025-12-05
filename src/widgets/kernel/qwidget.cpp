@@ -32,7 +32,7 @@
 #include "private/qwidgetwindow_p.h"
 #include "qpainter.h"
 #if QT_CONFIG(tooltip)
-#include "qtooltip.h"
+#include "private/qtooltip_p.h"
 #endif
 #if QT_CONFIG(whatsthis)
 #include "qwhatsthis.h"
@@ -1435,7 +1435,9 @@ void QWidgetPrivate::createTLSysExtra()
         if (extra->topextra->opacity != 255 && q->isWindow())
             extra->topextra->window->setOpacity(qreal(extra->topextra->opacity) / qreal(255));
 
-        const bool isTipLabel = q->inherits("QTipLabel");
+#if QT_CONFIG(tooltip)
+        const bool isTipLabel = qobject_cast<const QTipLabel *>(q) != nullptr;
+#endif
         const bool isAlphaWidget = !isTipLabel && q->inherits("QAlphaWidget");
 #ifdef Q_OS_WIN
         // Pass on native parent handle for Widget embedded into Active X.
