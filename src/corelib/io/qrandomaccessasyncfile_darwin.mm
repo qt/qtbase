@@ -95,10 +95,8 @@ void QRandomAccessAsyncFilePrivate::close()
     // cancel all operations
     m_mutex.lock();
     m_opToCancel = kAllOperationIds;
-    m_numChannelsToClose = m_ioChannel ? 1 : 0;
     for (const auto &op : m_operations) {
         if (op.channel) {
-            ++m_numChannelsToClose;
             closeIoChannel(op.channel);
         }
     }
@@ -212,8 +210,8 @@ QRandomAccessAsyncFilePrivate::writeFrom(qint64 offset, QSpan<const QSpan<const 
 void QRandomAccessAsyncFilePrivate::notifyIfOperationsAreCompleted()
 {
     QMutexLocker locker(&m_mutex);
+    --m_numChannelsToClose;
     if (m_opToCancel == kAllOperationIds) {
-        --m_numChannelsToClose;
         if (m_numChannelsToClose == 0 && m_runningOps.isEmpty())
             m_cancellationCondition.wakeOne();
     }
@@ -222,11 +220,19 @@ void QRandomAccessAsyncFilePrivate::notifyIfOperationsAreCompleted()
 dispatch_io_t QRandomAccessAsyncFilePrivate::createMainChannel(int fd)
 {
     auto sharedThis = this;
-    return dispatch_io_create(DISPATCH_IO_RANDOM, fd,
-                              dispatch_get_global_queue(QOS_CLASS_USER_INTERACTIVE, 0),
-                              ^(int /*error*/) {
-                                  sharedThis->notifyIfOperationsAreCompleted();
-                              });
+    auto channel =
+            dispatch_io_create(DISPATCH_IO_RANDOM, fd,
+                               dispatch_get_global_queue(QOS_CLASS_USER_INTERACTIVE, 0),
+                               ^(int /*error*/) {
+                                   // main I/O channel uses kInvalidOperationId
+                                   // as its identifier
+                                   sharedThis->notifyIfOperationsAreCompleted();
+                               });
+    if (channel) {
+        QMutexLocker locker(&m_mutex);
+        ++m_numChannelsToClose;
+    }
+    return channel;
 }
 
 dispatch_io_t QRandomAccessAsyncFilePrivate::duplicateIoChannel(OperationId opId)
@@ -247,6 +253,7 @@ dispatch_io_t QRandomAccessAsyncFilePrivate::duplicateIoChannel(OperationId opId
     if (channel) {
         QMutexLocker locker(&m_mutex);
         m_runningOps.insert(opId);
+        ++m_numChannelsToClose;
     }
     return channel;
 }
@@ -593,6 +600,7 @@ void QRandomAccessAsyncFilePrivate::executeOpen(OperationInfo &opInfo)
                            // So we need to notify the condition variable in
                            // both cases.
                            Q_ASSERT(sharedThis->m_runningOps.isEmpty());
+                           Q_ASSERT(sharedThis->m_numChannelsToClose == 0);
                            sharedThis->m_cancellationCondition.wakeOne();
                        } else {
                            auto context = sharedThis->q_ptr;
