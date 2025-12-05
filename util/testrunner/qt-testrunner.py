@@ -12,6 +12,8 @@
 #
 # This script wraps the execution of a Qt test executable, for example
 # tst_whatever, and tries to iron out unpredictable test failures.
+# It also reruns a new or modified test function multiple times
+# to ensure its stability.
 # In particular:
 #
 # + Append output argument to it: "-o tst_whatever.xml,xml" and
@@ -79,7 +81,7 @@ import xml.etree.ElementTree as ET
 import logging as L
 
 from pprint import pprint
-from typing import NamedTuple, Tuple, List, Optional
+from typing import NamedTuple, Tuple, List, Set, Optional
 
 # Define a custom type for returning a fail incident
 class TestResult(NamedTuple):
@@ -156,6 +158,10 @@ Default flags: --max-repeats 5 --passes-needed 1
                         help="(TODO - not implemented yet) Do not run anything, just describe what would happen")
     parser.add_argument("--timeout", metavar="T",
                         help="Timeout for each test execution in seconds")
+    parser.add_argument("--modified-functions-file", dest="mod_file",
+                        help="File with modified test functions")
+    parser.add_argument("--repeat-modified", type=int, dest="repeat_modified", default=10,
+                        help="Number of repeats that a new / modified test function has to succeed in order to return a PASS")
     parser.add_argument("--no-extra-args", action="store_true",
                         help="Do not append any extra arguments to the test command line, like"
                         " -o log_file.xml -v2 -vs. This will disable some functionality like the"
@@ -233,6 +239,24 @@ Default flags: --max-repeats 5 --passes-needed 1
         L.info("Detected special test not able to generate XML log! Will not parse it and will not repeat individual testcases")
         args.no_extra_args = True
         args.max_repeats = 0
+
+    args.modified_functions = set()
+    if args.mod_file:
+        args.modified_functions = read_modified_functions_file(args.mod_file, args.test_basename)
+    else:
+        if "COIN_CTEST_RESULTSDIR" in os.environ:
+            # CI default: modified functions file is installed together with qt-testrunner.py.
+            mydir = os.path.dirname(os.path.abspath(__file__))
+            filename = os.path.join(mydir, "qt-modified-testfunctions.txt")
+            try:
+                args.modified_functions = read_modified_functions_file(filename, args.test_basename)
+            except OSError as e:
+                L.warning("Skipping reading %s (%s)",
+                          filename, e.strerror)
+
+    if args.modified_functions:
+        L.info("Modified functions found, they have to pass %d times:\n    %s",
+               args.repeat_modified, " ".join(args.modified_functions))
 
     return args
 
@@ -328,13 +352,22 @@ def unique_filename(test_basename: str) -> str:
     timestamp = round(time.time() * 1000)
     return f"{test_basename}-{timestamp}"
 
+def generate_qtest_output_args(pathname_stem : str) -> List[str]:
+    out_args = [
+        "-o", f"{pathname_stem}.xml,xml",
+        "-o", f"{pathname_stem}.junit.xml,junitxml",
+        "-o", f"{pathname_stem}.txt,txt",
+        "-o", "-,txt"]
+    return out_args
+
+
 # Returns tuple: (exit_code, xml_logfile)
 def run_full_test(test_basename, testargs: List[str], output_dir: str,
                   no_extra_args=False, dryrun=False,
                   timeout=None, specific_extra_args=[])  \
         -> Tuple[int, Optional[str]]:
 
-    results_files = []
+    xml_output_file = None
     output_testargs = []
 
     # Append arguments to write log to qtestlib XML file,
@@ -342,20 +375,13 @@ def run_full_test(test_basename, testargs: List[str], output_dir: str,
     if not no_extra_args:
         filename_base = unique_filename(test_basename)
         pathname_stem = os.path.join(output_dir, filename_base)
+        output_testargs = generate_qtest_output_args(pathname_stem)
         xml_output_file = f"{pathname_stem}.xml"
-
-        results_files.append(xml_output_file)
-        output_testargs.extend([
-            "-o", f"{xml_output_file},xml",
-            "-o", f"{pathname_stem}.junit.xml,junitxml",
-            "-o", f"{pathname_stem}.txt,txt",
-            "-o", "-,txt"
-            ])
 
     proc = run_test(testargs + specific_extra_args + output_testargs,
                     timeout=timeout)
 
-    return (proc.returncode, results_files[0] if results_files else None)
+    return (proc.returncode, xml_output_file)
 
 
 def rerun_failed_testcase(test_basename, testargs: List[str], output_dir: str,
@@ -373,19 +399,14 @@ def rerun_failed_testcase(test_basename, testargs: List[str], output_dir: str,
     if testcase.tag:
         failed_arg += ":" + testcase.tag
 
-
     n_passes = 0
     for i in range(max_repeats):
         # For the individual testcase re-runs, we log to file since Coin needs
         # to parse it. That is the reason we use unique filename every time.
         filename_base = unique_filename(test_basename)
         pathname_stem = os.path.join(output_dir, filename_base)
+        output_args = generate_qtest_output_args(pathname_stem)
 
-        output_args = [
-            "-o", f"{pathname_stem}.xml,xml",
-            "-o", f"{pathname_stem}.junit.xml,junitxml",
-            "-o", f"{pathname_stem}.txt,txt",
-            "-o", "-,txt"]
         L.info("Re-running testcase: %s", failed_arg)
         if i < max_repeats - 1:
             proc = run_test(testargs + output_args + [failed_arg],
@@ -406,7 +427,7 @@ def rerun_failed_testcase(test_basename, testargs: List[str], output_dir: str,
             raise ReRunCrash(f"CRASH! returncode:{proc.returncode}")
         if proc.returncode == 0 and len(what_failed.failed_tests) > 0:
             raise ReRunCrash("CRASH! returncode:0 but failures were found: "
-                             + what_failed.failed_tests)
+                             + str(what_failed.failed_tests))
         if proc.returncode == 0:
             n_passes += 1
         if n_passes == passes_needed:
@@ -420,6 +441,81 @@ def rerun_failed_testcase(test_basename, testargs: List[str], output_dir: str,
     L.info("Test has FAILed despite all repetitions! re-runs:%d failures:%d",
            max_repeats, n_failures)
     return False
+
+# Expecting a text file where each line is formatted as follows:
+# void tst_testClass::testFunction()
+# void tst_testClass::testFunction() const
+#
+# TODO: Inherited test functions are not handled. When a derived test class
+#   (e.g.  tst_QGuiApplication : public tst_QCoreApplication) inherits test
+#   methods from a base class, edits to the base class's .cpp are recorded
+#   under the base class name and will not match test_basename of the derived
+#   class here. To fix, the caller would need to supply not just the test's
+#   own basename but also the set of base-class basenames whose modified
+#   functions should be treated as belonging to this test, and this function
+#   would need to accept matches against any of those names.
+def read_modified_functions_file(filename: str, test_basename: str) -> Set[str]:
+    modified_functions : Set[str] = set()
+    if not os.path.isfile(filename):
+        L.info("Modified-functions file '%s' doesn't exist."
+               " Assuming no modified / new test functions to be handled.",
+               filename)
+        return modified_functions
+    with open(filename, "r") as file:
+        for line in file:
+            line = line.strip()
+            if not line or "::" not in line:
+                L.warning("While parsing modified functions from %s, skipping malformed line: %s",
+                          filename, line)
+                continue
+            try:
+                parts = line.split("::")
+                test_class = parts[0].removeprefix("void").strip()
+                test_function = parts[-1].removesuffix(" const").rstrip()
+                test_function = test_function.removesuffix("()").strip()
+                test_function = test_function.removesuffix("_data")
+                if test_class.lower() == test_basename.lower():
+                    modified_functions.add(test_function)
+            except (IndexError, ValueError):
+                L.warning("While parsing modified functions file, skipping malformed line: %s",
+                          line)
+
+    return modified_functions
+
+def rerun_modified_test_functions(args: argparse.Namespace) -> int:
+    if not args.modified_functions:
+        return 0
+    if args.no_extra_args:
+        L.info(f"Test executable '%s' contains modified-functions (%s) but it is not built on QTest."
+               " Can't rerun any specific function, finishing.",
+               args.test_basename, str(args.modified_functions))
+        return 0
+    ret = 0
+    for modified_function in args.modified_functions:
+        filename_base = unique_filename(args.test_basename)
+        pathname_stem = os.path.join(args.log_dir, filename_base)
+        output_args = generate_qtest_output_args(pathname_stem)
+        not_passes = 0
+        # We already had iteration 1, so here come 2 through repeat_modified:
+        for iteration in range(2, args.repeat_modified + 1):
+            L.info("Re-running modified test function %s (%d/%d times)",
+                    modified_function, iteration, args.repeat_modified)
+            proc = run_test(args.testargs + output_args + [modified_function],
+                            timeout=args.timeout)
+            if proc.returncode < 0 or proc.returncode >= 128:   # CRASH
+                # We don't raise ReRunCrash Exception here because the program
+                # is exiting right after anyway, and we don't want to affect this.
+                ret = 3
+                not_passes += 1
+            elif proc.returncode != 0:                          # FAIL
+                if ret != 3:       # preserve any previous crash exit code (3)
+                    ret = 2
+                not_passes += 1
+        if not_passes > 0:
+            L.warning("Modified test function '%s' failed %d/%d times!",
+                      modified_function, not_passes, args.repeat_modified)
+
+    return ret
 
 
 def main():
@@ -450,28 +546,42 @@ def main():
                     what_failed = parse_log(results_file)
 
             failed_functions = what_failed.failed_tests
+            if failed_functions and args.modified_functions:
+                failed_modified_functions = [tr.func for tr in failed_functions
+                                                     if tr.func in args.modified_functions]
+                if failed_modified_functions:
+                    L.info("New or modified functions failed early: %s",
+                           " ".join(failed_modified_functions))
+                    L.info("Exiting without re-running anything!")
+                    sys.exit(2)
+            if failed_functions and retcode == 0:
+                L.warning("The test executable returned success but the logfile"
+                         f" contains FAIL for function: {failed_functions[0].func}")
+                continue    # CRASH
 
             if retcode < 0 or retcode >= 128 or what_failed.qfatal_message:
                 L.warning("CRASH detected, re-running the whole executable")
-                continue
+                continue    # CRASH
+
+            ret_modified = rerun_modified_test_functions(args)
+            if ret_modified != 0:
+                sys.exit(ret_modified)
+
+            # All (if any) modified-function reruns have PASSed!
             if retcode == 0:
-                if failed_functions:
-                    L.warning("The test executable returned success but the logfile"
-                             f" contains FAIL for function: {failed_functions[0].func}")
-                    continue
-                sys.exit(0)    # PASS
+                sys.exit(0)
 
             if len(failed_functions) == 0:
                 if results_file:
                     L.warning("No failures listed in the XML test log!"
                               " Did the test CRASH right after all its testcases PASSed?")
-                continue
+                continue    # CRASH
 
             cant_rerun = [ f.func for f in failed_functions if f.func in NO_RERUN_FUNCTIONS ]
             if cant_rerun:
                 L.warning(f"Failure detected in the special test function '{cant_rerun[0]}'"
                           " which can not be re-run individually")
-                continue
+                continue    # CRASH
 
             assert len(failed_functions) > 0  and  retcode != 0
             break    # all is fine, goto re-running individual failed testcases
@@ -485,10 +595,11 @@ def main():
     if args.max_repeats == 0:
         sys.exit(2)          # Some tests failed but no re-runs were asked
 
-    L.info("Some tests failed, will re-run at most %d times.\n",
-           args.max_repeats)
+    L.info("%d test(s) failed, will re-run at most %d times.\n",
+           len(failed_functions), args.max_repeats)
 
     for test_result in failed_functions:
+        # Re-run a failed test function max_repeats times, in order to iron-out flakiness.
         try:
             ret = rerun_failed_testcase(args.test_basename, args.testargs, args.log_dir,
                                         test_result, args.max_repeats, args.passes_needed,
