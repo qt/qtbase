@@ -182,6 +182,9 @@
 {
     qCDebug(lcQpaDrawing) << "Backing properties changed for" << self;
 
+    if (!m_platformWindow)
+        return;
+
     [self propagateBackingProperties];
 
     // Ideally we would plumb this situation through QPA in a way that lets
