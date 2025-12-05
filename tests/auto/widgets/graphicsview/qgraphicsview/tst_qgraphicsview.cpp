@@ -4867,8 +4867,6 @@ void tst_QGraphicsView::moveItemWhileScrolling()
     int a = adjustForAntialiasing ? 2 : 1;
     expectedRegion += QRect(40, 50, 10, 10).adjusted(-a, -a, a, a);
     expectedRegion += QRect(40, 60, 10, 10).adjusted(-a, -a, a, a);
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
     COMPARE_REGIONS(view.lastPaintedRegion, expectedRegion);
 }
 
