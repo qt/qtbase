@@ -40,14 +40,20 @@ const Qt::InputMethodQueries supportedQueries3 = Qt::ImEnabled |
                                                 Qt::ImCursorRectangle;
 }
 
-void QWaylandTextInputv3::enableSurface(::wl_surface *surface)
+void QWaylandTextInputv3::enableSurface(::wl_surface *)
 {
-    qCDebug(qLcQpaWaylandTextInput) << Q_FUNC_INFO << surface;
+}
+
+void QWaylandTextInputv3::disableSurface(::wl_surface *)
+{
+}
+
+void QWaylandTextInputv3::zwp_text_input_v3_enter(struct ::wl_surface *surface)
+{
+    qCDebug(qLcQpaWaylandTextInput) << Q_FUNC_INFO << "Trying to enable surface" << surface << "with focusing surface" << m_surface;
 
     if (m_surface == surface)
         return; // already enabled
-    if (m_surface)
-        qCWarning(qLcQpaWaylandTextInput()) << Q_FUNC_INFO << "Try to enable surface" << surface << "with focusing surface" << m_surface;
 
     m_surface = surface;
     m_pendingPreeditString.clear();
@@ -66,31 +72,6 @@ void QWaylandTextInputv3::enableSurface(::wl_surface *surface)
     updateState(supportedQueries3, update_state_enter);
 }
 
-void QWaylandTextInputv3::disableSurface(::wl_surface *surface)
-{
-    qCDebug(qLcQpaWaylandTextInput) << Q_FUNC_INFO << surface;
-
-    if (!m_surface)
-        return; // already disabled
-    if (m_surface != surface)
-        qCWarning(qLcQpaWaylandTextInput()) << Q_FUNC_INFO << "Try to disable surface" << surface << "with focusing surface" << m_surface;
-
-    m_currentPreeditString.clear();
-    m_surface = nullptr;
-    disable();
-    commit();
-}
-
-void QWaylandTextInputv3::zwp_text_input_v3_enter(struct ::wl_surface *surface)
-{
-    qCDebug(qLcQpaWaylandTextInput) << Q_FUNC_INFO << m_surface << surface;
-
-    if (m_surface)
-        qCWarning(qLcQpaWaylandTextInput) << Q_FUNC_INFO << "Got enter event without leaving a surface " << m_surface;
-
-    enableSurface(surface);
-}
-
 void QWaylandTextInputv3::zwp_text_input_v3_leave(struct ::wl_surface *surface)
 {
     qCDebug(qLcQpaWaylandTextInput) << Q_FUNC_INFO;
@@ -101,7 +82,10 @@ void QWaylandTextInputv3::zwp_text_input_v3_leave(struct ::wl_surface *surface)
     if (m_surface != surface)
         qCWarning(qLcQpaWaylandTextInput()) << Q_FUNC_INFO << "Got leave event for surface" << surface << "with focusing surface" << m_surface;
 
-    disableSurface(surface);
+    m_currentPreeditString.clear();
+    m_surface = nullptr;
+    disable();
+    commit();
 }
 
 void QWaylandTextInputv3::zwp_text_input_v3_preedit_string(const QString &text, int32_t cursorBegin, int32_t cursorEnd)
