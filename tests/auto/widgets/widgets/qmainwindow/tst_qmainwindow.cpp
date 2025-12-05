@@ -1900,9 +1900,6 @@ class MainWindow : public QMainWindow {
 #ifndef QT_NO_CURSOR
 void tst_QMainWindow::setCursor()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     MainWindow mw;
     QCursor cur = Qt::WaitCursor;
     mw.setCursor(cur);
@@ -1995,9 +1992,6 @@ void tst_QMainWindow::fixedSizeCentralWidget()
 
 void tst_QMainWindow::dockWidgetSize()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     QMainWindow mainWindow;
     mainWindow.menuBar()->addMenu("menu");
 
@@ -2215,9 +2209,6 @@ void tst_QMainWindow::resizeDocks()
 #if QT_CONFIG(dockwidget) && QT_CONFIG(tabbar)
 void tst_QMainWindow::QTBUG52175_tabifiedDockWidgetActivated()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     QMainWindow w;
 
     QDockWidget *dwFirst = new QDockWidget(&w);
