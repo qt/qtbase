@@ -6,27 +6,21 @@
 
 #include <qapplication.h>
 #include <qevent.h>
-#include <qpointer.h>
 #include <qstyle.h>
 #include <qstyleoption.h>
 #include <qstylepainter.h>
 #if QT_CONFIG(effects)
 #include <private/qeffects_p.h>
 #endif
-#include <qtextdocument.h>
-#include <qdebug.h>
 #include <qpa/qplatformscreen.h>
 #include <qpa/qplatformcursor.h>
 #if QT_CONFIG(style_stylesheet)
 #include <private/qstylesheetstyle_p.h>
 #endif
 
-#include <qlabel.h>
 #include <QtWidgets/private/qlabel_p.h>
 #include <QtGui/private/qhighdpiscaling_p.h>
 #include <qtooltip.h>
-
-#include <QtCore/qbasictimer.h>
 #include <QtWidgets/private/qtooltip_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -188,10 +182,10 @@ void QTipLabel::resizeEvent(QResizeEvent *e)
 void QTipLabel::mouseMoveEvent(QMouseEvent *e)
 {
     if (!rect.isNull()) {
-        QPoint pos = e->globalPosition().toPoint();
+        QPointF pos = e->globalPosition();
         if (widget)
             pos = widget->mapFromGlobal(pos);
-        if (!rect.contains(pos))
+        if (!rect.contains(pos.toPoint()))
             hideTip();
     }
     QLabel::mouseMoveEvent(e);
