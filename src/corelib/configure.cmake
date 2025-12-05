@@ -620,6 +620,10 @@ int main(void)
     HRESULT hr = CreateIoRing(IORING_VERSION_3, flags, 1, 1, &ioRingHandle);
     if (hr == IORING_E_SUBMISSION_QUEUE_FULL) // not valid, but test that this #define exists
         return 0;
+    IORING_HANDLE_REF ref(HANDLE(nullptr));
+    IORING_BUFFER_REF bufRef(nullptr);
+    // The newest API addition that we require:
+    BuildIoRingWriteFile(ioRingHandle, ref, bufRef, -1, 0, FILE_WRITE_FLAGS_NONE, 0, IOSQE_FLAGS_NONE);
     /* END TEST: */
     return 0;
 }
@@ -806,7 +810,7 @@ qt_feature("winsdkicu" PRIVATE
     CONDITION TEST_winsdkicu
     DISABLE QT_FEATURE_icu
 )
-qt_feature("windows_ioring" PRIVATE
+qt_feature("windows-ioring" PRIVATE
     LABEL "Windows I/O Ring"
     AUTODETECT WIN32 AND CMAKE_HOST_SYSTEM_VERSION VERSION_GREATER_EQUAL 10.0.22000
     CONDITION TEST_windows_ioring
@@ -1298,7 +1302,7 @@ qt_configure_add_summary_entry(ARGS "glib")
 qt_configure_add_summary_entry(ARGS "icu")
 qt_configure_add_summary_entry(ARGS "jemalloc")
 qt_configure_add_summary_entry(ARGS "liburing")
-qt_configure_add_summary_entry(ARGS "windows_ioring")
+qt_configure_add_summary_entry(ARGS "windows-ioring")
 qt_configure_add_summary_entry(ARGS "timezone_tzdb")
 qt_configure_add_summary_entry(ARGS "system-libb2")
 qt_configure_add_summary_entry(ARGS "mimetype-database")

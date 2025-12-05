@@ -24,6 +24,59 @@ static_assert(sizeof(qsizetype) > sizeof(UINT32),
 
 using namespace Qt::StringLiterals;
 
+namespace QtPrivate {
+#define FOREACH_WIN_IORING_FUNCTION(Fn) \
+    Fn(BuildIoRingReadFile) \
+    Fn(BuildIoRingWriteFile) \
+    Fn(BuildIoRingFlushFile) \
+    Fn(BuildIoRingCancelRequest) \
+    Fn(QueryIoRingCapabilities) \
+    Fn(CreateIoRing) \
+    Fn(GetIoRingInfo) \
+    Fn(SubmitIoRing) \
+    Fn(CloseIoRing) \
+    Fn(PopIoRingCompletion) \
+    Fn(SetIoRingCompletionEvent) \
+    /**/
+struct IORingApiTable
+{
+#define DefineIORingFunction(Name) \
+    using Name##Fn = decltype(&::Name); \
+    Name##Fn Name = nullptr;
+
+    FOREACH_WIN_IORING_FUNCTION(DefineIORingFunction)
+
+#undef DefineIORingFunction
+};
+
+static const IORingApiTable *getApiTable()
+{
+    static const IORingApiTable apiTable = []() {
+        IORingApiTable apiTable;
+        const HMODULE kernel32 = GetModuleHandleW(L"kernel32.dll");
+        if (Q_UNLIKELY(!kernel32)) // how would this happen
+            return apiTable;
+
+#define ResolveFunction(Name) \
+    apiTable.Name = IORingApiTable::Name##Fn(QFunctionPointer(GetProcAddress(kernel32, #Name)));
+
+        FOREACH_WIN_IORING_FUNCTION(ResolveFunction)
+
+#undef ResolveFunction
+        return apiTable;
+    }();
+
+#define TEST_TABLE_OK(X) \
+    apiTable.X && /* chain */
+#define BOOL_CHAIN(...) (__VA_ARGS__ true)
+    const bool success = BOOL_CHAIN(FOREACH_WIN_IORING_FUNCTION(TEST_TABLE_OK));
+#undef BOOL_CHAIN
+#undef TEST_TABLE_OK
+
+    return success ? std::addressof(apiTable) : nullptr;
+}
+} // namespace QtPrivate
+
 static HRESULT buildReadOperation(HIORING ioRingHandle, qintptr fd, QSpan<std::byte> destination,
                                   quint64 offset, quintptr userData)
 {
@@ -32,8 +85,10 @@ static HRESULT buildReadOperation(HIORING ioRingHandle, qintptr fd, QSpan<std::b
     const IORING_BUFFER_REF bufferRef(destination.data());
     const auto maxSize = q26::saturate_cast<UINT32>(destination.size());
     Q_ASSERT(maxSize == destination.size());
-    return BuildIoRingReadFile(ioRingHandle, fileRef, bufferRef, maxSize, offset, userData,
-                               IOSQE_FLAGS_NONE);
+    const auto *apiTable = QtPrivate::getApiTable();
+    Q_ASSERT(apiTable); // If we got this far it needs to be here
+    return apiTable->BuildIoRingReadFile(ioRingHandle, fileRef, bufferRef, maxSize, offset,
+                                         userData, IOSQE_FLAGS_NONE);
 }
 
 static HRESULT buildWriteOperation(HIORING ioRingHandle, qintptr fd, QSpan<const std::byte> source,
@@ -44,16 +99,18 @@ static HRESULT buildWriteOperation(HIORING ioRingHandle, qintptr fd, QSpan<const
     const IORING_BUFFER_REF bufferRef(const_cast<std::byte *>(source.data()));
     const auto maxSize = q26::saturate_cast<UINT32>(source.size());
     Q_ASSERT(maxSize == source.size());
+    const auto *apiTable = QtPrivate::getApiTable();
+    Q_ASSERT(apiTable); // If we got this far it needs to be here
     // @todo: FILE_WRITE_FLAGS can be set to write-through, could be used for Unbuffered mode.
-    return BuildIoRingWriteFile(ioRingHandle, fileRef, bufferRef, maxSize, offset,
-                                FILE_WRITE_FLAGS_NONE, userData, IOSQE_FLAGS_NONE);
+    return apiTable->BuildIoRingWriteFile(ioRingHandle, fileRef, bufferRef, maxSize, offset,
+                                          FILE_WRITE_FLAGS_NONE, userData, IOSQE_FLAGS_NONE);
 }
 
 QIORing::~QIORing()
 {
     if (initialized) {
         CloseHandle(eventHandle);
-        CloseIoRing(ioRingHandle);
+        apiTable->CloseIoRing(ioRingHandle);
     }
 }
 
@@ -62,8 +119,13 @@ bool QIORing::initializeIORing()
     if (initialized)
         return true;
 
+    if (apiTable = QtPrivate::getApiTable(); !apiTable) {
+        qCWarning(lcQIORing, "Failed to retrieve API table");
+        return false;
+    }
+
     IORING_CAPABILITIES capabilities;
-    QueryIoRingCapabilities(&capabilities);
+    apiTable->QueryIoRingCapabilities(&capabilities);
     if (capabilities.MaxVersion < IORING_VERSION_3) // 3 adds write, flush and drain
         return false;
     if ((capabilities.FeatureFlags & IORING_FEATURE_SET_COMPLETION_EVENT) == 0)
@@ -75,7 +137,8 @@ bool QIORing::initializeIORing()
 
     IORING_CREATE_FLAGS flags;
     memset(&flags, 0, sizeof(flags));
-    HRESULT hr = CreateIoRing(IORING_VERSION_3, flags, sqEntries, cqEntries, &ioRingHandle);
+    HRESULT hr = apiTable->CreateIoRing(IORING_VERSION_3, flags, sqEntries, cqEntries,
+                                        &ioRingHandle);
     if (FAILED(hr)) {
         qErrnoWarning(hr, "failed to initialize QIORing");
         return false;
@@ -83,7 +146,7 @@ bool QIORing::initializeIORing()
     auto earlyExitCleanup = qScopeGuard([this]() {
         if (eventHandle != INVALID_HANDLE_VALUE)
             CloseHandle(eventHandle);
-        CloseIoRing(ioRingHandle);
+        apiTable->CloseIoRing(ioRingHandle);
     });
     eventHandle = CreateEvent(nullptr, TRUE, FALSE, nullptr);
     if (eventHandle == INVALID_HANDLE_VALUE) {
@@ -91,13 +154,13 @@ bool QIORing::initializeIORing()
         return false;
     }
     notifier.emplace(eventHandle);
-    hr = SetIoRingCompletionEvent(ioRingHandle, eventHandle);
+    hr = apiTable->SetIoRingCompletionEvent(ioRingHandle, eventHandle);
     if (FAILED(hr)) {
         qErrnoWarning(hr, "Failed to assign the event handle to QIORing");
         return false;
     }
     IORING_INFO info;
-    if (SUCCEEDED(GetIoRingInfo(ioRingHandle, &info))) {
+    if (SUCCEEDED(apiTable->GetIoRingInfo(ioRingHandle, &info))) {
         sqEntries = info.SubmissionQueueSize;
         cqEntries = info.CompletionQueueSize;
         qCDebug(lcQIORing) << "QIORing configured with capacity for" << sqEntries
@@ -274,7 +337,7 @@ void QIORing::completionReady()
 {
     ResetEvent(eventHandle);
     IORING_CQE entry;
-    while (PopIoRingCompletion(ioRingHandle, &entry) == S_OK) {
+    while (apiTable->PopIoRingCompletion(ioRingHandle, &entry) == S_OK) {
         // NOLINTNEXTLINE(performance-no-int-to-ptr)
         auto *request = reinterpret_cast<GenericRequestType *>(entry.UserData);
         if (!addrItMap.contains(request)) {
@@ -458,7 +521,8 @@ void QIORing::submitRequests()
     const bool shouldTryWait = std::exchange(queueWasFull, false);
     const auto submitToRing = [this, &shouldTryWait] {
         quint32 submittedEntries = 0;
-        HRESULT hr = SubmitIoRing(ioRingHandle, shouldTryWait ? 1 : 0, 1, &submittedEntries);
+        HRESULT hr = apiTable->SubmitIoRing(ioRingHandle, shouldTryWait ? 1 : 0, 1,
+                                            &submittedEntries);
         qCDebug(lcQIORing) << "Submitted" << submittedEntries << "requests";
         unstagedRequests -= submittedEntries;
         if (FAILED(hr)) {
@@ -558,9 +622,9 @@ auto QIORing::prepareRequest(GenericRequestType &request) -> RequestPrepResult
         auto *closeRequest = request.requestData<Operation::Close>();
         // NOLINTNEXTLINE(performance-no-int-to-ptr)
         const IORING_HANDLE_REF fileRef(HANDLE(closeRequest->fd));
-        hr = BuildIoRingFlushFile(ioRingHandle, fileRef, FILE_FLUSH_MIN_METADATA,
-                                  quintptr(std::addressof(request)),
-                                  IOSQE_FLAGS_DRAIN_PRECEDING_OPS);
+        hr = apiTable->BuildIoRingFlushFile(ioRingHandle, fileRef, FILE_FLUSH_MIN_METADATA,
+                                            quintptr(std::addressof(request)),
+                                            IOSQE_FLAGS_DRAIN_PRECEDING_OPS);
         break;
     }
     case Operation::Read: {
@@ -645,9 +709,9 @@ auto QIORing::prepareRequest(GenericRequestType &request) -> RequestPrepResult
         auto *flushRequest = request.requestData<Operation::Flush>();
         // NOLINTNEXTLINE(performance-no-int-to-ptr)
         const IORING_HANDLE_REF fileRef(HANDLE(flushRequest->fd));
-        hr = BuildIoRingFlushFile(ioRingHandle, fileRef, FILE_FLUSH_DEFAULT,
-                                  quintptr(std::addressof(request)),
-                                  IOSQE_FLAGS_DRAIN_PRECEDING_OPS);
+        hr = apiTable->BuildIoRingFlushFile(ioRingHandle, fileRef, FILE_FLUSH_DEFAULT,
+                                            quintptr(std::addressof(request)),
+                                            IOSQE_FLAGS_DRAIN_PRECEDING_OPS);
         break;
     }
     case QtPrivate::Operation::Stat: {
@@ -703,8 +767,8 @@ auto QIORing::prepareRequest(GenericRequestType &request) -> RequestPrepResult
         }
         // NOLINTNEXTLINE(performance-no-int-to-ptr)
         const IORING_HANDLE_REF fileRef((HANDLE(fd)));
-        hr = BuildIoRingCancelRequest(ioRingHandle, fileRef, quintptr(otherOperation),
-                                      quintptr(std::addressof(request)));
+        hr = apiTable->BuildIoRingCancelRequest(ioRingHandle, fileRef, quintptr(otherOperation),
+                                                quintptr(std::addressof(request)));
         break;
     }
     case Operation::NumOperations:

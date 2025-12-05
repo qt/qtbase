@@ -91,6 +91,10 @@ enum class Operation : quint8 {
 // clang-format on
 Q_ENUM_NS(Operation);
 #undef DEFINE_ENTRY
+
+#ifdef Q_OS_WIN
+struct IORingApiTable;
+#endif
 }; // namespace QtPrivate
 
 template <QtPrivate::Operation Op>
@@ -221,9 +225,11 @@ private:
     std::optional<QWinEventNotifier> notifier;
     HIORING ioRingHandle = nullptr;
     HANDLE eventHandle = INVALID_HANDLE_VALUE;
+    const QtPrivate::IORingApiTable *apiTable;
 
     bool initialized = false;
     bool queueWasFull = false;
+
     [[nodiscard]]
     RequestPrepResult prepareRequest(GenericRequestType &request);
     QIORing::ReadWriteStatus handleReadCompletion(
