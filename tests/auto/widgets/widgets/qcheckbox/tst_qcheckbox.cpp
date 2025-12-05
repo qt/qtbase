@@ -33,8 +33,6 @@ private slots:
 
 void tst_QCheckBox::initTestCase()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
 }
 
 // ***************************************************
