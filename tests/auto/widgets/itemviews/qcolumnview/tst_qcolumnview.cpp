@@ -321,9 +321,6 @@ void tst_QColumnView::scrollTo_data()
 
 void tst_QColumnView::scrollTo()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     QFETCH(bool, reverse);
     QFETCH(bool, giveFocus);
     QWidget topLevel;
