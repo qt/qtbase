@@ -1025,8 +1025,18 @@ void tst_QRangeModelAdapter::modelReset()
         QCOMPARE(adapter[0], 3);
 
         QCOMPARE(adapter, (std::vector<int>{3, 2, 1}));
+        modelAboutToBeResetSpy.clear();
+        modelResetSpy.clear();
 
         std::vector<int> modifiedData = adapter;
+
+        adapter.assign(modifiedData.begin(), modifiedData.end());
+        QCOMPARE(modelResetSpy.count(), 1);
+        adapter.setRange(std::vector<int>{3, 2, 1});
+        QCOMPARE(modelResetSpy.count(), 2);
+        std::vector<short> shorts = {10, 11, 12};
+        adapter.assign(shorts.begin(), shorts.end());
+        QCOMPARE(modelResetSpy.count(), 3);
     }
 
     {

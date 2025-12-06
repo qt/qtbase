@@ -329,16 +329,39 @@
 
 /*!
     \fn template <typename Range, typename Protocol, typename Model> template <typename NewRange, QRangeModelAdapter<Range, Protocol, Model>::if_assignable_range<NewRange>> void QRangeModelAdapter<Range, Protocol, Model>::setRange(NewRange &&newRange)
-    \fn template <typename Range, typename Protocol, typename Model> template <typename NewRange, QRangeModelAdapter<Range, Protocol, Model>::if_assignable_range<NewRange>> QRangeModelAdapter &QRangeModelAdapter<Range, Protocol, Model>::operator=(NewRange &&newRange)
+    \fn template <typename Range, typename Protocol, typename Model> template <typename NewRange, QRangeModelAdapter<Range, Protocol, Model>::if_assignable_range<NewRange>, QRangeModelAdapter<Range, Protocol, Model>::unless_adapter<NewRange>> QRangeModelAdapter &QRangeModelAdapter<Range, Protocol, Model>::operator=(NewRange &&newRange)
 
-    Assigns \a newRange to the stored range, possibly using move semantics.
+    Replaces the contents of the model with the rows in \a newRange, possibly
+    using move semantics.
+
     This function makes the model() emit the \l{QAbstractItemModel::}{modelAboutToBeReset()}
     and \l{QAbstractItemModel::}{modelReset()} signals.
 
     \constraints \c Range is mutable, and \a newRange is of a type that can be
-                 assigned to \c Range.
+                 assigned to \c Range, but not a QRangeModelAdapter.
 
-    \sa range(), at(), model()
+    \sa range(), at(), model(), assign()
+*/
+
+/*!
+    \fn template <typename Range, typename Protocol, typename Model> template <typename Row, QRangeModelAdapter<Range, Protocol, Model>::if_assignable_range<std::initializer_list<Row>>> void QRangeModelAdapter<Range, Protocol, Model>::setRange(std::initializer_list<Row> newRange)
+    \fn template <typename Range, typename Protocol, typename Model> template <typename Row, QRangeModelAdapter<Range, Protocol, Model>::if_assignable_range<std::initializer_list<Row>>> QRangeModelAdapter &QRangeModelAdapter<Range, Protocol, Model>::assign(std::initializer_list<Row> newRange)
+    \fn template <typename Range, typename Protocol, typename Model> template <typename Row, QRangeModelAdapter<Range, Protocol, Model>::if_assignable_range<std::initializer_list<Row>>> QRangeModelAdapter &QRangeModelAdapter<Range, Protocol, Model>::operator=(std::initializer_list<Row> newRange)
+
+    Replaces the contents of the model with the rows in \a newRange.
+
+    \constraints \c Range is mutable, and \a newRange can be assigned to \c Range.
+
+    \sa range(), at, model()
+*/
+
+/*!
+    \fn template <typename Range, typename Protocol, typename Model> template <typename InputIterator, typename Sentinel, typename I = Impl, QRangeModelAdapter<Range, Protocol, Model>::if_writable<I>> void QRangeModelAdapter<Range, Protocol, Model>::setRange(InputIterator first, Sentinel last)
+    \fn template <typename Range, typename Protocol, typename Model> template <typename InputIterator, typename Sentinel, typename I = Impl, QRangeModelAdapter<Range, Protocol, Model>::if_writable<I>> void QRangeModelAdapter<Range, Protocol, Model>::assign(InputIterator first, Sentinel last)
+
+    Replaces the contents of the models with the rows in the range [\a first, \a last).
+
+    \sa range(), at, model()
 */
 
 /*!

@@ -1042,58 +1042,53 @@ public:
     template <typename NewRange = range_type, if_assignable_range<NewRange> = true>
     void setRange(NewRange &&newRange)
     {
-        using namespace QRangeModelDetails;
-
-        auto *impl = storage.implementation();
-        const QModelIndex root = storage.root();
-        const qsizetype newLastRow = qsizetype(Impl::size(refTo(newRange))) - 1;
-        auto *oldRange = impl->childRange(root);
-        const qsizetype oldLastRow = qsizetype(Impl::size(oldRange)) - 1;
-
-        if (!root.isValid()) {
-            impl->beginResetModel();
-            impl->deleteOwnedRows();
-        } else if constexpr (is_tree<Impl>) {
-            if (oldLastRow > 0) {
-                impl->beginRemoveRows(root, 0, model()->rowCount(root) - 1);
-                impl->deleteRemovedRows(refTo(oldRange));
-                impl->endRemoveRows();
-            }
-            if (newLastRow > 0)
-                impl->beginInsertRows(root, 0, newLastRow);
-        } else {
-            Q_ASSERT_X(false, "QRangeModelAdapter::setRange",
-                       "Internal error: The root index in a table or list must be invalid.");
-        }
-        refTo(oldRange) = std::forward<NewRange>(newRange);
-        if (!root.isValid()) {
-            impl->endResetModel();
-        } else if constexpr (is_tree<Impl>) {
-            if (newLastRow > 0) {
-                Q_ASSERT(model()->hasChildren(root));
-                // if it was moved, then newRange is now likely to be empty. Get
-                // the inserted row.
-                impl->setParentRow(refTo(impl->childRange(storage.root())),
-                                   pointerTo(impl->rowData(root)));
-                impl->endInsertRows();
-            }
-        }
-        if constexpr (Impl::itemsAreQObjects) {
-            if (model()->autoConnectPolicy() == QRangeModel::AutoConnectPolicy::Full) {
-                const auto begin = QRangeModelDetails::begin(refTo(oldRange));
-                const auto end = QRangeModelDetails::end(refTo(oldRange));
-                int rowIndex = 0;
-                for (auto it = begin; it != end; ++it, ++rowIndex)
-                    impl->autoConnectPropertiesInRow(*it, rowIndex, root);
-            }
-        }
+        setRangeImpl(qsizetype(Impl::size(QRangeModelDetails::refTo(newRange))) - 1,
+            [&newRange](auto &oldRange) {
+            oldRange = std::forward<NewRange>(newRange);
+        });
     }
 
-    template <typename NewRange = range_type, if_assignable_range<NewRange> = true>
+    template <typename NewRange = range_type, if_assignable_range<NewRange> = true,
+              unless_adapter<NewRange> = true>
     QRangeModelAdapter &operator=(NewRange &&newRange)
     {
         setRange(std::forward<NewRange>(newRange));
         return *this;
+    }
+
+    template <typename Row, if_assignable_range<std::initializer_list<Row>> = true>
+    void setRange(std::initializer_list<Row> newRange)
+    {
+        setRangeImpl(qsizetype(newRange.size() - 1), [&newRange](auto &oldRange) {
+            oldRange = newRange;
+        });
+    }
+
+    template <typename Row, if_assignable_range<std::initializer_list<Row>> = true>
+    QRangeModelAdapter &operator=(std::initializer_list<Row> newRange)
+    {
+        setRange(newRange);
+        return *this;
+    }
+
+    template <typename Row, if_assignable_range<std::initializer_list<Row>> = true>
+    void assign(std::initializer_list<Row> newRange)
+    {
+        setRange(newRange);
+    }
+
+    template <typename InputIterator, typename Sentinel, typename I = Impl, if_writable<I> = true>
+    void setRange(InputIterator first, Sentinel last)
+    {
+        setRangeImpl(qsizetype(std::distance(first, last) - 1), [first, last](auto &oldRange) {
+            oldRange.assign(first, last);
+        });
+    }
+
+    template <typename InputIterator, typename Sentinel, typename I = Impl, if_writable<I> = true>
+    void assign(InputIterator first, Sentinel last)
+    {
+        setRange(first, last);
     }
 
     // iterator API
@@ -1523,6 +1518,65 @@ private:
     void emitDataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight)
     {
         Q_EMIT storage.implementation()->dataChanged(topLeft, bottomRight, {});
+    }
+
+    void beginSetRangeImpl(Impl *impl, range_type *oldRange, qsizetype newLastRow)
+    {
+        const QModelIndex root = storage.root();
+        const qsizetype oldLastRow = qsizetype(Impl::size(oldRange)) - 1;
+
+        if (!root.isValid()) {
+            impl->beginResetModel();
+            impl->deleteOwnedRows();
+        } else if constexpr (is_tree<Impl>) {
+            if (oldLastRow > 0) {
+                impl->beginRemoveRows(root, 0, model()->rowCount(root) - 1);
+                impl->deleteRemovedRows(QRangeModelDetails::refTo(oldRange));
+                impl->endRemoveRows();
+            }
+            if (newLastRow > 0)
+                impl->beginInsertRows(root, 0, newLastRow);
+        } else {
+            Q_ASSERT_X(false, "QRangeModelAdapter::setRange",
+                       "Internal error: The root index in a table or list must be invalid.");
+        }
+    }
+
+    void endSetRangeImpl(Impl *impl, qsizetype newLastRow)
+    {
+        const QModelIndex root = storage.root();
+        if (!root.isValid()) {
+            impl->endResetModel();
+        } else if constexpr (is_tree<Impl>) {
+            if (newLastRow > 0) {
+                Q_ASSERT(model()->hasChildren(root));
+                // if it was moved, then newRange is now likely to be empty. Get
+                // the inserted row.
+                impl->setParentRow(QRangeModelDetails::refTo(impl->childRange(root)),
+                                   QRangeModelDetails::pointerTo(impl->rowData(root)));
+                impl->endInsertRows();
+            }
+        }
+    }
+
+    template <typename Assigner>
+    void setRangeImpl(qsizetype newLastRow, Assigner &&assigner)
+    {
+        auto *impl = storage.implementation();
+        auto *oldRange = impl->childRange(storage.root());
+        beginSetRangeImpl(impl, oldRange, newLastRow);
+        assigner(QRangeModelDetails::refTo(oldRange));
+        endSetRangeImpl(impl, newLastRow);
+
+        if constexpr (Impl::itemsAreQObjects) {
+            if (model()->autoConnectPolicy() == QRangeModel::AutoConnectPolicy::Full) {
+                const auto begin = QRangeModelDetails::begin(QRangeModelDetails::refTo(oldRange));
+                const auto end = QRangeModelDetails::end(QRangeModelDetails::refTo(oldRange));
+                int rowIndex = 0;
+                for (auto it = begin; it != end; ++it, ++rowIndex)
+                    impl->autoConnectPropertiesInRow(*it, rowIndex, storage.root());
+            }
+        }
     }
 
     template <typename P>
