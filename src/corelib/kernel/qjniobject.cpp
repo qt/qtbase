@@ -27,7 +27,8 @@ using namespace Qt::StringLiterals;
     garbage-collected and providing access to most \c JNIEnv method calls
     (member, static) and fields (setter, getter).  It eliminates much
     boiler-plate that would normally be needed, with direct JNI access, for
-    every operation, including exception-handling.
+    every operation. Exceptions thrown by called Java methods are cleared by
+    default, but can since Qt 6.11 also be handled by the caller.
 
     \note This API has been designed and tested for use with Android.
     It has not been tested for other platforms.
@@ -129,12 +130,46 @@ using namespace Qt::StringLiterals;
     Note that while the first template parameter specifies the return type of the Java
     function, the method will still return a QJniObject.
 
-    \section1 Handling Java Exception
+    \section1 Handling Java Exceptions
 
     After calling Java functions that might throw exceptions, it is important
     to check for, handle and clear out any exception before continuing. All
-    QJniObject functions handle exceptions internally by reporting and clearing them,
-    saving client code the need to handle exceptions.
+    QJniObject functions can handle exceptions internally by reporting and
+    clearing them. This includes JNI exceptions, for instance when trying to
+    call a method that doesn't exist, or with bad parameters; and exceptions
+    are thrown by the method as a way of reporting errors or returning failure
+    information.
+
+    From Qt 6.11 on, client code can opt in to handle exceptions explicitly in
+    each call. To do so, use \c{std::expected} from C++ 23 as the return type,
+    with the value type as the expected, and \c{jthrowable} as the error type.
+    For instance, trying to read a setting value via the
+    \c{android.provider.Settings.Secure} type might throw an exception if the
+    setting does not exist.
+
+    \code
+    Q_DECLARE_JNI_CLASS(SettingsSecure, "android/provider/Settings$Secure")
+    using namespace QtJniTypes;
+
+    QString enabledInputMethods()
+    {
+        ContentResolver resolver;
+        SettingsSecure settings;
+
+        auto defaultInputMethods = settings.callMethod<std::expected<QString, jthrowable>>(
+            "getString", resolver, u"enabled_input_methods"_s
+        );
+        if (defaultInputMethods)
+            return defaultInputMethods.value();
+        QStringList stackTrace = QJniEnvironment::stackTrace(defaultInputMethods.error());
+    }
+    \endcode
+
+    You can use any other type that behaves like \c{std::expected}, so handling
+    exceptions explicitly is possible without using C++23. The only
+    requirements are that the type declares three nested types \c{value_type},
+    \c{error_type}, and \c{unexpected_type}, can be constructed from the value
+    type, and from its \c{unexpected_type} holding a \c{jthrowable}.
 
     \note The user must handle exceptions manually when doing JNI calls using \c JNIEnv directly.
     It is unsafe to make other JNI calls when exceptions are pending. For more information, see
@@ -921,7 +956,10 @@ QByteArray QJniObject::className() const
     jint size = myJavaString.callMethod<jint>("length");
     \endcode
 
-    The method signature is deduced at compile time from \c Ret and the types of \a args.
+    The method signature is deduced at compile time from \c Ret and the types
+    of \a args. \c Ret can be a \c{std::expected}-compatible type that returns
+    a value, or \l{Handling Java Exceptions}{any Java exception thrown} by the
+    called method.
 */
 
 /*!
@@ -952,7 +990,10 @@ QByteArray QJniObject::className() const
     jint value = QJniObject::callStaticMethod<jint>("MyClass", "staticMethod");
     \endcode
 
-    The method signature is deduced at compile time from \c Ret and the types of \a args.
+    The method signature is deduced at compile time from \c Ret and the types
+    of \a args. \c Ret can be a \c{std::expected}-compatible type that returns
+    a value, or \l{Handling Java Exceptions}{any Java exception thrown} by the
+    called method.
 */
 
 /*!
@@ -1009,7 +1050,10 @@ QByteArray QJniObject::className() const
     jdouble randNr = QJniObject::callStaticMethod<jdouble>(javaMathClass, "random");
     \endcode
 
-    The method signature is deduced at compile time from \c Ret and the types of \a args.
+    The method signature is deduced at compile time from \c Ret and the types
+    of \a args. \c Ret can be a \c{std::expected}-compatible type that returns
+    a value, or \l{Handling Java Exceptions}{any Java exception thrown} by the
+    called method.
 */
 
 /*!
@@ -1020,8 +1064,12 @@ QByteArray QJniObject::className() const
     \c Ret (unless \c Ret is \c void).  If \c Ret is a jobject type, then the returned value will
     be a QJniObject.
 
-    The method signature is deduced at compile time from \c Ret and the types of \a args.
-    \c Klass needs to be a C++ type with a registered type mapping to a Java type.
+    The method signature is deduced at compile time from \c Ret and the types
+    of \a args. \c Klass needs to be a C++ type with a registered type mapping
+    to a Java type. \c Ret can be a \c{std::expected}-compatible type that
+    returns a value, or \l{Handling Java Exceptions}{any Java exception thrown}
+    by the called method.
+
 */
 
 /*!
@@ -1150,7 +1198,10 @@ QJniObject QJniObject::callStaticObjectMethod(jclass clazz, jmethodID methodId, 
     QJniObject myJavaString2 = myJavaString1.callObjectMethod<jstring>("toString");
     \endcode
 
-    The method signature is deduced at compile time from \c Ret and the types of \a args.
+    The method signature is deduced at compile time from \c Ret and the types
+    of \a args. \c Ret can be a \c{std::expected}-compatible type that returns
+    a value, or \l{Handling Java Exceptions}{any Java exception thrown} by the
+    called method.
 */
 
 /*!
@@ -1164,7 +1215,10 @@ QJniObject QJniObject::callStaticObjectMethod(jclass clazz, jmethodID methodId, 
     QJniObject string = QJniObject::callStaticObjectMethod<jstring>("CustomClass", "getClassName");
     \endcode
 
-    The method signature is deduced at compile time from \c Ret and the types of \a args.
+    The method signature is deduced at compile time from \c Ret and the types
+    of \a args. \c Ret can be a \c{std::expected}-compatible type that returns
+    a value, or \l{Handling Java Exceptions}{any Java exception thrown} by the
+    called method.
 */
 
 /*!
