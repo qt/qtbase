@@ -2620,9 +2620,33 @@ using ObjectTree = std::vector<ObjectTreeItem>;
 class ObjectTreeItem : public ObjectRow
 {
 public:
-    ObjectTreeItem(Object *item = nullptr)
+    ObjectTreeItem() = default;
+
+    explicit ObjectTreeItem(Object *item)
     {
         m_objects[0] = item;
+    }
+
+    ObjectTreeItem(const ObjectTreeItem &other) = delete;
+    ObjectTreeItem &operator=(const ObjectTreeItem &other) = delete;
+    ObjectTreeItem(ObjectTreeItem &&other) noexcept
+    {
+        m_children = std::move(other.m_children);
+        m_objects = std::move(other.m_objects);
+        other.m_objects = {};
+    }
+
+    ObjectTreeItem &operator=(ObjectTreeItem &&other) noexcept
+    {
+        m_children = std::move(other.m_children);
+        m_objects = std::move(other.m_objects);
+        other.m_objects = {};
+        return *this;
+    }
+
+    ~ObjectTreeItem()
+    {
+       qDeleteAll(m_objects);
     }
 
     ObjectTreeItem *parentRow() const { return m_parentRow; }
@@ -2646,9 +2670,7 @@ namespace std {
 
 void tst_QRangeModelAdapter::insertAutoConnectObjects()
 {
-    ObjectTree emptyTree;
-
-    QRangeModelAdapter adapter(emptyTree);
+    QRangeModelAdapter adapter(ObjectTree{});
     QSignalSpy dataChangedSpy(adapter.model(), &QAbstractItemModel::dataChanged);
     adapter.model()->setAutoConnectPolicy(QRangeModel::AutoConnectPolicy::Full);
 
@@ -2662,11 +2684,11 @@ void tst_QRangeModelAdapter::insertAutoConnectObjects()
 
     Object *newChild = new Object;
     auto firstRow = adapter.begin();
-    (*firstRow).children() = ObjectTree{
-        ObjectTreeItem(newChild),
-        ObjectTreeItem(),
-        ObjectTreeItem()
-    };
+    {
+        ObjectTree children(3);
+        children[0] = ObjectTreeItem(newChild);
+        (*firstRow).children() = std::move(children);
+    }
     QCOMPARE(dataChangedSpy.count(), 0);
     QVERIFY(adapter.hasChildren(0));
     newChild->setString("0.0");
@@ -2684,12 +2706,14 @@ void tst_QRangeModelAdapter::insertAutoConnectObjects()
     newChild = new Object;
     Object *newGrandChild = new Object;
     ObjectTreeItem newBranch(newChild);
-    newBranch.childRows() = ObjectTree{
-        ObjectTreeItem(), // skip the first row to verify that we continue through nullptr
-        ObjectTreeItem(newGrandChild),
-        ObjectTreeItem()
-    };
-    adapter.at({0, 2}) = newBranch;
+    {
+        ObjectTree children(3);
+        // skip the first row to verify that we continue through nullptr
+        children[1] = ObjectTreeItem(newGrandChild);
+        newBranch.childRows() = std::move(children);
+    }
+    adapter.at({0, 2}) = std::move(newBranch);
+    QCOMPARE(adapter.rowCount({0, 2}), 3);
     QCOMPARE(dataChangedSpy.count(), 1);
     newChild->setNumber(1);
     QCOMPARE(dataChangedSpy.count(), 2);
