@@ -641,7 +641,7 @@ template <typename T, typename S>
 [[nodiscard]] constexpr bool fuzzyCompare(const T &lhs, const S &rhs) noexcept
 {
     static_assert(noexcept(qIsNull(lhs) && qIsNull(rhs) && qFuzzyIsNull(lhs - rhs) && qFuzzyCompare(lhs, rhs)),
-                  "The operations qIsNull(), qFuzzyIsNull() and qFuzzyCompare() must be noexcept"
+                  "The operations qIsNull(), qFuzzyIsNull() and qFuzzyCompare() must be noexcept "
                   "for both argument types!");
     return qIsNull(lhs) || qIsNull(rhs) ? qFuzzyIsNull(lhs - rhs) : qFuzzyCompare(lhs, rhs);
 }
