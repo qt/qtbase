@@ -1622,12 +1622,6 @@ void QTreeViewPrivate::calcLogicalIndices(
     const auto indicesCount = logicalIndices->size();
     itemPositions->resize(indicesCount);
     for (qsizetype currentLogicalSection = 0; currentLogicalSection < indicesCount; ++currentLogicalSection) {
-        // shortcut, no need to calc anything more
-        if (indicesCount == 1 || spanning) {
-            (*itemPositions)[currentLogicalSection] = QStyleOptionViewItem::OnlyOne;
-            continue;
-        }
-        const int headerSection = logicalIndices->at(currentLogicalSection);
         // determine the viewItemPosition depending on the position of column 0
         int nextLogicalSection = currentLogicalSection + 1 >= indicesCount
                                  ? logicalIndexAfterRight
@@ -1635,8 +1629,11 @@ void QTreeViewPrivate::calcLogicalIndices(
         int prevLogicalSection = currentLogicalSection - 1 < 0
                                  ? logicalIndexBeforeLeft
                                  : logicalIndices->at(currentLogicalSection - 1);
+        const int headerSection = logicalIndices->at(currentLogicalSection);
         QStyleOptionViewItem::ViewItemPosition pos;
-        if ((nextLogicalSection != 0 && prevLogicalSection == -1) || isTreePosition(headerSection))
+        if ((nextLogicalSection == -1 && prevLogicalSection == -1) || spanning) {
+           pos = QStyleOptionViewItem::OnlyOne;
+        } else if ((nextLogicalSection != 0 && prevLogicalSection == -1) || isTreePosition(headerSection))
             pos = QStyleOptionViewItem::Beginning;
         else if (nextLogicalSection == 0 || nextLogicalSection == -1)
             pos = QStyleOptionViewItem::End;

@@ -3518,12 +3518,33 @@ void tst_QTreeView::styleOptionViewItem()
     model.clear();
     model.appendRow({ new QStandardItem("Hidden"),
                       new QStandardItem("OnlyOne Last") });
+    view.setModel(&model);
     view.setColumnHidden(0, true);
     view.setColumnHidden(1, false);
-    view.setModel(&model);
 
     delegate.count = 0;
     QTRY_COMPARE_GE(delegate.count, 1);
+
+    // special case, four columns, only one is updated but
+    // calcLogicalIndices() returns the correct value
+    {
+        model.clear();
+        model.appendRow({ new QStandardItem("Hidden"),
+                          new QStandardItem("Beginning Last"),
+                          new QStandardItem("Middle Last"),
+                          new QStandardItem("End Last") });
+        view.setColumnHidden(0, true);
+        delegate.count = 0;
+        QTRY_COMPARE_GE(delegate.count, 4);
+
+        // do not rely on paintEvent() as this might redraw a bigger
+        // rect than we expect
+        QList<int> logicalIndices;
+        QList<QStyleOptionViewItem::ViewItemPosition> itemPositions;
+        view.d_func()->calcLogicalIndices(&logicalIndices, &itemPositions, 3, 3);
+        QCOMPARE(itemPositions.size(), 1);
+        QCOMPARE(itemPositions.at(0), QStyleOptionViewItem::End);
+    }
 }
 
 class task174627_TreeView : public QTreeView
