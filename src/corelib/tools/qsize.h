@@ -254,15 +254,11 @@ public:
     inline QSizeF &operator/=(qreal c);
 
 private:
-    QT_WARNING_PUSH
-    QT_WARNING_DISABLE_FLOAT_COMPARE
     friend constexpr bool qFuzzyCompare(const QSizeF &s1, const QSizeF &s2) noexcept
     {
-        // if one of the arguments is 0.0.
         return QtPrivate::fuzzyCompare(s1.wd, s2.wd)
             && QtPrivate::fuzzyCompare(s1.ht, s2.ht);
     }
-    QT_WARNING_POP
     friend constexpr bool qFuzzyIsNull(const QSizeF &size) noexcept
     { return qFuzzyIsNull(size.wd) && qFuzzyIsNull(size.ht); }
     friend constexpr bool comparesEqual(const QSizeF &lhs, const QSizeF &rhs) noexcept
