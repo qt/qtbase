@@ -19,13 +19,11 @@ class QT_TECH_PREVIEW_API QRangeModelAdapter
 
 #ifdef Q_QDOC
     using range_type = Range;
-    using const_row_reference = typename std::iterator_traits<Range>::const_reference;
-    using row_reference = typename std::iterator_traits<Range>::reference;
 #else
     using range_type = QRangeModelDetails::wrapped_t<Range>;
+#endif
     using const_row_reference = typename Impl::const_row_reference;
     using row_reference = typename Impl::row_reference;
-#endif
     using range_features = typename QRangeModelDetails::range_traits<range_type>;
     using row_type = std::remove_reference_t<row_reference>;
     using row_features = QRangeModelDetails::range_traits<typename Impl::wrapped_row_type>;
@@ -1262,12 +1260,12 @@ public:
     decltype(auto) operator[](int row) const { return at(row); }
 
     template <typename I = Impl, if_table<I> = true, if_writable<I> = true>
-    decltype(auto) at(int row)
+    auto at(int row)
     {
         return RowReference{index(row, 0), this};
     }
     template <typename I = Impl, if_table<I> = true, if_writable<I> = true>
-    decltype(auto) operator[](int row) { return at(row); }
+    auto operator[](int row) { return at(row); }
 
     // at/operator[int, int] for table: returns value at row/column
     template <typename I = Impl, unless_list<I> = true>

@@ -277,14 +277,6 @@
 */
 
 /*!
-    \typedef QRangeModelAdapter::const_row_reference
-*/
-
-/*!
-    \typedef QRangeModelAdapter::row_reference
-*/
-
-/*!
     \typedef QRangeModelAdapter::range_type
 */
 
@@ -531,8 +523,8 @@
 */
 
 /*!
-    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::unless_list<I>> QRangeModelAdapter<Range, Protocol, Model>::const_row_reference QRangeModelAdapter<Range, Protocol, Model>::at(int row) const
-    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::unless_list<I>> QRangeModelAdapter<Range, Protocol, Model>::const_row_reference QRangeModelAdapter<Range, Protocol, Model>::operator[](int row) const
+    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::unless_list<I>> decltype(auto) QRangeModelAdapter<Range, Protocol, Model>::at(int row) const
+    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::unless_list<I>> decltype(auto) QRangeModelAdapter<Range, Protocol, Model>::operator[](int row) const
 
     \return a constant reference to the row at \a row, as stored in \c Range.
 
@@ -540,8 +532,8 @@
 */
 
 /*!
-    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::if_table<I>, QRangeModelAdapter<Range, Protocol, Model>::if_writable<I>> QRangeModelAdapter<Range, Protocol, Model>::row_reference QRangeModelAdapter<Range, Protocol, Model>::at(int row)
-    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::if_table<I>, QRangeModelAdapter<Range, Protocol, Model>::if_writable<I>> QRangeModelAdapter<Range, Protocol, Model>::row_reference QRangeModelAdapter<Range, Protocol, Model>::operator[](int row)
+    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::if_table<I>, QRangeModelAdapter<Range, Protocol, Model>::if_writable<I>> auto QRangeModelAdapter<Range, Protocol, Model>::at(int row)
+    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::if_table<I>, QRangeModelAdapter<Range, Protocol, Model>::if_writable<I>> auto QRangeModelAdapter<Range, Protocol, Model>::operator[](int row)
 
     \return a mutable reference to the row at \a row, as stored in \c Range.
 
