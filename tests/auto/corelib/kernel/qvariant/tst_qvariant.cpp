@@ -6,6 +6,8 @@
 #include <qvariant.h>
 
 #include <QtCore/qttypetraits.h>
+#include <QtCore/qsequentialiterable.h>
+#include <QtCore/qassociativeiterable.h>
 
 // don't assume <type_traits>
 template <typename T, typename U>
@@ -5025,7 +5027,7 @@ void sortIterable(QMetaSequence::Iterable *iterable)
 }
 
 template<typename Container>
-static void testSequentialIteration()
+static void testMetaSequenceIteration()
 {
     QFETCH(bool, hasSizeAccessor);
     QFETCH(bool, hasIndexedAccessors);
@@ -5157,7 +5159,7 @@ static void testSequentialIteration()
 }
 
 template<typename Container>
-static void testAssociativeIteration()
+static void testMetaAssociationIteration()
 {
     using Key = typename Container::key_type;
     using Mapped = typename Container::mapped_type;
@@ -5228,12 +5230,268 @@ static void testAssociativeIteration()
     QCOMPARE(f, iter.constEnd());
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0) && QT_DEPRECATED_SINCE(6, 15)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
+
+template<typename Iterator>
+void sortIterable(QSequentialIterable *iterable)
+{
+    std::sort(Iterator(iterable->mutableBegin()), Iterator(iterable->mutableEnd()),
+              [&](const QVariant &a, const QVariant &b) {
+        return a.toInt() < b.toInt();
+    });
+}
+
+template<typename Container>
+static void testSequentialIteration()
+{
+    QFETCH(bool, hasSizeAccessor);
+    const auto ignoreSizeWarning = [hasSizeAccessor]() {
+        if (hasSizeAccessor)
+            return;
+        QTest::ignoreMessage(
+                    QtWarningMsg,
+                    "size() called on an iterable without native size accessor. This is slow");
+    };
+    QTest::failOnWarning();
+
+    int numSeen = 0;
+    Container sequence;
+    ContainerAPI<Container>::insert(sequence, 1);
+    ContainerAPI<Container>::insert(sequence, 2);
+    ContainerAPI<Container>::insert(sequence, 3);
+
+    QVariant listVariant = QVariant::fromValue(sequence);
+    QVERIFY(listVariant.canConvert<QVariantList>());
+    QVariantList varList = listVariant.value<QVariantList>();
+    ignoreSizeWarning();
+    QCOMPARE(varList.size(), (int)std::distance(sequence.begin(), sequence.end()));
+    QSequentialIterable listIter = listVariant.view<QSequentialIterable>();
+    ignoreSizeWarning();
+    QCOMPARE(varList.size(), listIter.size());
+
+    typename Container::iterator containerIter = sequence.begin();
+    const typename Container::iterator containerEnd = sequence.end();
+    ignoreSizeWarning();
+    for (int i = 0, end = listIter.size(); i < end; ++i, ++containerIter, ++numSeen)
+    {
+        QVERIFY(ContainerAPI<Container >::compare(listIter.at(i), *containerIter));
+        QVERIFY(ContainerAPI<Container >::compare(listIter.at(i), varList.at(i)));
+    }
+    QCOMPARE(numSeen, (int)std::distance(sequence.begin(), sequence.end()));
+    QCOMPARE(containerIter, containerEnd);
+
+    numSeen = 0;
+    containerIter = sequence.begin();
+    for (QVariant v : listIter) {
+        QVERIFY(ContainerAPI<Container>::compare(v, *containerIter));
+        QVERIFY(ContainerAPI<Container>::compare(v, varList.at(numSeen)));
+        ++containerIter;
+        ++numSeen;
+    }
+    QCOMPARE(numSeen, (int)std::distance(sequence.begin(), sequence.end()));
+
+    auto compareLists = [&]() {
+        int numSeen = 0;
+        auto varList = listVariant.value<QVariantList>();
+        auto varIter = varList.begin();
+        for (const QVariant &v : std::as_const(listIter)) {
+            QVERIFY(ContainerAPI<Container>::compare(v, *varIter));
+            ++varIter;
+            ++numSeen;
+        }
+        QCOMPARE(varIter, varList.end());
+        numSeen = 0;
+        auto constVarIter = varList.constBegin();
+        for (QVariant v : listIter) {
+            QVERIFY(ContainerAPI<Container>::compare(v, *constVarIter));
+            ++constVarIter;
+            ++numSeen;
+        }
+        QCOMPARE(numSeen, (int)std::distance(varList.begin(), varList.end()));
+    };
+    compareLists();
+
+    QVariant first = listIter.at(0);
+    QVariant second = listIter.at(1);
+    QVariant third = listIter.at(2);
+    compareLists();
+    listIter.addValue(third);
+    compareLists();
+    listIter.addValue(second);
+    compareLists();
+    listIter.addValue(first);
+    compareLists();
+
+    QCOMPARE(listIter.size(), 6);
+
+    if (listIter.canRandomAccessIterate())
+        sortIterable<QSequentialIterable::RandomAccessIterator>(&listIter);
+    else if (listIter.canReverseIterate())
+        sortIterable<QSequentialIterable::BidirectionalIterator>(&listIter);
+    else if (listIter.canForwardIterate())
+        return; // std::sort cannot sort with only forward iterators.
+    else
+        QFAIL("The container has no meaningful iterators");
+
+    compareLists();
+    ignoreSizeWarning();
+    QCOMPARE(listIter.size(), 6);
+    QCOMPARE(listIter.at(0), first);
+    QCOMPARE(listIter.at(1), first);
+    QCOMPARE(listIter.at(2), second);
+    QCOMPARE(listIter.at(3), second);
+    QCOMPARE(listIter.at(4), third);
+    QCOMPARE(listIter.at(5), third);
+
+    if (listIter.metaContainer().canRemoveValue()) {
+        listIter.removeValue();
+        compareLists();
+        ignoreSizeWarning();
+        QCOMPARE(listIter.size(), 5);
+        QCOMPARE(listIter.at(0), first);
+        QCOMPARE(listIter.at(1), first);
+        QCOMPARE(listIter.at(2), second);
+        QCOMPARE(listIter.at(3), second);
+        QCOMPARE(listIter.at(4), third);
+    } else {
+        // QString and QByteArray have no pop_back or pop_front and it's unclear what other
+        // method we should use to remove an item.
+        QVERIFY((std::is_same_v<Container, QString> || std::is_same_v<Container, QByteArray>));
+    }
+
+    auto i = listIter.mutableBegin();
+    QVERIFY(i != listIter.mutableEnd());
+
+    *i = QStringLiteral("17");
+    if (listIter.metaContainer().valueMetaType() == QMetaType::fromType<int>())
+        QCOMPARE(listIter.at(0).toInt(), 17);
+    else if (listIter.metaContainer().valueMetaType() == QMetaType::fromType<bool>())
+        QCOMPARE(listIter.at(0).toBool(), false);
+
+    *i = QStringLiteral("true");
+    if (listIter.metaContainer().valueMetaType() == QMetaType::fromType<int>())
+        QCOMPARE(listIter.at(0).toInt(), 0);
+    else if (listIter.metaContainer().valueMetaType() == QMetaType::fromType<bool>())
+        QCOMPARE(listIter.at(0).toBool(), true);
+}
+
+template<typename Container>
+static void testAssociativeIteration()
+{
+    using Key = typename Container::key_type;
+    using Mapped = typename Container::mapped_type;
+
+    int numSeen = 0;
+    Container mapping;
+    mapping[5] = true;
+    mapping[15] = false;
+
+    QVariant mappingVariant = QVariant::fromValue(mapping);
+    QVariantMap varMap = mappingVariant.value<QVariantMap>();
+    QVariantMap varHash = mappingVariant.value<QVariantMap>();
+    QAssociativeIterable mappingIter = mappingVariant.view<QAssociativeIterable>();
+
+    typename Container::const_iterator containerIter = mapping.begin();
+    const typename Container::const_iterator containerEnd = mapping.end();
+    for ( ;containerIter != containerEnd; ++containerIter, ++numSeen)
+    {
+        Mapped expected = KeyGetter<Container>::value(containerIter);
+        Key key = KeyGetter<Container>::get(containerIter);
+        Mapped actual = qvariant_cast<Mapped>(mappingIter.value(key));
+        QCOMPARE(qvariant_cast<Mapped>(varMap.value(QString::number(key))), expected);
+        QCOMPARE(qvariant_cast<Mapped>(varHash.value(QString::number(key))), expected);
+        QCOMPARE(actual, expected);
+        const QAssociativeIterable::const_iterator it = mappingIter.find(key);
+        QVERIFY(it != mappingIter.end());
+        QCOMPARE(it.value().value<Mapped>(), expected);
+    }
+    QCOMPARE(numSeen, (int)std::distance(mapping.begin(), mapping.end()));
+    QCOMPARE(containerIter, containerEnd);
+    QVERIFY(mappingIter.find(10) == mappingIter.end());
+
+    auto i = mappingIter.mutableFind(QStringLiteral("nonono"));
+    QCOMPARE(i, mappingIter.mutableEnd());
+    i = mappingIter.mutableFind(QStringLiteral("5"));
+    QVERIFY(i != mappingIter.mutableEnd());
+
+    *i = QStringLiteral("17");
+
+    if (mappingIter.metaContainer().mappedMetaType() == QMetaType::fromType<int>())
+        QCOMPARE(mappingIter.value(5).toInt(), 17);
+    else if (mappingIter.metaContainer().mappedMetaType() == QMetaType::fromType<bool>())
+        QCOMPARE(mappingIter.value(5).toBool(), true);
+
+    *i = QStringLiteral("true");
+    if (mappingIter.metaContainer().mappedMetaType() == QMetaType::fromType<int>())
+        QCOMPARE(mappingIter.value(5).toInt(), 0);
+    else if (mappingIter.metaContainer().mappedMetaType() == QMetaType::fromType<bool>())
+        QCOMPARE(mappingIter.value(5).toBool(), true);
+
+    QVERIFY(mappingIter.containsKey("5"));
+    mappingIter.removeKey(QStringLiteral("5"));
+    QCOMPARE(mappingIter.find(5), mappingIter.end());
+
+    mappingIter.setValue(5, 44);
+    if (mappingIter.metaContainer().mappedMetaType() == QMetaType::fromType<int>())
+        QCOMPARE(mappingIter.value(5).toInt(), 44);
+    else if (mappingIter.metaContainer().mappedMetaType() == QMetaType::fromType<bool>())
+        QCOMPARE(mappingIter.value(5).toBool(), true);
+
+    // Test that find() does not coerce
+    auto container = Container();
+    container[0] = true;
+
+    QVariant containerVariant = QVariant::fromValue(container);
+    QAssociativeIterable iter = containerVariant.value<QAssociativeIterable>();
+    auto f = iter.constFind(QStringLiteral("anything"));
+    QCOMPARE(f, iter.constEnd());
+}
+
+template<typename T>
+static void addRowSequential(const char *name, bool hasSizeAccessor, bool hasIndexedAccessor)
+{
+    QTest::newRow(name)
+            << &testMetaSequenceIteration<T> << hasSizeAccessor << hasIndexedAccessor;
+    QTest::addRow("%s_old", name)
+            << &testSequentialIteration<T> << hasSizeAccessor << hasIndexedAccessor;
+}
+
+template<typename C>
+static void addRowAssociative(const char *name)
+{
+    QTest::newRow(name)
+            << &testMetaAssociationIteration<C>;
+    QTest::addRow("%s_old", name)
+            << &testAssociativeIteration<C>;
+}
+
+QT_WARNING_POP
+#else
+
+template<typename T>
+static void addRowSequential(const char *name, bool hasSizeAccessor, bool hasIndexedAccessor)
+{
+    QTest::newRow(name)
+            << &testMetaSequenceIteration<T> << hasSizeAccessor << hasIndexedAccessor;
+}
+
+template<typename C>
+static void addRowAssociative(const char *name)
+{
+    QTest::newRow(name)
+            << &testMetaAssociationIteration<C>;
+}
+
+#endif // QT_VERSION < QT_VERSION_CHECK(7, 0, 0) && QT_DEPRECATED_SINCE(6, 15)
+
 void tst_QVariant::iterateSequentialContainerElements_data()
 {
     QTest::addColumn<QFunctionPointer>("testFunction");
     QTest::addColumn<bool>("hasSizeAccessor");
     QTest::addColumn<bool>("hasIndexedAccessors");
-#define ADD(T)  QTest::newRow(#T) << &testSequentialIteration<T> << true << true
+#define ADD(T) addRowSequential<T>(#T, true, true)
     ADD(QQueue<int>);
     ADD(QQueue<QVariant>);
     ADD(QQueue<QString>);
@@ -5253,13 +5511,13 @@ void tst_QVariant::iterateSequentialContainerElements_data()
     ADD(QByteArray);
 
 #undef ADD
-#define ADD(T)  QTest::newRow(#T) << &testSequentialIteration<T> << true << false
+#define ADD(T) addRowSequential<T>(#T, true, false)
     ADD(std::list<int>);
     ADD(std::list<QVariant>);
     ADD(std::list<QString>);
 
 #undef ADD
-#define ADD(T)  QTest::newRow(#T) << &testSequentialIteration<T> << false << false
+#define ADD(T) addRowSequential<T>(#T, false, false)
 #ifdef TEST_FORWARD_LIST
     ADD(std::forward_list<int>);
     ADD(std::forward_list<QVariant>);
@@ -5271,7 +5529,7 @@ void tst_QVariant::iterateSequentialContainerElements_data()
 void tst_QVariant::iterateAssociativeContainerElements_data()
 {
     QTest::addColumn<QFunctionPointer>("testFunction");
-#define ADD(C, K, V)  QTest::newRow(#C #K #V) << &testAssociativeIteration<C<K, V>>;
+#define ADD(C, K, V) addRowAssociative<C<K, V>>(#C "<" #K "," #V ">");
     ADD(QHash, int, bool);
     ADD(QHash, int, int);
     ADD(QMap, int, bool);
