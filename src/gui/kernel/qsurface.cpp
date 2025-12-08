@@ -68,7 +68,10 @@ QT_IMPL_METATYPE_EXTERN_TAGGED(QSurface*, QSurface_ptr)
 
 bool QSurface::supportsOpenGL() const
 {
-    return surfaceType() == OpenGLSurface;
+    static bool openGLOnRasterSurfaceSupported =
+        QGuiApplicationPrivate::instance()->platformIntegration()->hasCapability(QPlatformIntegration::OpenGLOnRasterSurface);
+    return surfaceType() == OpenGLSurface
+           || (surfaceType() == RasterSurface && openGLOnRasterSurfaceSupported);
 }
 
 /*!
