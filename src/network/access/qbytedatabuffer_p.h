@@ -280,6 +280,8 @@ public:
         }
         return false;
     }
+
+    const QByteArray &last() const { return buffers.last(); }
 };
 
 QT_END_NAMESPACE

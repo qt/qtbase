@@ -697,8 +697,14 @@ void QHttp2Stream::handleDATA(const Frame &inboundFrame)
                             inboundFrame.dataSize());
         if (endStream)
             transitionState(StateTransition::CloseRemote);
-        emit dataReceived(fragment, endStream);
-        m_downloadBuffer.append(std::move(fragment));
+        const auto shouldBuffer = !fragment.isEmpty();
+        if (shouldBuffer) {
+            // Only non-empty fragments get appended!
+            m_downloadBuffer.append(std::move(fragment));
+            emit dataReceived(m_downloadBuffer.last(), endStream);
+        } else {
+            emit dataReceived(fragment, endStream);
+        }
     }
 
     if (!endStream && m_recvWindow < connection->streamInitialReceiveWindowSize / 2) {
