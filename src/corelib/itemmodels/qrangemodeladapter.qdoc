@@ -597,6 +597,16 @@
 */
 
 /*!
+    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::if_tree<I>> decltype(auto) QRangeModelAdapter<Range, Protocol, Model>::at(QSpan<const int> path) const
+    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::if_tree<I>> decltype(auto) QRangeModelAdapter<Range, Protocol, Model>::operator[](QSpan<const int> path) const
+
+    \return a constant reference to the row specified by \a path, as stored in
+    \c Range.
+
+    \constraints \c Range is a tree.
+*/
+
+/*!
     \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::if_tree<I>, QRangeModelAdapter<Range, Protocol, Model>::if_writable<I>> auto QRangeModelAdapter<Range, Protocol, Model>::at(QSpan<const int> path)
     \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::if_tree<I>, QRangeModelAdapter<Range, Protocol, Model>::if_writable<I>> auto QRangeModelAdapter<Range, Protocol, Model>::operator[](QSpan<const int> path)
 
