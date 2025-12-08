@@ -348,7 +348,9 @@ static void setCurrentThreadName(QThread *thr, String &objectName)
         prctl(PR_SET_NAME, name);
 #  elif defined(Q_OS_DARWIN)
         pthread_setname_np(name);
-#  elif defined(Q_OS_QNX)
+#  elif defined(Q_OS_OPENBSD)
+        pthread_set_name_np(pthread_self(), name);
+#  elif defined(Q_OS_QNX) || defined(Q_OS_BSD4)
         pthread_setname_np(pthread_self(), name);
 #  else
         Q_UNUSED(name)
