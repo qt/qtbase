@@ -3241,14 +3241,14 @@ QPainterPath QPainterPath::trimmed(qreal fromFraction, qreal toFraction, qreal o
 
     qreal f1 = qBound(qreal(0), fromFraction, qreal(1));
     qreal f2 = qBound(qreal(0), toFraction, qreal(1));
+    if (qFuzzyIsNull(f1 - f2)) // ie. f1 == f2 (even if one of them is 0.0)
+        return QPainterPath();
     if (f1 > f2)
         qSwap(f1, f2);
     if (qFuzzyCompare(f2 - f1, qreal(1)))  // Shortcut for no trimming
         return *this;
 
     QPainterPath res;
-    if (qFuzzyCompare(f1, f2))
-        return res;
     res.setFillRule(fillRule());
 
     if (offset) {
@@ -3278,9 +3278,9 @@ QPainterPath QPainterPath::trimmed(qreal fromFraction, qreal toFraction, qreal o
     const qreal l1 = f1 * totalLength;
     const qreal l2 = f2 * totalLength;
     const int e1 = d->elementAtLength(l1);
-    const bool mustTrimE1 = !qFuzzyCompare(d->m_runLengths.at(e1), l1);
+    const bool mustTrimE1 = !QtPrivate::fuzzyCompare(d->m_runLengths.at(e1), l1);
     const int e2 = d->elementAtLength(l2);
-    const bool mustTrimE2 = !qFuzzyCompare(d->m_runLengths.at(e2), l2);
+    const bool mustTrimE2 = !QtPrivate::fuzzyCompare(d->m_runLengths.at(e2), l2);
 
     //qDebug() << "Trim [" << f1 << f2 << "] e1:" << e1 << mustTrimE1 << "e2:" << e2 << mustTrimE2 << "wrapping:" << wrapping;
     if (e1 == e2 && !wrapping && mustTrimE1 && mustTrimE2) {
