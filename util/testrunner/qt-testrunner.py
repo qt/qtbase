@@ -91,6 +91,8 @@ class WhatFailed(NamedTuple):
 
 class ReRunCrash(Exception):
     pass
+class BadXMLCrash(Exception):
+    pass
 
 
 # In the last test re-run, we add special verbosity arguments, in an attempt
@@ -254,7 +256,7 @@ def parse_log(results_file) -> WhatFailed:
 
     root = tree.getroot()
     if root.tag != "TestCase":
-        raise AssertionError(
+        raise BadXMLCrash(
             f"The XML test log must have <TestCase> as root tag, but has: <{root.tag}>")
 
     failures = []
@@ -467,6 +469,8 @@ def main():
             assert len(failed_functions) > 0  and  retcode != 0
             break    # all is fine, goto re-running individual failed testcases
 
+        except AssertionError:
+            raise
         except Exception as e:
             L.error("exception:%s %s", type(e).__name__, e)
             L.error("The test executable probably crashed, see above for details")
@@ -482,6 +486,8 @@ def main():
             ret = rerun_failed_testcase(args.test_basename, args.testargs, args.log_dir,
                                         test_result, args.max_repeats, args.passes_needed,
                                         dryrun=args.dry_run, timeout=args.timeout)
+        except AssertionError:
+            raise
         except Exception as e:
             L.error("exception:%s", e)
             L.error("The testcase re-run probably crashed, giving up")
