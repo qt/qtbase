@@ -184,13 +184,15 @@ public:
                 return;
             }
 
-            // ### Qt7: Drop this code. We shouldn't second-guess the underlying container
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+            // We shouldn't second-guess the underlying container.
             QtPrivate::warnSynthesizedAccess(
                     "at() called on an iterable without native indexed accessors. This is slow");
             void *it = meta.constBegin(m_iterable.constPointer());
             meta.advanceConstIterator(it, idx);
             meta.valueAtConstIterator(it, dataPtr);
             meta.destroyConstIterator(it);
+#endif
         });
     }
 
@@ -204,13 +206,15 @@ public:
             return;
         }
 
-        // ### Qt7: Drop this code. We shouldn't second-guess the underlying container
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+        // We shouldn't second-guess the underlying container
         QtPrivate::warnSynthesizedAccess(
                 "set() called on an iterable without native indexed accessors. This is slow");
         void *it = meta.begin(m_iterable.mutablePointer());
         meta.advanceIterator(it, idx);
         meta.setValueAtIterator(it, dataPtr);
         meta.destroyIterator(it);
+#endif
     }
 
     void append(const QVariant &value)

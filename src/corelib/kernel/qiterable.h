@@ -502,7 +502,10 @@ public:
         if (m_metaContainer.hasSize())
             return m_metaContainer.size(container);
 
-        // ### Qt7: Return -1 here. We shouldn't second-guess the underlying container
+#if QT_VERSION >= QT_VERSION_CHECK(7, 0, 0)
+        // We shouldn't second-guess the underlying container, so we're not synthesizing a size.
+        return -1;
+#else
         QtPrivate::warnSynthesizedAccess(
                 "size() called on an iterable without native size accessor. This is slow");
 
@@ -515,6 +518,7 @@ public:
         m_metaContainer.destroyConstIterator(begin);
         m_metaContainer.destroyConstIterator(end);
         return size;
+#endif
     }
 
     void clear()
