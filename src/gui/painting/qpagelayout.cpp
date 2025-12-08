@@ -606,7 +606,7 @@ bool QPageLayout::setLeftMargin(qreal leftMargin, OutOfBoundsPolicy outOfBoundsP
     if (d->m_mode == StandardMode && outOfBoundsPolicy == OutOfBoundsPolicy::Clamp)
         leftMargin = qBound(d->m_minMargins.left(), leftMargin, d->m_maxMargins.left());
 
-    if (qFuzzyCompare(leftMargin, d->m_margins.left()))
+    if (QtPrivate::fuzzyCompare(leftMargin, d->m_margins.left()))
         return true;
 
     if (d->m_mode == FullPageMode
@@ -637,7 +637,7 @@ bool QPageLayout::setRightMargin(qreal rightMargin, OutOfBoundsPolicy outOfBound
     if (d->m_mode == StandardMode && outOfBoundsPolicy == OutOfBoundsPolicy::Clamp)
         rightMargin = qBound(d->m_minMargins.right(), rightMargin, d->m_maxMargins.right());
 
-    if (qFuzzyCompare(rightMargin, d->m_margins.right()))
+    if (QtPrivate::fuzzyCompare(rightMargin, d->m_margins.right()))
         return true;
 
     if (d->m_mode == FullPageMode
@@ -668,7 +668,7 @@ bool QPageLayout::setTopMargin(qreal topMargin, OutOfBoundsPolicy outOfBoundsPol
     if (d->m_mode == StandardMode && outOfBoundsPolicy == OutOfBoundsPolicy::Clamp)
         topMargin = qBound(d->m_minMargins.top(), topMargin, d->m_maxMargins.top());
 
-    if (qFuzzyCompare(topMargin, d->m_margins.top()))
+    if (QtPrivate::fuzzyCompare(topMargin, d->m_margins.top()))
         return true;
 
     if (d->m_mode == FullPageMode
@@ -699,7 +699,7 @@ bool QPageLayout::setBottomMargin(qreal bottomMargin, OutOfBoundsPolicy outOfBou
     if (d->m_mode == StandardMode && outOfBoundsPolicy == OutOfBoundsPolicy::Clamp)
         bottomMargin = qBound(d->m_minMargins.bottom(), bottomMargin, d->m_maxMargins.bottom());
 
-    if (qFuzzyCompare(bottomMargin, d->m_margins.bottom()))
+    if (QtPrivate::fuzzyCompare(bottomMargin, d->m_margins.bottom()))
         return true;
 
     if (d->m_mode == FullPageMode
