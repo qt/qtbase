@@ -5,11 +5,6 @@
 #include "qnetworkaccesscache_p.h"
 #include "QtCore/qpointer.h"
 #include "QtCore/qdeadlinetimer.h"
-#include "qnetworkaccessmanager_p.h"
-#include "qnetworkreply_p.h"
-#include "qnetworkrequest.h"
-
-#include <vector>
 
 //#define DEBUG_ACCESSCACHE
 
