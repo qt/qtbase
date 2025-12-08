@@ -95,6 +95,8 @@ private slots:
     void treeMoveRowBranches_data() { tree_data(); }
     void treeMoveRowBranches();
 
+    void adlTest();
+
 private:
     void createTestData();
     void createTree();
@@ -1992,6 +1994,32 @@ void tst_QRangeModel::treeMoveRowBranches()
     }
 
     verifyPmiList(pmiList);
+}
+
+namespace ADLTest
+{
+struct Value
+{
+    int x;
+
+    template <typename V = Value>
+    friend auto refTo(const V &)
+    {
+        static_assert(QtPrivate::type_dependent_false<V>(),
+                      "refTo should never be found through ADL.");
+    }
+    template <typename V = Value>
+    friend auto pointerTo(const V &)
+    {
+        static_assert(QtPrivate::type_dependent_false<V>(),
+                      "pointerTo should never be found through ADL.");
+    }
+};
+} // namespace ADLTest
+
+void tst_QRangeModel::adlTest()
+{
+    QRangeModel adlModel(std::vector<ADLTest::Value>{});
 }
 
 QTEST_MAIN(tst_QRangeModel)

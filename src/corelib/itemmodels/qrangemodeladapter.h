@@ -440,7 +440,6 @@ public:
     {
         const_row_type get() const
         {
-            using namespace QRangeModelDetails;
             const Reference *that = static_cast<const Reference *>(this);
             const auto *impl = that->m_adapter->storage.implementation();
             auto *childRange = impl->childRange(that->m_index.parent());
@@ -470,12 +469,10 @@ public:
     {
         const_row_type get() const
         {
-            using namespace QRangeModelDetails;
-            using QRangeModelDetails::begin;
-
             const Reference *that = static_cast<const Reference *>(this);
             const auto *impl = that->m_adapter->storage.implementation();
-            return *std::next(begin(refTo(impl->childRange(that->m_index.parent()))),
+            return *std::next(QRangeModelDetails::begin(
+                                QRangeModelDetails::refTo(impl->childRange(that->m_index.parent()))),
                               that->m_index.row());
         }
 
@@ -496,12 +493,10 @@ public:
     {
         const_row_type get() const
         {
-            using namespace QRangeModelDetails;
-            using QRangeModelDetails::begin;
-
             const Reference *that = static_cast<const Reference *>(this);
             const auto *impl = that->m_adapter->storage.implementation();
-            return *std::next(begin(refTo(impl->childRange(that->m_index.parent()))),
+            return *std::next(QRangeModelDetails::begin(
+                                QRangeModelDetails::refTo(impl->childRange(that->m_index.parent()))),
                               that->m_index.row());
         }
 
@@ -728,8 +723,7 @@ public:
         template <typename RHS>
         void verifyRows(const row_type &oldRow, const RHS &newRow)
         {
-            using namespace QRangeModelDetails;
-            if constexpr (test_size<row_type>::value) {
+            if constexpr (QRangeModelDetails::test_size<row_type>::value) {
                 // prevent that tables get populated with wrongly sized rows
                 Q_ASSERT_X(Impl::size(newRow) == Impl::size(oldRow),
                            "RowReference::operator=()",
@@ -738,7 +732,7 @@ public:
 
             if constexpr (is_tree<Impl>) {
                 // we cannot hook invalid rows up to the tree hierarchy
-                Q_ASSERT_X(isValid(newRow),
+                Q_ASSERT_X(QRangeModelDetails::isValid(newRow),
                            "RowReference::operator=()",
                            "An invalid row can not inserted into a tree!");
             }
@@ -753,19 +747,18 @@ public:
             verifyRows(oldRow, other);
 
             if constexpr (is_tree<Impl>) {
-                using namespace QRangeModelDetails;
                 auto &protocol = impl->protocol();
-                auto *oldParent = protocol.parentRow(refTo(oldRow));
+                auto *oldParent = protocol.parentRow(QRangeModelDetails::refTo(oldRow));
 
                 // the old children will be removed; we don't try to overwrite
                 // them with the new children, we replace them completely
-                if (decltype(auto) oldChildren = protocol.childRows(refTo(oldRow));
-                    isValid(oldChildren)) {
+                if (decltype(auto) oldChildren = protocol.childRows(QRangeModelDetails::refTo(oldRow));
+                    QRangeModelDetails::isValid(oldChildren)) {
                     if (int oldChildCount = this->m_adapter->model()->rowCount(this->m_index)) {
                         impl->beginRemoveRows(this->m_index, 0, oldChildCount - 1);
-                        impl->deleteRemovedRows(refTo(oldChildren));
+                        impl->deleteRemovedRows(QRangeModelDetails::refTo(oldChildren));
                         // make sure the list is empty before we emit rowsRemoved
-                        refTo(oldChildren) = range_type{};
+                        QRangeModelDetails::refTo(oldChildren) = range_type{};
                         impl->endRemoveRows();
                     }
                 }
@@ -774,11 +767,13 @@ public:
                     protocol.deleteRow(oldRow);
                 oldRow = std::forward<R>(other);
                 if constexpr (protocol_traits::has_setParentRow) {
-                    protocol.setParentRow(refTo(oldRow), oldParent);
-                    if (decltype(auto) newChildren = protocol.childRows(refTo(oldRow));
-                        isValid(newChildren)) {
-                        impl->beginInsertRows(this->m_index, 0, Impl::size(refTo(newChildren)) - 1);
-                        impl->setParentRow(refTo(newChildren), pointerTo(oldRow));
+                    protocol.setParentRow(QRangeModelDetails::refTo(oldRow), oldParent);
+                    if (decltype(auto) newChildren = protocol.childRows(QRangeModelDetails::refTo(oldRow));
+                        QRangeModelDetails::isValid(newChildren)) {
+                        impl->beginInsertRows(this->m_index, 0,
+                                              Impl::size(QRangeModelDetails::refTo(newChildren)) - 1);
+                        impl->setParentRow(QRangeModelDetails::refTo(newChildren),
+                                           QRangeModelDetails::pointerTo(oldRow));
                         impl->endInsertRows();
                     }
                 }

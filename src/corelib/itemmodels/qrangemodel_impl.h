@@ -107,7 +107,7 @@ namespace QRangeModelDetails
     }
 
     template <typename T>
-    using wrapped_t = std::remove_pointer_t<decltype(pointerTo(std::declval<T&>()))>;
+    using wrapped_t = std::remove_pointer_t<decltype(QRangeModelDetails::pointerTo(std::declval<T&>()))>;
 
     template <typename T>
     using is_wrapped = std::negation<std::is_same<
@@ -154,15 +154,15 @@ namespace QRangeModelDetails
 
     template <typename T>
     static decltype(auto) refTo(T&& t) {
-        Q_ASSERT(isValid(t));
+        Q_ASSERT(QRangeModelDetails::isValid(t));
         // it's allowed to move only if the object holds unique ownership of the wrapped data
         using Type = q20::remove_cvref_t<T>;
         if constexpr (is_any_of<T, std::optional>())
             return *std::forward<T>(t); // let std::optional resolve dereferencing
         if constexpr (!is_wrapped<Type>() || is_any_unique_ptr<Type>())
-            return q23::forward_like<T>(*pointerTo(t));
+            return q23::forward_like<T>(*QRangeModelDetails::pointerTo(t));
         else
-            return *pointerTo(t);
+            return *QRangeModelDetails::pointerTo(t);
     }
 
     template <typename It>
@@ -177,11 +177,11 @@ namespace QRangeModelDetails
 
     // use our own version of begin/end so that we can overload for pointers
     template <typename C>
-    static auto begin(C &&c) -> decltype(std::begin(refTo(std::forward<C>(c))))
-    { return std::begin(refTo(std::forward<C>(c))); }
+    static auto begin(C &&c) -> decltype(std::begin(QRangeModelDetails::refTo(std::forward<C>(c))))
+    { return std::begin(QRangeModelDetails::refTo(std::forward<C>(c))); }
     template <typename C>
-    static auto end(C &&c) -> decltype(std::end(refTo(std::forward<C>(c))))
-    { return std::end(refTo(std::forward<C>(c))); }
+    static auto end(C &&c) -> decltype(std::end(QRangeModelDetails::refTo(std::forward<C>(c))))
+    { return std::end(QRangeModelDetails::refTo(std::forward<C>(c))); }
     template <typename C>
     static auto pos(C &&c, int i)
     { return std::next(QRangeModelDetails::begin(std::forward<C>(c)), i); }
@@ -591,7 +591,7 @@ namespace QRangeModelDetails
     using protocol_setParentRow = qxp::is_detected<protocol_setParentRow_test, P, R>;
 
     template <typename P, typename R>
-    using protocol_mutable_childRows_test = decltype(refTo(std::declval<P&>()
+    using protocol_mutable_childRows_test = decltype(QRangeModelDetails::refTo(std::declval<P&>()
             .childRows(std::declval<QRangeModelDetails::wrapped_t<R>&>())) = {});
     template <typename P, typename R>
     using protocol_mutable_childRows = qxp::is_detected<protocol_mutable_childRows_test, P, R>;
@@ -729,8 +729,8 @@ namespace QRangeModelDetails
         using iterator = typename WrappedStorage::iterator;
         using const_iterator = typename WrappedStorage::const_iterator;
 
-        auto model() { return pointerTo(this->m_model); }
-        auto model() const { return pointerTo(this->m_model); }
+        auto model() { return QRangeModelDetails::pointerTo(this->m_model); }
+        auto model() const { return QRangeModelDetails::pointerTo(this->m_model); }
 
         template <typename Model = ModelStorage>
         ModelData(Model &&model)
@@ -988,11 +988,10 @@ protected:
     template <typename C>
     static constexpr int size(const C &c)
     {
-        using namespace QRangeModelDetails;
-        if (!isValid(c))
+        if (!QRangeModelDetails::isValid(c))
             return 0;
 
-        if constexpr (test_size<C>()) {
+        if constexpr (QRangeModelDetails::test_size<C>()) {
             return int(std::size(c));
         } else {
 #if defined(__cpp_lib_ranges)
@@ -1000,10 +999,10 @@ protected:
 #else
             using std::distance;
 #endif
-            using container_type = std::conditional_t<range_traits<C>::has_cbegin,
+            using container_type = std::conditional_t<QRangeModelDetails::range_traits<C>::has_cbegin,
                                                       const QRangeModelDetails::wrapped_t<C>,
                                                       QRangeModelDetails::wrapped_t<C>>;
-            container_type& container = const_cast<container_type &>(refTo(c));
+            container_type& container = const_cast<container_type &>(QRangeModelDetails::refTo(c));
             return int(distance(std::begin(container), std::end(container)));
         }
     }
@@ -1671,15 +1670,15 @@ public:
     template <typename Fn>
     bool forEachColumn(const row_type &row, int rowIndex, const QModelIndex &parent, Fn &&fn) const
     {
-        using namespace QRangeModelDetails;
-
         const auto &model = this->itemModel();
         if constexpr (one_dimensional_range) {
-            return fn(model.index(rowIndex, 0, parent), pointerTo(row));
+            return fn(model.index(rowIndex, 0, parent), QRangeModelDetails::pointerTo(row));
         } else if constexpr (dynamicColumns() || QRangeModelDetails::array_like_v<row_type>) {
             int columnIndex = -1;
-            return std::all_of(begin(row), end(row), [&](const auto &item) {
-                return fn(model.index(rowIndex, ++columnIndex, parent), pointerTo(item));
+            return std::all_of(QRangeModelDetails::begin(row),
+                               QRangeModelDetails::end(row), [&](const auto &item) {
+                return fn(model.index(rowIndex, ++columnIndex, parent),
+                          QRangeModelDetails::pointerTo(item));
             });
         } else { // tuple-like (but not necessarily std::tuple, so can't use std::apply)
             int column = -1;
