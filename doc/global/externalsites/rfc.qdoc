@@ -12,12 +12,6 @@
 */
 
 /*!
-    \externalpage https://datatracker.ietf.org/doc/html/rfc1179
-    \title RFC 1179
-    \keyword lpr
-*/
-
-/*!
     \externalpage https://datatracker.ietf.org/doc/html/rfc1738
     \title RFC 1738
 */
@@ -28,40 +22,13 @@
 */
 
 /*!
-    \externalpage https://datatracker.ietf.org/doc/html/rfc1928
-    \title RFC 1928
-*/
-
-/*!
-    \externalpage https://datatracker.ietf.org/doc/html/rfc1929
-    \title RFC 1929
-*/
-
-/*!
     \externalpage https://datatracker.ietf.org/doc/html/rfc2045
     \title RFC 2045
 */
 
 /*!
-    \externalpage https://datatracker.ietf.org/doc/html/rfc2109
-    \title RFC 2109
-    HTTP State Management Mechanism
-*/
-
-/*!
     \externalpage https://datatracker.ietf.org/doc/html/rfc2822
     \title RFC 2822
-*/
-
-/*!
-    \externalpage https://datatracker.ietf.org/doc/html/rfc2965
-    \title RFC 2965
-    HTTP State Management Mechanism
-*/
-
-/*!
-    \externalpage https://datatracker.ietf.org/doc/html/rfc3174
-    \title RFC 3174
 */
 
 /*!

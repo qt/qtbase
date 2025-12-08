@@ -58,30 +58,9 @@
 */
 
 /*!
-    \externalpage https://www.freedesktop.org/wiki/Standards/xembed-spec/
-    \title XEmbed Specification
-*/
-
-/*!
-    \externalpage https://www.freedesktop.org/wiki/Standards/icon-theme-spec/
-    \title Icon Themes Specification
-*/
-
-/*!
     \externalpage https://www.cups.org/
     \title Common Unix Printing System (CUPS)
     \keyword CUPS
-*/
-
-/*!
-    \externalpage https://www.freedesktop.org/wiki/Specifications/desktop-entry-spec/
-    \title Desktop Entry Specification
-*/
-
-/*!
-    \externalpage https://kde.org/
-    \title The K Desktop Environment
-    \keyword KDE
 */
 
 /*!
@@ -90,33 +69,13 @@
 */
 
 /*!
-    \externalpage https://cmake.org/cmake/help/latest/command/find_package.html
-    \title CMake find_package Documentation
-*/
-
-/*!
     \externalpage https://cmake.org/cmake/help/latest/manual/cmake-qt.7.html#automoc
     \title CMake AUTOMOC Documentation
 */
 
 /*!
-    \externalpage https://cmake.org/cmake/help/latest/manual/cmake-qt.7.html#autorcc
-    \title CMake AUTORCC Documentation
-*/
-
-/*!
     \externalpage https://cmake.org/cmake/help/latest/manual/cmake-qt.7.html#autouic
     \title CMake AUTOUIC Documentation
-*/
-
-/*!
-    \externalpage https://cmake.org/cmake/help/latest/prop_tgt/LOCATION.html
-    \title CMake LOCATION Documentation
-*/
-
-/*!
-    \externalpage https://cmake.org/cmake/help/latest/prop_tgt/POSITION_INDEPENDENT_CODE.html
-    \title CMake POSITION_INDEPENDENT_CODE Documentation
 */
 
 /*!
@@ -130,47 +89,8 @@
 */
 
 /*!
-    \externalpage https://conan.io/
-    \title Conan
-*/
-
-/*!
     \externalpage https://www.gnome.org/
     \title GNOME
-*/
-
-/*!
-    \externalpage https://www.gnu.org/software/emacs/
-    \title GNU Emacs
-*/
-
-/*!
-    \externalpage https://gnuwin32.sourceforge.net/packages.html
-    \title GnuWin32 Project
-*/
-
-/*!
-    \externalpage https://www.w3.org/Graphics/SVG/About.html
-    \title About SVG
-    \keyword Scalable Vector Graphics
-*/
-
-/*!
-    \externalpage https://www.w3.org/TR/SVG/types.html#ColorKeywords
-    \title SVG color keyword names
-*/
-
-/*!
-    \externalpage https://www.w3.org/Graphics/SVG/
-    \title SVG Working Group
-*/
-
-/*!
-    \externalpage https://www.w3.org/TR/SVGMobile/
-    \title Mobile SVG Profiles
-    \omit
-    Mobile SVG Profiles: SVG Tiny and SVG Basic
-    \endomit
 */
 
 /*!
@@ -186,33 +106,13 @@
 
 
 /*!
-    \externalpage https://jmeubank.github.io/tdm-gcc/
-    \title TDM-GCC
-*/
-
-/*!
     \externalpage https://www.dependencywalker.com/
     \title Dependency Walker
 */
 
 /*!
-    \externalpage https://webkit.org/
-    \title WebKit Open Source Project
-*/
-
-/*!
-    \externalpage https://www.informit.com/store/c-plus-plus-gui-programming-with-qt4-9780132354165
-    \title C++ GUI Programming with Qt 4, 2nd Edition
-*/
-
-/*!
     \externalpage https://www.openssl.org/
     \title OpenSSL Toolkit
-*/
-
-/*!
-    \externalpage https://www.activestate.com/platform/supported-languages/perl/
-    \title ActivePerl
 */
 
 /*!
@@ -223,16 +123,6 @@
 /*!
     \externalpage https://learn.microsoft.com/en-us/windows/win32/winsock/socket-handles-2
     \title Winsock 2 Socket Handle
-*/
-
-/*!
-    \externalpage https://www.w3.org/TR/html401/
-    \title HTML 4
-*/
-
-/*!
-    \externalpage https://html.spec.whatwg.org/multipage/
-    \title HTML 5
 */
 
 /*!
@@ -251,38 +141,13 @@
 */
 
 /*!
-    \externalpage https://pyxml.sourceforge.net/topics/xbel/
-    \title XML Bookmark Exchange Language Resource Page
-*/
-
-/*!
-    \externalpage https://www.w3.org/TR/xquery/#errors
-    \title error handling in the XQuery language
-*/
-
-/*!
     \externalpage https://xaos-project.github.io/
     \title XaoS
 */
 
 /*!
-    \externalpage https://www.unixodbc.org
-    \title https://www.unixodbc.org
-*/
-
-/*!
     \externalpage https://www.postgresql.org
     \title https://www.postgresql.org
-*/
-
-/*!
-    \externalpage https://www.postgresql.org/docs/current/installation-platform-notes.html
-    \title PostgreSQL MinGW/Native Windows
-*/
-
-/*!
-    \externalpage https://www.freetds.org
-    \title https://www.freetds.org
 */
 
 /*!
@@ -301,11 +166,6 @@
 */
 
 /*!
-    \externalpage https://tldp.org/HOWTO/Framebuffer-HOWTO.html
-    \title Framebuffer HOWTO
-*/
-
-/*!
     \externalpage https://www.w3.org/TR/scxml/
     \title State Chart XML: State Machine Notation for Control Abstraction
 */
@@ -321,23 +181,8 @@
 */
 
 /*!
-    \externalpage https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
-    \title GNU Lesser General Public License, version 2.1
-*/
-
-/*!
-    \externalpage https://www.qtcentre.org
-    \title Qt Centre
-*/
-
-/*!
     \externalpage https://kde.org
     \title KDE
-*/
-
-/*!
-    \externalpage https://cplusplus.com/reference/cstring/memcpy/
-    \title C++ Reference - memcpy
 */
 
 /*!
@@ -346,43 +191,8 @@
 */
 
 /*!
-    \externalpage https://www.w3.org/TR/CSS2/selector.html
-    \title Standard CSS2 selector
-*/
-
-/*!
-    \externalpage https://www.w3.org/XML/Core/#Publications
-    \title W3C XML specifications
-*/
-
-/*!
-    \externalpage https://www.w3.org/XML/Schema
-    \title XML Schema
-*/
-
-/*!
-    \externalpage https://opensource.org/license/bsd-3-clause
-    \title New and Modified BSD Licenses
-*/
-
-/*!
-    \externalpage https://ecma-international.org/publications-and-standards/standards/ecma-262/
-    \title ECMAScript Language Specification
-*/
-
-/*!
     \externalpage https://developer.mozilla.org/en-US/docs/Web/JavaScript
     \title JavaScript Resources
-*/
-
-/*!
-    \externalpage https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide
-    \title JavaScript Guide
-*/
-
-/*!
-    \externalpage https://developer.mozilla.org/en-US/docs/Web/JavaScript
-    \title About JavaScript
 */
 
 /*!
@@ -406,38 +216,13 @@
 */
 
 /*!
-    \externalpage https://registry.khronos.org/OpenGL/index_gl.php
-    \title OpenGL Registry
-*/
-
-/*!
-    \externalpage https://registry.khronos.org/OpenGL/index_es.php
-    \title Khronos OpenGL ES API Registry
-*/
-
-/*!
     \externalpage https://www.khronos.org/opengl/wiki/Array_Texture
     \title Array Texture
 */
 
 /*!
-    \externalpage https://github.com/iksaif/qsslkey-p11
-    \title qsslkey example
-*/
-
-/*!
     \externalpage https://www.w3.org/TR/2009/WD-webdatabase-20091029/
     \title HTML5 Web Database API
-*/
-
-/*!
-    \externalpage https://lldb.llvm.org/
-    \title The LLDB Debugger
-*/
-
-/*!
-    \externalpage https://account.qt.io/s/
-    \title Qt Account Sign-up
 */
 
 /*!
