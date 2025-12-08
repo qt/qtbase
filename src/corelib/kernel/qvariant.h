@@ -263,7 +263,7 @@ public:
         ConstReference &operator=(ConstReference &&value) = delete;
 
         // To be specialized for each Referred
-        operator QVariant() const noexcept(Referred::canNoexceptConvertToQVariant);
+        operator QVariant() const noexcept(Referred::CanNoexceptConvertToQVariant);
     };
 
     template<typename Referred>
@@ -288,18 +288,18 @@ public:
         ~Reference() = default;
 
         Reference &operator=(const Reference &value)
-                noexcept(Referred::canNoexceptAssignQVariant)
+                noexcept(Referred::CanNoexceptAssignQVariant)
         {
             return operator=(QVariant(value));
         }
 
         Reference &operator=(Reference &&value)
-                noexcept(Referred::canNoexceptAssignQVariant)
+                noexcept(Referred::CanNoexceptAssignQVariant)
         {
             return operator=(QVariant(value));
         }
 
-        operator QVariant() const noexcept(Referred::canNoexceptConvertToQVariant)
+        operator QVariant() const noexcept(Referred::CanNoexceptConvertToQVariant)
         {
             return ConstReference(m_referred);
         }
@@ -313,7 +313,7 @@ public:
         }
 
         // To be specialized for each Referred
-        Reference &operator=(const QVariant &value) noexcept(Referred::canNoexceptAssignQVariant);
+        Reference &operator=(const QVariant &value) noexcept(Referred::CanNoexceptAssignQVariant);
     };
 
     template<typename Pointed>

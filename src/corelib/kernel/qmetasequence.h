@@ -24,8 +24,8 @@ public:
     using reference = QVariant::Reference<SequentialIterator>;
     using pointer = QVariant::Pointer<SequentialIterator>;
 
-    static constexpr bool canNoexceptAssignQVariant = false;
-    static constexpr bool canNoexceptConvertToQVariant = false;
+    static constexpr bool CanNoexceptAssignQVariant = false;
+    static constexpr bool CanNoexceptConvertToQVariant = false;
 
     SequentialIterator(QIterator &&it) : QIterator(std::move(it)) {}
 
@@ -41,7 +41,7 @@ public:
     using reference = QVariant::ConstReference<SequentialConstIterator>;
     using pointer = QVariant::ConstPointer<SequentialConstIterator>;
 
-    static constexpr bool canNoexceptConvertToQVariant = false;
+    static constexpr bool CanNoexceptConvertToQVariant = false;
 
     SequentialConstIterator(QConstIterator &&it) : QConstIterator(std::move(it)) {}
 

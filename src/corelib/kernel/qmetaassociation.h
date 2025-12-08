@@ -25,8 +25,8 @@ public:
     using reference = QVariant::Reference<AssociativeIterator>;
     using pointer = QVariant::Pointer<AssociativeIterator>;
 
-    static constexpr bool canNoexceptAssignQVariant = false;
-    static constexpr bool canNoexceptConvertToQVariant = false;
+    static constexpr bool CanNoexceptAssignQVariant = false;
+    static constexpr bool CanNoexceptConvertToQVariant = false;
 
     AssociativeIterator(QIterator &&it) : QIterator(std::move(it)) {}
 
@@ -51,7 +51,7 @@ public:
     using reference = QVariant::ConstReference<AssociativeConstIterator>;
     using pointer = QVariant::ConstPointer<AssociativeConstIterator>;
 
-    static constexpr bool canNoexceptConvertToQVariant = false;
+    static constexpr bool CanNoexceptConvertToQVariant = false;
 
     AssociativeConstIterator(QConstIterator &&it) : QConstIterator(std::move(it)) {}
 

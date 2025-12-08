@@ -6448,15 +6448,15 @@ void tst_QVariant::get_NonDefaultConstructible()
 struct QVariantWrapper
 {
 public:
-    static constexpr bool canNoexceptConvertToQVariant
+    static constexpr bool CanNoexceptConvertToQVariant
             = std::is_nothrow_copy_constructible_v<QVariant>;
-    static constexpr bool canNoexceptAssignQVariant
+    static constexpr bool CanNoexceptAssignQVariant
             = std::is_nothrow_copy_assignable_v<QVariant>;
 
     QVariantWrapper(QVariant *content = nullptr) noexcept : m_content(content) {}
 
-    QVariant content() const noexcept(canNoexceptConvertToQVariant)  {  return *m_content;  }
-    void setContent(const QVariant &content) noexcept(canNoexceptAssignQVariant)
+    QVariant content() const noexcept(CanNoexceptConvertToQVariant)  {  return *m_content;  }
+    void setContent(const QVariant &content) noexcept(CanNoexceptAssignQVariant)
     {
         *m_content = content;
     }
@@ -6468,14 +6468,14 @@ private:
 QT_BEGIN_NAMESPACE
 template<>
 QVariant::ConstReference<QVariantWrapper>::operator QVariant() const
-        noexcept(QVariantWrapper::canNoexceptConvertToQVariant)
+        noexcept(QVariantWrapper::CanNoexceptConvertToQVariant)
 {
     return m_referred.content();
 }
 
 template<>
 QVariant::Reference<QVariantWrapper> &QVariant::Reference<QVariantWrapper>::operator=(
-        const QVariant &content) noexcept(QVariantWrapper::canNoexceptAssignQVariant)
+        const QVariant &content) noexcept(QVariantWrapper::CanNoexceptAssignQVariant)
 {
     m_referred.setContent(content);
     return *this;
