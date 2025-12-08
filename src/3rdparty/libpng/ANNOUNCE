@@ -1,4 +1,4 @@
-libpng 1.6.52 - December 3, 2025
+libpng 1.6.53 - December 5, 2025
 ================================
 
 This is a public release of libpng, intended for use in production code.
@@ -9,10 +9,10 @@ Files available for download
 
 Source files:
 
- * libpng-1.6.52.tar.xz (LZMA-compressed, recommended)
- * libpng-1.6.52.tar.gz (deflate-compressed)
- * lpng1652.7z (LZMA-compressed)
- * lpng1652.zip (deflate-compressed)
+ * libpng-1.6.53.tar.xz (LZMA-compressed, recommended)
+ * libpng-1.6.53.tar.gz (deflate-compressed)
+ * lpng1653.7z (LZMA-compressed)
+ * lpng1653.zip (deflate-compressed)
 
 Other information:
 
@@ -22,18 +22,14 @@ Other information:
  * TRADEMARK.md
 
 
-Changes from version 1.6.51 to version 1.6.52
+Changes from version 1.6.52 to version 1.6.53
 ---------------------------------------------
 
- * Fixed CVE-2025-66293 (high severity):
-   Out-of-bounds read in `png_image_read_composite`.
-   (Reported by flyfish101 <flyfish101@users.noreply.github.com>.)
- * Fixed the Paeth filter handling in the RISC-V RVV implementation.
-   (Reported by Filip Wasil; fixed by Liang Junzhao.)
- * Improved the performance of the RISC-V RVV implementation.
-   (Contributed by Liang Junzhao.)
- * Added allocation failure fuzzing to oss-fuzz.
-   (Contributed by Philippe Antoine.)
+ * Fixed a build failure on RISC-V RVV caused by a misspelled intrinsic.
+   (Contributed by Alexander Smorkalov.)
+ * Fixed a build failure with CMake 4.1 or newer, on Windows, when using
+   Visual C++ without MASM installed.
+   (Reported by Andrew Tribick; fixed by Luis Caro Campos.)
 
 
 Send comments/corrections/commendations to png-mng-implement at lists.sf.net.
