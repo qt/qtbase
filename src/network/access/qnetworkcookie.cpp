@@ -5,7 +5,6 @@
 #include "qnetworkcookie.h"
 #include "qnetworkcookie_p.h"
 
-#include "qnetworkrequest.h"
 #include "qnetworkreply.h"
 #include "QtCore/qbytearray.h"
 #include "QtCore/qdatetime.h"
