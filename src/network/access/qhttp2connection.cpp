@@ -34,8 +34,38 @@ using namespace Http2;
     \sa QHttp2Connection
 */
 
-QHttp2Stream::QHttp2Stream(QHttp2Connection *connection, quint32 streamID) noexcept
-    : QObject(connection), m_streamID(streamID)
+/*!
+    \struct QHttp2Stream::Configuration
+    \inmodule QtNetwork
+    \internal
+
+    \brief Configuration options for a QHttp2Stream.
+
+    The Configuration struct holds options that control stream behavior.
+
+    \sa QHttp2Connection::createStream()
+*/
+
+/*!
+    \variable QHttp2Stream::Configuration::useDownloadBuffer
+
+    Controls whether incoming DATA frames, from QHttp2Stream::dataReceived(),
+    are buffered. The default is \c true.
+
+    You may disable buffering for client-initiated streams when the
+    application processes DATA immediately.
+
+    Buffering must remain enabled for pushed streams. A pushed stream can
+    receive DATA before the application becomes aware of them and the buffered
+    DATA is required to deliver the pushed response.
+
+    \sa QHttp2Stream::downloadBuffer(), QHttp2Stream::takeDownloadBuffer(),
+        QHttp2Configuration::serverPushEnabled(), QHttp2Stream::dataReceived()
+*/
+
+QHttp2Stream::QHttp2Stream(QHttp2Connection *connection, quint32 streamID,
+                           Configuration configuration) noexcept
+    : QObject(connection), m_streamID(streamID), m_configuration(configuration)
 {
     Q_ASSERT(connection);
     Q_ASSERT(streamID); // stream id 0 is reserved for connection control messages
@@ -211,6 +241,12 @@ QHttp2Stream::~QHttp2Stream() noexcept {
     \fn QByteDataBuffer QHttp2Stream::downloadBuffer() const noexcept
 
     Returns the buffer containing the data received from the remote peer.
+*/
+
+/*!
+    \fn QHttp2Stream::Configuration QHttp2Stream::configuration() const
+
+    Returns the configuration of this stream.
 */
 
 void QHttp2Stream::finishWithError(Http2::Http2Error errorCode, const QString &message)
@@ -697,7 +733,7 @@ void QHttp2Stream::handleDATA(const Frame &inboundFrame)
                             inboundFrame.dataSize());
         if (endStream)
             transitionState(StateTransition::CloseRemote);
-        const auto shouldBuffer = !fragment.isEmpty();
+        const auto shouldBuffer = m_configuration.useDownloadBuffer && !fragment.isEmpty();
         if (shouldBuffer) {
             // Only non-empty fragments get appended!
             m_downloadBuffer.append(std::move(fragment));
@@ -891,23 +927,35 @@ QHttp2Connection *QHttp2Connection::createDirectServerConnection(QIODevice *sock
 }
 
 /*!
-    Creates a stream on this connection.
+    \fn QH2Expected<QHttp2Stream *, QHttp2Connection::CreateStreamError> QHttp2Connection::createStream()
 
+    Creates a stream on this connection, using the default QHttp2Stream::Configuration.
+
+//! [createStream]
     Automatically picks the next available stream ID and returns a pointer to
     the new stream, if possible. Otherwise returns an error.
 
     \sa QHttp2Connection::CreateStreamError, QHttp2Stream
+//! [createStream]
+    \sa createStream(QHttp2Stream::Configuration)
 */
-QH2Expected<QHttp2Stream *, QHttp2Connection::CreateStreamError> QHttp2Connection::createStream()
+
+/*!
+    Creates a stream with \a configuration on this connection.
+
+    \include qhttp2connection.cpp createStream
+*/
+QH2Expected<QHttp2Stream *, QHttp2Connection::CreateStreamError>
+QHttp2Connection::createStream(QHttp2Stream::Configuration configuration)
 {
     Q_ASSERT(m_connectionType == Type::Client); // This overload is just for clients
     if (m_nextStreamID > lastValidStreamID)
         return { QHttp2Connection::CreateStreamError::StreamIdsExhausted };
-    return createLocalStreamInternal();
+    return createLocalStreamInternal(configuration);
 }
 
 QH2Expected<QHttp2Stream *, QHttp2Connection::CreateStreamError>
-QHttp2Connection::createLocalStreamInternal()
+QHttp2Connection::createLocalStreamInternal(QHttp2Stream::Configuration conf)
 {
     if (m_goingAway)
         return { QHttp2Connection::CreateStreamError::ReceivedGOAWAY };
@@ -915,7 +963,7 @@ QHttp2Connection::createLocalStreamInternal()
     if (size_t(m_peerMaxConcurrentStreams) <= size_t(numActiveLocalStreams()))
         return { QHttp2Connection::CreateStreamError::MaxConcurrentStreamsReached };
 
-    if (QHttp2Stream *ptr = createStreamInternal_impl(streamID)) {
+    if (QHttp2Stream *ptr = createStreamInternal_impl(streamID, conf)) {
         m_nextStreamID += 2;
         return {ptr};
     }
@@ -923,7 +971,8 @@ QHttp2Connection::createLocalStreamInternal()
     return { QHttp2Connection::CreateStreamError::UnknownError };
 }
 
-QHttp2Stream *QHttp2Connection::createStreamInternal_impl(quint32 streamID)
+QHttp2Stream *QHttp2Connection::createStreamInternal_impl(quint32 streamID,
+                                                          QHttp2Stream::Configuration conf)
 {
     Q_ASSERT(streamID > m_lastIncomingStreamID || streamID >= m_nextStreamID);
 
@@ -936,7 +985,7 @@ QHttp2Stream *QHttp2Connection::createStreamInternal_impl(quint32 streamID)
     if (!result.inserted)
         return nullptr;
     QPointer<QHttp2Stream> &stream = result.iterator.value();
-    stream = new QHttp2Stream(this, streamID);
+    stream = new QHttp2Stream(this, streamID, conf);
     stream->m_recvWindow = streamInitialReceiveWindowSize;
     stream->m_sendWindow = streamInitialSendWindowSize;
 
