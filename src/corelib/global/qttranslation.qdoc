@@ -179,7 +179,7 @@
     \fn QString qTrId(const char *id, int n = -1)
     \relates <QtTranslation>
     \reentrant
-    \since 6.9
+    \since 6.11
 
     \brief The qTrId function is an alias for qtTrId.
 
