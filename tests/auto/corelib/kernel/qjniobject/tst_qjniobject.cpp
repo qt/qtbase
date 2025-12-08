@@ -10,8 +10,19 @@
 
 #if defined(__cpp_lib_expected)
 # include <expected>
-#else
-# include <QtCore/private/qexpected_p.h>
+
+template <typename T>
+using QJniReturnValue = std::expected<T, jthrowable>;
+using BadAccessException = std::bad_expected_access<jthrowable>;
+
+// even with __cpp_lib_expected >= 202211L, monadic functions seem to be rather
+// broken or not reliably available
+#define EXPECTED_HAS_MONADIC (__cpp_lib_expected >= 202211L)
+
+static_assert(QtJniTypes::Traits<QJniReturnValue<int>>::signature() ==
+              QtJniTypes::Traits<int>::signature());
+static_assert(QtJniTypes::Traits<QJniReturnValue<QString>>::signature() ==
+              QtJniTypes::Traits<QString>::signature());
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -2510,35 +2521,12 @@ void tst_QJniObject::implicitExceptionHandling_setStaticField()
                                  void>);
 }
 
-#if __cpp_lib_expected
-template <typename T>
-using QJniReturnValue = std::expected<T, jthrowable>;
-using BadAccessException = std::bad_expected_access<jthrowable>;
-// even with __cpp_lib_expected >= 202211L, monadic functions seem to be rather
-// broken or not reliably available
-#define EXPECTED_HAS_MONADIC false
-#elif TL_EXPECTED_VERSION_MAJOR
-#define EXPECTED_HAS_MONADIC true
-template <typename T>
-using QJniReturnValue = tl::expected<T, jthrowable>;
-using BadAccessException = tl::bad_expected_access<jthrowable>;
-#endif
-
-static_assert(QtJniTypes::Traits<QJniReturnValue<int>>::signature() ==
-              QtJniTypes::Traits<int>::signature());
-static_assert(QtJniTypes::Traits<QJniReturnValue<QString>>::signature() ==
-              QtJniTypes::Traits<QString>::signature());
-
-
 void tst_QJniObject::constructWithException()
 {
-#if __cpp_lib_expected
-    qInfo() << "Testing explicit exception handling with std::expected" << __cpp_lib_expected;
-#elif defined(TL_EXPECTED_VERSION_MAJOR)
-    qInfo() << "Testing explicit exception handling with tl::expected";
+#ifndef __cpp_lib_expected
+    QSKIP("std::expected not available.");
 #else
-    qInfo() << "Testing explicit exception handling with QJniReturnValue";
-#endif
+    qInfo() << "Testing explicit exception handling with std::expected" << __cpp_lib_expected;
 
     const QRegularExpression invalidClass("java.lang.ClassNotFoundException: .*");
     {
@@ -2575,10 +2563,14 @@ void tst_QJniObject::constructWithException()
     }
 
     QVERIFY(!QJniEnvironment().checkAndClearExceptions());
+#endif
 }
 
 void tst_QJniObject::callMethodWithException()
 {
+#ifndef __cpp_lib_expected
+    QSKIP("std::expected not available.");
+#else
     TestClass testObject;
     {
         auto result = testObject.callMethod<QJniReturnValue<void>>("voidMethod");
@@ -2640,11 +2632,14 @@ void tst_QJniObject::callMethodWithException()
         QCOMPARE_GE(stackTrace.size(), 1);
         QCOMPARE(stackTrace.at(0), u"java.lang.Throwable: "_s + A_STRING_OBJECT());
     }
+#endif
 }
 
 void tst_QJniObject::callMethodWithMonadic()
 {
-#if !EXPECTED_HAS_MONADIC
+#ifndef __cpp_lib_expected
+    QSKIP("std::expected not available.");
+#elif !EXPECTED_HAS_MONADIC
     QSKIP("Used version of std::expected does not have monadic functions");
 #else
     enum Monadic {
@@ -2750,6 +2745,9 @@ void tst_QJniObject::callMethodWithMonadic()
 
 void tst_QJniObject::callMethodWithTryCatch()
 {
+#ifndef __cpp_lib_expected
+    QSKIP("std::expected not available.");
+#else
     TestClass testObject;
 
     const QRegularExpression invalidMethod("java.lang.NoSuchMethodError: .*");
@@ -2762,10 +2760,14 @@ void tst_QJniObject::callMethodWithTryCatch()
     catch (BadAccessException &e) {
         qWarning().noquote() << QJniEnvironment::stackTrace(e.error()).join('\n');
     }
+#endif
 }
 
 void tst_QJniObject::callStaticMethodWithException()
 {
+#ifndef __cpp_lib_expected
+    QSKIP("std::expected not available.");
+#else
     {
         auto result = TestClass::callStaticMethod<QJniReturnValue<int>>("staticIntMethod");
         QVERIFY(result);
@@ -2790,10 +2792,14 @@ void tst_QJniObject::callStaticMethodWithException()
         QCOMPARE_GE(stackTrace.size(), 1);
         QCOMPARE(stackTrace.at(0), u"java.lang.Throwable: "_s + A_STRING_OBJECT());
     }
+#endif
 }
 
 void tst_QJniObject::getFieldWithException()
 {
+#ifndef __cpp_lib_expected
+    QSKIP("std::expected not available.");
+#else
     TestClass testObject;
     {
         auto result = testObject.getField<QJniReturnValue<jboolean>>("BOOL_FIELD");
@@ -2808,10 +2814,14 @@ void tst_QJniObject::getFieldWithException()
         result = testObject.getField<QJniReturnValue<QString>>("INVALID_STRING");
         QVERIFY(!result && result.error());
     }
+#endif
 }
 
 void tst_QJniObject::setFieldWithException()
 {
+#ifndef __cpp_lib_expected
+    QSKIP("std::expected not available.");
+#else
     TestClass testObject;
     {
         auto result = testObject.setField<QJniReturnValue<jboolean>>("BOOL_FIELD", true);
@@ -2828,10 +2838,14 @@ void tst_QJniObject::setFieldWithException()
         QVERIFY(!result);
         QVERIFY(result.error());
     }
+#endif
 }
 
 void tst_QJniObject::getStaticFieldWithException()
 {
+#ifndef __cpp_lib_expected
+    QSKIP("std::expected not available.");
+#else
     {
         auto result = TestClass::getStaticField<QJniReturnValue<jshort>>("S_SHORT_VAR");
         QVERIFY(result);
@@ -2847,10 +2861,14 @@ void tst_QJniObject::getStaticFieldWithException()
         QVERIFY(!result);
         QVERIFY(result.error());
     }
+#endif
 }
 
 void tst_QJniObject::setStaticFieldWithException()
 {
+#ifndef __cpp_lib_expected
+    QSKIP("std::expected not available.");
+#else
     {
         auto result = TestClass::setStaticField<QJniReturnValue<jboolean>>("S_BOOLEAN_VAR", true);
         QVERIFY(result);
@@ -2866,6 +2884,7 @@ void tst_QJniObject::setStaticFieldWithException()
         QVERIFY(!result);
         QVERIFY(result.error());
     }
+#endif
 }
 
 QTEST_MAIN(tst_QJniObject)
