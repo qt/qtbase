@@ -92,7 +92,7 @@ public:
     QString incomingErrorDetail;
     QHttp1Configuration http1Parameters;
     QHttp2Configuration http2Parameters;
-    QTcpKeepAliveConfiguration tcpKeepAliveParameters;
+    QTcpKeepAliveConfiguration tcpKeepAliveParameters = {};
 
 protected:
     // The zerocopy download buffer, if used:

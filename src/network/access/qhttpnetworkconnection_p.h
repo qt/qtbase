@@ -259,7 +259,7 @@ public:
 
     QString peerVerifyName;
 
-    QTcpKeepAliveConfiguration tcpKeepAliveConfiguration;
+    QTcpKeepAliveConfiguration tcpKeepAliveConfiguration = {};
 
     friend class QHttpNetworkConnectionChannel;
 };
