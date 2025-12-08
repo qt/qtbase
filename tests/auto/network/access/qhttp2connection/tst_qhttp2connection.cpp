@@ -21,6 +21,8 @@ class tst_QHttp2Connection : public QObject
 private slots:
     void construct();
     void constructStream();
+    void streamConfiguration_data();
+    void streamConfiguration();
     void testSETTINGSFrame();
     void maxHeaderTableSize();
     void testPING();
@@ -202,6 +204,59 @@ void tst_QHttp2Connection::constructStream()
     QCOMPARE(stream->state(), QHttp2Stream::State::Idle);
     QCOMPARE(stream->isUploadBlocked(), false);
     QCOMPARE(stream->isUploadingDATA(), false);
+}
+
+void tst_QHttp2Connection::streamConfiguration_data()
+{
+    QTest::addColumn<bool>("useDownloadBuffer");
+
+    QTest::addRow("useDownloadBuffer=true") << true;
+    QTest::addRow("useDownloadBuffer=false") << false;
+}
+
+void tst_QHttp2Connection::streamConfiguration()
+{
+    QFETCH(const bool, useDownloadBuffer);
+
+    auto [client, server] = makeFakeConnectedSockets();
+    auto *clientConnection = makeHttp2Connection(client.get(), {}, Client);
+    auto *serverConnection = makeHttp2Connection(server.get(), {}, Server);
+
+    QHttp2Stream::Configuration config;
+    config.useDownloadBuffer = useDownloadBuffer;
+
+    QHttp2Stream *clientStream = clientConnection->createStream(config).unwrap();
+    QVERIFY(clientStream);
+    QCOMPARE(clientStream->configuration().useDownloadBuffer, useDownloadBuffer);
+    QVERIFY(waitForSettingsExchange(clientConnection, serverConnection));
+
+    QSignalSpy newIncomingStreamSpy{ serverConnection, &QHttp2Connection::newIncomingStream };
+    QSignalSpy clientDataReceivedSpy{ clientStream, &QHttp2Stream::dataReceived };
+
+    HPack::HttpHeader headers = getRequiredHeaders();
+    clientStream->sendHEADERS(headers, false);
+
+    QVERIFY(newIncomingStreamSpy.wait());
+    auto *serverStream = newIncomingStreamSpy.front().front().value<QHttp2Stream *>();
+    QVERIFY(serverStream);
+
+    const HPack::HttpHeader responseHeaders{ { ":status", "200" } };
+    serverStream->sendHEADERS(responseHeaders, false);
+
+    const QByteArray testData = "Hello World"_ba.repeated(100);
+    serverStream->sendDATA(testData, true);
+
+    QVERIFY(clientDataReceivedSpy.wait());
+    QCOMPARE(clientDataReceivedSpy.count(), 1);
+
+    const QByteArray receivedData = clientDataReceivedSpy.front().front().value<QByteArray>();
+    QCOMPARE(receivedData, testData);
+
+    if (useDownloadBuffer) {
+        QCOMPARE(clientStream->downloadBuffer().byteAmount(), testData.size());
+    } else {
+        QVERIFY(clientStream->downloadBuffer().isEmpty());
+    }
 }
 
 void tst_QHttp2Connection::testSETTINGSFrame()
