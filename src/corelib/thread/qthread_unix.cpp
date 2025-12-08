@@ -427,10 +427,6 @@ void *QThreadPrivate::start(void *arg)
             if (thr->d_func()->priority & ThreadPriorityResetFlag) {
                 thr->d_func()->setPriority(QThread::Priority(thr->d_func()->priority & ~ThreadPriorityResetFlag));
             }
-#ifndef Q_OS_DARWIN // For Darwin we set it as an attribute when starting the thread
-            if (thr->d_func()->serviceLevel != QThread::QualityOfService::Auto)
-                thr->d_func()->setQualityOfServiceLevel(thr->d_func()->serviceLevel);
-#endif
 
             // threadId is set in QThread::start()
             Q_ASSERT(data->threadId.loadRelaxed() == QThread::currentThreadId());
@@ -779,10 +775,14 @@ void QThread::start(Priority priority)
     pthread_attr_init(&attr);
     if constexpr (!UsingPThreadTimedJoin)
         pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+    if (d->serviceLevel != QThread::QualityOfService::Auto) {
 #ifdef Q_OS_DARWIN
-    if (d->serviceLevel != QThread::QualityOfService::Auto)
         pthread_attr_set_qos_class_np(&attr, d->nativeQualityOfServiceClass(), 0);
+#else
+        // No such functionality on other OSes. We promise "no effect", so don't
+        // print a warning either.
 #endif
+    }
 
     d->priority = priority;
 
