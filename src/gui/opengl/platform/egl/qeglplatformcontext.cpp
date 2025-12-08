@@ -104,6 +104,14 @@ QT_BEGIN_NAMESPACE
 #define GL_LOSE_CONTEXT_ON_RESET 0x8252
 #endif
 
+// Constants from GL_EXT_robustness.
+#ifndef GL_RESET_NOTIFICATION_STRATEGY_EXT
+#define GL_RESET_NOTIFICATION_STRATEGY_EXT 0x8256
+#endif
+#ifndef GL_LOSE_CONTEXT_ON_RESET_EXT
+#define GL_LOSE_CONTEXT_ON_RESET_EXT 0x8252
+#endif
+
 // Constants from EGL_NV_robustness_video_memory_purge
 #ifndef EGL_GENERATE_RESET_ON_VIDEO_MEMORY_PURGE_NV
 #define EGL_GENERATE_RESET_ON_VIDEO_MEMORY_PURGE_NV 0x334C
@@ -452,10 +460,15 @@ void QEGLPlatformContext::updateFormatFromGL()
                     }
                 }
             }
-            if (hasExtension("GL_ARB_robustness")) {
+            if (m_format.renderableType() == QSurfaceFormat::OpenGL && hasExtension("GL_ARB_robustness")) {
                 GLint value = 0;
                 glGetIntegerv(GL_RESET_NOTIFICATION_STRATEGY, &value);
                 if (value == GL_LOSE_CONTEXT_ON_RESET)
+                    m_format.setOption(QSurfaceFormat::ResetNotification);
+            } else if (m_format.renderableType() == QSurfaceFormat::OpenGLES && hasExtension("GL_EXT_robustness")) {
+                GLint value = 0;
+                glGetIntegerv(GL_RESET_NOTIFICATION_STRATEGY_EXT, &value);
+                if (value == GL_LOSE_CONTEXT_ON_RESET_EXT)
                     m_format.setOption(QSurfaceFormat::ResetNotification);
             }
         }
