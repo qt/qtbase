@@ -237,18 +237,6 @@ bool QCocoaWindow::isForeignWindow() const
 
 QRect QCocoaWindow::geometry() const
 {
-    // QWindows that are embedded in a NSView hierarchy may be considered
-    // top-level from Qt's point of view but are not from Cocoa's point
-    // of view. Embedded QWindows get global (screen) geometry.
-    if (isEmbedded()) {
-        NSPoint windowPoint = [m_view convertPoint:NSMakePoint(0, 0) toView:nil];
-        NSRect screenRect = [[m_view window] convertRectToScreen:NSMakeRect(windowPoint.x, windowPoint.y, 1, 1)];
-        NSPoint screenPoint = screenRect.origin;
-        QPoint position = QCocoaScreen::mapFromNative(screenPoint).toPoint();
-        QSize size = QRectF::fromCGRect(NSRectToCGRect([m_view bounds])).toRect().size();
-        return QRect(position, size);
-    }
-
     return QPlatformWindow::geometry();
 }
 
