@@ -26,6 +26,8 @@
 #include <private/qheaderview_p.h>
 
 #include <algorithm>
+#include <QtCore/q26numeric.h>
+#include <QtCore/q20utility.h>
 
 using namespace std::chrono_literals;
 
@@ -4087,8 +4089,22 @@ int QTreeViewPrivate::accessibleChildIndex(const QModelIndex &index) const
     Q_Q(const QTreeView);
     Q_ASSERT(index.isValid());
 
+    int rowForIndex = q->visualIndex(index);
+    if (rowForIndex < 0)
+        return -1;     // should happen rarely, if ever. Possibly when select all is performed
     // Note that this will include the header, even if its hidden.
-    return (q->visualIndex(index) + (q->header() ? 1 : 0)) * index.model()->columnCount() + index.column();
+    if (q->header())
+        ++rowForIndex;
+    const int columnCount = index.model()->columnCount();
+
+    const qulonglong childIndex = qulonglong(rowForIndex) * columnCount + index.column();
+    const int result = q26::saturate_cast<int>(childIndex);
+    if (!q20::cmp_equal(result, childIndex)) {
+        qWarning("QTreeView: model is too large to be made accessible (%d < %llu)",
+                 result, childIndex);
+        return -1;
+    }
+    return result;
 }
 #endif
 
