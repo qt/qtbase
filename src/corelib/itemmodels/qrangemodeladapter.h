@@ -281,9 +281,8 @@ public:
 
         void swap(ColumnIteratorBase &other) noexcept
         {
-            using std::swap;
-            swap(m_rowIndex, other.m_rowIndex);
-            swap(m_column, other.m_column);
+            qSwap(m_rowIndex, other.m_rowIndex);
+            qSwap(m_column, other.m_column);
             q_ptr_swap(m_adapter, other.m_adapter);
         }
 
@@ -444,11 +443,12 @@ public:
             const auto *impl = that->m_adapter->storage.implementation();
             auto *childRange = impl->childRange(that->m_index.parent());
             if constexpr (std::is_convertible_v<const row_type &, const_row_type>) {
-                return *std::next(QRangeModelDetails::begin(childRange), that->m_index.row());
+                return *std::next(QRangeModelDetails::adl_begin(childRange), that->m_index.row());
             } else {
-                const auto &row = *std::next(QRangeModelDetails::begin(childRange),
+                const auto &row = *std::next(QRangeModelDetails::adl_begin(childRange),
                                              that->m_index.row());
-                return const_row_type{QRangeModelDetails::begin(row), QRangeModelDetails::end(row)};
+                return const_row_type{QRangeModelDetails::adl_begin(row),
+                                      QRangeModelDetails::adl_end(row)};
             }
         }
 
@@ -822,9 +822,8 @@ public:
 
         void swap(RowIteratorBase &other) noexcept
         {
-            using std::swap;
-            swap(m_row, other.m_row);
-            swap(this->m_rootIndex, other.m_rootIndex);
+            qSwap(m_row, other.m_row);
+            qSwap(this->m_rootIndex, other.m_rootIndex);
             q_ptr_swap(m_adapter, other.m_adapter);
         }
 

@@ -761,10 +761,13 @@ Q_CORE_EXPORT QVariant qVariantAtIndex(const QModelIndex &index)
     \fn template <typename Range, typename Protocol, QRangeModelDetails::if_tree_range<Range, Protocol>> QRangeModel::QRangeModel(Range &&range, Protocol &&protocol, QObject *parent)
 
     Constructs a QRangeModel instance that operates on the data in \a range.
-    The \a range has to be a sequential range for which \c{std::begin} and
-    \c{std::end} are available. If \a protocol is provided, then the model
-    will represent the range as a tree using the protocol implementation. The
-    model instance becomes a child of \a parent.
+    The \a range has to be a sequential range for which the compiler finds
+    \c{begin} and \c{end} overloads through
+    \l{https://en.cppreference.com/w/cpp/language/adl.html}{argument dependent
+    lookup}, or for which \c{std::begin} and \c{std::end} are implemented. If
+    \a protocol is provided, then the model will represent the range as a tree
+    using the protocol implementation. The model instance becomes a child of \a
+    parent.
 
     The \a range can be a pointer or reference wrapper, in which case mutating
     model APIs (such as \l{setData()} or \l{insertRow()}) will modify the data

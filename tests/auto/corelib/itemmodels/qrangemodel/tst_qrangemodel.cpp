@@ -2015,11 +2015,66 @@ struct Value
                       "pointerTo should never be found through ADL.");
     }
 };
+
+struct Range
+{
+    static inline bool beginCalled = false;
+    static inline bool sizeCalled = false;
+
+    friend Value *begin(Range &r)
+    {
+        Range::beginCalled = true;
+        return r.values;
+    }
+
+    friend Value *end(Range &r)
+    {
+        // never called by QRM, only used in tree models
+        return r.values + std::size(r.values);
+    }
+
+    friend size_t size(const Range &r)
+    {
+        Range::sizeCalled = true;
+        return std::size(r.values);
+    }
+
+    Value values[3] = {{0}, {1}, {2}};
+};
 } // namespace ADLTest
 
 void tst_QRangeModel::adlTest()
 {
     QRangeModel adlModel(std::vector<ADLTest::Value>{});
+
+    ADLTest::Range r;
+
+    // compile tests
+    {
+        QRangeModel model(&r);
+    }
+    {
+        QRangeModel model(std::make_unique<ADLTest::Range>());
+    }
+    {
+        QRangeModel model(std::ref(r));
+    }
+
+    QRangeModel model(std::move(r));
+    QCOMPARE(model.rowCount(), 3);
+    const QModelIndex top = model.index(0, 0);
+    const QModelIndex bottom = model.index(model.rowCount() - 1, 0);
+
+    QVERIFY(top.isValid());
+    QVERIFY(bottom.isValid());
+
+    QVariant topData = model.data(top);
+    QVariant bottomData = model.data(bottom);
+    QCOMPARE(topData.value<ADLTest::Value>().x, top.row());
+    QCOMPARE(bottomData.value<ADLTest::Value>().x, bottom.row());
+
+    QVERIFY(ADLTest::Range::beginCalled);
+    QVERIFY(ADLTest::Range::sizeCalled);
 }
 
 QTEST_MAIN(tst_QRangeModel)

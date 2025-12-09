@@ -175,16 +175,19 @@ namespace QRangeModelDetails
     template <typename It>
     auto value(It&& it) -> decltype((it->second)) { return std::forward<It>(it)->second; }
 
-    // use our own version of begin/end so that we can overload for pointers
+    // use our own, ADL friendly versions of begin/end so that we can overload
+    // for pointers.
+    using std::begin;
+    using std::end;
     template <typename C>
-    static auto begin(C &&c) -> decltype(std::begin(QRangeModelDetails::refTo(std::forward<C>(c))))
-    { return std::begin(QRangeModelDetails::refTo(std::forward<C>(c))); }
+    static auto adl_begin(C &&c) -> decltype(begin(QRangeModelDetails::refTo(std::forward<C>(c))))
+    { return begin(QRangeModelDetails::refTo(std::forward<C>(c))); }
     template <typename C>
-    static auto end(C &&c) -> decltype(std::end(QRangeModelDetails::refTo(std::forward<C>(c))))
-    { return std::end(QRangeModelDetails::refTo(std::forward<C>(c))); }
+    static auto adl_end(C &&c) -> decltype(end(QRangeModelDetails::refTo(std::forward<C>(c))))
+    { return end(QRangeModelDetails::refTo(std::forward<C>(c))); }
     template <typename C>
     static auto pos(C &&c, int i)
-    { return std::next(QRangeModelDetails::begin(std::forward<C>(c)), i); }
+    { return std::next(adl_begin(std::forward<C>(c)), i); }
 
     // Test if a type is a range, and whether we can modify it using the
     // standard C++ container member functions insert, erase, and resize.
@@ -306,15 +309,16 @@ namespace QRangeModelDetails
     [[maybe_unused]]
     static constexpr bool is_multi_role_v = is_multi_role<C>::value;
 
+    using std::size;
     template <typename C, typename = void>
     struct test_size : std::false_type {};
     template <typename C>
-    struct test_size<C, std::void_t<decltype(std::size(std::declval<C&>()))>> : std::true_type {};
+    struct test_size<C, std::void_t<decltype(size(std::declval<C&>()))>> : std::true_type {};
 
     template <typename C, typename = void>
     struct test_cbegin : std::false_type {};
     template <typename C>
-    struct test_cbegin<C, std::void_t<decltype(std::begin(std::declval<const C&>()))>>
+    struct test_cbegin<C, std::void_t<decltype(adl_begin(std::declval<const C&>()))>>
         : std::true_type
     {};
 
@@ -330,12 +334,12 @@ namespace QRangeModelDetails
         static constexpr bool has_cbegin = false;
     };
     template <typename C>
-    struct range_traits<C, std::void_t<decltype(begin(std::declval<C&>())),
-                                       decltype(end(std::declval<C&>())),
+    struct range_traits<C, std::void_t<decltype(adl_begin(std::declval<C&>())),
+                                       decltype(adl_end(std::declval<C&>())),
                                        std::enable_if_t<!is_multi_role_v<C>>
                                       >> : std::true_type
     {
-        using iterator = decltype(begin(std::declval<C&>()));
+        using iterator = decltype(adl_begin(std::declval<C&>()));
         using value_type = std::remove_reference_t<decltype(*std::declval<iterator&>())>;
         static constexpr bool is_mutable = !std::is_const_v<C> && !std::is_const_v<value_type>;
         static constexpr bool has_insert = test_insert<C>();
@@ -706,18 +710,18 @@ namespace QRangeModelDetails
     {
         mutable std::remove_const_t<ModelStorage> m_model;
 
-        using iterator = decltype(begin(m_model));
-        using const_iterator = decltype(begin(m_model));
+        using iterator = decltype(adl_begin(m_model));
+        using const_iterator = decltype(adl_begin(m_model));
     };
 
     template <typename ModelStorage>
     struct Storage<ModelStorage,
-                   std::void_t<decltype(begin(std::declval<const ModelStorage&>()))>>
+                   std::void_t<decltype(adl_begin(std::declval<const ModelStorage&>()))>>
     {
         ModelStorage m_model;
 
-        using iterator = decltype(begin(m_model));
-        using const_iterator = decltype(begin(std::as_const(m_model)));
+        using iterator = decltype(adl_begin(m_model));
+        using const_iterator = decltype(adl_begin(std::as_const(m_model)));
     };
 
     template <typename ModelStorage, typename ItemType>
@@ -761,7 +765,7 @@ protected:
         if (QRangeModelDetails::isValid(container)) {
             auto& ref = QRangeModelDetails::refTo(std::forward<StaticContainer>(container));
             if constexpr (QRangeModelDetails::array_like_v<type>) {
-                Q_ASSERT(idx < std::size(ref));
+                Q_ASSERT(idx < size(ref));
                 function(ref[idx]);
             } else {
                 constexpr size_t size = std::tuple_size_v<type>;
@@ -953,7 +957,7 @@ class QRangeModelImpl
 public:
     using range_type = QRangeModelDetails::wrapped_t<Range>;
     using range_features = QRangeModelDetails::range_traits<range_type>;
-    using row_reference = decltype(*QRangeModelDetails::begin(std::declval<range_type&>()));
+    using row_reference = decltype(*QRangeModelDetails::adl_begin(std::declval<range_type&>()));
     using row_type = std::remove_reference_t<row_reference>;
     using wrapped_row_type = QRangeModelDetails::wrapped_t<row_type>;
     using row_features = QRangeModelDetails::range_traits<wrapped_row_type>;
@@ -992,7 +996,8 @@ protected:
             return 0;
 
         if constexpr (QRangeModelDetails::test_size<C>()) {
-            return int(std::size(c));
+            using std::size;
+            return int(size(c));
         } else {
 #if defined(__cpp_lib_ranges)
             using std::ranges::distance;
@@ -1003,7 +1008,8 @@ protected:
                                                       const QRangeModelDetails::wrapped_t<C>,
                                                       QRangeModelDetails::wrapped_t<C>>;
             container_type& container = const_cast<container_type &>(QRangeModelDetails::refTo(c));
-            return int(distance(std::begin(container), std::end(container)));
+            return int(distance(QRangeModelDetails::adl_begin(container),
+                                QRangeModelDetails::adl_end(container)));
         }
     }
 
@@ -1305,7 +1311,7 @@ public:
                         else
                             return value.find(roleNames.value(role));
                     }();
-                    if (it != QRangeModelDetails::end(value))
+                    if (it != QRangeModelDetails::adl_end(value))
                         roleData.setData(QRangeModelDetails::value(it));
                     else
                         roleData.clearData();
@@ -1490,7 +1496,7 @@ public:
             if constexpr (std::is_assignable_v<LHS, RHS>)
                 org = std::forward<RHS>(copy);
             else
-                swap(org, copy);
+                qSwap(org, copy);
         }
     }
     template <typename LHS, typename RHS>
@@ -1675,8 +1681,8 @@ public:
             return fn(model.index(rowIndex, 0, parent), QRangeModelDetails::pointerTo(row));
         } else if constexpr (dynamicColumns() || QRangeModelDetails::array_like_v<row_type>) {
             int columnIndex = -1;
-            return std::all_of(QRangeModelDetails::begin(row),
-                               QRangeModelDetails::end(row), [&](const auto &item) {
+            return std::all_of(QRangeModelDetails::adl_begin(row),
+                               QRangeModelDetails::adl_end(row), [&](const auto &item) {
                 return fn(model.index(rowIndex, ++columnIndex, parent),
                           QRangeModelDetails::pointerTo(item));
             });
@@ -2093,8 +2099,8 @@ protected:
 
         if constexpr (protocol_traits::has_deleteRow && !std::is_pointer_v<Range>
                    && !QRangeModelDetails::is_any_of<Range, std::reference_wrapper>()) {
-            const auto begin = QRangeModelDetails::begin(*m_data.model());
-            const auto end = QRangeModelDetails::end(*m_data.model());
+            const auto begin = QRangeModelDetails::adl_begin(*m_data.model());
+            const auto end = QRangeModelDetails::adl_end(*m_data.model());
             that().deleteRemovedRows(begin, end);
         }
     }
@@ -2423,7 +2429,7 @@ public:
 
     void deleteRemovedRows(range_type &range)
     {
-        deleteRemovedRows(QRangeModelDetails::begin(range), QRangeModelDetails::end(range));
+        deleteRemovedRows(QRangeModelDetails::adl_begin(range), QRangeModelDetails::adl_end(range));
     }
 
     bool autoConnectProperties(const QModelIndex &parent) const
@@ -2463,8 +2469,8 @@ protected:
         auto &&grandParent = this->protocol().parentRow(QRangeModelDetails::refTo(parentRow));
         const range_type &parentSiblings = childrenOf(QRangeModelDetails::pointerTo(grandParent));
         // find the index of parentRow
-        const auto begin = QRangeModelDetails::begin(parentSiblings);
-        const auto end = QRangeModelDetails::end(parentSiblings);
+        const auto begin = QRangeModelDetails::adl_begin(parentSiblings);
+        const auto end = QRangeModelDetails::adl_end(parentSiblings);
         const auto it = std::find_if(begin, end, [parentRow](auto &&s){
             return QRangeModelDetails::pointerTo(std::forward<decltype(s)>(s)) == parentRow;
         });
@@ -2615,8 +2621,8 @@ protected:
                 if constexpr (Base::isMutable()) {
                     decltype(auto) children = this->protocol().childRows(QRangeModelDetails::refTo(*it));
                     if (QRangeModelDetails::isValid(children)) {
-                        deleteRemovedRows(QRangeModelDetails::begin(children),
-                                          QRangeModelDetails::end(children));
+                        deleteRemovedRows(QRangeModelDetails::adl_begin(children),
+                                          QRangeModelDetails::adl_end(children));
                         QRangeModelDetails::refTo(children) = range_type{ };
                     }
                 }
@@ -2629,8 +2635,8 @@ protected:
     void resetParentInChildren(range_type *children)
     {
         if constexpr (tree_traits::has_setParentRow && !rows_are_any_refs_or_pointers) {
-            const auto begin = QRangeModelDetails::begin(*children);
-            const auto end = QRangeModelDetails::end(*children);
+            const auto begin = QRangeModelDetails::adl_begin(*children);
+            const auto end = QRangeModelDetails::adl_end(*children);
             for (auto it = begin; it != end; ++it) {
                 decltype(auto) maybeChildren = this->protocol().childRows(*it);
                 if (QRangeModelDetails::isValid(maybeChildren)) {
@@ -2799,7 +2805,7 @@ protected:
         if constexpr (Base::dynamicColumns()) {
             return int(Base::size(*this->m_data.model()) == 0
                        ? 0
-                       : Base::size(*QRangeModelDetails::begin(*this->m_data.model())));
+                       : Base::size(*QRangeModelDetails::adl_begin(*this->m_data.model())));
         } else {
             return Base::fixedColumnCount();
         }
