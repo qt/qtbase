@@ -7,6 +7,31 @@
 
 QT_BEGIN_NAMESPACE
 
+QRandomAccessAsyncFileBackend::QRandomAccessAsyncFileBackend(QRandomAccessAsyncFile *owner)
+    : m_owner(owner)
+{
+}
+QRandomAccessAsyncFileBackend::~QRandomAccessAsyncFileBackend() = default;
+QRandomAccessAsyncFilePrivate::QRandomAccessAsyncFilePrivate() = default;
+QRandomAccessAsyncFilePrivate::~QRandomAccessAsyncFilePrivate() = default;
+
+void QRandomAccessAsyncFilePrivate::init()
+{
+    Q_Q(QRandomAccessAsyncFile);
+
+#if defined(QT_RANDOMACCESSASYNCFILE_QIORING) || defined(Q_OS_DARWIN)
+    m_backend = std::make_unique<QRandomAccessAsyncFileNativeBackend>(q);
+#endif
+    if (!m_backend || !m_backend->init()) {
+#if QT_CONFIG(thread) && QT_CONFIG(future)
+        m_backend = std::make_unique<QRandomAccessAsyncFileThreadPoolBackend>(q);
+        [[maybe_unused]]
+        bool result = m_backend->init();
+        Q_ASSERT(result); // it always succeeds
+#endif
+    }
+}
+
 QRandomAccessAsyncFile::QRandomAccessAsyncFile(QObject *parent)
     : QObject{*new QRandomAccessAsyncFilePrivate, parent}
 {

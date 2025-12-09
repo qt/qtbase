@@ -22,7 +22,7 @@
 
 #include <QtCore/qstring.h>
 
-#ifdef QT_RANDOMACCESSASYNCFILE_THREAD
+#if QT_CONFIG(future) && QT_CONFIG(thread)
 
 #include <QtCore/private/qfsfileengine_p.h>
 
@@ -30,7 +30,7 @@
 #include <QtCore/qmutex.h>
 #include <QtCore/qqueue.h>
 
-#endif // QT_RANDOMACCESSASYNCFILE_THREAD
+#endif // future && thread
 
 #ifdef Q_OS_DARWIN
 
@@ -50,6 +50,50 @@
 
 QT_BEGIN_NAMESPACE
 
+class QRandomAccessAsyncFileBackend
+{
+    Q_DISABLE_COPY_MOVE(QRandomAccessAsyncFileBackend)
+public:
+    explicit QRandomAccessAsyncFileBackend(QRandomAccessAsyncFile *owner);
+    virtual ~QRandomAccessAsyncFileBackend();
+
+    virtual bool init() = 0;
+    virtual void cancelAndWait(QIOOperation *op) = 0;
+
+    virtual void close() = 0;
+    virtual qint64 size() const = 0;
+
+    [[nodiscard]] virtual QIOOperation *open(const QString &path, QIODeviceBase::OpenMode mode) = 0;
+    [[nodiscard]] virtual QIOOperation *flush() = 0;
+
+    [[nodiscard]] virtual QIOReadOperation *read(qint64 offset, qint64 maxSize) = 0;
+    [[nodiscard]] virtual QIOWriteOperation *write(qint64 offset, const QByteArray &data) = 0;
+    [[nodiscard]] virtual QIOWriteOperation *write(qint64 offset, QByteArray &&data) = 0;
+
+    [[nodiscard]] virtual QIOVectoredReadOperation *
+    readInto(qint64 offset, QSpan<std::byte> buffer) = 0;
+    [[nodiscard]] virtual QIOVectoredWriteOperation *
+    writeFrom(qint64 offset, QSpan<const std::byte> buffer) = 0;
+
+    [[nodiscard]] virtual QIOVectoredReadOperation *
+    readInto(qint64 offset, QSpan<const QSpan<std::byte>> buffers) = 0;
+    [[nodiscard]] virtual QIOVectoredWriteOperation *
+    writeFrom(qint64 offset, QSpan<const QSpan<const std::byte>> buffers) = 0;
+protected:
+    // common for all backends
+    enum class FileState : quint8
+    {
+        Closed,
+        OpenPending, // already got an open request
+        Opened,
+    };
+
+    QString m_filePath;
+    QRandomAccessAsyncFile *m_owner = nullptr;
+    QIODeviceBase::OpenMode m_openMode;
+    FileState m_fileState = FileState::Closed;
+};
+
 class QRandomAccessAsyncFilePrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QRandomAccessAsyncFile)
@@ -62,64 +106,114 @@ public:
     { return file->d_func(); }
 
     void init();
-    void cancelAndWait(QIOOperation *op);
+    void cancelAndWait(QIOOperation *op)
+    {
+        checkValid();
+        m_backend->cancelAndWait(op);
+    }
 
-    void close();
-    qint64 size() const;
+    void close()
+    {
+        checkValid();
+        m_backend->close();
+    }
+    qint64 size() const
+    {
+        checkValid();
+        return m_backend->size();
+    }
 
-    [[nodiscard]] QIOOperation *open(const QString &path, QIODeviceBase::OpenMode mode);
-    [[nodiscard]] QIOOperation *flush();
+    [[nodiscard]] QIOOperation *open(const QString &path, QIODeviceBase::OpenMode mode)
+    {
+        checkValid();
+        return m_backend->open(path, mode);
+    }
+    [[nodiscard]] QIOOperation *flush()
+    {
+        checkValid();
+        return m_backend->flush();
+    }
 
-    [[nodiscard]] QIOReadOperation *read(qint64 offset, qint64 maxSize);
-    [[nodiscard]] QIOWriteOperation *write(qint64 offset, const QByteArray &data);
-    [[nodiscard]] QIOWriteOperation *write(qint64 offset, QByteArray &&data);
+    [[nodiscard]] QIOReadOperation *read(qint64 offset, qint64 maxSize)
+    {
+        checkValid();
+        return m_backend->read(offset, maxSize);
+    }
+    [[nodiscard]] QIOWriteOperation *write(qint64 offset, const QByteArray &data)
+    {
+        checkValid();
+        return m_backend->write(offset, data);
+    }
+    [[nodiscard]] QIOWriteOperation *write(qint64 offset, QByteArray &&data)
+    {
+        checkValid();
+        return m_backend->write(offset, std::move(data));
+    }
 
-    [[nodiscard]] QIOVectoredReadOperation *
-    readInto(qint64 offset, QSpan<std::byte> buffer);
-    [[nodiscard]] QIOVectoredWriteOperation *
-    writeFrom(qint64 offset, QSpan<const std::byte> buffer);
+    [[nodiscard]] QIOVectoredReadOperation *readInto(qint64 offset, QSpan<std::byte> buffer)
+    {
+        checkValid();
+        return m_backend->readInto(offset, buffer);
+    }
+    [[nodiscard]] QIOVectoredWriteOperation *writeFrom(qint64 offset, QSpan<const std::byte> buffer)
+    {
+        checkValid();
+        return m_backend->writeFrom(offset, buffer);
+    }
 
-    [[nodiscard]] QIOVectoredReadOperation *
-    readInto(qint64 offset, QSpan<const QSpan<std::byte>> buffers);
-    [[nodiscard]] QIOVectoredWriteOperation *
-    writeFrom(qint64 offset, QSpan<const QSpan<const std::byte>> buffers);
+    [[nodiscard]] QIOVectoredReadOperation *readInto(qint64 offset,
+                                                     QSpan<const QSpan<std::byte>> buffers)
+    {
+        checkValid();
+        return m_backend->readInto(offset, buffers);
+    }
+    [[nodiscard]] QIOVectoredWriteOperation *writeFrom(qint64 offset,
+                                                       QSpan<const QSpan<const std::byte>> buffers)
+    {
+        checkValid();
+        return m_backend->writeFrom(offset, buffers);
+    }
 
 private:
-    // common for all backends
-    enum class FileState : quint8
-    {
-        Closed,
-        OpenPending, // already got an open request
-        Opened,
-    };
+    void checkValid() const { Q_ASSERT(m_backend); }
+    std::unique_ptr<QRandomAccessAsyncFileBackend> m_backend;
 
-    QString m_filePath;
-    QIODeviceBase::OpenMode m_openMode;
-    FileState m_fileState = FileState::Closed;
+};
 
-#ifdef QT_RANDOMACCESSASYNCFILE_THREAD
+
+#if defined(QT_RANDOMACCESSASYNCFILE_QIORING) || defined(Q_OS_DARWIN)
+class QRandomAccessAsyncFileNativeBackend final : public QRandomAccessAsyncFileBackend
+{
+    Q_DISABLE_COPY_MOVE(QRandomAccessAsyncFileNativeBackend)
 public:
-    struct OperationResult
-    {
-        qint64 bytesProcessed; // either read or written
-        QIOOperation::Error error;
-    };
+    explicit QRandomAccessAsyncFileNativeBackend(QRandomAccessAsyncFile *owner);
+    ~QRandomAccessAsyncFileNativeBackend();
+
+    bool init() override;
+    void cancelAndWait(QIOOperation *op) override;
+
+    void close() override;
+    qint64 size() const override;
+
+    [[nodiscard]] QIOOperation *open(const QString &path, QIODeviceBase::OpenMode mode) override;
+    [[nodiscard]] QIOOperation *flush() override;
+
+    [[nodiscard]] QIOReadOperation *read(qint64 offset, qint64 maxSize) override;
+    [[nodiscard]] QIOWriteOperation *write(qint64 offset, const QByteArray &data) override;
+    [[nodiscard]] QIOWriteOperation *write(qint64 offset, QByteArray &&data) override;
+
+    [[nodiscard]] QIOVectoredReadOperation *
+    readInto(qint64 offset, QSpan<std::byte> buffer) override;
+    [[nodiscard]] QIOVectoredWriteOperation *
+    writeFrom(qint64 offset, QSpan<const std::byte> buffer) override;
+
+    [[nodiscard]] QIOVectoredReadOperation *
+    readInto(qint64 offset, QSpan<const QSpan<std::byte>> buffers) override;
+    [[nodiscard]] QIOVectoredWriteOperation *
+    writeFrom(qint64 offset, QSpan<const QSpan<const std::byte>> buffers) override;
 
 private:
-    mutable QBasicMutex m_engineMutex;
-    std::unique_ptr<QFSFileEngine> m_engine;
-    QFutureWatcher<OperationResult> m_watcher;
-
-    QQueue<QPointer<QIOOperation>> m_operations;
-    QPointer<QIOOperation> m_currentOperation;
-    qsizetype numProcessedBuffers = 0;
-
-    void executeNextOperation();
-    void processBufferAt(qsizetype idx);
-    void processFlush();
-    void processOpen();
-    void operationComplete();
-#elif defined(QT_RANDOMACCESSASYNCFILE_QIORING)
+#if defined(QT_RANDOMACCESSASYNCFILE_QIORING)
     void queueCompletion(QIOOperationPrivate *priv, QIOOperation::Error error);
     void startReadIntoSingle(QIOOperation *op, const QSpan<std::byte> &to);
     void startWriteFromSingle(QIOOperation *op, const QSpan<const std::byte> &from);
@@ -210,6 +304,61 @@ private:
                      dispatch_data_t dataToWrite, qint64 dataSize);
 #endif
 };
+#endif // QIORing || macOS
+
+#if QT_CONFIG(future) && QT_CONFIG(thread)
+class QRandomAccessAsyncFileThreadPoolBackend : public QRandomAccessAsyncFileBackend
+{
+    Q_DISABLE_COPY_MOVE(QRandomAccessAsyncFileThreadPoolBackend)
+public:
+    explicit QRandomAccessAsyncFileThreadPoolBackend(QRandomAccessAsyncFile *owner);
+    ~QRandomAccessAsyncFileThreadPoolBackend();
+
+    bool init() override;
+    void cancelAndWait(QIOOperation *op) override;
+
+    void close() override;
+    qint64 size() const override;
+
+    [[nodiscard]] QIOOperation *open(const QString &path, QIODeviceBase::OpenMode mode) override;
+    [[nodiscard]] QIOOperation *flush() override;
+
+    [[nodiscard]] QIOReadOperation *read(qint64 offset, qint64 maxSize) override;
+    [[nodiscard]] QIOWriteOperation *write(qint64 offset, const QByteArray &data) override;
+    [[nodiscard]] QIOWriteOperation *write(qint64 offset, QByteArray &&data) override;
+
+    [[nodiscard]] QIOVectoredReadOperation *
+    readInto(qint64 offset, QSpan<std::byte> buffer) override;
+    [[nodiscard]] QIOVectoredWriteOperation *
+    writeFrom(qint64 offset, QSpan<const std::byte> buffer) override;
+
+    [[nodiscard]] QIOVectoredReadOperation *
+    readInto(qint64 offset, QSpan<const QSpan<std::byte>> buffers) override;
+    [[nodiscard]] QIOVectoredWriteOperation *
+    writeFrom(qint64 offset, QSpan<const QSpan<const std::byte>> buffers) override;
+
+    struct OperationResult
+    {
+        qint64 bytesProcessed; // either read or written
+        QIOOperation::Error error;
+    };
+private:
+
+    mutable QBasicMutex m_engineMutex;
+    std::unique_ptr<QFSFileEngine> m_engine;
+    QFutureWatcher<OperationResult> m_watcher;
+
+    QQueue<QPointer<QIOOperation>> m_operations;
+    QPointer<QIOOperation> m_currentOperation;
+    qsizetype numProcessedBuffers = 0;
+
+    void executeNextOperation();
+    void processBufferAt(qsizetype idx);
+    void processFlush();
+    void processOpen();
+    void operationComplete();
+};
+#endif // future && thread
 
 QT_END_NAMESPACE
 

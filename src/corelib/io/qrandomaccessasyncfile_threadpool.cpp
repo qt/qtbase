@@ -64,28 +64,29 @@ static SharedThreadPool asyncFileThreadPool;
 
 } // anonymous namespace
 
-QRandomAccessAsyncFilePrivate::QRandomAccessAsyncFilePrivate() :
-    QObjectPrivate()
+QRandomAccessAsyncFileThreadPoolBackend::QRandomAccessAsyncFileThreadPoolBackend(QRandomAccessAsyncFile *owner) :
+    QRandomAccessAsyncFileBackend(owner)
 {
     asyncFileThreadPool.ref();
 }
 
-QRandomAccessAsyncFilePrivate::~QRandomAccessAsyncFilePrivate()
+QRandomAccessAsyncFileThreadPoolBackend::~QRandomAccessAsyncFileThreadPoolBackend()
 {
     asyncFileThreadPool.deref();
 }
 
-void QRandomAccessAsyncFilePrivate::init()
+bool QRandomAccessAsyncFileThreadPoolBackend::init()
 {
-    QObject::connect(&m_watcher, &QFutureWatcherBase::finished, q_ptr, [this]{
+    QObject::connect(&m_watcher, &QFutureWatcherBase::finished, m_owner, [this]{
         operationComplete();
     });
-    QObject::connect(&m_watcher, &QFutureWatcherBase::canceled, q_ptr, [this]{
+    QObject::connect(&m_watcher, &QFutureWatcherBase::canceled, m_owner, [this]{
         operationComplete();
     });
+    return true;
 }
 
-void QRandomAccessAsyncFilePrivate::cancelAndWait(QIOOperation *op)
+void QRandomAccessAsyncFileThreadPoolBackend::cancelAndWait(QIOOperation *op)
 {
     if (op == m_currentOperation) {
         m_currentOperation = nullptr; // to discard the result
@@ -97,7 +98,7 @@ void QRandomAccessAsyncFilePrivate::cancelAndWait(QIOOperation *op)
 }
 
 QIOOperation *
-QRandomAccessAsyncFilePrivate::open(const QString &path, QIODeviceBase::OpenMode mode)
+QRandomAccessAsyncFileThreadPoolBackend::open(const QString &path, QIODeviceBase::OpenMode mode)
 {
     // We generate the command in any case. But if the file is already opened,
     // it will finish with an error
@@ -112,14 +113,14 @@ QRandomAccessAsyncFilePrivate::open(const QString &path, QIODeviceBase::OpenMode
     auto *priv = new QIOOperationPrivate(dataStorage);
     priv->type = QIOOperation::Type::Open;
 
-    auto *op = new QIOOperation(*priv, q_ptr);
+    auto *op = new QIOOperation(*priv, m_owner);
 
     m_operations.append(op);
     executeNextOperation();
     return op;
 }
 
-void QRandomAccessAsyncFilePrivate::close()
+void QRandomAccessAsyncFileThreadPoolBackend::close()
 {
     // all the operations should be aborted
     for (const auto &op : std::as_const(m_operations)) {
@@ -148,7 +149,7 @@ void QRandomAccessAsyncFilePrivate::close()
     m_fileState = FileState::Closed;
 }
 
-qint64 QRandomAccessAsyncFilePrivate::size() const
+qint64 QRandomAccessAsyncFileThreadPoolBackend::size() const
 {
     QMutexLocker locker(&m_engineMutex);
     if (m_engine)
@@ -156,20 +157,20 @@ qint64 QRandomAccessAsyncFilePrivate::size() const
     return -1;
 }
 
-QIOOperation *QRandomAccessAsyncFilePrivate::flush()
+QIOOperation *QRandomAccessAsyncFileThreadPoolBackend::flush()
 {
     auto *dataStorage = new QtPrivate::QIOOperationDataStorage();
 
     auto *priv = new QIOOperationPrivate(dataStorage);
     priv->type = QIOOperation::Type::Flush;
 
-    auto *op = new QIOOperation(*priv, q_ptr);
+    auto *op = new QIOOperation(*priv, m_owner);
     m_operations.append(op);
     executeNextOperation();
     return op;
 }
 
-QIOReadOperation *QRandomAccessAsyncFilePrivate::read(qint64 offset, qint64 maxSize)
+QIOReadOperation *QRandomAccessAsyncFileThreadPoolBackend::read(qint64 offset, qint64 maxSize)
 {
     QByteArray array;
     array.resizeForOverwrite(maxSize);
@@ -179,14 +180,14 @@ QIOReadOperation *QRandomAccessAsyncFilePrivate::read(qint64 offset, qint64 maxS
     priv->offset = offset;
     priv->type = QIOOperation::Type::Read;
 
-    auto *op = new QIOReadOperation(*priv, q_ptr);
+    auto *op = new QIOReadOperation(*priv, m_owner);
     m_operations.append(op);
     executeNextOperation();
     return op;
 }
 
 QIOWriteOperation *
-QRandomAccessAsyncFilePrivate::write(qint64 offset, const QByteArray &data)
+QRandomAccessAsyncFileThreadPoolBackend::write(qint64 offset, const QByteArray &data)
 {
     auto *dataStorage = new QtPrivate::QIOOperationDataStorage(data);
 
@@ -194,14 +195,14 @@ QRandomAccessAsyncFilePrivate::write(qint64 offset, const QByteArray &data)
     priv->offset = offset;
     priv->type = QIOOperation::Type::Write;
 
-    auto *op = new QIOWriteOperation(*priv, q_ptr);
+    auto *op = new QIOWriteOperation(*priv, m_owner);
     m_operations.append(op);
     executeNextOperation();
     return op;
 }
 
 QIOWriteOperation *
-QRandomAccessAsyncFilePrivate::write(qint64 offset, QByteArray &&data)
+QRandomAccessAsyncFileThreadPoolBackend::write(qint64 offset, QByteArray &&data)
 {
     auto *dataStorage = new QtPrivate::QIOOperationDataStorage(std::move(data));
 
@@ -209,14 +210,14 @@ QRandomAccessAsyncFilePrivate::write(qint64 offset, QByteArray &&data)
     priv->offset = offset;
     priv->type = QIOOperation::Type::Write;
 
-    auto *op = new QIOWriteOperation(*priv, q_ptr);
+    auto *op = new QIOWriteOperation(*priv, m_owner);
     m_operations.append(op);
     executeNextOperation();
     return op;
 }
 
 QIOVectoredReadOperation *
-QRandomAccessAsyncFilePrivate::readInto(qint64 offset, QSpan<std::byte> buffer)
+QRandomAccessAsyncFileThreadPoolBackend::readInto(qint64 offset, QSpan<std::byte> buffer)
 {
     auto *dataStorage =
             new QtPrivate::QIOOperationDataStorage(QSpan<const QSpan<std::byte>>{buffer});
@@ -225,14 +226,14 @@ QRandomAccessAsyncFilePrivate::readInto(qint64 offset, QSpan<std::byte> buffer)
     priv->offset = offset;
     priv->type = QIOOperation::Type::Read;
 
-    auto *op = new QIOVectoredReadOperation(*priv, q_ptr);
+    auto *op = new QIOVectoredReadOperation(*priv, m_owner);
     m_operations.append(op);
     executeNextOperation();
     return op;
 }
 
 QIOVectoredWriteOperation *
-QRandomAccessAsyncFilePrivate::writeFrom(qint64 offset, QSpan<const std::byte> buffer)
+QRandomAccessAsyncFileThreadPoolBackend::writeFrom(qint64 offset, QSpan<const std::byte> buffer)
 {
     auto *dataStorage =
             new QtPrivate::QIOOperationDataStorage(QSpan<const QSpan<const std::byte>>{buffer});
@@ -241,14 +242,14 @@ QRandomAccessAsyncFilePrivate::writeFrom(qint64 offset, QSpan<const std::byte> b
     priv->offset = offset;
     priv->type = QIOOperation::Type::Write;
 
-    auto *op = new QIOVectoredWriteOperation(*priv, q_ptr);
+    auto *op = new QIOVectoredWriteOperation(*priv, m_owner);
     m_operations.append(op);
     executeNextOperation();
     return op;
 }
 
 QIOVectoredReadOperation *
-QRandomAccessAsyncFilePrivate::readInto(qint64 offset, QSpan<const QSpan<std::byte>> buffers)
+QRandomAccessAsyncFileThreadPoolBackend::readInto(qint64 offset, QSpan<const QSpan<std::byte>> buffers)
 {
     auto *dataStorage = new QtPrivate::QIOOperationDataStorage(buffers);
 
@@ -256,14 +257,14 @@ QRandomAccessAsyncFilePrivate::readInto(qint64 offset, QSpan<const QSpan<std::by
     priv->offset = offset;
     priv->type = QIOOperation::Type::Read;
 
-    auto *op = new QIOVectoredReadOperation(*priv, q_ptr);
+    auto *op = new QIOVectoredReadOperation(*priv, m_owner);
     m_operations.append(op);
     executeNextOperation();
     return op;
 }
 
 QIOVectoredWriteOperation *
-QRandomAccessAsyncFilePrivate::writeFrom(qint64 offset, QSpan<const QSpan<const std::byte>> buffers)
+QRandomAccessAsyncFileThreadPoolBackend::writeFrom(qint64 offset, QSpan<const QSpan<const std::byte>> buffers)
 {
     auto *dataStorage = new QtPrivate::QIOOperationDataStorage(buffers);
 
@@ -271,16 +272,16 @@ QRandomAccessAsyncFilePrivate::writeFrom(qint64 offset, QSpan<const QSpan<const 
     priv->offset = offset;
     priv->type = QIOOperation::Type::Write;
 
-    auto *op = new QIOVectoredWriteOperation(*priv, q_ptr);
+    auto *op = new QIOVectoredWriteOperation(*priv, m_owner);
     m_operations.append(op);
     executeNextOperation();
     return op;
 }
 
-static QRandomAccessAsyncFilePrivate::OperationResult
+static QRandomAccessAsyncFileThreadPoolBackend::OperationResult
 executeRead(QFSFileEngine *engine, QBasicMutex *mutex, qint64 offset, char *buffer, qint64 maxSize)
 {
-    QRandomAccessAsyncFilePrivate::OperationResult result{0, QIOOperation::Error::None};
+    QRandomAccessAsyncFileThreadPoolBackend::OperationResult result{0, QIOOperation::Error::None};
 
     QMutexLocker locker(mutex);
     if (engine) {
@@ -299,11 +300,11 @@ executeRead(QFSFileEngine *engine, QBasicMutex *mutex, qint64 offset, char *buff
     return result;
 }
 
-static QRandomAccessAsyncFilePrivate::OperationResult
+static QRandomAccessAsyncFileThreadPoolBackend::OperationResult
 executeWrite(QFSFileEngine *engine, QBasicMutex *mutex, qint64 offset,
              const char *buffer, qint64 size)
 {
-    QRandomAccessAsyncFilePrivate::OperationResult result{0, QIOOperation::Error::None};
+    QRandomAccessAsyncFileThreadPoolBackend::OperationResult result{0, QIOOperation::Error::None};
 
     QMutexLocker locker(mutex);
     if (engine) {
@@ -322,7 +323,7 @@ executeWrite(QFSFileEngine *engine, QBasicMutex *mutex, qint64 offset,
     return result;
 }
 
-void QRandomAccessAsyncFilePrivate::executeNextOperation()
+void QRandomAccessAsyncFileThreadPoolBackend::executeNextOperation()
 {
     if (m_currentOperation.isNull()) {
         // start next
@@ -351,7 +352,7 @@ void QRandomAccessAsyncFilePrivate::executeNextOperation()
     }
 }
 
-void QRandomAccessAsyncFilePrivate::processBufferAt(qsizetype idx)
+void QRandomAccessAsyncFileThreadPoolBackend::processBufferAt(qsizetype idx)
 {
     Q_ASSERT(!m_currentOperation.isNull());
     auto *priv = QIOOperationPrivate::get(m_currentOperation.get());
@@ -417,7 +418,7 @@ void QRandomAccessAsyncFilePrivate::processBufferAt(qsizetype idx)
     }
 }
 
-void QRandomAccessAsyncFilePrivate::processFlush()
+void QRandomAccessAsyncFileThreadPoolBackend::processFlush()
 {
     Q_ASSERT(!m_currentOperation.isNull());
     auto *priv = QIOOperationPrivate::get(m_currentOperation.get());
@@ -427,7 +428,7 @@ void QRandomAccessAsyncFilePrivate::processFlush()
     QBasicMutex *mutexPtr = &m_engineMutex;
     auto op = [engine = m_engine.get(), mutexPtr] {
         QMutexLocker locker(mutexPtr);
-        QRandomAccessAsyncFilePrivate::OperationResult result{0, QIOOperation::Error::None};
+        QRandomAccessAsyncFileThreadPoolBackend::OperationResult result{0, QIOOperation::Error::None};
         if (engine) {
             if (!engine->flush())
                 result.error = QIOOperation::Error::Flush;
@@ -442,7 +443,7 @@ void QRandomAccessAsyncFilePrivate::processFlush()
     m_watcher.setFuture(f);
 }
 
-void QRandomAccessAsyncFilePrivate::processOpen()
+void QRandomAccessAsyncFileThreadPoolBackend::processOpen()
 {
     Q_ASSERT(!m_currentOperation.isNull());
     auto *priv = QIOOperationPrivate::get(m_currentOperation.get());
@@ -457,7 +458,7 @@ void QRandomAccessAsyncFilePrivate::processOpen()
         m_engineMutex.unlock();
         QBasicMutex *mutexPtr = &m_engineMutex;
         auto op = [engine = m_engine.get(), mutexPtr, mode = m_openMode] {
-            QRandomAccessAsyncFilePrivate::OperationResult result{0, QIOOperation::Error::None};
+            QRandomAccessAsyncFileThreadPoolBackend::OperationResult result{0, QIOOperation::Error::None};
             QMutexLocker locker(mutexPtr);
             const bool res =
                     engine && engine->open(mode | QIODeviceBase::Unbuffered, std::nullopt);
@@ -468,13 +469,13 @@ void QRandomAccessAsyncFilePrivate::processOpen()
         f = QtFuture::makeReadyVoidFuture().then(asyncFileThreadPool(), op);
     } else {
         f = QtFuture::makeReadyVoidFuture().then(asyncFileThreadPool(), [] {
-            return QRandomAccessAsyncFilePrivate::OperationResult{0, QIOOperation::Error::Open};
+            return QRandomAccessAsyncFileThreadPoolBackend::OperationResult{0, QIOOperation::Error::Open};
         });
     }
     m_watcher.setFuture(f);
 }
 
-void QRandomAccessAsyncFilePrivate::operationComplete()
+void QRandomAccessAsyncFileThreadPoolBackend::operationComplete()
 {
     // TODO: if one of the buffers was read/written with an error,
     // stop processing immediately

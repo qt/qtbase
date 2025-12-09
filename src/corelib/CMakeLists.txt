@@ -590,17 +590,14 @@ if(QT_FEATURE_async_io)
             DEFINES
                 QT_RANDOMACCESSASYNCFILE_QIORING
         )
-    elseif(QT_FEATURE_thread AND QT_FEATURE_future)
-        # TODO: This should become the last (fallback) condition later.
-        # We migth also want to rewrite it so that it does not depend on
-        # QT_FEATURE_future.
-        qt_internal_extend_target(Core
-            SOURCES
-                io/qrandomaccessasyncfile_threadpool.cpp
-            DEFINES
-                QT_RANDOMACCESSASYNCFILE_THREAD
-        )
     endif()
+    # This is the fallback condition that should be always available.
+    # TODO: try to rewrite it so that it does not depend on
+    # QT_FEATURE_future.
+    qt_internal_extend_target(Core
+        SOURCES
+            io/qrandomaccessasyncfile_threadpool.cpp
+    )
 endif()
 
 # This needs to be done before one below adds kernel32 because the symbols we use

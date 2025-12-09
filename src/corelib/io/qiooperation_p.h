@@ -72,6 +72,9 @@ protected:
     Q_DECLARE_PRIVATE(QIOOperation)
 
     friend class QRandomAccessAsyncFilePrivate;
+    friend class QRandomAccessAsyncFileBackend;
+    friend class QRandomAccessAsyncFileNativeBackend;
+    friend class QRandomAccessAsyncFileThreadPoolBackend;
 };
 
 class Q_CORE_EXPORT QIOReadWriteOperationBase : public QIOOperation
@@ -86,6 +89,11 @@ protected:
     QIOReadWriteOperationBase() = delete;
     Q_DISABLE_COPY_MOVE(QIOReadWriteOperationBase)
     explicit QIOReadWriteOperationBase(QIOOperationPrivate &dd, QObject *parent = nullptr);
+
+    friend class QRandomAccessAsyncFilePrivate;
+    friend class QRandomAccessAsyncFileBackend;
+    friend class QRandomAccessAsyncFileNativeBackend;
+    friend class QRandomAccessAsyncFileThreadPoolBackend;
 };
 
 class Q_CORE_EXPORT QIOReadOperation : public QIOReadWriteOperationBase
@@ -101,6 +109,9 @@ protected:
     explicit QIOReadOperation(QIOOperationPrivate &dd, QObject *parent = nullptr);
 
     friend class QRandomAccessAsyncFilePrivate;
+    friend class QRandomAccessAsyncFileBackend;
+    friend class QRandomAccessAsyncFileNativeBackend;
+    friend class QRandomAccessAsyncFileThreadPoolBackend;
 };
 
 class Q_CORE_EXPORT QIOWriteOperation : public QIOReadWriteOperationBase
@@ -116,6 +127,9 @@ protected:
     explicit QIOWriteOperation(QIOOperationPrivate &dd, QObject *parent = nullptr);
 
     friend class QRandomAccessAsyncFilePrivate;
+    friend class QRandomAccessAsyncFileBackend;
+    friend class QRandomAccessAsyncFileNativeBackend;
+    friend class QRandomAccessAsyncFileThreadPoolBackend;
 };
 
 class Q_CORE_EXPORT QIOVectoredReadOperation : public QIOReadWriteOperationBase
@@ -131,6 +145,9 @@ protected:
     explicit QIOVectoredReadOperation(QIOOperationPrivate &dd, QObject *parent = nullptr);
 
     friend class QRandomAccessAsyncFilePrivate;
+    friend class QRandomAccessAsyncFileBackend;
+    friend class QRandomAccessAsyncFileNativeBackend;
+    friend class QRandomAccessAsyncFileThreadPoolBackend;
 };
 
 class Q_CORE_EXPORT QIOVectoredWriteOperation : public QIOReadWriteOperationBase
@@ -146,6 +163,9 @@ protected:
     explicit QIOVectoredWriteOperation(QIOOperationPrivate &dd, QObject *parent = nullptr);
 
     friend class QRandomAccessAsyncFilePrivate;
+    friend class QRandomAccessAsyncFileBackend;
+    friend class QRandomAccessAsyncFileNativeBackend;
+    friend class QRandomAccessAsyncFileThreadPoolBackend;
 };
 
 QT_END_NAMESPACE

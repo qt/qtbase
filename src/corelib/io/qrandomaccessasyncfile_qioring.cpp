@@ -18,18 +18,21 @@ QT_BEGIN_NAMESPACE
 Q_STATIC_LOGGING_CATEGORY(lcQRandomAccessIORing, "qt.core.qrandomaccessasyncfile.ioring",
                           QtCriticalMsg);
 
-QRandomAccessAsyncFilePrivate::QRandomAccessAsyncFilePrivate() = default;
+QRandomAccessAsyncFileNativeBackend::QRandomAccessAsyncFileNativeBackend(QRandomAccessAsyncFile *owner)
+    : QRandomAccessAsyncFileBackend(owner)
+{}
 
-QRandomAccessAsyncFilePrivate::~QRandomAccessAsyncFilePrivate() = default;
+QRandomAccessAsyncFileNativeBackend::~QRandomAccessAsyncFileNativeBackend() = default;
 
-void QRandomAccessAsyncFilePrivate::init()
+bool QRandomAccessAsyncFileNativeBackend::init()
 {
     m_ioring = QIORing::sharedInstance();
     if (!m_ioring)
-        qCCritical(lcQRandomAccessIORing, "QRandomAccessAsyncFile: ioring failed to initialize");
+        qCWarning(lcQRandomAccessIORing, "QRandomAccessAsyncFile: ioring failed to initialize");
+    return m_ioring != nullptr;
 }
 
-QIORing::RequestHandle QRandomAccessAsyncFilePrivate::cancel(QIORing::RequestHandle handle)
+QIORing::RequestHandle QRandomAccessAsyncFileNativeBackend::cancel(QIORing::RequestHandle handle)
 {
     if (handle) {
         QIORingRequest<QIORing::Operation::Cancel> cancelRequest;
@@ -39,7 +42,7 @@ QIORing::RequestHandle QRandomAccessAsyncFilePrivate::cancel(QIORing::RequestHan
     return nullptr;
 }
 
-void QRandomAccessAsyncFilePrivate::cancelAndWait(QIOOperation *op)
+void QRandomAccessAsyncFileNativeBackend::cancelAndWait(QIOOperation *op)
 {
     auto *opHandle = m_opHandleMap.value(op);
     if (auto *handle = cancel(opHandle)) {
@@ -48,7 +51,7 @@ void QRandomAccessAsyncFilePrivate::cancelAndWait(QIOOperation *op)
     }
 }
 
-void QRandomAccessAsyncFilePrivate::queueCompletion(QIOOperationPrivate *priv, QIOOperation::Error error)
+void QRandomAccessAsyncFileNativeBackend::queueCompletion(QIOOperationPrivate *priv, QIOOperation::Error error)
 {
     // Remove the handle now in case the user cancels or deletes the io-operation
     // before operationComplete is called - the null-handle will protect from
@@ -61,14 +64,14 @@ void QRandomAccessAsyncFilePrivate::queueCompletion(QIOOperationPrivate *priv, Q
     }, Qt::QueuedConnection);
 }
 
-QIOOperation *QRandomAccessAsyncFilePrivate::open(const QString &path, QIODeviceBase::OpenMode mode)
+QIOOperation *QRandomAccessAsyncFileNativeBackend::open(const QString &path, QIODeviceBase::OpenMode mode)
 {
     auto *dataStorage = new QtPrivate::QIOOperationDataStorage();
 
     auto *priv = new QIOOperationPrivate(dataStorage);
     priv->type = QIOOperation::Type::Open;
 
-    auto *op = new QIOOperation(*priv, q_ptr);
+    auto *op = new QIOOperation(*priv, m_owner);
     if (m_fileState != FileState::Closed) {
         queueCompletion(priv, QIOOperation::Error::Open);
         return op;
@@ -115,7 +118,7 @@ QIOOperation *QRandomAccessAsyncFilePrivate::open(const QString &path, QIODevice
     return op;
 }
 
-void QRandomAccessAsyncFilePrivate::close()
+void QRandomAccessAsyncFileNativeBackend::close()
 {
     // all the operations should be aborted
     const auto ops = std::exchange(m_operations, {});
@@ -123,7 +126,7 @@ void QRandomAccessAsyncFilePrivate::close()
     // Request to cancel all of the in-flight operations:
     for (const auto &op : ops) {
         if (op) {
-            op->d_func()->error = QIOOperation::Error::Aborted;
+            QIOOperationPrivate::get(op)->error = QIOOperation::Error::Aborted;
             if (auto *opHandle = m_opHandleMap.value(op)) {
                 tasksToAwait.append(cancel(opHandle));
                 tasksToAwait.append(opHandle);
@@ -142,7 +145,7 @@ void QRandomAccessAsyncFilePrivate::close()
     m_fd = -1;
 }
 
-qint64 QRandomAccessAsyncFilePrivate::size() const
+qint64 QRandomAccessAsyncFileNativeBackend::size() const
 {
     QIORingRequest<QIORing::Operation::Stat> statRequest;
     statRequest.fd = m_fd;
@@ -161,14 +164,14 @@ qint64 QRandomAccessAsyncFilePrivate::size() const
     return finalSize;
 }
 
-QIOOperation *QRandomAccessAsyncFilePrivate::flush()
+QIOOperation *QRandomAccessAsyncFileNativeBackend::flush()
 {
     auto *dataStorage = new QtPrivate::QIOOperationDataStorage();
 
     auto *priv = new QIOOperationPrivate(dataStorage);
     priv->type = QIOOperation::Type::Flush;
 
-    auto *op = new QIOOperation(*priv, q_ptr);
+    auto *op = new QIOOperation(*priv, m_owner);
     m_operations.append(op);
 
     QIORingRequest<QIORing::Operation::Flush> flushRequest;
@@ -192,7 +195,7 @@ QIOOperation *QRandomAccessAsyncFilePrivate::flush()
     return op;
 }
 
-void QRandomAccessAsyncFilePrivate::startReadIntoSingle(QIOOperation *op,
+void QRandomAccessAsyncFileNativeBackend::startReadIntoSingle(QIOOperation *op,
                                                         const QSpan<std::byte> &to)
 {
     QIORingRequest<QIORing::Operation::Read> readRequest;
@@ -231,7 +234,7 @@ void QRandomAccessAsyncFilePrivate::startReadIntoSingle(QIOOperation *op,
     m_opHandleMap.insert(priv->q_func(), m_ioring->queueRequest(std::move(readRequest)));
 }
 
-QIOReadOperation *QRandomAccessAsyncFilePrivate::read(qint64 offset, qint64 maxSize)
+QIOReadOperation *QRandomAccessAsyncFileNativeBackend::read(qint64 offset, qint64 maxSize)
 {
     QByteArray array;
     array.resizeForOverwrite(maxSize);
@@ -241,7 +244,7 @@ QIOReadOperation *QRandomAccessAsyncFilePrivate::read(qint64 offset, qint64 maxS
     priv->offset = offset;
     priv->type = QIOOperation::Type::Read;
 
-    auto *op = new QIOReadOperation(*priv, q_ptr);
+    auto *op = new QIOReadOperation(*priv, m_owner);
     m_operations.append(op);
 
     startReadIntoSingle(op, as_writable_bytes(QSpan(dataStorage->getByteArray())));
@@ -249,12 +252,12 @@ QIOReadOperation *QRandomAccessAsyncFilePrivate::read(qint64 offset, qint64 maxS
     return op;
 }
 
-QIOWriteOperation *QRandomAccessAsyncFilePrivate::write(qint64 offset, const QByteArray &data)
+QIOWriteOperation *QRandomAccessAsyncFileNativeBackend::write(qint64 offset, const QByteArray &data)
 {
     return write(offset, QByteArray(data));
 }
 
-void QRandomAccessAsyncFilePrivate::startWriteFromSingle(QIOOperation *op,
+void QRandomAccessAsyncFileNativeBackend::startWriteFromSingle(QIOOperation *op,
                                                          const QSpan<const std::byte> &from)
 {
     QIORingRequest<QIORing::Operation::Write> writeRequest;
@@ -288,7 +291,7 @@ void QRandomAccessAsyncFilePrivate::startWriteFromSingle(QIOOperation *op,
     m_opHandleMap.insert(priv->q_func(), m_ioring->queueRequest(std::move(writeRequest)));
 }
 
-QIOWriteOperation *QRandomAccessAsyncFilePrivate::write(qint64 offset, QByteArray &&data)
+QIOWriteOperation *QRandomAccessAsyncFileNativeBackend::write(qint64 offset, QByteArray &&data)
 {
     auto *dataStorage = new QtPrivate::QIOOperationDataStorage(std::move(data));
 
@@ -296,7 +299,7 @@ QIOWriteOperation *QRandomAccessAsyncFilePrivate::write(qint64 offset, QByteArra
     priv->offset = offset;
     priv->type = QIOOperation::Type::Write;
 
-    auto *op = new QIOWriteOperation(*priv, q_ptr);
+    auto *op = new QIOWriteOperation(*priv, m_owner);
     m_operations.append(op);
 
     startWriteFromSingle(op, as_bytes(QSpan(dataStorage->getByteArray())));
@@ -304,7 +307,7 @@ QIOWriteOperation *QRandomAccessAsyncFilePrivate::write(qint64 offset, QByteArra
     return op;
 }
 
-QIOVectoredReadOperation *QRandomAccessAsyncFilePrivate::readInto(qint64 offset,
+QIOVectoredReadOperation *QRandomAccessAsyncFileNativeBackend::readInto(qint64 offset,
                                                                   QSpan<std::byte> buffer)
 {
     auto *dataStorage = new QtPrivate::QIOOperationDataStorage(
@@ -314,7 +317,7 @@ QIOVectoredReadOperation *QRandomAccessAsyncFilePrivate::readInto(qint64 offset,
     priv->offset = offset;
     priv->type = QIOOperation::Type::Read;
 
-    auto *op = new QIOVectoredReadOperation(*priv, q_ptr);
+    auto *op = new QIOVectoredReadOperation(*priv, m_owner);
     m_operations.append(op);
 
     startReadIntoSingle(op, dataStorage->getReadSpans().first());
@@ -322,7 +325,7 @@ QIOVectoredReadOperation *QRandomAccessAsyncFilePrivate::readInto(qint64 offset,
     return op;
 }
 
-QIOVectoredWriteOperation *QRandomAccessAsyncFilePrivate::writeFrom(qint64 offset,
+QIOVectoredWriteOperation *QRandomAccessAsyncFileNativeBackend::writeFrom(qint64 offset,
                                                                     QSpan<const std::byte> buffer)
 {
     auto *dataStorage = new QtPrivate::QIOOperationDataStorage(
@@ -332,7 +335,7 @@ QIOVectoredWriteOperation *QRandomAccessAsyncFilePrivate::writeFrom(qint64 offse
     priv->offset = offset;
     priv->type = QIOOperation::Type::Write;
 
-    auto *op = new QIOVectoredWriteOperation(*priv, q_ptr);
+    auto *op = new QIOVectoredWriteOperation(*priv, m_owner);
     m_operations.append(op);
 
     startWriteFromSingle(op, dataStorage->getWriteSpans().first());
@@ -341,7 +344,7 @@ QIOVectoredWriteOperation *QRandomAccessAsyncFilePrivate::writeFrom(qint64 offse
 }
 
 QIOVectoredReadOperation *
-QRandomAccessAsyncFilePrivate::readInto(qint64 offset, QSpan<const QSpan<std::byte>> buffers)
+QRandomAccessAsyncFileNativeBackend::readInto(qint64 offset, QSpan<const QSpan<std::byte>> buffers)
 {
     if (!QIORing::supportsOperation(QtPrivate::Operation::VectoredRead))
         return nullptr;
@@ -351,7 +354,7 @@ QRandomAccessAsyncFilePrivate::readInto(qint64 offset, QSpan<const QSpan<std::by
     priv->offset = offset;
     priv->type = QIOOperation::Type::Read;
 
-    auto *op = new QIOVectoredReadOperation(*priv, q_ptr);
+    auto *op = new QIOVectoredReadOperation(*priv, m_owner);
     if (priv->offset < 0) { // The QIORing offset is unsigned, so error out now
         queueCompletion(priv, QIOOperation::Error::IncorrectOffset);
         return op;
@@ -393,7 +396,7 @@ QRandomAccessAsyncFilePrivate::readInto(qint64 offset, QSpan<const QSpan<std::by
 }
 
 QIOVectoredWriteOperation *
-QRandomAccessAsyncFilePrivate::writeFrom(qint64 offset, QSpan<const QSpan<const std::byte>> buffers)
+QRandomAccessAsyncFileNativeBackend::writeFrom(qint64 offset, QSpan<const QSpan<const std::byte>> buffers)
 {
     if (!QIORing::supportsOperation(QtPrivate::Operation::VectoredWrite))
         return nullptr;
@@ -403,7 +406,7 @@ QRandomAccessAsyncFilePrivate::writeFrom(qint64 offset, QSpan<const QSpan<const 
     priv->offset = offset;
     priv->type = QIOOperation::Type::Write;
 
-    auto *op = new QIOVectoredWriteOperation(*priv, q_ptr);
+    auto *op = new QIOVectoredWriteOperation(*priv, m_owner);
     if (priv->offset < 0) { // The QIORing offset is unsigned, so error out now
         queueCompletion(priv, QIOOperation::Error::IncorrectOffset);
         return op;

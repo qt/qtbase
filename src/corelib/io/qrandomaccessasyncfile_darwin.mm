@@ -27,14 +27,14 @@ static bool isBarrierOperation(QIOOperation::Type type)
 // only!
 template <typename Operation, typename ...Args>
 Operation *
-QRandomAccessAsyncFilePrivate::addOperation(QIOOperation::Type type, qint64 offset, Args &&...args)
+QRandomAccessAsyncFileNativeBackend::addOperation(QIOOperation::Type type, qint64 offset, Args &&...args)
 {
     auto dataStorage = new QtPrivate::QIOOperationDataStorage(std::forward<Args>(args)...);
     auto *priv = new QIOOperationPrivate(dataStorage);
     priv->offset = offset;
     priv->type = type;
 
-    Operation *op = new Operation(*priv, q_ptr);
+    Operation *op = new Operation(*priv, m_owner);
     auto opId = getNextId();
     m_operations.push_back(OperationInfo(opId, op));
     startOperationsUntilBarrier();
@@ -42,19 +42,20 @@ QRandomAccessAsyncFilePrivate::addOperation(QIOOperation::Type type, qint64 offs
     return op;
 }
 
-QRandomAccessAsyncFilePrivate::QRandomAccessAsyncFilePrivate()
-    : QObjectPrivate()
+QRandomAccessAsyncFileNativeBackend::QRandomAccessAsyncFileNativeBackend(QRandomAccessAsyncFile *owner)
+    : QRandomAccessAsyncFileBackend(owner)
 {
 }
 
-QRandomAccessAsyncFilePrivate::~QRandomAccessAsyncFilePrivate()
+QRandomAccessAsyncFileNativeBackend::~QRandomAccessAsyncFileNativeBackend()
         = default;
 
-void QRandomAccessAsyncFilePrivate::init()
+bool QRandomAccessAsyncFileNativeBackend::init()
 {
+    return true;
 }
 
-void QRandomAccessAsyncFilePrivate::cancelAndWait(QIOOperation *op)
+void QRandomAccessAsyncFileNativeBackend::cancelAndWait(QIOOperation *op)
 {
     auto it = std::find_if(m_operations.cbegin(), m_operations.cend(),
                            [op](const auto &opInfo) {
@@ -87,7 +88,7 @@ void QRandomAccessAsyncFilePrivate::cancelAndWait(QIOOperation *op)
     startOperationsUntilBarrier();
 }
 
-void QRandomAccessAsyncFilePrivate::close()
+void QRandomAccessAsyncFileNativeBackend::close()
 {
     if (m_fileState == FileState::Closed)
         return;
@@ -125,7 +126,7 @@ void QRandomAccessAsyncFilePrivate::close()
     m_fileState = FileState::Closed;
 }
 
-qint64 QRandomAccessAsyncFilePrivate::size() const
+qint64 QRandomAccessAsyncFileNativeBackend::size() const
 {
     if (m_fileState != FileState::Opened)
         return -1;
@@ -138,7 +139,7 @@ qint64 QRandomAccessAsyncFilePrivate::size() const
 }
 
 QIOOperation *
-QRandomAccessAsyncFilePrivate::open(const QString &path, QIODeviceBase::OpenMode mode)
+QRandomAccessAsyncFileNativeBackend::open(const QString &path, QIODeviceBase::OpenMode mode)
 {
     if (m_fileState == FileState::Closed) {
         m_filePath = path;
@@ -151,44 +152,44 @@ QRandomAccessAsyncFilePrivate::open(const QString &path, QIODeviceBase::OpenMode
     return addOperation<QIOOperation>(QIOOperation::Type::Open, 0);
 }
 
-QIOOperation *QRandomAccessAsyncFilePrivate::flush()
+QIOOperation *QRandomAccessAsyncFileNativeBackend::flush()
 {
     return addOperation<QIOOperation>(QIOOperation::Type::Flush, 0);
 }
 
-QIOReadOperation *QRandomAccessAsyncFilePrivate::read(qint64 offset, qint64 maxSize)
+QIOReadOperation *QRandomAccessAsyncFileNativeBackend::read(qint64 offset, qint64 maxSize)
 {
     QByteArray array(maxSize, Qt::Uninitialized);
     return addOperation<QIOReadOperation>(QIOOperation::Type::Read, offset, std::move(array));
 }
 
-QIOWriteOperation *QRandomAccessAsyncFilePrivate::write(qint64 offset, const QByteArray &data)
+QIOWriteOperation *QRandomAccessAsyncFileNativeBackend::write(qint64 offset, const QByteArray &data)
 {
     QByteArray copy = data;
     return write(offset, std::move(copy));
 }
 
-QIOWriteOperation *QRandomAccessAsyncFilePrivate::write(qint64 offset, QByteArray &&data)
+QIOWriteOperation *QRandomAccessAsyncFileNativeBackend::write(qint64 offset, QByteArray &&data)
 {
     return addOperation<QIOWriteOperation>(QIOOperation::Type::Write, offset, std::move(data));
 }
 
 QIOVectoredReadOperation *
-QRandomAccessAsyncFilePrivate::readInto(qint64 offset, QSpan<std::byte> buffer)
+QRandomAccessAsyncFileNativeBackend::readInto(qint64 offset, QSpan<std::byte> buffer)
 {
     return addOperation<QIOVectoredReadOperation>(QIOOperation::Type::Read, offset,
                                                   QSpan<const QSpan<std::byte>>{buffer});
 }
 
 QIOVectoredWriteOperation *
-QRandomAccessAsyncFilePrivate::writeFrom(qint64 offset, QSpan<const std::byte> buffer)
+QRandomAccessAsyncFileNativeBackend::writeFrom(qint64 offset, QSpan<const std::byte> buffer)
 {
     return addOperation<QIOVectoredWriteOperation>(QIOOperation::Type::Write, offset,
                                                    QSpan<const QSpan<const std::byte>>{buffer});
 }
 
 QIOVectoredReadOperation *
-QRandomAccessAsyncFilePrivate::readInto(qint64 offset, QSpan<const QSpan<std::byte>> buffers)
+QRandomAccessAsyncFileNativeBackend::readInto(qint64 offset, QSpan<const QSpan<std::byte>> buffers)
 {
     // GCD implementation does not have vectored read. Spawning several read
     // operations (each with an updated offset), is not ideal, because some
@@ -202,12 +203,12 @@ QRandomAccessAsyncFilePrivate::readInto(qint64 offset, QSpan<const QSpan<std::by
 }
 
 QIOVectoredWriteOperation *
-QRandomAccessAsyncFilePrivate::writeFrom(qint64 offset, QSpan<const QSpan<const std::byte>> buffers)
+QRandomAccessAsyncFileNativeBackend::writeFrom(qint64 offset, QSpan<const QSpan<const std::byte>> buffers)
 {
     return addOperation<QIOVectoredWriteOperation>(QIOOperation::Type::Write, offset, buffers);
 }
 
-void QRandomAccessAsyncFilePrivate::notifyIfOperationsAreCompleted()
+void QRandomAccessAsyncFileNativeBackend::notifyIfOperationsAreCompleted()
 {
     QMutexLocker locker(&m_mutex);
     --m_numChannelsToClose;
@@ -217,7 +218,7 @@ void QRandomAccessAsyncFilePrivate::notifyIfOperationsAreCompleted()
     }
 }
 
-dispatch_io_t QRandomAccessAsyncFilePrivate::createMainChannel(int fd)
+dispatch_io_t QRandomAccessAsyncFileNativeBackend::createMainChannel(int fd)
 {
     auto sharedThis = this;
     auto channel =
@@ -235,7 +236,7 @@ dispatch_io_t QRandomAccessAsyncFilePrivate::createMainChannel(int fd)
     return channel;
 }
 
-dispatch_io_t QRandomAccessAsyncFilePrivate::duplicateIoChannel(OperationId opId)
+dispatch_io_t QRandomAccessAsyncFileNativeBackend::duplicateIoChannel(OperationId opId)
 {
     if (!m_ioChannel)
         return nullptr;
@@ -258,13 +259,13 @@ dispatch_io_t QRandomAccessAsyncFilePrivate::duplicateIoChannel(OperationId opId
     return channel;
 }
 
-void QRandomAccessAsyncFilePrivate::closeIoChannel(dispatch_io_t channel)
+void QRandomAccessAsyncFileNativeBackend::closeIoChannel(dispatch_io_t channel)
 {
     if (channel)
         dispatch_io_close(channel, DISPATCH_IO_STOP);
 }
 
-void QRandomAccessAsyncFilePrivate::releaseIoChannel(dispatch_io_t channel)
+void QRandomAccessAsyncFileNativeBackend::releaseIoChannel(dispatch_io_t channel)
 {
     if (channel) {
         dispatch_release(channel);
@@ -272,7 +273,7 @@ void QRandomAccessAsyncFilePrivate::releaseIoChannel(dispatch_io_t channel)
     }
 }
 
-void QRandomAccessAsyncFilePrivate::handleOperationComplete(const OperationResult &opResult)
+void QRandomAccessAsyncFileNativeBackend::handleOperationComplete(const OperationResult &opResult)
 {
     // try to start next operations on return
     auto onReturn = qScopeGuard([this] {
@@ -379,15 +380,15 @@ void QRandomAccessAsyncFilePrivate::handleOperationComplete(const OperationResul
     }
 }
 
-void QRandomAccessAsyncFilePrivate::queueCompletion(OperationId opId, int error)
+void QRandomAccessAsyncFileNativeBackend::queueCompletion(OperationId opId, int error)
 {
     const OperationResult res = { opId, 0LL, error };
-    QMetaObject::invokeMethod(q_ptr, [this, res] {
+    QMetaObject::invokeMethod(m_owner, [this, res] {
         handleOperationComplete(res);
     }, Qt::QueuedConnection);
 }
 
-void QRandomAccessAsyncFilePrivate::startOperationsUntilBarrier()
+void QRandomAccessAsyncFileNativeBackend::startOperationsUntilBarrier()
 {
     // starts all operations until barrier, or a barrier operation if it's the
     // first one
@@ -421,7 +422,7 @@ void QRandomAccessAsyncFilePrivate::startOperationsUntilBarrier()
     }
 }
 
-void QRandomAccessAsyncFilePrivate::executeRead(OperationInfo &opInfo)
+void QRandomAccessAsyncFileNativeBackend::executeRead(OperationInfo &opInfo)
 {
     opInfo.channel = duplicateIoChannel(opInfo.opId);
     if (!opInfo.channel) {
@@ -452,7 +453,7 @@ void QRandomAccessAsyncFilePrivate::executeRead(OperationInfo &opInfo)
     }
 }
 
-void QRandomAccessAsyncFilePrivate::executeWrite(OperationInfo &opInfo)
+void QRandomAccessAsyncFileNativeBackend::executeWrite(OperationInfo &opInfo)
 {
     opInfo.channel = duplicateIoChannel(opInfo.opId);
     if (!opInfo.channel) {
@@ -501,7 +502,7 @@ void QRandomAccessAsyncFilePrivate::executeWrite(OperationInfo &opInfo)
     }
 }
 
-void QRandomAccessAsyncFilePrivate::executeFlush(OperationInfo &opInfo)
+void QRandomAccessAsyncFileNativeBackend::executeFlush(OperationInfo &opInfo)
 {
     opInfo.channel = duplicateIoChannel(opInfo.opId);
     if (!opInfo.channel) {
@@ -530,7 +531,7 @@ void QRandomAccessAsyncFilePrivate::executeFlush(OperationInfo &opInfo)
                 }
             }
         } else {
-            auto context = sharedThis->q_ptr;
+            auto context = sharedThis->m_owner;
             const OperationResult res = { opId, 0LL, err };
             QMetaObject::invokeMethod(context, [sharedThis](const OperationResult &r) {
                 sharedThis->handleOperationComplete(r);
@@ -562,7 +563,7 @@ static inline int openModeToOpenFlags(QIODevice::OpenMode mode)
     return oflags;
 }
 
-void QRandomAccessAsyncFilePrivate::executeOpen(OperationInfo &opInfo)
+void QRandomAccessAsyncFileNativeBackend::executeOpen(OperationInfo &opInfo)
 {
     if (m_fileState != FileState::OpenPending) {
         queueCompletion(opInfo.opId, EINVAL);
@@ -603,7 +604,7 @@ void QRandomAccessAsyncFilePrivate::executeOpen(OperationInfo &opInfo)
                            Q_ASSERT(sharedThis->m_numChannelsToClose == 0);
                            sharedThis->m_cancellationCondition.wakeOne();
                        } else {
-                           auto context = sharedThis->q_ptr;
+                           auto context = sharedThis->m_owner;
                            const OperationResult res = { opId, qint64(fd), err };
                            QMetaObject::invokeMethod(context,
                                [sharedThis](const OperationResult &r) {
@@ -613,7 +614,7 @@ void QRandomAccessAsyncFilePrivate::executeOpen(OperationInfo &opInfo)
                    });
 }
 
-void QRandomAccessAsyncFilePrivate::readOneBuffer(OperationId opId, qsizetype bufferIdx,
+void QRandomAccessAsyncFileNativeBackend::readOneBuffer(OperationId opId, qsizetype bufferIdx,
                                                   qint64 alreadyRead)
 {
     // we need to lookup the operation again, because it could have beed removed
@@ -650,7 +651,7 @@ void QRandomAccessAsyncFilePrivate::readOneBuffer(OperationId opId, qsizetype bu
                         readBuffers.size(), alreadyRead);
 }
 
-void QRandomAccessAsyncFilePrivate::readOneBufferHelper(OperationId opId, dispatch_io_t channel,
+void QRandomAccessAsyncFileNativeBackend::readOneBufferHelper(OperationId opId, dispatch_io_t channel,
                                                         qint64 offset, void *bytesPtr,
                                                         qint64 maxSize, qsizetype currentBufferIdx,
                                                         qsizetype totalBuffers, qint64 alreadyRead)
@@ -698,7 +699,7 @@ void QRandomAccessAsyncFilePrivate::readOneBufferHelper(OperationId opId, dispat
                              }
                          } else {
                              sharedThis->m_runningOps.remove(opId);
-                             auto context = sharedThis->q_ptr;
+                             auto context = sharedThis->m_owner;
                              // if error, or last buffer, or read less than expected,
                              // report operation completion
                              qint64 totalRead = qint64(readFromBuffer) + alreadyRead;
@@ -721,7 +722,7 @@ void QRandomAccessAsyncFilePrivate::readOneBufferHelper(OperationId opId, dispat
                      });
 }
 
-void QRandomAccessAsyncFilePrivate::writeHelper(OperationId opId, dispatch_io_t channel,
+void QRandomAccessAsyncFileNativeBackend::writeHelper(OperationId opId, dispatch_io_t channel,
                                                 qint64 offset, dispatch_data_t dataToWrite,
                                                 qint64 dataSize)
 {
@@ -760,7 +761,7 @@ void QRandomAccessAsyncFilePrivate::writeHelper(OperationId opId, dispatch_io_t 
                               const size_t written = dataSize - toBeWritten;
                               [dataToWrite release];
 
-                              auto context = sharedThis->q_ptr;
+                              auto context = sharedThis->m_owner;
                               const OperationResult res = { opId, qint64(written), error };
                               QMetaObject::invokeMethod(context,
                                   [sharedThis](const OperationResult &r) {
@@ -770,7 +771,7 @@ void QRandomAccessAsyncFilePrivate::writeHelper(OperationId opId, dispatch_io_t 
                       });
 }
 
-QRandomAccessAsyncFilePrivate::OperationId QRandomAccessAsyncFilePrivate::getNextId()
+QRandomAccessAsyncFileNativeBackend::OperationId QRandomAccessAsyncFileNativeBackend::getNextId()
 {
     // never return reserved values
     static OperationId opId = kInvalidOperationId;
