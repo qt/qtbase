@@ -6,9 +6,11 @@
 
 #include <QtGui/qtguiglobal.h>
 #include <QtGui/qtransform.h>
+
 #include <QtCore/qglobal.h>
 #include <QtCore/qline.h>
 #include <QtCore/qlist.h>
+#include <QtCore/qpoint.h>
 #include <QtCore/qrect.h>
 
 QT_BEGIN_NAMESPACE
