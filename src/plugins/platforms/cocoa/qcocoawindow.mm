@@ -299,16 +299,15 @@ void QCocoaWindow::setGeometry(const QRect &rectIn, QWindowPrivate::PositionPoli
 
     QPlatformWindow::setGeometry(rect);
 
-    if (isEmbedded()) {
-        if (!isForeignWindow()) {
-            [m_view setFrame:NSMakeRect(0, 0, rect.width(), rect.height())];
-        }
-        return;
-    }
-
     if (isContentView()) {
-        NSRect bounds = QCocoaScreen::mapToNative(rect);
-        [m_view.window setFrame:[m_view.window frameRectForContentRect:bounds] display:YES animate:NO];
+        if (isEmbedded()) {
+            // Sizing or moving the content view doesn't make sense when
+            // we are embedded, so report the current geometry as is.
+            QCocoaWindow::handleGeometryChange();
+        } else {
+            NSRect bounds = QCocoaScreen::mapToNative(rect);
+            [m_view.window setFrame:[m_view.window frameRectForContentRect:bounds] display:YES animate:NO];
+        }
     } else {
         m_view.frame = QCocoaWindow::mapToNative(rect, m_view.superview);
     }
