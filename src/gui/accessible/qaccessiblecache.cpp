@@ -19,6 +19,7 @@ Q_STATIC_LOGGING_CATEGORY(lcAccessibilityCache, "qt.accessibility.cache");
 */
 
 static QAccessibleCache *accessibleCache = nullptr;
+static bool inCacheDestructor = false;
 
 static void cleanupAccessibleCache()
 {
@@ -32,6 +33,8 @@ QAccessibleObjectDestroyedEvent::~QAccessibleObjectDestroyedEvent()
 
 QAccessibleCache::~QAccessibleCache()
 {
+    inCacheDestructor = true;
+
     for (QAccessible::Id id: idToInterface.keys())
         deleteInterface(id);
 }
@@ -188,10 +191,9 @@ void QAccessibleCache::deleteInterface(QAccessible::Id id, QObject *obj)
         return;
     }
 
-    // QObjects sends this from their destructor, but
-    // the object less interfaces calls deleteInterface
-    // directly
-    if (!obj && !iface->object()) {
+    // QObjects send this from their destructors, but the interfaces
+    // with no associated object call deleteInterface directly.
+    if (!inCacheDestructor && !obj && !iface->object()) {
         if (QGuiApplicationPrivate::is_app_running && !QGuiApplicationPrivate::is_app_closing && QAccessible::isActive()) {
             QAccessibleObjectDestroyedEvent event(id);
             QAccessible::updateAccessibility(&event);
