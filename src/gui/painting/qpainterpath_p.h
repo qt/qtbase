@@ -259,7 +259,7 @@ inline void QPainterPathPrivate::close()
     const QPainterPath::Element &first = elements.at(cStart);
     QPainterPath::Element &last = elements.last();
     if (first.x != last.x || first.y != last.y) {
-        if (QtPrivate::fuzzyCompare(first.x, last.x) && QtPrivate::fuzzyCompare(first.y, last.y)) {
+        if (qFuzzyCompare(QPointF(first), QPointF(last))) {
             last.x = first.x;
             last.y = first.y;
         } else {
