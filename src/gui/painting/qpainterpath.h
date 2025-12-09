@@ -50,8 +50,7 @@ public:
         bool operator==(const Element &e) const
         {
             return type == e.type
-                && QtPrivate::fuzzyCompare(x, e.x)
-                && QtPrivate::fuzzyCompare(y, e.y);
+                && qFuzzyCompare(QPointF(*this), QPointF(e));
         }
         inline bool operator!=(const Element &e) const { return !operator==(e); }
     };
