@@ -3,6 +3,8 @@
 #include "private/qttemporalpattern_p.h"
 
 #include <QtCore/qbitarray.h>
+#include "private/qlocale_p.h"
+#include "private/qtparseqttemporalformat_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -907,7 +909,11 @@ QString QDateTimePattern::serialize(const QDateTime &datetime) const
 
 QDateTimePattern QDateTimePattern::fromQtFormat(QStringView format)
 {
-    Q_UNUSED(format);
+    using namespace QtTemporalPattern;
+    constexpr DateTimeParts form = DateTimePart::Date | DateTimePart::Time | DateTimePart::Zone;
+    const auto qt = QtParseQtTemporalFormat::prefix(format, form);
+    if (qt.size() == format.size())
+        return QDateTimePattern(qt.fields);
     return QDateTimePattern({});
 }
 
@@ -979,7 +985,11 @@ QString QTimePattern::serialize(const QTime &time) const
 
 QTimePattern QTimePattern::fromQtFormat(QStringView format)
 {
-    Q_UNUSED(format);
+    using namespace QtTemporalPattern;
+    constexpr DateTimeParts form{DateTimePart::Time};
+    const auto qt = QtParseQtTemporalFormat::prefix(format, form);
+    if (qt.size() == format.size())
+        return QTimePattern(qt.fields);
     return QTimePattern({});
 }
 
@@ -1144,7 +1154,11 @@ QString QDatePattern::serialize(const QDate &date) const
 
 QDatePattern QDatePattern::fromQtFormat(QStringView format)
 {
-    Q_UNUSED(format);
+    using namespace QtTemporalPattern;
+    constexpr DateTimeParts form{DateTimePart::Date};
+    const auto qt = QtParseQtTemporalFormat::prefix(format, form);
+    if (qt.size() == format.size())
+        return QDatePattern(qt.fields);
     return QDatePattern({});
 }
 

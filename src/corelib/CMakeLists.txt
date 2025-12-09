@@ -1115,6 +1115,7 @@ qt_internal_extend_target(Core
 qt_internal_extend_target(Core CONDITION QT_FEATURE_datestring
     SOURCES
         time/qttemporalpattern.cpp time/qttemporalpattern_p.h
+        parse/qtparseqttemporalformat.cpp parse/qtparseqttemporalformat_p.h
 )
 
 qt_internal_extend_target(Core CONDITION QT_FEATURE_datetimeparser
