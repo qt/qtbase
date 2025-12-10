@@ -6,6 +6,7 @@ function(qt_internal_validate_cmake_generator)
 
     if(NOT warning_shown
             AND NOT CMAKE_GENERATOR MATCHES "Ninja"
+            AND NOT (IOS AND QT_INTERNAL_IS_STANDALONE_TEST)
             AND NOT QT_SILENCE_CMAKE_GENERATOR_WARNING
             AND NOT DEFINED ENV{QT_SILENCE_CMAKE_GENERATOR_WARNING})
         set_property(GLOBAL PROPERTY _qt_validate_cmake_generator_warning_shown TRUE)
