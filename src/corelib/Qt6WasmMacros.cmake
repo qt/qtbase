@@ -33,6 +33,16 @@ function(_qt_internal_wasm_add_target_helpers target)
             set(PRELOAD "")
         endif()
 
+        if(DEFINED QT_WASM_SOURCE_MAP_BASE)
+            set(WASM_SOURCE_MAP_BASE "${QT_WASM_SOURCE_MAP_BASE}")
+            target_link_options("${target}"
+            PRIVATE
+            "-gsource-map"
+            "--source-map-base"
+            "${WASM_SOURCE_MAP_BASE}")
+
+        endif()
+
         get_target_property(target_output_directory ${target} RUNTIME_OUTPUT_DIRECTORY)
 
         get_target_property(is_test ${target} _qt_is_test_executable)
