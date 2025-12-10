@@ -125,6 +125,7 @@ class QWindows11StylePrivate : public QWindowsVistaStylePrivate {
 protected:
     QIcon m_toolbarExtensionButton;
     QIcon m_lineEditClearButton;
+    QIcon m_tabCloseButton;
 };
 
 QT_END_NAMESPACE

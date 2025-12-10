@@ -2610,6 +2610,7 @@ void QWindows11Style::polish(QPalette& result)
     d->m_titleBarNormalIcon = QIcon();
     d->m_toolbarExtensionButton = QIcon();
     d->m_lineEditClearButton = QIcon();
+    d->m_tabCloseButton = QIcon();
 }
 
 QPixmap QWindows11Style::standardPixmap(StandardPixmap standardPixmap,
@@ -2649,6 +2650,14 @@ QIcon QWindows11Style::standardIcon(StandardPixmap standardIcon,
             d->m_toolbarExtensionButton = QIcon(e);
         }
         return d->m_toolbarExtensionButton;
+    }
+    case SP_TabCloseButton: {
+        if (d->m_tabCloseButton.isNull()) {
+            auto e = new WinFontIconEngine(fluentIcon(Icon::ChromeClose), d->assetFont);
+            e->setScale(0.6);
+            d->m_tabCloseButton = QIcon(e);
+        }
+        return d->m_tabCloseButton;
     }
     default:
         break;
