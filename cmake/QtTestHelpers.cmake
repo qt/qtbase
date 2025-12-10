@@ -1240,7 +1240,7 @@ function(qt_internal_add_test_finalizers target)
     # specific platforms.
     # TODO: Remove once we confirm that the new way of running test finalizers for all platforms
     # doesn't cause any issues.
-    if(QT_INTERNAL_SKIP_TEST_FINALIZERS_V2)
+    if(NOT QT_INTERNAL_SKIP_TEST_FINALIZERS_V2)
         return()
     endif()
 
