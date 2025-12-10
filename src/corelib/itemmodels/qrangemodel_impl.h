@@ -448,15 +448,15 @@ namespace QRangeModelDetails
         : std::true_type
     {};
 
-    // we use std::rotate in moveRows/Columns, which requires std::swap
-    template <typename It, typename = void>
-    struct test_rotate : std::false_type {};
-
+    // we use std::rotate in moveRows/Columns, which requires the values (which
+    // might be const if we only get a const iterator) to be swappable, and the
+    // iterator type to be at least a forward iterator
     template <typename It>
-    struct test_rotate<It, std::void_t<decltype(std::swap(*std::declval<It>(),
-                                                          *std::declval<It>()))>>
-        : std::true_type
-    {};
+    using test_rotate = std::conjunction<
+                            std::is_swappable<decltype(*std::declval<It>())>,
+                            std::is_base_of<std::forward_iterator_tag,
+                                            typename std::iterator_traits<It>::iterator_category>
+                        >;
 
     // Test if a type is an associative container that we can use for multi-role
     // data, i.e. has a key_type and a mapped_type typedef, and maps from int,
