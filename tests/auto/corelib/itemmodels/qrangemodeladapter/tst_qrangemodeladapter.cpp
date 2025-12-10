@@ -220,8 +220,8 @@ API_TEST(moveRows, moveRows(0, 0, 0))
 API_TEST(moveTreeRows, moveRows(QList<int>{0, 0}, 0, QList<int>{0, 0}))
 
 API_TEST(insertColumn, insertColumn(0))
-API_TEST(insertColumnWithData, insertColumn(0, {}))
-API_TEST(insertColumns, insertColumns(0, std::declval<Range&>()))
+API_TEST(insertColumnWithData, insertColumn(0, QList<int>{0}))
+API_TEST(insertColumns, insertColumns(0, QList<int>{0}))
 API_TEST(removeColumn, removeColumn(0))
 API_TEST(removeColumns, removeColumns(0, 0))
 API_TEST(moveColumn, moveColumn(0, 0))
@@ -849,7 +849,7 @@ void tst_QRangeModelAdapter::insertColumn_API()
 
     static_assert(has_insertColumnWithData(d.tableOfNumbers));
     static_assert(!has_insertColumnWithData(d.constTableOfNumbers));
-    static_assert(has_insertColumnWithData(d.tableOfPointers));
+    static_assert(!has_insertColumnWithData(d.tableOfPointers));
 }
 
 void tst_QRangeModelAdapter::insertColumns_API()
@@ -863,7 +863,7 @@ void tst_QRangeModelAdapter::insertColumns_API()
 
     static_assert(has_insertColumns(d.tableOfNumbers));
     static_assert(!has_insertColumns(d.constTableOfNumbers));
-    static_assert(has_insertColumns(d.tableOfPointers));
+    static_assert(!has_insertColumns(d.tableOfPointers));
     static_assert(!has_insertColumns(d.tableOfRowPointers));
     static_assert(!has_insertColumns(d.listOfNamedRoles));
     static_assert(!has_insertColumns(d.m_tree));

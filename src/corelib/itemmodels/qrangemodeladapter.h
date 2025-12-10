@@ -76,16 +76,22 @@ class QT_TECH_PREVIEW_API QRangeModelAdapter
     template <typename C>
     using if_compatible_row_range = std::enable_if_t<is_compatible_row_range<C>, bool>;
     template <typename Data>
-    static constexpr bool is_compatible_data = true;
-        // std::is_convertible_v<Data, decltype(*std::begin(std::declval<const_row_reference>()))>;
+    static constexpr bool is_compatible_data = std::is_convertible_v<Data, data_type>;
     template <typename Data>
     using if_compatible_data = std::enable_if_t<is_compatible_data<Data>, bool>;
     template <typename C>
     static constexpr bool is_compatible_data_range = is_compatible_data<
+                                                typename QRangeModelDetails::data_type<
+                                                    typename QRangeModelDetails::row_traits<
                                                         decltype(*std::begin(std::declval<C&>()))
-                                                    >;
+                                                    >::item_type
+                                                >::type
+                                            >;
     template <typename C>
-    using if_compatible_data_range = std::enable_if_t<is_compatible_data_range<C>, bool>;
+    using if_compatible_column_data = std::enable_if_t<is_compatible_data<C>
+                                                    || is_compatible_data_range<C>, bool>;
+    template <typename C>
+    using if_compatible_column_range = std::enable_if_t<is_compatible_data_range<C>, bool>;
 
     template <typename R>
     using if_assignable_range = std::enable_if_t<std::is_assignable_v<range_type, R>, bool>;
@@ -1443,15 +1449,15 @@ public:
         return storage.m_model->insertColumn(before);
     }
 
-    template <typename D = row_type, typename I = Impl,
-              if_canInsertColumns<I> = true, if_compatible_data<D> = true>
+    template <typename D, typename I = Impl,
+              if_canInsertColumns<I> = true, if_compatible_column_data<D> = true>
     bool insertColumn(int before, D &&data)
     {
         return insertColumnImpl(before, storage.root(), std::forward<D>(data));
     }
 
     template <typename C, typename I = Impl,
-              if_canInsertColumns<I> = true, if_compatible_data_range<C> = true>
+              if_canInsertColumns<I> = true, if_compatible_column_range<C> = true>
     bool insertColumns(int before, C &&data)
     {
         return insertColumnsImpl(before, storage.root(), std::forward<C>(data));

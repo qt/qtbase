@@ -835,7 +835,7 @@
 */
 
 /*!
-    \fn template <typename Range, typename Protocol, typename Model> template <typename D, typename I, QRangeModelAdapter<Range, Protocol, Model>::if_canInsertColumns<I>, QRangeModelAdapter<Range, Protocol, Model>::if_compatible_data<D>> bool QRangeModelAdapter<Range, Protocol, Model>::insertColumn(int before, D &&data)
+    \fn template <typename Range, typename Protocol, typename Model> template <typename D, typename I, QRangeModelAdapter<Range, Protocol, Model>::if_canInsertColumns<I>, QRangeModelAdapter<Range, Protocol, Model>::if_compatible_column_data<D>> bool QRangeModelAdapter<Range, Protocol, Model>::insertColumn(int before, D &&data)
     \overload
 
     Inserts a single column constructed from \a data before the column specified
@@ -863,7 +863,7 @@
 */
 
 /*!
-    \fn template <typename Range, typename Protocol, typename Model> template <typename C, typename I, QRangeModelAdapter<Range, Protocol, Model>::if_canInsertColumns<I>, QRangeModelAdapter<Range, Protocol, Model>::if_compatible_data_range<C>> bool QRangeModelAdapter<Range, Protocol, Model>::insertColumns(int before, C &&data)
+    \fn template <typename Range, typename Protocol, typename Model> template <typename C, typename I, QRangeModelAdapter<Range, Protocol, Model>::if_canInsertColumns<I>, QRangeModelAdapter<Range, Protocol, Model>::if_compatible_column_range<C>> bool QRangeModelAdapter<Range, Protocol, Model>::insertColumns(int before, C &&data)
 
     Inserts columns constructed from the elements in \a data before the column
     specified by \a before into all rows, and returns whether the insertion was
