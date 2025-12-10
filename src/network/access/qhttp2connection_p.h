@@ -260,7 +260,7 @@ public:
         return nullptr;
     }
 
-    void close(Http2::Http2Error error = Http2::HTTP2_NO_ERROR) { sendGOAWAY(error); }
+    void close(Http2::Http2Error errorCode = Http2::HTTP2_NO_ERROR);
 
     bool isGoingAway() const noexcept { return m_goingAway; }
 
@@ -302,8 +302,7 @@ private:
     Q_ALWAYS_INLINE
     bool streamIsIgnored(quint32 streamID) const noexcept;
 
-    void connectionError(Http2::Http2Error errorCode,
-                         const char *message); // Connection failed to be established?
+    void connectionError(Http2::Http2Error errorCode, const char *message, bool logAsError = true);
     void setH2Configuration(QHttp2Configuration config);
     void closeSession();
     void registerStreamAsResetLocally(quint32 streamID);
@@ -316,7 +315,11 @@ private:
     bool sendServerPreface();
     bool serverCheckClientPreface();
     bool sendWINDOW_UPDATE(quint32 streamID, quint32 delta);
-    bool sendGOAWAY(Http2::Http2Error errorCode);
+    void sendClientGracefulShutdownGoaway();
+    void sendInitialServerGracefulShutdownGoaway();
+    void sendFinalServerGracefulShutdownGoaway();
+    bool sendGOAWAYFrame(Http2::Http2Error errorCode, quint32 lastSreamID);
+    void maybeCloseOnGoingAway();
     bool sendSETTINGS_ACK();
 
     void handleDATA();
@@ -422,6 +425,17 @@ private:
     quint32 m_lastStreamToProcess = Http2::lastValidStreamID;
     static constexpr std::chrono::duration GoawayGracePeriod = std::chrono::seconds(60);
     QDeadlineTimer m_goawayGraceTimer;
+
+    std::optional<quint32> m_lastGoAwayLastStreamID;
+    bool m_connectionAborted = false;
+
+    enum class GracefulShutdownState {
+        None,
+        AwaitingPriorPing,
+        AwaitingShutdownPing,
+        FinalGOAWAYSent,
+    };
+    GracefulShutdownState m_gracefulShutdownState = GracefulShutdownState::None;
 
     bool m_prefaceSent = false;
 
