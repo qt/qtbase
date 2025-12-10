@@ -1994,12 +1994,9 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
                 tr = proxy()->subElementRect(SE_TabBarTabText, opt, widget);
 
             if (!tab->icon.isNull()) {
-                QPixmap tabIcon = tab->icon.pixmap(tab->iconSize, QStyleHelper::getDpr(p),
-                                                   (tab->state & State_Enabled) ? QIcon::Normal
-                                                                                : QIcon::Disabled,
-                                                   (tab->state & State_Selected) ? QIcon::On
-                                                                                 : QIcon::Off);
-                p->drawPixmap(iconRect.x(), iconRect.y(), tabIcon);
+                const auto mode = (tab->state & State_Enabled) ? QIcon::Normal : QIcon::Disabled;
+                const auto state = (tab->state & State_Selected) ? QIcon::On : QIcon::Off;
+                tab->icon.paint(p, iconRect, Qt::AlignCenter, mode, state);
             }
 
             proxy()->drawItemText(p, tr, alignment, tab->palette, tab->state & State_Enabled, tab->text,
