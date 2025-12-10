@@ -330,6 +330,13 @@ QMargins QCocoaWindow::safeAreaMargins() const
     // merge them.
     auto screenRect = m_view.window.screen.frame;
     auto screenInsets = m_view.window.screen.safeAreaInsets;
+    auto screenSafeArea = QCocoaScreen::mapFromNative(NSMakeRect(
+        NSMinX(screenRect) + screenInsets.left,
+        NSMinY(screenRect) + screenInsets.bottom, // Non-flipped
+        NSWidth(screenRect) - screenInsets.left - screenInsets.right,
+        NSHeight(screenRect) - screenInsets.top - screenInsets.bottom
+    ));
+
     auto screenRelativeViewBounds = QCocoaScreen::mapFromNative(
         [m_view.window convertRectToScreen:
             [m_view convertRect:m_view.bounds toView:nil]]
@@ -339,20 +346,10 @@ QMargins QCocoaWindow::safeAreaMargins() const
     // Note that we do not want represent the area outside of the
     // screen as being outside of the safe area.
     QMarginsF screenSafeAreaMargins = {
-        screenInsets.left ?
-            qMax(0.0f, screenInsets.left - screenRelativeViewBounds.left())
-            : 0.0f,
-        screenInsets.top ?
-            qMax(0.0f, screenInsets.top - screenRelativeViewBounds.top())
-            : 0.0f,
-        screenInsets.right ?
-            qMax(0.0f, screenInsets.right
-                - (screenRect.size.width - screenRelativeViewBounds.right()))
-            : 0.0f,
-        screenInsets.bottom ?
-            qMax(0.0f, screenInsets.bottom
-                - (screenRect.size.height - screenRelativeViewBounds.bottom()))
-            : 0.0f
+        qMin(screenSafeArea.left() - screenRelativeViewBounds.left(), screenInsets.left),
+        qMin(screenSafeArea.top() - screenRelativeViewBounds.top(), screenInsets.top),
+        qMin(screenRelativeViewBounds.right() - screenSafeArea.right(), screenInsets.right),
+        qMin(screenRelativeViewBounds.bottom() - screenSafeArea.bottom(), screenInsets.bottom)
     };
 
     return (screenSafeAreaMargins | viewSafeAreaMargins).toMargins();
