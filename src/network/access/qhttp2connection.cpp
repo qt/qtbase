@@ -15,6 +15,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <chrono>
 
 QT_BEGIN_NAMESPACE
 
@@ -646,6 +647,8 @@ void QHttp2Stream::setState(State newState)
             streamID(), int(m_state), int(newState));
     m_state = newState;
     emit stateChanged(newState);
+    if (m_state == State::Closed)
+        getConnection()->maybeCloseOnGoingAway();
 }
 
 // Changes the state as appropriate given the current state and the transition.
@@ -1033,19 +1036,33 @@ QHttp2Stream *QHttp2Connection::getStream(quint32 streamID) const
     return m_streams.value(streamID, nullptr).get();
 }
 
+/*!
+    Initiates connection shutdown. When \a errorCode is \c{NO_ERROR}, graceful
+    shutdown is initiated, allowing existing streams to complete. Otherwise the
+    connection is closed immediately with an error.
+*/
+void QHttp2Connection::close(Http2::Http2Error errorCode)
+{
+    if (m_connectionAborted)
+        return;
+
+    if (errorCode == Http2::HTTP2_NO_ERROR) {
+        if (m_connectionType == Type::Server)
+            sendInitialServerGracefulShutdownGoaway();
+        else
+            sendClientGracefulShutdownGoaway();
+    } else {
+        // RFC 9113, 5.4.1: After sending the GOAWAY frame for an error
+        // condition, the endpoint MUST close the TCP connection
+        connectionError(errorCode, "Connection closed with error", false);
+    }
+}
 
 /*!
     \fn QHttp2Stream *QHttp2Connection::promisedStream(const QUrl &streamKey) const
 
     Returns a pointer to the stream that was promised with the given
     \a streamKey, if any. Otherwise, returns null.
-*/
-
-/*!
-    \fn void QHttp2Connection::close()
-
-    This sends a GOAWAY frame on the connection stream, gracefully closing the
-    connection.
 */
 
 /*!
@@ -1154,13 +1171,6 @@ void QHttp2Connection::handleReadyRead()
     if (m_connectionType == Type::Server && !serverCheckClientPreface())
         return;
 
-    const auto streamIsActive = [](const QPointer<QHttp2Stream> &stream) {
-        return stream && stream->isActive();
-    };
-    if (m_goingAway && std::none_of(m_streams.cbegin(), m_streams.cend(), streamIsActive)) {
-        close();
-        return;
-    }
     QIODevice *socket = getSocket();
 
     qCDebug(qHttp2ConnectionLog, "[%p] Receiving data, %lld bytes available", this,
@@ -1170,13 +1180,13 @@ void QHttp2Connection::handleReadyRead()
     if (!m_prefaceSent)
         return;
 
-    while (!m_goingAway || std::any_of(m_streams.cbegin(), m_streams.cend(), streamIsActive)) {
+    while (!m_connectionAborted) {
         const auto result = frameReader.read(*socket);
         if (result != FrameStatus::goodFrame)
             qCDebug(qHttp2ConnectionLog, "[%p] Tried to read frame, got %d", this, int(result));
         switch (result) {
         case FrameStatus::incompleteFrame:
-            return;
+            return; // No more complete frames available
         case FrameStatus::protocolError:
             return connectionError(PROTOCOL_ERROR, "invalid frame");
         case FrameStatus::sizeError: {
@@ -1297,24 +1307,35 @@ void QHttp2Connection::setH2Configuration(QHttp2Configuration config)
     encoder.setCompressStrings(m_config.huffmanCompressionEnabled());
 }
 
-void QHttp2Connection::connectionError(Http2Error errorCode, const char *message)
+void QHttp2Connection::connectionError(Http2Error errorCode, const char *message, bool logAsError)
 {
     Q_ASSERT(message);
-    // RFC 9113, 6.8: An endpoint MAY send multiple GOAWAY frames if circumstances change.
+    if (m_connectionAborted)
+        return;
+    m_connectionAborted = true;
 
-    qCCritical(qHttp2ConnectionLog, "[%p] Connection error: %s (%d)", this, message,
-               int(errorCode));
+    if (logAsError) {
+        qCCritical(qHttp2ConnectionLog, "[%p] Connection error: %s (%d)", this, message,
+                   int(errorCode));
+    } else {
+        qCDebug(qHttp2ConnectionLog, "[%p] Closing connection: %s (%d)", this, message,
+                int(errorCode));
+    }
 
-    // RFC 9113, 6.8: Endpoints SHOULD always send a GOAWAY frame before closing a connection so
-    // that the remote peer can know whether a stream has been partially processed or not.
-    sendGOAWAY(errorCode);
+    // Mark going away so other code paths will stop creating new streams
+    m_goingAway = true;
+    // RFC 9113 5.4.1: An endpoint that encounters a connection error SHOULD
+    // first send a GOAWAY frame with the last incoming stream ID.
+    m_lastStreamToProcess = std::min(m_lastIncomingStreamID, m_lastStreamToProcess);
+    sendGOAWAYFrame(errorCode, m_lastStreamToProcess);
     auto messageView = QLatin1StringView(message);
 
     for (QHttp2Stream *stream : std::as_const(m_streams)) {
         if (stream && stream->isActive())
             stream->finishWithError(errorCode, messageView);
     }
-
+    // RFC 9113 5.4.1: After sending the GOAWAY frame for an error condition,
+    // the endpoint MUST close the TCP connection
     closeSession();
 }
 
@@ -1423,20 +1444,99 @@ bool QHttp2Connection::sendWINDOW_UPDATE(quint32 streamID, quint32 delta)
     return frameWriter.write(*getSocket());
 }
 
-bool QHttp2Connection::sendGOAWAY(Http2::Http2Error errorCode)
+void QHttp2Connection::sendClientGracefulShutdownGoaway()
 {
+    // Clients send a single GOAWAY. No race condition since they control stream creation
+    Q_ASSERT(m_connectionType == Type::Client);
+
+    if (m_connectionAborted || m_goingAway) {
+        qCWarning(qHttp2ConnectionLog, "[%p] Client graceful shutdown already in progress", this);
+        return;
+    }
+
     m_goingAway = true;
-    // If this is the first time, start the timer:
-    if (m_lastStreamToProcess == Http2::lastValidStreamID)
-        m_goawayGraceTimer.setRemainingTime(GoawayGracePeriod);
-    m_lastStreamToProcess = std::min(m_lastIncomingStreamID, m_lastStreamToProcess);
+    m_gracefulShutdownState = GracefulShutdownState::FinalGOAWAYSent;
+    m_lastStreamToProcess = m_lastIncomingStreamID;
+    sendGOAWAYFrame(Http2::HTTP2_NO_ERROR, m_lastStreamToProcess);
+
+    maybeCloseOnGoingAway();
+}
+
+void QHttp2Connection::sendInitialServerGracefulShutdownGoaway()
+{
+    Q_ASSERT(m_connectionType == Type::Server);
+    // RFC 9113, 6.8: A server that is attempting to gracefully shut down a
+    // connection SHOULD send an initial GOAWAY frame with the last stream
+    // identifier set to 2^31-1 and a NO_ERROR code.
+    if (m_connectionAborted || m_goingAway) {
+        qCWarning(qHttp2ConnectionLog, "[%p] Server graceful shutdown already in progress", this);
+        return;
+    }
+
+    m_goingAway = true;
+    m_goawayGraceTimer.setRemainingTime(GoawayGracePeriod);
+    sendGOAWAYFrame(Http2::HTTP2_NO_ERROR, Http2::lastValidStreamID);
+
+    // Send PING to measure RTT; handlePING() continues the shutdown on ACK.
+    // RFC 9113 6.8: After allowing time for any in-flight stream creation
+    // (at least one round-trip time)
+    if (sendPing())
+        m_gracefulShutdownState = GracefulShutdownState::AwaitingShutdownPing;
+    else
+        m_gracefulShutdownState = GracefulShutdownState::AwaitingPriorPing;
+}
+
+void QHttp2Connection::sendFinalServerGracefulShutdownGoaway()
+{
+    if (m_connectionAborted || !m_goingAway) {
+        qCWarning(qHttp2ConnectionLog, "[%p] Server graceful shutdown not in progress", this);
+        return;
+    }
+    m_gracefulShutdownState = GracefulShutdownState::FinalGOAWAYSent;
+    m_lastStreamToProcess = m_lastIncomingStreamID;
+    sendGOAWAYFrame(Http2::HTTP2_NO_ERROR, m_lastStreamToProcess);
+    maybeCloseOnGoingAway();
+}
+
+bool QHttp2Connection::sendGOAWAYFrame(Http2::Http2Error errorCode, quint32 lastStreamID)
+{
+    QIODevice *socket = getSocket();
+    if (!socket || !socket->isOpen())
+        return false;
+
     qCDebug(qHttp2ConnectionLog, "[%p] Sending GOAWAY frame, error code %u, last stream %u", this,
-            errorCode, m_lastStreamToProcess);
+            errorCode, lastStreamID);
+
     frameWriter.start(FrameType::GOAWAY, FrameFlag::EMPTY,
                       Http2PredefinedParameters::connectionStreamID);
-    frameWriter.append(m_lastStreamToProcess);
+    frameWriter.append(lastStreamID);
     frameWriter.append(quint32(errorCode));
-    return frameWriter.write(*getSocket());
+    return frameWriter.write(*socket);
+}
+
+void QHttp2Connection::maybeCloseOnGoingAway()
+{
+    // Only close if we've reached the final phase of graceful shutdown
+    // For the sender: after FinalGOAWAYSent
+    // For the receiver: after receiving GOAWAY and all our streams are done
+    if (m_connectionAborted || !m_goingAway) {
+        qCDebug(qHttp2ConnectionLog, "[%p] Connection close deferred, graceful shutdown not active",
+                this);
+        return;
+    }
+
+    // For graceful shutdown initiator, only close after final GOAWAY is sent
+    if (m_gracefulShutdownState == GracefulShutdownState::AwaitingShutdownPing)
+        return; // Still waiting for RTT measurement before final GOAWAY
+
+    const auto streamIsActive = [](const QPointer<QHttp2Stream> &stream) {
+        return stream && stream->isActive();
+    };
+
+    if (std::none_of(m_streams.cbegin(), m_streams.cend(), streamIsActive)) {
+        qCDebug(qHttp2ConnectionLog, "[%p] All streams closed, closing connection", this);
+        closeSession();
+    }
 }
 
 bool QHttp2Connection::sendSETTINGS_ACK()
@@ -1571,8 +1671,6 @@ void QHttp2Connection::handleHEADERS()
         qCDebug(qHttp2ConnectionLog, "[%p] HEADERS frame on stream %d has PRIORITY flag", this,
                 streamID);
         handlePRIORITY();
-        if (m_goingAway)
-            return;
     }
 
     const bool endHeaders = flags.testFlag(FrameFlag::END_HEADERS);
@@ -1834,6 +1932,17 @@ void QHttp2Connection::handlePING()
             emit pingFrameReceived(PingState::PongSignatureIdentical);
         }
         m_lastPingSignature.reset();
+
+        // Handle sendInitialServerGracefulShutdownGoaway()
+        if (m_gracefulShutdownState == GracefulShutdownState::AwaitingShutdownPing) {
+            sendFinalServerGracefulShutdownGoaway();
+        } else if (m_gracefulShutdownState == GracefulShutdownState::AwaitingPriorPing) {
+            // Prior PING completed, now send our RTT measurement PING. This shouldn't fail!
+            m_gracefulShutdownState = GracefulShutdownState::AwaitingShutdownPing;
+            [[maybe_unused]] const bool ok = sendPing();
+            Q_ASSERT(ok);
+        }
+
         return;
     } else {
         emit pingFrameReceived(PingState::Ping);
@@ -1876,27 +1985,44 @@ void QHttp2Connection::handleGOAWAY()
     if (lastStreamID != 0 && (lastStreamID & 0x1) != LocalMask)
         return connectionError(PROTOCOL_ERROR, "GOAWAY with invalid last stream ID");
 
+    // 6.8 - An endpoint MAY send multiple GOAWAY frames if circumstances
+    // change. Endpoints MUST NOT increase the value they send in the last
+    // stream identifier
+    if (m_lastGoAwayLastStreamID && lastStreamID > *m_lastGoAwayLastStreamID)
+        return connectionError(PROTOCOL_ERROR, "Repeated GOAWAY with invalid last stream ID");
+    m_lastGoAwayLastStreamID = lastStreamID;
+
     qCDebug(qHttp2ConnectionLog, "[%p] Received GOAWAY frame, error code %u, last stream %u",
             this, errorCode, lastStreamID);
     m_goingAway = true;
 
     emit receivedGOAWAY(errorCode, lastStreamID);
 
-    // Since the embedded stream ID is the last one that was or _might be_ processed,
-    // we cancel anything that comes after it. 0 can be used in the special case that
-    // no streams at all were or will be processed.
-    const quint32 firstPossibleStream = m_connectionType == Type::Client ? 1 : 2;
-    const quint32 firstCancelledStream = lastStreamID ? lastStreamID + 2 : firstPossibleStream;
-    Q_ASSERT((firstCancelledStream & 0x1) == LocalMask);
-    for (quint32 id = firstCancelledStream; id < m_nextStreamID; id += 2) {
-        QHttp2Stream *stream = m_streams.value(id, nullptr);
-        if (stream && stream->isActive())
-            stream->finishWithError(errorCode, "Received GOAWAY"_L1);
-    }
-
-    const auto isActive = [](const QHttp2Stream *stream) { return stream && stream->isActive(); };
-    if (std::none_of(m_streams.cbegin(), m_streams.cend(), isActive))
+    if (errorCode == HTTP2_NO_ERROR) {
+        // Graceful GOAWAY (NO_ERROR): Only cancel streams the peer explicitly won't process
+        // (those with IDs > lastStreamID). Streams with ID <= lastStreamID can still complete.
+        // '0' can be used in the special case that no streams at all were or will be processed.
+        const quint32 firstPossibleStream = m_connectionType == Type::Client ? 1 : 2;
+        const quint32 firstCancelledStream = lastStreamID ? lastStreamID + 2 : firstPossibleStream;
+        Q_ASSERT((firstCancelledStream & 0x1) == LocalMask);
+        for (quint32 id = firstCancelledStream; id < m_nextStreamID; id += 2) {
+            QHttp2Stream *stream = m_streams.value(id, nullptr);
+            if (stream && stream->isActive())
+                stream->finishWithError(errorCode, "Received GOAWAY"_L1);
+        }
+        maybeCloseOnGoingAway(); // check if we can close now
+    } else {
+        // RFC 9113, 5.4.1: After sending the GOAWAY frame for an error
+        // condition, the endpoint MUST close the TCP connection.
+        // As the peer is closing the connection immediately, they won't
+        // process any more data, so we close the connection here already.
+        m_connectionAborted = true;
+        for (QHttp2Stream *stream : std::as_const(m_streams)) {
+            if (stream && stream->isActive())
+                stream->finishWithError(errorCode, "Received GOAWAY"_L1);
+        }
         closeSession();
+    }
 }
 
 void QHttp2Connection::handleWINDOW_UPDATE()
