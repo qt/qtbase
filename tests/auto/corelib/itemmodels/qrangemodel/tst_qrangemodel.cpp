@@ -11,6 +11,7 @@
 #include <QtTest/qsignalspy.h>
 
 #include <QtGui/qcolor.h>
+#include <QtGui/qpolygon.h>
 
 #if QT_CONFIG(itemmodeltester)
 #include <QtTest/qabstractitemmodeltester.h>
@@ -81,6 +82,8 @@ private slots:
     void mapsAsRange();
     void spanAsRange();
     void filterAsRange();
+    void multiRoleContainer();
+    void multiRoleTuple();
 
     void tree_data();
     void tree();
@@ -1596,6 +1599,102 @@ void tst_QRangeModel::filterAsRange()
 #else
     QSKIP("Test of std::ranges requires C++ 20");
 #endif
+}
+
+template <>
+struct QRangeModel::RowOptions<QPolygon>
+{
+    static constexpr auto rowCategory = QRangeModel::RowCategory::MultiRoleItem;
+};
+
+template <>
+struct QRangeModel::ItemAccess<QPolygon>
+{
+    static QVariant readRole(const QPolygon &polygon, int role)
+    {
+        if (role == Qt::DisplayRole) {
+            QString string;
+            bool first = true;
+            for (const auto &point : polygon) {
+                if (!first)
+                    string += ";";
+                else
+                    first = false;
+                string += u"%1/%2"_s.arg(point.x()).arg(point.y());
+            }
+            return string;
+        }
+        return QVariant();
+    }
+
+    static bool writeRole(QPolygon &target, const QVariant &value, int role)
+    {
+        target.clear();
+        if (role == Qt::DisplayRole || role == Qt::EditRole) {
+            bool ok = false;
+            for (auto entry : QStringTokenizer(value.toString(), u';')) {
+                const auto tokens = entry.tokenize(u'/');
+                auto coord = tokens.cbegin();
+                QPoint point;
+                point.rx() = coord->toInt(&ok);
+                if (!ok)
+                    break;
+                ++coord;
+                point.ry() = coord->toInt(&ok);
+                if (!ok)
+                    break;
+                target += point;
+            }
+            return ok;
+        }
+        return false;
+    }
+};
+
+void tst_QRangeModel::multiRoleContainer()
+{
+    static_assert(QRangeModelDetails::item_access<QPolygon>::value);
+
+    QList<QPolygon> listOfPolygons = {
+        QPolygon{{0, 0}, {1, 0}, {1, 1}, {0, 1}},
+        QPolygon{{0, 0}, {2, 0}, {2, 2}, {0, 2}},
+        QPolygon{{0, 0}, {3, 0}, {3, 3}, {0, 3}},
+    };
+
+    QRangeModel model(std::ref(listOfPolygons));
+
+    QCOMPARE(model.rowCount(), 3);
+    QCOMPARE(model.columnCount(), 1);
+
+    const QModelIndex first = model.index(0, 0);
+    QCOMPARE(first.data(), "0/0;1/0;1/1;0/1");
+    QVERIFY(model.setData(first, "1/0;1/1;0/1;0/0"));
+    QCOMPARE(first.data(), "1/0;1/1;0/1;0/0");
+}
+
+template <>
+struct QRangeModel::RowOptions<QPoint>
+{
+    static constexpr auto rowCategory = QRangeModel::RowCategory::MultiRoleItem;
+};
+
+void tst_QRangeModel::multiRoleTuple()
+{
+    QList<QPoint> listOfPoints = {
+        {0, 0},
+        {1, 0},
+        {1, 1},
+        {0, 1},
+    };
+
+    QRangeModel model(listOfPoints);
+    QCOMPARE(model.rowCount(), listOfPoints.size());
+    QCOMPARE(model.columnCount(), 1);
+
+    const QModelIndex item = model.index(1, 0);
+    QCOMPARE(item.data().value<QPoint>(), listOfPoints.at(1));
+    QVERIFY(model.setData(item, listOfPoints.back()));
+    QCOMPARE(item.data().value<QPoint>(), listOfPoints.back());
 }
 
 enum class TreeProtocol {

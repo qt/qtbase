@@ -440,7 +440,8 @@ namespace QRangeModelDetails
     // is ambiguous with arrays, as they are also ranges
     template <typename T, typename = void>
     struct row_traits {
-        static constexpr bool is_range = is_range_v<q20::remove_cvref_t<T>>;
+        static constexpr bool is_range = is_range_v<q20::remove_cvref_t<T>>
+                                      && !row_category<T>::isMultiRole;
         // A static size of -1 indicates dynamically sized range
         // A static size of 0 indicates that the specified type doesn't
         // represent static or dynamic range.
@@ -472,7 +473,7 @@ namespace QRangeModelDetails
 
     // Specialization for tuple-like semantics (prioritized over metaobject)
     template <typename T>
-    struct row_traits<T, std::enable_if_t<tuple_like_v<T>>>
+    struct row_traits<T, std::enable_if_t<tuple_like_v<T> && !row_category<T>::isMultiRole>>
     {
         static constexpr std::size_t size64 = std::tuple_size_v<T>;
         static_assert(q20::in_range<int>(size64));
