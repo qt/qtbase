@@ -1173,9 +1173,9 @@ bool comparesEqual(const QEasingCurve &lhs, const QEasingCurve &rhs)
             res = lhs.d_ptr->config->fuzzyCompare(*rhs.d_ptr->config);
         } else if (lhs.d_ptr->config || rhs.d_ptr->config) {
             // one one has a config object, which could contain default values
-            res = qFuzzyCompare(lhs.amplitude(), rhs.amplitude())
-               && qFuzzyCompare(lhs.period(), rhs.period())
-               && qFuzzyCompare(lhs.overshoot(), rhs.overshoot());
+            res = QtPrivate::fuzzyCompare(lhs.amplitude(), rhs.amplitude())
+               && QtPrivate::fuzzyCompare(lhs.period(), rhs.period())
+               && QtPrivate::fuzzyCompare(lhs.overshoot(), rhs.overshoot());
         }
     }
     return res;
