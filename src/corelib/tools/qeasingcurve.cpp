@@ -333,12 +333,12 @@ struct TCBPoint
     qreal _b;
 
 
-    bool operator==(const TCBPoint &other) const
+    friend bool operator==(const TCBPoint &lhs, const TCBPoint &rhs) noexcept
     {
-        return _point == other._point &&
-                qFuzzyCompare(_t, other._t) &&
-                qFuzzyCompare(_c, other._c) &&
-                qFuzzyCompare(_b, other._b);
+        return qFuzzyCompare(lhs._point, rhs._point)
+            && QtPrivate::fuzzyCompare(lhs._t, rhs._t)
+            && QtPrivate::fuzzyCompare(lhs._c, rhs._c)
+            && QtPrivate::fuzzyCompare(lhs._b, rhs._b);
     }
 };
 Q_DECLARE_TYPEINFO(TCBPoint, Q_PRIMITIVE_TYPE);
