@@ -16,6 +16,13 @@ analysis_instructions_axivion: &analysis_instructions_axivion
           condition: runtime
           env_var: TESTED_MODULE_COIN
           not_equals_value: "qtbase"
+      - type: EnvironmentVariable
+        variableName: TESTED_MODULE_BRANCH_COIN
+        variableValue: "unknown"
+        enable_if:
+          condition: runtime
+          env_var: TESTED_MODULE_BRANCH_COIN
+          equals_value: null
     - type: Group
       instructions:
       - type: Rename
