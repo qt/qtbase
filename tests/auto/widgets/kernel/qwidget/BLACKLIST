@@ -4,11 +4,6 @@ osx
 macos arm
 [render_systemClip]
 osx
-[multipleToplevelFocusCheck]
-centos
-opensuse-leap
-ubuntu
-sles-15
 # QTBUG-87668
 [showMinimizedKeepsFocus]
 android
