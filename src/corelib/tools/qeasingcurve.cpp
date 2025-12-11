@@ -332,8 +332,6 @@ struct TCBPoint
     qreal _c;
     qreal _b;
 
-    TCBPoint() {}
-    TCBPoint(QPointF point, qreal t, qreal c, qreal b) : _point(point), _t(t), _c(c), _b(b) {}
 
     bool operator==(const TCBPoint &other) const
     {
@@ -1381,7 +1379,7 @@ void QEasingCurve::addTCBSegment(const QPointF &nextPoint, qreal t, qreal c, qre
     if (!d_ptr->config)
         d_ptr->config = curveToFunctionObject(d_ptr->type);
 
-    d_ptr->config->_tcbPoints.append(TCBPoint(nextPoint, t, c, b));
+    d_ptr->config->_tcbPoints.append(TCBPoint{nextPoint, t, c, b});
 
     if (nextPoint == QPointF(1.0, 1.0)) {
         d_ptr->config->_bezierCurves = tcbToBezier(d_ptr->config->_tcbPoints);
