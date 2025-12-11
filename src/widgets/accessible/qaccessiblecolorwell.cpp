@@ -3,6 +3,8 @@
 
 #include "private/qaccessiblecolorwell_p.h"
 
+#include <QtCore/qcoreapplication.h>
+
 QT_REQUIRE_CONFIG(accessibility);
 
 #if QT_CONFIG(colordialog)
@@ -14,6 +16,7 @@ class QAccessibleColorWellItem : public QAccessibleInterface
 {
     QAccessibleColorWell *m_parent;
 
+    Q_DECLARE_TR_FUNCTIONS(QAccessibleColorWellItem)
 public:
     QAccessibleColorWellItem(QAccessibleColorWell *parent);
 
@@ -79,7 +82,7 @@ QString QAccessibleColorWellItem::text(QAccessible::Text t) const
     if (t == QAccessible::Name) {
         QRgb color = m_parent->colorWell()->rgbValues()[m_parent->indexOfChild(this)];
         //: Color specified via its 3 RGB components (red, green, blue)
-        return QObject::tr("RGB %1, %2, %3")
+        return tr("RGB %1, %2, %3")
                 .arg(QString::number(qRed(color)), QString::number(qGreen(color)),
                      QString::number(qBlue(color)));
     }
