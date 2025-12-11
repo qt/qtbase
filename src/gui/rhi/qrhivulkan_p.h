@@ -948,6 +948,7 @@ public:
     VkPhysicalDeviceFeatures physDevFeatures;
 #ifdef VK_VERSION_1_1
     VkPhysicalDeviceMultiviewFeatures multiviewFeaturesIfApi11;
+    VkPhysicalDeviceShaderDrawParametersFeatures shaderDrawParametersFeaturesIfApi11;
 #endif
 #ifdef VK_VERSION_1_2
     VkPhysicalDeviceVulkan11Features physDevFeatures11IfApi12OrNewer;
@@ -1014,6 +1015,7 @@ public:
         QVersionNumber apiVersion;
         int imageBasedShadingRateTileSize = 0;
         bool drawIndirectMulti = false;
+        bool shaderDrawParameters = false;
     } caps;
 
     VkPipelineCache pipelineCache = VK_NULL_HANDLE;

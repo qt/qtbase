@@ -1245,6 +1245,13 @@ bool QRhiGles2::create(QRhi::Flags flags)
         }
     }
 
+    if (caps.gles)
+        caps.shaderDrawParameters = false;
+    else
+        caps.shaderDrawParameters = caps.ctxMajor > 4 || (caps.ctxMajor == 4 && caps.ctxMinor >= 6);
+    if (ctx->hasExtension(QByteArrayLiteral("GL_ARB_shader_draw_parameters")))
+        caps.shaderDrawParameters = true;
+
     nativeHandlesStruct.context = ctx;
 
     contextLost = false;
@@ -1702,6 +1709,8 @@ bool QRhiGles2::isFeatureSupported(QRhi::Feature feature) const
         return caps.drawIndirect;
     case QRhi::DrawIndirectMulti:
         return caps.drawIndirectMulti;
+    case QRhi::ShaderDrawParameters:
+        return caps.shaderDrawParameters;
     default:
         Q_UNREACHABLE_RETURN(false);
     }

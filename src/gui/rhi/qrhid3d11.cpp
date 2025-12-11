@@ -720,6 +720,7 @@ bool QRhiD3D11::isFeatureSupported(QRhi::Feature feature) const
     case QRhi::DrawIndirect:
         return featureLevel >= D3D_FEATURE_LEVEL_11_0;
     case QRhi::DrawIndirectMulti:
+    case QRhi::ShaderDrawParameters:
         return false;
     default:
         Q_UNREACHABLE();

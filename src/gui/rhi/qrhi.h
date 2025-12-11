@@ -1974,6 +1974,7 @@ public:
         DepthClamp,
         DrawIndirect,
         DrawIndirectMulti,
+        ShaderDrawParameters,
     };
 
     enum BeginFrameFlag {

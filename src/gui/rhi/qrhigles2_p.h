@@ -1125,6 +1125,7 @@ public:
         uint sampleVariables : 1;
         uint drawIndirect : 1;
         uint drawIndirectMulti : 1;
+        uint shaderDrawParameters : 1;
     } caps;
     QGles2SwapChain *currentSwapChain = nullptr;
     QSet<GLint> supportedCompressedFormats;

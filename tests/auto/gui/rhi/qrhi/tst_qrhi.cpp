@@ -150,6 +150,8 @@ private slots:
     void indexedIndirectMultiDrawFromCompute();
     void indexedIndirectMultiDrawHighDrawCount_data();
     void indexedIndirectMultiDrawHighDrawCount();
+    void indexedIndirectMultiDrawShaderDrawParams_data();
+    void indexedIndirectMultiDrawShaderDrawParams();
 
     void pipelineCache_data();
     void pipelineCache();
@@ -5733,6 +5735,161 @@ void tst_QRhi::indexedIndirectMultiDrawHighDrawCount()
 
     QCOMPARE(redCount,   64); // We should see the left red quad
     QCOMPARE(greenCount, 64); // We should see the right green quad
+    QCOMPARE(blueCount,   0); // We should not see the background
+}
+
+void tst_QRhi::indexedIndirectMultiDrawShaderDrawParams_data()
+{
+    rhiTestData();
+}
+
+void tst_QRhi::indexedIndirectMultiDrawShaderDrawParams()
+{
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+    std::unique_ptr<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing rendering");
+
+    if (!rhi->isFeatureSupported(QRhi::DrawIndirect))
+        QSKIP("Indirect draw is not supported, skipping test");
+    if (!rhi->isFeatureSupported(QRhi::DrawIndirectMulti))
+        QSKIP("Indirect multi-draw is not supported, skipping test");
+    if (!rhi->isFeatureSupported(QRhi::ShaderDrawParameters))
+        QSKIP("gl_DrawID is not supported, skipping test");
+
+    static constexpr float quadVertices[] {
+        -1.0f, -1.0f, 0.0f, // Bottom-left
+         0.0f, -1.0f, 0.0f, // Bottom-right
+         0.0f,  1.0f, 0.0f, // Top-right
+        -1.0f,  1.0f, 0.0f, // Top-left
+    };
+    static constexpr uint16_t quadIndices[] {
+        0, 1, 2,
+        2, 3, 0,
+    };
+    static constexpr QRhiIndexedIndirectDrawCommand quadDrawCommands[] {
+        { /* indexCount */ 6, /* instanceCount */ 1, /* firstIndex */ 0, /* vertexOffset */ 0, /* firstInstance */ 0 },
+        { /* indexCount */ 6, /* instanceCount */ 1, /* firstIndex */ 0, /* vertexOffset */ 0, /* firstInstance */ 0 },
+    };
+    static constexpr float quadColors[] {
+        1.0f, 0.0f, 0.0f, 1.0f, // Red
+        0.0f, 1.0f, 0.0f, 1.0f, // Green
+    };
+
+    const QSize outputSize(128, 64);
+    std::unique_ptr<QRhiTexture> texture(rhi->newTexture(QRhiTexture::RGBA8, outputSize, 1,
+                                                         QRhiTexture::RenderTarget | QRhiTexture::UsedAsTransferSource));
+    QVERIFY(texture->create());
+
+    std::unique_ptr<QRhiTextureRenderTarget> rt(rhi->newTextureRenderTarget({ texture.get() }));
+    std::unique_ptr<QRhiRenderPassDescriptor> rpDesc(rt->newCompatibleRenderPassDescriptor());
+    rt->setRenderPassDescriptor(rpDesc.get());
+    QVERIFY(rt->create());
+
+    QRhiCommandBuffer *cb = nullptr;
+    QVERIFY(rhi->beginOffscreenFrame(&cb) == QRhi::FrameOpSuccess);
+    QVERIFY(cb);
+
+    QRhiResourceUpdateBatch *beginPassUpdates = rhi->nextResourceUpdateBatch();
+
+    std::unique_ptr<QRhiBuffer> vertexBuffer(rhi->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer, sizeof(quadVertices)));
+    QVERIFY(vertexBuffer->create());
+    beginPassUpdates->uploadStaticBuffer(vertexBuffer.get(), quadVertices);
+
+    std::unique_ptr<QRhiBuffer> indexBuffer(rhi->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::IndexBuffer, sizeof(quadIndices)));
+    QVERIFY(indexBuffer->create());
+    beginPassUpdates->uploadStaticBuffer(indexBuffer.get(), quadIndices);
+
+    // In this test case, we construct the draw commands on the CPU
+    std::unique_ptr<QRhiBuffer> indirectBuffer(rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::IndirectBuffer, sizeof(quadDrawCommands)));
+    QVERIFY(indirectBuffer->create());
+    beginPassUpdates->updateDynamicBuffer(indirectBuffer.get(), 0, sizeof(quadDrawCommands), quadDrawCommands);
+
+    std::unique_ptr<QRhiBuffer> uniformBuffer(rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, 160));
+    QVERIFY(uniformBuffer->create());
+    beginPassUpdates->updateDynamicBuffer(uniformBuffer.get(), 0, 32, quadColors);
+    QMatrix4x4 quadMvp1 = rhi->clipSpaceCorrMatrix(); quadMvp1.translate(0.0, 0.0f, 0.0f);
+    beginPassUpdates->updateDynamicBuffer(uniformBuffer.get(), 32, 64, quadMvp1.constData());
+    QMatrix4x4 quadMvp2 = rhi->clipSpaceCorrMatrix(); quadMvp2.translate(1.0, 0.0f, 0.0f);
+    beginPassUpdates->updateDynamicBuffer(uniformBuffer.get(), 32+64, 64, quadMvp2.constData());
+
+    std::unique_ptr<QRhiShaderResourceBindings> shaderBindings(rhi->newShaderResourceBindings());
+    shaderBindings->setBindings({
+                                    QRhiShaderResourceBinding::uniformBuffer(0, QRhiShaderResourceBinding::VertexStage, uniformBuffer.get()),
+                                });
+    QVERIFY(shaderBindings->create());
+
+    std::unique_ptr<QRhiGraphicsPipeline> pipeline(rhi->newGraphicsPipeline());
+    QShader vs = loadShader(":/data/indirect_multi_draw_sdp.vert.qsb");
+    QVERIFY(vs.isValid());
+    QShader fs = loadShader(":/data/indirect_multi_draw_sdp.frag.qsb");
+    QVERIFY(fs.isValid());
+    pipeline->setShaderStages({ { QRhiShaderStage::Vertex, vs }, { QRhiShaderStage::Fragment, fs } });
+    QRhiVertexInputLayout vertexLayout;
+    vertexLayout.setBindings({ { 3 * sizeof(float) } });
+    vertexLayout.setAttributes({ { 0, 0, QRhiVertexInputAttribute::Float3, 0 } });
+    pipeline->setVertexInputLayout(vertexLayout);
+    pipeline->setShaderResourceBindings(shaderBindings.get());
+    pipeline->setRenderPassDescriptor(rpDesc.get());
+    QVERIFY(pipeline->create());
+
+    cb->beginPass(rt.get(), Qt::blue, { 1.0f, 0 }, beginPassUpdates);
+    cb->setGraphicsPipeline(pipeline.get());
+    cb->setShaderResources(shaderBindings.get());
+    cb->setViewport({ 0, 0, float(outputSize.width()), float(outputSize.height()) });
+    const QRhiCommandBuffer::VertexInput vertexBindings(vertexBuffer.get(), 0);
+    cb->setVertexInput(0, 1, &vertexBindings, indexBuffer.get());
+    cb->drawIndexedIndirect(indirectBuffer.get(), 0, 2);
+
+    QRhiReadbackResult readResult;
+    QImage result;
+    readResult.completed = [&readResult, &result] {
+        result = QImage(reinterpret_cast<const uchar *>(readResult.data.constData()),
+                        readResult.pixelSize.width(), readResult.pixelSize.height(),
+                        QImage::Format_RGBA8888_Premultiplied); // non-owning, no copy needed because readResult outlives result
+    };
+    QRhiResourceUpdateBatch *inPassUpdates = rhi->nextResourceUpdateBatch();
+    inPassUpdates->readBackTexture({ texture.get() }, &readResult);
+    cb->endPass(inPassUpdates);
+
+    rhi->endOffscreenFrame();
+
+    if (rhi->isYUpInFramebuffer() != rhi->isYUpInNDC())
+        result.flip();
+
+    // Convert to a byte-order independent format, otherwise the blue and red are swapped on little endian
+    result.convertTo(QImage::Format_ARGB32);
+
+    QCOMPARE(result.size(), texture->pixelSize());
+
+    if (impl == QRhi::Null)
+        return;
+
+    const int y = result.height() / 2; // Check a horizontal line in the middle
+    const quint32 *p = reinterpret_cast<const quint32 *>(result.constScanLine(y));
+    int x = result.width();
+    int redCount = 0;
+    int greenCount = 0;
+    int blueCount = 0;
+    const int maxFuzz = 1;
+
+    while (x-- > 0) {
+        const QRgb c(*p++);
+        if (qRed(c) >= (255 - maxFuzz) && qGreen(c) == 0 && qBlue(c) == 0)
+            ++redCount;
+        else if (qRed(c) == 0 && qGreen(c) >= (255 - maxFuzz) && qBlue(c) == 0)
+            ++greenCount;
+        else if (qRed(c) == 0 && qGreen(c) == 0 && qBlue(c) >= (255 - maxFuzz))
+            ++blueCount;
+        else
+            QFAIL(qPrintable(QStringLiteral("Unexpected color at x=%1, y=%2: %3,%4,%5")
+                             .arg(x).arg(y).arg(qRed(c)).arg(qGreen(c)).arg(qBlue(c))));
+    }
+
+    QCOMPARE(redCount,   64); // We should see the left red quad (drawID == 0)
+    QCOMPARE(greenCount, 64); // We should see the right green quad (drawID == 1)
     QCOMPARE(blueCount,   0); // We should not see the background
 }
 

@@ -918,6 +918,8 @@ bool QRhiD3D12::isFeatureSupported(QRhi::Feature feature) const
         return drawCommandSignature != nullptr && drawIndexedCommandSignature != nullptr;
     case QRhi::DrawIndirectMulti:
         return drawCommandSignature != nullptr && drawIndexedCommandSignature != nullptr;
+    case QRhi::ShaderDrawParameters:
+        return false;
     }
     return false;
 }

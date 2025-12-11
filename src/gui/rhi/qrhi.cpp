@@ -1142,6 +1142,11 @@ Q_LOGGING_CATEGORY(QRHI_LOG_RUB, "qt.rhi.rub")
     Otherwise, multiple draw calls are issued on the CPU by the RHI.
     In practice this can be expected to be supported on Vulkan 1.1+, OpenGL 4.3+
     and D3D12.
+
+    \value [since 6.12] ShaderDrawParameters Indicates that the \c{gl_BaseInstance},
+    \c{gl_BaseVertex} and \c{gl_DrawID} built-in variables are available in shaders.
+    In practice this can be expected to be supported on Vulkan 1.1+ and with desktop OpenGL
+    4.6 or \c{GL_ARB_shader_draw_parameters}.
  */
 
 /*!

@@ -926,6 +926,7 @@ bool QRhiMetal::isFeatureSupported(QRhi::Feature feature) const
     case QRhi::DrawIndirect:
         return true;
     case QRhi::DrawIndirectMulti:
+    case QRhi::ShaderDrawParameters:
         return false;
     default:
         Q_UNREACHABLE();

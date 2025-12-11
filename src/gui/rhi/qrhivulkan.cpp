@@ -737,9 +737,16 @@ bool QRhiVulkan::create(QRhi::Flags flags)
         // writing Quest 3 Android is a Vulkan 1.1 implementation at run time on
         // the headset.
         if (caps.apiVersion == QVersionNumber(1, 1)) {
-            multiviewFeaturesIfApi11 = {};
-            multiviewFeaturesIfApi11.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES;
-            addToChain(&physDevFeaturesChainable, &multiviewFeaturesIfApi11);
+            {
+                multiviewFeaturesIfApi11 = {};
+                multiviewFeaturesIfApi11.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES;
+                addToChain(&physDevFeaturesChainable, &multiviewFeaturesIfApi11);
+            }
+            {
+                shaderDrawParametersFeaturesIfApi11 = {};
+                shaderDrawParametersFeaturesIfApi11.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_DRAW_PARAMETERS_FEATURES;
+                addToChain(&physDevFeaturesChainable, &shaderDrawParametersFeaturesIfApi11);
+            }
             f->vkGetPhysicalDeviceFeatures2(physDev, &physDevFeaturesChainable);
             memcpy(&physDevFeatures, &physDevFeaturesChainable.features, sizeof(VkPhysicalDeviceFeatures));
             featuresQueried = true;
@@ -989,13 +996,17 @@ bool QRhiVulkan::create(QRhi::Flags flags)
     caps.drawIndirectMulti = physDevFeatures.multiDrawIndirect;
 
 #ifdef VK_VERSION_1_2
-    if (caps.apiVersion >= QVersionNumber(1, 2))
+    if (caps.apiVersion >= QVersionNumber(1, 2)) {
         caps.multiView = physDevFeatures11IfApi12OrNewer.multiview;
+        caps.shaderDrawParameters = physDevFeatures11IfApi12OrNewer.shaderDrawParameters;
+    }
 #endif
 
 #ifdef VK_VERSION_1_1
-    if (caps.apiVersion == QVersionNumber(1, 1))
+    if (caps.apiVersion == QVersionNumber(1, 1)) {
         caps.multiView = multiviewFeaturesIfApi11.multiview;
+        caps.shaderDrawParameters = shaderDrawParametersFeaturesIfApi11.shaderDrawParameters;
+    }
 #endif
 
 #ifdef VK_KHR_fragment_shading_rate
@@ -5581,6 +5592,8 @@ bool QRhiVulkan::isFeatureSupported(QRhi::Feature feature) const
         return true; // available in Vulkan 1.0
     case QRhi::DrawIndirectMulti:
         return caps.drawIndirectMulti;
+    case QRhi::ShaderDrawParameters:
+        return caps.shaderDrawParameters;
     default:
         Q_UNREACHABLE_RETURN(false);
     }
