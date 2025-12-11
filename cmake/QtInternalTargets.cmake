@@ -385,7 +385,10 @@ if(QT_FEATURE_stdlib_libcpp)
     target_compile_definitions(PlatformCommonInternal INTERFACE _LIBCPP_REMOVE_TRANSITIVE_INCLUDES)
 endif()
 
-if(QT_USE_CCACHE AND CLANG AND BUILD_WITH_PCH)
+if((QT_USE_CCACHE
+      OR (CMAKE_CXX_COMPILER_LAUNCHER MATCHES "^(.*[/\\])?sccache$"))
+    AND CLANG
+    AND BUILD_WITH_PCH)
     # The ccache man page says we must compile with -fno-pch-timestamp when using clang and pch.
     foreach(language IN ITEMS C CXX OBJC OBJCXX)
         target_compile_options(PlatformCommonInternal INTERFACE
