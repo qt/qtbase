@@ -6931,9 +6931,13 @@ class TopLevelFocusCheck: public QWidget
     Q_OBJECT
 public:
     QLineEdit* edit;
-    explicit TopLevelFocusCheck(QWidget *parent = nullptr)
+    explicit TopLevelFocusCheck(const QString &name, QWidget *parent = nullptr)
         : QWidget(parent), edit(new QLineEdit(this))
     {
+        const QString title = QLatin1String(QTest::currentTestFunction()) + "_"_L1 + name;
+        setWindowTitle(title);
+        setObjectName(title);
+        edit->setObjectName(QString("%1_edit"_L1).arg(title));
         edit->hide();
         edit->installEventFilter(this);
     }
@@ -6943,7 +6947,7 @@ public slots:
     {
         edit->show();
         edit->setFocus(Qt::OtherFocusReason);
-        QCoreApplication::processEvents();
+        QVERIFY(QTest::qWaitForWindowFocused(edit));
     }
     bool eventFilter(QObject *obj, QEvent *event) override
     {
@@ -6963,49 +6967,42 @@ void tst_QWidget::multipleToplevelFocusCheck()
 
     if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
         QSKIP("Window activation is not supported");
-    TopLevelFocusCheck w1;
-    TopLevelFocusCheck w2;
+    TopLevelFocusCheck w1("Widget-1"_L1);
+    TopLevelFocusCheck w2("Widget-2"_L1);
 
-    const QString title = QLatin1String(QTest::currentTestFunction());
-    w1.setWindowTitle(title + QLatin1String("_W1"));
     w1.move(m_availableTopLeft + QPoint(20, 20));
     w1.resize(200, 200);
     w1.show();
     QVERIFY(QTest::qWaitForWindowExposed(&w1));
-    w2.setWindowTitle(title + QLatin1String("_W2"));
     w2.move(w1.frameGeometry().topRight() + QPoint(20, 0));
     w2.resize(200,200);
     w2.show();
     QVERIFY(QTest::qWaitForWindowExposed(&w2));
 
     w1.activateWindow();
-    QApplicationPrivate::setActiveWindow(&w1);
     QVERIFY(QTest::qWaitForWindowActive(&w1));
-    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&w1));
+    QTRY_COMPARE(QApplication::activeWindow(), &w1);
     QTest::mouseDClick(&w1, Qt::LeftButton);
-    QTRY_COMPARE(QApplication::focusWidget(), static_cast<QWidget *>(w1.edit));
+    QTRY_COMPARE(QApplication::focusWidget(), w1.edit);
 
     w2.activateWindow();
-    QApplicationPrivate::setActiveWindow(&w2);
     QVERIFY(QTest::qWaitForWindowActive(&w2));
-    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&w2));
+    QTRY_COMPARE(QApplication::activeWindow(), &w2);
     QTest::mouseClick(&w2, Qt::LeftButton);
     QTRY_COMPARE(QApplication::focusWidget(), nullptr);
 
     QTest::mouseDClick(&w2, Qt::LeftButton);
-    QTRY_COMPARE(QApplication::focusWidget(), static_cast<QWidget *>(w2.edit));
+    QTRY_COMPARE(QApplication::focusWidget(), w2.edit);
 
     w1.activateWindow();
-    QApplicationPrivate::setActiveWindow(&w1);
     QVERIFY(QTest::qWaitForWindowActive(&w1));
-    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&w1));
+    QTRY_COMPARE(QApplication::activeWindow(), &w1);
     QTest::mouseDClick(&w1, Qt::LeftButton);
-    QTRY_COMPARE(QApplication::focusWidget(), static_cast<QWidget *>(w1.edit));
+    QTRY_COMPARE(QApplication::focusWidget(), w1.edit);
 
     w2.activateWindow();
-    QApplicationPrivate::setActiveWindow(&w2);
     QVERIFY(QTest::qWaitForWindowActive(&w2));
-    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&w2));
+    QTRY_COMPARE(QApplication::activeWindow(), &w2);
     QTest::mouseClick(&w2, Qt::LeftButton);
     QTRY_COMPARE(QApplication::focusWidget(), nullptr);
 }
