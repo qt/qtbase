@@ -381,8 +381,17 @@ void tst_QEventDispatcher::postEventFromThread()
     QAtomicInt hadToQuit = false;
     QAtomicInt done = false;
 
+    int threadCount = 500;
+    const int timeout = (1000
+#if defined(QT_GUI_LIB)
+        // Aggressively posting events may on some platforms rate limit us to
+        // the display's refresh rate, so give us enough time if that happens.
+        + ((1000.0 / qGuiApp->primaryScreen()->refreshRate()) * threadCount)
+#endif
+    );
+
     threadPool->start([&]{
-        int loop = 1000 / 10; // give it a second
+        int loop = timeout / 10;
         while (!done && --loop)
             QThread::sleep(std::chrono::milliseconds{10});
         if (done)
@@ -399,8 +408,7 @@ void tst_QEventDispatcher::postEventFromThread()
         }
     } receiver;
 
-    int count = 500;
-    while (!hadToQuit && --count) {
+    while (!hadToQuit && --threadCount) {
         threadPool->start([&receiver]{
             QCoreApplication::postEvent(&receiver, new QEvent(QEvent::User));
         });
