@@ -378,7 +378,8 @@ public:
     virtual ~QEasingCurveFunction() {}
     virtual qreal value(qreal t);
     virtual QEasingCurveFunction *clone() const { return new QEasingCurveFunction{*this}; }
-    bool operator==(const QEasingCurveFunction &other) const;
+    // ### virtual? (cf. QTBUG-142709)
+    bool fuzzyCompare(const QEasingCurveFunction &other) const noexcept;
 
     QEasingCurve::Type _t;
     qreal _p;
@@ -425,14 +426,14 @@ qreal QEasingCurveFunction::value(qreal t)
     return func(t);
 }
 
-bool QEasingCurveFunction::operator==(const QEasingCurveFunction &other) const
+bool QEasingCurveFunction::fuzzyCompare(const QEasingCurveFunction &other) const noexcept
 {
-    return _t == other._t &&
-           qFuzzyCompare(_p, other._p) &&
-           qFuzzyCompare(_a, other._a) &&
-           qFuzzyCompare(_o, other._o) &&
-            _bezierCurves == other._bezierCurves &&
-            _tcbPoints == other._tcbPoints;
+    return _t == other._t
+        && QtPrivate::fuzzyCompare(_p, other._p)
+        && QtPrivate::fuzzyCompare(_a, other._a)
+        && QtPrivate::fuzzyCompare(_o, other._o)
+        && _bezierCurves == other._bezierCurves
+        && _tcbPoints == other._tcbPoints;
 }
 
 QT_BEGIN_INCLUDE_NAMESPACE
@@ -1168,8 +1169,7 @@ bool comparesEqual(const QEasingCurve &lhs, const QEasingCurve &rhs)
     if (res) {
         if (lhs.d_ptr->config && rhs.d_ptr->config) {
             // catch the config content
-            res = lhs.d_ptr->config->operator==(*(rhs.d_ptr->config));
-
+            res = lhs.d_ptr->config->fuzzyCompare(*rhs.d_ptr->config);
         } else if (lhs.d_ptr->config || rhs.d_ptr->config) {
             // one one has a config object, which could contain default values
             res = qFuzzyCompare(lhs.amplitude(), rhs.amplitude())
