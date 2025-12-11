@@ -365,6 +365,11 @@ typedef QList<TCBPoint> TCBPoints;
 
 class QEasingCurveFunction
 {
+    QEasingCurveFunction &operator=(const QEasingCurveFunction &) = delete;
+    QEasingCurveFunction &operator=(QEasingCurveFunction &&) = delete;
+    QEasingCurveFunction(QEasingCurveFunction &&) = delete;
+protected:
+    QEasingCurveFunction(const QEasingCurveFunction &) = default; // used by clone()
 public:
     QEasingCurveFunction(QEasingCurve::Type type, qreal period = 0.3, qreal amplitude = 1.0,
         qreal overshoot = 1.70158)
@@ -372,7 +377,7 @@ public:
     { }
     virtual ~QEasingCurveFunction() {}
     virtual qreal value(qreal t);
-    virtual QEasingCurveFunction *copy() const;
+    virtual QEasingCurveFunction *clone() const { return new QEasingCurveFunction{*this}; }
     bool operator==(const QEasingCurveFunction &other) const;
 
     QEasingCurve::Type _t;
@@ -420,14 +425,6 @@ qreal QEasingCurveFunction::value(qreal t)
     return func(t);
 }
 
-QEasingCurveFunction *QEasingCurveFunction::copy() const
-{
-    QEasingCurveFunction *rv = new QEasingCurveFunction(_t, _p, _a, _o);
-    rv->_bezierCurves = _bezierCurves;
-    rv->_tcbPoints = _tcbPoints;
-    return rv;
-}
-
 bool QEasingCurveFunction::operator==(const QEasingCurveFunction &other) const
 {
     return _t == other._t &&
@@ -452,7 +449,7 @@ public:
     { }
     QEasingCurvePrivate(const QEasingCurvePrivate &other)
         : type(other.type),
-          config(other.config ? other.config->copy() : nullptr),
+          config(other.config ? other.config->clone() : nullptr),
           func(other.func)
     { }
     ~QEasingCurvePrivate() { delete config; }
@@ -536,17 +533,7 @@ struct BezierEase : public QEasingCurveFunction
         }
     }
 
-    QEasingCurveFunction *copy() const override
-    {
-        BezierEase *rv = new BezierEase();
-        rv->_t = _t;
-        rv->_p = _p;
-        rv->_a = _a;
-        rv->_o = _o;
-        rv->_bezierCurves = _bezierCurves;
-        rv->_tcbPoints = _tcbPoints;
-        return rv;
-    }
+    BezierEase *clone() const override { return new BezierEase{*this}; }
 
     void getBezierSegment(SingleCubicBezier * &singleCubicBezier, qreal x)
     {
@@ -918,7 +905,7 @@ struct TCBEase : public BezierEase
         return BezierEase::value(x);
     }
 
-    QEasingCurveFunction *copy() const override
+    TCBEase *clone() const override
     {
         return new TCBEase{*this};
     }
@@ -930,15 +917,7 @@ struct ElasticEase : public QEasingCurveFunction
         : QEasingCurveFunction(type, qreal(0.3), qreal(1.0))
     { }
 
-    QEasingCurveFunction *copy() const override
-    {
-        ElasticEase *rv = new ElasticEase(_t);
-        rv->_p = _p;
-        rv->_a = _a;
-        rv->_bezierCurves = _bezierCurves;
-        rv->_tcbPoints = _tcbPoints;
-        return rv;
-    }
+    ElasticEase *clone() const override { return new ElasticEase{*this}; }
 
     qreal value(qreal t) override
     {
@@ -965,14 +944,7 @@ struct BounceEase : public QEasingCurveFunction
         : QEasingCurveFunction(type, qreal(0.3), qreal(1.0))
     { }
 
-    QEasingCurveFunction *copy() const override
-    {
-        BounceEase *rv = new BounceEase(_t);
-        rv->_a = _a;
-        rv->_bezierCurves = _bezierCurves;
-        rv->_tcbPoints = _tcbPoints;
-        return rv;
-    }
+    BounceEase *clone() const override { return new BounceEase{*this}; }
 
     qreal value(qreal t) override
     {
@@ -998,14 +970,7 @@ struct BackEase : public QEasingCurveFunction
         : QEasingCurveFunction(type, qreal(0.3), qreal(1.0), qreal(1.70158))
     { }
 
-    QEasingCurveFunction *copy() const override
-    {
-        BackEase *rv = new BackEase(_t);
-        rv->_o = _o;
-        rv->_bezierCurves = _bezierCurves;
-        rv->_tcbPoints = _tcbPoints;
-        return rv;
-    }
+    BackEase *clone() const override { return new BackEase{*this}; }
 
     qreal value(qreal t) override
     {
