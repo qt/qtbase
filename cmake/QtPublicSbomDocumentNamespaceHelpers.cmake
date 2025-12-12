@@ -7,6 +7,8 @@ function(_qt_internal_sbom_compute_project_namespace out_var)
         SUPPLIER_URL
         PROJECT_NAME
         VERSION_SUFFIX
+        DOCUMENT_NAMESPACE_INFIX
+        DOCUMENT_NAMESPACE_SUFFIX
     )
     set(multi_args "")
 
@@ -36,9 +38,17 @@ function(_qt_internal_sbom_compute_project_namespace out_var)
 
     # Used in external refs, it should be either aa URI + UUID or a URI + checksum.
     # We currently use a URI + git version, which is probably not conformant to the spec.
-    set(repo_name_and_version "${project_name_lowercase}${version_suffix}")
-    set(repo_spdx_namespace
-        "${arg_SUPPLIER_URL}/spdxdocs/${repo_name_and_version}")
+    set(namespace "${project_name_lowercase}${version_suffix}")
+
+    if(arg_DOCUMENT_NAMESPACE_INFIX)
+        string(APPEND namespace "${arg_DOCUMENT_NAMESPACE_INFIX}")
+    endif()
+
+    if(arg_DOCUMENT_NAMESPACE_SUFFIX)
+        string(APPEND namespace "${arg_DOCUMENT_NAMESPACE_SUFFIX}")
+    endif()
+
+    set(repo_spdx_namespace "${arg_SUPPLIER_URL}/spdxdocs/${namespace}")
 
     set(${out_var} "${repo_spdx_namespace}" PARENT_SCOPE)
 endfunction()
