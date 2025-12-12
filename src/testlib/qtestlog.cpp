@@ -305,9 +305,7 @@ namespace QTest {
     {
         static QBasicAtomicInt counter = Q_BASIC_ATOMIC_INITIALIZER(QTest::maxWarnings);
 
-        auto loggerCapture = loggers->allLoggers();
-
-        if (loggerCapture.isEmpty()) {
+        if (loggers.isDestroyed() || loggers->allLoggers().isEmpty()) {
             // the message handler may be called from a worker thread, after the main thread stopped
             // logging. Forwarding to original message handler to avoid swallowing the message
             Q_ASSERT(oldMessageHandler);
@@ -325,6 +323,8 @@ namespace QTest {
                 handleFatal();
             return;
         }
+
+        auto loggerCapture = loggers->allLoggers();
 
         if (type != QtFatalMsg) {
             if (counter.loadRelaxed() <= 0)
