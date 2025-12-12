@@ -4115,9 +4115,12 @@ void QTreeView::currentChanged(const QModelIndex &current, const QModelIndex &pr
     if (QAccessible::isActive() && current.isValid() && hasFocus()) {
         Q_D(QTreeView);
 
-        QAccessibleEvent event(this, QAccessible::Focus);
-        event.setChild(d->accessibleChildIndex(current));
-        QAccessible::updateAccessibility(&event);
+        const int entry = d->accessibleChildIndex(current);
+        if (entry >= 0) {
+            QAccessibleEvent event(this, QAccessible::Focus);
+            event.setChild(entry);
+            QAccessible::updateAccessibility(&event);
+        }
     }
 #endif
 }
@@ -4137,18 +4140,20 @@ void QTreeView::selectionChanged(const QItemSelection &selected,
         QModelIndex sel = selected.indexes().value(0);
         if (sel.isValid()) {
             int entry = d->accessibleChildIndex(sel);
-            Q_ASSERT(entry >= 0);
-            QAccessibleEvent event(this, QAccessible::SelectionAdd);
-            event.setChild(entry);
-            QAccessible::updateAccessibility(&event);
+            if (entry >= 0) {
+                QAccessibleEvent event(this, QAccessible::SelectionAdd);
+                event.setChild(entry);
+                QAccessible::updateAccessibility(&event);
+            }
         }
         QModelIndex desel = deselected.indexes().value(0);
         if (desel.isValid()) {
             int entry = d->accessibleChildIndex(desel);
-            Q_ASSERT(entry >= 0);
-            QAccessibleEvent event(this, QAccessible::SelectionRemove);
-            event.setChild(entry);
-            QAccessible::updateAccessibility(&event);
+            if (entry >= 0) {
+                QAccessibleEvent event(this, QAccessible::SelectionRemove);
+                event.setChild(entry);
+                QAccessible::updateAccessibility(&event);
+            }
         }
     }
 #endif
