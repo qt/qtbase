@@ -39,6 +39,8 @@ function(_qt_internal_sbom_begin_project)
         SUPPLIER_URL
         DOWNLOAD_LOCATION
         DOCUMENT_NAMESPACE
+        DOCUMENT_NAMESPACE_INFIX
+        DOCUMENT_NAMESPACE_SUFFIX
         VERSION
         SBOM_PROJECT_NAME
         QT_REPO_PROJECT_NAME
@@ -112,11 +114,40 @@ function(_qt_internal_sbom_begin_project)
 
     if(arg_DOCUMENT_NAMESPACE)
         set(repo_spdx_namespace "${arg_DOCUMENT_NAMESPACE}")
+
+        if(QT_SBOM_DOCUMENT_NAMESPACE_INFIX)
+            string(APPEND repo_spdx_namespace "${QT_SBOM_DOCUMENT_NAMESPACE_INFIX}")
+        elseif(arg_DOCUMENT_NAMESPACE_INFIX)
+            string(APPEND repo_spdx_namespace "${arg_DOCUMENT_NAMESPACE_INFIX}")
+        endif()
+
+        if(QT_SBOM_DOCUMENT_NAMESPACE_SUFFIX)
+            string(APPEND repo_spdx_namespace "${QT_SBOM_DOCUMENT_NAMESPACE_SUFFIX}")
+        elseif(arg_DOCUMENT_NAMESPACE_SUFFIX)
+            string(APPEND repo_spdx_namespace "${arg_DOCUMENT_NAMESPACE_SUFFIX}")
+        endif()
     else()
         set(compute_project_namespace_args "")
         if(repo_supplier_url)
             list(APPEND compute_project_namespace_args SUPPLIER_URL "${repo_supplier_url}")
         endif()
+
+        if(QT_SBOM_DOCUMENT_NAMESPACE_INFIX)
+            list(APPEND compute_project_namespace_args
+                DOCUMENT_NAMESPACE_INFIX "${QT_SBOM_DOCUMENT_NAMESPACE_INFIX}")
+        elseif(arg_DOCUMENT_NAMESPACE_INFIX)
+            list(APPEND compute_project_namespace_args
+                DOCUMENT_NAMESPACE_INFIX "${arg_DOCUMENT_NAMESPACE_INFIX}")
+        endif()
+
+        if(QT_SBOM_DOCUMENT_NAMESPACE_SUFFIX)
+            list(APPEND compute_project_namespace_args
+                DOCUMENT_NAMESPACE_SUFFIX "${QT_SBOM_DOCUMENT_NAMESPACE_SUFFIX}")
+        elseif(arg_DOCUMENT_NAMESPACE_SUFFIX)
+            list(APPEND compute_project_namespace_args
+                DOCUMENT_NAMESPACE_SUFFIX "${arg_DOCUMENT_NAMESPACE_SUFFIX}")
+        endif()
+
         _qt_internal_sbom_compute_project_namespace(repo_spdx_namespace
             PROJECT_NAME "${repo_project_name_lowercase}"
             ${compute_project_namespace_args}
