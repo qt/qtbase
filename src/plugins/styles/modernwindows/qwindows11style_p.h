@@ -51,6 +51,9 @@ enum WINUI3Color {
     fillAccentSecondary,              // button hover color (alpha)
     fillAccentTertiary,               // button pressed color (alpha)
     fillAccentDisabled,               // button disabled color (alpha)
+    fillMicaAltDefault,               // tabbar button default
+    fillMicaAltTransparent,           // tabbar button (not selected, not hovered)
+    fillMicaAltSecondary,             // tabbar button (not selected, hovered)
     textPrimary,                      // text of default/hovered control
     textSecondary,                    // text of pressed control
     textDisabled,                     // text of disabled control
