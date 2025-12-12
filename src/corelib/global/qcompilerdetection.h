@@ -1404,7 +1404,7 @@ static_assert(!std::is_convertible_v<std::nullptr_t, bool>,
 #if defined(__cplusplus)
 
 #ifdef __cpp_constinit
-# if defined(Q_CC_MSVC) && !defined(Q_CC_CLANG)
+# if defined(Q_CC_MSVC) && _MSC_VER < 1940 && !defined(Q_CC_CLANG)
    // https://developercommunity.visualstudio.com/t/C:-constinit-for-an-optional-fails-if-/1406069
 #  define Q_CONSTINIT
 # else
