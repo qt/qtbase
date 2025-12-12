@@ -199,10 +199,8 @@ public:
     void set(qsizetype idx, const QVariant &value)
     {
         const QMetaSequence meta = metaContainer();
-        QtPrivate::QVariantTypeCoercer coercer;
-        const void *dataPtr = coercer.coerce(value, meta.valueMetaType());
         if (meta.canSetValueAtIndex()) {
-            meta.setValueAtIndex(mutableIterable(), idx, dataPtr);
+            setAt(idx, value);
             return;
         }
 
@@ -210,11 +208,21 @@ public:
         // We shouldn't second-guess the underlying container
         QtPrivate::warnSynthesizedAccess(
                 "set() called on an iterable without native indexed accessors. This is slow");
+
+        QtPrivate::QVariantTypeCoercer coercer;
+        const void *dataPtr = coercer.coerce(value, meta.valueMetaType());
         void *it = meta.begin(m_iterable.mutablePointer());
         meta.advanceIterator(it, idx);
         meta.setValueAtIterator(it, dataPtr);
         meta.destroyIterator(it);
 #endif
+    }
+
+    void setAt(qsizetype idx, const QVariant &value)
+    {
+        const QMetaSequence meta = metaContainer();
+        QtPrivate::QVariantTypeCoercer coercer;
+        meta.setValueAtIndex(mutableIterable(), idx, coercer.coerce(value, meta.valueMetaType()));
     }
 
     void append(const QVariant &value)

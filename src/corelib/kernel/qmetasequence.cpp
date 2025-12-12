@@ -584,6 +584,11 @@ void QMetaSequence::valueAtConstIterator(const void *iterator, void *result) con
 */
 
 /*!
+    \fn void QMetaSequence::Iterable::setAt(qsizetype idx, const QVariant &value)
+    Sets the element at position \a idx in the container to \a value.
+*/
+
+/*!
     \class QMetaSequence::Iterable::ConstIterator
     \inmodule QtCore
     \inherits QConstIterator

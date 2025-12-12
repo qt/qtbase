@@ -972,6 +972,7 @@ public:
 
         QVariant at(qsizetype idx) const;
         void set(qsizetype idx, const QVariant &value);
+        void setAt(qsizetype idx, const QVariant &value);
         void append(const QVariant &value);
         void prepend(const QVariant &value);
         void removeLast();
