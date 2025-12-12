@@ -30,6 +30,7 @@ function(_qt_internal_sbom_begin_project)
     set(opt_args
         USE_GIT_VERSION
         __QT_INTERNAL_HANDLE_QT_REPO
+        NO_AUTO_DOCUMENT_NAMESPACE_INFIX
     )
     set(single_args
         INSTALL_PREFIX
@@ -113,6 +114,15 @@ function(_qt_internal_sbom_begin_project)
     )
     _qt_internal_handle_sbom_project_version(${sbom_project_version_args})
 
+    if(arg___QT_INTERNAL_HANDLE_QT_REPO)
+        _qt_internal_sbom_compute_qt_uniqueish_document_namespace_infix(
+            OUT_VAR_UUID_INFIX_MERGED document_namespace_infix
+        )
+        if(document_namespace_infix)
+            set(arg_DOCUMENT_NAMESPACE_INFIX "-${document_namespace_infix}")
+        endif()
+    endif()
+
     if(arg_DOCUMENT_NAMESPACE)
         set(repo_spdx_namespace "${arg_DOCUMENT_NAMESPACE}")
 
@@ -120,6 +130,12 @@ function(_qt_internal_sbom_begin_project)
             string(APPEND repo_spdx_namespace "${QT_SBOM_DOCUMENT_NAMESPACE_INFIX}")
         elseif(arg_DOCUMENT_NAMESPACE_INFIX)
             string(APPEND repo_spdx_namespace "${arg_DOCUMENT_NAMESPACE_INFIX}")
+        elseif(NOT arg_NO_AUTO_DOCUMENT_NAMESPACE_INFIX
+                AND NOT QT_SBOM_NO_AUTO_DOCUMENT_NAMESPACE_INFIX)
+            _qt_internal_sbom_compute_uniqueish_document_namespace_infix(
+                OUT_VAR_UUID_INFIX_MERGED document_namespace_infix
+            )
+            string(APPEND repo_spdx_namespace "-${document_namespace_infix}")
         endif()
 
         if(QT_SBOM_DOCUMENT_NAMESPACE_SUFFIX)
@@ -139,6 +155,13 @@ function(_qt_internal_sbom_begin_project)
         elseif(arg_DOCUMENT_NAMESPACE_INFIX)
             list(APPEND compute_project_namespace_args
                 DOCUMENT_NAMESPACE_INFIX "${arg_DOCUMENT_NAMESPACE_INFIX}")
+        elseif(NOT arg_NO_AUTO_DOCUMENT_NAMESPACE_INFIX
+                AND NOT QT_SBOM_NO_AUTO_DOCUMENT_NAMESPACE_INFIX)
+            _qt_internal_sbom_compute_uniqueish_document_namespace_infix(
+                OUT_VAR_UUID_INFIX_MERGED document_namespace_infix
+            )
+            list(APPEND compute_project_namespace_args
+                DOCUMENT_NAMESPACE_INFIX "-${document_namespace_infix}")
         endif()
 
         if(QT_SBOM_DOCUMENT_NAMESPACE_SUFFIX)

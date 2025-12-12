@@ -226,9 +226,7 @@ function(_qt_internal_sbom_get_cyclone_bom_serial_number)
 
     _qt_internal_sbom_set_default_option_value_and_error_if_empty(SPDX_NAMESPACE "")
 
-    # This is a randomly generated uuid v4 value. To be used for all eternity. Until we change the
-    # implementation of the function.
-    set(uuid_namespace "c024642f-9853-45b2-9bfd-ab3f061a05bb")
+    _qt_internal_sbom_get_document_namespace_uuid_namespace(uuid_namespace)
 
     string(UUID uuid NAMESPACE "${uuid_namespace}" NAME "${arg_SPDX_NAMESPACE}" TYPE SHA1)
     set(cyclone_dx_serial_number "urn:cdx:${uuid}")
