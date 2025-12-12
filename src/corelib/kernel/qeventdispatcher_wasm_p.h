@@ -40,7 +40,6 @@ public:
     ~QEventDispatcherWasm();
 
     bool processEvents(QEventLoop::ProcessEventsFlags flags) override;
-    bool sendAllEvents(QEventLoop::ProcessEventsFlags flag);
 
     void registerTimer(Qt::TimerId timerId, Duration interval, Qt::TimerType timerType,
                        QObject *object) override final;
@@ -69,6 +68,7 @@ protected:
     virtual bool sendPostedEvents();
 
 private:
+    bool sendAllEvents(QEventLoop::ProcessEventsFlags flag);
     bool isMainThreadEventDispatcher();
     bool isSecondaryThreadEventDispatcher();
     bool isValidEventDispatcher();

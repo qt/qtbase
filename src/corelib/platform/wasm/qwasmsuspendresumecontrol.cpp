@@ -225,8 +225,11 @@ int QWasmSuspendResumeControl::sendPendingEvents()
             pendingEvents.call<void>("splice", i, 1);
 
             auto it = m_eventHandlers.find(event["index"].as<int>());
-            if (it != m_eventHandlers.end())
-                it->second(event["arg"]);
+            if (it != m_eventHandlers.end()) {
+                setCurrentEvent(event["arg"]);
+                it->second(currentEvent());
+                setCurrentEvent(emscripten::val::undefined());
+            }
             ++count;
         }
     }

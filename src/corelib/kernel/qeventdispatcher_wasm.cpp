@@ -150,6 +150,18 @@ bool QEventDispatcherWasm::isValidEventDispatcherPointer(QEventDispatcherWasm *e
 
 bool QEventDispatcherWasm::processEvents(QEventLoop::ProcessEventsFlags flags)
 {
+    // Accept the current event if event handling recurses / event loop is reentered,
+    // to prevent the browser from propagating it to other event handlers.
+    if (useAsyncify() && isMainThreadEventDispatcher()) {
+        auto control = QWasmSuspendResumeControl::get();
+        auto currentEvent = control->currentEvent();
+        if (!currentEvent.isUndefined() && currentEvent.instanceof(emscripten::val::global("Event"))) {
+            currentEvent.call<void>("preventDefault");
+            currentEvent.call<void>("stopPropagation");
+            control->setCurrentEvent(emscripten::val::undefined());
+        }
+    }
+
     emit awake();
 
     if (!useAsyncify() && isMainThreadEventDispatcher())
