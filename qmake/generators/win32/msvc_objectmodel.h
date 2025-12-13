@@ -29,7 +29,8 @@ enum DotNET {
     NET2015 = 0xd0,
     NET2017 = 0xe0,
     NET2019,
-    NET2022
+    NET2022,
+    NET2026
 };
 
 DotNET vsVersionFromString(const ProString &versionString);
