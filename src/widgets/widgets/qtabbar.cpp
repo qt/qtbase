@@ -52,6 +52,14 @@ public:
     void enterEvent(QEnterEvent *event) override;
     void leaveEvent(QEvent *event) override;
     void paintEvent(QPaintEvent *event) override;
+
+    void setParentClipRect(const QRect &clipRect)
+    {
+        m_parentClipRect = clipRect;
+    }
+
+protected:
+    QRect m_parentClipRect;
 };
 }
 
@@ -598,10 +606,11 @@ QRect QTabBarPrivate::normalizedScrollRect(int index)
     q->initStyleOption(&opt, currentIndex);
     opt.rect = q->rect();
 
-    QRect scrollButtonLeftRect = q->style()->subElementRect(QStyle::SE_TabBarScrollLeftButton, &opt, q);
-    QRect scrollButtonRightRect = q->style()->subElementRect(QStyle::SE_TabBarScrollRightButton, &opt, q);
-    QRect tearLeftRect = q->style()->subElementRect(QStyle::SE_TabBarTearIndicatorLeft, &opt, q);
-    QRect tearRightRect = q->style()->subElementRect(QStyle::SE_TabBarTearIndicatorRight, &opt, q);
+    const auto style = q->style();
+    QRect scrollButtonLeftRect = style->subElementRect(QStyle::SE_TabBarScrollLeftButton, &opt, q);
+    QRect scrollButtonRightRect = style->subElementRect(QStyle::SE_TabBarScrollRightButton, &opt, q);
+    QRect tearLeftRect = style->subElementRect(QStyle::SE_TabBarTearIndicatorLeft, &opt, q);
+    QRect tearRightRect = style->subElementRect(QStyle::SE_TabBarTearIndicatorRight, &opt, q);
 
     if (verticalTabs(shape)) {
         int topEdge, bottomEdge;
@@ -1004,8 +1013,13 @@ int QTabBar::insertTab(int index, const QIcon& icon, const QString &text)
     }
 
     if (isVisible() && tabAt(d->mousePosition) == index) {
-        d->hoverIndex = index;
-        d->hoverRect = tabRect(index);
+        if (d->normalizedScrollRect(index).contains(d->mousePosition)) {
+            d->hoverIndex = index;
+            d->hoverRect = tabRect(index);
+        } else {
+            d->hoverIndex = -1;
+            d->hoverRect = QRect();
+        }
     }
 
     tabInserted(index);
@@ -1096,11 +1110,13 @@ void QTabBar::removeTab(int index)
         if (d->hoverRect.isValid()) {
             update(d->hoverRect);
             d->hoverIndex = tabAt(d->mousePosition);
-            if (d->validIndex(d->hoverIndex)) {
+            if (d->validIndex(d->hoverIndex)
+                && d->normalizedScrollRect(d->hoverIndex).contains(d->mousePosition)) {
                 d->hoverRect = tabRect(d->hoverIndex);
                 update(d->hoverRect);
             } else {
                 d->hoverRect = QRect();
+                d->hoverIndex = -1;
             }
         }
         tabRemoved(index);
@@ -1692,15 +1708,18 @@ bool QTabBar::event(QEvent *event)
     case QEvent::HoverEnter: {
         QHoverEvent *he = static_cast<QHoverEvent *>(event);
         d->mousePosition = he->position().toPoint();
-        if (!d->hoverRect.contains(d->mousePosition)) {
+        const auto sr = d->normalizedScrollRect();
+        const auto oldHoverRect = d->hoverRect & sr;
+        if (!oldHoverRect.contains(d->mousePosition)) {
             if (d->hoverRect.isValid())
                 update(d->hoverRect);
             d->hoverIndex = tabAt(d->mousePosition);
-            if (d->validIndex(d->hoverIndex)) {
+            if (d->validIndex(d->hoverIndex) && sr.contains(d->mousePosition)) {
                 d->hoverRect = tabRect(d->hoverIndex);
                 update(d->hoverRect);
             } else {
                 d->hoverRect = QRect();
+                d->hoverIndex = -1;
             }
         }
         return true;
@@ -1845,10 +1864,14 @@ void QTabBar::paintEvent(QPaintEvent *)
         QStyleOption opt;
         opt.initFrom(this);
         QRegion buttonRegion;
-        if (d->leftB->isVisible())
-            buttonRegion |= style()->subElementRect(QStyle::SE_TabBarScrollLeftButton, &opt, this);
-        if (d->rightB->isVisible())
-            buttonRegion |= style()->subElementRect(QStyle::SE_TabBarScrollRightButton, &opt, this);
+        if (d->leftB->isVisible()) {
+            const auto r = style()->subElementRect(QStyle::SE_TabBarScrollLeftButton, &opt, this);
+            buttonRegion |= r;
+        }
+        if (d->rightB->isVisible()) {
+            const auto r = style()->subElementRect(QStyle::SE_TabBarScrollRightButton, &opt, this);
+            buttonRegion |= r;
+        }
         if (!buttonRegion.isEmpty())
             p.setClipRegion(QRegion(rect()) - buttonRegion);
     }
@@ -1857,6 +1880,10 @@ void QTabBar::paintEvent(QPaintEvent *)
         const auto tab = d->tabList.at(i);
         if (!tab->visible)
             continue;
+        for (const auto side : { QTabBar::LeftSide, QTabBar::RightSide }) {
+            if (auto closeButton = qobject_cast<CloseButton *>(tabButton(i, side)))
+                closeButton->setParentClipRect(scrollRect);
+        }
         QStyleOptionTab tabOption;
         initStyleOption(&tabOption, i);
         if (d->paintWithOffsets && tab->dragOffset != 0) {
@@ -2934,6 +2961,11 @@ void CloseButton::paintEvent(QPaintEvent *)
             opt.state |= QStyle::State_Selected;
     }
 
+    if (m_parentClipRect.isValid()) {
+        auto tl = mapFromParent(m_parentClipRect.topLeft());
+        auto br = mapFromParent(m_parentClipRect.bottomRight());
+        p.setClipRect(QRect(tl, br));
+    }
     style()->drawPrimitive(QStyle::PE_IndicatorTabClose, &opt, &p, this);
 }
 
