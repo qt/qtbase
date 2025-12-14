@@ -56,7 +56,7 @@ public:
     QTabBarPrivate()
     : layoutDirty(false), drawBase(true), elideModeSetByUser(false), useScrollButtons(false),
       useScrollButtonsSetByUser(false), expanding(true), closeButtonOnTabs(false),
-      paintWithOffsets(true), movable(false), dragInProgress(false), documentMode(false),
+      movable(false), dragInProgress(false), documentMode(false),
       autoHide(false), changeCurrentOnDrag(false)
     {}
     ~QTabBarPrivate()
@@ -95,7 +95,6 @@ public:
     bool useScrollButtonsSetByUser : 1;
     bool expanding : 1;
     bool closeButtonOnTabs : 1;
-    bool paintWithOffsets : 1;
     bool movable : 1;
     bool dragInProgress : 1;
     bool documentMode : 1;

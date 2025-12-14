@@ -748,7 +748,7 @@ void QTabBarPrivate::layoutTab(int index)
     if (tab->leftWidget) {
         QRect rect = q->style()->subElementRect(QStyle::SE_TabBarTabLeftButton, &opt, q);
         QPoint p = rect.topLeft();
-        if ((index == pressedIndex) || paintWithOffsets) {
+        if (index == pressedIndex) {
             if (vertical)
                 p.setY(p.y() + tab->dragOffset);
             else
@@ -759,7 +759,7 @@ void QTabBarPrivate::layoutTab(int index)
     if (tab->rightWidget) {
         QRect rect = q->style()->subElementRect(QStyle::SE_TabBarTabRightButton, &opt, q);
         QPoint p = rect.topLeft();
-        if ((index == pressedIndex) || paintWithOffsets) {
+        if (index == pressedIndex) {
             if (vertical)
                 p.setY(p.y() + tab->dragOffset);
             else
@@ -1886,7 +1886,7 @@ void QTabBar::paintEvent(QPaintEvent *)
         }
         QStyleOptionTab tabOption;
         initStyleOption(&tabOption, i);
-        if (d->paintWithOffsets && tab->dragOffset != 0) {
+        if (tab->dragOffset != 0) {
             if (vertical) {
                 tabOption.rect.moveTop(tabOption.rect.y() + tab->dragOffset);
             } else {
@@ -1928,7 +1928,7 @@ void QTabBar::paintEvent(QPaintEvent *)
         const auto tab = d->tabList.at(selected);
         initStyleOption(&tabOption, selected);
 
-        if (d->paintWithOffsets && tab->dragOffset != 0) {
+        if (tab->dragOffset != 0) {
             // if the drag offset is != 0, a move is in progress (drag or animation)
             // => set the tab position to Moving to preserve the rect
             tabOption.position = QStyleOptionTab::TabPosition::Moving;
