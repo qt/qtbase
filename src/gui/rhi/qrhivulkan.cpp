@@ -3318,34 +3318,43 @@ void QRhiVulkan::beginPass(QRhiCommandBuffer *cb,
     rpBeginInfo.renderArea.extent.width = uint32_t(rtD->pixelSize.width());
     rpBeginInfo.renderArea.extent.height = uint32_t(rtD->pixelSize.height());
 
+    const bool rpHasAnyClearOp = std::any_of(rtD->rp->attDescs.cbegin(), rtD->rp->attDescs.cend(),
+                                             [](const VkAttachmentDescription &attDesc) {
+        return (attDesc.loadOp == VK_ATTACHMENT_LOAD_OP_CLEAR
+                || attDesc.stencilLoadOp == VK_ATTACHMENT_LOAD_OP_CLEAR);
+    });
+
     QVarLengthArray<VkClearValue, (QVkRenderTargetData::MAX_COLOR_ATTACHMENTS + 1) * 2 + 1> cvs;
-    for (int i = 0; i < rtD->colorAttCount; ++i) {
-        VkClearValue cv;
-        cv.color = { { float(colorClearValue.redF()), float(colorClearValue.greenF()), float(colorClearValue.blueF()),
-                       float(colorClearValue.alphaF()) } };
-        cvs.append(cv);
+    if (rpHasAnyClearOp) {
+        for (int i = 0; i < rtD->colorAttCount; ++i) {
+            VkClearValue cv;
+            cv.color = { { colorClearValue.redF(), colorClearValue.greenF(), colorClearValue.blueF(),
+                           colorClearValue.alphaF() } };
+            cvs.append(cv);
+        }
+        for (int i = 0; i < rtD->dsAttCount; ++i) {
+            VkClearValue cv;
+            cv.depthStencil = { depthStencilClearValue.depthClearValue(), depthStencilClearValue.stencilClearValue() };
+            cvs.append(cv);
+        }
+        for (int i = 0; i < rtD->resolveAttCount; ++i) {
+            VkClearValue cv;
+            cv.color = { { colorClearValue.redF(), colorClearValue.greenF(), colorClearValue.blueF(),
+                           colorClearValue.alphaF() } };
+            cvs.append(cv);
+        }
+        for (int i = 0; i < rtD->dsResolveAttCount; ++i) {
+            VkClearValue cv;
+            cv.depthStencil = { depthStencilClearValue.depthClearValue(), depthStencilClearValue.stencilClearValue() };
+            cvs.append(cv);
+        }
+        for (int i = 0; i < rtD->shadingRateAttCount; ++i) {
+            VkClearValue cv;
+            cv.color = { { 0.0f, 0.0f, 0.0f, 0.0f } };
+            cvs.append(cv);
+        }
     }
-    for (int i = 0; i < rtD->dsAttCount; ++i) {
-        VkClearValue cv;
-        cv.depthStencil = { depthStencilClearValue.depthClearValue(), depthStencilClearValue.stencilClearValue() };
-        cvs.append(cv);
-    }
-    for (int i = 0; i < rtD->resolveAttCount; ++i) {
-        VkClearValue cv;
-        cv.color = { { float(colorClearValue.redF()), float(colorClearValue.greenF()), float(colorClearValue.blueF()),
-                       float(colorClearValue.alphaF()) } };
-        cvs.append(cv);
-    }
-    for (int i = 0; i < rtD->dsResolveAttCount; ++i) {
-        VkClearValue cv;
-        cv.depthStencil = { depthStencilClearValue.depthClearValue(), depthStencilClearValue.stencilClearValue() };
-        cvs.append(cv);
-    }
-    for (int i = 0; i < rtD->shadingRateAttCount; ++i) {
-        VkClearValue cv;
-        cv.color = { { 0.0f, 0.0f, 0.0f, 0.0f } };
-        cvs.append(cv);
-    }
+    Q_ASSERT(!rpHasAnyClearOp || cvs.size() == rtD->rp->attDescs.size());
     rpBeginInfo.clearValueCount = uint32_t(cvs.size());
 
     QVkCommandBuffer::Command &cmd(cbD->commands.get());
