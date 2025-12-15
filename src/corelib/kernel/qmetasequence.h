@@ -196,28 +196,6 @@ public:
         });
     }
 
-    void set(qsizetype idx, const QVariant &value)
-    {
-        const QMetaSequence meta = metaContainer();
-        if (meta.canSetValueAtIndex()) {
-            setAt(idx, value);
-            return;
-        }
-
-#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
-        // We shouldn't second-guess the underlying container
-        QtPrivate::warnSynthesizedAccess(
-                "set() called on an iterable without native indexed accessors. This is slow");
-
-        QtPrivate::QVariantTypeCoercer coercer;
-        const void *dataPtr = coercer.coerce(value, meta.valueMetaType());
-        void *it = meta.begin(m_iterable.mutablePointer());
-        meta.advanceIterator(it, idx);
-        meta.setValueAtIterator(it, dataPtr);
-        meta.destroyIterator(it);
-#endif
-    }
-
     void setAt(qsizetype idx, const QVariant &value)
     {
         const QMetaSequence meta = metaContainer();
@@ -309,6 +287,9 @@ public:
     {
         return metaContainer().valueMetaType();
     }
+
+    void set(qsizetype idx, const QVariant &value)
+            Q_DECL_EQ_DELETE_X("Use setAt() instead.");
 
     QT_WARNING_POP
 #endif // QT_DEPRECATED_SINCE(6, 11)

@@ -574,16 +574,6 @@ void QMetaSequence::valueAtConstIterator(const void *iterator, void *result) con
 */
 
 /*!
-    \fn void QMetaSequence::Iterable::set(qsizetype idx, const QVariant &value)
-    Sets the element at position \a idx in the container to \a value.
-
-    \note If the underlying container does not provide a native way to assign
-          an element at an index, this method will synthesize the assignment
-          using iterators. This behavior is deprecated and will be removed in a
-          future version of Qt.
-*/
-
-/*!
     \fn void QMetaSequence::Iterable::setAt(qsizetype idx, const QVariant &value)
     Sets the element at position \a idx in the container to \a value.
 */
