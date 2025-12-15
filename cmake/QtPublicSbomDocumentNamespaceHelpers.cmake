@@ -9,6 +9,7 @@ function(_qt_internal_sbom_compute_project_namespace out_var)
         VERSION_SUFFIX
         DOCUMENT_NAMESPACE_INFIX
         DOCUMENT_NAMESPACE_SUFFIX
+        DOCUMENT_NAMESPACE_URL_PREFIX
     )
     set(multi_args "")
 
@@ -48,7 +49,13 @@ function(_qt_internal_sbom_compute_project_namespace out_var)
         string(APPEND namespace "${arg_DOCUMENT_NAMESPACE_SUFFIX}")
     endif()
 
-    set(repo_spdx_namespace "${arg_SUPPLIER_URL}/spdxdocs/${namespace}")
+    if(arg_DOCUMENT_NAMESPACE_URL_PREFIX)
+        set(url_prefix "${arg_DOCUMENT_NAMESPACE_URL_PREFIX}")
+    else()
+        set(url_prefix "${arg_SUPPLIER_URL}/spdxdocs")
+    endif()
+
+    set(repo_spdx_namespace "${url_prefix}/${namespace}")
 
     set(${out_var} "${repo_spdx_namespace}" PARENT_SCOPE)
 endfunction()
