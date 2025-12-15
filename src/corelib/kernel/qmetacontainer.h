@@ -976,13 +976,6 @@ public:
         void prepend(const QVariant &value);
         void removeLast();
         void removeFirst();
-
-#if QT_DEPRECATED_SINCE(6, 11)
-        enum Position: quint8 { Unspecified, AtBegin, AtEnd };
-        void addValue(const QVariant &value, Position position = Unspecified);
-        void removeValue(Position position = Unspecified);
-        QMetaType valueMetaType() const;
-#endif // QT_DEPRECATED_SINCE(6, 11)
     };
 #else
     using Iterable = QtMetaContainerPrivate::Sequence;

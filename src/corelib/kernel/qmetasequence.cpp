@@ -531,39 +531,6 @@ void QMetaSequence::valueAtConstIterator(const void *iterator, void *result) con
 */
 
 /*!
-    \enum QMetaSequence::Iterable::Position
-    \deprecated [6.11] Use append(), prepend(), removeFirst(), or removeLast()
-
-    Specifies the position at which an element shall be added to or removed from
-    the iterable.
-
-    \value AtBegin
-        Add or remove at the beginning of the iterable.
-    \value AtEnd
-        Add or remove at the end of the iterable.
-    \value Unspecified
-        Add or remove at an unspecified position in the iterable.
- */
-
-/*!
-    \fn void QMetaSequence::Iterable::addValue(const QVariant &value, Position position)
-    \deprecated [6.11] Use append() or prepend()
-    Adds \a value to the container, at \a position, if possible.
- */
-
-/*!
-    \deprecated [6.11] Use removeFirst() or removeLast()
-    \fn void QMetaSequence::Iterable::removeValue(Position position)
-    Removes a value from the container, at \a position, if possible.
- */
-
-/*!
-    \deprecated [6.11] Use QMetaSequence::valueMetaType()
-    \fn QMetaType QMetaSequence::Iterable::valueMetaType() const
-    Returns the meta type for values stored in the underlying container.
- */
-
-/*!
     \fn QVariant QMetaSequence::Iterable::at(qsizetype idx) const
     Returns the value at position \a idx in the container.
 
