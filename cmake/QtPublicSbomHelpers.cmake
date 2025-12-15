@@ -41,6 +41,7 @@ function(_qt_internal_sbom_begin_project)
         DOCUMENT_NAMESPACE
         DOCUMENT_NAMESPACE_INFIX
         DOCUMENT_NAMESPACE_SUFFIX
+        DOCUMENT_NAMESPACE_URL_PREFIX
         VERSION
         SBOM_PROJECT_NAME
         QT_REPO_PROJECT_NAME
@@ -146,6 +147,14 @@ function(_qt_internal_sbom_begin_project)
         elseif(arg_DOCUMENT_NAMESPACE_SUFFIX)
             list(APPEND compute_project_namespace_args
                 DOCUMENT_NAMESPACE_SUFFIX "${arg_DOCUMENT_NAMESPACE_SUFFIX}")
+        endif()
+
+        if(QT_SBOM_DOCUMENT_NAMESPACE_URL_PREFIX)
+            list(APPEND compute_project_namespace_args
+                DOCUMENT_NAMESPACE_URL_PREFIX "${QT_SBOM_DOCUMENT_NAMESPACE_URL_PREFIX}")
+        elseif(arg_DOCUMENT_NAMESPACE_URL_PREFIX)
+            list(APPEND compute_project_namespace_args
+                DOCUMENT_NAMESPACE_URL_PREFIX "${arg_DOCUMENT_NAMESPACE_URL_PREFIX}")
         endif()
 
         _qt_internal_sbom_compute_project_namespace(repo_spdx_namespace
