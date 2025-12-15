@@ -209,5 +209,5 @@ message("The project file is successfully generated. To build the project run:"
     "\nmkdir build"
     "\ncd build"
     "\nqt-cmake ${project_abs_dir}"
-    "\ncmake --build ${project_abs_dir}"
+    "\ncmake --build ."
 )
