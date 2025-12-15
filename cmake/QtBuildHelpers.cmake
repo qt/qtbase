@@ -301,6 +301,7 @@ function(qt_internal_get_qt_build_public_helpers out_var)
         QtPublicSbomCommonGenerationHelpers
         QtPublicSbomCpeHelpers
         QtPublicSbomCycloneDXHelpers
+        QtPublicSbomDocumentNamespaceHelpers
         QtPublicSbomDepHelpers
         QtPublicSbomFileHelpers
         QtPublicSbomGenerationHelpers
