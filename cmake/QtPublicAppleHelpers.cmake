@@ -1028,7 +1028,6 @@ function(_qt_internal_check_apple_sdk_and_xcode_versions)
     endif()
 
     _qt_internal_get_cached_apple_sdk_version(sdk_version)
-    _qt_internal_get_cached_xcode_version(xcode_version)
 
     if(NOT max_sdk_version MATCHES "^[0-9]+$")
         message(FATAL_ERROR
@@ -1075,12 +1074,15 @@ function(_qt_internal_check_apple_sdk_and_xcode_versions)
         )
     endif()
 
-    if(xcode_version VERSION_LESS min_xcode_version AND NOT QT_NO_XCODE_MIN_VERSION_CHECK)
-        message(${message_type}
-            "Qt requires at least version ${min_xcode_version} of Xcode, "
-            "you're building against version ${xcode_version}. Please upgrade."
-            ${extra_message}
-        )
+    if(NOT QT_NO_XCODE_MIN_VERSION_CHECK)
+        _qt_internal_get_cached_xcode_version(xcode_version)
+        if(xcode_version VERSION_LESS min_xcode_version)
+            message(${message_type}
+                "Qt requires at least version ${min_xcode_version} of Xcode, "
+                "you're building against version ${xcode_version}. Please upgrade."
+                ${extra_message}
+            )
+        endif()
     endif()
 
     if(QT_NO_APPLE_SDK_MAX_VERSION_CHECK)
