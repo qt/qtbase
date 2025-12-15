@@ -630,6 +630,8 @@ static constexpr struct {
     { Qt::Key_Camera,           QT_TRANSLATE_NOOP("QShortcut", "Camera Shutter") },
     //: Button to focus the camera
     { Qt::Key_CameraFocus,      QT_TRANSLATE_NOOP("QShortcut", "Camera Focus") },
+    //: Button to open phone link
+    { Qt::Key_LinkPhone,        QT_TRANSLATE_NOOP("QShortcut", "Link Phone") },
 
     // --------------------------------------------------------------
     // Japanese keyboard support

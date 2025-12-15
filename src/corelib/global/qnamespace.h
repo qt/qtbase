@@ -1068,6 +1068,7 @@ namespace Qt {
         Key_ToggleCallHangup = 0x01100007, // a toggle key for answering, or hanging up, based on current call state
         Key_VoiceDial = 0x01100008,
         Key_LastNumberRedial = 0x01100009,
+        Key_LinkPhone = 0x0110000a,
 
         Key_Camera = 0x01100020,
         Key_CameraFocus = 0x01100021,

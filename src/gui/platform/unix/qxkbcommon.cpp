@@ -340,6 +340,9 @@ static constexpr const auto KeyTbl = qMakeArray(
 #ifdef XKB_KEY_XF86HangupPhone
         Xkb2Qt<XKB_KEY_XF86HangupPhone,         Qt::Key_Hangup>,
 #endif
+#ifdef XKB_KEY_XF86LinkPhone
+        Xkb2Qt<XKB_KEY_XF86LinkPhone,           Qt::Key_LinkPhone>,
+#endif
         Xkb2Qt<XKB_KEY_XF86Reply,               Qt::Key_Reply>,
         Xkb2Qt<XKB_KEY_XF86Reload,              Qt::Key_Reload>,
         Xkb2Qt<XKB_KEY_XF86RotateWindows,       Qt::Key_RotateWindows>,

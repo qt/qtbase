@@ -1898,6 +1898,7 @@
     \value Key_ToggleCallHangup A key to toggle the current call state (ie. either answer, or hangup) depending on current call state
     \value Key_VoiceDial
     \value Key_LastNumberRedial
+    \value Key_LinkPhone A key to open a phone link application
 
     \value Key_Execute
     \value Key_Printer
