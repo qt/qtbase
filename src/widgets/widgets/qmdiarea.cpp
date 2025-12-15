@@ -1075,6 +1075,13 @@ void QMdiAreaPrivate::updateActiveWindow(int removedIndex, bool activeRemoved)
 {
     Q_ASSERT(indicesToActivatedChildren.size() == childWindows.size());
 
+    // Update indices list first so that we don't rely
+    for (int i = 0; i < indicesToActivatedChildren.size(); ++i) {
+        int &index = indicesToActivatedChildren[i];
+        if (index > removedIndex)
+            --index;
+    }
+
 #if QT_CONFIG(tabbar)
     if (tabBar && removedIndex >= 0) {
         const QSignalBlocker blocker(tabBar);
@@ -1099,13 +1106,6 @@ void QMdiAreaPrivate::updateActiveWindow(int removedIndex, bool activeRemoved)
         // or update index if necessary.
         if (indexToHighlighted > removedIndex)
             --indexToHighlighted;
-    }
-
-    // Update indices list
-    for (int i = 0; i < indicesToActivatedChildren.size(); ++i) {
-        int *index = &indicesToActivatedChildren[i];
-        if (*index > removedIndex)
-            --*index;
     }
 
     if (!activeRemoved)

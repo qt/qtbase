@@ -9,8 +9,13 @@
 
 #### Libraries
 
-qt_find_package(Cups PROVIDED_TARGETS Cups::Cups MODULE_NAME printsupport QMAKE_LIB cups)
-
+if(NOT APPLE AND BUILD_SHARED_LIBS)
+    set(mark_cups_optional MARK_OPTIONAL)
+else()
+    set(mark_cups_optional "")
+endif()
+qt_find_package(Cups PROVIDED_TARGETS Cups::Cups
+    MODULE_NAME printsupport QMAKE_LIB cups ${mark_cups_optional})
 
 #### Tests
 

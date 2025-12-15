@@ -480,6 +480,16 @@ static qsizetype findLocaleIndexById(QLocaleId localeId)
     return -1;
 }
 
+static constexpr qsizetype locale_data_size = q20::ssize(locale_data) - 1; // trailing guard
+bool QLocaleData::allLocaleDataRows(bool (*check)(qsizetype, const QLocaleData &))
+{
+    for (qsizetype index = 0; index < locale_data_size; ++index) {
+        if (!(*check)(index, locale_data[index]))
+            return false;
+    }
+    return true;
+}
+
 qsizetype QLocaleData::findLocaleIndex(QLocaleId lid)
 {
     QLocaleId localeId = lid;
@@ -854,8 +864,6 @@ QDataStream &operator>>(QDataStream &ds, QLocale &l)
 }
 #endif // QT_NO_DATASTREAM
 
-static constexpr qsizetype locale_data_size = q20::ssize(locale_data) - 1; // trailing guard
-
 Q_GLOBAL_STATIC(QSharedDataPointer<QLocalePrivate>, defaultLocalePrivate,
                 new QLocalePrivate(defaultData(), defaultIndex()))
 
@@ -1113,9 +1121,7 @@ bool QLocale::equals(const QLocale &other) const
 /*!
     \fn void QLocale::swap(QLocale &other)
     \since 5.6
-
-    Swaps locale \a other with this locale. This operation is very fast and
-    never fails.
+    \memberswap{locale}
 */
 
 /*!
@@ -4402,6 +4408,15 @@ QString QLocale::formattedDataSize(qint64 bytes, int precision, DataSizeFormats 
     the USA, the list would be "en-Latn-US", "en-US", "en". The order of entries
     is the order in which to check for translations; earlier items in the list
     are to be preferred over later ones.
+
+    The returned list may contain entries for more than one language.
+    In particular, this happens for \l{QLocale::system()}{system locale}
+    when the user has configured the system to accept several languages
+    for user-interface translations. In such a case, the order of entries
+    for distinct languages is significant. For example, where a user has
+    configured a primarily German system to also accept English and Chinese,
+    in that order of preference, the returned list shall contain some
+    entries for German, then some for English, and finally some for Chinese.
 
     Most likely you do not need to use this function directly, but just pass the
     QLocale object to the QTranslator::load() function.

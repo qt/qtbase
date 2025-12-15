@@ -461,6 +461,18 @@ class TestClass : public MyNamespace::TestSuperClass, public DONT_CONFUSE_MOC(My
 public:
     inline TestClass() {}
 
+    // These two here test that Q_DECLARE_FLAGS is permitted in a class or
+    // struct nested inside of a Q_OBJECT and defined within the body of the
+    // class. A Q_OBJECT is not allowed here (see privateClass()).
+    struct NestedStruct {
+        enum E {};
+        Q_DECLARE_FLAGS(Flags, E)
+    };
+    class NestedClass {
+        enum E {};
+        Q_DECLARE_FLAGS(Flags, E)
+    };
+
 private slots:
     inline void dummy1() MACRO_WITH_POSSIBLE_COMPILER_SPECIFIC_ATTRIBUTES {}
     inline void dummy2() MACRO_WITH_POSSIBLE_COMPILER_SPECIFIC_ATTRIBUTES const {}
@@ -2323,6 +2335,29 @@ void tst_Moc::warnings_data()
         << QString()
         << QString("standard input:2:1: error: Plugin Metadata file \".\" could not be opened: file to open is a directory");
 #endif
+
+    static const char *tags[] = { "class", "struct" };
+    static const char *metaKeywords[] = { "Q_OBJECT", "Q_GADGET" };
+    for (size_t i = 0; i < std::size(tags) * 2 * std::size(metaKeywords) * 2; ++i) {
+        const char *tag1 = tags[i & 1];
+        const char *tag2 = tags[(i >> 1) & 1];
+        const char *meta1 = metaKeywords[(i >> 2) & 1];
+        const char *meta2 = metaKeywords[(i >> 3) & 1];
+        QByteArray input = tag1;
+        input += " X : public Base {\n    ";
+        input += meta1;
+        input += "\n    ";
+        input += tag2;
+        input += " Nested : public Base {\n        ";
+        input += meta2;
+        input += "    };\n};\n";
+        QTest::addRow("nested-%s-%s-%s-%s", tag1, meta1, tag2, meta2)
+                << input
+                << QStringList()
+                << 1
+                << QString()
+                << "standard input:4:1: error: Meta object features not supported for nested classes";
+    }
 }
 
 void tst_Moc::warnings()

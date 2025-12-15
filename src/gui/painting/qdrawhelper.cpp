@@ -6004,8 +6004,8 @@ DrawHelper qDrawHelper[QImage::NImageFormats] =
     {
         blend_color_generic,
         qt_bitmapblit_argb32,
-        qt_alphamapblit_argb32,
-        qt_alphargbblit_argb32,
+        qt_alphamapblit_generic,
+        qt_alphargbblit_generic,
         qt_rectfill_nonpremul_argb32
     },
     // Format_ARGB32_Premultiplied

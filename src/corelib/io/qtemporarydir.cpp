@@ -194,10 +194,7 @@ QTemporaryDir::QTemporaryDir(const QString &templatePath)
 
 /*!
     \fn void QTemporaryDir::swap(QTemporaryDir &other)
-
-    Swaps temporary-dir \a other with this temporary-dir. This operation is
-    very fast and never fails.
-
+    \memberswap{temporary-dir}
     \since 6.4
 */
 

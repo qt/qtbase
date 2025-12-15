@@ -1310,16 +1310,15 @@ QDateTimeParser::scanString(const QDateTime &defaultValue, bool fixup) const
 
     if (parserType != QMetaType::QTime) {
         if (year % 100 != year2digits && (isSet & YearSection2Digits)) {
+            const QDate date = actualDate(isSet, calendar,
+                                          year, year2digits, month, day, dayofweek);
             if (!(isSet & YearSection)) {
-                year = (year / 100) * 100;
-                year += year2digits;
+                year = date.year();
             } else {
                 conflicts = true;
                 const SectionNode &sn = sectionNode(currentSectionIndex);
-                if (sn.type == YearSection2Digits) {
-                    year = (year / 100) * 100;
-                    year += year2digits;
-                }
+                if (sn.type == YearSection2Digits)
+                    year = date.year();
             }
         }
 

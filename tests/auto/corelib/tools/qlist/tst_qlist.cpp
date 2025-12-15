@@ -1,6 +1,12 @@
 // Copyright (C) 2021 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
+#ifdef QT_NO_STRICT_QLIST_ITERATORS
+#  ifdef QT_STRICT_QLIST_ITERATORS
+#    undef QT_STRICT_QLIST_ITERATORS
+#  endif
+#endif
+
 #include <QTest>
 #include <QAtomicInt>
 #include <QThread>

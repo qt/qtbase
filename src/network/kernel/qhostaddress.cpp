@@ -487,9 +487,7 @@ QHostAddress &QHostAddress::operator=(SpecialAddress address)
 /*!
     \fn void QHostAddress::swap(QHostAddress &other)
     \since 5.6
-
-    Swaps this host address with \a other. This operation is very fast
-    and never fails.
+    \memberswap{host address}
 */
 
 /*!

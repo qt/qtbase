@@ -117,9 +117,7 @@ QGlyphRun &QGlyphRun::operator=(const QGlyphRun &other)
 /*!
     \fn void QGlyphRun::swap(QGlyphRun &other)
     \since 5.0
-
-    Swaps this glyph run instance with \a other. This function is very
-    fast and never fails.
+    \memberswap{glyph run instance}
 */
 
 /*!

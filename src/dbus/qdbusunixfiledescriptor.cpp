@@ -161,9 +161,7 @@ QDBusUnixFileDescriptor::~QDBusUnixFileDescriptor()
 /*!
     \fn void QDBusUnixFileDescriptor::swap(QDBusUnixFileDescriptor &other)
     \since 5.0
-
-    Swaps this file descriptor instance with \a other. This function
-    is very fast and never fails.
+    \memberswap{file descriptor instance}
 */
 
 /*!

@@ -639,14 +639,9 @@ QDomNodeListPrivate::~QDomNodeListPrivate()
         delete node_impl;
 }
 
-bool QDomNodeListPrivate::operator==(const QDomNodeListPrivate &other) const
+bool QDomNodeListPrivate::operator==(const QDomNodeListPrivate &other) const noexcept
 {
     return (node_impl == other.node_impl) && (tagname == other.tagname);
-}
-
-bool QDomNodeListPrivate::operator!=(const QDomNodeListPrivate &other) const
-{
-    return (node_impl != other.node_impl) || (tagname != other.tagname);
 }
 
 void QDomNodeListPrivate::createList()

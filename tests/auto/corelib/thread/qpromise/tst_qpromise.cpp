@@ -9,10 +9,20 @@
 #include <qfuture.h>
 #include <qfuturewatcher.h>
 #include <qpromise.h>
+#include <QtCore/qsemaphore.h>
 
 #include <algorithm>
 #include <memory>
 #include <chrono>
+
+using namespace std::chrono_literals;
+
+template <typename T>
+struct promise_type {};
+template <typename T>
+struct promise_type<QPromise<T>> { using type = T; };
+template <typename T>
+using promise_type_t = typename promise_type<T>::type;
 
 class tst_QPromise : public QObject
 {
@@ -25,6 +35,8 @@ private slots:
     void addResultOutOfOrder();
 #ifndef QT_NO_EXCEPTIONS
     void setException();
+    void setExceptionAfterCancelDoesNothing(); // QTBUG-128405
+    void setExceptionAfterFinishDoesNothing();
 #endif
     void cancel();
     void progress();
@@ -94,13 +106,38 @@ struct ThreadWrapper
     {
         t->start();
     }
-    void join() { t->wait(); }
-    ~ThreadWrapper()
+    void join() { QVERIFY(t->wait(60s)); }
+    ~ThreadWrapper() noexcept(false)
     {
-        t->wait();
+        join();
     }
 };
 #endif
+
+struct FutureWatcher
+{
+    bool thenCalled = false;
+    bool onFailedCalled = false;
+    bool onCanceledCalled = false;
+
+    FutureWatcher() = default;
+    Q_DISABLE_COPY_MOVE(FutureWatcher)
+
+    template <typename T>
+    explicit FutureWatcher(QFuture<T> &f) { setFuture(f); }
+
+    template <typename T>
+    void setFuture(QFuture<T> &f)
+    {
+        f.onFailed([&]{
+                       onFailedCalled = true;
+                       if constexpr (!std::is_void_v<T>)
+                           return T{};
+                   })
+         .then([&](auto&&...) { thenCalled = true; })
+         .onCanceled([&]{ onCanceledCalled = true; });
+    }
+};
 
 void tst_QPromise::promise()
 {
@@ -263,6 +300,69 @@ void tst_QPromise::setException()
     RUN_TEST_FUNC(testExceptionCaught, QPromise<MoveOnlyType>(),
                        std::make_exception_ptr(TestException()));
 }
+
+void tst_QPromise::setExceptionAfterCancelDoesNothing()
+{
+    struct TestException {};
+
+    auto test = [](auto promise, auto exception) {
+        auto f = promise.future();
+        FutureWatcher r(f);
+        QSemaphore sem;
+        QSemaphoreReleaser rel(sem);
+        ThreadWrapper t([&] {
+            auto p = std::move(promise);
+            p.start();
+            sem.acquire(); // wait for cancel() in main thread
+            p.setException(std::move(exception));
+        });
+
+        f.cancel();
+        rel.cancel()->release(); // give a go for setException() in worker thread
+
+        t.join();
+
+        QVERIFY(f.isCanceled());
+        QVERIFY(!r.thenCalled);
+        QVERIFY(!r.onFailedCalled);
+        QVERIFY(r.onCanceledCalled);
+    };
+
+    RUN_TEST_FUNC(test, QPromise<void>(), QException());
+    RUN_TEST_FUNC(test, QPromise<int>(),  QException());
+    RUN_TEST_FUNC(test, QPromise<void>(), std::make_exception_ptr(TestException()));
+    RUN_TEST_FUNC(test, QPromise<int>(), std::make_exception_ptr(TestException()));
+    RUN_TEST_FUNC(test, QPromise<CopyOnlyType>(), std::make_exception_ptr(TestException()));
+    RUN_TEST_FUNC(test, QPromise<MoveOnlyType>(), std::make_exception_ptr(TestException()));
+}
+
+void tst_QPromise::setExceptionAfterFinishDoesNothing()
+{
+    struct TestException {};
+
+    auto test = [](auto promise, auto exception) {
+        auto f = promise.future();
+        FutureWatcher r(f);
+        promise.start();
+        using T = promise_type_t<decltype(promise)>;
+        if constexpr (!std::is_void_v<T>)
+            promise.addResult(T());
+        promise.finish();
+        promise.setException(std::move(exception));
+
+        QVERIFY(f.isFinished());
+        QVERIFY(r.thenCalled);
+        QVERIFY(!r.onFailedCalled);
+        QVERIFY(!r.onCanceledCalled);
+    };
+
+    RUN_TEST_FUNC(test, QPromise<void>(), QException());
+    RUN_TEST_FUNC(test, QPromise<int>(),  QException());
+    RUN_TEST_FUNC(test, QPromise<void>(), std::make_exception_ptr(TestException()));
+    RUN_TEST_FUNC(test, QPromise<int>(), std::make_exception_ptr(TestException()));
+    RUN_TEST_FUNC(test, QPromise<CopyOnlyType>(), std::make_exception_ptr(TestException()));
+    RUN_TEST_FUNC(test, QPromise<MoveOnlyType>(), std::make_exception_ptr(TestException()));
+}
 #endif
 
 void tst_QPromise::cancel()
@@ -273,10 +373,10 @@ void tst_QPromise::cancel()
         QCOMPARE(promise.isCanceled(), true);
     };
 
-    testCancel(QPromise<void>());
-    testCancel(QPromise<int>());
-    testCancel(QPromise<CopyOnlyType>());
-    testCancel(QPromise<MoveOnlyType>());
+    RUN_TEST_FUNC(testCancel, QPromise<void>());
+    RUN_TEST_FUNC(testCancel, QPromise<int>());
+    RUN_TEST_FUNC(testCancel, QPromise<CopyOnlyType>());
+    RUN_TEST_FUNC(testCancel, QPromise<MoveOnlyType>());
 }
 
 void tst_QPromise::progress()
@@ -317,11 +417,13 @@ void tst_QPromise::addInThread()
         promise.start();
         auto f = promise.future();
         // move construct QPromise
-        ThreadWrapper thr([p = std::move(promise), &result] () mutable {
+        ThreadWrapper thr([&] {
+            auto p = std::move(promise);
             p.addResult(result);
         });
         // Waits for result first
-        QCOMPARE(f.result(), result);
+        const auto actual = f.result();
+        QCOMPARE(actual, result);
         QCOMPARE(f.resultAt(0), result);
     };
 
@@ -340,7 +442,8 @@ void tst_QPromise::addInThreadMoveOnlyObject()
     promise.start();
     auto f = promise.future();
 
-    ThreadWrapper thr([p = std::move(promise)] () mutable {
+    ThreadWrapper thr([&] {
+        auto p = std::move(promise);
         p.addResult(MoveOnlyType{-11});
     });
 
@@ -360,9 +463,9 @@ void tst_QPromise::reportFromMultipleThreads()
     promise.start();
 
     ThreadWrapper threads[] = {
-        ThreadWrapper([&promise] () mutable { promise.addResult(42); }),
-        ThreadWrapper([&promise] () mutable { promise.addResult(43); }),
-        ThreadWrapper([&promise] () mutable { promise.addResult(44); }),
+        ThreadWrapper([&promise] { promise.addResult(42); }),
+        ThreadWrapper([&promise] { promise.addResult(43); }),
+        ThreadWrapper([&promise] { promise.addResult(44); }),
     };
     for (auto& t : threads)
         t.join();
@@ -390,9 +493,9 @@ void tst_QPromise::reportFromMultipleThreadsByMovedPromise()
         auto promise = std::move(initialPromise);
         promise.start();
         ThreadWrapper threads[] = {
-            ThreadWrapper([&promise] () mutable { promise.addResult(42); }),
-            ThreadWrapper([&promise] () mutable { promise.addResult(43); }),
-            ThreadWrapper([&promise] () mutable { promise.addResult(44); }),
+            ThreadWrapper([&promise] { promise.addResult(42); }),
+            ThreadWrapper([&promise] { promise.addResult(43); }),
+            ThreadWrapper([&promise] { promise.addResult(44); }),
         };
         for (auto& t : threads)
             t.join();
@@ -420,7 +523,7 @@ void tst_QPromise::doNotCancelWhenFinished()
         promise.start();
 
         // Finish QPromise inside thread, destructor must not call cancel()
-        ThreadWrapper([p = std::move(promise)] () mutable { p.finish(); }).join();
+        ThreadWrapper([&] { auto p = std::move(promise); p.finish(); }).join();
 
         f.waitForFinished();
 
@@ -450,9 +553,9 @@ void tst_QPromise::cancelWhenDestroyed()
         auto promise = std::move(initialPromise);
         promise.start();
         ThreadWrapper threads[] = {
-            ThreadWrapper([&promise] () mutable { promise.addResult(42); }),
-            ThreadWrapper([&promise] () mutable { promise.addResult(43); }),
-            ThreadWrapper([&promise] () mutable { promise.addResult(44); }),
+            ThreadWrapper([&promise] { promise.addResult(42); }),
+            ThreadWrapper([&promise] { promise.addResult(43); }),
+            ThreadWrapper([&promise] { promise.addResult(44); }),
         };
         for (auto& t : threads)
             t.join();
@@ -482,7 +585,8 @@ void tst_QPromise::cancelWhenReassigned()
     auto f = promise.future();
     promise.start();
 
-    ThreadWrapper thr([p = std::move(promise)] () mutable {
+    ThreadWrapper thr([&] {
+        auto p = std::move(promise);
         QThread::msleep(100);
         p = QPromise<int>();  // assign new promise, old must be correctly destroyed
     });
@@ -510,70 +614,56 @@ static inline void testCancelWhenDestroyedWithoutStarting()
 
 void tst_QPromise::cancelWhenDestroyedWithoutStarting()
 {
-    testCancelWhenDestroyedWithoutStarting<void>();
-    testCancelWhenDestroyedWithoutStarting<int>();
-    testCancelWhenDestroyedWithoutStarting<CopyOnlyType>();
-    testCancelWhenDestroyedWithoutStarting<MoveOnlyType>();
+    RUN_TEST_FUNC(testCancelWhenDestroyedWithoutStarting<void>);
+    RUN_TEST_FUNC(testCancelWhenDestroyedWithoutStarting<int>);
+    RUN_TEST_FUNC(testCancelWhenDestroyedWithoutStarting<CopyOnlyType>);
+    RUN_TEST_FUNC(testCancelWhenDestroyedWithoutStarting<MoveOnlyType>);
 }
 
 template <typename T>
 static inline void testCancelWhenDestroyedRunsContinuations()
 {
     QFuture<T> future;
-    bool onCanceledCalled = false;
-    bool thenCalled = false;
+    FutureWatcher r;
     {
         QPromise<T> promise;
         future = promise.future();
-        future.then([&] (auto&&) {
-            thenCalled = true;
-        }).onCanceled([&] () {
-            onCanceledCalled = true;
-        });
+        r.setFuture(future);
     }
     QVERIFY(future.isFinished());
-    QVERIFY(!thenCalled);
-    QVERIFY(onCanceledCalled);
+    QVERIFY(!r.thenCalled);
+    QVERIFY(r.onCanceledCalled);
 }
 
 void tst_QPromise::cancelWhenDestroyedRunsContinuations()
 {
-    testCancelWhenDestroyedRunsContinuations<void>();
-    testCancelWhenDestroyedRunsContinuations<int>();
-    testCancelWhenDestroyedRunsContinuations<CopyOnlyType>();
-    testCancelWhenDestroyedRunsContinuations<MoveOnlyType>();
+    RUN_TEST_FUNC(testCancelWhenDestroyedRunsContinuations<void>);
+    RUN_TEST_FUNC(testCancelWhenDestroyedRunsContinuations<int>);
+    RUN_TEST_FUNC(testCancelWhenDestroyedRunsContinuations<CopyOnlyType>);
+    RUN_TEST_FUNC(testCancelWhenDestroyedRunsContinuations<MoveOnlyType>);
 }
 
 template <typename T>
 static inline void testCancelWhenDestroyedWithFailureHandler()
 {
     QFuture<T> future;
-    bool onFailedCalled = false;
-    bool thenCalled = false;
+    FutureWatcher r;
     {
         QPromise<T> promise;
         future = promise.future();
-        future
-            .onFailed([&] () {
-                onFailedCalled = true;
-                if constexpr (!std::is_same_v<void, T>)
-                    return T{};
-            })
-            .then([&] (auto&&) {
-                thenCalled = true;
-            });
+        r.setFuture(future);
     }
     QVERIFY(future.isFinished());
-    QVERIFY(!onFailedCalled);
-    QVERIFY(!thenCalled);
+    QVERIFY(!r.onFailedCalled);
+    QVERIFY(!r.thenCalled);
 }
 
 void tst_QPromise::cancelWhenDestroyedWithFailureHandler()
 {
-    testCancelWhenDestroyedWithFailureHandler<void>();
-    testCancelWhenDestroyedWithFailureHandler<int>();
-    testCancelWhenDestroyedWithFailureHandler<CopyOnlyType>();
-    testCancelWhenDestroyedWithFailureHandler<MoveOnlyType>();
+    RUN_TEST_FUNC(testCancelWhenDestroyedWithFailureHandler<void>);
+    RUN_TEST_FUNC(testCancelWhenDestroyedWithFailureHandler<int>);
+    RUN_TEST_FUNC(testCancelWhenDestroyedWithFailureHandler<CopyOnlyType>);
+    RUN_TEST_FUNC(testCancelWhenDestroyedWithFailureHandler<MoveOnlyType>);
 }
 
 template <typename T>
@@ -582,10 +672,7 @@ static inline void testContinuationsRunWhenFinished()
     QPromise<T> promise;
     QFuture<T> future = promise.future();
 
-    bool thenCalled = false;
-    future.then([&] (auto&&) {
-        thenCalled = true;
-    });
+    FutureWatcher r(future);
 
     promise.start();
     if constexpr (!std::is_void_v<T>) {
@@ -593,15 +680,15 @@ static inline void testContinuationsRunWhenFinished()
     }
     promise.finish();
 
-    QVERIFY(thenCalled);
+    QVERIFY(r.thenCalled);
 }
 
 void tst_QPromise::continuationsRunWhenFinished()
 {
-    testContinuationsRunWhenFinished<void>();
-    testContinuationsRunWhenFinished<int>();
-    testContinuationsRunWhenFinished<CopyOnlyType>();
-    testContinuationsRunWhenFinished<MoveOnlyType>();
+    RUN_TEST_FUNC(testContinuationsRunWhenFinished<void>);
+    RUN_TEST_FUNC(testContinuationsRunWhenFinished<int>);
+    RUN_TEST_FUNC(testContinuationsRunWhenFinished<CopyOnlyType>);
+    RUN_TEST_FUNC(testContinuationsRunWhenFinished<MoveOnlyType>);
 }
 
 void tst_QPromise::finishWhenSwapped()
@@ -661,7 +748,9 @@ void testCancelWhenMoved()
     promise2.start();
 
     // Move promises to local scope to test cancellation behavior
-    ThreadWrapper thr([p1 = std::move(promise1), p2 = std::move(promise2)] () mutable {
+    ThreadWrapper thr([&] {
+        auto p1 = std::move(promise1);
+        auto p2 = std::move(promise2);
         QThread::msleep(100);
         p1 = std::move(p2);
         p1.finish();  // this finish is for future #2
@@ -682,10 +771,10 @@ void testCancelWhenMoved()
 
 void tst_QPromise::cancelWhenMoved()
 {
-    testCancelWhenMoved<void>();
-    testCancelWhenMoved<int>();
-    testCancelWhenMoved<CopyOnlyType>();
-    testCancelWhenMoved<MoveOnlyType>();
+    RUN_TEST_FUNC(testCancelWhenMoved<void>);
+    RUN_TEST_FUNC(testCancelWhenMoved<int>);
+    RUN_TEST_FUNC(testCancelWhenMoved<CopyOnlyType>);
+    RUN_TEST_FUNC(testCancelWhenMoved<MoveOnlyType>);
 }
 
 void tst_QPromise::waitUntilResumed()
@@ -698,7 +787,8 @@ void tst_QPromise::waitUntilResumed()
     auto f = promise.future();
     f.suspend();
 
-    ThreadWrapper thr([p = std::move(promise)] () mutable {
+    ThreadWrapper thr([&] {
+        auto p = std::move(promise);
         p.suspendIfRequested();
         p.addResult(42);  // result added after suspend
         p.finish();
@@ -727,7 +817,8 @@ void tst_QPromise::waitUntilCanceled()
     auto f = promise.future();
     f.suspend();
 
-    ThreadWrapper thr([p = std::move(promise)] () mutable {
+    ThreadWrapper thr([&] {
+        auto p = std::move(promise);
         p.suspendIfRequested();
         p.addResult(42);  // result not added due to QFuture::cancel()
         p.finish();

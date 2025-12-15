@@ -195,9 +195,7 @@ QStaticText &QStaticText::operator=(const QStaticText &other)
 /*!
     \fn void QStaticText::swap(QStaticText &other)
     \since 5.0
-
-    Swaps this static text instance with \a other. This function is
-    very fast and never fails.
+    \memberswap{static text instance}
 */
 
 /*!

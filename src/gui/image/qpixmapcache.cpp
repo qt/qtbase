@@ -143,8 +143,8 @@ bool QPixmapCache::Key::operator ==(const Key &key) const
 
 /*!
     \fn void QPixmapCache::Key::swap(Key &)
-    \internal
     \since 5.6
+    \memberswap{key}
 */
 
 /*!

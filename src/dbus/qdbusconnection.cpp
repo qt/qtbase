@@ -1213,8 +1213,7 @@ QByteArray QDBusConnection::localMachineId()
 
 /*!
     \fn void QDBusConnection::swap(QDBusConnection &other)
-
-    Swaps this QDBusConnection instance with \a other.
+    \memberswap{connection}
 */
 
 QT_END_NAMESPACE

@@ -21,7 +21,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
  * \fn void QOpenGLPixelTransferOptions::swap(QOpenGLPixelTransferOptions &other)
- * \internal
+ * \memberswap{options}
  */
 
 class QOpenGLPixelTransferOptionsData : public QSharedData

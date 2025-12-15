@@ -32,7 +32,7 @@ QAndroidPlatformOpenGLWindow::~QAndroidPlatformOpenGLWindow()
     lockSurface();
     if (m_nativeSurfaceId != -1)
         QtAndroid::destroySurface(m_nativeSurfaceId);
-    clearEgl();
+    clearSurface();
     unlockSurface();
 }
 
@@ -81,12 +81,12 @@ void QAndroidPlatformOpenGLWindow::setGeometry(const QRect &rect)
         repaint(QRegion(rect));
 }
 
+// Called by QAndroidPlatformOpenGLContext::eglSurfaceForPlatformSurface(),
+// surface is already locked when calling this
 EGLSurface QAndroidPlatformOpenGLWindow::eglSurface(EGLConfig config)
 {
     if (QAndroidEventDispatcherStopper::stopped() || QGuiApplication::applicationState() == Qt::ApplicationSuspended)
         return m_eglSurface;
-
-    QMutexLocker lock(&m_surfaceMutex);
 
     if (m_nativeSurfaceId == -1) {
         AndroidDeadlockProtector protector;
@@ -98,17 +98,16 @@ EGLSurface QAndroidPlatformOpenGLWindow::eglSurface(EGLConfig config)
         m_surfaceWaitCondition.wait(&m_surfaceMutex);
     }
 
-    if (m_eglSurface == EGL_NO_SURFACE) {
-        m_surfaceMutex.unlock();
+    if (m_eglSurface == EGL_NO_SURFACE)
         checkNativeSurface(config);
-        m_surfaceMutex.lock();
-    }
+
     return m_eglSurface;
 }
 
 bool QAndroidPlatformOpenGLWindow::checkNativeSurface(EGLConfig config)
 {
-    QMutexLocker lock(&m_surfaceMutex);
+    // Either no surface created, or the m_eglSurface already wraps the active Surface
+    // -> makeCurrent is NOT needed.
     if (m_nativeSurfaceId == -1 || !m_androidSurfaceObject.isValid())
         return false; // makeCurrent is NOT needed.
 
@@ -130,14 +129,14 @@ void QAndroidPlatformOpenGLWindow::applicationStateChanged(Qt::ApplicationState 
             QtAndroid::destroySurface(m_nativeSurfaceId);
             m_nativeSurfaceId = -1;
         }
-        clearEgl();
+        clearSurface();
         unlockSurface();
     }
 }
 
 void QAndroidPlatformOpenGLWindow::createEgl(EGLConfig config)
 {
-    clearEgl();
+    clearSurface();
     QJniEnvironment env;
     m_nativeWindow = ANativeWindow_fromSurface(env.jniEnv(), m_androidSurfaceObject.object());
     m_androidSurfaceObject = QJniObject();
@@ -158,7 +157,7 @@ QSurfaceFormat QAndroidPlatformOpenGLWindow::format() const
     return m_format;
 }
 
-void QAndroidPlatformOpenGLWindow::clearEgl()
+void QAndroidPlatformOpenGLWindow::clearSurface()
 {
     if (m_eglSurface != EGL_NO_SURFACE) {
         eglMakeCurrent(m_eglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
@@ -168,7 +167,7 @@ void QAndroidPlatformOpenGLWindow::clearEgl()
 
     if (m_nativeWindow) {
         ANativeWindow_release(m_nativeWindow);
-        m_nativeWindow = 0;
+        m_nativeWindow = nullptr;
     }
 }
 
@@ -180,11 +179,13 @@ void QAndroidPlatformOpenGLWindow::surfaceChanged(JNIEnv *jniEnv, jobject surfac
 
     lockSurface();
     m_androidSurfaceObject = surface;
-    if (surface) // wait until we have a valid surface to draw into
+    if (m_androidSurfaceObject.isValid()) // wait until we have a valid surface to draw into
         m_surfaceWaitCondition.wakeOne();
+    else
+        clearSurface();
     unlockSurface();
 
-    if (surface) {
+    if (m_androidSurfaceObject.isValid()) {
         // repaint the window, when we have a valid surface
         QRect availableGeometry = screen()->availableGeometry();
         if (geometry().width() > 0 && geometry().height() > 0 && availableGeometry.width() > 0 && availableGeometry.height() > 0)

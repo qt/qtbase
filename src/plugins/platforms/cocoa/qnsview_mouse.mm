@@ -117,7 +117,7 @@ static const QPointingDevice *pointingDeviceFor(qint64 deviceID)
     ulong timestamp = [theEvent timestamp] * 1000;
 
     QCocoaDrag* nativeDrag = QCocoaIntegration::instance()->drag();
-    nativeDrag->setLastMouseEvent(theEvent, self);
+    nativeDrag->setLastInputEvent(theEvent, self);
 
     const auto modifiers = QAppleKeyMapper::fromCocoaModifiers(theEvent.modifierFlags);
     auto button = cocoaButton2QtButton(theEvent);

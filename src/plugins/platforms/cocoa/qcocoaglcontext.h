@@ -29,6 +29,7 @@ public:
     void initialize() override;
 
     bool makeCurrent(QPlatformSurface *surface) override;
+    void beginFrame() override;
     void swapBuffers(QPlatformSurface *surface) override;
     void doneCurrent() override;
 

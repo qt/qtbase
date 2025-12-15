@@ -43,9 +43,7 @@
 /*!
     \fn template <class T> void QQueue<T>::swap(QQueue<T> &other)
     \since 4.8
-
-    Swaps queue \a other with this queue. This operation is very
-    fast and never fails.
+    \memberswap{queue}
 */
 
 /*!

@@ -811,63 +811,64 @@ QImage QWindowsFontEngineDirectWrite::imageForGlyph(glyph_t t,
             image.fill(0xffffffff);
         }
 
-        BOOL ok = true;
-
         if (SUCCEEDED(hr)) {
+            BOOL ok = true;
             while (SUCCEEDED(hr) && ok) {
-                const DWRITE_COLOR_GLYPH_RUN *colorGlyphRun = 0;
-                hr = enumerator->GetCurrentRun(&colorGlyphRun);
-                if (FAILED(hr)) { // No colored runs, only outline
-                    qErrnoWarning(hr, "%s: IDWriteColorGlyphRunEnumerator::GetCurrentRun failed", __FUNCTION__);
-                    break;
-                }
-
-                IDWriteGlyphRunAnalysis *colorGlyphsAnalysis = NULL;
-                hr = factory2->CreateGlyphRunAnalysis(
-                            &colorGlyphRun->glyphRun,
-                            &transform,
-                            renderMode,
-                            measureMode,
-                            gridFitMode,
-                            DWRITE_TEXT_ANTIALIAS_MODE_CLEARTYPE,
-                            0.0, 0.0,
-                            &colorGlyphsAnalysis
-                            );
-
-                if (FAILED(hr)) {
-                    qErrnoWarning(hr, "%s: CreateGlyphRunAnalysis failed for color run", __FUNCTION__);
-                    break;
-                }
-
-                float r, g, b, a;
-                if (colorGlyphRun->paletteIndex == 0xFFFF) {
-                    r = float(color.redF());
-                    g = float(color.greenF());
-                    b = float(color.blueF());
-                    a = float(color.alphaF());
-                } else {
-                    r = qBound(0.0f, colorGlyphRun->runColor.r, 1.0f);
-                    g = qBound(0.0f, colorGlyphRun->runColor.g, 1.0f);
-                    b = qBound(0.0f, colorGlyphRun->runColor.b, 1.0f);
-                    a = qBound(0.0f, colorGlyphRun->runColor.a, 1.0f);
-                }
-
-                if (!qFuzzyIsNull(a)) {
-                    renderGlyphRun(&image,
-                                   r,
-                                   g,
-                                   b,
-                                   a,
-                                   colorGlyphsAnalysis,
-                                   boundingRect,
-                                   renderMode);
-                }
-                colorGlyphsAnalysis->Release();
-
                 hr = enumerator->MoveNext(&ok);
                 if (FAILED(hr)) {
                     qErrnoWarning(hr, "%s: IDWriteColorGlyphRunEnumerator::MoveNext failed", __FUNCTION__);
                     break;
+                }
+
+                if (ok) {
+                    const DWRITE_COLOR_GLYPH_RUN *colorGlyphRun = 0;
+                    hr = enumerator->GetCurrentRun(&colorGlyphRun);
+                    if (FAILED(hr)) { // No colored runs, only outline
+                        qErrnoWarning(hr, "%s: IDWriteColorGlyphRunEnumerator::GetCurrentRun failed", __FUNCTION__);
+                        break;
+                    }
+
+                    IDWriteGlyphRunAnalysis *colorGlyphsAnalysis = NULL;
+                    hr = factory2->CreateGlyphRunAnalysis(
+                                &colorGlyphRun->glyphRun,
+                                &transform,
+                                renderMode,
+                                measureMode,
+                                gridFitMode,
+                                DWRITE_TEXT_ANTIALIAS_MODE_CLEARTYPE,
+                                0.0, 0.0,
+                                &colorGlyphsAnalysis
+                                );
+
+                    if (FAILED(hr)) {
+                        qErrnoWarning(hr, "%s: CreateGlyphRunAnalysis failed for color run", __FUNCTION__);
+                        break;
+                    }
+
+                    float r, g, b, a;
+                    if (colorGlyphRun->paletteIndex == 0xFFFF) {
+                        r = float(color.redF());
+                        g = float(color.greenF());
+                        b = float(color.blueF());
+                        a = 1.0;
+                    } else {
+                        r = qBound(0.0f, colorGlyphRun->runColor.r, 1.0f);
+                        g = qBound(0.0f, colorGlyphRun->runColor.g, 1.0f);
+                        b = qBound(0.0f, colorGlyphRun->runColor.b, 1.0f);
+                        a = qBound(0.0f, colorGlyphRun->runColor.a, 1.0f);
+                    }
+
+                    if (!qFuzzyIsNull(a)) {
+                        renderGlyphRun(&image,
+                                       r,
+                                       g,
+                                       b,
+                                       a,
+                                       colorGlyphsAnalysis,
+                                       boundingRect,
+                                       renderMode);
+                    }
+                    colorGlyphsAnalysis->Release();
                 }
             }
         } else {

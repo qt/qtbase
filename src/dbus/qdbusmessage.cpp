@@ -837,8 +837,7 @@ QDebug operator<<(QDebug dbg, const QDBusMessage &msg)
 
 /*!
     \fn void QDBusMessage::swap(QDBusMessage &other)
-
-    Swaps this QDBusMessage instance with \a other.
+    \memberswap{message}
 */
 
 QT_END_NAMESPACE

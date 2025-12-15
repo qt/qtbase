@@ -1003,6 +1003,23 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
     FT_Face face = freetype->face;
 
     FT_Matrix matrix = freetype->matrix;
+    bool transform = matrix.xx != 0x10000
+                    || matrix.yy != 0x10000
+                    || matrix.xy != 0
+                    || matrix.yx != 0;
+    if (obliquen && transform) {
+        // We have to apply the obliquen transformation before any
+        // other transforms. This means we need to duplicate Freetype's
+        // obliquen matrix here and this has to be kept in sync.
+        FT_Matrix slant;
+        slant.xx = 0x10000L;
+        slant.yx = 0;
+        slant.xy = 0x0366A;
+        slant.yy = 0x10000L;
+
+        FT_Matrix_Multiply(&matrix, &slant);
+        matrix = slant;
+    }
 
     FT_Vector v;
     v.x = format == Format_Mono ? 0 : FT_Pos(subPixelPosition.x.value());
@@ -1012,11 +1029,6 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
     bool hsubpixel = false;
     int vfactor = 1;
     int load_flags = loadFlags(set, format, 0, hsubpixel, vfactor);
-
-    bool transform = matrix.xx != 0x10000
-                     || matrix.yy != 0x10000
-                     || matrix.xy != 0
-                     || matrix.yx != 0;
 
     if (transform || obliquen || (format != Format_Mono && !isScalableBitmap()))
         load_flags |= FT_LOAD_NO_BITMAP;
@@ -1049,7 +1061,7 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
 
     if (embolden)
         FT_GlyphSlot_Embolden(slot);
-    if (obliquen) {
+    if (obliquen && !transform) {
         FT_GlyphSlot_Oblique(slot);
 
         // While Embolden alters the metrics of the slot, oblique does not, so we need

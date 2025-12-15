@@ -1,5 +1,7 @@
 // Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// Copyright © 2004-2023 Unicode, Inc.
+// SPDX-License-Identifier: Unicode-3.0
+
 #include "localemodel.h"
 
 #include <QLocale>

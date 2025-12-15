@@ -142,8 +142,7 @@
 
 /*!
     \fn template <typename T, typename Tag> void QTaggedPointer<T, Tag>::swap(QTaggedPointer<T, Tag> &other) noexcept
-
-    Swaps this instance's pointer and tag with the pointer and tag in \a other.
+    \memberswap{pointer and tag}
 */
 
 /*!

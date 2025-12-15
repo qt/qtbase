@@ -118,6 +118,7 @@ class QFreeList
     // return which block the index \a x falls in, and modify \a x to be the index into that block
     static inline int blockfor(int &x)
     {
+        x = x & ConstantsType::IndexMask;
         for (int i = 0; i < ConstantsType::BlockCount; ++i) {
             int size = ConstantsType::Sizes[i];
             if (x < size)
@@ -223,7 +224,7 @@ inline int QFreeList<T, ConstantsType>::next()
     //        id & ConstantsType::IndexMask,
     //        newid & ConstantsType::IndexMask,
     //        (newid & ~ConstantsType::IndexMask) >> 24);
-    return id & ConstantsType::IndexMask;
+    return id;
 }
 
 template <typename T, typename ConstantsType>

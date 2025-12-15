@@ -86,6 +86,11 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \fn QBasicTimer::swap(QBasicTimer &other)
+    \since 5.14
+    \memberswap{timer}
+*/
+
+/*!
     \fn swap(QBasicTimer &lhs, QBasicTimer &rhs)
     \since 5.14
 
