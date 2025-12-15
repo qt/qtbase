@@ -527,10 +527,10 @@ QSinglePointEvent::QSinglePointEvent(QEvent::Type type, const QPointingDevice *d
     bool isWheel = (type == QEvent::Type::Wheel);
     auto devPriv = QPointingDevicePrivate::get(const_cast<QPointingDevice *>(pointingDevice()));
     auto epd = devPriv->pointById(0);
-    QEventPoint &p = epd->eventPoint;
+    QEventPoint p = epd->eventPoint;
     Q_ASSERT(p.device() == dev);
-    // p is a reference to a non-detached instance that lives in QPointingDevicePrivate::activePoints.
-    // Update persistent info in that instance.
+    // p is not detached yet and still shared with QPointingDevicePrivate::activePoints.
+    // Update persistent info in that shared QEventPoint.
     if (isPress || isWheel)
         QMutableEventPoint::setGlobalLastPosition(p, globalPos);
     else
@@ -550,7 +550,7 @@ QSinglePointEvent::QSinglePointEvent(QEvent::Type type, const QPointingDevice *d
     // Now detach, and update the detached instance with ephemeral state.
     QMutableEventPoint::detach(p);
     QMutableEventPoint::setPosition(p, localPos);
-    m_points.append(p);
+    m_points.append(std::move(p));
 }
 
 /*! \internal
