@@ -12,6 +12,7 @@
 #include "qandroidplatformdialoghelpers.h"
 #include "qandroidplatformfiledialoghelper.h"
 #include "qandroidplatformwindow.h"
+#include "qandroidplatformfontdatabase.h"
 
 #include <QCoreApplication>
 #include <QDebug>
@@ -231,8 +232,9 @@ static void loadAndroidStyle(QPalette *defaultPalette, std::shared_ptr<AndroidSt
         }
         const int ft = fontType(key);
         if (ft > -1 || !qtClassName.isEmpty()) {
-            // Extract font information
-            QFont font;
+            // Extract font information, calling default QFont constructor breaks
+            // initialization order. See QTQAINFRA-6893
+            QFont font(QGuiApplicationPrivate::platformIntegration()->fontDatabase()->defaultFont());
 
             // Font size (in pixels)
             attributeIterator = item.find("TextAppearance_textSize"_L1);
@@ -269,8 +271,6 @@ static void loadAndroidStyle(QPalette *defaultPalette, std::shared_ptr<AndroidSt
 
             if (ft > -1) {
                 style->m_fonts.insert(ft, font);
-                if (ft == QPlatformTheme::SystemFont)
-                    QGuiApplication::setFont(font);
             }
             // Extract font information
         }
@@ -328,12 +328,13 @@ QAndroidPlatformTheme::QAndroidPlatformTheme(QAndroidPlatformNativeInterface *an
     androidPlatformNativeInterface->m_androidStyle = m_androidStyleData;
 
     // default in case the style has not set a font
-    m_systemFont = QFont("Roboto"_L1, 14.0 * 100 / 72); // keep default size the same after changing from 100 dpi to 72 dpi
+    m_systemFont = new QFont("Roboto"_L1, 14.0 * 100 / 72); // keep default size the same after changing from 100 dpi to 72 dpi
 }
 
 QAndroidPlatformTheme::~QAndroidPlatformTheme()
 {
     m_instance = nullptr;
+    delete m_systemFont;
 }
 
 void QAndroidPlatformTheme::updateColorScheme()
@@ -540,7 +541,7 @@ const QFont *QAndroidPlatformTheme::font(Font type) const
     }
 
     if (type == QPlatformTheme::SystemFont)
-        return &m_systemFont;
+        return m_systemFont;
     return 0;
 }
 

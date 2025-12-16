@@ -61,7 +61,7 @@ private:
     static QAndroidPlatformTheme * m_instance;
     std::shared_ptr<AndroidStyle> m_androidStyleData;
     QPalette m_defaultPalette;
-    QFont m_systemFont;
+    QFont* m_systemFont;
     Qt::ColorScheme m_colorSchemeOverride = Qt::ColorScheme::Unknown;
 };
 
