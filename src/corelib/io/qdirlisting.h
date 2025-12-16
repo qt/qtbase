@@ -20,6 +20,7 @@ QT_BEGIN_NAMESPACE
 
 class QDirListingPrivate;
 class QFileInfo;
+class QDebug;
 class QDir;
 class QTimeZone;
 
@@ -150,6 +151,10 @@ public:
     const_iterator constBegin() const { return begin(); }
     sentinel constEnd() const { return end(); }
 
+#ifndef QT_NO_DEBUG_STREAM
+    Q_CORE_EXPORT friend QDebug operator<<(QDebug debug, QDirListing::IteratorFlags flags);
+#endif
+
 private:
     Q_DISABLE_COPY(QDirListing)
 
@@ -159,11 +164,6 @@ private:
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QDirListing::IteratorFlags)
-
-#ifndef QT_NO_DEBUG_STREAM
-class QDebug;
-Q_CORE_EXPORT QDebug operator<<(QDebug debug, QDirListing::IteratorFlags flags);
-#endif
 
 QT_END_NAMESPACE
 
