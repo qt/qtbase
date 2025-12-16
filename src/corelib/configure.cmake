@@ -812,7 +812,7 @@ qt_feature("winsdkicu" PRIVATE
 )
 qt_feature("windows-ioring" PRIVATE
     LABEL "Windows I/O Ring"
-    AUTODETECT WIN32 AND CMAKE_HOST_SYSTEM_VERSION VERSION_GREATER_EQUAL 10.0.22000
+    AUTODETECT WIN32
     CONDITION TEST_windows_ioring
 )
 qt_feature("inotify" PUBLIC PRIVATE

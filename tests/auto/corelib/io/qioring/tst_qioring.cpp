@@ -20,6 +20,7 @@ class tst_QIORing : public QObject
     Q_OBJECT
 
 private slots:
+    void initTestCase();
     void construct();
     void sharedInstance();
     void open();
@@ -32,6 +33,12 @@ private:
     static void closeFile(qintptr fd);
     static qintptr openHelper(QIORing *ring, const QString &path, QIODevice::OpenMode flags);
 };
+
+void tst_QIORing::initTestCase()
+{
+    if (QIORing::sharedInstance() == nullptr)
+        QSKIP("QIORing wasn't able to initialize on this platform. Test will be skipped.");
+}
 
 void tst_QIORing::closeFile(qintptr fd)
 {
