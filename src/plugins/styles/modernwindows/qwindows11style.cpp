@@ -3028,6 +3028,14 @@ QIcon QWindows11Style::standardIcon(StandardPixmap standardIcon,
         return getIcon(Icon::More, 1.0);
     case SP_TabCloseButton:
         return getIcon(Icon::ChromeClose, 0.6);
+    case SP_ArrowUp:
+        return getIcon(Icon::ChevronUpMed, 1.0);
+    case SP_ArrowDown:
+        return getIcon(Icon::ChevronDownMed, 1.0);
+    case SP_ArrowLeft:
+        return getIcon(Icon::ChevronLeftMed, 1.0);
+    case SP_ArrowRight:
+        return getIcon(Icon::ChevronRightMed, 1.0);
     default:
         break;
     }
