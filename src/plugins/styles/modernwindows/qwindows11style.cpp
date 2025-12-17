@@ -779,6 +779,85 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
             }
         }
         break;
+#if QT_CONFIG(toolbutton)
+    case CC_ToolButton:
+        if (const auto toolbutton = qstyleoption_cast<const QStyleOptionToolButton *>(option)) {
+            auto prx = proxy();
+            const bool isSplitButton =
+                    toolbutton->features.testFlag(QStyleOptionToolButton::MenuButtonPopup);
+            const auto fw = prx->pixelMetric(PM_DefaultFrameWidth, option, widget);
+            const auto buttonRect = prx->subControlRect(control, toolbutton, SC_ToolButton, widget);
+            const auto menuareaRect = isSplitButton
+                    ? prx->subControlRect(control, toolbutton, SC_ToolButtonMenu, widget)
+                    : QRect();
+
+            State bflags = toolbutton->state;
+            State mflags = toolbutton->state;
+            if (toolbutton->activeSubControls.testFlag(SC_ToolButton)) {
+                mflags &= ~(State_Sunken | State_MouseOver);
+                if (bflags.testFlag(State_Sunken))
+                    mflags |= State_Raised;
+            }
+            if (toolbutton->activeSubControls.testFlag(SC_ToolButtonMenu)) {
+                bflags &= ~(State_Sunken | State_MouseOver);
+                if (mflags.testFlag(State_Sunken))
+                    bflags |= State_Raised;
+            }
+
+            QStyleOption tool = *toolbutton;
+            if (toolbutton->subControls.testFlag(SC_ToolButton)) {
+                QPainterStateGuard psg(painter);
+                if (isSplitButton)
+                    painter->setClipRect(buttonRect);
+                tool.state = bflags;
+                prx->drawPrimitive(PE_PanelButtonTool, &tool, painter, widget);
+                if (isSplitButton) {
+                    if (state.testFlag(State_Enabled)) {
+                        painter->setPen(winUI3Color(controlStrokePrimary));
+                        const auto top = buttonRect.topRight() + QPoint(0, fw + 1);
+                        const auto btm = buttonRect.bottomRight() - QPoint(0, fw);
+                        painter->drawLine(top, btm);
+                    }
+                }
+            }
+
+            if (toolbutton->state.testFlag(State_HasFocus)) {
+                QStyleOptionFocusRect fr;
+                fr.QStyleOption::operator=(*toolbutton);
+                prx->drawPrimitive(PE_FrameFocusRect, &fr, painter, widget);
+            }
+            QStyleOptionToolButton label = *toolbutton;
+            label.state = bflags;
+            label.rect = buttonRect.marginsRemoved(QMargins(fw, fw, fw, fw));
+            prx->drawControl(CE_ToolButtonLabel, &label, painter, widget);
+
+            if (toolbutton->subControls.testFlag(SC_ToolButtonMenu)) {
+                QPainterStateGuard psg(painter);
+                painter->setClipRect(menuareaRect);
+                tool.state = mflags;
+                prx->drawPrimitive(PE_PanelButtonTool, &tool, painter, widget);
+
+                const int fontSize = painter->font().pointSize();
+                QFont f(d->assetFont);
+                f.setPointSize(qRound(fontSize * 0.9f)); // a little bit smaller
+                painter->setFont(f);
+                painter->setPen(controlTextColor(option));
+                const QRect textRect(menuareaRect.topLeft(), menuareaRect.size() - QSize(fw, 0));
+                painter->drawText(textRect, Qt::AlignCenter, fluentIcon(Icon::ChevronDownMed));
+
+            } else if (toolbutton->features.testFlag(QStyleOptionToolButton::HasMenu)) {
+                const int mbi = prx->pixelMetric(PM_MenuButtonIndicator, toolbutton, widget);
+                const QRect &ir = toolbutton->rect;
+                QRect rect(ir.right() + 5 - mbi, ir.y() + ir.height() - mbi + 4, mbi - 6 - fw,
+                           mbi - 6);
+                rect = visualRect(toolbutton->direction, buttonRect, rect);
+                painter->setFont(QFont(d->assetFont));
+                painter->setPen(controlTextColor(option));
+                painter->drawText(rect, Qt::AlignCenter, fluentIcon(Icon::ChevronDownMed));
+            }
+        }
+        break;
+#endif // QT_CONFIG(toolbutton)
     default:
         QWindowsVistaStyle::drawComplexControl(control, option, painter, widget);
     }
@@ -1013,7 +1092,8 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
             const bool isEnabled = state & QStyle::State_Enabled;
             const bool isMouseOver = state & QStyle::State_MouseOver;
             const bool isRaised = state & QStyle::State_Raised;
-            const QRectF rect = option->rect.marginsRemoved(QMargins(2,2,2,2));
+            const int fw = proxy()->pixelMetric(PM_DefaultFrameWidth, option, widget);
+            const QRectF rect = option->rect.marginsRemoved(QMargins(fw, fw, fw, fw));
             if (element == PE_PanelButtonTool && ((!isMouseOver && !isRaised) || !isEnabled))
                 painter->setPen(Qt::NoPen);
             else
@@ -1313,7 +1393,6 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
                 rect.translate(shiftX, shiftY);
                 painter->setFont(toolbutton->font);
                 const QString text = d->toolButtonElideText(toolbutton, rect, alignment);
-                // option->state has no State_Sunken here, windowsvistastyle/CC_ToolButton removes it
                 painter->setPen(controlTextColor(option));
                 proxy()->drawItemText(painter, rect, alignment, toolbutton->palette,
                                       toolbutton->state & State_Enabled, text);
