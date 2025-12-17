@@ -67,6 +67,31 @@ class QWindows11Style : public QWindowsVistaStyle
 {
     Q_OBJECT
 public:
+    enum class Icon : ushort {
+        AcceptMedium = 0xF78C,
+        Dash12 = 0xE629,
+        CheckMark = 0xE73E,
+        CaretLeftSolid8 = 0xEDD9,
+        CaretRightSolid8 = 0xEDDA,
+        CaretUpSolid8 = 0xEDDB,
+        CaretDownSolid8 = 0xEDDC,
+        ChevronDown = 0xE70D,
+        ChevronUp = 0xE70E,
+        ChevronUpMed = 0xE971,
+        ChevronDownMed = 0xE972,
+        ChevronLeftMed = 0xE973,
+        ChevronRightMed = 0xE974,
+        ChevronUpSmall = 0xE96D,
+        ChevronDownSmall = 0xE96E,
+        ChromeMinimize = 0xE921,
+        ChromeMaximize = 0xE922,
+        ChromeRestore = 0xE923,
+        ChromeClose = 0xE8BB,
+        More = 0xE712,
+        Help = 0xE897,
+        Clear = 0xE894,
+    };
+
     QWindows11Style();
     ~QWindows11Style() override;
     void drawComplexControl(ComplexControl control, const QStyleOptionComplex *option,
@@ -115,6 +140,7 @@ private:
     QColor controlTextColor(const QStyleOption *option, bool ignoreIsChecked = false) const;
     void drawLineEditFrame(QPainter *p, const QRectF &rect, const QStyleOption *o, bool isEditable = true) const;
     inline QColor winUI3Color(enum WINUI3Color col) const;
+    static inline QString fluentIcon(Icon i) { return QChar(ushort(i)); }
 
 private:
     Q_DISABLE_COPY_MOVE(QWindows11Style)
@@ -133,9 +159,7 @@ class QWindows11StylePrivate : public QWindowsVistaStylePrivate {
     QWindows11StylePrivate();
 
 protected:
-    QIcon m_toolbarExtensionButton;
-    QIcon m_lineEditClearButton;
-    QIcon m_tabCloseButton;
+    QVarLengthFlatMap<QWindows11Style::Icon, QIcon, 16> m_standardIcons;
     bool nativeRoundedTopLevelWindows;
 };
 

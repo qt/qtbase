@@ -158,6 +158,8 @@ public:
 
 protected:
     QFont assetFont;
+
+private:
     QIcon m_titleBarMinIcon;
     QIcon m_titleBarMaxIcon;
     QIcon m_titleBarCloseIcon;

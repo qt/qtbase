@@ -94,37 +94,6 @@ inline ControlState calcControlState(const QStyleOption *option)
 
 } // namespace StyleOptionHelper
 
-enum class Icon : ushort
-{
-    AcceptMedium = 0xF78C,
-    Dash12 = 0xE629,
-    CheckMark = 0xE73E,
-    CaretLeftSolid8 = 0xEDD9,
-    CaretRightSolid8 = 0xEDDA,
-    CaretUpSolid8 = 0xEDDB,
-    CaretDownSolid8 = 0xEDDC,
-    ChevronDown = 0xE70D,
-    ChevronUp = 0xE70E,
-    ChevronUpMed = 0xE971,
-    ChevronDownMed = 0xE972,
-    ChevronLeftMed = 0xE973,
-    ChevronRightMed = 0xE974,
-    ChevronUpSmall = 0xE96D,
-    ChevronDownSmall = 0xE96E,
-    ChromeMinimize = 0xE921,
-    ChromeMaximize = 0xE922,
-    ChromeRestore = 0xE923,
-    ChromeClose = 0xE8BB,
-    More = 0xE712,
-    Help = 0xE897,
-    Clear = 0xE894,
-};
-
-static inline QString fluentIcon(Icon i)
-{
-    return QChar(ushort(i));
-}
-
 template <typename R, typename P, typename B>
 static inline void drawRoundedRect(QPainter *p,
                                    R &&rect,
@@ -3010,13 +2979,7 @@ void QWindows11Style::polish(QPalette& result)
     SET_IF_UNRESOLVED(QPalette::Inactive, QPalette::WindowText, result.windowText().color());
 
     auto *d = const_cast<QWindows11StylePrivate *>(d_func());
-    d->m_titleBarMinIcon = QIcon();
-    d->m_titleBarMaxIcon = QIcon();
-    d->m_titleBarCloseIcon = QIcon();
-    d->m_titleBarNormalIcon = QIcon();
-    d->m_toolbarExtensionButton = QIcon();
-    d->m_lineEditClearButton = QIcon();
-    d->m_tabCloseButton = QIcon();
+    d->m_standardIcons.clear();
 }
 
 QPixmap QWindows11Style::standardPixmap(StandardPixmap standardPixmap,
@@ -3039,32 +3002,33 @@ QIcon QWindows11Style::standardIcon(StandardPixmap standardIcon,
                                     const QStyleOption *option,
                                     const QWidget *widget) const
 {
-    auto *d = const_cast<QWindows11StylePrivate*>(d_func());
+    const auto getIcon = [&](Icon ico, double scale) {
+        auto *d = const_cast<QWindows11StylePrivate *>(d_func());
+        QIcon &icon = d->m_standardIcons[ico];
+        if (icon.isNull()) {
+            auto engine = new WinFontIconEngine(fluentIcon(ico), d->assetFont);
+            engine->setScale(scale);
+            icon = QIcon(engine);
+        }
+        return icon;
+    };
+
     switch (standardIcon) {
-    case SP_LineEditClearButton: {
-        if (d->m_lineEditClearButton.isNull()) {
-            auto e = new WinFontIconEngine(fluentIcon(Icon::Clear), d->assetFont);
-            d->m_lineEditClearButton = QIcon(e);
-        }
-        return d->m_lineEditClearButton;
-    }
+    case SP_TitleBarMinButton:
+        return getIcon(Icon::ChromeMinimize, 0.7);
+    case SP_TitleBarMaxButton:
+        return getIcon(Icon::ChromeMaximize, 0.7);
+    case SP_TitleBarCloseButton:
+        return getIcon(Icon::ChromeClose, 0.7);
+    case SP_TitleBarNormalButton:
+        return getIcon(Icon::ChromeRestore, 0.7);
+    case SP_LineEditClearButton:
+        return getIcon(Icon::Clear, 0.7);
     case SP_ToolBarHorizontalExtensionButton:
-    case SP_ToolBarVerticalExtensionButton: {
-        if (d->m_toolbarExtensionButton.isNull()) {
-            auto e = new WinFontIconEngine(fluentIcon(Icon::More), d->assetFont);
-            e->setScale(1.0);
-            d->m_toolbarExtensionButton = QIcon(e);
-        }
-        return d->m_toolbarExtensionButton;
-    }
-    case SP_TabCloseButton: {
-        if (d->m_tabCloseButton.isNull()) {
-            auto e = new WinFontIconEngine(fluentIcon(Icon::ChromeClose), d->assetFont);
-            e->setScale(0.6);
-            d->m_tabCloseButton = QIcon(e);
-        }
-        return d->m_tabCloseButton;
-    }
+    case SP_ToolBarVerticalExtensionButton:
+        return getIcon(Icon::More, 1.0);
+    case SP_TabCloseButton:
+        return getIcon(Icon::ChromeClose, 0.6);
     default:
         break;
     }
