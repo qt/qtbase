@@ -25,7 +25,7 @@ class Q_WIDGETS_EXPORT QWizard : public QDialog
     Q_PROPERTY(Qt::TextFormat subTitleFormat READ subTitleFormat WRITE setSubTitleFormat)
     Q_PROPERTY(int startId READ startId WRITE setStartId)
     Q_PROPERTY(int currentId READ currentId WRITE setCurrentId NOTIFY currentIdChanged)
-    Q_PROPERTY(BannerSizePolicy bannerSizePolicy READ bannerSizePolicy WRITE setBannerSizePolicy REVISION(6, 11))
+    Q_PROPERTY(BannerStretchPolicy bannerStretchPolicy READ bannerStretchPolicy WRITE setBannerStretchPolicy REVISION(6, 11))
 
 public:
     enum WizardButton {
@@ -62,11 +62,11 @@ public:
     };
     Q_ENUM(WizardStyle)
 
-    enum class BannerSizePolicy {
+    enum class BannerStretchPolicy {
         NoStretch,
         Stretch,
     };
-    Q_ENUM(BannerSizePolicy)
+    Q_ENUM(BannerStretchPolicy)
 
     enum WizardOption {
         IndependentPages                = 0x00000001,
@@ -131,8 +131,8 @@ public:
     Qt::TextFormat titleFormat() const;
     void setSubTitleFormat(Qt::TextFormat format);
     Qt::TextFormat subTitleFormat() const;
-    void setBannerSizePolicy(BannerSizePolicy bannerSizePolicy);
-    QWizard::BannerSizePolicy bannerSizePolicy() const;
+    void setBannerStretchPolicy(BannerStretchPolicy bannerStretchPolicy);
+    QWizard::BannerStretchPolicy bannerStretchPolicy() const;
     void setPixmap(WizardPixmap which, const QPixmap &pixmap);
     QPixmap pixmap(WizardPixmap which) const;
 

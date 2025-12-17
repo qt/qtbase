@@ -259,7 +259,7 @@ public:
     void setup(const QWizardLayoutInfo &info, const QString &title,
                const QString &subTitle, const QPixmap &logo, const QPixmap &banner,
                Qt::TextFormat titleFormat, Qt::TextFormat subTitleFormat,
-               QWizard::BannerSizePolicy bannerSizePolicy);
+               QWizard::BannerStretchPolicy bannerStretchPolicy);
 
 protected:
     void paintEvent(QPaintEvent *event) override;
@@ -273,7 +273,7 @@ private:
     QLabel *logoLabel;
     QGridLayout *layout;
     QPixmap bannerPixmap;
-    QWizard::BannerSizePolicy wizardBannerSizePolicy = QWizard::BannerSizePolicy::NoStretch;
+    QWizard::BannerStretchPolicy wizardBannerStretchPolicy = QWizard::BannerStretchPolicy::NoStretch;
 };
 
 QWizardHeader::QWizardHeader(QWidget *parent)
@@ -329,7 +329,7 @@ bool QWizardHeader::vistaDisabled() const
 void QWizardHeader::setup(const QWizardLayoutInfo &info, const QString &title,
                           const QString &subTitle, const QPixmap &logo, const QPixmap &banner,
                           Qt::TextFormat titleFormat, Qt::TextFormat subTitleFormat,
-                          QWizard::BannerSizePolicy bannerSizePolicy)
+                          QWizard::BannerStretchPolicy bannerStretchPolicy)
 {
     bool modern = ((info.wizStyle == QWizard::ModernStyle)
 #if QT_CONFIG(style_windowsvista)
@@ -337,7 +337,7 @@ void QWizardHeader::setup(const QWizardLayoutInfo &info, const QString &title,
 #endif
     );
 
-    wizardBannerSizePolicy = bannerSizePolicy;
+    wizardBannerStretchPolicy = bannerStretchPolicy;
 
     layout->setRowMinimumHeight(0, modern ? ModernHeaderTopMargin : 0);
     layout->setRowMinimumHeight(1, modern ? info.topLevelMarginTop - ModernHeaderTopMargin - 1 : 0);
@@ -364,7 +364,7 @@ void QWizardHeader::setup(const QWizardLayoutInfo &info, const QString &title,
         bannerPixmap = QPixmap();
     }
 
-    if (bannerPixmap.isNull() || wizardBannerSizePolicy != QWizard::BannerSizePolicy::NoStretch) {
+    if (bannerPixmap.isNull() || wizardBannerStretchPolicy != QWizard::BannerStretchPolicy::NoStretch) {
         /*
             There is no widthForHeight() function, so we simulate it with a loop.
         */
@@ -392,12 +392,12 @@ void QWizardHeader::setup(const QWizardLayoutInfo &info, const QString &title,
 void QWizardHeader::paintEvent(QPaintEvent * /* event */)
 {
     QStylePainter painter(this);
-    switch (wizardBannerSizePolicy) {
-    case QWizard::BannerSizePolicy::Stretch:
+    switch (wizardBannerStretchPolicy) {
+    case QWizard::BannerStretchPolicy::Stretch:
         painter.setRenderHint(QPainter::SmoothPixmapTransform);
         painter.drawPixmap(0, 0, width(), height(), bannerPixmap);
         break;
-    case QWizard::BannerSizePolicy::NoStretch:
+    case QWizard::BannerStretchPolicy::NoStretch:
         painter.drawPixmap(0, 0, bannerPixmap);
         break;
     }
@@ -582,7 +582,7 @@ public:
     QList<QWizard::WizardButton> buttonsCustomLayout;
     Qt::TextFormat titleFmt = Qt::AutoText;
     Qt::TextFormat subTitleFmt = Qt::AutoText;
-    QWizard::BannerSizePolicy bannerSizePolicy = QWizard::BannerSizePolicy::NoStretch;
+    QWizard::BannerStretchPolicy bannerStretchPolicy = QWizard::BannerStretchPolicy::NoStretch;
     mutable QPixmap defaultPixmaps[QWizard::NPixmaps];
 
     union {
@@ -1238,7 +1238,7 @@ void QWizardPrivate::updateLayout()
         Q_ASSERT(page);
         headerWidget->setup(info, page->title(), page->subTitle(),
                             page->pixmap(QWizard::LogoPixmap), page->pixmap(QWizard::BannerPixmap),
-                            titleFmt, subTitleFmt, bannerSizePolicy);
+                            titleFmt, subTitleFmt, bannerStretchPolicy);
     }
 
     if (info.watermark || info.sideWidget) {
@@ -2097,7 +2097,7 @@ void QWizardAntiFlickerWidget::paintEvent(QPaintEvent *)
 */
 
 /*!
-    \enum QWizard::BannerSizePolicy
+    \enum QWizard::BannerStretchPolicy
 
     This enum specifies the banner size policy when there is a banner.
 
@@ -2800,25 +2800,25 @@ Qt::TextFormat QWizard::subTitleFormat() const
 }
 
 /*!
-    \property QWizard::bannerSizePolicy
+    \property QWizard::bannerStretchPolicy
     \brief the banner size policy
 
     The default policy is \l{QWizard::}{NoStretch}
 */
-void QWizard::setBannerSizePolicy(QWizard::BannerSizePolicy bannerSizePolicy)
+void QWizard::setBannerStretchPolicy(QWizard::BannerStretchPolicy bannerStretchPolicy)
 {
     Q_D(QWizard);
-    if (d->bannerSizePolicy == bannerSizePolicy)
+    if (d->bannerStretchPolicy == bannerStretchPolicy)
         return;
 
-    d->bannerSizePolicy = bannerSizePolicy;
+    d->bannerStretchPolicy = bannerStretchPolicy;
     d->updateLayout();
 }
 
-QWizard::BannerSizePolicy QWizard::bannerSizePolicy() const
+QWizard::BannerStretchPolicy QWizard::bannerStretchPolicy() const
 {
     Q_D(const QWizard);
-    return d->bannerSizePolicy;
+    return d->bannerStretchPolicy;
 }
 
 /*!
