@@ -105,6 +105,7 @@ enum class Icon : ushort
     CaretDownSolid8 = 0xEDDC,
     ChevronDown = 0xE70D,
     ChevronUp = 0xE70E,
+    ChevronUpMed = 0xE971,
     ChevronDownMed = 0xE972,
     ChevronLeftMed = 0xE973,
     ChevronRightMed = 0xE974,
@@ -823,6 +824,43 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
     }
 
     switch (element) {
+    case PE_IndicatorArrowUp:
+    case PE_IndicatorArrowDown:
+    case PE_IndicatorArrowRight:
+    case PE_IndicatorArrowLeft: {
+        const QRect &r = option->rect;
+        if (r.width() <= 1 || r.height() <= 1)
+            break;
+        Icon ico = Icon::Help;
+        switch (element) {
+        case PE_IndicatorArrowUp:
+            ico = Icon::ChevronUpMed;
+            break;
+        case PE_IndicatorArrowDown:
+            ico = Icon::ChevronDownMed;
+            break;
+        case PE_IndicatorArrowLeft:
+            ico = Icon::ChevronLeftMed;
+            break;
+        case PE_IndicatorArrowRight:
+            ico = Icon::ChevronRightMed;
+            break;
+        default:
+            break;
+        }
+        QPainterStateGuard psg(painter);
+        if (option->state.testFlag(State_Sunken)) {
+            const auto bsx = proxy()->pixelMetric(PM_ButtonShiftHorizontal, option, widget);
+            const auto bsy = proxy()->pixelMetric(PM_ButtonShiftVertical, option, widget);
+            if (bsx != 0 || bsy != 0)
+                painter->translate(bsx, bsy);
+        }
+        painter->setFont(d->assetFont);
+        painter->setPen(option->palette.buttonText().color());
+        painter->setBrush(option->palette.buttonText());
+        painter->drawText(option->rect, Qt::AlignCenter, fluentIcon(ico));
+        break;
+    }
     case PE_FrameFocusRect: {
         if (const QStyleOptionFocusRect *fropt = qstyleoption_cast<const QStyleOptionFocusRect *>(option)) {
             if (!(fropt->state & State_KeyboardFocusChange))
