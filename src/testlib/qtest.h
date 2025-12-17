@@ -181,16 +181,16 @@ inline bool qCompare(quint32 const &t1, quint64 const &t2, const char *actual,
 }
 namespace Internal {
 
-template <typename T, typename = void>
-struct HasInitMain : std::false_type{};
+template <typename T>
+using InitMainTest = decltype(&T::initMain);
 
 template <typename T>
-struct HasInitMain<T, std::void_t<decltype(&T::initMain)>> : std::true_type {};
+constexpr inline bool hasInitMain = qxp::is_detected_v<InitMainTest, T>;
 
 template<typename T>
 void callInitMain()
 {
-    if constexpr (HasInitMain<T>::value)
+    if constexpr (hasInitMain<T>)
         T::initMain();
 }
 
