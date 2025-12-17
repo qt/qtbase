@@ -365,7 +365,7 @@ bool QAuthenticator::isNull() const
     state.
 */
 
-void QAuthenticator::clear() noexcept
+void QAuthenticator::clear()
 {
     *d = QAuthenticatorPrivate();
     d->phase = QAuthenticatorPrivate::Done;
