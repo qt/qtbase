@@ -952,7 +952,7 @@ void QRegularExpressionPrivate::getPatternInfo()
 namespace {
 struct PcreJitStackFree
 {
-    void operator()(pcre2_jit_stack_16 *stack)
+    void operator()(pcre2_jit_stack_16 *stack) const
     {
         if (stack)
             pcre2_jit_stack_free_16(stack);
