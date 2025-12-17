@@ -3,6 +3,7 @@
 
 
 #include <QtCore/QCoreApplication>
+#include <QtCore/qxptype_traits.h>
 #include <QTest>
 
 class tst_InitMain : public QObject
@@ -19,8 +20,8 @@ private:
     static bool m_initMainCalled;
 };
 
-static_assert(QTest::Internals::HasInitMain<tst_InitMain>::value);
-static_assert(!QTest::Internals::HasInitMain<QObject>::value);
+static_assert(QTest::Internal::hasInitMain<tst_InitMain>);
+static_assert(!QTest::Internal::hasInitMain<QObject>);
 
 bool tst_InitMain::m_initMainCalled = false;
 
