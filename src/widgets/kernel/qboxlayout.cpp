@@ -112,15 +112,39 @@ void QBoxLayoutPrivate::effectiveMargins(int *left, int *top, int *right, int *b
     int t = topMargin;
     int r = rightMargin;
     int b = bottomMargin;
-#ifdef Q_OS_MACOS
+    /*
+     * \a firstBox is set to the first (left/topmost) visual item
+     * \a lastBox is set to the last (right/bottommost) visual item
+     *
+     * These two boxes will then be used to determine the extra margins the layout needs to be
+     * surrounded by in case they have a layout item rect (e.g. QGroupBox)
+     */
+    auto firstAndLastNonEmptyBox = [](const QList<QBoxLayoutItem*> list,
+                                    QBoxLayoutItem* *firstBox,
+                                    QBoxLayoutItem* *lastBox)
+    {
+        auto isNonEmptyBox = [](QBoxLayoutItem *box) { return box && box->item && !box->item->isEmpty();};
+        // search for the first non-empty box
+        auto topIt = std::find_if(list.begin(), list.end(), isNonEmptyBox);
+        if (topIt != list.end()) {
+            *firstBox = *topIt;
+            // search for the last non-empty box, but do not search past the first item found
+            auto bottomIt = std::find_if(list.rbegin(), std::make_reverse_iterator(--topIt), isNonEmptyBox);
+            *lastBox = *bottomIt;
+        } else {
+            *firstBox = nullptr;
+            *lastBox = nullptr;
+        }
+    };
+
+
     Q_Q(const QBoxLayout);
     if (horz(dir)) {
         QBoxLayoutItem *leftBox = nullptr;
         QBoxLayoutItem *rightBox = nullptr;
 
         if (left || right) {
-            leftBox = list.value(0);
-            rightBox = list.value(list.count() - 1);
+            firstAndLastNonEmptyBox(list, &leftBox, &rightBox);
             if (dir == QBoxLayout::RightToLeft)
                 qSwap(leftBox, rightBox);
 
@@ -164,8 +188,7 @@ void QBoxLayoutPrivate::effectiveMargins(int *left, int *top, int *right, int *b
         QBoxLayoutItem *bottomBox = nullptr;
 
         if (top || bottom) {
-            topBox = list.value(0);
-            bottomBox = list.value(list.count() - 1);
+            firstAndLastNonEmptyBox(list, &topBox, &bottomBox);
             if (dir == QBoxLayout::BottomToTop) {
                 qSwap(topBox, bottomBox);
             }
@@ -200,7 +223,7 @@ void QBoxLayoutPrivate::effectiveMargins(int *left, int *top, int *right, int *b
             }
         }
     }
-#endif
+
     if (left)
         *left = l;
     if (top)

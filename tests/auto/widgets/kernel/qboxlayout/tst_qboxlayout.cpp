@@ -43,6 +43,7 @@ private slots:
     void replaceWidget();
     void indexOf();
     void invalidIndex();
+    void effectiveMargins();
 };
 
 class CustomLayoutStyle : public QProxyStyle
@@ -592,6 +593,54 @@ void tst_QBoxLayout::invalidIndex()
     layout.insertWidget(1, &lbl);    // should not crash
     QVERIFY(layout.itemAt(0));
     QCOMPARE(layout.itemAt(0)->widget(), &lbl);
+}
+
+void tst_QBoxLayout::effectiveMargins()
+{
+    QWidget window;
+    QScopedPointer<MarginEatingStyle> marginEater(new MarginEatingStyle);
+
+    QVBoxLayout *vbox = new QVBoxLayout(&window);
+
+    QLabel* hiddenLabel1 = new QLabel(tr("Hidden text 1"));
+    // Hidden widget that is ahead of groupbox in vbox
+    hiddenLabel1->setVisible(false);
+
+    QGroupBox *groupBox = new QGroupBox(tr("Buttons"));
+    groupBox->setStyle(marginEater.data());
+    QVBoxLayout *vbox2 = new QVBoxLayout;
+    QPushButton *btn1 = new QPushButton(tr("Button 1"));
+    vbox2->addWidget(btn1);
+    groupBox->setLayout(vbox2);
+
+    QLabel* hiddenLabel2 = new QLabel(tr("Hidden text 2"));
+    // Hidden widget that is after groupbox in vbox
+    hiddenLabel2->setVisible(false);
+
+    vbox->setContentsMargins(0,0,0,0);
+    vbox->addWidget(hiddenLabel1);
+    vbox->addWidget(groupBox);
+    vbox->addWidget(hiddenLabel2);
+
+    /* The layout (vbox) has 3 widgets:
+            [invisible label] [groupBox] [invisible label]
+
+       Because the labels are invisible, vbox->sizeHint() should be the same as groupBox->sizeHint()
+    */
+    QCOMPARE(vbox->sizeHint(), groupBox->sizeHint());
+    QCOMPARE(window.sizeHint(), groupBox->sizeHint());
+
+    // Due to MarginEatingStyle, QGroupBox will "eat" 20 pixels of all margins (l,t,r,b).
+    // Set contentsMargins to be less and bigger than the 20 pixels specified
+    // by MarginEatingStyle. This will then test if the effective margins will
+    // be large enough to hold the "margin eating widget", and at the same time
+    // respect the explicit margin if it was set to be large enough to accommodate
+    // the "margin eating widget".
+    // Since the MarginEatingStyle will "eat" 20 pixels of each margin,
+    // the effective margins will change from:  (20, 20, 20, 20) to (20, 30, 20, 30),
+    // effectively becoming 20 pixels taller than the groupBox->sizeHint()
+    vbox->setContentsMargins(10,30,10,30);
+    QCOMPARE(vbox->sizeHint(), groupBox->sizeHint() + QSize(0, 20));
 }
 
 QTEST_MAIN(tst_QBoxLayout)

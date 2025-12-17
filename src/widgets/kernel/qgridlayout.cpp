@@ -224,7 +224,7 @@ void QGridLayoutPrivate::effectiveMargins(int *left, int *top, int *right, int *
         QGridBox *box = things.at(i);
         QLayoutItem *itm = box->item();
         w = itm->widget();
-        if (w) {
+        if (w && !itm->isEmpty()) {
             bool visualHReversed = hReversed != (w->layoutDirection() == Qt::RightToLeft);
             QRect lir = itm->geometry();
             QRect wr = w->geometry();
