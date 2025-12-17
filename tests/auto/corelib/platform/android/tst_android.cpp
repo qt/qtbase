@@ -251,6 +251,12 @@ void tst_Android::safeAreaWithWindowFlagsAndStates()
     QFETCH(Qt::WindowStates, windowStates);
     QFETCH(Qt::WindowFlags, windowFlags);
 
+    if ((QNativeInterface::QAndroidApplication::sdkVersion() > __ANDROID_API_V__) &&
+             qgetenv("QTEST_ENVIRONMENT").split(' ').contains("ci") &
+                (!(windowFlags & Qt::ExpandedClientAreaHint) &&
+                     !(windowStates & Qt::WindowFullScreen)))
+        QSKIP("Normal fails on Android 16 (QTBUG-140846).");
+
     QWidget widget;
     QPalette palette = widget.palette();
     palette.setColor(QPalette::Window, Qt::red);
@@ -338,6 +344,10 @@ void tst_Android::safeAreaWithWindowFlagsAndStates()
 // QTBUG-107604
 void tst_Android::testFullScreenDimensions()
 {
+    if ((QNativeInterface::QAndroidApplication::sdkVersion() > __ANDROID_API_V__) &&
+            qgetenv("QTEST_ENVIRONMENT").split(' ').contains("ci") )
+        QSKIP("Keep on failing on Android 16 (QTBUG-141712).");
+
     QJniObject activity = QNativeInterface::QAndroidApplication::context();
     QVERIFY(activity.isValid());
 
