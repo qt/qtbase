@@ -1439,6 +1439,7 @@ namespace Qt {
 
         ImhNoEditMenu = 0x800,
         ImhNoTextHandles = 0x1000,
+        ImhNoFullscreen = 0x2000,
 
         ImhDigitsOnly = 0x10000,
         ImhFormattedNumbersOnly = 0x20000,

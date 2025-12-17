@@ -2721,6 +2721,7 @@
 
     \value ImhNoEditMenu             Do not use built-in edit menu. This flag was introduced in Qt 5.11.
     \value ImhNoTextHandles          Do not use built-in text cursor and selection handles. This flag was introduced in Qt 5.11.
+    \value ImhNoFullscreen           [since 6.12] Do not use fullscreen input method.
 
     Flags that restrict input (exclusive flags):
 
