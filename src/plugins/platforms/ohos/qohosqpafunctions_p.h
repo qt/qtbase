@@ -160,7 +160,6 @@ public:
         QOhosOptional<int> windowHeight;
         QOhosOptional<ProcessMode> processMode;
         QOhosOptional<StartupVisibility> startupVisibility;
-        QOhosOptional<bool> windowFocused;
         QOhosOptional<QVariant> windowIcon;
         QOhosOptional<QString> windowBackgroundColorHex;
         QOhosOptional<QList<SupportWindowMode>> supportWindowModes;
