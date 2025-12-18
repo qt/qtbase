@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="400"
+   height="280"
+   version="1.1"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+
+<style>
+  svg .line-style { stroke: black; fill: none }
+  svg .text-style { font: 14px arial; fill: black }
+  svg .dw-style { stroke: black; fill: #e0e0e0 }
+  svg .cw-style { stroke: black; fill: #f0c8c8 }
+
+  svg.dark .line-style { stroke: #f2f2f2; fill: none }
+  svg.dark .text-style { font: 14px arial; fill: #f2f2f2 }
+  svg.dark .dw-style { stroke: #f2f2f2; fill: #606060 }
+  svg.dark .cw-style { stroke: #f2f2f2; fill: #603030 }
+
+  [data-theme="dark"] svg .line-style { stroke: #f2f2f2; fill: none }
+  [data-theme="dark"] svg .text-style { font: 14px arial; fill: #f2f2f2 }
+  [data-theme="dark"] svg .dw-style { stroke: #f2f2f2; fill: #606060 }
+  [data-theme="dark"] svg .cw-style { stroke: #f2f2f2; fill: #603030 }
+
+  [data-theme="light"] svg .line-style { stroke: black; fill: none }
+  [data-theme="light"] svg .text-style { font: 14px arial; fill: black }
+  [data-theme="light"] svg .dw-style { stroke: black; fill: #e0e0e0 }
+  [data-theme="light"] svg .cw-style { stroke: black; fill: #f0c8c8 }
+</style>
+
+<rect x="2.5" y="2.5" width="395" height="275"
+   stroke="black" fill="white" class="dw-style" />
+<text x="145.5" y="32.75"
+   font-family="arial" font-size="14px" stroke="none" fill="black"
+   class="text-style">Top dock window</text>
+<text x="135.5" y="255.5"
+   font-family="arial" font-size="14px" stroke="none" fill="black"
+   class="text-style">Bottom dock window</text>
+
+<rect x="60.5" y="55.5" width="280" height="170"
+   stroke="black" fill="#f0c8c8" class="cw-style" />
+<text x="155.5" y="145.5"
+   font-family="arial" font-size="14px" stroke="none" fill="black"
+   class="text-style">Central widget</text>
+
+<path d="m 60.5,2.5 l 0,275"
+      stroke="black" fill="none"
+      class="line-style" />
+<path d="m 340.5,2.5 l 0,275"
+      stroke="black" fill="none"
+      class="line-style" />
+
+<g transform="translate(37,190)">
+<text x="0" y="0"
+   font-family="arial" font-size="14px" stroke="none" fill="black"
+   transform="rotate(270)"
+   class="text-style">Left dock windw</text>
+</g>
+<g transform="translate(365,87)">
+<text x="0" y="0"
+   font-family="arial" font-size="14px" stroke="none" fill="black"
+   transform="rotate(90)"
+   class="text-style">Right dock windw</text>
+</g>
+</svg>

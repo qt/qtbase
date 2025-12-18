@@ -234,7 +234,7 @@
     Note that the left and right dock widgets will occupy the top and bottom
     corners of the main window in this layout.
 
-    \image mainwindow-docks-example.png
+    \image mainwindow-docks-example.svg
            {Placement of dock windows relative to a central widget}
 
     Once all the main window components have been set up, the central widget

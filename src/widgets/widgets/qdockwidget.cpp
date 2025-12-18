@@ -1275,7 +1275,7 @@ void QDockWidgetPrivate::setWindowState(WindowStates states, const QRect &rect)
     \l{QMainWindow::centralWidget()}{central widget} in a
     QMainWindow.
 
-    \image mainwindow-docks.png
+    \image mainwindow-docks.svg
            {Diagram of dock widget within toolbars and a container for widgets}
 
     Dock windows can be moved inside their current area, moved into
