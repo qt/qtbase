@@ -121,6 +121,8 @@ public:
     void polish(QApplication *app) override;
     void unpolish(QApplication *app) override;
     bool eventFilter(QObject *obj, QEvent *event) override;
+    QPixmap generatedIconPixmap(QIcon::Mode iconMode, const QPixmap &pixmap,
+                                const QStyleOption *option) const override;
 
 protected:
     QWindows11Style(QWindows11StylePrivate &dd);

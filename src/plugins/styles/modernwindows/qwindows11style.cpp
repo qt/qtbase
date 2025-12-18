@@ -3065,6 +3065,15 @@ QIcon QWindows11Style::standardIcon(StandardPixmap standardIcon,
     return QWindowsVistaStyle::standardIcon(standardIcon, option, widget);
 }
 
+QPixmap QWindows11Style::generatedIconPixmap(QIcon::Mode iconMode, const QPixmap &pixmap,
+                                             const QStyleOption *option) const
+{
+    if (iconMode == QIcon::Disabled)
+        return QWindowsVistaStyle::generatedIconPixmap(iconMode, pixmap, option);
+    return pixmap;
+}
+
+
 QColor QWindows11Style::calculateAccentColor(const QStyleOption *option) const
 {
     using namespace StyleOptionHelper;
