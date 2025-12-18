@@ -475,7 +475,10 @@ void QWin32PrintEngine::updateMatrix(const QTransform &m)
     d->painterMatrix = m;
     d->matrix = d->painterMatrix * stretch;
     d->txop = d->matrix.type();
-    d->complex_xform = (d->txop > QTransform::TxScale);
+    d->complex_xform = (d->txop > QTransform::TxScale)
+                        //or is TxScale and inverted
+                        || (d->txop == QTransform::TxScale
+                            && (d->matrix.m11() < 0 || d->matrix.m22() < 0));
 }
 
 enum HBitmapFormat
