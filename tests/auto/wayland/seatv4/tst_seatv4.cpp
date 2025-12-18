@@ -567,12 +567,18 @@ void tst_seatv4::animatedCursor()
         // Make sure no extra buffers have arrived
         QVERIFY(bufferSpy.empty());
 
+        if (QSysInfo::productType() == "opensuse-leap" && QSysInfo::productVersion() == QLatin1String("16.0"))
+            QEXPECT_FAIL("", "QTBUG-141773: opensuse-leap 16.0 fails", Continue);
+
         // The client should send a frame request in order to time animations correctly
         QVERIFY(!cursorSurface()->m_waitingFrameCallbacks.empty());
 
         // Tell the client it's time to animate
         cursorSurface()->sendFrameCallbacks();
     });
+
+    if (QSysInfo::productType() == "opensuse-leap" && QSysInfo::productVersion() == QLatin1String("16.0"))
+        QEXPECT_FAIL("", "QTBUG-141773: opensuse-leap 16.0 fails", Continue);
 
     // Verify that we get a new cursor buffer
     QTRY_COMPARE(bufferSpy.size(), 1);
