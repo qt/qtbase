@@ -1625,23 +1625,18 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
         if (const QStyleOptionHeader *header = qstyleoption_cast<const QStyleOptionHeader *>(opt)) {
             QRect rect = header->rect;
             if (!header->icon.isNull()) {
-                int iconExtent = proxy()->pixelMetric(PM_SmallIconSize, opt, widget);
-                QPixmap pixmap
-                    = header->icon.pixmap(QSize(iconExtent, iconExtent), QStyleHelper::getDpr(p), (header->state & State_Enabled) ? QIcon::Normal : QIcon::Disabled);
-                int pixw = pixmap.width() / pixmap.devicePixelRatio();
-
-                QRect aligned = alignedRect(header->direction, header->iconAlignment, pixmap.size() / pixmap.devicePixelRatio(), rect);
-                QRect inter = aligned.intersected(rect);
-                p->drawPixmap(inter.x(), inter.y(), pixmap,
-                              inter.x() - aligned.x(), inter.y() - aligned.y(),
-                              aligned.width() * pixmap.devicePixelRatio(),
-                              pixmap.height() * pixmap.devicePixelRatio());
+                const int iconExtent = proxy()->pixelMetric(PM_SmallIconSize, opt, widget);
+                const QRect aligned = alignedRect(header->direction, header->iconAlignment,
+                                                  QSize(iconExtent, iconExtent), rect);
+                header->icon.paint(p, aligned, Qt::AlignCenter,
+                                   header->state.testFlag(State_Enabled) ? QIcon::Normal
+                                                                         : QIcon::Disabled);
 
                 const int margin = proxy()->pixelMetric(QStyle::PM_HeaderMargin, opt, widget);
                 if (header->direction == Qt::LeftToRight)
-                    rect.setLeft(rect.left() + pixw + margin);
+                    rect.setLeft(rect.left() + iconExtent + margin);
                 else
-                    rect.setRight(rect.right() - pixw - margin);
+                    rect.setRight(rect.right() - iconExtent - margin);
             }
             QFontMetrics fm(header->fontMetrics);
             if (header->state & QStyle::State_On) {
