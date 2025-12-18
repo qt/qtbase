@@ -255,8 +255,6 @@ QNapi::Object convertStartOptionsToNapiObject(
     auto optOhosStartupVisibility = opts.startupVisibility.andThen(&tryMapStartupVisibilityToOhosOrLogWarning);
     if (optOhosStartupVisibility.hasValue())
         napiOptions.set("startupVisibility", jsState.mapOhosEnumToJs(optOhosStartupVisibility.value()));
-    if (opts.windowFocused.hasValue())
-        napiOptions.set("windowFocused", opts.windowFocused.value());
     if (opts.windowIcon.hasValue()) {
         auto windowIcon = opts.windowIcon.value().value<QImage>();
         if (!windowIcon.isNull())
