@@ -43,10 +43,9 @@ struct CallerHandlesException<R, std::void_t<typename R::unexpected_type,
 template <typename ReturnType>
 static constexpr bool callerHandlesException = CallerHandlesException<ReturnType>::value;
 
-template <typename Ret, typename ...Args>
-struct LocalFrame {
-    using ReturnType = Ret;
-
+template <typename ...Args>
+struct LocalFrame
+{
     mutable JNIEnv *env;
     bool hasFrame = false;
 
@@ -71,13 +70,7 @@ struct LocalFrame {
             env = QJniEnvironment::getJniEnv();
         return env;
     }
-    bool checkAndClearExceptions() const
-    {
-        if constexpr (callerHandlesException<ReturnType>)
-            return false;
-        else
-            return QJniEnvironment::checkAndClearExceptions(jniEnv());
-    }
+
     template <typename T>
     auto convertToJni(T &&value)
     {
@@ -101,14 +94,36 @@ struct LocalFrame {
         using Type = q20::remove_cvref_t<T>;
         return QtJniTypes::Traits<Type>::convertFromJni(std::move(object));
     }
+};
+
+template <typename Ret, typename ...Args>
+struct LocalFrameWithReturn : LocalFrame<Args...>
+{
+    using ReturnType = Ret;
+
+    using LocalFrame<Args...>::LocalFrame;
+
+    template <typename T>
+    auto convertFromJni(QJniObject &&object)
+    {
+        return LocalFrame<Args...>::template convertFromJni<T>(std::move(object));
+    }
 
     template <typename T>
     auto convertFromJni(jobject object);
 
+    bool checkAndClearExceptions() const
+    {
+        if constexpr (callerHandlesException<ReturnType>)
+            return false;
+        else
+            return QJniEnvironment::checkAndClearExceptions(this->jniEnv());
+    }
+
     auto makeResult()
     {
         if constexpr (callerHandlesException<ReturnType>) {
-            JNIEnv *env = jniEnv();
+            JNIEnv *env = this->jniEnv();
             if (env->ExceptionCheck()) {
                 jthrowable exception = env->ExceptionOccurred();
                 env->ExceptionClear();
@@ -140,7 +155,7 @@ struct LocalFrame {
 class Q_CORE_EXPORT QJniObject
 {
     template <typename Ret, typename ...Args> using LocalFrame
-        = QtJniTypes::Detail::LocalFrame<Ret, Args...>;
+        = QtJniTypes::Detail::LocalFrameWithReturn<Ret, Args...>;
 
 public:
     QJniObject();
@@ -152,12 +167,12 @@ public:
 #endif
         >
     explicit QJniObject(const char *className, Args &&...args)
-        : QJniObject(LocalFrame<QJniObject, Args...>{}, className, std::forward<Args>(args)...)
+        : QJniObject(QtJniTypes::Detail::LocalFrame<Args...>{}, className, std::forward<Args>(args)...)
     {
     }
 private:
     template<typename ...Args>
-    explicit QJniObject(LocalFrame<QJniObject, Args...> localFrame, const char *className, Args &&...args)
+    explicit QJniObject(QtJniTypes::Detail::LocalFrame<Args...> localFrame, const char *className, Args &&...args)
         : QJniObject(className, QtJniTypes::constructorSignature<Args...>().data(),
                      localFrame.convertToJni(std::forward<Args>(args))...)
     {
@@ -1050,7 +1065,7 @@ struct Traits<T, std::enable_if_t<QtJniTypes::Detail::callerHandlesException<T>>
 
 template <typename ReturnType, typename ...Args>
 template <typename T>
-auto QtJniTypes::Detail::LocalFrame<ReturnType, Args...>::convertFromJni(jobject object)
+auto QtJniTypes::Detail::LocalFrameWithReturn<ReturnType, Args...>::convertFromJni(jobject object)
 {
     // If the caller wants to handle exceptions through a std::expected-like
     // type, then we cannot turn the jobject into a QJniObject, as a
