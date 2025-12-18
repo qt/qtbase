@@ -4209,20 +4209,19 @@ QRect QCommonStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex 
 #if QT_CONFIG(toolbutton)
     case CC_ToolButton:
         if (const QStyleOptionToolButton *tb = qstyleoption_cast<const QStyleOptionToolButton *>(opt)) {
-            int mbi = proxy()->pixelMetric(PM_MenuButtonIndicator, tb, widget);
             ret = tb->rect;
             switch (sc) {
             case SC_ToolButton:
-                if ((tb->features
-                     & (QStyleOptionToolButton::MenuButtonPopup | QStyleOptionToolButton::PopupDelay))
-                    == QStyleOptionToolButton::MenuButtonPopup)
+                if (tb->features.testFlag(QStyleOptionToolButton::MenuButtonPopup)) {
+                    const int mbi = proxy()->pixelMetric(PM_MenuButtonIndicator, tb, widget);
                     ret.adjust(0, 0, -mbi, 0);
+                }
                 break;
             case SC_ToolButtonMenu:
-                if ((tb->features
-                     & (QStyleOptionToolButton::MenuButtonPopup | QStyleOptionToolButton::PopupDelay))
-                    == QStyleOptionToolButton::MenuButtonPopup)
+                if (tb->features.testFlag(QStyleOptionToolButton::MenuButtonPopup)) {
+                    const int mbi = proxy()->pixelMetric(PM_MenuButtonIndicator, tb, widget);
                     ret.adjust(ret.width() - mbi, 0, 0, 0);
+                }
                 break;
             default:
                 break;
