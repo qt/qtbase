@@ -334,6 +334,7 @@ struct QUtf8
 
     static char16_t *convertToUnicode(char16_t *dst, QByteArrayView in, QStringConverter::State *state);
 
+    Q_CORE_EXPORT
     static char *convertFromUnicode(char *dst, QStringView in) noexcept;
     Q_CORE_EXPORT static QByteArray convertFromUnicode(QStringView in);
     Q_CORE_EXPORT static QByteArray convertFromUnicode(QStringView in, QStringConverter::State *state);
