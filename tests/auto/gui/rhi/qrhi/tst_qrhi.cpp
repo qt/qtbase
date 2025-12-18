@@ -3894,6 +3894,9 @@ void tst_QRhi::renderToTextureArrayMultiView()
     if (rhi->backend() == QRhi::Vulkan && rhi->driverInfo().deviceType == QRhiDriverInfo::CpuDevice)
         QSKIP("lavapipe does not like multiview, skip for now");
 
+    if (QSysInfo::productType() == "opensuse-leap" && QSysInfo::productVersion() == QLatin1String("16.0") && rhi->backend() == QRhi::OpenGLES2)
+        QSKIP("QTBUG-141769: opensuse-leap 16.0 fails with OpenGL, skip for now");
+
     for (int sampleCount : rhi->supportedSampleCounts()) {
         const QSize outputSize(1920, 1080);
         QRhiTexture::Flags textureFlags = QRhiTexture::RenderTarget;
