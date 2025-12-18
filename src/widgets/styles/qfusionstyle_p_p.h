@@ -94,7 +94,8 @@ public:
         QColor buttonColor = pal.button().color();
         int val = qGray(buttonColor.rgb());
         buttonColor = buttonColor.lighter(100 + qMax(1, (180 - val)/6));
-        buttonColor.setHsv(buttonColor.hue(), buttonColor.saturation() * 0.75, buttonColor.value());
+        buttonColor.setHsv(buttonColor.hue(), buttonColor.saturation() * 0.75,
+                           buttonColor.value(), buttonColor.alpha());
         return buttonColor;
     }
 
