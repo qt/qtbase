@@ -1100,12 +1100,14 @@ void tst_QTabBar::kineticWheel()
         leftEdge = QPoint(0, 0);
         rightEdge = leftButton->geometry().topLeft();
     }
-    // avoid border lines
-    leftEdge += QPoint(2, 2);
+    // make sure the point is inside tabbar rect
+    const auto tabbarCenter = tabbar.geometry().center();
     if (horizontal) {
-        rightEdge += QPoint(-2, 2);
+        leftEdge = QPoint(leftEdge.x() + 10, tabbarCenter.y());
+        rightEdge = QPoint(rightEdge.x() - 10, tabbarCenter.y());
     } else {
-        rightEdge += QPoint(2, -2);
+        leftEdge = QPoint(tabbarCenter.x(), leftEdge.y() + 10);
+        rightEdge = QPoint(tabbarCenter.x(), rightEdge.y() - 10);
     }
 
     QCOMPARE(tabbar.tabAt(leftEdge), 0);
@@ -1393,7 +1395,7 @@ void tst_QTabBar::hoverTab()
     QCOMPARE(tabbar.styleOptions[2].state & QStyle::State_MouseOver, QStyle::State_None);
 
     // inserting a tab at index 2 again should paint the new tab hovered
-    tabbar.insertTab(2, "C2");
+    tabbar.insertTab(2, "X");
     QTRY_COMPARE(tabbar.styleOptions[2].state & QStyle::State_MouseOver, QStyle::State_MouseOver);
     QCOMPARE(tabbar.styleOptions[1].state & QStyle::State_MouseOver, QStyle::State_None);
 }

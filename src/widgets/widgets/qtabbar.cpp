@@ -834,7 +834,7 @@ void QTabBarPrivate::scrollTabs()
             const auto &tabRect = tab->rect;
             int start = horizontal ? tabRect.left() : tabRect.top();
             int end = horizontal ? tabRect.right() : tabRect.bottom();
-            if (end > scrollRect.right() && start > scrollOffset) {
+            if (end > scrollRect.right() && start > scrollRect.left()) {
                 makeVisible(i);
                 return;
             }
@@ -2449,10 +2449,12 @@ void QTabBar::wheelEvent(QWheelEvent *event)
                 if (!d->rightB->isVisible())
                     scrollRectExtent += tabsVertical ? d->rightB->height() : d->rightB->width();
 
+                const QRect scrollRect0 = d->normalizedScrollRect(0);
+                const int minScrollOffset = -1 * scrollRect0.left();
                 const int maxScrollOffset = qMax((tabsVertical ?
                                                   lastTabRect.bottom() :
                                                   lastTabRect.right()) - scrollRectExtent, 0);
-                d->scrollOffset = qBound(0, d->scrollOffset - delta, maxScrollOffset);
+                d->scrollOffset = qBound(minScrollOffset, d->scrollOffset - delta, maxScrollOffset);
                 d->leftB->setEnabled(d->scrollOffset > -scrollRect.left());
                 d->rightB->setEnabled(maxScrollOffset > d->scrollOffset);
                 if (oldScrollOffset != d->scrollOffset) {
