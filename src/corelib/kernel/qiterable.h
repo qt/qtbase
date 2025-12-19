@@ -77,7 +77,7 @@ public:
     using iterator_category = IteratorCategory;
     QTaggedIterator(Iterator &&it) : Iterator(std::move(it))
     {
-        const auto metaContainer = this->metaContainer();
+        [[maybe_unused]] const auto metaContainer = this->metaContainer();
         if constexpr (std::is_base_of_v<std::random_access_iterator_tag, IteratorCategory>) {
             if (!metaContainer.hasRandomAccessIterator()) {
                 qFatal("You cannot use this iterator as a random access iterator");
@@ -105,8 +105,6 @@ public:
                 this->clearIterator();
             }
         }
-
-        Q_UNUSED(metaContainer); // in case none of the above apply
     }
 
     bool operator==(const QTaggedIterator &o) const { return Iterator::operator==(o); }
