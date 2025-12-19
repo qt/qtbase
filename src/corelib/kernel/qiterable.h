@@ -8,10 +8,6 @@
 #include <QtCore/qtypeinfo.h>
 #include <QtCore/qtaggedpointer.h>
 
-#if !defined(QT_LEAN_HEADERS) || QT_LEAN_HEADERS < 1
-#   include <QtCore/qmetacontainer.h>
-#endif
-
 QT_BEGIN_NAMESPACE
 
 namespace QtPrivate {
