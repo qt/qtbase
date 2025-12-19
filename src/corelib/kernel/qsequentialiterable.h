@@ -21,9 +21,8 @@ QT_WARNING_DISABLE_DEPRECATED
         Q_CORE_EXPORT QT_DEPRECATED_VERSION_X_6_15(text)
 #endif
 
-class
-QT_CORE_DEPRECATED_EXPORT_VERSION_X_6_15("Use QMetaSequence::Iterable::Iterator instead.")
-QSequentialIterator : public QIterator<QMetaSequence>
+// Keep this a single long line, otherwise syncqt doesn't create a class forwarding header
+class QT_CORE_DEPRECATED_EXPORT_VERSION_X_6_15("Use QMetaSequence's iterables and iterators instead.") QSequentialIterator : public QIterator<QMetaSequence>
 {
 public:
     using value_type = QVariant;
@@ -38,9 +37,8 @@ public:
     QVariantPointer<QSequentialIterator> operator->() const;
 };
 
-class
-QT_CORE_DEPRECATED_EXPORT_VERSION_X_6_15("Use QMetaSequence::Iterable::ConstIterator instead.")
-QSequentialConstIterator : public QConstIterator<QMetaSequence>
+// Keep this a single long line, otherwise syncqt doesn't create a class forwarding header
+class QT_CORE_DEPRECATED_EXPORT_VERSION_X_6_15("Use QMetaSequence's iterables and iterators instead.") QSequentialConstIterator : public QConstIterator<QMetaSequence>
 {
 public:
     using value_type = QVariant;
@@ -55,9 +53,8 @@ public:
     QVariantConstPointer operator->() const;
 };
 
-class
-QT_CORE_DEPRECATED_EXPORT_VERSION_X_6_15("Use QMetaSequence::Iterable instead.")
-QSequentialIterable : public QIterable<QMetaSequence>
+// Keep this a single long line, otherwise syncqt doesn't create a class forwarding header
+class QT_CORE_DEPRECATED_EXPORT_VERSION_X_6_15("Use QMetaSequence's iterables and iterators instead.") QSequentialIterable : public QIterable<QMetaSequence>
 {
 public:
     using iterator = QTaggedIterator<QSequentialIterator, void>;
