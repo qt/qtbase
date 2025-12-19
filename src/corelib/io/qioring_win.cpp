@@ -580,6 +580,8 @@ void QIORing::prepareRequests()
         }
         ++it;
     }
+    if (it != pendingRequests.end())
+        lastUnqueuedIterator = it;
 }
 
 namespace QtPrivate {
