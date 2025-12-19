@@ -3255,15 +3255,79 @@ void tst_QTreeView::styleOptionViewItem()
         }
     public:
         using QStyledItemDelegate::QStyledItemDelegate;
+        bool checkModel(QTreeView *view, QAbstractItemModel *model)
+        {
+            expectedIndices.clear();
+            nonexpectedIndices.clear();
+            findIndexesToCheck(view, model, QModelIndex());
+            //qDebug() << "Found" << expectedIndices.size() << "indexes to check";
+            if (expectedIndices.empty()) {
+                qWarning() << "Testcase is wrong - need at least one visible item!";
+                return false;
+            }
+            return checkModel(view);
+        }
+
+        bool checkModel(QTreeView *view)
+        {
+            isTesting = true;
+            foundError = false;
+            const auto vp = view->viewport();
+            for (const auto &idx : std::as_const(expectedIndices)) {
+                if (!QTest::qWaitFor([&]() { return !view->visualRect(idx).isEmpty(); }, 2000)) {
+                    qWarning() << "Index" << idx << "has an invalid visible rect:" << view->visualRect(idx);
+                    isTesting = false;
+                    return false;
+                }
+                vp->update(view->visualRect(idx));
+            }
+            if (!QTest::qWaitFor([&]() { return expectedIndices.empty(); }, 2000)) {
+                for (const auto &idx : std::as_const(expectedIndices))
+                    qDebug() << "Missing indexes:" << idx << idx.data(Qt::DisplayRole).toString();
+                isTesting = false;
+                return false;
+            }
+            isTesting = false;
+            return !foundError;
+        }
+        void findIndexesToCheck(QTreeView *view,
+                                QAbstractItemModel *model,
+                                const QModelIndex &parent)
+        {
+            for (int r = 0; r < model->rowCount(parent); ++r) {
+                for (int c = 0; c < model->columnCount(parent); ++c) {
+                    const auto child = model->index(r, c, parent);
+                    if (view->isRowHidden(r, parent) || view->isColumnHidden(c) ||
+                        view->isIndexHidden(child) ||
+                        (parent.isValid() && view->isIndexHidden(parent)) ||
+                        (parent.isValid() && !view->isExpanded(parent)) ||
+                        (view->isFirstColumnSpanned(r, parent) && c != 0)) {
+                        nonexpectedIndices.append(child);
+                    } else {
+                        expectedIndices.append(child);
+                    }
+                    findIndexesToCheck(view, model, child);
+                }
+            }
+        }
         void paint(QPainter *painter, const QStyleOptionViewItem &option,
                    const QModelIndex &index) const override
         {
             QStyleOptionViewItem opt(option);
             initStyleOption(&opt, index);
+            QStyledItemDelegate::paint(painter, option, index);
 
             QVERIFY(!opt.text.isEmpty());
             QCOMPARE(opt.index, index);
             //qDebug() << index << opt.text;
+
+            expectedIndices.removeAll(index);
+            if (!isTesting)
+                return;
+            if (nonexpectedIndices.contains(index)) {
+                qDebug() << "Unexpected index found:" << index << index.data(Qt::DisplayRole).toString();
+                foundError = true;
+            }
 
             if (allCollapsed) {
                 QCOMPARE(!opt.features.testFlag(QStyleOptionViewItem::Alternate),
@@ -3296,12 +3360,12 @@ void tst_QTreeView::styleOptionViewItem()
                      !opt.text.contains("Last"));
 
             QVERIFY(!opt.text.contains("Assert"));
-
-            QStyledItemDelegate::paint(painter, option, index);
-            count++;
         }
-        mutable int count = 0;
         bool allCollapsed = false;
+        mutable QModelIndexList expectedIndices;
+        QModelIndexList nonexpectedIndices;
+        mutable bool foundError = false;
+        bool isTesting = false;
     };
 
     QTreeView view;
@@ -3364,23 +3428,22 @@ void tst_QTreeView::styleOptionViewItem()
                       new QStandardItem("Hidden"),
                       new QStandardItem("Assert"),
                       new QStandardItem("Assert"),
-                      new QStandardItem("Asser") });
+                      new QStandardItem("Assert") });
     view.setRowHidden(0, par3->index(), true);
     par1->appendRow({ new QStandardItem("Assert"),
                       new QStandardItem("Hidden"),
                       new QStandardItem("Assert"),
                       new QStandardItem("Assert"),
-                      new QStandardItem("Asser") });
+                      new QStandardItem("Assert") });
     view.setRowHidden(3, par1->index(), true);
 
     view.setColumnHidden(1, true);
     view.header()->setMinimumSectionSize(10);
     // make sure that all columns are drawn in the view by using a very small section size
     for (int i = 0; i < view.header()->count(); ++i)
-        view.header()->resizeSection(i, 20);
-    view.setMinimumWidth(view.header()->count() * 20);
+        view.header()->resizeSection(i, 40);
+    view.setMinimumWidth(view.header()->count() * 40);
 
-    const int visibleColumns = 4;
     const int modelColumns = 5;
 
     view.header()->swapSections(2, 3);
@@ -3392,96 +3455,84 @@ void tst_QTreeView::styleOptionViewItem()
         // Test the rendering to pixmap before painting the widget.
         // The rendering to pixmap should not depend on having been
         // painted already yet.
-        delegate.count = 0;
         QItemSelection sel(model.index(0,0), model.index(0,modelColumns-1));
+        delegate.expectedIndices = sel.indexes();
+        delegate.expectedIndices.removeAll(model.index(0, 1)); // hidden
+        delegate.nonexpectedIndices.clear();
+        delegate.nonexpectedIndices.append(model.index(0, 1));
         QRect rect;
         view.d_func()->renderToPixmap(sel.indexes(), &rect);
-        if (delegate.count != visibleColumns) {
-            qDebug() << rect << view.rect() << view.isVisible();
-        }
-        QTRY_COMPARE(delegate.count, visibleColumns);
+        QVERIFY(delegate.checkModel(&view));
     }
 #endif
 
-    delegate.count = 0;
     delegate.allCollapsed = true;
     view.showMaximized();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
-    QTRY_COMPARE_GE(delegate.count, 13);
-    delegate.count = 0;
+    QVERIFY(delegate.checkModel(&view, &model));
     delegate.allCollapsed = false;
     view.expandAll();
-    QTRY_COMPARE_GE(delegate.count, 13);
-    delegate.count = 0;
+    QVERIFY(delegate.checkModel(&view, &model));
     view.collapse(par2->index());
-    QTRY_COMPARE_GE(delegate.count, 4);
+    QVERIFY(delegate.checkModel(&view, &model));
 
     // test that the rendering of drag pixmap sets the correct options too (QTBUG-15834)
 #ifdef QT_BUILD_INTERNAL
-    delegate.count = 0;
     QItemSelection sel(model.index(0,0), model.index(0,modelColumns-1));
+    delegate.expectedIndices = sel.indexes();
+    delegate.expectedIndices.removeAll(model.index(0, 1)); // hidden
+    delegate.nonexpectedIndices.clear();
+    delegate.nonexpectedIndices.append(model.index(0, 1));
     QRect rect;
     view.d_func()->renderToPixmap(sel.indexes(), &rect);
-    if (delegate.count != visibleColumns) {
-        qDebug() << rect << view.rect() << view.isVisible();
-    }
-    QTRY_COMPARE(delegate.count, visibleColumns);
+    QVERIFY(delegate.checkModel(&view));
 #endif
 
     //test dynamic models
     {
-        delegate.count = 0;
         QStandardItemModel model2;
         QStandardItem *item0 = new QStandardItem("OnlyOne Last");
         model2.appendRow(item0);
         view.setModel(&model2);
-        QTRY_COMPARE_GE(delegate.count, 1);
+        QVERIFY(delegate.checkModel(&view, &model2));
 
         QStandardItem *item00 = new QStandardItem("OnlyOne Last");
         item0->appendRow(item00);
         item0->setText("OnlyOne Last HasChildren");
-        delegate.count = 0;
         view.expandAll();
-        QTRY_COMPARE_GE(delegate.count, 2);
+        QVERIFY(delegate.checkModel(&view, &model2));
 
         QStandardItem *item1 = new QStandardItem("OnlyOne Last");
-        delegate.count = 0;
         item0->setText("OnlyOne HasChildren");
         model2.appendRow(item1);
-        QTRY_COMPARE_GE(delegate.count, 3);
+        QVERIFY(delegate.checkModel(&view, &model2));
 
         QStandardItem *item01 = new QStandardItem("OnlyOne Last");
-        delegate.count = 0;
         item00->setText("OnlyOne");
         item0->appendRow(item01);
-        QTRY_COMPARE_GE(delegate.count, 4);
+        QVERIFY(delegate.checkModel(&view, &model2));
 
         QStandardItem *item000 = new QStandardItem("OnlyOne Last");
-        delegate.count = 0;
         item00->setText("OnlyOne HasChildren");
         item00->appendRow(item000);
-        QTRY_COMPARE_GE(delegate.count, 5);
+        QVERIFY(delegate.checkModel(&view, &model2));
 
-        delegate.count = 0;
         item0->removeRow(0);
-        QTRY_COMPARE_GE(delegate.count, 3);
+        QVERIFY(delegate.checkModel(&view, &model2));
 
         item00 = new QStandardItem("OnlyOne");
         item0->insertRow(0, item00);
 
-        delegate.count = 0;
         view.expandAll();
-        QTRY_COMPARE_GE(delegate.count, 4);
+        QVERIFY(delegate.checkModel(&view, &model2));
 
-        delegate.count = 0;
         item0->removeRow(1);
         item00->setText("OnlyOne Last");
-        QTRY_COMPARE_GE(delegate.count, 3);
+        QVERIFY(delegate.checkModel(&view, &model2));
 
-        delegate.count = 0;
         item0->removeRow(0);
         item0->setText("OnlyOne");
-        QTRY_COMPARE_GE(delegate.count, 2);
+        QVERIFY(delegate.checkModel(&view, &model2));
 
         //with hidden items
         item0->setText("OnlyOne HasChildren");
@@ -3493,25 +3544,21 @@ void tst_QTreeView::styleOptionViewItem()
         view.expandAll();
         QStandardItem *item02 = new QStandardItem("OnlyOne Last");
         item0->appendRow(item02);
-        delegate.count = 0;
-        QTRY_COMPARE_GE(delegate.count, 4);
+        QVERIFY(delegate.checkModel(&view, &model2));
 
         item0->removeRow(2);
         item00->setText("OnlyOne Last");
-        delegate.count = 0;
-        QTRY_COMPARE_GE(delegate.count, 3);
+        QVERIFY(delegate.checkModel(&view, &model2));
 
         item00->setText("OnlyOne");
         item0->insertRow(2, new QStandardItem("OnlyOne Last"));
         view.collapse(item0->index());
         item0->removeRow(0);
-        delegate.count = 0;
-        QTRY_COMPARE_GE(delegate.count, 2);
+        QVERIFY(delegate.checkModel(&view, &model2));
 
         item0->removeRow(1);
         item0->setText("OnlyOne");
-        delegate.count = 0;
-        QTRY_COMPARE_GE(delegate.count, 2);
+        QVERIFY(delegate.checkModel(&view, &model2));
     }
 
     // special case, two column, first is hidden
@@ -3521,9 +3568,7 @@ void tst_QTreeView::styleOptionViewItem()
     view.setModel(&model);
     view.setColumnHidden(0, true);
     view.setColumnHidden(1, false);
-
-    delegate.count = 0;
-    QTRY_COMPARE_GE(delegate.count, 1);
+    QVERIFY(delegate.checkModel(&view, &model));
 
     // special case, four columns, only one is updated but
     // calcLogicalIndices() returns the correct value
@@ -3534,9 +3579,7 @@ void tst_QTreeView::styleOptionViewItem()
                           new QStandardItem("Middle Last"),
                           new QStandardItem("End Last") });
         view.setColumnHidden(0, true);
-        delegate.count = 0;
-        QTRY_COMPARE_GE(delegate.count, 4);
-
+        QVERIFY(delegate.checkModel(&view, &model));
         // do not rely on paintEvent() as this might redraw a bigger
         // rect than we expect
         QList<int> logicalIndices;
