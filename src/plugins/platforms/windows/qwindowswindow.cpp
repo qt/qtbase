@@ -4035,10 +4035,13 @@ void QWindowsWindow::requestUpdate()
                     // the Posted event on the GUI thread.
                     if (m_vsyncUpdatePending.testAndSetAcquire(UpdateState::Requested, UpdateState::Posted)) {
                         QWindowsWindow *oldSelf = this;
-                        QMetaObject::invokeMethod(w, [w, oldSelf] {
+                        qsizetype oldCallbackId = m_vsyncServiceCallbackId;
+                        QMetaObject::invokeMethod(w, [w, oldSelf, oldCallbackId] {
                             // 'oldSelf' is only used for comparison, don't access it directly!
                             auto *self = static_cast<QWindowsWindow *>(w->handle());
-                            if (self && self == oldSelf) {
+                            // NOTE: In the off chance that the window got destroyed and recreated with the
+                            //       same address, we also check that the callback id is the same.
+                            if (self && self == oldSelf && self->m_vsyncServiceCallbackId == oldCallbackId) {
                                 // The platform window is still alive
                                 self->m_vsyncUpdatePending.storeRelease(UpdateState::Ready);
                                 self->deliverUpdateRequest();
