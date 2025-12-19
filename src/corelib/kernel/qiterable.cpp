@@ -626,9 +626,18 @@ Q_STATIC_LOGGING_CATEGORY(lcSynthesizedIterableAccess, "qt.iterable.synthesized"
 /*!
     \internal
  */
-void QtPrivate::warnSynthesizedAccess(const char *text)
+void QtPrivate::warnSynthesizedIterableAccess(QtPrivate::SynthesizedAccessFunction function)
 {
-    qCWarning(lcSynthesizedIterableAccess, "%s", text);
+    switch (function) {
+    case QtPrivate::SynthesizedAccessFunction::IterableSize:
+        qCWarning(lcSynthesizedIterableAccess,
+                  "size() called on an iterable without native size accessor. This is slow");
+        break;
+    case QtPrivate::SynthesizedAccessFunction::SequenceAt:
+        qCWarning(lcSynthesizedIterableAccess,
+                  "at() called on an iterable without native indexed accessors. This is slow");
+        break;
+    }
 }
 
 QT_END_NAMESPACE

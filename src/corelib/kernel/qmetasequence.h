@@ -186,8 +186,8 @@ public:
 
 #if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
             // We shouldn't second-guess the underlying container.
-            QtPrivate::warnSynthesizedAccess(
-                    "at() called on an iterable without native indexed accessors. This is slow");
+            QtPrivate::warnSynthesizedIterableAccess(
+                    QtPrivate::SynthesizedAccessFunction::SequenceAt);
             void *it = meta.constBegin(m_iterable.constPointer());
             meta.advanceConstIterator(it, idx);
             meta.valueAtConstIterator(it, dataPtr);

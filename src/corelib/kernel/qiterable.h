@@ -61,7 +61,13 @@ namespace QtPrivate {
         }
     };
 
-    Q_CORE_EXPORT void warnSynthesizedAccess(const char *text);
+    enum class SynthesizedAccessFunction: quint8
+    {
+        IterableSize,
+        SequenceAt
+    };
+
+    Q_CORE_EXPORT void warnSynthesizedIterableAccess(SynthesizedAccessFunction function);
 }
 
 template<class Iterator, typename IteratorCategory>
@@ -502,8 +508,8 @@ public:
         // We shouldn't second-guess the underlying container, so we're not synthesizing a size.
         return -1;
 #else
-        QtPrivate::warnSynthesizedAccess(
-                "size() called on an iterable without native size accessor. This is slow");
+        QtPrivate::warnSynthesizedIterableAccess(
+                QtPrivate::SynthesizedAccessFunction::IterableSize);
 
         if (!m_metaContainer.hasConstIterator())
             return -1;
