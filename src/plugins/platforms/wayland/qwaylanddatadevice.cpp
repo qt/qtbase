@@ -206,7 +206,7 @@ void QWaylandDataDevice::data_device_drop()
         auto platformDrag =  static_cast<QWaylandDrag *>(QGuiApplicationPrivate::platformIntegration()->drag());
         platformDrag->setDropResponse(response);
         platformDrag->finishDrag();
-    } else if (m_dragOffer) {
+    } else if (m_dragOffer && response.isAccepted()) {
         m_dragOffer->finish();
     }
 }
