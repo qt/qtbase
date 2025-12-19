@@ -57,7 +57,7 @@ template<typename Referred>
 QVariant sequentialIteratorToVariant(const Referred &referred)
 {
     const auto metaSequence = referred.metaContainer();
-    return QIterablePrivate::retrieveElement(metaSequence.valueMetaType(), [&](void *dataPtr) {
+    return QtIterablePrivate::retrieveElement(metaSequence.valueMetaType(), [&](void *dataPtr) {
         metaSequence.valueAtConstIterator(referred.constIterator(), dataPtr);
     });
 }
@@ -178,7 +178,7 @@ public:
     QVariant at(qsizetype idx) const
     {
         const QMetaSequence meta = metaContainer();
-        return QIterablePrivate::retrieveElement(meta.valueMetaType(), [&](void *dataPtr) {
+        return QtIterablePrivate::retrieveElement(meta.valueMetaType(), [&](void *dataPtr) {
             if (meta.canGetValueAtIndex()) {
                 meta.valueAtIndex(constIterable(), idx, dataPtr);
                 return;

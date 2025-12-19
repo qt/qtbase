@@ -211,7 +211,7 @@ QVariantPointer<QSequentialIterator> QSequentialIterator::operator->() const
 */
 QVariant QSequentialConstIterator::operator*() const
 {
-    return QIterablePrivate::retrieveElement(metaContainer().valueMetaType(), [this](void *dataPtr) {
+    return QtIterablePrivate::retrieveElement(metaContainer().valueMetaType(), [this](void *dataPtr) {
         metaContainer().valueAtConstIterator(constIterator(), dataPtr);
     });
 }

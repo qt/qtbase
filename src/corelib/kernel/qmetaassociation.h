@@ -33,7 +33,7 @@ public:
     key_type key() const
     {
         const QMetaAssociation meta = metaContainer();
-        return QIterablePrivate::retrieveElement(meta.keyMetaType(), [&](void *dataPtr) {
+        return QtIterablePrivate::retrieveElement(meta.keyMetaType(), [&](void *dataPtr) {
             meta.keyAtIterator(constIterator(), dataPtr);
         });
     }
@@ -58,7 +58,7 @@ public:
     key_type key() const
     {
         const QMetaAssociation meta = metaContainer();
-        return QIterablePrivate::retrieveElement(meta.keyMetaType(), [&](void *dataPtr) {
+        return QtIterablePrivate::retrieveElement(meta.keyMetaType(), [&](void *dataPtr) {
             meta.keyAtConstIterator(constIterator(), dataPtr);
         });
     }
@@ -79,12 +79,12 @@ QVariant associativeIteratorToVariant(const Referred &referred)
     const auto metaAssociation = referred.metaContainer();
     const QMetaType metaType(metaAssociation.mappedMetaType());
     if (metaType.isValid(QT6_CALL_NEW_OVERLOAD)) {
-        return QIterablePrivate::retrieveElement(metaType, [&](void *dataPtr) {
+        return QtIterablePrivate::retrieveElement(metaType, [&](void *dataPtr) {
             metaAssociation.mappedAtConstIterator(referred.constIterator(), dataPtr);
         });
     }
 
-    return QIterablePrivate::retrieveElement(metaType, [&](void *dataPtr) {
+    return QtIterablePrivate::retrieveElement(metaType, [&](void *dataPtr) {
         metaAssociation.keyAtConstIterator(referred.constIterator(), dataPtr);
     });
 }
@@ -243,7 +243,7 @@ public:
     QVariant value(const QVariant &key) const
     {
         const QMetaAssociation meta = metaContainer();
-        return QIterablePrivate::retrieveElement(meta.mappedMetaType(), [&](void *dataPtr) {
+        return QtIterablePrivate::retrieveElement(meta.mappedMetaType(), [&](void *dataPtr) {
             QtPrivate::QVariantTypeCoercer coercer;
             meta.mappedAtKey(constIterable(), coercer.coerce(key, meta.keyMetaType()), dataPtr);
         });

@@ -21,7 +21,7 @@ QT_WARNING_DISABLE_DEPRECATED
 */
 QVariant QAssociativeIterator::key() const
 {
-    return QIterablePrivate::retrieveElement(
+    return QtIterablePrivate::retrieveElement(
                 metaContainer().keyMetaType(), [this](void *dataPtr) {
         metaContainer().keyAtIterator(constIterator(), dataPtr);
     });
@@ -67,7 +67,7 @@ QVariantPointer<QAssociativeIterator> QAssociativeIterator::operator->() const
 */
 QVariant QAssociativeConstIterator::key() const
 {
-    return QIterablePrivate::retrieveElement(
+    return QtIterablePrivate::retrieveElement(
                 metaContainer().keyMetaType(), [this](void *dataPtr) {
         metaContainer().keyAtConstIterator(constIterator(), dataPtr);
     });
@@ -79,7 +79,7 @@ QVariant QAssociativeConstIterator::key() const
 */
 QVariant QAssociativeConstIterator::value() const
 {
-    return QIterablePrivate::retrieveElement(
+    return QtIterablePrivate::retrieveElement(
                 metaContainer().mappedMetaType(), [this](void *dataPtr) {
         metaContainer().mappedAtConstIterator(constIterator(), dataPtr);
     });
