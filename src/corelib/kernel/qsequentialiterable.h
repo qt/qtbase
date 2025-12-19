@@ -13,16 +13,8 @@ QT_BEGIN_NAMESPACE
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 
-#if defined(Q_CC_GNU_ONLY) && Q_CC_GNU < 1300
-    // GCC < 13 doesn't accept both deprecation and visibility on the same class
-    #define QT_CORE_DEPRECATED_EXPORT_VERSION_X_6_15(text) Q_CORE_EXPORT
-#else
-    #define QT_CORE_DEPRECATED_EXPORT_VERSION_X_6_15(text) \
-        Q_CORE_EXPORT QT_DEPRECATED_VERSION_X_6_15(text)
-#endif
-
 // Keep this a single long line, otherwise syncqt doesn't create a class forwarding header
-class QT_CORE_DEPRECATED_EXPORT_VERSION_X_6_15("Use QMetaSequence's iterables and iterators instead.") QSequentialIterator : public QIterator<QMetaSequence>
+class Q_CORE_EXPORT QT_DEPRECATED_VERSION_X_6_15("Use QMetaSequence's iterables and iterators instead.") QSequentialIterator : public QIterator<QMetaSequence>
 {
 public:
     using value_type = QVariant;
@@ -38,7 +30,7 @@ public:
 };
 
 // Keep this a single long line, otherwise syncqt doesn't create a class forwarding header
-class QT_CORE_DEPRECATED_EXPORT_VERSION_X_6_15("Use QMetaSequence's iterables and iterators instead.") QSequentialConstIterator : public QConstIterator<QMetaSequence>
+class Q_CORE_EXPORT QT_DEPRECATED_VERSION_X_6_15("Use QMetaSequence's iterables and iterators instead.") QSequentialConstIterator : public QConstIterator<QMetaSequence>
 {
 public:
     using value_type = QVariant;
@@ -54,7 +46,7 @@ public:
 };
 
 // Keep this a single long line, otherwise syncqt doesn't create a class forwarding header
-class QT_CORE_DEPRECATED_EXPORT_VERSION_X_6_15("Use QMetaSequence's iterables and iterators instead.") QSequentialIterable : public QIterable<QMetaSequence>
+class Q_CORE_EXPORT QT_DEPRECATED_VERSION_X_6_15("Use QMetaSequence's iterables and iterators instead.") QSequentialIterable : public QIterable<QMetaSequence>
 {
 public:
     using iterator = QTaggedIterator<QSequentialIterator, void>;
@@ -162,8 +154,6 @@ inline QVariantRef<QSequentialIterator> &QVariantRef<QSequentialIterator>::opera
 Q_DECLARE_TYPEINFO(QSequentialIterable, Q_RELOCATABLE_TYPE);
 Q_DECLARE_TYPEINFO(QSequentialIterable::iterator, Q_RELOCATABLE_TYPE);
 Q_DECLARE_TYPEINFO(QSequentialIterable::const_iterator, Q_RELOCATABLE_TYPE);
-
-#undef QT_CORE_DEPRECATED_EXPORT_VERSION_X_6_15
 
 QT_WARNING_POP
 #endif // QT_DEPRECATED_SINCE(6, 15)

@@ -13,16 +13,8 @@ QT_BEGIN_NAMESPACE
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 
-#if defined(Q_CC_GNU_ONLY) && Q_CC_GNU < 1300
-    // GCC < 13 doesn't accept both deprecation and visibility on the same class
-    #define QT_CORE_DEPRECATED_EXPORT_VERSION_X_6_15(text) Q_CORE_EXPORT
-#else
-    #define QT_CORE_DEPRECATED_EXPORT_VERSION_X_6_15(text) \
-        Q_CORE_EXPORT QT_DEPRECATED_VERSION_X_6_15(text)
-#endif
-
 // Keep this a single long line, otherwise syncqt doesn't create a class forwarding header
-class QT_CORE_DEPRECATED_EXPORT_VERSION_X_6_15("Use QMetaAssociation's iterables and iterators instead.") QAssociativeIterator : public QIterator<QMetaAssociation>
+class Q_CORE_EXPORT QT_DEPRECATED_VERSION_X_6_15("Use QMetaAssociation's iterables and iterators instead.") QAssociativeIterator : public QIterator<QMetaAssociation>
 {
 public:
     using key_type = QVariant;
@@ -42,7 +34,7 @@ public:
 };
 
 // Keep this a single long line, otherwise syncqt doesn't create a class forwarding header
-class QT_CORE_DEPRECATED_EXPORT_VERSION_X_6_15("Use QMetaAssociation's iterables and iterators instead.") QAssociativeConstIterator : public QConstIterator<QMetaAssociation>
+class Q_CORE_EXPORT QT_DEPRECATED_VERSION_X_6_15("Use QMetaAssociation's iterables and iterators instead.") QAssociativeConstIterator : public QConstIterator<QMetaAssociation>
 {
 public:
     using key_type = QVariant;
@@ -62,7 +54,7 @@ public:
 };
 
 // Keep this a single long line, otherwise syncqt doesn't create a class forwarding header
-class QT_CORE_DEPRECATED_EXPORT_VERSION_X_6_15("Use QMetaAssociation's iterables and iterators instead.") QAssociativeIterable : public QIterable<QMetaAssociation>
+class Q_CORE_EXPORT QT_DEPRECATED_VERSION_X_6_15("Use QMetaAssociation's iterables and iterators instead.") QAssociativeIterable : public QIterable<QMetaAssociation>
 {
 public:
     using iterator = QTaggedIterator<QAssociativeIterator, void>;
@@ -180,8 +172,6 @@ inline QVariantRef<QAssociativeIterator> &QVariantRef<QAssociativeIterator>::ope
 Q_DECLARE_TYPEINFO(QAssociativeIterable, Q_RELOCATABLE_TYPE);
 Q_DECLARE_TYPEINFO(QAssociativeIterable::iterator, Q_RELOCATABLE_TYPE);
 Q_DECLARE_TYPEINFO(QAssociativeIterable::const_iterator, Q_RELOCATABLE_TYPE);
-
-#undef QT_CORE_DEPRECATED_EXPORT_VERSION_X_6_15
 
 QT_WARNING_POP
 #endif // QT_DEPRECATED_SINCE(6, 15)

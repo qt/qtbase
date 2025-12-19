@@ -1001,7 +1001,11 @@
 #  define Q_NORETURN [[noreturn]]
 #endif
 
-#if (defined(__cplusplus) && __has_cpp_attribute(deprecated)) || \
+#if defined(Q_CC_GNU_ONLY) && Q_CC_GNU < 1300
+// Leave Q_DECL_DEPRECATED defined with __attribute__ because
+// GCC 12 and earlier has issues combining __attribute__ and [[]] syntax.
+// We phrase the deprecation macros as __attribute__ so that they can be combined with visibility.
+#elif (defined(__cplusplus) && __has_cpp_attribute(deprecated)) || \
     (!defined(__cplusplus) && __has_c_attribute(deprecated))
 #  ifdef Q_DECL_DEPRECATED
 #    undef Q_DECL_DEPRECATED
