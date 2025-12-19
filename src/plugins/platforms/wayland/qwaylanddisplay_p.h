@@ -127,8 +127,8 @@ public:
 
     struct wl_surface *createSurface(void *handle);
     struct ::wl_region *createRegion(const QRegion &qregion);
-    struct ::wl_subsurface *createSubSurface(QWaylandWindow *window, QWaylandWindow *parent);
-    struct ::wp_viewport *createViewport(QWaylandWindow *window);
+    struct ::wl_subsurface *createSubSurface(QWaylandSurface *window, QWaylandSurface *parent);
+    struct ::wp_viewport *createViewport(QWaylandSurface *surface);
 
     QWaylandShellIntegration *shellIntegration() const;
     QWaylandClientBufferIntegration *clientBufferIntegration() const;

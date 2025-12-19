@@ -124,39 +124,10 @@ QWaylandShmBuffer::QWaylandShmBuffer(QWaylandDisplay *display,
 
 QWaylandShmBuffer::~QWaylandShmBuffer(void)
 {
-    delete mMarginsImage;
     if (mImage.constBits())
         munmap((void *) mImage.constBits(), mImage.sizeInBytes());
     if (mShmPool)
         wl_shm_pool_destroy(mShmPool);
-}
-
-QImage *QWaylandShmBuffer::imageInsideMargins(const QMargins &marginsIn)
-{
-    QMargins margins = marginsIn * mImage.devicePixelRatio();
-
-    if (!margins.isNull() && margins != mMargins) {
-        if (mMarginsImage) {
-            delete mMarginsImage;
-        }
-        uchar *bits = const_cast<uchar *>(mImage.constBits());
-        uchar *b_s_data = bits + margins.top() * mImage.bytesPerLine() + margins.left() * 4;
-        int b_s_width = mImage.size().width() - margins.left() - margins.right();
-        int b_s_height = mImage.size().height() - margins.top() - margins.bottom();
-        mMarginsImage = new QImage(b_s_data, b_s_width,b_s_height,mImage.bytesPerLine(),mImage.format());
-        mMarginsImage->setDevicePixelRatio(mImage.devicePixelRatio());
-    }
-    if (margins.isNull()) {
-        delete mMarginsImage;
-        mMarginsImage = nullptr;
-    }
-
-    mMargins = margins;
-    if (!mMarginsImage)
-        return &mImage;
-
-    return mMarginsImage;
-
 }
 
 QWaylandShmBackingStore::QWaylandShmBackingStore(QWindow *window, QWaylandDisplay *display)
@@ -218,11 +189,8 @@ void QWaylandShmBackingStore::beginPaint(const QRegion &region)
 {
     mPainting = true;
     waylandWindow()->setBackingStore(this);
-
-    const QMargins margins = windowDecorationMargins();
-    const QRegion regionTranslated = region.translated(margins.left(), margins.top());
     const bool bufferWasRecreated = recreateBackBufferIfNeeded();
-    updateDirtyStates(regionTranslated);
+    updateDirtyStates(region);
 
     // Although undocumented, QBackingStore::beginPaint expects the painted region
     // to be cleared before use if the window has a surface format with an alpha.
@@ -262,11 +230,9 @@ bool QWaylandShmBackingStore::scroll(const QRegion &region, int dx, int dy)
         return false;
 
     const QPoint scrollDelta(dx, dy);
-    const QMargins margins = windowDecorationMargins();
-    const QRegion adjustedRegion = region.translated(margins.left(), margins.top());
 
-    const QRegion inPlaceRegion = adjustedRegion - mBackBuffer->dirtyRegion();
-    const QRegion frontBufferRegion = adjustedRegion - inPlaceRegion;
+    const QRegion inPlaceRegion = region - mBackBuffer->dirtyRegion();
+    const QRegion frontBufferRegion = region - inPlaceRegion;
 
     if (!inPlaceRegion.isEmpty()) {
         const QRect inPlaceBoundingRect = inPlaceRegion.boundingRect();
@@ -293,7 +259,7 @@ bool QWaylandShmBackingStore::scroll(const QRegion &region, int dx, int dy)
 
     // We do not mark the source region as dirty, even though it technically has "moved".
     // This matches the behavior of other backingstore implementations using qt_scrollRectInImage.
-    updateDirtyStates(adjustedRegion.translated(scrollDelta));
+    updateDirtyStates(region.translated(scrollDelta));
 
     return true;
 }
@@ -325,15 +291,11 @@ void QWaylandShmBackingStore::flush(QWindow *window, const QRegion &region, cons
     mPendingFlush = false;
     mPendingRegion = QRegion();
 
-    if (windowDecoration() && windowDecoration()->isDirty())
-        updateDecorations();
-
     finalizeBackBuffer();
 
     mFrontBuffer = mBackBuffer;
 
-    QMargins margins = windowDecorationMargins();
-    waylandWindow()->safeCommit(mFrontBuffer, region.translated(margins.left(), margins.top()));
+    waylandWindow()->safeCommit(mFrontBuffer, region);
 }
 
 void QWaylandShmBackingStore::resize(const QSize &size, const QRegion &)
@@ -418,9 +380,8 @@ bool QWaylandShmBackingStore::recreateBackBufferIfNeeded()
     wl_display_dispatch_queue_pending(mDisplay->wl_display(), mEventQueue);
 
     bool bufferWasRecreated = false;
-    QMargins margins = windowDecorationMargins();
     qreal scale = waylandWindow()->scale();
-    const QSize sizeWithMargins = (mRequestedSize + QSize(margins.left() + margins.right(), margins.top() + margins.bottom())) * scale;
+    const QSize devicePixelSize = mRequestedSize * scale;
 
     // We look for a free buffer to draw into. If the buffer is not the last buffer we used,
     // that is mBackBuffer, and the size is the same we copy the damaged content into the new
@@ -430,7 +391,7 @@ bool QWaylandShmBackingStore::recreateBackBufferIfNeeded()
     // You can exercise the different codepaths with weston, switching between the gl and the
     // pixman renderer. With the gl renderer release events are sent early so we can effectively
     // run single buffered, while with the pixman renderer we have to use two.
-    QWaylandShmBuffer *buffer = getBuffer(sizeWithMargins, bufferWasRecreated);
+    QWaylandShmBuffer *buffer = getBuffer(devicePixelSize, bufferWasRecreated);
     while (!buffer) {
         struct ::wl_display *display = mDisplay->wl_display();
         if (wl_display_dispatch_queue(display, mEventQueue) < 0) {
@@ -441,11 +402,8 @@ bool QWaylandShmBackingStore::recreateBackBufferIfNeeded()
                 qWarning("The Wayland connection experienced a fatal error during blocking read event: %s", strerror(ecode));
             _exit(-1);
         }
-        buffer = getBuffer(sizeWithMargins, bufferWasRecreated);
+        buffer = getBuffer(devicePixelSize, bufferWasRecreated);
     }
-
-    qsizetype oldSizeInBytes = mBackBuffer ? mBackBuffer->image()->sizeInBytes() : 0;
-    qsizetype newSizeInBytes = buffer->image()->sizeInBytes();
 
     mBackBuffer = buffer;
 
@@ -456,9 +414,6 @@ bool QWaylandShmBackingStore::recreateBackBufferIfNeeded()
             buffer->setAge(buffer->age() + 1);
         }
     }
-
-    if (windowDecoration() && window()->isVisible() && oldSizeInBytes != newSizeInBytes)
-        windowDecoration()->update();
 
     return bufferWasRecreated;
 }
@@ -494,71 +449,9 @@ void QWaylandShmBackingStore::finalizeBackBuffer()
     mBackBuffer->dirtyRegion() = QRegion();
 }
 
-QImage *QWaylandShmBackingStore::entireSurface() const
-{
-    return mBackBuffer->image();
-}
-
 QImage *QWaylandShmBackingStore::contentSurface() const
 {
-    return windowDecoration() ? mBackBuffer->imageInsideMargins(windowDecorationMargins()) : mBackBuffer->image();
-}
-
-void QWaylandShmBackingStore::updateDecorations()
-{
-    QPainter decorationPainter(entireSurface());
-    decorationPainter.setCompositionMode(QPainter::CompositionMode_Source);
-    QImage sourceImage = windowDecoration()->contentImage();
-
-    qreal dp = sourceImage.devicePixelRatio();
-    int dpWidth = int(sourceImage.width() / dp);
-    int dpHeight = int(sourceImage.height() / dp);
-    QTransform sourceMatrix;
-    sourceMatrix.scale(dp, dp);
-    QRect target; // needs to be in device independent pixels
-    QRegion dirtyRegion;
-
-    //Top
-    target.setX(0);
-    target.setY(0);
-    target.setWidth(dpWidth);
-    target.setHeight(windowDecorationMargins().top());
-    decorationPainter.drawImage(target, sourceImage, sourceMatrix.mapRect(target));
-    dirtyRegion += target;
-
-    //Left
-    target.setWidth(windowDecorationMargins().left());
-    target.setHeight(dpHeight);
-    decorationPainter.drawImage(target, sourceImage, sourceMatrix.mapRect(target));
-    dirtyRegion += target;
-
-    //Right
-    target.setX(dpWidth - windowDecorationMargins().right());
-    target.setWidth(windowDecorationMargins().right());
-    decorationPainter.drawImage(target, sourceImage, sourceMatrix.mapRect(target));
-    dirtyRegion += target;
-
-    //Bottom
-    target.setX(0);
-    target.setY(dpHeight - windowDecorationMargins().bottom());
-    target.setWidth(dpWidth);
-    target.setHeight(windowDecorationMargins().bottom());
-    decorationPainter.drawImage(target, sourceImage, sourceMatrix.mapRect(target));
-    dirtyRegion += target;
-
-    updateDirtyStates(dirtyRegion);
-}
-
-QWaylandAbstractDecoration *QWaylandShmBackingStore::windowDecoration() const
-{
-    return waylandWindow()->decoration();
-}
-
-QMargins QWaylandShmBackingStore::windowDecorationMargins() const
-{
-    if (windowDecoration())
-        return windowDecoration()->margins();
-    return QMargins();
+    return mBackBuffer->image();
 }
 
 QWaylandWindow *QWaylandShmBackingStore::waylandWindow() const

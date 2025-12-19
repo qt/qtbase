@@ -657,8 +657,7 @@ void tst_tabletv2::moveEvent()
         auto *surface = xdgSurface()->m_surface;
         auto *tool = tabletTool();
         tool->sendProximityIn(tablet(), surface);
-        QMargins margins = window.frameMargins();
-        tool->sendMotion(QPointF(12 + margins.left(), 34 + margins.top()));
+        tool->sendMotion(QPointF(12, 34));
         tool->sendFrame();
     });
     QTRY_VERIFY(window.numEvents());
@@ -712,8 +711,7 @@ void tst_tabletv2::pointerType()
         auto *surface = xdgSurface()->m_surface;
         auto *tool = tabletTool();
         tool->sendProximityIn(tablet(), surface);
-        QMargins margins = window.frameMargins();
-        tool->sendMotion(QPointF(12 + margins.left(), 34 + margins.top()));
+        tool->sendMotion(QPointF(12, 34));
         tool->sendFrame();
     });
 
@@ -759,8 +757,7 @@ void tst_tabletv2::hardwareSerial()
         auto *surface = xdgSurface()->m_surface;
         auto *tool = tabletTool();
         tool->sendProximityIn(tablet(), surface);
-        QMargins margins = window.frameMargins();
-        tool->sendMotion(QPointF(12 + margins.left(), 34 + margins.top()));
+        tool->sendMotion(QPointF(12, 34));
         tool->sendFrame();
     });
 
@@ -818,8 +815,7 @@ void tst_tabletv2::buttons()
     QCOMPOSITOR_TRY_VERIFY(tablet());
     exec([&] {
         tabletTool()->sendProximityIn(tablet(), xdgSurface()->m_surface);
-        QMargins margins = window.frameMargins();
-        tabletTool()->sendMotion(QPointF(12 + margins.left(), 34 + margins.top()));
+        tabletTool()->sendMotion(QPointF(12, 34));
         tabletTool()->sendFrame();
     });
 
@@ -857,15 +853,13 @@ void tst_tabletv2::tabletEvents()
     window.show();
     QCOMPOSITOR_TRY_VERIFY(xdgSurface() && xdgSurface()->m_committedConfigureSerial);
 
-    const QPointF insideDecorations(window.frameMargins().left(), window.frameMargins().top());
-
     QCOMPOSITOR_TRY_VERIFY(tablet());
     exec([&] {
         auto *surface = xdgSurface()->m_surface;
         auto *tool = tabletTool();
         // TODO: encapsulate this into a helper function?
         tool->sendProximityIn(tablet(), surface);
-        tool->sendMotion(QPointF(12, 34) + insideDecorations);
+        tool->sendMotion(QPointF(12, 34));
         tool->sendDown();
         tool->sendPressure(65535);
         tool->sendFrame();
@@ -883,7 +877,7 @@ void tst_tabletv2::tabletEvents()
     QCOMPARE(event->yTilt(), 0);
 
     exec([&] {
-        tabletTool()->sendMotion(QPointF(45, 56) + insideDecorations);
+        tabletTool()->sendMotion(QPointF(45, 56));
         tabletTool()->sendPressure(65535/2);
         tabletTool()->sendRotation(90);
         tabletTool()->sendTilt(13, 37);
@@ -901,7 +895,7 @@ void tst_tabletv2::tabletEvents()
 
     // Verify that the values stay the same if we don't update them
     exec([&] {
-        tabletTool()->sendMotion(QPointF(10, 11) + insideDecorations); // Change position only
+        tabletTool()->sendMotion(QPointF(10, 11)); // Change position only
         tabletTool()->sendFrame();
     });
     QTRY_VERIFY(window.numEvents());

@@ -40,8 +40,6 @@ QWaylandEglWindow::~QWaylandEglWindow()
 
     if (m_waylandEglWindow)
         wl_egl_window_destroy(m_waylandEglWindow);
-
-    delete m_contentFBO;
 }
 
 QWaylandWindow::WindowType QWaylandEglWindow::windowType() const
@@ -52,13 +50,10 @@ QWaylandWindow::WindowType QWaylandEglWindow::windowType() const
 void QWaylandEglWindow::ensureSize()
 {
     // this is always called on the main thread
-    QRect rect = geometry();
-    QMargins margins = clientSideMargins();
-    QSize sizeWithMargins = (rect.size() + QSize(margins.left() + margins.right(), margins.top() + margins.bottom())) * scale();
     {
         // keep a cache of the size that is safely accessible from the render thread
         QWriteLocker lock(&m_bufferSizeLock);
-        m_bufferSize = sizeWithMargins;
+        m_bufferSize = geometry().size() * scale();
     }
 }
 
@@ -105,8 +100,6 @@ void QWaylandEglWindow::createSurface(const QSize &initialSize)
         }
 
         QSurfaceFormat fmt = window()->requestedFormat();
-        if (mDisplay->supportsWindowDecoration())
-            fmt.setAlphaBufferSize(8);
         EGLConfig eglConfig = q_configFromGLFormat(m_clientBufferIntegration->eglDisplay(), fmt);
         setFormat(q_glFormatFromConfig(m_clientBufferIntegration->eglDisplay(), eglConfig, fmt));
 
@@ -128,13 +121,6 @@ EGLSurface QWaylandEglWindow::eglSurface() const
     return m_eglSurface;
 }
 
-QRect QWaylandEglWindow::contentsRect() const
-{
-    QRect r = geometry();
-    QMargins m = clientSideMargins();
-    return QRect(m.left(), m.bottom(), r.width(), r.height());
-}
-
 void QWaylandEglWindow::invalidateSurface()
 {
     QMutexLocker lock (&m_eglSurfaceLock);
@@ -147,42 +133,11 @@ void QWaylandEglWindow::invalidateSurface()
         wl_egl_window_destroy(m_waylandEglWindow);
         m_waylandEglWindow = nullptr;
     }
-    delete m_contentFBO;
-    m_contentFBO = nullptr;
 }
 
 QMutex* QWaylandEglWindow::eglSurfaceLock()
 {
     return &m_eglSurfaceLock;
-}
-GLuint QWaylandEglWindow::contentFBO() const
-{
-    if (!decoration())
-        return 0;
-
-    if (m_resize || !m_contentFBO) {
-        QOpenGLFramebufferObject *old = m_contentFBO;
-        QSize fboSize = geometry().size() * scale();
-        m_contentFBO = new QOpenGLFramebufferObject(fboSize.width(), fboSize.height(), QOpenGLFramebufferObject::CombinedDepthStencil);
-
-        delete old;
-        m_resize = false;
-    }
-
-    return m_contentFBO->handle();
-}
-
-GLuint QWaylandEglWindow::contentTexture() const
-{
-    return m_contentFBO->texture();
-}
-
-void QWaylandEglWindow::bindContentFBO()
-{
-    if (decoration()) {
-        contentFBO();
-        m_contentFBO->bind();
-    }
 }
 
 }

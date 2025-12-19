@@ -76,6 +76,7 @@ qt_internal_add_module(WaylandClient
         qwaylandshellsurface.cpp qwaylandshellsurface_p.h
         qwaylandshm.cpp qwaylandshm_p.h
         qwaylandshmbackingstore.cpp qwaylandshmbackingstore_p.h
+        qwaylanddecorationhandler.cpp qwaylanddecorationhandler_p.h
         qwaylandshmwindow.cpp qwaylandshmwindow_p.h
         qwaylandsubsurface.cpp qwaylandsubsurface_p.h
         qwaylandsurface.cpp qwaylandsurface_p.h

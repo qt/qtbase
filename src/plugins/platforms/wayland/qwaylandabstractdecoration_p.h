@@ -63,17 +63,18 @@ public:
 
     void update();
     bool isDirty() const;
+    void resetDirty();
+    virtual void paintTop(QPainter *painter) = 0;
+    virtual void paintLeft(QPainter *painter) = 0;
+    virtual void paintRight(QPainter *painter) = 0;
+    virtual void paintBottom(QPainter *painter) = 0;
 
     virtual QMargins margins(MarginsType marginsType = Full) const = 0;
 
     QWindow *window() const;
-    const QImage &contentImage();
 
     virtual bool handleMouse(QWaylandInputDevice *inputDevice, const QPointF &local, const QPointF &global,Qt::MouseButtons b,Qt::KeyboardModifiers mods) = 0;
     virtual bool handleTouch(QWaylandInputDevice *inputDevice, const QPointF &local, const QPointF &global, QEventPoint::State state, Qt::KeyboardModifiers mods) = 0;
-
-protected:
-    virtual void paint(QPaintDevice *device) = 0;
 
     void setMouseButtons(Qt::MouseButtons mb);
 

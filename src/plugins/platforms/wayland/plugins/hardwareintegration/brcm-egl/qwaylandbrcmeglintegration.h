@@ -35,7 +35,6 @@ public:
     void initialize(QWaylandDisplay *waylandDisplay) override;
 
     bool supportsThreadedOpenGL() const override { return true; }
-    bool supportsWindowDecoration() const override { return false; }
 
     QWaylandWindow *createEglWindow(QWindow *window);
     QPlatformOpenGLContext *createPlatformOpenGLContext(const QSurfaceFormat &glFormat, QPlatformOpenGLContext *share) const override;

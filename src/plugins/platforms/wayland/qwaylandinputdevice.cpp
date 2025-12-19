@@ -35,6 +35,7 @@
 #include "qwaylandinputmethodcontext_p.h"
 #include "qwaylandcallback_p.h"
 #include "qwaylandcursorsurface_p.h"
+#include "qwaylanddecorationhandler_p.h"
 
 #include <QtGui/private/qpixmap_raster_p.h>
 #include <QtGui/private/qguiapplication_p.h>
@@ -582,21 +583,16 @@ void QWaylandInputDevice::removeMouseButtonFromState(Qt::MouseButton button)
 
 QWaylandWindow *QWaylandInputDevice::pointerFocus() const
 {
-    //TODO GUARD!
     return mPointer && mPointer->focusSurface() ? mPointer->focusSurface()->waylandWindow() : nullptr;
 }
 
 QWaylandWindow *QWaylandInputDevice::keyboardFocus() const
 {
-    //GUARD!
-
     return mKeyboard && mKeyboard->focusSurface() ? mKeyboard->focusSurface()->waylandWindow() : nullptr;
 }
 
 QWaylandWindow *QWaylandInputDevice::touchFocus() const
 {
-    //GUARD!
-
     return mTouch && mTouch->mFocus ? mTouch->mFocus->waylandWindow() : nullptr;
 }
 
@@ -707,8 +703,8 @@ void QWaylandInputDevice::Pointer::pointer_enter(uint32_t serial, struct wl_surf
     mSurfacePos = QPointF(wl_fixed_to_double(sx), wl_fixed_to_double(sy));
     if (auto *ww = surface->waylandWindow())
         mGlobalPos = ww->mapToGlobalF(mSurfacePos);
-    else
-        return;
+    else if (auto *decoration = surface->decoration())
+        mGlobalPos = decoration->mapToGlobal(mSurfacePos);
 
     mParent->mSerial = serial;
     mEnterSerial = serial;
@@ -780,8 +776,8 @@ void QWaylandInputDevice::Pointer::pointer_motion(uint32_t time, wl_fixed_t surf
     QPointF global;
     if (auto *ww = surface->waylandWindow())
         global = ww->mapToGlobalF(pos);
-    else
-        return;
+    else if (auto *decoration = surface->decoration())
+        global = decoration->mapToGlobal(pos);
 
     mSurfacePos = pos;
     mGlobalPos = global;
@@ -918,6 +914,8 @@ void QWaylandInputDevice::Pointer::leavePointers()
 {
     if (auto *surface = focusSurface()) {
         LeaveEvent e(focusSurface(), mSurfacePos, mGlobalPos);
+        if (auto *decoration = surface->decoration())
+            decoration->handleMouse(mParent, e);
         if (auto *ww = surface->waylandWindow())
             ww->handleMouse(mParent, e);
     }
@@ -1223,6 +1221,8 @@ void QWaylandInputDevice::Pointer::flushFrameEvent()
 
     if (auto *event = mFrameData.event.get()) {
         if (auto surface = event->surface) {
+            if (auto *decoration = surface->decoration())
+                decoration->handleMouse(mParent, *event);
             if (auto *ww = surface->waylandWindow())
                 ww->handleMouse(mParent, *event);
         } else if (mFrameData.event->type == QEvent::MouseButtonRelease) {
@@ -1327,7 +1327,10 @@ void QWaylandInputDevice::Keyboard::keyboard_leave(uint32_t serial, struct wl_su
         return;
     }
 
-    QWaylandWindow *window = QWaylandWindow::fromWlSurface(surface);
+    auto qtSurface = QWaylandSurface::fromWlSurface(surface);
+    if (!qtSurface)
+        return;
+    QWaylandWindow *window = qtSurface->waylandWindow();
     if (!window)
         return;
 
@@ -1584,8 +1587,7 @@ void QWaylandInputDevice::handleTouchPoint(int id, QEventPoint::State state, con
             return;
 
         tp.area = QRectF(0, 0, 8, 8);
-        const QPointF localPosition = ww->mapFromWlSurface(surfacePosition);
-        const QPointF globalPosition = ww->mapToGlobalF(localPosition);
+        const QPointF globalPosition = ww->mapToGlobalF(surfacePosition);
         tp.area.moveCenter(globalPosition);
     }
 
@@ -1631,17 +1633,6 @@ void QWaylandInputDevice::Touch::touch_frame()
         // If the list can be empty, call isEmpty() before calling this function.
         // See: https://doc.qt.io/qt-5.15/qlist.html#last
         if (mPendingTouchPoints.empty())
-            return;
-        const QWindowSystemInterface::TouchPoint &tp = mPendingTouchPoints.constLast();
-        // When the touch event is received, the global pos is calculated with the margins
-        // in mind. Now we need to adjust again to get the correct local pos back.
-        auto *ww = mFocus->waylandWindow();
-        if (!ww)
-            return;
-        QMargins margins = ww->clientSideMargins();
-        QPoint p = tp.area.center().toPoint();
-        QPointF localPos(ww->mapFromGlobal(p) + QPoint(margins.left(), margins.top()));
-        if (ww->touchDragDecoration(mParent, localPos, tp.area.center(), tp.state, mParent->modifiers()))
             return;
     }
 

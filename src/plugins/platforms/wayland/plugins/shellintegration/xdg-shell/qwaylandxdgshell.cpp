@@ -395,6 +395,10 @@ bool QWaylandXdgSurface::showWindowMenu(QWaylandInputDevice *seat)
 {
     if (m_toplevel && m_toplevel->isInitialized()) {
         QPoint position = seat->pointerSurfacePosition().toPoint();
+        if (seat->pointer()->focusSurface()->decoration()) {
+            const QMargins margins = m_window->clientSideMargins();
+            position -= QPoint(margins.left(), margins.top());
+        }
         m_toplevel->show_window_menu(seat->wl_seat(), seat->serial(), position.x(), position.y());
         return true;
     }

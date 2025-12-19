@@ -104,7 +104,6 @@ public:
         backingStore->flush(rect);
     }
 
-    QPoint frameOffset() const { return QPoint(frameMargins().left(), frameMargins().top()); }
 
     int focusInEventCount = 0;
     int focusOutEventCount = 0;
@@ -258,7 +257,7 @@ void tst_WaylandClient::events()
 
     const int touchId = 0;
     exec([&] {
-        touch()->sendDown(s, window.frameOffset() + QPoint(10, 10), touchId);
+        touch()->sendDown(s, QPoint(10, 10), touchId);
     });
     // Note: wl_touch.frame should not be the last event in a test until QTBUG-66563 is fixed.
     // See also: QTBUG-66537
@@ -276,11 +275,11 @@ void tst_WaylandClient::events()
     QPoint mousePressPos(16, 16);
     QCOMPARE(window.mousePressEventCount, 0);
     exec([&] {
-        pointer()->sendEnter(s, window.frameOffset() + mousePressPos);
+        pointer()->sendEnter(s, mousePressPos);
         pointer()->sendFrame(client());
-        pointer()->sendMotion(client(), window.frameOffset() + mousePressPos / 2);
+        pointer()->sendMotion(client(), mousePressPos / 2);
         pointer()->sendFrame(client());
-        pointer()->sendMotion(client(), window.frameOffset() + mousePressPos);
+        pointer()->sendMotion(client(), mousePressPos);
         pointer()->sendFrame(client());
         pointer()->sendButton(client(), BTN_LEFT, Pointer::button_state_pressed);
         pointer()->sendFrame(client());
@@ -309,8 +308,8 @@ void tst_WaylandClient::backingStore()
 
     const QColor color = Qt::magenta; // see expose event in TestWindow
 
-    QTRY_COMPARE(s->m_image.size(), window.frameGeometry().size());
-    QTRY_COMPARE(s->m_image.pixel(window.frameMargins().left(), window.frameMargins().top()), color.rgba());
+    QTRY_COMPARE(s->m_image.size(), window.size());
+    QTRY_COMPARE(s->m_image.pixel(0, 0), color.rgba());
 
     window.hide();
 
@@ -331,7 +330,6 @@ public:
         m_dragIcon = QPixmap::fromImage(cursorImage);
     }
     ~DndWindow() override{}
-    QPoint frameOffset() const { return QPoint(frameMargins().left(), frameMargins().top()); }
     bool dragStarted = false;
 
 protected:
@@ -364,7 +362,6 @@ public:
 
     Surface *m_surface = nullptr;
     TestCompositor *m_compositor = nullptr;
-    QPoint m_frameOffset;
 
 public slots:
     void finishMouseDrag();
@@ -383,8 +380,8 @@ void DNDTest::touchDrag()
 {
     m_compositor->exec([&] {
         m_compositor->dataDevice()->sendDataOffer(m_surface->resource()->client());
-        m_compositor->dataDevice()->sendEnter(m_surface, m_frameOffset + QPoint(20, 20));
-        m_compositor->dataDevice()->sendMotion(m_surface, m_frameOffset + QPoint(21, 21));
+        m_compositor->dataDevice()->sendEnter(m_surface, QPoint(20, 20));
+        m_compositor->dataDevice()->sendMotion(m_surface, QPoint(21, 21));
         m_compositor->dataDevice()->sendDrop(m_surface);
         m_compositor->dataDevice()->sendLeave(m_surface);
     });
@@ -404,7 +401,6 @@ void tst_WaylandClient::touchDrag()
     DNDTest test;
     test.m_surface = s;
     test.m_compositor = this;
-    test.m_frameOffset = window.frameOffset();
 
     exec([&] {
         QObject::connect(dataDevice(), &DataDevice::dragStarted,
@@ -418,9 +414,9 @@ void tst_WaylandClient::touchDrag()
 
     const int touchId = 0;
     exec([&] {
-        touch()->sendDown(s, window.frameOffset() + QPoint(10, 10), touchId);
+        touch()->sendDown(s, QPoint(10, 10), touchId);
         touch()->sendFrame(client());
-        touch()->sendMotion(client(), window.frameOffset() + QPoint(20, 20), touchId);
+        touch()->sendMotion(client(), QPoint(20, 20), touchId);
         touch()->sendFrame(client());
     });
 
@@ -454,16 +450,16 @@ void tst_WaylandClient::mouseDrag()
 
     QPoint mousePressPos(16, 16);
     exec([&] {
-        pointer()->sendEnter(s, window.frameOffset() + mousePressPos);
+        pointer()->sendEnter(s, mousePressPos);
         pointer()->sendFrame(client());
-        pointer()->sendMotion(client(), window.frameOffset() + mousePressPos);
+        pointer()->sendMotion(client(), mousePressPos);
         pointer()->sendFrame(client());
         pointer()->sendButton(client(), BTN_LEFT, Pointer::button_state_pressed);
         pointer()->sendFrame(client());
 
         dataDevice()->sendDataOffer(s->resource()->client());
-        dataDevice()->sendEnter(s, window.frameOffset() + QPoint(20, 20));
-        dataDevice()->sendMotion(s, window.frameOffset() + QPoint(21, 21));
+        dataDevice()->sendEnter(s, QPoint(20, 20));
+        dataDevice()->sendMotion(s, QPoint(21, 21));
     });
 
     QTRY_VERIFY(window.dragStarted);
@@ -525,9 +521,9 @@ void tst_WaylandClient::hiddenPopupParent()
     QPoint mousePressPos(16, 16);
     QCOMPARE(toplevel.mousePressEventCount, 0);
     exec([&] {
-        pointer()->sendEnter(s, toplevel.frameOffset() + mousePressPos);
+        pointer()->sendEnter(s, mousePressPos);
         pointer()->sendFrame(client());
-        pointer()->sendMotion(client(), toplevel.frameOffset() + mousePressPos);
+        pointer()->sendMotion(client(), mousePressPos);
         pointer()->sendFrame(client());
         pointer()->sendButton(client(), BTN_LEFT, Pointer::button_state_pressed);
         pointer()->sendFrame(client());

@@ -293,29 +293,24 @@ struct ::wl_region *QWaylandDisplay::createRegion(const QRegion &qregion)
     return region;
 }
 
-::wl_subsurface *QWaylandDisplay::createSubSurface(QWaylandWindow *window, QWaylandWindow *parent)
+::wl_subsurface *QWaylandDisplay::createSubSurface(QWaylandSurface *window, QWaylandSurface *parent)
 {
     if (!mGlobals.subCompositor) {
         qCWarning(lcQpaWayland) << "Can't create subsurface, not supported by the compositor.";
         return nullptr;
     }
 
-    // Make sure we don't pass NULL surfaces to libwayland (crashes)
-    Q_ASSERT(parent->wlSurface());
-    Q_ASSERT(window->wlSurface());
-
-    return mGlobals.subCompositor->get_subsurface(window->wlSurface(), parent->wlSurface());
+    return mGlobals.subCompositor->get_subsurface(window->object(), parent->object());
 }
 
-::wp_viewport *QWaylandDisplay::createViewport(QWaylandWindow *window)
+::wp_viewport *QWaylandDisplay::createViewport(QWaylandSurface *surface)
 {
     if (!mGlobals.viewporter) {
         qCWarning(lcQpaWayland) << "Can't create wp_viewport, not supported by the compositor.";
         return nullptr;
     }
 
-    Q_ASSERT(window->wlSurface());
-    return mGlobals.viewporter->get_viewport(window->wlSurface());
+    return mGlobals.viewporter->get_viewport(surface->object());
 }
 
 QWaylandShellIntegration *QWaylandDisplay::shellIntegration() const
@@ -976,13 +971,10 @@ bool QWaylandDisplay::supportsWindowDecoration() const
     if (disabled)
         return false;
 
-    // Don't initialize client buffer integration just to check whether it can have a decoration.
-    if (!mWaylandIntegration->mClientBufferIntegrationInitialized)
-        return true;
+    if (!mGlobals.subCompositor)
+        return false;
 
-    // We can do software-rendered decorations, only disable them if the integration explicitly says it can't.
-    static bool integrationSupport = !clientBufferIntegration() || clientBufferIntegration()->supportsWindowDecoration();
-    return integrationSupport;
+    return true;
 }
 
 QWaylandWindow *QWaylandDisplay::lastInputWindow() const

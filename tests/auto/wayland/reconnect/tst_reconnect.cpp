@@ -74,7 +74,6 @@ public:
         ++touchEventCount;
     }
 
-    QPoint frameOffset() const { return QPoint(frameMargins().left(), frameMargins().top()); }
 
     int focusInEventCount = 0;
     int focusOutEventCount = 0;

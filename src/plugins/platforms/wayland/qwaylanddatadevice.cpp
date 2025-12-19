@@ -220,13 +220,16 @@ void QWaylandDataDevice::data_device_enter(uint32_t serial, wl_surface *surface,
 {
     const qreal x = wl_fixed_to_double(x_fixed);
     const qreal y = wl_fixed_to_double(y_fixed);
+    auto *dragWaylandSurface = surface ? QWaylandSurface::fromWlSurface(surface) : nullptr;
+    if (!dragWaylandSurface)
+        return;
 
-    auto *dragWaylandWindow = surface ? QWaylandWindow::fromWlSurface(surface) : nullptr;
+    auto dragWaylandWindow = dragWaylandSurface->waylandWindow();
     if (!dragWaylandWindow)
         return; // Ignore foreign surfaces
 
     m_dragWindow = dragWaylandWindow->window();
-    m_dragPoint = calculateDragPosition(x, y, m_dragWindow);
+    m_dragPoint = QPoint(x, y);
     m_enterSerial = serial;
 
     QMimeData *dragData = nullptr;
@@ -279,7 +282,7 @@ void QWaylandDataDevice::data_device_motion(uint32_t time, wl_fixed_t x_fixed, w
     if (!m_dragWindow)
         return;
 
-    m_dragPoint = calculateDragPosition(x, y, m_dragWindow);
+    m_dragPoint = QPoint(x, y);
 
     QMimeData *dragData = nullptr;
     Qt::DropActions supportedActions;
@@ -332,19 +335,6 @@ void QWaylandDataDevice::dragSourceCancelled()
         m_toplevelDrag->destroy();
         m_toplevelDrag = nullptr;
     }
-}
-
-QPoint QWaylandDataDevice::calculateDragPosition(qreal x, qreal y, QWindow *wnd) const
-{
-    QPoint pnt(x, y);
-    if (wnd) {
-        QWaylandWindow *wwnd = static_cast<QWaylandWindow*>(m_dragWindow->handle());
-        if (wwnd && wwnd->decoration()) {
-            pnt -= QPoint(wwnd->decoration()->margins().left(),
-                          wwnd->decoration()->margins().top());
-        }
-    }
-    return pnt;
 }
 
 void QWaylandDataDevice::sendResponse(Qt::DropActions supportedActions, const QPlatformDragQtResponse &response)

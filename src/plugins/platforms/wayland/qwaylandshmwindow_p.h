@@ -31,7 +31,6 @@ public:
 
     WindowType windowType() const override;
 
-    bool createDecoration() override;
 };
 
 }

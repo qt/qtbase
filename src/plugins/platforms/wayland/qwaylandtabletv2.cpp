@@ -539,13 +539,18 @@ void QWaylandTabletToolV2::zwp_tablet_tool_v2_frame(uint32_t time)
         return;
     }
 
-    QWaylandWindow *waylandWindow = QWaylandWindow::fromWlSurface(m_pending.proximitySurface->object());
+    // Decoration subsurfaces don't have a QWaylandWindow, so ignore tablet events there for now.
+    QWaylandWindow *waylandWindow = m_pending.proximitySurface->waylandWindow();
+    if (!waylandWindow) {
+        qCDebug(lcQpaWayland) << "Ignoring tablet event for surface without QWaylandWindow";
+        return;
+    }
     QWindow *window = waylandWindow->window();
     const bool needsTabletEvent = !(m_pending == m_applied);
 
     if (!m_applied.proximitySurface || needsTabletEvent) {
         ulong timestamp = time;
-        const QPointF localPosition = waylandWindow->mapFromWlSurface(m_pending.surfacePosition);
+        const QPointF localPosition = m_pending.surfacePosition;
         const QPointF globalPosition = waylandWindow->mapToGlobalF(localPosition);
         const Qt::MouseButtons buttons = m_pending.buttons |
                 (m_pending.down ? Qt::MouseButton::LeftButton : Qt::MouseButton::NoButton);
@@ -564,20 +569,11 @@ void QWaylandTabletToolV2::zwp_tablet_tool_v2_frame(uint32_t time)
         }
 
         if (needsTabletEvent) {
-            // do not use localPosition here since that is in Qt window coordinates
-            // but we need surface coordinates to include the decoration
-            bool decorationHandledEvent = waylandWindow->handleTabletEventDecoration(
-                    m_tabletSeat->seat(), m_pending.surfacePosition,
-                    window->mapToGlobal(m_pending.surfacePosition), buttons,
-                    m_tabletSeat->seat()->modifiers());
-
-            if (!decorationHandledEvent) {
-                QWindowSystemInterface::handleTabletEvent(window, timestamp, this, localPosition, globalPosition,
-                                                          buttons, pressure,
-                                                          xTilt, yTilt, tangentialPressure, rotation, z,
-                                                          m_tabletSeat->seat()->modifiers());
-                m_tabletSeat->seat()->display()->waylandCursor()->setPosFromEnterEvent(globalPosition.toPoint());
-            }
+            QWindowSystemInterface::handleTabletEvent(window, timestamp, this, localPosition, globalPosition,
+                                                      buttons, pressure,
+                                                      xTilt, yTilt, tangentialPressure, rotation, z,
+                                                      m_tabletSeat->seat()->modifiers());
+            m_tabletSeat->seat()->display()->waylandCursor()->setPosFromEnterEvent(globalPosition.toPoint());
         }
     }
 

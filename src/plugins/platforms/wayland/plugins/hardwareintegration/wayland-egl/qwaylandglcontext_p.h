@@ -18,7 +18,6 @@ class QOpenGLTextureCache;
 namespace QtWaylandClient {
 
 class QWaylandEglWindow;
-class DecorationsBlitter;
 
 class Q_WAYLANDCLIENT_EXPORT QWaylandGLContext : public QEGLPlatformContext
 {
@@ -27,7 +26,6 @@ public:
     QWaylandGLContext(EGLDisplay eglDisplay, QWaylandDisplay *display, const QSurfaceFormat &format, QPlatformOpenGLContext *share);
     ~QWaylandGLContext();
 
-    void initialize() override;
     void swapBuffers(QPlatformSurface *surface) override;
 
     bool makeCurrent(QPlatformSurface *surface) override;
@@ -35,8 +33,6 @@ public:
 
     void beginFrame() override;
     void endFrame() override;
-
-    GLuint defaultFramebufferObject(QPlatformSurface *surface) const override;
 
 protected:
     EGLSurface eglSurfaceForPlatformSurface(QPlatformSurface *surface) override;
@@ -46,8 +42,6 @@ protected:
 
 private:
     QWaylandDisplay *m_display = nullptr;
-    EGLContext m_decorationsContext = EGL_NO_CONTEXT;
-    DecorationsBlitter *m_blitter = nullptr;
     bool m_supportNonBlockingSwap = true;
     EGLenum m_api;
     wl_surface *m_wlSurface = nullptr;

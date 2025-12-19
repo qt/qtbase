@@ -84,9 +84,6 @@ private Q_SLOTS:
 #endif
 
 private:
-#if QT_CONFIG(draganddrop)
-    QPoint calculateDragPosition(qreal x, qreal y, QWindow *wnd) const;
-#endif
     void sendResponse(Qt::DropActions supportedActions, const QPlatformDragQtResponse &response);
 
     static int dropActionsToWl(Qt::DropActions dropActions);

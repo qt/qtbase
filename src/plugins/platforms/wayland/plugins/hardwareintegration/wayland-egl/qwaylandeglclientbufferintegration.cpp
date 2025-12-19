@@ -106,11 +106,6 @@ bool QWaylandEglClientBufferIntegration::supportsThreadedOpenGL() const
     return m_supportsThreading;
 }
 
-bool QWaylandEglClientBufferIntegration::supportsWindowDecoration() const
-{
-    return true;
-}
-
 QWaylandWindow *QWaylandEglClientBufferIntegration::createEglWindow(QWindow *window)
 {
     return new QWaylandEglWindow(window, m_display);
@@ -119,8 +114,6 @@ QWaylandWindow *QWaylandEglClientBufferIntegration::createEglWindow(QWindow *win
 QPlatformOpenGLContext *QWaylandEglClientBufferIntegration::createPlatformOpenGLContext(const QSurfaceFormat &glFormat, QPlatformOpenGLContext *share) const
 {
     QSurfaceFormat fmt = glFormat;
-    if (m_display->supportsWindowDecoration())
-        fmt.setAlphaBufferSize(8);
     return new QWaylandGLContext(m_eglDisplay, m_display, fmt, share);
 }
 

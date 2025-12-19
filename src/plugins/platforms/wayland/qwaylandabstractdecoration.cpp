@@ -65,46 +65,6 @@ void QWaylandAbstractDecoration::setWaylandWindow(QWaylandWindow *window)
     d->m_wayland_window = window;
 }
 
-// Creates regions like this on the outside of a rectangle with inner size \a size
-// -----
-// |   |
-// -----
-// I.e. the top and bottom extends into the corners
-static QRegion marginsRegion(const QSize &size, const QMargins &margins)
-{
-    QRegion r;
-
-    r += QRect(0, 0, size.width(), margins.top()); // top
-    r += QRect(0, size.height()-margins.bottom(), size.width(), margins.bottom()); //bottom
-    r += QRect(0, margins.top(), margins.left(), size.height()); //left
-    r += QRect(size.width()-margins.left(), margins.top(), margins.right(), size.height()-margins.top()); // right
-    return r;
-}
-
-const QImage &QWaylandAbstractDecoration::contentImage()
-{
-    Q_D(QWaylandAbstractDecoration);
-    if (d->m_isDirty) {
-        // Update the decoration backingstore
-
-        const qreal bufferScale = waylandWindow()->scale();
-        const QSize imageSize = waylandWindow()->surfaceSize() * bufferScale;
-        d->m_decorationContentImage = QImage(imageSize, QImage::Format_ARGB32_Premultiplied);
-        // Only scale by buffer scale, not QT_SCALE_FACTOR etc.
-        d->m_decorationContentImage.setDevicePixelRatio(bufferScale);
-        d->m_decorationContentImage.fill(Qt::transparent);
-        this->paint(&d->m_decorationContentImage);
-
-        QRegion damage = marginsRegion(waylandWindow()->surfaceSize(), waylandWindow()->frameMargins());
-        for (QRect r : damage)
-            waylandWindow()->damage(r);
-
-        d->m_isDirty = false;
-    }
-
-    return d->m_decorationContentImage;
-}
-
 void QWaylandAbstractDecoration::update()
 {
     Q_D(QWaylandAbstractDecoration);
@@ -164,6 +124,12 @@ bool QWaylandAbstractDecoration::isDirty() const
 {
     Q_D(const QWaylandAbstractDecoration);
     return d->m_isDirty;
+}
+
+void QWaylandAbstractDecoration::resetDirty()
+{
+    Q_D(QWaylandAbstractDecoration);
+    d->m_isDirty = false;
 }
 
 QWindow *QWaylandAbstractDecoration::window() const

@@ -40,8 +40,6 @@ public:
     int scale() const override { return int(mImage.devicePixelRatio()); }
     QImage *image() { return &mImage; }
 
-    QImage *imageInsideMargins(const QMargins &margins);
-
     QRegion &dirtyRegion() { return mDirtyRegion; }
 
     uint age() const { return mAge; }
@@ -52,8 +50,6 @@ private:
 
     QImage mImage;
     struct wl_shm_pool *mShmPool = nullptr;
-    QMargins mMargins;
-    QImage *mMarginsImage = nullptr;
     QRegion mDirtyRegion;
     uint mAge = 0;
 };
@@ -71,10 +67,6 @@ public:
     void endPaint() override;
     bool scroll(const QRegion &region, int dx, int dy) override;
 
-    QWaylandAbstractDecoration *windowDecoration() const;
-
-    QMargins windowDecorationMargins() const;
-    QImage *entireSurface() const;
     QImage *contentSurface() const;
     bool recreateBackBufferIfNeeded();
     void finalizeBackBuffer();
@@ -90,7 +82,6 @@ private:
     Q_DISABLE_COPY(QWaylandShmBackingStore)
 
     void updateDirtyStates(const QRegion &region);
-    void updateDecorations();
     QWaylandShmBuffer *getBuffer(const QSize &size, bool &bufferWasRecreated);
 
     QWaylandDisplay *mDisplay = nullptr;

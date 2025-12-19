@@ -49,7 +49,6 @@ public:
     virtual bool isValid() const { return true; }
 
     virtual bool supportsThreadedOpenGL() const { return false; }
-    virtual bool supportsWindowDecoration() const { return false; }
 
     virtual QWaylandWindow *createEglWindow(QWindow *window) = 0;
     virtual bool canCreatePlatformOffscreenSurface() const { return false; }

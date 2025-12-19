@@ -21,13 +21,17 @@
 #include <QtWaylandClient/private/qwayland-wayland.h>
 #include <QtCore/private/qglobal_p.h>
 
+#include <variant>
+
 QT_BEGIN_NAMESPACE
 
 namespace QtWaylandClient {
 
 class QWaylandScreen;
-class QWaylandWindow;
+class QWaylandSurfaceInputHandler;
 class QWaylandDisplay;
+class QWaylandWindow;
+class QWaylandDecorationSurface;
 
 class QWaylandSurface : public QObject, public QtWayland::wl_surface
 {
@@ -36,7 +40,18 @@ public:
     explicit QWaylandSurface(QWaylandDisplay *display);
     ~QWaylandSurface() override;
     QWaylandScreen *oldestEnteredScreen();
-    QWaylandWindow *waylandWindow() const { return m_window; }
+    QWaylandDecorationSurface *decoration() const
+    {
+        if (auto decoration = std::get_if<QWaylandDecorationSurface *>(&m_container))
+            return *decoration;
+        return nullptr;
+    }
+    QWaylandWindow *waylandWindow() const
+    {
+        if (auto window = std::get_if<QWaylandWindow *>(&m_container))
+            return *window;
+        return nullptr;
+    }
     std::optional<int32_t> preferredBufferScale() const { return m_preferredBufferScale; }
     std::optional<wl_output_transform> preferredBufferTransform() const { return m_preferredBufferTransform; }
 
@@ -57,11 +72,13 @@ protected:
     void surface_preferred_buffer_transform(uint32_t transform) override;
 
     QList<QWaylandScreen *> m_screens; //As seen by wl_surface.enter/leave events. Chronological order.
-    QWaylandWindow *m_window = nullptr;
+
+    std::variant<QWaylandWindow *, QWaylandDecorationSurface *> m_container = static_cast<QWaylandWindow *>(nullptr); // what this surface is for
     std::optional<int32_t> m_preferredBufferScale;
     std::optional<wl_output_transform> m_preferredBufferTransform;
 
-    friend class QWaylandWindow; // TODO: shouldn't need to be friends
+    friend class QWaylandWindow;
+    friend class QWaylandDecorationSurface;
 };
 
 } // namespace QtWaylandClient

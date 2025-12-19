@@ -27,14 +27,8 @@ public:
 
     void createSurface(const QSize &initialSize);
     void updateSurfaceSize(const QSize &bufferSize);
-    QRect contentsRect() const;
 
     EGLSurface eglSurface() const;
-    GLuint contentFBO() const;
-    GLuint contentTexture() const;
-    bool needToUpdateContentFBO() const { return decoration() && (m_resize || !m_contentFBO); }
-
-    void bindContentFBO();
 
     void invalidateSurface() override;
 
@@ -48,7 +42,6 @@ private:
     QMutex m_eglSurfaceLock;
     EGLSurface m_eglSurface = EGL_NO_SURFACE;
     mutable bool m_resize = false;
-    mutable QOpenGLFramebufferObject *m_contentFBO = nullptr;
 
     // Size of the buffer used by QWaylandWindow
     // This is always written to from the main thread, potentially read from the rendering thread

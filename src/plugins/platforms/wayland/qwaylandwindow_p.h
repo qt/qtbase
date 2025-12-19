@@ -66,6 +66,7 @@ class QWaylandViewport;
 class ColorManagementSurface;
 class Cutouts;
 class ImageDescription;
+class QWaylandDecorationHandler;
 
 class Q_WAYLANDCLIENT_EXPORT QWaylandWindow : public QNativeInterface::Private::QWaylandWindow,
                                               public QPlatformWindow
@@ -131,10 +132,8 @@ public:
     QMargins frameMargins() const override;
     QMargins clientSideMargins() const;
     void setCustomMargins(const QMargins &margins) override;
-    QSize surfaceSize() const;
     QMargins windowContentMargins() const;
     QRect windowContentGeometry() const;
-    QPointF mapFromWlSurface(const QPointF &surfacePosition) const;
 
     QMargins safeAreaMargins() const override;
     void setSafeAreaMargins(const QMargins &margins);
@@ -190,14 +189,9 @@ public:
     void handlePinchGesture(QWaylandInputDevice *inputDevice,
                             const QWaylandPointerGesturePinchEvent &e);
 #endif
+    QPointF mapInputToGlobal(const QPointF &pointIn);
 
-    bool touchDragDecoration(QWaylandInputDevice *inputDevice, const QPointF &local, const QPointF &global,
-                             QEventPoint::State state, Qt::KeyboardModifiers mods);
-    bool handleTabletEventDecoration(QWaylandInputDevice *inputDevice, const QPointF &local,
-                                     const QPointF &global, Qt::MouseButtons buttons,
-                                     Qt::KeyboardModifiers modifiers);
-
-    virtual bool createDecoration();
+    void updateNeedsDecoration();
 
 #if QT_CONFIG(cursor)
     void restoreMouseCursor(QWaylandInputDevice *device);
@@ -301,8 +295,7 @@ protected:
     QWaylandSubSurface *mSubSurfaceWindow = nullptr;
     QList<QWaylandSubSurface *> mChildren;
 
-    std::unique_ptr<QWaylandAbstractDecoration> mWindowDecoration;
-    bool mWindowDecorationEnabled = false;
+    std::unique_ptr<QWaylandDecorationHandler> mWindowDecorationHandler;
     bool mMouseEventsInContentArea = false;
     Qt::MouseButtons mMousePressedInContentArea = Qt::NoButton;
 
@@ -310,7 +303,6 @@ protected:
     enum GestureState {
         GestureNotActive,
         GestureActiveInContentArea,
-        GestureActiveInDecoration
     };
 
     // We want gestures started in the decoration area to be completely ignored even if the mouse
@@ -396,7 +388,6 @@ private:
     bool calculateExposure() const;
     void setPendingImageDescription();
 
-    void handleMouseEventWithDecoration(QWaylandInputDevice *inputDevice, const QWaylandPointerEvent &e);
     void handleScreensChanged();
     void updateScale();
     void setScale(qreal newScale);

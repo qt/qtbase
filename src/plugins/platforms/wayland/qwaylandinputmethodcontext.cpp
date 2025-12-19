@@ -290,14 +290,7 @@ void QWaylandInputMethodContext::update(Qt::InputMethodQueries queries)
             QWindow *window = QGuiApplication::focusWindow();
             if (window) {
                 const QRect windowRect = QGuiApplication::inputMethod()->inputItemTransform().mapRect(cRect);
-                const QRect nativeRect = QHighDpi::toNativePixels(windowRect, window);
-                auto *waylandWindow = static_cast<QWaylandWindow *>(window->handle());
-                if (waylandWindow) {
-                    const QMargins margins = waylandWindow->clientSideMargins();
-                    cRect = nativeRect.translated(margins.left(), margins.top());
-                } else {
-                    cRect = nativeRect;
-                }
+                cRect = QHighDpi::toNativePixels(windowRect, window);
             }
             inputMethod->update_cursor_rectangle(cRect.x(), cRect.y(), cRect.width(), cRect.height());
         }

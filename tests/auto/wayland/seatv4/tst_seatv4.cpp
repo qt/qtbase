@@ -210,9 +210,7 @@ void tst_seatv4::mousePressFloat()
         pointer()->sendButton(client(), BTN_LEFT, 1);
         pointer()->sendButton(client(), BTN_LEFT, 0);
     });
-    QMargins m = window.frameMargins();
-    QPointF pressedPosition(32.75 -m.left(), 32.25 - m.top());
-    QTRY_COMPARE(window.m_position, pressedPosition);
+    QTRY_COMPARE(window.m_position, QPointF(32.75, 32.25));
 }
 
 void tst_seatv4::simpleAxis_data()
