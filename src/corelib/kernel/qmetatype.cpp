@@ -2524,7 +2524,7 @@ bool QMetaType::convert(QMetaType fromType, const void *from, QMetaType toType, 
     if (toTypeId == qMetaTypeId<QMetaAssociation::Iterable>())
         return convertToAssociativeIterable<QMetaAssociation::Iterable>(fromType, from, to);
 
-#if QT_DEPRECATED_SINCE(6, 13)
+#if QT_DEPRECATED_SINCE(6, 15)
     QT_WARNING_PUSH
     QT_WARNING_DISABLE_DEPRECATED
 
@@ -2550,7 +2550,7 @@ bool QMetaType::convert(QMetaType fromType, const void *from, QMetaType toType, 
         return convertToAssociativeIterable<QAssociativeIterable>(fromType, from, to);
 
     QT_WARNING_POP
-#endif // QT_DEPRECATED_SINCE(6, 13)
+#endif // QT_DEPRECATED_SINCE(6, 15)
 
     return convertMetaObject(fromType, from, toType, to);
 }
@@ -2578,7 +2578,7 @@ bool QMetaType::view(QMetaType fromType, void *from, QMetaType toType, void *to)
     if (toTypeId == qMetaTypeId<QMetaAssociation::Iterable>())
         return viewAsAssociativeIterable<QMetaAssociation::Iterable>(fromType, from, to);
 
-#if QT_DEPRECATED_SINCE(6, 13)
+#if QT_DEPRECATED_SINCE(6, 15)
     QT_WARNING_PUSH
     QT_WARNING_DISABLE_DEPRECATED
 
@@ -2589,7 +2589,7 @@ bool QMetaType::view(QMetaType fromType, void *from, QMetaType toType, void *to)
         return viewAsAssociativeIterable<QAssociativeIterable>(fromType, from, to);
 
     QT_WARNING_POP
-#endif // QT_DEPRECATED_SINCE(6, 13)
+#endif // QT_DEPRECATED_SINCE(6, 15)
 
     return convertMetaObject(fromType, from, toType, to);
 }
@@ -2629,7 +2629,7 @@ bool QMetaType::canView(QMetaType fromType, QMetaType toType)
     if (toTypeId == qMetaTypeId<QMetaAssociation::Iterable>())
         return canImplicitlyViewAsAssociativeIterable(fromType);
 
-#if QT_DEPRECATED_SINCE(6, 13)
+#if QT_DEPRECATED_SINCE(6, 15)
     QT_WARNING_PUSH
     QT_WARNING_DISABLE_DEPRECATED
 
@@ -2640,7 +2640,7 @@ bool QMetaType::canView(QMetaType fromType, QMetaType toType)
         return canImplicitlyViewAsAssociativeIterable(fromType);
 
     QT_WARNING_POP
-#endif
+#endif // QT_DEPRECATED_SINCE(6, 15)
 
     if (canConvertMetaObject(fromType, toType))
         return true;
@@ -2768,7 +2768,7 @@ bool QMetaType::canConvert(QMetaType fromType, QMetaType toType)
         return true;
     }
 
-#if QT_DEPRECATED_SINCE(6, 13)
+#if QT_DEPRECATED_SINCE(6, 15)
     QT_WARNING_PUSH
     QT_WARNING_DISABLE_DEPRECATED
 
@@ -2789,7 +2789,7 @@ bool QMetaType::canConvert(QMetaType fromType, QMetaType toType)
     }
 
     QT_WARNING_POP
-#endif // QT_DEPRECATED_SINCE(6, 13)
+#endif // QT_DEPRECATED_SINCE(6, 15)
 
     if (toTypeId == QVariantPair && hasRegisteredConverterFunction(
                     fromType, QMetaType::fromType<QtMetaTypePrivate::QPairVariantInterfaceImpl>()))
