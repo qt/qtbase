@@ -1673,7 +1673,7 @@ public:
 void SyncScanner::updateSymbolDescriptor(const std::string &symbol, const std::string &file,
                                          SymbolDescriptor::SourceType type)
 {
-    if (m_commandLineArgs->showOnly())
+    if (m_commandLineArgs->showOnly() || m_commandLineArgs->debug())
         std::cout << "    SYMBOL: " << symbol << std::endl;
     m_symbols[symbol].update(file, type);
 }
