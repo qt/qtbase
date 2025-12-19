@@ -13,12 +13,14 @@
                         "index": 0,
                         "lineNumber": 11,
                         "name": "test",
+                        "override": false,
                         "read": "test",
                         "required": false,
                         "scriptable": true,
                         "stored": true,
                         "type": "int",
-                        "user": false
+                        "user": false,
+                        "virtual": false
                     }
                 ],
                 "qualifiedClassName": "MetaType",
@@ -31,7 +33,7 @@
             }
         ],
         "hashes": {
-            "MetaType": "0$NMxUTKrEcV2vk8Gr4Jl/SR4Q7/c"
+            "MetaType": "0$J6gCLzmMIlCRRPiPj/2ZjVZPBD8"
         },
         "inputFile": "MetaType.h",
         "outputRevision": 69

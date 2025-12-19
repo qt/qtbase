@@ -2310,6 +2310,8 @@ QJsonObject PropertyDef::toJson() const
 
     prop["constant"_L1] = constant;
     prop["final"_L1] = final;
+    prop["virtual"_L1] = virtual_;
+    prop["override"_L1] = override;
     prop["required"_L1] = required;
     prop["index"_L1] = relativeIndex;
     prop["lineNumber"_L1] = lineNumber;

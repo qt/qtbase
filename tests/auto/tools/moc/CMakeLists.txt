@@ -56,6 +56,7 @@ set(JSON_HEADERS
         tech-preview.h
         trigraphs.h
         using-namespaces.h
+        virtualAndOverride.h
 )
 
 qt_wrap_cpp(comparison_relevant_moc_list ${JSON_HEADERS}
