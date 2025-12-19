@@ -28,6 +28,11 @@ private slots:
     void write();
     void stat();
     void fiveGiBReadWrite();
+    void cancel();
+    void cancelFullQueue();
+
+    // This test should be last!
+    void fireAndForget();
 
 private:
     static void closeFile(qintptr fd);
@@ -279,6 +284,119 @@ void tst_QIORing::fiveGiBReadWrite()
     QVERIFY(std::all_of(bytes.get(), bytes.get() + Size,
                         [](std::byte ch) { return ch == std::byte(242); }));
 #endif
+}
+
+void tst_QIORing::cancel()
+{
+    QIORing ring;
+    QVERIFY(ring.ensureInitialized());
+
+    QTemporaryDir dir;
+    auto path = dir.filePath("testfile");
+
+    qintptr fd = openHelper(&ring, path, QIODevice::ReadWrite);
+    auto cleanup = qScopeGuard([fd]() { closeFile(fd); });
+
+    const std::vector<std::byte> buffer(1ll * 1024 * 1024);
+
+    QIORingRequest<QIORing::Operation::Write> writeTask;
+    writeTask.source = buffer;
+    writeTask.fd = fd;
+    writeTask.offset = 0;
+    writeTask.setCallback([](const QIORingRequest<QIORing::Operation::Write> &request) {
+        using ResultType = QIORingResult<QIORing::Operation::Write>;
+        if (std::get_if<ResultType>(&request.result))
+            QSKIP("The write finished first, so the rest of the test is invalid.");
+
+        const QFileDevice::FileError *error = std::get_if<QFileDevice::FileError>(&request.result);
+        QVERIFY(error);
+        QCOMPARE(*error, QFileDevice::AbortError);
+    });
+    QIORing::RequestHandle writeHandle = ring.queueRequest(std::move(writeTask));
+
+    QIORingRequest<QIORing::Operation::Cancel> cancelTask;
+    bool cancelCalled = false;
+    cancelTask.setCallback([&cancelCalled](){
+        cancelCalled = true;
+    });
+    cancelTask.handle = writeHandle;
+    QIORing::RequestHandle cancelHandle = ring.queueRequest(std::move(cancelTask));
+
+    QVERIFY(ring.waitForRequest(cancelHandle));
+    QVERIFY(cancelCalled);
+    QVERIFY(ring.waitForRequest(writeHandle));
+}
+
+void tst_QIORing::cancelFullQueue()
+{
+    // Make a ring with as small as possible queues:
+    QIORing ring(1, 2);
+    QVERIFY(ring.ensureInitialized());
+
+    const quint32 sqSize = ring.submissionQueueSize();
+    const quint32 cqSize = ring.completionQueueSize();
+    // Do +1 to make sure that, even though the queues are full, we prioritize
+    // the cancel and quickly discard the write task that was queued in front
+    // of it
+    const quint32 toSubmit = sqSize + cqSize + 1;
+
+    QTemporaryDir dir;
+    auto path = dir.filePath("testfile");
+
+    qintptr fd = openHelper(&ring, path, QIODevice::ReadWrite);
+    auto cleanup = qScopeGuard([fd]() { closeFile(fd); });
+
+    const std::vector<std::byte> buffer(1024);
+
+    for (quint32 i = 0; i < toSubmit; ++i) {
+        QIORingRequest<QIORing::Operation::Write> writeTask;
+        writeTask.source = buffer;
+        writeTask.fd = fd;
+        writeTask.offset = buffer.size() * i;
+        writeTask.callback = nullptr; // ignore the result...
+        std::ignore = ring.queueRequest(std::move(writeTask));
+    }
+
+    QIORingRequest<QIORing::Operation::Write> writeTaskToCancel;
+    writeTaskToCancel.source = buffer;
+    writeTaskToCancel.fd = fd;
+    writeTaskToCancel.offset = buffer.size() * (toSubmit);
+    writeTaskToCancel.setCallback([](const QIORingRequest<QIORing::Operation::Write> &request) {
+        // This is guaranteed to work - because our completion queue is full,
+        // even though this write operation was queued before the 'cancel', the
+        // cancel should be prioritized higher.
+        const QFileDevice::FileError *error = std::get_if<QFileDevice::FileError>(&request.result);
+        QVERIFY(error);
+        QCOMPARE(*error, QFileDevice::AbortError);
+    });
+    QIORing::RequestHandle writeHandleToCancel = ring.queueRequest(std::move(writeTaskToCancel));
+    QIORingRequest<QIORing::Operation::Cancel> cancelTask;
+    bool cancelCalled = false;
+    cancelTask.setCallback([&cancelCalled]() { cancelCalled = true; });
+
+    cancelTask.handle = writeHandleToCancel;
+    QIORing::RequestHandle cancelHandle = ring.queueRequest(std::move(cancelTask));
+
+    QVERIFY(ring.waitForRequest(cancelHandle));
+    QVERIFY(cancelCalled);
+    QVERIFY(ring.waitForRequest(writeHandleToCancel));
+}
+
+void tst_QIORing::fireAndForget()
+{
+    QIORing ring;
+    QVERIFY(ring.ensureInitialized());
+
+    QTemporaryDir dir;
+    auto path = dir.filePath("empty");
+
+    QIORingRequest<QIORing::Operation::Open> openRequest;
+    openRequest.flags = QIODevice::ReadOnly;
+    openRequest.path = QtPrivate::toFilesystemPath(path);
+    openRequest.callback = nullptr;
+
+    ring.queueRequest(std::move(openRequest));
+    // Nothing more, let the ring destruct and see what happens
 }
 
 QTEST_MAIN(tst_QIORing)
