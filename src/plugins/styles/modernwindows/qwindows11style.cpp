@@ -2413,6 +2413,9 @@ int QWindows11Style::pixelMetric(PixelMetric metric, const QStyleOption *option,
     case PM_TreeViewIndentation:
         res = 30;
         break;
+    case PM_ProgressBarChunkWidth:
+        res = 0;    // no chunks on windows11
+        break;
     default:
         res = QWindowsVistaStyle::pixelMetric(metric, option, widget);
     }
