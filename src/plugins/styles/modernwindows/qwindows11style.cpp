@@ -1883,10 +1883,13 @@ QRect QWindows11Style::subElementRect(QStyle::SubElement element, const QStyleOp
     QRect ret;
     switch (element) {
     case QStyle::SE_RadioButtonIndicator:
-    case QStyle::SE_CheckBoxIndicator:
+    case QStyle::SE_CheckBoxIndicator: {
         ret = QWindowsVistaStyle::subElementRect(element, option, widget);
-        ret.moveLeft(ret.left() + contentItemHMargin);
+        const auto ofs =
+                QCommonStylePrivate::rtl(option) ? -contentItemHMargin : +contentItemHMargin;
+        ret.moveLeft(ret.left() + ofs);
         break;
+    }
     case QStyle::SE_ComboBoxFocusRect:
     case QStyle::SE_CheckBoxFocusRect:
     case QStyle::SE_RadioButtonFocusRect:
@@ -2122,6 +2125,7 @@ QRect QWindows11Style::subControlRect(ComplexControl control, const QStyleOption
                     ret = ret.marginsRemoved(QMargins(fw, fw, fw, fw));
                 }
                 ret.setWidth(ret.width() - indicatorWidth - contentHMargin * 2);
+                ret = visualRect(option->direction, option->rect, ret);
                 break;
             }
             default:
