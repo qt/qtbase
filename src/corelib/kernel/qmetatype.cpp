@@ -1380,6 +1380,7 @@ QT_WARNING_DISABLE_CLANG("-Wtautological-compare")
         );
 
         QMETATYPE_CONVERTER(QVariantHash, QVariantMap,
+            result.reserve(source.size());
             for (auto it = source.begin(); it != source.end(); ++it)
                 result.insert(it.key(), it.value());
             return true;
