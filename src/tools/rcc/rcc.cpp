@@ -817,7 +817,7 @@ bool RCCResourceLibrary::readFiles(bool listMode, QIODevice &errorDevice)
             m_errorDevice->write(msg.toUtf8());
         }
 
-        if (!interpretResourceFile(&fileIn, fname, pwd, listMode))
+        if (!interpretResourceFile(&fileIn, fname, std::move(pwd), listMode))
             return false;
     }
     return true;
