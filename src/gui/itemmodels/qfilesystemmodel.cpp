@@ -15,6 +15,7 @@
 #endif
 
 #include <algorithm>
+#include <functional>
 
 #ifdef Q_OS_WIN
 #  include <QtCore/QVarLengthArray>
@@ -1130,8 +1131,10 @@ void QFileSystemModelPrivate::sortChildren(int column, const QModelIndex &parent
             iterator.value()->isVisible = false;
         }
     }
-    QFileSystemModelSorter ms(column);
-    std::sort(values.begin(), values.end(), ms);
+    {
+        const QFileSystemModelSorter ms(column);
+        std::sort(values.begin(), values.end(), std::cref(ms));
+    }
     // First update the new visible list
     indexNode->visibleChildren.clear();
     //No more dirty item we reset our internal dirty index
