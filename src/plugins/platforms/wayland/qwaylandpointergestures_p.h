@@ -28,7 +28,7 @@ QT_BEGIN_NAMESPACE
 namespace QtWaylandClient {
 
 class QWaylandDisplay;
-class QWaylandWindow;
+class QWaylandSurface;
 class QWaylandInputDevice;
 class QWaylandPointerGestureSwipe;
 class QWaylandPointerGesturePinch;
@@ -69,7 +69,7 @@ public:
     }
 
     QWaylandInputDevice *mParent = nullptr;
-    QPointer<QWaylandWindow> mFocus;
+    QPointer<QWaylandSurface> mFocus;
     uint mFingers = 0;
 };
 
@@ -101,7 +101,7 @@ public:
     }
 
     QWaylandInputDevice *mParent = nullptr;
-    QPointer<QWaylandWindow> mFocus;
+    QPointer<QWaylandSurface> mFocus;
     uint mFingers = 0;
 
     // We need to convert between absolute scale provided by wayland/libinput and zoom deltas

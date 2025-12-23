@@ -86,7 +86,7 @@ QWaylandDataOffer *QWaylandDataDevice::dragOffer() const
 
 bool QWaylandDataDevice::startDrag(QMimeData *mimeData, Qt::DropActions supportedActions, QWaylandWindow *icon)
 {
-    auto *origin = m_display->lastInputWindow();
+    auto *origin = m_display->lastInputSurface();
 
     if (!origin) {
         qCDebug(lcQpaWayland) << "Couldn't start a drag because the origin window could not be found.";
@@ -167,7 +167,7 @@ bool QWaylandDataDevice::startDrag(QMimeData *mimeData, Qt::DropActions supporte
         }
     }
 
-    start_drag(m_dragSource->object(), origin->wlSurface(), icon->wlSurface(), m_display->lastInputSerial());
+    start_drag(m_dragSource->object(), origin->object(), icon->wlSurface(), m_display->lastInputSerial());
     return true;
 }
 

@@ -447,7 +447,7 @@ void QWaylandTabletToolV2::zwp_tablet_tool_v2_down(uint32_t serial)
     m_tabletSeat->seat()->mSerial = serial;
 
     if (m_pending.proximitySurface) {
-        if (QWaylandWindow *window = m_pending.proximitySurface->waylandWindow()) {
+        if (QWaylandSurface *window = m_pending.proximitySurface) {
             QWaylandInputDevice *seat = m_tabletSeat->seat();
             seat->display()->setLastInputDevice(seat, serial, window);
         }

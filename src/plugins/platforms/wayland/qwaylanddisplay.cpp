@@ -450,7 +450,7 @@ void QWaylandDisplay::reconnect()
     mRegistryGlobals.clear();
 
     mLastInputSerial = 0;
-    mLastInputWindow.clear();
+    mLastInputSurface.clear();
     mLastKeyboardFocus.clear();
     mActiveWindows.clear();
     mActiveSubSurface.clear();
@@ -943,14 +943,19 @@ bool QWaylandDisplay::supportsWindowDecoration() const
 
 QWaylandWindow *QWaylandDisplay::lastInputWindow() const
 {
-    return mLastInputWindow.data();
+    return mLastInputSurface ? mLastInputSurface->waylandWindow() : nullptr;
 }
 
-void QWaylandDisplay::setLastInputDevice(QWaylandInputDevice *device, uint32_t serial, QWaylandWindow *win)
+QWaylandSurface *QWaylandDisplay::lastInputSurface() const
+{
+    return mLastInputSurface.data();
+}
+
+void QWaylandDisplay::setLastInputDevice(QWaylandInputDevice *device, uint32_t serial, QWaylandSurface *surface)
 {
     mLastInputDevice = device;
     mLastInputSerial = serial;
-    mLastInputWindow = win;
+    mLastInputSurface = surface;
 }
 
 bool QWaylandDisplay::isWindowActivated(const QWaylandWindow *window)

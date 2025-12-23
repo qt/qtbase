@@ -5,6 +5,7 @@
 #include "qwaylandpointergestures_p.h"
 #include "qwaylanddisplay_p.h"
 #include "qwaylandinputdevice_p.h"
+#include "qwaylandsurface_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -50,8 +51,8 @@ void QWaylandPointerGestureSwipe::zwp_pointer_gesture_swipe_v1_begin(uint32_t se
                                                                      uint32_t fingers)
 {
 #ifndef QT_NO_GESTURES
-    mFocus = QWaylandWindow::fromWlSurface(surface);
-    if (!mFocus) {
+    mFocus = QWaylandSurface::fromWlSurface(surface);
+    if (!mFocus || !mFocus->waylandWindow()) {
         return;
     }
     mParent->mSerial = serial;
@@ -66,7 +67,7 @@ void QWaylandPointerGestureSwipe::zwp_pointer_gesture_swipe_v1_begin(uint32_t se
                                               pointer->mSurfacePos, pointer->mGlobalPos, mFingers,
                                               QPointF());
 
-    mFocus->handleSwipeGesture(mParent, e);
+    mFocus->waylandWindow()->handleSwipeGesture(mParent, e);
 #endif
 }
 
@@ -74,7 +75,7 @@ void QWaylandPointerGestureSwipe::zwp_pointer_gesture_swipe_v1_update(uint32_t t
                                                                       wl_fixed_t dx, wl_fixed_t dy)
 {
 #ifndef QT_NO_GESTURES
-    if (!mFocus) {
+    if (!mFocus || !mFocus->waylandWindow()) {
         return;
     }
     const auto* pointer = mParent->pointer();
@@ -86,7 +87,7 @@ void QWaylandPointerGestureSwipe::zwp_pointer_gesture_swipe_v1_update(uint32_t t
     auto e = QWaylandPointerGestureSwipeEvent(mFocus, Qt::GestureUpdated, time,
                                               pointer->mSurfacePos, pointer->mGlobalPos, mFingers, delta);
 
-    mFocus->handleSwipeGesture(mParent, e);
+    mFocus->waylandWindow()->handleSwipeGesture(mParent, e);
 #endif
 }
 
@@ -94,7 +95,7 @@ void QWaylandPointerGestureSwipe::zwp_pointer_gesture_swipe_v1_end(uint32_t seri
                                                                    int32_t cancelled)
 {
 #ifndef QT_NO_GESTURES
-    if (!mFocus) {
+    if (!mFocus || !mFocus->waylandWindow()) {
         return;
     }
     mParent->mSerial = serial;
@@ -109,7 +110,7 @@ void QWaylandPointerGestureSwipe::zwp_pointer_gesture_swipe_v1_end(uint32_t seri
                                               pointer->mSurfacePos, pointer->mGlobalPos, mFingers,
                                               QPointF());
 
-    mFocus->handleSwipeGesture(mParent, e);
+    mFocus->waylandWindow()->handleSwipeGesture(mParent, e);
 
     mFocus.clear();
     mFingers = 0;
@@ -131,8 +132,8 @@ void QWaylandPointerGesturePinch::zwp_pointer_gesture_pinch_v1_begin(uint32_t se
                                                                      uint32_t fingers)
 {
 #ifndef QT_NO_GESTURES
-    mFocus = QWaylandWindow::fromWlSurface(surface);
-    if (!mFocus) {
+    mFocus = QWaylandSurface::fromWlSurface(surface);
+    if (!mFocus || !mFocus->waylandWindow()) {
         return;
     }
     mParent->mSerial = serial;
@@ -147,7 +148,7 @@ void QWaylandPointerGesturePinch::zwp_pointer_gesture_pinch_v1_begin(uint32_t se
                                               pointer->mSurfacePos, pointer->mGlobalPos, mFingers,
                                               QPointF(), 0, 0);
 
-    mFocus->handlePinchGesture(mParent, e);
+    mFocus->waylandWindow()->handlePinchGesture(mParent, e);
 #endif
 }
 
@@ -157,7 +158,7 @@ void QWaylandPointerGesturePinch::zwp_pointer_gesture_pinch_v1_update(uint32_t t
                                                                       wl_fixed_t rotation)
 {
 #ifndef QT_NO_GESTURES
-    if (!mFocus) {
+    if (!mFocus || !mFocus->waylandWindow()) {
         return;
     }
     const auto* pointer = mParent->pointer();
@@ -174,7 +175,7 @@ void QWaylandPointerGesturePinch::zwp_pointer_gesture_pinch_v1_update(uint32_t t
                                               pointer->mSurfacePos, pointer->mGlobalPos, mFingers,
                                               delta, rscale - mLastScale, rot);
 
-    mFocus->handlePinchGesture(mParent, e);
+    mFocus->waylandWindow()->handlePinchGesture(mParent, e);
 
     mLastScale = rscale;
 #endif
@@ -184,7 +185,7 @@ void QWaylandPointerGesturePinch::zwp_pointer_gesture_pinch_v1_end(uint32_t seri
                                                                    int32_t cancelled)
 {
 #ifndef QT_NO_GESTURES
-    if (!mFocus) {
+    if (!mFocus || !mFocus->waylandWindow()) {
         return;
     }
     mParent->mSerial = serial;
@@ -199,7 +200,7 @@ void QWaylandPointerGesturePinch::zwp_pointer_gesture_pinch_v1_end(uint32_t seri
                                               pointer->mSurfacePos, pointer->mGlobalPos, mFingers,
                                               QPointF(), 0, 0);
 
-    mFocus->handlePinchGesture(mParent, e);
+    mFocus->waylandWindow()->handlePinchGesture(mParent, e);
 
     mFocus.clear();
     mFingers = 0;

@@ -1587,7 +1587,7 @@ void QWaylandWindow::setStoredCursor(const QCursor &cursor) {
 }
 
 void QWaylandWindow::applyCursor(QWaylandInputDevice *device, const QCursor &cursor) {
-    if (!device || !device->pointer() || device->pointer()->focusWindow() != this)
+    if (!device || !device->pointer() || device->pointer()->focusSurface() != waylandSurface())
         return;
 
     int fallbackBufferScale = qCeil(devicePixelRatio());

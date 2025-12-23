@@ -19,6 +19,7 @@
 
 #include <QtWaylandClient/private/qtwaylandclientglobal_p.h>
 #include <QtWaylandClient/private/qwaylandwindow_p.h>
+#include <QtWaylandClient/private/qwaylandsurface_p.h>
 
 #include <QSocketNotifier>
 #include <QObject>
@@ -238,7 +239,7 @@ public:
     Keyboard(QWaylandInputDevice *p);
     ~Keyboard() override;
 
-    QWaylandWindow *focusWindow() const;
+    QWaylandSurface *focusSurface() const;
 
     void keyboard_keymap(uint32_t format,
                          int32_t fd,
@@ -311,7 +312,7 @@ class Q_WAYLANDCLIENT_EXPORT QWaylandInputDevice::Pointer : public QObject, publ
 public:
     explicit Pointer(QWaylandInputDevice *seat);
     ~Pointer() override;
-    QWaylandWindow *focusWindow() const;
+    QWaylandSurface *focusSurface() const;
 #if QT_CONFIG(cursor)
     int idealCursorScale() const;
     void updateCursorTheme();
@@ -391,7 +392,7 @@ public:
     bool mScrollBeginSent = false;
     bool mScrollEnd = false;
     QPointF mScrollDeltaRemainder;
-    QPointer<QWaylandWindow> mScrollTarget;
+    QPointer<QWaylandSurface> mScrollTarget;
 
     QWaylandEventCompressionPrivate mEventCompression;
 
@@ -432,7 +433,7 @@ public:
     struct ::wl_touch *wl_touch() { return QtWayland::wl_touch::object(); }
 
     QWaylandInputDevice *mParent = nullptr;
-    QPointer<QWaylandWindow> mFocus;
+    QPointer<QWaylandSurface> mFocus;
     QList<QWindowSystemInterface::TouchPoint> mPendingTouchPoints;
 };
 
@@ -440,7 +441,7 @@ class QWaylandPointerEvent
 {
     Q_GADGET
 public:
-    inline QWaylandPointerEvent(QEvent::Type type, Qt::ScrollPhase phase, QWaylandWindow *surface,
+    inline QWaylandPointerEvent(QEvent::Type type, Qt::ScrollPhase phase, QWaylandSurface *surface,
                                 ulong timestamp, const QPointF &localPos, const QPointF &globalPos,
                                 Qt::MouseButtons buttons, Qt::MouseButton button,
                                 Qt::KeyboardModifiers modifiers)
@@ -454,7 +455,7 @@ public:
         , modifiers(modifiers)
         , surface(surface)
     {}
-    inline QWaylandPointerEvent(QEvent::Type type, Qt::ScrollPhase phase, QWaylandWindow *surface,
+    inline QWaylandPointerEvent(QEvent::Type type, Qt::ScrollPhase phase, QWaylandSurface *surface,
                                 ulong timestamp, const QPointF &local, const QPointF &global,
                                 const QPoint &pixelDelta, const QPoint &angleDelta,
                                 Qt::MouseEventSource source,
@@ -483,7 +484,7 @@ public:
     QPoint pixelDelta;
     QPoint angleDelta;
     Qt::MouseEventSource source = Qt::MouseEventNotSynthesized;
-    QPointer<QWaylandWindow> surface;
+    QPointer<QWaylandSurface> surface;
     bool inverted = false;
 };
 
@@ -492,7 +493,7 @@ class QWaylandPointerGestureSwipeEvent
 {
     Q_GADGET
 public:
-    inline QWaylandPointerGestureSwipeEvent(QWaylandWindow *surface, Qt::GestureState state,
+    inline QWaylandPointerGestureSwipeEvent(QWaylandSurface *surface, Qt::GestureState state,
                                             ulong timestamp, const QPointF &local,
                                             const QPointF &global, uint fingers, const QPointF& delta)
         : surface(surface)
@@ -504,7 +505,7 @@ public:
         , delta(delta)
     {}
 
-    QPointer<QWaylandWindow> surface;
+    QPointer<QWaylandSurface> surface;
     Qt::GestureState state = Qt::GestureState::NoGesture;
     ulong timestamp = 0;
     QPointF local;
@@ -517,7 +518,7 @@ class QWaylandPointerGesturePinchEvent
 {
     Q_GADGET
 public:
-    inline QWaylandPointerGesturePinchEvent(QWaylandWindow *surface, Qt::GestureState state,
+    inline QWaylandPointerGesturePinchEvent(QWaylandSurface *surface, Qt::GestureState state,
                                             ulong timestamp, const QPointF &local,
                                             const QPointF &global, uint fingers, const QPointF& delta,
                                             qreal scale_delta, qreal rotation_delta)
@@ -532,7 +533,7 @@ public:
         , rotation_delta(rotation_delta)
     {}
 
-    QPointer<QWaylandWindow> surface;
+    QPointer<QWaylandSurface> surface;
     Qt::GestureState state = Qt::GestureState::NoGesture;
     ulong timestamp = 0;
     QPointF local;

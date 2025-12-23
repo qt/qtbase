@@ -271,7 +271,8 @@ public:
     uint32_t lastInputSerial() const { return mLastInputSerial; }
     QWaylandInputDevice *lastInputDevice() const { return mLastInputDevice; }
     QWaylandWindow *lastInputWindow() const;
-    void setLastInputDevice(QWaylandInputDevice *device, uint32_t serial, QWaylandWindow *window);
+    QWaylandSurface *lastInputSurface() const;
+    void setLastInputDevice(QWaylandInputDevice *device, uint32_t serial, QWaylandSurface *window);
 
     bool isWindowActivated(const QWaylandWindow *window);
     void handleWindowActivated(QWaylandWindow *window);
@@ -386,7 +387,7 @@ private:
     QList<RegistryGlobal> mRegistryGlobals;
     uint32_t mLastInputSerial = 0;
     QWaylandInputDevice *mLastInputDevice = nullptr;
-    QPointer<QWaylandWindow> mLastInputWindow;
+    QPointer<QWaylandSurface> mLastInputSurface;
     QPointer<QWaylandWindow> mLastKeyboardFocus;
     QList<QWaylandWindow *> mActiveWindows;
     QPointer<QWaylandWindow> mActiveSubSurface;
