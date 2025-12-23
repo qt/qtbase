@@ -184,10 +184,10 @@ public:
     QDirEntryInfo currentEntryInfo;
 
 #if QT_CONFIG(regularexpression)
-    QList<QRegularExpression> nameRegExps;
+    std::vector<QRegularExpression> nameRegExps;
     bool regexMatchesName(const QString &fileName) const
     {
-        if (nameRegExps.isEmpty())
+        if (nameRegExps.empty())
             return true;
         auto hasMatch = [&fileName](const auto &re) { return re.match(fileName).hasMatch(); };
         return std::any_of(nameRegExps.cbegin(), nameRegExps.cend(), hasMatch);
@@ -211,7 +211,7 @@ void QDirListingPrivate::init()
         nameFilters.clear();
 
 #if QT_CONFIG(regularexpression)
-    nameRegExps.reserve(nameFilters.size());
+    nameRegExps.reserve(size_t(nameFilters.size()));
 
     const bool isCase = iteratorFlags.testAnyFlags(QDirListing::IteratorFlag::CaseSensitive);
     const auto cs = isCase ? Qt::CaseSensitive : Qt::CaseInsensitive;
