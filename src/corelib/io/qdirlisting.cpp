@@ -161,7 +161,10 @@ using namespace Qt::StringLiterals;
 
 class QDirListingPrivate
 {
+    Q_DISABLE_COPY_MOVE(QDirListingPrivate)
 public:
+    QDirListingPrivate() = default;
+
     void init();
     void advance();
     void beginIterating();
