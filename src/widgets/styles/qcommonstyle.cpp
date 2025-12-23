@@ -2516,7 +2516,7 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
             QRect ir = visualRect(opt->direction, opt->rect,
                                   subElementRect(SE_RadioButtonIndicator, opt, widget));
             int spacing = proxy()->pixelMetric(PM_RadioButtonLabelSpacing, opt, widget);
-            r.setRect(ir.left() + ir.width() + spacing, opt->rect.y(), opt->rect.width() - ir.width() - spacing,
+            r.setRect(ir.right() + spacing, opt->rect.y(), opt->rect.width() - ir.width() - spacing,
                       opt->rect.height());
             r = visualRect(opt->direction, opt->rect, r);
             break;
