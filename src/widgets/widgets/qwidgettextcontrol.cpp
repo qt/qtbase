@@ -3479,6 +3479,7 @@ void QUnicodeControlCharacterMenu::menuActionTriggered()
 
 static constexpr auto supportedMimeTypes = qOffsetStringArray(
     "text/plain",
+    "text/plain;charset=utf-8",
     "text/html"
 #if QT_CONFIG(textmarkdownwriter)
     , "text/markdown"
@@ -3549,6 +3550,7 @@ void QTextEditMimeData::setup() const
     }
 #endif
     that->setText(fragment.toPlainText());
+    that->setData("text/plain;charset=utf-8"_L1, fragment.toRawText().toUtf8());
     fragment = QTextDocumentFragment();
 }
 
