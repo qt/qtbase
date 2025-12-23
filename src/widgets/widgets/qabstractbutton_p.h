@@ -21,6 +21,7 @@
 
 #include "QtCore/qbasictimer.h"
 #include "private/qwidget_p.h"
+#include "QtWidgets/qstyle.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -70,6 +71,10 @@ public:
     void emitReleased();
     void emitClicked();
     void emitToggled(bool checked);
+
+    // ### Qt7: add a public virtual initStyleOption()
+    // returns additional button states for QStyleOption
+    virtual QStyle::State styleButtonState(QStyle::State state) const;
 };
 
 QT_END_NAMESPACE

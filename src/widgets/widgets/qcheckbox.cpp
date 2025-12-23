@@ -25,6 +25,7 @@ public:
     QCheckBoxPrivate()
         : QAbstractButtonPrivate(QSizePolicy::CheckBox), tristate(false), noChange(false),
           hovering(true), publishedState(Qt::Unchecked) {}
+    QStyle::State styleButtonState(QStyle::State state) const override;
 
     uint tristate : 1;
     uint noChange : 1;
@@ -33,6 +34,19 @@ public:
 
     void init();
 };
+
+QStyle::State QCheckBoxPrivate::styleButtonState(QStyle::State state) const
+{
+    Q_Q(const QCheckBox);
+    state = QAbstractButtonPrivate::styleButtonState(state);
+    if (tristate && noChange)
+        state |= QStyle::State_NoChange;
+    else
+        state |= (checked ? QStyle::State_On : QStyle::State_Off);
+    if (q->testAttribute(Qt::WA_Hover) && q->underMouse())
+        state.setFlag(QStyle::State_MouseOver, hovering);
+    return state;
+}
 
 /*!
     \class QCheckBox
@@ -137,15 +151,7 @@ void QCheckBox::initStyleOption(QStyleOptionButton *option) const
         return;
     Q_D(const QCheckBox);
     option->initFrom(this);
-    if (d->down)
-        option->state |= QStyle::State_Sunken;
-    if (d->tristate && d->noChange)
-        option->state |= QStyle::State_NoChange;
-    else
-        option->state |= d->checked ? QStyle::State_On : QStyle::State_Off;
-    if (testAttribute(Qt::WA_Hover) && underMouse()) {
-        option->state.setFlag(QStyle::State_MouseOver, d->hovering);
-    }
+    option->state = d->styleButtonState(option->state);
     option->text = d->text;
     option->icon = d->icon;
     option->iconSize = iconSize();

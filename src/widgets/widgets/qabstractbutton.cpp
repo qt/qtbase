@@ -431,6 +431,13 @@ void QAbstractButtonPrivate::emitToggled(bool checked)
 #endif
 }
 
+QStyle::State QAbstractButtonPrivate::styleButtonState(QStyle::State state) const
+{
+    if (down)
+        state |= QStyle::State_Sunken;
+    return state;
+}
+
 /*!
     Constructs an abstract button with a \a parent.
 */
@@ -1237,7 +1244,10 @@ QSize QAbstractButton::iconSize() const
     Q_D(const QAbstractButton);
     if (d->iconSize.isValid())
         return d->iconSize;
-    int e = style()->pixelMetric(QStyle::PM_ButtonIconSize, nullptr, this);
+    QStyleOption opt;
+    opt.initFrom(this);
+    opt.state = d->styleButtonState(opt.state);
+    int e = style()->pixelMetric(QStyle::PM_ButtonIconSize, &opt, this);
     return QSize(e, e);
 }
 

@@ -24,6 +24,7 @@ class QRadioButtonPrivate : public QAbstractButtonPrivate
 public:
     QRadioButtonPrivate() : QAbstractButtonPrivate(QSizePolicy::RadioButton), hovering(true) {}
     void init();
+    QStyle::State styleButtonState(QStyle::State state) const override;
     uint hovering : 1;
 };
 
@@ -39,6 +40,16 @@ void QRadioButtonPrivate::init()
     q->setForegroundRole(QPalette::WindowText);
     q->setAttribute(Qt::WA_MacShowFocusRect);
     setLayoutItemMargins(QStyle::SE_RadioButtonLayoutItem);
+}
+
+QStyle::State QRadioButtonPrivate::styleButtonState(QStyle::State state) const
+{
+    Q_Q(const QRadioButton);
+    state = QAbstractButtonPrivate::styleButtonState(state);
+    state |= (checked ? QStyle::State_On : QStyle::State_Off);
+    if (q->testAttribute(Qt::WA_Hover) && q->underMouse())
+        state.setFlag(QStyle::State_MouseOver, hovering);
+    return state;
 }
 
 /*!
@@ -136,12 +147,7 @@ void QRadioButton::initStyleOption(QStyleOptionButton *option) const
     option->text = d->text;
     option->icon = d->icon;
     option->iconSize = iconSize();
-    if (d->down)
-        option->state |= QStyle::State_Sunken;
-    option->state |= (d->checked) ? QStyle::State_On : QStyle::State_Off;
-    if (testAttribute(Qt::WA_Hover) && underMouse()) {
-        option->state.setFlag(QStyle::State_MouseOver, d->hovering);
-    }
+    option->state = d->styleButtonState(option->state);
 }
 
 /*!

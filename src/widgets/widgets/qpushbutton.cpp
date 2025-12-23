@@ -290,14 +290,7 @@ void QPushButton::initStyleOption(QStyleOptionButton *option) const
         option->features |= QStyleOptionButton::AutoDefaultButton;
     if (d->defaultButton)
         option->features |= QStyleOptionButton::DefaultButton;
-    if (d->down || d->menuOpen)
-        option->state |= QStyle::State_Sunken;
-    if (d->checked)
-        option->state |= QStyle::State_On;
-    if (!d->flat && !d->down)
-        option->state |= QStyle::State_Raised;
-    if (underMouse() && hasMouseTracking())
-        option->state.setFlag(QStyle::State_MouseOver, d->hovering);
+    option->state = d->styleButtonState(option->state);
     option->text = d->text;
     option->icon = d->icon;
     option->iconSize = iconSize();
@@ -643,6 +636,21 @@ void QPushButtonPrivate::resetLayoutItemMargins()
     QStyleOptionButton opt;
     q->initStyleOption(&opt);
     setLayoutItemMargins(QStyle::SE_PushButtonLayoutItem, &opt);
+}
+
+QStyle::State QPushButtonPrivate::styleButtonState(QStyle::State state) const
+{
+    Q_Q(const QPushButton);
+    state = QAbstractButtonPrivate::styleButtonState(state);
+    if (menuOpen)
+        state |= QStyle::State_Sunken;
+    if (checked)
+        state |= QStyle::State_On;
+    if (!flat && !down)
+        state |= QStyle::State_Raised;
+    if (q->underMouse() && q->hasMouseTracking())
+        state.setFlag(QStyle::State_MouseOver, hovering);
+    return state;
 }
 
 void QPushButton::setFlat(bool flat)

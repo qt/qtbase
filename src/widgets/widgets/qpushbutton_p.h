@@ -47,6 +47,7 @@ public:
 #endif
     void resetLayoutItemMargins();
     void popupPressed();
+    QStyle::State styleButtonState(QStyle::State state) const override;
 #if QT_CONFIG(dialog)
     QDialog *dialogParent() const;
 #else

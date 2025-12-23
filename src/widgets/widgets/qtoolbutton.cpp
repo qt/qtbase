@@ -49,6 +49,7 @@ public:
 #endif
     bool updateHoverControl(const QPoint &pos);
     void onActionTriggered();
+    QStyle::State styleButtonState(QStyle::State state) const override;
     QStyle::SubControl newHoverControl(const QPoint &pos);
     QStyle::SubControl hoverControl;
     QRect hoverRect;
@@ -227,15 +228,7 @@ void QToolButton::initStyleOption(QStyleOptionToolButton *option) const
     option->text = d->text;
     option->icon = d->icon;
     option->arrowType = d->arrowType;
-    if (d->down)
-        option->state |= QStyle::State_Sunken;
-    if (d->checked)
-        option->state |= QStyle::State_On;
-    if (d->autoRaise)
-        option->state |= QStyle::State_AutoRaise;
-    if (!d->checked && !d->down)
-        option->state |= QStyle::State_Raised;
-
+    option->state = d->styleButtonState(option->state);
     option->subControls = QStyle::SC_ToolButton;
     option->activeSubControls = QStyle::SC_None;
 
@@ -491,6 +484,20 @@ void QToolButtonPrivate::onActionTriggered()
     Q_Q(QToolButton);
     if (QAction *action = qobject_cast<QAction *>(q->sender()))
         emit q->triggered(action);
+}
+
+QStyle::State QToolButtonPrivate::styleButtonState(QStyle::State state) const
+{
+    state = QAbstractButtonPrivate::styleButtonState(state);
+    if (checked)
+        state |= QStyle::State_On;
+    if (autoRaise)
+        state |= QStyle::State_AutoRaise;
+    if (!checked && !down)
+        state |= QStyle::State_Raised;
+    if (menuButtonDown)
+        state |= QStyle::State_Sunken;
+    return state;
 }
 
 /*!
