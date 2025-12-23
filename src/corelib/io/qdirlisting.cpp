@@ -299,20 +299,16 @@ bool QDirListingPrivate::entryMatches(QDirEntryInfo &entryInfo)
     Advances the internal iterator, either a QAbstractFileEngineIterator (e.g.
     QResourceFileEngineIterator) or a QFileSystemIterator (which uses low-level
     system methods, e.g. readdir() on Unix). The iterators are stored in a
-    vector.
+    stack.
 
     A typical example of doing recursive iteration:
     - while iterating directory A we find a sub-dir B
-    - an iterator for B is added to the vector
-    - B's iterator is processed (vector.back()) first; then the loop
+    - an iterator for B is pushed to the stack
+    - B's iterator is processed (stack.top()) first; then the loop
       goes back to processing A's iterator
 */
 void QDirListingPrivate::advance()
 {
-    // Use get() in both code paths below because the iterator returned by back()
-    // may be invalidated due to reallocation when appending new iterators in
-    // pushDirectory().
-
     if (engine) {
         while (!fileEngineIterators.empty()) {
             // Find the next valid iterator that matches the filters.
@@ -320,7 +316,7 @@ void QDirListingPrivate::advance()
             while (it = fileEngineIterators.top().get(), it->advance()) {
                 QDirEntryInfo entryInfo;
                 entryInfo.fileInfoOpt = it->currentFileInfo();
-                if (entryMatches(entryInfo)) {
+                if (entryMatches(entryInfo)) { // modifies `fileEngineIterators`!
                     currentEntryInfo = std::move(entryInfo);
                     return;
                 }
@@ -336,7 +332,7 @@ void QDirListingPrivate::advance()
             QFileSystemIterator *it;
             while (it = nativeIterators.top().get(),
                    it->advance(entryInfo.entry, entryInfo.metaData)) {
-                if (entryMatches(entryInfo)) {
+                if (entryMatches(entryInfo)) { // modifies `nativeIterators`!
                     currentEntryInfo = std::move(entryInfo);
                     return;
                 }
