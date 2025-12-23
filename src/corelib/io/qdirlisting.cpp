@@ -168,7 +168,10 @@ static QDirListing::IteratorFlags toDirListingFlags(QDirIterator::IteratorFlags 
 
 class QDirListingPrivate
 {
+    Q_DISABLE_COPY_MOVE(QDirListingPrivate)
 public:
+    QDirListingPrivate() = default;
+
     void init(bool resolveEngine);
     void advance();
     void beginIterating();
