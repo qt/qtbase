@@ -102,7 +102,6 @@ bool QFileSystemIterator::advance(QFileSystemEntry &fileEntry, QFileSystemMetaDa
     if (uncFallback) {
         fileEntry = QFileSystemEntry(dirPath + uncShares.at(uncShareIndex));
         metaData.fillFromFileAttribute(FILE_ATTRIBUTE_DIRECTORY);
-        return true;
     } else {
         QString fileName = QString::fromWCharArray(findData.cFileName);
         fileEntry = QFileSystemEntry(dirPath + fileName);
@@ -110,9 +109,8 @@ bool QFileSystemIterator::advance(QFileSystemEntry &fileEntry, QFileSystemMetaDa
         if (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY || !fileName.endsWith(".lnk"_L1)) {
             metaData.fillFromFindData(findData, true);
         }
-        return true;
     }
-    return false;
+    return true;
 }
 
 QT_END_NAMESPACE
