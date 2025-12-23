@@ -240,7 +240,7 @@ void QDirListingPrivate::init(bool resolveEngine = true)
     }();
 
     const auto cs = isCase ? Qt::CaseSensitive : Qt::CaseInsensitive;
-    for (const auto &filter : nameFilters)
+    for (const auto &filter : std::as_const(nameFilters))
         nameRegExps.emplace_back(QRegularExpression::fromWildcard(filter, cs));
 #endif
 
