@@ -3168,18 +3168,7 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
 
 #if QT_CONFIG(dial)
 
-// in lieu of std::array, minimal API
-template <int N>
-struct StaticPolygonF
-{
-    QPointF data[N];
-
-    constexpr int size() const { return N; }
-    constexpr const QPointF *cbegin() const { return data; }
-    constexpr const QPointF &operator[](int idx) const { return data[idx]; }
-};
-
-static StaticPolygonF<3> calcArrow(const QStyleOptionSlider *dial, qreal &a)
+static std::array<QPointF, 3> calcArrow(const QStyleOptionSlider *dial, qreal &a)
 {
     int width = dial->rect.width();
     int height = dial->rect.height();
@@ -3203,14 +3192,14 @@ static StaticPolygonF<3> calcArrow(const QStyleOptionSlider *dial, qreal &a)
         len = 5;
     int back = len / 2;
 
-    StaticPolygonF<3> arrow = {{
+    std::array<QPointF, 3> arrow = {
         QPointF(0.5 + xc + len * qCos(a),
                 0.5 + yc - len * qSin(a)),
         QPointF(0.5 + xc + back * qCos(a + Q_PI * 5 / 6),
                 0.5 + yc - back * qSin(a + Q_PI * 5 / 6)),
         QPointF(0.5 + xc + back * qCos(a - Q_PI * 5 / 6),
                 0.5 + yc - back * qSin(a - Q_PI * 5 / 6)),
-    }};
+    };
     return arrow;
 }
 
@@ -3711,11 +3700,11 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
             p->drawArc(br, 240 * 16, 180 * 16);
 
             qreal a;
-            const StaticPolygonF<3> arrow = calcArrow(dial, a);
+            const auto arrow = calcArrow(dial, a);
 
             p->setPen(Qt::NoPen);
             p->setBrush(pal.button());
-            p->drawPolygon(arrow.cbegin(), arrow.size());
+            p->drawPolygon(arrow.data(), int(arrow.size()));
 
             a = QStyleHelper::angle(QPointF(width / 2, height / 2), arrow[0]);
             p->setBrush(Qt::NoBrush);
