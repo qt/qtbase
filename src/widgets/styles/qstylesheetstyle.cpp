@@ -2748,15 +2748,18 @@ void QStyleSheetStyle::unsetPalette(QWidget *w)
             ew->setPalette(original);
     }
 
+    QWidget *ew = embeddedWidget(w);
     if (useStyleSheetPropagationInWidgetStyles) {
         unsetStyleSheetFont(w);
-        QWidget *ew = embeddedWidget(w);
         if (ew != w)
             unsetStyleSheetFont(ew);
     } else {
         QVariant oldFont = w->property("_q_styleSheetWidgetFont");
         if (oldFont.isValid()) {
-            w->setFont(qvariant_cast<QFont>(oldFont));
+            const QFont f = qvariant_cast<QFont>(oldFont);
+            w->setFont(f);
+            if (ew != w)
+                ew->setFont(f);
         }
     }
 
