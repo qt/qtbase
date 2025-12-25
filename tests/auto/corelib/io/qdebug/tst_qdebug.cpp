@@ -264,12 +264,29 @@ void tst_QDebug::constructors() const
     const char input[] = "testing QDebug constructors";
     const QLatin1StringView expected{"testing QDebug constructors "};
 
-    // QDebug(QString *)
+    // QDebug(QString *); no buffering for a QTextStream that operates on a QString,
+    // so flushing is no-op, see QTextStream::flush()
     {
         QString str;
         QDebug d(&str);
         d << input;
         QCOMPARE(str, expected);
+    }
+
+    // QDebug(QByteArray *)
+    {
+        QByteArray ba;
+        QDebug d(&ba);
+        d << input << Qt::flush;
+        QCOMPARE(ba, expected);
+    }
+    {
+        QByteArray ba;
+        {
+            QDebug d(&ba);
+            d << input;
+        }
+        QCOMPARE(ba, expected);
     }
 
     // QDebug(QIODevice *)
@@ -279,6 +296,16 @@ void tst_QDebug::constructors() const
         QVERIFY(buf.open(QIODevice::WriteOnly));
         QDebug d(&buf);
         d << input << Qt::flush;
+        QCOMPARE(ba, expected);
+    }
+    {
+        QByteArray ba;
+        QBuffer buf(&ba);
+        QVERIFY(buf.open(QIODevice::WriteOnly));
+        {
+            QDebug d(&buf);
+            d << input;
+        }
         QCOMPARE(ba, expected);
     }
 }
