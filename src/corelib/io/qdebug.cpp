@@ -130,6 +130,22 @@ QByteArray QtDebugUtils::toPrintable(const char *data, qint64 len, qsizetype max
 */
 
 /*!
+    \fn QDebug::QDebug(QByteArray *byteArray)
+    \since 6.9
+
+    Constructs a debug stream that writes to the given \a byteArray.
+
+    The data is encoded in UTF-8, which may not be the same as the system
+    locale, for example, on Windows.
+
+    With objects instantiated with this constructor, the data may be buffered
+    and won't be written to the byte array until the stream is flushed, for
+    example, by using \l Qt::flush.
+
+    \sa {QTextStream manipulators}
+*/
+
+/*!
     \fn QDebug::QDebug(QtMsgType t)
 
     Constructs a debug stream that writes to the handler for the message type \a t.
