@@ -8,6 +8,7 @@
 #include <QtCore/QtDebug>
 
 #include <QTest>
+#include <QtCore/qbuffer.h>
 #include <QtConcurrentRun>
 #include <QFutureSynchronizer>
 #include <QVariant>
@@ -77,6 +78,7 @@ private slots:
     void warningWithoutDebug() const;
     void criticalWithoutDebug() const;
     void basics() const;
+    void constructors() const;
     void debugWithBool() const;
     void debugSpaceHandling() const;
     void debugNoQuotes() const;
@@ -255,6 +257,30 @@ void tst_QDebug::basics() const
 
     qDebug() << nullptr;
     QCOMPARE(s_msg, "(nullptr)");
+}
+
+void tst_QDebug::constructors() const
+{
+    const char input[] = "testing QDebug constructors";
+    const QLatin1StringView expected{"testing QDebug constructors "};
+
+    // QDebug(QString *)
+    {
+        QString str;
+        QDebug d(&str);
+        d << input;
+        QCOMPARE(str, expected);
+    }
+
+    // QDebug(QIODevice *)
+    {
+        QByteArray ba;
+        QBuffer buf(&ba);
+        QVERIFY(buf.open(QIODevice::WriteOnly));
+        QDebug d(&buf);
+        d << input << Qt::flush;
+        QCOMPARE(ba, expected);
+    }
 }
 
 void tst_QDebug::debugWithBool() const
