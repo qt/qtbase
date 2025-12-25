@@ -946,31 +946,32 @@ void tst_QDirListing::withStdAlgorithms()
 void tst_QDirListing::debugStreamOperator_data()
 {
     QTest::addColumn<QDirListing::IteratorFlags>("flags");
-    QTest::addColumn<QString>("expected");
+    QTest::addColumn<QByteArray>("expected");
 
     auto addRow = [](const char *tagName, QDirListing::IteratorFlags f) {
-        QTest::newRow(tagName) << f << QString("QDirListing::IteratorFlags("_ba + tagName + ")");
+        QTest::newRow(tagName)
+            << f
+            << QByteArray("QFlags<QDirListing::IteratorFlag>("_ba + tagName + ')');
     };
 
     using F = QDirListing::IteratorFlag;
     addRow("Default", F::Default);
     addRow("ExcludeFiles|IncludeDotAndDotDot", F::ExcludeFiles | F::IncludeDotAndDotDot);
     addRow("ResolveSymlinks|IncludeHidden", F::ResolveSymlinks | F::IncludeHidden);
-    addRow("ExcludeFiles|ExcludeOther|Recursive", F::ExcludeFiles | F::ExcludeOther | F::Recursive);
 
-    QTest::newRow("DirsOnly|Recursive")
-        << QDirListing::IteratorFlags(F::ExcludeFiles | F::ExcludeOther | F::Recursive)
-        << u"QDirListing::IteratorFlags(ExcludeFiles|ExcludeOther|Recursive)"_s;
+    QTest::addRow("ExcludeFiles|ExcludeOther|Recursive")
+        << QDirListing::IteratorFlags(F::ExcludeFiles | F:: ExcludeOther | F::Recursive)
+        << "QFlags<QDirListing::IteratorFlag>(DirsOnly|Recursive)"_ba;
+
+    addRow("DirsOnly|Recursive", F::DirsOnly | F::Recursive);
 }
 
 void tst_QDirListing::debugStreamOperator()
 {
     QFETCH(QDirListing::IteratorFlags, flags);
-    QFETCH(QString, expected);
-    QString buffer;
-    QDebug debug = QDebug(&buffer).noquote();
-    debug.nospace() << flags;
-    QCOMPARE(buffer.trimmed(), expected);
+    QFETCH(QByteArray, expected);
+
+    QCOMPARE(QDebug::toBytes(flags), expected);
 }
 
 QTEST_MAIN(tst_QDirListing)

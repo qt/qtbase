@@ -9,6 +9,7 @@
 #include <QtCore/qtdeprecationmarkers.h>
 #include <QtCore/qfiledevice.h>
 #include <QtCore/qflags.h>
+#include <QtCore/qtmetamacros.h>
 #include <QtCore/qtclasshelpermacros.h>
 #include <QtCore/qtcoreexports.h>
 #include <QtCore/qdatetime.h>
@@ -26,6 +27,7 @@ class QTimeZone;
 
 class QDirListing
 {
+    Q_GADGET_EXPORT(Q_CORE_EXPORT)
 public:
     enum class IteratorFlag {
         Default =               0x000000,
@@ -47,6 +49,7 @@ public:
         NoNameFiltersForDirs  = 0x040000, // used internally
     };
     Q_DECLARE_FLAGS(IteratorFlags, IteratorFlag)
+    Q_FLAG(IteratorFlags)
 
     Q_CORE_EXPORT explicit QDirListing(const QString &path,
                                        IteratorFlags flags = IteratorFlag::Default);
@@ -150,10 +153,6 @@ public:
     // Qt compatibility
     const_iterator constBegin() const { return begin(); }
     sentinel constEnd() const { return end(); }
-
-#ifndef QT_NO_DEBUG_STREAM
-    Q_CORE_EXPORT friend QDebug operator<<(QDebug debug, QDirListing::IteratorFlags flags);
-#endif
 
 private:
     Q_DISABLE_COPY(QDirListing)
