@@ -312,11 +312,11 @@ void QDirListingPrivate::advance()
     if (engine) {
         while (!fileEngineIterators.empty()) {
             // Find the next valid iterator that matches the filters.
-            QAbstractFileEngineIterator *it;
-            while (it = fileEngineIterators.top().get(), it->advance()) {
+            // Always use top() because entryMatches() may modify `fileEngineIterators`!
+            while (fileEngineIterators.top()->advance()) {
                 QDirEntryInfo entryInfo;
-                entryInfo.fileInfoOpt = it->currentFileInfo();
-                if (entryMatches(entryInfo)) { // modifies `fileEngineIterators`!
+                entryInfo.fileInfoOpt = fileEngineIterators.top()->currentFileInfo();
+                if (entryMatches(entryInfo)) {
                     currentEntryInfo = std::move(entryInfo);
                     return;
                 }
@@ -329,10 +329,9 @@ void QDirListingPrivate::advance()
         QDirEntryInfo entryInfo;
         while (!nativeIterators.empty()) {
             // Find the next valid iterator that matches the filters.
-            QFileSystemIterator *it;
-            while (it = nativeIterators.top().get(),
-                   it->advance(entryInfo.entry, entryInfo.metaData)) {
-                if (entryMatches(entryInfo)) { // modifies `nativeIterators`!
+            // Always use top() because entryMatches() may modify `nativeIterators`!
+            while (nativeIterators.top()->advance(entryInfo.entry, entryInfo.metaData)) {
+                if (entryMatches(entryInfo)) {
                     currentEntryInfo = std::move(entryInfo);
                     return;
                 }
