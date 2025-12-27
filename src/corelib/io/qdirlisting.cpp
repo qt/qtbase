@@ -314,8 +314,7 @@ void QDirListingPrivate::advance()
             // Find the next valid iterator that matches the filters.
             // Always use top() because entryMatches() may modify `fileEngineIterators`!
             while (fileEngineIterators.top()->advance()) {
-                QDirEntryInfo entryInfo;
-                entryInfo.fileInfoOpt = fileEngineIterators.top()->currentFileInfo();
+                QDirEntryInfo entryInfo{fileEngineIterators.top()->currentFileInfo()};
                 if (entryMatches(entryInfo)) {
                     currentEntryInfo = std::move(entryInfo);
                     return;

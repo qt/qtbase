@@ -32,6 +32,12 @@ class QDirEntryInfo
     }
 
 public:
+    QDirEntryInfo() = default;
+    explicit QDirEntryInfo(QFileInfo &&info)
+        : fileInfoOpt(std::move(info))
+    {
+    }
+
     const QFileInfo &fileInfo()
     {
         if (!fileInfoOpt) {
