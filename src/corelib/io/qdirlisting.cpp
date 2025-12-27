@@ -325,16 +325,14 @@ void QDirListingPrivate::advance()
         }
     } else {
 #ifndef QT_NO_FILESYSTEMITERATOR
-        QDirEntryInfo entryInfo;
         while (!nativeIterators.empty()) {
             // Find the next valid iterator that matches the filters.
             // Always use top() because entryMatches() may modify `nativeIterators`!
-            while (nativeIterators.top()->advance(entryInfo.entry, entryInfo.metaData)) {
-                if (entryMatches(entryInfo)) {
-                    currentEntryInfo = std::move(entryInfo);
+            while (std::optional r = nativeIterators.top()->advance()) {
+                if (entryMatches(*r)) {
+                    currentEntryInfo = std::move(*r);
                     return;
                 }
-                entryInfo = {};
             }
 
             nativeIterators.pop();

@@ -57,7 +57,7 @@ QFileSystemIterator::~QFileSystemIterator()
         FindClose(findFileHandle);
 }
 
-bool QFileSystemIterator::advance(QFileSystemEntry &fileEntry, QFileSystemMetaData &metaData)
+std::optional<QDirEntryInfo> QFileSystemIterator::advance()
 {
     bool haveData = false;
     WIN32_FIND_DATA findData;
@@ -80,37 +80,38 @@ bool QFileSystemIterator::advance(QFileSystemEntry &fileEntry, QFileSystemMetaDa
                 if (parts.count() == 4 && QFileSystemEngine::uncListSharesOnServer(
                         "\\\\"_L1 + parts.at(2), &uncShares)) {
                     if (uncShares.isEmpty())
-                        return false; // No shares found in the server
+                        return std::nullopt; // No shares found in the server
                     uncFallback = true;
                 }
             }
         }
     }
     if (findFileHandle == INVALID_HANDLE_VALUE && !uncFallback)
-        return false;
+        return std::nullopt;
     // Retrieve the new file information.
     if (!haveData) {
         if (uncFallback) {
             if (++uncShareIndex >= uncShares.count())
-                return false;
+                return std::nullopt;
         } else {
             if (!FindNextFile(findFileHandle, &findData))
-                return false;
+                return std::nullopt;
         }
     }
     // Create the new file system entry & meta data.
+    QFileSystemEntry fileEntry;
+    QFileSystemMetaData metaData;
     if (uncFallback) {
         fileEntry = QFileSystemEntry(dirPath + uncShares.at(uncShareIndex));
         metaData.fillFromFileAttribute(FILE_ATTRIBUTE_DIRECTORY);
     } else {
         QString fileName = QString::fromWCharArray(findData.cFileName);
         fileEntry = QFileSystemEntry(dirPath + fileName);
-        metaData = QFileSystemMetaData();
         if (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY || !fileName.endsWith(".lnk"_L1)) {
             metaData.fillFromFindData(findData, true);
         }
     }
-    return true;
+    return QDirEntryInfo{std::move(fileEntry), std::move(metaData)};
 }
 
 QT_END_NAMESPACE

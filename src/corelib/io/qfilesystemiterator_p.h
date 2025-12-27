@@ -23,6 +23,7 @@
 #include <QtCore/qdir.h>
 #include <QtCore/qstringlist.h>
 
+#include <QtCore/private/qdirentryinfo_p.h>
 #include <QtCore/private/qfilesystementry_p.h>
 #include <QtCore/private/qfilesystemmetadata_p.h>
 
@@ -42,7 +43,7 @@ public:
     QFileSystemIterator(const QFileSystemEntry &entry, QDirListing::IteratorFlags filters);
     ~QFileSystemIterator();
 
-    bool advance(QFileSystemEntry &fileEntry, QFileSystemMetaData &metaData);
+    std::optional<QDirEntryInfo> advance();
 
 private:
     QString dirPath;

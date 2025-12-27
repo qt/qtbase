@@ -44,7 +44,7 @@ QFileSystemIterator::QFileSystemIterator(const QFileSystemEntry &entry, QDir::Fi
 
 QFileSystemIterator::~QFileSystemIterator() = default;
 
-bool QFileSystemIterator::advance(QFileSystemEntry &fileEntry, QFileSystemMetaData &metaData)
+std::optional<QDirEntryInfo> QFileSystemIterator::advance()
 {
     auto asFileEntry = [this](QStringView name) {
 #ifdef Q_OS_DARWIN
@@ -55,7 +55,7 @@ bool QFileSystemIterator::advance(QFileSystemEntry &fileEntry, QFileSystemMetaDa
         return QFileSystemEntry(dirPath + name, QFileSystemEntry::FromInternalPath());
     };
     if (!dir)
-        return false;
+        return std::nullopt;
 
     for (;;) {
         // From readdir man page:
@@ -78,9 +78,9 @@ bool QFileSystemIterator::advance(QFileSystemEntry &fileEntry, QFileSystemMetaDa
             auto *end = toUtf16.appendToBuffer(buffer.data(), name);
             buffer.resize(end - buffer.constData());
             if (!toUtf16.hasError()) {
-                fileEntry = asFileEntry(buffer);
+                QFileSystemMetaData metaData;
                 metaData.fillFromDirEnt(*dirEntry);
-                return true;
+                return QDirEntryInfo{asFileEntry(buffer), std::move(metaData)};
             } else {
                 errno = EILSEQ; // Invalid or incomplete multibyte or wide character
             }
@@ -90,7 +90,7 @@ bool QFileSystemIterator::advance(QFileSystemEntry &fileEntry, QFileSystemMetaDa
     }
 
     lastError = errno;
-    return false;
+    return std::nullopt;
 }
 
 QT_END_NAMESPACE

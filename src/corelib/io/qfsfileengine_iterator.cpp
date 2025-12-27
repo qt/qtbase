@@ -33,10 +33,8 @@ bool QFSFileEngineIterator::advance()
     if (!nativeIterator)
         return false;
 
-    QFileSystemEntry entry;
-    QFileSystemMetaData data;
-    if (nativeIterator->advance(entry, data)) {
-        m_fileInfo = QFileInfo(new QFileInfoPrivate(entry, data));
+    if (auto r = nativeIterator->advance()) {
+        m_fileInfo = QFileInfo(new QFileInfoPrivate(r->entry, r->metaData));
         return true;
     } else {
         nativeIterator.reset();
