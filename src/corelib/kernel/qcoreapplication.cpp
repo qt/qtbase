@@ -90,6 +90,9 @@
 
 #if __has_include(<sys/auxv.h>)     // Linux and FreeBSD
 #  include <sys/auxv.h>
+#  if defined(Q_OS_LINUX) && !defined(AT_EXECFN)
+#    define AT_EXECFN 31
+#  endif
 #endif
 
 #ifdef Q_OS_VXWORKS
@@ -2412,6 +2415,14 @@ static QString qAppFileName()
     return QString();
 #  elif defined(Q_OS_LINUX)
     // this includes the Embedded Android builds
+
+#    if QT_CONFIG(getauxval)
+    // AT_EXECFN has been provided since v2.6.27; use it if it is an absolute path
+    if (auto ptr = reinterpret_cast<const char *>(getauxval(AT_EXECFN)); ptr && *ptr == '/')
+        return QFile::decodeName(ptr);
+#    endif
+
+    // /proc/self/exe is always is an absolute path
     return QFile::decodeName(qt_readlink("/proc/self/exe"));
 #  elif defined(AT_EXECPATH)
     // seen on FreeBSD, but I suppose the other BSDs could adopt this API
@@ -2424,7 +2435,7 @@ static QString qAppFileName()
 #  else
     // other OS or something
     return QString();
-#endif
+#  endif
 }
 #endif // !Q_OS_WIN && !Q_OS_DARWIN
 
