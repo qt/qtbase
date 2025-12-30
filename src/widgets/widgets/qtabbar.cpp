@@ -2423,6 +2423,7 @@ void QTabBar::wheelEvent(QWheelEvent *event)
                 d->rightB->setEnabled(maxScrollOffset > d->scrollOffset);
                 if (oldScrollOffset != d->scrollOffset) {
                     event->accept();
+                    d->layoutTabs();
                     update();
                     return;
                 }
