@@ -456,7 +456,7 @@ public slots:
             for (auto row : adapter) {
                 qDebug() << row[0] << row[1];
             }
-            adapter[{0, 0, 0}, 1] = "Munich";
+            adapter[QSpan<const int>{ 0, 0, 0 }, 1] = "Munich";
         });
         updater->start(1000);
 
