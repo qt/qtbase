@@ -1493,16 +1493,16 @@ void QWaylandInputDevice::Touch::touch_up(uint32_t serial, uint32_t time, int32_
 
     if (allTouchPointsReleased()) {
         mFocus = nullptr;
-
-        // As of Weston 7.0.0 there is no touch_frame after the last touch_up
-        // (i.e. when the last finger is released). To accommodate for this, issue a
-        // touch_frame. This cannot hurt since it is safe to call the touch_frame
-        // handler multiple times when there are no points left.
-        // See: https://gitlab.freedesktop.org/wayland/weston/issues/44
-        // TODO: change logging category to lcQpaWaylandInput in newer versions.
-        qCDebug(lcQpaWayland, "Generating fake frame event to work around Weston bug");
-        touch_frame();
     }
+
+    // As of Weston 7.0.0 there is no touch_frame after the last touch_up
+    // (i.e. when the last finger is released). To accommodate for this, issue a
+    // touch_frame. This cannot hurt since it is safe to call the touch_frame
+    // handler multiple times when there are no points left.
+    // See: https://gitlab.freedesktop.org/wayland/weston/issues/44
+    // TODO: change logging category to lcQpaWaylandInput in newer versions.
+    qCDebug(lcQpaWayland, "Generating fake frame event to work around Weston bug");
+    touch_frame();
 }
 
 void QWaylandInputDevice::Touch::touch_motion(uint32_t time, int32_t id, wl_fixed_t x, wl_fixed_t y)
