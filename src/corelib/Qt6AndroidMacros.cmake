@@ -1284,7 +1284,7 @@ function(_qt_internal_get_android_abi_cmake_dir_path out_path abi)
             set(cmake_dir "${QT_CONFIG_BUILD_DIR}")
         else()
             string(TOUPPER "${QT_CMAKE_EXPORT_NAMESPACE}" export_namespace_upper)
-            set(cmake_dir "${prefix_path}/${${export_namespace_upper}_INSTALL_LIBS}/cmake")
+            set(cmake_dir "${prefix_path}/${${export_namespace_upper}_INSTALL_CMAKEDIR}")
         endif()
     endif()
 

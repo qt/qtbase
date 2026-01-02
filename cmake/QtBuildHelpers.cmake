@@ -371,6 +371,7 @@ endfunction()
 
 macro(qt_internal_setup_find_host_info_package)
     _qt_internal_determine_if_host_info_package_needed(__qt_build_requires_host_info_package)
+    _qt_internal_setup_qt_host_path("${__qt_build_requires_host_info_package}" "" "")
     _qt_internal_find_host_info_package("${__qt_build_requires_host_info_package}"
         ${INSTALL_CMAKE_NAMESPACE})
 endmacro()

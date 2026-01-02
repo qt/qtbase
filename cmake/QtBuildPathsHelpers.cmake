@@ -95,7 +95,7 @@ function(qt_internal_setup_build_and_install_paths)
         endif()
     endif()
 
-    set(__config_path_part "${INSTALL_LIBDIR}/cmake")
+    set(__config_path_part "${INSTALL_CMAKEDIR}")
     set(QT_CONFIG_BUILD_DIR "${QT_BUILD_DIR}/${__config_path_part}")
     set(QT_CONFIG_INSTALL_DIR "${QT_INSTALL_DIR}")
     if(QT_CONFIG_INSTALL_DIR)
@@ -159,6 +159,8 @@ macro(qt_internal_setup_configure_install_paths)
     qt_configure_process_path(INSTALL_BINDIR "bin" "Executables [PREFIX/bin]")
     qt_configure_process_path(INSTALL_INCLUDEDIR "include" "Header files [PREFIX/include]")
     qt_configure_process_path(INSTALL_LIBDIR "lib" "Libraries [PREFIX/lib]")
+    qt_configure_process_path(INSTALL_CMAKEDIR "${INSTALL_LIBDIR}/cmake"
+        "CMake files [PREFIX/lib/cmake]")
     qt_configure_process_path(INSTALL_MKSPECSDIR "mkspecs" "Mkspecs files [PREFIX/mkspecs]")
     qt_configure_process_path(INSTALL_SHAREDIR "share" "Share files [PREFIX/share]")
     qt_configure_process_path(INSTALL_QT_SHAREDIR "${INSTALL_SHAREDIR}/qt6"

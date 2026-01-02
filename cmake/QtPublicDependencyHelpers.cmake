@@ -299,9 +299,13 @@ macro(_qt_internal_setup_qt_host_path
             else()
                 # First try to auto-compute the location instead of requiring to set
                 # QT_HOST_PATH_CMAKE_DIR explicitly.
-                set(__qt_candidate_host_path_cmake_dir "${QT_HOST_PATH}/lib/cmake")
-                if(__qt_candidate_host_path_cmake_dir
-                        AND EXISTS "${__qt_candidate_host_path_cmake_dir}")
+                __qt_internal_get_possible_cmake_dirs(__qt_candidate_host_path_cmake_dirs
+                    "${QT_HOST_PATH}"
+                )
+                if(NOT __qt_candidate_host_path_cmake_dirs STREQUAL "")
+                    list(GET __qt_candidate_host_path_cmake_dirs 0
+                        __qt_candidate_host_path_cmake_dir
+                    )
                     set(QT_HOST_PATH_CMAKE_DIR
                         "${__qt_candidate_host_path_cmake_dir}" CACHE PATH "")
                 endif()

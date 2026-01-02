@@ -41,30 +41,41 @@ endfunction()
 
 # Checks if the path points to the cmake directory, like lib/cmake.
 function(__qt_internal_check_path_points_to_cmake_dir result path)
-    string(TOUPPER "${QT_CMAKE_EXPORT_NAMESPACE}" export_namespace_upper)
-    if((INSTALL_LIBDIR AND path MATCHES "/${INSTALL_LIBDIR}/cmake$") OR
-        (${export_namespace_upper}_INSTALL_LIBS AND
-            path MATCHES "/${${export_namespace_upper}_INSTALL_LIBS}/cmake$") OR
-        path MATCHES "/lib/cmake$"
-    )
-        set(${result} TRUE PARENT_SCOPE)
-    else()
-        set(${result} FALSE PARENT_SCOPE)
+    if(INSTALL_CMAKEDIR)
+        _qt_internal_re_escape(re_cmakedir "${INSTALL_CMAKEDIR}")
+        if(path MATCHES "/${re_cmakedir}$")
+            set(${result} TRUE PARENT_SCOPE)
+            return()
+        endif()
     endif()
+
+    string(TOUPPER "${QT_CMAKE_EXPORT_NAMESPACE}" export_namespace_upper)
+    if(${export_namespace_upper}_INSTALL_CMAKEDIR)
+        _qt_internal_re_escape(re_cmakedir "${${export_namespace_upper}_INSTALL_CMAKEDIR}")
+        if(path MATCHES "/${re_cmakedir}$")
+            set(${result} TRUE PARENT_SCOPE)
+            return()
+        endif()
+    endif()
+
+    set(${result} FALSE PARENT_SCOPE)
 endfunction()
 
 # Creates a reverse path to prefix from possible cmake directories. Returns the unchanged path
 # if it doesn't point to cmake directory.
 function(__qt_internal_reverse_prefix_path_from_cmake_dir result cmake_path)
     string(TOUPPER "${QT_CMAKE_EXPORT_NAMESPACE}" export_namespace_upper)
-    if(INSTALL_LIBDIR AND cmake_path MATCHES "(.+)/${INSTALL_LIBDIR}/cmake$")
-        if(CMAKE_MATCH_1)
+    if(INSTALL_CMAKEDIR)
+        _qt_internal_re_escape(re_cmakedir "${INSTALL_CMAKEDIR}")
+        if(cmake_path MATCHES "(.+)/${re_cmakedir}$" AND CMAKE_MATCH_1)
             set(${result} "${CMAKE_MATCH_1}" PARENT_SCOPE)
+            return()
         endif()
-    elseif(${export_namespace_upper}_INSTALL_LIBS AND
-        cmake_path MATCHES "(.+)/${${export_namespace_upper}_INSTALL_LIBS}/cmake$")
-        if(CMAKE_MATCH_1)
+    elseif(${export_namespace_upper}_INSTALL_CMAKEDIR)
+        _qt_internal_re_escape(re_cmakedir "${${export_namespace_upper}_INSTALL_CMAKEDIR}")
+        if(cmake_path MATCHES "(.+)/${re_cmakedir}$" AND CMAKE_MATCH_1)
             set(${result} "${CMAKE_MATCH_1}" PARENT_SCOPE)
+            return()
         endif()
     elseif(result MATCHES "(.+)/lib/cmake$")
         if(CMAKE_MATCH_1)
@@ -79,19 +90,19 @@ endfunction()
 function(__qt_internal_get_possible_cmake_dirs out_paths prefix_path)
     set(${out_paths} "")
 
-    if(EXISTS "${prefix_path}/lib/cmake")
-        list(APPEND ${out_paths} "${prefix_path}/lib/cmake")
+    set(next_path "${prefix_path}/${INSTALL_CMAKEDIR}")
+    if(INSTALL_CMAKEDIR AND EXISTS "${next_path}")
+        list(APPEND ${out_paths} "${next_path}")
     endif()
 
     string(TOUPPER "${QT_CMAKE_EXPORT_NAMESPACE}" export_namespace_upper)
-    set(next_path "${prefix_path}/${${export_namespace_upper}_INSTALL_LIBS}/cmake")
-    if(${export_namespace_upper}_INSTALL_LIBS AND EXISTS "${next_path}")
+    set(next_path "${prefix_path}/${${export_namespace_upper}_INSTALL_CMAKEDIR}")
+    if(${export_namespace_upper}_INSTALL_CMAKEDIR AND EXISTS "${next_path}")
         list(APPEND ${out_paths} "${next_path}")
     endif()
 
-    set(next_path "${prefix_path}/${INSTALL_LIBDIR}/cmake")
-    if(INSTALL_LIBDIR AND EXISTS "${next_path}")
-        list(APPEND ${out_paths} "${next_path}")
+    if(EXISTS "${prefix_path}/lib/cmake")
+        list(APPEND ${out_paths} "${prefix_path}/lib/cmake")
     endif()
 
     list(REMOVE_DUPLICATES ${out_paths})
@@ -1162,4 +1173,11 @@ function(_qt_internal_should_include_targets)
     # If no special setup is detected, use the normal logic, i.e. include
     # the Targets.cmake
     set(${arg_OUT_VAR_SHOULD_SKIP} OFF PARENT_SCOPE)
+endfunction()
+
+# Creates a regular expression that exactly matches the given string
+# Found in https://gitlab.kitware.com/cmake/cmake/issues/18580
+function(_qt_internal_re_escape out_var str)
+    string(REGEX REPLACE "([][+.*()^])" "\\\\\\1" regex "${str}")
+    set(${out_var} ${regex} PARENT_SCOPE)
 endfunction()

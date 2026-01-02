@@ -27,10 +27,18 @@ function(_qt_internal_get_build_vars_for_external_projects)
     # Standalone tests and examples have QT_BUILD_DIR pointing to the fake standalone prefix.
     # Use instead the relocatable prefix, because qt must have been built / installed by this point.
     if(QT_INTERNAL_BUILD_STANDALONE_PARTS)
-        qt_path_join(qt_cmake_dir
+        __qt_internal_get_possible_cmake_dirs(cmake_dirs
             "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}"
-            "${INSTALL_LIBDIR}/cmake/${QT_CMAKE_EXPORT_NAMESPACE}"
         )
+        if(cmake_dirs STREQUAL "")
+            message(FATAL_ERROR
+                "Can't locate CMake configuration files below the prefix "
+                "'${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}'."
+            )
+        else()
+            list(GET cmake_dirs 0 qt_cmake_dir)
+        endif()
+        qt_path_join(qt_cmake_dir "${qt_cmake_dir}" "${QT_CMAKE_EXPORT_NAMESPACE}")
 
         set(qt_prefixes "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}")
         set(qt_additional_packages_prefixes "${qt_prefixes}")

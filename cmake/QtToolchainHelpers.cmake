@@ -347,6 +347,7 @@ endif()
            "${init_post_chainload_toolchain}")
 
     qt_compute_relative_path_from_cmake_config_dir_to_prefix()
+    qt_re_escape(re_INSTALL_CMAKEDIR "${INSTALL_CMAKEDIR}")
     configure_file(
         "${CMAKE_CURRENT_SOURCE_DIR}/cmake/qt.toolchain.cmake.in"
         "${__GlobalConfig_build_dir}/qt.toolchain.cmake" @ONLY)

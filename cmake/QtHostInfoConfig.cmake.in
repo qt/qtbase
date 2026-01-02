@@ -6,6 +6,7 @@
 set(@var_prefix@BINDIR "@INSTALL_BINDIR@")
 set(@var_prefix@INCLUDEDIR "@INSTALL_INCLUDEDIR@")
 set(@var_prefix@LIBDIR "@INSTALL_LIBDIR@")
+set(@var_prefix@CMAKEDIR "@INSTALL_CMAKEDIR@")
 set(@var_prefix@MKSPECSDIR "@INSTALL_MKSPECSDIR@")
 set(@var_prefix@ARCHDATADIR "@INSTALL_ARCHDATADIR@")
 set(@var_prefix@PLUGINSDIR "@INSTALL_PLUGINSDIR@")

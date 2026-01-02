@@ -118,7 +118,7 @@ macro(qt_examples_build_begin)
     if(NOT QT_IS_EXTERNAL_EXAMPLES_BUILD OR NOT __qt_all_examples_ported_to_external_projects)
         qt_internal_set_up_build_dir_package_paths()
         list(PREPEND CMAKE_FIND_ROOT_PATH "${QT_BUILD_DIR}")
-        list(PREPEND QT_BUILD_CMAKE_PREFIX_PATH "${QT_BUILD_DIR}/${INSTALL_LIBDIR}/cmake")
+        list(PREPEND QT_BUILD_CMAKE_PREFIX_PATH "${QT_BUILD_DIR}/${INSTALL_CMAKEDIR}")
     endif()
 
     # Because CMAKE_INSTALL_RPATH is empty by default in the repo project, examples need to have
@@ -405,13 +405,13 @@ function(qt_internal_add_example_external_project subdir)
     # We we need to augment the CMAKE_MODULE_PATH with the current repo cmake build dir, to find
     # files like FindWrapBundledFooConfigExtra.cmake.
     set(module_paths "${qt_prefixes}")
-    list(TRANSFORM module_paths APPEND "/${INSTALL_LIBDIR}/cmake/${QT_CMAKE_EXPORT_NAMESPACE}")
+    list(TRANSFORM module_paths APPEND "/${INSTALL_CMAKEDIR}/${QT_CMAKE_EXPORT_NAMESPACE}")
     list(APPEND CMAKE_MODULE_PATH ${module_paths})
 
     # Pass additional paths where qml plugin config files should be included by Qt6QmlPlugins.cmake.
     # This is needed in prefix builds, where the cmake files are not installed yet.
     set(glob_prefixes "${qt_prefixes}")
-    list(TRANSFORM glob_prefixes APPEND "/${INSTALL_LIBDIR}/cmake/${QT_CMAKE_EXPORT_NAMESPACE}Qml")
+    list(TRANSFORM glob_prefixes APPEND "/${INSTALL_CMAKEDIR}/${QT_CMAKE_EXPORT_NAMESPACE}Qml")
 
     set(qml_plugin_cmake_config_file_glob_prefixes "")
     foreach(glob_prefix IN LISTS glob_prefixes)

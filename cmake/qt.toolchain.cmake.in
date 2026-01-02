@@ -167,8 +167,8 @@ if(__qt_toolchain_additional_packages_prefixes)
         file(TO_CMAKE_PATH "${__qt_additional_path}" __qt_additional_path)
         get_filename_component(__qt_additional_path "${__qt_additional_path}" ABSOLUTE)
         set(__qt_additional_path_lib_cmake "${__qt_additional_path}")
-        if(NOT __qt_additional_path_lib_cmake MATCHES "/lib/cmake$")
-            string(APPEND __qt_additional_path_lib_cmake "/lib/cmake")
+        if(NOT __qt_additional_path_lib_cmake MATCHES "/@re_INSTALL_CMAKEDIR@$")
+            string(APPEND __qt_additional_path_lib_cmake "/@INSTALL_CMAKEDIR@")
         endif()
 
         list(APPEND __qt_toolchain_additional_packages_root_paths

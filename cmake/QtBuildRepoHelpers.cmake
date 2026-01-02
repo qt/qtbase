@@ -677,7 +677,7 @@ function(qt_get_standalone_parts_config_files_path out_var)
     # the files.
     set(dir_name "StandaloneTests")
 
-    set(path_suffix "${INSTALL_LIBDIR}/cmake/${INSTALL_CMAKE_NAMESPACE}BuildInternals/${dir_name}")
+    set(path_suffix "${INSTALL_CMAKEDIR}/${INSTALL_CMAKE_NAMESPACE}BuildInternals/${dir_name}")
 
     # Each repo's standalone parts might be configured with a unique CMAKE_STAGING_PREFIX,
     # different from any previous one, and it might not coincide with where the BuildInternals
@@ -838,7 +838,7 @@ macro(qt_build_tests)
     # Prepending to QT_BUILD_CMAKE_PREFIX_PATH helps find components of Qt6, because those
     # find_package calls use NO_DEFAULT_PATH, and thus CMAKE_PREFIX_PATH is ignored.
     list(PREPEND CMAKE_FIND_ROOT_PATH "${QT_BUILD_DIR}")
-    list(PREPEND QT_BUILD_CMAKE_PREFIX_PATH "${QT_BUILD_DIR}/${INSTALL_LIBDIR}/cmake")
+    list(PREPEND QT_BUILD_CMAKE_PREFIX_PATH "${QT_BUILD_DIR}/${INSTALL_CMAKEDIR}")
 
     qt_internal_find_standalone_parts_config_files()
     qt_internal_find_standalone_test_config_file()
@@ -975,7 +975,7 @@ endfunction()
 # examples are being built), as well as for CMake tests (tests that call CMake to try and build
 # CMake applications).
 macro(qt_internal_set_up_build_dir_package_paths)
-    list(PREPEND CMAKE_PREFIX_PATH "${QT_BUILD_DIR}/${INSTALL_LIBDIR}/cmake")
+    list(PREPEND CMAKE_PREFIX_PATH "${QT_BUILD_DIR}/${INSTALL_CMAKEDIR}")
 
     # Make sure the CMake config files do not recreate the already-existing targets.
     if(NOT QT_BUILD_STANDALONE_EXAMPLES)
