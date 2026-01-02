@@ -3888,6 +3888,9 @@ void tst_QRhi::renderToTextureArrayMultiView()
     if (!rhi->isFeatureSupported(QRhi::MultiView))
         QSKIP("Multiview not supported, skipping testing on this backend");
 
+    if (qgetenv("XDG_CURRENT_DESKTOP").toLower().contains("ubuntu") && QSysInfo::productVersion().startsWith("24"))
+        QSKIP("Multiview not supported, skipping testing on this backend");
+
     if (rhi->backend() == QRhi::Vulkan && rhi->driverInfo().deviceType == QRhiDriverInfo::CpuDevice)
         QSKIP("lavapipe does not like multiview, skip for now");
 
