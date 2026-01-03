@@ -4361,7 +4361,7 @@ QRect QCommonStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex 
                 }
 
                 QRect frameRect = groupBox->rect;
-                frameRect.setTop(topMargin);
+                frameRect.setTop(frameRect.top() + topMargin);
 
                 if (sc == SC_GroupBoxFrame) {
                     ret = frameRect;
