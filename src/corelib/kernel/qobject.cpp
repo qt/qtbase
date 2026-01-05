@@ -1957,7 +1957,7 @@ int QObject::startTimer(std::chrono::nanoseconds interval, Qt::TimerType timerTy
 
     auto dispatcher = thisThreadData->eventDispatcher.loadRelaxed();
     if (Q_UNLIKELY(!dispatcher)) {
-        qWarning("QObject::startTimer: Timers can only be used with threads started with QThread");
+        qWarning("QObject::startTimer: current thread's event dispatcher has already been destroyed");
         return 0;
     }
 

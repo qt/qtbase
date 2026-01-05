@@ -198,7 +198,7 @@ void QBasicTimer::start(Duration duration, Qt::TimerType timerType, QObject *obj
 
     QAbstractEventDispatcher *eventDispatcher = currentData->eventDispatcher.loadRelaxed();
     if (Q_UNLIKELY(!eventDispatcher)) {
-        qWarning("QBasicTimer::start: QBasicTimer can only be used with threads started with QThread");
+        qWarning("QBasicTimer::start: current thread's event dispatcher has already been destroyed");
         return;
     }
     stop();
