@@ -85,6 +85,7 @@ private slots:
     void html_infiniteLoop();
     void html_blockIndent();
     void html_listIndent();
+    void html_listNestedParagraphIndent();
     void html_whitespace();
     void html_whitespace_data();
     void html_qt3Whitespace();
@@ -1256,6 +1257,22 @@ void tst_QTextDocumentFragment::html_listIndent()
     cursor.insertFragment(QTextDocumentFragment::fromHtml(html));
     QVERIFY(cursor.currentList());
     QCOMPARE(cursor.currentList()->format().indent(), 4);
+}
+
+void tst_QTextDocumentFragment::html_listNestedParagraphIndent()
+{
+    const char html[] = "<ul style=\"-qt-list-indent:2;\"><li>Blah<p>exposition</p></li></ul>";
+    cursor.insertFragment(QTextDocumentFragment::fromHtml(html));
+    QCOMPARE(cursor.block().text(), "exposition");
+    // The paragraph happens to not be "inside" the list item, as declared: perhaps that's another bug
+    QCOMPARE(cursor.currentList(), nullptr);
+    // But it should have the same indentation as the list item anyway
+    QCOMPARE(cursor.blockFormat().indent(), 2);
+
+    // Go back and check the list item
+    cursor.movePosition(QTextCursor::PreviousBlock);
+    QVERIFY(cursor.currentList());
+    QCOMPARE(cursor.currentList()->format().indent(), 2);
 }
 
 void tst_QTextDocumentFragment::html_whitespace_data()
