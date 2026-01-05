@@ -541,9 +541,9 @@ public:
     >
     auto setField(const char *fieldName, Type value)
     {
-        // handle old code explicitly specifying a non-return type for Ret
-        using T = std::conditional_t<!std::is_void_v<Ret> && !QtJniTypes::Detail::callerHandlesException<Ret>,
-                                     Ret, Type>;
+        // handle old code that explicitly specifies the field type (i.e. Ret != void)
+        using T = std::conditional_t<std::is_void_v<Ret> || QtJniTypes::Detail::callerHandlesException<Ret>,
+                                     Type, Ret>;
         LocalFrame<Ret, T> frame(jniEnv());
         constexpr auto signature = QtJniTypes::fieldSignature<T>();
         jfieldID id = getCachedFieldID(jniEnv(), fieldName, signature);
@@ -559,9 +559,9 @@ public:
     >
     auto setField(const char *fieldName, const char *signature, Type value)
     {
-        // handle old code explicitly specifying a non-return type for Ret
-        using T = std::conditional_t<!std::is_void_v<Ret> && !QtJniTypes::Detail::callerHandlesException<Ret>,
-                                     Ret, Type>;
+        // handle old code that explicitly specifies the field type (i.e. Ret != void)
+        using T = std::conditional_t<std::is_void_v<Ret> || QtJniTypes::Detail::callerHandlesException<Ret>,
+                                     Type, Ret>;
         LocalFrame<Ret, T> frame(jniEnv());
         jfieldID id = getCachedFieldID(frame.jniEnv(), fieldName, signature);
         if (id)
@@ -576,9 +576,9 @@ public:
     >
     static auto setStaticField(const char *className, const char *fieldName, Type value)
     {
-        // handle old code explicitly specifying a non-return type for Ret
-        using T = std::conditional_t<!std::is_void_v<Ret> && !QtJniTypes::Detail::callerHandlesException<Ret>,
-                                     Ret, Type>;
+        // handle old code that explicitly specifies the field type (i.e. Ret != void)
+        using T = std::conditional_t<std::is_void_v<Ret> || QtJniTypes::Detail::callerHandlesException<Ret>,
+                                     Type, Ret>;
         LocalFrame<Ret, T> frame;
         if (jclass clazz = QJniObject::loadClass(className, frame.jniEnv())) {
             constexpr auto signature = QtJniTypes::fieldSignature<q20::remove_cvref_t<T>>();
@@ -598,9 +598,9 @@ public:
     static auto setStaticField(const char *className, const char *fieldName,
                                const char *signature, Type value)
     {
-        // handle old code explicitly specifying a non-return type for Ret
-        using T = std::conditional_t<!std::is_void_v<Ret> && !QtJniTypes::Detail::callerHandlesException<Ret>,
-                                     Ret, Type>;
+        // handle old code that explicitly specifies the field type (i.e. Ret != void)
+        using T = std::conditional_t<std::is_void_v<Ret> || QtJniTypes::Detail::callerHandlesException<Ret>,
+                                     Type, Ret>;
         LocalFrame<Ret, T> frame;
         if (jclass clazz = QJniObject::loadClass(className, frame.jniEnv())) {
             jfieldID id = getCachedFieldID(frame.jniEnv(), clazz, className, fieldName,
@@ -619,9 +619,9 @@ public:
     static auto setStaticField(jclass clazz, const char *fieldName,
                                const char *signature, Type value)
     {
-        // handle old code explicitly specifying a non-return type for Ret
-        using T = std::conditional_t<!std::is_void_v<Ret> && !QtJniTypes::Detail::callerHandlesException<Ret>,
-                                     Ret, Type>;
+        // handle old code that explicitly specifies the field type (i.e. Ret != void)
+        using T = std::conditional_t<std::is_void_v<Ret> || QtJniTypes::Detail::callerHandlesException<Ret>,
+                                     Type, Ret>;
         LocalFrame<Ret, T> frame;
         jfieldID id = getFieldID(frame.jniEnv(), clazz, fieldName, signature, true);
 
