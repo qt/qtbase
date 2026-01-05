@@ -251,12 +251,6 @@ void tst_Android::safeAreaWithWindowFlagsAndStates()
     QFETCH(Qt::WindowStates, windowStates);
     QFETCH(Qt::WindowFlags, windowFlags);
 
-    if ((QNativeInterface::QAndroidApplication::sdkVersion() > __ANDROID_API_V__) &&
-             qgetenv("QTEST_ENVIRONMENT").split(' ').contains("ci") &
-                (!(windowFlags & Qt::ExpandedClientAreaHint) &&
-                     !(windowStates & Qt::WindowFullScreen)))
-        QSKIP("Normal fails on Android 16 (QTBUG-140846).");
-
     QWidget widget;
     QPalette palette = widget.palette();
     palette.setColor(QPalette::Window, Qt::red);
@@ -275,16 +269,14 @@ void tst_Android::safeAreaWithWindowFlagsAndStates()
     using namespace QtJniTypes;
     const int sdkVersion = QNativeInterface::QAndroidApplication::sdkVersion();
     auto activity = QNativeInterface::QAndroidApplication::context();
-
-    // Android 15 enables edge-to-edge by default.
-    bool edgeToEdge = sdkVersion >= __ANDROID_API_V__;
+    Window window = activity.callMethod<Window>("getWindow");
+    View decorView = window.callMethod<View>("getDecorView");
+    WindowInsets insets = decorView.callMethod<WindowInsets>("getRootWindowInsets");
+    QVERIFY(insets.isValid());
 
     // Detect camera cutout
     bool cameraCutout = false;
     if (sdkVersion >= __ANDROID_API_R__) {
-        Window window = activity.callMethod<Window>("getWindow");
-        View decorView = window.callMethod<View>("getDecorView");
-        WindowInsets insets = decorView.callMethod<WindowInsets>("getRootWindowInsets");
         if (insets.isValid()) {
             DisplayCutout cutout = insets.callMethod<DisplayCutout>("getDisplayCutout");
             if (cutout.isValid()) {
@@ -300,14 +292,27 @@ void tst_Android::safeAreaWithWindowFlagsAndStates()
         cameraCutout = true;
     }
 
-    const bool runsOnCI = qgetenv("QTEST_ENVIRONMENT").split(' ').contains("ci");
-    if (sdkVersion >= __ANDROID_API_V__ && runsOnCI) {
-        // However on CI, Android 15 and later doesn't enable edge-to-edge.
-        edgeToEdge = false;
+    int topStableInset = 0;
+    if (sdkVersion >= __ANDROID_API_R__) {
+        jint systemBarsType = WindowInsetsType::callStaticMethod<jint>("systemBars");
+        jint displayCutoutType = WindowInsetsType::callStaticMethod<jint>("displayCutout");
+        jint combinedType = systemBarsType | displayCutoutType;
+
+        GraphicsInsets insetsIgnoreVisibility = insets.callMethod<GraphicsInsets>(
+            "getInsetsIgnoringVisibility", combinedType);
+        QVERIFY(insetsIgnoreVisibility.isValid());
+        topStableInset = insetsIgnoreVisibility.getField<jint>("top");
+    } else {
+        topStableInset = insets.callMethod<jint>("getStableInsetTop");
     }
+
+    // Android 15 enables edge-to-edge by default, however not on Qt CI, so let's rely on
+    // the reported top stable inset of decor view to judge whether edge-to-edge is enabled.
+    bool edgeToEdge = sdkVersion >= __ANDROID_API_V__ && topStableInset != 0;
 
     const bool expandedClientArea = windowFlags & Qt::ExpandedClientAreaHint;
     const bool normalMode = !expandedClientArea && !fullscreen;
+
     if ((normalMode && !edgeToEdge) || (fullscreen && !cameraCutout)) {
         QTRY_COMPARE(widget.windowHandle()->safeAreaMargins(), QMargins());
     } else {
@@ -316,28 +321,10 @@ void tst_Android::safeAreaWithWindowFlagsAndStates()
         // Make sure the margins we get are the same as the system bars sizes,
         // that way we make sure we don't end up with margins bigger than expected.
         // So, retrieve the static system bars height.
-        Window window = activity.callMethod<Window>("getWindow");
-        View decorView = window.callMethod<View>("getDecorView");
-        WindowInsets insets = decorView.callMethod<WindowInsets>("getRootWindowInsets");
-        QVERIFY(insets.isValid());
 
         // Other margins can vary between Android versions, so let's only check for top
-        int top = 0;
-        if (sdkVersion >= __ANDROID_API_R__) {
-            jint systemBarsType = WindowInsetsType::callStaticMethod<jint>("systemBars");
-            jint displayCutoutType = WindowInsetsType::callStaticMethod<jint>("displayCutout");
-            jint combinedType = systemBarsType | displayCutoutType;
-
-            GraphicsInsets insetsIgnoreVisibility = insets.callMethod<GraphicsInsets>(
-                "getInsetsIgnoringVisibility", combinedType);
-            QVERIFY(insetsIgnoreVisibility.isValid());
-            top = insetsIgnoreVisibility.getField<jint>("top");
-        } else {
-            top    = insets.callMethod<jint>("getStableInsetTop");
-        }
-
         qreal dpr = widget.devicePixelRatio();
-        QCOMPARE_LE(widget.windowHandle()->safeAreaMargins().top(), qRound(top / dpr));
+        QCOMPARE_LE(widget.windowHandle()->safeAreaMargins().top(), qRound(topStableInset / dpr));
     }
 }
 
