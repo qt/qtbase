@@ -304,7 +304,7 @@ void tst_QGraphicsAnchorLayout::layoutDirection()
     view->show();
 
     QVERIFY(p->layout());
-    QCOMPARE(checkReverseDirection(p), true);
+    QTRY_COMPARE(checkReverseDirection(p), true);
 
     if (hasSimplification) {
         QVERIFY(usedSimplex(l, Qt::Horizontal));
