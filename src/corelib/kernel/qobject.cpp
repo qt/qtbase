@@ -1950,16 +1950,17 @@ int QObject::startTimer(std::chrono::nanoseconds interval, Qt::TimerType timerTy
     }
 
     auto thisThreadData = d->threadData.loadRelaxed();
-    if (Q_UNLIKELY(!thisThreadData->hasEventDispatcher())) {
-        qWarning("QObject::startTimer: Timers can only be used with threads started with QThread");
-        return 0;
-    }
-    if (Q_UNLIKELY(thread() != QThread::currentThread())) {
+    if (Q_UNLIKELY(thisThreadData != QThreadData::current())) {
         qWarning("QObject::startTimer: Timers cannot be started from another thread");
         return 0;
     }
 
     auto dispatcher = thisThreadData->eventDispatcher.loadRelaxed();
+    if (Q_UNLIKELY(!dispatcher)) {
+        qWarning("QObject::startTimer: Timers can only be used with threads started with QThread");
+        return 0;
+    }
+
     Qt::TimerId timerId = dispatcher->registerTimer(interval, timerType, this);
     d->ensureExtraData();
     d->extraData->runningTimers.append(timerId);
