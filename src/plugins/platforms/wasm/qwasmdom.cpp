@@ -245,7 +245,7 @@ QMimeData *DataTransfer::toMimeDataPreview()
     for (int i = 0; i < webDataTransfer["items"]["length"].as<int>(); ++i) {
         const auto item = webDataTransfer["items"][i];
         if (item["kind"].as<std::string>() == "file") {
-            uriList.append(QUrl("blob://placeholder"));
+            uriList.append(QUrl());
         } else {
             const auto itemMimeType = QString::fromStdString(item["type"].as<std::string>());
             data->setData(itemMimeType, QByteArray());
