@@ -251,7 +251,9 @@ QMimeData *DataTransfer::toMimeDataPreview()
             data->setData(itemMimeType, QByteArray());
         }
     }
-    data->setUrls(uriList);
+    if (!uriList.isEmpty())
+        data->setUrls(uriList);
+
     return data;
 }
 
