@@ -168,7 +168,7 @@ void WasmSuspendResumeControlTest::suspendExclusive()
 
     // Suspend exclusively for the exclusive timer, and verify that
     // the correct timers fired.
-    suspendResume.suspendExclusive(exlusiveTimerHandlerIndex);
+    suspendResume.suspendExclusive(QList<uint32_t> { exlusiveTimerHandlerIndex });
     suspendResume.sendPendingEvents(); // <- also clears exclusive mode
     if (!exclusiveTimerFired)
         QWASMFAIL("Exclusive timer did not fire");
