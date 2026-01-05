@@ -81,10 +81,6 @@ QThreadStorageData::~QThreadStorageData()
 void **QThreadStorageData::get() const
 {
     QThreadData *data = QThreadData::current();
-    if (!data) {
-        qWarning("QThreadStorage::get: QThreadStorage can only be used with threads started with QThread");
-        return nullptr;
-    }
     QList<void *> &tls = data->tls;
     if (tls.size() <= id)
         tls.resize(id + 1);
@@ -101,10 +97,6 @@ void **QThreadStorageData::get() const
 void **QThreadStorageData::set(void *p)
 {
     QThreadData *data = QThreadData::current();
-    if (!data) {
-        qWarning("QThreadStorage::set: QThreadStorage can only be used with threads started with QThread");
-        return nullptr;
-    }
     QList<void *> &tls = data->tls;
     if (tls.size() <= id)
         tls.resize(id + 1);
