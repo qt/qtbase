@@ -237,6 +237,10 @@ void DataTransfer::toMimeDataWithFile(std::function<void(QMimeData *)> callback)
     } // for items
 }
 
+// Creates a preview QMimeData which contains the MIME types but with empty
+// data. This is useful when handling native dragOver events where the
+// native DataTransfer API does not provide drag data (the data becomes
+// available on the drop event).
 QMimeData *DataTransfer::toMimeDataPreview()
 {
     auto data = new QMimeData();
