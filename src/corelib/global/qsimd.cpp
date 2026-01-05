@@ -371,6 +371,37 @@ static void cpuidFeatures07_00(uint &ebx, uint &ecx, uint &edx)
 }
 
 QT_FUNCTION_TARGET_BASELINE
+static void cpuidFeatures07_01(uint &eax, uint &edx)
+{
+#if defined(Q_CC_GNU) && !defined(Q_CC_EMSCRIPTEN)
+    qregisteruint rax;
+    qregisteruint rbx;
+    qregisteruint rcx = 1;
+    qregisteruint rdx;
+    asm ("xchg " PICreg", %1\n"
+         "cpuid\n"
+         "xchg " PICreg", %1\n"
+        : "=a" (rax), "=&r" (rbx), "+&c" (rcx), "=&d" (rdx)
+        : "0" (7));
+    eax = rax;
+    edx = rdx;
+#elif defined(Q_OS_WIN)
+    int info[4];
+    __cpuidex(info, 7, 1);
+    eax = info[0];
+    edx = info[3];
+#elif defined(Q_CC_GHS)
+    unsigned int info[4];
+    __CPUIDEX(7, 1, info);
+    eax = info[0];
+    edx = info[3];
+#else
+    Q_UNUSED(eax);
+    Q_UNUSED(edx);
+#endif
+}
+
+QT_FUNCTION_TARGET_BASELINE
 #if defined(Q_OS_WIN) && !(defined(Q_CC_GNU) || defined(Q_CC_GHS))
 // fallback overload in case this intrinsic does not exist: unsigned __int64 _xgetbv(unsigned int);
 inline quint64 _xgetbv(__int64) { return 0; }
@@ -432,8 +463,10 @@ static quint64 detectProcessorFeatures()
 
     uint results[X86CpuidMaxLeaf] = {};
     cpuidFeatures01(results[Leaf01ECX], results[Leaf01EDX]);
-    if (cpuidLevel >= 7)
+    if (cpuidLevel >= 7) {
         cpuidFeatures07_00(results[Leaf07_00EBX], results[Leaf07_00ECX], results[Leaf07_00EDX]);
+        cpuidFeatures07_01(results[Leaf07_01EAX], results[Leaf07_01EDX]);
+    }
 
     // populate our feature list
     for (uint i = 0; i < arraysize(x86_locators); ++i) {
