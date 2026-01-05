@@ -706,11 +706,13 @@ QTextHtmlImporter::ProcessNodeResult QTextHtmlImporter::processSpecialNodes()
             if (currentNode->listStart != 1)
                 listFmt.setStart(currentNode->listStart);
 
-            ++indent;
-            if (currentNode->hasCssListIndent)
+            if (currentNode->hasCssListIndent) {
+                indent += currentNode->cssListIndent;
                 listFmt.setIndent(currentNode->cssListIndent);
-            else
+            } else {
+                ++indent;
                 listFmt.setIndent(indent);
+            }
 
             List l;
             l.format = listFmt;
@@ -865,7 +867,10 @@ bool QTextHtmlImporter::closeTag()
                 if (lists.isEmpty())
                     break;
                 lists.resize(lists.size() - 1);
-                --indent;
+                if (currentNode->hasCssListIndent)
+                    indent -= currentNode->cssListIndent;
+                else
+                    --indent;
                 blockTagClosed = true;
                 break;
 
