@@ -340,7 +340,7 @@ void QNetworkCacheMetaDataPrivate::save(QDataStream &out, const QNetworkCacheMet
     out << metaData.lastModified();
     out << metaData.saveToDisk();
     out << metaData.attributes();
-    out << metaData.rawHeaders();
+    out << metaData.headers();
 }
 
 /*!
@@ -392,8 +392,7 @@ void QNetworkCacheMetaDataPrivate::load(QDataStream &in, QNetworkCacheMetaData &
     in >> p->lastModified;
     in >> p->saveToDisk;
     in >> p->attributes;
-    QNetworkCacheMetaData::RawHeaderList list; in >> list;
-    metaData.setRawHeaders(list);
+    in >> p->headers;
 }
 
 /*!

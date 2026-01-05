@@ -20,7 +20,7 @@
 #include <memory>
 
 #define CACHE_POSTFIX ".d"_L1
-#define CACHE_VERSION 8
+#define CACHE_VERSION 9
 #define DATA_DIR "data"_L1
 
 #define MAX_COMPRESSION_SIZE (1024 * 1024 * 3)

@@ -626,8 +626,10 @@ void tst_QNetworkDiskCache::streamVersion()
     if (version < out.version())
         out.setVersion(version);
     out << qint32(0xe8);    // cache magic
-    // Following code works only for cache file version 8 and should be updated on version change
-    out << qint32(8);
+    // Following code works only for cache file version 9 and should be updated on version change
+    constexpr qint32 CACHE_FILE_VERSION = 9;
+    static_assert(CACHE_FILE_VERSION == 9, "Cache file format changed: update serialization code");
+    out << CACHE_FILE_VERSION;
     out << qint32(version);
 
     QNetworkCacheMetaData md;
