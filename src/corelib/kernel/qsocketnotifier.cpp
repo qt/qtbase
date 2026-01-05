@@ -153,10 +153,10 @@ QSocketNotifier::QSocketNotifier(qintptr socket, Type type, QObject *parent)
 
     if (!d->sockfd.isValid())
         qWarning("QSocketNotifier: Invalid socket specified");
-    else if (!thisThreadData->hasEventDispatcher())
-        qWarning("QSocketNotifier: Can only be used with threads started with QThread");
+    else if (auto dispatcher = thisThreadData->eventDispatcher.loadRelaxed())
+        dispatcher->registerSocketNotifier(this);
     else
-        thisThreadData->eventDispatcher.loadRelaxed()->registerSocketNotifier(this);
+        qWarning("QSocketNotifier: current thread's event dispatcher has already been destroyed");
 }
 
 /*!
