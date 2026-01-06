@@ -2794,6 +2794,11 @@ void QGuiApplicationPrivate::processSafeAreaMarginsChangedEvent(QWindowSystemInt
 
 void QGuiApplicationPrivate::processThemeChanged(QWindowSystemInterfacePrivate::ThemeChangeEvent *)
 {
+    // FIXME: Remove check once we ensure that the platform plugin is
+    // torn down before QGuiApplication.
+    if (!qGuiApp)
+        return;
+
     if (self)
         self->handleThemeChanged();
 
