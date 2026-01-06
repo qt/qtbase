@@ -1183,6 +1183,7 @@ void tst_QDockWidget::task258459_visibilityChanged()
 {
     QMainWindow win;
     QDockWidget dock1, dock2;
+    win.setWindowFlag(Qt::FramelessWindowHint);
     win.addDockWidget(Qt::RightDockWidgetArea, &dock1);
     win.tabifyDockWidget(&dock1, &dock2);
     QSignalSpy spy1(&dock1, SIGNAL(visibilityChanged(bool)));
