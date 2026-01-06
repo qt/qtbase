@@ -1734,10 +1734,12 @@ private:
     }
 };
 
-template <typename Range, typename Protocol>
+template <typename Range, typename Protocol,
+          QRangeModelDetails::if_can_construct<Range, Protocol> = true>
 QRangeModelAdapter(Range &&, Protocol &&) -> QRangeModelAdapter<Range, Protocol>;
 
-template <typename Range>
+template <typename Range,
+          QRangeModelDetails::if_can_construct<Range> = true>
 QRangeModelAdapter(Range &&) -> QRangeModelAdapter<Range, void>;
 
 QT_END_NAMESPACE

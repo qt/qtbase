@@ -34,6 +34,16 @@ using RangeImplementation = std::conditional_t<std::is_void_v<Protocol>,
                                 QGenericTreeItemModelImpl<Range, Protocol>
                             >;
 
+template <typename ...Args>
+using construct_rangeModel_test = decltype(QRangeModel(std::declval<Args &&>()...));
+
+template <typename ...Args>
+static constexpr bool can_construct_rangeModel = qxp::is_detected_v<construct_rangeModel_test,
+                                                                    Args...>;
+
+template <typename ...Args>
+using if_can_construct = std::enable_if_t<can_construct_rangeModel<Args...>, bool>;
+
 // we can't use wrapped_t, we only want to unpack smart pointers, and maintain
 // the pointer nature of the type.
 template <typename T, typename = void>

@@ -23,6 +23,8 @@ public:
     using QRangeModelTest::QRangeModelTest;
 
     // compile tests
+    void construct_API();
+
     void setRange_API();
 
     void indexOfRow_API();
@@ -237,6 +239,18 @@ API_TEST(setCellRefProperty, at(0).at(0)->setNumber(5))
 
 API_TEST(getListItemProperty, at(0)->number())
 API_TEST(setListItemProperty, at(0).get()->setNumber(5))
+}
+
+template <typename ...Args>
+using construct_test = decltype(QRangeModelAdapter(std::declval<Args &&>() ...));
+
+void tst_QRangeModelAdapter::construct_API()
+{
+    static_assert(qxp::is_detected_v<construct_test, QList<int>>);
+    static_assert(qxp::is_detected_v<construct_test, QList<QList<QString>>>);
+    static_assert(qxp::is_detected_v<construct_test, QList<tree_row *>, tree_row::ProtocolPointerImpl>);
+
+    static_assert(!qxp::is_detected_v<construct_test, int>);
 }
 
 void tst_QRangeModelAdapter::setRange_API()
