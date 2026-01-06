@@ -24,7 +24,11 @@ if (
     NOT INTEGRITY AND NOT VXWORKS AND
     # gcc 10.2.0 chokes in a standard library header
     (NOT CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 10.2.0))
-    if ("${CMAKE_CXX_COMPILE_FEATURES}" MATCHES "cxx_std_20")
+    if ("${CMAKE_CXX_COMPILE_FEATURES}" MATCHES "cxx_std_26")
+        set_property(TARGET tst_qrangemodel PROPERTY CXX_STANDARD 26)
+    elseif ("${CMAKE_CXX_COMPILE_FEATURES}" MATCHES "cxx_std_23")
+        set_property(TARGET tst_qrangemodel PROPERTY CXX_STANDARD 23)
+    elseif ("${CMAKE_CXX_COMPILE_FEATURES}" MATCHES "cxx_std_20")
         set_property(TARGET tst_qrangemodel PROPERTY CXX_STANDARD 20)
     endif()
 endif()

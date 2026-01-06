@@ -44,6 +44,15 @@ static constexpr bool can_construct_rangeModel = qxp::is_detected_v<construct_ra
 template <typename ...Args>
 using if_can_construct = std::enable_if_t<can_construct_rangeModel<Args...>, bool>;
 
+template <typename Output, typename Input>
+decltype(auto) forwardOrConvert(Input&& input)
+{
+    if constexpr (std::is_same_v<q20::remove_cvref<Output>, q20::remove_cvref<Input>>)
+        return std::forward<Input>(input);
+    else
+        return Output(std::forward<Input>(input));
+}
+
 // we can't use wrapped_t, we only want to unpack smart pointers, and maintain
 // the pointer nature of the type.
 template <typename T, typename = void>

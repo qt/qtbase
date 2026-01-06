@@ -60,6 +60,8 @@ private slots:
         m_data.reset();
     }
 
+    void construct();
+
     void modelLifetime();
     void valueBehavior();
     void modelReset();
@@ -953,6 +955,27 @@ void tst_QRangeModelAdapter::moveColumns_API()
     static_assert(!has_moveColumns(d.m_tree));
 
     static_assert(!has_moveTreeColumns(d.m_tree));
+}
+
+void tst_QRangeModelAdapter::construct()
+{
+    std::vector<int> data = { 1, 2, 3 };
+    {
+        QRangeModelAdapter<const std::vector<int>> const_adapter(data);
+        QCOMPARE(const_adapter[0], data[0]); // unchanged, we operate on a local copy
+    }
+
+    {
+        QRangeModelAdapter<std::vector<int>> adapter(std::as_const(data));
+        adapter[0] = 0; // we can assign, but operate on a copy of data
+        QCOMPARE(adapter[0], 0);
+        QCOMPARE(data[0], 1); // unchanged
+    }
+
+    {
+        std::initializer_list<int> list = { 1, 2, 3, 4 };
+        QRangeModelAdapter<std::vector<int>> adapter(list);
+    }
 }
 
 

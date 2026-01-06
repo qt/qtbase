@@ -103,6 +103,17 @@ class QT_TECH_PREVIEW_API QRangeModelAdapter
     template <typename T>
     using unless_adapter = std::enable_if_t<!is_adapter<T>, bool>;
 
+    template <typename R, typename P>
+    using if_compatible_model_params =
+        std::enable_if_t<
+           std::conjunction_v<
+                std::disjunction<
+                    std::is_convertible<R &&, Range>,
+                    std::is_convertible<R &&, Range &&> // for C-arrays
+                >,
+                std::is_convertible<P, Protocol> // note, only void is expected to be convertible to void
+         >, bool>;
+
 #if !defined(Q_OS_VXWORKS) && !defined(Q_OS_INTEGRITY)
     // An adapter on a mutable range can make itself an adapter on a const
     // version of that same range. To make the constructor for a sub-range
@@ -1007,17 +1018,20 @@ public:
     using const_iterator = ConstRowIterator;
     using iterator = RowIterator;
 
-    template <typename R, typename P,
-              std::enable_if_t<!std::is_void_v<P>, bool> = true>
+    template <typename R,
+              typename P,
+              if_compatible_model_params<R, P> = true>
     explicit QRangeModelAdapter(R &&range, P &&protocol)
-        : QRangeModelAdapter(new Model(std::forward<R>(range), std::forward<P>(protocol)))
+        : QRangeModelAdapter(new Model(QRangeModelDetails::forwardOrConvert<Range>(std::forward<R>(range)),
+                                       QRangeModelDetails::forwardOrConvert<Protocol>(std::forward<P>(protocol))))
     {}
 
-    template <typename R, typename P = void,
-              unless_adapter<R> = true,
-              std::enable_if_t<std::is_void_v<P>, bool> = true>
+    template <typename R,
+              typename P = void, // to enable the ctr for void protocols only
+              if_compatible_model_params<R, P> = true,
+              unless_adapter<R> = true>
     explicit QRangeModelAdapter(R &&range)
-        : QRangeModelAdapter(new Model(std::forward<R>(range)))
+        : QRangeModelAdapter(new Model(QRangeModelDetails::forwardOrConvert<Range>(std::forward<R>(range))))
     {}
 
     // compiler-generated copy/move SMF are fine!
