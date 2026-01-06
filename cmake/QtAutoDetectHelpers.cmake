@@ -330,7 +330,9 @@ function(qt_auto_detect_apple)
     set(QT_MAC_SDK_VERSION "${apple_sdk_version}" CACHE STRING "Darwin SDK version.")
 
     _qt_internal_get_xcode_version_raw(xcode_version_raw)
-    set(QT_MAC_XCODE_VERSION "${xcode_version_raw}" CACHE STRING "Xcode version.")
+    if(xcode_version_raw)
+        set(QT_MAC_XCODE_VERSION "${xcode_version_raw}" CACHE STRING "Xcode version.")
+    endif()
 
     if(NOT CMAKE_SYSTEM_NAME)
         # macOS
