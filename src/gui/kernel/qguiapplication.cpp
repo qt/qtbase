@@ -2068,10 +2068,12 @@ bool QGuiApplication::event(QEvent *e)
         break;
     case QEvent::ApplicationFontChange:
     case QEvent::ApplicationPaletteChange:
+        postEvent(QGuiApplication::styleHints(), e->clone());
         for (auto *topLevelWindow : QGuiApplication::topLevelWindows())
             postEvent(topLevelWindow, new QEvent(e->type()));
         break;
     case QEvent::ThemeChange:
+        forwardEvent(QGuiApplication::styleHints(), e);
         for (auto *w : QGuiApplication::allWindows())
             forwardEvent(w, e);
         break;
