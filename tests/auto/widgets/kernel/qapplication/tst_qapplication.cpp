@@ -263,6 +263,7 @@ QT_WARNING_POP
         }
     };
 
+    QApplication::sendPostedEvents();
     EventWatcher watcher;
 
     QCOMPARE(watcher.palette_changed, 0);
@@ -273,11 +274,13 @@ QT_WARNING_POP
     qApp->setFont(font);
     QApplication::processEvents();
 #if QT_DEPRECATED_SINCE(6, 0)
+    // signal, plus events delivered to qApp and QStyleHints
+    QCOMPARE(watcher.palette_changed, 3);
+    QCOMPARE(watcher.font_changed, 3);
+#else
+    // events delivered to qApp and QStyleHints
     QCOMPARE(watcher.palette_changed, 2);
     QCOMPARE(watcher.font_changed, 2);
-#else
-    QCOMPARE(watcher.palette_changed, 1);
-    QCOMPARE(watcher.font_changed, 1);
 #endif
 }
 
