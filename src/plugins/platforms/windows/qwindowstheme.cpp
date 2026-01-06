@@ -673,6 +673,10 @@ Qt::ContrastPreference QWindowsTheme::contrastPreference() const
 
 void QWindowsTheme::handleThemeChange()
 {
+    auto *integration = QWindowsIntegration::instance();
+    if (!integration)
+        return;
+
     QWindowsThemeCache::clearAllThemeCaches();
 
     const auto oldColorScheme = s_colorScheme;
@@ -680,7 +684,6 @@ void QWindowsTheme::handleThemeChange()
     s_colorScheme = effectiveColorScheme();
     if (s_colorScheme != oldColorScheme) {
         // Only propagate color scheme changes if the scheme actually changed
-        auto integration = QWindowsIntegration::instance();
         integration->updateApplicationBadge();
 
         for (QWindowsWindow *w : std::as_const(QWindowsContext::instance()->windows()))
