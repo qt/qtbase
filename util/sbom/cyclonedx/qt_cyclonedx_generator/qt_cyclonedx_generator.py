@@ -55,10 +55,10 @@ def check_package_dependencies() -> None:
         missing_packages.append("tomli")
 
     if importlib.util.find_spec("cyclonedx") is None:
-        missing_packages.append("cyclonedx")
+        missing_packages.append("cyclonedx-python-lib")
 
     if importlib.util.find_spec("packageurl") is None:
-        missing_packages.append("packageurl")
+        missing_packages.append("packageurl-python")
 
     if missing_packages:
         log.error(f"Missing required dependencies: {', '.join(missing_packages)}")
