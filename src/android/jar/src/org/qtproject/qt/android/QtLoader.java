@@ -472,6 +472,12 @@ abstract class QtLoader {
 
         if (m_mainLibName == null)
             m_mainLibName = getMetaData("android.app.lib_name");
+
+        if (m_mainLibName == null || m_mainLibName.isEmpty()) {
+            Log.e(QtTAG, "The main library name is null or empty.");
+            return LoadingResult.Failed;
+        }
+
         // Load main lib
         if (!loadMainLibrary(m_mainLibName + "_" + m_preferredAbi)) {
             Log.e(QtTAG, "Loading main library failed");
@@ -568,6 +574,11 @@ abstract class QtLoader {
             return false;
 
         ArrayList<String> fullPathLibs = getLibrariesFullPaths(libraries);
+
+        if (libraries.size() != fullPathLibs.size()) {
+            Log.e(QtTAG, "Failed to get full paths of libraries.");
+            return false;
+        }
 
         final boolean[] success = {true};
         QtNative.getQtThread().run(() -> {
