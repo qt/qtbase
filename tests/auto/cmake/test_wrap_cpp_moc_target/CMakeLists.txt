@@ -7,8 +7,13 @@ project(test_wrap_cpp_moc_target)
 
 find_package(Qt6Core REQUIRED)
 
-add_executable(example main.cpp)
-
-qt_wrap_cpp(example main.cpp)
-
+add_executable(example
+    main.cpp
+    myobject1.cpp
+)
 target_link_libraries(example PRIVATE Qt::Core)
+
+qt_wrap_cpp(example
+    main.cpp
+    myobject1.h
+)

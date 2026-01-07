@@ -40,7 +40,11 @@ qt_wrap_cpp(<VAR> src_file1 [src_file2 ...]
 
 Creates rules for calling the \l{moc}{Meta-Object Compiler (moc)} on the given
 source files. For each input file, an output file is generated in the build
-directory. The paths of the generated files are added to \c{<VAR>}.
+directory.
+
+With the target-based signature, generated files are added as sources to
+\c{<TARGET>}. With the older signature, the paths of the generated files are
+added to \c{<VAR>}.
 
 \note This is a low-level macro. See the \l{CMake AUTOMOC Documentation} for a
 more convenient way to let source files be processed with \c{moc}.

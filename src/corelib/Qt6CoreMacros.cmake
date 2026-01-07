@@ -174,7 +174,9 @@ endif()
 function(qt6_wrap_cpp)
     # check if the first argument is a target
     if(TARGET ${ARGV0})
-        _qt_internal_wrap_cpp(dummy TARGET ${ARGV})
+        _qt_internal_wrap_cpp(__qt_internal_target_signature_marker
+            TARGET ${ARGV}
+        )
     else()
         set(output_parameter ${ARGV0})
         _qt_internal_wrap_cpp(${ARGV})
@@ -194,11 +196,15 @@ function(qt6_wrap_cpp)
     endif()
 endfunction()
 
-# _qt_internal_wrap_cpp(outfiles inputfile ... )
-
-function(_qt_internal_wrap_cpp outfiles)
+function(_qt_internal_wrap_cpp outfiles_var)
     # get include dirs
     _qt_internal_get_moc_flags(moc_flags)
+
+    if(outfiles_var STREQUAL "__qt_internal_target_signature_marker")
+        set(is_target_signature TRUE)
+    else()
+        set(is_target_signature FALSE)
+    endif()
 
     set(options)
     set(oneValueArgs
@@ -214,6 +220,7 @@ function(_qt_internal_wrap_cpp outfiles)
     set(moc_target ${_WRAP_CPP_TARGET})
     set(moc_depends ${_WRAP_CPP_DEPENDS})
 
+    set(outfiles "")
     set(metatypes_json_list "")
 
     foreach(it ${moc_files})
@@ -225,7 +232,11 @@ function(_qt_internal_wrap_cpp outfiles)
 
         if(it_ext MATCHES "${HEADER_REGEX}")
             _qt_internal_make_output_file("${it}" moc_ cpp outfile)
-            set(is_header_file TRUE)
+            if(is_target_signature)
+                target_sources(${moc_target} PRIVATE "${outfile}")
+            else()
+                list(APPEND outfiles "${outfile}")
+            endif()
         else()
             set(found_source_extension FALSE)
             foreach(LANG C CXX OBJC OBJCXX CUDA)
@@ -270,14 +281,14 @@ function(_qt_internal_wrap_cpp outfiles)
         _qt_internal_create_moc_command(
             ${it} ${outfile} "${moc_flags}" "${moc_options}" "${moc_target}" "${moc_depends}"
             "${out_json_file_var}")
-        list(APPEND ${outfiles} ${outfile})
         if(_WRAP_CPP___QT_INTERNAL_OUTPUT_MOC_JSON_FILES)
             list(APPEND metatypes_json_list "${${out_json_file_var}}")
         endif()
     endforeach()
 
-    if(is_header_file)
-        set(${outfiles} "${${outfiles}}" PARENT_SCOPE)
+    if(NOT outfiles STREQUAL "")
+        list(APPEND "${outfiles_var}" ${outfiles})
+        set("${outfiles_var}" "${${outfiles_var}}" PARENT_SCOPE)
     endif()
 
     if(metatypes_json_list)
