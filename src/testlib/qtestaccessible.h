@@ -131,7 +131,8 @@ public:
     }
     static void setUpdateHandler(std::function<void(QAccessibleEvent *event)> updateHandler)
     {
-        instance()->m_updateHandler = updateHandler;
+        Q_ASSERT_X(updateHandler, __FUNCTION__, "Update handler cannot be nullptr");
+        instance()->m_updateHandler = std::move(updateHandler);
     }
 
 private:
