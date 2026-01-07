@@ -213,26 +213,26 @@ private:
     { return Qt::compareThreeWay(lhs.jd, rhs.jd); }
     Q_DECLARE_STRONGLY_ORDERED_LITERAL_TYPE(QDate)
 
-    friend inline QDate &operator++(QDate &date) noexcept
+    friend QDate &operator++(QDate &date)
     {
         date = date.addDays(1);
         return date;
     }
 
-    friend inline QDate &operator--(QDate &date) noexcept
+    friend QDate &operator--(QDate &date)
     {
         date = date.addDays(-1);
         return date;
     }
 
-    friend inline QDate operator++(QDate &date, int) noexcept
+    friend QDate operator++(QDate &date, int)
     {
         QDate old = date;
         ++date;
         return old;
     }
 
-    friend inline QDate operator--(QDate &date, int) noexcept
+    friend QDate operator--(QDate &date, int)
     {
         QDate old = date;
         --date;
