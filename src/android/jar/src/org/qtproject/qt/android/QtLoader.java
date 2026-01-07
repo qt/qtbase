@@ -421,14 +421,12 @@ abstract class QtLoader {
             return LoadingResult.Failed;
         }
 
-        if (m_extractedNativeLibsDir == null)
-            parseNativeLibrariesDir();
-
         if (isUncompressedNativeLibs()) {
             String apkLibPath = getApkNativeLibrariesDir();
             setEnvironmentVariable("QT_PLUGIN_PATH", apkLibPath);
             setEnvironmentVariable("QML_PLUGIN_PATH", apkLibPath);
         } else {
+            parseNativeLibrariesDir();
             if (m_extractedNativeLibsDir == null || m_extractedNativeLibsDir.isEmpty()) {
                 Log.e(QtTAG, "The native libraries directory is null or empty");
                 return LoadingResult.Failed;
