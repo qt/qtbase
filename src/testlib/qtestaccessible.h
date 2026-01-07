@@ -108,8 +108,8 @@ public:
             return false;
         }
 
-        for (int i = 0; i < eventList().size(); ++i) {
-            if (*eventList()[i] == *ev) {
+        for (qsizetype i = 0; i < eventList().size(); ++i) {
+            if (*eventList().at(i) == *ev) {
                 if (i != 0) {
                     qWarning() << " Found event at position " << i;
                     qWarning("%s", qPrintable(msgAccessibilityEventListMismatch(eventList(), ev)));
