@@ -305,7 +305,7 @@ void tst_QAccessibility::init()
 
 void tst_QAccessibility::cleanup()
 {
-    const EventList list = QTestAccessibility::events();
+    const auto list = QTestAccessibility::events();
     if (!list.isEmpty()) {
         qWarning("%zd accessibility event(s) were not handled in testfunction '%s':", size_t(list.size()),
                  QString(QTest::currentTestFunction()).toLatin1().constData());
