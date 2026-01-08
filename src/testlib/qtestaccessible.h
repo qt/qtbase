@@ -27,7 +27,7 @@ QT_BEGIN_NAMESPACE
 
 class QObject;
 
-bool operator==(const QAccessibleEvent &l, const QAccessibleEvent &r)
+inline bool QTestAccessibility_cmpEvent(const QAccessibleEvent &l, const QAccessibleEvent &r)
 {
     if (l.type() != r.type()) {
 //        qDebug() << "QAccessibleEvent with wrong type: " << qAccessibleEventString(l.type()) << " and " << qAccessibleEventString(r.type());
@@ -109,7 +109,7 @@ public:
         }
 
         for (qsizetype i = 0; i < eventList().size(); ++i) {
-            if (*eventList().at(i) == *ev) {
+            if (QTestAccessibility_cmpEvent(*eventList().at(i), *ev)) {
                 if (i != 0) {
                     qWarning() << " Found event at position " << i;
                     qWarning("%s", qPrintable(msgAccessibilityEventListMismatch(eventList(), ev)));
@@ -124,7 +124,7 @@ public:
     }
     static bool containsEvent(QAccessibleEvent *event) {
         for (const QAccessibleEvent *ev : std::as_const(eventList())) {
-            if (*ev == *event)
+            if (QTestAccessibility_cmpEvent(*ev, *event))
                 return true;
         }
         return false;
@@ -297,6 +297,14 @@ private:
 #if QT_DEPRECATED_SINCE(6, 11)
 using EventList QT_DEPRECATED_VERSION_X_6_11("Use QTestAccessibility::EventList")
     = QTestAccessibility::EventList;
+
+QT_DEPRECATED_VERSION_X_6_11("This was an internal function for QTestAccessibility. "
+                             "Only QAccessibleEvent is allowed to define operator== for itself, "
+                             "and it doesn't, so use a named function instead")
+inline bool operator==(const QAccessibleEvent &l, const QAccessibleEvent &r)
+{
+    return QTestAccessibility_cmpEvent(l, r);
+}
 #endif // QT_DEPRECATED_SINCE(6, 11)
 
 QT_END_NAMESPACE
