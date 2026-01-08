@@ -40,7 +40,7 @@ qt_internal_add_module(Test
         qtest_gui.h
         qtest_network.h
         qtest_widgets.h
-        qtestaccessible.h
+        qtestaccessible.cpp qtestaccessible.h
         qtestassert.h
         qtestblacklist.cpp qtestblacklist_p.h
         qtestcase.cpp qtestcase.h qtestcase_p.h

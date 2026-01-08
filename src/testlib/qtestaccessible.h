@@ -266,17 +266,8 @@ private:
         return ev;
     }
 
-    static EventList &eventList()
-    {
-        static EventList list;
-        return list;
-    }
-
-    static QTestAccessibility *&instance()
-    {
-        static QTestAccessibility *ta = nullptr;
-        return ta;
-    }
+    Q_TESTLIB_EXPORT static EventList &eventList();
+    Q_TESTLIB_EXPORT static QTestAccessibility *&instance();
 
 private:
     static QString msgAccessibilityEventListMismatch(const EventList &haystack,
