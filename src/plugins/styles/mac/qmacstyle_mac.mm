@@ -4379,8 +4379,12 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                         myTab.palette.setColor(foregroundRole, Qt::white);
 
             if (myTab.documentMode && isDarkMode()) {
-                bool active = (myTab.state & State_Selected) && (myTab.state & State_Active);
-                myTab.palette.setColor(foregroundRole, active ? Qt::white : Qt::gray);
+                if (const auto *tabBar = qobject_cast<const QTabBar *>(w)) {
+                    if (!tabBar->tabTextColor(myTab.tabIndex).isValid()) {
+                        bool active = (myTab.state & State_Selected) && (myTab.state & State_Active);
+                        myTab.palette.setColor(foregroundRole, active ? Qt::white : Qt::gray);
+                    }
+                }
             }
 
             int heightOffset = 0;
