@@ -80,6 +80,7 @@ inline bool QTestAccessibility_cmpEvent(const QAccessibleEvent &l, const QAccess
 
 class QTestAccessibility
 {
+    Q_DISABLE_COPY_MOVE(QTestAccessibility)
 public:
     // Use pointers since we subclass QAccessibleEvent
     using EventList = QList<QAccessibleEvent*>;
