@@ -27,9 +27,6 @@ QT_BEGIN_NAMESPACE
 
 class QObject;
 
-// Use pointers since we subclass QAccessibleEvent
-using EventList = QList<QAccessibleEvent*>;
-
 bool operator==(const QAccessibleEvent &l, const QAccessibleEvent &r)
 {
     if (l.type() != r.type()) {
@@ -84,6 +81,9 @@ bool operator==(const QAccessibleEvent &l, const QAccessibleEvent &r)
 class QTestAccessibility
 {
 public:
+    // Use pointers since we subclass QAccessibleEvent
+    using EventList = QList<QAccessibleEvent*>;
+
     static void initialize()
     {
         if (!instance()) {
@@ -293,6 +293,11 @@ private:
     std::function<void(QAccessibleEvent *event)> m_updateHandler = [](QAccessibleEvent *) { ; };
 
 };
+
+#if QT_DEPRECATED_SINCE(6, 11)
+using EventList QT_DEPRECATED_VERSION_X_6_11("Use QTestAccessibility::EventList")
+    = QTestAccessibility::EventList;
+#endif // QT_DEPRECATED_SINCE(6, 11)
 
 QT_END_NAMESPACE
 
