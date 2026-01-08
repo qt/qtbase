@@ -84,6 +84,7 @@ bool operator==(const QAccessibleEvent &l, const QAccessibleEvent &r)
 
 class QTestAccessibility
 {
+    Q_DISABLE_COPY_MOVE(QTestAccessibility)
 public:
     static void initialize()
     {
