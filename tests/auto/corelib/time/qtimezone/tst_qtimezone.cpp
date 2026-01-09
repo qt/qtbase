@@ -58,6 +58,7 @@ private Q_SLOTS:
     // Backend tests (see also ../qtimezonebackend/)
     void utcTest();
     void darwinTypes();
+    void wasmTypes();
     void localeSpecificDisplayName_data();
     void localeSpecificDisplayName();
     // Compatibility with std::chrono::tzdb:
@@ -1293,6 +1294,28 @@ void tst_QTimeZone::darwinTypes()
 #else
     extern void tst_QTimeZone_darwinTypes(); // in tst_qtimezone_darwin.mm
     tst_QTimeZone_darwinTypes();
+#endif
+}
+
+void tst_QTimeZone::wasmTypes()
+{
+#ifndef Q_OS_WASM
+    QSKIP("This is a WebAssembly-only test");
+#else
+    const QByteArray sysId = QTimeZone::systemTimeZoneId();
+    QVERIFY(!sysId.isEmpty());
+    QVERIFY(sysId == "UTC" || sysId.startsWith("UTC+") || sysId.startsWith("UTC-"));
+
+    const QDateTime now = QDateTime::currentDateTimeUtc();
+
+    const QTimeZone utcPlus2(7200); // UTC+02:00
+    QVERIFY(utcPlus2.isValid());
+    QCOMPARE(utcPlus2.id(), QByteArray("UTC+02:00"));
+    QCOMPARE(utcPlus2.offsetFromUtc(now), 7200);
+
+    const QTimeZone local(QTimeZone::LocalTime);
+    const QTimeZone localBackend = local.asBackendZone();
+    QCOMPARE(local.offsetFromUtc(now), localBackend.offsetFromUtc(now));
 #endif
 }
 

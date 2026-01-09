@@ -23,6 +23,10 @@
 
 #include <algorithm>
 
+#ifdef Q_OS_WASM
+#include <emscripten/val.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 using namespace QtMiscUtils;
@@ -1349,7 +1353,19 @@ qint32 QUtcTimeZonePrivate::daylightTimeOffset(qint64 atMSecsSinceEpoch) const
 
 QByteArray QUtcTimeZonePrivate::systemTimeZoneId() const
 {
+#ifdef Q_OS_WASM
+    const emscripten::val date = emscripten::val::global("Date").new_();
+    if (date.isUndefined())
+        return utcQByteArray();
+    // JavaScript's getTimezoneOffset() returns minutes west of UTC.
+    // Qt expects seconds east of UTC, so we negate and convert to seconds.
+    const int offsetSeconds = -date.call<int>("getTimezoneOffset") * 60;
+    if (offsetSeconds == 0)
+        return utcQByteArray();
+    return isoOffsetFormat(offsetSeconds).toUtf8();
+#else
     return utcQByteArray();
+#endif
 }
 
 // TODO: port to QByteArrayView

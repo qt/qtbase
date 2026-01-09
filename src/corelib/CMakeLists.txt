@@ -1047,7 +1047,7 @@ qt_internal_extend_target(Core
 
 qt_internal_extend_target(Core
     CONDITION
-        QT_FEATURE_timezone AND UNIX AND NOT VXWORKS
+        QT_FEATURE_timezone AND UNIX AND NOT VXWORKS AND NOT WASM
         AND NOT ANDROID AND NOT APPLE AND NOT QT_FEATURE_timezone_tzdb
     SOURCES
         time/qtimezoneprivate_tz.cpp

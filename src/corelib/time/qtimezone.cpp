@@ -30,7 +30,7 @@ static QTimeZonePrivate *newBackendTimeZone()
     return new QMacTimeZonePrivate();
 #elif defined(Q_OS_ANDROID)
     return new QAndroidTimeZonePrivate();
-#elif defined(Q_OS_UNIX) && !defined(Q_OS_VXWORKS)
+#elif defined(Q_OS_UNIX) && !defined(Q_OS_VXWORKS) && !defined(Q_OS_WASM)
     return new QTzTimeZonePrivate();
 #elif QT_CONFIG(icu)
     return new QIcuTimeZonePrivate();
@@ -51,7 +51,7 @@ static QTimeZonePrivate *newBackendTimeZone(const QByteArray &ianaId)
     return new QMacTimeZonePrivate(ianaId);
 #elif defined(Q_OS_ANDROID)
     return new QAndroidTimeZonePrivate(ianaId);
-#elif defined(Q_OS_UNIX) && !defined(Q_OS_VXWORKS)
+#elif defined(Q_OS_UNIX) && !defined(Q_OS_VXWORKS) && !defined(Q_OS_WASM)
     return new QTzTimeZonePrivate(ianaId);
 #elif QT_CONFIG(icu)
     return new QIcuTimeZonePrivate(ianaId);
@@ -200,6 +200,17 @@ Q_GLOBAL_STATIC(QTimeZoneSingleton, global_tz);
     \note When Qt is built with the ICU library, it is used in preference to the
     Windows system APIs, bypassing all problems with those APIs using different
     names.
+
+    \section2 WebAssembly
+
+    On WebAssembly, QTimeZone supports only UTC and fixed UTC-offset time zones
+    when represented in backend-based form. The IANA timezone database is not
+    available, so functions like availableTimeZoneIds() return only UTC offset
+    zones. The system time zone is obtained via JavaScript's
+    \c{Date.getTimezoneOffset()} and represented as a fixed offset (e.g.,
+    "UTC+02:00") rather than a geographic IANA ID. However,
+    QTimeZone(QTimeZone::LocalTime) still provides a faithful representation
+    of local time, as it relies on the platform's standard time functions.
 
     \section2 System Time Zone
 
