@@ -439,8 +439,11 @@
     a move-only type, or you don't want to copy the result, use takeResult()
     instead.
 
-    \note Calling \c result() leads to undefined behavior if isValid()
-    returns \c false for this QFuture.
+//! [ub_when_invalid]
+    \note Calling this function leads to undefined behavior if isValid()
+    returns \c false for this QFuture. If this QFuture is not yet started, call
+    waitForFinished() before calling this function to avoid undefiend behavior.
+//! [ub_when_invalid]
 
     \sa resultAt(), results(), takeResult()
 */
@@ -451,8 +454,7 @@
     immediately available, this function will block and wait for the result to
     become available.
 
-    \note Calling resultAt() leads to undefined behavior if isValid()
-    returns \c false for this QFuture.
+    \include qfuture.qdoc ub_when_invalid
 
     \sa result(), results(), takeResult(), resultCount()
 */
@@ -462,8 +464,7 @@
     Returns \c true if the result at \a index is immediately available; otherwise
     returns \c false.
 
-    \note Calling isResultReadyAt() leads to undefined behavior if isValid()
-    returns \c false for this QFuture.
+    \include qfuture.qdoc ub_when_invalid
 
     \sa resultAt(), resultCount(), takeResult()
 */
@@ -477,8 +478,7 @@
     still iterate through the list of move-only results by using \l{STL-style iterators}
     or read-only \l{Java-style iterators}.
 
-    \note Calling \c results() leads to undefined behavior if isValid()
-    returns \c false for this QFuture.
+    \include qfuture.qdoc ub_when_invalid
 
     \sa result(), resultAt(), takeResult(), resultCount(), isValid()
 */
@@ -533,7 +533,8 @@
     \since 6.0
 
     Returns \c true if a result or results can be accessed or taken from this
-    QFuture object. Returns \c false after the result was taken from the future.
+    QFuture object. Returns \c false if the related QPromise has not yet
+    started or the result has already been collected from the future.
 
     \note The return value of this function only implies whether the future
     result can be consumed, not if it is ready. This function will return
