@@ -3,7 +3,5 @@
 # QTBUG-87025
 [desktopSettingsAware]
 android
-[wheelEventPropagation]
-android
 [modalDialog]
 android

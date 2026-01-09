@@ -2397,7 +2397,7 @@ void tst_QApplication::wheelEventPropagation()
 
     auto innerVBar = innerArea.verticalScrollBar();
     innerVBar->setObjectName("innerArea_vbar");
-    QCOMPARE(innerVBar->isVisible(), innerScrolls);
+    QTRY_COMPARE(innerVBar->isVisible(), innerScrolls);
     auto innerHBar = innerArea.horizontalScrollBar();
     innerHBar->setObjectName("innerArea_hbar");
     QCOMPARE(innerHBar->isVisible(), innerScrolls);
