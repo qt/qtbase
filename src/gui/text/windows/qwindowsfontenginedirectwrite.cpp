@@ -1433,7 +1433,9 @@ QImage QWindowsFontEngineDirectWrite::renderColorGlyph(DWRITE_GLYPH_RUN *glyphRu
                 }
 
                 if (colorGlyphRun->glyphImageFormat == DWRITE_GLYPH_IMAGE_FORMATS_NONE) {
-                    break;
+                    // On some older platforms, we get a glyph run with format NONE before
+                    // the actual ones
+                    continue;
                 } else if (colorGlyphRun->glyphImageFormat == DWRITE_GLYPH_IMAGE_FORMATS_COLR) {
                     if (ret.isNull()) {
                         ret = QImage(boundingRect.width() - 1,
@@ -1442,15 +1444,15 @@ QImage QWindowsFontEngineDirectWrite::renderColorGlyph(DWRITE_GLYPH_RUN *glyphRu
                         ret.fill(0);
                     }
 
-                    if (!renderColr0GlyphRun(&ret,
-                                             reinterpret_cast<const DWRITE_COLOR_GLYPH_RUN *>(colorGlyphRun), // Broken inheritance in MinGW
-                                             transform,
-                                             renderMode,
-                                             measureMode,
-                                             gridFitMode,
-                                             color,
-                                             boundingRect)) {
-                        return QImage{};
+                    if (renderColr0GlyphRun(&ret,
+                                            reinterpret_cast<const DWRITE_COLOR_GLYPH_RUN *>(colorGlyphRun), // Broken inheritance in MinGW
+                                            transform,
+                                            renderMode,
+                                            measureMode,
+                                            gridFitMode,
+                                            color,
+                                            boundingRect)) {
+                        break;
                     }
                 } else if (colorGlyphRun->glyphImageFormat & supportedBitmapFormats) {
                     ComPtr<IDWriteFontFace4> face4;
@@ -1497,6 +1499,8 @@ QImage QWindowsFontEngineDirectWrite::renderColorGlyph(DWRITE_GLYPH_RUN *glyphRu
                             ret = ret.transformed(matrix, Qt::SmoothTransformation);
 
                         face4->ReleaseGlyphImageData(ctx);
+
+                        break;
                     }
 
                 } else {
