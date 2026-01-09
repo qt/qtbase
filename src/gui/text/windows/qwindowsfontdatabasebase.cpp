@@ -626,6 +626,11 @@ void QWindowsFontDatabaseBase::createDirectWriteFactory(IDWriteFactory **factory
     }
 
     if (result == nullptr) {
+        qCDebug(lcQpaFonts) << "Trying to create IDWriteFactory4";
+        DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory4), &result);
+    }
+
+    if (result == nullptr) {
         qCDebug(lcQpaFonts) << "Trying to create IDWriteFactory3";
         DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory3), &result);
     }
