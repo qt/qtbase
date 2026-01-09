@@ -17,6 +17,7 @@
         android:label="-- %%INSERT_APP_NAME%% --"
         android:icon="-- %%INSERT_APP_ICON%% --"
         android:requestLegacyExternalStorage="true"
+        android:enableOnBackInvokedCallback="false"
         android:allowBackup="true"
         android:fullBackupOnly="false">
         <activity
