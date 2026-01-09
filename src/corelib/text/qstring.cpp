@@ -1747,6 +1747,13 @@ static void qtWarnAboutInvalidRegularExpression(const QRegularExpression &re, co
     name overtly indicates some other encoding, such \c{const char *}
     parameters are assumed to be encoded in UTF-8.
 
+    Since Qt 6.4, it is also possible to initialize QStrings using
+    the \l {Qt::Literals::StringLiterals::operator""_s()} and
+    \l {Qt::Literals::StringLiterals::operator""_L1()} literal
+    operators. In many cases, using the literals results in
+    \l{More efficient string construction}{more efficient string construction}.
+
+
     You can also provide string data as an array of \l{QChar}s:
 
     \snippet qstring/main.cpp 1
@@ -10225,6 +10232,9 @@ QString QString::toHtmlEscaped() const
   \note Some compilers have bugs encoding strings containing characters outside
   the US-ASCII character set. Make sure you prefix your string with \c{u} in
   those cases. It is optional otherwise.
+
+  \note QStringLiteral is interchangeable with \l operator""_s. The latter saves
+  typing when many string literals are present in the code.
 
   \sa QByteArrayLiteral
 */
