@@ -555,7 +555,9 @@ class QTableCornerButton : public QAbstractButton
 {
     Q_OBJECT
 public:
-    QTableCornerButton(QWidget *parent) : QAbstractButton(parent) {}
+    QTableCornerButton(QWidget *parent) : QAbstractButton(parent) {
+        setObjectName(QLatin1String("qt_tableview_cornerbutton"));
+    }
     void paintEvent(QPaintEvent*) override {
         QStyleOptionHeader opt;
         opt.initFrom(this);
