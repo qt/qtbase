@@ -322,7 +322,23 @@ void QWasmInputContext::updateInputElement()
     else
         m_inputElement.set("type", "text");
 
-    m_inputElement.set("inputMode", std::string("text"));
+// change inputmode to suit Qt imhints
+
+    Qt::InputMethodHints imHints = static_cast<Qt::InputMethodHints>(query.value(Qt::ImHints).toInt());
+    std::string inMode = "text";
+
+    if (imHints & Qt::ImhDigitsOnly)
+        inMode = "numeric";
+    if (imHints & Qt::ImhFormattedNumbersOnly)
+        inMode = "decimal";
+    if (imHints & Qt::ImhDialableCharactersOnly)
+        inMode = "tel";
+    if (imHints & Qt::ImhEmailCharactersOnly)
+        inMode = "email";
+    if (imHints & Qt::ImhUrlCharactersOnly)
+        inMode = "url";
+    // search ??
+    m_inputElement.set("inputMode",inMode);
 
     m_inputElement.call<void>("focus");
 }
