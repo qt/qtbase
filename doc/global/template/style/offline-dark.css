@@ -396,6 +396,10 @@ h3.fn:target {
     color: #a4a6a8
 }
 
+.template-block {
+    white-space: pre-wrap
+}
+
 /*
 -----------------
 table styles

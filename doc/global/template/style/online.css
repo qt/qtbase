@@ -471,6 +471,9 @@ h1,h2,h3,h4,h5,h6 {
 .qmlname span.name {
   font-weight: 400
 }
+.template-block {
+  white-space: pre-wrap
+}
 .qmlname {
   font-size:1.46em
 }

@@ -102,6 +102,10 @@ code {
   font-weight: 400;
 }
 
+.template-block {
+  white-space: pre-wrap;
+}
+
 p.naviNextPrevious {
   text-align: right;
   margin-right: 20px;
