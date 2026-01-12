@@ -187,7 +187,7 @@ namespace QRangeModelDetails
     { return end(QRangeModelDetails::refTo(std::forward<C>(c))); }
     template <typename C>
     static auto pos(C &&c, int i)
-    { return std::next(adl_begin(std::forward<C>(c)), i); }
+    { return std::next(QRangeModelDetails::adl_begin(std::forward<C>(c)), i); }
 
     // Test if a type is a range, and whether we can modify it using the
     // standard C++ container member functions insert, erase, and resize.
@@ -318,7 +318,7 @@ namespace QRangeModelDetails
     template <typename C, typename = void>
     struct test_cbegin : std::false_type {};
     template <typename C>
-    struct test_cbegin<C, std::void_t<decltype(adl_begin(std::declval<const C&>()))>>
+    struct test_cbegin<C, std::void_t<decltype(QRangeModelDetails::adl_begin(std::declval<const C&>()))>>
         : std::true_type
     {};
 
@@ -334,12 +334,12 @@ namespace QRangeModelDetails
         static constexpr bool has_cbegin = false;
     };
     template <typename C>
-    struct range_traits<C, std::void_t<decltype(adl_begin(std::declval<C&>())),
-                                       decltype(adl_end(std::declval<C&>())),
-                                       std::enable_if_t<!is_multi_role_v<C>>
+    struct range_traits<C, std::void_t<decltype(QRangeModelDetails::adl_begin(std::declval<C&>())),
+                                       decltype(QRangeModelDetails::adl_end(std::declval<C&>())),
+                                       std::enable_if_t<!QRangeModelDetails::is_multi_role_v<C>>
                                       >> : std::true_type
     {
-        using iterator = decltype(adl_begin(std::declval<C&>()));
+        using iterator = decltype(QRangeModelDetails::adl_begin(std::declval<C&>()));
         using value_type = std::remove_reference_t<decltype(*std::declval<iterator&>())>;
         static constexpr bool is_mutable = !std::is_const_v<C> && !std::is_const_v<value_type>;
         static constexpr bool has_insert = test_insert<C>();
@@ -710,18 +710,18 @@ namespace QRangeModelDetails
     {
         mutable std::remove_const_t<ModelStorage> m_model;
 
-        using iterator = decltype(adl_begin(m_model));
-        using const_iterator = decltype(adl_begin(m_model));
+        using iterator = decltype(QRangeModelDetails::adl_begin(m_model));
+        using const_iterator = decltype(QRangeModelDetails::adl_begin(m_model));
     };
 
     template <typename ModelStorage>
     struct Storage<ModelStorage,
-                   std::void_t<decltype(adl_begin(std::declval<const ModelStorage&>()))>>
+                   std::void_t<decltype(QRangeModelDetails::adl_begin(std::declval<const ModelStorage&>()))>>
     {
         ModelStorage m_model;
 
-        using iterator = decltype(adl_begin(m_model));
-        using const_iterator = decltype(adl_begin(std::as_const(m_model)));
+        using iterator = decltype(QRangeModelDetails::adl_begin(m_model));
+        using const_iterator = decltype(QRangeModelDetails::adl_begin(std::as_const(m_model)));
     };
 
     template <typename ModelStorage, typename ItemType>

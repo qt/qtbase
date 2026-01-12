@@ -79,6 +79,7 @@ private slots:
     void inconsistentColumnCount();
     void largeArrays();
     void mapsAsRange();
+    void spanAsRange();
     void filterAsRange();
 
     void tree_data();
@@ -1574,6 +1575,13 @@ void tst_QRangeModel::mapsAsRange()
         });
         QCOMPARE(model.columnCount(), 2);
     }
+}
+
+void tst_QRangeModel::spanAsRange()
+{
+    QList<int> list = {1, 2, 3};
+    QSpan span(list);
+    QRangeModel model(span);
 }
 
 void tst_QRangeModel::filterAsRange()
