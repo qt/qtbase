@@ -177,7 +177,9 @@ Q_CONSTINIT static Qt::LayoutDirection layout_direction = Qt::LayoutDirectionAut
 Q_CONSTINIT static Qt::LayoutDirection effective_layout_direction = Qt::LeftToRight;
 Q_CONSTINIT static bool force_reverse = false;
 
+Q_DECL_DEPRECATED_X("Use QGuiApplicationPrivate::instance() instead")
 Q_CONSTINIT QGuiApplicationPrivate *QGuiApplicationPrivate::self = nullptr;
+
 Q_CONSTINIT int QGuiApplicationPrivate::m_fakeMouseSourcePointId = -1;
 
 #ifndef QT_NO_CLIPBOARD
@@ -731,7 +733,9 @@ QGuiApplicationPrivate::QGuiApplicationPrivate(int &argc, char **argv)
       inputMethod(nullptr),
       lastTouchType(QEvent::TouchEnd)
 {
-    self = this;
+    // Note: Not same as QCoreApplication::self
+    QT_IGNORE_DEPRECATIONS(QGuiApplicationPrivate::self = this;)
+
     application_type = QCoreApplicationPrivate::Gui;
 #ifndef QT_NO_SESSIONMANAGER
     is_session_restored = false;
@@ -852,9 +856,10 @@ QString QGuiApplication::desktopFileName()
 QWindow *QGuiApplication::modalWindow()
 {
     CHECK_QAPP_INSTANCE(nullptr)
-    if (QGuiApplicationPrivate::self->modalWindowList.isEmpty())
+    const auto &modalWindows = QGuiApplicationPrivate::instance()->modalWindowList;
+    if (modalWindows.isEmpty())
         return nullptr;
-    return QGuiApplicationPrivate::self->modalWindowList.constFirst();
+    return modalWindows.constFirst();
 }
 
 static void updateBlockedStatusRecursion(QWindow *window, bool shouldBeBlocked)
@@ -875,8 +880,8 @@ void QGuiApplicationPrivate::updateBlockedStatus(QWindow *window)
 {
     bool shouldBeBlocked = false;
     const bool popupType = (window->type() == Qt::ToolTip) || (window->type() == Qt::Popup);
-    if (!popupType && !self->modalWindowList.isEmpty())
-        shouldBeBlocked = self->isWindowBlocked(window);
+    if (!popupType && !QGuiApplicationPrivate::instance()->modalWindowList.isEmpty())
+        shouldBeBlocked = QGuiApplicationPrivate::instance()->isWindowBlocked(window);
     updateBlockedStatusRecursion(window, shouldBeBlocked);
 }
 
@@ -890,18 +895,19 @@ static inline bool needsWindowBlockedEvent(const QWindow *w)
 
 void QGuiApplicationPrivate::showModalWindow(QWindow *modal)
 {
-    self->modalWindowList.prepend(modal);
+    auto *guiAppPrivate = QGuiApplicationPrivate::instance();
+    guiAppPrivate->modalWindowList.prepend(modal);
 
     // Send leave for currently entered window if it should be blocked
     if (currentMouseWindow && !QWindowPrivate::get(currentMouseWindow)->isPopup()) {
-        bool shouldBeBlocked = self->isWindowBlocked(currentMouseWindow);
+        bool shouldBeBlocked = guiAppPrivate->isWindowBlocked(currentMouseWindow);
         if (shouldBeBlocked) {
             // Remove the new window from modalWindowList temporarily so leave can go through
-            self->modalWindowList.removeFirst();
+            guiAppPrivate->modalWindowList.removeFirst();
             QEvent e(QEvent::Leave);
             QGuiApplication::sendEvent(currentMouseWindow, &e);
             currentMouseWindow = nullptr;
-            self->modalWindowList.prepend(modal);
+            guiAppPrivate->modalWindowList.prepend(modal);
         }
     }
 
@@ -915,7 +921,7 @@ void QGuiApplicationPrivate::showModalWindow(QWindow *modal)
 
 void QGuiApplicationPrivate::hideModalWindow(QWindow *window)
 {
-    self->modalWindowList.removeAll(window);
+    QGuiApplicationPrivate::instance()->modalWindowList.removeAll(window);
 
     for (QWindow *window : std::as_const(QGuiApplicationPrivate::window_list)) {
         if (needsWindowBlockedEvent(window) && window->d_func()->blockedByModalWindow)
@@ -1832,7 +1838,8 @@ QGuiApplicationPrivate::~QGuiApplicationPrivate()
     popup_list.clear();
     screen_list.clear();
 
-    self = nullptr;
+    // Note: Not same as QCoreApplication::self
+    QT_IGNORE_DEPRECATIONS(QGuiApplicationPrivate::self = nullptr;)
 }
 
 #if 0
@@ -2718,8 +2725,8 @@ void QGuiApplicationPrivate::processFocusWindowEvent(QWindowSystemInterfacePriva
         setApplicationState(Qt::ApplicationInactive);
     }
 
-    if (self) {
-        self->notifyActiveWindowChange(previous);
+    if (auto *guiAppPrivate = QGuiApplicationPrivate::instance()) {
+        guiAppPrivate->notifyActiveWindowChange(previous);
 
         if (previousFocusObject != qApp->focusObject() ||
             // We are getting an activation change but there is no new focusObject, and we also
@@ -2728,7 +2735,7 @@ void QGuiApplicationPrivate::processFocusWindowEvent(QWindowSystemInterfacePriva
             // when already in the QWidget destructor), so update the focusObject to avoid dangling
             // pointers. See also QWidget::clearFocus(), which tries to cover for this as well.
             (previous && previousFocusObject == nullptr && qApp->focusObject() == nullptr)) {
-            self->_q_updateFocusObject(qApp->focusObject());
+            guiAppPrivate->_q_updateFocusObject(qApp->focusObject());
         }
     }
 
@@ -2799,8 +2806,8 @@ void QGuiApplicationPrivate::processThemeChanged(QWindowSystemInterfacePrivate::
     if (!qGuiApp)
         return;
 
-    if (self)
-        self->handleThemeChanged();
+    if (auto *guiAppPrivate = QGuiApplicationPrivate::instance())
+        guiAppPrivate->handleThemeChanged();
 
     QIconPrivate::clearIconCache();
 
@@ -3090,6 +3097,8 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
     QPointingDevice *device = const_cast<QPointingDevice *>(static_cast<const QPointingDevice *>(e->device));
     QPointingDevicePrivate *devPriv = QPointingDevicePrivate::get(device);
 
+    auto *guiAppPrivate = QGuiApplicationPrivate::instance();
+
     if (e->touchType == QEvent::TouchCancel) {
         // The touch sequence has been canceled (e.g. by the compositor).
         // Send the TouchCancel to all windows with active touches and clean up.
@@ -3106,9 +3115,9 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
         for (QWindow *w : windowsNeedingCancel)
             QGuiApplication::sendSpontaneousEvent(w, &touchEvent);
 
-        if (!self->synthesizedMousePoints.isEmpty() && !e->synthetic()) {
-            for (QHash<QWindow *, SynthesizedMouseData>::const_iterator synthIt = self->synthesizedMousePoints.constBegin(),
-                 synthItEnd = self->synthesizedMousePoints.constEnd(); synthIt != synthItEnd; ++synthIt) {
+        if (!guiAppPrivate->synthesizedMousePoints.isEmpty() && !e->synthetic()) {
+            for (QHash<QWindow *, SynthesizedMouseData>::const_iterator synthIt = guiAppPrivate->synthesizedMousePoints.constBegin(),
+                 synthItEnd = guiAppPrivate->synthesizedMousePoints.constEnd(); synthIt != synthItEnd; ++synthIt) {
                 if (!synthIt->window)
                     continue;
                 QWindowSystemInterfacePrivate::MouseEvent fake(synthIt->window.data(),
@@ -3125,17 +3134,17 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
                 fake.flags |= QWindowSystemInterfacePrivate::WindowSystemEvent::Synthetic;
                 processMouseEvent(&fake);
             }
-            self->synthesizedMousePoints.clear();
+            guiAppPrivate->synthesizedMousePoints.clear();
         }
-        self->lastTouchType = e->touchType;
+        guiAppPrivate->lastTouchType = e->touchType;
         return;
     }
 
     // Prevent sending ill-formed event sequences: Cancel can only be followed by a Begin.
-    if (self->lastTouchType == QEvent::TouchCancel && e->touchType != QEvent::TouchBegin)
+    if (guiAppPrivate->lastTouchType == QEvent::TouchCancel && e->touchType != QEvent::TouchBegin)
         return;
 
-    self->lastTouchType = e->touchType;
+    guiAppPrivate->lastTouchType = e->touchType;
 
     QPointer<QWindow> window = e->window;  // the platform hopefully tells us which window received the event
     QVarLengthArray<QMutableTouchEvent, 2> touchEvents;
@@ -3285,7 +3294,7 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
                             break;
                         }
                         if (touchPoint->state() != QEventPoint::State::Released) {
-                            self->synthesizedMousePoints.insert(window, SynthesizedMouseData(
+                            guiAppPrivate->synthesizedMousePoints.insert(window, SynthesizedMouseData(
                                                                     touchPoint->position(), touchPoint->globalPosition(), window));
                         }
                         // All touch events that are not accepted by the application will be translated to
@@ -3308,7 +3317,7 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
                     }
                 }
                 if (eventType == QEvent::TouchEnd)
-                    self->synthesizedMousePoints.clear();
+                    guiAppPrivate->synthesizedMousePoints.clear();
             }
         }
     }
@@ -3744,7 +3753,7 @@ void QGuiApplicationPrivate::applyWindowGeometrySpecificationTo(QWindow *window)
 QFont QGuiApplication::font()
 {
     const auto locker = qt_scoped_lock(applicationFontMutex);
-    if (!QGuiApplicationPrivate::self && !QGuiApplicationPrivate::app_font) {
+    if (!QGuiApplicationPrivate::instance() && !QGuiApplicationPrivate::app_font) {
         qWarning("QGuiApplication::font(): no QGuiApplication instance and no application font set.");
         return QFont();  // in effect: QFont((QFontPrivate*)nullptr), so no recursion
     }
@@ -3817,7 +3826,7 @@ void QGuiApplicationPrivate::notifyActiveWindowChange(QWindow *prev)
         QEvent de(QEvent::WindowDeactivate);
         QCoreApplication::sendEvent(prev, &de);
     }
-    if (self->focus_window) {
+    if (QGuiApplicationPrivate::instance()->focus_window) {
         QEvent ae(QEvent::WindowActivate);
         QCoreApplication::sendEvent(focus_window, &ae);
     }
@@ -3843,7 +3852,7 @@ void QGuiApplication::setWindowIcon(const QIcon &icon)
             && QGuiApplicationPrivate::platform_integration->hasCapability(QPlatformIntegration::ApplicationIcon))
         QGuiApplicationPrivate::platform_integration->setApplicationIcon(icon);
     if (QGuiApplicationPrivate::is_app_running && !QGuiApplicationPrivate::is_app_closing)
-        QGuiApplicationPrivate::self->notifyWindowIconChanged();
+        QGuiApplicationPrivate::instance()->notifyWindowIconChanged();
 }
 
 void QGuiApplicationPrivate::notifyWindowIconChanged()
@@ -4240,7 +4249,7 @@ void QGuiApplication::setLayoutDirection(Qt::LayoutDirection direction)
     effective_layout_direction = direction;
     if (qGuiApp) {
         emit qGuiApp->layoutDirectionChanged(direction);
-        QGuiApplicationPrivate::self->notifyLayoutDirectionChange();
+        QGuiApplicationPrivate::instance()->notifyLayoutDirectionChange();
     }
 }
 
