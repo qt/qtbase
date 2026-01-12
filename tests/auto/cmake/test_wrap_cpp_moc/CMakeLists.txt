@@ -9,11 +9,11 @@ find_package(Qt6Core REQUIRED)
 
 add_executable(example main.cpp)
 
+set(moc_files "")
 qt_wrap_cpp(moc_files main.cpp TARGET example)
 
-# expect the generated moc files to be empty when a source file is passed
-if (NOT moc_files STREQUAL "")
-    message(FATAL_ERROR "test_qt_wrap_cpp_moc: moc_files should be empty")
+if(NOT moc_files MATCHES "main\\.moc$")
+    message(FATAL_ERROR "test_qt_wrap_cpp_moc: moc_files has unexpected content: ${moc_files}")
 endif()
 
 target_link_libraries(example PRIVATE Qt::Core)

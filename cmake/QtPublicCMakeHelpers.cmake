@@ -1181,3 +1181,16 @@ function(_qt_internal_re_escape out_var str)
     string(REGEX REPLACE "([][+.*()^])" "\\\\\\1" regex "${str}")
     set(${out_var} ${regex} PARENT_SCOPE)
 endfunction()
+
+# Create a non-existent, unique target name.
+# If the target ${name} doesn't exist, return that name in ${out_var}.
+# Otherwise, append an incrementing number, starting with 1.
+function(_qt_internal_unique_target_name out_var name)
+    set(target "${name}")
+    set(id 0)
+    while(TARGET "${target}")
+        math(EXPR id "${id} + 1")
+        set(target "${name}_${id}")
+    endwhile()
+    set("${out_var}" "${target}" PARENT_SCOPE)
+endfunction()

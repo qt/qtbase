@@ -200,12 +200,6 @@ function(_qt_internal_wrap_cpp outfiles_var)
     # get include dirs
     _qt_internal_get_moc_flags(moc_flags)
 
-    if(outfiles_var STREQUAL "__qt_internal_target_signature_marker")
-        set(is_target_signature TRUE)
-    else()
-        set(is_target_signature FALSE)
-    endif()
-
     set(options)
     set(oneValueArgs
         TARGET
@@ -232,11 +226,7 @@ function(_qt_internal_wrap_cpp outfiles_var)
 
         if(it_ext MATCHES "${HEADER_REGEX}")
             _qt_internal_make_output_file("${it}" moc_ cpp outfile)
-            if(is_target_signature)
-                target_sources(${moc_target} PRIVATE "${outfile}")
-            else()
-                list(APPEND outfiles "${outfile}")
-            endif()
+            list(APPEND outfiles "${outfile}")
         else()
             set(found_source_extension FALSE)
             foreach(LANG C CXX OBJC OBJCXX CUDA)
@@ -250,7 +240,7 @@ function(_qt_internal_wrap_cpp outfiles_var)
             if(found_extension)
                 if(TARGET ${moc_target})
                     _qt_internal_make_output_file(${it} "" moc outfile)
-                    target_sources(${moc_target} PRIVATE "${outfile}")
+                    list(APPEND outfiles "${outfile}")
                     target_include_directories("${moc_target}" PRIVATE
                         "${CMAKE_CURRENT_BINARY_DIR}")
                 else()
@@ -289,6 +279,19 @@ function(_qt_internal_wrap_cpp outfiles_var)
     if(NOT outfiles STREQUAL "")
         list(APPEND "${outfiles_var}" ${outfiles})
         set("${outfiles_var}" "${${outfiles_var}}" PARENT_SCOPE)
+
+        if(TARGET ${moc_target})
+            get_target_property(moc_target_source_dir ${moc_target} SOURCE_DIR)
+            if(NOT moc_target_source_dir STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+                # qt_wrap_cpp is not called in ${moc_target}'s directory scope.
+                # Add a custom target that drives the creation of moc's output files.
+                _qt_internal_unique_target_name(driver_target "_qt_${moc_target}_moc_driver")
+                add_custom_target(${driver_target} DEPENDS ${outfiles})
+                _qt_internal_assign_to_internal_targets_folder(${driver_target})
+                add_dependencies(${moc_target} ${driver_target})
+            endif()
+            target_sources(${moc_target} PRIVATE ${outfiles})
+        endif()
     endif()
 
     if(metatypes_json_list)
