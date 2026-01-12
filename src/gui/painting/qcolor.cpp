@@ -2254,14 +2254,15 @@ QColor QColor::toHsl() const noexcept
     const float max = Q_MAX_3(r, g, b);
     const float min = Q_MIN_3(r, g, b);
     const float chroma = max - min;
-    const float lightness = 0.5f * (max + min);
-    color.ct.ahsl.lightness = qRound(lightness * USHRT_MAX);
     if (qFuzzyIsNull(chroma)) {
         // achromatic case, hue is undefined
         color.ct.ahsl.hue = USHRT_MAX;
         color.ct.ahsl.saturation = 0;
+        color.ct.ahsl.lightness = qRound(max * USHRT_MAX);
     } else {
         // chromatic case
+        const float lightness = 0.5f * (max + min);
+        color.ct.ahsl.lightness = qRound(lightness * USHRT_MAX);
         const float saturation = 0.5f * chroma / (std::min)(lightness, 1 - lightness);
         color.ct.ahsl.saturation = qRound(saturation * USHRT_MAX);
         float hue = 0;
