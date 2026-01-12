@@ -2267,6 +2267,9 @@ QColor QColor::toHsl() const noexcept
         float hue = 0;
         if (qFuzzyCompare(r, max)) {
             hue = 0 + (g - b) / chroma;
+            // hue = hue mod 6
+            if (hue < 0)
+                hue += 6;
         } else if (qFuzzyCompare(g, max)) {
             hue = 2 + (b - r) / chroma;
         } else if (qFuzzyCompare(b, max)) {
@@ -2274,10 +2277,7 @@ QColor QColor::toHsl() const noexcept
         } else {
             Q_ASSERT_X(false, "QColor::toHsv", "internal error");
         }
-        hue *= 60.0f;
-        if (hue < 0.0f)
-            hue += 360.0f;
-        color.ct.ahsl.hue = qRound(hue * 100.0f);
+        color.ct.ahsl.hue = qRound(hue * (60 * 100));
     }
 
     return color;
