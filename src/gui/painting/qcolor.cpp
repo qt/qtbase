@@ -2212,16 +2212,16 @@ QColor QColor::toHsv() const noexcept
         color.ct.ahsv.saturation = qRound((delta / max) * USHRT_MAX);
         if (max == r) {
             hue = 0 + (g - b) / delta;
+            // hue = hue mod 6:
+            if (hue < 0)
+                hue += 6;
         } else if (max == g) {
             hue = 2 + (b - r) / delta;
         } else {
             Q_ASSERT(max == b); // max({r,g,b}) must be one of r, g, and b!
             hue = 4 + (r - g) / delta;
         }
-        hue *= 60.0f;
-        if (hue < 0.0f)
-            hue += 360.0f;
-        color.ct.ahsv.hue = qRound(hue * 100.0f);
+        color.ct.ahsv.hue = qRound(hue * (60 * 100));
     }
 
     return color;
