@@ -188,7 +188,7 @@ public:
 
     void _q_updateFocusObject(QObject *object);
 
-    static QGuiApplicationPrivate *instance() { return self; }
+    static QGuiApplicationPrivate *instance() { QT_IGNORE_DEPRECATIONS(return self;) }
 
     static QIcon *app_icon;
     static QString *platform_name;
