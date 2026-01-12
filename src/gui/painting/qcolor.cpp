@@ -2253,11 +2253,11 @@ QColor QColor::toHsl() const noexcept
     const float b = ct.argb.blue  / float(USHRT_MAX);
     const float max = Q_MAX_3(r, g, b);
     const float min = Q_MIN_3(r, g, b);
-    const float delta = max - min;
+    const float chroma = max - min;
     const float delta2 = max + min;
     const float lightness = 0.5f * delta2;
     color.ct.ahsl.lightness = qRound(lightness * USHRT_MAX);
-    if (qFuzzyIsNull(delta)) {
+    if (qFuzzyIsNull(chroma)) {
         // achromatic case, hue is undefined
         color.ct.ahsl.hue = USHRT_MAX;
         color.ct.ahsl.saturation = 0;
@@ -2265,15 +2265,15 @@ QColor QColor::toHsl() const noexcept
         // chromatic case
         float hue = 0;
         if (lightness < 0.5f)
-            color.ct.ahsl.saturation = qRound((delta / delta2) * USHRT_MAX);
+            color.ct.ahsl.saturation = qRound(chroma / delta2 * USHRT_MAX);
         else
-            color.ct.ahsl.saturation = qRound((delta / (2.0f - delta2)) * USHRT_MAX);
+            color.ct.ahsl.saturation = qRound(chroma / (2.0f - delta2) * USHRT_MAX);
         if (qFuzzyCompare(r, max)) {
-            hue = ((g - b) /delta);
+            hue = 0 + (g - b) / chroma;
         } else if (qFuzzyCompare(g, max)) {
-            hue = (2.0f + (b - r) / delta);
+            hue = 2 + (b - r) / chroma;
         } else if (qFuzzyCompare(b, max)) {
-            hue = (4.0f + (r - g) / delta);
+            hue = 4 + (r - g) / chroma;
         } else {
             Q_ASSERT_X(false, "QColor::toHsv", "internal error");
         }
