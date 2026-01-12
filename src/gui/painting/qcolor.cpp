@@ -2199,27 +2199,30 @@ QColor QColor::toHsv() const noexcept
     const ushort r = ct.argb.red;
     const ushort g = ct.argb.green;
     const ushort b = ct.argb.blue;
+
+    // cf. https://en.wikipedia.org/wiki/HSL_and_HSV#From_RGB
     const auto [min, max] = std::minmax({r, g, b});
-    color.ct.ahsv.value = max;
+    const auto value = max;
+    color.ct.ahsv.value = value;
     if (max == min) {
         // achromatic case, hue is undefined
         color.ct.ahsv.hue = USHRT_MAX;
         color.ct.ahsv.saturation = 0;
     } else {
         // chromatic case
-        const float delta = max - min; // cannot overflow
+        const float chroma = max - min; // cannot overflow
         float hue;
-        color.ct.ahsv.saturation = qRound((delta / max) * USHRT_MAX);
-        if (max == r) {
-            hue = 0 + (g - b) / delta;
+        color.ct.ahsv.saturation = qRound((chroma / value) * USHRT_MAX);
+        if (value == r) {
+            hue = 0 + (g - b) / chroma;
             // hue = hue mod 6:
             if (hue < 0)
                 hue += 6;
-        } else if (max == g) {
-            hue = 2 + (b - r) / delta;
+        } else if (value == g) {
+            hue = 2 + (b - r) / chroma;
         } else {
-            Q_ASSERT(max == b); // max({r,g,b}) must be one of r, g, and b!
-            hue = 4 + (r - g) / delta;
+            Q_ASSERT(value == b); // by construction, `value` is one of r, g, and b!
+            hue = 4 + (r - g) / chroma;
         }
         color.ct.ahsv.hue = qRound(hue * (60 * 100));
     }
