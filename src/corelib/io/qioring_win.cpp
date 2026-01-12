@@ -137,7 +137,7 @@ bool QIORing::initializeIORing()
 
     IORING_CREATE_FLAGS flags;
     memset(&flags, 0, sizeof(flags));
-#ifndef QT_DEBUG
+#if !defined(QT_DEBUG) && QT_CONFIG(windows_ioring_skip_builder_param_checks)
     flags.Advisory |= IORING_CREATE_SKIP_BUILDER_PARAM_CHECKS;
 #endif
     HRESULT hr = apiTable->CreateIoRing(IORING_VERSION_3, flags, sqEntries, cqEntries,

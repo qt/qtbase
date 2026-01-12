@@ -630,6 +630,24 @@ int main(void)
 "
 )
 
+qt_config_compile_test(windows_ioring_skip_builder_param_checks
+    LABEL "Windows SDK: IORing IORING_CREATE_SKIP_BUILDER_PARAM_CHECKS"
+    CODE
+"#include <windows.h>
+#include <ioringapi.h>
+
+int main(void)
+{
+    /* BEGIN TEST: */
+    IORING_CREATE_FLAGS flags;
+    memset(&flags, 0, sizeof(flags));
+    flags.Advisory |= IORING_CREATE_SKIP_BUILDER_PARAM_CHECKS;
+    /* END TEST: */
+    return 0;
+}
+"
+)
+
 # cpp_winrt
 qt_config_compile_test(cpp_winrt
     LABEL "cpp/winrt"
@@ -814,6 +832,11 @@ qt_feature("windows-ioring" PRIVATE
     LABEL "Windows I/O Ring"
     AUTODETECT WIN32
     CONDITION TEST_windows_ioring
+)
+qt_feature("windows-ioring-skip-builder-param-checks" PRIVATE
+    LABEL "Windows I/O Ring IORING_CREATE_SKIP_BUILDER_PARAM_CHECKS"
+    AUTODETECT WIN32
+    CONDITION TEST_windows_ioring_skip_builder_param_checks
 )
 qt_feature("inotify" PUBLIC PRIVATE
     LABEL "inotify"
@@ -1303,6 +1326,7 @@ qt_configure_add_summary_entry(ARGS "icu")
 qt_configure_add_summary_entry(ARGS "jemalloc")
 qt_configure_add_summary_entry(ARGS "liburing")
 qt_configure_add_summary_entry(ARGS "windows-ioring")
+qt_configure_add_summary_entry(ARGS "windows-ioring-skip-builder-param-checks")
 qt_configure_add_summary_entry(ARGS "timezone_tzdb")
 qt_configure_add_summary_entry(ARGS "system-libb2")
 qt_configure_add_summary_entry(ARGS "mimetype-database")
