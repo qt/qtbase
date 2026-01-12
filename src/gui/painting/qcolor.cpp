@@ -2254,8 +2254,7 @@ QColor QColor::toHsl() const noexcept
     const float max = Q_MAX_3(r, g, b);
     const float min = Q_MIN_3(r, g, b);
     const float chroma = max - min;
-    const float delta2 = max + min;
-    const float lightness = 0.5f * delta2;
+    const float lightness = 0.5f * (max + min);
     color.ct.ahsl.lightness = qRound(lightness * USHRT_MAX);
     if (qFuzzyIsNull(chroma)) {
         // achromatic case, hue is undefined
@@ -2263,11 +2262,9 @@ QColor QColor::toHsl() const noexcept
         color.ct.ahsl.saturation = 0;
     } else {
         // chromatic case
+        const float saturation = 0.5f * chroma / (std::min)(lightness, 1 - lightness);
+        color.ct.ahsl.saturation = qRound(saturation * USHRT_MAX);
         float hue = 0;
-        if (lightness < 0.5f)
-            color.ct.ahsl.saturation = qRound(chroma / delta2 * USHRT_MAX);
-        else
-            color.ct.ahsl.saturation = qRound(chroma / (2.0f - delta2) * USHRT_MAX);
         if (qFuzzyCompare(r, max)) {
             hue = 0 + (g - b) / chroma;
         } else if (qFuzzyCompare(g, max)) {
