@@ -88,6 +88,7 @@ public:
     int m_lastEventType;
     QList<QWindowSystemInterface::TouchPoint> m_touchPoints;
     QList<QWindowSystemInterface::TouchPoint> m_lastTouchPoints;
+    QVarLengthFlatMap<int, QList<QWindowSystemInterface::TouchPoint>, 3> m_pointsByToolType;
 
     struct Contact {
         int trackingId = -1;
@@ -95,6 +96,7 @@ public:
         int y = 0;
         int maj = -1;
         int pressure = 0;
+        int toolType = MT_TOOL_FINGER;
         QEventPoint::State state = QEventPoint::State::Pressed;
     };
     QHash<int, Contact> m_contacts; // The key is a tracking id for type A, slot number for type B.
@@ -109,6 +111,9 @@ public:
     void addTouchPoint(const Contact &contact, QEventPoint::States *combinedStates);
     void reportPoints();
     void loadMultiScreenMappings();
+
+    QPointingDevice *getDeviceForToolType(int toolType);
+    QPointingDevice::PointerType mapToolTypeToPointerType(int toolType);
 
     QRect screenGeometry() const;
 
@@ -126,6 +131,9 @@ public:
     bool m_singleTouch;
     QString m_screenName;
     mutable QPointer<QScreen> m_screen;
+
+    // Multiple devices for different tool types to ensure proper lifetime management
+    QVarLengthFlatMap<int, QPointer<QPointingDevice>, 3> m_devices;
 
     // Touch filtering and prediction are part of the same thing. The default
     // prediction is 0ms, but sensible results can be achieved by setting it
@@ -423,24 +431,74 @@ err:
 
 void QEvdevTouchScreenHandler::registerPointingDevice()
 {
-    if (m_device)
+    if (m_device) {
+        qCDebug(qLcEvdevTouch, "evdevtouch: Device already registered, skipping");
         return;
+    }
+
+    qCDebug(qLcEvdevTouch, "evdevtouch: Registering pointing device for %ls", qUtf16Printable(d->deviceNode));
 
     static int id = 1;
     QPointingDevice::Capabilities caps = QPointingDevice::Capability::Position | QPointingDevice::Capability::Area;
     if (d->hw_pressure_max > d->hw_pressure_min)
         caps.setFlag(QPointingDevice::Capability::Pressure);
 
-    // TODO get evdev ID instead of an incremeting number; set USB ID too
-    m_device = new QPointingDevice(d->hw_name, id++,
-                                   QInputDevice::DeviceType::TouchScreen, QPointingDevice::PointerType::Finger,
-                                   caps, 16, 0);
+    // For type B devices, we create devices for each supported tool type
+    // to ensure proper tool type handling and device lifetime management
+    if (d->m_typeB) {
+        qCDebug(qLcEvdevTouch, "evdevtouch: Registering type B device with multiple tool types");
+        // Register devices for each supported tool type
+        for (int toolType : { MT_TOOL_FINGER, MT_TOOL_PEN, MT_TOOL_PALM }) {
+            auto pointerType = d->mapToolTypeToPointerType(toolType);
+            QString deviceName = d->hw_name;
 
-    auto geom = d->screenGeometry();
-    if (!geom.isNull())
-        QPointingDevicePrivate::get(m_device)->setAvailableVirtualGeometry(geom);
+            // Add tool type suffix to device name for clarity
+            switch (toolType) {
+            case MT_TOOL_PEN:
+                deviceName += QStringLiteral(" (Pen)");
+                break;
+            case MT_TOOL_PALM:
+                deviceName += QStringLiteral(" (Palm)");
+                break;
+            case MT_TOOL_FINGER:
+            default:
+                deviceName += QStringLiteral(" (Finger)");
+                break;
+            }
 
-    QWindowSystemInterface::registerInputDevice(m_device);
+            // TODO get evdev ID instead of an incremeting number; set USB ID too
+            auto device = new QPointingDevice(deviceName, id++,
+                                           QInputDevice::DeviceType::TouchScreen, pointerType,
+                                           caps, 16, 0);
+
+            auto geom = d->screenGeometry();
+            if (!geom.isNull())
+                QPointingDevicePrivate::get(device)->setAvailableVirtualGeometry(geom);
+
+            d->m_devices[toolType] = device;
+            QWindowSystemInterface::registerInputDevice(device);
+            qCDebug(qLcEvdevTouch, "evdevtouch: Registered device %ls (toolType: %d, pointerType: %d)",
+                    qUtf16Printable(deviceName), toolType, static_cast<int>(pointerType));
+        }
+
+        // Set the default device to finger device for backward compatibility
+        m_device = d->getDeviceForToolType(MT_TOOL_FINGER);
+    } else {
+        qCDebug(qLcEvdevTouch, "evdevtouch: Registering type A device (single device)");
+        // For type A devices, use the original single device approach
+        // TODO get evdev ID instead of an incremeting number; set USB ID too
+        m_device = new QPointingDevice(d->hw_name, id++,
+                                       QInputDevice::DeviceType::TouchScreen, QPointingDevice::PointerType::Finger,
+                                       caps, 16, 0);
+
+        auto geom = d->screenGeometry();
+        if (!geom.isNull())
+            QPointingDevicePrivate::get(m_device)->setAvailableVirtualGeometry(geom);
+
+        QWindowSystemInterface::registerInputDevice(m_device);
+        qCDebug(qLcEvdevTouch, "evdevtouch: Registered single device %ls",
+                qUtf16Printable(d->hw_name));
+    }
 }
 
 /*! \internal
@@ -474,15 +532,36 @@ void QEvdevTouchScreenHandler::registerPointingDevice()
  */
 void QEvdevTouchScreenHandler::unregisterPointingDevice()
 {
-    if (!m_device)
+    if (!m_device && d->m_devices.isEmpty())
         return;
 
     if (QGuiApplication::instance()) {
-        m_device->moveToThread(QGuiApplication::instance()->thread());
-        m_device->deleteLater();
+        // Handle multiple devices for type B
+        for (auto device : d->m_devices) {
+            if (device.second) {
+                device.second->moveToThread(QGuiApplication::instance()->thread());
+                device.second->deleteLater();
+            }
+        }
+        d->m_devices.clear();
+
+        // Handle the single device for type A
+        if (m_device) {
+            m_device->moveToThread(QGuiApplication::instance()->thread());
+            m_device->deleteLater();
+        }
     } else {
+        // Handle multiple devices for type B
+        for (auto device : d->m_devices) {
+            if (device.second)
+                delete device.second;
+        }
+        d->m_devices.clear();
+
+        // Handle the single device for type A
         delete m_device;
     }
+
     m_device = nullptr;
 }
 
@@ -512,6 +591,9 @@ void QEvdevTouchScreenData::addTouchPoint(const Contact &contact, QEventPoint::S
 
 void QEvdevTouchScreenData::processInputEvent(input_event *data)
 {
+    qCDebug(qLcEvdevTouch, "evdevtouch: Processing input event. type: %d, code: %d, value: %d",
+            data->type, data->code, data->value);
+
     if (data->type == EV_ABS) {
 
         if (data->code == ABS_MT_POSITION_X || (m_singleTouch && data->code == ABS_X)) {
@@ -557,6 +639,20 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
                 m_contacts[m_currentSlot].pressure = m_currentData.pressure;
         } else if (data->code == ABS_MT_SLOT) {
             m_currentSlot = data->value;
+        } else if (data->code == ABS_MT_TOOL_TYPE) {
+            m_currentData.toolType = data->value;
+            if (m_typeB) {
+                switch (m_currentData.toolType) {
+                case MT_TOOL_FINGER:
+                case MT_TOOL_PEN:
+                case MT_TOOL_PALM:
+                    m_contacts[m_currentSlot].toolType = m_currentData.toolType;
+                    break;
+                default:
+                    qCWarning(qLcEvents, "unhandled tool type 0x%x", m_currentData.toolType);
+                    break;
+                }
+            }
         }
 
     } else if (data->type == EV_KEY && !m_typeB) {
@@ -608,6 +704,7 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
                     contact.x = prev.x;
                     contact.y = prev.y;
                     contact.maj = prev.maj;
+                    contact.toolType = prev.toolType;
                 } else {
                     contact.state = (prev.x == contact.x && prev.y == contact.y)
                             ? QEventPoint::State::Stationary : QEventPoint::State::Updated;
@@ -732,6 +829,31 @@ void QEvdevTouchScreenData::assignIds()
     m_contacts = newContacts;
 }
 
+QPointingDevice *QEvdevTouchScreenData::getDeviceForToolType(int toolType)
+{
+    switch (toolType) {
+    case MT_TOOL_FINGER:
+    case MT_TOOL_PEN:
+    case MT_TOOL_PALM:
+        return m_devices.value(toolType);
+    default:
+        return nullptr;
+    }
+}
+
+QPointingDevice::PointerType QEvdevTouchScreenData::mapToolTypeToPointerType(int toolType)
+{
+    switch (toolType) {
+    case MT_TOOL_PEN:
+        return QPointingDevice::PointerType::Pen;
+    case MT_TOOL_PALM:
+        return QPointingDevice::PointerType::Palm;
+    case MT_TOOL_FINGER:
+    default:
+        return QPointingDevice::PointerType::Finger;
+    }
+}
+
 QRect QEvdevTouchScreenData::screenGeometry() const
 {
     if (m_forceToActiveWindow) {
@@ -768,6 +890,8 @@ QRect QEvdevTouchScreenData::screenGeometry() const
 
 void QEvdevTouchScreenData::reportPoints()
 {
+    qCDebug(qLcEvdevTouch, "evdevtouch: Reporting points");
+
     QRect winRect = screenGeometry();
     if (winRect.isNull())
         return;
@@ -778,6 +902,7 @@ void QEvdevTouchScreenData::reportPoints()
     // Map the coordinates based on the normalized position. QPA expects 'area'
     // to be in screen coordinates.
     const int pointCount = m_touchPoints.size();
+    qCDebug(qLcEvdevTouch, "evdevtouch: pointCount %d", pointCount);
     for (int i = 0; i < pointCount; ++i) {
         QWindowSystemInterface::TouchPoint &tp(m_touchPoints[i]);
 
@@ -803,11 +928,55 @@ void QEvdevTouchScreenData::reportPoints()
             qCDebug(qLcEvents) << "reporting" << tp;
     }
 
-    // Let qguiapp pick the target window.
-    if (m_filtered)
-        emit q->touchPointsUpdated();
-    else
-        QWindowSystemInterface::handleTouchEvent(nullptr, q->touchDevice(), m_touchPoints);
+    qCDebug(qLcEvdevTouch, "evdevtouch: m_typeB %d", m_typeB);
+    // For type B devices, group touch points by tool type and send them to appropriate devices
+    if (m_typeB && !m_devices.isEmpty()) {
+        m_pointsByToolType.clear();
+
+        // We need to map touch points to tool types from the contacts
+        for (const auto &tp : m_touchPoints) {
+            // Find the contact that corresponds to this touch point
+            int toolType = MT_TOOL_FINGER; // default
+            for (auto it = m_contacts.begin(); it != m_contacts.end(); ++it) {
+                const Contact &contact = it.value();
+                if (contact.trackingId == tp.id) {
+                    toolType = contact.toolType;
+                    break;
+                }
+            }
+            switch (toolType) {
+            case MT_TOOL_FINGER:
+            case MT_TOOL_PEN:
+            case MT_TOOL_PALM:
+                m_pointsByToolType[toolType].append(tp);
+                break;
+            default:
+                qCWarning(qLcEvents, "unhandled tool type 0x%x", toolType);
+                break;
+            }
+        }
+
+        // Send touch points to appropriate devices
+        for (auto it = m_pointsByToolType.begin(); it != m_pointsByToolType.end(); ++it) {
+            int toolType = it.key();
+            const QList<QWindowSystemInterface::TouchPoint> &points = it.value();
+
+            QPointingDevice *device = getDeviceForToolType(toolType);
+            qCDebug(qLcEvdevTouch, "evdevtouch: device %ls, pointerType %ls, points %lld", qUtf16Printable(device->name()), qUtf16Printable(QVariant::fromValue(device->pointerType()).toString()), qlonglong{points.size()});
+            if (device && !points.isEmpty()) {
+                if (m_filtered)
+                    emit q->touchPointsUpdated();
+                else
+                    QWindowSystemInterface::handleTouchEvent(nullptr, device, points);
+            }
+        }
+    } else {
+        // For type A devices or when no specific tool type devices are available, use the default device
+        if (m_filtered)
+            emit q->touchPointsUpdated();
+        else
+            QWindowSystemInterface::handleTouchEvent(nullptr, q->touchDevice(), m_touchPoints);
+    }
 }
 
 QEvdevTouchScreenHandlerThread::QEvdevTouchScreenHandlerThread(const QString &device, const QString &spec, QObject *parent)
