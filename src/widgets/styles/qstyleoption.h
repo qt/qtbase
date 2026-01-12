@@ -363,7 +363,7 @@ protected:
     QStyleOptionMenuItem(int version);
 };
 
-// ### Qt7: merge with QStyleOptionHeader
+// ### Qt7: merge with QStyleOptionMenuItem
 class Q_WIDGETS_EXPORT QStyleOptionMenuItemV2 : public QStyleOptionMenuItem
 {
 public:
