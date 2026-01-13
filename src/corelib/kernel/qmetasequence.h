@@ -53,8 +53,8 @@ public:
 } // namespace QtMetaContainerPrivate
 
 namespace QtPrivate {
-template<typename Referred>
-QVariant sequentialIteratorToVariant(const Referred &referred)
+template<typename Indirect>
+QVariant sequentialIteratorToVariant(const Indirect &referred)
 {
     const auto metaSequence = referred.metaContainer();
     return QtIterablePrivate::retrieveElement(metaSequence.valueMetaType(), [&](void *dataPtr) {

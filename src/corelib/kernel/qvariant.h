@@ -62,17 +62,6 @@ inline T qvariant_cast(const QVariant &);
 namespace QtPrivate {
 template<> constexpr inline bool qIsRelocatable<QVariant> = true;
 
-template<typename Referred>
-class ConstReference;
-
-template<typename Referred>
-class Reference;
-
-template<typename Pointed>
-class ConstPointer;
-
-template<typename Pointed>
-class Pointer;
 } // namespace QtPrivate
 
 class Q_CORE_EXPORT QVariant
@@ -241,65 +230,88 @@ private:
         >;
 
 public:
-    template<typename Referred>
+    template<typename Indirect>
+    class Reference;
+
+    template<typename Indirect>
     class ConstReference
     {
     private:
-        const Referred m_referred;
+        friend class Reference<Indirect>;
+        const Indirect m_referred;
 
     public:
         // You can initialize a const reference from another one, but you can't assign to it.
 
-        explicit ConstReference(const Referred &referred)
-                noexcept(std::is_nothrow_copy_constructible_v<Referred>)
+        explicit ConstReference(const Indirect &referred)
+                noexcept(std::is_nothrow_copy_constructible_v<Indirect>)
             : m_referred(referred) {}
-        explicit ConstReference(Referred &&referred)
-                noexcept(std::is_nothrow_move_constructible_v<Referred>)
+        explicit ConstReference(Indirect &&referred)
+                noexcept(std::is_nothrow_move_constructible_v<Indirect>)
             : m_referred(std::move(referred)) {}
         ConstReference(const ConstReference &) = default;
         ConstReference(ConstReference &&) = default;
+
+        ConstReference(const Reference<Indirect> &)
+                noexcept(std::is_nothrow_copy_constructible_v<Indirect>);
+        ConstReference(Reference<Indirect> &&)
+                noexcept(std::is_nothrow_move_constructible_v<Indirect>);
+
         ~ConstReference() = default;
         ConstReference &operator=(const ConstReference &value) = delete;
         ConstReference &operator=(ConstReference &&value) = delete;
 
-        // To be specialized for each Referred
-        operator QVariant() const noexcept(Referred::CanNoexceptConvertToQVariant);
+        // To be specialized for each Indirect
+        operator QVariant() const noexcept(Indirect::CanNoexceptConvertToQVariant);
     };
 
-    template<typename Referred>
+    template<typename Indirect>
     class Reference
     {
     private:
-        Referred m_referred;
+        friend class ConstReference<Indirect>;
+        Indirect m_referred;
 
         friend void swap(Reference a, Reference b) { return a.swap(std::move(b)); }
 
     public:
         // Assigning and initializing are different operations for references.
 
-        explicit Reference(const Referred &referred)
-                noexcept(std::is_nothrow_copy_constructible_v<Referred>)
+        explicit Reference(const Indirect &referred)
+                noexcept(std::is_nothrow_copy_constructible_v<Indirect>)
             : m_referred(referred) {}
-        explicit Reference(Referred &&referred)
-                noexcept(std::is_nothrow_move_constructible_v<Referred>)
+        explicit Reference(Indirect &&referred)
+                noexcept(std::is_nothrow_move_constructible_v<Indirect>)
             : m_referred(std::move(referred)) {}
         Reference(const Reference &) = default;
         Reference(Reference &&) = default;
         ~Reference() = default;
 
         Reference &operator=(const Reference &value)
-                noexcept(Referred::CanNoexceptAssignQVariant)
+                noexcept(Indirect::CanNoexceptAssignQVariant)
         {
             return operator=(QVariant(value));
         }
 
         Reference &operator=(Reference &&value)
-                noexcept(Referred::CanNoexceptAssignQVariant)
+                noexcept(Indirect::CanNoexceptAssignQVariant)
         {
             return operator=(QVariant(value));
         }
 
-        operator QVariant() const noexcept(Referred::CanNoexceptConvertToQVariant)
+        Reference &operator=(const ConstReference<Indirect> &value)
+                noexcept(Indirect::CanNoexceptAssignQVariant)
+        {
+            return operator=(QVariant(value));
+        }
+
+        Reference &operator=(ConstReference<Indirect> &&value)
+                noexcept(Indirect::CanNoexceptAssignQVariant)
+        {
+            return operator=(QVariant(value));
+        }
+
+        operator QVariant() const noexcept(Indirect::CanNoexceptConvertToQVariant)
         {
             return ConstReference(m_referred);
         }
@@ -312,49 +324,55 @@ public:
             b = std::move(tmp);
         }
 
-        // To be specialized for each Referred
-        Reference &operator=(const QVariant &value) noexcept(Referred::CanNoexceptAssignQVariant);
+        // To be specialized for each Indirect
+        Reference &operator=(const QVariant &value) noexcept(Indirect::CanNoexceptAssignQVariant);
     };
 
-    template<typename Pointed>
+    template<typename Indirect>
     class ConstPointer
     {
     private:
-        Pointed m_pointed;
+        Indirect m_pointed;
 
     public:
-        explicit ConstPointer(const Pointed &pointed)
-                noexcept(std::is_nothrow_copy_constructible_v<Pointed>)
+        explicit ConstPointer(const Indirect &pointed)
+                noexcept(std::is_nothrow_copy_constructible_v<Indirect>)
             : m_pointed(pointed) {}
-        explicit ConstPointer(Pointed &&pointed)
-                noexcept(std::is_nothrow_move_constructible_v<Pointed>)
+        explicit ConstPointer(Indirect &&pointed)
+                noexcept(std::is_nothrow_move_constructible_v<Indirect>)
             : m_pointed(std::move(pointed)) {}
 
-        ConstReference<Pointed> operator*()
-                const noexcept(std::is_nothrow_copy_constructible_v<Pointed>)
+        ConstReference<Indirect> operator*()
+                const noexcept(std::is_nothrow_copy_constructible_v<Indirect>)
         {
-            return ConstReference<Pointed>(m_pointed);
+            return ConstReference<Indirect>(m_pointed);
         }
     };
 
-    template<typename Pointed>
+    template<typename Indirect>
     class Pointer
     {
     private:
-        Pointed m_pointed;
+        Indirect m_pointed;
 
     public:
-        explicit Pointer(const Pointed &pointed)
-                noexcept(std::is_nothrow_copy_constructible_v<Pointed>)
+        explicit Pointer(const Indirect &pointed)
+                noexcept(std::is_nothrow_copy_constructible_v<Indirect>)
             : m_pointed(pointed) {}
-        explicit Pointer(Pointed &&pointed)
-                noexcept(std::is_nothrow_move_constructible_v<Pointed>)
+        explicit Pointer(Indirect &&pointed)
+                noexcept(std::is_nothrow_move_constructible_v<Indirect>)
             : m_pointed(std::move(pointed)) {}
 
-        Reference<Pointed> operator*()
-                const noexcept(std::is_nothrow_copy_constructible_v<Pointed>)
+        Reference<Indirect> operator*()
+                const noexcept(std::is_nothrow_copy_constructible_v<Indirect>)
         {
-            return Reference<Pointed>(m_pointed);
+            return Reference<Indirect>(m_pointed);
+        }
+
+        operator ConstPointer<Indirect>() const
+                noexcept(std::is_nothrow_copy_constructible_v<Indirect>)
+        {
+            return ConstPointer(m_pointed);
         }
     };
 
@@ -890,6 +908,20 @@ inline bool QVariant::isDetached() const
 
 inline void swap(QVariant &value1, QVariant &value2) noexcept
 { value1.swap(value2); }
+
+template<typename Indirect>
+inline QVariant::ConstReference<Indirect>::ConstReference(const Reference<Indirect> &nonConst)
+        noexcept(std::is_nothrow_copy_constructible_v<Indirect>)
+    : ConstReference(nonConst.m_referred)
+{
+}
+
+template<typename Indirect>
+inline QVariant::ConstReference<Indirect>::ConstReference(Reference<Indirect> &&nonConst)
+        noexcept(std::is_nothrow_move_constructible_v<Indirect>)
+    : ConstReference(std::move(nonConst.m_referred))
+{
+}
 
 #ifndef QT_MOC
 

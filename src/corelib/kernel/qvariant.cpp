@@ -3000,22 +3000,35 @@ QT_WARNING_POP
 */
 
 /*!
-    \fn template<typename Referred> QVariant::ConstReference<Referred>::ConstReference(const Referred &referred)
+    \fn template<typename Indirect> QVariant::ConstReference<Indirect>::ConstReference(const Indirect &referred)
 
     Creates a QVariant::ConstReference from a \a referred.
  */
 
 /*!
-    \fn template<typename Referred> QVariant::ConstReference<Referred>::ConstReference(Referred &&referred)
+    \fn template<typename Indirect> QVariant::ConstReference<Indirect>::ConstReference(Indirect &&referred)
 
     Creates a QVariant::ConstReference from a \a referred.
  */
 
 /*!
-    \fn template<typename Referred> QVariant::ConstReference<Referred>::operator QVariant() const
+    \fn template<typename Indirect> QVariant::ConstReference<Indirect>::ConstReference(const Reference<Indirect> &nonConst)
+
+    Creates a QVariant::ConstReference from a \a nonConst Reference.
+ */
+
+/*!
+    \fn template<typename Indirect> QVariant::ConstReference<Indirect>::ConstReference(Reference<Indirect> &&nonConst)
+
+    Creates a QVariant::ConstReference from a \a nonConst Reference.
+ */
+
+
+/*!
+    \fn template<typename Indirect> QVariant::ConstReference<Indirect>::operator QVariant() const
 
     Dereferences the reference to a QVariant.
-    This method needs to be specialized for each Referred type. It is
+    This method needs to be specialized for each Indirect type. It is
     pre-defined for QMetaSequence::ConstIterator, QMetaSequence::Iterator,
     QMetaAssociation::ConstIterator, and QMetaAssociation::Iterator.
  */
@@ -3036,39 +3049,51 @@ QT_WARNING_POP
 */
 
 /*!
-    \fn template<typename Referred> QVariant::Reference<Referred>::Reference(const Referred &referred)
+    \fn template<typename Indirect> QVariant::Reference<Indirect>::Reference(const Indirect &referred)
 
     Creates a QVariant::Reference from a \a referred.
  */
 
 /*!
-    \fn template<typename Referred> QVariant::Reference<Referred>::Reference(Referred &&referred)
+    \fn template<typename Indirect> QVariant::Reference<Indirect>::Reference(Indirect &&referred)
 
     Creates a QVariant::Reference from a \a referred.
  */
 
 /*!
-    \fn template<typename Referred> QVariant::Reference<Referred> &QVariant::Reference<Referred>::operator=(const Reference<Referred> &value)
+    \fn template<typename Indirect> QVariant::Reference<Indirect> &QVariant::Reference<Indirect>::operator=(const Reference<Indirect> &value)
 
     Assigns a new \a value to the value referred to by this QVariant::Reference.
  */
 
 /*!
-    \fn template<typename Referred> QVariant::Reference<Referred> &QVariant::Reference<Referred>::operator=(Reference<Referred> &&value)
+    \fn template<typename Indirect> QVariant::Reference<Indirect> &QVariant::Reference<Indirect>::operator=(Reference<Indirect> &&value)
 
     Assigns a new \a value to the value referred to by this QVariant::Reference.
 */
 
 /*!
-    \fn template<typename Referred> QVariant::Reference<Referred> &QVariant::Reference<Referred>::operator=(const QVariant &value)
+    \fn template<typename Indirect> QVariant::Reference<Indirect> &QVariant::Reference<Indirect>::operator=(const ConstReference<Indirect> &value)
 
     Assigns a new \a value to the value referred to by this QVariant::Reference.
-    This method needs to be specialized for each Referred type. It is
+ */
+
+/*!
+    \fn template<typename Indirect> QVariant::Reference<Indirect> &QVariant::Reference<Indirect>::operator=(ConstReference<Indirect> &&value)
+
+    Assigns a new \a value to the value referred to by this QVariant::Reference.
+*/
+
+/*!
+    \fn template<typename Indirect> QVariant::Reference<Indirect> &QVariant::Reference<Indirect>::operator=(const QVariant &value)
+
+    Assigns a new \a value to the value referred to by this QVariant::Reference.
+    This method needs to be specialized for each Indirect type. It is
     pre-defined for QMetaSequence::Iterator and QMetaAssociation::Iterator.
  */
 
 /*!
-    \fn template<typename Referred> QVariant::Reference<Referred>::operator QVariant() const
+    \fn template<typename Indirect> QVariant::Reference<Indirect>::operator QVariant() const
 
     Dereferences the reference to a QVariant. By default this instantiates a
     temporary QVariant::ConstReference and calls dereferences that. In cases
@@ -3089,19 +3114,19 @@ QT_WARNING_POP
 */
 
 /*!
-    \fn template<typename Pointed> QVariant::ConstPointer<Pointed>::ConstPointer(const Pointed &pointed)
+    \fn template<typename Indirect> QVariant::ConstPointer<Indirect>::ConstPointer(const Indirect &pointed)
 
     Constructs a QVariant::ConstPointer from the value \a pointed to.
  */
 
 /*!
-    \fn template<typename Pointed> QVariant::ConstPointer<Pointed>::ConstPointer(Pointed &&pointed)
+    \fn template<typename Indirect> QVariant::ConstPointer<Indirect>::ConstPointer(Indirect &&pointed)
 
     Constructs a QVariant::ConstPointer from the value \a pointed to.
  */
 
 /*!
-    \fn template<typename Pointed> QVariant::ConstReference<Pointer> QVariant::ConstPointer<Pointed>::operator*() const
+    \fn template<typename Indirect> QVariant::ConstReference<Pointer> QVariant::ConstPointer<Indirect>::operator*() const
 
     Dereferences the QVariant::ConstPointer to a QVariant::ConstReference.
  */
@@ -3119,21 +3144,27 @@ QT_WARNING_POP
 */
 
 /*!
-    \fn template<typename Pointed> QVariant::Pointer<Pointed>::Pointer(const Pointed &pointed)
+    \fn template<typename Indirect> QVariant::Pointer<Indirect>::Pointer(const Indirect &pointed)
 
     Constructs a QVariant::Pointer from the value \a pointed to.
  */
 
 /*!
-    \fn template<typename Pointed> QVariant::Pointer<Pointed>::Pointer(Pointed &&pointed)
+    \fn template<typename Indirect> QVariant::Pointer<Indirect>::Pointer(Indirect &&pointed)
 
     Constructs a QVariant::Pointer from the value \a pointed to.
  */
 
 /*!
-    \fn template<typename Pointed> QVariant::Reference<Pointer> QVariant::Pointer<Pointed>::operator*() const
+    \fn template<typename Indirect> QVariant::Reference<Indirect> QVariant::Pointer<Indirect>::operator*() const
 
     Dereferences the QVariant::Pointer to a QVariant::Reference.
+ */
+
+/*!
+    \fn template<typename Indirect> QVariant::Pointer<Indirect>::operator QVariant::ConstPointer<Indirect>() const
+
+    Converts this QVariant::Pointer into a QVariant::ConstPointer.
  */
 
 QT_END_NAMESPACE

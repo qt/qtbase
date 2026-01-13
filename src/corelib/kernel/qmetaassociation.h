@@ -73,8 +73,8 @@ public:
 
 namespace QtPrivate {
 
-template<typename Referred>
-QVariant associativeIteratorToVariant(const Referred &referred)
+template<typename Indirect>
+QVariant associativeIteratorToVariant(const Indirect &referred)
 {
     const auto metaAssociation = referred.metaContainer();
     const QMetaType metaType(metaAssociation.mappedMetaType());

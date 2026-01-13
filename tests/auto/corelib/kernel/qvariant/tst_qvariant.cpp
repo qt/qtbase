@@ -6753,6 +6753,21 @@ void tst_QVariant::reference()
     ref = QVariant(12);
     QCOMPARE(QVariant(ref), QVariant(12));
     QCOMPARE(content, QVariant(12));
+
+    QVariant::ConstReference<QVariantWrapper> constRef2(ref);
+    QCOMPARE(QVariant(constRef2), QVariant(12));
+
+    QVariant content2(17);
+    QVariant::ConstReference<QVariantWrapper> constRef3(&content2);
+    ref = constRef3;
+    QCOMPARE(content, QVariant(17));
+
+    content2 = QVariant(18);
+    ref = std::move(constRef3);
+    QCOMPARE(content, QVariant(18));
+
+    QVariant::ConstReference<QVariantWrapper> constRef4(std::move(ref));
+    QCOMPARE(QVariant(constRef2), QVariant(18));
 }
 
 void tst_QVariant::pointer()
@@ -6768,6 +6783,9 @@ void tst_QVariant::pointer()
     *ptr = QVariant(12);
     QCOMPARE(*ptr, QVariant(12));
     QCOMPARE(content, QVariant(12));
+
+    QVariant::ConstPointer<QVariantWrapper> constPtr2 = ptr;
+    QCOMPARE(*constPtr2, QVariant(12));
 }
 
 template <typename T>
