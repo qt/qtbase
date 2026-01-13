@@ -107,7 +107,17 @@ namespace QRangeModelDetails
     }
 
     template <typename T>
-    using wrapped_t = std::remove_pointer_t<decltype(QRangeModelDetails::pointerTo(std::declval<T&>()))>;
+    struct wrapped_helper
+    {
+        using type = std::remove_pointer_t<decltype(QRangeModelDetails::pointerTo(std::declval<T&>()))>;
+    };
+    template <>
+    struct wrapped_helper<void>
+    {
+        using type = void;
+    };
+    template <typename T>
+    using wrapped_t = typename QRangeModelDetails::wrapped_helper<T>::type;
 
     template <typename T>
     using is_wrapped = std::negation<std::is_same<
@@ -530,7 +540,44 @@ namespace QRangeModelDetails
                 return columnCount;
             }
         }
+
         static constexpr bool hasMetaObject = true;
+    };
+
+    template <typename T, typename = void>
+    struct item_traits
+    {
+        template <typename That>
+        static QHash<int, QByteArray> roleNames(That *)
+        {
+            return That::roleNamesForSimpleType();
+        }
+    };
+
+    template <>
+    struct item_traits<void>
+    {
+        template <typename That>
+        static QHash<int, QByteArray> roleNames(That *that)
+        {
+            return that->itemModel().QAbstractItemModel::roleNames();
+        }
+    };
+
+    template <typename T>
+    struct item_traits<T, std::enable_if_t<QRangeModelDetails::is_multi_role<T>::value>>
+        : item_traits<void>
+    {
+    };
+
+    template <typename T>
+    struct item_traits<T, std::enable_if_t<QRangeModelDetails::has_metaobject_v<T>>>
+    {
+        template <typename That>
+        static QHash<int, QByteArray> roleNames(That *that)
+        {
+            return That::roleNamesForMetaObject(that->itemModel(), T::staticMetaObject);
+        }
     };
 
     template <typename T>
@@ -927,6 +974,8 @@ protected:
                               const QModelIndex &destParent, int destRow);
     inline void endMoveRows();
     inline AutoConnectPolicy autoConnectPolicy() const;
+
+public:
     inline QAbstractItemModel &itemModel();
     inline const QAbstractItemModel &itemModel() const;
 
@@ -935,6 +984,7 @@ protected:
                                                                        const QMetaObject &metaObject);
     Q_CORE_EXPORT static QHash<int, QByteArray> roleNamesForSimpleType();
 
+protected:
     Q_CORE_EXPORT QScopedValueRollback<bool> blockDataChangedDispatch();
 
     Q_CORE_EXPORT static QHash<int, QMetaProperty> roleProperties(const QAbstractItemModel &model,
@@ -1656,16 +1706,9 @@ public:
     QHash<int, QByteArray> roleNames() const
     {
         // will be 'void' if columns don't all have the same type
-        using item_type = typename row_traits::item_type;
-        if constexpr (QRangeModelDetails::has_metaobject_v<item_type>) {
-            return QRangeModelImplBase::roleNamesForMetaObject(this->itemModel(),
-                                        QRangeModelDetails::wrapped_t<item_type>::staticMetaObject);
-        } else if constexpr (std::negation_v<std::disjunction<std::is_void<item_type>,
-                                             QRangeModelDetails::is_multi_role<item_type>>>) {
-            return QRangeModelImplBase::roleNamesForSimpleType();
-        }
-
-        return this->itemModel().QAbstractItemModel::roleNames();
+        using item_type = QRangeModelDetails::wrapped_t<typename row_traits::item_type>;
+        using item_traits = typename QRangeModelDetails::item_traits<item_type>;
+        return item_traits::roleNames(this);
     }
 
     template <typename Fn, std::size_t ...Is>
