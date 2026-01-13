@@ -5,8 +5,8 @@
     "QtUsage": "Used in Qt Core. Configure with -system-doubleconversion or -no-doubleconversion to avoid.",
 
     "Homepage": "https://github.com/google/double-conversion",
-    "Version": "3.3.1",
-    "DownloadLocation": "https://github.com/google/double-conversion/releases/tag/v3.3.1",
+    "Version": "3.4.0",
+    "DownloadLocation": "https://github.com/google/double-conversion/releases/tag/v3.4.0",
     "PURL": "pkg:github/google/double-conversion@v$<VERSION>",
     "CPE": "cpe:2.3:a:google:double-conversion:$<VERSION>:*:*:*:*:*:*:*",
     "License": "BSD 3-clause \"New\" or \"Revised\" License",
