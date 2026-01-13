@@ -11,9 +11,12 @@
 #include "private/qeglfscursor_p.h"
 
 #include <QtCore/QLoggingCategory>
-#include <QtCore/QFileSystemWatcher>
 #include <QtGui/QScreen>
 #include <QtDeviceDiscoverySupport/private/qdevicediscovery_p.h>
+
+#if QT_CONFIG(filesystemwatcher)
+#include <QtCore/QFileSystemWatcher>
+#endif
 
 #include <gbm.h>
 
@@ -101,7 +104,9 @@ QKmsDevice *QEglFSKmsGbmIntegration::createDevice()
 {
 
     m_deviceDiscovery = std::unique_ptr<QDeviceDiscovery>(QDeviceDiscovery::create(QDeviceDiscovery::Device_VideoMask));
+#if QT_CONFIG(filesystemwatcher)
     m_kmsConfigWatcher = std::unique_ptr<QFileSystemWatcher>(new QFileSystemWatcher());
+#endif
 
     QString path = screenConfig()->devicePath();
     if (!path.isEmpty()) {
@@ -134,6 +139,7 @@ QKmsDevice *QEglFSKmsGbmIntegration::createDevice()
         json = qEnvironmentVariable("QT_QPA_KMS_CONFIG");
 
     if (!json.isEmpty()) {
+#if QT_CONFIG(filesystemwatcher)
         m_kmsConfigWatcher->addPath(json);
         QObject::connect(m_kmsConfigWatcher.get(), &QFileSystemWatcher::fileChanged,
                          m_kmsConfigWatcher.get(), [this, json]() {
@@ -144,6 +150,7 @@ QKmsDevice *QEglFSKmsGbmIntegration::createDevice()
                              m_kmsConfigWatcher->addPath(json); // as per QFileSystemWatcher doc we have to re-add
                                                                 // the path in case it's a new file
                          });
+#endif
     }
 
     return new QEglFSKmsGbmDevice(screenConfig(), path);

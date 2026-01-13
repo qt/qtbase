@@ -46,7 +46,9 @@ protected:
 
 private:
     std::unique_ptr<QDeviceDiscovery> m_deviceDiscovery;
+#if QT_CONFIG(filesystemwatcher)
     std::unique_ptr<QFileSystemWatcher> m_kmsConfigWatcher;
+#endif
 };
 
 QT_END_NAMESPACE
