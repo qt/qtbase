@@ -293,7 +293,7 @@ void Generator::generateCode()
     addEnums();
     fprintf(out, "    };\n");
 
-    fprintf(out, "    uint qt_metaObjectHashIndex = %d;\n", stridx(hashes[cdef->qualified]));
+    fprintf(out, "    int qt_metaObjectHashIndex = %d;\n", stridx(hashes[cdef->qualified]));
 
     const char *uintDataParams = "";
     if (isConstructible || !cdef->classInfoList.isEmpty()) {
