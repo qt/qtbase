@@ -5,6 +5,7 @@ package org.qtproject.qt.android;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
@@ -21,12 +22,14 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
+import android.util.Log;
 import java.lang.IllegalArgumentException;
 
 import android.widget.Toast;
 
 public class QtActivityBase extends Activity
 {
+    public static final String TAG = "QtActivityBase";
     public static final String EXTRA_SOURCE_INFO = "org.qtproject.qt.android.sourceInfo";
 
     private String m_applicationParams = "";
@@ -118,16 +121,20 @@ public class QtActivityBase extends Activity
         addReferrer(getIntent());
 
         try {
-            QtActivityLoader loader = QtActivityLoader.getActivityLoader(this);
-            loader.appendApplicationParameters(m_applicationParams);
+            if (isLaunchedAsAlias()) {
+                Log.d(TAG, "Starting an alias-activity, skipping loading of the Qt libraries.");
+            } else {
+                QtActivityLoader loader = QtActivityLoader.getActivityLoader(this);
+                loader.appendApplicationParameters(m_applicationParams);
 
-            QtLoader.LoadingResult result = loader.loadQtLibraries();
-            if (result == QtLoader.LoadingResult.Succeeded) {
-                m_delegate.startNativeApplication(loader.getApplicationParameters(),
-                        loader.getMainLibraryPath());
-            } else if (result == QtLoader.LoadingResult.Failed) {
-                showFatalFinishingToast();
-                return;
+                QtLoader.LoadingResult result = loader.loadQtLibraries();
+                if (result == QtLoader.LoadingResult.Succeeded) {
+                    m_delegate.startNativeApplication(loader.getApplicationParameters(),
+                            loader.getMainLibraryPath());
+                } else if (result == QtLoader.LoadingResult.Failed) {
+                    showFatalFinishingToast();
+                    return;
+                }
             }
         } catch (IllegalArgumentException e) {
             e.printStackTrace();
@@ -148,6 +155,17 @@ public class QtActivityBase extends Activity
         Toast.makeText(this, message, Toast.LENGTH_LONG).show();
 
         finish();
+    }
+
+    private boolean isLaunchedAsAlias() {
+        final ComponentName component = getIntent().getComponent();
+        if (component == null)
+            return false;
+
+        final String launchedClassName = component.getClassName();
+        final String runtimeClassName = this.getClass().getName();
+
+        return !launchedClassName.equals(runtimeClassName);
     }
 
     @Override
