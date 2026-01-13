@@ -25,12 +25,19 @@ struct D { int Foo; };
 struct E { int Foo() const; };
 struct F { static void Foo(); };
 
-static_assert(!qxp::is_detected_v<HasInnerFooTypedefTest, A>);
+#define FAIL(Type) \
+    static_assert(!qxp::is_detected_v<HasInnerFooTypedefTest, Type>); \
+    static_assert(std::is_same_v<qxp::detected_or_t<int, HasInnerFooTypedefTest, Type>, int>); \
+    static_assert(std::is_same_v<qxp::detected_t<HasInnerFooTypedefTest, Type>, qxp::nonesuch>)
+FAIL(A);
 static_assert( qxp::is_detected_v<HasInnerFooTypedefTest, B>);
-// static_assert(!qxp::is_detected_v<HasInnerFooTypedefTest, C>); // see above
-static_assert(!qxp::is_detected_v<HasInnerFooTypedefTest, D>);
-static_assert(!qxp::is_detected_v<HasInnerFooTypedefTest, E>);
-static_assert(!qxp::is_detected_v<HasInnerFooTypedefTest, F>);
+static_assert(std::is_same_v<qxp::detected_or_t<int, HasInnerFooTypedefTest, B>, void>);
+static_assert(std::is_same_v<qxp::detected_t<HasInnerFooTypedefTest, B>, void>);
+// FAIL(C); // see above
+FAIL(D);
+FAIL(E);
+FAIL(F);
+#undef FAIL
 
 } // InnerTypedefTest
 
@@ -49,15 +56,24 @@ struct G { int foo; };
 class H { void foo(); };
 class I { void foo() const; };
 
-static_assert(!qxp::is_detected_v<HasPublicConstFooFunctionTest, A>);
-static_assert(!qxp::is_detected_v<HasPublicConstFooFunctionTest, B>);
+#define FAIL(Type) \
+    static_assert(!qxp::is_detected_v<HasPublicConstFooFunctionTest, Type>); \
+    static_assert(std::is_same_v<qxp::detected_or_t<long, HasPublicConstFooFunctionTest, Type>, long>); \
+    static_assert(std::is_same_v<qxp::detected_t<HasPublicConstFooFunctionTest, Type>, qxp::nonesuch>)
+FAIL(A);
+FAIL(B);
 static_assert( qxp::is_detected_v<HasPublicConstFooFunctionTest, C>);
-static_assert(!qxp::is_detected_v<HasPublicConstFooFunctionTest, D>);
+static_assert(std::is_same_v<qxp::detected_or_t<long, HasPublicConstFooFunctionTest, C>, void>);
+static_assert(std::is_same_v<qxp::detected_t<HasPublicConstFooFunctionTest, C>, void>);
+FAIL(D);
 static_assert( qxp::is_detected_v<HasPublicConstFooFunctionTest, E>);
-static_assert(!qxp::is_detected_v<HasPublicConstFooFunctionTest, F>);
-static_assert(!qxp::is_detected_v<HasPublicConstFooFunctionTest, G>);
-// static_assert(!qxp::is_detected_v<HasPublicConstFooFunctionTest, H>); // see above
-// static_assert(!qxp::is_detected_v<HasPublicConstFooFunctionTest, I>); // see above
+static_assert(std::is_same_v<qxp::detected_or_t<long, HasPublicConstFooFunctionTest, E>, void>);
+static_assert(std::is_same_v<qxp::detected_t<HasPublicConstFooFunctionTest, E>, void>);
+FAIL(F);
+FAIL(G);
+// FAIL(H); // see above
+// FAIL(I); // see above
+#undef FAIL
 
 } // ReflectionTest
 
@@ -76,7 +92,11 @@ class C { using Foo = void; }; // inaccessible
 class D { friend struct Helper; using Foo = void; };
 
 static_assert(!qxp::is_detected_v<Helper::HasInnerFooTypedefTest, A>);
+static_assert(std::is_same_v<qxp::detected_or_t<int, Helper::HasInnerFooTypedefTest, A>, int>);
+static_assert(std::is_same_v<qxp::detected_t<Helper::HasInnerFooTypedefTest, A>, qxp::nonesuch>);
 static_assert( qxp::is_detected_v<Helper::HasInnerFooTypedefTest, B>);
+static_assert(std::is_same_v<qxp::detected_or_t<int, Helper::HasInnerFooTypedefTest, B>, void>);
+static_assert(std::is_same_v<qxp::detected_t<Helper::HasInnerFooTypedefTest, B>, void>);
 // static_assert(!qxp::is_detected_v<Helper::HasInnerFooTypedefTest, C>); // see above
 // static_assert(!qxp::is_detected_v<Helper::HasInnerFooTypedefTest, D>); // see above
 }

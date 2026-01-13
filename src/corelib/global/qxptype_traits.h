@@ -56,6 +56,14 @@ using is_detected = typename _detail::detector<qxp::nonesuch, void, Op, Args...>
 template <template <typename...> class Op, typename...Args>
 constexpr inline bool is_detected_v = qxp::is_detected<Op, Args...>::value;
 
+template <typename Default, template <typename...> class Op, typename...Args>
+using detected_or = _detail::detector<Default, void, Op, Args...>;
+
+template <typename Default, template <typename...> class Op, typename...Args>
+using detected_or_t = typename qxp::detected_or<Default, Op, Args...>::type;
+
+template <template <typename...> class Op, typename...Args>
+using detected_t = qxp::detected_or_t<qxp::nonesuch, Op, Args...>;
 
 // qxp::is_virtual_base_of_v<B, D> is true if and only if B is a virtual base class of D.
 // Just like is_base_of:
