@@ -460,6 +460,29 @@ namespace QRangeModelDetails
                                              std::tuple_element_t<0, T>, void>;
         static constexpr int fixed_size() { return 0; }
         static constexpr bool hasMetaObject = false;
+
+        template <typename C, typename F>
+        static auto for_element_at(C &&container, std::size_t idx, F &&function)
+        {
+            using type = q20::remove_cvref_t<C>;
+            constexpr size_t size = std::tuple_size_v<type>;
+            Q_ASSERT(idx < std::tuple_size_v<type>);
+            QtPrivate::applyIndexSwitch<size>(idx, [&](auto idxConstant) {
+                function(get<idxConstant>(std::forward<C>(container)));
+            });
+        }
+
+        static constexpr QMetaType meta_type_at(std::size_t idx)
+        {
+            constexpr auto size = std::tuple_size_v<T>;
+            Q_ASSERT(idx < size);
+            QMetaType metaType;
+            QtPrivate::applyIndexSwitch<size>(idx, [&metaType](auto idxConstant) {
+                using ElementType = std::tuple_element_t<idxConstant.value, T>;
+                metaType = QMetaType::fromType<QRangeModelDetails::wrapped_t<ElementType>>();
+            });
+            return metaType;
+        }
     };
 
     // Specialization for C arrays and std::array
@@ -471,6 +494,18 @@ namespace QRangeModelDetails
         using item_type = T;
         static constexpr int fixed_size() { return 0; }
         static constexpr bool hasMetaObject = false;
+
+        template <typename C, typename F>
+        static auto for_element_at(C &&container, std::size_t idx, F &&function)
+        {
+            Q_ASSERT(idx < size(std::forward<C>(container)));
+            function(std::forward<C>(container)[idx]);
+        }
+
+        static constexpr QMetaType meta_type_at(std::size_t)
+        {
+            return QMetaType::fromType<T>();
+        }
     };
 
     template <typename T, std::size_t N>
@@ -759,42 +794,9 @@ protected:
     static auto for_element_at(StaticContainer &&container, std::size_t idx, F &&function)
     {
         using type = std::remove_cv_t<QRangeModelDetails::wrapped_t<StaticContainer>>;
-        static_assert(QRangeModelDetails::array_like_v<type> || QRangeModelDetails::tuple_like_v<type>,
-                      "Internal error: expected an array-like or a tuple-like type");
-
         if (QRangeModelDetails::isValid(container)) {
             auto& ref = QRangeModelDetails::refTo(std::forward<StaticContainer>(container));
-            if constexpr (QRangeModelDetails::array_like_v<type>) {
-                Q_ASSERT(idx < size(ref));
-                function(ref[idx]);
-            } else {
-                constexpr size_t size = std::tuple_size_v<type>;
-                Q_ASSERT(idx < std::tuple_size_v<type>);
-                QtPrivate::applyIndexSwitch<size>(idx, [&](auto idxConstant) {
-                    function(get<idxConstant>(ref));
-                });
-            }
-        }
-    }
-
-    // Get the QMetaType for a tuple-element at a runtime index.
-    // Used in the headerData implementation.
-    template <typename T>
-    static constexpr QMetaType meta_type_at(size_t idx)
-    {
-        using type = QRangeModelDetails::wrapped_t<T>;
-        if constexpr (QRangeModelDetails::array_like_v<type>) {
-            Q_UNUSED(idx);
-            return QMetaType::fromType<std::tuple_element_t<0, type>>();
-        } else {
-            constexpr auto size = std::tuple_size_v<type>;
-            Q_ASSERT(idx < size);
-            QMetaType metaType;
-            QtPrivate::applyIndexSwitch<size>(idx, [&metaType](auto idxConstant) {
-                using ElementType = std::tuple_element_t<idxConstant.value, type>;
-                metaType = QMetaType::fromType<QRangeModelDetails::wrapped_t<ElementType>>();
-            });
-            return metaType;
+            QRangeModelDetails::row_traits<type>::for_element_at(ref, idx, std::forward<F>(function));
         }
     }
 
@@ -1187,7 +1189,7 @@ public:
             if constexpr (QRangeModelDetails::array_like_v<wrapped_row_type>) {
                 return section;
             } else {
-                const QMetaType metaType = QRangeModelImplBase::meta_type_at<wrapped_row_type>(section);
+                const QMetaType metaType = row_traits::meta_type_at(section);
                 if (metaType.isValid())
                     result = QString::fromUtf8(metaType.name());
             }
