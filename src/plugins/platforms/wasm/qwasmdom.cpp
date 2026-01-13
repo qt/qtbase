@@ -12,6 +12,7 @@
 #include <private/qstdweb_p.h>
 #include <private/qwasmlocalfileengine_p.h>
 #include <QtCore/qurl.h>
+#include <QtCore/QBuffer>
 
 #include <utility>
 #include <emscripten/wire.h>
@@ -73,13 +74,23 @@ void DataTransfer::setDropAction(Qt::DropAction action)
 void DataTransfer::setDataFromMimeData(const QMimeData &mimeData)
 {
     for (const auto &format : mimeData.formats()) {
-        auto data = mimeData.data(format);
+        if (format.startsWith("text/")) {
+            auto data = mimeData.data(format);
+            setData(format.toStdString(), QString::fromLocal8Bit(data).toStdString());
+        } else if (format == "application/x-qt-image") {
+            auto image = qvariant_cast<QImage>(mimeData.imageData());
+            QByteArray byteArray;
+            QBuffer buffer(&byteArray);
+            buffer.open(QIODevice::WriteOnly);
+            image.save(&buffer, "PNG");
+            buffer.close();
 
-        auto encoded = format.startsWith("text/")
-                ? QString::fromLocal8Bit(data).toStdString()
-                : "QB64" + QString::fromLocal8Bit(data.toBase64()).toStdString();
-
-        setData(format.toStdString(), std::move(encoded));
+            setData(format.toStdString(), "QB64" + QString::fromLocal8Bit(byteArray.toBase64()).toStdString());
+        } else {
+            auto data = mimeData.data(format);
+            auto encoded = "QB64" + QString::fromLocal8Bit(data.toBase64()).toStdString();
+            setData(format.toStdString(), std::move(encoded));
+        }
     }
 }
 
@@ -219,6 +230,14 @@ void DataTransfer::toMimeDataWithFile(std::function<void(QMimeData *)> callback)
                     QList<QUrl> urls;
                     urls.append(data);
                     mimeContext->mimeData->setUrls(urls);
+                } else if (itemMimeType == "application/x-qt-image") {
+                    if (data.startsWith("QB64")) {
+                        data.remove(0, 4);
+                        auto ba = QByteArray::fromBase64(QByteArray::fromStdString(data.toStdString()));
+                        QImage image;
+                        image.loadFromData(ba);
+                        mimeContext->mimeData->setImageData(image);
+                    }
                 } else {
                     // TODO improve encoding
                     if (data.startsWith("QB64")) {
