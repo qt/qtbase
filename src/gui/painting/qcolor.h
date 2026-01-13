@@ -457,7 +457,7 @@ namespace Svg {
     constexpr inline QColor yellow                   {QColor::Rgb, 0xff * 0x101, 0xff * 0x101, 0xff * 0x101, 0x00 * 0x101};
     constexpr inline QColor yellowgreen              {QColor::Rgb, 0xff * 0x101, 0x9a * 0x101, 0xcd * 0x101, 0x32 * 0x101};
 }  // namespace Svg
-}  // namespace QColorLiterals
+}  // namespace QColorConstants
 
 QT_END_NAMESPACE
 
