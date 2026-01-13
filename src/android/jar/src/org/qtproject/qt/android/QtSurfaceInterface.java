@@ -9,5 +9,4 @@ import android.view.Surface;
 interface QtSurfaceInterface
 {
     void onSurfaceChanged(Surface surface);
-    void onSurfaceSizeChanged(int width, int height);
 }

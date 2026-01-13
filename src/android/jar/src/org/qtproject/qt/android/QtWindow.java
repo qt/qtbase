@@ -38,7 +38,6 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
     private int m_actionBarHeight = -1;
 
     private static native void setSurface(int windowId, Surface surface);
-    private static native void surfaceSizeChanged(int windowId, int width, int height);
     private static native void safeAreaMarginsChanged(Insets insets, int id);
     static native void windowFocusChanged(boolean hasFocus, int id);
     static native void updateWindows();
@@ -241,12 +240,6 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
     public void onSurfaceChanged(Surface surface)
     {
         setSurface(getId(), surface);
-    }
-
-    @Override
-    public void onSurfaceSizeChanged(int width, int height)
-    {
-        surfaceSizeChanged(getId(), width, height);
     }
 
     @Override
