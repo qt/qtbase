@@ -236,7 +236,9 @@ void tst_QIORing::fiveGiBReadWrite()
     std::unique_ptr<std::byte[]> bytes(new (std::nothrow) std::byte[Size]);
     if (!bytes)
         QSKIP("Failed to allocate the buffer (not enough memory?)");
-    std::fill_n(bytes.get(), Size, std::byte(242));
+    constexpr size_t SmallPrime = 251;
+    for (size_t i = 0; i < Size; ++i)
+        bytes[i] = std::byte(i % SmallPrime);
 
     QIORing ring;
     QVERIFY(ring.ensureInitialized());
@@ -281,8 +283,9 @@ void tst_QIORing::fiveGiBReadWrite()
     });
     handle = ring.queueRequest(std::move(readRequest));
     QVERIFY(ring.waitForRequest(handle));
+    size_t counter = 0;
     QVERIFY(std::all_of(bytes.get(), bytes.get() + Size,
-                        [](std::byte ch) { return ch == std::byte(242); }));
+                        [&](std::byte ch) { return ch == std::byte(counter++ % SmallPrime); }));
 #endif
 }
 
