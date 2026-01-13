@@ -88,7 +88,7 @@
 
     If the current value of the QAtomicInteger is an expected value, the
     test-and-set functions assign a new value to the QAtomicInteger and
-    return true. If values are \a not the same, these functions do
+    return true. If values are \e not the same, these functions do
     nothing and return false. This operation equates to the following
     code:
 
@@ -1278,7 +1278,7 @@
 
     If the current value of the QAtomicPointer is an expected value,
     the test-and-set functions assign a new value to the
-    QAtomicPointer and return true. If values are \a not the same,
+    QAtomicPointer and return true. If values are \e not the same,
     these functions do nothing and return false. This operation
     equates to the following code:
 
