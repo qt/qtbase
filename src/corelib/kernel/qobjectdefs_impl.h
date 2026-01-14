@@ -632,7 +632,7 @@ namespace QtPrivate {
                       "Functor is not compatible with expected prototype!");
         return true;
     }
-}
+} // namespace QtPrivate
 
 QT_END_NAMESPACE
 
