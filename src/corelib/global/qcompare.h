@@ -37,6 +37,15 @@ enum class Ordering : CompareUnderlyingType
 
 enum class Uncomparable : CompareUnderlyingType
 {
+    // We choose the value of our Uncomparable to be the same that the C++
+    // Standard Library chooses for its own std::partial_ordering::unordered,
+    // so we can convert from their type to ours via simple std::bit_cast.
+#if 0
+    // GCC 16 broke ABI, so we cannot use the std::*_ordering types
+    // in our ABI until we drop support for GCC 15 and earlier. When that
+    // happens and std::bit_cast is guaranteed, this can be simplified to:
+    Unordered = std::bit_cast<CompareUnderlyingType>(std::partial_ordering::unordered);
+#else
     Unordered =
         #if   defined(Q_STL_LIBCPP)
                 -127
@@ -49,18 +58,31 @@ enum class Uncomparable : CompareUnderlyingType
               defined(Q_STL_STLPORT)    || \
               defined(Q_STL_SGI)
                 QtPrivate::LegacyUncomparableValue
-        // We haven't seen C++20 of these libraries, so we don't promise BC there.
+        // We haven't seen C++20 of these libraries, so we haven't chosen a value yet.
         # ifdef __cpp_lib_three_way_comparison
         #  error Please report the numeric value of std::partial_ordering::unordered in your STL in a bug report.
         # endif
         #else
         #   error Please handle any newly-added Q_STL_ checks in the above ifdef-ery.
         #endif
+#endif // future Qt
 };
-
 } // namespace QtPrivate
 
 namespace QtOrderingPrivate {
+
+using QtPrivate::Ordering;
+using QtPrivate::Uncomparable;
+
+#if defined(__cpp_lib_bit_cast) && defined(__cpp_lib_three_way_comparison)
+inline constexpr bool OrderingValuesAreEqual =
+        std::bit_cast<Ordering>(std::weak_ordering::equivalent) == Ordering::Equivalent &&
+        std::bit_cast<Ordering>(std::strong_ordering::equal) == Ordering::Equal &&
+        std::bit_cast<Ordering>(std::strong_ordering::less) == Ordering::Less &&
+        std::bit_cast<Ordering>(std::strong_ordering::greater) == Ordering::Greater;
+inline constexpr bool UnorderedValueIsEqual =
+        std::bit_cast<Uncomparable>(std::partial_ordering::unordered) == Uncomparable::Unordered;
+#endif
 
 template <typename O>
 constexpr O reversed(O o) noexcept
@@ -72,6 +94,9 @@ constexpr O reversed(O o) noexcept
 }
 
 } // namespace QtOrderingPrivate
+
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_MSVC(4702)   // unreachable code
 
 namespace Qt {
 
@@ -168,12 +193,18 @@ public:
     constexpr Q_IMPLICIT operator std::partial_ordering() const noexcept
     {
         static_assert(sizeof(*this) == sizeof(std::partial_ordering));
-#ifdef __cpp_lib_bit_cast
-        return std::bit_cast<std::partial_ordering>(*this);
-#else
         using O = QtPrivate::Ordering;
         using U = QtPrivate::Uncomparable;
         using R = std::partial_ordering;
+#ifdef __cpp_lib_bit_cast
+        if constexpr (QtOrderingPrivate::OrderingValuesAreEqual) {
+            if constexpr (!QtOrderingPrivate::UnorderedValueIsEqual) {
+                if (m_order == qToUnderlying(U::Unordered))
+                    return R::unordered;
+            }
+            return std::bit_cast<R>(*this);
+        }
+#endif // __cpp_lib_bit_cast
         switch (m_order) {
         case qToUnderlying(O::Less):        return R::less;
         case qToUnderlying(O::Greater):     return R::greater;
@@ -181,7 +212,6 @@ public:
         case qToUnderlying(U::Unordered):   return R::unordered;
         }
         Q_UNREACHABLE_RETURN(R::unordered);
-#endif // __cpp_lib_bit_cast
     }
 
     friend constexpr bool operator==(partial_ordering lhs, std::partial_ordering rhs) noexcept
@@ -359,18 +389,18 @@ public:
     constexpr Q_IMPLICIT operator std::weak_ordering() const noexcept
     {
         static_assert(sizeof(*this) == sizeof(std::weak_ordering));
-#ifdef __cpp_lib_bit_cast
-        return std::bit_cast<std::weak_ordering>(*this);
-#else
         using O = QtPrivate::Ordering;
         using R = std::weak_ordering;
+#ifdef __cpp_lib_bit_cast
+        if constexpr (QtOrderingPrivate::OrderingValuesAreEqual)
+            return std::bit_cast<R>(*this);
+#endif // __cpp_lib_bit_cast
         switch (m_order) {
         case qToUnderlying(O::Less):          return R::less;
         case qToUnderlying(O::Greater):       return R::greater;
         case qToUnderlying(O::Equivalent):    return R::equivalent;
         }
         Q_UNREACHABLE_RETURN(R::equivalent);
-#endif // __cpp_lib_bit_cast
     }
 
     friend constexpr bool operator==(weak_ordering lhs, std::weak_ordering rhs) noexcept
@@ -554,18 +584,18 @@ public:
     constexpr Q_IMPLICIT operator std::strong_ordering() const noexcept
     {
         static_assert(sizeof(*this) == sizeof(std::strong_ordering));
-#ifdef __cpp_lib_bit_cast
-        return std::bit_cast<std::strong_ordering>(*this);
-#else
         using O = QtPrivate::Ordering;
         using R = std::strong_ordering;
+#ifdef __cpp_lib_bit_cast
+        if constexpr (QtOrderingPrivate::OrderingValuesAreEqual)
+            return std::bit_cast<R>(*this);
+#endif // __cpp_lib_bit_cast
         switch (m_order) {
         case qToUnderlying(O::Less):    return R::less;
         case qToUnderlying(O::Greater): return R::greater;
         case qToUnderlying(O::Equal):   return R::equal;
         }
         Q_UNREACHABLE_RETURN(R::equal);
-#endif // __cpp_lib_bit_cast
     }
 
     friend constexpr bool operator==(strong_ordering lhs, std::strong_ordering rhs) noexcept
@@ -631,6 +661,8 @@ inline constexpr strong_ordering strong_ordering::equal(QtPrivate::Ordering::Equ
 inline constexpr strong_ordering strong_ordering::greater(QtPrivate::Ordering::Greater);
 
 } // namespace Qt
+
+QT_WARNING_POP
 
 QT_BEGIN_INCLUDE_NAMESPACE
 

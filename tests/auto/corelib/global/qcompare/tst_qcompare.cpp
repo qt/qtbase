@@ -197,7 +197,9 @@ void tst_QCompare::stdQtBinaryCompatibility()
         QCOMPARE_EQ(valueOf( Qt:: type ## _ordering :: flag), \
                     valueOf(std:: type ## _ordering :: flag)) \
         /* end */
+#  if !defined(Q_STL_LIBSTDCPP) || QT_VERSION >= QT_VERSION_CHECK(7, 0, 0)
     CHECK(partial, unordered);
+#  endif
     CHECK(partial, less);
     CHECK(partial, greater);
     CHECK(partial, equivalent);
