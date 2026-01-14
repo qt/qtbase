@@ -18,7 +18,9 @@ QT_BEGIN_NAMESPACE
     static_assert(std::bit_cast<std:: type ## _ordering>(Qt:: type ## _ordering:: flag) \
                   == std:: type ## _ordering :: flag) \
     /* end */
+#if !defined(Q_STL_LIBSTDCPP)
 CHECK(partial, unordered);
+#endif
 CHECK(partial, less);
 CHECK(partial, greater);
 CHECK(partial, equivalent);
