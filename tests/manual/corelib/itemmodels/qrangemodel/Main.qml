@@ -8,17 +8,21 @@ import QtQuick.Layouts
 Rectangle {
     id: root
     visible: true
-    width: 1200
-    height: 500
+    implicitWidth: 1200
+    implicitHeight: 500
 
     property AbstractItemModel model
+    Text {
+        text: "Data from " + (model ? model.objectName : "<empty>")
+        x: 0
+        y: parent.height - height
+    }
 
-    RowLayout {
+    SplitView {
         anchors.fill: parent
         ListView {
             id: list
-            implicitWidth: 500
-            implicitHeight: 500
+            SplitView.preferredWidth: 200
             model: root.model
             delegateModelAccess: DelegateModel.ReadWrite
             delegate: RowLayout {
@@ -42,17 +46,12 @@ Rectangle {
                                                             : delegate.display += "!"
                     }
                 }
-                Text {
-                    Layout.preferredWidth: 30
-                    text: delegate.index + ": " + delegate.row + "/" + delegate.column
-                }
             }
         }
 
         TableView {
             id: table
-            implicitWidth: 200
-            implicitHeight: 500
+            SplitView.preferredWidth: 200
             model: root.model
             alternatingRows: true
             rowSpacing: 5
@@ -67,8 +66,7 @@ Rectangle {
 
         TreeView {
             id: treeView
-            implicitWidth: 500
-            implicitHeight: 500
+            SplitView.preferredWidth: 200
             clip: true
             selectionModel: ItemSelectionModel {}
             model: root.model

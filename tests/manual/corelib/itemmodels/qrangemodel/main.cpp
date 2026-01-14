@@ -569,7 +569,11 @@ public:
 
 #ifdef QUICK_UI
         quickWidget = new QQuickWidget;
+        connect(quickWidget, &QQuickWidget::statusChanged, this, [](QQuickWidget::Status status){
+            qDebug() << "Quick UI status" << status;
+        });
         quickWidget->loadFromModule("Main", "Main");
+        quickWidget->setResizeMode(QQuickWidget::SizeRootObjectToView);
         splitter->addWidget(quickWidget);
 #endif
 
@@ -598,18 +602,16 @@ public:
 
         toolBar->addSeparator();
 
-        QAction *fullAutoConnectAction = new QAction(tr("Full"));
+        connectionOptions = new QActionGroup(this);
+        QAction *fullAutoConnectAction = connectionOptions->addAction(tr("Full"));
         fullAutoConnectAction->setCheckable(true);
         fullAutoConnectAction->setData(QVariant::fromValue(QRangeModel::AutoConnectPolicy::Full));
-        QAction *onReadAutoConnectAction = new QAction(tr("On Read"));
+        QAction *onReadAutoConnectAction = connectionOptions->addAction(tr("On Read"));
         onReadAutoConnectAction->setCheckable(true);
         onReadAutoConnectAction->setData(QVariant::fromValue(QRangeModel::AutoConnectPolicy::OnRead));
 
-        connectionOptions = new QActionGroup(this);
         connectionOptions->setExclusive(true);
         connectionOptions->setExclusionPolicy(QActionGroup::ExclusionPolicy::ExclusiveOptional);
-        connectionOptions->addAction(fullAutoConnectAction);
-        connectionOptions->addAction(onReadAutoConnectAction);
 
         toolBar->addAction(fullAutoConnectAction);
         toolBar->addAction(onReadAutoConnectAction);
@@ -629,6 +631,11 @@ public:
         modelPicker->setModelColumn(1);
     }
 
+    ~MainWindow()
+    {
+        delete model;
+    }
+
 private:
     void modelChanged(int index)
     {
@@ -639,12 +646,13 @@ private:
         const QMetaMethod method = mo.method(index + mo.methodOffset());
         if (method.invoke(&factory, qReturnArg(newModel))) {
             model = newModel;
+            newModel->setObjectName(QString::fromUtf8(method.name()).slice(4));
             treeview->setModel(newModel);
 #ifdef QUICK_UI
             if (!quickWidget->rootObject())
                 statusBar()->showMessage(tr("Failed to load QML"));
             else
-                quickWidget->rootObject()->setProperty("model", QVariant::fromValue(model));
+                quickWidget->rootObject()->setProperty("model", QVariant::fromValue(newModel));
 
             QQmlContext *rootContext = quickWidget->rootContext();
             QQmlContext *UIContext = quickWidget->engine()->contextForObject(quickWidget->rootObject());
