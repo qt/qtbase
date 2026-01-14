@@ -448,6 +448,11 @@ namespace QRangeModelDetails
         using item_type = std::conditional_t<is_range, typename range_traits<T>::value_type, T>;
         static constexpr int fixed_size() { return 1; }
         static constexpr bool hasMetaObject = false;
+
+        static QVariant column_name(int)
+        {
+            return {};
+        }
     };
 
     // Specialization for tuple-like semantics (prioritized over metaobject)
@@ -482,16 +487,21 @@ namespace QRangeModelDetails
             });
         }
 
-        static constexpr QMetaType meta_type_at(std::size_t idx)
+        static QVariant column_name(int section)
         {
             constexpr auto size = std::tuple_size_v<T>;
-            Q_ASSERT(idx < size);
-            QMetaType metaType;
-            QtPrivate::applyIndexSwitch<size>(idx, [&metaType](auto idxConstant) {
+            Q_ASSERT(std::size_t(section) < size);
+
+            QVariant result;
+            QtPrivate::applyIndexSwitch<size>(section, [&result](auto idxConstant) {
                 using ElementType = std::tuple_element_t<idxConstant.value, T>;
-                metaType = QMetaType::fromType<QRangeModelDetails::wrapped_t<ElementType>>();
+                const QMetaType metaType = QMetaType::fromType<
+                                                QRangeModelDetails::wrapped_t<ElementType>
+                                           >();
+                if (metaType.isValid())
+                    result = QString::fromUtf8(metaType.name());
             });
-            return metaType;
+            return result;
         }
     };
 
@@ -512,9 +522,9 @@ namespace QRangeModelDetails
             function(std::forward<C>(container)[idx]);
         }
 
-        static constexpr QMetaType meta_type_at(std::size_t)
+        static QVariant column_name(int section)
         {
-            return QMetaType::fromType<T>();
+            return section;
         }
     };
 
@@ -542,6 +552,20 @@ namespace QRangeModelDetails
         }
 
         static constexpr bool hasMetaObject = true;
+
+        static QVariant column_name(int section)
+        {
+            QVariant result;
+            if (fixed_size() == 1) {
+                const QMetaType metaType = QMetaType::fromType<T>();
+                result = QString::fromUtf8(metaType.name());
+            } else if (section <= fixed_size()) {
+                const QMetaProperty prop = T::staticMetaObject.property(
+                                    section + T::staticMetaObject.propertyOffset());
+                result = QString::fromUtf8(prop.name());
+            }
+            return result;
+        }
     };
 
     template <typename T, typename = void>
@@ -1226,24 +1250,7 @@ public:
             return this->itemModel().QAbstractItemModel::headerData(section, orientation, role);
         }
 
-        if constexpr (row_traits::hasMetaObject) {
-            if (row_traits::fixed_size() == 1) {
-                const QMetaType metaType = QMetaType::fromType<wrapped_row_type>();
-                result = QString::fromUtf8(metaType.name());
-            } else if (section <= row_traits::fixed_size()) {
-                const QMetaProperty prop = wrapped_row_type::staticMetaObject.property(
-                                    section + wrapped_row_type::staticMetaObject.propertyOffset());
-                result = QString::fromUtf8(prop.name());
-            }
-        } else if constexpr (static_column_count >= 1) {
-            if constexpr (QRangeModelDetails::array_like_v<wrapped_row_type>) {
-                return section;
-            } else {
-                const QMetaType metaType = row_traits::meta_type_at(section);
-                if (metaType.isValid())
-                    result = QString::fromUtf8(metaType.name());
-            }
-        }
+        result = row_traits::column_name(section);
         if (!result.isValid())
             result = this->itemModel().QAbstractItemModel::headerData(section, orientation, role);
         return result;
