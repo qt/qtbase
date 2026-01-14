@@ -15,6 +15,7 @@ add_subdirectory(qmetaproperty)
 add_subdirectory(qmetaenum)
 add_subdirectory(qsignalblocker)
 add_subdirectory(qsignalmapper)
+add_subdirectory(qslotobject)
 add_subdirectory(qtimer)
 add_subdirectory(qtranslator)
 # QTBUG-88135
