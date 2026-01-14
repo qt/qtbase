@@ -155,7 +155,10 @@ bool QEventDispatcherWasm::processEvents(QEventLoop::ProcessEventsFlags flags)
     if (useAsyncify() && isMainThreadEventDispatcher()) {
         auto control = QWasmSuspendResumeControl::get();
         auto currentEvent = control->currentEvent();
-        if (!currentEvent.isUndefined() && currentEvent.instanceof(emscripten::val::global("Event"))) {
+        if (!currentEvent.isUndefined() &&
+            !currentEvent["isInstanceOfEvent"].isUndefined() &&
+            !currentEvent["isInstanceOfEvent"].isNull() &&
+            currentEvent["isInstanceOfEvent"].as<bool>()) {
             currentEvent.call<void>("preventDefault");
             currentEvent.call<void>("stopPropagation");
             control->setCurrentEvent(emscripten::val::undefined());

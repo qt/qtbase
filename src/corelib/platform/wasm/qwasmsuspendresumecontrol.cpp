@@ -92,6 +92,7 @@ void qtRegisterEventHandlerJs(int index) {
                     objCopy[key] = obj[key];
             }
 
+            objCopy['isInstanceOfEvent'] = true;
             return objCopy;
         }
 
