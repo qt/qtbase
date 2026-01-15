@@ -45,7 +45,8 @@ with open_input_file(inputfile) as f:
     with open(file, "w") as out:
 
         current_mime_type = ''
-        skip_until = ''
+        skip_until = None
+        skip_indent = None
         for line in f:
 
             line = line.replace('\t', '  ') # Untabify
@@ -62,14 +63,22 @@ with open_input_file(inputfile) as f:
 
             if 'be a bit more flexible, but require one from each of these' in line:
               skip_until = '</magic>'
-            if skip_until == "" and 'minShouldMatch="' in line:
-                skip_until = '</magic>'
+            if skip_until is None and 'minShouldMatch="' in line:
+                skip_until = '</match>'
+                skip_indent = len(line) - len(line.lstrip())
             if 'value="OggS\\000' in line: # off by one in mask length, it seems (audio/x-oggflac and following)
                 skip_until = '</magic>'
 
-            if skip_until != "":
+            if skip_until is not None:
                 if skip_until in line:
-                    skip_until = ""
+                    if skip_indent is not None: # Indentation tracking for nested elements
+                        indent = len(line) - len(line.lstrip())
+                        if indent <= skip_indent: # Match closing tag at same or outer indentation level
+                            skip_indent = None
+                            skip_until = None
+                        line = wrap_with_comment(line)
+                    else: # No indentation tracking
+                        skip_until = None
                 else:
                     line = wrap_with_comment(line)
 
