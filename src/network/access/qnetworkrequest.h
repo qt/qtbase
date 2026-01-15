@@ -196,7 +196,7 @@ public:
         doSetIntervalBetweenProbes(std::chrono::duration<int>(r));
     }
     int tcpKeepAliveProbeCount() const;
-    void setTcpKeepAliveProbeCount(int probes) noexcept;
+    void setTcpKeepAliveProbeCount(int probes);
 
 #if QT_CONFIG(http) || defined (Q_OS_WASM)
     QT_NETWORK_INLINE_SINCE(6, 8)
@@ -208,8 +208,8 @@ public:
     void setTransferTimeout(std::chrono::milliseconds duration = DefaultTransferTimeout);
 #endif // QT_CONFIG(http) || defined (Q_OS_WASM)
 private:
-    void doSetIdleTimeBeforeProbes(std::chrono::duration<int> idle) noexcept;
-    void doSetIntervalBetweenProbes(std::chrono::duration<int> interval) noexcept;
+    void doSetIdleTimeBeforeProbes(std::chrono::duration<int> idle);
+    void doSetIntervalBetweenProbes(std::chrono::duration<int> interval);
     QSharedDataPointer<QNetworkRequestPrivate> d;
     friend class QNetworkRequestPrivate;
 };

@@ -1070,7 +1070,7 @@ std::chrono::seconds QNetworkRequest::tcpKeepAliveIdleTimeBeforeProbes() const
     \sa idleTimeBeforeProbes
 */
 
-void QNetworkRequest::doSetIdleTimeBeforeProbes(std::chrono::duration<int> seconds) noexcept
+void QNetworkRequest::doSetIdleTimeBeforeProbes(std::chrono::duration<int> seconds)
 {
     d->idleTimeBeforeProbes = seconds;
 }
@@ -1099,7 +1099,7 @@ std::chrono::seconds QNetworkRequest::tcpKeepAliveIntervalBetweenProbes() const
     \sa intervalBetweenProbes
 */
 
-void QNetworkRequest::doSetIntervalBetweenProbes(std::chrono::duration<int> seconds) noexcept
+void QNetworkRequest::doSetIntervalBetweenProbes(std::chrono::duration<int> seconds)
 {
     d->intervalBetweenProbes = seconds;
 }
@@ -1129,7 +1129,7 @@ int QNetworkRequest::tcpKeepAliveProbeCount() const
     \sa probeCount
 */
 
-void QNetworkRequest::setTcpKeepAliveProbeCount(int probes) noexcept
+void QNetworkRequest::setTcpKeepAliveProbeCount(int probes)
 {
     d->probeCount = probes;
 }
