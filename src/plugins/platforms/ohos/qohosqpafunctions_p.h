@@ -61,6 +61,23 @@ public:
         Mismatch,
     };
 
+    enum class AudioStreamUsage {
+        Unknown,
+        Music,
+        VoiceCommunication,
+        VoiceAssistant,
+        Alarm,
+        VoiceMessage,
+        Ringtone,
+        Notification,
+        Accessibility,
+        Movie,
+        Game,
+        Audiobook,
+        Navigation,
+        VideoCommunication,
+    };
+
     struct AbilityOnContinueRequest
     {
         int sourceApplicationVersionCode;
@@ -342,6 +359,9 @@ public:
 
     virtual QObject *getActiveWindowOrNull() const = 0;
 
+    virtual void setAudioStreamUsageHintProperty(QObject *qObject, AudioStreamUsage usage) = 0;
+    virtual QOhosOptional<AudioStreamUsage> tryGetAudioStreamUsageHintProperty(QObject *qObject) = 0;
+
 protected:
     QOhosQpaFunctions();
 };
@@ -351,5 +371,7 @@ QOhosQpaFunctions &getQOhosQpaFunctions();
 }
 
 QT_END_NAMESPACE
+
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::QOhosQpaFunctions::AudioStreamUsage));
 
 #endif // QOHOSQPAFUNCTIONS_H
