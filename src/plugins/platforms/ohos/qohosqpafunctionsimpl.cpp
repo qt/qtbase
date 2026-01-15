@@ -35,6 +35,7 @@
 #include <qohosudmfconversions.h>
 #include <qohosutils.h>
 #include <qohoswindowmanager.h>
+#include <qohoswindowproperty.h>
 #include <render/qwindowproxyregistry.h>
 #include <signal.h>
 #include <thread>
@@ -48,6 +49,8 @@ QT_BEGIN_NAMESPACE
 namespace QtOhos {
 
 namespace {
+
+const QOhosPropertyDescriptor<QOhosQpaFunctions::AudioStreamUsage> audioStreamUsageProperty{};
 
 QOhosOptional<QOhosQpaFunctions::WantInfo::LaunchReason> tryMapOhosLaunchReasonToWantInfoEnum(
     enums::ohos::app::ability::AbilityConstant::LaunchReason ohosLaunchReason)
@@ -991,6 +994,9 @@ public:
     bool tryOpenLink(QObject *optInstanceMainWindow, const QString &link, QOhosOptional<bool> appLinkingOnly) override;
 
     QObject *getActiveWindowOrNull() const override;
+
+    void setAudioStreamUsageHintProperty(QObject *qObject, AudioStreamUsage usage) override;
+    QOhosOptional<AudioStreamUsage> tryGetAudioStreamUsageHintProperty(QObject *qObject) override;
 };
 
 std::shared_ptr<void> QOhosQpaFunctionsImpl::startPickingColorFromScreenWithConsumer(
@@ -1851,6 +1857,16 @@ QObject *QOhosQpaFunctionsImpl::getActiveWindowOrNull() const
 {
     const auto focusedWindows = QWindowProxyRegistry::instance().queryWindowsWithSystemWindowAndFocus();
     return !focusedWindows.empty() ? focusedWindows.front() : nullptr;
+}
+
+void QOhosQpaFunctionsImpl::setAudioStreamUsageHintProperty(QObject *qObject, AudioStreamUsage usage)
+{
+    setQOhosPropertyOnQObject<QOhosQpaFunctions::AudioStreamUsage, &audioStreamUsageProperty>(qObject, usage);
+}
+
+QOhosOptional<QOhosQpaFunctions::AudioStreamUsage> QOhosQpaFunctionsImpl::tryGetAudioStreamUsageHintProperty(QObject *qObject)
+{
+    return tryGetQOhosPropertyFromQObject<QOhosQpaFunctions::AudioStreamUsage, &audioStreamUsageProperty>(qObject);
 }
 
 }
