@@ -463,6 +463,30 @@ QMutexLocker<QMutex> QAndroidPlatformWindow::destructionGuard()
     return QMutexLocker(&m_destructionMutex);
 }
 
+Q_CONSTINIT static QBasicAtomicInt g_surfacesCounter = Q_BASIC_ATOMIC_INITIALIZER(0);
+
+int QAndroidPlatformWindow::surfacesCount()
+{
+    return g_surfacesCounter.loadRelaxed();
+}
+
+void QAndroidPlatformWindow::incrementSurfacesCount()
+{
+    g_surfacesCounter.fetchAndAddRelaxed(1);
+}
+
+void QAndroidPlatformWindow::decrementSurfacesCount()
+{
+    int cur = g_surfacesCounter.loadRelaxed();
+    while (true) {
+        if (cur == 0)
+            return;
+
+        if (g_surfacesCounter.testAndSetRelaxed(cur, cur - 1))
+            return;
+    }
+}
+
 bool QAndroidPlatformWindow::registerNatives(QJniEnvironment &env)
 {
     if (!env.registerNativeMethods(QtJniTypes::Traits<QtJniTypes::QtWindow>::className(),

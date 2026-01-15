@@ -4,6 +4,7 @@
 #include "androidjniaccessibility.h"
 #include "androidjnimain.h"
 #include "qandroidplatformintegration.h"
+#include "qandroidplatformwindow.h"
 #include "qpa/qplatformaccessibility.h"
 #include <QtGui/private/qaccessiblebridgeutils_p.h>
 #include "qguiapplication.h"
@@ -69,6 +70,12 @@ namespace QtAndroidAccessibility
     template <typename Func, typename Ret>
     void runInObjectContext(QObject *context, Func &&func, Ret *retVal)
     {
+        if (QAndroidPlatformWindow::surfacesCount() == 0) {
+            __android_log_print(ANDROID_LOG_WARN, m_qtTag,
+                "Could not run accessibility call in object context, no valid surface.");
+            return;
+        }
+
         QtAndroidPrivate::AndroidDeadlockProtector protector(
             u"QtAndroidAccessibility::runInObjectContext()"_s);
         if (!protector.acquire()) {
