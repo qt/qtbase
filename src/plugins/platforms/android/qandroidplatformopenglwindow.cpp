@@ -113,6 +113,8 @@ bool QAndroidPlatformOpenGLWindow::ensureEglSurfaceCreated(EGLConfig config)
     // we've created another Surface, the window should be repainted
     sendExpose();
 
+    incrementSurfacesCount();
+
     return true;
 }
 
@@ -136,6 +138,8 @@ void QAndroidPlatformOpenGLWindow::clearSurface()
         ANativeWindow_release(m_nativeWindow);
         m_nativeWindow = nullptr;
     }
+
+    decrementSurfacesCount();
 }
 
 QT_END_NAMESPACE
