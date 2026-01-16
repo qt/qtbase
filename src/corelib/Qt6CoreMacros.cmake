@@ -3735,6 +3735,7 @@ function(_qt_internal_get_i18n_catalogs_for_modules out_var)
             list(APPEND result ${catalog})
         endforeach()
     endforeach()
+    list(REMOVE_DUPLICATES result)
     set("${out_var}" "${result}" PARENT_SCOPE)
 endfunction()
 
