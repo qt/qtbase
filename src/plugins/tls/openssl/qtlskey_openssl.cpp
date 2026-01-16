@@ -507,7 +507,11 @@ TlsKeyOpenSSL *TlsKeyOpenSSL::publicKeyFromX509(X509 *x)
 #endif
 
     EVP_PKEY *pkey = q_X509_get_pubkey(x);
-    Q_ASSERT(pkey);
+    if (!pkey) {
+      QTlsBackendOpenSSL::logAndClearErrorQueue();
+      return keyRaii.release();
+    }
+
     const int keyType = q_EVP_PKEY_type(q_EVP_PKEY_base_id(pkey));
 
     if (keyType == EVP_PKEY_RSA) {
