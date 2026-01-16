@@ -495,11 +495,12 @@ void QWaylandDisplay::reconnect()
             Qt::SingleShotConnection);
 
     setupConnection();
-    initialize();
 
     if (m_frameEventQueue)
         wl_event_queue_destroy(m_frameEventQueue);
     initEventThread();
+
+    initialize();
 
     auto needsRecreate = [](QPlatformWindow *window) {
         auto waylandWindow = static_cast<QWaylandWindow *>(window);
