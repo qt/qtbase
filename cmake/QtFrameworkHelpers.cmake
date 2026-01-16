@@ -163,6 +163,11 @@ function(qt_copy_framework_headers target)
         file(MAKE_DIRECTORY "${output_dir}/${fw_dir}/Versions/${fw_version}/Headers")
         file(CREATE_LINK "${fw_version}" "${output_dir}/${fw_dir}/Versions/Current" SYMBOLIC)
         file(CREATE_LINK "Versions/Current/Headers" "${output_dir}/${fw_header_dir}" SYMBOLIC)
+
+        # Make "ninja clean" work.
+        set_property(TARGET ${target} APPEND PROPERTY ADDITIONAL_CLEAN_FILES
+            "${output_dir}/${fw_dir}/Versions/${fw_version}/Headers"
+        )
     endif()
 
     if(CMAKE_GENERATOR MATCHES "^Ninja")
