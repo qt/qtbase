@@ -3275,7 +3275,8 @@ function(_qt_internal_setup_deploy_support)
 
     list(JOIN candidate_paths "\n    " candidate_paths_joined)
 
-    if(WIN32 AND NOT QT_NO_QTPATHS_DEPLOYMENT_WARNING AND NOT target_qtpaths_path)
+    if(WIN32 AND NOT QT_BUILDING_QT AND NOT QT_NO_QTPATHS_DEPLOYMENT_WARNING
+        AND NOT target_qtpaths_path)
         message(WARNING
             "No qtpaths executable found for deployment purposes. Candidates searched: \n    "
             "${candidate_paths_joined}"
