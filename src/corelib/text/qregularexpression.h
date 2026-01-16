@@ -192,6 +192,11 @@ Q_CORE_EXPORT QDebug operator<<(QDebug debug, const QRegularExpression &re);
 Q_CORE_EXPORT QDebug operator<<(QDebug debug, QRegularExpression::PatternOptions patternOptions);
 #endif
 
+[[nodiscard]] inline qsizetype QStringView::count(const QRegularExpression &re) const
+{
+    return QtPrivate::count(*this, re);
+}
+
 struct QRegularExpressionMatchPrivate;
 QT_DECLARE_QESDP_SPECIALIZATION_DTOR_WITH_EXPORT(QRegularExpressionMatchPrivate, Q_CORE_EXPORT)
 

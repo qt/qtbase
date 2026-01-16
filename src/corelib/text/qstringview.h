@@ -383,10 +383,7 @@ public:
     {
         return QtPrivate::contains(*this, re, rmatch);
     }
-    [[nodiscard]] qsizetype count(const QRegularExpression &re) const
-    {
-        return QtPrivate::count(*this, re);
-    }
+    [[nodiscard]] qsizetype count(const QRegularExpression &re) const; // defined in qregularexpression.h
 #endif
 
     [[nodiscard]] bool isRightToLeft() const noexcept
