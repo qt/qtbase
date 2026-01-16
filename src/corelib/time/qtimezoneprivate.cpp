@@ -1225,8 +1225,8 @@ class PatternAligner
     auto readField(QByteArrayView field, uint fieldBit, int *value);
     bool scanExtraFields(QStringView sep, const QLocaleData *locData,
                          qsizetype &txtLen, int &second);
-    bool scanMatchedFields(const Digits &fmt, const Digits &src, bool allowExtraFields,
-                           int &hour, int &minute, int &second, int &sign);
+    qsizetype scanMatchedFields(const Digits &fmt, const Digits &src, bool allowExtraFields,
+                                int &hour, int &minute, int &second, int &sign);
     void reset()
     {
         txtPos = 0;
@@ -1359,49 +1359,103 @@ bool PatternAligner::scanExtraFields(QStringView sep, const QLocaleData *locData
 }
 
 // For when we can use the content of fmt fields to indicate which field they are:
-bool PatternAligner::scanMatchedFields(const Digits &fmt, const Digits &src, bool allowExtraFields,
-                                       int &hour, int &minute, int &second, int &sign)
+qsizetype PatternAligner::scanMatchedFields(const Digits &fmt, const Digits &src,
+                                            bool allowExtraFields,
+                                            int &hour, int &minute, int &second, int &sign)
 {
     if (fmt.sign) {
         if (!fmt.digits.startsWith(hourAscii))
-            return false; // Sign must be applied to hour, no other field
+            return -1; // Sign must be applied to hour, no other field
         if (sign || !src.sign)
-            return false; // Only one sign, txt must have sign where str does
+            return -1; // Only one sign, txt must have sign where str does
         sign = fmt.sign == src.sign ? +1 : -1;
     } else if (src.sign) {
-        return false; // If str lacks sign, so must txt.
+        return -1; // If str lacks sign, so must txt.
     }
 
     QByteArrayView chosen{fmt.digits}, found{src.digits};
     while (chosen.size() && found.size()) {
+        const uint priorFields = seenFields;
         auto read = chosen.startsWith(hourAscii) ? readField(found, Hour, &hour)
             : chosen.startsWith(minuteAscii) ? readField(found, Minute, &minute)
             : chosen.startsWith(secondAscii) ? readField(found, Second, &second)
             : readField(found, 0u, nullptr);
-        if (!read.ok)
-            return false;
-        chosen = chosen.sliced(qMin(2, chosen.size()));
+        if (!read.ok) // Always catches the last case of the precedeing.
+            return -1;
+
+        if (read.used.size() < 2) {
+            const uint newField = (seenFields ^ priorFields);
+            // Only hour can be shorter than two digits, and even then only when
+            // it's all there is.
+            if (newField == Hour) {
+                // We can't ignore it as dangling cruft, as hour is always required.
+                if (priorFields) // It wasn't the only field.
+                    return -1;
+                // Anything after this is dangling cruft. We must assume elided
+                // zeros for minutes and seconds.
+                chosen = {};
+                found = found.sliced(read.used.size());
+                allowExtraFields = false;
+                break;
+            }
+            // If this isn't the first field and we've seen an hour field ...
+            if (chosen.size() < fmt.digits.size() && (priorFields & Hour)) {
+                // ... treat current field as start of dangling cruft.
+                // Forget we've seen it:
+                seenFields = priorFields;
+                Q_ASSERT(newField == Minute || newField == Second);
+                if (newField == Minute)
+                    minute = 0;
+                else
+                    second = 0;
+                // Assume elided zeros for remaining fields.
+                chosen = {};
+                allowExtraFields = false;
+                break;
+            }
+            return -1;
+        }
+
+        Q_ASSERT(chosen.size() >= 2); // It starts with a known two-digit string.
+        chosen = chosen.sliced(2);
         found = found.sliced(read.used.size());
     }
-
-    if (!found.isEmpty()
-        // If there's no later numeric field we might just have surplus precision:
-        && allowExtraFields && (seenFields & Hour)) {
-        if (!Q_LIKELY(seenFields & Minute)) {
-            auto read = readField(found, Minute, &minute);
-            if (!read.ok)
-                return false;
-            found = found.sliced(read.used.size());
-        }
-        if (!(seenFields & Second)) {
-            auto read = readField(found, Second, &second);
-            if (!read.ok)
-                return false;
-            found = found.sliced(read.used.size());
-        }
+    if (chosen.size()) {
+        Q_ASSERT(found.isEmpty());
+        // May have elided trailing zero (mins and) seconds.
+        return (seenFields & Hour) ? 0 : -1;
     }
 
-    return found.isEmpty();
+    if (found.size() && (seenFields & Hour)) {
+        // If there's no later numeric field we might just have surplus precision.
+        // Or we might just have dangling cruft.
+        if (allowExtraFields) {
+            if (!Q_LIKELY(seenFields & Minute)) {
+                const uint priorFields = seenFields;
+                auto read = readField(found, Minute, &minute);
+                if (!read.ok || read.used.size() < 2) {
+                    minute = 0;
+                    seenFields = priorFields;
+                    return found.size();
+                }
+                found = found.sliced(read.used.size());
+            }
+            if (!(seenFields & Second)) {
+                const uint priorFields = seenFields;
+                auto read = readField(found, Second, &second);
+                if (!read.ok || read.used.size() < 2) {
+                    second = 0;
+                    seenFields = priorFields;
+                    return found.size();
+                }
+                found = found.sliced(read.used.size());
+            }
+        }
+        // Otherwise, interpret remaining digits as dangling cruft.
+        return found.size();
+    }
+    // Can't write off any residue as dangling cruft because Hour isn't set:
+    return found.size() ? -1 : 0;
 }
 
 auto PatternAligner::match(QStringView str, const QList<qsizetype> &strPat,
@@ -1508,11 +1562,40 @@ auto PatternAligner::match(QStringView str, const QList<qsizetype> &strPat,
         const Digits asciiParse = locData->digitSequence(toParse, AllowSign);
         if (asciiParse.endIndex() != toParse.size())
             return R{};
-        // Allow extra fields if we've skipped none and there's no sep or later numeric field:
-        if (!scanMatchedFields(asciiField, asciiParse,
-                               !txtSkipped && txtInd + 2 >= strPat.size() && sep.isEmpty(),
-                               hour, minute, second, sign)) {
+        const uint priorFields = seenFields;
+        // Allow extra fields if there's no sep or later numeric field:
+        const qsizetype spare
+            = scanMatchedFields(asciiField, asciiParse,
+                                !txtSkipped && txtInd + 2 >= strPat.size() && sep.isEmpty(),
+                                hour, minute, second, sign);
+        if (spare < 0) // Did not match
             return R{};
+        if (spare) {
+            // If the pattern has a required end marker, we can't write off the
+            // spare as dangling cruft unless that end marker is a field
+            // separator, and we've seen one of those already, after an hour
+            // field, in which case we can treat the whole present field as
+            // dangling cruft.
+            if (spare == 1 && (seenFields & Hour)) {
+                // Too short for non-Hour field, can treat as dangling cruft.
+            } else if (strPat.back() < 0) {
+                if (sep.isEmpty() || !(priorFields & Hour)
+                    || strPat.back() != -sep.size() || !str.endsWith(sep)) {
+                    return R{};
+                }
+                int offset = hour * 60;
+                if (priorFields & Minute)
+                    offset += minute;
+                offset *= 60;
+                if (priorFields & Second)
+                    offset += second;
+                return R{ sign * offset, txtPos };
+            }
+
+            // Consume what we matched; ignore the rest as dangling cruft.
+            txtPos += asciiParse.digitStart
+                + (asciiParse.digits.size() - spare) * asciiParse.digitWidth;
+            break;
         }
 
         strPos += asciiField.endIndex();

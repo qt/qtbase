@@ -401,10 +401,24 @@ void tst_QTimeZoneBackend::findOffsetPrefix()
     }
 
     {
+        // Dangling cruft: easy mode.
         QString extended = text + " s0me+dang1ing-cruft"_L1;
         auto report = qScopeGuard([extended]() { qDebug() << "Extended name was:" << extended; });
         parsed = QTimeZonePrivate::findOffsetPrefix(extended, locale, flags);
         QVERIFY2(parsed, "Round-trip parsing of offset zone ran afoul of dangling cruft");
+        if (parsed.timeType != QTimeZone::GenericTime)
+            QCOMPARE(parsed.timeType, season);
+        QCOMPARE(parsed.nameLength, text.size());
+        QCOMPARE(parsed.ianaId, zone.id());
+        report.dismiss();
+    }
+
+    {
+        // Dangling cruft: hard mode - must recognise and discard extraneous digits.
+        QString extended = text + locale.toString(9876543210UL).remove(locale.groupSeparator());
+        auto report = qScopeGuard([extended]() { qDebug() << "Extended name was:" << extended; });
+        parsed = QTimeZonePrivate::findOffsetPrefix(extended, locale, flags);
+        QVERIFY2(parsed, "Round-trip parsing of offset zone ran afoul of dangling digits");
         if (parsed.timeType != QTimeZone::GenericTime)
             QCOMPARE(parsed.timeType, season);
         QCOMPARE(parsed.nameLength, text.size());
