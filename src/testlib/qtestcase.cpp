@@ -977,10 +977,8 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, const char *const argv[], bool 
                 QTest::testFunctions += QString::fromLatin1(argv[i]);
                 QTest::testTags += QString();
             } else {
-                QTest::testFunctions +=
-                    QString::fromLatin1(argv[i], colon);
-                QTest::testTags +=
-                    QString::fromLatin1(argv[i] + colon + 1);
+                QTest::testFunctions += QString::fromLatin1(argv[i], colon);
+                QTest::testTags += QString::fromLatin1(argv[i] + colon + 1);
             }
         }
     }
@@ -1951,9 +1949,10 @@ int QTest::qRun()
         if (!Internal::noCrashHandler)
             handler.emplace();
 
-        bool seenBad = false;
         TestMethods::MetaMethods commandLineMethods;
         commandLineMethods.reserve(static_cast<size_t>(QTest::testFunctions.size()));
+        std::vector<size_t> badFunctionIndices;
+        size_t index = 0;
         for (const QString &tf : std::as_const(QTest::testFunctions)) {
             const QByteArray tfB = tf.toLatin1();
             const QByteArray signature = tfB + QByteArrayLiteral("()");
@@ -1967,18 +1966,33 @@ int QTest::qRun()
                 QTestResult::setCurrentTestFunction(tfB.constData());
                 QTestResult::addFailure(qPrintable("Function not found: %1"_L1.arg(tf)));
                 QTestResult::finishedCurrentTestFunction();
-                // Ditch the tag that came with tf as test function:
-                QTest::testTags.remove(commandLineMethods.size());
-                seenBad = true;
+                // Record bad indices in reverse order to make removal easier:
+                badFunctionIndices.insert(badFunctionIndices.begin(), index);
             }
+            ++index;
         }
-        if (seenBad) {
+        if (badFunctionIndices.size() > 0) {
             // Provide relevant help to do better next time:
             std::fprintf(stderr, "\n%s -functions\nlists all available test functions.\n\n",
                                  QTestResult::currentAppName());
             if (commandLineMethods.empty()) // All requested functions missing.
                 return 1;
+
+            // List is in decreasing order, so we delete later entries before
+            // earlier, avoiding problems with entries after each deletion
+            // changing index:
+            for (size_t i : std::as_const(badFunctionIndices)) {
+                // Purge the bogus entries from testFunctions and testTags. We
+                // need to do this from testTags so that its indexing matches
+                // commandLineMethods. Quick Test will be calling qRun() again
+                // later, once for each style, so we need testFunctions to stay
+                // in sync with testTags, so we don't attempt to remove the same
+                // tag again on each repeat (QTBUG-143440).
+                QTest::testFunctions.removeAt(i);
+                QTest::testTags.removeAt(i);
+            }
         }
+        // If commandLineMethods is empty, constructor uses all available instead:
         TestMethods test(currentTestObject, std::move(commandLineMethods));
 
         int remainingRepetitions = repetitions;
