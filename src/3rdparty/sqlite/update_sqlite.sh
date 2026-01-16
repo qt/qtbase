@@ -8,8 +8,8 @@
 
 version_maj=3
 version_min=51
-version_patch=1
-year=2025
+version_patch=2
+year=2026
 
 version=${version_maj}.${version_min}.${version_patch}
 version_str=$(printf "%d%02d%02d00" ${version_maj} ${version_min} ${version_patch})
