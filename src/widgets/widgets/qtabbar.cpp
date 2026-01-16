@@ -428,8 +428,9 @@ void QTabBarPrivate::layoutTabs()
     bool vertTabs = verticalTabs(shape);
     int tabChainIndex = 0;
     int hiddenTabs = 0;
+    const auto *style = q->style();
 
-    Qt::Alignment tabAlignment = Qt::Alignment(q->style()->styleHint(QStyle::SH_TabBar_Alignment, nullptr, q));
+    Qt::Alignment tabAlignment = Qt::Alignment(style->styleHint(QStyle::SH_TabBar_Alignment, nullptr, q));
     QList<QLayoutStruct> tabChain(tabList.size() + 2);
 
     // We put an empty item at the front and back and set its expansive attribute
@@ -546,10 +547,16 @@ void QTabBarPrivate::layoutTabs()
         Q_Q(QTabBar);
         QStyleOption opt;
         opt.initFrom(q);
-        QRect scrollButtonLeftRect = q->style()->subElementRect(QStyle::SE_TabBarScrollLeftButton, &opt, q);
-        QRect scrollButtonRightRect = q->style()->subElementRect(QStyle::SE_TabBarScrollRightButton, &opt, q);
-        int scrollButtonWidth = q->style()->pixelMetric(QStyle::PM_TabBarScrollButtonWidth, &opt, q);
+        QRect scrollButtonLeftRect = style->subElementRect(QStyle::SE_TabBarScrollLeftButton, &opt, q);
+        QRect scrollButtonRightRect = style->subElementRect(QStyle::SE_TabBarScrollRightButton, &opt, q);
+        int scrollButtonWidth = style->pixelMetric(QStyle::PM_TabBarScrollButtonWidth, &opt, q);
 
+        const auto setIconOr = [](QToolButton *tb, const QIcon &icon, Qt::ArrowType arrowType) {
+            if (icon.isNull())
+                tb->setArrowType(arrowType);
+            else
+                tb->setIcon(icon);
+        };
         // Normally SE_TabBarScrollLeftButton should have the same width as PM_TabBarScrollButtonWidth.
         // But if that is not the case, we set the actual button width to PM_TabBarScrollButtonWidth, and
         // use the extra space from SE_TabBarScrollLeftButton as margins towards the tabs.
@@ -557,20 +564,26 @@ void QTabBarPrivate::layoutTabs()
             scrollButtonLeftRect.setHeight(scrollButtonWidth);
             scrollButtonRightRect.setY(scrollButtonRightRect.bottom() + 1 - scrollButtonWidth);
             scrollButtonRightRect.setHeight(scrollButtonWidth);
-            leftB->setArrowType(Qt::UpArrow);
-            rightB->setArrowType(Qt::DownArrow);
+            const auto upIcon = style->standardIcon(QStyle::SP_TabScrollUpButton, &opt, q);
+            const auto downIcon = style->standardIcon(QStyle::SP_TabScrollDownButton, &opt, q);
+            setIconOr(leftB, upIcon, Qt::UpArrow);
+            setIconOr(rightB, downIcon, Qt::DownArrow);
         } else if (q->layoutDirection() == Qt::RightToLeft) {
             scrollButtonRightRect.setWidth(scrollButtonWidth);
             scrollButtonLeftRect.setX(scrollButtonLeftRect.right() + 1 - scrollButtonWidth);
             scrollButtonLeftRect.setWidth(scrollButtonWidth);
-            leftB->setArrowType(Qt::RightArrow);
-            rightB->setArrowType(Qt::LeftArrow);
+            const auto leftIcon = style->standardIcon(QStyle::SP_TabScrollLeftButton, &opt, q);
+            const auto rightIcon = style->standardIcon(QStyle::SP_TabScrollRightButton, &opt, q);
+            setIconOr(leftB, rightIcon, Qt::RightArrow);
+            setIconOr(rightB, leftIcon, Qt::LeftArrow);
         } else {
             scrollButtonLeftRect.setWidth(scrollButtonWidth);
             scrollButtonRightRect.setX(scrollButtonRightRect.right() + 1 - scrollButtonWidth);
             scrollButtonRightRect.setWidth(scrollButtonWidth);
-            leftB->setArrowType(Qt::LeftArrow);
-            rightB->setArrowType(Qt::RightArrow);
+            const auto leftIcon = style->standardIcon(QStyle::SP_TabScrollLeftButton, &opt, q);
+            const auto rightIcon = style->standardIcon(QStyle::SP_TabScrollRightButton, &opt, q);
+            setIconOr(leftB, leftIcon, Qt::LeftArrow);
+            setIconOr(rightB, rightIcon, Qt::RightArrow);
         }
 
         leftB->setGeometry(scrollButtonLeftRect);
