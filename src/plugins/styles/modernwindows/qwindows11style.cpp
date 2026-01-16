@@ -309,7 +309,8 @@ QWindows11Style::QWindows11Style() : QWindows11Style(*new QWindows11StylePrivate
 QWindows11Style::QWindows11Style(QWindows11StylePrivate &dd) : QWindowsVistaStyle(dd)
 {
     Q_D(QWindows11Style);
-    d->assetFont = QFont("Segoe Fluent Icons");
+    const QStringList assetFontFamilies{ "Segoe Fluent Icons"_L1, "Segoe MDL2 Assets"_L1 };
+    d->assetFont = QFont(assetFontFamilies);
     d->assetFont.setStyleStrategy(QFont::NoFontMerging);
     highContrastTheme = QGuiApplicationPrivate::styleHints->colorScheme() == Qt::ColorScheme::Unknown;
     colorSchemeIndex = QGuiApplicationPrivate::styleHints->colorScheme() == Qt::ColorScheme::Light ? 0 : 1;
