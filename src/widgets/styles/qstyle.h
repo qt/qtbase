@@ -798,6 +798,10 @@ public:
         SP_DialogIgnoreButton,
         SP_RestoreDefaultsButton,
         SP_TabCloseButton,
+        SP_TabScrollLeftButton,
+        SP_TabScrollRightButton,
+        SP_TabScrollUpButton,
+        SP_TabScrollDownButton,
         NStandardPixmap, // assertion value for sync with QPlatformTheme::StandardPixmap
         // do not add any values below/greater than this
         SP_CustomBase = 0xf0000000

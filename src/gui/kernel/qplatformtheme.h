@@ -248,6 +248,10 @@ public:
         DialogIgnoreButton,
         RestoreDefaultsButton,
         TabCloseButton,
+        TabScrollLeftButton,
+        TabScrollRightButton,
+        TabScrollUpButton,
+        TabScrollDownButton,
         NStandardPixmap, // assertion value for sync with QStyle::StandardPixmap
 
         // do not add any values below/greater than this

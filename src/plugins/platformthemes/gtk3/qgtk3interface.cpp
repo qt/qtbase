@@ -254,6 +254,10 @@ QImage QGtk3Interface::standardPixmap(QPlatformTheme::StandardPixmap standardPix
     case QPlatformTheme::RestoreDefaultsButton:
     case QPlatformTheme::TabCloseButton:
     case QPlatformTheme::NStandardPixmap:
+    case QPlatformTheme::TabScrollLeftButton:
+    case QPlatformTheme::TabScrollRightButton:
+    case QPlatformTheme::TabScrollUpButton:
+    case QPlatformTheme::TabScrollDownButton:
         return QImage();
     }
     Q_UNREACHABLE();

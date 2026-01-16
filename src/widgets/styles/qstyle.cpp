@@ -2090,6 +2090,10 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
     \value [since 5.14] SP_DialogIgnoreButton Icon for a standard Ignore button in a QDialogButtonBox.
     \value [since 5.14] SP_RestoreDefaultsButton Icon for a standard RestoreDefaults button in a QDialogButtonBox.
     \value [since 6.3] SP_TabCloseButton Icon for the close button in the tab of a QTabBar.
+    \value [since 6.12] SP_TabScrollLeftButton Icon for the scroll left button of a QTabBar.
+    \value [since 6.12] SP_TabScrollRightButton Icon for the scroll right button of a QTabBar.
+    \value [since 6.12] SP_TabScrollUpButton Icon for the scroll up button of a QTabBar.
+    \value [since 6.12] SP_TabScrollDownButton Icon for the scroll down button of a QTabBar.
     \omitvalue NStandardPixmap
     \value SP_CustomBase  Base value for custom standard pixmaps;
     custom values must be greater than this value.

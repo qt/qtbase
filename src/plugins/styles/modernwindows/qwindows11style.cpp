@@ -2987,6 +2987,10 @@ QPixmap QWindows11Style::standardPixmap(StandardPixmap standardPixmap,
                                         const QWidget *widget) const
 {
     switch (standardPixmap) {
+    case SP_TabScrollLeftButton:
+    case SP_TabScrollRightButton:
+    case SP_TabScrollUpButton:
+    case SP_TabScrollDownButton:
     case SP_ToolBarHorizontalExtensionButton:
     case SP_ToolBarVerticalExtensionButton: {
         const int size = proxy()->pixelMetric(PM_ToolBarExtensionExtent, option, widget);
@@ -3029,6 +3033,14 @@ QIcon QWindows11Style::standardIcon(StandardPixmap standardIcon,
         return getIcon(Icon::More, 1.0);
     case SP_TabCloseButton:
         return getIcon(Icon::ChromeClose, 0.6);
+    case SP_TabScrollLeftButton:
+        return getIcon(Icon::CaretLeftSolid8, 0.5);
+    case SP_TabScrollRightButton:
+        return getIcon(Icon::CaretRightSolid8, 0.5);
+    case SP_TabScrollUpButton:
+        return getIcon(Icon::CaretUpSolid8, 0.5);
+    case SP_TabScrollDownButton:
+        return getIcon(Icon::CaretDownSolid8, 0.5);
     default:
         break;
     }
