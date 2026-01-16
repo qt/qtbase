@@ -69,6 +69,7 @@ private slots:
     void subjectIssuerDisplayName();
     void publicKey_data();
     void publicKey();
+    void publicKeyFromBrokenCert();
     void toPemOrDer_data();
     void toPemOrDer();
     void fromDevice();
@@ -581,6 +582,21 @@ void tst_QSslCertificate::publicKey()
     QVERIFY(!pubkey.isNull());
 
     QCOMPARE(certificate.publicKey(), pubkey);
+}
+
+void tst_QSslCertificate::publicKeyFromBrokenCert()
+{
+    if (!QSslSocket::supportsSsl())
+        return;
+
+    if (currentBackend() != TLSBackend::OpenSSL)
+        QSKIP("Only works with OpenSSL backend");
+
+    QByteArray certData = readFile(testDataDir + "more-certificates/broken-pubkey-cert.pem");
+    QSslCertificate cert(certData, QSsl::Pem);
+
+    QSslKey pubKey = cert.publicKey();
+    QVERIFY(pubKey.isNull());
 }
 
 void tst_QSslCertificate::toPemOrDer_data()
