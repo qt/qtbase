@@ -655,6 +655,47 @@ instructions:
       property: features
       contains_value: Sccache
 
+  # Disable PCH for sccache on Windows MSVC build, sccache does not support it
+  - type: Group
+    instructions:
+      - type: AppendToEnvironmentVariable
+        variableName: COMMON_CMAKE_ARGS
+        variableValue: " -DBUILD_WITH_PCH=OFF"
+      - type: AppendToEnvironmentVariable
+        variableName: COMMON_NON_QTBASE_CMAKE_ARGS
+        variableValue: " -DBUILD_WITH_PCH=OFF"
+      - type: AppendToEnvironmentVariable
+        variableName: COMMON_TEST_CMAKE_ARGS
+        variableValue: " -DBUILD_WITH_PCH=OFF"
+      - type: AppendToEnvironmentVariable
+        variableName: COMMON_EXAMPLES_CMAKE_ARGS
+        variableValue: " -DBUILD_WITH_PCH=OFF"
+
+      - type: AppendToEnvironmentVariable
+        variableName: COMMON_TARGET_CMAKE_ARGS
+        variableValue: " -DBUILD_WITH_PCH=OFF"
+      - type: AppendToEnvironmentVariable
+        variableName: COMMON_NON_QTBASE_TARGET_CMAKE_ARGS
+        variableValue: " -DBUILD_WITH_PCH=OFF"
+      - type: AppendToEnvironmentVariable
+        variableName: COMMON_TARGET_TEST_CMAKE_ARGS
+        variableValue: " -DBUILD_WITH_PCH=OFF"
+      - type: AppendToEnvironmentVariable
+        variableName: COMMON_TARGET_EXAMPLES_CMAKE_ARGS
+        variableValue: " -DBUILD_WITH_PCH=OFF"
+    enable_if:
+      condition: and
+      conditions:
+        - condition: property
+          property: features
+          contains_value: Sccache
+        - condition: property
+          property: host.os
+          equals_value: Windows
+        - condition: property
+          property: host.compiler
+          contains_value: MSVC
+
   # Specify a custom examples installation directory, so that the built example binaries are not
   # packaged into the artifact archive together with the Qt libraries.
   # Also specify that during examples deployment, only a subset of examples should be deployed, to
