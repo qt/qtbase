@@ -1738,8 +1738,8 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
         combobox drop-down lists, the item under the cursor is made
         the current item (QStyle::State_Selected).
 
-    \value SH_ComboBox_ListMouseTracking  same as
-        SH_ComboBox_ListMouseTracking_Current
+    \value SH_ComboBox_ListMouseTracking  Deprecated. Use
+        \l{SH_ComboBox_ListMouseTracking_Current} instead.
 
     \value SH_ComboBox_ListMouseTracking_Active  Mouse tracking in
         combobox drop-down lists, the item under the cursor is not
