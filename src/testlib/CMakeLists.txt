@@ -40,7 +40,7 @@ qt_internal_add_module(Test
         qtest_gui.h
         qtest_network.h
         qtest_widgets.h
-        qtestaccessible.cpp qtestaccessible.h
+        qtestaccessible.h
         qtestassert.h
         qtestblacklist.cpp qtestblacklist_p.h
         qtestcase.cpp qtestcase.h qtestcase_p.h
@@ -101,6 +101,11 @@ endif()
 
 ## Scopes:
 #####################################################################
+
+qt_internal_extend_target(Test CONDITION QT_FEATURE_gui
+    SOURCES
+        qtestaccessible.cpp
+)
 
 qt_internal_extend_target(Test CONDITION QT_FEATURE_itemmodeltester
     SOURCES
