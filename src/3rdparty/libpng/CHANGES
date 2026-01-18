@@ -6321,6 +6321,16 @@ Version 1.6.53 [December 5, 2025]
   Fixed a build failure with CMake 4.1 or newer, on Windows, when using
     Visual C++ without MASM installed.
 
+Version 1.6.54 [January 12, 2026]
+  Fixed CVE-2026-22695 (medium severity):
+    Heap buffer over-read in `png_image_read_direct_scaled.
+    (Reported and fixed by Petr Simecek.)
+  Fixed CVE-2026-22801 (medium severity):
+    Integer truncation causing heap buffer over-read in `png_image_write_*`.
+  Implemented various improvements in oss-fuzz.
+    (Contributed by Philippe Antoine.)
+
+
 Send comments/corrections/commendations to png-mng-implement at lists.sf.net.
 Subscription is required; visit
 https://lists.sourceforge.net/lists/listinfo/png-mng-implement
