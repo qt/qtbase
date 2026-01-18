@@ -759,6 +759,11 @@ std::unique_ptr<QWaylandXdgSurface::Positioner> QWaylandXdgSurface::createPositi
     Qt::Edges gravity = Qt::BottomEdge | Qt::RightEdge;
     uint32_t constraintAdjustment = QtWayland::xdg_positioner::constraint_adjustment_slide_x | QtWayland::xdg_positioner::constraint_adjustment_slide_y;
 
+    // Compensate the margins to appear exactly at the position provided by QPlatformWindow::geometry
+    // These marnings have nothing to do with parent controls, don't apply them when positioning via parent control geometry
+    QMargins windowMargins = m_window->windowContentMargins() - m_window->clientSideMargins();
+    placementAnchor.translate(windowMargins.left(), windowMargins.top());
+
     // Override from window type
     if (m_window->parentControlGeometry().isValid())
         placementAnchor = m_window->parentControlGeometry();
@@ -810,9 +815,7 @@ std::unique_ptr<QWaylandXdgSurface::Positioner> QWaylandXdgSurface::createPositi
 
     // set_popup expects a position relative to the parent
     QRect windowGeometry = m_window->windowContentGeometry();
-    QMargins windowMargins = m_window->windowContentMargins() - m_window->clientSideMargins();
     QMargins parentMargins = parent->windowContentMargins() - parent->clientSideMargins();
-    placementAnchor.translate(windowMargins.left(), windowMargins.top());
     placementAnchor.translate(-parentMargins.left(), -parentMargins.top());
 
     positioner->set_anchor_rect(placementAnchor.x(),
