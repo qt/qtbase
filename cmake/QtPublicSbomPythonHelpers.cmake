@@ -243,6 +243,12 @@ function(_qt_internal_sbom_find_python_dependency_program)
         list(APPEND hints ${QT_SBOM_PYTHON_APPS_PATH})
     endif()
 
+    # Sometimes the installed apps might be in the same location as the interepreter, if both are
+    # in a virtual env. So look also in the interpreter path.
+    if(QT_SBOM_PYTHON_INTERP)
+        list(APPEND hints ${QT_SBOM_PYTHON_INTERP})
+    endif()
+
     find_program(${cache_var}
         NAMES ${program_name}
         HINTS ${hints}
