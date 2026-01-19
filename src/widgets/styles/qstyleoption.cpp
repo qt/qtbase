@@ -1623,7 +1623,9 @@ QStyleOptionMenuItemV2::QStyleOptionMenuItemV2()
     \internal
 */
 QStyleOptionMenuItemV2::QStyleOptionMenuItemV2(int version)
-    : QStyleOptionMenuItem(version), mouseDown(false)
+    : QStyleOptionMenuItem(version),
+      mouseDown{false},
+      unused{0}
 {}
 
 /*!

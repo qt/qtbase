@@ -373,7 +373,9 @@ public:
     QStyleOptionMenuItemV2(const QStyleOptionMenuItemV2 &other) : QStyleOptionMenuItem(Version) { *this = other; }
     QStyleOptionMenuItemV2 &operator=(const QStyleOptionMenuItemV2 &) = default;
 
-    bool mouseDown;
+    bool mouseDown : 1;
+    Q_DECL_UNUSED_MEMBER
+    int unused : 31;
 protected:
     Q_WIDGETS_EXPORT QStyleOptionMenuItemV2(int version);
 };
