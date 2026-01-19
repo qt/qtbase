@@ -95,7 +95,6 @@ public:
     QRect undockedGeometry;
     QString fixedWindowTitle;
     QString dockedWindowTitle;
-    bool inDestructor = false;
 
     bool mousePressEvent(QMouseEvent *event);
     bool mouseDoubleClickEvent(QMouseEvent *event);

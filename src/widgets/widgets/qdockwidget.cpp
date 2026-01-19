@@ -1373,13 +1373,11 @@ QDockWidget::QDockWidget(const QString &title, QWidget *parent, Qt::WindowFlags 
 */
 QDockWidget::~QDockWidget()
 {
-    Q_D(QDockWidget);
-    d->inDestructor = true;
-    // Do all the unregistering while we're still a QDockWidget. Otherwise, it
-    // would be ~QObject() which does that and then QDockAreaLayout::takeAt(),
-    // acting on QEvent::ChildRemoved, will try to access our QWidget-ness when
-    // replacing us with a QPlaceHolderItem, causing UB:
-    setParent(nullptr);
+    // Remove the QDockWidget from its layout while it's still a widget.
+    // Otherwise QEvent::ChildRemoved will cause QDock*Layout::takeAt() and
+    // subsequently a UB.
+    if (parentWidget() && parentWidget()->layout())
+        parentWidget()->layout()->removeWidget(this);
 }
 
 /*!
@@ -1661,12 +1659,8 @@ bool QDockWidget::event(QEvent *event)
     case QEvent::Hide:
         if (layout != nullptr)
             layout->keepSize(this);
-        // If we are in the destructor, don't emit any signals, as those might
-        // be handled by a slot that requires this dock widget to still be alive.
-        if (!d->inDestructor) {
-            d->toggleViewAction->setChecked(false);
-            emit visibilityChanged(false);
-        }
+        d->toggleViewAction->setChecked(false);
+        emit visibilityChanged(false);
         break;
     case QEvent::Show: {
         d->toggleViewAction->setChecked(true);
