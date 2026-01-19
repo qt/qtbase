@@ -1599,6 +1599,7 @@ QStyleOptionProgressBar::QStyleOptionProgressBar(int version)
 
 /*!
     \class QStyleOptionMenuItemV2
+    \since 6.11
     \brief The QStyleOptionMenuItemV2 class enhances
     QStyleOptionMenuItem with new members.
 
