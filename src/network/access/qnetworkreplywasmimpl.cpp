@@ -82,6 +82,7 @@ QNetworkReplyWasmImplPrivate::~QNetworkReplyWasmImplPrivate()
         } else if (m_fetchContext->state == FetchContext::State::FINISHED) {
             lock.unlock();
             delete m_fetchContext;
+            m_fetchContext = nullptr;
         }
     }
 
@@ -127,6 +128,8 @@ void QNetworkReplyWasmImpl::close()
 {
     Q_D(QNetworkReplyWasmImpl);
 
+    if (!d->m_fetch)
+        return;
     emscripten_fetch_close(d->m_fetch);
     if (d->state != QNetworkReplyPrivate::Aborted &&
         d->state != QNetworkReplyPrivate::Finished &&
@@ -135,6 +138,7 @@ void QNetworkReplyWasmImpl::close()
             d->setCanceled();
     }
     QNetworkReply::close();
+    d->m_fetch = nullptr;
 }
 
 void QNetworkReplyWasmImpl::abort()
@@ -431,6 +435,7 @@ void QNetworkReplyWasmImplPrivate::headersReceived(const QByteArray &buffer)
                 splitPos != -1) { // headers include final \x00, so skip
                 auto headerName = header.first(splitPos).trimmed();
                 auto headerValue = header.sliced(splitPos + 1).trimmed();
+                headerValue = headerValue.replace('\x00', "").trimmed();
 
                 if (headerName.isEmpty() || headerValue.isEmpty())
                     continue;
