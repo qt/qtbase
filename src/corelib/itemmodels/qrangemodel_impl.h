@@ -1435,7 +1435,7 @@ public:
                     if (isRangeModelRole(role))
                         return setRangeModelDataRole();
                     return ItemAccess::writeRole(target, data, role);
-                } if constexpr (has_metaobject<value_type>) {
+                } else if constexpr (has_metaobject<value_type>) {
                     if (row_traits::fixed_size() <= 1) { // multi-role value
                         if (isRangeModelRole(role))
                             return setRangeModelDataRole();
