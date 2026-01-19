@@ -378,6 +378,8 @@ bool QEGLPlatformContext::hasExtension(const char *name)
 
     const size_t extensionSize = strlen(name);
     const char *availableExtensions = reinterpret_cast<const char *>(glGetString(GL_EXTENSIONS));
+    if (!availableExtensions)
+        return false;
     const char *availableExtensionsEnd = availableExtensions + strlen(availableExtensions);
 
     for (const char *cursor = availableExtensions; cursor < availableExtensionsEnd;) {
