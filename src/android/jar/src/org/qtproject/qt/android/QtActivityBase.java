@@ -31,6 +31,7 @@ public class QtActivityBase extends Activity
 {
     public static final String TAG = "QtActivityBase";
     public static final String EXTRA_SOURCE_INFO = "org.qtproject.qt.android.sourceInfo";
+    public static final String EXTRA_FATAL_MESSAGE = "org.qtproject.qt.android.fatalMessage";
 
     private String m_applicationParams = "";
     private boolean m_isCustomThemeSet = false;
@@ -155,8 +156,10 @@ public class QtActivityBase extends Activity
                 "fatal_error_msg", "string", packageName);
         String message = resources.getString(id);
         Toast.makeText(this, message, Toast.LENGTH_LONG).show();
-
-        finish();
+        Intent fatalIntent = new Intent();
+        fatalIntent.putExtra(EXTRA_FATAL_MESSAGE, message);
+        setResult(Activity.RESULT_CANCELED, fatalIntent);
+        super.finish();
     }
 
     private boolean isLaunchedAsAlias() {
