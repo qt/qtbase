@@ -1607,12 +1607,11 @@ QStyleOptionProgressBar::QStyleOptionProgressBar(int version)
 */
 
 /*!
+    \fn QStyleOptionMenuItemV2::QStyleOptionMenuItemV2()
+
     Constructs a QStyleOptionMenuItemV2, initializing the members
     variables to their default values.
 */
-QStyleOptionMenuItemV2::QStyleOptionMenuItemV2()
-    : QStyleOptionMenuItemV2(QStyleOptionMenuItemV2::Version)
-{}
 
 /*!
     \fn QStyleOptionMenuItemV2::QStyleOptionMenuItemV2(const QStyleOptionMenuItemV2 &other)

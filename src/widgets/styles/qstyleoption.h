@@ -369,7 +369,7 @@ class QStyleOptionMenuItemV2 : public QStyleOptionMenuItem
 public:
     enum StyleOptionVersion { Version = 2 };
 
-    Q_WIDGETS_EXPORT QStyleOptionMenuItemV2();
+    QStyleOptionMenuItemV2() : QStyleOptionMenuItemV2(Version) {}
     QStyleOptionMenuItemV2(const QStyleOptionMenuItemV2 &other) : QStyleOptionMenuItem(Version) { *this = other; }
     QStyleOptionMenuItemV2 &operator=(const QStyleOptionMenuItemV2 &) = default;
 
