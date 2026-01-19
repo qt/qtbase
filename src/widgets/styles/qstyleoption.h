@@ -364,18 +364,18 @@ protected:
 };
 
 // ### Qt7: merge with QStyleOptionMenuItem
-class Q_WIDGETS_EXPORT QStyleOptionMenuItemV2 : public QStyleOptionMenuItem
+class QStyleOptionMenuItemV2 : public QStyleOptionMenuItem
 {
 public:
     enum StyleOptionVersion { Version = 2 };
 
-    QStyleOptionMenuItemV2();
+    Q_WIDGETS_EXPORT QStyleOptionMenuItemV2();
     QStyleOptionMenuItemV2(const QStyleOptionMenuItemV2 &other) : QStyleOptionMenuItem(Version) { *this = other; }
     QStyleOptionMenuItemV2 &operator=(const QStyleOptionMenuItemV2 &) = default;
 
     bool mouseDown;
 protected:
-    QStyleOptionMenuItemV2(int version);
+    Q_WIDGETS_EXPORT QStyleOptionMenuItemV2(int version);
 };
 
 class Q_WIDGETS_EXPORT QStyleOptionDockWidget : public QStyleOption
