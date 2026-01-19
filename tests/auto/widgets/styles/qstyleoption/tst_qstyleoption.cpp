@@ -5,6 +5,7 @@
 #include <QTest>
 #include <QStyleOption>
 
+#include <memory>
 
 class tst_QStyleOption: public QObject
 {
@@ -15,33 +16,14 @@ private slots:
     void qstyleoptioncast();
 };
 
-// Just a simple container for QStyleOption-pointer
-struct StyleOptionPointerBase
-{
-    QStyleOption *pointer;
-
-    StyleOptionPointerBase(QStyleOption *p = nullptr) : pointer(p) { }
-
-    virtual ~StyleOptionPointerBase() { pointer = nullptr; }
-};
-
-template <typename T>
-struct StyleOptionPointer: public StyleOptionPointerBase
-{
-    StyleOptionPointer(T *p = nullptr): StyleOptionPointerBase(p) {}
-    ~StyleOptionPointer() { delete static_cast<T *>(pointer); pointer = nullptr; }
-};
-
-Q_DECLARE_METATYPE(StyleOptionPointerBase*)
-
-template <typename T>
-inline StyleOptionPointerBase *stylePtr(T *ptr) { return new StyleOptionPointer<T>(ptr); }
-
 void tst_QStyleOption::qstyleoptioncast_data()
 {
-    QTest::addColumn<StyleOptionPointerBase *>("testOption");
+    QTest::addColumn<std::shared_ptr<QStyleOption>>("testOption");
     QTest::addColumn<bool>("canCastToComplex");
     QTest::addColumn<int>("type");
+
+    // The shared_ptr ctor is templated; will always call the correct QStyleOption dtor
+    using stylePtr = std::shared_ptr<QStyleOption>;
 
     QTest::newRow("optionDefault") << stylePtr(new QStyleOption) << false << int(QStyleOption::SO_Default);
     QTest::newRow("optionButton") << stylePtr(new QStyleOptionButton) << false << int(QStyleOption::SO_Button);
@@ -65,41 +47,45 @@ void tst_QStyleOption::qstyleoptioncast_data()
 
 void tst_QStyleOption::qstyleoptioncast()
 {
-    QFETCH(StyleOptionPointerBase *, testOption);
+    QFETCH(const std::shared_ptr<QStyleOption>, testOption);
     QFETCH(bool, canCastToComplex);
     QFETCH(int, type);
 
-    QVERIFY(testOption->pointer != nullptr);
+    QCOMPARE_NE(testOption, nullptr);
 
-    QCOMPARE(testOption->pointer->type, type);
+    QCOMPARE_EQ(testOption->type, type);
 
     // Cast to common base class
-    QStyleOption *castOption = qstyleoption_cast<QStyleOption*>(testOption->pointer);
+    QStyleOption *castOption = qstyleoption_cast<QStyleOption*>(testOption.get());
     QVERIFY(castOption != nullptr);
 
     // Cast to complex base class
-    castOption = qstyleoption_cast<QStyleOptionComplex*>(testOption->pointer);
+    castOption = qstyleoption_cast<QStyleOptionComplex*>(testOption.get());
     QCOMPARE(canCastToComplex, (castOption != nullptr));
 
     // Cast to combo box
-    castOption = qstyleoption_cast<QStyleOptionComboBox*>(testOption->pointer);
-    QCOMPARE((castOption != nullptr),(testOption->pointer->type == QStyleOption::SO_ComboBox));
+    castOption = qstyleoption_cast<QStyleOptionComboBox*>(testOption.get());
+    if (castOption)
+        QCOMPARE_EQ(testOption->type, QStyleOption::SO_ComboBox);
+    else
+        QCOMPARE_NE(testOption->type, QStyleOption::SO_ComboBox);
+
 
     // Cast to button
-    castOption = qstyleoption_cast<QStyleOptionButton*>(testOption->pointer);
-    QCOMPARE((castOption != nullptr),(testOption->pointer->type == QStyleOption::SO_Button));
+    castOption = qstyleoption_cast<QStyleOptionButton*>(testOption.get());
+    if (castOption)
+        QCOMPARE_EQ(testOption->type, QStyleOption::SO_Button);
+    else
+        QCOMPARE_NE(testOption->type, QStyleOption::SO_Button);
 
     // Cast to lower version
-    testOption->pointer->version += 1;
-    castOption = qstyleoption_cast<QStyleOption*>(testOption->pointer);
+    testOption->version += 1;
+    castOption = qstyleoption_cast<QStyleOption*>(testOption.get());
     QVERIFY(castOption);
 
     // Cast a null pointer
     castOption = qstyleoption_cast<QStyleOption*>((QStyleOption*)0);
     QCOMPARE(castOption, nullptr);
-
-    // Deallocate
-    delete testOption;
 }
 
 QTEST_MAIN(tst_QStyleOption)
