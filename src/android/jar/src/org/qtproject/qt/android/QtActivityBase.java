@@ -125,15 +125,17 @@ public class QtActivityBase extends Activity
                 Log.d(TAG, "Starting an alias-activity, skipping loading of the Qt libraries.");
             } else {
                 QtActivityLoader loader = QtActivityLoader.getActivityLoader(this);
-                loader.appendApplicationParameters(m_applicationParams);
-
                 QtLoader.LoadingResult result = loader.loadQtLibraries();
-                if (result == QtLoader.LoadingResult.Succeeded) {
-                    m_delegate.startNativeApplication(loader.getApplicationParameters(),
-                            loader.getMainLibraryPath());
-                } else if (result == QtLoader.LoadingResult.Failed) {
+
+                if (result == QtLoader.LoadingResult.Failed) {
                     showFatalFinishingToast();
                     return;
+                }
+
+                if (result == QtLoader.LoadingResult.Succeeded) {
+                    loader.appendApplicationParameters(m_applicationParams);
+                    final String params = loader.getApplicationParameters();
+                    m_delegate.startNativeApplication(params, loader.getMainLibraryPath());
                 }
             }
         } catch (IllegalArgumentException e) {

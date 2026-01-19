@@ -31,13 +31,17 @@ public class QtServiceBase extends Service {
         try {
             QtServiceLoader loader = QtServiceLoader.getServiceLoader(this);
             QtLoader.LoadingResult result = loader.loadQtLibraries();
-            if (result == QtLoader.LoadingResult.Succeeded) {
-                QtNative.startApplication(loader.getApplicationParameters(),
-                                          loader.getMainLibraryPath());
-                QtNative.setApplicationState(QtNative.ApplicationState.ApplicationHidden);
-            } else if (result == QtLoader.LoadingResult.Failed) {
+
+            if (result == QtLoader.LoadingResult.Failed) {
                 Log.w(QtNative.QtTAG, "QtServiceLoader: failed to load Qt libraries");
                 stopSelf();
+                return;
+            }
+
+            if (result == QtLoader.LoadingResult.Succeeded) {
+                final String params = loader.getApplicationParameters();
+                QtNative.startApplication(params, loader.getMainLibraryPath());
+                QtNative.setApplicationState(QtNative.ApplicationState.ApplicationHidden);
             }
         } catch (IllegalArgumentException e) {
             Log.w(QtNative.QtTAG, Objects.requireNonNull(e.getMessage()));
