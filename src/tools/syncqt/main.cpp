@@ -1733,6 +1733,12 @@ bool SyncScanner::generateQtCamelCaseFileIfContentChanged(const std::string &out
     if (m_commandLineArgs->showOnly())
         return true;
 
+    // Safety check: aliasedFilePath should not be empty
+    if (aliasedFilePath.empty()) {
+        std::cerr << "ERROR: Empty aliasedFilePath for " << outputFilePath << std::endl;
+        return false;
+    }
+
     std::string buffer = "#include <";
     buffer += m_commandLineArgs->moduleName() + "/";
     buffer += aliasedFilePath;
@@ -1751,8 +1757,16 @@ bool SyncScanner::generateAliasedHeaderFileIfTimestampChanged(const std::string 
     if (m_commandLineArgs->showOnly())
         return true;
 
-    auto relativePath = std::filesystem::relative(aliasedFilePath, m_commandLineArgs->includeDir()).generic_string();
-    const bool aliasIsInsideIncludeDir = relativePath.find("../") != 0;
+    std::filesystem::path aliased(aliasedFilePath);
+    std::filesystem::path includeDir(m_commandLineArgs->includeDir());
+
+    // Check if paths have the same root (drive on Windows).
+    // If they don't, the alias cannot be inside includeDir, so use absolute path.
+    bool sameRoot = !aliased.is_absolute() || includeDir.root_name() == aliased.root_name();
+
+    auto relativePath = sameRoot ? std::filesystem::relative(aliased, includeDir).generic_string()
+                                 : std::string();
+    bool aliasIsInsideIncludeDir = sameRoot && relativePath.find("../") != 0;
 
     if (std::filesystem::exists({ outputFilePath })
         && std::filesystem::last_write_time({ outputFilePath }) >= originalStamp) {
