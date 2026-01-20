@@ -1137,7 +1137,7 @@ if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
     endfunction()
 endif()
 
-# This function is currently in Technical Preview. It's signature may change or be removed entirely.
+# This function is currently in Technology Preview. It's signature may change or be removed entirely.
 function(qt6_set_finalizer_mode target)
     cmake_parse_arguments(arg "ENABLE;DISABLE" "" "MODES" ${ARGN})
     if(NOT arg_ENABLE AND NOT arg_DISABLE)
@@ -3058,7 +3058,7 @@ endfunction()
 
 # Finalizer function for the top-level user projects.
 #
-# This function is currently in Technical Preview.
+# This function is currently in Technology Preview.
 # Its signature and behavior might change.
 function(qt6_finalize_project)
     if(NOT CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)

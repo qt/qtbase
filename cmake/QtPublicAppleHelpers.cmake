@@ -6,14 +6,14 @@ function(_qt_internal_handle_ios_launch_screen target)
     set(launch_screen "")
 
     # Check if the project provided a launch screen path via a variable.
-    # This variable is currently in Technical Preview.
+    # This variable is currently in Technology Preview.
     if(QT_IOS_LAUNCH_SCREEN)
         set(launch_screen "${QT_IOS_LAUNCH_SCREEN}")
     endif()
 
     # Check if the project provided a launch screen path via a target property, it takes precedence
     # over the variable.
-    # This property is currently in Technical Preview.
+    # This property is currently in Technology Preview.
     get_target_property(launch_screen_from_prop "${target}" QT_IOS_LAUNCH_SCREEN)
     if(launch_screen_from_prop)
         set(launch_screen "${launch_screen_from_prop}")

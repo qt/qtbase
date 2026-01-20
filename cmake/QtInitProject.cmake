@@ -21,7 +21,7 @@ set(types "")
 # Option Arguments:
 #     EXPERIMENTAL
 #         Marks that the support of the following files is experimental and the required Qt modules
-#         are in Technical preview state.
+#         are in Technology Preview state.
 #     DEPRECATED
 #         Marks that the support of the following files will be discontinued soon and the required
 #         Qt modules are deprecated.
@@ -137,7 +137,7 @@ foreach(f IN LISTS files)
                 message("We found files with the following extensions in your directory:"
                     " ${${type}_file_extensions}\n"
                     "Note that the modules ${${type}_required_modules} are"
-                    " in the technical preview state.")
+                    " in the Technology Preview state.")
             endif()
             if(${type}_is_deprecated)
                 message("We found files with the following extensions in your directory:"

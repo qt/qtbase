@@ -909,7 +909,7 @@ function(_qt_internal_show_skip_runtime_deploy_message qt_build_type_string)
     )
 endfunction()
 
-# This function is currently in Technical Preview.
+# This function is currently in Technology Preview.
 # Its signature and behavior might change.
 function(qt6_deploy_translations)
     set(no_value_options VERBOSE)
