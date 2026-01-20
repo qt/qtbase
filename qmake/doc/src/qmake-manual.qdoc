@@ -2996,6 +2996,24 @@
 
     Specifies the names of all source files in the project.
 
+    \section2 Note on included sources files
+
+    By default, QMake scans source files for dependencies and automatically excludes
+    .cpp files that are included in other .cpp files to prevent duplicate compilation
+    and linker errors. This automatic exclusion has important limitations:
+
+    \list
+    \li The exclusion happens regardless of preprocessor conditionals (\c{#ifdef},
+        \c{#ifndef}, etc.).
+    \li A .cpp file \c{#included} anywhere in the project will be excluded from
+        \c SOURCES, even if the include is conditional.
+    \endlist
+
+    To force compilation of excluded files, add \c{CONFIG += compile_included_sources}
+    to your .pro file. Alternatively, remove the included files from SOURCES and ensure
+    they are only compiled through their including file. This applies to all files with
+    extensions in \l{QMAKE_EXT_CPP}.
+
     For example:
 
     \snippet code/doc_src_qmake-manual.pro 49
