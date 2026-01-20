@@ -70,6 +70,10 @@ function(qt_internal_set_warnings_are_errors_flags target target_scope)
                     # being suppressed (QTBUG-134415)
                     # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=64117
                     -Wno-error=tsan
+                CONDITIONS VERSION_GREATER_EQUAL 16.0
+                    OPTIONS
+                    # We are not clean; see QTBUG-143470
+                    -Wno-error=sfinae-incomplete
             COMMON_CONDITIONS
                 ${common_conditions}
             ${language_args}
