@@ -496,6 +496,11 @@ function(qt_auto_detect_macos_single_arch_cross_compilation)
 
         # Exit early if check was previously done, so we don't need to do extra process calls.
         OR QT_INTERNAL_MACOS_SINGLE_ARCH_CROSS_COMPILING_DETECTION_DONE)
+        if(QT_NO_HANDLE_APPLE_SINGLE_ARCH_CROSS_COMPILING)
+            message(STATUS
+                "Skipping macOS single-arch cross-compilation detection as requested by "
+                "QT_NO_HANDLE_APPLE_SINGLE_ARCH_CROSS_COMPILING.")
+        endif()
         return()
     endif()
 
@@ -514,8 +519,15 @@ function(qt_auto_detect_macos_single_arch_cross_compilation)
         message(
             STATUS "Detected implicit macOS cross-compilation. "
             "Host arch: ${host_arch} Target arch: ${target_arch}. "
-            "Setting CMAKE_CROSSCOMPILING to TRUE."
+            "Setting CMAKE_CROSSCOMPILING to TRUE, and requiring a host Qt."
         )
+        if(host_arch MATCHES "arm64" AND NOT QT_HOST_PATH)
+            message(WARNING
+                "If you don't want to require a host Qt for the cross-build, and are ok "
+                "with relying on Rosetta for running the build tools, please reconfigure with "
+                "-DQT_NO_HANDLE_APPLE_SINGLE_ARCH_CROSS_COMPILING=ON in a clean build dir."
+            )
+        endif()
 
         # Setting these tells CMake we are cross-compiling. This gets set in the correct scope
         # for top-level builds as well, because it is included via
