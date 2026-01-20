@@ -8,6 +8,8 @@
 #include <QtWaylandClient/private/wayland-wayland-client-protocol.h>
 #include <QtWaylandClient/private/qwaylandwindow_p.h>
 
+#include <memory>
+
 using namespace MockCompositor;
 
 class tst_xdgshell : public QObject, private DefaultCompositor
@@ -240,7 +242,7 @@ void tst_xdgshell::popup()
             m_popup->resize(100, 100);
             m_popup->show();
         }
-        QScopedPointer<QRasterWindow> m_popup;
+        std::unique_ptr<QRasterWindow> m_popup;
     };
     Window window;
     window.resize(200, 200);
@@ -617,7 +619,7 @@ void tst_xdgshell::hidePopupParent()
             m_popup->resize(100, 100);
             m_popup->show();
         }
-        QScopedPointer<QRasterWindow> m_popup;
+        std::unique_ptr<QRasterWindow> m_popup;
     };
     Window window;
     window.resize(200, 200);

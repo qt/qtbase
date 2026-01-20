@@ -19,6 +19,8 @@
 #include <QtWaylandClient/private/qwaylandintegration_p.h>
 #include <QtGui/private/qguiapplication_p.h>
 
+#include <memory>
+
 using namespace MockCompositor;
 
 constexpr int dataDeviceVersion = 1;
@@ -114,7 +116,7 @@ public:
 
     uint keyCode = 0;
     QPoint mousePressPos;
-    QScopedPointer<QBackingStore> backingStore;
+    std::unique_ptr<QBackingStore> backingStore;
 };
 
 #if QT_CONFIG(opengl)
@@ -548,7 +550,8 @@ void tst_WaylandClient::glWindow()
 {
     QSKIP("Skipping GL tests, as not supported by all CI systems: See https://bugreports.qt.io/browse/QTBUG-65802");
 
-    QScopedPointer<TestGlWindow> testWindow(new TestGlWindow);
+    TestGlWindow w;
+    auto *testWindow = &w;
     testWindow->show();
     Surface *s = nullptr;
     QCOMPOSITOR_TRY_VERIFY(s = surface());
@@ -559,7 +562,7 @@ void tst_WaylandClient::glWindow()
     QTRY_COMPARE(testWindow->paintGLCalled, 1);
 
     //QTBUG-63411
-    QMetaObject::invokeMethod(testWindow.data(), "hideShow", Qt::QueuedConnection);
+    QMetaObject::invokeMethod(testWindow, "hideShow", Qt::QueuedConnection);
     testWindow->requestUpdate();
     QTRY_COMPARE(testWindow->paintGLCalled, 2);
 

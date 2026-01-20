@@ -13,6 +13,8 @@
 
 #include "mockcompositor.h"
 
+#include <memory>
+
 using namespace MockCompositor;
 
 /*
@@ -123,7 +125,7 @@ private slots:
     void mainThreadIsNotBlocked();
 
 public:
-    QScopedPointer<ExternalWaylandReaderThread> m_extThread;
+    std::unique_ptr<ExternalWaylandReaderThread> m_extThread;
 };
 
 void tst_multithreaded::mainThreadIsNotBlocked()

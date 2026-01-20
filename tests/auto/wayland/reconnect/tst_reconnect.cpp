@@ -22,6 +22,8 @@
 
 #include "wl-socket.h"
 
+#include <memory>
+
 #include <unistd.h>
 
 using namespace MockCompositor;
@@ -110,7 +112,7 @@ private Q_SLOTS:
 
 private:
     void configureWindow();
-    QScopedPointer<DefaultCompositor> m_comp;
+    std::unique_ptr<DefaultCompositor> m_comp;
     wl_socket *m_socket;
 };
 
