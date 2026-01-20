@@ -453,6 +453,21 @@ namespace QRangeModelDetails
         {
             return {};
         }
+
+        template <typename Row, typename Fn>
+        static bool for_each_element(const Row &row, const QModelIndex &firstIndex, Fn &&fn)
+        {
+            if constexpr (static_size == 0) {
+                return std::forward<Fn>(fn)(firstIndex, QRangeModelDetails::pointerTo(row));
+            } else {
+                int columnIndex = -1;
+                return std::all_of(QRangeModelDetails::adl_begin(row),
+                                QRangeModelDetails::adl_end(row), [&](const auto &item) {
+                    return std::forward<Fn>(fn)(firstIndex.siblingAtColumn(++columnIndex),
+                                                QRangeModelDetails::pointerTo(item));
+                });
+            }
+        }
     };
 
     // Specialization for tuple-like semantics (prioritized over metaobject)
@@ -503,6 +518,22 @@ namespace QRangeModelDetails
             });
             return result;
         }
+
+        template <typename Fn, std::size_t ...Is>
+        static bool forEachTupleElement(const T &row, Fn &&fn, std::index_sequence<Is...>)
+        {
+            using std::get;
+            return (std::forward<Fn>(fn)(QRangeModelDetails::pointerTo(get<Is>(row))) && ...);
+        }
+
+        template <typename Row, typename Fn>
+        static bool for_each_element(const Row &row, const QModelIndex &firstIndex, Fn &&fn)
+        {
+            int column = -1;
+            return forEachTupleElement(row, [&column, &fn, &firstIndex](QObject *item){
+                return std::forward<Fn>(fn)(firstIndex.siblingAtColumn(++column), item);
+            }, std::make_index_sequence<static_size>());
+        }
     };
 
     // Specialization for C arrays and std::array
@@ -525,6 +556,17 @@ namespace QRangeModelDetails
         static QVariant column_name(int section)
         {
             return section;
+        }
+
+        template <typename Row, typename Fn>
+        static bool for_each_element(const Row &row, const QModelIndex &firstIndex, Fn &&fn)
+        {
+            int columnIndex = -1;
+            return std::all_of(QRangeModelDetails::adl_begin(row),
+                            QRangeModelDetails::adl_end(row), [&](const auto &item) {
+                return std::forward<Fn>(fn)(firstIndex.siblingAtColumn(++columnIndex),
+                                            QRangeModelDetails::pointerTo(item));
+            });
         }
     };
 
@@ -565,6 +607,12 @@ namespace QRangeModelDetails
                 result = QString::fromUtf8(prop.name());
             }
             return result;
+        }
+
+        template <typename Row, typename Fn>
+        static bool for_each_element(const Row &row, const QModelIndex &firstIndex, Fn &&fn)
+        {
+            return std::forward<Fn>(fn)(firstIndex, QRangeModelDetails::pointerTo(row));
         }
     };
 
@@ -1718,39 +1766,12 @@ public:
         return item_traits::roleNames(this);
     }
 
-    template <typename Fn, std::size_t ...Is>
-    static bool forEachTupleElement(const row_type &row, Fn &&fn, std::index_sequence<Is...>)
-    {
-        using std::get;
-        return (std::forward<Fn>(fn)(QRangeModelDetails::pointerTo(get<Is>(row))) && ...);
-    }
-
-    template <typename Fn>
-    bool forEachColumn(const row_type &row, int rowIndex, const QModelIndex &parent, Fn &&fn) const
-    {
-        const auto &model = this->itemModel();
-        if constexpr (one_dimensional_range) {
-            return fn(model.index(rowIndex, 0, parent), QRangeModelDetails::pointerTo(row));
-        } else if constexpr (dynamicColumns() || QRangeModelDetails::array_like_v<row_type>) {
-            int columnIndex = -1;
-            return std::all_of(QRangeModelDetails::adl_begin(row),
-                               QRangeModelDetails::adl_end(row), [&](const auto &item) {
-                return fn(model.index(rowIndex, ++columnIndex, parent),
-                          QRangeModelDetails::pointerTo(item));
-            });
-        } else { // tuple-like (but not necessarily std::tuple, so can't use std::apply)
-            int column = -1;
-            return forEachTupleElement(row, [&column, &fn, &model, &rowIndex, &parent](QObject *item){
-                return std::forward<Fn>(fn)(model.index(rowIndex, ++column, parent), item);
-            }, std::make_index_sequence<static_column_count>());
-        }
-    }
-
     bool autoConnectPropertiesInRow(const row_type &row, int rowIndex, const QModelIndex &parent) const
     {
         if (!QRangeModelDetails::isValid(row))
             return true; // nothing to do
-        return forEachColumn(row, rowIndex, parent, [this](const QModelIndex &index, QObject *item) {
+        return row_traits::for_each_element(row, this->itemModel().index(rowIndex, 0, parent),
+                                            [this](const QModelIndex &index, QObject *item) {
             if constexpr (isMutable())
                 return Self::connectProperties(index, item, m_data.context, m_data.properties);
             else
@@ -1762,7 +1783,8 @@ public:
     {
         if (!QRangeModelDetails::isValid(row))
             return;
-        forEachColumn(row, rowIndex, parent, [this](const QModelIndex &, QObject *item) {
+        row_traits::for_each_element(row, this->itemModel().index(rowIndex, 0, parent),
+                                            [this](const QModelIndex &, QObject *item) {
             m_data.connections.removeIf([item](const auto &connection) {
                 return connection.sender == item;
             });
