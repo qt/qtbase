@@ -121,8 +121,10 @@ QWasmWindow::QWasmWindow(QWindow *w,
     m_inputElement["style"].set("display", "");
     m_window.call<void>("appendChild", m_inputElement);
 
-    // Hide the canvas from screen readers.
+    // The canvas displays graphics only, and is not accessible or an event target
     m_canvas.call<void>("setAttribute", std::string("aria-hidden"), std::string("true"));
+    m_canvas["style"].set("pointerEvents", "none");
+
     m_window.call<void>("appendChild", m_canvas);
 
     m_a11yContainer["classList"].call<void>("add", emscripten::val("qt-window-a11y-container"));
@@ -803,10 +805,14 @@ bool QWasmWindow::processPointerEnterLeave(const PointerEvent &event)
 
 void QWasmWindow::processPointer(const PointerEvent &event)
 {
+    // Process pointer events targeted at the window only, and not
+    // for instance events for the accessibility elements.
+    if (!event.isTargetedForElement(m_window))
+        return;
+
     switch (event.type) {
     case EventType::PointerDown:
-        if (event.isTargetedForQtElement())
-            m_window.call<void>("setPointerCapture", event.pointerId);
+        m_window.call<void>("setPointerCapture", event.pointerId);
 
         if ((window()->flags() & Qt::WindowDoesNotAcceptFocus)
                     != Qt::WindowDoesNotAcceptFocus
@@ -814,9 +820,7 @@ void QWasmWindow::processPointer(const PointerEvent &event)
                 window()->requestActivate();
         break;
     case EventType::PointerUp:
-        if (event.isTargetedForQtElement())
-            m_window.call<void>("releasePointerCapture", event.pointerId);
-        break;
+        m_window.call<void>("releasePointerCapture", event.pointerId);
     default:
         break;
     };
