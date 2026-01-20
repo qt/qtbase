@@ -2264,10 +2264,9 @@ QString QTime::toString(Qt::DateFormat format) const
     replaced by a single quote in the output. All other characters in the format
     string are included verbatim in the output string.
 
-    Formats without separators (e.g. "ddMM") are supported but must be used with
-    care, as the resulting strings aren't always reliably readable (e.g. if "dM"
-    produces "212" it could mean either the 2nd of December or the 21st of
-    February).
+    Formats without separators (e.g. "hhmm") are supported but must be used with
+    care, as the resulting strings aren't always reliably readable (e.g. if "Hm"
+    produces "212" it could mean either 02:12 or 21:02).
 
     Example format strings (assuming that the QTime is 14:13:09.042)
 
