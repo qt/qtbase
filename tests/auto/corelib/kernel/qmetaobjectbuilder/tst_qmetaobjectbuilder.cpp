@@ -1754,54 +1754,56 @@ void TestObject::intPropChanged(int _t1)
 
 void tst_QMetaObjectBuilder::usage_signal()
 {
-    QScopedPointer<TestObject> testObject(new TestObject);
+    TestObject testObject;
 
-    QSignalSpy propChangedSpy(testObject.data(), &TestObject::intPropChanged);
-    testObject->emitIntPropChanged();
+    QSignalSpy propChangedSpy(&testObject, &TestObject::intPropChanged);
+    testObject.emitIntPropChanged();
     QCOMPARE(propChangedSpy.size(), 1);
     QCOMPARE(propChangedSpy.at(0).size(), 1);
-    QCOMPARE(propChangedSpy.at(0).at(0).toInt(), testObject->intProp());
+    QCOMPARE(propChangedSpy.at(0).at(0).toInt(), testObject.intProp());
 }
 
 void tst_QMetaObjectBuilder::usage_property()
 {
-    QScopedPointer<TestObject> testObject(new TestObject);
+    TestObject testObject;
 
-    QVariant prop = testObject->property("intProp");
+    QVariant prop = testObject.property("intProp");
     QCOMPARE(prop.metaType(), QMetaType(QMetaType::Int));
-    QCOMPARE(prop.toInt(), testObject->intProp());
+    QCOMPARE(prop.toInt(), testObject.intProp());
 
-    QSignalSpy propChangedSpy(testObject.data(), &TestObject::intPropChanged);
-    QVERIFY(testObject->intProp() != 123);
-    testObject->setProperty("intProp", 123);
+    QSignalSpy propChangedSpy(&testObject, &TestObject::intPropChanged);
+    QVERIFY(testObject.intProp() != 123);
+    testObject.setProperty("intProp", 123);
     QCOMPARE(propChangedSpy.size(), 1);
-    prop = testObject->property("intProp");
+    prop = testObject.property("intProp");
     QCOMPARE(prop.metaType(), QMetaType(QMetaType::Int));
     QCOMPARE(prop.toInt(), 123);
 }
 
 void tst_QMetaObjectBuilder::usage_slot()
 {
-    QScopedPointer<TestObject> testObject(new TestObject);
+    TestObject testObject;
+    const QMetaObject *mo = testObject.metaObject();
 
-    int index = testObject->metaObject()->indexOfMethod("voidSlotInt(int)");
+    int index = mo->indexOfMethod("voidSlotInt(int)");
     QVERIFY(index != -1);
-    QMetaMethod voidSlotInt = testObject->metaObject()->method(index);
+    QMetaMethod voidSlotInt = mo->method(index);
 
-    QCOMPARE(testObject->voidSlotIntArgument(), -1);
-    QVERIFY(voidSlotInt.invoke(testObject.data(), Q_ARG(int, 123)));
-    QCOMPARE(testObject->voidSlotIntArgument(), 123);
+    QCOMPARE(testObject.voidSlotIntArgument(), -1);
+    QVERIFY(voidSlotInt.invoke(&testObject, Q_ARG(int, 123)));
+    QCOMPARE(testObject.voidSlotIntArgument(), 123);
 }
 
 void tst_QMetaObjectBuilder::usage_method()
 {
-    QScopedPointer<TestObject> testObject(new TestObject);
+    TestObject testObject;
+    const QMetaObject *mo = testObject.metaObject();
 
-    int index = testObject->metaObject()->indexOfMethod("listInvokableQRealQString(qreal,QString)");
+    int index = mo->indexOfMethod("listInvokableQRealQString(qreal,QString)");
     QVERIFY(index != -1);
-    QMetaMethod listInvokableQRealQString = testObject->metaObject()->method(index);
+    QMetaMethod listInvokableQRealQString = mo->method(index);
     QVariantList list;
-    QVERIFY(listInvokableQRealQString.invoke(testObject.data(), Q_RETURN_ARG(QVariantList, list),
+    QVERIFY(listInvokableQRealQString.invoke(&testObject, Q_RETURN_ARG(QVariantList, list),
                                              Q_ARG(qreal, 123.0), Q_ARG(QString, "ciao")));
     QCOMPARE(list.size(), 2);
     QCOMPARE(list.at(0).metaType(), QMetaType(QMetaType::QReal));
@@ -1812,50 +1814,51 @@ void tst_QMetaObjectBuilder::usage_method()
 
 void tst_QMetaObjectBuilder::usage_constructor()
 {
-    QScopedPointer<TestObject> testObject(new TestObject);
+    TestObject testObject;
+    const QMetaObject *mo = testObject.metaObject();
 
-    QCOMPARE(testObject->metaObject()->constructorCount(), 2);
-    QScopedPointer<QObject> testInstance(testObject->metaObject()->newInstance());
+    QCOMPARE(mo->constructorCount(), 2);
+    std::unique_ptr<QObject> testInstance(mo->newInstance());
     QVERIFY(testInstance != 0);
-    QScopedPointer<QObject> testInstance2(testObject->metaObject()->newInstance(Q_ARG(QObject*, testInstance.data())));
+    std::unique_ptr<QObject> testInstance2(mo->newInstance(Q_ARG(QObject*, testInstance.get())));
     QVERIFY(testInstance2 != 0);
-    QCOMPARE(testInstance2->parent(), testInstance.data());
+    QCOMPARE(testInstance2->parent(), testInstance.get());
 }
 
 void tst_QMetaObjectBuilder::usage_connect()
 {
-    QScopedPointer<TestObject> testObject(new TestObject);
+    TestObject testObject;
 
-    QVERIFY(QObject::connect(testObject.data(), SIGNAL(intPropChanged(int)),
-                             testObject.data(), SLOT(voidSlotInt(int))));
+    QVERIFY(QObject::connect(&testObject, SIGNAL(intPropChanged(int)),
+                             &testObject, SLOT(voidSlotInt(int))));
 
-    QCOMPARE(testObject->voidSlotIntArgument(), -1);
-    testObject->setProperty("intProp", 123);
-    QCOMPARE(testObject->voidSlotIntArgument(), 123);
+    QCOMPARE(testObject.voidSlotIntArgument(), -1);
+    testObject.setProperty("intProp", 123);
+    QCOMPARE(testObject.voidSlotIntArgument(), 123);
 
-    QVERIFY(QObject::disconnect(testObject.data(), SIGNAL(intPropChanged(int)),
-                                testObject.data(), SLOT(voidSlotInt(int))));
+    QVERIFY(QObject::disconnect(&testObject, SIGNAL(intPropChanged(int)),
+                                &testObject, SLOT(voidSlotInt(int))));
 }
 
 void tst_QMetaObjectBuilder::usage_templateConnect()
 {
-    QScopedPointer<TestObject> testObject(new TestObject);
+    TestObject testObject;
 
-    QMetaObject::Connection con = QObject::connect(testObject.data(), &TestObject::intPropChanged,
-                                                   testObject.data(), &TestObject::voidSlotInt);
+    QMetaObject::Connection con = QObject::connect(&testObject, &TestObject::intPropChanged,
+                                                   &testObject, &TestObject::voidSlotInt);
     QVERIFY(con);
 
-    QCOMPARE(testObject->voidSlotIntArgument(), -1);
-    testObject->setProperty("intProp", 123);
-    QCOMPARE(testObject->voidSlotIntArgument(), 123);
+    QCOMPARE(testObject.voidSlotIntArgument(), -1);
+    testObject.setProperty("intProp", 123);
+    QCOMPARE(testObject.voidSlotIntArgument(), 123);
 
-    QVERIFY(QObject::disconnect(testObject.data(), &TestObject::intPropChanged,
-                                testObject.data(), &TestObject::voidSlotInt));
+    QVERIFY(QObject::disconnect(&testObject, &TestObject::intPropChanged,
+                                &testObject, &TestObject::voidSlotInt));
 
     // Something that isn't a signal
     QTest::ignoreMessage(QtWarningMsg, "QObject::connect(TestObject, TestObject): signal not found");
-    con = QObject::connect(testObject.data(), &TestObject::setIntProp,
-                           testObject.data(), &TestObject::intPropChanged);
+    con = QObject::connect(&testObject, &TestObject::setIntProp,
+                           &testObject, &TestObject::intPropChanged);
     QVERIFY(!con);
 }
 
