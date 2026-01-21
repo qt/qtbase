@@ -1831,6 +1831,7 @@ void QRhiD3D11::enqueueSubresUpload(QD3D11Texture *texD, QD3D11CommandBuffer *cb
             const QPoint sp = subresDesc.sourceTopLeft();
             if (!subresDesc.sourceSize().isEmpty())
                 size = subresDesc.sourceSize();
+            size = clampedSubResourceUploadSize(size, dp, level, texD->m_pixelSize);
             if (img.depth() == 32) {
                 const int offset = sp.y() * img.bytesPerLine() + sp.x() * 4;
                 cmd.args.updateSubRes.src = cbD->retainImage(img) + offset;
@@ -1840,6 +1841,7 @@ void QRhiD3D11::enqueueSubresUpload(QD3D11Texture *texD, QD3D11CommandBuffer *cb
                 cmd.args.updateSubRes.src = cbD->retainImage(img);
             }
         } else {
+            size = clampedSubResourceUploadSize(size, dp, level, texD->m_pixelSize);
             cmd.args.updateSubRes.src = cbD->retainImage(img);
         }
         box.left = UINT(dp.x());

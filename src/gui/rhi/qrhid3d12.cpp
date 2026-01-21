@@ -3796,6 +3796,7 @@ void QRhiD3D12::enqueueResourceUpdates(QD3D12CommandBuffer *cbD, QRhiResourceUpd
                             QSize size = subresDesc.sourceSize().isEmpty() ? img.size() : subresDesc.sourceSize();
                             size.setWidth(qMin(size.width(), img.width() - srcPos.x()));
                             size.setHeight(qMin(size.height(), img.height() - srcPos.y()));
+                            size = clampedSubResourceUploadSize(size, dstPos, level, texD->m_pixelSize);
 
                             footprint.Width = size.width();
                             footprint.Height = size.height();

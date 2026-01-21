@@ -4022,7 +4022,7 @@ void QRhiVulkan::prepareUploadSubres(QVkTexture *texD, int layer, int level,
             const int sy = subresDesc.sourceTopLeft().y();
             if (!subresDesc.sourceSize().isEmpty())
                 size = subresDesc.sourceSize();
-
+            size = clampedSubResourceUploadSize(size, dp, level, texD->m_pixelSize);
             if (size.width() == image.width()) {
                 // No need to make a QImage copy here, can copy from the source
                 // QImage into staging directly.
@@ -4037,6 +4037,8 @@ void QRhiVulkan::prepareUploadSubres(QVkTexture *texD, int layer, int level,
                 bpc = qMax(1, image.depth() / 8);
                 copyInfo.bufferRowLength = uint32_t(image.bytesPerLine() / bpc);
             }
+        } else {
+            size = clampedSubResourceUploadSize(size, dp, level, texD->m_pixelSize);
         }
         copyInfo.imageOffset.x = dp.x();
         copyInfo.imageOffset.y = dp.y();

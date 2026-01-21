@@ -3032,6 +3032,17 @@ QRhiTextureSubresourceUploadDescription::QRhiTextureSubresourceUploadDescription
 /*!
     \fn void QRhiTextureSubresourceUploadDescription::setDestinationTopLeft(const QPoint &p)
     Sets the destination top-left position \a p.
+
+    \note In the most common case of sourcing the image data from a QImage, Qt
+    performs clamping of invalid texture upload sizes when the destination
+    position + the source size exceeds the size of the targeted texture
+    subresource (i.e, the size at the given mip level). There is also a
+    qWarning() message printed on the debug output in this case. This is done in
+    order to avoid confusion when the underlying 3D APIs crash and lead to GPU
+    device removals at a later point when submitting the commands. Regardless,
+    developers are encouraged to always validate applications by running with the
+    Vulkan, D3D12, or Metal validation/debug layers enabled, since those offer a
+    much wider range of checks on API usage.
  */
 
 /*!
@@ -11884,6 +11895,24 @@ QRhiPassResourceTracker::TextureStage QRhiPassResourceTracker::toPassTrackerText
         return QRhiPassResourceTracker::TexGeometryStage;
 
     Q_UNREACHABLE_RETURN(QRhiPassResourceTracker::TexVertexStage);
+}
+
+QSize QRhiImplementation::clampedSubResourceUploadSize(QSize size, QPoint dstPos, int level, QSize textureSizeAtLevelZero, bool warn)
+{
+    const QSize subResSize = q->sizeForMipLevel(level, textureSizeAtLevelZero);
+    const bool outOfBoundsHoriz = dstPos.x() + size.width() > subResSize.width();
+    const bool outOfBoundsVert = dstPos.y() + size.height() > subResSize.height();
+    if (Q_UNLIKELY(outOfBoundsHoriz || outOfBoundsVert)) {
+        if (warn) {
+            qWarning("Invalid texture upload issued; size %dx%d dst.position %d,%d dst.subresource size %dx%d; size will be clamped",
+                     size.width(), size.height(), dstPos.x(), dstPos.y(), subResSize.width(), subResSize.height());
+        }
+        if (outOfBoundsHoriz)
+            size.setWidth(subResSize.width() - dstPos.x());
+        if (outOfBoundsVert)
+            size.setHeight(subResSize.height() - dstPos.y());
+    }
+    return size;
 }
 
 QT_END_NAMESPACE

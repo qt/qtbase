@@ -7,6 +7,7 @@
 #include <QOffscreenSurface>
 #include <QPainter>
 #include <QSpan>
+#include <QRegularExpression>
 #include <qrgbafloat.h>
 #include <qrgba64.h>
 
@@ -1421,6 +1422,19 @@ void tst_QRhi::resourceUpdateBatchRGBATextureUpload()
                             inputImage.format());
 
         QVERIFY(imageRGBAEquals(inputImage, wrapperImage));
+
+        // Now try uploading to position (0, 1) which is out of bounds by one
+        // row. This is expected to lead to printing a warning, and clamping the
+        // upload size so that the underlying 3D APIs will not crash.
+        if (impl != QRhi::Null) {
+            QTest::ignoreMessage(QtWarningMsg, QRegularExpression(QStringLiteral("Invalid texture upload issued.+")));
+            QRhiResourceUpdateBatch *batch = rhi->nextResourceUpdateBatch();
+            QRhiTextureSubresourceUploadDescription subresDesc(inputImage);
+            subresDesc.setDestinationTopLeft(QPoint(0, 1));
+            QRhiTextureUploadDescription uploadDesc(QRhiTextureUploadEntry(0, 0, subresDesc));
+            batch->uploadTexture(texture.data(), uploadDesc);
+            QVERIFY(submitResourceUpdates(rhi.data(), batch));
+        }
     }
 }
 
