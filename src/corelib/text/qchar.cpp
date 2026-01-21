@@ -163,6 +163,7 @@ QT_BEGIN_NAMESPACE
     \value [since 6.5] Unicode_15_0 Version 15.0
     \value [since 6.8] Unicode_15_1 Version 15.1
     \value [since 6.9] Unicode_16_0 Version 16.0
+    \value [since 6.11] Unicode_17_0 Version 17.0
     \value Unicode_Unassigned  The value is not assigned to any character
                                in version 8.0 of Unicode.
 
@@ -273,6 +274,7 @@ QT_BEGIN_NAMESPACE
     \value [since 5.5] Script_BassaVah
     \value Script_Batak
     \value Script_Bengali
+    \value [since 6.11] Script_BeriaErfe
     \value [since 5.11] Script_Bhaiksuki
     \value Script_Bopomofo
     \value Script_Brahmi
@@ -395,6 +397,7 @@ QT_BEGIN_NAMESPACE
     \value Script_Sharada
     \value Script_Shavian
     \value [since 5.5] Script_Siddham
+    \value [since 6.11] Script_Sidetic
     \value [since 5.6] Script_SignWriting
     \value Script_Sinhala
     \value [since 5.15] Script_Sogdian
@@ -409,6 +412,7 @@ QT_BEGIN_NAMESPACE
     \value Script_TaiLe
     \value Script_TaiTham
     \value Script_TaiViet
+    \value [since 6.11] Script_TaiYo
     \value Script_Takri
     \value Script_Tamil
     \value [since 5.11] Script_Tangut
@@ -420,6 +424,7 @@ QT_BEGIN_NAMESPACE
     \value Script_Tifinagh
     \value [since 5.5] Script_Tirhuta
     \value [since 6.9] Script_Todhri
+    \value [since 6.11] Script_TolongSiki
     \value [since 6.3] Script_Toto
     \value [since 6.9] Script_TuluTigalari
     \value Script_Ugaritic

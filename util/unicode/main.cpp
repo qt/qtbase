@@ -27,8 +27,8 @@
 #  error This tool needs Qt >= 6.9, even if you are building tables for Qt 6.5 or 6.8.
 #endif
 
-#define DATA_VERSION_S "16.0"
-#define DATA_VERSION_STR "QChar::Unicode_16_0"
+#define DATA_VERSION_S "17.0"
+#define DATA_VERSION_STR "QChar::Unicode_17_0"
 
 using namespace Qt::StringLiterals;
 
@@ -89,6 +89,7 @@ static void initAgeMap()
         { QChar::Unicode_15_0,   "15.0" }, // UCD Revision 30
         { QChar::Unicode_15_1,   "15.1" }, // UCD Revision 32
         { QChar::Unicode_16_0,   "16.0" }, // UCD Revision 34
+        { QChar::Unicode_17_0,   "17.0" }, // UCD Revision 36
         { QChar::Unicode_Unassigned, 0 }
     };
     AgeMap *d = ageMap;
@@ -574,7 +575,7 @@ static const char *line_break_class_string =
     "    LineBreak_GL, LineBreak_NS, LineBreak_EX, LineBreak_SY,\n"
     "    LineBreak_IS, LineBreak_PR,\n"
     "    LineBreak_PO, LineBreak_NU, LineBreak_AL, LineBreak_HL, LineBreak_ID,\n"
-    "    LineBreak_IN, LineBreak_HY, LineBreak_WS_HY,\n"
+    "    LineBreak_IN, LineBreak_HY, LineBreak_WS_HY, LineBreak_HH,\n"
     "    LineBreak_BA, LineBreak_WS_BA,\n"
     "    LineBreak_HYBA,\n"
     "    LineBreak_BB, LineBreak_B2,\n"
@@ -598,7 +599,7 @@ enum LineBreakClass {
     LineBreak_GL, LineBreak_NS, LineBreak_EX, LineBreak_SY,
     LineBreak_IS, LineBreak_PR,
     LineBreak_PO, LineBreak_NU, LineBreak_AL, LineBreak_HL, LineBreak_ID,
-    LineBreak_IN, LineBreak_HY, LineBreak_WS_HY,
+    LineBreak_IN, LineBreak_HY, LineBreak_WS_HY, LineBreak_HH,
     LineBreak_BA, LineBreak_WS_BA,
     LineBreak_HYBA,
     LineBreak_BB, LineBreak_B2,
@@ -642,6 +643,7 @@ static void initLineBreak()
         { LineBreak_BA, "BA" },
         { LineBreak_BB, "BB" },
         { LineBreak_HY, "HY" },
+        { LineBreak_HH, "HH" },
         { LineBreak_CB, "CB" },
         { LineBreak_NS, "CJ" },
         { LineBreak_CL, "CL" },
@@ -886,6 +888,12 @@ static void initScriptMap()
         { QChar::Script_Sunuwar,                 "Sunuwar"},
         { QChar::Script_Todhri,                  "Todhri"},
         { QChar::Script_TuluTigalari,            "Tulu_Tigalari"},
+
+        // 17.0
+        { QChar::Script_Sidetic,                 "Sidetic"},
+        { QChar::Script_TaiYo,                   "Tai_Yo"},
+        { QChar::Script_TolongSiki,              "Tolong_Siki"},
+        { QChar::Script_BeriaErfe,               "Beria_Erfe"},
 
         // unhandled
         { QChar::Script_Unknown,                0 }
