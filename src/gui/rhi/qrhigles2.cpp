@@ -2574,7 +2574,7 @@ void QRhiGles2::enqueueSubresUpload(QGles2Texture *texD, QGles2CommandBuffer *cb
             const QPoint sp = subresDesc.sourceTopLeft();
             if (!subresDesc.sourceSize().isEmpty())
                 size = subresDesc.sourceSize();
-
+            size = clampedSubResourceUploadSize(size, dp, level, texD->m_pixelSize);
             if (caps.unpackRowLength) {
                 cbD->retainImage(img);
                 // create a non-owning wrapper for the subimage
@@ -2583,6 +2583,8 @@ void QRhiGles2::enqueueSubresUpload(QGles2Texture *texD, QGles2CommandBuffer *cb
             } else {
                 img = img.copy(sp.x(), sp.y(), size.width(), size.height());
             }
+        } else {
+            size = clampedSubResourceUploadSize(size, dp, level, texD->m_pixelSize);
         }
 
         setCmdByNotCompressedData(cbD->retainImage(img), size, img.bytesPerLine());
