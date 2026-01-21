@@ -425,6 +425,8 @@ QChildProcess::CharPointerList::CharPointerList(const QProcessEnvironmentPrivate
     if (!environment)
         return;
 
+    QProcessEnvironmentPrivate::MutexLocker locker(environment);
+
     const QProcessEnvironmentPrivate::Map &env = environment->vars;
     qsizetype count = env.size();
     pointers.reset(new char *[count + 1]);
