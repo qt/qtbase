@@ -32,7 +32,7 @@ QWaylandSessionManager::QWaylandSessionManager(QWaylandDisplay *display, const Q
 
 QWaylandSession *QWaylandSessionManager::session() const
 {
-    return mSession.data();
+    return mSession.get();
 }
 
 QWaylandSessionManager *QWaylandSessionManager::instance()

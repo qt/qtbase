@@ -19,9 +19,10 @@
 #include <QtWaylandClient/qtwaylandclientglobal.h>
 #include <qpa/qplatformintegration.h>
 #include <qpa/qplatformopenglcontext.h>
-#include <QtCore/QScopedPointer>
 #include <QtCore/QMutex>
 #include <QtCore/private/qglobal_p.h>
+
+#include <memory>
 
 QT_BEGIN_NAMESPACE
 
@@ -114,18 +115,18 @@ protected:
     // NOTE: mDisplay *must* be destructed after mDrag and mClientBufferIntegration
     // and mShellIntegration.
     // Do not move this definition into the private section at the bottom.
-    QScopedPointer<QWaylandDisplay> mDisplay;
+    std::unique_ptr<QWaylandDisplay> mDisplay;
 
 protected:
     void reset();
     virtual QPlatformNativeInterface *createPlatformNativeInterface();
 
-    QScopedPointer<QWaylandClientBufferIntegration> mClientBufferIntegration;
-    QScopedPointer<QWaylandServerBufferIntegration> mServerBufferIntegration;
-    QScopedPointer<QWaylandShellIntegration> mShellIntegration;
-    QScopedPointer<QWaylandInputDeviceIntegration> mInputDeviceIntegration;
+    std::unique_ptr<QWaylandClientBufferIntegration> mClientBufferIntegration;
+    std::unique_ptr<QWaylandServerBufferIntegration> mServerBufferIntegration;
+    std::unique_ptr<QWaylandShellIntegration> mShellIntegration;
+    std::unique_ptr<QWaylandInputDeviceIntegration> mInputDeviceIntegration;
 
-    QScopedPointer<QPlatformInputContext> mInputContext;
+    std::unique_ptr<QPlatformInputContext> mInputContext;
 
 private:
     void initializePlatform();
@@ -139,18 +140,18 @@ private:
 #endif
 
     const QString mPlatformName;
-    QScopedPointer<QPlatformFontDatabase> mFontDb;
+    std::unique_ptr<QPlatformFontDatabase> mFontDb;
 #if QT_CONFIG(clipboard)
-    QScopedPointer<QPlatformClipboard> mClipboard;
+    std::unique_ptr<QPlatformClipboard> mClipboard;
 #endif
 #if QT_CONFIG(draganddrop)
-    QScopedPointer<QPlatformDrag> mDrag;
+    std::unique_ptr<QPlatformDrag> mDrag;
 #endif
-    QScopedPointer<QPlatformNativeInterface> mNativeInterface;
+    std::unique_ptr<QPlatformNativeInterface> mNativeInterface;
 #if QT_CONFIG(accessibility)
-    mutable QScopedPointer<QPlatformAccessibility> mAccessibility;
+    mutable std::unique_ptr<QPlatformAccessibility> mAccessibility;
 #endif
-    QScopedPointer<QWaylandPlatformServices> mPlatformServices;
+    std::unique_ptr<QWaylandPlatformServices> mPlatformServices;
     QMutex mClientBufferInitLock;
     bool mClientBufferIntegrationInitialized = false;
     bool mServerBufferIntegrationInitialized = false;

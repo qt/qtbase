@@ -92,7 +92,7 @@ QWaylandIntegration::QWaylandIntegration(const QString &platformName)
     QCoreApplication::setAttribute(Qt::AA_CompressHighFrequencyEvents);
 
     mDisplay.reset(new QWaylandDisplay(this));
-    mPlatformServices.reset(new QWaylandPlatformServices(mDisplay.data()));
+    mPlatformServices.reset(new QWaylandPlatformServices(mDisplay.get()));
 
     QWaylandWindow::fixedToplevelPositions =
             !qEnvironmentVariableIsSet("QT_WAYLAND_DISABLE_FIXED_POSITIONS");
@@ -114,7 +114,7 @@ bool QWaylandIntegration::init()
 
 QPlatformNativeInterface * QWaylandIntegration::nativeInterface() const
 {
-    return mNativeInterface.data();
+    return mNativeInterface.get();
 }
 
 bool QWaylandIntegration::hasCapability(QPlatformIntegration::Capability cap) const
@@ -149,10 +149,10 @@ QPlatformWindow *QWaylandIntegration::createPlatformWindow(QWindow *window) cons
 
 #if QT_CONFIG(vulkan)
     if (window->surfaceType() == QSurface::VulkanSurface)
-        return new QWaylandVulkanWindow(window, mDisplay.data());
+        return new QWaylandVulkanWindow(window, mDisplay.get());
 #endif // QT_CONFIG(vulkan)
 
-    return new QWaylandShmWindow(window, mDisplay.data());
+    return new QWaylandShmWindow(window, mDisplay.get());
 }
 
 #if QT_CONFIG(opengl)
@@ -178,7 +178,7 @@ QOpenGLContext *QWaylandIntegration::createOpenGLContext(EGLContext context, EGL
 
 QPlatformBackingStore *QWaylandIntegration::createPlatformBackingStore(QWindow *window) const
 {
-    return new QWaylandShmBackingStore(window, mDisplay.data());
+    return new QWaylandShmBackingStore(window, mDisplay.get());
 }
 
 QAbstractEventDispatcher *QWaylandIntegration::createEventDispatcher() const
@@ -199,10 +199,10 @@ void QWaylandIntegration::initializePlatform()
     mNativeInterface.reset(createPlatformNativeInterface());
     initializeInputDeviceIntegration();
 #if QT_CONFIG(clipboard)
-    mClipboard.reset(new QWaylandClipboard(mDisplay.data()));
+    mClipboard.reset(new QWaylandClipboard(mDisplay.get()));
 #endif
 #if QT_CONFIG(draganddrop)
-    mDrag.reset(new QWaylandDrag(mDisplay.data()));
+    mDrag.reset(new QWaylandDrag(mDisplay.get()));
 #endif
 
     reconfigureInputContext();
@@ -214,8 +214,8 @@ void QWaylandIntegration::initialize()
 
     // Call this after initializing event thread for QWaylandDisplay::flushRequests()
     QAbstractEventDispatcher *dispatcher = QGuiApplicationPrivate::eventDispatcher;
-    QObject::connect(dispatcher, SIGNAL(aboutToBlock()), mDisplay.data(), SLOT(flushRequests()));
-    QObject::connect(dispatcher, SIGNAL(awake()), mDisplay.data(), SLOT(flushRequests()));
+    QObject::connect(dispatcher, SIGNAL(aboutToBlock()), mDisplay.get(), SLOT(flushRequests()));
+    QObject::connect(dispatcher, SIGNAL(awake()), mDisplay.get(), SLOT(flushRequests()));
 
     // Qt does not support running with no screens
     mDisplay->ensureScreen();
@@ -223,26 +223,26 @@ void QWaylandIntegration::initialize()
 
 QPlatformFontDatabase *QWaylandIntegration::fontDatabase() const
 {
-    return mFontDb.data();
+    return mFontDb.get();
 }
 
 #if QT_CONFIG(clipboard)
 QPlatformClipboard *QWaylandIntegration::clipboard() const
 {
-    return mClipboard.data();
+    return mClipboard.get();
 }
 #endif
 
 #if QT_CONFIG(draganddrop)
 QPlatformDrag *QWaylandIntegration::drag() const
 {
-    return mDrag.data();
+    return mDrag.get();
 }
 #endif  // draganddrop
 
 QPlatformInputContext *QWaylandIntegration::inputContext() const
 {
-    return mInputContext.data();
+    return mInputContext.get();
 }
 
 QVariant QWaylandIntegration::styleHint(StyleHint hint) const
@@ -265,18 +265,18 @@ QPlatformAccessibility *QWaylandIntegration::accessibility() const
         mAccessibility.reset(new QPlatformAccessibility());
 #endif
     }
-    return mAccessibility.data();
+    return mAccessibility.get();
 }
 #endif
 
 QPlatformServices *QWaylandIntegration::services() const
 {
-    return mPlatformServices.data();
+    return mPlatformServices.get();
 }
 
 QWaylandDisplay *QWaylandIntegration::display() const
 {
-    return mDisplay.data();
+    return mDisplay.get();
 }
 
 Qt::KeyboardModifiers QWaylandIntegration::queryKeyboardModifiers() const
@@ -329,7 +329,8 @@ QWaylandClientBufferIntegration *QWaylandIntegration::clientBufferIntegration() 
         const_cast<QWaylandIntegration *>(this)->initializeClientBufferIntegration();
 
     Q_ASSERT(mClientBufferIntegrationInitialized);
-    return mClientBufferIntegration && mClientBufferIntegration->isValid() ? mClientBufferIntegration.data() : nullptr;
+    bool isValid = mClientBufferIntegration && mClientBufferIntegration->isValid();
+    return isValid ? mClientBufferIntegration.get() : nullptr;
 }
 
 QWaylandServerBufferIntegration *QWaylandIntegration::serverBufferIntegration() const
@@ -337,7 +338,7 @@ QWaylandServerBufferIntegration *QWaylandIntegration::serverBufferIntegration() 
     if (!mServerBufferIntegrationInitialized)
         const_cast<QWaylandIntegration *>(this)->initializeServerBufferIntegration();
 
-    return mServerBufferIntegration.data();
+    return mServerBufferIntegration.get();
 }
 
 QWaylandShellIntegration *QWaylandIntegration::shellIntegration() const
@@ -345,7 +346,7 @@ QWaylandShellIntegration *QWaylandIntegration::shellIntegration() const
     if (!mShellIntegrationInitialized)
         const_cast<QWaylandIntegration *>(this)->initializeShellIntegration();
 
-    return mShellIntegration.data();
+    return mShellIntegration.get();
 }
 
 // May be called from non-GUI threads
@@ -383,7 +384,7 @@ void QWaylandIntegration::initializeClientBufferIntegration()
 
         if (mClientBufferIntegration) {
             qCDebug(lcQpaWayland) << "Initializing client buffer integration" << targetKey;
-            mClientBufferIntegration->initialize(mDisplay.data());
+            mClientBufferIntegration->initialize(mDisplay.get());
         } else {
             qCWarning(lcQpaWayland) << "Failed to load client buffer integration:" << targetKey;
             qCWarning(lcQpaWayland) << "Available client buffer integrations:" << keys;
@@ -417,7 +418,7 @@ void QWaylandIntegration::initializeServerBufferIntegration()
 
     if (mServerBufferIntegration) {
         qCDebug(lcQpaWayland) << "Initializing server buffer integration" << targetKey;
-        mServerBufferIntegration->initialize(mDisplay.data());
+        mServerBufferIntegration->initialize(mDisplay.get());
     } else {
         qCWarning(lcQpaWayland) << "Failed to load server buffer integration: " <<  targetKey;
         qCWarning(lcQpaWayland) << "Available server buffer integrations:" << keys;
@@ -509,11 +510,11 @@ void QWaylandIntegration::reconfigureInputContext()
         if (imKey == QLatin1String(WAYLAND_IM_KEY)) {
             Q_ASSERT(mDisplay->isWaylandInputContextRequested());
             if (mDisplay->textInputMethodManager() != nullptr)
-                mInputContext.reset(new QWaylandInputMethodContext(mDisplay.data()));
+                mInputContext.reset(new QWaylandInputMethodContext(mDisplay.get()));
             else if (mDisplay->textInputManagerv1() != nullptr
                      || mDisplay->textInputManagerv2() != nullptr
                      || mDisplay->textInputManagerv3() != nullptr)
-                mInputContext.reset(new QWaylandInputContext(mDisplay.data()));
+                mInputContext.reset(new QWaylandInputContext(mDisplay.get()));
         } else {
             mInputContext.reset(QPlatformInputContextFactory::create(imKey));
         }
@@ -523,7 +524,7 @@ void QWaylandIntegration::reconfigureInputContext()
     }
 
 #if QT_CONFIG(xkbcommon)
-    QXkbCommon::setXkbContext(mInputContext.data(), mDisplay->xkbContext());
+    QXkbCommon::setXkbContext(mInputContext.get(), mDisplay->xkbContext());
     if (QWaylandInputContext* waylandInput = qobject_cast<QWaylandInputContext*>(mInputContext.get())) {
         waylandInput->setXkbContext(mDisplay->xkbContext());
     }
@@ -535,7 +536,7 @@ void QWaylandIntegration::reconfigureInputContext()
 QWaylandShellIntegration *QWaylandIntegration::createShellIntegration(const QString &integrationName)
 {
     if (QWaylandShellIntegrationFactory::keys().contains(integrationName)) {
-        return QWaylandShellIntegrationFactory::create(integrationName, mDisplay.data());
+        return QWaylandShellIntegrationFactory::create(integrationName, mDisplay.get());
     } else {
         qCWarning(lcQpaWayland) << "No shell integration named" << integrationName << "found";
         return nullptr;
@@ -546,7 +547,7 @@ QWaylandShellIntegration *QWaylandIntegration::createShellIntegration(const QStr
 QPlatformSessionManager *QWaylandIntegration::createPlatformSessionManager(const QString &id, const QString &key) const
 {
     Q_UNUSED(key);
-    return new QWaylandSessionManager(mDisplay.data(), id);
+    return new QWaylandSessionManager(mDisplay.get(), id);
 }
 #endif
 

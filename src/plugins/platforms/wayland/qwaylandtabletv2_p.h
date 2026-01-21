@@ -27,6 +27,8 @@
 #include <QtGui/QPointingDevice>
 #include <QtGui/QInputDevice>
 
+#include <memory>
+
 QT_BEGIN_NAMESPACE
 
 namespace QtWaylandClient {
@@ -147,10 +149,10 @@ private:
 #if QT_CONFIG(cursor)
     struct
     {
-        QScopedPointer<QWaylandCursorShape> shape;
+        std::unique_ptr<QWaylandCursorShape> shape;
         QWaylandCursorTheme *theme = nullptr;
         int themeBufferScale = 0;
-        QScopedPointer<CursorSurface<QWaylandTabletToolV2>> surface;
+        std::unique_ptr<CursorSurface<QWaylandTabletToolV2>> surface;
         QTimer frameTimer;
         bool gotFrameCallback = false;
         bool gotTimerCallback = false;

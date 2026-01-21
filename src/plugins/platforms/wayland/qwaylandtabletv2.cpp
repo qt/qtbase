@@ -31,7 +31,7 @@ int QWaylandTabletToolV2::idealCursorScale() const
         return 1;
     }
 
-    if (auto *s = mCursor.surface.data()) {
+    if (auto *s = mCursor.surface.get()) {
         if (s->outputScale() > 0)
             return s->outputScale();
     }

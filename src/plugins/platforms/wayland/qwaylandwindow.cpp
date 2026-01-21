@@ -226,11 +226,11 @@ void QWaylandWindow::initializeWlSurface(bool colorSpace)
     {
         QWriteLocker lock(&mSurfaceLock);
         mSurface.reset(new QWaylandSurface(mDisplay));
-        connect(mSurface.data(), &QWaylandSurface::screensChanged,
+        connect(mSurface.get(), &QWaylandSurface::screensChanged,
                 this, &QWaylandWindow::handleScreensChanged);
-        connect(mSurface.data(), &QWaylandSurface::preferredBufferScaleChanged,
+        connect(mSurface.get(), &QWaylandSurface::preferredBufferScaleChanged,
                 this, &QWaylandWindow::updateScale);
-        connect(mSurface.data(), &QWaylandSurface::preferredBufferTransformChanged,
+        connect(mSurface.get(), &QWaylandSurface::preferredBufferTransformChanged,
                 this, &QWaylandWindow::updateBufferTransform);
         mSurface->m_window = this;
     }
@@ -239,7 +239,7 @@ void QWaylandWindow::initializeWlSurface(bool colorSpace)
     if (mDisplay->fractionalScaleManager() && qApp->highDpiScaleFactorRoundingPolicy() == Qt::HighDpiScaleFactorRoundingPolicy::PassThrough) {
         mFractionalScale.reset(new QWaylandFractionalScale(mDisplay->fractionalScaleManager()->get_fractional_scale(mSurface->object())));
 
-        connect(mFractionalScale.data(), &QWaylandFractionalScale::preferredScaleChanged,
+        connect(mFractionalScale.get(), &QWaylandFractionalScale::preferredScaleChanged,
                 this, &QWaylandWindow::updateScale);
     }
     // The fractional scale manager check is needed to work around Gnome < 36 where viewports don't work

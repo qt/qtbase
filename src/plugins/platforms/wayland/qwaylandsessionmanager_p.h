@@ -22,6 +22,8 @@
 #include <QtWaylandClient/qtwaylandclientglobal.h>
 #include <QtWaylandClient/private/qwayland-xx-session-management-v1.h>
 
+#include <memory>
+
 QT_BEGIN_NAMESPACE
 
 namespace QtWaylandClient {
@@ -60,7 +62,7 @@ private:
     void startSession();
 
     QWaylandDisplay *mDisplay = nullptr;
-    QScopedPointer<QWaylandSession> mSession;
+    std::unique_ptr<QWaylandSession> mSession;
     friend class QWaylandSession;
 };
 
