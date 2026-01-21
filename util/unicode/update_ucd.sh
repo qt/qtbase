@@ -25,10 +25,10 @@ download()
     wget -nv -P "$tmp" "$1"
 }
 
-download "https://www.unicode.org/Public/zipped/$VERSION/UCD.zip"
+download "https://www.unicode.org/Public/$VERSION/ucd/UCD.zip"
 unzip -q "$tmp/UCD.zip" -d "$tmp"
-download "https://www.unicode.org/Public/idna/$VERSION/IdnaMappingTable.txt"
-download "https://www.unicode.org/Public/idna/$VERSION/IdnaTestV2.txt"
+download "https://www.unicode.org/Public/$VERSION/idna/IdnaMappingTable.txt"
+download "https://www.unicode.org/Public/$VERSION/idna/IdnaTestV2.txt"
 
 data_dirs="util/unicode/data \
 tests/auto/corelib/io/qurluts46/testdata \
