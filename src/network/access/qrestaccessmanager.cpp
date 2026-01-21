@@ -765,7 +765,7 @@ QNetworkReply *QRestAccessManagerPrivate::createActiveRequest(QNetworkReply *rep
     Q_Q(QRestAccessManager);
     Q_ASSERT(reply);
     QtPrivate::SlotObjSharedPtr slotPtr(std::move(slot)); // adopts
-    activeRequests.insert(reply, CallerInfo{contextObject, slotPtr});
+    activeRequests.emplace(reply, CallerInfo{contextObject, std::move(slotPtr)});
     // The signal connections below are made to 'q' to avoid stray signal
     // handling upon its destruction while requests were still in progress
 
@@ -813,7 +813,7 @@ void QRestAccessManagerPrivate::handleReplyFinished(QNetworkReply *reply)
         return;
     }
 
-    CallerInfo caller = request.value();
+    CallerInfo caller = std::move(request.value());
     activeRequests.erase(request);
 
     if (caller.slot) {
