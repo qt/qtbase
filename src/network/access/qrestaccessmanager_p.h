@@ -23,9 +23,10 @@
 
 #include <QtCore/qloggingcategory.h>
 #include <QtCore/qjsonarray.h>
-#include <QtCore/qhash.h>
 #include <QtCore/qjsondocument.h>
 #include <QtCore/qjsonobject.h>
+#include <QtCore/private/qflatmap_p.h>
+
 #include <QtCore/qxpfunctional.h>
 
 QT_BEGIN_NAMESPACE
@@ -58,9 +59,9 @@ public:
 
     struct CallerInfo {
         QPointer<const QObject> contextObject = nullptr;
-        QtPrivate::SlotObjSharedPtr slot;
+        QtPrivate::SlotObjUniquePtr slot;
     };
-    QHash<QNetworkReply*, CallerInfo> activeRequests;
+    QVarLengthFlatMap<QNetworkReply*, CallerInfo, 4> activeRequests;
 
     QNetworkAccessManager *qnam = nullptr;
     bool deletesRepliesOnFinished = true;
