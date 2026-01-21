@@ -43,6 +43,13 @@ set_property(TARGET rangemodel APPEND PROPERTY
              QT_ANDROID_PACKAGE_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
+
+
+qt_internal_extend_target(rangemodel CONDITION MSVC
+    COMPILE_OPTIONS
+        /bigobj
+)
+
 if ("${CMAKE_CXX_COMPILE_FEATURES}" MATCHES "cxx_std_23")
     set_property(TARGET rangemodel PROPERTY CXX_STANDARD 23)
 endif()
