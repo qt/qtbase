@@ -41,6 +41,7 @@ class QBenchmarkCallgrindMeasurer : public QBenchmarkMeasurerBase
 {
 public:
     void start() override;
+    void updateMeasurement() override;
     QList<Measurement> stop() override;
     bool isMeasurementAccepted(Measurement measurement) override;
     int adjustIterationCount(int) override;

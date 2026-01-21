@@ -173,11 +173,19 @@ void QBenchmarkCallgrindMeasurer::start()
     CALLGRIND_ZERO_STATS;
 }
 
-QList<QBenchmarkMeasurerBase::Measurement> QBenchmarkCallgrindMeasurer::stop()
+void QBenchmarkCallgrindMeasurer::updateMeasurement()
 {
     CALLGRIND_DUMP_STATS;
     const qint64 result = QBenchmarkValgrindUtils::extractLastResult();
-    return { { qreal(result), 0, QTest::InstructionReads } };
+    accumulator.update(qreal(result));
+    CALLGRIND_ZERO_STATS;       // Zero cost centers again to ignore operations in previous lines
+}
+
+QList<QBenchmarkMeasurerBase::Measurement> QBenchmarkCallgrindMeasurer::stop()
+{
+    return { { accumulator.total(),
+               accumulator.variance() / QBenchmarkTestMethodData::current->measurementBlockSize,
+               QTest::InstructionReads } };
 }
 
 bool QBenchmarkCallgrindMeasurer::isMeasurementAccepted(Measurement measurement)
