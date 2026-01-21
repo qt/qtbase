@@ -605,50 +605,51 @@ enum Action {
 // See https://www.unicode.org/reports/tr14/tr14-37.html for the information
 // about the table. It was removed in the later versions of the standard.
 static const uchar breakTable[QUnicodeTables::LineBreak_ZWJ][QUnicodeTables::LineBreak_ZWJ] = {
-/* 1↓ 2→   OP  CL  CP  QU  +Pi +Pf +19 GL  NS  EX  SY  IS  PR  PO  NU  AL  HL  ID  IN  HY  +WS BA +WS HYBA BB  B2  ZW  CM  WJ  H2  H3  JL  JV  JT  RI  CB  EB  EM  AK  AP  AS  VI  VF*/
-/* OP */ { PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, CP, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB },
-/* CL */ { DB, PB, PB, IB, IB, PB, IB, IB, PB, PB, PB, PB, DB, DB, DB, DB, DB, DB, IB, IB, IB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
-/* CP */ { DB, PB, PB, IB, IB, PB, IB, IB, PB, PB, PB, PB, DB, DB, IB, IB, IB, DB, IB, IB, IB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
-/* QU */ { IB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, IB, IB, IB, IB, IB, DB, IB, IB, IB, IB, IB, IB, IB, IB, PB, CI, PB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB },
-/* +Pi*/ { PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, CP, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB },
-/* +Pf*/ { IB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, PB, CI, PB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB },
-/* +19*/ { IB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, PB, CI, PB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB },
-/* GL */ { IB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, PB, CI, PB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB },
-/* NS */ { DB, PB, PB, DB, IB, PB, IB, IB, IB, PB, PB, PB, DB, DB, DB, DB, DB, DB, IB, IB, IB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
-/* EX */ { DB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, DB, DB, DB, DB, DB, DB, IB, IB, IB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
-/* SY */ { DB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, DB, DB, DB, DB, IB, DB, IB, IB, IB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
-/* IS */ { DB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, DN, DB, IB, IB, IB, DB, IB, IB, IB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
-/* PR */ { DB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, DB, DB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, DB, DB, PB, CI, PB, IB, IB, IB, IB, IB, DB, DB, IB, IB, DB, DB, DB, DB, DB },
-/* PO */ { DB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, DB, DB, IB, IB, IB, DB, IB, IB, IB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
-/* NU */ { IN, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, IB, IB, IB, IB, IB, DB, IB, IB, IB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
-/* AL */ { IN, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, IB, IB, IB, IB, IB, DB, IB, IB, IB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
-/* HL */ { IN, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, IB, IB, IB, IB, IB, DB, IB, IB, CI, CI, CI, CI, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
-/* ID */ { DB, PB, PB, DB, IB, PB, IB, IB, IB, PB, PB, PB, DB, IB, DB, DB, DB, DB, IB, IB, IB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
-/* IN */ { DB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, DB, DB, DB, DB, DB, DB, IB, IB, IB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
-/* HY */ { HH, PB, PB, IB, IB, PB, IB, HH, IB, PB, PB, PB, HH, HH, IB, HH, HH, HH, IB, IB, IB, IB, IB, IB, HH, HH, PB, CI, PB, HH, HH, HH, HH, HH, HH, DB, DB, DB, HH, HH, HH, HH, HH },
-/* +WS*/ { HH, PB, PB, IB, IB, PB, IB, HH, IB, PB, PB, PB, HH, HH, IB, IB, HH, HH, IB, IB, IB, IB, IB, IB, HH, HH, PB, CI, PB, HH, HH, HH, HH, HH, HH, DB, DB, DB, HH, HH, HH, HH, HH },
-/* BA */ { HH, PB, PB, IB, IB, PB, IB, HH, IB, PB, PB, PB, HH, HH, HH, HH, HH, HH, IB, IB, IB, IB, IB, IB, HH, HH, PB, CI, PB, HH, HH, HH, HH, HH, HH, DB, DB, DB, HH, HH, HH, HH, HH },
-/* +WS*/ { HH, PB, PB, IB, IB, PB, IB, HH, IB, PB, PB, PB, HH, HH, HH, IB, HH, HH, IB, IB, IB, IB, IB, IB, HH, HH, PB, CI, PB, HH, HH, HH, HH, HH, HH, DB, DB, DB, HH, HH, HH, HH, HH },
-/*HYBA*/ { PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, DB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB },
-/* BB */ { IB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, PB, CI, PB, IB, IB, IB, IB, IB, IB, DB, IB, IB, IB, IB, IB, IB, IB },
-/* B2 */ { DB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, DB, DB, DB, DB, DB, DB, IB, IB, IB, IB, IB, IB, DB, PB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
-/* ZW */ { DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
-/* CM */ { IB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, DB, DB, IB, IB, IB, DB, IB, IB, IB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
-/* WJ */ { IB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, PB, CI, PB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB },
-/* H2 */ { DB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, DB, IB, DB, DB, DB, DB, IB, IB, IB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, IB, IB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
-/* H3 */ { DB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, DB, IB, DB, DB, DB, DB, IB, IB, IB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, IB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
-/* JL */ { DB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, DB, IB, DB, DB, DB, DB, IB, IB, IB, IB, IB, IB, DB, DB, PB, CI, PB, IB, IB, IB, IB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
-/* JV */ { DB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, DB, IB, DB, DB, DB, DB, IB, IB, IB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, IB, IB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
-/* JT */ { DB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, DB, IB, DB, DB, DB, DB, IB, IB, IB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, IB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
-/* RI */ { DB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, DB, DB, DB, DB, DB, DB, IB, IB, IB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, IB, DB, DB, DB, DB, DB, DB, DB, DB },
-/* CB */ { DB, PB, PB, IB, IB, PB, IB, IB, DB, PB, PB, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
-/* EB */ { DB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, DB, IB, DB, DB, DB, DB, IB, IB, IB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, IB, DB, DB, DB, DB, DB },
-/* EM */ { DB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, DB, IB, DB, DB, DB, DB, IB, IB, IB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
-/* AK */ { DB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, DB, DB, DB, DB, DB, DB, IB, IB, IB, IB, IB, IB, DB, DB, PB, DB, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, IB, IB },
-/* AP */ { DB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, DB, DB, DB, DB, DB, DB, IB, IB, IB, IB, IB, IB, DB, DB, PB, DB, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, IB, DB, IB, DB, DB },
-/* AS */ { DB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, DB, DB, DB, DB, DB, DB, IB, IB, IB, IB, IB, IB, DB, DB, PB, DB, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, IB, IB },
-/* VI */ { DB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, DB, DB, DB, DB, DB, DB, IB, IB, IB, IB, IB, IB, DB, DB, PB, DB, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
-/* VF */ { DB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, DB, DB, DB, DB, DB, DB, IB, IB, IB, IB, IB, IB, DB, DB, PB, DB, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
+/* 1↓ 2→   OP  CL  CP  QU  +Pi +Pf +19 GL  NS  EX  SY  IS  PR  PO  NU  AL  HL  ID  IN  HY  +WS HH  BA +WS HYBA BB  B2  ZW  CM  WJ  H2  H3  JL  JV  JT  RI  CB  EB  EM  AK  AP  AS  VI  VF*/
+/* OP */ { PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, CP, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB },
+/* CL */ { DB, PB, PB, IB, IB, PB, IB, IB, PB, PB, PB, PB, DB, DB, DB, DB, DB, DB, IB, IB, IB, IB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
+/* CP */ { DB, PB, PB, IB, IB, PB, IB, IB, PB, PB, PB, PB, DB, DB, IB, IB, IB, DB, IB, IB, IB, IB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
+/* QU */ { IB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, IB, IB, IB, IB, IB, DB, IB, IB, IB, IB, IB, IB, IB, IB, IB, PB, CI, PB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB },
+/* +Pi*/ { PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, CP, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB },
+/* +Pf*/ { IB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, PB, CI, PB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB },
+/* +19*/ { IB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, PB, CI, PB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB },
+/* GL */ { IB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, PB, CI, PB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB },
+/* NS */ { DB, PB, PB, DB, IB, PB, IB, IB, IB, PB, PB, PB, DB, DB, DB, DB, DB, DB, IB, IB, IB, IB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
+/* EX */ { DB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, DB, DB, DB, DB, DB, DB, IB, IB, IB, IB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
+/* SY */ { DB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, DB, DB, DB, DB, IB, DB, IB, IB, IB, IB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
+/* IS */ { DB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, DN, DB, IB, IB, IB, DB, IB, IB, IB, IB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
+/* PR */ { DB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, DB, DB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, DB, DB, PB, CI, PB, IB, IB, IB, IB, IB, DB, DB, IB, IB, DB, DB, DB, DB, DB },
+/* PO */ { DB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, DB, DB, IB, IB, IB, DB, IB, IB, IB, IB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
+/* NU */ { IN, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, IB, IB, IB, IB, IB, DB, IB, IB, IB, IB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
+/* AL */ { IN, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, IB, IB, IB, IB, IB, DB, IB, IB, IB, IB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
+/* HL */ { IN, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, IB, IB, IB, IB, IB, DB, IB, IB, CI, CI, IB, CI, CI, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
+/* ID */ { DB, PB, PB, DB, IB, PB, IB, IB, IB, PB, PB, PB, DB, IB, DB, DB, DB, DB, IB, IB, IB, IB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
+/* IN */ { DB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, DB, DB, DB, DB, DB, DB, IB, IB, IB, IB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
+/* HY */ { HH, PB, PB, IB, IB, PB, IB, HH, IB, PB, PB, PB, HH, HH, IB, HH, HH, HH, IB, IB, IB, IB, IB, IB, IB, HH, HH, PB, CI, PB, HH, HH, HH, HH, HH, HH, DB, DB, DB, HH, HH, HH, HH, HH },
+/* +WS*/ { HH, PB, PB, IB, IB, PB, IB, HH, IB, PB, PB, PB, HH, HH, IB, IB, IB, HH, IB, IB, IB, IB, IB, IB, IB, HH, HH, PB, CI, PB, HH, HH, HH, HH, HH, HH, DB, DB, DB, HH, HH, HH, HH, HH },
+/* HH */ { HH, PB, PB, IB, IB, PB, IB, HH, IB, PB, PB, PB, HH, HH, IB, HH, HH, HH, IB, IB, IB, IB, IB, IB, IB, HH, HH, PB, CI, PB, HH, HH, HH, HH, HH, HH, DB, DB, DB, HH, HH, HH, HH, HH },
+/* BA */ { HH, PB, PB, IB, IB, PB, IB, HH, IB, PB, PB, PB, HH, HH, HH, HH, HH, HH, IB, IB, IB, IB, IB, IB, IB, HH, HH, PB, CI, PB, HH, HH, HH, HH, HH, HH, DB, DB, DB, HH, HH, HH, HH, HH },
+/* +WS*/ { HH, PB, PB, IB, IB, PB, IB, HH, IB, PB, PB, PB, HH, HH, HH, IB, IB, HH, IB, IB, IB, IB, IB, IB, IB, HH, HH, PB, CI, PB, HH, HH, HH, HH, HH, HH, DB, DB, DB, HH, HH, HH, HH, HH },
+/*HYBA*/ { PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, DB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB, PB },
+/* BB */ { IB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, PB, CI, PB, IB, IB, IB, IB, IB, IB, DB, IB, IB, IB, IB, IB, IB, IB },
+/* B2 */ { DB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, DB, DB, DB, DB, DB, DB, IB, IB, IB, IB, IB, IB, IB, DB, PB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
+/* ZW */ { DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
+/* CM */ { IB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, DB, DB, IB, IB, IB, DB, IB, IB, IB, IB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
+/* WJ */ { IB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, PB, CI, PB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB },
+/* H2 */ { DB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, DB, IB, DB, DB, DB, DB, IB, IB, IB, IB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, IB, IB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
+/* H3 */ { DB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, DB, IB, DB, DB, DB, DB, IB, IB, IB, IB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, IB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
+/* JL */ { DB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, DB, IB, DB, DB, DB, DB, IB, IB, IB, IB, IB, IB, IB, DB, DB, PB, CI, PB, IB, IB, IB, IB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
+/* JV */ { DB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, DB, IB, DB, DB, DB, DB, IB, IB, IB, IB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, IB, IB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
+/* JT */ { DB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, DB, IB, DB, DB, DB, DB, IB, IB, IB, IB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, IB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
+/* RI */ { DB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, DB, DB, DB, DB, DB, DB, IB, IB, IB, IB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, IB, DB, DB, DB, DB, DB, DB, DB, DB },
+/* CB */ { DB, PB, PB, IB, IB, PB, IB, IB, DB, PB, PB, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
+/* EB */ { DB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, DB, IB, DB, DB, DB, DB, IB, IB, IB, IB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, IB, DB, DB, DB, DB, DB },
+/* EM */ { DB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, DB, IB, DB, DB, DB, DB, IB, IB, IB, IB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
+/* AK */ { DB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, DB, DB, DB, DB, DB, DB, IB, IB, IB, IB, IB, IB, IB, DB, DB, PB, DB, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, IB, IB },
+/* AP */ { DB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, DB, DB, DB, DB, DB, DB, IB, IB, IB, IB, IB, IB, IB, DB, DB, PB, DB, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, IB, DB, IB, DB, DB },
+/* AS */ { DB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, DB, DB, DB, DB, DB, DB, IB, IB, IB, IB, IB, IB, IB, DB, DB, PB, DB, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, IB, IB },
+/* VI */ { DB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, DB, DB, DB, DB, DB, DB, IB, IB, IB, IB, IB, IB, IB, DB, DB, PB, DB, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
+/* VF */ { DB, PB, PB, IB, IB, PB, IB, IB, IB, PB, PB, PB, DB, DB, DB, DB, DB, DB, IB, IB, IB, IB, IB, IB, IB, DB, DB, PB, DB, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
 };
 
 // The following line break classes are not treated by the pair table
@@ -775,20 +776,24 @@ static void getLineBreaks(const char16_t *string, qsizetype len, QCharAttributes
         if (Q_UNLIKELY((lcls >= QUnicodeTables::LineBreak_SP || lcls == QUnicodeTables::LineBreak_ZW
                         || lcls == QUnicodeTables::LineBreak_GL
                         || lcls == QUnicodeTables::LineBreak_CB)
-                       && (ncls == QUnicodeTables::LineBreak_HY || ucs4 == u'\u2010'))) {
+                       && (ncls == QUnicodeTables::LineBreak_HY
+                           || ncls == QUnicodeTables::LineBreak_HH))) {
             // LB20a: Do not break after a word-initial hyphen.
-            // ( sot | BK | CR | LF | NL | SP | ZW | CB | GL ) ( HY | [\u2010] ) × AL
+            // ( sot | BK | CR | LF | NL | SP | ZW | CB | GL ) ( HY | HH ) × ( AL | HL )
 
             // Remap to the synthetic class WS_* (whitespace+*), which is just
             // like the current respective linebreak class but with an IB action
-            // if the next class is AL.
-            if (ucs4 == u'\u2010')
+            // if the next class is AL or HL.
+            // The synthetic class tied to HH is named WS_BA because it was previously a subset of
+            // BA. With Unicode 17.0.0, the HH line-break class was introduced, split out from BA.
+            if (ncls == QUnicodeTables::LineBreak_HH)
                 ncls = QUnicodeTables::LineBreak_WS_BA;
             else
                 ncls = QUnicodeTables::LineBreak_WS_HY;
         }
 
-        if (Q_UNLIKELY(cls == QUnicodeTables::LineBreak_AP && ucs4 == LB::BRS::DottedCircle)) {
+        if (Q_UNLIKELY(cls == QUnicodeTables::LineBreak_AP && ucs4 == LB::BRS::DottedCircle)
+            && lcls != QUnicodeTables::LineBreak_SP) {
             // LB28a: Do not break inside the orthographic syllables of Brahmic scripts
             // AP × (AK | [◌] | AS)
             // @note: AP × (AK | AS) is checked by the breakTable
@@ -864,13 +869,14 @@ static void getLineBreaks(const char16_t *string, qsizetype len, QCharAttributes
 
         if (Q_UNLIKELY(lcls == QUnicodeTables::LineBreak_HL)) {
             // LB21a Do not break after the hyphen in Hebrew + Hyphen + non-Hebrew
-            // HL (HY | [ BA - $EastAsian ]) × [^HL]
-            auto eaw = QUnicodeTables::EastAsianWidth(prop->eastAsianWidth);
-            const bool isNonEaBA = ncls == QUnicodeTables::LineBreak_BA && !isEastAsian(eaw);
-            if (isNonEaBA || ncls == QUnicodeTables::LineBreak_HY) {
+            // HL (HY | HH) × [^HL]
+            if (ncls == QUnicodeTables::LineBreak_HY || ncls == QUnicodeTables::LineBreak_HH) {
                 // Remap to synthetic HYBA class which handles the next
                 // character. Generally (LB21) there are no breaks before
-                // HY or BA, so we can skip ahead to the next character.
+                // HY or HH, so we can skip ahead to the next character.
+                // The synthetic class is named such because prior to Unicode 17 this
+                // rule applied to a subset of BA. Unicode 17 added the HH class,
+                // which occupies the subset of BA that was previously used.
                 ncls = QUnicodeTables::LineBreak_HYBA;
                 goto next;
             }
@@ -1006,7 +1012,8 @@ static void getLineBreaks(const char16_t *string, qsizetype len, QCharAttributes
         if (Q_UNLIKELY(ncls == QUnicodeTables::LineBreak_EM
                        && lastProp->category == QChar::Other_NotAssigned
                        && lastProp->graphemeBreakClass
-                               == QUnicodeTables::GraphemeBreak_Extended_Pictographic)) {
+                               == QUnicodeTables::GraphemeBreak_Extended_Pictographic)
+            && lcls != QUnicodeTables::LineBreak_SP) {
             // LB30b: [\p{Extended_Pictographic}&\p{Cn}] × EM
             goto next;
         }
@@ -2721,6 +2728,10 @@ static CharAttributeFunction charAttributeFunction(QChar::Script script)
     case QChar::Script_Sunuwar:
     case QChar::Script_Todhri:
     case QChar::Script_TuluTigalari:
+    case QChar::Script_Sidetic:
+    case QChar::Script_TaiYo:
+    case QChar::Script_TolongSiki:
+    case QChar::Script_BeriaErfe:
         return nullptr;
     case QChar::ScriptCount:
         // Don't Q_UNREACHABLE here; this might be a newer value in later Qt versions

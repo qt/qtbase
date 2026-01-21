@@ -249,6 +249,17 @@ static const hb_script_t _qtscript_to_hbscript[] = {
     HB_SCRIPT_TODHRI,
     HB_SCRIPT_TULU_TIGALARI,
 #endif
+#if !HB_VERSION_ATLEAST(11, 5, 0)
+    hb_script_t(HB_TAG('B','e','r','f')), // Script_BeriaErfe
+    hb_script_t(HB_TAG('S','i','d','t')), // Script_Sidetic
+    hb_script_t(HB_TAG('T','a','y','o')), // Script_TaiYo
+    hb_script_t(HB_TAG('T','o','l','s')), // Script_TolongSiki
+#else
+    HB_SCRIPT_BERIA_ERFE,
+    HB_SCRIPT_SIDETIC,
+    HB_SCRIPT_TAI_YO,
+    HB_SCRIPT_TOLONG_SIKI,
+#endif
 };
 static_assert(QChar::ScriptCount == sizeof(_qtscript_to_hbscript) / sizeof(_qtscript_to_hbscript[0]));
 
