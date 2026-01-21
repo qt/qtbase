@@ -3785,7 +3785,7 @@ QWidget *QApplicationPrivate::findClosestTouchPointTarget(const QPointingDevice 
     const QPointingDevicePrivate *devPriv = QPointingDevicePrivate::get(device);
     for (auto &epd : devPriv->activePoints.values()) {
         const auto &pt = epd.eventPoint;
-        if (pt.id() != touchPoint.id()) {
+        if (pt.id() != touchPoint.id() && QMutableEventPoint::target(pt)) {
             qreal dx = globalPos.x() - pt.globalPosition().x();
             qreal dy = globalPos.y() - pt.globalPosition().y();
             qreal distance = dx * dx + dy * dy;
