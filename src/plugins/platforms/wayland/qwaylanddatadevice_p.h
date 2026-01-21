@@ -24,6 +24,8 @@
 
 #include <QtWaylandClient/private/qwayland-wayland.h>
 
+#include <memory>
+
 QT_REQUIRE_CONFIG(wayland_datadevice);
 
 QT_BEGIN_NAMESPACE
@@ -95,10 +97,10 @@ private:
     uint32_t m_enterSerial = 0;
     QPointer<QWindow> m_dragWindow;
     QPoint m_dragPoint;
-    QScopedPointer<QWaylandDataOffer> m_dragOffer;
-    QScopedPointer<QWaylandDataOffer> m_selectionOffer;
-    QScopedPointer<QWaylandDataSource> m_selectionSource;
-    QScopedPointer<QWaylandDataSource> m_dragSource;
+    std::unique_ptr<QWaylandDataOffer> m_dragOffer;
+    std::unique_ptr<QWaylandDataOffer> m_selectionOffer;
+    std::unique_ptr<QWaylandDataSource> m_selectionSource;
+    std::unique_ptr<QWaylandDataSource> m_dragSource;
     QtWayland::xdg_toplevel_drag_v1 *m_toplevelDrag = nullptr;
 };
 

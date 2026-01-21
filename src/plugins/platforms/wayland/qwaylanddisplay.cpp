@@ -1071,7 +1071,7 @@ QWaylandCursor *QWaylandDisplay::waylandCursor()
 {
     if (!mCursor)
         mCursor.reset(mWaylandIntegration->createPlatformCursor(this));
-    return mCursor.data();
+    return mCursor.get();
 }
 
 auto QWaylandDisplay::findExistingCursorTheme(const QString &name, int pixelSize) const noexcept

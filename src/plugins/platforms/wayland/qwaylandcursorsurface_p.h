@@ -8,6 +8,8 @@
 #include "qwaylandsurface_p.h"
 #include "qwaylandcallback_p.h"
 
+#include <memory>
+
 QT_BEGIN_NAMESPACE
 
 namespace QtWaylandClient {
@@ -67,7 +69,7 @@ public:
     }
 
 private:
-    QScopedPointer<WlCallback> m_frameCallback;
+    std::unique_ptr<WlCallback> m_frameCallback;
     InputDevice *m_pointer = nullptr;
     uint m_setSerial = 0;
     QPoint m_hotspot;

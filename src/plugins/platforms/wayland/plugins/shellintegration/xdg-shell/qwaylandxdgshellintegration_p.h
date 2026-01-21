@@ -8,6 +8,8 @@
 
 #include <QtWaylandClient/private/qwaylandshellintegration_p.h>
 
+#include <memory>
+
 QT_BEGIN_NAMESPACE
 
 namespace QtWaylandClient {
@@ -30,7 +32,7 @@ protected:
 
 private:
     QWaylandDisplay *mDisplay;
-    QScopedPointer<QWaylandXdgShell> mXdgShell;
+    std::unique_ptr<QWaylandXdgShell> mXdgShell;
 };
 
 }

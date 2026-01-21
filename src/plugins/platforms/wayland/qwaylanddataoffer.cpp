@@ -110,7 +110,7 @@ QString QWaylandDataOffer::firstFormat() const
 
 QMimeData *QWaylandDataOffer::mimeData()
 {
-    return m_mimeData.data();
+    return m_mimeData.get();
 }
 
 Qt::DropActions QWaylandDataOffer::supportedActions() const

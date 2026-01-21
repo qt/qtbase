@@ -194,7 +194,7 @@ int QWaylandInputDevice::Pointer::idealCursorScale() const
         return 1;
     }
 
-    if (auto *s = mCursor.surface.data()) {
+    if (auto *s = mCursor.surface.get()) {
         if (s->outputScale() > 0)
             return s->outputScale();
     }
@@ -472,27 +472,27 @@ QWaylandInputDevice::Touch *QWaylandInputDevice::createTouch(QWaylandInputDevice
 
 QWaylandInputDevice::Keyboard *QWaylandInputDevice::keyboard() const
 {
-    return mKeyboard.data();
+    return mKeyboard.get();
 }
 
 QWaylandInputDevice::Pointer *QWaylandInputDevice::pointer() const
 {
-    return mPointer.data();
+    return mPointer.get();
 }
 
 QWaylandPointerGestureSwipe *QWaylandInputDevice::pointerGestureSwipe() const
 {
-    return mPointerGestureSwipe.data();
+    return mPointerGestureSwipe.get();
 }
 
 QWaylandPointerGesturePinch *QWaylandInputDevice::pointerGesturePinch() const
 {
-    return mPointerGesturePinch.data();
+    return mPointerGesturePinch.get();
 }
 
 QWaylandInputDevice::Touch *QWaylandInputDevice::touch() const
 {
-    return mTouch.data();
+    return mTouch.get();
 }
 
 void QWaylandInputDevice::handleEndDrag()
@@ -529,7 +529,7 @@ void QWaylandInputDevice::setDataControlDevice(QWaylandDataControlDeviceV1 *data
 
 QWaylandDataControlDeviceV1 *QWaylandInputDevice::dataControlDevice() const
 {
-    return mDataControlDevice.data();
+    return mDataControlDevice.get();
 }
 #endif
 
@@ -541,7 +541,7 @@ void QWaylandInputDevice::setPrimarySelectionDevice(QWaylandPrimarySelectionDevi
 
 QWaylandPrimarySelectionDeviceV1 *QWaylandInputDevice::primarySelectionDevice() const
 {
-    return mPrimarySelectionDevice.data();
+    return mPrimarySelectionDevice.get();
 }
 #endif
 
@@ -569,12 +569,12 @@ void QWaylandInputDevice::setTextInputMethod(QWaylandTextInputMethod *textInputM
 
 QWaylandTextInputInterface *QWaylandInputDevice::textInput() const
 {
-    return mTextInput.data();
+    return mTextInput.get();
 }
 
 QWaylandTextInputMethod *QWaylandInputDevice::textInputMethod() const
 {
-    return mTextInputMethod.data();
+    return mTextInputMethod.get();
 }
 
 void QWaylandInputDevice::removeMouseButtonFromState(Qt::MouseButton button)

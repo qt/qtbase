@@ -23,6 +23,8 @@
 
 #include <QtCore/QObject>
 
+#include <memory>
+
 QT_REQUIRE_CONFIG(clipboard);
 
 QT_BEGIN_NAMESPACE
@@ -51,14 +53,14 @@ public:
     explicit QWaylandDataControlOfferV1(QWaylandDisplay *display, ::zwlr_data_control_offer_v1 *offer);
     ~QWaylandDataControlOfferV1() override { destroy(); }
     void startReceiving(const QString &mimeType, int fd) override;
-    QMimeData *mimeData() override { return m_mimeData.data(); }
+    QMimeData *mimeData() override { return m_mimeData.get(); }
 
 protected:
     void zwlr_data_control_offer_v1_offer(const QString &mime_type) override;
 
 private:
     QWaylandDisplay *m_display = nullptr;
-    QScopedPointer<QWaylandMimeData> m_mimeData;
+    std::unique_ptr<QWaylandMimeData> m_mimeData;
 };
 
 class Q_WAYLANDCLIENT_EXPORT QWaylandDataControlSourceV1 : public QObject, public QtWayland::zwlr_data_control_source_v1
@@ -89,11 +91,11 @@ class QWaylandDataControlDeviceV1 : public QObject, public QtWayland::zwlr_data_
 
 public:
     ~QWaylandDataControlDeviceV1() override;
-    QWaylandDataControlOfferV1 *primarySelectionOffer() const { return m_primarySelectionOffer.data(); }
-    QWaylandDataControlOfferV1 *selectionOffer() const { return m_selectionOffer.data(); }
+    QWaylandDataControlOfferV1 *primarySelectionOffer() const { return m_primarySelectionOffer.get(); }
+    QWaylandDataControlOfferV1 *selectionOffer() const { return m_selectionOffer.get(); }
     void invalidateSelectionOffer();
-    QWaylandDataControlSourceV1 *selectionSource() const { return m_selectionSource.data(); }
-    QWaylandDataControlSourceV1 *primarySelectionSource() const { return m_primarySelectionSource.data(); }
+    QWaylandDataControlSourceV1 *selectionSource() const { return m_selectionSource.get(); }
+    QWaylandDataControlSourceV1 *primarySelectionSource() const { return m_primarySelectionSource.get(); }
     void setSelectionSource(QWaylandDataControlSourceV1 *source);
     void setPrimarySelectionSource(QWaylandDataControlSourceV1 *source);
 
@@ -106,10 +108,10 @@ protected:
 private:
     QWaylandDisplay *m_display = nullptr;
     QWaylandInputDevice *m_seat = nullptr;
-    QScopedPointer<QWaylandDataControlOfferV1> m_selectionOffer;
-    QScopedPointer<QWaylandDataControlOfferV1> m_primarySelectionOffer;
-    QScopedPointer<QWaylandDataControlSourceV1> m_selectionSource;
-    QScopedPointer<QWaylandDataControlSourceV1> m_primarySelectionSource;
+    std::unique_ptr<QWaylandDataControlOfferV1> m_selectionOffer;
+    std::unique_ptr<QWaylandDataControlOfferV1> m_primarySelectionOffer;
+    std::unique_ptr<QWaylandDataControlSourceV1> m_selectionSource;
+    std::unique_ptr<QWaylandDataControlSourceV1> m_primarySelectionSource;
     friend class QWaylandDataControlManagerV1;
 };
 

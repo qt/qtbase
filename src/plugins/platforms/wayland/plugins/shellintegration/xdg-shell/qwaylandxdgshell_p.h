@@ -17,6 +17,8 @@
 #include <QtCore/QSize>
 #include <QtGui/QRegion>
 
+#include <memory>
+
 QT_BEGIN_NAMESPACE
 
 namespace QtWayland {
@@ -108,10 +110,10 @@ private:
 
         QWaylandXdgSurface *m_xdgSurface = nullptr;
         QWaylandXdgToplevelDecorationV1 *m_decoration = nullptr;
-        QScopedPointer<QWaylandXdgExportedV2> m_exported;
-        QScopedPointer<QWaylandXdgDialogV1> m_xdgDialog;
+        std::unique_ptr<QWaylandXdgExportedV2> m_exported;
+        std::unique_ptr<QWaylandXdgDialogV1> m_xdgDialog;
 #ifndef QT_NO_SESSIONMANAGER
-        QScopedPointer<QtWayland::xx_toplevel_session_v1> m_session;
+        std::unique_ptr<QtWayland::xx_toplevel_session_v1> m_session;
 #endif
     };
 
@@ -174,9 +176,9 @@ public:
 
     QWaylandDisplay *display() const { return m_display; }
 
-    QWaylandXdgDecorationManagerV1 *decorationManager() { return m_xdgDecorationManager.data(); }
-    QWaylandXdgActivationV1 *activation() const { return m_xdgActivation.data(); }
-    QWaylandXdgExporterV2 *exporter() const { return m_xdgExporter.data(); }
+    QWaylandXdgDecorationManagerV1 *decorationManager() { return m_xdgDecorationManager.get(); }
+    QWaylandXdgActivationV1 *activation() const { return m_xdgActivation.get(); }
+    QWaylandXdgExporterV2 *exporter() const { return m_xdgExporter.get(); }
     QWaylandXdgSurface *getXdgSurface(QWaylandWindow *window);
 
 private:
@@ -185,11 +187,11 @@ private:
 
     QWaylandDisplay *m_display = nullptr;
     QtWayland::xdg_wm_base *m_xdgWmBase = nullptr;
-    QScopedPointer<QWaylandXdgDecorationManagerV1> m_xdgDecorationManager;
-    QScopedPointer<QWaylandXdgActivationV1> m_xdgActivation;
-    QScopedPointer<QWaylandXdgExporterV2> m_xdgExporter;
-    QScopedPointer<QWaylandXdgDialogWmV1> m_xdgDialogWm;
-    QScopedPointer<QWaylandXdgToplevelIconManagerV1> m_topLevelIconManager;
+    std::unique_ptr<QWaylandXdgDecorationManagerV1> m_xdgDecorationManager;
+    std::unique_ptr<QWaylandXdgActivationV1> m_xdgActivation;
+    std::unique_ptr<QWaylandXdgExporterV2> m_xdgExporter;
+    std::unique_ptr<QWaylandXdgDialogWmV1> m_xdgDialogWm;
+    std::unique_ptr<QWaylandXdgToplevelIconManagerV1> m_topLevelIconManager;
 
     friend class QWaylandXdgSurface;
 };

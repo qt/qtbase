@@ -20,7 +20,6 @@
 #include <QtWaylandClient/private/qtwaylandclientglobal_p.h>
 #include <QtWaylandClient/private/qwaylandwindow_p.h>
 
-#include <QtCore/QScopedPointer>
 #include <QSocketNotifier>
 #include <QObject>
 #include <QTimer>
@@ -38,6 +37,8 @@
 #include <QtCore/QDebug>
 #include <QtCore/QElapsedTimer>
 #include <QtCore/QPointer>
+
+#include <memory>
 
 #if QT_CONFIG(cursor)
 struct wl_cursor_image;
@@ -186,23 +187,23 @@ protected:
 #endif
 
 #if QT_CONFIG(clipboard)
-    QScopedPointer<QWaylandDataControlDeviceV1> mDataControlDevice;
+    std::unique_ptr<QWaylandDataControlDeviceV1> mDataControlDevice;
 #endif
 
 #if QT_CONFIG(wayland_client_primary_selection)
-    QScopedPointer<QWaylandPrimarySelectionDeviceV1> mPrimarySelectionDevice;
+    std::unique_ptr<QWaylandPrimarySelectionDeviceV1> mPrimarySelectionDevice;
 #endif
 
-    QScopedPointer<Keyboard> mKeyboard;
-    QScopedPointer<Pointer> mPointer;
-    QScopedPointer<QWaylandPointerGestureSwipe> mPointerGestureSwipe;
-    QScopedPointer<QWaylandPointerGesturePinch> mPointerGesturePinch;
-    QScopedPointer<Touch> mTouch;
+    std::unique_ptr<Keyboard> mKeyboard;
+    std::unique_ptr<Pointer> mPointer;
+    std::unique_ptr<QWaylandPointerGestureSwipe> mPointerGestureSwipe;
+    std::unique_ptr<QWaylandPointerGesturePinch> mPointerGesturePinch;
+    std::unique_ptr<Touch> mTouch;
 
-    QScopedPointer<QWaylandTextInputInterface> mTextInput;
-    QScopedPointer<QWaylandTextInputMethod> mTextInputMethod;
+    std::unique_ptr<QWaylandTextInputInterface> mTextInput;
+    std::unique_ptr<QWaylandTextInputMethod> mTextInputMethod;
 #if QT_CONFIG(tabletevent)
-    QScopedPointer<QWaylandTabletSeatV2> mTabletSeat;
+    std::unique_ptr<QWaylandTabletSeatV2> mTabletSeat;
 #endif
 
     uint32_t mTime = 0;
@@ -356,10 +357,10 @@ public:
     uint32_t mEnterSerial = 0;
 #if QT_CONFIG(cursor)
     struct {
-        QScopedPointer<QWaylandCursorShape> shape;
+        std::unique_ptr<QWaylandCursorShape> shape;
         QWaylandCursorTheme *theme = nullptr;
         int themeBufferScale = 0;
-        QScopedPointer<CursorSurface<QWaylandInputDevice::Pointer>> surface;
+        std::unique_ptr<CursorSurface<QWaylandInputDevice::Pointer>> surface;
         QTimer frameTimer;
         bool gotFrameCallback = false;
         bool gotTimerCallback = false;
@@ -371,7 +372,7 @@ public:
     Qt::MouseButton mLastButton = Qt::NoButton;
 
     struct FrameData {
-        QScopedPointer<QWaylandPointerEvent> event;
+        std::unique_ptr<QWaylandPointerEvent> event;
 
         QPointF delta;
         QPoint delta120;

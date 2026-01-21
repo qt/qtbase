@@ -37,6 +37,8 @@
 #include <QtGui/private/qxkbcommon_p.h>
 #endif
 
+#include <memory>
+
 struct wl_cursor_image;
 struct wp_viewport;
 
@@ -313,7 +315,7 @@ private:
     struct wl_display *mDisplay = nullptr;
     std::unique_ptr<EventThread> m_eventThread;
     wl_event_queue *m_frameEventQueue = nullptr;
-    QScopedPointer<EventThread> m_frameEventQueueThread;
+    std::unique_ptr<EventThread> m_frameEventQueueThread;
     QList<QWaylandScreen *> mWaitingScreens;
     QList<QWaylandScreen *> mScreens;
     QPlatformPlaceholderScreen *mPlaceholderScreen = nullptr;
@@ -337,7 +339,7 @@ private:
     };
     FindExistingCursorThemeResult findExistingCursorTheme(const QString &name,
                                                           int pixelSize) const noexcept;
-    QScopedPointer<QWaylandCursor> mCursor;
+    std::unique_ptr<QWaylandCursor> mCursor;
 #endif
 
     struct GlobalHolder

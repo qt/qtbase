@@ -50,12 +50,12 @@ QWaylandDataDevice::~QWaylandDataDevice()
 
 QWaylandDataOffer *QWaylandDataDevice::selectionOffer() const
 {
-    return m_selectionOffer.data();
+    return m_selectionOffer.get();
 }
 
 void QWaylandDataDevice::invalidateSelectionOffer()
 {
-    if (m_selectionOffer.isNull())
+    if (!m_selectionOffer)
         return;
 
     m_selectionOffer.reset();
@@ -67,7 +67,7 @@ void QWaylandDataDevice::invalidateSelectionOffer()
 
 QWaylandDataSource *QWaylandDataDevice::selectionSource() const
 {
-    return m_selectionSource.data();
+    return m_selectionSource.get();
 }
 
 void QWaylandDataDevice::setSelectionSource(QWaylandDataSource *source)
@@ -81,7 +81,7 @@ void QWaylandDataDevice::setSelectionSource(QWaylandDataSource *source)
 #if QT_CONFIG(draganddrop)
 QWaylandDataOffer *QWaylandDataDevice::dragOffer() const
 {
-    return m_dragOffer.data();
+    return m_dragOffer.get();
 }
 
 bool QWaylandDataDevice::startDrag(QMimeData *mimeData, Qt::DropActions supportedActions, QWaylandWindow *icon)
@@ -110,8 +110,10 @@ bool QWaylandDataDevice::startDrag(QMimeData *mimeData, Qt::DropActions supporte
     if (version() >= 3)
         m_dragSource->set_actions(dropActionsToWl(supportedActions));
 
-    connect(m_dragSource.data(), &QWaylandDataSource::cancelled, this, &QWaylandDataDevice::dragSourceCancelled);
-    connect(m_dragSource.data(), &QWaylandDataSource::dndResponseUpdated, this, [this](bool accepted, Qt::DropAction action) {
+    connect(m_dragSource.get(), &QWaylandDataSource::cancelled,
+            this, &QWaylandDataDevice::dragSourceCancelled);
+    connect(m_dragSource.get(), &QWaylandDataSource::dndResponseUpdated,
+            this, [this](bool accepted, Qt::DropAction action) {
             auto drag = static_cast<QWaylandDrag *>(QGuiApplicationPrivate::platformIntegration()->drag());
             if (!drag->currentDrag()) {
                 return;
@@ -124,8 +126,8 @@ bool QWaylandDataDevice::startDrag(QMimeData *mimeData, Qt::DropActions supporte
                 drag->setResponse(response);
             }
     });
-    connect(m_dragSource.data(), &QWaylandDataSource::dndDropped, this,
-            [this](bool accepted, Qt::DropAction action) {
+    connect(m_dragSource.get(), &QWaylandDataSource::dndDropped,
+            this, [this](bool accepted, Qt::DropAction action) {
                 QPlatformDropQtResponse response(accepted, action);
                 if (m_toplevelDrag) {
                     // If the widget was dropped but the drag not accepted it
@@ -138,7 +140,7 @@ bool QWaylandDataDevice::startDrag(QMimeData *mimeData, Qt::DropActions supporte
                 static_cast<QWaylandDrag *>(QGuiApplicationPrivate::platformIntegration()->drag())
                         ->setDropResponse(response);
             });
-    connect(m_dragSource.data(), &QWaylandDataSource::finished, this, [this]() {
+    connect(m_dragSource.get(), &QWaylandDataSource::finished, this, [this]() {
         static_cast<QWaylandDrag *>(QGuiApplicationPrivate::platformIntegration()->drag())->finishDrag();
         if (m_toplevelDrag) {
             m_toplevelDrag->destroy();
