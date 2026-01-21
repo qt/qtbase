@@ -112,8 +112,8 @@ static void generateDataFromFile(const QString &fname, const QSet<QString> &skip
                 continue;
             }
             bool ok = true;
-            uint ucs4 = part.toInt(&ok, 16);
-            QVERIFY(ok && ucs4 > 0);
+            uint ucs4 = part.toUInt(&ok, 16);
+            QVERIFY(ok);
             if (QChar::requiresSurrogates(ucs4)) {
                 testString.append(QChar::highSurrogate(ucs4));
                 testString.append(QChar::lowSurrogate(ucs4));
@@ -214,7 +214,7 @@ void tst_QTextBoundaryFinder::graphemeBoundariesDefault_data()
 {
 
     // QTBUG-121907: We are not using Unicode grapheme segmentation for Indic scripts.
-    QSet<QString> skipSet = {u"ConjunctLinkingScripts_LinkingConsonant"_s};
+    QSet<QString> skipSet = {u"Extend_ConjunctLinker"_s};
     generateDataFromFile("data/GraphemeBreakTest.txt", skipSet);
 }
 

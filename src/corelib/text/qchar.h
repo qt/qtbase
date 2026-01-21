@@ -402,6 +402,12 @@ public:
         Script_Todhri,
         Script_TuluTigalari,
 
+        // Unicode 17.0 additions
+        Script_Sidetic,
+        Script_TaiYo,
+        Script_TolongSiki,
+        Script_BeriaErfe,
+
         ScriptCount
     };
 
@@ -497,6 +503,7 @@ public:
         Unicode_15_0,
         Unicode_15_1,
         Unicode_16_0,
+        Unicode_17_0,
     };
 
     Category category() const noexcept { return QChar::category(char32_t(ucs)); }

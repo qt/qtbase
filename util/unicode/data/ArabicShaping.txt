@@ -1,6 +1,6 @@
-# ArabicShaping-16.0.0.txt
-# Date: 2024-07-30
-# © 2024 Unicode®, Inc.
+# ArabicShaping-17.0.0.txt
+# Date: 2025-08-14
+# © 2025 Unicode®, Inc.
 # Unicode and the Unicode Logo are registered trademarks of Unicode, Inc. in the U.S. and other countries.
 # For terms of use and license, see https://www.unicode.org/terms_of_use.html
 #
@@ -12,22 +12,22 @@
 # shaping, repeating in machine readable form the information
 # exemplified in various tables of The Unicode Standard core specification.
 #
-# This file also defines Joining_Type values for
-# Mongolian, Phags-pa, Psalter Pahlavi, Sogdian, Old Uyghur, Chorasmian, 
-# and Adlam positional shaping,
-# and Joining_Type and Joining_Group values for Hanifi Rohingya positional shaping,
-# which are not listed in tables in the core specification.
+# This file also defines Joining_Type values for Mongolian, Phags-pa,
+# Psalter Pahlavi, Sogdian, Old Uyghur, Chorasmian, and Adlam positional
+# shaping, and Joining_Type and Joining_Group values for Hanifi Rohingya
+# positional shaping, which are not listed in tables in the core
+# specification.
 #
 # Script          Section  Table(s)
 #
-# Arabic           9.2      9-3, 9-4, 9-5, 9-7, 9-8, 9-9, 9-10, 9-11
+# Arabic           9.2      9-3, 9-4, 9-5, 9-7, 9-8, 9-9, 9-10, 9-11, 9-13
 # Syriac           9.3      9-15, 9-16, 9-17, 9-18, 9-19
-# Mandaic          9.5      9-21, 9-22
+# Mandaic          9.5      9-22, 9-23
 # Manichaean      10.5      10-4, 10-5, 10-6, 10-7
 # Psalter Pahlavi 10.6      --
 # Chorasmian      10.8      --
 # Mongolian       13.5      --
-# Phags-pa        14.4      --
+# Phags-pa        14.4      14-7
 # Sogdian         14.10     --
 # Old Uyghur      14.11     --
 # Hanifi Rohingya 16.14     --
@@ -482,6 +482,7 @@
 088C; TAH WITH 3 DOTS BELOW; D; TAH
 088D; KEHEH WITH VERTICAL 2 DOTS BELOW; D; GAF
 088E; VERTICAL TAIL; R; VERTICAL TAIL
+088F; DOTLESS NOON WITH SEPARATE RING ABOVE; D; NOON
 0890; ARABIC POUND MARK ABOVE; U; No_Joining_Group
 0891; ARABIC PIASTRE MARK ABOVE; U; No_Joining_Group
 
@@ -850,6 +851,8 @@ A873; PHAGS-PA CANDRABINDU; U; No_Joining_Group
 10EC2; DAL WITH VERTICAL 2 DOTS BELOW; R; DAL
 10EC3; TAH WITH VERTICAL 2 DOTS BELOW; D; TAH
 10EC4; KAF WITH VERTICAL 2 DOTS BELOW; D; KAF
+10EC6; THIN NOON; D; THIN NOON
+10EC7; DOTLESS YEH WITH 4 DOTS BELOW; D; YEH
 
 # Sogdian Characters
 
@@ -942,74 +945,74 @@ A873; PHAGS-PA CANDRABINDU; U; No_Joining_Group
 
 # Adlam Characters
 
-1E900;ADLAM CAPITAL ALIF; D; No_Joining_Group
-1E901;ADLAM CAPITAL DAALI; D; No_Joining_Group
-1E902;ADLAM CAPITAL LAAM; D; No_Joining_Group
-1E903;ADLAM CAPITAL MIIM; D; No_Joining_Group
-1E904;ADLAM CAPITAL BA; D; No_Joining_Group
-1E905;ADLAM CAPITAL SINNYIIYHE; D; No_Joining_Group
-1E906;ADLAM CAPITAL PE; D; No_Joining_Group
-1E907;ADLAM CAPITAL BHE; D; No_Joining_Group
-1E908;ADLAM CAPITAL RA; D; No_Joining_Group
-1E909;ADLAM CAPITAL E; D; No_Joining_Group
-1E90A;ADLAM CAPITAL FA; D; No_Joining_Group
-1E90B;ADLAM CAPITAL I; D; No_Joining_Group
-1E90C;ADLAM CAPITAL O; D; No_Joining_Group
-1E90D;ADLAM CAPITAL DHA; D; No_Joining_Group
-1E90E;ADLAM CAPITAL YHE; D; No_Joining_Group
-1E90F;ADLAM CAPITAL WAW; D; No_Joining_Group
-1E910;ADLAM CAPITAL NUN; D; No_Joining_Group
-1E911;ADLAM CAPITAL KAF; D; No_Joining_Group
-1E912;ADLAM CAPITAL YA; D; No_Joining_Group
-1E913;ADLAM CAPITAL U; D; No_Joining_Group
-1E914;ADLAM CAPITAL JIIM; D; No_Joining_Group
-1E915;ADLAM CAPITAL CHI; D; No_Joining_Group
-1E916;ADLAM CAPITAL HA; D; No_Joining_Group
-1E917;ADLAM CAPITAL QAAF; D; No_Joining_Group
-1E918;ADLAM CAPITAL GA; D; No_Joining_Group
-1E919;ADLAM CAPITAL NYA; D; No_Joining_Group
-1E91A;ADLAM CAPITAL TU; D; No_Joining_Group
-1E91B;ADLAM CAPITAL NHA; D; No_Joining_Group
-1E91C;ADLAM CAPITAL VA; D; No_Joining_Group
-1E91D;ADLAM CAPITAL KHA; D; No_Joining_Group
-1E91E;ADLAM CAPITAL GBE; D; No_Joining_Group
-1E91F;ADLAM CAPITAL ZAL; D; No_Joining_Group
-1E920;ADLAM CAPITAL KPO; D; No_Joining_Group
-1E921;ADLAM CAPITAL SHA; D; No_Joining_Group
-1E922;ADLAM SMALL ALIF; D; No_Joining_Group
-1E923;ADLAM SMALL DAALI; D; No_Joining_Group
-1E924;ADLAM SMALL LAAM; D; No_Joining_Group
-1E925;ADLAM SMALL MIIM; D; No_Joining_Group
-1E926;ADLAM SMALL BA; D; No_Joining_Group
-1E927;ADLAM SMALL SINNYIIYHE; D; No_Joining_Group
-1E928;ADLAM SMALL PE; D; No_Joining_Group
-1E929;ADLAM SMALL BHE; D; No_Joining_Group
-1E92A;ADLAM SMALL RA; D; No_Joining_Group
-1E92B;ADLAM SMALL E; D; No_Joining_Group
-1E92C;ADLAM SMALL FA; D; No_Joining_Group
-1E92D;ADLAM SMALL I; D; No_Joining_Group
-1E92E;ADLAM SMALL O; D; No_Joining_Group
-1E92F;ADLAM SMALL DHA; D; No_Joining_Group
-1E930;ADLAM SMALL YHE; D; No_Joining_Group
-1E931;ADLAM SMALL WAW; D; No_Joining_Group
-1E932;ADLAM SMALL NUN; D; No_Joining_Group
-1E933;ADLAM SMALL KAF; D; No_Joining_Group
-1E934;ADLAM SMALL YA; D; No_Joining_Group
-1E935;ADLAM SMALL U; D; No_Joining_Group
-1E936;ADLAM SMALL JIIM; D; No_Joining_Group
-1E937;ADLAM SMALL CHI; D; No_Joining_Group
-1E938;ADLAM SMALL HA; D; No_Joining_Group
-1E939;ADLAM SMALL QAAF; D; No_Joining_Group
-1E93A;ADLAM SMALL GA; D; No_Joining_Group
-1E93B;ADLAM SMALL NYA; D; No_Joining_Group
-1E93C;ADLAM SMALL TU; D; No_Joining_Group
-1E93D;ADLAM SMALL NHA; D; No_Joining_Group
-1E93E;ADLAM SMALL VA; D; No_Joining_Group
-1E93F;ADLAM SMALL KHA; D; No_Joining_Group
-1E940;ADLAM SMALL GBE; D; No_Joining_Group
-1E941;ADLAM SMALL ZAL; D; No_Joining_Group
-1E942;ADLAM SMALL KPO; D; No_Joining_Group
-1E943;ADLAM SMALL SHA; D; No_Joining_Group
-1E94B;ADLAM NASALIZATION MARK; T; No_Joining_Group
+1E900; ADLAM CAPITAL ALIF; D; No_Joining_Group
+1E901; ADLAM CAPITAL DAALI; D; No_Joining_Group
+1E902; ADLAM CAPITAL LAAM; D; No_Joining_Group
+1E903; ADLAM CAPITAL MIIM; D; No_Joining_Group
+1E904; ADLAM CAPITAL BA; D; No_Joining_Group
+1E905; ADLAM CAPITAL SINNYIIYHE; D; No_Joining_Group
+1E906; ADLAM CAPITAL PE; D; No_Joining_Group
+1E907; ADLAM CAPITAL BHE; D; No_Joining_Group
+1E908; ADLAM CAPITAL RA; D; No_Joining_Group
+1E909; ADLAM CAPITAL E; D; No_Joining_Group
+1E90A; ADLAM CAPITAL FA; D; No_Joining_Group
+1E90B; ADLAM CAPITAL I; D; No_Joining_Group
+1E90C; ADLAM CAPITAL O; D; No_Joining_Group
+1E90D; ADLAM CAPITAL DHA; D; No_Joining_Group
+1E90E; ADLAM CAPITAL YHE; D; No_Joining_Group
+1E90F; ADLAM CAPITAL WAW; D; No_Joining_Group
+1E910; ADLAM CAPITAL NUN; D; No_Joining_Group
+1E911; ADLAM CAPITAL KAF; D; No_Joining_Group
+1E912; ADLAM CAPITAL YA; D; No_Joining_Group
+1E913; ADLAM CAPITAL U; D; No_Joining_Group
+1E914; ADLAM CAPITAL JIIM; D; No_Joining_Group
+1E915; ADLAM CAPITAL CHI; D; No_Joining_Group
+1E916; ADLAM CAPITAL HA; D; No_Joining_Group
+1E917; ADLAM CAPITAL QAAF; D; No_Joining_Group
+1E918; ADLAM CAPITAL GA; D; No_Joining_Group
+1E919; ADLAM CAPITAL NYA; D; No_Joining_Group
+1E91A; ADLAM CAPITAL TU; D; No_Joining_Group
+1E91B; ADLAM CAPITAL NHA; D; No_Joining_Group
+1E91C; ADLAM CAPITAL VA; D; No_Joining_Group
+1E91D; ADLAM CAPITAL KHA; D; No_Joining_Group
+1E91E; ADLAM CAPITAL GBE; D; No_Joining_Group
+1E91F; ADLAM CAPITAL ZAL; D; No_Joining_Group
+1E920; ADLAM CAPITAL KPO; D; No_Joining_Group
+1E921; ADLAM CAPITAL SHA; D; No_Joining_Group
+1E922; ADLAM SMALL ALIF; D; No_Joining_Group
+1E923; ADLAM SMALL DAALI; D; No_Joining_Group
+1E924; ADLAM SMALL LAAM; D; No_Joining_Group
+1E925; ADLAM SMALL MIIM; D; No_Joining_Group
+1E926; ADLAM SMALL BA; D; No_Joining_Group
+1E927; ADLAM SMALL SINNYIIYHE; D; No_Joining_Group
+1E928; ADLAM SMALL PE; D; No_Joining_Group
+1E929; ADLAM SMALL BHE; D; No_Joining_Group
+1E92A; ADLAM SMALL RA; D; No_Joining_Group
+1E92B; ADLAM SMALL E; D; No_Joining_Group
+1E92C; ADLAM SMALL FA; D; No_Joining_Group
+1E92D; ADLAM SMALL I; D; No_Joining_Group
+1E92E; ADLAM SMALL O; D; No_Joining_Group
+1E92F; ADLAM SMALL DHA; D; No_Joining_Group
+1E930; ADLAM SMALL YHE; D; No_Joining_Group
+1E931; ADLAM SMALL WAW; D; No_Joining_Group
+1E932; ADLAM SMALL NUN; D; No_Joining_Group
+1E933; ADLAM SMALL KAF; D; No_Joining_Group
+1E934; ADLAM SMALL YA; D; No_Joining_Group
+1E935; ADLAM SMALL U; D; No_Joining_Group
+1E936; ADLAM SMALL JIIM; D; No_Joining_Group
+1E937; ADLAM SMALL CHI; D; No_Joining_Group
+1E938; ADLAM SMALL HA; D; No_Joining_Group
+1E939; ADLAM SMALL QAAF; D; No_Joining_Group
+1E93A; ADLAM SMALL GA; D; No_Joining_Group
+1E93B; ADLAM SMALL NYA; D; No_Joining_Group
+1E93C; ADLAM SMALL TU; D; No_Joining_Group
+1E93D; ADLAM SMALL NHA; D; No_Joining_Group
+1E93E; ADLAM SMALL VA; D; No_Joining_Group
+1E93F; ADLAM SMALL KHA; D; No_Joining_Group
+1E940; ADLAM SMALL GBE; D; No_Joining_Group
+1E941; ADLAM SMALL ZAL; D; No_Joining_Group
+1E942; ADLAM SMALL KPO; D; No_Joining_Group
+1E943; ADLAM SMALL SHA; D; No_Joining_Group
+1E94B; ADLAM NASALIZATION MARK; T; No_Joining_Group
 
 # EOF
