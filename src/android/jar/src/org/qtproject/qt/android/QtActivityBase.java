@@ -152,12 +152,16 @@ public class QtActivityBase extends Activity
     private void showFatalFinishingToast() {
         Resources resources = getResources();
         String packageName = getPackageName();
-        @SuppressLint("DiscouragedApi") int id = resources.getIdentifier(
-                "fatal_error_msg", "string", packageName);
-        String message = resources.getString(id);
-        Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+        String message = null;
+        try {
+            @SuppressLint("DiscouragedApi")
+            int id = resources.getIdentifier("fatal_error_msg", "string", packageName);
+            message = resources.getString(id);
+            Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+        } catch (Resources.NotFoundException ignored) { }
         Intent fatalIntent = new Intent();
-        fatalIntent.putExtra(EXTRA_FATAL_MESSAGE, message);
+        if (message != null)
+            fatalIntent.putExtra(EXTRA_FATAL_MESSAGE, message);
         setResult(Activity.RESULT_CANCELED, fatalIntent);
         super.finish();
     }
