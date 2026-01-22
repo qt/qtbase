@@ -14,11 +14,5 @@ qt_internal_extend_target(embeddedwindows CONDITION WIN32
         app.manifest
 )
 
-if(QT_FEATURE_xcb)
-    target_link_libraries(embeddedwindows PRIVATE XCB::XCB)
-endif()
-
-if(APPLE)
-    enable_language(OBJCXX)
-    set_source_files_properties(main.cpp PROPERTIES LANGUAGE OBJCXX)
-endif()
+include(../../shared/nativewindow.cmake)
+target_link_libraries(embeddedwindows PRIVATE nativewindow)
