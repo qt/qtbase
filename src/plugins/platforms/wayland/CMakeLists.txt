@@ -35,6 +35,7 @@ qt_internal_add_module(WaylandClient
     SOURCES
         shared/qwaylandinputmethodeventbuilder.cpp shared/qwaylandinputmethodeventbuilder_p.h
         shared/qwaylandmimehelper.cpp shared/qwaylandmimehelper_p.h
+        shared/qwaylandpipewritehelper.cpp shared/qwaylandpipewritehelper_p.h
         shared/qwaylandsharedmemoryformathelper_p.h
         global/qwaylandclientextension.cpp global/qwaylandclientextension.h global/qwaylandclientextension_p.h
         hardwareintegration/qwaylandclientbufferintegration.cpp hardwareintegration/qwaylandclientbufferintegration_p.h

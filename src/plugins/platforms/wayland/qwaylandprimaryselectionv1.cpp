@@ -5,15 +5,16 @@
 #include "qwaylandinputdevice_p.h"
 #include "qwaylanddisplay_p.h"
 #include "qwaylandmimehelper_p.h"
+#include "qwaylandpipewritehelper_p.h"
 
 #include <QtGui/private/qguiapplication_p.h>
 
 #include <qpa/qplatformclipboard.h>
 
-#include <signal.h>
 #include <unistd.h>
 
 QT_BEGIN_NAMESPACE
+using namespace std::chrono;
 
 namespace QtWaylandClient {
 
@@ -119,17 +120,19 @@ void QWaylandPrimarySelectionSourceV1::zwp_primary_selection_source_v1_send(cons
 {
     QByteArray content = QWaylandMimeHelper::getByteArray(m_mimeData, mime_type);
     if (!content.isEmpty()) {
-        // Create a sigpipe handler that does nothing, or clients may be forced to terminate
-        // if the pipe is closed in the other end.
-        struct sigaction action, oldAction;
-        action.sa_handler = SIG_IGN;
-        sigemptyset (&action.sa_mask);
-        action.sa_flags = 0;
-
-        sigaction(SIGPIPE, &action, &oldAction);
-        ssize_t unused = write(fd, content.constData(), size_t(content.size()));
-        Q_UNUSED(unused);
-        sigaction(SIGPIPE, &oldAction, nullptr);
+        switch (QWaylandPipeWriteHelper::safeWriteWithTimeout(fd, content.constData(), content.size(), PIPE_BUF, 5s)) {
+            case QWaylandPipeWriteHelper::SafeWriteResult::Ok:
+                break;
+            case QWaylandPipeWriteHelper::SafeWriteResult::Timeout:
+                qWarning() << "QWaylandPrimarySelectionSourceV1: timeout writing to pipe";
+                break;
+            case QWaylandPipeWriteHelper::SafeWriteResult::Closed:
+                qWarning() << "QWaylandPrimarySelectionSourceV1: peer closed pipe";
+                break;
+            case QWaylandPipeWriteHelper::SafeWriteResult::Error:
+                qWarning() << "QWaylandPrimarySelectionSourceV1: write() failed";
+                break;
+        }
     }
     close(fd);
 }
