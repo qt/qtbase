@@ -44,19 +44,49 @@ NativeWindow::NativeWindow()
 
 NativeWindow::~NativeWindow()
 {
-    if (m_handle.window.contentView == m_handle)
-        [m_handle.window close];
-
+    setVisible(false);
     [m_handle release];
+}
+
+void NativeWindow::setVisible(bool visible)
+{
+    m_handle.hidden = !visible;
+
+#if defined(Q_OS_MACOS)
+    if (visible && !m_handle.window) {
+        NSWindow *window = [[NSWindow alloc] initWithContentRect:NSZeroRect
+            styleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskResizable | NSWindowStyleMaskClosable
+            backing:NSBackingStoreBuffered defer:YES];
+
+        auto screenHeight = NSScreen.mainScreen.frame.size.height;
+        auto frameRect = [window frameRectForContentRect:m_handle.frame];
+        auto pos = frameRect.origin; auto size = frameRect.size;
+        [window setFrame:NSMakeRect(
+            // Account for non-flipped coordinate system for NSWindows
+            pos.x, screenHeight - pos.y - size.height, size.width, size.height)
+            display:YES animate:NO];
+
+        window.contentView = m_handle;
+        [window makeKeyAndOrderFront:nil];
+    } else if (!visible && m_handle.window.contentView == m_handle) {
+        [m_handle.window close];
+    }
+#endif
 }
 
 void NativeWindow::setGeometry(const QRect &rect)
 {
+    if (m_handle.window.contentView == m_handle)
+        return; // Not supported for top level
+
     m_handle.frame = QRectF(rect).toCGRect();
 }
 
 QRect NativeWindow::geometry() const
 {
+    if (m_handle.window.contentView == m_handle)
+        return {}; // Not supported for top level
+
     return QRectF::fromCGRect(m_handle.frame).toRect();
 }
 

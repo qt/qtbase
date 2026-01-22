@@ -7,6 +7,14 @@
 
 #if defined(Q_OS_WIN)
 
+struct ScopedDpiAwareness {
+    ScopedDpiAwareness(DPI_AWARENESS_CONTEXT awareness)
+    { m_oldAwareness = SetThreadDpiAwarenessContext(awareness); }
+    ~ScopedDpiAwareness() { SetThreadDpiAwarenessContext(m_oldAwareness); }
+private:
+    DPI_AWARENESS_CONTEXT m_oldAwareness;
+};
+
 NativeWindow::NativeWindow()
 {
     static const LPCWSTR className = []{
@@ -28,13 +36,43 @@ NativeWindow::~NativeWindow()
     DestroyWindow(m_handle);
 }
 
+void NativeWindow::setVisible(bool visible)
+{
+    if (visible && GetAncestor(m_handle, GA_PARENT) == GetDesktopWindow()) {
+        RECT windowRect;
+        GetWindowRect(m_handle, &windowRect);
+
+        LONG style = GetWindowLong(m_handle, GWL_STYLE);
+        style &= ~WS_POPUP;
+        style |= WS_OVERLAPPEDWINDOW;
+        SetWindowLong(m_handle, GWL_STYLE, style);
+
+        RECT adjustedRect = windowRect;
+        AdjustWindowRectEx(&adjustedRect, style, false,
+            GetWindowLong(m_handle, GWL_EXSTYLE));
+
+        SetWindowPos(m_handle, nullptr,
+            // Adjust x position to keep client area left edge in the same place,
+            // to match Qt's apparent behavior. FIXME: Check if Qt is correct.
+            adjustedRect.left, windowRect.top,
+            adjustedRect.right - adjustedRect.left,
+            adjustedRect.bottom - adjustedRect.top,
+            SWP_FRAMECHANGED | SWP_NOZORDER | SWP_NOACTIVATE
+        );
+    }
+    ShowWindow(m_handle, visible ? SW_SHOW : SW_HIDE);
+}
+
 void NativeWindow::setGeometry(const QRect &rect)
 {
+    ScopedDpiAwareness dpiAwareness(DPI_AWARENESS_CONTEXT_UNAWARE);
     MoveWindow(m_handle, rect.x(), rect.y(), rect.width(), rect.height(), false);
 }
 
 QRect NativeWindow::geometry() const
 {
+    ScopedDpiAwareness dpiAwareness(DPI_AWARENESS_CONTEXT_UNAWARE);
+
     WINDOWPLACEMENT wp;
     wp.length = sizeof(WINDOWPLACEMENT);
     if (GetWindowPlacement(m_handle, &wp)) {
@@ -95,6 +133,15 @@ NativeWindow::~NativeWindow()
     xcb_destroy_window(connection, m_handle);
 }
 
+void NativeWindow::setVisible(bool visible)
+{
+    if (visible)
+        xcb_map_window(connection, m_handle);
+    else
+        xcb_unmap_window(connection, m_handle);
+    xcb_flush(connection);
+}
+
 void NativeWindow::setGeometry(const QRect &rect)
 {
     const quint32 mask = XCB_CONFIG_WINDOW_X | XCB_CONFIG_WINDOW_Y
@@ -102,6 +149,12 @@ void NativeWindow::setGeometry(const QRect &rect)
     const qint32 values[] = { rect.x(), rect.y(), rect.width(), rect.height() };
     xcb_configure_window(connection, m_handle, mask,
         reinterpret_cast<const quint32*>(values));
+
+    // Ask the WM to respect out geometry on show
+    xcb_size_hints_t hints = {};
+    xcb_icccm_size_hints_set_position(&hints, true, rect.x(), rect.y());
+    xcb_icccm_size_hints_set_size(&hints, true, rect.width(), rect.height());
+    xcb_icccm_set_wm_normal_hints(connection, m_handle, &hints);
 
     xcb_flush(connection);
 }
@@ -153,6 +206,12 @@ NativeWindow::NativeWindow()
 
 NativeWindow::~NativeWindow()
 {
+}
+
+void NativeWindow::setVisible(bool visible)
+{
+    m_handle.callMethod<void>("setVisibility",
+        visible ? 0 /* View.VISIBLE */ : 2 /* View.GONE */);
 }
 
 NativeWindow::operator WId() const

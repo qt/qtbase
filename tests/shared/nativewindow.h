@@ -18,6 +18,7 @@ Q_FORWARD_DECLARE_OBJC_CLASS(UIView);
 #  include <QtCore/qt_windows.h>
 #elif QT_CONFIG(xcb)
 #  include <xcb/xcb.h>
+#  include <xcb/xcb_icccm.h>
 #elif defined(ANDROID)
 #  include <QtCore/qjniobject.h>
 #  include <QtCore/qjnitypes.h>
@@ -44,6 +45,8 @@ public:
 
     NativeWindow();
     ~NativeWindow();
+
+    void setVisible(bool visible);
 
     operator WId() const;
     WId parentWinId() const;

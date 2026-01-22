@@ -18,6 +18,7 @@ target_sources(nativewindow INTERFACE ${CMAKE_CURRENT_LIST_DIR}/nativewindow.cpp
 
 if(QT_FEATURE_xcb)
     target_link_libraries(nativewindow INTERFACE XCB::XCB)
+    target_link_libraries(nativewindow INTERFACE XCB::ICCCM)
 endif()
 
 if(APPLE)
