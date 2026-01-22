@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 add_subdirectory(initmain)
+add_subdirectory(outformat)
 add_subdirectory(qsignalspy)
 add_subdirectory(tostring)
 
