@@ -2168,7 +2168,11 @@ bool QRhiVulkan::createOffscreenRenderPass(QVkRenderPassDescriptor *rpD,
     selfDependency.dstStageMask    = stageMask;
     selfDependency.srcAccessMask   = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
     selfDependency.dstAccessMask   = selfDependency.srcAccessMask;
+#ifdef VK_VERSION_1_1
+    selfDependency.dependencyFlags = rpD->multiViewCount >= 2 ? VK_DEPENDENCY_VIEW_LOCAL_BIT : 0;
+#else
     selfDependency.dependencyFlags = 0;
+#endif
     rpD->subpassDeps.append(selfDependency);
 
     // rpD->subpassDeps stays empty: don't yet know the correct initial/final
