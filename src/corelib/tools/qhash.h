@@ -1364,9 +1364,25 @@ public:
     {
         return find(key);
     }
+
     iterator insert(const Key &key, const T &value)
     {
         return emplace(key, value);
+    }
+
+    iterator insert(const Key &key, T &&value)
+    {
+        return emplace(key, std::move(value));
+    }
+
+    iterator insert(Key &&key, const T &value)
+    {
+        return emplace(std::move(key), value);
+    }
+
+    iterator insert(Key &&key, T &&value)
+    {
+        return emplace(std::move(key), std::move(value));
     }
 
     void insert(const QHash &hash)
@@ -2290,6 +2306,21 @@ public:
     iterator insert(const Key &key, const T &value)
     {
         return emplace(key, value);
+    }
+
+    iterator insert(const Key &key, T &&value)
+    {
+        return emplace(key, std::move(value));
+    }
+
+    iterator insert(Key &&key, const T &value)
+    {
+        return emplace(std::move(key), value);
+    }
+
+    iterator insert(Key &&key, T &&value)
+    {
+        return emplace(std::move(key), std::move(value));
     }
 
     template <typename ...Args>
