@@ -765,7 +765,10 @@ QNetworkReply *QRestAccessManagerPrivate::createActiveRequest(QNetworkReply *rep
     Q_Q(QRestAccessManager);
     Q_ASSERT(reply);
     QtPrivate::SlotObjSharedPtr slotPtr(std::move(slot)); // adopts
-    activeRequests.emplace(reply, CallerInfo{contextObject, std::move(slotPtr)});
+    [[maybe_unused]] const auto [_, inserted] =
+        activeRequests.try_emplace(reply, CallerInfo{contextObject, std::move(slotPtr)});
+    Q_ASSERT(inserted); // if this fails, we have an ABA problem...
+
     // The signal connections below are made to 'q' to avoid stray signal
     // handling upon its destruction while requests were still in progress
 
