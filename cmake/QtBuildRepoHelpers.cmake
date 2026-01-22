@@ -512,7 +512,7 @@ function(qt_internal_show_extra_ide_sources)
 
     # changelogs
     set(changelogs_target_name ${qt_repo_targets_name}_changelogs)
-    file(GLOB change_logs_files LIST_DIRECTORIES false dist/*)
+    file(GLOB change_logs_files LIST_DIRECTORIES false dist/changes-*)
     if(change_logs_files)
         source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/dist" FILES ${change_logs_files})
         add_custom_target(${changelogs_target_name} SOURCES ${change_logs_files})
