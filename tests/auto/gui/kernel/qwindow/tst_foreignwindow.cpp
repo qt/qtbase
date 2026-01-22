@@ -7,7 +7,7 @@
 #include <private/qguiapplication_p.h>
 #include <qpa/qplatformintegration.h>
 
-#include "../../../../shared/nativewindow.h"
+#include "nativewindow.h"
 
 class tst_ForeignWindow: public QObject
 {
