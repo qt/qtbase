@@ -2325,6 +2325,14 @@ size_t qHash(long double key, size_t seed) noexcept
 */
 
 /*!
+    \fn template <class Key, class T> QHash<Key, T>::iterator QHash<Key, T>::insert(const Key &key, T &&value)
+    \fn template <class Key, class T> QHash<Key, T>::iterator QHash<Key, T>::insert(Key &&key, const T &value)
+    \fn template <class Key, class T> QHash<Key, T>::iterator QHash<Key, T>::insert(Key &&key, T &&value)
+    \since 6.11
+    \overload
+*/
+
+/*!
     \fn template <class Key, class T> template <typename ...Args> QHash<Key, T>::iterator QHash<Key, T>::emplace(const Key &key, Args&&... args)
     \fn template <class Key, class T> template <typename ...Args> QHash<Key, T>::iterator QHash<Key, T>::emplace(Key &&key, Args&&... args)
 
@@ -3162,6 +3170,14 @@ size_t qHash(long double key, size_t seed) noexcept
     \include qhash.cpp qhash-iterator-invalidation-func-desc
 
     \sa replace()
+*/
+
+/*!
+    \fn template <class Key, class T> QMultiHash<Key, T>::iterator QMultiHash<Key, T>::insert(const Key &key, T &&value)
+    \fn template <class Key, class T> QMultiHash<Key, T>::iterator QMultiHash<Key, T>::insert(Key &&key, const T &value)
+    \fn template <class Key, class T> QMultiHash<Key, T>::iterator QMultiHash<Key, T>::insert(Key &&key, T &&value)
+    \since 6.11
+    \overload
 */
 
 /*!
