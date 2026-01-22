@@ -249,13 +249,23 @@ public:
         explicit ConstReference(Indirect &&referred)
                 noexcept(std::is_nothrow_move_constructible_v<Indirect>)
             : m_referred(std::move(referred)) {}
-        ConstReference(const ConstReference &) = default;
-        ConstReference(ConstReference &&) = default;
+        ConstReference(const ConstReference &)
+                noexcept(std::is_nothrow_copy_constructible_v<Indirect>) = default;
+
+        // Move-constructing a reference from another one is not valid C++. You can't do this:
+        //     A a;
+        //     const A &ra(a);
+        //     const A &rb(std::move(ra));
+        ConstReference(ConstReference &&) = delete;
 
         ConstReference(const Reference<Indirect> &)
                 noexcept(std::is_nothrow_copy_constructible_v<Indirect>);
-        ConstReference(Reference<Indirect> &&)
-                noexcept(std::is_nothrow_move_constructible_v<Indirect>);
+
+        // Move-constructing a reference from another one is not valid C++. You can't do this:
+        //     A a;
+        //     A &ra(a);
+        //     const A &rb(std::move(ra));
+        // ConstReference(Reference<Indirect> &&) = delete;
 
         ~ConstReference() = default;
         ConstReference &operator=(const ConstReference &value) = delete;
@@ -272,7 +282,7 @@ public:
         friend class ConstReference<Indirect>;
         Indirect m_referred;
 
-        friend void swap(Reference a, Reference b) { return a.swap(std::move(b)); }
+        friend void swap(Reference a, Reference b) { return a.swap(b); }
 
     public:
         // Assigning and initializing are different operations for references.
@@ -284,7 +294,13 @@ public:
                 noexcept(std::is_nothrow_move_constructible_v<Indirect>)
             : m_referred(std::move(referred)) {}
         Reference(const Reference &) = default;
-        Reference(Reference &&) = default;
+
+        // Move-constructing a reference from another one is not valid C++. You can't do this:
+        //     A a;
+        //     A &ra(a);
+        //     A &rb(std::move(ra));
+        Reference(Reference &&) = delete;
+
         ~Reference() = default;
 
         Reference &operator=(const Reference &value)
@@ -913,13 +929,6 @@ template<typename Indirect>
 inline QVariant::ConstReference<Indirect>::ConstReference(const Reference<Indirect> &nonConst)
         noexcept(std::is_nothrow_copy_constructible_v<Indirect>)
     : ConstReference(nonConst.m_referred)
-{
-}
-
-template<typename Indirect>
-inline QVariant::ConstReference<Indirect>::ConstReference(Reference<Indirect> &&nonConst)
-        noexcept(std::is_nothrow_move_constructible_v<Indirect>)
-    : ConstReference(std::move(nonConst.m_referred))
 {
 }
 

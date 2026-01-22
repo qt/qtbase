@@ -449,6 +449,9 @@ private slots:
     void reference();
     void pointer();
 
+    void pointerAndReferenceSpecialMemberFunctions_data();
+    void pointerAndReferenceSpecialMemberFunctions();
+
 private:
     using StdVariant = std::variant<std::monostate,
             // list here all the types with which we instantiate getIf_impl:
@@ -6786,6 +6789,217 @@ void tst_QVariant::pointer()
 
     QVariant::ConstPointer<QVariantWrapper> constPtr2 = ptr;
     QCOMPARE(*constPtr2, QVariant(12));
+}
+
+struct SMFTracker
+{
+    enum Op { None, DefaultCtor, CopyCtor, MoveCtor, CopyAssign, MoveAssign, Dtor };
+
+    static constexpr bool CanNoexceptConvertToQVariant = true;
+    static constexpr bool CanNoexceptAssignQVariant = true;
+
+    SMFTracker() noexcept
+    {
+        QCOMPARE(std::exchange(lastOperation, DefaultCtor), None);
+    }
+
+    SMFTracker(const SMFTracker &) noexcept
+    {
+        QCOMPARE(std::exchange(lastOperation, CopyCtor), None);
+    }
+
+    SMFTracker(SMFTracker &&) noexcept
+    {
+        QCOMPARE(std::exchange(lastOperation, MoveCtor), None);
+    }
+
+    SMFTracker &operator=(const SMFTracker &) noexcept
+    {
+        []() { QCOMPARE(std::exchange(lastOperation, CopyAssign), None); }();
+        return *this;
+    }
+
+    SMFTracker &operator=(SMFTracker &&) noexcept
+    {
+        []() { QCOMPARE(std::exchange(lastOperation, MoveAssign), None); }();
+        return *this;
+    }
+
+    ~SMFTracker()
+    {
+        QCOMPARE(std::exchange(lastOperation, Dtor), None);
+    }
+
+    static Op takeLastOperation() { return std::exchange(lastOperation, None); }
+
+private:
+    static inline Op lastOperation = None;
+};
+
+QT_BEGIN_NAMESPACE
+template<>
+QVariant::ConstReference<SMFTracker>::operator QVariant() const noexcept
+{
+    return QVariant();
+}
+
+template<>
+QVariant::Reference<SMFTracker> &QVariant::Reference<SMFTracker>::operator=(
+        const QVariant &) noexcept
+{
+    return *this;
+}
+QT_END_NAMESPACE
+
+template<template<typename Indirect> class PointerOrReference>
+void testCopyConstruction()
+{
+    using Op = SMFTracker::Op;
+    {
+        SMFTracker content;
+        QCOMPARE(SMFTracker::takeLastOperation(), Op::DefaultCtor);
+
+        {
+            PointerOrReference<SMFTracker> a(content);
+            QCOMPARE(SMFTracker::takeLastOperation(), Op::CopyCtor);
+
+            {
+                PointerOrReference<SMFTracker> b(a);
+                QCOMPARE(SMFTracker::takeLastOperation(), Op::CopyCtor);
+            }
+
+            QCOMPARE(SMFTracker::takeLastOperation(), Op::Dtor);
+        }
+
+        QCOMPARE(SMFTracker::takeLastOperation(), Op::Dtor);
+    }
+
+    QCOMPARE(SMFTracker::takeLastOperation(), Op::Dtor);
+}
+
+template<template<typename Indirect> class PointerOrReference>
+void testMoveConstruction()
+{
+    using Op = SMFTracker::Op;
+    {
+        SMFTracker content;
+        QCOMPARE(SMFTracker::takeLastOperation(), Op::DefaultCtor);
+
+        {
+            PointerOrReference<SMFTracker> c(content);
+            QCOMPARE(SMFTracker::takeLastOperation(), Op::CopyCtor);
+
+            {
+                PointerOrReference<SMFTracker> d(std::move(c));
+                QCOMPARE(SMFTracker::takeLastOperation(), Op::MoveCtor);
+            }
+
+            QCOMPARE(SMFTracker::takeLastOperation(), Op::Dtor);
+        }
+
+        QCOMPARE(SMFTracker::takeLastOperation(), Op::Dtor);
+    }
+
+    QCOMPARE(SMFTracker::takeLastOperation(), Op::Dtor);
+}
+
+template<template<typename Indirect> class PointerOrReference>
+void testCopyMove()
+{
+    using Op = SMFTracker::Op;
+    {
+        SMFTracker content;
+        QCOMPARE(SMFTracker::takeLastOperation(), Op::DefaultCtor);
+
+        {
+            PointerOrReference<SMFTracker> d(content);
+            QCOMPARE(SMFTracker::takeLastOperation(), Op::CopyCtor);
+
+            {
+                PointerOrReference<SMFTracker> e(content);
+                QCOMPARE(SMFTracker::takeLastOperation(), Op::CopyCtor);
+
+                d = e;
+                QCOMPARE(SMFTracker::takeLastOperation(), Op::CopyAssign);
+            }
+
+            QCOMPARE(SMFTracker::takeLastOperation(), Op::Dtor);
+        }
+
+        QCOMPARE(SMFTracker::takeLastOperation(), Op::Dtor);
+
+        {
+            PointerOrReference<SMFTracker> f(content);
+            QCOMPARE(SMFTracker::takeLastOperation(), Op::CopyCtor);
+
+            {
+                PointerOrReference<SMFTracker> g(content);
+                QCOMPARE(SMFTracker::takeLastOperation(), Op::CopyCtor);
+
+                f = std::move(g);
+                QCOMPARE(SMFTracker::takeLastOperation(), Op::MoveAssign);
+            }
+
+            QCOMPARE(SMFTracker::takeLastOperation(), Op::Dtor);
+        }
+
+        QCOMPARE(SMFTracker::takeLastOperation(), Op::Dtor);
+
+    }
+
+    QCOMPARE(SMFTracker::takeLastOperation(), Op::Dtor);
+}
+
+enum class PointerOrReference {
+    Reference,
+    ConstReference,
+    Pointer,
+    ConstPointer
+};
+
+void tst_QVariant::pointerAndReferenceSpecialMemberFunctions_data()
+{
+    QTest::addColumn<PointerOrReference>("mode");
+    QTest::addRow("Reference") << PointerOrReference::Reference;
+    QTest::addRow("ConstReference") << PointerOrReference::ConstReference;
+    QTest::addRow("Pointer") << PointerOrReference::Pointer;
+    QTest::addRow("ConstPointer") << PointerOrReference::ConstPointer;
+}
+
+void tst_QVariant::pointerAndReferenceSpecialMemberFunctions()
+{
+    QFETCH(PointerOrReference, mode);
+
+    // References can be copy-constructed but not move-constructed.
+    // Const references can't be assigned to.
+    // Non-const references have special semantics for assignment operators.
+    // See tst_QVariant::reference() for those.
+    // Pointers can be copied and moved.
+
+    switch (mode) {
+    case PointerOrReference::Reference:
+        testCopyConstruction<QVariant::Reference>();
+        static_assert(!std::is_move_constructible_v<QVariant::Reference<SMFTracker>>);
+        static_assert(std::is_copy_assignable_v<QVariant::Reference<SMFTracker>>);
+        static_assert(std::is_move_assignable_v<QVariant::Reference<SMFTracker>>);
+        break;
+    case PointerOrReference::ConstReference:
+        testCopyConstruction<QVariant::ConstReference>();
+        static_assert(!std::is_move_constructible_v<QVariant::ConstReference<SMFTracker>>);
+        static_assert(!std::is_copy_assignable_v<QVariant::ConstReference<SMFTracker>>);
+        static_assert(!std::is_move_assignable_v<QVariant::ConstReference<SMFTracker>>);
+        break;
+    case PointerOrReference::Pointer:
+        testCopyConstruction<QVariant::Pointer>();
+        testMoveConstruction<QVariant::Pointer>();
+        testCopyMove<QVariant::Pointer>();
+        break;
+    case PointerOrReference::ConstPointer:
+        testCopyConstruction<QVariant::ConstPointer>();
+        testMoveConstruction<QVariant::ConstPointer>();
+        testCopyMove<QVariant::ConstPointer>();
+        break;
+    }
 }
 
 template <typename T>
