@@ -34,6 +34,7 @@ QT_BEGIN_NAMESPACE
 class QSslCertificate;
 class QSslCipher;
 class QSslKey;
+class QSslKeyingMaterial;
 class QSslEllipticCurve;
 class QSslDiffieHellmanParameters;
 
@@ -157,6 +158,9 @@ public:
 
     static const char ALPNProtocolHTTP2[];
     static const char NextProtocolHttp1_1[];
+
+    QList<QSslKeyingMaterial> keyingMaterial() const;
+    void setKeyingMaterial(const QList<QSslKeyingMaterial> &keyMaterial);
 
 private:
     friend class QSslSocket;

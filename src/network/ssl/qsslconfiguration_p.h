@@ -39,6 +39,7 @@
 #include "qsslcertificate.h"
 #include "qsslcipher.h"
 #include "qsslkey.h"
+#include "qsslkeyingmaterial.h"
 #include "qsslellipticcurve.h"
 #include "qssldiffiehellmanparameters.h"
 
@@ -59,7 +60,8 @@ public:
           sslSessionTicketLifeTimeHint(-1),
           ephemeralServerKey(),
           preSharedKeyIdentityHint(),
-          nextProtocolNegotiationStatus(QSslConfiguration::NextProtocolNegotiationNone)
+          nextProtocolNegotiationStatus(QSslConfiguration::NextProtocolNegotiationNone),
+          keyingMaterial()
     { }
 
     QSslCertificate peerCertificate;
@@ -101,6 +103,8 @@ public:
     QList<QByteArray> nextAllowedProtocols;
     QByteArray nextNegotiatedProtocol;
     QSslConfiguration::NextProtocolNegotiationStatus nextProtocolNegotiationStatus;
+
+    QList<QSslKeyingMaterial> keyingMaterial;
 
 #if QT_CONFIG(dtls)
     bool dtlsCookieEnabled = true;

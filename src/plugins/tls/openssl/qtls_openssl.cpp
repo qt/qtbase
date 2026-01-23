@@ -16,6 +16,7 @@
 #include <QtNetwork/private/qsslsocket_p.h>
 
 #include <QtNetwork/qsslpresharedkeyauthenticator.h>
+#include <QtNetwork/qsslkeyingmaterial.h>
 
 #include <QtCore/qscopedvaluerollback.h>
 #include <QtCore/qscopeguard.h>
@@ -749,6 +750,50 @@ void TlsCryptographOpenSSL::cancelCAFetch()
     caToFetch.reset();
 }
 
+void TlsCryptographOpenSSL::exportKeyingMaterial()
+{
+    auto sslCfg = q->sslConfiguration();
+    auto list = sslCfg.keyingMaterial();
+
+    for (auto &entry : list) {
+        if (!entry.isValid()) {
+#ifdef QSSLSOCKET_DEBUG
+            qCDebug(lcTlsBackend) << "keying material request is invalid:" << entry;
+#endif
+            continue;
+        }
+
+        QByteArray output(entry.keyingValueSize, Qt::Uninitialized);
+        /*
+         * https://docs.openssl.org/1.1.1/man3/SSL_export_keying_material/
+         * Note that in TLSv1.2 and below a zero length context is treated
+         * differently from no context at all, and will result in different
+         * keying material being returned. In TLSv1.3 a zero length context
+         * is that same as no context at all and will result in the same
+         * keying material being returned.
+         */
+        auto *outputData = reinterpret_cast<unsigned char*>(output.data());
+        const auto *context = reinterpret_cast<const unsigned char*>(entry.context().constData());
+        if (q_SSL_export_keying_material(ssl,
+                                         outputData,
+                                         entry.keyingValueSize,
+                                         entry.label().constData(),
+                                         entry.label().size(),
+                                         context,
+                                         entry.context().size(),
+                                         entry.context().isNull() ? 0 : 1)) {
+            entry.keyingValue = output;
+#ifdef QSSLSOCKET_DEBUG
+        } else {
+            qCDebug(lcTlsBackend) << "cannot export keying material:" << entry;
+#endif
+        }
+    }
+
+    sslCfg.setKeyingMaterial(list);
+    q->setSslConfiguration(sslCfg);
+}
+
 void TlsCryptographOpenSSL::continueHandshake()
 {
     Q_ASSERT(q);
@@ -846,6 +891,8 @@ void TlsCryptographOpenSSL::continueHandshake()
         if (q_SSL_get_server_tmp_key(ssl, &key))
             QTlsBackend::setEphemeralKey(d, QSslKey(key, QSsl::PublicKey));
     }
+
+    exportKeyingMaterial();
 
     d->setEncrypted(true);
     emit q->encrypted();

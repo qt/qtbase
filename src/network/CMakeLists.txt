@@ -359,6 +359,7 @@ qt_internal_extend_target(Network CONDITION QT_FEATURE_ssl
         ssl/qssldiffiehellmanparameters.cpp ssl/qssldiffiehellmanparameters.h ssl/qssldiffiehellmanparameters_p.h
         ssl/qsslellipticcurve.cpp ssl/qsslellipticcurve.h
         ssl/qsslerror.cpp
+        ssl/qsslkeyingmaterial.cpp ssl/qsslkeyingmaterial.h
         ssl/qsslkey_p.cpp ssl/qsslkey_p.h
         ssl/qsslpresharedkeyauthenticator.cpp ssl/qsslpresharedkeyauthenticator.h ssl/qsslpresharedkeyauthenticator_p.h
         ssl/qsslsocket.cpp ssl/qsslsocket_p.h

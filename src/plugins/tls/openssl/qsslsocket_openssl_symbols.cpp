@@ -383,6 +383,7 @@ DEFINEFUNC(X509_STORE *, X509_STORE_CTX_get0_store, X509_STORE_CTX *ctx, ctx, re
 DEFINEFUNC(X509_STORE_CTX *, X509_STORE_CTX_new, DUMMYARG, DUMMYARG, return nullptr, return)
 DEFINEFUNC2(void *, X509_STORE_CTX_get_ex_data, X509_STORE_CTX *ctx, ctx, int idx, idx, return nullptr, return)
 DEFINEFUNC(int, SSL_get_ex_data_X509_STORE_CTX_idx, DUMMYARG, DUMMYARG, return -1, return)
+DEFINEFUNC8(int, SSL_export_keying_material, SSL* s, s, unsigned char* out, out, size_t out_len, out_len, const char* label, label, size_t label_len, label_len, const unsigned char* ctx, ctx, size_t ctx_len, ctx_len, int use_ctx, use_ctx, return 0, return)
 
 #if OPENSSL_VERSION_MAJOR < 3
 DEFINEFUNC3(int, SSL_CTX_load_verify_locations, SSL_CTX *ctx, ctx, const char *CAfile, CAfile, const char *CApath, CApath, return 0, return)
@@ -1192,6 +1193,7 @@ bool q_resolveOpenSslSymbols()
         RESOLVEFUNC(X509_STORE_CTX_get_error_depth)
         RESOLVEFUNC(X509_STORE_CTX_get_current_cert)
         RESOLVEFUNC(X509_STORE_CTX_get0_store)
+        RESOLVEFUNC(SSL_export_keying_material)
         RESOLVEFUNC(X509_cmp)
         RESOLVEFUNC(X509_STORE_CTX_get_ex_data)
         RESOLVEFUNC(X509_dup)

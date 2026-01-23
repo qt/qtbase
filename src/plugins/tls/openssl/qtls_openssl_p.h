@@ -72,6 +72,8 @@ public:
     int emitErrorFromCallback(X509_STORE_CTX *ctx);
     void trySendFatalAlert();
 
+    void exportKeyingMaterial();
+
 #if QT_CONFIG(ocsp)
     bool checkOcspStatus();
 #endif

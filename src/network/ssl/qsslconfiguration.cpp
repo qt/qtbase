@@ -192,6 +192,7 @@ bool QSslConfiguration::operator==(const QSslConfiguration &other) const
         d->nextAllowedProtocols == other.d->nextAllowedProtocols &&
         d->nextNegotiatedProtocol == other.d->nextNegotiatedProtocol &&
         d->nextProtocolNegotiationStatus == other.d->nextProtocolNegotiationStatus &&
+        d->keyingMaterial == other.d->keyingMaterial &&
         d->dtlsCookieEnabled == other.d->dtlsCookieEnabled &&
         d->ocspStaplingEnabled == other.d->ocspStaplingEnabled &&
         d->reportFromCallback == other.d->reportFromCallback &&
@@ -240,6 +241,7 @@ bool QSslConfiguration::isNull() const
             d->nextAllowedProtocols.isEmpty() &&
             d->nextNegotiatedProtocol.isNull() &&
             d->nextProtocolNegotiationStatus == QSslConfiguration::NextProtocolNegotiationNone &&
+            d->keyingMaterial.isEmpty() &&
             d->ocspStaplingEnabled == false &&
             d->reportFromCallback == false &&
             d->missingCertIsFatal == false);
@@ -1243,6 +1245,82 @@ void QSslConfiguration::setHandshakeMustInterruptOnError(bool interrupt)
     Q_UNUSED(interrupt);
     qCWarning(lcSsl, "This operation requires OpenSSL as TLS backend");
 #endif
+}
+
+/*!
+    \since 6.12
+
+    Returns the keying material configuration for this SSL connection.
+
+    Keying material allows an application to derive additional
+    cryptographic material from an established TLS session, using the
+    TLS exporter mechanism as defined in RFC 5705 and RFC 8446.
+
+    Each entry in the returned list describes a request for exported
+    keying material, including the exporter label, optional context,
+    and the desired length of the exported data. The actual keying
+    material becomes available only after a successful handshake.
+
+    Exported keying material is bound to the specific TLS session and
+    cryptographically independent from the session keys used for
+    encryption. It can be used for application-specific purposes such
+    as channel binding or key derivation for protocols layered on top
+    of TLS.
+
+    If no keying material configuration was set, this function returns
+    an empty list.
+
+    \note The availability of keying material depends on the TLS
+          backend. Currently, this feature is supported only when using
+          OpenSSL.
+
+    \warning Exported keying material must be handled with care.
+             Improper use may compromise the security of the TLS
+             session or higher-level protocols.
+
+    \sa setKeyingMaterial()
+*/
+QList<QSslKeyingMaterial> QSslConfiguration::keyingMaterial() const
+{
+    return d->keyingMaterial;
+}
+
+/*!
+    \since 6.12
+
+    Sets the keying material configuration for this SSL connection to
+    \a keyMaterial.
+
+    This enables the TLS exporter mechanism, allowing the application
+    to derive additional cryptographic material from the negotiated TLS
+    session. The exporter is defined in RFC 5705 and RFC 8446.
+
+    The configuration must be set before the TLS handshake starts.
+    Calling this function on an already encrypted connection has no
+    effect.
+
+    Each QSslKeyingMaterial entry specifies the exporter label, optional
+    context value, and the length of the keying material to be derived.
+    After a successful handshake, the requested keying material can be
+    retrieved from the SSL connection.
+
+    Exported keying material is unique to the TLS session and can be
+    safely used to derive keys for application-level protocols that
+    require cryptographic binding to the underlying TLS channel.
+
+    \note This feature is backend-specific and currently requires
+          OpenSSL support.
+
+    \warning Applications are responsible for defining unique and
+             collision-resistant exporter labels. Reusing labels or
+             contexts across different purposes may lead to subtle
+             security vulnerabilities.
+
+    \sa keyingMaterial()
+*/
+void QSslConfiguration::setKeyingMaterial(const QList<QSslKeyingMaterial> &keyMaterial)
+{
+    d->keyingMaterial = keyMaterial;
 }
 
 /*!

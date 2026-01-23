@@ -110,7 +110,7 @@ QT_BEGIN_NAMESPACE
         funcret _q_##func(a, b, c, d, e); \
     }
 
-// ret func(arg1, arg2, arg3, arg4, arg6)
+// ret func(arg1, arg2, arg3, arg4, arg5, arg6)
 #  define DEFINEFUNC6(ret, func, arg1, a, arg2, b, arg3, c, arg4, d, arg5, e, arg6, f, err, funcret) \
     typedef ret (*_q_PTR_##func)(arg1, arg2, arg3, arg4, arg5, arg6);   \
     static _q_PTR_##func _q_##func = nullptr;                           \
@@ -122,7 +122,7 @@ QT_BEGIN_NAMESPACE
         funcret _q_##func(a, b, c, d, e, f); \
     }
 
-// ret func(arg1, arg2, arg3, arg4, arg6, arg7)
+// ret func(arg1, arg2, arg3, arg4, arg5, arg6, arg7)
 #  define DEFINEFUNC7(ret, func, arg1, a, arg2, b, arg3, c, arg4, d, arg5, e, arg6, f, arg7, g, err, funcret) \
     typedef ret (*_q_PTR_##func)(arg1, arg2, arg3, arg4, arg5, arg6, arg7);   \
     static _q_PTR_##func _q_##func = nullptr;                                 \
@@ -134,7 +134,19 @@ QT_BEGIN_NAMESPACE
         funcret _q_##func(a, b, c, d, e, f, g); \
     }
 
-// ret func(arg1, arg2, arg3, arg4, arg6, arg7, arg8, arg9)
+// ret func(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8)
+#  define DEFINEFUNC8(ret, func, arg1, a, arg2, b, arg3, c, arg4, d, arg5, e, arg6, f, arg7, g, arg8, h, err, funcret) \
+    typedef ret (*_q_PTR_##func)(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);   \
+    static _q_PTR_##func _q_##func = nullptr;                                 \
+    ret q_##func(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8) { \
+        if (Q_UNLIKELY(!_q_##func)) { \
+            qsslSocketUnresolvedSymbolWarning(#func); \
+            err; \
+        } \
+        funcret _q_##func(a, b, c, d, e, f, g, h); \
+    }
+
+// ret func(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9)
 #  define DEFINEFUNC9(ret, func, arg1, a, arg2, b, arg3, c, arg4, d, arg5, e, arg6, f, arg7, g, arg8, h, arg9, i, err, funcret) \
     typedef ret (*_q_PTR_##func)(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);   \
     static _q_PTR_##func _q_##func = nullptr;                                             \
@@ -171,13 +183,17 @@ QT_BEGIN_NAMESPACE
 #  define DEFINEFUNC5(ret, func, arg1, a, arg2, b, arg3, c, arg4, d, arg5, e, err, funcret) \
     ret q_##func(arg1, arg2, arg3, arg4, arg5) { funcret func(a, b, c, d, e); }
 
-// ret func(arg1, arg2, arg3, arg4, arg6)
+// ret func(arg1, arg2, arg3, arg4, arg5, arg6)
 #  define DEFINEFUNC6(ret, func, arg1, a, arg2, b, arg3, c, arg4, d, arg5, e, arg6, f, err, funcret) \
     ret q_##func(arg1, arg2, arg3, arg4, arg5, arg6) { funcret func(a, b, c, d, e, f); }
 
-// ret func(arg1, arg2, arg3, arg4, arg6, arg7)
+// ret func(arg1, arg2, arg3, arg4, arg5, arg6, arg7)
 #  define DEFINEFUNC7(ret, func, arg1, a, arg2, b, arg3, c, arg4, d, arg5, e, arg6, f, arg7, g, err, funcret) \
     ret q_##func(arg1, arg2, arg3, arg4, arg5, arg6, arg7) { funcret func(a, b, c, d, e, f, g); }
+
+// ret func(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8)
+#  define DEFINEFUNC8(ret, func, arg1, a, arg2, b, arg3, c, arg4, d, arg5, e, arg6, f, arg7, g, arg8, h, err, funcret) \
+    ret q_##func(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8) { funcret func(a, b, c, d, e, f, g, h); }
 
 // ret func(arg1, arg2, arg3, arg4, arg6, arg7, arg8, arg9)
 #  define DEFINEFUNC9(ret, func, arg1, a, arg2, b, arg3, c, arg4, d, arg5, e, arg6, f, arg7, g, arg8, h, arg9, i, err, funcret) \
@@ -518,6 +534,8 @@ DH *q_PEM_read_bio_DHparams(BIO *a, DH **b, pem_password_cb *c, void *d);
 BIGNUM *q_BN_bin2bn(const unsigned char *s, int len, BIGNUM *ret);
 #define q_SSL_CTX_set_tmp_dh(ctx, dh) q_SSL_CTX_ctrl((ctx), SSL_CTRL_SET_TMP_DH, 0, (char *)dh)
 #define q_SSL_CTX_set_dh_auto(ctx, onoff) q_SSL_CTX_ctrl(ctx,SSL_CTRL_SET_DH_AUTO,onoff,NULL)
+
+int q_SSL_export_keying_material(SSL *s, unsigned char *out, size_t olen, const char *label, size_t llen, const unsigned char *context, size_t contextlen, int use_context);
 
 #ifndef OPENSSL_NO_EC
 // EC Diffie-Hellman support
