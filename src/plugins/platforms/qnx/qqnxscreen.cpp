@@ -84,7 +84,7 @@ QQnxScreen::QQnxScreen(screen_context_t screenContext, screen_display_t display,
       m_keyboardHeight(0),
       m_nativeOrientation(Qt::PrimaryOrientation),
       m_coverWindow(0),
-      m_cursor(new QQnxCursor())
+      m_cursor(new QQnxCursor(screenContext))
 {
     qCDebug(lcQpaScreen) << Q_FUNC_INFO;
     // Cache initial orientation of this display
