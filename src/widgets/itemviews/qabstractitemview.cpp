@@ -4805,6 +4805,7 @@ QPixmap QAbstractItemViewPrivate::renderToPixmap(const QModelIndexList &indexes,
 
     pixmap.fill(Qt::transparent);
     QPainter painter(&pixmap);
+    painter.setLayoutDirection(q->layoutDirection());
     QStyleOptionViewItem option;
     q->initViewItemOption(&option);
     option.state |= QStyle::State_Selected;
