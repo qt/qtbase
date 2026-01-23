@@ -1279,6 +1279,9 @@ void QCommonStylePrivate::stopAnimation(const QObject *target) const
 void QCommonStylePrivate::removeAnimation(const QObject *target) const
 {
     animations.remove(target);
+    const auto w = const_cast<QWidget *>(qobject_cast<const QWidget *>(target));
+    if (w)
+        w->update();
 }
 #endif
 
