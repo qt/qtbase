@@ -237,3 +237,10 @@ save
     setFont "sansserif" 12 normal
     drawAlignedText 0 0 1000 1000 2048 "&مرحبًا"
 restore
+
+translate 0 35.5
+save
+    setPen black
+    setFont "Arial Black" 12 normal
+    drawText 0 20 "Foobar"
+restore
