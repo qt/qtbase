@@ -44,6 +44,11 @@ class QDataStream;
 #endif
 class QTextStream;
 
+// These macros from math.h conflict with the real functions in the std namespace:
+#ifdef signbit
+#  undef signbit
+#endif
+
 class qfloat16
 {
     struct Wrap
@@ -85,10 +90,10 @@ public:
     qfloat16 copySign(qfloat16 sign) const noexcept
     { return qfloat16(Wrap((sign.b16 & 0x8000) | (b16 & 0x7fff))); }
     // Can't specialize std::signbit() for qfloat16
-    bool signBit() const noexcept
-    { return b16 & 0x8000; }
-    // Support for std::numeric_limits<qfloat16>
+    friend bool signbit(qfloat16 x) noexcept
+    { return x.b16 & 0x8000; }
 
+    // Support for std::numeric_limits<qfloat16>
 #ifdef __STDCPP_FLOAT16_T__
 private:
     using Bounds = std::numeric_limits<NativeType>;

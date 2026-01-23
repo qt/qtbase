@@ -3133,8 +3133,6 @@ template <typename T> static auto decodeNanPayload(T t)
     return r;
 }
 
-static bool signbit(qfloat16 f) { return f.signBit(); }
-
 // Be consistent about display of infinities and NaNs (snprintf()'s varies,
 // notably on MinGW, despite POSIX documenting "[-]inf" or "[-]infinity" for %f,
 // %e and %g, uppercasing for their capital versions; similar for "nan"):
