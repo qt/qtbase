@@ -164,8 +164,19 @@ void DataTransfer::toMimeDataWithFile(std::function<void(QMimeData *)> callback)
             // add a QWasmFileEngine managed url. Else fall back to placing a copy
             // of the file at /tmp on Emsripten's in-memory file system.
             if (qstdweb::haveAsyncify()) {
-                QUrl fileUrl(QWasmFileEngineHandler::addFile(webfile));
+                const auto fileName = QWasmFileEngineHandler::addFile(webfile); // because QUrl::toLocalFile does not work
+                QUrl fileUrl(fileName);
                 mimeContext->fileUrls.append(fileUrl);
+
+                QString mimeFormat = QString::fromStdString(webfile.type());
+
+                if (fileCount == 1 && mimeFormat.contains("image/")) {
+                    QImage image;
+                    if (image.load(fileName))
+                        mimeContext->mimeData->setImageData(image);
+                    else
+                        qWarning() << "Failed to load" << fileName;
+                }
                 mimeContext->deref();
             } else {
                 // Limit in-memory file size to 1 GB
@@ -193,22 +204,22 @@ void DataTransfer::toMimeDataWithFile(std::function<void(QMimeData *)> callback)
                     if (file.write(fileContent) < 0)
                         qWarning() << "Write failed";
                     file.close();
+
+                    // If we get a single file, and that file is an image, then
+                    // try to decode the image data. This handles the case where
+                    // image data (i.e. not an image file) is pasted. The browsers
+                    // will then create a fake "image.png" file which has the image
+                    // data. As a side effect Qt will also decode the image for
+                    // single-image-file drops, since there is no way to differentiate
+                    // the fake "image.png" from a real one.
+                    QString mimeFormat = QString::fromStdString(webfile.type());
+                    if (fileCount == 1 && mimeFormat.contains("image/")) {
+                        QImage image;
+                        if (image.loadFromData(fileContent))
+                            mimeContext->mimeData->setImageData(image);
+                    }
                     mimeContext->deref();
                 });
-
-                // If we get a single file, and that file is an image, then
-                // try to decode the image data. This handles the case where
-                // image data (i.e. not an image file) is pasted. The browsers
-                // will then create a fake "image.png" file which has the image
-                // data. As a side effect Qt will also decode the image for
-                // single-image-file drops, since there is no way to differentiate
-                // the fake "image.png" from a real one.
-                QString mimeFormat = QString::fromStdString(webfile.type());
-                if (fileCount == 1 && mimeFormat.contains("image/")) {
-                    QImage image;
-                    if (image.loadFromData(fileContent))
-                        mimeContext->mimeData->setImageData(image);
-                }
             }
             break;
         }
