@@ -14,6 +14,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QShader
     \ingroup painting-3D
+    \ingroup shared
     \inmodule QtGui
     \since 6.6
 

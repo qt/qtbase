@@ -175,6 +175,8 @@ private:
 #endif
 };
 
+Q_DECLARE_SHARED(QShader)
+
 class Q_GUI_EXPORT QShaderKey
 {
 public:
