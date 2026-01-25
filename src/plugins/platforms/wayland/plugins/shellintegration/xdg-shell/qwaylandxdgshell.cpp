@@ -642,6 +642,7 @@ void QWaylandXdgSurface::requestXdgActivationToken(quint32 serial)
     if (auto *activation = m_shell->activation()) {
         auto tokenProvider = activation->requestXdgActivationToken(
                 m_shell->m_display, m_window->wlSurface(), serial, m_appId);
+        tokenProvider->setParent(this);
         connect(tokenProvider, &QWaylandXdgActivationTokenV1::done, m_window, &QWaylandWindow::xdgActivationTokenCreated);
         connect(tokenProvider, &QWaylandXdgActivationTokenV1::done, tokenProvider, &QObject::deleteLater);
     } else {
