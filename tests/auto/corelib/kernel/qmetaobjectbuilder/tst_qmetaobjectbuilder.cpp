@@ -27,6 +27,7 @@ private slots:
     void relatedMetaObject();
     void staticMetacall();
     void copyMetaObject();
+    void copyMetaObject_metaProperty();
     void removeNotifySignal();
 
     void usage_signal();
@@ -64,6 +65,7 @@ struct MetaObjectComparison {
     static inline auto Failed(QStringView message) {return  MetaObjectComparison{false, message.toString()}; }
 };
 MetaObjectComparison sameMetaObject(const QMetaObject *meta1, const QMetaObject *meta2);
+static MetaObjectComparison sameProperty(const QMetaProperty& prop1, const QMetaProperty& prop2);
 
 // Dummy class that has something of every type of thing moc can generate.
 class SomethingOfEverything : public QObject
@@ -1104,6 +1106,53 @@ void tst_QMetaObjectBuilder::copyMetaObject()
     dynamicMetaObjectsPendingFree.push_back(meta);
     compared = sameMetaObject(meta, &SomethingOfEverything::staticMetaObject);
     QVERIFY2(compared, qPrintable(compared.details));
+}
+
+class TestMetaPropertyFlags : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(MyEnumFlag fprop READ fprop)
+
+public:
+    enum MyEnum { A = 0x01, B = 0x02 };
+    Q_DECLARE_FLAGS(MyEnumFlag, MyEnum)
+    Q_FLAG(MyEnumFlag)
+    Q_ENUMS(MyEnum)
+
+    MyEnumFlag fprop() const { return A; }
+};
+
+void tst_QMetaObjectBuilder::copyMetaObject_metaProperty()
+{
+    // The TestMetaPropertyFlags class has both `Q_ENUMS(MyEnum)` and
+    // `Q_FLAG(MyEnumFlag, MyEnum)`, which means two separate sets of enumerator data
+    // are generated for `MyEnum`, from the .moc file:
+    // `QtMocHelpers::EnumData<enum MyEnum>`
+    // `QtMocHelpers::EnumData<MyEnumFlag>`
+
+    const auto *mo = &TestMetaPropertyFlags::staticMetaObject;
+    auto index1 = mo->indexOfProperty("fprop");
+    // No problem with the original meta-object, the correct enumerator
+    // (name() == "MyEnumFlag") is found in the `QMetaProperty(const QMetaObject *, int)`
+    // constructor
+    QMetaProperty p1 = mo->property(index1);
+    QVERIFY(p1.isEnumType());
+    QVERIFY(p1.isFlagType()); // and it has `EnumIsFlag`.
+
+    // Clone the meta-object
+    QMetaObjectBuilder builder(&TestMetaPropertyFlags::staticMetaObject);
+    std::unique_ptr<QMetaObject> meta{builder.toMetaObject()};
+    int index2 = meta.get()->indexOfProperty("fprop");
+    QMetaProperty p2 = meta.get()->property(index2);
+    QVERIFY(p2.isEnumType());
+
+    // When constructing `p2`, it doesn't find the "MyEnumFlag" enumerator data,
+    // instead it only finds "MyEnum".
+    QEXPECT_FAIL("", "isFlagType() returns false, QTBUG-101426", Continue);
+    QVERIFY(p2.isFlagType());
+
+    QEXPECT_FAIL("", "Meta properties differ, QTBUG-101426", Continue);
+    QVERIFY(sameProperty(p1, p2));
 }
 
 // Check that removing a method updates notify signals appropriately
