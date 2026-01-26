@@ -43,8 +43,6 @@ private slots:
     void propertyMetaType();
     void enumCloning();
 
-    void cleanupTestCase();
-
     void ownMetaTypeNoProperties();
 
     // void tooLongParameterNamesList(); // QTBUG-139845
@@ -53,8 +51,14 @@ private:
     static bool checkForSideEffects
         (const QMetaObjectBuilder& builder,
          QMetaObjectBuilder::AddMembers members);
-    QList<QMetaObject *> dynamicMetaObjectsPendingFree;
 };
+
+struct MetaObjectDeleter
+{
+    void operator()(QMetaObject *p) { free(p); }
+};
+
+using MetaObjectPtr = std::unique_ptr<QMetaObject, MetaObjectDeleter>;
 
 struct MetaObjectComparison {
     bool isSame = false;
@@ -764,8 +768,7 @@ void tst_QMetaObjectBuilder::variantProperty()
 {
     QMetaObjectBuilder builder;
     builder.addProperty("variant", "const QVariant &");
-    QMetaObject *meta = builder.toMetaObject();
-    dynamicMetaObjectsPendingFree.push_back(meta);
+    MetaObjectPtr meta{builder.toMetaObject()};
 
     QMetaProperty prop = meta->property(meta->propertyOffset());
     QCOMPARE(QMetaType::Type(prop.userType()), QMetaType::QVariant);
@@ -1008,12 +1011,11 @@ void tst_QMetaObjectBuilder::enumProperty()
 
     builder.addProperty("orientation", "Qt::Orientation", enumMetaType);
 
-    auto *mo = builder.toMetaObject();
+    MetaObjectPtr mo{builder.toMetaObject()};
     QVERIFY(mo != nullptr);
     const int index = mo->indexOfProperty("orientation");
     QVERIFY(index != -1);
     QVERIFY(mo->property(index).isEnumType());
-    free(mo);
 }
 
 void tst_QMetaObjectBuilder::classInfo()
@@ -1090,21 +1092,18 @@ void tst_QMetaObjectBuilder::staticMetacall()
 void tst_QMetaObjectBuilder::copyMetaObject()
 {
     QMetaObjectBuilder builder(&QObject::staticMetaObject);
-    QMetaObject *meta = builder.toMetaObject();
-    dynamicMetaObjectsPendingFree.push_back(meta);
-    auto compared = sameMetaObject(meta, &QObject::staticMetaObject);
+    MetaObjectPtr meta{builder.toMetaObject()};
+    auto compared = sameMetaObject(meta.get(), &QObject::staticMetaObject);
     QVERIFY2(compared, qPrintable(compared.details));
 
     QMetaObjectBuilder builder2(&staticMetaObject);
-    meta = builder2.toMetaObject();
-    dynamicMetaObjectsPendingFree.push_back(meta);
-    compared = sameMetaObject(meta, &staticMetaObject);
+    meta.reset(builder2.toMetaObject());
+    compared = sameMetaObject(meta.get(), &staticMetaObject);
     QVERIFY2(compared, qPrintable(compared.details));
 
     QMetaObjectBuilder builder3(&SomethingOfEverything::staticMetaObject);
-    meta = builder3.toMetaObject();
-    dynamicMetaObjectsPendingFree.push_back(meta);
-    compared = sameMetaObject(meta, &SomethingOfEverything::staticMetaObject);
+    meta.reset(builder3.toMetaObject());
+    compared = sameMetaObject(meta.get(), &SomethingOfEverything::staticMetaObject);
     QVERIFY2(compared, qPrintable(compared.details));
 }
 
@@ -1141,9 +1140,9 @@ void tst_QMetaObjectBuilder::copyMetaObject_metaProperty()
 
     // Clone the meta-object
     QMetaObjectBuilder builder(&TestMetaPropertyFlags::staticMetaObject);
-    std::unique_ptr<QMetaObject> meta{builder.toMetaObject()};
-    int index2 = meta.get()->indexOfProperty("fprop");
-    QMetaProperty p2 = meta.get()->property(index2);
+    MetaObjectPtr meta{builder.toMetaObject()};
+    int index2 = meta->indexOfProperty("fprop");
+    QMetaProperty p2 = meta->property(index2);
     QVERIFY(p2.isEnumType());
 
     // When constructing `p2`, it doesn't find the "MyEnumFlag" enumerator data,
@@ -1442,7 +1441,6 @@ private:
     //Q_PROPERTY(int intProp READ intProp WRITE setIntProp NOTIFY intPropChanged)
 public:
     TestObject(QObject *parent = nullptr); // Q_INVOKABLE
-    ~TestObject();
 
     // Property accessors
     int intProp() const;
@@ -1464,7 +1462,7 @@ public:
 private:
     static QMetaObject *buildMetaObject();
 
-    QMetaObject *m_metaObject;
+    MetaObjectPtr m_metaObject;
     int m_intProp;
     int m_voidSlotIntArg;
 };
@@ -1478,11 +1476,6 @@ TestObject::TestObject(QObject *parent)
       m_intProp(-1), m_voidSlotIntArg(-1)
 {
     staticMetaObject = *m_metaObject;
-}
-
-TestObject::~TestObject()
-{
-    free(m_metaObject);
 }
 
 QMetaObject *TestObject::buildMetaObject()
@@ -1598,7 +1591,7 @@ void TestObject::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, 
 
 const QMetaObject *TestObject::metaObject() const
 {
-    return m_metaObject;
+    return m_metaObject.get();
 }
 
 void *TestObject::qt_metacast(const char *_clname)
@@ -1650,7 +1643,7 @@ int TestObject::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
 void TestObject::intPropChanged(int _t1)
 {
     void *_a[] = { 0, const_cast<void*>(reinterpret_cast<const void*>(&_t1)) };
-    QMetaObject::activate(this, m_metaObject, 0, _a);
+    QMetaObject::activate(this, m_metaObject.get(), 0, _a);
 }
 
 
@@ -1766,14 +1759,12 @@ void tst_QMetaObjectBuilder::classNameFirstInStringData()
     QMetaObjectBuilder builder;
     builder.addMetaObject(&SomethingOfEverything::staticMetaObject);
     builder.setClassName(QByteArrayLiteral("TestClass"));
-    QMetaObject *mo = builder.toMetaObject();
+    MetaObjectPtr mo{builder.toMetaObject()};
 
     uint offset = mo->d.stringdata[0];
     uint len = mo->d.stringdata[1];
     QByteArray className(reinterpret_cast<const char *>(mo->d.stringdata) + offset, len);
     QCOMPARE(className, QByteArrayLiteral("TestClass"));
-
-    free(mo);
 }
 
 struct MyFoo {};
@@ -1787,13 +1778,12 @@ void tst_QMetaObjectBuilder::propertyMetaType()
     QMetaObjectBuilder builder;
     builder.setClassName("Test");
     builder.addProperty("myParameter", "MyFoo");
-    auto mo = builder.toMetaObject();
+    MetaObjectPtr mo{builder.toMetaObject()};
 
     QMetaProperty metaProp = mo->property(mo->indexOfProperty("myParameter"));
     QCOMPARE(metaProp.typeName(), meta.name());
     QCOMPARE(metaProp.typeId(), metaId);
     QCOMPARE(metaProp.metaType(), meta);
-    free(mo);
 }
 
 void tst_QMetaObjectBuilder::enumCloning()
@@ -1854,12 +1844,6 @@ void tst_QMetaObjectBuilder::ownMetaTypeNoProperties()
     auto cleanup = qScopeGuard([&](){ free(mo); });
     // own metatype should be invalid, as the dynamic metaobject has not been registered
     QVERIFY(!mo->metaType().isValid());// should not crash
-}
-
-void tst_QMetaObjectBuilder::cleanupTestCase()
-{
-    for (QMetaObject *obj: dynamicMetaObjectsPendingFree)
-        free(obj);
 }
 
 QTEST_MAIN(tst_QMetaObjectBuilder)
