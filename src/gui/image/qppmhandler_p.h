@@ -48,7 +48,7 @@ private:
     char type;
     int width;
     int height;
-    int mcc;
+    quint16 mcc;
     mutable QByteArray subType;
 };
 

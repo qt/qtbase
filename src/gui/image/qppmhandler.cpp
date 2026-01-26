@@ -32,12 +32,11 @@ static void discard_pbm_line(QIODevice *d)
     } while (res > 0 && buf[res-1] != '\n');
 }
 
-static int read_pbm_int(QIODevice *d, bool *ok, int maxDigits = -1)
+static quint16 read_pbm_int(QIODevice *d, bool *ok, int maxDigits = -1)
 {
     char c;
     int          val = -1;
     bool  digit;
-    bool hasOverflow = false;
     for (;;) {
         if (!d->getChar(&c))                // end of file
             break;
@@ -45,11 +44,8 @@ static int read_pbm_int(QIODevice *d, bool *ok, int maxDigits = -1)
         if (val != -1) {
             if (digit) {
                 const int cValue = c - '0';
-                if (val <= (INT_MAX - cValue) / 10) {
+                if (val <= (INT_MAX - cValue) / 10)
                     val = 10*val + cValue;
-                } else {
-                    hasOverflow = true;
-                }
                 if (maxDigits > 0 && --maxDigits == 0)
                     break;
                 continue;
@@ -70,12 +66,12 @@ static int read_pbm_int(QIODevice *d, bool *ok, int maxDigits = -1)
         if (maxDigits > 0 && --maxDigits == 0)
             break;
     }
-    if (val < 0)
+    if (val < 0 || val > 0xffff)
         *ok = false;
-    return hasOverflow ? -1 : val;
+    return qBound(0, val, 0xffff);
 }
 
-static bool read_pbm_header(QIODevice *device, char& type, int& w, int& h, int& mcc)
+static bool read_pbm_header(QIODevice *device, char& type, int& w, int& h, quint16& mcc)
 {
     char buf[3];
     if (device->read(buf, 3) != 3)                        // read P[1-6]<white-space>
@@ -97,7 +93,7 @@ static bool read_pbm_header(QIODevice *device, char& type, int& w, int& h, int& 
     else
         mcc = read_pbm_int(device, &ok);          // get max color component
 
-    if (!ok || w <= 0 || w > 32767 || h <= 0 || h > 32767 || mcc <= 0 || mcc > 0xffff)
+    if (!ok || w <= 0 || w > 32767 || h <= 0 || h > 32767 || mcc == 0)
         return false;                             // weird P.M image
 
     return true;
@@ -108,7 +104,7 @@ static inline QRgb scale_pbm_color(quint16 mx, quint16 rv, quint16 gv, quint16 b
     return QRgba64::fromRgba64((rv * 0xffffu) / mx, (gv * 0xffffu) / mx, (bv * 0xffffu) / mx, 0xffff).toArgb32();
 }
 
-static bool read_pbm_body(QIODevice *device, char type, int w, int h, int mcc, QImage *outImage)
+static bool read_pbm_body(QIODevice *device, char type, int w, int h, quint16 mcc, QImage *outImage)
 {
     int nbits, y;
     qsizetype pbm_bpl;
@@ -187,7 +183,7 @@ static bool read_pbm_body(QIODevice *device, char type, int w, int h, int mcc, Q
                 uint16_t *end = p + w;
                 uint16_t *b = reinterpret_cast<uint16_t *>(buf16);
                 while (p < end) {
-                    *p++ = qFromBigEndian(*b) * std::numeric_limits<uint16_t>::max() / mcc;
+                    *p++ = qFromBigEndian(*b) * 0xffffu / mcc;
                     b++;
                 }
             }
@@ -199,7 +195,7 @@ static bool read_pbm_body(QIODevice *device, char type, int w, int h, int mcc, Q
                     return false;
                 if (nbits == 8 && mcc < 255) {
                     for (qsizetype i = 0; i < pbm_bpl; i++)
-                        p[i] = (p[i] * 255) / mcc;
+                        p[i] = (p[i] * 0xffu) / mcc;
                 }
             }
         }
@@ -211,7 +207,7 @@ static bool read_pbm_body(QIODevice *device, char type, int w, int h, int mcc, Q
             p = outImage->scanLine(y);
             n = pbm_bpl;
             if (nbits == 1) {
-                int b;
+                uchar b;
                 int bitsLeft = w;
                 while (n-- && ok) {
                     b = 0;
@@ -231,7 +227,7 @@ static bool read_pbm_body(QIODevice *device, char type, int w, int h, int mcc, Q
                     }
                 } else {
                     while (n-- && ok) {
-                        *p++ = (read_pbm_int(device, &ok) & 0xffff) * std::numeric_limits<uint8_t>::max() / mcc;
+                        *p++ = read_pbm_int(device, &ok) * 0xffu / mcc;
                     }
                 }
             } else if (nbits == 16) {
@@ -243,12 +239,12 @@ static bool read_pbm_body(QIODevice *device, char type, int w, int h, int mcc, Q
                     }
                 }  else {
                     while (numPixel-- && ok) {
-                        *data++ = (read_pbm_int(device, &ok) & 0xffff) * std::numeric_limits<uint16_t>::max() / mcc;
+                        *data++ = read_pbm_int(device, &ok) * 0xffffu / mcc;
                     }
                 }
             } else {                                // 32 bits
                 n /= 4;
-                int r, g, b;
+                quint16 r, g, b;
                 if (mcc == 255) {
                     while (n-- && ok) {
                         r = read_pbm_int(device, &ok);
