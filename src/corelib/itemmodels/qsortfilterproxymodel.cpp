@@ -527,8 +527,10 @@ IndexMap::const_iterator QSortFilterProxyModelPrivate::create_mapping_recursive(
                 return end;
         }
         Mapping *gm = it.value();
-        if (gm->proxy_rows.at(source_parent.row()) == -1 ||
-                gm->proxy_columns.at(source_parent.column()) == -1) {
+        if (source_parent.row() >= gm->proxy_rows.size()
+            || gm->proxy_rows.at(source_parent.row()) == -1
+            || source_parent.column() >= gm->proxy_columns.size()
+            || gm->proxy_columns.at(source_parent.column()) == -1) {
             // Can't do, parent is filtered
             return end;
         }
