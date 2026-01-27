@@ -183,6 +183,17 @@ const char *Style = R"css(
     z-index: -1;
 }
 
+/* Dialogs take their geometry from Qt, the user agent would center and pad them. */
+.qt-window-a11y-container dialog {
+    margin: 0;
+    padding: 0;
+    border: none;
+    right: auto;
+    bottom: auto;
+    max-width: none;
+    max-height: none;
+}
+
 .title-bar .image-button {
     width: 18px;
     height: 18px;
@@ -242,6 +253,12 @@ const char *Style = R"css(
     opacity: 1.0;
     position: absolute;
     z-index: -1;
+}
+
+.menu-item {
+    margin-block-start: 0px;
+    margin-block-end: 0px;
+    padding-inline-start: 0px;
 }
 
 )css";

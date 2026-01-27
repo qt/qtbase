@@ -1178,8 +1178,22 @@ void QWasmWindow::requestActivateWindow()
 // Moves native focus to this window, via the foucus helper or the input element.
 void QWasmWindow::focus(FocusTarget target)
 {
-    if (QWasmAccessibility::isEnabled())
+    // Ask Qt for the focus object while accessibility is enabled. The application
+    // focus object may still belong to the window that focus is leaving, so use
+    // the one of this window.
+    if (QWasmAccessibility::isEnabled()) {
+        if (QWasmAccessibility::setFocusObject(window()->focusObject()))
+            return;
+        // The focus object may have no element that can take the focus, a tab bar
+        // for instance. The input context calls this for every focus change, also
+        // for the ones the browser made, so keep a focus that is already here.
+        if (m_window.call<bool>("matches", std::string(":focus-within")))
+            return;
+        // Bring the focus into the window so that it activates. The container is
+        // not hidden from assistive technology, unlike the focus helper.
+        m_a11yElementContainer.call<void>("focus");
         return;
+    }
 
     emscripten::val &element = target == InputFocus ? m_inputElement : m_focusHelper;
     element.call<void>("focus");
@@ -1189,6 +1203,10 @@ void QWasmWindow::onAccessibilityEnable()
 {
     m_focusHelper.call<void>("setAttribute", std::string("aria-hidden"), std::string("true"));
     m_inputElement.call<void>("setAttribute", std::string("aria-hidden"), std::string("true"));
+
+    // The container takes the focus when no element of the window can, so the
+    // window still activates. A negative tabindex keeps it out of the tab order.
+    m_a11yElementContainer.call<void>("setAttribute", std::string("tabindex"), std::string("-1"));
 }
 
 bool QWasmWindow::setMouseGrabEnabled(bool grab)
@@ -1202,9 +1220,13 @@ bool QWasmWindow::windowEvent(QEvent *event)
     switch (event->type()) {
     case QEvent::WindowBlocked:
         m_decoratedWindow["classList"].call<void>("add", emscripten::val("blocked"));
+        // A blocked window is outside the Qt focus chain, inert keeps the browser
+        // from tabbing into its accessibility elements.
+        m_decoratedWindow.call<void>("setAttribute", std::string("inert"), std::string(""));
         return false; // Propagate further
     case QEvent::WindowUnblocked:;
         m_decoratedWindow["classList"].call<void>("remove", emscripten::val("blocked"));
+        m_decoratedWindow.call<void>("removeAttribute", std::string("inert"));
         return false; // Propagate further
     default:
         return QPlatformWindow::windowEvent(event);

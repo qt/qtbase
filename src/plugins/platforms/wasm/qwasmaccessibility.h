@@ -33,6 +33,7 @@ public:
         return false;
     }
     static void enable() {}
+    static bool setFocusObject(QObject *object) { return false; }
 };
 #else
 class QWasmAccessibility : public QPlatformAccessibility
@@ -46,6 +47,7 @@ public:
     static void onRemoveWindow(QWindow *);
     static bool isEnabled();
     static void enable();
+    static bool setFocusObject(QObject *object);
 
 private:
     static QWasmAccessibility *instance();
@@ -53,6 +55,11 @@ private:
     void addEnableButton(QWindow *window);
     void enableAccessibility();
     void removeWindow(QWindow *window);
+    bool setFocusObjectImpl(QObject *object);
+
+#ifndef QT_NO_DEBUG
+    std::string logElementParentChain(emscripten::val element, QAccessibleInterface *iface, std::string tab = "");
+#endif
 
     emscripten::val getDescribedByContainer(QWindow *window);
     emscripten::val getDescribedByContainer(QAccessibleInterface *iface);
@@ -60,6 +67,7 @@ private:
     emscripten::val getElementContainer(QAccessibleInterface *iface);
     emscripten::val getDocument(const emscripten::val &container);
     QWindow *getWindow(QAccessibleInterface *iface);
+    bool isFocusInChildWindow(QAccessibleInterface *iface);
     bool isWindowNode(QAccessibleInterface *iface);
 
     emscripten::val createHtmlElement(QAccessibleInterface *iface);
@@ -70,7 +78,7 @@ private:
     void setHtmlElementVisibility(QAccessibleInterface *iface, bool visible);
     void setHtmlElementGeometry(QAccessibleInterface *iface);
     void setHtmlElementGeometry(emscripten::val element, QRect geometry);
-    void setHtmlElementFocus(QAccessibleInterface *iface);
+    bool setHtmlElementFocus(QAccessibleInterface *iface);
     void setHtmlElementDisabled(QAccessibleInterface *iface);
     void setHtmlElementOrientation(emscripten::val element, QAccessibleInterface *iface);
 
@@ -127,6 +135,15 @@ private:
     std::map<QWindow *, std::tuple<emscripten::val, std::shared_ptr<qstdweb::EventCallback>>> m_enableButtons;
     QHash<QAccessible::Id, emscripten::val> m_elements;
     int m_eventHandlerIndex;
+
+    // To handle the case where a button in a dialog is focused while the dialog is invisible
+    QAccessible::Id m_focusId = 0;
+
+    // To break focus loops
+    emscripten::val m_isSettingFocusIface = emscripten::val::undefined();
+
+    // Set while setHtmlElementFocus() moves the dom focus to follow Qt
+    bool m_isFollowingQtFocus = false;
 };
 
 #endif // QT_CONFIG(accessibility)
