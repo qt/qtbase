@@ -3,6 +3,8 @@
 
 #include <QtTest/qtest.h>
 
+#include <QtCore/qatomicscopedvaluerollback.h>
+
 #include <QtCore/private/qioring_p.h>
 
 #ifdef Q_OS_WIN
@@ -27,6 +29,8 @@ private slots:
     void read();
     void write();
     void vectoredOperations();
+    void vectoredOperationsCornerCases_data();
+    void vectoredOperationsCornerCases();
     void stat();
     void fiveGiBReadWrite();
     void tenGiBReadWriteVectored();
@@ -212,6 +216,14 @@ void tst_QIORing::write()
 
 void tst_QIORing::vectoredOperations()
 {
+    constexpr qsizetype BufferSize = 1024 * 1024;
+#ifdef Q_OS_LINUX
+    constexpr qsizetype ReadWriteLimit = BufferSize * 3 / 2;
+    QAtomicScopedValueRollback maxRWLen(QtPrivate::testMaxReadWriteLen,
+                                        ReadWriteLimit,
+                                        std::memory_order_relaxed);
+#endif
+
     QIORing ring;
     QVERIFY(ring.ensureInitialized());
 
@@ -227,7 +239,6 @@ void tst_QIORing::vectoredOperations()
     writeRequest.fd = fd;
     writeRequest.offset = 0;
     std::array<QByteArray, 256> buffers;
-    constexpr qsizetype BufferSize = 1024 * 1024;
     constexpr qsizetype TotalWrittenSize = qsizetype(buffers.size()) * BufferSize;
     for (auto &b : buffers)
         b = QByteArray(BufferSize, Qt::Uninitialized); // Initialize with garbage
@@ -275,6 +286,127 @@ void tst_QIORing::vectoredOperations()
         QVERIFY2(readBuffers[i] == buffers[i],
                  qPrintable("Failed on index %1"_L1.arg(QString::number(i))));
     }
+}
+
+void tst_QIORing::vectoredOperationsCornerCases_data()
+{
+    QTest::addColumn<qsizetype>("readWriteLimit");
+    QTest::addColumn<QByteArrayList>("data");
+
+    constexpr qsizetype SmallPrime = 251;
+    constexpr qsizetype BufferSize = 1024;
+    QByteArray inputBuffer(BufferSize, Qt::Uninitialized);
+    for (qsizetype i = 0; i < BufferSize; ++i)
+        inputBuffer[i] = char(i % SmallPrime);
+
+    // First span takes several vectored read operations
+    QTest::addRow("first_span_is_too_large")
+            << qsizetype(100) << QList{ inputBuffer, inputBuffer.first(100) };
+
+    // 1. First 2.5 spans fit into the first operation
+    // 2. The last 0.5 of the third span + other 1.5 spans fit into the second operation
+    // 3. The rest fits into the third operation
+    const QByteArray largerBuffer = inputBuffer + inputBuffer.first(BufferSize / 2);
+    QTest::addRow("split_spans_in_the_middle")
+            << qsizetype(BufferSize * 2.5)
+            << QList{ inputBuffer, inputBuffer, inputBuffer,
+                      largerBuffer, inputBuffer,
+                      inputBuffer };
+
+    // A case with a very large buffer in the middle
+    // 1. First 2 spans + a beginning of a third span fit into the first operation
+    // 2. The end of the third span takes two operations
+    // 3. The rest fits into the last operation
+    QByteArray veryLargeBuffer(5 * BufferSize, Qt::Uninitialized);
+    for (qsizetype i = 0; i < 5 * BufferSize; ++i)
+        veryLargeBuffer[i] = char(i % SmallPrime);
+    QTest::addRow("large_span_in_the_middle")
+            << qsizetype(BufferSize * 2.5)
+            << QList{ inputBuffer, inputBuffer,
+                      veryLargeBuffer,
+                      inputBuffer, inputBuffer };
+
+    // 1. All spans except the last one fit into the first operation
+    // 2. The last one takes several more operations
+    QTest::addRow("large_span_in_the_end")
+            << qsizetype(BufferSize)
+            << QList{ inputBuffer.first(100), inputBuffer.last(100),
+                      inputBuffer.mid(100, 500),
+                      veryLargeBuffer };
+}
+
+void tst_QIORing::vectoredOperationsCornerCases()
+{
+#if defined(Q_OS_LINUX) && defined(QT_DEBUG)
+    QFETCH(const qsizetype, readWriteLimit);
+    QAtomicScopedValueRollback maxRWLen(QtPrivate::testMaxReadWriteLen,
+                                        readWriteLimit,
+                                        std::memory_order_relaxed);
+
+    QFETCH(const QByteArrayList, data);
+
+    QIORing ring;
+    QVERIFY(ring.ensureInitialized());
+
+    QTemporaryDir dir;
+    auto path = dir.filePath("out");
+
+    auto fd = openHelper(&ring, path, QIODevice::ReadWrite);
+    auto cleanup = qScopeGuard([fd](){
+        closeFile(fd);
+    });
+
+    QIORingRequest<QIORing::Operation::VectoredWrite> writeRequest;
+    writeRequest.fd = fd;
+    writeRequest.offset = 0;
+    std::vector<QSpan<const std::byte>> inputBuffers(data.size());
+    qint64 totalInputSize = 0;
+    for (size_t i = 0; i < inputBuffers.size(); ++i) {
+        inputBuffers[i] = as_bytes(QSpan(data[i]));
+        totalInputSize += qint64(data[i].size());
+    }
+    writeRequest.sources = inputBuffers;
+
+    qint64 bytesWritten = 0;
+    writeRequest.setCallback( //
+            [&bytesWritten](const QIORingRequest<QIORing::Operation::VectoredWrite> &request) {
+                const auto *result = std::get_if<QIORingResult<QIORing::Operation::VectoredWrite>>(
+                        &request.result);
+                QVERIFY(result);
+                bytesWritten = result->bytesWritten;
+            });
+    QIORing::RequestHandle handle = ring.queueRequest(std::move(writeRequest));
+    QVERIFY(ring.waitForRequest(handle));
+    QCOMPARE(bytesWritten, totalInputSize);
+
+    // And read back again:
+    QIORingRequest<QIORing::Operation::VectoredRead> readRequest;
+    readRequest.fd = fd;
+    readRequest.offset = 0;
+    QList<QByteArray> readBuffers(data.size());
+    for (qsizetype i = 0; i < readBuffers.size(); ++i)
+        readBuffers[i] = QByteArray(data[i].size(), '\0');
+
+    std::vector<QSpan<std::byte>> writableSpans(readBuffers.size());
+    for (size_t i = 0; i < writableSpans.size(); ++i)
+        writableSpans[i] = as_writable_bytes(QSpan(readBuffers[i]));
+    readRequest.destinations = writableSpans;
+
+    qint64 bytesRead = 0;
+    readRequest.setCallback(
+            [&bytesRead](const QIORingRequest<QIORing::Operation::VectoredRead> &request) {
+                const auto *result = std::get_if<QIORingResult<QIORing::Operation::VectoredRead>>(
+                        &request.result);
+                QVERIFY(result);
+                bytesRead = result->bytesRead;
+            });
+    handle = ring.queueRequest(std::move(readRequest));
+    QVERIFY(ring.waitForRequest(handle));
+    QCOMPARE(bytesRead, totalInputSize);
+    QCOMPARE(readBuffers, data);
+#else
+    QSKIP("This test is only relevant for debug builds on Linux");
+#endif
 }
 
 void tst_QIORing::stat()

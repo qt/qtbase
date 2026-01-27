@@ -28,6 +28,29 @@ static_assert(alignof(iovec)
 
 static io_uring_op toUringOp(QIORing::Operation op);
 
+// From man write.2:
+// On Linux, write() (and similar system calls) will transfer at most 0x7ffff000 (2,147,479,552)
+// bytes, returning the number of bytes actually transferred. (This is true on both 32-bit and
+// 64-bit systems.)
+static constexpr qsizetype MaxReadWriteLen = 0x7ffff000; // aka. MAX_RW_COUNT
+
+// Assert that this instantiation of std::atomic is always lock-free so we
+// know that no code will execute on destruction.
+static_assert(std::atomic<qsizetype>::is_always_lock_free);
+
+// For test purposes we want to be able to decrease the max value.
+// For that, expose a helper variable that can be adjusted in the unit tests.
+Q_CONSTINIT std::atomic<qsizetype> QtPrivate::testMaxReadWriteLen{MaxReadWriteLen};
+
+static qsizetype maxReadWriteLen()
+{
+#ifndef QT_DEBUG
+    return MaxReadWriteLen;
+#else
+    return QtPrivate::testMaxReadWriteLen.load(std::memory_order_relaxed);
+#endif
+}
+
 QIORing::~QIORing()
 {
     if (eventDescriptor != -1)
@@ -520,7 +543,7 @@ auto QIORing::getVectoredOpAddressAndSize(QIORing::GenericRequestType &request, 
         qsizetype i = 0;
         for (; i < spans.size(); ++i) {
             total += spans[i].size();
-            if (total > MaxReadWriteLen)
+            if (total > maxReadWriteLen())
                 break;
         }
         return i;
@@ -541,7 +564,7 @@ auto QIORing::getVectoredOpAddressAndSize(QIORing::GenericRequestType &request, 
             // for a single read/write operation, we have to take into
             // consideration that we may have _already_ processed a part of it:
             const qsizetype remaining = singleSpan.size() - extra->spanOffset;
-            singleSpan.slice(extra->spanOffset, std::min(remaining, MaxReadWriteLen));
+            singleSpan.slice(extra->spanOffset, std::min(remaining, maxReadWriteLen()));
             r.address = singleSpan.data();
             r.size = singleSpan.size();
         } else {
@@ -595,13 +618,13 @@ auto QIORing::prepareRequest(io_uring_sqe *sqe, GenericRequestType &request) -> 
                 *readRequest = request.template requestData<Operation::Read>();
         auto span = readRequest->destination;
         auto offset = readRequest->offset;
-        if (span.size() >= MaxReadWriteLen) {
+        if (span.size() >= maxReadWriteLen()) {
             qCDebug(lcQIORing) << "Requested Read of size" << span.size() << "has to be split";
             auto *extra = request.getOrInitializeExtra<QtPrivate::ReadWriteExtra>();
             if (extra->spanOffset == 0) // First time setup
                 ++ongoingSplitOperations;
             qsizetype remaining = span.size() - extra->spanOffset;
-            span.slice(extra->spanOffset, std::min(remaining, MaxReadWriteLen));
+            span.slice(extra->spanOffset, std::min(remaining, maxReadWriteLen()));
             offset += extra->totalProcessed;
         }
         prepareFileReadWrite(sqe, *readRequest, span.data(), offset, span.size());
@@ -612,13 +635,13 @@ auto QIORing::prepareRequest(io_uring_sqe *sqe, GenericRequestType &request) -> 
                 *writeRequest = request.template requestData<Operation::Write>();
         auto span = writeRequest->source;
         auto offset = writeRequest->offset;
-        if (span.size() >= MaxReadWriteLen) {
+        if (span.size() >= maxReadWriteLen()) {
             qCDebug(lcQIORing) << "Requested Write of size" << span.size() << "has to be split";
             auto *extra = request.getOrInitializeExtra<QtPrivate::ReadWriteExtra>();
             if (extra->spanOffset == 0) // First time setup
                 ++ongoingSplitOperations;
             qsizetype remaining = span.size() - extra->spanOffset;
-            span.slice(extra->spanOffset, std::min(remaining, MaxReadWriteLen));
+            span.slice(extra->spanOffset, std::min(remaining, maxReadWriteLen()));
             offset += extra->totalProcessed;
         }
         prepareFileReadWrite(sqe, *writeRequest, span.data(), offset, span.size());

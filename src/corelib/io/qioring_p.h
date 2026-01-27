@@ -95,6 +95,10 @@ Q_ENUM_NS(Operation);
 #ifdef Q_OS_WIN
 struct IORingApiTable;
 #endif
+
+#ifdef Q_OS_LINUX
+extern Q_CORE_EXPORT std::atomic<qsizetype> testMaxReadWriteLen;
+#endif
 }; // namespace QtPrivate
 
 template <QtPrivate::Operation Op>
@@ -190,11 +194,6 @@ private:
         Finished,
     };
 #ifdef Q_OS_LINUX
-    // From man write.2:
-    // On Linux, write() (and similar system calls) will transfer at most 0x7ffff000 (2,147,479,552)
-    // bytes, returning the number of bytes actually transferred. (This is true on both 32-bit and
-    // 64-bit systems.)
-    static constexpr qsizetype MaxReadWriteLen = 0x7ffff000; // aka. MAX_RW_COUNT
     using NativeResultType = qint32;
     static constexpr bool isResultFailure(NativeResultType result) { return result < 0; }
 
