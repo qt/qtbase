@@ -28,6 +28,7 @@ public:
     QBenchmarkEvent();
     ~QBenchmarkEvent();
     void start() override;
+    void updateMeasurement() override;
     QList<Measurement> stop() override;
     bool isMeasurementAccepted(Measurement measurement) override;
     int adjustIterationCount(int suggestion) override;
