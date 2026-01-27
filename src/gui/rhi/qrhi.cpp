@@ -565,6 +565,12 @@ Q_LOGGING_CATEGORY(QRHI_LOG_RUB, "qt.rhi.rub")
     Profiler} can be used to gain deeper insights into the application's
     rendering and its performance.
 
+    \li Overlays showing live performance information can be highly useful as well, and
+    are often preferable to implementing simple frames-per-second counters within the
+    application itself, since they are more reliable and show more information. An example
+    is \l{https://game.intel.com/us/intel-presentmon/}{PresentMon}, which supports
+    graphics hardware from multiple vendors.
+
     \li As QRhi supports Direct 3D 12, using
     \l{https://devblogs.microsoft.com/pix/download/}{PIX}, a performance tuning
     and debugging tool for DirectX 12 games on Windows is an option as well.
