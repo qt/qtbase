@@ -24,8 +24,8 @@ namespace QtPrivate::Hijri {
 // GENERATED PART STARTS HERE
 
 /*
-    This part of the file was generated on 2025-11-13 from the
-    Common Locale Data Repository v48
+    This part of the file was generated on 2026-01-28 from the
+    Common Locale Data Repository v48.1
 
     http://www.unicode.org/cldr/
 
@@ -532,7 +532,7 @@ static inline constexpr QCalendarLocale locale_data[] = {
       {   226,    66,    62,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// Papiamento/Latin/Curacao
       {   226,    66,    13,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// Papiamento/Latin/Aruba
       {   227,     4,     1, 8735, 8735, 8818, 8818,  184,  184, 83, 83, 73, 73, 26, 26 },// Pashto/Arabic/Afghanistan
-      {   227,     4,   178, 8735, 8891, 8818, 8818,  184,  184, 83, 88, 73, 73, 26, 26 },// Pashto/Arabic/Pakistan
+      {   227,     4,   178, 8891, 8891, 8818, 8818,  184,  184, 88, 88, 73, 73, 26, 26 },// Pashto/Arabic/Pakistan
       {   228,     4,   112, 8979, 8979, 8979, 8979, 9069, 9069, 90, 90, 90, 90, 23, 23 },// Persian/Arabic/Iran
       {   228,     4,     1, 8979, 8979, 8979, 8979, 9069, 9069, 90, 90, 90, 90, 23, 23 },// Persian/Arabic/Afghanistan
       {   230,    66,   187, 9092, 9092, 9199, 9199,  184,  184,107,107, 77, 77, 26, 26 },// Polish/Latin/Poland
