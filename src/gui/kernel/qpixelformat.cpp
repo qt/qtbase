@@ -661,3 +661,5 @@ QDebug operator<<(QDebug dbg, const QPixelFormat &f)
 #endif
 
 QT_END_NAMESPACE
+
+#include "qpixelformat.moc"
