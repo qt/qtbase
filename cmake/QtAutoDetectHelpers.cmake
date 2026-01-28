@@ -557,7 +557,10 @@ function(qt_auto_detect_pch)
 endfunction()
 
 function(qt_auto_detect_win32_arm)
-    if("${QT_QMAKE_TARGET_MKSPEC}" STREQUAL "win32-arm64-msvc")
+    _qt_internal_set_win_arm64ec_env_flags()
+
+    if("${QT_QMAKE_TARGET_MKSPEC}" STREQUAL "win32-arm64-msvc"
+        OR "${QT_QMAKE_TARGET_MKSPEC}" STREQUAL "win32-arm64ec-msvc")
         set(CMAKE_SYSTEM_NAME "Windows" CACHE STRING "")
         set(CMAKE_SYSTEM_VERSION "10" CACHE STRING "")
         set(CMAKE_SYSTEM_PROCESSOR "arm64" CACHE STRING "")
@@ -673,6 +676,7 @@ macro(qt_internal_setup_autodetect)
 
     include("${CMAKE_CURRENT_LIST_DIR}/QtPublicAppleHelpers.cmake")
     include("${CMAKE_CURRENT_LIST_DIR}/QtPublicWasmToolchainHelpers.cmake")
+    include("${CMAKE_CURRENT_LIST_DIR}/QtPublicWinArm64ECHelpers.cmake")
 
     # Let CMake load our custom platform modules.
     # CMake-provided platform modules take precedence.

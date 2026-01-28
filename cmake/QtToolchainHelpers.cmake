@@ -34,6 +34,14 @@ set(__qt_chainload_toolchain_file \"\${__qt_initially_configured_toolchain_file}
         set(init_vcpkg "")
     endif()
 
+    if(QT_QMAKE_TARGET_MKSPEC)
+        list(APPEND init_platform
+            "if(NOT QT_QMAKE_TARGET_MKSPEC)"
+            "    set(QT_QMAKE_TARGET_MKSPEC ${QT_QMAKE_TARGET_MKSPEC} CACHE STRING \"\")"
+            "endif()"
+        )
+    endif()
+
     if(CMAKE_SYSTEM_NAME STREQUAL "Windows" AND CMAKE_CROSSCOMPILING)
         list(APPEND init_platform
             "string(TOUPPER \"${CMAKE_SYSTEM_PROCESSOR}\" _qt_orig_target_system_processor_upper)"
@@ -48,16 +56,20 @@ set(__qt_chainload_toolchain_file \"\${__qt_initially_configured_toolchain_file}
             "else()"
             "   set(QT_REQUIRE_HOST_PATH_CHECK FALSE)"
             "endif()"
+        )
+
+        file(READ "${PROJECT_SOURCE_DIR}/cmake/QtPublicWinArm64ECHelpers.cmake"
+            win_arm_helpers_content)
+        list(APPEND init_platform
+            "${win_arm_helpers_content}"
+            "if(QT_REPO_MODULE_VERSION AND \"\${QT_QMAKE_TARGET_MKSPEC}\""
+            "    STREQUAL \"win32-arm64ec-msvc\")"
+            "   _qt_internal_set_win_arm64ec_env_flags()"
+            "endif()"
+        )
+        list(APPEND init_platform
             "unset(_qt_host_system_processor_upper)"
             "unset(_qt_orig_host_system_processor_upper)"
-        )
-    endif()
-
-    if(QT_QMAKE_TARGET_MKSPEC)
-        list(APPEND init_platform
-            "if(NOT QT_QMAKE_TARGET_MKSPEC)"
-            "    set(QT_QMAKE_TARGET_MKSPEC ${QT_QMAKE_TARGET_MKSPEC} CACHE STRING \"\")"
-            "endif()"
         )
     endif()
 
