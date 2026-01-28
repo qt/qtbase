@@ -8487,18 +8487,45 @@ void qt_string_normalize(QString *data, QString::NormalizationForm mode, QChar::
                 if (QChar::requiresSurrogates(n.ucs4)) {
                     char16_t ucs4High = QChar::highSurrogate(n.ucs4);
                     char16_t ucs4Low = QChar::lowSurrogate(n.ucs4);
-                    char16_t oldHigh = QChar::highSurrogate(n.old_mapping);
-                    char16_t oldLow = QChar::lowSurrogate(n.old_mapping);
-                    while (pos < s.size() - 1) {
-                        if (s.at(pos).unicode() == ucs4High && s.at(pos + 1).unicode() == ucs4Low) {
-                            if (!d)
-                                d = data->data();
-                            d[pos] = QChar(oldHigh);
-                            d[++pos] = QChar(oldLow);
+
+                    // scan for this codepoint
+                    for ( ; pos < s.size() - 1; ++pos) {
+                        if (s.at(pos).unicode() == ucs4High && s.at(pos + 1).unicode() == ucs4Low)
+                            break;
+                    }
+                    if (pos == s.size())
+                        continue;   // no correction necessary
+
+                    // detach if necessary
+                    if (!d)
+                        d = data->data();
+                    if (QChar::requiresSurrogates(n.old_mapping)) {
+                        // no shrinking
+                        char16_t oldHigh = QChar::highSurrogate(n.old_mapping);
+                        char16_t oldLow = QChar::lowSurrogate(n.old_mapping);
+                        while (pos < s.size() - 1) {
+                            if (s.at(pos).unicode() == ucs4High && s.at(pos + 1).unicode() == ucs4Low) {
+                                d[pos] = QChar(oldHigh);
+                                d[++pos] = QChar(oldLow);
+                            }
+                            ++pos;
                         }
-                        ++pos;
+                    } else {
+                        // shrinking, so a little harder
+                        char16_t old = char16_t(n.old_mapping);
+                        qsizetype outpos = pos;
+                        for ( ; pos < s.size(); ++outpos, ++pos) {
+                            if (pos < s.size() - 1 && s.at(pos).unicode() == ucs4High
+                                    && s.at(pos + 1).unicode() == ucs4Low) {
+                                d[outpos] = QChar(old);
+                                ++pos;
+                            }
+                        }
+                        data->truncate(outpos);
+                        d = nullptr;
                     }
                 } else {
+                    Q_ASSERT(!QChar::requiresSurrogates(n.old_mapping));    // BMP maps to BMP
                     while (pos < s.size()) {
                         if (s.at(pos).unicode() == n.ucs4) {
                             if (!d)
