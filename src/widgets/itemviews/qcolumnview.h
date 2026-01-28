@@ -18,7 +18,7 @@ class Q_WIDGETS_EXPORT QColumnView : public QAbstractItemView {
 
 Q_OBJECT
     Q_PROPERTY(bool resizeGripsVisible READ resizeGripsVisible WRITE setResizeGripsVisible)
-    Q_PROPERTY(bool previewColumnVisible READ previewColumnVisible WRITE setPreviewColumnVisible)
+    Q_PROPERTY(bool previewColumnVisible READ isPreviewColumnVisible WRITE setPreviewColumnVisible)
 
 Q_SIGNALS:
     void updatePreviewWidget(const QModelIndex &index);
@@ -41,7 +41,7 @@ public:
     void setResizeGripsVisible(bool visible);
     bool resizeGripsVisible() const;
     void setPreviewColumnVisible(bool visible);
-    bool previewColumnVisible() const;
+    bool isPreviewColumnVisible() const;
 
     QWidget *previewWidget() const;
     void setPreviewWidget(QWidget *widget);

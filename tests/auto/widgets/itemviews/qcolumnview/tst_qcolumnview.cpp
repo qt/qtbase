@@ -744,12 +744,16 @@ void tst_QColumnView::preview()
 
     QWidget *previewWidget = new QWidget(&view);
     view.setPreviewWidget(previewWidget);
+    QVERIFY(view.isPreviewColumnVisible());
+
     QCOMPARE(view.previewWidget(), previewWidget);
     QVERIFY(previewWidget->parent() != &view);
     QTRY_VERIFY(view.previewWidget()->isVisible());
     view.setPreviewColumnVisible(false);
+    QVERIFY(!view.isPreviewColumnVisible());
     QTRY_VERIFY(!view.previewWidget()->isVisible());
     view.setPreviewColumnVisible(true);
+    QVERIFY(view.isPreviewColumnVisible());
     QTRY_VERIFY(view.previewWidget()->isVisible());
     view.setCurrentIndex(home);
     QTRY_VERIFY(!view.previewWidget()->isVisible());

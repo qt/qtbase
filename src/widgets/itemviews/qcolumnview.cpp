@@ -155,7 +155,7 @@ void QColumnView::setPreviewColumnVisible(bool visible)
         d->columns.constLast()->setVisible(d->showPreviewColumn);
 }
 
-bool QColumnView::previewColumnVisible() const
+bool QColumnView::isPreviewColumnVisible() const
 {
     Q_D(const QColumnView);
     return d->showPreviewColumn;
