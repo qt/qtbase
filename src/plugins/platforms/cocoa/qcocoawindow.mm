@@ -1311,6 +1311,32 @@ void QCocoaWindow::viewDidMoveToSuperview(NSView *previousSuperview)
         if (m_view.superview)
             [m_view setNeedsDisplay:YES];
     }
+
+    // The default coordinate system of NSViews is with the origin in the bottom
+    // left corner (also known as non-flipped). Qt's coordinate system on the other
+    // hand has the origin in the top left corner (flipped, in Cocoa terms). When
+    // we're parented into a non-flipped NSView (such as for foreign window parents),
+    // the position we set on our view in setCocoaGeometry will only accurately
+    // represent the QWindow position as long as the superview doesn't change
+    // its size. To ensure a stable y position (following the Qt semantics),
+    // we explicitly set an auto resizing mask, unless one is already set.
+    if (m_view.superview && !m_view.superview.flipped && !isContentView()) {
+        if (m_view.autoresizingMask == NSViewNotSizable) {
+            qCDebug(lcQpaWindow) << "Setting auto resizing mask on" << m_view
+                << "in non-flipped superview to maintain stable y-positioning";
+            setGeometry(geometry(), QWindowPrivate::WindowFrameExclusive);
+            m_view.autoresizingMask = NSViewMinYMargin;
+        }
+    } else if (previousSuperview && !previousSuperview.flipped
+        && m_view.autoresizingMask == NSViewMinYMargin) {
+        // Reset back to default. This assumes someone didn't
+        // actively set NSViewMinYMargin and want it to stay
+        // that way. In that rare case, they can re-apply the
+        // auto resizing mask after reparenting.
+        qCDebug(lcQpaWindow) << "Clearing auto resizing mask on" << m_view
+            << "as explicit stable y-positioning is no longer needed";
+        m_view.autoresizingMask = NSViewNotSizable;
+    }
 }
 
 /*!
