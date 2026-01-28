@@ -408,17 +408,18 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
             if (wasMouseOver != isMouseOver) {
                 styleObject->setProperty("_q_stylestate", int(state));
                 auto anim = qobject_cast<QNumberStyleAnimation *>(d->animation(styleObject));
+                constexpr int durationMS = 100;
                 qreal startValue = isMouseOver ? 0 : 1;
-                int duration = 100;
+                int curDurationMS = durationMS;
                 if (anim) {
                     startValue = anim->currentValue();
-                    duration = anim->currentLoopTime();
+                    curDurationMS = durationMS - (anim->duration() - anim->currentLoopTime());
                     d->stopAnimation(option->styleObject);
                 }
                 anim = new QNumberStyleAnimation(styleObject);
                 anim->setStartValue(startValue);
                 anim->setEndValue(isMouseOver ? 1 : 0);
-                anim->setDuration(duration);
+                anim->setDuration(curDurationMS);
                 d->startAnimation(anim);
             }
         }
