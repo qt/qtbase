@@ -121,15 +121,35 @@ void QCocoaWindow::initialize()
 
     if (!isForeignWindow()) {
         // Compute the initial geometry based on the geometry set on the
-        // QWindow. This geometry has already been reflected to the
-        // QPlatformWindow in the constructor, so to ensure that the
-        // resulting setGeometry call does not think the geometry has
-        // already been applied, we reset the QPlatformWindow's view
-        // of the geometry first.
+        // QWindow, with automatic positioning and sizing, if the position
+        // or size has been left unset.
         auto initialGeometry = QPlatformWindow::initialGeometry(window(),
             windowGeometry(), defaultWindowWidth, defaultWindowHeight);
-        QPlatformWindow::d_ptr->rect = QRect();
-        setGeometry(initialGeometry);
+
+        // Note: The initial geometry does not incorporate whether the
+        // positionPolicy includes the frame or not. It's up to us to
+        // account for that below.
+
+        if (QPlatformWindow::parent()) {
+            // If we have a parent window we need to establish the superview
+            // relationship first, before we can set the geometry, so that we
+            // know whether the superview is flipped or not when setting the
+            // geometry.
+            recreateWindowIfNeeded();
+            setGeometry(initialGeometry);
+        } else {
+            // If we're a top level window we need to create the NSWindow
+            // first, so that we know the frame margins of the window. But
+            // since the geometry will be applied during setContentView we
+            // must persist the initial geometry here, so that it's picked
+            // up that that point.
+            QPlatformWindow::setGeometry(initialGeometry);
+            recreateWindowIfNeeded();
+            // We don't need to set the initial geometry again here. And we
+            // must also be careful to not setGeometry with the newly adopted
+            // geometry, as that is now effecively WindowFrameExclusive, while
+            // the QWindow might still be set to WindowFrameInclusive.
+        }
 
         setMask(QHighDpi::toNativeLocalRegion(window()->mask(), window()));
 
@@ -143,11 +163,11 @@ void QCocoaWindow::initialize()
             }, NSKeyValueObservingOptionNew);
 
     } else {
+        // Reparent to superview if needed
+        recreateWindowIfNeeded();
         // Pick up essential foreign window state
         QPlatformWindow::setGeometry(QRectF::fromCGRect(m_view.frame).toRect());
     }
-
-    recreateWindowIfNeeded();
 
     m_initialized = true;
 }
