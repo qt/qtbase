@@ -1116,7 +1116,6 @@ void tst_QChar::normalizationCorrections()
     QCOMPARE(n, uncorrected);
 
     // there is no codepoint that changed correction between versions
-    QEXPECT_FAIL("SIP-to-BMP", "QTBUG-143607 shrinkage not implemented properly", Continue);
     n = input.normalized(form, QChar::Unicode_3_1);
     QCOMPARE(n, corrected);
 }
