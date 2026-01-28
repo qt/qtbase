@@ -1287,6 +1287,41 @@ void QCocoaWindow::viewDidChangeGlobalFrame()
     [m_view setNeedsDisplay:YES];
 }
 
+/*!
+    Notification that the view has moved to a different superview.
+
+    Unlike [NSView viewDidMoveToSuperview] this callback happens
+    after the view's new window has been resolved.
+*/
+void QCocoaWindow::viewDidMoveToSuperview(NSView *previousSuperview)
+{
+    qCDebug(lcQpaWindow) << "Done re-parenting" << m_view
+        << "from" << previousSuperview << "into" << m_view.superview;
+
+    if (isEmbedded()) {
+        // FIXME: Align this with logic in QCocoaWindow::setParent
+        handleGeometryChange();
+
+        if (m_view.superview)
+            [m_view setNeedsDisplay:YES];
+    }
+}
+
+/*!
+    Notification that the view has moved to a different window.
+
+    The viewDidMoveToSuperview callback comes in before this one.
+*/
+void QCocoaWindow::viewDidMoveToWindow(NSWindow *previousWindow)
+{
+    qCDebug(lcQpaWindow) << "Done moving" << m_view
+        << "from" << previousWindow << "to" << m_view.window;
+
+    // Get rid of our Qt managed NSWindow if we're now embedded
+    if (isEmbedded())
+        recreateWindowIfNeeded();
+}
+
 // ----------------------- NSWindow notifications -----------------------
 
 // Note: The following notifications are delivered to every QCocoaWindow

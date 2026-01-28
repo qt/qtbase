@@ -140,6 +140,9 @@ public:
     Q_NOTIFICATION_HANDLER(NSWindowDidChangeOcclusionStateNotification) void windowDidChangeOcclusionState();
     Q_NOTIFICATION_HANDLER(NSWindowDidChangeScreenNotification) void windowDidChangeScreen();
 
+    void viewDidMoveToSuperview(NSView *previousSuperview);
+    void viewDidMoveToWindow(NSWindow *previousWindow);
+
     void windowWillZoom();
 
     bool windowShouldClose();
