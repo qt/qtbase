@@ -110,6 +110,7 @@ private slots:
     void normalization();
 #endif // !defined(Q_OS_WASM)
     void normalization_manual();
+    void normalizationCorrections_data();
     void normalizationCorrections();
     void unicodeVersion();
 };
@@ -1085,40 +1086,36 @@ void tst_QChar::normalization_manual()
     }
 }
 
-void tst_QChar::normalizationCorrections()
+void tst_QChar::normalizationCorrections_data()
 {
-    QString s;
-    s.append(QChar(0xf951));
+    using namespace Qt::StringLiterals;
+    QTest::addColumn<QString>("input");
+    QTest::addColumn<QString::NormalizationForm>("form");
+    QTest::addColumn<QString>("uncorrected");
+    QTest::addColumn<QString>("corrected");
 
-    QString n = s.normalized(QString::NormalizationForm_D);
-    QString res;
-    res.append(QChar(0x964b));
-    QCOMPARE(n, res);
-
-    n = s.normalized(QString::NormalizationForm_D, QChar::Unicode_3_1);
-    res.clear();
-    res.append(QChar(0x96fb));
-    QCOMPARE(n, res);
-
-    s.clear();
-    s += QChar(QChar::highSurrogate(0x2f868));
-    s += QChar(QChar::lowSurrogate(0x2f868));
-
-    n = s.normalized(QString::NormalizationForm_C);
-    res.clear();
-    res += QChar(0x36fc);
-    QCOMPARE(n, res);
-
-    n = s.normalized(QString::NormalizationForm_C, QChar::Unicode_3_1);
-    res.clear();
-    res += QChar(0xd844);
-    res += QChar(0xdf6a);
-    QCOMPARE(n, res);
-
-    n = s.normalized(QString::NormalizationForm_C, QChar::Unicode_3_2);
-    QCOMPARE(n, res);
+    QTest::addRow("BMP-to-BMP") << u"\uf951"_s << QString::NormalizationForm_D
+                                << u"\u964b"_s << u"\u96fb"_s;
+    // Supplemental Ideographic Plane (SIP) is U+20000 to U+2FFFF
+    QTest::addRow("SIP-to-SIP") << u"\U0002f868"_s << QString::NormalizationForm_C
+                                << u"\u36fc"_s << u"\U0002136a"_s;
 }
 
+void tst_QChar::normalizationCorrections()
+{
+    QFETCH(QString, input);
+    QFETCH(QString, uncorrected);
+    QFETCH(QString, corrected);
+    QFETCH(QString::NormalizationForm, form);
+
+    // without corrections
+    QString n = input.normalized(form, QChar::Unicode_Unassigned);
+    QCOMPARE(n, uncorrected);
+
+    // there is no codepoint that changed correction between versions
+    n = input.normalized(form, QChar::Unicode_3_1);
+    QCOMPARE(n, corrected);
+}
 
 QTEST_APPLESS_MAIN(tst_QChar)
 #include "tst_qchar.moc"
