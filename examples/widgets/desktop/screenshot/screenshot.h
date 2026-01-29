@@ -44,6 +44,7 @@ private:
     QSpinBox *delaySpinBox;
     QCheckBox *hideThisWindowCheckBox;
     QPushButton *newScreenshotButton;
+    QPushButton *saveScreenshotButton;
 };
 //! [0]
 

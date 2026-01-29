@@ -14,6 +14,7 @@ Screenshot::Screenshot()
 
     const QRect screenGeometry = screen()->geometry();
     screenshotLabel->setMinimumSize(screenGeometry.width() / 8, screenGeometry.height() / 8);
+    screenshotLabel->setFrameShape(QFrame::Box);
 
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
     mainLayout->addWidget(screenshotLabel);
@@ -39,7 +40,7 @@ Screenshot::Screenshot()
     newScreenshotButton = new QPushButton(tr("New Screenshot"), this);
     connect(newScreenshotButton, &QPushButton::clicked, this, &Screenshot::newScreenshot);
     buttonsLayout->addWidget(newScreenshotButton);
-    QPushButton *saveScreenshotButton = new QPushButton(tr("Save Screenshot"), this);
+    saveScreenshotButton = new QPushButton(tr("Save Screenshot"), this);
     connect(saveScreenshotButton, &QPushButton::clicked, this, &Screenshot::saveScreenshot);
     buttonsLayout->addWidget(saveScreenshotButton);
     QPushButton *quitScreenshotButton = new QPushButton(tr("Quit"), this);
@@ -60,10 +61,12 @@ Screenshot::Screenshot()
 //! [1]
 void Screenshot::resizeEvent(QResizeEvent * /* event */)
 {
-    QSize scaledSize = originalPixmap.size();
-    scaledSize.scale(screenshotLabel->size(), Qt::KeepAspectRatio);
-    if (scaledSize != screenshotLabel->pixmap().size())
-        updateScreenshotLabel();
+    if (!originalPixmap.isNull()) {
+        QSize scaledSize = originalPixmap.size();
+        scaledSize.scale(screenshotLabel->size(), Qt::KeepAspectRatio);
+        if (scaledSize != screenshotLabel->pixmap().size())
+            updateScreenshotLabel();
+    }
 }
 //! [1]
 
@@ -111,16 +114,10 @@ void Screenshot::saveScreenshot()
 //! [4]
 void Screenshot::shootScreen()
 {
-    QScreen *screen = QGuiApplication::primaryScreen();
-    if (const QWindow *window = windowHandle())
-        screen = window->screen();
-    if (!screen)
-        return;
-
     if (delaySpinBox->value() != 0)
         QApplication::beep();
 
-    originalPixmap = screen->grabWindow(0);
+    originalPixmap = screen()->grabWindow(0);
     updateScreenshotLabel();
 
     newScreenshotButton->setDisabled(false);
@@ -145,8 +142,14 @@ void Screenshot::updateCheckBox()
 //! [10]
 void Screenshot::updateScreenshotLabel()
 {
-    screenshotLabel->setPixmap(originalPixmap.scaled(screenshotLabel->size(),
-                                                     Qt::KeepAspectRatio,
-                                                     Qt::SmoothTransformation));
+    if (originalPixmap.isNull()) {
+        saveScreenshotButton->setEnabled(false);
+        screenshotLabel->setText(tr("Grabbing \"%1\" failed.").arg(screen()->name()));
+    } else {
+        saveScreenshotButton->setEnabled(true);
+        screenshotLabel->setPixmap(originalPixmap.scaled(screenshotLabel->size(),
+                                                         Qt::KeepAspectRatio,
+                                                         Qt::SmoothTransformation));
+    }
 }
 //! [10]
