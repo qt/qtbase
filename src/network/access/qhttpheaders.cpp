@@ -22,6 +22,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 Q_STATIC_LOGGING_CATEGORY(lcQHttpHeaders, "qt.network.http.headers");
 
 /*!
@@ -1692,6 +1694,127 @@ std::optional<QDateTime> QHttpHeaders::dateTimeValueAt(qsizetype i) const
     QDateTime dt = QNetworkHeadersPrivate::fromHttpDate(valueAt(i));
     return dt.isValid() ? std::make_optional(std::move(dt)) :
                           std::nullopt;
+}
+
+/*!
+    \since 6.12
+
+    Returns the values of the \c Range HTTP header field, parsed as a list of
+    byte-range pairs.
+
+    Each pair represents an inclusive range [start, end]. According to RFC 9110:
+    \list
+        \li If the start is specified but the end is not (e.g., "bytes=500-"),
+            the pair will be \c{ (500, -1) }.
+        \li If the end is specified but the start is not (e.g., "bytes=-500"),
+            the pair will be \c{ (-1, 500) }, representing the last 500 bytes.
+        \li If both are specified (e.g., "bytes=0-499"), the pair will be \c{ (0, 499) }.
+    \endlist
+
+    If \a ok is not \nullptr, it is used to report the success or failure of the
+    parsing process:
+    \list
+        \li If no \c Range header is present, \a ok is set to \c true and an empty
+            list is returned.
+        \li According to RFC 9110 Section 14.2, any \c Range header containing a
+            unit other than "bytes" (e.g., "seconds=1-2") is ignored. These ignored
+            headers do not cause the parsing to fail; \a ok remains \c true.
+        \li If a \c Range header uses the "bytes" unit but is malformed (e.g.,
+            missing the hyphen, containing invalid characters, or invalid numbers),
+            the function returns an empty list and sets \a ok to \c false.
+    \endlist
+
+    \sa setRangeValue, WellKnownHeader::Range
+*/
+QList<QPair<qint64, qint64>> QHttpHeaders::rangeValue(bool *ok) const
+{
+    QList<QPair<qint64, qint64>> results;
+
+    const QList<QByteArray> rangesVals = values(WellKnownHeader::Range);
+    bool invalidHeaderEncountered = false;
+
+    for (QByteArrayView rangesVal : rangesVals) {
+        if (!rangesVal.startsWith("bytes="_ba))
+            continue;
+
+        rangesVal = rangesVal.slice(6);
+
+        for (QLatin1StringView part : qTokenize(QLatin1StringView(rangesVal), u',')) {
+            int dashPos = part.indexOf(u'-');
+            if (dashPos == -1) {
+                invalidHeaderEncountered = true;
+                break;
+            }
+
+            const QLatin1StringView startStr = part.sliced(0, dashPos).trimmed();
+            const QLatin1StringView endStr = part.sliced(dashPos + 1).trimmed();
+
+            bool okStart = false;
+            bool okEnd = false;
+
+            const qint64 start = startStr.isEmpty() ? -1 : startStr.toLongLong(&okStart);
+            const qint64 end = endStr.isEmpty() ? -1 : endStr.toLongLong(&okEnd);
+
+            if ((!startStr.isEmpty() && !okStart) || (!endStr.isEmpty() && !okEnd)) {
+                invalidHeaderEncountered = true;
+                break;
+            }
+            if (start == -1 && end == -1) {
+                invalidHeaderEncountered = true;
+                break;
+            }
+
+            results.append({start, end});
+        }
+    }
+
+    if (ok)
+        *ok = !invalidHeaderEncountered;
+
+    return invalidHeaderEncountered ? QList<QPair<qint64, qint64>>{} : results;
+}
+
+/*!
+    \since 6.12
+
+    Sets the \c Range HTTP header field to the specified list of \a ranges.
+
+    The ranges are formatted using the "bytes" unit. For each pair in the list:
+    \list
+        \li A pair of \c{ (500, -1) } is formatted as \c "500-".
+        \li A pair of \c{ (-1, 500) } is formatted as \c "-500".
+        \li A pair of \c{ (0, 499) } is formatted as \c "0-499".
+    \endlist
+
+    If multiple ranges are provided, they will be joined by commas, for example:
+    \c "bytes=0-499, 1000-".
+
+    If \a ranges is empty, the \c Range header is removed.
+
+    \sa rangeValue(), WellKnownHeader::Range
+*/
+void QHttpHeaders::setRangeValue(const QList<QPair<qint64, qint64>> &ranges)
+{
+    if (ranges.isEmpty()) {
+        removeAll(WellKnownHeader::Range);
+        return;
+    }
+
+    QByteArray result("bytes=");
+    for (int i = 0; i < ranges.size(); ++i) {
+        const auto &pair = ranges.at(i);
+
+        if (i > 0)
+            result += ", "_ba;
+
+        if (pair.first != -1)
+            result += QByteArray::number(pair.first);
+        result += "-"_ba;
+        if (pair.second != -1)
+            result += QByteArray::number(pair.second);
+    }
+
+    replaceOrAppend(WellKnownHeader::Range, result);
 }
 
 /*!

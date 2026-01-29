@@ -266,6 +266,9 @@ public:
     Q_NETWORK_EXPORT void setDateTimeValue(QAnyStringView name, const QDateTime &dateTime);
     Q_NETWORK_EXPORT void setDateTimeValue(WellKnownHeader name, const QDateTime &dateTime);
 
+    Q_NETWORK_EXPORT QList<QPair<qint64, qint64>> rangeValue(bool *ok = nullptr) const;
+    Q_NETWORK_EXPORT void setRangeValue(const QList<QPair<qint64, qint64>> &ranges);
+
     Q_NETWORK_EXPORT qsizetype size() const noexcept;
     Q_NETWORK_EXPORT void reserve(qsizetype size);
     bool isEmpty() const noexcept { return size() == 0; }

@@ -26,6 +26,7 @@ private slots:
     void replaceOrAppend();
     void intValues();
     void dateTimeValues();
+    void rangeValues();
     void data_stream_data();
     void data_stream();
     void data_stream_invalid_data();
@@ -644,6 +645,89 @@ void tst_QHttpHeaders::dateTimeValues()
     QCOMPARE(h1.dateTimeValue("date"), std::nullopt);
     QCOMPARE(h1.dateTimeValue("non-existing-header"), std::nullopt);
     QCOMPARE(h1.dateTimeValues("date"), std::nullopt);
+}
+
+void tst_QHttpHeaders::rangeValues()
+{
+    QHttpHeaders h1;
+    bool ok = false;
+
+    // Test set range
+    QList<QPair<qint64, qint64>> ranges = {
+        {0, 499},    // 0-499
+        {500, -1},   // 500-
+        {-1, 100}    // -100
+    };
+    h1.setRangeValue(ranges);
+    QCOMPARE(h1.value(QHttpHeaders::WellKnownHeader::Range), "bytes=0-499, 500-, -100");
+
+    // Parse range
+    auto parsedRanges = h1.rangeValue(&ok);
+    QCOMPARE(ok, true);
+    QCOMPARE(parsedRanges.size(), 3);
+    QCOMPARE(parsedRanges.at(0).first, 0);
+    QCOMPARE(parsedRanges.at(0).second, 499);
+    QCOMPARE(parsedRanges.at(1).first, 500);
+    QCOMPARE(parsedRanges.at(1).second, -1);
+    QCOMPARE(parsedRanges.at(2).first, -1);
+    QCOMPARE(parsedRanges.at(2).second, 100);
+
+    // Use empty range to clear (also not count as failure)
+    h1.setRangeValue({});
+    QVERIFY(!h1.contains(QHttpHeaders::WellKnownHeader::Range));
+    QVERIFY(h1.rangeValue(&ok).isEmpty());
+    QCOMPARE(ok, true);
+
+    // Test parsing invalid range
+    h1.clear();
+    h1.append(QHttpHeaders::WellKnownHeader::Range, "bytes= 0-100 , invalid, 500-");
+    auto complexRanges = h1.rangeValue(&ok);
+    QCOMPARE(ok, false);
+    QVERIFY(complexRanges.isEmpty());
+
+    h1.clear();
+    h1.append(QHttpHeaders::WellKnownHeader::Range, "bytes=100");
+    h1.rangeValue(&ok);
+    QCOMPARE(ok, false);
+
+    // Test unknown range unit (should ignore instead of failure)
+    h1.clear();
+    h1.append(QHttpHeaders::WellKnownHeader::Range, "items=0-10");
+    auto itemRanges = h1.rangeValue(&ok);
+    QCOMPARE(ok, true);
+    QVERIFY(itemRanges.isEmpty());
+
+    // Test multiple Range header
+    h1.clear();
+    h1.append(QHttpHeaders::WellKnownHeader::Range, "bytes=-100");
+    h1.append(QHttpHeaders::WellKnownHeader::Range, "bytes=114-514, 2000-");
+
+    auto multiHeaderRanges = h1.rangeValue(&ok);
+    QCOMPARE(ok, true);
+    QCOMPARE(multiHeaderRanges.size(), 3);
+    QCOMPARE(multiHeaderRanges.at(0), qMakePair(qint64(-1), qint64(100)));
+    QCOMPARE(multiHeaderRanges.at(1), qMakePair(qint64(114), qint64(514)));
+    QCOMPARE(multiHeaderRanges.at(2), qMakePair(qint64(2000), qint64(-1)));
+
+    // Multiple Range headers with one of them should be skipped
+    h1.clear();
+    h1.append(QHttpHeaders::WellKnownHeader::Range, "bytes=0-499");
+    h1.append(QHttpHeaders::WellKnownHeader::Range, "unknown-unit=1-2");
+    h1.append(QHttpHeaders::WellKnownHeader::Range, "bytes=1000-");
+
+    auto mixedHeaderRanges = h1.rangeValue(&ok);
+    QCOMPARE(ok, true);
+    QCOMPARE(mixedHeaderRanges.size(), 2);
+    QCOMPARE(mixedHeaderRanges.at(0), qMakePair(qint64(0), qint64(499)));
+    QCOMPARE(mixedHeaderRanges.at(1), qMakePair(qint64(1000), qint64(-1)));
+
+    // Test multiple Range header with invalid one
+    h1.clear();
+    h1.append(QHttpHeaders::WellKnownHeader::Range, "bytes=0-499");
+    h1.append(QHttpHeaders::WellKnownHeader::Range, "bytes=bad-format");
+
+    h1.rangeValue(&ok);
+    QCOMPARE(ok, false);
 }
 
 void tst_QHttpHeaders::data_stream_data()
