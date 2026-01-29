@@ -3,46 +3,13 @@
 
 #include "qimagescale_p.h"
 #include "qimage.h"
-#include <private/qtguiglobal_p.h>
 #include <private/qsimd_p.h>
-
-#if QT_CONFIG(qtgui_threadpool)
-#include <private/qlatch_p.h>
-#include <qthreadpool.h>
-#include <private/qguiapplication_p.h>
-#include <private/qthreadpool_p.h>
-#endif
 
 #if defined(__ARM_NEON__)
 
 QT_BEGIN_NAMESPACE
 
 using namespace QImageScale;
-
-template<typename T>
-static inline void multithread_pixels_function(QImageScaleInfo *isi, int dh, const T &scaleSection)
-{
-#if QT_CONFIG(qtgui_threadpool)
-    int segments = (qsizetype(isi->sh) * isi->sw) / (1<<16);
-    segments = std::min(segments, dh);
-    QThreadPool *threadPool = QGuiApplicationPrivate::qtGuiThreadPool();
-    if (segments > 1 && threadPool && !threadPool->contains(QThread::currentThread())) {
-        QLatch semaphore(segments);
-        int y = 0;
-        for (int i = 0; i < segments; ++i) {
-            int yn = (dh - y) / (segments - i);
-            threadPool->start([&, y, yn]() {
-                scaleSection(y, y + yn);
-                semaphore.countDown();
-            });
-            y += yn;
-        }
-        semaphore.wait();
-        return;
-    }
-#endif
-    scaleSection(0, dh);
-}
 
 inline static uint32x4_t qt_qimageScaleAARGBA_helper(const unsigned int *pix, int xyap, int Cxy, int step)
 {
