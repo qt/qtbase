@@ -148,6 +148,7 @@ private:
 
     void handlePointerEnterLeaveEvent(const PointerEvent &event);
     bool processPointerEnterLeave(const PointerEvent &event);
+    void releasePointerGrab(const MouseEvent &event);
     void processPointer(const PointerEvent &event);
     bool deliverPointerEvent(const PointerEvent &event);
     void handleWheelEvent(const emscripten::val &event);
@@ -213,6 +214,7 @@ private:
 
     QPoint m_lastPointerMovePoint;
 
+    std::optional<int> m_capturedPointerId = std::nullopt;
     WId m_winId = 0;
     bool m_wantCapture = false;
     bool m_hasTitle = false;

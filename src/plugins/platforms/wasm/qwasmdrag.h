@@ -16,6 +16,7 @@ QT_BEGIN_NAMESPACE
 
 struct DragEvent;
 
+class QWasmScreen;
 class QWasmDrag final : public QSimpleDrag
 {
 public:
@@ -31,7 +32,7 @@ public:
     void onNativeDragOver(DragEvent *event);
     void onNativeDrop(DragEvent *event);
     void onNativeDragStarted(DragEvent *event);
-    void onNativeDragFinished(DragEvent *event);
+    void onNativeDragFinished(DragEvent *event, QWasmScreen *platformScreen);
     void onNativeDragEnter(DragEvent *event);
     void onNativeDragLeave(DragEvent *event);
 
