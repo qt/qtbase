@@ -517,10 +517,17 @@ void tst_QWidget_window::tst_paintEventOnResize_QTBUG50796()
     QVERIFY(QTest::qWaitForWindowActive(&root));
     QVERIFY(native->isVisible());
 
+    // The top level widget can receive new margins after show
+    // if the size is big enough to end up overlapping safe areas.
+    int safeMarginsResizeCount = 0;
+    connect(native->windowHandle(), &QWindow::safeAreaMarginsChanged, this, [&]() {
+        ++safeMarginsResizeCount;
+    });
+
     native->paintEventCount = 0;
     native->resize(native->width() + 10, native->height() + 10);
     QTest::qWait(50); // Wait for paint events
-    QTRY_COMPARE(native->paintEventCount, 1); // Only one paint event must occur
+    QTRY_COMPARE(native->paintEventCount, 1 + safeMarginsResizeCount);
 }
 
 #if QT_CONFIG(draganddrop)
