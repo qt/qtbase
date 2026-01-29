@@ -449,12 +449,12 @@ void tst_QWizard::setPixmap()
     int newWidth = 1240;
     wizard.resize(newWidth, 720);
     QCOMPARE(wizard.width(), oldWidth);
-    wizard.setBannerStretchPolicy(QWizard::BannerStretchPolicy::Stretch);
+    wizard.setOption(QWizard::StretchBanner, true);
     wizard.resize(newWidth, 720);
     QCOMPARE(wizard.width(), newWidth);
-    wizard.setBannerStretchPolicy(QWizard::BannerStretchPolicy::NoStretch);
+    wizard.setOption(QWizard::StretchBanner, false);
     QCOMPARE(wizard.width(), oldWidth);
-    wizard.setBannerStretchPolicy(QWizard::BannerStretchPolicy::Stretch);
+    wizard.setOption(QWizard::StretchBanner, true);
     wizard.resize(newWidth, 720);
     QCOMPARE(wizard.width(), newWidth);
 }

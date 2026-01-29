@@ -25,7 +25,6 @@ class Q_WIDGETS_EXPORT QWizard : public QDialog
     Q_PROPERTY(Qt::TextFormat subTitleFormat READ subTitleFormat WRITE setSubTitleFormat)
     Q_PROPERTY(int startId READ startId WRITE setStartId)
     Q_PROPERTY(int currentId READ currentId WRITE setCurrentId NOTIFY currentIdChanged)
-    Q_PROPERTY(BannerStretchPolicy bannerStretchPolicy READ bannerStretchPolicy WRITE setBannerStretchPolicy REVISION(6, 11))
 
 public:
     enum WizardButton {
@@ -85,7 +84,8 @@ public:
         HaveCustomButton1               = 0x00002000,
         HaveCustomButton2               = 0x00004000,
         HaveCustomButton3               = 0x00008000,
-        NoCancelButtonOnLastPage        = 0x00010000
+        NoCancelButtonOnLastPage        = 0x00010000,
+        StretchBanner                   = 0x00020000,
     };
     Q_ENUM(WizardOption)
 
@@ -131,8 +131,6 @@ public:
     Qt::TextFormat titleFormat() const;
     void setSubTitleFormat(Qt::TextFormat format);
     Qt::TextFormat subTitleFormat() const;
-    void setBannerStretchPolicy(BannerStretchPolicy bannerStretchPolicy);
-    QWizard::BannerStretchPolicy bannerStretchPolicy() const;
     void setPixmap(WizardPixmap which, const QPixmap &pixmap);
     QPixmap pixmap(WizardPixmap which) const;
 
