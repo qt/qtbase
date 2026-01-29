@@ -2370,6 +2370,7 @@ bool QRhiVulkan::recreateSwapChain(QRhiSwapChain *swapChain)
         qWarning("Failed to create swapchain: %d", err);
         return false;
     }
+    setObjectName(uint64_t(newSwapChain), VK_OBJECT_TYPE_SWAPCHAIN_KHR, swapChainD->m_objectName);
 
     if (swapChainD->sc)
         releaseSwapChainResources(swapChain);
@@ -8354,6 +8355,7 @@ bool QVkShaderResourceBindings::create()
         qWarning("Failed to create descriptor set layout: %d", err);
         return false;
     }
+    rhiD->setObjectName(uint64_t(layout), VK_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT, m_objectName);
 
     VkDescriptorSetAllocateInfo allocInfo = {};
     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -8370,6 +8372,9 @@ bool QVkShaderResourceBindings::create()
         for (BoundResourceData &bd : boundResourceData[i])
             memset(&bd, 0, sizeof(BoundResourceData));
     }
+
+    for (int i = 0; i < QVK_FRAMES_IN_FLIGHT; ++i)
+        rhiD->setObjectName(uint64_t(descSets[i]), VK_OBJECT_TYPE_DESCRIPTOR_SET, m_objectName, i);
 
     lastActiveFrameSlot = -1;
     generation += 1;
