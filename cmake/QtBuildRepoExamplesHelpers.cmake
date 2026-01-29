@@ -11,6 +11,8 @@ macro(qt_examples_build_begin)
     # Examples are not unity-ready.
     set(CMAKE_UNITY_BUILD OFF)
 
+    qt_internal_sbom_disable_sbom_for_examples_subdir()
+
     # Skip running deployment steps when the developer asked to deploy a minimal subset of examples.
     # Each example can then decide whether it wants to be deployed as part of the minimal subset
     # by unsetting the QT_INTERNAL_SKIP_DEPLOYMENT variable before its qt_internal_add_example call.
