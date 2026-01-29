@@ -704,8 +704,9 @@ void tst_qfloat16::finite()
     // comparison, and we need exact here.
     const qfloat16 zero(0), plus(+1), minus(-1);
     const qfloat16 magnitude = (value < zero) ? -value : value;
-    QVERIFY(value.copySign(plus) == magnitude);
-    QVERIFY(value.copySign(minus) == -magnitude);
+    using std::copysign;
+    QCOMPARE_EQ(copysign(value, plus),   magnitude);
+    QCOMPARE_EQ(copysign(value, minus), -magnitude);
 }
 
 void tst_qfloat16::properties()
@@ -824,7 +825,8 @@ void tst_qfloat16::limits() // See also: qNaN() and infinity()
     QVERIFY(Bounds::denorm_min() / two == zero);
     const qfloat16 under = (-Bounds::denorm_min()) / two;
     QVERIFY(under == -zero);
-    QCOMPARE(qfloat16(1).copySign(under), qfloat16(-1));
+    using std::copysign;
+    QCOMPARE_EQ(copysign(qfloat16(1), under), qfloat16(-1));
 }
 
 void tst_qfloat16::mantissaOverflow()

@@ -123,9 +123,15 @@ Q_CORE_EXPORT int qRegisterNormalizedMetaType_qfloat16(const QByteArray &)
 /*!
     \since 5.15
     \fn qfloat16 qfloat16::copySign(qfloat16 sign) const noexcept
+    \obsolete [6.11] Use the copysign() friend function instead.
+*/
+
+/*!
+    \since 6.11
+    \fn bool qfloat16::copysign(qfloat16 x, qfloat16 sign)
 
     Returns a qfloat16 with the sign of \a sign but the rest of its value taken
-    from this qfloat16. Serves as qfloat16's equivalent of std::copysign().
+    from \a{x}. Serves as qfloat16's equivalent of std::copysign().
 
     \sa signbit()
 */
@@ -137,6 +143,8 @@ Q_CORE_EXPORT int qRegisterNormalizedMetaType_qfloat16(const QByteArray &)
     Returns true if qfloat16 \a x is negative, false otherwise. Note this
     function returns true for negative zero, negative infinity, and negative
     NaN values.
+
+    \sa copysign()
 */
 
 /*!
