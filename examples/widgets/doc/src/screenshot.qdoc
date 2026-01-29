@@ -152,19 +152,13 @@
 
     The \c shootScreen() slot is called to take the screenshot.
 
-    First, we find the instance of QScreen the window is located
-    by retrieving the QWindow and its QScreen, defaulting
-    to the primary screen. If no screen can be found, we return.
-    Although this is unlikely to happen, applications should check
-    for null pointers since there might be situations in which no
-    screen is connected.
-
     If the user has chosen to delay the screenshot, we make the application
     beep when the screenshot is taken using the static
     QApplication::beep() function.
 
     We then take the screenshot using the QScreen::grabWindow()
-    function. The function grabs the contents of the window passed as
+    function on the screen returned by QWidget::screen().
+    The function grabs the contents of the window passed as
     an argument, makes a pixmap out of it and returns that pixmap.
     The window id can be obtained with QWidget::winId() or QWindow::winId().
     Here, however, we just pass 0 as the window id, indicating that we
@@ -189,7 +183,15 @@
 
     The private \c updateScreenshotLabel() function is called whenever
     the screenshot changes, or when a resize event changes the size of
-    the screenshot preview label. It updates the screenshot preview's
+    the screenshot preview label.
+
+    First, we handle the failure case. On some platforms, namely
+    Wayland, it is not possible to retrieve the screen content.
+    In this case, the pixmap is empty as indicated by QPixmap::isNull().
+    We set an error string on the label and disable the button for
+    saving.
+
+    If a pixmap was obtained, we update the screenshot preview's
     label using the QLabel::setPixmap() and QPixmap::scaled()
     functions.
 
