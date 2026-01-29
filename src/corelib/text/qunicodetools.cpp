@@ -591,12 +591,12 @@ namespace BRS { // Brahmic Sequence, used to implement LB28a
     }
 }
 
-enum Action {
-    ProhibitedBreak, PB = ProhibitedBreak,
-    DirectBreak, DB = DirectBreak,
-    IndirectBreak, IB = IndirectBreak,
-    CombiningIndirectBreak, CI = CombiningIndirectBreak,
-    CombiningProhibitedBreak, CP = CombiningProhibitedBreak,
+enum Action { // => Given sequence 'BA' (see legacy https://www.unicode.org/reports/tr14/tr14-37.html#ExampleTable):
+    ProhibitedBreak, PB = ProhibitedBreak, // => Do not break between B and A, regardless of spaces
+    DirectBreak, DB = DirectBreak, // => Always a valid break position
+    IndirectBreak, IB = IndirectBreak, // => Only break after B if followed by spaces
+    CombiningIndirectBreak, CI = CombiningIndirectBreak, // => Break after B if A is CM, and B is followed by spaces
+    CombiningProhibitedBreak, CP = CombiningProhibitedBreak, // => Do not break after B if A is CM
     ProhibitedBreakAfterHebrewPlusHyphen, HH = ProhibitedBreakAfterHebrewPlusHyphen,
     IndirectBreakIfNarrow, IN = IndirectBreakIfNarrow, // For LB30
     DirectBreakOutsideNumericSequence, DN = DirectBreakOutsideNumericSequence, // For LB25
