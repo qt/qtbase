@@ -690,6 +690,13 @@ function(_qt_internal_setup_sbom)
     endif()
 endfunction()
 
+# Disable SBOM processing for targets created under tests/ or examples/.
+# Some repos create mock qt modules under these directories like qtdeclarative and
+# qtwebengine.
+macro(_qt_internal_conditionally_disable_sbom_in_current_scope)
+    set(QT_GENERATE_SBOM OFF)
+endmacro()
+
 # Ends repo sbom project generation.
 # Should be called after all relevant targets are added to the sbom.
 # Handles registering sbom info for recorded system libraries and then creates the sbom build

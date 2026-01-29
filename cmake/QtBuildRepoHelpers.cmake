@@ -803,6 +803,8 @@ macro(qt_build_tests)
     # Tests are not unity-ready.
     set(CMAKE_UNITY_BUILD OFF)
 
+    qt_internal_sbom_disable_sbom_for_tests_subdir()
+
     # Prepending to QT_BUILD_CMAKE_PREFIX_PATH helps find components of Qt6, because those
     # find_package calls use NO_DEFAULT_PATH, and thus CMAKE_PREFIX_PATH is ignored.
     list(PREPEND CMAKE_FIND_ROOT_PATH "${QT_BUILD_DIR}")

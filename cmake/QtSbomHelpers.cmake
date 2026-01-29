@@ -292,3 +292,15 @@ function(qt_internal_add_sbom_summary_info)
 
     qt_configure_end_summary_section()
 endfunction()
+
+macro(qt_internal_sbom_disable_sbom_for_tests_subdir)
+    if(NOT QT_NO_DISABLE_SBOM_FOR_TESTS_SUBDIR)
+        _qt_internal_conditionally_disable_sbom_in_current_scope()
+    endif()
+endmacro()
+
+macro(qt_internal_sbom_disable_sbom_for_examples_subdir)
+    if(NOT QT_NO_DISABLE_SBOM_FOR_EXAMPLES_SUBDIR)
+        _qt_internal_conditionally_disable_sbom_in_current_scope()
+    endif()
+endmacro()
