@@ -6,44 +6,11 @@
 #include <private/qdrawhelper_loongarch64_p.h>
 #include <private/qsimd_p.h>
 
-#if QT_CONFIG(qtgui_threadpool)
-#include <qsemaphore.h>
-#include <private/qguiapplication_p.h>
-#include <private/qthreadpool_p.h>
-#endif
-
 #if defined(QT_COMPILER_SUPPORTS_LSX)
 
 QT_BEGIN_NAMESPACE
 
 using namespace QImageScale;
-
-template<typename T>
-static inline void multithread_pixels_function(QImageScaleInfo *isi, int dh, const T &scaleSection)
-{
-#if QT_CONFIG(qtgui_threadpool)
-    int segments = (qsizetype(isi->sh) * isi->sw) / (1<<16);
-    segments = std::min(segments, dh);
-    QThreadPool *threadPool = QGuiApplicationPrivate::qtGuiThreadPool();
-    if (segments > 1 && threadPool && !threadPool->contains(QThread::currentThread())) {
-        QSemaphore semaphore;
-        int y = 0;
-        for (int i = 0; i < segments; ++i) {
-            int yn = (dh - y) / (segments - i);
-            threadPool->start([&, y, yn]() {
-                scaleSection(y, y + yn);
-                semaphore.release(1);
-            });
-            y += yn;
-        }
-        semaphore.acquire(segments);
-        return;
-    }
-#else
-    Q_UNUSED(isi);
-#endif
-    scaleSection(0, dh);
-}
 
 inline static __m128i Q_DECL_VECTORCALL
 qt_qimageScaleAARGBA_helper(const unsigned int *pix, int xyap, int Cxy,
