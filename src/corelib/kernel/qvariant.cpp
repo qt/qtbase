@@ -1465,8 +1465,13 @@ QVariantMap QVariant::toMap() const
 }
 
 /*!
-    Returns the variant as a QHash<QString, QVariant> if the variant
-    has type() \l QMetaType::QVariantHash; otherwise returns an empty map.
+    Returns the variant as a QHash<QString, QVariant> if the variant has
+    metaType() \l QMetaType::QVariantHash.  If it doesn't, QVariant will
+    attempt to convert the type to a hash and then return it. This will succeed
+    for any type that has registered a converter to QVariantHash or which was
+    declared as a associative container using
+    \l{Q_DECLARE_ASSOCIATIVE_CONTAINER_METATYPE}. If none of those
+    conditions are true, this function will return an empty hash.
 
     \sa canConvert(), convert()
 */
