@@ -25,15 +25,17 @@ endif()
 
 find_package(Qt6 COMPONENTS Core Gui REQUIRED)
 
-execute_process(COMMAND ${keytool}
-    -genkey -alias "$ENV{QT_ANDROID_KEYSTORE_ALIAS}" -keyalg RSA
-    -keystore "$ENV{QT_ANDROID_KEYSTORE_PATH}"
-    -noprompt
-    -dname "CN=qttest, OU=ID, O=Qt, L=Qt, S=Test, C=DE"
-    -storepass "$ENV{QT_ANDROID_KEYSTORE_STORE_PASS}"
-    -keypass "$ENV{QT_ANDROID_KEYSTORE_KEY_PASS}"
-    RESULT_VARIABLE keytool_result
-)
+if(NOT EXISTS "$ENV{QT_ANDROID_KEYSTORE_PATH}" OR IS_DIRECTORY "$ENV{QT_ANDROID_KEYSTORE_PATH}")
+    execute_process(COMMAND ${keytool}
+        -genkey -alias "$ENV{QT_ANDROID_KEYSTORE_ALIAS}" -keyalg RSA
+        -keystore "$ENV{QT_ANDROID_KEYSTORE_PATH}"
+        -noprompt
+        -dname "CN=qttest, OU=ID, O=Qt, L=Qt, S=Test, C=DE"
+        -storepass "$ENV{QT_ANDROID_KEYSTORE_STORE_PASS}"
+        -keypass "$ENV{QT_ANDROID_KEYSTORE_KEY_PASS}"
+        RESULT_VARIABLE keytool_result
+    )
+endif()
 
 
 qt6_add_executable(test_android_signing main.cpp)
