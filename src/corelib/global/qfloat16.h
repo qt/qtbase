@@ -45,6 +45,9 @@ class QDataStream;
 class QTextStream;
 
 // These macros from math.h conflict with the real functions in the std namespace:
+#ifdef copysign
+#  undef copysign
+#endif
 #ifdef signbit
 #  undef signbit
 #endif
@@ -88,7 +91,9 @@ public:
     Q_CORE_EXPORT int fpClassify() const noexcept;
     // Can't specialize std::copysign() for qfloat16
     qfloat16 copySign(qfloat16 sign) const noexcept
-    { return qfloat16(Wrap((sign.b16 & 0x8000) | (b16 & 0x7fff))); }
+    { return copysign(*this, sign); }
+    friend qfloat16 copysign(qfloat16 mag, qfloat16 sign) noexcept
+    { return qfloat16(Wrap((sign.b16 & 0x8000) | (mag.b16 & 0x7fff))); }
     // Can't specialize std::signbit() for qfloat16
     friend bool signbit(qfloat16 x) noexcept
     { return x.b16 & 0x8000; }
