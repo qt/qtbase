@@ -202,7 +202,8 @@ void QWasmWindow::registerEventHandlers()
     m_dragEndCallback = QWasmEventHandler(m_window, "dragend",
         [this](emscripten::val event) {
             DragEvent dragEvent(EventType::DragEnd, event, window());
-            QWasmDrag::instance()->onNativeDragFinished(&dragEvent);
+            QWasmDrag::instance()->onNativeDragFinished(&dragEvent, platformScreen());
+            releasePointerGrab(dragEvent);
         }
     );
     m_dragEnterCallback = QWasmEventHandler(m_window, "dragenter",
@@ -803,6 +804,17 @@ bool QWasmWindow::processPointerEnterLeave(const PointerEvent &event)
     return false;
 }
 
+void QWasmWindow::releasePointerGrab(const MouseEvent &event)
+{
+    // We check hasPointerCapture due to the implicit release
+    // browsers do.
+    if (m_capturedPointerId && event.isTargetedForElement(m_window) &&
+        m_window.call<bool>("hasPointerCapture", *m_capturedPointerId)) {
+        m_window.call<void>("releasePointerCapture", *m_capturedPointerId);
+        m_capturedPointerId = std::nullopt;
+    }
+}
+
 void QWasmWindow::processPointer(const PointerEvent &event)
 {
     // Process pointer events targeted at the window only, and not
@@ -812,6 +824,7 @@ void QWasmWindow::processPointer(const PointerEvent &event)
 
     switch (event.type) {
     case EventType::PointerDown:
+        m_capturedPointerId = event.pointerId;
         m_window.call<void>("setPointerCapture", event.pointerId);
 
         if ((window()->flags() & Qt::WindowDoesNotAcceptFocus)
@@ -820,7 +833,8 @@ void QWasmWindow::processPointer(const PointerEvent &event)
                 window()->requestActivate();
         break;
     case EventType::PointerUp:
-        m_window.call<void>("releasePointerCapture", event.pointerId);
+        releasePointerGrab(event);
+        break;
     default:
         break;
     };

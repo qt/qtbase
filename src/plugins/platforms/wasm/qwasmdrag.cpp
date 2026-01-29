@@ -200,8 +200,11 @@ void QWasmDrag::onNativeDrop(DragEvent *event)
     event->dataTransfer.toMimeDataWithFile(dropCallback);
 }
 
-void QWasmDrag::onNativeDragFinished(DragEvent *event)
+void QWasmDrag::onNativeDragFinished(DragEvent *event, QWasmScreen *platformScreen)
 {
+    // Keep sourcewindow before it is reset
+    QPointer<QWindow> sourceWindow = m_sourceWindow;
+
     event->webEvent.call<void>("preventDefault");
 
     if (m_dragState)
@@ -211,6 +214,28 @@ void QWasmDrag::onNativeDragFinished(DragEvent *event)
 
     if (m_dragState)
         m_dragState->quitEventLoopClosure();
+
+
+    // Send synthetic mouserelease event
+    const MouseEvent mouseEvent(*event);
+
+    const auto pointInScreen = platformScreen->mapFromLocal(
+        dom::mapPoint(mouseEvent.target(), platformScreen->element(), mouseEvent.localPoint));
+    const auto geometryF = platformScreen->geometry().toRectF();
+    QPointF targetPointClippedToScreen(
+            qBound(geometryF.left(), pointInScreen.x(), geometryF.right()),
+            qBound(geometryF.top(), pointInScreen.y(), geometryF.bottom()));
+
+    QTimer::singleShot(0, [sourceWindow, targetPointClippedToScreen, mouseEvent]() {
+        if (sourceWindow) {
+            const QEvent::Type eventType = QEvent::MouseButtonRelease;
+            QWindowSystemInterface::handleMouseEvent(
+                sourceWindow, QWasmIntegration::getTimestamp(),
+                sourceWindow->mapFromGlobal(targetPointClippedToScreen),
+                targetPointClippedToScreen, mouseEvent.mouseButtons, mouseEvent.mouseButton,
+                eventType, mouseEvent.modifiers);
+        }
+    });
 }
 
 void QWasmDrag::onNativeDragEnter(DragEvent *event)
