@@ -54,6 +54,10 @@ QLibInputHandler::QLibInputHandler(const QString &key, const QString &spec)
     Q_UNUSED(key);
     Q_UNUSED(spec);
 
+    char *seat = getenv("XDG_SEAT");
+    if (!seat)
+        seat = "seat0";
+
     m_udev = udev_new();
     if (Q_UNLIKELY(!m_udev))
         qFatal("Failed to get udev context for libinput");
@@ -66,7 +70,7 @@ QLibInputHandler::QLibInputHandler(const QString &key, const QString &spec)
     if (qLcLibInput().isDebugEnabled())
         libinput_log_set_priority(m_li, LIBINPUT_LOG_PRIORITY_DEBUG);
 
-    if (Q_UNLIKELY(libinput_udev_assign_seat(m_li, "seat0")))
+    if (Q_UNLIKELY(libinput_udev_assign_seat(m_li, seat)))
         qFatal("Failed to assign seat");
 
     m_liFd = libinput_get_fd(m_li);
