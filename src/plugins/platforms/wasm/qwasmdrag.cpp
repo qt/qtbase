@@ -29,14 +29,16 @@ namespace {
 
 QWindow *windowForDrag(QDrag *drag)
 {
-    QWindow *window = qobject_cast<QWindow *>(drag->source());
-    if (window)
-        return window;
-    if (drag->source()->metaObject()->indexOfMethod("_q_closestWindowHandle()") == -1)
-        return nullptr;
-
-    QMetaObject::invokeMethod(drag->source(), "_q_closestWindowHandle",
+    QObject *source = drag->source();
+    QWindow *window = nullptr;
+    while (source && !window) {
+        window = qobject_cast<QWindow *>(source);
+        if (!window && source->metaObject()->indexOfMethod("_q_closestWindowHandle()") != -1)
+            QMetaObject::invokeMethod(source, "_q_closestWindowHandle",
                               Q_RETURN_ARG(QWindow *, window));
+        if (!window)
+            source = source->parent();
+    }
     return window;
 }
 
@@ -90,11 +92,9 @@ Qt::DropAction QWasmDrag::drag(QDrag *drag)
     Q_ASSERT_X(!m_dragState, Q_FUNC_INFO, "Drag already in progress");
 
     QWindow *window = windowForDrag(drag);
-    if (!window)
-        return Qt::IgnoreAction;
 
     Qt::DropAction dragResult = Qt::IgnoreAction;
-    if (qstdweb::haveAsyncify()) {
+    if (window && qstdweb::haveAsyncify()) {
         m_dragState = std::make_unique<DragState>(drag, window, [this]() { QSimpleDrag::cancelDrag();  });
         dragResult = QSimpleDrag::drag(drag);
         m_dragState.reset();
@@ -178,30 +178,39 @@ void QWasmDrag::onNativeDrop(DragEvent *event)
     setExecutedDropAction(event->dropAction);
     std::shared_ptr<DragState> dragState = m_dragState;
 
-    const auto dropCallback = [dragState, wasmWindow, targetWindowPos,
+    const auto dropCallback = [this, dragState, wasmWindow, targetWindowPos,
         actions, mouseButton, modifiers](QMimeData *mimeData) {
+
         if (mimeData) {
-            auto dropResponse = std::make_shared<QPlatformDropQtResponse>(true, Qt::DropAction::CopyAction);
-            *dropResponse = QWindowSystemInterface::handleDrop(wasmWindow->window(), mimeData,
+            const QPlatformDropQtResponse dropResponse =
+                QWindowSystemInterface::handleDrop(wasmWindow->window(), mimeData,
                                                            targetWindowPos, actions,
                                                            mouseButton, modifiers);
 
-            if (dragState && dropResponse->isAccepted())
-                dragState->dropAction = dropResponse->acceptedAction();
+            if (dragState && dropResponse.isAccepted())
+                dragState->dropAction = dropResponse.acceptedAction();
 
             delete mimeData;
         }
+
+        if (!dragState)
+            QSimpleDrag::cancelDrag();
     };
 
-     event->dataTransfer.toMimeDataWithFile(dropCallback);
+    event->dataTransfer.toMimeDataWithFile(dropCallback);
 }
 
 void QWasmDrag::onNativeDragFinished(DragEvent *event)
 {
     event->webEvent.call<void>("preventDefault");
-    m_dragState->dropAction = event->dropAction;
+
+    if (m_dragState)
+        m_dragState->dropAction = event->dropAction;
+
     setExecutedDropAction(event->dropAction);
-    m_dragState->quitEventLoopClosure();
+
+    if (m_dragState)
+        m_dragState->quitEventLoopClosure();
 }
 
 void QWasmDrag::onNativeDragEnter(DragEvent *event)
