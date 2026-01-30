@@ -1684,15 +1684,14 @@ void QCocoaWindow::recreateWindowIfNeeded()
 
     if (shouldBeContentView && !m_nsWindow) {
         // Move view to new NSWindow if needed
-        if (auto *newWindow = createNSWindow(shouldBePanel)) {
-            qCDebug(lcQpaWindow) << "Ensuring that" << m_view << "is content view for" << newWindow;
-            [m_view setPostsFrameChangedNotifications:NO];
-            [newWindow setContentView:m_view];
-            [m_view setPostsFrameChangedNotifications:YES];
+        auto *newWindow = createNSWindow(shouldBePanel);
+        qCDebug(lcQpaWindow) << "Ensuring that" << m_view << "is content view for" << newWindow;
+        [m_view setPostsFrameChangedNotifications:NO];
+        [newWindow setContentView:m_view];
+        [m_view setPostsFrameChangedNotifications:YES];
 
-            m_nsWindow = newWindow;
-            Q_ASSERT(m_view.window == m_nsWindow);
-        }
+        m_nsWindow = newWindow;
+        Q_ASSERT(m_view.window == m_nsWindow);
     }
 
     if (parentCocoaWindow) {
