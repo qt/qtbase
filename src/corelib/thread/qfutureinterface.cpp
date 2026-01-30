@@ -174,6 +174,16 @@ void QFutureInterfaceBase::cancelChain()
     cancelChain(CancelMode::CancelOnly);
 }
 
+void QFutureInterfaceBase::setAddResultsIfCanceledEnabled(bool enable)
+{
+    d->addResultsIfCanceled = enable;
+}
+
+bool QFutureInterfaceBase::isAddResultsIfCanceledEnabled() const
+{
+    return d->addResultsIfCanceled;
+}
+
 void QFutureInterfaceBase::cancel(QFutureInterfaceBase::CancelMode mode)
 {
     d->cancelImpl(mode, QFutureInterfaceBasePrivate::CancelOption::CancelContinuations);
@@ -891,14 +901,6 @@ void QFutureInterfaceBase::setContinuation(std::function<void (const QFutureInte
 
     QMutexLocker lock(&d->continuationMutex);
 
-    // If the state is ready, run continuation immediately,
-    // otherwise save it for later.
-    if (isFinished()) {
-        d->continuationExecuted = true;
-        lock.unlock();
-        func(*this);
-        lock.relock();
-    }
     // Unless the continuation has been cleaned earlier, we have to
     // store the move-only continuation, to guarantee that the associated
     // future's data stays alive.
@@ -909,14 +911,38 @@ void QFutureInterfaceBase::setContinuation(std::function<void (const QFutureInte
             if (d->continuationData)
                 d->continuationData->nonConcludedParent = nullptr;
         }
-        d->continuation = std::move(func);
         if (futureData) {
+            // If we ever hit this, we should properly unlink the future before
+            // relinking to ourselves.
+            Q_ASSERT_X(!futureData->nonConcludedParent, "setContinuation",
+                       "futureData already has a parent");
             futureData->continuationType = type;
             futureData->nonConcludedParent = d;
         }
         d->continuationData = futureData;
         Q_ASSERT_X(!futureData || futureData->continuationType != ContinuationType::Unknown,
                    "setContinuation", "Make sure to provide a correct continuation type!");
+    }
+
+    // If the state is ready, run continuation immediately,
+    // otherwise save it for later.
+    // Ensure that we run the continuation after setting up the future chain links so that
+    // the continuation itself can modify the links again.
+    if (isFinished()) {
+        d->continuationExecuted = true;
+
+        lock.unlock();
+        func(*this);
+        lock.relock();
+    }
+
+    if (d->continuationState == QFutureInterfaceBasePrivate::Cleaned) {
+        // if the continuation that we've possibly run above has cleaned this
+        // future, we have to unlink ourselves from it again.
+        if (futureData)
+            futureData->nonConcludedParent = nullptr;
+    } else {
+        d->continuation = std::move(func);
     }
 }
 

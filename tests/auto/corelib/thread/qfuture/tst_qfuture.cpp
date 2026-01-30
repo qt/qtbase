@@ -5566,6 +5566,113 @@ void tst_QFuture::cancelChain()
         QCOMPARE_EQ(thenCnt, 4);
         QCOMPARE_EQ(onCancelCnt, 0);
     }
+
+    static const auto fakeLongRunningProcess = [] {
+        // Just create a future that is forever pending.
+        QFutureInterface<int> promise(QFutureInterfaceBase::Pending);
+        promise.setProgressValueAndText(5, "fakeLongRun");
+        return promise.future();
+    };
+
+    // The outer future is canceled and the cancelation propagates into the nested future
+    {
+        QPromise<void> p;
+
+        std::optional<QFuture<int>> nestedFuture;
+
+        QFuture<int> f = p.future().then([&nestedFuture]() mutable {
+            nestedFuture = fakeLongRunningProcess();
+            return nestedFuture.value();
+        }).unwrap();
+
+        p.start();
+        p.finish();
+
+        f.cancelChain();
+
+        QVERIFY(f.isCanceled());
+        QVERIFY(!f.isFinished());
+
+        QVERIFY(nestedFuture.has_value());
+        QVERIFY(nestedFuture->isCanceled());
+    }
+
+    // Cancelling a future chain with a nested future while the function
+    // returning the nested future is still in progress correctly propagates the
+    // cancellation.
+    {
+        QPromise<void> p;
+
+        std::optional<QFuture<int>> nestedFuture;
+
+        std::function<void()> triggerCancelChain;
+
+        QFuture<int> f = p.future().then([&triggerCancelChain, &nestedFuture]() mutable {
+            nestedFuture = fakeLongRunningProcess();
+
+            triggerCancelChain();
+
+            return nestedFuture.value();
+        }).unwrap();
+
+        triggerCancelChain = [&] { f.cancelChain(); };
+
+        p.start();
+        p.finish();
+
+        QVERIFY(f.isCanceled());
+
+        QVERIFY(nestedFuture.has_value());
+        QVERIFY(nestedFuture->isCanceled());
+
+        QVERIFY(!f.isFinished());
+    }
+
+    // Propagation of cancellation also works for nested in-progress futures in
+    // a different thread.
+    {
+        QSemaphore start;
+        QSemaphore cont;
+        std::atomic_bool continuationStopped = false;
+        std::atomic_bool unexpectedThenCalled = false;
+        std::atomic_bool expectedOnCanceledCalled = false;
+        QFuture<void> nestedFuture;
+        auto future = QtConcurrent::run([]{
+            QThread::currentThread()->msleep(100);
+        })
+        .then([&]{
+            nestedFuture = QtConcurrent::run([&](QPromise<void> &promise) {
+                start.release(1);
+                while(true) {
+                    if (promise.isCanceled()) {
+                        continuationStopped.store(true, std::memory_order_relaxed);
+                        break;
+                    }
+                    // some atomic work that cannot be interrupted
+                    QThread::currentThread()->msleep(100);
+                }
+            });
+            cont.acquire(1);
+            return nestedFuture;
+        })
+        .unwrap()
+        .then([&]{
+            unexpectedThenCalled.store(true, std::memory_order_relaxed);
+        })
+        .onCanceled([&]{
+            expectedOnCanceledCalled.store(true, std::memory_order_relaxed);
+        });
+
+        start.acquire(1);
+        future.cancelChain();
+        cont.release(1);
+        future.waitForFinished();
+
+        QVERIFY(nestedFuture.isCanceled());
+        QVERIFY(!unexpectedThenCalled.load(std::memory_order_relaxed));
+        QVERIFY(expectedOnCanceledCalled.load(std::memory_order_relaxed));
+        QVERIFY(continuationStopped.load(std::memory_order_relaxed));
+    }
 }
 
 void tst_QFuture::cancelChainWithContext_data()

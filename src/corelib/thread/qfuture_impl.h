@@ -845,50 +845,53 @@ struct UnwrapHandler
         using NestedType = typename QtPrivate::Future<ResultType>::type;
         QFutureInterface<NestedType> promise(QFutureInterfaceBase::State::Pending);
 
-        auto chain = outer->then([promise](const QFuture<ResultType> &outerFuture) mutable {
-            // We use the .then([](QFuture<ResultType> outerFuture) {...}) version
-            // (where outerFuture == *outer), to propagate the exception if the
-            // outer future has failed.
+        auto outerPromise  = QFutureInterfaceBase::get(*outer);
+        outerPromise.setAddResultsIfCanceledEnabled(true);
+
+        outerPromise.setContinuation([promise](const QFutureInterfaceBase &outerFutureBase) mutable {
+            QFutureInterface<ResultType> outerFuture(outerFutureBase);
+            promise.reportStarted();
+
             Q_ASSERT(outerFuture.isFinished());
+
 #ifndef QT_NO_EXCEPTIONS
-            if (outerFuture.d.hasException()) {
-                promise.reportStarted();
-                promise.reportException(outerFuture.d.exceptionStore().exception());
+            if (outerFuture.hasException()) {
+                promise.reportException(outerFuture.exceptionStore().exception());
                 promise.reportFinished();
                 return;
             }
 #endif
-
-            promise.reportStarted();
-            ResultType nestedFuture = outerFuture.result();
-
-            nestedFuture.then([promise] (const QFuture<NestedType> &nested) mutable {
-#ifndef QT_NO_EXCEPTIONS
-                if (nested.d.hasException()) {
-                    promise.reportException(nested.d.exceptionStore().exception());
-                } else
-#endif
-                {
-                    if constexpr (!std::is_void_v<NestedType>)
-                        promise.reportResults(nested.results());
-                }
-                promise.reportFinished();
-            }).onCanceled([promise] () mutable {
+            if (outerFuture.isCanceled())
                 promise.reportCanceled();
-                promise.reportFinished();
-            });
-        }).onCanceled([promise]() mutable {
-            // propagate the cancellation of the outer future
-            promise.reportStarted();
-            promise.reportCanceled();
-            promise.reportFinished();
-        });
 
-        // Inject the promise into the chain.
-        // We use a fake function as a continuation, since the promise is
-        // managed by the outer future
-        chain.d.setContinuation(ContinuationWrapper(std::move([](const QFutureInterfaceBase &) {})),
-                                promise.d, QFutureInterfaceBase::ContinuationType::Then);
+            if (outerFuture.resultCount() == 0) {
+                promise.reportFinished();
+                return;
+            }
+
+            auto nestedFuture = QFutureInterfaceBase::get(outerFuture.resultReference(0));
+
+            if (outerFuture.isCanceled())
+                nestedFuture.cancelChain();
+
+            nestedFuture.setContinuation([promise](const QFutureInterfaceBase &nestedFutureBase) mutable {
+                QFutureInterface<NestedType> nested(nestedFutureBase);
+#ifndef QT_NO_EXCEPTIONS
+                if (nested.hasException()) {
+                    promise.reportException(nested.exceptionStore().exception());
+                    promise.reportFinished();
+                    return;
+                }
+#endif
+                if (nested.isCanceled())
+                    promise.reportCanceled();
+
+                if constexpr (!std::is_void_v<NestedType>)
+                    promise.reportResults(nested.results());
+
+                promise.reportFinished();
+            }, promise.d, QFutureInterfaceBase::ContinuationType::Then);
+        }, promise.d, QFutureInterfaceBase::ContinuationType::Then);
 
         return promise.future();
     }

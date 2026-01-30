@@ -163,6 +163,7 @@ public:
     bool launchAsync = false;
     bool isValid = false;
     bool hasException = false;
+    bool addResultsIfCanceled = false;
 
     enum ContinuationState : quint8 { Default, Canceled, Cleaned };
     std::atomic<ContinuationState> continuationState { Default };
