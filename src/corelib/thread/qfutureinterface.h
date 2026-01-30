@@ -131,6 +131,8 @@ public:
     void cancel();
     void cancelAndFinish() { cancel(CancelMode::CancelAndFinish); }
     void cancelChain();
+    void setAddResultsIfCanceledEnabled(bool enable);
+    bool isAddResultsIfCanceledEnabled() const;
 
     void setSuspended(bool suspend);
     void toggleSuspended();
@@ -319,7 +321,7 @@ template <typename T>
 inline bool QFutureInterface<T>::reportResult(const T *result, int index)
 {
     QMutexLocker<QMutex> locker{&mutex()};
-    if (this->queryState(Canceled) || this->queryState(Finished))
+    if ((this->queryState(Canceled) && !this->isAddResultsIfCanceledEnabled()) || this->queryState(Finished))
         return false;
 
     Q_ASSERT(!hasException());
@@ -342,7 +344,7 @@ template<typename...Args, std::enable_if_t<std::is_constructible_v<T, Args...>, 
 bool QFutureInterface<T>::reportAndEmplaceResult(int index, Args&&...args)
 {
     QMutexLocker<QMutex> locker{&mutex()};
-    if (queryState(Canceled) || queryState(Finished))
+    if ((queryState(Canceled) && !isAddResultsIfCanceledEnabled()) || queryState(Finished))
         return false;
 
     Q_ASSERT(!hasException());
@@ -378,7 +380,7 @@ template<typename T>
 inline bool QFutureInterface<T>::reportResults(const QList<T> &_results, int beginIndex, int count)
 {
     QMutexLocker<QMutex> locker{&mutex()};
-    if (this->queryState(Canceled) || this->queryState(Finished))
+    if ((this->queryState(Canceled) && !this->isAddResultsIfCanceledEnabled()) || this->queryState(Finished))
         return false;
 
     Q_ASSERT(!hasException());
