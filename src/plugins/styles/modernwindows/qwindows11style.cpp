@@ -1893,28 +1893,19 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
             painter->setPen(Qt::NoPen);
             painter->setBrush(header->palette.button());
             painter->drawRect(header->rect);
-
-            painter->setPen(highContrastTheme == true ? header->palette.buttonText().color() : WINUI3Colors[colorSchemeIndex][frameColorLight]);
-            painter->setBrush(Qt::NoBrush);
-
-            if (header->position == QStyleOptionHeader::OnlyOneSection) {
-                break;
-            }
-            else if (header->position == QStyleOptionHeader::Beginning) {
-                painter->drawLine(QPointF(option->rect.topRight()) + QPointF(0.5,0.0),
-                                  QPointF(option->rect.bottomRight()) + QPointF(0.5,0.0));
-            }
-            else if (header->position == QStyleOptionHeader::End) {
-                painter->drawLine(QPointF(option->rect.topLeft()) - QPointF(0.5,0.0),
-                                  QPointF(option->rect.bottomLeft()) - QPointF(0.5,0.0));
-            } else {
-                painter->drawLine(QPointF(option->rect.topRight()) + QPointF(0.5,0.0),
-                                  QPointF(option->rect.bottomRight()) + QPointF(0.5,0.0));
-                painter->drawLine(QPointF(option->rect.topLeft()) - QPointF(0.5,0.0),
-                                  QPointF(option->rect.bottomLeft()) - QPointF(0.5,0.0));
-            }
-            painter->drawLine(QPointF(option->rect.bottomLeft()) + QPointF(0.0,0.5),
-                              QPointF(option->rect.bottomRight()) + QPointF(0.0,0.5));
+            const bool isRtl = option->direction == Qt::RightToLeft;
+            const QPointF tr = isRtl ? option->rect.topLeft() : option->rect.topRight();
+            const QPointF br = isRtl ? option->rect.bottomLeft() : option->rect.bottomRight();
+            const QPointF bl = isRtl ? option->rect.bottomRight() : option->rect.bottomLeft();
+            constexpr QPointF trOfs = QPointF(0.5, 0.0);
+            constexpr QPointF brOfs = QPointF(0.5, 0.5);
+            constexpr QPointF blOfs = QPointF(0.0, 0.5);
+            const std::array<QPointF, 3> points = { tr + trOfs, br + brOfs, bl + blOfs };
+            QPen pen(highContrastTheme ? header->palette.buttonText().color()
+                                       : winUI3Color(frameColorLight));
+            pen.setJoinStyle(Qt::MiterJoin);
+            painter->setPen(pen);
+            painter->drawPolyline(points.data(), int(points.size()));
         }
         break;
     }
