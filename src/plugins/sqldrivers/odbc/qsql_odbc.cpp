@@ -1946,13 +1946,27 @@ bool QODBCDriver::open(const QString & db,
     else
         connQStr = "DSN="_L1 + db;
 
-    const auto escapeUserPassword = [](QString arg) -> QString {
-        return u'{' + arg.replace(u'}', "}}"_L1) + u'}';
+    const auto escapePassword = [](const QString &arg) -> QString {
+        QString ret;
+        ret.reserve(arg.size() + 8);
+        for (const auto c : arg) {
+            // we percent-encode ascii chars which are not a letter
+            // or digit. For everything >= 0x80 we can't do much as
+            // we don't know how the odbc layer and odbc driver encodes
+            // and handles the string internally
+            if (c.isLetterOrNumber())
+                ret += c;
+            else if (c.unicode() < 128)
+                ret += QString::asprintf("%%%02x", c.unicode());
+            else
+                ret += c;   // good luck
+        }
+        return ret;
     };
     if (!user.isEmpty())
-        connQStr += ";UID="_L1 + escapeUserPassword(user);
+        connQStr += ";UID="_L1 + user;
     if (!password.isEmpty())
-        connQStr += ";PWD="_L1 + escapeUserPassword(password);
+        connQStr += ";PWD="_L1 + escapePassword(password);
 
     SQLSMALLINT cb;
     QVarLengthArray<SQLTCHAR, 1024> connOut(1024);
