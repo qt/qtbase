@@ -737,7 +737,6 @@ void QDockWidgetGroupWindow::destroyIfSingleItemLeft()
     reparentToMainWindow(lastDockWidget);
 
     // the group window could still have placeholder items => clear everything
-    layoutInfo()->deleteAllLayoutItems();
     layoutInfo()->item_list.clear();
 
     destroyOrHideIfEmpty();
@@ -756,7 +755,6 @@ void QDockWidgetGroupWindow::reparentToMainWindow(QDockWidget *dockWidget)
     QDockAreaLayoutInfo &parentInfo = mwLayout->layoutState.dockAreaLayout.docks[layoutInfo()->dockPos];
     dockWidget->removeEventFilter(this);
     parentInfo.add(dockWidget);
-    std::unique_ptr<QLayoutItem> cleanup = layoutInfo()->takeWidgetItem(dockWidget);
     layoutInfo()->remove(dockWidget);
     const bool wasFloating = dockWidget->isFloating();
     const bool wasVisible = dockWidget->isVisible();
