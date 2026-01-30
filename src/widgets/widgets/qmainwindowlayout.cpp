@@ -745,13 +745,14 @@ void QDockWidgetGroupWindow::destroyIfSingleItemLeft()
 void QDockWidgetGroupWindow::reparentToMainWindow(QDockWidget *dockWidget)
 {
     // reparent a dockWidget to the main window
+    // - abort ongoing animations
     // - remove it from the floating dock's layout info
     // - insert it to the main dock's layout info
-    // Finally, set draggingDock to nullptr, since the drag is finished.
     Q_ASSERT(qobject_cast<QMainWindow *>(parentWidget()));
     auto *mainWindow = static_cast<QMainWindow *>(parentWidget());
     QMainWindowLayout *mwLayout = qt_mainwindow_layout(mainWindow);
     Q_ASSERT(mwLayout);
+    mwLayout->widgetAnimator.abort(dockWidget);
     QDockAreaLayoutInfo &parentInfo = mwLayout->layoutState.dockAreaLayout.docks[layoutInfo()->dockPos];
     dockWidget->removeEventFilter(this);
     parentInfo.add(dockWidget);
