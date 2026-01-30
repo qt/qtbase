@@ -244,6 +244,7 @@ function(_qt_internal_android_prepare_gradle_build target)
 
     _qt_internal_android_copy_gradle_files(${target} "${android_build_dir}")
     _qt_internal_android_copy_android_resources(${target} "${deployment_dir}")
+    _qt_internal_android_copy_app_binary(${target} "${deployment_dir}")
     _qt_internal_android_copy_stdlib(${target} "${deployment_dir}")
     _qt_internal_android_copy_extra_libs(${target} "${deployment_dir}")
     _qt_internal_android_copy_qt_dependencies(${target} "${deployment_dir}")
@@ -323,6 +324,7 @@ function(_qt_internal_android_add_gradle_build target type)
             ${gradle_scripts}
             ${target}_copy_gradle_files
             ${target}_copy_android_res_files
+            ${target}_copy_app_binary
             ${target}_copy_stdlib
             ${target}_copy_extra_libs
             ${target}_copy_qt_files
@@ -852,6 +854,25 @@ function(_qt_internal_android_copy_extra_libs target deployment_dir)
     )
 
     add_custom_target(${target}_copy_extra_libs DEPENDS ${copy_outputs})
+endfunction()
+
+# Copies the app's binary file to the deployment dir.
+function(_qt_internal_android_copy_app_binary target deployment_dir)
+    set(target_file_dst
+        "${deployment_dir}/libs/${CMAKE_ANDROID_ARCH_ABI}/$<TARGET_FILE_NAME:${target}>")
+    _qt_internal_copy_file_if_different_command(copy_command
+        "$<TARGET_FILE:${target}>"
+        "${target_file_dst}"
+    )
+
+    _qt_internal_android_get_use_terminal_for_deployment(uses_terminal)
+
+    add_custom_target(${target}_copy_app_binary ALL
+        COMMAND ${copy_command}
+        COMMENT "Copying ${target} binary to apk folder"
+        VERBATIM
+        ${uses_terminal}
+    )
 endfunction()
 
 function(_qt_internal_android_extract_link_target raw_entry out_entry)
