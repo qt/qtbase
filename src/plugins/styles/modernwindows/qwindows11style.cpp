@@ -1746,25 +1746,31 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
             bool isFirst = vopt->viewItemPosition == QStyleOptionViewItem::Beginning;
             bool isLast = vopt->viewItemPosition == QStyleOptionViewItem::End;
 
-            // the tree decoration already painted the left side of the rounded rect
-            if (vopt->features.testFlag(QStyleOptionViewItem::IsDecoratedRootColumn) &&
-                vopt->showDecorationSelected) {
-                isFirst = false;
-                if (onlyOne) {
-                    onlyOne = false;
-                    isLast = true;
+            const QAbstractItemView *view = qobject_cast<const QAbstractItemView *>(widget);
+            if (qobject_cast<const QTableView *>(view)) {
+                onlyOne = true;
+            } else {
+                // the tree decoration already painted the left side of the rounded rect
+                if (vopt->features.testFlag(QStyleOptionViewItem::IsDecoratedRootColumn) &&
+                    vopt->showDecorationSelected) {
+                    isFirst = false;
+                    if (onlyOne) {
+                        onlyOne = false;
+                        isLast = true;
+                    }
+                }
+
+                if (isRtl) {
+                    if (isFirst) {
+                        isFirst = false;
+                        isLast = true;
+                    } else if (isLast) {
+                        isFirst = true;
+                        isLast = false;
+                    }
                 }
             }
 
-            if (isRtl) {
-                if (isFirst) {
-                    isFirst = false;
-                    isLast = true;
-                } else if (isLast) {
-                    isFirst = true;
-                    isLast = false;
-                }
-            }
             const bool highlightCurrent = vopt->state.testAnyFlags(State_Selected | State_MouseOver);
             if (highlightCurrent) {
                 if (highContrastTheme) {
