@@ -2129,7 +2129,7 @@ bool QMainWindowLayout::isDockWidgetTabbed(const QDockWidget *dockWidget) const
 void QMainWindowLayout::unuseTabBar(QTabBar *bar)
 {
     Q_ASSERT(qobject_cast<QMainWindowTabBar *>(bar));
-    delete bar;
+    bar->deleteLater();
 }
 
 QTabBar *QMainWindowLayout::getTabBar()
