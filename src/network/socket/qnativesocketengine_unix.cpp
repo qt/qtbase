@@ -450,16 +450,26 @@ bool QNativeSocketEnginePrivate::nativeConnect(const QHostAddress &addr, quint16
     qDebug() << "QNativeSocketEnginePrivate::nativeConnect() " << socketDescriptor;
 #endif
 
-    qt_sockaddr aa;
-    QT_SOCKLEN_T sockAddrSize;
-    setPortAndAddress(port, addr, &aa, &sockAddrSize);
+    int socketError = 0;
+    if (socketState == QAbstractSocket::ConnectingState) {
+        // We are already connecting, try to read out an error if any.
+        // This is to avoid calling connect() more than necessary, as the kernel may try to send
+        // us messages on poll/select of this socket whenever we do.
+        socklen_t len = sizeof(socketError);
+        getsockopt(int(socketDescriptor), SOL_SOCKET, SO_ERROR, &socketError, &len);
+    }
 
-    int connectResult = qt_safe_connect(socketDescriptor, &aa.a, sockAddrSize);
-#if defined (QNATIVESOCKETENGINE_DEBUG)
-    int ecopy = errno;
-#endif
+    int connectResult = -1;
+    if (socketError == 0) {
+        qt_sockaddr aa;
+        QT_SOCKLEN_T sockAddrSize;
+        setPortAndAddress(port, addr, &aa, &sockAddrSize);
+
+        connectResult = qt_safe_connect(socketDescriptor, &aa.a, sockAddrSize);
+        socketError = errno;
+    }
     if (connectResult == -1) {
-        switch (errno) {
+        switch (socketError) {
         case EISCONN:
             socketState = QAbstractSocket::ConnectedState;
             break;
@@ -511,7 +521,7 @@ bool QNativeSocketEnginePrivate::nativeConnect(const QHostAddress &addr, quint16
             qDebug("QNativeSocketEnginePrivate::nativeConnect(%s, %i) == false (%s)",
                    addr.toString().toLatin1().constData(), port,
                    socketState == QAbstractSocket::ConnectingState
-                   ? "Connection in progress" : strerror(ecopy));
+                   ? "Connection in progress" : strerror(socketError));
 #endif
             return false;
         }
