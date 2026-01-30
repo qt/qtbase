@@ -594,7 +594,8 @@ function(_qt_internal_sbom_generate_add_external_reference)
     if(NOT sbom_project_spdx_id)
         message(FATAL_ERROR "Call _qt_internal_sbom_begin_project() first")
     endif()
-    if(arg_RELATIONSHIP_STRING STREQUAL "")
+
+    if(NOT arg_RELATIONSHIP_STRING)
         if(arg_EXTERNAL_PACKAGE_SPDX_ID)
             set(external_package "${arg_EXTERNAL_DOCUMENT_SPDX_ID}:${arg_EXTERNAL_PACKAGE_SPDX_ID}")
             set(arg_RELATIONSHIP_STRING
