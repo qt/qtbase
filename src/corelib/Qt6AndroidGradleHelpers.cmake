@@ -248,6 +248,7 @@ function(_qt_internal_android_prepare_gradle_build target)
     _qt_internal_android_copy_app_binary(${target} "${deployment_dir}")
     _qt_internal_android_copy_stdlib(${target} "${deployment_dir}")
     _qt_internal_android_copy_extra_libs(${target} "${deployment_dir}")
+    _qt_internal_android_copy_extra_plugins(${target} "${deployment_dir}")
     _qt_internal_android_copy_qt_dependencies(${target} "${deployment_dir}")
     _qt_internal_android_copy_qml_dependencies(${target} "${deployment_dir}")
     _qt_internal_android_generate_libs_xml(${target} "${deployment_dir}")
@@ -335,6 +336,7 @@ function(_qt_internal_android_add_gradle_build target type)
             ${target}_copy_app_binary
             ${target}_copy_stdlib
             ${target}_copy_extra_libs
+            ${target}_copy_extra_plugins
             ${target}_copy_qt_files
             ${target}_update_libs_xml
             ${target}_android_deploy_aux
@@ -877,6 +879,84 @@ function(_qt_internal_android_copy_extra_libs target deployment_dir)
     )
 
     add_custom_target(${target}_copy_extra_libs DEPENDS ${copy_outputs})
+endfunction()
+
+# Copies additional plugins requested via QT_ANDROID_EXTRA_PLUGINS.
+function(_qt_internal_android_copy_extra_plugins target deployment_dir)
+    get_target_property(no_deploy_qt_libs ${target} QT_ANDROID_NO_DEPLOY_QT_LIBS)
+    if(no_deploy_qt_libs)
+        return()
+    endif()
+
+    if(TARGET ${target}_copy_extra_plugins)
+        return()
+    endif()
+
+    get_target_property(extra_plugins ${target} QT_ANDROID_EXTRA_PLUGINS)
+    if(NOT extra_plugins)
+        add_custom_target(${target}_copy_extra_plugins)
+        return()
+    endif()
+
+    set(extra_plugins_dst_dir "${deployment_dir}/libs/${CMAKE_ANDROID_ARCH_ABI}")
+    set(copy_outputs "")
+    set(copy_depends "")
+    set(copy_commands COMMAND ${CMAKE_COMMAND} -E make_directory "${extra_plugins_dst_dir}")
+
+    foreach(plugin_dir IN LISTS extra_plugins)
+        if(plugin_dir MATCHES "^\$<")
+            message(FATAL_ERROR
+                "QT_ANDROID_EXTRA_PLUGINS entry '${plugin_dir}' for ${target} is a generator "
+                "expression. This copy implementation prepares build rules during configuration "
+                "and requires resolved absolute paths.")
+        endif()
+
+        file(TO_CMAKE_PATH "${plugin_dir}" plugin_path)
+        if(NOT IS_ABSOLUTE "${plugin_path}")
+            message(FATAL_ERROR
+                "QT_ANDROID_EXTRA_PLUGINS entry '${plugin_dir}' for ${target} must be an "
+                "absolute path.")
+        endif()
+
+        file(GLOB_RECURSE plugin_files_rel CONFIGURE_DEPENDS
+            LIST_DIRECTORIES false
+            RELATIVE "${plugin_path}"
+            "${plugin_path}/*"
+        )
+
+        if(plugin_files_rel)
+            list(TRANSFORM plugin_files_rel PREPEND "${plugin_path}/"
+                OUTPUT_VARIABLE plugin_files)
+            list(TRANSFORM plugin_files_rel PREPEND "${extra_plugins_dst_dir}/"
+                OUTPUT_VARIABLE plugin_outputs)
+
+            list(APPEND copy_depends ${plugin_files})
+            list(APPEND copy_outputs ${plugin_outputs})
+        endif()
+
+        list(APPEND copy_commands
+            COMMAND ${CMAKE_COMMAND} -E copy_directory "${plugin_path}" "${extra_plugins_dst_dir}"
+        )
+    endforeach()
+
+    if(copy_outputs)
+        add_custom_command(
+            OUTPUT ${copy_outputs}
+            ${copy_commands}
+            DEPENDS ${copy_depends} ${target}
+            COMMENT "Copying extra plugins for ${target}"
+            VERBATIM
+        )
+        add_custom_target(${target}_copy_extra_plugins DEPENDS ${copy_outputs})
+    else()
+        # The plugin outputs not ready at configure time, copy after target builds
+        add_custom_target(${target}_copy_extra_plugins
+            ${copy_commands}
+            DEPENDS ${copy_depends} ${target}
+            COMMENT "Copying extra plugins for ${target}"
+            VERBATIM
+        )
+    endif()
 endfunction()
 
 # Copies the app's binary file to the deployment dir.
