@@ -1895,8 +1895,11 @@ void QFileSystemModelPrivate::removeNode(QFileSystemModelPrivate::QFileSystemNod
     QFileSystemNode * node = parentNode->children.take(name);
     delete node;
     // cleanup sort files after removing rather then re-sorting which is O(n)
-    if (vLocation >= 0)
+    if (vLocation >= 0) {
         parentNode->visibleChildren.removeAt(vLocation);
+        if (vLocation < parentNode->dirtyChildrenIndex)
+            --parentNode->dirtyChildrenIndex;
+    }
     if (vLocation >= 0 && !indexHidden)
         q->endRemoveRows();
 }
@@ -1948,6 +1951,8 @@ void QFileSystemModelPrivate::removeVisibleFile(QFileSystemNode *parentNode, int
                                        translateVisibleLocation(parentNode, vLocation));
     parentNode->children.value(parentNode->visibleChildren.at(vLocation))->isVisible = false;
     parentNode->visibleChildren.removeAt(vLocation);
+    if (vLocation < parentNode->dirtyChildrenIndex)
+        --parentNode->dirtyChildrenIndex;
     if (!indexHidden)
         q->endRemoveRows();
 }
