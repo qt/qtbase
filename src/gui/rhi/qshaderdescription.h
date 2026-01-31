@@ -274,7 +274,8 @@ public:
         GlobalInvocationIdBuiltin = 28,
         LocalInvocationIndexBuiltin = 29,
         VertexIndexBuiltin = 42,
-        InstanceIndexBuiltin = 43
+        InstanceIndexBuiltin = 43,
+        ViewIndexBuiltin = 4440,
     };
 
     struct BuiltinVariable {
