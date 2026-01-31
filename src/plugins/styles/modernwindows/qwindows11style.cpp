@@ -927,17 +927,12 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
             if (isOn) {
                 painter->setFont(d->assetFont);
                 painter->setPen(controlTextColor(option));
-                qreal clipWidth = 1.0;
+                const auto *animation =
+                        qobject_cast<QNumberStyleAnimation *>(d->animation(option->styleObject));
+                const qreal clipWidth = animation ? animation->currentValue() : 1.0;
                 const QString str = fluentIcon(Icon::AcceptMedium);
                 QFontMetrics fm(d->assetFont);
                 QRectF clipRect = fm.boundingRect(str);
-                if (d->transitionsEnabled() && option->styleObject) {
-                    QNumberStyleAnimation *animation = qobject_cast<QNumberStyleAnimation *>(
-                            d->animation(option->styleObject));
-                    if (animation)
-                        clipWidth = animation->currentValue();
-                }
-
                 clipRect.moveCenter(center);
                 clipRect.setLeft(rect.x() + (rect.width() - clipRect.width()) / 2.0 + 0.5);
                 clipRect.setWidth(clipWidth * clipRect.width());
