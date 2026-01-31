@@ -246,6 +246,7 @@ function(_qt_internal_android_prepare_gradle_build target)
     _qt_internal_android_copy_target_package_sources(${target} "${deployment_dir}")
     _qt_internal_android_copy_android_resources(${target} "${deployment_dir}")
     _qt_internal_android_copy_app_binary(${target} "${deployment_dir}")
+    _qt_internal_android_copy_non_qt_linked_libs(${target} "${deployment_dir}")
     _qt_internal_android_copy_stdlib(${target} "${deployment_dir}")
     _qt_internal_android_copy_extra_libs(${target} "${deployment_dir}")
     _qt_internal_android_copy_extra_plugins(${target} "${deployment_dir}")
@@ -335,6 +336,7 @@ function(_qt_internal_android_add_gradle_build target type)
             ${target}_copy_android_res_files
             ${target}_copy_app_binary
             ${target}_copy_stdlib
+            ${target}_copy_non_qt_linked_libs
             ${target}_copy_extra_libs
             ${target}_copy_extra_plugins
             ${target}_copy_qt_files
@@ -957,6 +959,88 @@ function(_qt_internal_android_copy_extra_plugins target deployment_dir)
             VERBATIM
         )
     endif()
+endfunction()
+
+# Copies non-Qt shared libraries linked to the target.
+function(_qt_internal_android_copy_non_qt_linked_libs target deployment_dir)
+    if(QT_NO_COLLECT_BUILD_TREE_APK_DEPS)
+        add_custom_target(${target}_copy_non_qt_linked_libs)
+        return()
+    endif()
+
+    set(queue "${target}")
+    set(processed "")
+    set(linked_libs "")
+    while(queue)
+        list(POP_FRONT queue current_target)
+        get_target_property(current_alias "${current_target}" ALIASED_TARGET)
+        if(current_alias)
+            set(current_target "${current_alias}")
+        endif()
+
+        if(current_target IN_LIST processed)
+            continue()
+        endif()
+        list(APPEND processed "${current_target}")
+
+        foreach(property_name IN ITEMS LINK_LIBRARIES INTERFACE_LINK_LIBRARIES)
+            get_target_property(link_entries "${current_target}" ${property_name})
+            if(NOT link_entries OR link_entries STREQUAL "${property_name}-NOTFOUND")
+                continue()
+            endif()
+
+            foreach(raw_entry IN LISTS link_entries)
+                _qt_internal_android_extract_link_target("${raw_entry}" entry)
+                if(NOT entry OR NOT TARGET "${entry}")
+                    continue()
+                endif()
+
+                if(NOT entry IN_LIST processed AND NOT entry IN_LIST queue)
+                    list(APPEND queue "${entry}")
+                endif()
+
+                get_target_property(entry_type "${entry}" TYPE)
+                if(NOT entry_type OR NOT entry_type MATCHES "^(SHARED|MODULE)_LIBRARY$")
+                    continue()
+                endif()
+
+                get_target_property(entry_imported "${entry}" IMPORTED)
+                if(entry_imported)
+                    continue()
+                endif()
+
+                # Skip if it's a Qt library.
+                get_target_property(entry_qt_package_version "${entry}" _qt_package_version)
+                if(entry_qt_package_version)
+                    continue()
+                endif()
+
+                list(APPEND linked_libs "${entry}")
+            endforeach()
+        endforeach()
+    endwhile()
+
+    list(REMOVE_DUPLICATES linked_libs)
+
+    if(NOT linked_libs)
+        add_custom_target(${target}_copy_non_qt_linked_libs)
+        return()
+    endif()
+
+    set(libs_abi_dir "${deployment_dir}/libs/${CMAKE_ANDROID_ARCH_ABI}")
+    set(linked_libs_copy_commands COMMAND ${CMAKE_COMMAND} -E make_directory "${libs_abi_dir}")
+    foreach(lib IN LISTS linked_libs)
+        list(APPEND linked_libs_copy_commands COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "$<TARGET_FILE:${lib}>" "${libs_abi_dir}/$<TARGET_FILE_NAME:${lib}>"
+        )
+    endforeach()
+
+    add_custom_target(${target}_copy_non_qt_linked_libs
+        ${linked_libs_copy_commands}
+        DEPENDS ${linked_libs}
+        COMMENT "Copying linked shared libraries for ${target}"
+        VERBATIM
+    )
 endfunction()
 
 # Copies the app's binary file to the deployment dir.
