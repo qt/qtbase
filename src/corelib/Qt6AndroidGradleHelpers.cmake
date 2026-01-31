@@ -243,13 +243,13 @@ function(_qt_internal_android_prepare_gradle_build target)
     _qt_internal_android_get_target_deployment_dir(deployment_dir ${target})
 
     _qt_internal_android_copy_gradle_files(${target} "${android_build_dir}")
+    _qt_internal_android_copy_target_package_sources(${target} "${deployment_dir}")
     _qt_internal_android_copy_android_resources(${target} "${deployment_dir}")
     _qt_internal_android_copy_app_binary(${target} "${deployment_dir}")
     _qt_internal_android_copy_stdlib(${target} "${deployment_dir}")
     _qt_internal_android_copy_extra_libs(${target} "${deployment_dir}")
     _qt_internal_android_copy_qt_dependencies(${target} "${deployment_dir}")
     _qt_internal_android_copy_qml_dependencies(${target} "${deployment_dir}")
-    _qt_internal_android_copy_target_package_sources(${target})
     _qt_internal_android_generate_libs_xml(${target} "${deployment_dir}")
 
     _qt_internal_android_generate_bundle_gradle_properties(${target})
@@ -652,10 +652,11 @@ function(_qt_internal_android_generate_bundle_local_properties target)
 endfunction()
 
 # Copies the customized Android package sources to the Android build directory
-function(_qt_internal_android_copy_target_package_sources target)
+function(_qt_internal_android_copy_target_package_sources target deployment_dir)
     _qt_internal_android_get_package_source_dir(package_source_dir ${target})
 
     if(NOT package_source_dir)
+        set_property(TARGET ${target} PROPERTY _qt_android_package_res_outputs "")
         return()
     endif()
     get_filename_component(package_source_dir "${package_source_dir}" ABSOLUTE)
@@ -667,14 +668,19 @@ function(_qt_internal_android_copy_target_package_sources target)
         "${package_source_dir}/*"
     )
 
+    # Save res outputs so default resources templates know to not override them.
+    set(package_res_files "${package_files}")
+    list(FILTER package_res_files INCLUDE REGEX "^res/")
+    list(TRANSFORM package_res_files PREPEND "${deployment_dir}/" OUTPUT_VARIABLE package_res_outputs)
+    set_property(TARGET ${target} PROPERTY _qt_android_package_res_outputs "${package_res_outputs}")
+
     # Do not copy files that we treat as CMake templates, having '.in' extention.
     #
     # TODO: If it ever will be an issue we may exclude only templates that are
     # known by our build system.
     list(FILTER package_files EXCLUDE REGEX ".+\\.in$")
 
-    _qt_internal_android_get_target_android_build_dir(android_build_dir ${target})
-    list(TRANSFORM package_files PREPEND "${android_build_dir}/" OUTPUT_VARIABLE out_package_files)
+    list(TRANSFORM package_files PREPEND "${deployment_dir}/" OUTPUT_VARIABLE out_package_files)
     list(TRANSFORM package_files PREPEND "${package_source_dir}/" OUTPUT_VARIABLE in_package_files)
 
     if(in_package_files)
@@ -684,7 +690,7 @@ function(_qt_internal_android_copy_target_package_sources target)
                 the QT_USE_ANDROID_MODERN_BUNDLE option enabled requires CMake version >= 3.26.")
         endif()
         set(copy_commands COMMAND "${CMAKE_COMMAND}" -E copy_directory_if_different
-            "${package_source_dir}" "${android_build_dir}")
+            "${package_source_dir}" "${deployment_dir}")
     else()
         # We actually have nothing to deploy.
         return()
@@ -751,6 +757,12 @@ function(_qt_internal_android_copy_android_resources target deployment_dir)
         OUTPUT_VARIABLE template_res_files)
     list(TRANSFORM template_res_files_rel PREPEND "${res_dir_dst}/"
         OUTPUT_VARIABLE dst_res_files)
+
+    # Exclude res outputs that are copied by QT_ANDROID_PACKAGE_SOURCE_DIR.
+    get_target_property(package_res_outputs ${target} _qt_android_package_res_outputs)
+    if(package_res_outputs AND NOT package_res_outputs STREQUAL "package_res_outputs-NOTFOUND")
+        list(REMOVE_ITEM dst_res_files ${package_res_outputs})
+    endif()
 
     add_custom_command(OUTPUT ${dst_res_files}
         COMMAND ${CMAKE_COMMAND} -E copy_directory "${template_res_dir}" "${res_dir_dst}"
