@@ -540,6 +540,7 @@ QT_BEGIN_NAMESPACE
     \value LocalInvocationIndexBuiltin
     \value VertexIndexBuiltin
     \value InstanceIndexBuiltin
+    \value ViewIndexBuiltin
  */
 
 /*!
@@ -1122,7 +1123,8 @@ static const struct BuiltinTypeTab {
     { "GlobalInvocationId", QShaderDescription::GlobalInvocationIdBuiltin },
     { "LocalInvocationIndex", QShaderDescription::LocalInvocationIndexBuiltin },
     { "VertexIndex", QShaderDescription::VertexIndexBuiltin },
-    { "InstanceIndex", QShaderDescription::InstanceIndexBuiltin }
+    { "InstanceIndex", QShaderDescription::InstanceIndexBuiltin },
+    { "ViewIndex", QShaderDescription::ViewIndexBuiltin }
 };
 
 static QLatin1StringView builtinTypeStr(QShaderDescription::BuiltinType t)
