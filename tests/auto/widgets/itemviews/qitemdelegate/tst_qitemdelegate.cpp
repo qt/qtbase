@@ -718,7 +718,7 @@ static QDateTimeEdit *findDateTimeEdit(const QWidget *widget)
 {
     const auto dateTimeEditors = widget->findChildren<QDateTimeEdit *>();
     for (auto dateTimeEditor : dateTimeEditors) {
-        if (qstrcmp(dateTimeEditor->metaObject()->className(), "QDateTimeEdit") == 0)
+        if (qstrcmp(dateTimeEditor->metaObject()->className(), "QItemEditorDateTimeEdit") == 0)
             return dateTimeEditor;
     }
     return nullptr;

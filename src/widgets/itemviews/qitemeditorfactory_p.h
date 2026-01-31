@@ -56,4 +56,21 @@ QT_END_NAMESPACE
 
 #endif // QT_CONFIG(lineedit)
 
+#if QT_CONFIG(datetimeedit)
+#include <qdatetimeedit.h>
+
+QT_BEGIN_NAMESPACE
+class QItemEditorDateTimeEdit : public QDateTimeEdit
+{
+    Q_OBJECT
+public:
+    Q_PROPERTY(QDateTime dateTime READ dateTime WRITE setDateTimeItemEditor NOTIFY dateTimeChanged USER true)
+    using QDateTimeEdit::QDateTimeEdit;
+
+    void setDateTimeItemEditor(const QDateTime &datetime);
+};
+QT_END_NAMESPACE
+
+#endif // QT_CONFIG(lineedit)
+
 #endif //QITEMEDITORFACTORY_P_H

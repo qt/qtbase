@@ -237,7 +237,7 @@ QWidget *QDefaultItemEditorFactory::createEditor(int userType, QWidget *parent) 
         ed->setFrame(false);
         return ed; }
     case QMetaType::QDateTime: {
-        QDateTimeEdit *ed = new QDateTimeEdit(parent);
+        QDateTimeEdit *ed = new QItemEditorDateTimeEdit(parent);
         ed->setFrame(false);
         return ed; }
 #endif
@@ -562,6 +562,14 @@ void QExpandingLineEdit::resizeToContents()
     }
 }
 
+#endif // QT_CONFIG(lineedit)
+
+#if QT_CONFIG(datetimeedit)
+void QItemEditorDateTimeEdit::setDateTimeItemEditor(const QDateTime &datetime)
+{
+    setTimeZone(datetime.timeRepresentation());
+    setDateTime(datetime);
+}
 #endif // QT_CONFIG(lineedit)
 
 #if QT_CONFIG(combobox)
