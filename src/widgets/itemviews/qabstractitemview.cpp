@@ -2109,9 +2109,9 @@ void QAbstractItemView::dragMoveEvent(QDragMoveEvent *event)
             if (d->selectionBehavior == QAbstractItemView::SelectRows
                 && d->dropIndicatorPosition != OnViewport
                 && (d->dropIndicatorPosition != OnItem || event->source() == this)) {
-                if (index.column() > 0)
-                    rect = visualRect(index.siblingAtColumn(0));
-                rect.setWidth(viewport()->width() - 1 - rect.x());
+                const int maxCol = d->model->columnCount(index.parent()) - 1;
+                const auto idx = index.column() > 0 ? index.siblingAtColumn(0) : index;
+                rect = d->intersectedRect(viewport()->rect(), idx, idx.siblingAtColumn(maxCol));
             }
             switch (d->dropIndicatorPosition) {
             case AboveItem:
