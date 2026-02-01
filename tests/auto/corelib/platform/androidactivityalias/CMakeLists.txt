@@ -7,9 +7,6 @@ if(NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_BUILDING_QT)
     find_package(Qt6BuildInternals REQUIRED COMPONENTS STANDALONE_TEST)
 endif()
 
-# Custom manifests still not handled fully by modern bundle builds
-set(QT_USE_ANDROID_MODERN_BUNDLE OFF)
-
 qt_internal_add_test(tst_androidactivityalias
     SOURCES
         tst_androidactivityalias.cpp

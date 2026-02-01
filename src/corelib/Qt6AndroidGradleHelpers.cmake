@@ -22,6 +22,14 @@ function(_qt_internal_android_get_template_path out_var target template_name)
         _qt_internal_android_get_package_source_dir(user_template_directory ${target})
         get_filename_component(user_template_directory "${user_template_directory}" ABSOLUTE)
 
+        # Add possible user manifest first so it takes precedence.
+        if(template_name STREQUAL "app/AndroidManifest.xml")
+            set(user_manifest "${user_template_directory}/AndroidManifest.xml")
+            if(EXISTS "${user_manifest}")
+                list(PREPEND possible_paths "${user_manifest}")
+            endif()
+        endif()
+
         # Add user template with the higher priority
         list(PREPEND possible_paths "${user_template_directory}/${template_name}.in")
     endif()
@@ -533,6 +541,35 @@ function(_qt_internal_android_get_manifest_property out_var target property defa
     set(${out_var} "${out_genex}" PARENT_SCOPE)
 endfunction()
 
+# Converts androiddeployqt-style placeholders to CMake placeholders.
+function(_qt_internal_android_convert_manifest_placeholders manifest_content out_placeholders)
+    set(updated "${manifest_content}")
+    if(updated MATCHES "%%INSERT_")
+        string(REPLACE "-- %%INSERT_VERSION_CODE%% --" "@APP_VERSION_CODE@"
+            updated "${updated}")
+        string(REPLACE "-- %%INSERT_VERSION_NAME%% --" "@APP_VERSION_NAME@"
+            updated "${updated}")
+        string(REPLACE "-- %%INSERT_APP_NAME%% --" "@APP_NAME@"
+            updated "${updated}")
+        string(REPLACE "-- %%INSERT_APP_LIB_NAME%% --" "@APP_LIB_NAME@"
+            updated "${updated}")
+        string(REPLACE "-- %%INSERT_APP_ARGUMENTS%% --" "@APP_ARGUMENTS@"
+            updated "${updated}")
+        string(REPLACE "-- %%INSERT_APP_ICON%% --" "@APP_ICON@"
+            updated "${updated}")
+        string(REPLACE "android:icon=\"@APP_ICON@\"" "@APP_ICON@"
+            updated "${updated}")
+        string(REPLACE "<!-- %%INSERT_PERMISSIONS -->" "@APP_PERMISSIONS@"
+            updated "${updated}")
+        string(REPLACE "<!-- %%INSERT_FEATURES -->" "@APP_FEATURES@"
+            updated "${updated}")
+        string(REGEX REPLACE "package=\"[^\"]*\"" "package=\"@APP_PACKAGE_NAME@\""
+            updated "${updated}")
+    endif()
+
+    set(${out_placeholders} "${updated}" PARENT_SCOPE)
+endfunction()
+
 # Generates the target AndroidManifest.xml
 function(_qt_internal_android_generate_target_android_manifest target)
     cmake_parse_arguments(PARSE_ARGV 1 arg "" "DEPLOYMENT_DIR" "")
@@ -554,16 +591,20 @@ function(_qt_internal_android_generate_target_android_manifest target)
         "app/${android_manifest_filename}")
     set(temporary_file "${out_file}.tmp")
 
-    # The file cannot be generated at cmake configure time, because androiddeployqt
-    # will override it at build time. We use this trick with temporary file to override
-    # it after the aux run of androiddeployqt.
+    # The file cannot be generated at cmake configure time because target properties
+    # (app name, version, permissions) are resolved at generate/build time. We use a
+    # temporary file and copy it as a build step to keep the manifest in sync.
+    set(manifest_depends
+        "${template_file}"
+        "${temporary_file}"
+    )
+    if(TARGET ${target}_copy_package_sources)
+        list(APPEND manifest_depends ${target}_copy_package_sources)
+    endif()
+
     add_custom_command(OUTPUT "${out_file}"
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${temporary_file}"
-            "${out_file}"
-        DEPENDS
-            "${template_file}"
-            "${temporary_file}"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${temporary_file}" "${out_file}"
+        DEPENDS ${manifest_depends}
     )
 
     _qt_internal_android_get_manifest_property(APP_PACKAGE_NAME ${target}
@@ -586,6 +627,7 @@ function(_qt_internal_android_generate_target_android_manifest target)
     )
 
     file(READ "${template_file}" manifest_content)
+    _qt_internal_android_convert_manifest_placeholders("${manifest_content}" manifest_content)
     string(REPLACE ">" "$<ANGLE-R>" manifest_content "${manifest_content}")
     string(REPLACE ";" "$<SEMICOLON>" manifest_content "${manifest_content}")
     string(REPLACE "," "$<COMMA>" manifest_content "${manifest_content}")
@@ -670,6 +712,10 @@ function(_qt_internal_android_copy_target_package_sources target deployment_dir)
         "${package_source_dir}/*"
     )
 
+    # Skip manifest copying because it will be handled and generated under
+    # _qt_internal_android_generate_target_android_manifest().
+    list(REMOVE_ITEM package_files "AndroidManifest.xml")
+
     # Save res outputs so default resources templates know to not override them.
     set(package_res_files "${package_files}")
     list(FILTER package_res_files INCLUDE REGEX "^res/")
@@ -706,6 +752,10 @@ function(_qt_internal_android_copy_target_package_sources target deployment_dir)
     )
 
     set_target_properties(${target} PROPERTIES _qt_android_deployment_files "${out_package_files}")
+
+    # This is used by _qt_internal_android_generate_target_android_manifest()
+    # to ensure it's run after the package sources are copied.
+    add_custom_target(${target}_copy_package_sources DEPENDS ${out_package_files})
 endfunction()
 
 # Copies gradle scripts to a build directory.
