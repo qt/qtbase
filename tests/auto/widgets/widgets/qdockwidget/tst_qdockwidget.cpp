@@ -1752,8 +1752,10 @@ void tst_QDockWidget::hoverWithoutDrop()
     // unplug and resize both dock widgets
     unplugAndResize(mainWindow, d1, home1(mainWindow), size1(mainWindow));
     unplugAndResize(mainWindow, d2, home2(mainWindow), size2(mainWindow));
+    const QSize sizeD1 = d1->size();
+    const QSize sizeD2 = d2->size();
 
-    // Test plugging
+    // hover over each other
     qCDebug(lcTestDockWidget) << "*** move d1 dock over d2 dock ***";
     qCDebug(lcTestDockWidget) << "*******(test hovering)***********";
     qCDebug(lcTestDockWidget) << "Move d1 over d2, wait and return to origin";
@@ -1761,7 +1763,15 @@ void tst_QDockWidget::hoverWithoutDrop()
     const QPoint target = d2->mapToGlobal(d2->rect().center());
     moveDockWidget(d1, target, source, MoveDockWidgetRule::Abort);
     auto *groupWindow = mainWindow->findChild<QDockWidgetGroupWindow *>();
+
+    // No dropping => no groupWindow exists
     QCOMPARE(groupWindow, nullptr);
+
+    // Check whether sizes are unchanged after hover
+    QCOMPARE(d1->size(), sizeD1);
+    QCOMPARE(d2->size(), sizeD2);
+
+
 #else
     QSKIP("test requires -developer-build option");
 #endif // QT_BUILD_INTERNAL
