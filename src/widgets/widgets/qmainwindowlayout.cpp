@@ -727,11 +727,16 @@ void QDockWidgetGroupWindow::destroyIfSingleItemLeft()
 
     // Unplug the last remaining dock widget and hide the group window, to avoid flickering
     mwLayout->unplug(lastDockWidget, QDockWidgetPrivate::DragScope::Widget);
-    lastDockWidget->setGeometry(geometry());
+    const QPoint position = pos();
     hide();
 
     // Re-parent last dock widget
     reparentToMainWindow(lastDockWidget);
+
+    // setVisible() might have restored it's last docked position.
+    // => If the last dock widget is floating, move it to the group window's position.
+    if (lastDockWidget->isFloating())
+        lastDockWidget->move(position);
 
     // the group window could still have placeholder items => clear everything
     layoutInfo()->item_list.clear();
