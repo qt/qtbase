@@ -584,6 +584,14 @@ void QAndroidInputContext::updateCursorPosition()
     }
 }
 
+bool QAndroidInputContext::isImhNoEditMenuSet()
+{
+    QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQuery();
+    if (query.isNull())
+        return false;
+    return query->value(Qt::ImHints).toUInt() & Qt::ImhNoEditMenu;
+}
+
 bool QAndroidInputContext::isImhNoTextHandlesSet()
 {
     QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQuery();
@@ -607,6 +615,7 @@ void QAndroidInputContext::updateSelectionHandles()
         return;
     }
 
+    const bool noEditMenu = isImhNoEditMenuSet();
     auto im = qGuiApp->inputMethod();
 
     QInputMethodQueryEvent query(Qt::ImCursorPosition | Qt::ImAnchorPosition | Qt::ImEnabled
@@ -625,7 +634,7 @@ void QAndroidInputContext::updateSelectionHandles()
         return;
     }
 
-    if ( cpos == anchor && (!readOnlyVariant.isValid() || readOnly)) {
+    if (cpos == anchor && (!readOnlyVariant.isValid() || readOnly)) {
         QtAndroidInput::updateHandles(Hidden);
         return;
     }
@@ -647,16 +656,19 @@ void QAndroidInputContext::updateSelectionHandles()
         QPoint editMenuPoint(x, y);
         m_handleMode &= ShowEditPopup;
         m_handleMode |= ShowCursor;
-        uint32_t buttons = readOnly ? 0 : EditContext::PasteButton;
-        if (!query.value(Qt::ImSurroundingText).toString().isEmpty())
-            buttons |= EditContext::SelectAllButton;
+        uint32_t buttons = 0;
+        if (!noEditMenu) {
+            buttons = readOnly ? 0 : EditContext::PasteButton;
+            if (!query.value(Qt::ImSurroundingText).toString().isEmpty())
+                buttons |= EditContext::SelectAllButton;
+        }
         QtAndroidInput::updateHandles(m_handleMode, editMenuPoint, buttons, cursorPointGlobal);
         m_hideCursorHandleTimer.start();
 
         return;
     }
 
-    m_handleMode = ShowSelection | ShowEditPopup ;
+    m_handleMode = ShowSelection | ShowEditPopup;
     auto leftRect = cursorRectangle();
     auto rightRect = anchorRectangle();
     if (cpos > anchor)
@@ -680,8 +692,11 @@ void QAndroidInputContext::updateSelectionHandles()
             rightPoint.setX(rightSideOfScreen - m_selectHandleWidth);
 
         QPoint editPoint(qPlatformWindow->mapToGlobal(leftRect.united(rightRect).topLeft().toPoint()));
-        uint32_t buttons = readOnly ? EditContext::CopyButton | EditContext::SelectAllButton
-                                    : EditContext::AllButtons;
+        uint32_t buttons = 0;
+        if (!noEditMenu) {
+            buttons = readOnly ? EditContext::CopyButton | EditContext::SelectAllButton
+                               : EditContext::AllButtons;
+        }
 
         QtAndroidInput::updateHandles(m_handleMode, editPoint, buttons, leftPoint, rightPoint,
                                       query.value(Qt::ImCurrentSelection).toString().isRightToLeft());
