@@ -1420,7 +1420,7 @@ void QRangeModel::setAutoConnectPolicy(QRangeModel::AutoConnectPolicy policy)
 
     d->m_autoConnectPolicy = policy;
     d->impl->call<QRangeModelImplBase::SetAutoConnectPolicy>();
-    Q_EMIT autoConnectPolicyChanged();
+    Q_EMIT autoConnectPolicyChanged(policy);
 }
 
 /*!

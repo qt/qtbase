@@ -114,7 +114,7 @@ public:
 
 Q_SIGNALS:
     void roleNamesChanged();
-    Q_REVISION(6, 11) void autoConnectPolicyChanged();
+    Q_REVISION(6, 11) void autoConnectPolicyChanged(AutoConnectPolicy policy);
 
 protected Q_SLOTS:
     void resetInternalData() override;
