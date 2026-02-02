@@ -681,7 +681,7 @@ public:
     Qt::CaseSensitivity nameCaseSensitivity;
 private:
     void matchRule(NodePtr node, const StyleRule &rules, StyleSheetOrigin origin,
-                    int depth, QMultiMap<uint, StyleRule> *weightedRules) const;
+                    int depth, std::multimap<uint64_t, StyleRule> *weightedRules) const;
     bool selectorMatches(const Selector &rule, NodePtr node) const;
     bool basicSelectorMatches(const BasicSelector &rule, NodePtr node) const;
 };
