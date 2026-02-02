@@ -32,6 +32,17 @@ function(_qt_internal_android_get_template_path out_var target template_name)
 
         # Add user template with the higher priority
         list(PREPEND possible_paths "${user_template_directory}/${template_name}.in")
+
+        # When the user’s package source dir is already the module's subdir
+        # (i.e app/ or dynamic_feature/), then don't add yet another app subdir.
+        if(user_template_directory)
+            get_filename_component(user_template_dir_basename "${user_template_directory}" NAME)
+            _qt_internal_re_escape(user_template_dir_basename_re "${user_template_dir_basename}")
+            if(template_name MATCHES "^${user_template_dir_basename_re}/(.+)$")
+                set(trailing_name "${CMAKE_MATCH_1}")
+                list(INSERT possible_paths 1 "${user_template_directory}/${trailing_name}.in")
+            endif()
+        endif()
     endif()
 
     set(template_path "")

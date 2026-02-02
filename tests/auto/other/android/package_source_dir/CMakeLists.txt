@@ -27,7 +27,7 @@ if(QT_USE_ANDROID_MODERN_BUNDLE)
     set_target_properties(tst_package_source_dir_custom_android_manifest
         PROPERTIES
             QT_ANDROID_PACKAGE_SOURCE_DIR
-            "${CMAKE_CURRENT_SOURCE_DIR}/custom_android_manifest_bundle"
+            "${CMAKE_CURRENT_SOURCE_DIR}/custom_android_manifest_bundle/app"
     )
 else()
     set_target_properties(tst_package_source_dir_custom_android_manifest
@@ -49,6 +49,6 @@ if(QT_USE_ANDROID_MODERN_BUNDLE)
     )
     set_target_properties(tst_package_source_dir_partial_template
         PROPERTIES
-            QT_ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/partial_template"
+            QT_ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/partial_template/app"
     )
 endif()
