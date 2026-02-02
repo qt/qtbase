@@ -119,9 +119,12 @@ public:
                                                                     }");
         m_blitProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, "varying highp vec2 outTexCoords;\n\
                                                                         uniform sampler2D texture;\n\
+                                                                        uniform lowp float forceOpaque;\n\
                                                                         void main()\n\
                                                                         {\n\
-                                                                            gl_FragColor = texture2D(texture, outTexCoords);\n\
+                                                                            lowp vec4 c = texture2D(texture, outTexCoords);\n\
+                                                                            c.a = mix(c.a, 1.0, forceOpaque);\n\
+                                                                            gl_FragColor = c;\n\
                                                                         }");
 
         m_blitProgram->bindAttributeLocation("position", 0);
@@ -135,6 +138,9 @@ public:
         m_blitProgram->bind();
         m_blitProgram->enableAttributeArray(0);
         m_blitProgram->enableAttributeArray(1);
+
+        // Default: keep sampled alpha.
+        m_blitProgram->setUniformValue("forceOpaque", 0.0f);
 
         glDisable(GL_DEPTH_TEST);
         glDisable(GL_BLEND);
@@ -192,6 +198,7 @@ public:
 
         //Draw Decoration
         if (auto *decoration = window->decoration()) {
+            m_blitProgram->setUniformValue("forceOpaque", 0.0f);
             m_blitProgram->setAttributeBuffer(0, GL_FLOAT, m_inverseSquareVerticesOffset, 2);
             QImage decorationImage = decoration->contentImage();
             cache->bindTexture(m_context->context(), decorationImage);
@@ -207,6 +214,9 @@ public:
         glBindTexture(GL_TEXTURE_2D, window->contentTexture());
         QRect r = window->contentsRect();
         glViewport(r.x() * scale, r.y() * scale, r.width() * scale, r.height() * scale);
+
+        const bool opaqueWindow = window->window() && !window->window()->requestedFormat().hasAlpha();
+        m_blitProgram->setUniformValue("forceOpaque", opaqueWindow ? 1.0f : 0.0f);
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     }
 
