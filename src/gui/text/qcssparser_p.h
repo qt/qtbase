@@ -681,9 +681,9 @@ public:
     Qt::CaseSensitivity nameCaseSensitivity;
 private:
     void matchRule(NodePtr node, const StyleRule &rules, StyleSheetOrigin origin,
-                    int depth, QMultiMap<uint, StyleRule> *weightedRules);
-    bool selectorMatches(const Selector &rule, NodePtr node);
-    bool basicSelectorMatches(const BasicSelector &rule, NodePtr node);
+                    int depth, QMultiMap<uint, StyleRule> *weightedRules) const;
+    bool selectorMatches(const Selector &rule, NodePtr node) const;
+    bool basicSelectorMatches(const BasicSelector &rule, NodePtr node) const;
 };
 
 enum TokenType {
@@ -855,7 +855,7 @@ struct Q_GUI_EXPORT ValueExtractor
 
     bool extractFont(QFont *font, int *fontSizeAdjustment);
     bool extractBackground(QBrush *, QString *, Repeat *, Qt::Alignment *, QCss::Origin *, QCss::Attachment *,
-                           QCss::Origin *);
+                           QCss::Origin *) const;
     bool extractGeometry(int *w, int *h, int *minw, int *minh, int *maxw, int *maxh);
     bool extractPosition(int *l, int *t, int *r, int *b, QCss::Origin *, Qt::Alignment *,
                          QCss::PositionMode *, Qt::Alignment *);
@@ -864,10 +864,10 @@ struct Q_GUI_EXPORT ValueExtractor
     bool extractOutline(int *borders, QBrush *colors, BorderStyle *Styles, QSize *radii, int *offsets);
     bool extractPalette(QBrush *foreground, QBrush *selectedForeground, QBrush *selectedBackground,
                         QBrush *alternateBackground, QBrush *placeHolderTextForeground,
-                        QBrush *accent);
-    int  extractStyleFeatures();
-    bool extractImage(QIcon *icon, Qt::Alignment *a, QSize *size);
-    bool extractIcon(QIcon *icon, QSize *size);
+                        QBrush *accent) const;
+    int  extractStyleFeatures() const;
+    bool extractImage(QIcon *icon, Qt::Alignment *a, QSize *size) const;
+    bool extractIcon(QIcon *icon, QSize *size) const;
 
     void lengthValues(const Declaration &decl, int *m);
     QTextLength textLength(const Declaration &decl);
