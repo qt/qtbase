@@ -4085,6 +4085,7 @@ void QTreeViewPrivate::sortIndicatorChanged(int column, Qt::SortOrder order)
 int QTreeViewPrivate::accessibleChildIndex(const QModelIndex &index) const
 {
     Q_Q(const QTreeView);
+    Q_ASSERT(index.isValid());
 
     // Note that this will include the header, even if its hidden.
     return (q->visualIndex(index) + (q->header() ? 1 : 0)) * index.model()->columnCount() + index.column();

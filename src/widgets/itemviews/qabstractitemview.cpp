@@ -3534,7 +3534,7 @@ void QAbstractItemView::dataChanged(const QModelIndex &topLeft, const QModelInde
         QAccessible::updateAccessibility(&accessibleEvent);
 
         // send accessibility events as needed when current item is modified
-        if (topLeft == bottomRight && topLeft == currentIndex())
+        if (topLeft.isValid() && topLeft == bottomRight && topLeft == currentIndex())
             d->updateItemAccessibility(topLeft, roles);
     }
 #endif

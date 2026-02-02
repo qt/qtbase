@@ -144,6 +144,7 @@ public:
 #if QT_CONFIG(accessibility)
     inline int accessibleChildIndex(const QModelIndex &index) const override
     {
+        Q_ASSERT(index.isValid());
         const int vHeader = verticalHeader ? 1 : 0;
         return (index.row() + (horizontalHeader ? 1 : 0)) * (index.model()->columnCount() + vHeader)
             + index.column() + vHeader;

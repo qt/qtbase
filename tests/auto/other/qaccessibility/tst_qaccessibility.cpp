@@ -238,6 +238,8 @@ private slots:
     void widgetLocaleTest();
     void noInterfacesBeforeSetActive();
     void parentChangedEvent();
+    void itemViewEmittingDataChangeNoSegFault_data();
+    void itemViewEmittingDataChangeNoSegFault();
 
 protected slots:
     void onClicked();
@@ -5038,6 +5040,68 @@ void tst_QAccessibility::parentChangedEvent()
         QAccessibleEvent parentChangedEvent(&w, QAccessible::ParentChanged);
         QVERIFY(QTestAccessibility::containsEvent(&parentChangedEvent));
     }
+}
+
+void tst_QAccessibility::itemViewEmittingDataChangeNoSegFault_data()
+{
+    QTest::addColumn<int>("dummy");
+    QTest::addRow("QListView");
+    QTest::addRow("QTreeView");
+    QTest::addRow("QTableView");
+    QTest::addRow("QColumnView");
+}
+
+QAbstractItemView *createView(const char *viewName)
+{
+    if (0 == strcmp(viewName, "QListView"))
+        return new QListView();
+    if (0 == strcmp(viewName, "QTreeView"))
+        return new QTreeView();
+    if (0 == strcmp(viewName, "QTableView"))
+        return new QTableView();
+    if (0 == strcmp(viewName, "QColumnView"))
+        return new QColumnView();
+    return nullptr;
+}
+
+class InvalidDataChangeSignalEmittingModel : public QStandardItemModel
+{
+    Q_OBJECT
+public:
+    using QStandardItemModel::QStandardItemModel;
+    inline void triggerEmittingInvalidDataChangeSignal() { emit dataChanged({}, {}); }
+};
+
+void tst_QAccessibility::itemViewEmittingDataChangeNoSegFault()
+{
+    // Tests for QTBUG-143781, views shouldn't segfault if they get a dataChanged() signal with an invalid index
+    QVERIFY(QAccessible::isActive()); // This is set high in initTestCase()
+    auto clearRemainingEvents = qScopeGuard([] {
+        // I don't care about warnings for left over events
+        // This has to execute after destructors execute for the views I create
+        QTestAccessibility::clearEvents();
+    });
+    const QScopedPointer<QAbstractItemView> view(createView(QTest::currentDataTag()));
+    QVERIFY(view);
+
+    InvalidDataChangeSignalEmittingModel model(1, 1);
+    model.setData(model.index(0, 0), u"Initial"_s);
+
+    view->setModel(&model);
+    view->show();
+
+    QTestAccessibility::clearEvents();
+    model.triggerEmittingInvalidDataChangeSignal();
+    // If we got to here without segmentation fault, we're good!
+
+    QVERIFY(!QTestAccessibility::containsEventOfType(QAccessible::NameChanged));
+    QVERIFY(!QTestAccessibility::containsEventOfType(QAccessible::DescriptionChanged));
+    QVERIFY(!QTestAccessibility::containsEventOfType(QAccessible::StateChanged));
+
+    view->setCurrentIndex(model.index(0, 0)); // This is necessary for NameChanged events to be emitted later
+    QTestAccessibility::clearEvents();
+    model.setData(model.index(0, 0), u"Modified"_s);
+    QVERIFY(QTestAccessibility::containsEventOfType(QAccessible::NameChanged));
 }
 
 QTEST_MAIN(tst_QAccessibility)
