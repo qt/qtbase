@@ -130,6 +130,13 @@ public:
         }
         return false;
     }
+    static bool containsEventOfType(QAccessible::Event evtype) {
+        for (const QAccessibleEvent *ev : std::as_const(eventList())) {
+            if (ev->type() == evtype)
+                return true;
+        }
+        return false;
+    }
     static void setUpdateHandler(std::function<void(QAccessibleEvent *event)> updateHandler)
     {
         Q_ASSERT_X(updateHandler, __FUNCTION__, "Update handler cannot be nullptr");

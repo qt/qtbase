@@ -1963,6 +1963,7 @@ bool QListViewPrivate::dropOn(QDropEvent *event, int *dropRow, int *dropCol, QMo
 int QListViewPrivate::accessibleChildIndex(const QModelIndex &index) const
 {
     Q_Q(const QListView);
+    Q_ASSERT(index.isValid());
     return q->visualIndex(index);
 }
 #endif
