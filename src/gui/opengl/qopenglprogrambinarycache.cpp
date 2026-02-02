@@ -10,6 +10,7 @@
 #include <QSaveFile>
 #include <QCoreApplication>
 #include <QCryptographicHash>
+#include <q20memory.h>
 
 #ifdef Q_OS_UNIX
 #include <sys/mman.h>
@@ -298,7 +299,8 @@ bool QOpenGLProgramBinaryCache::load(const QByteArray &cacheKey, uint programId)
     p = static_cast<const uchar *>(map.ptr) + BASE_HEADER_SIZE;
 #else
     buf = f.readAll();
-    p = reinterpret_cast<const uchar *>(buf.constData());
+    // QTBUG-142080: QByteArray::constData() confuses GCC, do it differently
+    p = reinterpret_cast<const uchar *>(q20::to_address(buf.cbegin()));
 #endif
 
     GLEnvInfo info;
