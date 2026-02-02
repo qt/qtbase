@@ -2392,8 +2392,8 @@ void QWindowsWindow::checkForScreenChanged(ScreenChangeMode mode, const RECT *su
 void QWindowsWindow::handleGeometryChange()
 {
     const QRect previousGeometry = m_data.geometry;
-    m_data.geometry = geometry_sys();
     updateFullFrameMargins();
+    m_data.geometry = geometry_sys();
     QWindowSystemInterface::handleGeometryChange(window(), m_data.geometry);
     // QTBUG-32121: OpenGL/normal windows (with exception of ANGLE
     // which we no longer support in Qt 6) do not receive expose
