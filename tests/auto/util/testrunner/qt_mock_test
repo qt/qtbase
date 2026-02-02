@@ -42,6 +42,7 @@
 
 import sys
 import os
+import re
 import traceback
 from tst_qt_testrunner import write_xml_log
 
@@ -51,6 +52,8 @@ STATE_FILE      = None
 XML_TEMPLATE    = None
 XML_OUTPUT_FILE = None
 CRASH_CLEANLY   = False
+# Remember the test functions that were run in this invocation
+TEST_FUNCTIONS_RUN = set()
 
 
 def crash():
@@ -64,13 +67,20 @@ def put_result(test_name, result):
     assert result in "PFC"
     with open(STATE_FILE, "a") as f:
         f.write(test_name + "\t" + result + "\n")
-def get_failures(test_name):
+# Counts the previous results in the STATE file.
+# If result=None then count any result of "test_name.*".
+def get_previous_result_count(test_name, result):
     n = 0
     try:
         with open(STATE_FILE) as f:
-            for line in f:
-                if line.split() == [ test_name, "F" ]:
-                    n += 1
+            if result is None:
+                for line in f:
+                    if line.split()[0].startswith(test_name):
+                        n += 1
+            else:
+                for line in f:
+                    if line.split() == [ test_name, result ]:
+                        n += 1
     except FileNotFoundError:
         return 0
     return n
@@ -120,6 +130,61 @@ def log_xml(fail_list):
                 pass
         else:
             write_xml_log(XML_OUTPUT_FILE, failure=fail_list)
+            clean_up_xml(XML_OUTPUT_FILE, TEST_FUNCTIONS_RUN)
+
+# Remove unneeded XML and comments.
+# Because the XML is rendered from a template, it contains a lot of garbage.
+# Run this *after* you render the XML_OUTPUT_FILE from the XML template.
+def clean_up_xml(filename, test_functions_run):
+    func_name_regex = re.compile(r' *<TestFunction .*name="([^"]+)">')
+    incident_regex  = re.compile(r' *<Incident .*type="\{\{.*\}\}"')
+
+    cleaned_up_xml = ""
+    skipping_function = False
+    skipping_incident = False
+    skipping_comment  = False
+
+    with open(filename) as f:
+        for line in f:
+
+            if skipping_function:
+                if "</TestFunction>" in line:
+                    skipping_function = False
+                continue
+            if skipping_incident:
+                if "</Incident>" in line:
+                    skipping_incident = False
+                continue
+            if skipping_comment:
+                if "-->" in line:
+                    skipping_comment = False
+                continue
+
+            # Delete parts of the XML file that refer to non-executed test functions.
+            m1 = func_name_regex.match(line)
+            if m1:
+                func_name = m1.group(1)
+                if func_name not in test_functions_run:
+                    skipping_function = True
+                    continue
+
+            # Delete <Incident> tags that has a type that starts with '{{'.
+            # This means that this part has not been template-replaced by write_xml_log().
+            m2 = incident_regex.match(line)
+            if m2:
+                skipping_incident = True
+                continue
+
+            # Delete multi-line XML comments.
+            if line.strip().startswith("<!--") and "-->" not in line:
+                skipping_comment = True
+                continue
+
+            # Keep the rest.
+            cleaned_up_xml += line
+
+    with open(filename, "w") as f:
+        f.write(cleaned_up_xml)
 
 # Return the exit code
 def run_test(testname):
@@ -132,20 +197,49 @@ def run_test(testname):
     elif testname == "always_crash":
         exit_code = 131
     elif testname == "fail_then_crash":
-        previous_fails = get_failures(testname)
+        previous_fails = get_previous_result_count(testname, "F")
         if previous_fails == 0:
             exit_code = 1
         else:
             exit_code = 131
     elif testname.startswith("fail_then_pass"):
         wanted_fails   = int(testname.partition(":")[2])
-        previous_fails = get_failures(testname)
+        previous_fails = get_previous_result_count(testname, "F")
         if previous_fails < wanted_fails:
             exit_code = 1
         else:
             exit_code = 0
+    # This will fail ONCE after exactly 3 passes
+    # TODO accept a :N datatag to fail after N passes.
+    # (difficult because qt-testrunner never specifies any datatag in the MFF re-runs).
+    elif testname.startswith("pass_then_fail_once"):
+        fail_after = 3
+        previous_runs_count = get_previous_result_count(testname, None)
+        if previous_runs_count == fail_after:
+            exit_code = 1
+        else:
+            exit_code = 0
+    elif testname.startswith("pass_then_crash_once"):
+        fail_after = 3
+        previous_runs_count = get_previous_result_count(testname, None)
+        if previous_runs_count == fail_after:
+            exit_code = 131
+        else:
+            exit_code = 0
+    elif testname.startswith("pass_then_fail_then_crash_once"):
+        fail_after = 3
+        previous_runs_count = get_previous_result_count(testname, None)
+        if   previous_runs_count == fail_after:
+            exit_code = 1
+        elif previous_runs_count == fail_after + 1:
+            exit_code = 131
+        else:
+            exit_code = 0
     else:
         assert False, "Unknown argument: %s" % testname
+
+    # Remember the test function name, it's needed in cleaned_up_xml().
+    TEST_FUNCTIONS_RUN.add(testname.partition(":")[0])
 
     if exit_code == 0:
         put_result(testname, "P")
@@ -226,3 +320,5 @@ if __name__ == "__main__":
     except Exception as e:
         traceback.print_exc()
         exit(128)                      # Something went wrong with this script
+
+# TODO return error when asking on the commandline to run initTestCase.

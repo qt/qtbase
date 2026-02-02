@@ -7,11 +7,13 @@ import sys
 import os
 import re
 import glob
+import time
 import subprocess
 
 from subprocess import STDOUT, PIPE
 from tempfile   import TemporaryDirectory, mkstemp
 
+DEBUG            = False
 MY_NAME          = os.path.basename(__file__)
 my_dir           = os.path.dirname(__file__)
 testrunner       = os.path.join(my_dir, "..", "..", "..", "..",
@@ -34,12 +36,12 @@ def setUpModule():
     with open(EMPTY_FILE, "w") as f:
         pass
 
-    filename = os.path.join(TEMPDIR.name, "file_1")
-    print("setUpModule(): setting up temporary directory and env var"
-          " QT_MOCK_TEST_STATE_FILE=" + filename + " and"
-          " QT_MOCK_TEST_XML_TEMPLATE_FILE=" + xml_log_template)
+    state_fname = os.path.join(TEMPDIR.name, "state_file")
+    print("setUpModule(): setting up env vars:\n"
+          "    QT_MOCK_TEST_STATE_FILE=" + state_fname + "\n"
+          "    QT_MOCK_TEST_XML_TEMPLATE_FILE=" + xml_log_template + "\n")
 
-    os.environ["QT_MOCK_TEST_STATE_FILE"]        = filename
+    os.environ["QT_MOCK_TEST_STATE_FILE"]        = state_fname
     os.environ["QT_MOCK_TEST_XML_TEMPLATE_FILE"] = xml_log_template
     os.environ["QT_TESTRUNNER_TESTING"] = "1"
 
@@ -47,6 +49,8 @@ def tearDownModule():
     print("\ntearDownModule(): Cleaning up temporary directory:",
           TEMPDIR.name)
     del os.environ["QT_MOCK_TEST_STATE_FILE"]
+    # Debug helper: press Ctrl-Z here to examine the TEMPDIR contents.
+    # time.sleep(5)
     TEMPDIR.cleanup()
 
 
@@ -110,14 +114,19 @@ def write_xml_log(filename, failure=None, inject_message=None):
     with open(filename, "w") as f:
         f.write(data)
 
+# Return a list with the lines in the file
+def read_lines_from_file(filename):
+    with open(filename) as f:
+        return [ l.strip() for l in f ]
+
 
 # Test that qt_mock_test behaves well. This is necessary to properly
 # test qt-testrunner.
 class Test_qt_mock_test(unittest.TestCase):
     def setUp(self):
-        state_file = os.environ["QT_MOCK_TEST_STATE_FILE"]
-        if os.path.exists(state_file):
-            os.remove(state_file)
+        self.state_file = os.environ["QT_MOCK_TEST_STATE_FILE"]
+        if os.path.exists(self.state_file):
+            os.remove(self.state_file)
     def assertProcessCrashed(self, proc):
         if DEBUG:
             print("process returncode is:", proc.returncode)
@@ -153,6 +162,73 @@ class Test_qt_mock_test(unittest.TestCase):
         self.assertEqual(proc.returncode, 1)
         proc = run([mock_test, "fail_then_pass:2"])
         self.assertEqual(proc.returncode, 0)
+        # fail_then_pass:1 passed before and should pass forever after its first failure.
+        proc = run([mock_test, "fail_then_pass:1"])
+        self.assertEqual(proc.returncode, 0)
+
+    def test_pass_then_fail_once(self):
+        r = [mock_test, "pass_then_fail_once"]
+        proc = run(r)
+        self.assertEqual(proc.returncode, 0)
+        proc = run(r)
+        self.assertEqual(proc.returncode, 0)
+        proc = run(r)
+        self.assertEqual(proc.returncode, 0)
+        proc = run(r)
+        self.assertEqual(proc.returncode, 1)
+        proc = run(r)
+        self.assertEqual(proc.returncode, 0)
+    def test_pass_then_crash_once(self):
+        r = [mock_test, "pass_then_crash_once"]
+        proc = run(r)
+        self.assertEqual(proc.returncode, 0)
+        proc = run(r)
+        self.assertEqual(proc.returncode, 0)
+        proc = run(r)
+        self.assertEqual(proc.returncode, 0)
+        proc = run(r)
+        self.assertProcessCrashed(proc)
+        proc = run(r)
+        self.assertEqual(proc.returncode, 0)
+    def test_pass_then_fail_then_crash_once(self):
+        r = [mock_test, "pass_then_fail_then_crash_once"]
+        proc = run(r)
+        self.assertEqual(proc.returncode, 0)
+        proc = run(r)
+        self.assertEqual(proc.returncode, 0)
+        proc = run(r)
+        self.assertEqual(proc.returncode, 0)
+        proc = run(r)
+        self.assertEqual(proc.returncode, 1)
+        proc = run(r)
+        self.assertProcessCrashed(proc)
+        proc = run(r)
+        self.assertEqual(proc.returncode, 0)
+
+    def test_many_tests_with_reruns_and_state_file(self):
+        my_env = { **os.environ,
+                   "QT_MOCK_TEST_RUN_LIST":
+                   "always_pass,always_fail,fail_then_pass:1,fail_then_pass:2" }
+        # First run qt_mock_test without arguments. It will run everything in the env var.
+        proc = run([mock_test], env=my_env)
+        self.assertEqual(proc.returncode, 1)
+        actual_runlog = read_lines_from_file(self.state_file)
+        wanted_runlog = ["always_pass\tP", "always_fail\tF",
+                         "fail_then_pass:1\tF", "fail_then_pass:2\tF"]
+        self.assertEqual(wanted_runlog, actual_runlog)
+
+        # Then start re-running single specific tests.
+        proc = run([mock_test, "fail_then_pass:1"])
+        self.assertEqual(proc.returncode, 0)
+        actual_runlog = read_lines_from_file(self.state_file)
+        wanted_runlog += ["fail_then_pass:1\tP"]
+        self.assertEqual(wanted_runlog, actual_runlog)
+        proc = run([mock_test, "fail_then_pass:2"])
+        self.assertEqual(proc.returncode, 1)
+        actual_runlog = read_lines_from_file(self.state_file)
+        wanted_runlog += ["fail_then_pass:2\tF"]
+        self.assertEqual(wanted_runlog, actual_runlog)
+
     def test_fail_then_crash(self):
         proc = run([mock_test, "fail_then_crash"])
         self.assertEqual(proc.returncode, 1)
@@ -202,20 +278,30 @@ def find_test_logs(testname=None, path=None, pattern="-*[0-9].xml"):
 # Test regular invocations of qt-testrunner.
 class Test_testrunner(unittest.TestCase):
     def setUp(self):
-        state_file = os.environ["QT_MOCK_TEST_STATE_FILE"]
-        if os.path.exists(state_file):
-            os.remove(state_file)
+        self.state_file = os.environ["QT_MOCK_TEST_STATE_FILE"]
+        if os.path.exists(self.state_file):
+            os.remove(self.state_file)
         # The mock_test honors only the XML output arguments, the rest are ignored.
         old_logfiles = find_test_logs(pattern="*.xml")
         for fname in old_logfiles:
             os.remove(os.path.join(TEMPDIR.name, fname))
         self.env = dict(os.environ)
         self.testrunner_args = []
+        self.runlog = None
+    def prepare_mff(self, test_func, test_case="qt_mock_test"):
+        assert ":" not in test_func, "The MFF should never contain datatags"
+        mff = os.path.join(TEMPDIR.name, "qt-modified-functions.txt")
+        with open(mff, "w") as f:
+            print(f"void {test_case}::{test_func}()", file=f)
+        self.testrunner_args += ["--modified-functions-file", mff]
+
     def prepare_env(self, run_list=None):
         if run_list is not None:
             self.env['QT_MOCK_TEST_RUN_LIST'] = ",".join(run_list)
     def run2(self):
-        return run_testrunner(testrunner_args=self.testrunner_args, env=self.env)
+        proc = run_testrunner(testrunner_args=self.testrunner_args, env=self.env)
+        self.runlog = read_lines_from_file(self.state_file)
+        return proc
 
     def test_simple_invocation(self):
         # All tests pass.
@@ -232,8 +318,8 @@ class Test_testrunner(unittest.TestCase):
     def test_always_fail(self):
         self.prepare_env(run_list=["always_fail"])
         proc = self.run2()
-        # TODO verify that re-runs==max_repeats
         self.assertEqual(proc.returncode, 2)
+        self.assertEqual(self.runlog, ["always_fail\tF"] * 6)    # 1 run + 5 re-runs
     def test_flaky_pass_1(self):
         self.prepare_env(run_list=["always_pass,fail_then_pass:1"])
         proc = self.run2()
@@ -247,14 +333,26 @@ class Test_testrunner(unittest.TestCase):
         proc = self.run2()
         self.assertEqual(proc.returncode, 2)
     def test_flaky_pass_fail(self):
-        self.prepare_env(run_list=["always_pass,fail_then_pass:1,fail_then_pass:6"])
+        self.prepare_env(run_list=["always_pass,fail_then_pass:2,fail_then_pass:6"])
         proc = self.run2()
-        # TODO verify that one func was re-run and passed but the other failed.
         self.assertEqual(proc.returncode, 2)
+        self.assertIn("always_pass\tP", self.runlog)
+        # this one did re-run and passed on the 3rd run
+        self.assertIn("fail_then_pass:2\tF", self.runlog)
+        self.assertIn("fail_then_pass:2\tP", self.runlog)
+        # this one did re-run but failed 6 times and gave up
+        self.assertIn("fail_then_pass:6\tF", self.runlog)
+        # it never passed
+        self.assertNotIn("fail_then_pass:6\tP", self.runlog)
+        self.assertEqual(self.runlog.count("fail_then_pass:6\tF"), 6)
+    # Test FAIL in initTestCase.
+    # Here qt-testrunner should treat it like a CRASH (re-run once the whole executable),
+    # because no individual re-runs of initTestCase can happen.
     def test_initTestCase_fail_crash(self):
         self.prepare_env(run_list=["initTestCase,always_pass"])
         proc = self.run2()
         self.assertEqual(proc.returncode, 3)
+        self.assertEqual(self.runlog.count("initTestCase\tF"), 2)
     def test_fail_then_crash(self):
         self.prepare_env(run_list=["fail_then_crash"])
         proc = self.run2()
@@ -284,6 +382,176 @@ class Test_testrunner(unittest.TestCase):
         # We never re-run more than once, so the exit code shows FAIL.
         self.assertEqual(proc.returncode, 3)
 
+    # Test that a PASSing function in MFF is re-run another 9 times.
+    def test_always_pass_in_mff(self):
+        self.prepare_mff("always_pass")
+        self.prepare_env(run_list=["always_pass"])
+        proc = self.run2()
+        self.assertEqual(self.runlog, ["always_pass\tP"] * 10)
+        self.assertEqual(proc.returncode, 0)
+    # Same as above but always_pass is not in the modified-functions-file.
+    # Should run (and pass) only once.
+    def test_always_pass_irrelevant_mff(self):
+        self.prepare_mff("always_fail")     # an irrelevant test listed in mff
+        self.prepare_env(run_list=["always_pass"])
+        proc = self.run2()
+        self.assertEqual(self.runlog, ["always_pass\tP"])     # only one entry
+        self.assertEqual(proc.returncode, 0)
+    # Test matching function in MFF with not matching *class name* -> no effect.
+    def test_always_pass_in_mff_wrong_classname(self):
+        self.prepare_mff("always_pass", test_case="qt_mock_test2")
+        self.prepare_env(run_list=["always_pass"])
+        proc = self.run2()
+        self.assertEqual(self.runlog, ["always_pass\tP"])     # only one entry
+        self.assertEqual(proc.returncode, 0)
+
+    # Test that a FAILing function in MFF runs only once.
+    def test_always_fail_in_mff(self):
+        self.prepare_mff("always_fail")
+        self.prepare_env(run_list=["always_fail"])
+        proc = self.run2()
+        self.assertEqual(self.runlog, ["always_fail\tF"])
+        self.assertEqual(proc.returncode, 2)
+    # If always_fail is not in the mff, it will re-run 5 times to test if flaky.
+    def test_always_fail_irrelevant_mff(self):
+        self.prepare_mff("always_pass")     # an irrelevant test listed in mff
+        self.prepare_env(run_list=["always_fail"])
+        proc = self.run2()
+        self.assertEqual(self.runlog, ["always_fail\tF"] * 6)   # 1 + 5 flaky re-runs
+        self.assertEqual(proc.returncode, 2)
+    # Test a CRASH in MFF aborts.
+    def test_always_crash_in_mff(self):
+        self.prepare_mff("always_crash")
+        self.prepare_env(run_list=["always_crash"])
+        proc = self.run2()
+        self.assertEqual(self.runlog, ["always_crash\tC"] * 2)
+        self.assertEqual(proc.returncode, 3)
+    # Test a CRASH aborts even if irrelevant entry is in MFF.
+    def test_always_crash_irrelevant_mff(self):
+        self.prepare_mff("always_crash")
+        self.prepare_env(run_list=["always_pass"])
+        proc = self.run2()
+        self.assertEqual(self.runlog, ["always_crash\tC"] * 2)
+        self.assertEqual(proc.returncode, 3)
+
+
+    # Test a PASSing function in MFF runs 1+9 times, and subsequent FAILures are handled properly.
+    def test_pass_then_fail_in_mff(self):
+        self.prepare_mff("pass_then_fail_once")
+        self.prepare_env(run_list=["pass_then_fail_once"])
+        proc = self.run2()
+        # Make sure that only one failure is recorded but 10 total runs have been done.
+        self.assertEqual(self.runlog, \
+              ["pass_then_fail_once\tP"] * 3
+            + ["pass_then_fail_once\tF"]
+            + ["pass_then_fail_once\tP"] * 6)
+        self.assertEqual(proc.returncode, 2)
+    # Same as above, but the function is invoked with a datatag.
+    # We verify that MFF re-executions happen without any datatag.
+    def test_pass_then_fail_in_mff_with_datatag(self):
+        self.prepare_mff("pass_then_fail_once")
+        self.prepare_env(run_list=["pass_then_fail_once:3"])
+        proc = self.run2()
+        self.assertEqual(self.runlog, \
+              ["pass_then_fail_once:3\tP"]
+            + ["pass_then_fail_once\tP"]  * 2
+            + ["pass_then_fail_once\tF"]
+            + ["pass_then_fail_once\tP"]  * 6)
+        self.assertEqual(proc.returncode, 2)
+
+    # Test pass in MFF without XML log: it's treated as crash since
+    # qt-testrunner can't tell if/which function passed.
+    def test_always_pass_in_mff_no_xml(self):
+        del self.env["QT_MOCK_TEST_XML_TEMPLATE_FILE"]
+        self.prepare_mff("always_pass")
+        self.prepare_env(run_list=["always_pass"])
+        proc = self.run2()
+        self.assertEqual(self.runlog, ["always_pass\tP"] * 2)   # One crash re-run
+        self.assertEqual(proc.returncode, 3)
+    # Test fail in MFF without XML log: same as crash without MFF.
+    def test_always_fail_in_mff_no_xml(self):
+        del self.env["QT_MOCK_TEST_XML_TEMPLATE_FILE"]
+        self.prepare_mff("always_fail")
+        self.prepare_env(run_list=["always_fail"])
+        proc = self.run2()
+        self.assertEqual(self.runlog, ["always_fail\tF"] * 2)   # One crash re-run
+        self.assertEqual(proc.returncode, 3)
+
+    # Test a CRASH does not rerun 10 times because of MFF.
+    def test_qfatal_crash_in_mff_(self):
+        fatal_xml_message = """
+            <Message type="qfatal" file="" line="0">
+              <DataTag><![CDATA[modal]]></DataTag>
+              <Description><![CDATA[Failed to initialize graphics backend for OpenGL.]]></Description>
+            </Message>
+        """
+        logfile = os.path.join(TEMPDIR.name, os.path.basename(mock_test) + ".xml")
+        write_xml_log(logfile, failure=None, inject_message=fatal_xml_message)
+        del self.env["QT_MOCK_TEST_XML_TEMPLATE_FILE"]
+        self.env["QT_TESTRUNNER_DEBUG_NO_UNIQUE_OUTPUT_FILENAME"] = "1"
+        self.prepare_mff("always_pass")
+        self.prepare_env(run_list=["always_pass"])
+        proc = self.run2()
+        self.assertEqual(self.runlog, ["always_pass\tP"] * 2)  # One crash re-run
+        self.assertEqual(proc.returncode, 3)
+    # Test a FAIL in f1 plus qfatal CRASH in f2, ignores any MFF entry.
+    def test_qfatal_crash_in_mff_2(self):
+        fatal_xml_message = """
+            <Message type="qfatal" file="" line="0">
+              <DataTag><![CDATA[modal]]></DataTag>
+              <Description><![CDATA[Failed to initialize graphics backend for OpenGL.]]></Description>
+            </Message>
+        """
+        logfile = os.path.join(TEMPDIR.name, os.path.basename(mock_test) + ".xml")
+        write_xml_log(logfile, failure=None, inject_message=fatal_xml_message)
+        del self.env["QT_MOCK_TEST_XML_TEMPLATE_FILE"]
+        self.env["QT_TESTRUNNER_DEBUG_NO_UNIQUE_OUTPUT_FILENAME"] = "1"
+        self.prepare_mff("always_pass")
+        self.prepare_env(run_list=["always_fail", "always_pass"])
+        proc = self.run2()
+        self.assertEqual(self.runlog, ["always_fail\tF", "always_pass\tP"] * 2)  # One crash re-run
+        self.assertEqual(proc.returncode, 3)
+    # Test a PASS in f1 plus CRASH in f2, ignores any MFF entry
+    # (does not rerun f1 10 times because of f1 in MFF).
+    def test_f1_mffpass_f2_crash(self):
+        self.prepare_mff("always_pass")
+        self.prepare_env(run_list=["always_pass", "always_crash"])
+        proc = self.run2()
+        self.assertEqual(len(self.runlog), 4)
+        self.assertEqual(proc.returncode, 3)
+    # Same as above, but now the CRASHed test program also generates an XML
+    # log file (the contents don't matter).
+    def test_f1_mffpass_f2_crash_with_xml(self):
+        self.prepare_mff("always_pass")
+        self.prepare_env(run_list=["always_pass", "always_crash"])
+        self.env["QT_TESTRUNNER_DEBUG_NO_UNIQUE_OUTPUT_FILENAME"] = "1"
+        logfile = os.path.join(TEMPDIR.name, os.path.basename(mock_test) + ".xml")
+        write_xml_log(logfile, failure=None)
+        proc = self.run2()
+        self.assertEqual(len(self.runlog), 4)
+        self.assertEqual(proc.returncode, 3)
+    # Test a PASSing function in MFF reruns 10 times even if it crashes in the
+    # reruns, but exits with the right exit code.
+    def test_pass_crash_in_mff(self):
+        self.prepare_mff("pass_then_crash_once")
+        self.prepare_env(run_list=["pass_then_crash_once"])
+        proc = self.run2()
+        self.assertEqual(self.runlog, \
+              ['pass_then_crash_once\tP'] * 3
+            + ['pass_then_crash_once\tC']
+            + ['pass_then_crash_once\tP'] * 6)
+        self.assertEqual(proc.returncode, 3)
+    def test_pass_fail_crash_in_mff(self):
+        self.prepare_mff("pass_then_fail_then_crash_once")
+        self.prepare_env(run_list=["pass_then_fail_then_crash_once"])
+        proc = self.run2()
+        self.assertEqual(self.runlog, \
+              ['pass_then_fail_then_crash_once\tP'] * 3
+            + ['pass_then_fail_then_crash_once\tF']
+            + ['pass_then_fail_then_crash_once\tC']
+            + ['pass_then_fail_then_crash_once\tP'] * 5)
+        self.assertEqual(proc.returncode, 3)
+
     # If no XML file is found by qt-testrunner, it is usually considered a
     # CRASH and the whole test is re-run. Even when the return code is zero.
     # It is a PASS only if the test is not capable of XML output (see no_extra_args above).
@@ -291,6 +559,7 @@ class Test_testrunner(unittest.TestCase):
         del self.env["QT_MOCK_TEST_XML_TEMPLATE_FILE"]
         self.prepare_env(run_list=["always_pass"])
         proc = self.run2()
+        self.assertEqual(self.runlog, ["always_pass\tP"] * 2)  # One crash re-run
         self.assertEqual(proc.returncode, 3)
     # On the 2nd iteration of the full test, both of the tests pass.
     # Still it's a CRASH because no XML file was found.
@@ -298,7 +567,7 @@ class Test_testrunner(unittest.TestCase):
         del self.env["QT_MOCK_TEST_XML_TEMPLATE_FILE"]
         self.prepare_env(run_list=["always_pass,fail_then_pass:1"])
         proc = self.run2()
-        # TODO verify that the whole test has run twice.
+        self.assertEqual(len(self.runlog), 4)
         self.assertEqual(proc.returncode, 3)
     # Even after 2 iterations of the full test we still get failures but no XML file,
     # and this is considered a CRASH.
@@ -571,11 +840,10 @@ class Test_testrunner_with_xml_logfile(unittest.TestCase):
 
 if __name__ == "__main__":
 
-    DEBUG = False
+    verbosity = 0
     if "--debug" in sys.argv:
         sys.argv.remove("--debug")
         DEBUG = True
 
-    # We set failfast=True as we do not want the test suite to continue if the
-    # tests of qt_mock_test failed. The next ones depend on it.
-    unittest.main(failfast=True)
+    unittest.main(failfast=False,
+                  verbosity=2 if DEBUG else 1)
