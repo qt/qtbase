@@ -2199,20 +2199,26 @@ bool StyleSelector::basicSelectorMatches(const BasicSelector &sel, NodePtr node)
 }
 
 void StyleSelector::matchRule(NodePtr node, const StyleRule &rule, StyleSheetOrigin origin,
-                               int depth, QMultiMap<uint, StyleRule> *weightedRules) const
+                              int depth, std::multimap<uint64_t, StyleRule> *weightedRules) const
 {
     for (const Selector &selector : rule.selectors) {
         if (selectorMatches(selector, node)) {
-            uint weight = rule.order
-                        + selector.specificity() *0x100
-                        + (uint(origin) + depth)*0x100000;
+            if (uint32_t(rule.order) >= 0x100000ULL)
+                qWarning("StyleSelector: rule order is to large - style sheet"
+                         "must not contain more than 0x100000 entries");
+            if (uint32_t(selector.specificity()) >= 0x100000ULL)
+                qWarning("StyleSelector: selector specifity is to large - "
+                         "style sheet must not contain more than 0x100000 selectors "
+                         "per widget type");
+            const uint64_t weight = rule.order
+                                  + selector.specificity() * 0x100000ULL
+                                  + (uint(origin) + depth) * 0x10000000000ULL;
             StyleRule newRule = rule;
-            if (rule.selectors.size() > 1) {
-                newRule.selectors.resize(1);
-                newRule.selectors[0] = selector;
-            }
+            if (rule.selectors.size() > 1)
+                newRule.selectors.push_back(selector);
+
             //We might have rules with the same weight if they came from a rule with several selectors
-            weightedRules->insert(weight, newRule);
+            weightedRules->emplace(weight, std::move(newRule));
         }
     }
 }
@@ -2225,7 +2231,7 @@ QList<StyleRule> StyleSelector::styleRulesForNode(NodePtr node)
     if (styleSheets.isEmpty())
         return rules;
 
-    QMultiMap<uint, StyleRule> weightedRules; // (spec, rule) that will be sorted below
+    std::multimap<uint64_t, StyleRule> weightedRules; // (spec, rule) that will be sorted below
 
     //prune using indexed stylesheet
     for (const StyleSheet &styleSheet : std::as_const(styleSheets)) {
@@ -2267,9 +2273,8 @@ QList<StyleRule> StyleSelector::styleRulesForNode(NodePtr node)
     }
 
     rules.reserve(weightedRules.size());
-    QMultiMap<uint, StyleRule>::const_iterator it = weightedRules.constBegin();
-    for ( ; it != weightedRules.constEnd() ; ++it)
-        rules += *it;
+    for (const auto &weigthedRule : weightedRules)
+        rules.push_back(std::move(weigthedRule.second));
 
     return rules;
 }
