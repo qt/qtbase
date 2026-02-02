@@ -29,10 +29,7 @@ struct QAbstractSocketConstants
 #if QT_VERSION >= QT_VERSION_CHECK(7, 0, 0)
     // compatibility with Qt 4 to 6
     using NetworkLayerProtocol = QHostAddress::NetworkLayerProtocol;
-    static constexpr auto IPv4Protocol = QHostAddress::IPv4Protocol;
-    static constexpr auto IPv6Protocol = QHostAddress::IPv6Protocol;
-    static constexpr auto AnyIPProtocol = QHostAddress::AnyIPProtocol;
-    static constexpr auto UnknownNetworkLayerProtocol = QHostAddress::UnknownNetworkLayerProtocol;
+    using enum NetworkLayerProtocol;
 #endif
 };
 }
