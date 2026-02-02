@@ -751,7 +751,7 @@ void QWaylandDisplay::registry_global(uint32_t id, const QString &interface, uin
         }
         mGlobals.textInputManagerv3.reset(
                 new WithDestructor<QtWayland::zwp_text_input_manager_v3,
-                                   zwp_text_input_manager_v3_destroy>(registry, id, 1));
+                                   zwp_text_input_manager_v3_destroy>(registry, id, std::min(2u, version)));
         for (QWaylandInputDevice *inputDevice : std::as_const(mInputDevices))
             inputDevice->setTextInput(new QWaylandTextInputv3(
                     this, mGlobals.textInputManagerv3->get_text_input(inputDevice->wl_seat())));

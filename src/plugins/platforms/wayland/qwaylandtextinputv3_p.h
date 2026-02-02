@@ -19,6 +19,7 @@
 #include "qwaylandtextinputinterface_p.h"
 #include <QtWaylandClient/private/qwayland-text-input-unstable-v3.h>
 #include <QLoggingCategory>
+#include <QList>
 
 struct wl_callback;
 struct wl_callback_listener;
@@ -49,8 +50,13 @@ public:
     QLocale locale() const override;
     Qt::LayoutDirection inputDirection() const override;
 
-    void enableSurface(::wl_surface *) override;
-    void disableSurface(::wl_surface *) override;
+    void showInputPanel() override;
+    void hideInputPanel() override;
+
+    // doing nothing in zwp_text_input_v3.
+    // enter() and leave() takes the role to enable/disable the surface
+    void enableSurface(::wl_surface *) override {};
+    void disableSurface(::wl_surface *) override {};
 
 protected:
     void zwp_text_input_v3_enter(struct ::wl_surface *surface) override;
@@ -59,24 +65,41 @@ protected:
     void zwp_text_input_v3_commit_string(const QString &text) override;
     void zwp_text_input_v3_delete_surrounding_text(uint32_t before_length, uint32_t after_length) override;
     void zwp_text_input_v3_done(uint32_t serial) override;
+    void zwp_text_input_v3_language(const QString &language) override;
+
+    void zwp_text_input_v3_action(uint32_t action, uint32_t serial) override;
+    void zwp_text_input_v3_preedit_hint(uint32_t begin, uint32_t end, uint32_t hint) override;
 
 private:
     ::wl_surface *m_surface = nullptr; // ### Here for debugging purposes
+
+    struct StyleHint {
+        uint32_t begin = 0;
+        uint32_t end = 0;
+        preedit_hint hint;
+        bool operator==(const StyleHint &other) const {
+            return begin == other.begin && end == other.end && hint == other.hint;
+        }
+    };
 
     struct PreeditInfo {
         QString text;
         int cursorBegin = 0;
         int cursorEnd = 0;
 
+        QList<QWaylandTextInputv3::StyleHint> styleHints;
+
         void clear() {
             text.clear();
+            styleHints.clear();
             cursorBegin = 0;
             cursorEnd = 0;
         }
         friend bool operator==(const PreeditInfo& lhs, const PreeditInfo& rhs) {
             return (lhs.text == rhs.text)
                     && (lhs.cursorBegin == rhs.cursorBegin)
-                    && (lhs.cursorEnd == rhs.cursorEnd);
+                    && (lhs.cursorEnd == rhs.cursorEnd)
+                    && lhs.styleHints == rhs.styleHints;
         }
     };
 
@@ -97,6 +120,8 @@ private:
     uint m_currentSerial = 0;
 
     bool m_condReselection = false;
+    QLocale m_locale;
+
 };
 
 }

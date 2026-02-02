@@ -9,9 +9,14 @@
 
 #include <QtCore/qloggingcategory.h>
 #include <QtGui/qguiapplication.h>
+#include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/private/qhighdpiscaling_p.h>
+#include <QtGui/qpa/qplatformintegration.h>
+#include <QtGui/qpa/qplatforminputcontext.h>
 #include <QtGui/qevent.h>
 #include <QtGui/qwindow.h>
+#include <QtGui/qpalette.h>
+
 #include <QTextCharFormat>
 
 QT_BEGIN_NAMESPACE
@@ -25,6 +30,12 @@ QWaylandTextInputv3::QWaylandTextInputv3(QWaylandDisplay *display,
     : QtWayland::zwp_text_input_v3(text_input)
 {
     Q_UNUSED(display)
+
+    if (version() >= ZWP_TEXT_INPUT_V3_SET_AVAILABLE_ACTIONS_SINCE_VERSION) {
+        uint32_t availableActions[1] = {action_submit};
+        const QByteArray availableActionsData = QByteArray::fromRawData(reinterpret_cast<char *>(availableActions), sizeof(availableActions));
+        set_available_actions(availableActionsData);
+    }
 }
 
 QWaylandTextInputv3::~QWaylandTextInputv3()
@@ -39,14 +50,6 @@ const Qt::InputMethodQueries supportedQueries3 = Qt::ImEnabled |
                                                 Qt::ImAnchorPosition |
                                                 Qt::ImHints |
                                                 Qt::ImCursorRectangle;
-}
-
-void QWaylandTextInputv3::enableSurface(::wl_surface *)
-{
-}
-
-void QWaylandTextInputv3::disableSurface(::wl_surface *)
-{
 }
 
 void QWaylandTextInputv3::zwp_text_input_v3_enter(struct ::wl_surface *surface)
@@ -103,8 +106,8 @@ void QWaylandTextInputv3::zwp_text_input_v3_preedit_string(const QString &text, 
         return;
 
     m_pendingPreeditString.text = text;
-    m_pendingPreeditString.cursorBegin = QWaylandInputMethodEventBuilder::indexFromWayland(text, cursorBegin);
-    m_pendingPreeditString.cursorEnd = QWaylandInputMethodEventBuilder::indexFromWayland(text, cursorEnd);
+    m_pendingPreeditString.cursorBegin = cursorBegin;
+    m_pendingPreeditString.cursorEnd = cursorEnd;
 }
 
 void QWaylandTextInputv3::zwp_text_input_v3_commit_string(const QString &text)
@@ -171,28 +174,78 @@ void QWaylandTextInputv3::zwp_text_input_v3_done(uint32_t serial)
         return;
     }
 
-    qCDebug(qLcQpaWaylandTextInput) << Q_FUNC_INFO << "PREEDIT" << m_pendingPreeditString.text << m_pendingPreeditString.cursorBegin;
+    const int newCursorIndex = QWaylandInputMethodEventBuilder::indexFromWayland(m_pendingPreeditString.text, m_pendingPreeditString.cursorBegin);
+    qCDebug(qLcQpaWaylandTextInput) << Q_FUNC_INFO << "PREEDIT" << m_pendingPreeditString.text << newCursorIndex;
 
     QList<QInputMethodEvent::Attribute> attributes;
     {
-        if (m_pendingPreeditString.cursorBegin != -1 ||
-                m_pendingPreeditString.cursorEnd != -1) {
+        if (m_pendingPreeditString.cursorBegin == -1 &&
+            m_pendingPreeditString.cursorEnd == -1) {
+            QInputMethodEvent::Attribute attribute(QInputMethodEvent::Cursor,
+                                                    0,
+                                                    0); // hide cursor
+            attributes.append(attribute);
+        } else if (m_pendingPreeditString.cursorBegin != 0 ||
+                m_pendingPreeditString.cursorEnd != 0) {
             // Current supported cursor shape is just line.
             // It means, cursorEnd and cursorBegin are the same.
             QInputMethodEvent::Attribute attribute1(QInputMethodEvent::Cursor,
-                                                    m_pendingPreeditString.cursorBegin,
-                                                    1);
+                                                    newCursorIndex,
+                                                    1); // keep visible
             attributes.append(attribute1);
         }
 
-        // only use single underline style for now
-        QTextCharFormat format;
-        format.setFontUnderline(true);
-        format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
-        QInputMethodEvent::Attribute attribute2(QInputMethodEvent::TextFormat,
-                                                0,
-                                                m_pendingPreeditString.text.length(), format);
-        attributes.append(attribute2);
+        if (version() == 1) {
+            // only use single underline style for now
+            QTextCharFormat format;
+            format.setFontUnderline(true);
+            format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
+            QInputMethodEvent::Attribute attribute2(QInputMethodEvent::TextFormat,
+                                                    0,
+                                                    m_pendingPreeditString.text.length(), format);
+            attributes.append(attribute2);
+        } else {
+            for (const StyleHint &prededitStyle : std::as_const(m_pendingPreeditString.styleHints)) {
+                int begin = QWaylandInputMethodEventBuilder::indexFromWayland(m_pendingPreeditString.text, prededitStyle.begin);
+                int end = QWaylandInputMethodEventBuilder::indexFromWayland(m_pendingPreeditString.text, prededitStyle.end);
+                QTextCharFormat format;
+
+                // styles taken from https://github.com/ibus/ibus/wiki/Wayland-Colors
+                switch (prededitStyle.hint) {
+                case preedit_hint_whole:
+                    format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
+                    break;
+                case preedit_hint_selection:
+                    format.setForeground(QPalette().highlightedText());
+                    format.setBackground(QPalette().highlight());
+                    break;
+                case preedit_hint_prediction:
+                    // this is meant to be normal text on a light grey
+                    format.setBackground(QPalette().placeholderText());
+                    break;
+                case preedit_hint_prefix:
+                    format.setForeground(QColor("#F90F0F"));
+                    break;
+                case preedit_hint_suffix:
+                    format.setForeground(QColor("#1EDC1A"));
+                    break;
+                case preedit_hint_spelling_error:
+                    format.setUnderlineStyle(QTextCharFormat::WaveUnderline);
+                    format.setUnderlineColor(QColor("#A40000"));
+                    break;
+                case preedit_hint_compose_error:
+                    format.setUnderlineStyle(QTextCharFormat::WaveUnderline);
+                    format.setUnderlineColor(QColor("#FF00FF"));
+                    break;
+                }
+
+                QInputMethodEvent::Attribute attribute2(QInputMethodEvent::TextFormat,
+                                                        begin,
+                                                        end - begin,
+                                                        format);
+                attributes.append(attribute2);
+            }
+        }
     }
     QInputMethodEvent event(m_pendingPreeditString.text, attributes);
 
@@ -229,6 +282,45 @@ void QWaylandTextInputv3::zwp_text_input_v3_done(uint32_t serial)
     if (serial == m_currentSerial)
         updateState(supportedQueries3, update_state_full);
 }
+
+void QWaylandTextInputv3::zwp_text_input_v3_language(const QString &language)
+{
+    const QLocale locale(language);
+    if (m_locale != locale) {
+        m_locale = locale;
+        QGuiApplicationPrivate::platformIntegration()->inputContext()->emitLocaleChanged();
+    }
+}
+
+void QWaylandTextInputv3::zwp_text_input_v3_action(uint32_t action, uint32_t serial)
+{
+    qCDebug(qLcQpaWaylandTextInput) << Q_FUNC_INFO << action << serial;
+    switch (action) {
+    case action_none:
+        break;
+    case action_submit: {
+        if (!QGuiApplication::focusObject())
+            break;
+        QKeyEvent keyPressEvent(QEvent::KeyPress, Qt::Key_Enter, Qt::NoModifier);
+        QCoreApplication::sendEvent(QGuiApplication::focusObject(), &keyPressEvent);
+        QKeyEvent keyReleaseEvent(QEvent::KeyRelease, Qt::Key_Enter, Qt::NoModifier);
+        QCoreApplication::sendEvent(QGuiApplication::focusObject(), &keyReleaseEvent);
+        break;
+    }
+    default:
+        // it's a bug as we declare our supported actions on startup
+        qCWarning(qLcQpaWaylandTextInput) << Q_FUNC_INFO << "Unexpected text input action received. This is a compositor bug";
+        break;
+    }
+}
+
+void QWaylandTextInputv3::zwp_text_input_v3_preedit_hint(uint32_t begin, uint32_t end, uint32_t hint)
+{
+    Q_ASSERT(hint <= preedit_hint_compose_error);
+    // they have to be cached as raw values, as we can't work out cursor indexes without the text
+    m_pendingPreeditString.styleHints.append({begin, end, static_cast<preedit_hint>(hint)});
+}
+
 
 void QWaylandTextInputv3::reset()
 {
@@ -367,6 +459,10 @@ void QWaylandTextInputv3::updateState(Qt::InputMethodQueries queries, uint32_t f
 
     if (queries & Qt::ImHints) {
         QWaylandInputMethodContentType contentType = QWaylandInputMethodContentType::convertV3(static_cast<Qt::InputMethodHints>(event.value(Qt::ImHints).toInt()));
+
+        if (version() >= ZWP_TEXT_INPUT_V3_CONTENT_HINT_PREEDIT_SHOWN_SINCE_VERSION)
+            contentType.hint |= ZWP_TEXT_INPUT_V3_CONTENT_HINT_PREEDIT_SHOWN;
+
         qCDebug(qLcQpaWaylandTextInput) << m_contentHint << contentType.hint;
         qCDebug(qLcQpaWaylandTextInput) << m_contentPurpose << contentType.purpose;
 
@@ -402,13 +498,27 @@ QRectF QWaylandTextInputv3::keyboardRect() const
 
 QLocale QWaylandTextInputv3::locale() const
 {
-    return QLocale();
+    return m_locale;
 }
 
 Qt::LayoutDirection QWaylandTextInputv3::inputDirection() const
 {
     return Qt::LeftToRight;
 }
+
+void QWaylandTextInputv3::showInputPanel()
+{
+    if (version() >= ZWP_TEXT_INPUT_V3_SHOW_INPUT_PANEL_SINCE_VERSION)
+        show_input_panel();
+}
+
+void QWaylandTextInputv3::hideInputPanel()
+{
+    if (version() >= ZWP_TEXT_INPUT_V3_HIDE_INPUT_PANEL_SINCE_VERSION)
+        hide_input_panel();
+}
+
+
 
 }
 
