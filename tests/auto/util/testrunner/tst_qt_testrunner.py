@@ -16,7 +16,7 @@ MY_NAME          = os.path.basename(__file__)
 my_dir           = os.path.dirname(__file__)
 testrunner       = os.path.join(my_dir, "..", "..", "..", "..",
                                 "util", "testrunner", "qt-testrunner.py")
-mock_test        = os.path.join(my_dir, "qt_mock_test.py")
+mock_test        = os.path.join(my_dir, "qt_mock_test")
 xml_log_template = os.path.join(my_dir, "qt_mock_test-log.xml")
 
 with open(xml_log_template) as f:
@@ -52,7 +52,7 @@ def tearDownModule():
 
 # Helper to run a command and always capture output
 def run(args : list, **kwargs):
-    if args[0].endswith(".py"):
+    if args[0].endswith(".py") or args[0] == mock_test:
         # Make sure we run python executables with the same python version.
         # It also helps on Windows, that .py files are not directly executable.
         args = [ sys.executable, *args ]
@@ -111,7 +111,7 @@ def write_xml_log(filename, failure=None, inject_message=None):
         f.write(data)
 
 
-# Test that qt_mock_test.py behaves well. This is necessary to properly
+# Test that qt_mock_test behaves well. This is necessary to properly
 # test qt-testrunner.
 class Test_qt_mock_test(unittest.TestCase):
     def setUp(self):
@@ -490,7 +490,7 @@ class Test_testrunner(unittest.TestCase):
 
 
 # Test qt-testrunner script with an existing XML log file:
-#   qt-testrunner.py qt_mock_test.py --parse-xml-testlog file.xml
+#   qt-testrunner.py qt_mock_test --parse-xml-testlog file.xml
 # qt-testrunner should repeat the testcases that are logged as
 # failures and fail or pass depending on how the testcases behave.
 # Different XML files are generated for the following test cases.

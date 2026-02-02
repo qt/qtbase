@@ -1,0 +1,6 @@
+version = 1
+
+[[annotations]]
+path = ["qt_mock_test-log.xml"]
+SPDX-FileCopyrightText = "Copyright (C) The Qt Company Ltd."
+SPDX-License-Identifier = "LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0"

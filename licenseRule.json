@@ -420,6 +420,11 @@
                 "file type": "util",
                 "spdx": ["LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0"]
             },
+            "tests/auto/util/testrunner/.*": {
+                "comment": "Exception: helpers that test the qt-testrunner tool",
+                "file type": "tools and utils",
+                "spdx": ["LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0"]
+            },
             "util/lexgen/tests/testdata/": {
                 "comment": "Exception",
                 "file type": "test",

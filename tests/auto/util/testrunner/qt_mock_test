@@ -103,7 +103,7 @@ def clean_cmdline():
 
 
 def log_test(testcase, result,
-             testsuite=MY_NAME.rpartition(".")[0]):
+             testsuite=MY_NAME):
     print("%-7s: %s::%s()" % (result, testsuite, testcase))
 
 def log_xml(fail_list):
