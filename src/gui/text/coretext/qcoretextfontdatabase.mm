@@ -99,6 +99,8 @@ CTFontDescriptorRef descriptorForFamily(const QString &familyName)
 }
 void QCoreTextFontDatabase::populateFontDatabase()
 {
+    QMacAutoReleasePool pool;
+
     qCDebug(lcQpaFonts) << "Populating font database...";
     QElapsedTimer elapsed;
     if (lcQpaFonts().isDebugEnabled())
@@ -485,6 +487,8 @@ extern CGAffineTransform qt_transform_from_fontdef(const QFontDef &fontDef);
 template <>
 QFontEngine *QCoreTextFontDatabaseEngineFactory<QCoreTextFontEngine>::fontEngine(const QFontDef &fontDef, void *usrPtr)
 {
+    QMacAutoReleasePool pool;
+
     QCFType<CTFontDescriptorRef> descriptor = QCFType<CTFontDescriptorRef>::constructFromGet(
         static_cast<CTFontDescriptorRef>(usrPtr));
 
@@ -532,6 +536,8 @@ QFontEngine *QCoreTextFontDatabaseEngineFactory<QCoreTextFontEngine>::fontEngine
 template <>
 QFontEngine *QCoreTextFontDatabaseEngineFactory<QFontEngineFT>::fontEngine(const QFontDef &fontDef, void *usrPtr)
 {
+    QMacAutoReleasePool pool;
+
     CTFontDescriptorRef descriptor = static_cast<CTFontDescriptorRef>(usrPtr);
 
     if (NSValue *fontDataValue = descriptorAttribute<NSValue>(descriptor, (CFStringRef)kQtFontDataAttribute)) {

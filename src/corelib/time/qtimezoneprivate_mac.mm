@@ -26,6 +26,7 @@ QT_BEGIN_NAMESPACE
 // Create the system default time zone
 QMacTimeZonePrivate::QMacTimeZonePrivate()
 {
+    QMacAutoReleasePool pool;
     // Reset the cached system tz then instantiate it:
     [NSTimeZone resetSystemTimeZone];
     m_nstz = [NSTimeZone.systemTimeZone retain];
@@ -57,6 +58,8 @@ QMacTimeZonePrivate *QMacTimeZonePrivate::clone() const
 
 void QMacTimeZonePrivate::init(const QByteArray &ianaId)
 {
+    QMacAutoReleasePool pool;
+
     m_nstz = [[NSTimeZone timeZoneWithName:QString::fromUtf8(ianaId).toNSString()] retain];
     if (m_nstz) {
         m_id = ianaId;
@@ -160,6 +163,7 @@ bool QMacTimeZonePrivate::isDaylightTime(qint64 atMSecsSinceEpoch) const
 
 QTimeZonePrivate::Data QMacTimeZonePrivate::data(qint64 forMSecsSinceEpoch) const
 {
+    QMacAutoReleasePool pool;
     const NSTimeInterval seconds = forMSecsSinceEpoch / 1000.0;
     NSDate *date = [NSDate dateWithTimeIntervalSince1970:seconds];
     Data data;
@@ -278,6 +282,8 @@ QTimeZonePrivate::Data QMacTimeZonePrivate::previousTransition(qint64 beforeMSec
 
 QByteArray QMacTimeZonePrivate::systemTimeZoneId() const
 {
+    QMacAutoReleasePool pool;
+
     // Reset the cached system tz then return the name
     [NSTimeZone resetSystemTimeZone];
     Q_ASSERT(NSTimeZone.systemTimeZone);

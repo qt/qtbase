@@ -377,6 +377,8 @@ bool qt_mac_runningUnderRosetta()
 bool qt_apple_runningWithLiquidGlass()
 {
     static const bool runningWithLiquidGlass = []{
+        QMacAutoReleasePool pool;
+
         if (QMacVersion::buildSDK(QMacVersion::ApplicationBinary).majorVersion() < 26)
             return false;
 

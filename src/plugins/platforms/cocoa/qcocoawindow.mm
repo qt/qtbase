@@ -312,6 +312,8 @@ void QCocoaWindow::setCocoaGeometry(const QRect &rect)
 
 QMargins QCocoaWindow::safeAreaMargins() const
 {
+    QMacAutoReleasePool pool;
+
     // The safe area of the view reflects the area not covered by navigation
     // bars, tab bars, toolbars, and other ancestor views that might obscure
     // the current view (by setting additionalSafeAreaInsets). If the window
@@ -1025,10 +1027,11 @@ void QCocoaWindow::handleWindowStateChanged(HandleFlags flags)
 
 void QCocoaWindow::setWindowTitle(const QString &title)
 {
+    QMacAutoReleasePool pool;
+
     if (!isContentView())
         return;
 
-    QMacAutoReleasePool pool;
     m_view.window.title = title.toNSString();
 
     if (title.isEmpty() && !window()->filePath().isEmpty()) {
@@ -1039,10 +1042,10 @@ void QCocoaWindow::setWindowTitle(const QString &title)
 
 void QCocoaWindow::setWindowFilePath(const QString &filePath)
 {
+    QMacAutoReleasePool pool;
+
     if (!isContentView())
         return;
-
-    QMacAutoReleasePool pool;
 
     if (window()->title().isNull())
         [m_view.window setTitleWithRepresentedFilename:filePath.toNSString()];
@@ -1055,6 +1058,8 @@ void QCocoaWindow::setWindowFilePath(const QString &filePath)
 
 void QCocoaWindow::setWindowIcon(const QIcon &icon)
 {
+    QMacAutoReleasePool pool;
+
     if (!isContentView())
         return;
 
@@ -1063,8 +1068,6 @@ void QCocoaWindow::setWindowIcon(const QIcon &icon)
         // Window icons are only supported on macOS in combination with a document filePath
         return;
     }
-
-    QMacAutoReleasePool pool;
 
     if (icon.isNull()) {
         iconButton.image = [NSWorkspace.sharedWorkspace iconForFile:m_view.window.representedFilename];
@@ -1957,6 +1960,8 @@ bool QCocoaWindow::alwaysShowToolWindow() const
 
 bool QCocoaWindow::setWindowModified(bool modified)
 {
+    QMacAutoReleasePool pool;
+
     if (!isContentView())
         return false;
 
@@ -1976,6 +1981,8 @@ QCocoaMenuBar *QCocoaWindow::menubar() const
 
 void QCocoaWindow::setWindowCursor(NSCursor *cursor)
 {
+    QMacAutoReleasePool pool;
+
     // Setting a cursor in a foreign view is not supported
     if (isForeignWindow())
         return;
@@ -2042,6 +2049,8 @@ void QCocoaWindow::setContentBorderEnabled(bool enable)
 
 void QCocoaWindow::applyContentBorderThickness(NSWindow *window)
 {
+    QMacAutoReleasePool pool;
+
     if (!window && isContentView())
         window = m_view.window;
 
@@ -2195,6 +2204,8 @@ QPoint QCocoaWindow::bottomLeftClippedByNSWindowOffset() const
 
 QMargins QCocoaWindow::frameMargins() const
 {
+    QMacAutoReleasePool pool;
+
     if (!isContentView())
         return QMargins();
 

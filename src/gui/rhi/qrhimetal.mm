@@ -515,6 +515,8 @@ inline Int aligned(Int v, Int byteAlign)
 
 bool QRhiMetal::probe(QRhiMetalInitParams *params)
 {
+    QMacAutoReleasePool pool;
+
     Q_UNUSED(params);
     id<MTLDevice> dev = MTLCreateSystemDefaultDevice();
     if (dev) {

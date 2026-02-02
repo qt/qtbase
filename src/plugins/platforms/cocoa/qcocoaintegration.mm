@@ -319,6 +319,8 @@ QOpenGLContext *QCocoaIntegration::createOpenGLContext(NSOpenGLContext *nativeCo
 
 QPlatformBackingStore *QCocoaIntegration::createPlatformBackingStore(QWindow *window) const
 {
+    QMacAutoReleasePool pool;
+
     QCocoaWindow *platformWindow = static_cast<QCocoaWindow*>(window->handle());
     if (!platformWindow) {
         qWarning() << window << "must be created before being used with a backingstore";

@@ -1795,6 +1795,10 @@ extern void qt_cleanupFontDatabase();
 
 QGuiApplicationPrivate::~QGuiApplicationPrivate()
 {
+#if defined(Q_OS_MACOS)
+    QMacAutoReleasePool pool;
+#endif
+
     is_app_closing = true;
     is_app_running = false;
 

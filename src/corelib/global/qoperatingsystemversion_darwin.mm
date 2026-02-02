@@ -7,6 +7,7 @@
 
 #include <QtCore/qfile.h>
 #include <QtCore/qversionnumber.h>
+#include <QtCore/private/qcore_mac_p.h>
 
 #if !defined(QT_BOOTSTRAPPED) && QT_CONFIG(process)
 #include <QtCore/qprocess.h>
@@ -18,6 +19,8 @@ using namespace Qt::StringLiterals;
 
 QOperatingSystemVersionBase QOperatingSystemVersionBase::current_impl()
 {
+    QMacAutoReleasePool pool;
+
     NSOperatingSystemVersion osv = NSProcessInfo.processInfo.operatingSystemVersion;
     QVersionNumber versionNumber(osv.majorVersion, osv.minorVersion, osv.patchVersion);
 
