@@ -19,7 +19,8 @@
 #
 # Needs environment variable:
 #   + QT_MOCK_TEST_STATE_FILE :: points to a unique filename, to be written
-#     for keeping the state of the fail_then_pass:N tests.
+#     for keeping the results of previous runs and controlling results of
+#     fail_then_pass:N.
 #
 # Mode B:
 #
@@ -55,15 +56,20 @@ CRASH_CLEANLY   = False
 def crash():
     sys.exit(131)
 
-def put_failure(test_name):
+# Write the result to the state file.
+# @result can be any of the characters PFC, for Pass,Fail,Crash respectively.
+# Format of each line in the state file:
+#     test_name <TAB> [PFC]
+def put_result(test_name, result):
+    assert result in "PFC"
     with open(STATE_FILE, "a") as f:
-        f.write(test_name + "\n")
+        f.write(test_name + "\t" + result + "\n")
 def get_failures(test_name):
     n = 0
     try:
         with open(STATE_FILE) as f:
             for line in f:
-                if line.strip() == test_name:
+                if line.split() == [ test_name, "F" ]:
                     n += 1
     except FileNotFoundError:
         return 0
@@ -128,7 +134,6 @@ def run_test(testname):
     elif testname == "fail_then_crash":
         previous_fails = get_failures(testname)
         if previous_fails == 0:
-            put_failure(testname)
             exit_code = 1
         else:
             exit_code = 131
@@ -136,7 +141,6 @@ def run_test(testname):
         wanted_fails   = int(testname.partition(":")[2])
         previous_fails = get_failures(testname)
         if previous_fails < wanted_fails:
-            put_failure(testname)
             exit_code = 1
         else:
             exit_code = 0
@@ -144,10 +148,13 @@ def run_test(testname):
         assert False, "Unknown argument: %s" % testname
 
     if exit_code == 0:
+        put_result(testname, "P")
         log_test(testname, "PASS")
     elif exit_code == 1:
+        put_result(testname, "F")
         log_test(testname, "FAIL!")
     else:
+        put_result(testname, "C")
         log_test(testname, "CRASH!")
 
     return exit_code
