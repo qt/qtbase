@@ -861,6 +861,16 @@ void tst_QDockWidget::dockLocationChanged()
     QMainWindow mw;
     QDockWidget dw;
     dw.setObjectName("dock1");
+    QDockWidget dw2;
+    dw2.setObjectName("dock2");
+
+    {
+        // Ensure tabify is a no-op before QMainWindow::addDockWidget()
+        QSignalSpy noopSpy(&dw2, &QDockWidget::dockLocationChanged);
+        mw.tabifyDockWidget(&dw, &dw2);
+        QCOMPARE(noopSpy.size(), 0);
+    }
+
     QSignalSpy spy(&dw, &QDockWidget::dockLocationChanged);
 
     mw.addDockWidget(Qt::LeftDockWidgetArea, &dw);
@@ -894,8 +904,6 @@ void tst_QDockWidget::dockLocationChanged()
     }
 
     spy.clear();
-    QDockWidget dw2;
-    dw2.setObjectName("dock2");
     mw.addDockWidget(Qt::TopDockWidgetArea, &dw2);
     mw.tabifyDockWidget(&dw2, &dw);
     QCOMPARE(spy.size(), 1);

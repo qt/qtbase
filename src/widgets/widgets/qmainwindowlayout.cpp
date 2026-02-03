@@ -1760,6 +1760,31 @@ bool QMainWindowLayout::restoreDockWidget(QDockWidget *dockwidget)
 #if QT_CONFIG(tabbar)
 void QMainWindowLayout::tabifyDockWidget(QDockWidget *first, QDockWidget *second)
 {
+    Q_ASSERT(first);
+    Q_ASSERT(second);
+
+    // first must have been added to the main window, otherwise we have no dock location
+    if (layoutState.dockAreaLayout.indexOf(first).isEmpty()) {
+        qCritical() << "Coding error: QDockWidget" << first
+                    << "tabbed before QMainWindow::addDockWidget()."
+                    << "Ignoring" << __FUNCTION__;
+        return;
+    }
+
+    // if second hasn't been added to the main window, add it at first's location
+    if (layoutState.dockAreaLayout.indexOf(second).isEmpty()) {
+        layoutState.mainWindow->addDockWidget(first->dockLocation(), second);
+        qCDebug(lcQpaDockWidgets) << "QDockWidget" << second << "has been added to"
+                                  << parent() << "at" << first->dockLocation();
+    }
+
+    // Do not interfer with existing floating tabs.
+    if (isDockWidgetTabbed(second)) {
+        qCDebug(lcQpaDockWidgets) << "QDockWidget" << second
+                                  << "is already tabbed. Ignoring" << __FUNCTION__;
+        return;
+    }
+
     applyRestoredState();
     addChildWidget(second);
     layoutState.dockAreaLayout.tabifyDockWidget(first, second);
