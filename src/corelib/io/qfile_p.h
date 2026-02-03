@@ -36,7 +36,7 @@ protected:
     bool openExternalFile(QIODevice::OpenMode flags, FILE *fh, QFile::FileHandleFlags handleFlags);
 
     QAbstractFileEngine *engine() const override;
-    bool copy(const QString &newName);
+    bool copy(const QString &newName, QFileDevice::Permissions permissions);
 
     QString fileName;
 

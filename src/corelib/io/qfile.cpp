@@ -674,7 +674,7 @@ QFile::rename(const QString &newName)
 
 #if QT_CONFIG(temporaryfile)
         // copy the file to the destination first
-        if (d->copy(newName)) {
+        if (d->copy(newName, permissions())) {
             // succeeded, remove the original
             if (!remove()) {
                 d->setError(QFile::RenameError, tr("Cannot remove source file: %1").arg(errorString()));
@@ -774,7 +774,7 @@ QFile::link(const QString &fileName, const QString &linkName)
 }
 
 #if QT_CONFIG(temporaryfile)    // dangerous without QTemporaryFile
-bool QFilePrivate::copy(const QString &newName)
+bool QFilePrivate::copy(const QString &newName, QFileDevice::Permissions permissions)
 {
     Q_Q(QFile);
     Q_ASSERT(error == QFile::NoError);
@@ -833,7 +833,7 @@ bool QFilePrivate::copy(const QString &newName)
     }
 
     // copy the permissions
-    out.setPermissions(q->permissions());
+    out.setPermissions(permissions);
     q->close();
 
     // final step: commit the copy
@@ -871,7 +871,7 @@ QFile::copy(const QString &newName)
     unsetError();
     close();
     if (error() == QFile::NoError)
-        return d->copy(newName);
+        return d->copy(newName, permissions());
     return false;
 }
 
