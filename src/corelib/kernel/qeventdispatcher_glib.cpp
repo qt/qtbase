@@ -412,7 +412,7 @@ void QEventDispatcherGlib::registerSocketNotifier(QSocketNotifier *notifier)
 {
     Q_ASSERT(notifier);
     int sockfd = int(notifier->socket());
-    int type = notifier->type();
+    const auto type = notifier->type();
 #ifndef QT_NO_DEBUG
     if (sockfd < 0) {
         qWarning("QSocketNotifier: Internal error");
