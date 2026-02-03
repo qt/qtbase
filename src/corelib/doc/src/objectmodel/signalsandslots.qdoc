@@ -307,17 +307,17 @@
     \c {static_cast} to disambiguate:
 
     \code
-    // Connect to the int overload of QComboBox::currentIndexChanged(int)
-    connect(comboBox, qOverload<int>(&QComboBox::currentIndexChanged),
-            this, &MyClass::handleIndexChanged);
+    // Connect to the QString overload of QCompleter::activated(const QString &)
+    connect(completer, qOverload<const QString &>(&QCompleter::activated),
+            this, &MyClass::onActivatedText);
 
     // Or select QLCDNumber::display(int) when connecting from QSlider::valueChanged(int)
     connect(slider, &QSlider::valueChanged,
             lcd, qOverload<int>(&QLCDNumber::display));
 
     // Using static_cast (more verbose):
-    connect(comboBox, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
-            this, &MyClass::handleIndexChanged);
+    connect(completer, static_cast<void(QCompleter::*)(const QString &)>(&QCompleter::activated),
+            this, &MyClass::onActivatedText);
 
     // Or using a lambda to call the correct overload:
     connect(slider, &QSlider::valueChanged,
