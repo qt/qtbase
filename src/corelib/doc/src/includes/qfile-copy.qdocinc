@@ -1,7 +1,10 @@
-If the copied file is a symbolic link (symlink), the
-file it refers to is copied, not the link itself. With the
-exception of permissions, which are copied, no other file metadata
-is copied.
+Since Qt 6.12, the permissions \a perm can be specified when calling.
+When it is not passed, the permissions of the original are copied.
+The new file shall be created with the given permissions.
+
+If the copied file is a symbolic link (symlink), the file it refers to
+is copied, not the link itself.
+With the exception of permissions, no other file metadata is copied.
 
 Returns \c true if successful; otherwise returns \c false.
 

@@ -854,7 +854,7 @@ bool QFilePrivate::copy(const QString &newName, QFileDevice::Permissions permiss
 */
 
 bool
-QFile::copy(const QString &newName)
+QFile::copy(const QString &newName, std::optional<QFileDevice::Permissions> perm)
 {
     Q_D(QFile);
     if (fileName().isEmpty()) {
@@ -871,7 +871,7 @@ QFile::copy(const QString &newName)
     unsetError();
     close();
     if (error() == QFile::NoError)
-        return d->copy(newName, permissions());
+        return d->copy(newName, perm ? *perm : permissions());
     return false;
 }
 
@@ -886,9 +886,10 @@ QFile::copy(const QString &newName)
 */
 
 bool
-QFile::copy(const QString &fileName, const QString &newName)
+QFile::copy(const QString &fileName, const QString &newName,
+            std::optional<QFileDevice::Permissions> perm)
 {
-    return QFile(fileName).copy(newName);
+    return QFile(fileName).copy(newName, perm);
 }
 #endif // QT_CONFIG(temporaryfile)
 

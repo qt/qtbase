@@ -8,7 +8,9 @@
 
 #include <QtCore/qfiledevice.h>
 #include <QtCore/qstring.h>
+
 #include <stdio.h>
+#include <optional>
 
 #ifdef open
 #error qfile.h must be included before any header file that defines open
@@ -240,8 +242,13 @@ public:
 #endif // QT_CONFIG(cxx17_filesystem)
 
 #if QT_CONFIG(temporaryfile)
+    bool copy(const QString &newName, std::optional<QFileDevice::Permissions> perm = std::nullopt);
+    static bool copy(const QString &fileName, const QString &newName,
+                     std::optional<QFileDevice::Permissions> perm = std::nullopt);
+#  if QT_CORE_REMOVED_SINCE(6, 12)
     bool copy(const QString &newName);
     static bool copy(const QString &fileName, const QString &newName);
+#  endif
 #endif
 #ifdef Q_QDOC
     bool copy(const std::filesystem::path &newName);

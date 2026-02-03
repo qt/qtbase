@@ -1545,3 +1545,23 @@ void QTimer::singleShotImpl(int msec, Qt::TimerType timerType,
 // order sections alphabetically to reduce chances of merge conflicts
 
 #endif // QT_CORE_REMOVED_SINCE(6, 11)
+
+#if QT_CORE_REMOVED_SINCE(6, 12)
+
+#include "qfile.h"
+
+bool QFile::copy(const QString &newName)
+{
+    return copy(newName, std::nullopt);
+}
+
+bool QFile::copy(const QString &fileName, const QString &newName)
+{
+    return QFile(fileName).copy(newName, std::nullopt);
+}
+
+// #include "qotherheader.h"
+// // implement removed functions from qotherheader.h
+// order sections alphabetically to reduce chances of merge conflicts
+
+#endif // QT_CORE_REMOVED_SINCE(6, 12)
