@@ -903,12 +903,11 @@ void tst_QDockWidget::dockLocationChanged()
         }
     }
 
+    // Dock area doesn't change => no signal emission
     spy.clear();
     mw.addDockWidget(Qt::TopDockWidgetArea, &dw2);
     mw.tabifyDockWidget(&dw2, &dw);
-    QCOMPARE(spy.size(), 1);
-    QCOMPARE(dockLocation(&spy), Qt::TopDockWidgetArea);
-    spy.clear();
+    QCOMPARE(spy.size(), 0);
 
     mw.splitDockWidget(&dw2, &dw, Qt::Horizontal);
     QCOMPARE(spy.size(), 1);

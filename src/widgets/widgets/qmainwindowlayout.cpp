@@ -1809,6 +1809,7 @@ void QMainWindowLayout::tabifyDockWidget(QDockWidget *first, QDockWidget *second
         return;
     }
 
+    const auto oldLocationFirst = dockWidgetArea(first);
     if (first->isFloating()) {
         tabifyWhileFloating(first, second);
     } else {
@@ -1816,7 +1817,9 @@ void QMainWindowLayout::tabifyDockWidget(QDockWidget *first, QDockWidget *second
         addChildWidget(second);
         layoutState.dockAreaLayout.tabifyDockWidget(first, second);
     }
-    emit second->dockLocationChanged(dockWidgetArea(first));
+    const auto newLocationFirst = dockWidgetArea(first);
+    if (newLocationFirst != oldLocationFirst)
+        emit second->dockLocationChanged(newLocationFirst);
     invalidate();
 }
 
