@@ -14,7 +14,7 @@
 #include <QtCore/qlist.h>
 #include <QtCore/qshareddata.h>
 #include <QtCore/qvariant.h>
-#include <QtCore/qhash.h>
+#include <QtCore/qmap.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -521,10 +521,10 @@ public:
         return static_cast<QFont::HintingPreference>(intProperty(FontHintingPreference));
     }
 
-    void setFontFeatures(const QHash<QFont::Tag, quint32> &fontFeatures);
-    QHash<QFont::Tag, quint32> fontFeatures() const;
-    void setFontVariableAxes(const QHash<QFont::Tag, float> &fontVariableAxes);
-    QHash<QFont::Tag, float> fontVariableAxes() const;
+    void setFontFeatures(const QMap<QFont::Tag, quint32> &fontFeatures);
+    QMap<QFont::Tag, quint32> fontFeatures() const;
+    void setFontVariableAxes(const QMap<QFont::Tag, float> &fontVariableAxes);
+    QMap<QFont::Tag, float> fontVariableAxes() const;
 
     inline void setFontKerning(bool enable)
     { setProperty(FontKerning, enable); }
