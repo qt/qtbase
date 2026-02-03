@@ -684,7 +684,7 @@ void tst_QTextFormat::setFontFeatures()
         QCOMPARE(resolvedFont.featureValue("abcd"), 1234);
         QCOMPARE(resolvedFont.featureValue("efgh"), 5678);
 
-        QHash<QFont::Tag, quint32> features = format.fontFeatures();
+        const auto features = format.fontFeatures();
         QCOMPARE(features.size(), 2);
         QCOMPARE(features.value("abcd"), 1234);
         QCOMPARE(features.value("efgh"), 5678);
@@ -693,7 +693,7 @@ void tst_QTextFormat::setFontFeatures()
     {
         QTextCharFormat format;
 
-        QHash<QFont::Tag, quint32> features;
+        QMap<QFont::Tag, quint32> features;
         features.insert("abcd", 4321);
         features.insert("efgh", 8765);
         format.setFontFeatures(features);
@@ -725,7 +725,7 @@ void tst_QTextFormat::setFontVariableAxes()
         QCOMPARE(resolvedFont.variableAxisValue("abcd"), 12.25);
         QCOMPARE(resolvedFont.variableAxisValue("efgh"), 13.25);
 
-        QHash<QFont::Tag, float> axes = format.fontVariableAxes();
+        const auto axes = format.fontVariableAxes();
         QCOMPARE(axes.size(), 2);
         QCOMPARE(axes.value("abcd"), 12.25);
         QCOMPARE(axes.value("efgh"), 13.25);
@@ -734,7 +734,7 @@ void tst_QTextFormat::setFontVariableAxes()
     {
         QTextCharFormat format;
 
-        QHash<QFont::Tag, float> axes;
+        QMap<QFont::Tag, float> axes;
         axes.insert("abcd", 12.25);
         axes.insert("efgh", 13.25);
         format.setFontVariableAxes(axes);
@@ -910,7 +910,7 @@ void tst_QTextFormat::dataStreamCompatibility()
             QMap<int, QVariant> properties = other.properties();
             QVERIFY(properties.contains(QTextFormat::FontFeatures));
 
-            auto features = other.property(QTextFormat::FontFeatures).value<QHash<QFont::Tag, quint32>>();
+            auto features = other.property(QTextFormat::FontFeatures).value<QMap<QFont::Tag, quint32>>();
             QCOMPARE(features.value("abcd"), 1234);
         }
     }

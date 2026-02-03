@@ -9,6 +9,7 @@
 #include <qdebug.h>
 #include <qmap.h>
 #include <qhashfunctions.h>
+#include <private/qfont_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -390,14 +391,14 @@ void QTextFormatPrivate::recalcFont() const
                 break;
             case QTextFormat::FontFeatures:
             {
-                const auto fontFeatures = props.at(i).value.value<QHash<QFont::Tag, quint32>>();
+                const auto fontFeatures = props.at(i).value.value<QMap<QFont::Tag, quint32>>();
                 for (auto it = fontFeatures.constBegin(); it != fontFeatures.constEnd(); ++it)
                     f.setFeature(it.key(), it.value());
                 break;
             }
             case QTextFormat::FontVariableAxes:
             {
-                const auto fontVariableAxes = props.at(i).value.value<QHash<QFont::Tag, float>>();
+                const auto fontVariableAxes = props.at(i).value.value<QMap<QFont::Tag, float>>();
                 for (auto it = fontVariableAxes.constBegin(); it != fontVariableAxes.constEnd(); ++it)
                     f.setVariableAxis(it.key(), it.value());
                 break;
@@ -1847,7 +1848,7 @@ void QTextCharFormat::setUnderlineStyle(UnderlineStyle style)
 
     \sa QFont::setFeature()
 */
-void QTextCharFormat::setFontFeatures(const QHash<QFont::Tag, quint32> &fontFeatures)
+void QTextCharFormat::setFontFeatures(const QMap<QFont::Tag, quint32> &fontFeatures)
 {
     setProperty(FontFeatures, QVariant::fromValue(fontFeatures));
 }
@@ -1859,9 +1860,9 @@ void QTextCharFormat::setFontFeatures(const QHash<QFont::Tag, quint32> &fontFeat
 
     \sa setFontFeatures()
 */
-QHash<QFont::Tag, quint32> QTextCharFormat::fontFeatures() const
+QMap<QFont::Tag, quint32> QTextCharFormat::fontFeatures() const
 {
-    return property(FontFeatures).value<QHash<QFont::Tag, quint32>>();
+    return property(FontFeatures).value<QMap<QFont::Tag, quint32>>();
 }
 
 /*!
@@ -1871,7 +1872,7 @@ QHash<QFont::Tag, quint32> QTextCharFormat::fontFeatures() const
 
     \sa QFont::setVariableAxis()
 */
-void QTextCharFormat::setFontVariableAxes(const QHash<QFont::Tag, float> &fontVariableAxes)
+void QTextCharFormat::setFontVariableAxes(const QMap<QFont::Tag, float> &fontVariableAxes)
 {
     setProperty(FontVariableAxes, QVariant::fromValue(fontVariableAxes));
 }
@@ -1883,9 +1884,9 @@ void QTextCharFormat::setFontVariableAxes(const QHash<QFont::Tag, float> &fontVa
 
     \sa setFontVariableAxes()
 */
-QHash<QFont::Tag, float> QTextCharFormat::fontVariableAxes() const
+QMap<QFont::Tag, float> QTextCharFormat::fontVariableAxes() const
 {
-    return property(FontVariableAxes).value<QHash<QFont::Tag, float>>();
+    return property(FontVariableAxes).value<QMap<QFont::Tag, float>>();
 }
 
 
@@ -2225,21 +2226,14 @@ void QTextCharFormat::setFont(const QFont &font, FontPropertiesInheritanceBehavi
         setFontHintingPreference(font.hintingPreference());
     if (mask & QFont::KerningResolved)
         setFontKerning(font.kerning());
-    if (mask & QFont::FeaturesResolved) {
-        const auto tags = font.featureTags();
 
-        QHash<QFont::Tag, quint32> fontFeatures;
-        for (QFont::Tag tag : tags)
-            fontFeatures.insert(tag, font.featureValue(tag));
-        setFontFeatures(fontFeatures);
+    if (mask & QFont::FeaturesResolved) {
+        QFontPrivate *fd = QFontPrivate::get(font);
+        setFontFeatures(fd->features);
     }
     if (mask & QFont::VariableAxesResolved) {
-        const auto tags = font.variableAxisTags();
-
-        QHash<QFont::Tag, float> fontVariableAxes;
-        for (QFont::Tag tag : tags)
-            fontVariableAxes.insert(tag, font.variableAxisValue(tag));
-        setFontVariableAxes(fontVariableAxes);
+        QFontPrivate *fd = QFontPrivate::get(font);
+        setFontVariableAxes(fd->request.variableAxisValues);
     }
 }
 
