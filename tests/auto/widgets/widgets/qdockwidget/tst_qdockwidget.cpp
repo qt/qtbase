@@ -1779,6 +1779,12 @@ void tst_QDockWidget::hoverWithoutDrop()
     QCOMPARE(d1->size(), sizeD1);
     QCOMPARE(d2->size(), sizeD2);
 
+    qCDebug(lcTestDockWidget) << "*** tabify d1 and d2 programmatically ***";
+    mainWindow->tabifyDockWidget(d1, d2);
+    QCOMPARE(mainWindow->tabifiedDockWidgets(d1), {d2});
+    QCOMPARE(mainWindow->tabifiedDockWidgets(d2), {d1});
+    groupWindow = mainWindow->findChild<QDockWidgetGroupWindow *>();
+    QVERIFY(groupWindow);
 
 #else
     QSKIP("test requires -developer-build option");

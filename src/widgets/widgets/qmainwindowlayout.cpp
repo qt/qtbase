@@ -1757,6 +1757,30 @@ bool QMainWindowLayout::restoreDockWidget(QDockWidget *dockwidget)
     return true;
 }
 
+#if QT_CONFIG(dockwidget) && QT_CONFIG(tabwidget)
+static QTabBar::Shape tabwidgetPositionToTabBarShape(QWidget *w)
+{
+    QTabBar::Shape result = QTabBar::RoundedSouth;
+    if (qobject_cast<QDockWidget *>(w)) {
+        switch (static_cast<QDockWidgetPrivate *>(qt_widget_private(w))->tabPosition) {
+        case QTabWidget::North:
+            result = QTabBar::RoundedNorth;
+            break;
+        case QTabWidget::South:
+            result = QTabBar::RoundedSouth;
+            break;
+        case QTabWidget::West:
+            result = QTabBar::RoundedWest;
+            break;
+        case QTabWidget::East:
+            result = QTabBar::RoundedEast;
+            break;
+        }
+    }
+    return result;
+}
+#endif // QT_CONFIG(dockwidget) && QT_CONFIG(tabwidget)
+
 #if QT_CONFIG(tabbar)
 void QMainWindowLayout::tabifyDockWidget(QDockWidget *first, QDockWidget *second)
 {
@@ -1785,11 +1809,47 @@ void QMainWindowLayout::tabifyDockWidget(QDockWidget *first, QDockWidget *second
         return;
     }
 
-    applyRestoredState();
-    addChildWidget(second);
-    layoutState.dockAreaLayout.tabifyDockWidget(first, second);
+    if (first->isFloating()) {
+        tabifyWhileFloating(first, second);
+    } else {
+        applyRestoredState();
+        addChildWidget(second);
+        layoutState.dockAreaLayout.tabifyDockWidget(first, second);
+    }
     emit second->dockLocationChanged(dockWidgetArea(first));
     invalidate();
+}
+
+void QMainWindowLayout::tabifyWhileFloating(QDockWidget *first, QDockWidget *second)
+{
+    Q_ASSERT(first->isFloating());
+    Q_ASSERT(!isDockWidgetTabbed(first));
+    Q_ASSERT(!isDockWidgetTabbed(second));
+
+    // if the second dock widget is still docked, make it floating
+    second->setFloating(true);
+
+    QDockWidgetGroupWindow *floatingTabs = createTabbedDockWindow();
+    floatingTabs->setGeometry(first->geometry());
+    QDockAreaLayoutInfo *info = floatingTabs->layoutInfo();
+    const QTabBar::Shape shape = tabwidgetPositionToTabBarShape(first);
+
+    const QInternal::DockPosition dockPosition = toDockPos(dockWidgetArea(first));
+    Q_ASSERT(dockPosition != QInternal::DockPosition::DockCount);
+    *info = QDockAreaLayoutInfo(&layoutState.dockAreaLayout.sep, dockPosition,
+                                Qt::Horizontal, shape,
+                                static_cast<QMainWindow *>(parentWidget()));
+    info->tabBar = getTabBar();
+    info->tabbed = true;
+    info->add(first);
+    info->add(second);
+    second->d_func()->plug(first->geometry());
+    QDockAreaLayoutInfo &parentInfo = layoutState.dockAreaLayout.docks[dockPosition];
+    parentInfo.add(floatingTabs);
+    first->setParent(floatingTabs);
+    second->setParent(floatingTabs);
+    floatingTabs->show();
+    floatingTabs->raise();
 }
 
 bool QMainWindowLayout::documentMode() const
@@ -2863,30 +2923,6 @@ static bool unplugGroup(QMainWindowLayout *layout, QLayoutItem **item,
     return true;
 }
 #endif
-
-#if QT_CONFIG(dockwidget) && QT_CONFIG(tabwidget)
-static QTabBar::Shape tabwidgetPositionToTabBarShape(QWidget *w)
-{
-    QTabBar::Shape result = QTabBar::RoundedSouth;
-    if (qobject_cast<QDockWidget *>(w)) {
-        switch (static_cast<QDockWidgetPrivate *>(qt_widget_private(w))->tabPosition) {
-        case QTabWidget::North:
-            result = QTabBar::RoundedNorth;
-            break;
-        case QTabWidget::South:
-            result = QTabBar::RoundedSouth;
-            break;
-        case QTabWidget::West:
-            result = QTabBar::RoundedWest;
-            break;
-        case QTabWidget::East:
-            result = QTabBar::RoundedEast;
-            break;
-        }
-    }
-    return result;
-}
-#endif // QT_CONFIG(dockwidget) && QT_CONFIG(tabwidget)
 
 /*! \internal
     Unplug \a widget (QDockWidget or QToolBar) from it's parent container.
