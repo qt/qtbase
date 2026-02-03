@@ -530,12 +530,8 @@ void QAbstractEventDispatcher::installNativeEventFilter(QAbstractNativeEventFilt
 void QAbstractEventDispatcher::removeNativeEventFilter(QAbstractNativeEventFilter *filter)
 {
     Q_D(QAbstractEventDispatcher);
-    for (int i = 0; i < d->eventFilters.size(); ++i) {
-        if (d->eventFilters.at(i) == filter) {
-            d->eventFilters[i] = nullptr;
-            break;
-        }
-    }
+    if (const auto idx = d->eventFilters.indexOf(filter); idx >= 0)
+        d->eventFilters[idx] = nullptr;
 }
 
 /*!
@@ -564,7 +560,7 @@ bool QAbstractEventDispatcher::filterNativeEvent(const QByteArray &eventType, vo
         // Raise the loopLevel so that deleteLater() calls in or triggered
         // by event_filter() will be processed from the main event loop.
         QScopedScopeLevelCounter scopeLevelCounter(d->threadData.loadAcquire());
-        for (int i = 0; i < d->eventFilters.size(); ++i) {
+        for (qsizetype i = 0; i < d->eventFilters.size(); ++i) {
             QAbstractNativeEventFilter *filter = d->eventFilters.at(i);
             if (!filter)
                 continue;
