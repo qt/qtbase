@@ -45,7 +45,7 @@ static gboolean socketNotifierSourceCheck(GSource *source)
     GSocketNotifierSource *src = reinterpret_cast<GSocketNotifierSource *>(source);
 
     bool pending = false;
-    for (int i = 0; !pending && i < src->pollfds.size(); ++i) {
+    for (qsizetype i = 0; !pending && i < src->pollfds.size(); ++i) {
         GPollFDWithQSocketNotifier *p = src->pollfds.at(i);
 
         if (p->pollfd.revents & G_IO_NVAL) {
@@ -354,7 +354,7 @@ QEventDispatcherGlib::~QEventDispatcherGlib()
     d->idleTimerSource = nullptr;
 
     // destroy socket notifier source
-    for (int i = 0; i < d->socketNotifierSource->pollfds.size(); ++i) {
+    for (qsizetype i = 0; i < d->socketNotifierSource->pollfds.size(); ++i) {
         GPollFDWithQSocketNotifier *p = d->socketNotifierSource->pollfds[i];
         g_source_remove_poll(&d->socketNotifierSource->source, &p->pollfd);
         delete p;
