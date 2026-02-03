@@ -1,5 +1,3 @@
-This file is closed before it is copied.
-
 If the copied file is a symbolic link (symlink), the
 file it refers to is copied, not the link itself. With the
 exception of permissions, which are copied, no other file metadata
@@ -9,3 +7,6 @@ Returns \c true if successful; otherwise returns \c false.
 
 Note that if a file with the name \a newName already exists,
 copy() returns \c false. This means QFile will not overwrite it.
+
+\note On Android, this operation is not yet supported for \c content
+scheme URIs.
