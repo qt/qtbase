@@ -3037,7 +3037,7 @@ void QWindowsWindow::calculateFullFrameMargins()
     // by handling WM_NCCALCSIZE). If that is the case, i.e., the client area and the window area
     // have identical sizes, we don't want to override the user-defined margins.
 
-    if (qrectFromRECT(windowRect).size() == qrectFromRECT(clientRect).size())
+    if (qSizeOfRect(windowRect) == qSizeOfRect(clientRect))
         return;
 
     // Normally obtained from WM_NCCALCSIZE. This calculation only works
