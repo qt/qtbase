@@ -461,11 +461,33 @@ int QImageWriter::quality() const
     of an image. For image formats that do not support setting the
     compression, this value is ignored.
 
-    The value range of \a compression depends on the image format. For
-    example, the "tiff" format supports two values, 0(no compression) and
-    1(LZW-compression).
+    The value range of \a compression depends on the image format:
+    \table
+    \header
+        \li Image Format
+        \li Supported Values
+    \row
+        \li PNG
+        \li Values in the range from 0 (no compression) to 100 (low visual
+            quality, maximum compression). This value is the inverse to
+            \e quality in setQuality. The two options are mutually exclusive.
+    \row
+        \li TGA
+        \li
+        0 - No compression \br
+        1 - RLE compression
+    \row
+        \li TIFF
+        \li
+        0 - No compression \br
+        1 - LZW compression \br
+        2 - RLE compression \br
+        3 - CCITT Group 3 fax encoding \br
+        4 - CCITT Group 4 fax encoding \br
+        5 - JPEG compression
+    \endtable
 
-    \sa compression()
+    \sa compression(), setQuality()
 */
 void QImageWriter::setCompression(int compression)
 {
