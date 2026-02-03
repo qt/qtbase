@@ -205,6 +205,14 @@ function(_qt_internal_android_generate_target_build_gradle target)
             "Please check your Android SDK installation.")
     endif()
 
+    # Prefer base API when the latest platform uses a dotted API (e.g. android-36.1).
+    if(ANDROID_COMPILE_SDK_VERSION MATCHES "^android-([0-9]+)\.[0-9]+$")
+        set(android_compile_sdk_base "android-${CMAKE_MATCH_1}")
+        if(ANDROID_SDK_ROOT AND EXISTS "${ANDROID_SDK_ROOT}/platforms/${android_compile_sdk_base}")
+            set(ANDROID_COMPILE_SDK_VERSION "${android_compile_sdk_base}")
+        endif()
+    endif()
+
     _qt_internal_android_get_gradle_source_sets(SOURCE_SETS ${target})
     _qt_internal_android_get_gradle_dependencies(GRADLE_DEPENDENCIES ${target})
 
