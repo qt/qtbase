@@ -975,7 +975,7 @@ void QMainWindow::setTabPosition(Qt::DockWidgetAreas areas, QTabWidget::TabPosit
 #endif // QT_CONFIG(tabwidget)
 
 /*!
-    Adds the given \a dockwidget to the specified \a area.
+    Adds the given \a dockwidget to the specified \a area in the main window.
 */
 void QMainWindow::addDockWidget(Qt::DockWidgetArea area, QDockWidget *dockwidget)
 {
@@ -1057,9 +1057,12 @@ void QMainWindow::splitDockWidget(QDockWidget *after, QDockWidget *dockwidget,
     \fn void QMainWindow::tabifyDockWidget(QDockWidget *first, QDockWidget *second)
 
     Moves \a second dock widget on top of \a first dock widget, creating a tabbed
-    docked area in the main window.
+    dock area at the current location of \a first.
 
-    \sa tabifiedDockWidgets()
+    Both dock widgets must have been added to the main window with
+    addDockWidget() before calling this function, and neither can already be tabbed.
+
+    \sa tabifiedDockWidgets(), addDockWidget()
 */
 void QMainWindow::tabifyDockWidget(QDockWidget *first, QDockWidget *second)
 {
