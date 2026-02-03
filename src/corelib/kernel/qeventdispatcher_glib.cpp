@@ -355,7 +355,7 @@ QEventDispatcherGlib::~QEventDispatcherGlib()
 
     // destroy socket notifier source
     for (qsizetype i = 0; i < d->socketNotifierSource->pollfds.size(); ++i) {
-        GPollFDWithQSocketNotifier *p = d->socketNotifierSource->pollfds[i];
+        GPollFDWithQSocketNotifier *p = d->socketNotifierSource->pollfds.at(i);
         g_source_remove_poll(&d->socketNotifierSource->source, &p->pollfd);
         delete p;
     }
