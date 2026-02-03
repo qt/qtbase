@@ -6,6 +6,7 @@ project(rangemodel VERSION 0.1 LANGUAGES CXX)
 
 find_package(Qt6 COMPONENTS
     Core Gui Widgets
+    BuildInternals
     REQUIRED
 )
 
