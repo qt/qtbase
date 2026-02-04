@@ -23,19 +23,7 @@ class QNetworkProxy;
 class QAbstractSocketPrivate;
 class QAuthenticator;
 
-namespace QtPrivate {
-struct QAbstractSocketConstants
-{
-#if QT_VERSION >= QT_VERSION_CHECK(7, 0, 0)
-    // compatibility with Qt 4 to 6
-    using NetworkLayerProtocol = QHostAddress::NetworkLayerProtocol;
-    using enum NetworkLayerProtocol;
-#endif
-};
-}
-
 class Q_NETWORK_EXPORT QAbstractSocket : public QIODevice
-        QT7_ONLY(, public QtPrivate::QAbstractSocketConstants)
 {
     Q_OBJECT
 
@@ -56,6 +44,10 @@ public:
         UnknownNetworkLayerProtocol = -1
     };
     Q_ENUM(NetworkLayerProtocol)
+#else
+    // compatibility with Qt 4 to 6
+    using NetworkLayerProtocol = QHostAddress::NetworkLayerProtocol;
+    using enum NetworkLayerProtocol;
 #endif
 
     enum SocketError {
