@@ -1302,7 +1302,7 @@ QT_WARNING_DISABLE_CLANG("-Wtautological-compare")
             return true;
         );
         QMETATYPE_CONVERTER(QString, Char32,
-            result = QChar::fromUcs4(source).operator QStringView().toString();
+            result = QStringView(QChar::fromUcs4(source)).toString();
             return true;
         );
 #if QT_CONFIG(datestring)

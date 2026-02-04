@@ -143,10 +143,20 @@ void tst_QChar::fromUcs4()
         QCOMPARE(result.chars[0], QChar::highSurrogate(ucs4));
         QCOMPARE(result.chars[1], QChar::lowSurrogate(ucs4));
         QCOMPARE(QStringView{result}.size(), 2);
+        QStringView v = result;
+        QCOMPARE(v.size(), 2);
+#if __cplusplus >= 202302L // no FTM for the ranged constructor of basic_string_view
+        QCOMPARE(std::u16string_view{result}.size(), 2);
+#endif
     } else {
         QCOMPARE(result.chars[0], ucs4);
         QCOMPARE(result.chars[1], 0u);
         QCOMPARE(QStringView{result}.size(), 1);
+        QStringView v = result;
+        QCOMPARE(v.size(), 1);
+#if __cplusplus >= 202302L // no FTM for the ranged constructor of basic_string_view
+        QCOMPARE(std::u16string_view{result}.size(), 1);
+#endif
     }
 }
 
