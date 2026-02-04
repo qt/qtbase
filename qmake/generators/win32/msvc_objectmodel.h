@@ -445,8 +445,8 @@ enum warningLevelOption {
 class VCToolBase {
 protected:
     // Functions
-    VCToolBase(){}
-    virtual ~VCToolBase(){}
+    VCToolBase() = default;
+    virtual ~VCToolBase() = default;
     virtual bool parseOption(const char* option) = 0;
 public:
     void parseOptions(const ProStringList& options) {
