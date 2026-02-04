@@ -9,7 +9,7 @@ QT_BEGIN_NAMESPACE
 namespace QtWaylandClient {
 
 QWaylandXdgDecorationManagerV1::QWaylandXdgDecorationManagerV1(wl_registry *registry, uint32_t id, uint32_t availableVersion)
-    : QtWayland::zxdg_decoration_manager_v1(registry, id, qMin(availableVersion, 1u))
+    : QtWayland::zxdg_decoration_manager_v1(registry, id, qMin(availableVersion, 2u))
 {
 }
 

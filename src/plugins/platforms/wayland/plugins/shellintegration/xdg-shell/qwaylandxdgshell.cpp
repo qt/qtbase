@@ -196,14 +196,19 @@ void QWaylandXdgSurface::Toplevel::xdg_toplevel_close()
 
 void QWaylandXdgSurface::Toplevel::requestWindowFlags(Qt::WindowFlags flags)
 {
-    if (m_decoration) {
-        if (flags & Qt::FramelessWindowHint) {
-            delete m_decoration;
-            m_decoration = nullptr;
-        } else {
+    if (flags & Qt::FramelessWindowHint) {
+        delete m_decoration;
+        m_decoration = nullptr;
+    } else {
+        auto decorationManager = m_xdgSurface->m_shell->decorationManager();
+        // with decorationManagerV1 we can't turn decorations back on again
+        if (!m_decoration && decorationManager && decorationManager->version() >= 2)
+            m_decoration = m_xdgSurface->m_shell->decorationManager()->createToplevelDecoration(object());
+
+        if (m_decoration)
             m_decoration->requestMode(QWaylandXdgToplevelDecorationV1::mode_server_side);
-        }
     }
+
 }
 
 void QWaylandXdgSurface::Toplevel::requestWindowStates(Qt::WindowStates states)
