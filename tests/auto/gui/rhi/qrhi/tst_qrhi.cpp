@@ -962,7 +962,7 @@ void tst_QRhi::nativeHandles()
 
             QScopedPointer<QRhiTexture> tex(rhi->newTexture(QRhiTexture::RGBA8, QSize(512, 512), 1, QRhiTexture::RenderTarget));
             QVERIFY(tex->create());
-            QScopedPointer<QRhiTextureRenderTarget> rt(rhi->newTextureRenderTarget({ tex.data() }));
+            QScopedPointer<QRhiTextureRenderTarget> rt(rhi->newTextureRenderTarget({ tex.get() }));
             QScopedPointer<QRhiRenderPassDescriptor> rpDesc(rt->newCompatibleRenderPassDescriptor());
             QVERIFY(rpDesc);
             rt->setRenderPassDescriptor(rpDesc.get());
