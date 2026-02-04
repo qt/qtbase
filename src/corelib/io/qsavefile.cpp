@@ -62,6 +62,12 @@ bool QSaveFilePrivate::open(QIODevice::OpenMode mode)
         writeError = QFileDevice::WriteError;
         return false;
     }
+    // If the target file exists, and we haven't already been given other
+    // permissions to use, save the existing permissions. For new files, see
+    // below.
+    if (!finalPermissions && priorFile.exists())
+        finalPermissions = priorFile.permissions();
+    // These may be overridden later by setPermissions(), of course.
 
     // Resolve symlinks. Don't use QFileInfo::canonicalFilePath so it still give
     // the expected target even if the file does not exist
@@ -107,13 +113,30 @@ bool QSaveFilePrivate::open(QIODevice::OpenMode mode)
         return false;
     }
 
-    fileEngine.reset(new QTemporaryFileEngine(&finalFileName, QTemporaryFileEngine::Win32NonShared));
-    // if the target file exists, we'll copy its permissions below,
-    // but until then, let's ensure the temporary file is not accessible
-    // to a third party
-    int perm = (priorFile.exists() ? 0600 : 0666);
-    static_cast<QTemporaryFileEngine *>(fileEngine.get())->initialize(finalFileName, perm);
-    // Same as in QFile: QIODevice provides the buffering, so there's no need to request it from the file engine.
+    fileEngine.reset(new QTemporaryFileEngine(&finalFileName,
+                                              QTemporaryFileEngine::Win32NonShared));
+    // For new files, when other permissions haven't been specified, we want the
+    // same permissions QFile::open() would get us. These depend on vagaries of
+    // the operating system (Unix's umask(), for example) that we don't want to
+    // second guess, so let open() do its thing and then read what it's done
+    // before closing and reopening with 0600 for the real writing.
+    if (!finalPermissions) {
+        Q_ASSERT(!priorFile.exists());
+        // Dry-run of what follows, but with different permissions.
+        static_cast<QTemporaryFileEngine *>(fileEngine.get())->initialize(finalFileName, 0666);
+        if (fileEngine->open(mode | QIODevice::Unbuffered)) {
+            Q_Q(QSaveFile);
+            finalPermissions = q->QFileDevice::permissions();
+            fileEngine->close();
+        }
+        fileEngine->remove();
+    }
+
+    // We'll set the target file's permissions on commit() but, until then,
+    // let's ensure the temporary file is not accessible to a third party.
+    static_cast<QTemporaryFileEngine *>(fileEngine.get())->initialize(finalFileName, 0600);
+    // Same as in QFile: QIODevice provides the buffering, so there's no need to
+    // request it from the file engine.
     if (!fileEngine->open(mode | QIODevice::Unbuffered)) {
         QFileDevice::FileError err = fileEngine->error();
 #ifdef Q_OS_UNIX
@@ -128,10 +151,6 @@ bool QSaveFilePrivate::open(QIODevice::OpenMode mode)
         setError(err, fileEngine->errorString());
         fileEngine.reset();
         return false;
-    }
-    if (priorFile.exists()) {
-        Q_Q(QSaveFile);
-        q->setPermissions(priorFile.permissions());
     }
     useTemporaryFile = true;
     return true;
@@ -251,8 +270,9 @@ void QSaveFile::setFileName(const QString &name)
 */
 
 /*!
-    Opens the file using \a mode flags. Returns \c true if successful;
-    otherwise returns \c false.
+    Opens the file using the given \a mode flags.
+
+    Returns \c true if successful; otherwise returns \c false.
 
     Important: The flags for \a mode must include \l QIODeviceBase::WriteOnly. Other
     common flags you can use are \l Text and \l Unbuffered. Flags not supported at the
@@ -286,6 +306,31 @@ void QSaveFile::close()
 }
 
 /*!
+    \reimp
+    Sets the \a permissions the file shall be given on successful commit().
+
+    While being written via QSaveFile the file may have more restrictive
+    permissions.
+*/
+bool QSaveFile::setPermissions(Permissions permissions)
+{
+    Q_D(QSaveFile);
+    d->finalPermissions = permissions;
+    return true;
+}
+
+/*!
+    \reimp
+    Reports the permissions the file shall be given on successful commit().
+*/
+QFileDevice::Permissions QSaveFile::permissions() const
+{
+    if (d_func()->finalPermissions)
+        return *d_func()->finalPermissions;
+    return QFileDevice::permissions();
+}
+
+/*!
   Commits the changes to disk, if all previous writes were successful.
 
   It is mandatory to call this at the end of the saving operation, otherwise the file will be
@@ -307,6 +352,8 @@ bool QSaveFile::commit()
         qWarning("QSaveFile::commit: File (%ls) is not open", qUtf16Printable(fileName()));
         return false;
     }
+    if (d->finalPermissions)
+        QFileDevice::setPermissions(*d->finalPermissions); // Records error on failure.
     QFileDevice::close(); // calls flush()
 
     const auto &fe = d->fileEngine;
@@ -335,8 +382,8 @@ bool QSaveFile::commit()
         }
     }
 
-    // return true if all previous write() calls succeeded and if close() and
-    // flush() succeeded.
+    // Return true if all previous write() calls succeeded and if close(),
+    // flush() and (when relevant) setPermissions() succeeded.
     return d->error == QFileDevice::NoError;
 }
 
