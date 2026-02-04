@@ -107,7 +107,7 @@ public:
         PathMtuSocketOption, // IP_MTU
         KeepAliveIdleOption, // TCP_KEEPIDLE
         KeepAliveIntervalOption, // TCP_KEEPINTVL
-        KeepAliveCountOption // TCP_KEEPCNT
+        KeepAliveCountOption, // TCP_KEEPCNT
     };
     Q_ENUM(SocketOption)
     enum BindFlag {
