@@ -1400,12 +1400,8 @@ QChar *QUtf32::convertToUnicode(QChar *out, QByteArrayView in, QStringConverter:
         }
         char32_t code = (endian == BigEndianness) ? qFromBigEndian<char32_t>(tuple) : qFromLittleEndian<char32_t>(tuple);
         if (headerdone || code != QChar::ByteOrderMark) {
-            if (QChar::requiresSurrogates(code)) {
-                *out++ = QChar(QChar::highSurrogate(code));
-                *out++ = QChar(QChar::lowSurrogate(code));
-            } else {
-                *out++ = QChar(code);
-            }
+            for (char16_t c : QChar::fromUcs4(code))
+                *out++ = c;
         }
         num = 0;
     } else if (endian == DetectEndianness) {
