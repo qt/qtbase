@@ -1385,6 +1385,18 @@ QChar *QUtf32::convertToUnicode(QChar *out, QByteArrayView in, QStringConverter:
     qsizetype num = state->remainingChars;
     state->remainingChars = 0;
 
+    const auto writeCodeToOutput = [&](char32_t code) {
+        if (Q_UNLIKELY(code > QChar::LastValidCodePoint)) {
+            if (state->flags & QStringDecoder::Flag::ConvertInvalidToNull)
+                *out++ = QChar::Null;
+            else
+                *out++ = QChar::ReplacementCharacter;
+        } else {
+            for (char16_t c : QChar::fromUcs4(code))
+                *out++ = c;
+        }
+    };
+
     if (!headerdone || endian == DetectEndianness || num) {
         while (num < 4)
             tuple[num++] = *chars++;
@@ -1402,8 +1414,7 @@ QChar *QUtf32::convertToUnicode(QChar *out, QByteArrayView in, QStringConverter:
         }
         char32_t code = (endian == BigEndianness) ? qFromBigEndian<char32_t>(tuple) : qFromLittleEndian<char32_t>(tuple);
         if (headerdone || code != QChar::ByteOrderMark) {
-            for (char16_t c : QChar::fromUcs4(code))
-                *out++ = c;
+            writeCodeToOutput(code);
         }
         num = 0;
     } else if (endian == DetectEndianness) {
@@ -1416,8 +1427,7 @@ QChar *QUtf32::convertToUnicode(QChar *out, QByteArrayView in, QStringConverter:
         tuple[num++] = *chars++;
         if (num == 4) {
             char32_t code = (endian == BigEndianness) ? qFromBigEndian<char32_t>(tuple) : qFromLittleEndian<char32_t>(tuple);
-            for (char16_t c : QChar::fromUcs4(code))
-                *out++ = c;
+            writeCodeToOutput(code);
             num = 0;
         }
     }

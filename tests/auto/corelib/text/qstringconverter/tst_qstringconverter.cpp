@@ -179,6 +179,9 @@ private slots:
     void utf8stateful_data();
     void utf8stateful();
 
+    void utf32Codec_data();
+    void utf32Codec();
+
     void utfHeaders_data();
     void utfHeaders();
 
@@ -2029,6 +2032,101 @@ void tst_QStringConverter::utf8stateful()
             QCOMPARE(decoded, result);
         }
     }
+}
+
+void tst_QStringConverter::utf32Codec_data()
+{
+    QTest::addColumn<QStringConverter::Flag>("flags");
+    QTest::addColumn<QByteArray>("encoded");
+    QTest::addColumn<QString>("unicode");
+
+#define UTF32_BOM "\0\0\xfe\xff"
+#define UTF32_A "\0\0\0a"
+#define UTF32_B "\0\0\0b"
+#define UTF32_C "\0\0\0c"
+#define UTF32_D "\0\0\0d"
+#define UTF32_REPLACEMENT "\0\0\xff\xfd"
+#define UTF32_ILLEGAL_BOM "\xff\xfe\xfe\xff"
+#define UTF32_ILLEGAL "\xff\0\0\xff"
+
+    QTest::newRow("abc skipbom")
+        << QStringConverter::Flag::Default
+        << UTF32_BOM UTF32_A UTF32_B UTF32_C ""_ba
+        << u"abc"_s;
+
+    QTest::newRow("abc writebom")
+        << QStringConverter::Flag::ConvertInitialBom
+        << UTF32_BOM UTF32_A UTF32_B UTF32_C ""_ba
+        << u"\uFEFF""abc"_s;
+
+    QTest::newRow("invalid with replacement 1")
+        << QStringConverter::Flag::Default
+        << UTF32_BOM UTF32_A UTF32_ILLEGAL UTF32_C ""_ba
+        << u"a""\uFFFD""c"_s;
+
+    QTest::newRow("invalid with replacement 2")
+        << QStringConverter::Flag::Default
+        << UTF32_BOM UTF32_A UTF32_ILLEGAL UTF32_C UTF32_D UTF32_ILLEGAL UTF32_ILLEGAL ""_ba
+        << u"a""\uFFFD""cd""\uFFFD""\uFFFD"_s;
+
+    QTest::newRow("invalid with null 1")
+        << QStringConverter::Flag::ConvertInvalidToNull
+        << UTF32_BOM UTF32_A UTF32_ILLEGAL UTF32_C ""_ba
+        << u"a\0c"_s;
+
+    QTest::newRow("invalid with null 2")
+        << QStringConverter::Flag::ConvertInvalidToNull
+        << UTF32_BOM UTF32_A UTF32_ILLEGAL UTF32_C UTF32_D UTF32_ILLEGAL UTF32_ILLEGAL ""_ba
+        << u"a\0cd\0\0"_s;
+
+    QTest::newRow("invalid with null 3")
+        << QStringConverter::Flag::ConvertInvalidToNull
+        << UTF32_BOM UTF32_A UTF32_REPLACEMENT UTF32_C UTF32_D UTF32_ILLEGAL UTF32_ILLEGAL ""_ba
+        << u"a""\uFFFD""cd\0\0"_s; // U+FFFD was in the source
+
+    QTest::newRow("nobom invalid 1")
+        << QStringConverter::Flag::Default
+        << UTF32_ILLEGAL_BOM UTF32_A UTF32_B UTF32_C ""_ba
+        << u"\uFFFD""abc"_s;
+
+    QTest::newRow("nobom invalid 2")
+        << QStringConverter::Flag::Default
+        << UTF32_ILLEGAL_BOM UTF32_A UTF32_ILLEGAL UTF32_C ""_ba
+        << u"\uFFFD""a""\uFFFD""c"_s;
+
+    QTest::newRow("nobom invalid 3")
+        << QStringConverter::Flag::ConvertInvalidToNull
+        << UTF32_ILLEGAL_BOM UTF32_A UTF32_ILLEGAL UTF32_C ""_ba
+        << u"\0a\0c"_s;
+
+#undef UTF32_BOM
+#undef UTF32_A
+#undef UTF32_B
+#undef UTF32_C
+#undef UTF32_D
+#undef UTF32_REPLACEMENT
+#undef UTF32_ILLEGAL_BOM
+#undef UTF32_ILLEGAL
+}
+
+void tst_QStringConverter::utf32Codec()
+{
+    QFETCH(QStringConverter::Flag, flags);
+    QFETCH(QByteArray, encoded);
+    QFETCH(QString, unicode);
+
+    if constexpr (QSysInfo::ByteOrder == QSysInfo::LittleEndian) {
+        if (QByteArrayView(QTest::currentDataTag()).startsWith("nobom")) {
+            char32_t *begin = reinterpret_cast<char32_t *>(encoded.data());
+            const qsizetype count = encoded.size() / sizeof(char32_t);
+            qFromBigEndian<char32_t>(begin, count, begin);
+        }
+    }
+
+    QStringDecoder decoder(QStringDecoder::Utf32, flags);
+    QVERIFY(decoder.isValid());
+    QString result = decoder(encoded);
+    QCOMPARE(result, unicode);
 }
 
 void tst_QStringConverter::utfHeaders_data()
