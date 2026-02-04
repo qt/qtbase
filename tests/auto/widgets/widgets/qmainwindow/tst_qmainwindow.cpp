@@ -1688,9 +1688,11 @@ void AddDockWidget::apply(QMainWindow *mw) const
             mw->addDockWidget(a, dw);
             break;
         case SplitMode:
+            mw->addDockWidget(Qt::BottomDockWidgetArea, dw);
             mw->splitDockWidget(other, dw, o);
             break;
         case TabMode:
+            mw->addDockWidget(Qt::BottomDockWidgetArea, dw);
             mw->tabifyDockWidget(other, dw);
             break;
     }

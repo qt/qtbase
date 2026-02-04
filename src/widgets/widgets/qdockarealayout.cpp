@@ -1919,8 +1919,9 @@ static Qt::DockWidgetArea toDockWidgetArea(QInternal::DockPosition pos)
     return Qt::NoDockWidgetArea;
 }
 
-bool QDockAreaLayoutInfo::restoreState(QDataStream &stream, QList<QDockWidget*> &widgets, bool testing)
+bool QDockAreaLayoutInfo::restoreState(QDataStream &stream, QList<QDockWidget*> &widgets, QInternal::CallMode callMode)
 {
+    const bool testing = callMode == QInternal::Testing;
     uchar marker;
     stream >> marker;
     if (marker != TabMarker && marker != SequenceMarker)
@@ -2033,7 +2034,7 @@ bool QDockAreaLayoutInfo::restoreState(QDataStream &stream, QList<QDockWidget*> 
             //here we need to make sure we change the item in the item_list
             QDockAreaLayoutItem &lastItem = testing ? item : item_list.last();
 
-            if (!lastItem.subinfo->restoreState(stream, widgets, testing))
+            if (!lastItem.subinfo->restoreState(stream, widgets, callMode))
                 return false;
 
         } else {
@@ -2419,10 +2420,10 @@ void QDockAreaLayout::saveState(QDataStream &stream) const
         stream << static_cast<int>(corners[i]);
 }
 
-bool QDockAreaLayout::restoreState(QDataStream &stream, const QList<QDockWidget*> &_dockwidgets, bool testing)
+bool QDockAreaLayout::restoreState(QDataStream &stream, const QList<QDockWidget*> &_dockwidgets, QInternal::CallMode callMode)
 {
     QList<QDockWidget*> dockwidgets = _dockwidgets;
-
+    const bool testing = callMode == QInternal::Testing;
     int cnt;
     stream >> cnt;
     for (int i = 0; i < cnt; ++i) {
@@ -2433,7 +2434,7 @@ bool QDockAreaLayout::restoreState(QDataStream &stream, const QList<QDockWidget*
         if (!testing) {
             docks[pos].rect = QRect(QPoint(0, 0), size);
         }
-        if (!docks[pos].restoreState(stream, dockwidgets, testing)) {
+        if (!docks[pos].restoreState(stream, dockwidgets, callMode)) {
             stream.setStatus(QDataStream::ReadCorruptData);
             return false;
         }

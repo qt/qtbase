@@ -782,7 +782,7 @@ void QDockWidgetPrivate::startDrag(DragScope scope)
     }
 
     if (state->ctrlDrag)
-        layout->restore();
+        layout->restore(QInternal::KeepSavedState);
 
     state->dragging = true;
 
@@ -829,7 +829,7 @@ void QDockWidgetPrivate::endDrag(EndDragMode mode)
                     delete state->widgetItem;
                     state->widgetItem = nullptr;
                 }
-                mwLayout->restore();
+                mwLayout->restore(QInternal::KeepSavedState);
                 QDockWidgetLayout *dwLayout = qobject_cast<QDockWidgetLayout*>(layout);
                 if (!dwLayout->nativeWindowDeco()) {
                     // get rid of the X11BypassWindowManager window flag and activate the resizer
