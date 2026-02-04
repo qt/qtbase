@@ -156,6 +156,8 @@ private slots:
 
     void xbmBufferHandling();
 
+    void autoTransformSizes();
+
 private:
     QString prefix;
     QTemporaryDir m_temporaryDir;
@@ -2203,6 +2205,28 @@ void tst_QImageReader::xbmBufferHandling()
     buffer.append("0x");
     // Only check we get no buffer overflow
     QImage::fromData(buffer, "xbm");
+}
+
+void tst_QImageReader::autoTransformSizes()
+{
+    QImageReader r(":/images/rot.jpg");
+    r.setAutoTransform(false);
+    const QSize untransformedSize(131, 174);
+
+    // Read width/height of image data
+    QCOMPARE(r.size(), untransformedSize);
+    QCOMPARE(r.effectiveSize(), untransformedSize);
+    QCOMPARE(r.read().size(), untransformedSize);
+
+    QImageReader r2(":/images/rot.jpg");
+    r2.setAutoTransform(true);
+    const QSize transformedSize = untransformedSize.transposed();
+
+    // Read width/height with indicated transformation (swapping width/height)
+    QCOMPARE(r2.size(), untransformedSize);
+    QCOMPARE(r2.effectiveSize(), transformedSize);
+    QCOMPARE(r2.read().size(), transformedSize);
+
 }
 
 QTEST_MAIN(tst_QImageReader)

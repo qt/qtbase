@@ -809,7 +809,7 @@ int QImageReader::quality() const
     an invalid size. Qt's built-in image handlers all support this feature,
     but custom image format plugins are not required to do so.
 
-    \sa QImageIOHandler::ImageOption, QImageIOHandler::option(), QImageIOHandler::supportsOption()
+    \sa effectiveSize(), QImageIOHandler::ImageOption, QImageIOHandler::option(), QImageIOHandler::supportsOption()
 */
 QSize QImageReader::size() const
 {
@@ -817,6 +817,28 @@ QSize QImageReader::size() const
         return d->handler->option(QImageIOHandler::Size).toSize();
 
     return QSize();
+}
+
+/*!
+ *  Returns the effective size of the image accounting for transformation,
+ *  without actually reading the image contents.
+ *
+ *  If the image format does not support this feature, this function returns
+ *  an invalid size. Qt's built-in image handlers all support this feature,
+ *  but custom image format plugins are not required to do so.
+ *
+ *  \sa setAutoTransform(), size(), QImageIOHandler::ImageOption, QImageIOHandler::option(), QImageIOHandler::supportsOption()
+ */
+QSize QImageReader::effectiveSize() const
+{
+    // ### Qt 7: Consider deprecating and following this behaviour in QImageReader::size()
+
+    QSize size = QImageReader::size();
+
+    if (autoTransform() && transformation().testFlag(QImageIOHandler::TransformationRotate90))
+        size.transpose();
+
+    return size;
 }
 
 /*!
@@ -1025,10 +1047,10 @@ QImageIOHandler::Transformations QImageReader::transformation() const
 /*!
     \since 5.5
 
-    Determines that images returned by read() should have transformation metadata automatically
-    applied if \a enabled is \c true.
+    Determines that images returned by read() and sizes by effectiveSize() should
+    have transformation metadata automatically applied if \a enabled is \c true.
 
-    \sa autoTransform(), transformation(), read()
+    \sa autoTransform(), transformation(), read(), effectiveSize()
 */
 void QImageReader::setAutoTransform(bool enabled)
 {
@@ -1039,9 +1061,10 @@ void QImageReader::setAutoTransform(bool enabled)
 /*!
     \since 5.5
 
-    Returns \c true if the image handler will apply transformation metadata on read().
+    Returns \c true if the image handler will apply transformation
+    metadata on read() and effectiveSize().
 
-    \sa setAutoTransform(), transformation(), read()
+    \sa setAutoTransform(), transformation(), read(), effectiveSize()
 */
 bool QImageReader::autoTransform() const
 {

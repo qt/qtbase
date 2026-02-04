@@ -52,6 +52,7 @@ public:
     QString fileName() const;
 
     QSize size() const;
+    QSize effectiveSize() const;
 
     QImage::Format imageFormat() const;
 
