@@ -2298,7 +2298,7 @@ void QMacStylePrivate::drawProgressBar(QPainter* p, const QStyleOptionProgressBa
 
 QMacStyle *QMacStyle::create()
 {
-    return new QMacApperanceStyle<QMacStyle>;
+    return new QMacApperanceStyle<QMacStyle, QStyleOption, QStyleOptionComplex>;
 }
 
 QMacStyle::QMacStyle()

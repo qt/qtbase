@@ -33,6 +33,8 @@
 
 QT_BEGIN_NAMESPACE
 
+class QPainter;
+
 /*
     Helper class to ensure that the Mac style in Widgets and Quick
     draw their NSViews and NSCells with the correct appearance,
@@ -44,11 +46,11 @@ QT_BEGIN_NAMESPACE
     in the function parameters, we have to opt for an awkward macro
     to solve this.
 */
-template <typename Style>
+template <typename Style, typename StyleOption, typename StyleOptionComplex>
 class QMacApperanceStyle : public Style
 {
 public:
-    void drawPrimitive(typename Style::PrimitiveElement pe, const QStyleOption *opt, QPainter *p
+    void drawPrimitive(typename Style::PrimitiveElement pe, const StyleOption *opt, QPainter *p
                        OPTIONAL_WIDGET_ARGUMENT) const override
     {
         [NSApp.effectiveAppearance performAsCurrentDrawingAppearance:^{
@@ -57,7 +59,7 @@ public:
         }];
     }
 
-    void drawControl(typename Style::ControlElement element, const QStyleOption *opt, QPainter *p
+    void drawControl(typename Style::ControlElement element, const StyleOption *opt, QPainter *p
                      OPTIONAL_WIDGET_ARGUMENT) const override
     {
         [NSApp.effectiveAppearance performAsCurrentDrawingAppearance:^{
@@ -66,7 +68,7 @@ public:
         }];
     }
 
-    void drawComplexControl(typename Style::ComplexControl cc, const QStyleOptionComplex *opt, QPainter *p
+    void drawComplexControl(typename Style::ComplexControl cc, const StyleOptionComplex *opt, QPainter *p
                             OPTIONAL_WIDGET_ARGUMENT) const override
     {
         [NSApp.effectiveAppearance performAsCurrentDrawingAppearance:^{
