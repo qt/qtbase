@@ -8,6 +8,7 @@ import com.google.android.play.core.splitinstall.SplitInstallManager;
 import com.google.android.play.core.splitinstall.SplitInstallManagerFactory;
 import com.google.android.play.core.splitinstall.SplitInstallRequest;
 import com.google.android.play.core.splitinstall.SplitInstallHelper;
+import com.google.android.play.core.splitinstall.SplitInstallException;
 import com.google.android.play.core.splitinstall.testing.FakeSplitInstallManagerFactory;
 import android.content.pm.PackageManager.NameNotFoundException;
 
@@ -77,6 +78,16 @@ public class StoreLoader implements StoreLoaderListenerCallback
                     } else {
                         Log.d(TAG, "Listener for callId '" + callId + "' is not found");
                     }
+                })
+                .addOnFailureListener(exception -> {
+                    int errorCode = -128;
+                    String message = "splitInstall() failed.";
+                    if (exception != null) {
+                        message = exception.getMessage();
+                        if (exception instanceof SplitInstallException)
+                            errorCode = ((SplitInstallException) exception).getErrorCode();
+                    }
+                    onErrorOccurred(callId, errorCode, message);
                 });
     }
 

@@ -150,7 +150,7 @@ void StoreLoaderImpl::addHandler(StoreLoaderHandler *handler)
 
     QMutexLocker lock(&m_lock);
     const auto &callId = handler->callId();
-    Q_ASSERT_X(m_handlers.constFind(callId) != m_handlers.constEnd(), "StoreLoaderImpl::addHandler",
+    Q_ASSERT_X(m_handlers.constFind(callId) == m_handlers.constEnd(), "StoreLoaderImpl::addHandler",
                qPrintable(QString("Handler with callId %1 already exists.").arg(callId)));
 
     m_handlers[callId] = QPointer(handler);
