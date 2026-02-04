@@ -29,7 +29,9 @@ namespace XdgSettings {
 static constexpr QLatin1StringView AppearanceNamespace{ "org.freedesktop.appearance" };
 static constexpr QLatin1StringView ColorSchemeKey{ "color-scheme" };
 static constexpr QLatin1StringView ContrastKey{ "contrast" };
+static constexpr QLatin1StringView MotionKey{ "reduced-motion" };
 Qt::ContrastPreference convertContrastPreference(const QVariant &value);
+Qt::MotionPreference convertMotionPreference(const QVariant &value);
 Qt::ColorScheme convertColorScheme(const QVariant &value);
 } // namespace XdgSettings
 
@@ -39,7 +41,10 @@ namespace GnomeSettings {
 // https://gitlab.gnome.org/GNOME/gsettings-desktop-schemas/-/commit/0e97f1f571c495184f80d875c68f241261a50e30
 static constexpr QLatin1StringView AllyNamespace{ "org.gnome.desktop.a11y.interface" };
 static constexpr QLatin1StringView ContrastKey{ "high-contrast" };
+static constexpr QLatin1StringView DesktopNamespace{ "org.gnome.desktop.interface" };
+static constexpr QLatin1StringView MotionKey{ "enable-animations" };
 Qt::ContrastPreference convertContrastPreference(const QVariant &value);
+Qt::MotionPreference convertMotionPreference(const QVariant &value);
 } // namespace GnomeSettings
 } // namespace QDBusSettings
 

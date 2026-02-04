@@ -24,6 +24,7 @@ using namespace Qt::StringLiterals;
 static constexpr QLatin1StringView appearanceInterface("org.freedesktop.appearance");
 static constexpr QLatin1StringView colorSchemeKey("color-scheme");
 static constexpr QLatin1StringView contrastKey("contrast");
+static constexpr QLatin1StringView motionKey("reduced-motion");
 
 class QXdgDesktopPortalThemePrivate : public QObject
     {
@@ -79,6 +80,9 @@ public Q_SLOTS:
             } else if (key == contrastKey) {
                 contrast = static_cast<Qt::ContrastPreference>(value.variant().toUInt());
                 QWindowSystemInterface::handleThemeChange();
+            } else if (key == motionKey) {
+                motion = static_cast<Qt::MotionPreference>(value.variant().toUInt());
+                QWindowSystemInterface::handleThemeChange();
             }
         }
     }
@@ -88,6 +92,7 @@ public:
     uint fileChooserPortalVersion = 0;
     Qt::ColorScheme colorScheme = Qt::ColorScheme::Unknown;
     Qt::ContrastPreference contrast = Qt::ContrastPreference::NoPreference;
+    Qt::MotionPreference motion = Qt::MotionPreference::NoPreference;
 };
 
 QXdgDesktopPortalTheme::QXdgDesktopPortalTheme()
@@ -150,6 +155,7 @@ QXdgDesktopPortalTheme::QXdgDesktopPortalTheme()
             const auto xdgColorSchemePref = static_cast<QXdgDesktopPortalThemePrivate::XdgColorschemePref>(settingsMap.value(appearanceInterface).value(colorSchemeKey).toUInt());
             d->colorScheme = QXdgDesktopPortalThemePrivate::colorSchemeFromXdgPref(xdgColorSchemePref);
             d->contrast = static_cast<Qt::ContrastPreference>(settingsMap.value(appearanceInterface).value(contrastKey).toUInt());
+            d->motion = static_cast<Qt::MotionPreference>(settingsMap.value(appearanceInterface).value(motionKey).toUInt());
         }
     } else {
         qWarning() << "Call to org.freedesktop.portal.Settings.ReadAll failed" << reply.error();
@@ -250,6 +256,12 @@ Qt::ContrastPreference QXdgDesktopPortalTheme::contrastPreference() const
 {
     Q_D(const QXdgDesktopPortalTheme);
     return d->contrast;
+}
+
+Qt::MotionPreference QXdgDesktopPortalTheme::motionPreference() const
+{
+    Q_D(const QXdgDesktopPortalTheme);
+    return d->motion;
 }
 
 QPixmap QXdgDesktopPortalTheme::standardPixmap(StandardPixmap sp, const QSizeF &size) const

@@ -35,15 +35,19 @@ public:
     Qt::ColorScheme colorScheme(Qt::ColorScheme fallback = Qt::ColorScheme::Unknown) const;
     Qt::ContrastPreference contrastPreference(
             Qt::ContrastPreference fallback = Qt::ContrastPreference::NoPreference) const;
+    Qt::MotionPreference motionPreference(
+            Qt::MotionPreference fallback = Qt::MotionPreference::NoPreference) const;
 
 private:
     void querySettings();
     void updateColorScheme(Qt::ColorScheme colorScheme);
     void updateContrast(Qt::ContrastPreference contrast);
+    void updateMotion(Qt::MotionPreference motion);
 
 Q_SIGNALS:
     void colorSchemeChanged(Qt::ColorScheme);
     void contrastChanged(Qt::ContrastPreference);
+    void motionChanged(Qt::MotionPreference);
     void themeNameChanged(const QString &themeName);
 
 private Q_SLOTS:
@@ -53,6 +57,7 @@ private:
     mutable uint m_version = 0; // cached version value
     std::optional<Qt::ColorScheme> m_colorScheme;
     std::optional<Qt::ContrastPreference> m_contrast;
+    std::optional<Qt::MotionPreference> m_motion;
     std::unique_ptr<QDBusListener> m_dbus;
     static constexpr QLatin1StringView s_service{ "org.freedesktop.portal.Desktop" };
     static constexpr QLatin1StringView s_path{ "/org/freedesktop/portal/desktop" };

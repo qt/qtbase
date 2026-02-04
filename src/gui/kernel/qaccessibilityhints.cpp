@@ -16,6 +16,16 @@ void QAccessibilityHintsPrivate::updateContrastPreference(Qt::ContrastPreference
     emit q->contrastPreferenceChanged(contrastPreference);
 }
 
+void QAccessibilityHintsPrivate::updateMotionPreference(Qt::MotionPreference motionPreference)
+{
+    if (m_motionPreference == motionPreference)
+        return;
+    m_motionPreference = motionPreference;
+
+    Q_Q(QAccessibilityHints);
+    emit q->motionPreferenceChanged(motionPreference);
+}
+
 QAccessibilityHintsPrivate *QAccessibilityHintsPrivate::get(QAccessibilityHints *q)
 {
     Q_ASSERT(q);
@@ -56,6 +66,23 @@ Qt::ContrastPreference QAccessibilityHints::contrastPreference() const
 {
     Q_D(const QAccessibilityHints);
     return d->m_contrastPreference;
+}
+
+/*!
+    \property QAccessibilityHints::motionPreference
+    \brief The motion preference set by the system.
+
+    This property can be used by the application to determine if the user interface should have
+    fewer animated effects. Respecting this preference may make the application more accessible
+    to those that suffer from vestibular motion disorders.
+
+    \sa contrastPreference
+    \since 6.12
+*/
+Qt::MotionPreference QAccessibilityHints::motionPreference() const
+{
+    Q_D(const QAccessibilityHints);
+    return d->m_motionPreference;
 }
 
 /*!

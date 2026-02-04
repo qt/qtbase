@@ -218,6 +218,10 @@ void QDBusListener::populateSignalMap()
     // e.g. when using the XDG portal version 1.
     m_signalMap.insert(DBusKey(GnomeSettings::AllyNamespace, GnomeSettings::ContrastKey),
                        ChangeSignal(Provider::Gnome, Setting::Contrast));
+    m_signalMap.insert(DBusKey(XdgSettings::AppearanceNamespace, XdgSettings::MotionKey),
+                       ChangeSignal(Provider::Gnome, Setting::Motion));
+    m_signalMap.insert(DBusKey(GnomeSettings::DesktopNamespace, GnomeSettings::MotionKey),
+                       ChangeSignal(Provider::Gnome, Setting::Motion));
 
     const QString &saveJsonFile = qEnvironmentVariable("QT_QPA_DBUS_SIGNALS_SAVE");
     if (!saveJsonFile.isEmpty())
@@ -258,7 +262,15 @@ void QDBusListener::onSettingChanged(const QString &location, const QString &key
         else if (key == GnomeSettings::ContrastKey)
             settingValue.setValue(GnomeSettings::convertContrastPreference(settingValue));
         else
-            Q_UNREACHABLE_IMPL();
+            Q_UNREACHABLE();
+        break;
+    case Setting::Motion:
+        if (key == XdgSettings::MotionKey)
+            settingValue.setValue(XdgSettings::convertMotionPreference(settingValue));
+        else if (key == GnomeSettings::MotionKey)
+            settingValue.setValue(GnomeSettings::convertMotionPreference(settingValue));
+        else
+            Q_UNREACHABLE();
         break;
     default:
         break;

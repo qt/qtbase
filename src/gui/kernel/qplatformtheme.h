@@ -321,6 +321,7 @@ public:
 #endif
     virtual void requestColorScheme(Qt::ColorScheme scheme);
     virtual Qt::ContrastPreference contrastPreference() const;
+    virtual Qt::MotionPreference motionPreference() const;
 
     static QVariant defaultThemeHint(ThemeHint hint);
     static QString defaultStandardButtonText(int button);

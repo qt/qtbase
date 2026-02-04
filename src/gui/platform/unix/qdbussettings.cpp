@@ -18,7 +18,16 @@ Qt::ContrastPreference QDBusSettings::XdgSettings::convertContrastPreference(con
     // 0 for no-preference, and, 1 for high-contrast.
     if (!value.isValid())
         return Qt::ContrastPreference::NoPreference;
-    return static_cast<Qt::ContrastPreference>(value.toUInt());
+    return value.value<Qt::ContrastPreference>();
+}
+
+Qt::MotionPreference QDBusSettings::XdgSettings::convertMotionPreference(const QVariant &value)
+{
+    // XDG portal provides the motion preference value as uint:
+    // 0 for no-preference, and, 1 for reduced motion.
+    if (!value.isValid())
+        return Qt::MotionPreference::NoPreference;
+    return value.value<Qt::MotionPreference>();
 }
 
 Qt::ColorScheme QDBusSettings::XdgSettings::convertColorScheme(const QVariant &value)
@@ -43,6 +52,14 @@ QDBusSettings::GnomeSettings::convertContrastPreference(const QVariant &value)
         return Qt::ContrastPreference::NoPreference;
     return value.toBool() ? Qt::ContrastPreference::HighContrast
                           : Qt::ContrastPreference::NoPreference;
+}
+
+Qt::MotionPreference QDBusSettings::GnomeSettings::convertMotionPreference(const QVariant &value)
+{
+    if (!value.isValid())
+        return Qt::MotionPreference::NoPreference;
+    return value.toBool() ? Qt::MotionPreference::NoPreference
+                          : Qt::MotionPreference::ReducedMotion;
 }
 
 QT_END_NAMESPACE

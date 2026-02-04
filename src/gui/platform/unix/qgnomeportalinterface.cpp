@@ -58,6 +58,14 @@ QGnomePortalInterface::contrastPreference(Qt::ContrastPreference fallback) const
     return m_contrast.value();
 }
 
+Qt::MotionPreference QGnomePortalInterface::motionPreference(Qt::MotionPreference fallback) const
+{
+    if (!m_motion.has_value())
+        return fallback;
+    return m_motion.value();
+}
+
+
 void QGnomePortalInterface::querySettings()
 {
     QDBusConnection dbus = QDBusConnection::sessionBus();
@@ -70,7 +78,8 @@ void QGnomePortalInterface::querySettings()
     auto message = QDBusMessage::createMethodCall(s_service, s_path, s_interface, method);
 
     message << QStringList{ QDBusSettings::XdgSettings::AppearanceNamespace,
-                            QDBusSettings::GnomeSettings::AllyNamespace };
+                            QDBusSettings::GnomeSettings::AllyNamespace,
+                            QDBusSettings::GnomeSettings::DesktopNamespace };
 
     QDBusPendingCall pendingCall = dbus.asyncCall(message);
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(pendingCall, this);
@@ -95,10 +104,21 @@ void QGnomePortalInterface::querySettings()
             return QVariant::fromValue(convertContrastPreference(value));
         };
 
+        constexpr auto XdgMotionKey = QDBusSettings::XdgSettings::MotionKey;
+        const auto convertXdgMotion = [](const QVariant &value) {
+            return QVariant::fromValue(QDBusSettings::XdgSettings::convertMotionPreference(value));
+        };
+
         constexpr auto GnomeContrastKey = QDBusSettings::GnomeSettings::ContrastKey;
-        const auto convrtGnomeContrast = [](const QVariant &value) {
+        const auto convertGnomeContrast = [](const QVariant &value) {
             using namespace QDBusSettings::GnomeSettings;
             return QVariant::fromValue(convertContrastPreference(value));
+        };
+
+        constexpr auto GnomeMotionKey = QDBusSettings::GnomeSettings::MotionKey;
+        const auto convertGnomeMotion = [](const QVariant &value) {
+            using namespace QDBusSettings::GnomeSettings;
+            return QVariant::fromValue(convertMotionPreference(value));
         };
 
         const QVariantList &args = reply.arguments();
@@ -124,7 +144,17 @@ void QGnomePortalInterface::querySettings()
                              && (namespace_ == QDBusSettings::GnomeSettings::AllyNamespace))
                         dbusSettingChanged(QDBusListener::Provider::Gnome,
                                            QDBusListener::Setting::Contrast,
-                                           convrtGnomeContrast(value));
+                                           convertGnomeContrast(value));
+                    else if ((key == XdgMotionKey)
+                             && namespace_ == QDBusSettings::XdgSettings::AppearanceNamespace)
+                        dbusSettingChanged(QDBusListener::Provider::Gnome,
+                                           QDBusListener::Setting::Motion,
+                                           convertXdgMotion(value));
+                    else if ((key == GnomeMotionKey)
+                             && namespace_ ==  QDBusSettings::GnomeSettings::DesktopNamespace)
+                        dbusSettingChanged(QDBusListener::Provider::Gnome,
+                                           QDBusListener::Setting::Motion,
+                                           convertGnomeMotion(value));
                 }
             }
         }
@@ -149,6 +179,14 @@ void QGnomePortalInterface::updateContrast(Qt::ContrastPreference contrast)
     emit contrastChanged(contrast);
 }
 
+void QGnomePortalInterface::updateMotion(Qt::MotionPreference motion)
+{
+    if (m_motion.has_value() && (m_motion.value() == motion))
+        return;
+    m_motion = motion;
+    emit motionChanged(motion);
+}
+
 void QGnomePortalInterface::dbusSettingChanged(QDBusListener::Provider provider,
                                                QDBusListener::Setting setting,
                                                const QVariant &value)
@@ -162,6 +200,9 @@ void QGnomePortalInterface::dbusSettingChanged(QDBusListener::Provider provider,
         break;
     case QDBusListener::Setting::Contrast:
         updateContrast(value.value<Qt::ContrastPreference>());
+        break;
+    case QDBusListener::Setting::Motion:
+        updateMotion(value.value<Qt::MotionPreference>());
         break;
     case QDBusListener::Setting::Theme:
         emit themeNameChanged(value.toString());

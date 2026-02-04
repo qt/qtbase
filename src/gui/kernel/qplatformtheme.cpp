@@ -492,6 +492,11 @@ Qt::ContrastPreference QPlatformTheme::contrastPreference() const
     return Qt::ContrastPreference::NoPreference;
 }
 
+Qt::MotionPreference QPlatformTheme::motionPreference() const
+{
+    return Qt::MotionPreference::NoPreference;
+}
+
 /*!
     \internal
     \brief Return a color palette for type \a type.

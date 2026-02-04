@@ -95,6 +95,8 @@ QGnomeTheme::QGnomeTheme()
 
     QObject::connect(portal, &QGnomePortalInterface::contrastChanged, portal,
                      [this](Qt::ContrastPreference contrast) { updateHighContrast(contrast); });
+    QObject::connect(portal, &QGnomePortalInterface::motionChanged, portal,
+                     [this](Qt::MotionPreference motion){ updateReducedMotion(motion); });
 #endif // QT_CONFIG(dbus)
 }
 
@@ -204,6 +206,12 @@ void QGnomeTheme::updateHighContrast(Qt::ContrastPreference contrast)
     QWindowSystemInterface::handleThemeChange();
 }
 
+void QGnomeTheme::updateReducedMotion(Qt::MotionPreference motion)
+{
+    Q_UNUSED(motion);
+    QWindowSystemInterface::handleThemeChange();
+}
+
 QPlatformMenuBar *QGnomeTheme::createPlatformMenuBar() const
 {
     if (isDBusGlobalMenuAvailable())
@@ -215,6 +223,12 @@ Qt::ContrastPreference QGnomeTheme::contrastPreference() const
 {
     Q_D(const QGnomeTheme);
     return d->m_gnomePortal.contrastPreference();
+}
+
+Qt::MotionPreference QGnomeTheme::motionPreference() const
+{
+    Q_D(const QGnomeTheme);
+    return d->m_gnomePortal.motionPreference();
 }
 
 #  if QT_CONFIG(systemtrayicon)

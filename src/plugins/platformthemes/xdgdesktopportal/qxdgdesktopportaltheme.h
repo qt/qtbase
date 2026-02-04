@@ -37,6 +37,7 @@ public:
 
     Qt::ColorScheme colorScheme() const override;
     Qt::ContrastPreference contrastPreference() const override;
+    Qt::MotionPreference motionPreference() const override;
 
     QPixmap standardPixmap(StandardPixmap sp, const QSizeF &size) const override;
     QIcon fileIcon(const QFileInfo &fileInfo,

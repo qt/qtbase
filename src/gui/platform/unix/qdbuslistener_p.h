@@ -40,6 +40,7 @@ public:
         ApplicationStyle,
         ColorScheme,
         Contrast,
+        Motion
     };
     Q_ENUM(Setting)
 

@@ -527,6 +527,12 @@ Qt::ContrastPreference QCocoaTheme::contrastPreference() const
                                                                                   : Qt::ContrastPreference::NoPreference;
 }
 
+Qt::MotionPreference QCocoaTheme::motionPreference() const
+{
+    return NSWorkspace.sharedWorkspace.accessibilityDisplayShouldReduceMotion ? Qt::MotionPreference::ReducedMotion
+                                                                              : Qt::MotionPreference::NoPreference;
+}
+
 QString QCocoaTheme::standardButtonText(int button) const
 {
     return button == QPlatformDialogHelper::Discard ?

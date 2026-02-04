@@ -752,7 +752,9 @@ void QStyleHintsPrivate::update(const QPlatformTheme *theme)
 {
     Q_ASSERT(theme);
     updateColorScheme(theme->colorScheme());
-    QAccessibilityHintsPrivate::get(accessibilityHints())->updateContrastPreference(theme->contrastPreference());
+    auto *accessibilityHintsPrivate = QAccessibilityHintsPrivate::get(accessibilityHints());
+    accessibilityHintsPrivate->updateContrastPreference(theme->contrastPreference());
+    accessibilityHintsPrivate->updateMotionPreference(theme->motionPreference());
 }
 
 QAccessibilityHints *QStyleHintsPrivate::accessibilityHints() const

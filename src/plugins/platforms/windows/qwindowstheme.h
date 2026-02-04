@@ -34,6 +34,7 @@ public:
     Qt::ColorScheme colorScheme() const override;
     void requestColorScheme(Qt::ColorScheme scheme) override;
     Qt::ContrastPreference contrastPreference() const override;
+    Qt::MotionPreference motionPreference() const override;
 
     static void handleThemeChange();
 

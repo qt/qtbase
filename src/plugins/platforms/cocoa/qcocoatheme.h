@@ -41,6 +41,7 @@ public:
     QVariant themeHint(ThemeHint hint) const override;
     Qt::ColorScheme colorScheme() const override;
     Qt::ContrastPreference contrastPreference() const override;
+    Qt::MotionPreference motionPreference() const override;
     QString standardButtonText(int button) const override;
     QKeySequence standardButtonShortcut(int button) const override;
 

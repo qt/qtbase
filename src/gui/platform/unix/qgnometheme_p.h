@@ -50,10 +50,12 @@ public:
 protected:
     virtual void updateColorScheme(Qt::ColorScheme);
     virtual void updateHighContrast(Qt::ContrastPreference);
+    virtual void updateReducedMotion(Qt::MotionPreference);
 
 public:
     QPlatformMenuBar *createPlatformMenuBar() const override;
     Qt::ContrastPreference contrastPreference() const override;
+    Qt::MotionPreference motionPreference() const override;
 
 #  if QT_CONFIG(systemtrayicon)
     QPlatformSystemTrayIcon *createPlatformSystemTrayIcon() const override;

@@ -145,6 +145,10 @@ void QKdeThemePrivate::settingChangedHandler(QDBusListener::Provider provider,
         qCDebug(lcQpaThemeKde) << "KDE contrast setting changed to: "
                                << value.value<Qt::ContrastPreference>();
         break;
+    case QDBusListener::Setting::Motion:
+        qCDebug(lcQpaThemeKde) << "KDE motion setting changed to: "
+                               << value.value<Qt::MotionPreference>();
+        break;
     }
 
     refresh();

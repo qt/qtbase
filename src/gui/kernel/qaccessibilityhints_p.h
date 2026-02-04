@@ -26,10 +26,12 @@ class QAccessibilityHintsPrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QAccessibilityHints)
 public:
     void updateContrastPreference(Qt::ContrastPreference contrastPreference);
+    void updateMotionPreference(Qt::MotionPreference motionPreference);
 
     static QAccessibilityHintsPrivate *get(QAccessibilityHints *q);
 private:
     Qt::ContrastPreference m_contrastPreference = Qt::ContrastPreference::NoPreference;
+    Qt::MotionPreference m_motionPreference = Qt::MotionPreference::NoPreference;
 };
 
 QT_END_NAMESPACE

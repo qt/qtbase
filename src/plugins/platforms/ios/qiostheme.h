@@ -27,6 +27,7 @@ public:
     Qt::ColorScheme colorScheme() const override;
     void requestColorScheme(Qt::ColorScheme scheme) override;
     Qt::ContrastPreference contrastPreference() const override;
+    Qt::MotionPreference motionPreference() const override;
 
 #if !defined(Q_OS_TVOS) && !defined(Q_OS_VISIONOS)
     QPlatformMenuItem* createPlatformMenuItem() const override;
@@ -49,6 +50,7 @@ private:
     static QPalette s_systemPalette;
     static inline Qt::ColorScheme s_colorSchemeOverride = Qt::ColorScheme::Unknown;
     QMacNotificationObserver m_contentSizeCategoryObserver;
+    QMacNotificationObserver m_motionPreferenceObserver;
 };
 
 QT_END_NAMESPACE
