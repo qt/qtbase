@@ -129,7 +129,8 @@ public:
 
     inline QResourceRoot(): tree(nullptr), names(nullptr), payloads(nullptr), version(0) {}
     inline QResourceRoot(int version, const uchar *t, const uchar *n, const uchar *d) { setSource(version, t, n, d); }
-    virtual ~QResourceRoot() { }
+    virtual ~QResourceRoot() = default;
+    Q_DISABLE_COPY_MOVE(QResourceRoot)
     int findNode(const QString &path, const QLocale &locale=QLocale()) const;
     inline bool isContainer(int node) const { return flags(node) & Directory; }
     QResource::Compression compressionAlgo(int node)
@@ -172,8 +173,6 @@ static QString cleanPath(const QString &_path)
     return path;
 }
 } // unnamed namespace
-
-Q_DECLARE_TYPEINFO(QResourceRoot, Q_RELOCATABLE_TYPE);
 
 typedef QList<QResourceRoot*> ResourceList;
 namespace {
