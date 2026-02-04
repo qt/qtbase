@@ -52,9 +52,9 @@ Window::Window(QWidget *parent)
 bool Window::event(QEvent *event)
 {
     if (event->type() == QEvent::ToolTip) {
-        QHelpEvent *helpEvent = static_cast<QHelpEvent *>(event);
+        auto *helpEvent = static_cast<QHelpEvent *>(event);
         if (Element *element = elementAt(helpEvent->pos())) {
-            QToolTip::showText(helpEvent->globalPos(), element->toolTip());
+            QToolTip::showText(helpEvent->globalPos(), element->toolTip(), this);
         } else {
             QToolTip::hideText();
             event->ignore();
