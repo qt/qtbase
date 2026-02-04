@@ -1272,8 +1272,9 @@ static inline int getInt(QDataStream &stream)
 }
 
 
-bool QToolBarAreaLayout::restoreState(QDataStream &stream, const QList<QToolBar*> &_toolBars, uchar tmarker, bool testing)
+bool QToolBarAreaLayout::restoreState(QDataStream &stream, const QList<QToolBar*> &_toolBars, uchar tmarker, QInternal::CallMode callMode)
 {
+    const bool testing = callMode == QInternal::Testing;
     QList<QToolBar*> toolBars = _toolBars;
     int lines;
     stream >> lines;

@@ -179,7 +179,7 @@ public:
     QLayoutItem *unplug(const QList<int> &path, QToolBarAreaLayout *other);
 
     void saveState(QDataStream &stream) const;
-    bool restoreState(QDataStream &stream, const QList<QToolBar*> &toolBars, uchar tmarker, bool testing = false);
+    bool restoreState(QDataStream &stream, const QList<QToolBar*> &toolBars, uchar tmarker, QInternal::CallMode callMode);
     bool isEmpty() const;
 };
 

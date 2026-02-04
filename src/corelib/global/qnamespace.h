@@ -1893,6 +1893,16 @@ public:
         DockCount
     };
 
+    enum CallMode {
+        Testing,
+        Live,
+    };
+
+    enum SaveStateRule {
+        KeepSavedState,
+        ClearSavedState,
+    };
+
     enum Callback {
         EventNotifyCallback,
         LastCallback

@@ -924,7 +924,7 @@ void tst_QDockWidget::dockLocationChanged()
     QCOMPARE(dockLocation(&spy), Qt::TopDockWidgetArea);
     spy.clear();
 
-    QByteArray ba = mw.saveState();
+    const QByteArray &ba = mw.saveState();
     mw.restoreState(ba);
     QCOMPARE(spy.size(), 1);
     QCOMPARE(dockLocation(&spy), Qt::TopDockWidgetArea);

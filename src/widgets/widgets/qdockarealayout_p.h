@@ -45,7 +45,7 @@ class QTabBar;
 // which then has one QDockAreaLayoutInfo as a child. (QDockAreaLayoutItem::subInfo) or
 // a widgetItem if this is a node of the tree (QDockAreaLayoutItem::widgetItem)
 //
-// A path indetifies uniquely one object in this tree, the first number being the side and all the following
+// A path identifies uniquely one object in this tree, the first number being the side and all the following
 // indexes into the QDockAreaLayoutInfo::item_list.
 
 struct Q_AUTOTEST_EXPORT QDockAreaLayoutItem
@@ -125,7 +125,7 @@ public:
         WidgetMarker = 0xfb
     };
     void saveState(QDataStream &stream) const;
-    bool restoreState(QDataStream &stream, QList<QDockWidget*> &widgets, bool testing);
+    bool restoreState(QDataStream &stream, QList<QDockWidget*> &widgets, QInternal::CallMode);
 
     void fitItems();
     bool expansive(Qt::Orientation o) const;
@@ -216,7 +216,7 @@ public:
     enum { DockWidgetStateMarker = 0xfd, FloatingDockWidgetTabMarker = 0xf9 };
     static QRect constrainedRect(QRect rect, QWidget *widget);
     void saveState(QDataStream &stream) const;
-    bool restoreState(QDataStream &stream, const QList<QDockWidget*> &widgets, bool testing = false);
+    bool restoreState(QDataStream &stream, const QList<QDockWidget*> &_dockWidgets, QInternal::CallMode callMode);
 
     QList<int> indexOfPlaceHolder(const QString &objectName) const;
     QList<int> indexOf(const QWidget *dockWidget) const;
