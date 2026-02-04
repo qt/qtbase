@@ -39,10 +39,12 @@ public:
 
     void requestActivateWindow() override;
 
+protected:
+    bool windowEvent(QEvent *event) override;
+
 private:
     void tryAcquireNativeSurfaceIfNeeded();
     void updateWindowGeometryFromView(QOhosView &view);
-    void updateWindowGeometryFromSurface();
     void restoreWindowCurrentCursorIfNeeded();
     void onWindowFlagsChanged(
         Qt::WindowFlags previousWindowFlags, Qt::WindowFlags currentWindowFlags) override;
@@ -51,6 +53,8 @@ private:
 
     void internalHijackSystemFocusAsPopup();
     void focusHijackingPopupHidden();
+    void startAsyncWaitForNodeResizeIfNeeded();
+    void handleNodeResizeEvent(const QArkUi::QQtEmbeddedWindowNode::NodeAreaInfo &areaChangeEvent);
 
     void handleWindowEvent(QOhosWindowProxy::WindowEvent evt);
     void handleWindowStatusChange(QOhosWindowProxy::WindowStatus evt);
@@ -65,9 +69,9 @@ private:
     QOhosOptional<QOhosWindowProxy::WindowEventType> m_lastWindowEventType;
     QOhosOptional<QOhosWindowProxy::WindowStatusType> m_lastWindowStatusType;
     QOhosOptional<QRegion> m_windowMask;
-    QOhosOptional<QOhosWindowProxy::RectChangeOptions> m_lastRectChangeOptions;
     QOhosOptional<QSize> m_optLastSurfaceSize;
     QMap<QOhosWindowProxy::AvoidAreaType, QOhosWindowProxy::AvoidArea> m_avoidAreaCache;
+    QBasicTimer m_geometryChangeTimer;
 };
 
 QT_END_NAMESPACE

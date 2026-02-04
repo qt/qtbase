@@ -145,6 +145,12 @@ void QOhosFloatingWindow::initialize()
         qWindow, &QOhosPlatformWindow::closeAllActivePopups);
 
     QObject::connect(
+        m_view.get(), &QOhosView::nodeAreaChanged, m_view.get(),
+        [this](QArkUi::QQtEmbeddedWindowNode::NodeAreaInfo event) {
+            handleNodeResizeEvent(event);
+        });
+
+    QObject::connect(
         m_view.get(), &QOhosView::windowEvent,
         qWindow,
         [this](QOhosWindowProxy::WindowEvent evt) { handleWindowEvent(evt); });
@@ -261,18 +267,6 @@ void QOhosFloatingWindow::updateWindowGeometryFromView(QOhosView &view)
 
     if (windowFrameGeometry() != viewGeometry.frameGeometry)
         setWindowGeometryFromOhos(viewGeometry.geometry);
-}
-
-void QOhosFloatingWindow::updateWindowGeometryFromSurface()
-{
-    if (!m_lastRectChangeOptions.hasValue())
-        return;
-
-    auto drawableRect = m_lastRectChangeOptions.value().rect.marginsRemoved(frameMargins());
-    setWindowGeometryFromOhos(
-        QRect(
-            drawableRect.topLeft(),
-            m_optLastSurfaceSize.valueOr(drawableRect.size())));
 }
 
 void QOhosFloatingWindow::restoreWindowCurrentCursorIfNeeded()
@@ -401,7 +395,7 @@ void QOhosFloatingWindow::handleWindowEvent(QOhosWindowProxy::WindowEvent evt)
         if (previousWindowEventType == QOhosWindowProxy::WindowEventType::WINDOW_HIDDEN && !qWindow->isVisible())
             qWindow->setVisible(true);
         setExposedRegionFromGeometry();
-        updateWindowGeometryFromView(*m_view);
+        startAsyncWaitForNodeResizeIfNeeded();
         break;
     case QOhosWindowProxy::WindowEventType::WINDOW_DESTROYED:
         windowActive = false;
@@ -527,7 +521,8 @@ void QOhosFloatingWindow::handleSurfaceStatusChanged(const QOhosOptional<QSize> 
             clearExposed();
     }
 
-    updateWindowGeometryFromSurface();
+    if (hasSurface)
+        startAsyncWaitForNodeResizeIfNeeded();
 }
 
 void QOhosFloatingWindow::handleWindowDisplayIdChanged(QOhosDisplayInfo::JsDisplayId displayId)
@@ -538,41 +533,58 @@ void QOhosFloatingWindow::handleWindowDisplayIdChanged(QOhosDisplayInfo::JsDispl
 void QOhosFloatingWindow::handleWindowRectChanged(
     const QOhosWindowProxy::RectChangeOptions &rectChangeOptions)
 {
-    bool shouldUpdateWindowGeometryFromView = true;
-    bool needsCloseAllActivePopups = false;
-    m_lastRectChangeOptions = rectChangeOptions;
+    bool needsCloseAllActivePopups = rectChangeOptions.reason == QOhosWindowProxy::RectChangeReason::DRAG_START;
 
     qCDebug(QtForOhos)
         << "windowRectChanged window:" << window()
         << "rect:" << rectChangeOptions.rect
         << "reason:" << static_cast<int>(rectChangeOptions.reason);
 
-    switch (rectChangeOptions.reason) {
-    case QOhosWindowProxy::RectChangeReason::UNDEFINED:
-    case QOhosWindowProxy::RectChangeReason::MAXIMIZE:
-        break;
-    case QOhosWindowProxy::RectChangeReason::DRAG_START:
-        shouldUpdateWindowGeometryFromView = false;
-        needsCloseAllActivePopups = true;
-        break;
-    case QOhosWindowProxy::RectChangeReason::RECOVER:
-    case QOhosWindowProxy::RectChangeReason::MOVE:
-    case QOhosWindowProxy::RectChangeReason::DRAG:
-    case QOhosWindowProxy::RectChangeReason::DRAG_END:
-        shouldUpdateWindowGeometryFromView = false;
-        break;
-    }
-
-    if (shouldUpdateWindowGeometryFromView)
-        updateWindowGeometryFromView(*m_view);
-    else
-        updateWindowGeometryFromSurface();
+    startAsyncWaitForNodeResizeIfNeeded();
 
     if (isWindowRotatedByTabletScreenRotation(window(), rectChangeOptions))
         needsCloseAllActivePopups = true;
 
     if (needsCloseAllActivePopups)
         QOhosPlatformWindow::closeAllActivePopups();
+}
+
+bool QOhosFloatingWindow::windowEvent(QEvent *event)
+{
+    if (event->type() == QEvent::Timer) {
+        auto *timerEvent = static_cast<QTimerEvent *>(event);
+        if (m_view && timerEvent->timerId() == m_geometryChangeTimer.timerId()) {
+            auto syntheticEvent = m_view->nodeAreaInfo();
+            handleNodeResizeEvent(syntheticEvent);
+        }
+    }
+
+    return QOhosPlatformWindow::windowEvent(event);
+}
+
+void QOhosFloatingWindow::startAsyncWaitForNodeResizeIfNeeded()
+{
+    constexpr auto geometryChangeEventTimeoutMs = std::chrono::milliseconds(16);
+
+    if (!m_geometryChangeTimer.isActive()) {
+        m_geometryChangeTimer.start(
+            geometryChangeEventTimeoutMs.count(),
+            Qt::PreciseTimer,
+            window());
+    }
+}
+
+void QOhosFloatingWindow::handleNodeResizeEvent(const QArkUi::QQtEmbeddedWindowNode::NodeAreaInfo &areaChangeEvent)
+{
+    m_geometryChangeTimer.stop();
+
+    if (Q_UNLIKELY(!m_view))
+        return;
+
+    setWindowGeometryFromOhos(
+        m_view->viewType() != QOhosView::ViewType::EmbeddedWindow
+            ? areaChangeEvent.screenGeometryPixels
+            : QRect(areaChangeEvent.parentRelativeOffsetPixels, areaChangeEvent.screenGeometryPixels.size()));
 }
 
 QT_END_NAMESPACE
