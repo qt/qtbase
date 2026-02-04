@@ -38,7 +38,6 @@ class Q_NETWORK_EXPORT QAbstractSocket : public QIODevice
         QT7_ONLY(, public QtPrivate::QAbstractSocketConstants)
 {
     Q_OBJECT
-    Q_MOC_INCLUDE(<QtNetwork/qauthenticator.h>)
 
 public:
     enum SocketType {
