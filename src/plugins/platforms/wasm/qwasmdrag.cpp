@@ -14,6 +14,9 @@
 #include <QtCore/qeventloop.h>
 #include <QtCore/qmimedata.h>
 #include <QtCore/qtimer.h>
+#include <QtGui/QPainter>
+#include <QtGui/QImage>
+#include <QtGui/QPixmap>
 #include <QFile>
 
 #include <private/qshapedpixmapdndwindow_p.h>
@@ -52,16 +55,18 @@ struct QWasmDrag::DragState
         DragImage(const QPixmap &pixmap, const QMimeData *mimeData, QWindow *window);
         ~DragImage();
 
-        emscripten::val htmlElement();
+        emscripten::val htmlElement() { return m_imageDomElement; }
+        QPixmap pixmap() const { return m_pixmap; }
 
     private:
-        emscripten::val generateDragImage(const QPixmap &pixmap, const QMimeData *mimeData);
-        emscripten::val generateDragImageFromText(const QMimeData *mimeData);
-        emscripten::val generateDefaultDragImage();
-        emscripten::val generateDragImageFromPixmap(const QPixmap &pixmap);
+        void generateDragImage(const QPixmap &pixmap, const QMimeData *mimeData);
+        void generateDragImageFromText(const QMimeData *mimeData);
+        void generateDefaultDragImage();
+        void generateDragImageFromPixmap(const QPixmap &pixmap);
 
-        emscripten::val m_imageDomElement;
-        emscripten::val m_temporaryImageElementParent;
+        emscripten::val m_imageDomElement = emscripten::val::undefined();
+        emscripten::val m_temporaryImageElementParent = emscripten::val::undefined();
+        QPixmap         m_pixmap;
     };
 
     DragState(QDrag *drag, QWindow *window, std::function<void()> quitEventLoopClosure);
@@ -94,13 +99,21 @@ Qt::DropAction QWasmDrag::drag(QDrag *drag)
     QWindow *window = windowForDrag(drag);
 
     Qt::DropAction dragResult = Qt::IgnoreAction;
-    if (window && qstdweb::haveAsyncify()) {
-        m_dragState = std::make_unique<DragState>(drag, window, [this]() { QSimpleDrag::cancelDrag();  });
-        dragResult = QSimpleDrag::drag(drag);
-        m_dragState.reset();
-    } else {
-        dragResult = QBasicDrag::drag(drag);
-    }
+    if (!qstdweb::haveAsyncify())
+        return dragResult;
+
+    auto dragState = std::make_shared<DragState>(drag, window, [this]() { QSimpleDrag::cancelDrag();  });
+
+    if (!m_isInEnterDrag)
+        m_dragState = dragState;
+
+    if (m_isInEnterDrag)
+        drag->setPixmap(QPixmap());
+    else if (drag->pixmap().size() == QSize(0, 0))
+        drag->setPixmap(dragState->dragImage->pixmap());
+
+    dragResult = QSimpleDrag::drag(drag);
+    m_dragState.reset();
 
     return dragResult;
 }
@@ -121,8 +134,6 @@ void QWasmDrag::onNativeDragStarted(DragEvent *event)
     if (shapedPixmapWindow())
         shapedPixmapWindow()->setVisible(false);
 
-    m_dragState->dragImage = std::make_unique<DragState::DragImage>(
-            m_dragState->drag->pixmap(), m_dragState->drag->mimeData(), event->targetWindow);
     event->dataTransfer.setDragImage(m_dragState->dragImage->htmlElement(),
                                      m_dragState->drag->hotSpot());
     event->dataTransfer.setDataFromMimeData(*m_dragState->drag->mimeData());
@@ -252,9 +263,11 @@ void QWasmDrag::onNativeDragEnter(DragEvent *event)
 
     setExecutedDropAction(event->dropAction);
 
+    m_isInEnterDrag = true;
     QDrag *drag = new QDrag(this);
     drag->setMimeData(new QMimeData());
     drag->exec(Qt::CopyAction | Qt::MoveAction, Qt::CopyAction);
+    m_isInEnterDrag = false;
 }
 
 void QWasmDrag::onNativeDragLeave(DragEvent *event)
@@ -263,36 +276,52 @@ void QWasmDrag::onNativeDragLeave(DragEvent *event)
     if (m_dragState)
         m_dragState->dropAction = event->dropAction;
     setExecutedDropAction(event->dropAction);
+
     event->dataTransfer.setDropAction(Qt::DropAction::IgnoreAction);
+
+    // If we started the drag from  onNativeDragEnter
+    // it is correct to cancel the drag.
+    if (m_isInEnterDrag)
+        cancelDrag();
 }
 
 QWasmDrag::DragState::DragImage::DragImage(const QPixmap &pixmap, const QMimeData *mimeData,
                                            QWindow *window)
-    : m_temporaryImageElementParent(QWasmWindow::fromWindow(window)->containerElement())
 {
-    m_imageDomElement = generateDragImage(pixmap, mimeData);
+    if (window)
+        m_temporaryImageElementParent = QWasmWindow::fromWindow(window)->containerElement();
+    generateDragImage(pixmap, mimeData);
 
     m_imageDomElement.set("className", "hidden-drag-image");
-    m_temporaryImageElementParent.call<void>("appendChild", m_imageDomElement);
+
+    // chromium requires the image to be the first child
+    if (m_temporaryImageElementParent.isUndefined())
+        ;
+    else if (m_temporaryImageElementParent["childElementCount"].as<int>() == 0)
+        m_temporaryImageElementParent.call<void>("appendChild", m_imageDomElement);
+    else
+        m_temporaryImageElementParent.call<void>("insertBefore", m_imageDomElement, m_temporaryImageElementParent["children"][0]);
 }
 
 QWasmDrag::DragState::DragImage::~DragImage()
 {
-    m_temporaryImageElementParent.call<void>("removeChild", m_imageDomElement);
+    if (!m_temporaryImageElementParent.isUndefined())
+        m_temporaryImageElementParent.call<void>("removeChild", m_imageDomElement);
 }
 
-emscripten::val QWasmDrag::DragState::DragImage::generateDragImage(const QPixmap &pixmap,
-                                                                   const QMimeData *mimeData)
+void QWasmDrag::DragState::DragImage::generateDragImage(
+    const QPixmap &pixmap,
+    const QMimeData *mimeData)
 {
     if (!pixmap.isNull())
-        return generateDragImageFromPixmap(pixmap);
-    if (mimeData->hasFormat("text/plain"))
-        return generateDragImageFromText(mimeData);
-    return generateDefaultDragImage();
+        generateDragImageFromPixmap(pixmap);
+    else if (mimeData && mimeData->hasFormat("text/plain"))
+        generateDragImageFromText(mimeData);
+    else
+        generateDefaultDragImage();
 }
 
-emscripten::val
-QWasmDrag::DragState::DragImage::generateDragImageFromText(const QMimeData *mimeData)
+void QWasmDrag::DragState::DragImage::generateDragImageFromText(const QMimeData *mimeData)
 {
     emscripten::val dragImageElement =
             emscripten::val::global("document")
@@ -304,10 +333,24 @@ QWasmDrag::DragState::DragImage::generateDragImageFromText(const QMimeData *mime
     dragImageElement.set(
             "innerText",
             text.first(qMin(qsizetype(MaxCharactersInDragImage), text.length())).toStdString());
-    return dragImageElement;
+
+    QRect bounds;
+    {
+        QPixmap image(QSize(1000,1000));
+        QPainter painter(&image);
+        bounds = painter.boundingRect(0, 0, 1000, 1000, 0, text);
+    }
+    QImage image(bounds.size(), QImage::Format_RGBA8888);
+    QPainter painter(&image);
+    painter.fillRect(bounds, QColor(255,255,255, 255)); // Transparency does not work very well :-(
+    painter.setPen(Qt::black);
+    painter.drawText(bounds, text);
+
+    m_pixmap = QPixmap::fromImage(image);
+    m_imageDomElement = dragImageElement;
 }
 
-emscripten::val QWasmDrag::DragState::DragImage::generateDefaultDragImage()
+void QWasmDrag::DragState::DragImage::generateDefaultDragImage()
 {
     emscripten::val dragImageElement =
             emscripten::val::global("document")
@@ -327,10 +370,21 @@ emscripten::val QWasmDrag::DragState::DragImage::generateDefaultDragImage()
     dragImageElement["style"].set("display", "flex");
 
     dragImageElement.call<void>("appendChild", innerImgElement);
-    return dragImageElement;
+
+    QByteArray pixmap_ba =
+        QByteArray::fromBase64(
+            QString::fromLatin1(
+                Base64IconStore::get()->getIcon(
+                    Base64IconStore::IconType::QtLogo)).toLocal8Bit());
+
+    if (!m_pixmap.loadFromData(pixmap_ba))
+        qWarning() << " Load of Qt logo failed";
+
+    m_pixmap = m_pixmap.scaled(50, 50);
+    m_imageDomElement = dragImageElement;
 }
 
-emscripten::val QWasmDrag::DragState::DragImage::generateDragImageFromPixmap(const QPixmap &pixmap)
+void QWasmDrag::DragState::DragImage::generateDragImageFromPixmap(const QPixmap &pixmap)
 {
     emscripten::val dragImageElement =
             emscripten::val::global("document")
@@ -351,18 +405,19 @@ emscripten::val QWasmDrag::DragState::DragImage::generateDragImageFromPixmap(con
                                       imageData, QRect(0, 0, pixmap.width(), pixmap.height()));
     context2d.call<void>("putImageData", imageData, emscripten::val(0), emscripten::val(0));
 
-    return dragImageElement;
-}
-
-emscripten::val QWasmDrag::DragState::DragImage::htmlElement()
-{
-    return m_imageDomElement;
+    m_pixmap = pixmap;
+    m_imageDomElement = dragImageElement;
 }
 
 QWasmDrag::DragState::DragState(QDrag *drag, QWindow *window,
                                 std::function<void()> quitEventLoopClosure)
     : drag(drag), window(window), quitEventLoopClosure(std::move(quitEventLoopClosure))
 {
+    dragImage =
+        std::make_unique<DragState::DragImage>(
+            drag->pixmap(),
+            drag->mimeData(),
+            window);
 }
 
 QWasmDrag::DragState::~DragState() = default;

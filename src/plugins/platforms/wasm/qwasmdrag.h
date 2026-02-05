@@ -41,7 +41,7 @@ public:
 
 private:
     struct DragState;
-
+    bool m_isInEnterDrag = false;
     std::shared_ptr<DragState> m_dragState;
 };
 
