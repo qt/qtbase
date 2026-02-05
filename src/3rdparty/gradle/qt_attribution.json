@@ -4,13 +4,13 @@
     "QDocModule": "qtcore",
     "QtParts": ["tools"],
     "Homepage": "https://gradle.org",
-    "Version": "8.14.3",
-    "DownloadLocation": "https://github.com/gradle/gradle/releases/tag/v8.14.3",
+    "Version": "9.3.1",
+    "DownloadLocation": "https://github.com/gradle/gradle/releases/tag/v9.3.1",
     "PURL": "pkg:github/gradle/gradle@v$<VERSION>",
     "CPE": "cpe:2.3:a:gradle:gradle:$<VERSION>:*:*:*:*:*:*:*",
     "QtUsage": "Needed to create Android packages",
     "License": "Apache License 2.0",
     "LicenseId": "Apache-2.0",
     "LicenseFile": "LICENSE",
-    "Copyright": "Copyright (C) 2024 Gradle Inc."
+    "Copyright": "Copyright (C) 2025 Gradle Inc."
 }
