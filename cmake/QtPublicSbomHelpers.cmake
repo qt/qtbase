@@ -798,6 +798,7 @@ function(_qt_internal_sbom_end_project)
     set_property(GLOBAL PROPERTY _qt_known_external_documents "")
     foreach(external_document IN LISTS known_external_documents)
         set_property(GLOBAL PROPERTY _qt_known_external_documents_${external_document} "")
+        set_property(GLOBAL PROPERTY _qt_known_external_documents_${external_document}_target "")
     endforeach()
 
     set_property(GLOBAL PROPERTY _qt_internal_sbom_repo_begin_called FALSE)
