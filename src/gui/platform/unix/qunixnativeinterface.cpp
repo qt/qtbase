@@ -137,7 +137,7 @@ QOpenGLContext *QNativeInterface::QGLXContext::fromNative(GLXContext visualBased
     this function can only be expected to have an effect on certain platforms,
     such as eglfs.
 
-    \sa QOpenGLContext::isValid(), QPlatformWindow::invalidateSurface()
+    \sa QOpenGLContext::isValid()
 */
 
 QT_DEFINE_NATIVE_INTERFACE(QEGLContext);
