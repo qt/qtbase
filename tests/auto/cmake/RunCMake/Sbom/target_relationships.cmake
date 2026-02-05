@@ -9,17 +9,21 @@ _qt_internal_setup_sbom(
 
 # This is used by common_result_gen.cmake.
 set(SBOM_VERSION "1.0.0")
+set(SBOM_PROJECT_NAME "TargetRels")
 
 _qt_internal_sbom_begin_project(
+    SBOM_PROJECT_NAME "${SBOM_PROJECT_NAME}"
     SUPPLIER "QtProjectTest"
     SUPPLIER_URL "https://qt-project.org/SbomTest"
     VERSION "${SBOM_VERSION}"
 )
 
+include(CMakePackageConfigHelpers)
 function(create_sbom_lib_target target)
     add_library(${target} STATIC)
     target_sources(${target} PRIVATE sources/utils_helper.cpp)
     install(TARGETS ${target}
+        EXPORT MainTargets
         ARCHIVE DESTINATION lib
     )
     _qt_internal_add_sbom(${target}
@@ -28,6 +32,21 @@ function(create_sbom_lib_target target)
         ARCHIVE_PATH lib
         LIBRARY_PATH lib
     )
+
+    # The installation bits are needed for the follow-up test which creates relationships on
+    # targets from external documents.
+    install(EXPORT MainTargets
+        NAMESPACE Main::
+        DESTINATION lib/cmake/Main
+    )
+    configure_package_config_file(
+        "${CMAKE_CURRENT_SOURCE_DIR}/MainConfig.cmake.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/MainConfig.cmake"
+        INSTALL_DESTINATION lib/cmake/Main
+    )
+
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/MainConfig.cmake
+            DESTINATION lib/cmake/Main )
 
     # This is used the by spdx and cydx deps checking code.
     _qt_internal_sbom_get_spdx_id_for_target(${target} ${target}_spdx_id)

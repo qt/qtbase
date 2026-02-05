@@ -541,22 +541,29 @@ Relationship: ${arg_RELATIONSHIP}
     set_property(GLOBAL APPEND PROPERTY _qt_sbom_cmake_include_files "${file_sbom_to_install}")
 endfunction()
 
-# Helper to add a reference to an external SPDX document.
+# Helper to add a reference to an external SPDX v2 document.
 #
 # EXTERNAL_DOCUMENT_SPDX_ID: The spdx id by which the external document should be referenced in
 # the current project SPDX document. This semantically serves as a pointer to the external document
 # URI.
 # e.g. DocumentRef-qtbase.
 #
-# EXTERNAL_DOCUMENT_FILE_PATH: The relative file path of the external sbom document.
-# e.g. "sbom/qtbase-6.9.0.spdx"
+# SBOM_FORMAT: Type of SPDX file, SPDX_V2_TAG_VALUE or SPDX_V2_JSON.
 #
+# EXTERNAL_DOCUMENT_NAMESPACE: Explicit SPDX namespace to embed, instead of parsing the file passed
+# in EXTERNAL_DOCUMENT_FILE_PATH.
+#
+# EXTERNAL_DOCUMENT_SHA1: Explicit sha1 to embed, instead of calculating it from the file passed
+# in EXTERNAL_DOCUMENT_FILE_PATH.
+#
+# EXTERNAL_DOCUMENT_FILE_PATH: An absolute or relative file path of the external sbom document.
+# In case of a relative file path, it will be searched for in the directories specified by the
+# EXTERNAL_DOCUMENT_INSTALL_PREFIXES option.
+# e.g. "sbom/qtbase-6.9.0.spdx"
 # Can contain generator expressions.
-# The file path is searched for in the directories specified by the
-# EXTERNAL_DOCUMENT_INSTALL_PREFIXES option during sbom generation, to compute the file checksum.
-# The file path is NOT embedded into the current project spdx document.
-# Only its spdx id and namespace is embedded. The namespace is extracted from the contents of the
-# referenced file.
+# The file path is NOT embedded into the current project spdx document. Only the document ref id,
+# spdx namespace and sha1 is embedded.
+# The namespace is extracted from the contents of the referenced file.
 #
 # EXTERNAL_DOCUMENT_INSTALL_PREFIXES: A list of directories where the external document file path
 # is searched for. The first existing file is used. Additionally the following locations are
@@ -583,6 +590,10 @@ function(_qt_internal_sbom_generate_add_external_reference)
         EXTERNAL_DOCUMENT_SPDX_ID
         EXTERNAL_PACKAGE_SPDX_ID
         RELATIONSHIP_STRING
+
+        EXTERNAL_DOCUMENT_NAMESPACE
+        EXTERNAL_DOCUMENT_SHA1
+        SBOM_FORMAT
     )
     set(multi_args
         EXTERNAL_DOCUMENT_INSTALL_PREFIXES
@@ -590,7 +601,46 @@ function(_qt_internal_sbom_generate_add_external_reference)
     cmake_parse_arguments(PARSE_ARGV 0 arg "${opt_args}" "${single_args}" "${multi_args}")
     _qt_internal_validate_all_args_are_parsed(arg)
 
-    _qt_internal_sbom_set_default_option_value_and_error_if_empty(EXTERNAL_DOCUMENT_FILE_PATH "")
+    # Default to tag:value if nothing is passed, because that was the previous behavior before this
+    # option got introduced.
+    if(NOT arg_SBOM_FORMAT)
+        set(arg_SBOM_FORMAT "SPDX_V2_TAG_VALUE")
+    endif()
+
+    if(NOT arg_EXTERNAL_DOCUMENT_FILE_PATH AND NOT arg_EXTERNAL_DOCUMENT_NAMESPACE)
+        message(FATAL_ERROR "Either EXTERNAL_DOCUMENT_FILE_PATH or "
+            "EXTERNAL_DOCUMENT_NAMESPACE together with EXTERNAL_DOCUMENT_SHA1 must be specified "
+            "to be able to add an external reference for an external SPDX v2 tag:value document.")
+    endif()
+
+    set(debug_var_assignments "
+        EXTERNAL_DOCUMENT_FILE_PATH: '${arg_EXTERNAL_DOCUMENT_FILE_PATH}'
+        EXTERNAL_DOCUMENT_NAMESPACE: '${arg_EXTERNAL_DOCUMENT_NAMESPACE}'
+        EXTERNAL_DOCUMENT_SHA1: '${arg_EXTERNAL_DOCUMENT_SHA1}'
+        EXTERNAL_DOCUMENT_SPDX_ID: '${arg_EXTERNAL_DOCUMENT_SPDX_ID}'
+")
+
+    if(NOT arg_EXTERNAL_DOCUMENT_FILE_PATH
+            AND arg_EXTERNAL_DOCUMENT_NAMESPACE
+            AND NOT arg_EXTERNAL_DOCUMENT_SHA1)
+        message(FATAL_ERROR
+            "EXTERNAL_DOCUMENT_SHA1 must be specified if EXTERNAL_DOCUMENT_NAMESPACE is specified "
+            "and EXTERNAL_DOCUMENT_FILE_PATH is not specified.\n${debug_var_assignments}")
+    endif()
+
+    if(NOT arg_EXTERNAL_DOCUMENT_FILE_PATH
+            AND NOT arg_EXTERNAL_DOCUMENT_NAMESPACE
+            AND arg_EXTERNAL_DOCUMENT_SHA1)
+        message(FATAL_ERROR
+            "EXTERNAL_DOCUMENT_NAMESPACE must be specified if EXTERNAL_DOCUMENT_SHA1 is specified "
+            "and EXTERNAL_DOCUMENT_FILE_PATH is not specified.\n${debug_var_assignments}")
+    endif()
+
+    if(arg_EXTERNAL_DOCUMENT_FILE_PATH)
+        set(find_external_document TRUE)
+    else()
+        set(find_external_document FALSE)
+    endif()
 
     if(NOT arg_EXTERNAL_DOCUMENT_SPDX_ID)
         get_property(spdx_id_count GLOBAL PROPERTY _qt_sbom_spdx_id_count)
@@ -621,42 +671,22 @@ function(_qt_internal_sbom_generate_add_external_reference)
 
     _qt_internal_get_staging_area_spdx_file_path(staging_area_spdx_file)
 
-    set(install_prefixes "")
+    set(document_search_paths "")
+    if(find_external_document)
+        set(search_path_args "")
+        if(arg_EXTERNAL_DOCUMENT_INSTALL_PREFIXES)
+            list(APPEND search_path_args
+                    EXTERNAL_DOCUMENT_SEARCH_PATHS ${arg_EXTERNAL_DOCUMENT_INSTALL_PREFIXES}
+            )
+        endif()
 
-    # Add the current sbom build dirs as install prefixes, so that we can use ninja 'sbom'
-    # in top-level builds. This is needed because the external references will point
-    # to sbom docs in different build dirs, not just one.
-    # We also need it in case we are converting a json document to a tag/value format in the
-    # current build dir of the project, and want it to be found.
-    get_cmake_property(build_sbom_dirs _qt_internal_sbom_dirs)
-    if(build_sbom_dirs)
-        foreach(build_sbom_dir IN LISTS build_sbom_dirs)
-            list(APPEND install_prefixes "${build_sbom_dir}")
-        endforeach()
+        _qt_internal_sbom_get_external_reference_search_paths(document_search_paths
+            SEARCH_IN_BUILD_SBOM_DIRS
+            SEARCH_IN_QT_PREFIXES
+            SEARCH_IN_DESTDIR_INSTALL_PREFIX_AT_INSTALL_TIME
+            ${search_path_args}
+        )
     endif()
-
-    # Always append the install time install prefix.
-    # The variable is escaped, so it is evaluated during cmake install time, so that the value
-    # can be overridden with cmake --install . --prefix <path>.
-    list(APPEND install_prefixes "\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}")
-
-    if(arg_EXTERNAL_DOCUMENT_INSTALL_PREFIXES)
-        list(APPEND install_prefixes ${arg_EXTERNAL_DOCUMENT_INSTALL_PREFIXES})
-    endif()
-
-    if(QT6_INSTALL_PREFIX)
-        list(APPEND install_prefixes ${QT6_INSTALL_PREFIX})
-    endif()
-
-    if(QT_ADDITIONAL_PACKAGES_PREFIX_PATH)
-        list(APPEND install_prefixes ${QT_ADDITIONAL_PACKAGES_PREFIX_PATH})
-    endif()
-
-    if(QT_ADDITIONAL_SBOM_DOCUMENT_PATHS)
-        list(APPEND install_prefixes ${QT_ADDITIONAL_SBOM_DOCUMENT_PATHS})
-    endif()
-
-    list(REMOVE_DUPLICATES install_prefixes)
 
     set(relationship_content "")
     if(arg_RELATIONSHIP_STRING)
@@ -668,29 +698,40 @@ function(_qt_internal_sbom_generate_add_external_reference)
 
     # File path may not exist yet, and it could be a generator expression.
     set(content "
-        set(relative_file_name \"${arg_EXTERNAL_DOCUMENT_FILE_PATH}\")
-        set(document_dir_paths ${install_prefixes})
-        list(JOIN document_dir_paths \"\\n\" document_dir_paths_per_line)
-        foreach(document_dir_path IN LISTS document_dir_paths)
-            set(document_file_path \"\${document_dir_path}/\${relative_file_name}\")
-            if(EXISTS \"\${document_file_path}\")
-                break()
-            endif()
-        endforeach()
-        if(NOT EXISTS \"\${document_file_path}\")
-            message(FATAL_ERROR \"Could not find external SBOM document \${relative_file_name}\"
-                \" in any of the document dir paths: \${document_dir_paths_per_line} \"
+        set(find_external_document \"${find_external_document}\")
+        set(document_search_paths ${document_search_paths})
+        set(maybe_external_document_file_path \"${arg_EXTERNAL_DOCUMENT_FILE_PATH}\")
+        set(sbom_format \"${arg_SBOM_FORMAT}\")
+
+        set(explicit_external_document_namespace \"${arg_EXTERNAL_DOCUMENT_NAMESPACE}\")
+        set(explicit_external_document_sha1 \"${arg_EXTERNAL_DOCUMENT_SHA1}\")
+
+        # The helper functions below are used both during configure time and SBOM generation
+        # time. During configure time, QT_GENERATE_SBOM is checked to return early gracefully,
+        # to allow projects to skip SBOM generation.
+        # During SBOM generation time, we need to ensure these functions run properly.
+        # Backup the var instead of setting it directly, because some of the testing infrastructure
+        # does checks of the variable at the end of sbom generation.
+        set(backup_qt_generate_sbom \"${QT_GENERATE_SBOM}\")
+        set(QT_GENERATE_SBOM ON)
+        if(find_external_document)
+            _qt_internal_sbom_find_external_reference_document(document_file_path
+                EXTERNAL_DOCUMENT_FILE_PATH \"\${maybe_external_document_file_path}\"
+                EXTERNAL_DOCUMENT_SEARCH_PATHS \${document_search_paths}
             )
-        endif()
-        file(SHA1 \"\${document_file_path}\" ext_sha1)
-        file(READ \"\${document_file_path}\" ext_content)
 
-        if(NOT \"\${ext_content}\" MATCHES \"[\\r\\n]DocumentNamespace:\")
-            message(FATAL_ERROR \"Missing DocumentNamespace in \${document_file_path}\")
-        endif()
+            _qt_internal_sbom_parse_spdx_v2_document_namespace(
+                EXTERNAL_DOCUMENT_FILE_PATH \"\${document_file_path}\"
+                SBOM_FORMAT \"\${sbom_format}\"
+                OUT_VAR_DOCUMENT_NAMESPACE ext_ns
+            )
 
-        string(REGEX REPLACE \"^.*[\\r\\n]DocumentNamespace:[ \\t]*([^#\\r\\n]*).*$\"
-                \"\\\\1\" ext_ns \"\${ext_content}\")
+            file(SHA1 \"\${document_file_path}\" ext_sha1)
+        else()
+            set(ext_ns \"\${explicit_external_document_namespace}\")
+            set(ext_sha1 \"\${explicit_external_document_sha1}\")
+        endif()
+        set(QT_GENERATE_SBOM \${backup_qt_generate_sbom})
 
         string(APPEND QT_SBOM_EXTERNAL_DOC_REFS \"
 ExternalDocumentRef: ${arg_EXTERNAL_DOCUMENT_SPDX_ID} \${ext_ns} SHA1: \${ext_sha1}\")
