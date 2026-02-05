@@ -176,27 +176,6 @@
 */
 
 /*!
-    \fn QString qTrId(const char *id, int n = -1)
-    \relates <QtTranslation>
-    \reentrant
-    \since 6.11
-
-    \brief The qTrId function is an alias for qtTrId.
-
-    This function provides the same functionality as qtTrId(). It returns
-    a translated string identified by \a id. If no matching string is found,
-    the id itself is returned.
-
-    If \a n >= 0, all occurrences of \c %n in the resulting string
-    are replaced with a decimal representation of \a n. In addition,
-    depending on \a n's value, the translation text may vary.
-
-    Both qTrId() and qtTrId() can be used interchangeably.
-
-    \sa qtTrId(), QObject::tr(), QCoreApplication::translate(), {Internationalization with Qt}
-*/
-
-/*!
     \macro QT_TRID_NOOP(id)
     \relates <QtTranslation>
     \since 4.6

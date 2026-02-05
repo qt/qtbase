@@ -32,8 +32,6 @@ class QString;
 // Defined in qcoreapplication.cpp
 Q_CORE_EXPORT QString qtTrId(const char *id, int n = -1);
 
-Q_CORE_EXPORT QString qTrId(const char *id, int n = -1);
-
 #define QT_TRID_NOOP(id) id
 #define QT_TRID_N_NOOP(id) id
 
