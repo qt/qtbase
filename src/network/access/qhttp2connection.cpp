@@ -1574,6 +1574,16 @@ void QHttp2Connection::handleDATA()
         }
     }
 
+    if (inboundFrame.payloadSize() > m_config.maxFrameSize()) {
+        qCDebug(qHttp2ConnectionLog,
+                "[%p] Received DATA frame with payload size %u, "
+                "but SETTINGS_MAX_FRAME_SIZE is %u, sending FRAME_SIZE_ERROR",
+                this, inboundFrame.payloadSize(), m_config.maxFrameSize());
+        return stream->streamError(
+                Http2Error::FRAME_SIZE_ERROR,
+                QLatin1String("DATA payload size exceeds SETTINGS_MAX_FRAME_SIZE"));
+    }
+
     if (qint32(inboundFrame.payloadSize()) > sessionReceiveWindowSize) {
         qCDebug(qHttp2ConnectionLog,
                 "[%p] Received DATA frame with payload size %u, "
