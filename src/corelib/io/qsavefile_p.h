@@ -39,6 +39,9 @@ protected:
 
     bool useTemporaryFile;
     bool directWriteFallback;
+
+public:
+    bool open(QIODevice::OpenMode mode);
 };
 
 QT_END_NAMESPACE

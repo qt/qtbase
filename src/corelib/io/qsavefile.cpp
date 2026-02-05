@@ -33,6 +33,110 @@ QSaveFilePrivate::~QSaveFilePrivate()
 {
 }
 
+bool QSaveFilePrivate::open(QIODevice::OpenMode mode)
+{
+    writeError = QFileDevice::NoError;
+    if ((mode & (QIODevice::ReadOnly | QIODevice::WriteOnly)) == 0) {
+        qWarning("QSaveFile::open: Open mode not specified");
+        return false;
+    }
+    // In the future we could implement ReadWrite by copying from the existing file to the temp file...
+    // The implications of NewOnly and ExistingOnly when used with QSaveFile need to be considered carefully...
+    if (mode & (QIODevice::ReadOnly | QIODevice::Append | QIODevice::NewOnly
+                | QIODevice::ExistingOnly)) {
+        qWarning("QSaveFile::open: Unsupported open mode 0x%x", uint(mode.toInt()));
+        return false;
+    }
+
+    // check if existing file is writable
+    QFileInfo existingFile(fileName);
+    if (existingFile.exists() && !existingFile.isWritable()) {
+        setError(QFileDevice::WriteError,
+                 QSaveFile::tr("Existing file %1 is not writable").arg(fileName));
+        writeError = QFileDevice::WriteError;
+        return false;
+    }
+
+    if (existingFile.isDir()) {
+        setError(QFileDevice::WriteError, QSaveFile::tr("Filename refers to a directory"));
+        writeError = QFileDevice::WriteError;
+        return false;
+    }
+
+    // Resolve symlinks. Don't use QFileInfo::canonicalFilePath so it still give
+    // the expected target even if the file does not exist
+    finalFileName = fileName;
+    if (existingFile.isSymLink()) {
+        int maxDepth = 128;
+        while (--maxDepth && existingFile.isSymLink())
+            existingFile.setFile(existingFile.symLinkTarget());
+        if (maxDepth > 0)
+            finalFileName = existingFile.filePath();
+    }
+
+    auto openDirectly = [this, mode]() {
+        fileEngine = QAbstractFileEngine::create(finalFileName);
+        if (fileEngine->open(mode | QIODevice::Unbuffered)) {
+            useTemporaryFile = false;
+            return true;
+        }
+        return false;
+    };
+
+    bool requiresDirectWrite = false;
+#ifdef Q_OS_WIN
+    // check if it is an Alternate Data Stream
+    requiresDirectWrite = finalFileName == fileName && fileName.indexOf(u':', 2) > 1;
+#elif defined(Q_OS_ANDROID)
+    // check if it is a content:// URL
+    requiresDirectWrite  = fileName.startsWith("content://"_L1);
+#endif
+    if (requiresDirectWrite) {
+        // yes, we can't rename onto it...
+        if (directWriteFallback) {
+            if (openDirectly())
+                return true;
+            setError(fileEngine->error(), fileEngine->errorString());
+            fileEngine.reset();
+        } else {
+            QString msg =
+                    QSaveFile::tr("QSaveFile cannot open '%1' without direct write fallback enabled.")
+                     .arg(QDir::toNativeSeparators(fileName));
+            setError(QFileDevice::OpenError, msg);
+        }
+        return false;
+    }
+
+    fileEngine.reset(new QTemporaryFileEngine(&finalFileName, QTemporaryFileEngine::Win32NonShared));
+    // if the target file exists, we'll copy its permissions below,
+    // but until then, let's ensure the temporary file is not accessible
+    // to a third party
+    int perm = (existingFile.exists() ? 0600 : 0666);
+    static_cast<QTemporaryFileEngine *>(fileEngine.get())->initialize(finalFileName, perm);
+    // Same as in QFile: QIODevice provides the buffering, so there's no need to request it from the file engine.
+    if (!fileEngine->open(mode | QIODevice::Unbuffered)) {
+        QFileDevice::FileError err = fileEngine->error();
+#ifdef Q_OS_UNIX
+        if (directWriteFallback && err == QFileDevice::OpenError && errno == EACCES) {
+            if (openDirectly())
+                return true;
+            err = fileEngine->error();
+        }
+#endif
+        if (err == QFileDevice::UnspecifiedError)
+            err = QFileDevice::OpenError;
+        setError(err, fileEngine->errorString());
+        fileEngine.reset();
+        return false;
+    }
+    if (existingFile.exists()) {
+        Q_Q(QSaveFile);
+        q->setPermissions(existingFile.permissions());
+    }
+    useTemporaryFile = true;
+    return true;
+}
+
 /*!
     \class QSaveFile
     \inmodule QtCore
@@ -165,105 +269,9 @@ bool QSaveFile::open(OpenMode mode)
         return false;
     }
     unsetError();
-    d->writeError = QFileDevice::NoError;
-    if ((mode & (ReadOnly | WriteOnly)) == 0) {
-        qWarning("QSaveFile::open: Open mode not specified");
+    if (!d->open(mode))
         return false;
-    }
-    // In the future we could implement ReadWrite by copying from the existing file to the temp file...
-    // The implications of NewOnly and ExistingOnly when used with QSaveFile need to be considered carefully...
-    if (mode & (ReadOnly | Append | NewOnly | ExistingOnly)) {
-        qWarning("QSaveFile::open: Unsupported open mode 0x%x", uint(mode.toInt()));
-        return false;
-    }
-
-    // check if existing file is writable
-    QFileInfo existingFile(d->fileName);
-    if (existingFile.exists() && !existingFile.isWritable()) {
-        d->setError(QFileDevice::WriteError, QSaveFile::tr("Existing file %1 is not writable").arg(d->fileName));
-        d->writeError = QFileDevice::WriteError;
-        return false;
-    }
-
-    if (existingFile.isDir()) {
-        d->setError(QFileDevice::WriteError, QSaveFile::tr("Filename refers to a directory"));
-        d->writeError = QFileDevice::WriteError;
-        return false;
-    }
-
-    // Resolve symlinks. Don't use QFileInfo::canonicalFilePath so it still give the expected
-    // target even if the file does not exist
-    d->finalFileName = d->fileName;
-    if (existingFile.isSymLink()) {
-        int maxDepth = 128;
-        while (--maxDepth && existingFile.isSymLink())
-            existingFile.setFile(existingFile.symLinkTarget());
-        if (maxDepth > 0)
-            d->finalFileName = existingFile.filePath();
-    }
-
-    auto openDirectly = [&]() {
-        d->fileEngine = QAbstractFileEngine::create(d->finalFileName);
-        if (d->fileEngine->open(mode | QIODevice::Unbuffered)) {
-            d->useTemporaryFile = false;
-            QFileDevice::open(mode);
-            return true;
-        }
-        return false;
-    };
-
-    bool requiresDirectWrite = false;
-#ifdef Q_OS_WIN
-    // check if it is an Alternate Data Stream
-    requiresDirectWrite = d->finalFileName == d->fileName && d->fileName.indexOf(u':', 2) > 1;
-#elif defined(Q_OS_ANDROID)
-    // check if it is a content:// URL
-    requiresDirectWrite  = d->fileName.startsWith("content://"_L1);
-#endif
-    if (requiresDirectWrite) {
-        // yes, we can't rename onto it...
-        if (d->directWriteFallback) {
-            if (openDirectly())
-                return true;
-            d->setError(d->fileEngine->error(), d->fileEngine->errorString());
-            d->fileEngine.reset();
-        } else {
-            QString msg =
-                    QSaveFile::tr("QSaveFile cannot open '%1' without direct write fallback enabled.")
-                     .arg(QDir::toNativeSeparators(d->fileName));
-            d->setError(QFileDevice::OpenError, msg);
-        }
-        return false;
-    }
-
-    d->fileEngine.reset(new QTemporaryFileEngine(&d->finalFileName, QTemporaryFileEngine::Win32NonShared));
-    // if the target file exists, we'll copy its permissions below,
-    // but until then, let's ensure the temporary file is not accessible
-    // to a third party
-    int perm = (existingFile.exists() ? 0600 : 0666);
-    static_cast<QTemporaryFileEngine *>(d->fileEngine.get())->initialize(d->finalFileName, perm);
-    // Same as in QFile: QIODevice provides the buffering, so there's no need to request it from the file engine.
-    if (!d->fileEngine->open(mode | QIODevice::Unbuffered)) {
-        QFileDevice::FileError err = d->fileEngine->error();
-#ifdef Q_OS_UNIX
-        if (d->directWriteFallback && err == QFileDevice::OpenError && errno == EACCES) {
-            if (openDirectly())
-                return true;
-            err = d->fileEngine->error();
-        }
-#endif
-        if (err == QFileDevice::UnspecifiedError)
-            err = QFileDevice::OpenError;
-        d->setError(err, d->fileEngine->errorString());
-        d->fileEngine.reset();
-        return false;
-    }
-
-    d->useTemporaryFile = true;
-    QFileDevice::open(mode);
-    if (existingFile.exists())
-        setPermissions(existingFile.permissions());
-    return true;
+    return QFileDevice::open(mode);
 }
 
 /*!
