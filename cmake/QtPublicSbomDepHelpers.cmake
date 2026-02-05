@@ -267,12 +267,19 @@ function(_qt_internal_sbom_add_external_target_dependency)
     set(relationship_entries "")
     set(target_depdendencies "")
 
-    # Get the external document path and the repo it belongs to for the given target.
+    # Get the external document path and the repo it belongs to for the given target,
+    # as well as the spdx document namespace, and cydx serial number.
     get_property(relative_installed_repo_document_path TARGET "${arg_DEPENDENCY_TARGET}"
         PROPERTY _qt_sbom_spdx_relative_installed_repo_document_path)
 
     get_property(project_name_lowercase TARGET "${arg_DEPENDENCY_TARGET}"
         PROPERTY _qt_sbom_spdx_repo_project_name_lowercase)
+
+    get_property(spdx_document_namespace TARGET "${arg_DEPENDENCY_TARGET}"
+        PROPERTY _qt_sbom_spdx_repo_document_namespace)
+
+    get_property(bom_serial_number_uuid TARGET "${arg_DEPENDENCY_TARGET}"
+        PROPERTY _qt_sbom_cydx_bom_serial_number_uuid)
 
     if(relative_installed_repo_document_path AND project_name_lowercase)
         _qt_internal_sbom_get_external_document_ref_spdx_id(
@@ -303,16 +310,32 @@ function(_qt_internal_sbom_add_external_target_dependency)
 
             set(external_document "${relative_installed_repo_document_path}")
 
-            _qt_internal_sbom_generate_add_external_reference(
-                EXTERNAL_DOCUMENT_FILE_PATH "${external_document}"
-                EXTERNAL_DOCUMENT_INSTALL_PREFIXES ${install_prefixes}
-                EXTERNAL_DOCUMENT_SPDX_ID "${external_document_ref}"
-            )
+            # We need to make the external document target name unique to the currently active
+            # project, otherwise we risk trying to override the document details of an existing
+            # external document target when processing multiple SBOM projects within a single
+            # cmake invocation.
+            _qt_internal_sbom_get_root_project_name_lower_case(current_project_name)
+            set(external_document_target
+                "ExternalDocumentProject-${project_name_lowercase}-for-${current_project_name}")
 
-            set_property(GLOBAL PROPERTY
-                _qt_known_external_documents_${external_document_ref} TRUE)
-            set_property(GLOBAL APPEND PROPERTY
-                _qt_known_external_documents "${external_document_ref}")
+            if(QT_SBOM_GENERATE_SPDX_V2)
+                _qt_internal_sbom_add_external_reference_document("${external_document_target}"
+                    NO_SCAN_FILE_AT_CONFIGURE_TIME
+                    SBOM_FORMAT SPDX_V2_TAG_VALUE
+                    SPDX_V2_DOCUMENT_REF_ID "${external_document_ref}"
+                    SPDX_V2_DOCUMENT_NAMESPACE "${spdx_document_namespace}"
+                    EXTERNAL_DOCUMENT_FILE_PATH "${external_document}"
+                    EXTERNAL_DOCUMENT_SEARCH_PATHS ${install_prefixes}
+                )
+            endif()
+
+            if(QT_SBOM_GENERATE_CYDX_V1_6)
+                _qt_internal_sbom_add_external_reference_document("${external_document_target}"
+                    NO_SCAN_FILE_AT_CONFIGURE_TIME
+                    SBOM_FORMAT CYDX_V1_JSON
+                    CYDX_URN_SERIAL_NUMBER "${bom_serial_number_uuid}"
+                )
+            endif()
         endif()
     else()
         message(AUTHOR_WARNING

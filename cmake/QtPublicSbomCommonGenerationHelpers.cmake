@@ -1,6 +1,10 @@
 # Copyright (C) 2025 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
+if(CMAKE_VERSION VERSION_LESS 3.17.0)
+    set(CMAKE_CURRENT_FUNCTION_LIST_DIR "${CMAKE_CURRENT_LIST_DIR}")
+endif()
+
 # Helper function to get common project related variables for SBOM generation for both SPDX and
 # CycloneDX formats.
 function(_qt_internal_sbom_get_common_project_variables)
@@ -538,6 +542,10 @@ function(_qt_internal_sbom_create_build_time_sbom_targets)
 
     _qt_internal_get_current_project_sbom_dir(sbom_dir)
     set(content "
+        # Include helpers functions.
+        include(\"${CMAKE_CURRENT_FUNCTION_LIST_DIR}/QtPublicCMakeHelpers.cmake\")
+        include(\"${CMAKE_CURRENT_FUNCTION_LIST_DIR}/QtPublicSbomExternalReferenceHelpers.cmake\")
+
         # QT_SBOM_BUILD_TIME be set to FALSE at install time, so don't override if it's set.
         # This allows reusing the same cmake file for both build and install.
         if(NOT DEFINED QT_SBOM_BUILD_TIME)

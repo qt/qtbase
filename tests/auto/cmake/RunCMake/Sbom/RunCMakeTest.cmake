@@ -4,6 +4,13 @@ cmake_minimum_required(VERSION 3.16)
 include(QtRunCMake)
 
 function(run_cmake_and_build case format_case)
+    set(opt_args "")
+    set(single_args "")
+    set(multi_args
+        SEARCH_CASE_PACKAGES
+    )
+    cmake_parse_arguments(PARSE_ARGV 2 arg "${opt_args}" "${single_args}" "${multi_args}")
+
     set(include_file "${case}")
     set(original_case "${case}")
     set(case "${format_case}-${case}")
@@ -16,6 +23,17 @@ function(run_cmake_and_build case format_case)
         "-DSBOM_INCLUDE_FILE=${include_file}"
         "-DFORMAT_CASE=${format_case}"
     )
+
+    set(extra_install_prefixes "")
+    foreach(search_case IN LISTS arg_SEARCH_CASE_PACKAGES)
+        set(case_install_prefix
+            "${RunCMake_BINARY_DIR}/${format_case}-${search_case}-build/installed")
+        list(APPEND extra_install_prefixes "${case_install_prefix}")
+    endforeach()
+
+    if (extra_install_prefixes)
+        list(APPEND options "-DCMAKE_PREFIX_PATH=${extra_install_prefixes}")
+    endif()
 
     if(format_case STREQUAL "spdx23")
         list(APPEND options
@@ -108,6 +126,11 @@ foreach(format_case IN LISTS format_cases)
     run_cmake_and_build(full "${format_case}")
     run_cmake_and_build(versions "${format_case}")
     run_cmake_and_build(target_relationships "${format_case}")
+
+    # The next test depends on the previous one successfully passing.
+    run_cmake_and_build(target_relationships_external "${format_case}"
+        SEARCH_CASE_PACKAGES target_relationships)
+
     run_cmake_and_build(project_relationships "${format_case}")
 endforeach()
 
