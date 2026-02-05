@@ -357,7 +357,7 @@ QHostInfo QHostInfoAgent::reverseLookup(const QHostAddress &address)
     sockaddr_in6 sa6;
     sockaddr *sa = nullptr;
     QT_SOCKLEN_T saSize;
-    if (address.protocol() == QAbstractSocket::IPv4Protocol) {
+    if (address.protocol() == QHostAddress::IPv4Protocol) {
         sa = reinterpret_cast<sockaddr *>(&sa4);
         saSize = sizeof(sa4);
         memset(&sa4, 0, sizeof(sa4));

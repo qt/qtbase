@@ -6,6 +6,8 @@
 #define QNETWORKINTERFACE_H
 
 #include <QtNetwork/qtnetworkglobal.h>
+
+#include <QtCore/qmetatype.h>
 #include <QtCore/qshareddata.h>
 #include <QtCore/qscopedpointer.h>
 #include <QtNetwork/qhostaddress.h>
