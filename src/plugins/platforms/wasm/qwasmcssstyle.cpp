@@ -231,6 +231,14 @@ const char *Style = R"css(
     position: absolute;
 }
 
+.hidden-drag-image {
+    visibility: visible;
+    display: block;
+    opacity: 1.0;
+    position: absolute;
+    z-index: -1;
+}
+
 )css";
 
 } // namespace
