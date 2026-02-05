@@ -1351,6 +1351,7 @@ void tst_QFile::openFileExistingOnly()
     QVERIFY(!f.open(QIODevice::ExistingOnly | QIODevice::ReadOnly));
     QVERIFY(!f.open(QIODevice::ExistingOnly | QIODevice::WriteOnly));
     QVERIFY(!f.open(QIODevice::ExistingOnly | QIODevice::ReadWrite));
+    QTest::ignoreMessage(QtWarningMsg, "QIODevice::open: File access not specified");
     QVERIFY(!f.open(QIODevice::ExistingOnly));
     QVERIFY(!QFile::exists("dontcreateme.txt"));
 
@@ -1364,6 +1365,7 @@ void tst_QFile::openFileExistingOnly()
     f.close();
     QVERIFY2(f.open(QIODevice::ExistingOnly | QIODevice::ReadWrite), msgOpenFailed(f).constData());
     f.close();
+    QTest::ignoreMessage(QtWarningMsg, "QIODevice::open: File access not specified");
     QVERIFY(!f.open(QIODevice::ExistingOnly));
     QVERIFY(QFile::exists("dontcreateme.txt"));
     QFile::remove("dontcreateme.txt");
