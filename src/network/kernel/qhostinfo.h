@@ -6,7 +6,9 @@
 #define QHOSTINFO_H
 
 #include <QtNetwork/qtnetworkglobal.h>
+
 #include <QtCore/qlist.h>
+#include <QtCore/qmetatype.h>
 #include <QtCore/qscopedpointer.h>
 #include <QtNetwork/qhostaddress.h>
 

@@ -7,8 +7,10 @@
 #define QHOSTADDRESS_H
 
 #include <QtNetwork/qtnetworkglobal.h>
-#include <QtCore/qstring.h>
+
+#include <QtCore/qobjectdefs.h>
 #include <QtCore/qshareddata.h>
+#include <QtCore/qstring.h>
 #if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
 #include <QtNetwork/qabstractsocket.h>
 #endif

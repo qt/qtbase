@@ -6,6 +6,8 @@
 #define QNETWORKDATAGRAM_H
 
 #include <QtCore/qbytearray.h>
+#include <QtCore/qmetatype.h>
+
 #include <QtNetwork/qhostaddress.h>
 
 #ifndef QT_NO_UDPSOCKET

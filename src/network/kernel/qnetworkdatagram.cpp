@@ -175,8 +175,8 @@ void QNetworkDatagram::clear()
  */
 bool QNetworkDatagram::isValid() const
 {
-    return d->header.senderAddress.protocol() != QAbstractSocket::UnknownNetworkLayerProtocol ||
-           d->header.destinationAddress.protocol() != QAbstractSocket::UnknownNetworkLayerProtocol;
+    return d->header.senderAddress.protocol() != QHostAddress::UnknownNetworkLayerProtocol ||
+           d->header.destinationAddress.protocol() != QHostAddress::UnknownNetworkLayerProtocol;
 }
 
 /*!
@@ -225,7 +225,7 @@ QHostAddress QNetworkDatagram::destinationAddress() const
 */
 int QNetworkDatagram::senderPort() const
 {
-    return d->header.senderAddress.protocol() == QAbstractSocket::UnknownNetworkLayerProtocol
+    return d->header.senderAddress.protocol() == QHostAddress::UnknownNetworkLayerProtocol
             ? -1 : d->header.senderPort;
 }
 
@@ -242,7 +242,7 @@ int QNetworkDatagram::senderPort() const
 */
 int QNetworkDatagram::destinationPort() const
 {
-    return d->header.destinationAddress.protocol() == QAbstractSocket::UnknownNetworkLayerProtocol
+    return d->header.destinationAddress.protocol() == QHostAddress::UnknownNetworkLayerProtocol
             ? -1 : d->header.destinationPort;
 }
 
