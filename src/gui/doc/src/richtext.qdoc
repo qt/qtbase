@@ -10,42 +10,64 @@
 /*!
     \page richtext.html
     \title Rich Text Processing
-    \brief An overview of Qt's rich text processing, editing and display features.
+    \brief Overview of Qt's rich text processing, editing, and display features.
     \ingroup explanations-ui
     \ingroup frameworks-technologies
     \ingroup qt-basic-concepts
 
-    \nextpage Rich Text Document Structure
+    Qt provides a set of classes for creating, editing, and rendering
+    structured rich text documents. These classes center around QTextDocument,
+    which represents a rich text document with a well-defined internal
+    structure. Working directly with QTextDocument allows applications to
+    create, modify, and inspect rich text without relying on intermediate
+    markup formats.
 
-    The Scribe framework provides a set of classes for reading and manipulating
-    structured rich text documents. Unlike previous rich text support in Qt, the
-    new classes are centered around the QTextDocument class rather than raw
-    textual information. This enables the developer to create and modify
-    structured rich text documents without having to prepare content in an
-    intermediate markup format.
+    You can access document information via two complementary interfaces:
 
-    The information within a document can be accessed via two complementary
-    interfaces: A cursor-based interface is used for editing, and a read-only
-    hierarchical interface provides a high level overview of the document
-    structure. The main advantage of the cursor-based interface is that the
-    text can be edited using operations that mimic a user's interaction with
-    an editor, without losing the underlying structure of the document. The
-    read-only hierarchical interface is most useful when performing operations
-    such as searching and document export.
+      \table
+        \header
+          \li Interface
+          \li Description
+        \row
+          \li Cursor-based interface (QTextCursor)
+          \li Supports editing operations that mimic user actions in a text
+              editor. Edits maintain the structural integrity of the underlying
+              document.
+        \row
+          \li Read-only hierarchical interface
+          \li Provides a high-level structural view of the document. It is
+              useful for tasks such as searching, inspection, and exporting
+              content.
+      \endtable
 
-    This document is divided up into chapters for convenient reference:
+    \section1 Rich Text Serialization
+
+    QTextDocument supports serialization to and from these markup formats:
 
     \list
-    \li \l{Rich Text Document Structure} outlines
-       the different kinds of elements in a QTextDocument, and describes how
-       they are arranged in a document structure.
-    \li \l{The QTextCursor Interface} explains how rich
-       text documents can be edited using the cursor-based interface.
-    \li \l{Document Layouts} briefly explains the role of document layouts.
-    \li \l{Common Rich Text Editing Tasks} examines some
-       common tasks that involve reading or manipulating rich text documents.
-    \li \l{Advanced Rich Text Processing} examines advanced rich text editing tasks.
-    \li \l{Supported HTML Subset} lists the HTML tags supported by QTextDocument.
+      \li HTML: A defined subset of HTML is supported for loading and saving.
+          See \l {Supported HTML Subset}.
+      \li Markdown: QTextDocument can parse Markdown in both CommonMark and
+          GitHub dialects.
+    \endlist
+
+    \section1 Rich Text Topics
+
+    \list
+        \li \l{Rich Text Document Structure} describes the different elements
+            in a QTextDocument and how they are arranged in a document
+            structure.
+        \li \l{The QTextCursor Interface} explains how to edit rich text
+            documents using the cursor-based interface.
+        \li \l{Document Layouts} describes how to visually arrange document
+            contents.
+        \li \l{Common Rich Text Editing Tasks} describes frequently used
+            operations for reading and manipulating rich text such as selecting,
+            searching, and printing.
+        \li \l{Advanced Rich Text Processing} describes advanced rich text
+            editing tasks such as handling large files.
+        \li \l{Supported HTML Subset} lists the HTML tags supported by
+            QTextDocument.
     \endlist
 
     \section1 Rich Text Processing APIs
