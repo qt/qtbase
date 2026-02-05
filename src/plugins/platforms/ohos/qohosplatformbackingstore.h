@@ -90,7 +90,7 @@ public:
     class WindowContextManager
     {
     public:
-        WindowContextManager(bool vsyncEnabled, std::function<void(QWindow *)> flushImmediateFunc);
+        WindowContextManager(bool vsyncEnabled, std::shared_ptr<std::function<void(QWindow *)>> flushImmediateFunc);
 
         WindowContext &getOrCreateWindowContext(QWindow *window, ::OHNativeWindow *nativeWindow);
 
@@ -118,6 +118,7 @@ private:
     std::function<void()> m_windowBufferFlushedCallback;
     bool m_debugDrawFlushedRegion {false};
     bool m_vsyncEnabled {false};
+    std::shared_ptr<std::function<void(QWindow *)>> m_flushFunc;
     WindowContextManager m_windowContextManager;
     bool m_reinitializeContextManager{false};
 };
