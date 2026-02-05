@@ -224,20 +224,18 @@ static const char *pointerTypeName(QPointingDevice::PointerType ptype) {
 }
 #endif
 
-void QXcbConnection::xi2SetupSlavePointerDevice(void *info, bool removeExisting, QPointingDevice *master)
+void QXcbConnection::xi2SetupSlavePointerDevice(void *info, QPointingDevice *master)
 {
     auto *deviceInfo = reinterpret_cast<xcb_input_xi_device_info_t *>(info);
-    if (removeExisting) {
 #if QT_CONFIG(tabletevent)
-        for (int i = 0; i < m_tabletData.size(); ++i) {
-            if (m_tabletData.at(i).deviceId == deviceInfo->deviceid) {
-                m_tabletData.remove(i);
-                break;
-            }
+    for (int i = 0; i < m_tabletData.size(); ++i) {
+        if (m_tabletData.at(i).deviceId == deviceInfo->deviceid) {
+            m_tabletData.remove(i);
+            break;
         }
-#endif
-        m_touchDevices.remove(deviceInfo->deviceid);
     }
+#endif
+    m_touchDevices.remove(deviceInfo->deviceid);
 
     const QByteArray nameRaw = QByteArray(xcb_input_xi_device_info_name(deviceInfo),
                                     xcb_input_xi_device_info_name_length(deviceInfo));
@@ -518,7 +516,7 @@ void QXcbConnection::xi2SetupDevices()
                 m_xiSlavePointerIds.append(deviceInfo->deviceid);
                 QInputDevice *master = const_cast<QInputDevice *>(QInputDevicePrivate::fromId(deviceInfo->attachment));
                 Q_ASSERT(master);
-                xi2SetupSlavePointerDevice(deviceInfo, false, qobject_cast<QPointingDevice *>(master));
+                xi2SetupSlavePointerDevice(deviceInfo, qobject_cast<QPointingDevice *>(master));
             }
         } break;
         case XCB_INPUT_DEVICE_TYPE_SLAVE_KEYBOARD: {
