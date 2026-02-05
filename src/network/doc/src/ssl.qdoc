@@ -50,7 +50,7 @@
     of OpenSSL. If found, it will enable and build the OpenSSL backend for Qt.
 
     \note While Qt can still support the older OpenSSL 1.1.1 version when built
-    from sources, the builds of Qt in the \l{Qt Online Installer} require
+    from sources, the builds of Qt in the \l{Get and Install Qt with \QOI}{\QOI} require
     OpenSSL 3 at runtime.
 
     By default, an OpenSSL-enabled Qt library dynamically loads any installed
