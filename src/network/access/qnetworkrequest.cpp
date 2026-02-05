@@ -1051,7 +1051,7 @@ void QNetworkRequest::setDecompressedSafetyCheckThreshold(qint64 threshold)
     starts sending keepalive probes, if the TCP Keepalive functionality has
     been turned on.
 
-    \sa setIdleTimeBeforeProbes
+    \sa setTcpKeepAliveIdleTimeBeforeProbes()
 */
 
 std::chrono::seconds QNetworkRequest::tcpKeepAliveIdleTimeBeforeProbes() const
@@ -1067,7 +1067,7 @@ std::chrono::seconds QNetworkRequest::tcpKeepAliveIdleTimeBeforeProbes() const
     sending keepalive probes to be \a idle, if the TCP Keepalive
     functionality has been turned on.
 
-    \sa idleTimeBeforeProbes
+    \sa tcpKeepAliveIdleTimeBeforeProbes()
 */
 
 void QNetworkRequest::doSetIdleTimeBeforeProbes(std::chrono::duration<int> seconds)
@@ -1081,7 +1081,7 @@ void QNetworkRequest::doSetIdleTimeBeforeProbes(std::chrono::duration<int> secon
     Returns the time between individual keepalive probes, if the TCP
     Keepalive functionality has been turned on.
 
-    \sa setIntervalBetweenProbes
+    \sa setTcpKeepAliveIntervalBetweenProbes()
 */
 
 std::chrono::seconds QNetworkRequest::tcpKeepAliveIntervalBetweenProbes() const
@@ -1096,7 +1096,7 @@ std::chrono::seconds QNetworkRequest::tcpKeepAliveIntervalBetweenProbes() const
     Sets the time between individual keepalive probes to be \a interval,
     if the TCP Keepalive functionality has been turned on.
 
-    \sa intervalBetweenProbes
+    \sa tcpKeepAliveIntervalBetweenProbes()
 */
 
 void QNetworkRequest::doSetIntervalBetweenProbes(std::chrono::duration<int> seconds)
@@ -1111,7 +1111,7 @@ void QNetworkRequest::doSetIntervalBetweenProbes(std::chrono::duration<int> seco
     dropping the connection, if the TCP Keepalive functionality has been
     turned on.
 
-    \sa setIntervalBetweenProbes
+    \sa setTcpKeepAliveProbeCount()
 */
 
 int QNetworkRequest::tcpKeepAliveProbeCount() const
@@ -1126,7 +1126,7 @@ int QNetworkRequest::tcpKeepAliveProbeCount() const
     before dropping the connection, if the TCP Keepalive functionality has
     been turned on.
 
-    \sa probeCount
+    \sa tcpKeepAliveProbeCount()
 */
 
 void QNetworkRequest::setTcpKeepAliveProbeCount(int probes)
