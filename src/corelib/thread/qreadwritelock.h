@@ -135,7 +135,7 @@ protected:
     friend class QReadWriteLockPrivate;
 };
 
-class Q_CORE_EXPORT QReadWriteLock : public QBasicReadWriteLock
+class QT6_ONLY(Q_CORE_EXPORT) QReadWriteLock : public QBasicReadWriteLock
 {
 public:
     enum RecursionMode { NonRecursive, Recursive };
@@ -174,7 +174,9 @@ public:
 #endif
 
 private:
+    QT7_ONLY(Q_CORE_EXPORT)
     static QReadWriteLockPrivate *initRecursive();
+    QT7_ONLY(Q_CORE_EXPORT)
     static void destroyRecursive(QReadWriteLockPrivate *);
 };
 
