@@ -239,12 +239,20 @@ function(_qt_internal_sbom_get_cyclone_bom_serial_number)
     endif()
 endfunction()
 
+# Returns the bom version field that is part of a bom-link to refer to the target in an
+# external CycloneDX document.
+function(_qt_internal_sbom_get_cydx_external_urn_bom_version target out_var)
+    # Currently 1, but we might change it to be configurable in the future.
+    set(bom_version "1")
+    set(${out_var} "${bom_version}" PARENT_SCOPE)
+endfunction()
+
 # See https://github.com/CycloneDX/guides/blob/main/SBOM/en/0x52-Linking.md
 function(_qt_internal_sbom_get_cydx_external_bom_link target out_var)
     get_target_property(spdx_id "${target}" _qt_sbom_spdx_id)
     get_target_property(bom_serial_number "${target}" _qt_sbom_cydx_bom_serial_number_uuid)
 
-    set(bom_version "1")
+    _qt_internal_sbom_get_cydx_external_urn_bom_version("${target}" bom_version)
     set(bom_link "urn:cdx:${bom_serial_number}/${bom_version}#${spdx_id}")
 
     set(${out_var} "${bom_link}" PARENT_SCOPE)

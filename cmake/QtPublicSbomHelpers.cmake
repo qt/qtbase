@@ -231,8 +231,21 @@ function(_qt_internal_sbom_begin_project)
 
     _qt_internal_path_join(repo_spdx_relative_install_path_spdx
         "${install_sbom_dir}" "${repo_project_file_name_spdx}")
+
+    # Currently only used for exporting as a target's property.
+    _qt_internal_path_join(repo_spdx_relative_install_path_spdx_json
+        "${install_sbom_dir}" "${repo_project_file_name_spdx}.json")
+
+    # This is actually the path to the intermediate CycloneDX toml file.
     _qt_internal_path_join(repo_spdx_relative_install_path_cydx
         "${install_sbom_dir}" "${repo_project_file_name_cydx}")
+
+    # Compute the relative path to the final cydx json file, to be exported in a target's property.
+    get_filename_component(repo_project_file_name_cydx_without_ext
+        "${repo_project_file_name_cydx}" NAME_WLE)
+
+    _qt_internal_path_join(repo_spdx_relative_install_path_cydx_json
+        "${install_sbom_dir}" "${repo_project_file_name_cydx_without_ext}.json")
 
     # Prepend DESTDIR, to allow relocating installed sbom. Needed for CI.
     _qt_internal_path_join(repo_spdx_install_path_spdx
@@ -353,8 +366,19 @@ function(_qt_internal_sbom_begin_project)
     set_property(GLOBAL PROPERTY _qt_internal_sbom_repo_cyclone_dx_bom_serial_number_uuid
         "${cyclone_dx_bom_serial_number_uuid}")
 
+    # TODO: Figure out what needs to be done to fully port usage to the tag value var below,
+    # taking into account compatibility for Qt Creator, etc.
     set_property(GLOBAL PROPERTY _qt_internal_sbom_relative_installed_repo_document_path
         "${repo_spdx_relative_install_path_spdx}")
+
+    set_property(GLOBAL PROPERTY _qt_internal_sbom_document_spdx_v2_tag_value_relative_path
+        "${repo_spdx_relative_install_path_spdx}")
+
+    set_property(GLOBAL PROPERTY _qt_internal_sbom_document_spdx_v2_json_relative_path
+        "${repo_spdx_relative_install_path_spdx_json}")
+
+    set_property(GLOBAL PROPERTY _qt_internal_sbom_document_cydx_v1_6_json_relative_path
+        "${repo_spdx_relative_install_path_cydx_json}")
 
     set_property(GLOBAL PROPERTY _qt_internal_sbom_repo_project_name_lowercase
         "${repo_project_name_lowercase}")
@@ -1903,6 +1927,21 @@ function(_qt_internal_sbom_get_external_document_ref_spdx_id repo_name out_var)
     set(${out_var} "DocumentRef-${repo_name}" PARENT_SCOPE)
 endfunction()
 
+# Computes a spdx id to reference the target's spdx v2 package via a SPDX v2 external document ref.
+# To be used for exporting the value as part of the target's metadata.
+function(_qt_internal_sbom_compute_external_spdx_v2_id target out_var)
+    get_target_property(project_name_lowercase "${target}"
+        _qt_sbom_spdx_repo_project_name_lowercase)
+
+    _qt_internal_sbom_get_external_document_ref_spdx_id(
+        "${project_name_lowercase}" external_document_ref)
+
+    _qt_internal_sbom_get_spdx_id_for_target("${target}" spdx_id)
+
+    set(ext_spdx_id "${external_document_ref}:${spdx_id}")
+    set(${out_var} "${ext_spdx_id}" PARENT_SCOPE)
+endfunction()
+
 # Sanitize a given value to be used as a SPDX id.
 function(_qt_internal_sbom_get_sanitized_spdx_id out_var hint)
     # Only allow alphanumeric characters and dashes.
@@ -2037,6 +2076,15 @@ function(_qt_internal_sbom_save_spdx_id_for_target target)
     get_property(relative_installed_repo_document_path
         GLOBAL PROPERTY _qt_internal_sbom_relative_installed_repo_document_path)
 
+    get_property(document_spdx_v2_tag_value_relative_path
+        GLOBAL PROPERTY _qt_internal_sbom_document_spdx_v2_tag_value_relative_path)
+
+    get_property(document_spdx_v2_json_relative_path
+        GLOBAL PROPERTY _qt_internal_sbom_document_spdx_v2_json_relative_path)
+
+    get_property(document_cydx_v1_6_json_relative_path
+        GLOBAL PROPERTY _qt_internal_sbom_document_cydx_v1_6_json_relative_path)
+
     get_property(project_name_lowercase
         GLOBAL PROPERTY _qt_internal_sbom_repo_project_name_lowercase)
 
@@ -2048,6 +2096,18 @@ function(_qt_internal_sbom_save_spdx_id_for_target target)
     set_property(TARGET ${target_unaliased} PROPERTY
         _qt_sbom_cydx_bom_serial_number_uuid
         "${bom_serial_number_uuid}")
+
+    set_property(TARGET ${target_unaliased} PROPERTY
+        _qt_sbom_spdx_v2_document_tag_value_relative_path
+        "${document_spdx_v2_tag_value_relative_path}")
+
+    set_property(TARGET ${target_unaliased} PROPERTY
+        _qt_sbom_spdx_v2_document_json_relative_path
+        "${document_spdx_v2_json_relative_path}")
+
+    set_property(TARGET ${target_unaliased} PROPERTY
+        _qt_sbom_cydx_v1_6_document_json_relative_path
+        "${document_cydx_v1_6_json_relative_path}")
 
     set_property(TARGET ${target_unaliased} PROPERTY
         _qt_sbom_spdx_relative_installed_repo_document_path
@@ -2065,6 +2125,26 @@ function(_qt_internal_sbom_save_spdx_id_for_target target)
         _qt_sbom_entity_type
         "${arg_SBOM_ENTITY_TYPE}")
 
+    _qt_internal_sbom_get_external_document_ref_spdx_id(
+        "${project_name_lowercase}" external_document_ref)
+
+    set_property(TARGET "${target_unaliased}" PROPERTY
+        _qt_sbom_spdx_v2_external_document_ref "${external_document_ref}")
+
+    _qt_internal_sbom_compute_external_spdx_v2_id("${target_unaliased}" external_spdx_v2_id)
+
+    set_property(TARGET "${target_unaliased}" PROPERTY
+        _qt_sbom_spdx_v2_external_spdx_id "${external_spdx_v2_id}")
+
+    _qt_internal_sbom_get_cydx_external_bom_link("${target_unaliased}" external_bom_link)
+    set_property(TARGET "${target_unaliased}" PROPERTY
+        _qt_sbom_cydx_external_bom_link "${external_bom_link}")
+
+    _qt_internal_sbom_get_cydx_external_urn_bom_version("${target_unaliased}"
+        external_urn_bom_version)
+    set_property(TARGET "${target_unaliased}" PROPERTY
+        _qt_sbom_cydx_external_urn_bom_version "${external_urn_bom_version}")
+
     # Export the properties, so they can be queried by other repos.
     # We also do it for versionless targets.
     set(export_properties
@@ -2072,7 +2152,14 @@ function(_qt_internal_sbom_save_spdx_id_for_target target)
         _qt_sbom_package_name
         _qt_sbom_spdx_id
         _qt_sbom_spdx_repo_document_namespace
+        _qt_sbom_spdx_v2_external_document_ref
+        _qt_sbom_spdx_v2_external_spdx_id
+        _qt_sbom_spdx_v2_document_tag_value_relative_path
+        _qt_sbom_spdx_v2_document_json_relative_path
         _qt_sbom_cydx_bom_serial_number_uuid
+        _qt_sbom_cydx_external_bom_link
+        _qt_sbom_cydx_external_urn_bom_version
+        _qt_sbom_cydx_v1_6_document_json_relative_path
         _qt_sbom_spdx_relative_installed_repo_document_path
         _qt_sbom_spdx_repo_project_name_lowercase
     )
