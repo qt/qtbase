@@ -715,7 +715,7 @@ void tst_QWindow::geometryAfterWmUpdateAndDestroyCreate()
     QRect modifiedGeometry = geometryAfterShow.translated(42, 42);
     modifiedGeometry.setSize(modifiedGeometry.size() + QSize(42, 42));
     QWindowSystemInterface::handleGeometryChange<QWindowSystemInterface::SynchronousDelivery>(
-        &window, modifiedGeometry);
+        &window, QHighDpi::toNativeWindowGeometry(modifiedGeometry, &window));
 
     window.destroy();
     window.show();
