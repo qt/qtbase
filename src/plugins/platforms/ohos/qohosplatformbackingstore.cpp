@@ -137,22 +137,19 @@ QOhosPlatformBackingStore::QOhosPlatformBackingStore(QWindow *window, const Crea
     : QRasterBackingStore(window)
     , m_debugDrawFlushedRegion(createInfo.debugDrawFlushedRegion)
     , m_vsyncEnabled(createInfo.enableVsync)
-    , m_windowContextManager(
-        createInfo.enableVsync,
-        [this](QWindow *qWindow) {
-            flushImmediate(qWindow);
-        })
+    , m_flushFunc(
+        std::make_shared<std::function<void(QWindow *)>>(
+            [this](QWindow *qWindow) {
+                flushImmediate(qWindow);
+            }))
+    , m_windowContextManager(createInfo.enableVsync, m_flushFunc)
 {
 }
 
 void QOhosPlatformBackingStore::flush(QWindow *window, const QRegion &region, const QPoint &offset)
 {
     if (m_reinitializeContextManager) {
-        m_windowContextManager = WindowContextManager(
-            m_vsyncEnabled,
-            [this](QWindow *qWindow) {
-                flushImmediate(qWindow);
-            });
+        m_windowContextManager = WindowContextManager(m_vsyncEnabled, m_flushFunc);
         m_reinitializeContextManager = false;
     }
 
@@ -308,8 +305,8 @@ QOhosPlatformBackingStore::FlushData &QOhosPlatformBackingStore::WindowContext::
 
 QOhosPlatformBackingStore::WindowContextManager::WindowContextManager(
     bool vsyncEnabled,
-    std::function<void(QWindow *)> flushImmediateFunc)
-    : m_flushFunc(QtOhos::moveToSharedPtr(std::move(flushImmediateFunc)))
+    std::shared_ptr<std::function<void(QWindow *)>> flushImmediateFunc)
+    : m_flushFunc(flushImmediateFunc)
     , m_vsyncEnabled(vsyncEnabled)
 {
 }
