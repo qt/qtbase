@@ -148,6 +148,7 @@ void tst_QAction::setText_data()
     QTest::newRow("Normal") << "Action" << "Action" << "Action";
     QTest::newRow("Ampersand") << "Search && Destroy" << "Search & Destroy" << "Search && Destroy";
     QTest::newRow("Mnemonic and ellipsis") << "O&pen File ..." << "Open File" << "Open File";
+    QTest::newRow("Mnemonic and ellipsis (unicode)") << QString("O&pen File") + u'\x2026' << "Open File" << "Open File";
 }
 
 void tst_QAction::setText()
