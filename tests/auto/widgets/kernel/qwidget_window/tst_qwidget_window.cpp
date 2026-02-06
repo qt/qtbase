@@ -510,7 +510,7 @@ void tst_QWidget_window::tst_paintEventOnResize_QTBUG50796()
 
     PaintTestWidget *native = new PaintTestWidget(&root);
     native->winId(); // We're testing native widgets
-    native->setGeometry(10, 10, 50, 50);
+    native->setGeometry(50, 50, 50, 50); // position it outside of potentially unsafe area
 
     root.show();
     QVERIFY(QTest::qWaitForWindowExposed(&root));
@@ -520,14 +520,14 @@ void tst_QWidget_window::tst_paintEventOnResize_QTBUG50796()
     // The top level widget can receive new margins after show
     // if the size is big enough to end up overlapping safe areas.
     int safeMarginsResizeCount = 0;
-    connect(native->windowHandle(), &QWindow::safeAreaMarginsChanged, this, [&]() {
+    connect(root.windowHandle(), &QWindow::safeAreaMarginsChanged, this, [&]() {
         ++safeMarginsResizeCount;
     });
 
     native->paintEventCount = 0;
     native->resize(native->width() + 10, native->height() + 10);
     QTest::qWait(50); // Wait for paint events
-    QTRY_COMPARE(native->paintEventCount, 1 + safeMarginsResizeCount);
+    QTRY_COMPARE(native->paintEventCount - safeMarginsResizeCount, 1); // Only one paint event must occur
 }
 
 #if QT_CONFIG(draganddrop)
