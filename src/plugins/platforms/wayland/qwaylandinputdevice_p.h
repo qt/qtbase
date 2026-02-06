@@ -382,9 +382,7 @@ public:
         bool horizontalAxisInverted = false;
 
         void resetScrollData();
-        bool hasPixelDelta() const;
         QPoint pixelDeltaAndError(QPointF *accumulatedError) const;
-        QPoint pixelDelta() const { return hasPixelDelta() ? delta.toPoint() : QPoint(); }
         QPoint angleDelta() const;
         Qt::MouseEventSource wheelEventSource() const;
     } mFrameData;

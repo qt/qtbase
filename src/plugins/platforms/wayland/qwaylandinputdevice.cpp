@@ -1096,28 +1096,8 @@ void QWaylandInputDevice::Pointer::FrameData::resetScrollData()
     verticalAxisInverted = false;
 }
 
-bool QWaylandInputDevice::Pointer::FrameData::hasPixelDelta() const
-{
-    switch (axisSource) {
-    case axis_source_wheel_tilt: // sideways tilt of the wheel
-    case axis_source_wheel:
-        // In the case of wheel events, a pixel delta doesn't really make sense,
-        // and will make Qt think this is a continuous scroll event when it isn't,
-        // so just ignore it.
-        return false;
-    case axis_source_finger:
-    case axis_source_continuous:
-        return !delta.isNull();
-    default:
-        return false;
-    }
-}
-
 QPoint QWaylandInputDevice::Pointer::FrameData::pixelDeltaAndError(QPointF *accumulatedError) const
 {
-    if (!hasPixelDelta())
-        return QPoint();
-
     Q_ASSERT(accumulatedError);
     // Add accumulated rounding error before rounding again
     QPoint pixelDelta = (delta + *accumulatedError).toPoint();

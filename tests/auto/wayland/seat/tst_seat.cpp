@@ -189,8 +189,7 @@ void tst_seat::simpleAxis()
     {
         auto e = window.m_events.takeFirst();
         QCOMPARE(e.phase, Qt::NoScrollPhase);
-        // Pixel delta should only be set if we know it's a high-res input device (which we don't)
-        QCOMPARE(e.pixelDelta, QPoint(0, 0));
+        QCOMPARE(e.pixelDelta, axis == Pointer::axis_vertical_scroll ? QPoint(0, -value) : QPoint(-value, 0));
         // There has been no information about what created the event.
         // Documentation says not synthesized is appropriate in such cases
         QCOMPARE(e.source, Qt::MouseEventNotSynthesized);
@@ -351,8 +350,7 @@ void tst_seat::highResolutionScroll()
         QCOMPARE(e.phase, Qt::NoScrollPhase);
         QVERIFY(qAbs(e.angleDelta.x()) <= qAbs(e.angleDelta.y())); // Vertical scroll
         QCOMPARE(e.angleDelta, QPoint(0, -30));
-        // Click scrolls are not continuous and should not have a pixel delta
-        QCOMPARE(e.pixelDelta, QPoint(0, 0));
+        QCOMPARE(e.pixelDelta, QPoint(0, -4));
     }
 
     exec([&] {
@@ -371,7 +369,7 @@ void tst_seat::highResolutionScroll()
         QVERIFY(qAbs(e.angleDelta.x()) <= qAbs(e.angleDelta.y())); // Vertical scroll
         QCOMPARE(e.angleDelta, QPoint(0, -90));
         // Click scrolls are not continuous and should not have a pixel delta
-        QCOMPARE(e.pixelDelta, QPoint(0, 0));
+        QCOMPARE(e.pixelDelta, QPoint(0, -11));
     }
 }
 
