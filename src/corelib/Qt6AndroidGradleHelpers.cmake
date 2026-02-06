@@ -101,14 +101,14 @@ endfunction()
 function(_qt_internal_android_get_gradle_source_sets out_var target)
     set(known_types java aidl res resources renderscript assets jniLibs)
     set(source_set "")
-    set(indent "            ")
+    set(indent "\n            ")
     foreach(type IN LISTS known_types)
         set(source_dirs
             "$<GENEX_EVAL:$<TARGET_PROPERTY:${target},_qt_android_gradle_${type}_source_dirs>>")
         string(JOIN "" source_set
             "${source_set}"
             "$<$<BOOL:${source_dirs}>:"
-                "${indent}${type}.srcDirs = ['$<JOIN:${source_dirs},'$<COMMA> '>']\n"
+                "${indent}${type}.srcDirs = ['$<JOIN:${source_dirs},'$<COMMA> '>']"
             ">"
         )
     endforeach()
@@ -118,9 +118,10 @@ function(_qt_internal_android_get_gradle_source_sets out_var target)
     string(JOIN "" source_set
         "${source_set}"
         "$<$<BOOL:${manifest}>:"
-            "${indent}manifest.srcFile '${manifest}'\n"
+            "${indent}manifest.srcFile '${manifest}'"
         ">"
     )
+    string(REGEX REPLACE "^${indent}" "" source_set "${source_set}")
     set(${out_var} "${source_set}" PARENT_SCOPE)
 endfunction()
 

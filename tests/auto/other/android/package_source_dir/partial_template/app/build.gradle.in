@@ -28,7 +28,7 @@ android {
 
     sourceSets {
         main {
-@SOURCE_SETS@
+            @SOURCE_SETS@
         }
     }
 
