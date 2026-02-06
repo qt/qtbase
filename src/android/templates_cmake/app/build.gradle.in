@@ -47,8 +47,7 @@ android {
     }
 
     aaptOptions {
-        // Do not compress Qt binary resources file
-        noCompress 'rcc'
+        noCompress 'rcc' // Do not compress Qt binary resources file
     }
 
     @ANDROID_DEPLOYMENT_EXTRAS@
