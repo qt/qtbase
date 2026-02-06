@@ -49,6 +49,8 @@ public:
     static NSScreen *nativeScreenForDisplayId(CGDirectDisplayID displayId);
     NSScreen *nativeScreen() const override;
 
+    bool isOnline() const;
+
     bool requestUpdate();
     void deliverUpdateRequests();
 
@@ -77,7 +79,6 @@ private:
     void update(CGDirectDisplayID displayId);
     void remove();
 
-    bool isOnline() const;
     bool isMirroring() const;
 
     CGDirectDisplayID m_displayId = kCGNullDirectDisplay;
