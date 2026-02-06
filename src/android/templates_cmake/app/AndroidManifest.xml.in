@@ -19,6 +19,7 @@
         android:label="@APP_NAME@"
         @APP_ICON@
         android:requestLegacyExternalStorage="true"
+        android:enableOnBackInvokedCallback="false"
         android:allowBackup="true"
         android:fullBackupOnly="false">
         <activity
