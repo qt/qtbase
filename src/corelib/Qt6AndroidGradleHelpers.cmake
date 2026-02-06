@@ -208,12 +208,20 @@ function(_qt_internal_android_generate_target_build_gradle target)
             "Please check your Android SDK installation.")
     endif()
 
-    # Prefer base API when the latest platform uses a dotted API (e.g. android-36.1).
-    if(ANDROID_COMPILE_SDK_VERSION MATCHES "^android-([0-9]+)\.[0-9]+$")
-        set(android_compile_sdk_base "android-${CMAKE_MATCH_1}")
-        if(ANDROID_SDK_ROOT AND EXISTS "${ANDROID_SDK_ROOT}/platforms/${android_compile_sdk_base}")
-            set(ANDROID_COMPILE_SDK_VERSION "${android_compile_sdk_base}")
-        endif()
+    set(ANDROID_COMPILE_SDK_RELEASE "")
+    set(ANDROID_COMPILE_SDK_MINOR "0")
+    if(ANDROID_COMPILE_SDK_VERSION MATCHES "^android-([0-9]+)\\.([0-9]+)$")
+        set(ANDROID_COMPILE_SDK_RELEASE "${CMAKE_MATCH_1}")
+        set(ANDROID_COMPILE_SDK_MINOR "${CMAKE_MATCH_2}")
+    elseif(ANDROID_COMPILE_SDK_VERSION MATCHES "^android-([0-9]+)$")
+        set(ANDROID_COMPILE_SDK_RELEASE "${CMAKE_MATCH_1}")
+    elseif(ANDROID_COMPILE_SDK_VERSION MATCHES "^([0-9]+)\\.([0-9]+)$")
+        set(ANDROID_COMPILE_SDK_RELEASE "${CMAKE_MATCH_1}")
+        set(ANDROID_COMPILE_SDK_MINOR "${CMAKE_MATCH_2}")
+    elseif(ANDROID_COMPILE_SDK_VERSION MATCHES "^([0-9]+)$")
+        set(ANDROID_COMPILE_SDK_RELEASE "${CMAKE_MATCH_1}")
+    else()
+        message(FATAL_ERROR "Unsupported android platform format '${ANDROID_COMPILE_SDK_VERSION}'.")
     endif()
 
     _qt_internal_android_get_gradle_source_sets(SOURCE_SETS ${target})
@@ -230,9 +238,11 @@ function(_qt_internal_android_generate_target_build_gradle target)
 
     string(JOIN "\n        " DEFAULT_CONFIG_VALUES
         "resConfig 'en'"
-        "minSdkVersion ${min_sdk_version}"
-        "targetSdkVersion ${target_sdk_version}"
-        "ndk.abiFilters = ['${target_abi_list}']"
+        "minSdk = ${min_sdk_version}"
+        "targetSdk = ${target_sdk_version}"
+        "ndk {"
+        "    abiFilters += ['${target_abi_list}']"
+        "}"
     )
 
     set(target_dynamic_features "$<TARGET_PROPERTY:${target},_qt_android_dynamic_features>")

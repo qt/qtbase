@@ -1,25 +1,20 @@
-buildscript {
-    repositories {
-        google()
-        mavenCentral()
-    }
-
-    dependencies {
-        classpath 'com.android.tools.build:gradle:9.0.0'
-    }
+plugins {
+    id '@GRADLE_PLUGIN_TYPE@' version '9.0.0'
 }
-
-apply plugin: '@GRADLE_PLUGIN_TYPE@'
 
 dependencies {
     @GRADLE_DEPENDENCIES@
 }
 
 android {
-    namespace '@PACKAGE_NAME@'
-    compileSdkVersion '@ANDROID_COMPILE_SDK_VERSION@'
-    buildToolsVersion '@ANDROID_BUILD_TOOLS_VERSION@'
-    ndkVersion '@ANDROID_NDK_REVISION@'
+    namespace = '@PACKAGE_NAME@'
+    compileSdk {
+        version = release(@ANDROID_COMPILE_SDK_RELEASE@) {
+            minorApiLevel = @ANDROID_COMPILE_SDK_MINOR@
+        }
+    }
+    buildToolsVersion = '@ANDROID_BUILD_TOOLS_VERSION@'
+    ndkVersion = '@ANDROID_NDK_REVISION@'
 
     defaultConfig {
         @DEFAULT_CONFIG_VALUES@
@@ -34,22 +29,22 @@ android {
         }
     }
 
-    tasks.withType(JavaCompile) {
+    tasks.withType(JavaCompile).configureEach {
         options.incremental = true
         options.compilerArgs += ['-Xlint:all']
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_17
-        targetCompatibility JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
-    lintOptions {
-        abortOnError false
+    lint {
+        abortOnError = false
     }
 
-    aaptOptions {
-        noCompress 'rcc' // Do not compress Qt binary resources file
+    androidResources {
+        noCompress += ['rcc'] // Do not compress Qt binary resources file
     }
 
     @ANDROID_DEPLOYMENT_EXTRAS@
