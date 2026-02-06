@@ -120,8 +120,7 @@ void tst_seatv7::wheelDiscreteScroll()
         // 1 click = 15 degrees. The angle delta should therefore be:
         // 15 degrees / (1/8 eights per degrees) = 120 eights of degrees.
         QCOMPARE(e.angleDelta, QPoint(0, -120));
-        // Click scrolls are not continuous and should not have a pixel delta
-        QCOMPARE(e.pixelDelta, QPoint(0, 0));
+        QCOMPARE(e.pixelDelta, QPoint(0, -1));
     }
 }
 

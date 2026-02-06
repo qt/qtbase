@@ -251,9 +251,6 @@ void tst_seatv4::simpleAxis()
             // There are now scroll phases on Wayland prior to v5
             QCOMPARE(event->phase(), Qt::NoScrollPhase);
 
-            // Pixel delta should only be set if we know it's a high-res input device (which we don't)
-            QCOMPARE(event->pixelDelta(), QPoint(0, 0));
-
             // The axis vector of the event is already in surface space, so there is now way to tell
             // whether it is inverted or not.
             QCOMPARE(event->inverted(), false);
@@ -293,6 +290,7 @@ void tst_seatv4::simpleAxis()
     QTRY_COMPARE(window.m_events.size(), 1);
     auto event = window.m_events.takeFirst();
     QCOMPARE(event.angleDelta, angleDelta);
+    QCOMPARE(event.pixelDelta, axis == Pointer::axis_vertical_scroll ? QPoint(0, -value) : QPoint(-value, 0));
 }
 
 void tst_seatv4::invalidPointerEvents()
