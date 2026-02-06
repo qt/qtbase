@@ -1,0 +1,6 @@
+********* Start testing of tst_Selected *********
+Config: Using QtTest library
+FAIL!  : tst_Selected::excell() Function not found: excell
+FAIL!  : tst_Selected::surprise() Function not found: surprise
+Totals: 0 passed, 2 failed, 0 skipped, 0 blacklisted, 0ms
+********* Finished testing of tst_Selected *********

@@ -745,6 +745,7 @@ bool TestLogger::shouldIgnoreTest(const QString &test) const
             || test == "benchliboptions"
             || test == "printdatatags"
             || test == "printdatatagswithglobaltags"
+            || test == "selected"
             || test == "silent"
             || test == "silent_fatal")
             return true;
@@ -808,6 +809,7 @@ void checkErrorOutput(const QString &test, const QByteArray &errorOutput)
         || test == "fetchbogus"
         || test == "watchdog"
         || test == "junit"
+        || test == "selected" // Reports unknown test functions to stderr
         || test == "benchlibcallgrind")
         return;
 
