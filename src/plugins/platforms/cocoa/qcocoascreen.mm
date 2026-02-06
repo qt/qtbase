@@ -376,8 +376,10 @@ struct DeferredDebugHelper
 
 void QCocoaScreen::deliverUpdateRequests()
 {
-    if (!isOnline())
+    if (!isOnline()) {
+        qCDebug(lcQpaScreenUpdates) << this << "is not online. Ignoring update request delivery";
         return;
+    }
 
     QMacAutoReleasePool pool;
 

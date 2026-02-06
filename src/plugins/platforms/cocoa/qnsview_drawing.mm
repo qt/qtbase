@@ -267,6 +267,14 @@
         return;
     }
 
+    auto *currentScreen = static_cast<QCocoaScreen*>(m_platformWindow->screen());
+    if (!currentScreen || !currentScreen->isOnline()) {
+        qCWarning(lcQpaDrawing) << "Display requested for non-online display" << currentScreen
+                                << "Deferring to next runloop pass";
+        dispatch_async(dispatch_get_main_queue(), ^{ self.needsDisplay = YES; });
+        return;
+    }
+
     const auto handleExposeEvent = [&]{
         const auto bounds = QRectF::fromCGRect(self.bounds).toRect();
         qCDebug(lcQpaDrawing) << "[QNSView displayLayer]" << m_platformWindow->window() << bounds;
