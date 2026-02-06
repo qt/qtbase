@@ -89,6 +89,7 @@ set(subprograms
     printdatatags
     printdatatagswithglobaltags
     qexecstringlist
+    selected
     silent
     silent_fatal
     signaldumper
