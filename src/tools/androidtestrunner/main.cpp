@@ -15,6 +15,7 @@
 #include <QtCore/QXmlStreamReader>
 #include <QtCore/QFileInfo>
 #include <QtCore/QSysInfo>
+#include <QtCore/QTemporaryFile>
 
 #include <atomic>
 #include <csignal>
@@ -260,8 +261,18 @@ static bool parseOptions()
             g_options.ndkStackPath = ndkStackPath;
     }
 
-    if (g_options.manifestPath.isEmpty())
-        g_options.manifestPath = g_options.buildPath + "/AndroidManifest.xml"_L1;
+    if (g_options.manifestPath.isEmpty()) {
+        const QStringList manifestCandidates = {
+            g_options.buildPath + "/AndroidManifest.xml"_L1,
+            g_options.buildPath + "/app/AndroidManifest.xml"_L1,
+        };
+        for (const QString &candidate : manifestCandidates) {
+            if (QFile::exists(candidate)) {
+                g_options.manifestPath = candidate;
+                break;
+            }
+        }
+    }
 
     return true;
 }
@@ -320,6 +331,60 @@ static void printHelp()
              qPrintable(QCoreApplication::arguments().at(0)));
 }
 
+static QString gradleInitScriptPath()
+{
+    static QString path;
+    if (!path.isEmpty())
+        return path;
+
+    QTemporaryFile initScript;
+    initScript.setAutoRemove(false);
+    if (!initScript.open())
+        return {};
+
+    initScript.write(
+        "gradle.projectsEvaluated {\n"
+        "    def prop = gradle.rootProject.findProperty(\"property\")\n"
+        "    def target = gradle.rootProject.findProject(':app') ?: gradle.rootProject\n"
+        "    for (part in prop.tokenize('.')) {\n"
+        "        target = target.\"${part}\"\n"
+        "    }\n"
+        "    println target\n"
+        "}\n"
+        "rootProject { tasks.register(\"printProjectProperty\") }\n");
+    initScript.close();
+
+    path = initScript.fileName();
+    qAddPostRoutine([] { QFile::remove(path); });
+    return path;
+}
+
+// Query a Gradle project's property using dot-separated path notation e.g. "android.namespace".
+static QString getGradleProjectProperty(const QString &androidBuildDir, const QString &property)
+{
+#ifdef Q_OS_WIN
+    QString gradlew = androidBuildDir + "/gradlew.bat"_L1;
+#else
+    QString gradlew = androidBuildDir + "/gradlew"_L1;
+#endif
+    if (!QFile::exists(gradlew))
+        return {};
+
+    const QString scriptPath = gradleInitScriptPath();
+    if (scriptPath.isEmpty())
+        return {};
+
+    QProcess process;
+    process.setWorkingDirectory(androidBuildDir);
+    process.start(gradlew, { "-q"_L1, "--init-script"_L1, scriptPath,
+                             "-Pproperty="_L1 + property, "printProjectProperty"_L1 });
+
+    if (!process.waitForFinished(30000))
+        return {};
+
+    return QString::fromUtf8(process.readAllStandardOutput()).trimmed();
+}
+
 static bool processAndroidManifest()
 {
     QFile androidManifestXml(g_options.manifestPath);
@@ -334,8 +399,6 @@ static bool processAndroidManifest()
         if (!reader.isStartElement())
             continue;
 
-        if (reader.name() == "manifest"_L1)
-            g_options.package = reader.attributes().value("package"_L1).toString();
         else if (reader.name() == "activity"_L1 && g_options.activity.isEmpty())
             g_options.activity = reader.attributes().value("android:name"_L1).toString();
         else if (reader.name() == "uses-permission"_L1)
@@ -977,6 +1040,10 @@ int main(int argc, char *argv[])
 
     if (!processAndroidManifest())
         return EXIT_ERROR;
+
+    const QString ns = getGradleProjectProperty(g_options.buildPath, "android.namespace"_L1);
+    if (!ns.isEmpty())
+        g_options.package = ns;
 
     if (g_options.package.isEmpty()) {
         qCritical("Unable to get package name for '%s'", qPrintable(g_options.packagePath));

@@ -24,6 +24,14 @@ android {
 
     defaultConfig {
         @DEFAULT_CONFIG_VALUES@
+        applicationId "@APP_PACKAGE_NAME@"
+        versionCode @APP_VERSION_CODE@
+        versionName "@APP_VERSION_NAME@"
+        manifestPlaceholders = [
+            appName: "@APP_NAME@",
+            appLibName: "@APP_LIB_NAME@",
+            appArguments: "@APP_ARGUMENTS@"
+        ]
     }
 
     sourceSets {

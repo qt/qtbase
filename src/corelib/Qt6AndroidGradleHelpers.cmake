@@ -249,6 +249,18 @@ function(_qt_internal_android_generate_target_build_gradle target)
 
     get_target_property(android_target_type ${target} _qt_android_target_type)
     if(android_target_type STREQUAL "APPLICATION")
+        _qt_internal_android_get_manifest_property(APP_PACKAGE_NAME ${target}
+            QT_ANDROID_PACKAGE_NAME "org.qtproject.example.$<MAKE_C_IDENTIFIER:${target}>")
+        _qt_internal_android_get_manifest_property(APP_NAME ${target}
+            QT_ANDROID_APP_NAME "${target}")
+        _qt_internal_android_get_manifest_property(APP_VERSION_CODE ${target}
+            QT_ANDROID_VERSION_CODE "1")
+        _qt_internal_android_get_manifest_property(APP_VERSION_NAME ${target}
+            QT_ANDROID_VERSION_NAME "1")
+        _qt_internal_android_get_manifest_property(APP_LIB_NAME ${target}
+            OUTPUT_NAME "${target}")
+        set(APP_ARGUMENTS "${QT_ANDROID_APPLICATION_ARGUMENTS}")
+
         set(GRADLE_PLUGIN_TYPE "com.android.application")
         set(template_subdir "app")
     elseif(android_target_type STREQUAL "DYNAMIC_FEATURE")

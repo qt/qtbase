@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:dist="http://schemas.android.com/apk/distribution"
-        split="@APP_TARGET@"
+        split="${featureSplit}"
         android:isFeatureSplit="true">
     <dist:module
         dist:instant="true"
-        dist:title="@TITLE_VAR@">
+        dist:title="${featureTitle}">
         <dist:delivery>
             <dist:on-demand />
         </dist:delivery>
