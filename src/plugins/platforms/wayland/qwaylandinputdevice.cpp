@@ -414,10 +414,13 @@ void QWaylandInputDevice::seat_capabilities(uint32_t caps)
 
         auto *pointerGestures = mQDisplay->pointerGestures();
         if (pointerGestures) {
+              QInputDevice::Capabilities  pointerCapabilities = QInputDevice::Capability::Position
+                                                             | QInputDevice::Capability::PixelScroll
+                                                             | QInputDevice::Capability::Scroll;
             // NOTE: The name of the device and its system ID are not exposed on Wayland.
             mTouchPadDevice = new QPointingDevice(
                     QLatin1StringView("touchpad"), 0, QInputDevice::DeviceType::TouchPad,
-                    QPointingDevice::PointerType::Finger, QInputDevice::Capability::Position,
+                    QPointingDevice::PointerType::Finger, pointerCapabilities,
                     MaxTouchPoints, 0, mSeatName, QPointingDeviceUniqueId(), this);
             QWindowSystemInterface::registerInputDevice(mTouchPadDevice);
             mPointerGesturePinch.reset(pointerGestures->createPointerGesturePinch(this));
