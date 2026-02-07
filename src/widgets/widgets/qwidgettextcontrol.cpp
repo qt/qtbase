@@ -1039,6 +1039,12 @@ void QWidgetTextControl::processEvent(QEvent *e, const QTransform &transform, QW
             d->mousePressEvent(ev, ev->button(), transform.map(ev->position()), ev->modifiers(),
                                ev->buttons(), ev->globalPosition());
             break; }
+        case QEvent::Enter:
+            d->updateHighlightedAnchor(transform.map(static_cast<QEnterEvent *>(e)->position()));
+            break;
+        case QEvent::Leave:
+            d->resetHighlightedAnchor();
+            break;
         case QEvent::MouseMove: {
             QMouseEvent *ev = static_cast<QMouseEvent *>(e);
             d->mouseMoveEvent(ev, ev->button(), transform.map(ev->position()), ev->modifiers(),
@@ -1679,13 +1685,8 @@ void QWidgetTextControlPrivate::mouseMoveEvent(QEvent *e, Qt::MouseButton button
 {
     Q_Q(QWidgetTextControl);
 
-    if (interactionFlags & Qt::LinksAccessibleByMouse) {
-        QString anchor = q->anchorAt(mousePos);
-        if (anchor != highlightedAnchor) {
-            highlightedAnchor = anchor;
-            emit q->linkHovered(anchor);
-        }
-    }
+    if (interactionFlags & Qt::LinksAccessibleByMouse)
+        updateHighlightedAnchor(mousePos);
 
     if (buttons & Qt::LeftButton) {
         const bool editable = interactionFlags & Qt::TextEditable;
@@ -2977,6 +2978,25 @@ void QWidgetTextControlPrivate::activateLinkUnderCursor(QString href)
     else
 #endif
         emit q_func()->linkActivated(href);
+}
+
+void QWidgetTextControlPrivate::updateHighlightedAnchor(QPointF mousePos)
+{
+    Q_Q(QWidgetTextControl);
+    const QString anchor = q->anchorAt(mousePos);
+    if (anchor != highlightedAnchor) {
+        highlightedAnchor = anchor;
+        emit q->linkHovered(anchor);
+    }
+}
+
+void QWidgetTextControlPrivate::resetHighlightedAnchor()
+{
+    Q_Q(QWidgetTextControl);
+    if (!highlightedAnchor.isEmpty()) {
+        highlightedAnchor.clear();
+        emit q->linkHovered(QString());
+    }
 }
 
 #if QT_CONFIG(tooltip)
