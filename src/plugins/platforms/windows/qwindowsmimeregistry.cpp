@@ -90,6 +90,7 @@ static inline bool readDib(QBuffer &buffer, QImage &img)
     return true;
 }
 
+#if QT_CONFIG(imageformat_bmp)
 static QByteArray writeDib(const QImage &img)
 {
     QByteArray ba;
@@ -188,6 +189,7 @@ static bool qt_write_dibv5(QDataStream &s, QImage image)
     delete[] buf;
     return true;
 }
+#endif //QT_CONFIG(imageformat_bmp)
 
 // helpers for using global memory
 
@@ -793,7 +795,7 @@ bool QWindowsMimeHtml::convertFromMime(const FORMATETC &formatetc, const QMimeDa
 }
 
 
-#ifndef QT_NO_IMAGEFORMAT_BMP
+#if QT_CONFIG(imageformat_bmp)
 class QWindowsMimeImage : public QWindowsMimeConverter
 {
 public:
@@ -944,7 +946,7 @@ QVariant QWindowsMimeImage::convertToMime(const QString &mimeType, IDataObject *
     // Failed
     return result;
 }
-#endif
+#endif //QT_CONFIG(imageformat_bmp)
 
 class QBuiltInMimes : public QWindowsMimeConverter
 {
@@ -1341,9 +1343,9 @@ void QWindowsMimeRegistry::ensureInitialized() const
 {
     if (m_internalMimeCount == 0) {
         m_internalMimeCount = -1; // prevent reentrancy when types register themselves
-#ifndef QT_NO_IMAGEFORMAT_BMP
+#if QT_CONFIG(imageformat_bmp)
         (void)new QWindowsMimeImage;
-#endif //QT_NO_IMAGEFORMAT_BMP
+#endif //QT_CONFIG(imageformat_bmp)
         (void)new QLastResortMimes;
         (void)new QWindowsMimeText;
         (void)new QWindowsMimeURI;
