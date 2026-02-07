@@ -100,6 +100,8 @@ public:
     { return selectionRect(this->cursor); }
 
     QString anchorForCursor(const QTextCursor &anchor) const;
+    void updateHighlightedAnchor(QPointF mousePos);
+    void resetHighlightedAnchor();
 
     void keyPressEvent(QKeyEvent *e);
     void mousePressEvent(QEvent *e, Qt::MouseButton button, const QPointF &pos,
