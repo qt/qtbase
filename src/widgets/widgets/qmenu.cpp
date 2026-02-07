@@ -1315,7 +1315,7 @@ void QMenuPrivate::scrollMenu(QMenuScroller::ScrollDirection direction, bool pag
 bool QMenuPrivate::mouseEventTaken(QMouseEvent *e)
 {
     Q_Q(QMenu);
-    QPoint pos = q->mapFromGlobal(e->globalPosition().toPoint());
+    const QPoint pos = q->mapFromGlobal(e->globalPosition()).toPoint();
 
     QStyle *style = q->style();
     QStyleOption opt(0);

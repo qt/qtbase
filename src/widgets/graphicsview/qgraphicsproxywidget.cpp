@@ -268,8 +268,8 @@ void QGraphicsProxyWidgetPrivate::sendWidgetMouseEvent(QGraphicsSceneMouseEvent 
     pos = mapToReceiver(pos, receiver);
 
     // Send mouse event.
-    QMouseEvent mouseEvent(type, pos, receiver->mapTo(receiver->topLevelWidget(), pos.toPoint()),
-                           receiver->mapToGlobal(pos.toPoint()),
+    QMouseEvent mouseEvent(type, pos, receiver->mapTo(receiver->topLevelWidget(), pos),
+                           receiver->mapToGlobal(pos),
                            event->button(), event->buttons(), event->modifiers(), event->source());
     mouseEvent.setTimestamp(event->timestamp());
 
@@ -1010,7 +1010,7 @@ void QGraphicsProxyWidget::contextMenuEvent(QGraphicsSceneContextMenuEvent *even
     // Map event position from us to the receiver
     pos = d->mapToReceiver(pos, receiver);
 
-    QPoint globalPos = receiver->mapToGlobal(pos.toPoint());
+    QPoint globalPos = receiver->mapToGlobal(pos).toPoint();
     //If the receiver by-pass the proxy its popups
     //will be top level QWidgets therefore they need
     //the screen position. mapToGlobal expect the widget to
@@ -1142,7 +1142,7 @@ void QGraphicsProxyWidget::dropEvent(QGraphicsSceneDragDropEvent *event)
 #else
     Q_D(QGraphicsProxyWidget);
     if (d->widget && d->dragDropWidget) {
-        QPoint widgetPos = d->mapToReceiver(event->pos(), d->dragDropWidget).toPoint();
+        const QPointF widgetPos = d->mapToReceiver(event->pos(), d->dragDropWidget);
         QDropEvent dropEvent(widgetPos, event->possibleActions(), event->mimeData(), event->buttons(), event->modifiers());
         QCoreApplication::sendEvent(d->dragDropWidget, &dropEvent);
         event->setAccepted(dropEvent.isAccepted());

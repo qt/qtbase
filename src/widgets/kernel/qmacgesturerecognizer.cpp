@@ -70,7 +70,7 @@ QMacPinchGestureRecognizer::recognize(QGesture *gesture, QObject *obj, QEvent *e
         switch (ev->gestureType()) {
         case Qt::BeginNativeGesture:
             reset(gesture);
-            g->setStartCenterPoint(static_cast<QWidget*>(obj)->mapFromGlobal(ev->globalPosition().toPoint()));
+            g->setStartCenterPoint(static_cast<QWidget*>(obj)->mapFromGlobal(ev->globalPosition()));
             g->setCenterPoint(g->startCenterPoint());
             g->setChangeFlags(QPinchGesture::CenterPointChanged);
             g->setTotalChangeFlags(g->totalChangeFlags() | g->changeFlags());

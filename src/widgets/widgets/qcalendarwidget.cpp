@@ -3141,7 +3141,7 @@ bool QCalendarWidget::eventFilter(QObject *watched, QEvent *event)
         if (!widget || widget->window() != tlw)
             return QWidget::eventFilter(watched, event);
 
-        QPoint mousePos = widget->mapTo(tlw, static_cast<QMouseEvent *>(event)->position().toPoint());
+        QPoint mousePos = widget->mapTo(tlw, static_cast<QMouseEvent *>(event)->position()).toPoint();
         QRect geom = QRect(d->yearEdit->mapTo(tlw, QPoint(0, 0)), d->yearEdit->size());
         if (!geom.contains(mousePos)) {
             event->accept();

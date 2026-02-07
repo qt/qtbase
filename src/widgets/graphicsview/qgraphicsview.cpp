@@ -870,7 +870,7 @@ void QGraphicsViewPrivate::populateSceneDragDropEvent(QGraphicsSceneDragDropEven
 #if QT_CONFIG(draganddrop)
     Q_Q(QGraphicsView);
     dest->setScenePos(q->mapToScene(source->position().toPoint()));
-    dest->setScreenPos(q->mapToGlobal(source->position().toPoint()));
+    dest->setScreenPos(q->mapToGlobal(source->position()).toPoint());
     dest->setButtons(source->buttons());
     dest->setModifiers(source->modifiers());
     dest->setPossibleActions(source->possibleActions());
@@ -3297,7 +3297,7 @@ void QGraphicsView::mouseMoveEvent(QMouseEvent *event)
         if (d->handScrolling) {
             QScrollBar *hBar = horizontalScrollBar();
             QScrollBar *vBar = verticalScrollBar();
-            QPoint delta = event->position().toPoint() - d->lastMouseEvent->position().toPoint();
+            QPoint delta = (event->position() - d->lastMouseEvent->position()).toPoint();
             hBar->setValue(hBar->value() + (isRightToLeft() ? delta.x() : -delta.x()));
             vBar->setValue(vBar->value() - delta.y());
 
