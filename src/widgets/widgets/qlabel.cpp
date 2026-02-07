@@ -957,6 +957,8 @@ bool QLabel::event(QEvent *e)
     } else if (type == QEvent::Polish) {
         if (d->needTextControl())
             d->ensureTextControl();
+    } else if (type == QEvent::Enter || type == QEvent::Leave) {
+        d->sendControlEvent(e);
     }
 
     return QFrame::event(e);

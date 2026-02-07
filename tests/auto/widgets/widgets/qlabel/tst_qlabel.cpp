@@ -4,6 +4,7 @@
 
 #include <QTest>
 #include <QTimer>
+#include <QSignalSpy>
 
 #include "qlabel.h"
 #include <qapplication.h>
@@ -87,6 +88,7 @@ private Q_SLOTS:
     void resourceProvider();
     void mouseEventPropagation_data();
     void mouseEventPropagation();
+    void linkHoverLeave();
 
 private:
     QLabel *testWidget;
@@ -728,6 +730,49 @@ void tst_QLabel::mouseEventPropagation()
     const uint count = expectPropagation ? buttons.count() : 0;
     QTRY_COMPARE(widget.pressed(), count);
     QTRY_COMPARE(widget.released(), count);
+}
+
+// Test that linkHovered is re-emitted when mouse leaves and re-enters
+// the label over the same link (QTBUG-143965)
+void tst_QLabel::linkHoverLeave()
+{
+    QLabel label;
+    label.setWindowTitle("Label");
+    label.setText(QLatin1String("<a href=\"test\">Click here to test link hover</a>"));
+    label.setTextInteractionFlags(Qt::LinksAccessibleByMouse);
+    label.setAlignment(Qt::AlignCenter);
+    label.setMouseTracking(true);
+    label.resize(200, 100);
+    QHBoxLayout hbox(testWidget);
+    hbox.addWidget(&label);
+    testWidget->setLayout(&hbox);
+
+    QSignalSpy spy(&label, &QLabel::linkHovered);
+
+    testWidget->show();
+    QVERIFY(QTest::qWaitForWindowExposed(&label));
+
+    // Step 1: Set mouse to an initial position
+    const QPoint initalMousePosition = testWidget->screen()->geometry().topLeft() + QPoint(5, 5);
+    QCursor::setPos(initalMousePosition);
+
+    // Step 2: Move mouse over the link
+    const QPoint center = label.rect().center();
+    QTest::mouseMove(&label, center);
+    if (!QTest::qWaitFor([&spy]{ return spy.count() == 1; }))
+        QSKIP("QPA plugin doesn't generate Enter/Leave events for simulated mouse move events.");
+
+    QCOMPARE(spy.last().at(0).toString(), QLatin1String("test"));
+
+    // Step 3: Move mouse out (trigger leave event)
+    QTest::mouseMove(&label, QPoint(-10, -10));
+    QTRY_COMPARE(spy.count(), 2);
+    QCOMPARE(spy.last().at(0).toString(), QString());
+
+    // Step 4: Move mouse back over the center
+    QTest::mouseMove(&label, center);
+    QTRY_COMPARE(spy.count(), 3);
+    QCOMPARE(spy.last().at(0).toString(), QLatin1String("test"));
 }
 
 QTEST_MAIN(tst_QLabel)
