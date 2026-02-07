@@ -15,6 +15,7 @@ function(_qt_internal_android_get_template_path out_var target template_name)
     # The paths are ordered according to their priority, from highest to lowest.
     set(possible_paths
         "${template_directory}/${template_name}.in"
+        "${template_directory}/${template_name}"
     )
 
     get_target_property(android_target_type ${target} _qt_android_target_type)

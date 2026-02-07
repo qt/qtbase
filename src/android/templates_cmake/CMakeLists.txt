@@ -4,7 +4,7 @@
 set(templates_files
     "${CMAKE_CURRENT_SOURCE_DIR}/.gitignore"
     "${CMAKE_CURRENT_SOURCE_DIR}/settings.gradle.in"
-    "${CMAKE_CURRENT_SOURCE_DIR}/gradle.properties.in"
+    "${CMAKE_CURRENT_SOURCE_DIR}/gradle.properties"
 )
 
 set(app_template_files
