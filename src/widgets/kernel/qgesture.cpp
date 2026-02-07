@@ -1058,9 +1058,8 @@ QPointF QGestureEvent::mapToGraphicsScene(const QPointF &gesturePoint) const
     if (w) // we get the viewport as widget, not the graphics view
         w = w->parentWidget();
     QGraphicsView *view = qobject_cast<QGraphicsView*>(w);
-    if (view) {
-        return view->mapToScene(view->mapFromGlobal(gesturePoint.toPoint()));
-    }
+    if (view)
+        return view->mapToScene(view->mapFromGlobal(gesturePoint).toPoint());
     return QPointF();
 }
 #endif // QT_CONFIG(graphicsview)

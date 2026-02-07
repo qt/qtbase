@@ -2648,7 +2648,7 @@ bool QMdiSubWindow::eventFilter(QObject *object, QEvent *event)
                 close();
         } else if (event->type() == QEvent::MouseMove) {
             QMouseEvent *mouseEvent = static_cast<QMouseEvent *>(event);
-            d->hoveredSubControl = d->getSubControl(mapFromGlobal(mouseEvent->globalPosition().toPoint()));
+            d->hoveredSubControl = d->getSubControl(mapFromGlobal(mouseEvent->globalPosition()).toPoint());
         } else if (event->type() == QEvent::Hide) {
             d->activeSubControl = QStyle::SC_None;
             update(QRegion(0, 0, width(), d->titleBarHeight()));
@@ -2662,7 +2662,7 @@ bool QMdiSubWindow::eventFilter(QObject *object, QEvent *event)
         if (event->type() != QEvent::MouseButtonPress || !testOption(QMdiSubWindow::RubberBandResize))
             return QWidget::eventFilter(object, event);
         const QMouseEvent *mouseEvent = static_cast<QMouseEvent *>(event);
-        d->mousePressPosition = parentWidget()->mapFromGlobal(mouseEvent->globalPosition().toPoint());
+        d->mousePressPosition = parentWidget()->mapFromGlobal(mouseEvent->globalPosition()).toPoint();
         d->oldGeometry = geometry();
         d->currentOperation = isLeftToRight() ? QMdiSubWindowPrivate::BottomRightResize
                                               : QMdiSubWindowPrivate::BottomLeftResize;
@@ -3303,7 +3303,7 @@ void QMdiSubWindow::mouseMoveEvent(QMouseEvent *mouseEvent)
         if ((d->isResizeOperation() && d->resizeEnabled) || (d->isMoveOperation() && d->moveEnabled)) {
             // As setNewGeometry moves the window, it invalidates the pos() value of any mouse move events that are
             // currently queued in the event loop. Map to parent using globalPos() instead.
-            d->setNewGeometry(parentWidget()->mapFromGlobal(mouseEvent->globalPosition().toPoint()));
+            d->setNewGeometry(parentWidget()->mapFromGlobal(mouseEvent->globalPosition()).toPoint());
         }
         return;
     }
