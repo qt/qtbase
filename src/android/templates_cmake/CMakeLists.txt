@@ -3,6 +3,7 @@
 
 set(templates_files
     "${CMAKE_CURRENT_SOURCE_DIR}/.gitignore"
+    "${CMAKE_CURRENT_SOURCE_DIR}/build.gradle"
     "${CMAKE_CURRENT_SOURCE_DIR}/settings.gradle.in"
     "${CMAKE_CURRENT_SOURCE_DIR}/gradle.properties"
 )
