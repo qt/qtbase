@@ -426,7 +426,7 @@ QGestureRecognizer::Result QFlickGestureRecognizer::recognize(QGesture *state,
     switch (event->type()) {
     case QEvent::MouseButtonPress:
         if (me && me->button() == button && me->buttons() == button) {
-            point = me->globalPosition().toPoint();
+            point = me->globalPosition();
             inputType = QScroller::InputPress;
         } else if (me) {
             scroller->stop();
@@ -435,13 +435,13 @@ QGestureRecognizer::Result QFlickGestureRecognizer::recognize(QGesture *state,
         break;
     case QEvent::MouseButtonRelease:
         if (me && me->button() == button) {
-            point = me->globalPosition().toPoint();
+            point = me->globalPosition();
             inputType = QScroller::InputRelease;
         }
         break;
     case QEvent::MouseMove:
         if (me && me->buttons() == button) {
-            point = me->globalPosition().toPoint();
+            point = me->globalPosition();
             inputType = QScroller::InputMove;
         }
         break;
@@ -533,7 +533,7 @@ QGestureRecognizer::Result QFlickGestureRecognizer::recognize(QGesture *state,
 
     if (inputType) {
         if (QWidget *w = qobject_cast<QWidget *>(d->receiver))
-            point = w->mapFromGlobal(point.toPoint());
+            point = w->mapFromGlobal(point);
 #if QT_CONFIG(graphicsview)
         else if (QGraphicsObject *go = qobject_cast<QGraphicsObject *>(d->receiver))
             point = go->mapFromScene(point);
