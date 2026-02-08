@@ -78,9 +78,9 @@ QSize QMenuBarExtension::sizeHint() const
 */
 QAction *QMenuBarPrivate::actionAt(QPoint p) const
 {
-    for(int i = 0; i < actions.size(); ++i) {
-        if (actionRect(actions.at(i)).contains(p))
-            return actions.at(i);
+    for (auto *action : actions) {
+        if (actionRect(action).contains(p))
+            return action;
     }
     return nullptr;
 }
@@ -163,13 +163,12 @@ void QMenuBarPrivate::updateGeometries()
     currentAction = nullptr;
 #ifndef QT_NO_SHORTCUT
     if (itemsDirty) {
-        for(int j = 0; j < shortcutIndexMap.size(); ++j)
-            q->releaseShortcut(shortcutIndexMap.value(j));
+        for (const auto shortcutId : std::as_const(shortcutIndexMap))
+            q->releaseShortcut(shortcutId);
         shortcutIndexMap.clear();
-        const int actionsCount = actions.size();
-        shortcutIndexMap.reserve(actionsCount);
-        for (int i = 0; i < actionsCount; i++)
-            shortcutIndexMap.append(q->grabShortcut(QKeySequence::mnemonic(actions.at(i)->text())));
+        shortcutIndexMap.reserve(actions.size());
+        for (const auto *action : std::as_const(actions))
+            shortcutIndexMap.append(q->grabShortcut(QKeySequence::mnemonic(action->text())));
     }
 #endif
     itemsDirty = false;
@@ -180,8 +179,7 @@ void QMenuBarPrivate::updateGeometries()
 
     //we try to see if the actions will fit there
     bool hasHiddenActions = false;
-    for (int i = 0; i < actions.size(); ++i) {
-        const QRect &rect = actionRects.at(i);
+    for (const auto &rect : std::as_const(actionRects)) {
         if (rect.isValid() && !menuRect.contains(rect)) {
             hasHiddenActions = true;
             break;
@@ -191,7 +189,7 @@ void QMenuBarPrivate::updateGeometries()
     //...and if not, determine the ones that fit on the menu with the extension visible
     if (hasHiddenActions) {
         menuRect = this->menuRect(true);
-        for (int i = 0; i < actions.size(); ++i) {
+        for (qsizetype i = 0; i < actions.size(); ++i) {
             const QRect &rect = actionRects.at(i);
             if (rect.isValid() && !menuRect.contains(rect)) {
                 hiddenActions.append(actions.at(i));
@@ -222,7 +220,7 @@ void QMenuBarPrivate::updateGeometries()
 
 QRect QMenuBarPrivate::actionRect(QAction *act) const
 {
-    const int index = actions.indexOf(act);
+    const qsizetype index = actions.indexOf(act);
 
     //makes sure the geometries are up-to-date
     const_cast<QMenuBarPrivate*>(this)->updateGeometries();
@@ -237,7 +235,7 @@ void QMenuBarPrivate::focusFirstAction()
 {
     if (!currentAction) {
         updateGeometries();
-        int index = 0;
+        qsizetype index = 0;
         while (index < actions.size() && actionRects.at(index).isNull()) ++index;
         if (index < actions.size())
             setCurrentAction(actions.at(index));
@@ -400,8 +398,8 @@ void QMenuBarPrivate::calcActionRects(int max_width, int start) const
     const int hmargin = style->pixelMetric(QStyle::PM_MenuBarHMargin, nullptr, q),
               vmargin = style->pixelMetric(QStyle::PM_MenuBarVMargin, nullptr, q),
                 icone = style->pixelMetric(QStyle::PM_SmallIconSize, nullptr, q);
-    for(int i = 0; i < actions.size(); i++) {
-        QAction *action = actions.at(i);
+    for (qsizetype i = 0; i < actions.size(); ++i) {
+        const QAction *action = actions.at(i);
         if (!action->isVisible())
             continue;
 
@@ -446,7 +444,7 @@ void QMenuBarPrivate::calcActionRects(int max_width, int start) const
     const int fw = q->style()->pixelMetric(QStyle::PM_MenuBarPanelWidth, nullptr, q);
     int x = fw + ((start == -1) ? hmargin : start) + itemSpacing;
     int y = fw + vmargin;
-    for(int i = 0; i < actions.size(); i++) {
+    for (qsizetype i = 0; i < actionRects.size(); ++i) {
         QRect &rect = actionRects[i];
         if (rect.isNull())
             continue;
@@ -686,15 +684,15 @@ void QMenuBarPrivate::init()
 }
 
 //Gets the next action for keyboard navigation
-QAction *QMenuBarPrivate::getNextAction(const int _start, const int increment) const
+QAction *QMenuBarPrivate::getNextAction(const qsizetype _start, const qsizetype increment) const
 {
     Q_Q(const QMenuBar);
     const_cast<QMenuBarPrivate*>(this)->updateGeometries();
     bool allowActiveAndDisabled = q->style()->styleHint(QStyle::SH_Menu_AllowActiveAndDisabled, nullptr, q);
-    const int start = (_start == -1 && increment == -1) ? actions.size() : _start;
-    const int end =  increment == -1 ? 0 : actions.size() - 1;
+    const qsizetype start = (_start == -1 && increment == -1) ? actions.size() : _start;
+    const qsizetype end =  increment == -1 ? 0 : actions.size() - 1;
 
-    for (int i = start; i != end;) {
+    for (qsizetype i = start; i != end;) {
         i += increment;
         QAction *current = actions.at(i);
         if (!actionRects.at(i).isNull() && (allowActiveAndDisabled || current->isEnabled()))
@@ -846,9 +844,9 @@ void QMenuBar::setActiveAction(QAction *act)
 */
 void QMenuBar::clear()
 {
-    QList<QAction*> acts = actions();
-    for(int i = 0; i < acts.size(); i++)
-        removeAction(acts[i]);
+    const auto acts = actions();
+    for (const auto &act : acts)
+        removeAction(act);
 }
 
 /*!
@@ -1049,7 +1047,7 @@ void QMenuBar::keyPressEvent(QKeyEvent *e)
     case Qt::Key_Right:
     case Qt::Key_Left: {
         if (d->currentAction) {
-            int index = d->actions.indexOf(d->currentAction);
+            qsizetype index = d->actions.indexOf(d->currentAction);
             if (QAction *nextAction = d->getNextAction(index, key == Qt::Key_Left ? -1 : +1)) {
                 d->setCurrentAction(nextAction, d->popupState, true);
                 key_consumed = true;
@@ -1076,7 +1074,7 @@ void QMenuBar::keyPressEvent(QKeyEvent *e)
         QAction *first = nullptr, *currentSelected = nullptr, *firstAfterCurrent = nullptr;
         {
             const QChar c = e->text().at(0).toUpper();
-            for(int i = 0; i < d->actions.size(); ++i) {
+            for (qsizetype i = 0; i < d->actions.size(); ++i) {
                 if (d->actionRects.at(i).isNull())
                     continue;
                 QAction *act = d->actions.at(i);
@@ -1166,7 +1164,7 @@ QPlatformMenu *QMenuBarPrivate::findInsertionPlatformMenu(const QAction *action)
 {
     Q_Q(QMenuBar);
     QPlatformMenu *beforeMenu = nullptr;
-    for (int beforeIndex = indexOf(const_cast<QAction *>(action)) + 1;
+    for (qsizetype beforeIndex = indexOf(const_cast<QAction *>(action)) + 1;
          !beforeMenu && (beforeIndex < q->actions().size());
          ++beforeIndex) {
         beforeMenu = getPlatformMenu(q->actions().at(beforeIndex));
@@ -1389,7 +1387,7 @@ bool QMenuBar::event(QEvent *e)
     case QEvent::Shortcut: {
         QShortcutEvent *se = static_cast<QShortcutEvent *>(e);
         int shortcutId = se->shortcutId();
-        for(int j = 0; j < d->shortcutIndexMap.size(); ++j) {
+        for (qsizetype j = 0; j < d->shortcutIndexMap.size(); ++j) {
             if (shortcutId == d->shortcutIndexMap.value(j))
                 d->_q_internalShortcutActivated(j);
         }
@@ -1541,7 +1539,7 @@ QSize QMenuBar::minimumSizeHint() const
     if (as_gui_menubar) {
         int w = parentWidget() ? parentWidget()->width() : QGuiApplication::primaryScreen()->virtualGeometry().width();
         d->calcActionRects(w - (2 * fw), 0);
-        for (int i = 0; ret.isNull() && i < d->actions.size(); ++i)
+        for (qsizetype i = 0; ret.isNull() && i < d->actions.size(); ++i)
             ret = d->actionRects.at(i).size();
         if (!d->extension->isHidden())
             ret += QSize(d->extension->sizeHint().width(), 0);
@@ -1591,10 +1589,8 @@ QSize QMenuBar::sizeHint() const
     if (as_gui_menubar) {
         const int w = parentWidget() ? parentWidget()->width() : QGuiApplication::primaryScreen()->virtualGeometry().width();
         d->calcActionRects(w - (2 * fw), 0);
-        for (int i = 0; i < d->actionRects.size(); ++i) {
-            const QRect &actionRect = d->actionRects.at(i);
+        for (const auto &actionRect : d->actionRects)
             ret = ret.expandedTo(QSize(actionRect.x() + actionRect.width(), actionRect.y() + actionRect.height()));
-        }
         //the action geometries already contain the top and left
         //margins. So we only need to add those from right and bottom.
         ret += QSize(fw + hmargin, fw + vmargin);
@@ -1638,8 +1634,8 @@ int QMenuBar::heightForWidth(int) const
     int fw = style()->pixelMetric(QStyle::PM_MenuBarPanelWidth, nullptr, this);
     int spaceBelowMenuBar = style()->styleHint(QStyle::SH_MainWindow_SpaceBelowMenuBar, nullptr, this);
     if (as_gui_menubar) {
-        for (int i = 0; i < d->actionRects.size(); ++i)
-            height = qMax(height, d->actionRects.at(i).height());
+        for (const auto &actionRect : d->actionRects)
+            height = qMax(height, actionRect.height());
         if (height) //there is at least one non-null item
             height += spaceBelowMenuBar;
         height += 2*fw;

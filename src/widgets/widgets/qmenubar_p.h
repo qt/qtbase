@@ -43,7 +43,7 @@ public:
         }
 
     void init();
-    QAction *getNextAction(const int start, const int increment) const;
+    QAction *getNextAction(const qsizetype start, const qsizetype increment) const;
 
     //item calculations
     uint itemsDirty : 1;
