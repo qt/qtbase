@@ -955,7 +955,7 @@ void QWidgetWindow::handleWheelEvent(QWheelEvent *event)
 
 #if QT_CONFIG(draganddrop)
 
-static QWidget *findDnDTarget(QWidget *parent, const QPoint &pos)
+static QWidget *findDnDTarget(QWidget *parent, const QPointF &pos)
 {
     // Find a target widget under mouse that accepts drops (QTBUG-22987).
     QWidget *widget = parent->childAt(pos);
@@ -981,7 +981,7 @@ void QWidgetWindow::handleDragEnterEvent(QDragMoveEvent *event, QWidget *widget)
 {
     Q_ASSERT(m_dragTarget == nullptr);
     if (!widget)
-        widget = findDnDTarget(m_widget, event->position().toPoint());
+        widget = findDnDTarget(m_widget, event->position());
     if (!widget) {
         event->ignore();
         return;
@@ -998,7 +998,7 @@ void QWidgetWindow::handleDragEnterEvent(QDragMoveEvent *event, QWidget *widget)
 
 void QWidgetWindow::handleDragMoveEvent(QDragMoveEvent *event)
 {
-    QPointer<QWidget> widget = findDnDTarget(m_widget, event->position().toPoint());
+    QPointer<QWidget> widget = findDnDTarget(m_widget, event->position());
     if (!widget) {
         event->ignore();
         if (m_dragTarget) { // Send DragLeave to previous
