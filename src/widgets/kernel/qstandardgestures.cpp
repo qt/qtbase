@@ -287,9 +287,9 @@ QGestureRecognizer::Result QSwipeGestureRecognizer::recognize(QGesture *state,
             const QEventPoint &p3 = ev->points().at(2);
 
             if (d->lastPositions[0].isNull()) {
-                d->lastPositions[0] = p1.globalPressPosition().toPoint();
-                d->lastPositions[1] = p2.globalPressPosition().toPoint();
-                d->lastPositions[2] = p3.globalPressPosition().toPoint();
+                d->lastPositions[0] = p1.globalPressPosition();
+                d->lastPositions[1] = p2.globalPressPosition();
+                d->lastPositions[2] = p3.globalPressPosition();
             }
             d->hotSpot = p1.globalPosition();
             d->isHotSpotSet = true;
@@ -312,9 +312,9 @@ QGestureRecognizer::Result QSwipeGestureRecognizer::recognize(QGesture *state,
             static const int directionChangeThreshold = MoveThreshold / 8;
             if (qAbs(xDistance) > MoveThreshold || qAbs(yDistance) > MoveThreshold) {
                 // measure the distance to check if the direction changed
-                d->lastPositions[0] = p1.globalPosition().toPoint();
-                d->lastPositions[1] = p2.globalPosition().toPoint();
-                d->lastPositions[2] = p3.globalPosition().toPoint();
+                d->lastPositions[0] = p1.globalPosition();
+                d->lastPositions[1] = p2.globalPosition();
+                d->lastPositions[2] = p3.globalPosition();
                 result = QGestureRecognizer::TriggerGesture;
                 // QTBUG-46195, small changes in direction should not cause the gesture to be canceled.
                 if (d->verticalDirection == QSwipeGesture::NoDirection || qAbs(yDistance) > directionChangeThreshold) {
@@ -375,7 +375,7 @@ void QSwipeGestureRecognizer::reset(QGesture *state)
     d->verticalDirection = d->horizontalDirection = QSwipeGesture::NoDirection;
     d->swipeAngle = 0;
 
-    d->lastPositions[0] = d->lastPositions[1] = d->lastPositions[2] = QPoint();
+    d->lastPositions[0] = d->lastPositions[1] = d->lastPositions[2] = QPointF();
     d->state = QSwipeGesturePrivate::NoGesture;
     d->velocityValue = 0;
     d->time.invalidate();

@@ -128,7 +128,7 @@ public:
     QSwipeGesture::SwipeDirection verticalDirection;
     qreal swipeAngle;
 
-    QPoint lastPositions[3];
+    QPointF lastPositions[3];
     State state;
     qreal velocityValue;
     QElapsedTimer time;
