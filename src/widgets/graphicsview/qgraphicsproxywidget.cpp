@@ -221,7 +221,7 @@ void QGraphicsProxyWidgetPrivate::sendWidgetMouseEvent(QGraphicsSceneMouseEvent 
 
     // Find widget position and receiver.
     QPointF pos = event->pos();
-    QPointer<QWidget> alienWidget = widget->childAt(pos.toPoint());
+    QPointer<QWidget> alienWidget = widget->childAt(pos);
     QPointer<QWidget> receiver =  alienWidget ? alienWidget : widget;
 
     if (QWidgetPrivate::nearestGraphicsProxyWidget(receiver) != q)
@@ -1004,7 +1004,7 @@ void QGraphicsProxyWidget::contextMenuEvent(QGraphicsSceneContextMenuEvent *even
 
     // Find widget position and receiver.
     QPointF pos = event->pos();
-    QPointer<QWidget> alienWidget = d->widget->childAt(pos.toPoint());
+    QPointer<QWidget> alienWidget = d->widget->childAt(pos);
     QPointer<QWidget> receiver =  alienWidget ? alienWidget : d->widget;
 
     // Map event position from us to the receiver
@@ -1079,7 +1079,7 @@ void QGraphicsProxyWidget::dragMoveEvent(QGraphicsSceneDragDropEvent *event)
         return;
     QPointF p = event->pos();
     event->ignore();
-    QPointer<QWidget> subWidget = d->widget->childAt(p.toPoint());
+    QPointer<QWidget> subWidget = d->widget->childAt(p);
     QPointer<QWidget> receiver =  subWidget ? subWidget : d->widget;
     bool eventDelivered = false;
     for (; receiver; receiver = receiver->parentWidget()) {
@@ -1264,7 +1264,7 @@ void QGraphicsProxyWidget::wheelEvent(QGraphicsSceneWheelEvent *event)
         return;
 
     QPointF pos = event->pos();
-    QPointer<QWidget> receiver = d->widget->childAt(pos.toPoint());
+    QPointer<QWidget> receiver = d->widget->childAt(pos);
     if (!receiver)
         receiver = d->widget;
 
