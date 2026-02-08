@@ -232,10 +232,10 @@ namespace QtAndroidInput
     {
         QAndroidInputContext *inputContext = QAndroidInputContext::androidInputContext();
 
-        const QPoint globalPos(x,y);
+        const QPoint localPos(x,y);
         QWindow *window = windowFromId(winId);
-        const QPoint localPos = window && window->handle() ?
-                window->handle()->mapFromGlobal(globalPos) : globalPos;
+        const QPoint globalPos = window && window->handle() ?
+                window->handle()->mapToGlobal(localPos) : localPos;
 
         if (inputContext && qGuiApp)
             QMetaObject::invokeMethod(inputContext, "longPress", Q_ARG(int, globalPos.x()), Q_ARG(int, globalPos.y()));
