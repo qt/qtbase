@@ -614,11 +614,11 @@ void QGestureManager::deliverEvents(const QSet<QGesture *> &gestures,
             Q_ASSERT(gesture->state() == Qt::GestureStarted);
             if (gesture->hasHotSpot()) {
                 // guess the target widget using the hotspot of the gesture
-                QPoint pt = gesture->hotSpot().toPoint();
+                const QPointF pt = gesture->hotSpot();
                 qCDebug(lcGestureManager) << __FUNCTION__ << gesture
                                           << "doesn't have a target yet."
                                           << "Trying hotspot at" << pt;
-                if (QWidget *topLevel = QApplication::topLevelAt(pt)) {
+                if (QWidget *topLevel = QApplication::topLevelAt(pt.toPoint())) {
                     QWidget *child = topLevel->childAt(topLevel->mapFromGlobal(pt));
                     target = child ? child : topLevel;
                 }
