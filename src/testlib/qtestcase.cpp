@@ -1988,7 +1988,9 @@ int QTest::qRun()
 
         int remainingRepetitions = repetitions;
         const bool repeatForever = repetitions < 0;
-        while (QTestLog::failCount() == 0 && (repeatForever || remainingRepetitions-- > 0)) {
+        const int badArgCount = QTestLog::failCount(); // Stop if anything else fails.
+        while (!(QTestLog::failCount() > badArgCount)
+               && (repeatForever || remainingRepetitions-- > 0)) {
             QTestTable::globalTestTable();
             test.invokeTests(currentTestObject);
             QTestTable::clearGlobalTestTable();

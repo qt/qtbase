@@ -2,5 +2,18 @@
 Config: Using QtTest library
 FAIL!  : tst_Selected::excell() Function not found: excell
 FAIL!  : tst_Selected::surprise() Function not found: surprise
-Totals: 0 passed, 2 failed, 0 skipped, 0 blacklisted, 0ms
+PASS   : tst_Selected::initTestCase()
+PASS   : tst_Selected::pass(verify)
+FAIL!  : tst_Selected::fail(less) The computed value is expected to be less than the baseline, but is not
+   Computed (1): 1
+   Baseline (0): 0
+   Loc: [qtbase/tests/auto/testlib/selftests/selected/tst_selected.cpp(0)]
+FAIL!  : tst_Selected::fail() Data tag not found: seriously
+XFAIL  : tst_Selected::xfail(differ) This test should XFAIL
+   Loc: [qtbase/tests/auto/testlib/selftests/selected/tst_selected.cpp(0)]
+PASS   : tst_Selected::xfail(differ)
+XPASS  : tst_Selected::xpass(same) QCOMPARE_EQ(0, 0) returned TRUE unexpectedly.
+   Loc: [qtbase/tests/auto/testlib/selftests/selected/tst_selected.cpp(0)]
+PASS   : tst_Selected::cleanupTestCase()
+Totals: 4 passed, 5 failed, 0 skipped, 0 blacklisted, 0ms
 ********* Finished testing of tst_Selected *********
