@@ -1728,6 +1728,7 @@ bool QCocoaWindow::updatesWithDisplayLink() const
 void QCocoaWindow::deliverUpdateRequest()
 {
     qCDebug(lcQpaDrawing) << "Delivering update request to" << window();
+    QScopedValueRollback<bool> blocker(m_deliveringUpdateRequest, true);
 
     if (auto *qtMetalLayer = qt_objc_cast<QMetalLayer*>(contentLayer())) {
         // We attempt a read lock here, so that the animation/render thread is
