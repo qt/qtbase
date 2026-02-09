@@ -161,9 +161,10 @@ public:
     QWindow::requestActivate() actually gives the window focus, is
     platform dependent.
 
-    Since 6.8, if embedding a Qt Quick based window, tab presses will
-    transition in and out of the embedded QML window, allowing focus to move
-    to the next or previous focusable object in the window container chain.
+    If embedding a Qt Quick based window, Qt will automatically ensure
+    that tab presses will transition in and out of the embedded QML window,
+    allowing focus to move to the next or previous focusable object in the
+    window container chain.
 
     \li Using many window container instances in a QWidget-based
     application can greatly hurt the overall performance of the
