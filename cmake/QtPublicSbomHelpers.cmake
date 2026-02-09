@@ -186,14 +186,12 @@ function(_qt_internal_sbom_begin_project)
         )
     endif()
 
-    if(QT_SBOM_GENERATE_CYDX_V1_6)
-        _qt_internal_sbom_get_cyclone_bom_serial_number(
-            SPDX_NAMESPACE "${repo_spdx_namespace}"
-            OUT_VAR_UUID cyclone_dx_bom_serial_number_uuid
-        )
-        list(APPEND begin_project_generate_args_cydx
-            BOM_SERIAL_NUMBER_UUID "${cyclone_dx_bom_serial_number_uuid}")
-    endif()
+    _qt_internal_sbom_get_cyclone_bom_serial_number(
+        SPDX_NAMESPACE "${repo_spdx_namespace}"
+        OUT_VAR_UUID cyclone_dx_bom_serial_number_uuid
+    )
+    list(APPEND begin_project_generate_args_cydx
+        BOM_SERIAL_NUMBER_UUID "${cyclone_dx_bom_serial_number_uuid}")
 
     if(arg_INSTALL_SBOM_DIR)
         set(install_sbom_dir "${arg_INSTALL_SBOM_DIR}")
@@ -388,6 +386,8 @@ function(_qt_internal_sbom_begin_project)
 
     set_property(GLOBAL PROPERTY _qt_internal_sbom_project_spdx_id
         "${repo_project_spdx_id}")
+
+    _qt_internal_create_project_sbom_target()
 
     # Collect project licenses.
     set(license_dirs "")
@@ -1666,6 +1666,94 @@ function(_qt_internal_create_sbom_target target)
     )
 endfunction()
 
+# Creates a custom target to represent a project's root SBOM package / component.
+# For SPDX it represents what we consider the root package, although the spec doesn't define
+# any such package.
+# For CYDX it represents the root component, which is defined by the spec.
+# The target is currently intended to be used in sbom relationship entries, but might be expanded
+# with further information.
+function(_qt_internal_create_project_sbom_target)
+    if(NOT QT_GENERATE_SBOM)
+        return()
+    endif()
+
+    set(opt_args "")
+    set(single_args "")
+    set(multi_args "")
+    cmake_parse_arguments(PARSE_ARGV 0 arg "${opt_args}" "${single_args}" "${multi_args}")
+    _qt_internal_validate_all_args_are_parsed(arg)
+
+    _qt_internal_sbom_get_current_project_target(target)
+    if(TARGET "${target}")
+        message(FATAL_ERROR "The target ${target} already exists.")
+    endif()
+
+    add_library("${target}" INTERFACE IMPORTED)
+
+    get_property(project_spdx_id GLOBAL PROPERTY _qt_internal_sbom_project_spdx_id)
+    if(NOT project_spdx_id)
+        message(FATAL_ERROR "The global property _qt_internal_sbom_project_spdx_id was not set, "
+            "which is required to create a project sbom target.")
+    endif()
+
+    get_property(repo_document_namespace
+        GLOBAL PROPERTY _qt_internal_sbom_repo_document_namespace)
+
+    if(NOT repo_document_namespace)
+        message(FATAL_ERROR "The global property _qt_internal_sbom_repo_document_namespace was not"
+            " set, which is required to create a project sbom target.")
+    endif()
+
+    get_property(bom_serial_number_uuid
+        GLOBAL PROPERTY _qt_internal_sbom_repo_cyclone_dx_bom_serial_number_uuid)
+
+    if(NOT bom_serial_number_uuid)
+        message(FATAL_ERROR "The global property "
+            "_qt_internal_sbom_repo_cyclone_dx_bom_serial_number_uuid"
+            " was not set, which is required to create a project sbom target.")
+    endif()
+
+    _qt_internal_sbom_get_external_document_ref_spdx_id(
+        "${arg_PROJECT_NAME}" external_document_ref)
+
+    set_target_properties("${target}" PROPERTIES
+        IMPORTED_GLOBAL TRUE
+
+        _qt_sbom_is_custom_sbom_target "TRUE"
+        _qt_sbom_is_project_sbom_target "TRUE"
+
+        _qt_sbom_spdx_id "${project_spdx_id}"
+        _qt_sbom_entity_type "SBOM_PROJECT"
+        _qt_sbom_spdx_repo_document_namespace "${repo_document_namespace}"
+        _qt_sbom_spdx_v2_external_document_ref "${external_document_ref}"
+        _qt_sbom_cydx_bom_serial_number_uuid "${bom_serial_number_uuid}"
+        _qt_sbom_spdx_repo_project_name_lowercase "${project_name}"
+    )
+
+    # The computation for these relies on the previous ones being set.
+    _qt_internal_sbom_compute_external_spdx_v2_id("${target}" external_spdx_v2_id)
+    _qt_internal_sbom_get_cydx_external_bom_link("${target}" external_bom_link)
+
+    set_target_properties("${target}" PROPERTIES
+        _qt_sbom_spdx_v2_external_spdx_id "${external_spdx_v2_id}"
+        _qt_sbom_cydx_external_bom_link "${external_bom_link}"
+    )
+endfunction()
+
+# Returns the target name representing the current sbom project.
+# When SBOM generation is disable, returns an empty string.
+function(_qt_internal_sbom_get_current_project_target out_var)
+    if(NOT QT_GENERATE_SBOM)
+        set(${out_var} "" PARENT_SCOPE)
+        return()
+    endif()
+
+    _qt_internal_sbom_get_root_project_name_lower_case(project_name)
+
+    set(target "${project_name}ProjectSbom")
+    set(${out_var} "${target}" PARENT_SCOPE)
+endfunction()
+
 # Helper to add additional sbom information for an existing target.
 # Just appends the options to the target's sbom args property, which will will be evaluated
 # during finalization.
@@ -1732,6 +1820,7 @@ function(_qt_internal_extend_sbom target)
     endif()
 
     get_target_property(is_system_library "${target}" _qt_internal_sbom_is_system_library)
+    get_target_property(is_project_sbom_target "${target}" _qt_sbom_is_project_sbom_target)
 
     set_property(TARGET ${target} APPEND PROPERTY _qt_finalize_sbom_args "${forward_args}")
 
@@ -1739,7 +1828,7 @@ function(_qt_internal_extend_sbom target)
     # This is necessary for system libraries because those are handled in special code path just
     # before finishing project sbom generation, and finalizing them would cause issues because they
     # don't actually have a TYPE until a later point in time.
-    if(NOT arg_NO_FINALIZATION AND NOT is_system_library)
+    if(NOT arg_NO_FINALIZATION AND NOT is_system_library AND NOT is_project_sbom_target)
         # Defer finalization. In case it was already deferred, it will be a no-op.
         # Some targets need immediate finalization, like the PlatformInternal ones,
         # because otherwise they would be finalized after the sbom was already generated.
@@ -1909,7 +1998,7 @@ function(_qt_internal_sbom_get_root_project_name_lower_case out_var)
     get_cmake_property(project_name _qt_internal_sbom_repo_project_name)
 
     if(NOT project_name)
-        message(FATAL_ERROR "No SBOM project name was set.")
+        message(FATAL_ERROR "The current active SBOM project name was not found.")
     endif()
 
     string(TOLOWER "${project_name}" repo_project_name_lowercase)
@@ -2294,6 +2383,8 @@ function(_qt_internal_sbom_get_package_infix type out_infix)
         set(package_infix "3rdparty-library-with-files")
     elseif(type STREQUAL "THIRD_PARTY_SOURCES")
         set(package_infix "3rdparty-sources")
+    elseif(type STREQUAL "SBOM_PROJECT")
+        set(package_infix "sbom-project")
     elseif(type STREQUAL "TRANSLATIONS")
         set(package_infix "translations")
     elseif(type STREQUAL "RESOURCES")
@@ -2345,6 +2436,8 @@ function(_qt_internal_sbom_get_package_purpose type out_purpose)
         set(package_purpose "LIBRARY")
     elseif(type STREQUAL "THIRD_PARTY_SOURCES")
         set(package_purpose "LIBRARY")
+    elseif(type STREQUAL "SBOM_PROJECT")
+        set(package_purpose "OTHER")
     elseif(type STREQUAL "TRANSLATIONS")
         set(package_purpose "OTHER")
     elseif(type STREQUAL "RESOURCES")
