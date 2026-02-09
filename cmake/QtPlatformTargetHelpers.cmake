@@ -45,9 +45,18 @@ function(qt_internal_setup_public_platform_target)
         endif()
         target_link_options(Platform INTERFACE "${libc_link_option}")
     endif()
-    if (QT_FEATURE_no_direct_extern_access)
-        target_compile_options(Platform INTERFACE "$<$<CXX_COMPILER_ID:GNU>:-mno-direct-extern-access>")
-        target_compile_options(Platform INTERFACE "$<$<CXX_COMPILER_ID:Clang>:-fno-direct-access-external-data>")
+    if(QT_FEATURE_no_direct_extern_access)
+        # Swift compiler doesn't understand these options on Linux.
+        set(not_swift_cond "$<NOT:$<COMPILE_LANGUAGE:Swift>>")
+
+        set(no_direct_extern_gnu "$<$<CXX_COMPILER_ID:GNU>:-mno-direct-extern-access>")
+        set(no_direct_extern_gnu_wrapped "$<${not_swift_cond}:${no_direct_extern_gnu}>")
+
+        set(no_direct_extern_clang "$<$<CXX_COMPILER_ID:Clang>:-fno-direct-access-external-data>")
+        set(no_direct_extern_clang_wrapped "$<${not_swift_cond}:${no_direct_extern_clang}>")
+
+        target_compile_options(Platform INTERFACE "${no_direct_extern_gnu_wrapped}")
+        target_compile_options(Platform INTERFACE "${no_direct_extern_clang_wrapped}")
     endif()
 
     qt_set_msvc_cplusplus_options(Platform INTERFACE)
