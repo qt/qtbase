@@ -32,6 +32,7 @@ function(_qt_internal_sbom_begin_project)
         __QT_INTERNAL_HANDLE_QT_REPO
         NO_AUTO_DOCUMENT_NAMESPACE_INFIX
         NO_AUTO_SEARCH_EXTERNAL_DOCUMENTS_IN_CMAKE_PATHS
+        NO_AUTO_SPDX_ID_SUFFIX
     )
     set(single_args
         INSTALL_PREFIX
@@ -44,6 +45,8 @@ function(_qt_internal_sbom_begin_project)
         DOCUMENT_NAMESPACE_INFIX
         DOCUMENT_NAMESPACE_SUFFIX
         DOCUMENT_NAMESPACE_URL_PREFIX
+        SPDX_ID_SUFFIX
+        SPDX_ID_SUFFIX_HASH_LENGTH
         VERSION
         SBOM_PROJECT_NAME
         QT_REPO_PROJECT_NAME
@@ -208,6 +211,34 @@ function(_qt_internal_sbom_begin_project)
     )
     list(APPEND begin_project_generate_args_cydx
         BOM_SERIAL_NUMBER_UUID "${cyclone_dx_bom_serial_number_uuid}")
+
+    if(QT_SBOM_SPDX_ID_SUFFIX)
+        set(spdx_id_unique_suffix "-${QT_SBOM_SPDX_ID_SUFFIX}")
+    elseif(arg_SPDX_ID_SUFFIX)
+        set(spdx_id_unique_suffix "-${arg_SPDX_ID_SUFFIX}")
+    elseif(NOT arg_NO_AUTO_SPDX_ID_SUFFIX AND NOT QT_SBOM_NO_AUTO_SPDX_SUFFIX)
+        set(compute_unique_spdx_id_suffix_args "")
+
+        if(QT_SBOM_SPDX_ID_SUFFIX_HASH_LENGTH)
+            list(APPEND compute_unique_spdx_id_suffix_args
+                HASH_LENGTH "${QT_SBOM_SPDX_ID_SUFFIX_HASH_LENGTH}")
+        elseif(arg_SPDX_ID_SUFFIX_HASH_LENGTH)
+            list(APPEND compute_unique_spdx_id_suffix_args
+                HASH_LENGTH "${arg_SPDX_ID_SUFFIX_HASH_LENGTH}")
+        endif()
+
+        _qt_internal_sbom_compute_uniqueish_spdx_id_suffix(
+            SPDX_NAMESPACE "${repo_spdx_namespace}"
+            OUT_VAR_UNIQUE_SUFFIX spdx_id_unique_suffix
+            ${compute_unique_spdx_id_suffix_args}
+        )
+        string(PREPEND spdx_id_unique_suffix "-")
+    else()
+        set(spdx_id_unique_suffix "")
+    endif()
+
+    set_property(GLOBAL PROPERTY _qt_internal_sbom_repo_spdx_id_unique_suffix
+        "${spdx_id_unique_suffix}")
 
     if(arg_INSTALL_SBOM_DIR)
         set(install_sbom_dir "${arg_INSTALL_SBOM_DIR}")
@@ -818,6 +849,7 @@ function(_qt_internal_sbom_end_project)
     endforeach()
 
     set_property(GLOBAL PROPERTY _qt_internal_sbom_repo_begin_called FALSE)
+    set_property(GLOBAL PROPERTY _qt_internal_sbom_repo_spdx_id_unique_suffix "")
     set_property(GLOBAL PROPERTY _qt_internal_sbom_external_document_search_paths "")
     set_property(GLOBAL PROPERTY _qt_internal_sbom_auto_search_external_documents_in_paths "")
 
@@ -1737,7 +1769,7 @@ function(_qt_internal_create_project_sbom_target)
             " was not set, which is required to create a project sbom target.")
     endif()
 
-    _qt_internal_sbom_get_external_document_ref_spdx_id(
+    _qt_internal_sbom_compute_external_document_ref_spdx_id(
         "${arg_PROJECT_NAME}" external_document_ref)
 
     set_target_properties("${target}" PROPERTIES
@@ -2073,9 +2105,95 @@ function(_qt_internal_sbom_get_qt_repo_project_name_lower_case out_var)
     set(${out_var} "${repo_project_name_lowercase}" PARENT_SCOPE)
 endfunction()
 
-# Get a spdx id to reference an external document.
+# Compute a SPDX v2.3 DocumentRef ID, to reference the current project's SPDX document as an
+# external document in another project.
+#
+# This is only meant to be used for exporting the value as part of the target's properties, to be
+# used in a different project.
+#
+# It should NOT be used to refer to already exported targets.
+#
+# For querying the DocumentRef of an exported target, use
+# _qt_internal_sbom_get_external_document_ref_spdx_id_from_sbom_target.
+function(_qt_internal_sbom_compute_external_document_ref_spdx_id repo_name out_var)
+    _qt_internal_sbom_get_spdx_id_unique_suffix(spdx_id_unique_suffix)
+    set(${out_var} "DocumentRef-${repo_name}${spdx_id_unique_suffix}" PARENT_SCOPE)
+endfunction()
+
+# Older deprecated function name of the function above, kept for compatibility in case it is used.
 function(_qt_internal_sbom_get_external_document_ref_spdx_id repo_name out_var)
-    set(${out_var} "DocumentRef-${repo_name}" PARENT_SCOPE)
+    if(NOT QT_NO_DEPRECATED_GET_EXTERNAL_DOCUMENT_REF_SPDX_ID)
+        message(DEPRECATION
+            "This function is deprecated. "
+            "Please use _qt_internal_sbom_compute_external_document_ref_spdx_id() instead."
+            "To silence this deprecation, pass "
+            "-DQT_NO_DEPRECATED_GET_EXTERNAL_DOCUMENT_REF_SPDX_ID=ON "
+            "when configuring the project."
+        )
+    endif()
+
+    _qt_internal_sbom_compute_external_document_ref_spdx_id("${repo_name}" external_document_ref)
+
+    set(${out_var} "${external_document_ref}" PARENT_SCOPE)
+endfunction()
+
+# Query the external reference DocumentRef ID from the given SBOM target.
+#
+# If CREATE_TEMPORARY_REF_WHEN_MISSING is set, it instead of erroring out when the document ref
+# isn't found, create one and assign it to the to the usual target property.
+# This allows referring to older targets that were exported without the necessary properties.
+function(_qt_internal_sbom_get_external_document_ref_spdx_id_from_sbom_target)
+    if(NOT QT_GENERATE_SBOM)
+        set(${out_var} "" PARENT_SCOPE)
+        return()
+    endif()
+
+    set(opt_args
+        CREATE_TEMPORARY_REF_WHEN_MISSING
+    )
+    set(single_args
+        TARGET
+        OUT_VAR
+    )
+    set(multi_args "")
+    cmake_parse_arguments(PARSE_ARGV 0 arg "${opt_args}" "${single_args}" "${multi_args}")
+    _qt_internal_validate_all_args_are_parsed(arg)
+
+    if(NOT arg_TARGET)
+        message(FATAL_ERROR "TARGET argument is required.")
+    endif()
+
+    if(NOT arg_OUT_VAR)
+        message(FATAL_ERROR "OUT_VAR argument is required.")
+    endif()
+
+    set(target_unaliased "${arg_TARGET}")
+    _qt_internal_dealias_target(target_unaliased)
+
+    get_target_property(external_document_ref
+        "${target_unaliased}" _qt_sbom_spdx_v2_external_document_ref)
+
+    if(NOT external_document_ref)
+        if(NOT arg_CREATE_TEMPORARY_REF_WHEN_MISSING
+                AND NOT QT_SBOM_NO_AUTO_CREATE_DOCUMENT_REF_WHEN_MISSING)
+            message(FATAL_ERROR
+                "The target '${arg_TARGET}' does not have a recorded SPDX v2.3 external document "
+                "DocumentRef value recorded.")
+        else()
+            string(MAKE_C_IDENTIFIER "${arg_TARGET}" target_c_identifier)
+            string(REPLACE "_" "-" target_c_identifier "${target_c_identifier}")
+            _qt_internal_sbom_compute_external_document_ref_spdx_id("${target_c_identifier}"
+                external_document_ref
+            )
+            set_target_properties("${target_unaliased}" PROPERTIES
+                _qt_sbom_spdx_v2_external_document_ref "${external_document_ref}")
+
+            message(DEBUG "Did not find external document ref for target '${arg_TARGET}'. "
+                "Created one and set it to '${external_document_ref}' in the target's properties.")
+        endif()
+    endif()
+
+    set(${arg_OUT_VAR} "${external_document_ref}" PARENT_SCOPE)
 endfunction()
 
 # Computes a spdx id to reference the target's spdx v2 package via a SPDX v2 external document ref.
@@ -2084,7 +2202,7 @@ function(_qt_internal_sbom_compute_external_spdx_v2_id target out_var)
     get_target_property(project_name_lowercase "${target}"
         _qt_sbom_spdx_repo_project_name_lowercase)
 
-    _qt_internal_sbom_get_external_document_ref_spdx_id(
+    _qt_internal_sbom_compute_external_document_ref_spdx_id(
         "${project_name_lowercase}" external_document_ref)
 
     _qt_internal_sbom_get_spdx_id_for_target("${target}" spdx_id)
@@ -2198,9 +2316,13 @@ function(_qt_internal_sbom_generate_target_package_spdx_id out_var)
 
     _qt_internal_sbom_get_root_project_name_for_spdx_id(repo_project_name_spdx_id)
     _qt_internal_sbom_get_package_infix("${arg_SBOM_ENTITY_TYPE}" package_infix)
+    _qt_internal_sbom_get_spdx_id_unique_suffix(spdx_id_unique_suffix)
 
-    _qt_internal_sbom_get_sanitized_spdx_id(spdx_id
-        "SPDXRef-${repo_project_name_spdx_id}-${package_infix}-${arg_PACKAGE_NAME}")
+    string(CONCAT spdx_id_input
+        "SPDXRef-${repo_project_name_spdx_id}-${package_infix}-${arg_PACKAGE_NAME}"
+        "${spdx_id_unique_suffix}"
+    )
+    _qt_internal_sbom_get_sanitized_spdx_id(spdx_id "${spdx_id_input}")
 
     set(${out_var} "${spdx_id}" PARENT_SCOPE)
 endfunction()
@@ -2361,7 +2483,7 @@ function(_qt_internal_sbom_save_spdx_id_for_target target)
         get_target_property(external_document_ref
             "${arg_EXTERNAL_SBOM_DOCUMENT_TARGET}" _qt_sbom_spdx_v2_external_document_ref)
     else()
-        _qt_internal_sbom_get_external_document_ref_spdx_id(
+        _qt_internal_sbom_compute_external_document_ref_spdx_id(
             "${project_name_lowercase}" external_document_ref)
     endif()
 

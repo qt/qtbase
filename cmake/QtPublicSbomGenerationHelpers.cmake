@@ -141,6 +141,8 @@ PackageVersion: ${QT_SBOM_GIT_VERSION}")
 
     set(project_comment "<text>${project_comment}</text>")
 
+    _qt_internal_sbom_get_spdx_id_unique_suffix(spdx_id_unique_suffix)
+
     set(content
         "SPDXVersion: SPDX-2.3
 DataLicense: CC0-1.0
@@ -153,7 +155,7 @@ build system from https://code.qt.io/cgit/qt/qtbase.git/tree/cmake/QtPublicSbomH
 Created: ${current_utc}\${QT_SBOM_EXTERNAL_DOC_REFS}
 
 PackageName: ${CMAKE_CXX_COMPILER_ID}
-SPDXID: SPDXRef-compiler
+SPDXID: SPDXRef-compiler${spdx_id_unique_suffix}
 PackageVersion: ${CMAKE_CXX_COMPILER_VERSION}
 PackageDownloadLocation: NOASSERTION
 PackageLicenseConcluded: NOASSERTION
@@ -163,7 +165,7 @@ PackageSupplier: Organization: Anonymous
 FilesAnalyzed: false
 PackageSummary: <text>The compiler as identified by CMake, running on ${CMAKE_HOST_SYSTEM_NAME} (${CMAKE_HOST_SYSTEM_PROCESSOR})</text>
 PrimaryPackagePurpose: APPLICATION
-Relationship: SPDXRef-compiler BUILD_DEPENDENCY_OF ${project_spdx_id}
+Relationship: SPDXRef-compiler${spdx_id_unique_suffix} BUILD_DEPENDENCY_OF ${project_spdx_id}
 RelationshipComment: <text>${project_spdx_id} is built by compiler ${CMAKE_CXX_COMPILER_ID} version ${CMAKE_CXX_COMPILER_VERSION}</text>
 
 PackageName: ${arg_PROJECT}
