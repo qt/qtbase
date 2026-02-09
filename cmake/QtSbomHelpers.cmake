@@ -127,7 +127,7 @@ function(qt_internal_sbom_get_external_document_ref_spdx_id project_name out_var
 
     if(QT_GENERATE_SBOM)
         string(TOLOWER "${project_name}" project_name_lowercase)
-        _qt_internal_sbom_get_external_document_ref_spdx_id("${project_name_lowercase}" result)
+        _qt_internal_sbom_compute_external_document_ref_spdx_id("${project_name_lowercase}" result)
     endif()
 
     set(${out_var} "${result}" PARENT_SCOPE)

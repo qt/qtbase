@@ -101,8 +101,12 @@ function(_qt_internal_sbom_serialize_sbom_relationship_entry)
         set(spdx_relationship_list "")
 
         if(from_is_external)
-            get_target_property(external_reference_from "${arg_SBOM_RELATIONSHIP_FROM}"
-                _qt_sbom_spdx_v2_external_document_ref)
+            _qt_internal_sbom_get_external_document_ref_spdx_id_from_sbom_target(
+                TARGET "${arg_SBOM_RELATIONSHIP_FROM}"
+                OUT_VAR external_reference_from
+                CREATE_TEMPORARY_REF_WHEN_MISSING
+            )
+
             if(NOT external_reference_from)
                 message(FATAL_ERROR
                     "SBOM_RELATIONSHIP_FROM target '${arg_SBOM_RELATIONSHIP_FROM}' is an external "
@@ -125,8 +129,12 @@ function(_qt_internal_sbom_serialize_sbom_relationship_entry)
                 OUT_VAR to_is_external
             )
             if(to_is_external)
-                get_target_property(external_reference_to "${relationship_to}"
-                    _qt_sbom_spdx_v2_external_document_ref)
+                _qt_internal_sbom_get_external_document_ref_spdx_id_from_sbom_target(
+                    TARGET "${relationship_to}"
+                    OUT_VAR external_reference_to
+                    CREATE_TEMPORARY_REF_WHEN_MISSING
+                )
+
                 if(NOT external_reference_to)
                     message(FATAL_ERROR
                         "SBOM_RELATIONSHIP_TO target '${relationship_to}' is an external "

@@ -74,7 +74,9 @@ function(_qt_internal_sbom_get_common_project_variables)
     # Prevent collision with other generated SPDXID with -[0-9]+ suffix.
     string(REGEX REPLACE "-([0-9]+)$" "\\1" arg_PROJECT_FOR_SPDX_ID "${arg_PROJECT_FOR_SPDX_ID}")
 
-    set(project_spdx_id "SPDXRef-${arg_PROJECT_FOR_SPDX_ID}")
+    _qt_internal_sbom_get_spdx_id_unique_suffix(spdx_id_unique_suffix)
+    set(project_spdx_id "SPDXRef-${arg_PROJECT_FOR_SPDX_ID}${spdx_id_unique_suffix}")
+
     set(${arg_OUT_VAR_PROJECT_FOR_SPDX_ID} "${project_spdx_id}" PARENT_SCOPE)
 
     _qt_internal_sbom_set_default_option_value_and_error_if_empty(SUPPLIER "")

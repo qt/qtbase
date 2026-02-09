@@ -1172,6 +1172,8 @@ endfunction()
 # Get a sanitized spdx id for a file.
 # For consistency, we prefix the id with SPDXRef-PackagedFile-. This is not a requirement.
 function(_qt_internal_sbom_get_file_spdx_id target out_var)
-    _qt_internal_sbom_get_sanitized_spdx_id(spdx_id "SPDXRef-PackagedFile-${target}")
+    _qt_internal_sbom_get_spdx_id_unique_suffix(spdx_id_unique_suffix)
+    _qt_internal_sbom_get_sanitized_spdx_id(spdx_id
+        "SPDXRef-PackagedFile-${target}${spdx_id_unique_suffix}")
     set(${out_var} "${spdx_id}" PARENT_SCOPE)
 endfunction()
