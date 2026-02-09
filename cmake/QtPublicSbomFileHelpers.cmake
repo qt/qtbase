@@ -52,6 +52,7 @@ function(_qt_internal_sbom_handle_target_binary_files target)
         THIRD_PARTY_LIBRARY
         THIRD_PARTY_LIBRARY_WITH_FILES
         THIRD_PARTY_SOURCES
+        SBOM_PROJECT
         EXECUTABLE
         LIBRARY
         TRANSLATIONS
@@ -75,6 +76,7 @@ function(_qt_internal_sbom_handle_target_binary_files target)
         SYSTEM_LIBRARY
         THIRD_PARTY_LIBRARY
         THIRD_PARTY_SOURCES
+        SBOM_PROJECT
         TRANSLATIONS
         RESOURCES
         CUSTOM
