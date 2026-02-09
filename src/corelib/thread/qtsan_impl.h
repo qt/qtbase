@@ -65,10 +65,10 @@ inline void mutexPostUnlock(void *addr, unsigned flags)
 }
 
 enum : unsigned {
-    ReadLock = ::__tsan_mutex_read_lock,
     MutexWriteReentrant = ::__tsan_mutex_write_reentrant,
     TryLock = ::__tsan_mutex_try_lock,
     TryLockFailed = ::__tsan_mutex_try_lock_failed,
+    ReadLock = ::__tsan_mutex_read_lock,
 };
 #else
 inline void futexAcquire(void *, void * = nullptr) {}
@@ -77,10 +77,10 @@ inline void latchCountDown(void *) {}
 inline void latchWait(const void *) {}
 
 enum : unsigned {
-    ReadLock,
     MutexWriteReentrant,
     TryLock,
     TryLockFailed,
+    ReadLock,
 };
 inline void mutexPreLock(void *, unsigned) {}
 inline void mutexPostLock(void *, unsigned, int) {}
