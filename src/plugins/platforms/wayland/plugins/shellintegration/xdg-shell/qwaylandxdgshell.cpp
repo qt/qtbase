@@ -2,6 +2,7 @@
 // Copyright (C) 2017 Eurogiciel, author: <philippe.coval@eurogiciel.fr>
 // Copyright (C) 2023 David Edmundson <davidedmundson@kde.org>
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+// Qt-Security score:significant reason:default
 
 #include "qwaylandxdgshell_p.h"
 
