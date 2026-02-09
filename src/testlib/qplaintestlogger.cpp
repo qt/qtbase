@@ -175,8 +175,10 @@ namespace QTest {
     // Pretty-prints a benchmark result using the given number of digits.
     template <typename T> QByteArray formatResult(T number, int significantDigits)
     {
-        if (number < T(0))
-            return "NAN";
+        if (qIsNaN(number) || number < T(0)) // (includes -ve infinity)
+            return "NaN";
+        if (qIsInf(number))
+            return "INF";
         if (number == T(0))
             return "0";
 
