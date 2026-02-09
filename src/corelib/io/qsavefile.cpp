@@ -89,16 +89,24 @@ bool QSaveFilePrivate::open(QIODevice::OpenMode mode)
         return false;
     };
 
-#if defined(Q_OS_WIN) || defined(Q_OS_ANDROID)
-    const bool requiresDirectWrite =
+    const char *directWriteReason = nullptr;
 #ifdef Q_OS_WIN
-        // check if it is an Alternate Data Stream
-        finalFileName == fileName && fileName.indexOf(u':', 2) > 1;
+    // check if it is an Alternate Data Stream
+    if (finalFileName == fileName && fileName.indexOf(u':', 2) > 1)
+        directWriteReason = QT_TR_NOOP("target is an Alternate Data Stream");
 #elif defined(Q_OS_ANDROID)
-        // check if it is a content:// URL
-        fileName.startsWith("content://"_L1);
+    // check if it is a content:// URL
+    if (fileName.startsWith("content://"_L1))
+        directWriteReason = QT_TR_NOOP("target is a content:// virtual file");
 #endif
-    if (requiresDirectWrite) {
+    if (
+#if defined(Q_OS_WIN) || defined(Q_OS_ANDROID)
+        !directWriteReason &&
+#endif // Q_OS_WIN || Q_OS_ANDROID
+        priorFile.exists() && !priorFile.isFile()) {
+        directWriteReason = QT_TR_NOOP("target exists and is not a regular file");
+    }
+    if (directWriteReason) {
         // yes, we can't rename onto it...
         if (directWriteFallback) {
             if (openDirectly())
@@ -106,14 +114,13 @@ bool QSaveFilePrivate::open(QIODevice::OpenMode mode)
             setError(fileEngine->error(), fileEngine->errorString());
             fileEngine.reset();
         } else {
-            QString msg =
-                    QSaveFile::tr("QSaveFile cannot open '%1' without direct write fallback enabled.")
-                     .arg(QDir::toNativeSeparators(fileName));
+            QString msg = QSaveFile::tr(
+                "QSaveFile cannot open '%1' without direct write fallback enabled: %2.")
+                .arg(QDir::toNativeSeparators(fileName)).arg(directWriteReason);
             setError(QFileDevice::OpenError, msg);
         }
         return false;
     }
-#endif // Q_OS_WIN || Q_OS_ANDROID
 
     fileEngine.reset(new QTemporaryFileEngine(&finalFileName,
                                               QTemporaryFileEngine::Win32NonShared));
