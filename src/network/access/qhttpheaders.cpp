@@ -1726,9 +1726,9 @@ std::optional<QDateTime> QHttpHeaders::dateTimeValueAt(qsizetype i) const
 
     \sa setRangeValue, WellKnownHeader::Range
 */
-QList<QPair<qint64, qint64>> QHttpHeaders::rangeValue(bool *ok) const
+QList<std::pair<qint64, qint64>> QHttpHeaders::rangeValue(bool *ok) const
 {
-    QList<QPair<qint64, qint64>> results;
+    QList<std::pair<qint64, qint64>> results;
 
     const QList<QByteArray> rangesVals = values(WellKnownHeader::Range);
     bool invalidHeaderEncountered = false;
@@ -1771,7 +1771,7 @@ QList<QPair<qint64, qint64>> QHttpHeaders::rangeValue(bool *ok) const
     if (ok)
         *ok = !invalidHeaderEncountered;
 
-    return invalidHeaderEncountered ? QList<QPair<qint64, qint64>>{} : results;
+    return invalidHeaderEncountered ? QList<std::pair<qint64, qint64>>{} : results;
 }
 
 /*!
@@ -1793,7 +1793,7 @@ QList<QPair<qint64, qint64>> QHttpHeaders::rangeValue(bool *ok) const
 
     \sa rangeValue(), WellKnownHeader::Range
 */
-void QHttpHeaders::setRangeValue(const QList<QPair<qint64, qint64>> &ranges)
+void QHttpHeaders::setRangeValue(const QList<std::pair<qint64, qint64>> &ranges)
 {
     if (ranges.isEmpty()) {
         removeAll(WellKnownHeader::Range);
