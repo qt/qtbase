@@ -9,7 +9,7 @@
 #include <QtCore/qtdeprecationmarkers.h>
 #include <QtCore/qfiledevice.h>
 #include <QtCore/qflags.h>
-#include <QtCore/qtmetamacros.h>
+#include <QtCore/qobjectdefs.h>
 #include <QtCore/qtclasshelpermacros.h>
 #include <QtCore/qtcoreexports.h>
 #include <QtCore/qdatetime.h>
@@ -21,7 +21,6 @@ QT_BEGIN_NAMESPACE
 
 class QDirListingPrivate;
 class QFileInfo;
-class QDebug;
 class QDir;
 class QTimeZone;
 
