@@ -651,6 +651,8 @@ void tst_QHttp2Connection::testBadFrameSize_data()
     const int longerThanMaxFrameSize = (int)configuration.maxFrameSize() + 1;
     QTest::newRow("data_too_long")
             << uchar(Http2::FrameType::DATA) << longerThanMaxFrameSize << true << 0 << true;
+    QTest::newRow("headers_too_long")
+            << uchar(Http2::FrameType::HEADERS) << longerThanMaxFrameSize << false << 1 << true;
 }
 
 void tst_QHttp2Connection::testBadFrameSize()
