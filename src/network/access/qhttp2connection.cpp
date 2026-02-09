@@ -1634,6 +1634,15 @@ void QHttp2Connection::handleHEADERS()
     if (streamID == connectionStreamID)
         return connectionError(PROTOCOL_ERROR, "HEADERS on 0x0 stream");
 
+    if (inboundFrame.payloadSize() > m_config.maxFrameSize()) {
+        qCDebug(qHttp2ConnectionLog,
+                "[%p] Received HEADERS frame with payload size %u, "
+                "but SETTINGS_MAX_FRAME_SIZE is %u, sending FRAME_SIZE_ERROR",
+                this, inboundFrame.payloadSize(), m_config.maxFrameSize());
+        return connectionError(Http2Error::FRAME_SIZE_ERROR,
+                               "HEADERS payload size exceeds SETTINGS_MAX_FRAME_SIZE");
+    }
+
     const bool isClient = m_connectionType == Type::Client;
     const bool isClientInitiatedStream = !!(streamID & 1);
     const bool isRemotelyInitiatedStream = isClient ^ isClientInitiatedStream;
