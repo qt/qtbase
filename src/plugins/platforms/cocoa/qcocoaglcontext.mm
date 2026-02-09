@@ -21,6 +21,10 @@ static inline QByteArray getGlString(GLenum param)
     return QByteArray();
 }
 
+#if defined(Q_PROCESSOR_X86_64)
+QT_DECLARE_NAMESPACED_OBJC_INTERFACE(QNoopDisplayDelegate, NSObject<CALayerDelegate>)
+#endif
+
 QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(lcQpaOpenGLContext, "qt.qpa.openglcontext", QtWarningMsg);
@@ -458,6 +462,29 @@ void QCocoaGLContext::update()
 
     QMutexLocker locker(&s_reentrancyMutex);
     qCInfo(lcQpaOpenGLContext) << "Updating" << m_context << "for" << QT_IGNORE_DEPRECATIONS(m_context.view);
+
+    // On macOS 26 on Intel machines, when using the software GL backend,
+    // -[NSOpenGLContext update] triggers a display of the GL layer, and
+    // then crashes in glClear during the display.
+#if defined(Q_PROCESSOR_X86_64)
+    static bool tahoeOrAbove = QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSTahoe;
+    auto *layer = QT_IGNORE_DEPRECATIONS(m_context.view.layer);
+    if (tahoeOrAbove && isSoftwareContext() && layer.needsDisplay) {
+        static QNoopDisplayDelegate *noopDisplayDelegate = [QNoopDisplayDelegate new];
+        qCDebug(lcQpaOpenGLContext) << "Layer needs display. Installing noop display delegate" << noopDisplayDelegate;
+        auto *orignalDelegate = layer.delegate;
+        layer.delegate = noopDisplayDelegate;
+
+        [m_context update];
+
+        qCDebug(lcQpaOpenGLContext) << "Restoring original layer delegate" << orignalDelegate;
+        layer.delegate = orignalDelegate;
+        [layer setNeedsDisplay];
+
+        return;
+    }
+#endif
+
     [m_context update];
 }
 
@@ -555,3 +582,12 @@ QDebug operator<<(QDebug debug, const QCocoaGLContext *context)
 #endif // !QT_NO_DEBUG_STREAM
 
 QT_END_NAMESPACE
+
+#if defined(Q_PROCESSOR_X86_64)
+@implementation QNoopDisplayDelegate
+- (void)displayLayer:(CALayer *)layer
+{
+    qCWarning(lcQpaOpenGLContext) << "Ignoring display of" << layer << "during [NSOpenGLContext update]";
+}
+@end
+#endif
