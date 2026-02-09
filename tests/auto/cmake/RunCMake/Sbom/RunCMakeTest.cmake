@@ -132,5 +132,10 @@ foreach(format_case IN LISTS format_cases)
         SEARCH_CASE_PACKAGES target_relationships)
 
     run_cmake_and_build(project_relationships "${format_case}")
+    run_cmake_and_build(spdx_suffixes "${format_case}")
+
+    # The next test depends on the previous one successfully passing.
+    run_cmake_and_build(spdx_suffixes_external "${format_case}"
+        SEARCH_CASE_PACKAGES spdx_suffixes)
 endforeach()
 

@@ -304,6 +304,74 @@ function(_qt_internal_sbom_compute_qt_uniqueish_document_namespace_infix)
     endif()
 endfunction()
 
+# Computes a short unique-ish sha suffix to embed into all Qt package SPDX ids, to ensure that each
+# package spdx id is distinct enough between Qt builds.
+#
+# The use case is referencing multiple versions of the the same target, within a project that
+# mixes multiple Qt versions, like Qt for MCU.
+#
+# E.g. record that MyLib depends on Qt Core 6.8.3 from qtbase spdx doc1, and that MyLib2 depends
+# on Qt Core 6.9.1 from qtbase spdx doc2, within the generated project doc that contains MyLib and
+# MyLib2.
+#
+# Default hash length chosen to be 12, to have a probability of 0.001 collisions when there are
+# 750000 releases of the same Qt repo, according to
+# https://en.wikipedia.org/wiki/Birthday_problem#Probability_table
+function(_qt_internal_sbom_compute_uniqueish_spdx_id_suffix)
+    set(opt_args "")
+    set(single_args
+        SPDX_NAMESPACE
+        OUT_VAR_UNIQUE_SUFFIX
+        HASH_LENGTH
+    )
+    set(multi_args "")
+
+    cmake_parse_arguments(PARSE_ARGV 0 arg "${opt_args}" "${single_args}" "${multi_args}")
+    _qt_internal_validate_all_args_are_parsed(arg)
+
+    if(QT_SBOM_NO_AUTO_SPDX_SUFFIX)
+        set(${arg_OUT_VAR_UNIQUE_SUFFIX} "" PARENT_SCOPE)
+        return()
+    endif()
+
+    if(NOT arg_OUT_VAR_UNIQUE_SUFFIX)
+        message(FATAL_ERROR "OUT_VAR_UNIQUE_SUFFIX must be set")
+    endif()
+
+    if(NOT arg_SPDX_NAMESPACE)
+        message(FATAL_ERROR "SPDX_NAMESPACE must be set")
+    endif()
+
+    if(QT_SBOM_FAKE_DETERMINISTIC_BUILD
+            # This is to allow developers test a fake build, without a fake uuid
+            AND NOT QT_SBOM_NO_FAKE_DETERMINISTIC_BUILD_SPDX_IDX_SUFFIX
+        )
+        set(unique_suffix "fake-id-suffix")
+    else()
+        string(SHA1 namespace_sha "${arg_SPDX_NAMESPACE}")
+
+        if(arg_HASH_LENGTH)
+            set(sha_suffix_length "${arg_HASH_LENGTH}")
+        else()
+            set(sha_suffix_length "12")
+        endif()
+
+        string(SUBSTRING "${namespace_sha}" 0 "${sha_suffix_length}" unique_suffix)
+    endif()
+
+    set(${arg_OUT_VAR_UNIQUE_SUFFIX} "${unique_suffix}" PARENT_SCOPE)
+endfunction()
+
+# Retrieves the current project's spdx id suffix.
+function(_qt_internal_sbom_get_spdx_id_unique_suffix out_var)
+    get_cmake_property(unique_suffix _qt_internal_sbom_repo_spdx_id_unique_suffix)
+    if(NOT unique_suffix)
+        set(unique_suffix "")
+    endif()
+
+    set(${out_var} "${unique_suffix}" PARENT_SCOPE)
+endfunction()
+
 # Returns a lower case host platform name for sbom document namespace purposes.
 function(_qt_internal_sbom_get_host_platform_name out_var)
     string(TOLOWER "${CMAKE_HOST_SYSTEM_NAME}" main_value)

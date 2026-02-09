@@ -282,8 +282,11 @@ function(_qt_internal_sbom_add_external_target_dependency)
         PROPERTY _qt_sbom_cydx_bom_serial_number_uuid)
 
     if(relative_installed_repo_document_path AND project_name_lowercase)
-        _qt_internal_sbom_get_external_document_ref_spdx_id(
-            "${project_name_lowercase}" external_document_ref)
+        _qt_internal_sbom_get_external_document_ref_spdx_id_from_sbom_target(
+            TARGET "${arg_DEPENDENCY_TARGET}"
+            OUT_VAR external_document_ref
+            CREATE_TEMPORARY_REF_WHEN_MISSING
+        )
 
         get_cmake_property(known_external_document
             _qt_known_external_documents_${external_document_ref})
