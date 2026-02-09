@@ -61,12 +61,6 @@ public:
     };
     Q_ENUM(WizardStyle)
 
-    enum class BannerStretchPolicy {
-        NoStretch,
-        Stretch,
-    };
-    Q_ENUM(BannerStretchPolicy)
-
     enum WizardOption {
         IndependentPages                = 0x00000001,
         IgnoreSubTitles                 = 0x00000002,
