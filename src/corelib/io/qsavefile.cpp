@@ -48,16 +48,16 @@ bool QSaveFilePrivate::open(QIODevice::OpenMode mode)
         return false;
     }
 
-    // check if existing file is writable
-    QFileInfo existingFile(fileName);
-    if (existingFile.exists() && !existingFile.isWritable()) {
+    // Check if existing file is writable:
+    QFileInfo priorFile(fileName);
+    if (priorFile.exists() && !priorFile.isWritable()) {
         setError(QFileDevice::WriteError,
                  QSaveFile::tr("Existing file %1 is not writable").arg(fileName));
         writeError = QFileDevice::WriteError;
         return false;
     }
 
-    if (existingFile.isDir()) {
+    if (priorFile.isDir()) {
         setError(QFileDevice::WriteError, QSaveFile::tr("Filename refers to a directory"));
         writeError = QFileDevice::WriteError;
         return false;
@@ -66,12 +66,12 @@ bool QSaveFilePrivate::open(QIODevice::OpenMode mode)
     // Resolve symlinks. Don't use QFileInfo::canonicalFilePath so it still give
     // the expected target even if the file does not exist
     finalFileName = fileName;
-    if (existingFile.isSymLink()) {
+    if (priorFile.isSymLink()) {
         int maxDepth = 128;
-        while (--maxDepth && existingFile.isSymLink())
-            existingFile.setFile(existingFile.symLinkTarget());
+        while (--maxDepth && priorFile.isSymLink())
+            priorFile.setFile(priorFile.symLinkTarget());
         if (maxDepth > 0)
-            finalFileName = existingFile.filePath();
+            finalFileName = priorFile.filePath();
     }
 
     auto openDirectly = [this, mode]() {
@@ -111,7 +111,7 @@ bool QSaveFilePrivate::open(QIODevice::OpenMode mode)
     // if the target file exists, we'll copy its permissions below,
     // but until then, let's ensure the temporary file is not accessible
     // to a third party
-    int perm = (existingFile.exists() ? 0600 : 0666);
+    int perm = (priorFile.exists() ? 0600 : 0666);
     static_cast<QTemporaryFileEngine *>(fileEngine.get())->initialize(finalFileName, perm);
     // Same as in QFile: QIODevice provides the buffering, so there's no need to request it from the file engine.
     if (!fileEngine->open(mode | QIODevice::Unbuffered)) {
@@ -129,9 +129,9 @@ bool QSaveFilePrivate::open(QIODevice::OpenMode mode)
         fileEngine.reset();
         return false;
     }
-    if (existingFile.exists()) {
+    if (priorFile.exists()) {
         Q_Q(QSaveFile);
-        q->setPermissions(existingFile.permissions());
+        q->setPermissions(priorFile.permissions());
     }
     useTemporaryFile = true;
     return true;
