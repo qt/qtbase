@@ -277,6 +277,8 @@ public: // for QNSView
     QHash<quintptr, BorderRange> m_contentBorderAreas; // identifier -> uppper/lower
     QHash<quintptr, bool> m_enabledContentBorderAreas; // identifier -> enabled state (true/false)
 
+    bool m_deliveringUpdateRequest = false;
+
     static inline id s_globalMouseMonitor = 0;
     static inline id s_applicationActivationObserver = 0;
 

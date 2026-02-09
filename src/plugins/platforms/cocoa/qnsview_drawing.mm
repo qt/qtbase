@@ -267,6 +267,16 @@
         return;
     }
 
+    if (m_platformWindow->m_deliveringUpdateRequest) {
+        // In rare cases delivering an update request might trigger a synchronous display,
+        // for example when calling -[NSOpenGLContext update] as part of rendering a frame,
+        // if using the software GL backend on macOS 26. Our rendering stack does not deal
+        // well with this reentrancy, and it also causes crashes the macOS GL driver.
+        qCWarning(lcQpaDrawing) << "Asked to display during update-request delivery. Deferring.";
+        dispatch_async(dispatch_get_main_queue(), ^{ self.needsDisplay = YES; });
+        return;
+    }
+
     auto *currentScreen = static_cast<QCocoaScreen*>(m_platformWindow->screen());
     if (!currentScreen || !currentScreen->isOnline()) {
         qCWarning(lcQpaDrawing) << "Display requested for non-online display" << currentScreen
