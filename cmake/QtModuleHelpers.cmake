@@ -322,7 +322,12 @@ function(qt_internal_add_module target)
             # Without FEATURE_no_direct_extern_access, applications cannot use
             # -fPIE any more and must use -fPIC. Even then, this may fail.
             # Consider upgrading.
-            target_compile_options(${target} INTERFACE -fPIC)
+            #
+            # When a Swift library links to a Qt module, it fails to link because cmake passes
+            # -fPIC to it, and the swiftc compiler doesn't know that option.
+            # Prevent passing it.
+            set(fpic_flag "$<$<NOT:$<COMPILE_LANGUAGE:Swift>>:-fPIC>")
+            target_compile_options(${target} INTERFACE "${fpic_flag}")
         endif()
     endif()
 
