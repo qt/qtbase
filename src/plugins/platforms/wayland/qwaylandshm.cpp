@@ -1,5 +1,6 @@
 // Copyright (C) 2016 LG Electronics Inc, author: <mikko.levonmaa@lge.com>
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+// Qt-Security score:significant reason:default
 #include <QtWaylandClient/private/qwaylandshm_p.h>
 #include <QtWaylandClient/private/qwaylanddisplay_p.h>
 
