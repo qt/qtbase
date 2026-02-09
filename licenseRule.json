@@ -292,6 +292,11 @@
                 "file type": "3rd party",
                 "spdx": ["Apache-2.0"]
             },
+            "tests/manual/qnx/foreignwindows/": {
+                "comment": "Exception",
+                "file type": "test",
+                "spdx": ["LicenseRef-Qt-Commercial OR BSD-3-Clause"]
+            },
             "tests/testserver/apache2/testdata/www/htdocs/protected/rfc3252\\.txt": {
                 "comment": "The Internet Society",
                 "file type": "3rd party",
