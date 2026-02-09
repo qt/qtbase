@@ -386,6 +386,18 @@ QT_BEGIN_NAMESPACE
 # define QT_IF_DEPRECATED_SINCE_6_13(whenTrue, whenFalse) whenTrue
 #endif
 
+#if QT_DEPRECATED_SINCE(6, 14)
+# define QT_IF_DEPRECATED_SINCE_6_14(whenTrue, whenFalse) whenFalse
+#else
+# define QT_IF_DEPRECATED_SINCE_6_14(whenTrue, whenFalse) whenTrue
+#endif
+
+#if QT_DEPRECATED_SINCE(6, 15)
+# define QT_IF_DEPRECATED_SINCE_6_15(whenTrue, whenFalse) whenFalse
+#else
+# define QT_IF_DEPRECATED_SINCE_6_15(whenTrue, whenFalse) whenTrue
+#endif
+
 #ifdef __cplusplus
 // A tag to help mark stuff deprecated (cf. QStringViewLiteral)
 namespace QtPrivate {
