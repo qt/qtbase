@@ -41,7 +41,7 @@ struct CallerHandlesException<R, std::void_t<typename R::unexpected_type,
 };
 
 template <typename ReturnType>
-static constexpr bool callerHandlesException = CallerHandlesException<ReturnType>::value;
+constexpr bool callerHandlesException = CallerHandlesException<ReturnType>::value;
 
 template <typename ...Args>
 struct LocalFrame
