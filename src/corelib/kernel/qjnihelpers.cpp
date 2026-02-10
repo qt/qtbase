@@ -478,7 +478,7 @@ bool QtAndroidPrivate::AndroidDeadlockProtector::acquire() {
 
 QT_END_NAMESPACE
 
-JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved)
+extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved)
 {
     Q_UNUSED(reserved);
 
