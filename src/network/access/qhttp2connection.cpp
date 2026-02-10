@@ -2101,6 +2101,14 @@ void QHttp2Connection::handleWINDOW_UPDATE()
 void QHttp2Connection::handleCONTINUATION()
 {
     Q_ASSERT(inboundFrame.type() == FrameType::CONTINUATION);
+    if (inboundFrame.payloadSize() > m_config.maxFrameSize()) {
+        qCDebug(qHttp2ConnectionLog,
+                "[%p] Received CONTINUATION frame with payload size %u, "
+                "but SETTINGS_MAX_FRAME_SIZE is %u, sending FRAME_SIZE_ERROR",
+                this, inboundFrame.payloadSize(), m_config.maxFrameSize());
+        return connectionError(Http2Error::FRAME_SIZE_ERROR,
+                               "CONTINUATION payload size exceeds SETTINGS_MAX_FRAME_SIZE");
+    }
     auto streamID = inboundFrame.streamID();
     qCDebug(qHttp2ConnectionLog,
             "[%p] Received CONTINUATION frame on stream %d, end stream? %s", this, streamID,
