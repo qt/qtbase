@@ -8787,7 +8787,7 @@ static inline bool hdrFormatMatchesVkSurfaceFormat(QRhiSwapChain::Format f, cons
         return s.format == VK_FORMAT_R16G16B16A16_SFLOAT
                 && s.colorSpace == VK_COLOR_SPACE_EXTENDED_SRGB_LINEAR_EXT;
     case QRhiSwapChain::HDR10:
-        return (s.format == VK_FORMAT_A2B10G10R10_UNORM_PACK32 || s.format == VK_FORMAT_A2R10G10B10_UNORM_PACK32)
+        return s.format == VK_FORMAT_A2B10G10R10_UNORM_PACK32
                 && s.colorSpace == VK_COLOR_SPACE_HDR10_ST2084_EXT;
     case QRhiSwapChain::HDRExtendedDisplayP3Linear:
         return s.format == VK_FORMAT_R16G16B16A16_SFLOAT
@@ -8906,36 +8906,80 @@ bool QVkSwapChain::ensureSurface()
     quint32 formatCount = 0;
     rhiD->vkGetPhysicalDeviceSurfaceFormatsKHR(rhiD->physDev, surface, &formatCount, nullptr);
     QList<VkSurfaceFormatKHR> formats(formatCount);
-    if (formatCount)
-        rhiD->vkGetPhysicalDeviceSurfaceFormatsKHR(rhiD->physDev, surface, &formatCount, formats.data());
+    rhiD->vkGetPhysicalDeviceSurfaceFormatsKHR(rhiD->physDev, surface, &formatCount,
+                                               formats.data());
 
-    // See if there is a better match than the default BGRA8 format. (but if
-    // not, we will stick to the default)
+    // Initially select the first available format, will only be used as a worst-case fallback
+    colorFormat = formats.constFirst().format;
+    colorSpace = formats.constFirst().colorSpace;
+
+    // See if we can find the preferred SDR format
     const bool srgbRequested = m_flags.testFlag(sRGB);
-    for (int i = 0; i < int(formatCount); ++i) {
-        if (formats[i].format != VK_FORMAT_UNDEFINED) {
-            bool ok = srgbRequested == isSrgbFormat(formats[i].format);
-            if (m_format != SDR)
-                ok &= hdrFormatMatchesVkSurfaceFormat(m_format, formats[i]);
+    bool foundBestFormat = false;
+    if (m_format == SDR) {
+        for (int i = 0; i < int(formatCount); ++i) {
+            bool ok;
+            if (srgbRequested) {
+                ok = defaultSrgbColorFormat == formats[i].format;
+            } else {
+                ok = defaultColorFormat == formats[i].format;
+            }
             if (ok) {
+                foundBestFormat = true;
                 colorFormat = formats[i].format;
                 colorSpace = formats[i].colorSpace;
-#if QT_CONFIG(wayland)
-                // On Wayland, only one color management surface can be created at a time without
-                // triggering a protocol error, and we create one ourselves in some situations.
-                // To avoid this problem, use VK_COLOR_SPACE_PASS_THROUGH_EXT when supported,
-                // so that the driver doesn't create a color management surface as well.
-                const bool hasPassThrough = std::any_of(formats.begin(), formats.end(), [this](const VkSurfaceFormatKHR &fmt) {
-                    return fmt.format == colorFormat && fmt.colorSpace == VK_COLOR_SPACE_PASS_THROUGH_EXT;
-                });
-                if (hasPassThrough) {
-                    colorSpace = VK_COLOR_SPACE_PASS_THROUGH_EXT;
-                }
-#endif
                 break;
             }
         }
     }
+
+    // Otherwise pick one that fits our requirements:
+    if (!foundBestFormat && (m_format != SDR || srgbRequested)) {
+        for (int i = 0; i < int(formatCount); ++i) {
+            bool ok = false;
+            if (m_format != SDR) {
+                ok = hdrFormatMatchesVkSurfaceFormat(m_format, formats[i]);
+            } else if (srgbRequested) {
+                ok = isSrgbFormat(formats[i].format);
+            }
+            if (ok) {
+                colorFormat = formats[i].format;
+                colorSpace = formats[i].colorSpace;
+                break;
+            }
+        }
+    }
+
+    // Although this should be rare, warn when we fail to select a suitable format
+    if (m_format != SDR) {
+        VkSurfaceFormatKHR format{};
+        format.format = colorFormat;
+        format.colorSpace = colorSpace;
+        if (!hdrFormatMatchesVkSurfaceFormat(m_format, format)) {
+            qWarning("Failed to select a suitable VkFormat for HDR, using format %d as fallback",
+                     colorFormat);
+        }
+    } else {
+        if (srgbRequested && !isSrgbFormat(colorFormat)) {
+            qWarning("Failed to select a suitable VkFormat for sRGB, using format %d as fallback",
+                     colorFormat);
+        }
+    }
+
+#if QT_CONFIG(wayland)
+    // On Wayland, only one color management surface can be created at a time without
+    // triggering a protocol error, and we create one ourselves in some situations.
+    // To avoid this problem, use VK_COLOR_SPACE_PASS_THROUGH_EXT when supported,
+    // so that the driver doesn't create a color management surface as well.
+    const bool hasPassThrough =
+            std::any_of(formats.begin(), formats.end(), [this](const VkSurfaceFormatKHR &fmt) {
+                return fmt.format == colorFormat
+                        && fmt.colorSpace == VK_COLOR_SPACE_PASS_THROUGH_EXT;
+            });
+    if (hasPassThrough) {
+        colorSpace = VK_COLOR_SPACE_PASS_THROUGH_EXT;
+    }
+#endif
 
     samples = rhiD->effectiveSampleCountBits(m_sampleCount);
 

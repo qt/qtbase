@@ -633,7 +633,9 @@ struct QVkSwapChain : public QRhiSwapChain
     int bufferCount = 0;
     VkSurfaceKHR surface = VK_NULL_HANDLE;
     VkSurfaceKHR lastConnectedSurface = VK_NULL_HANDLE;
-    VkFormat colorFormat = VK_FORMAT_B8G8R8A8_UNORM;
+    const VkFormat defaultColorFormat = VK_FORMAT_B8G8R8A8_UNORM;
+    const VkFormat defaultSrgbColorFormat = VK_FORMAT_B8G8R8A8_SRGB;
+    VkFormat colorFormat = VK_FORMAT_UNDEFINED;
     VkColorSpaceKHR colorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
     QVkRenderBuffer *ds = nullptr;
     VkSampleCountFlagBits samples = VK_SAMPLE_COUNT_1_BIT;
