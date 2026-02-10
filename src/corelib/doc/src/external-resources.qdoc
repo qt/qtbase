@@ -143,6 +143,21 @@
 */
 
 /*!
+    \externalpage https://cmake.org/cmake/help/latest/command/target_include_directories.html
+    \title CMake target_include_directories documentation
+*/
+
+/*!
+    \externalpage https://cmake.org/cmake/help/latest/variable/CMAKE_PREFIX_PATH.html
+    \title CMake CMAKE_PREFIX_PATH documentation
+*/
+
+/*!
+    \externalpage https://cmake.org/cmake/help/latest/variable/CMAKE_TOOLCHAIN_FILE.html
+    \title CMake CMAKE_TOOLCHAIN_FILE documentation
+*/
+
+/*!
     \externalpage https://cmake.org/cmake/help/latest/module/FetchContent.html#command:fetchcontent_makeavailable
     \title FetchContent_MakeAvailable()
 */
