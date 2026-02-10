@@ -2638,8 +2638,12 @@ bool Parser::parseAnimation(AnimationRule *animationRule)
                     return foundRBrace;
                 }
             }
-            if (!decl.isEmpty())
-                set.declarations.append(decl);
+            if (!decl.isEmpty()) {
+                if (decl.d->property == QStringLiteral("animation-timing-function"))
+                    set.timingFunction = decl;
+                else
+                    set.declarations.append(decl);
+            }
         } while (test(SEMICOLON));
 
         if (!next(RBRACE)) return false;

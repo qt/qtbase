@@ -412,7 +412,11 @@ void tst_QCssParser::animation()
 {
     QCss::Parser parser("@keyframes emptyAnimation{} "
                         "@keyframes motion{from {x : 10;} to {x : 50;}} "
-                        "@keyframes color{0% {fill : blue;} 25% {fill : yellow;} 100% {fill : red;}}");
+                        "@keyframes color{0% {fill : blue;} 25% {fill : yellow;} 100% {fill : red;}}"
+                        "@keyframes timingFunction{0% {animation-timing-function: linear;}"
+                                                  "25% {animation-timing-function: cubic-bezier(0.25, 0.1, 0.25, 1.0);}"
+                                                  "50% {animation-timing-function: steps(1, jump-start);}"
+                                                  "100% {}}");
 
     {
         QCss::AnimationRule rule;
@@ -451,6 +455,29 @@ void tst_QCssParser::animation()
         QCOMPARE(rule.ruleSets[1].declarations[0].d->values[0].toString(), QStringLiteral("yellow"));
         QCOMPARE(rule.ruleSets[2].declarations[0].d->property, QStringLiteral("fill"));
         QCOMPARE(rule.ruleSets[2].declarations[0].d->values[0].toString(), QStringLiteral("red"));
+    }
+
+    {
+        QCss::AnimationRule rule;
+        QVariant expectedValue;
+        QVERIFY(parser.testAnimation());
+        QVERIFY(parser.parseAnimation(&rule));
+        QCOMPARE(rule.animName, QStringLiteral("timingFunction"));
+        QCOMPARE(rule.ruleSets.size(), 4);
+
+        expectedValue = QString("linear");
+        QVERIFY(!rule.ruleSets[0].timingFunction.d->values.isEmpty());
+        QCOMPARE(rule.ruleSets[0].timingFunction.d->values[0].variant, expectedValue);
+
+        expectedValue = QVariant(QStringList() << "cubic-bezier" << "0.25, 0.1, 0.25, 1.0");
+        QVERIFY(!rule.ruleSets[1].timingFunction.d->values.isEmpty());
+        QCOMPARE(rule.ruleSets[1].timingFunction.d->values[0].variant, expectedValue);
+
+        expectedValue = QVariant(QStringList() << "steps" << "1, jump-start");
+        QVERIFY(!rule.ruleSets[2].timingFunction.d->values.isEmpty());
+        QCOMPARE(rule.ruleSets[2].timingFunction.d->values[0].variant, expectedValue);
+
+        QVERIFY(rule.ruleSets[3].timingFunction.d->values.isEmpty());
     }
 }
 

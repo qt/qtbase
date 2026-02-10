@@ -611,6 +611,7 @@ struct AnimationRule
     {
         float keyFrame;
         QList<Declaration> declarations;
+        Declaration timingFunction;
     };
 
     QString animName;
