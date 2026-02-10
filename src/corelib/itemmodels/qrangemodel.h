@@ -17,7 +17,7 @@ class Q_CORE_EXPORT QRangeModel : public QAbstractItemModel
     Q_PROPERTY(QHash<int, QByteArray> roleNames READ roleNames WRITE setRoleNames RESET resetRoleNames
                                                 NOTIFY roleNamesChanged FINAL)
     Q_PROPERTY(AutoConnectPolicy autoConnectPolicy READ autoConnectPolicy WRITE setAutoConnectPolicy
-                                                NOTIFY autoConnectPolicyChanged FINAL REVISION(6, 11))
+                                                NOTIFY autoConnectPolicyChanged REVISION(6, 11))
 
 public:
     enum class AutoConnectPolicy {
