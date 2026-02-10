@@ -41,10 +41,36 @@ void QWaylandClientExtensionPrivate::globalRemoved(const RegistryGlobal &global)
 }
 
 /*!
-    \class QWaylandClientExtension
-    \internal
+    \class QWaylandClientExtensionTemplate
+    \brief A class for implementing custom extensions on the Wayland protocol.
+    \inmodule QtWaylandClient
+
+    The QWaylandClientExtensionTemplate is a convenience class for creating
+    the client-side implementation of custom Wayland protocols. Typical usage
+    involves inheriting this class and instantiating it with its own subclass.
+
+    See the \l{Custom Extension} example in \l{Qt Wayland Compositor} for a
+    concrete use of this class.
 */
 
+/*!
+    \class QWaylandClientExtension
+    \brief A class for implementing custom extensions on the Wayland protocol.
+    \inmodule QtWaylandClient
+
+    The QWaylandClientExtension class can be used to implement custom extensions
+    for Wayland protocol. The extension must also be supported by the compositor
+    in order to be usable. See the \l{Custom Extension} example in
+    \l{Qt Wayland Compositor} for an example that implements both the compositor
+    and client sides of a custom extension.
+
+    This class is usually not inherited directly, but through
+    QWaylandClientExtensionTemplate for convenience.
+*/
+
+/*!
+   \internal
+*/
 void QWaylandClientExtension::initialize()
 {
     Q_D(QWaylandClientExtension);
@@ -64,6 +90,9 @@ void QWaylandClientExtension::initialize()
     }
 }
 
+/*!
+   Constructs the client extension and sets its version to \a ver.
+*/
 QWaylandClientExtension::QWaylandClientExtension(const int ver)
     : QObject(*new QWaylandClientExtensionPrivate())
 {
@@ -78,16 +107,38 @@ QWaylandClientExtension::QWaylandClientExtension(const int ver)
     QMetaObject::invokeMethod(this, "initialize", Qt::QueuedConnection);
 }
 
+/*!
+   Destroys the client extension.
+*/
 QWaylandClientExtension::~QWaylandClientExtension()
 {
 }
 
+/*!
+   \internal
+*/
 QtWaylandClient::QWaylandIntegration *QWaylandClientExtension::integration() const
 {
     Q_D(const QWaylandClientExtension);
     return d->waylandIntegration;
 }
 
+/*!
+   \fn const struct wl_interface *extensionInterface() const
+   \internal
+*/
+
+/*!
+   \fn void bind(struct ::wl_registry *registry, int id, int version)
+   \internal
+*/
+
+/*!
+   \property QWaylandClientExtension::protocolVersion
+   \brief The version of the protocol.
+
+   This property holds the version the protocol has been registered under.
+*/
 int QWaylandClientExtension::version() const
 {
     Q_D(const QWaylandClientExtension);
@@ -102,6 +153,14 @@ void QWaylandClientExtension::setVersion(const int ver)
         emit versionChanged();
     }
 }
+
+/*!
+   \property QWaylandClientExtension::active
+   \brief The active state of the extension.
+
+   Set to \c true if the extension is currently active. Otherwise this
+   property is \c false.
+*/
 
 bool QWaylandClientExtension::isActive() const
 {

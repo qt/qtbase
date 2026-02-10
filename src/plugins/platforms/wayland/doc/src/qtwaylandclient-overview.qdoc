@@ -1,5 +1,15 @@
-// Copyright (C) 2024 The Qt Company Ltd.
+// Copyright (C) 2026 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+/*!
+    \module QtWaylandClient
+    \title Qt Wayland Client C++ Classes
+    \ingroup modules
+    \qtcmakepackage WaylandClient
+    \qtvariable waylandclient
+    \brief Library to enable connecting to a Wayland compositor as a client.
+
+    The \l{Qt Wayland Client} page contains information about how to use the module.
+*/
 
 /*!
   \page qtwaylandclient-index.html
@@ -11,9 +21,31 @@
   For most use cases, the library is used automatically through the Wayland QPA plugin, and there is
   no need for the application itself to use any functions from the library.
 
-  However, when paired with \l{Qt Wayland Compositor}, the cmake function
-  \l{qt_generate_wayland_protocol_client_sources}{qt_generate_wayland_protocol_client_sources()}
+  See \l{Qt for Linux/X11}{Qt for Linux} for general information. For more information
+  about Wayland itself, see \l{Wayland and Qt}.
+
+  The cmake function \l{qt_generate_wayland_protocol_client_sources}{qt_generate_wayland_protocol_client_sources()}
   can be used to create custom protocol extensions.
+
+  Qt also provides the \l{Qt Wayland Compositor} module for developing compositors.
+
+  \section1 Using the Module
+
+  \include {module-use.qdocinc} {using the c++ api}
+
+  \section2 Building with CMake
+
+  \include {module-use.qdocinc} {building with cmake} {WaylandClient}
+
+   \section2 Building with qmake
+
+   \include {module-use.qdocinc} {building_with_qmake} {waylandclient}
+
+  \section1 Reference
+
+  \list
+    \li \l {Qt Wayland Client C++ Classes} {C++ Classes}
+  \endlist
 
   \section1 Licenses and Attributions
 
