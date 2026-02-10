@@ -620,10 +620,9 @@ void QWaylandWindow::sendExposeEvent(const QRect &rect)
       *  wanting focus.
     */
     if (mExposed && mExposeEventNeedsAttachedBuffer && !rect.isNull()) {
-        auto buffer = new QWaylandShmBuffer(mDisplay, rect.size(), QImage::Format_ARGB32);
-        buffer->image()->fill(Qt::transparent);
-        buffer->setDeleteOnRelease(true);
-        commit(buffer, QRegion());
+        QWaylandShmBuffer buffer(mDisplay, rect.size(), QImage::Format_ARGB32);
+        buffer.image()->fill(Qt::transparent);
+        commit(&buffer, QRegion());
     }
 }
 
