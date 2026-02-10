@@ -4848,6 +4848,7 @@ std::string QByteArray::toStdString() const
 
 /*!
     \fn QByteArray::operator std::string_view() const noexcept
+    \target qbytearray-operator-std-string_view
     \since 6.10
 
     Converts this QByteArray object to a \c{std::string_view} object.

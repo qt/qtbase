@@ -2628,6 +2628,7 @@ QString::QString(QChar ch)
 */
 
 /*! \fn QString::operator std::u16string_view() const
+    \target qstring-operator-std-u16string_view
     \since 6.7
 
     Converts this QString object to a \c{std::u16string_view} object.

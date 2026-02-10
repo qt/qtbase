@@ -1087,6 +1087,7 @@
 
 /*!
     \fn QByteArrayView::operator std::string_view() const
+    \target qbytearrayview-operator-std-string_view
     \since 6.7
 
     Converts this QByteArrayView object to a \c{std::string_view} object.

@@ -738,6 +738,7 @@
 
 /*!
     \fn QUtf8StringView::operator std::string_view() const
+    \target qutf8stringview-operator-std-string_view
     \since 6.7
 
     Converts this QUtf8StringView object to a
@@ -747,6 +748,7 @@
 
 /*!
     \fn QUtf8StringView::operator std::u8string_view() const
+    \target qutf8stringview-operator-std-u8string_view
     \since 6.10
 
     Converts this QUtf8StringView object to a \c{std::u8string_view}
