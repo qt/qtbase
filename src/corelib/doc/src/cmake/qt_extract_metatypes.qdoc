@@ -10,6 +10,8 @@
 
 \summary {Extracts metatypes from a Qt target and generates an associated metatypes.json file.}
 
+\include cmake-find-package-core.qdocinc
+
 \cmakecommandsince 6.0
 \preliminarycmakecommand
 

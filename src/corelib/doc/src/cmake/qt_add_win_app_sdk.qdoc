@@ -10,6 +10,8 @@
 
 \summary {Adds the Windows App SDK library to the application.}
 
+\include cmake-find-package-core.qdocinc
+
 \cmakecommandsince 6.9
 \preliminarycmakecommand
 

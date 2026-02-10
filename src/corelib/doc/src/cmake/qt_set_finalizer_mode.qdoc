@@ -10,6 +10,8 @@
 
 \summary {Customizes aspects of a target's finalization.}
 
+\include cmake-find-package-core.qdocinc
+
 \cmakecommandsince 6.2
 \preliminarycmakecommand
 
