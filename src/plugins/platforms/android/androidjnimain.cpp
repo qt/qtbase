@@ -889,7 +889,7 @@ static bool initJavaReferences(QJniEnvironment &env)
 
 QT_END_NAMESPACE
 
-Q_DECL_EXPORT jint JNICALL JNI_OnLoad(JavaVM */*vm*/, void */*reserved*/)
+extern "C" Q_DECL_EXPORT jint JNICALL JNI_OnLoad(JavaVM */*vm*/, void */*reserved*/)
 {
     static bool initialized = false;
     if (initialized)
