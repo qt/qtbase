@@ -151,10 +151,9 @@ namespace QtAndroidInput
 
         static_assert (sizeof(eventButtons) <= sizeof(uint), "Qt::MouseButtons size changed. Adapt code.");
 
-        if (eventButtons == Qt::NoButton) {
-            QWindowSystemInterface::handleMouseEvent(topLevel, localPos, globalPos, qtButtons, Qt::NoButton, type);
+        if (eventButtons == Qt::NoButton)
             return;
-        }
+
         for (uint buttonInt = 0x1; static_cast<uint>(eventButtons) >= buttonInt; buttonInt <<= 1) {
             const auto button = static_cast<Qt::MouseButton>(buttonInt);
             if (eventButtons.testFlag(button)) {
@@ -203,7 +202,10 @@ namespace QtAndroidInput
             window = windowFromId(winId);
         const QPoint globalPos = window && window->handle() ?
                                     window->handle()->mapToGlobal(localPos) : localPos;
-        sendMouseButtonEvents(window, localPos, globalPos, mouseButtonState, QEvent::MouseMove);
+        const Qt::MouseButtons qtButtons = toMouseButtons(mouseButtonState);
+        m_lastSeenButtons = qtButtons;
+        QWindowSystemInterface::handleMouseEvent(window, localPos, globalPos,
+                                                 qtButtons, Qt::NoButton, QEvent::MouseMove);
     }
 
     static void mouseWheel(JNIEnv */*env*/, jobject /*thiz*/, jint winId, jint x, jint y, jfloat hdelta, jfloat vdelta)
