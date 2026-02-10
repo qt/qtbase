@@ -18,6 +18,7 @@ class Q_CORE_EXPORT QRangeModel : public QAbstractItemModel
                                                 NOTIFY roleNamesChanged FINAL)
     Q_PROPERTY(AutoConnectPolicy autoConnectPolicy READ autoConnectPolicy WRITE setAutoConnectPolicy
                                                 NOTIFY autoConnectPolicyChanged REVISION(6, 11))
+    Q_CLASSINFO("RegisterEnumClassesUnscoped", "false")
 
 public:
     enum class AutoConnectPolicy {
