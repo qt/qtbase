@@ -124,14 +124,21 @@ QOhosPlatformIntegration::QOhosPlatformIntegration(const QStringList &paramList)
     m_ohosPlatformNativeInterface.reset(new QOhosPlatformNativeInterface());
 
     if (!QtOhos::isOhosNoUiChildMode()) {
-        m_eglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-        if (Q_UNLIKELY(m_eglDisplay == EGL_NO_DISPLAY))
+        auto rawDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+        if (Q_UNLIKELY(rawDisplay == EGL_NO_DISPLAY))
             qOhosReportFatalErrorAndAbort("Could not open egl display");
 
         EGLint major;
         EGLint minor;
-        if (Q_UNLIKELY(!eglInitialize(m_eglDisplay, &major, &minor)))
+        if (Q_UNLIKELY(!eglInitialize(rawDisplay, &major, &minor)))
             qOhosReportFatalErrorAndAbort("Could not initialize egl display");
+
+        m_eglDisplay = std::shared_ptr<EGLDisplay>(
+            new EGLDisplay(rawDisplay),
+            [](EGLDisplay *p) {
+                eglTerminate(*p);
+                delete p;
+            });
 
         if (Q_UNLIKELY(!eglBindAPI(EGL_OPENGL_ES_API)))
             qOhosReportFatalErrorAndAbort("Could not bind GL_ES API");
@@ -263,13 +270,13 @@ QPlatformOpenGLContext *QOhosPlatformIntegration::createPlatformOpenGLContext(QO
     format.setGreenBufferSize(8);
     format.setBlueBufferSize(8);
     format.setAlphaBufferSize(8);
-    auto *eglCtx = new QOhosEGLPlatformContext(format, context->shareHandle(), m_eglDisplay);
+    auto *eglCtx = new QOhosEGLPlatformContext(format, context->shareHandle(), *m_eglDisplay);
     return eglCtx;
 }
 
 QOpenGLContext *QOhosPlatformIntegration::createOpenGLContext(EGLContext context, EGLDisplay display, QOpenGLContext *shareContext) const
 {
-    return QEGLPlatformContext::createFrom<QOhosEGLPlatformContext>(context, display, m_eglDisplay, shareContext);
+    return QEGLPlatformContext::createFrom<QOhosEGLPlatformContext>(context, display, *m_eglDisplay, shareContext);
 }
 #endif // QT_NO_OPENGL
 
@@ -277,7 +284,7 @@ QPlatformOffscreenSurface *
 QOhosPlatformIntegration::createPlatformOffscreenSurface(QOffscreenSurface *surface) const
 {
     auto __dbg = make_QCScopedDebug("QOhosPlatformIntegration::createPlatformOffscreenSurface");
-    return new QEGLPbuffer(m_eglDisplay, surface->requestedFormat(), surface);
+    return new QEGLPbuffer(*m_eglDisplay, surface->requestedFormat(), surface);
 }
 
 bool QOhosPlatformIntegration::hasCapability(Capability cap) const
