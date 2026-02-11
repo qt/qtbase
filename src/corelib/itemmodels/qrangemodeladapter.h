@@ -386,7 +386,9 @@ public:
 
     struct ConstColumnIterator : ColumnIteratorBase<ConstColumnIterator, const QRangeModelAdapter>
     {
+    private:
         using Base = ColumnIteratorBase<ConstColumnIterator, const QRangeModelAdapter>;
+    public:
         using difference_type = typename Base::difference_type;
         using value_type = data_type;
         using reference = const_data_type;
@@ -414,7 +416,9 @@ public:
 
     struct ColumnIterator : ColumnIteratorBase<ColumnIterator, QRangeModelAdapter>
     {
+    private:
         using Base = ColumnIteratorBase<ColumnIterator, QRangeModelAdapter>;
+    public:
         using difference_type = typename Base::difference_type;
         using value_type = DataReference;
         using reference = DataReference;
@@ -620,7 +624,9 @@ public:
 
     struct ConstRowReference : RowReferenceBase<ConstRowReference, const QRangeModelAdapter>
     {
+    private:
         using Base = RowReferenceBase<ConstRowReference, const QRangeModelAdapter>;
+    public:
         using Base::Base;
 
         ConstRowReference() = default;
@@ -633,7 +639,9 @@ public:
 
     struct RowReference : RowReferenceBase<RowReference, QRangeModelAdapter>
     {
+    private:
         using Base = RowReferenceBase<RowReference, QRangeModelAdapter>;
+    public:
         using iterator = ColumnIterator;
         using const_iterator = typename Base::const_iterator;
         using size_type = typename Base::size_type;
@@ -925,7 +933,9 @@ public:
 public:
     struct ConstRowIterator : public RowIteratorBase<ConstRowIterator, const QRangeModelAdapter>
     {
+    private:
         using Base = RowIteratorBase<ConstRowIterator, const QRangeModelAdapter>;
+    public:
         using Base::Base;
 
         using difference_type = typename Base::difference_type;
@@ -969,7 +979,9 @@ public:
 
     struct RowIterator : public RowIteratorBase<RowIterator, QRangeModelAdapter>
     {
+    private:
         using Base = RowIteratorBase<RowIterator, QRangeModelAdapter>;
+    public:
         using Base::Base;
 
         using difference_type = typename Base::difference_type;
