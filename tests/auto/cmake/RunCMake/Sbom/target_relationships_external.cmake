@@ -238,6 +238,101 @@ if(QT_GENERATE_SBOM AND QT_SBOM_GENERATE_CYDX_V1_6)
     endif()
 endif()
 
+# External sbom targets test cases.
+
+foreach(idx RANGE 1 3)
+    # c for consumer
+    set(target "c${idx}")
+    create_sbom_lib_target(${target})
+endforeach()
+
+foreach(idx RANGE 1 3)
+    set(main_target "Main::t${idx}")
+    # mt for main target
+    set(main_prefix "mt${idx}")
+    _qt_internal_sbom_get_spdx_id_for_target(${main_target} ${main_prefix}_spdx_id)
+endforeach()
+
+# Case 1
+# Create an target representing an external SBOM package / component.
+# An external SBOM target is always associated with an external reference document.
+# We extract and use the spdx id from Main's exported targets, basically recreating them manually
+# as external.
+_qt_internal_add_sbom(t1_ext
+    SPDX_ID "${mt1_spdx_id}"
+    IS_EXTERNAL_SBOM_ENTITY
+    EXTERNAL_SBOM_DOCUMENT_TARGET ExtDoc1
+    SBOM_ENTITY_TYPE LIBRARY
+)
+
+# Case 2
+# Add a relationship on the external target. This adds a relationship for both spdx and cydx
+# formats, because the external document target has info for both.
+_qt_internal_extend_sbom(c1
+    SBOM_RELATIONSHIP_ENTRIES
+        SBOM_RELATIONSHIP_ENTRY
+            SBOM_RELATIONSHIP_FROM
+                c1
+            SBOM_RELATIONSHIP_TYPE
+                DEPENDS_ON
+            SBOM_RELATIONSHIP_TO
+                t1_ext
+            SBOM_RELATIONSHIP_COMMENT
+                "c1 depends on t1_ext"
+)
+add_assert_str_exists_in_spdx_v2_3_doc(
+    "Relationship: ${c1_spdx_id} DEPENDS_ON ${extdoc1_spdx_v2_document_ref_id}:${mt1_spdx_id}")
+add_cydx_v1_6_deps_to_result_file(c1 DEPS "${mt1_spdx_id}")
+
+# Case 3
+# Add relationship to an external target that is only defined in one format.
+_qt_internal_add_sbom(t2_ext
+    SPDX_ID "${mt2_spdx_id}"
+    IS_EXTERNAL_SBOM_ENTITY
+    EXTERNAL_SBOM_DOCUMENT_TARGET ExtDoc2Spdx
+    SBOM_ENTITY_TYPE LIBRARY
+)
+_qt_internal_add_sbom(t3_ext
+    SPDX_ID "${mt3_spdx_id}"
+    IS_EXTERNAL_SBOM_ENTITY
+    EXTERNAL_SBOM_DOCUMENT_TARGET ExtDoc3Cydx
+    SBOM_ENTITY_TYPE LIBRARY
+)
+
+_qt_internal_extend_sbom(c2
+    SBOM_RELATIONSHIP_ENTRIES
+        SBOM_RELATIONSHIP_ENTRY
+            SBOM_RELATIONSHIP_FROM
+                c2
+            SBOM_RELATIONSHIP_TYPE
+                DEPENDS_ON
+            SBOM_RELATIONSHIP_TO
+                t2_ext
+            SBOM_RELATIONSHIP_COMMENT
+                "c2 depends on t2_ext"
+            SBOM_FORMATS SPDX_V2
+)
+_qt_internal_sbom_query_external_reference_document(ExtDoc2Spdx
+    OUT_VAR_SPDX_V2_DOCUMENT_REF_ID extdoc2_spdx_v2_document_ref_id
+)
+add_assert_str_exists_in_spdx_v2_3_doc(
+    "Relationship: ${c2_spdx_id} DEPENDS_ON ${extdoc2_spdx_v2_document_ref_id}:${mt2_spdx_id}")
+
+_qt_internal_extend_sbom(c3
+    SBOM_RELATIONSHIP_ENTRIES
+        SBOM_RELATIONSHIP_ENTRY
+            SBOM_RELATIONSHIP_FROM
+                c3
+            SBOM_RELATIONSHIP_TYPE
+                DEPENDS_ON
+            SBOM_RELATIONSHIP_TO
+                t3_ext
+            SBOM_RELATIONSHIP_COMMENT
+                "c3 depends on t3_ext"
+            SBOM_FORMATS CYDX_V1_6
+)
+add_cydx_v1_6_deps_to_result_file(c3 DEPS "${mt3_spdx_id}")
+
 _qt_internal_sbom_end_project()
 
 include(CommonResultGen)
