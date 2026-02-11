@@ -298,6 +298,7 @@ private:
     const int m_id;
 };
 
+Q_GUI_EXPORT QPoint qt_defaultDpis();
 Q_GUI_EXPORT int qt_defaultDpiX();
 Q_GUI_EXPORT int qt_defaultDpiY();
 Q_GUI_EXPORT int qt_defaultDpi();
