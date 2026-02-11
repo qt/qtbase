@@ -6,6 +6,8 @@ description             = Qt Core Reference Documentation
 version                 = $QT_VERSION
 
 moduleheader            = QtCoreDoc
+# Allow private Android classes to be documented as public
+internalfilepatterns    = "^((?!androidextras).)*_p.h\$"
 includepaths           += ./include
 
 examplesinstallpath     = corelib
