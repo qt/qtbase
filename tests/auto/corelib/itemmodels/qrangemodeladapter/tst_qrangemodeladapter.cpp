@@ -2572,6 +2572,37 @@ void tst_QRangeModelAdapter::buildValueTree()
         QVERIFY(!firstGrandchildPMI.isValid());
     }
 
+    { // assign new range to an existing branch
+        QCOMPARE(adapter.rowCount(0), 0);
+        tree_row newChild[] = {
+            {"0.1", "zero.one"}
+        };
+        adapter.at(0).children().assign(std::make_move_iterator(std::begin(newChild)),
+                                        std::make_move_iterator(std::end(newChild)));
+        QCOMPARE(adapter.rowCount(0), 1);
+        QCOMPARE(rowsRemovedSpy.count(), 0);
+        QCOMPARE(rowsInsertedSpy.count(), 1);
+        rowsInsertedSpy.clear();
+
+        tree_row newChildren[] = {
+            {"0.1", "zero.one"},
+            {"0.2", "zero.two"},
+        };
+        adapter.at(0).children().assign(std::make_move_iterator(std::begin(newChildren)),
+                                        std::make_move_iterator(std::end(newChildren)));
+        QCOMPARE(adapter.rowCount(0), 2);
+        QCOMPARE(rowsRemovedSpy.count(), 1);
+        QCOMPARE(rowsInsertedSpy.count(), 1);
+        rowsRemovedSpy.clear();
+        rowsInsertedSpy.clear();
+
+        adapter.at(0).children().assign({});
+        QCOMPARE(adapter.rowCount(0), 0);
+        QCOMPARE(rowsRemovedSpy.count(), 1);
+        QCOMPARE(rowsInsertedSpy.count(), 0);
+        rowsRemovedSpy.clear();
+    }
+
     dataChangedSpy.clear();
     rowsInsertedSpy.clear();
 #endif // old Q_CC_MSVC

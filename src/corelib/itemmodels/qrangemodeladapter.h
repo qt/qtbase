@@ -1556,12 +1556,12 @@ private:
             impl->beginResetModel();
             impl->deleteOwnedRows();
         } else if constexpr (is_tree<Impl>) {
-            if (oldLastRow > 0) {
+            if (oldLastRow >= 0) {
                 impl->beginRemoveRows(root, 0, model()->rowCount(root) - 1);
                 impl->deleteRemovedRows(QRangeModelDetails::refTo(oldRange));
                 impl->endRemoveRows();
             }
-            if (newLastRow > 0)
+            if (newLastRow >= 0)
                 impl->beginInsertRows(root, 0, newLastRow);
         } else {
             Q_ASSERT_X(false, "QRangeModelAdapter::assign",
@@ -1575,7 +1575,7 @@ private:
         if (!root.isValid()) {
             impl->endResetModel();
         } else if constexpr (is_tree<Impl>) {
-            if (newLastRow > 0) {
+            if (newLastRow >= 0) {
                 Q_ASSERT(model()->hasChildren(root));
                 // if it was moved, then newRange is now likely to be empty. Get
                 // the inserted row.
