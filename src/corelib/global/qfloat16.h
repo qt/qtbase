@@ -448,7 +448,7 @@ inline auto qHypot(qfloat16 x, qfloat16 y)
 {
 #if defined(QT_COMPILER_SUPPORTS_F16C) && defined(__F16C__) || QFLOAT16_IS_NATIVE
     return QtPrivate::QHypotHelper<qfloat16>(x).add(y).result();
-#else
+#else // NearestFloat is float:
     return qfloat16(qHypot(float(x), float(y)));
 #endif
 }
@@ -459,6 +459,14 @@ template<typename F, typename ...Fs> auto qHypot(F first, Fs... rest);
 template <typename T> typename QtPrivate::QHypotType<T, qfloat16>::type
 qHypot(T x, qfloat16 y)
 {
+    // Two-arg qHypot() delegates to std::hypot(), which has no (T = double,
+    // NearestFloat = __fp16) overload on ARM64 Linux, leading to ambiguity in
+    // (at least) that case. Testing whether we can use it needs C++20 ...
+#ifdef __cpp_concepts
+    if constexpr (requires { std::hypot(x, qfloat16::NearestFloat(y)); })
+        return qHypot(x, qfloat16::NearestFloat(y));
+    else
+#endif
     if constexpr (std::is_floating_point_v<T>)
         return qHypot(x, float(y));
     else
@@ -470,7 +478,7 @@ template <typename T> auto qHypot(qfloat16 x, T y)
 }
 
 #if defined(__cpp_lib_hypot) && __cpp_lib_hypot >= 201603L // Expected to be true
-// If any are not qfloat16, convert each qfloat16 to float:
+// If any are not qfloat16, convert each qfloat16 to qfloat16::NearestFloat:
 /* (The following splits the some-but-not-all-qfloat16 cases up, using
    (X|Y|Z)&~(X&Y&Z) = X ? ~(Y&Z) : Y|Z = X&~(Y&Z) | ~X&Y | ~X&~Y&Z,
    into non-overlapping cases, to avoid ambiguity.) */
@@ -495,7 +503,7 @@ inline auto qHypot(qfloat16 x, qfloat16 y, qfloat16 z)
 {
 #if (defined(QT_COMPILER_SUPPORTS_F16C) && defined(__F16C__)) || QFLOAT16_IS_NATIVE
     return QtPrivate::QHypotHelper<qfloat16>(x).add(y).add(z).result();
-#else
+#else // NearestFloat is float;
     return qfloat16(qHypot(float(x), float(y), float(z)));
 #endif
 }
