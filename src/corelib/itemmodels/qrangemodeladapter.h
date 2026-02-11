@@ -268,7 +268,7 @@ public:
         {
             value_type value;
             ds >> value;
-            ref = value;
+            ref = std::move(value);
             return ds;
         }
 #endif
