@@ -1054,18 +1054,17 @@ public:
     }
 };
 
-class
-QT_DEPRECATED_VERSION_X_6_15("Use QVariant::ConstPointer instead.")
-QVariantConstPointer
+// Keep this a single long line, otherwise syncqt doesn't create a class forwarding header
+class Q_CORE_EXPORT QT_DEPRECATED_VERSION_X_6_15("Use QVariant::ConstPointer instead.") QVariantConstPointer
 {
 private:
     QVariant m_variant;
 
 public:
-    Q_CORE_EXPORT explicit QVariantConstPointer(QVariant variant);
+    explicit QVariantConstPointer(QVariant variant);
 
-    Q_CORE_EXPORT QVariant operator*() const;
-    Q_CORE_EXPORT const QVariant *operator->() const;
+    QVariant operator*() const;
+    const QVariant *operator->() const;
 };
 
 template<typename Pointer> class
