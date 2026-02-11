@@ -101,7 +101,7 @@ private:
     void expectInvalidIndex(int count)
     {
 #ifndef QT_NO_DEBUG
-        static QRegularExpression invalidIndex{".* - Index at position is invalid"};
+        static QRegularExpression invalidIndex{".* - Index at .* is invalid"};
 
         for (int i = 0; i < count; ++i) // at and DataRef accesses when testing out-of-bounds
             QTest::ignoreMessage(QtCriticalMsg, invalidIndex);
