@@ -1066,7 +1066,7 @@ public:
     template <typename NewRange = range_type, if_assignable_range<NewRange> = true>
     void setRange(NewRange &&newRange)
     {
-        setRangeImpl(qsizetype(Impl::size(QRangeModelDetails::refTo(newRange))) - 1,
+        setRangeImpl(qsizetype(Impl::size(QRangeModelDetails::refTo(newRange))),
             [&newRange](auto &oldRange) {
             oldRange = std::forward<NewRange>(newRange);
         });
@@ -1083,7 +1083,7 @@ public:
     template <typename Row, if_assignable_range<std::initializer_list<Row>> = true>
     void setRange(std::initializer_list<Row> newRange)
     {
-        setRangeImpl(qsizetype(newRange.size() - 1), [&newRange](auto &oldRange) {
+        setRangeImpl(qsizetype(newRange.size()), [&newRange](auto &oldRange) {
             oldRange = newRange;
         });
     }
@@ -1104,7 +1104,7 @@ public:
     template <typename InputIterator, typename Sentinel, typename I = Impl, if_writable<I> = true>
     void setRange(InputIterator first, Sentinel last)
     {
-        setRangeImpl(qsizetype(std::distance(first, last) - 1), [first, last](auto &oldRange) {
+        setRangeImpl(qsizetype(std::distance(first, last)), [first, last](auto &oldRange) {
             oldRange.assign(first, last);
         });
     }
@@ -1584,8 +1584,12 @@ private:
     }
 
     template <typename Assigner>
-    void setRangeImpl(qsizetype newLastRow, Assigner &&assigner)
+    void setRangeImpl(qsizetype newSize, Assigner &&assigner)
     {
+        Q_ASSERT_X(newSize <= std::numeric_limits<int>::max(),
+                   "QRangeModelAdapter::setRange", "New range is too large");
+
+        const qsizetype newLastRow = newSize - 1;
         auto *impl = storage.implementation();
         auto *oldRange = impl->childRange(storage.root());
         beginSetRangeImpl(impl, oldRange, newLastRow);
