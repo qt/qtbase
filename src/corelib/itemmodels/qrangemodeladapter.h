@@ -297,57 +297,57 @@ public:
             q_ptr_swap(m_adapter, other.m_adapter);
         }
 
-        friend Iterator &operator++(Iterator &that) noexcept
+        friend Iterator &operator++(Iterator &that)
         {
             ++that.m_column;
             return that;
         }
-        friend Iterator operator++(Iterator &that, int) noexcept
+        friend Iterator operator++(Iterator &that, int)
         {
             auto copy = that;
             ++that;
             return copy;
         }
-        friend Iterator operator+(const Iterator &that, difference_type n) noexcept
+        friend Iterator operator+(const Iterator &that, difference_type n)
         {
             return {that.m_rowIndex, that.m_column + n, that.m_adapter};
         }
-        friend Iterator operator+(difference_type n, const Iterator &that) noexcept
+        friend Iterator operator+(difference_type n, const Iterator &that)
         {
             return that + n;
         }
-        friend Iterator &operator+=(Iterator &that, difference_type n) noexcept
+        friend Iterator &operator+=(Iterator &that, difference_type n)
         {
             that.m_column += n;
             return that;
         }
 
-        friend Iterator &operator--(Iterator &that) noexcept
+        friend Iterator &operator--(Iterator &that)
         {
             --that.m_column;
             return that;
         }
-        friend Iterator operator--(Iterator &that, int) noexcept
+        friend Iterator operator--(Iterator &that, int)
         {
             auto copy = that;
             --that;
             return copy;
         }
-        friend Iterator operator-(const Iterator &that, difference_type n) noexcept
+        friend Iterator operator-(const Iterator &that, difference_type n)
         {
             return {that.m_rowIndex, that.m_column - n, that.m_adapter};
         }
-        friend Iterator operator-(difference_type n, const Iterator &that) noexcept
+        friend Iterator operator-(difference_type n, const Iterator &that)
         {
             return that - n;
         }
-        friend Iterator &operator-=(Iterator &that, difference_type n) noexcept
+        friend Iterator &operator-=(Iterator &that, difference_type n)
         {
             that.m_column -= n;
             return that;
         }
 
-        friend difference_type operator-(const Iterator &lhs, const Iterator &rhs) noexcept
+        friend difference_type operator-(const Iterator &lhs, const Iterator &rhs)
         {
             Q_PRE(lhs.m_rowIndex == rhs.m_rowIndex);
             Q_PRE(lhs.m_adapter == rhs.m_adapter);
@@ -838,57 +838,57 @@ public:
             q_ptr_swap(m_adapter, other.m_adapter);
         }
 
-        friend Iterator &operator++(Iterator &that) noexcept
+        friend Iterator &operator++(Iterator &that)
         {
             ++that.m_row;
             return that;
         }
-        friend Iterator operator++(Iterator &that, int) noexcept
+        friend Iterator operator++(Iterator &that, int)
         {
             auto copy = that;
             ++that;
             return copy;
         }
-        friend Iterator operator+(const Iterator &that, difference_type n) noexcept
+        friend Iterator operator+(const Iterator &that, difference_type n)
         {
             return {that.m_row + n, that.root(), that.m_adapter};
         }
-        friend Iterator operator+(difference_type n, const Iterator &that) noexcept
+        friend Iterator operator+(difference_type n, const Iterator &that)
         {
             return that + n;
         }
-        friend Iterator &operator+=(Iterator &that, difference_type n) noexcept
+        friend Iterator &operator+=(Iterator &that, difference_type n)
         {
             that.m_row += n;
             return that;
         }
 
-        friend Iterator &operator--(Iterator &that) noexcept
+        friend Iterator &operator--(Iterator &that)
         {
             --that.m_row;
             return that;
         }
-        friend Iterator operator--(Iterator &that, int) noexcept
+        friend Iterator operator--(Iterator &that, int)
         {
             auto copy = that;
             --that;
             return copy;
         }
-        friend Iterator operator-(const Iterator &that, difference_type n) noexcept
+        friend Iterator operator-(const Iterator &that, difference_type n)
         {
             return {that.m_row - n, that.root(), that.m_adapter};
         }
-        friend Iterator operator-(difference_type n, const Iterator &that) noexcept
+        friend Iterator operator-(difference_type n, const Iterator &that)
         {
             return that - n;
         }
-        friend Iterator &operator-=(Iterator &that, difference_type n) noexcept
+        friend Iterator &operator-=(Iterator &that, difference_type n)
         {
             that.m_row -= n;
             return that;
         }
 
-        friend difference_type operator-(const Iterator &lhs, const Iterator &rhs) noexcept
+        friend difference_type operator-(const Iterator &lhs, const Iterator &rhs)
         {
             return lhs.m_row - rhs.m_row;
         }
