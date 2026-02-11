@@ -850,35 +850,59 @@ void tst_QSet::setOperations()
     QVERIFY(set8.contains("epsilon"));
     QVERIFY(set8.contains("iota"));
 
+    const auto getSet2Copy = [set2]() { return set2; };
+
     QSet<QString> set9 = set1 | set2;
+    QVERIFY(set9 == set3);
+    set9 = set1 | getSet2Copy();
     QVERIFY(set9 == set3);
 
     QSet<QString> set10 = set1 & set2;
     QVERIFY(set10 == set5);
+    set10 = set1 & getSet2Copy();
+    QVERIFY(set10 == set5);
 
     QSet<QString> set11 = set1 + set2;
+    QVERIFY(set11 == set3);
+    set11 = set1 + getSet2Copy();
     QVERIFY(set11 == set3);
 
     QSet<QString> set12 = set1 - set2;
     QVERIFY(set12 == set7);
+    set12 = set1 - getSet2Copy();
+    QVERIFY(set12 == set7);
 
     QSet<QString> set13 = set2 - set1;
+    QVERIFY(set13 == set8);
+    set13 = getSet2Copy() - set1;
     QVERIFY(set13 == set8);
 
     QSet<QString> set14 = set1;
     set14 |= set2;
     QVERIFY(set14 == set3);
+    set14 = set1;
+    set14 |= getSet2Copy();
+    QVERIFY(set14 == set3);
 
     QSet<QString> set15 = set1;
     set15 &= set2;
+    QVERIFY(set15 == set5);
+    set15 = set1;
+    set15 &= getSet2Copy();
     QVERIFY(set15 == set5);
 
     QSet<QString> set16 = set1;
     set16 += set2;
     QVERIFY(set16 == set3);
+    set16 = set1;
+    set16 += getSet2Copy();
+    QVERIFY(set16 == set3);
 
     QSet<QString> set17 = set1;
     set17 -= set2;
+    QVERIFY(set17 == set7);
+    set17 = set1;
+    set17 -= getSet2Copy();
     QVERIFY(set17 == set7);
 
     QSet<QString> set18 = set2;

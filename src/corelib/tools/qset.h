@@ -200,7 +200,7 @@ public:
 
     friend QSet operator|(const QSet &lhs, const QSet &rhs) { return QSet(lhs) |= rhs; }
     friend QSet operator|(QSet &&lhs, const QSet &rhs) { lhs |= rhs; return std::move(lhs); }
-    friend QSet operator|(const QSet &lhs, QSet &&rhs) { return lhs |= std::move(rhs); }
+    friend QSet operator|(const QSet &lhs, QSet &&rhs) { return QSet(lhs) |= std::move(rhs); }
     friend QSet operator|(QSet &&lhs, QSet &&rhs) { return std::move(lhs) |= std::move(rhs); }
 
     friend QSet operator&(const QSet &lhs, const QSet &rhs) { return QSet(lhs) &= rhs; }
