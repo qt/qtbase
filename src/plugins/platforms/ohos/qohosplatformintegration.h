@@ -101,7 +101,7 @@ public:
     QOhosScreenManager *screenManager() const;
 
 private:
-    EGLDisplay m_eglDisplay;
+    std::shared_ptr<EGLDisplay> m_eglDisplay;
 
     QThread *m_mainThread;
     std::unique_ptr<QOhosPlatformFontDatabase> m_ohosFDB;
