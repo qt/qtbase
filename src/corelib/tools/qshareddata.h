@@ -337,7 +337,7 @@ QSharedDataPointerBase<P, T>::detach_helper()
     T *x = clone();
     x->ref.ref();
     if (!d->ref.deref())
-        delete d.get();
+        destroy(d.get());
     d.reset(x);
 }
 
