@@ -1614,6 +1614,7 @@ void tst_QUdpSocket::setMulticastInterface_data()
     QTest::addColumn<QNetworkInterface>("iface");
     QTest::addColumn<QHostAddress>("address");
     const QList<QNetworkInterface> interfaces = QNetworkInterface::allInterfaces();
+    int added = 0;
     for (const QNetworkInterface &iface : interfaces) {
         if ((iface.flags() & QNetworkInterface::IsUp) == 0)
             continue;
@@ -1621,8 +1622,13 @@ void tst_QUdpSocket::setMulticastInterface_data()
         for (const QNetworkAddressEntry &entry : entries) {
             const QByteArray testName = iface.name().toLatin1() + ':' + entry.ip().toString().toLatin1();
             QTest::newRow(testName.constData()) << iface << entry.ip();
+            ++added;
         }
     }
+
+    if (added == 0)
+        QSKIP("QNetworkInterface returned no addresses on interfaces with IsUp, not even loopback. "
+              "You may want to run tst_qnetworkinterface on your system.");
 }
 
 void tst_QUdpSocket::setMulticastInterface()
