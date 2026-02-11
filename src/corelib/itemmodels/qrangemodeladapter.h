@@ -292,8 +292,8 @@ public:
 
         void swap(ColumnIteratorBase &other) noexcept
         {
-            qSwap(m_rowIndex, other.m_rowIndex);
-            qSwap(m_column, other.m_column);
+            std::swap(m_rowIndex, other.m_rowIndex);
+            std::swap(m_column, other.m_column);
             q_ptr_swap(m_adapter, other.m_adapter);
         }
 
