@@ -1138,13 +1138,7 @@ function(_qt_internal_sbom_add_target target)
         string(APPEND package_comment "Contained in CMake package: ${qt_package_name}\n")
     endif()
 
-    # Record the target spdx id right now, so we can refer to it in later attribution targets
-    # if needed.
-    _qt_internal_sbom_record_target_spdx_id(${target}
-        SBOM_ENTITY_TYPE "${sbom_entity_type}"
-        PACKAGE_NAME "${package_name_for_spdx_id}"
-        OUT_VAR package_spdx_id
-    )
+    _qt_internal_sbom_get_spdx_id_for_target("${target}" package_spdx_id)
 
     if(arg_USE_ATTRIBUTION_FILES)
         set(attribution_args
@@ -1710,20 +1704,33 @@ function(_qt_internal_extend_sbom target)
 
     _qt_internal_map_sbom_entity_type(sbom_entity_type ${ARGN})
 
-    # Make sure a spdx id is recorded for the target right now, so it is "known" when handling
-    # relationships for other targets, even if the target was not yet finalized.
-    if(sbom_entity_type)
-        # Friendly package name is allowed to be empty.
-        set(package_name_option "")
-        if(arg_FRIENDLY_PACKAGE_NAME)
-            set(package_name_option PACKAGE_NAME "${arg_FRIENDLY_PACKAGE_NAME}")
+    # Make sure the spdx id and sbom entity type is recorded for the target right now, so it is
+    # "known" when handling relationships for other targets, even if the target was not yet
+    # finalized.
+    # The SBOM entity type is expected to be passed when creating a new SBOM target, or extending
+    # an existing target for the first time with SBOM info.
+    _qt_internal_sbom_get_spdx_id_for_target("${target}" spdx_id)
+    if(NOT spdx_id)
+        set(record_spdx_id_args "")
+
+        # Isn't allowed to be empty when creating the spdx id.
+        if(sbom_entity_type)
+            list(APPEND record_spdx_id_args SBOM_ENTITY_TYPE "${sbom_entity_type}")
+        else()
+            message(FATAL_ERROR
+                "Target '${target}' is missing an SBOM_ENTITY_TYPE value. "
+                "Make sure to pass it when creating new SBOM target or extending an existing "
+                "target with SBOM infromation for the first time.")
         endif()
 
-        _qt_internal_sbom_record_target_spdx_id(${target}
-            SBOM_ENTITY_TYPE "${sbom_entity_type}"
-            ${package_name_option}
-        )
+        # Friendly package name is allowed to be empty.
+        if(arg_FRIENDLY_PACKAGE_NAME)
+            list(APPEND record_spdx_id_args PACKAGE_NAME "${arg_FRIENDLY_PACKAGE_NAME}")
+        endif()
+
+        _qt_internal_sbom_record_target_spdx_id(${target} ${record_spdx_id_args})
     endif()
+
     get_target_property(is_system_library "${target}" _qt_internal_sbom_is_system_library)
 
     set_property(TARGET ${target} APPEND PROPERTY _qt_finalize_sbom_args "${forward_args}")
@@ -1953,7 +1960,12 @@ function(_qt_internal_sbom_get_sanitized_spdx_id out_var hint)
     set(${out_var} "${spdx_id}" PARENT_SCOPE)
 endfunction()
 
-# Generates a spdx id for a target and saves it its properties.
+# Generates a spdx id for a target and saves it, the passed in SBOM_ENTITY_TYPE value, and a lot
+# of other project specific properties like the spdx document namespace, cyclone dx document serial
+# number, etc, in its target properties.
+# A SBOM_ENTITY_TYPE value is required when saving the spdx id.
+
+# Exits early and returns the spdx id if it was already created earlier.
 function(_qt_internal_sbom_record_target_spdx_id target)
     set(opt_args "")
     set(single_args
