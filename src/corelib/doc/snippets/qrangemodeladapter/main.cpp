@@ -121,12 +121,12 @@ void get_and_set()
     modifiedBooks = adapter.range();
     //! [get-range]
 
-    //! [set-range]
+    //! [assign]
     // reset to the original
     adapter = books;
     // or
-    adapter.setRange(books);
-    //! [set-range]
+    adapter.assign(books);
+    //! [assign]
 }
 
 void dataAccess()

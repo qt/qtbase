@@ -25,7 +25,7 @@ public:
     // compile tests
     void construct_API();
 
-    void setRange_API();
+    void assign_API();
 
     void indexOfRow_API();
     void indexOfCell_API();
@@ -191,7 +191,7 @@ struct API##Test<Range, Protocol, \
     }; \
 HAS_API(API)
 
-API_TEST(setRange, setRange({}))
+API_TEST(assign, assign({}))
 
 API_TEST(indexOfRow, index(0))
 API_TEST(indexOfCell, index(0, 0))
@@ -255,20 +255,20 @@ void tst_QRangeModelAdapter::construct_API()
     static_assert(!qxp::is_detected_v<construct_test, int>);
 }
 
-void tst_QRangeModelAdapter::setRange_API()
+void tst_QRangeModelAdapter::assign_API()
 {
     Data d;
     auto tree = value_tree{};
-    static_assert(has_setRange(d.vectorOfGadgets));
-    static_assert(has_setRange(std::move(d.tableOfRowPointers)));
-    static_assert(has_setRange(d.m_tree));
-    static_assert(has_setRange(tree));
+    static_assert(has_assign(d.vectorOfGadgets));
+    static_assert(has_assign(std::move(d.tableOfRowPointers)));
+    static_assert(has_assign(d.m_tree));
+    static_assert(has_assign(tree));
 #if (!defined(Q_CC_GNU_ONLY) || Q_CC_GNU > 1303) && !defined(Q_OS_VXWORKS) && !defined(Q_OS_INTEGRITY)
-    static_assert(has_setRange(std::ref(tree)));
+    static_assert(has_assign(std::ref(tree)));
 #endif
-    static_assert(has_setRange(std::move(tree)));
-    static_assert(!has_setRange(std::as_const(d.vectorOfGadgets)));
-    static_assert(!has_setRange(std::as_const(tree)));
+    static_assert(has_assign(std::move(tree)));
+    static_assert(!has_assign(std::as_const(d.vectorOfGadgets)));
+    static_assert(!has_assign(std::as_const(tree)));
 }
 
 void tst_QRangeModelAdapter::indexOfRow_API()
@@ -1048,14 +1048,14 @@ void tst_QRangeModelAdapter::modelReset()
 
         QCOMPARE(adapter.range(), std::vector<int>());
 
-        adapter.setRange(std::vector<int>{1, 2, 3, 4, 5});
+        adapter.assign(std::vector<int>{1, 2, 3, 4, 5});
         QCOMPARE(modelAboutToBeResetSpy.count(), 1);
         QCOMPARE(modelResetSpy.count(), 1);
 
         QCOMPARE(adapter.rowCount(), 5);
         QCOMPARE(adapter[0], 1);
 
-        adapter.setRange({3, 2, 1});
+        adapter.assign({3, 2, 1});
         QCOMPARE(modelAboutToBeResetSpy.count(), 2);
         QCOMPARE(modelResetSpy.count(), 2);
         QCOMPARE(adapter.rowCount(), 3);
@@ -1069,7 +1069,7 @@ void tst_QRangeModelAdapter::modelReset()
 
         adapter.assign(modifiedData.begin(), modifiedData.end());
         QCOMPARE(modelResetSpy.count(), 1);
-        adapter.setRange(std::vector<int>{3, 2, 1});
+        adapter.assign(std::vector<int>{3, 2, 1});
         QCOMPARE(modelResetSpy.count(), 2);
         std::vector<short> shorts = {10, 11, 12};
         adapter.assign(shorts.begin(), shorts.end());
@@ -1090,7 +1090,7 @@ void tst_QRangeModelAdapter::modelReset()
         adapter.at(0) = tree_row{};
         QCOMPARE(std::as_const(adapter).at(0, 0), "");
         QCOMPARE(std::as_const(adapter).at(0, 1), "");
-        adapter.setRange(createValueTree());
+        adapter.assign(createValueTree());
         QCOMPARE(std::as_const(adapter).at(0, 0), "1");
         QCOMPARE(std::as_const(adapter).at(0, 1), "one");
     }
