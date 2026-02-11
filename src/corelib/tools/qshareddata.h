@@ -60,6 +60,7 @@ template <template <typename> class P, typename T> class QSharedDataPointerBase
 
 protected:
     constexpr QSharedDataPointerBase(T *ptr = nullptr) noexcept : d(ptr) {}
+    QT_DECLARE_RO5_SMF_AS_DEFAULTED(QSharedDataPointerBase)
 
 public:
     // When adding anything public to this class, make sure to add the doc version to
