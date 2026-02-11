@@ -116,9 +116,7 @@ void get_and_set()
 
     // show UI and where the user can modify the list
 
-    QList<Book> modifiedBooks = adapter;
-    // or
-    modifiedBooks = adapter.range();
+    QList<Book> modifiedBooks = adapter.range();
     //! [get-range]
 
     //! [assign]

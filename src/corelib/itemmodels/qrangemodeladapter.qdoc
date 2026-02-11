@@ -42,9 +42,7 @@
     If the adapter was created from an lvalue or rvalue reference, then the
     adapter and model will operate on a copy of the original range object.
     Otherwise, modifications made through the adapter or model will be written
-    to the original range object. To get the updated range, use the range()
-    function explicitly, or use the implicit conversion of the adapter to a
-    the range.
+    to the original range object. To access the updated range, use range():
 
     \snippet qrangemodeladapter/main.cpp get-range
 
@@ -312,7 +310,6 @@
 
 /*!
     \fn template <typename Range, typename Protocol, typename Model> const QRangeModelAdapter<Range, Protocol, Model>::range_type &QRangeModelAdapter<Range, Protocol, Model>::range() const
-    \fn template <typename Range, typename Protocol, typename Model> QRangeModelAdapter<Range, Protocol, Model>::operator const QRangeModelAdapter<Range, Protocol, Model>::range_type &() const
 
     \return a const reference to the range that the model adapter operates on.
 

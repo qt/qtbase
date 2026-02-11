@@ -1056,11 +1056,6 @@ public:
         return QRangeModelDetails::refTo(storage.implementation()->childRange(storage.root()));
     }
 
-    Q_IMPLICIT operator const range_type &() const
-    {
-        return range();
-    }
-
     template <typename NewRange = range_type, if_assignable_range<NewRange> = true>
     void assign(NewRange &&newRange)
     {
