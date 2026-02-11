@@ -1064,9 +1064,9 @@ public:
     }
 
     template <typename NewRange = range_type, if_assignable_range<NewRange> = true>
-    void setRange(NewRange &&newRange)
+    void assign(NewRange &&newRange)
     {
-        setRangeImpl(qsizetype(Impl::size(QRangeModelDetails::refTo(newRange))),
+        assignImpl(qsizetype(Impl::size(QRangeModelDetails::refTo(newRange))),
             [&newRange](auto &oldRange) {
             oldRange = std::forward<NewRange>(newRange);
         });
@@ -1076,14 +1076,14 @@ public:
               unless_adapter<NewRange> = true>
     QRangeModelAdapter &operator=(NewRange &&newRange)
     {
-        setRange(std::forward<NewRange>(newRange));
+        assign(std::forward<NewRange>(newRange));
         return *this;
     }
 
     template <typename Row, if_assignable_range<std::initializer_list<Row>> = true>
-    void setRange(std::initializer_list<Row> newRange)
+    void assign(std::initializer_list<Row> newRange)
     {
-        setRangeImpl(qsizetype(newRange.size()), [&newRange](auto &oldRange) {
+        assignImpl(qsizetype(newRange.size()), [&newRange](auto &oldRange) {
             oldRange = newRange;
         });
     }
@@ -1091,28 +1091,16 @@ public:
     template <typename Row, if_assignable_range<std::initializer_list<Row>> = true>
     QRangeModelAdapter &operator=(std::initializer_list<Row> newRange)
     {
-        setRange(newRange);
+        assign(newRange);
         return *this;
-    }
-
-    template <typename Row, if_assignable_range<std::initializer_list<Row>> = true>
-    void assign(std::initializer_list<Row> newRange)
-    {
-        setRange(newRange);
-    }
-
-    template <typename InputIterator, typename Sentinel, typename I = Impl, if_writable<I> = true>
-    void setRange(InputIterator first, Sentinel last)
-    {
-        setRangeImpl(qsizetype(std::distance(first, last)), [first, last](auto &oldRange) {
-            oldRange.assign(first, last);
-        });
     }
 
     template <typename InputIterator, typename Sentinel, typename I = Impl, if_writable<I> = true>
     void assign(InputIterator first, Sentinel last)
     {
-        setRange(first, last);
+        assignImpl(qsizetype(std::distance(first, last)), [first, last](auto &oldRange) {
+            oldRange.assign(first, last);
+        });
     }
 
     // iterator API
@@ -1544,7 +1532,7 @@ private:
         Q_EMIT storage.implementation()->dataChanged(topLeft, bottomRight, {});
     }
 
-    void beginSetRangeImpl(Impl *impl, range_type *oldRange, qsizetype newLastRow)
+    void beginAssignImpl(Impl *impl, range_type *oldRange, qsizetype newLastRow)
     {
         const QModelIndex root = storage.root();
         const qsizetype oldLastRow = qsizetype(Impl::size(oldRange)) - 1;
@@ -1561,12 +1549,12 @@ private:
             if (newLastRow > 0)
                 impl->beginInsertRows(root, 0, newLastRow);
         } else {
-            Q_ASSERT_X(false, "QRangeModelAdapter::setRange",
+            Q_ASSERT_X(false, "QRangeModelAdapter::assign",
                        "Internal error: The root index in a table or list must be invalid.");
         }
     }
 
-    void endSetRangeImpl(Impl *impl, qsizetype newLastRow)
+    void endAssignImpl(Impl *impl, qsizetype newLastRow)
     {
         const QModelIndex root = storage.root();
         if (!root.isValid()) {
@@ -1584,17 +1572,17 @@ private:
     }
 
     template <typename Assigner>
-    void setRangeImpl(qsizetype newSize, Assigner &&assigner)
+    void assignImpl(qsizetype newSize, Assigner &&assigner)
     {
         Q_ASSERT_X(newSize <= std::numeric_limits<int>::max(),
-                   "QRangeModelAdapter::setRange", "New range is too large");
+                   "QRangeModelAdapter::assign", "New range is too large");
 
         const qsizetype newLastRow = newSize - 1;
         auto *impl = storage.implementation();
         auto *oldRange = impl->childRange(storage.root());
-        beginSetRangeImpl(impl, oldRange, newLastRow);
+        beginAssignImpl(impl, oldRange, newLastRow);
         assigner(QRangeModelDetails::refTo(oldRange));
-        endSetRangeImpl(impl, newLastRow);
+        endAssignImpl(impl, newLastRow);
 
         if constexpr (Impl::itemsAreQObjects) {
             if (model()->autoConnectPolicy() == QRangeModel::AutoConnectPolicy::Full) {
