@@ -188,6 +188,8 @@ static bool writeJsonFiles(const QList<QString> &fileList, const QString &fileLi
     if (timestampFile.size() == sizeof(timestamp))
         timestampFile.read(reinterpret_cast<char *>(&timestamp), sizeof(timestamp));
 
+    const qint64 previousTimestamp = timestamp;
+
     // Check if any of the metatype json files produced by automoc is newer than the last file
     // processed by cmake_automoc parser
     for (const auto &jsonFile : fileList) {
@@ -198,18 +200,30 @@ static bool writeJsonFiles(const QList<QString> &fileList, const QString &fileLi
         }
     }
 
-    if (timestamp != std::numeric_limits<qint64>::min() || !QFile::exists(fileListFilePath)) {
+    QByteArray newContent;
+    for (const auto &jsonFile : fileList) {
+        newContent += jsonFile.toUtf8();
+        newContent += '\n';
+    }
+
+    bool needsRewrite = timestamp > previousTimestamp;
+    if (!needsRewrite) {
+        // Timestamps are unchanged, but the set of json files might have changed
+        // (e.g. a Q_OBJECT macro was removed from a header). Compare the file lists.
+        QFile existingFile(fileListFilePath);
+        if (!existingFile.open(QIODevice::ReadOnly | QIODevice::Text)
+            || existingFile.readAll() != newContent) {
+            needsRewrite = true;
+        }
+    }
+
+    if (needsRewrite) {
         QFile file(fileListFilePath);
         if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
             fprintf(stderr, "Could not open: %s\n", qPrintable(fileListFilePath));
             return false;
         }
-
-        QTextStream textStream(&file);
-        for (const auto &jsonFile : fileList) {
-            textStream << jsonFile << Qt::endl;
-        }
-        textStream.flush();
+        file.write(newContent);
 
         // Update the timestamp according the newest json file timestamp.
         timestampFile.resize(0);
