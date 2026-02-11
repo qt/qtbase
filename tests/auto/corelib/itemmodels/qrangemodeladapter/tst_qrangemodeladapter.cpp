@@ -1065,7 +1065,7 @@ void tst_QRangeModelAdapter::modelReset()
         modelAboutToBeResetSpy.clear();
         modelResetSpy.clear();
 
-        std::vector<int> modifiedData = adapter;
+        std::vector<int> modifiedData = adapter.range();
 
         adapter.assign(modifiedData.begin(), modifiedData.end());
         QCOMPARE(modelResetSpy.count(), 1);
@@ -1099,7 +1099,7 @@ void tst_QRangeModelAdapter::modelReset()
         QStringList list;
         QRangeModelAdapter adapter(list);
         auto setList = [](const QStringList &) {};
-        setList(adapter);
+        setList(adapter.range());
         QVariant var = list;
     }
 }
