@@ -1572,9 +1572,22 @@ function(qt6_extract_metatypes target)
         VERBATIM
     )
 
-    if(CMAKE_GENERATOR MATCHES " Makefiles")
-        # Work around https://gitlab.kitware.com/cmake/cmake/-/issues/19005 to trigger the command
-        # that generates ${metatypes_file}.
+    if(CMAKE_GENERATOR MATCHES "Visual Studio")
+        # MSBuild cannot track BYPRODUCTS for dependency ordering between
+        # CustomBuild items. Without an explicit OUTPUT rule, MSBuild may run
+        # qmltyperegistrar (which depends on metatypes.json) before
+        # moc --collect-json (which produces metatypes.json as a BYPRODUCT).
+        # Use 'touch' instead of 'true' because MSBuild needs the output file's
+        # timestamp to be updated, otherwise the rule re-fires on every build.
+        add_custom_command(
+            OUTPUT ${metatypes_file}
+            DEPENDS ${metatypes_file_gen}
+            COMMAND ${CMAKE_COMMAND} -E touch ${metatypes_file}
+            VERBATIM
+        )
+    elseif(CMAKE_GENERATOR MATCHES " Makefiles")
+        # Work around https://gitlab.kitware.com/cmake/cmake/-/issues/19005
+        # to trigger the command that generates ${metatypes_file}.
         add_custom_command(
             OUTPUT ${metatypes_file}
             DEPENDS ${metatypes_file_gen}
