@@ -98,12 +98,13 @@ QImageData::QImageData()
       format(QImage::Format_ARGB32), bytes_per_line(0),
       ser_no(next_qimage_serial_number()),
       detach_no(0),
-      dpmx(qt_defaultDpiX() * 100 / qreal(2.54)),
-      dpmy(qt_defaultDpiY() * 100 / qreal(2.54)),
       offset(0, 0), own_data(true), ro_data(false), has_alpha_clut(false),
       is_cached(false), cleanupFunction(nullptr), cleanupInfo(nullptr),
       paintEngine(nullptr)
 {
+    QPoint dpis = qt_defaultDpis();
+    dpmx = dpis.x() * 100 / qreal(2.54);
+    dpmy = dpis.y() * 100 / qreal(2.54);
 }
 
 /*! \fn QImageData * QImageData::create(const QSize &size, QImage::Format format)

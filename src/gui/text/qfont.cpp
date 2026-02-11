@@ -111,34 +111,32 @@ bool QFontDef::exactMatch(const QFontDef &other) const
 
 extern bool qt_is_tty_app;
 
-Q_GUI_EXPORT int qt_defaultDpiX()
+Q_GUI_EXPORT QPoint qt_defaultDpis()
 {
     if (QCoreApplication::instance()->testAttribute(Qt::AA_Use96Dpi))
-        return 96;
+        return QPoint(96, 96);
 
     if (qt_is_tty_app)
-        return 75;
+        return QPoint(75, 75);
 
-    if (const QScreen *screen = QGuiApplication::primaryScreen())
-        return qRound(screen->logicalDotsPerInchX());
+    int dpis = QGuiApplicationPrivate::m_primaryScreenDpis.loadRelaxed();
+    int dpiX = (dpis >> 16) & 0xffff;
+    int dpiY = dpis & 0xffff;
+    if (dpiX > 0 && dpiY > 0)
+        return QPoint(dpiX, dpiY);
 
     //PI has not been initialised, or it is being initialised. Give a default dpi
-    return 100;
+    return QPoint(100, 100);
+}
+
+Q_GUI_EXPORT int qt_defaultDpiX()
+{
+    return qt_defaultDpis().x();
 }
 
 Q_GUI_EXPORT int qt_defaultDpiY()
 {
-    if (QCoreApplication::instance()->testAttribute(Qt::AA_Use96Dpi))
-        return 96;
-
-    if (qt_is_tty_app)
-        return 75;
-
-    if (const QScreen *screen = QGuiApplication::primaryScreen())
-        return qRound(screen->logicalDotsPerInchY());
-
-    //PI has not been initialised, or it is being initialised. Give a default dpi
-    return 100;
+    return qt_defaultDpis().y();
 }
 
 Q_GUI_EXPORT int qt_defaultDpi()
