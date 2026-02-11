@@ -1760,6 +1760,9 @@ private:
     }
 };
 
+// Deduction guides are needed to correctly map single-parameter construction
+// to the void-protocol case, and to disable construction from incompatible
+// ranges.
 template <typename Range, typename Protocol,
           QRangeModelDetails::if_can_construct<Range, Protocol> = true>
 QRangeModelAdapter(Range &&, Protocol &&) -> QRangeModelAdapter<Range, Protocol>;
