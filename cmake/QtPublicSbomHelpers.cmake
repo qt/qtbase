@@ -1317,8 +1317,18 @@ function(_qt_internal_sbom_add_target target)
     endif()
 
     if(download_location)
-        list(APPEND project_package_options_spdx DOWNLOAD_LOCATION "${download_location}")
-        list(APPEND project_package_options_cydx DOWNLOAD_LOCATION "${download_location}")
+        set(placeholder_args "")
+        if(package_version)
+            list(APPEND placeholder_args VERSION "${package_version}")
+        endif()
+        _qt_internal_sbom_replace_qa_placeholders(
+            VALUES "${download_location}"
+            ${placeholder_args}
+            OUT_VAR download_location_replaced
+        )
+
+        list(APPEND project_package_options_spdx DOWNLOAD_LOCATION "${download_location_replaced}")
+        list(APPEND project_package_options_cydx DOWNLOAD_LOCATION "${download_location_replaced}")
     endif()
 
     _qt_internal_sbom_get_package_purpose("${sbom_entity_type}" package_purpose)
