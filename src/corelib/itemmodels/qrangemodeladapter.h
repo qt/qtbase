@@ -151,9 +151,7 @@ public:
 
         explicit DataReference(const QModelIndex &index) noexcept
             : m_index(index)
-        {
-            Q_ASSERT_X(m_index.isValid(), "QRangeModelAdapter::at", "Index at position is invalid");
-        }
+        {}
 
         DataReference(const DataReference &other) = default;
         DataReference(DataReference &&other) = default;
@@ -1272,9 +1270,17 @@ public:
     const_data_type operator[](int row) const { return at(row); }
 
     template <typename I= Impl, if_list<I> = true, if_writable<I> = true>
-    auto at(int row) { return DataReference{this->index(row)}; }
+    auto at(int row) {
+        const QModelIndex idx = this->index(row);
+        Q_ASSERT_X(idx.isValid(), "QRangeModelAdapter::at", "Index at row is invalid");
+        return DataReference{idx};
+    }
     template <typename I = Impl, if_list<I> = true, if_writable<I> = true>
-    auto operator[](int row) { return DataReference{this->index(row)}; }
+    auto operator[](int row) {
+        const QModelIndex idx = this->index(row);
+        Q_ASSERT_X(idx.isValid(), "QRangeModelAdapter::operator[]", "Index at row is invalid");
+        return DataReference{idx};
+    }
 
     // at/operator[int] for table or tree: a reference or view of the row
     template <typename I = Impl, unless_list<I> = true>
@@ -1308,11 +1314,18 @@ public:
     template <typename I = Impl, unless_list<I> = true, if_writable<I> = true>
     auto at(int row, int column)
     {
-        return DataReference{this->index(row, column)};
+        const QModelIndex idx = this->index(row, column);
+        Q_ASSERT_X(idx.isValid(), "QRangeModelAdapter::at", "Index at cell is invalid");
+        return DataReference{idx};
     }
 #ifdef __cpp_multidimensional_subscript
     template <typename I = Impl, unless_list<I> = true, if_writable<I> = true>
-    auto operator[](int row, int column) { return at(row, column); }
+    auto operator[](int row, int column)
+    {
+        const QModelIndex idx = this->index(row, column);
+        Q_ASSERT_X(idx.isValid(), "QRangeModelAdapter::operator[]", "Index at cell is invalid");
+        return DataReference{idx};
+    }
 #endif
 
     // at/operator[int] for tree: return a wrapper that maintains reference to
@@ -1359,11 +1372,18 @@ public:
     auto at(QSpan<const int> path, int column)
     {
         Q_PRE(path.size());
-        return DataReference{this->index(path, column)};
+        const QModelIndex idx = this->index(path, column);
+        Q_ASSERT_X(idx.isValid(), "QRangeModelAdapter::at", "Index at path is invalid");
+        return DataReference{idx};
     }
 #ifdef __cpp_multidimensional_subscript
     template <typename I = Impl, if_tree<I> = true, if_writable<I> = true>
-    auto operator[](QSpan<const int> path, int column) { return at(path, column); }
+    auto operator[](QSpan<const int> path, int column)
+    {
+        const QModelIndex idx = this->index(path, column);
+        Q_ASSERT_X(idx.isValid(), "QRangeModelAdapter::operator[]", "Index at path is invalid");
+        return DataReference{idx};
+    }
 #endif
 
     template <typename I = Impl, if_canInsertRows<I> = true>
