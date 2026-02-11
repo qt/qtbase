@@ -8,7 +8,7 @@
 #include <QtCore/qtconfigmacros.h>
 #include <QtCore/qcompilerdetection.h>
 
-#include <QtCore/q20type_traits.h>
+#include <QtCore/q23type_traits.h>
 
 //
 //  W A R N I N G
