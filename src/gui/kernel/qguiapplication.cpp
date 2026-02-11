@@ -202,6 +202,7 @@ Q_CONSTINIT bool QGuiApplicationPrivate::popup_closed_on_press = false;
 Q_CONSTINIT QInputDeviceManager *QGuiApplicationPrivate::m_inputDeviceManager = nullptr;
 
 Q_CONSTINIT qreal QGuiApplicationPrivate::m_maxDevicePixelRatio = 0.0;
+Q_CONSTINIT QBasicAtomicInt QGuiApplicationPrivate::m_primaryScreenDpis = Q_BASIC_ATOMIC_INITIALIZER(0);
 
 Q_CONSTINIT static qreal fontSmoothingGamma = 1.7;
 
@@ -726,6 +727,7 @@ QGuiApplication::~QGuiApplication()
     QGuiApplicationPrivate::highDpiScaleFactorRoundingPolicy = Qt::HighDpiScaleFactorRoundingPolicy::PassThrough;
     QGuiApplicationPrivate::currentDragWindow = nullptr;
     QGuiApplicationPrivate::tabletDevicePoints.clear();
+    QGuiApplicationPrivate::m_primaryScreenDpis.storeRelaxed(0);
 }
 
 QGuiApplicationPrivate::QGuiApplicationPrivate(int &argc, char **argv)
@@ -1221,6 +1223,20 @@ void QGuiApplicationPrivate::resetCachedDevicePixelRatio()
     m_maxDevicePixelRatio = 0.0;
 }
 
+void QGuiApplicationPrivate::_q_updatePrimaryScreenDpis()
+{
+    int dpis = 0;
+    const QScreen *screen = QGuiApplication::primaryScreen();
+    if (screen) {
+        int dpiX = qRound(screen->logicalDotsPerInchX());
+        int dpiY = qRound(screen->logicalDotsPerInchY());
+        dpis = (dpiX << 16) | (dpiY & 0xffff);
+        QObject::connect(screen, SIGNAL(logicalDotsPerInchChanged(qreal)),
+                         q_func(), SLOT(_q_updatePrimaryScreenDpis()), Qt::UniqueConnection);
+    }
+    m_primaryScreenDpis.storeRelaxed(dpis);
+}
+
 /*!
     Returns the top level window at the given position \a pos, if any.
 */
@@ -1642,6 +1658,9 @@ void Q_TRACE_INSTRUMENT(qtgui) QGuiApplicationPrivate::init()
 #if defined(Q_OS_MACOS)
     QMacAutoReleasePool pool;
 #endif
+
+    QObject::connect(q_func(), SIGNAL(primaryScreenChanged(QScreen *)),
+                     q_func(), SLOT(_q_updatePrimaryScreenDpis()));
 
     QCoreApplicationPrivate::init();
 

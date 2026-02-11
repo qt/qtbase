@@ -175,6 +175,7 @@ private:
     Q_DECLARE_PRIVATE(QGuiApplication)
 
     Q_PRIVATE_SLOT(d_func(), void _q_updateFocusObject(QObject *object))
+    Q_PRIVATE_SLOT(d_func(), void _q_updatePrimaryScreenDpis())
 
 #ifndef QT_NO_GESTURES
     friend class QGestureManager;
