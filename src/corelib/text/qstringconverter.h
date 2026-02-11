@@ -64,10 +64,8 @@ public:
     }
 
     using FinalizeResult = FinalizeResultChar<char>;
-    Q_REQUIRED_RESULT
-    Q_CORE_EXPORT FinalizeResult finalize(char *out, qsizetype maxlen);
-    Q_REQUIRED_RESULT
-    FinalizeResult finalize() { return finalize(nullptr, 0); }
+    [[nodiscard]] Q_CORE_EXPORT FinalizeResult finalize(char *out, qsizetype maxlen);
+    [[nodiscard]] FinalizeResult finalize() { return finalize(nullptr, 0); }
 
 private:
     QByteArray invalidateAndReturnNull()
@@ -141,15 +139,13 @@ public:
 
     using FinalizeResult = FinalizeResultChar<char16_t>;
     using FinalizeResultQChar = FinalizeResultChar<QChar>;
-    FinalizeResultQChar finalize(QChar *out, qsizetype maxlen)
+    [[nodiscard]] FinalizeResultQChar finalize(QChar *out, qsizetype maxlen)
     {
         auto r = finalize(reinterpret_cast<char16_t *>(out), maxlen);
         return { {}, reinterpret_cast<QChar *>(r.next), r.invalidChars, r.error };
     }
-    Q_REQUIRED_RESULT
-    Q_CORE_EXPORT FinalizeResult finalize(char16_t *out, qsizetype maxlen);
-    Q_REQUIRED_RESULT
-    FinalizeResult finalize()
+    [[nodiscard]] Q_CORE_EXPORT FinalizeResult finalize(char16_t *out, qsizetype maxlen);
+    [[nodiscard]] FinalizeResult finalize()
     {
         return finalize(static_cast<char16_t *>(nullptr), 0);
     }
