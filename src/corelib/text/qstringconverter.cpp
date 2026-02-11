@@ -2687,10 +2687,6 @@ QStringList QStringConverter::availableCodecs()
 }
 
 /*!
-    \class QStringConverter::FinalizeResultBase
-    \internal
-*/
-/*!
     \class QStringConverter::FinalizeResultChar
     \inmodule QtCore
     \since 6.11
@@ -2702,7 +2698,7 @@ QStringList QStringConverter::availableCodecs()
     why the call did not succeed.
 */
 /*!
-    \enum QStringConverter::FinalizeResultBase::Error
+    \enum QStringConverter::FinalizeResultError
     \value NoError No error.
     \value InvalidCharacters The encoder successfully finalized, but encountered
                              invalid characters either during finalization or some time earlier.
@@ -2772,17 +2768,17 @@ auto QStringDecoder::finalize(char16_t *out, qsizetype maxlen) -> FinalizeResult
     const qint16 invalidChars = q26::saturate_cast<qint16>(state.invalidChars + count);
     if (count == 0 || !out) {
         resetState();
-        return { {}, out, invalidChars, invalidChars ? Error::InvalidCharacters : Error::NoError };
+        return {out, invalidChars, invalidChars ? Error::InvalidCharacters : Error::NoError};
     }
     if (maxlen < count)
-        return { {}, out, invalidChars, Error::NotEnoughSpace };
+        return {out, invalidChars, Error::NotEnoughSpace};
 
     const char16_t replacement = (state.flags & QStringConverter::Flag::ConvertInvalidToNull)
             ? QChar::Null
             : QChar::ReplacementCharacter;
     out = std::fill_n(out, count, replacement);
     resetState();
-    return { {}, out, invalidChars, invalidChars ? Error::InvalidCharacters : Error::NoError };
+    return {out, invalidChars, invalidChars ? Error::InvalidCharacters : Error::NoError};
 }
 
 /*!
@@ -2831,7 +2827,7 @@ auto QStringEncoder::finalize(char *out, qsizetype maxlen) -> QStringEncoder::Fi
     const qint16 invalidChars = q26::saturate_cast<qint16>(state.invalidChars + count);
     if (!isValid() || (!count && !usesIcu) || !out) {
         resetState();
-        return { {}, out, invalidChars, invalidChars ? Error::InvalidCharacters : Error::NoError };
+        return {out, invalidChars, invalidChars ? Error::InvalidCharacters : Error::NoError};
     }
 
     if ((false)) {
@@ -2854,7 +2850,7 @@ auto QStringEncoder::finalize(char *out, qsizetype maxlen) -> QStringEncoder::Fi
         const char *outEnd = out + maxlen;
         ucnv_fromUnicode(icu_conv, &out, outEnd, &dummyInput, dummyInput, nullptr, flush, &err);
         if (err == U_BUFFER_OVERFLOW_ERROR)
-            return { {}, out, invalidChars, Error::NotEnoughSpace };
+            return {out, invalidChars, Error::NotEnoughSpace};
         resetState();
 #endif
     } else if (!(state.flags & QStringConverter::Flag::ConvertInvalidToNull)) {
@@ -2871,18 +2867,18 @@ auto QStringEncoder::finalize(char *out, qsizetype maxlen) -> QStringEncoder::Fi
         constexpr std::array<char16_t, 4> replacement{ repl, repl, repl, repl };
         const qsizetype charactersToEncode = std::min(count, qsizetype(replacement.size()));
         if (maxlen < requiredSpace(charactersToEncode))
-            return { {}, out, invalidChars, Error::NotEnoughSpace };
+            return {out, invalidChars, Error::NotEnoughSpace};
         // we don't want the incomplete data in the internal buffer; we're
         // flushing the buffer after all
         resetState();
         out = appendToBuffer(out, QStringView(replacement.data(), charactersToEncode));
     } else /* outputting Null characters for each remaining unconverted input character */ {
         if (maxlen < count)
-            return { {}, out, invalidChars, Error::NotEnoughSpace };
+            return {out, invalidChars, Error::NotEnoughSpace};
         out = std::fill_n(out, count, '\0');
         resetState();
     }
-    return { {}, out, invalidChars, invalidChars ? Error::InvalidCharacters : Error::NoError };
+    return {out, invalidChars, invalidChars ? Error::InvalidCharacters : Error::NoError};
 }
 
 /*!

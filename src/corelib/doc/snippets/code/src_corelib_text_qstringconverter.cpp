@@ -35,7 +35,7 @@ void examples()
             string += toUtf16(chunk);
         }
         auto result = toUtf16.finalize();
-        if (result.error != QStringDecoder::FinalizeResult::NoError) {
+        if (result.error != QStringDecoder::FinalizeResult::Error::NoError) {
             // Handle error
         }
         //! [2]
@@ -51,7 +51,7 @@ void examples()
             encoded += fromUtf16(chunk);
         }
         auto result = fromUtf16.finalize();
-        if (result.error != QStringEncoder::FinalizeResult::NoError) {
+        if (result.error != QStringEncoder::FinalizeResult::Error::NoError) {
             // Handle error
         }
         //! [3]
