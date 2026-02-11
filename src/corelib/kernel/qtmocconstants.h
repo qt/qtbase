@@ -30,8 +30,7 @@ namespace QtMocConstants {
 // revision 11 is Qt 6.5: The metatype for void is stored in the metatypes array
 // revision 12 is Qt 6.6: It adds the metatype for enums
 // revision 13 is Qt 6.9: Adds support for 64-bit QFlags and moves the method revision
-// revision 14 is Qt 6.11: Adds a hash of meta object contents
-enum { OutputRevision = 14 };   // Used by moc, qmetaobjectbuilder and qdbus
+enum { OutputRevision = 13 };   // Used by moc, qmetaobjectbuilder and qdbus
 
 enum PropertyFlags : uint {
     Invalid = 0x00000000,

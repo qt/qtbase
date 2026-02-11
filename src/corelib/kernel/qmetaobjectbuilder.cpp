@@ -1179,11 +1179,10 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
     int methodParametersDataSize = aggregateParameterCount(d->methods)
              + aggregateParameterCount(d->constructors);
     if constexpr (mode == Construct) {
-        static_assert(QMetaObjectPrivate::OutputRevision == 14, "QMetaObjectBuilder should generate the same version as moc");
+        static_assert(QMetaObjectPrivate::OutputRevision == 13, "QMetaObjectBuilder should generate the same version as moc");
         pmeta->revision = QMetaObjectPrivate::OutputRevision;
         pmeta->flags = d->flags.toInt() | AllocatedMetaObject;
         pmeta->className = 0;   // Class name is always the first string.
-        pmeta->metaObjectHashIndex = -1;   // TODO support hash in the builder too
         //pmeta->signalCount is handled in the "output method loop" as an optimization.
 
         pmeta->classInfoCount = d->classInfoNames.size();

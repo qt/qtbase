@@ -23,9 +23,6 @@
                 ]
             }
         ],
-        "hashes": {
-            "BackslashNewlines": "0$VAkStqKr6pw5W81yZ3rCFn98h9U"
-        },
         "inputFile": "backslash-newlines.h",
         "outputRevision": 69
     },
@@ -44,9 +41,6 @@
                 ]
             }
         ],
-        "hashes": {
-            "IfdefedClass": "0$OochknExuVUAqq2zc5gt2Ldj4+4"
-        },
         "inputFile": "c-comments.h",
         "outputRevision": 69
     },
@@ -81,9 +75,6 @@
                 "qualifiedClassName": "CStyleEnums"
             }
         ],
-        "hashes": {
-            "CStyleEnums": "0$fqbHabuJUT79FJr/S/6WsAiFcJI"
-        },
         "inputFile": "cstyle-enums.h",
         "outputRevision": 69
     },
@@ -334,11 +325,6 @@
                 ]
             }
         ],
-        "hashes": {
-            "CXX11Enums": "0$SPzFG1raX8GCqiq6g21PoU/7ixs",
-            "CXX11Enums2": "0$uYFCI2+nT8TI8jLcKAvO8vp9OYA",
-            "CXX11Enums3": "0$bRezVo4UbDNuGatmLEd0/n8K8FA"
-        },
         "inputFile": "cxx11-enums.h",
         "outputRevision": 69
     },
@@ -741,17 +727,6 @@
                 ]
             }
         ],
-        "hashes": {
-            "ExplicitOverrideControlBase": "0$PFsRqLGh0wP5gfqwF9CVeUi9EVU",
-            "ExplicitOverrideControlFinalCxx11": "0$RQTN9wEJCVZ1N4IcieHs2LuRKY8",
-            "ExplicitOverrideControlFinalCxx11OverrideCxx11": "0$ZEBCUhi5oEGiDVdmoqD+x4n1KJk",
-            "ExplicitOverrideControlFinalQt": "0$GuS6YD8Kcf/9KyehmFsrmDWW42M",
-            "ExplicitOverrideControlFinalQtOverrideQt": "0$q48mSBftA2LJFVSB4uqTmKs2gOc",
-            "ExplicitOverrideControlOverrideCxx11": "0$he1BJyFAtIcrEf74bZY1d54aCbc",
-            "ExplicitOverrideControlOverrideQt": "0$dWQ+iDw9oKEYXiSgy2izIISyRMg",
-            "ExplicitOverrideControlSealed": "0$3nq5psg7nFNDlPnBpaYraCr3CHQ",
-            "ExplicitOverrideControlSealedOverride": "0$I7ySe3SgUSARroswRh74wJoZkkA"
-        },
         "inputFile": "cxx11-explicit-override-control.h",
         "outputRevision": 69
     },
@@ -875,17 +850,6 @@
                 ]
             }
         ],
-        "hashes": {
-            "ExportedFinalTestClassCpp11": "0$eUEIDQi+/lB9KOjB+oul4rZe9xE",
-            "ExportedFinalTestClassCpp11X": "0$g03sLKAEeX8BLjKjFsG3MMfunaY",
-            "ExportedFinalTestClassQt": "0$fYFeeRSmEnokVTW4eIiCU6PR5HM",
-            "ExportedFinalTestClassQtX": "0$7+xgvb70xVV3Xot9q7FhSm8mUew",
-            "ExportedSealedTestClass": "0$jzcARHlbTm1whxXOtg9edtN1ctg",
-            "ExportedSealedTestClassX": "0$tEmYiad6hqJMlGaCnNc2GhZtDgM",
-            "FinalTestClassCpp11": "0$Opb/8DnbfVjpH2CZvHo9Rv93iV8",
-            "FinalTestClassQt": "0$DtnHOKRNbQ5Y3QbO5AeLM4qYDW0",
-            "SealedTestClass": "0$VUU19XJgT+KhqRBlwQmXkd0yVgQ"
-        },
         "inputFile": "cxx11-final-classes.h",
         "outputRevision": 69
     },
@@ -1089,9 +1053,6 @@
                 ]
             }
         ],
-        "hashes": {
-            "CXX11TrailingReturn": "0$neQlOl+UXv3j3WBfYThJnODlY+A"
-        },
         "inputFile": "cxx11-trailing-return.h",
         "outputRevision": 69
     },
@@ -1132,10 +1093,6 @@
                 "qualifiedClassName": "CXX17Namespace::A::B::C::D"
             }
         ],
-        "hashes": {
-            "CXX17Namespace::A::B::C::D": "0$WwEpzp6jKMGQfcvBrtsAJOy01KM",
-            "CXX17Namespace::A::B::C::D::ClassInNamespace": "0$/g09nq8R/tK4tC37pIgfRw/mBog"
-        },
         "inputFile": "cxx17-namespaces.h",
         "outputRevision": 69
     },
@@ -1166,9 +1123,6 @@
                 ]
             }
         ],
-        "hashes": {
-            "DirInIncludePath": "0$Yj0uFD5gTp9Ie67oMAyjAEUetbo"
-        },
         "inputFile": "dir-in-include-path.h",
         "outputRevision": 69
     },
@@ -1187,9 +1141,6 @@
                 ]
             }
         ],
-        "hashes": {
-            "Foo": "0$CB6VdqlszayDKadxVcYxPz1KzvI"
-        },
         "inputFile": "enum_with_include.h",
         "outputRevision": 69
     },
@@ -1222,9 +1173,6 @@
                 ]
             }
         ],
-        "hashes": {
-            "StringLiterals": "0$ZMhjewm0f9PVVN6Nf31Slot+IRo"
-        },
         "inputFile": "escapes-in-string-literals.h",
         "outputRevision": 69
     },
@@ -1463,9 +1411,6 @@
                 ]
             }
         ],
-        "hashes": {
-            "ForwardDeclaredParamClass": "0$1v+gvQyQz9IWyRMSBZJfmhZpCw4"
-        },
         "inputFile": "forward-declared-param.h",
         "outputRevision": 69
     },
@@ -1500,9 +1445,6 @@
                 ]
             }
         ],
-        "hashes": {
-            "FunctionWithAttributes": "0$PHwt9wN4wGfmeCWQSXJ4CFyLKCk"
-        },
         "inputFile": "function-with-attributes.h",
         "outputRevision": 69
     },
@@ -1538,10 +1480,6 @@
                 ]
             }
         ],
-        "hashes": {
-            "DerivedGadgetWithEnums": "0$ziLf2XE3jIzXb4mHc1AtXn2Pr+w",
-            "GadgetWithNoEnums": "0$Jahs+W0ABVb+g0vSoUQ80hLQCzk"
-        },
         "inputFile": "gadgetwithnoenums.h",
         "outputRevision": 69
     },
@@ -1578,11 +1516,6 @@
                 ]
             }
         ],
-        "hashes": {
-            "GrandParentGadget::BaseGadget": "0$edRI9jp0xvXAhzuu71v5ByBmvbw",
-            "GrandParentGadget::CRTPDerivedGadget": "0$Y3W4552o/BUqjdHf2NxgqKGkRmI",
-            "GrandParentGadget::DerivedGadget": "0$AhUcr6i4Hne/y216sE3UnzvaBks"
-        },
         "inputFile": "grand-parent-gadget-class.h",
         "outputRevision": 69
     },
@@ -1660,10 +1593,6 @@
                 "qualifiedClassName": "SomeRandomNamespace"
             }
         ],
-        "hashes": {
-            "SomeRandomNamespace": "0$haTJ0XROzXzF0eXH4sreUExdPxg",
-            "TestFwdProperties": "0$nCnIBZp9yjT7g7CBF8SPWRS5Qbo"
-        },
         "inputFile": "moc_include.h",
         "outputRevision": 69
     },
@@ -1734,11 +1663,6 @@
                 "qualifiedClassName": "FooNamespace::FooNestedNamespace::FooMoreNestedNamespace"
             }
         ],
-        "hashes": {
-            "FooNamespace": "0$Z0uaI0MMFqu0YzU7vExYNRUcBhs",
-            "FooNamespace::FooNestedNamespace": "0$c0mGYICDOoC4QPdVm5HRH9ApH68",
-            "FooNamespace::FooNestedNamespace::FooMoreNestedNamespace": "0$FHRRWVs1L+xEcXWY318xVxYlx+Y"
-        },
         "inputFile": "namespace.h",
         "outputRevision": 69
     },
@@ -1770,10 +1694,6 @@
                 ]
             }
         ],
-        "hashes": {
-            "QTBUG_101141::Base": "0$U366MOIqv3M+uAirFGzc/YkYdoA",
-            "QTBUG_101141::Derived": "0$RhyA1CgCTHJhP+oLRVIDYv85oNQ"
-        },
         "inputFile": "namespaced-base-class.h",
         "outputRevision": 69
     },
@@ -1872,10 +1792,6 @@
                 ]
             }
         ],
-        "hashes": {
-            "Foo::Bar": "0$eaOvO5e3VDVuBA0sUL57V/gVzSA",
-            "Foo::Baz": "0$sc6EyZfHAz5yPLCMHpU0LXoi1XY"
-        },
         "inputFile": "namespaced-flags.h",
         "outputRevision": 69
     },
@@ -1912,9 +1828,6 @@
                 ]
             }
         ],
-        "hashes": {
-            "MyBooooooostishClass": "0$RDRAZTtVcMrrVnaW3ccG5tm5kvU"
-        },
         "inputFile": "no-keywords.h",
         "outputRevision": 69
     },
@@ -1933,9 +1846,6 @@
                 ]
             }
         ],
-        "hashes": {
-            "NonGadgetParent::Derived": "0$3bsnxOwlHgO7cAngQLFI5JRtpDE"
-        },
         "inputFile": "non-gadget-parent-class.h",
         "outputRevision": 69
     },
@@ -2002,9 +1912,6 @@
                 ]
             }
         ],
-        "hashes": {
-            "OldStyleCast": "0$tg567Jxb/wczCGYgDo7CHjLQaF8"
-        },
         "inputFile": "oldstyle-casts.h",
         "outputRevision": 69
     },
@@ -2248,9 +2155,6 @@
                 ]
             }
         ],
-        "hashes": {
-            "PD::ParseDefine": "0$gtPGvhjjReF7/9ujAvwWNaRWEdk"
-        },
         "inputFile": "parse-defines.h",
         "outputRevision": 69
     },
@@ -2269,9 +2173,6 @@
                 ]
             }
         ],
-        "hashes": {
-            "TestPluginMetaData": "0$D43pha4BOvdLMUbKSF0Pw0b2rfQ"
-        },
         "inputFile": "plugin_metadata.h",
         "outputRevision": 69
     },
@@ -2376,9 +2277,6 @@
                 ]
             }
         ],
-        "hashes": {
-            "TestPointeeCanBeIncomplete": "0$BXzN6PCuKk/qhZeYZaaNyUNKW/8"
-        },
         "inputFile": "pointery_to_incomplete.h",
         "outputRevision": 69
     },
@@ -2460,10 +2358,6 @@
                 ]
             }
         ],
-        "hashes": {
-            "PureVirtualSignalsImpl": "0$+RHy7vy0RgivuAtQW3Dohe0R+qk",
-            "PureVirtualSignalsTest": "0$31whJazqnFwWMc3cO9MaT9wBSy8"
-        },
         "inputFile": "pure-virtual-signals.h",
         "outputRevision": 69
     },
@@ -2536,10 +2430,6 @@
                 ]
             }
         ],
-        "hashes": {
-            "QEnum64Object": "0$mPIUjAUmfYvqxkkkXghMo9RAiZA",
-            "QFlags64Object": "0$o86jnlU0tZ0uyjOrEZ4/oOXAKfk"
-        },
         "inputFile": "qflags64object.h",
         "outputRevision": 69
     },
@@ -2596,10 +2486,6 @@
                 ]
             }
         ],
-        "hashes": {
-            "InvokableBeforeInline": "0$t5nSESnZz1Liw62inFXd2SZTQTg",
-            "InvokableBeforeReturnType": "0$q7unyP9EifVhdxdSVIaFweQMDs4"
-        },
         "inputFile": "qinvokable.h",
         "outputRevision": 69
     },
@@ -2639,9 +2525,6 @@
                 ]
             }
         ],
-        "hashes": {
-            "QmlMacro": "0$ohmDXSSvwPL9cUf7TItBqGRGOXM"
-        },
         "inputFile": "qmlmacro.h",
         "outputRevision": 69
     },
@@ -2678,9 +2561,6 @@
                 ]
             }
         ],
-        "hashes": {
-            "TestQPrivateSlots": "0$akM0QTpV2o3AF3v6YBUh+iY1NsM"
-        },
         "inputFile": "qprivateslots.h",
         "outputRevision": 69
     },
@@ -2704,9 +2584,6 @@
                 "qualifiedClassName": "QTBUG_35657::A"
             }
         ],
-        "hashes": {
-            "QTBUG_35657::A": "0$ExnqnOcM0keSitP69QEKBZXt4Es"
-        },
         "inputFile": "qtbug-35657-gadget.h",
         "outputRevision": 69
     },
@@ -2743,9 +2620,6 @@
                 ]
             }
         ],
-        "hashes": {
-            "QTBUG_35657::B": "0$87m3VpcM2/d4skOyD6CagCHib00"
-        },
         "inputFile": "related-metaobjects-in-gadget.h",
         "outputRevision": 69
     },
@@ -2805,10 +2679,6 @@
                 ]
             }
         ],
-        "hashes": {
-            "QTBUG_2151::A": "0$wwzOwB54lloQnRalZ9IiAf2oCII",
-            "QTBUG_2151::B": "0$9hWmRWFLal27FkUg8QRPzYpgsnI"
-        },
         "inputFile": "related-metaobjects-in-namespaces.h",
         "outputRevision": 69
     },
@@ -3307,28 +3177,6 @@
                 ]
             }
         ],
-        "hashes": {
-            "NS1::DependingNestedGadget": "0$TNcL1NZLavYE788QGBJRrdJbnr8",
-            "NS1::DependingNestedObject": "0$03GAmI/fGSH/r4vcC10RgMTNYbE",
-            "NS1::DependingObject": "0$D0TnpCzT9VAUsz3fRCNW1+nEWgI",
-            "NS1::Gadget": "0$x+7FBtXOnCa+gBCDQYYJELL4q6I",
-            "NS1::Nested::Gadget": "0$QrFH5wzXn6x40CgbEt6o8+GwAEw",
-            "NS1::Nested::Object": "0$pMIVvuQb0tyLZ5mwRFw8QDUTsPE",
-            "NS1::NestedUnsused::Gadget": "0$ksUC+FXicub96bqLdCnYlMjTIQg",
-            "NS1::NestedUnsused::Object": "0$Cu9dTusUon5OJbsbCNDszsTWsk4",
-            "NS1::Object": "0$FkizYy4XPEX9QPIyL2eE9bFYc5E",
-            "NS2::DependingNestedGadget": "0$vdj1JGeGEtEmB9ZzsT9fKvB40wc",
-            "NS2::DependingNestedObject": "0$kcASuS4zm/eD+FCuHe+4q/ZLXiY",
-            "NS2::DependingObject": "0$HK/b3ClpMa/zww2knFRBzHsIWBY",
-            "NS2::Gadget": "0$1c2uSbAFT5taj/PGDXyGdXgWhk0",
-            "NS2::Nested::Gadget": "0$1Xmv0ccjZFLq/Y68TxyTQNopa8E",
-            "NS2::Nested::Object": "0$usRIIUM8ix6bMuqFyxtLIGnTAew",
-            "NS2::NestedUnsused::Gadget": "0$V8PumQY6aJmatQ/V72bPVRUyPtM",
-            "NS2::NestedUnsused::Object": "0$HJl5p4/beto2yDugYIrnCfTIRm0",
-            "NS2::Object": "0$qx8DIVSOVAgRXwqE1JjvDXnuM44",
-            "Unsused::Gadget": "0$9DYMYjqKdVlC6OknSGIF2TCoZJo",
-            "Unsused::Object": "0$KW85gaAnMYh4a0phjBcM1vGAyKw"
-        },
         "inputFile": "related-metaobjects-name-conflict.h",
         "outputRevision": 69
     },
@@ -3370,9 +3218,6 @@
                 ]
             }
         ],
-        "hashes": {
-            "SignalWithDefaultArg": "0$nxiVjK8ieRlRO/uDdq0gKtPSgTU"
-        },
         "inputFile": "signal-with-default-arg.h",
         "outputRevision": 69
     },
@@ -3402,9 +3247,6 @@
                 ]
             }
         ],
-        "hashes": {
-            "KDAB": "0$grAoknUYC0BkMxt4HLH2mGR4Tu8"
-        },
         "inputFile": "single-quote-digit-separator-n3781.h",
         "outputRevision": 69
     },
@@ -3486,9 +3328,6 @@
                 ]
             }
         ],
-        "hashes": {
-            "SlotsWithVoidTemplateTest": "0$/08YvkDzSSJmzKO0L6t3PWzQTpA"
-        },
         "inputFile": "slots-with-void-template.h",
         "outputRevision": 69
     },
@@ -3507,9 +3346,6 @@
                 ]
             }
         ],
-        "hashes": {
-            "Task192552": "0$QGM+ZcuSQWGxY2IolngyVZy8sy4"
-        },
         "inputFile": "task192552.h",
         "outputRevision": 69
     },
@@ -3540,10 +3376,6 @@
                 ]
             }
         ],
-        "hashes": {
-            "NS_A::NS_B::TestObject": "0$IMqa1PfGS0EaXXK+9Ch24g/nP2A",
-            "NS_A::NS_Main::TestMain": "0$0z3ZNVKocxpdZHzRFtoTKQimUm0"
-        },
         "inputFile": "task234909.h",
         "outputRevision": 69
     },
@@ -3719,9 +3551,6 @@
                 ]
             }
         ],
-        "hashes": {
-            "TypenameWithUnsigned": "0$jwklF5QEzeV58Ui5C0aT9ZFwDVo"
-        },
         "inputFile": "task240368.h",
         "outputRevision": 69
     },
@@ -3740,9 +3569,6 @@
                 ]
             }
         ],
-        "hashes": {
-            "Task87883": "0$wz5QuoSTJ+0peRmMDYqL9p8q5q4"
-        },
         "inputFile": "task87883.h",
         "outputRevision": 69
     },
@@ -3831,9 +3657,6 @@
                 ]
             }
         ],
-        "hashes": {
-            "MyTechPreviewObject": "0$m2YUGRZgF2OOXQtnAiFcczcw+0A"
-        },
         "inputFile": "tech-preview.h",
         "outputRevision": 69
     },
@@ -3918,9 +3741,6 @@
                 ]
             }
         ],
-        "hashes": {
-            "BBB::Foo": "0$QBU7ysZZuCx+IZ4+vUQEQ84tqu8"
-        },
         "inputFile": "trigraphs.h",
         "outputRevision": 69
     },
@@ -3991,10 +3811,6 @@
                 ]
             }
         ],
-        "hashes": {
-            "WithOverride": "0$dKpX/UA07Owp7D1wOQTtBUySaAU",
-            "WithVirtual": "0$xUxsxEv1GXliAEGjde3GwF91OkE"
-        },
         "inputFile": "virtualAndOverride.h",
         "outputRevision": 69
     }

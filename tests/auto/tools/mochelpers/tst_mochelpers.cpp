@@ -104,7 +104,7 @@ void tst_MocHelpers::classinfoDataGroup()
 {
     constexpr auto data = QtMocHelpers::metaObjectData<void, void>(0, dummyStringData,
             QtMocHelpers::UintData{}, QtMocHelpers::UintData{},
-            QtMocHelpers::UintData{}, -1, QtMocHelpers::UintData{},
+            QtMocHelpers::UintData{}, QtMocHelpers::UintData{},
             QtMocHelpers::ClassInfos({{1, 2}, {3, 4}}));
     checkClassInfos(data.staticData.data);
 }
@@ -612,7 +612,7 @@ void tst_MocHelpers::constructorUintGroup()
 
     constexpr auto data = QtMocHelpers::metaObjectData<void, void>(0, dummyStringData,
             QtMocHelpers::UintData{}, QtMocHelpers::UintData{},
-            QtMocHelpers::UintData{}, -1, constructors);
+            QtMocHelpers::UintData{}, constructors);
     checkConstructors(data.staticData.data, data.relocatingData.metaTypes);
 }
 
@@ -676,7 +676,7 @@ void tst_MocHelpers::uintArrayNoMethods()
                 QtMocHelpers::EnumData<E2>(7, 6, EnumIsFlag | EnumIsScoped)
                     .add({ { 7, E2::V0 }, { 10, E2::V1 }, }),
                 QtMocHelpers::EnumData<QFlags<E1>>(11, 1, EnumIsFlag).add({ { 3, E1::AnEnumValue } }),
-            }, -1, QtMocHelpers::UintData{}, QtMocHelpers::ClassInfos({{1, 2}, {3, 4}}));
+            }, QtMocHelpers::UintData{}, QtMocHelpers::ClassInfos({{1, 2}, {3, 4}}));
 
     auto &data = mo.staticData.data;
     auto &metaTypes = mo.relocatingData.metaTypes;
@@ -724,7 +724,6 @@ void tst_MocHelpers::uintArray()
                     .add({ { 7, E2::V0 }, { 10, E2::V1 }, }),
                 QtMocHelpers::EnumData<QFlags<E1>>(11, 1, EnumIsFlag).add({ { 3, E1::AnEnumValue } }),
             },
-            -1,
             QtMocHelpers::UintData{
                 QtMocHelpers::ConstructorData<NoType(QObject *)>(1, QtMocConstants::AccessPublic,
                     {{ { QMetaType::QObjectStar, 2 } }}

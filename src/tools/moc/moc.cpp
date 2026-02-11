@@ -17,10 +17,6 @@
 #include <private/qmetaobject_moc_p.h>
 #include <private/qduplicatetracker_p.h>
 
-// This is a bootstrapped tool, so we can't rely on QCryptographicHash for the
-// faster SHA1 implementations from OpenSSL.
-#include "../../3rdparty/sha1/sha1.cpp"
-
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
@@ -1216,24 +1212,6 @@ static QByteArrayList requiredQtContainers(const QList<ClassDef> &classes)
     return required;
 }
 
-QByteArray classDefJsonObjectHash(const QJsonObject &object)
-{
-    const QByteArray json = QJsonDocument(object).toJson(QJsonValue::JsonFormat::Compact);
-    QByteArray hash(20, 0); // SHA1 produces 160 bits of data
-
-    {
-        Sha1State state;
-        sha1InitState(&state);
-        sha1Update(&state, reinterpret_cast<const uchar *>(json.constData()), json.size());
-        sha1FinalizeState(&state);
-        sha1ToHash(&state, reinterpret_cast<uchar *>(hash.data()));
-    }
-
-    static const char revisionPrefix[] = "0$";
-    const QByteArray hashB64 = hash.toBase64(QByteArray::OmitTrailingEquals);
-    return revisionPrefix + hashB64;
-}
-
 void Moc::generate(FILE *out, FILE *jsonOutput)
 {
     QByteArrayView fn = strippedFileName();
@@ -1312,18 +1290,10 @@ void Moc::generate(FILE *out, FILE *jsonOutput)
     fprintf(out, "QT_WARNING_DISABLE_DEPRECATED\n");
     fprintf(out, "QT_WARNING_DISABLE_GCC(\"-Wuseless-cast\")\n");
 
-    QHash<QByteArray, QJsonObject> classDefJsonObjects;
-    QHash<QByteArray, QByteArray> metaObjectHashes;
-    for (const ClassDef &def : std::as_const(classList)) {
-        const QJsonObject jsonObject = def.toJson();
-        classDefJsonObjects.insert(def.qualified, jsonObject);
-        metaObjectHashes.insert(def.qualified, classDefJsonObjectHash(jsonObject));
-    }
-
     fputs("", out);
     for (const ClassDef &def : std::as_const(classList)) {
-        Generator generator(this, &def, metaTypes, knownQObjectClasses, knownGadgets,
-                            metaObjectHashes, out, requireCompleteTypes);
+        Generator generator(this, &def, metaTypes, knownQObjectClasses, knownGadgets, out,
+                            requireCompleteTypes);
         generator.generateCode();
 
         // generator.generateCode() should have already registered all strings
@@ -1342,19 +1312,12 @@ void Moc::generate(FILE *out, FILE *jsonOutput)
         mocData["inputFile"_L1] = QLatin1StringView(fn.constData());
 
         QJsonArray classesJsonFormatted;
-        QJsonObject hashesJsonObject;
 
-        for (const ClassDef &cdef : std::as_const(classList)) {
-            classesJsonFormatted.append(classDefJsonObjects[cdef.qualified]);
-            hashesJsonObject.insert(QString::fromLatin1(cdef.qualified),
-                                    QString::fromLatin1(metaObjectHashes[cdef.qualified]));
-        }
+        for (const ClassDef &cdef: std::as_const(classList))
+            classesJsonFormatted.append(cdef.toJson());
 
         if (!classesJsonFormatted.isEmpty())
             mocData["classes"_L1] = classesJsonFormatted;
-
-        if (!hashesJsonObject.isEmpty())
-            mocData["hashes"_L1] = hashesJsonObject;
 
         QJsonDocument jsonDoc(mocData);
         fputs(jsonDoc.toJson().constData(), jsonOutput);
