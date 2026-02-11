@@ -142,7 +142,7 @@ public:
     [[nodiscard]] FinalizeResultQChar finalize(QChar *out, qsizetype maxlen)
     {
         auto r = finalize(reinterpret_cast<char16_t *>(out), maxlen);
-        return { {}, reinterpret_cast<QChar *>(r.next), r.invalidChars, r.error };
+        return {reinterpret_cast<QChar *>(r.next), r.invalidChars, r.error};
     }
     [[nodiscard]] Q_CORE_EXPORT FinalizeResult finalize(char16_t *out, qsizetype maxlen);
     [[nodiscard]] FinalizeResult finalize()

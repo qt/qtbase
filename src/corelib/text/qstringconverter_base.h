@@ -171,18 +171,15 @@ public:
     Q_CORE_EXPORT static QStringList availableCodecs();
 
 
-    struct FinalizeResultBase
-    {
-        enum Error : quint8 {
-            NoError,
-            InvalidCharacters,
-            NotEnoughSpace,
-        };
+    enum class FinalizeResultError : quint8 {
+        NoError,
+        InvalidCharacters,
+        NotEnoughSpace,
     };
     template <typename Char>
-    struct FinalizeResultChar : FinalizeResultBase
+    struct FinalizeResultChar
     {
-        using Error = FinalizeResultBase::Error;
+        using Error = FinalizeResultError;
 
         Char *next;
         qint16 invalidChars;
