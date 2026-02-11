@@ -18,9 +18,8 @@ class Generator
 public:
     Generator(Moc *moc, const ClassDef *classDef, const QList<QByteArray> &metaTypes,
               const QHash<QByteArray, QByteArray> &knownQObjectClasses,
-              const QHash<QByteArray, QByteArray> &knownGadgets,
-              const QHash<QByteArray, QByteArray> &hashes,
-              FILE *outfile = nullptr, bool requireCompleteTypes = false);
+              const QHash<QByteArray, QByteArray> &knownGadgets, FILE *outfile = nullptr,
+              bool requireCompleteTypes = false);
     void generateCode();
     qsizetype registeredStringsCount() { return strings.size(); }
 
@@ -55,7 +54,6 @@ private:
     QList<QByteArray> metaTypes;
     QHash<QByteArray, QByteArray> knownQObjectClasses;
     QHash<QByteArray, QByteArray> knownGadgets;
-    QHash<QByteArray, QByteArray> hashes;
     bool requireCompleteTypes;
 };
 

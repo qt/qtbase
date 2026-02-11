@@ -511,8 +511,7 @@ template <typename ObjectType, typename Unique, typename Strings,
           typename Constructors = UintData<>, typename ClassInfo = detail::UintDataBlock<0, 0>>
 constexpr auto metaObjectData(uint flags, const Strings &strings,
                               const Methods &methods, const Properties &properties,
-                              const Enums &enums, int qt_metaObjectHashIndex = -1,
-                              const Constructors &constructors = {},
+                              const Enums &enums, const Constructors &constructors = {},
                               const ClassInfo &classInfo = {})
 {
     constexpr uint MetaTypeCount = Properties::metaTypeCount()
@@ -521,7 +520,7 @@ constexpr auto metaObjectData(uint flags, const Strings &strings,
             + Methods::metaTypeCount()
             + Constructors::metaTypeCount();
 
-    constexpr uint HeaderSize = 15;
+    constexpr uint HeaderSize = 14;
     constexpr uint TotalSize = HeaderSize
             + Properties::dataSize()
             + Enums::dataSize()
@@ -582,8 +581,6 @@ constexpr auto metaObjectData(uint flags, const Strings &strings,
             ++data[13];
         }
     }
-
-    data[14] = qt_metaObjectHashIndex;
 
     return result;
 }

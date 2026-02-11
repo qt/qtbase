@@ -383,10 +383,9 @@ void QDBusMetaObjectGenerator::write(QDBusMetaObject *obj)
             - methods.size(); // ditto
 
     QDBusMetaObjectPrivate *header = reinterpret_cast<QDBusMetaObjectPrivate *>(idata.data());
-    static_assert(QMetaObjectPrivate::OutputRevision == 14, "QtDBus meta-object generator should generate the same version as moc");
+    static_assert(QMetaObjectPrivate::OutputRevision == 13, "QtDBus meta-object generator should generate the same version as moc");
     header->revision = QMetaObjectPrivate::OutputRevision;
     header->className = 0;
-    header->metaObjectHashIndex = -1; // TODO support hash in dbus metaobject too
     header->classInfoCount = 0;
     header->classInfoData = 0;
     header->methodCount = int(signals_.size() + methods.size());

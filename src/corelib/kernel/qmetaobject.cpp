@@ -469,33 +469,6 @@ QMetaType QMetaObject::metaType() const
     }
 }
 
-static inline QByteArrayView objectMetaObjectHash(const QMetaObject *m)
-{
-    // metaObjectHash didn't exist before revision 14
-    if (QT_VERSION < QT_VERSION_CHECK(7, 0, 0) && priv(m->d.data)->revision < 14)
-        return {};
-    const auto index = priv(m->d.data)->metaObjectHashIndex;
-    if (index == -1)
-        return {};
-    return stringDataView(m, index);
-}
-
-/*!
-    \since 6.11
-
-    Returns the revisioned hash of the contents of this QMetaObject or nullptr.
-
-    The hash has the following format <hash_revision>$<hash_b64>, where
-    hash_revision is an integer and hash_b64 is the base64 encoding of the
-    hash.
-
-    Note that only hashes of the same revision should be compared.
-*/
-const char *QMetaObject::metaObjectHash() const
-{
-    return objectMetaObjectHash(this).constData();
-}
-
 /*!
     Returns the method offset for this class; i.e. the index position
     of this class's first member function.
