@@ -8,9 +8,9 @@
 #include <QtGui/qinputdevice.h>
 #include <arkui/ui_input_event.h>
 #include <multimodalinput/oh_input_manager.h>
+#include <qarkui/window.h>
 #include <qohosdisplayinfo.h>
 #include <qohosplugincore.h>
-#include <qarkui/window.h>
 
 QT_BEGIN_NAMESPACE
 
