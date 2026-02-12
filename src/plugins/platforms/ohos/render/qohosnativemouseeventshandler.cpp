@@ -7,8 +7,6 @@
 #include <cstdint>
 #include <functional>
 #include <qarkui/input.h>
-#include <qarkui/qarkuiutils.h>
-#include <qohoskeymodifiers.h>
 #include <render/qohosbatchingrequestshandler.h>
 #include <render/qohosnativemouseeventshandler.h>
 #include <vector>
@@ -65,7 +63,7 @@ public:
         QtOhos::QThreadSafeRef<QOhosInputMethodEventHandler> imEventHandlerRef,
         std::shared_ptr<QOhosHoverEventsGenerator> hoverEventsGenerator);
 
-    void handleMouseEvent(::ArkUI_UIInputEvent *uiInputEvent);
+    void handleMouseEvent(QArkUi::NativeNodeMouseEvent nativeNodeMouseEvent);
 
 private:
     struct MouseEvent
@@ -96,23 +94,15 @@ QOhosNativeNodeMouseInputHandler::QOhosNativeNodeMouseInputHandler(
 {
 }
 
-void QOhosNativeNodeMouseInputHandler::handleMouseEvent(::ArkUI_UIInputEvent *uiInputEvent)
+void QOhosNativeNodeMouseInputHandler::handleMouseEvent(QArkUi::NativeNodeMouseEvent nativeNodeMouseEvent)
 {
-    auto mouseButton = QArkUi::callArkUi(
-        Q_OHOS_NAMED_FUNC(::OH_ArkUI_MouseEvent_GetMouseButton), uiInputEvent);
-    auto mouseAction = QArkUi::callArkUi(
-        Q_OHOS_NAMED_FUNC(::OH_ArkUI_MouseEvent_GetMouseAction), uiInputEvent);
-
-    auto localPosition = QArkUi::getPointerEventLocalPosition(uiInputEvent);
-    auto displayPosition = QArkUi::getPointerEventDisplayPosition(uiInputEvent);
-
     QOhosMouseEvent mouseEvent = {
-        .timestampMs = QArkUi::getInputEventTimeMs(uiInputEvent),
-        .localPosition = localPosition,
-        .globalPosition = displayPosition,
-        .button = tryMapNativeNodeMouseButtonToQt(mouseButton).valueOr(Qt::NoButton),
-        .eventType = tryMapNativeNodeMouseActionToQt(mouseAction).valueOr(QEvent::None),
-        .modifiers = readKeyModifiersFromOhosUiInputEvent(uiInputEvent),
+        .timestampMs = nativeNodeMouseEvent.timestampMs,
+        .localPosition = nativeNodeMouseEvent.localPosition,
+        .globalPosition = nativeNodeMouseEvent.displayPosition,
+        .button = tryMapNativeNodeMouseButtonToQt(nativeNodeMouseEvent.button).valueOr(Qt::NoButton),
+        .eventType = tryMapNativeNodeMouseActionToQt(nativeNodeMouseEvent.action).valueOr(QEvent::None),
+        .modifiers = nativeNodeMouseEvent.modifiers,
     };
 
     m_hoverEventsGenerator->handleQOhosMouseEvent(mouseEvent);
@@ -182,14 +172,14 @@ bool QOhosNativeNodeMouseInputHandler::mayDropMouseEvent(
 
 }
 
-QOhosConsumer<::ArkUI_UIInputEvent *> makeQOhosNativeMouseEventsHandler(
+QOhosConsumer<QArkUi::NativeNodeMouseEvent> makeQOhosNativeMouseEventsHandler(
     QtOhos::QThreadSafeRef<QWindow> qWindowRef,
     QtOhos::QThreadSafeRef<QOhosInputMethodEventHandler> imEventHandlerRef,
     std::shared_ptr<QOhosHoverEventsGenerator> hoverEventsGenerator)
 {
     auto mouseInputHandler = std::make_shared<QOhosNativeNodeMouseInputHandler>(qWindowRef, imEventHandlerRef, hoverEventsGenerator);
-    return [mouseInputHandler](::ArkUI_UIInputEvent *uiInputEvent) {
-        mouseInputHandler->handleMouseEvent(uiInputEvent);
+    return [mouseInputHandler](QArkUi::NativeNodeMouseEvent nativeNodeMouseEvent) {
+        mouseInputHandler->handleMouseEvent(nativeNodeMouseEvent);
     };
 }
 

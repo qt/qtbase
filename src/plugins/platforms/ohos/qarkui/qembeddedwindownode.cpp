@@ -508,9 +508,14 @@ void QEmbeddedWindowNode::setAxisEventsHandler(QOhosConsumer<::ArkUI_UIInputEven
     setContentNodeEventHandler(::NODE_ON_AXIS, "axis", std::move(axisEventsHandler));
 }
 
-void QEmbeddedWindowNode::setMouseEventsHandler(QOhosConsumer<::ArkUI_UIInputEvent *> mouseEventsHandler)
+void QEmbeddedWindowNode::setMouseEventsHandler(QOhosConsumer<NativeNodeMouseEvent> mouseEventsHandler)
 {
-    setContentNodeEventHandler(::NODE_ON_MOUSE, "mouse", std::move(mouseEventsHandler));
+    setContentNodeEventHandler(
+        ::NODE_ON_MOUSE,
+        "mouse",
+        [mouseEventsHandler = std::move(mouseEventsHandler)](::ArkUI_UIInputEvent *rawMouseEvent) {
+            mouseEventsHandler(NativeNodeMouseEvent::makeFromUiInputEvent(rawMouseEvent));
+        });
 }
 
 std::shared_ptr<void> QEmbeddedWindowNode::startDrag(

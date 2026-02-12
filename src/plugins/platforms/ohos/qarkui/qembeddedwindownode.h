@@ -17,6 +17,7 @@
 #include <functional>
 #include <memory>
 #include <native_window/external_window.h>
+#include <qarkui/input.h>
 #include <qarkui/qnativenodeapi.h>
 #include <qohosplugincore.h>
 #include <qohosudmf.h>
@@ -102,9 +103,9 @@ public:
     void setHitTestMode(::ArkUI_HitTestMode hitTestMode);
     void setDragEventsHandler(QOhosConsumer<::ArkUI_NodeEventType, ::ArkUI_DragEvent *> dragEventsHandler);
     void setKeyEventsHandler(QOhosConsumer<::ArkUI_UIInputEvent *> keyEventsHandler);
-    void setMouseEventsHandler(QOhosConsumer<::ArkUI_UIInputEvent *> mouseEventsHandler);
     void setHoverEventsHandler(QOhosConsumer<::ArkUI_UIInputEvent *> hoverEventsHandler);
     void setAxisEventsHandler(QOhosConsumer<::ArkUI_UIInputEvent *> axisEventsHandler);
+    void setMouseEventsHandler(QOhosConsumer<NativeNodeMouseEvent> mouseEventsHandler);
     std::shared_ptr<void> startDrag(
         std::vector<std::shared_ptr<::OH_PixelmapNative>> pixelMaps, const QPointF &hotspot,
         QOhosUdmfData udmfData, std::function<void(::ArkUI_DragAndDropInfo *)> statusListener);
