@@ -3,7 +3,9 @@ spurious = \
     "No such template parameter .*" \
     "Missing comma in .*" \
     "Missing pattern .*" \
-    "Unable to parse (QML|JavaScript).*"
+    "Missing return type for .*" \
+    "Unable to parse (QML|JavaScript).*" \
+    "Invalid syntax for \\\\qmlmethod: .*"
 
 # New in 6.11, disabled on <= 6.10
 spurious += "Undocumented property .*" \
