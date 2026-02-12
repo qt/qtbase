@@ -72,6 +72,13 @@ struct NativeNodeMouseEvent
     static NativeNodeMouseEvent makeFromUiInputEvent(::ArkUI_UIInputEvent *event);
 };
 
+struct NativeNodeHoverEvent
+{
+    bool isHovered;
+
+    static NativeNodeHoverEvent makeFromUiInputEvent(::ArkUI_UIInputEvent *event);
+};
+
 }
 
 QT_END_NAMESPACE

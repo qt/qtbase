@@ -498,9 +498,14 @@ void QEmbeddedWindowNode::setKeyEventsHandler(
     setContentNodeEventHandler(::NODE_ON_KEY_EVENT, "key", std::move(keyEventsHandler));
 }
 
-void QEmbeddedWindowNode::setHoverEventsHandler(QOhosConsumer<::ArkUI_UIInputEvent *> hoverEventsHandler)
+void QEmbeddedWindowNode::setHoverEventsHandler(QOhosConsumer<NativeNodeHoverEvent> hoverEventsHandler)
 {
-    setContentNodeEventHandler(::NODE_ON_HOVER_EVENT, "hover", std::move(hoverEventsHandler));
+    setContentNodeEventHandler(
+        ::NODE_ON_HOVER_EVENT,
+        "hover",
+        [hoverEventsHandler = std::move(hoverEventsHandler)](::ArkUI_UIInputEvent *rawHoverEvent) {
+            hoverEventsHandler(NativeNodeHoverEvent::makeFromUiInputEvent(rawHoverEvent));
+        });
 }
 
 void QEmbeddedWindowNode::setAxisEventsHandler(QOhosConsumer<::ArkUI_UIInputEvent *> axisEventsHandler)

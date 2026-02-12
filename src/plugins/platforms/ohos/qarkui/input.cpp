@@ -194,6 +194,13 @@ NativeNodeMouseEvent NativeNodeMouseEvent::makeFromUiInputEvent(::ArkUI_UIInputE
     };
 }
 
+NativeNodeHoverEvent NativeNodeHoverEvent::makeFromUiInputEvent(::ArkUI_UIInputEvent *event)
+{
+    return NativeNodeHoverEvent {
+        .isHovered = callArkUi(Q_OHOS_NAMED_FUNC(::OH_ArkUI_HoverEvent_IsHovered), event),
+    };
+}
+
 }
 
 QT_END_NAMESPACE
