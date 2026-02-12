@@ -40,7 +40,8 @@ void applyIndexSwitch(size_t index, Applier&& applier, std::index_sequence<Is...
 template <size_t IndexCount, typename Applier>
 void applyIndexSwitch(size_t index, Applier&& applier)
 {
-    applyIndexSwitch(index, std::forward<Applier>(applier), std::make_index_sequence<IndexCount>());
+    QtPrivate::applyIndexSwitch(index, std::forward<Applier>(applier),
+                                std::make_index_sequence<IndexCount>());
 }
 
 template <typename Interface>
@@ -178,7 +179,8 @@ private:
         auto doInvoke = [&](auto idxConstant) {
             std::tuple_element_t<idxConstant.value, Methods<>>::doInvoke(subclass, ret, args);
         };
-        applyIndexSwitch(index, doInvoke, std::index_sequence<interfaceMethodIndex<Is>()...>{});
+        QtPrivate::applyIndexSwitch(index, doInvoke,
+                                    std::index_sequence<interfaceMethodIndex<Is>()...>{});
     }
 
     static void callImpl(size_t index, typename Interface::base_interface &intf, void *ret, void *args)
