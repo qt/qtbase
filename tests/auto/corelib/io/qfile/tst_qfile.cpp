@@ -2468,6 +2468,12 @@ void tst_QFile::remove_and_exists()
     QFile f("tull_i_grunn.txt");
 
     QVERIFY(!f.exists());
+    QVERIFY(!QFile::remove(f.fileName()));
+    QVERIFY(!f.remove());
+    QCOMPARE(f.error(), QFile::RemoveError);
+#ifdef Q_OS_UNIX
+    QCOMPARE(f.errorString(), qt_error_string(ENOENT));
+#endif
 
     bool opened = f.open(QIODevice::WriteOnly);
     QVERIFY(opened);
@@ -2479,6 +2485,12 @@ void tst_QFile::remove_and_exists()
 
     f.remove();
     QVERIFY(!f.exists());
+
+    QVERIFY(!f.remove());
+    QCOMPARE(f.error(), QFile::RemoveError);
+#ifdef Q_OS_UNIX
+    QCOMPARE(f.errorString(), qt_error_string(ENOENT));
+#endif
 }
 
 void tst_QFile::removeOpenFile()
