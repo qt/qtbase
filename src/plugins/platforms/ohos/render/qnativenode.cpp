@@ -41,11 +41,6 @@ QT_BEGIN_NAMESPACE
 
 namespace {
 
-bool getHoveredStateFromHoverEvent(::ArkUI_UIInputEvent *uiInputEvent)
-{
-    return QArkUi::callArkUi(Q_OHOS_NAMED_FUNC(::OH_ArkUI_HoverEvent_IsHovered), uiInputEvent);
-}
-
 using InputEventType = QArkUi::QXComponentCallbackReceiver::InputEventType;
 using SurfaceEventType = QArkUi::QXComponentCallbackReceiver::SurfaceEventType;
 
@@ -222,8 +217,8 @@ QNativeNode::QNativeNode(const CreateInfo &nativeNodeCreateInfo)
             m_jsStateData->embeddedWindow->setMouseEventsHandler(
                 makeQOhosNativeMouseEventsHandler(qWindowRef, imEventHandlerRef, hoverEventsGenerator));
             m_jsStateData->embeddedWindow->setHoverEventsHandler(
-                [hoverEventsGenerator](::ArkUI_UIInputEvent *uiInputEvent) {
-                    hoverEventsGenerator->handleQOhosHoverEvent(getHoveredStateFromHoverEvent(uiInputEvent));
+                [hoverEventsGenerator](QArkUi::NativeNodeHoverEvent hoverEvent) {
+                    hoverEventsGenerator->handleQOhosHoverEvent(hoverEvent.isHovered);
                 });
         }
     });
