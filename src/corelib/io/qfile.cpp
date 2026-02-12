@@ -409,10 +409,12 @@ QString QFile::symLinkTarget(const QString &fileName)
 }
 
 /*!
-    Removes the file specified by fileName(). Returns \c true if successful;
-    otherwise returns \c false.
+    Removes the file specified by fileName().
 
-    The file is closed before it is removed.
+    Returns \c true if the file was successfully removed; otherwise returns \c
+    false.
+
+    The file is closed before it is removed, if it was open.
 
     \sa setFileName()
 */
@@ -443,7 +445,8 @@ QFile::remove()
 
     Removes the file specified by the \a fileName given.
 
-    Returns \c true if successful; otherwise returns \c false.
+    Returns \c true if the file was successfully removed; otherwise returns
+    \c false.
 
     \sa remove()
 */
