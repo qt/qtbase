@@ -1232,6 +1232,18 @@ static void simulateMouseClick(QWindow *target, ulong &timeStamp,
                                              {}, Qt::LeftButton, QEvent::MouseButtonRelease);
 }
 
+static inline bool qFuzzyComparePositionF(const QPointF &p1, const QPointF &p2, qreal fuzz)
+{
+    return qAbs(p1.x() - p2.x()) <= fuzz && qAbs(p1.y() - p2.y()) <= fuzz;
+}
+
+static inline QString msgPointFMismatch(const QPointF &p1, const QPointF &p2)
+{
+    QString result;
+    QDebug(&result) << p1 << "!=" << p2;
+    return result;
+}
+
 void tst_QWindow::testInputEvents()
 {
     InputTestWindow window;
@@ -1284,8 +1296,13 @@ void tst_QWindow::testInputEvents()
     QCoreApplication::processEvents();
     QCOMPARE(window.mousePressButton, int(Qt::LeftButton));
     QCOMPARE(window.mouseReleaseButton, int(Qt::LeftButton));
-    QCOMPARE(window.mousePressScreenPos, windowGlobal);
-    QCOMPARE(window.mousePressLocalPos, local); // the local we passed was bogus, verify that qGuiApp calculated the proper one
+
+    const qreal fuzz = 1.0 / QHighDpiScaling::factor(&window);
+    QTRY_VERIFY2(qFuzzyComparePositionF(window.mousePressScreenPos, windowGlobal, fuzz),
+                 qPrintable(msgPointFMismatch(window.mousePressScreenPos, windowGlobal)));
+    // the local we passed was bogus, verify that qGuiApp calculated the proper one
+    QTRY_VERIFY2(qFuzzyComparePositionF(window.mousePressLocalPos, local, fuzz),
+                 qPrintable(msgPointFMismatch(window.mousePressLocalPos, local)));
 }
 
 void tst_QWindow::touchToMouseTranslation()
