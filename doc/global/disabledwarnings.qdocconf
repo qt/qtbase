@@ -4,6 +4,8 @@ spurious = \
     "Undocumented property .*" \
     "Missing comma in .*" \
     "Missing pattern .*" \
+    "Missing return type for .*" \
     "Unable to parse (QML|JavaScript).*" \
-    "Redundant link to self in .*"
+    "Redundant link to self in .*" \
+    "Invalid syntax for \\\\qmlmethod: .*"
 
