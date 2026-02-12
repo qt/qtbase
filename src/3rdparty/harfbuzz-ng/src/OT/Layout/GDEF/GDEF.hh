@@ -1002,20 +1002,34 @@ struct GDEF
 
     }
 
+    HB_ALWAYS_INLINE
     bool mark_set_covers (unsigned int set_index, hb_codepoint_t glyph_id) const
     {
       return
 #ifndef HB_NO_GDEF_CACHE
-	     mark_glyph_sets[set_index].may_have (glyph_id)
-#else
-	     table->mark_set_covers (set_index, glyph_id)
+	     // We can access arrayZ directly because of sanitize_lookup_props() guarantee.
+	     mark_glyph_sets.arrayZ[set_index].may_have (glyph_id) &&
 #endif
+	     table->mark_set_covers (set_index, glyph_id)
       ;
+    }
+
+    unsigned sanitize_lookup_props (unsigned lookup_props) const
+    {
+#ifndef HB_NO_GDEF_CACHE
+      if (lookup_props & LookupFlag::UseMarkFilteringSet &&
+	  (lookup_props >> 16) >= mark_glyph_sets.length)
+      {
+        // Invalid mark filtering set index; unset the flag.
+	lookup_props &= ~LookupFlag::UseMarkFilteringSet;
+      }
+#endif
+      return lookup_props;
     }
 
     hb_blob_ptr_t<GDEF> table;
 #ifndef HB_NO_GDEF_CACHE
-    hb_vector_t<hb_bit_set_t> mark_glyph_sets;
+    hb_vector_t<hb_set_digest_t> mark_glyph_sets;
     mutable hb_cache_t<21, 3> glyph_props_cache;
     static_assert (sizeof (glyph_props_cache) == 512, "");
 #endif
