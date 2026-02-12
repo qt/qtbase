@@ -3,6 +3,10 @@
 
 #include <qarkui/input.h>
 
+#include <qarkui/qarkuiutils.h>
+
+namespace ch = std::chrono;
+
 QT_BEGIN_NAMESPACE
 
 namespace QArkUi {
@@ -155,6 +159,26 @@ QInputDevice::DeviceType getTouchDeviceType(const ::ArkUI_UIInputEvent *inputEve
     return sourceType == ::UI_INPUT_EVENT_SOURCE_TYPE_TOUCH_SCREEN
         ? QInputDevice::DeviceType::TouchScreen
         : QInputDevice::DeviceType::TouchPad;
+}
+
+QPointF getPointerEventLocalPosition(const ::ArkUI_UIInputEvent *event)
+{
+    return QPointF(
+        callArkUi(Q_OHOS_NAMED_FUNC(::OH_ArkUI_PointerEvent_GetX), event),
+        callArkUi(Q_OHOS_NAMED_FUNC(::OH_ArkUI_PointerEvent_GetY), event));
+}
+
+QPointF getPointerEventDisplayPosition(const ::ArkUI_UIInputEvent *event)
+{
+    return QPointF(
+        callArkUi(Q_OHOS_NAMED_FUNC(::OH_ArkUI_PointerEvent_GetDisplayX), event),
+        callArkUi(Q_OHOS_NAMED_FUNC(::OH_ArkUI_PointerEvent_GetDisplayY), event));
+}
+
+ch::milliseconds getInputEventTimeMs(const ::ArkUI_UIInputEvent *event)
+{
+    auto eventTime = ch::nanoseconds(callArkUi(Q_OHOS_NAMED_FUNC(::OH_ArkUI_UIInputEvent_GetEventTime), event));
+    return ch::duration_cast<ch::milliseconds>(eventTime);
 }
 
 }

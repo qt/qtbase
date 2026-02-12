@@ -5,8 +5,10 @@
 #define QARKUI__INPUT_H
 
 #include <QtCore/qglobal.h>
+#include <QtCore/qpoint.h>
 #include <QtGui/qinputdevice.h>
 #include <arkui/ui_input_event.h>
+#include <chrono>
 #include <multimodalinput/oh_input_manager.h>
 #include <qarkui/window.h>
 #include <qohosdisplayinfo.h>
@@ -52,6 +54,9 @@ struct TouchEvent
 };
 
 QInputDevice::DeviceType getTouchDeviceType(const ::ArkUI_UIInputEvent *inputEvent);
+QPointF getPointerEventLocalPosition(const ::ArkUI_UIInputEvent *event);
+QPointF getPointerEventDisplayPosition(const ::ArkUI_UIInputEvent *event);
+std::chrono::milliseconds getInputEventTimeMs(const ::ArkUI_UIInputEvent *event);
 
 }
 
