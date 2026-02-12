@@ -982,9 +982,8 @@ void tst_QSequentialAnimationGroup::groupWithZeroDurationAnimations()
 
     QTest::qWait(100);
 
-    int o2val = o2.property("myOtherProperty").toInt();
-    QVERIFY(o2val > 13);
-    QVERIFY(o2val < 31);
+    QTRY_COMPARE_GT(o2.property("myOtherProperty").toInt(), 13);
+    QCOMPARE_LT(o2.property("myOtherProperty").toInt(), 31);
     QCOMPARE(o.property("myProperty").toInt(), 43);
     QCOMPARE(o.property("myOtherProperty").toInt(), 13);
 
@@ -1413,7 +1412,10 @@ void tst_QSequentialAnimationGroup::finishWithUncontrolledAnimation()
 
     group.setCurrentTime(300);
     QCOMPARE(group.state(), QAnimationGroup::Stopped);
-    QCOMPARE(notTimeDriven.currentLoopTime(), actualDuration);
+    if (actualDuration > 300) // May happen under heavy load.
+        QCOMPARE(notTimeDriven.currentLoopTime(), 300);
+    else // Should take the same time as before:
+        QCOMPARE(notTimeDriven.currentLoopTime(), actualDuration);
     QCOMPARE(group.currentAnimation(), static_cast<QAbstractAnimation*>(&anim));
 
     //3rd case:
