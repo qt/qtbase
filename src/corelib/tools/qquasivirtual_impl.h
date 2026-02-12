@@ -15,6 +15,7 @@
 #include <QtCore/qtclasshelpermacros.h>
 
 #include <algorithm>
+#include <QtCore/q20memory.h>
 #include <type_traits>
 #include <tuple>
 
@@ -218,14 +219,9 @@ public:
             if constexpr (std::is_void_v<Return>) {
                 std::apply(invoke, std::move(*static_cast<PackedArgs *>(args)));
             } else {
-                // Note, that ::new (*) Return(...) fails on Integrity.
-                // TODO: use std::construct_at for c++20
-                using Alloc = std::allocator<Return>;
-                Alloc alloc;
-                std::allocator_traits<Alloc>::construct(alloc, static_cast<Return *>(ret),
-                               std::apply(invoke, std::move(*static_cast<PackedArgs *>(args))));
+                q20::construct_at(static_cast<Return *>(ret),
+                                  std::apply(invoke, std::move(*static_cast<PackedArgs *>(args))));
             }
-
         }
 
         friend class QQuasiVirtualSubclass<Subclass, Interface>;
