@@ -582,11 +582,12 @@ struct skipping_iterator_t
 #endif
   bool next (unsigned *unsafe_to = nullptr)
   {
+    auto *info = c->buffer->info;
     const signed stop = (signed) end - 1;
     while ((signed) idx < stop)
     {
       idx++;
-      switch (match (c->buffer->info[idx]))
+      switch (match (info[idx]))
       {
 	case MATCH:
 	{
@@ -612,11 +613,12 @@ struct skipping_iterator_t
 #endif
   bool prev (unsigned *unsafe_from = nullptr)
   {
+    auto *out_info = c->buffer->out_info;
     const unsigned stop = 0;
     while (idx > stop)
     {
       idx--;
-      switch (match (c->buffer->out_info[idx]))
+      switch (match (out_info[idx]))
       {
 	case MATCH:
 	{
@@ -786,7 +788,11 @@ struct hb_ot_apply_context_t :
   void set_random (bool random_) { random = random_; }
   void set_recurse_func (recurse_func_t func) { recurse_func = func; }
   void set_lookup_index (unsigned int lookup_index_) { lookup_index = lookup_index_; }
-  void set_lookup_props (unsigned int lookup_props_) { lookup_props = lookup_props_; init_iters (); }
+  void set_lookup_props (unsigned int lookup_props_)
+  {
+    lookup_props = gdef_accel.sanitize_lookup_props (lookup_props_);
+    init_iters ();
+  }
 
   uint32_t random_number ()
   {
@@ -831,7 +837,7 @@ struct hb_ot_apply_context_t :
     if (glyph_props & match_props & LookupFlag::IgnoreFlags)
       return false;
 
-    if (unlikely (glyph_props & HB_OT_LAYOUT_GLYPH_PROPS_MARK))
+    if (glyph_props & HB_OT_LAYOUT_GLYPH_PROPS_MARK)
       return match_properties_mark (info, glyph_props, match_props);
 
     return true;
@@ -1994,13 +2000,12 @@ static inline bool context_would_apply_lookup (hb_would_apply_context_t *c,
 }
 
 template <typename HBUINT>
-HB_ALWAYS_INLINE
-static bool context_apply_lookup (hb_ot_apply_context_t *c,
-				  unsigned int inputCount, /* Including the first glyph (not matched) */
-				  const HBUINT input[], /* Array of input values--start with second glyph */
-				  unsigned int lookupCount,
-				  const LookupRecord lookupRecord[],
-				  const ContextApplyLookupContext &lookup_context)
+static inline bool context_apply_lookup (hb_ot_apply_context_t *c,
+					 unsigned int inputCount, /* Including the first glyph (not matched) */
+					 const HBUINT input[], /* Array of input values--start with second glyph */
+					 unsigned int lookupCount,
+					 const LookupRecord lookupRecord[],
+					 const ContextApplyLookupContext &lookup_context)
 {
   if (unlikely (inputCount > HB_MAX_CONTEXT_LENGTH)) return false;
 
@@ -2276,7 +2281,7 @@ struct RuleSet
     skippy_iter.reset (c->buffer->idx);
     skippy_iter.set_match_func (match_always, nullptr);
     skippy_iter.set_glyph_data ((HBUINT16 *) nullptr);
-    unsigned unsafe_to = (unsigned) -1, unsafe_to1 = 0, unsafe_to2 = 0;
+    unsigned unsafe_to = (unsigned) -1, unsafe_to1, unsafe_to2 = 0;
     hb_glyph_info_t *first = nullptr, *second = nullptr;
     bool matched = skippy_iter.next ();
     if (likely (matched))
@@ -2289,7 +2294,7 @@ struct RuleSet
       }
 
       first = &c->buffer->info[skippy_iter.idx];
-      unsafe_to = skippy_iter.idx + 1;
+      unsafe_to1 = skippy_iter.idx + 1;
     }
     else
     {
@@ -3136,17 +3141,16 @@ static inline bool chain_context_would_apply_lookup (hb_would_apply_context_t *c
 }
 
 template <typename HBUINT>
-HB_ALWAYS_INLINE
-static bool chain_context_apply_lookup (hb_ot_apply_context_t *c,
-					unsigned int backtrackCount,
-					const HBUINT backtrack[],
-					unsigned int inputCount, /* Including the first glyph (not matched) */
-					const HBUINT input[], /* Array of input values--start with second glyph */
-					unsigned int lookaheadCount,
-					const HBUINT lookahead[],
-					unsigned int lookupCount,
-					const LookupRecord lookupRecord[],
-					const ChainContextApplyLookupContext &lookup_context)
+static inline bool chain_context_apply_lookup (hb_ot_apply_context_t *c,
+					       unsigned int backtrackCount,
+					       const HBUINT backtrack[],
+					       unsigned int inputCount, /* Including the first glyph (not matched) */
+					       const HBUINT input[], /* Array of input values--start with second glyph */
+					       unsigned int lookaheadCount,
+					       const HBUINT lookahead[],
+					       unsigned int lookupCount,
+					       const LookupRecord lookupRecord[],
+					       const ChainContextApplyLookupContext &lookup_context)
 {
   if (unlikely (inputCount > HB_MAX_CONTEXT_LENGTH)) return false;
 
@@ -3473,7 +3477,7 @@ struct ChainRuleSet
     skippy_iter.reset (c->buffer->idx);
     skippy_iter.set_match_func (match_always, nullptr);
     skippy_iter.set_glyph_data ((HBUINT16 *) nullptr);
-    unsigned unsafe_to = (unsigned) -1, unsafe_to1 = 0, unsafe_to2 = 0;
+    unsigned unsafe_to = (unsigned) -1, unsafe_to1, unsafe_to2 = 0;
     hb_glyph_info_t *first = nullptr, *second = nullptr;
     bool matched = skippy_iter.next ();
     if (likely (matched))

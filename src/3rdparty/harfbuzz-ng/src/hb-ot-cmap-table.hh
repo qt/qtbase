@@ -1670,6 +1670,10 @@ struct SubtableUnicodesCache {
   {
     SubtableUnicodesCache* cache =
         (SubtableUnicodesCache*) hb_malloc (sizeof(SubtableUnicodesCache));
+
+    if (unlikely (!cache))
+      return nullptr;
+
     new (cache) SubtableUnicodesCache (source_table);
     return cache;
   }
@@ -1763,6 +1767,10 @@ struct cmap
     ;
 
     SubtableUnicodesCache* cache = SubtableUnicodesCache::create(source_table);
+
+    if (unlikely (!cache))
+      return nullptr;
+
     for (const EncodingRecord& _ : it)
       cache->set_for(&_); // populate the cache for this encoding record.
 
