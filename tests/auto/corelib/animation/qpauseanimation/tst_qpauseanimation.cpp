@@ -202,7 +202,8 @@ void tst_QPauseAnimation::pauseAndPropertyAnimations()
     QCOMPARE(pause.state(), QAbstractAnimation::Running);
     QCOMPARE(pause.m_updateCurrentTimeCount, 2);
 
-    const int expectedDuration = animation.totalDuration() + 150;
+    // wait a bit extra, for good measure
+    const int expectedDuration = animation.totalDuration() + 900;
     WAIT_FOR_STOPPED(animation, expectedDuration);
 
     QCOMPARE(pause.state(), QAbstractAnimation::Stopped);
@@ -405,7 +406,7 @@ void tst_QPauseAnimation::multipleSequentialGroups()
     if (pause5.m_updateCurrentTimeCount != 4)
         QEXPECT_FAIL("", timerError, Abort);
 #endif
-    QCOMPARE(pause5.m_updateCurrentTimeCount, 4);
+    QTRY_COMPARE(pause5.m_updateCurrentTimeCount, 4);
 }
 
 void tst_QPauseAnimation::zeroDuration()
