@@ -785,7 +785,7 @@ private:
     int registerHelper() const
     {
         if (d_ptr) {
-            if (int id = d_ptr->typeId.loadRelaxed())
+            if (int id = d_ptr->typeId.loadRelaxed(); Q_LIKELY(id))
                 return id;
             return registerHelper(d_ptr);
         }
@@ -2693,7 +2693,7 @@ constexpr bool QMetaType::isValid(QT6_IMPL_NEW_OVERLOAD) const noexcept
 
 bool QMetaType::isRegistered(QT6_IMPL_NEW_OVERLOAD) const noexcept
 {
-    return d_ptr && d_ptr->typeId.loadRelaxed();
+    return d_ptr && Q_LIKELY(d_ptr->typeId.loadRelaxed());
 }
 
 constexpr qsizetype QMetaType::sizeOf() const
