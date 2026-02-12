@@ -666,6 +666,20 @@ Q_CORE_EXPORT QVariant qVariantAtIndex(const QModelIndex &index)
 
     \note The implementation of \c{get} above requires C++23.
 
+    \section2 Binary compatibility considerations
+
+    QRangeModel is not a template class. Passing QRangeModel instances (by
+    pointer or reference, as with all QObject classes) through library APIs, or
+    storing QRangeModel by value in a public class of a library, is safe.
+
+    However, the QRangeModel constructor is a template and inline, and the
+    internal implementation that is specialized on the type of the range the
+    model operates on is instantiated in the constructor. You should not call
+    the constructor in an inline-implementation of a library API. It results in
+    ODR violations, and might break binary compatibility of that library if the
+    Qt version it gets built against is different from the Qt version an
+    application using that library is built against.
+
     \sa {Model/View Programming}
 */
 
