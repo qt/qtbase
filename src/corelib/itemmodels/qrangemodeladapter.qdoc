@@ -284,6 +284,12 @@
 
     Constructs a QRangeModelAdapter that operates on \a range. For tree ranges,
     the optional \a protocol will be used for tree traversal.
+
+    See the \l{QRangeModel::}{QRangeModel} constructor documentation for details
+    on the requirements to \a Range, and how the value category of \a range
+    changes the interaction between adapter, model, and range.
+
+    \sa QRangeModel
 */
 
 /*!
