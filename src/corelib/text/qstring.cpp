@@ -8077,7 +8077,7 @@ QString &QString::setNum(qulonglong n, int base)
     Sets the string to the printed value of \a n, formatted according to the
     given \a format and \a precision, and returns a reference to the string.
 
-    \sa number(), QLocale::FloatingPointPrecisionOption, {Number Formats}
+    \sa number(), QLocale::FloatingPointPrecisionOption, {Number formats}
 */
 
 QString &QString::setNum(double n, char format, int precision)
@@ -8194,7 +8194,7 @@ QString QString::number(qulonglong n, int base)
     For formats with an exponent, the exponent will show its sign and have at
     least two digits, left-padding the exponent with zero if needed.
 
-    \sa setNum(), QLocale::toString(), QLocale::FloatingPointPrecisionOption, {Number Formats}
+    \sa setNum(), QLocale::toString(), QLocale::FloatingPointPrecisionOption, {Number formats}
 */
 QString QString::number(double n, char format, int precision)
 {
@@ -8855,7 +8855,7 @@ QString QString::arg_impl(QAnyStringView a, int fieldWidth, QChar fillChar) cons
   integral types and sometimes incorrectly accepted \c char and \c char16_t
   arguments.
 
-  \sa {Number Formats}
+  \sa {Number formats}
 */
 QString QString::arg_impl(qlonglong a, int fieldWidth, int base, QChar fillChar) const
 {
@@ -8941,7 +8941,7 @@ QString QString::arg_impl(qulonglong a, int fieldWidth, int base, QChar fillChar
   types. A backwards-compatible fix is to cast such types to one of the C++
   floating-point types.
 
-  \sa QLocale::toString(), QLocale::FloatingPointPrecisionOption, {Number Formats}
+  \sa QLocale::toString(), QLocale::FloatingPointPrecisionOption, {Number formats}
 */
 QString QString::arg_impl(double a, int fieldWidth, char format, int precision, QChar fillChar) const
 {
