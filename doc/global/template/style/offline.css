@@ -573,14 +573,12 @@ ol.I > li {
     display: block;
     margin: 10px;
     overflow: auto;
-    padding: 20px 20px 20px 20px;
 }
 
 .js {
     display: block;
     margin: 10px;
     overflow: auto;
-    padding: 20px 20px 20px 20px;
 }
 
 .memItemLeft {
@@ -609,7 +607,6 @@ td.memItemRight span.status {
     display: block;
     margin: 10px;
     overflow: auto;
-    padding: 20px 20px 20px 20px;
 }
 
 .qmlextra {
