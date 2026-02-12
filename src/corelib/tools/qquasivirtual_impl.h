@@ -33,8 +33,7 @@ void applyIndexSwitch(size_t index, Applier&& applier, std::index_sequence<Is...
     // linear if/else if/... statements. Experiments show that Clang, GCC, and MSVC
     // optimize it to essentially the same bytecode as a normal C++ switch,
     // ensuring O(1) lookup complexity.
-    static_cast<void>(((Is == index ? (applier(std::integral_constant<size_t, Is>{}), true) : false)
-                       || ...));
+    static_cast<void>(((Is == index && (applier(std::integral_constant<size_t, Is>{}), true)) || ...));
 }
 
 template <size_t IndexCount, typename Applier>
