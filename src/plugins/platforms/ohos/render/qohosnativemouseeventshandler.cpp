@@ -6,6 +6,7 @@
 #include <chrono>
 #include <cstdint>
 #include <functional>
+#include <qarkui/input.h>
 #include <qarkui/qarkuiutils.h>
 #include <qohoskeymodifiers.h>
 #include <render/qohosbatchingrequestshandler.h>
@@ -102,19 +103,11 @@ void QOhosNativeNodeMouseInputHandler::handleMouseEvent(::ArkUI_UIInputEvent *ui
     auto mouseAction = QArkUi::callArkUi(
         Q_OHOS_NAMED_FUNC(::OH_ArkUI_MouseEvent_GetMouseAction), uiInputEvent);
 
-    auto localPosition = QPointF(
-        QArkUi::callArkUi(Q_OHOS_NAMED_FUNC(::OH_ArkUI_PointerEvent_GetX), uiInputEvent),
-        QArkUi::callArkUi(Q_OHOS_NAMED_FUNC(::OH_ArkUI_PointerEvent_GetY), uiInputEvent));
-
-    auto displayPosition = QPointF(
-        QArkUi::callArkUi(Q_OHOS_NAMED_FUNC(::OH_ArkUI_PointerEvent_GetDisplayX), uiInputEvent),
-        QArkUi::callArkUi(Q_OHOS_NAMED_FUNC(::OH_ArkUI_PointerEvent_GetDisplayY), uiInputEvent));
-
-    auto eventTime = QArkUi::callArkUi(
-        Q_OHOS_NAMED_FUNC(::OH_ArkUI_UIInputEvent_GetEventTime), uiInputEvent);
+    auto localPosition = QArkUi::getPointerEventLocalPosition(uiInputEvent);
+    auto displayPosition = QArkUi::getPointerEventDisplayPosition(uiInputEvent);
 
     QOhosMouseEvent mouseEvent = {
-        .timestampMs = ch::duration_cast<ch::milliseconds>(ch::nanoseconds(eventTime)),
+        .timestampMs = QArkUi::getInputEventTimeMs(uiInputEvent),
         .localPosition = localPosition,
         .globalPosition = displayPosition,
         .button = tryMapNativeNodeMouseButtonToQt(mouseButton).valueOr(Qt::NoButton),
