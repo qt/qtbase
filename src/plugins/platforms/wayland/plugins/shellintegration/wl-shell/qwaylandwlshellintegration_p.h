@@ -15,7 +15,7 @@
 // We mean it.
 //
 
-#include <private/qwayland-wayland.h>
+#include <QtWaylandClient/private/qwayland-wayland.h>
 
 #include <QtWaylandClient/private/qwaylandshellintegration_p.h>
 
