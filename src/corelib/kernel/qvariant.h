@@ -504,7 +504,7 @@ public:
         if (!mt)
             return 0;
         int id = mt->typeId.loadRelaxed();
-        // Q_ASSUME(id > 0);
+        Q_PRESUME(id > 0);
         return id;
     }
 
