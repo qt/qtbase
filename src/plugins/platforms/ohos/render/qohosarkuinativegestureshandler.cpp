@@ -23,20 +23,6 @@ QT_BEGIN_NAMESPACE
 
 namespace {
 
-QPointF getLocalPosition(const ::ArkUI_UIInputEvent *inputEvent)
-{
-    const auto localX = ::OH_ArkUI_PointerEvent_GetX(inputEvent);
-    const auto localY = ::OH_ArkUI_PointerEvent_GetY(inputEvent);
-    return { localX, localY };
-}
-
-QPointF getDisplayBasedPosition(const ::ArkUI_UIInputEvent *inputEvent)
-{
-    return QPointF(
-        ::OH_ArkUI_PointerEvent_GetDisplayX(inputEvent),
-        ::OH_ArkUI_PointerEvent_GetDisplayY(inputEvent));
-}
-
 Qt::NativeGestureType getQtGestureType(
     ::ArkUI_GestureEventActionType ohEventActionType, Qt::NativeGestureType defaultGestureType)
 {
@@ -99,8 +85,8 @@ void QOhosArkUiNativeGesturesHandler::handleRotationGestureEvent(
 
     const auto *inputEvent = ::OH_ArkUI_GestureEvent_GetRawInputEvent(gestureEvent);
     const auto gestureTimestamp = ::OH_ArkUI_UIInputEvent_GetEventTime(inputEvent);
-    const auto localPosition = getLocalPosition(inputEvent);
-    const auto displayBasedPosition = getDisplayBasedPosition(inputEvent);
+    const auto localPosition = QArkUi::getPointerEventLocalPosition(inputEvent);
+    const auto displayBasedPosition = QArkUi::getPointerEventDisplayPosition(inputEvent);
     const auto deviceType = QArkUi::getTouchDeviceType(inputEvent);
 
     QOhosNativeGestureEvent newEvent {
@@ -134,7 +120,7 @@ void QOhosArkUiNativeGesturesHandler::handlePinchGestureEvent(const ::ArkUI_Gest
         return;
 
     const auto gestureTimestamp = ::OH_ArkUI_UIInputEvent_GetEventTime(inputEvent);
-    const auto displayBasedPosition = getDisplayBasedPosition(inputEvent);
+    const auto displayBasedPosition = QArkUi::getPointerEventDisplayPosition(inputEvent);
     const auto deviceType = QArkUi::getTouchDeviceType(inputEvent);
 
     const auto scaleFactor =
