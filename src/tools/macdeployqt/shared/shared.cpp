@@ -925,6 +925,11 @@ void deployRPaths(const QString &bundlePath, const QList<QString> &rpaths, const
 
 void changeInstallName(const QString &oldName, const QString &newName, const QString &binaryPath)
 {
+    if (newName == oldName) {
+        LogDebug() << "Skipping install_name_tool for" << binaryPath
+                   << "as name is already" << newName;
+        return;
+    }
     LogDebug() << "Using install_name_tool:";
     LogDebug() << " in" << binaryPath;
     LogDebug() << " change reference" << oldName;
