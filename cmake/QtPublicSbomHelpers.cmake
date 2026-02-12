@@ -1604,9 +1604,7 @@ function(_qt_internal_add_sbom target)
         return()
     endif()
 
-    set(opt_args
-        IMMEDIATE_FINALIZATION
-    )
+    set(opt_args "")
     set(single_args "")
     set(multi_args "")
     cmake_parse_arguments(PARSE_ARGV 1 arg "${opt_args}" "${single_args}" "${multi_args}")
@@ -1617,10 +1615,6 @@ function(_qt_internal_add_sbom target)
     # If a target doesn't exist we create it.
     if(NOT TARGET "${target}")
         _qt_internal_create_sbom_target("${target}" ${forward_args})
-    endif()
-
-    if(arg_IMMEDIATE_FINALIZATION)
-        list(APPEND forward_args IMMEDIATE_FINALIZATION)
     endif()
 
     # Save the passed options.
