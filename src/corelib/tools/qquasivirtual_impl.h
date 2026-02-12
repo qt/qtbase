@@ -52,6 +52,8 @@ private:
     static constexpr bool passArgAsValue = sizeof(Arg) <= sizeof(size_t)
                                         && std::is_trivially_destructible_v<Arg>;
 
+    template <typename C = Interface> using Methods = typename C::template MethodTemplates<C>;
+
     template <typename ...>
     struct MethodImpl;
 
@@ -114,8 +116,6 @@ private:
         template <typename Subclass>
         using Overridden = R(Subclass::*)(Args...) const;
     };
-
-    template <typename C = Interface> using Methods = typename C::template MethodTemplates<C>;
 
 public:
     template <auto prototype>
