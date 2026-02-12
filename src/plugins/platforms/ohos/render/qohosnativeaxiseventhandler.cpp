@@ -3,6 +3,7 @@
 
 #include <render/qohosnativeaxiseventhandler.h>
 
+#include <qarkui/input.h>
 #include <render/qohosnativegestureshandler.h>
 
 QT_BEGIN_NAMESPACE
@@ -24,13 +25,6 @@ private:
 
     QOhosConsumer<const QOhosNativeGestureEvent &> m_nativeGesturesHandler;
 };
-
-std::tuple<QPointF, QPointF> getLocalAndGlobalPointsFromUiInputEvent(ArkUI_UIInputEvent* event)
-{
-    return {
-        {OH_ArkUI_PointerEvent_GetX(event), OH_ArkUI_PointerEvent_GetY(event)},
-        {OH_ArkUI_PointerEvent_GetDisplayX(event), OH_ArkUI_PointerEvent_GetDisplayY(event)}};
-}
 
 QOhosOptional<Qt::NativeGestureType> getQtGestureType(::InputEvent_AxisAction ohAxisActionType)
 {
@@ -74,9 +68,8 @@ void QOhosAxisEventHandler::handleUiAxisEvent(ArkUI_UIInputEvent *event)
     const auto now = std::chrono::steady_clock::now();
 
     auto eventTimestamp = OH_ArkUI_UIInputEvent_GetEventTime(event);
-    QPointF localPosition;
-    QPointF screenPosition;
-    std::tie(localPosition, screenPosition) = getLocalAndGlobalPointsFromUiInputEvent(event);
+    auto localPosition = QArkUi::getPointerEventLocalPosition(event);
+    auto screenPosition = QArkUi::getPointerEventDisplayPosition(event);
     double horizontalAxisValue = OH_ArkUI_AxisEvent_GetHorizontalAxisValue(event);
     double verticalAxisValue = OH_ArkUI_AxisEvent_GetVerticalAxisValue(event);
     auto eventToolType = OH_ArkUI_UIInputEvent_GetToolType(event);
