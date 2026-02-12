@@ -264,11 +264,11 @@ Q_CORE_EXPORT QVariant qVariantAtIndex(const QModelIndex &index)
     operations will perform better if \c{std::size} is available, and if the
     iterator satisfies \c{std::random_access_iterator}.
 
-    The range must be provided when constructing the model; there is no API to
-    set the range later, and there is no API to retrieve the range from the
-    model. The range can be provided by value, reference wrapper, or pointer.
-    How the model was constructed defines whether changes through the model API
-    will modify the original data.
+    The range must be provided when constructing the model and can be provided
+    by value, reference wrapper, or pointer. How the model was constructed
+    defines whether changes through the model API will modify the original
+    data. Use QRangeModelAdapter to implicitly construct a model while also
+    having direct, type-safe, and convenient access to the model as a range.
 
     When constructed by value, the model makes a copy of the range, and
     QAbstractItemModel APIs that modify the model, such as setData() or
@@ -276,10 +276,8 @@ Q_CORE_EXPORT QVariant qVariantAtIndex(const QModelIndex &index)
 
     \snippet qrangemodel/main.cpp value
 
-    As there is no API to retrieve the range again, constructing the model from
-    a range by value is mostly only useful for displaying read-only data.
-    Changes to the data can be monitored using the signals emitted by the
-    model, such as \l{QAbstractItemModel}{dataChanged()}.
+    Changes made to the data can be monitored by connecting to the signals
+    emitted by the model, such as \l{QAbstractItemModel}{dataChanged()}.
 
     To make modifications of the model affect the original range, provide the
     range either by pointer:
@@ -300,7 +298,8 @@ Q_CORE_EXPORT QVariant qVariantAtIndex(const QModelIndex &index)
     range that the model operates on must no longer be modified directly. Views
     on the model wouldn't be informed about the changes, and structural changes
     are likely to corrupt instances of QPersistentModelIndex that the model
-    maintains.
+    maintains. Use QRangeModelAdapter to safely interact with the underlying
+    range while keeping the model updated.
 
     The caller must make sure that the range's lifetime exceeds the lifetime of
     the model.
@@ -799,9 +798,13 @@ Q_CORE_EXPORT QVariant qVariantAtIndex(const QModelIndex &index)
 
     \note While the model does not take ownership of the range object otherwise,
     you must not modify the \a range directly once the model has been constructed
-    and  and passed on to a view. Such modifications will not emit signals
+    and and passed on to a view. Such modifications will not emit signals
     necessary to keep model users (other models or views) synchronized with the
     model, resulting in inconsistent results, undefined behavior, and crashes.
+    Use QRangeModelAdapter to safely interact with the underlying range while
+    keeping the model updated.
+
+    \sa QRangeModelAdapter
 */
 
 /*!
