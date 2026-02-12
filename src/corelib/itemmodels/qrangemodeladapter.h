@@ -7,6 +7,8 @@
 
 #include <QtCore/qrangemodeladapter_impl.h>
 
+#include <QtCore/q26numeric.h>
+
 QT_BEGIN_NAMESPACE
 
 template <typename Range, typename Protocol = void, typename Model = QRangeModel>
@@ -1076,7 +1078,7 @@ public:
     template <typename Row, if_assignable_range<std::initializer_list<Row>> = true>
     void assign(std::initializer_list<Row> newRange)
     {
-        assignImpl(qsizetype(newRange.size()), [&newRange](auto &oldRange) {
+        assignImpl(newRange.size(), [&newRange](auto &oldRange) {
             oldRange = newRange;
         });
     }
@@ -1091,7 +1093,7 @@ public:
     template <typename InputIterator, typename Sentinel, typename I = Impl, if_writable<I> = true>
     void assign(InputIterator first, Sentinel last)
     {
-        assignImpl(qsizetype(std::distance(first, last)), [first, last](auto &oldRange) {
+        assignImpl(size_t(std::distance(first, last)), [first, last](auto &oldRange) {
             oldRange.assign(first, last);
         });
     }
@@ -1547,7 +1549,7 @@ private:
         Q_EMIT storage.implementation()->dataChanged(topLeft, bottomRight, {});
     }
 
-    void beginAssignImpl(Impl *impl, range_type *oldRange, qsizetype newLastRow)
+    void beginAssignImpl(Impl *impl, range_type *oldRange, int newLastRow)
     {
         const QModelIndex root = storage.root();
         const qsizetype oldLastRow = qsizetype(Impl::size(oldRange)) - 1;
@@ -1569,7 +1571,7 @@ private:
         }
     }
 
-    void endAssignImpl(Impl *impl, qsizetype newLastRow)
+    void endAssignImpl(Impl *impl, int newLastRow)
     {
         const QModelIndex root = storage.root();
         if (!root.isValid()) {
@@ -1587,12 +1589,13 @@ private:
     }
 
     template <typename Assigner>
-    void assignImpl(qsizetype newSize, Assigner &&assigner)
+    void assignImpl(std::size_t newSize, Assigner &&assigner)
     {
-        Q_ASSERT_X(newSize <= std::numeric_limits<int>::max(),
+        const auto sz = q26::saturate_cast<int>(newSize);
+        Q_ASSERT_X(q20::cmp_equal(sz, newSize),
                    "QRangeModelAdapter::assign", "New range is too large");
+        const int newLastRow = sz - 1;
 
-        const qsizetype newLastRow = newSize - 1;
         auto *impl = storage.implementation();
         auto *oldRange = impl->childRange(storage.root());
         beginAssignImpl(impl, oldRange, newLastRow);
