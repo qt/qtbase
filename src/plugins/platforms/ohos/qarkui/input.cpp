@@ -4,6 +4,7 @@
 #include <qarkui/input.h>
 
 #include <qarkui/qarkuiutils.h>
+#include <qohoskeymodifiers.h>
 
 namespace ch = std::chrono;
 
@@ -179,6 +180,18 @@ ch::milliseconds getInputEventTimeMs(const ::ArkUI_UIInputEvent *event)
 {
     auto eventTime = ch::nanoseconds(callArkUi(Q_OHOS_NAMED_FUNC(::OH_ArkUI_UIInputEvent_GetEventTime), event));
     return ch::duration_cast<ch::milliseconds>(eventTime);
+}
+
+NativeNodeMouseEvent NativeNodeMouseEvent::makeFromUiInputEvent(::ArkUI_UIInputEvent *event)
+{
+    return NativeNodeMouseEvent {
+        .timestampMs = getInputEventTimeMs(event),
+        .localPosition = getPointerEventLocalPosition(event),
+        .displayPosition = getPointerEventDisplayPosition(event),
+        .button = callArkUi(Q_OHOS_NAMED_FUNC(::OH_ArkUI_MouseEvent_GetMouseButton), event),
+        .action = callArkUi(Q_OHOS_NAMED_FUNC(::OH_ArkUI_MouseEvent_GetMouseAction), event),
+        .modifiers = readKeyModifiersFromOhosUiInputEvent(event),
+    };
 }
 
 }

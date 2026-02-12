@@ -7,14 +7,14 @@
 #include <QtCore/private/qohoscommon_p.h>
 #include <QtCore/qglobal.h>
 #include <QtGui/qwindow.h>
-#include <arkui/ui_input_event.h>
+#include <qarkui/input.h>
 #include <qohosinputmethodeventhandler.h>
 #include <qohosplugincore.h>
 #include <render/qohoshovereventsgenerator.h>
 
 QT_BEGIN_NAMESPACE
 
-QOhosConsumer<::ArkUI_UIInputEvent *> makeQOhosNativeMouseEventsHandler(
+QOhosConsumer<QArkUi::NativeNodeMouseEvent> makeQOhosNativeMouseEventsHandler(
     QtOhos::QThreadSafeRef<QWindow> qWindowRef,
     QtOhos::QThreadSafeRef<QOhosInputMethodEventHandler> imEventHandlerRef,
     std::shared_ptr<QOhosHoverEventsGenerator> hoverEventsGenerator);

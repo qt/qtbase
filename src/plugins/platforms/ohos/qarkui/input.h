@@ -4,6 +4,7 @@
 #ifndef QARKUI__INPUT_H
 #define QARKUI__INPUT_H
 
+#include <QtCore/qflags.h>
 #include <QtCore/qglobal.h>
 #include <QtCore/qpoint.h>
 #include <QtGui/qinputdevice.h>
@@ -12,6 +13,7 @@
 #include <multimodalinput/oh_input_manager.h>
 #include <qarkui/window.h>
 #include <qohosdisplayinfo.h>
+#include <qohoskeymodifiers.h>
 #include <qohosplugincore.h>
 
 QT_BEGIN_NAMESPACE
@@ -57,6 +59,18 @@ QInputDevice::DeviceType getTouchDeviceType(const ::ArkUI_UIInputEvent *inputEve
 QPointF getPointerEventLocalPosition(const ::ArkUI_UIInputEvent *event);
 QPointF getPointerEventDisplayPosition(const ::ArkUI_UIInputEvent *event);
 std::chrono::milliseconds getInputEventTimeMs(const ::ArkUI_UIInputEvent *event);
+
+struct NativeNodeMouseEvent
+{
+    std::chrono::milliseconds timestampMs;
+    QPointF localPosition;
+    QPointF displayPosition;
+    std::int32_t button;
+    std::int32_t action;
+    QFlags<OhosKeyboardModifier> modifiers;
+
+    static NativeNodeMouseEvent makeFromUiInputEvent(::ArkUI_UIInputEvent *event);
+};
 
 }
 
