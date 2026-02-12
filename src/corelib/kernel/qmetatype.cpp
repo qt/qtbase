@@ -574,7 +574,7 @@ const char *QtMetaTypePrivate::typedefNameForType(const QtPrivate::QMetaTypeInte
     \fn int QMetaType::id() const
     \since 5.13
 
-    Returns id type held by this QMetatype instance.
+    Returns id type held by this QMetaType instance.
 */
 
 /*!
