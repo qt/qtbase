@@ -8,7 +8,7 @@
 #include <QtCore/qglobal.h>
 #include <QtCore/qspan.h>
 #include <arkui/ui_input_event.h>
-#include <qarkui/input.h>
+#include <multimodalinput/oh_input_manager.h>
 #include <vector>
 
 QT_BEGIN_NAMESPACE
