@@ -25,5 +25,4 @@ HTML.navigationseparator = \
 # Add some padding around code snippets, as we cannot
 # correctly style them for QTextBrowser using only CSS.
 codeindent         = 1
-codeprefix         = "\n"
 codesuffix         = "\n"
