@@ -1091,60 +1091,50 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
         painter->restore();
         break;
     case CE_HeaderSection:
-        painter->save();
         // Draws the header in tables.
-        if (const QStyleOptionHeader *header = qstyleoption_cast<const QStyleOptionHeader *>(option)) {
-            const QStyleOptionHeaderV2 *headerV2 = qstyleoption_cast<const QStyleOptionHeaderV2 *>(option);
+        if (const auto *header = qstyleoption_cast<const QStyleOptionHeader *>(option)) {
+            QPainterStateGuard psg(painter);
+            const auto *headerV2 = qstyleoption_cast<const QStyleOptionHeaderV2 *>(option);
             const bool isSectionDragTarget = headerV2 ? headerV2->isSectionDragTarget : false;
+            const auto &rect = option->rect;
 
-            const QString pixmapName = "headersection-"_L1
-                                       % HexString(header->position)
-                                       % HexString(header->orientation)
-                                       % QLatin1Char(isSectionDragTarget ? '1' : '0');
-            QCachedPainter cp(painter, pixmapName, option);
-            if (cp.needsPainting()) {
-                const QRect pixmapRect = cp.pixmapRect();
-                QColor buttonColor = d->buttonColor(option->palette);
-                QColor gradientStartColor = buttonColor.lighter(104);
-                QColor gradientStopColor = buttonColor.darker(102);
-                if (isSectionDragTarget) {
-                    gradientStopColor = gradientStartColor.darker(130);
-                    gradientStartColor = gradientStartColor.darker(130);
-                }
-                QLinearGradient gradient(pixmapRect.topLeft(), pixmapRect.bottomLeft());
+            QColor buttonColor = d->buttonColor(option->palette);
+            QColor gradientStartColor = buttonColor.lighter(104);
+            QColor gradientStopColor = buttonColor.darker(102);
+            if (isSectionDragTarget) {
+                gradientStopColor = gradientStartColor.darker(130);
+                gradientStartColor = gradientStartColor.darker(130);
+            }
+            QLinearGradient gradient(rect.topLeft(), rect.bottomLeft());
+            if (option->palette.window().gradient()) {
+                gradient.setStops(option->palette.window().gradient()->stops());
+            } else {
+                QColor midColor1 = mergedColors(gradientStartColor, gradientStopColor, 60);
+                QColor midColor2 = mergedColors(gradientStartColor, gradientStopColor, 40);
+                gradient.setColorAt(0, gradientStartColor);
+                gradient.setColorAt(0.5, midColor1);
+                gradient.setColorAt(0.501, midColor2);
+                gradient.setColorAt(0.92, gradientStopColor);
+                gradient.setColorAt(1, gradientStopColor.darker(104));
+            }
+            painter->fillRect(rect, gradient);
+            painter->setPen(QFusionStylePrivate::innerContrastLine);
+            painter->setBrush(Qt::NoBrush);
+            painter->drawLine(rect.topLeft(), rect.topRight());
+            painter->setPen(d->outline(option->palette));
+            painter->drawLine(rect.bottomLeft(), rect.bottomRight());
 
-                if (option->palette.window().gradient()) {
-                    gradient.setStops(option->palette.window().gradient()->stops());
-                } else {
-                    QColor midColor1 = mergedColors(gradientStartColor, gradientStopColor, 60);
-                    QColor midColor2 = mergedColors(gradientStartColor, gradientStopColor, 40);
-                    gradient.setColorAt(0, gradientStartColor);
-                    gradient.setColorAt(0.5, midColor1);
-                    gradient.setColorAt(0.501, midColor2);
-                    gradient.setColorAt(0.92, gradientStopColor);
-                    gradient.setColorAt(1, gradientStopColor.darker(104));
-                }
-                cp->fillRect(pixmapRect, gradient);
-                cp->setPen(QFusionStylePrivate::innerContrastLine);
-                cp->setBrush(Qt::NoBrush);
-                cp->drawLine(pixmapRect.topLeft(), pixmapRect.topRight());
-                cp->setPen(d->outline(option->palette));
-                cp->drawLine(pixmapRect.bottomLeft(), pixmapRect.bottomRight());
-
-                if (header->orientation == Qt::Horizontal &&
-                        header->position != QStyleOptionHeader::End &&
-                        header->position != QStyleOptionHeader::OnlyOneSection) {
-                    cp->setPen(QColor(0, 0, 0, 40));
-                    cp->drawLine(pixmapRect.topRight(), pixmapRect.bottomRight() + QPoint(0, -1));
-                    cp->setPen(QFusionStylePrivate::innerContrastLine);
-                    cp->drawLine(pixmapRect.topRight() + QPoint(-1, 0), pixmapRect.bottomRight() + QPoint(-1, -1));
-                } else if (header->orientation == Qt::Vertical) {
-                    cp->setPen(d->outline(option->palette));
-                    cp->drawLine(pixmapRect.topRight(), pixmapRect.bottomRight());
-                }
+            if (header->orientation == Qt::Horizontal && header->position != QStyleOptionHeader::End
+                && header->position != QStyleOptionHeader::OnlyOneSection) {
+                painter->setPen(QColor(0, 0, 0, 40));
+                painter->drawLine(rect.topRight(), rect.bottomRight() + QPoint(0, -1));
+                painter->setPen(QFusionStylePrivate::innerContrastLine);
+                painter->drawLine(rect.topRight() + QPoint(-1, 0), rect.bottomRight() + QPoint(-1, -1));
+            } else if (header->orientation == Qt::Vertical) {
+                painter->setPen(d->outline(option->palette));
+                painter->drawLine(rect.topRight(), rect.bottomRight());
             }
         }
-        painter->restore();
         break;
     case CE_ProgressBarGroove:
         painter->save();
