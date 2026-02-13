@@ -1204,6 +1204,7 @@ auto QFileSystemEngine::cloneFile(int srcfd, int dstfd, const QFileSystemMetaDat
     switch (errno) {
     case EINVAL: // observed with some obscure filesystem combinations
     case EXDEV: // Linux can't do xdev file copies (FreeBSD can)
+    case ENOSYS: // caused by some containers wrongly filtering the system call
         break;
 
     default:
