@@ -133,11 +133,6 @@ QLocale::Language QLocale::codeToLanguage(QStringView languageCode) noexcept
 
 #include "qoperatingsystemversion.h"
 
-QOperatingSystemVersion QOperatingSystemVersion::current()
-{
-    return QOperatingSystemVersionBase::current();
-}
-
 QString QOperatingSystemVersion::name() const
 {
     return QOperatingSystemVersionBase::name();
