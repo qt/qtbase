@@ -100,8 +100,8 @@ QOhosScreenManager::QOhosScreenManager()
         primaryDisplayInfo = getDisplayInfoForPrimaryDisplay(jsState);
 
         m_jsScopeData = QtOhos::makeProxyWithJsThreadDeleter(
-            JsScopeData::create(
-                jsState, JsScopeData::CreateInfo{
+            QOhosDisplayManager::create(
+                jsState, QOhosDisplayManager::CreateInfo{
                     .displayInfos = displayInfos,
                     .displayChangedCb = [selfRef](QtOhos::JsState &jsState, JsDisplayId changedDisplayId) {
                         auto displayObject = tryGetDisplayById(jsState, changedDisplayId);
@@ -166,7 +166,7 @@ void QOhosScreenManager::handleDisplayChangedCallbackInQtThread(const QOhosDispl
     updatePrimaryPlatformScreenIfNeeded();
 }
 
-void QOhosScreenManager::JsScopeData::registerDisplayCallbackListener(
+void QOhosScreenManager::QOhosDisplayManager::registerDisplayCallbackListener(
     QNapi::Object displayModule, const std::string &eventName,
     QOhosConsumer<QtOhos::JsState &, JsDisplayId> handleFunction)
 {
@@ -180,7 +180,7 @@ void QOhosScreenManager::JsScopeData::registerDisplayCallbackListener(
             }));
 }
 
-bool QOhosScreenManager::JsScopeData::tryRegisterDisplay(
+bool QOhosScreenManager::QOhosDisplayManager::tryRegisterDisplay(
     QtOhos::JsState &jsState, JsDisplayId displayId)
 {
     auto optDisplay = tryGetDisplayById(jsState, displayId);
@@ -213,7 +213,7 @@ bool QOhosScreenManager::JsScopeData::tryRegisterDisplay(
     return added;
 }
 
-void QOhosScreenManager::JsScopeData::unregisterDisplay(JsDisplayId displayId)
+void QOhosScreenManager::QOhosDisplayManager::unregisterDisplay(JsDisplayId displayId)
 {
     if (m_perDisplayDestroyNotifiers.erase(displayId) == 0)
         qOhosPrintfError("Attempted to erase unknown display with id: %f", displayId.value());
@@ -279,24 +279,24 @@ void QOhosScreenManager::removeScreenIfExists(JsDisplayId displayId)
     std::ignore = m_displays.erase(displayId);
 }
 
-std::shared_ptr<QOhosScreenManager::JsScopeData> QOhosScreenManager::JsScopeData::create(
+std::shared_ptr<QOhosScreenManager::QOhosDisplayManager> QOhosScreenManager::QOhosDisplayManager::create(
     QtOhos::JsState &jsState, CreateInfo createInfo)
 {
-   auto jsScopeData = std::shared_ptr<JsScopeData>(new JsScopeData(jsState));
+   auto jsScopeData = std::shared_ptr<QOhosDisplayManager>(new QOhosDisplayManager(jsState));
    jsScopeData->initialize(jsState, std::move(createInfo));
    return jsScopeData;
 }
 
-std::vector<QOhosDisplayInfo> QOhosScreenManager::JsScopeData::getRegisteredDisplayInfos()
+std::vector<QOhosDisplayInfo> QOhosScreenManager::QOhosDisplayManager::getRegisteredDisplayInfos()
 {
     return m_registeredDisplayInfos;
 }
 
-QOhosScreenManager::JsScopeData::JsScopeData(QtOhos::JsState &)
+QOhosScreenManager::QOhosDisplayManager::QOhosDisplayManager(QtOhos::JsState &)
 {
 }
 
-void QOhosScreenManager::JsScopeData::initialize(QtOhos::JsState &jsState, CreateInfo createInfo)
+void QOhosScreenManager::QOhosDisplayManager::initialize(QtOhos::JsState &jsState, CreateInfo createInfo)
 {
     for (const auto &displayInfo : createInfo.displayInfos) {
         if (!shouldIgnoreDisplay(displayInfo) && tryRegisterDisplay(jsState, displayInfo.id)) {

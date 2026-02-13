@@ -57,7 +57,7 @@ private:
     void removeScreenIfExists(QOhosDisplayInfo::JsDisplayId displayId);
     void updatePrimaryPlatformScreenIfNeeded();
 
-    class JsScopeData : public std::enable_shared_from_this<JsScopeData>
+    class QOhosDisplayManager : public std::enable_shared_from_this<QOhosDisplayManager>
     {
     public:
         struct CreateInfo
@@ -69,12 +69,12 @@ private:
             QOhosConsumer<QtOhos::JsState &, JsDisplayId, QRectF> displayAvailableAreaChangedCb;
         };
 
-        static std::shared_ptr<JsScopeData> create(QtOhos::JsState &jsState, CreateInfo createInfo);
+        static std::shared_ptr<QOhosDisplayManager> create(QtOhos::JsState &jsState, CreateInfo createInfo);
 
         std::vector<QOhosDisplayInfo> getRegisteredDisplayInfos();
 
     private:
-        JsScopeData(QtOhos::JsState &);
+        QOhosDisplayManager(QtOhos::JsState &);
 
         void initialize(QtOhos::JsState &jsState, CreateInfo createInfo);
         void registerDisplayCallbackListener(
@@ -89,7 +89,7 @@ private:
         QOhosConsumer<QtOhos::JsState &, JsDisplayId, QRectF> m_availableAreaChangedCb;
     };
 
-    std::shared_ptr<JsScopeData> m_jsScopeData;
+    std::shared_ptr<QOhosDisplayManager> m_jsScopeData;
     JsDisplayId m_primaryDisplayId;
     std::map<JsDisplayId, std::unique_ptr<QOhosPlatformScreenHolder>> m_displays;
 };
