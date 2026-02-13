@@ -76,4 +76,23 @@ QSizeF QOhosDisplayInfo::physicalSize() const
         mapPixelsToMillimeters(sizePixels.height(), dpi.second));
 }
 
+bool QOhosDisplayInfo::shouldIgnoreDisplay() const
+{
+    constexpr int virtualDisplayBaseId = 1000;
+    static const QOhosDisplayInfo::DisplaySourceMode sourceModesToIgnore[] = {
+       QOhosDisplayInfo::DisplaySourceMode::NONE,
+       QOhosDisplayInfo::DisplaySourceMode::MIRROR,
+       QOhosDisplayInfo::DisplaySourceMode::ALONE,
+    };
+
+    const auto *sourceModeToIgnoreIter = std::find(
+        std::begin(sourceModesToIgnore), std::end(sourceModesToIgnore),
+        sourceMode);
+    bool ignoreBySoureMode = sourceModeToIgnoreIter != std::end(sourceModesToIgnore);
+
+    return sourceMode.hasValue()
+        ? ignoreBySoureMode
+        : id.value() >= virtualDisplayBaseId;
+}
+
 QT_END_NAMESPACE

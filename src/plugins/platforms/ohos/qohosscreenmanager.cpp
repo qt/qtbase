@@ -49,25 +49,6 @@ QDebug &operator<<(QDebug &outputStream, const QOhosDisplayInfo &displayInfo)
     return outputStream;
 }
 
-bool shouldIgnoreDisplay(const QOhosDisplayInfo &displayInfo)
-{
-    constexpr int virtualDisplayBaseId = 1000;
-    static const QOhosDisplayInfo::DisplaySourceMode sourceModesToIgnore[] = {
-       QOhosDisplayInfo::DisplaySourceMode::NONE,
-       QOhosDisplayInfo::DisplaySourceMode::MIRROR,
-       QOhosDisplayInfo::DisplaySourceMode::ALONE,
-    };
-
-    const auto *sourceModeToIgnoreIter = std::find(
-        std::begin(sourceModesToIgnore), std::end(sourceModesToIgnore),
-        displayInfo.sourceMode);
-    bool ignoreBySoureMode = sourceModeToIgnoreIter != std::end(sourceModesToIgnore);
-
-    return displayInfo.sourceMode.hasValue()
-        ? ignoreBySoureMode
-        : displayInfo.id.value() >= virtualDisplayBaseId;
-}
-
 }
 
 QOhosScreenManager::QOhosScreenManager()
@@ -151,7 +132,7 @@ QOhosScreenManager::QOhosScreenManager()
 
 void QOhosScreenManager::handleDisplayChangedCallbackInQtThread(const QOhosDisplayInfo &displayInfo)
 {
-    if (shouldIgnoreDisplay(displayInfo))
+    if (displayInfo.shouldIgnoreDisplay())
         return;
     auto *platformScreen = platformScreenForDisplayIdOrNull(displayInfo.id);
     if (platformScreen == nullptr) {
@@ -306,7 +287,7 @@ QOhosScreenManager::QOhosDisplayManager::QOhosDisplayManager(QtOhos::JsState &)
 void QOhosScreenManager::QOhosDisplayManager::initialize(QtOhos::JsState &jsState, CreateInfo createInfo)
 {
     for (const auto &displayInfo : createInfo.displayInfos) {
-        if (!shouldIgnoreDisplay(displayInfo) && tryRegisterDisplay(jsState, displayInfo.id)) {
+        if (!displayInfo.shouldIgnoreDisplay() && tryRegisterDisplay(jsState, displayInfo.id)) {
             m_registeredDisplayInfos.push_back(displayInfo);
         } else {
             qOhosPrintfError(
@@ -346,7 +327,7 @@ void QOhosScreenManager::QOhosDisplayManager::initialize(QtOhos::JsState &jsStat
 
 void QOhosScreenManager::handleDisplayAdded(const QOhosDisplayInfo &displayInfo)
 {
-    if (shouldIgnoreDisplay(displayInfo)) {
+    if (displayInfo.shouldIgnoreDisplay()) {
         qCWarning(QtForOhos) << "Display add ignored (based on display id):" << displayInfo.id.value();
         return;
     }
