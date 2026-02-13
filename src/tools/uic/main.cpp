@@ -85,7 +85,7 @@ int runUic(int argc, char *argv[])
     parser.addOption(noProtOption);
 
     QCommandLineOption noImplicitIncludesOption(QStringList{u"n"_s, u"no-implicit-includes"_s});
-    noImplicitIncludesOption.setDescription(u"Disable generation of #include-directives."_s);
+    noImplicitIncludesOption.setDescription(u"Disable generation of custom widget #include-directives."_s);
     parser.addOption(noImplicitIncludesOption);
 
     QCommandLineOption postfixOption(u"postfix"_s);
