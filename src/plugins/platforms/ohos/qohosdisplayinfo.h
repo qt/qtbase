@@ -36,6 +36,7 @@ struct QOhosDisplayInfo
     using JsDisplayId = QtOhos::TypedId<double, struct JsDisplayIdTag>;
 
     static QOhosDisplayInfo makeFromOhosDisplayObject(QtOhos::JsState &jsState, QNapi::Object displayObject);
+    static QOhosOptional<QNapi::Object> tryGetDisplayById(QtOhos::JsState &jsState, QOhosDisplayInfo::JsDisplayId displayId);
 
     JsDisplayId id;
     QString name;
