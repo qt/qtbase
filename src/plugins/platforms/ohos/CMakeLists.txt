@@ -13,6 +13,7 @@ qt_internal_add_plugin(QOhosPlatformIntegrationPlugin
     EXCEPTIONS
     SOURCES
         qarkui/qarkuiutils.h
+        qarkui/displaymanager.cpp qarkui/displaymanager.h
         qarkui/input.cpp qarkui/input.h
         qarkui/qembeddedwindownode.cpp qarkui/qembeddedwindownode.h
         qarkui/qnativenodeapi.cpp qarkui/qnativenodeapi.h
