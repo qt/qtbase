@@ -50,6 +50,7 @@ struct QOhosDisplayInfo
 
     QRect displayGeometryPixels() const;
     QSizeF physicalSize() const;
+    bool shouldIgnoreDisplay() const;
 };
 
 namespace QtOhos
