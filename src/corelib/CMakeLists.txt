@@ -958,7 +958,7 @@ qt_internal_extend_target(Core CONDITION WASM
         text/qlocale_wasm.cpp
 )
 
-qt_internal_extend_target(Core CONDITION MSVC AND CLANG
+qt_internal_extend_target(Core CONDITION MSVC AND CLANG AND NOT CMAKE_CROSSCOMPILING
     LIBRARIES
         clang_rt.builtins-$<IF:$<STREQUAL:${TEST_architecture_arch},arm64>,aarch64,x86_64>
 )
