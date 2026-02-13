@@ -209,15 +209,24 @@
           <property name="text">
            <string>Developer</string>
           </property>
+          <property name="textAlignment">
+           <set>AlignCenter</set>
+          </property>
          </item>
          <item>
           <property name="text">
            <string>Student</string>
           </property>
+          <property name="textAlignment"> <!-- 7.0 fully qualified -->
+           <set>Qt::AlignmentFlag::AlignCenter</set>
+          </property>
          </item>
          <item>
           <property name="text">
            <string>Fisherman</string>
+          </property>
+          <property name="textAlignment">
+           <set>AlignCenter</set>
           </property>
          </item>
         </widget>

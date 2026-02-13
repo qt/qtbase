@@ -2364,7 +2364,9 @@ void WriteInitialization::addInitializer(Item *item, const QString &name,
         str << language::derefPointer << "set" << name.at(0).toUpper() << QStringView{name}.mid(1) << '(';
         if (column >= 0)
             str << column << ", ";
-        str << value << ");";
+        str << value << ')';
+        if (language::language() != Language::Python)
+            str << ';';
         item->addSetter(setter, directive, translatable);
     }
 }
@@ -2411,11 +2413,16 @@ void WriteInitialization::addQtFlagsInitializer(Item *item, const DomPropertyMap
                                                 const QString &name, int column)
 {
     if (const DomProperty *p = properties.value(name)) {
-        const QString orOperator = u'|' + language::qtQualifier;
         QString v = p->elementSet();
         if (!v.isEmpty()) {
-            v.replace(u'|', orOperator);
-            addInitializer(item, name, column, language::qtQualifier + v);
+            if (v.contains(u':')) {
+                v = language::enumValue(v);
+            } else { // Qt 6 Legacy: Unqualified values
+                const QString orOperator = u'|' + language::qtQualifier;
+                v.replace(u'|', orOperator);
+                v.prepend(language::qtQualifier);
+            }
+            addInitializer(item, name, column, v);
         }
     }
 }
@@ -2429,8 +2436,11 @@ void WriteInitialization::addQtEnumInitializer(Item *item,
 {
     if (const DomProperty *p = properties.value(name)) {
         QString v = p->elementEnum();
-        if (!v.isEmpty())
-            addInitializer(item, name, column, language::qtQualifier + v);
+        if (!v.isEmpty()) {
+            v = v.contains(u':') ? language::enumValue(v)
+                                 : language::qtQualifier + v; // Qt 6 Legacy: Unqualified values
+            addInitializer(item, name, column, v);
+        }
     }
 }
 
