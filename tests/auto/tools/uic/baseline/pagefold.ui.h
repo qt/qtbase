@@ -170,9 +170,12 @@ public:
         gridLayout->addWidget(passwordEdit, 3, 1, 1, 3);
 
         professionList = new QListWidget(mainFrame);
-        new QListWidgetItem(professionList);
-        new QListWidgetItem(professionList);
-        new QListWidgetItem(professionList);
+        QListWidgetItem *__qlistwidgetitem = new QListWidgetItem(professionList);
+        __qlistwidgetitem->setTextAlignment(Qt::AlignCenter);
+        QListWidgetItem *__qlistwidgetitem1 = new QListWidgetItem(professionList);
+        __qlistwidgetitem1->setTextAlignment(Qt::AlignmentFlag::AlignCenter);
+        QListWidgetItem *__qlistwidgetitem2 = new QListWidgetItem(professionList);
+        __qlistwidgetitem2->setTextAlignment(Qt::AlignCenter);
         professionList->setObjectName("professionList");
 
         gridLayout->addWidget(professionList, 5, 1, 1, 3);
