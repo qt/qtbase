@@ -389,8 +389,8 @@ void QOhosPlatformBackingStore::flushImmediate(QWindow *window)
 
     auto &windowContext = m_windowContextManager.getOrCreateWindowContext(window, nativeWindow);
     QRegion region;
-    QPoint offset;
-    std::tie(region, offset) = windowContext.flushData().fetchAndReset();
+    QPoint rootWindowOffset;
+    std::tie(region, rootWindowOffset) = windowContext.flushData().fetchAndReset();
 
     if (region.isEmpty())
         return;
@@ -400,7 +400,7 @@ void QOhosPlatformBackingStore::flushImmediate(QWindow *window)
 
     auto srcImageRect = isRootWindow
         ? QRect({}, m_image.size())
-        : QRect(offset, platformWindow->geometry().size()).intersected(QRect({}, m_image.size()));
+        : QRect(rootWindowOffset, platformWindow->geometry().size()).intersected(QRect({}, m_image.size()));
     if (srcImageRect.isEmpty()) {
         qOhosPrintfDebug("Cannot get source image rect, ignore flush call");
         return;
@@ -425,7 +425,7 @@ void QOhosPlatformBackingStore::flushImmediate(QWindow *window)
                 debugDrawFlushedQRegion(dstImage, region);
 
             return makeOhosRegionRectsForFlush(
-                mergedRegionOpt.valueOr(QRegion()), isRootWindow ? QPoint{} : offset, dstImage.size());
+                mergedRegionOpt.valueOr(QRegion()), isRootWindow ? QPoint{} : rootWindowOffset, dstImage.size());
         },
         [&](::BufferHandle *bufferHandle) {
             bufferRegionHandler.storeRegionForBufferHandle(bufferHandle, region);
