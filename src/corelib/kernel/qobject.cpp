@@ -1418,12 +1418,11 @@ QBindable<QString> QObject::bindableObjectName()
 */
 
 /*!
-    \fn bool QObject::isQmlObjectType() const
     Returns whether the object has been created by the QML engine or
     ownership has been explicitly set via QJSEngine::setObjectOwnership().
     \since 6.11
 */
-bool QObject::isQmlObjectType() const
+bool QObject::isQmlExposed() const noexcept
 {
     Q_D(const QObject);
     return !d->isDeletingChildren && d->declarativeData;
