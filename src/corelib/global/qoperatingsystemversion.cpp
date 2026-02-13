@@ -112,7 +112,8 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QOperatingSystemVersion::current()
+    \fn QOperatingSystemVersion QOperatingSystemVersion::current()
+
     Returns a QOperatingSystemVersion indicating the current OS and its version number.
 
     \sa currentType()
