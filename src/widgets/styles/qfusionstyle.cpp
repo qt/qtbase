@@ -2150,99 +2150,8 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
         break;
 #if QT_CONFIG(slider)
     case CC_ScrollBar:
-        painter->save();
         if (const QStyleOptionSlider *scrollBar = qstyleoption_cast<const QStyleOptionSlider *>(option)) {
-            bool wasActive = false;
-            qreal expandScale = 1.0;
-            qreal expandOffset = -1.0;
-            QObject *styleObject = option->styleObject;
-            if (styleObject && proxy()->styleHint(SH_ScrollBar_Transient, option, widget)) {
-#if QT_CONFIG(animation)
-                qreal opacity = 0.0;
-                bool shouldExpand = false;
-                const qreal maxExpandScale = 13.0 / 9.0;
-#endif
-
-                int oldPos = styleObject->property("_q_stylepos").toInt();
-                int oldMin = styleObject->property("_q_stylemin").toInt();
-                int oldMax = styleObject->property("_q_stylemax").toInt();
-                QRect oldRect = styleObject->property("_q_stylerect").toRect();
-                QStyle::State oldState = static_cast<QStyle::State>(qvariant_cast<QStyle::State::Int>(styleObject->property("_q_stylestate")));
-                uint oldActiveControls = styleObject->property("_q_stylecontrols").toUInt();
-
-                // a scrollbar is transient when the scrollbar itself and
-                // its sibling are both inactive (ie. not pressed/hovered/moved)
-                bool transient = !option->activeSubControls && !(option->state & State_On);
-
-                if (!transient ||
-                        oldPos != scrollBar->sliderPosition ||
-                        oldMin != scrollBar->minimum ||
-                        oldMax != scrollBar->maximum ||
-                        oldRect != scrollBar->rect ||
-                        oldState != scrollBar->state ||
-                        oldActiveControls != scrollBar->activeSubControls) {
-
-                    styleObject->setProperty("_q_stylepos", scrollBar->sliderPosition);
-                    styleObject->setProperty("_q_stylemin", scrollBar->minimum);
-                    styleObject->setProperty("_q_stylemax", scrollBar->maximum);
-                    styleObject->setProperty("_q_stylerect", scrollBar->rect);
-                    styleObject->setProperty("_q_stylestate", static_cast<QStyle::State::Int>(scrollBar->state));
-                    styleObject->setProperty("_q_stylecontrols", static_cast<uint>(scrollBar->activeSubControls));
-
-#if QT_CONFIG(animation)
-                    // if the scrollbar is transient or its attributes, geometry or
-                    // state has changed, the opacity is reset back to 100% opaque
-                    opacity = 1.0;
-
-                    QScrollbarStyleAnimation *anim  = qobject_cast<QScrollbarStyleAnimation *>(d->animation(styleObject));
-                    if (transient) {
-                        if (!anim) {
-                            anim = new QScrollbarStyleAnimation(QScrollbarStyleAnimation::Deactivating, styleObject);
-                            d->startAnimation(anim);
-                        } else if (anim->mode() == QScrollbarStyleAnimation::Deactivating) {
-                            // the scrollbar was already fading out while the
-                            // state changed -> restart the fade out animation
-                            anim->setCurrentTime(0);
-                        }
-                    } else if (anim && anim->mode() == QScrollbarStyleAnimation::Deactivating) {
-                        d->stopAnimation(styleObject);
-                    }
-#endif // animation
-                }
-
-#if QT_CONFIG(animation)
-                QScrollbarStyleAnimation *anim = qobject_cast<QScrollbarStyleAnimation *>(d->animation(styleObject));
-                if (anim && anim->mode() == QScrollbarStyleAnimation::Deactivating) {
-                    // once a scrollbar was active (hovered/pressed), it retains
-                    // the active look even if it's no longer active while fading out
-                    if (oldActiveControls)
-                        anim->setActive(true);
-
-                    wasActive = anim->wasActive();
-                    opacity = anim->currentValue();
-                }
-
-                shouldExpand = (option->activeSubControls || wasActive);
-                if (shouldExpand) {
-                    if (!anim && !oldActiveControls) {
-                        // Start expand animation only once and when entering
-                        anim = new QScrollbarStyleAnimation(QScrollbarStyleAnimation::Activating, styleObject);
-                        d->startAnimation(anim);
-                    }
-                    if (anim && anim->mode() == QScrollbarStyleAnimation::Activating) {
-                        expandScale = 1.0 + (maxExpandScale - 1.0) * anim->currentValue();
-                        expandOffset = 5.5 * anim->currentValue() - 1;
-                    } else {
-                        // Keep expanded state after the animation ends, and when fading out
-                        expandScale = maxExpandScale;
-                        expandOffset = 4.5;
-                    }
-                }
-                painter->setOpacity(opacity);
-#endif // animation
-            }
-
-            bool transient = proxy()->styleHint(SH_ScrollBar_Transient, option, widget);
+            QPainterStateGuard psg(painter);
             bool horizontal = scrollBar->orientation == Qt::Horizontal;
             bool sunken = scrollBar->state & State_Sunken;
 
@@ -2261,32 +2170,14 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
             const QColor bgColor = QStyleHelper::backgroundColor(option->palette, widget);
             const bool isDarkBg = bgColor.red() < 128 && bgColor.green() < 128 && bgColor.blue() < 128;
 
-            if (transient) {
-                if (horizontal) {
-                    rect.setY(rect.y() + 4.5 - expandOffset);
-                    scrollBarSlider.setY(scrollBarSlider.y() + 4.5 - expandOffset);
-                    scrollBarGroove.setY(scrollBarGroove.y() + 4.5 - expandOffset);
-
-                    rect.setHeight(rect.height() * expandScale);
-                    scrollBarGroove.setHeight(scrollBarGroove.height() * expandScale);
-                } else {
-                    rect.setX(rect.x() + 4.5 - expandOffset);
-                    scrollBarSlider.setX(scrollBarSlider.x() + 4.5 - expandOffset);
-                    scrollBarGroove.setX(scrollBarGroove.x() + 4.5 - expandOffset);
-
-                    rect.setWidth(rect.width() * expandScale);
-                    scrollBarGroove.setWidth(scrollBarGroove.width() * expandScale);
-                }
-            }
-
             // Paint groove
-            if ((!transient || scrollBar->activeSubControls || wasActive) && scrollBar->subControls & SC_ScrollBarGroove) {
+            if (scrollBar->activeSubControls && scrollBar->subControls & SC_ScrollBarGroove) {
                 QLinearGradient gradient(rect.center().x(), rect.top(),
                                          rect.center().x(), rect.bottom());
                 if (!horizontal)
                     gradient = QLinearGradient(rect.left(), rect.center().y(),
                                                rect.right(), rect.center().y());
-                if (!transient || !isDarkBg) {
+                if (!isDarkBg) {
                     QColor buttonColor = d->buttonColor(option->palette);
                     gradient.setColorAt(0, buttonColor.darker(107));
                     gradient.setColorAt(0.1, buttonColor.darker(105));
@@ -2299,13 +2190,8 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                     gradient.setColorAt(1, bgColor.lighter(157));
                 }
 
-                painter->save();
-                if (transient)
-                    painter->setOpacity(0.8);
                 painter->fillRect(rect, gradient);
                 painter->setPen(Qt::NoPen);
-                if (transient)
-                    painter->setOpacity(0.4);
                 painter->setPen(alphaOutline);
                 if (horizontal)
                     painter->drawLine(rect.topLeft(), rect.topRight());
@@ -2317,15 +2203,13 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                 painter->setPen(subtleEdge);
                 painter->setBrush(Qt::NoBrush);
                 painter->drawRect(scrollBarGroove.adjusted(horizontal ? 0 : 1, horizontal ? 1 : 0, -1, -1));
-                painter->restore();
             }
 
-            QRect pixmapRect = scrollBarSlider;
-            QLinearGradient gradient(pixmapRect.center().x(), pixmapRect.top(),
-                                     pixmapRect.center().x(), pixmapRect.bottom());
+            QLinearGradient gradient(scrollBarSlider.center().x(), scrollBarSlider.top(),
+                                     scrollBarSlider.center().x(), scrollBarSlider.bottom());
             if (!horizontal)
-                gradient = QLinearGradient(pixmapRect.left(), pixmapRect.center().y(),
-                                           pixmapRect.right(), pixmapRect.center().y());
+                gradient = QLinearGradient(scrollBarSlider.left(), scrollBarSlider.center().y(),
+                                           scrollBarSlider.right(), scrollBarSlider.center().y());
 
             QLinearGradient highlightedGradient = gradient;
 
@@ -2341,47 +2225,26 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
 
             // Paint slider
             if (scrollBar->subControls & SC_ScrollBarSlider) {
-                if (transient) {
-                    QRect rect = scrollBarSlider.adjusted(horizontal ? 1 : 2, horizontal ? 2 : 1, -1, -1);
-                    painter->setPen(Qt::NoPen);
-                    painter->setBrush(isDarkBg ? QFusionStylePrivate::lightShade : QFusionStylePrivate::darkShade);
-                    int r = qMin(rect.width(), rect.height()) / 2;
+                painter->setPen(alphaOutline);
+                if (option->state & State_Sunken && scrollBar->activeSubControls & SC_ScrollBarSlider)
+                    painter->setBrush(midColor2);
+                else if (option->state & State_MouseOver && scrollBar->activeSubControls & SC_ScrollBarSlider)
+                    painter->setBrush(highlightedGradient);
+                else if (!isDarkBg)
+                    painter->setBrush(gradient);
+                else
+                    painter->setBrush(midColor2);
 
-                    painter->save();
-                    painter->setRenderHint(QPainter::Antialiasing, true);
-                    painter->drawRoundedRect(rect, r, r);
-                    painter->restore();
-                } else {
-                    QRect pixmapRect = scrollBarSlider;
-                    painter->setPen(alphaOutline);
-                    if (option->state & State_Sunken && scrollBar->activeSubControls & SC_ScrollBarSlider)
-                        painter->setBrush(midColor2);
-                    else if (option->state & State_MouseOver && scrollBar->activeSubControls & SC_ScrollBarSlider)
-                        painter->setBrush(highlightedGradient);
-                    else if (!isDarkBg)
-                        painter->setBrush(gradient);
-                    else
-                        painter->setBrush(midColor2);
+                painter->drawRect(scrollBarSlider.adjusted(horizontal ? -1 : 0, horizontal ? 0 : -1,
+                                                           horizontal ? 0 : -1,
+                                                           horizontal ? -1 : 0));
 
-                    painter->drawRect(pixmapRect.adjusted(horizontal ? -1 : 0, horizontal ? 0 : -1, horizontal ? 0 : -1, horizontal ? -1 : 0));
-
-                    painter->setPen(QFusionStylePrivate::innerContrastLine);
-                    painter->drawRect(scrollBarSlider.adjusted(horizontal ? 0 : 1, horizontal ? 1 : 0, -1, -1));
-
-                    // Outer shadow
-                    //                  painter->setPen(subtleEdge);
-                    //                  if (horizontal) {
-                    ////                    painter->drawLine(scrollBarSlider.topLeft() + QPoint(-2, 0), scrollBarSlider.bottomLeft() + QPoint(2, 0));
-                    ////                    painter->drawLine(scrollBarSlider.topRight() + QPoint(-2, 0), scrollBarSlider.bottomRight() + QPoint(2, 0));
-                    //                  } else {
-                    ////                    painter->drawLine(pixmapRect.topLeft() + QPoint(0, -2), pixmapRect.bottomLeft() + QPoint(0, -2));
-                    ////                    painter->drawLine(pixmapRect.topRight() + QPoint(0, 2), pixmapRect.bottomRight() + QPoint(0, 2));
-                    //                  }
-                }
+                painter->setPen(QFusionStylePrivate::innerContrastLine);
+                painter->drawRect(scrollBarSlider.adjusted(horizontal ? 0 : 1, horizontal ? 1 : 0, -1, -1));
             }
 
             // The SubLine (up/left) buttons
-            if (!transient && scrollBar->subControls & SC_ScrollBarSubLine) {
+            if (scrollBar->subControls & SC_ScrollBarSubLine) {
                 if ((scrollBar->activeSubControls & SC_ScrollBarSubLine) && sunken)
                     painter->setBrush(gradientStopColor);
                 else if ((scrollBar->activeSubControls & SC_ScrollBarSubLine))
@@ -2407,7 +2270,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
             }
 
             // The AddLine (down/right) button
-            if (!transient && scrollBar->subControls & SC_ScrollBarAddLine) {
+            if (scrollBar->subControls & SC_ScrollBarAddLine) {
                 if ((scrollBar->activeSubControls & SC_ScrollBarAddLine) && sunken)
                     painter->setBrush(gradientStopColor);
                 else if ((scrollBar->activeSubControls & SC_ScrollBarAddLine))
@@ -2430,9 +2293,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                     arrowType = option->direction == Qt::LeftToRight ? Qt::RightArrow : Qt::LeftArrow;
                 qt_fusion_draw_arrow(arrowType, painter, option, downRect.adjusted(1, 1, 0, 0), arrowColor);
             }
-
         }
-        painter->restore();
         break;
 #endif // QT_CONFIG(slider)
     case CC_ComboBox:
@@ -2548,82 +2409,75 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
             painter->setRenderHint(QPainter::Antialiasing, true);
             if ((option->subControls & SC_SliderGroove) && groove.isValid()) {
                 // draw background groove
-                QCachedPainter cp(painter, "slider_groove"_L1, option, groove.size(), groove);
-                if (cp.needsPainting()) {
-                    const QRect pixmapRect = cp.pixmapRect();
-                    const QColor buttonColor = d->buttonColor(option->palette);
-                    const auto grooveColor =
-                        QColor::fromHsv(buttonColor.hue(),
-                                        qMin(255, (int)(buttonColor.saturation())),
-                                        qMin(255, (int)(buttonColor.value()*0.9)));
-                    cp->translate(0.5, 0.5);
-                    QLinearGradient gradient;
-                    if (horizontal) {
-                        gradient.setStart(pixmapRect.center().x(), pixmapRect.top());
-                        gradient.setFinalStop(pixmapRect.center().x(), pixmapRect.bottom());
-                    }
-                    else {
-                        gradient.setStart(pixmapRect.left(), pixmapRect.center().y());
-                        gradient.setFinalStop(pixmapRect.right(), pixmapRect.center().y());
-                    }
-                    cp->setPen(outline);
-                    gradient.setColorAt(0, grooveColor.darker(110));
-                    gradient.setColorAt(1, grooveColor.lighter(110));//palette.button().color().darker(115));
-                    cp->setBrush(gradient);
-                    cp->drawRoundedRect(pixmapRect.adjusted(1, 1, -2, -2), 1, 1);
+                const QColor buttonColor = d->buttonColor(option->palette);
+                const auto grooveColor =
+                    QColor::fromHsv(buttonColor.hue(),
+                                    qMin(255, (int)(buttonColor.saturation())),
+                                    qMin(255, (int)(buttonColor.value() * 0.9)));
+                painter->translate(0.5, 0.5);
+                QLinearGradient gradient;
+                if (horizontal) {
+                    gradient.setStart(groove.center().x(), groove.top());
+                    gradient.setFinalStop(groove.center().x(), groove.bottom());
+                } else {
+                    gradient.setStart(groove.left(), groove.center().y());
+                    gradient.setFinalStop(groove.right(), groove.center().y());
                 }
-                cp.finish();
+                painter->setPen(outline);
+                gradient.setColorAt(0, grooveColor.darker(110));
+                gradient.setColorAt(1, grooveColor.lighter(110));//palette.button().color().darker(115));
+                painter->setBrush(gradient);
+                painter->drawRoundedRect(groove.adjusted(1, 1, -2, -2), 1, 1);
+
 
                 // draw blue groove highlight
                 QRect clipRect;
                 if (horizontal) {
-                    if (slider->upsideDown)
-                        clipRect = QRect(handle.right(), groove.top(), groove.right() - handle.right(), groove.height());
-                    else
+                    if (slider->upsideDown) {
+                        clipRect = QRect(handle.right(), groove.top(),
+                                         groove.right() - handle.right(), groove.height());
+                    } else {
                         clipRect = QRect(groove.left(), groove.top(),
                                          handle.left() - slider->rect.left(), groove.height());
+                    }
                 } else {
-                    if (slider->upsideDown)
-                        clipRect = QRect(groove.left(), handle.bottom(), groove.width(), groove.height() - (handle.bottom() - slider->rect.top()));
-                    else
-                        clipRect = QRect(groove.left(), groove.top(), groove.width(), handle.top() - groove.top());
+                    if (slider->upsideDown) {
+                        clipRect = QRect(groove.left(), handle.bottom(), groove.width(),
+                                         groove.height() - (handle.bottom() - slider->rect.top()));
+                    } else {
+                        clipRect = QRect(groove.left(), groove.top(), groove.width(),
+                                         handle.top() - groove.top());
+                    }
                 }
-                painter->save();
+
+                QPainterStateGuard psg2(painter);
                 painter->setClipRect(clipRect.adjusted(0, 0, 1, 1), Qt::IntersectClip);
-
-                QCachedPainter cpBlue(painter, "slider_groove_blue"_L1, option, groove.size(), groove);
-                if (cpBlue.needsPainting()) {
-                    const QRect pixmapRect = cp.pixmapRect();
-                    QLinearGradient gradient;
-                    if (horizontal) {
-                        gradient.setStart(pixmapRect.center().x(), pixmapRect.top());
-                        gradient.setFinalStop(pixmapRect.center().x(), pixmapRect.bottom());
-                    }
-                    else {
-                        gradient.setStart(pixmapRect.left(), pixmapRect.center().y());
-                        gradient.setFinalStop(pixmapRect.right(), pixmapRect.center().y());
-                    }
-                    const QColor highlightedoutline = activeHighlight.darker(140);
-                    QColor grooveOutline = outline;
-                    if (qGray(grooveOutline.rgb()) > qGray(highlightedoutline.rgb()))
-                        grooveOutline = highlightedoutline;
-
-                    cpBlue->translate(0.5, 0.5);
-                    cpBlue->setPen(grooveOutline);
-                    gradient.setColorAt(0, activeHighlight);
-                    gradient.setColorAt(1, activeHighlight.lighter(130));
-                    cpBlue->setBrush(gradient);
-                    cpBlue->drawRoundedRect(pixmapRect.adjusted(1, 1, -2, -2), 1, 1);
-                    cpBlue->setPen(QFusionStylePrivate::innerContrastLine);
-                    cpBlue->setBrush(Qt::NoBrush);
-                    cpBlue->drawRoundedRect(pixmapRect.adjusted(2, 2, -3, -3), 1, 1);
+                gradient = QLinearGradient();
+                if (horizontal) {
+                    gradient.setStart(groove.center().x(), groove.top());
+                    gradient.setFinalStop(groove.center().x(), groove.bottom());
+                } else {
+                    gradient.setStart(groove.left(), groove.center().y());
+                    gradient.setFinalStop(groove.right(), groove.center().y());
                 }
-                cpBlue.finish();
-                painter->restore();
+                const QColor highlightedoutline = activeHighlight.darker(140);
+                QColor grooveOutline = outline;
+                if (qGray(grooveOutline.rgb()) > qGray(highlightedoutline.rgb()))
+                    grooveOutline = highlightedoutline;
+
+                painter->translate(0.5, 0.5);
+                painter->setPen(grooveOutline);
+                gradient.setColorAt(0, activeHighlight);
+                gradient.setColorAt(1, activeHighlight.lighter(130));
+                painter->setBrush(gradient);
+                painter->drawRoundedRect(groove.adjusted(1, 1, -2, -2), 1, 1);
+                painter->setPen(QFusionStylePrivate::innerContrastLine);
+                painter->setBrush(Qt::NoBrush);
+                painter->drawRoundedRect(groove.adjusted(2, 2, -3, -3), 1, 1);
             }
 
             if (option->subControls & SC_SliderTickmarks) {
-                painter->save();
+                QPainterStateGuard psg2(painter);
                 painter->translate(slider->rect.x(), slider->rect.y());
                 painter->setRenderHint(QPainter::Antialiasing, false);
                 painter->setPen(outline);
@@ -2681,41 +2535,39 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                     v = nextInterval;
                 }
                 painter->drawLines(lines);
-                painter->restore();
             }
             // draw handle
-            if ((option->subControls & SC_SliderHandle) ) {
-                QCachedPainter cp(painter, "slider_handle"_L1, option, handle.size(), handle);
-                if (cp.needsPainting()) {
-                    const QRect pixmapRect = cp.pixmapRect();
-                    QRect gradRect = pixmapRect.adjusted(2, 2, -2, -2);
+            if ((option->subControls & SC_SliderHandle)) {
+                const QRect gradRect = handle.adjusted(2, 2, -2, -2);
 
-                    // gradient fill
-                    QRect r = pixmapRect.adjusted(1, 1, -2, -2);
-                    QLinearGradient gradient = qt_fusion_gradient(gradRect, d->buttonColor(option->palette),horizontal ? TopDown : FromLeft);
+                // gradient fill
+                const QRect r = handle.adjusted(1, 1, -2, -2);
+                QLinearGradient gradient = qt_fusion_gradient(
+                        gradRect, d->buttonColor(option->palette), horizontal ? TopDown : FromLeft);
 
-                    cp->translate(0.5, 0.5);
+                painter->translate(0.5, 0.5);
 
-                    cp->setPen(Qt::NoPen);
-                    cp->setBrush(QColor(0, 0, 0, 40));
-                    cp->drawRect(horizontal ? r.adjusted(-1, 2, 1, -2) : r.adjusted(2, -1, -2, 1));
+                painter->setPen(Qt::NoPen);
+                painter->setBrush(QColor(0, 0, 0, 40));
+                painter->drawRect(horizontal ? r.adjusted(-1, 2, 1, -2) : r.adjusted(2, -1, -2, 1));
+                painter->setPen(outline);
+                painter->setBrush(gradient);
+                painter->drawRoundedRect(r, 2, 2);
+                painter->setBrush(Qt::NoBrush);
+                painter->setPen(QFusionStylePrivate::innerContrastLine);
+                painter->drawRoundedRect(r.adjusted(1, 1, -1, -1), 2, 2);
 
-                    cp->setPen(outline);
-                    cp->setBrush(gradient);
-                    cp->drawRoundedRect(r, 2, 2);
-                    cp->setBrush(Qt::NoBrush);
-                    cp->setPen(QFusionStylePrivate::innerContrastLine);
-                    cp->drawRoundedRect(r.adjusted(1, 1, -1, -1), 2, 2);
+                QColor cornerAlpha = outline.darker(120);
+                cornerAlpha.setAlpha(80);
 
-                    QColor cornerAlpha = outline.darker(120);
-                    cornerAlpha.setAlpha(80);
-
-                    //handle shadow
-                    cp->setPen(shadowAlpha);
-                    cp->drawLine(QPoint(r.left() + 2, r.bottom() + 1), QPoint(r.right() - 2, r.bottom() + 1));
-                    cp->drawLine(QPoint(r.right() + 1, r.bottom() - 3), QPoint(r.right() + 1, r.top() + 4));
-                    cp->drawLine(QPoint(r.right() - 1, r.bottom()), QPoint(r.right() + 1, r.bottom() - 2));
-                }
+                // handle shadow
+                painter->setPen(shadowAlpha);
+                painter->drawLine(QPoint(r.left() + 2, r.bottom() + 1),
+                                  QPoint(r.right() - 2, r.bottom() + 1));
+                painter->drawLine(QPoint(r.right() + 1, r.bottom() - 3),
+                                  QPoint(r.right() + 1, r.top() + 4));
+                painter->drawLine(QPoint(r.right() - 1, r.bottom()),
+                                  QPoint(r.right() + 1, r.bottom() - 2));
             }
         }
         break;
@@ -2844,8 +2696,6 @@ int QFusionStyle::pixelMetric(PixelMetric metric, const QStyleOption *option, co
         val = 0;
         break;
     case PM_ScrollView_ScrollBarOverlap:
-        if (proxy()->styleHint(SH_ScrollBar_Transient, option, widget))
-            return proxy()->pixelMetric(PM_ScrollBarExtent, option, widget);
         val = 0;
         break;
     case PM_DefaultFrameWidth:
