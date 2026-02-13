@@ -573,7 +573,8 @@ function(_qt_internal_sbom_generate_json)
             RESULT_VARIABLE res
         )
         if(NOT res EQUAL 0)
-            message(FATAL_ERROR \"SBOM conversion to JSON failed: \${res}\")
+            message(FATAL_ERROR \"Converting SBOM '\${QT_SBOM_OUTPUT_PATH}' to \"
+                                \"JSON failed with exit code: \${res}\")
         endif()
 ")
 
