@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <memory>
 #include <utility>
+#include <qarkui/displaymanager.h>
 #include <qohosdisplayinfo.h>
 #include <qohosjsutils.h>
 #include <qohosplatformscreen.h>
@@ -20,10 +21,6 @@ QOhosDisplayInfo getDisplayInfoForPrimaryDisplay(QtOhos::JsState &jsState)
     auto primaryDisplay = jsState.eval<QNapi::Object>("@ohos.display.getPrimaryDisplaySync()");
     return QOhosDisplayInfo::makeFromOhosDisplayObject(jsState, primaryDisplay);
 }
-
-const std::string displayCallbackNameChangeEvent = "change";
-const std::string displayCallbackNameAddEvent = "add";
-const std::string displayCallbackNameRemoveEvent = "remove";
 
 QDebug &operator<<(QDebug &outputStream, const QOhosDisplayInfo &displayInfo)
 {
@@ -69,8 +66,8 @@ QOhosScreenManager::QOhosScreenManager()
         primaryDisplayInfo = getDisplayInfoForPrimaryDisplay(jsState);
 
         m_jsScopeData = QtOhos::makeProxyWithJsThreadDeleter(
-            QOhosDisplayManager::create(
-                jsState, QOhosDisplayManager::CreateInfo{
+            QArkUi::QOhosDisplayManager::create(
+                jsState, QArkUi::QOhosDisplayManager::CreateInfo{
                     .displayInfos = displayInfos,
                     .displayChangedCb = [selfRef](QtOhos::JsState &jsState, JsDisplayId changedDisplayId) {
                         auto displayObject = QOhosDisplayInfo::tryGetDisplayById(jsState, changedDisplayId);
@@ -134,60 +131,6 @@ void QOhosScreenManager::handleDisplayChangedCallbackInQtThread(const QOhosDispl
     platformScreen->setDisplayInfo(displayInfo);
     updatePrimaryPlatformScreenIfNeeded();
 }
-
-void QOhosScreenManager::QOhosDisplayManager::registerDisplayCallbackListener(
-    QNapi::Object displayModule, const std::string &eventName,
-    QOhosConsumer<QtOhos::JsState &, JsDisplayId> handleFunction)
-{
-    m_destroyNotifiers.push_back(
-        QtOhos::registerOnOffMethodsBasedEventHandler(
-            displayModule, eventName,
-            [handleFunction = std::move(handleFunction)](const QtOhos::CallbackInfo &cbInfo) {
-                auto changedDisplayIdValue = cbInfo.getFirstArg<QNapi::Number>(Q_FUNC_INFO);
-                auto changedDisplayId = JsDisplayId{changedDisplayIdValue};
-                handleFunction(cbInfo.jsState(), changedDisplayId);
-            }));
-}
-
-bool QOhosScreenManager::QOhosDisplayManager::tryRegisterDisplay(
-    QtOhos::JsState &jsState, JsDisplayId displayId)
-{
-    auto optDisplay = QOhosDisplayInfo::tryGetDisplayById(jsState, displayId);
-    if (!optDisplay.hasValue()) {
-        qOhosPrintfError(
-            "%s: Display with id: %f went missing during its registration.",
-            Q_FUNC_INFO, displayId.value());
-        return false;
-    }
-
-    auto availableAreaChangeHandle = QtOhos::registerOnOffMethodsBasedEventHandler(
-        optDisplay.value(),
-        "availableAreaChange",
-        [this, displayId](const QtOhos::CallbackInfo &cbInfo) {
-            auto availableArea = cbInfo.getFirstArg<QNapi::Object>(Q_FUNC_INFO);
-            auto availableAreaQRectF = QRectF(
-                availableArea.get<QNapi::Number>("left"),
-                availableArea.get<QNapi::Number>("top"),
-                availableArea.get<QNapi::Number>("width"),
-                availableArea.get<QNapi::Number>("height"));
-            m_availableAreaChangedCb(cbInfo.jsState(), displayId, availableAreaQRectF);
-        });
-
-    bool added = false;
-    std::tie(std::ignore, added) = m_perDisplayDestroyNotifiers.insert(
-        std::make_pair(displayId, std::move(availableAreaChangeHandle)));
-    if (!added)
-        qOhosPrintfError("Duplicate display added event for display id: %f", displayId.value());
-
-    return added;
-}
-
-void QOhosScreenManager::QOhosDisplayManager::unregisterDisplay(JsDisplayId displayId)
-{
-    if (m_perDisplayDestroyNotifiers.erase(displayId) == 0)
-        qOhosPrintfError("Attempted to erase unknown display with id: %f", displayId.value());
-}
-
 
 QOhosScreenManager::QOhosPlatformScreenHolder::QOhosPlatformScreenHolder(
     const QOhosDisplayInfo &displayInfo)
@@ -261,64 +204,6 @@ void QOhosScreenManager::addScreen(QOhosDisplayInfo displayInfo)
 void QOhosScreenManager::removeScreenIfExists(JsDisplayId displayId)
 {
     std::ignore = m_displays.erase(displayId);
-}
-
-std::shared_ptr<QOhosScreenManager::QOhosDisplayManager> QOhosScreenManager::QOhosDisplayManager::create(
-    QtOhos::JsState &jsState, CreateInfo createInfo)
-{
-   auto jsScopeData = std::shared_ptr<QOhosDisplayManager>(new QOhosDisplayManager(jsState));
-   jsScopeData->initialize(jsState, std::move(createInfo));
-   return jsScopeData;
-}
-
-std::vector<QOhosDisplayInfo> QOhosScreenManager::QOhosDisplayManager::getRegisteredDisplayInfos()
-{
-    return m_registeredDisplayInfos;
-}
-
-QOhosScreenManager::QOhosDisplayManager::QOhosDisplayManager(QtOhos::JsState &)
-{
-}
-
-void QOhosScreenManager::QOhosDisplayManager::initialize(QtOhos::JsState &jsState, CreateInfo createInfo)
-{
-    for (const auto &displayInfo : createInfo.displayInfos) {
-        if (!displayInfo.shouldIgnoreDisplay() && tryRegisterDisplay(jsState, displayInfo.id)) {
-            m_registeredDisplayInfos.push_back(displayInfo);
-        } else {
-            qOhosPrintfError(
-                "%s: Failed to register display (%f) during display initialization.",
-                Q_FUNC_INFO,
-                displayInfo.id.value());
-        }
-    }
-
-    auto displayModule = jsState.eval<QNapi::Object>("@ohos.display");
-    m_availableAreaChangedCb = std::move(createInfo.displayAvailableAreaChangedCb);
-    registerDisplayCallbackListener(
-        displayModule,
-        displayCallbackNameChangeEvent,
-        std::move(createInfo.displayChangedCb));
-    registerDisplayCallbackListener(
-        displayModule,
-        displayCallbackNameAddEvent,
-        [this, displayAddedCb = std::move(createInfo.displayAddedCb)](QtOhos::JsState &jsState, JsDisplayId displayId) {
-            if (tryRegisterDisplay(jsState, displayId)) {
-                displayAddedCb(jsState, displayId);
-            } else {
-                qOhosPrintfError(
-                    "%s: Failed to register display (%f) during display added callback.",
-                    Q_FUNC_INFO,
-                    displayId.value());
-            }
-        });
-    registerDisplayCallbackListener(
-        displayModule,
-        displayCallbackNameRemoveEvent,
-        [this, displayRemovedCb = std::move(createInfo.displayRemovedCb)](QtOhos::JsState &jsState, JsDisplayId displayId) {
-            unregisterDisplay(displayId);
-            displayRemovedCb(jsState, displayId);
-        });
 }
 
 void QOhosScreenManager::handleDisplayAdded(const QOhosDisplayInfo &displayInfo)
