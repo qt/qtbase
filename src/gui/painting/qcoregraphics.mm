@@ -298,7 +298,7 @@ QImage qt_mac_toQImage(CGImageRef cgImage)
     if (!image.isNull()) {
         CGColorSpaceRef colorSpace = CGImageGetColorSpace(cgImage);
         QCFType<CFDataRef> iccData = CGColorSpaceCopyICCData(colorSpace);
-        image.setColorSpace(QColorSpace::fromIccProfile(QByteArray::fromRawCFData(iccData)));
+        image.setColorSpace(QColorSpace::fromIccProfile(QByteArray::fromCFData(iccData)));
     }
 
     return image;
