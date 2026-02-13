@@ -57,7 +57,7 @@ void copyImageRow(QSpan<const uchar> srcRow, QSpan<uchar> dstRow)
 }
 
 void copyImage(
-    QOhosPlatformBackingStore::QImageView srcImage, QImage &dstImage, const QRegion &region)
+    QOhosPlatformBackingStore::QImageView srcImage, QImage &dstImage, const QRegion &region, const QPoint &dstOffset)
 {
     const auto intersectedRegion =
         region.intersected(QRect({}, srcImage.size())).intersected(QRect({}, dstImage.size()));
@@ -65,12 +65,12 @@ void copyImage(
     for (const auto &rect : intersectedRegion) {
         const auto xSrc = rect.x() * srcImage.bytesPerPixel();
         const auto widthSrc = rect.width() * srcImage.bytesPerPixel();
-        const auto xDst = rect.x() * qImageBytesPerPixel(dstImage);
+        const auto xDst = (rect.x() + dstOffset.x()) * qImageBytesPerPixel(dstImage);
         const auto widthDst = rect.width() * qImageBytesPerPixel(dstImage);
 
         for (int row = 0; row < rect.height(); ++row) {
             const int srcY = rect.y() + row;
-            const int dstY = srcY;
+            const int dstY = srcY + dstOffset.y();
             const auto srcRow = srcImage.constScanLine(srcY).subspan(xSrc, widthSrc);
             auto dstRow = qImageScanLine(dstImage, dstY).subspan(xDst, widthDst);
             copyImageRow(srcRow, dstRow);
@@ -130,6 +130,13 @@ std::function<void()> makeVSyncFrameRequestFunc(
             };
         },
         Q_FUNC_INFO);
+}
+
+QPoint extractNegativeOffset(const QPoint &offset)
+{
+    return QPoint(
+        std::max(0, -offset.x()),
+        std::max(0, -offset.y()));
 }
 
 }
@@ -407,6 +414,11 @@ void QOhosPlatformBackingStore::flushImmediate(QWindow *window)
 
     QImageView srcImage = QImageView(m_image, srcImageRect);
 
+    const auto rootWindowRegionToFlush = region
+        .translated(rootWindowOffset)
+        .intersected(srcImageRect)
+        .translated(-rootWindowOffset);
+
     surface->paintOnNativeWindowSurface(
         [&](QImage &dstImage, ::BufferHandle *bufferHandle) {
             if (srcImage.bytesPerPixel() != qImageBytesPerPixel(dstImage)) {
@@ -414,19 +426,21 @@ void QOhosPlatformBackingStore::flushImmediate(QWindow *window)
                     "%s: bytes per pixel in src and dst image mismatch. Image formats are not the same.", Q_FUNC_INFO);
             }
 
-            const auto& mergedRegionOpt = bufferRegionHandler.mergeRegionForBufferHandle(bufferHandle, region);
-            const auto windowVisibleRegion = QRegion(QRect({}, srcImage.size()));
+            const auto& mergedRegionOpt = bufferRegionHandler.mergeRegionForBufferHandle(bufferHandle, rootWindowRegionToFlush);
+            const auto dstImageOffset = extractNegativeOffset(rootWindowOffset);
+            const auto windowVisibleRegion = QRegion(QRect(dstImageOffset, srcImage.size()));
             const auto requestedRegion = mergedRegionOpt.valueOr(windowVisibleRegion);
-            copyImage(srcImage, dstImage, requestedRegion);
+            const auto sourceRegionToFlush = requestedRegion.translated(-dstImageOffset);
+            copyImage(srcImage, dstImage, sourceRegionToFlush, dstImageOffset);
 
             if (m_debugDrawFlushedRegion)
-                debugDrawFlushedQRegion(dstImage, region);
+                debugDrawFlushedQRegion(dstImage, rootWindowRegionToFlush);
 
             return makeOhosRegionRectsForFlush(
                 mergedRegionOpt.valueOr(QRegion()), isRootWindow ? QPoint{} : rootWindowOffset, dstImage.size());
         },
         [&](::BufferHandle *bufferHandle) {
-            bufferRegionHandler.storeRegionForBufferHandle(bufferHandle, region);
+            bufferRegionHandler.storeRegionForBufferHandle(bufferHandle, rootWindowRegionToFlush);
         });
 
     if (isRootWindow) {
