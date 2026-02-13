@@ -21,18 +21,6 @@ QOhosDisplayInfo getDisplayInfoForPrimaryDisplay(QtOhos::JsState &jsState)
     return QOhosDisplayInfo::makeFromOhosDisplayObject(jsState, primaryDisplay);
 }
 
-QOhosOptional<QNapi::Object> tryGetDisplayById(QtOhos::JsState &jsState, QOhosDisplayInfo::JsDisplayId displayId)
-{
-    QOhosOptional<QNapi::Object> result;
-    try {
-        result = jsState.eval<QNapi::Object>(
-            "@ohos.display.getDisplayByIdSync(*)", {displayId.value()});
-    } catch (const Napi::Error &error) {
-        qOhosPrintfError("%s: Failed to retrieve display with id: %f", Q_FUNC_INFO, displayId.value());
-    }
-    return result;
-}
-
 const std::string displayCallbackNameChangeEvent = "change";
 const std::string displayCallbackNameAddEvent = "add";
 const std::string displayCallbackNameRemoveEvent = "remove";
@@ -85,7 +73,7 @@ QOhosScreenManager::QOhosScreenManager()
                 jsState, QOhosDisplayManager::CreateInfo{
                     .displayInfos = displayInfos,
                     .displayChangedCb = [selfRef](QtOhos::JsState &jsState, JsDisplayId changedDisplayId) {
-                        auto displayObject = tryGetDisplayById(jsState, changedDisplayId);
+                        auto displayObject = QOhosDisplayInfo::tryGetDisplayById(jsState, changedDisplayId);
                         if (!displayObject.hasValue()) {
                             qOhosPrintfError(
                                 "%s: Failed to retrieve display with id: %f during display changed callback. Ignoring the event...",
@@ -99,7 +87,7 @@ QOhosScreenManager::QOhosScreenManager()
                         });
                     },
                     .displayAddedCb = [selfRef](QtOhos::JsState &jsState, JsDisplayId displayId) {
-                        auto displayObject = tryGetDisplayById(jsState, displayId);
+                        auto displayObject = QOhosDisplayInfo::tryGetDisplayById(jsState, displayId);
                         if (!displayObject.hasValue()) {
                             qOhosPrintfError(
                                 "%s: Failed to retrieve display with id: %f during display added callback. Ignoring the event ...",
@@ -164,7 +152,7 @@ void QOhosScreenManager::QOhosDisplayManager::registerDisplayCallbackListener(
 bool QOhosScreenManager::QOhosDisplayManager::tryRegisterDisplay(
     QtOhos::JsState &jsState, JsDisplayId displayId)
 {
-    auto optDisplay = tryGetDisplayById(jsState, displayId);
+    auto optDisplay = QOhosDisplayInfo::tryGetDisplayById(jsState, displayId);
     if (!optDisplay.hasValue()) {
         qOhosPrintfError(
             "%s: Display with id: %f went missing during its registration.",

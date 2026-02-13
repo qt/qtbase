@@ -64,6 +64,20 @@ QOhosDisplayInfo QOhosDisplayInfo::makeFromOhosDisplayObject(QtOhos::JsState &js
     return result;
 }
 
+QOhosOptional<QNapi::Object> QOhosDisplayInfo::tryGetDisplayById(QtOhos::JsState &jsState, QOhosDisplayInfo::JsDisplayId displayId)
+{
+    QOhosOptional<QNapi::Object> result;
+    try {
+        result = jsState.eval<QNapi::Object>(
+            "@ohos.display.getDisplayByIdSync(*)", { displayId.value() });
+    } catch (const Napi::Error &error) {
+        qOhosPrintfError(
+            "%s: Failed to retrieve display with id: %f", Q_FUNC_INFO,
+            displayId.value());
+    }
+    return result;
+}
+
 QRect QOhosDisplayInfo::displayGeometryPixels() const
 {
     return QRect(topLeftOffsetPixels.valueOr(QPoint()), sizePixels.toSize());
