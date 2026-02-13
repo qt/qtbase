@@ -69,9 +69,10 @@ void copyImage(
         const auto widthDst = rect.width() * qImageBytesPerPixel(dstImage);
 
         for (int row = 0; row < rect.height(); ++row) {
-            const auto y = rect.y() + row;
-            const auto srcRow = srcImage.constScanLine(y).subspan(xSrc, widthSrc);
-            auto dstRow = qImageScanLine(dstImage, y).subspan(xDst, widthDst);
+            const int srcY = rect.y() + row;
+            const int dstY = srcY;
+            const auto srcRow = srcImage.constScanLine(srcY).subspan(xSrc, widthSrc);
+            auto dstRow = qImageScanLine(dstImage, dstY).subspan(xDst, widthDst);
             copyImageRow(srcRow, dstRow);
         }
     }
