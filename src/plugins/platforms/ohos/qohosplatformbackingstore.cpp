@@ -56,7 +56,8 @@ void copyImageRow(QSpan<const uchar> srcRow, QSpan<uchar> dstRow)
     std::memcpy(dstRow.data(), srcRow.data(), sizeToCopy);
 }
 
-void copyImage(QOhosPlatformBackingStore::QImageView srcImage, QImage &dstImage, const QRegion &region)
+void copyImage(
+    QOhosPlatformBackingStore::QImageView srcImage, QImage &dstImage, const QRegion &region)
 {
     const auto intersectedRegion =
         region.intersected(QRect({}, srcImage.size())).intersected(QRect({}, dstImage.size()));
