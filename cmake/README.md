@@ -113,19 +113,28 @@ install:
     # do NOT make install
 ```
 
-## Specifying configure.json features on the command line
+## Specifying build features on the command line
 
-QMake defines most features in configure.json files, like -developer-build or -no-opengl.
+Qt's configure script has command line options that trigger Qt build features,
+like `-developer-build`, or `-no-opengl`. Such features are defined in
+`configure.cmake` files. See the [Qt6 Build System wiki
+page](https://wiki.qt.io/Qt6_Build_System) for details.
 
-In CMake land, we currently generate configure.cmake files from the configure.json files into
-the source directory next to them using the helper script
-``path_to_qtbase_source/util/cmake/configurejson2cmake.py``. They are checked into the repository.
-If the feature in configure.json has the name "dlopen", you can specify whether to enable or disable that
-feature in CMake with a -D flag on the CMake command line. So for example -DFEATURE_dlopen=ON or
--DFEATURE_sql_mysql=OFF. Remember to convert all '-' to '_' in the feature name.
-At the moment, if you change a FEATURE flag's value, you have to remove the
-CMakeCache.txt file and reconfigure with CMake. And even then you might stumble on some issues when
-reusing an existing build, because of an automoc bug in upstream CMake.
+If the feature in `configure.cmake` has the name `dlopen`, you can specify
+whether to enable or disable that feature in CMake with a `-D` flag on the CMake
+command line. So for example `-DFEATURE_dlopen=ON` or `-DFEATURE_sql_mysql=OFF`.
+Remember to convert all '-' to '_' in the feature name.
+
+To display the available feature names of a Qt module, run
+``` shell
+qt-configure-module <path-to-qt-repo> -list-features
+```
+
+Alternatively, you can use the top-level configure script to list all features
+of all modules:
+``` shell
+configure -list-features
+```
 
 ## Building with CCache
 
@@ -223,36 +232,6 @@ CMake allows specifying the ``--trace`` and ``--trace-expand`` options, which wo
 ``qmake -d -d``: As the cmake code is evaluated, the values of parameters and variables is shown.
 This can be a lot of output, so you may want to redirect it to a file using the
 ``--trace-redirect=log.txt`` option.
-
-# Porting Help
-
-We have some python scripts to help with the conversion from qmake to cmake. These scripts can be
-found in ``utils/cmake``.
-
-## configurejson2cmake.py
-
-This script converts all ``configure.json`` in the Qt repository to ``configure.cmake`` files for
-use with CMake. We want to generate configure.cmake files for the foreseeable future, so if you need
-to tweak the generated configure.cmake files, please tweak the generation script instead.
-
-``configurejson2cmake.py`` is run like this: ``util/cmake/configurejson2cmake.py .`` in the
-top-level source directory of a Qt repository.
-
-
-## pro2cmake.py
-
-``pro2cmake.py`` generates a skeleton CMakeLists.txt file from a .pro-file. You will need to polish
-the resulting CMakeLists.txt file, but e.g. the list of files, etc. should be extracted for you.
-
-``pro2cmake.py`` is run like this: ``path_to_qtbase_source/util/cmake/pro2cmake.py some.pro``.
-
-
-## run_pro2cmake.py
-
-`` A small helper script to run pro2cmake.py on all .pro-files in a directory. Very useful to e.g.
-convert all the unit tests for a Qt module over to cmake;-)
-
-``run_pro2cmake.py`` is run like this: ``path_to_qtbase_source/util/cmake/run_pro2cmake.py some_dir``.
 
 
 ## vcpkg support
