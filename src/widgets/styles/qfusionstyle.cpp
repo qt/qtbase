@@ -2154,15 +2154,14 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
             painter->setRenderHint(QPainter::Antialiasing, true);
             painter->translate(0.5, 0.5);
 
+            auto *prx = proxy();
             bool horizontal = scrollBar->orientation == Qt::Horizontal;
             bool sunken = scrollBar->state & State_Sunken;
 
-            QRect scrollBarSubLine = proxy()->subControlRect(control, scrollBar, SC_ScrollBarSubLine, widget);
-            QRect scrollBarAddLine = proxy()->subControlRect(control, scrollBar, SC_ScrollBarAddLine, widget);
-            QRect scrollBarSlider = proxy()->subControlRect(control, scrollBar, SC_ScrollBarSlider, widget);
-            QRect scrollBarGroove = proxy()->subControlRect(control, scrollBar, SC_ScrollBarGroove, widget);
+            QRect scrollBarSlider = prx->subControlRect(control, scrollBar, SC_ScrollBarSlider, widget);
+            QRect scrollBarGroove = prx->subControlRect(control, scrollBar, SC_ScrollBarGroove, widget);
 
-            QRect rect = option->rect;
+            const QRect &rect = option->rect;
             QColor alphaOutline = d->outline(option->palette);
             alphaOutline.setAlpha(180);
 
@@ -2174,11 +2173,12 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
 
             // Paint groove
             if (scrollBar->activeSubControls && scrollBar->subControls & SC_ScrollBarGroove) {
-                QLinearGradient gradient(rect.center().x(), rect.top(),
-                                         rect.center().x(), rect.bottom());
-                if (!horizontal)
-                    gradient = QLinearGradient(rect.left(), rect.center().y(),
-                                               rect.right(), rect.center().y());
+                const auto center = scrollBarGroove.center();
+                auto gradient = horizontal ? QLinearGradient(center.x(), scrollBarGroove.top(),
+                                                             center.x(), scrollBarGroove.bottom())
+                                           : QLinearGradient(scrollBarGroove.left(), center.y(),
+                                                             scrollBarGroove.right(), center.y());
+
                 if (!isDarkBg) {
                     QColor buttonColor = d->buttonColor(option->palette);
                     gradient.setColorAt(0, buttonColor.darker(107));
@@ -2193,7 +2193,6 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                 }
 
                 painter->fillRect(rect, gradient);
-                painter->setPen(Qt::NoPen);
                 painter->setPen(alphaOutline);
                 if (horizontal)
                     painter->drawLine(rect.topLeft(), rect.topRight());
@@ -2207,11 +2206,11 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                 painter->drawRect(scrollBarGroove.adjusted(horizontal ? 0 : 1, horizontal ? 1 : 0, -1, -1));
             }
 
-            QLinearGradient gradient(scrollBarSlider.center().x(), scrollBarSlider.top(),
-                                     scrollBarSlider.center().x(), scrollBarSlider.bottom());
-            if (!horizontal)
-                gradient = QLinearGradient(scrollBarSlider.left(), scrollBarSlider.center().y(),
-                                           scrollBarSlider.right(), scrollBarSlider.center().y());
+            const auto center = scrollBarSlider.center();
+            auto gradient = horizontal ? QLinearGradient(center.x(), scrollBarSlider.top(),
+                                                         center.x(), scrollBarSlider.bottom())
+                                       : QLinearGradient(scrollBarSlider.left(), center.y(),
+                                                         scrollBarSlider.right(), center.y());
 
             QLinearGradient highlightedGradient = gradient;
 
@@ -2228,7 +2227,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
             // Paint slider
             if (scrollBar->subControls & SC_ScrollBarSlider) {
                 painter->setPen(alphaOutline);
-                if (option->state & State_Sunken && scrollBar->activeSubControls & SC_ScrollBarSlider)
+                if (sunken && scrollBar->activeSubControls & SC_ScrollBarSlider)
                     painter->setBrush(midColor2);
                 else if (option->state & State_MouseOver && scrollBar->activeSubControls & SC_ScrollBarSlider)
                     painter->setBrush(highlightedGradient);
@@ -2245,55 +2244,38 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                 painter->drawRect(scrollBarSlider.adjusted(horizontal ? 0 : 1, horizontal ? 1 : 0, -1, -1));
             }
 
+            auto drawUpDown = [&](SubControl sc, Qt::ArrowType arrowType) {
+                const QRect subRect = prx->subControlRect(control, scrollBar, sc, widget);
+                painter->setBrush(Qt::NoBrush);
+                painter->setPen(alphaOutline);
+                painter->drawRect(subRect);
+                if (scrollBar->activeSubControls.testFlag(sc)) {
+                    if (sunken)
+                        painter->setBrush(gradientStopColor);
+                    else
+                        painter->setBrush(highlightedGradient);
+                } else {
+                    painter->setBrush(gradient);
+                }
+                painter->setPen(QFusionStylePrivate::innerContrastLine);
+                painter->drawRect(subRect.adjusted(1, 1, -1, -1));
+
+                qt_fusion_draw_arrow(arrowType, painter, option, subRect,
+                                     arrowColor);
+            };
             // The SubLine (up/left) buttons
             if (scrollBar->subControls & SC_ScrollBarSubLine) {
-                if ((scrollBar->activeSubControls & SC_ScrollBarSubLine) && sunken)
-                    painter->setBrush(gradientStopColor);
-                else if ((scrollBar->activeSubControls & SC_ScrollBarSubLine))
-                    painter->setBrush(highlightedGradient);
-                else
-                    painter->setBrush(gradient);
-
-                const QRect upRect = scrollBarSubLine.adjusted(0, 0, -1, -1);
-                painter->setPen(Qt::NoPen);
-                painter->drawRect(upRect.adjusted(horizontal ? 0 : 1, horizontal ? 1 : 0, 0, 0));
-                painter->setPen(alphaOutline);
-                painter->drawRect(upRect);
-
-                painter->setBrush(Qt::NoBrush);
-                painter->setPen(QFusionStylePrivate::innerContrastLine);
-                painter->drawRect(upRect.adjusted(1, 1, -1, -1));
-
-                // Arrows
                 Qt::ArrowType arrowType = Qt::UpArrow;
                 if (option->state & State_Horizontal)
                     arrowType = option->direction == Qt::LeftToRight ? Qt::LeftArrow : Qt::RightArrow;
-                qt_fusion_draw_arrow(arrowType, painter, option, upRect.adjusted(1, 1, 0, 0), arrowColor);
+                drawUpDown(SC_ScrollBarSubLine, arrowType);
             }
-
             // The AddLine (down/right) button
             if (scrollBar->subControls & SC_ScrollBarAddLine) {
-                if ((scrollBar->activeSubControls & SC_ScrollBarAddLine) && sunken)
-                    painter->setBrush(gradientStopColor);
-                else if ((scrollBar->activeSubControls & SC_ScrollBarAddLine))
-                    painter->setBrush(midColor2);
-                else
-                    painter->setBrush(gradient);
-
-                const QRect downRect = scrollBarAddLine.adjusted(0, 0, -1, -1);
-                painter->setPen(Qt::NoPen);
-                painter->drawRect(downRect.adjusted(horizontal ? 0 : 1, horizontal ? 1 : 0, 0, 0));
-                painter->setPen(alphaOutline);
-                painter->drawRect(downRect);
-
-                painter->setBrush(Qt::NoBrush);
-                painter->setPen(QFusionStylePrivate::innerContrastLine);
-                painter->drawRect(downRect.adjusted(1, 1, -1, -1));
-
                 Qt::ArrowType arrowType = Qt::DownArrow;
                 if (option->state & State_Horizontal)
                     arrowType = option->direction == Qt::LeftToRight ? Qt::RightArrow : Qt::LeftArrow;
-                qt_fusion_draw_arrow(arrowType, painter, option, downRect.adjusted(1, 1, 0, 0), arrowColor);
+                drawUpDown(SC_ScrollBarAddLine, arrowType);
             }
         }
         break;
