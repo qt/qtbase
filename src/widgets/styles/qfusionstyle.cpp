@@ -347,7 +347,7 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
     case PE_FrameTabBarBase:
         if (const QStyleOptionTabBarBase *tbb
                 = qstyleoption_cast<const QStyleOptionTabBarBase *>(option)) {
-            painter->save();
+            QPainterStateGuard psg(painter);
             painter->setPen(outline.lighter(110));
             switch (tbb->shape) {
             case QTabBar::RoundedNorth: {
@@ -357,8 +357,8 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
                 painter->setClipRegion(region);
                 painter->setPen(option->palette.light().color());
                 painter->drawLine(tbb->rect.topLeft() + QPoint(0, 1), tbb->rect.topRight() + QPoint(0, 1));
-            }
                 break;
+            }
             case QTabBar::RoundedWest:
                 painter->drawLine(tbb->rect.left(), tbb->rect.top(), tbb->rect.left(), tbb->rect.bottom());
                 break;
@@ -373,23 +373,21 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
             case QTabBar::TriangularEast:
             case QTabBar::TriangularWest:
             case QTabBar::TriangularSouth:
-                painter->restore();
                 QCommonStyle::drawPrimitive(elem, option, painter, widget);
-                return;
+                break;
             }
-            painter->restore();
         }
-        return;
+        break;
 #endif // QT_CONFIG(tabbar)
     case PE_PanelScrollAreaCorner: {
-        painter->save();
+        QPainterStateGuard psg(painter);
         QColor alphaOutline = outline;
         alphaOutline.setAlpha(180);
         painter->setPen(alphaOutline);
         painter->setBrush(option->palette.brush(QPalette::Window));
         painter->drawRect(option->rect);
-        painter->restore();
-    } break;
+        break;
+    }
     case PE_IndicatorArrowUp:
     case PE_IndicatorArrowDown:
     case PE_IndicatorArrowRight:
@@ -414,16 +412,15 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
             break;
         }
         qt_fusion_draw_arrow(arrow, painter, option, option->rect, arrowColor);
-    }
         break;
-    case PE_IndicatorItemViewItemCheck:
-    {
+    }
+    case PE_IndicatorItemViewItemCheck: {
         QStyleOptionButton button;
         button.QStyleOption::operator=(*option);
         button.state &= ~State_MouseOver;
         proxy()->drawPrimitive(PE_IndicatorCheckBox, &button, painter, widget);
+        break;
     }
-        return;
     case PE_IndicatorHeaderArrow:
         if (const QStyleOptionHeader *header = qstyleoption_cast<const QStyleOptionHeader *>(option)) {
             const QRect r = header->rect.translated(0, -2);
@@ -445,8 +442,8 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
         proxy()->drawPrimitive(PE_PanelButtonCommand, option, painter, widget);
         break;
 
-    case PE_IndicatorToolBarSeparator:
-    {
+    case PE_IndicatorToolBarSeparator: {
+        QPainterStateGuard psg(painter);
         const QRect &rect = option->rect;
         const int margin = 6;
         const QColor col = option->palette.window().color();
@@ -466,8 +463,8 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
             painter->drawLine(rect.left() + margin, rect.top() + offset + 1,
                               rect.right() - margin, rect.top() + offset + 1);
         }
-    }
         break;
+    }
     case PE_Frame: {
         if (widget && widget->inherits("QComboBoxPrivateContainer")){
             QStyleOption copy = *option;
@@ -475,14 +472,13 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
             proxy()->drawPrimitive(PE_PanelMenu, &copy, painter, widget);
             break;
         }
-        painter->save();
+        QPainterStateGuard psg(painter);
         painter->setPen(outline.lighter(108));
         painter->drawRect(option->rect.adjusted(0, 0, -1, -1));
-        painter->restore(); }
         break;
-    case PE_FrameMenu:
-        painter->save();
-    {
+    }
+    case PE_FrameMenu: {
+        QPainterStateGuard psg(painter);
         painter->setPen(outline);
         painter->drawRect(option->rect.adjusted(0, 0, -1, -1));
         QColor frameLight = option->palette.window().color().lighter(160);
@@ -497,11 +493,9 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
         painter->setPen(frameShadow);
         painter->drawLine(frame.topRight(), frame.bottomRight());
         painter->drawLine(frame.bottomLeft(), frame.bottomRight());
-    }
-        painter->restore();
         break;
+    }
     case PE_PanelButtonTool:
-        painter->save();
         if ((option->state & State_Enabled || option->state & State_On) || !(option->state & State_AutoRaise)) {
             if (widget && widget->inherits("QDockWidgetTitleButton")) {
                 if (option->state & State_MouseOver)
@@ -510,7 +504,6 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
                 proxy()->drawPrimitive(PE_PanelButtonCommand, option, painter, widget);
             }
         }
-        painter->restore();
         break;
     case PE_IndicatorDockWidgetResizeHandle:
     {
@@ -521,9 +514,9 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
     }
         break;
     case PE_FrameDockWidget:
-    case PE_FrameWindow:
-    {
-        painter->save();
+    case PE_FrameWindow: {
+        QPainterStateGuard psg(painter);
+
         const QRect &rect = option->rect;
         const QColor col = (elem == PE_FrameWindow) ? outline.darker(150)
                                                     : option->palette.window().color().darker(120);
@@ -538,15 +531,13 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
                                 {rect.right() - 1, rect.top() + 1,
                                  rect.right() - 1, rect.bottom() - 1}};
         painter->drawLines(lines, 2);
-        painter->restore();
         break;
     }
-    case PE_FrameLineEdit:
-    {
+    case PE_FrameLineEdit: {
+        QPainterStateGuard psg(painter);
+
         const QRect &r = option->rect;
         bool hasFocus = option->state & State_HasFocus;
-
-        painter->save();
 
         painter->setRenderHint(QPainter::Antialiasing, true);
         //  ### highdpi painter bug.
@@ -566,13 +557,12 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
         painter->setPen(QFusionStylePrivate::topShadow);
         painter->drawLine(QPoint(r.left() + 2, r.top() + 1), QPoint(r.right() - 2, r.top() + 1));
 
-        painter->restore();
-
-    }
         break;
+    }
     case PE_IndicatorCheckBox:
-        painter->save();
         if (const QStyleOptionButton *checkbox = qstyleoption_cast<const QStyleOptionButton*>(option)) {
+            QPainterStateGuard psg(painter);
+
             painter->setRenderHint(QPainter::Antialiasing, true);
             painter->translate(0.5, 0.5);
             const QRect rect = option->rect.adjusted(0, 0, -1, -1);
@@ -630,11 +620,10 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
                 painter->drawPath(path.translated(rect.topLeft()));
             }
         }
-        painter->restore();
         break;
-    case PE_IndicatorRadioButton:
-        painter->save();
-    {
+    case PE_IndicatorRadioButton: {
+        QPainterStateGuard psg(painter);
+
         QColor pressedColor = mergedColors(option->palette.base().color(), option->palette.windowText().color(), 85);
         painter->setBrush((option->state & State_Sunken) ? pressedColor : option->palette.base().color());
         painter->setRenderHint(QPainter::Antialiasing, true);
@@ -662,9 +651,8 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
             painter->setBrush(checkMarkColor);
             painter->drawPath(circle);
         }
-    }
-        painter->restore();
         break;
+    }
     case PE_IndicatorToolBarHandle:
     {
         const QPoint center = option->rect.center();
@@ -695,7 +683,7 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
                 return;
             const QRect &rect = option->rect;
 
-            painter->save();
+            QPainterStateGuard psg(painter);
             painter->setRenderHint(QPainter::Antialiasing, true);
             painter->translate(0.5, 0.5);
             QColor fillcolor = highlightedOutline;
@@ -707,7 +695,6 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
             gradient.setColorAt(1, fillcolor);
             painter->setBrush(gradient);
             painter->drawRoundedRect(rect.adjusted(0, 0, -1, -1), 1, 1);
-            painter->restore();
         }
         break;
     case PE_PanelButtonCommand:
@@ -813,14 +800,11 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
     case PE_FrameStatusBarItem:
         break;
     case PE_PanelMenu: {
-        painter->save();
         const QBrush menuBackground = option->palette.base().color().lighter(108);
         QColor borderColor = option->palette.window().color().darker(160);
         qDrawPlainRect(painter, option->rect, borderColor, 1, &menuBackground);
-        painter->restore();
-    }
         break;
-
+    }
     default:
         QCommonStyle::drawPrimitive(elem, option, painter, widget);
         break;
