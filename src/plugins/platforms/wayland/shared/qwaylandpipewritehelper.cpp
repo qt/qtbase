@@ -6,7 +6,12 @@
 
 QT_BEGIN_NAMESPACE
 
-QWaylandPipeWriteHelper::SafeWriteResult QWaylandPipeWriteHelper::safeWriteWithTimeout(int fd, const char *data, qsizetype len, qsizetype chunkSize, std::chrono::nanoseconds timeout)
+QWaylandPipeWriteHelper::SafeWriteResult
+QWaylandPipeWriteHelper::safeWriteWithTimeout(int fd,
+                                              const char *data,
+                                              qsizetype len,
+                                              qsizetype chunkSize,
+                                              std::chrono::nanoseconds timeout)
 {
     if (len == 0)
         return SafeWriteResult::Ok;
