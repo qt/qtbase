@@ -25,8 +25,6 @@ QWaylandPipeWriteHelper::safeWriteWithTimeout(int fd,
     while (offset < len) {
         int ready = qt_safe_poll(&pfd, 1, deadline);
         if (ready < 0) {
-            if (errno == EINTR)
-                continue;
             return SafeWriteResult::Error;
         } else if (ready == 0 || deadline.hasExpired()) {
             return SafeWriteResult::Timeout;
@@ -37,8 +35,6 @@ QWaylandPipeWriteHelper::safeWriteWithTimeout(int fd,
                 offset += n;
                 continue;
             } else if (n < 0) {
-                if (errno == EINTR)
-                    continue;
                 if (errno == EAGAIN || errno == EWOULDBLOCK)
                     continue;
                 if (errno == EPIPE)
