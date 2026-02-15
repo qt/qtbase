@@ -15,6 +15,7 @@
 // We mean it.
 //
 
+#include <QtCore/qtypes.h>
 #include <chrono>
 
 QT_BEGIN_NAMESPACE
