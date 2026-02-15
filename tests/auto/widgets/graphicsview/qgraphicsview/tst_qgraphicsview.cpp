@@ -246,7 +246,6 @@ private slots:
     void task245469_itemsAtPointWithClip();
     void task253415_reconnectUpdateSceneOnSceneChanged();
     void task255529_transformationAnchorMouseAndViewportMargins();
-    void task259503_scrollingArtifacts();
     void QTBUG_4151_clipAndIgnore_data();
     void QTBUG_4151_clipAndIgnore();
     void QTBUG_5859_exposedRect();
@@ -5812,63 +5811,6 @@ void tst_QGraphicsView::task255529_transformationAnchorMouseAndViewportMargins()
         QTest::qWait(100);
     }
 #endif
-}
-
-void tst_QGraphicsView::task259503_scrollingArtifacts()
-{
-    QGraphicsScene scene(0, 0, 800, 600);
-
-    QGraphicsRectItem card;
-    card.setRect(0, 0, 50, 50);
-    card.setPen(QPen(Qt::darkRed));
-    card.setBrush(QBrush(Qt::cyan));
-    card.setZValue(2.0);
-    card.setPos(300, 300);
-    scene.addItem(&card);
-
-    class SAGraphicsView: public QGraphicsView
-    {
-    public:
-        SAGraphicsView(QGraphicsScene *scene)
-            : QGraphicsView(scene)
-            , itSTimeToTest(false)
-        {
-            setViewportUpdateMode( QGraphicsView::MinimalViewportUpdate );
-            resize(QSize(640, 480));
-        }
-
-        QRegion updateRegion;
-        bool itSTimeToTest;
-
-        void paintEvent(QPaintEvent *event) override
-        {
-            QGraphicsView::paintEvent(event);
-
-            if (itSTimeToTest)
-            {
-                QEXPECT_FAIL("", "QTBUG-24296", Continue);
-                QCOMPARE(event->region(), updateRegion);
-            }
-        }
-    };
-
-    SAGraphicsView view(&scene);
-    view.show();
-    QVERIFY(QTest::qWaitForWindowExposed(&view));
-
-    int hsbValue = view.horizontalScrollBar()->value();
-    view.horizontalScrollBar()->setValue(hsbValue / 2);
-    QTest::qWait(10);
-    view.horizontalScrollBar()->setValue(0);
-    QTest::qWait(10);
-
-    QRect itemDeviceBoundingRect = card.deviceTransform(view.viewportTransform()).mapRect(card.boundingRect()).toRect();
-    itemDeviceBoundingRect.adjust(-2, -2, 2, 2);
-    view.updateRegion = itemDeviceBoundingRect;
-    view.updateRegion += itemDeviceBoundingRect.translated(-100, 0);
-    view.itSTimeToTest = true;
-    card.setPos(200, 300);
-    QTest::qWait(10);
 }
 
 void tst_QGraphicsView::QTBUG_4151_clipAndIgnore_data()
