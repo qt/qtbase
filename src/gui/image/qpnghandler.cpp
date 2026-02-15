@@ -581,7 +581,7 @@ bool QPngHandlerPrivate::readPngImage(QImage *outImage)
     row_pointers = nullptr;
     state = Ready;
 
-    if (colorSpaceState > Undefined && colorSpace.isValid())
+    if (colorSpaceState > Undefined)
         outImage->setColorSpace(colorSpace);
 
     return true;
