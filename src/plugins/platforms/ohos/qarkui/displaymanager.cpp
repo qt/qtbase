@@ -64,7 +64,9 @@ bool QOhosDisplayManager::tryRegisterDisplay(
     bool added = false;
     std::tie(std::ignore, added) = m_perDisplayDestroyNotifiers.insert(
         std::make_pair(displayId, std::move(availableAreaChangeHandle)));
-    if (!added)
+    if (added)
+        m_registeredDisplayInfos.push_back(displayInfo);
+    else
         qOhosPrintfError("Duplicate display added event for display id: %f", displayId.value());
 
     return added;
@@ -90,9 +92,7 @@ std::vector<QOhosDisplayInfo> QOhosDisplayManager::getRegisteredDisplayInfos()
 QOhosDisplayManager::QOhosDisplayManager(QtOhos::JsState &jsState, CreateInfo createInfo)
 {
     for (const auto &displayInfo : createInfo.displayInfos) {
-        if (tryRegisterDisplay(jsState, displayInfo.id)) {
-            m_registeredDisplayInfos.push_back(displayInfo);
-        } else {
+        if (!tryRegisterDisplay(jsState, displayInfo.id)) {
             qOhosPrintfError(
                 "%s: Failed to register display (%f) during display initialization.",
                 Q_FUNC_INFO,
