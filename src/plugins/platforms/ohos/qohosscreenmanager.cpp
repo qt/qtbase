@@ -41,6 +41,7 @@ QOhosScreenManager::QOhosScreenManager()
     QOhosDisplayInfo primaryDisplayInfo;
     auto selfRef = QtOhos::QThreadSafeRef<QOhosScreenManager>(this);
 
+    std::vector<QOhosDisplayInfo> registeredDisplays;
     QtOhos::runInJsThreadAndWait([&](QtOhos::JsState &jsState) {
         primaryDisplayInfo = getDisplayInfoForPrimaryDisplay(jsState);
 
@@ -86,10 +87,11 @@ QOhosScreenManager::QOhosScreenManager()
                         });
                     },
                 }));
+        registeredDisplays = m_jsScopeData->getRegisteredDisplayInfos();
     });
 
     m_primaryDisplayId = primaryDisplayInfo.id;
-    for (const auto &displayInfo : m_jsScopeData->getRegisteredDisplayInfos())
+    for (const auto &displayInfo : registeredDisplays)
         addScreen(displayInfo);
 }
 
