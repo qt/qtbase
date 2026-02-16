@@ -437,12 +437,27 @@ function(_qt_internal_sbom_create_build_time_sbom_targets)
         set(multi_config_suffix "")
     endif()
 
+    if(QT_BUILD_DIR)
+        set(build_sbom_install_prefix "${QT_BUILD_DIR}")
+    else()
+        set(build_sbom_install_prefix "${CMAKE_BINARY_DIR}")
+    endif()
+
     _qt_internal_get_current_project_sbom_dir(sbom_dir)
     set(content "
         # QT_SBOM_BUILD_TIME be set to FALSE at install time, so don't override if it's set.
         # This allows reusing the same cmake file for both build and install.
         if(NOT DEFINED QT_SBOM_BUILD_TIME)
             set(QT_SBOM_BUILD_TIME TRUE)
+
+            # Set CMAKE_INSTALL_PREFIX for build time SBOMs to the build dir,
+            # because a repo's SBOM generation might refer to it, and when it is empty,
+            # it will try to write into a subdirectory of the root dir, e.g. '/sbom' dir,
+            # failing due to lack of permissions.
+            if(NOT DEFINED CMAKE_INSTALL_PREFIX OR NOT CMAKE_INSTALL_PREFIX)
+                set(QT_SBOM_BUILD_SBOM_INSTALL_PREFIX \"${build_sbom_install_prefix}\")
+                set(CMAKE_INSTALL_PREFIX \"\${QT_SBOM_BUILD_SBOM_INSTALL_PREFIX}\")
+            endif()
         endif()
         if(NOT QT_SBOM_OUTPUT_PATH)
             set(QT_SBOM_OUTPUT_DIR \"${arg_SBOM_BUILD_OUTPUT_DIR}\")
