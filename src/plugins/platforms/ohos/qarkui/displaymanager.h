@@ -19,7 +19,6 @@ public:
 
     struct CreateInfo
     {
-        std::vector<QOhosDisplayInfo> displayInfos;
         QOhosConsumer<QtOhos::JsState &, JsDisplayId> displayChangedCb;
         QOhosConsumer<QtOhos::JsState &, JsDisplayId> displayAddedCb;
         QOhosConsumer<QtOhos::JsState &, JsDisplayId> displayRemovedCb;
