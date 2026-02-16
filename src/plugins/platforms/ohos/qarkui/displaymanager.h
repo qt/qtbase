@@ -19,15 +19,11 @@ public:
 
     struct CreateInfo
     {
-        QOhosConsumer<QtOhos::JsState &, JsDisplayId> displayChangedCb;
-        QOhosConsumer<QtOhos::JsState &, JsDisplayId> displayAddedCb;
-        QOhosConsumer<QtOhos::JsState &, JsDisplayId> displayRemovedCb;
+        QOhosConsumer<QtOhos::JsState &, std::vector<QOhosDisplayInfo>> displaysUpdatedCb;
         QOhosConsumer<QtOhos::JsState &, JsDisplayId, QRectF> displayAvailableAreaChangedCb;
     };
 
     static std::shared_ptr<QOhosDisplayManager> create(QtOhos::JsState &jsState, CreateInfo createInfo);
-    static void getAllDisplaysAsync(
-        QtOhos::JsState &jsState, QOhosConsumer<std::vector<QOhosDisplayInfo>> resultConsumer);
 
     std::vector<QOhosDisplayInfo> getRegisteredDisplayInfos();
 
@@ -38,7 +34,6 @@ private:
         QNapi::Object displayModule, const std::string &eventName,
         QOhosConsumer<QtOhos::JsState &, QOhosDisplayInfo::JsDisplayId> handleFunction);
     bool tryRegisterDisplay(QtOhos::JsState &jsState, JsDisplayId displayId);
-    void unregisterDisplay(JsDisplayId displayId);
     void rebuildRegisteredDisplayList(QtOhos::JsState &jsState);
 
     std::vector<QOhosDisplayInfo> m_registeredDisplayInfos;
