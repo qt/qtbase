@@ -4,8 +4,13 @@
 #include <qarkui/displaymanager.h>
 
 #include <QtCore/private/qcore_ohos_p.h>
+#include <QtCore/qspan.h>
 #include <memory>
+#include <qarkui/qarkuiutils.h>
+#include <qohosdisplayinfo.h>
 #include <qohosjsutils.h>
+#include <window_manager/oh_display_info.h>
+#include <window_manager/oh_display_manager.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -16,6 +21,27 @@ namespace {
 const std::string displayCallbackNameChangeEvent = "change";
 const std::string displayCallbackNameAddEvent = "add";
 const std::string displayCallbackNameRemoveEvent = "remove";
+
+std::shared_ptr<::NativeDisplayManager_DisplaysInfo> enumerateAllDisplaysOrFail()
+{
+    ::NativeDisplayManager_DisplaysInfo *displayListPtr = nullptr;
+    callArkUiOrFailOnErrorResult(
+        Q_OHOS_NAMED_FUNC(::OH_NativeDisplayManager_CreateAllDisplays),
+        &displayListPtr);
+    if (displayListPtr == nullptr) {
+        qOhosReportFatalErrorAndAbort(
+            "%s: OH_NativeDisplayManager_CreateAllDisplays returned empty displayListPtr",
+            Q_FUNC_INFO);
+    }
+
+    return std::shared_ptr<::NativeDisplayManager_DisplaysInfo>(
+        displayListPtr,
+        [](::NativeDisplayManager_DisplaysInfo *displayListPtr) {
+            callArkUi(
+                Q_OHOS_NAMED_FUNC(::OH_NativeDisplayManager_DestroyAllDisplays),
+                displayListPtr);
+        });
+}
 
 }
 
@@ -91,12 +117,13 @@ std::vector<QOhosDisplayInfo> QOhosDisplayManager::getRegisteredDisplayInfos()
 
 QOhosDisplayManager::QOhosDisplayManager(QtOhos::JsState &jsState, CreateInfo createInfo)
 {
-    for (const auto &displayInfo : createInfo.displayInfos) {
-        if (!tryRegisterDisplay(jsState, displayInfo.id)) {
+    auto displayListPtr = enumerateAllDisplaysOrFail();
+    for (const auto &nativeDisplayInfo : QSpan(displayListPtr->displaysInfo, displayListPtr->displaysLength)) {
+        if (!tryRegisterDisplay(jsState, JsDisplayId(nativeDisplayInfo.id))) {
             qOhosPrintfError(
-                "%s: Failed to register display (%f) during display initialization.",
+                "%s: Failed to register display (%d) during display initialization.",
                 Q_FUNC_INFO,
-                displayInfo.id.value());
+                nativeDisplayInfo.id);
         }
     }
 

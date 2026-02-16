@@ -41,16 +41,12 @@ QOhosScreenManager::QOhosScreenManager()
     QOhosDisplayInfo primaryDisplayInfo;
     auto selfRef = QtOhos::QThreadSafeRef<QOhosScreenManager>(this);
 
-    auto displayInfos = QtOhos::evalInJsThreadWithConsumer<std::vector<QOhosDisplayInfo>>(
-        QArkUi::QOhosDisplayManager::getAllDisplaysAsync);
-
     QtOhos::runInJsThreadAndWait([&](QtOhos::JsState &jsState) {
         primaryDisplayInfo = getDisplayInfoForPrimaryDisplay(jsState);
 
         m_jsScopeData = QtOhos::makeProxyWithJsThreadDeleter(
             QArkUi::QOhosDisplayManager::create(
                 jsState, QArkUi::QOhosDisplayManager::CreateInfo{
-                    .displayInfos = displayInfos,
                     .displayChangedCb = [selfRef](QtOhos::JsState &jsState, JsDisplayId changedDisplayId) {
                         auto displayObject = QOhosDisplayInfo::tryGetDisplayById(jsState, changedDisplayId);
                         if (!displayObject.hasValue()) {
