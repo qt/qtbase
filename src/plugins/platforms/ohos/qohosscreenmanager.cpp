@@ -13,73 +13,35 @@
 
 QT_BEGIN_NAMESPACE
 
-namespace
-{
-
-QOhosDisplayInfo getDisplayInfoForPrimaryDisplay(QtOhos::JsState &jsState)
-{
-    auto primaryDisplay = jsState.eval<QNapi::Object>("@ohos.display.getPrimaryDisplaySync()");
-    return QOhosDisplayInfo::makeFromOhosDisplayObject(jsState, primaryDisplay);
-}
-
-QDebug &operator<<(QDebug &outputStream, const QOhosDisplayInfo &displayInfo)
-{
-    outputStream << "id:" << displayInfo.id.value()
-        << "name:" << displayInfo.name
-        << "sizePixels:" << displayInfo.sizePixels
-        << "densityDPI:" << displayInfo.densityDPI
-        << "densityPixels:" << displayInfo.densityPixels
-        << "densityScaled:" << displayInfo.densityScaled
-        << "dpi:" << displayInfo.dpi;
-    return outputStream;
-}
-
-}
-
 QOhosScreenManager::QOhosScreenManager()
 {
-    QOhosDisplayInfo primaryDisplayInfo;
     auto selfRef = QtOhos::QThreadSafeRef<QOhosScreenManager>(this);
 
     std::vector<QOhosDisplayInfo> registeredDisplays;
     QtOhos::runInJsThreadAndWait([&](QtOhos::JsState &jsState) {
-        primaryDisplayInfo = getDisplayInfoForPrimaryDisplay(jsState);
+        auto rebuildScreenListFunc = QtOhos::moveToSharedPtr(
+            [selfRef](QtOhos::JsState &jsState) {
+                QArkUi::QOhosDisplayManager::getAllDisplaysAsync(
+                    jsState,
+                    [selfRef](auto displayInfos) {
+                        selfRef.visitInQtThreadIfAlive(
+                            [displayInfos](QOhosScreenManager &self) {
+                                self.rebuildScreenList(displayInfos);
+                            });
+                    });
+            });
 
         m_jsScopeData = QtOhos::makeProxyWithJsThreadDeleter(
             QArkUi::QOhosDisplayManager::create(
                 jsState, QArkUi::QOhosDisplayManager::CreateInfo{
-                    .displayChangedCb = [selfRef](QtOhos::JsState &jsState, JsDisplayId changedDisplayId) {
-                        auto displayObject = QOhosDisplayInfo::tryGetDisplayById(jsState, changedDisplayId);
-                        if (!displayObject.hasValue()) {
-                            qOhosPrintfError(
-                                "%s: Failed to retrieve display with id: %f during display changed callback. Ignoring the event...",
-                                Q_FUNC_INFO, changedDisplayId.value());
-                            return;
-                        }
-
-                        auto displayInfo = QOhosDisplayInfo::makeFromOhosDisplayObject(jsState, displayObject.value());
-                        selfRef.visitInQtThreadIfAlive([displayInfo](QOhosScreenManager &self) {
-                            self.handleDisplayChangedCallbackInQtThread(displayInfo);
-                        });
+                    .displayChangedCb = [rebuildScreenListFunc](QtOhos::JsState &jsState, JsDisplayId) {
+                        (*rebuildScreenListFunc)(jsState);
                     },
-                    .displayAddedCb = [selfRef](QtOhos::JsState &jsState, JsDisplayId displayId) {
-                        auto displayObject = QOhosDisplayInfo::tryGetDisplayById(jsState, displayId);
-                        if (!displayObject.hasValue()) {
-                            qOhosPrintfError(
-                                "%s: Failed to retrieve display with id: %f during display added callback. Ignoring the event ...",
-                                Q_FUNC_INFO, displayId.value());
-                            return;
-                        }
-
-                        auto displayInfo = QOhosDisplayInfo::makeFromOhosDisplayObject(jsState, displayObject.value());
-                        selfRef.visitInQtThreadIfAlive([displayInfo](QOhosScreenManager &self) {
-                            self.handleDisplayAdded(displayInfo);
-                        });
+                    .displayAddedCb = [rebuildScreenListFunc](QtOhos::JsState &jsState, JsDisplayId) {
+                        (*rebuildScreenListFunc)(jsState);
                     },
-                    .displayRemovedCb = [selfRef](QtOhos::JsState &, JsDisplayId displayId) {
-                        selfRef.visitInQtThreadIfAlive([displayId](QOhosScreenManager &self) {
-                            self.handleDisplayRemoved(displayId);
-                        });
+                    .displayRemovedCb = [rebuildScreenListFunc](QtOhos::JsState &jsState, JsDisplayId) {
+                        (*rebuildScreenListFunc)(jsState);
                     },
                     .displayAvailableAreaChangedCb = [selfRef](QtOhos::JsState &, JsDisplayId displayId, QRectF availableArea) {
                         selfRef.visitInQtThreadIfAlive([displayId, availableArea](QOhosScreenManager &self) {
@@ -90,26 +52,7 @@ QOhosScreenManager::QOhosScreenManager()
         registeredDisplays = m_jsScopeData->getRegisteredDisplayInfos();
     });
 
-    m_primaryDisplayId = primaryDisplayInfo.id;
-    for (const auto &displayInfo : registeredDisplays)
-        addScreen(displayInfo);
-}
-
-void QOhosScreenManager::handleDisplayChangedCallbackInQtThread(const QOhosDisplayInfo &displayInfo)
-{
-    if (displayInfo.shouldIgnoreDisplay())
-        return;
-    auto *platformScreen = platformScreenForDisplayIdOrNull(displayInfo.id);
-    if (platformScreen == nullptr) {
-        qCWarning(QtForOhos) << "Received display 'change' event for unknown display with id:"
-            << displayInfo.id.value();
-        return;
-    }
-
-    qCDebug(QtForOhos) << "DisplayChanged:" << displayInfo;
-
-    platformScreen->setDisplayInfo(displayInfo);
-    updatePrimaryPlatformScreenIfNeeded();
+    rebuildScreenList(registeredDisplays);
 }
 
 QOhosScreenManager::QOhosPlatformScreenHolder::QOhosPlatformScreenHolder(
@@ -176,57 +119,6 @@ QOhosPlatformScreen *QOhosScreenManager::platformScreenForDisplayIdOrFail(JsDisp
     return platformScreen;
 }
 
-void QOhosScreenManager::addScreen(QOhosDisplayInfo displayInfo)
-{
-    auto it = std::find_if(
-        m_displays.begin(), m_displays.end(),
-        [&](const std::unique_ptr<QOhosPlatformScreenHolder> &platformScreenHolder) {
-            return platformScreenHolder->displayIdOrEmpty() == displayInfo.id;
-        });
-
-    if (it != m_displays.end()) {
-        qCWarning(QtForOhos) << "Attemting to add display with non unique id:" << displayInfo.id.value()
-            << "previous display with that id will be removed";
-        (*it) = std::make_unique<QOhosPlatformScreenHolder>(displayInfo);
-    } else {
-        m_displays.push_back(std::make_unique<QOhosPlatformScreenHolder>(displayInfo));
-    }
-}
-
-void QOhosScreenManager::removeScreenIfExists(JsDisplayId displayId)
-{
-    auto it = std::find_if(
-        m_displays.begin(), m_displays.end(),
-        [&](const std::unique_ptr<QOhosPlatformScreenHolder> &platformScreenHolder) {
-            return platformScreenHolder->displayIdOrEmpty() == displayId;
-        });
-
-    if (it != m_displays.end())
-        m_displays.erase(it);
-}
-
-void QOhosScreenManager::handleDisplayAdded(const QOhosDisplayInfo &displayInfo)
-{
-    if (displayInfo.shouldIgnoreDisplay()) {
-        qCWarning(QtForOhos) << "Display add ignored (based on display id):" << displayInfo.id.value();
-        return;
-    }
-    qCWarning(QtForOhos) << "Display added:" << displayInfo;
-    addScreen(displayInfo);
-    updatePrimaryPlatformScreenIfNeeded();
-}
-
-void QOhosScreenManager::handleDisplayRemoved(JsDisplayId displayId)
-{
-    qCWarning(QtForOhos) << "Display removed: id:" << displayId.value();
-    updatePrimaryPlatformScreenIfNeeded();
-
-    if (m_primaryDisplayId == displayId)
-        qOhosReportFatalErrorAndAbort("Primary display removed - this is not supported");
-
-    removeScreenIfExists(displayId);
-}
-
 void QOhosScreenManager::handleDisplayAvailableAreaChanged(
     JsDisplayId jsDisplayId, QRectF availableArea)
 {
@@ -235,29 +127,44 @@ void QOhosScreenManager::handleDisplayAvailableAreaChanged(
         platformScreen->setAvailableGeometry(availableArea.toRect());
 }
 
-void QOhosScreenManager::updatePrimaryPlatformScreenIfNeeded()
+void QOhosScreenManager::rebuildScreenList(std::vector<QOhosDisplayInfo> updatedDisplayInfos)
 {
-    auto primaryDisplayInfo = QtOhos::evalInJsThread(&getDisplayInfoForPrimaryDisplay);
+    const auto primaryDisplayId = JsDisplayId(0);
 
-    if (m_primaryDisplayId == primaryDisplayInfo.id)
-        return;
+    if (updatedDisplayInfos.empty())
+        qOhosReportFatalErrorAndAbort("Empty display list. This should not happen");
 
-    qCDebug(QtForOhos)
-        << "Primary display changed from:" << m_primaryDisplayId.value()
-        << "to:" << primaryDisplayInfo.id.value();
+    auto currentDisplays = std::exchange(m_displays, {});
 
-    auto *primaryPlatformScreen = platformScreenForDisplayIdOrNull(primaryDisplayInfo.id);
-    if (primaryPlatformScreen == nullptr) {
-        qCWarning(QtForOhos)
-            << Q_FUNC_INFO
-            << "Primary screen changed, but it was not registered previously"
-            << "adding the screen with display id:" << primaryDisplayInfo.id.value();
-        addScreen(primaryDisplayInfo);
-        primaryPlatformScreen = platformScreenForDisplayIdOrFail(primaryDisplayInfo.id);
+    QOhosPlatformScreen *primaryScreen = nullptr;
+    for (const auto &displayInfo: updatedDisplayInfos) {
+        auto availablePlatformScreenHolderIt = std::find_if(
+            currentDisplays.begin(), currentDisplays.end(),
+            [](const std::unique_ptr<QOhosPlatformScreenHolder> &platformScreenHolder) {
+                return platformScreenHolder && platformScreenHolder->platformScreenOrNull() != nullptr;
+            });
+
+        auto platformScreenHolder = availablePlatformScreenHolderIt != currentDisplays.end()
+            ? std::move(*availablePlatformScreenHolderIt)
+            : std::make_unique<QOhosPlatformScreenHolder>(displayInfo);
+
+        auto *platformScreen = platformScreenHolder->platformScreenOrNull();
+        if (Q_UNLIKELY(platformScreen == nullptr))
+            qOhosReportFatalErrorAndAbort("platformScreenHolder->platformScreenOrNull() == nullptr. This should not happen.");
+
+        platformScreen->setDisplayInfo(displayInfo);
+        if (displayInfo.id == primaryDisplayId)
+            primaryScreen = platformScreen;
+
+        m_displays.push_back(std::move(platformScreenHolder));
     }
 
-    m_primaryDisplayId = primaryDisplayInfo.id;
-    QWindowSystemInterface::handlePrimaryScreenChanged(primaryPlatformScreen);
+    if (primaryScreen != nullptr) {
+        QWindowSystemInterface::handlePrimaryScreenChanged(primaryScreen);
+    } else {
+        qCCritical(QtForOhos) << Q_FUNC_INFO << "no primary screen was found in the updated list";
+    }
+
 }
 
 QT_END_NAMESPACE
