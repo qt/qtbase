@@ -2659,8 +2659,12 @@ void QGuiApplicationPrivate::processKeyEvent(QWindowSystemInterfacePrivate::KeyE
         menuKeyPressAccepted = e->key == Qt::Key_Menu && ev.isAccepted();
     } else if (e->keyType == QEvent::KeyRelease) {
         if (e->key == Qt::Key_Back && !backKeyPressAccepted && !ev.isAccepted()) {
-            if (window)
-                QWindowSystemInterface::handleCloseEvent(window);
+            auto iface = qGuiApp->nativeInterface<QNativeInterface::QAndroidApplication>();
+            iface->runOnAndroidMainThread([iface]() {
+                if (!iface->isActivityContext())
+                    return;
+                iface->context().callMethod<jboolean>("moveTaskToBack", true);
+            });
         } else if (e->key == Qt::Key_Menu && !menuKeyPressAccepted && !ev.isAccepted()) {
             platform_theme->showPlatformMenuBar();
         }
