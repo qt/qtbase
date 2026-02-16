@@ -39,6 +39,62 @@
 
 QT_BEGIN_NAMESPACE
 
+static bool isConnectInProgressError(int socketError)
+{
+    return socketError == EINPROGRESS || socketError == EALREADY || socketError == EAGAIN;
+}
+
+static void setErrorFromConnectError(int socketError, QNativeSocketEnginePrivate *d)
+{
+    Q_ASSERT(d);
+    switch (socketError) {
+    case EISCONN:
+        d->socketState = QAbstractSocket::ConnectedState;
+        break;
+    case ECONNREFUSED:
+    case EINVAL:
+    case ENOENT:
+        d->setError(QAbstractSocket::ConnectionRefusedError, QNativeSocketEnginePrivate::ConnectionRefusedErrorString);
+        d->socketState = QAbstractSocket::UnconnectedState;
+        break;
+    case ETIMEDOUT:
+        d->setError(QAbstractSocket::NetworkError, QNativeSocketEnginePrivate::ConnectionTimeOutErrorString);
+        break;
+    case EHOSTUNREACH:
+        d->setError(QAbstractSocket::NetworkError, QNativeSocketEnginePrivate::HostUnreachableErrorString);
+        d->socketState = QAbstractSocket::UnconnectedState;
+        break;
+    case ENETUNREACH:
+        d->setError(QAbstractSocket::NetworkError, QNativeSocketEnginePrivate::NetworkUnreachableErrorString);
+        d->socketState = QAbstractSocket::UnconnectedState;
+        break;
+    case EADDRINUSE:
+        d->setError(QAbstractSocket::NetworkError, QNativeSocketEnginePrivate::AddressInuseErrorString);
+        break;
+    case EINPROGRESS:
+    case EALREADY:
+        d->setError(QAbstractSocket::UnfinishedSocketOperationError, QNativeSocketEnginePrivate::InvalidSocketErrorString);
+        d->socketState = QAbstractSocket::ConnectingState;
+        break;
+    case EAGAIN:
+        d->setError(QAbstractSocket::UnfinishedSocketOperationError, QNativeSocketEnginePrivate::InvalidSocketErrorString);
+        break;
+    case EACCES:
+    case EPERM:
+        d->setError(QAbstractSocket::SocketAccessError, QNativeSocketEnginePrivate::AccessErrorString);
+        d->socketState = QAbstractSocket::UnconnectedState;
+        break;
+    case EAFNOSUPPORT:
+    case EBADF:
+    case EFAULT:
+    case ENOTSOCK:
+        d->socketState = QAbstractSocket::UnconnectedState;
+        break;
+    default:
+        break;
+    }
+}
+
 /*
     Extracts the port and address from a sockaddr, and stores them in
     \a port and \a addr if they are non-null.
@@ -450,74 +506,15 @@ bool QNativeSocketEnginePrivate::nativeConnect(const QHostAddress &addr, quint16
     qDebug() << "QNativeSocketEnginePrivate::nativeConnect() " << socketDescriptor;
 #endif
 
-    int socketError = 0;
-    if (socketState == QAbstractSocket::ConnectingState) {
-        // We are already connecting, try to read out an error if any.
-        // This is to avoid calling connect() more than necessary, as the kernel may try to send
-        // us messages on poll/select of this socket whenever we do.
-        socklen_t len = sizeof(socketError);
-        if (getsockopt(int(socketDescriptor), SOL_SOCKET, SO_ERROR, &socketError, &len) != 0) {
-            // getsockopt failed - let's treat socketError as undefined to be safe. So, reset.
-            socketError = 0;
-        }
-    }
 
-    int connectResult = -1;
-    if (socketError == 0) {
-        qt_sockaddr aa;
-        QT_SOCKLEN_T sockAddrSize;
-        setPortAndAddress(port, addr, &aa, &sockAddrSize);
+    qt_sockaddr aa;
+    QT_SOCKLEN_T sockAddrSize;
+    setPortAndAddress(port, addr, &aa, &sockAddrSize);
 
-        connectResult = qt_safe_connect(socketDescriptor, &aa.a, sockAddrSize);
-        socketError = errno;
-    }
+    const int connectResult = qt_safe_connect(socketDescriptor, &aa.a, sockAddrSize);
+    const int socketError = errno;
     if (connectResult == -1) {
-        switch (socketError) {
-        case EISCONN:
-            socketState = QAbstractSocket::ConnectedState;
-            break;
-        case ECONNREFUSED:
-        case EINVAL:
-        case ENOENT:
-            setError(QAbstractSocket::ConnectionRefusedError, ConnectionRefusedErrorString);
-            socketState = QAbstractSocket::UnconnectedState;
-            break;
-        case ETIMEDOUT:
-            setError(QAbstractSocket::NetworkError, ConnectionTimeOutErrorString);
-            break;
-        case EHOSTUNREACH:
-            setError(QAbstractSocket::NetworkError, HostUnreachableErrorString);
-            socketState = QAbstractSocket::UnconnectedState;
-            break;
-        case ENETUNREACH:
-            setError(QAbstractSocket::NetworkError, NetworkUnreachableErrorString);
-            socketState = QAbstractSocket::UnconnectedState;
-            break;
-        case EADDRINUSE:
-            setError(QAbstractSocket::NetworkError, AddressInuseErrorString);
-            break;
-        case EINPROGRESS:
-        case EALREADY:
-            setError(QAbstractSocket::UnfinishedSocketOperationError, InvalidSocketErrorString);
-            socketState = QAbstractSocket::ConnectingState;
-            break;
-        case EAGAIN:
-            setError(QAbstractSocket::UnfinishedSocketOperationError, InvalidSocketErrorString);
-            break;
-        case EACCES:
-        case EPERM:
-            setError(QAbstractSocket::SocketAccessError, AccessErrorString);
-            socketState = QAbstractSocket::UnconnectedState;
-            break;
-        case EAFNOSUPPORT:
-        case EBADF:
-        case EFAULT:
-        case ENOTSOCK:
-            socketState = QAbstractSocket::UnconnectedState;
-            break;
-        default:
-            break;
-        }
+        setErrorFromConnectError(socketError, this);
 
         if (socketState != QAbstractSocket::ConnectedState) {
 #if defined (QNATIVESOCKETENGINE_DEBUG)
@@ -537,6 +534,25 @@ bool QNativeSocketEnginePrivate::nativeConnect(const QHostAddress &addr, quint16
 
     socketState = QAbstractSocket::ConnectedState;
     return true;
+}
+
+bool QNativeSocketEnginePrivate::nativeCheckConnection()
+{
+    int socketError = 0;
+    QT_SOCKLEN_T len = sizeof(socketError);
+    if (::getsockopt(int(socketDescriptor), SOL_SOCKET, SO_ERROR, &socketError, &len) != 0)
+        return false;
+
+    if (socketError == 0 || socketError == EISCONN) {
+        socketState = QAbstractSocket::ConnectedState;
+        return true;
+    }
+
+    setErrorFromConnectError(socketError, this);
+    if (socketState == QAbstractSocket::ConnectingState && !isConnectInProgressError(socketError))
+        socketState = QAbstractSocket::UnconnectedState;
+
+    return socketState != QAbstractSocket::ConnectingState;
 }
 
 bool QNativeSocketEnginePrivate::nativeBind(const QHostAddress &address, quint16 port)

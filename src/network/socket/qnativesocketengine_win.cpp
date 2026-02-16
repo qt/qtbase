@@ -703,25 +703,9 @@ bool QNativeSocketEnginePrivate::nativeConnect(const QHostAddress &address, quin
         ipv6only = ::setsockopt(socketDescriptor, IPPROTO_IPV6, IPV6_V6ONLY, (char*)&ipv6only, sizeof(ipv6only) );
     }
 
-    int socketError = 0;
-    if (socketState == QAbstractSocket::ConnectingState) {
-        // We are already connecting, try to read out an error if any.
-        // This is to avoid calling connect() more than necessary, since we are already trying
-        // in the middle of connecting, there is no gain in calling connect() again.
-        socklen_t len = sizeof(socketError);
-        auto *socketErrPtr = reinterpret_cast<char *>(&socketError);
-        if (getsockopt(int(socketDescriptor), SOL_SOCKET, SO_ERROR, socketErrPtr, &len) != 0) {
-            // getsockopt failed - let's treat socketError as undefined to be safe. So, reset.
-            socketError = 0;
-        }
-    }
-
-    int connectResult = SOCKET_ERROR;
-    if (socketError == 0) {
-        connectResult = ::WSAConnect(socketDescriptor, &aa.a, sockAddrSize, nullptr, nullptr,
+    int connectResult = ::WSAConnect(socketDescriptor, &aa.a, sockAddrSize, nullptr, nullptr,
                                         nullptr, nullptr);
-        socketError = WSAGetLastError();
-    }
+    int socketError = WSAGetLastError();
     if (connectResult == SOCKET_ERROR) {
         WS_ERROR_DEBUG(socketError);
 
@@ -731,24 +715,8 @@ bool QNativeSocketEnginePrivate::nativeConnect(const QHostAddress &address, quin
             break;
         case WSAEWOULDBLOCK: {
             socketError = WSAEINPROGRESS;
-            int value = 0;
-            QT_SOCKLEN_T valueSize = sizeof(value);
-            if (::getsockopt(socketDescriptor, SOL_SOCKET, SO_ERROR,
-                             reinterpret_cast<char *>(&value), &valueSize) == 0) {
-                if (value != NOERROR) {
-                    // MSDN says getsockopt with SO_ERROR clears the error, but it's not actually
-                    // cleared and this can affect all subsequent WSAConnect attempts, so clear it
-                    // now.
-                    WS_ERROR_DEBUG(value);
-                    socketError = value;
-                    const int val = NO_ERROR;
-                    ::setsockopt(socketDescriptor, SOL_SOCKET, SO_ERROR,
-                                    reinterpret_cast<const char *>(&val), sizeof val);
-                }
-            }
             Q_FALLTHROUGH();
         }
-
         default:
             setErrorFromWSAError(socketError, this);
             break;
@@ -771,6 +739,30 @@ bool QNativeSocketEnginePrivate::nativeConnect(const QHostAddress &address, quin
 
     socketState = QAbstractSocket::ConnectedState;
     return true;
+}
+
+bool QNativeSocketEnginePrivate::nativeCheckConnection()
+{
+    int value = 0;
+    QT_SOCKLEN_T optlen = sizeof(value);
+    char *optval = reinterpret_cast<char *>(&value);
+    if (::getsockopt(socketDescriptor, SOL_SOCKET, SO_ERROR, optval, &optlen) != 0)
+        return false;
+
+    if (value == NO_ERROR) {
+        socketState = QAbstractSocket::ConnectedState;
+        return true;
+    }
+
+    setErrorFromWSAError(value, this);
+    if (socketState == QAbstractSocket::ConnectingState
+            && value != WSAEWOULDBLOCK
+            && value != WSAEINPROGRESS
+            && value != WSAEALREADY) {
+        socketState = QAbstractSocket::UnconnectedState;
+    }
+
+    return socketState != QAbstractSocket::ConnectingState;
 }
 
 

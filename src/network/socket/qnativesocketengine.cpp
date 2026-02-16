@@ -601,7 +601,9 @@ void QNativeSocketEngine::connectionNotification()
     Q_D(QNativeSocketEngine);
     Q_ASSERT(state() == QAbstractSocket::ConnectingState);
 
-    connectToHost(d->peerAddress, d->peerPort);
+    if (d->nativeCheckConnection() && state() == QAbstractSocket::ConnectedState)
+        d->fetchConnectionParameters();
+
     if (state() != QAbstractSocket::ConnectingState) {
         // we changed states
         QAbstractSocketEngine::connectionNotification();

@@ -127,6 +127,7 @@ public:
     bool createNewSocket(QAbstractSocket::SocketType type, QAbstractSocket::NetworkLayerProtocol &protocol);
 
     bool nativeConnect(const QHostAddress &address, quint16 port);
+    bool nativeCheckConnection();
     bool nativeBind(const QHostAddress &address, quint16 port);
     bool nativeListen(int backlog);
     qintptr nativeAccept();
