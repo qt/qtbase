@@ -19,29 +19,13 @@ QOhosScreenManager::QOhosScreenManager()
 
     std::vector<QOhosDisplayInfo> registeredDisplays;
     QtOhos::runInJsThreadAndWait([&](QtOhos::JsState &jsState) {
-        auto rebuildScreenListFunc = QtOhos::moveToSharedPtr(
-            [selfRef](QtOhos::JsState &jsState) {
-                QArkUi::QOhosDisplayManager::getAllDisplaysAsync(
-                    jsState,
-                    [selfRef](auto displayInfos) {
-                        selfRef.visitInQtThreadIfAlive(
-                            [displayInfos](QOhosScreenManager &self) {
-                                self.rebuildScreenList(displayInfos);
-                            });
-                    });
-            });
-
         m_jsScopeData = QtOhos::makeProxyWithJsThreadDeleter(
             QArkUi::QOhosDisplayManager::create(
                 jsState, QArkUi::QOhosDisplayManager::CreateInfo{
-                    .displayChangedCb = [rebuildScreenListFunc](QtOhos::JsState &jsState, JsDisplayId) {
-                        (*rebuildScreenListFunc)(jsState);
-                    },
-                    .displayAddedCb = [rebuildScreenListFunc](QtOhos::JsState &jsState, JsDisplayId) {
-                        (*rebuildScreenListFunc)(jsState);
-                    },
-                    .displayRemovedCb = [rebuildScreenListFunc](QtOhos::JsState &jsState, JsDisplayId) {
-                        (*rebuildScreenListFunc)(jsState);
+                    .displaysUpdatedCb = [selfRef](QtOhos::JsState &, std::vector<QOhosDisplayInfo> displayInfos) {
+                        selfRef.visitInQtThreadIfAlive([displayInfos = std::move(displayInfos)](QOhosScreenManager &self) {
+                            self.rebuildScreenList(displayInfos);
+                        });
                     },
                     .displayAvailableAreaChangedCb = [selfRef](QtOhos::JsState &, JsDisplayId displayId, QRectF availableArea) {
                         selfRef.visitInQtThreadIfAlive([displayId, availableArea](QOhosScreenManager &self) {

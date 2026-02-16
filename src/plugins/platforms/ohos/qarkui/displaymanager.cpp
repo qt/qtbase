@@ -98,12 +98,6 @@ bool QOhosDisplayManager::tryRegisterDisplay(
     return added;
 }
 
-void QOhosDisplayManager::unregisterDisplay(JsDisplayId displayId)
-{
-    if (m_perDisplayDestroyNotifiers.erase(displayId) == 0)
-        qOhosPrintfError("Attempted to erase unknown display with id: %f", displayId.value());
-}
-
 std::shared_ptr<QOhosDisplayManager> QOhosDisplayManager::create(
     QtOhos::JsState &jsState, CreateInfo createInfo)
 {
@@ -119,55 +113,26 @@ QOhosDisplayManager::QOhosDisplayManager(QtOhos::JsState &jsState, CreateInfo cr
 {
     rebuildRegisteredDisplayList(jsState);
 
-    auto displayModule = jsState.eval<QNapi::Object>("@ohos.display");
     m_availableAreaChangedCb = std::move(createInfo.displayAvailableAreaChangedCb);
-    registerDisplayCallbackListener(
-        displayModule,
+
+    const std::string displayEventNames[] = {
         displayCallbackNameChangeEvent,
-        std::move(createInfo.displayChangedCb));
-    registerDisplayCallbackListener(
-        displayModule,
         displayCallbackNameAddEvent,
-        [this, displayAddedCb = std::move(createInfo.displayAddedCb)](QtOhos::JsState &jsState, JsDisplayId displayId) {
-            if (tryRegisterDisplay(jsState, displayId)) {
-                displayAddedCb(jsState, displayId);
-            } else {
-                qOhosPrintfError(
-                    "%s: Failed to register display (%f) during display added callback.",
-                    Q_FUNC_INFO,
-                    displayId.value());
-            }
-        });
-    registerDisplayCallbackListener(
-        displayModule,
         displayCallbackNameRemoveEvent,
-        [this, displayRemovedCb = std::move(createInfo.displayRemovedCb)](QtOhos::JsState &jsState, JsDisplayId displayId) {
-            unregisterDisplay(displayId);
-            displayRemovedCb(jsState, displayId);
-        });
-}
+    };
 
-void QOhosDisplayManager::getAllDisplaysAsync(
-    QtOhos::JsState &jsState, QOhosConsumer<std::vector<QOhosDisplayInfo>> resultConsumer)
-{
-    jsState.eval<QNapi::Promise>("@ohos.display.getAllDisplay()")
-        .withContext(std::move(resultConsumer))
-        .onThenWithContext(
-            [](const QtOhos::CallbackInfo &cbInfo, auto &resultConsumer) {
-                auto displayObjectsArray = cbInfo.getFirstArg<QNapi::Array>(Q_FUNC_INFO);
-                resultConsumer(
-                    QNapi::getArrayElements<std::vector<QOhosDisplayInfo>, QNapi::Object>(
-                        displayObjectsArray,
-                        [&](QNapi::Object jsDisplay) {
-                            return QOhosDisplayInfo::makeFromOhosDisplayObject(cbInfo.jsState(), jsDisplay);
-                        }));
-            })
-        .onCatchWithContext(
-            [](auto &resultConsumer) {
-                qOhosPrintfError("%s: Failed to enumerate displays", Q_FUNC_INFO);
-                resultConsumer({});
+    auto displaysUpdatedCb = QtOhos::moveToSharedPtr(std::move(createInfo.displaysUpdatedCb));
+
+    auto displayModule = jsState.eval<QNapi::Object>("@ohos.display");
+    for (const auto &eventName: displayEventNames) {
+        registerDisplayCallbackListener(
+            displayModule,
+            eventName,
+            [this, displaysUpdatedCb](QtOhos::JsState &jsState, JsDisplayId) {
+                rebuildRegisteredDisplayList(jsState);
+                (*displaysUpdatedCb)(jsState, m_registeredDisplayInfos);
             });
-
+    }
 }
 
 void QOhosDisplayManager::rebuildRegisteredDisplayList(QtOhos::JsState &jsState)
