@@ -117,15 +117,7 @@ std::vector<QOhosDisplayInfo> QOhosDisplayManager::getRegisteredDisplayInfos()
 
 QOhosDisplayManager::QOhosDisplayManager(QtOhos::JsState &jsState, CreateInfo createInfo)
 {
-    auto displayListPtr = enumerateAllDisplaysOrFail();
-    for (const auto &nativeDisplayInfo : QSpan(displayListPtr->displaysInfo, displayListPtr->displaysLength)) {
-        if (!tryRegisterDisplay(jsState, JsDisplayId(nativeDisplayInfo.id))) {
-            qOhosPrintfError(
-                "%s: Failed to register display (%d) during display initialization.",
-                Q_FUNC_INFO,
-                nativeDisplayInfo.id);
-        }
-    }
+    rebuildRegisteredDisplayList(jsState);
 
     auto displayModule = jsState.eval<QNapi::Object>("@ohos.display");
     m_availableAreaChangedCb = std::move(createInfo.displayAvailableAreaChangedCb);
@@ -176,6 +168,19 @@ void QOhosDisplayManager::getAllDisplaysAsync(
                 resultConsumer({});
             });
 
+}
+
+void QOhosDisplayManager::rebuildRegisteredDisplayList(QtOhos::JsState &jsState)
+{
+    auto displayListPtr = enumerateAllDisplaysOrFail();
+    for (const auto &nativeDisplayInfo : QSpan(displayListPtr->displaysInfo, displayListPtr->displaysLength)) {
+        if (!tryRegisterDisplay(jsState, JsDisplayId(nativeDisplayInfo.id))) {
+            qOhosPrintfError(
+                "%s: Failed to register display (%d) during display initialization.",
+                Q_FUNC_INFO,
+                nativeDisplayInfo.id);
+        }
+    }
 }
 
 }

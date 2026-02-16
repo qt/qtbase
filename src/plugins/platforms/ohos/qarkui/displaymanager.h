@@ -39,6 +39,7 @@ private:
         QOhosConsumer<QtOhos::JsState &, QOhosDisplayInfo::JsDisplayId> handleFunction);
     bool tryRegisterDisplay(QtOhos::JsState &jsState, JsDisplayId displayId);
     void unregisterDisplay(JsDisplayId displayId);
+    void rebuildRegisteredDisplayList(QtOhos::JsState &jsState);
 
     std::vector<QOhosDisplayInfo> m_registeredDisplayInfos;
     std::vector<std::shared_ptr<void>> m_destroyNotifiers;
