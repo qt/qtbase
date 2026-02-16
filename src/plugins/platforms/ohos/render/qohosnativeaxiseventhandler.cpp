@@ -23,6 +23,10 @@ private:
     QtOhos::QThreadSafeRef<QWindow> m_qWindowRef;
     QtOhos::QThreadSafeRef<QOhosInputMethodEventHandler> m_imEventHandlerRef;
 
+    QOhosOptional<QPointF> m_localPosition;
+    QOhosOptional<QPointF> m_screenPosition;
+    QOhosOptional<std::int32_t> m_wheelScrollLines;
+
     QOhosConsumer<const QOhosNativeGestureEvent &> m_nativeGesturesHandler;
 };
 
@@ -95,6 +99,10 @@ void QOhosAxisEventHandler::handleUiAxisEvent(ArkUI_UIInputEvent *event)
     auto eventAxisAction = OH_ArkUI_AxisEvent_GetAxisAction(event);
     std::int32_t wheelScrollLines;
     wheelScrollLines = OH_ArkUI_AxisEvent_GetScrollStep(event);
+
+    m_localPosition = makeQOhosOptional(localPosition);
+    m_screenPosition = makeQOhosOptional(screenPosition);
+    m_wheelScrollLines = makeQOhosOptional(wheelScrollLines);
 
     QOhosWheelEvent ohosWheelEvent = {
         .timestamp = eventTimestamp,
