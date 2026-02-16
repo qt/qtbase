@@ -8,12 +8,12 @@
 #include <QPointer>
 #include <QtCore/private/qnapi_p.h>
 #include <QtCore/private/qohoscommon_p.h>
-#include <map>
 #include <memory>
 #include <qarkui/displaymanager.h>
 #include <qohosdisplayinfo.h>
 #include <qohosplatformscreen.h>
 #include <qohosplugincore.h>
+#include <vector>
 
 QT_BEGIN_NAMESPACE
 
@@ -63,7 +63,7 @@ private:
 
     std::shared_ptr<QArkUi::QOhosDisplayManager> m_jsScopeData;
     JsDisplayId m_primaryDisplayId;
-    std::map<JsDisplayId, std::unique_ptr<QOhosPlatformScreenHolder>> m_displays;
+    std::vector<std::unique_ptr<QOhosPlatformScreenHolder>> m_displays;
 };
 
 QT_END_NAMESPACE
