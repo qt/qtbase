@@ -44,6 +44,7 @@ private:
 
         QOhosPlatformScreen *platformScreenOrNull() const;
         QOhosOptional<QOhosDisplayInfo> displayInfoOrEmpty() const;
+        QOhosOptional<JsDisplayId> displayIdOrEmpty() const;
 
     private:
         QPointer<QOhosPlatformScreen> m_platformScreen;
