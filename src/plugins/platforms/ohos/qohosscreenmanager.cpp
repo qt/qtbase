@@ -209,12 +209,9 @@ void QOhosScreenManager::handleDisplayRemoved(JsDisplayId displayId)
 void QOhosScreenManager::handleDisplayAvailableAreaChanged(
     JsDisplayId jsDisplayId, QRectF availableArea)
 {
-    auto displaysIt = m_displays.find(jsDisplayId);
-    if (displaysIt != m_displays.end()) {
-        auto *platformScreen = displaysIt->second->platformScreenOrNull();
-        if (platformScreen != nullptr)
-            platformScreen->setAvailableGeometry(availableArea.toRect());
-    }
+    auto *platformScreen = platformScreenForDisplayIdOrNull(jsDisplayId);
+    if (platformScreen != nullptr)
+        platformScreen->setAvailableGeometry(availableArea.toRect());
 }
 
 void QOhosScreenManager::updatePrimaryPlatformScreenIfNeeded()
