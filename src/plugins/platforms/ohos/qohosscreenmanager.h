@@ -43,6 +43,7 @@ private:
         ~QOhosPlatformScreenHolder();
 
         QOhosPlatformScreen *platformScreenOrNull() const;
+        QOhosOptional<QOhosDisplayInfo> displayInfoOrEmpty() const;
 
     private:
         QPointer<QOhosPlatformScreen> m_platformScreen;
