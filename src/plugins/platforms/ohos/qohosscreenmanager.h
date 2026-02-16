@@ -50,19 +50,12 @@ private:
         QPointer<QOhosPlatformScreen> m_platformScreen;
     };
 
-    void handleDisplayChangedCallbackInQtThread(const QOhosDisplayInfo &displayInfo);
-    void handleDisplayAdded(const QOhosDisplayInfo &displayInfo);
-    void handleDisplayRemoved(QOhosDisplayInfo::JsDisplayId displayId);
     void handleDisplayAvailableAreaChanged(JsDisplayId jsDisplayID, QRectF availableArea);
 
     QOhosPlatformScreenHolder *platformScreenHolderForDisplayIdOrNull(QOhosDisplayInfo::JsDisplayId displayId) const;
-    void addScreen(QOhosDisplayInfo displayInfo);
-    void removeScreenIfExists(QOhosDisplayInfo::JsDisplayId displayId);
-    void updatePrimaryPlatformScreenIfNeeded();
-
+    void rebuildScreenList(std::vector<QOhosDisplayInfo> updatedScreenList);
 
     std::shared_ptr<QArkUi::QOhosDisplayManager> m_jsScopeData;
-    JsDisplayId m_primaryDisplayId;
     std::vector<std::unique_ptr<QOhosPlatformScreenHolder>> m_displays;
 };
 
