@@ -172,6 +172,9 @@ void QOhosDisplayManager::getAllDisplaysAsync(
 
 void QOhosDisplayManager::rebuildRegisteredDisplayList(QtOhos::JsState &jsState)
 {
+    m_perDisplayDestroyNotifiers = {};
+    m_registeredDisplayInfos = {};
+
     auto displayListPtr = enumerateAllDisplaysOrFail();
     for (const auto &nativeDisplayInfo : QSpan(displayListPtr->displaysInfo, displayListPtr->displaysLength)) {
         if (!tryRegisterDisplay(jsState, JsDisplayId(nativeDisplayInfo.id))) {
