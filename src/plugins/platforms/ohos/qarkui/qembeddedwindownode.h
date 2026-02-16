@@ -106,6 +106,7 @@ public:
     void setHoverEventsHandler(QOhosConsumer<NativeNodeHoverEvent> hoverEventsHandler);
     void setAxisEventsHandler(QOhosConsumer<::ArkUI_UIInputEvent *> axisEventsHandler);
     void setMouseEventsHandler(QOhosConsumer<NativeNodeMouseEvent> mouseEventsHandler);
+    void setCoastingAxisEventsHandler(QOhosConsumer<::ArkUI_UIInputEvent *> coastingAxisEventsHandler);
     std::shared_ptr<void> startDrag(
         std::vector<std::shared_ptr<::OH_PixelmapNative>> pixelMaps, const QPointF &hotspot,
         QOhosUdmfData udmfData, std::function<void(::ArkUI_DragAndDropInfo *)> statusListener);
