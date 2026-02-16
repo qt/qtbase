@@ -221,6 +221,14 @@ QOhosOptional<QOhosDisplayInfo> QOhosScreenManager::QOhosPlatformScreenHolder::d
         : makeEmptyQOhosOptional();
 }
 
+QOhosOptional<QOhosDisplayInfo::JsDisplayId> QOhosScreenManager::QOhosPlatformScreenHolder::displayIdOrEmpty() const
+{
+    return displayInfoOrEmpty().transform(
+        [](const QOhosDisplayInfo &displayInfo) {
+            return displayInfo.id;
+        });
+}
+
 QOhosScreenManager::QOhosPlatformScreenHolder::~QOhosPlatformScreenHolder()
 {
     if (m_platformScreen != nullptr)
