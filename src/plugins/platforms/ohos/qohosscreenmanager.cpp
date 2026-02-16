@@ -42,25 +42,7 @@ QOhosScreenManager::QOhosScreenManager()
     auto selfRef = QtOhos::QThreadSafeRef<QOhosScreenManager>(this);
 
     auto displayInfos = QtOhos::evalInJsThreadWithConsumer<std::vector<QOhosDisplayInfo>>(
-        [](QtOhos::JsState &jsState, auto resultConsumer) {
-            jsState.eval<QNapi::Promise>("@ohos.display.getAllDisplay()")
-                .withContext(std::move(resultConsumer))
-                .onThenWithContext(
-                    [](const QtOhos::CallbackInfo &cbInfo, auto &resultConsumer) {
-                        auto displayObjectsArray = cbInfo.getFirstArg<QNapi::Array>(Q_FUNC_INFO);
-                        resultConsumer(
-                            QNapi::getArrayElements<std::vector<QOhosDisplayInfo>, QNapi::Object>(
-                                displayObjectsArray,
-                                [&](QNapi::Object jsDisplay) {
-                                    return QOhosDisplayInfo::makeFromOhosDisplayObject(cbInfo.jsState(), jsDisplay);
-                                }));
-                    })
-                .onCatchWithContext(
-                    [](auto &resultConsumer) {
-                        qOhosPrintfError("%s: Failed to enumerate displays", Q_FUNC_INFO);
-                        resultConsumer({});
-                    });
-        });
+        QArkUi::QOhosDisplayManager::getAllDisplaysAsync);
 
     QtOhos::runInJsThreadAndWait([&](QtOhos::JsState &jsState) {
         primaryDisplayInfo = getDisplayInfoForPrimaryDisplay(jsState);
