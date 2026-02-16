@@ -27,6 +27,8 @@ public:
     };
 
     static std::shared_ptr<QOhosDisplayManager> create(QtOhos::JsState &jsState, CreateInfo createInfo);
+    static void getAllDisplaysAsync(
+        QtOhos::JsState &jsState, QOhosConsumer<std::vector<QOhosDisplayInfo>> resultConsumer);
 
     std::vector<QOhosDisplayInfo> getRegisteredDisplayInfos();
 

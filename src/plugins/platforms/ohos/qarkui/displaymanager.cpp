@@ -124,6 +124,29 @@ QOhosDisplayManager::QOhosDisplayManager(QtOhos::JsState &jsState, CreateInfo cr
         });
 }
 
+void QOhosDisplayManager::getAllDisplaysAsync(
+    QtOhos::JsState &jsState, QOhosConsumer<std::vector<QOhosDisplayInfo>> resultConsumer)
+{
+    jsState.eval<QNapi::Promise>("@ohos.display.getAllDisplay()")
+        .withContext(std::move(resultConsumer))
+        .onThenWithContext(
+            [](const QtOhos::CallbackInfo &cbInfo, auto &resultConsumer) {
+                auto displayObjectsArray = cbInfo.getFirstArg<QNapi::Array>(Q_FUNC_INFO);
+                resultConsumer(
+                    QNapi::getArrayElements<std::vector<QOhosDisplayInfo>, QNapi::Object>(
+                        displayObjectsArray,
+                        [&](QNapi::Object jsDisplay) {
+                            return QOhosDisplayInfo::makeFromOhosDisplayObject(cbInfo.jsState(), jsDisplay);
+                        }));
+            })
+        .onCatchWithContext(
+            [](auto &resultConsumer) {
+                qOhosPrintfError("%s: Failed to enumerate displays", Q_FUNC_INFO);
+                resultConsumer({});
+            });
+
+}
+
 }
 
 QT_END_NAMESPACE
