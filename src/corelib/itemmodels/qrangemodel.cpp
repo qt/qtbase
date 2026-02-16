@@ -149,25 +149,48 @@ QHash<int, QMetaProperty> QRangeModelImplBase::roleProperties(const QAbstractIte
     return result;
 }
 
+QHash<int, QMetaProperty> QRangeModelImplBase::columnProperties(const QMetaObject &metaObject)
+{
+    QHash<int, QMetaProperty> result;
+    const int propertyOffset = metaObject.propertyOffset();
+    for (int p = propertyOffset; p < metaObject.propertyCount(); ++p)
+        result[p - propertyOffset] = metaObject.property(p);
+    return result;
+}
+
+QRangeModelDetails::AutoConnectContext::~AutoConnectContext() = default;
+
 template <auto Handler>
-static bool connectPropertiesHelper(const QModelIndex &index, const QObject *item, QObject *context,
+static bool connectPropertiesHelper(const QModelIndex &index, const QObject *item,
+                                    QRangeModelDetails::AutoConnectContext *context,
                                     const QHash<int, QMetaProperty> &properties)
 {
     if (!item)
         return true;
-    for (auto &&[role, property] : properties.asKeyValueRange()) {
+
+    auto connect = [item, context](const QModelIndex &cell, int role, const QMetaProperty &property) {
         if (property.hasNotifySignal()) {
-            if (!Handler(index, item, context, role, property))
+            if (!Handler(cell, item, context, role, property))
                 return false;
         } else {
             qWarning() << "Property" << property.name() << "for" << Qt::ItemDataRole(role)
-                                     << "has no notify signal";
+                       << "at" << cell << "has no notify signal";
         }
+        return true;
+    };
+
+    if (context->mapping == QRangeModelDetails::AutoConnectContext::AutoConnectMapping::Roles) {
+        for (auto &&[role, property] : properties.asKeyValueRange())
+            connect(index, role, property);
+    } else {
+        for (auto &&[column, property] : properties.asKeyValueRange())
+            connect(index.siblingAtColumn(column), Qt::DisplayRole, property);
     }
     return true;
 }
 
-bool QRangeModelImplBase::connectProperty(const QModelIndex &index, const QObject *item, QObject *context,
+bool QRangeModelImplBase::connectProperty(const QModelIndex &index, const QObject *item,
+                                          QRangeModelDetails::AutoConnectContext *context,
                                           int role, const QMetaProperty &property)
 {
     if (!item)
@@ -189,13 +212,15 @@ bool QRangeModelImplBase::connectProperty(const QModelIndex &index, const QObjec
     return true;
 }
 
-bool QRangeModelImplBase::connectProperties(const QModelIndex &index, const QObject *item, QObject *context,
+bool QRangeModelImplBase::connectProperties(const QModelIndex &index, const QObject *item,
+                                            QRangeModelDetails::AutoConnectContext *context,
                                             const QHash<int, QMetaProperty> &properties)
 {
     return connectPropertiesHelper<QRangeModelImplBase::connectProperty>(index, item, context, properties);
 }
 
-bool QRangeModelImplBase::connectPropertyConst(const QModelIndex &index, const QObject *item, QObject *context,
+bool QRangeModelImplBase::connectPropertyConst(const QModelIndex &index, const QObject *item,
+                                               QRangeModelDetails::AutoConnectContext *context,
                                                int role, const QMetaProperty &property)
 {
     if (!item)
@@ -210,7 +235,8 @@ bool QRangeModelImplBase::connectPropertyConst(const QModelIndex &index, const Q
     }
 }
 
-bool QRangeModelImplBase::connectPropertiesConst(const QModelIndex &index, const QObject *item, QObject *context,
+bool QRangeModelImplBase::connectPropertiesConst(const QModelIndex &index, const QObject *item,
+                                                 QRangeModelDetails::AutoConnectContext *context,
                                                  const QHash<int, QMetaProperty> &properties)
 {
     return connectPropertiesHelper<QRangeModelImplBase::connectPropertyConst>(index, item, context, properties);
@@ -1411,9 +1437,11 @@ void QRangeModel::resetRoleNames()
     \brief if and when the model auto-connects to property changed notifications.
 
     If QRangeModel operates on a data structure that holds the same type of
-    QObject subclass as its item type, then it can automatically connect the
-    properties of the QObjects to the dataChanged() signal. This is done for
-    those properties that match one of the \l{roleNames()}{role names}.
+    QObject subclass as its row or item type, then it can automatically connect
+    the properties of the QObjects to the dataChanged() signal. For QObject
+    rows, this is done for each column, mapping to the Qt::DisplayRole
+    property. For items, this is done for those properties that match one of
+    the \l{roleNames()}{role names}.
 
     By default, the value of this property is \l{QRangeModel::AutoConnectPolicy::}
     {None}, so no such connections are made. Changing the value of this property
