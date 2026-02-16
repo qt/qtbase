@@ -44,6 +44,10 @@ bool QOhosDisplayManager::tryRegisterDisplay(
         return false;
     }
 
+    auto displayInfo = QOhosDisplayInfo::makeFromOhosDisplayObject(jsState, optDisplay.value());
+    if (displayInfo.shouldIgnoreDisplay())
+        return false;
+
     auto availableAreaChangeHandle = QtOhos::registerOnOffMethodsBasedEventHandler(
         optDisplay.value(),
         "availableAreaChange",
@@ -86,7 +90,7 @@ std::vector<QOhosDisplayInfo> QOhosDisplayManager::getRegisteredDisplayInfos()
 QOhosDisplayManager::QOhosDisplayManager(QtOhos::JsState &jsState, CreateInfo createInfo)
 {
     for (const auto &displayInfo : createInfo.displayInfos) {
-        if (!displayInfo.shouldIgnoreDisplay() && tryRegisterDisplay(jsState, displayInfo.id)) {
+        if (tryRegisterDisplay(jsState, displayInfo.id)) {
             m_registeredDisplayInfos.push_back(displayInfo);
         } else {
             qOhosPrintfError(
