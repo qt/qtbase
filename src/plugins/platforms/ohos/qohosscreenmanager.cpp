@@ -149,9 +149,14 @@ QOhosScreenManager::QOhosPlatformScreenHolder::~QOhosPlatformScreenHolder()
 QOhosScreenManager::QOhosPlatformScreenHolder *
 QOhosScreenManager::platformScreenHolderForDisplayIdOrNull(JsDisplayId displayId) const
 {
-    auto it = m_displays.find(displayId);
+    auto it = std::find_if(
+        m_displays.begin(), m_displays.end(),
+        [&](const std::unique_ptr<QOhosPlatformScreenHolder> &platformScreenHolder) {
+            return platformScreenHolder->displayIdOrEmpty() == displayId;
+        });
+
     return it != m_displays.end()
-        ? it->second.get()
+        ? it->get()
         : nullptr;
 }
 
@@ -173,17 +178,31 @@ QOhosPlatformScreen *QOhosScreenManager::platformScreenForDisplayIdOrFail(JsDisp
 
 void QOhosScreenManager::addScreen(QOhosDisplayInfo displayInfo)
 {
-    auto it = m_displays.find(displayInfo.id);
+    auto it = std::find_if(
+        m_displays.begin(), m_displays.end(),
+        [&](const std::unique_ptr<QOhosPlatformScreenHolder> &platformScreenHolder) {
+            return platformScreenHolder->displayIdOrEmpty() == displayInfo.id;
+        });
+
     if (it != m_displays.end()) {
         qCWarning(QtForOhos) << "Attemting to add display with non unique id:" << displayInfo.id.value()
             << "previous display with that id will be removed";
+        (*it) = std::make_unique<QOhosPlatformScreenHolder>(displayInfo);
+    } else {
+        m_displays.push_back(std::make_unique<QOhosPlatformScreenHolder>(displayInfo));
     }
-    m_displays[displayInfo.id] = std::make_unique<QOhosPlatformScreenHolder>(displayInfo);
 }
 
 void QOhosScreenManager::removeScreenIfExists(JsDisplayId displayId)
 {
-    std::ignore = m_displays.erase(displayId);
+    auto it = std::find_if(
+        m_displays.begin(), m_displays.end(),
+        [&](const std::unique_ptr<QOhosPlatformScreenHolder> &platformScreenHolder) {
+            return platformScreenHolder->displayIdOrEmpty() == displayId;
+        });
+
+    if (it != m_displays.end())
+        m_displays.erase(it);
 }
 
 void QOhosScreenManager::handleDisplayAdded(const QOhosDisplayInfo &displayInfo)
