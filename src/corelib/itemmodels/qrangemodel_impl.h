@@ -455,8 +455,8 @@ namespace QRangeModelDetails
             return {};
         }
 
-        template <typename Row, typename Fn>
-        static bool for_each_element(const Row &row, const QModelIndex &firstIndex, Fn &&fn)
+        template <typename Fn>
+        static bool for_each_element(const T &row, const QModelIndex &firstIndex, Fn &&fn)
         {
             if constexpr (static_size == 0) {
                 return std::forward<Fn>(fn)(firstIndex, QRangeModelDetails::pointerTo(row));
@@ -527,11 +527,11 @@ namespace QRangeModelDetails
             return (std::forward<Fn>(fn)(QRangeModelDetails::pointerTo(get<Is>(row))) && ...);
         }
 
-        template <typename Row, typename Fn>
-        static bool for_each_element(const Row &row, const QModelIndex &firstIndex, Fn &&fn)
+        template <typename Fn>
+        static bool for_each_element(const T &row, const QModelIndex &firstIndex, Fn &&fn)
         {
             int column = -1;
-            return forEachTupleElement(row, [&column, &fn, &firstIndex](QObject *item){
+            return forEachTupleElement(row, [&column, &fn, &firstIndex](const QObject *item){
                 return std::forward<Fn>(fn)(firstIndex.siblingAtColumn(++column), item);
             }, std::make_index_sequence<static_size>());
         }
@@ -559,12 +559,12 @@ namespace QRangeModelDetails
             return section;
         }
 
-        template <typename Row, typename Fn>
-        static bool for_each_element(const Row &row, const QModelIndex &firstIndex, Fn &&fn)
+        template <typename Fn>
+        static bool for_each_element(const std::array<T, N> &row, const QModelIndex &firstIndex, Fn &&fn)
         {
             int columnIndex = -1;
             return std::all_of(QRangeModelDetails::adl_begin(row),
-                            QRangeModelDetails::adl_end(row), [&](const auto &item) {
+                               QRangeModelDetails::adl_end(row), [&](const auto &item) {
                 return std::forward<Fn>(fn)(firstIndex.siblingAtColumn(++columnIndex),
                                             QRangeModelDetails::pointerTo(item));
             });
@@ -610,8 +610,8 @@ namespace QRangeModelDetails
             return result;
         }
 
-        template <typename Row, typename Fn>
-        static bool for_each_element(const Row &row, const QModelIndex &firstIndex, Fn &&fn)
+        template <typename Fn>
+        static bool for_each_element(const T &row, const QModelIndex &firstIndex, Fn &&fn)
         {
             return std::forward<Fn>(fn)(firstIndex, QRangeModelDetails::pointerTo(row));
         }
@@ -1062,13 +1062,14 @@ protected:
 
     Q_CORE_EXPORT static QHash<int, QMetaProperty> roleProperties(const QAbstractItemModel &model,
                                                                   const QMetaObject &metaObject);
-    Q_CORE_EXPORT static bool connectProperty(const QModelIndex &index, QObject *item, QObject *context,
+    Q_CORE_EXPORT static QHash<int, QMetaProperty> columnProperties(const QMetaObject &metaObject);
+    Q_CORE_EXPORT static bool connectProperty(const QModelIndex &index, const QObject *item, QObject *context,
                                               int role, const QMetaProperty &property);
-    Q_CORE_EXPORT static bool connectPropertyConst(const QModelIndex &index, QObject *item, QObject *context,
+    Q_CORE_EXPORT static bool connectPropertyConst(const QModelIndex &index, const QObject *item, QObject *context,
                                                    int role, const QMetaProperty &property);
-    Q_CORE_EXPORT static bool connectProperties(const QModelIndex &index, QObject *item, QObject *context,
+    Q_CORE_EXPORT static bool connectProperties(const QModelIndex &index, const QObject *item, QObject *context,
                                                 const QHash<int, QMetaProperty> &properties);
-    Q_CORE_EXPORT static bool connectPropertiesConst(const QModelIndex &index, QObject *item, QObject *context,
+    Q_CORE_EXPORT static bool connectPropertiesConst(const QModelIndex &index, const QObject *item, QObject *context,
                                                      const QHash<int, QMetaProperty> &properties);
 };
 
@@ -1771,8 +1772,9 @@ public:
     {
         if (!QRangeModelDetails::isValid(row))
             return true; // nothing to do
-        return row_traits::for_each_element(row, this->itemModel().index(rowIndex, 0, parent),
-                                            [this](const QModelIndex &index, QObject *item) {
+        return row_traits::for_each_element(QRangeModelDetails::refTo(row),
+                                            this->itemModel().index(rowIndex, 0, parent),
+                                            [this](const QModelIndex &index, const QObject *item) {
             if constexpr (isMutable())
                 return Self::connectProperties(index, item, m_data.context, m_data.properties);
             else
@@ -1784,8 +1786,9 @@ public:
     {
         if (!QRangeModelDetails::isValid(row))
             return;
-        row_traits::for_each_element(row, this->itemModel().index(rowIndex, 0, parent),
-                                            [this](const QModelIndex &, QObject *item) {
+        row_traits::for_each_element(QRangeModelDetails::refTo(row),
+                                     this->itemModel().index(rowIndex, 0, parent),
+                                     [this](const QModelIndex &, const QObject *item) {
             m_data.connections.removeIf([item](const auto &connection) {
                 return connection.sender == item;
             });

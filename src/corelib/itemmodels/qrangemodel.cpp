@@ -150,7 +150,7 @@ QHash<int, QMetaProperty> QRangeModelImplBase::roleProperties(const QAbstractIte
 }
 
 template <auto Handler>
-static bool connectPropertiesHelper(const QModelIndex &index, QObject *item, QObject *context,
+static bool connectPropertiesHelper(const QModelIndex &index, const QObject *item, QObject *context,
                                     const QHash<int, QMetaProperty> &properties)
 {
     if (!item)
@@ -167,7 +167,7 @@ static bool connectPropertiesHelper(const QModelIndex &index, QObject *item, QOb
     return true;
 }
 
-bool QRangeModelImplBase::connectProperty(const QModelIndex &index, QObject *item, QObject *context,
+bool QRangeModelImplBase::connectProperty(const QModelIndex &index, const QObject *item, QObject *context,
                                           int role, const QMetaProperty &property)
 {
     if (!item)
@@ -189,13 +189,13 @@ bool QRangeModelImplBase::connectProperty(const QModelIndex &index, QObject *ite
     return true;
 }
 
-bool QRangeModelImplBase::connectProperties(const QModelIndex &index, QObject *item, QObject *context,
+bool QRangeModelImplBase::connectProperties(const QModelIndex &index, const QObject *item, QObject *context,
                                             const QHash<int, QMetaProperty> &properties)
 {
     return connectPropertiesHelper<QRangeModelImplBase::connectProperty>(index, item, context, properties);
 }
 
-bool QRangeModelImplBase::connectPropertyConst(const QModelIndex &index, QObject *item, QObject *context,
+bool QRangeModelImplBase::connectPropertyConst(const QModelIndex &index, const QObject *item, QObject *context,
                                                int role, const QMetaProperty &property)
 {
     if (!item)
@@ -210,7 +210,7 @@ bool QRangeModelImplBase::connectPropertyConst(const QModelIndex &index, QObject
     }
 }
 
-bool QRangeModelImplBase::connectPropertiesConst(const QModelIndex &index, QObject *item, QObject *context,
+bool QRangeModelImplBase::connectPropertiesConst(const QModelIndex &index, const QObject *item, QObject *context,
                                                  const QHash<int, QMetaProperty> &properties)
 {
     return connectPropertiesHelper<QRangeModelImplBase::connectPropertyConst>(index, item, context, properties);
