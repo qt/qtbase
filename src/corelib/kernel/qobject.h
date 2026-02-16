@@ -135,11 +135,6 @@ public:
     inline bool isQuickItemType() const { return d_ptr->isQuickItem; }
 
     bool isQmlExposed() const noexcept;
-#if QT_DEPRECATED_SINCE(6, 11)
-    // only to get the rename through the integration round, ### remove after
-    QT_DEPRECATED_X("Use isQmlExposed() instead")
-    bool isQmlObjectType() const { return isQmlExposed(); }
-#endif
 
     inline bool signalsBlocked() const noexcept { return d_ptr->blockSig; }
     bool blockSignals(bool b) noexcept;
