@@ -56,16 +56,6 @@ void copyImageRow(QSpan<const uchar> srcRow, QSpan<uchar> dstRow)
     std::memcpy(dstRow.data(), srcRow.data(), sizeToCopy);
 }
 
-void copyImage(QOhosPlatformBackingStore::QImageView srcImage, QImage &dstImage)
-{
-    const auto heightToCopy = std::min(srcImage.size().height(), dstImage.height());
-    for (int i = 0; i < heightToCopy; ++i) {
-        auto srcRow = srcImage.constScanLine(i);
-        auto dstRow = qImageScanLine(dstImage, i);
-        copyImageRow(srcRow, dstRow);
-    }
-}
-
 void copyImage(QOhosPlatformBackingStore::QImageView srcImage, QImage &dstImage, const QRegion &region)
 {
     const auto intersectedRegion =
@@ -416,10 +406,9 @@ void QOhosPlatformBackingStore::flushImmediate(QWindow *window)
             }
 
             const auto& mergedRegionOpt = bufferRegionHandler.mergeRegionForBufferHandle(bufferHandle, region);
-            if (mergedRegionOpt.hasValue())
-                copyImage(srcImage, dstImage, mergedRegionOpt.value());
-            else
-                copyImage(srcImage, dstImage);
+            const auto windowVisibleRegion = QRegion(QRect({}, srcImage.size()));
+            const auto requestedRegion = mergedRegionOpt.valueOr(windowVisibleRegion);
+            copyImage(srcImage, dstImage, requestedRegion);
 
             if (m_debugDrawFlushedRegion)
                 debugDrawFlushedQRegion(dstImage, region);
