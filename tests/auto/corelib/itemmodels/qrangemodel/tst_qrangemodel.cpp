@@ -914,6 +914,39 @@ void tst_QRangeModel::autoConnectPolicy()
     }();
 
     [policy]{
+        QList<Object *> objectList = {
+            new Object, new Object, new Object
+        };
+        Object *top = objectList.front();
+        Object *bottom = objectList.back();
+
+        QRangeModel model(std::move(objectList));
+        model.setAutoConnectPolicy(policy);
+        QSignalSpy dataChangedSpy(&model, &QAbstractItemModel::dataChanged);
+
+        if (policy == QRangeModel::AutoConnectPolicy::OnRead) {
+            // read top-left and bottom-right
+            model.data(model.index(0, 0));
+            model.data(model.index(model.rowCount() - 1, model.columnCount() - 1));
+        }
+        top->setString("abc");
+        QCOMPARE(dataChangedSpy.count(), 1);
+        QCOMPARE(dataChangedSpy.back().at(0), model.index(0, 0));
+        QCOMPARE(dataChangedSpy.back().at(1), model.index(0, 0));
+        QCOMPARE(dataChangedSpy.back().at(2), QVariant::fromValue(QList<int>{Qt::DisplayRole}));
+        bottom->setNumber(42);
+        QCOMPARE(dataChangedSpy.count(), 2);
+        QCOMPARE(dataChangedSpy.back().at(0), model.index(model.rowCount() - 1,
+                                                          model.columnCount() - 1));
+        QCOMPARE(dataChangedSpy.back().at(2), QVariant::fromValue(QList<int>{Qt::DisplayRole}));
+        dataChangedSpy.clear();
+
+        top->setNumber(1234);
+        bottom->setString("def");
+        QCOMPARE(dataChangedSpy.count(), policy == QRangeModel::AutoConnectPolicy::Full ? 2 : 0);
+    }();
+
+    [policy]{
         using Tree = QList<MultiRoleObject *>;
         struct ObjectTreeProtocol
         {
