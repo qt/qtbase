@@ -233,6 +233,13 @@ QOhosPlatformScreen *QOhosScreenManager::QOhosPlatformScreenHolder::platformScre
     return m_platformScreen;
 }
 
+QOhosOptional<QOhosDisplayInfo> QOhosScreenManager::QOhosPlatformScreenHolder::displayInfoOrEmpty() const
+{
+    return m_platformScreen != nullptr
+        ? makeQOhosOptional(m_platformScreen->displayInfo())
+        : makeEmptyQOhosOptional();
+}
+
 QOhosScreenManager::QOhosPlatformScreenHolder::~QOhosPlatformScreenHolder()
 {
     if (m_platformScreen != nullptr)
