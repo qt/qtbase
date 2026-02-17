@@ -196,10 +196,12 @@ using namespace winrt::Windows::Networking::Connectivity;
 [[nodiscard]]
 QNetworkInformation::TransportMedium getTransportMedium(const ConnectionProfile &profile)
 {
-    if (profile.IsWwanConnectionProfile())
-        return QNetworkInformation::TransportMedium::Cellular;
-    if (profile.IsWlanConnectionProfile())
-        return QNetworkInformation::TransportMedium::WiFi;
+    if (auto p2 = profile.try_as<IConnectionProfile2>()) {
+        if (p2.IsWwanConnectionProfile())
+            return QNetworkInformation::TransportMedium::Cellular;
+        if (p2.IsWlanConnectionProfile())
+            return QNetworkInformation::TransportMedium::WiFi;
+    }
 
     NetworkAdapter adapter(nullptr);
     try {
