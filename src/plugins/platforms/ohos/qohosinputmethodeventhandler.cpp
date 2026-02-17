@@ -71,25 +71,6 @@ QOhosOptional<QEventPoint::State> tryMapXComponentTouchEventTypeToQt(::OH_Native
     return makeEmptyQOhosOptional();
 }
 
-Qt::ScrollPhase convertArkUiAxisEventActionToQtScrollPhase(int32_t arkUiAxisEventAction)
-{
-    switch (arkUiAxisEventAction) {
-    case UI_AXIS_EVENT_ACTION_NONE:
-        return Qt::NoScrollPhase;
-    case UI_AXIS_EVENT_ACTION_BEGIN:
-        return Qt::ScrollBegin;
-    case UI_AXIS_EVENT_ACTION_UPDATE:
-        return Qt::ScrollUpdate;
-    case UI_AXIS_EVENT_ACTION_END:
-        return Qt::ScrollEnd;
-    case UI_AXIS_EVENT_ACTION_CANCEL:
-        return Qt::ScrollEnd;
-    }
-
-    qOhosReportFatalErrorAndAbort(
-        "Received unsupported UI_AXIS_EVENT_ACTION: %d", arkUiAxisEventAction);
-}
-
 QPointF calculateTouchPointNormalPosition(QWindow *targetWindow, const QPointF &clickPoint)
 {
     auto *platformScreen = static_cast<QOhosPlatformScreen *>(targetWindow->screen()->handle());
@@ -302,7 +283,6 @@ void QOhosInputMethodEventHandler::onMouseWheelEvent(const QOhosWheelEvent &even
         return;
     }
 
-    Qt::ScrollPhase phase = convertArkUiAxisEventActionToQtScrollPhase(event.axisAction);
     Qt::MouseEventSource source = event.eventToolType == ::UI_INPUT_EVENT_TOOL_TYPE_TOUCHPAD
         ? Qt::MouseEventSynthesizedBySystem
         : Qt::MouseEventNotSynthesized;
@@ -316,7 +296,7 @@ void QOhosInputMethodEventHandler::onMouseWheelEvent(const QOhosWheelEvent &even
         pixelDelta,
         angleDelta,
         convertOhosToQtKeyboardModifiers(event.modifiers),
-        phase,
+        event.scrollPhase,
         source,
         inverted);
 }

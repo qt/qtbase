@@ -43,7 +43,7 @@ struct QOhosWheelEvent
     double horizontalValue;
     double verticalValue;
     int32_t eventToolType;
-    int32_t axisAction;
+    Qt::ScrollPhase scrollPhase;
     int32_t wheelScrollLines;
     QFlags<OhosKeyboardModifier> modifiers;
 };
