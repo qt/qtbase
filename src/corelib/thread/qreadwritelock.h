@@ -53,7 +53,11 @@ public:
         quintptr u = quintptr(d);
         Q_ASSERT_X(u, "QReadWriteLock::unlock()", "Cannot unlock an unlocked lock");
         if (u & StateLockedForRead)
-            flags |= QtTsan::ReadLock;  // ### will be wrong for past-contention read locks
+            flags |= QtTsan::ReadLock;
+#ifdef QT_BUILDING_UNDER_TSAN
+        else if (u > StateMask && isContendedLockForRead(d))
+            flags |= QtTsan::ReadLock;
+#endif
 
         QtTsan::mutexPreUnlock(this, flags);
         if (u > StateMask || !d_ptr.testAndSetRelease(d, nullptr, d))
@@ -127,6 +131,7 @@ protected:
     Q_CORE_EXPORT bool contendedTryLockForRead(QDeadlineTimer timeout, void *dd);
     Q_CORE_EXPORT bool contendedTryLockForWrite(QDeadlineTimer timeout, void *dd);
     Q_CORE_EXPORT void contendedUnlock(void *dd);
+    Q_CORE_EXPORT bool isContendedLockForRead(const void *dd) Q_DECL_PURE_FUNCTION;
 
     constexpr QBasicReadWriteLock(QReadWriteLockPrivate *d) noexcept : d_ptr(d)
     {}
