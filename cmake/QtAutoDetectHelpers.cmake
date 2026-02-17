@@ -285,7 +285,7 @@ function(qt_auto_detect_apple)
 
     if(QT_APPLE_SDK)
         set(CMAKE_OSX_SYSROOT "${QT_APPLE_SDK}" CACHE STRING "")
-    elseif(NOT CMAKE_SYSTEM_NAME)
+    elseif(NOT CMAKE_SYSTEM_NAME OR CMAKE_SYSTEM_NAME STREQUAL "Darwin")
         # Persist SDK name for macOS builds, since CMake 4.x will pick arbitrary
         # SDK paths, ignoring xcode-select, if not given an explicit SDK.
         _qt_internal_get_apple_sdk_name(sdk_name)
@@ -310,7 +310,7 @@ function(qt_auto_detect_apple)
         "Minimum OS X version to target for deployment (at runtime); newer APIs weak linked."
         " Set to empty string for default value.")
     if(NOT CMAKE_OSX_DEPLOYMENT_TARGET)
-        if(NOT CMAKE_SYSTEM_NAME)
+        if(NOT CMAKE_SYSTEM_NAME OR CMAKE_SYSTEM_NAME STREQUAL "Darwin")
             # macOS
             set(version "${QT_SUPPORTED_MIN_MACOS_VERSION}")
         elseif(CMAKE_SYSTEM_NAME STREQUAL iOS)
@@ -334,7 +334,7 @@ function(qt_auto_detect_apple)
         set(QT_MAC_XCODE_VERSION "${xcode_version_raw}" CACHE STRING "Xcode version.")
     endif()
 
-    if(NOT CMAKE_SYSTEM_NAME)
+    if(NOT CMAKE_SYSTEM_NAME OR CMAKE_SYSTEM_NAME STREQUAL "Darwin")
         # macOS
         list(LENGTH CMAKE_OSX_ARCHITECTURES arch_count)
         if(arch_count GREATER 0)
