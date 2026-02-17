@@ -1,6 +1,7 @@
 # QTBUG-87412
 [tst_move_show]
 android
+wayland
 [tst_show_move_hide_show]
 android
 [tst_resize_show]

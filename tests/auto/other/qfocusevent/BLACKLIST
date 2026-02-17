@@ -1,3 +1,5 @@
 # QTBUG-87395
 [checkReason_Popup]
 android
+[checkReason_ActiveWindow]
+wayland

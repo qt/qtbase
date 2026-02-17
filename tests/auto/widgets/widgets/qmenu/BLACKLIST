@@ -5,6 +5,7 @@ macos
 macos
 [submenuTearOffDontClose]
 macos # Can't move cursor (QTBUG-76312)
+wayland
 # QTBUG-87424
 [focus]
 android
@@ -19,6 +20,7 @@ android
 wayland
 [QTBUG8122_widgetActionCrashOnClose]
 android
+wayland
 [click_while_dismissing_submenu]
 android
 [menuSize_Scrolling]
@@ -26,6 +28,21 @@ android
 [QTBUG_89082_actionTipsHide]
 macos ci # Can't move cursor (QTBUG-76312)
 windows-10 ci
+wayland
 # QTBUG-87424
 [transientParent]
 android
+[layoutDirection]
+wayland
+[widgetActionContextMenu]
+wayland
+[QTBUG47515_widgetActionEnterLeave]
+wayland
+[statusTip]
+wayland
+[nestedTearOffDetached]
+wayland
+[QTBUG20403_nested_popup_on_shortcut_trigger]
+wayland
+[QTBUG_56917_wideSubmenuScreenNumber]
+wayland
