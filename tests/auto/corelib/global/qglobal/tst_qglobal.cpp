@@ -9,6 +9,7 @@
 #include <QPair>
 #include <QSysInfo>
 #include <QLatin1String>
+#include <QtCore/qscopeguard.h>
 #include <QString>
 #include <QtVersion>
 #include <QtCore/qttypetraits.h>
@@ -88,6 +89,7 @@ class tst_QGlobal: public QObject
     Q_OBJECT
 
 private slots:
+    void accessibleStateBC();
     void cMode();
     void qIsNull();
     void for_each();
@@ -127,6 +129,111 @@ qint128 tst_qint128_max();
 quint128 tst_quint128_max();
 #endif
 
+}
+
+void tst_QGlobal::accessibleStateBC()
+{
+    // Check BC of QAccessible::State from 6.10 → 6.11
+
+    // We do the check here because it is of general interest.
+
+    #define MAKE_STATE(State, ...) \
+        struct State { \
+            State() { std::memset(this, 0, sizeof(*this)); } \
+            \
+            quint64 e01 : 1; \
+            quint64 e02 : 1; \
+            quint64 e03 : 1; \
+            quint64 e04 : 1; \
+            quint64 e05 : 1; \
+            quint64 e06 : 1; \
+            quint64 e07 : 1; \
+            quint64 e08 : 1; \
+            quint64 e09 : 1; \
+            quint64 e10 : 1; \
+            quint64 e11 : 1; \
+            quint64 e12 : 1; \
+            quint64 e13 : 1; \
+            quint64 e14 : 1; \
+            quint64 e15 : 1; \
+            quint64 e16 : 1; \
+            quint64 e17 : 1; \
+            quint64 e18 : 1; \
+            quint64 e19 : 1; \
+            quint64 e20 : 1; \
+            quint64 e21 : 1; \
+            quint64 e22 : 1; \
+            quint64 e23 : 1; \
+            quint64 e24 : 1; \
+            quint64 e25 : 1; \
+            quint64 e26 : 1; \
+            quint64 e27 : 1; \
+            quint64 e28 : 1; \
+            quint64 e29 : 1; \
+            quint64 e30 : 1; \
+            quint64 e31 : 1; \
+            quint64 e32 : 1; \
+            quint64 e33 : 1; \
+            quint64 e34 : 1; \
+            quint64 e35 : 1; \
+            quint64 e36 : 1; \
+            quint64 e37 : 1; \
+            \
+            __VA_ARGS__ \
+        } \
+        /* end */
+
+    //
+    // GIVEN: The QAcessible::State of Qt 6.10:
+    //        only 37 allocated elements, compiler-allocated padding:
+    //
+
+    MAKE_STATE(StateQt6_10, /* no reserved fields */);
+#if !defined(Q_OS_VXWORKS) // ¯\_(ツ)_/¯
+    static_assert(!std::has_unique_object_representations_v<StateQt6_10>); // why we wanna change
+#endif
+
+    //
+    // WHEN: making the paddding explicit so we can use memcmp() to implement op==:
+    //
+    MAKE_STATE(StateQt6_11, Q_DECL_UNUSED_MEMBER quint64 qt_reserved : 27;);
+    static_assert(std::has_unique_object_representations_v<StateQt6_11>); // precondition
+    #undef MAKE_STATE
+
+    //
+    // THEN: size of object and location of the data members doesn't change:
+    //
+
+    static_assert(sizeof(StateQt6_10) == sizeof(StateQt6_11));
+
+    #define CHECK(nn) \
+        { \
+            StateQt6_10 oldS; \
+            StateQt6_11 newS; \
+        \
+            oldS.e ## nn = true; \
+            newS.e ## nn = true; \
+        \
+            auto printOnFailure = qScopeGuard([&] { \
+                    qDebug() << reinterpret_cast<quint64&>(oldS) << "vs" \
+                             << reinterpret_cast<quint64&>(newS); \
+                }); \
+            QVERIFY2(std::memcmp(&oldS, &newS, sizeof oldS) == 0, \
+                     "Failed for e" #nn); \
+            printOnFailure.dismiss(); \
+        } \
+        /* end */
+
+    CHECK(01); // first element
+    CHECK(05); // compilers may not support 64-bit bit-fields:
+    CHECK(06); //  check both sides of border of 32-bit range (counting from old back)
+    CHECK(07); // first byte boundary
+    CHECK(08); //  ditto
+    CHECK(32); // 32-bit-boundary
+    CHECK(33); //  (counting from front)
+    CHECK(37); // last allocated element
+
+    #undef CHECK
 }
 
 void tst_QGlobal::cMode()
