@@ -4,6 +4,7 @@
 #include "qwindowswindowclassdescription.h"
 
 #include <QtGui/qwindow.h>
+#include <QtCore/qvariant.h>
 
 #include "qwindowswindowclassregistry.h"
 
