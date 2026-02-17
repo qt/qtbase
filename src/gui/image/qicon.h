@@ -19,6 +19,7 @@ class QPainter;
 class Q_GUI_EXPORT QIcon
 {
     Q_GADGET
+    Q_CLASSINFO("RegisterEnumClassesUnscoped", "false")
 public:
     enum Mode { Normal, Disabled, Active, Selected };
     Q_ENUM(Mode);
