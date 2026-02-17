@@ -168,25 +168,39 @@ class Object : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QString display READ display WRITE setDisplay NOTIFY displayChanged)
+    Q_PROPERTY(QColor decoration READ decoration WRITE setDecoration NOTIFY decorationChanged)
 
 public:
     Object(int x, QObject *parent = nullptr)
-        : QObject(parent), m_display(QString::number(x))
+        : QObject(parent)
+        , m_display(QString::number(x))
+        , m_decoration(QColor::fromHsv(x % 255, 255, 255))
     {}
     QString display() const { return m_display; }
-    void setDisplay(const QString &d) { m_display = d; displayChanged(); }
+    void setDisplay(const QString &display)
+    {
+        if (m_display == display)
+            return;
+        m_display = display;
+        emit displayChanged();
+    }
+
+    QColor decoration() const { return m_decoration; }
+    void setDecoration(QColor color)
+    {
+        if (m_decoration == color)
+            return;
+        m_decoration = color;
+        emit decorationChanged();
+    }
 
 Q_SIGNALS:
     void displayChanged();
+    void decorationChanged();
 
 private:
     QString m_display;
-};
-
-template <>
-struct QRangeModel::RowOptions<Object>
-{
-    static constexpr auto rowCategory = QRangeModel::RowCategory::MultiRoleItem;
+    QColor m_decoration;
 };
 
 class ModelFactory : public QObject
@@ -196,14 +210,7 @@ class ModelFactory : public QObject
     std::vector<int> numbers = {1, 2, 3, 4, 5};
     QList<QString> strings = {u"one"_s, u"two"_s, u"three"_s};
     std::array<int, 1000000> largeArray = {};
-    std::array<Object *, 1000> objects = {};
     QTimer updater;
-
-    void updateAllObjects()
-    {
-        for (auto *object : objects)
-            object->setDisplay(QTime::currentTime().toString());
-    }
 
 public:
     void reset()
@@ -457,12 +464,22 @@ public slots:
 
     QRangeModel *makeAutoConnectedObjects()
     {
-        QRangeModel *model = new QRangeModel(std::ref(objects));
-        connect(&updater, &QTimer::timeout, this, &ModelFactory::updateAllObjects);
+        std::array<std::pair<Object *, Object *>, 500> table;
+        for (size_t i = 0; i < table.size(); ++i) {
+            table[i].first = new Object(i);
+            table[i].second = new Object(i);
+        }
 
-        qDeleteAll(objects);
-        for (size_t i = 0; i < objects.size(); ++i)
-            objects[i] = new Object(i, model);
+        QRangeModelAdapter adapter(std::move(table));
+        QRangeModel *model = adapter.model();
+        connect(&updater, &QTimer::timeout, this, [adapter = std::move(adapter)] {
+            for (auto row : adapter) {
+                for (auto column : row) {
+                    const_cast<Object *>(column)->setDisplay(QTime::currentTime().toString());
+                }
+            }
+        });
+
         updater.start(1000);
         model->setAutoConnectPolicy(QRangeModel::AutoConnectPolicy::OnRead);
         return model;
@@ -470,13 +487,48 @@ public slots:
 
     QRangeModel *makeAutoConnectedConstObjects()
     {
-        QRangeModel *model = new QRangeModel(&std::as_const(objects));
-        connect(&updater, &QTimer::timeout, this, &ModelFactory::updateAllObjects);
+        std::array<std::pair<Object *, Object *>, 500> table;
+        for (size_t i = 0; i < table.size(); ++i) {
+            table[i].first = new Object(i);
+            table[i].second = new Object(i);
+        }
 
-        qDeleteAll(objects);
-        for (size_t i = 0; i < objects.size(); ++i)
-            objects[i] = new Object(i, model);
+        QRangeModelAdapter adapter(std::move(std::as_const(table)));
+        QRangeModel *model = adapter.model();
+        connect(&updater, &QTimer::timeout, this, [adapter = std::move(adapter)] {
+            for (auto row : adapter) {
+                for (auto column : row) {
+                    auto object = const_cast<Object *>(column);
+                    object->setDisplay(QTime::currentTime().toString());
+                    int hue = column->decoration().hue() + 1;
+                    object->setDecoration(QColor::fromHsv(hue % 255, 255, 255));
+                }
+            }
+        });
+
         updater.start(1000);
+        model->setAutoConnectPolicy(QRangeModel::AutoConnectPolicy::Full);
+        return model;
+    }
+
+    QRangeModel *makeAutoConnectedRows()
+    {
+        QList<Object *> list;
+        for (int i = 0; i < 100; ++i)
+            list.append(new Object(i));
+
+        QRangeModelAdapter adapter(std::move(list));
+        QRangeModel *model = adapter.model();
+        connect(&updater, &QTimer::timeout, this, [adapter = std::move(adapter)] {
+            for (auto row : adapter) {
+                auto object = const_cast<Object *>(row.get());
+                object->setDisplay(QTime::currentTime().toString());
+                int hue = row->decoration().hue() + 1;
+                object->setDecoration(QColor::fromHsv(hue % 255, 255, 255));
+            }
+        });
+
+        updater.start(100);
         model->setAutoConnectPolicy(QRangeModel::AutoConnectPolicy::Full);
         return model;
     }
@@ -625,7 +677,7 @@ public:
 
     ~MainWindow()
     {
-        delete model;
+        factory.reset();
     }
 
 private:
@@ -640,6 +692,7 @@ private:
         const QMetaMethod method = mo.method(index + mo.methodOffset());
         if (method.invoke(&factory, qReturnArg(newModel))) {
             model = newModel;
+            newModel->setParent(this);
             newModel->setObjectName(QString::fromUtf8(method.name()).slice(4));
             treeview->setModel(newModel);
 #ifdef QUICK_UI
