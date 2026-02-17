@@ -843,10 +843,11 @@ QOhosOptional<QList<QOhosQpaFunctions::ShareKit::SharedRecord>> WantInfoImpl::tr
                             records.append(optRecord.value());
                     }
 
-                    if (records.size() != optRecords.size()) {
+                    std::size_t unconvertedRecordsCount = optRecords.size() - records.size();
+                    if (unconvertedRecordsCount != 0) {
                         qOhosPrintfWarning(
-                            "%s: can't convert %lld Shared Records, ignoring them",
-                            Q_FUNC_INFO, records.size() - optRecords.size());
+                            "%s: can't convert %zu Shared Records, ignoring them",
+                            Q_FUNC_INFO, unconvertedRecordsCount);
                     }
 
                     resultConsumer(makeQOhosOptional(records));
