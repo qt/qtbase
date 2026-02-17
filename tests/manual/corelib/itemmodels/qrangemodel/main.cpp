@@ -95,7 +95,7 @@ struct QMetaEnumerator
     using const_iterator = iterator;
 
     template <typename Enum>
-    explicit QMetaEnumerator(Enum e) noexcept
+    explicit QMetaEnumerator(Enum) noexcept
         : m_enum(QMetaEnum::fromType<Enum>())
     {}
 
@@ -171,7 +171,7 @@ class Object : public QObject
 
 public:
     Object(int x, QObject *parent = nullptr)
-        : m_display(QString::number(x))
+        : QObject(parent), m_display(QString::number(x))
     {}
     QString display() const { return m_display; }
     void setDisplay(const QString &d) { m_display = d; displayChanged(); }
@@ -196,13 +196,20 @@ class ModelFactory : public QObject
     std::vector<int> numbers = {1, 2, 3, 4, 5};
     QList<QString> strings = {u"one"_s, u"two"_s, u"three"_s};
     std::array<int, 1000000> largeArray = {};
-    std::array<Object *, 10000> objects = {};
-    std::unique_ptr<QTimer> updater = nullptr;
+    std::array<Object *, 1000> objects = {};
+    QTimer updater;
 
     void updateAllObjects()
     {
         for (auto *object : objects)
             object->setDisplay(QTime::currentTime().toString());
+    }
+
+public:
+    void reset()
+    {
+        updater.stop();
+        updater.disconnect();
     }
 
 public slots:
@@ -216,22 +223,21 @@ public slots:
         return new QRangeModel(&largeArray);
     }
 
-#if 0 // vector with adapter
     QRangeModel *makeVectorWithAdapter()
     {
         QRangeModelAdapter adapter(std::ref(numbers));
-        QRangeModel &model = *adapter.model();
+        auto *model = adapter.model();
         qDebug() << "Data from index" << adapter.index(0).data();
         qDebug() << "Data from adapter" << adapter.data(0);
         qDebug() << "Data from operator[]" << adapter[0];
 
-        QTimer::singleShot(5000, &model, [&adapter]{
-            adapter[0] = {};
+        connect(&updater, &QTimer::timeout, model, [adapter] mutable {
+            adapter[0] = adapter[0] + 1;
         });
 
-        return adapter.model();
+        updater.start(1000);
+        return model;
     }
-#endif
 
     QRangeModel *makeStrings()
     {
@@ -256,20 +262,7 @@ public slots:
             { 4, "vier"},
             { 5, "fünf"},
         };
-#if 0
-        QRangeModelAdapter adapter(std::ref(data));
-        QRangeModel &model = *adapter.model();
-        qDebug() << "Tuple from index" << adapter.index(0, 1).data();
-        qDebug() << "Tuple from adapter" << adapter.data(0, 1);
 
-        qDebug() << "Tuple from operator[]" << adapter[0];
-        qDebug() << "Tuple from operator[...]" << adapter[0, 1];
-        QTimer::singleShot(5000, &model, [&adapter]{
-            adapter[0] = { 0, "null" };
-            adapter.insertRow(0, {-1, "negative"});
-            adapter[2, 1] = "two";
-        });
-#endif
         return new QRangeModel(data);
     }
 
@@ -450,15 +443,14 @@ public slots:
         QRangeModelAdapter adapter(std::move(europe));
         const QList<int> path = {1, 0};
         QRangeModel *model = adapter.model();
-        updater.reset(new QTimer);
-        connect(updater.get(), &QTimer::timeout, model, [adapter] mutable {
+        connect(&updater, &QTimer::timeout, model, [adapter] mutable {
             // adapter[0] = tree_row{"Deutschland", "Berlin"};
             for (auto row : adapter) {
                 qDebug() << row[0] << row[1];
             }
             adapter[QSpan<const int>{ 0, 0, 0 }, 1] = "Munich";
         });
-        updater->start(1000);
+        updater.start(1000);
 
         return model;
     }
@@ -466,12 +458,12 @@ public slots:
     QRangeModel *makeAutoConnectedObjects()
     {
         QRangeModel *model = new QRangeModel(std::ref(objects));
-        updater.reset(new QTimer(model));
-        connect(updater.get(), &QTimer::timeout, this, &ModelFactory::updateAllObjects);
+        connect(&updater, &QTimer::timeout, this, &ModelFactory::updateAllObjects);
 
-        for (int i = 0; i < objects.size(); ++i)
+        qDeleteAll(objects);
+        for (size_t i = 0; i < objects.size(); ++i)
             objects[i] = new Object(i, model);
-        updater->start(1000);
+        updater.start(1000);
         model->setAutoConnectPolicy(QRangeModel::AutoConnectPolicy::OnRead);
         return model;
     }
@@ -479,12 +471,12 @@ public slots:
     QRangeModel *makeAutoConnectedConstObjects()
     {
         QRangeModel *model = new QRangeModel(&std::as_const(objects));
-        updater.reset(new QTimer(model));
-        connect(updater.get(), &QTimer::timeout, this, &ModelFactory::updateAllObjects);
+        connect(&updater, &QTimer::timeout, this, &ModelFactory::updateAllObjects);
 
-        for (int i = 0; i < objects.size(); ++i)
+        qDeleteAll(objects);
+        for (size_t i = 0; i < objects.size(); ++i)
             objects[i] = new Object(i, model);
-        updater->start(1000);
+        updater.start(1000);
         model->setAutoConnectPolicy(QRangeModel::AutoConnectPolicy::Full);
         return model;
     }
@@ -639,7 +631,9 @@ public:
 private:
     void modelChanged(int index)
     {
-        auto oldModel = model;
+        QPointer<QRangeModel> oldModel = model;
+
+        factory.reset();
 
         QRangeModel *newModel = nullptr;
         const QMetaObject &mo = ModelFactory::staticMetaObject;
@@ -653,9 +647,6 @@ private:
                 statusBar()->showMessage(tr("Failed to load QML"));
             else
                 quickWidget->rootObject()->setProperty("model", QVariant::fromValue(newModel));
-
-            QQmlContext *rootContext = quickWidget->rootContext();
-            QQmlContext *UIContext = quickWidget->engine()->contextForObject(quickWidget->rootObject());
 #endif
             for (auto *action : connectionOptions->actions()) {
                 action->setChecked(action->data().value<QRangeModel::AutoConnectPolicy>()
