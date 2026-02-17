@@ -334,6 +334,49 @@ To convertImplicit(const From& from)
 
     template<typename T>
     struct IsEnumOrFlags : std::disjunction<std::is_enum<T>, IsQFlags<T>> {};
+
+    namespace detail {
+    template<typename T, typename ODR_VIOLATION_PREVENTER>
+    struct is_complete_helper
+    {
+        template<typename U>
+        static auto check(U *) -> std::integral_constant<bool, sizeof(U) != 0>;
+        static auto check(...) -> std::false_type;
+        using type = decltype(check(static_cast<T *>(nullptr)));
+    };
+    } // namespace detail
+
+    template <typename T, typename ODR_VIOLATION_PREVENTER = void>
+    struct is_complete :
+            detail::is_complete_helper<std::remove_reference_t<T>, ODR_VIOLATION_PREVENTER>::type
+    {};
+
+    template <typename T> struct MetatypeDecay              { using type = T; };
+    template <typename T> struct MetatypeDecay<const T>     { using type = T; };
+    template <typename T> struct MetatypeDecay<const T &>   { using type = T; };
+
+    template <typename T> struct IsPointerDeclaredOpaque  :
+            std::disjunction<std::is_member_pointer<T>,
+                             std::is_function<std::remove_pointer_t<T>>>
+    {};
+    template <> struct IsPointerDeclaredOpaque<void *>       : std::true_type {};
+    template <> struct IsPointerDeclaredOpaque<const void *> : std::true_type {};
+
+    template <typename X> static constexpr bool checkTypeIsSuitableForMetaType()
+    {
+        using T = typename MetatypeDecay<X>::type;
+        static_assert(is_complete<T, void>::value || std::is_void_v<T>,
+                "Meta Types must be fully defined");
+        static_assert(!std::is_reference_v<T>,
+                "Meta Types cannot be non-const references or rvalue references.");
+        if constexpr (std::is_pointer_v<T> && !IsPointerDeclaredOpaque<T>::value) {
+            using Pointed = std::remove_pointer_t<T>;
+            static_assert(is_complete<Pointed, void>::value,
+                    "Pointer Meta Types must either point to fully-defined types "
+                    "or be declared with Q_DECLARE_OPAQUE_POINTER(T *)");
+        }
+        return true;
+    }
 }  // namespace QtPrivate
 
 class Q_CORE_EXPORT QMetaType {
@@ -874,31 +917,6 @@ QT_FOR_EACH_AUTOMATIC_TEMPLATE_SMART_POINTER(QT_FORWARD_DECLARE_SHARED_POINTER_T
 
 namespace QtPrivate
 {
-    namespace detail {
-    template<typename T, typename ODR_VIOLATION_PREVENTER>
-    struct is_complete_helper
-    {
-        template<typename U>
-        static auto check(U *) -> std::integral_constant<bool, sizeof(U) != 0>;
-        static auto check(...) -> std::false_type;
-        using type = decltype(check(static_cast<T *>(nullptr)));
-    };
-    } // namespace detail
-
-    template <typename T, typename ODR_VIOLATION_PREVENTER>
-    struct is_complete : detail::is_complete_helper<std::remove_reference_t<T>, ODR_VIOLATION_PREVENTER>::type {};
-
-    template <typename T> struct MetatypeDecay              { using type = T; };
-    template <typename T> struct MetatypeDecay<const T>     { using type = T; };
-    template <typename T> struct MetatypeDecay<const T &>   { using type = T; };
-
-    template <typename T> struct IsPointerDeclaredOpaque  :
-            std::disjunction<std::is_member_pointer<T>,
-                             std::is_function<std::remove_pointer_t<T>>>
-    {};
-    template <> struct IsPointerDeclaredOpaque<void *>      : std::true_type {};
-    template <> struct IsPointerDeclaredOpaque<const void *> : std::true_type {};
-
     // Note: this does not check that T = U* isn't pointing to a
     // forward-declared type. You may want to combine with
     // checkTypeIsSuitableForMetaType().
@@ -1199,21 +1217,6 @@ namespace QtPrivate
     };
 #endif
 
-    template <typename X> static constexpr bool checkTypeIsSuitableForMetaType()
-    {
-        using T = typename MetatypeDecay<X>::type;
-        static_assert(is_complete<T, void>::value || std::is_void_v<T>,
-                "Meta Types must be fully defined");
-        static_assert(!std::is_reference_v<T>,
-                "Meta Types cannot be non-const references or rvalue references.");
-        if constexpr (std::is_pointer_v<T> && !IsPointerDeclaredOpaque<T>::value) {
-            using Pointed = std::remove_pointer_t<T>;
-            static_assert(is_complete<Pointed, void>::value,
-                    "Pointer Meta Types must either point to fully-defined types "
-                    "or be declared with Q_DECLARE_OPAQUE_POINTER(T *)");
-        }
-        return true;
-    }
 } // namespace QtPrivate
 
 template <typename T, int =
