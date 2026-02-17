@@ -1942,7 +1942,12 @@ void QOhosStyle::polish(QWidget *widget)
         qobject_cast<QListView *>(widget)->viewport()->setAttribute(Qt::WA_Hover);
     } else if (qobjectIsInstanceOf<QComboBox>(widget)) {
         auto comboBox = qobject_cast<QComboBox *>(widget);
-        comboBox->setItemDelegate(new QStyledItemDelegate(comboBox->view()));
+        const char *delegateClassName = comboBox->itemDelegate()->metaObject()->className();
+        bool isDefaultComboBoxDelegate =
+            qstrcmp(delegateClassName, "QComboBoxDelegate") == 0
+            || qstrcmp(delegateClassName, "QComboMenuDelegate") == 0;
+        if (isDefaultComboBoxDelegate)
+            comboBox->setItemDelegate(new QStyledItemDelegate(comboBox->view()));
     } else if (qobjectIsInstanceOf<QMdiSubWindow>(widget)) {
         widget->setAttribute(Qt::WA_TranslucentBackground);
         widget->setAutoFillBackground(false);
