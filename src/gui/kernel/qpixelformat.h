@@ -5,7 +5,8 @@
 #define QPIXELFORMAT_H
 
 #include <QtGui/qtguiglobal.h>
-#include <QtCore/qmetaobject.h>
+
+#include <QtCore/qobjectdefs.h>
 
 QT_BEGIN_NAMESPACE
 
