@@ -46,6 +46,8 @@ public:
     NativeWindow();
     ~NativeWindow();
 
+    Handle handle() const { return m_handle; }
+
     void setVisible(bool visible);
 
     operator WId() const;
