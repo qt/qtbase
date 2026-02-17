@@ -112,7 +112,12 @@ void tst_QSslKeyingMaterial::initTestCase()
 void tst_QSslKeyingMaterial::exporterProducesSameMaterialOnBothSides()
 {
     QList<QSslKeyingMaterial> material;
-    material << QSslKeyingMaterial(QByteArray("label1"), 5);
+    const QSslKeyingMaterial label1_5(QByteArray("label1"), 5);
+    const QSslKeyingMaterial label1_6(QByteArray("label1"), 6);
+    const QSslKeyingMaterial label1_5_ctx1(QByteArray("label1"), 5, QByteArray("ctx1"));
+    material << label1_5;
+    material << label1_6;
+    material << label1_5_ctx1;
 
     QSslServer server;
     auto serverCfg = serverConfig();
@@ -133,8 +138,9 @@ void tst_QSslKeyingMaterial::exporterProducesSameMaterialOnBothSides()
     QSignalSpy clientConnectedSpy(&client, &QSslSocket::encrypted);
     client.connectToHostEncrypted(QHostAddress(QHostAddress::LocalHost).toString(), server.serverPort());
     QTRY_VERIFY(client.isEncrypted());
-    QCOMPARE(client.sslConfiguration().keyingMaterial().size(), 1);
+    QCOMPARE(client.sslConfiguration().keyingMaterial().size(), 3);
     QCOMPARE(client.sslConfiguration().keyingMaterial().first().value().size(), 5);
+    QCOMPARE(client.sslConfiguration().keyingMaterial().last().value().size(), 5);
 
     QTRY_VERIFY(server.hasPendingConnections());
     QTcpSocket *pending = server.nextPendingConnection();
@@ -145,9 +151,28 @@ void tst_QSslKeyingMaterial::exporterProducesSameMaterialOnBothSides()
 
     const auto serverMaterial = serverSocket->sslConfiguration().keyingMaterial();
     const auto clientMaterial = client.sslConfiguration().keyingMaterial();
-    QCOMPARE(serverMaterial.size(), 1);
+    QCOMPARE(serverMaterial.size(), 3);
     QCOMPARE(serverMaterial.first().value().size(), 5);
+    QCOMPARE(serverMaterial.last().value().size(), 5);
     QCOMPARE(serverMaterial.first(), clientMaterial.first());
+    QCOMPARE(serverMaterial.last(), clientMaterial.last());
+    QCOMPARE_NE(serverMaterial.first(), clientMaterial.last());
+
+    QVERIFY(!client.sslConfiguration().keyingMaterial(QSslKeyingMaterial(QByteArray("label2"), 5)));
+
+    const auto data1_5 = client.sslConfiguration().keyingMaterial(label1_5);
+    QVERIFY(data1_5);
+    QCOMPARE(serverMaterial.first(), data1_5.value());
+
+    const auto data1_5_ctx1 = client.sslConfiguration().keyingMaterial(label1_5_ctx1);
+    QVERIFY(data1_5_ctx1);
+    QCOMPARE(serverMaterial.last(), data1_5_ctx1.value());
+
+    const auto data1_6 = client.sslConfiguration().keyingMaterial(label1_6);
+    QVERIFY(data1_6);
+    QCOMPARE_NE(data1_6.value(), data1_5.value());
+    QCOMPARE_NE(data1_6.value(), data1_5_ctx1.value());
+    QCOMPARE_NE(data1_5.value(), data1_5_ctx1.value());
 }
 
 #endif // Feature 'ssl'.

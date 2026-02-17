@@ -1288,6 +1288,28 @@ QList<QSslKeyingMaterial> QSslConfiguration::keyingMaterial() const
 /*!
     \since 6.12
 
+    Returns the keying material configuration for this SSL connection
+    of given object.
+
+    \sa keyingMaterial()
+*/
+std::optional<QSslKeyingMaterial>
+QSslConfiguration::keyingMaterial(const QSslKeyingMaterial &material) const
+{
+    for (const auto &entry : std::as_const(d->keyingMaterial)) {
+        if (entry.label() == material.label() &&
+            entry.context() == material.context() &&
+            entry.size() == material.size()) {
+            return entry;
+        }
+    }
+
+    return std::nullopt;
+}
+
+/*!
+    \since 6.12
+
     Sets the keying material configuration for this SSL connection to
     \a keyMaterial.
 

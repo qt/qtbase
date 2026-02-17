@@ -55,7 +55,7 @@ QT_IMPL_METATYPE_EXTERN(QSslKeyingMaterial)
     QSslKeyingMaterial keying("session-label", 32, "app-specific-context");
 
     // After the TLS handshake completes get data from QSslConfiguration.
-    QByteArray derived = sslConfiguration().keyingMaterial().first().value();
+    QByteArray derived = sslConfiguration().keyingMaterial(keying)->value();
 
     // Both client and server will obtain the same 'derived' bytes
     // even though they each performed the derivation independently.
