@@ -40,6 +40,25 @@ QOhosOptional<Qt::NativeGestureType> getQtGestureType(::InputEvent_AxisAction oh
     return makeEmptyQOhosOptional();
 }
 
+Qt::ScrollPhase convertArkUiAxisEventActionToQtScrollPhase(std::int32_t arkUiAxisEventAction)
+{
+    switch (arkUiAxisEventAction) {
+    case UI_AXIS_EVENT_ACTION_NONE:
+        return Qt::NoScrollPhase;
+    case UI_AXIS_EVENT_ACTION_BEGIN:
+        return Qt::ScrollBegin;
+    case UI_AXIS_EVENT_ACTION_UPDATE:
+        return Qt::ScrollUpdate;
+    case UI_AXIS_EVENT_ACTION_END:
+        return Qt::ScrollEnd;
+    case UI_AXIS_EVENT_ACTION_CANCEL:
+        return Qt::ScrollEnd;
+    }
+
+    qOhosReportFatalErrorAndAbort(
+        "Received unsupported UI_AXIS_EVENT_ACTION: %d", arkUiAxisEventAction);
+}
+
 QOhosAxisEventHandler::QOhosAxisEventHandler(
     QtOhos::QThreadSafeRef<QWindow> qWindowRef,
     QtOhos::QThreadSafeRef<QOhosInputMethodEventHandler> imEventHandlerRef)
@@ -84,7 +103,7 @@ void QOhosAxisEventHandler::handleUiAxisEvent(ArkUI_UIInputEvent *event)
         .horizontalValue = horizontalAxisValue,
         .verticalValue = verticalAxisValue,
         .eventToolType = eventToolType,
-        .axisAction = eventAxisAction,
+        .scrollPhase = convertArkUiAxisEventActionToQtScrollPhase(eventAxisAction),
         .wheelScrollLines = wheelScrollLines,
         .modifiers = readKeyModifiersFromOhosUiInputEvent(event),
     };
