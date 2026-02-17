@@ -34,6 +34,7 @@ QT_BEGIN_NAMESPACE
 class Q_GUI_EXPORT QWindowPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QWindow)
+    Q_GADGET
 
 public:
     enum PositionPolicy
@@ -41,6 +42,7 @@ public:
         WindowFrameInclusive,
         WindowFrameExclusive
     };
+    Q_ENUM(PositionPolicy)
 
     QWindowPrivate(decltype(QObjectPrivateVersion) version = QObjectPrivateVersion);
     ~QWindowPrivate() override;

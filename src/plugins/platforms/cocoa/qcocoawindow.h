@@ -7,6 +7,7 @@
 
 #include <qpa/qplatformwindow.h>
 #include <qpa/qplatformwindow_p.h>
+#include <QtGui/private/qwindow_p.h>
 #include <QRect>
 #include <QPointer>
 
@@ -81,7 +82,7 @@ public:
     void setGeometry(const QRect &rect) override;
     QRect geometry() const override;
     QRect normalGeometry() const override;
-    void setCocoaGeometry(const QRect &rect);
+    void setGeometry(const QRect &rect, QWindowPrivate::PositionPolicy positionPolicy);
 
     QMargins safeAreaMargins() const override;
 

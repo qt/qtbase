@@ -212,24 +212,6 @@ QSurfaceFormat QCocoaWindow::format() const
     return format;
 }
 
-void QCocoaWindow::setGeometry(const QRect &rectIn)
-{
-    qCDebug(lcQpaWindow) << "QCocoaWindow::setGeometry" << window() << rectIn;
-
-    QScopedValueRollback inSetGeometry(m_inSetGeometry, true);
-
-    QRect rect = rectIn;
-    // This means it is a call from QWindow::setFramePosition() and
-    // the coordinates include the frame (size is still the contents rectangle).
-    if (qt_window_private(const_cast<QWindow *>(window()))->positionPolicy
-            == QWindowPrivate::WindowFrameInclusive) {
-        const QMargins margins = frameMargins();
-        rect.moveTopLeft(rect.topLeft() + QPoint(margins.left(), margins.top()));
-    }
-
-    setCocoaGeometry(rect);
-}
-
 bool QCocoaWindow::isForeignWindow() const
 {
     return ![m_view isKindOfClass:[QNSView class]];
@@ -274,10 +256,26 @@ void QCocoaWindow::updateNormalGeometry()
     m_normalGeometry = geometry();
 }
 
-void QCocoaWindow::setCocoaGeometry(const QRect &rect)
+void QCocoaWindow::setGeometry(const QRect &rect)
 {
-    qCDebug(lcQpaWindow) << "QCocoaWindow::setCocoaGeometry" << window() << rect;
+    QScopedValueRollback inSetGeometry(m_inSetGeometry, true);
+    setGeometry(rect, qt_window_private(window())->positionPolicy);
+}
+
+void QCocoaWindow::setGeometry(const QRect &rectIn, QWindowPrivate::PositionPolicy positionPolicy)
+{
+    qCDebug(lcQpaWindow) << "QCocoaWindow::setGeometry" << window() << rectIn << positionPolicy;
     QMacAutoReleasePool pool;
+
+    QRect rect = rectIn;
+    if (positionPolicy == QWindowPrivate::WindowFrameInclusive) {
+        // This means it is a call from QWindow::setFramePosition(), so the coordinates
+        // include the frame (size is still the contents rectangle). As the functionality
+        // below operates purely in content positions, we need to remove the frame margins.
+        const QMargins margins = frameMargins();
+        rect.moveTopLeft(rect.topLeft() + QPoint(margins.left(), margins.top()));
+        qCDebug(lcQpaWindow) << "Adjusted content geometry to" << rect << "by removing frame margins" << margins;
+    }
 
     QPlatformWindow::setGeometry(rect);
 
@@ -1238,7 +1236,7 @@ void QCocoaWindow::setParent(const QPlatformWindow *parentWindow)
     // Recreate in case we need to get rid of a NSWindow, or create one
     recreateWindowIfNeeded();
 
-    setCocoaGeometry(geometry());
+    setGeometry(geometry(), QWindowPrivate::WindowFrameExclusive);
 }
 
 NSView *QCocoaWindow::view() const
