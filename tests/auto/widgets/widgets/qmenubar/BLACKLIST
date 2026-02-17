@@ -1,3 +1,7 @@
 # QTBUG-87421
 [cornerWidgets]
 android
+[task256322_highlight]
+wayland
+[pressDragRelease]
+wayland

@@ -2,5 +2,6 @@
 # QTBUG-101519
 windows-11
 android
+wayland
 [touchBeginWithGraphicsWidget]
 android
