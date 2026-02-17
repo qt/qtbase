@@ -37,8 +37,8 @@ template <typename Functor>
 qWaitFor(Functor predicate, QDeadlineTimer deadline = QDeadlineTimer(
     defaultTryTimeout.load(std::memory_order_relaxed)))
 {
-    using Internal::waitForMore;
-    using Internal::waitForSucceeded;
+    using Internal::waitForMore; // customization point
+    using Internal::waitForSucceeded; // customization point
 
     // We should not spin the event loop in case the predicate is already true,
     // otherwise we might send new events that invalidate the predicate.
