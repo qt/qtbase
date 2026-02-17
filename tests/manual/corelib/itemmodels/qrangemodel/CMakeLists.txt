@@ -1,12 +1,14 @@
 # Copyright (C) 2025 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-cmake_minimum_required(VERSION 3.16)
-project(rangemodel VERSION 0.1 LANGUAGES CXX)
+if(NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_BUILDING_QT)
+    cmake_minimum_required(VERSION 3.16)
+    project(rangemodel LANGUAGES CXX)
+    find_package(Qt6BuildInternals REQUIRED COMPONENTS STANDALONE_TEST)
+endif()
 
 find_package(Qt6 COMPONENTS
     Core Gui Widgets
-    BuildInternals
     REQUIRED
 )
 
@@ -43,8 +45,6 @@ endif()
 set_property(TARGET rangemodel APPEND PROPERTY
              QT_ANDROID_PACKAGE_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}
 )
-
-
 
 qt_internal_extend_target(rangemodel CONDITION MSVC
     COMPILE_OPTIONS
