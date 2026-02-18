@@ -14,3 +14,15 @@ endif()
 if(NOT QT_SCREW_DRIVER_LOADED)
     message(FATAL_ERROR "FindWrapScrewdriver.cmake was not loaded.")
 endif()
+
+if(NOT DEFINED Qt6GarageTools_TARGETS)
+    message(FATAL_ERROR "Qt6GarageTools_TARGETS was not defined.")
+endif()
+
+if(NOT Qt6GarageTools_TARGETS)
+    message(FATAL_ERROR "Qt6GarageTools_TARGETS was empty.")
+endif()
+
+if(NOT "Qt6::pliers" IN_LIST Qt6GarageTools_TARGETS)
+    message(FATAL_ERROR "Qt6::pliers was not in Qt6GarageTools_TARGETS.")
+endif()

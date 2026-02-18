@@ -621,7 +621,7 @@ endif()
 
     if(tool_targets)
         string(APPEND extra_cmake_statements
-"set(${QT_CMAKE_EXPORT_NAMESPACE}${package_name}Tools_TARGETS \"${tool_targets}\")")
+"set(${QT_CMAKE_EXPORT_NAMESPACE}${package_name}_TARGETS \"${tool_targets}\")")
     endif()
 
     if(package_extra_cmake_statements)
