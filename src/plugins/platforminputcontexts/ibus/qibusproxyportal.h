@@ -7,6 +7,7 @@
  * This is an auto-generated file.
  * Do not edit! All changes made to it will be lost.
  */
+// Qt-Security score:significant reason:default
 
 #ifndef QIBUSPROXYPORTAL_H
 #define QIBUSPROXYPORTAL_H

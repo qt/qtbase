@@ -8,6 +8,7 @@
  * This file may have been hand-edited. Look for HAND-EDIT comments
  * before re-generating it.
  */
+// Qt-Security score:significant reason:default
 
 #include "qibusinputcontextproxy.h"
 
