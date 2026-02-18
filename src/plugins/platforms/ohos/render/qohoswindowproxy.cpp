@@ -324,7 +324,7 @@ QOhosWindowProxy::QOhosWindowProxy(
     , m_qAbilityInstanceId(m_jsScopeData->qAbilityPeer->instanceId())
 {
     for (const auto &eventHandlerDescriptor : eventHandlerDescriptors) {
-        m_jsScopeData->registerCallbackListener(
+        m_jsScopeData->registerEventListener(
             eventHandlerDescriptor.eventName, eventHandlerDescriptor.eventHandler,
             eventHandlerDescriptor.eventHandlerFlags);
     }
@@ -1326,7 +1326,7 @@ QOhosWindowProxy::JsScopeData::~JsScopeData()
     }
 }
 
-void QOhosWindowProxy::JsScopeData::registerCallbackListener(
+void QOhosWindowProxy::JsScopeData::registerEventListener(
     const std::string &eventName,
     void (QOhosWindowProxy::JsScopeData::*handleFunction)(const QtOhos::CallbackInfo &),
     QFlags<EventHandlerFlagBits> eventHandlerFlags)
