@@ -89,9 +89,15 @@ public:
     {
         set(r);
     }
+QT_WARNING_PUSH
+// see https://gcc.gnu.org/bugzilla/show_bug.cgi?id=123985
+#if defined(Q_CC_GNU_ONLY) && Q_CC_GNU_ONLY >= 1600 && Q_CC_GNU_ONLY < 1700 && !defined(__OPTIMIZE__)
+QT_WARNING_DISABLE_GCC("-Wmaybe-uninitialized")
+#endif
     inline QRectVectorPath()
         : QVectorPath(pts, 4, nullptr, QVectorPath::RectangleHint | QVectorPath::ImplicitClose)
     { }
+QT_WARNING_POP
 
     qreal pts[8];
 };
