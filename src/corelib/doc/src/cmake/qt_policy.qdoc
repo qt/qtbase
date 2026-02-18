@@ -60,6 +60,10 @@ You can set \c behavior to one of the following options:
 
 \qtpolicydeprecatedbehavior
 
+\section1 Available Policies
+
+\annotatedlist qt-cmake-policies
+
 \sa qt_standard_project_setup
 
 */
