@@ -65,7 +65,21 @@ std::shared_ptr<void> registerOnOffMethodsBasedEventHandler(
     if (!sharedContext->optExtraOnArg.IsEmpty())
         onCallArgs.push_back(sharedContext->optExtraOnArg.Value());
     onCallArgs.push_back(jsEventHandlerRef->Value());
-    eventSourceObject.call("on", onCallArgs);
+    bool onCallSuccessful;
+    try {
+        eventSourceObject.call("on", onCallArgs);
+        onCallSuccessful = true;
+    } catch (const Napi::Error &error) {
+        onCallSuccessful = false;
+        if (options.optOnCallExceptionHandler) {
+            options.optOnCallExceptionHandler(error);
+        } else {
+            throw;
+        }
+    }
+
+    if (!onCallSuccessful)
+        return nullptr;
 
     auto eventSourceWeakRef = moveToSharedPtr(Napi::Weak(eventSourceObject));
 
