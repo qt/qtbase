@@ -8,6 +8,7 @@
 // Find card via devicediscovery like in eglfs_kms.
 // Mode restore like QEglFSKmsInterruptHandler.
 // grabWindow
+// Qt-Security score:significant reason:default
 
 #include "qlinuxfbdrmscreen.h"
 #include <QLoggingCategory>
