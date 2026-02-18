@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Marc Mutz <marc.mutz@kdab.com>, Giuseppe D'Angelo <giuseppe.dangelo@kdab.com>
 // Copyright (C) 2022 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+// Qt-Security score:significant reason:default
 
 #ifndef QXPTYPE_TRAITS_H
 #define QXPTYPE_TRAITS_H

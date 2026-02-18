@@ -14,6 +14,7 @@
 // Despite its file name, this really is not a public header.
 // It is an implementation detail of the private bootstrap library.
 //
+// Qt-Security score:significant reason:default
 
 #if 0
 // silence syncqt warnings
