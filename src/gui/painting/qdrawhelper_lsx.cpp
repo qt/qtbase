@@ -1,5 +1,6 @@
 // Copyright (C) 2024 Loongson Technology Corporation Limited.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+// Qt-Security score:significant reason:default
 
 #include <private/qdrawhelper_loongarch64_p.h>
 

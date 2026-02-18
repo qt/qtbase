@@ -1,6 +1,7 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // Copyright (C) 2004, 2005 Daniel M. Duley., (C) Carsten Haitzler and various contributors., (C) Willem Monsuwe <willem@stack.nl>
 // SPDX-License-Identifier: BSD-2-Clause AND Imlib2
+// Qt-Security score:significant reason:default
 #include <private/qimagescale_p.h>
 #include <private/qdrawhelper_p.h>
 #include <private/qimage_p.h>
