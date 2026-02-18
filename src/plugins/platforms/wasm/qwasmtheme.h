@@ -29,6 +29,9 @@ constexpr auto contrastPreferenceMore =  "(prefers-contrast: more)";
 constexpr auto contrastPreferenceLess =  "(prefers-contrast: less)";
 constexpr auto contrastPreferenceCustom =  "(prefers-contrast: custom)";
 
+// this reflects @media/prefers-reduced-motion
+constexpr auto reducedMotionPreferenceReduce = "(prefers-reduced-motion: reduce)";
+
 template <typename MediaName, typename CallbackFn, typename Container>
 void registerCallbacks(std::initializer_list<MediaName> mediaNames, CallbackFn callback, Container &callbacksContainer)
 {
@@ -56,6 +59,7 @@ public:
     Qt::ColorScheme colorScheme() const override;
     void requestColorScheme(Qt::ColorScheme scheme) override;
     Qt::ContrastPreference contrastPreference() const override;
+    Qt::MotionPreference motionPreference() const override;
     QVariant themeHint(ThemeHint hint) const override;
     const QFont *font(Font type) const override;
     bool usePlatformNativeDialog(DialogType type) const override;
@@ -65,6 +69,7 @@ public:
 
     void onColorSchemeChange();
     void onContrastPreferenceChange();
+    void onMotionPreferenceChange();
 
 private:
     Qt::ColorScheme m_colorScheme = Qt::ColorScheme::Unknown;
@@ -73,6 +78,8 @@ private:
     mutable bool m_paletteIsDirty = false;
     Qt::ContrastPreference m_contrastPreference;
     std::vector<QWasmEventHandler> m_contrastPreferenceChangeCallbacks;
+    Qt::MotionPreference m_motionPreference;
+    QWasmEventHandler m_motionPreferenceChangeCallback;
 };
 
 QT_END_NAMESPACE

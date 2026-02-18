@@ -46,6 +46,13 @@ Qt::ContrastPreference getContrastPreferenceFromMedia()
         return Qt::ContrastPreference::NoPreference;
     }
 }
+
+Qt::MotionPreference getMotionPreferenceFromMedia()
+{
+    if (matchMedia(reducedMotionPreferenceReduce))
+        return Qt::MotionPreference::ReducedMotion;
+    return Qt::MotionPreference::NoPreference;
+}
 } // namespace
 
 using namespace Qt::StringLiterals;
@@ -56,6 +63,8 @@ QWasmTheme::QWasmTheme()
     qCDebug(lcQpaThemeWasm) << "Initializing Wasm theme. Color scheme: " << m_colorScheme;
     m_contrastPreference = getContrastPreferenceFromMedia();
     qCDebug(lcQpaThemeWasm) << "Initializing Wasm theme. Contrast preference: " << m_contrastPreference;
+    m_motionPreference = getMotionPreferenceFromMedia();
+    qCDebug(lcQpaThemeWasm) << "Initializing Wasm theme. Motion preference: " << m_motionPreference;
 
     for (auto family : QFontDatabase::families())
         if (QFontDatabase::isFixedPitch(family))
@@ -73,6 +82,10 @@ QWasmTheme::QWasmTheme()
               contrastPreferenceCustom },
             [this](emscripten::val) { QWasmTheme::onContrastPreferenceChange(); },
             m_contrastPreferenceChangeCallbacks);
+    registerCallbacks(
+            { reducedMotionPreferenceReduce },
+            [this](emscripten::val) { QWasmTheme::onMotionPreferenceChange(); },
+            m_motionPreferenceChangeCallback);
 }
 
 QWasmTheme::~QWasmTheme()
@@ -110,6 +123,11 @@ void QWasmTheme::requestColorScheme(Qt::ColorScheme scheme)
 Qt::ContrastPreference QWasmTheme::contrastPreference() const
 {
     return m_contrastPreference;
+}
+
+Qt::MotionPreference QWasmTheme::motionPreference() const
+{
+    return m_motionPreference;
 }
 
 QVariant QWasmTheme::themeHint(ThemeHint hint) const
@@ -163,5 +181,14 @@ void QWasmTheme::onContrastPreferenceChange()
     }
 }
 
+void QWasmTheme::onMotionPreferenceChange()
+{
+    auto motionPreference = getMotionPreferenceFromMedia();
+    if (m_motionPreference != motionPreference) {
+        qCDebug(lcQpaThemeWasm) << "Motion preference changed to " << motionPreference;
+        m_motionPreference = motionPreference;
+        QWindowSystemInterface::handleThemeChange<QWindowSystemInterface::SynchronousDelivery>();
+    }
+}
 
 QT_END_NAMESPACE
