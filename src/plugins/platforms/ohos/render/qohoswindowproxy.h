@@ -272,7 +272,7 @@ private:
             std::shared_ptr<QtOhos::QAbilityPeer> qAbilityPeer);
         ~JsScopeData();
 
-        void registerCallbackListener(
+        void registerEventListener(
             const std::string &eventName,
             void (JsScopeData::*handleFunctions)(const QtOhos::CallbackInfo &),
             QFlags<EventHandlerFlagBits> eventHandlerFlags);
