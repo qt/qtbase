@@ -18,7 +18,6 @@
         android:hardwareAccelerated="true"
         android:label="@APP_NAME@"
         @APP_ICON@
-        android:requestLegacyExternalStorage="true"
         android:allowBackup="true"
         android:fullBackupOnly="false">
         <activity
