@@ -272,7 +272,7 @@ private:
             std::shared_ptr<QtOhos::QAbilityPeer> qAbilityPeer);
         ~JsScopeData();
 
-        void registerEventListener(
+        std::shared_ptr<void> registerEventListener(
             const std::string &eventName,
             void (JsScopeData::*handleFunctions)(const QtOhos::CallbackInfo &),
             QFlags<EventHandlerFlagBits> eventHandlerFlags);
@@ -300,6 +300,7 @@ private:
         std::shared_ptr<QtOhos::QAbilityPeer> qAbilityPeer;
         std::shared_ptr<void> m_windowFrameMouseFilterHandle;
         std::shared_ptr<void> m_windowFrameTouchFilterHandle;
+        std::shared_ptr<void> m_eventListenersHandle;
         QOhosConsumer<NonClientAreaMouseEvent> nonClientAreaMouseEventConsumer;
         QOhosConsumer<NonClientAreaTouchEvent> nonClientAreaTouchEventConsumer;
         std::shared_ptr<QArkUi::JsWindowRef> jsWindowRef;
