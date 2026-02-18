@@ -31,9 +31,8 @@ public:
     std::vector<QOhosDisplayInfo> getRegisteredDisplayInfos();
 
 private:
-    QOhosDisplayManager(QtOhos::JsState &);
+    QOhosDisplayManager(QtOhos::JsState &jsState, CreateInfo createInfo);
 
-    void initialize(QtOhos::JsState &jsState, CreateInfo createInfo);
     void registerDisplayCallbackListener(
         QNapi::Object displayModule, const std::string &eventName,
         QOhosConsumer<QtOhos::JsState &, QOhosDisplayInfo::JsDisplayId> handleFunction);
