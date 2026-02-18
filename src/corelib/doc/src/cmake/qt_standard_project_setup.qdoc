@@ -54,13 +54,21 @@ defined before, with possibly confusing results. It does the following things:
 \endlist
 
 Since Qt 6.5, it is possible to change the default behavior of Qt's CMake
-API by opting in to changes from newer Qt versions. If \c{REQUIRES} is
-specified, all suggested changes introduced in Qt up to \c{REQUIRES} are enabled,
-and using an older Qt version will result in an error.
-If additionally \c{SUPPORTS_UP_TO} has been specified, any new changes introduced
-in versions up to \c{SUPPORTS_UP_TO} are also enabled (but using an older Qt
-version is not an error). This is similar to CMake's policy concept
-(compare \l{cmake_policy}).
+API by opting in to behavior changes from newer Qt versions via
+\l{Qt CMake policies}. This is similar to CMake's own policy concept
+(compare \l{cmake_policy}). If \c{REQUIRES} is specified, all policies
+introduced in Qt versions up to and including \c{REQUIRES} are automatically
+set to \c{NEW}, and using an older Qt version will result in an error.
+For example, specifying \c{REQUIRES 6.8} enables policies QTP0001 through
+QTP0005. If \c{SUPPORTS_UP_TO} is also specified, policies up to that version
+are enabled as well, but without requiring that particular Qt version to be
+present.
+
+The following policies are available:
+
+\annotatedlist qt-cmake-policies
+
+See \l{qt_policy} for details on manually setting individual policies.
 
 On platforms that support \c{RPATH} (other than Apple platforms), two values
 are appended to the \c{CMAKE_INSTALL_RPATH} variable by this command.
