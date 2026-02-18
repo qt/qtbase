@@ -4,6 +4,7 @@
 # Android template files
 
 set(template_files
+    "${CMAKE_CURRENT_SOURCE_DIR}/.gitignore"
     "${CMAKE_CURRENT_SOURCE_DIR}/AndroidManifest.xml"
     "${CMAKE_CURRENT_SOURCE_DIR}/build.gradle")
 

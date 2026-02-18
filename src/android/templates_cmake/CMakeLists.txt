@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 set(templates_files
+    "${CMAKE_CURRENT_SOURCE_DIR}/.gitignore"
     "${CMAKE_CURRENT_SOURCE_DIR}/settings.gradle.in"
     "${CMAKE_CURRENT_SOURCE_DIR}/gradle.properties.in"
 )
