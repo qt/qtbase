@@ -75,9 +75,7 @@ void QOhosDisplayManager::unregisterDisplay(JsDisplayId displayId)
 std::shared_ptr<QOhosDisplayManager> QOhosDisplayManager::create(
     QtOhos::JsState &jsState, CreateInfo createInfo)
 {
-   auto jsScopeData = std::shared_ptr<QOhosDisplayManager>(new QOhosDisplayManager(jsState));
-   jsScopeData->initialize(jsState, std::move(createInfo));
-   return jsScopeData;
+    return std::shared_ptr<QOhosDisplayManager>(new QOhosDisplayManager(jsState, std::move(createInfo)));
 }
 
 std::vector<QOhosDisplayInfo> QOhosDisplayManager::getRegisteredDisplayInfos()
@@ -85,11 +83,7 @@ std::vector<QOhosDisplayInfo> QOhosDisplayManager::getRegisteredDisplayInfos()
     return m_registeredDisplayInfos;
 }
 
-QOhosDisplayManager::QOhosDisplayManager(QtOhos::JsState &)
-{
-}
-
-void QOhosDisplayManager::initialize(QtOhos::JsState &jsState, CreateInfo createInfo)
+QOhosDisplayManager::QOhosDisplayManager(QtOhos::JsState &jsState, CreateInfo createInfo)
 {
     for (const auto &displayInfo : createInfo.displayInfos) {
         if (!displayInfo.shouldIgnoreDisplay() && tryRegisterDisplay(jsState, displayInfo.id)) {
