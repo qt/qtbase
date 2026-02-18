@@ -241,6 +241,9 @@ QWaylandScreen *QWaylandScreen::waylandScreenFromWindow(QWindow *window)
 
 QWaylandScreen *QWaylandScreen::fromWlOutput(::wl_output *output)
 {
+    if(!output)
+        return nullptr;
+
     if (auto *o = QtWayland::wl_output::fromObject(output))
         return static_cast<QWaylandScreen *>(o);
     return nullptr;
