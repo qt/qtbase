@@ -1967,7 +1967,6 @@ bool QDockAreaLayoutInfo::restoreState(QDataStream &stream, QList<QDockWidget*> 
                 QPlaceHolderItem *placeHolder = new QPlaceHolderItem;
                 QDockAreaLayoutItem item(placeHolder);
 
-                placeHolder->objectName = name;
                 placeHolder->window = flags & StateFlagFloating;
                 placeHolder->hidden = !(flags & StateFlagVisible);
                 if (placeHolder->window) {
@@ -1980,6 +1979,7 @@ bool QDockAreaLayoutInfo::restoreState(QDataStream &stream, QList<QDockWidget*> 
                 }
                 if (item.size != -1)
                     item.flags |= QDockAreaLayoutItem::KeepSize;
+                placeHolder->objectName = std::move(name);
                 if (!testing)
                     item_list.append(item);
             } else {
