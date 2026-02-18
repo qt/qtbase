@@ -11,6 +11,7 @@
 //
 // We mean it.
 //
+// Qt-Security score:significant reason:default
 
 #ifndef QFUNCTIONS_P_H
 #define QFUNCTIONS_P_H

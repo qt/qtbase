@@ -2,6 +2,7 @@
 // Copyright (C) 2013 John Layt <jlayt@kde.org>
 // Copyright © 2004-2023 Unicode, Inc.
 // SPDX-License-Identifier: Unicode-3.0
+// Qt-Security score:significant reason:default
 
 #ifndef QTIMEZONEPRIVATE_DATA_P_H
 #define QTIMEZONEPRIVATE_DATA_P_H

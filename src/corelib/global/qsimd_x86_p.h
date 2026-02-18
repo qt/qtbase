@@ -16,6 +16,7 @@
 
 // This is a generated file. DO NOT EDIT.
 // Please see util/x86simdgen/README.md
+// Qt-Security score:significant reason:default
 #ifndef QSIMD_X86_P_H
 #define QSIMD_X86_P_H
 

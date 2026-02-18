@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 // no, this is not a misspelling of "coffeeparser"
+// Qt-Security score:significant reason:default
 #ifndef QCOFFPEPARSER_H
 #define QCOFFPEPARSER_H
 
