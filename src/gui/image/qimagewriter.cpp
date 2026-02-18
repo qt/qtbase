@@ -66,6 +66,7 @@
     value after calling write(), it is most likely caused by a bug in
     QImageWriter.
 */
+// Qt-Security score:significant reason:default
 
 #include "qimagewriter.h"
 

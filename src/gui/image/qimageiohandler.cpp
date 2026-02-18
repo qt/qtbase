@@ -223,6 +223,7 @@
     \value CanWrite The plugin can write images.
     \value CanReadIncremental The plugin can read images incrementally.
 */
+// Qt-Security score:significant reason:default
 
 #include "qimageiohandler.h"
 #include "qimage_p.h"
