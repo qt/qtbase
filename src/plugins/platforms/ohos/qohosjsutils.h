@@ -27,6 +27,7 @@ struct OnOffMethodsBasedEventHandlerOptions
     std::function<bool(QNapi::Object)> optEventSourceAliveCheckFunc;
     QOhosOptional<QNapi::ValueWrapper> extraOnArg;
     QOhosOptional<QNapi::ValueWrapper> extraOffArg;
+    std::function<void(const Napi::Error &)> optOnCallExceptionHandler;
 };
 
 template<typename T>
