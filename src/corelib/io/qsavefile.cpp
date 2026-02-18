@@ -89,13 +89,14 @@ bool QSaveFilePrivate::open(QIODevice::OpenMode mode)
         return false;
     };
 
-    bool requiresDirectWrite = false;
+#if defined(Q_OS_WIN) || defined(Q_OS_ANDROID)
+    const bool requiresDirectWrite =
 #ifdef Q_OS_WIN
-    // check if it is an Alternate Data Stream
-    requiresDirectWrite = finalFileName == fileName && fileName.indexOf(u':', 2) > 1;
+        // check if it is an Alternate Data Stream
+        finalFileName == fileName && fileName.indexOf(u':', 2) > 1;
 #elif defined(Q_OS_ANDROID)
-    // check if it is a content:// URL
-    requiresDirectWrite  = fileName.startsWith("content://"_L1);
+        // check if it is a content:// URL
+        fileName.startsWith("content://"_L1);
 #endif
     if (requiresDirectWrite) {
         // yes, we can't rename onto it...
@@ -112,6 +113,7 @@ bool QSaveFilePrivate::open(QIODevice::OpenMode mode)
         }
         return false;
     }
+#endif // Q_OS_WIN || Q_OS_ANDROID
 
     fileEngine.reset(new QTemporaryFileEngine(&finalFileName,
                                               QTemporaryFileEngine::Win32NonShared));
