@@ -88,6 +88,8 @@ function(_qt_internal_android_copy_dynamic_feature target dynamic_feature)
         COMMENT "Copying ${dynamic_feature} dynamic feature to ${target} deployment directory"
     )
     add_custom_target(${target}_deploy_dynamic_features DEPENDS "${output_file_path}")
+    _qt_internal_android_add_deploy_libraries_dependency(${target}
+        ${target}_deploy_dynamic_features)
 endfunction()
 
 # Generates the feature name strings and copy them to the respective deployment directory.

@@ -266,14 +266,29 @@ function(_qt_internal_android_generate_target_build_gradle target)
     set_property(TARGET ${target} APPEND PROPERTY _qt_android_deployment_files "${out_file}")
 endfunction()
 
+# Registers a library copy target as a dependency of ${target}_deploy_libraries.
+function(_qt_internal_android_add_deploy_libraries_dependency target dep_target)
+    if(NOT TARGET ${dep_target})
+        return()
+    endif()
+    if(NOT TARGET ${target}_deploy_libraries)
+        add_custom_target(${target}_deploy_libraries)
+    endif()
+    add_dependencies(${target}_deploy_libraries ${dep_target})
+endfunction()
+
 # Prepares the artifacts for the gradle build of the target.
 function(_qt_internal_android_prepare_gradle_build target)
     _qt_internal_android_get_target_android_build_dir(android_build_dir ${target})
     _qt_internal_android_get_target_deployment_dir(deployment_dir ${target})
 
-    _qt_internal_android_copy_gradle_files(${target} "${android_build_dir}")
-    _qt_internal_android_copy_target_package_sources(${target} "${deployment_dir}")
-    _qt_internal_android_copy_android_resources(${target} "${deployment_dir}")
+    # Gradle files and resources are ABI-independent, only the main ABI packages them.
+    if(NOT QT_IS_ANDROID_MULTI_ABI_EXTERNAL_PROJECT)
+        _qt_internal_android_copy_gradle_files(${target} "${android_build_dir}")
+        _qt_internal_android_copy_target_package_sources(${target} "${deployment_dir}")
+        _qt_internal_android_copy_android_resources(${target} "${deployment_dir}")
+    endif()
+
     _qt_internal_android_copy_app_binary(${target} "${deployment_dir}")
     _qt_internal_android_copy_stdlib(${target} "${deployment_dir}")
     _qt_internal_android_copy_extra_libs(${target} "${deployment_dir}")
@@ -282,6 +297,14 @@ function(_qt_internal_android_prepare_gradle_build target)
     _qt_internal_android_copy_non_qt_linked_libs(${target} "${deployment_dir}")
     _qt_internal_android_copy_qt_dependencies(${target} "${deployment_dir}")
     _qt_internal_android_copy_qml_plugins(${target} "${deployment_dir}")
+
+    # Multi-ABI external builds need to only care about the libraries deployment.
+    if(QT_IS_ANDROID_MULTI_ABI_EXTERNAL_PROJECT)
+        add_custom_target(qt_internal_${target}_copy_apk_dependencies
+            DEPENDS ${target}_deploy_libraries)
+        return()
+    endif()
+
     _qt_internal_android_generate_libs_xml(${target} "${deployment_dir}")
 
     _qt_internal_android_generate_bundle_gradle_properties(${target})
@@ -337,17 +360,14 @@ function(_qt_internal_android_add_gradle_build target type)
     _qt_internal_android_get_output_package_name(package_build_file_path ${target} ${type})
 
     set(extra_deps "")
-    if(TARGET ${target}_copy_feature_names)
-        list(APPEND extra_deps ${target}_copy_feature_names)
-    endif()
-
-    if(TARGET ${target}_deploy_dynamic_features)
-        list(APPEND extra_deps ${target}_deploy_dynamic_features)
-    endif()
-
-    foreach(qml_dep_target ${target}_copy_qml_plugins ${target}_build_qml_bundle)
-        if(TARGET ${qml_dep_target})
-            list(APPEND extra_deps ${qml_dep_target})
+    foreach(dep ${target}_copy_feature_names
+                 ${target}_copy_apk_dependencies
+                 ${target}_copy_gradle_files
+                 ${target}_copy_android_res_files
+                 ${target}_build_qml_bundle
+                 ${target}_update_libs_xml)
+        if(TARGET ${dep})
+            list(APPEND extra_deps ${dep})
         endif()
     endforeach()
 
@@ -366,16 +386,7 @@ function(_qt_internal_android_add_gradle_build target type)
         DEPENDS
             ${target}
             ${gradle_scripts}
-            ${target}_copy_gradle_files
-            ${target}_copy_android_res_files
-            ${target}_copy_app_binary
-            ${target}_copy_stdlib
-            ${target}_copy_non_qt_linked_libs
-            ${target}_copy_extra_libs
-            ${target}_copy_extra_plugins
-            ${target}_copy_qml_plugins
-            ${target}_copy_qt_files
-            ${target}_update_libs_xml
+            ${target}_deploy_libraries
             ${extra_deps}
         WORKING_DIRECTORY
             "${android_build_dir}"
@@ -903,6 +914,7 @@ function(_qt_internal_android_copy_stdlib target deployment_dir)
     )
 
     add_custom_target(${target}_copy_stdlib DEPENDS "${stdlib_dst}")
+    _qt_internal_android_add_deploy_libraries_dependency(${target} ${target}_copy_stdlib)
 endfunction()
 
 # Copies additional native libraries requested via QT_ANDROID_EXTRA_LIBS.
@@ -918,7 +930,6 @@ function(_qt_internal_android_copy_extra_libs target deployment_dir)
 
     get_target_property(extra_libs ${target} QT_ANDROID_EXTRA_LIBS)
     if(NOT extra_libs)
-        add_custom_target(${target}_copy_extra_libs)
         return()
     endif()
 
@@ -967,6 +978,7 @@ function(_qt_internal_android_copy_extra_libs target deployment_dir)
     )
 
     add_custom_target(${target}_copy_extra_libs DEPENDS ${copy_outputs})
+    _qt_internal_android_add_deploy_libraries_dependency(${target} ${target}_copy_extra_libs)
 endfunction()
 
 # Copies additional plugins requested via QT_ANDROID_EXTRA_PLUGINS.
@@ -982,7 +994,6 @@ function(_qt_internal_android_copy_extra_plugins target deployment_dir)
 
     get_target_property(extra_plugins ${target} QT_ANDROID_EXTRA_PLUGINS)
     if(NOT extra_plugins)
-        add_custom_target(${target}_copy_extra_plugins)
         return()
     endif()
 
@@ -1054,6 +1065,7 @@ function(_qt_internal_android_copy_extra_plugins target deployment_dir)
         COMMENT "Copying extra plugins for ${target}"
         VERBATIM
     )
+    _qt_internal_android_add_deploy_libraries_dependency(${target} ${target}_copy_extra_plugins)
 endfunction()
 
 function(_qt_internal_android_get_plugin_output_filename target out_filename)
@@ -1113,7 +1125,6 @@ function(_qt_internal_android_copy_qml_plugins target deployment_dir)
     endforeach()
 
     if(NOT copy_commands)
-        add_custom_target(${target}_copy_qml_plugins)
         return()
     endif()
 
@@ -1123,12 +1134,12 @@ function(_qt_internal_android_copy_qml_plugins target deployment_dir)
         COMMENT "Copying QML plugin targets for ${target}"
         VERBATIM
     )
+    _qt_internal_android_add_deploy_libraries_dependency(${target} ${target}_copy_qml_plugins)
 endfunction()
 
 # Copies non-Qt shared libraries linked to the target.
 function(_qt_internal_android_copy_non_qt_linked_libs target deployment_dir)
     if(QT_NO_COLLECT_BUILD_TREE_APK_DEPS)
-        add_custom_target(${target}_copy_non_qt_linked_libs)
         return()
     endif()
 
@@ -1183,7 +1194,6 @@ function(_qt_internal_android_copy_non_qt_linked_libs target deployment_dir)
     list(REMOVE_DUPLICATES linked_libs)
 
     if(NOT linked_libs)
-        add_custom_target(${target}_copy_non_qt_linked_libs)
         return()
     endif()
 
@@ -1201,6 +1211,8 @@ function(_qt_internal_android_copy_non_qt_linked_libs target deployment_dir)
         COMMENT "Copying linked shared libraries for ${target}"
         VERBATIM
     )
+    _qt_internal_android_add_deploy_libraries_dependency(${target}
+        ${target}_copy_non_qt_linked_libs)
 endfunction()
 
 # Copies (or symlinks) the app's binary file to the deployment dir.
@@ -1226,6 +1238,7 @@ function(_qt_internal_android_copy_app_binary target deployment_dir)
         VERBATIM
         ${uses_terminal}
     )
+    _qt_internal_android_add_deploy_libraries_dependency(${target} ${target}_copy_app_binary)
 endfunction()
 
 # Returns command to deploy a file or create a symlink to the deployment dir.
@@ -1653,16 +1666,17 @@ function(_qt_internal_android_copy_qt_dependencies target deployment_dir)
     list(REMOVE_DUPLICATES copy_depends)
     list(FILTER copy_depends EXCLUDE REGEX "^$")
 
-    if(copy_commands)
-        add_custom_target(${target}_copy_qt_files
-            ${copy_commands}
-            DEPENDS ${copy_depends}
-            COMMENT "Copying Qt deployment files for ${target}"
-            VERBATIM
-        )
-    else()
-        add_custom_target(${target}_copy_qt_files)
+    if(NOT copy_commands)
+        return()
     endif()
+
+    add_custom_target(${target}_copy_qt_files
+        ${copy_commands}
+        DEPENDS ${copy_depends}
+        COMMENT "Copying Qt deployment files for ${target}"
+        VERBATIM
+    )
+    _qt_internal_android_add_deploy_libraries_dependency(${target} ${target}_copy_qt_files)
 endfunction()
 
 # Appends a unique lib name for the target to the libs.xml section.
@@ -2060,6 +2074,12 @@ function(_qt_internal_android_copy_qml_dependencies target deployment_dir)
 
     if(qml_plugins)
         set_property(TARGET ${target} APPEND PROPERTY _qt_android_qml_plugins "${qml_plugins}")
+    endif()
+
+    # TODO: don't call qmlimportscanner again at all for multi-ABI external builds.
+    # QML assets are ABI-independent, only the main ABI packages them.
+    if(QT_IS_ANDROID_MULTI_ABI_EXTERNAL_PROJECT)
+        return()
     endif()
 
     set(qml_bundle_dir "${deployment_dir}/assets/android_rcc_bundle")
