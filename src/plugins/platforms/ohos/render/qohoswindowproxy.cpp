@@ -323,11 +323,14 @@ QOhosWindowProxy::QOhosWindowProxy(
     , m_nodeXComponent(windowProxyData.nodeXComponent)
     , m_qAbilityInstanceId(m_jsScopeData->qAbilityPeer->instanceId())
 {
+    std::vector<std::shared_ptr<void>> eventListenersHandles;
     for (const auto &eventHandlerDescriptor : eventHandlerDescriptors) {
-        m_jsScopeData->registerEventListener(
-            eventHandlerDescriptor.eventName, eventHandlerDescriptor.eventHandler,
-            eventHandlerDescriptor.eventHandlerFlags);
+        eventListenersHandles.push_back(
+            m_jsScopeData->registerEventListener(
+                eventHandlerDescriptor.eventName, eventHandlerDescriptor.eventHandler,
+                eventHandlerDescriptor.eventHandlerFlags));
     }
+    m_jsScopeData->m_eventListenersHandle = QtOhos::moveToSharedPtr(std::move(eventListenersHandles));
 }
 
 QOhosWindowProxy::~QOhosWindowProxy()
@@ -1303,11 +1306,6 @@ QOhosWindowProxy::JsScopeData::~JsScopeData()
         return;
     }
 
-    if (!windowDestroyedFromSystem) {
-        for (const auto &eventHandlerDescriptor : eventHandlerDescriptors)
-            jsWindowRef->call("off", {eventHandlerDescriptor.eventName});
-    }
-
     QtOhos::JsWindowsTracker::tagWindowAsClosing(jsWindowRef->jsObject(), "QOhosWindowProxy::JsScopeData destructor");
 
     if (windowProxyType == WindowProxyType::MainWindow) {
@@ -1326,7 +1324,7 @@ QOhosWindowProxy::JsScopeData::~JsScopeData()
     }
 }
 
-void QOhosWindowProxy::JsScopeData::registerEventListener(
+std::shared_ptr<void> QOhosWindowProxy::JsScopeData::registerEventListener(
     const std::string &eventName,
     void (QOhosWindowProxy::JsScopeData::*handleFunction)(const QtOhos::CallbackInfo &),
     QFlags<EventHandlerFlagBits> eventHandlerFlags)
@@ -1334,60 +1332,59 @@ void QOhosWindowProxy::JsScopeData::registerEventListener(
 
     std::weak_ptr<JsScopeData> weakSelf = shared_from_this();
     bool ignoreWhenAbilityIsTerminating = !eventHandlerFlags.testFlag(EventHandlerFlagBits::allowCallWhenAbilityIsTerminating);
-    try {
-        jsWindowRef->call(
-            "on",
-            {
-                eventName,
-                [weakSelf, handleFunction, eventName, ignoreWhenAbilityIsTerminating](const QtOhos::CallbackInfo &cbInfo) {
-                    auto self = weakSelf.lock();
-                    if (Q_UNLIKELY(!self)) {
-                        qOhosPrintfWarning(
-                            "callback '%s' called for destroyed QOhosWindowProxy::JsScopeData, ignoring",
-                            eventName.c_str());
-                        return;
-                    }
 
-                    if (self->isWindowClosing() && ignoreWhenAbilityIsTerminating) {
-                        qOhosPrintfError(
-                            "QOhosWindowProxy: Received callback for event '%s' during termination of the related QAbility.",
-                            eventName.c_str());
-                        return;
-                    }
+    return QtOhos::registerOnOffMethodsBasedEventHandler(
+        jsWindowRef->jsObject(), eventName,
+        [weakSelf, handleFunction, eventName, ignoreWhenAbilityIsTerminating](const QtOhos::CallbackInfo &cbInfo) {
+            auto self = weakSelf.lock();
+            if (Q_UNLIKELY(!self)) {
+                qOhosPrintfWarning(
+                    "callback '%s' called for destroyed QOhosWindowProxy::JsScopeData, ignoring",
+                    eventName.c_str());
+                return;
+            }
 
-                    if (Q_UNLIKELY(self->windowDestroyedFromSystem)) {
-                        qOhosPrintfError(
-                            "QOhosWindowProxy: Received callback for event '%s' after WINDOW_DESTROYED",
-                            eventName.c_str());
-                        return;
-                    }
+            if (self->isWindowClosing() && ignoreWhenAbilityIsTerminating) {
+                qOhosPrintfError(
+                    "QOhosWindowProxy: Received callback for event '%s' during termination of the related QAbility.",
+                    eventName.c_str());
+                return;
+            }
 
-                    ((*self).*handleFunction)(cbInfo);
-                }
-            });
-    } catch (const Napi::Error &error) {
-        constexpr std::uint32_t capabilityNotSupportedErrorCode = 801;
-        constexpr std::uint32_t windowStateIsAbnormalErrorCode = 1300002;
+            if (Q_UNLIKELY(self->windowDestroyedFromSystem)) {
+                qOhosPrintfError(
+                    "QOhosWindowProxy: Received callback for event '%s' after WINDOW_DESTROYED",
+                    eventName.c_str());
+                return;
+            }
 
-        const QSet<std::uint32_t> ignorableErrorCodes = {
-            capabilityNotSupportedErrorCode,
-            windowStateIsAbnormalErrorCode,
-        };
+            ((*self).*handleFunction)(cbInfo);
+        },
+        {
+            .optOnCallExceptionHandler = [&](const Napi::Error &error) {
+                constexpr std::uint32_t capabilityNotSupportedErrorCode = 801;
+                constexpr std::uint32_t windowStateIsAbnormalErrorCode = 1300002;
 
-        auto errorCode = QtOhos::tryGetCodeFromJsBusinessError(error);
+                const QSet<std::uint32_t> ignorableErrorCodes = {
+                    capabilityNotSupportedErrorCode,
+                    windowStateIsAbnormalErrorCode,
+                };
 
-        auto ignorableError =
-            eventHandlerFlags.testFlag(EventHandlerFlagBits::allowEventHandlerRegistrationFailure)
-            && errorCode.hasValue()
-            && ignorableErrorCodes.contains(errorCode.value());
+                auto errorCode = QtOhos::tryGetCodeFromJsBusinessError(error);
 
-        if (!ignorableError)
-            throw;
+                auto ignorableError =
+                    eventHandlerFlags.testFlag(EventHandlerFlagBits::allowEventHandlerRegistrationFailure)
+                    && errorCode.hasValue()
+                    && ignorableErrorCodes.contains(errorCode.value());
 
-        qOhosPrintfWarning(
-            "%s: Ignored error %u while registering for window event '%s'",
-            Q_FUNC_INFO, errorCode.value(), eventName.c_str());
-    }
+                if (!ignorableError)
+                    throw;
+
+                qOhosPrintfWarning(
+                    "%s: Ignored error %u while registering for window event '%s'",
+                    Q_FUNC_INFO, errorCode.value(), eventName.c_str());
+            },
+        });
 }
 
 std::shared_ptr<void> QOhosWindowProxy::JsScopeData::registerSubWindowCloseHandler(
