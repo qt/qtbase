@@ -1,6 +1,7 @@
 // Copyright (C) 2019 The Qt Company Ltd.
 // Copyright © 2004-2023 Unicode, Inc.
 // SPDX-License-Identifier: Unicode-3.0
+// Qt-Security score:significant reason:default
 
 #ifndef QROMANCALENDAR_DATA_P_H
 #define QROMANCALENDAR_DATA_P_H

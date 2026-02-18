@@ -1,6 +1,7 @@
 // Copyright (C) 2020 The Qt Company Ltd.
 // Copyright (C) 2016 by Southwest Research Institute (R)
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+// Qt-Security score:significant reason:default
 
 #include "qfloat16.h"
 #include "private/qsimd_p.h"

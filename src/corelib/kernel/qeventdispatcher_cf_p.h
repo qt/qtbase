@@ -1,5 +1,6 @@
 // Copyright (c) 2007-2008, Apple, Inc.
 // SPDX-License-Identifier: BSD-3-Clause
+// Qt-Security score:significant reason:default
 
 #ifndef QEVENTDISPATCHER_CF_P_H
 #define QEVENTDISPATCHER_CF_P_H

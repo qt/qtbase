@@ -15,6 +15,7 @@
 // along with this software. If not, see
 // <http://creativecommons.org/publicdomain/zero/1.0/>.
 ///
+// Qt-Security score:significant reason:default
 
 #ifndef Q23_TL_EXPECTED_HPP
 #define Q23_TL_EXPECTED_HPP
