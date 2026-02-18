@@ -11,6 +11,7 @@
 ** Do not edit! All changes made to it will be lost.
 **
 ****************************************************************************/
+// Qt-Security score:significant reason:default
 
 #ifndef QOPENGLVERSIONFUNCTIONS_4_4_CORE_H
 #define QOPENGLVERSIONFUNCTIONS_4_4_CORE_H

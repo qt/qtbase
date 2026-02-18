@@ -10,6 +10,7 @@
 ** Do not edit! All changes made to it will be lost.
 **
 ****************************************************************************/
+// Qt-Security score:significant reason:default
 
 #include "qopenglfunctions_4_3_compatibility.h"
 #include "qopenglcontext.h"

@@ -11,6 +11,7 @@
 ** Do not edit! All changes made to it will be lost.
 **
 ****************************************************************************/
+// Qt-Security score:significant reason:default
 
 #include "qopenglversionfunctions.h"
 #include "qopenglversionfunctions_p.h"

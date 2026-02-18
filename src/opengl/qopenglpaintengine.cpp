@@ -25,6 +25,7 @@
 */
 
 // #define QT_OPENGL_CACHE_AS_VBOS
+// Qt-Security score:significant reason:default
 
 #include <private/qopenglgradientcache_p.h>
 #include <private/qopengltexturecache_p.h>

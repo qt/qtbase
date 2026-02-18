@@ -11,6 +11,7 @@
 //
 // We mean it.
 //
+// Qt-Security score:significant reason:default
 
 #ifndef QOPENGLTEXTURECACHE_P_H
 #define QOPENGLTEXTURECACHE_P_H

@@ -11,6 +11,7 @@
 //
 // We mean it.
 //
+// Qt-Security score:significant reason:default
 
 #ifndef QOPENGLTEXTUREUPLOADER_P_H
 #define QOPENGLTEXTUREUPLOADER_P_H

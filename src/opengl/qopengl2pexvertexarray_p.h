@@ -11,6 +11,7 @@
 //
 // We mean it.
 //
+// Qt-Security score:significant reason:default
 
 #ifndef QOPENGL2PEXVERTEXARRAY_P_H
 #define QOPENGL2PEXVERTEXARRAY_P_H

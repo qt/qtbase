@@ -180,6 +180,7 @@
     Transformations, clipping, opacity, and composition modes set using QPainter
     will be respected when using the custom shader hook.
 */
+// Qt-Security score:significant reason:default
 
 #ifndef QOPENGLENGINE_SHADER_MANAGER_H
 #define QOPENGLENGINE_SHADER_MANAGER_H
