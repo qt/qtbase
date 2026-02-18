@@ -146,9 +146,6 @@ function(_qt_internal_android_generate_dynamic_feature_manifest target dynamic_f
     _qt_internal_android_get_template_path(template_file ${target}
         "dynamic_feature/${android_manifest_filename}")
 
-    set(APP_TARGET "${target}")
-    set(TITLE_VAR "@string/${dynamic_feature}_title")
-
     set(output_file "${dynamic_feature_deployment_dir}/AndroidManifest.xml")
     _qt_internal_configure_file(CONFIGURE OUTPUT "${output_file}" INPUT "${template_file}")
 endfunction()

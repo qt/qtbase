@@ -24,7 +24,6 @@ android {
     defaultConfig {
         @DEFAULT_CONFIG_VALUES@
         manifestPlaceholders = [
-            featureSplit: rootProject.name,
             featureTitle: "@string/${project.name}_title"
         ]
     }
