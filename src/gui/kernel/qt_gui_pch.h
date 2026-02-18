@@ -8,6 +8,7 @@
  * better to define your own header.  Use of this header is currently
  * UNSUPPORTED.
  */
+// Qt-Security score:significant reason:default
 
 #include "../../corelib/global/qt_pch.h"
 
