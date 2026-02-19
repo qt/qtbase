@@ -91,8 +91,15 @@ void QOhosNativeGesturesHandler::processGestureEventsInQtThread(std::vector<QOho
         auto screenBasedPosition = QHighDpi::fromNativePixels(
             event.displayBasedPosition, platformScreen);
         inputMethodEventHandler->onGestureEventFromNativeNode(
-            m_qWindowRef.data(), event.gestureTimestamp, event.value, event.localPosition,
-            screenBasedPosition, event.gestureType, event.deviceType);
+            QOhosGestureEvent {
+                .targetWindow = m_qWindowRef.data(),
+                .timestamp = event.gestureTimestamp,
+                .value = event.value,
+                .localPosition = event.localPosition,
+                .screenPosition = screenBasedPosition,
+                .gestureType = event.gestureType,
+                .deviceType = event.deviceType,
+            });
     }
 }
 
