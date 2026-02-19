@@ -4,7 +4,7 @@ version = 1
 path = ["tests/auto/opengl/CMakeLists.txt",
         "tests/benchmarks/widgets/graphicsview/functional/CMakeLists.txt"]
 precedence = "closest"
-SPDX-FileCopyrightText = "Copyright (C) 20242 The Qt Company Ltd."
+SPDX-FileCopyrightText = "Copyright (C) 2024 The Qt Company Ltd."
 SPDX-License-Identifier = "BSD-3-Clause"
 
 [[annotations]]
