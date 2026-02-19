@@ -137,7 +137,7 @@ QtWaylandClient::QWaylandIntegration *QWaylandClientExtension::integration() con
    \property QWaylandClientExtension::protocolVersion
    \brief The version of the protocol.
 
-   This property holds the version the protocol has been registered under.
+   This property holds the version of the protocol that has been requested.
 */
 int QWaylandClientExtension::version() const
 {
