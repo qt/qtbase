@@ -84,10 +84,10 @@ Qt::ScrollPhase convertArkUiAxisEventActionToQtScrollPhase(int32_t arkUiAxisEven
         return Qt::ScrollEnd;
     case UI_AXIS_EVENT_ACTION_CANCEL:
         return Qt::ScrollEnd;
-    default:
-        qOhosReportFatalErrorAndAbort(
-            "Received unsupported UI_AXIS_EVENT_ACTION: %d", arkUiAxisEventAction);
     }
+
+    qOhosReportFatalErrorAndAbort(
+        "Received unsupported UI_AXIS_EVENT_ACTION: %d", arkUiAxisEventAction);
 }
 
 QPointF calculateTouchPointNormalPosition(QWindow *targetWindow, const QPointF &clickPoint)
