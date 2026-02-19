@@ -293,7 +293,7 @@ void QNativeNode::handleSurfaceEvent(
         if (nativeWindow == nullptr) {
             m_optSurface.reset();
         } else if (m_optSurface) {
-            m_optSurface->setNativeWindowSurface(nativeWindow);
+            m_optSurface->setNativeWindowSurface(nativeWindow, optSurfaceSize);
         } else {
             m_optSurface = std::make_unique<QOhosSurface>(nativeWindow);
         }

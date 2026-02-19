@@ -169,7 +169,8 @@ QOhosSurface::QOhosSurface(::OHNativeWindow *nativeWindow)
     return m_nativeWindow;
 }
 
-void QOhosSurface::setNativeWindowSurface(::OHNativeWindow *nativeWindow)
+void QOhosSurface::setNativeWindowSurface(
+    ::OHNativeWindow *nativeWindow, const QOhosOptional<QSize> &optSurfaceSize)
 {
     if (nativeWindow == nullptr)
         qOhosReportFatalErrorAndAbort("NativeWindow cannot be null");
@@ -186,7 +187,7 @@ void QOhosSurface::setNativeWindowSurface(::OHNativeWindow *nativeWindow)
 
     if (m_eglSurface) {
         m_eglSurface->setNativeWindowSurface(
-            reinterpret_cast<::EGLNativeWindowType>(m_nativeWindow));
+            reinterpret_cast<::EGLNativeWindowType>(m_nativeWindow), optSurfaceSize);
     }
 }
 
@@ -195,7 +196,7 @@ EGLSurface QOhosSurface::tryGetOrCreateEGLWindowSurface(EGLDisplay display, EGLC
     if (!m_eglSurface) {
         m_eglSurface = std::make_unique<QOhosEGLSurface>();
         m_eglSurface->setNativeWindowSurface(
-            reinterpret_cast<::EGLNativeWindowType>(m_nativeWindow));
+            reinterpret_cast<::EGLNativeWindowType>(m_nativeWindow), makeEmptyQOhosOptional());
     }
     return m_eglSurface->tryGetOrCreateEGLWindowSurface(display, config, {});
 }
