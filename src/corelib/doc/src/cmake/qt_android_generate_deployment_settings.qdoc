@@ -72,7 +72,7 @@ how to accomplish this.
 \li \l{cmake-target-property-QT_ANDROID_LEGACY_PACKAGING}{QT_ANDROID_LEGACY_PACKAGING}
 \li \l{cmake-target-property-QT_QML_IMPORT_PATH}{QT_QML_IMPORT_PATH}
 \li \l{cmake-target-property-QT_QML_ROOT_PATH}{QT_QML_ROOT_PATH}
-\li \l{cmake-target-property-qt_no_entrypoint}{qt_no_entrypoint}
+\li \l{cmake-target-property-QT_NO_ENTRYPOINT}{QT_NO_ENTRYPOINT}
 \endlist
 
 Upon return, the \c{QT_ANDROID_DEPLOYMENT_SETTINGS_FILE} target property will

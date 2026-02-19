@@ -1560,14 +1560,17 @@ endif()
 qt_internal_apply_gc_binaries_conditional(Core PUBLIC)
 
 # Add entry-point on platforms that need it. A project can opt-out of using the
-# entrypoint by setting the qt_no_entrypoint property to TRUE on a target.
+# entrypoint by setting the QT_NO_ENTRYPOINT property to TRUE on a target.
 if(WIN32 OR UIKIT)
     # find_package(Qt6Core) should call find_package(Qt6EntryPointPrivate) so that we can
     # link against EntryPointPrivate. Normally this is handled automatically for deps, but
     # it doesn't work for EntryPointPrivate since its linker line contains the generator expression.
     qt_internal_register_target_dependencies(Core PUBLIC Qt6::EntryPointPrivate)
 
-    set(entrypoint_conditions "$<NOT:$<BOOL:$<TARGET_PROPERTY:qt_no_entrypoint>>>")
+    # Also read the old qt_no_entrypoint property for backward compatibility.
+    set(genex_bool_prop "$<BOOL:$<TARGET_PROPERTY:QT_NO_ENTRYPOINT>>")
+    set(genex_bool_prop_old "$<BOOL:$<TARGET_PROPERTY:qt_no_entrypoint>>")
+    set(entrypoint_conditions "$<NOT:$<OR:${genex_bool_prop},${genex_bool_prop_old}>>")
     list(APPEND entrypoint_conditions "$<STREQUAL:$<TARGET_PROPERTY:TYPE>,EXECUTABLE>")
 
     if(WIN32)

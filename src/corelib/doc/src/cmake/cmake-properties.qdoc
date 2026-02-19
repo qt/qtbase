@@ -612,18 +612,21 @@ instead.
 \ingroup cmake-properties-qtcore
 \ingroup cmake-target-properties-qtcore
 
-\title qt_no_entrypoint
-\target cmake-target-property-qt_no_entrypoint
+\title QT_NO_ENTRYPOINT
+\target cmake-target-property-QT_NO_ENTRYPOINT
 
 \summary {Specifies to inhibit linking against Qt's entrypoint lib.}
 
 \cmakepropertysince 6.1
-\preliminarycmakeproperty
 
 On certain platforms, Qt applications link against Qt's entrypoint lib by default.
 That library provides implementations of main (or WinMain).
 
-On targets that must provide their own entry point, set the property \c qt_no_entrypoint to inhibit linking against Qt's entrypoint library.
+On targets that must provide their own entry point, set the property \c
+QT_NO_ENTRYPOINT to inhibit linking against Qt's entrypoint library.
+
+\note Until Qt 6.12.0, this property was named \c qt_no_entrypoint. The old name
+is still recognized for backward compatibility.
 */
 
 /*!
