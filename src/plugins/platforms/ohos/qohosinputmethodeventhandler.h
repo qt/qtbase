@@ -59,6 +59,14 @@ struct QOhosMouseEvent
     QFlags<OhosKeyboardModifier> modifiers;
 };
 
+struct QOhosHoverEvent
+{
+    QPointer<QWindow> targetWindow;
+    QPointF localPosition;
+    QPointF globalPosition;
+    bool isHover = false;
+};
+
 class QOhosInputMethodEventHandler : public QObject
 {
     Q_OBJECT
@@ -81,7 +89,7 @@ public:
 
     void onKeyEvent(const QOhosKeyEvent &keyEvent, QWindow *targetWindow);
     void onMouseEvent(const QOhosMouseEvent &mouseEvent);
-    void onHoverEvent(bool isHover, const QPointF &local, const QPointF &global, QWindow *window);
+    void onHoverEvent(const QOhosHoverEvent &hoverEvent);
     void onMouseWheelEvent(const QOhosWheelEvent &event, QWindow *window);
     void onNonClientAreaMouseEvents(QWindow *targetWindow, std::vector<QOhosWindowProxy::NonClientAreaMouseEvent> eventBatch);
     void onNonClientAreaTouchEvents(QWindow *targetWindow, std::vector<QOhosWindowProxy::NonClientAreaTouchEvent> eventBatch);

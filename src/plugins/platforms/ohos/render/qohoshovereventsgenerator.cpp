@@ -65,7 +65,13 @@ void QOhosHoverEventsGeneratorImpl::sendQtHoverEvent(bool isHover)
                 auto *platformScreen = static_cast<QOhosPlatformScreen *>(qWindow->screen()->handle());
                 const auto scaledLocalPosition = QHighDpi::toNative(localPosition, platformScreen->pixelScalingCoefficient());
                 const auto scaledGlobalPosition = QHighDpi::toNative(globalPosition, platformScreen->pixelScalingCoefficient());
-                imEventHandler.onHoverEvent(isHover, scaledLocalPosition, scaledGlobalPosition, qWindow);
+                imEventHandler.onHoverEvent(
+                    QOhosHoverEvent {
+                        .targetWindow = qWindow,
+                        .localPosition = scaledLocalPosition,
+                        .globalPosition = scaledGlobalPosition,
+                        .isHover = isHover,
+                    });
             }
         });
 }

@@ -216,8 +216,12 @@ void QOhosInputMethodEventHandler::onMouseEvent(const QOhosMouseEvent &mouseEven
     handleMouseEvent(wsiEvent);
 }
 
-void QOhosInputMethodEventHandler::onHoverEvent(bool isHover, const QPointF &local, const QPointF &global, QWindow *window)
+void QOhosInputMethodEventHandler::onHoverEvent(const QOhosHoverEvent &hoverEvent)
 {
+    bool isHover = hoverEvent.isHover;
+    auto local = hoverEvent.localPosition;
+    auto global = hoverEvent.globalPosition;
+    QWindow *window = hoverEvent.targetWindow;
     if (!m_currentMouseGrabbingWindow.isNull() && m_currentMouseGrabbingWindow != window)
         return;
 
