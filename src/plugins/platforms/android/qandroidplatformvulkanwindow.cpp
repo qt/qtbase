@@ -48,10 +48,10 @@ void QAndroidPlatformVulkanWindow::setGeometry(const QRect &rect)
 
 void QAndroidPlatformVulkanWindow::applicationStateChanged(Qt::ApplicationState state)
 {
-    QAndroidPlatformWindow::applicationStateChanged(state);
     if (state <= Qt::ApplicationHidden) {
         destroyAndClearSurface();
     }
+    QAndroidPlatformWindow::applicationStateChanged(state);
 }
 
 QSurfaceFormat QAndroidPlatformVulkanWindow::format() const
