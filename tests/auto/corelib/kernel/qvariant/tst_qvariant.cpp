@@ -282,6 +282,9 @@ private slots:
     void toRectF_data();
     void toRectF();
 
+    void qvariant_cast_fromNull_int() { qvariant_cast_fromNull_impl(42); }
+    void qvariant_cast_fromNull_QString() { qvariant_cast_fromNull_impl(u"string"_s); }
+    void qvariant_cast_fromNull_QTransform() { qvariant_cast_fromNull_impl(QTransform{1, 2, 3, 4, 5, 6, 7, 8, 9}); }
     void qvariant_cast_QObject_data();
     void qvariant_cast_QObject();
     void qvariant_cast_QObject_derived();
@@ -460,6 +463,7 @@ private:
             QTransform,
             NonDefaultConstructible
         >;
+    template <typename T> void qvariant_cast_fromNull_impl(T t) const;
     template <typename T>
     void getIf_impl(T t) const;
     template <typename T>
@@ -475,6 +479,20 @@ private:
 };
 
 const qlonglong intMax1 = (qlonglong)INT_MAX + 1;
+
+template <typename T>
+T mutate(const T &t) { return t + t; }
+template <>
+QTransform mutate(const QTransform &t)
+{
+    return t * 2;
+}
+
+template <typename T>
+QVariant make_null_QVariant_of_type()
+{
+    return QVariant(QMetaType::fromType<T>());
+}
 
 void tst_QVariant::constructor()
 {
@@ -2673,6 +2691,59 @@ void tst_QVariant::cleanupTestCase()
 {
     delete customNonQObjectPointer;
     qDeleteAll(objectPointerTestData);
+}
+
+struct NonConvertible
+{
+    std::array<qint8, QVariant::Private::MaxInternalSize> payload;
+    NonConvertible()
+    {
+        payload.fill(-1);
+    }
+};
+template <typename T> void tst_QVariant::qvariant_cast_fromNull_impl(T t) const
+{
+    auto operate = [](T &v) {
+        // some random operations on the type to ensure it is valid
+        v = mutate(v);
+        if constexpr (std::is_same_v<T, QString>)
+            (void)v.toUtf8();
+        else if constexpr (std::is_same_v<T, QTransform>)
+            (void)v.m11();
+    };
+
+    // create a null QVariant of the same type
+    QVariant null = make_null_QVariant_of_type<T>();
+
+    QVERIFY(null.isNull());
+    T v = qvariant_cast<T>(null);
+    QCOMPARE_EQ(v, T{});
+    QCOMPARE_NE(v, t);
+    operate(v);
+
+    // move from null
+    QVERIFY(null.isNull());
+    v = qvariant_cast<T>(std::move(null));
+    QCOMPARE_EQ(v, T{});
+    QCOMPARE_NE(v, t);
+    operate(v);
+
+    // repeat, but now make this variant null via failed conversion
+    null = QVariant::fromValue(NonConvertible{});
+    QVERIFY(!null.convert(QMetaType::fromType<T>()));
+
+    QVERIFY(null.isNull());
+    v = qvariant_cast<T>(null);
+    QCOMPARE_EQ(v, T{});
+    QCOMPARE_NE(v, t);
+    operate(v);
+
+    // move from null
+    QVERIFY(null.isNull());
+    v = qvariant_cast<T>(std::move(null));
+    QCOMPARE_EQ(v, T{});
+    QCOMPARE_NE(v, t);
+    operate(v);
 }
 
 void tst_QVariant::qvariant_cast_QObject_data()
@@ -7045,23 +7116,10 @@ void tst_QVariant::pointerAndReferenceSpecialMemberFunctions()
     }
 }
 
-template <typename T>
-T mutate(const T &t) { return t + t; }
-template <>
-QTransform mutate(const QTransform &t)
-{
-    return t * 2;
-}
 template <>
 NonDefaultConstructible mutate(const NonDefaultConstructible &t)
 {
     return NonDefaultConstructible{t.i + t.i};
-}
-
-template <typename T>
-QVariant make_null_QVariant_of_type()
-{
-    return QVariant(QMetaType::fromType<T>());
 }
 
 template <typename T>
