@@ -16,11 +16,8 @@
 //
 
 #include <QtCore/private/qohoslogger_p.h>
-#include <QtCore/qstring.h>
 #include <algorithm>
-#include <array>
 #include <functional>
-#include <map>
 #include <memory>
 #include <napi.h>
 #include <string>
