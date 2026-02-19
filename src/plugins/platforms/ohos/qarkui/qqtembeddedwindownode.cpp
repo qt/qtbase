@@ -430,6 +430,7 @@ QQtEmbeddedWindowNode::NodeAreaInfo QQtEmbeddedWindowNode::nodeAreaInfo() const
         .screenGeometryPixels = nodeScreenGeometryPixels(),
         .windowRelativeOffsetPixels = windowRelativeOffsetPixels(),
         .parentRelativeOffsetPixels = parentRelativeOffsetPixels(),
+        .globalRelativeOffsetPixels = globalRelativeOffsetPixels(),
     };
 }
 

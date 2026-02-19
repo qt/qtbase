@@ -61,6 +61,7 @@ public:
         QRect screenGeometryPixels;
         QPoint windowRelativeOffsetPixels;
         QPoint parentRelativeOffsetPixels;
+        QPoint globalRelativeOffsetPixels;
     };
 
     static std::shared_ptr<QQtEmbeddedWindowNode> createOrFail(const CreateInfo &createInfo);
