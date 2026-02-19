@@ -2399,15 +2399,8 @@ QSharedPointer<QTemporaryDir> QTest::qExtractTestData(const QString &dirName)
               QFileInfo destinationFileInfo(destination);
               QDir().mkpath(destinationFileInfo.path());
               QFile file(filePath);
-              if (!file.copy(destination)) {
+              if (!file.copy(destination, QFile::ReadUser | QFile::WriteUser | QFile::ReadGroup)) {
                   qWarning("Failed to copy '%ls': %ls.", qUtf16Printable(filePath),
-                           qUtf16Printable(file.errorString()));
-                  return result;
-              }
-
-              file.setFileName(destination);
-              if (!file.setPermissions(QFile::ReadUser | QFile::WriteUser | QFile::ReadGroup)) {
-                  qWarning("Failed to set permissions on '%ls': %ls.", qUtf16Printable(destination),
                            qUtf16Printable(file.errorString()));
                   return result;
               }
