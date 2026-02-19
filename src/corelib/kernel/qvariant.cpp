@@ -1241,7 +1241,7 @@ void QVariant::load(QDataStream &s)
             return;
         }
     }
-    create(typeId, nullptr);
+    *this = fromMetaType(QMetaType(typeId));
     d.is_null = is_null;
 
     if (!isValid()) {
@@ -2092,10 +2092,7 @@ bool QVariant::convert(QMetaType targetType)
     if (d.type() == targetType)
         return targetType.isValid();
 
-    QVariant oldValue = *this;
-
-    clear();
-    create(targetType, nullptr);
+    QVariant oldValue = std::exchange(*this, QVariant::fromMetaType(targetType));
     if (!oldValue.canConvert(targetType))
         return false;
 
