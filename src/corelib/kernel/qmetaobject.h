@@ -352,7 +352,7 @@ public:
     QT_WARNING_POP
 #endif
     int userType() const { return typeId(); }
-    int typeId() const { return metaType().id(); }
+    int typeId() const { return metaType().rawId(); }
     QMetaType metaType() const;
     int propertyIndex() const;
     int relativePropertyIndex() const;

@@ -2225,7 +2225,7 @@ QByteArrayView QMetaMethod::nameView() const
 */
 int QMetaMethod::returnType() const
  {
-     return returnMetaType().id();
+     return returnMetaType().rawId();
 }
 
 /*!
@@ -2239,10 +2239,10 @@ QMetaType QMetaMethod::returnMetaType() const
     if (!mobj || methodType() == QMetaMethod::Constructor)
         return QMetaType{};
     auto mt = QMetaType(mobj->d.metaTypes[data.metaTypeOffset()]);
-    if (mt.id() == QMetaType::UnknownType)
-        return QMetaType(QMetaMethodPrivate::get(this)->returnType());
-    else
-        return mt;
+    if (!mt.isValid())
+        mt = QMetaType(QMetaMethodPrivate::get(this)->returnType());
+    mt.registerType();
+    return mt;
 }
 
 /*!
@@ -2271,7 +2271,7 @@ int QMetaMethod::parameterCount() const
 */
 int QMetaMethod::parameterType(int index) const
 {
-    return parameterMetaType(index).id();
+    return parameterMetaType(index).rawId();
 }
 
 /*!
@@ -2294,10 +2294,10 @@ QMetaType QMetaMethod::parameterMetaType(int index) const
     // + 1 if there exists a return type
     auto parameterOffset = index + (methodType() == QMetaMethod::Constructor ? 0 : 1);
     auto mt = QMetaType(mobj->d.metaTypes[data.metaTypeOffset() + parameterOffset]);
-    if (mt.id() == QMetaType::UnknownType)
-        return QMetaType(QMetaMethodPrivate::get(this)->parameterType(index));
-    else
-        return mt;
+    if (!mt.isValid())
+        mt = QMetaType(QMetaMethodPrivate::get(this)->parameterType(index));
+    mt.registerType();
+    return mt;
 }
 
 /*!
@@ -3253,7 +3253,9 @@ QMetaType QMetaEnum::metaType() const
         QMetaType();
 #endif
 
-    return QMetaType(mobj->d.metaTypes[data.index(mobj) + p->propertyCount]);
+    QMetaType mt(mobj->d.metaTypes[data.index(mobj) + p->propertyCount]);
+    mt.registerType();
+    return mt;
 }
 
 /*!
@@ -3840,7 +3842,9 @@ QMetaType QMetaProperty::metaType() const
 {
     if (!mobj)
         return {};
-    return QMetaType(mobj->d.metaTypes[data.index(mobj)]);
+    QMetaType mt(mobj->d.metaTypes[data.index(mobj)]);
+    mt.registerType();
+    return mt;
 }
 
 int QMetaProperty::Data::index(const QMetaObject *mobj) const
