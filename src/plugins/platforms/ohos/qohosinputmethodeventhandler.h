@@ -67,6 +67,17 @@ struct QOhosHoverEvent
     bool isHover = false;
 };
 
+struct QOhosGestureEvent
+{
+    QPointer<QWindow> targetWindow;
+    std::int64_t timestamp;
+    qreal value;
+    QPointF localPosition;
+    QPointF screenPosition;
+    Qt::NativeGestureType gestureType;
+    QInputDevice::DeviceType deviceType;
+};
+
 class QOhosInputMethodEventHandler : public QObject
 {
     Q_OBJECT
@@ -82,10 +93,7 @@ public:
     void onTouchEventFromJsWindow(
         QWindow *optTargetWindow,
         const QList<QWindowSystemInterface::TouchPoint> &touchPoints);
-    void onGestureEventFromNativeNode(
-        QWindow *targetWindow, std::int64_t timestamp, qreal value, QPointF localPosition,
-        QPointF screenPosition, Qt::NativeGestureType gestureType,
-        QInputDevice::DeviceType deviceType);
+    void onGestureEventFromNativeNode(const QOhosGestureEvent &gestureEvent);
 
     void onKeyEvent(const QOhosKeyEvent &keyEvent, QWindow *targetWindow);
     void onMouseEvent(const QOhosMouseEvent &mouseEvent);

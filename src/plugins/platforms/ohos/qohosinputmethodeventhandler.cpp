@@ -143,15 +143,20 @@ void QOhosInputMethodEventHandler::onTouchEventFromXComponent(
     handleTouchEvent(touchEvent);
 }
 
-void QOhosInputMethodEventHandler::onGestureEventFromNativeNode(
-    QWindow *targetWindow, std::int64_t timestamp, qreal value, QPointF localPosition,
-    QPointF screenPosition, Qt::NativeGestureType gestureType,
-    QInputDevice::DeviceType deviceType)
+void QOhosInputMethodEventHandler::onGestureEventFromNativeNode(const QOhosGestureEvent &gestureEvent)
 {
-    auto *touchDevice = getTouchDeviceOrCreateIfNeeded(deviceType);
+    auto *touchDevice = getTouchDeviceOrCreateIfNeeded(gestureEvent.deviceType);
+    auto localPosition = gestureEvent.localPosition;
+    auto screenPosition = gestureEvent.screenPosition;
 
     QWindowSystemInterface::handleGestureEventWithRealValue(
-        targetWindow, timestamp, static_cast<const QPointingDevice *>(touchDevice), gestureType, value, localPosition, screenPosition);
+        gestureEvent.targetWindow,
+        gestureEvent.timestamp,
+        static_cast<const QPointingDevice *>(touchDevice),
+        gestureEvent.gestureType,
+        gestureEvent.value,
+        localPosition,
+        screenPosition);
 }
 
 void QOhosInputMethodEventHandler::onKeyEvent(const QOhosKeyEvent &keyEvent, QWindow *targetWindow)
