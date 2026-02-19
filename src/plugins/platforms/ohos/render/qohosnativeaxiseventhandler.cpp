@@ -77,29 +77,27 @@ void QOhosAxisEventHandler::handleUiAxisEvent(ArkUI_UIInputEvent *event)
     std::int32_t wheelScrollLines;
     wheelScrollLines = OH_ArkUI_AxisEvent_GetScrollStep(event);
 
-    if (!qFuzzyIsNull(horizontalAxisValue) || !qFuzzyIsNull(verticalAxisValue)) {
-        QOhosWheelEvent ohosWheelEvent = {
-            .timestamp = eventTimestamp,
-            .localPoint = localPosition,
-            .globalPoint = screenPosition,
-            .horizontalValue = horizontalAxisValue,
-            .verticalValue = verticalAxisValue,
-            .eventToolType = eventToolType,
-            .axisAction = eventAxisAction,
-            .wheelScrollLines = wheelScrollLines,
-            .modifiers = readKeyModifiersFromOhosUiInputEvent(event),
-        };
+    QOhosWheelEvent ohosWheelEvent = {
+        .timestamp = eventTimestamp,
+        .localPoint = localPosition,
+        .globalPoint = screenPosition,
+        .horizontalValue = horizontalAxisValue,
+        .verticalValue = verticalAxisValue,
+        .eventToolType = eventToolType,
+        .axisAction = eventAxisAction,
+        .wheelScrollLines = wheelScrollLines,
+        .modifiers = readKeyModifiersFromOhosUiInputEvent(event),
+    };
 
-        auto weakSelf = QtOhos::makeWeakPtr(shared_from_this());
-        m_imEventHandlerRef.visitInQtThreadIfAlive(
-            [weakSelf, ohosWheelEvent, qWindowRef = m_qWindowRef](auto &eventHandler) {
-                auto sharedSelf = weakSelf.lock();
-                if (!sharedSelf) {
-                    return;
-                };
-                eventHandler.onMouseWheelEvent(ohosWheelEvent, qWindowRef.data());
-            });
-    }
+    auto weakSelf = QtOhos::makeWeakPtr(shared_from_this());
+    m_imEventHandlerRef.visitInQtThreadIfAlive(
+        [weakSelf, ohosWheelEvent, qWindowRef = m_qWindowRef](auto &eventHandler) {
+            auto sharedSelf = weakSelf.lock();
+            if (!sharedSelf) {
+                return;
+            };
+            eventHandler.onMouseWheelEvent(ohosWheelEvent, qWindowRef.data());
+        });
 
     const auto totalScale = OH_ArkUI_AxisEvent_GetPinchAxisScaleValue(event);
 
