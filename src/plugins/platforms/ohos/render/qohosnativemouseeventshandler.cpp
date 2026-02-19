@@ -154,9 +154,8 @@ void QOhosNativeNodeMouseInputHandler::processMouseEventsInQtThread(std::vector<
 
         auto mouseEvent = batch[i].mouseEvent;
         mouseEvent.targetWindow = targetWindow;
-        auto *platformScreen = static_cast<QOhosPlatformScreen *>(mouseEvent.targetWindow->screen()->handle());
-        mouseEvent.localPosition = QHighDpi::toNative(mouseEvent.localPosition, platformScreen->pixelScalingCoefficient());
-        mouseEvent.globalPosition = QHighDpi::toNative(mouseEvent.globalPosition, platformScreen->pixelScalingCoefficient());
+        mouseEvent.localPosition = mouseEvent.localPosition;
+        mouseEvent.globalPosition = mouseEvent.globalPosition;
         eventHandler->onMouseEvent(mouseEvent);
     }
 }

@@ -261,7 +261,13 @@ void QOhosNativeXComponentInputHandler::handleHoverEvent(void *nativeWindow, boo
     invokeMethodLaterIfSelfExists(
         m_imEventHandlerRef.toQObjectThreadSafeRef(),
         [isHover, localPoint, globalPoint](QOhosNativeXComponentInputHandler &self) {
-            self.m_imEventHandlerRef.data()->onHoverEvent(isHover, localPoint, globalPoint, self.m_qWindowRef.data());
+            self.m_imEventHandlerRef.data()->onHoverEvent(
+                QOhosHoverEvent {
+                    .targetWindow = self.m_qWindowRef.data(),
+                    .localPosition = localPoint,
+                    .globalPosition = globalPoint,
+                    .isHover = isHover,
+                });
         });
 }
 
