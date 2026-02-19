@@ -23,6 +23,10 @@ if(APPLE AND TARGET Qt::Gui)
     qt_internal_add_RunCMake_test(AppleFrameworkDeduplication)
 endif()
 
+if(APPLE)
+    qt_internal_add_RunCMake_test(ApplePlistI18n)
+endif()
+
 if(TARGET Qt6::Platform)
     get_target_property(sbom_spdx_id Qt6::Platform _qt_sbom_spdx_id)
     # If the id is present and non-empty, that means we built Qt with sbom support.

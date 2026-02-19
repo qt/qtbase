@@ -685,16 +685,36 @@ function(_qt_internal_set_apple_localizations target)
         return()
     endif()
 
+    get_target_property(plist_file "${target}" MACOSX_BUNDLE_INFO_PLIST)
+    if (NOT plist_file)
+        return()
+    endif()
+
+    if(NOT "${QT_I18N_SOURCE_LANGUAGE}" STREQUAL "")
+        _qt_internal_plist_buddy("${plist_file}"
+            COMMANDS "print CFBundleDevelopmentRegion"
+            OUTPUT_VARIABLE existing_dev_region
+        )
+        if(existing_dev_region)
+            _qt_internal_plist_buddy("${plist_file}"
+                COMMANDS
+                    "Set CFBundleDevelopmentRegion ${QT_I18N_SOURCE_LANGUAGE}"
+            )
+        else()
+            _qt_internal_plist_buddy("${plist_file}"
+                COMMANDS
+                    "Add CFBundleDevelopmentRegion string"
+                    "Set CFBundleDevelopmentRegion ${QT_I18N_SOURCE_LANGUAGE}"
+            )
+        endif()
+    endif()
+
     set(supported_languages "${QT_I18N_TRANSLATED_LANGUAGES}")
     if("${QT_I18N_TRANSLATED_LANGUAGES}" STREQUAL "")
         get_target_property(supported_languages "${target}" _qt_apple_supported_languages)
         if("${supported_languages}" STREQUAL "supported_languages-NOTFOUND")
             return()
         endif()
-    endif()
-    get_target_property(plist_file "${target}" MACOSX_BUNDLE_INFO_PLIST)
-    if (NOT plist_file)
-        return()
     endif()
 
     _qt_internal_plist_buddy("${plist_file}"
@@ -711,20 +731,6 @@ function(_qt_internal_set_apple_localizations target)
                 ${supported_languages}
                 "Delete CFBundleAllowMixedLocalizations"
         )
-    endif()
-
-    if(NOT "${QT_I18N_SOURCE_LANGUAGE}" STREQUAL "")
-        _qt_internal_plist_buddy("${plist_file}"
-            COMMANDS "print CFBundleDevelopmentRegion"
-            OUTPUT_VARIABLE existing_dev_region
-        )
-        if(NOT existing_dev_region)
-            _qt_internal_plist_buddy("${plist_file}"
-                COMMANDS
-                    "Add CFBundleDevelopmentRegion string"
-                    "Set CFBundleDevelopmentRegion ${QT_I18N_SOURCE_LANGUAGE}"
-            )
-        endif()
     endif()
 endfunction()
 
