@@ -173,6 +173,7 @@ public:
 
     void replace(qsizetype i, const T &t);
     void remove(qsizetype i, qsizetype n = 1);
+    void removeAt(qsizetype i) { remove(i); } // QList compatibility
     template <typename AT = T>
     qsizetype removeAll(const AT &t);
     template <typename AT = T>
@@ -539,6 +540,7 @@ public:
 #ifdef Q_QDOC
     void replace(qsizetype i, const T &t);
     void remove(qsizetype i, qsizetype n = 1);
+    void removeAt(qsizetype i);
     template <typename AT = T>
     qsizetype removeAll(const AT &t);
     template <typename AT = T>
@@ -548,6 +550,7 @@ public:
 #endif
     using Base::replace;
     using Base::remove;
+    using Base::removeAt;
     using Base::removeAll;
     using Base::removeOne;
     using Base::removeIf;

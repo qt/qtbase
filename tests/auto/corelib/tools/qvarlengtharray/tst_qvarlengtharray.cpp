@@ -1701,7 +1701,7 @@ void tst_QVarLengthArray::remove()
     arr.remove(1, 3);
     QCOMPARE(arr, QVarLengthArray<QString>({ "val0", "val1", "val2", "val0", "val1", "val2" }));
 
-    arr.remove(2);
+    arr.removeAt(2);
     QCOMPARE(arr, QVarLengthArray<QString>({ "val0", "val1", "val0", "val1", "val2" }));
 
     QVERIFY(arr.removeOne("val1"));

@@ -604,6 +604,19 @@
     \sa insert(), replace()
 */
 
+/*!
+    \fn template<class T, qsizetype Prealloc> void QVarLengthArray<T, Prealloc>::removeAt(qsizetype i)
+    \since 6.12
+
+    Removes the element at position \a i from the array.
+
+    \include qvarlengtharray.qdoc valid-i
+
+    This function is provided for compatibility with QList.
+
+    \sa insert(), replace()
+*/
+
 /*! \fn template<class T, qsizetype Prealloc> QVarLengthArray<T, Prealloc>::iterator QVarLengthArray<T, Prealloc>::begin()
     \since 4.8
 
