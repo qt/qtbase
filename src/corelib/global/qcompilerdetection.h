@@ -1327,9 +1327,8 @@
 #endif // __cplusplus
 
 #if defined(__cplusplus) && defined(Q_CC_MSVC) && !defined(Q_CC_CLANG)
-#  if Q_CC_MSVC < 1927
-     // Check below only works with 16.7 or newer
-#    error "Qt requires at least Visual Studio 2019 version 16.7 (VC++ version 14.27). Please upgrade."
+#  if Q_CC_MSVC < 1930
+#    error "Qt requires at least Visual Studio 2022 (MSVC version 19.30 or newer). Please upgrade."
 #  endif
 
 // On MSVC we require /permissive- set by user code. Check that we are
