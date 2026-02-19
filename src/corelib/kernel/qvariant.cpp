@@ -2242,7 +2242,6 @@ bool QVariant::convert(int type, void *ptr) const
 {
     return QMetaType::convert(d.type(), constData(), QMetaType(type), ptr);
 }
-#endif
 
 /*!
   \internal
@@ -2251,6 +2250,7 @@ bool QVariant::view(int type, void *ptr)
 {
     return QMetaType::view(d.type(), data(), QMetaType(type), ptr);
 }
+#endif // QT_REMOVAL_QT7_DEPRECATED_SINCE(6, 16)
 
 /*!
     \fn bool QVariant::operator==(const QVariant &lhs, const QVariant &rhs)
