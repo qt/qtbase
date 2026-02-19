@@ -989,48 +989,37 @@ template<typename T> inline T qvariant_cast_qmetatype_converted(const QVariant &
 
 template<typename T> inline T qvariant_cast(const QVariant &v)
 {
-    QMetaType targetType = QMetaType::fromType<T>();
-    if (v.d.type() == targetType)
-        return v.d.get<T>();
-    if constexpr (std::is_same_v<T,std::remove_const_t<std::remove_pointer_t<T>> const *>) {
-        using nonConstT = std::remove_const_t<std::remove_pointer_t<T>> *;
-        QMetaType nonConstTargetType = QMetaType::fromType<nonConstT>();
-        if (v.d.type() == nonConstTargetType)
-            return v.d.get<nonConstT>();
-    }
+    if (const T *ptr = get_if<T>(&v))
+        return *ptr;
 
+    QMetaType targetType = QMetaType::fromType<T>();
     return QtPrivate::qvariant_cast_qmetatype_converted<T>(v, targetType);
 }
 
 template<typename T> inline T qvariant_cast(QVariant &&v)
 {
-    QMetaType targetType = QMetaType::fromType<T>();
-    if (v.d.type() == targetType) {
+    if (const T *ptr = get_if<T>(&std::as_const(v))) {
+        // we can only move from this if not sharing
         if constexpr (QVariant::Private::FitsInInternalSize<sizeof(T)>) {
             // If T in principle fits into the internal space, it may be using
             // it (depending on e.g. QTypeInfo, which, generally, can change
             // from version to version, so we need to check is_shared:
             if (!v.d.is_shared)
-                return std::move(*reinterpret_cast<T *>(v.d.data.data));
+                return std::move(*const_cast<T *>(ptr));
         }
         // Otherwise, it cannot possibly be using internal space:
         Q_ASSERT(v.d.is_shared);
         if (v.d.data.shared->ref.loadRelaxed() == 1)
-            return std::move(*reinterpret_cast<T *>(v.d.data.shared->data()));
+            return std::move(*const_cast<T *>(ptr));
         else
-            return v.d.get<T>();
+            return *ptr;
     }
     if constexpr (std::is_same_v<T, QVariant>) {
         // if the metatype doesn't match, but we want a QVariant, just return the current variant
         return v;
-    } if constexpr (std::is_same_v<T,std::remove_const_t<std::remove_pointer_t<T>> const *>) {
-        // moving a pointer is pointless, just do the same as the const & overload
-        using nonConstT = std::remove_const_t<std::remove_pointer_t<T>> *;
-        QMetaType nonConstTargetType = QMetaType::fromType<nonConstT>();
-        if (v.d.type() == nonConstTargetType)
-            return v.d.get<nonConstT>();
     }
 
+    QMetaType targetType = QMetaType::fromType<T>();
     return QtPrivate::qvariant_cast_qmetatype_converted<T>(v, targetType);
 }
 

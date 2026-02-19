@@ -7249,6 +7249,14 @@ void tst_QVariant::getIf_impl(T t) const
             QCOMPARE_EQ(*pnc, t2);
         }
 
+        // QVariant detaches (data() behavior):
+        QVariant copy = v;
+        pv = get_if<T>(&v);
+        pv2 = get_if<T>(&copy);
+        QVERIFY(v.isDetached());
+        QVERIFY(copy.isDetached());
+        QCOMPARE_NE(pv, pv2);
+
         // typed null QVariants become non-null (data() behavior):
         if constexpr (std::is_default_constructible_v<T>) {
             QVERIFY(nulT.isNull());
