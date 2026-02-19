@@ -488,6 +488,7 @@ static QVariant::Private clonePrivate(const QVariant::Private &other)
     Constructs an invalid variant.
 */
 
+#if QT_REMOVAL_QT7_DEPRECATED_SINCE(6, 16)
 /*!
     \fn QVariant::create(int type, const void *copy)
 
@@ -497,10 +498,9 @@ static QVariant::Private clonePrivate(const QVariant::Private &other)
     \a copy is not \nullptr.
 
 */
-//### Qt 7: Remove in favor of QMetaType overload
 void QVariant::create(int type, const void *copy)
 {
-    create(QMetaType(type), copy);
+    *this = QVariant::fromMetaType(QMetaType(type), copy);
 }
 
 /*!
@@ -513,6 +513,7 @@ void QVariant::create(QMetaType type, const void *copy)
 {
     *this = QVariant::fromMetaType(type, copy);
 }
+#endif // QT_REMOVAL_QT7_DEPRECATED_SINCE(6, 16)
 
 /*!
     \fn QVariant::~QVariant()

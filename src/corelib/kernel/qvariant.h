@@ -879,8 +879,14 @@ private:
 
 protected:
     Private d;
+
+#if QT_REMOVAL_QT7_DEPRECATED_SINCE(6, 16)
+    // These were \internal, so no message in _X.
+    QT_DEPRECATED_VERSION_6_16
     void create(int type, const void *copy);
+    QT_DEPRECATED_VERSION_6_16
     void create(QMetaType type, const void *copy);
+#endif
     bool equals(const QVariant &other) const;
     bool convert(int type, void *ptr) const;
     bool view(int type, void *ptr);
