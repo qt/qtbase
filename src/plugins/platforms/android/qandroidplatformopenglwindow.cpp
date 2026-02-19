@@ -79,13 +79,13 @@ EGLSurface QAndroidPlatformOpenGLWindow::eglSurface(EGLConfig config)
 
 void QAndroidPlatformOpenGLWindow::applicationStateChanged(Qt::ApplicationState state)
 {
-    QAndroidPlatformWindow::applicationStateChanged(state);
     if (state <=  Qt::ApplicationHidden) {
         lockSurface();
         destroySurface();
         clearSurface();
         unlockSurface();
     }
+    QAndroidPlatformWindow::applicationStateChanged(state);
 }
 
 // m_surfaceMutex already locked, called only by eglSurface()
