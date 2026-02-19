@@ -579,6 +579,17 @@ const char *QtMetaTypePrivate::typedefNameForType(const QtPrivate::QMetaTypeInte
 */
 
 /*!
+    \fn int QMetaType::rawId() const
+    \internal
+    \since 6.12
+
+    Returns id type held by this QMetaType instance. The type must be registered
+    before calling this function (if unsure, use id()).
+
+    \sa registerType(), id()
+*/
+
+/*!
     \fn void QMetaType::registerType() const
     \since 6.5
 

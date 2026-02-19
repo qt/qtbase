@@ -523,6 +523,12 @@ public:
         return registerHelper();
     }
 #endif
+    int rawId() const
+    {
+        Q_PRE(!isValid(QT6_CALL_NEW_OVERLOAD) || isRegistered(QT6_CALL_NEW_OVERLOAD));
+        return d_ptr ? d_ptr->typeId.loadRelaxed() : 0;
+    }
+
     constexpr qsizetype sizeOf() const;
     constexpr qsizetype alignOf() const;
     constexpr TypeFlags flags() const;
