@@ -9,6 +9,8 @@
 #include <GLES3/gl3.h>
 #include <QSharedPointer>
 #include <QtCore/qglobal.h>
+#include <QtCore/qsize.h>
+#include <qohosplugincore.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -31,12 +33,14 @@ public:
     ~QOhosEGLSurface();
 
     EGLSurface tryGetOrCreateEGLWindowSurface(EGLDisplay display, EGLConfig config, SurfaceFlags flags = {});
-    void setNativeWindowSurface(EGLNativeWindowType nativeWindow);
+    void setNativeWindowSurface(
+        EGLNativeWindowType nativeWindow, const QOhosOptional<QSize> &optSurfaceSize);
     SurfaceFlags currentSurfaceFlags() const;
 
 private:
     void cleanup();
     void tryCreateSurface(EGLDisplay display, EGLConfig config, SurfaceFlags surfaceFlags);
+    QOhosOptional<QSize> currentSurfaceSize() const;
 
     EGLDisplay m_refCurrentDisplay = EGL_NO_DISPLAY;
     EGLConfig m_refCurrentConfig = nullptr;
@@ -44,6 +48,7 @@ private:
     EGLNativeWindowType m_refTargetNativeWindow = nullptr;
     EGLSurface m_ownEglSurface = EGL_NO_SURFACE;
     SurfaceFlags m_currentSurfaceFlags = {};
+    QOhosOptional<QSize> m_targetSurfaceSize;
 };
 
 QT_END_NAMESPACE

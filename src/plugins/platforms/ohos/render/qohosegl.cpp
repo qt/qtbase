@@ -9,8 +9,10 @@
 
 QT_BEGIN_NAMESPACE
 
-void QOhosEGLSurface::setNativeWindowSurface(EGLNativeWindowType nativeWindow)
+void QOhosEGLSurface::setNativeWindowSurface(
+    EGLNativeWindowType nativeWindow, const QOhosOptional<QSize> &optSurfaceSize)
 {
+    m_targetSurfaceSize = optSurfaceSize;
     m_refTargetNativeWindow = nativeWindow;
 }
 
@@ -62,6 +64,26 @@ void QOhosEGLSurface::tryCreateSurface(EGLDisplay display, EGLConfig config, Sur
     m_currentSurfaceFlags = surfaceFlags;
 }
 
+QOhosOptional<QSize> QOhosEGLSurface::currentSurfaceSize() const
+{
+    if (m_refCurrentDisplay == EGL_NO_DISPLAY || m_ownEglSurface == EGL_NO_SURFACE)
+        return makeEmptyQOhosOptional();
+
+    EGLint width;
+    if (eglQuerySurface(m_refCurrentDisplay, m_ownEglSurface, EGL_WIDTH, &width) != EGL_TRUE) {
+        qOhosPrintfWarning("%s - cannot get surface width, error: %d", Q_FUNC_INFO, eglGetError());
+        return makeEmptyQOhosOptional();
+    }
+
+    EGLint height;
+    if (eglQuerySurface(m_refCurrentDisplay, m_ownEglSurface, EGL_HEIGHT, &height) != EGL_TRUE) {
+        qOhosPrintfWarning("%s - cannot get surface height, error: %d", Q_FUNC_INFO, eglGetError());
+        return makeEmptyQOhosOptional();
+    }
+
+    return makeQOhosOptional(QSize(width, height));
+}
+
 EGLSurface QOhosEGLSurface::tryGetOrCreateEGLWindowSurface(
     EGLDisplay display, EGLConfig config, SurfaceFlags surfaceFlags)
 {
@@ -69,8 +91,8 @@ EGLSurface QOhosEGLSurface::tryGetOrCreateEGLWindowSurface(
         || m_refCurrentNativeWindow != m_refTargetNativeWindow
         || m_refCurrentDisplay != display
         || m_refCurrentConfig != config
-        || m_currentSurfaceFlags != surfaceFlags;
-
+        || m_currentSurfaceFlags != surfaceFlags
+        || (m_targetSurfaceSize.hasValue() && m_targetSurfaceSize != currentSurfaceSize());
 
     if (!needsRebuild)
         return m_ownEglSurface;
@@ -91,6 +113,7 @@ void QOhosEGLSurface::cleanup()
     m_refCurrentNativeWindow = nullptr;
     m_ownEglSurface = EGL_NO_SURFACE;
     m_currentSurfaceFlags = {};
+    m_targetSurfaceSize = makeEmptyQOhosOptional();
 }
 
 QOhosEGLSurface::~QOhosEGLSurface()
