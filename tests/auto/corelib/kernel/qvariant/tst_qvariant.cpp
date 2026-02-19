@@ -442,6 +442,8 @@ private slots:
     void getIf_QString() { getIf_impl(u"string"_s); };
     void getIf_QTransform() { getIf_impl(QTransform{1, 2, 3, 4, 5, 6, 7, 8, 9}); } // too large
     void getIf_NonDefaultConstructible();
+    void getIf_Pointers();
+    void getIf_ConstPointers();
     void getIfSpecial();
 
     void get_int() { get_impl(42); }
@@ -459,6 +461,8 @@ private:
     using StdVariant = std::variant<std::monostate,
             // list here all the types with which we instantiate getIf_impl:
             int,
+            int *,
+            const int *,
             QString,
             QTransform,
             NonDefaultConstructible
@@ -482,6 +486,8 @@ const qlonglong intMax1 = (qlonglong)INT_MAX + 1;
 
 template <typename T>
 T mutate(const T &t) { return t + t; }
+template <typename T>
+T *mutate(T *t) { return t + 1; }
 template <>
 QTransform mutate(const QTransform &t)
 {
@@ -6809,6 +6815,18 @@ void tst_QVariant::getIf_NonDefaultConstructible()
     getIf_impl(NonDefaultConstructible{42});
 }
 
+void tst_QVariant::getIf_Pointers()
+{
+    int array[2] = { 42, -47 };
+    getIf_impl(&array[0]);
+}
+
+void tst_QVariant::getIf_ConstPointers()
+{
+    const int array[2] = { 42, -47 };
+    getIf_impl(&array[0]);
+}
+
 void tst_QVariant::getIfSpecial()
 {
     QVariant v{QString{}}; // used to be a null QVariant in Qt 5
@@ -7125,6 +7143,7 @@ NonDefaultConstructible mutate(const NonDefaultConstructible &t)
 template <typename T>
 void tst_QVariant::getIf_impl(T t) const
 {
+    using Pointed = std::conditional_t<std::is_pointer_v<T>, std::remove_pointer_t<T>, void>;
     QVariant v = QVariant::fromValue(t);
 
     QVariant null;
@@ -7152,6 +7171,16 @@ void tst_QVariant::getIf_impl(T t) const
         // mutable
         QCOMPARE_EQ(get_if<T>(&stdn), nullptr);
         QCOMPARE_EQ(get_if<T>(&date), nullptr);
+
+        if constexpr (std::is_pointer_v<T> && std::is_const_v<Pointed>) {
+            // we cannot get a non-const pointer to Pointed from a const one
+            using NonConstPointed = std::remove_const_t<Pointed>;
+            QCOMPARE_EQ(get_if<NonConstPointed *>(&std::as_const(stdn)), nullptr);
+            QCOMPARE_EQ(get_if<NonConstPointed *>(&std::as_const(v)), nullptr);
+
+            QCOMPARE_EQ(get_if<NonConstPointed *>(&stdn), nullptr);
+            QCOMPARE_EQ(get_if<NonConstPointed *>(&v), nullptr);
+        }
     }
 
     // returns nullptr on null variant (QVariant only):
@@ -7163,7 +7192,8 @@ void tst_QVariant::getIf_impl(T t) const
             QCOMPARE_EQ(get_if<T>(&std::as_const(nulT)), nullptr);
             // but mutable access makes typed null QVariants non-null (like data())
             QCOMPARE_NE(get_if<T>(&nulT), nullptr);
-            QVERIFY(!nulT.isNull());
+            if constexpr (!std::is_pointer_v<T>)
+                QVERIFY(!nulT.isNull());
             nulT = make_null_QVariant_of_type<T>(); // reset to null state
         }
     }
@@ -7179,6 +7209,14 @@ void tst_QVariant::getIf_impl(T t) const
         static_assert(std::is_same_v<decltype(ps), const T*>);
         QCOMPARE_NE(pv, nullptr);
         QCOMPARE_EQ(*pv, t);
+
+        if constexpr (std::is_pointer_v<T> && !std::is_const_v<Pointed>) {
+            // we *can* get a const Pointed* from a non-const one (QVariant only)
+            auto pnc = get_if<const Pointed *>(&std::as_const(v));
+            static_assert(std::is_same_v<decltype(pnc), const Pointed *const *>);
+            QCOMPARE_NE(pnc, nullptr);
+            QCOMPARE_EQ(*pnc, t);
+        }
     }
 
     // mutable access:
@@ -7203,11 +7241,20 @@ void tst_QVariant::getIf_impl(T t) const
         QCOMPARE_NE(pv2, nullptr);
         QCOMPARE_EQ(*pv2, t2);
 
+        if constexpr (std::is_pointer_v<T> && !std::is_const_v<Pointed>) {
+            // we *can* get a const Pointed* from a non-const one (QVariant only)
+            auto pnc = get_if<const Pointed *>(&v);
+            static_assert(std::is_same_v<decltype(pnc), const Pointed **>);
+            QCOMPARE_NE(pnc, nullptr);
+            QCOMPARE_EQ(*pnc, t2);
+        }
+
         // typed null QVariants become non-null (data() behavior):
         if constexpr (std::is_default_constructible_v<T>) {
             QVERIFY(nulT.isNull());
             auto pn = get_if<T>(&nulT);
-            QVERIFY(!nulT.isNull());
+            if constexpr (!std::is_pointer_v<T>)
+                QVERIFY(!nulT.isNull());
             static_assert(std::is_same_v<decltype(pn), T*>);
             QCOMPARE_NE(pn, nullptr);
             QCOMPARE_EQ(*pn, T{});
@@ -7215,6 +7262,16 @@ void tst_QVariant::getIf_impl(T t) const
             auto pn2 = get_if<T>(&nulT);
             QCOMPARE_NE(pn2, nullptr);
             QCOMPARE_EQ(*pn2, t2);
+
+            if constexpr (std::is_pointer_v<T> && !std::is_const_v<Pointed>) {
+                // we *can* get a const Pointed* from a non-const one
+                nulT = make_null_QVariant_of_type<T>();
+                QVERIFY(nulT.isNull());
+                auto pnc = get_if<const Pointed *>(&nulT);
+                static_assert(std::is_same_v<decltype(pnc), const Pointed **>);
+                QCOMPARE_NE(pnc, nullptr);
+                QCOMPARE_EQ(*pnc, T{});
+            }
         }
     }
 }

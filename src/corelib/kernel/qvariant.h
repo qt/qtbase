@@ -823,6 +823,12 @@ private:
             return false;
         if (std::is_const_v<Variant> && v->d.is_null)
             return false;       // (const) data() will not detach from is_null
+
+        using NonConstT = std::remove_const_t<std::remove_pointer_t<T>>;
+        if constexpr (std::is_pointer_v<T> && !std::is_same_v<T, NonConstT *>) {
+            if (v->d.type() == QMetaType::fromType<NonConstT *>())
+                return true;
+        }
         return v->d.type() == QMetaType::fromType<T>();
     }
 
