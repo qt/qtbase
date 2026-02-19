@@ -76,6 +76,7 @@ public:
     QRect nodeScreenGeometryPixels() const;
     QPoint windowRelativeOffsetPixels() const;
     QPoint parentRelativeOffsetPixels() const;
+    QPoint globalRelativeOffsetPixels() const;
     bool hasNonQtManagedChildren() const;
     NodeAreaInfo nodeAreaInfo() const;
 
