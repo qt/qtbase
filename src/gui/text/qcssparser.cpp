@@ -3046,7 +3046,7 @@ bool Parser::testAndParseUri(QString *uri)
         index = rewind;
         return false;
     }
-    *uri = args;
+    *uri = std::move(args);
     removeOptionalQuotes(uri);
     return true;
 }
