@@ -296,6 +296,10 @@ function(_qt_internal_sbom_record_external_target_dependecies)
         get_target_property(package_version "${target}" _qt_sbom_package_version)
         _qt_internal_sbom_get_cydx_external_bom_link("${target}" external_bom_link)
 
+        if(NOT package_name)
+            message(FATAL_ERROR "Target '${target}' does not provide a SBOM package name")
+        endif()
+
         set_property(GLOBAL
             PROPERTY "_qt_internal_sbom_external_target_dep_${spdx_id}_target"
             "${target}")
