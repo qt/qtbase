@@ -43,6 +43,8 @@ inline constexpr bool qIsComplex =
 template <typename T>
 inline constexpr bool qIsRelocatable =  std::is_trivially_copyable_v<T> && std::is_trivially_destructible_v<T>;
 
+template <typename T> inline constexpr bool qIsQtRelocatableContainer = false;
+
 // Denotes types that are trivially default constructible, and for which
 // value-initialization can be achieved by filling their storage with 0 bits.
 // There is no type trait we can use for this, so we hardcode a list of
@@ -129,6 +131,9 @@ template <class T1, class T2>
 class QTypeInfo<std::pair<T1, T2>> : public QTypeInfoMerger<std::pair<T1, T2>, T1, T2> {};
 
 #define Q_DECLARE_MOVABLE_CONTAINER(CONTAINER) \
+namespace QtPrivate { \
+template <typename ...T> constexpr bool qIsQtRelocatableContainer<CONTAINER<T...>> = true; \
+} \
 template <typename ...T> \
 class QTypeInfo<CONTAINER<T...>> \
 { \
@@ -151,6 +156,8 @@ Q_DECLARE_MOVABLE_CONTAINER(QMultiMap);
 Q_DECLARE_MOVABLE_CONTAINER(QHash);
 Q_DECLARE_MOVABLE_CONTAINER(QMultiHash);
 Q_DECLARE_MOVABLE_CONTAINER(QCache);
+// if you add a new container here after a .0 release, see qvariant.h for
+// QVariant::Private::hasAlwaysBeenAbleToUseInternalSpace()
 
 #undef Q_DECLARE_MOVABLE_CONTAINER
 

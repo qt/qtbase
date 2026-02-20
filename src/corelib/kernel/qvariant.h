@@ -110,6 +110,44 @@ public:
                    size_t(type->size) <= MaxInternalSize && size_t(type->alignment) <= alignof(double);
         }
 
+        template <typename T> static constexpr bool hasAlwaysBeenAbleToUseInternalSpace()
+        {
+            if constexpr (!CanUseInternalSpace<T>)
+                return false;
+#if defined(QT_BOOTSTRAPPED) || defined(QT_STATIC)
+            return true;
+#else
+            // Because it's possible to mark a type relocatable in a later,
+            // dynamic build of Qt, we need to explicitly list which types have
+            // always been relocatable since they were added. Since this is an
+            // optimization, we don't have to be exhaustive.
+            if constexpr (std::is_scalar_v<T>)
+                return true;        // scalars are and have always been relocatable
+            if constexpr (QtPrivate::IsQFlags<T>::value)
+                return true;        // likewise
+            if constexpr (QtPrivate::qIsQtRelocatableContainer<T>)
+                return true;
+            if constexpr (QMetaTypeId2<T>::IsBuiltIn) {
+                // at release time
+#  if QT_VERSION_MAJOR < 7
+                constexpr int LastCoreType = QMetaType::QVariantPair;
+                constexpr int LastGuiType = QMetaType::QColorSpace;
+                constexpr int LastWidgetType = QMetaType::QSizePolicy;
+#  else
+                // add at release time
+#  endif
+                constexpr int Id = QMetaTypeId2<T>::MetaType;
+                if constexpr (Id <= LastCoreType)
+                    return true;    // includes QString, QByteArray, etc.
+                if constexpr (Id >= QMetaType::FirstGuiType && Id <= LastGuiType)
+                    return true;
+                if constexpr (Id >= QMetaType::FirstWidgetsType && Id <= LastWidgetType)
+                    return true;
+            }
+            return false;
+#endif // QT_BOOTSTRAPPED || QT_STATIC
+        }
+
         union
         {
             uchar data[MaxInternalSize] = {};
@@ -135,7 +173,18 @@ public:
         { return is_shared ? data.shared->data() : &data.data; }
 
         template<typename T> const T &get() const
-        { return *static_cast<const T *>(storage()); }
+        {
+            if constexpr (!FitsInInternalSize<sizeof(T)> || alignof(T) > alignof(double)) {
+                // regardless of whether it's marked relocatable now or in the future
+                Q_ASSERT(is_shared);
+                return *static_cast<const T *>(data.shared->data());
+            } else if constexpr (hasAlwaysBeenAbleToUseInternalSpace<T>()) {
+                Q_ASSERT(!is_shared);
+                return *reinterpret_cast<const T *>(data.data);
+            } else {
+                return *static_cast<const T *>(storage());
+            }
+        }
 
         inline const QtPrivate::QMetaTypeInterface *typeInterface() const
         {
