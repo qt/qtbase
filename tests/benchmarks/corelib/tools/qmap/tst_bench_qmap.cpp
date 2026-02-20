@@ -37,6 +37,9 @@ private slots:
 
     void insertMap();
 
+    void take_data();
+    void take();
+
 private:
     QStringList helloEachWorld(int count);
 };
@@ -296,6 +299,34 @@ void tst_QMap::insertMap()
         map2.insert(i * 7, 0);
     QBENCHMARK_ONCE {
         map.insert(map2);
+    }
+}
+
+void tst_QMap::take_data()
+{
+    QTest::addColumn<int>("size");
+    QTest::addColumn<int>("key");
+
+    QTest::addRow("0 in {}") << 0 << 0;
+    QTest::addRow("0 in {0}") << 1 << 0;
+    QTest::addRow("1 in {0}") << 1 << 1;
+    QTest::addRow("0 in {0, 1}") << 2 << 0;
+    QTest::addRow("1 in {0, 1}") << 2 << 1;
+    QTest::addRow("1024 in {0...2047}") << 2048 << 1024;
+}
+
+void tst_QMap::take()
+{
+    QFETCH(const int, size);
+    QFETCH(const int, key);
+
+    QMap<int, QString> map;
+    for (int i = 0; i < size; ++i)
+        map[i] = QString::number(i);
+
+    QBENCHMARK {
+        auto copy = map;
+        [[maybe_unused]] const auto r = copy.take(key);
     }
 }
 
