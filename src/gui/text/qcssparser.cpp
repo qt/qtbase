@@ -2639,7 +2639,7 @@ bool Parser::parseAnimation(AnimationRule *animationRule)
                 }
             }
             if (!decl.isEmpty()) {
-                if (decl.d->property == QStringLiteral("animation-timing-function"))
+                if (decl.d->property == "animation-timing-function"_L1)
                     set.timingFunction = std::move(decl);
                 else
                     set.declarations.push_back(std::move(decl));
