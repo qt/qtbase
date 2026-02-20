@@ -143,7 +143,7 @@ function(_qt_internal_sbom_handle_target_binary_files target)
             list(APPEND valid_executable_types "MODULE_LIBRARY")
         endif()
         if(NOT target_type IN_LIST valid_executable_types)
-            message(FATAL_ERROR "Unsupported target type: ${target_type}")
+            message(FATAL_ERROR "Unsupported target type of target '${target}': ${target_type}")
         endif()
 
         get_target_property(app_is_bundle ${target} MACOSX_BUNDLE)
