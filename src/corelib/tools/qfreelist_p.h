@@ -210,7 +210,7 @@ inline int QFreeList<T, ConstantsType>::next()
         if (!v) {
             ElementType* const alloced = allocate((id & ConstantsType::IndexMask) - at,
                                                   ConstantsType::Sizes[block]);
-            if (_v[block].testAndSetRelease(nullptr, alloced, v)) {
+            if (_v[block].testAndSetOrdered(nullptr, alloced, v)) {
                 v = alloced;
             } else {
                 // race with another thread lost
