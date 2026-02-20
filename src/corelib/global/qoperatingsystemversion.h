@@ -264,7 +264,7 @@ public:
     {
     }
 
-    QT_CORE_INLINE_SINCE(6, 11)
+    QT_CORE_INLINE_SINCE(6, 3)
     static QOperatingSystemVersion current();
 
     static constexpr OSType currentType()
@@ -305,12 +305,12 @@ class QDebug;
 Q_CORE_EXPORT QDebug operator<<(QDebug debug, const QOperatingSystemVersion &ov);
 #endif
 
-#if QT_CORE_INLINE_IMPL_SINCE(6, 11)
+#if QT_CORE_INLINE_IMPL_SINCE(6, 3)
 QOperatingSystemVersion QOperatingSystemVersion::current()
 {
     return QOperatingSystemVersionBase::current();
 }
-#endif // QT_CORE_INLINE_IMPL_SINCE(6, 11)
+#endif // QT_CORE_INLINE_IMPL_SINCE(6, 3)
 
 QT_END_NAMESPACE
 
