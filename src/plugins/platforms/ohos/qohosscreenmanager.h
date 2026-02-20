@@ -33,7 +33,7 @@ private:
     class QOhosPlatformScreenHolder
     {
     public:
-        explicit QOhosPlatformScreenHolder(const QOhosDisplayInfo &displayInfo);
+        explicit QOhosPlatformScreenHolder(std::unique_ptr<QOhosPlatformScreen> platformScreen);
 
         QOhosPlatformScreenHolder(const QOhosPlatformScreenHolder &) = delete;
         QOhosPlatformScreenHolder(QOhosPlatformScreenHolder &&) = delete;

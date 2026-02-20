@@ -41,9 +41,8 @@ QOhosScreenManager::QOhosScreenManager()
 }
 
 QOhosScreenManager::QOhosPlatformScreenHolder::QOhosPlatformScreenHolder(
-    const QOhosDisplayInfo &displayInfo)
+    std::unique_ptr<QOhosPlatformScreen> screen)
 {
-    auto screen = std::make_unique<QOhosPlatformScreen>(displayInfo);
     m_platformScreen = screen.get();
     QWindowSystemInterface::handleScreenAdded(screen.release());
 }
@@ -131,7 +130,7 @@ void QOhosScreenManager::rebuildScreenList(std::vector<QOhosDisplayInfo> updated
 
         auto platformScreenHolder = availablePlatformScreenHolderIt != currentDisplays.end()
             ? std::move(*availablePlatformScreenHolderIt)
-            : std::make_unique<QOhosPlatformScreenHolder>(displayInfo);
+            : std::make_unique<QOhosPlatformScreenHolder>(std::make_unique<QOhosPlatformScreen>(displayInfo));
 
         auto *platformScreen = platformScreenHolder->platformScreenOrNull();
         if (Q_UNLIKELY(platformScreen == nullptr))
