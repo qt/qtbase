@@ -2639,7 +2639,7 @@ bool Parser::parseAnimation(AnimationRule *animationRule)
                 }
             }
             if (!decl.isEmpty())
-                set.declarations.append(decl);
+                set.declarations.push_back(std::move(decl));
         } while (test(SEMICOLON));
 
         if (!next(RBRACE)) return false;
