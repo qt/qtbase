@@ -593,7 +593,7 @@
     \overload
     \since 4.8
 
-    Removes \a count elements from the middle of the array, starting at
+    Removes \a count elements from the array, starting at
     index position \a i.
 
     \include qvarlengtharray.qdoc valid-i
