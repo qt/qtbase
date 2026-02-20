@@ -108,15 +108,14 @@ QVariant QMimeDataPrivate::retrieveTypedData(const QString &format, QMetaType ty
     // Text data requested: fallback to URL data if available
     if (format == "text/plain"_L1 && !data.isValid()) {
         data = retrieveTypedData(textUriListLiteral(), QMetaType(QMetaType::QVariantList));
-        if (data.metaType().id() == QMetaType::QUrl) {
-            data = QVariant(data.toUrl().toDisplayString());
-        } else if (data.metaType().id() == QMetaType::QVariantList) {
+        if (const QUrl *url = get_if<QUrl>(&std::as_const(data))) {
+            data = QVariant(url->toDisplayString());
+        } else if (const QVariantList *list = get_if<QVariantList>(&std::as_const(data))) {
             QString text;
             int numUrls = 0;
-            const QList<QVariant> list = data.toList();
-            for (const auto &element : list) {
-                if (element.metaType().id() == QMetaType::QUrl) {
-                    text += element.toUrl().toDisplayString();
+            for (const auto &element : *list) {
+                if (const QUrl *url = get_if<QUrl>(&element)) {
+                    text += url->toDisplayString();
                     text += u'\n';
                     ++numUrls;
                 }
@@ -142,21 +141,20 @@ QVariant QMimeDataPrivate::retrieveTypedData(const QString &format, QMetaType ty
         || (typeId == QMetaType::QImage && data.metaType().id() == QMetaType::QPixmap))
         return data;
 
-    if (data.metaType().id() == QMetaType::QByteArray) {
+    if (const QByteArray *ba = get_if<QByteArray>(&std::as_const(data))) {
         // see if we can convert to the requested type
         switch (typeId) {
         case QMetaType::QString: {
-            const QByteArray ba = data.toByteArray();
-            if (ba.isNull())
+            if (ba->isNull())
                 return QVariant();
             if (format == "text/html"_L1) {
-                QStringDecoder decoder = QStringDecoder::decoderForHtml(ba);
+                QStringDecoder decoder = QStringDecoder::decoderForHtml(*ba);
                 if (decoder.isValid()) {
-                    return QString(decoder(ba));
+                    return QString(decoder(*ba));
                 }
                 // fall back to utf8
             }
-            return QString::fromUtf8(ba);
+            return QString::fromUtf8(*ba);
         }
         case QMetaType::QColor: {
             QVariant newData = data;
@@ -197,8 +195,8 @@ QVariant QMimeDataPrivate::retrieveTypedData(const QString &format, QMetaType ty
             QByteArray result;
             const QList<QVariant> list = data.toList();
             for (const auto &element : list) {
-                if (element.metaType().id() == QMetaType::QUrl) {
-                    result += element.toUrl().toEncoded();
+                if (const QUrl *url = get_if<QUrl>(&element)) {
+                    result += url->toEncoded();
                     result += "\r\n";
                 }
             }
@@ -328,15 +326,14 @@ QMimeData::~QMimeData()
 QList<QUrl> QMimeData::urls() const
 {
     Q_D(const QMimeData);
-    QVariant data = d->retrieveTypedData(textUriListLiteral(), QMetaType(QMetaType::QVariantList));
+    const QVariant data = d->retrieveTypedData(textUriListLiteral(), QMetaType(QMetaType::QVariantList));
     QList<QUrl> urls;
-    if (data.metaType().id() == QMetaType::QUrl)
-        urls.append(data.toUrl());
-    else if (data.metaType().id() == QMetaType::QVariantList) {
-        const QList<QVariant> list = data.toList();
-        for (const auto &element : list) {
-            if (element.metaType().id() == QMetaType::QUrl)
-                urls.append(element.toUrl());
+    if (const QUrl *url = get_if<QUrl>(&data)) {
+        urls.append(*url);
+    } else if (const QVariantList *list = get_if<QVariantList>(&data)) {
+        for (const auto &element : *list) {
+            if (const QUrl *url = get_if<QUrl>(&element))
+                urls.append(*url);
         }
     }
     return urls;

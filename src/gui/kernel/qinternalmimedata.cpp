@@ -77,28 +77,29 @@ QStringList QInternalMimeData::formats() const
 QVariant QInternalMimeData::retrieveData(const QString &mimeType, QMetaType type) const
 {
     QVariant data = retrieveData_sys(mimeType, type);
+    const QByteArray *ba = get_if<QByteArray>(&std::as_const(data));
     if (mimeType == "application/x-qt-image"_L1) {
-        if (data.isNull() || (data.metaType().id() == QMetaType::QByteArray && data.toByteArray().isEmpty())) {
+        if (data.isNull() || (ba && ba->isEmpty())) {
             // try to find an image
             QStringList imageFormats = imageReadMimeFormats();
             for (int i = 0; i < imageFormats.size(); ++i) {
                 data = retrieveData_sys(imageFormats.at(i), type);
-                if (data.isNull() || (data.metaType().id() == QMetaType::QByteArray && data.toByteArray().isEmpty()))
+                ba = get_if<QByteArray>(&std::as_const(data));
+                if (data.isNull() || (ba && ba->isEmpty()))
                     continue;
                 break;
             }
         }
         int typeId = type.id();
         // we wanted some image type, but all we got was a byte array. Convert it to an image.
-        if (data.metaType().id() == QMetaType::QByteArray
+        if (ba
             && (typeId == QMetaType::QImage || typeId == QMetaType::QPixmap || typeId == QMetaType::QBitmap))
-            data = QImage::fromData(data.toByteArray());
+            data = QImage::fromData(*ba);
 
-    } else if (mimeType == "application/x-color"_L1 && data.metaType().id() == QMetaType::QByteArray) {
+    } else if (ba && mimeType == "application/x-color"_L1) {
         QColor c;
-        QByteArray ba = data.toByteArray();
-        if (ba.size() == 8) {
-            ushort * colBuf = (ushort *)ba.data();
+        if (ba->size() == 8) {
+            auto colBuf = reinterpret_cast<const ushort *>(ba->data());
             c.setRgbF(qreal(colBuf[0]) / qreal(0xFFFF),
                       qreal(colBuf[1]) / qreal(0xFFFF),
                       qreal(colBuf[2]) / qreal(0xFFFF),
@@ -107,10 +108,10 @@ QVariant QInternalMimeData::retrieveData(const QString &mimeType, QMetaType type
         } else {
             qWarning("Qt: Invalid color format");
         }
-    } else if (data.metaType() != type && data.metaType().id() == QMetaType::QByteArray) {
+    } else if (ba && data.metaType() != type) {
         // try to use mime data's internal conversion stuf.
         QInternalMimeData *that = const_cast<QInternalMimeData *>(this);
-        that->setData(mimeType, data.toByteArray());
+        that->setData(mimeType, *ba);
         data = QMimeData::retrieveData(mimeType, type);
         that->clear();
     }
