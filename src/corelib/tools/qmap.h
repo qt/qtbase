@@ -94,6 +94,49 @@ public:
         } while (it != end);
     }
 
+    // Merges the two sources into this one, giving preference to source2
+    void fillWithMergeOf(const Map &source1, const Map &source2)
+    {
+        Q_ASSERT(m.empty());
+
+        auto insertionHint = m.end();
+        auto src1It = source1.crbegin();
+        const auto src1End = source1.crend();
+        auto src2It = source2.crbegin();
+        const auto src2End = source2.crend();
+        const auto &keyCompare = m.key_comp();
+        while (src1It != src1End && src2It != src2End) {
+            if (keyCompare(src2It->first, src1It->first)) {
+                insertionHint = m.emplace_hint(insertionHint, src1It->first, src1It->second);
+                ++src1It;
+            } else if (keyCompare(src1It->first, src2It->first)) {
+                insertionHint = m.emplace_hint(insertionHint, src2It->first, src2It->second);
+                ++src2It;
+            } else {
+                // Equivalence, insert source2, forget source1
+                insertionHint = m.emplace_hint(insertionHint, src2It->first, src2It->second);
+                ++src1It;
+                ++src2It;
+            }
+        }
+        for (; src1It != src1End; ++src1It)
+            insertionHint = m.emplace_hint(insertionHint, src1It->first, src1It->second);
+        for (; src2It != src2End; ++src2It)
+            insertionHint = m.emplace_hint(insertionHint, src2It->first, src2It->second);
+    }
+
+    // Merge source into this one without changing source as std::map::merge would
+    void insertMap(const Map &source)
+    {
+        Q_ASSERT(!m.empty());
+        // copy in reverse order, trying to make effective use of insertionHint.
+        auto insertionHint = m.end();
+        auto it = source.crbegin();
+        const auto end = source.crend();
+        for (; it != end; ++it)
+            insertionHint = m.emplace_hint(insertionHint, it->first, it->second);
+    }
+
     // used in key(T), count(Key, T), find(key, T), etc; returns a
     // comparator object suitable for algorithms with std::(multi)map
     // iterators.
@@ -797,50 +840,57 @@ public:
 
     void insert(const QMap<Key, T> &map)
     {
-        // TODO: improve. In case of assignment, why copying first?
         if (map.isEmpty())
             return;
 
-        detach();
+        if (isEmpty()) {
+            *this = map;
+            return;
+        }
+
+        if (d.isShared()) {
+            QtPrivate::QExplicitlySharedDataPointerV2<MapData> newD(new MapData);
+            const auto commit = qScopeGuard([&] { newD.swap(d); });
+            newD->fillWithMergeOf(d->m, map.d->m);
+            return;
+        }
 
 #ifdef __cpp_lib_node_extract
+        // Since std::map::merge is destructive only use it when not shared
         auto copy = map.d->m;
-        copy.merge(std::move(d->m));
+        copy.merge(d->m);
         d->m = std::move(copy);
 #else
-        // this is a std::copy, but we can't use std::inserter (need insert_or_assign...).
-        // copy in reverse order, trying to make effective use of insertionHint.
-        auto insertionHint = d->m.end();
-        auto mapIt = map.d->m.crbegin();
-        auto end = map.d->m.crend();
-        for (; mapIt != end; ++mapIt)
-            insertionHint = d->m.insert_or_assign(insertionHint, mapIt->first, mapIt->second);
+        QtPrivate::QExplicitlySharedDataPointerV2<MapData> newD(new MapData);
+        const auto commit = qScopeGuard([&] { newD.swap(d); });
+        newD->fillWithMergeOf(d->m, map.d->m);
+
 #endif
     }
 
     void insert(QMap<Key, T> &&map)
     {
-        if (!map.d || map.d->m.empty())
-            return;
-
-        if (map.d.isShared()) {
+        if (map.isEmpty() || map.d.isShared()) {
             // fall back to a regular copy
             insert(map);
             return;
         }
 
-        detach();
+        // Otherwise insert into map, and do a swap on return
+        const auto commit = qScopeGuard([&] { map.swap(*this); });
+        if (isEmpty())
+            return;
+
+        if (d.isShared()) {
+            map.d->insertMap(d->m);
+            return;
+        }
 
 #ifdef __cpp_lib_node_extract
         map.d->m.merge(std::move(d->m));
-        *this = std::move(map);
 #else
         // same as above
-        auto insertionHint = d->m.end();
-        auto mapIt = map.d->m.crbegin();
-        auto end = map.d->m.crend();
-        for (; mapIt != end; ++mapIt)
-            insertionHint = d->m.insert_or_assign(insertionHint, std::move(mapIt->first), std::move(mapIt->second));
+        map.d->insertMap(d->m);
 #endif
     }
 
