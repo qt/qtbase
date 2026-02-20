@@ -1173,6 +1173,7 @@ void tst_QMap::take()
 
         QCOMPARE(map.take(3), QLatin1String("drei"));
         QVERIFY(!map.contains(3));
+        QVERIFY(map.take(3).isNull());
     }
 
     {
