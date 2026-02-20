@@ -476,6 +476,8 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
             break;
         }
         painter->save();
+        painter->setRenderHint(QPainter::Antialiasing, true);
+        painter->translate(0.5, 0.5);
         painter->setPen(outline.lighter(108));
         painter->drawRect(option->rect.adjusted(0, 0, -1, -1));
         painter->restore(); }
