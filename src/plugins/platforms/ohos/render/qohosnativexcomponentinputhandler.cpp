@@ -283,6 +283,15 @@ void QOhosNativeXComponentInputHandler::processMouseEventsInQtThread(std::vector
             continue;
 
         auto event = batch[i].event;
+
+        auto eventType = tryMapXComponentMouseEventActionToQEventType(event.action);
+        if (!eventType.hasValue()) {
+            qOhosPrintfDebug(
+                "%s: got unsupported action in mouse event (%d), ignoring",
+                Q_FUNC_INFO, event.action);
+            continue;
+        }
+
         auto optButton = tryMapXComponentMouseButtonToQt(event.button);
         if (!optButton.hasValue())
            qOhosWarning(QtForOhos) << "Unexpected mouse button!";
@@ -301,7 +310,7 @@ void QOhosNativeXComponentInputHandler::processMouseEventsInQtThread(std::vector
                 .localPosition = localPos,
                 .globalPosition = globalPos,
                 .button = optButton.valueOr(Qt::NoButton),
-                .eventType = tryMapXComponentMouseEventActionToQEventType(event.action).valueOr(QEvent::None),
+                .eventType = eventType.value(),
                 .modifiers = readKeyModifiersFromKeyState(
                     QSpan(keysToModifiers.data(), keysToModifiers.size())),
             });
