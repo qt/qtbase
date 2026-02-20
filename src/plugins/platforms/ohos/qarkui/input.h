@@ -27,6 +27,7 @@ struct MouseEvent
     ::Input_MouseEventButton button;
     ::Input_MouseEventAction action;
     QPoint displayPosition;
+    QPoint globalPosition;
     std::chrono::microseconds actionTime;
 
     static QOhosOptional<MouseEvent> createFromNativeEvent(const ::Input_MouseEvent *event);
@@ -48,6 +49,7 @@ struct TouchEvent
     JsWindowId jsWindowId;
     QOhosDisplayInfo::JsDisplayId jsDisplayId;
     QPoint displayPosition;
+    QPoint globalPosition;
     ::Input_TouchEventAction action;
     std::int32_t fingerId;
     std::chrono::microseconds actionTime;

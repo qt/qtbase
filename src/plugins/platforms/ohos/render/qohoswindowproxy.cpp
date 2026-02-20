@@ -1529,6 +1529,7 @@ void QOhosWindowProxy::JsScopeData::onMouseEventFromArkUi(const QArkUi::MouseEve
         .button = tryMapMouseEventButtonToQt(event.button).valueOr(Qt::NoButton),
         .displayPosition = event.displayPosition,
         .localPosition = event.displayPosition - windowOrigin,
+        .globalPosition = event.globalPosition,
     };
 
     nonClientAreaMouseEventConsumer(nonClientAreaMouseEvent);
@@ -1559,6 +1560,7 @@ void QOhosWindowProxy::JsScopeData::onTouchEventFromArkUi(const QArkUi::TouchEve
         .timestamp = std::chrono::duration_cast<std::chrono::milliseconds>(event.actionTime),
         .state = optState.value(),
         .displayPosition = event.displayPosition,
+        .globalPosition = event.globalPosition,
     };
 
     nonClientAreaTouchEventConsumer(nonClientAreaTouchEvent);
