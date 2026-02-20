@@ -88,14 +88,18 @@ QOhosOptional<MouseEvent> MouseEvent::createFromNativeEvent(const ::Input_MouseE
         return makeEmptyQOhosOptional();
     }
 
+    auto displayId = QOhosDisplayInfo::JsDisplayId(::OH_Input_GetMouseEventDisplayId(event));
+    auto displayPosition =
+        QPoint(
+            ::OH_Input_GetMouseEventDisplayX(event),
+            ::OH_Input_GetMouseEventDisplayY(event));
+
     MouseEvent mouseEvent = {
         .jsWindowId = jsWindowId,
-        .jsDisplayId = QOhosDisplayInfo::JsDisplayId(::OH_Input_GetMouseEventDisplayId(event)),
+        .jsDisplayId = displayId,
         .button = optMappedButton.value(),
         .action = optMappedAction.value(),
-        .displayPosition = QPoint(
-            ::OH_Input_GetMouseEventDisplayX(event),
-            ::OH_Input_GetMouseEventDisplayY(event)),
+        .displayPosition = displayPosition,
         .actionTime = std::chrono::microseconds(::OH_Input_GetMouseEventActionTime(event)),
     };
 
@@ -115,12 +119,15 @@ QOhosOptional<TouchEvent> TouchEvent::createFromNativeEvent(const ::Input_TouchE
         return makeEmptyQOhosOptional();
     }
 
+    auto displayId = JsDisplayId(::OH_Input_GetTouchEventDisplayId(event));
+    auto displayPosition = QPoint(
+        ::OH_Input_GetTouchEventDisplayX(event),
+        ::OH_Input_GetTouchEventDisplayY(event));
+
     TouchEvent keyEvent = {
         .jsWindowId = jsWindowId,
-        .jsDisplayId = JsDisplayId(::OH_Input_GetTouchEventDisplayId(event)),
-        .displayPosition = QPoint(
-            ::OH_Input_GetTouchEventDisplayX(event),
-            ::OH_Input_GetTouchEventDisplayY(event)),
+        .jsDisplayId = displayId,
+        .displayPosition = displayPosition,
         .action = optMappedAction.value(),
         .fingerId = ::OH_Input_GetTouchEventFingerId(event),
         .actionTime = std::chrono::microseconds(::OH_Input_GetTouchEventActionTime(event)),
