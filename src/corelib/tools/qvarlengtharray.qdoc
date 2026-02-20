@@ -305,8 +305,10 @@
 
     Returns a reference to the item at index position \a i.
 
+//! [valid-i]
     \a i must be a valid index position in the array (i.e., 0 <= \a i
     < size()).
+//! [valid-i]
 
     \sa data(), at()
 */
@@ -446,8 +448,7 @@
 
     Returns a reference to the item at index position \a i.
 
-    \a i must be a valid index position in the array (i.e., 0 <= \a i
-    < size()).
+    \include qvarlengtharray.qdoc valid-i
 
     \sa value(), operator[]()
 */
@@ -583,8 +584,7 @@
     \since 4.8
     Replaces the item at index position \a i with \a value.
 
-    \a i must be a valid index position in the array (i.e., 0 <= \a
-    i < size()).
+    \include qvarlengtharray.qdoc valid-i
 
     \sa operator[](), remove()
 */
@@ -596,6 +596,10 @@
 
     Removes \a count elements from the middle of the array, starting at
     index position \a i.
+
+    \include qvarlengtharray.qdoc valid-i
+    \a count must be <= size() - \a i.
+    \a i == size() is allowed if \a count == 0.
 
     \sa insert(), replace()
 */
