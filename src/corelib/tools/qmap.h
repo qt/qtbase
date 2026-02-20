@@ -12,6 +12,7 @@
 #include <QtCore/qlist.h>
 #include <QtCore/qrefcount.h>
 #include <QtCore/qpair.h>
+#include <QtCore/qscopeguard.h>
 #include <QtCore/qshareddata.h>
 #include <QtCore/qshareddata_impl.h>
 #include <QtCore/qttypetraits.h>
@@ -328,10 +329,45 @@ public:
         if (!d)
             return T();
 
-        const auto copy = d.isShared() ? *this : QMap(); // keep `key` alive across the detach
-        // TODO: improve. There is no need of copying all the
-        // elements (the one to be removed can be skipped).
-        detach();
+        if (d.isShared()) {
+            Map m;
+            // For historic reasons, we always un-share (was: detach()) when
+            // this function is called, even if `key` isn't found
+            const auto commit = qScopeGuard([&] { QMap{std::move(m)}.swap(*this); });
+
+            // This way of copying ought to be O(N) (not NlogN) and not causing
+            // any rebalancings in `m`, because we build in-order and with hint
+            // [[citation needed]].
+
+            const auto keep = [&m] (auto it) { m.insert(m.cend(), *it); };
+
+            auto it = d->m.cbegin();
+            const auto end = d->m.cend();
+            const auto cmp = d->m.key_comp();
+            while (it != end) {
+                if (cmp(it->first, key)) { // still before
+                    keep(it);
+                    ++it;
+                } else if (cmp(key, it->first)) { // after, iow: not found
+                    // This should be faster than an actual range-insert, because
+                    // the latter cannot assume that the input is sorted; we can:
+                    while (it != end) {
+                        keep(it);
+                        ++it;
+                    }
+                    break;
+                } else { // found!
+                    return [&] {
+                        T r = it->second; // we cannot move (isShared()!)
+                        while (++it != end)
+                            keep(it);
+                        return r;
+                    }();
+                }
+            }
+            // if we reach here, `key` wasn't found:
+            return T();
+        }
 
 #ifdef __cpp_lib_node_extract
         if (const auto node = d->m.extract(key))
