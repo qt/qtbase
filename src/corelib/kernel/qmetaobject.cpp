@@ -673,6 +673,8 @@ bool QMetaObjectPrivate::methodMatch(const QMetaObject *m, const QMetaMethod &me
         if (mt.isValid()) {
             if (mt == QMetaType(ifaces[i]))
                 continue;
+            if ((typeInfo & IsUnresolvedType) == 0 && mt.rawId() != int(typeInfo))
+                return false;
             if (mt.id() != typeFromTypeInfo(m, typeInfo))
                 return false;
         } else {
@@ -2045,7 +2047,7 @@ QMetaMethodPrivate::checkMethodMetaTypeConsistency(const QtPrivate::QMetaTypeInt
     QMetaType mt(iface);
     if (iface) {
         if ((typeInfo & IsUnresolvedType) == 0)
-            Q_ASSERT(mt.id() == int(typeInfo & TypeNameIndexMask));
+            Q_ASSERT(mt.rawId() == int(typeInfo & TypeNameIndexMask));
         Q_ASSERT(mt.name());
     } else {
         // The iface can only be null for a parameter if that parameter is a
