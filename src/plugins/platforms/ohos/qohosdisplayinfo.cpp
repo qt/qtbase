@@ -109,4 +109,10 @@ bool QOhosDisplayInfo::shouldIgnoreDisplay() const
         : id.value() >= virtualDisplayBaseId;
 }
 
+bool QOhosDisplayInfo::isDisplayMainOrExtended() const
+{
+    return sourceMode == QOhosDisplayInfo::DisplaySourceMode::MAIN
+        || sourceMode == QOhosDisplayInfo::DisplaySourceMode::EXTEND;
+}
+
 QT_END_NAMESPACE
