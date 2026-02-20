@@ -705,7 +705,7 @@ void tst_QWidget_window::tst_dnd()
     mimeData.setText(QLatin1String("testmimetext"));
 
     // Simulate DnD events on the QWidgetWindow.
-    QPoint position = QPoint(11, 1);
+    QPointF position = QPointF(11, 1);
     QDragEnterEvent e(position, Qt::CopyAction, &mimeData, Qt::LeftButton, Qt::NoModifier);
     QWindow *window = dndTestWidget.windowHandle();
     qApp->sendEvent(window, &e);
@@ -726,15 +726,15 @@ void tst_QWidget_window::tst_dnd()
     }
 
     window = nativeWidget->windowHandle();
-    QDragEnterEvent enterEvent(QPoint(0, 0), Qt::CopyAction, &mimeData, Qt::LeftButton, Qt::NoModifier);
+    QDragEnterEvent enterEvent(QPointF(0, 0), Qt::CopyAction, &mimeData, Qt::LeftButton, Qt::NoModifier);
     qApp->sendEvent(window, &enterEvent);
     log.push_back(msgEventAccepted(enterEvent));
 
-    QDragMoveEvent moveEvent(QPoint(1, 1), Qt::CopyAction, &mimeData, Qt::LeftButton, Qt::NoModifier);
+    QDragMoveEvent moveEvent(QPointF(1, 1), Qt::CopyAction, &mimeData, Qt::LeftButton, Qt::NoModifier);
     qApp->sendEvent(window, &moveEvent);
     log.push_back(msgEventAccepted(moveEvent));
 
-    QDropEvent dropEvent(QPoint(2, 2), Qt::CopyAction, &mimeData, Qt::LeftButton, Qt::NoModifier);
+    QDropEvent dropEvent(QPointF(2, 2), Qt::CopyAction, &mimeData, Qt::LeftButton, Qt::NoModifier);
     qApp->sendEvent(window, &dropEvent);
     log.push_back(msgEventAccepted(dropEvent));
 

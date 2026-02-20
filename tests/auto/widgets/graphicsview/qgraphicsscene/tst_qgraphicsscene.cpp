@@ -2235,14 +2235,14 @@ void tst_QGraphicsScene::dragAndDrop_simple()
     QMimeData mimeData;
 
     // Initial drag enter for the scene
-    QDragEnterEvent dragEnter(QPoint(0, 0), Qt::CopyAction, &mimeData, Qt::LeftButton, {});
+    QDragEnterEvent dragEnter(QPointF(0, 0), Qt::CopyAction, &mimeData, Qt::LeftButton, {});
     QApplication::sendEvent(view.viewport(), &dragEnter);
     QVERIFY(dragEnter.isAccepted());
     QCOMPARE(dragEnter.dropAction(), Qt::CopyAction);
 
     {
         // Move outside the item
-        QDragMoveEvent dragMove(QPoint(0, 0), Qt::CopyAction, &mimeData, Qt::LeftButton, {});
+        QDragMoveEvent dragMove(QPointF(0, 0), Qt::CopyAction, &mimeData, Qt::LeftButton, {});
         QApplication::sendEvent(view.viewport(), &dragMove);
         QVERIFY(!dragMove.isAccepted());
         QCOMPARE(dragMove.dropAction(), Qt::CopyAction);
@@ -2285,7 +2285,7 @@ void tst_QGraphicsScene::dragAndDrop_simple()
     }
     {
         // Move outside the item
-        QDragMoveEvent dragMove(QPoint(0, 0), Qt::CopyAction, &mimeData, Qt::LeftButton, {});
+        QDragMoveEvent dragMove(QPointF(0, 0), Qt::CopyAction, &mimeData, Qt::LeftButton, {});
         QApplication::sendEvent(view.viewport(), &dragMove);
         QVERIFY(!dragMove.isAccepted());
         QCOMPARE(dragMove.dropAction(), Qt::CopyAction);
@@ -2339,7 +2339,7 @@ void tst_QGraphicsScene::dragAndDrop_disabledOrInvisible()
     QMimeData mimeData;
 
     // Initial drag enter for the scene
-    QDragEnterEvent dragEnter(QPoint(0, 0), Qt::CopyAction, &mimeData, Qt::LeftButton, {});
+    QDragEnterEvent dragEnter(QPointF(0, 0), Qt::CopyAction, &mimeData, Qt::LeftButton, {});
     QApplication::sendEvent(view.viewport(), &dragEnter);
     QVERIFY(dragEnter.isAccepted());
     QCOMPARE(dragEnter.dropAction(), Qt::CopyAction);
@@ -2355,7 +2355,7 @@ void tst_QGraphicsScene::dragAndDrop_disabledOrInvisible()
     }
     {
         // Move outside the item
-        QDragMoveEvent dragMove(QPoint(0, 0), Qt::CopyAction, &mimeData, Qt::LeftButton, {});
+        QDragMoveEvent dragMove(QPointF(0, 0), Qt::CopyAction, &mimeData, Qt::LeftButton, {});
         QApplication::sendEvent(view.viewport(), &dragMove);
         QVERIFY(!dragMove.isAccepted());
         QCOMPARE(dragMove.dropAction(), Qt::CopyAction);
@@ -2395,7 +2395,7 @@ void tst_QGraphicsScene::dragAndDrop_disabledOrInvisible()
     }
 
     // Dummy drop event to keep the Mac from crashing.
-    QDropEvent dropEvent(QPoint(0, 0), Qt::CopyAction, &mimeData, Qt::LeftButton, {});
+    QDropEvent dropEvent(QPointF(0, 0), Qt::CopyAction, &mimeData, Qt::LeftButton, {});
     QApplication::sendEvent(view.viewport(), &dropEvent);
 }
 
@@ -2422,14 +2422,14 @@ void tst_QGraphicsScene::dragAndDrop_propagate()
     QMimeData mimeData;
 
     // Initial drag enter for the scene
-    QDragEnterEvent dragEnter(QPoint(0, 0), Qt::CopyAction, &mimeData, Qt::LeftButton, {});
+    QDragEnterEvent dragEnter(QPointF(0, 0), Qt::CopyAction, &mimeData, Qt::LeftButton, {});
     QApplication::sendEvent(view.viewport(), &dragEnter);
     QVERIFY(dragEnter.isAccepted());
     QCOMPARE(dragEnter.dropAction(), Qt::CopyAction);
 
     {
         // Move outside the items
-        QDragMoveEvent dragMove(QPoint(0, 0), Qt::CopyAction, &mimeData, Qt::LeftButton, {});
+        QDragMoveEvent dragMove(QPointF(0, 0), Qt::CopyAction, &mimeData, Qt::LeftButton, {});
         QApplication::sendEvent(view.viewport(), &dragMove);
         QVERIFY(!dragMove.isAccepted());
         QCOMPARE(dragMove.dropAction(), Qt::CopyAction);
@@ -2508,7 +2508,7 @@ void tst_QGraphicsScene::dragAndDrop_propagate()
     }
 
     // Dummy drop event to keep the Mac from crashing.
-    QDropEvent dropEvent(QPoint(0, 0), Qt::CopyAction, &mimeData, Qt::LeftButton, {});
+    QDropEvent dropEvent(QPointF(0, 0), Qt::CopyAction, &mimeData, Qt::LeftButton, {});
     QApplication::sendEvent(view.viewport(), &dropEvent);
 }
 #endif
