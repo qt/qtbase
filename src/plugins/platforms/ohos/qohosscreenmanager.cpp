@@ -130,7 +130,18 @@ void QOhosScreenManager::rebuildScreenList(std::vector<QOhosDisplayInfo> updated
 
         auto platformScreenHolder = availablePlatformScreenHolderIt != currentDisplays.end()
             ? std::move(*availablePlatformScreenHolderIt)
-            : std::make_unique<QOhosPlatformScreenHolder>(std::make_unique<QOhosPlatformScreen>(displayInfo));
+            : std::make_unique<QOhosPlatformScreenHolder>(
+                std::make_unique<QOhosPlatformScreen>(
+                    displayInfo,
+                    [this]() {
+                        std::vector<QOhosPlatformScreen *> result;
+                        for (const auto &screenHolder : m_displays) {
+                            auto *platformScreen = screenHolder->platformScreenOrNull();
+                            if (platformScreen != nullptr)
+                                result.push_back(platformScreen);
+                        }
+                        return result;
+                    }));
 
         auto *platformScreen = platformScreenHolder->platformScreenOrNull();
         if (Q_UNLIKELY(platformScreen == nullptr))

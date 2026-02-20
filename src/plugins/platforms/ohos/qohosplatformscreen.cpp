@@ -14,6 +14,7 @@
 #include "qohosjsmain.h"
 #include "qohosdeadlockprotector.h"
 #include "render/qohosview.h"
+#include <algorithm>
 #include <multimedia/image_framework/image/pixelmap_native.h>
 #include <qarkui/qarkuiutils.h>
 #include <qguiapplication.h>
@@ -162,7 +163,7 @@ QOhosOptional<Qt::ScreenOrientation> tryMapJsDisplayOrientationToQt(QOhosDisplay
 
 }
 
-QOhosPlatformScreen::QOhosPlatformScreen(const QOhosDisplayInfo &displayInfo)
+QOhosPlatformScreen::QOhosPlatformScreen(const QOhosDisplayInfo &displayInfo, QOhosSupplier<std::vector<QOhosPlatformScreen *>> platformScreenListSupplier)
     : QObject()
     , QPlatformScreen()
     , m_format(QImage::Format_ARGB32_Premultiplied)
@@ -170,6 +171,7 @@ QOhosPlatformScreen::QOhosPlatformScreen(const QOhosDisplayInfo &displayInfo)
     , m_platformCursor(new QOhosPlatformCursor())
     , m_displayInfo(displayInfo)
     , m_availableGeometry(getAvailableArea())
+    , m_platformScreenListSupplier(std::move(platformScreenListSupplier))
 {
     auto __dbg = make_QCScopedDebug("QOhosPlatformScreen::QOhosPlatformScreen");
 }
@@ -361,6 +363,23 @@ void QOhosPlatformScreen::setAvailableGeometry(const QRect &rect)
         m_availableGeometry = rect;
         QWindowSystemInterface::handleScreenGeometryChange(QPlatformScreen::screen(), geometry(), availableGeometry());
     }
+}
+
+QList<QPlatformScreen *> QOhosPlatformScreen::virtualSiblings() const
+{
+    if (!m_displayInfo.isDisplayMainOrExtended())
+        return QPlatformScreen::virtualSiblings();
+
+    QList<QPlatformScreen *> result;
+    auto allPlatformScreens = m_platformScreenListSupplier();
+    std::copy_if(
+        allPlatformScreens.begin(), allPlatformScreens.end(),
+        std::back_inserter(result),
+        [](QOhosPlatformScreen *ohosPlatformScreen) {
+            return ohosPlatformScreen->displayInfo().isDisplayMainOrExtended();
+        });
+
+    return result;
 }
 
 QPixmap QOhosPlatformScreen::grabWindow(WId wId, int x, int y, int width, int height) const

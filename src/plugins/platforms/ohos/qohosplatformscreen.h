@@ -11,6 +11,7 @@
 #include <QWaitCondition>
 #include <QtCore/qatomic.h>
 
+#include <functional>
 #include <qohosdisplayinfo.h>
 #include <qohosplugincore.h>
 #include "EGL/eglplatform.h"
@@ -26,7 +27,9 @@ class QOhosPlatformScreen: public QObject, public QPlatformScreen
 {
     Q_OBJECT
 public:
-    QOhosPlatformScreen(const QOhosDisplayInfo &displayInfo);
+    QOhosPlatformScreen(
+        const QOhosDisplayInfo &displayInfo,
+        QOhosSupplier<std::vector<QOhosPlatformScreen *>> platformScreenListSupplier);
     ~QOhosPlatformScreen();
 
     static QOhosPlatformScreen *fromQScreen(QScreen *screen);
@@ -53,6 +56,7 @@ public:
 
     void setDisplayInfo(const QOhosDisplayInfo &displayInfo);
     void setAvailableGeometry(const QRect &rect);
+    QList<QPlatformScreen *> virtualSiblings() const override;
 
 protected:
     QDpi logicalDpi() const override;
@@ -70,6 +74,7 @@ private:
     QScopedPointer<QOhosPlatformCursor> m_platformCursor;
     QOhosDisplayInfo m_displayInfo;
     QRect m_availableGeometry;
+    QOhosSupplier<std::vector<QOhosPlatformScreen *>> m_platformScreenListSupplier;
 };
 
 QT_END_NAMESPACE
