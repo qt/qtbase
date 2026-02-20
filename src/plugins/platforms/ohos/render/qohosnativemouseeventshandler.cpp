@@ -96,12 +96,20 @@ QOhosNativeNodeMouseInputHandler::QOhosNativeNodeMouseInputHandler(
 
 void QOhosNativeNodeMouseInputHandler::handleMouseEvent(QArkUi::NativeNodeMouseEvent nativeNodeMouseEvent)
 {
+    auto eventType = tryMapNativeNodeMouseActionToQt(nativeNodeMouseEvent.action);
+    if (!eventType.hasValue()) {
+        qOhosPrintfDebug(
+            "%s: got unsupported action in mouse event (%d), ignoring",
+            Q_FUNC_INFO, nativeNodeMouseEvent.action);
+        return;
+    }
+
     QOhosMouseEvent mouseEvent = {
         .timestampMs = nativeNodeMouseEvent.timestampMs,
         .localPosition = nativeNodeMouseEvent.localPosition,
         .globalPosition = nativeNodeMouseEvent.displayPosition,
         .button = tryMapNativeNodeMouseButtonToQt(nativeNodeMouseEvent.button).valueOr(Qt::NoButton),
-        .eventType = tryMapNativeNodeMouseActionToQt(nativeNodeMouseEvent.action).valueOr(QEvent::None),
+        .eventType = eventType.value(),
         .modifiers = nativeNodeMouseEvent.modifiers,
     };
 
