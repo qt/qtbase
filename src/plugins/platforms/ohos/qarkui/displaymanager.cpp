@@ -43,6 +43,30 @@ std::shared_ptr<::NativeDisplayManager_DisplaysInfo> enumerateAllDisplaysOrFail(
         });
 }
 
+QPoint getGlobalDisplayOffsetOfDisplay(QOhosDisplayInfo::JsDisplayId displayId)
+{
+    std::int32_t x = 0;
+    std::int32_t y = 0;
+    auto getDisplayPositionResult = callArkUi(
+        Q_OHOS_NAMED_FUNC(::OH_NativeDisplayManager_GetDisplayPosition),
+        static_cast<std::uint64_t>(displayId.value()),
+        &x, &y);
+
+    QPoint result;
+    if (getDisplayPositionResult == ::DISPLAY_MANAGER_OK) {
+        result = QPoint(x, y);
+    } else if (getDisplayPositionResult == ::DISPLAY_MANAGER_ERROR_ILLEGAL_PARAM) {
+        // NOTE: According to the documentation Queries for other screens return DISPLAY_MANAGER_ERROR_ILLEGAL_PARAM.
+        // 0, 0 offset is a default for those cases as they are not part of the virtual desktop
+        result = QPoint();
+    } else {
+        qOhosReportFatalErrorAndAbort(
+            "OH_NativeDisplayManager_GetDisplayPosition returned unexpected error: %d", getDisplayPositionResult);
+    }
+
+    return result;
+}
+
 }
 
 void QOhosDisplayManager::registerDisplayCallbackListener(
@@ -149,6 +173,11 @@ void QOhosDisplayManager::rebuildRegisteredDisplayList(QtOhos::JsState &jsState)
                 nativeDisplayInfo.id);
         }
     }
+}
+
+QPoint mapFromDisplayToGlobal(const QPoint &displayOffset, QOhosDisplayInfo::JsDisplayId jsDisplayId)
+{
+    return getGlobalDisplayOffsetOfDisplay(jsDisplayId) + displayOffset;
 }
 
 }

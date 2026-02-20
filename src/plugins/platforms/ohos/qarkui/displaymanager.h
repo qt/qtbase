@@ -42,6 +42,8 @@ private:
     QOhosConsumer<QtOhos::JsState &, JsDisplayId, QRectF> m_availableAreaChangedCb;
 };
 
+QPoint mapFromDisplayToGlobal(const QPoint &displayOffset, QOhosDisplayInfo::JsDisplayId jsDisplayId);
+
 }
 
 QT_END_NAMESPACE
