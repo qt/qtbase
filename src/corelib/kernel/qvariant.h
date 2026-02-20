@@ -597,7 +597,7 @@ public:
     QT_DEPRECATED_VERSION_X_6_0("Use typeId() or metaType().")
     Type type() const
     {
-        int type = d.type().id();
+        int type = d.type().rawId();
         return type >= QMetaType::User ? UserType : static_cast<Type>(type);
     }
     QT_DEPRECATED_VERSION_6_0

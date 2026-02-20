@@ -1261,7 +1261,7 @@ void QVariant::load(QDataStream &s)
     void *data = const_cast<void *>(constData());
     if (!d.type().load(s, data)) {
         s.setStatus(QDataStream::ReadCorruptData);
-        qWarning("QVariant::load: unable to load type %d.", d.type().id());
+        qWarning("QVariant::load: unable to load type %d.", d.type().rawId());
     }
 }
 
@@ -1273,7 +1273,7 @@ void QVariant::load(QDataStream &s)
 */
 void QVariant::save(QDataStream &s) const
 {
-    quint32 typeId = d.type().id();
+    quint32 typeId = d.type().rawId();
     bool saveAsUserType = false;
     if (typeId >= QMetaType::User) {
         typeId = QMetaType::User;
@@ -1352,7 +1352,7 @@ void QVariant::save(QDataStream &s) const
 
     if (!d.type().save(s, constData())) {
         qWarning("QVariant::save: unable to save type '%s' (type id: %d).\n",
-                 d.type().name(), d.type().id());
+                 d.type().name(), d.type().rawId());
         Q_ASSERT_X(false, "QVariant::save", "Invalid type to save");
     }
 }
@@ -2493,7 +2493,7 @@ bool QVariant::isNull() const
 QDebug QVariant::qdebugHelper(QDebug dbg) const
 {
     QDebugStateSaver saver(dbg);
-    const uint typeId = d.type().id();
+    const uint typeId = d.type().rawId();
     dbg.nospace() << "QVariant(";
     if (typeId != QMetaType::UnknownType) {
         dbg << d.type().name() << ", ";
