@@ -1008,7 +1008,7 @@ QTimeZonePrivate::findLongNamePrefix(QStringView text, const QLocale &locale,
                     (length + 2 < text.size() && isAsciiDigit(text[length + 2].unicode())) ? 3 : 2;
             } while (++groups < 3 && length < text.size() && text[length] == u':');
             if (length > 4)
-                return { text.sliced(length).toLatin1(), length, QTimeZone::GenericTime };
+                return { text.first(length).toLatin1(), length, QTimeZone::GenericTime };
         }
         return { utcQByteArray(), 3, QTimeZone::GenericTime };
     }
