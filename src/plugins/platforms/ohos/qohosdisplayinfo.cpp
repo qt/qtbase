@@ -20,7 +20,7 @@ constexpr double mapPixelsToMillimeters(double pixels, double dpi)
 
 QOhosDisplayInfo QOhosDisplayInfo::makeFromOhosDisplayObject(QtOhos::JsState &jsState, QNapi::Object displayObject)
 {
-    constexpr auto forceEmptyTopLevelOffsetPixels  = true;
+    constexpr auto forceEmptyTopLevelOffsetPixels  = false;
     constexpr auto minSupportedSdkVersionForSourceMode = 19;
 
     auto sourceMode = QOhosDeviceInfo::sdkApiVersion() >= minSupportedSdkVersionForSourceMode
