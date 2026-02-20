@@ -2640,9 +2640,9 @@ bool Parser::parseAnimation(AnimationRule *animationRule)
             }
             if (!decl.isEmpty()) {
                 if (decl.d->property == QStringLiteral("animation-timing-function"))
-                    set.timingFunction = decl;
+                    set.timingFunction = std::move(decl);
                 else
-                    set.declarations.append(decl);
+                    set.declarations.push_back(std::move(decl));
             }
         } while (test(SEMICOLON));
 
