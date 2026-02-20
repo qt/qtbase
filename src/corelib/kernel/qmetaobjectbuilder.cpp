@@ -44,7 +44,7 @@ QT_BEGIN_NAMESPACE
 
 static bool isBuiltinType(QByteArrayView type)
 {
-    int id = QMetaType::fromName(type).id();
+    int id = QMetaType::fromName(type).rawId();
     if (!id && !type.isEmpty() && type != "void")
         return false;
     return (id < QMetaType::User);
@@ -1283,7 +1283,7 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
 
     auto getTypeInfo = [&](const auto &typeName) {
         if (isBuiltinType(typeName))
-            return QMetaType::fromName(typeName).id();
+            return QMetaType::fromName(typeName).rawId();
         int index;
         if constexpr (std::is_same_v<decltype(typeName), const QByteArrayView &>)
             index = strings.enter(QByteArray::fromRawData(typeName.constData(), typeName.size()));
@@ -1452,7 +1452,7 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
         *types = nullptr;
         types++;
         for (const auto &method: d->methods) {
-            QMetaType mt(QMetaType::fromName(method.returnType).id());
+            QMetaType mt(QMetaType::fromName(method.returnType).rawId());
             *types = reinterpret_cast<QtPrivate::QMetaTypeInterface *&>(mt);
             types++;
             for (auto parameterType: method.parameterTypes()) {

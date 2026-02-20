@@ -116,7 +116,7 @@ static int *queuedConnectionTypes(QSpan<const QArgumentType> argumentTypes)
         else if (type.name().endsWith('*'))
             types[i] = QMetaType::VoidStar;
         else
-            types[i] = QMetaType::fromName(type.name()).id();
+            types[i] = QMetaType::fromName(type.name()).rawId();
 
         if (!types[i]) {
             qCWarning(lcConnect,

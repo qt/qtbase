@@ -2778,7 +2778,7 @@ auto QMetaMethodInvoker::invokeImpl(QMetaMethod self, void *target,
         if ((typeInfo & IsUnresolvedType) == 0) {
             // this is a built-in type
             if (MetaTypesAreOptional && !metaTypes)
-                return int(typeInfo) == QMetaType::fromName(userTypeName).id();
+                return int(typeInfo) == QMetaType::fromName(userTypeName).rawId();
             return int(typeInfo) == metaTypes[idx]->typeId;
         }
 
@@ -3066,7 +3066,7 @@ bool QMetaMethod::invokeOnGadget(void *gadget,
             if (qstrcmp(normalized.constData(), retType) != 0) {
                 // String comparison failed, try compare the metatype.
                 int t = returnType();
-                if (t == QMetaType::UnknownType || t != QMetaType::fromName(normalized).id())
+                if (t == QMetaType::UnknownType || t != QMetaType::fromName(normalized).rawId())
                     return false;
             }
         }

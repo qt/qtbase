@@ -606,7 +606,7 @@ public:
     QT_DEPRECATED_VERSION_6_0
     static Type nameToType(const char *name)
     {
-        int metaType = QMetaType::fromName(name).id();
+        int metaType = QMetaType::fromName(name).rawId();
         return metaType <= int(UserType) ? QVariant::Type(metaType) : UserType;
     }
     QT_WARNING_POP

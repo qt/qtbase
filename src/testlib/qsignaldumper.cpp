@@ -73,7 +73,7 @@ static void qSignalDumperCallback(QObject *caller, int signal_index, void **argv
     QList<QByteArray> args = member.parameterTypes();
     for (int i = 0; i < args.size(); ++i) {
         const QByteArray &arg = args.at(i);
-        int typeId = QMetaType::fromName(args.at(i).constData()).id();
+        int typeId = QMetaType::fromName(args.at(i).constData()).rawId();
         if (arg.endsWith('*') || arg.endsWith('&')) {
             str += '(';
             str += arg;

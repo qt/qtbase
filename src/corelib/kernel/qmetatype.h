@@ -467,10 +467,10 @@ public:
 #if QT_DEPRECATED_SINCE(6, 0)
     QT_DEPRECATED_VERSION_6_0
     static int type(const char *typeName)
-    { return QMetaType::fromName(typeName).id(); }
+    { return QMetaType::fromName(typeName).rawId(); }
     QT_DEPRECATED_VERSION_6_0
     static int type(const QT_PREPEND_NAMESPACE(QByteArray) &typeName)
-    { return QMetaType::fromName(typeName).id(); }
+    { return QMetaType::fromName(typeName).rawId(); }
     QT_DEPRECATED_VERSION_6_0
     static const char *typeName(int type)
     { return QMetaType(type).name(); }

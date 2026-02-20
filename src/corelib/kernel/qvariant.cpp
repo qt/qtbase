@@ -1227,7 +1227,7 @@ void QVariant::load(QDataStream &s)
         } else if (typeId == Qt5SizePolicy) {
             typeId = QMetaType::QSizePolicy;
         } else if (typeId == Qt5RegExp) {
-            typeId = QMetaType::fromName("QRegExp").id();
+            typeId = QMetaType::fromName("QRegExp").rawId();
         }
     }
 
@@ -1237,7 +1237,7 @@ void QVariant::load(QDataStream &s)
     if (typeId == QMetaType::User) {
         QByteArray name;
         s >> name;
-        typeId = QMetaType::fromName(name).id();
+        typeId = QMetaType::fromName(name).rawId();
         if (typeId == QMetaType::UnknownType) {
             s.setStatus(QDataStream::ReadCorruptData);
             qWarning("QVariant::load: unknown user type with name %s.", name.constData());
