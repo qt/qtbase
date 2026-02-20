@@ -42,6 +42,7 @@ private slots:
     void lowerUpperBound();
     void mergeCompare();
     void take();
+    void takeAlwaysDetaches();
 
     void iterators();
     void multimapIterators();
@@ -1192,6 +1193,71 @@ void tst_QMap::take()
         QCOMPARE(multiMap.take(0), u"value0");
         QCOMPARE(multiMap.take(0), QString());
         QVERIFY(!multiMap.contains(0));
+    }
+}
+
+void tst_QMap::takeAlwaysDetaches()
+{
+    {
+        const QMap<int, int> ref = {{0, 1}, {2, 3}};
+        QMap<int, int> map = {{0, 1}, {2, 3}};
+        const auto copy = map;
+        QVERIFY(copy.isSharedWith(map));
+        [[maybe_unused]] const auto r = map.take(42); // doesn't exist
+        QVERIFY(map.isDetached()); // but detached
+        QVERIFY(!copy.isSharedWith(map));
+        QCOMPARE_EQ(map, ref);
+        QCOMPARE_EQ(copy, ref);
+    }
+    {
+        const QMultiMap<int, int> ref = {{0, 1}, {0, 2}};
+        QMultiMap<int, int> map = {{0, 1}, {0, 2}};
+        const auto copy = map;
+        QVERIFY(copy.isSharedWith(map));
+        [[maybe_unused]] const auto r = map.take(42); // doesn't exist
+        QVERIFY(map.isDetached()); // but detached
+        QVERIFY(!copy.isSharedWith(map));
+        QCOMPARE_EQ(map, ref);
+        QCOMPARE_EQ(copy, ref);
+    }
+
+    // except on null:
+
+    {
+        QMap<int, int> ref;
+        QMap<int, int> null;
+        QVERIFY(ref.isSharedWith(null));
+        [[maybe_unused]] const auto r = null.take(42);
+        QVERIFY(ref.isSharedWith(null));
+    }
+    {
+        QMultiMap<int, int> ref;
+        QMultiMap<int, int> null;
+        QVERIFY(ref.isSharedWith(null));
+        [[maybe_unused]] const auto r = null.take(42);
+        QVERIFY(ref.isSharedWith(null));
+    }
+
+    // but also on empty:
+
+    {
+        QMap<int, int> empty = {{0, 0}};
+        // this makes it empty:
+        [[maybe_unused]] const auto r = empty.take(0);
+        const auto copy = empty;
+        QVERIFY(copy.isSharedWith(empty));
+        [[maybe_unused]] const auto r2 = empty.take(42);
+        QVERIFY(!copy.isSharedWith(empty));
+    }
+
+    {
+        QMultiMap<int, int> empty = {{0, 0}};
+        // this makes it empty:
+        [[maybe_unused]] const auto r = empty.take(0);
+        const auto copy = empty;
+        QVERIFY(copy.isSharedWith(empty));
+        [[maybe_unused]] const auto r2 = empty.take(42);
+        QVERIFY(!copy.isSharedWith(empty));
     }
 }
 
