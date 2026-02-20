@@ -3,6 +3,7 @@
 
 #include <qarkui/input.h>
 
+#include <qarkui/displaymanager.h>
 #include <qarkui/qarkuiutils.h>
 #include <qohoskeymodifiers.h>
 
@@ -100,6 +101,7 @@ QOhosOptional<MouseEvent> MouseEvent::createFromNativeEvent(const ::Input_MouseE
         .button = optMappedButton.value(),
         .action = optMappedAction.value(),
         .displayPosition = displayPosition,
+        .globalPosition = mapFromDisplayToGlobal(displayPosition, displayId),
         .actionTime = std::chrono::microseconds(::OH_Input_GetMouseEventActionTime(event)),
     };
 
@@ -128,6 +130,7 @@ QOhosOptional<TouchEvent> TouchEvent::createFromNativeEvent(const ::Input_TouchE
         .jsWindowId = jsWindowId,
         .jsDisplayId = displayId,
         .displayPosition = displayPosition,
+        .globalPosition = mapFromDisplayToGlobal(displayPosition, displayId),
         .action = optMappedAction.value(),
         .fingerId = ::OH_Input_GetTouchEventFingerId(event),
         .actionTime = std::chrono::microseconds(::OH_Input_GetTouchEventActionTime(event)),

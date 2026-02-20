@@ -138,6 +138,7 @@ public:
         Qt::MouseButton button;
         QPointF displayPosition;
         QPointF localPosition;
+        QPointF globalPosition;
     };
 
     struct NonClientAreaTouchEvent
@@ -146,6 +147,7 @@ public:
         std::chrono::milliseconds timestamp;
         QEventPoint::State state;
         QPointF displayPosition;
+        QPointF globalPosition;
     };
 
     struct ShowWindowOptions
