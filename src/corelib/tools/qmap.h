@@ -283,6 +283,35 @@ public:
             d.reset(new MapData);
     }
 
+    // A detach for holding an already shared copy, until calling function
+    // is done using references to keys or values that might reference it.
+    QMap referenceHoldingDetach()
+    {
+        if (!d) {
+            d.reset(new MapData);
+        } else if (d.isShared()) {
+            auto hold = *this;
+            d.detach();
+            return hold;
+        }
+        return {};
+    }
+
+    // Specialized version of referenceHoldingDetach(), which will not copy key, if copying
+    QMap referenceHoldingDetachExcept(const Key &key)
+    {
+        if (!d) {
+            d.reset(new MapData);
+        } else if (d.isShared()) {
+            auto hold = *this;
+            QtPrivate::QExplicitlySharedDataPointerV2<MapData> newData(new MapData);
+            newData->copyIfNotEquivalentTo(d->m, key);
+            d.swap(newData);
+            return hold;
+        }
+        return {};
+    }
+
     bool isDetached() const noexcept
     {
         return d ? !d.isShared() : false; // false makes little sense, but that's shared_null's behavior...
@@ -414,8 +443,7 @@ public:
 
     T &operator[](const Key &key)
     {
-        const auto copy = d.isShared() ? *this : QMap(); // keep `key` alive across the detach
-        detach();
+        const auto hold = referenceHoldingDetach();
         auto i = d->m.find(key);
         if (i == d->m.end())
             i = d->m.insert({key, T()}).first;
@@ -688,8 +716,7 @@ public:
 
     iterator find(const Key &key)
     {
-        const auto copy = d.isShared() ? *this : QMap(); // keep `key` alive across the detach
-        detach();
+        const auto hold = referenceHoldingDetach();
         return iterator(d->m.find(key));
     }
 
@@ -707,8 +734,7 @@ public:
 
     iterator lowerBound(const Key &key)
     {
-        const auto copy = d.isShared() ? *this : QMap(); // keep `key` alive across the detach
-        detach();
+        const auto hold = referenceHoldingDetach();
         return iterator(d->m.lower_bound(key));
     }
 
@@ -721,8 +747,7 @@ public:
 
     iterator upperBound(const Key &key)
     {
-        const auto copy = d.isShared() ? *this : QMap(); // keep `key` alive across the detach
-        detach();
+        const auto hold = referenceHoldingDetach();
         return iterator(d->m.upper_bound(key));
     }
 
@@ -735,25 +760,22 @@ public:
 
     iterator insert(const Key &key, const T &value)
     {
-        const auto copy = d.isShared() ? *this : QMap(); // keep `key` alive across the detach
-        // TODO: improve. In case of assignment, why copying first?
-        detach();
+        const auto hold = referenceHoldingDetachExcept(key);
         return iterator(d->m.insert_or_assign(key, value).first);
     }
 
     iterator insert(const_iterator pos, const Key &key, const T &value)
     {
-        // TODO: improve. In case of assignment, why copying first?
-        typename Map::const_iterator dpos;
-        const auto copy = d.isShared() ? *this : QMap(); // keep `key`/`value` alive across the detach
-        if (!d || d.isShared()) {
-            auto posDistance = d ? std::distance(d->m.cbegin(), pos.i) : 0;
+        if (!d) {
             detach();
-            dpos = std::next(d->m.cbegin(), posDistance);
-        } else {
-            dpos = pos.i;
+            return iterator(d->m.emplace(key, value).first);
+        } else if (d.isShared()) {
+            auto posDistance = std::distance(d->m.cbegin(), pos.i);
+            const auto hold = referenceHoldingDetachExcept(key);
+            auto dpos = std::next(d->m.cbegin(), posDistance);
+            return iterator(d->m.insert_or_assign(dpos, key, value));
         }
-        return iterator(d->m.insert_or_assign(dpos, key, value));
+        return iterator(d->m.insert_or_assign(pos.i, key, value));
     }
 
     void insert(const QMap<Key, T> &map)
@@ -814,8 +836,7 @@ public:
 
     std::pair<iterator, iterator> equal_range(const Key &akey)
     {
-        const auto copy = d.isShared() ? *this : QMap(); // keep `key` alive across the detach
-        detach();
+        const auto hold = referenceHoldingDetach();
         auto result = d->m.equal_range(akey);
         return {iterator(result.first), iterator(result.second)};
     }
