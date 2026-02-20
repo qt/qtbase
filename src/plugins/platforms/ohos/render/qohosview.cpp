@@ -903,11 +903,7 @@ void QOhosView::updateWindowPosition(const std::pair<QPoint, QOhosOptional<QOhos
     std::tie(position, displayId) = positionProp;
 
     if (m_ohosWindowProxy != nullptr) {
-        m_ohosWindowProxy->moveWindowToGlobal(
-            position,
-            QOhosWindowProxy::MoveConfiguration {
-                .displayId = displayId,
-            });
+        m_ohosWindowProxy->moveWindowToGlobalOrGlobalDisplay(position, displayId);
     } else {
         m_nativeNode->setPosition(position);
     }

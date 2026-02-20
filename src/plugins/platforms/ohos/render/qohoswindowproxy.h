@@ -186,6 +186,9 @@ public:
 
     ~QOhosWindowProxy();
 
+    void moveWindowToGlobalOrGlobalDisplay(
+        const QPoint &position, QOhosOptional<QOhosDisplayInfo::JsDisplayId> optDisplayId);
+
     void setSize(const QSize &size);
     void moveWindowToGlobal(const QPoint &position, const MoveConfiguration &moveConfiguration);
     void setWindowBackgroundColor(const QColor &color);

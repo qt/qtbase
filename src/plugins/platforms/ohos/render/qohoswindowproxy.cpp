@@ -20,6 +20,7 @@
 #include <qarkui/window.h>
 #include <qarkui/window_manager.h>
 #include <qohosdeviceinfo_p.h>
+#include <qohosdisplayinfo.h>
 #include <qohosimageformat.h>
 #include <qohosjsutils.h>
 #include <qohospixelmapconversions.h>
@@ -363,6 +364,75 @@ void QOhosWindowProxy::removeStartingWindow()
             promise.onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
         },
         Q_FUNC_INFO);
+}
+
+void QOhosWindowProxy::moveWindowToGlobalOrGlobalDisplay(
+    const QPoint &point, QOhosOptional<QOhosDisplayInfo::JsDisplayId> optMoveToTargetDisplay)
+{
+    auto displayIdValue = optMoveToTargetDisplay.valueOr(QOhosDisplayInfo::JsDisplayId(-1)).value();
+    qOhosPrintfDebug("%s: %d,%d,%f", Q_FUNC_INFO, point.x(), point.y(), displayIdValue);
+
+    QtOhos::invokeInJsThreadAndWaitForContinue(
+        [&](QtOhos::JsState &jsState, QOhosTaskPromise<> taskPromise) {
+            if (m_jsScopeData->isWindowClosing()) {
+                taskPromise();
+                return;
+            }
+
+            const auto primaryJsDisplayId = QOhosDisplayInfo::JsDisplayId(0);
+
+            auto targetDisplayId = optMoveToTargetDisplay.hasValue()
+                ? optMoveToTargetDisplay.value()
+                : getWindowProperties().displayId.valueOr(primaryJsDisplayId);
+
+            auto optDisplayInfo = QOhosDisplayInfo::tryGetDisplayById(jsState, targetDisplayId)
+                .transform([&](auto displayObject) {
+                    return QOhosDisplayInfo::makeFromOhosDisplayObject(jsState, displayObject);
+                });
+
+            auto optIsDisplayMainOrExtended = optDisplayInfo
+                .transform(
+                    [](const QOhosDisplayInfo &displayInfo) {
+                        return displayInfo.isDisplayMainOrExtended();
+                    });
+
+            bool isDisplayMainOrExtended;
+            if (optIsDisplayMainOrExtended.hasValue()) {
+                isDisplayMainOrExtended = optIsDisplayMainOrExtended.value();
+            } else {
+                qOhosPrintfWarning(
+                    "%s: no display source mode detected. Assumming main/extended screen", Q_FUNC_INFO);
+                isDisplayMainOrExtended = true;
+            }
+
+            QNapi::Promise promise;
+            if (!isDisplayMainOrExtended) {
+                auto optDisplayOffset = optDisplayInfo.andThen(
+                    [](const QOhosDisplayInfo &displayInfo) {
+                        return displayInfo.topLeftOffsetPixels;
+                    });
+
+                const QPoint defaultDisplayOffset(0, 0);
+                auto targetCoordinates = point - optDisplayOffset.valueOr(defaultDisplayOffset);
+
+                if (!optMoveToTargetDisplay.hasValue())
+                    qOhosPrintfWarning("%s: trying to move window to not valid target display", Q_FUNC_INFO);
+
+                auto moveConfigurationObject = toNapiObject(
+                    jsState.env(),
+                    MoveConfiguration {
+                        .displayId = optMoveToTargetDisplay,
+                    });
+
+                promise = m_jsScopeData->jsWindowRef->evalToPromiseOrRejectOnThrow(
+                    "moveWindowToGlobal(*)", {targetCoordinates.x(), targetCoordinates.y(), moveConfigurationObject});
+            } else {
+                promise = m_jsScopeData->jsWindowRef->evalToPromiseOrRejectOnThrow(
+                    "moveWindowToGlobalDisplay(*)", {point.x(), point.y()});
+            }
+
+            promise.onFinally(std::move(taskPromise));
+        });
 }
 
 void QOhosWindowProxy::setSize(const QSize &size)
