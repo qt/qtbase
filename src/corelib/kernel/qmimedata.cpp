@@ -133,8 +133,8 @@ QVariant QMimeDataPrivate::retrieveTypedData(const QString &format, QMetaType ty
     // provide more conversion possibilities than just what QVariant provides
 
     // URLs can be lists as well...
-    if ((typeId == QMetaType::QUrl && data.metaType().id() == QMetaType::QVariantList)
-        || (typeId == QMetaType::QVariantList && data.metaType().id() == QMetaType::QUrl))
+    if ((typeId == QMetaType::QUrl && data.metaType().isSameType<QVariantList>())
+        || (typeId == QMetaType::QVariantList && data.metaType().isSameType<QUrl>()))
         return data;
 
     // images and pixmaps are interchangeable

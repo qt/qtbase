@@ -490,7 +490,7 @@ public:
 
     bool setBinding(const QUntypedPropertyBinding &newBinding)
     {
-        if (!newBinding.isNull() && newBinding.valueMetaType().id() != qMetaTypeId<T>())
+        if (!newBinding.isNull() && !newBinding.valueMetaType().isSameType<T>())
             return false;
         setBinding(static_cast<const QPropertyBinding<T> &>(newBinding));
         return true;
@@ -1221,7 +1221,7 @@ public:
 
     bool setBinding(const QUntypedPropertyBinding &newBinding)
     {
-        if (!newBinding.isNull() && newBinding.valueMetaType().id() != qMetaTypeId<T>())
+        if (!newBinding.isNull() && !newBinding.valueMetaType().isSameType<T>())
             return false;
         setBinding(static_cast<const QPropertyBinding<T> &>(newBinding));
         return true;

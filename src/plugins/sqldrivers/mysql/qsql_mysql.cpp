@@ -583,28 +583,28 @@ QVariant QMYSQLResult::data(int field)
         } else if (qIsInteger(f.type.id())) {
             QVariant variant(f.type, f.outField);
             // we never want to return char variants here, see QTBUG-53397
-            if (f.type.id() == QMetaType::UChar)
+            if (f.type.isSameType<uchar>())
                 return variant.toUInt();
-            else if (f.type.id() == QMetaType::Char)
+            else if (f.type.isSameType<char>())
                 return variant.toInt();
             return variant;
         } else if (qIsTimeOrDate(f.myField->type) && f.bufLength >= sizeof(QT_MYSQL_TIME)) {
             auto t = reinterpret_cast<const QT_MYSQL_TIME *>(f.outField);
             QDate date;
             QTime time;
-            if (f.type.id() != QMetaType::QTime)
+            if (!f.type.isSameType<QTime>())
                 date = QDate(t->year, t->month, t->day);
-            if (f.type.id() != QMetaType::QDate)
+            if (!f.type.isSameType<QDate>())
                 time = QTime(t->hour, t->minute, t->second, t->second_part / 1000);
-            if (f.type.id() == QMetaType::QDateTime)
+            if (f.type.isSameType<QDateTime>())
                 return QDateTime(date, time, QTimeZone::UTC);
-            else if (f.type.id() == QMetaType::QDate)
+            else if (f.type.isSameType<QDate>())
                 return date;
             else
                 return time;
         }
 
-        if (f.type.id() != QMetaType::QByteArray)
+        if (!f.type.isSameType<QByteArray>())
             val = QString::fromUtf8(f.outField, f.bufLength);
     } else {
         if (d->row[field] == nullptr) {
@@ -617,7 +617,7 @@ QVariant QMYSQLResult::data(int field)
 
         fieldLength = mysql_fetch_lengths(d->result)[field];
 
-        if (f.type.id() != QMetaType::QByteArray)
+        if (!f.type.isSameType<QByteArray>())
             val = QString::fromUtf8(d->row[field], fieldLength);
     }
 

@@ -130,7 +130,7 @@ QVariant QXcbMime::mimeConvertToFormat(QXcbConnection *connection, xcb_atom_t a,
 //    qDebug() << "mimeConvertDataToFormat" << format << atomName << data;
 
     if (hasUtf8 && atomName == format + ";charset=utf-8"_L1) {
-        if (requestedType.id() == QMetaType::QString)
+        if (requestedType.isSameType<QString>())
             return QString::fromUtf8(data);
         return data;
     }
@@ -253,7 +253,7 @@ xcb_atom_t QXcbMime::mimeAtomForFormat(QXcbConnection *connection, const QString
 
     // for string/text requests try to use a format with a well-defined charset
     // first to avoid encoding problems
-    if (requestedType.id() == QMetaType::QString
+    if (requestedType.isSameType<QString>()
         && format.startsWith("text/"_L1)
         && !format.contains("charset="_L1)) {
 
