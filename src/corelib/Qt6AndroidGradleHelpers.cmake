@@ -968,39 +968,19 @@ function(_qt_internal_android_copy_extra_plugins target deployment_dir)
     endif()
 
     set(extra_plugins_dst_dir "${deployment_dir}/libs/${CMAKE_ANDROID_ARCH_ABI}")
-    set(copy_outputs "")
-    set(copy_depends "")
-    set(copy_commands COMMAND ${CMAKE_COMMAND} -E make_directory "${extra_plugins_dst_dir}")
 
     foreach(plugin_dir IN LISTS extra_plugins)
-        if(plugin_dir MATCHES "^\$<")
-            message(FATAL_ERROR
-                "QT_ANDROID_EXTRA_PLUGINS entry '${plugin_dir}' for ${target} is a generator "
-                "expression. This copy implementation prepares build rules during configuration "
-                "and requires resolved absolute paths.")
+        if(NOT plugin_dir)
+            continue()
         endif()
 
-        file(TO_CMAKE_PATH "${plugin_dir}" plugin_path)
-        if(NOT IS_ABSOLUTE "${plugin_path}")
-            message(FATAL_ERROR
-                "QT_ANDROID_EXTRA_PLUGINS entry '${plugin_dir}' for ${target} must be an "
-                "absolute path.")
-        endif()
-
-        file(GLOB_RECURSE plugin_files_rel CONFIGURE_DEPENDS
-            LIST_DIRECTORIES false
-            RELATIVE "${plugin_path}"
-            "${plugin_path}/*"
-        )
-
-        if(plugin_files_rel)
-            list(TRANSFORM plugin_files_rel PREPEND "${plugin_path}/"
-                OUTPUT_VARIABLE plugin_files)
-            list(TRANSFORM plugin_files_rel PREPEND "${extra_plugins_dst_dir}/"
-                OUTPUT_VARIABLE plugin_outputs)
-
-            list(APPEND copy_depends ${plugin_files})
-            list(APPEND copy_outputs ${plugin_outputs})
+        set(plugin_path "${plugin_dir}")
+        if(NOT "${plugin_dir}" MATCHES "^[$]<")
+            file(TO_CMAKE_PATH "${plugin_dir}" plugin_path)
+            if(NOT IS_ABSOLUTE "${plugin_path}")
+                message(WARNING "QT_ANDROID_EXTRA_PLUGINS entry '${plugin_dir}' for ${target} "
+                                "is not an absolute path.")
+            endif()
         endif()
 
         list(APPEND copy_commands
@@ -1008,24 +988,12 @@ function(_qt_internal_android_copy_extra_plugins target deployment_dir)
         )
     endforeach()
 
-    if(copy_outputs)
-        add_custom_command(
-            OUTPUT ${copy_outputs}
-            ${copy_commands}
-            DEPENDS ${copy_depends} ${target}
-            COMMENT "Copying extra plugins for ${target}"
-            VERBATIM
-        )
-        add_custom_target(${target}_copy_extra_plugins DEPENDS ${copy_outputs})
-    else()
-        # The plugin outputs not ready at configure time, copy after target builds
-        add_custom_target(${target}_copy_extra_plugins
-            ${copy_commands}
-            DEPENDS ${copy_depends} ${target}
-            COMMENT "Copying extra plugins for ${target}"
-            VERBATIM
-        )
-    endif()
+    add_custom_target(${target}_copy_extra_plugins
+        ${copy_commands}
+        DEPENDS ${target}
+        COMMENT "Copying extra plugins for ${target}"
+        VERBATIM
+    )
 endfunction()
 
 # Copies non-Qt shared libraries linked to the target.
