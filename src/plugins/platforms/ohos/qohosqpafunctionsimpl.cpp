@@ -984,10 +984,6 @@ public:
     void setWindowContrast(QObject *window, int contrast) override;
     void setWindowSaturation(QObject *window, int saturation) override;
 
-    bool shareDataUsingShareKit(
-        QObject *windowObject, const QList<ShareKit::SharedRecord> &recordsToShare,
-        const ShareKit::ShareControllerOptions &controllerOptions) override;
-
     std::shared_ptr<void> shareDataUsingShareKit(
         QObject *optWindowObject, const QList<ShareKit::SharedRecord> &recordsToShare,
         const ShareKit::ShareControllerOptions &controllerOptions,
@@ -1750,14 +1746,6 @@ void QOhosQpaFunctionsImpl::setWindowSaturation(QObject *window, int saturation)
         qOhosReportFatalErrorAndAbort("%s: window argument is null or not a QWindow", Q_FUNC_INFO);
 
     QOhosPlatformWindow::setSaturation(qWindow, saturation);
-}
-
-bool QOhosQpaFunctionsImpl::shareDataUsingShareKit(
-    QObject *optWindowObject, const QList<ShareKit::SharedRecord> &recordsToShare,
-    const ShareKit::ShareControllerOptions &controllerOptions)
-{
-    return !!shareDataUsingShareKit(
-        optWindowObject, recordsToShare, controllerOptions, makeQOhosNoOpConsumer());
 }
 
 std::shared_ptr<void> QOhosQpaFunctionsImpl::shareDataUsingShareKit(

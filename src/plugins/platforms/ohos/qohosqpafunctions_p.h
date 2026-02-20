@@ -347,10 +347,6 @@ public:
     virtual void setWindowContrast(QObject *window, int contrast) = 0;
     virtual void setWindowSaturation(QObject *window, int saturation) = 0;
 
-    virtual bool shareDataUsingShareKit(
-        QObject *optWindowObject, const QList<ShareKit::SharedRecord> &recordsToShare,
-        const ShareKit::ShareControllerOptions &controllerOptions) = 0;
-
     virtual std::shared_ptr<void> shareDataUsingShareKit(
         QObject *optWindowObject, const QList<ShareKit::SharedRecord> &recordsToShare,
         const ShareKit::ShareControllerOptions &controllerOptions,
