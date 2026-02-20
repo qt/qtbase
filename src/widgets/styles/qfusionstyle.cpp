@@ -780,22 +780,22 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
         }
         }
         break;
-    case PE_FrameTabWidget:
-        painter->save();
-        painter->fillRect(option->rect.adjusted(0, 0, -1, -1), d->tabFrameColor(option->palette));
+    case PE_FrameTabWidget: {
+        QRect rect = option->rect.adjusted(0, 0, -1, -1);
+        painter->fillRect(rect, d->tabFrameColor(option->palette));
 #if QT_CONFIG(tabwidget)
         if (const QStyleOptionTabWidgetFrame *twf = qstyleoption_cast<const QStyleOptionTabWidgetFrame *>(option)) {
-            QRect rect = option->rect.adjusted(0, 0, -1, -1);
+            QPainterStateGuard psg(painter);
+            painter->setRenderHint(QPainter::Antialiasing, true);
+            painter->translate(0.5, 0.5);
 
             // Shadow outline
             if (twf->shape != QTabBar::RoundedSouth) {
                 rect.adjust(0, 0, 0, -1);
-                QColor borderColor = outline.lighter(110);
                 QColor alphaShadow(Qt::black);
                 alphaShadow.setAlpha(15);
                 painter->setPen(alphaShadow);
                 painter->drawLine(option->rect.bottomLeft(), option->rect.bottomRight());
-                painter->setPen(borderColor);
             }
 
             // outline
@@ -808,9 +808,8 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
 
         }
 #endif // QT_CONFIG(tabwidget)
-        painter->restore();
-        break ;
-
+        break;
+    }
     case PE_FrameStatusBarItem:
         break;
     case PE_PanelMenu: {
