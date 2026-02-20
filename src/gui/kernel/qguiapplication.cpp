@@ -2601,23 +2601,13 @@ void QGuiApplicationPrivate::processKeyEvent(QWindowSystemInterfacePrivate::KeyE
 {
     QWindow *window = e->window.data();
     modifier_buttons = e->modifiers;
-    if (e->nullWindow()
-#ifdef Q_OS_ANDROID
-           || e->key == Qt::Key_Back || e->key == Qt::Key_Menu
-#endif
-            ) {
+    if (e->nullWindow())
         window = QGuiApplication::focusWindow();
-    }
 
     if (!window) {
         e->eventAccepted = false;
         return;
     }
-
-#if defined(Q_OS_ANDROID)
-    static bool backKeyPressAccepted = false;
-    static bool menuKeyPressAccepted = false;
-#endif
 
 #if !defined(Q_OS_MACOS)
     // FIXME: Include OS X in this code path by passing the key event through
@@ -2625,10 +2615,6 @@ void QGuiApplicationPrivate::processKeyEvent(QWindowSystemInterfacePrivate::KeyE
     if (e->keyType == QEvent::KeyPress) {
         if (QWindowSystemInterface::handleShortcutEvent(window, e->timestamp, e->key, e->modifiers,
             e->nativeScanCode, e->nativeVirtualKey, e->nativeModifiers, e->unicode, e->repeat, e->repeatCount)) {
-#if defined(Q_OS_ANDROID)
-            backKeyPressAccepted = e->key == Qt::Key_Back;
-            menuKeyPressAccepted = e->key == Qt::Key_Menu;
-#endif
             return;
         }
     }
@@ -2653,22 +2639,6 @@ void QGuiApplicationPrivate::processKeyEvent(QWindowSystemInterfacePrivate::KeyE
 #ifdef Q_OS_ANDROID
     else
         ev.setAccepted(false);
-
-    if (e->keyType == QEvent::KeyPress) {
-        backKeyPressAccepted = e->key == Qt::Key_Back && ev.isAccepted();
-        menuKeyPressAccepted = e->key == Qt::Key_Menu && ev.isAccepted();
-    } else if (e->keyType == QEvent::KeyRelease) {
-        if (e->key == Qt::Key_Back && !backKeyPressAccepted && !ev.isAccepted()) {
-            auto iface = qGuiApp->nativeInterface<QNativeInterface::QAndroidApplication>();
-            iface->runOnAndroidMainThread([iface]() {
-                if (!iface->isActivityContext())
-                    return;
-                iface->context().callMethod<jboolean>("moveTaskToBack", true);
-            });
-        } else if (e->key == Qt::Key_Menu && !menuKeyPressAccepted && !ev.isAccepted()) {
-            platform_theme->showPlatformMenuBar();
-        }
-    }
 #endif
     e->eventAccepted = ev.isAccepted();
 }

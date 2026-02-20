@@ -7,6 +7,7 @@
 #include <QtGui/qtguiglobal.h>
 
 #include "androidjniinput.h"
+#include "androidjnimenu.h"
 #include "androidjnimain.h"
 #include "qandroidplatformintegration.h"
 
@@ -36,6 +37,8 @@ namespace QtAndroidInput
     static QList<QWindowSystemInterface::TouchPoint> m_touchPoints;
 
     static QPointer<QWindow> m_mouseGrabber;
+    static bool m_backKeyPressAccepted = false;
+    static bool m_menuKeyPressAccepted = false;
 
 
     void updateSelection(int selStart, int selEnd, int candidatesStart, int candidatesEnd)
@@ -860,22 +863,56 @@ namespace QtAndroidInput
 
     static void keyDown(JNIEnv */*env*/, jobject /*thiz*/, jint key, jint unicode, jint modifier, jboolean autoRepeat)
     {
-        QWindowSystemInterface::handleKeyEvent(0,
-                                               QEvent::KeyPress,
-                                               mapAndroidKey(key).toCombined(),
-                                               mapAndroidModifiers(modifier),
-                                               toString(unicode),
-                                               autoRepeat);
+        const int qtKeyCombination = mapAndroidKey(key).toCombined();
+        const auto qtModifiers = mapAndroidModifiers(modifier);
+        const auto isBackKey = qtKeyCombination == Qt::Key_Back;
+        const auto isMenuKey = qtKeyCombination == Qt::Key_Menu;
+        const auto text = toString(unicode);
+
+        bool accepted = false;
+        if (isBackKey || isMenuKey) {
+            accepted = QWindowSystemInterface::handleKeyEvent<
+                QWindowSystemInterface::SynchronousDelivery>(
+                nullptr, QEvent::KeyPress, qtKeyCombination, qtModifiers, text, autoRepeat);
+        } else {
+            QWindowSystemInterface::handleKeyEvent(
+                nullptr, QEvent::KeyPress, qtKeyCombination, qtModifiers, text, autoRepeat);
+        }
+        m_backKeyPressAccepted = isBackKey && accepted;
+        m_menuKeyPressAccepted = isMenuKey && accepted;
+    }
+
+    static void moveActivityToBackground() {
+        auto iface = qGuiApp->nativeInterface<QNativeInterface::QAndroidApplication>();
+        iface->runOnAndroidMainThread([iface]() {
+            if (!iface->isActivityContext())
+                return;
+            iface->context().callMethod<jboolean>("moveTaskToBack", true);
+        });
     }
 
     static void keyUp(JNIEnv */*env*/, jobject /*thiz*/, jint key, jint unicode, jint modifier, jboolean autoRepeat)
     {
-        QWindowSystemInterface::handleKeyEvent(0,
-                                               QEvent::KeyRelease,
-                                               mapAndroidKey(key).toCombined(),
-                                               mapAndroidModifiers(modifier),
-                                               toString(unicode),
-                                               autoRepeat);
+        const int qtKeyCombination = mapAndroidKey(key).toCombined();
+        const auto qtModifiers = mapAndroidModifiers(modifier);
+        const auto isBackKey = qtKeyCombination == Qt::Key_Back;
+        const auto isMenuKey = qtKeyCombination == Qt::Key_Menu;
+        const auto text = toString(unicode);
+
+        if (!isBackKey && !isMenuKey) {
+            QWindowSystemInterface::handleKeyEvent(
+                nullptr, QEvent::KeyRelease, qtKeyCombination, qtModifiers, text, autoRepeat);
+            return;
+        }
+
+        const bool accepted =
+            QWindowSystemInterface::handleKeyEvent<QWindowSystemInterface::SynchronousDelivery>(
+                nullptr, QEvent::KeyRelease, qtKeyCombination, qtModifiers, text, autoRepeat);
+
+        if (isBackKey && !m_backKeyPressAccepted && !accepted)
+            moveActivityToBackground();
+        else if (isMenuKey && !m_menuKeyPressAccepted && !accepted)
+            QtAndroidMenu::openOptionsMenu();
     }
 
     static void keyboardVisibilityChanged(JNIEnv */*env*/, jobject /*thiz*/, jboolean visibility)
