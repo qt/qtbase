@@ -288,12 +288,8 @@ function(qt_internal_android_dependencies target)
     qt_internal_android_dependencies_content(${target} file_contents)
 
     # Get plugins from the module's plugin types and get their dependencies
-    set(available_plugin_types "")
     foreach(plugin ${QT_KNOWN_PLUGINS})
         get_target_property(iter_known_plugin_type ${plugin} QT_PLUGIN_TYPE)
-        if(iter_known_plugin_type)
-            list(APPEND available_plugin_types "${iter_known_plugin_type}")
-        endif()
         foreach(plugin_type ${module_plugin_types})
             if (plugin_type STREQUAL iter_known_plugin_type)
                 qt_internal_android_dependencies_content(${plugin} plugin_file_contents)
@@ -301,7 +297,6 @@ function(qt_internal_android_dependencies target)
             endif()
         endforeach()
     endforeach()
-    list(REMOVE_DUPLICATES available_plugin_types)
 
     if ((NOT module_plugin_types)
         AND (NOT file_contents))
@@ -321,11 +316,9 @@ function(qt_internal_android_dependencies target)
 
     # Module plugins
     if(module_plugin_types)
-        foreach(plugin_type IN LISTS module_plugin_types)
-            if(NOT available_plugin_types OR plugin_type IN_LIST available_plugin_types)
-                string(APPEND file_contents
-                    "<bundled file=\"${INSTALL_PLUGINSDIR}/${plugin_type}\" type=\"plugin_dir\"/>\n")
-            endif()
+        foreach(plugin IN LISTS module_plugin_types)
+            string(APPEND file_contents
+                "<bundled file=\"${INSTALL_PLUGINSDIR}/${plugin}\" type=\"plugin_dir\"/>\n")
         endforeach()
     endif()
 
