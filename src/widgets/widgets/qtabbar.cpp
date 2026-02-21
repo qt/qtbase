@@ -748,7 +748,7 @@ void QTabBarPrivate::layoutTab(int index)
     if (tab->leftWidget) {
         QRect rect = q->style()->subElementRect(QStyle::SE_TabBarTabLeftButton, &opt, q);
         QPoint p = rect.topLeft();
-        if (index == pressedIndex) {
+        if (tab->dragOffset != 0) {
             if (vertical)
                 p.setY(p.y() + tab->dragOffset);
             else
@@ -759,7 +759,7 @@ void QTabBarPrivate::layoutTab(int index)
     if (tab->rightWidget) {
         QRect rect = q->style()->subElementRect(QStyle::SE_TabBarTabRightButton, &opt, q);
         QPoint p = rect.topLeft();
-        if (index == pressedIndex) {
+        if (tab->dragOffset != 0) {
             if (vertical)
                 p.setY(p.y() + tab->dragOffset);
             else
