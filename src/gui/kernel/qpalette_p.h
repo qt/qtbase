@@ -18,6 +18,8 @@
 
 #include "qpalette.h"
 
+#include <QtCore/qatomic.h>
+
 QT_BEGIN_NAMESPACE
 
 class Q_GUI_EXPORT QPalettePrivate
@@ -67,8 +69,8 @@ public:
 
     QAtomicInt ref;
     QPalette::ResolveMask resolveMask = {0};
-    static inline int qt_palette_count = 0;
-    static inline int qt_palette_private_count = 0;
+    static QAtomicInt qt_palette_count;
+    static QAtomicInt qt_palette_private_count;
     int detach_no = ++qt_palette_private_count;
     QExplicitlySharedDataPointer<Data> data;
 };
