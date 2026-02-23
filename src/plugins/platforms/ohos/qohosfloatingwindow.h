@@ -44,7 +44,6 @@ protected:
 
 private:
     void tryAcquireNativeSurfaceIfNeeded();
-    void updateWindowGeometryFromView(QOhosView &view);
     void restoreWindowCurrentCursorIfNeeded();
     void onWindowFlagsChanged(
         Qt::WindowFlags previousWindowFlags, Qt::WindowFlags currentWindowFlags) override;
