@@ -371,6 +371,8 @@ class Q_CORE_EXPORT QDateTime
         ShortData data;
     };
 
+    friend class QTypeInfo<Data>;
+
 public:
     QDateTime() noexcept;
 
@@ -675,6 +677,7 @@ private:
     friend Q_CORE_EXPORT QDebug operator<<(QDebug, const QDateTime &);
 #endif
 };
+Q_DECLARE_TYPEINFO(QDateTime::Data, Q_RELOCATABLE_TYPE);
 Q_DECLARE_SHARED(QDateTime)
 
 #ifndef QT_NO_DATASTREAM
