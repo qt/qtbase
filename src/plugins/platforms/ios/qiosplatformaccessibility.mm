@@ -54,8 +54,12 @@ void QIOSPlatformAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *even
     switch (event->type()) {
     case QAccessible::Announcement: {
         auto *announcementEvent = static_cast<QAccessibleAnnouncementEvent *>(event);
-        UIAccessibilityPostNotification(UIAccessibilityAnnouncementNotification,
-                                        announcementEvent->message().toNSString());
+        const bool queueAnnouncement =
+                (announcementEvent->politeness() == QAccessible::AnnouncementPoliteness::Polite);
+        NSAttributedString *message = [[NSAttributedString alloc]
+                initWithString:announcementEvent->message().toNSString()
+                    attributes:@{UIAccessibilitySpeechAttributeQueueAnnouncement: @(queueAnnouncement)}];
+        UIAccessibilityPostNotification(UIAccessibilityAnnouncementNotification, [message autorelease]);
         break;
     }
     case QAccessible::Focus: {
