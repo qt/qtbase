@@ -144,10 +144,27 @@ QNapi::Object makeShareKitControllerOptionsObject(
     return controllerOptionsObject;
 }
 
+std::shared_ptr<void> registerOnOffShareCompletedEventHandler(
+    QNapi::Object shareController, QOhosConsumer<ShareOperationResult> shareCompletedCallback)
+{
+    return QtOhos::registerOnOffMethodsBasedEventHandler(
+        shareController, "shareCompleted",
+        [shareCompletedCallback = std::move(shareCompletedCallback)](const QtOhos::CallbackInfo &cbInfo) {
+            const auto shareOperationResult = cbInfo.getFirstArg<QNapi::Object>(Q_FUNC_INFO);
+            const auto targetAbilityName = shareOperationResult.eval<QNapi::String>(
+                "targetAbilityInfo.name");
+            shareCompletedCallback(
+                ShareOperationResult{
+                    .targetAbilityName = targetAbilityName,
+                });
+        });
+}
+
 void shareDataImpl(
     QtOhos::JsState &jsState, std::shared_ptr<QtOhos::QUiAbilityPeer> uiAbilityPeer,
     const std::vector<SharedRecord> &recordsToShare, ControllerOptions controllerOptions,
-    std::function<void()> panelClosedCallback, QOhosConsumer<std::shared_ptr<void>> resultConsumer)
+    std::function<void()> panelClosedCallback, QOhosConsumer<ShareOperationResult> shareCompletedCallback,
+    QOhosConsumer<std::shared_ptr<void>> resultConsumer)
 {
     qOhosPrintfDebug("%s: sharing %lu records through ShareKit", Q_FUNC_INFO, recordsToShare.size());
 
@@ -185,8 +202,12 @@ void shareDataImpl(
     auto controller = jsState.eval<QNapi::Object>(
         "@kit.ShareKit.systemShare.ShareController<new>(*)", {sharedDataObject});
 
-    auto dissmissCallbackHandle = QtOhos::registerOnOffMethodsBasedEventHandler(
-        controller, "dismiss", std::move(panelClosedCallback));
+    auto callbacksHandle = QtOhos::moveToSharedPtr(
+        std::vector<std::shared_ptr<void>>{
+            QtOhos::registerOnOffMethodsBasedEventHandler(
+                controller, "dismiss", std::move(panelClosedCallback)),
+            registerOnOffShareCompletedEventHandler(controller, std::move(shareCompletedCallback)),
+        });
 
     controller.call<QNapi::Promise>(
         "show",
@@ -196,8 +217,8 @@ void shareDataImpl(
         })
     .withContext(std::move(resultConsumer))
     .onThenWithContext(
-        [dissmissCallbackHandle](auto &resultConsumer) {
-            resultConsumer(dissmissCallbackHandle);
+        [callbacksHandle](auto &resultConsumer) {
+            resultConsumer(callbacksHandle);
         })
     .onCatchWithContext(
         [](const QtOhos::CallbackInfo &cbInfo, auto &resultConsumer) {
@@ -223,7 +244,8 @@ QOhosConsumer<Ts...> makeAsyncConsumer(
 
 std::shared_ptr<void> shareData(
     QWindow *optInstanceMainWindow, const std::vector<SharedRecord> &recordsToShare,
-    ControllerOptions controllerOptions, std::function<void()> panelClosedCallback)
+    ControllerOptions controllerOptions, std::function<void()> panelClosedCallback,
+    QOhosConsumer<ShareOperationResult> shareCompletedCallback)
 {
     auto optMainWindowInstanceObjectRef =
         optInstanceMainWindow != nullptr
@@ -232,6 +254,8 @@ std::shared_ptr<void> shareData(
 
     auto panelClosedJsCallback = makeAsyncConsumer(
         std::move(panelClosedCallback), &QtOhos::invokeInQtThread);
+    auto shareCompletedJsCallback = makeAsyncConsumer(
+        std::move(shareCompletedCallback), &QtOhos::invokeInQtThread);
 
     return QtOhos::evalInJsThreadWithConsumer<std::shared_ptr<void>>(
         [&](QtOhos::JsState &jsState, QOhosConsumer<std::shared_ptr<void>> resultConsumer) {
@@ -247,7 +271,7 @@ std::shared_ptr<void> shareData(
 
             shareDataImpl(
                 jsState, uiAbilityPeer, recordsToShare, controllerOptions, std::move(panelClosedJsCallback),
-                std::move(resultConsumer));
+                std::move(shareCompletedJsCallback), std::move(resultConsumer));
         });
 }
 
