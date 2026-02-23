@@ -312,6 +312,9 @@ void tst_QMap::take_data()
     QTest::addRow("1 in {0}") << 1 << 1;
     QTest::addRow("0 in {0, 1}") << 2 << 0;
     QTest::addRow("1 in {0, 1}") << 2 << 1;
+    QTest::addRow("0 in {0...16}") << 17 << 0;
+    QTest::addRow("7 in {0...16}") << 17 << 7;
+    QTest::addRow("16 in {0...16}") << 17 << 16;
     QTest::addRow("1024 in {0...2047}") << 2048 << 1024;
 }
 
