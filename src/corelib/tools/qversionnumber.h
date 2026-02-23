@@ -194,6 +194,8 @@ class QVersionNumber
         Q_CORE_EXPORT void setVector(int len, int maj, int min, int mic);
     } m_segments;
 
+    friend class QTypeInfo<SegmentStorage>;
+
     class It
     {
         const QVersionNumber *v;
@@ -401,6 +403,7 @@ private:
     friend Q_CORE_EXPORT size_t qHash(const QVersionNumber &key, size_t seed);
 };
 
+Q_DECLARE_TYPEINFO(QVersionNumber::SegmentStorage, Q_RELOCATABLE_TYPE);
 Q_DECLARE_TYPEINFO(QVersionNumber, Q_RELOCATABLE_TYPE);
 
 #ifndef QT_NO_DEBUG_STREAM
