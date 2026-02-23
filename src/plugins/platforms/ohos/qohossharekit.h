@@ -72,9 +72,15 @@ struct ControllerOptions
     QOhosOptional<std::vector<ShareAbilityType>> excludedAbilities;
 };
 
+struct ShareOperationResult
+{
+    std::string targetAbilityName;
+};
+
 std::shared_ptr<void> shareData(
     QWindow *optInstanceMainWindow, const std::vector<SharedRecord> &recordsToShare,
-    ControllerOptions controllerOptions, std::function<void()> panelClosedCallback);
+    ControllerOptions controllerOptions, std::function<void()> panelClosedCallback,
+    QOhosConsumer<ShareOperationResult> shareCompletedCallback);
 
 }
 

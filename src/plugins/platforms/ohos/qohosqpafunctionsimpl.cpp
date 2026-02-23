@@ -1805,7 +1805,8 @@ std::shared_ptr<void> QOhosQpaFunctionsImpl::shareDataUsingShareKit(
     };
 
     return QOhosShareKit::shareData(
-        optQWindow, shareKitRecords, shareKitControllerOptions, std::move(panelClosedCallback));
+        optQWindow, shareKitRecords, shareKitControllerOptions, std::move(panelClosedCallback),
+        makeQOhosNoOpConsumer());
 }
 
 bool QOhosQpaFunctionsImpl::tryOpenLink(QObject *optInstanceMainWindow, const QString &link, QOhosOptional<bool> appLinkingOnly)
