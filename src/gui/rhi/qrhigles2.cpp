@@ -1647,6 +1647,8 @@ bool QRhiGles2::isFeatureSupported(QRhi::Feature feature) const
         return caps.sampleVariables;
     case QRhi::InstanceIndexIncludesBaseInstance:
         return false; // because BaseInstance is always false
+    case QRhi::DepthClamp:
+        return caps.depthClamp;
     default:
         Q_UNREACHABLE_RETURN(false);
     }

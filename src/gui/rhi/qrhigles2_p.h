@@ -1015,6 +1015,7 @@ public:
               baseVertex(false),
               compute(false),
               textureCompareMode(false),
+              depthClamp(false),
               properMapBuffer(false),
               nonBaseLevelFramebufferTexture(false),
               texelFetch(false),

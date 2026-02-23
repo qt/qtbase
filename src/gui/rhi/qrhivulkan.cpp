@@ -5414,6 +5414,8 @@ bool QRhiVulkan::isFeatureSupported(QRhi::Feature feature) const
         return true;
     case QRhi::InstanceIndexIncludesBaseInstance:
         return true;
+    case QRhi::DepthClamp:
+        return true;
     default:
         Q_UNREACHABLE_RETURN(false);
     }

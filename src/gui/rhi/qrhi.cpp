@@ -1117,6 +1117,12 @@ Q_LOGGING_CATEGORY(QRHI_LOG_RUB, "qt.rhi.rub")
     In practice this will be the case for Direct 3D 11 and 12 at the moment.
     With Vulkan and Metal this feature is expected to be reported as supported
     always. This enum value has been introduced in Qt 6.11.
+
+    \value DepthClamp Indicates that enabling depth clamping is supported. When
+    reported as unsupported, which will be the case with OpenGL ES, OpenGL
+    versions before 3.2 without the relevant extension present, and Metal on the
+    iOS Simulator, calling \l{QRhiCommandBuffer::}{setDepthClamp()} with an argument
+    of \c true has no effect. This enum value has been introduced in Qt 6.11.
  */
 
 /*!
@@ -7217,7 +7223,8 @@ QRhiResource::Type QRhiGraphicsPipeline::resourceType() const
     clip plane are rasterized and their depth values are clamped to the
     depth range. When disabled (the default), such primitives are clipped.
 
-    \note This setting is ignored on OpenGL ES.
+    \note This setting is ignored when the QRhi::DepthClamp feature is
+    reported as unsupported.
 
     \since 6.11
  */
