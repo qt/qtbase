@@ -529,6 +529,7 @@ public:
         int maxThreadGroupSize = 512;
         bool multiView = false;
         bool shadingRateMap = false;
+        bool depthClamp = true;
     } caps;
 
     QRhiMetalData *d = nullptr;

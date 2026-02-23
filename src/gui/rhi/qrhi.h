@@ -1937,7 +1937,8 @@ public:
         VariableRateShadingMapWithTexture,
         PerRenderTargetBlending,
         SampleVariables,
-        InstanceIndexIncludesBaseInstance
+        InstanceIndexIncludesBaseInstance,
+        DepthClamp
     };
 
     enum BeginFrameFlag {

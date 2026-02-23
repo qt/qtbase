@@ -715,6 +715,8 @@ bool QRhiD3D11::isFeatureSupported(QRhi::Feature feature) const
         return true;
     case QRhi::InstanceIndexIncludesBaseInstance:
         return false;
+    case QRhi::DepthClamp:
+        return true;
     default:
         Q_UNREACHABLE();
         return false;

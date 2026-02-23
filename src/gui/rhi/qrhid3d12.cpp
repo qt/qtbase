@@ -870,6 +870,8 @@ bool QRhiD3D12::isFeatureSupported(QRhi::Feature feature) const
         return true;
     case QRhi::InstanceIndexIncludesBaseInstance:
         return false;
+    case QRhi::DepthClamp:
+        return true;
     }
     return false;
 }
