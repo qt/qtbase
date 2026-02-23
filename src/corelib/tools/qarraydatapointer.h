@@ -430,6 +430,9 @@ inline void swap(QArrayDataPointer<T> &p1, QArrayDataPointer<T> &p2) noexcept
     p1.swap(p2);
 }
 
+template <class T>
+Q_DECLARE_TYPEINFO_BODY(QArrayDataPointer<T>, Q_RELOCATABLE_TYPE);
+
 ////////////////////////////////////////////////////////////////////////////////
 //  Q_ARRAY_LITERAL
 
