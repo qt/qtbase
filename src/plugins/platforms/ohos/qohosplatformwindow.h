@@ -31,12 +31,6 @@ public:
         Frameless,
     };
 
-    enum class ScreenChangeResult
-    {
-        Changed,
-        NotChanged,
-    };
-
     enum class NativeNodeRenderFitPolicy
     {
         TopLeft,
@@ -93,7 +87,6 @@ public:
     void setWindowTitle(const QString &title) override;
 
     void setParent(const QPlatformWindow *newParent) override;
-    ScreenChangeResult tryChangeScreen(QOhosPlatformScreen *screen);
     QPlatformScreen *screen() const override;
 
     void setWindowState(Qt::WindowStates state) override;

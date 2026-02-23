@@ -143,48 +143,6 @@ void QOhosPlatformWindow::setParent(const QPlatformWindow *newParent)
     view->setParentOrReparent(*parentView);
 }
 
-QOhosPlatformWindow::ScreenChangeResult QOhosPlatformWindow::tryChangeScreen(QOhosPlatformScreen *platformScreen)
-{
-    if (platformScreen == nullptr) {
-        qCWarning(QtForOhos) << Q_FUNC_INFO << "platform screen is null. Ignoring";
-        return ScreenChangeResult::NotChanged;
-    }
-
-    auto *view = ownedViewOrNull();
-    if (view == nullptr) {
-        qCWarning(QtForOhos) << Q_FUNC_INFO << "view is nullptr";
-        return ScreenChangeResult::NotChanged;
-    }
-
-    auto screenDisplayId = platformScreen->displayInfo().id;
-    m_lastRequestedDisplayId = makeQOhosOptional(screenDisplayId);
-
-    if (view->viewType() == QOhosView::ViewType::EmbeddedWindow) {
-        qCWarning(QtForOhos) << Q_FUNC_INFO << "view is of invalid type";
-        return ScreenChangeResult::NotChanged;
-    }
-
-    if (m_displayId == screenDisplayId) {
-        qCWarning(QtForOhos) << Q_FUNC_INFO << "Screen has not changed. Ignoring";
-        return ScreenChangeResult::NotChanged;
-    }
-
-    auto currentWindowPosition = windowFrameGeometry().topLeft();
-    auto availableArea = platformScreen->availableGeometry();
-
-    auto adjustedWindowPosition = QPoint(
-        qBound<int>(availableArea.left(), currentWindowPosition.x(), availableArea.right()),
-        qBound<int>(availableArea.top(), currentWindowPosition.y(), availableArea.bottom()));
-
-    qCDebug(QtForOhos)
-        << Q_FUNC_INFO << "window:" << window()
-        << "screen id" << screenDisplayId.value()
-        << "target position:" << adjustedWindowPosition;
-
-    view->setPositionOnScreenImmediate(adjustedWindowPosition, screenDisplayId);
-    return ScreenChangeResult::Changed;
-}
-
 QPlatformScreen *QOhosPlatformWindow::screen() const
 {
     if (!m_displayId.hasValue())
