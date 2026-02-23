@@ -1599,6 +1599,12 @@ qt_feature("test_auto" PUBLIC
     LABEL "Compile auto tests"
 )
 
+# Compile baseline tests
+qt_feature("test_baseline" PUBLIC
+    LABEL "Compile baseline tests"
+    AUTODETECT OFF
+)
+
 qt_configure_add_report_entry(
     TYPE WARNING
     MESSAGE "Starting with Qt 6.10, a -no-prefix or -developer-build
