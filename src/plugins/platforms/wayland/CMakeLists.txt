@@ -31,6 +31,7 @@ include(../../../../src/tools/qtwaylandscanner/Qt6WaylandClientMacros.cmake)
 #####################################################################
 
 qt_internal_add_module(WaylandClient
+    PLUGIN_TYPES wayland-inputdevice-integration
     SOURCES
         shared/qwaylandinputmethodeventbuilder.cpp shared/qwaylandinputmethodeventbuilder_p.h
         shared/qwaylandmimehelper.cpp shared/qwaylandmimehelper_p.h
