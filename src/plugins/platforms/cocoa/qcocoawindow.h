@@ -150,7 +150,7 @@ public:
     bool windowIsPopupType(Qt::WindowType type = Qt::Widget) const;
 
     NSInteger windowLevel(Qt::WindowFlags flags);
-    NSUInteger windowStyleMask(Qt::WindowFlags flags);
+    NSUInteger windowStyleMask(Qt::WindowFlags flags) const;
     void updateTitleBarButtons(Qt::WindowFlags flags);
     bool isFixedSize() const;
 

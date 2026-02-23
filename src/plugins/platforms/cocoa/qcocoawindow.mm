@@ -602,7 +602,7 @@ NSInteger QCocoaWindow::windowLevel(Qt::WindowFlags flags)
     return windowLevel;
 }
 
-NSUInteger QCocoaWindow::windowStyleMask(Qt::WindowFlags flags)
+NSUInteger QCocoaWindow::windowStyleMask(Qt::WindowFlags flags) const
 {
     const Qt::WindowType type = static_cast<Qt::WindowType>(int(flags & Qt::WindowType_Mask));
 
@@ -2271,16 +2271,27 @@ QMargins QCocoaWindow::frameMargins() const
 {
     QMacAutoReleasePool pool;
 
-    if (!isContentView())
+    // Child windows don't have frame margins. We explicitly don't check
+    // isContentView() here, as we want to know the frame argins also for
+    // windows that haven't gotten their NSWindow yet.
+    if (QPlatformWindow::parent())
         return QMargins();
 
-    NSRect frameW = m_view.window.frame;
-    NSRect frameC = [m_view.window contentRectForFrameRect:frameW];
+    NSRect frameRect;
+    NSRect contentRect;
 
-    return QMargins(frameW.origin.x - frameC.origin.x,
-        (frameW.origin.y + frameW.size.height) - (frameC.origin.y + frameC.size.height),
-        (frameW.origin.x + frameW.size.width) - (frameC.origin.x + frameC.size.width),
-        frameC.origin.y - frameW.origin.y);
+    if (m_view.window) {
+        frameRect = m_view.window.frame;
+        contentRect = [m_view.window contentRectForFrameRect:frameRect];
+    } else {
+        contentRect = m_view.frame;
+        frameRect = [NSWindow frameRectForContentRect:contentRect styleMask:windowStyleMask(window()->flags())];
+    }
+
+    return QMargins(frameRect.origin.x - contentRect.origin.x,
+        (frameRect.origin.y + frameRect.size.height) - (contentRect.origin.y + contentRect.size.height),
+        (frameRect.origin.x + frameRect.size.width) - (contentRect.origin.x + contentRect.size.width),
+        contentRect.origin.y - contentRect.origin.y);
 }
 
 void QCocoaWindow::setFrameStrutEventsEnabled(bool enabled)
