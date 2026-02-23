@@ -198,6 +198,7 @@ void tst_QWidget_window::tst_show_move()
 {
     QWidget w;
     w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
     const QPoint pos(100, 100);
     w.move(pos);
     QVERIFY2(qFuzzyCompareWindowPosition(w.pos(), pos, m_fuzz),
