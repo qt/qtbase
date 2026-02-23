@@ -557,6 +557,7 @@ std::shared_ptr<QOhosWindowProxy> QOhosView::tryCreateWindowProxyIfNeeded(ViewTy
         createInfo.decorEnabled = window->decorationPreset() != QOhosPlatformWindow::DecorationPreset::Frameless;
         createInfo.disableWindowFocusableBeforeLoadContentHack = window->windowFlags().testFlag(Qt::WindowDoesNotAcceptFocus);
         createInfo.modal = qWindow->modality() != Qt::NonModal;
+        createInfo.windowRect = window->geometry().marginsAdded(window->frameMargins());
         result = parentWindowProxy->createSubWindow(createInfo);
 
         break;
