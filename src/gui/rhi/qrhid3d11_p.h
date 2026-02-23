@@ -127,24 +127,51 @@ struct QD3D11RenderPassDescriptor : public QRhiRenderPassDescriptor
 
 struct QD3D11RenderTargetData
 {
+    static const int MAX_COLOR_ATTACHMENTS = 8;
+
+    struct Views
+    {
+        int colorAttCount;
+        ID3D11RenderTargetView *rtv[MAX_COLOR_ATTACHMENTS];
+        ID3D11DepthStencilView *dsv;
+
+        void setFrom(int colorAttCount, ID3D11RenderTargetView * const *rtv, ID3D11DepthStencilView *dsv)
+        {
+            this->colorAttCount = colorAttCount;
+            for (int i = 0; i < colorAttCount; ++i)
+                this->rtv[i] = rtv[i];
+            for (int i = colorAttCount; i < MAX_COLOR_ATTACHMENTS; ++i)
+                this->rtv[i] = nullptr;
+            this->dsv = dsv;
+        }
+
+        void reset()
+        {
+            colorAttCount = 0;
+            for (int i = 0; i < MAX_COLOR_ATTACHMENTS; ++i)
+                rtv[i] = nullptr;
+            dsv = nullptr;
+        }
+    };
+
     QD3D11RenderTargetData(QRhiImplementation *)
     {
-        for (int i = 0; i < MAX_COLOR_ATTACHMENTS; ++i)
-            rtv[i] = nullptr;
+        views.reset();
     }
 
     QD3D11RenderPassDescriptor *rp = nullptr;
     QSize pixelSize;
     float dpr = 1;
     int sampleCount = 1;
-    int colorAttCount = 0;
-    int dsAttCount = 0;
-
-    static const int MAX_COLOR_ATTACHMENTS = 8;
-    ID3D11RenderTargetView *rtv[MAX_COLOR_ATTACHMENTS];
-    ID3D11DepthStencilView *dsv = nullptr;
-
+    Views views;
     QRhiRenderTargetAttachmentTracker::ResIdList currentResIdList;
+};
+
+struct QD3D11RenderTargetUavUpdateState
+{
+    QD3D11RenderTargetData::Views rtViews;
+    std::array<ID3D11UnorderedAccessView *, QD3D11RenderTargetData::MAX_COLOR_ATTACHMENTS> uav;
+    bool update(const QD3D11RenderTargetData::Views &currentRtViews, ID3D11UnorderedAccessView * const *uavs = nullptr, int count = 0);
 };
 
 struct QD3D11SwapChainRenderTarget : public QRhiSwapChainRenderTarget
@@ -179,14 +206,6 @@ struct QD3D11TextureRenderTarget : public QRhiTextureRenderTarget
     bool ownsDsv = false;
     ID3D11DepthStencilView *dsv = nullptr;
     friend class QRhiD3D11;
-};
-
-struct RenderTargetUavUpdateState
-{
-    ID3D11RenderTargetView *rtv[QD3D11RenderTargetData::MAX_COLOR_ATTACHMENTS];
-    ID3D11DepthStencilView *dsv = nullptr;
-    std::array<ID3D11UnorderedAccessView *, QD3D11RenderTargetData::MAX_COLOR_ATTACHMENTS> uav;
-    bool update(QD3D11RenderTargetData *data, ID3D11UnorderedAccessView * const *uavs = nullptr, int count = 0);
 };
 
 struct QD3D11GraphicsPipeline;
@@ -422,23 +441,27 @@ struct QD3D11CommandBuffer : public QRhiCommandBuffer
         enum ClearFlag { Color = 1, Depth = 2, Stencil = 4 };
         Cmd cmd;
 
-        // QRhi*/QD3D11* references should be kept at minimum (so no
-        // QRhiTexture/Buffer/etc. pointers).
+        // QRhi*/QD3D11* references should be kept at minimum, and avoided, if
+        // possible. So no QRhiTexture/Buffer/etc. pointers (or pointers to the
+        // internal d). Store D3D resource refs instead so there is no
+        // dependency on the QRhi* resource objects themselves anymore in the
+        // command list.
         union Args {
             struct {
                 ID3D11Query *tsQuery;
                 ID3D11Query *tsDisjointQuery;
-                QD3D11RenderTargetData *swapchainData;
+                ID3D11RenderTargetView *swapchainRtv;
+                ID3D11DepthStencilView *swapchainDsv;
             } beginFrame;
             struct {
                 ID3D11Query *tsQuery;
                 ID3D11Query *tsDisjointQuery;
             } endFrame;
             struct {
-                QRhiRenderTarget *rt;
+                QD3D11RenderTargetData::Views rtViews;
             } setRenderTarget;
             struct {
-                QRhiRenderTarget *rt;
+                QD3D11RenderTargetData::Views rtViews;
                 int mask;
                 float c[4];
                 float d;
@@ -464,7 +487,16 @@ struct QD3D11CommandBuffer : public QRhiCommandBuffer
                 DXGI_FORMAT format;
             } bindIndexBuffer;
             struct {
-                QD3D11GraphicsPipeline *ps;
+                D3D11_PRIMITIVE_TOPOLOGY topology;
+                ID3D11InputLayout *inputLayout;
+                ID3D11DepthStencilState *dsState;
+                ID3D11BlendState *blendState;
+                ID3D11RasterizerState *rastState;
+                ID3D11VertexShader *vs;
+                ID3D11HullShader *hs;
+                ID3D11DomainShader *ds;
+                ID3D11GeometryShader *gs;
+                ID3D11PixelShader *fs;
             } bindGraphicsPipeline;
             struct {
                 int resourceBatchesIndex;
@@ -473,22 +505,20 @@ struct QD3D11CommandBuffer : public QRhiCommandBuffer
                 uint dynamicOffsetPairs[MAX_DYNAMIC_OFFSET_COUNT * 2]; // binding, offsetInConstants
             } bindShaderResources;
             struct {
-                QD3D11GraphicsPipeline *ps;
+                ID3D11DepthStencilState *dsState;
                 quint32 ref;
             } stencilRef;
             struct {
-                QD3D11GraphicsPipeline *ps;
+                ID3D11BlendState *blendState;
                 float c[4];
             } blendConstants;
             struct {
-                QD3D11GraphicsPipeline *ps;
                 quint32 vertexCount;
                 quint32 instanceCount;
                 quint32 firstVertex;
                 quint32 firstInstance;
             } draw;
             struct {
-                QD3D11GraphicsPipeline *ps;
                 quint32 indexCount;
                 quint32 instanceCount;
                 quint32 firstIndex;
@@ -496,15 +526,13 @@ struct QD3D11CommandBuffer : public QRhiCommandBuffer
                 quint32 firstInstance;
             } drawIndexed;
             struct {
-                QD3D11GraphicsPipeline *ps;
-                QD3D11Buffer *indirectBuffer;
+                ID3D11Buffer *indirectBuffer;
                 quint32 indirectBufferOffset;
                 quint32 drawCount;
                 quint32 stride;
             } drawIndirect;
             struct {
-                QD3D11GraphicsPipeline *ps;
-                QD3D11Buffer *indirectBuffer;
+                ID3D11Buffer *indirectBuffer;
                 quint32 indirectBufferOffset;
                 quint32 drawCount;
                 quint32 stride;
@@ -542,7 +570,7 @@ struct QD3D11CommandBuffer : public QRhiCommandBuffer
                 char s[64];
             } debugMark;
             struct {
-                QD3D11ComputePipeline *ps;
+                ID3D11ComputeShader *cs;
             } bindComputePipeline;
             struct {
                 UINT x;
@@ -573,7 +601,7 @@ struct QD3D11CommandBuffer : public QRhiCommandBuffer
     DXGI_FORMAT currentIndexFormat;
     ID3D11Buffer *currentVertexBuffers[D3D11_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT];
     quint32 currentVertexOffsets[D3D11_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT];
-    QD3D11RenderTargetData *prevRtD;
+    QD3D11RenderTargetData::Views currentRenderTargetViews;
 
     QVarLengthArray<QByteArray, 4> dataRetainPool;
     QVarLengthArray<QRhiBufferData, 4> bufferDataRetainPool;
@@ -609,7 +637,7 @@ struct QD3D11CommandBuffer : public QRhiCommandBuffer
         recordingPass = NoPass;
         // do not zero lastGpuTime
         currentTarget = nullptr;
-        prevRtD = nullptr;
+        currentRenderTargetViews.reset();
         resetCommands();
         resetCachedState();
     }
@@ -830,10 +858,12 @@ public:
                                       const QShader::NativeResourceBindingMap *nativeResourceBindingMaps[]);
     void executeBufferHostWrites(QD3D11Buffer *bufD);
 
-    void bindShaderResources(const QD3D11ShaderResourceBindings::ResourceBatches &allResourceBatches,
+    void bindShaderResources(QD3D11CommandBuffer *cbD,
+                             const QD3D11ShaderResourceBindings::ResourceBatches &allResourceBatches,
                              const uint *dynOfsPairs, int dynOfsPairCount,
-                             bool offsetOnlyChange, QD3D11RenderTargetData *rtD, RenderTargetUavUpdateState &rtUavState);
-    void resetShaderResources(QD3D11RenderTargetData *rtD, RenderTargetUavUpdateState &rtUavState);
+                             bool offsetOnlyChange,
+                             QD3D11RenderTargetUavUpdateState *rtUavState);
+    void resetShaderResources(QD3D11CommandBuffer *cbD, QD3D11RenderTargetUavUpdateState *rtUavState);
     void executeCommandBuffer(QD3D11CommandBuffer *cbD);
     DXGI_SAMPLE_DESC effectiveSampleDesc(int sampleCount) const;
     void finishActiveReadbacks();
