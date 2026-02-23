@@ -47,6 +47,7 @@ struct QOhosWindowProxySubWindowCreateInfo
     QtOhos::InternalWindowId windowId;
     std::string qAbilityInstanceId;
     std::string windowTitle;
+    QRect windowRect;
     bool decorEnabled = false;
     bool disableWindowFocusableBeforeLoadContentHack;
     bool modal = false;

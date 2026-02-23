@@ -36,6 +36,7 @@ struct SubWindowOptions
     std::string windowTitle;
     bool decorEnabled;
     bool isModal;
+    QRect windowRect;
 };
 
 struct SubWindowOnAppearContext
@@ -85,6 +86,18 @@ QNapi::Object makeLocalStorage(QtOhos::JsState &jsState)
     return jsState.eval<QNapi::Object>("LocalStorage.makeNewLocalStorage()");
 }
 
+QNapi::Object makeRectObject(Napi::Env env, const QRect &rect)
+{
+    return QNapi::makeObject(
+        env,
+        {
+            {"left", rect.x()},
+            {"top", rect.top()},
+            {"width", rect.width()},
+            {"height", rect.height()},
+        });
+}
+
 QNapi::Promise createSubWindowWithOptions(
     QNapi::Object windowStageOrWindowObject,
     const std::string &windowName, const SubWindowOptions &subWindowOptions)
@@ -96,6 +109,9 @@ QNapi::Promise createSubWindowWithOptions(
                 {"title", subWindowOptions.windowTitle},
                 {"decorEnabled", subWindowOptions.decorEnabled},
                 {"isModal", subWindowOptions.isModal},
+                {
+                    "windowRect", makeRectObject(windowStageOrWindowObject.Env(), subWindowOptions.windowRect)
+                }
             });
 
     return windowStageOrWindowObject.call<QNapi::Promise>(
@@ -305,6 +321,7 @@ void makeWindowProxyDataForSubWindowInJsThread(
             .windowTitle = createInfo.windowTitle,
             .decorEnabled = createInfo.decorEnabled,
             .isModal = createInfo.modal,
+            .windowRect = createInfo.windowRect,
         })
         .withContext(Context {
             .disableWindowFocusableBeforeLoadContentHack = createInfo.disableWindowFocusableBeforeLoadContentHack,
