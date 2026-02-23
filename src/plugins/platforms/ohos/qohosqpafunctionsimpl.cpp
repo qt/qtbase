@@ -987,7 +987,8 @@ public:
     std::shared_ptr<void> shareDataUsingShareKit(
         QObject *optWindowObject, const QList<ShareKit::SharedRecord> &recordsToShare,
         const ShareKit::ShareControllerOptions &controllerOptions,
-        std::function<void()> panelClosedCallback) override;
+        std::function<void()> panelClosedCallback,
+        QOhosConsumer<ShareKit::ShareOperationResult> optShareCompletedCallback) override;
 
     bool tryOpenLink(QObject *optInstanceMainWindow, const QString &link, QOhosOptional<bool> appLinkingOnly) override;
 
@@ -1751,7 +1752,8 @@ void QOhosQpaFunctionsImpl::setWindowSaturation(QObject *window, int saturation)
 std::shared_ptr<void> QOhosQpaFunctionsImpl::shareDataUsingShareKit(
     QObject *optWindowObject, const QList<ShareKit::SharedRecord> &recordsToShare,
     const ShareKit::ShareControllerOptions &controllerOptions,
-    std::function<void()> panelClosedCallback)
+    std::function<void()> panelClosedCallback,
+    QOhosConsumer<ShareKit::ShareOperationResult> optShareCompletedCallback)
 {
     auto *optQWindow = qobject_cast<QWindow *>(optWindowObject);
     if (optWindowObject != nullptr && optQWindow == nullptr)
@@ -1804,9 +1806,18 @@ std::shared_ptr<void> QOhosQpaFunctionsImpl::shareDataUsingShareKit(
             }),
     };
 
+    auto shareCompletedCallback = optShareCompletedCallback
+        ? std::move(optShareCompletedCallback)
+        : makeQOhosNoOpConsumer();
+
     return QOhosShareKit::shareData(
         optQWindow, shareKitRecords, shareKitControllerOptions, std::move(panelClosedCallback),
-        makeQOhosNoOpConsumer());
+        [shareCompletedCallback = std::move(shareCompletedCallback)](auto shareOperationResult) {
+            shareCompletedCallback(
+                ShareKit::ShareOperationResult{
+                    .targetAbilityName = QString::fromStdString(shareOperationResult.targetAbilityName),
+                });
+        });
 }
 
 bool QOhosQpaFunctionsImpl::tryOpenLink(QObject *optInstanceMainWindow, const QString &link, QOhosOptional<bool> appLinkingOnly)
