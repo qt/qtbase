@@ -61,6 +61,7 @@ public:
     static QHostInfo fromName(const QString &name);
     static QString localHostName();
     static QString localDomainName();
+    static void clearCache();
 
 #ifdef Q_QDOC
     template<typename Functor>

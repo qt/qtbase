@@ -1083,6 +1083,42 @@ void qt_qhostinfo_clear_cache()
     }
 }
 
+/*!
+    \fn void QHostInfo::clearCache()
+
+    Clears the internal DNS cache used by lookupHost() and fromName().
+
+    Call this when cached host information may be stale and fresh lookups
+    are needed. Typical use cases include:
+    \list
+        \li The application has detected a network configuration change
+           (e.g. switch between Wi-Fi and Ethernet, or VPN connect/disconnect).
+        \li A server's address is known to have changed (e.g. dynamic DNS or
+           failover), and the application should resolve the host name again.
+           Note that upstream DNS servers and resolvers have their own TTL,
+           clearing the cache here does not affect them,
+           so the new lookup may still return the previous address until
+           the upstream TTL expires.
+        \li The application uses a cached result for lookups,
+           but it requires a fresh lookup if the cache has expired or is no longer valid.
+    \endlist
+
+    This function only clears the cache. It does not cancel in-progress
+    lookups; those will complete and their results will still be delivered.
+    Use this when you want future lookups to resolve again without
+    affecting ongoing operations.
+
+    \since 6.12
+    \sa lookupHost(), fromName()
+*/
+
+void QHostInfo::clearCache()
+{
+    if (theHostInfoLookupManager.exists()) {
+        theHostInfoLookupManager->cache.clear();
+    }
+}
+
 #ifdef QT_BUILD_INTERNAL
 void Q_AUTOTEST_EXPORT qt_qhostinfo_enable_cache(bool e)
 {

@@ -18,6 +18,7 @@
 
 #include <QCoreApplication>
 #include <QDebug>
+#include <QScopeGuard>
 #include <QTcpServer>
 #include <QTcpSocket>
 #include <QTest>
@@ -83,6 +84,7 @@ private slots:
     void multipleDifferentLookups();
 
     void cache();
+    void clearCache();
 
     void abortHostLookup();
 
@@ -592,8 +594,8 @@ void tst_QHostInfo::cache()
     QVERIFY(valid);
     QVERIFY(!result.addresses().isEmpty());
 
-    // clear the cache
-    qt_qhostinfo_clear_cache();
+    // clear the cache (using public API; we don't need to cancel in-progress lookups here)
+    QHostInfo::clearCache();
 
     // lookup third time, result should not come directly.
     valid = true;
@@ -605,6 +607,49 @@ void tst_QHostInfo::cache()
 
     // the slot should have been called 2 times.
     QCOMPARE(helper.lookupsDoneCounter, 2);
+}
+
+void tst_QHostInfo::clearCache()
+{
+    QFETCH_GLOBAL(bool, cache);
+#ifdef QT_BUILD_INTERNAL
+    // This test requires cache enabled; enable it for this test when the global row is WithoutCache and restore afterward.
+    const bool needRestore = !cache;
+    if (needRestore)
+        qt_qhostinfo_enable_cache(true);
+    const auto restoreCache = qScopeGuard([needRestore]() {
+        if (needRestore)
+            qt_qhostinfo_enable_cache(false);
+    });
+    // Test clearCache() using cache_inject: inject an entry, verify it's
+    // used, clear via public API, then verify the next lookup is not from cache.
+    const QString hostname = "clearCache-api.example";
+    QHostInfo injected;
+    injected.setHostName(hostname);
+    injected.setAddresses({QHostAddress("192.0.2.99")});
+    injected.setError(QHostInfo::NoError);
+
+    qt_qhostinfo_cache_inject(hostname, injected);
+
+    bool valid = false;
+    int id = -1;
+    tst_QHostInfo_Helper helper(hostname);
+    QHostInfo result = qt_qhostinfo_lookup(hostname, &helper, SLOT(resultsReady(QHostInfo)), &valid, &id);
+    QVERIFY(valid);
+    QVERIFY(!result.addresses().isEmpty());
+    QCOMPARE(result.addresses().constFirst(), QHostAddress("192.0.2.99"));
+
+    QHostInfo::clearCache();
+
+    valid = true;
+    result = qt_qhostinfo_lookup(hostname, &helper, SLOT(resultsReady(QHostInfo)), &valid, &id);
+    QVERIFY(!valid);
+    QVERIFY(result.addresses().isEmpty());
+    // We triggered an async lookup; abort it so we don't leave it pending.
+    QHostInfo::abortHostLookup(id);
+#else
+    QSKIP("qt_qhostinfo_cache_inject is only available in internal builds");
+#endif
 }
 
 void tst_QHostInfo_Helper::resultsReady(const QHostInfo &hi)
