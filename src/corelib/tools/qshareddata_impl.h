@@ -145,6 +145,9 @@ constexpr void swap(QExplicitlySharedDataPointerV2<T> &lhs, QExplicitlySharedDat
 
 } // namespace QtPrivate
 
+template <class T>
+Q_DECLARE_TYPEINFO_BODY(QtPrivate::QExplicitlySharedDataPointerV2<T>, Q_RELOCATABLE_TYPE);
+
 QT_END_NAMESPACE
 
 #endif // QSHAREDDATA_IMPL_H
