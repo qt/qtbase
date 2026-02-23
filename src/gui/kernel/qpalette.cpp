@@ -11,6 +11,9 @@
 
 QT_BEGIN_NAMESPACE
 
+Q_CONSTINIT QAtomicInt QPalettePrivate::qt_palette_count = Q_BASIC_ATOMIC_INITIALIZER(0);
+Q_CONSTINIT QAtomicInt QPalettePrivate::qt_palette_private_count = Q_BASIC_ATOMIC_INITIALIZER(0);
+
 static_assert(QPalettePrivate::bitPosition(QPalette::ColorGroup(QPalette::NColorGroups - 1),
                               QPalette::ColorRole(QPalette::NColorRoles - 1))
                   < sizeof(QPalette::ResolveMask) * CHAR_BIT,
