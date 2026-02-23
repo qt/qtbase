@@ -1,2 +1,5 @@
 [quitOnLastWindowClosedWithEventLoopLocker]
 b2qt
+
+[changeFocusWindow]
+wayland
