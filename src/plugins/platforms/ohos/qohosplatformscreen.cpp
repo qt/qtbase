@@ -186,10 +186,15 @@ QOhosPlatformScreen *QOhosPlatformScreen::fromQScreen(QScreen *screen)
 
 QWindow *QOhosPlatformScreen::topLevelAt(const QPoint &p) const
 {
-    auto windowIds = QOhosWindowProxy::queryWindowIdsByCoordinate(m_displayInfo.id, p);
-    return !windowIds.empty()
-        ? QWindowProxyRegistry::instance().findQWindowByJsWindowIdOrNull(windowIds.front())
-        : nullptr;
+    for (auto *platformScreen : virtualSiblings()) {
+        auto *ohosPlatformScreen = static_cast<QOhosPlatformScreen *>(platformScreen);
+
+        auto windowIds = QOhosWindowProxy::queryWindowIdsByCoordinate(ohosPlatformScreen->m_displayInfo.id, p);
+        if (!windowIds.empty())
+            return QWindowProxyRegistry::instance().findQWindowByJsWindowIdOrNull(windowIds.front());
+    }
+
+    return nullptr;
 }
 
 QPlatformCursor *QOhosPlatformScreen::cursor() const
