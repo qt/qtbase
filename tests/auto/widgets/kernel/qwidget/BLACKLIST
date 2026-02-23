@@ -55,7 +55,7 @@ wayland
 wayland
 [reparent]
 wayland
-[mapsFromAndTo]
+[mapFromAndTo]
 wayland
 [dumpObjectTree]
 wayland

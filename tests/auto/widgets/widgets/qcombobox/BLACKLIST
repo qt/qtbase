@@ -1,3 +1,14 @@
 [task_QTBUG_56693_itemFontFromModel]
 # Counts draw calls, but we could have multiple expose events QTBUG-62080
 osx
+wayland
+[popupWheelHandling]
+wayland
+[task190351_layout]
+wayland
+[task_QTBUG_49831_scrollerNotActivated]
+wayland
+[setCustomModelAndView]
+wayland
+[closePopupWithCheckableItems]
+wayland
