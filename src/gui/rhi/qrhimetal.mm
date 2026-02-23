@@ -655,6 +655,9 @@ bool QRhiMetal::create(QRhi::Flags flags)
     if (caps.shadingRateMap && caps.multiView)
         caps.shadingRateMap = [d->dev supportsRasterizationRateMapWithLayerCount: 2];
 
+    // QTBUG-144444: setDepthClipMode is not available on the Simulator
+    caps.depthClamp = [d->dev supportsFamily:MTLGPUFamilyApple3];
+
     if (rhiFlags.testFlag(QRhi::EnablePipelineCacheDataSave))
         d->setupBinaryArchive();
 
@@ -876,6 +879,8 @@ bool QRhiMetal::isFeatureSupported(QRhi::Feature feature) const
         return true;
     case QRhi::InstanceIndexIncludesBaseInstance:
         return true;
+    case QRhi::DepthClamp:
+        return caps.depthClamp;
     default:
         Q_UNREACHABLE();
         return false;
@@ -1474,6 +1479,8 @@ void QRhiMetal::enqueueShaderResourceBindings(QMetalShaderResourceBindings *srbD
 
 void QMetalGraphicsPipeline::makeActiveForCurrentRenderPassEncoder(QMetalCommandBuffer *cbD)
 {
+    QRHI_RES_RHI(QRhiMetal);
+
     [cbD->d->currentRenderPassEncoder setRenderPipelineState: d->ps];
 
     if (cbD->d->currentDepthStencilState != d->ds) {
@@ -1488,9 +1495,11 @@ void QMetalGraphicsPipeline::makeActiveForCurrentRenderPassEncoder(QMetalCommand
         [cbD->d->currentRenderPassEncoder setTriangleFillMode: d->triangleFillMode];
         cbD->currentTriangleFillMode = int(d->triangleFillMode);
     }
-    if (cbD->currentDepthClipMode == -1 || d->depthClipMode != uint(cbD->currentDepthClipMode)) {
-        [cbD->d->currentRenderPassEncoder setDepthClipMode: d->depthClipMode];
-        cbD->currentDepthClipMode = int(d->depthClipMode);
+    if (rhiD->caps.depthClamp) {
+        if (cbD->currentDepthClipMode == -1 || d->depthClipMode != uint(cbD->currentDepthClipMode)) {
+            [cbD->d->currentRenderPassEncoder setDepthClipMode: d->depthClipMode];
+            cbD->currentDepthClipMode = int(d->depthClipMode);
+        }
     }
     if (cbD->currentFrontFaceWinding == -1 || d->winding != uint(cbD->currentFrontFaceWinding)) {
         [cbD->d->currentRenderPassEncoder setFrontFacingWinding: d->winding];
