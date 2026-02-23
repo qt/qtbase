@@ -41,12 +41,6 @@ namespace QtOhos {
 class QOhosQpaFunctions
 {
 public:
-    enum class ScreenChangeResult
-    {
-        Changed,
-        NotChanged,
-    };
-
     enum class NativeNodeRenderFitPolicy
     {
         TopLeft,
@@ -258,8 +252,6 @@ public:
     virtual void setInAppOnlyPasteboardShareOption(bool shareInAppOnly) = 0;
     virtual QVariant getImageDataFromPasteboard() const = 0;
     virtual QString getTextDataFromPasteboard() const = 0;
-
-    virtual ScreenChangeResult tryChangePlatformWindowScreenInternal(QObject *windowObject, QObject *screenObject) = 0;
 
     virtual void setWindowOrWidgetNativeNodeRenderFitPolicyHint(QObject *windowOrWidget, NativeNodeRenderFitPolicy renderFitPolicy) = 0;
 

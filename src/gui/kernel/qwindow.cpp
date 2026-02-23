@@ -521,6 +521,7 @@ void QWindowPrivate::emitScreenChangedRecursion(QScreen *newScreen)
 void QWindowPrivate::setTopLevelScreen(QScreen *newScreen, bool recreate)
 {
     Q_Q(QWindow);
+
     if (parentWindow) {
         qWarning() << q << '(' << newScreen << "): Attempt to set a screen on a child window.";
         return;

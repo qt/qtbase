@@ -904,8 +904,6 @@ public:
     QVariant getImageDataFromPasteboard() const override;
     QString getTextDataFromPasteboard() const override;
 
-    ScreenChangeResult tryChangePlatformWindowScreenInternal(QObject *windowObject, QObject *screenObject) override;
-
     void setWindowOrWidgetNativeNodeRenderFitPolicyHint(QObject *windowOrWidget, NativeNodeRenderFitPolicy renderFitPolicy) override;
 
     void setSurfaceBackgroundColor(QObject *windowOrWidget, const QColor &color) override;
@@ -1084,36 +1082,6 @@ void QOhosQpaFunctionsImpl::tagWindowOrWidgetAsFloatWindow(
     QObject *windowOrWidget, bool floatWindow)
 {
     QOhosPlatformWindow::tagWindowOrWidgetAsFloatWindow(windowOrWidget, floatWindow);
-}
-
-QOhosQpaFunctions::ScreenChangeResult QOhosQpaFunctionsImpl::tryChangePlatformWindowScreenInternal(QObject *windowObject, QObject *screenObject)
-{
-    auto *qWindow = qobject_cast<QWindow *>(windowObject);
-    auto *qScreen = qobject_cast<QScreen *>(screenObject);
-
-    if (qWindow == nullptr)
-        qOhosReportFatalErrorAndAbort("%s: windowObject argument is null or not a QWindow", Q_FUNC_INFO);
-
-    if (screenObject != nullptr && qScreen == nullptr)
-        qOhosReportFatalErrorAndAbort("%s: screenObject argument is not a QScreen", Q_FUNC_INFO);
-
-    auto *ohosPlatformWindow = QOhosPlatformWindow::fromQWindowOrNull(qWindow);
-    auto *platformScreen = qScreen != nullptr ? qScreen->handle() : nullptr;
-
-    if (ohosPlatformWindow == nullptr)
-        qOhosReportFatalErrorAndAbort("%s: platformWindow argument is null", Q_FUNC_INFO);
-
-    auto tryChangeScreenResult = ohosPlatformWindow->tryChangeScreen(static_cast<QOhosPlatformScreen *>(platformScreen));
-    auto result = QOhosQpaFunctions::ScreenChangeResult::NotChanged;
-    switch (tryChangeScreenResult) {
-    case QOhosPlatformWindow::ScreenChangeResult::Changed:
-        result = QOhosQpaFunctions::ScreenChangeResult::Changed;
-        break;
-    case QOhosPlatformWindow::ScreenChangeResult::NotChanged:
-        result = QOhosQpaFunctions::ScreenChangeResult::NotChanged;
-        break;
-    }
-    return result;
 }
 
 void QOhosQpaFunctionsImpl::setWindowOrWidgetNativeNodeRenderFitPolicyHint(
