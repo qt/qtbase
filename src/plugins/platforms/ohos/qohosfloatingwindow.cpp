@@ -201,75 +201,6 @@ void QOhosFloatingWindow::initialize()
         [this](QOhosDisplayInfo::JsDisplayId displayId) { handleWindowDisplayIdChanged(displayId); });
 }
 
-void QOhosFloatingWindow::updateWindowGeometryFromView(QOhosView &view)
-{
-    auto viewGeometry = view.viewGeometry();
-    qCDebug(QtForOhos) << "View Geometry: " << viewGeometry.frameGeometry << viewGeometry.geometry;
-
-    if (view.viewType() != QOhosView::ViewType::EmbeddedWindow)
-        setDisplayIdFromOhos(viewGeometry.displayId);
-
-    if (viewGeometry.geometry.size().isEmpty()) {
-        qCCritical(QtForOhos, "%s: Failed as the received geometry is invalid", Q_FUNC_INFO);
-        return;
-    }
-
-    bool shouldSkipMarginCalculation =
-        view.viewType() == QOhosView::ViewType::MainWindow
-        && queryQOhosRuntimeDeviceAndMode() == QOhosRuntimeDeviceTypeAndMode::HandheldDeviceFullScreen;
-
-    QMargins margins =
-        shouldSkipMarginCalculation
-            ? QMargins()
-            : [&]() {
-                QMargins margins;
-                margins.setTop(qAbs(viewGeometry.frameGeometry.top() - viewGeometry.geometry.top()));
-                margins.setLeft(qAbs(viewGeometry.frameGeometry.left() - viewGeometry.geometry.left()));
-                margins.setRight(viewGeometry.frameGeometry.right() - viewGeometry.geometry.right());
-                margins.setBottom(viewGeometry.frameGeometry.bottom() - viewGeometry.geometry.bottom());
-                return margins;
-            }();
-
-    const auto oldOhosWindowFrameMargins = frameMargins();
-    bool shouldResizeWindowDueToInconsistentMargins =
-        shouldSkipMarginCalculation
-        && oldOhosWindowFrameMargins != margins;
-
-    setWindowMarginsFromOhos(margins);
-
-    if (shouldResizeWindowDueToInconsistentMargins) {
-        const auto newGeometry = viewGeometry.frameGeometry - oldOhosWindowFrameMargins;
-        setGeometry(newGeometry);
-        return;
-    }
-
-    if (shouldSkipMarginCalculation) {
-        auto targetGeometry = view.isSubWindowCoveringFullScreen()
-            ? viewGeometry.frameGeometry
-            : viewGeometry.frameGeometry
-                .marginsRemoved(view.avoidAreaMargins(QOhosWindowProxy::AvoidAreaType::TYPE_SYSTEM))
-                .marginsRemoved(view.avoidAreaMargins(QOhosWindowProxy::AvoidAreaType::TYPE_NAVIGATION_INDICATOR));
-        setWindowGeometryFromOhos(targetGeometry);
-        return;
-    }
-
-    // WORKAROUND
-    // This is temporary fix, that only regards state when "free windows mode" is on and window
-    // is maximized. System returns invalid geometry and system bottom bar covers application
-    // contents.
-    // TODO: remove when system returns correct geometry in this state.
-    bool maximized = windowStates().testFlag(Qt::WindowState::WindowMaximized);
-    if (queryQOhosRuntimeDeviceAndMode() == QOhosRuntimeDeviceTypeAndMode::HandheldDeviceWindowPcMode && maximized) {
-        auto targetGeometry = viewGeometry.geometry.marginsRemoved(
-            view.avoidAreaMargins(QOhosWindowProxy::AvoidAreaType::TYPE_NAVIGATION_INDICATOR));
-        setWindowGeometryFromOhos(targetGeometry);
-        return;
-    }
-
-    if (windowFrameGeometry() != viewGeometry.frameGeometry)
-        setWindowGeometryFromOhos(viewGeometry.geometry);
-}
-
 void QOhosFloatingWindow::restoreWindowCurrentCursorIfNeeded()
 {
     auto *view = ownedViewOrNull();
@@ -464,7 +395,7 @@ void QOhosFloatingWindow::handleWindowStatusChange(QOhosWindowProxy::WindowStatu
     // There is no functionality in OHOS to fetch the window status that would allow checking
     // the value while processing the WINDOW_SHOWN window event type. Therefore, the window
     // geometry view needs to be recalculated with any change.
-    updateWindowGeometryFromView(*m_view);
+    startAsyncWaitForNodeResizeIfNeeded();
 }
 
 void QOhosFloatingWindow::handleWindowVisibilityChange(bool visible)
@@ -507,7 +438,7 @@ void QOhosFloatingWindow::handleAvoidAreaChanged(
             << "left:" <<  systemAvoidArea.leftRect
             << "right:" <<  systemAvoidArea.rightRect
             << "bottom:" <<  systemAvoidArea.bottomRect;
-        updateWindowGeometryFromView(*m_view);
+        startAsyncWaitForNodeResizeIfNeeded();
     }
 }
 
