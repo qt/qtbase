@@ -2166,7 +2166,10 @@ void QWindowsWindow::handleDpiChanged(HWND hwnd, WPARAM wParam, LPARAM lParam)
     // window geometry again, and the provided geometry is incorrect, we omit
     // making the SetWindowPos() call.
     if (!m_inSetgeometry) {
-        updateFullFrameMargins();
+        // Forces the system to recalculate the window size, which would further
+        // help in using correct min/max limit as set through application. It
+        // also internally handle setting the correct frame margins.
+        QWindowsContext::forceNcCalcSize(hwnd);
         SetWindowPos(hwnd, nullptr, prcNewWindow->left, prcNewWindow->top,
                      prcNewWindow->right - prcNewWindow->left,
                      prcNewWindow->bottom - prcNewWindow->top, SWP_NOZORDER | SWP_NOACTIVATE);
