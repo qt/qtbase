@@ -219,6 +219,11 @@ public:
             QOhosOptional<bool> useDefaultPreviewMode;
             QOhosOptional<QList<ShareAbilityType>> excludedAbilities;
         };
+
+        struct ShareOperationResult
+        {
+            QString targetAbilityName;
+        };
     };
 
     class WantInfo
@@ -351,7 +356,8 @@ public:
     virtual std::shared_ptr<void> shareDataUsingShareKit(
         QObject *optWindowObject, const QList<ShareKit::SharedRecord> &recordsToShare,
         const ShareKit::ShareControllerOptions &controllerOptions,
-        std::function<void()> panelClosedCallback) = 0;
+        std::function<void()> panelClosedCallback,
+        QOhosConsumer<ShareKit::ShareOperationResult> optShareCompletedCallback = nullptr) = 0;
 
     virtual bool tryOpenLink(QObject *optInstanceMainWindow, const QString &link, QOhosOptional<bool> appLinkingOnly) = 0;
 
