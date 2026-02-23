@@ -1594,6 +1594,11 @@ qt_feature("test_squish" PUBLIC
     LABEL "Run Squish based tests"
 )
 
+# Compile autotests
+qt_feature("test_auto" PUBLIC
+    LABEL "Compile auto tests"
+)
+
 qt_configure_add_report_entry(
     TYPE WARNING
     MESSAGE "Starting with Qt 6.10, a -no-prefix or -developer-build
