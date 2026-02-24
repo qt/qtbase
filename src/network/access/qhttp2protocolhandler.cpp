@@ -269,7 +269,7 @@ bool QHttp2ProtocolHandler::tryRemoveReply(QHttpNetworkReply *reply)
     QHttp2Stream *stream = streamIDs.take(reply);
     if (stream) {
         stream->sendRST_STREAM(stream->isUploadingDATA() ? Http2::CANCEL : Http2::HTTP2_NO_ERROR);
-        requestReplyPairs.remove(stream);
+        clearStreamState(stream);
         stream->deleteLater();
         return true;
     }
@@ -511,6 +511,8 @@ void QHttp2ProtocolHandler::handleAuthorization(QHttp2Stream *stream)
     }
     if (authOk) {
         stream->sendRST_STREAM(CANCEL);
+        clearStreamState(stream);
+        stream->deleteLater();
     } // else: errors handled inside handleAuth
 }
 
@@ -542,6 +544,7 @@ void QHttp2ProtocolHandler::finishStream(QHttp2Stream *stream, Qt::ConnectionTyp
         }
     }
 
+    clearStreamState(stream);
     qCDebug(QT_HTTP2) << "stream" << stream->streamID() << "closed";
 
     // Detach the reply and tear down the stream via canonical path, so a
@@ -599,6 +602,8 @@ void QHttp2ProtocolHandler::finishStreamWithError(QHttp2Stream *stream,
         emit httpReply->finishedWithError(error, message);
     }
 
+    clearStreamState(stream);
+    stream->deleteLater();
     qCWarning(QT_HTTP2) << "stream" << stream->streamID() << "finished with error:" << message;
 }
 
@@ -659,8 +664,10 @@ void QHttp2ProtocolHandler::connectStream(const HttpMessagePair &message, QHttp2
 
     reply->setHttp2WasUsed(true);
     QPointer<QHttp2Stream> &oldStream = streamIDs[reply];
-    if (oldStream)
+    if (oldStream) {
         disconnect(oldStream, nullptr, this, nullptr);
+        clearStreamState(oldStream);
+    }
     oldStream = stream;
     requestReplyPairs.emplace(stream, message);
 
@@ -684,6 +691,20 @@ void QHttp2ProtocolHandler::connectStream(const HttpMessagePair &message, QHttp2
             }
         }
     });
+}
+
+void QHttp2ProtocolHandler::clearStreamState(QHttp2Stream *stream)
+{
+    auto it = requestReplyPairs.find(stream);
+    if (it == requestReplyPairs.end())
+        return;
+
+    if (auto *reply = it->second)
+        streamIDs.remove(reply);
+    if (auto *uploadDevice = it->first.uploadByteDevice())
+        streamIDs.remove(uploadDevice);
+
+    requestReplyPairs.erase(it);
 }
 
 void QHttp2ProtocolHandler::initReplyFromPushPromise(const HttpMessagePair &message,
