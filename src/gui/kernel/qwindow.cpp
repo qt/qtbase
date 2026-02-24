@@ -791,8 +791,11 @@ QWindow *QWindow::parent(AncestorMode mode) const
 void QWindow::setParent(QWindow *parent)
 {
     Q_D(QWindow);
-    if (d->parentWindow == parent)
+    if (d->parentWindow == parent
+        // Allow explicit reparenting to top level for embedded windows
+        && !(d->platformWindow && d->platformWindow->isEmbedded())) {
         return;
+    }
 
     QScreen *newScreen = parent ? parent->screen() : screen();
     if (d->windowRecreationRequired(newScreen)) {
