@@ -43,6 +43,8 @@ customConstructShared(size_t size, size_t align, F &&construct)
 
 inline int QVariant::PrivateShared::computeOffset(PrivateShared *ps, size_t align)
 {
+    if (align < sizeof(PrivateShared))
+        return sizeof(PrivateShared);
     return int(((quintptr(ps) + sizeof(PrivateShared) + align - 1) & ~(align - 1)) - quintptr(ps));
 }
 
