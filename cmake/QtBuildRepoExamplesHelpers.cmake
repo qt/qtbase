@@ -370,10 +370,6 @@ function(qt_internal_add_example_external_project subdir)
 
     cmake_parse_arguments(PARSE_ARGV 1 arg "${options}" "${singleOpts}" "${multiOpts}")
 
-    if(QT_FEATURE_developer_build)
-        set(QT_LINT_EXAMPLES ON)
-    endif()
-
     _qt_internal_get_build_vars_for_external_projects(
         CMAKE_DIR_VAR qt_cmake_dir
         PREFIXES_VAR qt_prefixes
@@ -388,10 +384,6 @@ function(qt_internal_add_example_external_project subdir)
         list(APPEND var_defs
             -DCMAKE_TOOLCHAIN_FILE:FILEPATH=${qt_cmake_dir}/qt.toolchain.cmake
         )
-        if(QT_LINT_EXAMPLES)
-            list(APPEND var_defs -DQT_LINT_EXAMPLES=ON)
-        endif()
-
     else()
         list(PREPEND CMAKE_PREFIX_PATH ${qt_prefixes})
 
@@ -402,6 +394,16 @@ function(qt_internal_add_example_external_project subdir)
            NOT CMAKE_SYSTEM_NAME STREQUAL CMAKE_HOST_SYSTEM_NAME)
             list(APPEND vars_to_pass_if_defined CMAKE_SYSTEM_NAME:STRING)
         endif()
+    endif()
+
+    if(QT_FEATURE_developer_build)
+        set(QT_LINT_EXAMPLES ON)
+    endif()
+
+    # This might be set even without a developer build, e.g. in CI options, so it's a separate
+    # check.
+    if(QT_LINT_EXAMPLES)
+        list(APPEND var_defs -DQT_LINT_EXAMPLES:BOOL=ON)
     endif()
 
     # We we need to augment the CMAKE_MODULE_PATH with the current repo cmake build dir, to find
