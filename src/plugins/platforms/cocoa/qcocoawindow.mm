@@ -312,8 +312,6 @@ void QCocoaWindow::setGeometry(const QRect &rectIn, QWindowPrivate::PositionPoli
     } else {
         m_view.frame = QCocoaWindow::mapToNative(rect, m_view.superview);
     }
-
-    // will call QPlatformWindow::setGeometry(rect) during resize confirmation (see qnsview.mm)
 }
 
 QMargins QCocoaWindow::safeAreaMargins() const
