@@ -48,19 +48,11 @@ void QAndroidPlatformOpenGLWindow::setGeometry(const QRect &rect)
 
 EGLSurface QAndroidPlatformOpenGLWindow::eglSurface(EGLConfig config)
 {
-    // Avoid early return on initial suspension unless a surface was already created.
-    // This avoids the multi‑window startup race.
-    if (m_androidSurfaceCreated &&
-        (QAndroidEventDispatcherStopper::stopped() ||
-        QGuiApplication::applicationState() == Qt::ApplicationSuspended)) {
-        qCDebug(lcQpaWindow) << "Application not active, return existing surface.";
+    if (m_eglSurface != EGL_NO_SURFACE && !m_androidSurfaceObject.isValid())
         return m_eglSurface;
-    }
 
     QMutexLocker surfaceLock(&m_surfaceMutex);
-    // If we haven't called createSurface() yet, call it and wait until Android has created
-    // the Surface
-    if (!m_androidSurfaceCreated) {
+    if (m_eglSurface == EGL_NO_SURFACE) {
         static constexpr char funcName[] = "QAndroidPlatformOpenGLWindow::eglSurface()";
         QtAndroidPrivate::AndroidDeadlockProtector protector(funcName);
         if (!protector.acquire()) {
@@ -73,30 +65,23 @@ EGLSurface QAndroidPlatformOpenGLWindow::eglSurface(EGLConfig config)
         m_surfaceWaitCondition.wait(&m_surfaceMutex);
     }
 
-    if (m_eglSurface != EGL_NO_SURFACE && !m_androidSurfaceObject.isValid())
-        return m_eglSurface;
+    if (m_androidSurfaceObject.isValid()) {
+        clearSurface();
+        m_nativeWindow = ANativeWindow_fromSurface(
+            QJniEnvironment::getJniEnv(), m_androidSurfaceObject.object());
+        m_androidSurfaceObject = QJniObject();
+        m_eglSurface = eglCreateWindowSurface(m_eglDisplay, config, m_nativeWindow, NULL);
+        m_format = q_glFormatFromConfig(m_eglDisplay, config, window()->requestedFormat());
+        if (Q_UNLIKELY(m_eglSurface == EGL_NO_SURFACE)) {
+            EGLint error = eglGetError();
+            eglTerminate(m_eglDisplay);
+            qFatal("EGL Error : Could not create the egl surface: error = 0x%x\n", error);
+        }
 
-    if (!m_androidSurfaceCreated || !m_androidSurfaceObject.isValid()) {
-        qCDebug(lcQpaWindow) << "Skipping create egl on invalid or not yet created surface";
-        return m_eglSurface;
+        sendExpose();
+
+        incrementSurfacesCount();
     }
-
-    clearSurface();
-    m_nativeWindow = ANativeWindow_fromSurface(
-        QJniEnvironment::getJniEnv(), m_androidSurfaceObject.object());
-    m_androidSurfaceObject = QJniObject();
-    m_eglSurface = eglCreateWindowSurface(m_eglDisplay, config, m_nativeWindow, NULL);
-    m_format = q_glFormatFromConfig(m_eglDisplay, config, window()->requestedFormat());
-    if (Q_UNLIKELY(m_eglSurface == EGL_NO_SURFACE)) {
-        EGLint error = eglGetError();
-        eglTerminate(m_eglDisplay);
-        qFatal("EGL Error : Could not create the egl surface: error = 0x%x\n", error);
-    }
-
-    // we've created another Surface, the window should be repainted
-    sendExpose();
-
-    incrementSurfacesCount();
 
     return m_eglSurface;
 }

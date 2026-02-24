@@ -96,7 +96,6 @@ protected:
     // destroy the Surface.
     QtJniTypes::Surface m_androidSurfaceObject;
     QWaitCondition m_surfaceWaitCondition;
-    bool m_androidSurfaceCreated = false;
     QMutex m_surfaceMutex;
     QMutex m_destructionMutex;
 

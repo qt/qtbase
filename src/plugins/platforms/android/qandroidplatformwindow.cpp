@@ -342,15 +342,14 @@ void QAndroidPlatformWindow::createSurface()
 
     m_nativeQtWindow.callMethod<void>("createSurface", windowStaysOnTop, 32, isOpaque,
                                       m_surfaceContainerType);
-    m_androidSurfaceCreated = true;
 }
 
 void QAndroidPlatformWindow::destroySurface()
 {
-    if (m_androidSurfaceCreated) {
+    // Embedding containers never construct the Java window, so there is
+    // nothing to destroy.
+    if (m_nativeQtWindow.isValid())
         m_nativeQtWindow.callMethod<void>("destroySurface");
-        m_androidSurfaceCreated = false;
-    }
 }
 
 void QAndroidPlatformWindow::onSurfaceChanged(QtJniTypes::Surface surface)
@@ -407,8 +406,6 @@ void QAndroidPlatformWindow::setSurface(JNIEnv *env, jobject object, jint window
         QAndroidPlatformWindow *platformWindow =
                                 static_cast<QAndroidPlatformWindow *>(window->handle());
         const auto guard = platformWindow->destructionGuard();
-        if (!platformWindow->m_androidSurfaceCreated)
-            continue;
         if (platformWindow->nativeViewId() == windowId)
             platformWindow->onSurfaceChanged(surface);
     }
