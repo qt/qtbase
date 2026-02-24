@@ -2784,7 +2784,7 @@ auto QMetaMethodInvoker::invokeImpl(QMetaMethod self, void *target,
             // this is a built-in type
             if (MetaTypesAreOptional && !metaTypes)
                 return int(typeInfo) == QMetaType::fromName(userTypeName).rawId();
-            return int(typeInfo) == metaTypes[idx]->typeId;
+            return int(typeInfo) == metaTypes[idx]->typeId.loadRelaxed();
         }
 
         QByteArrayView methodTypeName = stringDataView(priv->mobj, typeInfo & TypeNameIndexMask);
