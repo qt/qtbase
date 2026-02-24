@@ -50,6 +50,9 @@
 
 QT_BEGIN_NAMESPACE
 
+// disabled for now
+#define BFLOAT16_ENABLED    0
+
 using namespace Qt::StringLiterals;
 
 namespace { // anonymous used to hide QVariant handlers
@@ -79,6 +82,12 @@ static qlonglong qMetaTypeNumber(const QVariant::Private *d)
     case QMetaType::Short:
     case QMetaType::Long:
         return qMetaTypeNumberBySize(d);
+    case QMetaType::Float16:
+        return qRound64(d->get<qfloat16>());
+#if defined(__STDCPP_BFLOAT16_T__) && BFLOAT16_ENABLED
+    case QMetaType::BFloat16:
+        return qRound64(float(d->get<std::bfloat16_t>()));
+#endif
     case QMetaType::Float:
         return qRound64(d->get<float>());
     case QMetaType::Double:
@@ -145,6 +154,10 @@ static std::optional<qlonglong> qConvertToNumber(const QVariant::Private *d, boo
     case QMetaType::Short:
     case QMetaType::Long:
     case QMetaType::Float:
+    case QMetaType::Float16:
+#if defined(__STDCPP_BFLOAT16_T__) && BFLOAT16_ENABLED
+    case QMetaType::BFloat16:
+#endif
     case QMetaType::LongLong:
         return qMetaTypeNumber(d);
     case QMetaType::ULongLong:
@@ -181,6 +194,10 @@ static std::optional<double> qConvertToRealNumber(const QVariant::Private *d)
         return double(d->get<float>());
     case QMetaType::Float16:
         return double(d->get<qfloat16>());
+#if defined(__STDCPP_BFLOAT16_T__) && BFLOAT16_ENABLED
+    case QMetaType::BFloat16:
+        return qreal(d->get<std::bfloat16_t>());
+#endif
     case QMetaType::ULongLong:
     case QMetaType::UInt:
     case QMetaType::UChar:
@@ -2304,6 +2321,9 @@ static bool qIsNumericType(uint tp)
             Q_UINT64_C(1) << QMetaType::QString |
             Q_UINT64_C(1) << QMetaType::Bool |
             Q_UINT64_C(1) << QMetaType::Double |
+#if defined(__STDCPP_BFLOAT16_T__) && BFLOAT16_ENABLED
+            Q_UINT64_C(1) << QMetaType::BFloat16 |
+#endif
             Q_UINT64_C(1) << QMetaType::Float16 |
             Q_UINT64_C(1) << QMetaType::Float |
             Q_UINT64_C(1) << QMetaType::Char |
@@ -2325,6 +2345,10 @@ static bool qIsNumericType(uint tp)
 
 static bool qIsFloatingPoint(uint tp)
 {
+#if defined(__STDCPP_BFLOAT16_T__) && BFLOAT16_ENABLED
+    if (tp == QMetaType::BFloat16)
+        return true;
+#endif
     return tp == QMetaType::Double || tp == QMetaType::Float || tp == QMetaType::Float16;
 }
 
