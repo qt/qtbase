@@ -83,32 +83,25 @@ void QAndroidPlatformVulkanWindow::destroyAndClearSurface()
 
 VkSurfaceKHR *QAndroidPlatformVulkanWindow::vkSurface()
 {
-    if (QAndroidEventDispatcherStopper::stopped() ||
-        QGuiApplication::applicationState() == Qt::ApplicationSuspended) {
-        qDebug(lcQpaWindow) << "Application not active, return existing surface.";
+    // Lock-free fast path
+    if (m_vkSurface != VK_NULL_HANDLE && !m_androidSurfaceObject.isValid())
         return &m_vkSurface;
+
+    QMutexLocker lock(&m_surfaceMutex);
+    if (m_vkSurface == VK_NULL_HANDLE) {
+        QtAndroidPrivate::AndroidDeadlockProtector protector(
+            u"QAndroidPlatformVulkanWindow::vkSurface()"_s);
+        if (!protector.acquire())
+            return &m_vkSurface;
+        createSurface();
+        m_surfaceWaitCondition.wait(&m_surfaceMutex);
     }
 
-    bool needsExpose = false;
-    if (!m_vkSurface) {
+    if (m_androidSurfaceObject.isValid()) {
         clearSurface();
-
-        QMutexLocker lock(&m_surfaceMutex);
-        if (!m_androidSurfaceCreated) {
-            QtAndroidPrivate::AndroidDeadlockProtector protector(
-                u"QAndroidPlatformVulkanWindow::vkSurface()"_s);
-            if (!protector.acquire())
-                return &m_vkSurface;
-            createSurface();
-            m_surfaceWaitCondition.wait(&m_surfaceMutex);
-        }
-
-        if (!m_androidSurfaceCreated || !m_androidSurfaceObject.isValid())
-            return &m_vkSurface;
-
-        QJniEnvironment env;
-        m_nativeWindow = ANativeWindow_fromSurface(env.jniEnv(), m_androidSurfaceObject.object());
-
+        m_nativeWindow = ANativeWindow_fromSurface(QJniEnvironment::getJniEnv(),
+                                                   m_androidSurfaceObject.object());
+        m_androidSurfaceObject = QJniObject();
         VkAndroidSurfaceCreateInfoKHR surfaceInfo;
         memset(&surfaceInfo, 0, sizeof(surfaceInfo));
         surfaceInfo.sType = VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR;
@@ -130,13 +123,10 @@ VkSurfaceKHR *QAndroidPlatformVulkanWindow::vkSurface()
         if (err != VK_SUCCESS)
             qWarning("Failed to create Android VkSurface: %d", err);
 
-        needsExpose = true;
-    }
-
-    if (needsExpose)
         sendExpose();
 
-    incrementSurfacesCount();
+        incrementSurfacesCount();
+    }
 
     return &m_vkSurface;
 }
