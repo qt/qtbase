@@ -155,10 +155,13 @@ static std::optional<qlonglong> qConvertToNumber(const QVariant::Private *d, boo
     case QMetaType::UShort:
     case QMetaType::ULong:
         return qlonglong(qMetaTypeUNumber(d));
+    case QMetaType::QCborSimpleType:
+        return qToUnderlying(d->get<QCborSimpleType>());
     }
 
-    if (d->typeInterface()->flags & QMetaType::IsEnumeration
-        || d->typeInterface()->typeId == QMetaType::QCborSimpleType)
+    if (d->typeInterface()->flags & QMetaType::IsUnsignedEnumeration)
+        return qMetaTypeUNumber(d);
+    if (d->typeInterface()->flags & QMetaType::IsEnumeration)
         return qMetaTypeNumberBySize(d);
 
     return std::nullopt;
@@ -2266,13 +2269,14 @@ static int numericTypePromotion(const QtPrivate::QMetaTypeInterface *iface1,
     if (qIsFloatingPoint(t1) || qIsFloatingPoint(t2))
         return QMetaType::QReal;
 
-    auto isUnsigned = [](uint tp) {
+    auto isUnsigned = [](uint tp, const QtPrivate::QMetaTypeInterface *iface) {
         // only types for which sizeof(T) >= sizeof(int); lesser ones promote to int
         return tp == QMetaType::ULongLong || tp == QMetaType::ULong ||
-                tp == QMetaType::UInt || tp == QMetaType::Char32;
+                tp == QMetaType::UInt || tp == QMetaType::Char32 ||
+                (iface->flags & QMetaType::IsUnsignedEnumeration && iface->size >= sizeof(int));
     };
-    bool isUnsigned1 = isUnsigned(t1);
-    bool isUnsigned2 = isUnsigned(t2);
+    bool isUnsigned1 = isUnsigned(t1, iface1);
+    bool isUnsigned2 = isUnsigned(t2, iface2);
 
     // integral rules:
     // 1) if either type is a 64-bit unsigned, compare as 64-bit unsigned
