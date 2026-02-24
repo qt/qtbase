@@ -5,3 +5,5 @@
 android
 [modalDialog]
 android
+[exitFromEventLoop]
+wayland
