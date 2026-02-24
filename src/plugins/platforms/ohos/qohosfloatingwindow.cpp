@@ -58,7 +58,7 @@ void QOhosFloatingWindow::setGeometry(const QRect &rect)
     QOhosPlatformWindow::setGeometry(rect);
 
     if (view != nullptr) {
-        auto frameGeometry = windowFrameGeometry();
+        auto frameGeometry = rect.marginsAdded(frameMargins());
         if (oldWindowFrameGeometry.topLeft() != frameGeometry.topLeft())
             view->setPosition(frameGeometry.topLeft());
         if (oldWindowFrameGeometry.size() != frameGeometry.size())
