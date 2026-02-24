@@ -24,7 +24,6 @@ public:
 
     void setGeometry(const QRect &rect) override;
     EGLSurface eglSurface(EGLConfig config);
-    bool ensureEglSurfaceCreated(EGLConfig config);
     QSurfaceFormat format() const override;
 
     void applicationStateChanged(Qt::ApplicationState) override;

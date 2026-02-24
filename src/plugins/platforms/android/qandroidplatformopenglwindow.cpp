@@ -28,10 +28,9 @@ QAndroidPlatformOpenGLWindow::QAndroidPlatformOpenGLWindow(QWindow *window, EGLD
 QAndroidPlatformOpenGLWindow::~QAndroidPlatformOpenGLWindow()
 {
     m_surfaceWaitCondition.wakeOne();
-    lockSurface();
+    QMutexLocker surfaceLock(&m_surfaceMutex);
     destroySurface();
     clearSurface();
-    unlockSurface();
 }
 
 void QAndroidPlatformOpenGLWindow::setGeometry(const QRect &rect)
@@ -47,8 +46,6 @@ void QAndroidPlatformOpenGLWindow::setGeometry(const QRect &rect)
     }
 }
 
-// Called by QAndroidPlatformOpenGLContext::eglSurfaceForPlatformSurface(),
-// surface is already locked when calling this
 EGLSurface QAndroidPlatformOpenGLWindow::eglSurface(EGLConfig config)
 {
     // Avoid early return on initial suspension unless a surface was already created.
@@ -59,6 +56,8 @@ EGLSurface QAndroidPlatformOpenGLWindow::eglSurface(EGLConfig config)
         qCDebug(lcQpaWindow) << "Application not active, return existing surface.";
         return m_eglSurface;
     }
+
+    QMutexLocker surfaceLock(&m_surfaceMutex);
     // If we haven't called createSurface() yet, call it and wait until Android has created
     // the Surface
     if (!m_androidSurfaceCreated) {
@@ -74,32 +73,12 @@ EGLSurface QAndroidPlatformOpenGLWindow::eglSurface(EGLConfig config)
         m_surfaceWaitCondition.wait(&m_surfaceMutex);
     }
 
-    if (m_eglSurface == EGL_NO_SURFACE)
-        ensureEglSurfaceCreated(config);
+    if (m_eglSurface != EGL_NO_SURFACE && !m_androidSurfaceObject.isValid())
+        return m_eglSurface;
 
-    return m_eglSurface;
-}
-
-void QAndroidPlatformOpenGLWindow::applicationStateChanged(Qt::ApplicationState state)
-{
-    if (state <=  Qt::ApplicationHidden) {
-        lockSurface();
-        destroySurface();
-        clearSurface();
-        unlockSurface();
-    }
-    QAndroidPlatformWindow::applicationStateChanged(state);
-}
-
-// m_surfaceMutex already locked, called only by eglSurface()
-// and QAndroidPlatformOpenGLContext::swapBuffers().
-bool QAndroidPlatformOpenGLWindow::ensureEglSurfaceCreated(EGLConfig config)
-{
-    // Either no surface created, or the m_eglSurface already wraps the active Surface,
-    // so makeCurrent is NOT needed, and we should not create a new EGL surface.
     if (!m_androidSurfaceCreated || !m_androidSurfaceObject.isValid()) {
         qCDebug(lcQpaWindow) << "Skipping create egl on invalid or not yet created surface";
-        return false;
+        return m_eglSurface;
     }
 
     clearSurface();
@@ -119,7 +98,17 @@ bool QAndroidPlatformOpenGLWindow::ensureEglSurfaceCreated(EGLConfig config)
 
     incrementSurfacesCount();
 
-    return true;
+    return m_eglSurface;
+}
+
+void QAndroidPlatformOpenGLWindow::applicationStateChanged(Qt::ApplicationState state)
+{
+    if (state <=  Qt::ApplicationHidden) {
+        QMutexLocker surfaceLock(&m_surfaceMutex);
+        destroySurface();
+        clearSurface();
+    }
+    QAndroidPlatformWindow::applicationStateChanged(state);
 }
 
 QSurfaceFormat QAndroidPlatformOpenGLWindow::format() const
