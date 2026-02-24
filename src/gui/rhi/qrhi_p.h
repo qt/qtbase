@@ -622,7 +622,7 @@ struct QRhiBatchedBindings
 
     struct Batch {
         uint startBinding;
-        QVarLengthArray<T, 4> resources;
+        QVector<T> resources;
 
         bool operator==(const Batch &other) const
         {
@@ -635,7 +635,10 @@ struct QRhiBatchedBindings
         }
     };
 
-    QVarLengthArray<Batch, 4> batches; // sorted by startBinding
+    // some backends make copies of QRhiBatchedBindings -> implicit sharing and
+    // not having a (possibly wasted) prealloc are beneficial -> use QVector
+    // instead of QVLA
+    QVector<Batch> batches; // sorted by startBinding
 
     bool operator==(const QRhiBatchedBindings<T> &other) const
     {
