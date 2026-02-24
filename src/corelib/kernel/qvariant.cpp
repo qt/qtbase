@@ -74,7 +74,7 @@ static qlonglong qMetaTypeNumberBySize(const QVariant::Private *d)
 
 static qlonglong qMetaTypeNumber(const QVariant::Private *d)
 {
-    switch (d->typeInterface()->typeId) {
+    switch (d->typeInterface()->typeId.loadRelaxed()) {
     case QMetaType::Int:
         return d->get<int>();
     case QMetaType::LongLong:
@@ -127,7 +127,7 @@ static qulonglong qMetaTypeUNumber(const QVariant::Private *d)
 static std::optional<qlonglong> qConvertToNumber(const QVariant::Private *d, bool allowStringToBool = false)
 {
     bool ok;
-    switch (d->typeInterface()->typeId) {
+    switch (d->typeInterface()->typeId.loadRelaxed()) {
     case QMetaType::QString: {
         const QString &s = d->get<QString>();
         if (qlonglong l = s.toLongLong(&ok); ok)
@@ -192,7 +192,7 @@ static std::optional<qlonglong> qConvertToNumber(const QVariant::Private *d, boo
 static std::optional<double> qConvertToRealNumber(const QVariant::Private *d)
 {
     bool ok;
-    switch (d->typeInterface()->typeId) {
+    switch (d->typeInterface()->typeId.loadRelaxed()) {
     case QMetaType::QString:
         if (double r = d->get<QString>().toDouble(&ok); ok)
             return r;
@@ -2369,8 +2369,8 @@ static bool canBeNumericallyCompared(const QtPrivate::QMetaTypeInterface *iface1
 
     // We don't need QMetaType::id() here because the type Id is always stored
     // directly for all built-in types.
-    bool isNumeric1 = qIsNumericType(iface1->typeId);
-    bool isNumeric2 = qIsNumericType(iface2->typeId);
+    bool isNumeric1 = qIsNumericType(iface1->typeId.loadRelaxed());
+    bool isNumeric2 = qIsNumericType(iface2->typeId.loadRelaxed());
 
     // if they're both numeric (or QString), then they can be compared
     if (isNumeric1 && isNumeric2)
@@ -2402,8 +2402,8 @@ static int numericTypePromotion(const QtPrivate::QMetaTypeInterface *iface1,
 
     // We don't need QMetaType::id() here because the type Id is always stored
     // directly for the types we're comparing against below.
-    uint t1 = iface1->typeId;
-    uint t2 = iface2->typeId;
+    uint t1 = iface1->typeId.loadRelaxed();
+    uint t2 = iface2->typeId.loadRelaxed();
 
     if ((t1 == QMetaType::Bool && t2 == QMetaType::QString) ||
         (t2 == QMetaType::Bool && t1 == QMetaType::QString))
