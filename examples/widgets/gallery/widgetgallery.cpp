@@ -153,6 +153,10 @@ WidgetGallery::WidgetGallery(QWidget *parent)
         QGuiApplication::styleHints()->setColorScheme(static_cast<Qt::ColorScheme>(index));
     });
 
+    connect(QGuiApplication::styleHints(), &QStyleHints::colorSchemeChanged, this, [colorSchemeComboBox](Qt::ColorScheme colorScheme) {
+        colorSchemeComboBox->setCurrentIndex(static_cast<int>(colorScheme));
+    });
+
     const QKeySequence helpKeySequence(QKeySequence::HelpContents);
     const QString helpText = tr("Press <kbd>%1</kbd> over a widget to see Documentation")
                                      .arg(helpKeySequence.toString(QKeySequence::NativeText));
