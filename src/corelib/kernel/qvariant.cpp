@@ -102,6 +102,11 @@ static qlonglong qMetaTypeNumber(const QVariant::Private *d)
 
 static qulonglong qMetaTypeUNumber(const QVariant::Private *d)
 {
+    if constexpr (QSysInfo::ByteOrder == QSysInfo::LittleEndian) {
+        // in little-endian machines, we can always just load the full 64 bits
+        // because the QVariant::Private is zeroed before the value is stored.
+        return d->get<qulonglong>();
+    }
     switch (d->typeInterface()->size) {
     case 1:
         return d->get<unsigned char>();
