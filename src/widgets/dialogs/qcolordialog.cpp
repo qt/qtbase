@@ -797,8 +797,11 @@ int QColorPicker::satPt(const QPoint &pt, const QSize &widgetSize)
 
 void QColorPicker::setCol(const QPoint &pt, bool notify)
 {
-    if (pt == m_pos)
+    if (pt == m_pos || pix.isNull())
         return;
+
+    Q_ASSERT(pix.height());
+    Q_ASSERT(pix.width());
 
     QRect r(m_pos, QSize(20, 20));
     m_pos.setX(std::clamp(pt.x(), 0, pix.width() - 1));
