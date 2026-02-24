@@ -355,7 +355,7 @@ void QAndroidPlatformWindow::destroySurface()
 
 void QAndroidPlatformWindow::onSurfaceChanged(QtJniTypes::Surface surface)
 {
-    lockSurface();
+    QMutexLocker surfaceLock(&m_surfaceMutex);
     const bool surfaceIsValid = surface.isValid();
     qCDebug(lcQpaWindow) << "onSurfaceChanged(): valid Surface received" << surfaceIsValid;
     m_androidSurfaceObject = surface;
@@ -367,8 +367,6 @@ void QAndroidPlatformWindow::onSurfaceChanged(QtJniTypes::Surface surface)
     }
 
     sendExpose();
-
-    unlockSurface();
 }
 
 void QAndroidPlatformWindow::sendExpose() const

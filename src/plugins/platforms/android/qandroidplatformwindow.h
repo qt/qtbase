@@ -70,9 +70,6 @@ public:
     static bool registerNatives(QJniEnvironment &env);
     void onSurfaceChanged(QtJniTypes::Surface surface);
 
-    void lockSurface() { m_surfaceMutex.lock(); }
-    void unlockSurface() { m_surfaceMutex.unlock(); }
-
     static int surfacesCount();
 
 protected:

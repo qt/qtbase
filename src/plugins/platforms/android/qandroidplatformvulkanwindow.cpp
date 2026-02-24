@@ -76,10 +76,9 @@ void QAndroidPlatformVulkanWindow::clearSurface()
 
 void QAndroidPlatformVulkanWindow::destroyAndClearSurface()
 {
-    lockSurface();
+    QMutexLocker surfaceLock(&m_surfaceMutex);
     destroySurface();
     clearSurface();
-    unlockSurface();
 }
 
 VkSurfaceKHR *QAndroidPlatformVulkanWindow::vkSurface()
