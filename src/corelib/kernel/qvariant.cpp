@@ -76,12 +76,16 @@ static qlonglong qMetaTypeNumber(const QVariant::Private *d)
 {
     switch (d->typeInterface()->typeId) {
     case QMetaType::Int:
+        return d->get<int>();
     case QMetaType::LongLong:
+        return d->get<qlonglong>();
     case QMetaType::Char:
     case QMetaType::SChar:
+        return d->get<signed char>();
     case QMetaType::Short:
+        return d->get<short>();
     case QMetaType::Long:
-        return qMetaTypeNumberBySize(d);
+        return d->get<long>();
     case QMetaType::Float16:
         return qRound64(d->get<qfloat16>());
 #if defined(__STDCPP_BFLOAT16_T__) && BFLOAT16_ENABLED
