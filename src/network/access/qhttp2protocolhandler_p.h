@@ -16,12 +16,11 @@
 // We mean it.
 //
 
-#include "access/qhttp2connection_p.h"
 #include <private/qhttpnetworkconnectionchannel_p.h>
 #include <private/qabstractprotocolhandler_p.h>
 #include <private/qhttpnetworkrequest_p.h>
 
-#include <access/qhttp2configuration.h>
+#include <QtNetwork/qhttp2configuration.h>
 
 #include <private/qhttp2connection_p.h>
 #include <private/http2protocol_p.h>
@@ -46,9 +45,12 @@ QT_REQUIRE_CONFIG(http);
 
 QT_BEGIN_NAMESPACE
 
+class tst_Http2;
+
 class QHttp2ProtocolHandler : public QObject, public QAbstractProtocolHandler
 {
     Q_OBJECT
+    friend class tst_Http2;
 
 public:
     QHttp2ProtocolHandler(QHttpNetworkConnectionChannel *channel);
@@ -93,6 +95,7 @@ private:
     // Stream's lifecycle management:
     QHttp2Stream *createNewStream(const HttpMessagePair &message, bool uploadDone = false);
     void connectStream(const HttpMessagePair &message, QHttp2Stream *stream);
+    void clearStreamState(QHttp2Stream *stream);
 
     QHttp2Connection *h2Connection;
 
@@ -104,7 +107,6 @@ private:
     inline static const quint32 maxAcceptableTableSize = 16 * HPack::FieldLookupTable::DefaultSize;
 
     QHash<QObject *, QPointer<QHttp2Stream>> streamIDs;
-    using HttpMessagePair = std::pair<QHttpNetworkRequest, QHttpNetworkReply *>;
     QHash<QHttp2Stream *, HttpMessagePair> requestReplyPairs;
 
     void initReplyFromPushPromise(const HttpMessagePair &message, const QUrl &cacheKey);

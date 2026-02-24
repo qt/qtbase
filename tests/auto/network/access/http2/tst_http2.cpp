@@ -14,6 +14,7 @@
 #include <QtNetwork/private/qhttpnetworkconnection_p.h>
 #include <QtNetwork/private/qhttpnetworkreply_p.h>
 #include <QtNetwork/private/http2protocol_p.h>
+#include <QtNetwork/private/qhttp2protocolhandler_p.h>
 #include <QtNetwork/qnetworkaccessmanager.h>
 #include <QtNetwork/qhttp2configuration.h>
 #include <QtNetwork/qnetworkrequest.h>
@@ -89,6 +90,7 @@ private slots:
     void earlyResponse();
     void earlyError();
     void abortReply();
+    void abortReplyThenReceiveHeaders();
     void connectToHost_data();
     void connectToHost();
     void maxFrameSize();
@@ -848,6 +850,69 @@ void tst_Http2::abortReply()
     using namespace std::chrono_literals;
     // Process some extra events in case they trigger an error:
     QTest::qWait(100ms);
+}
+
+void tst_Http2::abortReplyThenReceiveHeaders()
+{
+    clearHTTP2State();
+    serverPort = 0;
+
+    const auto serverConnectionType = defaultConnectionType() == H2Type::h2c ? H2Type::h2Direct
+                                                                             : H2Type::h2Alpn;
+    ServerPtr targetServer(newServer(defaultServerSettings, serverConnectionType));
+
+    QMetaObject::invokeMethod(targetServer.get(), "startServer", Qt::QueuedConnection);
+    runEventLoop();
+
+    QVERIFY(serverPort != 0);
+
+    // SETUP create QHttpNetworkConnection primed for http2 usage
+    const auto connectionType = serverConnectionType == H2Type::h2Direct
+            ? QHttpNetworkConnection::ConnectionTypeHTTP2Direct
+            : QHttpNetworkConnection::ConnectionTypeHTTP2;
+    QHttpNetworkConnection connection(1, "127.0.0.1", serverPort, true, false, nullptr,
+                                      connectionType);
+#if QT_CONFIG(ssl)
+    QSslConfiguration config = QSslConfiguration::defaultConfiguration();
+    config.setAllowedNextProtocols({"h2"});
+    connection.setSslConfiguration(config);
+    connection.ignoreSslErrors();
+#endif
+    // SETUP manually setup the QHttpNetworkRequest
+    QHttpNetworkRequest req;
+    req.setSsl(true);
+    req.setHTTP2Allowed(true);
+    if (defaultConnectionType() == H2Type::h2c)
+        req.setH2cAllowed(true);
+    req.setOperation(QHttpNetworkRequest::Get);
+    req.setUrl(requestUrl(defaultConnectionType()));
+    // ^ All the above is set-up, the real code starts below v
+
+    std::unique_ptr<QHttpNetworkReply> reply{connection.sendRequest(req)};
+    QVERIFY(reply);
+    QSemaphore sem;
+    connect(reply.get(), &QHttpNetworkReply::finished, reply.get(), [&sem] {
+        sem.release();
+    });
+
+    using namespace std::chrono_literals;
+    QDeadlineTimer timer(5s);
+    // We purposefully do not use any of the qWait* functions because we don't want to process
+    // deleteLater's yet
+    while (!sem.tryAcquire() && !timer.hasExpired())
+        QCoreApplication::processEvents();
+    QCOMPARE_GT(timer.remainingTime(), 0);
+
+    auto *handler = static_cast<QHttp2ProtocolHandler *>(
+            connection.channels()->protocolHandler.get());
+    QVERIFY(handler);
+    QCOMPARE(handler->requestReplyPairs.size(), 0);
+
+    // Ensure deleteLater() for the stream has executed before reply destruction.
+    QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
+    QTest::qWait(50ms);
+
+    reply.reset();
 }
 
 
