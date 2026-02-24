@@ -3241,6 +3241,8 @@ QT_WARNING_POP
     addComparePair(EnumTest_Enum0_value, 0U);
     addComparePair(EnumTest_Enum0_value, 0LL);
     addComparePair(EnumTest_Enum0_value, 0ULL);
+    addComparePair(EnumTest_Enum0_value, -1);
+    addComparePair(EnumTest_Enum0_value, -1LL);
     addComparePair(EnumTest_Enum0_value, int(EnumTest_Enum0_value));
     addComparePair(EnumTest_Enum0_value, qint64(EnumTest_Enum0_value));
     addComparePair(EnumTest_Enum0_value, quint64(EnumTest_Enum0_value));
@@ -3255,6 +3257,8 @@ QT_WARNING_POP
     addComparePair(EnumTest_Enum1_value, 0U);
     addComparePair(EnumTest_Enum1_value, 0LL);
     addComparePair(EnumTest_Enum1_value, 0ULL);
+    addComparePair(EnumTest_Enum1_value, -1);
+    addComparePair(EnumTest_Enum1_value, -1LL);
     addComparePair(EnumTest_Enum1_value, int(EnumTest_Enum1_value));
     addComparePair(EnumTest_Enum1_value, qint64(EnumTest_Enum1_value));
     addComparePair(EnumTest_Enum1_value, quint64(EnumTest_Enum1_value));
@@ -3269,6 +3273,8 @@ QT_WARNING_POP
     addComparePair(EnumTest_Enum3_value, 0U);
     addComparePair(EnumTest_Enum3_value, 0LL);
     addComparePair(EnumTest_Enum3_value, 0ULL);
+    addComparePair(EnumTest_Enum3_value, -1);
+    addComparePair(EnumTest_Enum3_value, -1LL);
     addComparePair(EnumTest_Enum3_value, int(EnumTest_Enum3_value));
     addComparePair(EnumTest_Enum3_value, qint64(EnumTest_Enum3_value));
     addComparePair(EnumTest_Enum3_value, quint64(EnumTest_Enum3_value));
@@ -3279,8 +3285,45 @@ QT_WARNING_POP
     addComparePair(EnumTest_Enum3_bigValue, qint64(EnumTest_Enum3_bigValue));
     addComparePair(EnumTest_Enum3_bigValue, quint64(EnumTest_Enum3_bigValue));
 
+    // unsigned enums
+    addComparePair(EnumTest_Enum4{}, 0);
+    addComparePair(EnumTest_Enum4{}, 0U);
+    addComparePair(EnumTest_Enum4{}, 0LL);
+    addComparePair(EnumTest_Enum4{}, 0ULL);
+    addComparePair(EnumTest_Enum4{}, -1);
+    addComparePair(EnumTest_Enum4{}, -1LL);
+    addComparePair(EnumTest_Enum4{}, ~0U);
+    addComparePair(EnumTest_Enum4{}, ~0ULL);
+    addComparePair(EnumTest_Enum4{}, EnumTest_Enum4(-1));
+
+    addComparePair(EnumTest_Enum5{}, 0);
+    addComparePair(EnumTest_Enum5{}, 0U);
+    addComparePair(EnumTest_Enum5{}, 0LL);
+    addComparePair(EnumTest_Enum5{}, 0ULL);
+    addComparePair(EnumTest_Enum5{}, -1);
+    addComparePair(EnumTest_Enum5{}, -1LL);
+    addComparePair(EnumTest_Enum5{}, ~0U);
+    addComparePair(EnumTest_Enum5{}, ~0ULL);
+    addComparePair(EnumTest_Enum5{}, EnumTest_Enum5(-1));
+
+    addComparePair(EnumTest_Enum6{}, 0);
+    addComparePair(EnumTest_Enum6{}, 0U);
+    addComparePair(EnumTest_Enum6{}, 0LL);
+    addComparePair(EnumTest_Enum6{}, 0ULL);
+    addComparePair(EnumTest_Enum6{}, -1);
+    addComparePair(EnumTest_Enum6{}, -1LL);
+    addComparePair(EnumTest_Enum6{}, ~0U);
+    addComparePair(EnumTest_Enum6{}, ~0ULL);
+    addComparePair(EnumTest_Enum6{}, EnumTest_Enum6(-1));
+
     // enums of different types always compare as unordered
     addComparePairWithResult(EnumTest_Enum0_value, EnumTest_Enum1_value, QPartialOrdering::Unordered);
+
+    // QCborSimpleType behaves like quint8
+    addComparePairWithResult(QCborSimpleType{}, 0, QPartialOrdering::Equivalent);
+    addComparePairWithResult(QCborSimpleType{}, -1, QPartialOrdering::Greater);
+    addComparePairWithResult(QCborSimpleType{0xff}, -128, QPartialOrdering::Greater);
+    addComparePairWithResult(QCborSimpleType{0xff}, qint8(-128), QPartialOrdering::Greater);
 }
 
 void tst_QVariant::compareNumerics() const
