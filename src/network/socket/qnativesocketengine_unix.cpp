@@ -456,7 +456,10 @@ bool QNativeSocketEnginePrivate::nativeConnect(const QHostAddress &addr, quint16
         // This is to avoid calling connect() more than necessary, as the kernel may try to send
         // us messages on poll/select of this socket whenever we do.
         socklen_t len = sizeof(socketError);
-        getsockopt(int(socketDescriptor), SOL_SOCKET, SO_ERROR, &socketError, &len);
+        if (getsockopt(int(socketDescriptor), SOL_SOCKET, SO_ERROR, &socketError, &len) != 0) {
+            // getsockopt failed - let's treat socketError as undefined to be safe. So, reset.
+            socketError = 0;
+        }
     }
 
     int connectResult = -1;
