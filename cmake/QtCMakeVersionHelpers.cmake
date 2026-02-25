@@ -376,12 +376,12 @@ if(CMAKE_VERSION VERSION_GREATER_EQUAL \"4.0\"
     set(CMAKE_POLICY_VERSION_MINIMUM \"\${__qt_toolchain_cmake_policy_version_minimum}\")
     message(DEBUG
         \"Setting CMAKE_POLICY_VERSION_MINIMUM to \"
-        \"\${__qt_toolchain_cmake_policy_version_minimum}\ in toolchain file.\")
+        \"\${__qt_toolchain_cmake_policy_version_minimum} in toolchain file.\")
 endif()
 ")
         else()
             message(FATAL_ERROR "Unknown TYPE value '${arg_TYPE}'. "
-                " Supported values are COMMAND_LINE and VAR_ASSIGNMENT.")
+                " Supported values are COMMAND_LINE and TOOLCHAIN_FILE_ASSIGNMENT.")
         endif()
     endif()
 
