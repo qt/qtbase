@@ -244,6 +244,17 @@ QT_END_NAMESPACE
     m_platformWindow->setVisible(window->isVisible());
 }
 
+- (void)setStyleMask:(NSWindowStyleMask)styleMask
+{
+    // Setting the style mask might move the content view between
+    // a NSThemeFrame and a NSNextStepFrame, which results in also
+    // losing the view.window temporarily. We don't want that to
+    // result in dropping our window controller.
+    [[self.windowController retain] autorelease];
+
+    [super setStyleMask:styleMask];
+}
+
 - (NSString *)description
 {
     NSMutableString *description = [NSMutableString stringWithString:[super description]];

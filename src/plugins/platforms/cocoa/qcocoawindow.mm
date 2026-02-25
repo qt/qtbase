@@ -31,6 +31,38 @@
 
 #include <vector>
 
+QT_DECLARE_NAMESPACED_OBJC_INTERFACE(QNSWindowController, NSWindowController
+- (instancetype)initWithCocoaWindow:(QCocoaWindow *)platformWindow;
+)
+
+@implementation QNSWindowController {
+    QPointer<QCocoaWindow> m_platformWindow;
+}
+
+- (instancetype)initWithCocoaWindow:(QCocoaWindow *)platformWindow
+{
+    // We need a nib name, even if we don't use a NIB, otherwise
+    // Cocoa is not going to call our loadWindow override.
+    if ((self = [super initWithWindowNibName:@"QNSWindowController"]))
+        m_platformWindow = platformWindow;
+
+    return self;
+}
+
+- (void)loadWindow
+{
+    QMacAutoReleasePool pool;
+    self.window = [m_platformWindow->createNSWindow() autorelease];
+}
+- (void)dealloc
+{
+    qCDebug(lcQpaWindow) << "Disposing of" << self.window << "for" << m_platformWindow;
+    [self.window close];
+    self.window = nil;
+    [super dealloc];
+}
+@end
+
 QT_BEGIN_NAMESPACE
 
 enum {
@@ -179,15 +211,13 @@ QCocoaWindow::~QCocoaWindow()
     qCDebug(lcQpaWindow) << "QCocoaWindow::~QCocoaWindow" << window();
 
     QMacAutoReleasePool pool;
-    [m_nsWindow makeFirstResponder:nil];
-    [m_nsWindow setContentView:nil];
+
+    // Remove from superview as long as we're not a foreign
+    // window used only to contain Qt windows (ie no parent)
+    if (!isForeignWindow() || QPlatformWindow::parent())
+        [m_view removeFromSuperview];
 
     m_safeAreaInsetsObserver = {};
-
-    // Remove from superview only if we have a Qt window parent,
-    // as we don't want to affect window container foreign windows.
-    if (QPlatformWindow::parent())
-        [m_view removeFromSuperview];
 
     // Make sure to disconnect observer in all case if view is valid
     // to avoid notifications received when deleting when using Qt::AA_NativeWindows attribute
@@ -210,7 +240,6 @@ QCocoaWindow::~QCocoaWindow()
         object:m_view];
 
     [m_view release];
-    [m_nsWindow closeAndRelease];
 
     // Disposing of the view and window should have resulted in an
     // expose event with isExposed=false, but just in case we try
@@ -727,6 +756,14 @@ void QCocoaWindow::setWindowFlags(Qt::WindowFlags flags)
     if (!isContentView())
         return;
 
+    qCDebug(lcQpaWindow) << "Setting" << flags << "for" << window();
+
+    // FIXME: Some flags may require a different NSWindow class, in
+    // which case we should recreate here, after first updating the
+    // QWindow flags state. But currently applyContentBorderThickness
+    // depends on setWindowFlags, causing a recursion, so we need to
+    // clean up that entanglement first.
+
     // While setting style mask we can have handleGeometryChange calls on a content
     // view with null geometry, reporting an invalid coordinates as a result.
     m_inSetStyleMask = true;
@@ -1139,20 +1176,19 @@ bool QCocoaWindow::isExposed() const
     return !m_exposedRect.isEmpty();
 }
 
+/*!
+    Returns \c true if the window is a child of a non-Qt window.
+
+    A embedded window has no parent platform window as reflected
+    though parent(), but has a native parent handle.
+*/
 bool QCocoaWindow::isEmbedded() const
 {
-    // Child QWindows are not embedded
-    if (window()->parent())
-        return false;
-
-    // Top-level QWindows with non-Qt NSWindows are embedded
-    if (m_view.window)
-        return !([m_view.window isKindOfClass:[QNSWindow class]] ||
-                 [m_view.window isKindOfClass:[QNSPanel class]]);
-
-    // The window has no QWindow parent but also no NSWindow,
-    // conservatively reuturn false.
-    return false;
+    // We compute this in viewDidMoveToSuperview, so that we don't
+    // report inconsistent states during reparenting, where the
+    // QPlatformWindow and QWindow parent() is not in sync with
+    // the view's superview.
+    return m_isEmbedded;
 }
 
 bool QCocoaWindow::isOpaque() const
@@ -1266,6 +1302,30 @@ NSWindow *QCocoaWindow::nativeWindow() const
     return m_view.window;
 }
 
+void QCocoaWindow::updateEmbeddedState()
+{
+    const bool wasEmbedded = m_isEmbedded;
+    m_isEmbedded = [&]{
+        if (QPlatformWindow::parent())
+            return false;
+
+        if (!m_view.superview)
+            return false;
+
+        // In a top level window the view will still have the window's theme
+        // frame as their superview, which does not count as being embedded.
+        auto *qtWindowController = qt_objc_cast<QNSWindowController*>(m_view.window.windowController);
+        if (m_view == qtWindowController.window.contentView)
+            return false;
+
+        return true;
+    }();
+    if (m_isEmbedded != wasEmbedded) {
+        qCDebug(lcQpaWindow) << "Updated embedded state from"
+            << wasEmbedded << "to" << m_isEmbedded;
+    }
+}
+
 // ----------------------- NSView notifications -----------------------
 
 void QCocoaWindow::viewDidChangeFrame()
@@ -1300,6 +1360,9 @@ void QCocoaWindow::viewDidMoveToSuperview(NSView *previousSuperview)
 {
     qCDebug(lcQpaWindow) << "Done re-parenting" << m_view
         << "from" << previousSuperview << "into" << m_view.superview;
+
+    // Update embedded state now that we have a consistent state
+    updateEmbeddedState();
 
     if (isEmbedded()) {
         // FIXME: Align this with logic in QCocoaWindow::setParent
@@ -1346,9 +1409,14 @@ void QCocoaWindow::viewDidMoveToWindow(NSWindow *previousWindow)
     qCDebug(lcQpaWindow) << "Done moving" << m_view
         << "from" << previousWindow << "to" << m_view.window;
 
-    // Get rid of our Qt managed NSWindow if we're now embedded
-    if (isEmbedded())
-        recreateWindowIfNeeded();
+    if (auto *qtWindowController = qt_objc_cast<QNSWindowController*>(m_view.window.windowController)) {
+        qCDebug(lcQpaWindow) << "Retaining new window controller" << qtWindowController;
+        [qtWindowController retain];
+    }
+    if (auto *qtWindowController = qt_objc_cast<QNSWindowController*>(previousWindow.windowController)) {
+        qCDebug(lcQpaWindow) << "Releasing old window controller" << qtWindowController;
+        [qtWindowController autorelease];
+    }
 
     // Moving to a new window might result in a new screen. This is normally
     // handled for top level windows via windowDidChangeScreen, but for child
@@ -1682,97 +1750,54 @@ bool QCocoaWindow::isContentView() const
 
     A QWindow may need a corresponding NSWindow/NSPanel, depending on
     whether or not it's a top level or not, window flags, etc.
+
+    \sa windowClass
 */
 void QCocoaWindow::recreateWindowIfNeeded()
 {
     QMacAutoReleasePool pool;
 
-    QPlatformWindow *parentWindow = QPlatformWindow::parent();
-    auto *parentCocoaWindow = static_cast<QCocoaWindow *>(parentWindow);
+    auto *parentWindow = static_cast<QCocoaWindow *>(QPlatformWindow::parent());
 
-    QCocoaWindow *oldParentCocoaWindow = nullptr;
-    if (QNSView *qnsView = qnsview_cast(m_view.superview))
-        oldParentCocoaWindow = qnsView.platformWindow;
+    const bool shouldManageTopLevelWindow = !parentWindow
+        && !((window()->type() & Qt::SubWindow) == Qt::SubWindow)
+        && !isForeignWindow();
 
-    if (isForeignWindow()) {
-        // A foreign window is created as such, and can never move between being
-        // foreign and not, so we don't need to get rid of any existing NSWindows,
-        // nor create new ones, as a foreign window is a single simple NSView.
-        qCDebug(lcQpaWindow) << "Skipping NSWindow management for foreign window" << this;
+    if (shouldManageTopLevelWindow) {
+        auto *windowController = qt_objc_cast<QNSWindowController*>(m_view.window.windowController);
+        const bool isControllerContentView = m_view == windowController.window.contentView;
+        const bool windowClassIsCorrect = [m_view.window isKindOfClass:windowClass()];
 
-        // We do however need to manage the parent relationship
-        if (parentCocoaWindow)
-            [parentCocoaWindow->m_view addSubview:m_view];
-        else if (oldParentCocoaWindow)
-            [m_view removeFromSuperview];
+        if (!isControllerContentView || !windowClassIsCorrect) {
+            qCDebug(lcQpaWindow) << "Creating new window controller for" << m_view;
+            windowController = [[QNSWindowController alloc] initWithCocoaWindow:this];
 
-        return;
-    }
+            m_view.postsFrameChangedNotifications = NO;
+            windowController.window.contentView = m_view;
+            m_view.postsFrameChangedNotifications = YES;
 
-    const bool isEmbeddedView = isEmbedded();
-    RecreationReasons recreateReason = RecreationNotNeeded;
-
-    if (parentWindow != oldParentCocoaWindow)
-         recreateReason |= ParentChanged;
-
-    if (isEmbeddedView && m_nsWindow)
-        recreateReason |= EmbeddedChanged;
-
-    if (!m_view.window)
-        recreateReason |= MissingWindow;
-
-    Qt::WindowType type = window()->type();
-
-    const bool shouldBeContentView = !parentWindow
-        && !((type & Qt::SubWindow) == Qt::SubWindow)
-        && !isEmbeddedView;
-    if (isContentView() != shouldBeContentView)
-        recreateReason |= ContentViewChanged;
-
-    const bool isPanel = isContentView() && [m_view.window isKindOfClass:[QNSPanel class]];
-    const bool shouldBePanel = shouldBeContentView &&
-        ((type & Qt::Popup) == Qt::Popup || (type & Qt::Dialog) == Qt::Dialog);
-
-    if (isPanel != shouldBePanel)
-         recreateReason |= PanelChanged;
-
-    qCDebug(lcQpaWindow) << "QCocoaWindow::recreateWindowIfNeeded" << window() << recreateReason;
-
-    if (recreateReason == RecreationNotNeeded)
-        return;
-
-    // Remove current window (if any)
-    if ((isContentView() && !shouldBeContentView) || (recreateReason & (PanelChanged | EmbeddedChanged))) {
-        if (m_nsWindow) {
-            qCDebug(lcQpaWindow) << "Getting rid of existing window" << m_nsWindow;
-            [m_nsWindow closeAndRelease];
-            if (isContentView() && !isEmbeddedView) {
-                // We explicitly disassociate m_view from the window's contentView,
-                // as AppKit does not automatically do this in response to removing
-                // the view from the NSThemeFrame subview list, so we might end up
-                // with a NSWindow contentView pointing to a deallocated NSView.
-                m_view.window.contentView = nil;
-            }
-            m_nsWindow = nil;
+            // The view now owns the window controller
+            [windowController release];
+        } else {
+            qCDebug(lcQpaWindow) << "Re-using existing window controller" << windowController;
         }
+    } else if (parentWindow) {
+        if (m_view.superview != parentWindow->view()) {
+            qCDebug(lcQpaWindow) << "Reparenting view to new parent" << parentWindow;
+            [parentWindow->view() addSubview:m_view];
+        }
+    } else if (qnsview_cast(m_view.superview) && !isEmbedded()) {
+        qCDebug(lcQpaWindow) << "Removing view from superview" << m_view.superview;
+        [m_view removeFromSuperview];
     }
+}
 
-    if (shouldBeContentView && !m_nsWindow) {
-        // Move view to new NSWindow if needed
-        auto *newWindow = createNSWindow(shouldBePanel);
-        qCDebug(lcQpaWindow) << "Ensuring that" << m_view << "is content view for" << newWindow;
-        [m_view setPostsFrameChangedNotifications:NO];
-        [newWindow setContentView:m_view];
-        [m_view setPostsFrameChangedNotifications:YES];
-
-        m_nsWindow = newWindow;
-        Q_ASSERT(m_view.window == m_nsWindow);
-    }
-
-    if (parentCocoaWindow) {
-        // Child windows have no NSWindow, re-parent to superview instead
-        [parentCocoaWindow->m_view addSubview:m_view];
-    }
+Class QCocoaWindow::windowClass() const
+{
+    const auto type = window()->type();
+    return ((type & Qt::Popup) == Qt::Popup
+         || (type & Qt::Dialog) == Qt::Dialog) ?
+                QNSPanel.class : QNSWindow.class;
 }
 
 void QCocoaWindow::requestUpdate()
@@ -1897,7 +1922,7 @@ void QCocoaWindow::setupPopupMonitor()
     }
 }
 
-QCocoaNSWindow *QCocoaWindow::createNSWindow(bool shouldBePanel)
+QCocoaNSWindow *QCocoaWindow::createNSWindow()
 {
     QMacAutoReleasePool pool;
 
@@ -1942,8 +1967,7 @@ QCocoaNSWindow *QCocoaWindow::createNSWindow(bool shouldBePanel)
     }
 
     // Create NSWindow
-    Class windowClass = shouldBePanel ? [QNSPanel class] : [QNSWindow class];
-    QCocoaNSWindow *nsWindow = [[windowClass alloc] initWithContentRect:contentRect
+    QCocoaNSWindow *nsWindow = [[windowClass() alloc] initWithContentRect:contentRect
         // Mask will be updated in setWindowFlags if not the final mask
         styleMask:styleMask
         // Deferring window creation breaks OpenGL (the GL context is
@@ -1992,7 +2016,7 @@ QCocoaNSWindow *QCocoaWindow::createNSWindow(bool shouldBePanel)
     nsWindow.level = windowLevel(flags);
     nsWindow.tabbingMode = NSWindowTabbingModeDisallowed;
 
-    if (shouldBePanel) {
+    if ([nsWindow isKindOfClass:NSPanel.class]) {
         // Qt::Tool windows hide on app deactivation, unless Qt::WA_MacAlwaysShowToolWindow is set
         nsWindow.hidesOnDeactivate = ((type & Qt::Tool) == Qt::Tool) && !alwaysShowToolWindow();
 

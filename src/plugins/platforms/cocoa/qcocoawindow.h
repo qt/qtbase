@@ -184,16 +184,6 @@ public:
     void updateNormalGeometry();
 
     void recreateWindowIfNeeded();
-    enum RecreationReason {
-        RecreationNotNeeded = 0,
-        ParentChanged = 0x1,
-        MissingWindow = 0x2,
-        ContentViewChanged = 0x10,
-        PanelChanged = 0x20,
-        EmbeddedChanged = 0x40,
-    };
-    Q_DECLARE_FLAGS(RecreationReasons, RecreationReason)
-    Q_FLAG(RecreationReasons)
 
     bool allowsIndependentThreadedRendering() const override;
 
@@ -206,9 +196,9 @@ public:
     static QPointF mapFromNative(CGPoint pos, NSView *referenceView);
     static QRectF mapFromNative(CGRect rect, NSView *referenceView);
 
-protected:
-    QCocoaNSWindow *createNSWindow(bool shouldBePanel);
+    QCocoaNSWindow *createNSWindow();
 
+protected:
     Qt::WindowStates windowState() const;
     void applyWindowState(Qt::WindowStates newState);
     void toggleMaximized();
@@ -223,6 +213,7 @@ public: // for QNSView
     friend class QCocoaNativeInterface;
 
     bool isContentView() const;
+    Class windowClass() const;
 
     bool alwaysShowToolWindow() const;
 
@@ -247,7 +238,6 @@ public: // for QNSView
     QFlatMap<quintptr, NSVisualEffectView*> m_effectViews;
 
     NSView *m_view = nil;
-    QCocoaNSWindow *m_nsWindow = nil;
 
     Qt::WindowStates m_lastReportedWindowState = Qt::WindowNoState;
 
@@ -289,6 +279,9 @@ public: // for QNSView
     QHash<quintptr, bool> m_enabledContentBorderAreas; // identifier -> enabled state (true/false)
 
     bool m_deliveringUpdateRequest = false;
+
+    bool m_isEmbedded = false;
+    void updateEmbeddedState();
 
     static inline id s_globalMouseMonitor = 0;
     static inline id s_applicationActivationObserver = 0;
