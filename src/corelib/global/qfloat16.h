@@ -111,7 +111,7 @@ public:
 #if QT_CONFIG(signaling_nan)
     static constexpr qfloat16 _limit_signaling_NaN() noexcept { return qfloat16(Wrap(0x7d00)); }
 #endif
-#endif
+#endif // __STDCPP_FLOAT16_T__
     inline constexpr bool isNormal() const noexcept
     { return (b16 & 0x7c00) && (b16 & 0x7c00) != 0x7c00; }
 private:
