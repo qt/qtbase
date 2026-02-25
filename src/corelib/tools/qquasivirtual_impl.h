@@ -138,7 +138,7 @@ public:
 
     struct Deleter
     {
-        void operator () (QQuasiVirtualInterface* self) const { self->call<Destroy>(); }
+        void operator () (QQuasiVirtualInterface* self) const { self->template call<Destroy>(); }
     };
 
 protected:
