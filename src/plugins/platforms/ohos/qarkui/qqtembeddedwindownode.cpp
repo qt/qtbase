@@ -339,7 +339,7 @@ QQtEmbeddedWindowNode::QQtEmbeddedWindowNode(
 
 QQtEmbeddedWindowNode::~QQtEmbeddedWindowNode() = default;
 
-void QQtEmbeddedWindowNode::setAreaChangeReceiver(QOhosConsumer<AreaChangeEvent> areaChangeReceiver)
+void QQtEmbeddedWindowNode::setAreaChangeReceiver(QOhosConsumer<NodeAreaInfo> areaChangeReceiver)
 {
     m_optAreaChangedReceiver = std::move(areaChangeReceiver);
 
@@ -347,7 +347,7 @@ void QQtEmbeddedWindowNode::setAreaChangeReceiver(QOhosConsumer<AreaChangeEvent>
         ::ArkUI_NodeEventType::NODE_EVENT_ON_AREA_CHANGE,
         [this](::ArkUI_NodeEvent *) {
             m_optAreaChangedReceiver(
-                AreaChangeEvent {
+                NodeAreaInfo {
                     .screenGeometryPixels = nodeScreenGeometryPixels(),
                     .windowRelativeOffsetPixels = windowRelativeOffsetPixels(),
                     .parentRelativeOffsetPixels = parentRelativeOffsetPixels(),

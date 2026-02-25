@@ -167,7 +167,7 @@ Q_SIGNALS:
     void surfaceStatusChanged(const QOhosOptional<QSize> &optSurfaceSize);
     void windowDisplayIdChanged(QOhosDisplayInfo::JsDisplayId);
     void externalContentInteractionDetected();
-    void nodeAreaChanged(QArkUi::QQtEmbeddedWindowNode::AreaChangeEvent areaChangeEvt);
+    void nodeAreaChanged(QArkUi::QQtEmbeddedWindowNode::NodeAreaInfo areaChangeEvt);
 
 private:
     static constexpr QOhosRuntimeDeviceTypeAndMode allModes =

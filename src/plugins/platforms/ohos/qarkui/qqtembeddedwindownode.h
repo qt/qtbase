@@ -56,7 +56,7 @@ public:
         QOhosOptional<QColor> backgroundColor;
     };
 
-    struct AreaChangeEvent
+    struct NodeAreaInfo
     {
         QRect screenGeometryPixels;
         QPoint windowRelativeOffsetPixels;
@@ -69,7 +69,7 @@ public:
     ::OHNativeWindow *nativeWindowOrNull() const;
     void setCallbackReceiver(std::unique_ptr<QXComponentCallbackReceiver> callbackReceiver);
     void setSurfaceResolution(std::uint32_t width, std::uint32_t height);
-    void setAreaChangeReceiver(QOhosConsumer<AreaChangeEvent> areaChangeReceiver);
+    void setAreaChangeReceiver(QOhosConsumer<NodeAreaInfo> areaChangeReceiver);
     void setFocusedChangeReceiver(QOhosConsumer<bool> focus);
     void setVisibilityChangeReceiver(QOhosConsumer<bool> visibilityChangedReceiver);
     void setTouchInterceptReceiver(QOhosConsumer<const ::ArkUI_UIInputEvent *> touchInterceptReceiver);
@@ -93,7 +93,7 @@ private:
     std::shared_ptr<void> m_xComponentCallbackDispatcherToken;
     std::unique_ptr<QXComponentCallbackReceiver> m_callbackReceiver;
     ::OHNativeWindow *m_nativeWindow = nullptr;
-    QOhosConsumer<AreaChangeEvent> m_optAreaChangedReceiver;
+    QOhosConsumer<NodeAreaInfo> m_optAreaChangedReceiver;
     QOhosConsumer<bool> m_optFocusedChangedReceiver;
     QOhosConsumer<bool> m_optVisibilityChangedReceiver;
     QOhosConsumer<const ::ArkUI_UIInputEvent *> m_optTouchInterceptReceiver;
