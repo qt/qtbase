@@ -64,7 +64,7 @@ public:
     void startDrag(
         const std::vector<QImage> &images, const QPointF &hotspot,
         const QMimeData &mimeData, QOhosConsumer<Qt::DropAction> dropActionConsumer);
-    void setNodeAreaChangeHandler(QOhosConsumer<QArkUi::QQtEmbeddedWindowNode::AreaChangeEvent> areaChangeEventConsumer);
+    void setNodeAreaChangeHandler(QOhosConsumer<QArkUi::QQtEmbeddedWindowNode::NodeAreaInfo> areaChangeEventConsumer);
     void setNodeFocusChangeHandler(QOhosConsumer<bool> focusedChangedConsumer);
     void setNodeVisibilityChangeHandler(QOhosConsumer<bool> visibilityChangedConsumer);
     QRect nodeScreenGeometryPixels() const;

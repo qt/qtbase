@@ -482,7 +482,7 @@ void QNativeNode::setTransparentForInput(bool transparentForInput)
     });
 }
 
-void QNativeNode::setNodeAreaChangeHandler(QOhosConsumer<QArkUi::QQtEmbeddedWindowNode::AreaChangeEvent> areaChangeEventConsumer)
+void QNativeNode::setNodeAreaChangeHandler(QOhosConsumer<QArkUi::QQtEmbeddedWindowNode::NodeAreaInfo> areaChangeEventConsumer)
 {
     auto selfRef = QtOhos::makeQThreadSafeRef(this);
     QtOhos::runInJsThreadAndWait([&](QtOhos::JsState &) {
