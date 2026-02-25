@@ -19,7 +19,7 @@ qt_internal_add_test(tst_qfloat16
 )
 
 # To test std::format support, if possible
-if(QT_FEATURE_cxx20_format)
+if(QT_FEATURE_cxx20_format AND CMAKE_CXX_STANDARD VERSION_LESS 20)
     set_target_properties(tst_qfloat16
         PROPERTIES
             CXX_STANDARD 20
