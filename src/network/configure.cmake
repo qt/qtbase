@@ -205,6 +205,9 @@ qt_feature("getifaddrs" PUBLIC
     CONDITION VXWORKS OR UNIX AND NOT QT_FEATURE_linux_netlink AND TEST_getifaddrs
 )
 qt_feature_definition("getifaddrs" "QT_NO_GETIFADDRS" NEGATE VALUE "1")
+qt_feature("hostinfocache" PRIVATE
+    LABEL "QHostInfo cache"
+)
 qt_feature("ipv6ifname" PUBLIC
     LABEL "IPv6 ifname"
     CONDITION VXWORKS OR UNIX AND NOT QT_FEATURE_linux_netlink AND TEST_ipv6ifname

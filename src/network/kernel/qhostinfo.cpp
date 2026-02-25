@@ -1102,13 +1102,9 @@ void qt_qhostinfo_cache_inject(const QString &hostname, const QHostInfo &resolut
 }
 #endif
 
-// cache for 60 seconds
-// cache 128 items
+#if defined(QT_BUILD_INTERNAL) || QT_CONFIG(hostinfocache)
 QHostInfoCache::QHostInfoCache() : max_age(60), enabled(true), cache(128)
 {
-#ifdef QT_QHOSTINFO_CACHE_DISABLED_BY_DEFAULT
-    enabled.store(false, std::memory_order_relaxed);
-#endif
 }
 
 QHostInfo QHostInfoCache::get(const QString &name, bool *valid)
@@ -1149,6 +1145,7 @@ void QHostInfoCache::clear()
     QMutexLocker locker(&this->mutex);
     cache.clear();
 }
+#endif // QT_BUILD_INTERNAL || QT_CONFIG(hostinfocache)
 
 QT_END_NAMESPACE
 
