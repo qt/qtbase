@@ -188,7 +188,6 @@ public:
         RecreationNotNeeded = 0,
         ParentChanged = 0x1,
         MissingWindow = 0x2,
-        WindowModalityChanged = 0x4,
         ContentViewChanged = 0x10,
         PanelChanged = 0x20,
         EmbeddedChanged = 0x40,
@@ -251,7 +250,6 @@ public: // for QNSView
     QCocoaNSWindow *m_nsWindow = nil;
 
     Qt::WindowStates m_lastReportedWindowState = Qt::WindowNoState;
-    Qt::WindowModality m_windowModality = Qt::NonModal;
 
     static QPointer<QCocoaWindow> s_windowUnderMouse;
 

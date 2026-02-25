@@ -428,7 +428,7 @@ void QCocoaWindow::setVisible(bool visible)
     };
 
     if (visible) {
-        // We need to recreate if the modality has changed as the style mask will need updating
+        // The flags may have changed, in which case we may need to switch window type
         recreateWindowIfNeeded();
 
         // We didn't send geometry changes during creation, as that would have confused
@@ -1709,10 +1709,6 @@ void QCocoaWindow::recreateWindowIfNeeded()
     if (!m_view.window)
         recreateReason |= MissingWindow;
 
-    // If the modality has changed the style mask will need updating
-    if (m_windowModality != window()->modality())
-        recreateReason |= WindowModalityChanged;
-
     Qt::WindowType type = window()->type();
 
     const bool shouldBeContentView = !parentWindow
@@ -1999,9 +1995,6 @@ QCocoaNSWindow *QCocoaWindow::createNSWindow(bool shouldBePanel)
                 setupPopupMonitor();
         }
     }
-
-    // Persist modality so we can detect changes later on
-    m_windowModality = QPlatformWindow::window()->modality();
 
     applyContentBorderThickness(nsWindow);
 
