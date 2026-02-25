@@ -1688,6 +1688,11 @@ void QOhosView::handleWindowFlagsChange(
         setWindowShadowDisabled();
 }
 
+QArkUi::QQtEmbeddedWindowNode::NodeAreaInfo QOhosView::nodeAreaInfo() const
+{
+    return m_nativeNode->nodeAreaInfo();
+}
+
 bool QOhosView::WindowMinMaxCloseButtonsState::operator==(const WindowMinMaxCloseButtonsState &other) const
 {
     return maxButtonShown == other.maxButtonShown

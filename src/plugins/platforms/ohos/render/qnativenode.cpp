@@ -543,5 +543,13 @@ QRect QNativeNode::nodeParentRelativeGeometryPixels() const
         });
 }
 
+QArkUi::QQtEmbeddedWindowNode::NodeAreaInfo QNativeNode::nodeAreaInfo() const
+{
+    return QtOhos::evalInJsThread(
+        [&](QtOhos::JsState &) {
+            return m_jsStateData->embeddedWindow->nodeAreaInfo();
+        });
+}
+
 QT_END_NAMESPACE
 
