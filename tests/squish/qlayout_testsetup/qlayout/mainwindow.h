@@ -5,6 +5,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+QT_BEGIN_NAMESPACE
 
 class QGridLayout;
 
@@ -23,4 +24,5 @@ private:
     QGridLayout *m_mainLayout;
 };
 
+QT_END_NAMESPACE
 #endif // MAINWINDOW_H

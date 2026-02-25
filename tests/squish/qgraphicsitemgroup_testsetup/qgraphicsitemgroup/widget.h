@@ -10,6 +10,8 @@
 #include <QGraphicsItemGroup>
 #include <QPainter>
 
+QT_BEGIN_NAMESPACE
+
 namespace Ui {
     class Widget;
 }
@@ -52,4 +54,5 @@ private:
     int previousSelectionCount;
 };
 
+QT_END_NAMESPACE
 #endif // WIDGET_H
