@@ -329,7 +329,7 @@ public:
 
         operator QVariant() const noexcept(Indirect::CanNoexceptConvertToQVariant)
         {
-            return ConstReference(m_referred);
+            return ConstReference<Indirect>(m_referred);
         }
 
         void swap(Reference b)
@@ -388,7 +388,7 @@ public:
         operator ConstPointer<Indirect>() const
                 noexcept(std::is_nothrow_copy_constructible_v<Indirect>)
         {
-            return ConstPointer(m_pointed);
+            return ConstPointer<Indirect>(m_pointed);
         }
     };
 
