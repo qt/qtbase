@@ -346,12 +346,7 @@ void QQtEmbeddedWindowNode::setAreaChangeReceiver(QOhosConsumer<NodeAreaInfo> ar
     stackNode().setEventHandler(
         ::ArkUI_NodeEventType::NODE_EVENT_ON_AREA_CHANGE,
         [this](::ArkUI_NodeEvent *) {
-            m_optAreaChangedReceiver(
-                NodeAreaInfo {
-                    .screenGeometryPixels = nodeScreenGeometryPixels(),
-                    .windowRelativeOffsetPixels = windowRelativeOffsetPixels(),
-                    .parentRelativeOffsetPixels = parentRelativeOffsetPixels(),
-                });
+            m_optAreaChangedReceiver(nodeAreaInfo());
         });
 }
 
@@ -427,6 +422,15 @@ bool QQtEmbeddedWindowNode::hasNonQtManagedChildren() const
         [&](::ArkUI_NodeHandle nodeHandle) {
             return !QArkUi::Node::isQtManagedNode(nodeHandle);
         }).hasValue();
+}
+
+QQtEmbeddedWindowNode::NodeAreaInfo QQtEmbeddedWindowNode::nodeAreaInfo() const
+{
+    return NodeAreaInfo {
+        .screenGeometryPixels = nodeScreenGeometryPixels(),
+        .windowRelativeOffsetPixels = windowRelativeOffsetPixels(),
+        .parentRelativeOffsetPixels = parentRelativeOffsetPixels(),
+    };
 }
 
 QPoint QQtEmbeddedWindowNode::windowRelativeOffsetPixels() const

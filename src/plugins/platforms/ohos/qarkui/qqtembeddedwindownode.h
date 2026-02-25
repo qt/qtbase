@@ -77,6 +77,7 @@ public:
     QPoint windowRelativeOffsetPixels() const;
     QPoint parentRelativeOffsetPixels() const;
     bool hasNonQtManagedChildren() const;
+    NodeAreaInfo nodeAreaInfo() const;
 
     ~QQtEmbeddedWindowNode() override;
 
