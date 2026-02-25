@@ -138,6 +138,7 @@ public:
     void handleWindowFlagsChange(
         Qt::WindowFlags previousWindowFlags, Qt::WindowFlags currentWindowFlags);
     void handlePaletteChange();
+    QArkUi::QQtEmbeddedWindowNode::NodeAreaInfo nodeAreaInfo() const;
 
     void showImmediate();
     void hide();

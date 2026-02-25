@@ -69,6 +69,7 @@ public:
     void setNodeVisibilityChangeHandler(QOhosConsumer<bool> visibilityChangedConsumer);
     QRect nodeScreenGeometryPixels() const;
     QRect nodeParentRelativeGeometryPixels() const;
+    QArkUi::QQtEmbeddedWindowNode::NodeAreaInfo nodeAreaInfo() const;
 
     void addForeignWindowChild(QOhosForeignWindow *foreignWindow);
 
