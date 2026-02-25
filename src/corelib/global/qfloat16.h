@@ -16,6 +16,9 @@
 #include <QtCore/qtypes.h>
 
 #include <limits>
+#ifdef __cpp_lib_math_constants
+#include <numbers>
+#endif
 #include <string.h>
 #include <type_traits>
 
@@ -32,6 +35,8 @@
 #if defined(QT_COMPILER_SUPPORTS_F16C) && defined(__F16C__)
 #include <immintrin.h>
 #endif
+
+class tst_qfloat16;
 
 QT_BEGIN_NAMESPACE
 
@@ -55,6 +60,8 @@ class QTextStream;
 
 class qfloat16
 {
+    friend class ::tst_qfloat16;
+
 #if QFLOAT16_IS_NATIVE
 #  define QF16_CONSTEXPR constexpr
 #  define QF16_PARTIALLY_ORDERED Q_DECLARE_PARTIALLY_ORDERED_LITERAL_TYPE
@@ -135,6 +142,24 @@ public:
     static constexpr qfloat16 _limit_signaling_NaN() noexcept { return qfloat16(Wrap(0x7d00)); }
 #endif
 #endif // __STDCPP_FLOAT16_T__
+    // support for C++20 <numbers>
+#define QF16_NUM(which, val) \
+    static constexpr qfloat16 _num_ ## which () noexcept \
+    { return qfloat16(Wrap(val)); }
+    QF16_NUM(e,          0x4170)
+    QF16_NUM(log2e,      0x3dc5)
+    QF16_NUM(log10e,     0x36f3)
+    QF16_NUM(pi,         0x4248)
+    QF16_NUM(inv_pi,     0x3518)
+    QF16_NUM(inv_sqrtpi, 0x3883)
+    QF16_NUM(ln2,        0x398c)
+    QF16_NUM(ln10,       0x409b)
+    QF16_NUM(sqrt2,      0x3da8)
+    QF16_NUM(sqrt3,      0x3eee)
+    QF16_NUM(inv_sqrt3,  0x389e)
+    QF16_NUM(egamma,     0x389e)
+    QF16_NUM(phi,        0x3e79)
+#undef QF16_NUM
     inline constexpr bool isNormal() const noexcept
     { return (b16 & 0x7c00) && (b16 & 0x7c00) != 0x7c00; }
 
@@ -591,6 +616,31 @@ template<> class numeric_limits<const volatile QT_PREPEND_NAMESPACE(qfloat16)>
 // Adding overloads to std isn't allowed, so we can't extend this to support
 // for fpclassify(), isnormal() &c. (which, furthermore, are macros on MinGW).
 } // namespace std
+
+// std::numbers support
+#ifdef __cpp_lib_math_constants
+namespace std::numbers {
+#define QF16_SPECIALIZE(which) \
+    template <> inline constexpr QT_PREPEND_NAMESPACE(qfloat16) \
+    which ## _v<QT_PREPEND_NAMESPACE(qfloat16)> \
+        = QT_PREPEND_NAMESPACE(qfloat16)::_num_ ## which () \
+    /* end */
+QF16_SPECIALIZE(e);
+QF16_SPECIALIZE(log2e);
+QF16_SPECIALIZE(log10e);
+QF16_SPECIALIZE(pi);
+QF16_SPECIALIZE(inv_pi);
+QF16_SPECIALIZE(inv_sqrtpi);
+QF16_SPECIALIZE(ln2);
+QF16_SPECIALIZE(ln10);
+QF16_SPECIALIZE(sqrt2);
+QF16_SPECIALIZE(sqrt3);
+QF16_SPECIALIZE(inv_sqrt3);
+QF16_SPECIALIZE(egamma);
+QF16_SPECIALIZE(phi);
+#undef QF16_SPECIALIZE
+} // namespace std::numbers
+#endif // __cpp_lib_math_constants
 
 // std::format support
 #ifdef QT_SUPPORTS_STD_FORMAT

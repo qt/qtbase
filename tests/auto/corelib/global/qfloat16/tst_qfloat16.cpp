@@ -52,6 +52,12 @@ private slots:
     void properties();
     void limits();
     void mantissaOverflow();
+    void mathConstants_vs_float_data();
+    void mathConstants_vs_float();
+    void mathConstants_vs_fp16_data();
+    void mathConstants_vs_fp16();
+    void mathConstants_vs_std_float16_t_data();
+    void mathConstants_vs_std_float16_t();
     void dataStream();
     void textStream();
 
@@ -60,6 +66,12 @@ private slots:
     void format_data();
     void format();
     void formatMultiArg();
+
+private:
+    template <typename OtherFP>
+    void mathConstants_vs_impl_data();
+    template <typename OtherFP>
+    void mathConstants_vs_impl();
 };
 
 void tst_qfloat16::compareCompiles()
@@ -931,6 +943,121 @@ void tst_qfloat16::mantissaOverflow()
     QCOMPARE(f16, f16s[0]);
     QVERIFY(qIsNaN(f16));
 }
+
+#define FOR_EACH_MATH_CONSTANT(op) \
+    op(e) \
+    op(log2e) \
+    op(log10e) \
+    op(pi) \
+    op(inv_pi) \
+    op(inv_sqrtpi) \
+    op(ln2) \
+    op(ln10) \
+    op(sqrt2) \
+    op(sqrt3) \
+    op(inv_sqrt3) \
+    op(egamma) \
+    op(phi) \
+    /* end */
+
+namespace QF16MathConstantsAreConstexpr {
+#ifdef __cpp_lib_math_constants
+#define CHECK(x) \
+    [[maybe_unused]] constexpr auto x = std::numbers:: x ## _v<qfloat16>; \
+    static_assert(std::is_same_v<decltype(x), const qfloat16>, #x "_v"); \
+    /* end */
+FOR_EACH_MATH_CONSTANT(CHECK)
+#undef CHECK
+#endif // __cpp_lib_math_constants
+}
+
+template <typename F>
+struct FloatWrapper {
+    F value;
+};
+
+void tst_qfloat16::mathConstants_vs_float_data()
+{
+    mathConstants_vs_impl_data<float>();
+}
+
+void tst_qfloat16::mathConstants_vs_float()
+{
+    mathConstants_vs_impl<float>();
+}
+
+void tst_qfloat16::mathConstants_vs_fp16_data()
+{
+    mathConstants_vs_impl_data<QtPrivate::NativeFloat16Type>();
+}
+
+void tst_qfloat16::mathConstants_vs_fp16()
+{
+    mathConstants_vs_impl<QtPrivate::NativeFloat16Type>();
+}
+
+void tst_qfloat16::mathConstants_vs_std_float16_t_data()
+{
+#ifdef __STDCPP_FLOAT16_T__
+    mathConstants_vs_impl_data<std::float16_t>();
+#else
+    QSKIP("This test requires C++23 std::float16_t support enabled in the stdlib.");
+#endif
+}
+
+void tst_qfloat16::mathConstants_vs_std_float16_t()
+{
+#ifdef __STDCPP_FLOAT16_T__
+    mathConstants_vs_impl<std::float16_t>();
+#endif
+    // else QSKIP()ed in _data()
+}
+
+template<typename OtherFP>
+void tst_qfloat16::mathConstants_vs_impl_data()
+{
+#ifndef __cpp_lib_math_constants
+    QSKIP("This test requires C++20 std::numbers support enabled in the stdlib.");
+#else
+    if constexpr (std::is_void_v<OtherFP>) { // not defined
+        QSKIP("This test requires a native FP16 type to be defined for the platform.");
+    } else if constexpr (std::is_floating_point_v<OtherFP>) { // ie. we expect std::numbers to work for OtherFP
+        QTest::addColumn<FloatWrapper<qfloat16>>("qf16");
+        QTest::addColumn<FloatWrapper<OtherFP>>("other");
+
+    #define CHECK(constant) do { \
+            const auto lhs = FloatWrapper<qfloat16>{std::numbers:: constant##_v<qfloat16>}; \
+            const auto rhs = FloatWrapper<OtherFP>{std::numbers:: constant##_v<OtherFP>}; \
+            QTest::addRow("%s", #constant) << lhs << rhs; \
+        } while (false);
+        FOR_EACH_MATH_CONSTANT(CHECK)
+    #undef CHECK
+    } else {
+        QSKIP(("This test requires the stdlib to provide std::numbers constants for "_ba +
+               QMetaType::fromType<OtherFP>().name()).constData());
+    }
+#endif // __cpp_lib_math_constants
+}
+
+template <typename OtherFP>
+void tst_qfloat16::mathConstants_vs_impl()
+{
+    // QSKIPs for all these are in _data(); these just shield code from the compiler:
+#ifdef __cpp_lib_math_constants
+    if constexpr (std::is_floating_point_v<OtherFP>) {
+        QFETCH(const FloatWrapper<qfloat16>, qf16);
+        QFETCH(const FloatWrapper<OtherFP>, other);
+
+        const uint lhs = qfloat16(other.value).b16;
+        const uint rhs = qf16.value.b16;
+
+        QCOMPARE_EQ(lhs, rhs);
+        QCOMPARE_EQ(qfloat16(other.value), qf16.value);
+    }
+#endif // __cpp_lib_math_constants
+}
+
+#undef FOR_EACH_MATH_CONSTANT
 
 void tst_qfloat16::dataStream()
 {
