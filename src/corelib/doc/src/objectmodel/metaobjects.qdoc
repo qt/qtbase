@@ -88,7 +88,7 @@
     \snippet qtcast/qtcast.cpp 4
 
     The cast to QLabel, on the other hand, fails. The pointer is then
-    set to 0. This makes it possible to handle objects of different
+    set to \nullptr. This makes it possible to handle objects of different
     types differently at run-time, based on the type:
 
     \snippet qtcast/qtcast.cpp 5
