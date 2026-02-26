@@ -112,6 +112,7 @@ public:
 
     QTimerInfoList timerList;
     QAtomicInt interrupt; // bool
+    QAtomicInt wakeUpCalledDuringProcessEvents; // bool
 };
 
 inline QSocketNotifierSetUNIX::QSocketNotifierSetUNIX() noexcept

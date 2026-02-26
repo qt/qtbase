@@ -457,13 +457,9 @@ void tst_QEventDispatcher::postEventFromEventHandler()
 
     const QByteArrayView eventDispatcherName(QAbstractEventDispatcher::instance()->metaObject()->className());
     qDebug() << eventDispatcherName;
-    // QXcbUnixEventDispatcher and QEventDispatcherUNIX do not do this correctly on any platform;
-    // both Windows event dispatchers fail as well.
-    const bool knownToFail = eventDispatcherName.contains("UNIX")
-                          || eventDispatcherName.contains("Unix")
-                          || eventDispatcherName.contains("Win32")
-                          || eventDispatcherName.contains("WindowsGui")
-                          || eventDispatcherName.contains("Android");
+    // QEventDispatcherWin32 and QWindowsGuiEventDispatcher do not do this correctly.
+    const bool knownToFail = eventDispatcherName.contains("Win32")
+                          || eventDispatcherName.contains("WindowsGui");
 
     if (knownToFail)
         QEXPECT_FAIL("", eventDispatcherName.constData(), Continue);

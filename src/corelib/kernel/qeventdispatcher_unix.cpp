@@ -434,6 +434,8 @@ bool QEventDispatcherUNIX::processEvents(QEventLoop::ProcessEventsFlags flags)
     Q_D(QEventDispatcherUNIX);
     d->interrupt.storeRelaxed(0);
 
+    d->wakeUpCalledDuringProcessEvents.storeRelaxed(0);
+
     // we are awake, broadcast it
     emit awake();
 
@@ -503,6 +505,9 @@ bool QEventDispatcherUNIX::processEvents(QEventLoop::ProcessEventsFlags flags)
     if (include_timers)
         nevents += d->activateTimers();
 
+    if (d->wakeUpCalledDuringProcessEvents.loadRelaxed())
+        d->threadPipe.wakeUp();
+
     // return true if we handled events, false otherwise
     return (nevents > 0);
 }
@@ -523,6 +528,7 @@ auto QEventDispatcherUNIX::remainingTime(Qt::TimerId timerId) const -> Duration
 void QEventDispatcherUNIX::wakeUp()
 {
     Q_D(QEventDispatcherUNIX);
+    d->wakeUpCalledDuringProcessEvents.storeRelaxed(1);
     d->threadPipe.wakeUp();
 }
 
