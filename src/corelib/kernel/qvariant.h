@@ -122,7 +122,11 @@ public:
 
         constexpr Private() noexcept : is_shared(false), is_null(true), packedType(0) {}
         explicit Private(const QtPrivate::QMetaTypeInterface *iface) noexcept;
-        template <typename T> explicit Private(std::piecewise_construct_t, const T &t);
+        template <typename T>
+        explicit Private(std::in_place_t, T &&t);
+        template <typename T>
+        explicit Private(std::piecewise_construct_t, const T &t)
+            : Private{std::in_place, t} {}
 
         const void *storage() const
         { return is_shared ? data.shared->data() : &data.data; }
