@@ -91,6 +91,7 @@ void QOhosPlatformWindow::setGeometry(const QRect &rect)
         Q_FUNC_INFO,
         adjustedRect.x(), adjustedRect.y(),
         adjustedRect.width(), adjustedRect.height());
+    m_lastRequestedWindowFrameGeometry = rect.marginsAdded(frameMargins());
     QPlatformWindow::setGeometry(adjustedRect);
 }
 
@@ -213,6 +214,11 @@ QOhosPlatformScreen *QOhosPlatformWindow::platformScreen() const
 QOhosOptional<QOhosDisplayInfo::JsDisplayId> QOhosPlatformWindow::tryTakeLastRequestedDisplayId()
 {
     return std::exchange(m_lastRequestedDisplayId, makeEmptyQOhosOptional());
+}
+
+QRect QOhosPlatformWindow::lastRequestedWindowFrameGeometry() const
+{
+    return m_lastRequestedWindowFrameGeometry;
 }
 
 void QOhosPlatformWindow::propagateSizeHints()
@@ -430,7 +436,8 @@ void QOhosPlatformWindow::initialize()
 
     auto initialWindowGeom = windowGeometry();
     auto initialGeom = initialGeometry(window(), initialWindowGeom, defaultWindowWidth, defaultWindowHeight);
-    setGeometry(initialGeom);
+    m_lastRequestedWindowFrameGeometry = initialGeom;
+    QPlatformWindow::setGeometry(initialGeom);
 
     m_parent = parent();
 }
