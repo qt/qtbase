@@ -89,8 +89,6 @@ _qt_internal_sbom_add_external_reference_document(ExtDoc1
     SPDX_V2_DOCUMENT_REF_ID "${spdx_external_document_ref_id}"
     EXTERNAL_DOCUMENT_FILE_PATH
         "${spdx_v2_tag_value_path}"
-    EXTERNAL_DOCUMENT_SEARCH_PATHS
-        ${CMAKE_PREFIX_PATH}
 )
 
 _qt_internal_sbom_add_external_reference_document(ExtDoc1
@@ -98,16 +96,12 @@ _qt_internal_sbom_add_external_reference_document(ExtDoc1
     SPDX_V2_DOCUMENT_REF_ID "${spdx_external_document_ref_id}"
     EXTERNAL_DOCUMENT_FILE_PATH
         "${spdx_v2_json_path}"
-    EXTERNAL_DOCUMENT_SEARCH_PATHS
-        ${CMAKE_PREFIX_PATH}
 )
 
 _qt_internal_sbom_add_external_reference_document(ExtDoc1
     SBOM_FORMAT "CYDX_V1_JSON"
     EXTERNAL_DOCUMENT_FILE_PATH
         "${cydx_v1_6_json_path}"
-    EXTERNAL_DOCUMENT_SEARCH_PATHS
-        ${CMAKE_PREFIX_PATH}
 )
 
 # Case 2
@@ -117,16 +111,12 @@ _qt_internal_sbom_add_external_reference_document(ExtDoc2Spdx
     SPDX_V2_DOCUMENT_REF_ID "${spdx_external_document_ref_id}-v2"
     EXTERNAL_DOCUMENT_FILE_PATH
         "${spdx_v2_tag_value_path}"
-    EXTERNAL_DOCUMENT_SEARCH_PATHS
-        ${CMAKE_PREFIX_PATH}
 )
 
 _qt_internal_sbom_add_external_reference_document(ExtDoc3Cydx
     SBOM_FORMAT "CYDX_V1_JSON"
     EXTERNAL_DOCUMENT_FILE_PATH
         "${cydx_v1_6_json_path}"
-    EXTERNAL_DOCUMENT_SEARCH_PATHS
-        ${CMAKE_PREFIX_PATH}
 )
 
 # Case 3
@@ -135,9 +125,7 @@ _qt_internal_sbom_add_external_reference_document(ExtDoc3Cydx
 # For SPDX, we need to provide the SHA1, so we have to compute it first from the file path.
 set(spdx_v2_sha1 "EMPTY_SHA")
 if(QT_SBOM_GENERATE_SPDX_V2)
-    _qt_internal_sbom_get_external_reference_search_paths(document_search_paths
-        EXTERNAL_DOCUMENT_SEARCH_PATHS ${CMAKE_PREFIX_PATH}
-    )
+    _qt_internal_sbom_get_external_reference_search_paths(document_search_paths)
     _qt_internal_sbom_find_external_reference_document(spdx_v2_tag_value_absolute_path
         EXTERNAL_DOCUMENT_FILE_PATH "${spdx_v2_tag_value_path}"
         EXTERNAL_DOCUMENT_SEARCH_PATHS "${document_search_paths}"
@@ -168,8 +156,6 @@ _qt_internal_sbom_add_external_reference_document(ExtDoc5
     SPDX_V2_DOCUMENT_REF_ID "${spdx_external_document_ref_id}-v5"
     EXTERNAL_DOCUMENT_FILE_PATH
         "${spdx_v2_json_path}"
-    EXTERNAL_DOCUMENT_SEARCH_PATHS
-        ${CMAKE_PREFIX_PATH}
 )
 
 # Case 5
