@@ -32,6 +32,8 @@ include(../../../../src/tools/qtwaylandscanner/Qt6WaylandClientMacros.cmake)
 
 qt_internal_add_module(WaylandClient
     PLUGIN_TYPES wayland-inputdevice-integration
+    POLICIES
+        QTP0006
     SOURCES
         shared/qwaylandinputmethodeventbuilder.cpp shared/qwaylandinputmethodeventbuilder_p.h
         shared/qwaylandmimehelper.cpp shared/qwaylandmimehelper_p.h
@@ -118,7 +120,6 @@ qt_internal_add_module(WaylandClient
         ../../../3rdparty/wayland/protocols/xdg-shell
         ../../../3rdparty/wayland/protocols/wlr-data-control
         ../../../3rdparty/wayland/protocols/session-management
-
 )
 
 qt_internal_add_plugin(QWaylandIntegrationPlugin

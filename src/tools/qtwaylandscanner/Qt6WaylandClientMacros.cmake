@@ -28,6 +28,25 @@ function(qt6_generate_wayland_protocol_client_sources target)
     string(REPLACE "." "_" module_define_infix "${module_define_infix}")
     set(build_macro "QT_BUILD_${module_define_infix}_LIB")
 
+    if(arg_PRIVATE_CODE)
+        set(wayland_scanner_code_option "private-code")
+    elseif(arg_PUBLIC_CODE)
+        set(wayland_scanner_code_option "public-code")
+    else()
+        __qt_internal_setup_policy(QTP0006 "6.12.0"
+            "qt_generate_wayland_protocol_client_sources called without PRIVATE_CODE or PUBLIC_CODE. "
+            "Defaulting to PUBLIC_CODE for backwards compatibility. Pass PRIVATE_CODE explicitly, "
+            "or set qt_policy(SET QTP0006 NEW) to use PRIVATE_CODE by default. "
+            "Check https://doc.qt.io/qt-6/qt-cmake-policy-qtp0006.html for policy details."
+        )
+        qt6_policy(GET QTP0006 _qtp0006_value)
+        if(_qtp0006_value STREQUAL "NEW")
+            set(wayland_scanner_code_option "private-code")
+        else()
+            set(wayland_scanner_code_option "public-code")
+        endif()
+    endif()
+
     foreach(protocol_file IN LISTS arg_FILES)
         get_filename_component(protocol_name "${protocol_file}" NAME_WLE)
 
@@ -39,13 +58,6 @@ function(qt6_generate_wayland_protocol_client_sources target)
 
         if (NOT arg_NO_INCLUDE_CORE_ONLY)
             set(waylandscanner_extra_args "--include-core-only")
-        endif()
-
-
-        if (arg_PRIVATE_CODE)
-            set(wayland_scanner_code_option "private-code")
-        else()
-            set(wayland_scanner_code_option "public-code")
         endif()
 
         add_custom_command(
