@@ -1395,7 +1395,8 @@ public:
               if_canInsertRows<I> = true, if_compatible_row<D> = true, if_tree<I> = true>
     bool insertRow(QSpan<const int> before, D &&data)
     {
-        return insertRowImpl(before, storage.root(), std::forward<D>(data));
+        return insertRowImpl(before.back(), this->index(before.sliced(0, before.size() - 1), 0),
+                             std::forward<D>(data));
     }
 
     template <typename C, typename I = Impl,
@@ -1409,7 +1410,7 @@ public:
               if_canInsertRows<I> = true, if_compatible_row_range<C> = true, if_tree<I> = true>
     bool insertRows(QSpan<const int> before, C &&data)
     {
-        return insertRowsImpl(before.back(), this->index(before.first(before.size() - 1), 0),
+        return insertRowsImpl(before.back(), this->index(before.sliced(0, before.size() - 1), 0),
                               std::forward<C>(data));
     }
 

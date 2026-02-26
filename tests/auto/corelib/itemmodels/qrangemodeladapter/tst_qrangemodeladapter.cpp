@@ -2692,6 +2692,26 @@ void tst_QRangeModelAdapter::buildPointerTree()
         QCOMPARE(rowsInsertedSpy.at(0).value(0), adapter.index(1, 0)); // parent
         QCOMPARE(rowsInsertedSpy.at(0).value(1), 0);
         QCOMPARE(rowsInsertedSpy.at(0).value(2), 4); // five children added
+        rowsInsertedSpy.clear();
+    }
+
+    { // insert rows
+        QVERIFY(adapter.insertRow(QList<int>{0}, new tree_row("-1", "negative")));
+        QCOMPARE(rowsInsertedSpy.count(), 1);
+        rowsInsertedSpy.clear();
+        QVERIFY(!adapter.hasChildren(QList<int>{0}));
+        QVERIFY(adapter.insertRow({0, 0}, new tree_row("-1.0", "negative.null")));
+        QVERIFY(adapter.hasChildren(QList<int>{0}));
+        QCOMPARE(rowsInsertedSpy.count(), 1);
+        rowsInsertedSpy.clear();
+        QVERIFY(adapter.insertRows({0, 1}, std::vector{
+            new tree_row("-1.1", "negative.one"),
+            new tree_row("-1.2", "negative.two"),
+        }));
+        QCOMPARE(rowsInsertedSpy.count(), 1);
+        QCOMPARE(rowsInsertedSpy.at(0).value(0), adapter.index(0, 0)); // parent
+        QCOMPARE(rowsInsertedSpy.at(0).value(1), 1);
+        QCOMPARE(rowsInsertedSpy.at(0).value(2), 2);
     }
 }
 
