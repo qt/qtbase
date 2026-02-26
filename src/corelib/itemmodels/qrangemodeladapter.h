@@ -786,7 +786,8 @@ public:
                     protocol.deleteRow(oldRow);
                 oldRow = std::forward<R>(other);
                 if constexpr (protocol_traits::has_setParentRow) {
-                    protocol.setParentRow(QRangeModelDetails::refTo(oldRow), oldParent);
+                    protocol.setParentRow(QRangeModelDetails::refTo(oldRow),
+                                          QRangeModelDetails::pointerTo(oldParent));
                     if (decltype(auto) newChildren = protocol.childRows(QRangeModelDetails::refTo(oldRow));
                         QRangeModelDetails::isValid(newChildren)) {
                         impl->beginInsertRows(this->m_index, 0,
@@ -1614,24 +1615,29 @@ private:
         }
     }
 
-    template <typename P>
-    static auto setParentRow(P protocol, row_type &newRow, row_ptr parentRow)
-        -> decltype(protocol.setParentRow(std::declval<row_type&>(), std::declval<row_ptr>()))
+
+    template <typename P, typename Row>
+    static auto setParentRow(P &protocol, Row &newRow, row_ptr parentRow)
+        -> decltype(protocol.setParentRow(newRow, parentRow))
     {
         return protocol.setParentRow(newRow, parentRow);
     }
-
-    template <typename ...Args> static constexpr void setParentRow(Args &&...) {}
+    template <typename ...Args> static constexpr void setParentRow(Args &&...)
+    {
+        static_assert(!protocol_traits::has_setParentRow,
+                      "Internal error, wrong setParentRow overload called");
+    }
 
     template <typename D>
     bool insertRowImpl(int before, const QModelIndex &parent, D &&data)
     {
         return storage.implementation()->doInsertRows(before, 1, parent, [&data, this]
-                                        (range_type &range, auto parentRow, int row, int count) {
+                                        (range_type &range, auto *parentRow, int row, int count) {
             Q_UNUSED(this);
             const auto oldSize = range.size();
             auto newRow = range.emplace(QRangeModelDetails::pos(range, row), std::forward<D>(data));
-            setParentRow(storage.implementation()->protocol(), *newRow, parentRow);
+            setParentRow(storage->protocol(), QRangeModelDetails::refTo(*newRow),
+                                              QRangeModelDetails::pointerTo(parentRow));
             return range.size() == oldSize + count;
         });
     }
@@ -1655,7 +1661,7 @@ private:
     {
         bool result = false;
         result = storage->doInsertRows(before, int(std::size(data)), parent, [&data, this]
-                                        (range_type &range, auto parentRow, int row, int count){
+                                        (range_type &range, auto *parentRow, int row, int count){
             Q_UNUSED(parentRow);
             Q_UNUSED(this);
             const auto pos = QRangeModelDetails::pos(range, row);
@@ -1678,7 +1684,8 @@ private:
                 auto start = range.insert(pos, dataRange.first, dataRange.second);
                 if constexpr (protocol_traits::has_setParentRow) {
                     while (count) {
-                        setParentRow(storage->protocol(), *start, parentRow);
+                        setParentRow(storage->protocol(), QRangeModelDetails::refTo(*start),
+                                                          QRangeModelDetails::pointerTo(parentRow));
                         ++start;
                         --count;
                     }
@@ -1689,7 +1696,8 @@ private:
                 auto newRow = range.insert(pos, count, row_type{});
                 while (dataRange.first != dataRange.second) {
                     *newRow = *dataRange.first;
-                    setParentRow(storage->protocol(), *newRow, parentRow);
+                    setParentRow(storage->protocol(), QRangeModelDetails::refTo(*newRow),
+                                                      QRangeModelDetails::pointerTo(parentRow));
                     ++dataRange.first;
                     ++newRow;
                 }
