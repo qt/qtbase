@@ -1875,6 +1875,8 @@ void tst_QRangeModelAdapter::treeAccess()
     {
         auto tree = createValueTree();
         QRangeModelAdapter adapter(std::ref(tree));
+        QVERIFY(!adapter.index(QList<int>{}, 0).isValid());
+        QVERIFY(adapter.index(QList<int>{0}, 0).isValid());
         expectInvalidIndex(4); // row, column, and non-existing children
         verifyTree(adapter, tree);
         // adapter.at(0).value() = u"123"_s;
@@ -2590,6 +2592,7 @@ void tst_QRangeModelAdapter::buildValueTree()
         };
         adapter.at(0).children().assign(std::make_move_iterator(std::begin(newChildren)),
                                         std::make_move_iterator(std::end(newChildren)));
+        QVERIFY(adapter.at(0).children().index({}, 0).isValid());
         QCOMPARE(adapter.rowCount(0), 2);
         QCOMPARE(rowsRemovedSpy.count(), 1);
         QCOMPARE(rowsInsertedSpy.count(), 1);
