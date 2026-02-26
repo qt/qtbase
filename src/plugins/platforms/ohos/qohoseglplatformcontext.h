@@ -28,6 +28,7 @@ public:
 
 private:
     EGLSurface eglSurfaceForPlatformSurface(QPlatformSurface *surface) final;
+    bool m_isDuringSwappingBuffers;
 };
 
 QT_END_NAMESPACE

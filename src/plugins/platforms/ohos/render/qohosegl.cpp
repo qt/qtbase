@@ -85,8 +85,11 @@ QOhosOptional<QSize> QOhosEGLSurface::currentSurfaceSize() const
 }
 
 EGLSurface QOhosEGLSurface::tryGetOrCreateEGLWindowSurface(
-    EGLDisplay display, EGLConfig config, SurfaceFlags surfaceFlags)
+    EGLDisplay display, EGLConfig config, bool swappingBuffers, SurfaceFlags surfaceFlags)
 {
+    if (swappingBuffers)
+       return m_ownEglSurface;
+
     bool needsRebuild = m_ownEglSurface == EGL_NO_SURFACE
         || m_refCurrentNativeWindow != m_refTargetNativeWindow
         || m_refCurrentDisplay != display

@@ -13,12 +13,15 @@ QT_BEGIN_NAMESPACE
 
 QOhosEGLPlatformContext::QOhosEGLPlatformContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display)
     : QEGLPlatformContext(format, share, display, nullptr)
+    , m_isDuringSwappingBuffers(false)
 {
 }
 
 void QOhosEGLPlatformContext::swapBuffers(QPlatformSurface *surface)
 {
+    m_isDuringSwappingBuffers = true;
     QEGLPlatformContext::swapBuffers(surface);
+    m_isDuringSwappingBuffers = false;
 
     auto *ohosWindow = static_cast<QOhosFloatingWindow *>(surface);
     auto *ohosView = ohosWindow != nullptr
@@ -37,7 +40,8 @@ EGLSurface QOhosEGLPlatformContext::eglSurfaceForPlatformSurface(QPlatformSurfac
     auto *ohosWindowSurface = ohosWindow->ownedSurfaceOrNull();
 
     return ohosWindowSurface != nullptr
-        ? ohosWindowSurface->tryGetOrCreateEGLWindowSurface(eglDisplay(), eglConfig())
+        ? ohosWindowSurface->tryGetOrCreateEGLWindowSurface(
+            eglDisplay(), eglConfig(), m_isDuringSwappingBuffers)
         : EGL_NO_SURFACE;
 }
 
