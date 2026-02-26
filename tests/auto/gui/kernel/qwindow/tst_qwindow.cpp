@@ -113,6 +113,7 @@ private slots:
     void childGeometryAfterReparent();
     void childEvents();
     void parentEvents();
+    void expandedClientAreaSize();
 
 private:
     QPoint m_availableTopLeft;
@@ -3569,6 +3570,62 @@ void tst_QWindow::parentEvents()
     tester.nextExpectedParent = nullptr;
     child.setParent(nullptr);
     if (QTest::currentTestFailed()) return;
+}
+
+void tst_QWindow::expandedClientAreaSize()
+{
+    const auto *platformIntegration = QGuiApplicationPrivate::platformIntegration();
+    if (!platformIntegration->hasCapability(QPlatformIntegration::NonFullScreenWindows))
+        QSKIP("This platform does not support non-fullscreen windows");
+
+#if !defined(Q_OS_MACOS)
+    QSKIP("This platform does not implement stable frame size on Qt::ExpandedClientAreaHint yet");
+#endif
+
+    ColoredWindow firstWindow(QColorConstants::Svg::lightsteelblue);
+    firstWindow.resize(300, 300);
+    firstWindow.setFramePosition(100, 100);
+    firstWindow.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&firstWindow));
+
+    const auto expandedHints = Qt::ExpandedClientAreaHint | Qt::NoTitleBarBackgroundHint;
+
+    ColoredWindow secondWindow(QColorConstants::Svg::palegoldenrod);
+    secondWindow.resize(300, 300);
+    secondWindow.setFramePosition(450, 100);
+    secondWindow.setFlags(expandedHints);
+    secondWindow.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&secondWindow));
+
+    // The frame position of an expanded window should match that of a non-expanded one
+    QCOMPARE(firstWindow.frameGeometry().top(), secondWindow.frameGeometry().top());
+    // The size of an expanded window should expand to include the frame margins
+    QCOMPARE(firstWindow.frameGeometry().size(), secondWindow.frameGeometry().size());
+
+    // Removing the expanded flag should result in a stable frame geometry
+    secondWindow.setFlags(secondWindow.flags() & ~expandedHints);
+    QCOMPARE(firstWindow.frameGeometry().top(), secondWindow.frameGeometry().top());
+    QCOMPARE(firstWindow.frameGeometry().size(), secondWindow.frameGeometry().size());
+
+    // Adding the expanded flag should result in a stable frame geometry
+    firstWindow.setFlags(firstWindow.flags() | expandedHints);
+    QCOMPARE(firstWindow.frameGeometry().top(), secondWindow.frameGeometry().top());
+    QCOMPARE(firstWindow.frameGeometry().size(), secondWindow.frameGeometry().size());
+
+    // Recreating a window with expanded client area should result in stable frame geometry
+    firstWindow.destroy();
+    firstWindow.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&firstWindow));
+    QCOMPARE(firstWindow.frameGeometry().top(), secondWindow.frameGeometry().top());
+    QCOMPARE(firstWindow.frameGeometry().size(), secondWindow.frameGeometry().size());
+
+    // Recreating a window without expanded client area should result in stable frame geometry
+    firstWindow.destroy();
+    firstWindow.setFlags(firstWindow.flags() & ~expandedHints);
+    firstWindow.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&firstWindow));
+    QCOMPARE(firstWindow.frameGeometry().top(), secondWindow.frameGeometry().top());
+    QCOMPARE(firstWindow.frameGeometry().size(), secondWindow.frameGeometry().size());
 }
 
 #include <tst_qwindow.moc>

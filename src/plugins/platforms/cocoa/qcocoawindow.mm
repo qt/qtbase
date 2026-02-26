@@ -170,6 +170,15 @@ void QCocoaWindow::initialize()
             recreateWindowIfNeeded();
             setGeometry(initialGeometry);
         } else {
+            if (window()->flags() & Qt::ExpandedClientAreaHint) {
+                // Make sure the expanded client area hint actually expands the
+                // client size to incorporate the frame size, had it been there.
+                QRect frameGeometryWithFrame = QCocoaScreen::mapFromNative(
+                    [NSWindow frameRectForContentRect:QCocoaScreen::mapToNative(initialGeometry)
+                        styleMask:windowStyleMask(window()->flags() & ~Qt::ExpandedClientAreaHint)]).toRect();
+                initialGeometry.setSize(frameGeometryWithFrame.size());
+            }
+
             // If we're a top level window we need to create the NSWindow
             // first, so that we know the frame margins of the window. But
             // since the geometry will be applied during setContentView we
@@ -211,6 +220,18 @@ QCocoaWindow::~QCocoaWindow()
     qCDebug(lcQpaWindow) << "QCocoaWindow::~QCocoaWindow" << window();
 
     QMacAutoReleasePool pool;
+
+    if (window()->flags() & Qt::ExpandedClientAreaHint) {
+        // We expanded the client area during initialization, so we need
+        // to adjust the size back now, so that recreating the window again
+        // will not keep growing it as we re-expand the size.
+        auto readjustedGeometry = geometry();
+        QRect contentRectWithFrame = QCocoaScreen::mapFromNative(
+            [NSWindow contentRectForFrameRect:QCocoaScreen::mapToNative(geometry())
+                styleMask:windowStyleMask(window()->flags() & ~Qt::ExpandedClientAreaHint)]).toRect();
+        readjustedGeometry.setSize(contentRectWithFrame.size());
+        setGeometry(readjustedGeometry, QWindowPrivate::PositionPolicy::WindowFrameExclusive);
+    }
 
     // Remove from superview as long as we're not a foreign
     // window used only to contain Qt windows (ie no parent)
@@ -786,11 +807,25 @@ void QCocoaWindow::setWindowFlags(Qt::WindowFlags flags)
     // depends on setWindowFlags, causing a recursion, so we need to
     // clean up that entanglement first.
 
-    // While setting style mask we can have handleGeometryChange calls on a content
-    // view with null geometry, reporting an invalid coordinates as a result.
-    m_inSetStyleMask = true;
-    m_view.window.styleMask = windowStyleMask(flags);
-    m_inSetStyleMask = false;
+    {
+        // While setting style mask we can have handleGeometryChange calls on a content
+        // view with null geometry, reporting an invalid coordinates as a result.
+        QScopedValueRollback<bool> geometryChangeBlocker(m_inSetStyleMask, true);
+
+        const auto newMask = windowStyleMask(flags);
+        const bool expandedClientAreaChanged = (
+            (newMask & NSWindowStyleMaskFullSizeContentView) !=
+            (m_view.window.styleMask & NSWindowStyleMaskFullSizeContentView));
+        const auto frameGeometry = window()->frameGeometry();
+
+        m_view.window.styleMask = newMask;
+
+        if (expandedClientAreaChanged) {
+            // Maintain stable frame geometry when toggling expanded client area
+            setGeometry(frameGeometry.marginsRemoved(frameMargins()),
+                QWindowPrivate::PositionPolicy::WindowFrameExclusive);
+        }
+    }
 
     Qt::WindowType type = static_cast<Qt::WindowType>(int(flags & Qt::WindowType_Mask));
     if ((type & Qt::Popup) != Qt::Popup && (type & Qt::Dialog) != Qt::Dialog) {
