@@ -191,14 +191,14 @@ void QOhosSurface::setNativeWindowSurface(
     }
 }
 
-EGLSurface QOhosSurface::tryGetOrCreateEGLWindowSurface(EGLDisplay display, EGLConfig config)
+EGLSurface QOhosSurface::tryGetOrCreateEGLWindowSurface(EGLDisplay display, EGLConfig config, bool swappingBuffers)
 {
     if (!m_eglSurface) {
         m_eglSurface = std::make_unique<QOhosEGLSurface>();
         m_eglSurface->setNativeWindowSurface(
             reinterpret_cast<::EGLNativeWindowType>(m_nativeWindow), makeEmptyQOhosOptional());
     }
-    return m_eglSurface->tryGetOrCreateEGLWindowSurface(display, config, {});
+    return m_eglSurface->tryGetOrCreateEGLWindowSurface(display, config, swappingBuffers, {});
 }
 
 QOhosOptional<QSize> QOhosSurface::surfaceResolution() const

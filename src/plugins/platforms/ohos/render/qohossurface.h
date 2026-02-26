@@ -34,7 +34,7 @@ public:
 
     ::OHNativeWindow *nativeWindow() const;
     void setNativeWindowSurface(::OHNativeWindow *nativeWindow, const QOhosOptional<QSize> &optSurfaceSize);
-    EGLSurface tryGetOrCreateEGLWindowSurface(EGLDisplay display, EGLConfig config);
+    EGLSurface tryGetOrCreateEGLWindowSurface(EGLDisplay display, EGLConfig config, bool swappingBuffers);
     QOhosOptional<QSize> surfaceResolution() const;
 
     void paintOnNativeWindowSurface(

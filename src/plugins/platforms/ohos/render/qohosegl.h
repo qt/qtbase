@@ -32,7 +32,8 @@ public:
 
     ~QOhosEGLSurface();
 
-    EGLSurface tryGetOrCreateEGLWindowSurface(EGLDisplay display, EGLConfig config, SurfaceFlags flags = {});
+    EGLSurface tryGetOrCreateEGLWindowSurface(
+        EGLDisplay display, EGLConfig config, bool swappingBuffers, SurfaceFlags flags = {});
     void setNativeWindowSurface(
         EGLNativeWindowType nativeWindow, const QOhosOptional<QSize> &optSurfaceSize);
     SurfaceFlags currentSurfaceFlags() const;
