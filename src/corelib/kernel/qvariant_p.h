@@ -99,7 +99,7 @@ QVariant::Private::Private(std::piecewise_construct_t, const T &t)
         new (data.data) T(t);
     } else {
         static_assert(!isNothrowQVariantConstructible); // we allocate memory, even if T doesn't
-        data.shared = customConstructShared(sizeof(T), alignof(T), [=](void *where) {
+        data.shared = customConstructShared(sizeof(T), alignof(T), [&t](void *where) {
             new (where) T(t);
         });
     }
