@@ -514,6 +514,22 @@ function(_qt_internal_sbom_get_external_reference_search_paths out_var)
         endif()
     endif()
 
+    get_cmake_property(project_search_paths _qt_internal_sbom_external_document_search_paths)
+    if(project_search_paths)
+        list(APPEND search_paths ${project_search_paths})
+    endif()
+
+    get_cmake_property(search_in_cmake_paths
+        _qt_internal_sbom_auto_search_external_documents_in_paths)
+    if(search_in_cmake_paths)
+        if(CMAKE_PREFIX_PATH)
+            list(APPEND search_paths ${CMAKE_PREFIX_PATH})
+        endif()
+        if(CMAKE_FRAMEWORK_PATH)
+            list(APPEND search_paths ${CMAKE_FRAMEWORK_PATH})
+        endif()
+    endif()
+
     # Always append the install time install prefix.
     # The variable is escaped, so it is evaluated during cmake install time, so that the value
     # can be overridden with cmake --install . --prefix <path>.

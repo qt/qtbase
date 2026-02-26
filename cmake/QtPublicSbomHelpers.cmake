@@ -31,6 +31,7 @@ function(_qt_internal_sbom_begin_project)
         USE_GIT_VERSION
         __QT_INTERNAL_HANDLE_QT_REPO
         NO_AUTO_DOCUMENT_NAMESPACE_INFIX
+        NO_AUTO_SEARCH_EXTERNAL_DOCUMENTS_IN_CMAKE_PATHS
     )
     set(single_args
         INSTALL_PREFIX
@@ -52,6 +53,7 @@ function(_qt_internal_sbom_begin_project)
     set(multi_args
         COPYRIGHTS
         LICENSE_DIR_PATHS
+        EXTERNAL_DOCUMENT_SEARCH_PATHS
     )
 
     cmake_parse_arguments(PARSE_ARGV 0 arg "${opt_args}" "${single_args}" "${multi_args}")
@@ -122,6 +124,20 @@ function(_qt_internal_sbom_begin_project)
             set(arg_DOCUMENT_NAMESPACE_INFIX "-${document_namespace_infix}")
         endif()
     endif()
+
+    if(arg_EXTERNAL_DOCUMENT_SEARCH_PATHS)
+        set_property(GLOBAL APPEND PROPERTY _qt_internal_sbom_external_document_search_paths
+            ${arg_EXTERNAL_DOCUMENT_SEARCH_PATHS})
+    endif()
+
+    if(arg_NO_AUTO_SEARCH_EXTERNAL_DOCUMENTS_IN_CMAKE_PATHS)
+        set(auto_search_external_documents_in_cmake_paths FALSE)
+    else()
+        set(auto_search_external_documents_in_cmake_paths TRUE)
+    endif()
+    set_property(GLOBAL PROPERTY
+        _qt_internal_sbom_auto_search_external_documents_in_paths
+        "${auto_search_external_documents_in_cmake_paths}")
 
     if(arg_DOCUMENT_NAMESPACE)
         set(repo_spdx_namespace "${arg_DOCUMENT_NAMESPACE}")
@@ -802,6 +818,8 @@ function(_qt_internal_sbom_end_project)
     endforeach()
 
     set_property(GLOBAL PROPERTY _qt_internal_sbom_repo_begin_called FALSE)
+    set_property(GLOBAL PROPERTY _qt_internal_sbom_external_document_search_paths "")
+    set_property(GLOBAL PROPERTY _qt_internal_sbom_auto_search_external_documents_in_paths "")
 
     # Add configure-time dependency on project attribution files.
     get_property(attribution_files GLOBAL PROPERTY _qt_internal_project_attribution_files)
