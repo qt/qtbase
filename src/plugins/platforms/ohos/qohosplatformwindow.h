@@ -129,6 +129,7 @@ public:
     bool setKeyboardGrabEnabled(bool grab) override;
 
     QOhosOptional<QOhosDisplayInfo::JsDisplayId> tryTakeLastRequestedDisplayId();
+    QRect lastRequestedWindowFrameGeometry() const;
 
 protected:
     QOhosPlatformScreen *platformScreen() const;
@@ -170,6 +171,7 @@ private:
     QOhosOptional<QOhosDisplayInfo::JsDisplayId> m_lastRequestedDisplayId;
     QOhosPropertiesStore m_propertiesStore;
     bool m_exposed = false;
+    QRect m_lastRequestedWindowFrameGeometry;
 };
 
 template<typename T, const QOhosPropertyDescriptor<T> *propertyPtr>
