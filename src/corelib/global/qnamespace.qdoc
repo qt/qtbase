@@ -831,6 +831,18 @@
 */
 
 /*!
+    \enum Qt::ContrastPreference
+    \since 6.10
+
+    Represents the user's preferred contrast setting.
+    Styles can honor this setting by increasing the contrast of foreground and background colors,
+    as well as giving widgets and controls thicker borders.
+
+    \value NoPreference No specific preferences.
+    \value HighContrast The user prefers the application to be in high contrast.
+*/
+
+/*!
     \enum Qt::ImageConversionFlag
 
     The options marked "(default)" are set if no other values from
