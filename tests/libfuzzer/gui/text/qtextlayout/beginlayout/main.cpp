@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QGuiApplication>
+#include <QByteArray>
 #include <QTextLayout>
 
 extern "C" int LLVMFuzzerTestOneInput(const char *Data, size_t Size) {

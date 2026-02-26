@@ -4,6 +4,7 @@
 #include <cstdlib>
 
 #include <QGuiApplication>
+#include <QByteArray>
 #include <QColor>
 #include <QColorSpace>
 #include <QImage>

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QDateTime>
+#include <QString>
 
 // Enable to report the currently used format, e.g. when reproducing issues
 // #define LOG_FORMAT
