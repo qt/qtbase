@@ -1029,6 +1029,7 @@ macro(_qt_internal_get_sbom_add_target_common_options opt_args single_args multi
         DEFAULT_SBOM_ENTITY_TYPE
         SBOM_ENTITY_TYPE
         PACKAGE_VERSION
+        PACKAGE_SUMMARY
         FRIENDLY_PACKAGE_NAME
         SUPPLIER
         CPE_VENDOR
@@ -1573,6 +1574,10 @@ function(_qt_internal_sbom_add_target target)
     endif()
     if(spdx_relationships)
         list(APPEND project_package_options_spdx RELATIONSHIPS ${spdx_relationships})
+    endif()
+
+    if(arg_PACKAGE_SUMMARY)
+        list(APPEND project_package_options_spdx PACKAGE_SUMMARY "${arg_PACKAGE_SUMMARY}")
     endif()
 
     if(QT_SBOM_GENERATE_SPDX_V2)
