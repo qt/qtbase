@@ -197,7 +197,7 @@ QRect tryCorrectFrameGeometry(QOhosPlatformWindow *platformWindow, QPlatformScre
     auto availableArea = targetScreen->availableGeometry();
 
     auto *qWindow = platformWindow->window();
-    const auto frameGeometry = QHighDpi::toNativePixels(qWindow->frameGeometry(), targetScreen);
+    const auto frameGeometry = platformWindow->windowFrameGeometry();
     auto newGeometry = frameGeometry;
 
     auto windowType = qWindow->type();
@@ -209,7 +209,7 @@ QRect tryCorrectFrameGeometry(QOhosPlatformWindow *platformWindow, QPlatformScre
         ? makeQOhosOptional(
             QOhosPlatformWindow::fromQWindow(qWindow->transientParent())->windowGeometry())
         : makeEmptyQOhosOptional();
-    if (optTransientParentWindowGeometry == QHighDpi::toNativePixels(qWindow->geometry(), targetScreen))
+    if (optTransientParentWindowGeometry == platformWindow->windowGeometry())
         return newGeometry;
 
     if (!availableArea.isEmpty()) {
