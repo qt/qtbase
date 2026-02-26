@@ -1864,6 +1864,10 @@ void QWindowsFontEngineDirectWrite::initFontInfo(const QFontDef &request,
     IDWriteFontFace3 *face3 = nullptr;
     if (SUCCEEDED(m_directWriteFontFace->QueryInterface(__uuidof(IDWriteFontFace3),
                                                         reinterpret_cast<void **>(&face3)))) {
+
+        fontDef.weight = QWindowsDirectWriteFontDatabase::fromDirectWriteWeight(face3->GetWeight());
+        fontDef.style = QWindowsDirectWriteFontDatabase::fromDirectWriteStyle(face3->GetStyle());
+
         IDWriteLocalizedStrings *names;
         if (SUCCEEDED(face3->GetFaceNames(&names))) {
             wchar_t englishLocale[] = L"en-us";

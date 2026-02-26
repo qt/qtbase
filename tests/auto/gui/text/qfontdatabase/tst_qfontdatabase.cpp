@@ -74,6 +74,8 @@ private slots:
     void addApplicationFontFallback();
     void addApplicationEmojiFontFamily();
 
+    void propertiesForStyleName();
+
 private:
     QString m_ledFont;
     QString m_testFont;
@@ -866,6 +868,28 @@ void tst_QFontDatabase::addApplicationEmojiFontFamily()
         QCOMPARE(glyphIndexes.at(0), 238);
     }
 
+}
+
+void tst_QFontDatabase::propertiesForStyleName()
+{
+    const QString family = QStringLiteral("Arial");
+    const QString style = QStringLiteral("Bold Italic");
+
+    if (!QFontDatabase::families().contains(family)
+        || !QFontDatabase::styles(family).contains(style)) {
+        QSKIP("This test requires Arial Bold Italic to be installed on the system.");
+    }
+
+    QFont f(family);
+    f.setStyleName(style);
+
+    QFontInfo fi(f);
+    QCOMPARE(fi.family(), family);
+    QCOMPARE(fi.styleName(), style);
+    QCOMPARE(fi.weight(), QFont::Bold);
+    QCOMPARE(fi.style(), QFont::StyleItalic);
+    QCOMPARE(fi.italic(), true);
+    QCOMPARE(fi.bold(), true);
 }
 
 QTEST_MAIN(tst_QFontDatabase)

@@ -72,7 +72,7 @@ QString QWindowsDirectWriteFontDatabase::localeString(IDWriteLocalizedStrings *n
     return QString();
 }
 
-static QFont::Stretch fromDirectWriteStretch(DWRITE_FONT_STRETCH stretch)
+QFont::Stretch QWindowsDirectWriteFontDatabase::fromDirectWriteStretch(DWRITE_FONT_STRETCH stretch)
 {
     switch (stretch) {
     case DWRITE_FONT_STRETCH_ULTRA_CONDENSED: return QFont::UltraCondensed;
@@ -88,12 +88,12 @@ static QFont::Stretch fromDirectWriteStretch(DWRITE_FONT_STRETCH stretch)
     }
 }
 
-static QFont::Weight fromDirectWriteWeight(DWRITE_FONT_WEIGHT weight)
+QFont::Weight QWindowsDirectWriteFontDatabase::fromDirectWriteWeight(DWRITE_FONT_WEIGHT weight)
 {
     return static_cast<QFont::Weight>(weight);
 }
 
-static QFont::Style fromDirectWriteStyle(DWRITE_FONT_STYLE style)
+QFont::Style QWindowsDirectWriteFontDatabase::fromDirectWriteStyle(DWRITE_FONT_STYLE style)
 {
     switch (style) {
     case DWRITE_FONT_STYLE_NORMAL: return QFont::StyleNormal;
