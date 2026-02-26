@@ -755,6 +755,7 @@ function(_qt_internal_sbom_generate_add_package)
     )
     set(single_args
         PACKAGE
+        PACKAGE_SUMMARY
         VERSION
         LICENSE_DECLARED
         LICENSE_CONCLUDED
@@ -830,6 +831,12 @@ PackageCopyrightText: ${arg_COPYRIGHT}"
     else()
         set(fields "${fields}
 PackageCopyrightText: NOASSERTION"
+        )
+    endif()
+
+    if(arg_PACKAGE_SUMMARY)
+        set(fields "${fields}
+PackageSummary: <text>${arg_PACKAGE_SUMMARY}</text>"
         )
     endif()
 
