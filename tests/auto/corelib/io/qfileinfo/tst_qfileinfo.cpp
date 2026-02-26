@@ -1385,7 +1385,10 @@ void tst_QFileInfo::fakeFileTimes_data()
 
     // This is 2^{31} seconds before 1970-01-01 15:14:8,
     // i.e. shortly after the start of time_t, in any time-zone:
+#ifndef Q_OS_QNX  // qnx6 filesystem stores timestamps as 32-bit unsigned;
+                  // pre-epoch values overflow silently to ~2038
     QTest::newRow("early") << QDateTime(QDate(1901, 12, 14), QTime(12, 0));
+#endif
 
     // QTBUG-12006 claims XP handled this (2010-Mar-26 8:46:10) wrong due to an MS API bug:
     QTest::newRow("XP-bug") << QDateTime::fromSecsSinceEpoch(1269593170);
