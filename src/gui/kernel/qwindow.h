@@ -201,6 +201,8 @@ public:
 
     QPoint framePosition() const;
     void setFramePosition(const QPoint &point);
+    void setFramePosition(int x, int y)
+    { setFramePosition(QPoint(x, y)); }
 
     QMargins safeAreaMargins() const;
 

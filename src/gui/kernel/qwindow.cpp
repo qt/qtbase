@@ -1993,6 +1993,16 @@ void QWindow::setFramePosition(const QPoint &point)
 }
 
 /*!
+    \fn void QWindow::setFramePosition(int x, int y)
+    \brief Sets the upper left position of the window, including its window frame, to \a x, \a y
+
+    The position is in relation to the virtualGeometry() of its screen.
+
+    \since 6.12
+    \sa setGeometry(), frameGeometry()
+*/
+
+/*!
     Returns the safe area margins of the window.
 
     The safe area represents the part of the window where content
