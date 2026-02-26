@@ -1143,7 +1143,6 @@ public:
     template <typename I = Impl, if_tree<I> = true>
     QModelIndex index(QSpan<const int> path, int col) const
     {
-        Q_PRE(path.size());
         QModelIndex result = storage.root();
         auto count = path.size();
         for (const int r : path) {
