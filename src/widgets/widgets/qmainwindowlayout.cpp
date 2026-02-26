@@ -3119,6 +3119,7 @@ void QMainWindowLayout::hover(QLayoutItem *hoverTarget,
             auto *groupWindow = qobject_cast<QDockWidgetGroupWindow *>(w);
             Q_ASSERT(groupWindow);
             if (groupWindow->hover(hoverTarget, groupWindow->mapFromGlobal(mousePos))) {
+                savedState.clear();
                 setCurrentHoveredFloat(groupWindow);
                 applyState(layoutState); // update the tabbars
             }
