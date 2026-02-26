@@ -56,8 +56,10 @@ void QWaylandSurface::handleScreenRemoved(QScreen *qScreen)
 
 void QWaylandSurface::surface_enter(wl_output *output)
 {
-    auto addedScreen = QWaylandScreen::fromWlOutput(output);
+    if (!output)
+        return;
 
+    auto addedScreen = QWaylandScreen::fromWlOutput(output);
     if (!addedScreen)
         return;
 
@@ -76,8 +78,10 @@ void QWaylandSurface::surface_enter(wl_output *output)
 
 void QWaylandSurface::surface_leave(wl_output *output)
 {
-    auto *removedScreen = QWaylandScreen::fromWlOutput(output);
+    if (!output)
+        return;
 
+    auto *removedScreen = QWaylandScreen::fromWlOutput(output);
     if (!removedScreen)
         return;
 
