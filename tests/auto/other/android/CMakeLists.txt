@@ -6,6 +6,6 @@ add_subdirectory(package_source_dir)
 
 if(QT_USE_ANDROID_MODERN_BUNDLE)
     add_subdirectory(dynamic_feature)
-else()
+elseif(QT_BUILD_STANDALONE_TESTS)
     add_subdirectory(deployment_settings)
 endif()
