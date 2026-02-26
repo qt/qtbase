@@ -277,8 +277,8 @@ function(_qt_internal_android_prepare_gradle_build target)
     _qt_internal_android_copy_stdlib(${target} "${deployment_dir}")
     _qt_internal_android_copy_extra_libs(${target} "${deployment_dir}")
     _qt_internal_android_copy_extra_plugins(${target} "${deployment_dir}")
-    _qt_internal_android_copy_qt_dependencies(${target} "${deployment_dir}")
     _qt_internal_android_copy_qml_dependencies(${target} "${deployment_dir}")
+    _qt_internal_android_copy_qt_dependencies(${target} "${deployment_dir}")
     _qt_internal_android_generate_libs_xml(${target} "${deployment_dir}")
 
     _qt_internal_android_generate_bundle_gradle_properties(${target})
@@ -1414,6 +1414,10 @@ function(_qt_internal_android_copy_qt_dependencies target deployment_dir)
     get_target_property(no_deploy_qt_libs ${target} QT_ANDROID_NO_DEPLOY_QT_LIBS)
 
     _qt_internal_android_collect_qt_modules(${target} qt_modules)
+    _qt_internal_android_get_qt_modules_from_qml_plugins(${target} qml_plugin_qt_modules)
+    list(APPEND qt_modules ${qml_plugin_qt_modules})
+    list(REMOVE_DUPLICATES qt_modules)
+
     foreach(module IN LISTS qt_modules)
         if(NOT no_deploy_qt_libs)
             set(module_dst "${libs_abi_dir}/$<TARGET_FILE_NAME:${module}>")
@@ -2013,11 +2017,27 @@ function(_qt_internal_android_copy_qml_plugins_outputs target deployment_dir qml
                     VERBATIM
                 )
                 list(APPEND plugin_copy_outputs "${need_lib_dst}")
+
+                # Map libQt6Foo_<abi>.so -> Qt6::Foo and record for later XML dependency processing.
+                string(REGEX REPLACE "_${CMAKE_ANDROID_ARCH_ABI}$" "" module "${needed_lib_base}")
+                string(REGEX REPLACE "^Qt([0-9]+)" "Qt\\1::" module_target "${module}")
+                if(TARGET "${module_target}")
+                    set_property(TARGET ${target} APPEND PROPERTY
+                        _qt_android_qt_modules_from_qml_plugins "${module_target}")
+                endif()
             endif()
         endforeach()
     endwhile()
 
     set(${out_outputs} "${plugin_copy_outputs}" PARENT_SCOPE)
+endfunction()
+
+function(_qt_internal_android_get_qt_modules_from_qml_plugins target out_qt_modules)
+    get_target_property(modules ${target} _qt_android_qt_modules_from_qml_plugins)
+    if(NOT modules OR modules STREQUAL "_qt_android_qt_modules_from_qml_plugins-NOTFOUND")
+        set(modules "")
+    endif()
+    set(${out_qt_modules} "${modules}" PARENT_SCOPE)
 endfunction()
 
 function(_qt_internal_android_copy_qml_dependencies target deployment_dir)
