@@ -926,22 +926,29 @@ QVariant::QVariant(QMetaType type, const void *copy)
 {
 }
 
-QVariant::QVariant(int val) noexcept : d(std::piecewise_construct_t{}, val) {}
-QVariant::QVariant(uint val) noexcept : d(std::piecewise_construct_t{}, val) {}
-QVariant::QVariant(qlonglong val) noexcept : d(std::piecewise_construct_t{}, val) {}
-QVariant::QVariant(qulonglong val) noexcept : d(std::piecewise_construct_t{}, val) {}
-QVariant::QVariant(bool val) noexcept : d(std::piecewise_construct_t{}, val) {}
-QVariant::QVariant(double val) noexcept : d(std::piecewise_construct_t{}, val) {}
-QVariant::QVariant(float val) noexcept : d(std::piecewise_construct_t{}, val) {}
+#define MAKE_CTOR_BY_VALUE(...) \
+    QVariant::QVariant(__VA_ARGS__ val) \
+        noexcept(QVariant::Private::CanUseInternalSpace<__VA_ARGS__>) \
+        : d{std::in_place, std::move(val)} {} \
+    static_assert(std::is_nothrow_copy_constructible_v<__VA_ARGS__>) \
+    /* end */
+
+MAKE_CTOR_BY_VALUE(int);
+MAKE_CTOR_BY_VALUE(uint);
+MAKE_CTOR_BY_VALUE(qlonglong);
+MAKE_CTOR_BY_VALUE(qulonglong);
+MAKE_CTOR_BY_VALUE(bool);
+MAKE_CTOR_BY_VALUE(double);
+MAKE_CTOR_BY_VALUE(float);
 
 QVariant::QVariant(const QByteArray &val) noexcept : d(std::piecewise_construct_t{}, val) {}
 QVariant::QVariant(const QBitArray &val) noexcept : d(std::piecewise_construct_t{}, val) {}
 QVariant::QVariant(const QString &val) noexcept : d(std::piecewise_construct_t{}, val) {}
-QVariant::QVariant(QChar val) noexcept : d(std::piecewise_construct_t{}, val) {}
+MAKE_CTOR_BY_VALUE(QChar);
 QVariant::QVariant(const QStringList &val) noexcept : d(std::piecewise_construct_t{}, val) {}
 
-QVariant::QVariant(QDate val) noexcept : d(std::piecewise_construct_t{}, val) {}
-QVariant::QVariant(QTime val) noexcept : d(std::piecewise_construct_t{}, val) {}
+MAKE_CTOR_BY_VALUE(QDate);
+MAKE_CTOR_BY_VALUE(QTime);
 QVariant::QVariant(const QDateTime &val) noexcept : d(std::piecewise_construct_t{}, val) {}
 
 QVariant::QVariant(const QList<QVariant> &list) noexcept : d(std::piecewise_construct_t{}, list) {}
@@ -953,28 +960,20 @@ QVariant::QVariant(QLatin1StringView val) : QVariant(QString(val)) {}
 #if QT_CONFIG(easingcurve)
 QVariant::QVariant(const QEasingCurve &val) : d(std::piecewise_construct_t{}, val) {}
 #endif
-QVariant::QVariant(QPoint pt) noexcept
-    : d(std::piecewise_construct_t{}, pt) {}
-QVariant::QVariant(QPointF pt) noexcept(Private::FitsInInternalSize<sizeof(qreal) * 2>)
-    : d(std::piecewise_construct_t{}, pt) {}
-QVariant::QVariant(QRect r) noexcept(Private::FitsInInternalSize<sizeof(int) * 4>)
-    : d(std::piecewise_construct_t{}, r) {}
-QVariant::QVariant(QRectF r) noexcept(Private::FitsInInternalSize<sizeof(qreal) * 4>)
-    : d(std::piecewise_construct_t{}, r) {}
-QVariant::QVariant(QLine l) noexcept(Private::FitsInInternalSize<sizeof(int) * 4>)
-    : d(std::piecewise_construct_t{}, l) {}
-QVariant::QVariant(QLineF l) noexcept(Private::FitsInInternalSize<sizeof(qreal) * 4>)
-    : d(std::piecewise_construct_t{}, l) {}
-QVariant::QVariant(QSize s) noexcept
-    : d(std::piecewise_construct_t{}, s) {}
-QVariant::QVariant(QSizeF s) noexcept(Private::FitsInInternalSize<sizeof(qreal) * 2>)
-    : d(std::piecewise_construct_t{}, s) {}
+MAKE_CTOR_BY_VALUE(QPoint);
+MAKE_CTOR_BY_VALUE(QPointF);
+MAKE_CTOR_BY_VALUE(QRect);
+MAKE_CTOR_BY_VALUE(QRectF);
+MAKE_CTOR_BY_VALUE(QLine);
+MAKE_CTOR_BY_VALUE(QLineF);
+MAKE_CTOR_BY_VALUE(QSize);
+MAKE_CTOR_BY_VALUE(QSizeF);
 QVariant::QVariant(const QUrl &u) noexcept : d(std::piecewise_construct_t{}, u) {}
 QVariant::QVariant(const QLocale &l) noexcept : d(std::piecewise_construct_t{}, l) {}
 #if QT_CONFIG(regularexpression)
 QVariant::QVariant(const QRegularExpression &re) noexcept : d(std::piecewise_construct_t{}, re) {}
 #endif // QT_CONFIG(regularexpression)
-QVariant::QVariant(QUuid uuid) noexcept(Private::FitsInInternalSize<16>) : d(std::piecewise_construct_t{}, uuid) {}
+MAKE_CTOR_BY_VALUE(QUuid);
 QVariant::QVariant(const QJsonValue &jsonValue) noexcept(Private::FitsInInternalSize<sizeof(CborValueStandIn)>)
     : d(std::piecewise_construct_t{}, jsonValue)
 { static_assert(sizeof(CborValueStandIn) == sizeof(QJsonValue)); }
@@ -986,6 +985,8 @@ QVariant::QVariant(const QModelIndex &modelIndex) noexcept(Private::FitsInIntern
     : d(std::piecewise_construct_t{}, modelIndex) {}
 QVariant::QVariant(const QPersistentModelIndex &modelIndex) : d(std::piecewise_construct_t{}, modelIndex) {}
 #endif
+
+#undef MAKE_CTOR_BY_VALUE
 
 /*! \fn QVariant::Type QVariant::type() const
     \deprecated [6.0] Use typeId() or metaType() instead.
