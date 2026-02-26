@@ -80,27 +80,29 @@ inline QVariant::Private::Private(const QtPrivate::QMetaTypeInterface *iface) no
     Q_ASSERT((quintptr(iface) & 0x3) == 0);
 }
 
-template <typename T> inline
-QVariant::Private::Private(std::piecewise_construct_t, const T &t)
-    : is_shared(!CanUseInternalSpace<T>), is_null(std::is_same_v<T, std::nullptr_t>)
+template <typename TT>
+QVariant::Private::Private(std::in_place_t, TT &&t)
+    : is_shared{!CanUseInternalSpace<q20::remove_cvref_t<TT>>},
+      is_null{std::is_null_pointer_v<std::remove_reference_t<TT>>}
 {
+    using T = q20::remove_cvref_t<TT>;
     // confirm noexceptness
-    static constexpr bool isNothrowQVariantConstructible = noexcept(QVariant(t));
-    static constexpr bool isNothrowCopyConstructible = std::is_nothrow_copy_constructible_v<T>;
-    static constexpr bool isNothrowCopyAssignable = std::is_nothrow_copy_assignable_v<T>;
+    constexpr bool isNothrowQVariantConstructible = noexcept(QVariant{std::forward<TT>(t)});
+    constexpr bool isNothrowConstructible = std::is_nothrow_constructible_v<T, TT>;
+    constexpr bool isNothrowAssignable = std::is_nothrow_assignable_v<T&, TT>;
 
     const QtPrivate::QMetaTypeInterface *iface = QtPrivate::qMetaTypeInterfaceForType<T>();
     Q_ASSERT((quintptr(iface) & 0x3) == 0);
     packedType = quintptr(iface) >> 2;
 
     if constexpr (CanUseInternalSpace<T>) {
-        static_assert(isNothrowQVariantConstructible == isNothrowCopyConstructible);
-        static_assert(isNothrowQVariantConstructible == isNothrowCopyAssignable);
-        new (data.data) T(t);
+        static_assert(isNothrowQVariantConstructible == isNothrowConstructible);
+        static_assert(isNothrowQVariantConstructible == isNothrowAssignable);
+        new (data.data) T(std::forward<TT>(t));
     } else {
         static_assert(!isNothrowQVariantConstructible); // we allocate memory, even if T doesn't
         data.shared = customConstructShared(sizeof(T), alignof(T), [&t](void *where) {
-            new (where) T(t);
+            new (where) T(std::forward<TT>(t));
         });
     }
 }
