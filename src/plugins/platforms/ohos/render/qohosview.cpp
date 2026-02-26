@@ -126,6 +126,11 @@ QOhosWindowProxy::AvoidArea AvoidAreaCache::getStoredOrRetrieveFromWindowProxy(
     return result;
 }
 
+QRect requestedWindowFrameGeometry(QOhosPlatformWindow *platformWindow)
+{
+    return platformWindow->geometry().marginsAdded(platformWindow->frameMargins());
+}
+
 void tryUpdateMaximumMarginsFromAvoidArea(QMargins &marginsToUpdate, const QOhosWindowProxy::AvoidArea &avoidArea)
 {
     if (!avoidArea.visible)
@@ -196,7 +201,7 @@ QRect tryCorrectFrameGeometry(QOhosPlatformWindow *platformWindow, QPlatformScre
     auto availableArea = targetScreen->availableGeometry();
 
     auto *qWindow = platformWindow->window();
-    const auto frameGeometry = platformWindow->windowFrameGeometry();
+    const auto frameGeometry = requestedWindowFrameGeometry(platformWindow);
     auto newGeometry = frameGeometry;
 
     auto windowType = qWindow->type();
@@ -245,7 +250,7 @@ QRect getTargetSystemWindowGeometryForPlatformWindow(
 {
     return viewType == QOhosView::ViewType::SubWindow
         ? tryCorrectFrameGeometry(platformWindow, targetScreen)
-        : platformWindow->windowFrameGeometry();
+        : requestedWindowFrameGeometry(platformWindow);
 }
 
 QWindow *getFirstTopLevelWindowOrNull()
@@ -499,7 +504,7 @@ std::shared_ptr<QOhosWindowProxy> QOhosView::tryCreateWindowProxyIfNeeded(ViewTy
             createInfo.qWindowRef = QtOhos::QObjectThreadSafeRef(qWindow);
             createInfo.windowId = window->internalWindowId();
             createInfo.windowTitle = qWindow->title().toStdString();
-            createInfo.frameGeometry = window->windowFrameGeometry();
+            createInfo.frameGeometry = requestedWindowFrameGeometry(window);
             createInfo.fullscreen = qWindow->windowState() == Qt::WindowFullScreen;
             createInfo.displayId = window->tryTakeLastRequestedDisplayId();
             result = QOhosWindowProxy::createMainWindow(createInfo);
@@ -554,7 +559,7 @@ std::shared_ptr<QOhosWindowProxy> QOhosView::tryCreateWindowProxyIfNeeded(ViewTy
         createInfo.decorEnabled = window->decorationPreset() != QOhosPlatformWindow::DecorationPreset::Frameless;
         createInfo.disableWindowFocusableBeforeLoadContentHack = window->windowFlags().testFlag(Qt::WindowDoesNotAcceptFocus);
         createInfo.modal = qWindow->modality() != Qt::NonModal;
-        createInfo.windowRect = window->geometry().marginsAdded(window->frameMargins());
+        createInfo.windowRect = requestedWindowFrameGeometry(window);
         result = parentWindowProxy->createSubWindow(createInfo);
 
         break;
