@@ -19,6 +19,8 @@
 #include <qsignalspy.h>
 
 #include <QtWidgets/private/qapplication_p.h>
+#include <QtGui/private/qguiapplication_p.h>
+#include <qpa/qplatformintegration.h>
 
 typedef QList<QGraphicsItem *> QGraphicsItemList;
 
@@ -1084,10 +1086,11 @@ void tst_QGraphicsWidget::initStyleOption()
     }
     QFETCH(bool, underMouse);
     if (underMouse) {
+        if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::MouseCursorPositioning))
+            QSKIP("Platform does not support cursor positioning");
         const auto pos = view.viewport()->mapToGlobal(view.mapFromScene(widget->mapToScene(widget->boundingRect().center())));
         QCursor::setPos(pos);
-        if (!QTest::qWaitFor([pos]{ return QCursor::pos() == pos; }))
-            QSKIP("Cannot move cursor");
+        QTRY_COMPARE(QCursor::pos(), pos);
     }
 
     QFETCH(QPalette, palette);

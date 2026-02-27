@@ -104,7 +104,8 @@ public:
         RhiBasedRendering,
         ScreenWindowGrabbing, // whether QScreen::grabWindow() is supported
         BackingStoreStaticContents,
-        OffscreenSurface
+        OffscreenSurface,
+        MouseCursorPositioning,
     };
 
     virtual ~QPlatformIntegration() { }

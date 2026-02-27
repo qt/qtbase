@@ -41,6 +41,8 @@
 #include <QtGui/qbackingstore.h>
 #include <QtGui/qguiapplication.h>
 #include <QtGui/qpa/qplatformwindow.h>
+#include <QtGui/private/qguiapplication_p.h>
+#include <qpa/qplatformintegration.h>
 #if QT_CONFIG(draganddrop)
 #include <QtGui/qpa/qplatformdrag.h>
 #endif
@@ -67,9 +69,7 @@ using namespace std::chrono_literals;
 
 #if defined(Q_OS_WIN)
 #  include <QtCore/qt_windows.h>
-#  include <QtGui/private/qguiapplication_p.h>
 #include <qpa/qplatformnativeinterface.h>
-#include <qpa/qplatformintegration.h>
 
 #include <algorithm>
 
@@ -7411,8 +7411,8 @@ void tst_QWidget::setCursor()
 
 void tst_QWidget::setToolTip()
 {
-    if (QApplication::platformName().startsWith(QLatin1String("wayland")))
-        QSKIP("Setting mouse cursor position is not possible on Wayland");
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::MouseCursorPositioning))
+        QSKIP("Platform does not support cursor positioning");
 
     QWidget widget;
     widget.resize(200, 200);
@@ -10766,8 +10766,9 @@ void tst_QWidget::maskedUpdate()
 #ifndef QT_NO_CURSOR
 void tst_QWidget::syntheticEnterLeave()
 {
-    if (m_platform == QStringLiteral("wayland"))
-        QSKIP("Wayland: This fails. Figure out why.");
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::MouseCursorPositioning))
+        QSKIP("Platform does not support cursor positioning");
+
     class MyWidget : public QWidget
     {
     public:
@@ -10779,8 +10780,7 @@ void tst_QWidget::syntheticEnterLeave()
     };
 
     QCursor::setPos(m_safeCursorPos);
-    if (!QTest::qWaitFor([this]{ return QCursor::pos() == m_safeCursorPos; }))
-        QSKIP("Can't move cursor");
+    QTRY_COMPARE(QCursor::pos(), m_safeCursorPos);
 
     MyWidget window;
     window.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
@@ -10821,8 +10821,7 @@ void tst_QWidget::syntheticEnterLeave()
     // Position the cursor in the middle of the window.
     const QPoint globalPos = window.mapToGlobal(QPoint(100, 100));
     QCursor::setPos(globalPos); // Enter child2 and grandChild.
-    if (!QTest::qWaitFor([globalPos]{ return QCursor::pos() == globalPos; }))
-        QSKIP("Can't move cursor");
+    QTRY_COMPARE(QCursor::pos(), globalPos);
 
     QCOMPARE(window.numLeaveEvents, 0);
     QCOMPARE(child2->numLeaveEvents, 0);
@@ -10893,6 +10892,11 @@ void tst_QWidget::enterLeaveOnWindowShowHide_data()
 */
 void tst_QWidget::enterLeaveOnWindowShowHide()
 {
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QSKIP("QWindow::requestActivate() is not supported.");
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::MouseCursorPositioning))
+        QSKIP("Platform does not support cursor positioning");
+
     QFETCH(Qt::WindowType, windowType);
     class Widget : public QWidget
     {
@@ -10958,9 +10962,6 @@ void tst_QWidget::enterLeaveOnWindowShowHide()
     const QPoint cursorPos = screenGeometry.topLeft() + QPoint(50, 50);
     widget.setGeometry(QRect(cursorPos - QPoint(50, 50), screenGeometry.size() / 4));
     QCursor::setPos(cursorPos);
-
-    if (!QTest::qWaitFor([&]{ return widget.geometry().contains(QCursor::pos()); }))
-        QSKIP("We can't move the cursor");
     widget.show();
     QVERIFY(QTest::qWaitForWindowActive(&widget));
 
@@ -10995,8 +10996,9 @@ void tst_QWidget::enterLeaveOnWindowShowHide()
 #ifndef QT_NO_CURSOR
 void tst_QWidget::taskQTBUG_4055_sendSyntheticEnterLeave()
 {
-    if (m_platform == QStringLiteral("wayland"))
-        QSKIP("Wayland: Clients can't set cursor position on wayland.");
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::MouseCursorPositioning))
+        QSKIP("Platform does not support cursor positioning");
+
     class SELParent : public QWidget
     {
     public:
@@ -11023,8 +11025,7 @@ void tst_QWidget::taskQTBUG_4055_sendSyntheticEnterLeave()
     };
 
     QCursor::setPos(m_safeCursorPos);
-    if (!QTest::qWaitFor([this]{ return QCursor::pos() == m_safeCursorPos; }))
-        QSKIP("Can't move cursor");
+    QTRY_COMPARE(QCursor::pos(), m_safeCursorPos);
 
     SELParent parent;
     parent.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
@@ -11037,8 +11038,7 @@ void tst_QWidget::taskQTBUG_4055_sendSyntheticEnterLeave()
 
     const QPoint childPos = child.mapToGlobal(QPoint(100, 100));
     QCursor::setPos(childPos);
-    if (!QTest::qWaitFor([childPos]{ return QCursor::pos() == childPos; }))
-        QSKIP("Can't move cursor");
+    QTRY_COMPARE(QCursor::pos(), childPos);
 
     // Make sure the cursor has entered the child.
     QTRY_VERIFY(child.numEnterEvents > 0);
@@ -11094,8 +11094,8 @@ void tst_QWidget::taskQTBUG_4055_sendSyntheticEnterLeave()
 
 void tst_QWidget::hoverPosition()
 {
-    if (m_platform == QStringLiteral("wayland"))
-        QSKIP("Wayland: Clients can't set cursor position on wayland.");
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::MouseCursorPositioning))
+        QSKIP("Platform does not support cursor positioning");
 
     class HoverWidget : public QWidget
     {
@@ -11150,8 +11150,7 @@ void tst_QWidget::hoverPosition()
     };
 
     QCursor::setPos(m_safeCursorPos);
-    if (!QTest::qWaitFor([this]{ return QCursor::pos() == m_safeCursorPos; }))
-        QSKIP("Can't move cursor");
+    QTRY_COMPARE(QCursor::pos(), m_safeCursorPos);
 
     QWidget root;
     root.setGeometry(100,100,300,300);
@@ -11163,12 +11162,10 @@ void tst_QWidget::hoverPosition()
     const QPoint middle(50, 50);
     // wait until we got the correct global pos
     QPoint expectedGlobalPos = root.geometry().topLeft() + QPoint(100, 100) + middle;
-    if (!QTest::qWaitFor([&]{ return expectedGlobalPos == h.mapToGlobal(middle); }))
-        QSKIP("Can't move cursor");
+    QTRY_VERIFY(expectedGlobalPos == h.mapToGlobal(middle));
     QPoint curpos = h.mapToGlobal(middle);
     QCursor::setPos(curpos);
-    if (!QTest::qWaitFor([curpos]{ return QCursor::pos() == curpos; }))
-          QSKIP("Can't move cursor");
+    QTRY_COMPARE(QCursor::pos(), curpos);
     QTRY_COMPARE_GE(h.hoverEventCount, 1); // HoverEnter and then probably HoverMove, so usually 2
     QTRY_COMPARE_GE(h.paintEventCount, 2);
     const int enterHoverEventCount = h.hoverEventCount;
@@ -11181,16 +11178,14 @@ void tst_QWidget::hoverPosition()
 
     curpos += {10, 10};
     QCursor::setPos(curpos);
-    if (!QTest::qWaitFor([curpos]{ return QCursor::pos() == curpos; }))
-          QSKIP("Can't move cursor");
+    QTRY_COMPARE(QCursor::pos(), curpos);
     QTRY_COMPARE(h.hoverEventCount, enterHoverEventCount + 1);
     QCOMPARE(h.lastHoverType, QEvent::HoverMove);
     QTRY_COMPARE_GE(h.paintEventCount, 3);
 
     curpos += {50, 50}; // in the outer widget, but leaving the inner widget
     QCursor::setPos(curpos);
-    if (!QTest::qWaitFor([curpos]{ return QCursor::pos() == curpos; }))
-          QSKIP("Can't move cursor");
+    QTRY_COMPARE(QCursor::pos(), curpos);
     QTRY_COMPARE(h.lastHoverType, QEvent::HoverLeave);
     QCOMPARE_GE(h.hoverEventCount, enterHoverEventCount + 2);
     QTRY_COMPARE_GE(h.paintEventCount, 4);

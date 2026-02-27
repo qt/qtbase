@@ -298,6 +298,7 @@ bool QXcbIntegration::hasCapability(QPlatformIntegration::Capability cap) const
     case MultipleWindows:
     case ForeignWindows:
     case SyncState:
+    case MouseCursorPositioning:
         return true;
     case OffscreenSurface:
         return m_connection->glIntegration() && m_connection->glIntegration()->canCreatePlatformOffscreenSurface();

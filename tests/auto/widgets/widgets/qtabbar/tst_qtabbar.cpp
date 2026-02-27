@@ -15,6 +15,8 @@
 #include <QWindow>
 
 #include <QtWidgets/private/qtabbar_p.h>
+#include <QtGui/private/qguiapplication_p.h>
+#include <qpa/qplatformintegration.h>
 
 using namespace Qt::StringLiterals;
 
@@ -1313,13 +1315,14 @@ void tst_QTabBar::currentTabLargeFont()
 
 void tst_QTabBar::hoverTab_data()
 {
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::MouseCursorPositioning))
+        QSKIP("Platform does not support cursor positioning");
+
     // Move the cursor away from the widget as not to interfere.
-    // skip this test if we can't
     const QPoint topLeft = QGuiApplication::primaryScreen()->availableGeometry().topLeft();
     const QPoint cursorPos = topLeft + QPoint(10, 10);
     QCursor::setPos(cursorPos);
-    if (!QTest::qWaitFor([cursorPos]{ return QCursor::pos() == cursorPos; }, 500))
-        QSKIP("Can't move mouse");
+    QTRY_COMPARE(QCursor::pos(), cursorPos);
 
     QTest::addColumn<bool>("documentMode");
     QTest::addRow("normal mode") << true;

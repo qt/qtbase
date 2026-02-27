@@ -2660,8 +2660,8 @@ void tst_QWindow::modalWindowEnterEventOnHide_QTBUG35109()
     if (isPlatformOffscreenOrMinimal())
         QSKIP("Can't test window focusing on offscreen/minimal");
 
-    if (isPlatformEglFS() || isPlatformWayland())
-        QSKIP("QCursor::setPos() is not supported on this platform");
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::MouseCursorPositioning))
+        QSKIP("Platform does not support cursor positioning");
 
     const QPoint center = QGuiApplication::primaryScreen()->availableGeometry().center();
 
@@ -2837,10 +2837,8 @@ void tst_QWindow::spuriousMouseMove()
     const QString &platformName = QGuiApplication::platformName();
     if (platformName == QLatin1String("offscreen") || platformName == QLatin1String("cocoa"))
         QSKIP("No enter events sent");
-    if (platformName == QLatin1String("wayland"))
-        QSKIP("Setting mouse cursor position is not possible on Wayland");
-    if (isPlatformEglFS())
-        QSKIP("QCursor::setPos() is not supported on this platform");
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::MouseCursorPositioning))
+        QSKIP("Platform does not support cursor positioning");
     const QRect screenGeometry = QGuiApplication::primaryScreen()->geometry();
     const QPoint center = screenGeometry.center();
     QCursor::setPos(center);
@@ -3270,11 +3268,8 @@ void tst_QWindow::enterLeaveOnWindowShowHide_data()
 */
 void tst_QWindow::enterLeaveOnWindowShowHide()
 {
-    if (isPlatformWayland())
-        QSKIP("Can't set cursor position and qWaitForWindowActive on Wayland");
-
-    if (isPlatformEglFS())
-        QSKIP("QCursor::setPos() is not supported on this platform");
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::MouseCursorPositioning))
+        QSKIP("Platform does not support cursor positioning");
 
     QFETCH(Qt::WindowType, windowType);
 
@@ -3310,9 +3305,7 @@ void tst_QWindow::enterLeaveOnWindowShowHide()
     const QPoint cursorPos = screenGeometry.topLeft() + QPoint(50, 50);
     window.setGeometry(QRect(cursorPos - QPoint(50, 50), screenGeometry.size() / 4));
     QCursor::setPos(cursorPos);
-
-    if (!QTest::qWaitFor([&]{ return window.geometry().contains(QCursor::pos()); }))
-        QSKIP("We can't move the cursor");
+    QTRY_COMPARE(QCursor::pos(), cursorPos);
 
     window.show();
     QVERIFY(QTest::qWaitForWindowActive(&window));

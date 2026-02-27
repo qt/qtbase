@@ -240,6 +240,10 @@ QPlatformServices *QPlatformIntegration::services() const
     without falling back to an implementation utilizing an invisible QWindow. A platform
     without this capability requires QOffscreenSurface::create to be called from the GUI
     thread.
+
+    \value MouseCursorPositioning The platform supports programmatic cursor positioning via
+    QCursor::setPos(). Platforms such as Wayland that enforce pointer confinement will
+    return \c false. The default implementation returns \c false.
  */
 
 /*!

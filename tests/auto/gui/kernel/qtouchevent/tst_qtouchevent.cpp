@@ -1126,11 +1126,10 @@ void tst_QTouchEvent::touchOnMultipleTouchscreens()
 void tst_QTouchEvent::multiPointRawEventTranslationOnTouchPad()
 {
 #ifdef Q_OS_MACOS
-#if QT_CONFIG(cursor)
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::MouseCursorPositioning))
+        QSKIP("The macOS mouse cursor interferes with this test and cannot be moved away");
     QCursor::setPos(0, 0); // move mouse out of the way
-    if (!QTest::qWaitFor([]{ return QCursor::pos() == QPoint(0, 0); }))
-#endif
-        QSKIP("The macOS mouse cursor interferes with this test can cannot be moved away");
+    QTRY_COMPARE(QCursor::pos(), QPoint(0, 0));
 #endif
 
     if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))

@@ -276,6 +276,10 @@ bool QCocoaIntegration::hasCapability(QPlatformIntegration::Capability cap) cons
 #endif
         return true;
     }
+    case MouseCursorPositioning:
+        return AXIsProcessTrustedWithOptions(CFDictionaryRef(@{
+            id(kAXTrustedCheckOptionPrompt): @NO
+        }));
     default:
         return QPlatformIntegration::hasCapability(cap);
     }

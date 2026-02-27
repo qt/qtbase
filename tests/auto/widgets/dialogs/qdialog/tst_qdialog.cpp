@@ -20,6 +20,7 @@
 #include <QWindow>
 #include <QRhiWidget>
 #include <private/qguiapplication_p.h>
+#include <qpa/qplatformintegration.h>
 #include <qpa/qplatformtheme.h>
 #include <qpa/qplatformtheme_p.h>
 
@@ -519,11 +520,8 @@ void tst_QDialog::snapToDefaultButton()
 #ifdef QT_NO_CURSOR
     QSKIP("Test relies on there being a cursor");
 #else
-    if (!QGuiApplication::platformName().compare(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("This platform does not support setting the cursor position.");
-#ifdef Q_OS_ANDROID
-    QSKIP("Android does not support cursor");
-#endif
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::MouseCursorPositioning))
+        QSKIP("Platform does not support cursor positioning");
 
 #ifdef Q_OS_OHOS
     QSKIP("OHOS does not support setting cursor position.");
@@ -533,12 +531,7 @@ void tst_QDialog::snapToDefaultButton()
                                + QPoint(100, 100), QSize(200, 200));
     const QPoint startingPos = dialogGeometry.bottomRight() + QPoint(100, 100);
     QCursor::setPos(startingPos);
-#ifdef Q_OS_MACOS
-    // On OS X we use CGEventPost to move the cursor, it needs at least
-    // some time before the event handled and the position really set.
-    QTest::qWait(100);
-#endif
-    QCOMPARE(QCursor::pos(), startingPos);
+    QTRY_COMPARE(QCursor::pos(), startingPos);
     QDialog dialog;
     QPushButton *button = new QPushButton(&dialog);
     button->setDefault(true);
