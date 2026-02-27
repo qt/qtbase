@@ -462,6 +462,7 @@ public:
     // conditionally noexcept trivial or trivially-copyable
     // (most of these are noexcept on 64-bit)
     QVariant(const QJsonValue &jsonValue) noexcept(Private::FitsInInternalSize<sizeof(CborValueStandIn)>);
+    QVariant(QJsonValue &&jsonValue) noexcept(Private::FitsInInternalSize<sizeof(CborValueStandIn)>);
     QVariant(const QModelIndex &modelIndex) noexcept(Private::FitsInInternalSize<8 + 2 * sizeof(quintptr)>);
     QVariant(QUuid uuid) noexcept(Private::FitsInInternalSize<16>);
     QVariant(QSize size) noexcept;
@@ -475,8 +476,11 @@ public:
 
     // not noexcept
     QVariant(const QEasingCurve &easing) noexcept(false);
+    QVariant(QEasingCurve &&easing) noexcept;
     QVariant(const QJsonDocument &jsonDocument) noexcept(false);
+    QVariant(QJsonDocument &&jsonDocument) noexcept;
     QVariant(const QPersistentModelIndex &modelIndex) noexcept(false);
+    QVariant(QPersistentModelIndex &&modelIndex) noexcept;
 
 #ifndef QT_NO_CAST_FROM_ASCII
     QT_ASCII_CAST_WARN QVariant(const char *str) noexcept(false)

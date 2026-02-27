@@ -739,6 +739,12 @@ void *QVariant::prepareForEmplace(QMetaType type)
 */
 
 /*!
+    \since 6.12
+    \fn QVariant::QVariant(QEasingCurve &&val)
+    \overload
+*/
+
+/*!
     \since 5.0
     \fn QVariant::QVariant(QUuid val) noexcept
 
@@ -760,10 +766,22 @@ void *QVariant::prepareForEmplace(QMetaType type)
 */
 
 /*!
+    \since 6.12
+    \fn QVariant::QVariant(QPersistentModelIndex &&val)
+    \overload
+*/
+
+/*!
     \since 5.0
     \fn QVariant::QVariant(const QJsonValue &val)
 
     Constructs a new variant with a json value, \a val.
+*/
+
+/*!
+    \since 6.12
+    \fn QVariant::QVariant(QJsonValue &&val)
+    \overload
 */
 
 /*!
@@ -797,6 +815,12 @@ void *QVariant::prepareForEmplace(QMetaType type)
     \fn QVariant::QVariant(const QJsonDocument &val)
 
     Constructs a new variant with a json document value, \a val.
+*/
+
+/*!
+    \since 6.12
+    \fn QVariant::QVariant(QJsonDocument &&val)
+    \overload
 */
 
 /*!
@@ -1045,6 +1069,8 @@ QVariant::QVariant(QLatin1StringView val) : QVariant(QString(val)) {}
 
 #if QT_CONFIG(easingcurve)
 QVariant::QVariant(const QEasingCurve &val) : d{std::in_place, val} {}
+QVariant::QVariant(QEasingCurve &&val) noexcept : d{std::in_place, std::move(val)} {}
+static_assert(QVariant::Private::CanUseInternalSpace<QEasingCurve>);
 #endif
 MAKE_CTOR_BY_VALUE(QPoint);
 MAKE_CTOR_BY_VALUE(QPointF);
@@ -1063,14 +1089,22 @@ MAKE_CTOR_BY_VALUE(QUuid);
 QVariant::QVariant(const QJsonValue &jsonValue) noexcept(Private::FitsInInternalSize<sizeof(CborValueStandIn)>)
     : d{std::in_place, jsonValue}
 { static_assert(sizeof(CborValueStandIn) == sizeof(QJsonValue)); }
+QVariant::QVariant(QJsonValue &&jsonValue) noexcept(Private::FitsInInternalSize<sizeof(CborValueStandIn)>)
+    : d{std::in_place, std::move(jsonValue)} {}
 MAKE_CTOR_BY_REF(QJsonObject);
 MAKE_CTOR_BY_REF(QJsonArray);
 QVariant::QVariant(const QJsonDocument &jsonDocument) : d{std::in_place, jsonDocument} {}
+QVariant::QVariant(QJsonDocument &&jsonDocument) noexcept
+    : d{std::in_place, jsonDocument} {}
+static_assert(QVariant::Private::CanUseInternalSpace<QJsonDocument>);
 #if QT_CONFIG(itemmodel)
 QVariant::QVariant(const QModelIndex &modelIndex) noexcept(Private::FitsInInternalSize<8 + 2 * sizeof(quintptr)>)
     : d{std::in_place, modelIndex} {}
 QVariant::QVariant(const QPersistentModelIndex &modelIndex)
     : d{std::in_place, modelIndex} {}
+QVariant::QVariant(QPersistentModelIndex &&modelIndex) noexcept
+    : d{std::in_place, std::move(modelIndex)} {}
+static_assert(QVariant::Private::CanUseInternalSpace<QPersistentModelIndex>);
 #endif
 
 #undef MAKE_CTOR_BY_REF
