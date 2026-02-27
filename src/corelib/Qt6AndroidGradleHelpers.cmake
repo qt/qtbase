@@ -348,6 +348,9 @@ function(_qt_internal_android_add_gradle_build target type)
         endif()
     endforeach()
 
+    _qt_internal_android_gradle_cleanup_commands(gradle_cleanup_commands
+        "${gradlew}" "${android_build_dir}" "${target}")
+
     set(gradle_scripts "$<TARGET_PROPERTY:${target},_qt_android_deployment_files>")
     add_custom_command(OUTPUT "${package_file_path}"
         BYPRODUCTS "${package_build_file_path}"
@@ -356,6 +359,7 @@ function(_qt_internal_android_add_gradle_build target type)
         COMMAND
             ${CMAKE_COMMAND} -E copy_if_different
             "${package_build_file_path}" "${package_file_path}"
+        ${gradle_cleanup_commands}
         DEPENDS
             ${target}
             ${gradle_scripts}
@@ -506,6 +510,21 @@ endfunction()
 function(_qt_internal_android_gradlew_path out_var target)
     _qt_internal_android_get_target_android_build_dir(android_build_dir ${target})
     set(${out_var} "${android_build_dir}/${gradlew_file_name}" PARENT_SCOPE)
+endfunction()
+
+# Return Gradle clean command if QT_ANDROID_POST_BUILD_GRADLE_CLEANUP is set
+function(_qt_internal_android_gradle_cleanup_commands out_var gradlew working_dir target)
+    if(NOT QT_ANDROID_POST_BUILD_GRADLE_CLEANUP)
+        set(${out_var} "" PARENT_SCOPE)
+        return()
+    endif()
+
+    set(commands "")
+    list(APPEND commands
+        COMMAND ${CMAKE_COMMAND} -E echo "Running gradle clean for ${target} in ${working_dir}..."
+        COMMAND "${gradlew}" -p "${working_dir}" clean
+    )
+    set(${out_var} "${commands}" PARENT_SCOPE)
 endfunction()
 
 # Returns the generator expression for the gradle_property value. Defaults to the default_value

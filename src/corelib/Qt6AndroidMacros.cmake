@@ -618,17 +618,9 @@ function(qt6_android_add_apk_target target)
 
     _qt_internal_check_depfile_support(has_depfile_support)
 
-    set(qt_android_delete_build_dir_commands "")
-    if(QT_ANDROID_POST_BUILD_GRADLE_CLEANUP)
-        set(gradlew_script "gradlew")
-        if(CMAKE_HOST_WIN32)
-            string(APPEND gradlew_script ".bat")
-        endif()
-        list(APPEND qt_android_delete_build_dir_commands
-            COMMAND "${CMAKE_COMMAND}" -E echo "Executing ${gradlew_script} clean in ${target}..."
-            COMMAND "${CMAKE_COMMAND}" -E chdir ${apk_final_dir} "${gradlew_script}" clean
-        )
-    endif()
+    _qt_internal_android_gradlew_name(gradlew_script)
+    _qt_internal_android_gradle_cleanup_commands(qt_android_delete_build_dir_commands
+        "${apk_final_dir}/${gradlew_script}" "${apk_final_dir}" "${target}")
 
     if(has_depfile_support)
         cmake_policy(PUSH)
