@@ -278,6 +278,8 @@ public:
 
     virtual void setWindowKeepScreenOn(QObject *windowOrWidget, bool keepScreenOn) = 0;
 
+    virtual void setWindowDragResizable(QObject *windowOrWidget, bool dragResizable) = 0;
+
     virtual QOhosOptional<double> tryGetNativeWindowId(QObject *window) = 0;
     virtual QOhosOptional<double> tryGetScreenDisplayId(QObject *screenObject) = 0;
 

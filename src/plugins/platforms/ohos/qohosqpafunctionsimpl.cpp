@@ -915,6 +915,8 @@ public:
 
     void setWindowKeepScreenOn(QObject *windowOrWidget, bool keepScreenOn) override;
 
+    void setWindowDragResizable(QObject *windowOrWidget, bool dragResizable) override;
+
     QOhosOptional<double> tryGetNativeWindowId(QObject *window) override;
     QOhosOptional<double> tryGetScreenDisplayId(QObject *screenObject) override;
 
@@ -1145,6 +1147,11 @@ void QOhosQpaFunctionsImpl::setMainWindowGeometryPersistencePolicy(
 void QOhosQpaFunctionsImpl::setWindowKeepScreenOn(QObject *windowOrWidget, bool keepScreenOn)
 {
     QOhosPlatformWindow::setWindowKeepScreenOn(windowOrWidget, keepScreenOn);
+}
+
+void QOhosQpaFunctionsImpl::setWindowDragResizable(QObject *windowOrWidget, bool dragResizable)
+{
+    QOhosPlatformWindow::setWindowDragResizable(windowOrWidget, dragResizable);
 }
 
 QOhosOptional<double> QOhosQpaFunctionsImpl::tryGetNativeWindowId(QObject *window)

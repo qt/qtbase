@@ -265,6 +265,7 @@ private:
     void setSaturation(int saturation);
     void setWindowKeepScreenOn(bool keepScreenOn);
     void setFixedSizeStateEnabled(bool fixedSizeStateEnabled);
+    void setWindowDragResizable(bool dragResizable);
     void showWindow();
     void sendAsyncSyntheticWindowActiveEvent();
 

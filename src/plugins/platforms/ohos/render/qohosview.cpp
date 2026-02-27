@@ -715,6 +715,10 @@ QOhosView::QOhosView(QWindow *ownerWindow, QSharedPointer<QNativeNode> nativeNod
             [this](int saturation) {
                 setSaturation(saturation);
             }),
+        m_windowPropertiesProvider.addPropertyWriteCallback<bool, &QOhosPlatformWindow::windowDragResizableProperty>(
+            [this](bool dragResizable) {
+                setWindowDragResizable(dragResizable);
+            }),
     };
 
     m_windowPropertiesProviderCallbacksHandle = QtOhos::moveToSharedPtr(std::move(writeCallbacks));
@@ -1477,6 +1481,11 @@ void QOhosView::syncWindowStateImmediate(WindowStateSyncReason reason)
         .tryGetProperty<bool, &QOhosPlatformWindow::windowFixedSizeStateProperty>();
     if (fixedSizeStateEnabled.hasValue())
         setFixedSizeStateEnabled(fixedSizeStateEnabled.value());
+
+    auto windowDragResizable = m_windowPropertiesProvider
+        .tryGetProperty<bool, &QOhosPlatformWindow::windowDragResizableProperty>();
+    if (windowDragResizable.hasValue())
+        setWindowDragResizable(windowDragResizable.value());
 }
 
 void QOhosView::flushSystemPropertyUpdatesImmediate()
@@ -1547,6 +1556,12 @@ void QOhosView::updateWindowFrameless(bool frameless)
         m_ohosWindowProxy->setWindowDecorVisible(!frameless);
         m_ohosWindowProxy->setWindowTitleMoveEnabled(!frameless);
     }
+}
+
+void QOhosView::setWindowDragResizable(bool dragResizable)
+{
+    if (m_ohosWindowProxy != nullptr)
+        m_ohosWindowProxy->enableDrag(dragResizable);
 }
 
 void QOhosView::setWindowMinMaxCloseButtonState(const WindowMinMaxCloseButtonsState &state)
