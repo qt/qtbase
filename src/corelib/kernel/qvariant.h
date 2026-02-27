@@ -124,9 +124,12 @@ public:
         explicit Private(const QtPrivate::QMetaTypeInterface *iface) noexcept;
         template <typename T>
         explicit Private(std::in_place_t, T &&t);
+#if QT_DEPRECATED_SINCE(6, 12)
         template <typename T>
+        QT_DEPRECATED_VERSION_X_6_12("use the std::in_place overload and check whether you can move into it.")
         explicit Private(std::piecewise_construct_t, const T &t)
             : Private{std::in_place, t} {}
+#endif
 
         const void *storage() const
         { return is_shared ? data.shared->data() : &data.data; }
