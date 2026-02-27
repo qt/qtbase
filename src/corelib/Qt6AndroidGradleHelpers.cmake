@@ -1887,8 +1887,10 @@ function(_qt_internal_android_parse_qmlimportscanner_output
             if(EXISTS "${plugin_path}")
                 list(APPEND qml_plugins "${plugin_path}")
             elseif(NOT optional)
-                message(WARNING "QML plugin '${plugin_name}' not found for ${target}.")
-                set(skip_module TRUE)
+                if(NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_BUILDING_QT)
+                    message(WARNING "QML plugin '${plugin_name}' not found for ${target}.")
+                    set(skip_module TRUE)
+                endif()
             endif()
         endif()
 
