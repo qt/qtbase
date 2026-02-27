@@ -843,6 +843,18 @@
 */
 
 /*!
+    \enum Qt::MotionPreference
+    \since 6.12
+
+    Represents the user's preferred setting for animations and motions.
+    Controls, styles and applications can honor this setting by limiting the amount of animations depending
+    on the enum value.
+
+    \value NoPreference No specific preferences.
+    \value ReducedMotion The user prefers fewer animations in their UI.
+*/
+
+/*!
     \enum Qt::ImageConversionFlag
 
     The options marked "(default)" are set if no other values from
