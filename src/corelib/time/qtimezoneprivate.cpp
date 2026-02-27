@@ -1267,7 +1267,16 @@ QString QUtcTimeZonePrivate::displayName(QTimeZone::TimeType timeType,
                                          const QLocale &locale) const
 {
 #if QT_CONFIG(timezone_locale)
-    QString name = QTimeZonePrivate::displayName(timeType, nameType, locale);
+    QString name =
+#  if QT_CONFIG(icu)
+        // ICU doesn't recognize m_name in "UTC±HH:mm" form as an ID - so that
+        // localeName() only does the offset format, making it useless here (and
+        // it's always expensive). It does, however, cope with plain UTC, so
+        // skip except in that case:
+        m_offsetFromUtc != 0 ? QString() :
+#  endif
+        QTimeZonePrivate::displayName(timeType, nameType, locale);
+
     // That may fall back to standard offset format, in which case we'd sooner
     // use m_name if it's non-empty (for the benefit of custom zones).
     // However, a localized fallback is better than ignoring the locale, so only
