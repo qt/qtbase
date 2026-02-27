@@ -483,6 +483,9 @@ QTimeZone::QTimeZone(const QByteArray &ianaId)
             if (!d->isValid()) {
                 // We may have a legacy alias for a supported IANA ID:
                 QByteArrayView name = QTimeZonePrivate::aliasToIana(ianaId);
+                // Or an alias for an IANA ID that has a supported alias:
+                if (name.isEmpty() || name == ianaId)
+                    name = global_tz->backend->availableAlias(ianaId);
                 if (!name.isEmpty() && name != ianaId)
                     d = newBackendTimeZone(name.toByteArray());
             }
@@ -862,6 +865,8 @@ QByteArray QTimeZone::id() const
     describes.
 
     This method is only available when feature \c timezone is enabled.
+
+    \sa isTimeZoneIdAvailable()
 */
 bool QTimeZone::hasAlternativeName(QByteArrayView alias) const
 {
@@ -1487,12 +1492,13 @@ QTimeZone QTimeZone::utc()
 /*!
     Returns \c true if a given time zone \a ianaId is available on this system.
 
-    This may include some non-IANA IDs, notably UTC-offset IDs, that are not
-    listed in \l availableTimeZoneIds().
+    This may be true for some texts that are not in fact IANA IDs, notably
+    UTC-offset IDs, and known aliases for supported IANA IDs that are not listed
+    in \l availableTimeZoneIds().
 
     This method is only available when feature \c timezone is enabled.
 
-    \sa availableTimeZoneIds()
+    \sa availableTimeZoneIds(), hasAlternativeName()
 */
 
 bool QTimeZone::isTimeZoneIdAvailable(const QByteArray &ianaId)
@@ -1508,9 +1514,18 @@ bool QTimeZone::isTimeZoneIdAvailable(const QByteArray &ianaId)
     if (!QTimeZonePrivate::isValidId(ianaId))
         return false;
 #endif
-    return QUtcTimeZonePrivate().isTimeZoneIdAvailable(ianaId)
+    if (QUtcTimeZonePrivate().isTimeZoneIdAvailable(ianaId)
         || QUtcTimeZonePrivate::offsetFromUtcString(ianaId) != QTimeZonePrivate::invalidSeconds()
-        || global_tz->backend->isTimeZoneIdAvailable(ianaId);
+        || global_tz->backend->isTimeZoneIdAvailable(ianaId)) {
+        return true;
+    }
+    if (const auto name = QTimeZonePrivate::aliasToIana(ianaId); !name.isEmpty()) {
+        return QUtcTimeZonePrivate().isTimeZoneIdAvailable(name)
+            || global_tz->backend->isTimeZoneIdAvailable(name);
+    }
+
+    QByteArrayView known = global_tz->backend->availableAlias(ianaId);
+    return !known.isEmpty();
 }
 
 [[maybe_unused]] static bool isUniqueSorted(const QList<QByteArray> &seq)

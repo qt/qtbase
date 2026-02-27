@@ -128,6 +128,7 @@ public:
 
     virtual QByteArray systemTimeZoneId() const;
 
+    QByteArrayView availableAlias(QByteArrayView ianaId) const; // Empty if none.
     virtual bool isTimeZoneIdAvailable(QByteArrayView ianaId) const;
     virtual QList<QByteArray> availableTimeZoneIds() const = 0;
     virtual QList<QByteArray> availableTimeZoneIds(QLocale::Territory territory) const;

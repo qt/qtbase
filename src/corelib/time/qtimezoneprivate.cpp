@@ -608,6 +608,38 @@ QByteArray QTimeZonePrivate::systemTimeZoneId() const
     return QByteArray();
 }
 
+template <typename Pred>
+static QByteArrayView aliasMatching(QByteArrayView name, Pred test)
+{
+    if (test(name))
+        return name;
+    {
+        // First, if it's an alias, map name to its CLDR form:
+        const auto data = std::lower_bound(std::begin(aliasMappingTable),
+                                           std::end(aliasMappingTable),
+                                           name, earlierAliasId);
+        if (data != std::end(aliasMappingTable) && data->aliasId() == name) {
+            name = data->ianaId();
+            if (test(name))
+                return name;
+        }
+        // Now name is the canonical CLDR name, even if it was previously an alias.
+    }
+    // Failing that, traverse the whole alias mapping table in search of an
+    // alias for name that satisfies test():
+    for (const auto &data : aliasMappingTable) {
+        QByteArrayView alias = data.aliasId();
+        if (data.ianaId() == name && test(alias))
+            return alias;
+    }
+    return {};
+}
+
+QByteArrayView QTimeZonePrivate::availableAlias(QByteArrayView ianaId) const
+{
+    return aliasMatching(ianaId, [this](QByteArrayView id) { return isTimeZoneIdAvailable(id); });
+}
+
 bool QTimeZonePrivate::isTimeZoneIdAvailable(QByteArrayView ianaId) const
 {
     // Fall-back implementation, can be made faster in subclasses.
