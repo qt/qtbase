@@ -455,6 +455,15 @@ namespace QRangeModelDetails
             return {};
         }
 
+        template <typename C, typename Fn>
+        static void for_element_at(C &&container, std::size_t idx, Fn &&fn)
+        {
+            if constexpr (is_range)
+                std::forward<Fn>(fn)(*QRangeModelDetails::pos(std::forward<C>(container), idx));
+            else
+                std::forward<Fn>(fn)(std::forward<C>(container));
+        }
+
         template <typename Fn>
         static bool for_each_element(const T &row, const QModelIndex &firstIndex, Fn &&fn)
         {
@@ -463,7 +472,7 @@ namespace QRangeModelDetails
             } else {
                 int columnIndex = -1;
                 return std::all_of(QRangeModelDetails::adl_begin(row),
-                                QRangeModelDetails::adl_end(row), [&](const auto &item) {
+                                   QRangeModelDetails::adl_end(row), [&](const auto &item) {
                     return std::forward<Fn>(fn)(firstIndex.siblingAtColumn(++columnIndex),
                                                 QRangeModelDetails::pointerTo(item));
                 });
@@ -495,11 +504,11 @@ namespace QRangeModelDetails
         template <typename C, typename F>
         static auto for_element_at(C &&container, std::size_t idx, F &&function)
         {
-            using type = q20::remove_cvref_t<C>;
+            using type = q20::remove_cvref_t<QRangeModelDetails::wrapped_t<C>>;
             constexpr size_t size = std::tuple_size_v<type>;
-            Q_ASSERT(idx < std::tuple_size_v<type>);
+            Q_ASSERT(idx < size);
             QtPrivate::applyIndexSwitch<size>(idx, [&](auto idxConstant) {
-                function(get<idxConstant>(std::forward<C>(container)));
+                function(get<idxConstant>(QRangeModelDetails::refTo(std::forward<C>(container))));
             });
         }
 
@@ -550,8 +559,8 @@ namespace QRangeModelDetails
         template <typename C, typename F>
         static auto for_element_at(C &&container, std::size_t idx, F &&function)
         {
-            Q_ASSERT(idx < size(std::forward<C>(container)));
-            function(std::forward<C>(container)[idx]);
+            Q_ASSERT(idx < size(QRangeModelDetails::refTo(std::forward<C>(container))));
+            function(QRangeModelDetails::refTo(std::forward<C>(container))[idx]);
         }
 
         static QVariant column_name(int section)
@@ -595,6 +604,12 @@ namespace QRangeModelDetails
         }
 
         static constexpr bool hasMetaObject = true;
+
+        template <typename C, typename F>
+        static auto for_element_at(C &&container, std::size_t, F &&function)
+        {
+            std::forward<F>(function)(std::forward<C>(container));
+        }
 
         static QVariant column_name(int section)
         {
@@ -932,21 +947,8 @@ template <typename, typename, typename> class QRangeModelAdapter;
 
 class QRangeModelImplBase : public QtPrivate::QQuasiVirtualInterface<QRangeModelImplBase>
 {
-private:
     using Self = QRangeModelImplBase;
     using QtPrivate::QQuasiVirtualInterface<Self>::Method;
-protected:
-    // Helper for calling a lambda with the element of a statically
-    // sized range (tuple or array) with a runtime index.
-    template <typename StaticContainer, typename F>
-    static auto for_element_at(StaticContainer &&container, std::size_t idx, F &&function)
-    {
-        using type = std::remove_cv_t<QRangeModelDetails::wrapped_t<StaticContainer>>;
-        if (QRangeModelDetails::isValid(container)) {
-            auto& ref = QRangeModelDetails::refTo(std::forward<StaticContainer>(container));
-            QRangeModelDetails::row_traits<type>::for_element_at(ref, idx, std::forward<F>(function));
-        }
-    }
 
 public:
     // keep in sync with QRangeModel::AutoConnectPolicy
@@ -1312,7 +1314,7 @@ public:
                 const_row_reference row = rowData(index);
                 row_reference mutableRow = const_cast<row_reference>(row);
                 if (QRangeModelDetails::isValid(mutableRow)) {
-                    QRangeModelImplBase::for_element_at(mutableRow, index.column(), [&f](auto &&ref){
+                    row_traits::for_element_at(mutableRow, index.column(), [&f](auto &&ref){
                         using target_type = decltype(ref);
                         if constexpr (std::is_const_v<std::remove_reference_t<target_type>>)
                             f &= ~Qt::ItemIsEditable;
@@ -2265,21 +2267,15 @@ protected:
         bool result = false;
         row_reference row = rowData(index);
 
-        if constexpr (one_dimensional_range) {
-            result = writer(row);
-        } else if (QRangeModelDetails::isValid(row)) {
-            if constexpr (dynamicColumns()) {
-                result = writer(*QRangeModelDetails::pos(row, index.column()));
-            } else {
-                QRangeModelImplBase::for_element_at(row, index.column(), [&writer, &result](auto &&target) {
-                    using target_type = decltype(target);
-                    // we can only assign to an lvalue reference
-                    if constexpr (std::is_lvalue_reference_v<target_type>
-                              && !std::is_const_v<std::remove_reference_t<target_type>>) {
-                        result = writer(std::forward<target_type>(target));
-                    }
-                });
-            }
+        if (QRangeModelDetails::isValid(row)) {
+            row_traits::for_element_at(row, index.column(), [&writer, &result](auto &&target) {
+                using target_type = decltype(target);
+                // we can only assign to an lvalue reference
+                if constexpr (std::is_lvalue_reference_v<target_type>
+                           && !std::is_const_v<std::remove_reference_t<target_type>>) {
+                    result = writer(std::forward<target_type>(target));
+                }
+            });
         }
 
         return result;
@@ -2288,14 +2284,8 @@ protected:
     template <typename F>
     void readAt(const QModelIndex &index, F&& reader) const {
         const_row_reference row = rowData(index);
-        if constexpr (one_dimensional_range) {
-            return reader(row);
-        } else if (QRangeModelDetails::isValid(row)) {
-            if constexpr (dynamicColumns())
-                reader(*QRangeModelDetails::pos(row, index.column()));
-            else
-                QRangeModelImplBase::for_element_at(row, index.column(), std::forward<F>(reader));
-        }
+        if (QRangeModelDetails::isValid(row))
+            row_traits::for_element_at(row, index.column(), std::forward<F>(reader));
     }
 
     template <typename Value>
