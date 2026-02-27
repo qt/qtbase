@@ -77,6 +77,8 @@ QT_BEGIN_NAMESPACE
     provide less commonly used signals, for example pressed() and
     released().
 
+    \snippet code/src_gui_widgets_qpushbutton.cpp clicked
+
     Command buttons in dialogs are by default auto-default buttons,
     i.e., they become the default push button automatically when they
     receive the keyboard input focus. A default button is a push

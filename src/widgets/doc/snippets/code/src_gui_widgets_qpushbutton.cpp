@@ -4,3 +4,7 @@
 //! [0]
 QPushButton *button = new QPushButton("&Download", this);
 //! [0]
+
+//! [clicked]
+connect(dispenseButton, &QPushButton::clicked, this, &IceCreamMaker::dispense);
+//! [clicked]
