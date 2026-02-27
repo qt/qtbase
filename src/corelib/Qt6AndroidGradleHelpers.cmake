@@ -875,9 +875,10 @@ function(_qt_internal_android_copy_stdlib target deployment_dir)
     set(stdlib_dst "${stdlib_dst_dir}/libc++_shared.so")
     _qt_internal_android_append_to_libs_xml_section(${target} qt_libs "${stdlib_dst}")
 
+    _qt_internal_android_get_deploy_command(deploy_stdlib_cmd "${stdlib_src}" "${stdlib_dst}")
     add_custom_command(OUTPUT "${stdlib_dst}"
         COMMAND ${CMAKE_COMMAND} -E make_directory "${stdlib_dst_dir}"
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${stdlib_src}" "${stdlib_dst}"
+        COMMAND ${deploy_stdlib_cmd}
         DEPENDS "${stdlib_src}"
         COMMENT "Copying libc++_shared for ${target}"
         VERBATIM
@@ -1078,23 +1079,39 @@ function(_qt_internal_android_copy_non_qt_linked_libs target deployment_dir)
     )
 endfunction()
 
-# Copies the app's binary file to the deployment dir.
+# Copies (or symlinks) the app's binary file to the deployment dir.
 function(_qt_internal_android_copy_app_binary target deployment_dir)
     set(target_file_dst
         "${deployment_dir}/libs/${CMAKE_ANDROID_ARCH_ABI}/$<TARGET_FILE_NAME:${target}>")
-    _qt_internal_copy_file_if_different_command(copy_command
-        "$<TARGET_FILE:${target}>"
-        "${target_file_dst}"
-    )
 
     _qt_internal_android_get_use_terminal_for_deployment(uses_terminal)
 
+    _qt_internal_android_get_deploy_command(deploy_command
+        "$<TARGET_FILE:${target}>" "${target_file_dst}")
+    set(deploy_cmd COMMAND ${deploy_command})
+
+    if(QT_ANDROID_CREATE_SYMLINKS_ONLY)
+        set(deploy_comment "Symlinking ${target} binary to apk folder")
+    else()
+        set(deploy_comment "Copying ${target} binary to apk folder")
+    endif()
+
     add_custom_target(${target}_copy_app_binary ALL
-        COMMAND ${copy_command}
-        COMMENT "Copying ${target} binary to apk folder"
+        ${deploy_cmd}
+        COMMENT "${deploy_comment}"
         VERBATIM
         ${uses_terminal}
     )
+endfunction()
+
+# Returns command to deploy a file or create a symlink to the deployment dir.
+function(_qt_internal_android_get_deploy_command out_cmd src dst)
+    if(QT_ANDROID_CREATE_SYMLINKS_ONLY)
+        set(${out_cmd} ${CMAKE_COMMAND} -E create_symlink "${src}" "${dst}" PARENT_SCOPE)
+    else()
+        _qt_internal_copy_file_if_different_command(${out_cmd} "${src}" "${dst}")
+        set(${out_cmd} "${${out_cmd}}" PARENT_SCOPE)
+    endif()
 endfunction()
 
 function(_qt_internal_android_extract_link_target raw_entry out_entry)
@@ -1397,10 +1414,9 @@ function(_qt_internal_android_copy_qt_dependencies target deployment_dir)
             endif()
 
             list(APPEND seen_destinations "${module_dst}")
-            list(APPEND copy_commands
-                COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                    "$<TARGET_FILE:${module}>"
-                    "${module_dst}")
+            _qt_internal_android_get_deploy_command(deploy_module_cmd
+                "$<TARGET_FILE:${module}>" "${module_dst}")
+            list(APPEND copy_commands COMMAND ${deploy_module_cmd})
             list(APPEND copy_depends "${module}")
         endif()
 
@@ -1424,8 +1440,9 @@ function(_qt_internal_android_copy_qt_dependencies target deployment_dir)
             endif()
 
             list(APPEND seen_destinations "${destination}")
-            list(APPEND copy_commands
-                COMMAND ${CMAKE_COMMAND} -E copy_if_different "${jar_absolute}" "${destination}")
+            _qt_internal_android_get_deploy_command(deploy_jar_cmd
+                "${jar_absolute}" "${destination}")
+            list(APPEND copy_commands COMMAND ${deploy_jar_cmd})
             list(APPEND copy_depends "${jar_absolute}")
         endforeach()
 
@@ -1452,8 +1469,9 @@ function(_qt_internal_android_copy_qt_dependencies target deployment_dir)
             endif()
 
             list(APPEND seen_destinations "${destination}")
-            list(APPEND copy_commands
-                COMMAND ${CMAKE_COMMAND} -E copy_if_different "${lib_absolute}" "${destination}")
+            _qt_internal_android_get_deploy_command(deploy_lib_cmd
+                "${lib_absolute}" "${destination}")
+            list(APPEND copy_commands COMMAND ${deploy_lib_cmd})
             list(APPEND copy_depends "${lib_absolute}")
         endforeach()
 
@@ -1480,8 +1498,9 @@ function(_qt_internal_android_copy_qt_dependencies target deployment_dir)
                     COMMAND ${CMAKE_COMMAND} -E copy_directory "${file_absolute}" "${destination}")
             else()
                 get_filename_component(destination_dir "${destination}" DIRECTORY)
-                list(APPEND copy_commands
-                    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${file_absolute}" "${destination}")
+                _qt_internal_android_get_deploy_command(deploy_file_cmd
+                    "${file_absolute}" "${destination}")
+                list(APPEND copy_commands COMMAND ${deploy_file_cmd})
             endif()
             list(APPEND copy_depends "${file_absolute}")
         endforeach()
@@ -1507,8 +1526,9 @@ function(_qt_internal_android_copy_qt_dependencies target deployment_dir)
                 endif()
 
                 list(APPEND seen_destinations "${destination}")
-                list(APPEND copy_commands
-                    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${plugin_file}" "${destination}")
+                _qt_internal_android_get_deploy_command(deploy_plugin_cmd
+                    "${plugin_file}" "${destination}")
+                list(APPEND copy_commands COMMAND ${deploy_plugin_cmd})
                 list(APPEND copy_depends "${plugin_file}")
             endforeach()
         endforeach()
@@ -1906,10 +1926,11 @@ function(_qt_internal_android_copy_qml_plugins_outputs target deployment_dir qml
     foreach(qml_plugin IN LISTS qml_plugins)
         get_filename_component(plugin_name "${qml_plugin}" NAME)
         set(plugin_destination "${libs_abi_dir}/${plugin_name}")
+        _qt_internal_android_get_deploy_command(deploy_qml_plugin_cmd
+            "${qml_plugin}" "${plugin_destination}")
         add_custom_command(OUTPUT "${plugin_destination}"
             COMMAND ${CMAKE_COMMAND} -E make_directory "${libs_abi_dir}"
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                "${qml_plugin}" "${plugin_destination}"
+            COMMAND ${deploy_qml_plugin_cmd}
             DEPENDS "${qml_plugin}"
             COMMENT "Copying QML plugin ${plugin_name} for ${target}"
             VERBATIM
@@ -1970,10 +1991,11 @@ function(_qt_internal_android_copy_qml_plugins_outputs target deployment_dir qml
                 list(APPEND existing_qt_libs "${needed_lib_base}")
 
                 set(need_lib_dst "${libs_abi_dir}/${needed_lib}")
+                _qt_internal_android_get_deploy_command(deploy_qml_dep_cmd
+                    "${needed_lib_path}" "${need_lib_dst}")
                 add_custom_command(OUTPUT "${need_lib_dst}"
                     COMMAND ${CMAKE_COMMAND} -E make_directory "${libs_abi_dir}"
-                    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${needed_lib_path}"
-                        "${need_lib_dst}"
+                    COMMAND ${deploy_qml_dep_cmd}
                     DEPENDS "${needed_lib_path}"
                     COMMENT "Copying QML plugin dependency ${needed_lib} for ${target}"
                     VERBATIM
