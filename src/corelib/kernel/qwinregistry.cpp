@@ -29,17 +29,10 @@ static const wchar_t *nullTerminate(const QString &s)
     return reinterpret_cast<const wchar_t*>(s.utf16());
 }
 
-QWinRegistryKey::QWinRegistryKey(QObject *parent)
-    : QObject(parent)
-{
-}
-
 // Open a key with the specified permissions (KEY_READ/KEY_WRITE).
 // "access" is to explicitly use the 32- or 64-bit branch.
 QWinRegistryKey::QWinRegistryKey(HKEY parentHandle, const wchar_t *subKey,
-                                 REGSAM permissions, REGSAM access,
-                                 QObject *parent)
-    : QObject(parent)
+                                 REGSAM permissions, REGSAM access)
 {
     if (RegOpenKeyExW(parentHandle, subKey,
                       0, permissions | access, &m_key) != ERROR_SUCCESS) {
@@ -48,8 +41,8 @@ QWinRegistryKey::QWinRegistryKey(HKEY parentHandle, const wchar_t *subKey,
 }
 
 QWinRegistryKey::QWinRegistryKey(HKEY parentHandle, const QString &subKey,
-                                 REGSAM permissions, REGSAM access, QObject *parent)
-    : QWinRegistryKey(parentHandle, nullTerminate(subKey), permissions, access, parent)
+                                 REGSAM permissions, REGSAM access)
+    : QWinRegistryKey(parentHandle, nullTerminate(subKey), permissions, access)
 {
 }
 
@@ -201,15 +194,22 @@ QString QWinRegistryKey::stringValue(const QString &subKey) const
     return stringValue(nullTerminate(subKey));
 }
 
-void QWinRegistryKey::connectNotify(const QMetaMethod &signal)
+QWinRegistryNotifier::QWinRegistryNotifier(HKEY parentHandle, const wchar_t *subKey,
+                                           QObject *parent)
+    : QWinRegistryNotifier(QWinRegistryKey(parentHandle, subKey), parent)
 {
-    if (signal != QMetaMethod::fromSignal(&QWinRegistryKey::valueChanged))
-        return;
+}
 
-    if (!isValid())
-        return;
+QWinRegistryNotifier::QWinRegistryNotifier(HKEY parentHandle, const QString &subKey,
+                                           QObject *parent)
+    : QWinRegistryNotifier(QWinRegistryKey(parentHandle, subKey), parent)
+{
+}
 
-    if (m_keyChangedEvent)
+QWinRegistryNotifier::QWinRegistryNotifier(QWinRegistryKey &&key, QObject *parent)
+    : QObject(parent), m_key(std::move(key))
+{
+    if (!m_key.isValid())
         return;
 
     m_keyChangedEvent.reset(CreateEvent(nullptr, false, false, nullptr));
@@ -222,7 +222,7 @@ void QWinRegistryKey::connectNotify(const QMetaMethod &signal)
             | REG_NOTIFY_CHANGE_LAST_SET
             | REG_NOTIFY_CHANGE_SECURITY;
 
-        if (auto status = RegNotifyChangeKeyValue(m_key, true, changeFilter,
+        if (auto status = RegNotifyChangeKeyValue(m_key.handle(), true, changeFilter,
             m_keyChangedEvent.get(), true); status != ERROR_SUCCESS) {
             qWarning() << "Failed to register notification for registry key"
                        << this << "due to" << QSystemError::windowsString(status);
@@ -236,8 +236,6 @@ void QWinRegistryKey::connectNotify(const QMetaMethod &signal)
         });
 
     registerForNotification();
-
-    return QObject::connectNotify(signal);
 }
 
 #ifndef QT_NO_DEBUG_STREAM

@@ -21,38 +21,27 @@
 #include <QtCore/qt_windows.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/qobject.h>
-#include <QtCore/qmetaobject.h>
 #include <QtCore/private/quniquehandle_types_p.h>
 
 QT_BEGIN_NAMESPACE
 
-class Q_CORE_EXPORT QWinRegistryKey : public QObject
+class Q_CORE_EXPORT QWinRegistryKey
 {
-    Q_DISABLE_COPY(QWinRegistryKey)
-    Q_OBJECT
-
 public:
-    QWinRegistryKey(QObject *parent = nullptr);
+    QWinRegistryKey() = default;
     explicit QWinRegistryKey(HKEY parentHandle, const wchar_t *subKey,
-                             REGSAM permissions = KEY_READ, REGSAM access = 0,
-                             QObject *parent = nullptr);
+                             REGSAM permissions = KEY_READ, REGSAM access = 0);
     explicit QWinRegistryKey(HKEY parentHandle, const QString &subKey,
-                             REGSAM permissions = KEY_READ, REGSAM access = 0,
-                             QObject *parent = nullptr);
+                             REGSAM permissions = KEY_READ, REGSAM access = 0);
     ~QWinRegistryKey();
 
     QWinRegistryKey(QWinRegistryKey &&other) noexcept
-#if 1 // QTBUG-140725
-        = delete;
-    void operator=(QWinRegistryKey &&) = delete;
-#else
         : m_key(std::exchange(other.m_key, nullptr)) {}
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QWinRegistryKey)
     void swap(QWinRegistryKey &other) noexcept
     {
         qt_ptr_swap(m_key, other.m_key);
     }
-#endif
 
     [[nodiscard]] bool isValid() const { return m_key != nullptr; }
 
@@ -86,12 +75,6 @@ public:
     friend Q_CORE_EXPORT QDebug operator<<(QDebug dbg, const QWinRegistryKey &);
 #endif
 
-Q_SIGNALS:
-    void valueChanged();
-
-protected:
-    void connectNotify(const QMetaMethod &signal) override;
-
 private:
     template<typename T>
     static std::optional<T> to_optional(QVariant v)
@@ -102,6 +85,30 @@ private:
     }
 
     HKEY m_key = nullptr;
+};
+
+Q_DECLARE_SHARED(QWinRegistryKey)
+
+class Q_CORE_EXPORT QWinRegistryNotifier : public QObject
+{
+    Q_OBJECT
+    Q_DISABLE_COPY(QWinRegistryNotifier)
+
+public:
+    explicit QWinRegistryNotifier(QWinRegistryKey &&key, QObject *parent = nullptr);
+    explicit QWinRegistryNotifier(HKEY parentHandle, const wchar_t *subKey,
+                                  QObject *parent = nullptr);
+    explicit QWinRegistryNotifier(HKEY parentHandle, const QString &subKey,
+                                  QObject *parent = nullptr);
+
+    [[nodiscard]] bool isValid() const { return m_key.isValid(); }
+    [[nodiscard]] const QWinRegistryKey &key() const { return m_key; }
+
+Q_SIGNALS:
+    void valueChanged();
+
+private:
+    QWinRegistryKey m_key;
     QUniqueWin32NullHandle m_keyChangedEvent;
 };
 

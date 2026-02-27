@@ -276,8 +276,11 @@ void tst_qwinregistrykey::valueChanged()
 
     QVERIFY(write(testKey, L"valueThatCanChange", -1));
 
+    QWinRegistryNotifier notifier(QWinRegistryKey(HKEY_CURRENT_USER, TEST_KEY));
+    QVERIFY(notifier.isValid());
+
     bool valueChanged = false;
-    QObject::connect(&testKey, &QWinRegistryKey::valueChanged, [&] {
+    QObject::connect(&notifier, &QWinRegistryNotifier::valueChanged, [&] {
         valueChanged = true;
     });
 
