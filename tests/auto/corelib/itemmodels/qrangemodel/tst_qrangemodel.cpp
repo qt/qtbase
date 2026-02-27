@@ -100,6 +100,7 @@ private slots:
     void treeMoveRowBranches();
 
     void adlTest();
+    void itemAccess();
 
 private:
     void createTestData();
@@ -2216,6 +2217,65 @@ void tst_QRangeModel::adlTest()
     QVERIFY(ADLTest::Range::beginCalled);
     QVERIFY(ADLTest::Range::sizeCalled);
 }
+
+class ItemAccessItem : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(QString display MEMBER m_display)
+    Q_PROPERTY(QColor decoration MEMBER m_decoration)
+public:
+    ItemAccessItem(const QString &display, QColor decoration)
+        : m_display(display), m_decoration(decoration)
+    {}
+
+    QString m_display;
+    QColor m_decoration;
+};
+
+template <>
+struct QRangeModel::ItemAccess<ItemAccessItem>
+{
+    static QVariant readRole(const ItemAccessItem &item, int role)
+    {
+        switch (role) {
+        case Qt::DisplayRole:
+            return item.m_display.toUpper();
+        case Qt::DecorationRole:
+            return QColor(item.m_decoration.red(), item.m_decoration.green(),
+                          item.m_decoration.blue(), 128);
+        default:
+            break;
+        }
+        return {};
+    }
+
+    static bool writeRole(ItemAccessItem &item, const QVariant &data, int role)
+    {
+        switch (role) {
+        case Qt::DisplayRole:
+        case Qt::EditRole:
+            item.m_display = data.toString();
+            return true;
+        default:
+            break;
+        }
+        return false;
+    }
+};
+
+void tst_QRangeModel::itemAccess()
+{
+    QRangeModel model(QList<ItemAccessItem *>{
+        new ItemAccessItem{"one", Qt::red}
+    });
+    const QModelIndex index = model.index(0, 0);
+    QCOMPARE(model.columnCount(), 1);
+    QCOMPARE(model.data(index), "ONE");
+    QCOMPARE(model.data(index, Qt::DecorationRole).value<QColor>().alpha(), 128);
+    QVERIFY(model.setData(index, "Two"));
+    QCOMPARE(model.data(index), "TWO");
+    QVERIFY(!model.setData(index, QVariant::fromValue(Qt::blue), Qt::DecorationRole));
+};
 
 QTEST_MAIN(tst_QRangeModel)
 #include "tst_qrangemodel.moc"

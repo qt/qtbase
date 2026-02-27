@@ -389,6 +389,33 @@ namespace QRangeModelDetails
     template <typename C>
     [[maybe_unused]] static constexpr bool is_range_v = is_range<C>();
 
+    // Detect an ItemAccess specialization with static read/writeRole members
+    template <typename T> struct QRangeModelItemAccess;
+
+    template <typename T, typename = void>
+    struct item_access : std::false_type {};
+
+    template <typename T>
+    struct item_access<T,
+        std::void_t<decltype(QRangeModelItemAccess<T>::readRole(std::declval<const std::remove_pointer_t<T>&>(),
+                                                                Qt::DisplayRole)),
+                    decltype(QRangeModelItemAccess<T>::writeRole(std::declval<std::remove_pointer_t<T>&>(),
+                                                                 std::declval<QVariant>(),
+                                                                 Qt::DisplayRole))
+                   >
+        > : std::true_type
+    {
+        using ItemAccess = QRangeModelItemAccess<std::remove_pointer_t<T>>;
+        static_assert(std::is_invocable_r_v<bool,
+            decltype(ItemAccess::writeRole), std::remove_pointer_t<T>&, QVariant, Qt::ItemDataRole>,
+            "The return type of the ItemAccess::writeRole implementation "
+            "needs to be convertible to a bool!");
+        static_assert(std::is_invocable_r_v<QVariant,
+            decltype(ItemAccess::readRole), const std::remove_pointer_t<T>&, Qt::ItemDataRole>,
+            "The return type of the ItemAccess::readRole implementation "
+            "needs to be convertible to QVariant!");
+    };
+
     // Detect which options are set to override default heuristics. Since
     // QRangeModel is not yet defined we need to delay the evaluation.
     template <typename T> struct QRangeModelRowOptions;
@@ -396,7 +423,7 @@ namespace QRangeModelDetails
     template <typename T, typename = void>
     struct row_category : std::false_type
     {
-        static constexpr bool isMultiRole = false;
+        static constexpr bool isMultiRole = item_access<std::remove_pointer_t<T>>::value;
     };
 
     template <typename T>
@@ -406,33 +433,6 @@ namespace QRangeModelDetails
         static constexpr auto rowCategory = QRangeModelRowOptions<T>::rowCategory;
         using RowCategory = decltype(rowCategory);
         static constexpr bool isMultiRole = rowCategory == RowCategory::MultiRoleItem;
-    };
-
-    // Detect an ItemAccess specialization with static read/writeRole members
-    template <typename T> struct QRangeModelItemAccess;
-
-    template <typename T, typename = void>
-    struct item_access : std::false_type {};
-
-    template <typename T>
-    struct item_access<T,
-        std::void_t<decltype(QRangeModelItemAccess<T>::readRole(std::declval<const T&>(),
-                                                                Qt::DisplayRole)),
-                    decltype(QRangeModelItemAccess<T>::writeRole(std::declval<T&>(),
-                                                                 std::declval<QVariant>(),
-                                                                 Qt::DisplayRole))
-                   >
-        > : std::true_type
-    {
-        using ItemAccess = QRangeModelItemAccess<T>;
-        static_assert(std::is_invocable_r_v<bool,
-            decltype(ItemAccess::writeRole), T&, QVariant, Qt::ItemDataRole>,
-            "The return type of the ItemAccess::writeRole implementation "
-            "needs to be convertible to a bool!");
-        static_assert(std::is_invocable_r_v<QVariant,
-            decltype(ItemAccess::readRole), const T&, Qt::ItemDataRole>,
-            "The return type of the ItemAccess::readRole implementation "
-            "needs to be convertible to QVariant!");
     };
 
     // Find out how many fixed elements can be retrieved from a row element.
@@ -1436,8 +1436,10 @@ public:
                 using ItemAccess = QRangeModelDetails::QRangeModelItemAccess<wrapped_value_type>;
                 tried = true;
                 for (auto &roleData : roleDataSpan) {
-                    if (!readModelData(roleData))
-                        roleData.setData(ItemAccess::readRole(value, roleData.role()));
+                    if (!readModelData(roleData)) {
+                        roleData.setData(ItemAccess::readRole(QRangeModelDetails::refTo(value),
+                                                              roleData.role()));
+                    }
                 }
             } else if constexpr (multi_role()) {
                 tried = true;
@@ -1580,7 +1582,7 @@ public:
                     using ItemAccess = QRangeModelDetails::QRangeModelItemAccess<wrapped_value_type>;
                     if (isRangeModelRole(role))
                         return setRangeModelDataRole();
-                    return ItemAccess::writeRole(target, data, role);
+                    return ItemAccess::writeRole(QRangeModelDetails::refTo(target), data, role);
                 } else if constexpr (has_metaobject<value_type>) {
                     if (row_traits::fixed_size() <= 1) { // multi-role value
                         if (isRangeModelRole(role))
