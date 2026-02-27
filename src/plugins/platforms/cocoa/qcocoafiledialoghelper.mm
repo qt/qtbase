@@ -384,8 +384,13 @@ typedef QSharedPointer<QFileDialogOptions> SharedPointerFileDialogOptions;
         return;
     const QString selection = m_nameFilterDropDownList.value([m_popupButton indexOfSelectedItem]);
     m_selectedNameFilter = [self findStrippedFilterWithVisualFilterName:selection];
-    [m_panel validateVisibleColumns];
-    [self updateProperties];
+
+    // Don't touch the panel if it's not shown, as its remote view service
+    // may already be invalidated (see QCocoaFileDialogHelper::setDirectory).
+    if (m_panel.visible) {
+        [m_panel validateVisibleColumns];
+        [self updateProperties];
+    }
 
     const QStringList filters = m_options->nameFilters();
     const int menuIndex = m_popupButton.indexOfSelectedItem;
@@ -639,7 +644,12 @@ void QCocoaFileDialogHelper::setDirectory(const QUrl &directory)
 {
     m_directory = directory;
 
-    if (m_delegate)
+    // Only update the panel if it's currently shown. A previously closed
+    // panel is kept alive (for selectedFiles), but its remote view service
+    // may already be invalidated, in which case AppKit throws an
+    // NSInternalInconsistencyException. The next show() creates a new
+    // panel that picks up m_directory anyway.
+    if (m_delegate && m_delegate->m_panel.visible)
         m_delegate->m_panel.directoryURL = [NSURL fileURLWithPath:directory.toLocalFile().toNSString()];
 }
 
@@ -683,7 +693,9 @@ QList<QUrl> QCocoaFileDialogHelper::selectedFiles() const
 
 void QCocoaFileDialogHelper::setFilter()
 {
-    if (!m_delegate)
+    // Don't touch the panel if it's not shown (see setDirectory). The next
+    // show() creates a new panel that picks up the current options anyway.
+    if (!m_delegate || !m_delegate->m_panel.visible)
         return;
 
     [m_delegate updateProperties];
