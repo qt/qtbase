@@ -197,12 +197,12 @@ QString QTimeZonePrivate::displayName(QTimeZone::TimeType timeType,
 {
     const Data tran = data(timeType);
     if (tran.atMSecsSinceEpoch != invalidMSecs()) {
+#if QT_CONFIG(timezone_locale) // Takes care of offsetformat:
+        return localeName(tran.atMSecsSinceEpoch, tran.offsetFromUtc, timeType, nameType, locale);
+#else // All this base can help with is offset names:
         if (nameType == QTimeZone::OffsetName && isAnglicLocale(locale))
             return isoOffsetFormat(tran.offsetFromUtc);
-
-#if QT_CONFIG(timezone_locale)
-        return localeName(tran.atMSecsSinceEpoch, tran.offsetFromUtc, timeType, nameType, locale);
-#endif
+#endif // Hopefully derived classes can do better.
     }
     return QString();
 }
