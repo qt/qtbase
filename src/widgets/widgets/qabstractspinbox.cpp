@@ -2022,7 +2022,7 @@ QVariant operator+(const QVariant &arg1, const QVariant &arg2)
         QDateTime a2 = arg2.toDateTime();
         QDateTime a1 = arg1.toDateTime().addDays(QDATETIMEEDIT_DATE_MIN.daysTo(a2.date()));
         a1.setTime(a1.time().addMSecs(a2.time().msecsSinceStartOfDay()));
-        ret = QVariant(a1);
+        ret = QVariant(std::move(a1));
         break;
     }
 #endif // datetimeparser
@@ -2058,7 +2058,7 @@ QVariant operator-(const QVariant &arg1, const QVariant &arg2)
             QDateTime dt = a2.addDays(days).addSecs(secs);
             if (msecs > 0)
                 dt.setTime(dt.time().addMSecs(msecs));
-            ret = QVariant(dt);
+            ret = QVariant(std::move(dt));
         }
         break;
     }

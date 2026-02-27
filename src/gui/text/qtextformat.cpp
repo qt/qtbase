@@ -1267,7 +1267,7 @@ void QTextFormat::setProperty(int propertyId, const QList<QTextLength> &value)
     list.reserve(numValues);
     for (int i = 0; i < numValues; ++i)
         list << value.at(i);
-    d->insertProperty(propertyId, list);
+    d->insertProperty(propertyId, std::move(list));
 }
 
 /*!
@@ -2346,7 +2346,7 @@ void QTextBlockFormat::setTabPositions(const QList<QTextOption::Tab> &tabs)
     list.reserve(tabs.size());
     for (const auto &e : tabs)
         list.append(QVariant::fromValue(e));
-    setProperty(TabPositions, list);
+    setProperty(TabPositions, std::move(list));
 }
 
 /*!

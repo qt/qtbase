@@ -306,7 +306,7 @@ bool X509CertificateGeneric::parse(const QByteArray &data)
                                     break;
                                 }
                             }
-                            extension.value = extValue;
+                            extension.value = std::move(extValue);
                             extension.supported = true;
                         }
                     }
@@ -372,7 +372,7 @@ bool X509CertificateGeneric::parseExtension(const QByteArray &data, X509Certific
                 break;
             }
         }
-        value = result;
+        value = std::move(result);
     } else if (oid == "2.5.29.14") {
         // subjectKeyIdentifier
         if (!val.read(valElem.value()) || val.type() != QAsn1Element::OctetStringType)
@@ -397,7 +397,7 @@ bool X509CertificateGeneric::parseExtension(const QByteArray &data, X509Certific
             if (!ok)
                 return false;
         }
-        value = result;
+        value = std::move(result);
     } else if (oid == "2.5.29.35") {
         // authorityKeyIdentifier
         if (!val.read(valElem.value()) || val.type() != QAsn1Element::SequenceType)
@@ -413,7 +413,7 @@ bool X509CertificateGeneric::parseExtension(const QByteArray &data, X509Certific
                 result[serial] = colonSeparatedHex(el.value());
             }
         }
-        value = result;
+        value = std::move(result);
     } else {
         supported = false;
         value = valElem.value();

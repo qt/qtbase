@@ -123,7 +123,7 @@ QVariant QMimeDataPrivate::retrieveTypedData(const QString &format, QMetaType ty
             }
             if (numUrls == 1)
                 text.chop(1); // no final '\n' if there's only one URL
-            data = QVariant(text);
+            data = QVariant(std::move(text));
         }
     }
 

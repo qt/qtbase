@@ -519,7 +519,7 @@ void ValueExtractor::lengthValues(const Declaration &decl, int *m)
         v += QVariant::fromValue<LengthData>(datas[i]);
         m[i] = lengthValueFromData(datas[i], f);
     }
-    decl.d->parsed = v;
+    decl.d->parsed = std::move(v);
 }
 
 bool ValueExtractor::extractGeometry(int *w, int *h, int *minw, int *minh, int *maxw, int *maxh)
@@ -619,7 +619,7 @@ QSize ValueExtractor::sizeValue(const Declaration &decl)
         x[1] = x[0];
     QList<QVariant> v;
     v << QVariant::fromValue<LengthData>(x[0]) << QVariant::fromValue<LengthData>(x[1]);
-    decl.d->parsed = v;
+    decl.d->parsed = std::move(v);
     return QSize(lengthValueFromData(x[0], f), lengthValueFromData(x[1], f));
 }
 
@@ -1185,14 +1185,14 @@ static bool setFontSizeFromValue(QCss::Value value, QFont *font, int *fontSizeAd
     QString s = value.variant.toString();
     if (s.endsWith("pt"_L1, Qt::CaseInsensitive)) {
         s.chop(2);
-        value.variant = s;
+        value.variant = std::move(s);
         if (value.variant.convert(QMetaType::fromType<qreal>())) {
             font->setPointSizeF(qBound(qreal(0), value.variant.toReal(), qreal(1 << 24) - 1));
             valid = true;
         }
     } else if (s.endsWith("px"_L1, Qt::CaseInsensitive)) {
         s.chop(2);
-        value.variant = s;
+        value.variant = std::move(s);
         if (value.variant.convert(QMetaType::fromType<qreal>())) {
             font->setPixelSize(qBound(0, value.variant.toInt(), (1 << 24) - 1));
             valid = true;
@@ -1594,7 +1594,7 @@ void Declaration::brushValues(QBrush *c, const QPalette &pal) const
             }
         }
         if (needParse & 0x10)
-            d->parsed = v;
+            d->parsed = std::move(v);
     }
     if (i == 0) c[0] = c[1] = c[2] = c[3] = QBrush();
     else if (i == 1) c[3] = c[2] = c[1] = c[0];
@@ -1727,7 +1727,7 @@ void Declaration::colorValues(QColor *c, const QPalette &pal) const
                 c[i] = color.color;
             }
         }
-        d->parsed = v;
+        d->parsed = std::move(v);
     }
 
     if (i == 0) c[0] = c[1] = c[2] = c[3] = QColor();
@@ -2991,7 +2991,7 @@ bool Parser::parseTerm(Value *value)
                     if (QFileInfo(args).isRelative() && !sourcePath.isEmpty()) {
                         args.prepend(sourcePath);
                     }
-                    value->variant = args;
+                    value->variant = std::move(args);
                 } else {
                     value->type = Value::Function;
                     value->variant = QStringList() << name << args;

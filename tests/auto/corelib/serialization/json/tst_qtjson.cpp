@@ -3914,13 +3914,13 @@ void tst_QtJson::documentFromVariant()
     QStringList strList;
     strList.append(string);
 
-    QJsonDocument da1 = QJsonDocument::fromVariant(QVariant(strList));
+    QJsonDocument da1 = QJsonDocument::fromVariant(QVariant(std::move(strList)));
     QVERIFY(da1.isArray());
 
     QVariantList list;
     list.append(string);
 
-    QJsonDocument da2 = QJsonDocument::fromVariant(list);
+    QJsonDocument da2 = QJsonDocument::fromVariant(std::move(list));
     QVERIFY(da2.isArray());
 
     // As JSON arrays they should be equal.
@@ -3930,13 +3930,13 @@ void tst_QtJson::documentFromVariant()
     QMap <QString, QVariant> map;
     map["key"] = string;
 
-    QJsonDocument do1 = QJsonDocument::fromVariant(QVariant(map));
+    QJsonDocument do1 = QJsonDocument::fromVariant(QVariant(std::move(map)));
     QVERIFY(do1.isObject());
 
     QHash <QString, QVariant> hash;
     hash["key"] = string;
 
-    QJsonDocument do2 = QJsonDocument::fromVariant(QVariant(hash));
+    QJsonDocument do2 = QJsonDocument::fromVariant(QVariant(std::move(hash)));
     QVERIFY(do2.isObject());
 
     // As JSON objects they should be equal.

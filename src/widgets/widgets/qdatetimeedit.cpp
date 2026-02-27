@@ -240,7 +240,7 @@ void QDateTimeEdit::setDateTime(const QDateTime &datetime)
         const QDate date = when.date();
         if (!(d->sections & DateSections_Mask))
             setDateRange(date, date);
-        d->setValue(when, EmitIfChanged);
+        d->setValue(std::move(when), EmitIfChanged);
     }
 }
 
@@ -272,7 +272,7 @@ void QDateTimeEdit::setDate(QDate date)
         d->clearCache();
         QDateTime when = d->dateTimeValue(date, d->value.toTime());
         Q_ASSERT(when.isValid());
-        d->setValue(when, EmitIfChanged);
+        d->setValue(std::move(when), EmitIfChanged);
         d->updateTimeZone();
     }
 }
@@ -449,9 +449,9 @@ void QDateTimeEdit::setDateTimeRange(const QDateTime &min, const QDateTime &max)
 {
     Q_D(QDateTimeEdit);
     // FIXME: does none of the range checks applied to setMin/setMax methods !
-    const QDateTime minimum = min.toTimeZone(d->timeZone);
-    const QDateTime maximum = (min > max ? minimum : max.toTimeZone(d->timeZone));
-    d->setRange(minimum, maximum);
+    QDateTime minimum = min.toTimeZone(d->timeZone);
+    QDateTime maximum = (min > max ? minimum : max.toTimeZone(d->timeZone));
+    d->setRange(std::move(minimum), std::move(maximum));
 }
 
 /*!
@@ -2279,7 +2279,7 @@ QDateTime QDateTimeEditPrivate::stepBy(int sectionIndex, int steps, bool test) c
         }
     }
 
-    return bound(v, value, steps).toDateTime().toTimeZone(timeZone);
+    return bound(std::move(v), value, steps).toDateTime().toTimeZone(timeZone);
 }
 
 /*!

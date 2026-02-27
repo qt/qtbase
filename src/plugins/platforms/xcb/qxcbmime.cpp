@@ -164,9 +164,9 @@ QVariant QXcbMime::mimeConvertToFormat(QXcbConnection *connection, xcb_atom_t a,
                     QList<QVariant> list;
                     list.reserve(urls.size());
                     for (const QStringView &s : urls) {
-                        const QUrl url(s.trimmed().toString());
+                        QUrl url(s.trimmed().toString());
                         if (url.isValid())
-                            list.append(url);
+                            list.emplace_back(std::move(url));
                     }
                     // We expect "text/x-moz-url" as <url><space><title>.
                     // The atomName variable is not used because mimeAtomToString()
