@@ -226,6 +226,7 @@ public:
     bool getImmersiveModeEnabledState();
     QPixmap snapshot() const;
     bool startMoving();
+    void enableDrag(bool enable);
 
     QOhosOptional<bool> isFocused() const;
 

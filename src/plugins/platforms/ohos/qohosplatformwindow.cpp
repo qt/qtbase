@@ -62,6 +62,7 @@ const QOhosPropertyDescriptor<bool> QOhosPlatformWindow::windowPrivacyModeSettin
 const QOhosPropertyDescriptor<QColor> QOhosPlatformWindow::surfaceBackgroundColorProperty;
 const QOhosPropertyDescriptor<QOhosPlatformWindow::NativeNodeRenderFitPolicy> QOhosPlatformWindow::nativeNodeRenderFitPolicyHintProperty;
 const QOhosPropertyDescriptor<bool> QOhosPlatformWindow::windowKeepScreenOnProperty;
+const QOhosPropertyDescriptor<bool> QOhosPlatformWindow::windowDragResizableProperty;
 const QOhosPropertyDescriptor<bool> QOhosPlatformWindow::windowFixedSizeStateProperty;
 const QOhosPropertyDescriptor<int> QOhosPlatformWindow::windowBrightnessProperty;
 const QOhosPropertyDescriptor<int> QOhosPlatformWindow::windowContrastProperty;
@@ -386,6 +387,11 @@ void QOhosPlatformWindow::setSurfaceBackgroundColor(QObject *windowOrWidget, con
 void QOhosPlatformWindow::setWindowKeepScreenOn(QObject *windowOrWidget, bool keepScreenOn)
 {
     setWindowOrWidgetProperty<bool, &windowKeepScreenOnProperty>(windowOrWidget, keepScreenOn);
+}
+
+void QOhosPlatformWindow::setWindowDragResizable(QObject *windowOrWidget, bool dragResizable)
+{
+    setWindowOrWidgetProperty<bool, &windowDragResizableProperty>(windowOrWidget, dragResizable);
 }
 
 void QOhosPlatformWindow::setBrightness(QObject *windowOrWidget, int brightness)

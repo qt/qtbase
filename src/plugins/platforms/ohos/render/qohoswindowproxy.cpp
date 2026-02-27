@@ -1619,6 +1619,27 @@ bool QOhosWindowProxy::startMoving()
     return true;
 }
 
+void QOhosWindowProxy::enableDrag(bool enable)
+{
+    qCDebug(QtForOhos, "%s: %s", Q_FUNC_INFO, QtOhos::mapBoolToTrueFalseStr(enable));
+
+    if (qtIsMainWindow()) {
+        qCWarning(QtForOhos(), "%s: enableDrag is not supported on main windows", Q_FUNC_INFO);
+        return;
+    }
+
+    QtOhos::invokeInJsThreadAndWaitForContinue(
+        [&](QtOhos::JsState &, std::function<void()> continueFunc) {
+            if (m_jsScopeData->isWindowClosing()) {
+                continueFunc();
+                return;
+            }
+            m_jsScopeData->jsWindowRef->call<QNapi::Promise>("enableDrag", {enable})
+            .onCatch(QtOhos::makeErrorLoggingJsCallback("enableDrag()"))
+            .onFinally(std::move(continueFunc));
+        });
+}
+
 QOhosOptional<bool> QOhosWindowProxy::isFocused() const
 {
     return QtOhos::evalInJsThread(

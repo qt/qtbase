@@ -45,6 +45,7 @@ public:
     static const QOhosPropertyDescriptor<QColor> surfaceBackgroundColorProperty;
     static const QOhosPropertyDescriptor<NativeNodeRenderFitPolicy> nativeNodeRenderFitPolicyHintProperty;
     static const QOhosPropertyDescriptor<bool> windowKeepScreenOnProperty;
+    static const QOhosPropertyDescriptor<bool> windowDragResizableProperty;
     static const QOhosPropertyDescriptor<bool> windowFixedSizeStateProperty;
     static const QOhosPropertyDescriptor<int> windowBrightnessProperty;
     static const QOhosPropertyDescriptor<int> windowContrastProperty;
@@ -62,6 +63,7 @@ public:
     static Qt::WindowFlags platformWindowFlagsForQWindow(QWindow *window);
     static void setSurfaceBackgroundColor(QObject *windowOrWidget, const QColor &color);
     static void setWindowKeepScreenOn(QObject *windowOrWidget, bool keepScreenOn);
+    static void setWindowDragResizable(QObject *windowOrWidget, bool dragResizable);
     static void setBrightness(QObject *windowOrWidget, int brightness);
     static void setContrast(QObject *windowOrWidget, int contrast);
     static void setSaturation(QObject *windowOrWidget, int saturation);
