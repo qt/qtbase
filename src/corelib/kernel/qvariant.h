@@ -433,18 +433,31 @@ public:
     QVariant(QDate date) noexcept;
     QVariant(QTime time) noexcept;
     QVariant(const QBitArray &bitarray) noexcept;
+    QVariant(QBitArray &&bitarray) noexcept;
     QVariant(const QByteArray &bytearray) noexcept;
+    QVariant(QByteArray &&bytearray) noexcept;
     QVariant(const QDateTime &datetime) noexcept;
+    QVariant(QDateTime &&datetime) noexcept;
     QVariant(const QHash<QString, QVariant> &hash) noexcept;
+    QVariant(QHash<QString, QVariant> &&hash) noexcept;
     QVariant(const QJsonArray &jsonArray) noexcept;
+    QVariant(QJsonArray &&jsonArray) noexcept;
     QVariant(const QJsonObject &jsonObject) noexcept;
+    QVariant(QJsonObject &&jsonObject) noexcept;
     QVariant(const QList<QVariant> &list) noexcept;
+    QVariant(QList<QVariant> &&list) noexcept;
     QVariant(const QLocale &locale) noexcept;
+    QVariant(QLocale &&locale) noexcept;
     QVariant(const QMap<QString, QVariant> &map) noexcept;
+    QVariant(QMap<QString, QVariant> &&map) noexcept;
     QVariant(const QRegularExpression &re) noexcept;
+    QVariant(QRegularExpression &&re) noexcept;
     QVariant(const QString &string) noexcept;
+    QVariant(QString &&string) noexcept;
     QVariant(const QStringList &stringlist) noexcept;
+    QVariant(QStringList &&stringlist) noexcept;
     QVariant(const QUrl &url) noexcept;
+    QVariant(QUrl &&url) noexcept;
 
     // conditionally noexcept trivial or trivially-copyable
     // (most of these are noexcept on 64-bit)

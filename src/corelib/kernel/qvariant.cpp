@@ -644,6 +644,12 @@ void *QVariant::prepareForEmplace(QMetaType type)
 */
 
 /*!
+    \since 6.12
+    \fn QVariant::QVariant(QString &&val)
+    \overload
+*/
+
+/*!
     \fn QVariant::QVariant(QLatin1StringView val)
 
     Constructs a new variant with a QString value from the Latin-1
@@ -672,15 +678,33 @@ void *QVariant::prepareForEmplace(QMetaType type)
 */
 
 /*!
+    \since 6.12
+    \fn QVariant::QVariant(QStringList &&val)
+    \overload
+*/
+
+/*!
   \fn QVariant::QVariant(const QMap<QString, QVariant> &val) noexcept
 
     Constructs a new variant with a map of \l {QVariant}s, \a val.
 */
 
 /*!
+    \since 6.12
+    \fn QVariant::QVariant(QMap<QString, QVariant> &&val)
+    \overload
+*/
+
+/*!
   \fn QVariant::QVariant(const QHash<QString, QVariant> &val) noexcept
 
     Constructs a new variant with a hash of \l {QVariant}s, \a val.
+*/
+
+/*!
+    \since 6.12
+    \fn QVariant::QVariant(QHash<QString, QVariant> &&val)
+    \overload
 */
 
 /*!
@@ -699,6 +723,12 @@ void *QVariant::prepareForEmplace(QMetaType type)
   \fn QVariant::QVariant(const QDateTime &val) noexcept
 
     Constructs a new variant with a date/time value, \a val.
+*/
+
+/*!
+    \since 6.12
+    \fn QVariant::QVariant(QDateTime &&val)
+    \overload
 */
 
 /*!
@@ -744,10 +774,22 @@ void *QVariant::prepareForEmplace(QMetaType type)
 */
 
 /*!
+    \since 6.12
+    \fn QVariant::QVariant(QJsonObject &&val)
+    \overload
+*/
+
+/*!
     \since 5.0
     \fn QVariant::QVariant(const QJsonArray &val)
 
     Constructs a new variant with a json array value, \a val.
+*/
+
+/*!
+    \since 6.12
+    \fn QVariant::QVariant(QJsonArray &&val)
+    \overload
 */
 
 /*!
@@ -764,9 +806,21 @@ void *QVariant::prepareForEmplace(QMetaType type)
 */
 
 /*!
+    \since 6.12
+    \fn QVariant::QVariant(QByteArray &&val)
+    \overload
+*/
+
+/*!
   \fn QVariant::QVariant(const QBitArray &val) noexcept
 
     Constructs a new variant with a bitarray value, \a val.
+*/
+
+/*!
+    \since 6.12
+    \fn QVariant::QVariant(QBitArray &&val)
+    \overload
 */
 
 /*!
@@ -824,6 +878,12 @@ void *QVariant::prepareForEmplace(QMetaType type)
  */
 
 /*!
+    \since 6.12
+    \fn QVariant::QVariant(QUrl &&val)
+    \overload
+*/
+
+/*!
   \fn QVariant::QVariant(int val) noexcept
 
     Constructs a new variant with an integer value, \a val.
@@ -874,6 +934,12 @@ void *QVariant::prepareForEmplace(QMetaType type)
 */
 
 /*!
+    \since 6.12
+    \fn QVariant::QVariant(QList<QVariant> &&val)
+    \overload
+*/
+
+/*!
   \fn QVariant::QVariant(QChar c) noexcept
 
   Constructs a new variant with a char value, \a c.
@@ -886,11 +952,23 @@ void *QVariant::prepareForEmplace(QMetaType type)
 */
 
 /*!
+    \since 6.12
+    \fn QVariant::QVariant(QLocale &&val)
+    \overload
+*/
+
+/*!
   \fn QVariant::QVariant(const QRegularExpression &re) noexcept
 
   \since 5.0
 
   Constructs a new variant with the regular expression value \a re.
+*/
+
+/*!
+    \since 6.12
+    \fn QVariant::QVariant(QRegularExpression &&val)
+    \overload
 */
 
 /*! \fn QVariant::QVariant(Type type)
@@ -933,6 +1011,16 @@ QVariant::QVariant(QMetaType type, const void *copy)
     static_assert(std::is_nothrow_copy_constructible_v<__VA_ARGS__>) \
     /* end */
 
+#define MAKE_CTOR_BY_REF(...) \
+    QVariant::QVariant(__VA_ARGS__ &&val) noexcept \
+        : d{std::in_place, std::move(val)} {} \
+    QVariant::QVariant(const __VA_ARGS__ &val) noexcept \
+        : d{std::in_place, val} {} \
+    static_assert(QVariant::Private::CanUseInternalSpace<__VA_ARGS__>); \
+    static_assert(std::is_nothrow_copy_constructible_v<__VA_ARGS__>); \
+    static_assert(std::is_nothrow_move_constructible_v<__VA_ARGS__>) \
+    /* end */
+
 MAKE_CTOR_BY_VALUE(int);
 MAKE_CTOR_BY_VALUE(uint);
 MAKE_CTOR_BY_VALUE(qlonglong);
@@ -941,19 +1029,17 @@ MAKE_CTOR_BY_VALUE(bool);
 MAKE_CTOR_BY_VALUE(double);
 MAKE_CTOR_BY_VALUE(float);
 
-QVariant::QVariant(const QByteArray &val) noexcept : d{std::in_place, val} {}
-QVariant::QVariant(const QBitArray &val) noexcept : d{std::in_place, val} {}
-QVariant::QVariant(const QString &val) noexcept : d{std::in_place, val} {}
+MAKE_CTOR_BY_REF(QByteArray);
+MAKE_CTOR_BY_REF(QBitArray);
+MAKE_CTOR_BY_REF(QString);
 MAKE_CTOR_BY_VALUE(QChar);
-QVariant::QVariant(const QStringList &val) noexcept : d{std::in_place, val} {}
-
+MAKE_CTOR_BY_REF(QStringList);
 MAKE_CTOR_BY_VALUE(QDate);
 MAKE_CTOR_BY_VALUE(QTime);
-QVariant::QVariant(const QDateTime &val) noexcept : d{std::in_place, val} {}
-
-QVariant::QVariant(const QList<QVariant> &list) noexcept : d{std::in_place, list} {}
-QVariant::QVariant(const QMap<QString, QVariant> &map) noexcept : d{std::in_place, map} {}
-QVariant::QVariant(const QHash<QString, QVariant> &hash) noexcept : d{std::in_place, hash} {}
+MAKE_CTOR_BY_REF(QDateTime);
+MAKE_CTOR_BY_REF(QList<QVariant>);
+MAKE_CTOR_BY_REF(QMap<QString, QVariant>);
+MAKE_CTOR_BY_REF(QHash<QString, QVariant>);
 
 QVariant::QVariant(QLatin1StringView val) : QVariant(QString(val)) {}
 
@@ -968,17 +1054,17 @@ MAKE_CTOR_BY_VALUE(QLine);
 MAKE_CTOR_BY_VALUE(QLineF);
 MAKE_CTOR_BY_VALUE(QSize);
 MAKE_CTOR_BY_VALUE(QSizeF);
-QVariant::QVariant(const QUrl &u) noexcept : d{std::in_place, u} {}
-QVariant::QVariant(const QLocale &l) noexcept : d{std::in_place, l} {}
+MAKE_CTOR_BY_REF(QUrl);
+MAKE_CTOR_BY_REF(QLocale);
 #if QT_CONFIG(regularexpression)
-QVariant::QVariant(const QRegularExpression &re) noexcept : d{std::in_place, re} {}
+MAKE_CTOR_BY_REF(QRegularExpression);
 #endif // QT_CONFIG(regularexpression)
 MAKE_CTOR_BY_VALUE(QUuid);
 QVariant::QVariant(const QJsonValue &jsonValue) noexcept(Private::FitsInInternalSize<sizeof(CborValueStandIn)>)
     : d{std::in_place, jsonValue}
 { static_assert(sizeof(CborValueStandIn) == sizeof(QJsonValue)); }
-QVariant::QVariant(const QJsonObject &jsonObject) noexcept : d{std::in_place, jsonObject} {}
-QVariant::QVariant(const QJsonArray &jsonArray) noexcept : d{std::in_place, jsonArray} {}
+MAKE_CTOR_BY_REF(QJsonObject);
+MAKE_CTOR_BY_REF(QJsonArray);
 QVariant::QVariant(const QJsonDocument &jsonDocument) : d{std::in_place, jsonDocument} {}
 #if QT_CONFIG(itemmodel)
 QVariant::QVariant(const QModelIndex &modelIndex) noexcept(Private::FitsInInternalSize<8 + 2 * sizeof(quintptr)>)
@@ -987,6 +1073,7 @@ QVariant::QVariant(const QPersistentModelIndex &modelIndex)
     : d{std::in_place, modelIndex} {}
 #endif
 
+#undef MAKE_CTOR_BY_REF
 #undef MAKE_CTOR_BY_VALUE
 
 /*! \fn QVariant::Type QVariant::type() const
