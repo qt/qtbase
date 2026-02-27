@@ -186,6 +186,13 @@ QPointF getPointerEventDisplayPosition(const ::ArkUI_UIInputEvent *event)
         callArkUi(Q_OHOS_NAMED_FUNC(::OH_ArkUI_PointerEvent_GetDisplayY), event));
 }
 
+QPointF getPointerEventGlobalPosition(const ::ArkUI_UIInputEvent *event)
+{
+    return QPointF(
+        callArkUi(Q_OHOS_NAMED_FUNC(::OH_ArkUI_PointerEvent_GetGlobalDisplayX), event),
+        callArkUi(Q_OHOS_NAMED_FUNC(::OH_ArkUI_PointerEvent_GetGlobalDisplayY), event));
+}
+
 ch::milliseconds getInputEventTimeMs(const ::ArkUI_UIInputEvent *event)
 {
     auto eventTime = ch::nanoseconds(callArkUi(Q_OHOS_NAMED_FUNC(::OH_ArkUI_UIInputEvent_GetEventTime), event));
@@ -198,6 +205,7 @@ NativeNodeMouseEvent NativeNodeMouseEvent::makeFromUiInputEvent(::ArkUI_UIInputE
         .timestampMs = getInputEventTimeMs(event),
         .localPosition = getPointerEventLocalPosition(event),
         .displayPosition = getPointerEventDisplayPosition(event),
+        .globalPosition = getPointerEventGlobalPosition(event),
         .button = callArkUi(Q_OHOS_NAMED_FUNC(::OH_ArkUI_MouseEvent_GetMouseButton), event),
         .action = callArkUi(Q_OHOS_NAMED_FUNC(::OH_ArkUI_MouseEvent_GetMouseAction), event),
         .modifiers = readKeyModifiersFromOhosUiInputEvent(event),

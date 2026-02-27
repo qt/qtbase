@@ -67,6 +67,7 @@ struct NativeNodeMouseEvent
     std::chrono::milliseconds timestampMs;
     QPointF localPosition;
     QPointF displayPosition;
+    QPointF globalPosition;
     std::int32_t button;
     std::int32_t action;
     QFlags<OhosKeyboardModifier> modifiers;
