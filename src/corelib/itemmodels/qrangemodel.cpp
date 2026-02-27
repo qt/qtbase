@@ -793,7 +793,9 @@ Q_CORE_EXPORT QVariant qVariantAtIndex(const QModelIndex &index)
     \endcode
 
     A specialization of this type will take precedence over any predefined
-    behavior. Do not specialize this template for types you do not own.
+    behavior. Do not specialize this template for types you do not own. Types
+    for which ItemAccess is specialized are implicitly interpreted as
+    \l{RowCategory}{multi-role items}.
 */
 
 /*!
