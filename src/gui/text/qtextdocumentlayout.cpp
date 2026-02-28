@@ -3542,7 +3542,7 @@ void QTextDocumentLayoutPrivate::layoutBlock(const QTextBlock &bl, int blockPosi
                     line.setLineWidth(qMax<qreal>(line.naturalTextWidth(), (right-left).toReal()));
 
                     if (haveWordOrAnyWrapMode) {
-                        option.setWrapMode(QTextOption::WordWrap);
+                        option.setWrapMode(QTextOption::WrapAtWordBoundaryOrAnywhere);
                         tl->setTextOption(option);
                     }
                 }
