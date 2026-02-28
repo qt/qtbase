@@ -641,7 +641,8 @@ void QAbstractSpinBox::stepBy(int steps)
         default:
             singleStep = d->singleStep;
         }
-        d->setValue(d->bound(d->value + (singleStep * steps), old, steps), e);
+        const auto newVal = d->bound(d->value + (singleStep * steps), old, steps);
+        d->setValue(d->roundValue(newVal), e);
     } else if (e == AlwaysEmit) {
         d->emitSignals(e, old);
     }
@@ -1772,6 +1773,11 @@ void QAbstractSpinBoxPrivate::setValue(const QVariant &val, EmitPolicy ep,
     if (ep == AlwaysEmit || (ep == EmitIfChanged && old != value)) {
         emitSignals(ep, old);
     }
+}
+
+QVariant QAbstractSpinBoxPrivate::roundValue(const QVariant &val) const
+{
+    return val;
 }
 
 /*!

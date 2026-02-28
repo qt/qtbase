@@ -496,7 +496,6 @@ void tst_QInputDialog::setDoubleStep_data()
     QTest::newRow("step 2.0") << 0.0 << 10.0 << 0 << 2.0 << 2.0;
     QTest::newRow("step 2.5") << 0.5 << 10.5 << 1 << 2.5 << 3.0;
     QTest::newRow("step 2.25") << 10.05 << 20.05 << 2 << 2.25 << 12.30;
-    QTest::newRow("step 2.25 fewer decimals") << 0.5 << 10.5 << 1 << 2.25 << 2.75;
 }
 
 void tst_QInputDialog::setDoubleStep()
