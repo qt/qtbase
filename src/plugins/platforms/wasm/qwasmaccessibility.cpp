@@ -520,6 +520,7 @@ emscripten::val QWasmAccessibility::createHtmlElement(QAccessibleInterface *ifac
             setAttribute(element, "type", "text");
             setAttribute(element, "contenteditable", "true");
             setAttribute(element, "readonly", iface->state().readOnly);
+            setAttribute(element, "autocorrect", "off");
             setProperty(element, "inputMode", "text");
         } break;
         default:
@@ -727,6 +728,7 @@ void QWasmAccessibility::handleLineEditUpdate(QAccessibleEvent *event)
         else
             setProperty(element, "type", "text");
     } break;
+    case QAccessible::ValueChanged:
     case QAccessible::NameChanged: {
         setNamedProperty(event->accessibleInterface(), "value", QAccessible::Value);
     } break;
@@ -744,8 +746,11 @@ void QWasmAccessibility::handleLineEditUpdate(QAccessibleEvent *event)
         setNamedProperty(event->accessibleInterface(), "value", QAccessible::Value);
     } break;
     case QAccessible::TextRemoved:
-    case QAccessible::TextInserted:
+    case QAccessible::TextInserted: {
+        setNamedProperty(event->accessibleInterface(), "value", QAccessible::Value);
+    } break;
     case QAccessible::TextCaretMoved: {
+        // We lack ValueChanged event, sync on caret move instead
         setNamedProperty(event->accessibleInterface(), "value", QAccessible::Value);
     } break;
     default:
