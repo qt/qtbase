@@ -54,6 +54,10 @@ public:
     virtual QString textFromValue(const QVariant &n) const override;
     QVariant validateAndInterpret(QString &input, int &pos,
                                   QValidator::State &state) const;
+    QVariant roundValue(const QVariant &val) const override
+    {
+        return round(val.toDouble());
+    }
     double round(double input) const;
     // variables
     int decimals;

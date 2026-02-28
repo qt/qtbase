@@ -69,6 +69,7 @@ public:
     virtual void setRange(const QVariant &min, const QVariant &max);
     void setValue(const QVariant &val, EmitPolicy ep, bool updateEdit = true);
     virtual QVariant bound(const QVariant &val, const QVariant &old = QVariant(), int steps = 0) const;
+    virtual QVariant roundValue(const QVariant &val) const;
     virtual void updateEdit();
 
     virtual void emitSignals(EmitPolicy ep, const QVariant &old);
