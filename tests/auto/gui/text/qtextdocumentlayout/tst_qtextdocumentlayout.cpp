@@ -42,6 +42,7 @@ private slots:
 
     void largeImage();
 #endif
+    void wrapTextWithSpacesAndTabs();
 
 private:
     QTextDocument *doc;
@@ -428,6 +429,29 @@ void tst_QTextDocumentLayout::testHitTest()
     }
 }
 #endif
+
+void tst_QTextDocumentLayout::wrapTextWithSpacesAndTabs()
+{
+    doc->clear();
+
+    QTextOption option = doc->defaultTextOption();
+    option.setWrapMode(QTextOption::WrapAtWordBoundaryOrAnywhere);
+    doc->setDefaultTextOption(option);
+    doc->setTextWidth(200);
+
+    QTextCursor cursor(doc);
+    // Spaces followed by tab create specific width that triggers overflow handling
+    cursor.insertText(QString(70, ' ') + QStringLiteral("\t") + QStringLiteral("text"));
+
+    doc->documentLayout()->documentSize();
+
+    QTextBlock block = doc->firstBlock();
+    QVERIFY(block.isValid());
+
+    // Verify wrap mode is correctly restored to WrapAtWordBoundaryOrAnywhere
+    QCOMPARE(block.layout()->textOption().wrapMode(),
+             QTextOption::WrapAtWordBoundaryOrAnywhere);
+}
 
 QTEST_MAIN(tst_QTextDocumentLayout)
 #include "tst_qtextdocumentlayout.moc"
