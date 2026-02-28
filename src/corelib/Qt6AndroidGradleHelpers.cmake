@@ -510,12 +510,6 @@ function(_qt_internal_android_gradlew_name out_var)
     set(${out_var} "${gradlew_file_name}" PARENT_SCOPE)
 endfunction()
 
-# Return the path to the gradlew script.
-function(_qt_internal_android_gradlew_path out_var target)
-    _qt_internal_android_get_target_android_build_dir(android_build_dir ${target})
-    set(${out_var} "${android_build_dir}/${gradlew_file_name}" PARENT_SCOPE)
-endfunction()
-
 # Return Gradle clean command if QT_ANDROID_POST_BUILD_GRADLE_CLEANUP is set
 function(_qt_internal_android_gradle_cleanup_commands out_var gradlew working_dir target)
     if(NOT QT_ANDROID_POST_BUILD_GRADLE_CLEANUP)
