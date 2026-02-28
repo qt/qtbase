@@ -1591,7 +1591,7 @@ qt_feature("test_gui" PUBLIC
 # Run squish based tests on Windows, macOS and Linux
 qt_feature("test_squish" PUBLIC
     LABEL "Run Squish based tests"
-    CONDITION WIN32 OR (APPLE AND NOT IOS) OR (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    CONDITION WIN32 OR (APPLE AND NOT IOS) OR (CMAKE_SYSTEM_NAME STREQUAL "Linux" AND NOT ANDROID)
 )
 
 qt_configure_add_report_entry(
