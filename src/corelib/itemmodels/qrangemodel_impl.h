@@ -393,7 +393,10 @@ namespace QRangeModelDetails
     template <typename T> struct QRangeModelItemAccess;
 
     template <typename T, typename = void>
-    struct item_access : std::false_type {};
+    struct item_access : std::false_type
+    {
+        static constexpr bool hasFlags = false;
+    };
 
     template <typename T>
     struct item_access<T,
@@ -405,15 +408,21 @@ namespace QRangeModelDetails
                    >
         > : std::true_type
     {
-        using ItemAccess = QRangeModelItemAccess<std::remove_pointer_t<T>>;
+        using ItemType = std::remove_pointer_t<T>;
+        using ItemAccess = QRangeModelItemAccess<ItemType>;
         static_assert(std::is_invocable_r_v<bool,
-            decltype(ItemAccess::writeRole), std::remove_pointer_t<T>&, QVariant, Qt::ItemDataRole>,
+            decltype(ItemAccess::writeRole), ItemType&, QVariant, Qt::ItemDataRole>,
             "The return type of the ItemAccess::writeRole implementation "
             "needs to be convertible to a bool!");
         static_assert(std::is_invocable_r_v<QVariant,
-            decltype(ItemAccess::readRole), const std::remove_pointer_t<T>&, Qt::ItemDataRole>,
+            decltype(ItemAccess::readRole), const ItemType&, Qt::ItemDataRole>,
             "The return type of the ItemAccess::readRole implementation "
             "needs to be convertible to QVariant!");
+
+        template <typename Access, typename Test>
+        using hasFlags_test = decltype(Access::flags(std::declval<const Test&>()));
+
+        static constexpr bool hasFlags = qxp::is_detected_v<hasFlags_test, ItemAccess, ItemType>;
     };
 
     // Detect which options are set to override default heuristics. Since
@@ -1301,6 +1310,22 @@ public:
         if (!index.isValid())
             return Qt::NoItemFlags;
 
+        // try customization
+        std::optional<Qt::ItemFlags> customFlags;
+        readAt(index, [&customFlags](auto &&ref){
+            Q_UNUSED(ref);
+            using wrapped_value_type = q20::remove_cvref_t<QRangeModelDetails::wrapped_t<decltype(ref)>>;
+            if constexpr (QRangeModelDetails::item_access<wrapped_value_type>::hasFlags) {
+                using ItemAccess = QRangeModelDetails::QRangeModelItemAccess<wrapped_value_type>;
+                customFlags = ItemAccess::flags(ref);
+                if constexpr (!isMutable())
+                    *customFlags &= ~Qt::ItemIsEditable;
+            }
+        });
+        if (customFlags)
+            return *customFlags;
+
+        // compute flags ourselves
         Qt::ItemFlags f = Structure::defaultFlags();
 
         if constexpr (isMutable()) {

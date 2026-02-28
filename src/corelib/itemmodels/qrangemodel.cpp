@@ -796,6 +796,16 @@ Q_CORE_EXPORT QVariant qVariantAtIndex(const QModelIndex &index)
     };
     \endcode
 
+    Optionally, a \c{flags()} implementation can return a combination of
+    Qt::ItemFlags:
+
+    \code
+        static Qt::ItemFlags flags(const ItemType &item)
+        {
+            return item.flags();
+        }
+    \endcode
+
     A specialization of this type will take precedence over any predefined
     behavior. Do not specialize this template for types you do not own. Types
     for which ItemAccess is specialized are implicitly interpreted as

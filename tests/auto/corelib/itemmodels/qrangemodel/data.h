@@ -115,6 +115,11 @@ struct ItemAccessType
 template <>
 struct QRangeModel::ItemAccess<ItemAccessType>
 {
+    static Qt::ItemFlags flags(const ItemAccessType &)
+    {
+        return Qt::ItemIsEditable;
+    }
+
     static QVariant readRole(const ItemAccessType &item, int role)
     {
         switch (role) {
