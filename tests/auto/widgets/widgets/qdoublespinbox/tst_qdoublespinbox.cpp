@@ -23,46 +23,22 @@
 #include <QStyle>
 #include <QProxyStyle>
 
-#include <QtWidgets/private/qapplication_p.h>
-
 #include <QtCore/private/qlocale_p.h> // for QSystemLocale
 
 class DoubleSpinBox : public QDoubleSpinBox
 {
     Q_OBJECT
 public:
-    DoubleSpinBox(QWidget *parent = nullptr)
-        : QDoubleSpinBox(parent)
-    { /*connect(this, SIGNAL(valueChanged(double)), this, SLOT(foo(double)));*/ }
-    QString textFromValue(double v) const override
-    {
-        return QDoubleSpinBox::textFromValue(v);
-    }
-    QValidator::State validate(QString &text, int &pos) const override
-    {
-        return QDoubleSpinBox::validate(text, pos);
-    }
-    double valueFromText(const QString &text) const override
-    {
-        return QDoubleSpinBox::valueFromText(text);
-    }
-#if QT_CONFIG(wheelevent)
-    void wheelEvent(QWheelEvent *event) override
-    {
-        QDoubleSpinBox::wheelEvent(event);
-    }
-#endif
-    void initStyleOption(QStyleOptionSpinBox *option) const override
-    {
-        QDoubleSpinBox::initStyleOption(option);
-    }
+    using QDoubleSpinBox::QDoubleSpinBox;
 
-    QLineEdit* lineEdit() const { return QDoubleSpinBox::lineEdit(); }
-public slots:
-    void foo(double vla)
-    {
-        qDebug() << vla;
-    }
+    using QDoubleSpinBox::textFromValue;
+    using QDoubleSpinBox::validate;
+    using QDoubleSpinBox::valueFromText;
+    using QDoubleSpinBox::initStyleOption;
+    using QDoubleSpinBox::lineEdit;
+#if QT_CONFIG(wheelevent)
+    using QDoubleSpinBox::wheelEvent;
+#endif
 };
 
 class PressAndHoldStyle : public QProxyStyle
@@ -111,7 +87,6 @@ class tst_QDoubleSpinBox : public QObject
     Q_OBJECT
 public:
     tst_QDoubleSpinBox();
-    virtual ~tst_QDoubleSpinBox();
 public slots:
     void initTestCase();
     void cleanup();
@@ -210,19 +185,14 @@ static QLatin1String modifierToName(Qt::KeyboardModifier modifier)
     switch (modifier) {
     case Qt::NoModifier:
         return QLatin1String("No");
-        break;
     case Qt::ControlModifier:
         return QLatin1String("Ctrl");
-        break;
     case Qt::ShiftModifier:
         return QLatin1String("Shift");
-        break;
     case Qt::AltModifier:
         return QLatin1String("Alt");
-        break;
     case Qt::MetaModifier:
         return QLatin1String("Meta");
-        break;
     default:
         qFatal("Unexpected keyboard modifier");
         return QLatin1String();
@@ -232,10 +202,6 @@ static QLatin1String modifierToName(Qt::KeyboardModifier modifier)
 tst_QDoubleSpinBox::tst_QDoubleSpinBox()
 {
     QLocale::setDefault(QLocale::c());
-}
-
-tst_QDoubleSpinBox::~tst_QDoubleSpinBox()
-{
 }
 
 void tst_QDoubleSpinBox::initTestCase()
@@ -264,7 +230,7 @@ void tst_QDoubleSpinBox::setValue_data()
 void tst_QDoubleSpinBox::setValue()
 {
     QFETCH(double, val);
-    QDoubleSpinBox spin(0);
+    QDoubleSpinBox spin;
     spin.setRange(-DBL_MAX, DBL_MAX);
     spin.setValue(val);
     QCOMPARE(spin.value(), val);
@@ -386,7 +352,7 @@ void tst_QDoubleSpinBox::setTracking()
     QFETCH(QStringList, texts);
     QFETCH(bool, tracking);
 
-    QDoubleSpinBox spin(0);
+    QDoubleSpinBox spin;
     spin.setKeyboardTracking(tracking);
     spin.setDecimals(decimals);
     spin.show();
@@ -493,7 +459,7 @@ void tst_QDoubleSpinBox::setWrapping()
     QFETCH(QTestEventList, keys);
     QFETCH(DoubleList, expected);
 
-    QDoubleSpinBox spin(0);
+    QDoubleSpinBox spin;
     spin.setMinimum(minimum);
     spin.setMaximum(maximum);
     spin.setValue(startValue);
@@ -504,10 +470,7 @@ void tst_QDoubleSpinBox::setWrapping()
 
     keys.simulate(&spin);
 
-    QCOMPARE(actualValues.size(), expected.size());
-    for (int i=0; i<qMin(actualValues.size(), expected.size()); ++i) {
-        QCOMPARE(actualValues.at(i), expected.at(i));
-    }
+    QCOMPARE(actualValues, expected);
 }
 
 void tst_QDoubleSpinBox::setSpecialValueText_data()
@@ -536,7 +499,7 @@ void tst_QDoubleSpinBox::setSpecialValueText()
     QFETCH(QString, expected);
     QFETCH(bool, show);
 
-    QDoubleSpinBox spin(0);
+    QDoubleSpinBox spin;
     spin.setSpecialValueText(specialValueText);
     spin.setMinimum(minimum);
     spin.setMaximum(maximum);
@@ -557,20 +520,18 @@ void tst_QDoubleSpinBox::setSingleStep_data()
     QTest::addColumn<bool>("show");
 
     QTestEventList keys;
-    DoubleList values;
+    DoubleList values = { 11, 10, 11 };
     keys.addKeyClick(Qt::Key_Up);
     keys.addKeyClick(Qt::Key_Down);
     keys.addKeyClick(Qt::Key_Up);
-    values << 11 << 10 << 11;
     QTest::newRow("data0") << 1.0 << 10.0 << keys << values << false;
     QTest::newRow("data1") << 1.0 << 10.0 << keys << values << true;
 
     keys.clear();
-    values.clear();
     keys.addKeyClick(Qt::Key_Up);
     keys.addKeyClick(Qt::Key_Down);
     keys.addKeyClick(Qt::Key_Up);
-    values << 12.5 << 10.0 << 12.5;
+    values = { 12.5, 10.0, 12.5 };
     QTest::newRow("data2") << 2.5 << 10.0 << keys << values << false;
     QTest::newRow("data3") << 2.5 << 10.0 << keys << values << true;
 }
@@ -583,7 +544,7 @@ void tst_QDoubleSpinBox::setSingleStep()
     QFETCH(DoubleList, expected);
     QFETCH(bool, show);
 
-    QDoubleSpinBox spin(0);
+    QDoubleSpinBox spin;
     actualValues.clear();
     spin.setSingleStep(singleStep);
     spin.setValue(startValue);
@@ -593,10 +554,7 @@ void tst_QDoubleSpinBox::setSingleStep()
 
     QCOMPARE(actualValues.size(), 0);
     keys.simulate(&spin);
-    QCOMPARE(actualValues.size(), expected.size());
-    for (int i=0; i<qMin(actualValues.size(), expected.size()); ++i) {
-        QCOMPARE(actualValues.at(i), expected.at(i));
-    }
+    QCOMPARE(actualValues, expected);
 }
 
 void tst_QDoubleSpinBox::setMinMax_data()
@@ -632,7 +590,7 @@ void tst_QDoubleSpinBox::setMinMax()
     QFETCH(bool, show);
 
     {
-        QDoubleSpinBox spin(0);
+        QDoubleSpinBox spin;
         spin.setMinimum(minimum);
         spin.setMaximum(maximum);
         spin.setValue(startValue);
@@ -644,7 +602,7 @@ void tst_QDoubleSpinBox::setMinMax()
     }
 
     {
-        QDoubleSpinBox spin(0);
+        QDoubleSpinBox spin;
         spin.setMaximum(maximum);
         spin.setMinimum(minimum);
         spin.setValue(startValue);
@@ -655,7 +613,7 @@ void tst_QDoubleSpinBox::setMinMax()
     }
 
     {
-        QDoubleSpinBox spin(0);
+        QDoubleSpinBox spin;
         spin.setRange(minimum, maximum);
         spin.setValue(startValue);
 
@@ -693,7 +651,7 @@ void tst_QDoubleSpinBox::setDecimals()
     QFETCH(double, startValue);
     QFETCH(QString, expected);
 
-    QDoubleSpinBox spin(0);
+    QDoubleSpinBox spin;
     spin.setRange(-DBL_MAX, DBL_MAX);
     spin.setDecimals(decimals);
     spin.setValue(startValue);
@@ -831,7 +789,7 @@ void tst_QDoubleSpinBox::valueFromTextAndValidate()
 
 void tst_QDoubleSpinBox::setReadOnly()
 {
-    QDoubleSpinBox spin(0);
+    QDoubleSpinBox spin;
     spin.setValue(0.2);
     spin.show();
     QVERIFY(QTest::qWaitForWindowActive(&spin));
@@ -1068,15 +1026,9 @@ void tst_QDoubleSpinBox::undoRedo()
 
 #endif // QT_CONFIG(shortcut)
 
-struct task199226_DoubleSpinBox : public QDoubleSpinBox
-{
-    task199226_DoubleSpinBox(QWidget *parent = nullptr) : QDoubleSpinBox(parent) {}
-    QLineEdit *lineEdit() { return QAbstractSpinBox::lineEdit(); }
-};
-
 void tst_QDoubleSpinBox::task199226_stateAfterEnter()
 {
-    task199226_DoubleSpinBox spin;
+    DoubleSpinBox spin;
     spin.setMinimum(0);
     spin.setMaximum(10);
     spin.setDecimals(0);
@@ -1090,15 +1042,9 @@ void tst_QDoubleSpinBox::task199226_stateAfterEnter()
     QVERIFY(!spin.lineEdit()->isUndoAvailable());
 }
 
-class task224497_fltMax_DoubleSpinBox : public QDoubleSpinBox
-{
-public:
-    QLineEdit * lineEdit () const { return QDoubleSpinBox::lineEdit(); }
-};
-
 void tst_QDoubleSpinBox::task224497_fltMax()
 {
-    task224497_fltMax_DoubleSpinBox dspin;
+    DoubleSpinBox dspin;
     dspin.setMinimum(3);
     dspin.setMaximum(FLT_MAX);
     dspin.show();
@@ -1145,7 +1091,7 @@ void tst_QDoubleSpinBox::task255471_decimalsValidation()
 
 void tst_QDoubleSpinBox::taskQTBUG_5008_textFromValueAndValidate()
 {
-    class DecoratedSpinBox : public QDoubleSpinBox
+    class DecoratedSpinBox : public DoubleSpinBox
     {
     public:
         DecoratedSpinBox()
@@ -1153,11 +1099,6 @@ void tst_QDoubleSpinBox::taskQTBUG_5008_textFromValueAndValidate()
             setLocale(QLocale::French);
             setMaximum(100000000);
             setValue(1000);
-        }
-
-        QLineEdit *lineEdit() const
-        {
-            return QDoubleSpinBox::lineEdit();
         }
 
         //we use the French delimiters here
@@ -1212,7 +1153,7 @@ void tst_QDoubleSpinBox::setGroupSeparatorShown_data()
     QTest::newRow("data1") << QLocale::Swedish << QLocale::Sweden;
     QTest::newRow("data2") << QLocale::German << QLocale::Germany;
     QTest::newRow("data3") << QLocale::Georgian << QLocale::Georgia;
-    QTest::newRow("data3") << QLocale::Macedonian << QLocale::Macedonia;
+    QTest::newRow("data4") << QLocale::Macedonian << QLocale::Macedonia;
 }
 
 void tst_QDoubleSpinBox::setGroupSeparatorShown()
@@ -1588,7 +1529,7 @@ void tst_QDoubleSpinBox::stepModifierKeys()
     QFETCH(QTestEventList, keys);
     QFETCH(double, expectedValue);
 
-    QDoubleSpinBox spin(0);
+    QDoubleSpinBox spin;
     spin.setValue(startValue);
 
     QScopedPointer<StepModifierStyle, QScopedPointerDeleteLater> style(
