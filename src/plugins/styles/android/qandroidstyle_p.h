@@ -348,7 +348,7 @@ private:
     typedef QHash<int, AndroidControl *> AndroidControlsHash;
     AndroidControlsHash m_androidControlsHash;
     QPalette m_standardPalette;
-    AndroidCompoundButtonControl *checkBoxControl;
+    AndroidCompoundButtonControl *m_checkBoxControl = nullptr;
 };
 
 QT_END_NAMESPACE
