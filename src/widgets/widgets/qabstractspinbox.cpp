@@ -19,30 +19,23 @@
 #include <qclipboard.h>
 #include <qdatetime.h>
 #include <qevent.h>
+#include <qloggingcategory.h>
 #if QT_CONFIG(menu)
 #include <qmenu.h>
 #endif
-#include <qpainter.h>
-#include <qpalette.h>
 #include <qstylepainter.h>
-#include <qdebug.h>
 #if QT_CONFIG(accessibility)
 # include <qaccessible.h>
 #endif
 
 #include <QtCore/qpointer.h>
 
-//#define QABSTRACTSPINBOX_QSBDEBUG
-#ifdef QABSTRACTSPINBOX_QSBDEBUG
-#  define QASBDEBUG qDebug
-#else
-#  define QASBDEBUG if (false) qDebug
-#endif
-
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 using namespace std::chrono_literals;
+
+Q_STATIC_LOGGING_CATEGORY(lcWidgetAbstractSpinBox, "qt.widgets.qabstractspinbox")
 
 /*!
     \class QAbstractSpinBox
@@ -1910,7 +1903,8 @@ void QAbstractSpinBoxPrivate::interpret(EmitPolicy ep)
     if (q->validate(tmp, pos) != QValidator::Acceptable) {
         const QString copy = tmp;
         q->fixup(tmp);
-        QASBDEBUG() << "QAbstractSpinBoxPrivate::interpret() text '"
+        qDebug(lcWidgetAbstractSpinBox)
+                    << "QAbstractSpinBoxPrivate::interpret() text '"
                     << edit->displayText()
                     << "' >> '" << copy << '\''
                     << "' >> '" << tmp << '\'';
