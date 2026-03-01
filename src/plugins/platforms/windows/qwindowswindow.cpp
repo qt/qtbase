@@ -2406,6 +2406,10 @@ void QWindowsWindow::handleGeometryChange()
     const QRect previousGeometry = m_data.geometry;
     updateFullFrameMargins();
     m_data.geometry = geometry_sys();
+    // Avoid superfluous geometry change events, possibly triggered by window
+    // customization frameworks.
+    if (m_data.geometry == previousGeometry)
+        return;
     QWindowSystemInterface::handleGeometryChange(window(), m_data.geometry);
     // QTBUG-32121: OpenGL/normal windows (with exception of ANGLE
     // which we no longer support in Qt 6) do not receive expose
