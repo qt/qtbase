@@ -31,7 +31,6 @@ QAndroidStyle::QAndroidStyle()
     : QFusionStyle()
 {
     QPixmapCache::clear();
-    checkBoxControl = NULL;
     QPlatformNativeInterface *nativeInterface = QGuiApplication::platformNativeInterface();
     QPalette *standardPalette = reinterpret_cast<QPalette *>(nativeInterface->nativeResourceForIntegration("AndroidStandardPalette"));
     if (standardPalette)
@@ -65,8 +64,8 @@ QAndroidStyle::QAndroidStyle()
 
         switch (itemType) {
         case QC_Checkbox:
-            checkBoxControl = new AndroidCompoundButtonControl(item.toVariantMap(), itemType);
-            m_androidControlsHash[int(itemType)] = checkBoxControl;
+            m_checkBoxControl = new AndroidCompoundButtonControl(item.toVariantMap(), itemType);
+            m_androidControlsHash[int(itemType)] = m_checkBoxControl;
             break;
         case QC_RadioButton:
             m_androidControlsHash[int(itemType)] = new AndroidCompoundButtonControl(item.toVariantMap(),
@@ -375,6 +374,10 @@ void QAndroidStyle::drawComplexControl(ComplexControl cc,
         return;
     }
     if (cc == CC_GroupBox) {
+        if (!m_checkBoxControl) {
+            QFusionStyle::drawComplexControl(cc, opt, p, widget);
+            return;
+        }
         if (const QStyleOptionGroupBox *groupBox = qstyleoption_cast<const QStyleOptionGroupBox *>(opt)) {
             // Draw frame
             QRect textRect = subControlRect(CC_GroupBox, opt, SC_GroupBoxLabel, widget);
@@ -432,7 +435,7 @@ void QAndroidStyle::drawComplexControl(ComplexControl cc,
                 QStyleOptionButton box;
                 box.QStyleOption::operator=(*groupBox);
                 box.rect = checkBoxRect;
-                checkBoxControl->drawControl(&box, p, widget);
+                m_checkBoxControl->drawControl(&box, p, widget);
             }
         }
         return;
@@ -475,6 +478,9 @@ QRect QAndroidStyle::subControlRect(ComplexControl cc,
                                     SubControl sc,
                                     const QWidget *widget) const
 {
+    if (cc == CC_GroupBox && !m_checkBoxControl)
+        return QFusionStyle::subControlRect(cc, opt, sc, widget);
+
     const ItemType itemType = qtControl(cc);
     AndroidControlsHash::const_iterator it = itemType != QC_UnknownType
                                              ? m_androidControlsHash.find(itemType)
@@ -486,7 +492,7 @@ QRect QAndroidStyle::subControlRect(ComplexControl cc,
         case CC_GroupBox: {
             if (const QStyleOptionGroupBox *groupBox = qstyleoption_cast<const QStyleOptionGroupBox *>(opt)) {
                 QSize textSize = opt->fontMetrics.boundingRect(groupBox->text).size() + QSize(2, 2);
-                QSize checkBoxSize = checkBoxControl->size(opt);
+                QSize checkBoxSize = m_checkBoxControl->size(opt);
                 int indicatorWidth = checkBoxSize.width();
                 int indicatorHeight = checkBoxSize.height();
                 QRect checkBoxRect;
@@ -543,9 +549,13 @@ int QAndroidStyle::pixelMetric(PixelMetric metric, const QStyleOption *option,
     case PM_ScrollBarExtent:
         return 0;
     case PM_IndicatorWidth:
-        return checkBoxControl->size(option).width();
+        if (m_checkBoxControl)
+            return m_checkBoxControl->size(option).width();
+        return QFusionStyle::pixelMetric(metric, option, widget);
     case PM_IndicatorHeight:
-        return checkBoxControl->size(option).height();
+        if (m_checkBoxControl)
+            return m_checkBoxControl->size(option).height();
+        return QFusionStyle::pixelMetric(metric, option, widget);
     default:
         return QFusionStyle::pixelMetric(metric, option, widget);
     }
@@ -562,7 +572,7 @@ QSize QAndroidStyle::sizeFromContents(ContentsType ct,
         if (const QStyleOptionHeader *hdr = qstyleoption_cast<const QStyleOptionHeader *>(opt)) {
             bool nullIcon = hdr->icon.isNull();
             int margin = pixelMetric(QStyle::PM_HeaderMargin, hdr, w);
-            int iconSize = nullIcon ? 0 : checkBoxControl->size(opt).width();
+            int iconSize = nullIcon ? 0 : pixelMetric(QStyle::PM_IndicatorWidth, opt, w);
             QSize txt;
 /*
  * These next 4 lines are a bad hack to fix a bug in case a QStyleSheet is applied at QApplication level.
@@ -593,10 +603,10 @@ QSize QAndroidStyle::sizeFromContents(ContentsType ct,
                                              : m_androidControlsHash.end();
     if (it != m_androidControlsHash.end())
         return it.value()->sizeFromContents(opt, sz, w);
-    if (ct == CT_GroupBox) {
+    if (ct == CT_GroupBox && m_checkBoxControl) {
         if (const QStyleOptionGroupBox *groupBox = qstyleoption_cast<const QStyleOptionGroupBox *>(opt)) {
             QSize textSize = opt->fontMetrics.boundingRect(groupBox->text).size() + QSize(2, 2);
-            QSize checkBoxSize = checkBoxControl->size(opt);
+            QSize checkBoxSize = m_checkBoxControl->size(opt);
             int indicatorWidth = checkBoxSize.width();
             int indicatorHeight = checkBoxSize.height();
             QRect checkBoxRect;
