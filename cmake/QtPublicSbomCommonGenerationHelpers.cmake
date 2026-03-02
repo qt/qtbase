@@ -1,9 +1,12 @@
 # Copyright (C) 2025 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-if(CMAKE_VERSION VERSION_LESS 3.17.0)
-    set(CMAKE_CURRENT_FUNCTION_LIST_DIR "${CMAKE_CURRENT_LIST_DIR}")
-endif()
+# Save the 'macros base dir' in a global property instead of a variable, to allow access in a
+# deferred function where the variable might not be accessible by the function scope.
+# We explicitly don't set CMAKE_CURRENT_FUNCTION_LIST_DIR as we do in some other cases, because
+# that can be overridden by a different file depending on the inclusion order of the
+# cmake files, and thus pointing to a different dir.
+set_property(GLOBAL PROPERTY __qt_sbom_generation_helpers_base_dir "${CMAKE_CURRENT_LIST_DIR}")
 
 # Helper function to get common project related variables for SBOM generation for both SPDX and
 # CycloneDX formats.
@@ -542,11 +545,12 @@ function(_qt_internal_sbom_create_build_time_sbom_targets)
         set(build_sbom_install_prefix "${CMAKE_BINARY_DIR}")
     endif()
 
+    get_property(macro_module_base_dir GLOBAL PROPERTY __qt_sbom_generation_helpers_base_dir)
     _qt_internal_get_current_project_sbom_dir(sbom_dir)
     set(content "
         # Include helpers functions.
-        include(\"${CMAKE_CURRENT_FUNCTION_LIST_DIR}/QtPublicCMakeHelpers.cmake\")
-        include(\"${CMAKE_CURRENT_FUNCTION_LIST_DIR}/QtPublicSbomExternalReferenceHelpers.cmake\")
+        include(\"${macro_module_base_dir}/QtPublicCMakeHelpers.cmake\")
+        include(\"${macro_module_base_dir}/QtPublicSbomExternalReferenceHelpers.cmake\")
 
         # QT_SBOM_BUILD_TIME be set to FALSE at install time, so don't override if it's set.
         # This allows reusing the same cmake file for both build and install.
