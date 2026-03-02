@@ -38,7 +38,7 @@ QAndroidTimeZonePrivate::QAndroidTimeZonePrivate()
 }
 
 // Create a named time zone
-QAndroidTimeZonePrivate::QAndroidTimeZonePrivate(const QByteArray &ianaId)
+QAndroidTimeZonePrivate::QAndroidTimeZonePrivate(QByteArrayView ianaId)
     : QTimeZonePrivate()
 {
     init(ianaId);
@@ -60,7 +60,7 @@ static QString getDisplayName(QJniObject zone, jint style, jboolean dst,
                                      jlocale.object<QtJniTypes::Locale>()).toString();
 }
 
-void QAndroidTimeZonePrivate::init(const QByteArray &ianaId)
+void QAndroidTimeZonePrivate::init(QByteArrayView ianaId)
 {
     const QString iana = QString::fromUtf8(ianaId);
     androidTimeZone = QJniObject::callStaticMethod<QtJniTypes::TimeZone>(

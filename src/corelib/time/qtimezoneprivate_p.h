@@ -360,7 +360,7 @@ public:
     // Create default time zone
     QAndroidTimeZonePrivate();
     // Create named time zone
-    QAndroidTimeZonePrivate(const QByteArray &ianaId);
+    QAndroidTimeZonePrivate(QByteArrayView ianaId);
     ~QAndroidTimeZonePrivate();
 
     QAndroidTimeZonePrivate *clone() const override;
@@ -385,7 +385,7 @@ public:
     QList<QByteArray> availableTimeZoneIds() const override;
 
 private:
-    void init(const QByteArray &zoneId);
+    void init(QByteArrayView zoneId);
 
     QJniObject androidTimeZone;
 };
