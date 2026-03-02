@@ -482,9 +482,9 @@ QTimeZone::QTimeZone(const QByteArray &ianaId)
             d = newBackendTimeZone(ianaId);
             if (!d->isValid()) {
                 // We may have a legacy alias for a supported IANA ID:
-                const QByteArray name = QTimeZonePrivate::aliasToIana(ianaId);
+                QByteArrayView name = QTimeZonePrivate::aliasToIana(ianaId);
                 if (!name.isEmpty() && name != ianaId)
-                    d = newBackendTimeZone(name);
+                    d = newBackendTimeZone(name.toByteArray());
             }
         }
     }
@@ -868,11 +868,11 @@ bool QTimeZone::hasAlternativeName(QByteArrayView alias) const
     const QByteArray me = id();
     if (alias == me)
         return true;
-    QByteArray mine = QTimeZonePrivate::aliasToIana(me);
+    QByteArrayView mine = QTimeZonePrivate::aliasToIana(me);
     // Empty if id() aliases to itself, which we've already checked:
     if (!mine.isEmpty() && alias == mine)
         return true;
-    QByteArray its = QTimeZonePrivate::aliasToIana(alias);
+    QByteArrayView its = QTimeZonePrivate::aliasToIana(alias);
     // Empty if alias aliases to itself, which we've already compared to id()
     // and, where relevant, mine.
     return !its.isEmpty() && its == (mine.isEmpty() ? me : mine);

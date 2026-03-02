@@ -721,7 +721,7 @@ QString QTimeZonePrivate::localeName(qint64 atMSecsSinceEpoch, int offsetFromUtc
     }; // end scanIana
 
     scanIana(m_id);
-    if (QByteArray iana = aliasToIana(m_id); !iana.isEmpty() && iana != m_id)
+    if (QByteArrayView iana = aliasToIana(m_id); !iana.isEmpty() && iana != m_id)
         scanIana(iana);
 
     // Requires locData, nextData set suitably - save repetition of member:

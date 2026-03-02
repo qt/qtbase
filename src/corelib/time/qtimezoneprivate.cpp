@@ -994,15 +994,15 @@ QTimeZonePrivate::findLongUtcPrefix(QStringView text)
     return {};
 }
 
-QByteArray QTimeZonePrivate::aliasToIana(QByteArrayView alias)
+QByteArrayView QTimeZonePrivate::aliasToIana(QByteArrayView alias)
 {
     const auto data = std::lower_bound(std::begin(aliasMappingTable), std::end(aliasMappingTable),
                                        alias, earlierAliasId);
     if (data != std::end(aliasMappingTable) && data->aliasId() == alias)
-        return data->ianaId().toByteArray();
+        return data->ianaId();
     // Note: empty return means not an alias, which is true of an ID that others
-    // are aliases to, as the table omits self-alias entries. Let caller sort
-    // that out, rather than allocating to return alias.toByteArray().
+    // are aliases to, as the table omits self-alias entries. We could return
+    // alias, but we only want to return non-empty if it *was* an alias.
     return {};
 }
 

@@ -150,7 +150,7 @@ public:
     static QString isoOffsetFormat(int offsetFromUtc,
                                    QTimeZone::NameType mode = QTimeZone::OffsetName);
 
-    static QByteArray aliasToIana(QByteArrayView alias);
+    static QByteArrayView aliasToIana(QByteArrayView alias);
     static QByteArrayView ianaIdToWindowsId(QByteArrayView ianaId);
     static QByteArrayView windowsIdToDefaultIanaId(QByteArrayView windowsId);
     static QByteArrayView windowsIdToDefaultIanaId(QByteArrayView windowsId,
