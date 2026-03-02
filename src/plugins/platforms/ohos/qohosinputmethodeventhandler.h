@@ -109,6 +109,8 @@ public:
     void grabKeyboard(QWindow *window);
     void stopAnyKeyboardGrab();
 
+    QPoint cursorPosition() const;
+
 private:
     struct QWindowSystemInterfaceTouchEvent
     {
