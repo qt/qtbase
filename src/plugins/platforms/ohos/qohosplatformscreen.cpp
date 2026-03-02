@@ -333,7 +333,10 @@ QRect QOhosPlatformScreen::geometry() const
 
 QRect QOhosPlatformScreen::availableGeometry() const
 {
-    return !m_availableGeometry.isEmpty() ? m_availableGeometry : geometry();
+    auto screenGeometry = geometry();
+    return !m_availableGeometry.isEmpty()
+        ? m_availableGeometry.translated(screenGeometry.topLeft())
+        : screenGeometry;
 }
 
 int QOhosPlatformScreen::depth() const
