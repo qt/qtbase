@@ -528,7 +528,7 @@ static bool parseTestArgs()
     const QStringList envVarsList = QProcessEnvironment::systemEnvironment().toStringList();
     for (const QString &var : envVarsList) {
         if (var.startsWith("QTEST_"_L1) || var.startsWith("QT_"_L1))
-            testEnvVars += "%1 "_L1.arg(var);
+            testEnvVars += "%1\t"_L1.arg(var);
     }
 
     if (!testEnvVars.isEmpty()) {

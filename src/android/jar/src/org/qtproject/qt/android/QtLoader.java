@@ -262,18 +262,15 @@ abstract class QtLoader {
     }
 
     /**
-     * Sets a list of keys/values string to as environment variables.
-     * This expects the key/value to be separated by '=', and parameters
-     * to be separated by tabs or space.
+     * Sets a list of keys/values string as environment variables.
+     * The KEY=VALUE pairs are separated by tabs ('\t').
      **/
     public void setEnvironmentVariables(String environmentVariables)
     {
         if (environmentVariables == null || environmentVariables.isEmpty())
             return;
 
-        environmentVariables = environmentVariables.replaceAll("\t", " ");
-
-        for (String variable : environmentVariables.split(" ")) {
+        for (String variable : environmentVariables.split("\t")) {
             String[] keyValue = variable.split("=", 2);
             if (keyValue.length < 2 || keyValue[0].isEmpty())
                 continue;
