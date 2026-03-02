@@ -31,7 +31,6 @@ struct QOhosWindowProxyMainWindowCreateInfo
     std::string windowTitle;
     QRect frameGeometry;
     bool fullscreen = false;
-    QOhosOptional<QOhosDisplayInfo::JsDisplayId> displayId;
 };
 
 struct QOhosWindowProxyExistingMainWindowCreateInfo
@@ -57,7 +56,6 @@ struct QOhosWindowProxyFloatWindowCreateInfo
 {
     QtOhos::QObjectThreadSafeRef qWindowRef;
     QtOhos::InternalWindowId internalWindowId;
-    QOhosOptional<QOhosDisplayInfo::JsDisplayId> displayId;
 };
 
 struct QOhosWindowProxyData

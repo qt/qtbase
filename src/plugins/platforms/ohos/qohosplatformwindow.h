@@ -128,7 +128,6 @@ public:
     bool setMouseGrabEnabled(bool grab) override;
     bool setKeyboardGrabEnabled(bool grab) override;
 
-    QOhosOptional<QOhosDisplayInfo::JsDisplayId> tryTakeLastRequestedDisplayId();
     QRect lastRequestedWindowFrameGeometry() const;
 
 protected:
@@ -168,7 +167,6 @@ private:
 
     QPlatformWindow *m_parent {nullptr};
     QOhosOptional<QOhosDisplayInfo::JsDisplayId> m_displayId;
-    QOhosOptional<QOhosDisplayInfo::JsDisplayId> m_lastRequestedDisplayId;
     QOhosPropertiesStore m_propertiesStore;
     bool m_exposed = false;
     QRect m_lastRequestedWindowFrameGeometry;

@@ -126,11 +126,6 @@ QOhosWindowProxy::AvoidArea AvoidAreaCache::getStoredOrRetrieveFromWindowProxy(
     return result;
 }
 
-QRect requestedWindowFrameGeometry(QOhosPlatformWindow *platformWindow)
-{
-    return platformWindow->geometry().marginsAdded(platformWindow->frameMargins());
-}
-
 void tryUpdateMaximumMarginsFromAvoidArea(QMargins &marginsToUpdate, const QOhosWindowProxy::AvoidArea &avoidArea)
 {
     if (!avoidArea.visible)
@@ -154,85 +149,6 @@ QSize evaluateGeometrySizeBasedOnFrameGeometry(
     };
 }
 
-QRect correctFrameGeometryPositionFitToAvailableArea(const QRect &geometry, const QRect &availableArea)
-{
-    QRect newGeometry = geometry;
-    if (newGeometry.top() < availableArea.top())
-        newGeometry.moveTop(availableArea.top());
-    if (newGeometry.bottom() > availableArea.top() + availableArea.height())
-        newGeometry.moveBottom(availableArea.top() + availableArea.height());
-    if (newGeometry.left() < availableArea.left())
-        newGeometry.moveLeft(availableArea.left());
-    if (newGeometry.right() > availableArea.right())
-        newGeometry.moveRight(availableArea.right());
-
-    return newGeometry;
-}
-
-QRect correctFrameGeometryPositionFitToReachableArea(
-    const QRect &geometry, const QRect &availableArea, const QRect &screenGeometry)
-{
-    QRect newGeometry = geometry;
-    constexpr auto minVisibleThresholdSizeFactor = 0.05;
-
-    const auto minVisibleThresholdInPixelsX = qCeil(screenGeometry.width() * minVisibleThresholdSizeFactor);
-    const auto minVisibleThresholdInPixelsY = qCeil(screenGeometry.height() * minVisibleThresholdSizeFactor);
-
-    const auto topReachableAreaBoundary = availableArea.top() + minVisibleThresholdInPixelsY;
-    const auto bottomReachableAreaBoundary =
-        availableArea.top() + availableArea.height() - minVisibleThresholdInPixelsY;
-    const auto leftReachableAreaBoundary = availableArea.left() + minVisibleThresholdInPixelsX;
-    const auto rightReachableAreaBoundary = availableArea.right() - minVisibleThresholdInPixelsX;
-
-    if (newGeometry.bottom() < topReachableAreaBoundary)
-        newGeometry.moveBottom(topReachableAreaBoundary);
-    if (newGeometry.top() > bottomReachableAreaBoundary)
-        newGeometry.moveTop(bottomReachableAreaBoundary);
-    if (newGeometry.right() < leftReachableAreaBoundary)
-        newGeometry.moveRight(leftReachableAreaBoundary);
-    if (newGeometry.left() > rightReachableAreaBoundary)
-        newGeometry.moveLeft(rightReachableAreaBoundary);
-
-    return newGeometry;
-}
-
-QRect tryCorrectFrameGeometry(QOhosPlatformWindow *platformWindow, QPlatformScreen *targetScreen)
-{
-    auto availableArea = targetScreen->availableGeometry();
-
-    auto *qWindow = platformWindow->window();
-    const auto frameGeometry = requestedWindowFrameGeometry(platformWindow);
-    auto newGeometry = frameGeometry;
-
-    auto windowType = qWindow->type();
-
-    if (windowType == Qt::WindowType::ToolTip)
-        return newGeometry;
-
-    const auto optTransientParentWindowGeometry = qWindow->transientParent() != nullptr
-        ? makeQOhosOptional(
-            QOhosPlatformWindow::fromQWindow(qWindow->transientParent())->windowGeometry())
-        : makeEmptyQOhosOptional();
-    if (optTransientParentWindowGeometry == platformWindow->windowGeometry())
-        return newGeometry;
-
-    if (!availableArea.isEmpty()) {
-        newGeometry.setSize(newGeometry.size().boundedTo(availableArea.size()));
-
-        newGeometry = windowType == Qt::WindowType::Popup || windowType == Qt::WindowType::Dialog
-            ? correctFrameGeometryPositionFitToAvailableArea(newGeometry, availableArea)
-            : correctFrameGeometryPositionFitToReachableArea(newGeometry, availableArea, targetScreen->geometry());
-
-        if (newGeometry.topLeft() != frameGeometry.topLeft()) {
-            qCDebug(
-                QtForOhos,
-                "%s: Moving window from: (%d,%d) to: (%d,%d)",
-                Q_FUNC_INFO, frameGeometry.x(), frameGeometry.y(), newGeometry.x(), newGeometry.y());
-        }
-    }
-    return newGeometry;
-}
-
 QSize getQSizeGrownBy(const QSize &size, const QMargins &margins)
 {
     // HACK
@@ -243,14 +159,6 @@ QSize getQSizeGrownBy(const QSize &size, const QMargins &margins)
     return {
         qMax(1, size.width() + margins.left() + margins.right()),
         qMax(1, size.height() + margins.top() + margins.bottom())};
-}
-
-QRect getTargetSystemWindowGeometryForPlatformWindow(
-    QOhosView::ViewType viewType, QOhosPlatformWindow *platformWindow, QPlatformScreen *targetScreen)
-{
-    return viewType == QOhosView::ViewType::SubWindow
-        ? tryCorrectFrameGeometry(platformWindow, targetScreen)
-        : requestedWindowFrameGeometry(platformWindow);
 }
 
 QWindow *getFirstTopLevelWindowOrNull()
@@ -504,9 +412,8 @@ std::shared_ptr<QOhosWindowProxy> QOhosView::tryCreateWindowProxyIfNeeded(ViewTy
             createInfo.qWindowRef = QtOhos::QObjectThreadSafeRef(qWindow);
             createInfo.windowId = window->internalWindowId();
             createInfo.windowTitle = qWindow->title().toStdString();
-            createInfo.frameGeometry = requestedWindowFrameGeometry(window);
+            createInfo.frameGeometry = window->lastRequestedWindowFrameGeometry();
             createInfo.fullscreen = qWindow->windowState() == Qt::WindowFullScreen;
-            createInfo.displayId = window->tryTakeLastRequestedDisplayId();
             result = QOhosWindowProxy::createMainWindow(createInfo);
         }
 
@@ -559,7 +466,7 @@ std::shared_ptr<QOhosWindowProxy> QOhosView::tryCreateWindowProxyIfNeeded(ViewTy
         createInfo.decorEnabled = window->decorationPreset() != QOhosPlatformWindow::DecorationPreset::Frameless;
         createInfo.disableWindowFocusableBeforeLoadContentHack = window->windowFlags().testFlag(Qt::WindowDoesNotAcceptFocus);
         createInfo.modal = qWindow->modality() != Qt::NonModal;
-        createInfo.windowRect = requestedWindowFrameGeometry(window);
+        createInfo.windowRect = window->lastRequestedWindowFrameGeometry();
         result = parentWindowProxy->createSubWindow(createInfo);
 
         break;
@@ -574,7 +481,6 @@ std::shared_ptr<QOhosWindowProxy> QOhosView::tryCreateWindowProxyIfNeeded(ViewTy
         QOhosWindowProxy::FloatWindowCreateInfo createInfo = {
             .qWindowRef = QtOhos::QObjectThreadSafeRef(qWindow),
             .internalWindowId = window->internalWindowId(),
-            .displayId = window->tryTakeLastRequestedDisplayId(),
         };
         result = QOhosWindowProxy::createFloatWindow(createInfo);
         break;
@@ -1228,8 +1134,7 @@ QOhosView::ViewType QOhosView::viewType() const
 void QOhosView::forceGeometryUpdate()
 {
     auto *platformWindow = QOhosPlatformWindow::fromQWindow(m_ownerWindow);
-    auto targetWindowGeometry = getTargetSystemWindowGeometryForPlatformWindow(
-        viewType(), platformWindow, platformWindow->screen());
+    auto targetWindowGeometry = platformWindow->geometry().marginsAdded(platformWindow->frameMargins());
 
     m_updateData.position.optPendingUpdateRequest = {targetWindowGeometry.topLeft(), {}};
     m_updateData.size.optPendingUpdateRequest = targetWindowGeometry.size();
@@ -1397,10 +1302,7 @@ void QOhosView::syncWindowStateImmediate(WindowStateSyncReason reason)
         break;
     case ViewType::MainWindow:
     {
-        auto lastRequestedDisplayId = platformWindow->tryTakeLastRequestedDisplayId();
-        targetDisplayId = lastRequestedDisplayId.hasValue()
-            ? lastRequestedDisplayId
-            : m_ohosWindowProxy->tryGetMainWindowJsDisplayId();
+        targetDisplayId = m_ohosWindowProxy->tryGetMainWindowJsDisplayId();
         break;
     }
     case ViewType::FloatWindow:
@@ -1408,16 +1310,7 @@ void QOhosView::syncWindowStateImmediate(WindowStateSyncReason reason)
         break;
     }
 
-    auto *displayIdPlatformScreen = QOhosPlatformIntegration::instance() != nullptr && targetDisplayId.hasValue()
-        ? QOhosPlatformIntegration::instance()->screenManager()->platformScreenForDisplayIdOrNull(targetDisplayId.value())
-        : nullptr;
-
-    auto *targetScreen = displayIdPlatformScreen != nullptr
-        ? displayIdPlatformScreen
-        : platformWindow->screen();
-
-    auto targetGeometryToSet =
-        getTargetSystemWindowGeometryForPlatformWindow(viewType(), platformWindow, targetScreen);
+    auto targetGeometryToSet = platformWindow->lastRequestedWindowFrameGeometry();
 
     if (windowGeometrySyncEnabled) {
         submitSystemPropertyUpdate(m_updateData.sizeLimits, targetWindowLimitsToSet);

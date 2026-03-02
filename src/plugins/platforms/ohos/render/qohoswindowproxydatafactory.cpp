@@ -233,9 +233,6 @@ void makeWindowProxyDataForMainWindowInJsThread(
         abilityStartupOptions.set("windowMode", fullscreenWindowMode);
     }
 
-    if (createInfo.displayId.hasValue())
-        abilityStartupOptions.set("displayId", createInfo.displayId.value().value());
-
     jsState.startNewQAbilityInstance(
         jsState.defaultQAbilityPeer(), createInfo.qWindowRef,
         abilityStartupOptions,
@@ -372,9 +369,6 @@ void makeWindowProxyDataForFloatWindowInJsThread(
             {"windowType", jsState.eval<QNapi::Number>("@ohos.window.WindowType.TYPE_FLOAT")},
             {"ctx", qAbilityPeer->qAbility().get<QNapi::Object>("context")},
         });
-
-    if (createInfo.displayId.hasValue())
-        configurationObject.set("displayId", createInfo.displayId.value().value());
 
     struct Context
     {
