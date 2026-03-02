@@ -708,7 +708,7 @@ QTimeZone::OffsetData QTimeZonePrivate::toOffsetData(const QTimeZonePrivate::Dat
 }
 
 // Is the format of the ID valid ?
-bool QTimeZonePrivate::isValidId(const QByteArray &ianaId)
+bool QTimeZonePrivate::isValidId(QByteArrayView ianaId)
 {
     /*
       Main rules for defining TZ/IANA names, as per

@@ -146,7 +146,7 @@ public:
     { return (std::numeric_limits<int>::min)(); }
     static QTimeZone::OffsetData invalidOffsetData();
     static QTimeZone::OffsetData toOffsetData(const Data &data);
-    static bool isValidId(const QByteArray &ianaId);
+    static bool isValidId(QByteArrayView ianaId);
     static QString isoOffsetFormat(int offsetFromUtc,
                                    QTimeZone::NameType mode = QTimeZone::OffsetName);
 
