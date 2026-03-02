@@ -34,10 +34,10 @@ class QtActivityLoader extends QtLoader {
         return (QtActivityLoader) m_instance;
     }
 
-    private String getDecodedUtfString(String str)
+    private String getDecodedUtfStringFromBase64(String str)
     {
-        byte[] decodedExtraEnvVars = Base64.decode(str, Base64.DEFAULT);
-        return new String(decodedExtraEnvVars, StandardCharsets.UTF_8);
+        byte[] decoded = Base64.decode(str, Base64.DEFAULT);
+        return new String(decoded, StandardCharsets.UTF_8);
     }
 
     int getAppIconSize()
@@ -98,7 +98,7 @@ class QtActivityLoader extends QtLoader {
         if (isDebuggable) {
             if (extras.containsKey("extraenvvars")) {
                 String extraEnvVars = extras.getString("extraenvvars");
-                setEnvironmentVariables(getDecodedUtfString(extraEnvVars));
+                setEnvironmentVariables(getDecodedUtfStringFromBase64(extraEnvVars));
             }
 
             for (String key : extras.keySet()) {
@@ -110,7 +110,7 @@ class QtActivityLoader extends QtLoader {
 
             if (extras.containsKey("extraappparams")) {
                 String extraAppParams = extras.getString("extraappparams");
-                appendApplicationParameters(getDecodedUtfString(extraAppParams));
+                appendApplicationParameters(getDecodedUtfStringFromBase64(extraAppParams));
             }
         } else {
             Log.d(QtNative.QtTAG, "Not in debug mode! It is not allowed to use extra arguments " +
