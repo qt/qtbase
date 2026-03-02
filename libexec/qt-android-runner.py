@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
 import os
+import shlex
 import subprocess
 import sys
 import base64
@@ -77,8 +78,12 @@ try:
 except Exception as e:
     die(f"Failed to check for running devices, received error: {e}")
 
+# Keep both forms: adb_argv for subprocess.run(list) calls below, and a
+# shlex-joined string so the existing f-string shell=True usages still work.
+adb_argv = [adb]
 if args.serial:
-    adb = f"{adb} -s {args.serial}"
+    adb_argv += ["-s", args.serial]
+adb = shlex.join(adb_argv)
 
 if args.build_path is None:
     die("App build path is not provided")
@@ -171,16 +176,17 @@ if not package_name:
 if not activity_name:
     die("Failed to retrieve the main activity name of the app")
 
-start_cmd = f"{adb} shell am start -n {package_name}/{activity_name}"
+start_cmd = [*adb_argv, "shell", "am", "start", "-n", f"{package_name}/{activity_name}"]
 
-# Get environment variables
-env_vars = " ".join(f"{key}={value}" for key, value in os.environ.items())
-encoded_env_vars = base64.b64encode(env_vars.encode()).decode()
-start_cmd += f" -e extraenvvars \"{encoded_env_vars}\""
+# Get environment variables; skip the flag entirely when there is nothing to forward.
+env_vars = "\t".join(f"{key}={value}" for key, value in os.environ.items())
+if env_vars:
+    encoded_env_vars = base64.b64encode(env_vars.encode()).decode()
+    start_cmd += ["-e", "extraenvvars", encoded_env_vars]
 
 # Get app arguments
 if remaining_args:
-    start_cmd += f" -e applicationArguments \"{' '.join(remaining_args)}\""
+    start_cmd += ["-e", "applicationArguments", shlex.quote(' '.join(remaining_args))]
 
 # Get formatted time from device
 start_timestamp = ""
@@ -191,7 +197,7 @@ except Exception as e:
     die(f"Failed to get formatted time from the device, received error: {e}")
 
 try:
-    subprocess.run(start_cmd, check=True, shell=True)
+    subprocess.run(start_cmd, check=True)
 except Exception as e:
     die(f"Failed to start the app {package_name}, received error: {e}")
 
