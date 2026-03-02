@@ -281,17 +281,17 @@ endfunction()
 # Adds the modern gradle build targets.
 # These targets use the settings.gradle based build directory structure.
 function(_qt_internal_android_add_gradle_build target type)
-    _qt_internal_android_get_deployment_type_option(android_deployment_type_option
-        "assembleRelease" "assembleDebug")
+    if(type STREQUAL "aab")
+        _qt_internal_android_get_deployment_type_option(android_deployment_type_option
+            "bundleRelease" "bundleDebug")
+    else()
+        _qt_internal_android_get_deployment_type_option(android_deployment_type_option
+            "assembleRelease" "assembleDebug")
+    endif()
 
     _qt_internal_android_gradlew_name(gradlew_file_name)
     _qt_internal_android_get_target_android_build_dir(android_build_dir ${target})
     set(gradlew "${android_build_dir}/${gradlew_file_name}")
-
-    set(extra_args "")
-    if(type STREQUAL "aab")
-        set(extra_args "bundle")
-    endif()
 
     set(package_file_path "${android_build_dir}/${target}.${type}")
 
@@ -310,7 +310,7 @@ function(_qt_internal_android_add_gradle_build target type)
     add_custom_command(OUTPUT "${package_file_path}"
         BYPRODUCTS "${package_build_file_path}"
         COMMAND
-            "${gradlew}" ${android_deployment_type_option} ${extra_args}
+            "${gradlew}" ${android_deployment_type_option}
         COMMAND
             ${CMAKE_COMMAND} -E copy_if_different
             "${package_build_file_path}" "${package_file_path}"
