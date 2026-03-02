@@ -1700,15 +1700,17 @@ std::optional<QDateTime> QHttpHeaders::dateTimeValueAt(qsizetype i) const
     \since 6.12
 
     Returns the values of the \c Range HTTP header field, parsed as a list of
-    byte-range pairs.
+    QHttpHeaderRange objects.
 
-    Each pair represents an inclusive range [start, end]. According to RFC 9110:
+    Each range represents a byte range. According to RFC 9110:
     \list
         \li If the start is specified but the end is not (e.g., "bytes=500-"),
-            the pair will be \c{ (500, -1) }.
+            the QHttpHeaderRange will have \c{start=500} and \c{end=std::nullopt}.
         \li If the end is specified but the start is not (e.g., "bytes=-500"),
-            the pair will be \c{ (-1, 500) }, representing the last 500 bytes.
-        \li If both are specified (e.g., "bytes=0-499"), the pair will be \c{ (0, 499) }.
+            the QHttpHeaderRange will have \c{start=std::nullopt} and \c{end=500},
+            representing the last 500 bytes.
+        \li If both are specified (e.g., "bytes=0-499"), the QHttpHeaderRange will
+            have \c{start=0} and \c{end=499}.
     \endlist
 
     If \a ok is not \nullptr, it is used to report the success or failure of the
@@ -1724,11 +1726,11 @@ std::optional<QDateTime> QHttpHeaders::dateTimeValueAt(qsizetype i) const
             the function returns an empty list and sets \a ok to \c false.
     \endlist
 
-    \sa setRangeValue, WellKnownHeader::Range
+    \sa setRangeValues, WellKnownHeader::Range
 */
-QList<std::pair<qint64, qint64>> QHttpHeaders::rangeValue(bool *ok) const
+QList<QHttpHeaderRange> QHttpHeaders::rangeValues(bool *ok) const
 {
-    QList<std::pair<qint64, qint64>> results;
+    QList<QHttpHeaderRange> results;
 
     const QList<QByteArray> rangesVals = values(WellKnownHeader::Range);
     bool invalidHeaderEncountered = false;
@@ -1752,26 +1754,40 @@ QList<std::pair<qint64, qint64>> QHttpHeaders::rangeValue(bool *ok) const
             bool okStart = false;
             bool okEnd = false;
 
-            const qint64 start = startStr.isEmpty() ? -1 : startStr.toLongLong(&okStart);
-            const qint64 end = endStr.isEmpty() ? -1 : endStr.toLongLong(&okEnd);
+            std::optional<qint64> start;
+            std::optional<qint64> end;
+
+            if (!startStr.isEmpty()) {
+                const qint64 startVal = startStr.toLongLong(&okStart);
+                if (okStart)
+                    start = startVal;
+            }
+
+            if (!endStr.isEmpty()) {
+                const qint64 endVal = endStr.toLongLong(&okEnd);
+                if (okEnd)
+                    end = endVal;
+            }
 
             if ((!startStr.isEmpty() && !okStart) || (!endStr.isEmpty() && !okEnd)) {
                 invalidHeaderEncountered = true;
                 break;
             }
-            if (start == -1 && end == -1) {
+
+            QHttpHeaderRange range(start, end);
+            if (!range.isValid()) {
                 invalidHeaderEncountered = true;
                 break;
             }
 
-            results.append({start, end});
+            results.append(range);
         }
     }
 
     if (ok)
         *ok = !invalidHeaderEncountered;
 
-    return invalidHeaderEncountered ? QList<std::pair<qint64, qint64>>{} : results;
+    return invalidHeaderEncountered ? QList<QHttpHeaderRange>{} : results;
 }
 
 /*!
@@ -1779,11 +1795,14 @@ QList<std::pair<qint64, qint64>> QHttpHeaders::rangeValue(bool *ok) const
 
     Sets the \c Range HTTP header field to the specified list of \a ranges.
 
-    The ranges are formatted using the "bytes" unit. For each pair in the list:
+    The ranges are formatted using the "bytes" unit. For each QHttpHeaderRange in the list:
     \list
-        \li A pair of \c{ (500, -1) } is formatted as \c "500-".
-        \li A pair of \c{ (-1, 500) } is formatted as \c "-500".
-        \li A pair of \c{ (0, 499) } is formatted as \c "0-499".
+        \li A range with only a start (e.g., QHttpHeaderRange(500, std::nullopt))
+            is formatted as \c "500-".
+        \li A range with only an end (e.g., QHttpHeaderRange(std::nullopt, 500))
+            is formatted as \c "-500", representing the last 500 bytes.
+        \li A range with both start and end (e.g., QHttpHeaderRange(0, 499))
+            is formatted as \c "0-499".
     \endlist
 
     If multiple ranges are provided, they will be joined by commas, for example:
@@ -1791,9 +1810,9 @@ QList<std::pair<qint64, qint64>> QHttpHeaders::rangeValue(bool *ok) const
 
     If \a ranges is empty, the \c Range header is removed.
 
-    \sa rangeValue(), WellKnownHeader::Range
+    \sa rangeValues(), WellKnownHeader::Range
 */
-void QHttpHeaders::setRangeValue(const QList<std::pair<qint64, qint64>> &ranges)
+void QHttpHeaders::setRangeValues(QSpan<const QHttpHeaderRange> ranges)
 {
     if (ranges.isEmpty()) {
         removeAll(WellKnownHeader::Range);
@@ -1801,17 +1820,17 @@ void QHttpHeaders::setRangeValue(const QList<std::pair<qint64, qint64>> &ranges)
     }
 
     QByteArray result("bytes=");
-    for (int i = 0; i < ranges.size(); ++i) {
-        const auto &pair = ranges.at(i);
+    for (qsizetype i = 0; i < ranges.size(); ++i) {
+        const QHttpHeaderRange &range = ranges[i];
 
         if (i > 0)
             result += ", "_ba;
 
-        if (pair.first != -1)
-            result += QByteArray::number(pair.first);
+        if (range.start())
+            result += QByteArray::number(*range.start());
         result += "-"_ba;
-        if (pair.second != -1)
-            result += QByteArray::number(pair.second);
+        if (range.end())
+            result += QByteArray::number(*range.end());
     }
 
     replaceOrAppend(WellKnownHeader::Range, result);
@@ -1912,5 +1931,20 @@ void QHttpHeaders::clear()
     d.detach();
     d->headers.clear();
 }
+
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug debug, const QHttpHeaderRange &range)
+{
+    QDebugStateSaver saver(debug);
+    debug.nospace() << "QHttpHeaderRange(bytes=";
+    if (range.start())
+        debug.nospace() << *range.start();
+    debug.nospace() << "-";
+    if (range.end())
+        debug.nospace() << *range.end();
+    debug.nospace() << ")";
+    return debug;
+}
+#endif
 
 QT_END_NAMESPACE

@@ -12,10 +12,59 @@
 #include <QtCore/qobjectdefs.h>
 #include <QtCore/qshareddata.h>
 #include <QtCore/qcontainerfwd.h>
+#include <QtCore/qspan.h>
+#include <QtCore/qcomparehelpers.h>
+#include <optional>
 
 QT_BEGIN_NAMESPACE
 
 class QDebug;
+
+class QHttpHeaderRange
+{
+public:
+    constexpr QHttpHeaderRange() noexcept = default;
+    constexpr QHttpHeaderRange(std::optional<qint64> start, std::optional<qint64> end) noexcept
+        : m_start(start), m_end(end) {}
+
+    constexpr std::optional<qint64> start() const noexcept { return m_start; }
+    constexpr std::optional<qint64> end() const noexcept { return m_end; }
+    constexpr void setStart(std::optional<qint64> start) noexcept { m_start = start; }
+    constexpr void setEnd(std::optional<qint64> end) noexcept { m_end = end; }
+
+    constexpr bool isValid() const noexcept
+    {
+        if (!m_start && !m_end)
+            return false;
+        if (m_start && m_start < 0)
+            return false;
+        if (m_end && m_end < 0)
+            return false;
+        if (m_start && m_end && *m_start > *m_end)
+            return false;
+        return true;
+    }
+
+#ifndef QT_NO_DEBUG_STREAM
+    friend QDebug operator<<(QDebug debug, const QHttpHeaderRange &range);
+#endif
+
+private:
+    friend constexpr bool comparesEqual(const QHttpHeaderRange &lhs,
+                                        const QHttpHeaderRange &rhs) noexcept
+    {
+        return lhs.m_start == rhs.m_start && lhs.m_end == rhs.m_end;
+    }
+    Q_DECLARE_EQUALITY_COMPARABLE(QHttpHeaderRange)
+
+    std::optional<qint64> m_start;
+    std::optional<qint64> m_end;
+};
+
+inline size_t qHash(QHttpHeaderRange range, size_t seed = 0) noexcept
+{
+    return qHashMulti(seed, range.start().value_or(0), range.end().value_or(0));
+}
 
 class QHttpHeadersPrivate;
 QT_DECLARE_QESDP_SPECIALIZATION_DTOR_WITH_EXPORT(QHttpHeadersPrivate, Q_NETWORK_EXPORT)
@@ -266,8 +315,8 @@ public:
     Q_NETWORK_EXPORT void setDateTimeValue(QAnyStringView name, const QDateTime &dateTime);
     Q_NETWORK_EXPORT void setDateTimeValue(WellKnownHeader name, const QDateTime &dateTime);
 
-    Q_NETWORK_EXPORT QList<std::pair<qint64, qint64>> rangeValue(bool *ok = nullptr) const;
-    Q_NETWORK_EXPORT void setRangeValue(const QList<std::pair<qint64, qint64>> &ranges);
+    Q_NETWORK_EXPORT QList<QHttpHeaderRange> rangeValues(bool *ok = nullptr) const;
+    Q_NETWORK_EXPORT void setRangeValues(QSpan<const QHttpHeaderRange> ranges);
 
     Q_NETWORK_EXPORT qsizetype size() const noexcept;
     Q_NETWORK_EXPORT void reserve(qsizetype size);
