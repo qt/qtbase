@@ -288,6 +288,13 @@ function(_qt_internal_sbom_get_qt_entity_repo_source_dir target)
         message(FATAL_ERROR "OUT_VAR must be set")
     endif()
 
+    # Interface libs don't have a source dir. Return early, to avoid errors with CMake 3.16.
+    get_target_property(target_type "${target}" TYPE)
+    if(target_type STREQUAL "INTERFACE_LIBRARY")
+        set(${arg_OUT_VAR} "" PARENT_SCOPE)
+        return()
+    endif()
+
     get_target_property(repo_source_dir "${target}" SOURCE_DIR)
 
     # Get the path relative to the PROJECT_SOURCE_DIR
