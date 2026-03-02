@@ -2478,8 +2478,16 @@ void tst_QLocale::formatTimeZone()
         zone = now.timeZoneAbbreviation();
     QCOMPARE(enUS.toString(now, "t"), zone);
 
-    // Time on its own will always use the current local time zone:
+#if QT_VERSION < QT_VERSION_CHECK(7,0,0) && !defined(QT_BOOTSTRAPPED)
+    // Time on its own will always use the current local time zone (and
+    // shouldn't use 't' format):
+    QTest::ignoreMessage(QtWarningMsg, "Zone specifiers are only meaningful "
+                         "for a full datetime. Their use in formatting QTime "
+                         "is deprecated and shall be retired in Qt 7.");
     QCOMPARE(enUS.toString(now.time(), "t"), zone);
+#else // Once retired, the format specifier won't be recognized as such:
+    QCOMPARE(enUS.toString(now.time(), "t"), u"t");
+#endif
 }
 
 void tst_QLocale::toDateTime_data()
