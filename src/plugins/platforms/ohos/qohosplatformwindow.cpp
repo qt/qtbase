@@ -211,11 +211,6 @@ QOhosPlatformScreen *QOhosPlatformWindow::platformScreen() const
     return static_cast<QOhosPlatformScreen *>(screen());
 }
 
-QOhosOptional<QOhosDisplayInfo::JsDisplayId> QOhosPlatformWindow::tryTakeLastRequestedDisplayId()
-{
-    return std::exchange(m_lastRequestedDisplayId, makeEmptyQOhosOptional());
-}
-
 QRect QOhosPlatformWindow::lastRequestedWindowFrameGeometry() const
 {
     return m_lastRequestedWindowFrameGeometry;
