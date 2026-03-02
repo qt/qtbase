@@ -1147,6 +1147,7 @@ function(_qt_internal_android_extract_link_target raw_entry out_entry)
 endfunction()
 
 function(_qt_internal_android_collect_qt_modules target out_qt_modules)
+    string(TOUPPER "${CMAKE_BUILD_TYPE}" build_type_upper)
     set(queue "${target}")
     set(processed "")
     set(collected "")
@@ -1164,7 +1165,11 @@ function(_qt_internal_android_collect_qt_modules target out_qt_modules)
         endif()
         list(APPEND processed "${current_target}")
 
-        foreach(property_name IN ITEMS LINK_LIBRARIES INTERFACE_LINK_LIBRARIES)
+        foreach(property_name IN ITEMS
+                LINK_LIBRARIES
+                INTERFACE_LINK_LIBRARIES
+                IMPORTED_LINK_DEPENDENT_LIBRARIES
+                "IMPORTED_LINK_DEPENDENT_LIBRARIES_${build_type_upper}")
             get_target_property(link_entries "${current_target}" ${property_name})
             if(NOT link_entries OR link_entries STREQUAL "${property_name}-NOTFOUND")
                 continue()
