@@ -447,6 +447,20 @@ void QOhosInputMethodEventHandler::stopAnyMouseGrab()
     m_currentMouseGrabbingWindow.clear();
 }
 
+QPoint QOhosInputMethodEventHandler::cursorPosition() const
+{
+    if (m_lastWsiMouseEvent.hasValue())
+        return m_lastWsiMouseEvent.value().globalPosition.toPoint();
+
+    auto lastScaledPositionFromApp = QGuiApplicationPrivate::lastCursorPosition.toPoint();
+    auto *screen = qGuiApp->screenAt(lastScaledPositionFromApp);
+    return QHighDpi::toNativePixels(
+        lastScaledPositionFromApp,
+        screen != nullptr
+            ? screen
+            : QGuiApplication::primaryScreen());
+}
+
 void QOhosInputMethodEventHandler::stopAnyKeyboardGrab()
 {
     m_currentKeyboardGrabbingWindow.clear();
