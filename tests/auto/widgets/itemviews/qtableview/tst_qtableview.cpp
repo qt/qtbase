@@ -4275,7 +4275,7 @@ void tst_QTableView::mouseWheel_data()
 {
     QTest::addColumn<QAbstractItemView::ScrollMode>("scrollMode");
     QTest::addColumn<int>("delta");
-    QTest::addColumn<int>("horizontalPositon");
+    QTest::addColumn<int>("horizontalPosition");
     QTest::addColumn<int>("verticalPosition");
 
     QTest::newRow("scroll up per item")
@@ -4293,7 +4293,7 @@ void tst_QTableView::mouseWheel()
 {
     QFETCH(QAbstractItemView::ScrollMode, scrollMode);
     QFETCH(int, delta);
-    QFETCH(int, horizontalPositon);
+    QFETCH(int, horizontalPosition);
     QFETCH(int, verticalPosition);
 
     QtTestTableModel model(100, 100);
@@ -4322,7 +4322,7 @@ void tst_QTableView::mouseWheel()
     QWheelEvent horizontalEvent(pos, view.mapToGlobal(pos), QPoint(), QPoint(delta, 0),
                                 Qt::NoButton, Qt::NoModifier, Qt::NoScrollPhase, false);
     QApplication::sendEvent(view.viewport(), &horizontalEvent);
-    QVERIFY(qAbs(view.horizontalScrollBar()->value() - horizontalPositon) < 15);
+    QVERIFY(qAbs(view.horizontalScrollBar()->value() - horizontalPosition) < 15);
     QApplication::sendEvent(view.viewport(), &verticalEvent);
     QVERIFY(qAbs(view.verticalScrollBar()->value() - verticalPosition) < 15);
 }
