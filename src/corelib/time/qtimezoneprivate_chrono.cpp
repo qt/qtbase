@@ -116,7 +116,7 @@ QByteArray QChronoTimeZonePrivate::systemTimeZoneId() const
     return {};
 }
 
-bool QChronoTimeZonePrivate::isTimeZoneIdAvailable(const QByteArray &ianaId) const
+bool QChronoTimeZonePrivate::isTimeZoneIdAvailable(QByteArrayView ianaId) const
 {
     return idToZone(std::string_view(ianaId.data(), ianaId.size())) != nullptr;
 }

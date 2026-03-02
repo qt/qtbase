@@ -386,7 +386,7 @@ QByteArray QIcuTimeZonePrivate::systemTimeZoneId() const
     return ucalDefaultTimeZoneId();
 }
 
-bool QIcuTimeZonePrivate::isTimeZoneIdAvailable(const QByteArray &ianaId) const
+bool QIcuTimeZonePrivate::isTimeZoneIdAvailable(QByteArrayView ianaId) const
 {
     return QtTimeZoneLocale::ucalKnownTimeZoneId(QString::fromUtf8(ianaId));
 }

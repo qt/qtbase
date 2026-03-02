@@ -290,7 +290,7 @@ QByteArray QMacTimeZonePrivate::systemTimeZoneId() const
     return QString::fromNSString(NSTimeZone.systemTimeZone.name).toUtf8();
 }
 
-bool QMacTimeZonePrivate::isTimeZoneIdAvailable(const QByteArray& ianaId) const
+bool QMacTimeZonePrivate::isTimeZoneIdAvailable(QByteArrayView ianaId) const
 {
     QMacAutoReleasePool pool;
     return [NSTimeZone timeZoneWithName:QString::fromUtf8(ianaId).toNSString()] != nil;

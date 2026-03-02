@@ -1262,7 +1262,7 @@ QTimeZonePrivate::Data QTzTimeZonePrivate::previousTransition(qint64 beforeMSecs
     return last > tranCache().cbegin() ? dataForTzTransition(*--last) : Data{};
 }
 
-bool QTzTimeZonePrivate::isTimeZoneIdAvailable(const QByteArray &ianaId) const
+bool QTzTimeZonePrivate::isTimeZoneIdAvailable(QByteArrayView ianaId) const
 {
     // Allow a POSIX rule as long as it has offset data. (This needs to reject a
     // plain abbreviation, without offset, since claiming to support such zones

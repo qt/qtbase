@@ -608,7 +608,7 @@ QByteArray QTimeZonePrivate::systemTimeZoneId() const
     return QByteArray();
 }
 
-bool QTimeZonePrivate::isTimeZoneIdAvailable(const QByteArray &ianaId) const
+bool QTimeZonePrivate::isTimeZoneIdAvailable(QByteArrayView ianaId) const
 {
     // Fall-back implementation, can be made faster in subclasses.
     // Backends that don't cache the available list SHOULD override this.
@@ -1388,8 +1388,7 @@ QByteArray QUtcTimeZonePrivate::systemTimeZoneId() const
 #endif
 }
 
-// TODO: port to QByteArrayView
-bool QUtcTimeZonePrivate::isTimeZoneIdAvailable(const QByteArray &ianaId) const
+bool QUtcTimeZonePrivate::isTimeZoneIdAvailable(QByteArrayView ianaId) const
 {
     // Only the zone IDs supplied by CLDR and recognized by constructor.
     for (const UtcData &data : utcDataTable) {
