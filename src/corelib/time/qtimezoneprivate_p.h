@@ -151,7 +151,7 @@ public:
                                    QTimeZone::NameType mode = QTimeZone::OffsetName);
 
     static QByteArray aliasToIana(QByteArrayView alias);
-    static QByteArray ianaIdToWindowsId(const QByteArray &ianaId);
+    static QByteArrayView ianaIdToWindowsId(QByteArrayView ianaId);
     static QByteArrayView windowsIdToDefaultIanaId(QByteArrayView windowsId);
     static QByteArrayView windowsIdToDefaultIanaId(QByteArrayView windowsId,
                                                    QLocale::Territory territory);

@@ -87,7 +87,7 @@ static quint16 toWindowsIdKey(QByteArrayView winId)
     return 0;
 }
 
-static QByteArray toWindowsIdLiteral(quint16 windowsIdKey)
+static QByteArrayView toWindowsIdLiteral(quint16 windowsIdKey)
 {
     // Caller should be passing a valid (in range) key; and table is sorted in
     // increasing order, with no gaps in numbering, starting with key = 1 at
@@ -95,15 +95,15 @@ static QByteArray toWindowsIdLiteral(quint16 windowsIdKey)
     if (Q_LIKELY(windowsIdKey > 0 && windowsIdKey <= std::size(windowsDataTable))) {
         const auto &data = windowsDataTable[windowsIdKey - 1];
         if (Q_LIKELY(data.windowsIdKey == windowsIdKey))
-            return data.windowsId().toByteArray();
+            return data.windowsId();
     }
     // Fall back on binary chop - key and winId are monotonic, table is sorted on them:
     const auto data = std::lower_bound(std::begin(windowsDataTable), std::end(windowsDataTable),
                                        windowsIdKey, atLowerWindowsKey);
     if (data != std::end(windowsDataTable) && data->windowsIdKey == windowsIdKey)
-        return data->windowsId().toByteArray();
+        return data->windowsId();
 
-    return QByteArray();
+    return {};
 }
 
 static auto zoneStartForWindowsId(quint16 windowsIdKey) noexcept
@@ -1006,7 +1006,7 @@ QByteArray QTimeZonePrivate::aliasToIana(QByteArrayView alias)
     return {};
 }
 
-QByteArray QTimeZonePrivate::ianaIdToWindowsId(const QByteArray &id)
+QByteArrayView QTimeZonePrivate::ianaIdToWindowsId(QByteArrayView id)
 {
     const auto idUtf8 = QUtf8StringView(id);
 
@@ -1018,7 +1018,7 @@ QByteArray QTimeZonePrivate::ianaIdToWindowsId(const QByteArray &id)
     }
     // If the IANA ID is the default for any Windows ID, it has already shown up
     // as an ID for it in some territory; no need to search windowsDataTable[].
-    return QByteArray();
+    return {};
 }
 
 QByteArrayView QTimeZonePrivate::windowsIdToDefaultIanaId(QByteArrayView windowsId)

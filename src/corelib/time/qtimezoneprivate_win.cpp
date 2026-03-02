@@ -507,7 +507,7 @@ void QWinTimeZonePrivate::init(const QByteArray &ianaId)
         m_windowsId = windowsSystemZoneId();
         m_id = systemTimeZoneId();
     } else {
-        m_windowsId = ianaIdToWindowsId(ianaId);
+        m_windowsId = ianaIdToWindowsId(ianaId).toByteArray();
         m_id = ianaId;
     }
     const auto initialYear = [](const QWinTransitionRule &rule) {

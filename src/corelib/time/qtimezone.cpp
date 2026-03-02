@@ -1600,7 +1600,7 @@ QList<QByteArray> QTimeZone::availableTimeZoneIds(int offsetSeconds)
 
 QByteArray QTimeZone::ianaIdToWindowsId(const QByteArray &ianaId)
 {
-    return QTimeZonePrivate::ianaIdToWindowsId(ianaId);
+    return QTimeZonePrivate::ianaIdToWindowsId(ianaId).toByteArray();
 }
 
 /*!
