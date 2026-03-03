@@ -58,20 +58,22 @@ public:
         Q_ASSERT(m.empty());
 
         size_type result = 0;
-        const auto &keyCompare = source.key_comp();
-        const auto filter = [&result, &key, &keyCompare](const auto &v)
-        {
-            if (!keyCompare(key, v.first) && !keyCompare(v.first, key)) {
-                // keys are equivalent (neither a<b nor b<a) => found it
-                ++result;
-                return true;
-            }
-            return false;
-        };
 
-        std::remove_copy_if(source.cbegin(), source.cend(),
-                            std::inserter(m, m.end()),
-                            filter);
+        const auto keep = [this](auto it) { m.insert(m.cend(), *it); };
+
+        auto it = source.cbegin();
+        const auto end = source.cend();
+        const auto &cmp = m.key_comp();
+        // Keep all before:
+        for (; it != end && cmp(it->first, key); ++it)
+            keep(it);
+        // Count and skip matches:
+        for (; it != end && !cmp(key, it->first); ++it)
+            ++result;
+        // Keep all after:
+        for (; it != end; ++it)
+            keep(it);
+
         return result;
     }
 
