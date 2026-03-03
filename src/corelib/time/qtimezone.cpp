@@ -1643,7 +1643,7 @@ QByteArray QTimeZone::windowsIdToDefaultIanaId(const QByteArray &windowsId)
 QByteArray QTimeZone::windowsIdToDefaultIanaId(const QByteArray &windowsId,
                                                QLocale::Territory territory)
 {
-    return QTimeZonePrivate::windowsIdToDefaultIanaId(windowsId, territory);
+    return QTimeZonePrivate::windowsIdToDefaultIanaId(windowsId, territory).toByteArray();
 }
 
 /*!

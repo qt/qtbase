@@ -825,14 +825,14 @@ QByteArray QWinTimeZonePrivate::systemTimeZoneId() const
 {
     const QLocale::Territory territory = userTerritory();
     const QByteArray windowsId = windowsSystemZoneId();
-    QByteArray ianaId;
+    QByteArrayView ianaId;
     // If we have a real territory, then try get a specific match for that territory
     if (territory != QLocale::AnyTerritory)
         ianaId = windowsIdToDefaultIanaId(windowsId, territory);
     // If we don't have a real territory, or there wasn't a specific match, try the global default
     if (ianaId.isEmpty())
-        ianaId = windowsIdToDefaultIanaId(windowsId).toByteArray();
-    return ianaId;
+        ianaId = windowsIdToDefaultIanaId(windowsId);
+    return ianaId.toByteArray();
 }
 
 QList<QByteArray> QWinTimeZonePrivate::availableTimeZoneIds() const

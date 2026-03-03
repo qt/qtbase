@@ -77,7 +77,7 @@ constexpr bool zoneAtLowerWindowsKey(ZoneData entry, qint16 winIdKey) noexcept
 }
 
 // Static table-lookup helpers
-static quint16 toWindowsIdKey(const QByteArray &winId)
+static quint16 toWindowsIdKey(QByteArrayView winId)
 {
     // Key and winId are monotonic, table is sorted on them.
     const auto data = std::lower_bound(std::begin(windowsDataTable), std::end(windowsDataTable),
@@ -1033,11 +1033,30 @@ QByteArrayView QTimeZonePrivate::windowsIdToDefaultIanaId(QByteArrayView windows
     return {};
 }
 
-QByteArray QTimeZonePrivate::windowsIdToDefaultIanaId(const QByteArray &windowsId,
-                                                      QLocale::Territory territory)
+QByteArrayView QTimeZonePrivate::windowsIdToDefaultIanaId(QByteArrayView windowsId,
+                                                          QLocale::Territory territory)
 {
-    const QList<QByteArray> list = windowsIdToIanaIds(windowsId, territory);
-    return list.size() > 0 ? list.first() : QByteArray();
+    // Must match windowsIdToIanaIds(), but returning its first entry (or empty)
+    if (territory == QLocale::World) {
+        // World data are in windowsDataTable, not zoneDataTable.
+        return windowsIdToDefaultIanaId(windowsId);
+    }
+
+    const quint16 windowsIdKey = toWindowsIdKey(windowsId);
+    const qint16 land = static_cast<quint16>(territory);
+    for (auto data = zoneStartForWindowsId(windowsIdKey);
+         data != std::end(zoneDataTable) && data->windowsIdKey == windowsIdKey;
+         ++data) {
+        // Return the first (preferred) region match:
+        if (data->territory == land) {
+            const auto ids = data->ids();
+            // We only want the first, but tokenizers only do iteration:
+            for (const auto id : ids)
+                return id;
+        }
+    }
+
+    return {};
 }
 
 QList<QByteArray> QTimeZonePrivate::windowsIdToIanaIds(const QByteArray &windowsId)
@@ -1063,6 +1082,7 @@ QList<QByteArray> QTimeZonePrivate::windowsIdToIanaIds(const QByteArray &windows
 QList<QByteArray> QTimeZonePrivate::windowsIdToIanaIds(const QByteArray &windowsId,
                                                        QLocale::Territory territory)
 {
+    // Must match windowsIdToDefaultIanaId(), but collecting all candidates.
     QList<QByteArray> list;
     if (territory == QLocale::World) {
         // World data are in windowsDataTable, not zoneDataTable.
