@@ -1059,7 +1059,7 @@ QByteArrayView QTimeZonePrivate::windowsIdToDefaultIanaId(QByteArrayView windows
     return {};
 }
 
-QList<QByteArray> QTimeZonePrivate::windowsIdToIanaIds(const QByteArray &windowsId)
+QList<QByteArray> QTimeZonePrivate::windowsIdToIanaIds(QByteArrayView windowsId)
 {
     const quint16 windowsIdKey = toWindowsIdKey(windowsId);
     QList<QByteArray> list;
@@ -1079,7 +1079,7 @@ QList<QByteArray> QTimeZonePrivate::windowsIdToIanaIds(const QByteArray &windows
     return list;
 }
 
-QList<QByteArray> QTimeZonePrivate::windowsIdToIanaIds(const QByteArray &windowsId,
+QList<QByteArray> QTimeZonePrivate::windowsIdToIanaIds(QByteArrayView windowsId,
                                                        QLocale::Territory territory)
 {
     // Must match windowsIdToDefaultIanaId(), but collecting all candidates.

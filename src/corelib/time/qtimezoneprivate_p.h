@@ -155,8 +155,8 @@ public:
     static QByteArrayView windowsIdToDefaultIanaId(QByteArrayView windowsId);
     static QByteArrayView windowsIdToDefaultIanaId(QByteArrayView windowsId,
                                                    QLocale::Territory territory);
-    static QList<QByteArray> windowsIdToIanaIds(const QByteArray &windowsId);
-    static QList<QByteArray> windowsIdToIanaIds(const QByteArray &windowsId,
+    static QList<QByteArray> windowsIdToIanaIds(QByteArrayView windowsId);
+    static QList<QByteArray> windowsIdToIanaIds(QByteArrayView windowsId,
                                                 QLocale::Territory territory);
     struct NamePrefixMatch
     {
