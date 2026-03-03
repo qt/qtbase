@@ -24,7 +24,7 @@ class tst_qfloat16: public QObject
 
 private slots:
     void compareCompiles();
-    void relationalOperatorsAreConstexpr();
+    void operatorsAreConstexpr();
     void ordering_data();
     void ordering();
     void fuzzyCompare_data();
@@ -137,10 +137,11 @@ template <typename RHS> static constexpr bool checkArithmeticCompiles(qfloat16 l
     return true;
 }
 
-void tst_qfloat16::relationalOperatorsAreConstexpr()
+void tst_qfloat16::operatorsAreConstexpr()
 {
 #if QFLOAT16_IS_NATIVE
 
+    // relational
 #define CHECK_CONSTEXPR(Type) \
     do { \
         constexpr qfloat16 lhs = qfloat16(0.0f); \
@@ -171,6 +172,26 @@ void tst_qfloat16::relationalOperatorsAreConstexpr()
 
 #undef CHECK_CONSTEXPR
 
+    // arithmetic
+    static_assert(checkArithmeticCompiles({}, qfloat16(1.0f)));
+    static_assert(checkArithmeticCompiles(qfloat16(0.0f), qfloat16(1.0f)));
+#ifdef __STDCPP_FLOAT16_T__
+    static_assert(checkArithmeticCompiles(qfloat16(0.0f), 1.0f16));
+#endif
+    static_assert(checkArithmeticCompiles(qfloat16(0.0f), 1.0f));
+    static_assert(checkArithmeticCompiles(qfloat16(0.0f), 1.0));
+    static_assert(checkArithmeticCompiles(qfloat16(0.0f), 1.0L));
+    static_assert(checkArithmeticCompiles(qfloat16(0.0f), 1));
+
+    // combine
+    static_assert(+ +qfloat16{} == qfloat16{});
+    static_assert(+ +qfloat16{} == qfloat16(0.0f));
+    static_assert(+ +qfloat16(1.0f) == qfloat16(1.0f));
+    static_assert(-+-qfloat16(1.0f) == qfloat16(1.0f));
+    static_assert(qfloat16(1.0f) + qfloat16(0.0f) == qfloat16(1.0f));
+    static_assert(qfloat16(1.0f) - qfloat16(0.0f) == qfloat16(1.0f));
+    static_assert(qfloat16(1.0f) * qfloat16(0.0f) == qfloat16(0.0f));
+    static_assert(qfloat16(1.0f) / qfloat16(1.0f) == qfloat16(1.0f));
 #else
     QSKIP("This check is only relevant for native float16 types");
 #endif // QFLOAT16_IS_NATIVE

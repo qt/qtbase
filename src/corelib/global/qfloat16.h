@@ -55,6 +55,14 @@ class QTextStream;
 
 class qfloat16
 {
+#if QFLOAT16_IS_NATIVE
+#  define QF16_CONSTEXPR constexpr
+#  define QF16_PARTIALLY_ORDERED Q_DECLARE_PARTIALLY_ORDERED_LITERAL_TYPE
+#else
+#  define QF16_CONSTEXPR
+#  define QF16_PARTIALLY_ORDERED Q_DECLARE_PARTIALLY_ORDERED
+#endif
+
     struct Wrap
     {
         // To let our private constructor work, without other code seeing
@@ -72,13 +80,13 @@ public:
     static constexpr bool IsNative = QFLOAT16_IS_NATIVE;
     using NearestFloat = std::conditional_t<IsNative, NativeType, float>;
 
-    constexpr inline qfloat16() noexcept : b16(0) {}
     explicit qfloat16(Qt::Initialization) noexcept { }
 
 #if QFLOAT16_IS_NATIVE
-    constexpr inline qfloat16(NativeType f) : nf(f) {}
+    constexpr inline qfloat16(NativeType f = {}) : nf(f) {}
     constexpr operator NativeType() const noexcept { return nf; }
 #else
+    constexpr inline qfloat16() noexcept : b16(0) {}
     inline qfloat16(float f) noexcept;
     inline operator float() const noexcept;
 #endif
@@ -129,13 +137,13 @@ public:
     inline constexpr bool isNormal() const noexcept
     { return (b16 & 0x7c00) && (b16 & 0x7c00) != 0x7c00; }
 
-    qfloat16 operator++(int) noexcept
+    QF16_CONSTEXPR qfloat16 operator++(int) noexcept
     { qfloat16 tmp = *this; ++(*this); return tmp; }
-    qfloat16 &operator++() noexcept
+    QF16_CONSTEXPR qfloat16 &operator++() noexcept
     { return *this += NearestFloat(1); }
-    qfloat16 operator--(int) noexcept
+    QF16_CONSTEXPR qfloat16 operator--(int) noexcept
     { qfloat16 tmp = *this; --(*this); return tmp; }
-    qfloat16 &operator--() noexcept
+    QF16_CONSTEXPR qfloat16 &operator--() noexcept
     { return *this -= NearestFloat(1); }
 
 private:
@@ -169,17 +177,25 @@ private:
     friend bool qIsNull(qfloat16 f) noexcept;
 
     friend constexpr inline qfloat16 operator+(qfloat16 a) noexcept { return a; }
-    friend inline qfloat16 operator-(qfloat16 a) noexcept
+    friend constexpr inline qfloat16 operator-(qfloat16 a) noexcept
     {
+#if QFLOAT16_IS_NATIVE
+        return -static_cast<NearestFloat>(a);
+#else
         qfloat16 f;
         f.b16 = a.b16 ^ quint16(0x8000);
         return f;
+#endif
     }
 
-    friend inline qfloat16 operator+(qfloat16 a, qfloat16 b) noexcept { return qfloat16(static_cast<NearestFloat>(a) + static_cast<NearestFloat>(b)); }
-    friend inline qfloat16 operator-(qfloat16 a, qfloat16 b) noexcept { return qfloat16(static_cast<NearestFloat>(a) - static_cast<NearestFloat>(b)); }
-    friend inline qfloat16 operator*(qfloat16 a, qfloat16 b) noexcept { return qfloat16(static_cast<NearestFloat>(a) * static_cast<NearestFloat>(b)); }
-    friend inline qfloat16 operator/(qfloat16 a, qfloat16 b) noexcept { return qfloat16(static_cast<NearestFloat>(a) / static_cast<NearestFloat>(b)); }
+    friend QF16_CONSTEXPR inline qfloat16 operator+(qfloat16 a, qfloat16 b) noexcept
+    { return qfloat16(static_cast<NearestFloat>(a) + static_cast<NearestFloat>(b)); }
+    friend QF16_CONSTEXPR inline qfloat16 operator-(qfloat16 a, qfloat16 b) noexcept
+    { return qfloat16(static_cast<NearestFloat>(a) - static_cast<NearestFloat>(b)); }
+    friend QF16_CONSTEXPR inline qfloat16 operator*(qfloat16 a, qfloat16 b) noexcept
+    { return qfloat16(static_cast<NearestFloat>(a) * static_cast<NearestFloat>(b)); }
+    friend QF16_CONSTEXPR inline qfloat16 operator/(qfloat16 a, qfloat16 b) noexcept
+    { return qfloat16(static_cast<NearestFloat>(a) / static_cast<NearestFloat>(b)); }
 
     friend size_t qHash(qfloat16 key, size_t seed = 0) noexcept
     { return qHash(float(key), seed); } // 6.4 algorithm, so keep using it; ### Qt 7: fix QTBUG-116077
@@ -188,10 +204,12 @@ QT_WARNING_PUSH
 QT_WARNING_DISABLE_GCC("-Wfloat-conversion")
 
 #define QF16_MAKE_ARITH_OP_FP(FP, OP) \
-    friend inline FP operator OP(qfloat16 lhs, FP rhs) noexcept { return static_cast<FP>(lhs) OP rhs; } \
-    friend inline FP operator OP(FP lhs, qfloat16 rhs) noexcept { return lhs OP static_cast<FP>(rhs); }
+    friend QF16_CONSTEXPR inline FP operator OP(qfloat16 lhs, FP rhs) noexcept  \
+    { return static_cast<FP>(lhs) OP rhs; }                                     \
+    friend QF16_CONSTEXPR inline FP operator OP(FP lhs, qfloat16 rhs) noexcept  \
+    { return lhs OP static_cast<FP>(rhs); }
 #define QF16_MAKE_ARITH_OP_EQ_FP(FP, OP_EQ, OP) \
-    friend inline qfloat16& operator OP_EQ(qfloat16& lhs, FP rhs) noexcept \
+    friend QF16_CONSTEXPR inline qfloat16 &operator OP_EQ(qfloat16& lhs, FP rhs) noexcept \
     { lhs = qfloat16(NearestFloat(static_cast<FP>(lhs) OP rhs)); return lhs; }
 #define QF16_MAKE_ARITH_OP(FP) \
     QF16_MAKE_ARITH_OP_FP(FP, +) \
@@ -213,8 +231,10 @@ QT_WARNING_DISABLE_GCC("-Wfloat-conversion")
 #undef QF16_MAKE_ARITH_OP_FP
 
 #define QF16_MAKE_ARITH_OP_INT(OP) \
-    friend inline double operator OP(qfloat16 lhs, int rhs) noexcept { return static_cast<double>(lhs) OP rhs; } \
-    friend inline double operator OP(int lhs, qfloat16 rhs) noexcept { return lhs OP static_cast<double>(rhs); }
+    friend QF16_CONSTEXPR inline double operator OP(qfloat16 lhs, int rhs) noexcept \
+    { return static_cast<double>(lhs) OP rhs; }                                     \
+    friend QF16_CONSTEXPR inline double operator OP(int lhs, qfloat16 rhs) noexcept \
+    { return lhs OP static_cast<double>(rhs); }
 
     QF16_MAKE_ARITH_OP_INT(+)
     QF16_MAKE_ARITH_OP_INT(-)
@@ -223,14 +243,6 @@ QT_WARNING_DISABLE_GCC("-Wfloat-conversion")
 #undef QF16_MAKE_ARITH_OP_INT
 
 QT_WARNING_DISABLE_FLOAT_COMPARE
-
-#if QFLOAT16_IS_NATIVE
-#  define QF16_CONSTEXPR constexpr
-#  define QF16_PARTIALLY_ORDERED Q_DECLARE_PARTIALLY_ORDERED_LITERAL_TYPE
-#else
-#  define QF16_CONSTEXPR
-#  define QF16_PARTIALLY_ORDERED Q_DECLARE_PARTIALLY_ORDERED
-#endif
 
     friend QF16_CONSTEXPR bool comparesEqual(const qfloat16 &lhs, const qfloat16 &rhs) noexcept
     { return static_cast<NearestFloat>(lhs) == static_cast<NearestFloat>(rhs); }
