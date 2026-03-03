@@ -1596,8 +1596,8 @@ qt_feature("test_squish" PUBLIC
 
 qt_configure_add_report_entry(
     TYPE NOTE
-    MESSAGE "Bulding Squish Autotests"
-    CONDITION QT_FEATURE_test_squish
+    MESSAGE "Building Squish Autotests"
+    CONDITION QT_FEATURE_test_squish AND QT_BUILD_TESTS
 )
 
 # Compile autotests
