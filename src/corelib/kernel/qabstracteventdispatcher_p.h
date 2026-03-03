@@ -37,9 +37,9 @@ public:
     bool isV2 = false;
 
     static int allocateTimerId();
-    static void releaseTimerId(int id);
-    static void releaseTimerId(Qt::TimerId id)
-    { releaseTimerId(qToUnderlying(id)); }
+    static void releaseTimerId(int id)
+    { releaseTimerId(Qt::TimerId{id}); }
+    static void releaseTimerId(Qt::TimerId id);
 
     static QAbstractEventDispatcherPrivate *get(QAbstractEventDispatcher *o)
     { return o->d_func(); }
