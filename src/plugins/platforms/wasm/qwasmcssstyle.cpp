@@ -37,8 +37,14 @@ const char *Style = R"css(
 }
 
 .qt-window {
-    overflow: hidden;
+    overflow: clip;
     position: relative;
+}
+
+.qt-window-canvas {
+    position: absolute;
+    left: 0;
+    top: 0;
 }
 
 .qt-decorated-window.transparent-for-input {
@@ -166,16 +172,14 @@ const char *Style = R"css(
     opacity: 0.35;
 }
 
-.qt-window {
-    display: flex;
-}
-
 .title-bar div {
     pointer-events: none;
 }
 
 .qt-window-a11y-container {
     position: absolute;
+    left: 0;
+    top: 0;
     z-index: -1;
 }
 

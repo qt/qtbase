@@ -456,8 +456,9 @@ void QWasmWindow::setGeometry(const QRect &rect)
     m_a11yContainer["style"].set("width", std::to_string(clientAreaRect.width()) + "px");
     m_a11yContainer["style"].set("height", std::to_string(clientAreaRect.height()) + "px");
 
-    // Important for the title flexbox to shrink correctly
+    // Important for the title bar and decorated window to size correctly
     m_window["style"].set("width", std::to_string(clientAreaRect.width()) + "px");
+    m_window["style"].set("height", std::to_string(clientAreaRect.height()) + "px");
 
     QSizeF canvasSize = clientAreaRect.size() * devicePixelRatio();
 
