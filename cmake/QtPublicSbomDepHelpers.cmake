@@ -83,8 +83,12 @@ function(_qt_internal_sbom_handle_target_dependencies target)
     set(external_relationship_entries "")
     set(external_target_dependencies "")
 
-    # Go through each direct linked lib.
-    foreach(direct_lib IN LISTS all_direct_libraries)
+    set(libs_to_process ${all_direct_libraries})
+
+    # Go through all collected direct linked libs. More might be added during the processing
+    # due to handling of WrapFoo -> Qt::BundledFoo libraries.
+    while(libs_to_process)
+        list(POP_FRONT libs_to_process direct_lib)
         if(NOT TARGET "${direct_lib}")
             continue()
         endif()
@@ -111,17 +115,11 @@ function(_qt_internal_sbom_handle_target_dependencies target)
                         "${lib_walked_target}" _qt_module_is_3rdparty_library)
 
                     # Add a dependency on the vendored lib instead of the Wrap target.
-                    if(is_3rdparty_bundled_lib AND lib_spdx_id)
-                        set(relationship_entry
-                            SBOM_RELATIONSHIP_ENTRY
-                                SBOM_RELATIONSHIP_FROM
-                                    "${target}"
-                                SBOM_RELATIONSHIP_TYPE
-                                    DEPENDS_ON
-                                SBOM_RELATIONSHIP_TO
-                                    "${lib_walked_target}"
-                        )
-                        list(APPEND regular_relationship_entries ${relationship_entry})
+                    if(is_3rdparty_bundled_lib)
+                        message(DEBUG
+                            "Replacing SBOM dependency on '${direct_lib}' with dependency on "
+                            "bundled target '${lib_walked_target}' for target '${target}'")
+                        list(APPEND libs_to_process "${lib_walked_target}")
                         set(bundled_targets_found TRUE)
                     endif()
                 endforeach()
@@ -186,7 +184,7 @@ function(_qt_internal_sbom_handle_target_dependencies target)
                 list(APPEND external_target_dependencies ${extra_target_dependencies})
             endif()
         endif()
-    endforeach()
+    endwhile()
 
     set(all_relationship_entries ${external_relationship_entries} ${regular_relationship_entries})
 
