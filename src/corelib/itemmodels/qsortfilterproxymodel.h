@@ -109,6 +109,14 @@ public:
     };
     Q_DECLARE_FLAGS(Directions, Direction)
 
+    enum class DataChangeRelevance {
+        NotRelevant = 0x00,
+        RelevantForFiltering = 0x01,
+        RelevantForSorting = 0x02,
+        RelevantForFilteringAndSorting = RelevantForFiltering | RelevantForSorting
+    };
+    Q_DECLARE_FLAGS(DataChangeRelevances, DataChangeRelevance)
+
 public Q_SLOTS:
     void setFilterRegularExpression(const QString &pattern);
     void setFilterRegularExpression(const QRegularExpression &regularExpression);
@@ -120,6 +128,16 @@ protected:
     virtual bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const;
     virtual bool filterAcceptsColumn(int source_column, const QModelIndex &source_parent) const;
     virtual bool lessThan(const QModelIndex &source_left, const QModelIndex &source_right) const;
+
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+    Q_INVOKABLE DataChangeRelevances dataChangeRelevances(const QModelIndex &sourceTopLeft,
+                                                          const QModelIndex &sourceBottomRight,
+                                                          const QList<int> &roles) const;
+#else
+    virtual DataChangeRelevances dataChangeRelevances(const QModelIndex &sourceTopLeft,
+                                                      const QModelIndex &sourceBottomRight,
+                                                      const QList<int> &roles) const;
+#endif
 
     void beginFilterChange();
     void endFilterChange(Directions directions = Direction::Both);
@@ -190,6 +208,7 @@ private:
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QSortFilterProxyModel::Directions)
+Q_DECLARE_OPERATORS_FOR_FLAGS(QSortFilterProxyModel::DataChangeRelevances)
 
 QT_END_NAMESPACE
 

@@ -5570,5 +5570,75 @@ void tst_QSortFilterProxyModel::filterChangeEmitsModelChangedSignals()
     QCOMPARE(rowsRemovedSpy.count(), 1);
 }
 
+class ChangeIgnoringFilterModel : public QSortFilterProxyModel
+{
+    Q_OBJECT
+public:
+    mutable int filterAcceptsRowCalls = 0;
+    mutable int lessThanCalls = 0;
+
+    bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const override
+    {
+        ++filterAcceptsRowCalls;
+        return QSortFilterProxyModel::filterAcceptsRow(sourceRow, sourceParent);
+    }
+    bool lessThan(const QModelIndex &sourceLeft, const QModelIndex &sourceRight) const override
+    {
+        ++lessThanCalls;
+        return QSortFilterProxyModel::lessThan(sourceLeft, sourceRight);
+    }
+
+protected:
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+    Q_INVOKABLE QSortFilterProxyModel::DataChangeRelevances dataChangeRelevances(const QModelIndex &sourceTopLeft,
+                                                                                 const QModelIndex &sourceBottomRight,
+                                                                                 const QList<int> &roles) const
+#else
+   QSortFilterProxyModel::DataChangeRelevances dataChangeRelevances(const QModelIndex &sourceTopLeft,
+                                                                    const QModelIndex &sourceBottomRight,
+                                                                    const QList<int> &roles) const override
+#endif
+    {
+        Q_UNUSED(sourceTopLeft);
+        Q_UNUSED(sourceBottomRight);
+
+        if (roles.isEmpty())
+            return QSortFilterProxyModel::DataChangeRelevance::RelevantForFilteringAndSorting;
+
+        QSortFilterProxyModel::DataChangeRelevances ignoreFlags = QSortFilterProxyModel::DataChangeRelevance::NotRelevant;
+        if (roles.contains(filterRole()))
+            ignoreFlags.setFlag(QSortFilterProxyModel::DataChangeRelevance::RelevantForFiltering);
+        if (roles.contains(sortRole()))
+            ignoreFlags.setFlag(QSortFilterProxyModel::DataChangeRelevance::RelevantForSorting);
+        return ignoreFlags;
+    }
+};
+void tst_QSortFilterProxyModel::dataChangeRelevances()
+{
+    ChangeIgnoringFilterModel filterModel;
+    filterModel.setDynamicSortFilter(true);
+    filterModel.setFilterRegularExpression("A");
+    filterModel.sort(0);
+    filterModel.setSourceModel(m_model);
+
+    m_model->appendRow(new QStandardItem(QString("A")));
+    m_model->appendRow(new QStandardItem(QString("B")));
+
+    QCOMPARE(filterModel.rowCount(), 1);
+    QCOMPARE(filterModel.filterAcceptsRowCalls, 2);
+    QCOMPARE(filterModel.lessThanCalls, 0);
+
+    m_model->item(1)->setData(QString("A"), Qt::DisplayRole);
+    QCOMPARE(filterModel.rowCount(), 2);
+    QCOMPARE(filterModel.filterAcceptsRowCalls, 3);
+    QCOMPARE(filterModel.lessThanCalls, 1);
+
+    // changing a role unrelated to filtering or sorting should not trigger a re-evaluation filterAcceptsRow or lessThan.
+    m_model->item(1)->setData(Qt::Checked, Qt::CheckStateRole);
+    QCOMPARE(filterModel.rowCount(), 2);
+    QCOMPARE(filterModel.filterAcceptsRowCalls, 3);
+    QCOMPARE(filterModel.lessThanCalls, 1);
+}
+
 QTEST_MAIN(tst_QSortFilterProxyModel)
 #include "tst_qsortfilterproxymodel.moc"
