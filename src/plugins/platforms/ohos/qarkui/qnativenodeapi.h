@@ -87,6 +87,8 @@ public:
 
     void setLengthMetricUnitOrFail(::ArkUI_LengthMetricUnit unit);
 
+    bool hasParent() const;
+
 private:
     static std::set<::ArkUI_NodeHandle> qtManagedNodes;
 
