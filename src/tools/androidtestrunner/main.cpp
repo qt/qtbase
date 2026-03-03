@@ -1059,7 +1059,7 @@ int main(int argc, char *argv[])
 
     int exitCode = testExitCode();
 
-    if (g_options.showLogcatOutput)
+    if (g_options.showLogcatOutput || !isTestExitCodeNormal(exitCode))
         analyseLogcat(formattedStartTime, &exitCode);
 
     const bool pullRes = pullResults();
