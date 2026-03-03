@@ -1475,6 +1475,10 @@ qint64 QNativeSocketEnginePrivate::nativeWrite(const char *data, qint64 len)
                 setError(QAbstractSocket::NetworkError, WriteErrorString);
                 q->close();
                 break;
+            case WSAEMSGSIZE:
+                ret = -1;
+                setError(QAbstractSocket::DatagramTooLargeError, DatagramTooLargeErrorString);
+                break;
             default:
                 break;
             }
