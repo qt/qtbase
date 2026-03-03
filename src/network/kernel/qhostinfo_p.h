@@ -175,7 +175,10 @@ public:
     void lookupFinished(QHostInfoRunnable *r);
     bool wasAborted(int id);
 
-    [[no_unique_address]] QHostInfoCache cache;
+#if __has_attribute(no_unique_address) && __cplusplus >= 201803L
+    [[no_unique_address]]
+#endif
+    QHostInfoCache cache;
 
     friend class QHostInfoRunnable;
 protected:
