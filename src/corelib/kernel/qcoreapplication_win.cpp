@@ -619,7 +619,13 @@ static const char *sessionMgrLogOffOption(uint p)
 
 // Returns a "human readable" string representation of the MSG and the
 // information it points to
+#if QT_DEPRECATED_SINCE(6, 12)
 QString decodeMSG(const MSG& msg)
+{
+    return qt_decodeMSG(msg);
+}
+#endif
+QString qt_decodeMSG(const MSG& msg)
 {
     const WPARAM wParam = msg.wParam;
     const LPARAM lParam = msg.lParam;
@@ -823,7 +829,7 @@ QDebug operator<<(QDebug dbg, const MSG &msg)
     QDebugStateSaver saver(dbg);
     dbg.noquote();
     dbg.nospace();
-    dbg << decodeMSG(msg);
+    dbg << qt_decodeMSG(msg);
     return dbg;
 }
 #endif

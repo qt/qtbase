@@ -281,7 +281,11 @@ Q_CORE_EXPORT QString qAppName();                // get application name
 
 #ifndef QT_NO_QOBJECT
 #if defined(Q_OS_WIN) && !defined(QT_NO_DEBUG_STREAM)
+#if QT_DEPRECATED_SINCE(6, 12)
+QT_DEPRECATED_VERSION_X_6_12("Use qt_decodeMSG() instead.")
 Q_CORE_EXPORT QString decodeMSG(const MSG &);
+#endif
+Q_CORE_EXPORT QString qt_decodeMSG(const MSG &);
 Q_CORE_EXPORT QDebug operator<<(QDebug, const MSG &);
 #endif
 #endif

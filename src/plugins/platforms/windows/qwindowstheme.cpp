@@ -520,8 +520,8 @@ LRESULT QT_WIN_CALLBACK qThemeChangeObserverWndProc(HWND hwnd, UINT message, WPA
     case WM_THEMECHANGED:
     case WM_SYSCOLORCHANGE:
     case WM_DWMCOLORIZATIONCOLORCHANGED:
-        qCDebug(lcQpaTheme) << "Handling theme change due to"
-            << qUtf8Printable(decodeMSG(MSG{hwnd, message, wParam, lParam, 0, {0, 0}}).trimmed());
+        qCDebug(lcQpaTheme, "Handling theme change due to %ls",
+                qUtf16Printable(qt_decodeMSG(MSG{hwnd, message, wParam, lParam, 0, {0, 0}}).trimmed()));
         QWindowsTheme::handleThemeChange();
 
         MSG msg; // Clear the message queue, we've already reacted to the change
