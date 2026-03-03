@@ -142,7 +142,7 @@ QList<QByteArray> QChronoTimeZonePrivate::availableTimeZoneIds(int utcOffset) co
             result << QByteArray{id.data(), qsizetype(id.size())};
         // Order preserved; they were already sorted and unique.
     }
-    return result;
+    return padSortedWithAliases(result);
 }
 
 QString QChronoTimeZonePrivate::abbreviation(qint64 atMSecsSinceEpoch) const

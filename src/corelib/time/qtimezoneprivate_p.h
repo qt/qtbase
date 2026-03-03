@@ -197,6 +197,9 @@ protected:
     // Use to filter what the backend has available.
     QList<QByteArrayView> matchingTimeZoneIds(QLocale::Territory territory) const;
     QList<QByteArrayView> matchingTimeZoneIds(int utcOffset) const;
+    // Use to extend a list with what its entries alias, then sort and uniquify:
+    static QList<QByteArray> uniqueSortedAliasPadded(QList<QByteArray> &&zoneIds);
+    static QList<QByteArray> padSortedWithAliases(QList<QByteArray> &&zoneIds);
 
 #if QT_CONFIG(timezone_locale)
     // Defined in qtimezonelocale.cpp

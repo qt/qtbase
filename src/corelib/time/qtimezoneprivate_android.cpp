@@ -213,10 +213,8 @@ QList<QByteArray> QAndroidTimeZonePrivate::availableTimeZoneIds() const
     for (const auto &id : androidAvailableIdList)
         result.append(id.toString().toUtf8());
 
-    // Sort & uniquify (just to be sure; it appears to not need this, but we can't rely on that).
-    std::sort(result.begin(), result.end());
-    result.erase(std::unique(result.begin(), result.end()), result.end());
-    return result;
+    // (It appears to not need sort+uniquify, but we can't rely on that.)
+    return uniqueSortedAliasPadded(std::move(result));
 }
 
 QT_END_NAMESPACE

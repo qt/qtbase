@@ -713,6 +713,36 @@ QList<QByteArray> QTimeZonePrivate::availableTimeZoneIds(int offsetFromUtc) cons
     return selectAvailable(matchingTimeZoneIds(offsetFromUtc), availableTimeZoneIds());
 }
 
+QList<QByteArray> QTimeZonePrivate::uniqueSortedAliasPadded(QList<QByteArray> &&zoneIds)
+{
+    // Inputs are not expected to be sorted. (Use padSortedWithAliases() when they are.)
+    const QList<QByteArray> source = zoneIds;
+    // If we include a zone, include also its CLDR-standard name:
+    for (const auto &name : source) {
+        const auto zone = aliasToIana(name);
+        if (!zone.isEmpty()) {
+            zoneIds << zone.toByteArray();
+            Q_ASSERT(aliasToIana(zone).isEmpty());
+        }
+    }
+    std::sort(zoneIds.begin(), zoneIds.end());
+    zoneIds.erase(std::unique(zoneIds.begin(), zoneIds.end()), zoneIds.end());
+    return zoneIds;
+}
+
+QList<QByteArray> QTimeZonePrivate::padSortedWithAliases(QList<QByteArray> &&zoneIds)
+{
+    // Input is assumed sorted; this is preserved, as is uniqueness if it was unique.
+    const QList<QByteArray> source = zoneIds;
+    for (const auto &name : source) {
+        const auto zone = aliasToIana(name);
+        const auto pos = std::lower_bound(zoneIds.begin(), zoneIds.end(), zone);
+        if (pos != zoneIds.end() && *pos != zone)
+            zoneIds.insert(pos, zone.toByteArray());
+    }
+    return zoneIds;
+}
+
 #ifndef QT_NO_DATASTREAM
 void QTimeZonePrivate::serialize(QDataStream &ds) const
 {

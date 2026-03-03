@@ -1273,9 +1273,7 @@ bool QTzTimeZonePrivate::isTimeZoneIdAvailable(QByteArrayView ianaId) const
 
 QList<QByteArray> QTzTimeZonePrivate::availableTimeZoneIds() const
 {
-    QList<QByteArray> result = tzZones->keys();
-    std::sort(result.begin(), result.end());
-    return result;
+    return uniqueSortedAliasPadded(tzZones->keys());
 }
 
 QList<QByteArray> QTzTimeZonePrivate::availableTimeZoneIds(QLocale::Territory territory) const
@@ -1284,6 +1282,7 @@ QList<QByteArray> QTzTimeZonePrivate::availableTimeZoneIds(QLocale::Territory te
     for (auto it = tzZones->cbegin(), end = tzZones->cend(); it != end; ++it) {
         if (it.value().territory == territory)
             result << it.key();
+        // We'll pick up any CLDR-standard names below, so don't try to map here.
     }
     std::sort(result.begin(), result.end());
 

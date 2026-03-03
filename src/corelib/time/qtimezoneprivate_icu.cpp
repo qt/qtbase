@@ -155,7 +155,7 @@ static QTimeZonePrivate::Data ucalTimeZoneTransition(UCalendar *m_ucal,
 }
 #endif // U_ICU_VERSION_SHORT
 
-// Convert a uenum to a QList<QByteArray>
+// Convert a uenum (listing zone names) to a QList<QByteArray>
 static QList<QByteArray> uenumToIdList(UEnumeration *uenum)
 {
     QList<QByteArray> list;
@@ -165,9 +165,16 @@ static QList<QByteArray> uenumToIdList(UEnumeration *uenum)
     QByteArray result = uenum_next(uenum, &size, &status);
     while (U_SUCCESS(status) && !result.isEmpty()) {
         list << result;
+        // Include the CLDR-canonical name, as well
+        const QByteArrayView zone = QTimeZonePrivate::aliasToIana(result);
+        if (!zone.isEmpty()) {
+            list << zone.toByteArray();
+            Q_ASSERT(QTimeZonePrivate::aliasToIana(zone).isEmpty());
+        }
         status = U_ZERO_ERROR;
         result = uenum_next(uenum, &size, &status);
     }
+
     std::sort(list.begin(), list.end());
     list.erase(std::unique(list.begin(), list.end()), list.end());
     return list;
