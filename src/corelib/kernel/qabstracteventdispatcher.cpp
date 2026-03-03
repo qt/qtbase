@@ -104,12 +104,12 @@ int QAbstractEventDispatcherPrivate::allocateTimerId()
     return 0; // Note! returning 0 generates a warning
 }
 
-void QAbstractEventDispatcherPrivate::releaseTimerId(int timerId)
+void QAbstractEventDispatcherPrivate::releaseTimerId(Qt::TimerId timerId)
 {
     // this function may be called by a global destructor after
     // timerIdFreeList() has been destructed
     if (QtTimerIdFreeList *fl = timerIdFreeList())
-        fl->release(timerId);
+        fl->release(qToUnderlying(timerId));
 }
 
 /*!
