@@ -11,6 +11,7 @@
 #include "qloggingcategory.h"
 #include "qmutex.h"
 #include "qthreadstorage.h"
+#include <private/quniquehandle_types_p.h>
 
 #include <qt_windows.h>
 
@@ -300,6 +301,33 @@ void QThread::yieldCurrentThread()
 void QThread::sleep(std::chrono::nanoseconds nsecs)
 {
     using namespace std::chrono;
+    if (nsecs < 2ms) {
+        QUniqueWin32NullHandle waitableTimerHandle;
+        waitableTimerHandle.reset(CreateWaitableTimerEx(
+                nullptr, nullptr, CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_ALL_ACCESS));
+        if (waitableTimerHandle) {
+            using namespace std::chrono_literals;
+            // SetWaitableTimerEx's uses intervals of 100ns (0.1µs)
+            using hundredsOfNano = std::ratio<1, 10'000'000>;
+            using hundredsOfNanoseconds = std::chrono::duration<long long, hundredsOfNano>;
+            const auto ticks100ns = duration_cast<hundredsOfNanoseconds>(nsecs);
+            LARGE_INTEGER i;
+            // Negate to make it a relative timeout:
+            i.QuadPart = std::min(-(ticks100ns.count()), -1ll);
+            BOOL timerResult = SetWaitableTimerEx(
+                    waitableTimerHandle.get(), &i,
+                    0, // not periodic
+                    nullptr, nullptr, // no callback
+                    nullptr, // no wake context / don't wake from sleep
+                    0); // lowest tolerated delay
+
+            if (timerResult == TRUE) {
+                if (WaitForSingleObject(waitableTimerHandle.get(), INFINITE) == ERROR_SUCCESS)
+                    return;
+            }
+        }
+    }
+    // Fallback:
     ::Sleep(DWORD(duration_cast<milliseconds>(nsecs).count()));
 }
 
@@ -315,7 +343,7 @@ void QThread::msleep(unsigned long msecs)
 
 void QThread::usleep(unsigned long usecs)
 {
-    ::Sleep((usecs / 1000) + 1);
+    sleep(std::chrono::microseconds(usecs));
 }
 
 #if QT_CONFIG(thread)
