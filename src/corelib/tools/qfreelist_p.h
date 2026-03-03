@@ -19,7 +19,7 @@
 #include <QtCore/private/qglobal_p.h>
 #include <QtCore/qatomic.h>
 
-#include <atomic>
+#include <QtCore/q20atomic.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -148,7 +148,7 @@ class QFreeList
     }
 
     // the blocks
-    QAtomicPointer<ElementType> _v[ConstantsType::BlockCount];
+    q20::atomic<ElementType *> _v[ConstantsType::BlockCount];
     // the next free id
     QAtomicInt _next;
 
@@ -182,21 +182,21 @@ template <typename T, typename ConstantsType>
 inline QFreeList<T, ConstantsType>::~QFreeList()
 {
     for (int i = 0; i < ConstantsType::BlockCount; ++i)
-        delete [] _v[i].loadAcquire();
+        delete [] _v[i].load(std::memory_order_acquire);
 }
 
 template <typename T, typename ConstantsType>
 inline typename QFreeList<T, ConstantsType>::ConstReferenceType QFreeList<T, ConstantsType>::at(int x) const
 {
     const int block = blockfor(x);
-    return (_v[block].loadRelaxed())[x].t();
+    return (_v[block].load(std::memory_order_relaxed))[x].t();
 }
 
 template <typename T, typename ConstantsType>
 inline typename QFreeList<T, ConstantsType>::ReferenceType QFreeList<T, ConstantsType>::operator[](int x)
 {
     const int block = blockfor(x);
-    return (_v[block].loadRelaxed())[x].t();
+    return (_v[block].load(std::memory_order_relaxed))[x].t();
 }
 
 template <typename T, typename ConstantsType>
@@ -207,12 +207,12 @@ inline int QFreeList<T, ConstantsType>::next()
     do {
         int at = id & ConstantsType::IndexMask;
         const int block = blockfor(at);
-        ElementType *v = _v[block].loadAcquire();
+        ElementType *v = _v[block].load(std::memory_order_acquire);
 
         if (!v) {
             ElementType* const alloced = allocate((id & ConstantsType::IndexMask) - at,
                                                   ConstantsType::Sizes[block]);
-            if (_v[block]._q_value.compare_exchange_strong(v, alloced, std::memory_order_release, std::memory_order_acquire)) {
+            if (_v[block].compare_exchange_strong(v, alloced, std::memory_order_release, std::memory_order_acquire)) {
                 v = alloced;
             } else {
                 // race with another thread lost
@@ -235,7 +235,7 @@ inline void QFreeList<T, ConstantsType>::release(int id)
 {
     int at = id & ConstantsType::IndexMask;
     const int block = blockfor(at);
-    ElementType *v = _v[block].loadAcquire();
+    ElementType *v = _v[block].load(std::memory_order_acquire);
 
     int x, newid;
     do {
