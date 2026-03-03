@@ -51,14 +51,20 @@ public:
         : m(std::move(other))
     {}
 
-    // used in remove(); copies from source all the values not matching key.
-    // returns how many were NOT copied (removed).
-    size_type copyIfNotEquivalentTo(const Map &source, const Key &key)
+    // copies from source all the values not matching key.
+    // returns how many were NOT copied (removed), and first removed iterator
+    auto copyIfNotEquivalentTo(const Map &source, const Key &key)
     {
         Q_ASSERT(m.empty());
 
         size_type result = 0;
+        auto foundIt = source.end();
 
+        const auto markFound = [&](auto it) {
+            if (result == 0)
+                foundIt = it;
+            ++result;
+        };
         const auto keep = [this](auto it) { m.insert(m.cend(), *it); };
 
         auto it = source.cbegin();
@@ -69,12 +75,13 @@ public:
             keep(it);
         // Count and skip matches:
         for (; it != end && !cmp(key, it->first); ++it)
-            ++result;
+            markFound(it);
         // Keep all after:
         for (; it != end; ++it)
             keep(it);
 
-        return result;
+        struct resultType { size_type count; decltype(source.begin()) iterator; };
+        return resultType{result, foundIt};
     }
 
     void copyExceptFor(const Map &source, const iterator &skipit)
@@ -402,7 +409,7 @@ public:
             return size_type(d->m.erase(key));
 
         MapData *newData = new MapData;
-        size_type result = newData->copyIfNotEquivalentTo(d->m, key);
+        size_type result = newData->copyIfNotEquivalentTo(d->m, key).count;
 
         d.reset(newData);
 
@@ -421,41 +428,14 @@ public:
             return T();
 
         if (d.isShared()) {
-            Map m;
+            MapData *m = new MapData;
             // For historic reasons, we always un-share (was: detach()) when
             // this function is called, even if `key` isn't found
-            const auto commit = qScopeGuard([&] { QMap{std::move(m)}.swap(*this); });
+            const auto commit = qScopeGuard([&] { d.reset(m); });
 
-            // This way of copying ought to be O(N) (not NlogN) and not causing
-            // any rebalancings in `m`, because we build in-order and with hint
-            // [[citation needed]].
-
-            const auto keep = [&m] (auto it) { m.insert(m.cend(), *it); };
-
-            auto it = d->m.cbegin();
-            const auto end = d->m.cend();
-            const auto cmp = d->m.key_comp();
-            while (it != end) {
-                if (cmp(it->first, key)) { // still before
-                    keep(it);
-                    ++it;
-                } else if (cmp(key, it->first)) { // after, iow: not found
-                    // This should be faster than an actual range-insert, because
-                    // the latter cannot assume that the input is sorted; we can:
-                    while (it != end) {
-                        keep(it);
-                        ++it;
-                    }
-                    break;
-                } else { // found!
-                    return [&] {
-                        T r = it->second; // we cannot move (isShared()!)
-                        while (++it != end)
-                            keep(it);
-                        return r;
-                    }();
-                }
-            }
+            auto result = m->copyIfNotEquivalentTo(d->m, key);
+            if (result.count)
+                return result.iterator->second;
             // if we reach here, `key` wasn't found:
             return T();
         }
@@ -1140,7 +1120,7 @@ public:
             return size_type(d->m.erase(key));
 
         MapData *newData = new MapData;
-        size_type result = newData->copyIfNotEquivalentTo(d->m, key);
+        size_type result = newData->copyIfNotEquivalentTo(d->m, key).count;
 
         d.reset(newData);
 
