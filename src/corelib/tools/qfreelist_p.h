@@ -19,6 +19,8 @@
 #include <QtCore/private/qglobal_p.h>
 #include <QtCore/qatomic.h>
 
+#include <atomic>
+
 QT_BEGIN_NAMESPACE
 
 /*! \internal
@@ -210,7 +212,7 @@ inline int QFreeList<T, ConstantsType>::next()
         if (!v) {
             ElementType* const alloced = allocate((id & ConstantsType::IndexMask) - at,
                                                   ConstantsType::Sizes[block]);
-            if (_v[block].testAndSetOrdered(nullptr, alloced, v)) {
+            if (_v[block]._q_value.compare_exchange_strong(v, alloced, std::memory_order_release, std::memory_order_acquire)) {
                 v = alloced;
             } else {
                 // race with another thread lost
