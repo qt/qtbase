@@ -426,11 +426,6 @@ void QAbstractEventDispatcher::closingDown()
 
     \sa registeredTimers(), QAbstractEventDispatcher::TimerInfoV2, timersForObject()
 */
-/*! \fn QAbstractEventDispatcher::TimerInfo::TimerInfo(int timerId, int interval, Qt::TimerType timerType)
-
-    Constructs a TimerInfo struct with the given \a timerId, \a interval, and
-    \a timerType.
-*/
 /*!
     \variable QAbstractEventDispatcher::TimerInfo::timerId
 
