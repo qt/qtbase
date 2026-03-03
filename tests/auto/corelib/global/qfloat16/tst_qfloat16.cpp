@@ -106,7 +106,7 @@ template <typename RHS> static constexpr bool checkArithmeticCompiles(qfloat16 l
 
     auto ps = +lhs;     // unary +
     auto ng = -lhs;     // unary -
-    static_assert(std::is_same_v<decltype(ps), qfloat16> || true); // broken, uses operator NearestFloat()
+    static_assert(std::is_same_v<decltype(ps), qfloat16>);
     static_assert(std::is_same_v<decltype(ng), qfloat16>);
 
     assertType(lhs + rhs);

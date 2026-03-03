@@ -158,6 +158,7 @@ private:
 
     friend bool qIsNull(qfloat16 f) noexcept;
 
+    friend constexpr inline qfloat16 operator+(qfloat16 a) noexcept { return a; }
     friend inline qfloat16 operator-(qfloat16 a) noexcept
     {
         qfloat16 f;
