@@ -17,7 +17,6 @@
 //
 
 #include <QtCore/private/qglobal_p.h>
-#include <QtCore/qatomic.h>
 
 #include <QtCore/q20atomic.h>
 
@@ -38,7 +37,7 @@ struct QFreeListElement
     typedef T &ReferenceType;
 
     T _t;
-    QAtomicInt next;
+    q20::atomic<int> next;
 
     inline ConstReferenceType t() const { return _t; }
     inline ReferenceType t() { return _t; }
@@ -55,7 +54,7 @@ struct QFreeListElement<void>
     typedef void ConstReferenceType;
     typedef void ReferenceType;
 
-    QAtomicInt next;
+    q20::atomic<int> next;
 
     inline void t() const { }
     inline void t() { }
@@ -137,7 +136,7 @@ class QFreeList
         // qDebug("QFreeList: allocating %d elements (%ld bytes) with offset %d", size, size * sizeof(ElementType), offset);
         ElementType *v = new ElementType[size];
         for (int i = 0; i < size; ++i)
-            v[i].next.storeRelaxed(offset + i + 1);
+            v[i].next.store(offset + i + 1, std::memory_order_relaxed);
         return v;
     }
 
@@ -150,7 +149,7 @@ class QFreeList
     // the blocks
     q20::atomic<ElementType *> _v[ConstantsType::BlockCount];
     // the next free id
-    QAtomicInt _next;
+    q20::atomic<int> _next;
 
     // QFreeList is not copyable
     Q_DISABLE_COPY_MOVE(QFreeList)
@@ -203,7 +202,7 @@ template <typename T, typename ConstantsType>
 inline int QFreeList<T, ConstantsType>::next()
 {
     int newid;
-    int id = _next.loadAcquire();
+    int id = _next.load(std::memory_order_acquire);
     do {
         int at = id & ConstantsType::IndexMask;
         const int block = blockfor(at);
@@ -221,8 +220,8 @@ inline int QFreeList<T, ConstantsType>::next()
             }
         }
 
-        newid = v[at].next.loadRelaxed() | (id & ~ConstantsType::IndexMask);
-    } while (!_next.testAndSetOrdered(id, newid, id));
+        newid = v[at].next.load(std::memory_order_relaxed) | (id & ~ConstantsType::IndexMask);
+    } while (!_next.compare_exchange_strong(id, newid, std::memory_order_release, std::memory_order_acquire));
     // qDebug("QFreeList::next(): returning %d (_next now %d, serial %d)",
     //        id & ConstantsType::IndexMask,
     //        newid & ConstantsType::IndexMask,
@@ -239,11 +238,11 @@ inline void QFreeList<T, ConstantsType>::release(int id)
 
     int x, newid;
     do {
-        x = _next.loadAcquire();
-        v[at].next.storeRelaxed(x & ConstantsType::IndexMask);
+        x = _next.load(std::memory_order_acquire);
+        v[at].next.store(x & ConstantsType::IndexMask, std::memory_order_relaxed);
 
         newid = incrementserial(x, id);
-    } while (!_next.testAndSetRelease(x, newid));
+    } while (!_next.compare_exchange_weak(x, newid, std::memory_order_release));
     // qDebug("QFreeList::release(%d): _next now %d (was %d), serial %d",
     //        id & ConstantsType::IndexMask,
     //        newid & ConstantsType::IndexMask,
