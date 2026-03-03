@@ -308,6 +308,11 @@ void Node::setLengthMetricUnitOrFail(::ArkUI_LengthMetricUnit unit)
     }
 }
 
+bool Node::hasParent() const
+{
+    return nativeNodeApi().getParent(handle()) != nullptr;
+}
+
 QOhosOptional<::ArkUI_NodeHandle> Node::tryfindChild(
     ::ArkUI_NodeHandle nodeHandle, const std::function<bool(::ArkUI_NodeHandle)> predicate)
 {
