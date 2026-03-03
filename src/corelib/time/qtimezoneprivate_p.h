@@ -152,7 +152,7 @@ public:
 
     static QByteArray aliasToIana(QByteArrayView alias);
     static QByteArray ianaIdToWindowsId(const QByteArray &ianaId);
-    static QByteArray windowsIdToDefaultIanaId(const QByteArray &windowsId);
+    static QByteArrayView windowsIdToDefaultIanaId(QByteArrayView windowsId);
     static QByteArray windowsIdToDefaultIanaId(const QByteArray &windowsId,
                                                QLocale::Territory territory);
     static QList<QByteArray> windowsIdToIanaIds(const QByteArray &windowsId);

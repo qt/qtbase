@@ -831,7 +831,7 @@ QByteArray QWinTimeZonePrivate::systemTimeZoneId() const
         ianaId = windowsIdToDefaultIanaId(windowsId, territory);
     // If we don't have a real territory, or there wasn't a specific match, try the global default
     if (ianaId.isEmpty())
-        ianaId = windowsIdToDefaultIanaId(windowsId);
+        ianaId = windowsIdToDefaultIanaId(windowsId).toByteArray();
     return ianaId;
 }
 

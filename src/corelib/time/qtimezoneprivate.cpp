@@ -1021,16 +1021,16 @@ QByteArray QTimeZonePrivate::ianaIdToWindowsId(const QByteArray &id)
     return QByteArray();
 }
 
-QByteArray QTimeZonePrivate::windowsIdToDefaultIanaId(const QByteArray &windowsId)
+QByteArrayView QTimeZonePrivate::windowsIdToDefaultIanaId(QByteArrayView windowsId)
 {
     const auto data = std::lower_bound(std::begin(windowsDataTable), std::end(windowsDataTable),
                                        windowsId, earlierWindowsId);
     if (data != std::end(windowsDataTable) && data->windowsId() == windowsId) {
         QByteArrayView id = data->ianaId();
         Q_ASSERT(id.indexOf(' ') == -1);
-        return id.toByteArray();
+        return id;
     }
-    return QByteArray();
+    return {};
 }
 
 QByteArray QTimeZonePrivate::windowsIdToDefaultIanaId(const QByteArray &windowsId,
@@ -1066,7 +1066,7 @@ QList<QByteArray> QTimeZonePrivate::windowsIdToIanaIds(const QByteArray &windows
     QList<QByteArray> list;
     if (territory == QLocale::World) {
         // World data are in windowsDataTable, not zoneDataTable.
-        list << windowsIdToDefaultIanaId(windowsId);
+        list << windowsIdToDefaultIanaId(windowsId).toByteArray();
     } else {
         const quint16 windowsIdKey = toWindowsIdKey(windowsId);
         const qint16 land = static_cast<quint16>(territory);

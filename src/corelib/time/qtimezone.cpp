@@ -1617,7 +1617,7 @@ QByteArray QTimeZone::ianaIdToWindowsId(const QByteArray &ianaId)
 
 QByteArray QTimeZone::windowsIdToDefaultIanaId(const QByteArray &windowsId)
 {
-    return QTimeZonePrivate::windowsIdToDefaultIanaId(windowsId);
+    return QTimeZonePrivate::windowsIdToDefaultIanaId(windowsId).toByteArray();
 }
 
 /*!
