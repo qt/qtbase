@@ -691,8 +691,8 @@ function(qt_internal_add_test name)
         list(APPEND extra_test_args "--timeout" "${android_timeout}")
 
         set(build_environment "")
-        if(DEFINED ENV{QT_BUILD_ENVIRONMENT})
-            set(build_environment "$ENV{QT_BUILD_ENVIRONMENT}")
+        if(DEFINED ENV{QTEST_ENVIRONMENT})
+            set(build_environment "$ENV{QTEST_ENVIRONMENT}")
         endif()
 
         if(QT_ENABLE_VERBOSE_DEPLOYMENT OR build_environment STREQUAL "ci")
