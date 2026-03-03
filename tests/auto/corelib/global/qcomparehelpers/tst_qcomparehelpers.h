@@ -102,6 +102,9 @@ private slots:
     void lexicographicalCompareThreeWay_Pointers();
     void lexicographicalCompareThreeWay_NonCopyMove();
     void lexicographicalCompareThreeWay_CustomPointerHelper();
+
+    void compareThreeWayForPairs_data();
+    void compareThreeWayForPairs();
 };
 
 #endif // TST_QCOMPAREHELPERS_H

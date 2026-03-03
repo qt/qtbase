@@ -3,6 +3,8 @@
 
 #include "tst_qcomparehelpers.h"
 
+using namespace Qt::StringLiterals;
+
 #define DECLARE_TYPE(Name, Type, RetType, Constexpr, Noex, Suffix, ...) \
 class Templated ## Name \
 { \
@@ -603,4 +605,151 @@ void tst_QCompareHelpers::lexicographicalCompareThreeWay_CustomPointerHelper()
                                                                            a3.begin(), a3.end());
         QCOMPARE_EQ(res, Qt::partial_ordering::unordered);
     }
+}
+
+
+// A type that does not implement compareThreeWay() or op<=>().
+// Comparison inside std::pair<> overload should use op<() and produce weak
+// ordering.
+using WeakOrderingType = LessOnly<int>;
+using IntPair = std::pair<int, int>; // strong ordering
+using NestedWeakIntPair = std::pair<WeakOrderingType, IntPair>; // weak ordering
+using NestedFloatNestedWeakIntPair = std::pair<float, NestedWeakIntPair>; // partial ordering
+
+static_assert(QtOrderingPrivate::CompareThreeWayTester::hasCompareThreeWay_v<IntPair, IntPair>);
+// WeakOrderingType only has operator<()!
+static_assert(!QtOrderingPrivate::CompareThreeWayTester::hasCompareThreeWay_v<NestedWeakIntPair, NestedWeakIntPair>);
+// But this one is fine, because Qt::compareThreeWay() overload for NestedWeakIntPair exists!
+static_assert(QtOrderingPrivate::CompareThreeWayTester::hasCompareThreeWay_v<NestedFloatNestedWeakIntPair, NestedFloatNestedWeakIntPair>);
+
+// some mixed-type checks
+using FPPair = std::pair<float, double>;
+static_assert(QtOrderingPrivate::CompareThreeWayTester::hasCompareThreeWay_v<IntPair, FPPair>);
+using IntNestedFPPair = std::pair<int, FPPair>;
+using FloatNestedIntPair = std::pair<float, IntPair>;
+static_assert(QtOrderingPrivate::CompareThreeWayTester::hasCompareThreeWay_v<IntNestedFPPair, FloatNestedIntPair>);
+
+void tst_QCompareHelpers::compareThreeWayForPairs_data()
+{
+    QTest::addColumn<IntPair>("leftIntPair");
+    QTest::addColumn<IntPair>("rightIntPair");
+    QTest::addColumn<Qt::strong_ordering>("expectedStrong");
+    QTest::addColumn<WeakOrderingType>("leftWeakVal");
+    QTest::addColumn<WeakOrderingType>("rightWeakVal");
+    QTest::addColumn<Qt::weak_ordering>("expectedWeak");
+    QTest::addColumn<float>("leftFloat");
+    QTest::addColumn<float>("rightFloat");
+    QTest::addColumn<Qt::partial_ordering>("expectedPartial");
+
+    struct StrongInput
+    {
+        IntPair left;
+        IntPair right;
+        Qt::strong_ordering result;
+        QByteArray description;
+    };
+
+    const IntPair p11 = std::make_pair(1, 1);
+    const IntPair p21 = std::make_pair(2, 1);
+    const IntPair p12 = std::make_pair(1, 2);
+    std::array<StrongInput, 3> strongVals {
+        StrongInput{p11, p11, Qt::strong_ordering::equal, "(1,1)_vs_(1,1)"_ba},
+        StrongInput{p21, p11, Qt::strong_ordering::greater, "(2,1)_vs_(1,1)"_ba},
+        StrongInput{p12, p11, Qt::strong_ordering::greater, "(1,2)_vs_(1,1)"_ba},
+    };
+
+    struct WeakInput
+    {
+        WeakOrderingType left;
+        WeakOrderingType right;
+        Qt::weak_ordering result;
+        QByteArray description;
+    };
+
+    const WeakOrderingType weakOne{1};
+    const WeakOrderingType weakTwo{2};
+    const WeakOrderingType weakThree{3};
+    std::array<WeakInput, 3> weakVals {
+        WeakInput{weakOne, weakOne, Qt::weak_ordering::equivalent, "weakOne_vs_weakOne"_ba},
+        WeakInput{weakOne, weakTwo, Qt::weak_ordering::less, "weakOne_vs_weakTwo"_ba},
+        WeakInput{weakThree, weakTwo, Qt::weak_ordering::greater, "weakThree_vs_weakTwo"_ba},
+    };
+
+    struct PartialInput
+    {
+        float left;
+        float right;
+        Qt::partial_ordering result;
+        QByteArray description;
+    };
+
+    const float posInf = std::numeric_limits<float>::infinity();
+    const float negInf = -std::numeric_limits<float>::infinity();
+    const float nan = std::numeric_limits<float>::quiet_NaN();
+    std::array<PartialInput, 4> partialVals {
+        PartialInput{posInf, negInf, Qt::partial_ordering::greater, "+inf_vs_-inf"_ba},
+        PartialInput{0.f, posInf, Qt::partial_ordering::less, "0_vs_+inf"_ba},
+        PartialInput{negInf, 0.f, Qt::partial_ordering::less, "-inf_vs_0"_ba},
+        PartialInput{nan, 0.f, Qt::partial_ordering::unordered, "nan_vs_0"_ba},
+    };
+
+    auto adjustWeakResult = [](Qt::weak_ordering weak, Qt::strong_ordering strong) {
+        if (weak == Qt::weak_ordering::equivalent)
+            return Qt::weak_ordering(strong);
+        return weak;
+    };
+
+    auto adjustPartialResult = [](Qt::partial_ordering partial, Qt::weak_ordering weak,
+                                  Qt::strong_ordering strong) {
+        if (partial == Qt::partial_ordering::equivalent) {
+            if (weak == Qt::weak_ordering::equivalent)
+                return Qt::partial_ordering(strong);
+            return Qt::partial_ordering(weak);
+        }
+        return partial;
+    };
+
+    for (const auto &s : strongVals) {
+        for (const auto &w : weakVals) {
+            for (const auto &p : partialVals) {
+                const QByteArray desc = s.description + ';' + w.description + ';' + p.description;
+                QTest::newRow(desc.data())
+                        << s.left << s.right << s.result
+                        << w.left << w.right << adjustWeakResult(w.result, s.result)
+                        << p.left << p.right << adjustPartialResult(p.result, w.result, s.result);
+            }
+        }
+    }
+}
+
+void tst_QCompareHelpers::compareThreeWayForPairs()
+{
+    QFETCH(const IntPair, leftIntPair);
+    QFETCH(const IntPair, rightIntPair);
+    QFETCH(const Qt::strong_ordering, expectedStrong);
+    QFETCH(const WeakOrderingType, leftWeakVal);
+    QFETCH(const WeakOrderingType, rightWeakVal);
+    QFETCH(const Qt::weak_ordering, expectedWeak);
+    QFETCH(const float, leftFloat);
+    QFETCH(const float, rightFloat);
+    QFETCH(const Qt::partial_ordering, expectedPartial);
+
+    const auto strongRes = Qt::compareThreeWay(leftIntPair, rightIntPair);
+    QCOMPARE_EQ(strongRes, expectedStrong);
+    const auto strongResRev = Qt::compareThreeWay(rightIntPair, leftIntPair);
+    QCOMPARE_EQ(strongResRev, QtOrderingPrivate::reversed(expectedStrong));
+
+    const NestedWeakIntPair leftWeak = std::make_pair(leftWeakVal, leftIntPair);
+    const NestedWeakIntPair rightWeak = std::make_pair(rightWeakVal, rightIntPair);
+    const auto weakRes = Qt::compareThreeWay(leftWeak, rightWeak);
+    QCOMPARE_EQ(weakRes, expectedWeak);
+    const auto weakResRev = Qt::compareThreeWay(rightWeak, leftWeak);
+    QCOMPARE_EQ(weakResRev, QtOrderingPrivate::reversed(expectedWeak));
+
+    const NestedFloatNestedWeakIntPair leftPartial = std::make_pair(leftFloat, leftWeak);
+    const NestedFloatNestedWeakIntPair rightPartial = std::make_pair(rightFloat, rightWeak);
+    const auto partialRes = Qt::compareThreeWay(leftPartial, rightPartial);
+    QCOMPARE_EQ(partialRes, expectedPartial);
+    const auto partialResRev = Qt::compareThreeWay(rightPartial, leftPartial);
+    QCOMPARE_EQ(partialResRev, QtOrderingPrivate::reversed(expectedPartial));
 }

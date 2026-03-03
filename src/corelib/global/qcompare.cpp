@@ -1518,6 +1518,21 @@ CHECK(strong, equivalent);
 */
 
 /*!
+    \fn template <typename T1, typename T2, typename U1, typename U2> Qt::compareThreeWay(const std::pair<T1, T2> &lhs, const std::pair<U1, U2> &rhs)
+    \since 6.12
+    \relates <QtCompare>
+    \overload
+
+    \note \c T1 should be comparable to \c U1 and \c T2 should be comparable to
+    \c U2 using \c {compareThreeWay()} or \c {operator<()}.
+
+    This overload uses \c auto return type, because the strength of the ordering
+    depends on the template arguments of the pair. For example, if either of
+    the arguments is a floating point type, the ordering would be
+    \l {Qt::partial_ordering}, if they both are integral - \l {Qt::strong_ordering}.
+*/
+
+/*!
     \fn template <typename LeftType, typename RightType> qCompareThreeWay(const LeftType &lhs, const RightType &rhs)
     \since 6.7
     \relates <QtCompare>

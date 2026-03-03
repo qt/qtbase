@@ -1243,6 +1243,104 @@ constexpr bool compareThreeWayNoexcept() noexcept
 
 QT_WARNING_POP // QT_WARNING_DISABLE_DEPRECATED
 
+[[maybe_unused]] inline constexpr struct { /* Niebloid */
+    template <typename LT, typename RT = LT>
+    [[maybe_unused]] constexpr Qt::weak_ordering operator()(const LT &lhs, const RT &rhs) const
+    {
+        if (lhs < rhs)
+            return Qt::weak_ordering::less;
+        if (rhs < lhs)
+            return Qt::weak_ordering::greater;
+        return Qt::weak_ordering::equivalent;
+    }
+} weakComparator;
+
+// Forward declaration. Impl should be added after compareThreeWay() overload
+// for std::pair.
+template <bool Condition, typename LT, typename RT = LT>
+auto threeWayOrWeakCompare(const LT &lhs, const RT &rhs);
+
+} // namespace QtOrderingPrivate
+
+namespace Qt {
+
+template <typename T, typename U>
+using if_has_qt_compare_three_way =
+        std::enable_if_t<
+                std::disjunction_v<QtOrderingPrivate::CompareThreeWayTester::HasCompareThreeWay<T, U>,
+                                   QtOrderingPrivate::CompareThreeWayTester::HasCompareThreeWay<U, T>>,
+                bool>;
+
+#ifdef __cpp_lib_three_way_comparison
+template <typename T1, typename T2, typename U1, typename U2,
+          std::enable_if_t<
+                  QTypeTraits::has_operator_compare_three_way_with_v<std::pair<T1, T2>,
+                                                                     std::pair<U1, U2>>,
+                  bool> = true>
+auto compareThreeWay(const std::pair<T1, T2> &lhs, const std::pair<U1, U2> &rhs)
+{
+    return QtOrderingPrivate::to_Qt(lhs <=> rhs);
+}
+#endif
+
+#ifdef Q_QDOC
+template <typename T1, typename T2, typename U1, typename U2>
+#else
+template <typename T1, typename T2, typename U1, typename U2,
+          std::enable_if_t<
+                  !QTypeTraits::has_operator_compare_three_way_with_v<std::pair<T1, T2>,
+                                                                      std::pair<U1, U2>>,
+                  bool> = true>
+#endif
+auto compareThreeWay(const std::pair<T1, T2> &lhs, const std::pair<U1, U2> &rhs)
+{
+    using namespace QtOrderingPrivate;
+    using Qt::compareThreeWay;
+
+    constexpr bool firstHasCompareThreeWay = CompareThreeWayTester::hasCompareThreeWay_v<T1, U1>;
+    constexpr bool secondHasCompareThreeWay = CompareThreeWayTester::hasCompareThreeWay_v<T2, U2>;
+
+    using FirstType =
+            decltype(threeWayOrWeakCompare<firstHasCompareThreeWay>(std::declval<T1>(),
+                                                                    std::declval<U1>()));
+    using SecondType =
+            decltype(threeWayOrWeakCompare<secondHasCompareThreeWay>(std::declval<T2>(),
+                                                                     std::declval<U2>()));
+
+    using R = std::common_type_t<FirstType, SecondType>;
+
+    if (auto r = threeWayOrWeakCompare<firstHasCompareThreeWay>(lhs.first, rhs.first); !is_eq(r))
+        return R{r};
+    return R{threeWayOrWeakCompare<secondHasCompareThreeWay>(lhs.second, rhs.second)};
+}
+
+} // namespace Qt
+
+namespace QtOrderingPrivate {
+
+namespace CompareThreeWayTester {
+
+using Qt::compareThreeWay;
+
+template <typename T1, typename T2, typename U1, typename U2>
+struct HasCompareThreeWay<
+        std::pair<T1, T2>, std::pair<U1, U2>,
+        std::void_t<decltype(compareThreeWay(std::declval<T1>(), std::declval<U1>())),
+                    decltype(compareThreeWay(std::declval<T2>(), std::declval<U2>()))>
+        > : std::true_type {};
+
+} // namespace CompareThreeWayTester
+
+template <bool Condition, typename LT, typename RT>
+auto threeWayOrWeakCompare(const LT &lhs, const RT &rhs)
+{
+    using Qt::compareThreeWay;
+    if constexpr (Condition)
+        return compareThreeWay(lhs, rhs);
+    else
+        return weakComparator(lhs, rhs);
+}
+
 #ifdef __cpp_lib_three_way_comparison
 [[maybe_unused]] inline constexpr struct { /* Niebloid */
     template <typename LT, typename RT = LT>
@@ -1338,17 +1436,6 @@ auto lexicographicalCompareThreeWay(InputIt1 first1, InputIt1 last1,
 }
 
 } // namespace QtOrderingPrivate
-
-namespace Qt {
-
-template <typename T, typename U>
-using if_has_qt_compare_three_way =
-        std::enable_if_t<
-            std::disjunction_v<QtOrderingPrivate::CompareThreeWayTester::HasCompareThreeWay<T, U>,
-                               QtOrderingPrivate::CompareThreeWayTester::HasCompareThreeWay<U, T>>,
-        bool>;
-
-} // namespace Qt
 
 QT_END_NAMESPACE
 
