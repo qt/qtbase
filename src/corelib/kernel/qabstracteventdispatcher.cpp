@@ -92,7 +92,7 @@ QAbstractEventDispatcherPrivate::QAbstractEventDispatcherPrivate()
 QAbstractEventDispatcherPrivate::~QAbstractEventDispatcherPrivate()
     = default;
 
-int QAbstractEventDispatcherPrivate::allocateTimerId()
+Qt::TimerId QAbstractEventDispatcherPrivate::allocateTimerId()
 {
     // This function may be called after timerIdFreeList() has been destructed
     // for example in case when application exits without waiting for
@@ -100,8 +100,8 @@ int QAbstractEventDispatcherPrivate::allocateTimerId()
     // to a slot which triggers a sequence that registers new timer.
     // See https://bugreports.qt-project.org/browse/QTBUG-38957.
     if (QtTimerIdFreeList *fl = timerIdFreeList())
-        return fl->next();
-    return 0; // Note! returning 0 generates a warning
+        return Qt::TimerId{fl->next()};
+    return Qt::TimerId{0}; // Note! returning 0 generates a warning
 }
 
 void QAbstractEventDispatcherPrivate::releaseTimerId(Qt::TimerId timerId)
@@ -277,7 +277,7 @@ int QAbstractEventDispatcher::registerTimer(qint64 interval, Qt::TimerType timer
 Qt::TimerId QAbstractEventDispatcher::registerTimer(Duration interval, Qt::TimerType timerType,
                                                     QObject *object)
 {
-    auto id = Qt::TimerId(QAbstractEventDispatcherPrivate::allocateTimerId());
+    auto id = QAbstractEventDispatcherPrivate::allocateTimerId();
 #if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
     if (QAbstractEventDispatcherV2 *self = v2(this))
         self->registerTimer(id, interval, timerType, object);

@@ -36,7 +36,7 @@ public:
 
     bool isV2 = false;
 
-    static int allocateTimerId();
+    static Qt::TimerId allocateTimerId();
     static void releaseTimerId(int id)
     { releaseTimerId(Qt::TimerId{id}); }
     static void releaseTimerId(Qt::TimerId id);
