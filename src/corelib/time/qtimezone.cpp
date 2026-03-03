@@ -870,12 +870,14 @@ bool QTimeZone::hasAlternativeName(QByteArrayView alias) const
         return true;
     QByteArrayView mine = QTimeZonePrivate::aliasToIana(me);
     // Empty if id() aliases to itself, which we've already checked:
-    if (!mine.isEmpty() && alias == mine)
+    if (mine.isEmpty())
+        mine = me; // To simplify the final conditional
+    else if (alias == mine)
         return true;
     QByteArrayView its = QTimeZonePrivate::aliasToIana(alias);
     // Empty if alias aliases to itself, which we've already compared to id()
     // and, where relevant, mine.
-    return !its.isEmpty() && its == (mine.isEmpty() ? me : mine);
+    return !its.isEmpty() && its == mine;
 }
 
 /*!
