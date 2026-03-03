@@ -978,6 +978,23 @@ QTimeZonePrivate::findLongNamePrefix(QStringView text, const QLocale &locale,
                                      std::optional<qint64> atEpochMillis)
 {
     // Search all known zones for one that matches a prefix of text in our locale.
+    const auto matchLength = [text](QStringView name) -> qsizetype {
+        qsizetype length = 0; // "Does not match" by default.
+        if (name.size() > 0 && text.startsWith(name, Qt::CaseInsensitive)) {
+            length = name.size();
+            // But a case-insensitive match might have different length:
+            while (!text.first(length).startsWith(name, Qt::CaseInsensitive)) {
+                ++length;
+                Q_ASSERT(length <= text.size());
+            }
+            // If we didn't need to grow, check whether we can shrink:
+            if (length == name.size()) {
+                while (length > 0 && text.first(length - 1).startsWith(name, Qt::CaseInsensitive))
+                    --length;
+            }
+        }
+        return length;
+    };
     const auto when = atEpochMillis
         ? QDateTime::fromMSecsSinceEpoch(*atEpochMillis, QTimeZone::UTC)
         : QDateTime();
@@ -990,23 +1007,20 @@ QTimeZonePrivate::findLongNamePrefix(QStringView text, const QLocale &locale,
     QTimeZonePrivate::NamePrefixMatch best = findUtcOffsetPrefix(text, locale);
     constexpr QTimeZone::TimeType types[]
         = { QTimeZone::GenericTime, QTimeZone::StandardTime, QTimeZone::DaylightTime };
-    const auto improves = [text, &best](const QString &name) {
-        return text.startsWith(name, Qt::CaseInsensitive) && name.size() > best.nameLength;
-    };
     const QList<QByteArray> allZones = QTimeZone::availableTimeZoneIds();
     for (const QByteArray &iana : allZones) {
         QTimeZone zone(iana);
         if (!zone.isValid())
             continue;
         if (when.isValid()) {
-            QString name = zone.displayName(when, QTimeZone::LongName, locale);
-            if (improves(name))
-                best = { iana, name.size(), typeFor(zone) };
+            const QString name = zone.displayName(when, QTimeZone::LongName, locale);
+            if (qsizetype match = matchLength(name); match > best.nameLength)
+                best = { iana, match, typeFor(zone) };
         } else {
             for (const QTimeZone::TimeType type : types) {
-                QString name = zone.displayName(type, QTimeZone::LongName, locale);
-                if (improves(name))
-                    best = { iana, name.size(), type };
+                const QString name = zone.displayName(type, QTimeZone::LongName, locale);
+                if (qsizetype match = matchLength(name); match > best.nameLength)
+                    best = { iana, match, type };
             }
         }
         // If we have a match for all of text, we can't get any better:
