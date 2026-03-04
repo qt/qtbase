@@ -408,14 +408,14 @@ static QDate calculateDowDate(int year, int month, int dayOfWeek, int week)
     return date;
 }
 
-static QDate calculatePosixDate(const QByteArray &dateRule, int year)
+static QDate calculatePosixDate(QLatin1StringView dateRule, int year)
 {
     Q_ASSERT(!dateRule.isEmpty());
     bool ok;
     // Can start with M, J, or a digit
     if (dateRule.at(0) == 'M') {
         // nth week in month format "Mmonth.week.dow"
-        const auto dateParts = QLatin1StringView(dateRule).tokenize(u'.');
+        const auto dateParts = dateRule.tokenize(u'.');
         auto token = dateParts.begin();
         Q_ASSERT(token != dateParts.end());
         Q_ASSERT(!token->isEmpty()); // the 'M' is its [0].
@@ -431,7 +431,7 @@ static QDate calculatePosixDate(const QByteArray &dateRule, int year)
     } else if (dateRule.at(0) == 'J') {
         // Day of Year 1...365, ignores Feb 29.
         // So March always starts on day 60.
-        int doy = QByteArrayView{ dateRule }.sliced(1).toInt(&ok);
+        int doy = dateRule.sliced(1).toInt(&ok);
         if (ok && doy > 0 && doy < 366) {
             // Subtract 1 because we're adding days *after* the first of
             // January, unless it's after February in a leap year, when the leap
@@ -447,6 +447,11 @@ static QDate calculatePosixDate(const QByteArray &dateRule, int year)
             return QDate(year, 1, 1).addDays(doy);
     }
     return QDate();
+}
+
+static QDate calculatePosixDate(QByteArrayView dateRule, int year)
+{
+    return calculatePosixDate(QLatin1StringView(dateRule), year);
 }
 
 // returns the time in seconds, INT_MIN if we failed to parse
