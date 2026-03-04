@@ -1,3 +1,52 @@
+CHANGES BETWEEN 2.14.1 and 2.14.2 (2026-Mar-01)
+
+  I. IMPORTANT CHANGES
+
+  - Several  changes  related  to  LCD  filtering  are implemented  to
+    achieve better performance and encourage sound practices.
+
+    . Instead of  blanket LCD filtering over the entire bitmap,  it is
+      now applied only to non-zero spans using direct rendering.  This
+      speeds up the ClearType-like rendering by more than 40% at sizes
+      above 32 ppem.
+
+    . Setting the filter weights with FT_Face_Properties  is no longer
+      supported.  The default and light filters  are optimized to work
+      with any face.
+
+    . The legacy libXft LCD filter algorithm is no longer provided.
+
+
+  II. IMPORTANT BUG FIXES
+
+  - A bunch of potential security problems have been found.  All users
+    should update.
+
+  - The italic angle in `PS_FontInfo`  is now stored  as a fixed-point
+    value  in degrees  for  all  Type 1 fonts  and  their derivatives,
+    consistent  with  CFF  fonts  and  common  practices.  The  broken
+    underline position and thickness values are fixed for CFF fonts.
+
+
+  III. MISCELLANEOUS
+
+  - The `x` field in the `FT_Span` structure is now unsigned.
+
+  - Demo  program  `ftgrid` got  an  option  `-m`  to select  a  start
+    character to display.
+
+  - Similarly, demo program  `ftmulti` got an option `-m`  to select a
+    text string for rendering.
+
+  - Option  `-d` in  the demo  program `ttdebug`  is now  called `-a`,
+    expecting  a  comma-separated  list  of  axis  values.   The  user
+    interface is also slightly improved.
+
+  - The `ftinspect` demo program can now be compiled with Qt6, too.
+
+
+======================================================================
+
 CHANGES BETWEEN 2.14.0 and 2.14.1 (2025-Sep-11)
 
   I. IMPORTANT BUG FIXES
