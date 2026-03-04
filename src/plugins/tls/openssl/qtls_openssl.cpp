@@ -772,11 +772,10 @@ void TlsCryptographOpenSSL::exportKeyingMaterial()
          * is that same as no context at all and will result in the same
          * keying material being returned.
          */
-        auto *outputData = reinterpret_cast<unsigned char*>(output.data());
         const auto context = entry.context();
         const auto label = entry.label();
         if (q_SSL_export_keying_material(ssl,
-                                         outputData,
+                                         reinterpret_cast<unsigned char*>(output.data_ptr().data()),
                                          entry.keyingValueSize,
                                          label.data(),
                                          label.size(),
