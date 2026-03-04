@@ -603,7 +603,7 @@ PosixZone PosixZone::parse(const char *&pos, const char *end)
    By default a simple zone abbreviation with no offset information is accepted.
    Set \a requireOffset to \c true to require that there be offset data present.
 */
-static auto validatePosixRule(const QByteArray &posixRule, bool requireOffset = false)
+static auto validatePosixRule(QByteArrayView posixRule, bool requireOffset = false)
 {
     // Format is described here:
     // https://sourceware.org/glibc/manual/latest/html_node/Proleptic-TZ.html
