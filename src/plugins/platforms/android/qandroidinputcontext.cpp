@@ -391,10 +391,18 @@ static JNINativeMethod methods[] = {
     {"fullscreenMode", "()Z", (void *)fullscreenMode}
 };
 
+static QPlatformWindow *focusWindowHandle()
+{
+    QWindow *window = qGuiApp->focusWindow();
+    return window ? window->handle() : nullptr;
+}
+
 static QRect screenInputItemRectangle()
 {
-    QRect windowRect = QPlatformInputContext::inputItemRectangle().toRect();
-    QPlatformWindow *window = qGuiApp->focusWindow()->handle();
+    QPlatformWindow *window = focusWindowHandle();
+    if (!window)
+        return QRect();
+    const QRect windowRect = QPlatformInputContext::inputItemRectangle().toRect();
     return QRect(window->mapToGlobal(windowRect.topLeft()), windowRect.size());
 }
 
@@ -620,6 +628,10 @@ void QAndroidInputContext::updateSelectionHandles()
     if (noHandles || !m_focusObject)
         return;
 
+    QPlatformWindow *qPlatformWindow = focusWindowHandle();
+    if (!qPlatformWindow)
+        return;
+
     if (isImhNoTextHandlesSet()) {
         QtAndroidInput::updateHandles(Hidden);
         return;
@@ -636,7 +648,6 @@ void QAndroidInputContext::updateSelectionHandles()
     int anchor = query.value(Qt::ImAnchorPosition).toInt();
     const QVariant readOnlyVariant = query.value(Qt::ImReadOnly);
     bool readOnly = readOnlyVariant.toBool();
-    QPlatformWindow *qPlatformWindow = qGuiApp->focusWindow()->handle();
 
     if (!readOnly && ((m_handleMode & 0xff) == Hidden)) {
         QtAndroidInput::updateHandles(Hidden);
@@ -838,7 +849,8 @@ void QAndroidInputContext::handleLocationChanged(int handleId, int x, int y)
 
 void QAndroidInputContext::touchDown(int x, int y)
 {
-    if (m_focusObject && screenInputItemRectangle().contains(x, y)) {
+    QPlatformWindow *window = focusWindowHandle();
+    if (window && m_focusObject && screenInputItemRectangle().contains(x, y)) {
         // If the user touch the input rectangle, we can show the cursor handle
         m_handleMode = ShowCursor;
         // The VK will appear in a moment, stop the timer
@@ -854,7 +866,6 @@ void QAndroidInputContext::touchDown(int x, int y)
         }
 
         // Check if cursor is visible in focused window before updating handles
-        QPlatformWindow *window = qGuiApp->focusWindow()->handle();
         const QRectF curRect = cursorRectangle();
         const QPoint cursorGlobalPoint = window->mapToGlobal(QPoint(curRect.x(), curRect.y()));
         const QRect windowRect = QPlatformInputContext::inputItemClipRectangle().toRect();
@@ -987,7 +998,7 @@ void QAndroidInputContext::showInputPanel()
     if (query.isNull())
         return;
 
-    if (!qGuiApp->focusWindow()->handle())
+    if (!focusWindowHandle())
         return; // not a real window, probably VR/XR
 
     disconnect(m_updateCursorPosConnection);
