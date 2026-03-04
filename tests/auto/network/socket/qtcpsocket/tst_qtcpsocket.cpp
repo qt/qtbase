@@ -2530,8 +2530,14 @@ void tst_QTcpSocket::suddenRemoteDisconnect()
 
     QString processExe = stressTestDir + "/stressTest";
 
+    auto noMsgPatternEnv = QProcessEnvironment::systemEnvironment();
+    // Unset any custom message pattern that might mess with the expected output:
+    noMsgPatternEnv.remove(u"QT_MESSAGE_PATTERN"_s);
+
     // Start server
     QProcess serverProcess;
+    serverProcess.setProcessEnvironment(noMsgPatternEnv);
+
     serverProcess.setReadChannel(QProcess::StandardError);
     serverProcess.start(processExe, QStringList(server), QIODevice::ReadWrite | QIODevice::Text);
     QVERIFY2(serverProcess.waitForStarted(), qPrintable(
@@ -2552,6 +2558,7 @@ void tst_QTcpSocket::suddenRemoteDisconnect()
 
     // Start client
     QProcess clientProcess;
+    clientProcess.setProcessEnvironment(noMsgPatternEnv);
     clientProcess.setReadChannel(QProcess::StandardError);
     clientProcess.start(processExe, QStringList(client), QIODevice::ReadWrite | QIODevice::Text);
     QVERIFY2(clientProcess.waitForStarted(), qPrintable(
