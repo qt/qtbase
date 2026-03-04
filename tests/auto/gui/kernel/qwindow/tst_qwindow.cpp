@@ -425,8 +425,13 @@ void tst_QWindow::eventOrderOnShow()
     window.show();
     QCoreApplication::processEvents();
 
+    int safeMarginsEventCount = 0;
+    connect(&window, &QWindow::safeAreaMarginsChanged, this, [&]() {
+        ++safeMarginsEventCount;
+    });
+
     QTRY_COMPARE(window.received(QEvent::Show), 1);
-    QTRY_COMPARE(window.received(QEvent::Resize), 1);
+    QTRY_COMPARE(window.received(QEvent::Resize) - safeMarginsEventCount, 1);
     QTRY_VERIFY(window.isExposed());
 
     QVERIFY(window.eventIndex(QEvent::Show) < window.eventIndex(QEvent::Resize));
@@ -3518,4 +3523,3 @@ void tst_QWindow::parentEvents()
 
 #include <tst_qwindow.moc>
 QTEST_MAIN(tst_QWindow)
-
