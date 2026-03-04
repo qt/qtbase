@@ -1659,6 +1659,8 @@ void Q_TRACE_INSTRUMENT(qtgui) QGuiApplicationPrivate::init()
     QMacAutoReleasePool pool;
 #endif
 
+    QObject::connect(q_func(), SIGNAL(screenAdded(QScreen*)),
+                     q_func(), SLOT(_q_updatePrimaryScreenDpis()));
     QObject::connect(q_func(), SIGNAL(primaryScreenChanged(QScreen *)),
                      q_func(), SLOT(_q_updatePrimaryScreenDpis()));
 
