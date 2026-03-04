@@ -9,7 +9,9 @@
 
 QT_BEGIN_NAMESPACE
 
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
 class QAbstractNativeEventFilterPrivate;
+#endif
 
 class Q_CORE_EXPORT QAbstractNativeEventFilter
 {
@@ -21,7 +23,10 @@ public:
 
 private:
     Q_DISABLE_COPY(QAbstractNativeEventFilter)
-    QAbstractNativeEventFilterPrivate *d;
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+    Q_DECL_UNUSED_MEMBER
+    QAbstractNativeEventFilterPrivate *d = nullptr;
+#endif
 };
 
 QT_END_NAMESPACE
