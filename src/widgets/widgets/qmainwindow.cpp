@@ -1259,7 +1259,7 @@ bool QMainWindow::event(QEvent *event)
         case QEvent::DragLeave:
             if (!d->layout->draggingWidget)
                 break;
-            d->layout->hover(d->layout->draggingWidget, pos() - QPoint(-1, -1));
+            d->layout->hover(d->layout->draggingWidget, pos() - QPoint(1, 1));
             return true;
 #endif
         default:
