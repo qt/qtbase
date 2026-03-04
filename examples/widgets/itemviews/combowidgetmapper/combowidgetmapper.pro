@@ -1,7 +1,7 @@
 QT += widgets
 requires(qtConfig(combobox))
 
-HEADERS   = window.h
+HEADERS   = window.h person.h
 SOURCES   = main.cpp \
             window.cpp
 

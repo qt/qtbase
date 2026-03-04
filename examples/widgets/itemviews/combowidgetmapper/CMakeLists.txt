@@ -11,6 +11,7 @@ qt_standard_project_setup()
 qt_add_executable(combowidgetmapper
     main.cpp
     window.cpp window.h
+    person.h
 )
 
 set_target_properties(combowidgetmapper PROPERTIES

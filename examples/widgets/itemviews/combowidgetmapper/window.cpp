@@ -12,11 +12,8 @@
 #include <QtWidgets/QTextEdit>
 #include <QtWidgets/QVBoxLayout>
 
-#include <QtGui/QStandardItemModel>
-
+#include <QtCore/QRangeModel>
 #include <QtCore/QStringListModel>
-
-#include <array>
 
 using namespace Qt::StringLiterals;
 
@@ -27,18 +24,23 @@ Window::Window(QWidget *parent)
       addressEdit(new QTextEdit),
       typeComboBox(new QComboBox),
       nextButton(new QPushButton(tr("&Next"))),
-      previousButton(new QPushButton(tr("&Previous")))
-{
+      previousButton(new QPushButton(tr("&Previous"))),
 //! [Set up widgets]
-
-    setupModel();
-
+//! [Set up the model]
+      data{Person{u"Alice"_s,  u"<qt>123 Main Street<br/>Market Town</qt>"_s,                      u"0"_s},
+           Person{u"Bob"_s,    u"<qt>PO Box 32<br/>Mail Handling Service<br/>Service City</qt>"_s, u"1"_s},
+           Person{u"Carol"_s,  u"<qt>The Lighthouse<br/>Remote Island</qt>"_s,                     u"2"_s},
+           Person{u"Donald"_s, u"<qt>47338 Park Avenue<br/>Big City</qt>"_s,                       u"0"_s},
+           Person{u"Emma"_s,   u"<qt>Research Station<br/>Base Camp<br/>Big Mountain</qt>"_s,      u"2"_s}},
+      model(new QRangeModel(data, this)),
+      mapper(new QDataWidgetMapper(this))
+//! [Set up the model]
+{
 //! [Set up type combo box]
     typeComboBox->setModel(new QStringListModel({ tr("Home"), tr("Work"), tr("Other") }, this));
 //! [Set up type combo box]
 
 //! [Set up the mapper]
-    mapper = new QDataWidgetMapper(this);
     mapper->setModel(model);
     mapper->addMapping(nameEdit, 0);
     mapper->addMapping(addressEdit, 1);
@@ -71,33 +73,6 @@ Window::Window(QWidget *parent)
     mapper->toFirst();
 }
 //! [Set up connections and layouts]
-
-//! [Set up the model]
-
-struct Person
-{
-    QString name;
-    QString address;
-    QString type;
-};
-
-void Window::setupModel()
-{
-    static const std::array<Person, 5> people = {
-        Person{u"Alice"_s,  u"<qt>123 Main Street<br/>Market Town</qt>"_s,                      u"0"_s},
-        Person{u"Bob"_s,    u"<qt>PO Box 32<br/>Mail Handling Service<br/>Service City</qt>"_s, u"1"_s},
-        Person{u"Carol"_s,  u"<qt>The Lighthouse<br/>Remote Island</qt>"_s,                     u"2"_s},
-        Person{u"Donald"_s, u"<qt>47338 Park Avenue<br/>Big City</qt>"_s,                       u"0"_s},
-        Person{u"Emma"_s,   u"<qt>Research Station<br/>Base Camp<br/>Big Mountain</qt>"_s,      u"2"_s}
-    };
-
-    model = new QStandardItemModel(0, 3, this);
-    for (const auto &person : people) {
-        model->appendRow({new QStandardItem(person.name), new QStandardItem(person.address),
-                          new QStandardItem(person.type)});
-    }
-}
-//! [Set up the model]
 
 //! [Slot for updating the buttons]
 void Window::updateButtons(int row)
