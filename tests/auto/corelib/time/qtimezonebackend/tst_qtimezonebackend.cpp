@@ -215,6 +215,8 @@ void tst_QTimeZoneBackend::roundtripDisplayNames_data()
         if (!zone.isValid())
             continue;
         for (const auto type : types) {
+            if (type == QTimeZone::DaylightTime && !zone.hasDaylightTime())
+                continue;
             QTest::addRow("%s@fr_FR/%s", id.constData(), typeName(type))
                 << zone << fr << type;
             QTest::addRow("%s@hi_IN/%s", id.constData(), typeName(type))

@@ -1043,7 +1043,10 @@ QTimeZonePrivate::findLongNamePrefix(QStringView text, const QLocale &locale,
             if (qsizetype match = matchLength(name); match > best.nameLength)
                 best = { iana, match, typeFor(zone) };
         } else {
+            const bool neverDst = !zone.hasDaylightTime();
             for (const QTimeZone::TimeType type : types) {
+                if (neverDst && type == QTimeZone::DaylightTime)
+                    continue;
                 const QString name = zone.displayName(type, QTimeZone::LongName, locale);
                 if (qsizetype match = matchLength(name); match > best.nameLength)
                     best = { iana, match, type };
