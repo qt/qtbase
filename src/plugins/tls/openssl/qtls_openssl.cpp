@@ -773,15 +773,17 @@ void TlsCryptographOpenSSL::exportKeyingMaterial()
          * keying material being returned.
          */
         auto *outputData = reinterpret_cast<unsigned char*>(output.data());
-        const auto *context = reinterpret_cast<const unsigned char*>(entry.context().constData());
+        const auto context = entry.context();
+        const auto label = entry.label();
         if (q_SSL_export_keying_material(ssl,
                                          outputData,
                                          entry.keyingValueSize,
-                                         entry.label().constData(),
-                                         entry.label().size(),
-                                         context,
-                                         entry.context().size(),
-                                         entry.context().isNull() ? 0 : 1)) {
+                                         label.data(),
+                                         label.size(),
+                                         reinterpret_cast<const unsigned char*>(context.data()),
+                                         context.size(),
+                                         context.isNull() ? 0 : 1))
+        {
             entry.keyingValue = output;
 #ifdef QSSLSOCKET_DEBUG
         } else {
