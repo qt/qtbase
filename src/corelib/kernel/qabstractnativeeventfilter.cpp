@@ -23,9 +23,7 @@ QT_BEGIN_NAMESPACE
     object.
 */
 QAbstractNativeEventFilter::QAbstractNativeEventFilter()
-{
-    Q_UNUSED(d);
-}
+    = default;
 
 /*!
     Destroys the native event filter.
@@ -34,6 +32,10 @@ QAbstractNativeEventFilter::QAbstractNativeEventFilter()
 */
 QAbstractNativeEventFilter::~QAbstractNativeEventFilter()
 {
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+    if (d) // check no-one took `d` into use on this object
+        qFatal("QAbstractNativeEventFilter::d is not to be used");
+#endif
     QAbstractEventDispatcher *eventDispatcher = QAbstractEventDispatcher::instance();
     if (eventDispatcher)
         eventDispatcher->removeNativeEventFilter(this);
