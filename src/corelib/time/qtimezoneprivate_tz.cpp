@@ -606,11 +606,27 @@ PosixZone PosixZone::parse(const char *&pos, const char *end)
 static auto validatePosixRule(const QByteArray &posixRule, bool requireOffset = false)
 {
     // Format is described here:
-    // http://www.gnu.org/software/libc/manual/html_node/TZ-Variable.html
+    // https://sourceware.org/glibc/manual/latest/html_node/Proleptic-TZ.html
     // See also calculatePosixTransition()'s reference.
-    const auto parts = posixRule.split(',');
-    const struct { bool isValid, hasDst; } fail{false, false}, good{true, parts.size() > 1};
-    const QByteArray &zoneinfo = parts.at(0).trimmed();
+    QLatin1StringView zoneinfo, startDate, endDate;
+    int parts = 1;
+    {
+        const auto tokens = QLatin1StringView(posixRule).tokenize(u',');
+        auto token = tokens.begin();
+        Q_ASSERT(token != tokens.end());
+        zoneinfo = token->trimmed();
+        if (++token != tokens.end()) {
+            ++parts;
+            startDate = *token;
+            if (++token != tokens.end()) {
+                ++parts;
+                endDate = *token;
+                if (++token != tokens.end())
+                    ++parts; // So we know if we have too many
+            }
+        }
+    }
+    const struct { bool isValid, hasDst; } fail{false, false}, good{true, parts > 1};
     if (zoneinfo.isEmpty())
         return fail;
 
@@ -635,17 +651,16 @@ static auto validatePosixRule(const QByteArray &posixRule, bool requireOffset = 
         return fail;
 
     if (good.hasDst) {
-        if (parts.size() != 3 || parts.at(1).isEmpty() || parts.at(2).isEmpty())
+        if (parts != 3 || startDate.isEmpty() || endDate.isEmpty())
             return fail;
-        for (int i = 1; i < 3; ++i) {
-            const auto tran = parts.at(i).split('/');
-            if (!calculatePosixDate(tran.at(0), 1972).isValid())
+        for (int i = 0; i < 2; ++i) {
+            const auto tokens = (i ? endDate : startDate).tokenize(u'/');
+            auto token = tokens.begin();
+            Q_ASSERT(token != tokens.end());
+            if (!calculatePosixDate(*token, 1972).isValid())
                 return fail;
-            if (tran.size() > 1) {
-                const auto time = tran.at(1);
-                if (parsePosixTime(time.begin(), time.end()) == INT_MIN)
-                    return fail;
-            }
+            if (++token != tokens.end() && parsePosixTime(token->begin(), token->end()) == INT_MIN)
+                return fail;
         }
     }
     return good;
