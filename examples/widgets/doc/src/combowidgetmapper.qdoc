@@ -17,22 +17,37 @@
     can be entered, we provide a combo box to allow their addresses to be
     classified as "Home", "Work" or "Other".
 
+    \section1 Person Class Definition
+
+    We define a struct \c{Person} containing name, address and address type
+    to represent the model data:
+
+    \snippet itemviews/combowidgetmapper/person.h Person
+
+    It is declared to be a Q_GADGET with the members to be properties
+    of the same name to be able to conveniently populate a QRangeModel.
+
     \section1 Window Class Definition
 
-    The class provides a constructor, a slot to keep the buttons up to date,
-    and a private function to set up the model:
+    The class provides a constructor and a slot to keep the buttons up to date:
 
     \snippet itemviews/combowidgetmapper/window.h Window definition
 
     In addition to the QDataWidgetMapper object and the controls used to make
-    up the user interface, we use a QStandardItemModel to hold our data.
+    up the user interface, we use a QList<Person> to hold our data
+    and a QRangeModel operating on it.
 
     \section1 Window Class Implementation
 
-    The constructor of the \c Window class can be explained in three parts.
+    The constructor of the \c Window class can be explained in several parts.
     In the first part, we set up the widgets used for the user interface:
 
     \snippet itemviews/combowidgetmapper/window.cpp Set up widgets
+
+    The person list is populated using an initalizer list, which is then
+    passed to the QRangeModel:
+
+    \snippet itemviews/combowidgetmapper/window.cpp Set up the model
 
     Note that we set up the mapping the combo box in the same way as for other
     widgets, but that we apply its own model holding information about the
@@ -63,21 +78,6 @@
     The rest of the constructor sets up connections and layouts:
 
     \snippet itemviews/combowidgetmapper/window.cpp Set up connections and layouts
-
-    The model is initialized in the window's \c{setupModel()} function. Here,
-    we create a standard model with 5 rows and 3 columns, populated from an array
-    of struct \c{Person}. In each row, we insert a name, address, and a value
-    that indicates the type of address.
-    The address types are stored in a string list model.
-
-    \snippet itemviews/combowidgetmapper/window.cpp Set up the model
-
-    As we insert each row into the model, like a record in a database, we
-    store values that correspond to items in \c typeModel for each person's
-    address type. When the widget mapper reads these values from the final
-    column of each row, it will need to use them as references to values in
-    \c typeModel, as shown in the following diagram. This is where the
-    delegate is used.
 
     \image widgetmapper-combo-mapping.png
     {Mapping of the model to the view using a delegate}
