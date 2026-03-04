@@ -6,10 +6,12 @@
 #include "qwaylandinputcontext_p.h"
 #include "qwaylanddisplay_p.h"
 #include "qwaylandinputdevice_p.h"
+#include "qwaylandwindow_p.h"
 
 #include <QtGui/qguiapplication.h>
 #include <QtGui/qtextformat.h>
 #include <QtGui/private/qguiapplication_p.h>
+#include <QtGui/private/qhighdpiscaling_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -284,8 +286,20 @@ void QWaylandInputMethodContext::update(Qt::InputMethodQueries queries)
             inputMethod->update_hints(event.value(Qt::ImHints).toInt());
 
         if (queries & Qt::ImCursorRectangle) {
-            QRect rect = event.value(Qt::ImCursorRectangle).toRect();
-            inputMethod->update_cursor_rectangle(rect.x(), rect.y(), rect.width(), rect.height());
+            QRect cRect = event.value(Qt::ImCursorRectangle).toRect();
+            QWindow *window = QGuiApplication::focusWindow();
+            if (window) {
+                const QRect windowRect = QGuiApplication::inputMethod()->inputItemTransform().mapRect(cRect);
+                const QRect nativeRect = QHighDpi::toNativePixels(windowRect, window);
+                auto *waylandWindow = static_cast<QWaylandWindow *>(window->handle());
+                if (waylandWindow) {
+                    const QMargins margins = waylandWindow->clientSideMargins();
+                    cRect = nativeRect.translated(margins.left(), margins.top());
+                } else {
+                    cRect = nativeRect;
+                }
+            }
+            inputMethod->update_cursor_rectangle(cRect.x(), cRect.y(), cRect.width(), cRect.height());
         }
 
         inputMethod->sendInputState(&event, queries);
