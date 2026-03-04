@@ -6,8 +6,8 @@
     \title Combo Widget Mapper Example
     \examplecategory {User Interface Components}
     \ingroup examples-itemviews
-    \brief The Combo Widget Mapper example shows how to use a custom delegate to
-    map information from a model to specific widgets on a form.
+    \brief The Combo Widget Mapper example shows how to use a QDataWidgetMapper
+    to map information from a model to specific widgets on a form.
 
     \image combowidgetmapper-example.png
            {Application with various fields such as Name, Address, and Type}
@@ -25,9 +25,7 @@
     \snippet itemviews/combowidgetmapper/window.h Window definition
 
     In addition to the QDataWidgetMapper object and the controls used to make
-    up the user interface, we use a QStandardItemModel to hold our data and
-    a QStringListModel to hold information about the types of address that
-    can be applied to each person's data.
+    up the user interface, we use a QStandardItemModel to hold our data.
 
     \section1 Window Class Implementation
 
@@ -37,9 +35,11 @@
     \snippet itemviews/combowidgetmapper/window.cpp Set up widgets
 
     Note that we set up the mapping the combo box in the same way as for other
-    widgets, but that we apply its own model to it so that it will display
-    data from its own model, the \c typeModel, rather than from the model
-    containing data about each person.
+    widgets, but that we apply its own model holding information about the
+    types of address to it, so that it will display the address type string
+    rather than the data from the model containing data about each person:
+
+    \snippet itemviews/combowidgetmapper/window.cpp Set up type combo box
 
     Next, we set up the widget mapper, relating each input widget to a column
     in the model specified by the call to \l{QDataWidgetMapper::}{setModel()}:
@@ -65,8 +65,9 @@
     \snippet itemviews/combowidgetmapper/window.cpp Set up connections and layouts
 
     The model is initialized in the window's \c{setupModel()} function. Here,
-    we create a standard model with 5 rows and 3 columns. In each row, we
-    insert a name, address, and a value that indicates the type of address.
+    we create a standard model with 5 rows and 3 columns, populated from an array
+    of struct \c{Person}. In each row, we insert a name, address, and a value
+    that indicates the type of address.
     The address types are stored in a string list model.
 
     \snippet itemviews/combowidgetmapper/window.cpp Set up the model

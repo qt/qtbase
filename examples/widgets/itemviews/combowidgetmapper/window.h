@@ -4,16 +4,14 @@
 #ifndef WINDOW_H
 #define WINDOW_H
 
-#include <QWidget>
+#include <QtWidgets/QWidget>
 
 QT_BEGIN_NAMESPACE
 class QComboBox;
 class QDataWidgetMapper;
-class QLabel;
 class QLineEdit;
 class QPushButton;
 class QStandardItemModel;
-class QStringListModel;
 class QTextEdit;
 QT_END_NAMESPACE
 
@@ -31,18 +29,14 @@ private slots:
 private:
     void setupModel();
 
-    QLabel *nameLabel;
-    QLabel *addressLabel;
-    QLabel *typeLabel;
     QLineEdit *nameEdit;
     QTextEdit *addressEdit;
     QComboBox *typeComboBox;
     QPushButton *nextButton;
     QPushButton *previousButton;
 
-    QStandardItemModel *model;
-    QStringListModel *typeModel;
-    QDataWidgetMapper *mapper;
+    QStandardItemModel *model = nullptr;
+    QDataWidgetMapper *mapper = nullptr;
 };
 //! [Window definition]
 
