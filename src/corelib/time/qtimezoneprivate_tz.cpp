@@ -415,14 +415,18 @@ static QDate calculatePosixDate(const QByteArray &dateRule, int year)
     // Can start with M, J, or a digit
     if (dateRule.at(0) == 'M') {
         // nth week in month format "Mmonth.week.dow"
-        QList<QByteArray> dateParts = dateRule.split('.');
-        if (dateParts.size() > 2) {
-            Q_ASSERT(!dateParts.at(0).isEmpty()); // the 'M' is its [0].
-            int month = QByteArrayView{ dateParts.at(0) }.sliced(1).toInt(&ok);
-            int week = ok ? dateParts.at(1).toInt(&ok) : 0;
-            int dow = ok ? dateParts.at(2).toInt(&ok) : 0;
-            if (ok)
-                return calculateDowDate(year, month, dow, week);
+        const auto dateParts = QLatin1StringView(dateRule).tokenize(u'.');
+        auto token = dateParts.begin();
+        Q_ASSERT(token != dateParts.end());
+        Q_ASSERT(!token->isEmpty()); // the 'M' is its [0].
+        const int month = token->sliced(1).toInt(&ok);
+        if (ok && ++token != dateParts.end()) {
+            const int week = token->toInt(&ok);
+            if (ok && ++token != dateParts.end()) {
+                const int dow = token->toInt(&ok);
+                if (ok)
+                    return calculateDowDate(year, month, dow, week);
+            }
         }
     } else if (dateRule.at(0) == 'J') {
         // Day of Year 1...365, ignores Feb 29.
