@@ -29,6 +29,21 @@
 
     \snippet qrangemodeladapter/main.cpp construct
 
+    The exact type that gets constructed is deducted by the compiler based on
+    the constructor argument(s), and the differences between value categories
+    can result in different behavior. Therefore, you should not explicitly
+    specify the template parameters. C++ however does not allow class template
+    argument deduction for non-static class data members. To make
+    QRangeModelAdapter a data member of a class, use the following pattern:
+
+    \snippet qrangemodeladapter/main.cpp class-member-rvalue
+
+    This creates a QRangeModelAdapter operating on an unnamed (i.e. rvalue
+    reference) vector of Books. To make the adapter operate on a reference
+    wrapper to a list of Books, use this instead:
+
+    \snippet qrangemodeladapter/main.cpp class-member-refwrapper
+
     Constructing the adapter from a range implicitly constructs a QRangeModel
     instance from that same range. Use model() to get it, and pass it to Qt
     Widgets or Qt Quick item views as usual.

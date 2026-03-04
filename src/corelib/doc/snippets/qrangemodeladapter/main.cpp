@@ -98,6 +98,23 @@ void construct_and_use()
     QRangeModelAdapter adapter(&data);
     //! [construct]
 
+    //! [class-member-rvalue]
+    class Backend
+    {
+        using Adapter = decltype(QRangeModelAdapter(std::vector<Book>{}));
+        Adapter adapter = Adapter(std::vector<Book>{});
+    //! [class-member-rvalue]
+    };
+
+    class Backend2
+    {
+    //! [class-member-refwrapper]
+        QList<Book> books = { /* ... */ };
+        using Adapter = decltype(QRangeModelAdapter(std::ref(books)));
+        Adapter adapter = Adapter(std::ref(books));
+    };
+    //! [class-member-refwrapper]
+
     //! [use-model]
     QListView listView;
     listView.setModel(adapter.model());
