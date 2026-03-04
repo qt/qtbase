@@ -205,7 +205,7 @@ private:
         WindowModeOnlySystemUpdateDataProperty<Qt::WindowModality> modality;
         WindowModeOnlySystemUpdateDataProperty<QString> title;
         WindowModeOnlySystemUpdateDataProperty<WindowMinMaxCloseButtonsState> windowMinMaxCloseButtonsState;
-        NoTabletSystemUpdateDataProperty<bool> windowStaysOnTop;
+        WindowModeOnlySystemUpdateDataProperty<bool> windowStaysOnTop;
         WindowModeOnlySystemUpdateDataProperty<bool> frameless;
     };
 
