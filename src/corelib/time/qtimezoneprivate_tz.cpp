@@ -449,11 +449,6 @@ static QDate calculatePosixDate(QLatin1StringView dateRule, int year)
     return QDate();
 }
 
-static QDate calculatePosixDate(QByteArrayView dateRule, int year)
-{
-    return calculatePosixDate(QLatin1StringView(dateRule), year);
-}
-
 // returns the time in seconds, INT_MIN if we failed to parse
 static int parsePosixTime(const char *begin, const char *end)
 {
@@ -493,9 +488,9 @@ static int parsePosixTime(const char *begin, const char *end)
     return (hour * 60 + min) * 60 + sec;
 }
 
-static int parsePosixTransitionTime(const QByteArray &timeRule)
+static int parsePosixTransitionTime(QLatin1StringView timeRule)
 {
-    return parsePosixTime(timeRule.constBegin(), timeRule.constEnd());
+    return parsePosixTime(timeRule.begin(), timeRule.end());
 }
 
 static int parsePosixOffset(const char *begin, const char *end)
@@ -674,21 +669,24 @@ static QList<QTimeZonePrivate::Data> calculatePosixTransitions(const QByteArray 
 
     // POSIX Format is like "TZ=CST6CDT,M3.2.0/2:00:00,M11.1.0/2:00:00"
     // i.e. "std offset dst [offset],start[/time],end[/time]"
-    // See the section about TZ at
-    // http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap08.html
+    // See the section about TZ at the end of
+    // https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap08.html
     // and the link in validatePosixRule(), above.
-    QList<QByteArray> parts = posixRule.split(',');
+    const auto tokens = QLatin1String(posixRule).tokenize(u',');
+    auto token = tokens.begin();
+    Q_ASSERT(token != tokens.end());
 
     PosixZone stdZone, dstZone;
+    QLatin1StringView zoneText = *token;
     {
-        const QByteArray &zoneinfo = parts.at(0).trimmed();
-        const char *begin = zoneinfo.constBegin();
+        QLatin1StringView zoneinfo = zoneText.trimmed();
+        const char *begin = zoneinfo.begin();
 
-        stdZone = PosixZone::parse(begin, zoneinfo.constEnd());
+        stdZone = PosixZone::parse(begin, zoneinfo.end());
         if (!stdZone.hasValidOffset()) {
             stdZone.offset = 0;     // reset to UTC if we failed to parse
-        } else if (begin < zoneinfo.constEnd()) {
-            dstZone = PosixZone::parse(begin, zoneinfo.constEnd());
+        } else if (begin < zoneinfo.end()) {
+            dstZone = PosixZone::parse(begin, zoneinfo.end());
             if (!dstZone.hasValidOffset()) {
                 // if the dst offset isn't provided, it is 1 hour ahead of the standard offset
                 dstZone.offset = stdZone.offset + (60 * 60);
@@ -697,25 +695,31 @@ static QList<QTimeZonePrivate::Data> calculatePosixTransitions(const QByteArray 
     }
 
     // If only the name part, or no DST specified, then no transitions
-    if (parts.size() == 1 || !dstZone.hasValidOffset()) {
+    if (++token == tokens.end() || !dstZone.hasValidOffset()) {
         result.emplaceBack(
-                stdZone.name.isEmpty() ? QString::fromUtf8(parts.at(0)) : stdZone.name,
+                stdZone.name.isEmpty() ? QString(zoneText) : stdZone.name,
                 lastTranMSecs, stdZone.offset, stdZone.offset);
         return result;
     }
-    if (parts.size() < 3 || parts.at(1).isEmpty() || parts.at(2).isEmpty())
+    QLatin1StringView dstRule = *token;
+    if (++token == tokens.end() || dstRule.isEmpty() || token->isEmpty())
         return result; // Malformed.
+    QLatin1StringView stdRule = *token;
 
     // Get the std to dst transition details
     const int twoOClock = 7200; // Default transition time, when none specified
-    const auto dstParts = parts.at(1).split('/');
-    const QByteArray dstDateRule = dstParts.at(0);
-    const int dstTime = dstParts.size() < 2 ? twoOClock : parsePosixTransitionTime(dstParts.at(1));
+    const auto dstParts = dstRule.tokenize(u'/');
+    auto subtok = dstParts.begin();
+    Q_ASSERT(subtok != dstParts.end());
+    QLatin1StringView dstDateRule = *subtok;
+    const int dstTime = ++subtok == dstParts.end() ? twoOClock : parsePosixTransitionTime(*subtok);
 
     // Get the dst to std transition details
-    const auto stdParts = parts.at(2).split('/');
-    const QByteArray stdDateRule = stdParts.at(0);
-    const int stdTime = stdParts.size() < 2 ? twoOClock : parsePosixTransitionTime(stdParts.at(1));
+    const auto stdParts = stdRule.tokenize(u'/');
+    subtok = stdParts.begin();
+    Q_ASSERT(subtok != stdParts.end());
+    QLatin1StringView stdDateRule = *subtok;
+    const int stdTime = ++subtok == stdParts.end() ? twoOClock : parsePosixTransitionTime(*subtok);
 
     if (dstDateRule.isEmpty() || stdDateRule.isEmpty() || dstTime == INT_MIN || stdTime == INT_MIN)
         return result; // Malformed.
