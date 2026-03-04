@@ -41,7 +41,7 @@
 #define AttachListFunc    otv_O_x_Ox
 #define LigCaretListFunc  otv_O_x_Ox
 
-  /* sets valid->extra1 (0)           */
+  /* sets otvalid->extra1 (0)           */
 
   static void
   otv_O_x_Ox( FT_Bytes       table,
