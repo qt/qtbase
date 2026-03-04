@@ -763,7 +763,6 @@ void TlsCryptographOpenSSL::exportKeyingMaterial()
             continue;
         }
 
-        QByteArray output(entry.keyingValueSize, Qt::Uninitialized);
         /*
          * https://docs.openssl.org/1.1.1/man3/SSL_export_keying_material/
          * Note that in TLSv1.2 and below a zero length context is treated
@@ -774,7 +773,8 @@ void TlsCryptographOpenSSL::exportKeyingMaterial()
          */
         const auto context = entry.context();
         const auto label = entry.label();
-        if (q_SSL_export_keying_material(ssl,
+        if (QByteArray output(entry.keyingValueSize, Qt::Uninitialized);
+            q_SSL_export_keying_material(ssl,
                                          reinterpret_cast<unsigned char*>(output.data_ptr().data()),
                                          entry.keyingValueSize,
                                          label.data(),
@@ -783,7 +783,7 @@ void TlsCryptographOpenSSL::exportKeyingMaterial()
                                          context.size(),
                                          context.isNull() ? 0 : 1))
         {
-            entry.keyingValue = output;
+            entry.keyingValue = std::move(output);
 #ifdef QSSLSOCKET_DEBUG
         } else {
             qCDebug(lcTlsBackend) << "cannot export keying material:" << entry;
