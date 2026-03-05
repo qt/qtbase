@@ -8,6 +8,7 @@ QT_BEGIN_NAMESPACE
 
 Q_DECLARE_TYPEINFO(RelocatableInPluginType, Q_RELOCATABLE_TYPE);
 
+QT_WARNING_DISABLE_CLANG("-Wreturn-type-c-linkage")
 extern "C" QVariant Q_DECL_EXPORT pluginCreateVariant(bool relocatable)
 {
     return relocatable ? relocatabilityChange_create<RelocatableInPluginType>()
