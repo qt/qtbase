@@ -107,6 +107,7 @@ private slots:
     void enterLeaveOnWindowShowHide();
 #endif
     void windowExposedAfterReparent();
+    void childGeometryAfterReparent();
     void childEvents();
     void parentEvents();
 
@@ -3302,6 +3303,63 @@ void tst_QWindow::windowExposedAfterReparent()
 
     child.setParent(&parent);
     QVERIFY(QTest::qWaitForWindowExposed(&child));
+}
+
+void tst_QWindow::childGeometryAfterReparent()
+{
+    if (isPlatformEglFS())
+        QSKIP("eglfs does not support child windows.");
+
+    if (QGuiApplication::platformName() == QStringLiteral("xcb"))
+        QSKIP("Behavior currently broken on X11: QTBUG-143664");
+
+#ifdef Q_OS_ANDROID
+    QSKIP("Fails on Android. QTBUG-105201");
+#endif
+
+    const QRect topLevelChildGeometry(m_availableTopLeft + QPoint(50, 50), m_testWindowSize);
+
+    // QTBUG-143663: When a window is shown as top-level and then reparented to
+    // become a child, its geometry should be correct. Previously on Windows,
+    // stale frame margins from the top-level state were incorrectly applied.
+
+    ColoredWindow parent(Qt::green);
+    parent.setTitle(QLatin1String(QTest::currentTestFunction()));
+    parent.setGeometry(QRect(m_availableTopLeft, m_testWindowSize * 2));
+    parent.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&parent));
+
+    // Show as top-level first (this is the key to reproducing the bug)
+    ColoredWindow child(Qt::red);
+    child.setGeometry(topLevelChildGeometry);
+    child.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&child));
+
+    // Check initial geometry. Window has a frame, so geometry != frameGeometry
+    QTRY_COMPARE(child.geometry(), topLevelChildGeometry);
+    QCOMPARE_NE(child.frameGeometry(), child.geometry());
+    QCOMPARE(child.position(), topLevelChildGeometry.topLeft());
+    QCOMPARE_NE(child.framePosition(), m_availableTopLeft);
+
+    // Reparent to become a child window
+    child.setParent(&parent);
+    child.setGeometry(0, 0, 100, 100);
+
+    // Child windows have no frame, so geometry == frameGeometry
+    QTRY_COMPARE(child.geometry(), QRect(0, 0, 100, 100));
+    QCOMPARE(child.frameGeometry(), child.geometry());
+    QCOMPARE(child.position(), QPoint(0, 0));
+    QCOMPARE(child.framePosition(), QPoint(0, 0));
+
+    // Reparent to become a top level window
+    child.setParent(nullptr);
+    child.setGeometry(topLevelChildGeometry);
+
+    // Window has a frame, so geometry != frameGeometry
+    QTRY_COMPARE(child.geometry(), topLevelChildGeometry);
+    QCOMPARE_NE(child.frameGeometry(), child.geometry());
+    QCOMPARE(child.position(), topLevelChildGeometry.topLeft());
+    QCOMPARE_NE(child.framePosition(), m_availableTopLeft);
 }
 
 struct ParentWindow : public QWindow
