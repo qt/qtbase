@@ -1481,11 +1481,8 @@ function(_qt_internal_android_process_module_lib_deps target module libs_abi_dir
         endif()
 
         get_filename_component(filename "${lib_absolute}" NAME)
-        if(NOT filename MATCHES "^libplugins_")
-            _qt_internal_android_append_to_libs_xml_section(${target} qt_libs "${filename}")
-        elseif(filename MATCHES "^libplugins_platforms_qtforandroid_")
-            _qt_internal_android_append_to_libs_xml_section(${target} local_libs "${filename}")
-        endif()
+        # Add lib files to libs.xml so that they are explicitly loaded and JNI_OnLoad() called
+        _qt_internal_android_append_to_libs_xml_section(${target} local_libs "${filename}")
 
         _qt_internal_path_join(destination "${libs_abi_dir}" "${filename}")
         if(destination IN_LIST seen_destinations)
