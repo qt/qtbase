@@ -1146,25 +1146,30 @@ function(_qt_internal_android_extract_link_target raw_entry out_entry)
     set(${out_entry} "${entry}" PARENT_SCOPE)
 endfunction()
 
+# Collects Qt modules that 'target' depends on, with dependencies listed before
+# targets that depend on them.
 function(_qt_internal_android_collect_qt_modules target out_qt_modules)
     string(TOUPPER "${CMAKE_BUILD_TYPE}" build_type_upper)
-    set(queue "${target}")
-    set(processed "")
+    set(pending_stack "${target}")
+    set(expanded_targets "")
     set(collected "")
 
-    while(queue)
-        list(POP_FRONT queue current_target)
-
-        get_target_property(current_alias "${current_target}" ALIASED_TARGET)
-        if(current_alias)
-            set(current_target "${current_alias}")
-        endif()
-
-        if(current_target IN_LIST processed)
+    while(pending_stack)
+        list(GET pending_stack -1 current_target)
+        if(current_target IN_LIST expanded_targets)
+            list(POP_BACK pending_stack)
+            get_target_property(target_type "${current_target}" TYPE)
+            if(target_type AND target_type MATCHES "^(SHARED|MODULE)_LIBRARY$")
+                if(current_target MATCHES "^Qt[0-9]*::" OR TARGET "Qt6::${current_target}")
+                    list(APPEND collected "${current_target}")
+                endif()
+            endif()
             continue()
         endif()
-        list(APPEND processed "${current_target}")
 
+        list(APPEND expanded_targets "${current_target}")
+
+        set(direct_deps "")
         foreach(property_name IN ITEMS
                 LINK_LIBRARIES
                 INTERFACE_LINK_LIBRARIES
@@ -1186,18 +1191,14 @@ function(_qt_internal_android_collect_qt_modules target out_qt_modules)
                     set(entry "${entry_alias}")
                 endif()
 
-                get_target_property(entry_type "${entry}" TYPE)
-                if(entry_type AND entry_type MATCHES "^(SHARED|MODULE)_LIBRARY$")
-                    if(entry MATCHES "^Qt[0-9]*::" OR TARGET "Qt6::${entry}")
-                        list(APPEND collected "${entry}")
-                    endif()
-                endif()
-
-                if(NOT entry IN_LIST processed AND NOT entry IN_LIST queue)
-                    list(APPEND queue "${entry}")
+                if(NOT entry IN_LIST expanded_targets)
+                    list(APPEND direct_deps "${entry}")
                 endif()
             endforeach()
         endforeach()
+
+        list(REMOVE_DUPLICATES direct_deps)
+        list(APPEND pending_stack ${direct_deps})
     endwhile()
 
     list(REMOVE_DUPLICATES collected)
@@ -1766,7 +1767,6 @@ function(_qt_internal_android_assemble_libs_xml_section target section_name out_
 
     list(REMOVE_ITEM libs "")
     list(REMOVE_DUPLICATES libs)
-    list(SORT libs)
     set(entries "")
     foreach(lib IN LISTS libs)
         string(APPEND entries "
