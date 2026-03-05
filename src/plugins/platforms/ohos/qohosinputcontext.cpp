@@ -398,6 +398,11 @@ bool QOhosInputContext::attachToInputMethodController()
             m_inputContext.sendInsertedPreviewTextToQt(std::move(previewText));
         }
 
+        void onFinishPreviewText() override
+        {
+            m_inputContext.commit();
+        }
+
         void onDeleteForward(int length) override
         {
             m_inputContext.sendFocusObjectFunctionalKeyEvent(Qt::Key_Delete, QChar::fromLatin1('\u007F'), length);
