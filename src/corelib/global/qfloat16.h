@@ -128,6 +128,16 @@ public:
 #endif // __STDCPP_FLOAT16_T__
     inline constexpr bool isNormal() const noexcept
     { return (b16 & 0x7c00) && (b16 & 0x7c00) != 0x7c00; }
+
+    qfloat16 operator++(int) noexcept
+    { qfloat16 tmp = *this; ++(*this); return tmp; }
+    qfloat16 &operator++() noexcept
+    { return *this += NearestFloat(1); }
+    qfloat16 operator--(int) noexcept
+    { qfloat16 tmp = *this; --(*this); return tmp; }
+    qfloat16 &operator--() noexcept
+    { return *this -= NearestFloat(1); }
+
 private:
     // ABI note: Qt 6's qfloat16 began with just a quint16 member so it ended
     // up passed in general purpose registers in any function call taking

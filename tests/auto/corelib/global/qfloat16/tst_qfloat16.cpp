@@ -119,6 +119,13 @@ template <typename RHS> static constexpr bool checkArithmeticCompiles(qfloat16 l
     assertType(rhs * lhs);
     assertType(rhs / qfloat16(1.0f));       // avoid division by zero
 
+    assertIsFloat16Ref(++lhs);
+    assertIsFloat16Ref(--lhs);
+    auto inc = lhs++;
+    auto dec = lhs--;
+    static_assert(std::is_same_v<decltype(inc), qfloat16>);
+    static_assert(std::is_same_v<decltype(dec), qfloat16>);
+
     // operators op=(integral) are missing
     if constexpr (!std::is_integral_v<RHS>) {
         assertIsFloat16Ref(lhs += rhs);
@@ -584,6 +591,16 @@ void tst_qfloat16::arithOps()
     QVERIFY(qFuzzyCompare(val1 - qfloat16(val2), val1 - val2));
     QVERIFY(qFuzzyCompare(val1 * qfloat16(val2), val1 * val2));
     QVERIFY(qFuzzyCompare(val1 / qfloat16(val2), val1 / val2));
+
+    qfloat16 v{val1};
+    QCOMPARE(float(++v), val1 + 1);
+    QCOMPARE(float(v), val1 + 1);
+    QCOMPARE(float(--v), val1);
+    QCOMPARE(float(v), val1);
+    QCOMPARE(float(v--), val1);
+    QCOMPARE(float(v), val1 - 1);
+    QCOMPARE(float(v++), val1 - 1);
+    QCOMPARE(float(v), val1);
 
     float r1 = 0.f;
     r1 += qfloat16(val2);
