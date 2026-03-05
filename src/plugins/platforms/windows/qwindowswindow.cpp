@@ -2067,7 +2067,14 @@ void QWindowsWindow::setParent_sys(const QPlatformWindow *parent)
         // Force toplevel state as QWindow::isTopLevel cannot be relied upon here.
         if (wasTopLevel != isTopLevel) {
             setDropSiteEnabled(false);
-            setWindowFlags_sys(window()->flags(), unsigned(isTopLevel ? WindowCreationData::ForceTopLevel : WindowCreationData::ForceChild));
+            m_data = setWindowFlags_sys(window()->flags(), unsigned(isTopLevel ? WindowCreationData::ForceTopLevel : WindowCreationData::ForceChild));
+            // Update frame margins for the new top-level state.
+            // Child windows have no frame/titlebar, so margins must be zero.
+            // Top-level windows need frame margins recalculated.
+            if (isTopLevel)
+                updateFullFrameMargins();
+            else
+                m_data.fullFrameMargins = {};
             updateDropSite(isTopLevel);
         }
     }
