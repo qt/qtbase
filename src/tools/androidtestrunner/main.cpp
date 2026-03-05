@@ -896,12 +896,20 @@ struct TestRunnerSystemSemaphore
 
     void release()
     {
+#if !defined(Q_OS_WIN32)
+        // Block signals around CAS + release sequence so that no signal arrives
+        // after isAcquired is cleared but before the OS semaphore is actually
+        // released (which would leave it held after _exit() call).
+        sigset_t newMask, oldMask;
+        sigfillset(&newMask);
+        sigprocmask(SIG_BLOCK, &newMask, &oldMask);
+#endif
         bool expected = true;
-        // NOTE: There's still could be tiny time gap between the compare_exchange_strong() call
-        // and release() call where the thread could be interrupted, if that's ever an issue,
-        // this code could be checked and improved further.
         if (isAcquired.compare_exchange_strong(expected, false))
             isAcquired.store(!semaphore.release());
+#if !defined(Q_OS_WIN32)
+        sigprocmask(SIG_SETMASK, &oldMask, nullptr);
+#endif
     }
 
     std::atomic<bool> isAcquired { false };
