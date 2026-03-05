@@ -8,11 +8,8 @@
 #include <qtextformat.h>
 #include <qpainter.h>
 #include <qdebug.h>
-#include <qfile.h>
 #include <qicon.h>
 #include <private/qtextengine_p.h>
-#include <qpalette.h>
-#include <qthread.h>
 #include <limits>
 
 QT_BEGIN_NAMESPACE
@@ -50,23 +47,22 @@ static inline QUrl findAtNxFileOrResource(const QString &baseFileName,
     return QUrl(*name);
 }
 
-template<typename T>
-static T getAs(QTextDocument *doc, const QTextImageFormat &format, const qreal devicePixelRatio = 1.0)
+static QImage getImage(QTextDocument *doc, const QTextImageFormat &format, const qreal devicePixelRatio = 1.0)
 {
     qreal sourcePixelRatio = 1.0;
     QString name;
     const QUrl url = findAtNxFileOrResource(format.name(), devicePixelRatio, &sourcePixelRatio, &name);
     const QVariant data = doc->resource(QTextDocument::ImageResource, url);
 
-    T result;
+    QImage result;
     if (data.userType() == QMetaType::QPixmap || data.userType() == QMetaType::QImage)
-        result = data.value<T>();
+        result = data.value<QImage>();
     else if (data.metaType() == QMetaType::fromType<QByteArray>())
         result.loadFromData(data.toByteArray());
 
     if (result.isNull()) {
         if (name.isEmpty() || !result.load(name))
-            return T(":/qt-project.org/styles/commonstyle/images/file-16.png"_L1);
+            return QImage(":/qt-project.org/styles/commonstyle/images/file-16.png"_L1);
         doc->addResource(QTextDocument::ImageResource, url, result);
     }
 
@@ -75,7 +71,6 @@ static T getAs(QTextDocument *doc, const QTextImageFormat &format, const qreal d
     return result;
 }
 
-template<typename T>
 static QSize getSize(QTextDocument *doc, const QTextImageFormat &format)
 {
     const bool hasWidth = format.hasProperty(QTextFormat::ImageWidth);
@@ -96,10 +91,10 @@ static QSize getSize(QTextDocument *doc, const QTextImageFormat &format)
         width = qMin(effectiveMaxWidth, width);
     }
 
-    T source;
+    QImage source;
     QSize size(width, height);
     if (!hasWidth || !hasHeight) {
-        source = getAs<T>(doc, format);
+        source = getImage(doc, format);
         QSizeF sourceSize = source.deviceIndependentSize();
 
         if (sourceSize.width() > effectiveMaxWidth) {
@@ -122,15 +117,10 @@ static QSize getSize(QTextDocument *doc, const QTextImageFormat &format)
         }
     }
 
-    qreal scale = 1.0;
-    QPaintDevice *pdev = doc->documentLayout()->paintDevice();
-    if (pdev) {
-        if (source.isNull())
-            source = getAs<T>(doc, format);
-        if (!source.isNull())
-            scale = qreal(pdev->logicalDpiY()) / qreal(qt_defaultDpi());
-    }
-    size *= scale;
+    const QPaintDevice *pdev = doc->documentLayout()->paintDevice();
+    if (pdev)
+        size *= qreal(pdev->logicalDpiY()) / qreal(qt_defaultDpi());
+
     return size;
 }
 
@@ -144,16 +134,14 @@ QSizeF QTextImageHandler::intrinsicSize(QTextDocument *doc, int posInDocument, c
     Q_UNUSED(posInDocument);
     const QTextImageFormat imageFormat = format.toImageFormat();
 
-    if (QCoreApplication::instance()->thread() != QThread::currentThread())
-        return getSize<QImage>(doc, imageFormat);
-    return getSize<QPixmap>(doc, imageFormat);
+    return getSize(doc, imageFormat);
 }
 
 QImage QTextImageHandler::image(QTextDocument *doc, const QTextImageFormat &imageFormat)
 {
     Q_ASSERT(doc != nullptr);
 
-    return getAs<QImage>(doc, imageFormat);
+    return getImage(doc, imageFormat);
 }
 
 void QTextImageHandler::drawObject(QPainter *p, const QRectF &rect, QTextDocument *doc, int posInDocument, const QTextFormat &format)
@@ -161,13 +149,8 @@ void QTextImageHandler::drawObject(QPainter *p, const QRectF &rect, QTextDocumen
     Q_UNUSED(posInDocument);
         const QTextImageFormat imageFormat = format.toImageFormat();
 
-    if (QCoreApplication::instance()->thread() != QThread::currentThread()) {
-        const QImage image = getAs<QImage>(doc, imageFormat, p->device()->devicePixelRatio());
-        p->drawImage(rect, image, image.rect());
-    } else {
-        const QPixmap pixmap = getAs<QPixmap>(doc, imageFormat, p->device()->devicePixelRatio());
-        p->drawPixmap(rect, pixmap, pixmap.rect());
-    }
+    const QImage image = getImage(doc, imageFormat, p->device()->devicePixelRatio());
+    p->drawImage(rect, image, image.rect());
 }
 
 QT_END_NAMESPACE
