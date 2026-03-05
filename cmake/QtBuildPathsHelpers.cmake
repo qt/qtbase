@@ -243,6 +243,14 @@ macro(qt_internal_set_qt_apple_support_files_path)
     endif()
 endmacro()
 
+macro(qt_internal_set_qt_windows_support_files_path)
+    # This is analogous to what we have in QtConfig.cmake.in. It's copied here so that
+    # tests can be built in tree.
+    if(WIN32)
+        set(__qt_internal_cmake_windows_support_files_path "${QT_CMAKE_DIR}/windows")
+    endif()
+endmacro()
+
 macro(qt_internal_set_qt_staging_prefix)
     if(NOT "${CMAKE_STAGING_PREFIX}" STREQUAL "")
         set(QT_STAGING_PREFIX "${CMAKE_STAGING_PREFIX}")
@@ -267,6 +275,8 @@ macro(qt_internal_setup_paths_and_prefixes)
     qt_internal_set_qt_cmake_dir()
 
     qt_internal_set_qt_apple_support_files_path()
+
+    qt_internal_set_qt_windows_support_files_path()
 endmacro()
 
 # Returns the prefix for the variables defined by HostInfo package. The prefix
