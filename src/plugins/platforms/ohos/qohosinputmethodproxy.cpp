@@ -290,7 +290,9 @@ std::shared_ptr<void> QOhosInputMethodProxy::registerCallbacks(
     registrationHandles.push_back(
         registerTextEditorProxyCallback(
             textEditorProxy.get(), Q_OHOS_NAMED_FUNC(::OH_TextEditorProxy_SetFinishTextPreviewFunc),
-            [](auto...) {
+            [weakClientCallbacks]() {
+                callInQtThread(
+                    weakClientCallbacks, &QOhosInputMethodProxy::ClientCallbacks::onFinishPreviewText);
             }));
 
     return QtOhos::moveToSharedPtr(std::move(registrationHandles));

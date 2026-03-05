@@ -22,6 +22,7 @@ public:
 
         virtual void onInsertText(std::string text) = 0;
         virtual void onInsertPreviewText(std::string text) = 0;
+        virtual void onFinishPreviewText() = 0;
         virtual void onDeleteForward(int length) = 0;
         virtual void onDeleteBackward(int length) = 0;
         virtual void onSendKeyboardStatus(::InputMethod_KeyboardStatus keyboardStatus) = 0;
