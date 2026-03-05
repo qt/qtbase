@@ -931,10 +931,10 @@ void QLabel::keyPressEvent(QKeyEvent *ev)
 bool QLabel::event(QEvent *e)
 {
     Q_D(QLabel);
-    QEvent::Type type = e->type();
 
+    switch (e->type()) {
 #ifndef QT_NO_SHORTCUT
-    if (type == QEvent::Shortcut) {
+    case QEvent::Shortcut: {
         QShortcutEvent *se = static_cast<QShortcutEvent *>(e);
         if (se->shortcutId() == d->shortcutId) {
             QWidget *w = d->buddy;
@@ -951,23 +951,30 @@ bool QLabel::event(QEvent *e)
                 window()->setAttribute(Qt::WA_KeyboardFocusChange);
             return true;
         }
-    } else
+        break;
+    }
 #endif
-    if (type == QEvent::Resize) {
+    case QEvent::Resize:
         if (d->control)
             d->textLayoutDirty = true;
-    } else if (e->type() == QEvent::StyleChange
+        break;
+    case QEvent::StyleChange:
 #ifdef Q_OS_MAC
-               || e->type() == QEvent::MacSizeChange
+    case QEvent::MacSizeChange:
 #endif
-               ) {
         d->setLayoutItemMargins(QStyle::SE_LabelLayoutItem);
         d->updateLabel();
-    } else if (type == QEvent::Polish) {
+        break;
+    case QEvent::Polish:
         if (d->needTextControl())
             d->ensureTextControl();
-    } else if (type == QEvent::Enter || type == QEvent::Leave) {
+        break;
+    case QEvent::Enter:
+    case QEvent::Leave:
         d->sendControlEvent(e);
+        break;
+    default:
+        break;
     }
 
     return QFrame::event(e);
