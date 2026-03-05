@@ -2042,7 +2042,7 @@ function(_qt_internal_android_parse_qmlimportscanner_output
         if(plugin_name)
             _qt_internal_android_json_get_bool("${qml_scan}" ${mod_index} pluginIsOptional optional)
             set(plugin_path "${module_abs}/lib${plugin_name}_${CMAKE_ANDROID_ARCH_ABI}.so")
-            if(EXISTS "${plugin_path}")
+            if(EXISTS "${plugin_path}" OR TARGET "${plugin_name}")
                 list(APPEND qml_plugins "${plugin_path}")
             elseif(NOT optional)
                 if(NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_BUILDING_QT)
