@@ -511,6 +511,9 @@ void QCompletionEngine::saveInCache(QString part, const QModelIndex& parent, con
 {
     if (c->filterMode == Qt::MatchEndsWith)
         return;
+    if (c->cs == Qt::CaseInsensitive)
+        part = std::move(part).toLower();
+
     QMatchData old = cache[parent].take(part);
     cost = cost + m.indices.cost() - old.indices.cost();
     if (cost * sizeof(int) > 1024 * 1024) {
@@ -533,8 +536,6 @@ void QCompletionEngine::saveInCache(QString part, const QModelIndex& parent, con
         }
     }
 
-    if (c->cs == Qt::CaseInsensitive)
-        part = std::move(part).toLower();
     cache[parent][part] = m;
 }
 
@@ -546,11 +547,13 @@ QIndexMapper QSortedModelEngine::indexHint(QString part, const QModelIndex& pare
     if (c->cs == Qt::CaseInsensitive)
         part = std::move(part).toLower();
 
-    const CacheItem& map = cache[parent];
-
     // Try to find a lower and upper bound for the search from previous results
     int to = model->rowCount(parent) - 1;
     int from = 0;
+    const auto mapIt = cache.constFind(parent);
+    if (mapIt == cache.cend())
+        return QIndexMapper(from, to);
+    const CacheItem &map = mapIt.value();
     const CacheItem::const_iterator it = map.lowerBound(part);
 
     // look backward for first valid hint
