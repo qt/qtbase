@@ -13,7 +13,13 @@
 
 QT_BEGIN_NAMESPACE
 
-QOhosConsumer<::ArkUI_UIInputEvent *> makeQOhosNativeAxisEventHandler(
+enum class QOhosAxisEventType
+{
+    AxisEvent,
+    CoastingAxisEvent,
+};
+
+QOhosConsumer<QOhosAxisEventType, ::ArkUI_UIInputEvent *> makeQOhosNativeAxisEventHandler(
     QtOhos::QThreadSafeRef<QWindow> qWindowRef,
     QtOhos::QThreadSafeRef<QOhosInputMethodEventHandler> imEventHandlerRef);
 

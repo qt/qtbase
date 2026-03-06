@@ -4,6 +4,7 @@
 #include <render/qohosnativeaxiseventhandler.h>
 
 #include <qarkui/input.h>
+#include <qarkui/qarkuiutils.h>
 #include <render/qohosnativegestureshandler.h>
 
 QT_BEGIN_NAMESPACE
@@ -18,6 +19,7 @@ public:
         QtOhos::QThreadSafeRef<QOhosInputMethodEventHandler> imEventHandlerRef);
 
     void handleUiAxisEvent(ArkUI_UIInputEvent *event);
+    void handleUiCoastingAxisEvent(::ArkUI_UIInputEvent *event);
 
 private:
     QtOhos::QThreadSafeRef<QWindow> m_qWindowRef;
@@ -62,6 +64,26 @@ Qt::ScrollPhase convertArkUiAxisEventActionToQtScrollPhase(std::int32_t arkUiAxi
     qOhosReportFatalErrorAndAbort(
         "Received unsupported UI_AXIS_EVENT_ACTION: %d", arkUiAxisEventAction);
 }
+
+#if OH_CURRENT_API_VERSION >= 22
+
+Qt::ScrollPhase convertArkUiCoastingAxisEventActionToQtScrollPhase(::ArkUI_CoastingAxisEventPhase phase)
+{
+    switch (phase) {
+    case ::ARKUI_COASTING_AXIS_EVENT_PHASE_NONE:
+        return Qt::NoScrollPhase;
+    case ::ARKUI_COASTING_AXIS_EVENT_PHASE_BEGIN:
+        return Qt::ScrollBegin;
+    case ::ARKUI_COASTING_AXIS_EVENT_PHASE_UPDATE:
+        return Qt::ScrollMomentum;
+    case ::ARKUI_COASTING_AXIS_EVENT_PHASE_END:
+        return Qt::ScrollEnd;
+    }
+
+    qOhosReportFatalErrorAndAbort("Received unsupported ArkUI_CoastingAxisEventPhase: %d", phase);
+};
+
+#endif
 
 QOhosAxisEventHandler::QOhosAxisEventHandler(
     QtOhos::QThreadSafeRef<QWindow> qWindowRef,
@@ -147,15 +169,76 @@ void QOhosAxisEventHandler::handleUiAxisEvent(ArkUI_UIInputEvent *event)
     }
 }
 
+#if OH_CURRENT_API_VERSION >= 22
+
+void QOhosAxisEventHandler::handleUiCoastingAxisEvent(::ArkUI_UIInputEvent *event)
+{
+    if (!m_localPosition.hasValue() || !m_screenPosition.hasValue() || !m_wheelScrollLines.hasValue()) {
+        qOhosPrintfWarning(
+            "%s: Cannot create wheel event - incomplete data, ignoring coasting event.", Q_FUNC_INFO);
+        return;
+    }
+
+    auto *coastingAxisEvent = QArkUi::callArkUi(
+        Q_OHOS_NAMED_FUNC(::OH_ArkUI_UIInputEvent_GetCoastingAxisEvent), event);
+    auto eventTime = QArkUi::callArkUi(
+        Q_OHOS_NAMED_FUNC(::OH_ArkUI_CoastingAxisEvent_GetEventTime), coastingAxisEvent);
+    auto phase = QArkUi::callArkUi(
+        Q_OHOS_NAMED_FUNC(::OH_ArkUI_CoastingAxisEvent_GetPhase), coastingAxisEvent);
+    auto delta = QPointF(
+        QArkUi::callArkUi(Q_OHOS_NAMED_FUNC(::OH_ArkUI_CoastingAxisEvent_GetDeltaX), coastingAxisEvent),
+        QArkUi::callArkUi(Q_OHOS_NAMED_FUNC(::OH_ArkUI_CoastingAxisEvent_GetDeltaY), coastingAxisEvent));
+
+    const QFlags<OhosKeyboardModifier> coastingAxisEventModifiersFallback = {};
+
+    QOhosWheelEvent ohosWheelEvent = {
+        .timestamp = eventTime,
+        .localPoint = m_localPosition.value(),
+        .globalPoint = m_screenPosition.value(),
+        .horizontalValue = delta.x(),
+        .verticalValue = delta.y(),
+        .eventToolType = ::UI_INPUT_EVENT_TOOL_TYPE_TOUCHPAD,
+        .scrollPhase = convertArkUiCoastingAxisEventActionToQtScrollPhase(phase),
+        .wheelScrollLines = m_wheelScrollLines.value(),
+        .modifiers = coastingAxisEventModifiersFallback,
+    };
+
+    auto weakSelf = QtOhos::makeWeakPtr(shared_from_this());
+    m_imEventHandlerRef.visitInQtThreadIfAlive(
+        [weakSelf, ohosWheelEvent, qWindowRef = m_qWindowRef](auto &eventHandler) {
+            auto sharedSelf = weakSelf.lock();
+            QWindow *qWindow = qWindowRef.data();
+            if (!sharedSelf || qWindow == nullptr)
+                return;
+
+            eventHandler.onMouseWheelEvent(ohosWheelEvent, qWindow);
+        });
 }
 
-QOhosConsumer<::ArkUI_UIInputEvent *> makeQOhosNativeAxisEventHandler(
+#else
+
+void QOhosAxisEventHandler::handleUiCoastingAxisEvent(::ArkUI_UIInputEvent *)
+{
+}
+
+#endif
+
+}
+
+QOhosConsumer<QOhosAxisEventType, ::ArkUI_UIInputEvent *> makeQOhosNativeAxisEventHandler(
     QtOhos::QThreadSafeRef<QWindow> qWindowRef,
     QtOhos::QThreadSafeRef<QOhosInputMethodEventHandler> imEventHandlerRef)
 {
     auto handler = std::make_shared<QOhosAxisEventHandler>(qWindowRef, imEventHandlerRef);
-    return [handler](::ArkUI_UIInputEvent *inputEvent) {
-        handler->handleUiAxisEvent(inputEvent);
+    return [handler](QOhosAxisEventType eventType, ::ArkUI_UIInputEvent *inputEvent) {
+        switch (eventType) {
+        case QOhosAxisEventType::AxisEvent:
+            handler->handleUiAxisEvent(inputEvent);
+            break;
+        case QOhosAxisEventType::CoastingAxisEvent:
+            handler->handleUiCoastingAxisEvent(inputEvent);
+            break;
+        }
     };
 }
 

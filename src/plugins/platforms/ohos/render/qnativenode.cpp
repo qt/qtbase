@@ -205,8 +205,17 @@ QNativeNode::QNativeNode(const CreateInfo &nativeNodeCreateInfo)
                     });
             });
 
-        m_jsStateData->embeddedWindow->setAxisEventsHandler(
+        auto sharedAxisEventHandler = QtOhos::moveToSharedPtr(
             makeQOhosNativeAxisEventHandler(qWindowRef, imEventHandlerRef));
+        m_jsStateData->embeddedWindow->setAxisEventsHandler(
+            [sharedAxisEventHandler](auto *event) {
+                (*sharedAxisEventHandler)(QOhosAxisEventType::AxisEvent, event);
+            }
+        );
+        m_jsStateData->embeddedWindow->setCoastingAxisEventsHandler(
+            [sharedAxisEventHandler](auto *event) {
+                (*sharedAxisEventHandler)(QOhosAxisEventType::CoastingAxisEvent, event);
+            });
         m_jsStateData->embeddedWindow->setGesturesHandler(
             makeQOhosArkUiNativeGesturesHandler(qWindowRef));
         m_jsStateData->embeddedWindow->setDragEventsHandler(makeQOhosNativeDragEventsHandler(qWindowRef));
