@@ -97,6 +97,25 @@ namespace QtTemporalPattern {
             | TemporalFieldFlag::StandardTime | TemporalFieldFlag::DaylightSavingTime;
     }
 
+    // Implement group-related tests:
+    constexpr inline
+    bool matchesFlagWithin(QtTemporalPattern::TemporalFieldFlags flags,
+                           QtTemporalPattern::TemporalFieldFlag sought,
+                           QtTemporalPattern::TemporalFieldFlags group)
+    {
+        Q_ASSERT(group.testFlag(sought)); // In case caller passed the wrong group.
+        return flags.testFlag(sought) || !flags.testAnyFlags(group);
+    }
+
+    constexpr inline
+    bool matchesFlagsWithin(QtTemporalPattern::TemporalFieldFlags flags,
+                            QtTemporalPattern::TemporalFieldFlags sought,
+                            QtTemporalPattern::TemporalFieldFlags group)
+    {
+        Q_ASSERT(!(sought & ~group)); // i.e. all of sought are in group.
+        return flags.testAnyFlags(sought) || !flags.testAnyFlags(group);
+    }
+
     // Classify the categories:
     enum class DateTimePart { None, Date = 1, Time = 2, Zone = 4 };
     Q_DECLARE_FLAGS(DateTimeParts, DateTimePart)

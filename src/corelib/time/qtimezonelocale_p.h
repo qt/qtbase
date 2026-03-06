@@ -19,6 +19,9 @@
 
 #include <QtCore/qstring.h>
 #include <QtCore/qtimezone.h>
+#if QT_CONFIG(datestring)
+#   include "private/qttemporalpattern_p.h"
+#endif
 
 #if QT_CONFIG(icu)
 #include <unicode/ucal.h>
@@ -45,10 +48,12 @@ QList<QByteArrayView> ianaIdsForTerritory(QLocale::Territory territory);
 
 QList<qsizetype> fallbackLocalesFor(qsizetype index); // qlocale.cpp
 
-// Note: "repurposes" QLocale::FormatType with its own twisted meaning.
+#if QT_CONFIG(datestring)
 // See comments in QTZL.cpp; qlocale.cpp has a fallback implementation.
-QString zoneOffsetFormat(const QLocale &locale, qsizetype locInd, QLocale::FormatType width,
+QString zoneOffsetFormat(const QLocale &locale, qsizetype locInd,
+                         QtTemporalPattern::TemporalFieldFlags flags,
                          const QDateTime &when, int offsetSeconds);
+#endif // datestring
 
 // Define data types for QTZL_data_p.h
 

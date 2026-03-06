@@ -63,6 +63,9 @@ QT_WARNING_DISABLE_GCC("-Wfree-nonheap-object") // false positive tracking
 #if QT_CONFIG(timezone) && QT_CONFIG(timezone_locale) && !QT_CONFIG(icu)
 #   include "private/qtimezonelocale_p.h"
 #endif
+#if QT_CONFIG(datestring)
+#   include "private/qttemporalpattern_p.h"
+#endif
 
 #include <q20iterator.h>
 
@@ -3775,19 +3778,21 @@ static QString offsetFromAbbreviation(QString &&text)
 }
 
 // For the benefit of QCalendar, below, when not provided by QTZL.
-#if QT_CONFIG(icu) || !(QT_CONFIG(timezone) && QT_CONFIG(timezone_locale))
+#if !QT_CONFIG(datestring)
+// No need for temporal data serialization and parsing code.
+#elif QT_CONFIG(icu) || !(QT_CONFIG(timezone) && QT_CONFIG(timezone_locale))
 namespace QtTimeZoneLocale {
 
 // TODO: is there a way to get this non-kludgily from ICU ?
 // If so, that version goes in QTZL.cpp's relevant #if-ery branch.
 QString zoneOffsetFormat([[maybe_unused]] const QLocale &locale,
                          qsizetype,
-                         [[maybe_unused]] QLocale::FormatType width,
+                         QtTemporalPattern::TemporalFieldFlags,
                          const QDateTime &when,
                          int offsetSeconds)
 {
-    // Only the non-ICU TZ-locale code uses the other two widths:
-    Q_ASSERT(width == QLocale::ShortFormat); //
+    // Only the non-ICU TZ-locale code uses the prefix forms, so this tacitly
+    // assumes flags: Numeric | Abbreviated | NeedNoUtcPrefix | ZeroPad.
     QString text =
 #if QT_CONFIG(timezone)
         locale != QLocale::system()
@@ -3806,7 +3811,6 @@ QString zoneOffsetFormat([[maybe_unused]] const QLocale &locale,
 #endif // ICU or no TZ L10n
 
 // Another intrusion from QCalendar, using some of the tools above:
-
 QString QCalendarBackend::dateTimeToString(QStringView format, const QDateTime &datetime,
                                            QDate dateOnly, QTime timeOnly,
                                            const QLocale &locale) const
@@ -3977,18 +3981,25 @@ QString QCalendarBackend::dateTimeToString(QStringView format, const QDateTime &
                 break;
 
             case 't': {
+#if QT_CONFIG(datestring)
+                // Feature check should really apply to the whole function, but
+                // this portion of it depends on internals entangled with the
+                // feature.
                 enum AbbrType { Long, Offset, Short };
                 const auto tzAbbr = [locale](const QDateTime &when, AbbrType type) {
                     QString text;
                     if (type == Offset) {
+                        using Flag = QtTemporalPattern::TemporalFieldFlag;
+                        constexpr auto noPrefixOffset = Flag::Numeric | Flag::Abbreviated
+                            | Flag::NeedNoUtcPrefix | Flag::ZeroPad;
                         text = QtTimeZoneLocale::zoneOffsetFormat(locale, locale.d->m_index,
-                                                                  QLocale::ShortFormat,
+                                                                  noPrefixOffset,
                                                                   when, when.offsetFromUtc());
                         // When using timezone_locale data, this should always succeed:
                         if (!text.isEmpty())
                             return text;
                     }
-#if QT_CONFIG(timezone)
+#   if QT_CONFIG(timezone)
                     if (type != Short || locale != QLocale::system()) {
                         QTimeZone::NameType mode =
                             type == Short ? QTimeZone::ShortName
@@ -4005,7 +4016,7 @@ QString QCalendarBackend::dateTimeToString(QStringView format, const QDateTime &
                             return text;
                     }
                     // else: prefer QDateTime's abbreviation, for backwards-compatibility.
-#endif // else, make do with non-localized abbreviation:
+#   endif // else, make do with non-localized abbreviation:
                     // Absent timezone_locale data, Offset might still reach here:
                     if (type == Offset) // Our prior failure might not have tried this:
                         text = when.toOffsetFromUtc(when.offsetFromUtc()).timeZoneAbbreviation();
@@ -4040,6 +4051,7 @@ QString QCalendarBackend::dateTimeToString(QStringView format, const QDateTime &
                 }
                 if (!text.isEmpty())
                     result.append(text);
+#endif // datestring
                 break;
             }
 
@@ -4054,7 +4066,6 @@ QString QCalendarBackend::dateTimeToString(QStringView format, const QDateTime &
 
     return result;
 }
-
 // End of QCalendar intrustions
 
 QString QLocaleData::doubleToString(double d, int precision, DoubleForm form,

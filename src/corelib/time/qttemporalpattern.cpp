@@ -479,6 +479,28 @@ namespace QtTemporalPattern {
 // QDoc, recognizing QFLAG() usage.
 
 /*!
+    \fn constexpr bool QtTemporalPattern::matchesFlagWithin(QtTemporalPattern::TemporalFieldFlags flags, QtTemporalPattern::TemporalFieldFlag sought, QtTemporalPattern::TemporalFieldFlags group)
+
+    Tests \a flags for a \a sought flag within a \a group.
+
+    Implements the per-flag check for a single TemporalFieldFlag with respect to
+    its FieldGroup entry. If no flag in a group is given in \a flags, then all
+    flags in the group are allowed; otherwise, only the given flags in the group
+    match.
+*/
+
+/*!
+    \fn constexpr bool QtTemporalPattern::matchesFlagsWithin(QtTemporalPattern::TemporalFieldFlags flags, QtTemporalPattern::TemporalFieldFlags sought, QtTemporalPattern::TemporalFieldFlags group)
+
+    Similar to \l matchesFlagWithin(), but if any of those \a sought is found in
+    \a flags, or if none of group are, it's counted as a match.
+
+    In some contexts, some flags are treated as equivalent, so to check for what
+    they represent pass the equivalent flags |-joined as \a sought.
+*/
+
+
+/*!
     \enum QtTemporalPattern::DateTimePart
     \brief This enumeraction classifies the various field categories.
 
