@@ -123,6 +123,12 @@ while(NOT "${configure_args}" STREQUAL "")
         set(auto_detect_compiler FALSE)
     elseif(arg STREQUAL "-list-features")
         set(list_features TRUE)
+        if(configure_args)
+            list(GET configure_args 0 _next_arg)
+            if(NOT _next_arg MATCHES "^-")
+                list(POP_FRONT configure_args list_features_module)
+            endif()
+        endif()
     elseif(arg MATCHES "^-h(elp)?$")
         set(display_module_help TRUE)
     elseif(arg STREQUAL "-write-options-for-conan")
@@ -294,9 +300,11 @@ function(qt_feature feature)
         "${no_value_options}" "${single_value_options}" "${multi_value_options}"
     )
 
+    get_property(_current_module GLOBAL PROPERTY COMMANDLINE_CURRENT_CONFIGURE_MODULE)
     set_property(GLOBAL APPEND PROPERTY COMMANDLINE_KNOWN_FEATURES "${feature}")
     set_property(GLOBAL PROPERTY COMMANDLINE_FEATURE_PURPOSE_${feature} "${arg_PURPOSE}")
     set_property(GLOBAL PROPERTY COMMANDLINE_FEATURE_SECTION_${feature} "${arg_SECTION}")
+    set_property(GLOBAL PROPERTY COMMANDLINE_FEATURE_MODULE_${feature} "${_current_module}")
 
     if(NOT generate_vcpkg_manifest)
         return()
@@ -611,6 +619,12 @@ while(commandline_files)
         endif()
     endif()
 
+    get_filename_component(current_configure_module "${commandline_file_directory}" NAME)
+    if(current_configure_module STREQUAL "src")
+        get_filename_component(_parent_dir "${commandline_file_directory}" DIRECTORY)
+        get_filename_component(current_configure_module "${_parent_dir}" NAME)
+    endif()
+    set_property(GLOBAL PROPERTY COMMANDLINE_CURRENT_CONFIGURE_MODULE "${current_configure_module}")
     set(configure_file "${commandline_file_directory}/${configure_filename}")
     unset(commandline_subconfigs)
     if(EXISTS "${configure_file}")
@@ -874,8 +888,9 @@ Options:
 
   -feature-<feature> ... Enable <feature>
   -no-feature-<feature>  Disable <feature> [none]
-  -list-features ....... List available features. Note that some features
-                         have dedicated command line options as well.
+  -list-features [module]  List available features, optionally filtered by
+                           module directory (e.g., sql, network). Note that some
+                           features have dedicated command line options as well.
 ]])
 
     set(help_file "${MODULE_ROOT}/config_help.txt")
@@ -893,6 +908,12 @@ if(list_features)
         get_property(section GLOBAL PROPERTY COMMANDLINE_FEATURE_SECTION_${feature})
         get_property(purpose GLOBAL PROPERTY COMMANDLINE_FEATURE_PURPOSE_${feature})
         if(purpose)
+            if(DEFINED list_features_module)
+                get_property(feature_module GLOBAL PROPERTY COMMANDLINE_FEATURE_MODULE_${feature})
+                if(NOT feature_module STREQUAL list_features_module)
+                    continue()
+                endif()
+            endif()
             if(NOT "${section}" STREQUAL "")
                 string(APPEND section ": ")
             endif()
