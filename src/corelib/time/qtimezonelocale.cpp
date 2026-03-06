@@ -609,7 +609,9 @@ QString QTimeZonePrivate::localeName(qint64 atMSecsSinceEpoch, int offsetFromUtc
                                      QTimeZone::NameType nameType,
                                      const QLocale &locale) const
 {
-    if (nameType == QTimeZone::OffsetName) {
+    if (nameType == QTimeZone::OffsetName
+        // Use offset forms for QUtcTimeZonePrivate instances:
+        || QUtcTimeZonePrivate::offsetFromUtcString(m_id) != invalidSeconds()) {
         // Doesn't need fallbacks, since every locale has hour and offset formats.
         return QtTimeZoneLocale::zoneOffsetFormat(locale, locale.d->m_index, QLocale::LongFormat,
                                                   QDateTime(), offsetFromUtc);
