@@ -2685,8 +2685,15 @@
     \value ImhHiddenText             The input method should not show the characters while typing.
                                      This is automatically set when setting QLineEdit::echoMode to \c Password.
                                      Note that setting \c ImhHiddenText does not change the echo mode.
+
+                                     Note that Android IMEs deliberately only
+                                     allow Latin/ASCII character input for password fields.
     \value ImhSensitiveData          Typed text should not be stored by the active input method
                                      in any persistent storage like predictive user dictionary.
+
+                                     Note that the Qt Framework treats this as a visible password
+                                     and in this case Android IMEs deliberately only
+                                     allow Latin/ASCII character input.
     \value ImhNoAutoUppercase        The input method should not try to automatically switch to upper case
                                      when a sentence ends.
     \value ImhPreferNumbers          Numbers are preferred (but not required).
