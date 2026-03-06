@@ -974,7 +974,7 @@ bool QThreadPrivate::wait(QMutexLocker<QMutex> &locker, QDeadlineTimer deadline)
         pthread_cleanup_push(&CancelState::run, &nocancel);
         pthread_t thrId = from_HANDLE<pthread_t>(data->threadId.loadRelaxed());
         if constexpr (QT_CONFIG(pthread_clockjoin))
-            r = pthread_clockjoin_np(thrId, nullptr, SteadyClockClockId, pts);
+            r = pthread_clockjoin_np(thrId, nullptr, QSteadyClockClockId, pts);
         else
             r = pthread_timedjoin_np(thrId, nullptr, pts);
         Q_ASSERT(r == 0 || r == ETIMEDOUT);
