@@ -561,6 +561,7 @@ void QOhosInputMethodEventHandler::handleTouchEvent(const QWindowSystemInterface
 
     updateWindowsUnderTouchPoints(touchEvent);
 
+    m_lastWsiTouchEvent = touchEvent;
     QWindowSystemInterface::handleTouchEvent(
         touchEvent.targetWindow, touchEvent.timestampMs.count(),
         static_cast<const QPointingDevice *>(touchEvent.touchDevice), touchEvent.touchPoints,

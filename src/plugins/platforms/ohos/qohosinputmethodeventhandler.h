@@ -139,6 +139,7 @@ private:
     QPointer<QWindow> m_currentKeyboardGrabbingWindow;
     QMap<Qt::Key, ushort> m_autoRepeatCountMap;
     QOhosOptional<QOhosMouseEvent> m_lastWsiMouseEvent;
+    QOhosOptional<QWindowSystemInterfaceTouchEvent> m_lastWsiTouchEvent;
 };
 
 QT_END_NAMESPACE
