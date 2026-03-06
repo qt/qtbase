@@ -1653,10 +1653,18 @@ void QColorDialogPrivate::pickScreenColor()
 
 void QColorDialogPrivate::updateColorLabelText(const QPoint &globalPos)
 {
-    if (lblScreenColorInfo)
-        lblScreenColorInfo->setText(QColorDialog::tr("Cursor at %1, %2\nPress ESC to cancel")
+    if (!lblScreenColorInfo)
+        return;
+#ifdef Q_OS_OHOS
+    Q_UNUSED(globalPos)
+    lblScreenColorInfo->setText(QColorDialog::tr("Cursor at %1, %2\nPress ESC to cancel")
+                                .arg(QStringLiteral("-"))
+                                .arg(QStringLiteral("-")));
+#else
+    lblScreenColorInfo->setText(QColorDialog::tr("Cursor at %1, %2\nPress ESC to cancel")
                                 .arg(globalPos.x())
                                 .arg(globalPos.y()));
+#endif
 }
 
 void QColorDialogPrivate::releaseColorPicking()
