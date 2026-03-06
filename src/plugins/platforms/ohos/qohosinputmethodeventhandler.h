@@ -119,6 +119,7 @@ private:
         QInputDevice *touchDevice;
         std::chrono::milliseconds timestampMs;
         QFlags<OhosKeyboardModifier> modifiers;
+        QOhosOptional<QPoint> singleTouchPointEventGlobalPosition;
     };
 
     QInputDevice *getTouchDeviceOrCreateIfNeeded(QInputDevice::DeviceType deviceType);
