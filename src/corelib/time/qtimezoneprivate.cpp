@@ -1214,6 +1214,8 @@ QUtcTimeZonePrivate::QUtcTimeZonePrivate(const QByteArray &id)
             break;
         }
     }
+    // Don't accept other matches; QTZ's constructor falls back to its own check
+    // using offsetFromUtcString() if all else fails.
 }
 
 qint64 QUtcTimeZonePrivate::offsetFromUtcString(QByteArrayView id)
