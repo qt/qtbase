@@ -1105,7 +1105,7 @@ void tst_QArrayData::arrayOpsExtra()
                 o->appendInitialize(initialSize);
             } else {
                 // there's no prependInitialize()
-                for (qsizetype n = 0; n < initialSize; ++n) {
+                for (size_t n = 0; n < initialSize; ++n) {
                     i->emplace(0);
                     s->emplace(0);
                     o->emplace(0);
