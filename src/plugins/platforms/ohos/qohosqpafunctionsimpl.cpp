@@ -780,6 +780,29 @@ QOhosShareKit::ShareAbilityType mapShareAbilityTypeFromQpaFunctionsEnum(
         Q_FUNC_INFO, static_cast<int>(abilityType));
 }
 
+QOhosOptional<std::uint32_t> tryConvertPortNameToSystemPortId(const QString &portName)
+{
+    constexpr const char *serialPortPrefix = "COM";
+    const QString prefix = QLatin1String(serialPortPrefix);
+
+    if (!portName.startsWith(prefix))
+        return {};
+
+    return QtOhos::tryParseStringAsUnsignedInteger<std::uint32_t>(portName.mid(prefix.length()).toStdString());
+}
+
+bool hasSerialPortAccessRightJsImpl(QtOhos::JsState &jsState, std::uint32_t serialPortId)
+{
+    try {
+        return jsState.eval<QNapi::Boolean>("@ohos.usbManager.serial.hasSerialRight(*)", {serialPortId});
+    } catch (const Napi::Error &error) {
+        qOhosPrintfError(
+            "%s: hasSerialRight for port %d failed with error: %s",
+            Q_FUNC_INFO, serialPortId, error.what());
+        return false;
+    }
+}
+
 class WantInfoImpl : public QOhosQpaFunctions::WantInfo
 {
 public:
@@ -968,6 +991,8 @@ public:
     bool readOhosNoUiChildMode() override;
 
     void startNoUiChildProcess(QString libraryName, QStringList args) override;
+
+    bool hasSerialPortAccessRight(const QString &portName) override;
 
     std::pair<bool, QList<FileShare::PolicyErrorResult>> persistPermission(
         const QList<FileShare::PolicyInfo> &policyInfos) override;
@@ -1646,6 +1671,23 @@ void QOhosQpaFunctionsImpl::startNoUiChildProcess(QString libraryName, QStringLi
                 args.begin(), args.end(), std::back_inserter(argsVector),
                 std::mem_fn(&QString::toStdString));
             jsState.startNoUiChildProcess(libraryName.toStdString(), argsVector);
+        },
+        Q_FUNC_INFO);
+}
+
+bool QOhosQpaFunctionsImpl::hasSerialPortAccessRight(const QString &portName)
+{
+    const auto optSerialPortId = tryConvertPortNameToSystemPortId(portName);
+    if (!optSerialPortId.hasValue()) {
+        qOhosPrintfError(
+            "%s: cannot convert serial port name '%s' to port id.",
+            Q_FUNC_INFO, portName.toStdString().c_str());
+        return false;
+    }
+
+    return QtOhos::evalInJsThread(
+        [&](QtOhos::JsState &jsState) {
+            return hasSerialPortAccessRightJsImpl(jsState, optSerialPortId.value());
         },
         Q_FUNC_INFO);
 }
