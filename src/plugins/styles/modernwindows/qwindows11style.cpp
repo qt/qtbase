@@ -822,7 +822,6 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
             QStyleOptionToolButton label = *toolbutton;
             label.state = bflags;
             label.rect = buttonRect.marginsRemoved(QMargins(fw, fw, fw, fw));
-            prx->drawControl(CE_ToolButtonLabel, &label, painter, widget);
 
             if (toolbutton->subControls.testFlag(SC_ToolButtonMenu)) {
                 QPainterStateGuard psg(painter);
@@ -839,15 +838,18 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
                 painter->drawText(textRect, Qt::AlignCenter, fluentIcon(Icon::ChevronDownMed));
 
             } else if (toolbutton->features.testFlag(QStyleOptionToolButton::HasMenu)) {
-                const int mbi = prx->pixelMetric(PM_MenuButtonIndicator, toolbutton, widget);
+                const int mbi = qRound(prx->pixelMetric(PM_MenuButtonIndicator, toolbutton, widget) * 0.3);
                 const QRect &ir = toolbutton->rect;
-                QRect rect(ir.right() + 5 - mbi, ir.y() + ir.height() - mbi + 4, mbi - 6 - fw,
-                           mbi - 6);
+                QRect rect(ir.right() - mbi - 2 * fw, ir.bottom() - mbi - fw, mbi,
+                           mbi);
                 rect = visualRect(toolbutton->direction, buttonRect, rect);
+                const QRect lblRect = label.rect - QMargins(0, 0, rect.width(), 0);
+                label.rect = visualRect(toolbutton->direction, buttonRect, lblRect);
                 painter->setFont(QFont(d->assetFont));
                 painter->setPen(controlTextColor(option));
                 painter->drawText(rect, Qt::AlignCenter, fluentIcon(Icon::ChevronDownMed));
             }
+            prx->drawControl(CE_ToolButtonLabel, &label, painter, widget);
         }
         break;
 #endif // QT_CONFIG(toolbutton)
@@ -1504,35 +1506,29 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
                     painter->setFont(toolbutton->font);
                     QRect pr = rect,
                             tr = rect;
-                    int alignment = Qt::TextShowMnemonic;
+                    int alignment = Qt::TextShowMnemonic | Qt::AlignCenter;
                     if (!proxy()->styleHint(SH_UnderlineShortcut, toolbutton, widget))
                         alignment |= Qt::TextHideMnemonic;
 
                     if (toolbutton->toolButtonStyle == Qt::ToolButtonTextUnderIcon) {
                         pr.setHeight(pmSize.height() + 4); //### 4 is currently hardcoded in QToolButton::sizeHint()
                         tr.adjust(0, pr.height() - 1, 0, -1);
-                        pr.translate(shiftX, shiftY);
-                        if (!hasArrow) {
-                            proxy()->drawItemPixmap(painter, pr, Qt::AlignCenter, pm);
-                        } else {
-                            drawArrow(proxy(), toolbutton, pr, painter, widget);
-                        }
-                        alignment |= Qt::AlignCenter;
                     } else {
                         pr.setWidth(pmSize.width() + 4); //### 4 is currently hardcoded in QToolButton::sizeHint()
                         tr.adjust(pr.width(), 0, 0, 0);
-                        pr.translate(shiftX, shiftY);
-                        if (!hasArrow) {
-                            proxy()->drawItemPixmap(painter, QStyle::visualRect(toolbutton->direction, rect, pr), Qt::AlignCenter, pm);
-                        } else {
-                            drawArrow(proxy(), toolbutton, pr, painter, widget);
-                        }
-                        alignment |= Qt::AlignLeft | Qt::AlignVCenter;
+                    }
+                    pr.translate(shiftX, shiftY);
+                    if (hasArrow) {
+                        drawArrow(proxy(), toolbutton, pr, painter, widget);
+                    } else {
+                        const auto vr = QStyle::visualRect(toolbutton->direction, rect, pr);
+                        proxy()->drawItemPixmap(painter, vr, Qt::AlignCenter, pm);
                     }
                     tr.translate(shiftX, shiftY);
-                    const QString text = d->toolButtonElideText(toolbutton, tr, alignment);
                     painter->setPen(controlTextColor(option));
-                    proxy()->drawItemText(painter, QStyle::visualRect(toolbutton->direction, rect, tr), alignment, toolbutton->palette,
+                    const QString text = d->toolButtonElideText(toolbutton, tr, alignment);
+                    const auto vr = QStyle::visualRect(toolbutton->direction, rect, tr);
+                    proxy()->drawItemText(painter, vr, alignment, toolbutton->palette,
                                           toolbutton->state & State_Enabled, text);
                 } else {
                     rect.translate(shiftX, shiftY);
@@ -2548,14 +2544,20 @@ QSize QWindows11Style::sizeFromContents(ContentsType type, const QStyleOption *o
         break;
     }
     case CT_ToolButton: {
-        contentSize = QWindowsVistaStyle::sizeFromContents(type, option, size, widget);
-        // we want our own horizontal spacing
-        const int oldMargin = proxy()->pixelMetric(PM_ButtonMargin, option, widget);
-        contentSize.rwidth() += 2 * contentHMargin - oldMargin;
-        if (const auto toolbutton = qstyleoption_cast<const QStyleOptionToolButton *>(option)) {
-            if (toolbutton->features.testFlag(QStyleOptionToolButton::HasMenu))
-                contentSize.rwidth() += size.height();
+        contentSize = size;
+        if (const auto tb = qstyleoption_cast<const QStyleOptionToolButton *>(option)) {
+            // no separate menu, only dropdown icon
+            if (!tb->subControls.testFlag(SC_ToolButtonMenu)) {
+                if (tb->features.testFlag(QStyleOptionToolButton::HasMenu))
+                    contentSize.rwidth() += 2;
+            }
+            if (tb->toolButtonStyle == Qt::ToolButtonTextBesideIcon
+                || tb->toolButtonStyle == Qt::ToolButtonIconOnly) {
+                contentSize.rheight() = qMax(contentSize.height(), tb->iconSize.height() + 4);
+            }
         }
+        const auto fw = proxy()->pixelMetric(PM_DefaultFrameWidth, option, widget);
+        contentSize += QSize(contentHMargin + 2 * fw, 2 * fw);
         break;
     }
     case CT_ItemViewItem: {
