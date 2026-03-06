@@ -160,7 +160,6 @@ public:
     void processCommandLineArguments();
     QString cachedApplicationFilePath;
     QString qmljs_debug_arguments; // a string containing arguments for js/qml debugging.
-    inline QString qmljsDebugArgumentsString() const { return qmljs_debug_arguments; }
 
 #ifdef QT_NO_QOBJECT
     QCoreApplication *q_ptr = nullptr;
