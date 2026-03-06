@@ -396,7 +396,7 @@ void TestVulkanRenderer::startNextFrame()
 {
     ++testVulkan.startNextFrameCount;
 
-    VkClearColorValue clearColor = { 0, 1, 0, 1 };
+    VkClearColorValue clearColor = { { 0, 1, 0, 1 } };
     VkClearDepthStencilValue clearDS = { 1, 0 };
     VkClearValue clearValues[2];
     memset(clearValues, 0, sizeof(clearValues));
