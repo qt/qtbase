@@ -93,6 +93,17 @@ QRectF calculateTouchPointArea(const QPointF &clickPoint)
         fingerAreaHeight);
 }
 
+QPoint determineScreenGlobalDisplayOffset(QWindow *qWindow)
+{
+    auto *screen = qWindow != nullptr
+        ? qWindow->screen()
+        : QGuiApplication::primaryScreen();
+
+    return screen != nullptr
+        ? screen->handle()->geometry().topLeft()
+        : QPoint();
+}
+
 }
 
 QOhosInputMethodEventHandler::QOhosInputMethodEventHandler(
@@ -113,6 +124,8 @@ void QOhosInputMethodEventHandler::onTouchEventFromXComponent(
 
     QList<QWindowSystemInterface::TouchPoint> wsiTouchPoints;
 
+    std::vector<QPoint> activeTouchPointDisplayPositions;
+
     for (const auto &touchPointData : touchPoints) {
         const auto &touchPoint = touchPointData.touchPoint;
         QEventPoint::State state =
@@ -120,6 +133,9 @@ void QOhosInputMethodEventHandler::onTouchEventFromXComponent(
                 .valueOr(QEventPoint::State::Stationary);
 
         QPointF clickPoint = touchPointData.displayPosition;
+
+        if (state != QEventPoint::State::Released)
+            activeTouchPointDisplayPositions.push_back(touchPointData.displayPosition.toPoint());
 
         QWindowSystemInterface::TouchPoint qwsiTouchPoint;
         qwsiTouchPoint.id = touchPoint.id;
@@ -131,12 +147,21 @@ void QOhosInputMethodEventHandler::onTouchEventFromXComponent(
         wsiTouchPoints.push_back(qwsiTouchPoint);
     }
 
+    auto displayOffset = targetWindow != nullptr
+        ? determineScreenGlobalDisplayOffset(targetWindow)
+        : QPoint(0, 0);
+
+    auto singleActiveTouchEventGlobalPosition = activeTouchPointDisplayPositions.size() == 1
+        ? makeQOhosOptional(displayOffset + activeTouchPointDisplayPositions.front())
+        : makeEmptyQOhosOptional();
+
     QWindowSystemInterfaceTouchEvent touchEvent = {
         .targetWindow = targetWindow,
         .touchPoints = wsiTouchPoints,
         .touchDevice = touchDevice,
         .timestampMs = ch::duration_cast<ch::milliseconds>(timeStamp),
         .modifiers = modifiers,
+        .singleTouchPointEventGlobalPosition = singleActiveTouchEventGlobalPosition,
     };
 
     handleTouchEvent(touchEvent);
