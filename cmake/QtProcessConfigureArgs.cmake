@@ -30,6 +30,37 @@ macro(pop_path_argument)
     file(TO_CMAKE_PATH "${path}" path)
 endmacro()
 
+function(qt_configure_print_to_stdout text)
+    set(tmp_candidates
+        "${CMAKE_CURRENT_BINARY_DIR}"
+        "$ENV{TMPDIR}"
+        "$ENV{TEMP}"
+        "/tmp"
+    )
+    set(tmp "")
+    foreach(dir IN LISTS tmp_candidates)
+        if(dir STREQUAL "")
+            continue()
+        endif()
+        set(candidate "${dir}/.qt_configure_stdout_tmp")
+        execute_process(
+            COMMAND "${CMAKE_COMMAND}" -E touch "${candidate}"
+            RESULT_VARIABLE touch_result
+        )
+        if(touch_result EQUAL 0)
+            set(tmp "${candidate}")
+            break()
+        endif()
+    endforeach()
+    if(tmp STREQUAL "")
+        message("${text}")  # last resort fallback (stderr)
+        return()
+    endif()
+    file(WRITE "${tmp}" "${text}")
+    execute_process(COMMAND "${CMAKE_COMMAND}" -E cat "${tmp}")
+    file(REMOVE "${tmp}")
+endfunction()
+
 function(is_non_empty_valid_arg arg value)
     if(value STREQUAL "")
         message(FATAL_ERROR "Value supplied to command line option '${arg}' is empty.")
@@ -884,7 +915,7 @@ function(qt_call_function func)
 endfunction()
 
 if(display_module_help)
-    message([[
+    set(help [[
 Options:
   -help, -h ............ Display this help screen
 
@@ -895,13 +926,12 @@ Options:
                            features have dedicated command line options as well.
   -list-modules .......... List available module names for use with -list-features.
 ]])
-
     set(help_file "${MODULE_ROOT}/config_help.txt")
     if(EXISTS "${help_file}")
-        file(READ "${help_file}" content)
-        message("${content}")
+        file(READ "${help_file}" help_file_content)
+        string(APPEND help "${help_file_content}")
     endif()
-
+    qt_configure_print_to_stdout("${help}")
     return()
 endif()
 
@@ -917,7 +947,7 @@ if(list_modules)
     list(REMOVE_DUPLICATES modules)
     list(SORT modules)
     list(JOIN modules "\n" modules)
-    message("${modules}")
+    qt_configure_print_to_stdout("${modules}\n")
     return()
 endif()
 
@@ -943,7 +973,7 @@ if(list_features)
     endforeach()
     list(SORT lines)
     list(JOIN lines "\n" lines)
-    message("${lines}")
+    qt_configure_print_to_stdout("${lines}\n")
     return()
 endif()
 
