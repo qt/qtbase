@@ -66,7 +66,7 @@ QT_BEGIN_NAMESPACE
 
 Q_DECLARE_TYPEINFO(pollfd, Q_PRIMITIVE_TYPE);
 
-static inline constexpr clockid_t SteadyClockClockId =
+static inline constexpr clockid_t QSteadyClockClockId =
 #if !defined(CLOCK_MONOTONIC)
         // we don't know how to set the monotonic clock
         CLOCK_REALTIME
@@ -100,7 +100,7 @@ static inline constexpr clockid_t QWaitConditionClockId =
         // unknown why use of the monotonic clock causes failures
         CLOCK_REALTIME
 #else
-        SteadyClockClockId;
+        QSteadyClockClockId;
 #endif
         ;
 
@@ -219,7 +219,7 @@ inline timespec qAbsTimespec(timespec ts)
     return normalizedTimespec(ts);
 }
 
-template <clockid_t ClockId = SteadyClockClockId>
+template <clockid_t ClockId = QSteadyClockClockId>
 inline timespec deadlineToAbstime(QDeadlineTimer deadline)
 {
     using namespace std::chrono;
