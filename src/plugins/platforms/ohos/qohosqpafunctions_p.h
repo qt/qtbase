@@ -332,6 +332,8 @@ public:
 
     virtual void startNoUiChildProcess(QString libraryName, QStringList args) = 0;
 
+    virtual bool hasSerialPortAccessRight(const QString &portName) = 0;
+
     virtual std::pair<bool, QList<FileShare::PolicyErrorResult>> persistPermission(
         const QList<FileShare::PolicyInfo> &policyInfos) = 0;
 
