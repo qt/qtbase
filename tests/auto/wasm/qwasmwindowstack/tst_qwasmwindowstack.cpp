@@ -785,7 +785,7 @@ void tst_QWasmWindowStack::stayAboveParentOnBottom1()
     stack.pushWindow(windows + 1, QWasmWindowStack::PositionPreference::StayOnBottom);
     stack.pushWindow(windows + 2, QWasmWindowStack::PositionPreference::Regular);
     stack.pushWindow(windows + 3, QWasmWindowStack::PositionPreference::StayOnTop);
-    stack.pushWindow(windows + 4, QWasmWindowStack::PositionPreference::StayAboveTransientParent);
+    stack.pushWindow(windows + 4, QWasmWindowStack::PositionPreference::StayAboveTransientParent, true);
 
     {
         const std::vector expectedWindowOrder = {
@@ -836,7 +836,7 @@ void tst_QWasmWindowStack::stayAboveParentOnBottom2()
     stack.pushWindow(windows + 1, QWasmWindowStack::PositionPreference::StayOnBottom);
     stack.pushWindow(windows + 2, QWasmWindowStack::PositionPreference::Regular);
     stack.pushWindow(windows + 3, QWasmWindowStack::PositionPreference::StayOnTop);
-    stack.pushWindow(windows + 4, QWasmWindowStack::PositionPreference::StayAboveTransientParent);
+    stack.pushWindow(windows + 4, QWasmWindowStack::PositionPreference::StayAboveTransientParent, true);
 
     {
         const std::vector expectedWindowOrder = {
@@ -887,7 +887,7 @@ void tst_QWasmWindowStack::stayAboveParentOnBottom3()
     stack.pushWindow(windows + 1, QWasmWindowStack::PositionPreference::StayOnBottom);
     stack.pushWindow(windows + 2, QWasmWindowStack::PositionPreference::Regular);
     stack.pushWindow(windows + 3, QWasmWindowStack::PositionPreference::StayOnTop);
-    stack.pushWindow(windows + 4, QWasmWindowStack::PositionPreference::StayAboveTransientParent);
+    stack.pushWindow(windows + 4, QWasmWindowStack::PositionPreference::StayAboveTransientParent, true);
 
     {
         const std::vector expectedWindowOrder = {
@@ -938,7 +938,7 @@ void tst_QWasmWindowStack::stayAboveParentRegular()
     stack.pushWindow(windows + 1, QWasmWindowStack::PositionPreference::Regular);
     stack.pushWindow(windows + 2, QWasmWindowStack::PositionPreference::Regular);
     stack.pushWindow(windows + 3, QWasmWindowStack::PositionPreference::StayOnTop);
-    stack.pushWindow(windows + 4, QWasmWindowStack::PositionPreference::StayAboveTransientParent);
+    stack.pushWindow(windows + 4, QWasmWindowStack::PositionPreference::StayAboveTransientParent, true);
 
     {
         const std::vector expectedWindowOrder = {
@@ -985,7 +985,7 @@ void tst_QWasmWindowStack::stayAboveParentOnTop()
     stack.pushWindow(windows + 0, QWasmWindowStack::PositionPreference::StayOnBottom);
     stack.pushWindow(windows + 1, QWasmWindowStack::PositionPreference::Regular);
     stack.pushWindow(windows + 2, QWasmWindowStack::PositionPreference::StayOnTop);
-    stack.pushWindow(windows + 3, QWasmWindowStack::PositionPreference::StayAboveTransientParent);
+    stack.pushWindow(windows + 3, QWasmWindowStack::PositionPreference::StayAboveTransientParent, true);
     stack.pushWindow(windows + 4, QWasmWindowStack::PositionPreference::StayOnTop);
 
     {
