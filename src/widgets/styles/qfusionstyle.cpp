@@ -2172,7 +2172,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
             const bool isDarkBg = bgColor.red() < 128 && bgColor.green() < 128 && bgColor.blue() < 128;
 
             // Paint groove
-            if (scrollBar->activeSubControls && scrollBar->subControls & SC_ScrollBarGroove) {
+            if (scrollBar->subControls & SC_ScrollBarGroove) {
                 const auto center = scrollBarGroove.center();
                 auto gradient = horizontal ? QLinearGradient(center.x(), scrollBarGroove.top(),
                                                              center.x(), scrollBarGroove.bottom())
