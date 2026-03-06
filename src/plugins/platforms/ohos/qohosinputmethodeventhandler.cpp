@@ -472,6 +472,14 @@ QPoint QOhosInputMethodEventHandler::cursorPosition() const
     if (m_lastWsiMouseEvent.hasValue())
         return m_lastWsiMouseEvent.value().globalPosition.toPoint();
 
+    auto optLastTouchPosition = m_lastWsiTouchEvent
+        .andThen(
+            [](const QWindowSystemInterfaceTouchEvent &touchEvent) {
+                return touchEvent.singleTouchPointEventGlobalPosition;
+            });
+    if (optLastTouchPosition.hasValue())
+        return optLastTouchPosition.value();
+
     auto lastScaledPositionFromApp = QGuiApplicationPrivate::lastCursorPosition.toPoint();
     auto *screen = qGuiApp->screenAt(lastScaledPositionFromApp);
     return QHighDpi::toNativePixels(
