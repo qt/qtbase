@@ -61,6 +61,7 @@ Configure meta:
   -list-features [module]  List available features, optionally filtered by
                            module directory (e.g., sql, network). Note that some
                            features have dedicated command line options as well.
+  -list-modules .......... List available module names for use with -list-features.
 
 Build options:
 

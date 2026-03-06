@@ -129,6 +129,8 @@ while(NOT "${configure_args}" STREQUAL "")
                 list(POP_FRONT configure_args list_features_module)
             endif()
         endif()
+    elseif(arg STREQUAL "-list-modules")
+        set(list_modules TRUE)
     elseif(arg MATCHES "^-h(elp)?$")
         set(display_module_help TRUE)
     elseif(arg STREQUAL "-write-options-for-conan")
@@ -891,6 +893,7 @@ Options:
   -list-features [module]  List available features, optionally filtered by
                            module directory (e.g., sql, network). Note that some
                            features have dedicated command line options as well.
+  -list-modules .......... List available module names for use with -list-features.
 ]])
 
     set(help_file "${MODULE_ROOT}/config_help.txt")
@@ -899,6 +902,22 @@ Options:
         message("${content}")
     endif()
 
+    return()
+endif()
+
+if(list_modules)
+    unset(modules)
+    foreach(feature ${commandline_known_features})
+        get_property(purpose GLOBAL PROPERTY COMMANDLINE_FEATURE_PURPOSE_${feature})
+        if(purpose)
+            get_property(feature_module GLOBAL PROPERTY COMMANDLINE_FEATURE_MODULE_${feature})
+            list(APPEND modules "${feature_module}")
+        endif()
+    endforeach()
+    list(REMOVE_DUPLICATES modules)
+    list(SORT modules)
+    list(JOIN modules "\n" modules)
+    message("${modules}")
     return()
 endif()
 
