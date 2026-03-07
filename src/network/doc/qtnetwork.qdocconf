@@ -62,4 +62,5 @@ manifestmeta.highlighted.names = \
     "QtNetwork/Torrent Example"
 
 # Enforce zero documentation warnings
+reportmissingalttextforimages = true
 warninglimit = 0
