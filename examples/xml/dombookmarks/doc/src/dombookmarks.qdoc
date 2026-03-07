@@ -14,7 +14,7 @@
     the files. The \l {QXmlStream Bookmarks Example} provides an alternative
     way to read this type of file.
 
-    \image screenshot.png
+    \image screenshot.png {Bookmark tree with Title and Location columns}
 
     \section1 The XbelTree Class Definition
 

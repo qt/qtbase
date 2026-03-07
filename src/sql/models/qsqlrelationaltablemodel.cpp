@@ -310,7 +310,9 @@ void QSqlRelationalTableModelPrivate::clearCache()
 
     \table
     \row \li \inlineimage noforeignkeys.png
+              {Table showing city and country as numeric foreign key values}
          \li \inlineimage foreignkeys.png
+              {Table showing city and country resolved to text strings}
     \endtable
 
     The screenshot on the left shows a plain QSqlTableModel in a

@@ -50,4 +50,5 @@ navigation.toctitles.inclusive = false
 manifestmeta.thumbnail.names = "QtXml/XML Stream Lint Example"
 
 # Enforce zero documentation warnings
+reportmissingalttextforimages = true
 warninglimit = 0

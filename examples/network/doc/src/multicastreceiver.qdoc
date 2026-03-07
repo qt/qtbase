@@ -10,5 +10,6 @@
     \brief Demonstrates how to receive information sent to a multicast group.
 
     This example demonstrates how to receive messages sent to a multicast group.
-    \image multicastreceiver-example.webp
+    \image multicastreceiver-example.webp {Received IPv4 and IPv6 multicast
+           datagrams with Quit button}
 */
