@@ -26,6 +26,13 @@ void QWasmWindowStack<Window>::invariant()
     Q_ASSERT(m_regularWindowsBegin >= m_windowStack.begin());
     Q_ASSERT(m_regularWindowsBegin <= m_alwaysOnTopWindowsBegin);
     Q_ASSERT(m_alwaysOnTopWindowsBegin <= m_windowStack.end());
+
+#ifndef NDEBUG
+    for(auto it = begin(); it != end(); ++it)
+    {
+        Q_ASSERT(m_windowStack.count(*it) == 1);
+    }
+#endif
 }
 
 /* insert a window at the correct location.

@@ -99,7 +99,7 @@ void QWasmWindowTreeNode<Window>::sendToBottom()
 {
     if (!parentNode())
         return;
-    m_childStack.lower(asWasmWindow());
+    parentNode()->m_childStack.lower(asWasmWindow());
 }
 
 template<class Window>
