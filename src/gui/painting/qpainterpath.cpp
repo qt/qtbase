@@ -199,6 +199,7 @@ static void qt_debug_path(const QPainterPath &path)
     \table 70%
     \row
     \li \inlineimage qpainterpath-construction.png
+                     {Path with rectangle and bezier curves}
     \li
     \snippet code/src_gui_painting_qpainterpath.cpp 0
     \endtable
@@ -215,8 +216,8 @@ static void qt_debug_path(const QPainterPath &path)
     \li Qt::OddEvenFill
     \li Qt::WindingFill
     \row
-    \li \inlineimage qt-fillrule-oddeven.png
-    \li \inlineimage qt-fillrule-winding.png
+    \li \inlineimage qt-fillrule-oddeven.png {Star with odd-even fill}
+    \li \inlineimage qt-fillrule-winding.png {Star with winding fill}
     \endtable
 
     See the Qt::FillRule documentation for the definition of the
@@ -290,8 +291,8 @@ static void qt_debug_path(const QPainterPath &path)
     \li \l {painting/painterpaths}{Painter Paths Example}
     \li \l {painting/deform}{Vector Deformation Example}
     \row
-    \li \inlineimage qpainterpath-example.png
-    \li \inlineimage qpainterpath-demo.png
+    \li \inlineimage qpainterpath-example.png {Painter Paths application}
+    \li \inlineimage qpainterpath-demo.png {Vector Deformation application}
     \endtable
 
     \sa QPainterPathStroker, QPainter, QRegion, {Painter Paths Example}
@@ -778,6 +779,7 @@ void QPainterPath::lineTo(const QPointF &p)
     \table 100%
     \row
     \li \inlineimage qpainterpath-cubicto.png
+                     {Cubic bezier curve with control points c1 and c2}
     \li
     \snippet code/src_gui_painting_qpainterpath.cpp 1
     \endtable
@@ -904,6 +906,7 @@ void QPainterPath::quadTo(const QPointF &c, const QPointF &e)
     \table 100%
     \row
     \li \inlineimage qpainterpath-arcto.png
+                     {Arc path with bounding rectangle and start angle}
     \li
     \snippet code/src_gui_painting_qpainterpath.cpp 2
     \endtable
@@ -1022,6 +1025,7 @@ QPointF QPainterPath::currentPosition() const
     \table 100%
     \row
     \li \inlineimage qpainterpath-addrectangle.png
+                     {Rectangle with currentPosition marker}
     \li
     \snippet code/src_gui_painting_qpainterpath.cpp 3
     \endtable
@@ -1068,6 +1072,7 @@ void QPainterPath::addRect(const QRectF &r)
     \table 100%
     \row
     \li \inlineimage qpainterpath-addpolygon.png
+                     {Polygon with labeled point coordinates}
     \li
     \snippet code/src_gui_painting_qpainterpath.cpp 4
     \endtable
@@ -1102,6 +1107,7 @@ void QPainterPath::addPolygon(const QPolygonF &polygon)
     \table 100%
     \row
     \li \inlineimage qpainterpath-addellipse.png
+                     {Ellipse with bounding rectangle}
     \li
     \snippet code/src_gui_painting_qpainterpath.cpp 5
     \endtable
@@ -1153,7 +1159,7 @@ void QPainterPath::addEllipse(const QRectF &boundingRect)
 
     \table 100%
     \row
-    \li \inlineimage qpainterpath-addtext.png
+    \li \inlineimage qpainterpath-addtext.png {Qt text with baseline position}
     \li
     \snippet code/src_gui_painting_qpainterpath.cpp 6
     \endtable
@@ -1335,8 +1341,8 @@ Qt::FillRule QPainterPath::fillRule() const
     \li Qt::OddEvenFill (default)
     \li Qt::WindingFill
     \row
-    \li \inlineimage qt-fillrule-oddeven.png
-    \li \inlineimage qt-fillrule-winding.png
+    \li \inlineimage qt-fillrule-oddeven.png {Star with odd-even fill}
+    \li \inlineimage qt-fillrule-winding.png {Star with winding fill}
     \endtable
 
     \sa fillRule()

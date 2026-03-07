@@ -71,41 +71,41 @@ QT_BEGIN_NAMESPACE
     \table
     \header \li Shape \li Qt::CursorShape Value \li Cursor Name
             \li Shape \li Qt::CursorShape Value \li Cursor Name
-    \row \li \inlineimage cursor-arrow.png
+    \row \li \inlineimage cursor-arrow.png {Arrow cursor}
          \li Qt::ArrowCursor   \li \c left_ptr
-         \li \inlineimage      cursor-sizev.png
+         \li \inlineimage cursor-sizev.png {Vertical resize cursor}
          \li Qt::SizeVerCursor \li \c size_ver
-    \row \li \inlineimage      cursor-uparrow.png
+    \row \li \inlineimage cursor-uparrow.png {Up arrow cursor}
          \li Qt::UpArrowCursor \li \c up_arrow
-         \li \inlineimage      cursor-sizeh.png
+         \li \inlineimage cursor-sizeh.png {Horizontal resize cursor}
          \li Qt::SizeHorCursor \li \c size_hor
-    \row \li \inlineimage      cursor-cross.png
+    \row \li \inlineimage cursor-cross.png {Cross cursor}
          \li Qt::CrossCursor   \li \c cross
-         \li \inlineimage      cursor-sizeb.png
+         \li \inlineimage cursor-sizeb.png {Diagonal resize cursor}
          \li Qt::SizeBDiagCursor \li \c size_bdiag
-    \row \li \inlineimage      cursor-ibeam.png
+    \row \li \inlineimage cursor-ibeam.png {I-beam cursor}
          \li Qt::IBeamCursor   \li \c ibeam
-         \li \inlineimage      cursor-sizef.png
+         \li \inlineimage cursor-sizef.png {Diagonal resize cursor}
          \li Qt::SizeFDiagCursor \li \c size_fdiag
-    \row \li \inlineimage      cursor-wait.png
+    \row \li \inlineimage cursor-wait.png {Wait cursor}
          \li Qt::WaitCursor    \li \c wait
-         \li \inlineimage      cursor-sizeall.png
+         \li \inlineimage cursor-sizeall.png {Move cursor}
          \li Qt::SizeAllCursor \li \c size_all
-    \row \li \inlineimage      cursor-busy.png
+    \row \li \inlineimage cursor-busy.png {Busy cursor}
          \li Qt::BusyCursor    \li \c left_ptr_watch
-         \li \inlineimage      cursor-vsplit.png
+         \li \inlineimage cursor-vsplit.png {Vertical split cursor}
          \li Qt::SplitVCursor  \li \c split_v
-    \row \li \inlineimage      cursor-forbidden.png
+    \row \li \inlineimage cursor-forbidden.png {Forbidden cursor}
          \li Qt::ForbiddenCursor \li \c forbidden
-         \li \inlineimage      cursor-hsplit.png
+         \li \inlineimage cursor-hsplit.png {Horizontal split cursor}
          \li Qt::SplitHCursor  \li \c split_h
-    \row \li \inlineimage      cursor-hand.png
+    \row \li \inlineimage cursor-hand.png {Pointing hand cursor}
          \li Qt::PointingHandCursor \li \c pointing_hand
-         \li \inlineimage      cursor-openhand.png
+         \li \inlineimage cursor-openhand.png {Open hand cursor}
          \li Qt::OpenHandCursor  \li \c openhand
-    \row \li \inlineimage      cursor-whatsthis.png
+    \row \li \inlineimage cursor-whatsthis.png {What's this cursor}
          \li Qt::WhatsThisCursor \li \c whats_this
-         \li \inlineimage      cursor-closedhand.png
+         \li \inlineimage cursor-closedhand.png {Closed hand cursor}
          \li Qt::ClosedHandCursor \li \c closedhand
     \row \li
          \li Qt::DragMoveCursor      \li \c dnd-move or \c move

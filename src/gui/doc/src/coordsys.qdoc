@@ -42,7 +42,9 @@
     \table
     \row
     \li \inlineimage coordinatesystem-rect.svg
+                     {Rectangle on coordinate grid from (1,2) to (7,6)}
     \li \inlineimage coordinatesystem-line.svg
+                     {Line on coordinate grid from (2,7) to (6,1)}
     \row
     \li QRect(QPoint(1, 2), QPoint(7, 6))
     \li QLine(QPoint(2, 7), QPoint(6, 1))
@@ -74,7 +76,9 @@
     \table
     \row
     \li \inlineimage coordinatesystem-rect-raster.svg
+                     {Aliased rectangle with pixels rendered right and below}
     \li \inlineimage coordinatesystem-line-raster.svg
+                     {Aliased line with pixels rendered right and below}
 
     \row
     \li
@@ -96,13 +100,17 @@
     \li {2,1} QRectF
     \row
     \li \inlineimage qrect-diagram-zero.png
+                     {Rectangle showing width() and height() dimensions}
     \li \inlineimage qrectf-diagram-one.png
+                     {Rectangle with one-pixel pen showing corner coordinates}
     \row
     \li Logical representation
     \li One pixel wide pen
     \row
     \li \inlineimage qrectf-diagram-two.png
+                     {Rectangle with two-pixel pen showing corner coordinates}
     \li \inlineimage qrectf-diagram-three.png
+                     {Rectangle with three-pixel pen showing corner coordinates}
     \row
     \li Two pixel wide pen
     \li Three pixel wide pen
@@ -140,7 +148,9 @@
     \table
     \row
     \li \inlineimage coordinatesystem-rect-antialias.svg
+                     {Anti-aliased rectangle with symmetric pixel rendering}
     \li \inlineimage coordinatesystem-line-antialias.svg
+                     {Anti-aliased line with symmetric pixel rendering}
     \row
     \li
 
@@ -164,10 +174,10 @@
 
     \table
     \row
-    \li \inlineimage qpainter-clock.png
-    \li \inlineimage qpainter-rotation.png
-    \li \inlineimage qpainter-scale.png
-    \li \inlineimage qpainter-translation.png
+    \li \inlineimage qpainter-clock.png {Clock without transformation}
+    \li \inlineimage qpainter-rotation.png {Clock with rotation applied}
+    \li \inlineimage qpainter-scale.png {Clock with scale applied}
+    \li \inlineimage qpainter-translation.png {Clock with translation applied}
     \row
     \li nop
     \li \l {QPainter::rotate()}{rotate()}
@@ -200,6 +210,7 @@
     \li {2,1} Analog Clock Example
     \row
     \li \inlineimage coordinatesystem-analogclock.png
+                     {Analog clock widget showing hour and minute hands}
     \li
     The Analog Clock example shows how to draw the contents of a
     custom widget using QPainter's transformation matrix.

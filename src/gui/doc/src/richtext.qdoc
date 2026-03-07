@@ -105,6 +105,7 @@
     \table
     \row
     \li \inlineimage richtext-document.png
+                     {Document structure with frames and text blocks}
     \li \b{Basic structure}
 
     The "top level" of a document might be populated in the way shown.

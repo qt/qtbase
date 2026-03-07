@@ -1000,7 +1000,7 @@ bool QPixmap::convertFromImage(const QImage &image, Qt::ImageConversionFlags fla
     transformation modes specified by \a aspectRatioMode and \a
     transformMode.
 
-    \image qimage-scaling.png
+    \image qimage-scaling.png {Three aspect ratio modes compared}
 
     \list
     \li If \a aspectRatioMode is Qt::IgnoreAspectRatio, the pixmap

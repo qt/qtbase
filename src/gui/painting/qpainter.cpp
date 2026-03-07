@@ -901,7 +901,6 @@ void QPainterPrivate::updateState(QPainterState *newState)
     }
 }
 
-
 /*!
     \class QPainter
     \brief The QPainter class performs low-level painting on widgets and
@@ -1032,6 +1031,7 @@ void QPainterPrivate::updateState(QPainterState *newState)
     \table 100%
     \row
     \li \inlineimage qpainter-basicdrawing.png
+                     {Basic Drawing application with shape and pen options}
     \li
     \b {Basic Drawing Example}
 
@@ -1058,6 +1058,7 @@ void QPainterPrivate::updateState(QPainterState *newState)
     painter paths can be used to build complex shapes for rendering.
 
     \li \inlineimage qpainter-painterpaths.png
+                     {Painter Paths application with various shapes}
     \endtable
 
     QPainter also provides the fillPath() function which fills the
@@ -1080,8 +1081,9 @@ void QPainterPrivate::updateState(QPainterState *newState)
     \li \l {painting/pathstroke}{Path Stroking}
     \row
     \li \inlineimage qpainter-vectordeformation.png
-    \li \inlineimage qpainter-gradients.png
-    \li \inlineimage qpainter-pathstroking.png
+                     {Vector Deformation application with lens effect}
+    \li \inlineimage qpainter-gradients.png {Gradients application}
+    \li \inlineimage qpainter-pathstroking.png {Path Stroking application}
     \endtable
 
     Text drawing is done using drawText(). When you need
@@ -1141,6 +1143,7 @@ void QPainterPrivate::updateState(QPainterState *newState)
         produces evenly spaced rings. Anti-aliased rendering results in
         smooth circles.
     \li \inlineimage qpainter-concentriccircles.png
+                     {Concentric circles comparing aliased and antialiased}
     \endtable
 
     The RenderHint enum specifies flags to QPainter that may or may
@@ -1167,10 +1170,10 @@ void QPainterPrivate::updateState(QPainterState *newState)
     \header
     \li  nop \li rotate() \li scale() \li translate()
     \row
-    \li \inlineimage qpainter-clock.png
-    \li \inlineimage qpainter-rotation.png
-    \li \inlineimage qpainter-scale.png
-    \li \inlineimage qpainter-translation.png
+    \li \inlineimage qpainter-clock.png {Clock without transformation}
+    \li \inlineimage qpainter-rotation.png {Clock with rotation applied}
+    \li \inlineimage qpainter-scale.png {Clock with scale applied}
+    \li \inlineimage qpainter-translation.png {Clock with translation applied}
     \endtable
 
     The most commonly used transformations are scaling, rotation,
@@ -1198,6 +1201,7 @@ void QPainterPrivate::updateState(QPainterState *newState)
     transformation operations and see the results immediately.
 
     \li \inlineimage qpainter-affinetransformations.png
+        {Affine Transformations example with penguin graphic}
     \endtable
 
     All the transformation operations operate on the transformation
@@ -1272,6 +1276,7 @@ void QPainterPrivate::updateState(QPainterState *newState)
     \table 100%
     \row
     \li \inlineimage qpainter-compositiondemo.png
+        {Composition Modes example with blended images}
 
     \li
     \b {Composition Modes Example}
@@ -3170,7 +3175,7 @@ void QPainter::fillPath(const QPainterPath &path, const QBrush &brush)
 
     \table 100%
     \row
-    \li \inlineimage qpainter-path.png
+    \li \inlineimage qpainter-path.png {Bezier curve path}
     \li
     \snippet code/src_gui_painting_qpainter.cpp 5
     \endtable
@@ -3215,7 +3220,7 @@ void QPainter::drawPath(const QPainterPath &path)
 
     \table 100%
     \row
-    \li \inlineimage qpainter-line.png
+    \li \inlineimage qpainter-line.png {Diagonal line}
     \li
     \snippet code/src_gui_painting_qpainter.cpp 6
     \endtable
@@ -3261,7 +3266,7 @@ void QPainter::drawPath(const QPainterPath &path)
 
     \table 100%
     \row
-    \li \inlineimage qpainter-rectangle.png
+    \li \inlineimage qpainter-rectangle.png {Rectangle outline}
     \li
     \snippet code/src_gui_painting_qpainter.cpp 7
     \endtable
@@ -3971,7 +3976,7 @@ const QFont &QPainter::font() const
 
     \table 100%
     \row
-    \li \inlineimage qpainter-roundrect.png
+    \li \inlineimage qpainter-roundrect.png {Rounded rectangle outline}
     \li
     \snippet code/src_gui_painting_qpainter.cpp 8
     \endtable
@@ -4035,7 +4040,7 @@ void QPainter::drawRoundedRect(const QRectF &rect, qreal xRadius, qreal yRadius,
 
     \table 100%
     \row
-    \li \inlineimage qpainter-ellipse.png
+    \li \inlineimage qpainter-ellipse.png {Ellipse outline}
     \li
     \snippet code/src_gui_painting_qpainter.cpp 9
     \endtable
@@ -4165,7 +4170,7 @@ void QPainter::drawEllipse(const QRect &r)
 
     \table 100%
     \row
-    \li \inlineimage qpainter-arc.png
+    \li \inlineimage qpainter-arc.png {Arc curve}
     \li
     \snippet code/src_gui_painting_qpainter.cpp 10
     \endtable
@@ -4230,7 +4235,7 @@ void QPainter::drawArc(const QRectF &r, int a, int alen)
 
     \table 100%
     \row
-    \li \inlineimage qpainter-pie.png
+    \li \inlineimage qpainter-pie.png {Pie slice shape}
     \li
     \snippet code/src_gui_painting_qpainter.cpp 11
     \endtable
@@ -4301,7 +4306,7 @@ void QPainter::drawPie(const QRectF &r, int a, int alen)
 
     \table 100%
     \row
-    \li \inlineimage qpainter-chord.png
+    \li \inlineimage qpainter-chord.png {Chord shape}
     \li
     \snippet code/src_gui_painting_qpainter.cpp 12
     \endtable
@@ -4625,7 +4630,7 @@ void QPainter::drawPolyline(const QPoint *points, int pointCount)
 
     \table 100%
     \row
-    \li \inlineimage qpainter-polygon.png
+    \li \inlineimage qpainter-polygon.png {Four-sided polygon}
     \li
     \snippet code/src_gui_painting_qpainter.cpp 14
     \endtable
@@ -4738,7 +4743,7 @@ void QPainter::drawPolygon(const QPoint *points, int pointCount, Qt::FillRule fi
 
     \table 100%
     \row
-    \li \inlineimage qpainter-polygon.png
+    \li \inlineimage qpainter-polygon.png {Four-sided polygon}
     \li
     \snippet code/src_gui_painting_qpainter.cpp 15
     \endtable
@@ -5780,7 +5785,7 @@ void QPainter::drawText(const QRect &r, int flags, const QString &str, QRect *br
 
     \table 100%
     \row
-    \li \inlineimage qpainter-text.png
+    \li \inlineimage qpainter-text.png {Text showing Qt Project}
     \li
     \snippet code/src_gui_painting_qpainter.cpp 17
     \endtable
@@ -5792,7 +5797,7 @@ void QPainter::drawText(const QRect &r, int flags, const QString &str, QRect *br
 
     \table 100%
     \row
-    \li \inlineimage qpainter-text-bounds.png
+    \li \inlineimage qpainter-text-bounds.png {Text with bounding rectangles}
     \li \snippet code/src_gui_painting_qpainter.cpp drawText
     \endtable
 
@@ -5854,7 +5859,7 @@ void QPainter::drawText(const QRectF &r, int flags, const QString &str, QRectF *
 
     \table 100%
     \row
-    \li \inlineimage qpainter-text-bounds.png
+    \li \inlineimage qpainter-text-bounds.png {Text with bounding rectangles}
     \li \snippet code/src_gui_painting_qpainter.cpp drawText
     \endtable
 
@@ -5897,7 +5902,7 @@ void QPainter::drawText(const QRectF &r, int flags, const QString &str, QRectF *
 
     \table 100%
     \row
-    \li \inlineimage qpainter-text-bounds.png
+    \li \inlineimage qpainter-text-bounds.png {Text with bounding rectangles}
     \li \snippet code/src_gui_painting_qpainter.cpp drawText
     \endtable
 

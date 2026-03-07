@@ -502,6 +502,7 @@ bool QImageData::checkForAlphaPixels() const
     \li {2,1}32-bit
     \row
     \li \inlineimage qimage-32bit_scaled.png
+                     {3x3 pixel grid with ARGB color values}
     \li
     \snippet code/src_gui_image_qimage.cpp 0
     \endtable
@@ -523,6 +524,7 @@ bool QImageData::checkForAlphaPixels() const
     \li {2,1} 8-bit
     \row
     \li \inlineimage qimage-8bit_scaled.png
+                     {3x3 pixel grid with indexed colors and color table}
     \li
     \snippet code/src_gui_image_qimage.cpp 1
     \endtable
