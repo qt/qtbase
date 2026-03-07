@@ -63,17 +63,17 @@ QT_BEGIN_NAMESPACE
 
     \table
     \row
-    \li \inlineimage qpen-solid.png
-    \li \inlineimage qpen-dash.png
-    \li \inlineimage qpen-dot.png
+    \li \inlineimage qpen-solid.png {Solid line}
+    \li \inlineimage qpen-dash.png {Dashed line}
+    \li \inlineimage qpen-dot.png {Dotted line}
     \row
     \li Qt::SolidLine
     \li Qt::DashLine
     \li Qt::DotLine
     \row
-    \li \inlineimage qpen-dashdot.png
-    \li \inlineimage qpen-dashdotdot.png
-    \li \inlineimage qpen-custom.png
+    \li \inlineimage qpen-dashdot.png {Dash-dot line}
+    \li \inlineimage qpen-dashdotdot.png {Dash-dot-dot line}
+    \li \inlineimage qpen-custom.png {Custom dash line}
     \row
     \li Qt::DashDotLine
     \li Qt::DashDotDotLine
@@ -112,9 +112,9 @@ QT_BEGIN_NAMESPACE
 
     \table
     \row
-    \li \inlineimage qpen-square.png
-    \li \inlineimage qpen-flat.png
-    \li \inlineimage qpen-roundcap.png
+    \li \inlineimage qpen-square.png {Square cap}
+    \li \inlineimage qpen-flat.png {Flat cap}
+    \li \inlineimage qpen-roundcap.png {Round cap}
     \row
     \li Qt::SquareCap
     \li Qt::FlatCap
@@ -142,9 +142,9 @@ QT_BEGIN_NAMESPACE
 
     \table
     \row
-    \li \inlineimage qpen-bevel.png
-    \li \inlineimage qpen-miter.png
-    \li \inlineimage qpen-roundjoin.png
+    \li \inlineimage qpen-bevel.png {Bevel join}
+    \li \inlineimage qpen-miter.png {Miter join}
+    \li \inlineimage qpen-roundjoin.png {Round join}
     \row
     \li Qt::BevelJoin
     \li Qt::MiterJoin
@@ -173,7 +173,7 @@ QT_BEGIN_NAMESPACE
 
     \table 100%
     \row
-    \li \inlineimage qpen-demo.png
+    \li \inlineimage qpen-demo.png {Path Stroking application with pen options}
     \li \b {\l {painting/pathstroke}{The Path Stroking Example}}
 
     The Path Stroking example shows Qt's built-in dash patterns and shows
@@ -478,7 +478,7 @@ QList<qreal> QPen::dashPattern() const
 
     \table 100%
     \row
-    \li \inlineimage qpen-custom.png
+    \li \inlineimage qpen-custom.png {Custom dash line}
     \li
     \snippet code/src_gui_painting_qpen.cpp 3
     \endtable
@@ -530,6 +530,7 @@ qreal QPen::dashOffset() const
 
     \table
     \row \li \inlineimage qpen-dashpattern.png
+                          {Dash patterns with different offsets}
     \li For example, a pattern where each stroke is four units long, followed by a gap
     of two units, will begin with the stroke when drawn as a line.
 
@@ -567,7 +568,7 @@ qreal QPen::miterLimit() const
 /*!
     Sets the miter limit of this pen to the given \a limit.
 
-    \image qpen-miterlimit.png
+    \image qpen-miterlimit.png {Miter join with width and miterLimit labeled}
 
     The miter limit describes how far a miter join can extend from the
     join point. This is used to reduce artifacts between line joins

@@ -558,9 +558,9 @@ static bool qColorCheckCmykFValidity(float c, float m, float y, float k, float a
     \header
     \li RGB \li HSV \li CMYK
     \row
-    \li \inlineimage qcolor-rgb.png
-    \li \inlineimage qcolor-hsv.png
-    \li \inlineimage qcolor-cmyk.png
+    \li \inlineimage qcolor-rgb.png {Color wheel with RGB values}
+    \li \inlineimage qcolor-hsv.png {Color wheel with HSV values}
+    \li \inlineimage qcolor-cmyk.png {Color wheel with CMYK values}
     \endtable
 
     The QColor constructor creates the color based on RGB values.  To
@@ -703,19 +703,19 @@ static bool qColorCheckCmykFValidity(float c, float m, float y, float k, float a
     color wheel familiar to most people. Red is 0 (degrees), green is
     120, and blue is 240.
 
-    \inlineimage qcolor-hue.png
+    \inlineimage qcolor-hue.png {Color wheel showing hue values from 0 to 300}
 
     \li S, for saturation, is in the range 0 to 255, and the bigger it is,
     the stronger the color is. Grayish colors have saturation near 0; very
     strong colors have saturation near 255.
 
-    \inlineimage qcolor-saturation.png
+    \inlineimage qcolor-saturation.png {Saturation gradient from gray to blue}
 
     \li V, for value, is in the range 0 to 255 and represents lightness or
     brightness of the color. 0 is black; 255 is as far from black as
     possible.
 
-    \inlineimage qcolor-value.png
+    \inlineimage qcolor-value.png {Value gradient from black to white}
     \endlist
 
     Here are some examples: pure red is H=0, S=255, V=255; a dark red,
