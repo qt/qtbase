@@ -102,9 +102,12 @@ private slots:
     void removingWithAlwaysOnTop();
     void positionPreferenceChanges();
     void clearing();
-    void stayAboveParentOnBottom1();
-    void stayAboveParentOnBottom2();
-    void stayAboveParentOnBottom3();
+    void stayAboveParentOnBottom1_Low();
+    void stayAboveParentOnBottom1_High();
+    void stayAboveParentOnBottom2_Low();
+    void stayAboveParentOnBottom2_High();
+    void stayAboveParentOnBottom3_Low();
+    void stayAboveParentOnBottom3_High();
     void stayAboveParentRegular();
     void stayAboveParentOnTop();
 
@@ -773,7 +776,7 @@ void tst_QWasmWindowStack::clearing()
     QCOMPARE(0u, stack.size());
 }
 
-void tst_QWasmWindowStack::stayAboveParentOnBottom1()
+void tst_QWasmWindowStack::stayAboveParentOnBottom1_Low()
 {
     QWasmWindow windows[5];
     windows[4].m_transientParent = &windows[0];
@@ -824,7 +827,58 @@ void tst_QWasmWindowStack::stayAboveParentOnBottom1()
     }
 }
 
-void tst_QWasmWindowStack::stayAboveParentOnBottom2()
+void tst_QWasmWindowStack::stayAboveParentOnBottom1_High()
+{
+    QWasmWindow windows[5];
+    windows[4].m_transientParent = &windows[0];
+    windows[4].m_windowFlags = Qt::Tool;
+
+    QWasmWindowStack stack(m_mockCallback);
+
+    stack.pushWindow(windows + 0, QWasmWindowStack::PositionPreference::StayOnBottom);
+    stack.pushWindow(windows + 1, QWasmWindowStack::PositionPreference::StayOnBottom);
+    stack.pushWindow(windows + 2, QWasmWindowStack::PositionPreference::Regular);
+    stack.pushWindow(windows + 3, QWasmWindowStack::PositionPreference::StayOnTop);
+    stack.pushWindow(windows + 4, QWasmWindowStack::PositionPreference::StayAboveTransientParent, false);
+
+    {
+        const std::vector expectedWindowOrder = {
+            windows + 3,
+            windows + 2,
+            windows + 4,
+            windows + 1,
+            windows + 0
+        };
+
+        qDebug() << LogWindows(windows + 0, stack);
+
+        QVERIFY(std::equal(expectedWindowOrder.begin(), expectedWindowOrder.end(),
+                           getWindowsFrontToBack(&stack).begin()));
+    }
+    {
+        // Check that window is moved to correct group:
+        //   it was: StayAboveParent, in group StayOnBottom
+        //   it is: StayOnTop
+        stack.windowPositionPreferenceChanged(
+            windows + 4,
+            QWasmWindowStack::PositionPreference::StayOnTop);
+
+        const std::vector expectedWindowOrder = {
+            windows + 4,
+            windows + 3,
+            windows + 2,
+            windows + 1,
+            windows + 0
+        };
+
+        qDebug() << LogWindows(windows + 0, stack);
+
+        QVERIFY(std::equal(expectedWindowOrder.begin(), expectedWindowOrder.end(),
+                           getWindowsFrontToBack(&stack).begin()));
+    }
+}
+
+void tst_QWasmWindowStack::stayAboveParentOnBottom2_Low()
 {
     QWasmWindow windows[5];
     windows[4].m_transientParent = &windows[0];
@@ -875,7 +929,58 @@ void tst_QWasmWindowStack::stayAboveParentOnBottom2()
     }
 }
 
-void tst_QWasmWindowStack::stayAboveParentOnBottom3()
+void tst_QWasmWindowStack::stayAboveParentOnBottom2_High()
+{
+    QWasmWindow windows[5];
+    windows[4].m_transientParent = &windows[0];
+    windows[4].m_windowFlags = Qt::Tool;
+
+    QWasmWindowStack stack(m_mockCallback);
+
+    stack.pushWindow(windows + 0, QWasmWindowStack::PositionPreference::StayOnBottom);
+    stack.pushWindow(windows + 1, QWasmWindowStack::PositionPreference::StayOnBottom);
+    stack.pushWindow(windows + 2, QWasmWindowStack::PositionPreference::Regular);
+    stack.pushWindow(windows + 3, QWasmWindowStack::PositionPreference::StayOnTop);
+    stack.pushWindow(windows + 4, QWasmWindowStack::PositionPreference::StayAboveTransientParent, false);
+
+    {
+        const std::vector expectedWindowOrder = {
+            windows + 3,
+            windows + 2,
+            windows + 4,
+            windows + 1,
+            windows + 0
+        };
+
+        qDebug() << LogWindows(windows + 0, stack);
+
+        QVERIFY(std::equal(expectedWindowOrder.begin(), expectedWindowOrder.end(),
+                           getWindowsFrontToBack(&stack).begin()));
+    }
+    {
+        // Check that order does not change:
+        //   it was: StayAboveParent, in group StayOnBottom
+        //   it is: StayOnBottom
+        stack.windowPositionPreferenceChanged(
+            windows + 4,
+            QWasmWindowStack::PositionPreference::StayOnBottom);
+
+        const std::vector expectedWindowOrder = {
+            windows + 3,
+            windows + 2,
+            windows + 4,
+            windows + 1,
+            windows + 0
+        };
+
+        qDebug() << LogWindows(windows + 0, stack);
+
+        QVERIFY(std::equal(expectedWindowOrder.begin(), expectedWindowOrder.end(),
+                           getWindowsFrontToBack(&stack).begin()));
+    }
+}
+
+void tst_QWasmWindowStack::stayAboveParentOnBottom3_Low()
 {
     QWasmWindow windows[5];
     windows[4].m_transientParent = &windows[0];
@@ -895,6 +1000,57 @@ void tst_QWasmWindowStack::stayAboveParentOnBottom3()
             windows + 2,
             windows + 1,
             windows + 4,
+            windows + 0
+        };
+
+        qDebug() << LogWindows(windows + 0, stack);
+
+        QVERIFY(std::equal(expectedWindowOrder.begin(), expectedWindowOrder.end(),
+                           getWindowsFrontToBack(&stack).begin()));
+    }
+    {
+        // Check that windows is moved to correct group
+        //   it was: StayAboveParent, in group StayOnBottom
+        //   it is: Regular
+        stack.windowPositionPreferenceChanged(
+            windows + 4,
+            QWasmWindowStack::PositionPreference::Regular);
+
+        const std::vector expectedWindowOrder = {
+            windows + 3,
+            windows + 4,
+            windows + 2,
+            windows + 1,
+            windows + 0
+        };
+
+        qDebug() << LogWindows(windows + 0, stack);
+
+        QVERIFY(std::equal(expectedWindowOrder.begin(), expectedWindowOrder.end(),
+                           getWindowsFrontToBack(&stack).begin()));
+    }
+}
+
+void tst_QWasmWindowStack::stayAboveParentOnBottom3_High()
+{
+    QWasmWindow windows[5];
+    windows[4].m_transientParent = &windows[0];
+    windows[4].m_windowFlags = Qt::Tool;
+
+    QWasmWindowStack stack(m_mockCallback);
+
+    stack.pushWindow(windows + 0, QWasmWindowStack::PositionPreference::StayOnBottom);
+    stack.pushWindow(windows + 1, QWasmWindowStack::PositionPreference::StayOnBottom);
+    stack.pushWindow(windows + 2, QWasmWindowStack::PositionPreference::Regular);
+    stack.pushWindow(windows + 3, QWasmWindowStack::PositionPreference::StayOnTop);
+    stack.pushWindow(windows + 4, QWasmWindowStack::PositionPreference::StayAboveTransientParent, false);
+
+    {
+        const std::vector expectedWindowOrder = {
+            windows + 3,
+            windows + 2,
+            windows + 4,
+            windows + 1,
             windows + 0
         };
 
