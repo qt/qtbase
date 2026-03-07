@@ -13,7 +13,8 @@
     classes to download a collection of images from the network and scale them,
     without blocking the UI.
 
-    \image imagescaling.webp
+    \image imagescaling.webp {Downloaded images in a grid with Add URLs,
+           Cancel buttons and Finished status}
 
     The application consists of the following steps:
 

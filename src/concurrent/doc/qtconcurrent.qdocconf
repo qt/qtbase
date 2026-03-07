@@ -56,4 +56,5 @@ navigation.toctitles = "Qt Concurrent module topics"
 navigation.toctitles.inclusive = false
 
 # Enforce zero documentation warnings
+reportmissingalttextforimages = true
 warninglimit = 0

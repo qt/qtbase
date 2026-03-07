@@ -18,7 +18,8 @@
     prime numbers within the list and display the total count of prime numbers
     found.
 
-    \image primecounter.png
+    \image primecounter.png {Prime counter with reduce option selector,
+           Start button, progress bars, and prime count result}
 
     \include examples-run.qdocinc
 
