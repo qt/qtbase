@@ -2936,7 +2936,8 @@ bool QAbstractItemModel::decodeData(int row, int column, const QModelIndex &pare
 
     \table 80%
     \row
-        \li  \inlineimage modelview-begin-insert-rows.svg Inserting rows
+        \li  \inlineimage modelview-begin-insert-rows.svg
+                         {Inserting rows 2, 3, 4 into a list}
         \li  Specify the first and last row numbers for the span of rows you
             want to insert into an item in a model.
 
@@ -2947,7 +2948,8 @@ bool QAbstractItemModel::decodeData(int row, int column, const QModelIndex &pare
 
             This inserts the three new rows as rows 2, 3, and 4.
     \row
-        \li  \inlineimage modelview-begin-append-rows.svg Appending rows
+        \li  \inlineimage modelview-begin-append-rows.svg
+                         {Appending rows 4, 5 to a list}
         \li  To append rows, insert them after the last row.
 
             For example, as shown in the diagram, we append two rows to a
@@ -3003,7 +3005,8 @@ void QAbstractItemModel::endInsertRows()
 
     \table 80%
     \row
-        \li  \inlineimage modelview-begin-remove-rows.svg Removing rows
+        \li  \inlineimage modelview-begin-remove-rows.svg
+                         {Removing rows 2 and 3 from a list}
         \li  Specify the first and last row numbers for the span of rows you
             want to remove from an item in a model.
 
@@ -3124,7 +3127,8 @@ void QAbstractItemModelPrivate::executePendingOperations() const { }
 
     \table 80%
     \row
-        \li  \inlineimage modelview-move-rows-1.svg Moving rows to another parent
+        \li  \inlineimage modelview-move-rows-1.svg
+                         {Moving rows from one parent to another}
         \li  Specify the first and last row numbers for the span of rows in
             the source parent you want to move in the model. Also specify
             the row in the destination parent to move the span to.
@@ -3138,7 +3142,8 @@ void QAbstractItemModelPrivate::executePendingOperations() const { }
             This moves the three rows rows 2, 3, and 4 in the source to become 2, 3 and 4 in
             the destination. Other affected siblings are displaced accordingly.
     \row
-        \li  \inlineimage modelview-move-rows-2.svg Moving rows to append to another parent
+        \li  \inlineimage modelview-move-rows-2.svg
+                         {Appending rows to another parent}
         \li  To append rows to another parent, move them to after the last row.
 
             For example, as shown in the diagram, we move three rows to a
@@ -3148,7 +3153,8 @@ void QAbstractItemModelPrivate::executePendingOperations() const { }
 
             This moves the target rows to the end of the target parent as 6, 7 and 8.
     \row
-        \li  \inlineimage modelview-move-rows-3.svg Moving rows in the same parent up
+        \li  \inlineimage modelview-move-rows-3.svg
+                         {Moving a row up within the same parent}
         \li  To move rows within the same parent, specify the row to move them to.
 
             For example, as shown in the diagram, we move one item from row 2 to row 0,
@@ -3163,7 +3169,8 @@ void QAbstractItemModelPrivate::executePendingOperations() const { }
             it is already)
 
     \row
-        \li  \inlineimage modelview-move-rows-4.svg Moving rows in the same parent down
+        \li  \inlineimage modelview-move-rows-4.svg
+                         {Moving a row down within the same parent}
         \li  To move rows within the same parent, specify the row to move them to.
 
             For example, as shown in the diagram, we move one item from row 2 to row 4,
@@ -3245,7 +3252,8 @@ void QAbstractItemModel::endMoveRows()
 
     \table 80%
     \row
-        \li  \inlineimage modelview-begin-insert-columns.svg Inserting columns
+        \li  \inlineimage modelview-begin-insert-columns.svg
+                         {Inserting columns 4, 5, 6 into a row}
         \li  Specify the first and last column numbers for the span of columns
             you want to insert into an item in a model.
 
@@ -3256,7 +3264,8 @@ void QAbstractItemModel::endMoveRows()
 
             This inserts the three new columns as columns 4, 5, and 6.
     \row
-        \li  \inlineimage modelview-begin-append-columns.svg Appending columns
+        \li  \inlineimage modelview-begin-append-columns.svg
+                         {Appending columns 6, 7, 8 to a row}
         \li  To append columns, insert them after the last column.
 
             For example, as shown in the diagram, we append three columns to a
@@ -3314,7 +3323,8 @@ void QAbstractItemModel::endInsertColumns()
 
     \table 80%
     \row
-        \li  \inlineimage modelview-begin-remove-columns.svg Removing columns
+        \li  \inlineimage modelview-begin-remove-columns.svg
+                         {Removing columns 4, 5, 6 from a row}
         \li  Specify the first and last column numbers for the span of columns
             you want to remove from an item in a model.
 

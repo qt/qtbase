@@ -113,13 +113,17 @@ QT_BEGIN_NAMESPACE
     \table
     \row
         \li \inlineimage qrect-diagram-zero.png
+                         {Rectangle showing width and height dimensions}
         \li \inlineimage qrect-diagram-one.png
+                         {Rectangle with one-pixel pen showing corner coordinates}
     \row
         \li Logical representation
         \li One pixel wide pen
     \row
         \li \inlineimage qrect-diagram-two.png
+                         {Rectangle with two-pixel pen showing corner coordinates}
         \li \inlineimage qrect-diagram-three.png
+                         {Rectangle with three-pixel pen showing corner coordinates}
     \row
         \li Two pixel wide pen
         \li Three pixel wide pen
@@ -1395,13 +1399,17 @@ QDebug operator<<(QDebug dbg, const QRect &r)
     \table
     \row
         \li \inlineimage qrect-diagram-zero.png
+                         {Rectangle showing width and height dimensions}
         \li \inlineimage qrectf-diagram-one.png
+                         {Rectangle with one-pixel pen showing corner coordinates}
     \row
         \li Logical representation
         \li One pixel wide pen
     \row
         \li \inlineimage qrectf-diagram-two.png
+                         {Rectangle with two-pixel pen showing corner coordinates}
         \li \inlineimage qrectf-diagram-three.png
+                         {Rectangle with three-pixel pen showing corner coordinates}
     \row
         \li Two pixel wide pen
         \li Three pixel wide pen

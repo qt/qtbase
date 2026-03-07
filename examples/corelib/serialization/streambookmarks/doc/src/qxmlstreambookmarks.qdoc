@@ -18,7 +18,7 @@
     scope for editing bookmarks. None the less, it could surely be extended with
     such features, if desired.
 
-    \image screenshot.png
+    \image screenshot.png {Bookmark tree with Title and Location columns}
 
     \section1 XbelWriter Class Definition
 
@@ -185,8 +185,8 @@
 
     \table
     \row
-         \li \inlineimage filemenu.png
-         \li \inlineimage helpmenu.png
+         \li \inlineimage filemenu.png {File menu with Open, Save As, and Exit}
+         \li \inlineimage helpmenu.png {Help menu with About and About Qt}
     \endtable
 
     The \c open() function, when triggered, offers the user a file dialog to use

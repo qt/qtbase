@@ -42,7 +42,7 @@
     diagram below shows the valid iterator positions as red arrows for a list
     containing four items:
 
-    \image javaiterators1.svg Java-style iterators point between items
+    \image javaiterators1.svg {Iterator positions between items A, B, C, D}
 
     Here's a typical loop for iterating through all the elements of a
     QList<QString> in order:

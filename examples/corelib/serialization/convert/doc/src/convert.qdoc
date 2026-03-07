@@ -18,7 +18,8 @@
     formats. Conversion via the less capable formats is apt to lose structure
     from the data.
 
-    \image convert.png
+    \image convert.png {Terminal output showing JSON conversion of game
+           save data with levels, NPCs, and player information}
 
     \sa {Parsing and displaying CBOR data}, {Saving and Loading a Game}
 

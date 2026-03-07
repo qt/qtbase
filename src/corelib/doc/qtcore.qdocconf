@@ -84,4 +84,5 @@ manifestmeta.highlighted.names = \
     "QtCore/Serialization Converter" \
     "QtCore/QXmlStream Bookmarks Example"
 
+reportmissingalttextforimages = true
 warninglimit = 0

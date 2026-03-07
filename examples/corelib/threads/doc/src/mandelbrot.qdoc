@@ -46,9 +46,9 @@
 
     \table
     \row
-    \li \inlineimage mandelbrot_zoom1.png
-    \li \inlineimage mandelbrot_zoom2.png
-    \li \inlineimage mandelbrot_zoom3.png
+    \li \inlineimage mandelbrot_zoom1.png {Original Mandelbrot image}
+    \li \inlineimage mandelbrot_zoom2.png {Scaled during zoom}
+    \li \inlineimage mandelbrot_zoom3.png {Rerendered after zoom}
     \endtable
 
     Similarly, when the user scrolls, the previous pixmap is scrolled
@@ -57,9 +57,9 @@
 
     \table
     \row
-    \li \inlineimage mandelbrot_scroll1.png
-    \li \inlineimage mandelbrot_scroll2.png
-    \li \inlineimage mandelbrot_scroll3.png
+    \li \inlineimage mandelbrot_scroll1.png {Original position}
+    \li \inlineimage mandelbrot_scroll2.png {Scrolled with unpainted area}
+    \li \inlineimage mandelbrot_scroll3.png {Rerendered after scroll}
     \endtable
 
     The application consists of two classes:

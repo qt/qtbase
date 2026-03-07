@@ -9,7 +9,8 @@
     \ingroup corelib_examples
     \brief QCalendar example illustrating user-supplied custom calendars.
 
-    \image calendarwindow_transition.png
+    \image calendarwindow_transition.png {Calendar widget showing October
+           1582 with the Julian to Gregorian transition gap}
 
     \section1 Introduction
 

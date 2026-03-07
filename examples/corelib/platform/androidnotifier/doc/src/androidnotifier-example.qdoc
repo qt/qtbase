@@ -9,7 +9,8 @@
     \ingroup androidplatform
     \ingroup corelib_examples
 
-    \image androidnotifier.png
+    \image androidnotifier.png {Android notification panel showing Qt
+           Notifier message with happy and sad smiley buttons}
 
     This example demonstrates how to add a custom Java class to an Android
     application, and how to call it using the JNI convenience APIs in Qt.

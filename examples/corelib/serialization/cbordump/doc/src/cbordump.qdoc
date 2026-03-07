@@ -19,7 +19,8 @@
 
     \sa QCborStreamReader
 
-    \image cbordump.png
+    \image cbordump.png {Terminal output showing CBOR data in diagnostic
+           notation and detailed hex byte format}
 
     \section1 The CborDumper Class
 

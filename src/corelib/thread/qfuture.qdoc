@@ -793,7 +793,8 @@
     between the second and third result, and returns the second result; and
     so on.
 
-    \image javaiterators1.svg
+    \image javaiterators1.svg {Iterator positions between four items A, B,
+           C, D with arrows pointing to valid positions}
 
     Here's how to iterate over the elements in reverse order:
 

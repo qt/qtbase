@@ -436,17 +436,17 @@
 
     \table
     \row
-    \li \inlineimage qpen-solid.png
-    \li \inlineimage qpen-dash.png
-    \li \inlineimage qpen-dot.png
+    \li \inlineimage qpen-solid.png {Solid line}
+    \li \inlineimage qpen-dash.png {Dashed line}
+    \li \inlineimage qpen-dot.png {Dotted line}
     \row
     \li Qt::SolidLine
     \li Qt::DashLine
     \li Qt::DotLine
     \row
-    \li \inlineimage qpen-dashdot.png
-    \li \inlineimage qpen-dashdotdot.png
-    \li \inlineimage qpen-custom.png
+    \li \inlineimage qpen-dashdot.png {Dash-dot line}
+    \li \inlineimage qpen-dashdotdot.png {Dash-dot-dot line}
+    \li \inlineimage qpen-custom.png {Custom dash line}
     \row
     \li Qt::DashDotLine
     \li Qt::DashDotDotLine
@@ -477,9 +477,9 @@
 
     \table
     \row
-    \li \inlineimage qpen-square.png
-    \li \inlineimage qpen-flat.png
-    \li \inlineimage qpen-roundcap.png
+    \li \inlineimage qpen-square.png {Square cap extending past endpoint}
+    \li \inlineimage qpen-flat.png {Flat cap ending at endpoint}
+    \li \inlineimage qpen-roundcap.png {Rounded cap}
     \row
     \li Qt::SquareCap
     \li Qt::FlatCap
@@ -505,9 +505,9 @@
 
     \table
     \row
-    \li \inlineimage qpen-bevel.png
-    \li \inlineimage qpen-miter.png
-    \li \inlineimage qpen-roundjoin.png
+    \li \inlineimage qpen-bevel.png {Beveled corner join}
+    \li \inlineimage qpen-miter.png {Pointed miter join}
+    \li \inlineimage qpen-roundjoin.png {Rounded corner join}
     \row
     \li Qt::BevelJoin
     \li Qt::MiterJoin
@@ -2567,68 +2567,68 @@
 
     The standard arrow cursor is the default for widgets in a normal state.
 
-    \value ArrowCursor    \inlineimage cursor-arrow.png
+    \value ArrowCursor    \inlineimage cursor-arrow.png {Arrow cursor}
                           The standard arrow cursor.
-    \value UpArrowCursor  \inlineimage cursor-uparrow.png
+    \value UpArrowCursor  \inlineimage cursor-uparrow.png {Up arrow cursor}
                           An arrow pointing upwards toward the top of the screen.
-    \value CrossCursor    \inlineimage cursor-cross.png
+    \value CrossCursor    \inlineimage cursor-cross.png {Cross cursor}
                           A crosshair cursor, typically used to help the
                           user accurately select a point on the screen.
-    \value WaitCursor     \inlineimage cursor-wait.png
+    \value WaitCursor     \inlineimage cursor-wait.png {Wait cursor}
                           An hourglass or watch cursor, usually shown during
                           operations that prevent the user from interacting with
                           the application.
-    \value IBeamCursor    \inlineimage cursor-ibeam.png
+    \value IBeamCursor    \inlineimage cursor-ibeam.png {I-beam cursor}
                           A caret or ibeam cursor, indicating that a widget can
                           accept and display text input.
-    \value SizeVerCursor  \inlineimage cursor-sizev.png
+    \value SizeVerCursor  \inlineimage cursor-sizev.png {Vertical resize cursor}
                           A cursor used for elements that are used to vertically
                           resize top-level windows.
-    \value SizeHorCursor  \inlineimage cursor-sizeh.png
+    \value SizeHorCursor  \inlineimage cursor-sizeh.png {Horizontal resize cursor}
                           A cursor used for elements that are used to horizontally
                           resize top-level windows.
-    \value SizeBDiagCursor  \inlineimage cursor-sizeb.png
+    \value SizeBDiagCursor  \inlineimage cursor-sizeb.png {Diagonal resize cursor}
                           A cursor used for elements that are used to diagonally
                           resize top-level windows at their top-right and
                           bottom-left corners.
-    \value SizeFDiagCursor  \inlineimage cursor-sizef.png
+    \value SizeFDiagCursor  \inlineimage cursor-sizef.png {Diagonal resize cursor}
                           A cursor used for elements that are used to diagonally
                           resize top-level windows at their top-left and
                           bottom-right corners.
-    \value SizeAllCursor  \inlineimage cursor-sizeall.png
+    \value SizeAllCursor  \inlineimage cursor-sizeall.png {Move cursor}
                           A cursor used for elements that are used to resize
                           top-level windows in any direction.
     \value BlankCursor    A blank/invisible cursor, typically used when the cursor
                           shape needs to be hidden.
-    \value SplitVCursor   \inlineimage cursor-vsplit.png
+    \value SplitVCursor   \inlineimage cursor-vsplit.png {Vertical split cursor}
                           A cursor used for vertical splitters, indicating that
                           a handle can be dragged horizontally to adjust the use
                           of available space.
-    \value SplitHCursor   \inlineimage cursor-hsplit.png
+    \value SplitHCursor   \inlineimage cursor-hsplit.png {Horizontal split cursor}
                           A cursor used for horizontal splitters, indicating that
                           a handle can be dragged vertically to adjust the use
                           of available space.
-    \value PointingHandCursor  \inlineimage cursor-hand.png
+    \value PointingHandCursor  \inlineimage cursor-hand.png {Pointing hand cursor}
                           A pointing hand cursor that is typically used for
                           clickable elements such as hyperlinks.
-    \value ForbiddenCursor  \inlineimage cursor-forbidden.png
+    \value ForbiddenCursor  \inlineimage cursor-forbidden.png {Forbidden cursor}
                           A slashed circle cursor, typically used during drag
                           and drop operations to indicate that dragged content
                           cannot be dropped on particular widgets or inside
                           certain regions.
-    \value OpenHandCursor \inlineimage cursor-openhand.png
+    \value OpenHandCursor \inlineimage cursor-openhand.png {Open hand cursor}
                           A cursor representing an open hand, typically used to
                           indicate that the area under the cursor is the visible
                           part of a canvas that the user can click and drag in
                           order to scroll around.
-    \value ClosedHandCursor \inlineimage cursor-closedhand.png
+    \value ClosedHandCursor \inlineimage cursor-closedhand.png {Closed hand cursor}
                           A cursor representing a closed hand, typically used to
                           indicate that a dragging operation is in progress that
                           involves scrolling.
-    \value WhatsThisCursor  \inlineimage cursor-whatsthis.png
+    \value WhatsThisCursor  \inlineimage cursor-whatsthis.png {What's this cursor}
                           An arrow with a question mark, typically used to indicate
                           the presence of What's This? help for a widget.
-    \value BusyCursor     \inlineimage cursor-busy.png
+    \value BusyCursor     \inlineimage cursor-busy.png {Busy cursor}
                           An hourglass or watch cursor, usually shown during
                           operations that allow the user to interact with
                           the application while they are performed in the
