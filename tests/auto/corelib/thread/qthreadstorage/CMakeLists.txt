@@ -19,9 +19,15 @@ qt_internal_add_test(tst_qthreadstorage
 ## Scopes:
 #####################################################################
 
-if(NOT ANDROID)
+if(QT_FEATURE_process AND NOT ANDROID)
     add_subdirectory(crashonexit)
-    if(QT_FEATURE_process)
-        add_dependencies(tst_qthreadstorage crashOnExit_helper)
-    endif()
+    add_dependencies(tst_qthreadstorage crashOnExit_helper)
+
+    qt_internal_add_executable(tst_qthreadstorage_warnonexit
+        OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+        INSTALL_DIRECTORY "${INSTALL_TESTSDIR}/tst_qthreadstorage/crashOnExit_helper"
+        SOURCES
+            warnonexit.cpp
+    )
+    add_dependencies(tst_qthreadstorage tst_qthreadstorage_warnonexit)
 endif()
