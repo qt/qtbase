@@ -395,6 +395,26 @@ void QEmbeddedWindowNode::setZIndex(std::int32_t index)
     m_stackNode->setAttributeOrFail(::NODE_Z_INDEX, index);
 }
 
+void QEmbeddedWindowNode::raise()
+{
+    if (!m_stackNode->hasParent()) {
+        qOhosPrintfDebug("%s: stack node has no parent, ignore raising it", Q_FUNC_INFO);
+        return;
+    }
+
+    m_stackNode->moveTo(m_stackNode->siblingsCount());
+}
+
+void QEmbeddedWindowNode::lower()
+{
+    if (!m_stackNode->hasParent()) {
+        qOhosPrintfDebug("%s: stack node has no parent, ignore lowering it", Q_FUNC_INFO);
+        return;
+    }
+
+    m_stackNode->moveTo(0);
+}
+
 void QEmbeddedWindowNode::setFocused(bool focused)
 {
     m_contentNode->setAttributeOrFail(::NODE_FOCUS_STATUS, focused);

@@ -112,6 +112,8 @@ public:
 
     std::int32_t zIndex() const;
     void setZIndex(std::int32_t index);
+    void raise();
+    void lower();
 
     void *qtWindowId();
 
