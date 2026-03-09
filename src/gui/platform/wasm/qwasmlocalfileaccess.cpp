@@ -35,10 +35,12 @@ void showOpenViaHTMLPolyfill(const QStringList &accept, FileSelectMode fileSelec
     Q_UNUSED(accept);
     input.set("multiple", emscripten::val(fileSelectMode == FileSelectMode::MultipleFiles));
 
-    // Note: there is no event in case the user cancels the file dialog.
     static std::unique_ptr<qstdweb::EventCallback> changeEvent;
+    static std::unique_ptr<qstdweb::EventCallback> cancelEvent;
     auto callback = [=](emscripten::val) { onFilesSelected.thenFunc(input["files"]); };
+    auto cancelCallback = [=](emscripten::val) { onFilesSelected.catchFunc(emscripten::val::undefined()); };
     changeEvent = std::make_unique<qstdweb::EventCallback>(input, "change", callback);
+    cancelEvent = std::make_unique<qstdweb::EventCallback>(input, "cancel", cancelCallback);
 
     // Activate file input
     emscripten::val body = document["body"];

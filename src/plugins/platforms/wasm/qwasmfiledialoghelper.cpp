@@ -113,6 +113,9 @@ void QWasmFileDialogHelper::onOpenDialogClosed(bool accepted, std::vector<qstdwe
 
     if (!accepted) {
         emit reject();
+
+        if (m_eventLoop)
+            m_eventLoop->quit();
         return;
     }
 
@@ -139,6 +142,9 @@ void QWasmFileDialogHelper::onSaveDialogClosed(bool accepted, qstdweb::FileSyste
 {
     if (!accepted) {
         emit reject();
+
+        if (m_eventLoop)
+            m_eventLoop->quit();
         return;
     }
 
