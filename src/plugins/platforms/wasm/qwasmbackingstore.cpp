@@ -53,6 +53,9 @@ void QWasmBackingStore::updateTexture(QWasmWindow *window)
     if (m_dirty.isNull())
         return;
 
+    if (m_image.size().isEmpty())
+        return;
+
     if (m_webImageDataArray.isUndefined()) {
         m_webImageDataArray = window->context2d().call<emscripten::val>(
                 "createImageData", emscripten::val(m_image.width()),
