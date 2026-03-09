@@ -1530,7 +1530,7 @@ void QApplicationPrivate::setFocusWidget(QWidget *focus, Qt::FocusReason reason)
                 focus->window()->setAttribute(Qt::WA_KeyboardFocusChange);
             else if (reason == Qt::ShortcutFocusReason) {
                 focus->window()->setAttribute(Qt::WA_KeyboardFocusChange);
-            } else {
+            } else if (reason != Qt::ActiveWindowFocusReason) {
                 focus->window()->setAttribute(Qt::WA_KeyboardFocusChange, false);
             }
         }

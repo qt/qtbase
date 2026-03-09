@@ -503,8 +503,17 @@ void QWidgetWindow::handleFocusInEvent(QFocusEvent *e)
     else if (e->reason() == Qt::TabFocusReason)
         focusWidget = getFocusWidget(FirstFocusWidget);
 
-    if (focusWidget != nullptr)
-        focusWidget->setFocus();
+    if (focusWidget != nullptr) {
+        focusWidget->setFocus(e->reason());
+
+        // Set WA_KeyboardFocusChange if focus was moved to this window via platform
+        // tab key handling, for instance if the native platform moves focus to an
+        // embedded QWindow. This ensures that widgets treat the focus change as
+        // keyboard navigation focus change, also in this case where Qt is not processing
+        // the tab key event itself.
+        if (e->reason() == Qt::TabFocusReason || e->reason() == Qt::BacktabFocusReason)
+            m_widget->setAttribute(Qt::WA_KeyboardFocusChange);
+    }
 }
 
 void QWidgetWindow::handleNonClientAreaMouseEvent(QMouseEvent *e)
