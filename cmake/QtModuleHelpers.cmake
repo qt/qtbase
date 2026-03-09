@@ -743,6 +743,29 @@ function(qt_internal_add_module target)
             PRIVATE_FILE "${module_config_private_header}"
         )
         include(${configureFile})
+
+        if(QT_INTERNAL_CALLED_FROM_CONFIGURE AND QT_FEATURE_developer_build
+            AND NOT QT_NO_CONFIGURE_CMDLINE_CHAIN_CHECK
+            AND (__QtFeature_public_features OR __QtFeature_private_features
+                OR __QtFeature_internal_features))
+            get_filename_component(configure_file_dir "${configureFile}" DIRECTORY)
+            file(RELATIVE_PATH configure_file_rel "${CMAKE_SOURCE_DIR}" "${configure_file_dir}")
+            set(cmdline_marker_dir "${CMAKE_BINARY_DIR}")
+            if(configure_file_rel)
+                string(APPEND cmdline_marker_dir "/${configure_file_rel}")
+            endif()
+            string(APPEND cmdline_marker_dir "/.qt")
+            set(cmdline_marker_file "${cmdline_marker_dir}/cmdline_visited")
+            if(NOT EXISTS "${cmdline_marker_file}")
+                message(FATAL_ERROR
+                    "${configureFile} defines qt_feature() calls but its directory was not "
+                    "visited during configure's qt_cmdline.cmake traversal.\n"
+                    "Add a qt_commandline_subconfig() entry pointing to "
+                    "'${configure_file_dir}', or set QT_NO_CONFIGURE_CHAIN_CHECK=ON to "
+                    "suppress this check.")
+            endif()
+        endif()
+
         qt_feature_module_end("${target}")
 
         qt_internal_extend_target("${target}"
