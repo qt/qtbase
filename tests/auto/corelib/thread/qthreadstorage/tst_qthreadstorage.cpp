@@ -36,6 +36,7 @@ private slots:
     void autoDelete();
     void adoptedThreads();
     void ensureCleanupOrder();
+    void noWarningOnExitForQGlobalStatic();
     void crashOnExit();
     void leakInDestructor();
     void resetInDestructor();
@@ -247,6 +248,29 @@ void tst_QThreadStorage::ensureCleanupOrder()
     thread.wait();
 
     QVERIFY(First::order < Second::order);
+}
+
+void tst_QThreadStorage::noWarningOnExitForQGlobalStatic()
+{
+#ifdef Q_OS_ANDROID
+    QSKIP("Can't start QProcess to run a custom user binary on Android");
+#endif
+#if !QT_CONFIG(process)
+    QSKIP("No QProcess support");
+#else
+#  ifdef Q_OS_WIN
+    QSKIP("Not able to detect a call to exit() in Windows.");
+    QString binary = QFINDTESTDATA("tst_qthreadstorage_warnonexit.exe");
+#  else
+    QString binary = QFINDTESTDATA("tst_qthreadstorage_warnonexit");
+#  endif
+    QProcess process;
+    process.start(binary);
+    QVERIFY2(process.waitForStarted(), qPrintable(process.errorString()));
+    QVERIFY2(process.waitForFinished(), qPrintable(process.errorString()));
+    QCOMPARE(process.readAllStandardError(), QByteArray());
+    QCOMPARE(process.exitStatus(), QProcess::NormalExit);
+#endif
 }
 
 #if QT_CONFIG(process)

@@ -227,8 +227,8 @@ public:
 
     void wakeAll();
     static void *start(void *arg);
-    void finish();          // happens early (before thread-local dtors)
-    void cleanup();         // happens late (as a thread-local dtor, if possible)
+    void finish(bool = false);  // happens early (before thread-local dtors)
+    void cleanup();             // happens late (as a thread-local dtor, if possible)
 #endif // Q_OS_UNIX
 
 #ifdef Q_OS_WIN
