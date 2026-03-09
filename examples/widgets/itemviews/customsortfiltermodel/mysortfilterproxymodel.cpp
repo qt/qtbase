@@ -3,7 +3,10 @@
 
 #include "mysortfilterproxymodel.h"
 
-#include <QtWidgets>
+#include <QtCore/QModelIndex>
+#include <QtCore/QRegularExpression>
+
+using namespace Qt::StringLiterals;
 
 //! [0]
 MySortFilterProxyModel::MySortFilterProxyModel(QObject *parent)
@@ -53,26 +56,25 @@ bool MySortFilterProxyModel::lessThan(const QModelIndex &left,
 //! [4]
 
 //! [6]
-    if (leftData.userType() == QMetaType::QDateTime) {
+    if (leftData.userType() == QMetaType::QDateTime)
         return leftData.toDateTime() < rightData.toDateTime();
-    } else {
-        static const QRegularExpression emailPattern("[\\w\\.]*@[\\w\\.]*");
 
-        QString leftString = leftData.toString();
-        if (left.column() == 1) {
-            const QRegularExpressionMatch match = emailPattern.match(leftString);
-            if (match.hasMatch())
-                leftString = match.captured(0);
-        }
-        QString rightString = rightData.toString();
-        if (right.column() == 1) {
-            const QRegularExpressionMatch match = emailPattern.match(rightString);
-            if (match.hasMatch())
-                rightString = match.captured(0);
-        }
+    static const QRegularExpression emailPattern(u"[\\w\\.]*@[\\w\\.]*"_s);
 
-        return QString::localeAwareCompare(leftString, rightString) < 0;
+    QString leftString = leftData.toString();
+    if (left.column() == 1) {
+        const QRegularExpressionMatch match = emailPattern.match(leftString);
+        if (match.hasMatch())
+            leftString = match.captured(0);
     }
+    QString rightString = rightData.toString();
+    if (right.column() == 1) {
+        const QRegularExpressionMatch match = emailPattern.match(rightString);
+        if (match.hasMatch())
+            rightString = match.captured(0);
+    }
+
+    return QString::localeAwareCompare(leftString, rightString) < 0;
 }
 //! [5] //! [6]
 

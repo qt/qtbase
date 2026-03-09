@@ -8,16 +8,13 @@
 
 QT_BEGIN_NAMESPACE
 class QAbstractItemModel;
-class QCheckBox;
-class QComboBox;
 class QDateEdit;
-class QGroupBox;
-class QLabel;
-class QLineEdit;
 class QTreeView;
 QT_END_NAMESPACE
+
 class MySortFilterProxyModel;
 class FilterWidget;
+
 //! [0]
 class Window : public QWidget
 {
@@ -35,13 +32,8 @@ private slots:
 private:
     MySortFilterProxyModel *proxyModel;
 
-    QGroupBox *sourceGroupBox;
-    QGroupBox *proxyGroupBox;
     QTreeView *sourceView;
     QTreeView *proxyView;
-    QLabel *filterPatternLabel;
-    QLabel *fromLabel;
-    QLabel *toLabel;
     FilterWidget *filterWidget;
     QDateEdit *fromDateEdit;
     QDateEdit *toDateEdit;

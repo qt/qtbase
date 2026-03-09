@@ -4,14 +4,12 @@
 #ifndef WINDOW_H
 #define WINDOW_H
 
-#include <QWidget>
+#include <QtWidgets/QWidget>
 
 QT_BEGIN_NAMESPACE
 class QAbstractItemModel;
 class QCheckBox;
 class QComboBox;
-class QGroupBox;
-class QLabel;
 class QLineEdit;
 class QSortFilterProxyModel;
 class QTreeView;
@@ -34,15 +32,10 @@ private slots:
 private:
     QSortFilterProxyModel *proxyModel;
 
-    QGroupBox *sourceGroupBox;
-    QGroupBox *proxyGroupBox;
     QTreeView *sourceView;
     QTreeView *proxyView;
     QCheckBox *filterCaseSensitivityCheckBox;
     QCheckBox *sortCaseSensitivityCheckBox;
-    QLabel *filterPatternLabel;
-    QLabel *filterSyntaxLabel;
-    QLabel *filterColumnLabel;
     QLineEdit *filterPatternLineEdit;
     enum Syntax {
         RegularExpression,
