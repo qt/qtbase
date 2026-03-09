@@ -630,6 +630,14 @@ void QWasmWindow::applyWindowState()
 
     const bool isFullscreen = m_state.testFlag(Qt::WindowFullScreen);
     const bool isMaximized = m_state.testFlag(Qt::WindowMaximized);
+
+    // The screen geometry may be stale if the container element was hidden
+    // (display:none) when created — ResizeObserver doesn't fire for elements
+    // not in the layout. Re-read the geometry now so that fullscreen/maximized
+    // windows get the correct size.
+    if ((isFullscreen || isMaximized) && platformScreen()->geometry().size().isEmpty())
+        platformScreen()->updateQScreenSize();
+
     if (isFullscreen)
         newGeom = platformScreen()->geometry();
     else if (isMaximized)
