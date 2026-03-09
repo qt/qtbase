@@ -4,8 +4,8 @@
 #ifndef MYSORTFILTERPROXYMODEL_H
 #define MYSORTFILTERPROXYMODEL_H
 
-#include <QDate>
-#include <QSortFilterProxyModel>
+#include <QtCore/QDate>
+#include <QtCore/QSortFilterProxyModel>
 
 //! [0]
 class MySortFilterProxyModel : public QSortFilterProxyModel

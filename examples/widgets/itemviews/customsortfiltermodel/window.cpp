@@ -5,83 +5,84 @@
 #include "mysortfilterproxymodel.h"
 #include "filterwidget.h"
 
-#include <QtWidgets>
+#include <QtWidgets/QCheckBox>
+#include <QtWidgets/QComboBox>
+#include <QtWidgets/QDateEdit>
+#include <QtWidgets/QFormLayout>
+#include <QtWidgets/QGroupBox>
+#include <QtWidgets/QHBoxLayout>
+#include <QtWidgets/QLabel>
+#include <QtWidgets/QLineEdit>
+#include <QtWidgets/QStyle>
+#include <QtWidgets/QTreeView>
+
+#include <QtGui/QScreen>
+
+#include <QtCore/QDate>
 
 //! [0]
 Window::Window()
+    : proxyModel(new MySortFilterProxyModel(this)),
+//! [0]
+      sourceView(new QTreeView),
+      proxyView(new QTreeView),
+      filterWidget(new FilterWidget),
+      fromDateEdit(new QDateEdit),
+      toDateEdit(new QDateEdit)
 {
-    proxyModel = new MySortFilterProxyModel(this);
-    //! [0]
-
     //! [1]
-    sourceView = new QTreeView;
     sourceView->setRootIsDecorated(false);
     sourceView->setAlternatingRowColors(true);
     //! [1]
 
-    QHBoxLayout *sourceLayout = new QHBoxLayout;
     //! [2]
+    auto *sourceGroupBox = new QGroupBox(tr("Original Model"));
+    auto *sourceLayout = new QHBoxLayout(sourceGroupBox);
     sourceLayout->addWidget(sourceView);
-    sourceGroupBox = new QGroupBox(tr("Original Model"));
-    sourceGroupBox->setLayout(sourceLayout);
     //! [2]
 
     //! [3]
-    filterWidget = new FilterWidget;
     filterWidget->setText(tr("Grace|Sports"));
-    connect(filterWidget, &FilterWidget::filterChanged, this, &Window::textFilterChanged);
-
-    filterPatternLabel = new QLabel(tr("&Filter pattern:"));
-    filterPatternLabel->setBuddy(filterWidget);
-
-    fromDateEdit = new QDateEdit;
     fromDateEdit->setDate(QDate(1970, 01, 01));
-    fromLabel = new QLabel(tr("F&rom:"));
-    fromLabel->setBuddy(fromDateEdit);
-
-    toDateEdit = new QDateEdit;
     toDateEdit->setDate(QDate(2099, 12, 31));
-    toLabel = new QLabel(tr("&To:"));
-    toLabel->setBuddy(toDateEdit);
-
+    //! [3]
+    //! [4]
+    connect(filterWidget, &FilterWidget::filterChanged,
+            this, &Window::textFilterChanged);
     connect(filterWidget, &QLineEdit::textChanged,
             this, &Window::textFilterChanged);
     connect(fromDateEdit, &QDateTimeEdit::dateChanged,
             this, &Window::dateFilterChanged);
     connect(toDateEdit, &QDateTimeEdit::dateChanged,
-            //! [3] //! [4]
             this, &Window::dateFilterChanged);
     //! [4]
 
     //! [5]
-    proxyView = new QTreeView;
     proxyView->setRootIsDecorated(false);
     proxyView->setAlternatingRowColors(true);
     proxyView->setModel(proxyModel);
     proxyView->setSortingEnabled(true);
     proxyView->sortByColumn(1, Qt::AscendingOrder);
 
-    QGridLayout *proxyLayout = new QGridLayout;
-    proxyLayout->addWidget(proxyView, 0, 0, 1, 3);
-    proxyLayout->addWidget(filterPatternLabel, 1, 0);
-    proxyLayout->addWidget(filterWidget, 1, 1);
-    proxyLayout->addWidget(fromLabel, 3, 0);
-    proxyLayout->addWidget(fromDateEdit, 3, 1, 1, 2);
-    proxyLayout->addWidget(toLabel, 4, 0);
-    proxyLayout->addWidget(toDateEdit, 4, 1, 1, 2);
+    auto *proxyGroupBox = new QGroupBox(tr("Sorted/Filtered Model"));
+    auto *proxyLayout = new QVBoxLayout(proxyGroupBox);
+    proxyLayout->addWidget(proxyView);
+    auto *formLayout = new QFormLayout;
+    proxyLayout->addLayout(formLayout);
+    formLayout->addRow(tr("&Filter pattern:"), filterWidget);
+    formLayout->addRow(tr("F&rom:"), fromDateEdit);
+    formLayout->addRow(tr("&To:"), toDateEdit);
 
-    proxyGroupBox = new QGroupBox(tr("Sorted/Filtered Model"));
-    proxyGroupBox->setLayout(proxyLayout);
     //! [5]
 
     //! [6]
-    QVBoxLayout *mainLayout = new QVBoxLayout;
+    auto *mainLayout = new QVBoxLayout(this);
     mainLayout->addWidget(sourceGroupBox);
     mainLayout->addWidget(proxyGroupBox);
-    setLayout(mainLayout);
 
     setWindowTitle(tr("Custom Sort/Filter Model"));
-    resize(500, 450);
+    auto screenGeometry = screen()->geometry();
+    resize(screenGeometry.width() / 2, screenGeometry.height() * 2 / 3);
 }
 //! [6]
 

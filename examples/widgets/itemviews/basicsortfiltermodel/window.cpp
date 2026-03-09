@@ -1,9 +1,25 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
-#include <QtWidgets>
-
 #include "window.h"
+
+#include <QtWidgets/QCheckBox>
+#include <QtWidgets/QComboBox>
+#include <QtWidgets/QFormLayout>
+#include <QtWidgets/QGroupBox>
+#include <QtWidgets/QHBoxLayout>
+#include <QtWidgets/QLabel>
+#include <QtWidgets/QLineEdit>
+#include <QtWidgets/QStyle>
+#include <QtWidgets/QTreeView>
+
+#include <QtGui/QColor>
+#include <QtGui/QScreen>
+
+#include <QtCore/QRegularExpression>
+#include <QtCore/QSortFilterProxyModel>
+
+using namespace Qt::StringLiterals;
 
 static inline QColor textColor(const QPalette &palette)
 {
@@ -20,40 +36,32 @@ static void setTextColor(QWidget *w, const QColor &c)
 }
 
 Window::Window()
+    : proxyModel(new QSortFilterProxyModel),
+      sourceView(new QTreeView),
+      proxyView(new QTreeView),
+      sortCaseSensitivityCheckBox(new QCheckBox(tr("Case sensitive sorting"))),
+      filterCaseSensitivityCheckBox(new QCheckBox(tr("Case sensitive filter"))),
+      filterPatternLineEdit(new QLineEdit),
+      filterSyntaxComboBox(new QComboBox),
+      filterColumnComboBox(new QComboBox)
 {
-    proxyModel = new QSortFilterProxyModel;
-
-    sourceView = new QTreeView;
     sourceView->setRootIsDecorated(false);
     sourceView->setAlternatingRowColors(true);
 
-    proxyView = new QTreeView;
     proxyView->setRootIsDecorated(false);
     proxyView->setAlternatingRowColors(true);
     proxyView->setModel(proxyModel);
     proxyView->setSortingEnabled(true);
 
-    sortCaseSensitivityCheckBox = new QCheckBox(tr("Case sensitive sorting"));
-    filterCaseSensitivityCheckBox = new QCheckBox(tr("Case sensitive filter"));
-
-    filterPatternLineEdit = new QLineEdit;
     filterPatternLineEdit->setClearButtonEnabled(true);
-    filterPatternLabel = new QLabel(tr("&Filter pattern:"));
-    filterPatternLabel->setBuddy(filterPatternLineEdit);
 
-    filterSyntaxComboBox = new QComboBox;
     filterSyntaxComboBox->addItem(tr("Regular expression"), RegularExpression);
     filterSyntaxComboBox->addItem(tr("Wildcard"), Wildcard);
     filterSyntaxComboBox->addItem(tr("Fixed string"), FixedString);
-    filterSyntaxLabel = new QLabel(tr("Filter &syntax:"));
-    filterSyntaxLabel->setBuddy(filterSyntaxComboBox);
 
-    filterColumnComboBox = new QComboBox;
     filterColumnComboBox->addItem(tr("Subject"));
     filterColumnComboBox->addItem(tr("Sender"));
     filterColumnComboBox->addItem(tr("Date"));
-    filterColumnLabel = new QLabel(tr("Filter &column:"));
-    filterColumnLabel->setBuddy(filterColumnComboBox);
 
     connect(filterPatternLineEdit, &QLineEdit::textChanged,
             this, &Window::filterRegularExpressionChanged);
@@ -66,39 +74,38 @@ Window::Window()
     connect(sortCaseSensitivityCheckBox, &QAbstractButton::toggled,
             this, &Window::sortChanged);
 
-    sourceGroupBox = new QGroupBox(tr("Original Model"));
-    proxyGroupBox = new QGroupBox(tr("Sorted/Filtered Model"));
+    auto *sourceGroupBox = new QGroupBox(tr("Original Model"));
+    auto *proxyGroupBox = new QGroupBox(tr("Sorted/Filtered Model"));
 
-    QHBoxLayout *sourceLayout = new QHBoxLayout;
+    auto *sourceLayout = new QHBoxLayout(sourceGroupBox);
     sourceLayout->addWidget(sourceView);
-    sourceGroupBox->setLayout(sourceLayout);
 
-    QGridLayout *proxyLayout = new QGridLayout;
-    proxyLayout->addWidget(proxyView, 0, 0, 1, 3);
-    proxyLayout->addWidget(filterPatternLabel, 1, 0);
-    proxyLayout->addWidget(filterPatternLineEdit, 1, 1, 1, 2);
-    proxyLayout->addWidget(filterSyntaxLabel, 2, 0);
-    proxyLayout->addWidget(filterSyntaxComboBox, 2, 1, 1, 2);
-    proxyLayout->addWidget(filterColumnLabel, 3, 0);
-    proxyLayout->addWidget(filterColumnComboBox, 3, 1, 1, 2);
-    proxyLayout->addWidget(filterCaseSensitivityCheckBox, 4, 0, 1, 2);
-    proxyLayout->addWidget(sortCaseSensitivityCheckBox, 4, 2);
-    proxyGroupBox->setLayout(proxyLayout);
+    auto *proxyLayout = new QVBoxLayout(proxyGroupBox);
+    proxyLayout->addWidget(proxyView);
 
-    QVBoxLayout *mainLayout = new QVBoxLayout;
+    auto *filterLayout = new QFormLayout;
+    filterLayout->addRow(tr("&Filter pattern:"), filterPatternLineEdit);
+    filterLayout->addRow(tr("Filter &syntax:"), filterSyntaxComboBox);
+    filterLayout->addRow(tr("Filter &column:"), filterColumnComboBox);
+    proxyLayout->addLayout(filterLayout);
+    auto *checkBoxLayout = new QHBoxLayout();
+    checkBoxLayout->addWidget(filterCaseSensitivityCheckBox);
+    checkBoxLayout->addWidget(sortCaseSensitivityCheckBox);
+    checkBoxLayout->addStretch();
+    proxyLayout->addLayout(checkBoxLayout);
 
+    auto *mainLayout = new QVBoxLayout(this);
     mainLayout->addWidget(sourceGroupBox);
     mainLayout->addWidget(proxyGroupBox);
 
-    setLayout(mainLayout);
-
     setWindowTitle(tr("Basic Sort/Filter Model"));
-    resize(500, 450);
+    auto screenGeometry = screen()->geometry();
+    resize(screenGeometry.width() / 2, screenGeometry.height() * 2 / 3);
 
     proxyView->sortByColumn(1, Qt::AscendingOrder);
     filterColumnComboBox->setCurrentIndex(1);
 
-    filterPatternLineEdit->setText("Andy|Grace");
+    filterPatternLineEdit->setText(u"Andy|Grace"_s);
     filterCaseSensitivityCheckBox->setChecked(true);
     sortCaseSensitivityCheckBox->setChecked(true);
 }
@@ -107,6 +114,11 @@ void Window::setSourceModel(QAbstractItemModel *model)
 {
     proxyModel->setSourceModel(model);
     sourceView->setModel(model);
+
+    for (int i = 0; i < proxyModel->columnCount(); ++i)
+        proxyView->resizeColumnToContents(i);
+    for (int i = 0; i < model->columnCount(); ++i)
+        sourceView->resizeColumnToContents(i);
 }
 
 void Window::filterRegularExpressionChanged()

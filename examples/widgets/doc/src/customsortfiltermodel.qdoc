@@ -189,13 +189,13 @@
     data structure:
 
     \snippet itemviews/customsortfiltermodel/window.cpp 3
-    \snippet itemviews/customsortfiltermodel/window.cpp 4
 
     Note that whenever the user changes one of the filtering options,
     we must explicitly reapply the filter. This is done by connecting
     the various editors to functions that update the proxy model.
 
-    \snippet itemviews/customsortfiltermodel/window.cpp 5
+    \snippet itemviews/customsortfiltermodel/window.cpp 4
+
 
     The sorting will be handled by the view. All we have to do is to
     enable sorting for our proxy view by setting the
@@ -203,11 +203,13 @@
     default). Then we add all the filtering widgets and the proxy view
     to a layout that we install on a corresponding group box.
 
-    \snippet itemviews/customsortfiltermodel/window.cpp 6
+    \snippet itemviews/customsortfiltermodel/window.cpp 5
 
     Finally, after putting our two group boxes into another layout
     that we install on our main application widget, we customize the
     application window.
+
+    \snippet itemviews/customsortfiltermodel/window.cpp 6
 
     As mentioned above, we create the source model in the \c main ()
     function, calling the \c Window::setSourceModel() function to make
