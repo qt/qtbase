@@ -51,6 +51,56 @@ private:
 };
 
 #if QT_CONFIG(networkdiskcache)
+class ReadTrackingDevice final : public QIODevice
+{
+public:
+    ReadTrackingDevice(QIODevice *device, bool *readOccurred, QObject *parent = nullptr)
+        : QIODevice(parent), wrapped(device), consumed(readOccurred)
+    {
+        Q_ASSERT(wrapped);
+        wrapped->setParent(this);
+        if (!wrapped->isOpen())
+            wrapped->open(QIODevice::ReadOnly);
+        setOpenMode(wrapped->openMode());
+    }
+
+    bool isSequential() const override { return wrapped->isSequential(); }
+    bool atEnd() const override { return wrapped->atEnd(); }
+    qint64 size() const override { return wrapped->size(); }
+    qint64 pos() const override { return wrapped->pos(); }
+    bool seek(qint64 pos) override { return wrapped->seek(pos); }
+    bool canReadLine() const override { return wrapped->canReadLine() || QIODevice::canReadLine(); }
+    qint64 bytesAvailable() const override { return wrapped->bytesAvailable() + QIODevice::bytesAvailable(); }
+    bool waitForReadyRead(int msecs) override { return wrapped->waitForReadyRead(msecs); }
+    bool waitForBytesWritten(int msecs) override { return wrapped->waitForBytesWritten(msecs); }
+
+protected:
+    qint64 readData(char *data, qint64 maxSize) override
+    {
+        const qint64 bytesRead = wrapped->read(data, maxSize);
+        if (bytesRead > 0)
+            *consumed = true;
+        return bytesRead;
+    }
+
+    qint64 readLineData(char *data, qint64 maxSize) override
+    {
+        const qint64 bytesRead = wrapped->readLine(data, maxSize);
+        if (bytesRead > 0)
+            *consumed = true;
+        return bytesRead;
+    }
+
+    qint64 writeData(const char *data, qint64 maxSize) override
+    {
+        return wrapped->write(data, maxSize);
+    }
+
+private:
+    QIODevice *wrapped;
+    bool *consumed;
+};
+
 class NetworkDiskCache : public QNetworkDiskCache
 {
     Q_OBJECT
@@ -66,8 +116,10 @@ public:
 
     QIODevice *data(const QUrl &url) override
     {
-        gotData = true;
-        return QNetworkDiskCache::data(url);
+        QIODevice *device = QNetworkDiskCache::data(url);
+        if (!device)
+            return nullptr;
+        return new ReadTrackingDevice(device, &gotData);
     }
 
     QTemporaryDir tempDir;
