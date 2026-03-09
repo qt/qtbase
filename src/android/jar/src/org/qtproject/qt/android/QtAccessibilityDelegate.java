@@ -223,7 +223,7 @@ class QtAccessibilityDelegate extends View.AccessibilityDelegate
     void notifyObjectFocus(int viewId)
     {
         QtNative.runAction(() -> {
-            if (m_view == null)
+            if (m_view == null || m_focusedVirtualViewId == viewId)
                 return;
             m_focusedVirtualViewId = viewId;
             m_view.invalidate();
@@ -637,12 +637,15 @@ class QtAccessibilityDelegate extends View.AccessibilityDelegate
             break;
         case AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS:
             if (m_focusedVirtualViewId != virtualViewId) {
-                success = QtNativeAccessibility.focusAction(virtualViewId);
-                if (!success) {
-                    notifyObjectFocus(virtualViewId);
-                    success = true;
-                }
+                QtNativeAccessibility.focusAction(virtualViewId);
+            } else {
+                // Focus is returning from another window (e.g. the TalkBack menu)
+                // without prior CLEAR_FOCUS. Reset to force notifyObjectFocus() to
+                // go through.
+                m_focusedVirtualViewId = INVALID_ID;
             }
+            notifyObjectFocus(virtualViewId);
+            success = true;
             break;
         case AccessibilityNodeInfo.ACTION_SCROLL_FORWARD:
             success = QtNativeAccessibility.scrollForward(virtualViewId);
