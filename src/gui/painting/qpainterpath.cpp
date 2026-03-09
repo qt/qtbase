@@ -85,7 +85,7 @@ void qt_find_ellipse_coords(const QRectF &r, qreal angle, qreal length,
         if (!points[i])
             continue;
 
-        qreal theta = angles[i] - 360 * qFloor(angles[i] / 360);
+        qreal theta = angles[i] - 360 * std::floor(angles[i] / 360);
         qreal t = theta / 90;
         // truncate
         int quadrant = int(t);
@@ -970,6 +970,13 @@ void QPainterPath::arcTo(const QRectF &rect, qreal startAngle, qreal sweepLength
 
 void QPainterPath::arcMoveTo(const QRectF &rect, qreal angle)
 {
+    if (!hasValidCoords(rect) || !isValidCoord(angle)) {
+#ifndef QT_NO_DEBUG
+        qWarning("QPainterPath::arcMoveTo: Adding point with invalid coordinates, ignoring call");
+#endif
+        return;
+    }
+
     if (rect.isNull())
         return;
 
