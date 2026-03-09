@@ -3536,9 +3536,10 @@ void tst_QWidget::showMinimized()
 
     QWidget plain;
     plain.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
+    const QSize size(200, 200);
     plain.move(100, 100);
-    plain.resize(200, 200);
-    QPoint pos = plain.pos();
+    plain.resize(size);
+    const QPoint pos = plain.pos();
 
     plain.showMinimized();
     QVERIFY(plain.isMinimized());
@@ -3566,9 +3567,10 @@ void tst_QWidget::showMinimized()
     QVERIFY(plain.isMinimized());
     QVERIFY(plain.isVisible());
 
-    plain.setGeometry(200, 200, 300, 300);
     plain.showNormal();
-    QCOMPARE(plain.geometry(), QRect(200, 200, 300, 300));
+    QCOMPARE(plain.windowState(), Qt::WindowNoState);
+    QCOMPARE(plain.pos(), pos);
+    QCOMPARE(plain.size(), size);
 
     {
         QWidget frame;
