@@ -110,8 +110,6 @@ public:
         std::vector<std::shared_ptr<::OH_PixelmapNative>> pixelMaps, const QPointF &hotspot,
         QOhosUdmfData udmfData, std::function<void(::ArkUI_DragAndDropInfo *)> statusListener);
 
-    std::int32_t zIndex() const;
-    void setZIndex(std::int32_t index);
     void raise();
     void lower();
 

@@ -385,16 +385,6 @@ bool QEmbeddedWindowNode::ParentDescriptor::operator==(const ParentDescriptor &o
     }();
 }
 
-std::int32_t QEmbeddedWindowNode::zIndex() const
-{
-    return m_stackNode->getAttributeOrFail<std::int32_t>(::NODE_Z_INDEX);
-}
-
-void QEmbeddedWindowNode::setZIndex(std::int32_t index)
-{
-    m_stackNode->setAttributeOrFail(::NODE_Z_INDEX, index);
-}
-
 void QEmbeddedWindowNode::raise()
 {
     if (!m_stackNode->hasParent()) {
