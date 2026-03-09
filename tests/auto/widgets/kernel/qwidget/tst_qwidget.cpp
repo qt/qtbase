@@ -242,6 +242,8 @@ private slots:
     void optimizedResizeMove();
     void optimizedResize_topLevel();
     void resizeEvent();
+    void resizeBeforeShow_data();
+    void resizeBeforeShow();
     void task110173();
 
     void testDeletionInEventHandlers();
@@ -3485,6 +3487,43 @@ void tst_QWidget::resizeEvent()
             safeMarginsResizeCount = 1;
         QCOMPARE (wTopLevel.m_resizeEventCount, 2 + safeMarginsResizeCount);
     }
+}
+
+typedef void (QWidget::*QWidgetVoidMethodPtr)();
+
+void tst_QWidget::resizeBeforeShow_data()
+{
+    QTest::addColumn<QWidgetVoidMethodPtr>("showMode");
+    QTest::addRow("show")       << &QWidget::show;
+    QTest::addRow("showNormal") << &QWidget::showNormal;
+}
+
+void tst_QWidget::resizeBeforeShow()
+{
+    QFETCH(QWidgetVoidMethodPtr, showMode);
+
+    QWidget topLevel;
+    topLevel.show();
+
+    QWidget plain(&topLevel);
+    const QSize size(200, 200);
+    const QSize newSize(400, 400);
+
+    // First resize
+    plain.resize(size);
+    QCOMPARE(plain.size(), size);
+
+    (plain.*showMode)();
+    QCOMPARE(plain.size(), size);
+    plain.hide();
+
+    // Second resize
+    plain.resize(newSize);
+    QCOMPARE(plain.size(), newSize);
+
+    (plain.*showMode)();
+    QCOMPARE(plain.size(), newSize);
+    plain.hide();
 }
 
 void tst_QWidget::showMinimized()
