@@ -4,7 +4,7 @@
 #ifndef FILTERWIDGET_H
 #define FILTERWIDGET_H
 
-#include <QLineEdit>
+#include <QtWidgets/QLineEdit>
 
 QT_BEGIN_NAMESPACE
 class QAction;
