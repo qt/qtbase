@@ -313,6 +313,14 @@ bool Node::hasParent() const
     return nativeNodeApi().getParent(handle()) != nullptr;
 }
 
+std::uint32_t Node::siblingsCount() const
+{
+    auto *parentHandle = nativeNodeApi().getParent(handle());
+    return parentHandle != nullptr
+        ? nativeNodeApi().getTotalChildCount(parentHandle) - 1
+        : 0;
+}
+
 QOhosOptional<::ArkUI_NodeHandle> Node::tryfindChild(
     ::ArkUI_NodeHandle nodeHandle, const std::function<bool(::ArkUI_NodeHandle)> predicate)
 {

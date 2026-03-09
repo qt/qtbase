@@ -89,6 +89,8 @@ public:
 
     bool hasParent() const;
 
+    std::uint32_t siblingsCount() const;
+
 private:
     static std::set<::ArkUI_NodeHandle> qtManagedNodes;
 
