@@ -151,18 +151,6 @@ inline timeval timespecToTimeval(timespec ts)
     return tv;
 }
 
-inline timespec qAbsTimespec(timespec ts)
-{
-    if (ts.tv_sec < 0) {
-        ts.tv_sec = -ts.tv_sec - 1;
-        ts.tv_nsec -= OneSecAsNsecs;
-    }
-    if (ts.tv_sec == 0 && ts.tv_nsec < 0) {
-        ts.tv_nsec = -ts.tv_nsec;
-    }
-    return normalizedTimespec(ts);
-}
-
 template <clockid_t ClockId = QSteadyClockClockId>
 inline timespec deadlineToAbstime(QDeadlineTimer deadline)
 {
