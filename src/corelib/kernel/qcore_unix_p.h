@@ -124,11 +124,6 @@ inline Duration timespecToChrono(timespec ts) noexcept
     return duration_cast<Duration>(seconds{ts.tv_sec} + nanoseconds{ts.tv_nsec});
 }
 
-inline std::chrono::milliseconds timespecToChronoMs(timespec ts) noexcept
-{
-    return timespecToChrono<std::chrono::milliseconds>(ts);
-}
-
 // Internal operator functions for timespecs
 constexpr inline timespec &normalizedTimespec(timespec &t)
 {
