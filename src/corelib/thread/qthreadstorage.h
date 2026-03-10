@@ -30,7 +30,8 @@ template <> struct QThreadStorageTraits<true>
 class Q_CORE_EXPORT QThreadStorageData
 {
 public:
-    explicit QThreadStorageData(void (*func)(void *));
+    using DeleterFn = void (*)(void *);
+    explicit QThreadStorageData(DeleterFn func);
     ~QThreadStorageData();
 
     void** get() const;
@@ -108,8 +109,16 @@ private:
     static inline void deleteData(void *x)
     { qThreadStorage_deleteData(x, reinterpret_cast<T*>(0)); }
 
+    static inline QThreadStorageData::DeleterFn deleter()
+    {
+        if constexpr (std::is_trivially_destructible_v<T> && !std::is_pointer_v<T>)
+            return nullptr;
+        else
+            return deleteData;
+    }
+
 public:
-    inline QThreadStorage() : d(deleteData) { Trait::warnAboutTrivial(); }
+    inline QThreadStorage() : d(deleter()) { Trait::warnAboutTrivial(); }
     inline ~QThreadStorage() { }
 
     inline bool hasLocalData() const

@@ -39,6 +39,11 @@ Q_CONSTINIT static QBasicMutex destructorsMutex;
 typedef QList<void (*)(void *)> DestructorMap;
 Q_GLOBAL_STATIC(DestructorMap, destructors)
 
+static auto trivialDestruction()
+{
+    return reinterpret_cast<QThreadStorageData::DeleterFn>(quintptr(-1));
+}
+
 QThreadStorageData::QThreadStorageData(void (*func)(void *))
 {
     QMutexLocker locker(&destructorsMutex);
@@ -62,6 +67,9 @@ QThreadStorageData::QThreadStorageData(void (*func)(void *))
         if (destr->at(id) == nullptr)
             break;
     }
+
+    if (func == nullptr)
+        func = trivialDestruction();
     if (id == destr->size()) {
         destr->append(func);
     } else {
@@ -117,7 +125,7 @@ void **QThreadStorageData::set(void *p)
         void *q = value;
         value = nullptr;
 
-        if (destructor)
+        if (destructor && destructor != trivialDestruction())
             destructor(q);
     }
 
@@ -164,7 +172,8 @@ void QThreadStoragePrivate::finish(QList<void *> *tls, bool suppressWarnings)
                          i, QThread::currentThread());
             continue;
         }
-        destructor(q); //crash here might mean the thread exited after qthreadstorage was destroyed
+        if (destructor != trivialDestruction())
+            destructor(q); //crash here might mean the thread exited after qthreadstorage was destroyed
 
         if (tls->size() > i) {
             //re reset the tls in case it has been recreated by its own destructor.
