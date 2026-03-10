@@ -1107,16 +1107,16 @@ function(_qt_internal_android_copy_app_binary target deployment_dir)
 
     _qt_internal_android_get_deploy_command(deploy_command
         "$<TARGET_FILE:${target}>" "${target_file_dst}")
-    set(deploy_cmd COMMAND ${deploy_command})
-
     if(QT_ANDROID_CREATE_SYMLINKS_ONLY)
         set(deploy_comment "Symlinking ${target} binary to apk folder")
     else()
         set(deploy_comment "Copying ${target} binary to apk folder")
     endif()
 
+    set(libs_abi_dir "${deployment_dir}/libs/${CMAKE_ANDROID_ARCH_ABI}")
     add_custom_target(${target}_copy_app_binary ALL
-        ${deploy_cmd}
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${libs_abi_dir}"
+        COMMAND ${deploy_command}
         COMMENT "${deploy_comment}"
         VERBATIM
         ${uses_terminal}
