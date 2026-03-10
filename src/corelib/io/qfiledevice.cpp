@@ -39,10 +39,10 @@ void QFileDevicePrivate::setError(QFileDevice::FileError err)
     errorString.clear();
 }
 
-void QFileDevicePrivate::setError(QFileDevice::FileError err, const QString &errStr)
+void QFileDevicePrivate::setError(QFileDevice::FileError err, QString errStr)
 {
     error = err;
-    errorString = errStr;
+    errorString = std::move(errStr);
 }
 
 void QFileDevicePrivate::setError(QFileDevice::FileError err, int errNum)
