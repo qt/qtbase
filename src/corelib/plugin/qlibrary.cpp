@@ -680,7 +680,7 @@ bool QLibrary::isLibrary(const QString &fileName)
 static bool qt_get_metadata(QLibraryPrivate *priv, QString *errMsg)
 {
     auto error = [=](QString &&explanation) {
-        *errMsg = QLibrary::tr("'%1' is not a Qt plugin (%2)").arg(priv->fileName, std::move(explanation));
+        *errMsg = QLibrary::tr("'%1' is not a Qt plugin (%2)").arg(priv->fileName, explanation);
         return false;
     };
 

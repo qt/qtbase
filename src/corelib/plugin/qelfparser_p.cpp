@@ -502,7 +502,7 @@ struct ErrorMaker
 
     Q_DECL_COLD_FUNCTION QLibraryScanResult operator()(QString &&text) const
     {
-        *errMsg = QLibrary::tr("'%1' is not a valid ELF object (%2)").arg(*errMsg, std::move(text));
+        *errMsg = QLibrary::tr("'%1' is not a valid ELF object (%2)").arg(*errMsg, text);
         return {};
     }
 
