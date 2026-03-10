@@ -102,6 +102,7 @@ qt_internal_add_module(Core
         global/qvolatile_p.h
         global/q17memory.h
         global/q20algorithm.h
+        global/q20atomic.h
         global/q20bit.h
         global/q20chrono.h
         global/q20functional.h
