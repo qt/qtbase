@@ -3,7 +3,8 @@ requires(qtConfig(treeview))
 
 HEADERS     = mysortfilterproxymodel.h \
               window.h \
-              filterwidget.h
+              filterwidget.h \
+              mailheader.h
 SOURCES     = main.cpp \
               mysortfilterproxymodel.cpp \
               window.cpp \

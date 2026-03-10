@@ -1,26 +1,45 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
+#include "mailheader.h"
 #include "window.h"
 
 #include <QtWidgets/QApplication>
 
-#include <QtGui/QStandardItemModel>
-
-#include <QtCore/QTime>
+#include <QtCore/QRangeModel>
 
 #include <array>
 
 using namespace Qt::StringLiterals;
 
-struct MailHeader
+class MailModel : public QRangeModel
 {
-    QString subject;
-    QString sender;
-    QDateTime date;
+public:
+    explicit MailModel(QObject *parent = nullptr) : QRangeModel(mails, parent) {}
+
+    QVariant headerData(int section, Qt::Orientation orientation,
+                        int role = Qt::DisplayRole) const override
+    {
+        if (orientation == Qt::Horizontal && role == Qt::DisplayRole) {
+            switch (section) {
+            case 0:
+                return Window::tr("Subject");
+            case 1:
+                return Window::tr("Sender");
+            case 2:
+                return Window::tr("Date");
+            default:
+                break;
+            }
+        }
+        return QRangeModel::headerData(section, orientation, role);
+    }
+
+private:
+    static const std::array<MailHeader, 10> mails;
 };
 
-static const std::array<MailHeader, 10> mails = {
+const std::array<MailHeader, 10> MailModel::mails = {
     MailHeader{ u"RE: Sports"_s, u"Petra Schmidt <petras@nospam.com>"_s,
                 QDateTime(QDate(2007, 01, 05), QTime(12, 01)) },
     MailHeader{ u"AW: Sports"_s, u"Rolf Newschweinstein <rolfn@nospam.com>"_s,
@@ -43,30 +62,11 @@ static const std::array<MailHeader, 10> mails = {
                 QDateTime(QDate(2006, 12, 31), QTime(17, 03)) }
 };
 
-QAbstractItemModel *createMailModel(QObject *parent)
-{
-    auto *model = new QStandardItemModel(0, 3, parent);
-
-    model->setHeaderData(0, Qt::Horizontal, QObject::tr("Subject"));
-    model->setHeaderData(1, Qt::Horizontal, QObject::tr("Sender"));
-    model->setHeaderData(2, Qt::Horizontal, QObject::tr("Date"));
-
-    for (const auto &mh : mails) {
-        QList<QStandardItem *> row = { new QStandardItem(mh.subject),
-                                       new QStandardItem(mh.sender),
-                                       new QStandardItem };
-        row[2]->setData(QVariant::fromValue(mh.date), Qt::DisplayRole);
-        model->appendRow(row);
-    }
-
-    return model;
-}
-
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
     Window window;
-    window.setSourceModel(createMailModel(&window));
+    window.setSourceModel(new MailModel(&window));
     window.show();
     return QCoreApplication::exec();
 }
