@@ -267,15 +267,14 @@ struct AutoFileDescriptor
 // udev encodes the labels with ID_LABEL_FS_ENC which is done with
 // blkid_encode_string(). Within this function some 1-byte utf-8
 // characters not considered safe (e.g. '\' or ' ') are encoded as hex
-static QString decodeFsEncString(QString &&str)
+static QString decodeFsEncString(QString decoded)
 {
     using namespace QtMiscUtils;
-    qsizetype start = str.indexOf(u'\\');
+    const qsizetype start = decoded.indexOf(u'\\');
     if (start < 0)
-        return std::move(str);
+        return decoded;
 
     // decode in-place
-    QString decoded = std::move(str);
     auto ptr = reinterpret_cast<char16_t *>(decoded.begin());
     qsizetype in = start;
     qsizetype out = start;
