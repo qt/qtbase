@@ -99,7 +99,7 @@ static QVariant nullIfEmpty(T &&value)
     // For use where we should fall back to CLDR if we got an empty value.
     if (value.isEmpty())
         return {};
-    return std::move(value);
+    return std::forward<T>(value);
 }
 }
 
