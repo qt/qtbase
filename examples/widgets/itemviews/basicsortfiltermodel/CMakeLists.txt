@@ -10,7 +10,7 @@ qt_standard_project_setup()
 
 qt_add_executable(basicsortfiltermodel
     main.cpp
-    window.cpp window.h
+    window.cpp window.h mailheader.h
 )
 
 set_target_properties(basicsortfiltermodel PROPERTIES

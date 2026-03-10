@@ -10,7 +10,7 @@ qt_standard_project_setup()
 
 qt_add_executable(customsortfiltermodel
     filterwidget.cpp filterwidget.h
-    main.cpp
+    main.cpp mailheader.h
     mysortfilterproxymodel.cpp mysortfilterproxymodel.h
     window.cpp window.h
 )

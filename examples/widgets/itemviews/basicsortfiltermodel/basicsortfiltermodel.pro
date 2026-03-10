@@ -1,7 +1,8 @@
 QT += widgets
 requires(qtConfig(combobox))
 
-HEADERS     = window.h
+HEADERS     = window.h \
+              mailheader.h
 SOURCES     = main.cpp \
               window.cpp
 
