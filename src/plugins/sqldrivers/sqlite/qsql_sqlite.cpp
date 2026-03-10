@@ -46,18 +46,16 @@ using namespace Qt::StringLiterals;
 
 static int qGetColumnType(const QString &tpName)
 {
-    const QString typeName = tpName.toLower();
-
-    if (typeName == "integer"_L1 || typeName == "int"_L1)
+    if (tpName.compare("integer"_L1, Qt::CaseInsensitive) == 0 || tpName.compare("int"_L1, Qt::CaseInsensitive) == 0)
         return QMetaType::Int;
-    if (typeName == "double"_L1
-        || typeName == "float"_L1
-        || typeName == "real"_L1
-        || typeName.startsWith("numeric"_L1))
+    if (tpName.compare("double"_L1, Qt::CaseInsensitive) == 0
+        || tpName.compare("float"_L1, Qt::CaseInsensitive) == 0
+        || tpName.compare("real"_L1, Qt::CaseInsensitive) == 0
+        || tpName.startsWith("numeric"_L1, Qt::CaseInsensitive))
         return QMetaType::Double;
-    if (typeName == "blob"_L1)
+    if (tpName.compare("blob"_L1, Qt::CaseInsensitive) == 0)
         return QMetaType::QByteArray;
-    if (typeName == "boolean"_L1 || typeName == "bool"_L1)
+    if (tpName.compare("boolean"_L1, Qt::CaseInsensitive) == 0 || tpName.compare("bool"_L1, Qt::CaseInsensitive) == 0)
         return QMetaType::Bool;
     return QMetaType::QString;
 }
