@@ -142,69 +142,13 @@ constexpr inline timespec &normalizedTimespec(timespec &t)
     }
     return t;
 }
-constexpr inline bool operator<(const timespec &t1, const timespec &t2)
-{ return t1.tv_sec < t2.tv_sec || (t1.tv_sec == t2.tv_sec && t1.tv_nsec < t2.tv_nsec); }
-constexpr inline bool operator==(const timespec &t1, const timespec &t2)
-{ return t1.tv_sec == t2.tv_sec && t1.tv_nsec == t2.tv_nsec; }
-constexpr inline bool operator!=(const timespec &t1, const timespec &t2)
-{ return !(t1 == t2); }
-constexpr inline timespec &operator+=(timespec &t1, const timespec &t2)
-{
-    t1.tv_sec += t2.tv_sec;
-    t1.tv_nsec += t2.tv_nsec;
-    return normalizedTimespec(t1);
-}
-constexpr inline timespec operator+(const timespec &t1, const timespec &t2)
-{
-    timespec tmp = {};
-    tmp.tv_sec = t1.tv_sec + t2.tv_sec;
-    tmp.tv_nsec = t1.tv_nsec + t2.tv_nsec;
-    return normalizedTimespec(tmp);
-}
-constexpr inline timespec operator-(const timespec &t1, const timespec &t2)
-{
-    timespec tmp = {};
-    tmp.tv_sec = t1.tv_sec - (t2.tv_sec - 1);
-    tmp.tv_nsec = t1.tv_nsec - (t2.tv_nsec + OneSecAsNsecs);
-    return normalizedTimespec(tmp);
-}
-constexpr inline timespec operator*(const timespec &t1, int mul)
-{
-    timespec tmp = {};
-    tmp.tv_sec = t1.tv_sec * mul;
-    tmp.tv_nsec = t1.tv_nsec * mul;
-    return normalizedTimespec(tmp);
-}
+
 inline timeval timespecToTimeval(timespec ts)
 {
     timeval tv;
     tv.tv_sec = ts.tv_sec;
     tv.tv_usec = ts.tv_nsec / 1000;
     return tv;
-}
-
-inline timespec &operator+=(timespec &t1, std::chrono::milliseconds msecs)
-{
-    t1 += durationToTimespec(msecs);
-    return t1;
-}
-
-inline timespec &operator+=(timespec &t1, int ms)
-{
-    t1 += std::chrono::milliseconds{ms};
-    return t1;
-}
-
-inline timespec operator+(const timespec &t1, std::chrono::milliseconds msecs)
-{
-    timespec tmp = t1;
-    tmp += msecs;
-    return tmp;
-}
-
-inline timespec operator+(const timespec &t1, int ms)
-{
-    return t1 + std::chrono::milliseconds{ms};
 }
 
 inline timespec qAbsTimespec(timespec ts)
