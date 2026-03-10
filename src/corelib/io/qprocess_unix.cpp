@@ -193,7 +193,7 @@ static constexpr int FakeErrnoForThrow = std::numeric_limits<int>::max();
 static QString errorMessageForSyscall(QUtf8StringView fnName, int errnoCode = -1)
 {
     QString msg = qt_error_string(errnoCode);
-    return QProcess::tr("Child process set up failed: %1: %2").arg(fnName, std::move(msg));
+    return QProcess::tr("Child process set up failed: %1: %2").arg(fnName, msg);
 }
 
 static QString startFailureErrorMessage(ChildError &err, [[maybe_unused]] ssize_t bytesRead)
