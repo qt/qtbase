@@ -816,6 +816,7 @@ bool QFilePrivate::copy(const QString &newName)
 
     while (r == QAbstractFileEngine::TriStateResult::NotSupported) {
         // OS couldn't do it, so do a block-level copy
+        Q_DECL_UNINITIALIZED
         char block[4096];
         qint64 in = q->read(block, sizeof(block));
         if (in == 0)
