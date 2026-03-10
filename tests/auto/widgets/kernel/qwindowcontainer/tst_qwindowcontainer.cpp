@@ -62,6 +62,7 @@ private slots:
     void testPlatformSurfaceEvent();
     void embedWidgetWindow();
     void testFocus();
+    void testFocusMultipleContainers();
     void parentDestroyed();
     void cleanup();
 
@@ -529,6 +530,53 @@ void tst_QWindowContainer::testFocus()
     QCOMPARE(QGuiApplication::focusWindow(), embedded);
     QCOMPARE(QApplication::focusWidget(), container);
     QVERIFY(!lineEdit->hasFocus());
+}
+
+void tst_QWindowContainer::testFocusMultipleContainers()
+{
+    class FocusCounter : public QObject {
+        public:
+            int count = 0;
+
+            bool eventFilter(QObject *, QEvent *e) override {
+                if (e->type() == QEvent::FocusIn) {
+                    ++count;
+                    if (count >= 50)
+                        return true; // eat the event to break the loop
+                }
+                return false;
+            }
+    };
+
+    auto *window1 = new QWindow;
+    auto *window2 = new QWindow;
+    QScopedPointer<QWidget> container1(QWidget::createWindowContainer(window1));
+    container1->setWindowTitle("Primary Window");
+    container1->resize(400, 300);
+    FocusCounter windowCounter1;
+    window1->installEventFilter(&windowCounter1);
+
+    QScopedPointer<QWidget> container2(QWidget::createWindowContainer(window2));
+    container2->setWindowTitle("Secondary Window");
+    container2->resize(400, 300);
+    FocusCounter windowCounter2;
+    window2->installEventFilter(&windowCounter2);
+
+    container1->move(m_availableGeometry.x() + 100, m_availableGeometry.y() + 100);
+    container2->move(m_availableGeometry.x() + 520, m_availableGeometry.y() + 100);
+
+    container1->setFocusPolicy(Qt::StrongFocus);
+    container2->setFocusPolicy(Qt::StrongFocus);
+    container1->show();
+    container2->show();
+    QVERIFY(QTest::qWaitForWindowExposed(container1.data()));
+    QVERIFY(QTest::qWaitForWindowExposed(container2.data()));
+    // We can not reliably test the focus event count for
+    // each window as that is up to the window manager, but it
+    // should not be more than 1
+    QTest::qWait(100);
+    QCOMPARE_LE(windowCounter1.count, 1);
+    QCOMPARE_LE(windowCounter2.count, 1);
 }
 
 class CreateDestroyWidget : public QWidget

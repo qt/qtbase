@@ -5,6 +5,7 @@
 #include "qwindowcontainer_p.h"
 #include "qwidget_p.h"
 #include "qwidgetwindow_p.h"
+#include <QtCore/qtimer.h>
 #include <QtGui/qwindow.h>
 #include <QtGui/private/qwindow_p.h>
 #include <QtGui/private/qguiapplication_p.h>
@@ -31,6 +32,7 @@ public:
     QWindowContainerPrivate()
         : window(nullptr)
         , usesNativeWidgets(false)
+        , syncingFocus(false)
     {
     }
 
@@ -109,6 +111,7 @@ public:
     QWindow fakeParent;
 
     uint usesNativeWidgets : 1;
+    uint syncingFocus : 1;
 };
 
 
@@ -272,8 +275,14 @@ bool QWindowContainer::eventFilter(QObject *o, QEvent *e)
             d->window = nullptr;
         }
     } else if (e->type() == QEvent::FocusIn) {
-        if (o == d->window)
-            setFocus(Qt::ActiveWindowFocusReason);
+        if (o == d->window) {
+            if (d->syncingFocus) {
+                d->syncingFocus = false;
+                return false;
+            }
+            if (!hasFocus())
+                setFocus(Qt::ActiveWindowFocusReason);
+        }
     }
     return false;
 }
@@ -323,7 +332,7 @@ bool QWindowContainer::event(QEvent *e)
         break;
     case QEvent::FocusIn:
         if (d->window->parent()) {
-            if (QGuiApplication::focusWindow() != d->window) {
+            if (QGuiApplication::focusWindow() != d->window && !d->syncingFocus) {
                 QFocusEvent *event = static_cast<QFocusEvent *>(e);
                 const auto reason = event->reason();
                 QWindowPrivate::FocusTarget target = QWindowPrivate::FocusTarget::Current;
@@ -332,7 +341,14 @@ bool QWindowContainer::event(QEvent *e)
                 else if (reason == Qt::BacktabFocusReason)
                     target = QWindowPrivate::FocusTarget::Last;
                 qt_window_private(d->window)->setFocusToTarget(target, reason);
+                d->syncingFocus = true;
                 d->window->requestActivate();
+                // In case the window doesn't get focused,
+                // we don't want to be stuck in syncingFocus forever. Reset it after a short delay.
+                QTimer::singleShot(200, this, [this]() {
+                    Q_D(QWindowContainer);
+                    d->syncingFocus = false;
+                });
             }
         }
         break;
