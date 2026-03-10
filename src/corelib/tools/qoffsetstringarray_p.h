@@ -36,8 +36,7 @@ QT_WARNING_PUSH
 QT_WARNING_DISABLE_GCC("-Wstringop-overread")
 #endif
 
-
-template <typename StaticString, typename OffsetList>
+template <typename StaticString, typename OffsetList, int LongestElement>
 class QOffsetStringArray
 {
     static auto viewType_helper()
@@ -57,6 +56,7 @@ class QOffsetStringArray
 public:
     using Char = typename StaticString::value_type;
     using View = typename decltype(viewType_helper())::type;
+    static constexpr typename OffsetList::value_type MaxElementLength = LongestElement;
 
     constexpr QOffsetStringArray(const StaticString &string, const OffsetList &offsets)
         : m_string(string), m_offsets(offsets)
@@ -113,6 +113,7 @@ template <size_t Highest> constexpr auto minifyValue()
 template <typename Char, int... Nx>
 constexpr auto makeOffsetStringArray(const Char (&...entries)[Nx])
 {
+    constexpr int LongestElement = std::max({ Nx... }) - 1;
     constexpr size_t StringLength = (Nx + ...);
     using OffsetType = decltype(QtPrivate::minifyValue<StringLength>());
 
@@ -131,7 +132,10 @@ constexpr auto makeOffsetStringArray(const Char (&...entries)[Nx])
         q20::copy_n(strings[i], length, staticString.begin() + offsetList[i]);
     }
 
-    return QOffsetStringArray(staticString, offsetList);
+    using StaticString = decltype(staticString);
+    using OffsetList = decltype(offsetList);
+    using R = QOffsetStringArray<StaticString, OffsetList, LongestElement>;
+    return R(staticString, offsetList);
 }
 } // namespace QtPrivate
 
