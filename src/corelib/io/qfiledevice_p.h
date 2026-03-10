@@ -55,7 +55,7 @@ protected:
     bool putCharHelper(char c) override;
 
     void setError(QFileDevice::FileError err);
-    void setError(QFileDevice::FileError err, const QString &errorString);
+    void setError(QFileDevice::FileError err, QString errorString);
     void setError(QFileDevice::FileError err, int errNum);
 
     mutable std::unique_ptr<QAbstractFileEngine> fileEngine;
