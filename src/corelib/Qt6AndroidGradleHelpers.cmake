@@ -2055,16 +2055,12 @@ function(_qt_internal_android_parse_qmlimportscanner_output
         endif()
 
         _qt_internal_android_json_get_string("${qml_scan}" ${mod_index} prefer module_prefer)
-        if(module_prefer MATCHES "^:/")
-            set(skip_module TRUE)
-        endif()
 
         if(NOT skip_module)
-            list(APPEND qml_modules "${module_abs}::${module_relative}")
+            list(APPEND qml_modules "${module_abs}::${module_relative}::${module_prefer}")
         endif()
     endforeach()
 
-    list(REMOVE_DUPLICATES qml_modules)
     list(REMOVE_DUPLICATES qml_plugins)
 
     set(${out_qml_modules} "${qml_modules}" PARENT_SCOPE)
@@ -2072,27 +2068,47 @@ function(_qt_internal_android_parse_qmlimportscanner_output
 endfunction()
 
 function(_qt_internal_android_copy_qml_modules_outputs target qml_bundle_dir qml_modules out_outputs)
-    set(bundle_outputs "")
-    foreach(entry IN LISTS qml_modules)
-        string(REPLACE "::" ";" entry_parts "${entry}")
-        list(GET entry_parts 0 module_abs)
-        list(GET entry_parts 1 module_rel)
+    if(NOT qml_modules)
+        set(${out_outputs} "" PARENT_SCOPE)
+        return()
+    endif()
+
+    set(commands "")
+    foreach(module_entry IN LISTS qml_modules)
+        string(REPLACE "::" ";" module_parts "${module_entry}")
+        list(GET module_parts 0 module_abs)
+        list(GET module_parts 1 module_rel)
+        list(GET module_parts 2 module_prefer)
+
         if(NOT module_abs OR NOT module_rel)
             continue()
         endif()
-        set(destination_dir "${qml_bundle_dir}/${module_rel}")
-        set(marker "${destination_dir}/.qt_qml_module_copied")
-        add_custom_command(OUTPUT "${marker}"
-            COMMAND ${CMAKE_COMMAND} -E make_directory "${destination_dir}"
-            COMMAND ${CMAKE_COMMAND} -E copy_directory "${module_abs}" "${destination_dir}"
-            COMMAND ${CMAKE_COMMAND} -E touch "${marker}"
-            COMMENT "Copying QML module ${module_rel} for ${target}"
-            VERBATIM
-        )
-        list(APPEND bundle_outputs "${marker}")
+
+        set(destination_dir "${qml_bundle_dir}/qml/${module_rel}")
+        list(APPEND commands COMMAND ${CMAKE_COMMAND} -E make_directory "${destination_dir}")
+
+        if(module_prefer MATCHES "^:/")
+            # QML sources are compiled into the plugin's resources, so copy only the qmldir file.
+            list(APPEND commands COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                    "${module_abs}/qmldir" "${destination_dir}/qmldir")
+        else()
+            list(APPEND commands COMMAND ${CMAKE_COMMAND} -E copy_directory
+                "${module_abs}" "${destination_dir}")
+        endif()
     endforeach()
 
-    set(${out_outputs} "${bundle_outputs}" PARENT_SCOPE)
+    if(NOT commands)
+        set(${out_outputs} "" PARENT_SCOPE)
+        return()
+    endif()
+
+    add_custom_target(${target}_copy_qml_modules
+        ${commands}
+        COMMENT "Copying QML modules for ${target}"
+        VERBATIM
+    )
+
+    set(${out_outputs} "${target}_copy_qml_modules" PARENT_SCOPE)
 endfunction()
 
 function(_qt_internal_android_copy_qml_dependencies target deployment_dir)
@@ -2129,9 +2145,6 @@ function(_qt_internal_android_copy_qml_dependencies target deployment_dir)
     set(qml_bundle_dir "${deployment_dir}/assets/android_rcc_bundle")
     _qt_internal_android_copy_qml_modules_outputs(${target} "${qml_bundle_dir}" "${qml_modules}"
         copy_qml_modules_outputs)
-    if(copy_qml_modules_outputs)
-        add_custom_target(${target}_copy_qml_modules DEPENDS ${copy_qml_modules_outputs})
-    endif()
 
     if(qml_plugins)
         # Store QML plugins for later scanning with llvm-readobj
@@ -2154,8 +2167,6 @@ function(_qt_internal_android_copy_qml_dependencies target deployment_dir)
 
         set_property(TARGET ${target} APPEND PROPERTY _qt_android_deployment_files "${bundle_rcc}")
         add_custom_target(${target}_build_qml_bundle DEPENDS "${bundle_rcc}")
-        if(TARGET ${target}_copy_qml_modules)
-            add_dependencies(${target}_build_qml_bundle ${target}_copy_qml_modules)
-        endif()
+        add_dependencies(${target}_build_qml_bundle "${copy_qml_modules_outputs}")
     endif()
 endfunction()
