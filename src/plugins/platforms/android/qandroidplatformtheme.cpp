@@ -475,6 +475,30 @@ Java_org_qtproject_qt_android_QtActivityDelegateBase_updateUiContrast(JNIEnv *, 
                                                 : Qt::ContrastPreference::NoPreference;
 }
 
+static Qt::MotionPreference s_motionPreference = Qt::MotionPreference::NoPreference;
+
+Qt::MotionPreference QAndroidPlatformTheme::motionPreference() const
+{
+    return s_motionPreference;
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_org_qtproject_qt_android_QtActivityDelegateBase_updateUiMotionScale(JNIEnv *, jobject,
+                                                                         jfloat newUiMotion)
+{
+    const Qt::MotionPreference preference = qFuzzyIsNull(newUiMotion)
+                                                ? Qt::MotionPreference::ReducedMotion
+                                                : Qt::MotionPreference::NoPreference;
+    if (s_motionPreference == preference)
+        return;
+    s_motionPreference = preference;
+    if (!qGuiApp)
+        return;
+    QMetaObject::invokeMethod(qGuiApp, [] {
+        QWindowSystemInterface::handleThemeChange();
+    });
+}
+
 static inline int paletteType(QPlatformTheme::Palette type)
 {
     switch (type) {

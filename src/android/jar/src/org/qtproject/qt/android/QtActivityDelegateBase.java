@@ -5,6 +5,7 @@
 
 package org.qtproject.qt.android;
 
+import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.app.UiModeManager;
 import android.content.pm.ActivityInfo;
@@ -31,6 +32,7 @@ abstract class QtActivityDelegateBase
 
     static native boolean canOverrideColorSchemeHint();
     static native void updateUiContrast(float newUiContrast);
+    static native void updateUiMotionScale(float newUiMotionScale);
 
     // Subclass must implement these
     abstract void startNativeApplicationImpl(String appParams, String mainLib);
@@ -83,6 +85,11 @@ abstract class QtActivityDelegateBase
         m_membersInitialized = true;
         m_topLevelWindows.clear();
         m_displayManager.registerDisplayListener();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            ValueAnimator.registerDurationScaleChangeListener(
+                            QtActivityDelegateBase::updateUiMotionScale);
+            updateUiMotionScale(ValueAnimator.getDurationScale());
+        }
         m_inputDelegate.initInputMethodManager(m_activity);
 
         try {
