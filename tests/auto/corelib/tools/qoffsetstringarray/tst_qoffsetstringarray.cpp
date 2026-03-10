@@ -24,6 +24,7 @@ constexpr const auto messages = qOffsetStringArray(
     "level - 3",
     "level - 4"
 );
+static_assert(messages.MaxElementLength == std::char_traits<char>::length("level - 0"));
 
 // When compiled with C++20, this is using the native char8_t
 constexpr auto utf8Messages = qOffsetStringArray(
@@ -33,6 +34,7 @@ constexpr auto utf8Messages = qOffsetStringArray(
     u8"level - 3",
     u8"level - 4"
 );
+static_assert(utf8Messages.MaxElementLength == std::char_traits<char>::length("level - 0"));
 
 constexpr auto utf16Messages = qOffsetStringArray(
     u"level - 0",
@@ -41,6 +43,7 @@ constexpr auto utf16Messages = qOffsetStringArray(
     u"level - 3",
     u"level - 4"
 );
+static_assert(utf16Messages.MaxElementLength == std::char_traits<char>::length("level - 0"));
 
 constexpr const auto messages257 = qOffsetStringArray(
     "", "", "", "", "", "", "", "", "", "",
@@ -72,6 +75,7 @@ constexpr const auto messages257 = qOffsetStringArray(
     "", "", "", "", "", "", "", "", "", "",
     "", "", "", "", "", "", "end"
 );
+static_assert(messages257.MaxElementLength == std::char_traits<char>::length("end"));
 
 constexpr const auto messagesBigOffsets = qOffsetStringArray(
     "        10        20        30        40        50        60        70        80        90",
@@ -79,6 +83,7 @@ constexpr const auto messagesBigOffsets = qOffsetStringArray(
     "        10        20        30        40        50        60        70        80        90",
     "        10        20        30        40        50        60        70        80        90"
 );
+static_assert(messagesBigOffsets.MaxElementLength == 90);
 
 void tst_QOffsetStringArray::init()
 {
