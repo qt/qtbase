@@ -81,7 +81,7 @@ public:
         subvolume = std::move(info.fsRoot);
     }
 
-    QStorageInfoPrivate(MountInfo &&info)
+    explicit QStorageInfoPrivate(MountInfo &&info)
     {
         setFromMountInfo(std::move(info));
     }
