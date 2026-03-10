@@ -123,6 +123,7 @@ private:
     inline int findOffset(int node) const { return node * (14 + (version >= 0x02 ? 8 : 0)); } //sizeof each tree element
     uint hash(int node) const;
     QString name(int node) const;
+    bool nameMatches(int node, QStringView other) const;
     short flags(int node) const;
 public:
     mutable QAtomicInt ref;
@@ -789,6 +790,27 @@ inline QString QResourceRoot::name(int node) const
     return ret;
 }
 
+inline bool QResourceRoot::nameMatches(int node, QStringView other) const
+{
+    if (!node) // root
+        return other.isEmpty();
+    const int offset = findOffset(node);
+
+    qint32 name_offset = qFromBigEndian<qint32>(tree + offset);
+    qsizetype name_length = qFromBigEndian<qint16>(names + name_offset);
+    name_offset += 2;
+    name_offset += 4; //jump past hash
+
+    if (other.size() != name_length)
+        return false;
+    const QChar *strData = reinterpret_cast<const QChar *>(names + name_offset);
+    for (qsizetype ch = 0; ch < name_length; ++ch) {
+        if (other.at(ch) != qFromBigEndian<char16_t>(strData + ch))
+            return false;
+    }
+    return true;
+}
+
 int QResourceRoot::findNode(const QString &_path, const QLocale &locale) const
 {
     QString path = _path;
@@ -855,7 +877,7 @@ int QResourceRoot::findNode(const QString &_path, const QLocale &locale) const
                 --sub_node;
             for (; sub_node < child + child_count && hash(sub_node) == h;
                  ++sub_node) { // here we go...
-                if (name(sub_node) == segment) {
+                if (nameMatches(sub_node, segment)) {
                     found = true;
                     int offset = findOffset(sub_node);
 #ifdef DEBUG_RESOURCE_MATCH
