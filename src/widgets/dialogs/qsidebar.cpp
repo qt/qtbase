@@ -46,7 +46,7 @@ QUrlModel::QUrlModel(QObject *parent) : QStandardItemModel(parent), showFullPath
 
 QUrlModel::~QUrlModel()
 {
-    for (const auto &conn : std::as_const(modelConnections))
+    for (auto &conn : modelConnections)
         disconnect(conn);
 }
 
@@ -288,7 +288,7 @@ void QUrlModel::setFileSystemModel(QFileSystemModel *model)
     if (model == fileSystemModel)
         return;
     if (fileSystemModel != nullptr) {
-        for (const auto &conn : std::as_const(modelConnections))
+        for (auto &conn : modelConnections)
             disconnect(conn);
     }
     fileSystemModel = model;
