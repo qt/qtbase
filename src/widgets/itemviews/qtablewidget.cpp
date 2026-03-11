@@ -1644,7 +1644,7 @@ void QTableWidgetPrivate::setup()
 
 void QTableWidgetPrivate::clearConnections()
 {
-    for (const QMetaObject::Connection &connection : connections)
+    for (QMetaObject::Connection &connection : connections)
         QObject::disconnect(connection);
 }
 
