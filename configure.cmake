@@ -1306,12 +1306,17 @@ qt_feature("coverage"
     CONDITION QT_FEATURE_coverage_gcov
 )
 
-qt_feature("android_16kb_pages"
+# Mark the feature as PRIVATE because we want it to be exported, but we don't want modifications
+# in the public qconfig.h header in a patch release.
+qt_feature("android_16kb_pages" PRIVATE
     LABEL "Using 16KB page sizes in Android"
     CONDITION ANDROID AND (((CMAKE_ANDROID_NDK_VERSION VERSION_GREATER_EQUAL "25.0.0"))
                           AND ((CMAKE_ANDROID_ARCH_ABI STREQUAL "arm64-v8a") OR
                               (CMAKE_ANDROID_ARCH_ABI STREQUAL "x86_64")))
 )
+# The feature is saved into the public QT_CONFIG var in the qt_lib_core.pri file, to ensure it's
+# available automatically for testing with qtConfig() in all user projects.
+qt_feature_config("android_16kb_pages" QMAKE_PUBLIC_QT_CONFIG)
 
 qt_configure_add_summary_build_type_and_config()
 qt_configure_add_summary_section(NAME "Build options")
