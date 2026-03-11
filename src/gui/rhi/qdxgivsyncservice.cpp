@@ -377,6 +377,12 @@ void QDxgiVSyncService::registerWindow(QWindow *window)
     if (disableService || windows.contains(window))
         return;
 
+    if (window->format().swapInterval() == 0) {
+        qCDebug(lcQpaScreenUpdates) << "QDxgiVSyncService: window" << window
+                                    << "has swapInterval 0, skipping this window";
+        return;
+    }
+
     qCDebug(lcQpaScreenUpdates) << "QDxgiVSyncService: adding window" << window;
 
     WindowData wd;
