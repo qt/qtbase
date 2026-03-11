@@ -5193,7 +5193,8 @@ bool QRhiGles2::compileShader(GLuint program, const QRhiShaderStage &shaderStage
                 log.resize(infoLogLength);
                 f->glGetShaderInfoLog(shader, infoLogLength, &length, log.data());
             }
-            qWarning("Failed to compile shader: %s\nSource was:\n%s", log.constData(), source.constData());
+            qWarning("Failed to compile shader: %s\n", log.constData());
+            qCDebug(QRHI_LOG_INFO, "Source of failed shader was:\n%s", source.constData());
             return false;
         }
         if (m_shaderCache.size() >= MAX_SHADER_CACHE_ENTRIES) {
