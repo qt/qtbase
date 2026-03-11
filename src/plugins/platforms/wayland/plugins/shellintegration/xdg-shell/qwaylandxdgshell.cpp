@@ -288,6 +288,18 @@ void QWaylandXdgSurface::Popup::grab(QWaylandInputDevice *seat, uint serial)
     m_grabbing = true;
 }
 
+void QWaylandXdgSurface::Popup::reposition()
+{
+    if (version() < XDG_POPUP_REPOSITIONED_SINCE_VERSION)
+        return;
+
+    std::unique_ptr<Positioner> positioner = m_xdgSurface->createPositioner(m_xdgSurface->window()->transientParent());
+    m_waitingForRepositionSerial++;
+    xdg_popup::reposition(positioner->object(), m_waitingForRepositionSerial);
+    m_waitingForReposition = true;
+    m_xdgSurface->window()->updateExposure();
+}
+
 void QWaylandXdgSurface::Popup::xdg_popup_configure(int32_t x, int32_t y, int32_t width, int32_t height)
 {
     m_pendingGeometry = QRect(x, y, width, height);
@@ -666,17 +678,24 @@ void QWaylandXdgSurface::setWindowPosition(const QPoint &position)
 {
     Q_UNUSED(position);
 
-    if (!m_popup)
-        return;
+    if (m_popup)
+        m_popup->reposition();
+}
 
-    if (m_popup->version() < XDG_POPUP_REPOSITIONED_SINCE_VERSION)
-        return;
+void QWaylandXdgSurface::setWindowSize(const QSize &size)
+{
+    Q_UNUSED(size);
 
-    std::unique_ptr<Positioner> positioner = createPositioner(m_window->transientParent());
-    m_popup->m_waitingForRepositionSerial++;
-    m_popup->reposition(positioner->object(), m_popup->m_waitingForRepositionSerial);
-    m_popup->m_waitingForReposition = true;
-    window()->updateExposure();
+    if (m_popup)
+        m_popup->reposition();
+}
+
+void QWaylandXdgSurface::setWindowGeometry(const QRect &rect)
+{
+    Q_UNUSED(rect);
+
+    if (m_popup)
+        m_popup->reposition();
 }
 
 std::unique_ptr<QWaylandXdgSurface::Positioner> QWaylandXdgSurface::createPositioner(QWaylandWindow *parent)
