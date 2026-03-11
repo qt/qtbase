@@ -2048,7 +2048,7 @@ void QSortFilterProxyModel::setSourceModel(QAbstractItemModel *sourceModel)
     beginResetModel();
 
     if (d->model) {
-        for (const QMetaObject::Connection &connection : std::as_const(d->sourceConnections))
+        for (QMetaObject::Connection &connection : d->sourceConnections)
             disconnect(connection);
     }
 
