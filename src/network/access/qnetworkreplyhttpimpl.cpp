@@ -912,7 +912,8 @@ void QNetworkReplyHttpImplPrivate::postRequest(const QNetworkRequest &newHttpReq
     // connections list. This orphaned list will be cleaned up next time 'thread' emits a signal,
     // unfortunately that's the finished signal. It leads to a soft-leak so we do this to disconnect
     // it on deletion so that it cleans up the orphan immediately.
-    QObject::connect(delegate, &QObject::destroyed, delegate, [threadFinishedConnection]() {
+    QObject::connect(delegate, &QObject::destroyed,
+                     delegate, [threadFinishedConnection] () mutable {
         if (bool(threadFinishedConnection))
             QObject::disconnect(threadFinishedConnection);
     });
