@@ -64,6 +64,8 @@ public:
     bool isAlertState() const override { return m_alertState; }
     QString externWindowHandle() override;
     void setWindowPosition(const QPoint &position) override;
+    void setWindowSize(const QSize &size) override;
+    void setWindowGeometry(const QRect &rect) override;
     void setIcon(const QIcon &icon) override;
 
     void setSizeHints();
@@ -128,6 +130,8 @@ private:
         void resetConfiguration();
 
         void grab(QWaylandInputDevice *seat, uint serial);
+        void reposition();
+
         void xdg_popup_configure(int32_t x, int32_t y, int32_t width, int32_t height) override;
         void xdg_popup_popup_done() override;
         void xdg_popup_repositioned(uint32_t token) override;
