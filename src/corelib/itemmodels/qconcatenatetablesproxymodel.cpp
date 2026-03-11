@@ -8,6 +8,8 @@
 #include "qmap.h"
 #include "qdebug.h"
 
+#include <array>
+
 QT_BEGIN_NAMESPACE
 
 class QConcatenateTablesProxyModelPrivate : public QAbstractItemModelPrivate
