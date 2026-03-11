@@ -38,18 +38,18 @@ QByteArray QDBusArgumentPrivate::createSignature(QMetaType type)
         return "";
 
     QByteArray signature;
-    QDBusMarshaller *marshaller = new QDBusMarshaller;
-    marshaller->ba = &signature;
+    const bool ok = [&signature, &type] {
+        QDBusMarshaller marshaller;
+        marshaller.ba = &signature;
 
-    // run it
-    QVariant v{type};
-    QDBusArgument arg(marshaller);
-    QDBusMetaType::marshall(arg, v.metaType(), v.constData());
-    arg.d = nullptr;
+        // run it
+        QVariant v{type};
+        QDBusArgument arg(&marshaller);
+        QDBusMetaType::marshall(arg, v.metaType(), v.constData());
+        arg.d = nullptr;
 
-    // delete it
-    bool ok = marshaller->ok;
-    delete marshaller;
+        return marshaller.ok;
+    }();
 
     if (signature.isEmpty() || !ok || !QDBusUtil::isValidSingleSignature(QString::fromLatin1(signature))) {
         qWarning("QDBusMarshaller: type '%s' produces invalid D-Bus signature '%s' "
