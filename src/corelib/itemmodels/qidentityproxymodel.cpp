@@ -290,7 +290,7 @@ void QIdentityProxyModel::setSourceModel(QAbstractItemModel* newSourceModel)
     // Call QObject::disconnect() unconditionally, if there is an existing source
     // model, it's disconnected, and if there isn't, then calling disconnect() on
     // a default-constructed Connection does nothing
-    for (const auto &c : d->m_sourceModelConnections)
+    for (auto &c : d->m_sourceModelConnections)
         QObject::disconnect(c);
 
     QAbstractProxyModel::setSourceModel(newSourceModel);
