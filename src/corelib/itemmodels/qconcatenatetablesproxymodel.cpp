@@ -70,6 +70,9 @@ public:
                     std::is_same<ConnArray::value_type, Args>...
                 >,
             bool>;
+        Q_DISABLE_COPY(ModelInfo)
+        ModelInfo(ModelInfo &&) = default;
+        ModelInfo &operator=(ModelInfo &&) = default;
         template <typename...Args, if_compatible<Args...> = true>
         explicit ModelInfo(QAbstractItemModel *m, Args&&...args)
             : model(m), connections{std::forward<Args>(args)...} {}
