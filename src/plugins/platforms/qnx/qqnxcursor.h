@@ -17,6 +17,7 @@ class QQnxCursor : public QPlatformCursor
 {
 public:
     QQnxCursor(screen_context_t context);
+    ~QQnxCursor();
 
 #if !defined(QT_NO_CURSOR)
     void changeCursor(QCursor *windowCursor, QWindow *window) override;
@@ -30,6 +31,7 @@ private:
     screen_context_t m_screenContext;
     screen_session_t m_session = 0;
     int m_currentCShape = 0;
+    bool m_customCursorEnabled = false;
 };
 
 QT_END_NAMESPACE
