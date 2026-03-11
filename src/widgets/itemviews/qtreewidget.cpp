@@ -2286,7 +2286,7 @@ QDataStream &operator>>(QDataStream &in, QTreeWidgetItem &item)
 
 void QTreeWidgetPrivate::clearConnections()
 {
-    for (const QMetaObject::Connection &connection : connections)
+    for (QMetaObject::Connection &connection : connections)
         QObject::disconnect(connection);
 }
 
