@@ -91,6 +91,8 @@ public:
 
     std::uint32_t siblingsCount() const;
 
+    void moveTo(std::uint32_t index);
+
 private:
     static std::set<::ArkUI_NodeHandle> qtManagedNodes;
 
