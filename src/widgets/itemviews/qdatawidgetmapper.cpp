@@ -78,12 +78,12 @@ public:
 
     void disconnectModel()
     {
-        for (const QMetaObject::Connection &connection : modelConnections)
+        for (QMetaObject::Connection &connection : modelConnections)
             QObject::disconnect(connection);
     }
     void disconnectDelegate()
     {
-        for (const QMetaObject::Connection &connection : delegateConnections)
+        for (QMetaObject::Connection &connection : delegateConnections)
             QObject::disconnect(connection);
     }
 
