@@ -99,7 +99,7 @@ QTextEditPrivate::QTextEditPrivate()
 
 QTextEditPrivate::~QTextEditPrivate()
 {
-    for (const QMetaObject::Connection &connection : connections)
+    for (QMetaObject::Connection &connection : connections)
         QObject::disconnect(connection);
 }
 
