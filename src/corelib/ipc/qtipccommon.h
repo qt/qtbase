@@ -59,7 +59,7 @@ public:
 
     QNativeIpcKey(QNativeIpcKey &&other) noexcept
         : d(std::exchange(other.d, nullptr)), key(std::move(other.key)),
-          typeAndFlags(std::move(other.typeAndFlags))
+          typeAndFlags(other.typeAndFlags)
     {
         if (isSlowPath())
             move_internal(std::move(other));
