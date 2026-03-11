@@ -1392,10 +1392,9 @@ public:
                 QModelRoleDataSpan roleDataSpan(roleDataArray);
                 multiData(index, roleDataSpan);
 
-                for (auto &&roleData : std::move(roleDataSpan)) {
-                    QVariant data = roleData.data();
-                    if (data.isValid())
-                        result[roleData.role()] = std::move(data);
+                for (QModelRoleData &roleData : roleDataSpan) {
+                    if (roleData.data().isValid())
+                        result[roleData.role()] = std::move(roleData.data());
                 }
             }
         }
