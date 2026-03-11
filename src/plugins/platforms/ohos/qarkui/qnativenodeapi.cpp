@@ -7,6 +7,7 @@
 #include <arkui/native_interface.h>
 #include <arkui/native_node.h>
 #include <arkui/native_type.h>
+#include <qarkui/qarkuiutils.h>
 #include <qohosutils.h>
 
 QT_BEGIN_NAMESPACE
@@ -319,6 +320,13 @@ std::uint32_t Node::siblingsCount() const
     return parentHandle != nullptr
         ? nativeNodeApi().getTotalChildCount(parentHandle) - 1
         : 0;
+}
+
+void Node::moveTo(std::uint32_t index)
+{
+    QArkUi::callArkUi(
+        Q_OHOS_NAMED_FUNC(::OH_ArkUI_NodeUtils_MoveTo),
+        handle(), nativeNodeApi().getParent(handle()), index);
 }
 
 QOhosOptional<::ArkUI_NodeHandle> Node::tryfindChild(
