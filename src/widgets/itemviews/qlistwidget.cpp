@@ -1097,9 +1097,9 @@ void QListWidgetPrivate::setup()
 
 void QListWidgetPrivate::clearConnections()
 {
-    for (const QMetaObject::Connection &connection : connections)
+    for (QMetaObject::Connection &connection : connections)
         QObject::disconnect(connection);
-    for (const QMetaObject::Connection &connection : selectionModelConnections)
+    for (QMetaObject::Connection &connection : selectionModelConnections)
         QObject::disconnect(connection);
 }
 
@@ -1380,7 +1380,7 @@ void QListWidget::setSelectionModel(QItemSelectionModel *selectionModel)
 {
     Q_D(QListWidget);
 
-    for (const QMetaObject::Connection &connection : d->selectionModelConnections)
+    for (QMetaObject::Connection &connection : d->selectionModelConnections)
         disconnect(connection);
 
     QListView::setSelectionModel(selectionModel);
