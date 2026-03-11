@@ -3,9 +3,12 @@
 // Qt-Security score:significant reason:default
 
 #include "qconcatenatetablesproxymodel.h"
+
 #include <private/qabstractitemmodel_p.h>
+
 #include "qsize.h"
 #include "qmap.h"
+#include <QtCore/qvarlengtharray.h>
 #include "qdebug.h"
 
 #include <array>
@@ -73,19 +76,18 @@ public:
         QAbstractItemModel *model = nullptr;
         ConnArray connections;
     };
-    QList<ModelInfo> m_models;
+    QVarLengthArray<ModelInfo, 16> m_models;
     mutable QHash<int, QByteArray> m_roleNames;
 
-    QList<ModelInfo>::const_iterator findSourceModel(const QAbstractItemModel *m) const
+    const ModelInfo *findSourceModel(const QAbstractItemModel *m) const
     {
         auto byModelPtr = [m](const auto &modInfo) { return modInfo.model == m; };
         return std::find_if(m_models.cbegin(), m_models.cend(), byModelPtr);
     }
 
-    QList<ModelInfo>::iterator findSourceModel(const QAbstractItemModel *m)
+    ModelInfo *findSourceModel(const QAbstractItemModel *m)
     {
-        auto byModelPtr = [m](const auto &modInfo) { return modInfo.model == m; };
-        return std::find_if(m_models.begin(), m_models.end(), byModelPtr);
+        return const_cast<ModelInfo *>(std::as_const(*this).findSourceModel(m));
     }
 
     bool containsSourceModel(const QAbstractItemModel *m) const
@@ -384,7 +386,7 @@ bool QConcatenateTablesProxyModelPrivate::mapDropCoordinatesToSource(int row, in
         // Drop after the last item
         if (row == -1 || row == m_rowCount) {
             *sourceRow = -1;
-            *sourceModel = m_models.constLast().model;
+            *sourceModel = m_models.back().model;
             return true;
         }
         // Drop between toplevel items
