@@ -9,6 +9,8 @@
 
 #include <qvarlengtharray.h>
 
+#include <private/qstringconverter_p.h>
+
 #include <memory>
 
 #include <stdlib.h>
@@ -21,8 +23,7 @@ QT_BEGIN_NAMESPACE
     libraries to iterate over the directory represented by \a entry.
 */
 QFileSystemIterator::QFileSystemIterator(const QFileSystemEntry &entry)
-    : dirPath(entry.filePath()),
-      toUtf16(QStringDecoder::Utf8)
+    : dirPath(entry.filePath())
 {
     dir.reset(QT_OPENDIR(entry.nativeFilePath().constData()));
     if (!dir) {
@@ -75,6 +76,7 @@ bool QFileSystemIterator::advance(QFileSystemEntry &fileEntry, QFileSystemMetaDa
             QByteArrayView name(dirEntry->d_name, strlen(dirEntry->d_name));
             // name.size() is sufficient here, see QUtf8::convertToUnicode() for details
             QVarLengthArray<char16_t> buffer(name.size());
+            QStringDecoder toUtf16(QStringDecoder::Utf8);
             auto *end = toUtf16.appendToBuffer(buffer.data(), name);
             buffer.resize(end - buffer.constData());
             if (!toUtf16.hasError()) {

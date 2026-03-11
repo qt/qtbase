@@ -26,10 +26,6 @@
 #include <QtCore/private/qfilesystementry_p.h>
 #include <QtCore/private/qfilesystemmetadata_p.h>
 
-#if !defined(Q_OS_WIN)
-#include <private/qstringconverter_p.h>
-#endif
-
 #include <memory>
 
 QT_BEGIN_NAMESPACE
@@ -64,7 +60,6 @@ private:
 
     QT_DIRENT *dirEntry = nullptr;
     int lastError = 0;
-    QStringDecoder toUtf16;
 #endif
 
     Q_DISABLE_COPY_MOVE(QFileSystemIterator)
