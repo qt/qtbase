@@ -1305,7 +1305,7 @@ void QLabelPrivate::clearContents()
     shortcutId = 0;
 #endif
 #if QT_CONFIG(movie)
-    for (const auto &conn : std::as_const(movieConnections))
+    for (auto &conn : movieConnections)
         QObject::disconnect(conn);
     movie = nullptr;
 #endif
