@@ -77,6 +77,7 @@ private slots:
     void treeIterate();
     void treeAccess();
     void treeWriteAccess();
+    void treeFindRecursively();
 
     void insertRow();
     void insertRows();
@@ -2036,6 +2037,29 @@ void tst_QRangeModelAdapter::treeWriteAccess()
         QCOMPARE(row->description(), "deleted");
 
     }
+}
+
+void tst_QRangeModelAdapter::treeFindRecursively()
+{
+    QRangeModelAdapter adapter(createValueTree());
+    QStringView needle = u"2.3.2";
+    QList<int> path;
+    while (true) {
+        auto it = std::find_if(adapter.cbegin(), adapter.cend(), [needle](const auto &row){
+            return needle.startsWith(row->value());
+        });
+        QVERIFY(it != adapter.cend());
+        path.append(it - adapter.cbegin());
+        if (it->value() == needle)
+            break;
+        if ((*it).hasChildren()) {
+            adapter = (*it).children();
+        } else {
+            path = {};
+            break;
+        }
+    }
+    QCOMPARE(path, (QList<int>{1, 2, 1}));
 }
 
 void tst_QRangeModelAdapter::insertRow()
