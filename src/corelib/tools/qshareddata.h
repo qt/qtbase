@@ -353,31 +353,32 @@ void swap(QExplicitlySharedDataPointer<T> &p1, QExplicitlySharedDataPointer<T> &
 template<typename T> Q_DECLARE_TYPEINFO_BODY(QSharedDataPointer<T>, Q_RELOCATABLE_TYPE);
 template<typename T> Q_DECLARE_TYPEINFO_BODY(QExplicitlySharedDataPointer<T>, Q_RELOCATABLE_TYPE);
 
+#define QT_DECLARE_QSDP_SPECIALIZATION_DTOR_COMMON(Pointer, Class, ExportMacro) \
+    template<> ExportMacro Pointer<Class>::~Pointer();
+#define QT_DEFINE_QSDP_SPECIALIZATION_DTOR_COMMON(Pointer, Class, Inline)       \
+    template<> Inline Pointer<Class>::~Pointer()                                \
+    { \
+        if (d && !d->ref.deref()) \
+            delete d.get(); \
+    }
+
 #define QT_DECLARE_QSDP_SPECIALIZATION_DTOR(Class) \
-    template<> QSharedDataPointer<Class>::~QSharedDataPointer();
+    QT_DECLARE_QSDP_SPECIALIZATION_DTOR_COMMON(QSharedDataPointer, Class, )
 
 #define QT_DECLARE_QSDP_SPECIALIZATION_DTOR_WITH_EXPORT(Class, ExportMacro) \
-    template<> ExportMacro QSharedDataPointer<Class>::~QSharedDataPointer();
+    QT_DECLARE_QSDP_SPECIALIZATION_DTOR_COMMON(QSharedDataPointer, Class, ExportMacro)
 
 #define QT_DEFINE_QSDP_SPECIALIZATION_DTOR(Class) \
-    template<> QSharedDataPointer<Class>::~QSharedDataPointer() \
-    { \
-        if (d && !d->ref.deref()) \
-            delete d.get(); \
-    }
+    QT_DEFINE_QSDP_SPECIALIZATION_DTOR_COMMON(QSharedDataPointer, Class, )
 
 #define QT_DECLARE_QESDP_SPECIALIZATION_DTOR(Class) \
-    template<> QExplicitlySharedDataPointer<Class>::~QExplicitlySharedDataPointer();
+    QT_DECLARE_QSDP_SPECIALIZATION_DTOR_COMMON(QExplicitlySharedDataPointer, Class, )
 
 #define QT_DECLARE_QESDP_SPECIALIZATION_DTOR_WITH_EXPORT(Class, ExportMacro) \
-    template<> ExportMacro QExplicitlySharedDataPointer<Class>::~QExplicitlySharedDataPointer();
+    QT_DECLARE_QSDP_SPECIALIZATION_DTOR_COMMON(QExplicitlySharedDataPointer, Class, ExportMacro)
 
 #define QT_DEFINE_QESDP_SPECIALIZATION_DTOR(Class) \
-    template<> QExplicitlySharedDataPointer<Class>::~QExplicitlySharedDataPointer() \
-    { \
-        if (d && !d->ref.deref()) \
-            delete d.get(); \
-    }
+    QT_DEFINE_QSDP_SPECIALIZATION_DTOR_COMMON(QExplicitlySharedDataPointer, Class, )
 
 QT_END_NAMESPACE
 
