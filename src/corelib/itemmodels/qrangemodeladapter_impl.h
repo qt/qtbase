@@ -361,7 +361,7 @@ struct ParentIndex
 template <>
 struct ParentIndex<true>
 {
-    const QModelIndex m_rootIndex;
+    QModelIndex m_rootIndex;
     QModelIndex root() const { return m_rootIndex; }
 };
 
