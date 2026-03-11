@@ -273,11 +273,12 @@ function(_qt_internal_android_prepare_gradle_build target)
     _qt_internal_android_copy_target_package_sources(${target} "${deployment_dir}")
     _qt_internal_android_copy_android_resources(${target} "${deployment_dir}")
     _qt_internal_android_copy_app_binary(${target} "${deployment_dir}")
-    _qt_internal_android_copy_non_qt_linked_libs(${target} "${deployment_dir}")
     _qt_internal_android_copy_stdlib(${target} "${deployment_dir}")
     _qt_internal_android_copy_extra_libs(${target} "${deployment_dir}")
     _qt_internal_android_copy_extra_plugins(${target} "${deployment_dir}")
     _qt_internal_android_copy_qml_dependencies(${target} "${deployment_dir}")
+    _qt_internal_android_copy_local_plugin_targets(${target} "${deployment_dir}")
+    _qt_internal_android_copy_non_qt_linked_libs(${target} "${deployment_dir}")
     _qt_internal_android_copy_qt_dependencies(${target} "${deployment_dir}")
     _qt_internal_android_generate_libs_xml(${target} "${deployment_dir}")
 
@@ -370,6 +371,7 @@ function(_qt_internal_android_add_gradle_build target type)
             ${target}_copy_non_qt_linked_libs
             ${target}_copy_extra_libs
             ${target}_copy_extra_plugins
+            ${target}_copy_local_plugin_targets
             ${target}_copy_qt_files
             ${target}_update_libs_xml
             ${extra_deps}
@@ -1016,6 +1018,68 @@ function(_qt_internal_android_copy_extra_plugins target deployment_dir)
     )
 endfunction()
 
+function(_qt_internal_android_get_plugin_output_name target out_name)
+    get_target_property(name "${target}" LIBRARY_OUTPUT_NAME)
+    if(NOT name)
+        get_target_property(name "${target}" OUTPUT_NAME)
+    endif()
+    if(NOT name)
+        set(name "${target}")
+    endif()
+    set(${out_name} "${name}" PARENT_SCOPE)
+endfunction()
+
+# Collects project plugin targets added by add_dependencies() then deploy all
+# discovered plugins including the ones found by qmlimportscanner that were not
+# ready at configure time.
+function(_qt_internal_android_copy_local_plugin_targets target deployment_dir)
+    get_target_property(no_deploy_qt_libs ${target} QT_ANDROID_NO_DEPLOY_QT_LIBS)
+    if(no_deploy_qt_libs)
+        return()
+    endif()
+
+    if(TARGET ${target}_copy_local_plugin_targets)
+        return()
+    endif()
+
+    set(libs_abi_dir "${deployment_dir}/libs/${CMAKE_ANDROID_ARCH_ABI}")
+    set(copy_commands "")
+    set(copy_depends "")
+
+    # Deploy all collected plugin targets.
+    get_target_property(plugin_targets ${target} _qt_android_plugin_local_targets)
+    set(seen_destinations "")
+    foreach(plugin_target IN LISTS plugin_targets)
+        if(NOT TARGET "${plugin_target}")
+            continue()
+        endif()
+        _qt_internal_android_get_plugin_output_name("${plugin_target}" plugin_out_name)
+        set(plugin_filename "lib${plugin_out_name}_${CMAKE_ANDROID_ARCH_ABI}.so")
+        _qt_internal_path_join(plugin_dst "${libs_abi_dir}" "${plugin_filename}")
+        if(plugin_dst IN_LIST seen_destinations)
+            continue()
+        endif()
+        list(APPEND seen_destinations "${plugin_dst}")
+
+        _qt_internal_android_get_deploy_command(deploy_cmd
+            "$<TARGET_FILE:${plugin_target}>" "${plugin_dst}")
+        list(APPEND copy_commands COMMAND ${deploy_cmd})
+        list(APPEND copy_depends "${plugin_target}")
+    endforeach()
+
+    if(NOT copy_commands)
+        add_custom_target(${target}_copy_local_plugin_targets)
+        return()
+    endif()
+
+    add_custom_target(${target}_copy_local_plugin_targets
+        ${copy_commands}
+        DEPENDS ${copy_depends}
+        COMMENT "Copying local plugin targets for ${target}"
+        VERBATIM
+    )
+endfunction()
+
 # Copies non-Qt shared libraries linked to the target.
 function(_qt_internal_android_copy_non_qt_linked_libs target deployment_dir)
     if(QT_NO_COLLECT_BUILD_TREE_APK_DEPS)
@@ -1026,6 +1090,13 @@ function(_qt_internal_android_copy_non_qt_linked_libs target deployment_dir)
     set(queue "${target}")
     set(processed "")
     set(linked_libs "")
+
+    # Queue project plugin targets so that non-Qt libs they link against are deployed.
+    get_target_property(plugin_targets ${target} _qt_android_plugin_local_targets)
+    if(plugin_targets)
+        list(APPEND queue ${plugin_targets})
+    endif()
+
     while(queue)
         list(POP_FRONT queue current_target)
         get_target_property(current_alias "${current_target}" ALIASED_TARGET)
@@ -1146,13 +1217,19 @@ function(_qt_internal_android_extract_link_target raw_entry out_entry)
     set(${out_entry} "${entry}" PARENT_SCOPE)
 endfunction()
 
-# Collects Qt modules that 'target' depends on, with dependencies listed before
-# targets that depend on them.
+# Collects Qt modules that 'target' and its plugins depends on, with dependencies
+# listed before targets that depend on them.
 function(_qt_internal_android_collect_qt_modules target out_qt_modules)
     string(TOUPPER "${CMAKE_BUILD_TYPE}" build_type_upper)
     set(pending_stack "${target}")
     set(expanded_targets "")
     set(collected "")
+
+    # Collect Qt modules from local plugin targets
+    get_target_property(plugin_targets ${target} _qt_android_plugin_local_targets)
+    if(plugin_targets)
+        list(APPEND pending_stack ${plugin_targets})
+    endif()
 
     while(pending_stack)
         list(GET pending_stack -1 current_target)
@@ -2001,13 +2078,16 @@ function(_qt_internal_android_json_get_bool json index key out_value)
 endfunction()
 
 function(_qt_internal_android_parse_qmlimportscanner_output
-        target qml_scan qml_import_paths qml_root_paths out_qml_modules out_qml_plugins)
+        target qml_scan qml_import_paths qml_root_paths out_qml_modules out_qml_plugins
+        out_qml_plugin_local_targets)
     set(qml_modules "")
     set(qml_plugins "")
+    set(qml_plugin_local_targets "")
 
     if(qml_scan STREQUAL "")
         set(${out_qml_modules} "" PARENT_SCOPE)
         set(${out_qml_plugins} "" PARENT_SCOPE)
+        set(${out_qml_plugin_local_targets} "" PARENT_SCOPE)
         return()
     endif()
 
@@ -2015,6 +2095,7 @@ function(_qt_internal_android_parse_qmlimportscanner_output
     if(NOT module_count GREATER 0)
         set(${out_qml_modules} "" PARENT_SCOPE)
         set(${out_qml_plugins} "" PARENT_SCOPE)
+        set(${out_qml_plugin_local_targets} "" PARENT_SCOPE)
         return()
     endif()
 
@@ -2041,11 +2122,17 @@ function(_qt_internal_android_parse_qmlimportscanner_output
 
         set(skip_module FALSE)
         _qt_internal_android_json_get_string("${qml_scan}" ${mod_index} plugin plugin_name)
+        # TODO: look into projects shipping their own pre-built QML modules
         if(plugin_name)
             _qt_internal_android_json_get_bool("${qml_scan}" ${mod_index} pluginIsOptional optional)
+            # TODO: simplify and rely on the CMake targets only
+            _qt_internal_android_json_get_string("${qml_scan}" ${mod_index} linkTarget link_target)
             set(plugin_path "${module_abs}/lib${plugin_name}_${CMAKE_ANDROID_ARCH_ABI}.so")
-            if(EXISTS "${plugin_path}" OR TARGET "${plugin_name}")
+            string(FIND "${plugin_path}" "${CMAKE_BINARY_DIR}/" plugin_in_bindir)
+            if(EXISTS "${plugin_path}")
                 list(APPEND qml_plugins "${plugin_path}")
+            elseif(TARGET "${link_target}")
+                list(APPEND qml_plugin_local_targets "${link_target}")
             elseif(NOT optional)
                 if(NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_BUILDING_QT)
                     message(WARNING "QML plugin '${plugin_name}' not found for ${target}.")
@@ -2062,9 +2149,11 @@ function(_qt_internal_android_parse_qmlimportscanner_output
     endforeach()
 
     list(REMOVE_DUPLICATES qml_plugins)
+    list(REMOVE_DUPLICATES qml_plugin_local_targets)
 
     set(${out_qml_modules} "${qml_modules}" PARENT_SCOPE)
     set(${out_qml_plugins} "${qml_plugins}" PARENT_SCOPE)
+    set(${out_qml_plugin_local_targets} "${qml_plugin_local_targets}" PARENT_SCOPE)
 endfunction()
 
 function(_qt_internal_android_copy_qml_modules_outputs target qml_bundle_dir qml_modules out_outputs)
@@ -2136,9 +2225,9 @@ function(_qt_internal_android_copy_qml_dependencies target deployment_dir)
     endif()
 
     _qt_internal_android_parse_qmlimportscanner_output(${target} "${qml_scan_output}"
-        "${qml_import_paths}" "${qml_root_paths}" qml_modules qml_plugins)
+        "${qml_import_paths}" "${qml_root_paths}" qml_modules qml_plugins qml_plugin_local_targets)
 
-    if(NOT qml_modules AND NOT qml_plugins)
+    if(NOT qml_modules AND NOT qml_plugins AND NOT qml_plugin_local_targets)
         return()
     endif()
 
@@ -2149,6 +2238,12 @@ function(_qt_internal_android_copy_qml_dependencies target deployment_dir)
     if(qml_plugins)
         # Store QML plugins for later scanning with llvm-readobj
         set_property(TARGET ${target} PROPERTY _qt_android_qml_plugins "${qml_plugins}")
+    endif()
+
+    if(qml_plugin_local_targets)
+        # Add found QML plugin targets for later scanning for Qt modules and non-Qt linked libs.
+        set_property(TARGET ${target} APPEND
+            PROPERTY _qt_android_plugin_local_targets "${qml_plugin_local_targets}")
     endif()
 
     if(copy_qml_modules_outputs)
