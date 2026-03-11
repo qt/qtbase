@@ -233,7 +233,7 @@ public:
 
     inline void disconnectModel()
     {
-        for (const QMetaObject::Connection &connection : modelConnections)
+        for (QMetaObject::Connection &connection : modelConnections)
             QObject::disconnect(connection);
     }
 
