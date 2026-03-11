@@ -72,6 +72,12 @@ public:
         return std::find_if(m_models.cbegin(), m_models.cend(), byModelPtr);
     }
 
+    QList<ModelInfo>::iterator findSourceModel(const QAbstractItemModel *m)
+    {
+        auto byModelPtr = [m](const auto &modInfo) { return modInfo.model == m; };
+        return std::find_if(m_models.begin(), m_models.end(), byModelPtr);
+    }
+
     bool containsSourceModel(const QAbstractItemModel *m) const
     { return findSourceModel(m) != m_models.cend(); }
 
@@ -538,7 +544,7 @@ void QConcatenateTablesProxyModel::removeSourceModel(QAbstractItemModel *sourceM
     Q_D(QConcatenateTablesProxyModel);
 
     auto it = d->findSourceModel(sourceModel);
-    Q_ASSERT(it != d->m_models.cend());
+    Q_ASSERT(it != d->m_models.end());
     for (auto &c : it->connections)
         disconnect(c);
 
