@@ -1638,15 +1638,12 @@ public:
     template <typename LHS, typename RHS>
     void updateTarget(LHS &org, RHS &&copy) noexcept
     {
-        if constexpr (std::is_pointer_v<RHS>) {
+        if constexpr (std::is_pointer_v<RHS>)
             return;
-        } else {
-            using std::swap;
-            if constexpr (std::is_assignable_v<LHS, RHS>)
-                org = std::forward<RHS>(copy);
-            else
-                qSwap(org, copy);
-        }
+        else if constexpr (std::is_assignable_v<LHS, RHS>)
+            org = std::forward<RHS>(copy);
+        else
+            qSwap(org, copy);
     }
     template <typename LHS, typename RHS>
     void updateTarget(LHS *org, RHS &&copy) noexcept
