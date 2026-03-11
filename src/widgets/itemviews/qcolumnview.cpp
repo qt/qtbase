@@ -84,7 +84,7 @@ void QColumnViewPrivate::clearConnections()
 #if QT_CONFIG(animation)
     QObject::disconnect(animationConnection);
 #endif
-    for (const QMetaObject::Connection &connection : gripConnections)
+    for (QMetaObject::Connection &connection : gripConnections)
         QObject::disconnect(connection);
     const auto copy = viewConnections;  // disconnectView modifies this container
     for (auto it = copy.keyBegin(); it != copy.keyEnd(); ++it)
@@ -625,7 +625,7 @@ void QColumnViewPrivate::disconnectView(QAbstractItemView *view)
     const auto it = viewConnections.find(view);
     if (it == viewConnections.end())
         return;
-    for (const QMetaObject::Connection &connection : it.value())
+    for (QMetaObject::Connection &connection : it.value())
         QObject::disconnect(connection);
     viewConnections.erase(it);
 }
