@@ -831,11 +831,11 @@ void Q_TRACE_INSTRUMENT(qtcore) QCoreApplicationPrivate::init()
     // into account. If necessary, recompute right away and replay the manual changes on top of the
     // new lib paths.
     if (coreappdata->libPathsInitialized()) {
-        const QStringList appPaths = std::move(coreappdata->app_libpaths);
+        const QStringList appPaths = std::exchange(coreappdata->app_libpaths, {});
         Q_ASSERT(!coreappdata->libPathsInitialized());
 
         if (coreappdata->libPathsManuallySet()) {
-            const QStringList manualPaths = std::move(coreappdata->manual_libpaths);
+            const QStringList manualPaths = std::exchange(coreappdata->manual_libpaths, {});
             Q_ASSERT(!coreappdata->libPathsManuallySet());
 
             // Replay the delta. As paths can only be prepended to the front or removed from
