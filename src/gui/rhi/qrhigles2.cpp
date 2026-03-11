@@ -777,10 +777,16 @@ bool QRhiGles2::create(QRhi::Flags flags)
         ctx->setFormat(requestedFormat);
         if (maybeShareContext) {
             ctx->setShareContext(maybeShareContext);
-            ctx->setScreen(maybeShareContext->screen());
+            if (maybeWindow)
+                ctx->setScreen(maybeWindow->screen());
+            else
+                ctx->setScreen(maybeShareContext->screen());
         } else if (QOpenGLContext *shareContext = QOpenGLContext::globalShareContext()) {
             ctx->setShareContext(shareContext);
-            ctx->setScreen(shareContext->screen());
+            if (maybeWindow)
+                ctx->setScreen(maybeWindow->screen());
+            else
+                ctx->setScreen(shareContext->screen());
         } else if (maybeWindow) {
             ctx->setScreen(maybeWindow->screen());
         }
