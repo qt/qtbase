@@ -173,7 +173,7 @@ void QTransposeProxyModel::setSourceModel(QAbstractItemModel* newSourceModel)
         return;
     beginResetModel();
     if (d->model) {
-        for (const QMetaObject::Connection& discIter : std::as_const(d->sourceConnections))
+        for (QMetaObject::Connection &discIter : d->sourceConnections)
             disconnect(discIter);
     }
     d->sourceConnections.clear();
