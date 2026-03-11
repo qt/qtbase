@@ -3,7 +3,6 @@
 
 #include "qohosnativegestureshandler.h"
 #include <QtCore/private/qohoslogger_p.h>
-#include <private/qhighdpiscaling_p.h>
 #include <qohosinputmethodeventhandler.h>
 #include <qohosjsmain.h>
 #include <qohosplatformintegration.h>
@@ -83,8 +82,6 @@ void QOhosNativeGesturesHandler::processGestureEventsInQtThread(std::vector<QOho
             batch.begin(), batch.end(), mayDropGestureEvent),
         batch.end());
 
-    const auto *platformScreen = m_qWindowRef.data()->screen()->handle();
-
     for (auto &event : batch) {
         m_qtThreadEventTransformer(event);
 
@@ -94,7 +91,7 @@ void QOhosNativeGesturesHandler::processGestureEventsInQtThread(std::vector<QOho
                 .timestamp = event.gestureTimestamp,
                 .value = event.value,
                 .localPosition = event.localPosition,
-                .screenPosition = QHighDpi::fromNativePixels(event.displayBasedPosition, platformScreen),
+                .screenPosition = event.displayBasedPosition,
                 .gestureType = event.gestureType,
                 .deviceType = event.deviceType,
             });

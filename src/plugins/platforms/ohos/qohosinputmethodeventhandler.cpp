@@ -94,13 +94,11 @@ QPointF calculateTouchPointNormalPosition(QWindow *targetWindow, const QPointF &
 {
     auto *platformScreen = static_cast<QOhosPlatformScreen *>(targetWindow->screen()->handle());
 
-    QSize screenSizeScaled = QHighDpi::fromNative(
-        platformScreen->geometry().size(),
-        platformScreen->pixelScalingCoefficient());
+    QSize screenSize = platformScreen->geometry().size();
 
     QPointF clickPointNormalized(
-        clickPoint.x() / screenSizeScaled.width(),
-        clickPoint.y() / screenSizeScaled.height());
+        clickPoint.x() / screenSize.width(),
+        clickPoint.y() / screenSize.height());
 
     return clickPointNormalized;
 }

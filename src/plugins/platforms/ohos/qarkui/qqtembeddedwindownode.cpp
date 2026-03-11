@@ -251,6 +251,7 @@ std::shared_ptr<QQtEmbeddedWindowNode> QQtEmbeddedWindowNode::createOrFail(const
     xComponentNode->setAttributeOrFail(::NODE_FOCUSABLE, createInfo.focusable);
     xComponentNode->setAttributeOrFail(::NODE_RENDER_FIT, createInfo.renderFit);
     xComponentNode->setAttributeOrFail(::NODE_Z_INDEX, createInfo.zIndex);
+    xComponentNode->setLengthMetricUnitOrFail(::ARKUI_LENGTH_METRIC_UNIT_PX);
 
     stackNode->addChildOrFail(*xComponentNode);
 

@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include <QtCore/private/qohoscommon_p.h>
-#include <QtGui/private/qhighdpiscaling_p.h>
 #include <chrono>
 #include <cstdint>
 #include <functional>
@@ -162,9 +161,6 @@ void QOhosNativeNodeMouseInputHandler::processMouseEventsInQtThread(std::vector<
 
         auto mouseEvent = batch[i].mouseEvent;
         mouseEvent.targetWindow = targetWindow;
-        auto *platformScreen = static_cast<QOhosPlatformScreen *>(mouseEvent.targetWindow->screen()->handle());
-        mouseEvent.localPosition = QHighDpi::toNative(mouseEvent.localPosition, platformScreen->pixelScalingCoefficient());
-        mouseEvent.globalPosition = QHighDpi::toNative(mouseEvent.globalPosition, platformScreen->pixelScalingCoefficient());
         eventHandler->onMouseEvent(mouseEvent);
     }
 }

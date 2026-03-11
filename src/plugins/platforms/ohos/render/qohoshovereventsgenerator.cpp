@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include <QtCore/private/qohoscommon_p.h>
-#include <QtGui/private/qhighdpiscaling_p.h>
 #include <render/qohoshovereventsgenerator.h>
 
 QT_BEGIN_NAMESPACE
@@ -62,12 +61,11 @@ void QOhosHoverEventsGeneratorImpl::sendQtHoverEvent(bool isHover)
         [isHover, localPosition, globalPosition, qWindowRef = m_qWindowRef](QOhosInputMethodEventHandler &imEventHandler) {
             QWindow *qWindow = qWindowRef.data();
             if (qWindow != nullptr) {
-                auto *platformScreen = static_cast<QOhosPlatformScreen *>(qWindow->screen()->handle());
                 imEventHandler.onHoverEvent(
                     QOhosHoverEvent {
                         .targetWindow = qWindow,
-                        .localPosition = QHighDpi::toNative(localPosition, platformScreen->pixelScalingCoefficient()),
-                        .globalPosition = QHighDpi::toNative(globalPosition, platformScreen->pixelScalingCoefficient()),
+                        .localPosition = localPosition,
+                        .globalPosition = globalPosition,
                         .isHover = isHover,
                     });
             }
