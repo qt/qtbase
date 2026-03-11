@@ -187,7 +187,7 @@ void QTreeView::setModel(QAbstractItemModel *model)
     if (model == d->model)
         return;
     if (d->model && d->model != QAbstractItemModelPrivate::staticEmptyModel()) {
-        for (const QMetaObject::Connection &connection : d->modelConnections)
+        for (QMetaObject::Connection &connection : d->modelConnections)
             QObject::disconnect(connection);
     }
 
@@ -3141,9 +3141,9 @@ void QTreeViewPrivate::initialize()
 
 void QTreeViewPrivate::clearConnections()
 {
-    for (const QMetaObject::Connection &connection : modelConnections)
+    for (QMetaObject::Connection &connection : modelConnections)
         QObject::disconnect(connection);
-    for (const QMetaObject::Connection &connection : headerConnections)
+    for (QMetaObject::Connection &connection : headerConnections)
         QObject::disconnect(connection);
     QObject::disconnect(selectionmodelConnection);
     QObject::disconnect(sortHeaderConnection);
