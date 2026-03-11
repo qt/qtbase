@@ -250,9 +250,9 @@ void QAbstractItemViewPrivate::disconnectDelegate(QAbstractItemDelegate *delegat
 void QAbstractItemViewPrivate::disconnectAll()
 {
     Q_Q(QAbstractItemView);
-    for (const QMetaObject::Connection &connection : modelConnections)
+    for (QMetaObject::Connection &connection : modelConnections)
         QObject::disconnect(connection);
-    for (const QMetaObject::Connection &connection : scrollbarConnections)
+    for (QMetaObject::Connection &connection : scrollbarConnections)
       QObject::disconnect(connection);
     disconnectDelegate(itemDelegate);
     for (QAbstractItemDelegate *delegate : std::as_const(rowDelegates))
@@ -719,7 +719,7 @@ void QAbstractItemView::setModel(QAbstractItemModel *model)
     if (model == d->model)
         return;
     if (d->model && d->model != QAbstractItemModelPrivate::staticEmptyModel()) {
-        for (const QMetaObject::Connection &connection : d->modelConnections)
+        for (QMetaObject::Connection &connection : d->modelConnections)
             disconnect(connection);
     }
     d->model = (model ? model : QAbstractItemModelPrivate::staticEmptyModel());
