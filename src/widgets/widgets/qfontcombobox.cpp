@@ -425,8 +425,8 @@ QFontComboBox::QFontComboBox(QWidget *parent)
 */
 QFontComboBox::~QFontComboBox()
 {
-    Q_D(const QFontComboBox);
-    for (const QMetaObject::Connection &connection : d->connections)
+    Q_D(QFontComboBox);
+    for (QMetaObject::Connection &connection : d->connections)
         QObject::disconnect(connection);
 }
 
