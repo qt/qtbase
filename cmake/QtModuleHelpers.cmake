@@ -682,7 +682,7 @@ function(qt_internal_add_module target)
         foreach(public_lib IN LISTS arg_PUBLIC_LIBRARIES)
             if("${public_lib}" MATCHES "^(Qt|${QT_CMAKE_EXPORT_NAMESPACE})::(.*)Private$")
                 message(AUTHOR_WARNING
-                    "${target} specfies ${public_lib} in its PUBLIC_LIBRARIES option. "
+                    "${target} specifies ${public_lib} in its PUBLIC_LIBRARIES option. "
                     "Public modules should not link publicly to Private modules, because that "
                     "exposes private module headers to user projects without them opting into it. "
                     "Update the project to use the LIBRARIES keyword instead."
