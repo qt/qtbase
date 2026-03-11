@@ -282,7 +282,9 @@ QAbstractFileEngine::FileFlags QWasmFileEngine::fileFlags(FileFlags type) const
     return type & (QAbstractFileEngine::FileFlag::ExistsFlag |
                     QAbstractFileEngine::FileFlag::FileType |
                     QAbstractFileEngine::FileFlag::ReadOwnerPerm |
-                    QAbstractFileEngine::FileFlag::WriteOwnerPerm);
+                    QAbstractFileEngine::FileFlag::WriteOwnerPerm |
+                    QAbstractFileEngine::FileFlag::ReadUserPerm |
+                    QAbstractFileEngine::FileFlag::WriteUserPerm);
 }
 
 bool QWasmFileEngine::setPermissions(uint perms)
