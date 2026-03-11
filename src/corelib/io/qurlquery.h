@@ -17,6 +17,8 @@ QT_BEGIN_NAMESPACE
 Q_CORE_EXPORT size_t qHash(const QUrlQuery &key, size_t seed = 0) noexcept;
 
 class QUrlQueryPrivate;
+QT_DECLARE_QSDP_SPECIALIZATION_DTOR(QUrlQueryPrivate)
+
 class Q_CORE_EXPORT QUrlQuery
 {
 public:
@@ -31,6 +33,7 @@ public:
     }
 
     QUrlQuery(const QUrlQuery &other);
+    QT_CORE_INLINE_SINCE(6, 12)
     QUrlQuery(QUrlQuery &&other) noexcept;
     QUrlQuery &operator=(const QUrlQuery &other);
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QUrlQuery)
@@ -83,6 +86,10 @@ public:
 };
 
 Q_DECLARE_SHARED(QUrlQuery)
+
+#if QT_CORE_INLINE_IMPL_SINCE(6, 12)
+QUrlQuery::QUrlQuery(QUrlQuery &&other) noexcept = default;
+#endif
 
 QT_END_NAMESPACE
 

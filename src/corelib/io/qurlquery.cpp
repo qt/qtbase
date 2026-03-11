@@ -167,6 +167,7 @@ public:
     QChar valueDelimiter;
     QChar pairDelimiter;
 };
+QT_DEFINE_QSDP_SPECIALIZATION_DTOR(QUrlQueryPrivate)
 
 template<> void QSharedDataPointer<QUrlQueryPrivate>::detach()
 {
@@ -368,14 +369,11 @@ QUrlQuery::QUrlQuery(const QUrlQuery &other)
 }
 
 /*!
+    \fn QUrlQuery::QUrlQuery(QUrlQuery &&other) noexcept
     \since 6.5
     Moves the contents of the \a other QUrlQuery object, including the query
     delimiters.
 */
-QUrlQuery::QUrlQuery(QUrlQuery &&other) noexcept
-    : d(std::move(other.d))
-{
-}
 
 /*!
     Copies the contents of the \a other QUrlQuery object, including the query

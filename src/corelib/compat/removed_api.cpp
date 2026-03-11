@@ -1556,6 +1556,8 @@ bool QFile::copy(const QString &fileName, const QString &newName)
     return QFile(fileName).copy(newName, std::nullopt);
 }
 
+#include "qurlquery.h"      // uses QT_CORE_INLINE_SINCE
+
 // #include "qotherheader.h"
 // // implement removed functions from qotherheader.h
 // order sections alphabetically to reduce chances of merge conflicts
