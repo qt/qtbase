@@ -69,14 +69,11 @@ public:
     QJsonValue(const QJsonValue &other) noexcept;
     QJsonValue &operator =(const QJsonValue &other) noexcept;
 
+    QT_CORE_INLINE_SINCE(6, 12)
     QJsonValue(QJsonValue &&other) noexcept;
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QJsonValue)
 
-    QJsonValue &operator =(QJsonValue &&other) noexcept
-    {
-        swap(other);
-        return *this;
-    }
-
+    QT_CORE_INLINE_SINCE(6, 12)
     void swap(QJsonValue &other) noexcept;
 
     static QJsonValue fromVariant(const QVariant &variant);
@@ -342,6 +339,15 @@ inline QJsonValue QCborValueConstRef::toJsonValue() const
 {
     return concrete().toJsonValue();
 }
+
+#if QT_CORE_INLINE_IMPL_SINCE(6, 12)
+QJsonValue::QJsonValue(QJsonValue &&other) noexcept = default;
+
+void QJsonValue::swap(QJsonValue &other) noexcept
+{
+    value.swap(other.value);
+}
+#endif
 
 #if !defined(QT_NO_DEBUG_STREAM)
 Q_CORE_EXPORT QDebug operator<<(QDebug, const QJsonValue &);

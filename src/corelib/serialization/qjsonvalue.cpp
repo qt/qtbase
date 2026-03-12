@@ -272,17 +272,6 @@ QJsonValue &QJsonValue::operator =(const QJsonValue &other) noexcept
     return *this;
 }
 
-QJsonValue::QJsonValue(QJsonValue &&other) noexcept
-    : value(std::move(other.value))
-{
-    other.value = QCborValue(nullptr);
-}
-
-void QJsonValue::swap(QJsonValue &other) noexcept
-{
-    value.swap(other.value);
-}
-
 /*!
     \fn QJsonValue::QJsonValue(QJsonValue &&other)
     \since 5.10
