@@ -563,7 +563,7 @@ qt_config_compile_test(renameat2
 int main(int, char **argv)
 {
     /* BEGIN TEST: */
-renameat2(AT_FDCWD, argv[1], AT_FDCWD, argv[2], RENAME_NOREPLACE | RENAME_WHITEOUT);
+renameat2(AT_FDCWD, argv[1], AT_FDCWD, argv[2], RENAME_NOREPLACE);
     /* END TEST: */
     return 0;
 }
@@ -889,7 +889,7 @@ qt_feature("qqnx_pps" PRIVATE
 )
 qt_feature("renameat2" PRIVATE
     LABEL "renameat2()"
-    CONDITION ( LINUX OR HURD ) AND TEST_renameat2
+    CONDITION UNIX AND TEST_renameat2
 )
 qt_feature("slog2" PRIVATE
     LABEL "slog2"
