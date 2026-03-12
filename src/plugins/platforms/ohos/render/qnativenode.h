@@ -51,7 +51,7 @@ public:
     void setSizeParentFillPercentNormalized(const QSizeF &size);
     void setPosition(QPoint position);
     void setVisibility(bool visible);
-    void fillToParent(const QSize &surfaceResolution);
+    void fillToParent();
     void raise();
     void lower();
     void setFocused(bool focused);

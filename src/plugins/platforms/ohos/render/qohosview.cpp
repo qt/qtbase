@@ -975,7 +975,7 @@ void QOhosView::showImmediate()
 
         if (qOhosWindowProxy != nullptr) {
             m_nativeNode->setParent(qOhosWindowProxy->nodeXComponent());
-            m_nativeNode->fillToParent(m_ownerWindow->handle()->windowGeometry().size());
+            m_nativeNode->fillToParent();
         }
 
         setOrResetWindowProxy(qOhosWindowProxy, currentViewTypeInfo.optLogicalParent);

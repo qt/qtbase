@@ -320,13 +320,6 @@ void QQtEmbeddedWindowNode::onHoverEvent(bool isHover)
         m_callbackReceiver->onHoverEvent(isHover);
 }
 
-void QQtEmbeddedWindowNode::setSurfaceResolution(std::uint32_t width, std::uint32_t height)
-{
-    contentNode().setAttributeOrFail(
-        ::NODE_XCOMPONENT_SURFACE_SIZE,
-        std::array<std::uint32_t, 2>{width, height});
-}
-
 QQtEmbeddedWindowNode::QQtEmbeddedWindowNode(
     std::unique_ptr<Node> stackNode,
     std::unique_ptr<Node> xComponentNode,

@@ -69,7 +69,6 @@ public:
     QXComponentRender renderXComponent() const;
     ::OHNativeWindow *nativeWindowOrNull() const;
     void setCallbackReceiver(std::unique_ptr<QXComponentCallbackReceiver> callbackReceiver);
-    void setSurfaceResolution(std::uint32_t width, std::uint32_t height);
     void setAreaChangeReceiver(QOhosConsumer<NodeAreaInfo> areaChangeReceiver);
     void setFocusedChangeReceiver(QOhosConsumer<bool> focus);
     void setVisibilityChangeReceiver(QOhosConsumer<bool> visibilityChangedReceiver);

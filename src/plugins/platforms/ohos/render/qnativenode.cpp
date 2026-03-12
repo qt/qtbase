@@ -282,15 +282,12 @@ QOhosSurface *QNativeNode::surfaceOrNull() const
     return m_optSurface.get();
 }
 
-void QNativeNode::fillToParent(const QSize &surfaceResolution)
+void QNativeNode::fillToParent()
 {
     QtOhos::runInJsThreadAndWait(
         [&](QtOhos::JsState &) {
             m_jsStateData->embeddedWindow->setPosition(QPointF(0, 0));
             m_jsStateData->embeddedWindow->setSizeParentFillPercentageNormalized(QSizeF(1.0, 1.0));
-            m_jsStateData->embeddedWindow->setSurfaceResolution(
-                static_cast<std::uint32_t>(surfaceResolution.width()),
-                static_cast<std::uint32_t>(surfaceResolution.height()));
         },
         Q_FUNC_INFO);
 }
