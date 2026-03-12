@@ -9,8 +9,6 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_LOGGING_CATEGORY(lcQpaQnx, "qt.qpa.qnx");
-
 QQnxCursor::QQnxCursor(screen_context_t context)
     : m_screenContext(context)
     , m_customCursorEnabled(qEnvironmentVariableIntValue("QT_QPA_QNX_CUSTOM_CURSOR"))

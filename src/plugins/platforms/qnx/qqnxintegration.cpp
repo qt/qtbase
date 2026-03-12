@@ -73,8 +73,6 @@
 
 QT_BEGIN_NAMESPACE
 
-// Q_LOGGING_CATEGORY(lcQpaQnx, "qt.qpa.qnx");
-
 using namespace Qt::StringLiterals;
 
 QQnxIntegration *QQnxIntegration::ms_instance;

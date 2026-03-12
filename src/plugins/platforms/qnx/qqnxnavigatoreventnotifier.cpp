@@ -19,8 +19,6 @@
 
 QT_BEGIN_NAMESPACE
 
-// Q_LOGGING_CATEGORY(lcQpaQnxNavigatorEvents, "qt.qpa.qnx.navigator.events");
-
 const char *QQnxNavigatorEventNotifier::navigatorControlPath = "/pps/services/navigator/control";
 const size_t QQnxNavigatorEventNotifier::ppsBufferSize = 4096;
 

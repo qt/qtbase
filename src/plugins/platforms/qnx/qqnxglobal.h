@@ -5,8 +5,11 @@
 #define QQNXGLOBAL_H
 
 #include <qglobal.h>
+#include <QtCore/QLoggingCategory>
 
 QT_BEGIN_NAMESPACE
+
+Q_DECLARE_LOGGING_CATEGORY(lcQpaQnx);
 
 void qScreenCheckError(int rc, const char *funcInfo, const char *message, bool critical);
 
