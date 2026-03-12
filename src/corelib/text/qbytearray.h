@@ -787,14 +787,9 @@ public:
 
     explicit operator bool() const noexcept { return decodingStatus == QByteArray::Base64DecodingStatus::Ok; }
 
-#if defined(Q_COMPILER_REF_QUALIFIERS) && !defined(Q_QDOC)
     QByteArray &operator*() & noexcept { return decoded; }
     const QByteArray &operator*() const & noexcept { return decoded; }
     QByteArray &&operator*() && noexcept { return std::move(decoded); }
-#else
-    QByteArray &operator*() noexcept { return decoded; }
-    const QByteArray &operator*() const noexcept { return decoded; }
-#endif
 
     friend inline bool operator==(const QByteArray::FromBase64Result &lhs, const QByteArray::FromBase64Result &rhs) noexcept
     {
