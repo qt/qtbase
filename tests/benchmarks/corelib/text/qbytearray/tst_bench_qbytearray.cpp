@@ -29,6 +29,15 @@ private slots:
     void latin1Uppercasing_category();
     void latin1Uppercasing_bitcheck();
 
+    void toUpper_data();
+    void toUpper();
+    void toLower_data() { toUpper_data(); }
+    void toLower();
+    void toUpperThenLower_data() { toUpper_data(); }
+    void toUpperThenLower();
+    void toLowerThenUpper_data() { toUpper_data(); }
+    void toLowerThenUpper();
+
     void toPercentEncoding_data();
     void toPercentEncoding();
 
@@ -324,6 +333,66 @@ void tst_QByteArray::latin1Uppercasing_bitcheck()
         char *dst = dst_orig;
         for (const char *src = src_orig; src != end; ++src, ++dst)
             *dst = bittest(shouldUppercase, *src) ? uchar(*src) & ~0x20 : uchar(*src);
+    }
+}
+
+void tst_QByteArray::toUpper_data()
+{
+    QTest::addColumn<bool>("shared");
+
+    QTest::addRow("shared") << true;
+    QTest::addRow("detached") << false;
+}
+
+void tst_QByteArray::toUpper()
+{
+    QFETCH(const bool, shared);
+
+    QByteArray in = sourcecode;
+    if (!shared)
+        in.detach();
+
+    QBENCHMARK {
+        [[maybe_unused]] auto r = in.toUpper();
+    }
+}
+
+void tst_QByteArray::toLower()
+{
+    QFETCH(const bool, shared);
+
+    QByteArray in = sourcecode;
+    if (!shared)
+        in.detach();
+
+    QBENCHMARK {
+        [[maybe_unused]] auto r = in.toLower();
+    }
+}
+
+void tst_QByteArray::toUpperThenLower()
+{
+    QFETCH(const bool, shared);
+
+    QByteArray in = sourcecode;
+    if (!shared)
+        in.detach();
+
+    QBENCHMARK {
+        [[maybe_unused]] auto r = in.toUpper().toLower();
+    }
+}
+
+void tst_QByteArray::toLowerThenUpper()
+{
+    QFETCH(const bool, shared);
+
+    QByteArray in = sourcecode;
+    if (!shared)
+        in.detach();
+
+    QBENCHMARK {
+        [[maybe_unused]] auto r = in.toLower().toUpper();
     }
 }
 
