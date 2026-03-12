@@ -5854,6 +5854,9 @@ void QRhiVulkan::setGraphicsPipeline(QRhiCommandBuffer *cb, QRhiGraphicsPipeline
         cbD->currentGraphicsPipeline = ps;
         cbD->currentComputePipeline = nullptr;
         cbD->currentPipelineGeneration = psD->generation;
+
+        if (cbD->hasCustomScissorSet && !psD->m_flags.testFlag(QRhiGraphicsPipeline::UsesScissor))
+            setDefaultScissor(cbD);
     }
 
     psD->lastActiveFrameSlot = currentFrameSlot;
@@ -6225,6 +6228,39 @@ void QRhiVulkan::setVertexInput(QRhiCommandBuffer *cb,
     }
 }
 
+void QRhiVulkan::setDefaultScissor(QVkCommandBuffer *cbD)
+{
+    cbD->hasCustomScissorSet = false;
+
+    const QSize outputSize = cbD->currentTarget->pixelSize();
+    std::array<float, 4> vp = cbD->currentViewport.viewport();
+    float x = 0, y = 0, w = 0, h = 0;
+
+    if (qFuzzyIsNull(vp[2]) && qFuzzyIsNull(vp[3])) {
+        x = 0;
+        y = 0;
+        w = outputSize.width();
+        h = outputSize.height();
+    } else {
+        // x,y is top-left in VkRect2D but bottom-left in QRhiScissor
+        qrhi_toTopLeftRenderTargetRect<Bounded>(outputSize, vp, &x, &y, &w, &h);
+    }
+
+    QVkCommandBuffer::Command &cmd(cbD->commands.get());
+    VkRect2D *s = &cmd.args.setScissor.scissor;
+    s->offset.x = int32_t(x);
+    s->offset.y = int32_t(y);
+    s->extent.width = uint32_t(w);
+    s->extent.height = uint32_t(h);
+
+    if (cbD->passUsesSecondaryCb) {
+        df->vkCmdSetScissor(cbD->activeSecondaryCbStack.last(), 0, 1, s);
+        cbD->commands.unget();
+    } else {
+        cmd.cmd = QVkCommandBuffer::Command::SetScissor;
+    }
+}
+
 void QRhiVulkan::setViewport(QRhiCommandBuffer *cb, const QRhiViewport &viewport)
 {
     QVkCommandBuffer *cbD = QRHI_RES(QVkCommandBuffer, cb);
@@ -6252,22 +6288,11 @@ void QRhiVulkan::setViewport(QRhiCommandBuffer *cb, const QRhiViewport &viewport
         cmd.cmd = QVkCommandBuffer::Command::SetViewport;
     }
 
+    cbD->currentViewport = viewport;
     if (cbD->currentGraphicsPipeline
-        && !QRHI_RES(QVkGraphicsPipeline, cbD->currentGraphicsPipeline)->m_flags.testFlag(QRhiGraphicsPipeline::UsesScissor))
+        && !cbD->currentGraphicsPipeline->flags().testFlag(QRhiGraphicsPipeline::UsesScissor))
     {
-        QVkCommandBuffer::Command &cmd(cbD->commands.get());
-        VkRect2D *s = &cmd.args.setScissor.scissor;
-        qrhi_toTopLeftRenderTargetRect<Bounded>(outputSize, viewport.viewport(), &x, &y, &w, &h);
-        s->offset.x = int32_t(x);
-        s->offset.y = int32_t(y);
-        s->extent.width = uint32_t(w);
-        s->extent.height = uint32_t(h);
-        if (cbD->passUsesSecondaryCb) {
-            df->vkCmdSetScissor(cbD->activeSecondaryCbStack.last(), 0, 1, s);
-            cbD->commands.unget();
-        } else {
-            cmd.cmd = QVkCommandBuffer::Command::SetScissor;
-        }
+        setDefaultScissor(cbD);
     }
 }
 
@@ -6298,6 +6323,8 @@ void QRhiVulkan::setScissor(QRhiCommandBuffer *cb, const QRhiScissor &scissor)
     } else {
         cmd.cmd = QVkCommandBuffer::Command::SetScissor;
     }
+
+    cbD->hasCustomScissorSet = true;
 }
 
 void QRhiVulkan::setBlendConstants(QRhiCommandBuffer *cb, const QColor &c)

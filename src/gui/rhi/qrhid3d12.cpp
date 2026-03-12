@@ -1089,6 +1089,9 @@ void QRhiD3D12::setGraphicsPipeline(QRhiCommandBuffer *cb, QRhiGraphicsPipeline 
 
         if (psD->viewInstanceMask)
             cbD->cmdList->SetViewInstanceMask(psD->viewInstanceMask);
+
+        if (cbD->hasCustomScissorSet && !psD->m_flags.testFlag(QRhiGraphicsPipeline::UsesScissor))
+            setDefaultScissor(cbD);
     }
 }
 
@@ -1531,6 +1534,33 @@ void QRhiD3D12::setVertexInput(QRhiCommandBuffer *cb,
     }
 }
 
+void QRhiD3D12::setDefaultScissor(QD3D12CommandBuffer *cbD)
+{
+    cbD->hasCustomScissorSet = false;
+
+    const QSize outputSize = cbD->currentTarget->pixelSize();
+    std::array<float, 4> vp = cbD->currentViewport.viewport();
+    float x = 0, y = 0, w = 0, h = 0;
+
+    if (qFuzzyIsNull(vp[2]) && qFuzzyIsNull(vp[3])) {
+        x = 0;
+        y = 0;
+        w = outputSize.width();
+        h = outputSize.height();
+    } else {
+        // x,y is top-left in D3D12_RECT but bottom-left in QRhiScissor
+        qrhi_toTopLeftRenderTargetRect<Bounded>(outputSize, vp, &x, &y, &w, &h);
+    }
+
+    D3D12_RECT r;
+    r.left = x;
+    r.top = y;
+    // right and bottom are exclusive
+    r.right = x + w;
+    r.bottom = y + h;
+    cbD->cmdList->RSSetScissorRects(1, &r);
+}
+
 void QRhiD3D12::setViewport(QRhiCommandBuffer *cb, const QRhiViewport &viewport)
 {
     QD3D12CommandBuffer *cbD = QRHI_RES(QD3D12CommandBuffer, cb);
@@ -1552,17 +1582,11 @@ void QRhiD3D12::setViewport(QRhiCommandBuffer *cb, const QRhiViewport &viewport)
     v.MaxDepth = viewport.maxDepth();
     cbD->cmdList->RSSetViewports(1, &v);
 
+    cbD->currentViewport = viewport;
     if (cbD->currentGraphicsPipeline
-            && !cbD->currentGraphicsPipeline->flags().testFlag(QRhiGraphicsPipeline::UsesScissor))
+        && !cbD->currentGraphicsPipeline->flags().testFlag(QRhiGraphicsPipeline::UsesScissor))
     {
-        qrhi_toTopLeftRenderTargetRect<Bounded>(outputSize, viewport.viewport(), &x, &y, &w, &h);
-        D3D12_RECT r;
-        r.left = x;
-        r.top = y;
-        // right and bottom are exclusive
-        r.right = x + w;
-        r.bottom = y + h;
-        cbD->cmdList->RSSetScissorRects(1, &r);
+        setDefaultScissor(cbD);
     }
 }
 
@@ -1585,6 +1609,8 @@ void QRhiD3D12::setScissor(QRhiCommandBuffer *cb, const QRhiScissor &scissor)
     r.right = x + w;
     r.bottom = y + h;
     cbD->cmdList->RSSetScissorRects(1, &r);
+
+    cbD->hasCustomScissorSet = true;
 }
 
 void QRhiD3D12::setBlendConstants(QRhiCommandBuffer *cb, const QColor &c)

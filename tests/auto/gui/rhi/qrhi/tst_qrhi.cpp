@@ -128,6 +128,8 @@ private slots:
     void renderToTextureArrayMultiView();
     void renderToTextureSameSrbDifferentShaders_data();
     void renderToTextureSameSrbDifferentShaders();
+    void renderToTextureScissorChange_data();
+    void renderToTextureScissorChange();
     void renderToWindowSimple_data();
     void renderToWindowSimple();
     void continuousReadbackFromWindow_data();
@@ -4065,6 +4067,157 @@ void tst_QRhi::renderToTextureArrayMultiView()
         }
         QVERIFY(n >= 10);
     }
+}
+
+void tst_QRhi::renderToTextureScissorChange_data()
+{
+    rhiTestData();
+}
+
+void tst_QRhi::renderToTextureScissorChange()
+{
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+    std::unique_ptr<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing rendering");
+
+#ifdef TST_GL
+    if (impl == QRhi::OpenGLES2) {
+        rhi->makeThreadLocalNativeContextCurrent();
+        QOpenGLContext *ctx = QOpenGLContext::currentContext();
+        // because of gl_VertexId in the shader, which is added in GLSL 130 and GLSL ES 300
+        if (!ctx || ctx->format().majorVersion() < 3)
+            QSKIP("This test needs at least OpenGL 3.0 or OpenGL ES 3.0, skipping on OpenGL");
+    }
+#endif
+
+    const QSize outputSize(1920, 1080);
+    std::unique_ptr<QRhiTexture> texture(rhi->newTexture(QRhiTexture::RGBA8, outputSize, 1,
+                                                         QRhiTexture::RenderTarget | QRhiTexture::UsedAsTransferSource));
+    QVERIFY(texture->create());
+
+    std::unique_ptr<QRhiTextureRenderTarget> rt(rhi->newTextureRenderTarget({ texture.get() }));
+    std::unique_ptr<QRhiRenderPassDescriptor> rpDesc(rt->newCompatibleRenderPassDescriptor());
+    rt->setRenderPassDescriptor(rpDesc.get());
+    QVERIFY(rt->create());
+
+    QRhiCommandBuffer *cb = nullptr;
+    QVERIFY(rhi->beginOffscreenFrame(&cb) == QRhi::FrameOpSuccess);
+    QVERIFY(cb);
+
+    QRhiResourceUpdateBatch *updates = rhi->nextResourceUpdateBatch();
+
+    std::unique_ptr<QRhiBuffer> ubuf(rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, 16));
+    QVERIFY(ubuf->create());
+    QVector4D color = { 1.0f, 0.0f, 0.0f, 1.0f };
+    updates->updateDynamicBuffer(ubuf.get(), 0, 16, &color);
+
+    std::unique_ptr<QRhiShaderResourceBindings> srb(rhi->newShaderResourceBindings());
+    srb->setBindings({
+        QRhiShaderResourceBinding::uniformBuffer(0, QRhiShaderResourceBinding::FragmentStage, ubuf.get()),
+    });
+    QVERIFY(srb->create());
+
+    auto setupPipeline = [&srb, &rpDesc](QRhiGraphicsPipeline *pipeline) {
+        QShader vs = loadShader(":/data/fullscreenquad.vert.qsb");
+        QShader fs = loadShader(":/data/fullscreenquad_color.frag.qsb");
+        pipeline->setShaderStages({ { QRhiShaderStage::Vertex, vs }, { QRhiShaderStage::Fragment, fs } });
+        pipeline->setShaderResourceBindings(srb.get());
+        pipeline->setRenderPassDescriptor(rpDesc.get());
+    };
+
+    std::unique_ptr<QRhiGraphicsPipeline> pipeline(rhi->newGraphicsPipeline());
+    setupPipeline(pipeline.get());
+    QVERIFY(pipeline->create());
+
+    std::unique_ptr<QRhiGraphicsPipeline> scissoringPipeline(rhi->newGraphicsPipeline());
+    setupPipeline(scissoringPipeline.get());
+    scissoringPipeline->setFlags(QRhiGraphicsPipeline::UsesScissor);
+    QVERIFY(scissoringPipeline->create());
+
+    cb->beginPass(rt.get(), Qt::white, { 1.0f, 0 }, updates);
+    // fullscreen quad, scissored to (bottom-left) 100x100 - 300x300
+    cb->setGraphicsPipeline(scissoringPipeline.get());
+    cb->setViewport({ 0, 0, float(outputSize.width()), float(outputSize.height()) });
+    cb->setShaderResources();
+    cb->setScissor({ 100, 100, 200, 200 });
+    cb->draw(3);
+    cb->endPass();
+
+    QRhiReadbackResult readResult;
+    QImage result;
+    readResult.completed = [&readResult, &result] {
+        result = QImage(reinterpret_cast<const uchar *>(readResult.data.constData()),
+                        readResult.pixelSize.width(), readResult.pixelSize.height(),
+                        QImage::Format_RGBA8888_Premultiplied); // non-owning, no copy needed because readResult outlives result
+    };
+    QRhiResourceUpdateBatch *readbackBatch = rhi->nextResourceUpdateBatch();
+    readbackBatch->readBackTexture({ texture.get() }, &readResult);
+    cb->resourceUpdate(readbackBatch);
+    rhi->finish();
+
+    if (rhi->isYUpInFramebuffer())
+        result = result.flipped();
+
+    if (rhi->backend() != QRhi::Null) {
+        // 200x200 red rect at (bottom left) 100,100
+        int y = outputSize.height() - 1 - 150;
+        int redCount = 0;
+        for (int x = 100; x < 100 + 300; ++x) {
+            QRgb c = result.pixel(x, y);
+            if (qRed(c) >= 254 && qGreen(c) == 0 && qBlue(c) == 0)
+                ++redCount;
+        }
+        QVERIFY(redCount == 200);
+
+        // should be white outside the scissor rect
+        y = outputSize.height() - 50;
+        redCount = 0;
+        for (int x = 100; x < 100 + 300; ++x) {
+            QRgb c = result.pixel(x, y);
+            if (qRed(c) >= 254 && qGreen(c) == 0 && qBlue(c) == 0)
+                ++redCount;
+        }
+        QCOMPARE(redCount, 0);
+    }
+
+    cb->beginPass(rt.get(), Qt::white, { 1.0f, 0 });
+
+    // fullscreen quad, scissored to (bottom-left) 100x100 - 300x300
+    cb->setGraphicsPipeline(scissoringPipeline.get());
+    cb->setViewport({ 0, 0, float(outputSize.width()), float(outputSize.height()) });
+    cb->setShaderResources();
+    cb->setScissor({ 100, 100, 200, 200 });
+    cb->draw(3);
+
+    // switch to the non-UsesScissor pipeline, the end result should be the whole textured filled with red,
+    // the scissoring is expected to be "disabled" (or made to match the viewport) automatically
+    cb->setGraphicsPipeline(pipeline.get());
+    cb->setShaderResources();
+    cb->draw(3);
+
+    cb->endPass();
+
+    readbackBatch = rhi->nextResourceUpdateBatch();
+    readbackBatch->readBackTexture({ texture.get() }, &readResult);
+    cb->resourceUpdate(readbackBatch);
+    rhi->finish();
+
+    if (rhi->backend() != QRhi::Null) {
+        const int y = outputSize.height() - 1 - 150;
+        // no scissoring, everything is supposed to be red
+        int nonRedCount = 0;
+        for (int x = 100; x < 100 + 300; ++x) {
+            QRgb c = result.pixel(x, y);
+            if (!(qRed(c) >= 254 && qGreen(c) == 0 && qBlue(c) == 0))
+                ++nonRedCount;
+        }
+        QVERIFY(nonRedCount == 0);
+    }
+
+    rhi->endOffscreenFrame();
 }
 
 void tst_QRhi::renderToWindowSimple_data()
