@@ -34,6 +34,7 @@
 
 #include <iostream>
 #include <sstream>
+#include <utility>
 
 #include <emscripten/val.h>
 
@@ -77,12 +78,14 @@ QWasmWindow::QWasmWindow(QWindow *w,
     if (nativeHandle) {
         m_window = *(emscripten::val *)(nativeHandle);
         m_winId = nativeHandle;
+        m_hasNativeHandle = true;
         m_decoratedWindow.set("id", "qt-window-" + std::to_string(m_winId));
         m_decoratedWindow.call<void>("appendChild", m_window);
         return;
     }
 
     m_window.set("className", "qt-window");
+    m_window.call<void>("setAttribute", emscripten::val("role"), emscripten::val("application"));
     m_decoratedWindow.call<void>("appendChild", m_window);
 
     m_canvas["classList"].call<void>("add", emscripten::val("qt-window-canvas"));
@@ -108,6 +111,7 @@ QWasmWindow::QWasmWindow(QWindow *w,
     m_focusHelper["style"].set("height", "1px");
     m_focusHelper["style"].set("z-index", -2);
     m_focusHelper["style"].set("opacity", 0);
+    m_focusHelper.set("tabIndex", -1); // focusable only via .focus(), not browser Tab
     m_window.call<void>("appendChild", m_focusHelper);
 
     // Set up m_inputElement, which takes focus whenever a Qt text input UI element has
@@ -123,6 +127,7 @@ QWasmWindow::QWasmWindow(QWindow *w,
     m_inputElement["style"].set("z-index", -2);
     m_inputElement["style"].set("opacity", 0);
     m_inputElement["style"].set("display", "");
+    m_inputElement.set("tabIndex", -1); // focusable only via .focus(), not browser Tab
     m_window.call<void>("appendChild", m_inputElement);
 
     // The canvas displays graphics only, and is not accessible or an event target
@@ -630,6 +635,9 @@ void QWasmWindow::setWindowFlags(Qt::WindowFlags flags)
 
     m_nonClientArea->titleBar()->setMaximizeVisible(hasMaximizeButton());
     m_nonClientArea->titleBar()->setCloseVisible(m_flags.testFlag(Qt::WindowCloseButtonHint));
+
+    // Depends on the flags, and on whether the window is a child window.
+    setBrowserTabStop(true);
 }
 
 void QWasmWindow::setWindowState(Qt::WindowStates newState)
@@ -713,6 +721,110 @@ void QWasmWindow::commitParent(QWasmWindowTreeNode *parent)
     m_commitedParent = parent;
 }
 
+// Returns whether the window takes part in browser Tab navigation. Only
+// top-level windows which accept focus do: child windows are reached through
+// the Qt focus chain of their parent window, and popups, tool tips, splash
+// screens and Qt::WindowDoesNotAcceptFocus windows are not tab stops on
+// other platforms either.
+bool QWasmWindow::isBrowserTabNavigable() const
+{
+    if (!window()->isTopLevel() || m_flags.testFlag(Qt::WindowDoesNotAcceptFocus))
+        return false;
+    switch (m_flags & Qt::WindowType_Mask) {
+    case Qt::Popup:
+    case Qt::ToolTip:
+    case Qt::SplashScreen:
+        return false;
+    default:
+        return true;
+    }
+}
+
+// Sets whether the window is a browser Tab stop reachable by tab navigation.
+// Windows which do not take part in browser Tab navigation are never Tab stops.
+void QWasmWindow::setBrowserTabStop(bool isTabStop)
+{
+    // The native element is owned by user code, which also manages its tabindex
+    if (m_hasNativeHandle)
+        return;
+    if (!isBrowserTabNavigable()) {
+        m_window.call<void>("removeAttribute", std::string("tabindex"));
+        return;
+    }
+    m_window.set("tabIndex", isTabStop ? 0 : -1);
+}
+
+// Handles Tab and Backtab keys: Qt moves focus between its own tab stops, and
+// past the first or last one focus is released to the browser, whose
+// default action then moves it to the next or previous element of the page.
+// Returns false for other keys.
+bool QWasmWindow::handleTabKey(const KeyEvent &event)
+{
+    if (event.key != Qt::Key_Tab && event.key != Qt::Key_Backtab)
+        return false;
+
+    // Qt reports focus chain wrapping to the top-level window (see
+    // windowEvent()), also when the Tab key is handled by a child window:
+    // a Qt Quick child window passes focus on to its parent window when
+    // it has no next tab stop.
+    QWasmWindow *topLevel = this;
+    while (topLevel->parent())
+        topLevel = static_cast<QWasmWindow *>(topLevel->parent());
+
+    topLevel->m_handlingTabKey = true;
+    const bool accepted = processKey(event);
+    topLevel->m_handlingTabKey = false;
+    const bool wrapped = std::exchange(topLevel->m_focusChainWrapped, false);
+
+    if (accepted && !wrapped) {
+        // Qt moved focus; keep the browser from moving it as well
+        event.webEvent.call<void>("preventDefault");
+        event.webEvent.call<void>("stopPropagation");
+    } else if (accepted) {
+        // The user tabbed past all of Qt's tab stops. Release focus to the
+        // browser, and keep parent windows from processing the key again.
+        topLevel->setBrowserTabStop(false);
+        event.webEvent.call<void>("stopPropagation");
+    } else if (event.type == EventType::KeyDown && isBrowserTabNavigable()) {
+        // Qt has no tab stop in this direction
+        setBrowserTabStop(false);
+    }
+    // A Tab key not accepted by a child window propagates to the parent window
+    return true;
+}
+
+// Returns Tab or Backtab focus reason if focus moved to target by keyboard
+// navigation from relatedTarget, else ActiveWindowFocusReason.
+Qt::FocusReason QWasmWindow::tabFocusReason(emscripten::val target, emscripten::val relatedTarget)
+{
+    if (relatedTarget.isNull() || relatedTarget.isUndefined())
+        return Qt::ActiveWindowFocusReason;
+
+    // The browser shows a focus indicator (:focus-visible) for focus moved by
+    // the keyboard, but not for focus moved by e.g. a mouse click.
+    if (!target.call<bool>("matches", std::string(":focus-visible")))
+        return Qt::ActiveWindowFocusReason;
+
+    // Focus moved forward if relatedTarget comes before target in the document.
+    // compareDocumentPosition() only compares nodes of the same tree, so compare
+    // with the shadow host of target which is in the tree of relatedTarget.
+    const emscripten::val relatedRoot = relatedTarget.call<emscripten::val>("getRootNode");
+    emscripten::val node = target;
+    while (!node.call<emscripten::val>("getRootNode").strictlyEquals(relatedRoot)) {
+        node = node.call<emscripten::val>("getRootNode")["host"];
+        if (node.isNull() || node.isUndefined())
+            return Qt::ActiveWindowFocusReason;
+    }
+    constexpr int DocumentPositionPreceding = 0x02;
+    constexpr int DocumentPositionFollowing = 0x04;
+    const int position = node.call<int>("compareDocumentPosition", relatedTarget);
+    if (position & DocumentPositionPreceding)
+        return Qt::TabFocusReason;
+    if (position & DocumentPositionFollowing)
+        return Qt::BacktabFocusReason;
+    return Qt::ActiveWindowFocusReason;
+}
+
 void QWasmWindow::handleKeyEvent(const KeyEvent &event)
 {
     qCDebug(qLcQpaWasmInputContext) << "handleKeyEvent";
@@ -722,7 +834,7 @@ void QWasmWindow::handleKeyEvent(const KeyEvent &event)
         // input event handler deal with those (keyCode 229 / isComposing).
         if (event.isComposing || event.keyCode == 229)
             return;
-        if (processKey(event)) {
+        if (!handleTabKey(event) && processKey(event)) {
             // The key is already handled in Qt; flag the following input event
             // so it is ignored by inputCallback (it still reaches it, to keep
             // word suggestions working) instead of inserting the text twice.
@@ -730,7 +842,7 @@ void QWasmWindow::handleKeyEvent(const KeyEvent &event)
         }
         event.webEvent.call<void>("stopImmediatePropagation");
     } else {
-        if (processKey(event)) {
+        if (!handleTabKey(event) && processKey(event)) {
             event.webEvent.call<void>("preventDefault");
             event.webEvent.call<void>("stopPropagation");
         }
@@ -806,27 +918,60 @@ void QWasmWindow::handleBeforeInputEvent(emscripten::val event)
         m_focusHelper.set("innerHTML", std::string());
 }
 
+// Returns whether target belongs to this window, and not to one of its child
+// windows. The html elements of child windows are nested in the element of
+// the parent window, and their focus events bubble up to the parent window.
+bool QWasmWindow::isOwnEventTarget(emscripten::val target) const
+{
+    return target.call<emscripten::val>("closest", std::string(".qt-window"))
+            .strictlyEquals(m_window);
+}
+
 void QWasmWindow::handleFocusinEvent(emscripten::val event)
 {
+    // Focus moved to a child window, which handles the event itself
+    if (!isOwnEventTarget(event["target"]))
+        return;
+
     // Determine if the focus moved from outside the html tree for the window
     emscripten::val relatedTarget = event["relatedTarget"];
     bool enteringWindow = relatedTarget.isNull() || relatedTarget.isUndefined()
                           || !m_window.call<bool>("contains", relatedTarget);
 
-    if (enteringWindow)  {
-        setAsActiveNode();
-        QWindowSystemInterface::handleFocusWindowChanged(window(), Qt::ActiveWindowFocusReason);
-    }
+    // Tab or Backtab if focus arrived from outside by browser keyboard
+    // navigation. Child windows are not browser Tab stops: Qt moves focus
+    // to them and has already picked the focus target within the window.
+    const Qt::FocusReason reason = enteringWindow && isBrowserTabNavigable()
+            ? tabFocusReason(event["target"], relatedTarget)
+            : Qt::ActiveWindowFocusReason;
+
+    // When focus moves internally (e.g. to the focus-helper element), and this
+    // window is already the focus window, skip re-notifying Qt. This preserves
+    // the original focus reason (e.g. TabFocusReason) which widgets use to
+    // decide whether to show focus rectangles.
+    if (!enteringWindow && QGuiApplication::focusWindow() == window())
+        return;
+
+    setAsActiveNode();
+    QWindowSystemInterface::handleFocusWindowChanged(window(), reason);
 }
 
 void QWasmWindow::handleFocusoutEvent(emscripten::val event)
 {
-    // Determine if foucs now leaves the html tree for the window
+    // Determine if focus now has moved outside of this window's html element tree.
     emscripten::val relatedTarget = event["relatedTarget"];
     bool leavingWindow = relatedTarget.isNull() || relatedTarget.isUndefined()
                          || !m_window.call<bool>("contains", relatedTarget);
+    if (!leavingWindow)
+        return;
 
-    if (leavingWindow)
+    // A browser Tab stop again, for the next Tab-in. Also when focus left
+    // from a child window, e.g. by Tab past the last tab stop of the child.
+    setBrowserTabStop(true);
+
+    // Send FocusWindowChanged (with null window), unless focus moved from a
+    // child window, which handles the event itself.
+    if (isOwnEventTarget(event["target"]))
         QWindowSystemInterface::handleFocusWindowChanged(nullptr, Qt::ActiveWindowFocusReason);
 }
 
@@ -1170,9 +1315,9 @@ void QWasmWindow::requestActivateWindow()
     raise();
     focus();
 
-    // Don't call base class requestActivateWindow() or send as focus
+    // Don't call base class requestActivateWindow() or send a focus
     // changed event here; that is done in the focusin event handler
-    // when native foucs actually moves.
+    // when native focus actually moves.
 }
 
 // Moves native focus to this window, via the foucus helper or the input element.
@@ -1228,6 +1373,24 @@ bool QWasmWindow::windowEvent(QEvent *event)
         m_decoratedWindow["classList"].call<void>("remove", emscripten::val("blocked"));
         m_decoratedWindow.call<void>("removeAttribute", std::string("inert"));
         return false; // Propagate further
+    case QEvent::FocusIn: {
+        auto *focusEvent = static_cast<QFocusEvent *>(event);
+        if (focusEvent->reason() == Qt::TabFocusReason
+            || focusEvent->reason() == Qt::BacktabFocusReason) {
+            // The focus chain has wrapped: Qt is trying to focus the platform
+            // window itself, meaning the user has tabbed past all internal
+            // tab stops. Set a flag so the key handler can release focus to
+            // the browser. Let Qt wrap the focus chain if there is no Tab key
+            // to release focus with, e.g. for QWidget::focusNextPrevChild()
+            // called by the application.
+            if (!m_handlingTabKey)
+                return QPlatformWindow::windowEvent(event);
+            m_focusChainWrapped = true;
+            event->accept();
+            return true;
+        }
+        return QPlatformWindow::windowEvent(event);
+    }
     default:
         return QPlatformWindow::windowEvent(event);
     }

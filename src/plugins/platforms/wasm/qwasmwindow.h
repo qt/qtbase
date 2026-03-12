@@ -145,6 +145,12 @@ private:
     void applyWindowState();
     void commitParent(QWasmWindowTreeNode *parent);
 
+    bool isBrowserTabNavigable() const;
+    void setBrowserTabStop(bool isTabStop);
+    bool isOwnEventTarget(emscripten::val target) const;
+    bool handleTabKey(const KeyEvent &event);
+    static Qt::FocusReason tabFocusReason(emscripten::val target, emscripten::val relatedTarget);
+
     void handleKeyEvent(const KeyEvent &event);
     bool processKey(const KeyEvent &event);
     void handleInputEvent(emscripten::val event);
@@ -233,6 +239,9 @@ private:
     bool m_wantCapture = false;
     bool m_hasTitle = false;
     bool m_needsCompositor = false;
+    bool m_hasNativeHandle = false; // m_window is a user-provided element
+    bool m_handlingTabKey = false; // a Tab key is being processed for this window tree
+    bool m_focusChainWrapped = false; // set by windowEvent when Tab wraps past all tab stops
     long m_requestAnimationFrameId = -1;
     friend class QWasmCompositor;
     friend class QWasmEventTranslator;
