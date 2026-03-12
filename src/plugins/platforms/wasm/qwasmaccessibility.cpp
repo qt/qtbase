@@ -111,6 +111,7 @@ void QWasmAccessibility::addEnableButton(QWindow *window)
     emscripten::val button = document.call<emscripten::val>("createElement", std::string("button"));
     setProperty(button, "innerText", "Enable Screen Reader");
     button["classList"].call<void>("add", emscripten::val("hidden-visually-read-by-screen-reader"));
+    button.set("tabIndex", -1);
     container.call<void>("appendChild", button);
 
     auto enableContext = std::make_tuple(button, std::make_unique<qstdweb::EventCallback>
@@ -574,6 +575,10 @@ emscripten::val QWasmAccessibility::createHtmlElement(QAccessibleInterface *ifac
     handleIdentifierUpdate(iface);
     handleDescriptionChanged(iface);
     sendEvent(iface, QAccessible::NameChanged);
+
+    // Remove from browser Tab order; a11y elements can be focused
+    // programmatically by Qt, but not by the browser
+    element.set("tabIndex", -1);
 
     linkToParent(iface);
     // Link in child elements
