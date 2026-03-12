@@ -229,7 +229,7 @@ public:
     [[nodiscard]] QByteArray sliced(qsizetype pos, qsizetype n) &&
     { verify(pos, n); return sliced_helper(*this, pos, n); }
     [[nodiscard]] QByteArray chopped(qsizetype len) &&
-    { verify(0, len); return std::move(*this).first(size() - len); }
+    { verify(0, len); chop(len); return std::move(*this); }
 #endif
 
     bool startsWith(QByteArrayView bv) const

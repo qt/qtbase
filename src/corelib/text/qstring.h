@@ -527,7 +527,7 @@ public:
     [[nodiscard]] QString sliced(qsizetype pos, qsizetype n) &&
     { verify(pos, n); return sliced_helper(*this, pos, n); }
     [[nodiscard]] QString chopped(qsizetype n) &&
-    { verify(0, n); return std::move(*this).first(size() - n); }
+    { verify(0, n); chop(n); return std::move(*this); }
 #endif
     bool startsWith(const QString &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     [[nodiscard]] bool startsWith(QStringView s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
