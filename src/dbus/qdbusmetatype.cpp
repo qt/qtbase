@@ -456,7 +456,7 @@ const char *QDBusMetaType::typeToSignature(QMetaType type)
     {
         QReadLocker locker(&ct->lock);
         auto it = ct->hash.constFind(type.id());
-        if (it == ct->hash.end())
+        if (it == ct->hash.cend())
             return nullptr;
 
         const QDBusCustomTypeInfo &info = *it;
