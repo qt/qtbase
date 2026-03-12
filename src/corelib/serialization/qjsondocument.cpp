@@ -97,24 +97,17 @@ QJsonDocument::QJsonDocument(QCborValue data)
 
  Binary data set with fromRawData is not freed.
  */
-QJsonDocument::~QJsonDocument() = default;
+QJsonDocument::~QJsonDocument()
+{
+    delete d;
+}
 
 /*!
  * Creates a copy of the \a other document.
  */
 QJsonDocument::QJsonDocument(const QJsonDocument &other)
-    : d(other.d ? std::make_unique<QJsonDocumentPrivate>(other.d->value) : nullptr)
+    : d(other.d ? new QJsonDocumentPrivate(other.d->value) : nullptr)
 {
-}
-
-QJsonDocument::QJsonDocument(QJsonDocument &&other) noexcept
-    : d(std::move(other.d))
-{
-}
-
-void QJsonDocument::swap(QJsonDocument &other) noexcept
-{
-    qSwap(d, other.d);
 }
 
 /*!
@@ -126,10 +119,12 @@ QJsonDocument &QJsonDocument::operator =(const QJsonDocument &other)
     if (this != &other) {
         if (other.d) {
             if (!d)
-                d = std::make_unique<QJsonDocumentPrivate>();
+                d = new QJsonDocumentPrivate;
+            // this is noexcept:
             d->value = other.d->value;
         } else {
-            d.reset();
+            delete d;
+            d = nullptr;
         }
     }
     return *this;

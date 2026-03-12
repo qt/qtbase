@@ -14,8 +14,6 @@
 #include <QtCore/qscopedpointer.h>
 #include <QtCore/qstringview.h>
 
-#include <memory>
-
 QT_BEGIN_NAMESPACE
 
 class QDebug;
@@ -44,14 +42,11 @@ public:
     QJsonDocument(const QJsonDocument &other);
     QJsonDocument &operator =(const QJsonDocument &other);
 
+    QT_CORE_INLINE_SINCE(6, 12)
     QJsonDocument(QJsonDocument &&other) noexcept;
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QJsonDocument)
 
-    QJsonDocument &operator =(QJsonDocument &&other) noexcept
-    {
-        swap(other);
-        return *this;
-    }
-
+    QT_CORE_INLINE_SINCE(6, 12)
     void swap(QJsonDocument &other) noexcept;
 
     static QJsonDocument fromVariant(const QVariant &variant);
@@ -107,10 +102,22 @@ private:
 
     inline explicit QJsonDocument(QCborValue data);
 
-    std::unique_ptr<QJsonDocumentPrivate> d;
+    QJsonDocumentPrivate *d = nullptr;
 };
 
 Q_DECLARE_SHARED(QJsonDocument)
+
+#if QT_CORE_INLINE_IMPL_SINCE(6, 12)
+QJsonDocument::QJsonDocument(QJsonDocument &&other) noexcept
+    : d(std::exchange(other.d, nullptr))
+{
+}
+
+void QJsonDocument::swap(QJsonDocument &other) noexcept
+{
+    qt_ptr_swap(d, other.d);
+}
+#endif
 
 #if !defined(QT_NO_DEBUG_STREAM)
 Q_CORE_EXPORT QDebug operator<<(QDebug, const QJsonDocument &);

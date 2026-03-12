@@ -1556,6 +1556,7 @@ bool QFile::copy(const QString &fileName, const QString &newName)
     return QFile(fileName).copy(newName, std::nullopt);
 }
 
+#include "qjsondocument.h"  // uses QT_CORE_INLINE_SINCE
 #include "qjsonvalue.h"     // uses QT_CORE_INLINE_SINCE
 
 #include "qobjectdefs.h"    // uses QT_CORE_INLINE_SINCE
