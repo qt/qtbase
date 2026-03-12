@@ -798,6 +798,7 @@ public:
     QByteArray &operator*() & noexcept { return decoded; }
     const QByteArray &operator*() const & noexcept { return decoded; }
     QByteArray &&operator*() && noexcept { return std::move(decoded); }
+    const QByteArray &&operator*() const && noexcept { return std::move(decoded); }
 
     friend inline bool operator==(const QByteArray::FromBase64Result &lhs, const QByteArray::FromBase64Result &rhs) noexcept
     {

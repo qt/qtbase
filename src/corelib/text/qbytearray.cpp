@@ -5176,6 +5176,7 @@ emscripten::val QByteArray::toEcmaUint8Array()
 
 /*!
     \fn const QByteArray &QByteArray::FromBase64Result::operator*() const &
+    \fn const QByteArray &&QByteArray::FromBase64Result::operator*() const &&
     \fn QByteArray &QByteArray::FromBase64Result::operator*() &
     \fn QByteArray &&QByteArray::FromBase64Result::operator*() &&
 
