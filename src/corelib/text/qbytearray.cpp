@@ -21,6 +21,7 @@
 #if defined(Q_OS_WASM)
 #include "private/qstdweb_p.h"
 #endif
+#include <QtCore/private/qtclasshelper_p.h>
 
 #ifndef QT_NO_COMPRESS
 #include <zconf.h>
@@ -3275,8 +3276,7 @@ QByteArray QByteArray::sliced_helper(QByteArray &a, qsizetype pos, qsizetype n)
     \sa isLower(), toUpper(), {Character Case}
 */
 
-template <typename T>
-static QByteArray toCase_template(T &input, uchar (*lookup)(uchar))
+static QByteArray toCase(const QByteArray &input, QByteArray *rvalue, uchar (*lookup)(uchar))
 {
     // find the first bad character in input
     const char *orig_begin = input.constBegin();
@@ -3290,10 +3290,10 @@ static QByteArray toCase_template(T &input, uchar (*lookup)(uchar))
     }
 
     if (firstBad == e)
-        return std::move(input);
+        return q_choose_copy_move(input, rvalue);
 
     // transform the rest
-    QByteArray s = std::move(input);    // will copy if T is const QByteArray
+    QByteArray s = q_choose_copy_move(input, rvalue);
     char *b = s.begin();            // will detach if necessary
     char *p = b + (firstBad - orig_begin);
     e = b + s.size();
@@ -3304,12 +3304,12 @@ static QByteArray toCase_template(T &input, uchar (*lookup)(uchar))
 
 QByteArray QByteArray::toLower_helper(const QByteArray &a)
 {
-    return toCase_template(a, asciiLower);
+    return toCase(a, nullptr, asciiLower);
 }
 
 QByteArray QByteArray::toLower_helper(QByteArray &a)
 {
-    return toCase_template(a, asciiLower);
+    return toCase(a, &a, asciiLower);
 }
 
 /*!
@@ -3326,12 +3326,12 @@ QByteArray QByteArray::toLower_helper(QByteArray &a)
 
 QByteArray QByteArray::toUpper_helper(const QByteArray &a)
 {
-    return toCase_template(a, asciiUpper);
+    return toCase(a, nullptr, asciiUpper);
 }
 
 QByteArray QByteArray::toUpper_helper(QByteArray &a)
 {
-    return toCase_template(a, asciiUpper);
+    return toCase(a, &a, asciiUpper);
 }
 
 /*! \fn void QByteArray::clear()

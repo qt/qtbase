@@ -44,11 +44,28 @@ QT_BEGIN_NAMESPACE
 
         q_choose_append(m_container, lvalue, rvalue);
 
+    For all other purposes, you can use
+
+        q_choose_copy_move(lvalue, rvalue);
+
+    though note that this always produces an rvalue (the copy, if any, is done
+    inside the function).
+
     The functions mandate (in the C++ sense) that all arguments are the same
     type, so they deduce each argument separately and then static_assert that
     they're the same. If we need std::exchange()-like mixed types later, it's
     easy to relax. For now, avoid being overly general.
 */
+template <typename U, typename V>
+U q_choose_copy_move(const U &lvalue, V *rvalue)
+{
+    static_assert(std::is_same_v<U, V>, "all arguments must be of the same type");
+    if (rvalue)
+        return std::move(*rvalue);
+    else
+        return lvalue;
+}
+
 template <typename T, typename U, typename V>
 decltype(auto) q_choose_assign(T &var, const U &lvalue, V *rvalue)
 {
