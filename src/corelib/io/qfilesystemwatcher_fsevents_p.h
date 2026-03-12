@@ -53,7 +53,7 @@ private Q_SLOTS:
     void doEmitDirectoryChanged(const QString &path, bool removed);
     bool restartStream();
 
-private:
+public:
     struct Info {
         QString origPath;
         timespec ctime;
@@ -73,6 +73,8 @@ private:
             , watchedPath(watchedPath)
         {}
     };
+
+private:
     typedef QHash<QString, Info> InfoByName;
     typedef QHash<QString, InfoByName> FilesByPath;
     struct DirInfo {
