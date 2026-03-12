@@ -1131,7 +1131,7 @@ void QDBusConnectionPrivate::closeConnection()
         }
     }
 
-    for (QDBusPendingCallPrivate *call : pendingCalls) {
+    for (QDBusPendingCallPrivate *call : std::as_const(pendingCalls)) {
         if (!call->ref.deref())
             delete call;
     }
