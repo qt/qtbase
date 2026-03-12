@@ -71,18 +71,16 @@ QJsonDocument::QJsonDocument()
  * Creates a QJsonDocument from \a object.
  */
 QJsonDocument::QJsonDocument(const QJsonObject &object)
-    : d(nullptr)
+    : QJsonDocument(QCborMap::fromJsonObject(object))
 {
-    setObject(object);
 }
 
 /*!
  * Constructs a QJsonDocument from \a array.
  */
 QJsonDocument::QJsonDocument(const QJsonArray &array)
-    : d(nullptr)
+    : QJsonDocument(QCborArray::fromJsonArray(array))
 {
-    setArray(array);
 }
 
 /*!
@@ -105,14 +103,8 @@ QJsonDocument::~QJsonDocument() = default;
  * Creates a copy of the \a other document.
  */
 QJsonDocument::QJsonDocument(const QJsonDocument &other)
+    : d(other.d ? std::make_unique<QJsonDocumentPrivate>(other.d->value) : nullptr)
 {
-    if (other.d) {
-        if (!d)
-            d = std::make_unique<QJsonDocumentPrivate>();
-        d->value = other.d->value;
-    } else {
-        d.reset();
-    }
 }
 
 QJsonDocument::QJsonDocument(QJsonDocument &&other) noexcept
@@ -187,8 +179,7 @@ QJsonDocument QJsonDocument::fromVariant(const QVariant &variant)
         doc.setArray(QJsonArray::fromVariantList(variant.toList()));
         break;
     case QMetaType::QStringList:
-        doc.d = std::make_unique<QJsonDocumentPrivate>();
-        doc.d->value = QCborArray::fromStringList(variant.toStringList());
+        doc = QJsonDocument(QCborArray::fromStringList(variant.toStringList()));
         break;
     default:
         break;
@@ -270,8 +261,7 @@ QJsonDocument QJsonDocument::fromJson(const QByteArray &json, QJsonParseError *e
     QJsonDocument result;
     const QCborValue val = parser.parse(error);
     if (val.isArray() || val.isMap()) {
-        result.d = std::make_unique<QJsonDocumentPrivate>();
-        result.d->value = val;
+        result = QJsonDocument(val);
     } else if (!val.isUndefined() && error) {
         // parsed a valid string/number/bool/null,
         // but QJsonDocument only stores objects and arrays.
@@ -359,10 +349,7 @@ QJsonArray QJsonDocument::array() const
  */
 void QJsonDocument::setObject(const QJsonObject &object)
 {
-    if (!d)
-        d = std::make_unique<QJsonDocumentPrivate>();
-
-    d->value = QCborValue::fromJsonValue(object);
+    *this = QJsonDocument(QCborValue::fromJsonValue(object));
 }
 
 /*!
@@ -372,10 +359,7 @@ void QJsonDocument::setObject(const QJsonObject &object)
  */
 void QJsonDocument::setArray(const QJsonArray &array)
 {
-    if (!d)
-        d = std::make_unique<QJsonDocumentPrivate>();
-
-    d->value = QCborValue::fromJsonValue(array);
+    *this = QJsonDocument(QCborValue::fromJsonValue(array));
 }
 
 /*!
