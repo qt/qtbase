@@ -1528,6 +1528,9 @@ void QRhiMetal::setGraphicsPipeline(QRhiCommandBuffer *cb, QRhiGraphicsPipeline 
     cbD->currentComputePipeline = nullptr;
     cbD->currentPipelineGeneration = psD->generation;
 
+    if (cbD->hasCustomScissorSet && !psD->m_flags.testFlag(QRhiGraphicsPipeline::UsesScissor))
+        setDefaultScissor(cbD);
+
     if (!psD->d->tess.enabled && !psD->d->tess.failed)
         psD->makeActiveForCurrentRenderPassEncoder(cbD);
 
@@ -1891,6 +1894,32 @@ void QRhiMetal::setVertexInput(QRhiCommandBuffer *cb,
     }
 }
 
+void QRhiMetal::setDefaultScissor(QMetalCommandBuffer *cbD)
+{
+    cbD->hasCustomScissorSet = false;
+
+    const QSize outputSize = cbD->currentTarget->pixelSize();
+    std::array<float, 4> vp = cbD->currentViewport.viewport();
+    float x = 0, y = 0, w = 0, h = 0;
+
+    if (qFuzzyIsNull(vp[2]) && qFuzzyIsNull(vp[3])) {
+        x = 0;
+        y = 0;
+        w = outputSize.width();
+        h = outputSize.height();
+    } else {
+        // x,y is top-left in MTLScissorRect but bottom-left in QRhiScissor
+        qrhi_toTopLeftRenderTargetRect<Bounded>(outputSize, vp, &x, &y, &w, &h);
+    }
+
+    MTLScissorRect s;
+    s.x = NSUInteger(x);
+    s.y = NSUInteger(y);
+    s.width = NSUInteger(w);
+    s.height = NSUInteger(h);
+    [cbD->d->currentRenderPassEncoder setScissorRect: s];
+}
+
 void QRhiMetal::setViewport(QRhiCommandBuffer *cb, const QRhiViewport &viewport)
 {
     QMetalCommandBuffer *cbD = QRHI_RES(QMetalCommandBuffer, cb);
@@ -1926,15 +1955,11 @@ void QRhiMetal::setViewport(QRhiCommandBuffer *cb, const QRhiViewport &viewport)
 
     [cbD->d->currentRenderPassEncoder setViewport: vp];
 
+    cbD->currentViewport = viewport;
     if (cbD->currentGraphicsPipeline
-        && !cbD->currentGraphicsPipeline->m_flags.testFlag(QRhiGraphicsPipeline::UsesScissor)) {
-        MTLScissorRect s;
-        qrhi_toTopLeftRenderTargetRect<Bounded>(outputSize, viewport.viewport(), &x, &y, &w, &h);
-        s.x = NSUInteger(x);
-        s.y = NSUInteger(y);
-        s.width = NSUInteger(w);
-        s.height = NSUInteger(h);
-        [cbD->d->currentRenderPassEncoder setScissorRect: s];
+        && !cbD->currentGraphicsPipeline->m_flags.testFlag(QRhiGraphicsPipeline::UsesScissor))
+    {
+        setDefaultScissor(cbD);
     }
 }
 
@@ -1958,6 +1983,8 @@ void QRhiMetal::setScissor(QRhiCommandBuffer *cb, const QRhiScissor &scissor)
     s.height = NSUInteger(h);
 
     [cbD->d->currentRenderPassEncoder setScissorRect: s];
+
+    cbD->hasCustomScissorSet = true;
 }
 
 void QRhiMetal::setBlendConstants(QRhiCommandBuffer *cb, const QColor &c)
@@ -6280,6 +6307,8 @@ void QMetalCommandBuffer::resetPerPassCachedState()
     currentDepthClipMode = -1;
     currentFrontFaceWinding = -1;
     currentDepthBiasValues = { 0.0f, 0.0f };
+    hasCustomScissorSet = false;
+    currentViewport = {};
 
     d->currentShaderResourceBindingState = {};
     d->currentDepthStencilState = nil;

@@ -985,6 +985,8 @@ struct QD3D12CommandBuffer : public QRhiCommandBuffer
         currentVertexOffsets = {};
         hasShadingRateSet = false;
         hasShadingRateMapSet = false;
+        hasCustomScissorSet = false;
+        currentViewport = {};
     }
 
     // per-frame
@@ -1005,6 +1007,8 @@ struct QD3D12CommandBuffer : public QRhiCommandBuffer
     std::array<quint32, D3D12_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT> currentVertexOffsets;
     bool hasShadingRateSet;
     bool hasShadingRateMapSet;
+    bool hasCustomScissorSet;
+    QRhiViewport currentViewport;
 
     // global
     double lastGpuTime = 0;
@@ -1250,6 +1254,7 @@ public:
                                                    quint32 neededDescriptorCount,
                                                    bool *gotNew);
     void bindShaderVisibleHeaps(QD3D12CommandBuffer *cbD);
+    void setDefaultScissor(QD3D12CommandBuffer *cbD);
 
     bool debugLayer = false;
     UINT maxFrameLatency = 2; // 1-3, use 2 to keep CPU-GPU parallelism while reducing lag compared to tripple buffering

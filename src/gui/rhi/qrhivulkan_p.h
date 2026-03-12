@@ -368,6 +368,8 @@ struct QVkCommandBuffer : public QRhiCommandBuffer
         memset(currentVertexOffsets, 0, sizeof(currentVertexOffsets));
         inExternal = false;
         hasShadingRateSet = false;
+        hasCustomScissorSet = false;
+        currentViewport = {};
     }
 
     PassType recordingPass;
@@ -390,6 +392,8 @@ struct QVkCommandBuffer : public QRhiCommandBuffer
     QVarLengthArray<VkCommandBuffer, 4> activeSecondaryCbStack;
     bool inExternal;
     bool hasShadingRateSet;
+    bool hasCustomScissorSet;
+    QRhiViewport currentViewport;
 
     struct ComputePassState {
         struct AccessFlagsAndIsNew {
@@ -890,6 +894,7 @@ public:
     void ensureCommandPoolForNewFrame();
     double elapsedSecondsFromTimestamp(quint64 timestamp[2], bool *ok);
     void printExtraErrorInfo(VkResult err);
+    void setDefaultScissor(QVkCommandBuffer *cbD);
 
     QVulkanInstance *inst = nullptr;
     QWindow *maybeWindow = nullptr;
