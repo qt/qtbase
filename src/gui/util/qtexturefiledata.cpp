@@ -81,6 +81,8 @@ public:
     QMap<QByteArray, QByteArray> keyValues;
 };
 
+QT_DEFINE_QSDP_SPECIALIZATION_DTOR(QTextureFileDataPrivate)
+
 QTextureFileData::QTextureFileData(Mode mode)
 {
     d = new QTextureFileDataPrivate;
