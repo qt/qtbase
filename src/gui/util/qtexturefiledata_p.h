@@ -28,6 +28,7 @@ class QDebug;
 Q_DECLARE_LOGGING_CATEGORY(lcQtGuiTextureIO)
 
 class QTextureFileDataPrivate;
+QT_DECLARE_QSDP_SPECIALIZATION_DTOR(QTextureFileDataPrivate)
 
 class Q_GUI_EXPORT QTextureFileData
 {
@@ -36,8 +37,12 @@ public:
 
     QTextureFileData(Mode mode = ByteArrayMode);
     QTextureFileData(const QTextureFileData &other);
+    QTextureFileData(QTextureFileData &&) = default;
     QTextureFileData &operator=(const QTextureFileData &other);
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QTextureFileData)
     ~QTextureFileData();
+
+    void swap(QTextureFileData &other) noexcept { d.swap(other.d); }
 
     bool isNull() const;
     bool isValid() const;
@@ -85,7 +90,7 @@ private:
     friend Q_GUI_EXPORT QDebug operator<<(QDebug dbg, const QTextureFileData &d);
 };
 
-Q_DECLARE_TYPEINFO(QTextureFileData, Q_RELOCATABLE_TYPE);
+Q_DECLARE_SHARED(QTextureFileData)
 
 Q_GUI_EXPORT QDebug operator<<(QDebug dbg, const QTextureFileData &d);
 
