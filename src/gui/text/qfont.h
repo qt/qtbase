@@ -16,6 +16,7 @@ QT_BEGIN_NAMESPACE
 
 
 class QFontPrivate;                                     /* don't touch */
+QT_DECLARE_QESDP_SPECIALIZATION_DTOR(QFontPrivate)
 class QVariant;
 
 class Q_GUI_EXPORT QFont
@@ -142,6 +143,7 @@ public:
     explicit QFont(const QStringList &families, int pointSize = -1, int weight = -1, bool italic = false);
     QFont(const QFont &font, const QPaintDevice *pd);
     QFont(const QFont &font);
+    QFont(QFont &&) = default;
     ~QFont();
 
     void swap(QFont &other) noexcept

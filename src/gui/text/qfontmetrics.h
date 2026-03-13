@@ -23,6 +23,7 @@ public:
     explicit QFontMetrics(const QFont &);
     QFontMetrics(const QFont &font, const QPaintDevice *pd);
     QFontMetrics(const QFontMetrics &);
+    QFontMetrics(QFontMetrics &&) = default;
     ~QFontMetrics();
 
     QFontMetrics &operator=(const QFontMetrics &);
@@ -95,6 +96,7 @@ public:
     QFontMetricsF(const QFont &font, const QPaintDevice *pd);
     QFontMetricsF(const QFontMetrics &);
     QFontMetricsF(const QFontMetricsF &);
+    QFontMetricsF(QFontMetricsF &&) = default;
     ~QFontMetricsF();
 
     QFontMetricsF &operator=(const QFontMetricsF &);

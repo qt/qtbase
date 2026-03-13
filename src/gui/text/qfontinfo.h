@@ -18,9 +18,11 @@ class Q_GUI_EXPORT QFontInfo
 public:
     QFontInfo(const QFont &);
     QFontInfo(const QFontInfo &);
+    QFontInfo(QFontInfo &&) = default;
     ~QFontInfo();
 
     QFontInfo &operator=(const QFontInfo &);
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QFontInfo)
 
     void swap(QFontInfo &other) noexcept { d.swap(other.d); }
 

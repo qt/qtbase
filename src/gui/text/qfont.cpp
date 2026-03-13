@@ -47,6 +47,8 @@ QT_BEGIN_NAMESPACE
 #  define QFONTCACHE_DECREASE_TRIGGER_LIMIT 256
 #endif
 
+QT_DEFINE_QESDP_SPECIALIZATION_DTOR(QFontPrivate)
+
 bool QFontDef::exactMatch(const QFontDef &other) const
 {
     /*
