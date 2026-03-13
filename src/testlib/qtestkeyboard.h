@@ -37,7 +37,8 @@ namespace QTest
     enum KeyAction { Press, Release, Click, Shortcut };
 
     static void simulateEvent(QWindow *window, bool press, int code,
-                              Qt::KeyboardModifiers modifier, QString text, bool repeat, int delay=-1)
+                              Qt::KeyboardModifiers modifier, const QString &text,
+                              bool repeat, int delay = -1)
     {
         QEvent::Type type;
         type = press ? QEvent::KeyPress : QEvent::KeyRelease;
@@ -46,7 +47,8 @@ namespace QTest
     }
 
     static void sendKeyEvent(KeyAction action, QWindow *window, Qt::Key code,
-                             QString text, Qt::KeyboardModifiers modifier, int delay=-1)
+                             const QString &text, Qt::KeyboardModifiers modifier,
+                             int delay = -1)
     {
         QTEST_ASSERT(qApp);
 
@@ -148,7 +150,8 @@ namespace QTest
 
 #ifdef QT_WIDGETS_LIB
     static void simulateEvent(QWidget *widget, bool press, int code,
-                              Qt::KeyboardModifiers modifier, QString text, bool repeat, int delay=-1)
+                              Qt::KeyboardModifiers modifier, const QString &text,
+                              bool repeat, int delay = -1)
     {
         QTEST_ASSERT(widget);
         extern int Q_TESTLIB_EXPORT defaultKeyDelay();
@@ -168,7 +171,8 @@ namespace QTest
     }
 
     static void sendKeyEvent(KeyAction action, QWidget *widget, Qt::Key code,
-                             QString text, Qt::KeyboardModifiers modifier, int delay=-1)
+                             const QString &text, Qt::KeyboardModifiers modifier,
+                             int delay = -1)
     {
         QTEST_ASSERT(qApp);
 
