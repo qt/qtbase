@@ -867,8 +867,8 @@ bool QTextHtmlImporter::closeTag()
                 if (lists.isEmpty())
                     break;
                 lists.resize(lists.size() - 1);
-                if (currentNode->hasCssListIndent)
-                    indent -= currentNode->cssListIndent;
+                if (closedNode->hasCssListIndent)
+                    indent -= closedNode->cssListIndent;
                 else
                     --indent;
                 blockTagClosed = true;
