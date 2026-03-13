@@ -163,6 +163,8 @@ protected:
     QOhosOptional<QCursor> m_cursor;
 
 private:
+    void sendExposeUpdate();
+
     QPlatformWindow *m_parent {nullptr};
     QOhosOptional<QOhosDisplayInfo::JsDisplayId> m_displayId;
     QOhosOptional<QOhosDisplayInfo::JsDisplayId> m_lastRequestedDisplayId;
