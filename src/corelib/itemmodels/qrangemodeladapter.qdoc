@@ -194,7 +194,7 @@
     \section3 Table row access
 
     The \l{at(int)} overload is still available, but it returns the entire table
-    wor. This makes it possible to work with all the values in the row at once.
+    row. This makes it possible to work with all the values in the row at once.
 
     \snippet qrangemodeladapter/main.cpp table-row-const-access
 
@@ -719,7 +719,7 @@
     \a before, and returns whether the insertion was successful.
     \include qrangemodeladapter.qdoc insert-row-appends
 
-    \constraints \c Range supports insertion of elemnets, and if
+    \constraints \c Range supports insertion of elements, and if
                  rows can be constructed from the elements in \a data.
 
     \sa insertRow(), removeRows(), insertColumns()
