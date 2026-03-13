@@ -584,7 +584,7 @@ void QOhosPlatformWindow::setExposedRegionFromGeometry()
     auto fullWindowExposedRegion = QRegion{QRect{{}, geometry().size()}};
     if (m_lastExposedRegion.intersected(fullWindowExposedRegion) != fullWindowExposedRegion) {
         m_lastExposedRegion = fullWindowExposedRegion;
-        QWindowSystemInterface::handleExposeEvent(window(), fullWindowExposedRegion);
+        sendExposeUpdate();
     }
 }
 
@@ -730,6 +730,11 @@ bool QOhosPlatformWindow::isWindowBeingClosedOrDestroyed(QWindow *window) const
 {
     QWindowPrivate *windowPriv = qt_window_private(window);
     return windowPriv && (windowPriv->inClose || windowPriv->visibilityOnDestroy);
+}
+
+void QOhosPlatformWindow::sendExposeUpdate()
+{
+    QWindowSystemInterface::handleExposeEvent(window(), m_lastExposedRegion);
 }
 
 QT_END_NAMESPACE
