@@ -108,10 +108,7 @@ void QOhosForeignWindow::setVisible(bool visible)
         m_jsStateData->embeddedWindow->setNodeVisibility(visible);
     });
 
-    if (visible)
-        setExposedRegionFromGeometry();
-    else
-        clearExposed();
+    setExposedFromOhos(visible);
 }
 
 QMargins QOhosForeignWindow::frameMargins() const

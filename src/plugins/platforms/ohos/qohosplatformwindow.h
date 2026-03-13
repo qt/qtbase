@@ -136,8 +136,7 @@ protected:
 
     void setWindowStateFromOhos(Qt::WindowStates state);
     void setWindowMarginsFromOhos(const QMargins &margins);
-    void clearExposed();
-    void setExposedRegionFromGeometry();
+    void setExposedFromOhos(bool exposed);
     void setDisplayIdFromOhos(QOhosOptional<QOhosDisplayInfo::JsDisplayId> displayId);
     void setWindowGeometryFromOhos(const QRect &nativeWindowDrawGeometry);
     void notifyWindowDestroyedFromOhos();
