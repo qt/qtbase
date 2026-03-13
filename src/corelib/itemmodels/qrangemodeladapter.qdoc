@@ -109,7 +109,7 @@
     regular C++ containers. As with data(), at() overloads exist to access an
     item at a row for lists, at a row/column pair for table, and a path/column
     pair for trees. However, at() always returns the whole item at the
-    specified position; it's not possible to read an individual role values for
+    specified position; it is not possible to read individual role values of
     an item.
 
     As expected from a C++ container API, the const overloads of at() (and the
@@ -167,7 +167,7 @@
     this item, and for all roles.
 
     If the range is represented as a table, then you can access an individual
-    item by row and columns, using the \l{at(int, int)}{at(row, column)}
+    item by row and column, using the \l{at(int, int)}{at(row, column)}
     overload. For trees, that overload gives access to top-level items, while
     the \l{at(QSpan<const int>, int)}{at(path, column)} overload provides
     access to items nested within the tree.
@@ -178,7 +178,7 @@
     \snippet qrangemodeladapter/main.cpp table-item-access
 
     If the range doesn't store all columns using the same data type, then
-    \c{at(row,column)} returns a (a reference wrapper with a) QVariant holding
+    \c{at(row,column)} returns a (reference wrapper with a) QVariant holding
     the item.
 
     \snippet qrangemodeladapter/main.cpp table-mixed-type-access
@@ -259,9 +259,9 @@
     \snippet qrangemodeladapter/main.cpp ranged-for-const-table
 
     Both the const and the mutable iterator will dereference to a wrapper type
-    for the row. This make sure that we can consistently iterate over each
-    column, even if the underlying row type is not a range (e.g. it might be a
-    tuple or gadget).
+    for the row. This makes sure that we can consistently iterate over each
+    item in the row, even if the underlying row type is not a range (e.g. it
+    might be a tuple or gadget).
 
     \snippet qrangemodeladapter/main.cpp ranged-for-const-table-items
 
