@@ -157,7 +157,6 @@ protected:
 
     Qt::WindowFlags m_windowFlags;
     Qt::WindowStates m_windowState;
-    QRegion m_lastExposedRegion;
 
     QtOhos::InternalWindowId m_windowId = QtOhos::InternalWindowId::invalidWindowId();
     QRect m_oldGeometry;
@@ -171,6 +170,7 @@ private:
     QOhosOptional<QOhosDisplayInfo::JsDisplayId> m_displayId;
     QOhosOptional<QOhosDisplayInfo::JsDisplayId> m_lastRequestedDisplayId;
     QOhosPropertiesStore m_propertiesStore;
+    bool m_exposed = false;
 };
 
 template<typename T, const QOhosPropertyDescriptor<T> *propertyPtr>

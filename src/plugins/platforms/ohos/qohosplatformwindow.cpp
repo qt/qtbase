@@ -70,7 +70,6 @@ const QOhosPropertyDescriptor<int> QOhosPlatformWindow::windowSaturationProperty
 
 QOhosPlatformWindow::QOhosPlatformWindow(QWindow *window)
     : QPlatformWindow(window)
-    , m_lastExposedRegion()
     , m_propertiesStore(window)
 {
     m_windowFlags = Qt::Widget;
@@ -230,7 +229,7 @@ void QOhosPlatformWindow::propagateSizeHints()
 
 bool QOhosPlatformWindow::isExposed() const
 {
-    return !m_lastExposedRegion.isEmpty();
+    return m_exposed;
 }
 
 QtOhos::InternalWindowId QOhosPlatformWindow::internalWindowId() const
@@ -586,14 +585,13 @@ bool QOhosPlatformWindow::floatWindowTagValueOrFalse() const
 
 void QOhosPlatformWindow::clearExposed()
 {
-    m_lastExposedRegion = QRegion();
+    m_exposed = false;
     sendExposeUpdate();
 }
 
 void QOhosPlatformWindow::setExposedRegionFromGeometry()
 {
-    auto fullWindowExposedRegion = QRegion{QRect{{}, geometry().size()}};
-    m_lastExposedRegion = fullWindowExposedRegion;
+    m_exposed = true;
     sendExposeUpdate();
 }
 
@@ -736,8 +734,7 @@ bool QOhosPlatformWindow::isWindowBeingClosedOrDestroyed(QWindow *window) const
 
 void QOhosPlatformWindow::sendExposeUpdate()
 {
-    bool exposed = !m_lastExposedRegion.isEmpty();
-    auto exposedSize = exposed
+    auto exposedSize = m_exposed
         ? geometry().size()
         : QSize();
 
