@@ -1501,7 +1501,7 @@ QTimeZone QTimeZone::utc()
     \sa availableTimeZoneIds(), hasAlternativeName()
 */
 
-bool QTimeZone::isTimeZoneIdAvailable(const QByteArray &ianaId)
+bool QTimeZone::isTimeZoneIdAvailable(QByteArrayView ianaId)
 {
 #if defined(Q_OS_UNIX) && !(QT_CONFIG(timezone_tzdb) || defined(Q_OS_DARWIN) \
                             || defined(Q_OS_ANDROID) || defined(Q_OS_VXWORKS))

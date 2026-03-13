@@ -904,7 +904,7 @@ QTimeZonePrivate::findLongNamePrefix(QStringView text, const QLocale &locale,
                     QStringView name = range.viewData(longZoneNameTable);
                     // Save potentially expensive "zone is supported" check when possible:
                     bool gotZone = row.ianaIdIndex == best.ianaIdIndex
-                        || QTimeZone::isTimeZoneIdAvailable(row.ianaId().toByteArray());
+                        || QTimeZone::isTimeZoneIdAvailable(row.ianaId());
                     if (text.startsWith(name) && gotZone)
                         best = { static_cast<qsizetype>(range.size), type, row.ianaIdIndex };
                 }
@@ -930,7 +930,7 @@ QTimeZonePrivate::findLongNamePrefix(QStringView text, const QLocale &locale,
                     ? metaRow->metaZoneKey == metaZoneAt(metaRow->ianaId(), *atEpochMillis)
                     : zoneEverInMeta(metaRow->ianaId(), metaRow->metaZoneKey))) {
                 if (metaRow->ianaIdIndex == best.ianaIdIndex
-                    || QTimeZone::isTimeZoneIdAvailable(metaRow->ianaId().toByteArray())) {
+                    || QTimeZone::isTimeZoneIdAvailable(metaRow->ianaId())) {
                     best.ianaIdIndex = metaRow->ianaIdIndex;
                     best.where = metaLand;
                     if (best.where == QLocale::World)
@@ -984,7 +984,7 @@ QTimeZonePrivate::findLongNamePrefix(QStringView text, const QLocale &locale,
                     qsizetype length = cut + city.size() + suffix.size();
                     if (length > found.nameLength) {
                         bool gotZone = row.ianaId() == found.ianaId // (cheap pre-test)
-                            || QTimeZone::isTimeZoneIdAvailable(row.ianaId().toByteArray());
+                            || QTimeZone::isTimeZoneIdAvailable(row.ianaId());
                         if (gotZone)
                             found = { row.ianaId().toByteArray(), length, timeType };
                     }

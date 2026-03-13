@@ -206,7 +206,10 @@ public:
     static QTimeZone systemTimeZone();
     static QTimeZone utc();
 
+#if QT_CORE_REMOVED_SINCE(6, 12)
     static bool isTimeZoneIdAvailable(const QByteArray &ianaId);
+#endif
+    static bool isTimeZoneIdAvailable(QByteArrayView ianaId);
 
     static QList<QByteArray> availableTimeZoneIds();
     static QList<QByteArray> availableTimeZoneIds(QLocale::Territory territory);

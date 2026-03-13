@@ -1558,6 +1558,13 @@ bool QFile::copy(const QString &fileName, const QString &newName)
 
 #include "qobjectdefs.h"    // uses QT_CORE_INLINE_SINCE
 
+#include "qtimezone.h"
+
+bool QTimeZone::isTimeZoneIdAvailable(const QByteArray &ianaId)
+{
+    return isTimeZoneIdAvailable(QByteArrayView{ianaId});
+}
+
 #include "qurlquery.h"      // uses QT_CORE_INLINE_SINCE
 
 // #include "qotherheader.h"

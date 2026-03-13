@@ -1422,7 +1422,7 @@ void tst_QTimeZone::stdCompatibility()
     if (tz.isValid())
         QVERIFY2(tz.hasAlternativeName(zoneName), tz.id().constData());
     else
-        QVERIFY(!QTimeZone::isTimeZoneIdAvailable(zoneName.toByteArray()));
+        QVERIFY(!QTimeZone::isTimeZoneIdAvailable(zoneName));
 #else
     QSKIP("This test requires C++20's <chrono>.");
 #endif
