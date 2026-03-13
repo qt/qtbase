@@ -167,10 +167,9 @@
     \li Spaces and "%20": unencoded space characters will be accepted and will
     be treated as equivalent to "%20".
 
-    \li Single "%" characters: Any occurrences of a percent character "%" not
-    followed by exactly two hexadecimal characters (e.g., "13% coverage.html")
-    will be replaced by "%25". Note that one lone "%" character will trigger
-    the correction mode for all percent characters.
+    \li Single "%" characters: if any percent character "%" is not followed by
+    two hexadecimal characters (e.g., "13% coverage.html"), the parser will
+    assume the input was not encoded and will replace all "%" characters with "%25".
 
     \li Reserved and unreserved characters: An encoded URL should only
     contain a few characters as literals; all other characters should
