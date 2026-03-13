@@ -630,14 +630,7 @@ void QOhosPlatformWindow::setDisplayIdFromOhos(QOhosOptional<QOhosDisplayInfo::J
 
 void QOhosPlatformWindow::setWindowGeometryFromOhos(const QRect &nativeWindowDrawGeometry)
 {
-    if (nativeWindowDrawGeometry == m_lastReportedGeometryFromSystem)
-        return;
-
-    auto optOldGeometry = std::exchange(m_lastReportedGeometryFromSystem, nativeWindowDrawGeometry);
-    if (optOldGeometry.hasValue()) {
-        qCDebug(QtForOhos) << "window:" << window() << "geometry change from:"
-            << optOldGeometry.value() << "to:" << nativeWindowDrawGeometry;
-    }
+    qCDebug(QtForOhos) << "window:" << window() << "geometry change to:" << nativeWindowDrawGeometry;
     QWindowSystemInterface::handleGeometryChange(window(), nativeWindowDrawGeometry);
     QWindowSystemInterface::handleExposeEvent(window(), QRect(QPoint(), nativeWindowDrawGeometry.size()));
 }

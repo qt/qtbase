@@ -170,7 +170,6 @@ private:
     QPlatformWindow *m_parent {nullptr};
     QOhosOptional<QOhosDisplayInfo::JsDisplayId> m_displayId;
     QOhosOptional<QOhosDisplayInfo::JsDisplayId> m_lastRequestedDisplayId;
-    QOhosOptional<QRect> m_lastReportedGeometryFromSystem;
     QOhosPropertiesStore m_propertiesStore;
 };
 
