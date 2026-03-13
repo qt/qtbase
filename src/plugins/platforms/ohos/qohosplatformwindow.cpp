@@ -736,7 +736,12 @@ bool QOhosPlatformWindow::isWindowBeingClosedOrDestroyed(QWindow *window) const
 
 void QOhosPlatformWindow::sendExposeUpdate()
 {
-    QWindowSystemInterface::handleExposeEvent(window(), m_lastExposedRegion);
+    bool exposed = !m_lastExposedRegion.isEmpty();
+    auto exposedSize = exposed
+        ? geometry().size()
+        : QSize();
+
+    QWindowSystemInterface::handleExposeEvent(window(), QRegion(QRect(QPoint(), exposedSize)));
 }
 
 QT_END_NAMESPACE
