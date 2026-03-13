@@ -8,6 +8,7 @@
 #include "qohosjsutils.h"
 #include "qohospixelmapconversions.h"
 #include "qohosstatusbarmenu.h"
+#include <qohosdeviceinfo_p.h>
 #include <QtCore/qdatetime.h>
 #include <QtCore/qobject.h>
 #include <QtGui/private/qhighdpiscaling_p.h>
@@ -30,6 +31,17 @@ const std::string ohosSystemTrayItemTitle = "Qt Application";
 const auto trayIconGeometry = QRect(0, 0, 24, 24);
 
 const auto notificationIconSize = QSize(128,128);
+
+bool ohosStatusBarHoverTipsSupported()
+{
+    constexpr auto minSupportedSdkVersionForSettingHoverTips = 22;
+    return QOhosDeviceInfo::sdkApiVersion() >= minSupportedSdkVersionForSettingHoverTips;
+}
+
+std::string applyWorkaroundForEmptyHoverTips(const std::string &hoverTips)
+{
+    return !hoverTips.empty() ? hoverTips : " ";
+}
 
 std::function<QNapi::Array(QtOhos::JsState &)> makeEmptyJsArrayFactory()
 {
@@ -116,7 +128,7 @@ void updateOhosStatusBarMenu(QtOhos::JsState &jsState, QNapi::Array statusBarGro
 
 QNapi::Object makeJsStatusBarItem(
     QtOhos::JsState &jsState, QNapi::Object statusBarIcon, const std::string &title,
-    QNapi::Array statusBarGroupMenus)
+    QNapi::Array statusBarGroupMenus, QOhosOptional<std::string> hoverTips)
 {
     auto *env = jsState.env();
 
@@ -128,13 +140,25 @@ QNapi::Object makeJsStatusBarItem(
             {"abilityName", ""},
         });
 
-    return QNapi::makeObject(
+    auto statusBarItem = QNapi::makeObject(
         env,
         {
             {"icons", statusBarIcon},
             {"quickOperation", quickOperation},
             {"statusBarGroupMenu", statusBarGroupMenus},
         });
+
+    if (hoverTips.hasValue()) {
+        if (ohosStatusBarHoverTipsSupported()) {
+            statusBarItem.set("hoverTips", applyWorkaroundForEmptyHoverTips(hoverTips.value()));
+        } else {
+            qOhosPrintfDebug(
+                "%s: status bar hover tips not supported on this API version, ignoring",
+                Q_FUNC_INFO);
+        }
+    }
+
+    return statusBarItem;
 }
 
 double getPrimaryDisplayPixelDensity(QtOhos::JsState &jsState)
@@ -320,6 +344,7 @@ public:
 private:
     bool m_initialized = false;
     QIcon m_icon;
+    QOhosOptional<QString> m_optToolTip;
     QPlatformMenu *m_menu = nullptr;
 
     struct JsScopeData
@@ -354,8 +379,12 @@ void QOhosSystemTrayIcon::init()
         [&](QtOhos::JsState &jsState) {
             auto jsStatusBarIcon = makeJsStatusBarIcon(jsState, m_icon);
             auto jsStatusBarGroupMenus = jsStatusBarGroupMenusFactory(jsState);
+            auto optHoverTipsString = m_optToolTip.transform(
+                [](const auto &toolTip) {
+                    return toolTip.toStdString();
+                });
             auto jsStatusBarItem = makeJsStatusBarItem(
-                jsState, jsStatusBarIcon, ohosSystemTrayItemTitle, jsStatusBarGroupMenus);
+                jsState, jsStatusBarIcon, ohosSystemTrayItemTitle, jsStatusBarGroupMenus, optHoverTipsString);
             addItemToOhosStatusBar(jsState, jsStatusBarItem);
             m_jsScopeData->m_iconLeftClickListenerHandle = registerOhosIconLeftClickListener(
                 jsState,
@@ -399,7 +428,25 @@ void QOhosSystemTrayIcon::updateIcon(const QIcon &icon)
 
 void QOhosSystemTrayIcon::updateToolTip(const QString &tooltip)
 {
-    Q_UNUSED(tooltip);
+    m_optToolTip = tooltip;
+
+    if (m_initialized) {
+        if (!ohosStatusBarHoverTipsSupported()) {
+            qOhosPrintfDebug(
+                "%s: status bar hover tips not supported on this API version, ignoring",
+                Q_FUNC_INFO);
+            return;
+        }
+
+        QtOhos::invokeInJsThreadAndWaitForContinue(
+            [&](QtOhos::JsState &jsState, std::function<void()> continueFunc) {
+                jsState.eval<QNapi::Promise>(
+                    "@kit.StatusBarExtensionKit.statusBarManager.updateStatusBarHoverTips(*)",
+                    {getContextForStatusBarManager(jsState), applyWorkaroundForEmptyHoverTips(tooltip.toStdString())})
+                .onCatch(QtOhos::makeErrorLoggingJsCallback("updateStatusBarHoverTips()"))
+                .onFinally(std::move(continueFunc));
+            });
+    }
 }
 
 QRect QOhosSystemTrayIcon::geometry() const
