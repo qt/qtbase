@@ -587,7 +587,7 @@ bool QOhosPlatformWindow::floatWindowTagValueOrFalse() const
 void QOhosPlatformWindow::clearExposed()
 {
     m_lastExposedRegion = QRegion();
-    QWindowSystemInterface::handleExposeEvent(window(), m_lastExposedRegion);
+    sendExposeUpdate();
 }
 
 void QOhosPlatformWindow::setExposedRegionFromGeometry()
