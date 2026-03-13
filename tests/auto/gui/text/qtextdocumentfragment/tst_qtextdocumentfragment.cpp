@@ -1259,10 +1259,17 @@ void tst_QTextDocumentFragment::html_listIndent()
     QCOMPARE(cursor.currentList()->format().indent(), 4);
 }
 
-void tst_QTextDocumentFragment::html_listNestedParagraphIndent()
+void tst_QTextDocumentFragment::html_listNestedParagraphIndent() // QTBUG-143122 QTBUG-144216
 {
-    const char html[] = "<ul style=\"-qt-list-indent:2;\"><li>Blah<p>exposition</p></li></ul>";
+    const char html[] = "<ul style=\"-qt-list-indent:2;\"><li>Blah<p>exposition</p></li></ul><p>NOT indented</p>";
     cursor.insertFragment(QTextDocumentFragment::fromHtml(html));
+
+    // Check the paragraph after the end of the list: should not be indented (QTBUG-144216)
+    QCOMPARE(cursor.block().text(), "NOT indented");
+    QCOMPARE(cursor.blockFormat().indent(), 0);
+
+    // Go back and check the paragraph inside the list item
+    cursor.movePosition(QTextCursor::PreviousBlock);
     QCOMPARE(cursor.block().text(), "exposition");
     // The paragraph happens to not be "inside" the list item, as declared: perhaps that's another bug
     QCOMPARE(cursor.currentList(), nullptr);
