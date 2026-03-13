@@ -58,7 +58,7 @@ class Global
 {
 public:
     Global() {
-        qDebug() << "Global constructor";
+        // Can't use qDebug in global constructor
     }
     ~Global() {
         qDebug() << "Global destructor"; // <- will not be printed

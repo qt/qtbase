@@ -3,8 +3,7 @@
 #include <QtGui>
 #include <QtWidgets>
 
-// This example show how calling QDialog::exec() shows the dialog,
-// but does not return.
+// This example show how calling QDialog::exec() requires asyncify to work
 
 class ClickWindow: public QRasterWindow
 {
@@ -31,9 +30,9 @@ public:
         connect(&messageBox, &QMessageBox::buttonClicked, [](QAbstractButton *button) {
            qDebug() << "Button Clicked" << button;
         });
-        messageBox.exec(); // <-- does not return
+        messageBox.exec(); // <-- Requires asyncify
 
-        qDebug() << "mousePressEvent(): done"; // <---  will not be printed
+        qDebug() << "mousePressEvent(): done";
     }
 };
 

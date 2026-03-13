@@ -61,6 +61,11 @@ void WasmIoDevicesTest::blobIODevice()
 
 void WasmIoDevicesTest::uint8ArrayIODevice()
 {
+    if (!qstdweb::canBlockCallingThread()) {
+        QtWasmTest::completeTestFunction(QtWasmTest::TestResult::Skip, "requires asyncify");
+        return;
+    }
+
     // Create test buffer and Uint8ArrayIODevice
     const int bufferSize = 1024;
     Uint8Array array(createTestArrayBuffer(bufferSize));
