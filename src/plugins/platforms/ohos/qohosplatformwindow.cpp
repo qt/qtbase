@@ -581,7 +581,7 @@ void QOhosPlatformWindow::clearExposed()
 
 void QOhosPlatformWindow::setExposedRegionFromGeometry()
 {
-    auto fullWindowExposedRegion = QRegion{QRect{{}, windowGeometry().size()}};
+    auto fullWindowExposedRegion = QRegion{QRect{{}, geometry().size()}};
     if (m_lastExposedRegion.intersected(fullWindowExposedRegion) != fullWindowExposedRegion) {
         m_lastExposedRegion = fullWindowExposedRegion;
         QWindowSystemInterface::handleExposeEvent(window(), fullWindowExposedRegion);
