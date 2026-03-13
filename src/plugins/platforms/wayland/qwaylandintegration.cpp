@@ -364,6 +364,7 @@ void QWaylandIntegration::initializeClientBufferIntegration()
     if (targetKey.isEmpty()) {
         if (mDisplay->hardwareIntegration()
                 && mDisplay->hardwareIntegration()->clientBufferIntegration() != QLatin1String("wayland-eglstream-controller")
+                && mDisplay->hardwareIntegration()->clientBufferIntegration() != QLatin1String("linux-dmabuf-v1")
                 && mDisplay->hardwareIntegration()->clientBufferIntegration() != QLatin1String("linux-dmabuf-unstable-v1")) {
             targetKey = mDisplay->hardwareIntegration()->clientBufferIntegration();
         } else {
