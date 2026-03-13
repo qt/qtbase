@@ -377,8 +377,14 @@ QWaylandDisplay::~QWaylandDisplay(void)
     // Reset the globals manually since they need to be destroyed before the wl_display
     mGlobals = {};
 
-    if (object())
+    if (object()) {
+        if (mFixes)
+            mFixes->destroy_registry(object());
+
         wl_registry_destroy(object());
+    }
+
+    mFixes.reset();
 
     if (mDisplay)
         wl_display_disconnect(mDisplay);
@@ -478,8 +484,15 @@ void QWaylandDisplay::reconnect()
         mSyncCallback = nullptr;
     }
 
-    if (object())
+    if (object()) {
+        if (mFixes)
+            mFixes->destroy_registry(object());
+
         wl_registry_destroy(object());
+    }
+
+    mFixes.reset();
+
     mDisplay = wl_display_connect(nullptr);
     if (!mDisplay)
         _exit(1);
@@ -815,6 +828,9 @@ void QWaylandDisplay::registry_global(uint32_t id, const QString &interface, uin
                         registry, id, 1));
     }
 #endif
+    else if (interface == QLatin1String(QtWayland::wl_fixes::interface()->name)) {
+        mFixes.reset(new WithDestructor<QtWayland::wl_fixes, wl_fixes_destroy>(registry, id, std::min(version, 2u)));
+    }
 
 
     mRegistryGlobals.append(RegistryGlobal(id, interface, version, registry));
@@ -891,6 +907,9 @@ void QWaylandDisplay::registry_global_remove(uint32_t id)
             break;
         }
     }
+
+    if (mFixes && mFixes->version() >= WL_FIXES_ACK_GLOBAL_REMOVE_SINCE_VERSION)
+        mFixes->ack_global_remove(object(), id);
 }
 
 bool QWaylandDisplay::hasRegistryGlobal(QStringView interfaceName) const
