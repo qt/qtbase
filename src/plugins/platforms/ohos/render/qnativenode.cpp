@@ -336,7 +336,7 @@ void QNativeNode::raise()
 {
     QtOhos::runInJsThreadAndWait([&](QtOhos::JsState &){
         auto &window = *m_jsStateData->embeddedWindow;
-        window.setZIndex(window.zIndex() + 1);
+        window.raise();
     });
 }
 
@@ -344,7 +344,7 @@ void QNativeNode::lower()
 {
     QtOhos::runInJsThreadAndWait([&](QtOhos::JsState &){
         auto &window = *m_jsStateData->embeddedWindow;
-        window.setZIndex(qMax(window.zIndex() - 1, QArkUi::QEmbeddedWindowNode::minimumNodeZIndexValue));
+        window.lower();
     });
 }
 
