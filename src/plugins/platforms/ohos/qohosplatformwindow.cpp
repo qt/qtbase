@@ -473,6 +473,12 @@ void QOhosPlatformWindow::setWindowMarginsFromOhos(const QMargins &margins)
     qCDebug(QtForOhos) << "Window margins changed: " << *m_optFrameMargins;
 }
 
+void QOhosPlatformWindow::setExposedFromOhos(bool exposed)
+{
+    m_exposed = exposed;
+    sendExposeUpdate();
+}
+
 void QOhosPlatformWindow::handleDpiChange()
 {
     auto *qWindow = window();
@@ -581,18 +587,6 @@ std::shared_ptr<void> QOhosPlatformWindow::setSurfaceConsumer(
 bool QOhosPlatformWindow::floatWindowTagValueOrFalse() const
 {
     return m_propertiesStore.tryGetProperty<bool, &floatWindowTagProperty>().valueOr(false);
-}
-
-void QOhosPlatformWindow::clearExposed()
-{
-    m_exposed = false;
-    sendExposeUpdate();
-}
-
-void QOhosPlatformWindow::setExposedRegionFromGeometry()
-{
-    m_exposed = true;
-    sendExposeUpdate();
 }
 
 QPixmap QOhosPlatformWindow::makeSnapshot() const

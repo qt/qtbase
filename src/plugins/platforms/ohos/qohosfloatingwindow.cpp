@@ -314,7 +314,7 @@ void QOhosFloatingWindow::handleWindowEvent(QOhosWindowProxy::WindowEvent evt)
     case QOhosWindowProxy::WindowEventType::WINDOW_HIDDEN:
         if (!checkWindowAcceptsFocus() && QGuiApplicationPrivate::focus_window == qWindow)
             focusHijackingPopupHidden();
-        clearExposed();
+        setExposedFromOhos(false);
         windowActive = false;
         break;
     case QOhosWindowProxy::WindowEventType::WINDOW_SHOWN:
@@ -326,7 +326,7 @@ void QOhosFloatingWindow::handleWindowEvent(QOhosWindowProxy::WindowEvent evt)
         // window state.
         if (previousWindowEventType == QOhosWindowProxy::WindowEventType::WINDOW_HIDDEN && !qWindow->isVisible())
             qWindow->setVisible(true);
-        setExposedRegionFromGeometry();
+        setExposedFromOhos(true);
         startAsyncWaitForNodeResizeIfNeeded();
         break;
     case QOhosWindowProxy::WindowEventType::WINDOW_DESTROYED:
@@ -410,10 +410,7 @@ void QOhosFloatingWindow::handleWindowVisibilityChange(bool visible)
     if (visible && m_windowMask.hasValue())
         m_view->setWindowMask(QOhosWindowProxy::WindowMask{m_windowMask.value()});
 
-    if (visible)
-        setExposedRegionFromGeometry();
-    else
-        clearExposed();
+    setExposedFromOhos(visible);
 }
 
 void QOhosFloatingWindow::handleAvoidAreaChanged(
@@ -447,10 +444,7 @@ void QOhosFloatingWindow::handleSurfaceStatusChanged(const QOhosOptional<QSize> 
     m_optLastSurfaceSize = optSurfaceSize;
     bool hasSurface = m_view->surfaceOrNull() != nullptr;
     if (m_view->viewType() == QOhosView::ViewType::EmbeddedWindow) {
-        if (hasSurface)
-            setExposedRegionFromGeometry();
-        else
-            clearExposed();
+        setExposedFromOhos(hasSurface);
     }
 
     if (hasSurface)
