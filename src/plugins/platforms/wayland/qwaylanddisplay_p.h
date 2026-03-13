@@ -317,6 +317,7 @@ private:
         void *data = nullptr;
     };
     struct wl_display *mDisplay = nullptr;
+    std::unique_ptr<QtWayland::wl_fixes> mFixes;
     std::unique_ptr<EventThread> m_eventThread;
     wl_event_queue *m_frameEventQueue = nullptr;
     std::unique_ptr<EventThread> m_frameEventQueueThread;
