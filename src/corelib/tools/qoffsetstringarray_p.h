@@ -25,11 +25,6 @@
 #include <array>
 #include <limits>
 #include <string_view>
-#include <tuple>
-
-#ifdef __cpp_concepts
-#  include <concepts>
-#endif
 
 class tst_QOffsetStringArray;
 
