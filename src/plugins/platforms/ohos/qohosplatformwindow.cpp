@@ -593,10 +593,8 @@ void QOhosPlatformWindow::clearExposed()
 void QOhosPlatformWindow::setExposedRegionFromGeometry()
 {
     auto fullWindowExposedRegion = QRegion{QRect{{}, geometry().size()}};
-    if (m_lastExposedRegion.intersected(fullWindowExposedRegion) != fullWindowExposedRegion) {
-        m_lastExposedRegion = fullWindowExposedRegion;
-        sendExposeUpdate();
-    }
+    m_lastExposedRegion = fullWindowExposedRegion;
+    sendExposeUpdate();
 }
 
 QPixmap QOhosPlatformWindow::makeSnapshot() const
