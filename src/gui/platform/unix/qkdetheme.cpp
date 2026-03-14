@@ -67,6 +67,7 @@ public:
         ViewForegroundVisited,
         TooltipBackground,
         TooltipForeground,
+        ViewForegroundInactive,
     };
 
     QKdeThemePrivate(const QStringList &kdeDirs, int kdeVersion);
@@ -243,6 +244,7 @@ static constexpr QKdeThemePrivate::KdeSettingType settingsType(QKdeThemePrivate:
     CASE(ViewForegroundVisited, Colors);
     CASE(TooltipBackground, Colors);
     CASE(TooltipForeground, Colors);
+    CASE(ViewForegroundInactive, Colors);
     };
     // GCC 8.x does not treat __builtin_unreachable() as constexpr
 #  if !defined(Q_CC_GNU_ONLY) || (Q_CC_GNU >= 900)
@@ -294,6 +296,8 @@ static constexpr QLatin1StringView settingsKey(QKdeThemePrivate::KdeSetting sett
         return QLatin1StringView("Window/BackgroundNormal");
     case QKdeThemePrivate::KdeSetting::ViewForeground:
         return QLatin1StringView("View/ForegroundNormal");
+    case QKdeThemePrivate::KdeSetting::ViewForegroundInactive:
+        return QLatin1StringView("View/ForegroundInactive");
     case QKdeThemePrivate::KdeSetting::WindowForeground:
         return QLatin1StringView("Window/ForegroundNormal");
     case QKdeThemePrivate::KdeSetting::ViewBackground:
@@ -503,6 +507,7 @@ void QKdeThemePrivate::readKdeSystemPalette(const QStringList &kdeDirs, int kdeV
     kdeColor(pal, QPalette::LinkVisited, readKdeSetting(KdeSetting::ViewForegroundVisited, kdeDirs, kdeVersion, kdeSettings));
     kdeColor(pal, QPalette::ToolTipBase, readKdeSetting(KdeSetting::TooltipBackground, kdeDirs, kdeVersion, kdeSettings));
     kdeColor(pal, QPalette::ToolTipText, readKdeSetting(KdeSetting::TooltipForeground, kdeDirs, kdeVersion, kdeSettings));
+    kdeColor(pal, QPalette::PlaceholderText, readKdeSetting(KdeSetting::ViewForegroundInactive, kdeDirs, kdeVersion, kdeSettings));
 
     // The above code sets _all_ color roles to "normal" colors. In KDE, the disabled
     // color roles are calculated by applying various effects described in kdeglobals.
