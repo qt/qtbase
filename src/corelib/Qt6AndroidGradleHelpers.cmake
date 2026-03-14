@@ -135,7 +135,8 @@ function(_qt_internal_android_get_gradle_dependencies out_var target)
             "${dep_type} "
         )
         set(dep_postfix "")
-        set(dep_property "$<GENEX_EVAL:$<TARGET_PROPERTY:${target},_qt_android_gradle_${dep_type}_dependencies>>")
+        set(dep_type_property "_qt_android_gradle_${dep_type}_dependencies")
+        set(dep_property "$<GENEX_EVAL:$<TARGET_PROPERTY:${target},${dep_type_property}>>")
         string(JOIN "" known_dependencies
             "${known_dependencies}"
             "$<$<BOOL:${dep_property}>:"
@@ -482,7 +483,7 @@ function(_qt_internal_android_template_res_dir out_var)
 
     set(template_res_dir "${android_templates_root}/templates/res")
     if(NOT EXISTS "${template_res_dir}")
-        message(FATAL_ERROR "Android template resource directory '${template_res_dir}' is not found."
+        message(FATAL_ERROR "Android template resource directory '${template_res_dir}' not found."
             " Please check your Qt installation.")
     endif()
     set(${out_var} "${template_res_dir}" PARENT_SCOPE)
@@ -759,7 +760,8 @@ function(_qt_internal_android_copy_target_package_sources target deployment_dir)
     # Save res outputs so default resources templates know to not override them.
     set(package_res_files "${package_files}")
     list(FILTER package_res_files INCLUDE REGEX "^res/")
-    list(TRANSFORM package_res_files PREPEND "${deployment_dir}/" OUTPUT_VARIABLE package_res_outputs)
+    list(TRANSFORM package_res_files PREPEND "${deployment_dir}/"
+        OUTPUT_VARIABLE package_res_outputs)
     set_property(TARGET ${target} PROPERTY _qt_android_package_res_outputs "${package_res_outputs}")
 
     # Do not copy files that we treat as CMake templates, having '.in' extention.
@@ -1311,11 +1313,11 @@ endfunction()
 
 function(_qt_internal_android_get_qt_paths out_qt_prefix out_qt_libs_dir out_qt_data_dir)
     _qt_internal_get_android_abi_prefix_path(qt_prefix ${CMAKE_ANDROID_ARCH_ABI})
-    _qt_internal_get_android_abi_subdir_path(qt_libs_subdir QT6_INSTALL_LIBS ${CMAKE_ANDROID_ARCH_ABI})
-    _qt_internal_get_android_abi_subdir_path(qt_data_subdir QT6_INSTALL_DATA ${CMAKE_ANDROID_ARCH_ABI})
+    _qt_internal_get_android_abi_subdir_path(qt_libs_dir QT6_INSTALL_LIBS ${CMAKE_ANDROID_ARCH_ABI})
+    _qt_internal_get_android_abi_subdir_path(qt_data_dir QT6_INSTALL_DATA ${CMAKE_ANDROID_ARCH_ABI})
 
-    _qt_internal_path_join(qt_libs_dir "${qt_prefix}" "${qt_libs_subdir}")
-    _qt_internal_path_join(qt_data_dir "${qt_prefix}" "${qt_data_subdir}")
+    _qt_internal_path_join(qt_libs_dir "${qt_prefix}" "${qt_libs_dir}")
+    _qt_internal_path_join(qt_data_dir "${qt_prefix}" "${qt_data_dir}")
 
     set(${out_qt_prefix} "${qt_prefix}" PARENT_SCOPE)
     set(${out_qt_libs_dir} "${qt_libs_dir}" PARENT_SCOPE)
@@ -1354,7 +1356,8 @@ function(_qt_internal_android_extract_xml_file_attrs nodes_var out_attrs)
     set(${out_attrs} "${files}" PARENT_SCOPE)
 endfunction()
 
-function(_qt_internal_android_read_dependency_xml target out_jars out_libs out_files out_plugin_dirs)
+function(_qt_internal_android_read_dependency_xml
+    target out_jars out_libs out_files out_plugin_dirs)
     _qt_internal_android_dependency_xml_path("${target}" dependency_xml)
     if(NOT dependency_xml)
         set(${out_jars} "" PARENT_SCOPE)
@@ -2156,7 +2159,8 @@ function(_qt_internal_android_parse_qmlimportscanner_output
     set(${out_qml_plugin_local_targets} "${qml_plugin_local_targets}" PARENT_SCOPE)
 endfunction()
 
-function(_qt_internal_android_copy_qml_modules_outputs target qml_bundle_dir qml_modules out_outputs)
+function(_qt_internal_android_copy_qml_modules_outputs
+    target qml_bundle_dir qml_modules out_outputs)
     if(NOT qml_modules)
         set(${out_outputs} "" PARENT_SCOPE)
         return()
@@ -2208,7 +2212,8 @@ function(_qt_internal_android_copy_qml_dependencies target deployment_dir)
 
     __qt_internal_get_tool_imported_location(qmlimportscanner_path "qmlimportscanner")
     if(NOT qmlimportscanner_path)
-        message(WARNING "qmlimportscanner not found. Skipping QML dependency scanning for ${target}.")
+        message(WARNING
+            "qmlimportscanner not found. Skipping QML dependency scanning for ${target}.")
         return()
     endif()
 
