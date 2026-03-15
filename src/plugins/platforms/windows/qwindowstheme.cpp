@@ -40,7 +40,6 @@
 #include <qpa/qwindowsysteminterface.h>
 #include <QtGui/private/qabstractfileiconengine_p.h>
 #include <QtGui/private/qwindowsfontdatabase_p.h>
-#include <private/qhighdpiscaling_p.h>
 #include <private/qwinregistry_p.h>
 #include <QtCore/private/qfunctions_win_p.h>
 #include <QtGui/private/qwindowsthemecache_p.h>

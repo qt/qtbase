@@ -42,7 +42,6 @@
 #include <QtCore/private/qandroiditemmodelproxy_p.h>
 #include <QtCore/private/qandroidmodelindexproxy_p.h>
 #include <QtGui/private/qguiapplication_p.h>
-#include <QtGui/private/qhighdpiscaling_p.h>
 
 #include <qpa/qwindowsysteminterface.h>
 
