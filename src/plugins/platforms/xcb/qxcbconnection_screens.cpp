@@ -6,7 +6,6 @@
 #include "qxcbscreen.h"
 #include "qxcbintegration.h"
 
-#include <QtGui/private/qhighdpiscaling_p.h>
 #include <QtCore/QString>
 #include <QtCore/QList>
 

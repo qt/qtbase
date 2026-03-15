@@ -16,7 +16,6 @@
 #include <qpa/qwindowsysteminterface.h>
 #include <QtCore/qcoreapplication.h>
 #include <QtGui/qguiapplication.h>
-#include <private/qhighdpiscaling_p.h>
 
 #include <tuple>
 

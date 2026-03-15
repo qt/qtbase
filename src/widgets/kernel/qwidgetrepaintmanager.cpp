@@ -23,7 +23,6 @@
 #include <private/qgraphicseffect_p.h>
 #endif
 #include <QtGui/private/qwindow_p.h>
-#include <QtGui/private/qhighdpiscaling_p.h>
 
 #include <qpa/qplatformbackingstore.h>
 
