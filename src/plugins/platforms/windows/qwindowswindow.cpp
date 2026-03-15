@@ -2352,6 +2352,7 @@ void QWindowsWindow::handleResized(int wParam, LPARAM lParam)
         return;
     case SIZE_MAXIMIZED:
         handleGeometryChange();
+        updateRestoreGeometry();    // we might be in ResizeMoveActive mode but changed the screen
         if (!testFlag(WithinSetStyle) && !testFlag(WithinSetGeometry))
             handleWindowStateChange(Qt::WindowMaximized | (isFullScreen_sys() ? Qt::WindowFullScreen
                                                                               : Qt::WindowNoState));
