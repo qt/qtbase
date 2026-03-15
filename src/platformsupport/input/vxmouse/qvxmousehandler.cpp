@@ -14,7 +14,6 @@
 
 #include <qplatformdefs.h>
 #include <private/qcore_unix_p.h> // overrides QT_OPEN
-#include <private/qhighdpiscaling_p.h>
 
 #include <errno.h>
 #include <evdevLib.h>

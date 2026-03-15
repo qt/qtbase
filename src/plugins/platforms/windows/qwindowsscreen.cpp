@@ -18,7 +18,6 @@
 #include <qpa/qwindowsysteminterface.h>
 #include <QtCore/private/qsystemerror_p.h>
 #include <QtGui/private/qedidparser_p.h>
-#include <private/qhighdpiscaling_p.h>
 #include <private/qwindowsfontdatabasebase_p.h>
 #include <private/qpixmap_win_p.h>
 #include <private/quniquehandle_p.h>

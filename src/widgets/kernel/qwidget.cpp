@@ -44,7 +44,6 @@
 #include "private/qstyle_p.h"
 #include "qfileinfo.h"
 #include "qscopeguard.h"
-#include <QtGui/private/qhighdpiscaling_p.h>
 #include <QtGui/qinputmethod.h>
 
 #if QT_CONFIG(graphicseffect)

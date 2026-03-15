@@ -6,7 +6,6 @@
 #include <QtGui/qbackingstore.h>
 #include <QtGui/qpainter.h>
 
-#include <private/qhighdpiscaling_p.h>
 #include <qpa/qplatformwindow.h>
 
 QT_BEGIN_NAMESPACE

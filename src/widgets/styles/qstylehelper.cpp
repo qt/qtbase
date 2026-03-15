@@ -5,7 +5,6 @@
 #include <qstyleoption.h>
 #include <qpainter.h>
 #include <qpixmapcache.h>
-#include <private/qhighdpiscaling_p.h>
 #include <private/qguiapplication_p.h>
 #include <private/qmath_p.h>
 #include <private/qstyle_p.h>
