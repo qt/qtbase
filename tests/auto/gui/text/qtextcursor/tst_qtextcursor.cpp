@@ -128,6 +128,9 @@ private slots:
     void joinNonEmptyRemovedBlockUserState();
     void crashOnDetachingDanglingCursor();
 
+    void deletePreviousGraphemeCluster_data();
+    void deletePreviousGraphemeCluster();
+
 private:
     int blockCount();
 
@@ -2192,6 +2195,98 @@ void tst_QTextCursor::crashOnDetachingDanglingCursor()
     QTextCursor cursor2 = cursor;
     delete document;
     cursor2.setPosition(0); // Don't crash here
+}
+
+void tst_QTextCursor::deletePreviousGraphemeCluster_data()
+{
+    QTest::addColumn<QString>("input");
+    QTest::addColumn<QString>("expected");
+
+#if !defined(QT_NO_EMOJISEGMENTER)
+    // === Emoji sequences: entire cluster should be deleted ===
+
+    // Emoji with skin tone modifier: U+1F44D U+1F3FD (👍🏽)
+    QTest::newRow("skin tone")
+        << QString::fromUcs4(U"\U0001F44D\U0001F3FD")
+        << QString();
+
+    // ZWJ family: U+1F468 U+200D U+1F469 U+200D U+1F467 U+200D U+1F466 (👨‍👩‍👧‍👦)
+    QTest::newRow("ZWJ family")
+        << QString::fromUcs4(U"\U0001F468\u200D\U0001F469\u200D\U0001F467\u200D\U0001F466")
+        << QString();
+
+    // ZWJ profession: U+1F469 U+200D U+1F680 (👩‍🚀)
+    QTest::newRow("ZWJ profession")
+        << QString::fromUcs4(U"\U0001F469\u200D\U0001F680")
+        << QString();
+
+    // Flag (regional indicators): U+1F1EA U+1F1FA (🇪🇺)
+    QTest::newRow("flag")
+        << QString::fromUcs4(U"\U0001F1EA\U0001F1FA")
+        << QString();
+
+    // Simple surrogate pair (no modifiers): U+1F600 (😀)
+    QTest::newRow("simple emoji")
+        << QString::fromUcs4(U"\U0001F600")
+        << QString();
+
+    // Two consecutive grapheme clusters — only the last one should be deleted
+    QTest::newRow("two skin tone emoji")
+        << (QString::fromUcs4(U"\U0001F44D\U0001F3FB") + QString::fromUcs4(U"\U0001F44D\U0001F3FD"))
+        << QString::fromUcs4(U"\U0001F44D\U0001F3FB");
+
+    QTest::newRow("two ZWJ sequences")
+        << (QString::fromUcs4(U"\U0001F468\u200D\U0001F52C") + QString::fromUcs4(U"\U0001F469\u200D\U0001F680"))
+        << QString::fromUcs4(U"\U0001F468\u200D\U0001F52C");
+
+    QTest::newRow("two flags")
+        << (QString::fromUcs4(U"\U0001F1E8\U0001F1ED") + QString::fromUcs4(U"\U0001F1EA\U0001F1FA"))
+        << QString::fromUcs4(U"\U0001F1E8\U0001F1ED");
+
+    // Keycap sequence: U+0033 U+FE0F U+20E3 (3️⃣)
+    QTest::newRow("keycap")
+        << QString::fromUcs4(U"\u0033\uFE0F\u20E3")
+        << QString();
+
+    // Tag sequence (Scotland flag): U+1F3F4 + tag chars + U+E007F
+    QTest::newRow("tag sequence")
+        << QString::fromUcs4(U"\U0001F3F4\U000E0067\U000E0062\U000E0073\U000E0063\U000E0074\U000E007F")
+        << QString();
+#endif // !QT_NO_EMOJISEGMENTER
+
+    // === Non-emoji grapheme clusters: only one codepoint should be deleted ===
+
+    // Devanagari: consonant + vowel sign (U+092F U+093E = या)
+    // Backspace should delete only the vowel sign, not the whole cluster
+    QTest::newRow("devanagari consonant+vowel")
+        << QString::fromUcs4(U"\u092F\u093E")
+        << QString(QChar(0x092F));
+
+    // Thai: base + combining (U+0E01 U+0E34 = กิ)
+    QTest::newRow("thai base+combining")
+        << QString::fromUcs4(U"\u0E01\u0E34")
+        << QString(QChar(0x0E01));
+}
+
+void tst_QTextCursor::deletePreviousGraphemeCluster()
+{
+    QFETCH(QString, input);
+    QFETCH(QString, expected);
+
+    // Insert prefix + grapheme cluster + suffix, position cursor after it, deletePreviousChar
+    const QString prefix = QStringLiteral("ab");
+    const QString suffix = QStringLiteral("cd");
+    const QString full = prefix + input + suffix;
+
+    cursor.insertText(full);
+    // Position cursor right after the input (before suffix)
+    cursor.setPosition(prefix.size() + input.size());
+
+    cursor.deletePreviousChar();
+
+    const QString result = doc->toPlainText();
+    const QString expectedFull = prefix + expected + suffix;
+    QCOMPARE(result, expectedFull);
 }
 
 QTEST_MAIN(tst_QTextCursor)
