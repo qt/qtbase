@@ -193,6 +193,9 @@ namespace QT_NAMESPACE {}
 # ifndef QT_LEAN_HEADERS
 #  define QT_LEAN_HEADERS 2
 # endif
+# ifndef QT_NO_DISCONNECT_CONST_CONNECTION
+#  define QT_NO_DISCONNECT_CONST_CONNECTION
+# endif
 # ifndef QT_NO_QPAIR
 #  define QT_NO_QPAIR
 # endif

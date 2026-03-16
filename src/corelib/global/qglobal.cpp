@@ -364,6 +364,9 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
     \row\li  6.9.0 \li The qsnprintf() and qvnprintf() functions (see \l{QT_NO_QSNPRINTF}).
     \row\li 6.12.0 \li The QPair type-alias and the qMakePair() function template (use \c{std::pair}/\c{std::make_pair}).
     \row\li 6.12.0 \li Certain transitive includes in public Qt headers (include what you need yourself).
+    \row\li 6.12.0 \li Support for const QMetaObject::Connection arguments in
+                       \l{QObject::disconnect(QMetaObject::Connection&)}{QObject::disconnect()}
+                       (see \l{QT_NO_DISCONNECT_CONST_CONNECTION})
     \row\li 6.12.0 \li Support for qHash overloads without a seed (see \l{QT_NO_SINGLE_ARGUMENT_QHASH_OVERLOAD}).
     \endtable
 
