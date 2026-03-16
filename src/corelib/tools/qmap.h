@@ -1115,7 +1115,7 @@ public:
                 keep(it);
             // Keep matching keys if value match, otherwise skip and count
             for (; it != end && !keyCompare(key, it->first); ++it) {
-                if (it->second != value)
+                if (!(it->second == value))
                     keep(it);
                 else
                     ++result;
