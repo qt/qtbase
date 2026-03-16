@@ -17,7 +17,10 @@
 //
 
 #include "qtransposeproxymodel.h"
+
 #include <private/qabstractproxymodel_p.h>
+
+#include <array>
 
 QT_BEGIN_NAMESPACE
 
@@ -29,9 +32,11 @@ private:
     QTransposeProxyModelPrivate();
     ~QTransposeProxyModelPrivate() override;
 
-    QList<QMetaObject::Connection> sourceConnections;
     QList<QPersistentModelIndex> layoutChangePersistentIndexes;
     QModelIndexList layoutChangeProxyIndexes;
+    std::array<QMetaObject::Connection, 18> sourceConnections;
+
+
     QModelIndex uncheckedMapToSource(const QModelIndex &proxyIndex) const;
     QModelIndex uncheckedMapFromSource(const QModelIndex &sourceIndex) const;
     void onLayoutChanged(const QList<QPersistentModelIndex> &parents, QAbstractItemModel::LayoutChangeHint hint);
