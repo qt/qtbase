@@ -394,11 +394,20 @@ public:
         // the moved-from state is the empty state, so we're good with the clear() here:
         clear();
         Q_ASSERT(capacity() >= Prealloc);
+        const auto thisInlineStorage = this->array;
         const auto otherInlineStorage = other.array;
         if (other.ptr != otherInlineStorage) {
-            // heap storage: steal the external buffer, reset other to otherInlineStorage
-            this->a = std::exchange(other.a, Prealloc);
-            this->ptr = std::exchange(other.ptr, otherInlineStorage);
+            // heap storage: steal the external buffer
+            if (this->ptr == thisInlineStorage) {
+                // we were using inline storage; reset other to otherInlineStorage
+                this->a = std::exchange(other.a, Prealloc);
+                this->ptr = std::exchange(other.ptr, otherInlineStorage);
+            } else {
+                // both were using heap storage; do a PURE_SWAP (note we already
+                // destroyed all elements of *this, so this is just memory, so ok!):
+                std::swap(this->a, other.a);
+                qt_ptr_swap(this->ptr, other.ptr);
+            }
         } else {
             // inline storage: move into our storage (doesn't matter whether inline or external)
             QtPrivate::q_uninitialized_relocate_n(other.data(), other.size(), data());
