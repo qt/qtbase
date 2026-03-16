@@ -40,6 +40,7 @@
 #include <signal.h>
 #include <thread>
 #include <unistd.h>
+#include <unordered_map>
 #include <vector>
 
 using namespace std::chrono_literals;
@@ -803,6 +804,39 @@ bool hasSerialPortAccessRightJsImpl(QtOhos::JsState &jsState, std::uint32_t seri
     }
 }
 
+void requestSerialPortAccessRightJsImpl(
+    QtOhos::JsState &jsState, std::uint32_t serialPortId, QOhosConsumer<bool> resultConsumer)
+{
+    jsState.evalToPromiseOrRejectOnThrow(
+        "@ohos.usbManager.serial.requestSerialRight(*)", {serialPortId})
+    .withContext(std::move(resultConsumer))
+    .onThenWithContext(
+        [](const QtOhos::CallbackInfo &cbInfo, auto &resultConsumer) {
+            bool granted = cbInfo.getFirstArg<QNapi::Boolean>(Q_FUNC_INFO);
+            resultConsumer(granted);
+        })
+    .onCatchWithContext(
+        [](const QtOhos::CallbackInfo &cbInfo, auto &resultConsumer) {
+            QtOhos::logJsCallbackError(
+                cbInfo, "@ohos.usbManager.serial.requestSerialRight() failed");
+            resultConsumer(false);
+        });
+}
+
+void cancelSerialPortAccessRightJsImpl(QtOhos::JsState &jsState, std::uint32_t serialPortId)
+{
+    if (!hasSerialPortAccessRightJsImpl(jsState, serialPortId))
+        return;
+
+    try {
+        jsState.eval("@ohos.usbManager.serial.cancelSerialRight(*)", {serialPortId});
+    } catch (const Napi::Error &error) {
+        qOhosPrintfError(
+            "%s: cancelSerialRight(%u) failed with error (ignoring): %s",
+            Q_FUNC_INFO, serialPortId, error.what());
+    }
+}
+
 class WantInfoImpl : public QOhosQpaFunctions::WantInfo
 {
 public:
@@ -919,7 +953,7 @@ QOhosQpaFunctions::WantInfo::LaunchReason WantInfoImpl::launchReason() const
     return m_launchReason;
 }
 
-class QOhosQpaFunctionsImpl : public QOhosQpaFunctions
+class QOhosQpaFunctionsImpl : public QOhosQpaFunctions, public std::enable_shared_from_this<QOhosQpaFunctionsImpl>
 {
 public:
     std::shared_ptr<void> startPickingColorFromScreenWithConsumer(
@@ -994,6 +1028,10 @@ public:
 
     bool hasSerialPortAccessRight(const QString &portName) override;
 
+    void requestSerialPortAccessRight(
+        const QString &portName, QObject *resultConsumerQtContext,
+        QOhosConsumer<std::shared_ptr<void>> resultConsumer) override;
+
     std::pair<bool, QList<FileShare::PolicyErrorResult>> persistPermission(
         const QList<FileShare::PolicyInfo> &policyInfos) override;
 
@@ -1026,6 +1064,12 @@ public:
 
     void setAudioStreamUsageHintProperty(QObject *qObject, AudioStreamUsage usage) override;
     QOhosOptional<AudioStreamUsage> tryGetAudioStreamUsageHintProperty(QObject *qObject) override;
+
+private:
+    void processSerialPortPermissionResponse(std::uint32_t serialPortId, bool granted);
+
+    std::unordered_map<std::uint32_t, std::vector<QOhosConsumer<std::shared_ptr<void>>>> m_pendingSerialPortsPermissionRequestsConsumers;
+    std::unordered_map<std::uint32_t, std::weak_ptr<void>> m_grantedSerialPortsPermissionContexts;
 };
 
 std::shared_ptr<void> QOhosQpaFunctionsImpl::startPickingColorFromScreenWithConsumer(
@@ -1692,6 +1736,73 @@ bool QOhosQpaFunctionsImpl::hasSerialPortAccessRight(const QString &portName)
         Q_FUNC_INFO);
 }
 
+void QOhosQpaFunctionsImpl::requestSerialPortAccessRight(
+    const QString &portName, QObject *resultConsumerQtContext,
+    QOhosConsumer<std::shared_ptr<void>> resultConsumer)
+{
+    auto resultConsumerQtContextRef = QtOhos::makeQThreadSafeRef(resultConsumerQtContext);
+    auto asyncResultConsumer = [resultConsumerQtContextRef, resultConsumer = std::move(resultConsumer)](std::shared_ptr<void> permissionContext) {
+        resultConsumerQtContextRef.visitInQtThreadIfAlive(
+            [resultConsumer = std::move(resultConsumer), permissionContext](auto &resultConsumerQtContext) {
+                QMetaObject::invokeMethod(
+                    &resultConsumerQtContext,
+                    [resultConsumer = std::move(resultConsumer), permissionContext]() {
+                        resultConsumer(permissionContext);
+                    },
+                    Qt::QueuedConnection);
+            });
+    };
+
+    const auto optSerialPortId = tryConvertPortNameToSystemPortId(portName);
+    if (!optSerialPortId.hasValue()) {
+        qOhosPrintfError(
+            "%s: cannot convert serial port name '%s' to port id.",
+            Q_FUNC_INFO, portName.toStdString().c_str());
+
+        asyncResultConsumer(nullptr);
+        return;
+    }
+
+    QtOhos::invokeInQtThread(
+        [serialPortId = optSerialPortId.value(), weakSelf = QtOhos::makeWeakPtr(shared_from_this()), asyncResultConsumer = std::move(asyncResultConsumer)]() {
+            auto self = weakSelf.lock();
+            if (!self)
+                return;
+
+            auto alreadyGrantedPermissionContextIt =
+                self->m_grantedSerialPortsPermissionContexts.find(serialPortId);
+            auto optAlreadyGrantedPermissionContext =
+                alreadyGrantedPermissionContextIt != self->m_grantedSerialPortsPermissionContexts.end()
+                    ? alreadyGrantedPermissionContextIt->second.lock()
+                    : nullptr;
+
+            if (optAlreadyGrantedPermissionContext) {
+                asyncResultConsumer(optAlreadyGrantedPermissionContext);
+                return;
+            }
+
+            self->m_pendingSerialPortsPermissionRequestsConsumers[serialPortId].push_back(
+                std::move(asyncResultConsumer));
+
+            if (self->m_pendingSerialPortsPermissionRequestsConsumers[serialPortId].size() == 1) {
+                QtOhos::invokeInJsThread(
+                    [serialPortId, weakSelf](QtOhos::JsState &jsState) {
+                        requestSerialPortAccessRightJsImpl(
+                            jsState,
+                            serialPortId,
+                            [serialPortId, weakSelf](bool granted) {
+                                QtOhos::invokeInQtThread(
+                                    [serialPortId, weakSelf, granted]() {
+                                        auto self = weakSelf.lock();
+                                        if (self)
+                                            self->processSerialPortPermissionResponse(serialPortId, granted);
+                                    });
+                        });
+                    });
+            }
+        });
+}
+
 std::pair<bool, QList<QOhosQpaFunctions::FileShare::PolicyErrorResult>> QOhosQpaFunctionsImpl::persistPermission(
     const QList<FileShare::PolicyInfo> &policyInfos)
 {
@@ -1940,6 +2051,35 @@ void QOhosQpaFunctionsImpl::setAudioStreamUsageHintProperty(QObject *qObject, Au
 QOhosOptional<QOhosQpaFunctions::AudioStreamUsage> QOhosQpaFunctionsImpl::tryGetAudioStreamUsageHintProperty(QObject *qObject)
 {
     return tryGetQOhosPropertyFromQObject<QOhosQpaFunctions::AudioStreamUsage, &audioStreamUsageProperty>(qObject);
+}
+
+void QOhosQpaFunctionsImpl::processSerialPortPermissionResponse(std::uint32_t serialPortId, bool granted)
+{
+    auto permissionContext = granted
+        ? QtOhos::makeDestroyNotifier(
+            [serialPortId, weakSelf = QtOhos::makeWeakPtr(shared_from_this())]() {
+                QtOhos::invokeInQtThread(
+                    [serialPortId, weakSelf]() {
+                        QtOhos::runInJsThreadAndWait(
+                            [&](QtOhos::JsState &jsState) {
+                                cancelSerialPortAccessRightJsImpl(jsState, serialPortId);
+                            },
+                            Q_FUNC_INFO);
+
+                        auto self = weakSelf.lock();
+                        if (self)
+                            self->m_grantedSerialPortsPermissionContexts.erase(serialPortId);
+                    });
+            })
+        : nullptr;
+
+    if (permissionContext)
+        m_grantedSerialPortsPermissionContexts[serialPortId] = permissionContext;
+
+    for (const auto &asyncPermissionRequestConsumer : m_pendingSerialPortsPermissionRequestsConsumers[serialPortId])
+        asyncPermissionRequestConsumer(permissionContext);
+
+    m_pendingSerialPortsPermissionRequestsConsumers.erase(serialPortId);
 }
 
 }

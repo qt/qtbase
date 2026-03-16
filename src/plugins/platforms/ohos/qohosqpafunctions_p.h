@@ -334,6 +334,10 @@ public:
 
     virtual bool hasSerialPortAccessRight(const QString &portName) = 0;
 
+    virtual void requestSerialPortAccessRight(
+        const QString &portName, QObject *resultConsumerQtContext,
+        QOhosConsumer<std::shared_ptr<void>> resultConsumer) = 0;
+
     virtual std::pair<bool, QList<FileShare::PolicyErrorResult>> persistPermission(
         const QList<FileShare::PolicyInfo> &policyInfos) = 0;
 
