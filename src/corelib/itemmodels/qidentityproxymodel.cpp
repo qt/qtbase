@@ -300,7 +300,8 @@ void QIdentityProxyModel::setSourceModel(QAbstractItemModel* newSourceModel)
 
     if (sourceModel()) {
         auto *m = sourceModel();
-        d->m_sourceModelConnections = {
+        using C = QMetaObject::Connection;
+        d->m_sourceModelConnections = std::array{
             QObjectPrivate::connect(m, &QAbstractItemModel::rowsAboutToBeInserted, d,
                                     &QIdentityProxyModelPrivate::sourceRowsAboutToBeInserted),
             QObjectPrivate::connect(m, &QAbstractItemModel::rowsInserted, d,
@@ -331,21 +332,16 @@ void QIdentityProxyModel::setSourceModel(QAbstractItemModel* newSourceModel)
                                     &QIdentityProxyModelPrivate::sourceModelReset),
             QObjectPrivate::connect(m, &QAbstractItemModel::headerDataChanged, d,
                                     &QIdentityProxyModelPrivate::sourceHeaderDataChanged),
-        };
-
-        if (d->m_handleDataChanges) {
-            d->m_sourceModelConnections.emplace_back(
+            !d->m_handleDataChanges ? C{} :
                 QObjectPrivate::connect(m, &QAbstractItemModel::dataChanged, d,
-                                        &QIdentityProxyModelPrivate::sourceDataChanged));
-        }
-        if (d->m_handleLayoutChanges) {
-            d->m_sourceModelConnections.emplace_back(
+                                        &QIdentityProxyModelPrivate::sourceDataChanged),
+            !d->m_handleLayoutChanges ? C{} :
                 QObjectPrivate::connect(m, &QAbstractItemModel::layoutAboutToBeChanged, d,
-                                        &QIdentityProxyModelPrivate::sourceLayoutAboutToBeChanged));
-            d->m_sourceModelConnections.emplace_back(
+                                        &QIdentityProxyModelPrivate::sourceLayoutAboutToBeChanged),
+            !d->m_handleLayoutChanges ? C{} :
                 QObjectPrivate::connect(m, &QAbstractItemModel::layoutChanged, d,
-                                        &QIdentityProxyModelPrivate::sourceLayoutChanged));
-        }
+                                        &QIdentityProxyModelPrivate::sourceLayoutChanged),
+        };
     }
 
     endResetModel();

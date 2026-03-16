@@ -20,6 +20,8 @@
 #include <QtCore/private/qabstractproxymodel_p.h>
 #include <QtCore/qidentityproxymodel.h>
 
+#include <array>
+
 QT_BEGIN_NAMESPACE
 
 class Q_CORE_EXPORT QIdentityProxyModelPrivate : public QAbstractProxyModelPrivate
@@ -65,7 +67,7 @@ public:
 private:
     bool m_handleLayoutChanges = true;
     bool m_handleDataChanges = true;
-    QVarLengthArray<QMetaObject::Connection, 18> m_sourceModelConnections;
+    std::array<QMetaObject::Connection, 18> m_sourceModelConnections;
 };
 
 QT_END_NAMESPACE
