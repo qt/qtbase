@@ -29,13 +29,9 @@ class Q_CORE_EXPORT QAbstractProxyModelPrivate : public QAbstractItemModelPrivat
 {
     Q_DECLARE_PUBLIC(QAbstractProxyModel)
 public:
-    QAbstractProxyModelPrivate()
-        : QAbstractItemModelPrivate(),
-        sourceHadZeroRows(false),
-        sourceHadZeroColumns(false),
-        updateVerticalHeader(false),
-        updateHorizontalHeader(false)
-    {}
+    QAbstractProxyModelPrivate();
+    ~QAbstractProxyModelPrivate() override;
+
     void setModelForwarder(QAbstractItemModel *sourceModel)
     {
         q_func()->setSourceModel(sourceModel);
