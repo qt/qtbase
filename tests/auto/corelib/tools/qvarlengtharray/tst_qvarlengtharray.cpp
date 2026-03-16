@@ -298,6 +298,19 @@ void tst_QVarLengthArray::move(T t1, T t2)
         QCOMPARE(v.size(), 2);
         QCOMPARE(v[0], t1);
         QCOMPARE(v[1], t2);
+
+        QVarLengthArray<T, N> v2;
+        v2.append(t1);
+        v2.append(t1);
+        v2.append(t2);
+        v2.append(t2);
+
+        v = std::move(v2);
+        QCOMPARE(v.size(), 4);
+        QCOMPARE(v[0], t1);
+        QCOMPARE(v[1], t1);
+        QCOMPARE(v[2], t2);
+        QCOMPARE(v[3], t2);
     }
 }
 
