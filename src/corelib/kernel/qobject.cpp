@@ -5550,10 +5550,13 @@ QMetaObject::Connection QObjectPrivate::connectImpl(const QObject *sender, int s
 }
 
 /*!
-    Disconnect a connection.
+    Disconnects \a connection and resets it to
+    \l{QMetaObject::Connection::operator bool()}{invalid}.
 
-    If the \a connection is invalid or has already been disconnected, do nothing
+    If \a connection is invalid or has already been disconnected, do nothing
     and return false.
+
+    \note Future versions of Qt may only accept non-const objects here.
 
    \sa connect()
  */
