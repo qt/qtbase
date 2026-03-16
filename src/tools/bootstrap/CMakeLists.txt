@@ -121,7 +121,7 @@ qt_internal_extend_target(Bootstrap CONDITION WIN32
         user32
 )
 
-qt_internal_extend_target(Bootstrap CONDITION MSVC AND CLANG
+qt_internal_extend_target(Bootstrap CONDITION MSVC AND CLANG AND NOT CMAKE_CROSSCOMPILING
     LIBRARIES
         clang_rt.builtins-$<IF:$<STREQUAL:${TEST_architecture_arch},arm64>,aarch64,x86_64>
 )
