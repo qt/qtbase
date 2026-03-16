@@ -5561,7 +5561,7 @@ bool QObject::disconnect(const QMetaObject::Connection &connection)
     if (!c)
         return false;
     const bool disconnected = QObjectPrivate::removeConnection(c);
-    const_cast<QMetaObject::Connection &>(connection).d_ptr = nullptr;
+    connection.d_ptr = nullptr;
     c->deref(); // has been removed from the QMetaObject::Connection object
     return disconnected;
 }

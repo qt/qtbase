@@ -672,6 +672,7 @@ private:
 };
 
 class Q_CORE_EXPORT QMetaObject::Connection {
+    mutable // QTBUG-144929
     void *d_ptr; //QObjectPrivate::Connection*
     explicit Connection(void *data) : d_ptr(data) {  }
     friend class QObject;
