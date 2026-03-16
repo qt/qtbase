@@ -63,10 +63,10 @@ struct PropertyChangedHandler
 
     // we can assign a connection to a moved-from handler to update the
     // handler stored in the QSlotObject/QCallableObject.
-    PropertyChangedHandler &operator=(const QMetaObject::Connection &connection) noexcept
+    PropertyChangedHandler &operator=(QMetaObject::Connection &&connection)
     {
         Q_ASSERT(std::holds_alternative<PropertyChangedHandler *>(storage));
-        std::get<PropertyChangedHandler *>(storage)->connection = connection;
+        std::get<PropertyChangedHandler *>(storage)->connection = std::move(connection);
         return *this;
     }
 
@@ -207,7 +207,7 @@ bool QRangeModelImplBase::connectProperty(const QModelIndex &index, const QObjec
         // This assignment updates the stored handler's connection with the
         // QMetaObject::Connection handle, and should look harmless for
         // static analyzers.
-        handler = connection;
+        handler = std::move(connection);
     }
     return true;
 }
