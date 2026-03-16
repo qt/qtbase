@@ -104,6 +104,16 @@ QPoint determineScreenGlobalDisplayOffset(QWindow *qWindow)
         : QPoint();
 }
 
+QPoint makeWindowLocalPosition(const QPoint &globalPosition, QWindow *qWindow)
+{
+    auto *platformWindow = QOhosPlatformWindow::fromQWindowOrNull(qWindow);
+    auto platformWindowGeometry = platformWindow != nullptr
+        ? platformWindow->geometry()
+        : QHighDpi::toNativePixels(qWindow->geometry(), qWindow);
+
+    return globalPosition - platformWindowGeometry.topLeft();
+}
+
 }
 
 QOhosInputMethodEventHandler::QOhosInputMethodEventHandler(
@@ -520,13 +530,7 @@ void QOhosInputMethodEventHandler::handleMouseEvent(const QOhosMouseEvent &wsiEv
     QPointF localPosition;
     if (!m_currentMouseGrabbingWindow.isNull()) {
         targetWindow = m_currentMouseGrabbingWindow;
-        localPosition =
-            QHighDpi::toNativeLocalPosition(
-                targetWindow->mapFromGlobal(
-                    wsiEvent.targetWindow->mapToGlobal(
-                        QHighDpi::fromNativePixels(
-                            wsiEvent.localPosition.toPoint(), wsiEvent.targetWindow.data()))),
-                targetWindow);
+        localPosition = makeWindowLocalPosition(wsiEvent.globalPosition.toPoint(), targetWindow);
         switch (wsiEvent.eventType) {
         case QEvent::NonClientAreaMouseButtonRelease:
             targetEventType = QEvent::MouseButtonRelease;
