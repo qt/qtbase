@@ -340,7 +340,8 @@ void QSslServerPrivate::initializeHandshakeProcess(QSslSocket *socket)
                 // QObject dtor, but we only use the pointer value!
                 removeSocketData(quintptr(obj));
             });
-    auto it = socketData.emplace(quintptr(socket), readyRead, destroyed, std::make_shared<QTimer>());
+    auto it = socketData.emplace(quintptr(socket), std::move(readyRead), std::move(destroyed),
+                                 std::make_shared<QTimer>());
     it->timeoutTimer->setSingleShot(true);
     it->timeoutTimer->callOnTimeout(q, [this, socket]() { handleHandshakeTimedOut(socket); });
     it->timeoutTimer->setInterval(handshakeTimeout);

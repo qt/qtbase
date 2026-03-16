@@ -48,8 +48,8 @@ public:
 
         SocketData(QMetaObject::Connection readyRead, QMetaObject::Connection destroyed,
                    std::shared_ptr<QTimer> &&timer)
-            : readyReadConnection(readyRead),
-              destroyedConnection(destroyed),
+            : readyReadConnection{std::move(readyRead)},
+              destroyedConnection{std::move(destroyed)},
               timeoutTimer(std::move(timer))
         {
         }
