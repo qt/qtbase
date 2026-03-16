@@ -91,11 +91,12 @@ static QImage getImage(QTextDocument *doc, const QTextImageFormat &format,
     const auto readImage = [&](auto &&content) {
         QImageReader imgReader(content);
         if (imgReader.canRead()) {
-            if (size.isValid())
+            const bool supportsScaledSize = imgReader.supportsOption(QImageIOHandler::ScaledSize);
+            if (size.isValid() && supportsScaledSize)
                 imgReader.setScaledSize((size * devicePixelRatio).toSize());
             QImage result = imgReader.read();
             result.setDevicePixelRatio(sourcePixelRatio);
-            if (!imgReader.supportsOption(QImageIOHandler::ScaledSize))
+            if (!supportsScaledSize)
                 doc->addResource(QTextDocument::ImageResource, url, result);
             else if (canUsePixmapCache)
                 QPixmapCache::insert(cacheKey, QPixmap::fromImage(result));
