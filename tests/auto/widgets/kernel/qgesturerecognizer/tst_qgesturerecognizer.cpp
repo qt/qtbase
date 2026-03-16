@@ -404,6 +404,7 @@ void tst_QGestureRecognizer::touchReplay()
 
     QWindow* windowHandle = parent.window()->windowHandle();
     const QPoint globalPos = QPoint(42, 16);
+    QTRY_VERIFY(QApplication::topLevelAt(parent.geometry().center()));
     QTest::touchEvent(windowHandle, m_touchDevice.get()).press(1, globalPos);
     QTest::touchEvent(windowHandle, m_touchDevice.get()).release(1, globalPos);
 
