@@ -49,6 +49,17 @@ QT_BEGIN_NAMESPACE
     \brief the source model of this proxy model.
 */
 
+QAbstractProxyModelPrivate::QAbstractProxyModelPrivate()
+    : QAbstractItemModelPrivate(),
+      sourceHadZeroRows(false),
+      sourceHadZeroColumns(false),
+      updateVerticalHeader(false),
+      updateHorizontalHeader(false)
+{}
+
+QAbstractProxyModelPrivate::~QAbstractProxyModelPrivate()
+    = default;
+
 //detects the deletion of the source model
 void QAbstractProxyModelPrivate::_q_sourceModelDestroyed()
 {
