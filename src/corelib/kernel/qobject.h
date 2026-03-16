@@ -295,7 +295,12 @@ public:
         { return disconnect(this, signal, receiver, member); }
     inline bool disconnect(const QObject *receiver, const char *member = nullptr) const
         { return disconnect(this, nullptr, receiver, member); }
+#ifndef QT_NO_DISCONNECT_CONST_CONNECTION
     static bool disconnect(const QMetaObject::Connection &);
+#endif
+    static bool disconnect(QMetaObject::Connection &);
+    static bool disconnect(QMetaObject::Connection &&conn)
+    { return disconnect(conn); } // call lvalue overload
 
 #ifdef Q_QDOC
     template<typename PointerToMemberFunction>

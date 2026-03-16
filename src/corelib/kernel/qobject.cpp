@@ -4,6 +4,10 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 // Qt-Security score:significant reason:default
 
+#ifdef QT_NO_DISCONNECT_CONST_CONNECTION
+#  undef QT_NO_DISCONNECT_CONST_CONNECTION
+#endif
+
 #include "qobject.h"
 #include "qobject_p.h"
 #include "qobject_p_p.h"
@@ -5278,6 +5282,30 @@ QDebug operator<<(QDebug dbg, const QObject *o)
 */
 
 /*!
+    \since 6.12
+    \macro QT_NO_DISCONNECT_CONST_CONNECTION
+    \relates QObject
+
+    Disables the \c{const &} overload of
+    \l{QObject::disconnect(QMetaObject::Connection&)}{QObject::disconnect()} to
+    force callers to pass non-const objects.
+
+    Passing non-const objects is preferred, because they can be reset
+    immediately, releasing resources sooner. Different versions of Qt handle
+    the const overload differently. In older Qt versions, calling the const
+    overload with a Connection originally declared \c{const} may invoke
+    undefined behavior. Current Qt versions are safe in this regard, but future
+    Qt versions may remove the const overload, or have it delay releasing
+    resources until the Connection object is reassigned or destroyed.
+
+    Passing non-const objects avoids all of the issues above.
+
+    Code that compiles with this macro set also compiles (and doesn't invoke
+    undefined behavior) without the macro enabled, and in all Qt versions since
+    5.0.
+*/
+
+/*!
     \typedef QObjectList
     \relates QObject
 
@@ -5549,6 +5577,7 @@ QMetaObject::Connection QObjectPrivate::connectImpl(const QObject *sender, int s
     return ret;
 }
 
+#ifndef QT_NO_DISCONNECT_CONST_CONNECTION
 /*!
     Disconnects \a connection and resets it to
     \l{QMetaObject::Connection::operator bool()}{invalid}.
@@ -5558,10 +5587,40 @@ QMetaObject::Connection QObjectPrivate::connectImpl(const QObject *sender, int s
 
     \note Future versions of Qt may only accept non-const objects here.
 
+    \sa QT_NO_DISCONNECT_CONST_CONNECTION
    \sa connect()
  */
 bool QObject::disconnect(const QMetaObject::Connection &connection)
 {
+    // keep in sync with non-const overload
+    QObjectPrivate::Connection *c = static_cast<QObjectPrivate::Connection *>(connection.d_ptr);
+    if (!c)
+        return false;
+    const bool disconnected = QObjectPrivate::removeConnection(c);
+    connection.d_ptr = nullptr;
+    c->deref(); // has been removed from the QMetaObject::Connection object
+    return disconnected;
+}
+#endif // QT_NO_DISCONNECT_CONST_CONNECTION
+
+/*!
+    \since 6.12
+    \fn bool QObject::disconnect(QMetaObject::Connection &connection)
+    \fn bool QObject::disconnect(QMetaObject::Connection &&connection)
+
+    Disconnect a connection.
+
+    If \a connection is
+    \l{QMetaObject::Connection::operator bool()}{invalid}
+    or has already been disconnected, do nothing and return false.
+
+    \note In Qt versions prior to 6.12, this function took only by \c{const-&}.
+
+    \sa connect()
+ */
+bool QObject::disconnect(QMetaObject::Connection &connection)
+{
+    // keep in sync with the overload above
     QObjectPrivate::Connection *c = static_cast<QObjectPrivate::Connection *>(connection.d_ptr);
     if (!c)
         return false;

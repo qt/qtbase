@@ -360,6 +360,7 @@ qt_internal_add_module(Core
         compat/removed_api.cpp
         global/qsimd.cpp
         kernel/qsocketnotifier.cpp # defines BUILDING_QSOCKETNOTIFIER
+        kernel/qobject.cpp # undef QT_NO_DISCONNECT_CONST_CONNECTION
     DEFINES
         QT_NO_CONTEXTLESS_CONNECT
         QT_NO_FOREACH
