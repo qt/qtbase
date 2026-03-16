@@ -26,7 +26,9 @@ class QTransposeProxyModelPrivate : public QAbstractProxyModelPrivate
     Q_DECLARE_PUBLIC(QTransposeProxyModel)
     Q_DISABLE_COPY(QTransposeProxyModelPrivate)
 private:
-    QTransposeProxyModelPrivate() = default;
+    QTransposeProxyModelPrivate();
+    ~QTransposeProxyModelPrivate() override;
+
     QList<QMetaObject::Connection> sourceConnections;
     QList<QPersistentModelIndex> layoutChangePersistentIndexes;
     QModelIndexList layoutChangeProxyIndexes;

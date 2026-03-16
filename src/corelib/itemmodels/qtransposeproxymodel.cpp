@@ -11,6 +11,12 @@
 
 QT_BEGIN_NAMESPACE
 
+QTransposeProxyModelPrivate::QTransposeProxyModelPrivate()
+    = default;
+
+QTransposeProxyModelPrivate::~QTransposeProxyModelPrivate()
+    = default;
+
 QModelIndex QTransposeProxyModelPrivate::uncheckedMapToSource(const QModelIndex &proxyIndex) const
 {
     if (!model || !proxyIndex.isValid())
