@@ -835,14 +835,14 @@ static QSizeF viewItemTextLayout(QTextLayout &textLayout, int lineWidth, int max
             break;
         line.setLineWidth(lineWidth);
         line.setPosition(QPointF(0, height));
-        height += line.height();
-        widthUsed = qMax(widthUsed, line.naturalTextWidth());
-        // we assume that the height of the next line is the same as the current one
-        if (maxHeight > 0 && lastVisibleLine && height + line.height() > maxHeight) {
-            const QTextLine nextLine = textLayout.createLine();
-            *lastVisibleLine = nextLine.isValid() ? i : -1;
+        // Assume that when maxHeight > 0, we can draw extra things.
+        // To preserve behavior, ignore overflow when i == 0.
+        if (i && maxHeight > 0 && lastVisibleLine && height + line.height() > maxHeight) {
+            *lastVisibleLine = i - 1;
             break;
         }
+        height += line.height();
+        widthUsed = qMax(widthUsed, line.naturalTextWidth());
         ++i;
     }
     textLayout.endLayout();
