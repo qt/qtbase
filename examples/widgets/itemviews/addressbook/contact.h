@@ -5,12 +5,19 @@
 #define CONTACT_H
 
 #include <QDataStream>
+#include <QMetaObject>
 #include <QString>
 #include <QtCompare>
 
 //! [0]
 struct Contact
 {
+private:
+    Q_GADGET
+    Q_PROPERTY(QString name MEMBER name)
+    Q_PROPERTY(QString address MEMBER address)
+
+public:
     QString name;
     QString address;
 

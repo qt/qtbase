@@ -4,7 +4,12 @@
 #ifndef ADDRESSWIDGET_H
 #define ADDRESSWIDGET_H
 
+#include "contact.h"
+
 #include <QTabWidget>
+
+#include <QList>
+#include <QRangeModelAdapter>
 
 QT_BEGIN_NAMESPACE
 class QSortFilterProxyModel;
@@ -14,6 +19,14 @@ QT_END_NAMESPACE
 struct Contact;
 class NewAddressTab;
 class TableModel;
+
+//! [RowOptions declaration]
+template <>
+struct QRangeModel::RowOptions<Contact>
+{
+    inline static QVariant headerData(int section, int role);
+};
+//! [RowOptions declaration]
 
 //! [0]
 class AddressWidget : public QTabWidget
@@ -40,9 +53,29 @@ signals:
 private:
     void setupTabs();
 
-    TableModel *table;
     NewAddressTab *newAddressTab;
+
+    QList<Contact> contacts;
+    using Adapter = decltype(QRangeModelAdapter(std::ref(contacts)));
+    Adapter adapter;
 };
 //! [0]
+
+//! [RowOptions headerData]
+QVariant QRangeModel::RowOptions<Contact>::headerData(int section, int role)
+{
+    if (role == Qt::DisplayRole) {
+        switch (section) {
+        case 0:
+            return AddressWidget::tr("Name");
+        case 1:
+            return AddressWidget::tr("Address");
+        default:
+            break;
+        }
+    }
+    return {};
+}
+//! [RowOptions headerData]
 
 #endif // ADDRESSWIDGET_H

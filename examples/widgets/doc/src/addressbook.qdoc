@@ -20,8 +20,8 @@
 
     \section1 Overview
 
-    The address book contains 5 classes: \c MainWindow,
-    \c AddressWidget, \c TableModel, \c NewAddressTab and
+    The address book contains 4 classes: \c MainWindow,
+    \c AddressWidget, \c NewAddressTab and
     \c AddDialog. The \c MainWindow class uses \c AddressWidget as
     its central widget and provides \uicontrol File and \uicontrol Tools menus.
 
@@ -56,101 +56,6 @@
     This QDialog subclass is instantiated by \c NewAddressTab to
     add contacts, and by \c AddressWidget to add and edit contacts.
 
-    We begin by looking at the \c TableModel implementation.
-
-
-    \section1 TableModel Class Definition
-
-    The \c TableModel class provides standard API to access data in
-    its list of contacts by subclassing QAbstractTableModel. The
-    basic functions that must be implemented in order to do so are:
-    \c rowCount(), \c columnCount(), \c data(), \c headerData().
-    For TableModel to be editable, it has to provide implementations
-    \c insertRows(), \c removeRows(), \c setData() and \c flags()
-    functions.
-
-    \snippet itemviews/addressbook/tablemodel.h 0
-
-    Two constructors are used, a default constructor which uses
-    \c TableModel's own \c {QList<Contact>} and one that takes
-    \c {QList<Contact>} as an argument, for convenience.
-
-
-    \section1 TableModel Class Implementation
-
-    We implement the two constructors as defined in the header file.
-    The second constructor initializes the list of contacts in the
-    model, with the parameter value.
-
-    \snippet itemviews/addressbook/tablemodel.cpp 0
-
-    The \c rowCount() and \c columnCount() functions return the
-    dimensions of the model. Whereas, \c rowCount()'s value will vary
-    depending on the number of contacts added to the address book,
-    \c columnCount()'s value is always 2 because we only need space
-    for the \b Name and \b Address columns.
-
-    \snippet itemviews/addressbook/tablemodel.cpp 1
-
-    The \c data() function returns either a \b Name or
-    \b {Address}, based on the contents of the model index
-    supplied. The row number stored in the model index is used to
-    reference an item in the list of contacts. Selection is handled
-    by the QItemSelectionModel, which will be explained with
-    \c AddressWidget.
-
-    \snippet itemviews/addressbook/tablemodel.cpp 2
-
-    The \c headerData() function displays the table's header,
-    \b Name and \b Address. If you require numbered entries
-    for your address book, you can use a vertical header which we
-    have hidden in this example (see the \c AddressWidget
-    implementation).
-
-    \snippet itemviews/addressbook/tablemodel.cpp 3
-
-    The \c insertRows() function is called before new data is added,
-    otherwise the data will not be displayed. The
-    \c beginInsertRows() and \c endInsertRows() functions are called
-    to ensure all connected views are aware of the changes.
-
-    \snippet itemviews/addressbook/tablemodel.cpp 4
-
-    The \c removeRows() function is called to remove data. Again,
-    \l{QAbstractItemModel::}{beginRemoveRows()} and
-    \l{QAbstractItemModel::}{endRemoveRows()} are called to ensure
-    all connected views are aware of the changes.
-
-    \snippet itemviews/addressbook/tablemodel.cpp 5
-
-    The \c setData() function is the function that inserts data into
-    the table, item by item and not row by row. This means that to
-    fill a row in the address book, \c setData() must be called
-    twice, as each row has 2 columns. It is important to emit the
-    \l{QAbstractItemModel::}{dataChanged()} signal as it tells all
-    connected views to update their displays.
-
-    \snippet itemviews/addressbook/tablemodel.cpp 6
-
-    The \c flags() function returns the item flags for the given
-    index.
-
-    \snippet itemviews/addressbook/tablemodel.cpp 7
-
-    We set the Qt::ItemIsEditable flag because we want to allow the
-    \c TableModel to be edited. Although for this example we don't
-    use the editing features of the QTableView object, we enable
-    them here so that we can reuse the model in other programs.
-
-    The last function in \c {TableModel}, \c getContacts() returns the
-    QList<Contact> object that holds all the contacts in the address
-    book. We use this function later to obtain the list of contacts to
-    check for existing entries, write the contacts to a file and read
-    them back. Further explanation is given with \c AddressWidget.
-
-    \snippet itemviews/addressbook/tablemodel.cpp 8
-
-
     \section1 AddressWidget Class Definition
 
     The \c AddressWidget class is technically the main class
@@ -166,6 +71,14 @@
     the QSortFilterProxyModel object that we use to filter the
     entries, and \c tableView, the QTableView object.
 
+    It stores the contacts in a QList and uses a QRangeModelAdapter
+    to operate on it.
+
+    We provide the row header values for \c{struct Contact} via
+    a specialization of QRangeModel::RowOptions:
+
+    \snippet itemviews/addressbook/addresswidget.h RowOptions declaration
+    \snippet itemviews/addressbook/addresswidget.h RowOptions headerData
 
     \section1 AddressWidget Class Implementation
 

@@ -15,7 +15,6 @@ qt_add_executable(addressbook
     main.cpp
     mainwindow.cpp mainwindow.h
     newaddresstab.cpp newaddresstab.h
-    tablemodel.cpp tablemodel.h
 )
 
 set_target_properties(addressbook PROPERTIES
