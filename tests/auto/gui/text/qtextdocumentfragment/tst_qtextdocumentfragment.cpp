@@ -5,6 +5,7 @@
 #include <QTest>
 
 #include <qpalette.h>
+#include <qtemporarydir.h>
 #include <qtextdocument.h>
 #include <qtextdocumentfragment.h>
 #include <qtexttable.h>
@@ -26,7 +27,6 @@ class tst_QTextDocumentFragment : public QObject
 
 public:
     tst_QTextDocumentFragment();
-    ~tst_QTextDocumentFragment();
 
 public slots:
     void init();
@@ -264,21 +264,18 @@ private:
 
     QTextDocument *doc;
     QTextCursor cursor;
+    QTemporaryDir tempDir {};
 };
 
 tst_QTextDocumentFragment::tst_QTextDocumentFragment()
 {
     QImage img(16, 16, QImage::Format_ARGB32_Premultiplied);
-    img.save("foo.png");
-}
-
-tst_QTextDocumentFragment::~tst_QTextDocumentFragment()
-{
-    QFile::remove(QLatin1String("foo.png"));
+    img.save(tempDir.filePath("foo.png"));
 }
 
 void tst_QTextDocumentFragment::init()
 {
+    QVERIFY(tempDir.isValid());
     doc = new QTextDocument;
     cursor = QTextCursor(doc);
 }
@@ -1739,6 +1736,7 @@ void tst_QTextDocumentFragment::html_qtBgColor()
 
 void tst_QTextDocumentFragment::html_bodyBackground()
 {
+    doc->setBaseUrl(QUrl::fromLocalFile(tempDir.path() + "/"));
     const char html[] = "<body background=\"foo.png\">Foo</body>";
     doc->setHtml(html);
 
@@ -1747,6 +1745,7 @@ void tst_QTextDocumentFragment::html_bodyBackground()
 
 void tst_QTextDocumentFragment::html_tableCellBackground()
 {
+    doc->setBaseUrl(QUrl::fromLocalFile(tempDir.path() + "/"));
     const char html[] = "<body><table><tr><td background=\"foo.png\">Foo</td></tr></table></body>";
     doc->setHtml(html);
 
@@ -1761,6 +1760,7 @@ void tst_QTextDocumentFragment::html_tableCellBackground()
 
 void tst_QTextDocumentFragment::css_bodyBackground()
 {
+    doc->setBaseUrl(QUrl::fromLocalFile(tempDir.path() + "/"));
     const char html[] = "<body style=\"background-image:url('foo.png')\">Foo</body>";
     doc->setHtml(html);
 
@@ -1769,6 +1769,7 @@ void tst_QTextDocumentFragment::css_bodyBackground()
 
 void tst_QTextDocumentFragment::css_tableCellBackground()
 {
+    doc->setBaseUrl(QUrl::fromLocalFile(tempDir.path() + "/"));
     const char html[] = "<body><table><tr><td style=\"background-image:url('foo.png')\">Foo</td></tr></table></body>";
     doc->setHtml(html);
 
