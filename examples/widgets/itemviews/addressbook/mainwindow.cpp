@@ -6,6 +6,14 @@
 #include <QAction>
 #include <QFileDialog>
 #include <QMenuBar>
+#include <QStatusBar>
+
+#include <QIcon>
+#include <QKeySequence>
+
+#include <QDir>
+#include <QItemSelection>
+#include <QModelIndexList>
 
 //! [0]
 MainWindow::MainWindow()
@@ -23,24 +31,31 @@ void MainWindow::createMenus()
 {
     QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
 
-    QAction *openAct = new QAction(tr("&Open..."), this);
+    auto *openAct = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::DocumentOpen),
+                                tr("&Open..."), this);
+    openAct->setShortcut(QKeySequence(QKeySequence::Open));
     fileMenu->addAction(openAct);
     connect(openAct, &QAction::triggered, this, &MainWindow::openFile);
 //! [1a]
 
-    QAction *saveAct = new QAction(tr("&Save"), this);
+    auto *saveAct = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::DocumentSave),
+                                tr("&Save"), this);
+    saveAct->setShortcut(QKeySequence(QKeySequence::Save));
     fileMenu->addAction(saveAct);
     connect(saveAct, &QAction::triggered, this, &MainWindow::saveFile);
 
     fileMenu->addSeparator();
 
-    QAction *exitAct = new QAction(tr("E&xit"), this);
+    auto *exitAct = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::ApplicationExit),
+                                tr("E&xit"), this);
+    exitAct->setShortcut(QKeySequence(QKeySequence::Quit));
     fileMenu->addAction(exitAct);
     connect(exitAct, &QAction::triggered, this, &QWidget::close);
 
     QMenu *toolMenu = menuBar()->addMenu(tr("&Tools"));
 
-    QAction *addAct = new QAction(tr("&Add Entry..."), this);
+    auto *addAct = new QAction(tr("&Add Entry..."), this);
+    addAct->setShortcut(QKeySequence(Qt::ControlModifier | Qt::Key_A));
     toolMenu->addAction(addAct);
     connect(addAct, &QAction::triggered,
             addressWidget, &AddressWidget::showAddEntryDialog);
@@ -59,35 +74,32 @@ void MainWindow::createMenus()
     connect(removeAct, &QAction::triggered, addressWidget, &AddressWidget::removeEntry);
 
     connect(addressWidget, &AddressWidget::selectionChanged,
-        this, &MainWindow::updateActions);
+            this, &MainWindow::updateActions);
 }
 //! [1b]
 
 //! [2]
 void MainWindow::openFile()
 {
-    addressWidget->readFromFile();
+    if (addressWidget->readFromFile())
+        statusBar()->showMessage(tr("Read %1").arg(QDir::toNativeSeparators(AddressWidget::fileName())));
 }
 //! [2]
 
 //! [3]
 void MainWindow::saveFile()
 {
-    addressWidget->writeToFile();
+    if (addressWidget->writeToFile())
+        statusBar()->showMessage(tr("Wrote %1").arg(QDir::toNativeSeparators(AddressWidget::fileName())));
 }
 //! [3]
 
 //! [4]
 void MainWindow::updateActions(const QItemSelection &selection)
 {
-    QModelIndexList indexes = selection.indexes();
+    const QModelIndexList indexes = selection.indexes();
 
-    if (!indexes.isEmpty()) {
-        removeAct->setEnabled(true);
-        editAct->setEnabled(true);
-    } else {
-        removeAct->setEnabled(false);
-        editAct->setEnabled(false);
-    }
+    removeAct->setEnabled(!indexes.isEmpty());
+    editAct->setEnabled(!indexes.isEmpty());
 }
 //! [4]

@@ -9,6 +9,7 @@ SOURCES   = adddialog.cpp \
             tablemodel.cpp
 HEADERS   = adddialog.h \
             addresswidget.h \
+            contact.h \
             mainwindow.h \
             newaddresstab.h \
             tablemodel.h

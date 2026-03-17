@@ -11,6 +11,7 @@ qt_standard_project_setup()
 qt_add_executable(addressbook
     adddialog.cpp adddialog.h
     addresswidget.cpp addresswidget.h
+    contact.h
     main.cpp
     mainwindow.cpp mainwindow.h
     newaddresstab.cpp newaddresstab.h

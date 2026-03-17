@@ -2,58 +2,63 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
 #include "adddialog.h"
+#include "contact.h"
 
-#include <QtWidgets>
+#include <QDialogButtonBox>
+#include <QFormLayout>
+#include <QHBoxLayout>
+#include <QLabel>
+#include <QLineEdit>
+#include <QPlainTextEdit>
+#include <QPushButton>
 
 //! [0]
 AddDialog::AddDialog(QWidget *parent)
     : QDialog(parent),
+      buttonBox(new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, this)),
       nameText(new QLineEdit),
-      addressText(new QTextEdit)
+      addressText(new QPlainTextEdit)
 {
-    auto nameLabel = new QLabel(tr("Name"));
-    auto addressLabel = new QLabel(tr("Address"));
-    auto okButton = new QPushButton(tr("OK"));
-    auto cancelButton = new QPushButton(tr("Cancel"));
+    auto *formLayout = new QFormLayout;
+    formLayout->addRow(tr("Name"), nameText);
+    formLayout->addRow(tr("Address"), addressText);
 
-    auto gLayout = new QGridLayout;
-    gLayout->setColumnStretch(1, 2);
-    gLayout->addWidget(nameLabel, 0, 0);
-    gLayout->addWidget(nameText, 0, 1);
+    auto *mainLayout = new QVBoxLayout(this);
+    mainLayout->addLayout(formLayout);
+    mainLayout->addWidget(buttonBox);
 
-    gLayout->addWidget(addressLabel, 1, 0, Qt::AlignLeft|Qt::AlignTop);
-    gLayout->addWidget(addressText, 1, 1, Qt::AlignLeft);
-
-    auto buttonLayout = new QHBoxLayout;
-    buttonLayout->addWidget(okButton);
-    buttonLayout->addWidget(cancelButton);
-
-    gLayout->addLayout(buttonLayout, 2, 1, Qt::AlignRight);
-
-    auto mainLayout = new QVBoxLayout;
-    mainLayout->addLayout(gLayout);
-    setLayout(mainLayout);
-
-    connect(okButton, &QAbstractButton::clicked, this, &QDialog::accept);
-    connect(cancelButton, &QAbstractButton::clicked, this, &QDialog::reject);
+    connect(buttonBox, &QDialogButtonBox::accepted, this, &QDialog::accept);
+    connect(buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
+    connect(nameText, &QLineEdit::textChanged, this, &AddDialog::updateEnabled);
+    connect(addressText, &QPlainTextEdit::textChanged, this, &AddDialog::updateEnabled);
 
     setWindowTitle(tr("Add a Contact"));
+
+    updateEnabled();
 }
 
-QString AddDialog::name() const
+void AddDialog::updateEnabled()
 {
-    return nameText->text();
+    Contact c = contact();
+    const bool valid = !c.name.isEmpty() && c.name.front().isLetter() && !c.address.isEmpty();
+    buttonBox->button(QDialogButtonBox::Ok)->setEnabled(valid);
 }
 
-QString AddDialog::address() const
+Contact AddDialog::contact() const
 {
-    return addressText->toPlainText();
+    return { nameText->text().trimmed(), addressText->toPlainText().trimmed() };
 }
 
-void AddDialog::editAddress(const QString &name, const QString &address)
+void AddDialog::setContact(const Contact &c)
+{
+    nameText->setText(c.name);
+    addressText->setPlainText(c.address);
+    updateEnabled();
+}
+
+void AddDialog::editAddress(const Contact &c)
 {
     nameText->setReadOnly(true);
-    nameText->setText(name);
-    addressText->setPlainText(address);
+    setContact(c);
 }
 //! [0]
