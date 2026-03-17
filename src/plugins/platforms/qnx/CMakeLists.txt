@@ -83,6 +83,12 @@ qt_internal_extend_target(QQnxIntegrationPlugin CONDITION QT_FEATURE_qqnx_pps AN
         qqnxinputcontext_noimf.cpp qqnxinputcontext_noimf.h
 )
 
+qt_internal_extend_target(QQnxIntegrationPlugin CONDITION QT_FEATURE_vulkan
+    SOURCES
+        qqnxvulkaninstance.cpp qqnxvulkaninstance.h
+        qqnxvulkanwindow.cpp qqnxvulkanwindow.h
+)
+
 qt_internal_extend_target(QQnxIntegrationPlugin CONDITION lgmon
     SOURCES
         qqnxlgmon.cpp

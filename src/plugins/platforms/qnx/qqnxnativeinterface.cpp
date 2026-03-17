@@ -7,6 +7,10 @@
 #include "qqnxglcontext.h"
 #endif
 
+#if QT_CONFIG(vulkan)
+#include "qqnxvulkanwindow.h"
+#endif
+
 #include "qqnxscreen.h"
 #include "qqnxwindow.h"
 #if defined(QQNX_IMF)
@@ -33,6 +37,14 @@ QQnxNativeInterface::QQnxNativeInterface(QQnxIntegration *integration)
 
 void *QQnxNativeInterface::nativeResourceForWindow(const QByteArray &resource, QWindow *window)
 {
+#if QT_CONFIG(vulkan)
+    if (resource == "vkSurface") {
+        if (window && window->surfaceType() == QSurface::VulkanSurface && window->handle())
+            return static_cast<QQnxVulkanWindow *>(window->handle())->surface();
+        return nullptr;
+    }
+#endif
+
     if (resource == "windowGroup" && window && window->screen()) {
         QQnxScreen * const screen = static_cast<QQnxScreen *>(window->screen()->handle());
         if (screen) {

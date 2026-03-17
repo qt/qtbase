@@ -74,6 +74,10 @@ public:
     QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const override;
 #endif
 
+#if QT_CONFIG(vulkan)
+    QPlatformVulkanInstance *createPlatformVulkanInstance(QVulkanInstance *instance) const override;
+#endif
+
     QPlatformInputContext *inputContext() const override;
 
     void moveToScreen(QWindow *window, int screen);

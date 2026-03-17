@@ -6701,6 +6701,8 @@ void tst_QRhi::tessellation()
 #ifdef Q_OS_ANDROID
     if (QNativeInterface::QAndroidApplication::sdkVersion() >= 31)
         QSKIP("Fails on Android 12 (QTBUG-108844)");
+#elif defined(Q_OS_QNX)
+    QSKIP("V3D 4.2 Vulkan on QNX does not support tessellation");
 #endif
     QFETCH(QRhi::Implementation, impl);
     QFETCH(QRhiInitParams *, initParams);
@@ -6878,6 +6880,10 @@ void tst_QRhi::tessellationInterfaceBlocks()
     // buffer whose values are checked by the unit test. MSL 2.1 is required for this test.
     // (requires support for writing to a storage buffer in the vertex shader within a render
     // pipeline)
+
+#if defined(Q_OS_QNX)
+    QSKIP("V3D 4.2 Vulkan on QNX does not support tessellation");
+#endif
 
     QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
     if (!rhi)
@@ -7390,7 +7396,8 @@ void tst_QRhi::storageBuffer()
         QScopedPointer<QRhiComputePipeline> pipeline(rhi->newComputePipeline());
         pipeline->setShaderStage({ QRhiShaderStage::Compute, s });
         pipeline->setShaderResourceBindings(srb.data());
-        QVERIFY(pipeline->create());
+        if (!pipeline->create())
+            QSKIP("Compute pipeline could not be created (shader version not supported on this backend)");
 
         cb->beginComputePass(u);
 
@@ -7431,6 +7438,8 @@ void tst_QRhi::storageBufferRuntimeSizeGraphics()
 #ifdef Q_OS_ANDROID
     if (QNativeInterface::QAndroidApplication::sdkVersion() >= 31)
         QSKIP("Fails on Android 12 (QTBUG-108844)");
+#elif defined(Q_OS_QNX)
+    QSKIP("V3D 4.2 Vulkan on QNX does not support tessellation");
 #endif
     // Draws a tessellated triangle with color determined by the length of
     // buffers bound to shader stages. This is primarily to test Metal

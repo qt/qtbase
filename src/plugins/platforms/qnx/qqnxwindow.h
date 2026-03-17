@@ -43,6 +43,7 @@ public:
 
     WId winId() const override { return (WId)m_window; }
     screen_window_t nativeHandle() const { return m_window; }
+    screen_context_t screenContext() const { return m_screenContext; }
 
     void setBufferSize(const QSize &size);
     QSize bufferSize() const { return m_bufferSize; }

@@ -23,6 +23,11 @@
 #include "qqnxeglwindow.h"
 #endif
 
+#if QT_CONFIG(vulkan)
+#include "qqnxvulkanwindow.h"
+#include "qqnxvulkaninstance.h"
+#endif
+
 #if QT_CONFIG(qqnx_pps)
 #include "qqnxnavigatorpps.h"
 #include "qqnxnavigatoreventnotifier.h"
@@ -321,11 +326,22 @@ QPlatformWindow *QQnxIntegration::createPlatformWindow(QWindow *window) const
     case QSurface::OpenGLSurface:
         return new QQnxEglWindow(window, m_screenContext, needRootWindow);
 #endif
+#if QT_CONFIG(vulkan)
+    case QSurface::VulkanSurface:
+        return new QQnxVulkanWindow(window, m_screenContext, needRootWindow);
+#endif
     default:
         qFatal("QQnxWindow: unsupported window API");
     }
     return 0;
 }
+
+#if QT_CONFIG(vulkan)
+QPlatformVulkanInstance *QQnxIntegration::createPlatformVulkanInstance(QVulkanInstance *instance) const
+{
+    return new QQnxVulkanInstance(instance);
+}
+#endif
 
 QPlatformBackingStore *QQnxIntegration::createPlatformBackingStore(QWindow *window) const
 {
@@ -337,6 +353,10 @@ QPlatformBackingStore *QQnxIntegration::createPlatformBackingStore(QWindow *wind
 #if !defined(QT_NO_OPENGL)
     // Return a QRhiBackingStore for non-raster surface windows
     case QSurface::OpenGLSurface:
+        return new QRhiBackingStore(window);
+#endif
+#if QT_CONFIG(vulkan)
+    case QSurface::VulkanSurface:
         return new QRhiBackingStore(window);
 #endif
     default:

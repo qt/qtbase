@@ -118,9 +118,13 @@ void tst_QVulkan::vulkan11()
         err = f->vkEnumeratePhysicalDeviceGroups(inst.vkInstance(), &count, groupProperties.data()); // 1.1 API
         QCOMPARE(err, VK_SUCCESS);
         for (const VkPhysicalDeviceGroupProperties &gp : groupProperties) {
-#ifdef Q_OS_ANDROID
+#if defined(Q_OS_ANDROID)
             QEXPECT_FAIL("",
                 "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_GROUP_PROPERTIES check fails on Android",
+                Continue);
+#elif defined(Q_OS_QNX)
+            QEXPECT_FAIL("",
+                "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_GROUP_PROPERTIES check fails on QNX (Mesa V3D does not populate sType)",
                 Continue);
 #endif
             QCOMPARE(gp.sType, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_GROUP_PROPERTIES);
@@ -258,6 +262,10 @@ static void waitForUnexposed(QWindow *w)
 
 void tst_QVulkan::vulkanWindow()
 {
+#if defined(Q_OS_QNX)
+    QSKIP("Mesa V3D driver state corruption on QNX: destroy/recreate cycle corrupts "
+          "internal driver state, causing subsequent Vulkan tests to crash (SIGSEGV)");
+#endif
     QVulkanInstance inst;
     if (!inst.create())
         QSKIP("Vulkan init failed; skip");
