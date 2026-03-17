@@ -237,6 +237,7 @@ void tst_QGestureRecognizer::pinchGesture()
     widget.setWindowTitle(QTest::currentTestFunction());
     widget.show();
     QVERIFY(QTest::qWaitForWindowExposed(&widget));
+    QTRY_VERIFY(QApplication::topLevelAt(widget.geometry().center()));
 
     QList<QPoint> points;
     points.append(widget.rect().center());
