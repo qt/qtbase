@@ -3511,13 +3511,14 @@ void tst_Moc::overloadedAddressOperator()
 class CustomQObject : public QObject
 {
     Q_OBJECT
-    Q_ENUMS(Number)
 public:
     enum Number {
       Zero,
       One,
       Two
     };
+    Q_ENUM(Number)
+
     explicit CustomQObject(QObject *parent = nullptr)
       : QObject(parent)
     {
@@ -3551,13 +3552,14 @@ Q_DECLARE_METATYPE(SomeNamespace::NamespacedNonQObject)
 class CustomQObject2 : public QObject
 {
     Q_OBJECT
-    Q_ENUMS(Number)
 public:
     enum Number {
       Zero,
       One,
       Two
     };
+    Q_ENUM(Number)
+
     explicit CustomQObject2(QObject *parent = nullptr)
       : QObject(parent)
     {
@@ -4044,9 +4046,9 @@ namespace QTBUG32933_relatedObjectsDontIncludeItself {
             Q_PROPERTY(Obj::MyEnum p2 MEMBER member)
             Q_PROPERTY(NS::Obj::MyEnum p3 MEMBER member)
             Q_PROPERTY(QTBUG32933_relatedObjectsDontIncludeItself::NS::Obj::MyEnum p4 MEMBER member)
-            Q_ENUMS(MyEnum)
         public:
             enum MyEnum { Something, SomethingElse };
+            Q_ENUM(MyEnum)
             MyEnum member;
         };
     }
@@ -4056,19 +4058,19 @@ void tst_Moc::QTBUG32933_relatedObjectsDontIncludeItself()
 {
     const QMetaObject *mo = &QTBUG32933_relatedObjectsDontIncludeItself::NS::Obj::staticMetaObject;
     const auto *objects = mo->d.relatedMetaObjects;
-    // the related objects should be empty because the enums is in the same object.
+    // the related objects should be empty because the enum is in the same object.
     QVERIFY(!objects);
 }
 
 class UnrelatedClass : public QObject
 {
     Q_OBJECT
-    Q_ENUMS(UnrelatedEnum)
 public:
     enum UnrelatedEnum {
         UnrelatedInvalidValue = -1,
         UnrelatedValue = 42
     };
+    Q_ENUM(UnrelatedEnum)
 };
 
 // The presence of this macro used to confuse moc and prevent
