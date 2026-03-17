@@ -993,6 +993,10 @@ function(_qt_internal_android_copy_extra_plugins target deployment_dir)
 
     set(extra_plugins_dst_dir "${deployment_dir}/libs/${CMAKE_ANDROID_ARCH_ABI}")
 
+    _qt_internal_collect_buildsystem_targets(buildsystem_library_targets
+        "${CMAKE_SOURCE_DIR}" INCLUDE SHARED_LIBRARY MODULE_LIBRARY)
+
+    set(extra_plugin_targets "")
     foreach(plugin_dir IN LISTS extra_plugins)
         if(NOT plugin_dir)
             continue()
@@ -1010,11 +1014,48 @@ function(_qt_internal_android_copy_extra_plugins target deployment_dir)
         list(APPEND copy_commands
             COMMAND ${CMAKE_COMMAND} -E copy_directory "${plugin_path}" "${extra_plugins_dst_dir}"
         )
+
+        # Extra plugins might not have direct dependency to ${target}, so find build system
+        # targets in the project that are needed for the extra plugins outputs.
+
+        # 1. Extract the target name from $<TARGET_FILE_DIR:name> genexes.
+        if("${plugin_dir}" MATCHES "^\\$<TARGET_FILE_DIR:([^>]+)>$")
+            if(TARGET "${CMAKE_MATCH_1}")
+                list(APPEND extra_plugin_targets "${CMAKE_MATCH_1}")
+            else()
+                message(WARNING "QT_ANDROID_EXTRA_PLUGINS entry '${plugin_dir}' for ${target} "
+                                "skipped invalid auto-discovered dependency ${CMAKE_MATCH_1}")
+            endif()
+            continue()
+        elseif("${plugin_dir}" MATCHES "^[$]<")
+            message(WARNING "QT_ANDROID_EXTRA_PLUGINS entry '${plugin_dir}' for ${target}"
+                            "skipped dependencies auto-discovery due to unsupported genex.")
+            continue()
+        endif()
+
+        # 2. Find targets with LIBRARY_OUTPUT_DIRECTORY resolving to extra plugin directory.
+        get_filename_component(plugin_path_abs "${plugin_path}" ABSOLUTE)
+        foreach(library_target IN LISTS buildsystem_library_targets)
+            get_target_property(library_outdir "${library_target}" LIBRARY_OUTPUT_DIRECTORY)
+            if(NOT library_outdir)
+                continue()
+            endif()
+            if(NOT IS_ABSOLUTE "${library_outdir}")
+                get_target_property(library_binary_dir "${library_target}" BINARY_DIR)
+                set(library_outdir "${library_binary_dir}/${library_outdir}")
+            endif()
+            get_filename_component(library_outdir "${library_outdir}" ABSOLUTE)
+            if(library_outdir STREQUAL plugin_path_abs)
+                list(APPEND extra_plugin_targets "${library_target}")
+            endif()
+        endforeach()
     endforeach()
+
+    list(REMOVE_DUPLICATES extra_plugin_targets)
 
     add_custom_target(${target}_copy_extra_plugins
         ${copy_commands}
-        DEPENDS ${target}
+        DEPENDS ${target} ${extra_plugin_targets}
         COMMENT "Copying extra plugins for ${target}"
         VERBATIM
     )
