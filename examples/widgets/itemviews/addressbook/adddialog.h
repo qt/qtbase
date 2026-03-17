@@ -7,11 +7,13 @@
 #include <QDialog>
 
 QT_BEGIN_NAMESPACE
+class QDialogButtonBox;
 class QLabel;
-class QPushButton;
-class QTextEdit;
+class QPlainTextEdit;
 class QLineEdit;
 QT_END_NAMESPACE
+
+struct Contact;
 
 //! [0]
 class AddDialog : public QDialog
@@ -19,15 +21,20 @@ class AddDialog : public QDialog
     Q_OBJECT
 
 public:
-    AddDialog(QWidget *parent = nullptr);
+    explicit AddDialog(QWidget *parent = nullptr);
 
-    QString name() const;
-    QString address() const;
-    void editAddress(const QString &name, const QString &address);
+    Contact contact() const;
+    void setContact(const Contact &c);
+
+    void editAddress(const Contact &c);
+
+private slots:
+    void updateEnabled();
 
 private:
+    QDialogButtonBox *buttonBox;
     QLineEdit *nameText;
-    QTextEdit *addressText;
+    QPlainTextEdit *addressText;
 };
 //! [0]
 

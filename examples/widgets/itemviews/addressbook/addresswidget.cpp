@@ -3,8 +3,33 @@
 
 #include "addresswidget.h"
 #include "adddialog.h"
+#include "newaddresstab.h"
+#include "tablemodel.h"
 
-#include <QtWidgets>
+#include <QHeaderView>
+#include <QMessageBox>
+#include <QTableView>
+
+#include <QDataStream>
+#include <QDir>
+#include <QFile>
+#include <QItemSelection>
+#include <QItemSelectionModel>
+#include <QModelIndex>
+#include <QRegularExpression>
+#include <QSortFilterProxyModel>
+#include <QStandardPaths>
+
+#include <algorithm>
+
+using namespace Qt::StringLiterals;
+
+QString AddressWidget::fileName()
+{
+    static const QString result = QStandardPaths::standardLocations(QStandardPaths::TempLocation).value(0)
+            + "/addressbook.dat"_L1;
+    return result;
+}
 
 //! [0]
 AddressWidget::AddressWidget(QWidget *parent)
@@ -12,8 +37,7 @@ AddressWidget::AddressWidget(QWidget *parent)
       table(new TableModel(this)),
       newAddressTab(new NewAddressTab(this))
 {
-    connect(newAddressTab, &NewAddressTab::sendDetails,
-        this, &AddressWidget::addEntry);
+    connect(newAddressTab, &NewAddressTab::triggered, this, &AddressWidget::showAddEntryDialog);
 
     addTab(newAddressTab, tr("Address Book"));
 
@@ -24,30 +48,33 @@ AddressWidget::AddressWidget(QWidget *parent)
 //! [2]
 void AddressWidget::showAddEntryDialog()
 {
-    AddDialog aDialog;
+    AddDialog aDialog(this);
 
-    if (aDialog.exec())
-        addEntry(aDialog.name(), aDialog.address());
+    if (aDialog.exec() == QDialog::Accepted)
+        addEntry(aDialog.contact());
 }
 //! [2]
 
 //! [3]
-void AddressWidget::addEntry(const QString &name, const QString &address)
+void AddressWidget::addEntry(const Contact &contact)
 {
-    if (!name.front().isLetter()) {
-        QMessageBox::information(this, tr("Invalid name"),
-            tr("The name must start with a letter."));
-    } else if (!table->getContacts().contains({ name, address })) {
-        table->insertRows(0, 1, QModelIndex());
-
-        QModelIndex index = table->index(0, 0, QModelIndex());
-        table->setData(index, name, Qt::EditRole);
-        index = table->index(0, 1, QModelIndex());
-        table->setData(index, address, Qt::EditRole);
-        removeTab(indexOf(newAddressTab));
-    } else {
+    if (table->getContacts().contains(contact)) {
         QMessageBox::information(this, tr("Duplicate Name"),
-            tr("The name \"%1\" already exists.").arg(name));
+                                 tr("The name \"%1\" already exists.").arg(contact.name));
+        return;
+    }
+
+    table->insertRows(0, 1);
+    table->setData(table->index(0, 0), contact.name, Qt::EditRole);
+    table->setData(table->index(0, 1), contact.address, Qt::EditRole);
+    removeTab(indexOf(newAddressTab));
+
+    const QChar firstChar = contact.name.at(0).toUpper();
+    for (int t = 0, tabCount = count(); t < tabCount; ++t) {
+        if (tabText(t).contains(firstChar)) {
+            setCurrentIndex(t);
+            break;
+        }
     }
 }
 //! [3]
@@ -55,37 +82,35 @@ void AddressWidget::addEntry(const QString &name, const QString &address)
 //! [4a]
 void AddressWidget::editEntry()
 {
-    QTableView *temp = static_cast<QTableView*>(currentWidget());
-    QSortFilterProxyModel *proxy = static_cast<QSortFilterProxyModel*>(temp->model());
-    QItemSelectionModel *selectionModel = temp->selectionModel();
+    auto *tableView = static_cast<QTableView *>(currentWidget());
+    auto *proxy = static_cast<QSortFilterProxyModel *>(tableView->model());
+    QItemSelectionModel *selectionModel = tableView->selectionModel();
 
     const QModelIndexList indexes = selectionModel->selectedRows();
-    QString name;
-    QString address;
-    int row = -1;
+    if (indexes.isEmpty())
+        return;
 
-    for (const QModelIndex &index : indexes) {
-        row = proxy->mapToSource(index).row();
-        QModelIndex nameIndex = table->index(row, 0, QModelIndex());
-        QVariant varName = table->data(nameIndex, Qt::DisplayRole);
-        name = varName.toString();
+    const int row = proxy->mapToSource(indexes.constFirst()).row();
 
-        QModelIndex addressIndex = table->index(row, 1, QModelIndex());
-        QVariant varAddr = table->data(addressIndex, Qt::DisplayRole);
-        address = varAddr.toString();
-    }
+    Contact contact;
+    QModelIndex nameIndex = table->index(row, 0);
+    QVariant varName = table->data(nameIndex, Qt::DisplayRole);
+    contact.name = varName.toString();
+    QModelIndex addressIndex = table->index(row, 1);
+    QVariant varAddr = table->data(addressIndex, Qt::DisplayRole);
+    contact.address = varAddr.toString();
 //! [4a]
 
 //! [4b]
-    AddDialog aDialog;
+    AddDialog aDialog(this);
     aDialog.setWindowTitle(tr("Edit a Contact"));
-    aDialog.editAddress(name, address);
+    aDialog.editAddress(contact);
 
-    if (aDialog.exec()) {
-        const QString newAddress = aDialog.address();
-        if (newAddress != address) {
-            const QModelIndex index = table->index(row, 1, QModelIndex());
-            table->setData(index, newAddress, Qt::EditRole);
+    if (aDialog.exec() == QDialog::Accepted) {
+        const Contact newContact = aDialog.contact();
+        if (newContact != contact) {
+            const QModelIndex index = table->index(row, 1);
+            table->setData(index, newContact.address, Qt::EditRole);
         }
     }
 }
@@ -94,18 +119,18 @@ void AddressWidget::editEntry()
 //! [5]
 void AddressWidget::removeEntry()
 {
-    QTableView *temp = static_cast<QTableView*>(currentWidget());
-    QSortFilterProxyModel *proxy = static_cast<QSortFilterProxyModel*>(temp->model());
-    QItemSelectionModel *selectionModel = temp->selectionModel();
+    auto *tableView = static_cast<QTableView *>(currentWidget());
+    auto *proxy = static_cast<QSortFilterProxyModel *>(tableView->model());
+    QItemSelectionModel *selectionModel = tableView->selectionModel();
 
     const QModelIndexList indexes = selectionModel->selectedRows();
+    if (indexes.isEmpty())
+        return;
 
-    for (QModelIndex index : indexes) {
-        int row = proxy->mapToSource(index).row();
-        table->removeRows(row, 1, QModelIndex());
-    }
+    const int row = proxy->mapToSource(indexes.constFirst()).row();
+    table->removeRows(row, 1);
 
-    if (table->rowCount(QModelIndex()) == 0)
+    if (table->rowCount() == 0)
         insertTab(0, newAddressTab, tr("Address Book"));
 }
 //! [5]
@@ -113,7 +138,6 @@ void AddressWidget::removeEntry()
 //! [1]
 void AddressWidget::setupTabs()
 {
-    using namespace Qt::StringLiterals;
     const auto groups = { "ABC"_L1, "DEF"_L1, "GHI"_L1, "JKL"_L1, "MNO"_L1, "PQR"_L1,
                           "STU"_L1, "VW"_L1, "XYZ"_L1 };
 
@@ -121,12 +145,12 @@ void AddressWidget::setupTabs()
         const auto regExp = QRegularExpression(QLatin1StringView("^[%1].*").arg(str),
                                                QRegularExpression::CaseInsensitiveOption);
 
-        auto proxyModel = new QSortFilterProxyModel(this);
+        auto *proxyModel = new QSortFilterProxyModel(this);
         proxyModel->setSourceModel(table);
         proxyModel->setFilterRegularExpression(regExp);
         proxyModel->setFilterKeyColumn(0);
 
-        QTableView *tableView = new QTableView;
+        auto *tableView = new QTableView;
         tableView->setModel(proxyModel);
         tableView->setSelectionBehavior(QAbstractItemView::SelectRows);
         tableView->horizontalHeader()->setStretchLastSection(true);
@@ -149,14 +173,15 @@ void AddressWidget::setupTabs()
 //! [1]
 
 //! [7]
-void AddressWidget::readFromFile()
+bool AddressWidget::readFromFile()
 {
-    QFile file(fileName);
+    QFile file(fileName());
 
     if (!file.open(QIODevice::ReadOnly)) {
         QMessageBox::information(this, tr("Unable to open file"),
-            file.errorString());
-        return;
+                                 tr("Cannot open %1: %2").arg(QDir::toNativeSeparators(fileName()),
+                                                              file.errorString()));
+        return false;
     }
 
     QList<Contact> contacts;
@@ -166,24 +191,32 @@ void AddressWidget::readFromFile()
     if (contacts.isEmpty()) {
         QMessageBox::information(this, tr("No contacts in file"),
                                  tr("The file you are attempting to open contains no contacts."));
-    } else {
-        for (const auto &contact: std::as_const(contacts))
-            addEntry(contact.name, contact.address);
     }
+
+    for (const auto &contact : std::as_const(contacts))
+        addEntry(contact);
+
+    return true;
 }
 //! [7]
 
 //! [6]
-void AddressWidget::writeToFile()
+bool AddressWidget::writeToFile()
 {
-    QFile file(fileName);
+    QFile file(fileName());
 
     if (!file.open(QIODevice::WriteOnly)) {
-        QMessageBox::information(this, tr("Unable to open file"), file.errorString());
-        return;
+        QMessageBox::information(this, tr("Unable to open file"),
+                                 tr("Cannot write to %1: %2").arg(QDir::toNativeSeparators(fileName()),
+                                                                  file.errorString()));
+        return false;
     }
 
+    auto sortedContacts = table->getContacts();
+    std::sort(sortedContacts.begin(), sortedContacts.end());
+
     QDataStream out(&file);
-    out << table->getContacts();
+    out << sortedContacts;
+    return true;
 }
 //! [6]
