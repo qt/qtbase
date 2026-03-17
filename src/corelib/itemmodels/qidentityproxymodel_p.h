@@ -27,9 +27,7 @@ class Q_CORE_EXPORT QIdentityProxyModelPrivate : public QAbstractProxyModelPriva
     Q_DECLARE_PUBLIC(QIdentityProxyModel)
 
 public:
-    QIdentityProxyModelPrivate()
-    {
-    }
+    QIdentityProxyModelPrivate();
     ~QIdentityProxyModelPrivate() override;
 
     QList<QPersistentModelIndex> layoutChangePersistentIndexes;
