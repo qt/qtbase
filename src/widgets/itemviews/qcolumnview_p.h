@@ -120,7 +120,6 @@ public:
     QColumnViewPrivate();
     ~QColumnViewPrivate();
     void initialize();
-    void clearConnections();
 
     QAbstractItemView *createColumn(const QModelIndex &index, bool show);
 
