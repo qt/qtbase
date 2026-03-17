@@ -34,6 +34,8 @@
 #     option `-o outfile.xml,xml` will be ignored.
 #   + QT_MOCK_TEST_RUN_LIST :: may contain a comma-separated list of test
 #     that should run.
+#     - Optionally, a test in that list can end in ~[PFC] in order to
+#       PASS,FAIL or CRASH respectively.
 #   + QT_MOCK_TEST_CRASH_CLEANLY :: if set to 1, then the executable will
 #     crash (exit with a high exit code)
 #     after successfully running the given tests and writing the XML logfile.
@@ -186,10 +188,24 @@ def clean_up_xml(filename, test_functions_run):
     with open(filename, "w") as f:
         f.write(cleaned_up_xml)
 
-# Return the exit code
-def run_test(testname):
+def PFC_to_exitcode(pfc : str):
+    if   pfc == "P":
+        return 0
+    elif pfc == "F":
+        return 1
+    elif pfc == "C":
+        return 131
+    assert False, "Unreachable! testname ended in ~[^PFC]!"
+
+# Return the exit code.
+# desired_result is only implemented for initTestCase.
+def run_test(testname, desired_result=None):
+    assert  not desired_result or desired_result in "PFC"
+
     if   testname == "initTestCase":
-        exit_code = 1              # specifically test that initTestCase fails
+        if not desired_result:
+            desired_result = "F"    # by default test that initTestCase fails
+        exit_code = PFC_to_exitcode(desired_result)
     elif testname == "always_pass":
         exit_code = 0
     elif testname == "always_fail":
@@ -262,7 +278,9 @@ def no_args_run():
     total_result = True
     fail_list = []
     for test in run_list:
-        test_exit_code = run_test(test)
+        # Optionally the test ends in ~[PFC] to set the result.
+        (test, _, desired_result) = test.partition("~")
+        test_exit_code = run_test(test, desired_result)
         if test_exit_code not in (0, 1):
             crash()
         if test_exit_code != 0:
@@ -303,6 +321,8 @@ def main():
         no_args_run()
         assert False, "Unreachable!"
     else:                                           # run single test function
+        assert args[0] != "initTestCase", \
+            "QTest does not support executing initTestCase individually!"
         exit_code = run_test(args[0])
         # Write "fail" in the XML log only if the specific run has failed.
         if exit_code != 0:
@@ -320,5 +340,3 @@ if __name__ == "__main__":
     except Exception as e:
         traceback.print_exc()
         exit(128)                      # Something went wrong with this script
-
-# TODO return error when asking on the commandline to run initTestCase.

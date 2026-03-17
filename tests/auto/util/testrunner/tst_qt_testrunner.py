@@ -130,8 +130,8 @@ class Test_qt_mock_test(unittest.TestCase):
     def assertProcessCrashed(self, proc):
         if DEBUG:
             print("process returncode is:", proc.returncode)
-        self.assertTrue(proc.returncode < 0 or
-                        proc.returncode >= 128)
+        # Controlled CRASH of qt-mock-test always exits with 131.
+        self.assertEqual(proc.returncode, 131)
 
     def test_always_pass(self):
         proc = run([mock_test, "always_pass"])
@@ -428,12 +428,20 @@ class Test_testrunner(unittest.TestCase):
         self.assertEqual(proc.returncode, 3)
     # Test a CRASH aborts even if irrelevant entry is in MFF.
     def test_always_crash_irrelevant_mff(self):
-        self.prepare_mff("always_crash")
-        self.prepare_env(run_list=["always_pass"])
+        self.prepare_mff("always_pass")     # an irrelevant test listed in mff
+        self.prepare_env(run_list=["always_crash"])
         proc = self.run2()
         self.assertEqual(self.runlog, ["always_crash\tC"] * 2)
         self.assertEqual(proc.returncode, 3)
 
+    # Test initTestCase in MFF. qt-testrunner should never invoke initTestCase
+    # as argument to a QTest executable, as QTest does not support that.
+    def test_initTestCase_in_mff(self):
+        self.prepare_mff("initTestCase")
+        self.prepare_env(run_list=["initTestCase~P,always_pass"])
+        proc = self.run2()
+        self.assertEqual(proc.returncode, 0)
+        self.assertEqual(len(self.runlog), 1)
 
     # Test a PASSing function in MFF runs 1+9 times, and subsequent FAILures are handled properly.
     def test_pass_then_fail_in_mff(self):
