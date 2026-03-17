@@ -313,6 +313,7 @@ void tst_QGestureRecognizer::swipeGesture()
     widget.setWindowFlag(Qt::FramelessWindowHint);
     widget.show();
     QVERIFY(QTest::qWaitForWindowExposed(&widget));
+    QTRY_VERIFY(QApplication::topLevelAt(widget.geometry().center()));
 
     // Start a swipe sequence with 2 points (QTBUG-15768)
     const QPoint fingerDistance(m_fingerDistance, m_fingerDistance);
