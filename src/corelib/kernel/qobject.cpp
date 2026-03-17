@@ -5852,10 +5852,10 @@ QMetaObject::Connection &QMetaObject::Connection::operator=(const QMetaObject::C
 }
 
 /*!
+    \fn QMetaObject::Connection::Connection();
+
     Creates a Connection instance.
 */
-
-QMetaObject::Connection::Connection() : d_ptr(nullptr) {}
 
 /*!
     Destructor for QMetaObject::Connection.

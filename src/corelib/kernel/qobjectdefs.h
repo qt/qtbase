@@ -680,7 +680,8 @@ class Q_CORE_EXPORT QMetaObject::Connection {
     bool isConnected_helper() const;
 public:
     ~Connection();
-    Connection();
+    QT_CORE_INLINE_SINCE(6, 12)
+    Connection() noexcept;
     Connection(const Connection &other);
     Connection &operator=(const Connection &other);
 #ifdef Q_QDOC
@@ -696,6 +697,13 @@ public:
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(Connection)
     void swap(Connection &other) noexcept { qt_ptr_swap(d_ptr, other.d_ptr); }
 };
+
+#if QT_CORE_INLINE_IMPL_SINCE(6, 12)
+QMetaObject::Connection::Connection() noexcept
+    : d_ptr(nullptr)
+{}
+#endif // QT_CORE_INLINE_IMPL_SINCE(6, 12)
+
 
 template <typename Func>
 QMetaObject::Connection
