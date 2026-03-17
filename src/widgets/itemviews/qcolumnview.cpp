@@ -79,26 +79,22 @@ void QColumnViewPrivate::initialize()
     q->setItemDelegate(new QColumnViewDelegate(q));
 }
 
-void QColumnViewPrivate::clearConnections()
-{
-#if QT_CONFIG(animation)
-    QObject::disconnect(animationConnection);
-#endif
-    for (QMetaObject::Connection &connection : gripConnections)
-        QObject::disconnect(connection);
-    const auto copy = viewConnections;  // disconnectView modifies this container
-    for (auto it = copy.keyBegin(); it != copy.keyEnd(); ++it)
-        disconnectView(*it);
-}
-
-
 /*!
     Destroys the column view.
 */
 QColumnView::~QColumnView()
 {
     Q_D(QColumnView);
-    d->clearConnections();
+    // clear all connections:
+#if QT_CONFIG(animation)
+    disconnect(d->animationConnection);
+#endif
+    for (QMetaObject::Connection &conn : d->gripConnections)
+        disconnect(conn);
+    for (auto &conns : d->viewConnections) {
+        for (QMetaObject::Connection &conn : conns)
+            disconnect(conn);
+    }
 }
 
 /*!
