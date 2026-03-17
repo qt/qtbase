@@ -4,8 +4,10 @@
 #ifndef QOHOSPLATFORMTHEME_H
 #define QOHOSPLATFORMTHEME_H
 
+#include <QtCore/qfileinfo.h>
 #include <QtCore/qhash.h>
 #include <QtCore/qmap.h>
+#include <QtGui/qicon.h>
 #include <QtGui/qpalette.h>
 #include <qohosplugincore.h>
 #include <qpa/qplatformtheme.h>
@@ -40,6 +42,8 @@ public:
     void setWheelScrollLines(int wheelScrollLines);
 
     QPlatformSystemTrayIcon *createPlatformSystemTrayIcon() const override;
+
+    QIcon fileIcon(const QFileInfo &fileInfo, QPlatformTheme::IconOptions iconOptions) const override;
 
 private:
     QMap<Qt::ColorScheme, QHash<Palette, QPalette>> m_themesPalettes;
