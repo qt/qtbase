@@ -1179,14 +1179,14 @@ public:
     enum MyEnum { A = 0x01, B = 0x02 };
     Q_DECLARE_FLAGS(MyEnumFlag, MyEnum)
     Q_FLAG(MyEnumFlag)
-    Q_ENUMS(MyEnum)
+    Q_ENUM(MyEnum)
 
     MyEnumFlag fprop() const { return A; }
 };
 
 void tst_QMetaObjectBuilder::copyMetaObject_metaProperty()
 {
-    // The TestMetaPropertyFlags class has both `Q_ENUMS(MyEnum)` and
+    // The TestMetaPropertyFlags class has both `Q_ENUM(MyEnum)` and
     // `Q_FLAG(MyEnumFlag, MyEnum)`, which means two separate sets of enumerator data
     // are generated for `MyEnum`, from the .moc file:
     // `QtMocHelpers::EnumData<enum MyEnum>`
