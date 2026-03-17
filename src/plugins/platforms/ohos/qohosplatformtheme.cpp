@@ -7,14 +7,18 @@
 #include"qohosplatformdialoghelper.h"
 #include "qohosplatformintegration.h"
 #include "qohossystemtrayicon.h"
+#include <QtCore/private/qcore_ohos_p.h>
+#include <QtCore/private/qohoscommon_p.h>
 #include <QtCore/private/qohoslogger_p.h>
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/private/qhighdpiscaling_p.h>
+#include <QtGui/private/qabstractfileiconengine_p.h>
 #include <initializer_list>
 #include <qohosqpafunctions_p.h>
 #include <qohosutils.h>
 #include <qpa/qplatformfontdatabase.h>
 #include <qpa/qplatformintegration.h>
+#include <string>
 #include <tuple>
 
 QT_BEGIN_NAMESPACE
@@ -801,6 +805,102 @@ Qt::ColorScheme mapOhosThemeToColorScheme(
     }
 }
 
+QOhosOptional<QPixmap> tryGetFilePixmapByResourceObject(QtOhos::JsState &jsState, QNapi::Object resource)
+{
+    std::string undocumentedParamsPropertyName("params");
+    auto optParams = QNapi::getOptionalPropOrEmpty<QNapi::Value>(resource, undocumentedParamsPropertyName);
+    if (optParams.IsEmpty()) {
+        qOhosPrintfWarning(
+            "%s: expected '%s' property not found in resource object, ignore getting pixmap",
+            Q_FUNC_INFO, undocumentedParamsPropertyName.c_str());
+        return makeEmptyQOhosOptional();
+    }
+    if (!optParams.IsArray()) {
+        qOhosPrintfWarning(
+            "%s: '%s' property is not an array, ignore getting pixmap",
+            Q_FUNC_INFO, undocumentedParamsPropertyName.c_str());
+        return makeEmptyQOhosOptional();
+    }
+
+    auto params = QNapi::getArrayElements<std::vector<std::string>, QNapi::String>(
+        QNapi::checkedCast<QNapi::Array>(optParams));
+    if (params.empty()) {
+        qOhosPrintfWarning(
+            "%s: '%s' property is empty, ignore getting pixmap",
+            Q_FUNC_INFO, undocumentedParamsPropertyName.c_str());
+        return makeEmptyQOhosOptional();
+    }
+
+    const auto resourceIdentifier = params.front();
+    const auto lastSeparatorPosition = resourceIdentifier.rfind('.');
+    if (lastSeparatorPosition == std::string::npos) {
+        qOhosPrintfWarning(
+            "%s: '%s' property has unknown resource name, ignore getting pixmap",
+            Q_FUNC_INFO, undocumentedParamsPropertyName.c_str());
+        return makeEmptyQOhosOptional();
+    }
+
+    const auto simpleName = resourceIdentifier.substr(lastSeparatorPosition + 1);
+    auto resourceContentBuffer = jsState.eval<QNapi::TypedArrayOf<std::uint8_t>>(
+        "@ohos.resourceManager.getSysResourceManager().getMediaByNameSync(*)", {simpleName});
+
+    QPixmap pixmap;
+    bool pixmapLoadResult = pixmap.loadFromData(
+        static_cast<const uchar *>(resourceContentBuffer.Data()), resourceContentBuffer.ByteLength());
+
+    if (pixmapLoadResult) {
+        return makeQOhosOptional(pixmap);
+    } else {
+        qOhosPrintfWarning("%s: cannot load pixmap", Q_FUNC_INFO);
+        return makeEmptyQOhosOptional();
+    }
+}
+
+QOhosOptional<QPixmap> tryGetFilePixmapByFilenameExtension(
+    QtOhos::JsState &jsState, const std::string &filenameExtension)
+{
+    std::string ohosDotFilenameExtension = "." + filenameExtension;
+    auto uniformDataType = jsState.eval<QNapi::String>(
+        "@ohos.data.uniformTypeDescriptor.getUniformDataTypeByFilenameExtension(*)",
+        {ohosDotFilenameExtension});
+
+    auto resourceValue = jsState.eval(
+        "@kit.FileManagerServiceKit.fileManagerService.getFileIconSync(*)", {uniformDataType});
+    if (resourceValue.IsObject()) {
+        return tryGetFilePixmapByResourceObject(jsState, QNapi::checkedCast<QNapi::Object>(resourceValue));
+    } else {
+        qOhosPrintfWarning("%s: got unhandled resource result type, ignore it", Q_FUNC_INFO);
+        return makeEmptyQOhosOptional();
+    }
+}
+
+class QOhosFileIconEngine : public QAbstractFileIconEngine
+{
+public:
+    explicit QOhosFileIconEngine(const QFileInfo &info, QPlatformTheme::IconOptions opts);
+
+protected:
+    QPixmap filePixmap(const QSize &size, QIcon::Mode mode, QIcon::State) override;
+};
+
+QOhosFileIconEngine::QOhosFileIconEngine(const QFileInfo &info, QPlatformTheme::IconOptions opts)
+    : QAbstractFileIconEngine(info, opts)
+{
+}
+
+QPixmap QOhosFileIconEngine::filePixmap(const QSize &size, QIcon::Mode, QIcon::State)
+{
+    auto fileNameSuffix = fileInfo().suffix();
+    auto optPixmap = QtOhos::evalInJsThread(
+        [&](QtOhos::JsState &jsState) {
+            return tryGetFilePixmapByFilenameExtension(jsState, fileNameSuffix.toStdString());
+        });
+
+    return optPixmap.hasValue()
+        ? optPixmap.value().scaled(size, Qt::KeepAspectRatio, Qt::SmoothTransformation)
+        : QPixmap();
+}
+
 }
 
 QOhosPlatformTheme::QOhosPlatformTheme()
@@ -905,6 +1005,13 @@ void QOhosPlatformTheme::setWheelScrollLines(int wheelScrollLines)
 QPlatformSystemTrayIcon *QOhosPlatformTheme::createPlatformSystemTrayIcon() const
 {
     return makeQOhosSystemTrayIcon().release();
+}
+
+QIcon QOhosPlatformTheme::fileIcon(const QFileInfo &fileInfo, QPlatformTheme::IconOptions iconOptions) const
+{
+    return !fileInfo.suffix().isEmpty()
+        ? QIcon(new QOhosFileIconEngine(fileInfo, iconOptions))
+        : QPlatformTheme::fileIcon(fileInfo, iconOptions);
 }
 
 QT_END_NAMESPACE
