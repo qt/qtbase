@@ -39,7 +39,6 @@ struct QWindowsScreenData
     HMONITOR hMonitor = nullptr;
     QString deviceName;
     QString devicePath;
-    std::optional<int> deviceIndex = std::nullopt;
 };
 
 class QWindowsScreen : public QPlatformScreen, public QNativeInterface::QWindowsScreen
