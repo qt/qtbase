@@ -61,7 +61,7 @@ QWaylandXdgSurface::Toplevel::Toplevel(QWaylandXdgSurface *xdgSurface)
 #ifndef QT_NO_SESSIONMANAGER
     const QString sessionRestoreId = xdgSurface->window()->sessionRestoreId();
     if (!sessionRestoreId.isEmpty() && QWaylandSessionManager::instance()->session())
-        m_session.reset(new WithDestructor<QtWayland::xx_toplevel_session_v1, xx_toplevel_session_v1_destroy>(QWaylandSessionManager::instance()->session()->restore_toplevel(object(), sessionRestoreId)));
+        m_session.reset(new WithDestructor<QtWayland::xdg_toplevel_session_v1, xdg_toplevel_session_v1_destroy>(QWaylandSessionManager::instance()->session()->restore_toplevel(object(), sessionRestoreId)));
 #endif
 }
 

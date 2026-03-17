@@ -1,7 +1,7 @@
 version = 1
 
 [[annotations]]
-path = "xx-session-management-v1.xml"
+path = "xdg-session-management-v1.xml"
 precedence = "closest"
 SPDX-FileCopyrightText = [
     "Copyright 2018 Mike Blumenkrantz",

@@ -54,7 +54,7 @@
 #include <QtWaylandClient/private/qwayland-fractional-scale-v1.h>
 #include <QtWaylandClient/private/qwayland-viewporter.h>
 #include <QtWaylandClient/private/qwayland-cursor-shape-v1.h>
-#include <QtWaylandClient/private/qwayland-xx-session-management-v1.h>
+#include <QtWaylandClient/private/qwayland-xdg-session-management-v1.h>
 #include <QtWaylandClient/private/qwayland-xdg-system-bell-v1.h>
 #include <QtWaylandClient/private/qwayland-xdg-toplevel-drag-v1.h>
 #include <QtWaylandClient/private/qwayland-wlr-data-control-unstable-v1.h>
@@ -808,10 +808,9 @@ void QWaylandDisplay::registry_global(uint32_t id, const QString &interface, uin
                 registry, id, 1));
     }
 #ifndef QT_NO_SESSIONMANAGER
-       else if (interface == QLatin1String(QtWayland::xx_session_manager_v1::interface()->name)
-               && qEnvironmentVariableIntValue("QT_WAYLAND_ENABLE_XX_SESSION_MANAGER") > 0) {
-        mGlobals.xxSessionManager.reset(
-                new WithDestructor<QtWayland::xx_session_manager_v1, xx_session_manager_v1_destroy>(
+       else if (interface == QLatin1String(QtWayland::xdg_session_manager_v1::interface()->name)) {
+        mGlobals.xdgSessionManager.reset(
+                new WithDestructor<QtWayland::xdg_session_manager_v1, xdg_session_manager_v1_destroy>(
                         registry, id, 1));
     }
 #endif

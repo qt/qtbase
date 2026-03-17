@@ -23,7 +23,7 @@ QWaylandSessionManager::QWaylandSessionManager(QWaylandDisplay *display, const Q
     , QPlatformSessionManager(id, QString())
     , mDisplay(display)
 {
-    if (!display->xxSessionManager())
+    if (!display->xdgSessionManager())
         return;
 
     // The protocol also exposes a way of supporting crash handling to expose later
@@ -49,12 +49,12 @@ void QWaylandSessionManager::setSessionId(const QString &id)
 
 void QWaylandSessionManager::startSession()
 {
-    QtWayland::xx_session_manager_v1::reason restoreReason = QtWayland::xx_session_manager_v1::reason_launch;
+    QtWayland::xdg_session_manager_v1::reason restoreReason = QtWayland::xdg_session_manager_v1::reason_launch;
     if (!sessionId().isEmpty()) {
-        restoreReason = QtWayland::xx_session_manager_v1::reason_session_restore;
+        restoreReason = QtWayland::xdg_session_manager_v1::reason_session_restore;
     }
     mSession.reset(new QWaylandSession(this));
-    mSession->init(mDisplay->xxSessionManager()->get_session(restoreReason, sessionId()));
+    mSession->init(mDisplay->xdgSessionManager()->get_session(restoreReason, sessionId()));
     mDisplay->forceRoundTrip();
 }
 
@@ -70,17 +70,17 @@ QWaylandSession::~QWaylandSession() {
     destroy();
 }
 
-void QWaylandSession::xx_session_v1_created(const QString &id) {
+void QWaylandSession::xdg_session_v1_created(const QString &id) {
     qCDebug(lcQpaWayland) << "Session created" << id;
     mSessionManager->setSessionId(id);
 }
 
-void QWaylandSession::xx_session_v1_restored() {
+void QWaylandSession::xdg_session_v1_restored() {
     qCDebug(lcQpaWayland) << "Session restored";
     // session Id won't have change, do nothing
 }
 
-void QWaylandSession::xx_session_v1_replaced() {
+void QWaylandSession::xdg_session_v1_replaced() {
     qCDebug(lcQpaWayland) << "Session replaced";
     mSessionManager->setSessionId(QString());
 }

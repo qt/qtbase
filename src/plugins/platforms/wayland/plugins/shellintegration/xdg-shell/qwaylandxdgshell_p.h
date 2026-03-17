@@ -22,7 +22,7 @@
 QT_BEGIN_NAMESPACE
 
 namespace QtWayland {
-    class xx_toplevel_session_v1;
+    class xdg_toplevel_session_v1;
 }
 
 namespace QtWaylandClient {
@@ -113,7 +113,7 @@ private:
         std::unique_ptr<QWaylandXdgExportedV2> m_exported;
         std::unique_ptr<QWaylandXdgDialogV1> m_xdgDialog;
 #ifndef QT_NO_SESSIONMANAGER
-        std::unique_ptr<QtWayland::xx_toplevel_session_v1> m_session;
+        std::unique_ptr<QtWayland::xdg_toplevel_session_v1> m_session;
 #endif
     };
 
