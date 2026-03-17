@@ -5,12 +5,18 @@
 
 #include <QApplication>
 
+#include <QScreen>
+
+#include <QRect>
+
 //! [0]
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
     MainWindow mw;
+    const auto availableGeometry = mw.screen()->availableGeometry();
+    mw.resize(availableGeometry.width() / 3, availableGeometry.height() / 3);
     mw.show();
-    return app.exec();
+    return QCoreApplication::exec();
 }
 //! [0]

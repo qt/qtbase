@@ -36,6 +36,11 @@
     an instance of \c TableModel to add, edit and remove entries to
     the address book.
 
+    \c{struct Contact} stores a contact and provides
+    comparison and serialization via QDataStream:
+
+    \snippet itemviews/addressbook/contact.h 0
+
     \c TableModel is a subclass of QAbstractTableModel that provides
     the standard model/view API to access data. It holds a list of
     added contacts.
@@ -299,17 +304,9 @@
 
     The constructor instantiates the \c addButton,
     \c descriptionLabel and connects the \c{addButton}'s signal to
-    the \c{addEntry()} slot.
+    the \c{triggered()} signal.
 
     \snippet itemviews/addressbook/newaddresstab.cpp 0
-
-    The \c addEntry() function is similar to \c AddressWidget's
-    \c addEntry() in the sense that both functions instantiate an
-    \c AddDialog object. Data from the dialog is extracted and sent
-    to \c AddressWidget's \c addEntry() slot by emitting the
-    \c sendDetails() signal.
-
-    \snippet itemviews/addressbook/newaddresstab.cpp 1
 
     \image signals-n-slots-aw-nat.png {Function calls for adding a new contact}
 

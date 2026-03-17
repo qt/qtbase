@@ -31,10 +31,10 @@ int TableModel::columnCount(const QModelIndex &parent) const
 QVariant TableModel::data(const QModelIndex &index, int role) const
 {
     if (!index.isValid())
-        return QVariant();
+        return {};
 
     if (index.row() >= contacts.size() || index.row() < 0)
-        return QVariant();
+        return {};
 
     if (role == Qt::DisplayRole) {
         const auto &contact = contacts.at(index.row());
@@ -48,17 +48,14 @@ QVariant TableModel::data(const QModelIndex &index, int role) const
                 break;
         }
     }
-    return QVariant();
+    return {};
 }
 //! [2]
 
 //! [3]
 QVariant TableModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
-    if (role != Qt::DisplayRole)
-        return QVariant();
-
-    if (orientation == Qt::Horizontal) {
+    if (role == Qt::DisplayRole && orientation == Qt::Horizontal) {
         switch (section) {
             case 0:
                 return tr("Name");
@@ -68,7 +65,7 @@ QVariant TableModel::headerData(int section, Qt::Orientation orientation, int ro
                 break;
         }
     }
-    return QVariant();
+    return {};
 }
 //! [3]
 
