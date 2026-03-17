@@ -9,6 +9,9 @@
 
 QT_BEGIN_NAMESPACE
 
+QIdentityProxyModelPrivate::QIdentityProxyModelPrivate()
+    = default;
+
 QIdentityProxyModelPrivate::~QIdentityProxyModelPrivate()
     = default;
 
