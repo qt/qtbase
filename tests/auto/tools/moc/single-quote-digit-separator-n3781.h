@@ -19,6 +19,6 @@ public:
         = 1'234'567
 #endif
     };
-    Q_ENUMS(Salaries)
+    Q_ENUM(Salaries)
 };
 #endif // SINGLE_QUOTE_DIGIT_SEPARATOR_N3781_H
