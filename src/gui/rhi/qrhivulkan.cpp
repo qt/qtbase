@@ -3535,7 +3535,7 @@ inline void qrhivk_accumulateComputeResource(T *writtenResources, QRhiResource *
     }
     auto it = writtenResources->find(resource);
     if (it != writtenResources->end())
-        it->first |= access;
+        it->second.accessFlags |= access;
     else if (bindingType == storeTypeVal || bindingType == loadStoreTypeVal)
         writtenResources->insert(resource, { access, true });
 }
@@ -3553,13 +3553,12 @@ void QRhiVulkan::dispatch(QRhiCommandBuffer *cb, int x, int y, int z)
         // The key in the writtenResources map indicates that the resource was
         // written in a previous dispatch, whereas the value accumulates the
         // access mask in the current one.
-        for (auto &accessAndIsNewFlag : cbD->computePassState.writtenResources)
-            accessAndIsNewFlag = { 0, false };
+        for (auto [res, accessAndIsNewFlag] : cbD->computePassState.writtenResources)
+            accessAndIsNewFlag = { 0, false }; // note: accessAndIsNewFlag is a reference
 
         QVkShaderResourceBindings *srbD = QRHI_RES(QVkShaderResourceBindings, cbD->currentComputeSrb);
-        const int bindingCount = srbD->m_bindings.size();
-        for (int i = 0; i < bindingCount; ++i) {
-            const QRhiShaderResourceBinding::Data *b = shaderResourceBindingData(srbD->m_bindings.at(i));
+        for (auto &binding : srbD->m_bindings) {
+            const QRhiShaderResourceBinding::Data *b = shaderResourceBindingData(binding);
             switch (b->type) {
             case QRhiShaderResourceBinding::ImageLoad:
             case QRhiShaderResourceBinding::ImageStore:
@@ -3587,8 +3586,8 @@ void QRhiVulkan::dispatch(QRhiCommandBuffer *cb, int x, int y, int z)
         }
 
         for (auto it = cbD->computePassState.writtenResources.begin(); it != cbD->computePassState.writtenResources.end(); ) {
-            const int accessInThisDispatch = it->first;
-            const bool isNewInThisDispatch = it->second;
+            const VkAccessFlags accessInThisDispatch = it->second.accessFlags;
+            const bool isNewInThisDispatch = it->second.isNew;
             if (accessInThisDispatch && !isNewInThisDispatch) {
                 if (it.key()->resourceType() == QRhiResource::Texture) {
                     QVkTexture *texD = QRHI_RES(QVkTexture, it.key());

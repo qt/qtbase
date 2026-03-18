@@ -392,8 +392,12 @@ struct QVkCommandBuffer : public QRhiCommandBuffer
     bool inExternal;
     bool hasShadingRateSet;
 
-    struct {
-        QHash<QRhiResource *, std::pair<VkAccessFlags, bool> > writtenResources;
+    struct ComputePassState {
+        struct AccessFlagsAndIsNew {
+            VkAccessFlags accessFlags;
+            bool isNew;
+        };
+        QVarLengthFlatMap<QRhiResource *, AccessFlagsAndIsNew, 12> writtenResources;
         void reset() {
             writtenResources.clear();
         }
@@ -618,6 +622,8 @@ struct QVkCommandBuffer : public QRhiCommandBuffer
 
     friend class QRhiVulkan;
 };
+
+Q_DECLARE_TYPEINFO(QVkCommandBuffer::ComputePassState::AccessFlagsAndIsNew, Q_RELOCATABLE_TYPE);
 
 struct QVkSwapChain : public QRhiSwapChain
 {
