@@ -32,6 +32,8 @@
 #include <qevent.h>
 #include <qscrollbar.h>
 
+#include <QtCore/private/qflatmap_p.h>
+
 #include <vector>
 
 QT_REQUIRE_CONFIG(columnview);
@@ -145,7 +147,7 @@ public:
 #endif
     std::vector<QMetaObject::Connection> gripConnections;
     using ViewConnections = std::array<QMetaObject::Connection, 6>;
-    QHash<QAbstractItemView *, ViewConnections> viewConnections;
+    QVarLengthFlatMap<QAbstractItemView *, ViewConnections, 4> viewConnections;
 
     QWidget *previewWidget;
     QAbstractItemView *previewColumn;

@@ -91,7 +91,7 @@ QColumnView::~QColumnView()
 #endif
     for (QMetaObject::Connection &conn : d->gripConnections)
         disconnect(conn);
-    for (auto &conns : d->viewConnections) {
+    for (auto &&[_, conns] : d->viewConnections) {
         for (QMetaObject::Connection &conn : conns)
             disconnect(conn);
     }
