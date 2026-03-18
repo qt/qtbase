@@ -1560,6 +1560,7 @@ function(_qt_internal_sbom_add_target target)
         FORWARD_MULTI
             LIBRARIES
             PUBLIC_LIBRARIES
+            SBOM_DEPENDENCIES
             SBOM_RELATIONSHIP_ENTRIES
             SBOM_RELATIONSHIPS # deprecated, still used by WebEngine
     )
