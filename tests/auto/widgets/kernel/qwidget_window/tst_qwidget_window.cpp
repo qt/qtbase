@@ -32,6 +32,7 @@
 
 using namespace QTestPrivate;
 using namespace Qt::StringLiterals;
+using namespace std::chrono_literals;
 
 // Compare a window position that may go through scaling in the platform plugin with fuzz.
 static inline bool qFuzzyCompareWindowPosition(const QPoint &p1, const QPoint p2, int fuzz)
@@ -784,7 +785,7 @@ protected:
 
         // Cancel the drag, if the platform doesn't correctly move the cursor
         // and no DragMove is seen.
-        QTimer::singleShot(150, this, [=]{
+        QTimer::singleShot(150ms, this, [this, drag] {
             if (moveTimeout())
                 drag->cancel();
         });
