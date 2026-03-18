@@ -145,7 +145,7 @@ public:
     QMetaObject::Connection animationConnection;
 #endif
     std::vector<QMetaObject::Connection> gripConnections;
-    using ViewConnections = std::vector<QMetaObject::Connection>;
+    using ViewConnections = std::array<QMetaObject::Connection, 6>;
     QHash<QAbstractItemView *, ViewConnections> viewConnections;
 
     QWidget *previewWidget;

@@ -681,7 +681,7 @@ QAbstractItemView *QColumnViewPrivate::createColumn(const QModelIndex &index, bo
         QObject::connect(view, &QAbstractItemView::doubleClicked, q, &QColumnView::doubleClicked),
         QObject::connect(view, &QAbstractItemView::entered, q, &QColumnView::entered),
         QObject::connect(view, &QAbstractItemView::pressed, q, &QColumnView::pressed),
-        clickedConnection
+        std::move(clickedConnection),
     };
 
     view->setFocusPolicy(Qt::NoFocus);
