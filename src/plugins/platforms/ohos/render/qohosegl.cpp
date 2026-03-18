@@ -108,6 +108,13 @@ EGLSurface QOhosEGLSurface::tryGetOrCreateEGLWindowSurface(
 
 void QOhosEGLSurface::cleanup()
 {
+    if (m_refCurrentDisplay != EGL_NO_DISPLAY
+        && eglMakeCurrent(m_refCurrentDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT) == EGL_FALSE) {
+        qOhosPrintfWarning(
+            "%s: failed to unbind context from the current rendering thread, error: %d", Q_FUNC_INFO,
+            eglGetError());
+    }
+
     if (m_ownEglSurface != EGL_NO_SURFACE && eglDestroySurface(m_refCurrentDisplay, m_ownEglSurface) == EGL_FALSE)
         qOhosPrintfDebug("Failed to destroy surface");
 
