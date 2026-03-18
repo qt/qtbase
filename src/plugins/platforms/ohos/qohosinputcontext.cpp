@@ -544,8 +544,9 @@ void QOhosInputContext::onCursorRectangleChanged()
             : focusedWindow->geometry());
     auto nativeCursorPos = QHighDpiScaling::mapPositionToNative(
         inputItemClampedCursorPos, focusedWindow->screen()->handle());
+    auto screenBasedCursorPos = nativeCursorPos - focusedWindow->screen()->handle()->geometry().topLeft();
     updateOhosCursor({
-        nativeCursorPos.x(), nativeCursorPos.y(),
+        screenBasedCursorPos.x(), screenBasedCursorPos.y(),
         globalCursorRectangle.width(), globalCursorRectangle.height()
     });
     m_updateCursorRectangleAfterAttaching = false;
