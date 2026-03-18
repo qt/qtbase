@@ -2765,7 +2765,6 @@ void QTableView::setSortingEnabled(bool enable)
     horizontalHeader()->setSortIndicatorShown(enable);
     for (QMetaObject::Connection &connection : d->dynHorHeaderConnections)
         disconnect(connection);
-    d->dynHorHeaderConnections.clear();
     if (enable) {
         //sortByColumn has to be called before we connect or set the sortingEnabled flag
         // because otherwise it will not call sort on the model.

@@ -28,7 +28,6 @@
 
 #include <array>
 #include <list>
-#include <vector>
 
 QT_REQUIRE_CONFIG(tableview);
 
@@ -177,7 +176,7 @@ public:
     std::array<QMetaObject::Connection, 4> modelConnections;
     std::array<QMetaObject::Connection, 7> verHeaderConnections;
     std::array<QMetaObject::Connection, 5> horHeaderConnections;
-    std::vector<QMetaObject::Connection> dynHorHeaderConnections;
+    std::array<QMetaObject::Connection, 2> dynHorHeaderConnections;
 
     bool sortingEnabled;
     bool geometryRecursionBlock;
