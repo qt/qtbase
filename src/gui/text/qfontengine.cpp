@@ -255,8 +255,9 @@ bool QFontEngine::supportsTransformation(const QTransform &transform) const
     return transform.type() < QTransform::TxProject;
 }
 
-bool QFontEngine::expectsGammaCorrectedBlending() const
+bool QFontEngine::expectsGammaCorrectedBlending(QFontEngine::GlyphFormat format) const
 {
+    Q_UNUSED(format);
     return true;
 }
 

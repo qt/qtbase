@@ -224,7 +224,7 @@ private:
                      GlyphFormat neededFormat,
                      const QTransform &t) override;
     bool hasInternalCaching() const override { return cacheEnabled; }
-    bool expectsGammaCorrectedBlending() const override;
+    bool expectsGammaCorrectedBlending(QFontEngine::GlyphFormat format) const override;
 
     void removeGlyphFromCache(glyph_t glyph) override;
     int glyphMargin(QFontEngine::GlyphFormat /* format */) override { return 0; }
