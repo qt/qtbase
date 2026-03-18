@@ -1359,6 +1359,27 @@ static QString vcRedistDir()
     return QString();
 }
 
+static bool isSystemLibrary(const QString &libraryPath)
+{
+    static const QString systemRootEnv = qEnvironmentVariable("SystemRoot");
+    static bool systemRootEmptyEmitted = false;
+    if (systemRootEnv.isEmpty()) {
+        if (!systemRootEmptyEmitted) {
+            std::wcerr << "Warning: Cannot detect system root.\n";
+            systemRootEmptyEmitted = true;
+        }
+        return false;
+    }
+    static QString systemRoot;
+    if (systemRoot.isEmpty()) {
+        systemRoot = QDir(QDir::fromNativeSeparators(systemRootEnv)).canonicalPath();
+        if (!systemRoot.endsWith(u'/'))
+            systemRoot += u'/';
+    }
+
+    return libraryPath.startsWith(systemRoot, Qt::CaseInsensitive);
+}
+
 static QStringList findMinGWRuntimePaths(const QString &qtBinDir, Platform platform, const QStringList &runtimeFilters)
 {
     //MinGW: Add runtime libraries. Check first for the Qt binary directory, and default to path if nothing is found.
@@ -1787,6 +1808,10 @@ static DeployResult deploy(const Options &options, const QMap<QString, QString> 
                                                  peHeaderInfo.machineArch));
         }
         for (const QString &qtLib : std::as_const(libraries)) {
+            if (isSystemLibrary(qtLib)) {
+                std::wcout << "Skipping system library " << qtLib << "\n";
+                continue;
+            }
             if (!updateLibrary(qtLib, targetPath, options, errorMessage))
                 return result;
         }
