@@ -369,6 +369,7 @@ function(_qt_internal_sbom_handle_target_relationships target)
     set(multi_args
         LIBRARIES
         PUBLIC_LIBRARIES
+        SBOM_DEPENDENCIES
         SBOM_RELATIONSHIPS # spdx v2 input, deprecated, still used by WebEngine
         SBOM_RELATIONSHIP_ENTRIES
     )
@@ -384,11 +385,19 @@ function(_qt_internal_sbom_handle_target_relationships target)
     set(external_target_dependencies "")
     set(spdx_relationships "") # deprecated, but needed
 
+    _qt_internal_forward_function_args(
+        FORWARD_PREFIX arg
+        FORWARD_OUT_VAR handle_target_dependencies_args
+        FORWARD_MULTI
+            LIBRARIES
+            PUBLIC_LIBRARIES
+            SBOM_DEPENDENCIES
+    )
+
     # Get relationships based on target linkage.
     _qt_internal_sbom_handle_target_dependencies("${target}"
         SPDX_ID "${arg_SPDX_ID}"
-        LIBRARIES "${arg_LIBRARIES}"
-        PUBLIC_LIBRARIES "${arg_PUBLIC_LIBRARIES}"
+        ${handle_target_dependencies_args}
         OUT_SBOM_RELATIONSHIP_ENTRIES target_relationship_entries
         OUT_EXTERNAL_TARGET_DEPENDENCIES external_target_dependencies
     )

@@ -60,7 +60,7 @@ function(create_sbom_lib_target target)
     bubble_up_extra_result_code()
 endfunction()
 
-foreach(idx RANGE 1 9)
+foreach(idx RANGE 1 10)
     set(target "t${idx}")
     create_sbom_lib_target(${target})
 endforeach()
@@ -210,6 +210,14 @@ _qt_internal_extend_sbom(t9
 )
 add_assert_str_exists_in_spdx_v2_3_doc("Relationship: ${t9_spdx_id} DEPENDS_ON ${t1_spdx_id}")
 add_cydx_v1_6_deps_to_result_file(t9 DEPS ${t1_spdx_id})
+
+# Case 7 check that manual setting of SBOM_DEPENDENCIES works
+_qt_internal_extend_sbom(t10
+    SBOM_DEPENDENCIES t8 t9
+)
+add_assert_str_exists_in_spdx_v2_3_doc("Relationship: ${t10_spdx_id} DEPENDS_ON ${t8_spdx_id}")
+add_assert_str_exists_in_spdx_v2_3_doc("Relationship: ${t10_spdx_id} DEPENDS_ON ${t9_spdx_id}")
+add_cydx_v1_6_deps_to_result_file(t10 DEPS ${t8_spdx_id} ${t9_spdx_id})
 
 _qt_internal_sbom_end_project()
 

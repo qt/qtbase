@@ -17,6 +17,7 @@ function(_qt_internal_sbom_handle_target_dependencies target)
     set(multi_args
         LIBRARIES
         PUBLIC_LIBRARIES
+        SBOM_DEPENDENCIES
     )
     cmake_parse_arguments(PARSE_ARGV 1 arg "${opt_args}" "${single_args}" "${multi_args}")
     _qt_internal_validate_all_args_are_parsed(arg)
