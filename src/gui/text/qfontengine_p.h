@@ -261,7 +261,7 @@ public:
     static QByteArray convertToPostscriptFontFamilyName(const QByteArray &fontFamily);
 
     virtual bool hasUnreliableGlyphOutline() const;
-    virtual bool expectsGammaCorrectedBlending() const;
+    virtual bool expectsGammaCorrectedBlending(QFontEngine::GlyphFormat format) const;
 
     static bool disableEmojiSegmenter();
 

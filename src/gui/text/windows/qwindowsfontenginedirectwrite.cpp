@@ -763,7 +763,7 @@ QImage QWindowsFontEngineDirectWrite::alphaMapForGlyph(glyph_t glyph,
             const uint *src = reinterpret_cast<const uint *>(im.constScanLine(y));
             uchar *dst = alphaMap.scanLine(y);
             for (int x=0; x<im.width(); ++x) {
-                *dst = 255 - (m_fontEngineData->pow_gamma[qGray(0xffffffff - *src)] * 255. / 2047.);
+                *dst = qGray(*src);
                 ++dst;
                 ++src;
             }
@@ -2075,6 +2075,11 @@ QImage QWindowsFontEngineDirectWrite::bitmapForGlyph(glyph_t glyph,
 QList<QFontVariableAxis> QWindowsFontEngineDirectWrite::variableAxes() const
 {
     return m_variableAxes;
+}
+
+bool QWindowsFontEngineDirectWrite::expectsGammaCorrectedBlending(QFontEngine::GlyphFormat format) const
+{
+    return format == QFontEngine::Format_A32;
 }
 
 QT_END_NAMESPACE

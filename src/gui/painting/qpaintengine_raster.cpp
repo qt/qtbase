@@ -2815,7 +2815,7 @@ bool QRasterPaintEngine::drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs,
                         qFloor(positions[i].x) + alphaMap->x,
                         qFloor(y) - alphaMap->y,
                         alphaMap->width, alphaMap->height,
-                        fontEngine->expectsGammaCorrectedBlending());
+                        fontEngine->expectsGammaCorrectedBlending(QFontEngine::GlyphFormat(alphaMap->format)));
         }
 
     } else {
@@ -2879,7 +2879,14 @@ bool QRasterPaintEngine::drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs,
                 drawImage(QPoint(x, y), QImage(glyphBits, c.w, c.h, bpl, image.format()));
                 s->matrix = originalTransform;
             } else {
-                alphaPenBlt(glyphBits, bpl, depth, x, y, c.w, c.h, fontEngine->expectsGammaCorrectedBlending());
+                alphaPenBlt(glyphBits,
+                            bpl,
+                            depth,
+                            x,
+                            y,
+                            c.w,
+                            c.h,
+                            fontEngine->expectsGammaCorrectedBlending(glyphFormat));
             }
         }
     }

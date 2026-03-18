@@ -1127,8 +1127,9 @@ void QFontEngineFT::setDefaultHintStyle(HintStyle style)
     default_hint_style = style;
 }
 
-bool QFontEngineFT::expectsGammaCorrectedBlending() const
+bool QFontEngineFT::expectsGammaCorrectedBlending(QFontEngine::GlyphFormat format) const
 {
+    Q_UNUSED(format);
     return stemDarkeningDriver;
 }
 

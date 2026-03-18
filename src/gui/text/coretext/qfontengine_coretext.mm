@@ -758,8 +758,9 @@ bool QCoreTextFontEngine::shouldSmoothFont() const
     Q_UNREACHABLE();
 }
 
-bool QCoreTextFontEngine::expectsGammaCorrectedBlending() const
+bool QCoreTextFontEngine::expectsGammaCorrectedBlending(QFontEngine::GlyphFormat format) const
 {
+    Q_UNUSED(format);
     return shouldSmoothFont() && fontSmoothing() == Subpixel;
 }
 

@@ -115,6 +115,8 @@ public:
 
     QList<QFontVariableAxis> variableAxes() const override;
 
+    bool expectsGammaCorrectedBlending(QFontEngine::GlyphFormat format) const override;
+
 private:
 #if QT_CONFIG(directwritecolrv1)
     bool traverseColr1(IDWritePaintReader *paintReader,
