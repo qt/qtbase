@@ -2858,6 +2858,7 @@ QAccessibleTableInterface::~QAccessibleTableInterface()
     \row    \li \l increaseAction() \li increase the value of the accessible (e.g. spinbox)
     \row    \li \l pressAction()    \li press or click or activate the accessible (should correspond to clicking the object with the mouse)
     \row    \li \l setFocusAction() \li set the focus to this accessible
+    \row    \li \l showOnScreenAction() \li move this accessible into the viewport
     \row    \li \l showMenuAction() \li show a context menu, corresponds to right-clicks
     \endtable
 
@@ -2949,6 +2950,7 @@ struct QAccessibleActionStrings
         decreaseAction(QStringLiteral(QT_TRANSLATE_NOOP("QAccessibleActionInterface", "Decrease"))),
         showMenuAction(QStringLiteral(QT_TRANSLATE_NOOP("QAccessibleActionInterface", "ShowMenu"))),
         setFocusAction(QStringLiteral(QT_TRANSLATE_NOOP("QAccessibleActionInterface", "SetFocus"))),
+        showOnScreenAction(QStringLiteral(QT_TRANSLATE_NOOP("QAccessibleActionInterface", "Show on Screen"))),
         toggleAction(QStringLiteral(QT_TRANSLATE_NOOP("QAccessibleActionInterface", "Toggle"))),
         scrollLeftAction(QStringLiteral(QT_TRANSLATE_NOOP("QAccessibleActionInterface", "Scroll Left"))),
         scrollRightAction(QStringLiteral(QT_TRANSLATE_NOOP("QAccessibleActionInterface", "Scroll Right"))),
@@ -2963,6 +2965,7 @@ struct QAccessibleActionStrings
     const QString decreaseAction;
     const QString showMenuAction;
     const QString setFocusAction;
+    const QString showOnScreenAction;
     const QString toggleAction;
     const QString scrollLeftAction;
     const QString scrollRightAction;
@@ -2983,6 +2986,8 @@ struct QAccessibleActionStrings
             return QAccessibleActionInterface::tr("Shows the menu");
         else if (actionName == setFocusAction)
             return QAccessibleActionInterface::tr("Sets the focus");
+        else if (actionName == showOnScreenAction)
+            return QAccessibleActionInterface::tr("Moves the accessible into viewport");
         else if (actionName == toggleAction)
             return QAccessibleActionInterface::tr("Toggles the state");
         else if (actionName == scrollLeftAction)
@@ -3058,6 +3063,15 @@ const QString &QAccessibleActionInterface::showMenuAction()
 const QString &QAccessibleActionInterface::setFocusAction()
 {
     return accessibleActionStrings()->setFocusAction;
+}
+
+/*!
+    Returns the name of the show on screen default action.
+    \sa actionNames(), localizedActionName()
+  */
+const QString &QAccessibleActionInterface::showOnScreenAction()
+{
+    return accessibleActionStrings()->showOnScreenAction;
 }
 
 /*!

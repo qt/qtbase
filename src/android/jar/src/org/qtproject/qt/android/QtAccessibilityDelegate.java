@@ -492,6 +492,8 @@ class QtAccessibilityDelegate extends View.AccessibilityDelegate
         screenRect.offset(-parentScreenRect.left, -parentScreenRect.top);
         setBoundsInParent(node, screenRect);
 
+        node.addAction(AccessibilityNodeInfo.AccessibilityAction.ACTION_SHOW_ON_SCREEN);
+
         // Manage internal accessibility focus state.
         if (m_focusedVirtualViewId == virtualViewId) {
             node.setAccessibilityFocused(true);
@@ -532,6 +534,10 @@ class QtAccessibilityDelegate extends View.AccessibilityDelegate
 
             boolean handled = false;
             //Log.i(TAG, "PERFORM ACTION: " + action + " on " + virtualViewId);
+            if (action == AccessibilityNodeInfo.AccessibilityAction.ACTION_SHOW_ON_SCREEN.getId()) {
+                handled = QtNativeAccessibility.showOnScreen(virtualViewId);
+                notifyScrolledEvent(virtualViewId);
+            }
             switch (action) {
                 case AccessibilityNodeInfo.ACTION_CLEAR_ACCESSIBILITY_FOCUS:
                     if (m_focusedVirtualViewId == virtualViewId) {
@@ -544,7 +550,7 @@ class QtAccessibilityDelegate extends View.AccessibilityDelegate
                     m_view.invalidate();
                     sendEventForVirtualViewId(virtualViewId,
                             AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUS_CLEARED);
-                    handled = true;
+                    handled |= true;
                     break;
                 default:
                     // Let the node provider handle focus for the view node.

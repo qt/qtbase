@@ -413,6 +413,32 @@ namespace QtAndroidAccessibility
         return result && oldPosition != screenRect_helper(firstChildId, false);
     }
 
+    static bool showOnScreen_helper(int objectId)
+    {
+        QAccessibleInterface *iface = interfaceFromId(objectId);
+        if (!iface || !iface->isValid() || !iface->actionInterface())
+            return false;
+
+        const auto actionNames = iface->actionInterface()->actionNames();
+
+        if (actionNames.contains(QAccessibleActionInterface::showOnScreenAction())) {
+            invokeActionOnInterfaceInMainThread(iface->actionInterface(), QAccessibleActionInterface::showOnScreenAction());
+            return true;
+        }
+        return false;
+    }
+
+    static jboolean showOnScreen(JNIEnv */*env*/, jobject /*thiz*/, jint objectId)
+    {
+        bool result = false;
+        if (m_accessibilityContext) {
+            runInObjectContext(m_accessibilityContext, [objectId]() {
+                return showOnScreen_helper(objectId);
+            }, &result);
+        }
+        return result;
+    }
+
     static QString textFromValue(QAccessibleInterface *iface)
     {
         QString valueStr;
@@ -827,6 +853,7 @@ namespace QtAndroidAccessibility
         {"focusAction", "(I)Z", (void*)focusAction},
         {"scrollForward", "(I)Z", (void*)scrollForward},
         {"scrollBackward", "(I)Z", (void*)scrollBackward},
+        {"showOnScreen", "(I)Z", (void *)showOnScreen}
     };
 
 #define GET_AND_CHECK_STATIC_METHOD(VAR, CLASS, METHOD_NAME, METHOD_SIGNATURE) \

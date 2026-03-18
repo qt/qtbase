@@ -242,6 +242,7 @@ public:
     static const QString &decreaseAction();
     static const QString &showMenuAction();
     static const QString &setFocusAction();
+    static const QString &showOnScreenAction();
     static const QString &toggleAction();
     static QString scrollLeftAction();
     static QString scrollRightAction();
