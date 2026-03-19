@@ -682,6 +682,12 @@ QOhosView::QOhosView(QWindow *ownerWindow, QSharedPointer<QNativeNode> nativeNod
             Q_EMIT nodeAreaChanged(nodeAreaChangeEvent);
         });
 
+    m_nativeNode->setNodeVisibilityChangeHandler(
+        [this](bool visible) {
+            if (viewType() == QOhosView::ViewType::EmbeddedWindow)
+                Q_EMIT windowVisibilityChange(visible);
+        });
+
     std::vector<std::shared_ptr<void>> writeCallbacks = {
         m_windowPropertiesProvider.addPropertyWriteCallback<double, &QOhosPlatformWindow::windowCornerRadiusProperty>(
             [this](double windowCornerRadius) {
