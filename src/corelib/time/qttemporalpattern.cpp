@@ -5,6 +5,9 @@
 #include <QtCore/qbitarray.h>
 #include "private/qlocale_p.h"
 #include "private/qtparseqttemporalformat_p.h"
+#if QT_CONFIG(datetimeparser)
+#  include "private/qtparsetemporal_p.h"
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -886,9 +889,33 @@ SupportType supports(DateTimeParts wanted, QSpan<const TemporalField> range,
 QtTemporalPattern::ParseResult<QDateTime>
 QDateTimePattern::parse(QStringView text, const QDateTime &defaults) const
 {
+#if QT_CONFIG(datetimeparser)
+    const auto seen = QtParseTemporal::prefix(text, m_fields, m_locale, m_calendar, m_baseYear);
+    if (!m_fields.isEmpty() && !seen) // Failed to parse.
+        return {};
+
+    const QDate date = seen.date(m_calendar, defaults.date());
+    const QTime time = seen.time(defaults.time());
+
+    const QDateTime::TransitionResolution res = [type = seen.timeType]() {
+        using Res = QDateTime::TransitionResolution;
+        switch (type) {
+        case QTimeZone::StandardTime: return Res::PreferStandard;
+        case QTimeZone::DaylightTime: return Res::PreferDaylightSaving;
+        case QTimeZone::GenericTime: return Res::LegacyBehavior;
+        }
+        Q_UNREACHABLE_RETURN(Res::LegacyBehavior);
+    }();
+
+    if (QDateTime result(date, time, seen.zone, res); result.isValid())
+        return {result, seen.size()};
+    // Fall back to default transition resolution:
+    return {QDateTime(date, time, seen.zone), seen.size()};
+#else
     Q_UNUSED(text);
     Q_UNUSED(defaults);
     return {};
+#endif // datetimeparser
 }
 
 /*!
@@ -962,9 +989,16 @@ QDateTimePattern QDateTimePattern::fromQtFormat(QStringView format)
 QtTemporalPattern::ParseResult<QTime>
 QTimePattern::parse(QStringView text, QTime defaults) const
 {
+#if QT_CONFIG(datetimeparser)
+    const auto seen = QtParseTemporal::prefix(text, m_fields, m_locale, QCalendar());
+    if (!m_fields.isEmpty() && !seen) // Failed to parse.
+        return {};
+    return {seen.time(defaults), seen.size()};
+#else
     Q_UNUSED(text);
     Q_UNUSED(defaults);
     return {};
+#endif // datetimeparser
 }
 
 /*!
@@ -1129,9 +1163,16 @@ QTimePattern QTimePattern::fromQtFormat(QStringView format)
 QtTemporalPattern::ParseResult<QDate>
 QDatePattern::parse(QStringView text, QDate defaults) const
 {
+#if QT_CONFIG(datetimeparser)
+    const auto seen = QtParseTemporal::prefix(text, m_fields, m_locale, m_calendar, m_baseYear);
+    if (!m_fields.isEmpty() && !seen) // Failed to parse.
+        return {};
+    return {seen.date(m_calendar, defaults), seen.size()};
+#else
     Q_UNUSED(text);
     Q_UNUSED(defaults);
     return {};
+#endif // datetimeparser
 }
 
 /*!
