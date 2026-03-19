@@ -55,7 +55,12 @@ void QOhosFloatingWindow::setGeometry(const QRect &rect)
 
     auto oldWindowFrameGeometry = windowFrameGeometry();
 
+    auto *currentScreen = QOhosPlatformWindow::screen();
     QOhosPlatformWindow::setGeometry(rect);
+
+    auto *targetScreen = QOhosPlatformWindow::screenForGeometry(rect.marginsAdded(frameMargins()));
+    if (targetScreen != nullptr && targetScreen != currentScreen)
+        QWindowSystemInterface::handleWindowScreenChanged(window(), targetScreen->screen());
 
     if (view != nullptr) {
         auto frameGeometry = rect.marginsAdded(frameMargins());
