@@ -80,6 +80,7 @@ void QOhosFloatingWindow::setVisible(bool visible)
     } else {
         m_view->showImmediate();
     }
+    startAsyncWaitForNodeResizeIfNeeded();
 }
 
 WId QOhosFloatingWindow::winId() const
