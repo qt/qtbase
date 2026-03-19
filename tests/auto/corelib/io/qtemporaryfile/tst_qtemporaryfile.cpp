@@ -624,10 +624,6 @@ void tst_QTemporaryFile::rename()
             QVERIFY(QFile::exists(dir.filePath("temporary-file.txt"_L1)));
         }
 
-#ifdef Q_OS_ANDROID
-        if (!overwrite)
-            QEXPECT_FAIL("failure", "QTBUG-138610", Abort);
-#endif
         if (overwrite)
             QCOMPARE(file.renameOverwrite("temporary-file.txt"_L1), expectedRenameResult);
         else

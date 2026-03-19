@@ -1793,10 +1793,17 @@ bool QFileSystemEngine::renameFile(const QFileSystemEntry &source, const QFileSy
         error = QSystemError(savedErrno, QSystemError::StandardLibraryError);
         return false;
     } else if (!SupportsHardlinking) {
-        // man 2 link on Linux has:
-        // EPERM  The filesystem containing oldpath and newpath does not
-        //        support the creation of hard links.
-        errno = EPERM;
+        // Since hard linking is not supported, check for target existence
+        // manually, mimicking what link(2) would have reported via EEXIST.
+        // If the target does not exist, fall through to ::rename() below.
+        if (::access(tgtPath, F_OK) == 0) {
+            errno = EEXIST;
+        } else {
+            // man 2 link on Linux has:
+            // EPERM  The filesystem containing oldpath and newpath does not
+            // support the creation of hard links.
+            errno = EPERM;
+        }
     }
 
     switch (errno) {
