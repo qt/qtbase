@@ -370,6 +370,15 @@ bool QOhosPlatformBackingStore::scroll(const QRegion &area, int dx, int dy)
     return true;
 }
 
+void QOhosPlatformBackingStore::beginPaint(const QRegion &region)
+{
+    auto previousImageSize = m_image.size();
+    QRasterBackingStore::beginPaint(region);
+    bool imageWasResized = previousImageSize != m_image.size();
+    if (imageWasResized)
+        m_windowContextManager = WindowContextManager(m_vsyncEnabled, m_flushFunc);
+}
+
 void QOhosPlatformBackingStore::flushImmediate(QWindow *window)
 {
     auto *platformWindow = QOhosPlatformWindow::fromQWindowOrNull(window);
