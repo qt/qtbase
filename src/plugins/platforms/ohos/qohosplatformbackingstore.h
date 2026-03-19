@@ -111,6 +111,7 @@ public:
     void flush(QWindow *window, const QRegion &region, const QPoint &offset) final;
     QImage::Format format() const override;
     bool scroll(const QRegion &area, int dx, int dy) override;
+    void beginPaint(const QRegion &region) override;
 
 private:
     void flushImmediate(QWindow *window);
