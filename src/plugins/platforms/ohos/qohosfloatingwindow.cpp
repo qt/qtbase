@@ -522,6 +522,7 @@ void QOhosFloatingWindow::handleSurfaceStatusChanged(const QOhosOptional<QSize> 
 void QOhosFloatingWindow::handleWindowDisplayIdChanged(QOhosDisplayInfo::JsDisplayId displayId)
 {
     setDisplayIdFromOhos(makeQOhosOptional(displayId));
+    startAsyncWaitForNodeResizeIfNeeded();
 }
 
 void QOhosFloatingWindow::handleWindowRectChanged(
