@@ -1427,14 +1427,11 @@ function(_qt_internal_android_extract_xml_file_attrs nodes_var out_attrs)
     set(${out_attrs} "${files}" PARENT_SCOPE)
 endfunction()
 
-function(_qt_internal_android_read_dependency_xml
-    target out_jars out_libs out_files out_plugin_dirs)
+function(_qt_internal_android_read_dependency_xml target out_jars out_libs)
     _qt_internal_android_dependency_xml_path("${target}" dependency_xml)
     if(NOT dependency_xml)
         set(${out_jars} "" PARENT_SCOPE)
         set(${out_libs} "" PARENT_SCOPE)
-        set(${out_files} "" PARENT_SCOPE)
-        set(${out_plugin_dirs} "" PARENT_SCOPE)
         return()
     endif()
 
@@ -1442,34 +1439,15 @@ function(_qt_internal_android_read_dependency_xml
 
     string(REGEX MATCHALL "<jar[^>]*/>" jar_nodes "${xml_contents}")
     string(REGEX MATCHALL "<lib[^>]*/>" lib_nodes "${xml_contents}")
-    string(REGEX MATCHALL "<bundled[^>]*/>" bundled_nodes "${xml_contents}")
 
     _qt_internal_android_extract_xml_file_attrs(jar_nodes parsed_jars)
     _qt_internal_android_extract_xml_file_attrs(lib_nodes parsed_libs)
 
-    set(parsed_files "")
-    set(parsed_plugin_dirs "")
-    foreach(node IN LISTS bundled_nodes)
-        if(NOT node MATCHES "file=\"([^\"]+)\"")
-            continue()
-        endif()
-        set(file "${CMAKE_MATCH_1}")
-        if(node MATCHES "type=\"plugin_dir\"")
-            list(APPEND parsed_plugin_dirs "${file}")
-        else()
-            list(APPEND parsed_files "${file}")
-        endif()
-    endforeach()
-
     list(REMOVE_DUPLICATES parsed_jars)
     list(REMOVE_DUPLICATES parsed_libs)
-    list(REMOVE_DUPLICATES parsed_files)
-    list(REMOVE_DUPLICATES parsed_plugin_dirs)
 
     set(${out_jars} "${parsed_jars}" PARENT_SCOPE)
     set(${out_libs} "${parsed_libs}" PARENT_SCOPE)
-    set(${out_files} "${parsed_files}" PARENT_SCOPE)
-    set(${out_plugin_dirs} "${parsed_plugin_dirs}" PARENT_SCOPE)
 endfunction()
 
 function(_qt_internal_android_get_module_jar_dependencies target xml_jars out_var)
@@ -1492,23 +1470,6 @@ function(_qt_internal_android_get_module_lib_dependencies target xml_libs out_va
     list(APPEND module_lib_dependencies ${xml_libs})
     list(REMOVE_DUPLICATES module_lib_dependencies)
     set(${out_var} "${module_lib_dependencies}" PARENT_SCOPE)
-endfunction()
-
-function(_qt_internal_android_get_module_file_dependencies target xml_files out_var)
-    get_target_property(module_file_dependencies "${target}"
-        QT_ANDROID_BUNDLED_FILES)
-    if(module_file_dependencies STREQUAL "module_file_dependencies-NOTFOUND")
-        set(module_file_dependencies "")
-    endif()
-    list(APPEND module_file_dependencies ${xml_files})
-    list(REMOVE_DUPLICATES module_file_dependencies)
-    set(${out_var} "${module_file_dependencies}" PARENT_SCOPE)
-endfunction()
-
-function(_qt_internal_android_get_module_plugin_dirs xml_plugin_dirs out_var)
-    set(module_plugin_directories "${xml_plugin_dirs}")
-    list(REMOVE_DUPLICATES module_plugin_directories)
-    set(${out_var} "${module_plugin_directories}" PARENT_SCOPE)
 endfunction()
 
 function(_qt_internal_android_get_clean_dependency dependency out_dependency)
@@ -1656,58 +1617,9 @@ function(_qt_internal_android_process_module_lib_deps target module libs_abi_dir
     set(${inout_copy_depends} "${copy_depends}" PARENT_SCOPE)
 endfunction()
 
-# Deploys bundled files/assets dependencies for a module
-function(_qt_internal_android_process_module_file_deps module assets_bundle_dir xml_files
-        inout_seen_destinations inout_copy_commands inout_copy_depends)
-    set(seen_destinations "${${inout_seen_destinations}}")
-    set(copy_commands "${${inout_copy_commands}}")
-    set(copy_depends "${${inout_copy_depends}}")
-
-    _qt_internal_android_get_module_file_dependencies("${module}" "${xml_files}" module_file_deps)
-    foreach(file IN LISTS module_file_deps)
-        _qt_internal_android_get_clean_dependency("${file}" file_dep)
-        _qt_internal_android_get_dependency_abs_path("${module}" "${file_dep}" module_abs)
-        if(NOT module_abs)
-            message(WARNING "The file dependency '${file_dep}' is missing for ${module}.")
-            continue()
-        endif()
-
-        _qt_internal_path_join(destination "${assets_bundle_dir}" "${file_dep}")
-        if(destination IN_LIST seen_destinations)
-            continue()
-        endif()
-
-        list(APPEND seen_destinations "${destination}")
-        if(IS_DIRECTORY "${module_abs}")
-            list(APPEND copy_commands
-                COMMAND ${CMAKE_COMMAND} -E copy_directory "${module_abs}" "${destination}")
-        else()
-            _qt_internal_android_get_deploy_command(deploy_file_cmd
-                "${module_abs}" "${destination}")
-            list(APPEND copy_commands COMMAND ${deploy_file_cmd})
-        endif()
-        list(APPEND copy_depends "${module_abs}")
-    endforeach()
-
-    set(${inout_seen_destinations} "${seen_destinations}" PARENT_SCOPE)
-    set(${inout_copy_commands} "${copy_commands}" PARENT_SCOPE)
-    set(${inout_copy_depends} "${copy_depends}" PARENT_SCOPE)
-endfunction()
-
-
-# Resolves plugin paths for a module using XML plugin_dir entries and the _qt_plugins property.
-function(_qt_internal_android_list_module_plugins module xml_plugin_dirs out_plugin_paths)
+# Resolves plugin paths for a module using the _qt_plugins property.
+function(_qt_internal_android_list_module_plugins module out_plugin_paths)
     set(result "")
-    _qt_internal_android_get_module_plugin_dirs("${xml_plugin_dirs}" module_plugin_dirs)
-    foreach(plugin_dep_raw IN LISTS module_plugin_dirs)
-        _qt_internal_android_get_clean_dependency("${plugin_dep_raw}" plugin_dep)
-        _qt_internal_android_get_dependency_abs_path("${module}" "${plugin_dep}" plugin_abs_dir)
-        if(NOT plugin_abs_dir)
-            continue()
-        endif()
-        file(GLOB plugin_files LIST_DIRECTORIES false "${plugin_abs_dir}/libplugins_*.so")
-        list(APPEND result ${plugin_files})
-    endforeach()
 
     string(TOUPPER "${CMAKE_BUILD_TYPE}" build_type_upper)
     get_target_property(qt_plugins "${module}" _qt_plugins)
@@ -1826,8 +1738,7 @@ function(_qt_internal_android_copy_qt_dependencies target deployment_dir)
             endif()
             list(APPEND processed_modules "${module}")
 
-            _qt_internal_android_read_dependency_xml("${module}"
-                xml_jars xml_libs xml_files xml_plugin_dirs)
+            _qt_internal_android_read_dependency_xml("${module}" xml_jars xml_libs)
 
             _qt_internal_android_process_module_jars("${target}" "${module}"
                 "${libs_root_dir}" "${xml_jars}"
@@ -1845,11 +1756,7 @@ function(_qt_internal_android_copy_qt_dependencies target deployment_dir)
                 "${libs_abi_dir}" "${xml_libs}"
                 seen_destinations copy_commands copy_depends)
 
-            _qt_internal_android_process_module_file_deps("${module}"
-                "${assets_bundle_dir}" "${xml_files}"
-                seen_destinations copy_commands copy_depends)
-
-            _qt_internal_android_list_module_plugins("${module}" "${xml_plugin_dirs}" new_plugins)
+            _qt_internal_android_list_module_plugins("${module}" new_plugins)
             list(APPEND plugin_queue ${new_plugins})
         endwhile()
 
