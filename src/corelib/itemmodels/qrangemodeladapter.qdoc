@@ -72,8 +72,9 @@
     range that the model operates on. The adapter API is based on the typical
     API for C++ containers and ranges, including iterators. To access
     individual rows and items, use at(), the corresponding subscript
-    \c{operator[]}, or data(). Which overloads of those functions are available
-    depends on the range for which the adapter was constructed.
+    \l{QRangeModelAdapter::operator[]()}{operator[]}, or data().
+    Which overloads of those functions are available depends on the range for
+    which the adapter was constructed.
 
     \section2 Reading item data as a QVariant
 
@@ -113,7 +114,7 @@
     an item.
 
     As expected from a C++ container API, the const overloads of at() (and the
-    corresponding subscript \c{operator[]}) provide immutable access to the
+    corresponding subscript \l{operator[]()}) provide immutable access to the
     value, while the mutable overloads return a reference object that a new
     value can be assigned to. Note that a QRangeModelAdapter operating on a
     const range behaves in that respect like a const QRangeModelAdapter. The
@@ -125,11 +126,12 @@
     \snippet qrangemodeladapter/main.cpp read-only
 
     The returned reference objects are wrappers that convert implicitly to the
-    underlying type, have a \c{get()} function to explicitly access the
-    underlying value, and an \c{operator->()} that provides direct access to
-    const member functions. However, to prevent accidental data changes that
-    would bypass the QAbstractItemModel notification protocol, those reference
-    objects prevent direct modifications of the items.
+    underlying type, have a \l{QRangeModelAdapter::DataReference::}{get()}
+    function to explicitly access the underlying value, and an
+    \l{QRangeModelAdapter::DataReference::}{operator->()} that provides direct
+    access to const member functions. However, to prevent accidental data
+    changes that would bypass the QAbstractItemModel notification protocol,
+    those reference objects prevent direct modifications of the items.
 
     \note Accessing the reference object always makes a call to the model to get
     a copy of the value. This can be expensive; for performance critical access
@@ -185,7 +187,7 @@
 
     \section2 Accessing rows in tables and trees
 
-    For tables and trees, the overloads of at() and subscript \c{operator[]}
+    For tables and trees, the overloads of at() and subscript \l{operator[]()}
     without the column parameter provide access to the entire row. The value
     returned by the const overloads will be a reference type that gives access
     to the row data. If that row holds pointers, then that reference type will
@@ -525,8 +527,8 @@
     \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::if_list<I>, QRangeModelAdapter<Range, Protocol, Model>::if_writable<I>> auto QRangeModelAdapter<Range, Protocol, Model>::at(int row)
     \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::if_list<I>, QRangeModelAdapter<Range, Protocol, Model>::if_writable<I>> auto QRangeModelAdapter<Range, Protocol, Model>::operator[](int row)
 
-    \return the value at \a row wrapped into a mutable reference to the type
-    stored in \c Range.
+    \return a \l{DataReference}{mutable reference} to the value stored in
+    \c Range.
 
 //! [data-ref]
     \note Modifications to the range will invalidate that reference. To modify
@@ -551,7 +553,8 @@
     \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::if_table<I>, QRangeModelAdapter<Range, Protocol, Model>::if_writable<I>> auto QRangeModelAdapter<Range, Protocol, Model>::at(int row)
     \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::if_table<I>, QRangeModelAdapter<Range, Protocol, Model>::if_writable<I>> auto QRangeModelAdapter<Range, Protocol, Model>::operator[](int row)
 
-    \return a mutable reference to the row at \a row, as stored in \c Range.
+    \return a \l{QRangeModelAdapter::RowReference}{reference wrapper} to the row
+    at \a row, as stored in \c Range.
 
     \constraints \c Range is a mutable table, but not a tree.
 */
@@ -560,7 +563,8 @@
     \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::if_tree<I>, QRangeModelAdapter<Range, Protocol, Model>::if_writable<I>> auto QRangeModelAdapter<Range, Protocol, Model>::at(int row)
     \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::if_tree<I>, QRangeModelAdapter<Range, Protocol, Model>::if_writable<I>> auto QRangeModelAdapter<Range, Protocol, Model>::operator[](int row)
 
-    \return a mutable wrapper holding a reference to the tree row specified by \a row.
+    \return a \l{QRangeModelAdapter::RowReference}{reference wrapper} to the row
+    at \a row, as stored in \c Range.
 
 //! [treerow-ref]
     To modify the tree row, assign a new value to it. Assigning a new tree row
@@ -595,9 +599,9 @@
     \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::unless_list<I>, QRangeModelAdapter<Range, Protocol, Model>::if_writable<I>> auto QRangeModelAdapter<Range, Protocol, Model>::operator[](int row, int column)
 \endomit
 
-    \return a mutable reference to the value stored as the item specified by
-    \a row and \a column. If the item is a multi-role item, then this will be
-    a reference to the entire item.
+    \return a \l{DataReference}{mutable reference} to the value stored as the
+    item specified by \a row and \a column. If the item is a multi-role item,
+    then this will be a reference to the entire item.
 
     \include qrangemodeladapter.qdoc data-ref
 
@@ -618,7 +622,8 @@
     \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::if_tree<I>, QRangeModelAdapter<Range, Protocol, Model>::if_writable<I>> auto QRangeModelAdapter<Range, Protocol, Model>::at(QSpan<const int> path)
     \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::if_tree<I>, QRangeModelAdapter<Range, Protocol, Model>::if_writable<I>> auto QRangeModelAdapter<Range, Protocol, Model>::operator[](QSpan<const int> path)
 
-    \return a mutable wrapper holding a reference to the tree row specified by \a path.
+    \return a \l{RowReference}{mutable wrapper} holding a reference to the tree
+    row specified by \a path.
 
     \include qrangemodeladapter.qdoc treerow-ref
 
@@ -645,10 +650,11 @@
     \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::if_tree<I>, QRangeModelAdapter<Range, Protocol, Model>::if_writable<I>> auto QRangeModelAdapter<Range, Protocol, Model>::operator[](QSpan<const int> path, int column)
 \endomit
 
-    \return a mutable reference to the value stored as the item specified by
-    \a path and \a column. If the item is a multi-role item, then this will be
-    a reference to the entire item. If the rows in the \c Range store different
-    types at different columns, then the return type will be a QVariant.
+    \return a \l{DataReference}{mutable reference} to the value stored as the
+    item specified by \a path and \a column. If the item is a multi-role item,
+    then this will be a reference to the entire item. If the rows in the \c
+    Range store different types at different columns, then the return type will
+    be a QVariant.
 
     \include qrangemodeladapter.qdoc data-ref
 
@@ -958,4 +964,352 @@
 /*!
     \fn template <typename Range, typename Protocol, typename Model> template <typename I, typename F, QRangeModelAdapter<Range, Protocol, Model>::if_canMoveItems<F>, QRangeModelAdapter<Range, Protocol, Model>::if_tree<I>> bool QRangeModelAdapter<Range, Protocol, Model>::moveColumns(QSpan<const int> source, int count, int to)
     \internal Not possible to create a tree from a row type that can rotate/splice?
+*/
+
+/*!
+    \class QRangeModelAdapter::DataReference
+    \inmodule QtCore
+    \since 6.11
+    \preliminary
+    \ingroup model-view
+    \brief DataReference is a reference wrapper around an item in a QRangeModel.
+
+    Accessing an item in the model using the non-const overloads of at(),
+    subscript \l{QRangeModelAdapter::operator[]()}{operator[]}, or
+    dereferencing a non-const \l{QRangeModelAdapter::RowIterator}{iterator},
+    returns a DataReference wrapper around the item in the model.
+
+    Assigning to that reference wrapper changes the data in the model using
+    QAbstractItemModel API.
+
+    \code
+    adapter[0] = newValue;
+    \endcode
+
+    A const version of the value itself can be accessed using get() or
+    operator->().
+
+    \code
+    QRangeModelAdapter adapter(QList<Gadget>{ ~~~ });
+    auto value = adapter[0]->value();
+    // adapter[0]->setValue(); // not allowed - would not emit dataChanged()
+    \endcode
+
+    In contrast to \c{std::reference_wrapper}, assigning one DataReference to
+    another does not rebind the reference, but sets the value using copy-
+    semantics.
+
+    \code
+    adapter[0] = adapter[1]; // items at row 0 and row 1 now have the same value
+    \endcode
+
+    \sa RowReference, ConstRowReference
+*/
+
+/*!
+    \typedef QRangeModelAdapter::DataReference::value_type
+
+    An alias for the type of the items stored in the underlying range.
+    If different columns in the model hold different types, then this is an
+    alias to QVariant.
+*/
+
+/*!
+    \typedef QRangeModelAdapter::DataReference::const_value_type
+
+    An alias for the const type of the items stored in the underlying range.
+    If different columns in the model hold different types, then this is an
+    alias to \c{const QVariant}.
+*/
+
+/*!
+    \typedef QRangeModelAdapter::DataReference::pointer
+
+    An alias for the pointer type returned by operator->().
+*/
+
+/*!
+    \fn template <typename Range, typename Protocol, typename Model> QRangeModelAdapter<Range, Protocol, Model>::DataReference::DataReference(const QModelIndex &index) noexcept
+
+    Constructs a DataReference wrapper for the item at \a index.
+*/
+
+/*!
+    \fn template <typename Range, typename Protocol, typename Model> QRangeModelAdapter<Range, Protocol, Model>::DataReference::DataReference(const DataReference &other)
+
+    Constructs a copy of \a other.
+*/
+
+/*!
+    \fn template <typename Range, typename Protocol, typename Model> QRangeModelAdapter<Range, Protocol, Model>::DataReference::DataReference(DataReference &&other)
+
+    Constructs a DataReference by moving from \a other.
+*/
+
+/*!
+    \fn template <typename Range, typename Protocol, typename Model> QDataReference &QRangeModelAdapter<Range, Protocol, Model>::DataReference::operator=(const DataReference &other)
+
+    Assigns the item value referred to by \a other to the value referenced by this wrapper.
+*/
+
+/*!
+    \fn template <typename Range, typename Protocol, typename Model> DataReference &QRangeModelAdapter<Range, Protocol, Model>::DataReference::operator=(DataReference &&other)
+
+    Moves the value reference by \a other into the value referenced by this wrapper.
+*/
+
+/*!
+    \fn template <typename Range, typename Protocol, typename Model> DataReference &QRangeModelAdapter<Range, Protocol, Model>::DataReference::operator=(const value_type &value)
+
+    Assigns \a value to the underlying model item.
+*/
+
+/*!
+    \fn template <typename Range, typename Protocol, typename Model> DataReference &QRangeModelAdapter<Range, Protocol, Model>::DataReference::operator=(value_type &&value)
+
+    Move-assigns \a value to the underlying model item.
+*/
+
+/*!
+    \fn template <typename Range, typename Protocol, typename Model> const_value_type QRangeModelAdapter<Range, Protocol, Model>::DataReference::get() const
+    \fn template <typename Range, typename Protocol, typename Model> QRangeModelAdapter<Range, Protocol, Model>::DataReference::operator const_value_type() const
+    \return the item value referred to by this DataReference as a const value.
+*/
+
+/*!
+    \fn template <typename Range, typename Protocol, typename Model> pointer QRangeModelAdapter<Range, Protocol, Model>::DataReference::operator->() const
+    \return a pointer to the value referred to by this DataReference.
+*/
+
+/*!
+    \fn template <typename Range, typename Protocol, typename Model> bool QRangeModelAdapter<Range, Protocol, Model>::DataReference::isValid() const
+    \return true if this DataReference refers to a valid model index.
+*/
+
+/*!
+    \class QRangeModelAdapter::RowReferenceBase
+    \inmodule QtCore
+    \since 6.11
+    \preliminary
+    \ingroup model-view
+    \brief RowReferenceBase provides common API for RowReference and ConstRowReference.
+
+    For models that are tables or trees, accessing a row of an adapter using
+    \l{QRangeModelAdapter::}{at()}, subscript \l{QRangeModelAdapter::operator[]()}
+    {operator[]}, or dereferencing a RowIterator, returns a RowReference or
+    ConstRowReference to the specified row.
+
+    \sa DataReference
+*/
+
+/*!
+    \fn template <typename Range, typename Protocol, typename Model> template <typename Reference, typename Adapter> template <typename I = Impl, QRangeModelAdapter<Range, Protocol, Model>::if_tree<I>> bool QRangeModelAdapter<Range, Protocol, Model>::RowReferenceBase<Reference, Adapter>::hasChildren() const
+
+    \return true if the referenced row has one or more child rows, otherwise false.
+
+    \constraints \c Range is a tree.
+*/
+
+/*!
+    \fn template <typename Range, typename Protocol, typename Model> template <typename Reference, typename Adapter> template <typename I = Impl, QRangeModelAdapter<Range, Protocol, Model>::if_tree<I>> auto QRangeModelAdapter<Range, Protocol, Model>::RowReferenceBase<Reference, Adapter>::children() const
+
+    \return a QRangeModelAdapter operating on the same range and model as this adapter, and with
+    this row as the root index.
+
+    \constraints \c Range is a tree.
+*/
+
+/*!
+    \fn template <typename Range, typename Protocol, typename Model> template <typename Reference, typename Adapter> ConstColumnIterator QRangeModelAdapter<Range, Protocol, Model>::RowReferenceBase<Reference, Adapter>::cbegin() const
+
+    \return a ConstColumnIterator pointing to the first column of this row.
+*/
+
+/*!
+    \fn template <typename Range, typename Protocol, typename Model> template <typename Reference, typename Adapter> ConstColumnIterator QRangeModelAdapter<Range, Protocol, Model>::RowReferenceBase<Reference, Adapter>::begin() const
+
+    \return a ConstColumnIterator pointing to the first column of this row.
+*/
+
+/*!
+    \fn template <typename Range, typename Protocol, typename Model> template <typename Reference, typename Adapter> ConstColumnIterator QRangeModelAdapter<Range, Protocol, Model>::RowReferenceBase<Reference, Adapter>::cend() const
+
+    \return a ConstColumnIterator pointing just after the last column of this row.
+*/
+
+/*!
+    \fn template <typename Range, typename Protocol, typename Model> template <typename Reference, typename Adapter> ConstColumnIterator QRangeModelAdapter<Range, Protocol, Model>::RowReferenceBase<Reference, Adapter>::end() const
+
+    \return a ConstColumnIterator pointing just after the last column of this row.
+*/
+
+/*!
+    \fn template <typename Range, typename Protocol, typename Model> template <typename Reference, typename Adapter> size_type QRangeModelAdapter<Range, Protocol, Model>::RowReferenceBase<Reference, Adapter>::size() const
+
+    \return the number of columns in the model.
+
+    This returns the same value for all rows in the model.
+*/
+
+/*!
+    \fn template <typename Range, typename Protocol, typename Model> template <typename Reference, typename Adapter> auto QRangeModelAdapter<Range, Protocol, Model>::RowReferenceBase<Reference, Adapter>::at(int column) const
+    \fn template <typename Range, typename Protocol, typename Model> template <typename Reference, typename Adapter> auto QRangeModelAdapter<Range, Protocol, Model>::RowReferenceBase<Reference, Adapter>::operator[](int column) const
+
+    \return a reference wrapper to the item at \a column of this row.
+
+    Depending on the data structure the adapter operates on, the returned value
+    is a const reference wrapper, a pointer to a const object, or a QVariant.
+*/
+
+/*!
+    \class QRangeModelAdapter::RowReference
+    \inmodule QtCore
+    \since 6.11
+    \preliminary
+    \ingroup model-view
+    \brief RowReference is a reference wrapper around a row in a QRangeModel.
+
+    For ranges that are tables or trees, accessing a row of a QRangeModelAdapter
+    using the non-const overloads of \l{QRangeModelAdapter::}{at()} or subscript
+    \l{QRangeModelAdapter::operator[]()}{operator[]}, or by dereferencing a
+    RowIterator, returns a RowReference for the specified row.
+
+    \sa ConstRowReference, DataReference
+*/
+
+/*!
+    \typedef QRangeModelAdapter::RowReference::row_type
+
+    An alias for the type of the rows in the underlying range.
+*/
+
+/*!
+    \fn template <typename Range, typename Protocol, typename Model> RowReference &QRangeModelAdapter<Range, Protocol, Model>::RowReference::operator=(const RowReference &other)
+    \fn template <typename Range, typename Protocol, typename Model> RowReference &QRangeModelAdapter<Range, Protocol, Model>::RowReference::operator=(const ConstRowReference &other)
+
+    Assigns the row referenced by \a other to the row referenced by this, emitting
+    dataChanged for all items in the row.
+
+//! [rowref-assign]
+    If the model is a tree, and the referenced row has children, then those children
+    are removed from the model. If the row referenced by \a other has children,
+    then those children are inserted into the model.
+//! [rowref-assign]
+*/
+
+/*!
+    \fn template <typename Range, typename Protocol, typename Model> RowReference &QRangeModelAdapter<Range, Protocol, Model>::RowReference::operator=(const row_type &other)
+    \fn template <typename Range, typename Protocol, typename Model> RowReference &QRangeModelAdapter<Range, Protocol, Model>::RowReference::operator=(row_type &&other)
+
+    Assigns the row \a other to the row referenced by this, emitting dataChanged
+    for all items in the row.
+
+    \include qrangemodeladapter.qdoc rowref-assign
+*/
+
+/*!
+    \fn template <typename Range, typename Protocol, typename Model> QRangeModelAdapter<Range, Protocol, Model>::RowReference::operator ConstRowReference() const
+
+    \return a ConstRowReference referencing the same row as this.
+*/
+
+/*!
+    \fn template <typename Range, typename Protocol, typename Model> template <typename I = Impl, QRangeModelAdapter<Range, Protocol, Model>::if_tree<I>> auto QRangeModelAdapter<Range, Protocol, Model>::RowReference::children()
+
+    \return a QRangeModelAdapter operating on the same range and model as this adapter, and with
+    this row as the root index.
+
+    \constraints \c Range is a tree.
+*/
+
+/*!
+    \fn template <typename Range, typename Protocol, typename Model> ColumnIterator QRangeModelAdapter<Range, Protocol, Model>::RowReference::begin()
+
+    \return a ColumnIterator pointing to the first column of this row.
+*/
+
+/*!
+    \fn template <typename Range, typename Protocol, typename Model> ColumnIterator QRangeModelAdapter<Range, Protocol, Model>::RowReference::end()
+
+    \return a ColumnIterator pointing just after the last column of this row.
+*/
+
+/*!
+    \fn template <typename Range, typename Protocol, typename Model> auto QRangeModelAdapter<Range, Protocol, Model>::RowReference::at(int column)
+    \fn template <typename Range, typename Protocol, typename Model> auto QRangeModelAdapter<Range, Protocol, Model>::RowReference::operator[](int column)
+
+    \return a reference wrapper to the item at \a column of this row.
+*/
+
+
+/*!
+    \class QRangeModelAdapter::ConstRowReference
+    \inmodule QtCore
+    \since 6.11
+    \preliminary
+    \ingroup model-view
+    \brief ConstRowReference is a reference wrapper around a const row in a QRangeModel.
+
+    For ranges that are tables or trees, accessing a row of a QRangeModelAdapter
+    using the const overloads of \l{QRangeModelAdapter::}{at()} or subscript
+    \l{QRangeModelAdapter::operator[]()}{operator[]}, or by dereferencing a
+    ConstRowIterator, returns a ConstRowReference for the specified row.
+
+    \sa RowReference, DataReference
+*/
+
+/*!
+    \class QRangeModelAdapter::RowIterator
+    \inmodule QtCore
+    \since 6.11
+    \preliminary
+    \ingroup model-view
+    \brief Provides an STL-style non-const iterator over the rows of a model.
+
+    The iterator models \c{std::random_access_iterator}. If the model is a list,
+    then dereferencing the iterator returns a DataReference wrapper for the
+    pointed-to item in the model.
+
+    For tables and trees, dereferencing the iterator returns a RowReference for
+    the pointed-to row.
+*/
+
+/*!
+    \class QRangeModelAdapter::ConstRowIterator
+    \inmodule QtCore
+    \since 6.11
+    \preliminary
+    \ingroup model-view
+    \brief Provides an STL-style const iterator over the rows of a model.
+
+    The iterator models \c{std::random_access_iterator}. If the model is a list,
+    then dereferencing the iterator returns the pointed-to item in the model.
+
+    For tables and trees, dereferencing the iterator returns a ConstRowReference
+    for the pointed-to row.
+*/
+
+/*!
+    \class QRangeModelAdapter::ColumnIterator
+    \inmodule QtCore
+    \since 6.11
+    \preliminary
+    \ingroup model-view
+    \brief Provides an STL-style non-const iterator over the columns in a model row.
+
+    The iterator models \c{std::random_access_iterator}. Dereferencing the iterator
+    returns a DataReference wrapper for the value at the pointed-to item in
+    the model.
+*/
+
+/*!
+    \class QRangeModelAdapter::ConstColumnIterator
+    \inmodule QtCore
+    \since 6.11
+    \preliminary
+    \ingroup model-view
+    \brief Provides an STL-style non-const iterator over the columns in a model row.
+
+    The iterator models \c{std::random_access_iterator}. Dereferencing the iterator
+    returns the const value at the pointed-to item in the model.
 */

@@ -147,9 +147,15 @@ class QT_TECH_PREVIEW_API QRangeModelAdapter
 public:
     struct DataReference
     {
+#ifdef Q_QDOC
+        using value_type = int;
+        using const_value_type = const int;
+        using pointer = void *;
+#else
         using value_type = data_type;
         using const_value_type = const_data_type;
         using pointer = QRangeModelDetails::data_pointer_t<const_value_type>;
+#endif
 
         explicit DataReference(const QModelIndex &index) noexcept
             : m_index(index)
@@ -646,6 +652,9 @@ public:
         using const_iterator = typename Base::const_iterator;
         using size_type = typename Base::size_type;
         using difference_type = typename Base::difference_type;
+#ifdef Q_QDOC
+        using row_type = int;
+#endif
         using const_row_type = typename Base::const_row_type;
 
         using Base::Base;
