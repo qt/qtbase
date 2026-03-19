@@ -53,8 +53,6 @@ void QOhosFloatingWindow::setGeometry(const QRect &rect)
         return;
     }
 
-    auto oldWindowFrameGeometry = windowFrameGeometry();
-
     auto *currentScreen = QOhosPlatformWindow::screen();
     QOhosPlatformWindow::setGeometry(rect);
 
@@ -64,10 +62,8 @@ void QOhosFloatingWindow::setGeometry(const QRect &rect)
 
     if (view != nullptr) {
         auto frameGeometry = rect.marginsAdded(frameMargins());
-        if (oldWindowFrameGeometry.topLeft() != frameGeometry.topLeft())
-            view->setPosition(frameGeometry.topLeft());
-        if (oldWindowFrameGeometry.size() != frameGeometry.size())
-            view->setSize(frameGeometry.size());
+        view->setPosition(frameGeometry.topLeft());
+        view->setSize(frameGeometry.size());
     }
 }
 
