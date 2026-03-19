@@ -242,12 +242,12 @@ function(qt_internal_add_sbom_summary_info)
 
         qt_internal_is_sbom_option_enabled(QT_SBOM_GENERATE_CYDX_V1_6 value)
         qt_internal_get_sbom_option_required_suffix(QT_SBOM_REQUIRE_GENERATE_CYDX_V1_6 suffix)
-        qt_configure_add_summary_entry(ARGS "Generate CyloneDX v1.6"
+        qt_configure_add_summary_entry(ARGS "Generate CycloneDX v1.6"
             TYPE "message" MESSAGE "${value}${suffix}")
 
         qt_internal_is_sbom_option_enabled(QT_SBOM_VERIFY_CYDX_V1_6 value)
         qt_internal_get_sbom_option_required_suffix(QT_SBOM_REQUIRE_VERIFY_CYDX_V1_6 suffix)
-        qt_configure_add_summary_entry(ARGS "Verify   CyloneDX v1.6"
+        qt_configure_add_summary_entry(ARGS "Verify   CycloneDX v1.6"
             TYPE "message" MESSAGE "${value}${suffix}")
 
         # Python interpreter info.
