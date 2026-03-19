@@ -166,7 +166,7 @@ endfunction()
 # DEPS_FOUND_FOR_$OP_KEY var.
 function(_qt_internal_sbom_verify_if_sbom_op_dependencies_are_found)
     set(opt_args
-        REQUIRED
+        FINAL_ATTEMPT
         PYTHON_FOUND
         DEP_FOUND
         EVERYTHING_FOUND
@@ -176,17 +176,20 @@ function(_qt_internal_sbom_verify_if_sbom_op_dependencies_are_found)
         PYTHON_PATH
         PYTHON_VERSION
         DEP_PACKAGE_NAME
+        PYTHON_FIND_OUTPUT
         DEP_FIND_OUTPUT
+        ATTEMPT_MESSAGE
+        ATTEMPT_RESULT_MESSAGE
         OP_KEY
+        ATTEMPT_LOG_OUT_VAR
+        ATTEMPT_COUNT_OUT_VAR
     )
-    set(multi_args
-        PYTHON_COMMON_ARGS
-    )
+    set(multi_args "")
     cmake_parse_arguments(PARSE_ARGV 0 arg "${opt_args}" "${single_args}" "${multi_args}")
 
     if(arg_EVERYTHING_FOUND)
-        message(DEBUG "Python Dependencies found. "
-            "Using Python '${arg_PYTHON_PATH}' for running SBOM op '${arg_OP_KEY}'.")
+        message(DEBUG "Python and dependencies found for SBOM operation '${arg_OP_KEY}'. "
+            "Using Python '${arg_PYTHON_PATH}'")
 
         if(NOT QT_INTERNAL_SBOM_PYTHON_EXECUTABLE)
             message(DEBUG "Setting QT_INTERNAL_SBOM_PYTHON_EXECUTABLE to ${arg_PYTHON_PATH}")
@@ -202,39 +205,109 @@ function(_qt_internal_sbom_verify_if_sbom_op_dependencies_are_found)
         return()
     endif()
 
-    if(arg_REQUIRED)
-        set(message_type "FATAL_ERROR")
-    else()
-        set(message_type "DEBUG")
-    endif()
-
     if(NOT arg_PYTHON_FOUND)
-        # Look for python one more time, this time without QUIET, to show an error why it
-        # wasn't found.
-        if(arg_REQUIRED)
-            _qt_internal_sbom_find_python_helper(${arg_PYTHON_COMMON_ARGS}
-                OUT_VAR_PYTHON_PATH unused_python
-                OUT_VAR_PYTHON_FOUND unused_found
-            )
-        endif()
-        message(${message_type}
-            "Python ${arg_REQUIRED_VERSION} for running SBOM op '${arg_OP_KEY}' NOT found.")
+        string(CONCAT not_found_message
+            "Python ${arg_REQUIRED_VERSION} for running SBOM operation '${arg_OP_KEY}' NOT found.\n"
+            "Suggestion: In case if Python is installed, but not in a standard location, specify "
+            "it using -DQT_SBOM_PYTHON_INTERP=<python-executable-path>\n"
+        )
     elseif(NOT arg_DEP_FOUND)
-
-        set(extra_install_message "")
-        if(message_type STREQUAL "FATAL_ERROR")
-            set(extra_install_message
-                "Install it using pip install '${arg_DEP_PACKAGE_NAME}' \n")
-        endif()
-        message(${message_type}
-            "Python dependency for running SBOM op '${arg_OP_KEY}' NOT found:\n"
-            ${extra_install_message}
-            "Details:\n"
-            "Python interpreter: ${arg_PYTHON_PATH}\n"
-            "Error output: \n${arg_DEP_FIND_OUTPUT}\n\n"
+        string(CONCAT not_found_message
+            "Python dependency for running SBOM operation '${arg_OP_KEY}' NOT found.\n"
+            "Suggestion: Install it using pip install '${arg_DEP_PACKAGE_NAME}'\n"
         )
     endif()
+
+    set(dep_find_contents "")
+    if(arg_DEP_FIND_OUTPUT)
+        string(CONCAT dep_find_contents
+            "Dependency find log begins.\n${arg_DEP_FIND_OUTPUT}\n"
+            "Dependency find log ends.\n"
+        )
+    endif()
+
+    string(CONCAT current_attempt_message
+        "${arg_ATTEMPT_MESSAGE}\n"
+        "Result: ${not_found_message}\n"
+        "Python find log begins.\n${arg_PYTHON_FIND_OUTPUT}\n"
+        "Python find log ends.\n"
+        "${dep_find_contents}"
+        "${arg_ATTEMPT_RESULT_MESSAGE}\n\n"
+    )
+
+    message(DEBUG "${current_attempt_message}")
+
+    if(arg_FINAL_ATTEMPT)
+        set(previous_attempts_contents "")
+        if(${arg_ATTEMPT_LOG_OUT_VAR})
+            string(CONCAT previous_attempts_contents
+                "Previous attempts log below.\n"
+                "${${arg_ATTEMPT_LOG_OUT_VAR}}"
+            )
+        endif()
+        string(CONCAT final_attempt_message
+            "${current_attempt_message}\n"
+            "${previous_attempts_contents}"
+        )
+        message(FATAL_ERROR "${final_attempt_message}")
+    endif()
+
+    # Collect all previous attempt messages, to show them at the very end if not found.
+    if(arg_ATTEMPT_LOG_OUT_VAR)
+        set(attempt_count "${${arg_ATTEMPT_COUNT_OUT_VAR}}")
+        math(EXPR attempt_count "${attempt_count} + 1")
+        set(${arg_ATTEMPT_COUNT_OUT_VAR} "${attempt_count}" PARENT_SCOPE)
+
+        string(CONCAT attempt_log_content
+            "${${arg_ATTEMPT_LOG_OUT_VAR}}\n"
+            "Attempt ${attempt_count}:\n"
+            "${current_attempt_message}")
+        set(${arg_ATTEMPT_LOG_OUT_VAR} "${attempt_log_content}" PARENT_SCOPE)
+    endif()
 endfunction()
+
+# Helper macro to output a debug or error message when python or one of its dependencies are not
+# found. Expects the caller to set all of the vars.
+# Meant to reduce the line noise due to the repeated calls.
+macro(_qt_internal_sbom_verify_if_sbom_op_dependencies_are_found_lambda)
+    # Assemble args to show what wasn't found.
+    if(python_found)
+        list(APPEND verify_args PYTHON_FOUND)
+    endif()
+    if(dep_found)
+        list(APPEND verify_args DEP_FOUND)
+    endif()
+    if(everything_found)
+        list(APPEND verify_args EVERYTHING_FOUND)
+    endif()
+    if(python_path)
+        list(APPEND verify_args PYTHON_PATH "${python_path}")
+    endif()
+    if(python_version)
+        list(APPEND verify_args PYTHON_VERSION "${python_version}")
+    endif()
+    if(python_find_output)
+        list(APPEND verify_args PYTHON_FIND_OUTPUT "${python_find_output}")
+    endif()
+    if(dep_find_output)
+        list(APPEND verify_args DEP_FIND_OUTPUT "${dep_find_output}")
+    endif()
+    if(attempt_message)
+        list(APPEND verify_args ATTEMPT_MESSAGE "${attempt_message}")
+    endif()
+    if(attempt_result_message)
+        list(APPEND verify_args ATTEMPT_RESULT_MESSAGE "${attempt_result_message}")
+    endif()
+
+    _qt_internal_sbom_verify_if_sbom_op_dependencies_are_found(
+        ${verify_args}
+        REQUIRED_VERSION "${required_version}"
+        OP_KEY "${arg_OP_KEY}"
+        DEP_PACKAGE_NAME "${dep_package_name}"
+        ATTEMPT_LOG_OUT_VAR attempt_log
+        ATTEMPT_COUNT_OUT_VAR attempt_count
+    )
+endmacro()
 
 # Helper to find a python interpreter and a specific python dependency, e.g. to be able to generate
 # a SPDX JSON SBOM, or run post-installation steps like NTIA verification.
@@ -244,6 +317,8 @@ endfunction()
 # avoid conflicts with any other found python interpreter.
 # Also caches the python version found in QT_INTERNAL_SBOM_PYTHON_VERSION, so we can show it
 # in the configure summary.
+# Attempts to find a suitable Python interpreter with multiple searching approaches, due to platform
+# specifics and quirks in how the FindPython module behaves.
 function(_qt_internal_sbom_find_and_handle_sbom_op_dependencies)
     set(opt_args
         REQUIRED
@@ -298,86 +373,151 @@ function(_qt_internal_sbom_find_and_handle_sbom_op_dependencies)
 
     set(everything_found FALSE)
 
-    # On macOS FindPython prefers looking in the system framework location, but that usually would
+    # Used by the macro calls below below to collect debug find output across attempts.
+    set(attempt_log "")
+    set(attempt_count 0)
+
+    # Look in QT_SBOM_PYTHON_INTERP if it's set.
+    # If QT_SBOM_FORCE_USE_PYTHON_INTERP is set, attempt to use it without preforming a search.
+    _qt_internal_sbom_get_sbom_python_interp_path(
+        OUT_VAR_FOUND sbom_python_interp_found
+        OUT_VAR_PYTHON_PATH sbom_python_interp_path
+        OUT_VAR_PYTHON_DIR_PATH sbom_python_interp_dir
+    )
+    if(sbom_python_interp_found)
+        set(extra_python_args
+            QUIET
+        )
+        # It's possible that sbom_python_interp_path can't be computed, so we need to check that
+        # it's not empty.
+        if(QT_SBOM_FORCE_USE_PYTHON_INTERP AND sbom_python_interp_path)
+            set(using_message "${sbom_python_interp_path}")
+            list(APPEND extra_python_args
+                FORCE_SET_INTERPRETER_PATH
+                INTERPRETER_PATH "${sbom_python_interp_path}"
+            )
+        else()
+            set(using_message "${sbom_python_interp_dir}")
+            list(APPEND extra_python_args
+                SEARCH_IN_INTERPRETER_DIR_PATH
+                INTERPRETER_DIR_PATH "${sbom_python_interp_dir}"
+            )
+        endif()
+        string(CONCAT attempt_message
+            "Looking for Python and dependencies for operation '${arg_OP_KEY}'. "
+            "Searching using QT_SBOM_PYTHON_INTERP: '${using_message}'.")
+        _qt_internal_sbom_find_python_and_dependency_helper_lambda()
+
+        set(attempt_result_message "")
+        if(NOT everything_found)
+            string(CONCAT attempt_result_message
+                "SBOM Python search using QT_SBOM_PYTHON_INTERP did "
+                "not find all dependencies for operation '${arg_OP_KEY}'. Search continues."
+            )
+        endif()
+
+        set(verify_args "")
+        _qt_internal_sbom_verify_if_sbom_op_dependencies_are_found_lambda()
+    endif()
+
+    # Look into any custom provided root dir, that was not set via QT_SBOM_PYTHON_INTERP.
+    _qt_internal_sbom_get_python_root_dir(OUT_VAR_PYTHON_ROOT_DIR_PATH python_root_dir)
+    if(NOT everything_found AND python_root_dir)
+        set(extra_python_args
+            QUIET
+            SEARCH_IN_ROOT_DIR
+        )
+        string(CONCAT attempt_message
+            "Looking for Python and dependencies for operation '${arg_OP_KEY}'. "
+            "Searching using Python3_ROOT_DIR: '${python_root_dir}'.")
+        _qt_internal_sbom_find_python_and_dependency_helper_lambda()
+
+        set(attempt_result_message "")
+        if(NOT everything_found)
+            string(CONCAT attempt_result_message
+                "SBOM Python search using Python3_ROOT_DIR did not find all dependencies "
+                "for operation '${arg_OP_KEY}'. Search continues."
+            )
+        endif()
+
+        set(verify_args "")
+        _qt_internal_sbom_verify_if_sbom_op_dependencies_are_found_lambda()
+    endif()
+
+    # On macOS, FindPython prefers looking in the system framework location, but that usually would
     # not have the required dependencies. So we first look in it, and then fallback to any other
     # non-framework python found.
-    if(CMAKE_HOST_APPLE)
-        set(extra_python_args SEARCH_IN_FRAMEWORKS QUIET)
-        message(DEBUG "Looking for Python and dependencies for op '${arg_OP_KEY}' "
-            "in the system framework location first.")
+    if(NOT everything_found AND CMAKE_HOST_APPLE)
+        set(extra_python_args
+            QUIET
+            SEARCH_IN_FRAMEWORKS
+        )
+        string(CONCAT attempt_message
+            "Looking for Python and dependencies for operation '${arg_OP_KEY}'. "
+            "Searching in the macOS framework locations.")
         _qt_internal_sbom_find_python_and_dependency_helper_lambda()
+
+        set(attempt_result_message "")
         if(NOT everything_found)
-            # Assemble args to show what wasn't found.
-            set(verify_args "")
-            if(python_found)
-                list(APPEND verify_args PYTHON_FOUND)
-            endif()
-            if(dep_found)
-                list(APPEND verify_args DEP_FOUND)
-            endif()
-            if(everything_found)
-                list(APPEND verify_args EVERYTHING_FOUND)
-            endif()
-            if(python_path)
-                list(APPEND verify_args PYTHON_PATH "${python_path}")
-            endif()
-            if(python_version)
-                list(APPEND verify_args PYTHON_VERSION "${python_version}")
-            endif()
-            if(dep_find_output)
-                list(APPEND verify_args DEP_FIND_OUTPUT "${dep_find_output}")
-            endif()
-
-            _qt_internal_sbom_verify_if_sbom_op_dependencies_are_found(
-                ${verify_args}
-                REQUIRED_VERSION "${required_version}"
-                OP_KEY "${arg_OP_KEY}"
-                DEP_PACKAGE_NAME "${dep_package_name}"
-                PYTHON_COMMON_ARGS ${python_common_args}
+            string(CONCAT attempt_result_message
+                "macOS-specific SBOM Python search did not find all dependencies "
+                "for operation '${arg_OP_KEY}'. Search continues."
             )
-
-            message(DEBUG "Initial Apple-specific SBOM Python search did not find all dependencies "
-                "for op ${arg_OP_KEY}, looking again outside of the system framework location.")
         endif()
+
+        set(verify_args "")
+        _qt_internal_sbom_verify_if_sbom_op_dependencies_are_found_lambda()
     endif()
 
-    # Looking again if something wasn't found, or a search was not done yet.
-    if(NOT everything_found)
-        set(extra_python_args QUIET)
-        message(DEBUG "Looking for Python and dependencies for op '${arg_OP_KEY}'.")
+    # On Windows, also look in the registry first.
+    if(NOT everything_found AND CMAKE_HOST_WIN32)
+        set(extra_python_args
+            QUIET
+            SEARCH_IN_REGISTRY
+        )
+        string(CONCAT attempt_message
+            "Looking for Python and dependencies for operation '${arg_OP_KEY}'. Searching in the "
+            " Windows registry.")
         _qt_internal_sbom_find_python_and_dependency_helper_lambda()
+
+        set(attempt_result_message "")
+        if(NOT everything_found)
+            string(CONCAT attempt_result_message
+                "Windows-specific SBOM Python search did not find all dependencies "
+                "for operation '${arg_OP_KEY}'. Search continues."
+            )
+        endif()
+
+        set(verify_args "")
+        _qt_internal_sbom_verify_if_sbom_op_dependencies_are_found_lambda()
     endif()
 
-    # Assemble args to show what was or wasn't found.
-    set(verify_args "")
-    if(arg_REQUIRED)
-        list(APPEND verify_args REQUIRED)
+    # Do a final lookup without all the approaches above.
+    if(NOT everything_found)
+        set(extra_python_args
+            QUIET
+        )
+        string(CONCAT attempt_message
+            "Looking for Python and dependencies for operation "
+            "'${arg_OP_KEY}'. Searching default locations as per FindPython3 docs.")
+        _qt_internal_sbom_find_python_and_dependency_helper_lambda()
+
+        set(attempt_result_message "")
+        if(NOT everything_found)
+            string(CONCAT attempt_result_message
+                "SBOM Python search in default locations did not find all dependencies "
+                "for operation '${arg_OP_KEY}'. Search concluded."
+            )
+        endif()
+
+        set(verify_args "")
+        # If REQUIRED was passed, and we are at the final attempt, in case we didn't find the
+        # deps, we will error out.
+        if(arg_REQUIRED)
+            list(APPEND verify_args FINAL_ATTEMPT)
+        endif()
+        _qt_internal_sbom_verify_if_sbom_op_dependencies_are_found_lambda()
     endif()
-    if(python_found)
-        list(APPEND verify_args PYTHON_FOUND)
-    endif()
-    if(dep_found)
-        list(APPEND verify_args DEP_FOUND)
-    endif()
-    if(everything_found)
-        list(APPEND verify_args EVERYTHING_FOUND)
-    endif()
-    if(python_path)
-        list(APPEND verify_args PYTHON_PATH "${python_path}")
-    endif()
-    if(python_version)
-        list(APPEND verify_args PYTHON_VERSION "${python_version}")
-    endif()
-    if(dep_find_output)
-        list(APPEND verify_args DEP_FIND_OUTPUT "${dep_find_output}")
-    endif()
-    _qt_internal_sbom_verify_if_sbom_op_dependencies_are_found(
-        ${verify_args}
-        REQUIRED_VERSION "${required_version}"
-        OP_KEY "${arg_OP_KEY}"
-        DEP_PACKAGE_NAME "${dep_package_name}"
-        PYTHON_COMMON_ARGS ${python_common_args}
-    )
 
     if(arg_OUT_VAR_DEPS_FOUND)
         set(${arg_OUT_VAR_DEPS_FOUND} "${QT_INTERNAL_SBOM_DEPS_FOUND_FOR_${arg_OP_KEY}}"
