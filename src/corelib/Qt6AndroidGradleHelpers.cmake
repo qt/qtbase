@@ -2180,7 +2180,6 @@ function(_qt_internal_android_parse_qmlimportscanner_output
         set(skip_module FALSE)
         _qt_internal_android_json_get_string("${qml_scan}" ${mod_index} plugin plugin_name)
         if(plugin_name)
-            _qt_internal_android_json_get_bool("${qml_scan}" ${mod_index} pluginIsOptional optional)
             _qt_internal_android_json_get_string("${qml_scan}" ${mod_index} linkTarget link_target)
             if(TARGET "${link_target}")
                 get_property(plugin_target TARGET "${link_target}"
@@ -2193,8 +2192,10 @@ function(_qt_internal_android_parse_qmlimportscanner_output
                     set(plugin_target "${link_target}")
                 endif()
                 list(APPEND qml_plugins "${plugin_target}")
-            elseif(NOT optional)
-                if(NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_BUILDING_QT)
+            else()
+                _qt_internal_android_json_get_bool("${qml_scan}" ${mod_index}
+                    pluginIsOptional optional)
+                if(NOT optional AND NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_BUILDING_QT)
                     message(WARNING "QML plugin '${plugin_name}' not found for ${target}.")
                     set(skip_module TRUE)
                 endif()
