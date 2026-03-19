@@ -15,6 +15,7 @@ macro(_qt_internal_sbom_find_python_and_dependency_helper_lambda)
         OUT_VAR_PYTHON_VERSION python_version
         OUT_VAR_DEP_FOUND dep_found
         OUT_VAR_PYTHON_AND_DEP_FOUND everything_found
+        OUT_VAR_PYTHON_FIND_OUTPUT python_find_output
         OUT_VAR_DEP_FIND_OUTPUT dep_find_output
     )
 endmacro()
@@ -31,6 +32,7 @@ function(_qt_internal_sbom_find_python_and_dependency_helper)
         OUT_VAR_PYTHON_VERSION
         OUT_VAR_DEP_FOUND
         OUT_VAR_PYTHON_AND_DEP_FOUND
+        OUT_VAR_PYTHON_FIND_OUTPUT
         OUT_VAR_DEP_FIND_OUTPUT
     )
     set(multi_args
@@ -68,6 +70,7 @@ function(_qt_internal_sbom_find_python_and_dependency_helper)
         OUT_VAR_PYTHON_PATH python_path_inner
         OUT_VAR_PYTHON_FOUND python_found_inner
         OUT_VAR_PYTHON_VERSION python_version_inner
+        OUT_VAR_PYTHON_FIND_OUTPUT python_find_output_inner
     )
 
     if(python_found_inner AND python_path_inner)
@@ -90,14 +93,14 @@ function(_qt_internal_sbom_find_python_and_dependency_helper)
     endif()
     set(${arg_OUT_VAR_DEP_FOUND} "${dep_found_inner}" PARENT_SCOPE)
     set(${arg_OUT_VAR_PYTHON_AND_DEP_FOUND} "${everything_found_inner}" PARENT_SCOPE)
+    set(${arg_OUT_VAR_PYTHON_FIND_OUTPUT} "${python_find_output_inner}" PARENT_SCOPE)
     set(${arg_OUT_VAR_DEP_FIND_OUTPUT} "${dep_find_output_inner}" PARENT_SCOPE)
 endfunction()
 
-# Tries to find the python intrepreter, given the QT_SBOM_PYTHON_INTERP path hint, as well as
-# other options.
+# Tries to find a python intrepreter for SBOM handling.
 # Ignores any previously found python.
 # Returns the python interpreter path and whether it was successfully found, along with the version
-# found.
+# found and some debug output when not found.
 #
 # This is intentionally a function, and not a macro, to prevent overriding the Python3_EXECUTABLE
 # non-cache variable in a global scope in case if a different python is found and used for a
@@ -110,13 +113,20 @@ endfunction()
 function(_qt_internal_sbom_find_python_helper)
     set(opt_args
         SEARCH_IN_FRAMEWORKS
+        SEARCH_IN_REGISTRY
+        SEARCH_IN_ROOT_DIR
+        SEARCH_IN_INTERPRETER_DIR_PATH
+        FORCE_SET_INTERPRETER_PATH
         QUIET
     )
     set(single_args
         VERSION
+        INTERPRETER_PATH
+        INTERPRETER_DIR_PATH
         OUT_VAR_PYTHON_PATH
         OUT_VAR_PYTHON_FOUND
         OUT_VAR_PYTHON_VERSION
+        OUT_VAR_PYTHON_FIND_OUTPUT
     )
     set(multi_args "")
     cmake_parse_arguments(PARSE_ARGV 0 arg "${opt_args}" "${single_args}" "${multi_args}")
@@ -130,9 +140,59 @@ function(_qt_internal_sbom_find_python_helper)
         message(FATAL_ERROR "OUT_VAR_PYTHON_FOUND var is required")
     endif()
 
+    set(find_output "Search options:")
+
     # Allow disabling looking for a python interpreter shipped as part of a macOS system framework.
     if(NOT arg_SEARCH_IN_FRAMEWORKS)
         set(Python3_FIND_FRAMEWORK NEVER)
+        list(APPEND find_output "Will NOT search in macOS framework locations.")
+    else()
+        list(APPEND find_output "Will search in macOS framework locations.")
+    endif()
+
+    if(NOT arg_SEARCH_IN_REGISTRY)
+        set(Python3_FIND_REGISTRY NEVER)
+        list(APPEND find_output "Will NOT search in Windows registry.")
+    else()
+        list(APPEND find_output "Will search in Windows registry.")
+    endif()
+
+    # Remove the root dir if not requested to search in it.
+    if(NOT arg_SEARCH_IN_ROOT_DIR)
+        unset(Python3_ROOT_DIR)
+
+        # Temporarily also unset the env var.
+        set(python_root_dir_env_value "$ENV{Python3_ROOT_DIR}")
+        if(python_root_dir_env_value AND NOT QT_SBOM_NO_PYTHON_ROOT_DIR_ENV_BACKUP)
+            set(python_root_dir_env_backup "$ENV{Python3_ROOT_DIR}")
+            unset(ENV{Python3_ROOT_DIR})
+        endif()
+
+        list(APPEND find_output "Will NOT search in Python3_ROOT_DIR.")
+    else()
+        _qt_internal_sbom_get_python_root_dir(OUT_VAR_PYTHON_ROOT_DIR_PATH Python3_ROOT_DIR)
+        list(APPEND find_output "Will search in Python3_ROOT_DIR: '${Python3_ROOT_DIR}'.")
+    endif()
+
+    set(force_python_interpreter_path "")
+    if(arg_FORCE_SET_INTERPRETER_PATH AND arg_INTERPRETER_PATH)
+        set(force_python_interpreter_path "${arg_INTERPRETER_PATH}")
+
+        list(APPEND find_output
+            "Will force set Python3_EXECUTABLE to provided INTERPRETER_PATH: "
+            "'${arg_INTERPRETER_PATH}'.")
+    else()
+        list(APPEND find_output "Will NOT force set Python3_EXECUTABLE to INTERPRETER_PATH.")
+    endif()
+
+    if(arg_SEARCH_IN_INTERPRETER_DIR_PATH AND arg_INTERPRETER_DIR_PATH)
+        # Python3_ROOT_DIR expects a directory, not a path.
+        set(Python3_ROOT_DIR "${arg_INTERPRETER_DIR_PATH}")
+
+        list(APPEND find_output
+            "Will search in provided INTERPRETER_DIR_PATH: '${arg_INTERPRETER_DIR_PATH}'.")
+    else()
+        list(APPEND find_output "Will NOT search in INTERPRETER_DIR_PATH.")
     endif()
 
     set(required_version "")
@@ -141,29 +201,155 @@ function(_qt_internal_sbom_find_python_helper)
     endif()
 
     set(find_quiet "")
-    if(arg_QUIET)
+    if(arg_QUIET AND NOT QT_INTERNAL_SBOM_NO_FIND_PYTHON_QUIET)
         set(find_quiet "QUIET")
     endif()
 
-    # Locally reset any executable that was possibly already found.
-    # We do this to ensure we always re-do the lookup/
-    # This needs to be set to an empty string, to override any cache variable
-    set(Python3_EXECUTABLE "")
+    # When performing a search, locally reset any executable that was possibly already found.
+    # We do this to ensure we always re-do the lookup.
+    # This needs to be set to an empty string, to override any cache variable.
+    # When FORCE_SET_INTERPRETER_PATH is used, set the executable to the given path.
+    if(arg_FORCE_SET_INTERPRETER_PATH
+            AND force_python_interpreter_path
+            AND EXISTS "${force_python_interpreter_path}"
+        )
+        set(Python3_EXECUTABLE "${force_python_interpreter_path}")
+    else()
+        set(Python3_EXECUTABLE "")
+    endif()
 
     # This needs to be unset, because the Python module checks whether the variable is defined, not
     # whether it is empty.
     unset(_Python3_EXECUTABLE)
 
-    if(QT_SBOM_PYTHON_INTERP)
-        set(Python3_ROOT_DIR ${QT_SBOM_PYTHON_INTERP})
+    find_package(Python3 ${required_version} ${find_quiet} COMPONENTS Interpreter)
+
+    if(python_root_dir_env_backup AND NOT QT_SBOM_NO_PYTHON_ROOT_DIR_ENV_BACKUP)
+        set(ENV{Python3_ROOT_DIR} "${python_root_dir_env_backup}")
     endif()
 
-    find_package(Python3 ${required_version} ${find_quiet} COMPONENTS Interpreter)
+    if(Python3_Interpreter_FOUND)
+        list(APPEND find_output
+            "Python interpreter found: '${Python3_EXECUTABLE} (version ${Python3_VERSION})'.")
+    else()
+        list(APPEND find_output "Python interpreter NOT found.")
+    endif()
+
+    list(JOIN find_output "\n" find_output_joined)
 
     set(${arg_OUT_VAR_PYTHON_PATH} "${Python3_EXECUTABLE}" PARENT_SCOPE)
     set(${arg_OUT_VAR_PYTHON_FOUND} "${Python3_Interpreter_FOUND}" PARENT_SCOPE)
+    set(${arg_OUT_VAR_PYTHON_FIND_OUTPUT} "${find_output_joined}" PARENT_SCOPE)
     if(arg_OUT_VAR_PYTHON_VERSION)
         set(${arg_OUT_VAR_PYTHON_VERSION} "${Python3_VERSION}" PARENT_SCOPE)
+    endif()
+endfunction()
+
+# Helper to retrieve the python interpreter path and directory, from either a QT_SBOM_PYTHON_INTERP
+# env var or regular (cache) var, when one of them is set.
+# The regular var is preferred.
+# In the very first implementation, the var expected to be passed an interpreter path, rather
+# than the dir where the python interpreter is located, which is what FindPython's
+# Python3_ROOT_DIR expects.
+# Now both cases are handled properly. So the variable name is a bit of a misnomer, but we keep
+# it for compatibility.
+function(_qt_internal_sbom_get_sbom_python_interp_path)
+    set(opt_args "")
+    set(single_args
+        OUT_VAR_FOUND
+        OUT_VAR_PYTHON_PATH
+        OUT_VAR_PYTHON_DIR_PATH
+    )
+    set(multi_args "")
+    cmake_parse_arguments(PARSE_ARGV 0 arg "${opt_args}" "${single_args}" "${multi_args}")
+    _qt_internal_validate_all_args_are_parsed(arg)
+
+    set(candidates
+        "${QT_SBOM_PYTHON_INTERP}"
+        "$ENV{QT_SBOM_PYTHON_INTERP}"
+    )
+
+    set(something_found FALSE)
+    foreach(candidate IN LISTS candidates)
+        if(NOT candidate OR NOT EXISTS "${candidate}")
+            continue()
+        endif()
+
+        set(something_found TRUE)
+        if(IS_DIRECTORY "${candidate}")
+            set(interp_dir "${candidate}")
+            set(interp_path "")
+
+            # We need to find the executable in the given directory, to be able to assign it to
+            # Python3_EXECUTABLE when FORCE_SET_INTERPRETER_PATH is used.
+            find_program(QT_INTERNAL_SBOM_PYTHON_INTERP_PATH
+                NAMES python3 python
+                HINTS "${interp_dir}"
+                NO_DEFAULT_PATH
+            )
+            if(QT_INTERNAL_SBOM_PYTHON_INTERP_PATH)
+                set(interp_path "${QT_INTERNAL_SBOM_PYTHON_INTERP_PATH}")
+                message(DEBUG
+                    "Found python executable '${interp_path}' in QT_SBOM_PYTHON_INTERP candidate "
+                    "directory: '${candidate}'.")
+            else()
+                message(DEBUG
+                    "QT_SBOM_PYTHON_INTERP '${candidate}' is a directory, but no "
+                    "python executable found in it.")
+            endif()
+        else()
+            get_filename_component(interp_dir "${candidate}" DIRECTORY)
+            set(interp_path "${candidate}")
+        endif()
+        break()
+    endforeach()
+
+    if(arg_OUT_VAR_FOUND)
+        set(${arg_OUT_VAR_FOUND} "${something_found}" PARENT_SCOPE)
+    endif()
+    if(arg_OUT_VAR_PYTHON_PATH)
+        set(${arg_OUT_VAR_PYTHON_PATH} "${interp_path}" PARENT_SCOPE)
+    endif()
+    if(arg_OUT_VAR_PYTHON_DIR_PATH)
+        set(${arg_OUT_VAR_PYTHON_DIR_PATH} "${interp_dir}" PARENT_SCOPE)
+    endif()
+endfunction()
+
+# Returns the value of Python3_ROOT_DIR if it's set, either as a cmake variable or env var.
+function(_qt_internal_sbom_get_python_root_dir)
+    set(opt_args "")
+    set(single_args
+        OUT_VAR_FOUND
+        OUT_VAR_PYTHON_ROOT_DIR_PATH
+    )
+    set(multi_args "")
+    cmake_parse_arguments(PARSE_ARGV 0 arg "${opt_args}" "${single_args}" "${multi_args}")
+    _qt_internal_validate_all_args_are_parsed(arg)
+
+    set(candidates
+        "${Python3_ROOT_DIR}"
+        "$ENV{Python3_ROOT_DIR}"
+    )
+
+    set(python_root_dir "")
+
+    set(something_found FALSE)
+    foreach(candidate IN LISTS candidates)
+        if(NOT candidate OR NOT EXISTS "${candidate}")
+            continue()
+        endif()
+
+        set(something_found TRUE)
+        if(IS_DIRECTORY "${candidate}")
+            set(python_root_dir "${candidate}")
+        endif()
+    endforeach()
+
+    if(arg_OUT_VAR_FOUND)
+        set(${arg_OUT_VAR_FOUND} "${something_found}" PARENT_SCOPE)
+    endif()
+    if(arg_OUT_VAR_PYTHON_ROOT_DIR_PATH)
+        set(${arg_OUT_VAR_PYTHON_ROOT_DIR_PATH} "${python_root_dir}" PARENT_SCOPE)
     endif()
 endfunction()
 
@@ -205,11 +391,14 @@ function(_qt_internal_sbom_find_python_dependency_helper)
 
     if("${res}" STREQUAL "0")
         set(found TRUE)
-        set(output "${output}")
+        string(CONCAT output
+            "SBOM Python dependency '${arg_DEPENDENCY_IMPORT_STATEMENT}' found. "
+            "Output:\n${output}")
     else()
         set(found FALSE)
-        string(CONCAT output "SBOM Python dependency ${arg_DEPENDENCY_IMPORT_STATEMENT} NOT found. "
-            "Error:\n${output}")
+        string(CONCAT output
+            "SBOM Python dependency '${arg_DEPENDENCY_IMPORT_STATEMENT}' NOT found. "
+            "Output:\n${output} Exit code: ${res}")
     endif()
 
     set(${arg_OUT_VAR_FOUND} "${found}" PARENT_SCOPE)
@@ -240,13 +429,26 @@ function(_qt_internal_sbom_find_python_dependency_program)
     # The path to python installed apps is different on Windows compared to UNIX, so we use
     # a different path than where the python interpreter might be located.
     if(QT_SBOM_PYTHON_APPS_PATH)
-        list(APPEND hints ${QT_SBOM_PYTHON_APPS_PATH})
+        list(APPEND hints "${QT_SBOM_PYTHON_APPS_PATH}")
     endif()
 
     # Sometimes the installed apps might be in the same location as the interepreter, if both are
     # in a virtual env. So look also in the interpreter path.
-    if(QT_SBOM_PYTHON_INTERP)
-        list(APPEND hints ${QT_SBOM_PYTHON_INTERP})
+    _qt_internal_sbom_get_sbom_python_interp_path(OUT_VAR_PYTHON_DIR_PATH sbom_python_interp_dir)
+    if(sbom_python_interp_dir)
+        list(APPEND hints "${sbom_python_interp_dir}")
+    endif()
+
+    # If we already found a python interpreter for sbom purposes, look in its parent directory.
+    if(QT_INTERNAL_SBOM_PYTHON_EXECUTABLE)
+        get_filename_component(python_interp_dir "${QT_INTERNAL_SBOM_PYTHON_EXECUTABLE}" DIRECTORY)
+        list(APPEND hints "${python_interp_dir}")
+    endif()
+
+    # Look in the python root dir as well.
+    _qt_internal_sbom_get_python_root_dir(OUT_VAR_PYTHON_ROOT_DIR_PATH python_root_dir)
+    if(python_root_dir)
+        list(APPEND hints "${python_root_dir}")
     endif()
 
     find_program(${cache_var}
