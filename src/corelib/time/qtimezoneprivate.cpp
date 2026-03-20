@@ -1048,12 +1048,8 @@ QByteArrayView QTimeZonePrivate::windowsIdToDefaultIanaId(QByteArrayView windows
          data != std::end(zoneDataTable) && data->windowsIdKey == windowsIdKey;
          ++data) {
         // Return the first (preferred) region match:
-        if (data->territory == land) {
-            const auto ids = data->ids();
-            // We only want the first, but tokenizers only do iteration:
-            for (const auto id : ids)
-                return id;
-        }
+        if (data->territory == land)
+            return *data->ids().begin();
     }
 
     return {};
