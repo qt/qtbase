@@ -50,6 +50,7 @@ Q_STATIC_LOGGING_CATEGORY(lcQThread, "qt.core.thread", QtWarningMsg)
 
 Q_CONSTINIT static thread_local QThreadData *currentThreadData = nullptr;
 
+static void deref_current_thread_data(QThreadData *data);
 static void destroy_current_thread_data(void *p)
 {
     QThreadData *data = static_cast<QThreadData *>(p);
@@ -66,6 +67,12 @@ static void destroy_current_thread_data(void *p)
         // have begun destruction; we must not dereference the QThread pointer.
     }
 
+    deref_current_thread_data(data);
+}
+
+// static
+void deref_current_thread_data(QThreadData *data)
+{
     // the QThread object may still have a reference, so this may not delete
     data->deref();
 
