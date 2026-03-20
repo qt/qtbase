@@ -251,6 +251,57 @@
     \sa operator==()
 */
 
+/*! \fn template <class Key, class T> bool QMultiMap<Key, T>::operator<(const QMultiMap<Key, T> &lhs, const QMultiMap<Key, T> &rhs)
+    \since 6.12
+
+    Returns \c true if \a lhs is
+    \l {https://en.cppreference.com/w/cpp/algorithm/lexicographical_compare_three_way}
+    {lexicographically less than} \a rhs; otherwise returns \c false.
+
+    \include qmap.qdoc operator_uses_qt_lex_compare_three_way
+*/
+
+/*! \fn template <class Key, class T> bool QMultiMap<Key, T>::operator>(const QMultiMap<Key, T> &lhs, const QMultiMap<Key, T> &rhs)
+    \since 6.12
+
+    Returns \c true if \a lhs is
+    \l {https://en.cppreference.com/w/cpp/algorithm/lexicographical_compare_three_way}
+    {lexicographically greater than} \a rhs; otherwise returns \c false.
+
+    \include qmap.qdoc operator_uses_qt_lex_compare_three_way
+*/
+
+/*! \fn template <class Key, class T> bool QMultiMap<Key, T>::operator<=(const QMultiMap<Key, T> &lhs, const QMultiMap<Key, T> &rhs)
+    \since 6.12
+
+    Returns \c true if \a lhs is
+    \l {https://en.cppreference.com/w/cpp/algorithm/lexicographical_compare_three_way}
+    {lexicographically less or equal than} \a rhs; otherwise returns \c false.
+
+    \include qmap.qdoc operator_uses_qt_lex_compare_three_way
+*/
+
+/*! \fn template <class Key, class T> bool QMultiMap<Key, T>::operator>=(const QMultiMap<Key, T> &lhs, const QMultiMap<Key, T> &rhs)
+    \since 6.12
+
+    Returns \c true if \a lhs is
+    \l {https://en.cppreference.com/w/cpp/algorithm/lexicographical_compare_three_way}
+    {lexicographically greater or equal than} \a rhs; otherwise returns \c false.
+
+    \include qmap.qdoc operator_uses_qt_lex_compare_three_way
+*/
+
+/*! \fn template <class Key, class T> auto QMultiMap<Key, T>::operator<=>(const QMultiMap<Key, T> &lhs, const QMultiMap<Key, T> &rhs)
+    \since 6.12
+
+    Compares the contents of \a lhs and \a rhs
+    \l {https://en.cppreference.com/w/cpp/algorithm/lexicographical_compare_three_way}
+    {lexicographically}. Returns the result of the strongest applicable category
+    type.
+
+    \include qmap.qdoc operator_in_cpp20_only
+*/
+
 /*! \fn template <class Key, class T> qsizetype QMultiMap<Key, T>::size() const
 
     Returns the number of (key, value) pairs in the multi map.

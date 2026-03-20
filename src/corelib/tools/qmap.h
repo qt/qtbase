@@ -251,6 +251,32 @@ public:
     }
 };
 
+// common type traits
+namespace QtPrivate {
+
+template <typename Container, typename ...Ts>
+using map_has_operator_less_than =
+        std::conjunction<QTypeTraits::has_operator_less_than_container<Container, Ts>...>;
+
+template <typename Container, typename T>
+using map_has_qt_compare_three_way_container =
+        std::disjunction<std::is_base_of<Container, T>, Qt::has_qt_compare_three_way<T>>;
+
+template <typename Container, typename ...Ts>
+using map_has_qt_compare_three_way =
+        std::conjunction<map_has_qt_compare_three_way_container<Container, Ts>...>;
+
+template <typename Container, typename ...Ts>
+using if_map_has_relational_operators =
+        std::enable_if_t<
+                std::disjunction_v<
+                    map_has_operator_less_than<Container, Ts...>,
+                    map_has_qt_compare_three_way<Container, Ts...>
+                >,
+        bool>;
+
+} // namespace QtPrivate
+
 //
 // QMap
 //
@@ -330,11 +356,29 @@ private:
     QT_DECLARE_EQUALITY_OPERATORS_HELPER(QMap, QMap, /* non-constexpr */, noexcept(false),
                         template <typename AKey = Key, typename AT = T,
                                   QTypeTraits::compare_eq_result_container<QMap, AKey, AT> = true>)
-    // TODO: add the other comparison operators; std::map has them.
+
+    template <typename AKey = Key, typename AT = T,
+              QtPrivate::if_map_has_relational_operators<QMap, AKey, AT> = true>
+    friend auto compareThreeWay(const QMap &lhs, const QMap &rhs)
+    {
+        return QtOrderingPrivate::lexicographicalCompareThreeWay(lhs.constKeyValueBegin(),
+                                                                 lhs.constKeyValueEnd(),
+                                                                 rhs.constKeyValueBegin(),
+                                                                 rhs.constKeyValueEnd());
+    }
+    QT_DECLARE_ORDERING_HELPER_AUTO(QMap, QMap, /* non-constexpr */, noexcept(false),
+                    template <typename AKey = Key, typename AT = T,
+                              QtPrivate::if_map_has_relational_operators<QMap, AKey, AT> = true>)
+
 public:
 #else
     friend bool operator==(const QMap &lhs, const QMap &rhs);
     friend bool operator!=(const QMap &lhs, const QMap &rhs);
+    friend bool operator<(const QMap &lhs, const QMap &rhs);
+    friend bool operator>(const QMap &lhs, const QMap &rhs);
+    friend bool operator<=(const QMap &lhs, const QMap &rhs);
+    friend bool operator>=(const QMap &lhs, const QMap &rhs);
+    friend auto operator<=>(const QMap &lhs, const QMap &rhs);
 #endif // Q_QDOC
 
     size_type size() const { return d ? size_type(d->m.size()) : size_type(0); }
@@ -1045,11 +1089,28 @@ private:
     QT_DECLARE_EQUALITY_OPERATORS_HELPER(QMultiMap, QMultiMap, /* non-constexpr */, noexcept(false),
                  template <typename AKey = Key, typename AT = T,
                            QTypeTraits::compare_eq_result_container<QMultiMap, AKey, AT> = true>)
-    // TODO: add the other comparison operators; std::multimap has them.
+
+    template <typename AKey = Key, typename AT = T,
+              QtPrivate::if_map_has_relational_operators<QMultiMap, AKey, AT> = true>
+    friend auto compareThreeWay(const QMultiMap &lhs, const QMultiMap &rhs)
+    {
+        return QtOrderingPrivate::lexicographicalCompareThreeWay(lhs.constKeyValueBegin(),
+                                                                 lhs.constKeyValueEnd(),
+                                                                 rhs.constKeyValueBegin(),
+                                                                 rhs.constKeyValueEnd());
+    }
+    QT_DECLARE_ORDERING_HELPER_AUTO(QMultiMap, QMultiMap, /* non-constexpr */, noexcept(false),
+                template <typename AKey = Key, typename AT = T,
+                          QtPrivate::if_map_has_relational_operators<QMultiMap, AKey, AT> = true>)
 public:
 #else
     friend bool operator==(const QMultiMap &lhs, const QMultiMap &rhs);
     friend bool operator!=(const QMultiMap &lhs, const QMultiMap &rhs);
+    friend bool operator<(const QMultiMap &lhs, const QMultiMap &rhs);
+    friend bool operator>(const QMultiMap &lhs, const QMultiMap &rhs);
+    friend bool operator<=(const QMultiMap &lhs, const QMultiMap &rhs);
+    friend bool operator>=(const QMultiMap &lhs, const QMultiMap &rhs);
+    friend auto operator<=>(const QMultiMap &lhs, const QMultiMap &rhs);
 #endif // Q_QDOC
 
     size_type size() const { return d ? size_type(d->m.size()) : size_type(0); }

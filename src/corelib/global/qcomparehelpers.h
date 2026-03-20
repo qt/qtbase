@@ -1271,6 +1271,13 @@ using if_has_qt_compare_three_way =
                                    QtOrderingPrivate::CompareThreeWayTester::HasCompareThreeWay<U, T>>,
                 bool>;
 
+template <typename T, typename = void>
+struct has_qt_compare_three_way : std::false_type {};
+
+template <typename T>
+struct has_qt_compare_three_way<T, std::void_t<if_has_qt_compare_three_way<T, T>>>
+    : std::true_type {};
+
 #ifdef __cpp_lib_three_way_comparison
 template <typename T1, typename T2, typename U1, typename U2,
           std::enable_if_t<

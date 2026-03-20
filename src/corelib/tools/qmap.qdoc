@@ -239,6 +239,67 @@
     \sa operator==()
 */
 
+/*! \fn template <class Key, class T> bool QMap<Key, T>::operator<(const QMap<Key, T> &lhs, const QMap<Key, T> &rhs)
+    \since 6.12
+
+    Returns \c true if \a lhs is
+    \l {https://en.cppreference.com/w/cpp/algorithm/lexicographical_compare_three_way}
+    {lexicographically less than} \a rhs; otherwise returns \c false.
+
+//! [operator_uses_qt_lex_compare_three_way]
+    This operator is available if both the key type \c Key and the mapped type
+    \c T provide one of \c {operator<=>()} (in C++20 mode),
+    \c {compareThreeWay()} helper method, or \c {operator<()}.
+//! [operator_uses_qt_lex_compare_three_way]
+*/
+
+/*! \fn template <class Key, class T> bool QMap<Key, T>::operator>(const QMap<Key, T> &lhs, const QMap<Key, T> &rhs)
+    \since 6.12
+
+    Returns \c true if \a lhs is
+    \l {https://en.cppreference.com/w/cpp/algorithm/lexicographical_compare_three_way}
+    {lexicographically greater than} \a rhs; otherwise returns \c false.
+
+    \include qmap.qdoc operator_uses_qt_lex_compare_three_way
+*/
+
+/*! \fn template <class Key, class T> bool QMap<Key, T>::operator<=(const QMap<Key, T> &lhs, const QMap<Key, T> &rhs)
+    \since 6.12
+
+    Returns \c true if \a lhs is
+    \l {https://en.cppreference.com/w/cpp/algorithm/lexicographical_compare_three_way}
+    {lexicographically less or equal than} \a rhs; otherwise returns \c false.
+
+    \include qmap.qdoc operator_uses_qt_lex_compare_three_way
+*/
+
+/*! \fn template <class Key, class T> bool QMap<Key, T>::operator>=(const QMap<Key, T> &lhs, const QMap<Key, T> &rhs)
+    \since 6.12
+
+    Returns \c true if \a lhs is
+    \l {https://en.cppreference.com/w/cpp/algorithm/lexicographical_compare_three_way}
+    {lexicographically greater or equal than} \a rhs; otherwise returns \c false.
+
+    \include qmap.qdoc operator_uses_qt_lex_compare_three_way
+*/
+
+/*! \fn template <class Key, class T> auto QMap<Key, T>::operator<=>(const QMap<Key, T> &lhs, const QMap<Key, T> &rhs)
+    \since 6.12
+
+    Compares the contents of \a lhs and \a rhs
+    \l {https://en.cppreference.com/w/cpp/algorithm/lexicographical_compare_three_way}
+    {lexicographically}. Returns the result of the strongest applicable category
+    type.
+
+//! [operator_in_cpp20_only]
+    \note This operator is only available in C++20 mode when both the key type
+    \c Key and the mapped type \c T meet the requirements of
+    \c {std::three_way_comparable} concept or provide \c {operator<()}.
+    In this case the \c{<}, \c{<=}, \c{>}, and \c{>=} operators are synthesized
+    from \c {operator<=>()} and \c {operator==()}.
+//! [operator_in_cpp20_only]
+*/
+
 /*! \fn template <class Key, class T> size_type QMap<Key, T>::size() const
 
     Returns the number of (key, value) pairs in the map.

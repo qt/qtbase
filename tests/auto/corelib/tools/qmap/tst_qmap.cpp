@@ -13,6 +13,17 @@ using namespace Qt::StringLiterals;
 
 QT_WARNING_DISABLE_DEPRECATED
 
+struct LessOnly
+{
+    float val;
+
+private:
+    friend bool operator==(LessOnly lhs, LessOnly rhs) noexcept
+    { return lhs.val == rhs.val; }
+    friend bool operator<(LessOnly lhs, LessOnly rhs) noexcept
+    { return lhs.val < rhs.val; }
+};
+
 class tst_QMap : public QObject
 {
     Q_OBJECT
@@ -34,6 +45,20 @@ private slots:
 
     void comparisonCompiles();
     void operator_eq();
+
+private:
+    template <typename KeyType, typename MappedType, typename Ordering>
+    void relationalOperatorsImpl();
+
+private slots:
+    void relationalOperatorsStrong()
+    { relationalOperatorsImpl<int, int, Qt::strong_ordering>(); }
+    void relationalOperatorsPartial()
+    { relationalOperatorsImpl<int, float, Qt::partial_ordering>(); }
+    void relationalOperatorsWeak()
+    { relationalOperatorsImpl<int, QDateTime, Qt::weak_ordering>(); }
+    void relationalOperatorsWeakLessOnly()
+    { relationalOperatorsImpl<int, LessOnly, Qt::weak_ordering>(); }
 
     void empty();
     void contains();
@@ -638,12 +663,21 @@ void tst_QMap::swap()
 
 void tst_QMap::comparisonCompiles()
 {
-    QTestPrivate::testEqualityOperatorsCompile<QMap<int, int>>();
-    QTestPrivate::testEqualityOperatorsCompile<QMap<QString, QString>>();
-    QTestPrivate::testEqualityOperatorsCompile<QMap<QString, int>>();
-    QTestPrivate::testEqualityOperatorsCompile<QMultiMap<int, int>>();
-    QTestPrivate::testEqualityOperatorsCompile<QMultiMap<QString, QString>>();
-    QTestPrivate::testEqualityOperatorsCompile<QMultiMap<QString, int>>();
+    QTestPrivate::testAllComparisonOperatorsCompile<QMap<int, int>>();
+    QTestPrivate::testAllComparisonOperatorsCompile<QMap<QString, QString>>();
+    QTestPrivate::testAllComparisonOperatorsCompile<QMap<QString, int>>();
+    QTestPrivate::testAllComparisonOperatorsCompile<QMultiMap<int, int>>();
+    QTestPrivate::testAllComparisonOperatorsCompile<QMultiMap<QString, QString>>();
+    QTestPrivate::testAllComparisonOperatorsCompile<QMultiMap<QString, int>>();
+
+    using IntPair = std::pair<int, int>;
+    using FPPair = std::pair<float, int>;
+    QTestPrivate::testAllComparisonOperatorsCompile<QMap<int, IntPair>>();
+    QTestPrivate::testAllComparisonOperatorsCompile<QMap<FPPair, QString>>();
+    QTestPrivate::testAllComparisonOperatorsCompile<QMap<IntPair, FPPair>>();
+    QTestPrivate::testAllComparisonOperatorsCompile<QMultiMap<int, IntPair>>();
+    QTestPrivate::testAllComparisonOperatorsCompile<QMultiMap<FPPair, QString>>();
+    QTestPrivate::testAllComparisonOperatorsCompile<QMultiMap<IntPair, FPPair>>();
 }
 
 void tst_QMap::operator_eq()
@@ -810,6 +844,146 @@ void tst_QMap::operator_eq()
         // The insertion order matters!
         QCOMPARE_NE(a, b);
         QT_TEST_EQUALITY_OPS(a, b, false);
+    }
+}
+
+template <typename Key, typename Mapped, typename Ordering>
+std::vector<std::pair<Key, Mapped>> makeComparisonData(Ordering)
+{ return {}; }
+
+template <>
+std::vector<std::pair<int, int>> makeComparisonData(Qt::strong_ordering order)
+{
+    if (order == Qt::strong_ordering::equivalent)
+        return {{1, 1}, {2, 2}, {3, 3}, {4, 4}};
+    else if (order == Qt::strong_ordering::less)
+        return {{1, 1}, {2, 1}, {4, 3}};
+    else /* greater */
+        return {{1, 1}, {3, 2}, {3, 1}};
+}
+
+template <>
+std::vector<std::pair<int, float>> makeComparisonData(Qt::partial_ordering order)
+{
+    if (order == Qt::partial_ordering::equivalent)
+        return {{1, 1.f}, {2, 2.f}, {3, 3.f}, {4, 4.f}};
+    else if (order == Qt::partial_ordering::less)
+        return {{1, 1.f}, {2, 1.f}, {4, 3.f}};
+    else if (order == Qt::partial_ordering::greater)
+        return {{1, 1.f}, {3, 2.f}, {3, 1.f}};
+    else /* unordered */
+        return {{1, 1.f}, {2, std::numeric_limits<float>::quiet_NaN()}, {3, 3.f}, {4, 4.f}};
+}
+
+template <>
+std::vector<std::pair<int, QDateTime>> makeComparisonData(Qt::weak_ordering order)
+{
+    using namespace std::chrono_literals;
+    QTimeZone utcPlusOne = QTimeZone::fromDurationAheadOfUtc(3600s);
+    // These two QDateTimes represent the same moment of time, but using
+    // different time zones. So, they are equivalent, but not equal.
+    QDateTime nullUtc = QDateTime::fromMSecsSinceEpoch(0, QTimeZone::UTC);
+    QDateTime nullUtcPlusOne = QDateTime::fromMSecsSinceEpoch(0, utcPlusOne);
+
+    if (order == Qt::strong_ordering::equivalent) {
+        return {{1, nullUtc}, {2, nullUtc.addDays(1)},
+                 {3, nullUtc.addDays(2)}, {4, nullUtc.addDays(3)}};
+    } else if (order == Qt::strong_ordering::less) {
+        return {{1, nullUtcPlusOne}, {2, nullUtc}, {4, nullUtc.addDays(2)}};
+    } else { /* greater */
+        return {{1, nullUtcPlusOne}, {3, nullUtc.addDays(1)}, {3, nullUtc}};
+    }
+}
+
+template <>
+std::vector<std::pair<int, LessOnly>> makeComparisonData(Qt::weak_ordering order)
+{
+    if (order == Qt::partial_ordering::equivalent)
+        return {{1, LessOnly{1.f}}, {2, LessOnly{2.f}}, {3, LessOnly{3.f}}, {4, LessOnly{4.f}}};
+    else if (order == Qt::partial_ordering::less)
+        return {{1, LessOnly{1.f}}, {2, LessOnly{1.f}}, {4, LessOnly{3.f}}};
+    else /* greater */
+        return {{1, LessOnly{1.f}}, {3, LessOnly{2.f}}, {3, LessOnly{1.f}}};
+}
+
+template <typename KeyType, typename MappedType, typename Ordering>
+void tst_QMap::relationalOperatorsImpl()
+{
+    using Map = QMap<KeyType, MappedType>;
+    using MultiMap = QMultiMap<KeyType, MappedType>;
+
+    const auto eq_data = makeComparisonData<KeyType, MappedType>(Ordering::equivalent);
+    const auto lt_data = makeComparisonData<KeyType, MappedType>(Ordering::less);
+    const auto gt_data = makeComparisonData<KeyType, MappedType>(Ordering::greater);
+
+    // QMap
+    {
+        Map lhs{{eq_data.begin(), eq_data.end()}};
+        Map rhs{{eq_data.begin(), eq_data.end()}};
+        QCOMPARE_EQ(compareThreeWay(lhs, rhs), Ordering::equivalent);
+        QT_TEST_ALL_COMPARISON_OPS(lhs, rhs, Ordering::equivalent);
+
+
+        rhs.clear(); // missing operator=()
+        rhs.insert(Map{{lt_data.begin(), lt_data.end()}});
+        QCOMPARE_EQ(compareThreeWay(lhs, rhs), Ordering::greater);
+        QT_TEST_ALL_COMPARISON_OPS(lhs, rhs, Ordering::greater);
+
+
+        rhs.clear();
+        rhs.insert(Map{{gt_data.begin(), gt_data.end()}});
+        QCOMPARE_EQ(compareThreeWay(lhs, rhs), Ordering::less);
+        QT_TEST_ALL_COMPARISON_OPS(lhs, rhs, Ordering::less);
+
+        if constexpr (std::is_same_v<Ordering, Qt::partial_ordering>) {
+            const auto un_data = makeComparisonData<KeyType, MappedType>(Ordering::unordered);
+            rhs.clear();
+            rhs.insert(Map{{un_data.begin(), un_data.end()}});
+            QCOMPARE_EQ(compareThreeWay(lhs, rhs), Ordering::unordered);
+            QT_TEST_ALL_COMPARISON_OPS(lhs, rhs, Ordering::unordered);
+            // comparison with itself should still yield unordered
+            lhs.clear();
+            lhs.insert(Map{{un_data.begin(), un_data.end()}});
+            QCOMPARE_EQ(compareThreeWay(lhs, rhs), Ordering::unordered);
+            QT_TEST_ALL_COMPARISON_OPS(lhs, rhs, Ordering::unordered);
+        }
+    }
+
+    // QMultiMap
+    {
+        MultiMap lhs{{eq_data.begin(), eq_data.end()}};
+        lhs += MultiMap{{eq_data.begin(), eq_data.end()}};
+        MultiMap rhs{{eq_data.begin(), eq_data.end()}};
+        rhs += MultiMap{{eq_data.begin(), eq_data.end()}};
+        QCOMPARE_EQ(compareThreeWay(lhs, rhs), Ordering::equivalent);
+        QT_TEST_ALL_COMPARISON_OPS(lhs, rhs, Ordering::equivalent);
+
+        rhs.clear(); // missing operator=()
+        rhs += MultiMap{{eq_data.begin(), eq_data.end()}};
+        rhs += MultiMap{{lt_data.begin(), lt_data.end()}};
+        QCOMPARE_EQ(compareThreeWay(lhs, rhs), Ordering::greater);
+        QT_TEST_ALL_COMPARISON_OPS(lhs, rhs, Ordering::greater);
+
+        rhs.clear();
+        rhs += MultiMap{{eq_data.begin(), eq_data.end()}};
+        rhs += MultiMap{{gt_data.begin(), gt_data.end()}};
+        QCOMPARE_EQ(compareThreeWay(lhs, rhs), Ordering::less);
+        QT_TEST_ALL_COMPARISON_OPS(lhs, rhs, Ordering::less);
+
+        if constexpr (std::is_same_v<Ordering, Qt::partial_ordering>) {
+            const auto un_data = makeComparisonData<KeyType, MappedType>(Ordering::unordered);
+            rhs.clear();
+            rhs += MultiMap{{eq_data.begin(), eq_data.end()}};
+            rhs += MultiMap{{un_data.begin(), un_data.end()}};
+            QCOMPARE_EQ(compareThreeWay(lhs, rhs), Ordering::unordered);
+            QT_TEST_ALL_COMPARISON_OPS(lhs, rhs, Ordering::unordered);
+            // comparison with itself should still yield unordered
+            lhs.clear();
+            lhs += MultiMap{{eq_data.begin(), eq_data.end()}};
+            lhs += MultiMap{{un_data.begin(), un_data.end()}};
+            QCOMPARE_EQ(compareThreeWay(lhs, rhs), Ordering::unordered);
+            QT_TEST_ALL_COMPARISON_OPS(lhs, rhs, Ordering::unordered);
+        }
     }
 }
 

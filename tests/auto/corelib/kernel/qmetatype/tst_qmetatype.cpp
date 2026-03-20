@@ -61,7 +61,7 @@ static_assert(!QTypeTraits::has_operator_less_than_v<QPair<int, NoOperators>>);
 
 // QMap
 static_assert(QTypeTraits::has_operator_equal_v<QMap<int, QString>>);
-static_assert(!QTypeTraits::has_operator_less_than_v<QMap<int, QString>>);
+static_assert(QTypeTraits::has_operator_less_than_v<QMap<int, QString>>);
 static_assert(!QTypeTraits::has_operator_equal_v<QMap<int, NoOperators>>);
 static_assert(!QTypeTraits::has_operator_less_than_v<QMap<int, NoOperators>>);
 

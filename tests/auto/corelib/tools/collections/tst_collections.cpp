@@ -196,18 +196,22 @@ struct NoCmpRecursiveSet : public QSet<NoCmpRecursiveSet>
 struct NoCmpRecursiveMapV : public QMap<Dummy, NoCmpRecursiveMapV>
 {
     bool operator==(const NoCmpRecursiveMapV &) const = delete;
+    bool operator<(const NoCmpRecursiveMapV &) const = delete;
 };
 struct NoCmpRecursiveMapK : public QMap<NoCmpRecursiveMapK, Dummy>
 {
     bool operator==(const NoCmpRecursiveMapK &) const = delete;
+    bool operator<(const NoCmpRecursiveMapK &) const = delete;
 };
 struct NoCmpRecursiveMultiMapV : public QMultiMap<Dummy, NoCmpRecursiveMultiMapV>
 {
     bool operator==(const NoCmpRecursiveMultiMapV &) const = delete;
+    bool operator<(const NoCmpRecursiveMultiMapV &) const = delete;
 };
 struct NoCmpRecursiveMultiMapK : public QMultiMap<NoCmpRecursiveMultiMapK, Dummy>
 {
     bool operator==(const NoCmpRecursiveMultiMapK &) const = delete;
+    bool operator<(const NoCmpRecursiveMultiMapK &) const = delete;
 };
 struct NoCmpRecursiveHashV : public QHash<Dummy, NoCmpRecursiveHashV>
 {
@@ -267,17 +271,25 @@ static_assert(QTypeTraits::has_operator_equal_v<RecursiveList>);
 static_assert(QTypeTraits::has_operator_less_than_v<RecursiveList>);
 static_assert(QTypeTraits::has_operator_equal_v<RecursiveSet>);
 static_assert(QTypeTraits::has_operator_equal_v<RecursiveMapV>);
+static_assert(QTypeTraits::has_operator_less_than_v<RecursiveMapV>);
 static_assert(QTypeTraits::has_operator_equal_v<RecursiveMapK>);
+static_assert(QTypeTraits::has_operator_less_than_v<RecursiveMapK>);
 static_assert(QTypeTraits::has_operator_equal_v<RecursiveMultiMapV>);
+static_assert(QTypeTraits::has_operator_less_than_v<RecursiveMultiMapV>);
 static_assert(QTypeTraits::has_operator_equal_v<RecursiveMultiMapK>);
+static_assert(QTypeTraits::has_operator_less_than_v<RecursiveMultiMapK>);
 static_assert(QTypeTraits::has_operator_equal_v<RecursiveHashV>);
 static_assert(QTypeTraits::has_operator_equal_v<RecursiveHashK>);
 static_assert(QTypeTraits::has_operator_equal_v<RecursiveMultiHashV>);
 static_assert(QTypeTraits::has_operator_equal_v<RecursiveMultiHashK>);
 
 static_assert(!QTypeTraits::has_operator_equal_v<NoCmpParamRecursiveMapV>);
+static_assert(!QTypeTraits::has_operator_less_than_v<NoCmpParamRecursiveMapV>);
 static_assert(!QTypeTraits::has_operator_equal_v<NoCmpParamRecursiveMapK>);
+static_assert(!QTypeTraits::has_operator_less_than_v<NoCmpParamRecursiveMapK>);
 static_assert(!QTypeTraits::has_operator_equal_v<NoCmpParamRecursiveMultiMapV>);
+static_assert(!QTypeTraits::has_operator_equal_v<NoCmpParamRecursiveMultiMapV>);
+static_assert(!QTypeTraits::has_operator_equal_v<NoCmpParamRecursiveMultiMapK>);
 static_assert(!QTypeTraits::has_operator_equal_v<NoCmpParamRecursiveMultiMapK>);
 static_assert(!QTypeTraits::has_operator_equal_v<NoCmpParamRecursiveHashV>);
 static_assert(!QTypeTraits::has_operator_equal_v<NoCmpParamRecursiveHashK>);
@@ -288,9 +300,13 @@ static_assert(!QTypeTraits::has_operator_equal_v<NoCmpRecursiveList>);
 static_assert(!QTypeTraits::has_operator_less_than_v<NoCmpRecursiveList>);
 static_assert(!QTypeTraits::has_operator_equal_v<NoCmpRecursiveSet>);
 static_assert(!QTypeTraits::has_operator_equal_v<NoCmpRecursiveMapV>);
+static_assert(!QTypeTraits::has_operator_less_than_v<NoCmpRecursiveMapV>);
 static_assert(!QTypeTraits::has_operator_equal_v<NoCmpRecursiveMapK>);
+static_assert(!QTypeTraits::has_operator_less_than_v<NoCmpRecursiveMapK>);
 static_assert(!QTypeTraits::has_operator_equal_v<NoCmpRecursiveMultiMapV>);
+static_assert(!QTypeTraits::has_operator_less_than_v<NoCmpRecursiveMultiMapV>);
 static_assert(!QTypeTraits::has_operator_equal_v<NoCmpRecursiveMultiMapK>);
+static_assert(!QTypeTraits::has_operator_less_than_v<NoCmpRecursiveMultiMapK>);
 static_assert(!QTypeTraits::has_operator_equal_v<NoCmpRecursiveHashV>);
 static_assert(!QTypeTraits::has_operator_equal_v<NoCmpRecursiveHashK>);
 static_assert(!QTypeTraits::has_operator_equal_v<NoCmpRecursiveMultiHashV>);
