@@ -89,7 +89,7 @@ public:
     void onTouchEventFromXComponent(
         QWindow *targetWindow, std::chrono::nanoseconds timeStamp,
         const std::vector<QOhosTouchEventTouchPointData> &touchPoints,
-        QInputDevice::DeviceType deviceType);
+        QInputDevice::DeviceType deviceType, QFlags<OhosKeyboardModifier> modifiers);
     void onTouchEventFromJsWindow(
         QWindow *optTargetWindow,
         const QList<QWindowSystemInterface::TouchPoint> &touchPoints);
@@ -116,6 +116,7 @@ private:
         QList<QWindowSystemInterface::TouchPoint> touchPoints;
         QInputDevice *touchDevice;
         std::chrono::milliseconds timestampMs;
+        QFlags<OhosKeyboardModifier> modifiers;
     };
 
     QInputDevice *getTouchDeviceOrCreateIfNeeded(QInputDevice::DeviceType deviceType);
