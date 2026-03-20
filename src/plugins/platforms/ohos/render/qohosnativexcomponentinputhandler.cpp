@@ -213,6 +213,8 @@ void QOhosNativeXComponentInputHandler::handleTouchEvent(void *window)
             .touchTimeStamp = std::chrono::nanoseconds(touchEvent.timeStamp),
             .touchPoints = validTouchPoints,
             .deviceType = getTouchDeviceType(m_xComponent.handle(), touchEvent.id),
+            .modifiers = readKeyModifiersFromKeyState(
+                QSpan(keysToModifiers.data(), keysToModifiers.size())),
         });
 }
 
@@ -323,7 +325,7 @@ void QOhosNativeXComponentInputHandler::processTouchEventsInQtThread(std::vector
                 event.touchPoints.end());
         }
         m_imEventHandlerRef.data()->onTouchEventFromXComponent(
-            window, event.touchTimeStamp, event.touchPoints, event.deviceType);
+            window, event.touchTimeStamp, event.touchPoints, event.deviceType, event.modifiers);
     }
 }
 

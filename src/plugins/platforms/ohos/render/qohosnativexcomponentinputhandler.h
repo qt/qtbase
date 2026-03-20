@@ -44,6 +44,7 @@ private:
         std::chrono::nanoseconds touchTimeStamp;
         std::vector<QOhosTouchEventTouchPointData> touchPoints;
         QInputDevice::DeviceType deviceType;
+        QFlags<OhosKeyboardModifier> modifiers;
     };
 
     static bool mayDropMouseEvent(

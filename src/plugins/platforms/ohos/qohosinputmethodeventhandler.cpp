@@ -109,7 +109,7 @@ QOhosInputMethodEventHandler::~QOhosInputMethodEventHandler() = default;
 void QOhosInputMethodEventHandler::onTouchEventFromXComponent(
     QWindow *targetWindow, ch::nanoseconds timeStamp,
     const std::vector<QOhosTouchEventTouchPointData> &touchPoints,
-    QInputDevice::DeviceType deviceType)
+    QInputDevice::DeviceType deviceType, QFlags<OhosKeyboardModifier> modifiers)
 {
     auto *touchDevice = getTouchDeviceOrCreateIfNeeded(deviceType);
 
@@ -138,6 +138,7 @@ void QOhosInputMethodEventHandler::onTouchEventFromXComponent(
         .touchPoints = wsiTouchPoints,
         .touchDevice = touchDevice,
         .timestampMs = ch::duration_cast<ch::milliseconds>(timeStamp),
+        .modifiers = modifiers,
     };
 
     handleTouchEvent(touchEvent);
@@ -548,7 +549,8 @@ void QOhosInputMethodEventHandler::handleTouchEvent(const QWindowSystemInterface
 
     QWindowSystemInterface::handleTouchEvent(
         touchEvent.targetWindow, touchEvent.timestampMs.count(),
-        static_cast<const QPointingDevice *>(touchEvent.touchDevice), touchEvent.touchPoints);
+        static_cast<const QPointingDevice *>(touchEvent.touchDevice), touchEvent.touchPoints,
+        convertOhosToQtKeyboardModifiers(touchEvent.modifiers));
 }
 
 void QOhosInputMethodEventHandler::updateWindowsUnderTouchPoints(const QWindowSystemInterfaceTouchEvent &touchEvent)
