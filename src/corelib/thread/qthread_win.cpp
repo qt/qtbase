@@ -117,19 +117,20 @@ QThreadData *QThreadData::currentThreadData() noexcept
 QThreadData *QThreadData::createCurrentThreadData()
 {
     Q_ASSERT(!currentThreadData());
-    std::unique_ptr data = std::make_unique<QThreadData>();
+
+    QThreadData *data = new QThreadData();
 
     // This needs to be called prior to new QAdoptedThread() to avoid
     // recursion (see qobject.cpp).
-    set_thread_data(data.get());
+    set_thread_data(data);
 
     QT_TRY {
-        data->thread.storeRelease(new QAdoptedThread(data.get()));
+        data->thread.storeRelease(new QAdoptedThread(data));
     } QT_CATCH(...) {
-        clearCurrentThreadData();
+        deref_current_thread_data(data);
         QT_RETHROW;
     }
-    return data.release();
+    return data;
 }
 
 void QAdoptedThread::init()
