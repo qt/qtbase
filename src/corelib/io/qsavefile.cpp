@@ -10,8 +10,10 @@
 #include "private/qsavefile_p.h"
 #include "qfileinfo.h"
 #include "qabstractfileengine_p.h"
+#include <QtCore/qcoreapplication.h>
 #include "qdebug.h"
 #include "qtemporaryfile.h"
+#include <QtCore/qttranslation.h>
 #include "private/qiodevice_p.h"
 #include "private/qtemporaryfile_p.h"
 #ifdef Q_OS_UNIX
@@ -93,18 +95,18 @@ bool QSaveFilePrivate::open(QIODevice::OpenMode mode)
 #ifdef Q_OS_WIN
     // check if it is an Alternate Data Stream
     if (finalFileName == fileName && fileName.indexOf(u':', 2) > 1)
-        directWriteReason = QT_TR_NOOP("target is an Alternate Data Stream");
+        directWriteReason = QT_TRANSLATE_NOOP("QSaveFile", "target is an Alternate Data Stream");
 #elif defined(Q_OS_ANDROID)
     // check if it is a content:// URL
     if (fileName.startsWith("content://"_L1))
-        directWriteReason = QT_TR_NOOP("target is a content:// virtual file");
+        directWriteReason = QT_TRANSLATE_NOOP("QSaveFile", "target is a content:// virtual file");
 #endif
     if (
 #if defined(Q_OS_WIN) || defined(Q_OS_ANDROID)
         !directWriteReason &&
 #endif // Q_OS_WIN || Q_OS_ANDROID
         priorFile.exists() && !priorFile.isFile()) {
-        directWriteReason = QT_TR_NOOP("target exists and is not a regular file");
+        directWriteReason = QT_TRANSLATE_NOOP("QSaveFile", "target exists and is not a regular file");
     }
     if (directWriteReason) {
         // yes, we can't rename onto it...
@@ -114,10 +116,11 @@ bool QSaveFilePrivate::open(QIODevice::OpenMode mode)
             setError(fileEngine->error(), fileEngine->errorString());
             fileEngine.reset();
         } else {
-            QString msg = QSaveFile::tr(
-                "QSaveFile cannot open '%1' without direct write fallback enabled: %2.")
-                .arg(QDir::toNativeSeparators(fileName)).arg(directWriteReason);
-            setError(QFileDevice::OpenError, msg);
+            setError(QFileDevice::OpenError,
+                     QSaveFile::tr("QSaveFile cannot open '%1' "
+                                   "without direct write fallback enabled: %2.")
+                     .arg(QDir::toNativeSeparators(fileName),
+                          QSaveFile::tr(directWriteReason)));
         }
         return false;
     }
