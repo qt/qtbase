@@ -88,8 +88,8 @@ private:
     void updateNativeTimer();
 
     static QEventDispatcherWasm *g_mainThreadEventDispatcher;
-    static std::shared_ptr<QWasmSuspendResumeControl> g_mainThreadSuspendResumeControl;
-
+    static std::shared_ptr<QWasmSuspendResumeControl> g_customMainThreadSuspendResumeControl;
+    static QWasmSuspendResumeControl *g_mainThreadSuspendResumeControl;
     bool m_interrupted = false;
     bool m_wakeup = false;
 

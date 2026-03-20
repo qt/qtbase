@@ -46,6 +46,10 @@
 #include <private/qhooks_p.h>
 #include <private/qnativeinterface_p.h>
 
+#ifdef Q_OS_WASM
+#include <private/qstdweb_p.h>
+#endif
+
 #if QT_CONFIG(permissions)
 #include <private/qpermissions_p.h>
 #endif
@@ -1507,6 +1511,11 @@ void QCoreApplication::exit(int returnCode)
 {
     if (!self)
         return;
+
+#ifdef Q_OS_WASM
+    if (!qstdweb::haveAsyncify())
+        qFatal("Terminating since we don't have asyncify");
+#endif
     QCoreApplicationPrivate *d = self->d_func();
     if (!d->aboutToQuitEmitted) {
         emit self->aboutToQuit(QCoreApplication::QPrivateSignal());

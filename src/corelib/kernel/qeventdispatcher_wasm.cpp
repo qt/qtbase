@@ -47,7 +47,8 @@ static bool useAsyncify()
 #endif // defined(QT_STATIC)
 
 Q_CONSTINIT QEventDispatcherWasm *QEventDispatcherWasm::g_mainThreadEventDispatcher = nullptr;
-Q_CONSTINIT std::shared_ptr<QWasmSuspendResumeControl> QEventDispatcherWasm::g_mainThreadSuspendResumeControl;
+Q_CONSTINIT std::shared_ptr<QWasmSuspendResumeControl> QEventDispatcherWasm::g_customMainThreadSuspendResumeControl;
+Q_CONSTINIT QWasmSuspendResumeControl *QEventDispatcherWasm::g_mainThreadSuspendResumeControl = nullptr;
 
 #if QT_CONFIG(thread)
 Q_CONSTINIT QVector<QEventDispatcherWasm *> QEventDispatcherWasm::g_secondaryThreadEventDispatchers;
@@ -78,19 +79,20 @@ QEventDispatcherWasm::QEventDispatcherWasm(std::shared_ptr<QWasmSuspendResumeCon
         g_mainThreadEventDispatcher = this;
 
         if (suspendResumeControl) {
-            g_mainThreadSuspendResumeControl = suspendResumeControl;
+            g_customMainThreadSuspendResumeControl = suspendResumeControl;
+            g_mainThreadSuspendResumeControl = g_customMainThreadSuspendResumeControl.get();
         } else {
-            g_mainThreadSuspendResumeControl = std::make_shared<QWasmSuspendResumeControl>();
+            g_mainThreadSuspendResumeControl = QWasmSuspendResumeControl::get();
         }
 
         // Zero-timer used on wake() calls
-        m_wakeupTimer = std::make_unique<QWasmTimer>(g_mainThreadSuspendResumeControl.get(), [](){ onWakeup(); });
+        m_wakeupTimer = std::make_unique<QWasmTimer>(g_mainThreadSuspendResumeControl, [](){ onWakeup(); });
 
         // Timer set to fire at the next Qt timer timeout
-        m_nativeTimer = std::make_unique<QWasmTimer>(g_mainThreadSuspendResumeControl.get(), []() { onTimer(); });
+        m_nativeTimer = std::make_unique<QWasmTimer>(g_mainThreadSuspendResumeControl, []() { onTimer(); });
 
         // Timer used when suspending to process native events
-        m_suspendTimer = std::make_unique<QWasmTimer>(g_mainThreadSuspendResumeControl.get(), []() { onProcessNativeEventsResume(); });
+        m_suspendTimer = std::make_unique<QWasmTimer>(g_mainThreadSuspendResumeControl, []() { onProcessNativeEventsResume(); });
     } else {
 #if QT_CONFIG(thread)
         std::lock_guard<std::mutex> lock(g_staticDataMutex);
@@ -119,7 +121,8 @@ QEventDispatcherWasm::~QEventDispatcherWasm()
     {
         QWasmSocket::clearSocketNotifiers();
         g_mainThreadEventDispatcher = nullptr;
-        g_mainThreadSuspendResumeControl.reset();
+        g_customMainThreadSuspendResumeControl.reset();
+        g_mainThreadSuspendResumeControl = nullptr;
     }
 }
 

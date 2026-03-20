@@ -9,8 +9,8 @@
 
 QT_BEGIN_NAMESPACE
 
-QWasmEventDispatcher::QWasmEventDispatcher(std::shared_ptr<QWasmSuspendResumeControl> suspendResume)
-    :QEventDispatcherWasm(suspendResume)
+QWasmEventDispatcher::QWasmEventDispatcher()
+    :QEventDispatcherWasm()
 {
 
 }

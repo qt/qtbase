@@ -10,10 +10,10 @@ class ClickWindow: public QRasterWindow
 {
 public:
     ClickWindow() {
-        qDebug() << "ClickWindow constructor";
+        qWarning() << "ClickWindow constructor";
     }
     ~ClickWindow() {
-        qDebug() << "ClickWindow destructor";
+        qWarning() << "ClickWindow destructor";
     }
 
     void paintEvent(QPaintEvent *ev) override {
@@ -30,27 +30,31 @@ public:
 
 int main(int argc, char **argv)
 {
-    qDebug() << "main(): Creating QGuiApplication object";
-    QGuiApplication app(argc, argv);
+    for (int i = 0; i < 5; ++i) {
+        qDebug() << "main(): Creating QGuiApplication object";
+        QGuiApplication app(argc, argv);
 
-    QObject::connect(&app, &QCoreApplication::aboutToQuit, [](){
-        qDebug() << "QCoreApplication::aboutToQuit";
-    });
+        QObject::connect(&app, &QCoreApplication::aboutToQuit, [](){
+            qDebug() << "QCoreApplication::aboutToQuit";
+        });
 
-    ClickWindow window;
-    window.show();
+        ClickWindow window;
+        window.show();
 
-    qDebug() << "main(): calling exec()";
-    app.exec();
+        qDebug() << "main(): calling exec()";
+        app.exec();
 
-    // The exec() call above never returns; instead, a JavaScript exception
-    // is thrown such that control returns to the browser while preserving
-    // the C++ stack.
+        // If not using asyncify:
+        //
+        // The exec() call above never returns; instead, a JavaScript exception
+        // is thrown such that control returns to the browser while preserving
+        // the C++ stack.
 
-    // This means that the window object above is not destroyed, and that
-    // shutdown code after exec() does not run.
+        // This means that the window object above is not destroyed, and that
+        // shutdown code after exec() does not run.
 
-    qDebug() << "main(): after exit"; // <- will not be printed
+        qDebug() << "main(): after exit"; // <- will not be printed
+    }
 }
 
 // Global variables are created before main() as usual, but not destroyed
@@ -61,7 +65,7 @@ public:
         qDebug() << "Global constructor";
     }
     ~Global() {
-        qDebug() << "Global destructor"; // <- will not be printed
+        qWarning() << "Global destructor"; // <- will not be printed, without asyncify
     }
 };
 Global global;
