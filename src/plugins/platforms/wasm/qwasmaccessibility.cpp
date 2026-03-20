@@ -56,7 +56,7 @@ QWasmAccessibility::QWasmAccessibility()
 
     // Register accessibility element event handler
     QWasmSuspendResumeControl *suspendResume = QWasmSuspendResumeControl::get();
-    Q_ASSERT(suspendResume);
+
     m_eventHandlerIndex = suspendResume->registerEventHandler([this](const emscripten::val event){
         this->handleEventFromHtmlElement(event);
     });
@@ -66,7 +66,6 @@ QWasmAccessibility::~QWasmAccessibility()
 {
     // Remove accessibility element event handler
     QWasmSuspendResumeControl *suspendResume = QWasmSuspendResumeControl::get();
-    Q_ASSERT(suspendResume);
     suspendResume->removeEventHandler(m_eventHandlerIndex);
 
     s_instance = nullptr;

@@ -16,7 +16,7 @@ class QWasmSuspendResumeControl;
 class QWasmEventDispatcher : public QEventDispatcherWasm
 {
 public:
-    QWasmEventDispatcher(std::shared_ptr<QWasmSuspendResumeControl> suspendResume);
+    QWasmEventDispatcher();
 
 protected:
     bool sendPostedEvents() override;

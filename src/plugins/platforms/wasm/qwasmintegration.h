@@ -98,9 +98,6 @@ private:
         QWasmScreen *wasmScreen;
     };
 
-    // m_suspendResume should be created first and destroyed early as other fields depend on it
-    std::shared_ptr<QWasmSuspendResumeControl> m_suspendResume;
-
     mutable QWasmFontDatabase *m_fontDb;
     mutable QWasmServices *m_desktopServices;
     mutable QHash<QWindow *, QWasmBackingStore *> m_backingStores;

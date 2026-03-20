@@ -96,8 +96,7 @@ EMSCRIPTEN_BINDINGS(qtQWasmIntegraton)
 QWasmIntegration *QWasmIntegration::s_instance;
 
 QWasmIntegration::QWasmIntegration()
-    : m_suspendResume(std::make_shared<QWasmSuspendResumeControl>()) // create early in order to register event handlers at startup
-    , m_fontDb(nullptr)
+    : m_fontDb(nullptr)
     , m_desktopServices(nullptr)
 #if QT_CONFIG(clipboard)
     , m_clipboard(new QWasmClipboard)
@@ -277,7 +276,7 @@ QPlatformFontDatabase *QWasmIntegration::fontDatabase() const
 
 QAbstractEventDispatcher *QWasmIntegration::createEventDispatcher() const
 {
-    return new QWasmEventDispatcher(m_suspendResume);
+    return new QWasmEventDispatcher();
 }
 
 QVariant QWasmIntegration::styleHint(QPlatformIntegration::StyleHint hint) const

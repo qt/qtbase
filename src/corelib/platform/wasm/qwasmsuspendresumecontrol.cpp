@@ -40,7 +40,7 @@ using emscripten::val;
     event handlers directly in that case.
 */
 
-QWasmSuspendResumeControl *QWasmSuspendResumeControl::s_suspendResumeControl = nullptr;
+Q_GLOBAL_STATIC(QWasmSuspendResumeControl, s_suspendResumeControl);
 
 // Setup/constructor function for Module.suspendResumeControl.
 // FIXME if assigning to the Module object from C++ is/becomes possible
@@ -113,6 +113,7 @@ void qtRegisterEventHandlerJs(int index) {
             // Handle the event based on instance state and asyncify flag
             if (control.exclusiveEventHandler > 0) {
                 // In exclusive mode, resume on exclusive event handler match only
+
                 if (index != control.exclusiveEventHandler)
                     return;
 
@@ -149,18 +150,20 @@ QWasmSuspendResumeControl::QWasmSuspendResumeControl()
 #endif
     qtSuspendResumeControlClearJs();
     suspendResumeControlJs().set("asyncifyEnabled", qstdweb::haveAsyncify());
-    QWasmSuspendResumeControl::s_suspendResumeControl = this;
 }
 
 QWasmSuspendResumeControl::~QWasmSuspendResumeControl()
 {
+    if (!m_eventHandlers.empty())
+        qWarning() << "QWasmSuspendResumeControl::~QWasmSuspendResumeControl - still remaining " << m_eventHandlers.size() << " handlers";
     qtSuspendResumeControlClearJs();
-    QWasmSuspendResumeControl::s_suspendResumeControl = nullptr;
 }
 
 QWasmSuspendResumeControl *QWasmSuspendResumeControl::get()
 {
-    Q_ASSERT_X(s_suspendResumeControl, "QWasmSuspendResumeControl", "Must create a QWasmSuspendResumeControl instance first");
+    if (!s_suspendResumeControl)
+        qFatal("QWasmSuspendResumeControl -- Object not created/destroyed");
+
     return s_suspendResumeControl;
 }
 
@@ -245,8 +248,8 @@ int QWasmSuspendResumeControl::sendPendingEvents()
 
 void qtSendPendingEvents()
 {
-    if (QWasmSuspendResumeControl::s_suspendResumeControl)
-        QWasmSuspendResumeControl::s_suspendResumeControl->sendPendingEvents();
+    if (s_suspendResumeControl)
+        s_suspendResumeControl->sendPendingEvents();
 }
 
 EMSCRIPTEN_BINDINGS(qtSuspendResumeControl) {
@@ -261,7 +264,6 @@ QWasmEventHandler::QWasmEventHandler(emscripten::val element, const std::string 
 ,m_name(name)
 {
     QWasmSuspendResumeControl *suspendResume = QWasmSuspendResumeControl::get();
-    Q_ASSERT(suspendResume); // must construct the event dispatcher or platform integration first
     m_eventHandlerIndex = suspendResume->registerEventHandler(std::move(handler));
     m_element.call<void>("addEventListener", m_name, suspendResume->jsEventHandlerAt(m_eventHandlerIndex));
 }
@@ -273,7 +275,6 @@ QWasmEventHandler::~QWasmEventHandler()
         return;
 
     QWasmSuspendResumeControl *suspendResume = QWasmSuspendResumeControl::get();
-    Q_ASSERT(suspendResume);
     m_element.call<void>("removeEventListener", m_name, suspendResume->jsEventHandlerAt(m_eventHandlerIndex));
     suspendResume->removeEventHandler(m_eventHandlerIndex);
 }
@@ -322,11 +323,13 @@ QWasmTimer::QWasmTimer(QWasmSuspendResumeControl *suspendResume, std::function<v
 QWasmTimer::~QWasmTimer()
 {
     clearTimeout();
+    // We lack a test that checks validity of m_suspendResume
     m_suspendResume->removeEventHandler(m_handlerIndex);
 }
 
 void QWasmTimer::setTimeout(std::chrono::milliseconds timeout)
 {
+    Q_ASSERT(m_suspendResume == QWasmSuspendResumeControl::get());
     if (hasTimeout())
         clearTimeout();
     val jsHandler = QWasmSuspendResumeControl::get()->jsEventHandlerAt(m_handlerIndex);

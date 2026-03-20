@@ -482,7 +482,6 @@ size_t qstdweb::Promise::State::s_numInstances = 0;
 Promise& Promise::addThenFunction(std::function<void(emscripten::val)> thenFunc)
 {
     QWasmSuspendResumeControl *suspendResume = QWasmSuspendResumeControl::get();
-    Q_ASSERT(suspendResume);
 
     m_state->m_handlers.push_back(suspendResume->registerEventHandler(thenFunc));
     m_state->m_promise =
@@ -498,7 +497,6 @@ Promise& Promise::addThenFunction(std::function<void(emscripten::val)> thenFunc)
 Promise& Promise::addCatchFunction(std::function<void(emscripten::val)> catchFunc)
 {
     QWasmSuspendResumeControl *suspendResume = QWasmSuspendResumeControl::get();
-    Q_ASSERT(suspendResume);
 
     m_state->m_handlers.push_back(suspendResume->registerEventHandler(catchFunc));
     m_state->m_promise =
@@ -514,7 +512,6 @@ Promise& Promise::addCatchFunction(std::function<void(emscripten::val)> catchFun
 Promise& Promise::addFinallyFunction(std::function<void()> finallyFunc)
 {
     QWasmSuspendResumeControl *suspendResume = QWasmSuspendResumeControl::get();
-    Q_ASSERT(suspendResume);
 
     auto thisHandler = std::make_shared<uint32_t>((uint32_t)(-1));
     auto state = m_state;
@@ -530,7 +527,6 @@ Promise& Promise::addFinallyFunction(std::function<void()> finallyFunc)
             if (state->m_handlers.back() == *thisHandler) {
                 auto guard = state; // removeEventHandler will remove also this function
                 QWasmSuspendResumeControl *suspendResume = QWasmSuspendResumeControl::get();
-                Q_ASSERT(suspendResume);
                 for (int i = 0; i < guard->m_handlers.size(); ++i) {
                     suspendResume->removeEventHandler(guard->m_handlers[i]);
                     guard->m_handlers[i] = (uint32_t)(-1);
@@ -565,7 +561,6 @@ uint32_t Promise::adoptPromise(emscripten::val promise, PromiseCallbacks callbac
         "Promise::adoptPromise", "must provide at least one callback function");
 
     QWasmSuspendResumeControl *suspendResume = QWasmSuspendResumeControl::get();
-    Q_ASSERT(suspendResume);
 
     // Registers a possibly-empty callback with suspendresumecontrol. Returns
     // the the handler index if there was a valid callback, or nullopt.
@@ -586,7 +581,8 @@ uint32_t Promise::adoptPromise(emscripten::val promise, PromiseCallbacks callbac
     auto finallyFunc = callbacks.finallyFunc;
 
     // 'Finally' callback which performs clean-up and calls the user-provided finally.
-    auto finally = [suspendResume, thenIndex, catchIndex, finallyIndex, finallyFunc](emscripten::val){
+    auto finally = [thenIndex, catchIndex, finallyIndex, finallyFunc](emscripten::val){
+        QWasmSuspendResumeControl *suspendResume = QWasmSuspendResumeControl::get();
 
         // Clean up event handlers
         if (thenIndex)
@@ -629,7 +625,6 @@ uint32_t Promise::adoptPromise(emscripten::val promise, PromiseCallbacks callbac
 void Promise::suspendExclusive(QList<uint32_t> handlerIndices)
 {
     QWasmSuspendResumeControl *suspendResume = QWasmSuspendResumeControl::get();
-    Q_ASSERT(suspendResume);
     suspendResume->suspendExclusive(handlerIndices);
     suspendResume->sendPendingEvents();
 }

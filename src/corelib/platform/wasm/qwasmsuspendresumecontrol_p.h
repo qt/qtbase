@@ -55,7 +55,6 @@ public:
 private:
     friend void qtSendPendingEvents();
 
-    static QWasmSuspendResumeControl *s_suspendResumeControl;
     std::map<int, std::function<void(emscripten::val)>> m_eventHandlers;
     std::function<bool(int)> m_eventFilter = [](int) { return true; };
     emscripten::val m_currentEvent = emscripten::val::undefined();
