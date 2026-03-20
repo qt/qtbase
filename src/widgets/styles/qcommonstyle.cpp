@@ -2609,39 +2609,39 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
         break;
 #endif // QT_CONFIG(toolbox)
     case SE_HeaderLabel: {
-        int margin = proxy()->pixelMetric(QStyle::PM_HeaderMargin, opt, widget);
-        r.setRect(opt->rect.x() + margin, opt->rect.y() + margin,
-                  opt->rect.width() - margin * 2, opt->rect.height() - margin * 2);
+        const int margin = proxy()->pixelMetric(PM_HeaderMargin, opt, widget);
+        r = opt->rect.marginsRemoved({ margin, margin, margin, margin });
 
-        if (const QStyleOptionHeader *header = qstyleoption_cast<const QStyleOptionHeader *>(opt)) {
+        if (const auto *header = qstyleoption_cast<const QStyleOptionHeader *>(opt)) {
             // Subtract width needed for arrow, if there is one
             if (header->sortIndicator != QStyleOptionHeader::None) {
+                const int hdrSize = proxy()->pixelMetric(PM_HeaderMarkSize, opt, widget);
                 if (opt->state & State_Horizontal)
-                    r.setWidth(r.width() - (opt->rect.height() / 2) - (margin * 2));
+                    r.setWidth(r.width() - hdrSize);
                 else
-                    r.setHeight(r.height() - (opt->rect.width() / 2) - (margin * 2));
+                    r.setHeight(r.height() - hdrSize);
             }
         }
         r = visualRect(opt->direction, opt->rect, r);
-        break; }
+        break;
+    }
     case SE_HeaderArrow: {
-        int h = opt->rect.height();
-        int w = opt->rect.width();
-        int x = opt->rect.x();
-        int y = opt->rect.y();
-        int margin = proxy()->pixelMetric(QStyle::PM_HeaderMargin, opt, widget);
+        const auto &rect = opt->rect;
+        const int margin = proxy()->pixelMetric(PM_HeaderMargin, opt, widget);
+        const int arrowSize = proxy()->pixelMetric(PM_HeaderMarkSize, opt, widget);
 
         if (opt->state & State_Horizontal) {
-            int horiz_size = h / 2;
-            r.setRect(x + w - margin * 2 - horiz_size, y + 5,
-                      horiz_size, h - margin * 2 - 5);
+            const int yCenter = rect.center().y();
+            r.setRect(rect.right() - margin * 2 - arrowSize, yCenter - arrowSize / 2,
+                      arrowSize, arrowSize);
         } else {
-            int vert_size = w / 2;
-            r.setRect(x + 5, y + h - margin * 2 - vert_size,
-                      w - margin * 2 - 5, vert_size);
+            const int xCenter = rect.center().x();
+            r.setRect(xCenter - arrowSize / 2, rect.bottom() - margin * 2 - arrowSize,
+                      arrowSize, arrowSize);
         }
         r = visualRect(opt->direction, opt->rect, r);
-        break; }
+        break;
+    }
 
     case SE_RadioButtonClickRect:
         r = subElementRect(SE_RadioButtonFocusRect, opt, widget);
@@ -4714,7 +4714,8 @@ int QCommonStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const QWid
         ret = int(QStyleHelper::dpiScaled(4, opt));
         break;
     case PM_HeaderMarkSize:
-        ret = int(QStyleHelper::dpiScaled(16, opt));
+        ret = opt ? opt->fontMetrics.height() * 5 / 8
+                  : int(QStyleHelper::dpiScaled(16, opt)); // 62.5%
         break;
     case PM_HeaderGripMargin:
         ret = int(QStyleHelper::dpiScaled(4, opt));

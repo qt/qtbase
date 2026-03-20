@@ -423,7 +423,7 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
     }
     case PE_IndicatorHeaderArrow:
         if (const QStyleOptionHeader *header = qstyleoption_cast<const QStyleOptionHeader *>(option)) {
-            const QRect r = header->rect.translated(0, -2);
+            const QRect &r = header->rect;
             QColor arrowColor = header->palette.windowText().color();
             arrowColor.setAlpha(180);
 
