@@ -591,7 +591,7 @@ function(qt_generate_build_internals_extra_cmake_code)
                      ${QT_CONFIG_BUILD_DIR}
                      ${INSTALL_CMAKE_NAMESPACE}BuildInternals/QtBuildInternalsExtra.cmake)
 
-        if(CMAKE_BUILD_TYPE)
+        if(CMAKE_BUILD_TYPE AND NOT QT_NO_STORE_CMAKE_BUILD_TYPE)
             string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
                 "
 # Used by qt_internal_set_cmake_build_type.
