@@ -536,9 +536,9 @@ void QOhosInputContext::onCursorRectangleChanged()
         QGuiApplication::inputMethod()->inputItemClipRectangle()
         .translated(m_lastFocusedWindowPosition)
         .toRect();
-    auto screenSpaceCursorRectangle = m_lastCursorRectangle.translated(m_lastFocusedWindowPosition);
+    auto globalCursorRectangle = m_lastCursorRectangle.translated(m_lastFocusedWindowPosition);
     auto inputItemClampedCursorPos = clampToRect(
-        {screenSpaceCursorRectangle.x(), screenSpaceCursorRectangle.y()},
+        {globalCursorRectangle.x(), globalCursorRectangle.y()},
         globalInputItemRectangle.isValid()
             ? globalInputItemRectangle
             : focusedWindow->geometry());
@@ -546,7 +546,7 @@ void QOhosInputContext::onCursorRectangleChanged()
         inputItemClampedCursorPos, focusedWindow->screen()->handle());
     updateOhosCursor({
         nativeCursorPos.x(), nativeCursorPos.y(),
-        screenSpaceCursorRectangle.width(), screenSpaceCursorRectangle.height()
+        globalCursorRectangle.width(), globalCursorRectangle.height()
     });
     m_updateCursorRectangleAfterAttaching = false;
 }
