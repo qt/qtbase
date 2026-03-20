@@ -584,7 +584,7 @@ QFont *QKdeThemePrivate::kdeFont(const QVariant &fontValue)
         if (!fontDescription.isEmpty()) {
             QFont font(fontFamily);
             if (font.fromString(fontDescription))
-                return new QFont(font);
+                return new QFont(std::move(font));
         }
     }
     return nullptr;
