@@ -527,15 +527,15 @@ void QOhosInputContext::onCursorRectangleChanged()
 
     m_lastCursorRectangle = cursorRectangle;
     m_lastFocusedWindowPosition = focusedWindowPosition;
-    auto screenSpaceInputItemRectangle =
+    auto globalInputItemRectangle =
         QGuiApplication::inputMethod()->inputItemClipRectangle()
         .translated(m_lastFocusedWindowPosition)
         .toRect();
     auto screenSpaceCursorRectangle = m_lastCursorRectangle.translated(m_lastFocusedWindowPosition);
     auto inputItemClampedCursorPos = clampToRect(
         {screenSpaceCursorRectangle.x(), screenSpaceCursorRectangle.y()},
-        screenSpaceInputItemRectangle.isValid()
-            ? screenSpaceInputItemRectangle
+        globalInputItemRectangle.isValid()
+            ? globalInputItemRectangle
             : focusedWindow->geometry());
     auto nativeCursorPos = QHighDpiScaling::mapPositionToNative(
         inputItemClampedCursorPos, focusedWindow->screen()->handle());
