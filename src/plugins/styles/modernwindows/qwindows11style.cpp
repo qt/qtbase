@@ -1004,7 +1004,7 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
             if (indicator != QStyleOptionHeader::None) {
                 QPainterStateGuard psg(painter);
                 QFont f(d->assetFont);
-                f.setPointSize(6);
+                f.setPointSize(option->rect.height());
                 painter->setFont(f);
                 painter->setPen(header->palette.text().color());
                 const auto ico = indicator == QStyleOptionHeader::SortUp ? Icon::ChevronDown
@@ -2190,10 +2190,23 @@ QRect QWindows11Style::subElementRect(QStyle::SubElement element, const QStyleOp
         }
         break;
 #endif // QT_CONFIG(toolbar)
-    case QStyle::SE_HeaderLabel:
-    case QStyle::SE_HeaderArrow:
-        ret = QWindowsVistaStyle::subElementRect(element, option, widget);
+    case SE_HeaderLabel: {
+        const int margin = proxy()->pixelMetric(PM_HeaderMargin, option, widget);
+        ret = option->rect.marginsRemoved({ margin, margin, margin, margin });
         break;
+    }
+    case SE_HeaderArrow: {
+        ret = option->rect;
+        if (const auto *header = qstyleoption_cast<const QStyleOptionHeader *>(option)) {
+            // the sort indicator is always show above in the win11 style
+            if (header->sortIndicator != QStyleOptionHeader::None) {
+                const int arrowSize = proxy()->pixelMetric(PM_HeaderMarkSize, option, widget);
+                const int xCenter = ret.center().x();
+                ret = QRect(xCenter - arrowSize / 2, ret.top(), arrowSize, arrowSize);
+            }
+        }
+        break;
+    }
     case SE_PushButtonContents: {
         int border = proxy()->pixelMetric(PM_DefaultFrameWidth, option, widget);
         ret = option->rect.marginsRemoved(QMargins(border, border, border, border));
@@ -2693,6 +2706,9 @@ int QWindows11Style::pixelMetric(PixelMetric metric, const QStyleOption *option,
         break;
     case PM_ProgressBarChunkWidth:
         res = 0;    // no chunks on windows11
+        break;
+    case PM_HeaderMarkSize:
+        res = 6;
         break;
     default:
         res = QWindowsVistaStyle::pixelMetric(metric, option, widget);
