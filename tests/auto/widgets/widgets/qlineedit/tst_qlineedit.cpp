@@ -3506,15 +3506,17 @@ void tst_QLineEdit::textMargin_data()
     QTest::addColumn<QPoint>("mousePressPos");
     QTest::addColumn<int>("cursorPosition");
 
-    QLineEdit testWidget;
+    struct TestLineEditWidget : public QLineEdit
+    {
+        QRect cursorRect() const { return QLineEdit::cursorRect(); }
+    };
+
+    TestLineEditWidget testWidget;
     QFontMetrics metrics(testWidget.font());
     const QString s = QLatin1String("MMM MMM MMM");
-    const int windows11StyleHorizontalOffset = qApp->style()->inherits("QWindows11Style") ? 8 : 0;
 
-    // Different styles generate different offsets, so
-    // calculate the width rather than hardcode it.
-    const int pixelWidthOfM = windows11StyleHorizontalOffset + metrics.horizontalAdvance(s, 1);
-    const int pixelWidthOfMMM_MM = windows11StyleHorizontalOffset + metrics.horizontalAdvance(s, 6);
+    const int pixelWidthOfM = testWidget.cursorRect().x() + metrics.horizontalAdvance(s, 1);
+    const int pixelWidthOfMMM_MM = testWidget.cursorRect().x() + metrics.horizontalAdvance(s, 6);
 
     QTest::newRow("default-0") << 0 << 0 << 0 << 0 << QPoint(pixelWidthOfMMM_MM, 0) << 6;
     QTest::newRow("default-1") << 0 << 0 << 0 << 0 << QPoint(1, 1) << 0;
