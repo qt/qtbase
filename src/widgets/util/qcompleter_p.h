@@ -22,6 +22,7 @@
 
 #include "QtWidgets/qabstractitemview.h"
 #include "QtCore/qabstractproxymodel.h"
+#include "QtCore/qhash.h"
 #include "QtCore/qmap.h"
 #include "qcompleter.h"
 #include "qstyleditemdelegate.h"
@@ -113,7 +114,7 @@ class QCompletionEngine
 {
 public:
     typedef QMap<QString, QMatchData> CacheItem;
-    typedef QMap<QModelIndex, CacheItem> Cache;
+    typedef QHash<QModelIndex, CacheItem> Cache;
 
     QCompletionEngine(QCompleterPrivate *c) : c(c), curRow(-1), cost(0) { }
     virtual ~QCompletionEngine() { }
