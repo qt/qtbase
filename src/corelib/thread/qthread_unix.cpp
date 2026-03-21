@@ -10,7 +10,6 @@
 #include <private/qcore_unix_p.h>
 #include "qdebug.h"
 #include "qloggingcategory.h"
-#include "qthreadstorage.h"
 #include <private/qtools_p.h>
 
 #if defined(Q_OS_WASM)

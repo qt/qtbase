@@ -10,7 +10,6 @@
 #include <private/qeventdispatcher_win_p.h>
 #include "qloggingcategory.h"
 #include "qmutex.h"
-#include "qthreadstorage.h"
 #include <private/quniquehandle_types_p.h>
 
 #include <qt_windows.h>
