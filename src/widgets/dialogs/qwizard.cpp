@@ -105,6 +105,7 @@ const struct {
     { "QAbstractSlider", "value" },
     { "QComboBox", "currentIndex" },
     { "QDateTimeEdit", "dateTime" },
+    { "QDateEdit", "date" },
     { "QLineEdit", "text" },
     { "QListWidget", "currentRow" },
     { "QSpinBox", "value" },
