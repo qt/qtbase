@@ -370,17 +370,6 @@ void QWellArray::keyPressEvent(QKeyEvent* e)
         if (curRow < numRows()-1)
             setCurrent(curRow + 1, curCol);
         break;
-#if 0
-    // bad idea that shouldn't have been implemented; very counterintuitive
-    case Qt::Key_Return:
-    case Qt::Key_Enter:
-        /*
-          ignore the key, so that the dialog get it, but still select
-          the current row/col
-        */
-        e->ignore();
-        // fallthrough intended
-#endif
     case Qt::Key_Space:
         setSelected(curRow, curCol);
         break;

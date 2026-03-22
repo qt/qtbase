@@ -427,13 +427,6 @@ Qt::Alignment QGraphicsLinearLayout::alignment(QGraphicsLayoutItem *item) const
     return d->engine.alignment(item);
 }
 
-#if 0 // ###
-QSizePolicy::ControlTypes QGraphicsLinearLayout::controlTypes(LayoutSide side) const
-{
-    return d->engine.controlTypes(side);
-}
-#endif
-
 /*!
     \reimp
 */

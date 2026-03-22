@@ -314,23 +314,6 @@ QGridLayoutPrivate::QGridLayoutPrivate()
     verticalSpacing = -1;
 }
 
-#if 0
-QGridLayoutPrivate::QGridLayoutPrivate(int nRows, int nCols)
-    : rowData(0), colData(0)
-{
-    init();
-    if (nRows  < 0) {
-        nRows = 1;
-        addVertical = false;
-    }
-    if (nCols  < 0) {
-        nCols = 1;
-        addVertical = true;
-    }
-    setSize(nRows, nCols);
-}
-#endif
-
 void QGridLayoutPrivate::deleteAll()
 {
     while (!things.isEmpty())
