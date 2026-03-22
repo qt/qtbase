@@ -124,9 +124,6 @@ public:
 
     void insertViewItems(int pos, int count, const QTreeViewItem &viewItem);
     void removeViewItems(int pos, int count);
-#if 0
-    bool checkViewItems() const;
-#endif
 
     int firstVisibleItem(int *offset = nullptr) const;
     int lastVisibleItem(int firstVisual = -1, int offset = -1) const;
