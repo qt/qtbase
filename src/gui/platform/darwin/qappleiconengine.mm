@@ -431,6 +431,9 @@ void QAppleIconEngine::paint(QPainter *painter, const QRect &rect, QIcon::Mode m
 {
     Q_UNUSED(state);
 
+    if (isNull())
+        return;
+
     QColor color;
     const QPalette palette;
     switch (mode) {
