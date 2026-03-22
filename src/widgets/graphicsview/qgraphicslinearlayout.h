@@ -53,10 +53,6 @@ public:
     void invalidate() override;
     QSizeF sizeHint(Qt::SizeHint which, const QSizeF &constraint = QSizeF()) const override;
 
-#if 0 // ###
-    Q5SizePolicy::ControlTypes controlTypes(LayoutSide side) const;
-#endif
-
     void dump(int indent = 0) const;
 
 protected:

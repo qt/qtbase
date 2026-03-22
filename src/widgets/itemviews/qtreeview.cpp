@@ -3198,21 +3198,6 @@ void QTreeViewPrivate::removeViewItems(int pos, int count)
             items[i].parentItem -= count;
 }
 
-#if 0
-bool QTreeViewPrivate::checkViewItems() const
-{
-    for (int i = 0; i < viewItems.count(); ++i) {
-        const QTreeViewItem &vi = viewItems.at(i);
-        if (vi.parentItem == -1) {
-            Q_ASSERT(!vi.index.parent().isValid() || vi.index.parent() == root);
-        } else {
-            Q_ASSERT(vi.index.parent() == viewItems.at(vi.parentItem).index);
-        }
-    }
-    return true;
-}
-#endif
-
 void QTreeViewPrivate::collapse(int item, bool emitSignal)
 {
     Q_Q(QTreeView);

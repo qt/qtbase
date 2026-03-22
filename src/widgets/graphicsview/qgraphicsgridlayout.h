@@ -82,10 +82,6 @@ public:
     void setGeometry(const QRectF &rect) override;
     QSizeF sizeHint(Qt::SizeHint which, const QSizeF &constraint = QSizeF()) const override;
 
-    // ####
-    //QRect cellRect(int row, int column, int rowSpan = 1, int columnSpan = 1) const;
-    //QSizePolicy::ControlTypes controlTypes(LayoutSide side) const;
-
 private:
     Q_DISABLE_COPY(QGraphicsGridLayout)
     Q_DECLARE_PRIVATE(QGraphicsGridLayout)
