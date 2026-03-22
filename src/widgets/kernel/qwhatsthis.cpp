@@ -556,10 +556,9 @@ void QWhatsThisPrivate::say(QWidget * widget, const QString &text, int x, int y)
 
     // squeeze it in if that would result in part of what's this
     // being only partially visible
-    if (x + w  + shadowWidth > sx+screenRect.width()) {
-        x = (widget ? qMin(screenRect.width(), pos.x() + widget->width())
-                    : screenRect.width())
-            - w;
+    if (x + w  + shadowWidth > screenRect.right()) {
+        x = widget ? qMin(screenRect.right(), pos.x() + widget->width()) : screenRect.right();
+        x -=w;
     }
 
     if (x < sx)
@@ -568,17 +567,16 @@ void QWhatsThisPrivate::say(QWidget * widget, const QString &text, int x, int y)
     if (widget && h > widget->height() + 16) {
         y = pos.y() + widget->height() + 2; // below, two pixels spacing
         // what's this is above or below, wherever there's most space
-        if (y + h + 10 > sy + screenRect.height())
+        if (y + h + 10 > screenRect.bottom())
             y = pos.y() + 2 - shadowWidth - h; // above, overlap
     }
     y = y + 2;
 
     // squeeze it in if that would result in part of what's this
     // being only partially visible
-    if (y + h + shadowWidth > sy + screenRect.height()) {
-        y = (widget ? qMin(screenRect.height(), pos.y() + widget->height())
-                    : screenRect.height())
-            - h;
+    if (y + h + shadowWidth > screenRect.bottom()) {
+        y = widget ? qMin(screenRect.bottom(), pos.y() + widget->height()) : screenRect.bottom();
+        y -= h;
     }
     if (y < sy)
         y = sy;
