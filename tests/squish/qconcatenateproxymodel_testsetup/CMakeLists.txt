@@ -3,5 +3,7 @@
 
 add_subdirectory(qconcatenatetablesproxymodel)
 
-file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/suite_qconcatenateproxymodel"
-     DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/suite_qconcatenateproxymodel")
+if(NOT CMAKE_CURRENT_BINARY_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+    file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/suite_qconcatenateproxymodel"
+         DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/suite_qconcatenateproxymodel")
+endif()

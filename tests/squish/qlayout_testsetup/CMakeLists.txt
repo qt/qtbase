@@ -3,5 +3,8 @@
 
 add_subdirectory(qlayout)
 
-file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/suite_qlayout"
-     DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/suite_qlayout")
+if(NOT CMAKE_CURRENT_BINARY_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+    file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/suite_qlayout"
+         DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/suite_qlayout")
+endif()
+

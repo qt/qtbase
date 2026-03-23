@@ -3,5 +3,7 @@
 
 add_subdirectory(qgraphicsitemgroup)
 
-file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/suite_qgraphicsitemgroup"
-     DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/suite_qgraphicsitemgroup")
+if(NOT CMAKE_CURRENT_BINARY_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+    file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/suite_qgraphicsitemgroup"
+         DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/suite_qgraphicsitemgroup")
+endif()

@@ -3,6 +3,8 @@
 
 add_subdirectory(keypadnavigation)
 
-file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/suite_keypadnavigation"
-     DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/suite_keypadnavigation")
+if(NOT CMAKE_CURRENT_BINARY_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+    file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/suite_keypadnavigation"
+         DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/suite_keypadnavigation")
+endif()
 
