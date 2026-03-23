@@ -108,6 +108,8 @@ Q_LOGGING_CATEGORY(lcPointerGrab, "qt.pointer.grab");
     \value Cursor
         A transparent circle with cross-hairs as found on a
         \l {QInputDevice::DeviceType}{Puck} device.
+    \value Palm
+        The user's palm.
     \value AllPointerTypes
         Any of the above (used as a default filter value).
 */

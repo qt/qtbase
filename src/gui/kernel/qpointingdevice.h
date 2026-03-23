@@ -65,6 +65,7 @@ public:
         Pen = 0x0004,       // stylus on a tablet
         Eraser = 0x0008,    // eraser end of a stylus
         Cursor = 0x0010,    // digitizer with crosshairs
+        Palm = 0x0020,      // palm
         AllPointerTypes = 0x7FFF
     };
     Q_DECLARE_FLAGS(PointerTypes, PointerType)
