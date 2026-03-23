@@ -3,4 +3,5 @@
 
 if(ANDROID AND QT_FEATURE_widgets)
     qt_internal_add_example(androidnotifier)
+    qt_internal_add_example(androidlanguageexchange)
 endif()
