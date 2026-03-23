@@ -8,7 +8,7 @@
 
 #include <algorithm> // sort
 #include <optional>
-#include <utility> // exchange, move
+#include <utility> // exchange, move, pair
 #include <vector>
 
 QT_BEGIN_NAMESPACE
@@ -238,6 +238,8 @@ class TemporalFieldMatcher
                                               TemporalFieldFlags flags) const;
     std::vector<PartialParse> dayNameExtend(const PartialParse &base, QStringView text,
                                             TemporalFieldFlags flags) const;
+    std::pair<qsizetype, int> dayPeriodPrefix(const PartialParse &base, QStringView text,
+                                              TemporalFieldFlags flags) const;
 public:
     TemporalFieldMatcher(const QLocale &loc, QCalendar cal, std::optional<int> centuryStart)
         : locale(loc), calendar(cal), baseYear(centuryStart)
@@ -398,6 +400,24 @@ TemporalFieldMatcher::dayNameExtend(const PartialParse &base, QStringView text,
     return matches;
 }
 
+std::pair<qsizetype, int>
+TemporalFieldMatcher::dayPeriodPrefix(const PartialParse &base, QStringView text,
+                                      TemporalFieldFlags flags) const
+{
+    std::pair<qsizetype, int> result = {0, -1};
+    for (int i = 0; i < 2; ++i) {
+        if (base.periodInDay >= 0 && base.periodInDay != i)
+            continue;
+        if (const QString token = i ? locale.pmText() : locale.amText(); !token.isEmpty()) {
+            if (auto match = matchesAt(text, base.results.endIndex, token, flags);
+                match.endIndex > result.first) {
+                result = { match.endIndex, i };
+            }
+        }
+    }
+    return result;
+}
+
 /*!
     \internal
     Find all matches to \a field, within \a text, that extend \a base.
@@ -466,6 +486,16 @@ TemporalFieldMatcher::continuations(const PartialParse &base, QStringView text,
     case Cat::Hour:
         break;
     case Cat::PeriodInDay: // am/pm; LDML also has noon, midnight, "at night" and others.
+        if (const auto match = dayPeriodPrefix(base, text, field.options); match.second >= 0) {
+            // Ensured by dayPeriodPrefix:
+            Q_ASSERT(base.periodInDay < 0 || base.periodInDay == match.second);
+            PartialParse grow = base;
+            grow.results.endIndex = match.first;
+            grow.periodInDay = match.second;
+            matches.push_back(grow);
+            if (field.options.testFlag(Flag::SpacePad))
+                matches = spacePadExtend(std::move(matches), text);
+        }
         break;
 
     case Cat::DayOfWeek:

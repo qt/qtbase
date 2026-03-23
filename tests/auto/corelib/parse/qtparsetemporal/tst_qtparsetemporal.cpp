@@ -144,6 +144,145 @@ void tst_QtParseTemporal::prefix_data()
         << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
         << 48 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
 
+    // Time:
+    // PeriodInDay:
+    QTest::newRow("AM/daypart/C/greg/0")
+        << u"AM"_s << Fields{ Field{ empty, 0, Flag::Verbal, Cat::PeriodInDay } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        // Not returned directly by prefix(), but until == 2 reveals that it was matched:
+        << 2 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("PM/daypart/C/greg/0")
+        << u"PM"_s << Fields{ Field{ empty, 0, Flag::Verbal, Cat::PeriodInDay } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 2 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("Am/daypart/C/greg/0")
+        << u"Am"_s << Fields{ Field{ empty, 0, Flag::Verbal, Cat::PeriodInDay } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("Pm/daypart/C/greg/0")
+        << u"Pm"_s << Fields{ Field{ empty, 0, Flag::Verbal, Cat::PeriodInDay } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("aM/daypart/C/greg/0")
+        << u"aM"_s << Fields{ Field{ empty, 0, Flag::Verbal, Cat::PeriodInDay } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("pM/daypart/C/greg/0")
+        << u"pM"_s << Fields{ Field{ empty, 0, Flag::Verbal, Cat::PeriodInDay } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("am/daypart/C/greg/0")
+        << u"am"_s << Fields{ Field{ empty, 0, Flag::Verbal, Cat::PeriodInDay } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("pm/daypart/C/greg/0")
+        << u"pm"_s << Fields{ Field{ empty, 0, Flag::Verbal, Cat::PeriodInDay } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+
+    // Ignoring case:
+    QTest::newRow("AM/daypart-case/C/greg/0")
+        << u"AM"_s << Fields{ Field{ empty, 0, Flag::Verbal | Flag::IgnoreCase, Cat::PeriodInDay } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 2 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("PM/daypart-case/C/greg/0")
+        << u"PM"_s << Fields{ Field{ empty, 0, Flag::Verbal | Flag::IgnoreCase, Cat::PeriodInDay } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 2 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("Am/daypart-case/C/greg/0")
+        << u"Am"_s << Fields{ Field{ empty, 0, Flag::Verbal | Flag::IgnoreCase, Cat::PeriodInDay } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 2 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("Pm/daypart-case/C/greg/0")
+        << u"Pm"_s << Fields{ Field{ empty, 0, Flag::Verbal | Flag::IgnoreCase, Cat::PeriodInDay } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 2 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("aM/daypart-case/C/greg/0")
+        << u"aM"_s << Fields{ Field{ empty, 0, Flag::Verbal | Flag::IgnoreCase, Cat::PeriodInDay } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 2 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("pM/daypart-case/C/greg/0")
+        << u"pM"_s << Fields{ Field{ empty, 0, Flag::Verbal | Flag::IgnoreCase, Cat::PeriodInDay } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 2 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("am/daypart-case/C/greg/0")
+        << u"am"_s << Fields{ Field{ empty, 0, Flag::Verbal | Flag::IgnoreCase, Cat::PeriodInDay } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 2 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("pm/daypart-case/C/greg/0")
+        << u"pm"_s << Fields{ Field{ empty, 0, Flag::Verbal | Flag::IgnoreCase, Cat::PeriodInDay } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 2 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+
+    // Upper case (happens to coincide with locale):
+    QTest::newRow("AM/daypart-upper/C/greg/0")
+        << u"AM"_s << Fields{ Field{ empty, 0, Flag::Verbal | Flag::UpperCase, Cat::PeriodInDay } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 2 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("PM/daypart-upper/C/greg/0")
+        << u"PM"_s << Fields{ Field{ empty, 0, Flag::Verbal | Flag::UpperCase, Cat::PeriodInDay } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 2 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("Am/daypart-upper/C/greg/0")
+        << u"Am"_s << Fields{ Field{ empty, 0, Flag::Verbal | Flag::UpperCase, Cat::PeriodInDay } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("Pm/daypart-upper/C/greg/0")
+        << u"Pm"_s << Fields{ Field{ empty, 0, Flag::Verbal | Flag::UpperCase, Cat::PeriodInDay } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("aM/daypart-upper/C/greg/0")
+        << u"aM"_s << Fields{ Field{ empty, 0, Flag::Verbal | Flag::UpperCase, Cat::PeriodInDay } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("pM/daypart-upper/C/greg/0")
+        << u"pM"_s << Fields{ Field{ empty, 0, Flag::Verbal | Flag::UpperCase, Cat::PeriodInDay } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("am/daypart-upper/C/greg/0")
+        << u"am"_s << Fields{ Field{ empty, 0, Flag::Verbal | Flag::UpperCase, Cat::PeriodInDay } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("pm/daypart-upper/C/greg/0")
+        << u"pm"_s << Fields{ Field{ empty, 0, Flag::Verbal | Flag::UpperCase, Cat::PeriodInDay } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+
+    // Lower case:
+    QTest::newRow("AM/daypart-lower/C/greg/0")
+        << u"AM"_s << Fields{ Field{ empty, 0, Flag::Verbal | Flag::LowerCase, Cat::PeriodInDay } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("PM/daypart-lower/C/greg/0")
+        << u"PM"_s << Fields{ Field{ empty, 0, Flag::Verbal | Flag::LowerCase, Cat::PeriodInDay } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("Am/daypart-lower/C/greg/0")
+        << u"Am"_s << Fields{ Field{ empty, 0, Flag::Verbal | Flag::LowerCase, Cat::PeriodInDay } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("Pm/daypart-lower/C/greg/0")
+        << u"Pm"_s << Fields{ Field{ empty, 0, Flag::Verbal | Flag::LowerCase, Cat::PeriodInDay } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("aM/daypart-lower/C/greg/0")
+        << u"aM"_s << Fields{ Field{ empty, 0, Flag::Verbal | Flag::LowerCase, Cat::PeriodInDay } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("pM/daypart-lower/C/greg/0")
+        << u"pM"_s << Fields{ Field{ empty, 0, Flag::Verbal | Flag::LowerCase, Cat::PeriodInDay } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("am/daypart-lower/C/greg/0")
+        << u"am"_s << Fields{ Field{ empty, 0, Flag::Verbal | Flag::LowerCase, Cat::PeriodInDay } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 2 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("pm/daypart-lower/C/greg/0")
+        << u"pm"_s << Fields{ Field{ empty, 0, Flag::Verbal | Flag::LowerCase, Cat::PeriodInDay } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 2 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+
+
     // Date:
     // DayOfWeek:
     QTest::newRow("Sunday/wday/C/greg/0")
