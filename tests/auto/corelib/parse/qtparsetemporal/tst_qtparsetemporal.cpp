@@ -143,6 +143,213 @@ void tst_QtParseTemporal::prefix_data()
                           0, Flags{ Flag::SpacePad }, Cat::Literal } }
         << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
         << 48 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+
+    // Date:
+    // DayOfWeek:
+    QTest::newRow("Sunday/wday/C/greg/0")
+        << u"Sunday"_s << Fields{ Field{ empty, 0, Flags{}, Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 6 << wall << -1 << -1 << -1 << -1 << 7 << 0 << 0 << 0;
+    QTest::newRow("Sunday/wday-wide/C/greg/0")
+        << u"Sunday"_s << Fields{ Field{ empty, 0, Flag::Wide, Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 6 << wall << -1 << -1 << -1 << -1 << 7 << 0 << 0 << 0;
+    QTest::newRow("Sunday/wday-short/C/greg/0") // ignores "day"
+        << u"Sunday"_s << Fields{ Field{ empty, 0, Flag::Short, Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 3 << wall << -1 << -1 << -1 << -1 << 7 << 0 << 0 << 0;
+    QTest::newRow("Sunday/wday-abbr/C/greg/0") // ignores "day"
+        << u"Sunday"_s << Fields{ Field{ empty, 0, Flag::Abbreviated, Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 3 << wall << -1 << -1 << -1 << -1 << 7 << 0 << 0 << 0;
+    QTest::newRow("Sunday/wday-narrow/C/greg/0") // ignores "unday", reads "S" as "Saturday"
+        << u"Sunday"_s << Fields{ Field{ empty, 0, Flag::Narrow, Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 1 << wall << -1 << -1 << -1 << -1 << 6 << 0 << 0 << 0;
+    QTest::newRow("Sat/wday/C/greg/0")
+        << u"Sat"_s << Fields{ Field{ empty, 0, Flags{}, Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 3 << wall << -1 << -1 << -1 << -1 << 6 << 0 << 0 << 0;
+    QTest::newRow("Sat/wday-wide/C/greg/0")
+        << u"Sat"_s << Fields{ Field{ empty, 0, Flag::Wide, Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("Sat/wday-short/C/greg/0")
+        << u"Sat"_s << Fields{ Field{ empty, 0, Flag::Short, Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 3 << wall << -1 << -1 << -1 << -1 << 6 << 0 << 0 << 0;
+    QTest::newRow("Sat/wday-narrow/C/greg/0") // ignores "at"
+        << u"Sat"_s << Fields{ Field{ empty, 0, Flag::Narrow, Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 1 << wall << -1 << -1 << -1 << -1 << 6 << 0 << 0 << 0;
+    QTest::newRow("5/wday/C/greg/0")
+        << u"5"_s << Fields{ Field{ empty, 0, Flags{}, Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 1 << wall << -1 << -1 << -1 << -1 << 5 << 0 << 0 << 0;
+    QTest::newRow("5/wday-wide/C/greg/0")
+        << u"5"_s << Fields{ Field{ empty, 0, Flag::Wide, Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("5/wday-short/C/greg/0")
+        << u"5"_s << Fields{ Field{ empty, 0, Flag::Short, Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("5/wday-narrow/C/greg/0")
+        << u"5"_s << Fields{ Field{ empty, 0, Flag::Narrow, Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 1 << wall << -1 << -1 << -1 << -1 << 5 << 0 << 0 << 0;
+    QTest::newRow("W/wday/C/greg/0")
+        << u"W"_s << Fields{ Field{ empty, 0, Flags{}, Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 1 << wall << -1 << -1 << -1 << -1 << 3 << 0 << 0 << 0;
+    QTest::newRow("W/wday-wide/C/greg/0")
+        << u"W"_s << Fields{ Field{ empty, 0, Flag::Wide, Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("W/wday-short/C/greg/0")
+        << u"W"_s << Fields{ Field{ empty, 0, Flag::Short, Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("W/wday-narrow/C/greg/0")
+        << u"W"_s << Fields{ Field{ empty, 0, Flag::Narrow, Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 1 << wall << -1 << -1 << -1 << -1 << 3 << 0 << 0 << 0;
+
+    // Verbal
+    QTest::newRow("Saturday/wday-verb/C/greg/0")
+        << u"Saturday"_s << Fields{ Field{ empty, 0, Flag::Verbal, Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 8 << wall << -1 << -1 << -1 << -1 << 6 << 0 << 0 << 0;
+    QTest::newRow("Saturday/wday-verb-wide/C/greg/0")
+        << u"Saturday"_s << Fields{ Field{ empty, 0, Flag::Verbal | Flag::Wide, Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 8 << wall << -1 << -1 << -1 << -1 << 6 << 0 << 0 << 0;
+    QTest::newRow("Saturday/wday-verb-short/C/greg/0") // ignores "urday"
+        << u"Saturday"_s << Fields{ Field{ empty, 0, Flag::Verbal | Flag::Short, Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 3 << wall << -1 << -1 << -1 << -1 << 6 << 0 << 0 << 0;
+    QTest::newRow("Saturday/wday-verb-abbr/C/greg/0") // ignores "urday"
+        << u"Saturday"_s << Fields{ Field{ empty, 0,
+                                           Flag::Verbal | Flag::Abbreviated, Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 3 << wall << -1 << -1 << -1 << -1 << 6 << 0 << 0 << 0;
+    QTest::newRow("Saturday/wday-verb-narrow/C/greg/0")
+        << u"Saturday"_s << Fields{ Field{ empty, 0, Flag::Verbal | Flag::Narrow, Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("Fri/wday-verb/C/greg/0")
+        << u"Fri"_s << Fields{ Field{ empty, 0, Flag::Verbal, Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 3 << wall << -1 << -1 << -1 << -1 << 5 << 0 << 0 << 0;
+    QTest::newRow("Fri/wday-verb-wide/C/greg/0")
+        << u"Fri"_s << Fields{ Field{ empty, 0, Flag::Verbal | Flag::Wide, Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("Fri/wday-verb-short/C/greg/0")
+        << u"Fri"_s << Fields{ Field{ empty, 0, Flag::Verbal | Flag::Short, Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 3 << wall << -1 << -1 << -1 << -1 << 5 << 0 << 0 << 0;
+    QTest::newRow("Fri/wday-verb-narrow/C/greg/0")
+        << u"Fri"_s << Fields{ Field{ empty, 0, Flag::Verbal | Flag::Narrow, Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("4/wday-verb/C/greg/0")
+        << u"4"_s << Fields{ Field{ empty, 0, Flag::Verbal, Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 1 << wall << -1 << -1 << -1 << -1 << 4 << 0 << 0 << 0;
+    QTest::newRow("4/wday-verb-wide/C/greg/0")
+        << u"4"_s << Fields{ Field{ empty, 0, Flag::Verbal | Flag::Wide, Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("4/wday-verb-short/C/greg/0")
+        << u"4"_s << Fields{ Field{ empty, 0, Flag::Verbal | Flag::Short, Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("4/wday-verb-narrow/C/greg/0")
+        << u"4"_s << Fields{ Field{ empty, 0, Flag::Verbal | Flag::Narrow, Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 1 << wall << -1 << -1 << -1 << -1 << 4 << 0 << 0 << 0;
+    QTest::newRow("W/wday-verb/C/greg/0")
+        << u"W"_s << Fields{ Field{ empty, 0, Flag::Verbal, Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("W/wday-verb-wide/C/greg/0")
+        << u"W"_s << Fields{ Field{ empty, 0, Flag::Verbal | Flag::Wide, Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("W/wday-verb-short/C/greg/0")
+        << u"W"_s << Fields{ Field{ empty, 0, Flag::Verbal | Flag::Short, Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("W/wday-verb-narrow/C/greg/0")
+        << u"W"_s << Fields{ Field{ empty, 0, Flag::Verbal | Flag::Narrow, Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+
+    // Standalone
+    QTest::newRow("Friday/wday-lone/C/greg/0")
+        << u"Friday"_s << Fields{ Field{ empty, 0, Flag::Standalone, Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 6 << wall << -1 << -1 << -1 << -1 << 5 << 0 << 0 << 0;
+    QTest::newRow("Friday/wday-lone-wide/C/greg/0")
+        << u"Friday"_s << Fields{ Field{ empty, 0, Flag::Standalone | Flag::Wide, Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 6 << wall << -1 << -1 << -1 << -1 << 5 << 0 << 0 << 0;
+    QTest::newRow("Friday/wday-lone-short/C/greg/0") // ignores "day"
+        << u"Friday"_s << Fields{ Field{ empty, 0,
+                                         Flag::Standalone | Flag::Short, Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 3 << wall << -1 << -1 << -1 << -1 << 5 << 0 << 0 << 0;
+    QTest::newRow("Friday/wday-lone-abbr/C/greg/0") // ignores "day"
+        << u"Friday"_s << Fields{ Field{ empty, 0, Flag::Standalone | Flag::Abbreviated,
+                                         Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 3 << wall << -1 << -1 << -1 << -1 << 5 << 0 << 0 << 0;
+    QTest::newRow("Friday/wday-lone-narrow/C/greg/0")
+        << u"Friday"_s << Fields{ Field{ empty, 0,
+                                         Flag::Standalone | Flag::Narrow, Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 1 << wall << -1 << -1 << -1 << -1 << 5 << 0 << 0 << 0;
+    QTest::newRow("Thu/wday-lone/C/greg/0")
+        << u"Thu"_s << Fields{ Field{ empty, 0, Flag::Standalone, Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 3 << wall << -1 << -1 << -1 << -1 << 4 << 0 << 0 << 0;
+    QTest::newRow("Thu/wday-lone-wide/C/greg/0")
+        << u"Thu"_s << Fields{ Field{ empty, 0, Flag::Standalone | Flag::Wide, Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("Thu/wday-lone-short/C/greg/0")
+        << u"Thu"_s << Fields{ Field{ empty, 0, Flag::Standalone | Flag::Short, Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 3 << wall << -1 << -1 << -1 << -1 << 4 << 0 << 0 << 0;
+    QTest::newRow("Thu/wday-lone-narrow/C/greg/0") // Ignores "hu", reads "T" as Tuesday
+        << u"Thu"_s << Fields{ Field{ empty, 0, Flag::Standalone | Flag::Narrow, Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 1 << wall << -1 << -1 << -1 << -1 << 2 << 0 << 0 << 0;
+    QTest::newRow("3/wday-lone/C/greg/0")
+        << u"3"_s << Fields{ Field{ empty, 0, Flag::Standalone, Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("3/wday-lone-narrow/C/greg/0")
+        << u"3"_s << Fields{ Field{ empty, 0, Flag::Standalone | Flag::Narrow, Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("W/wday-lone/C/greg/0")
+        << u"W"_s << Fields{ Field{ empty, 0, Flag::Standalone, Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 1 << wall << -1 << -1 << -1 << -1 << 3 << 0 << 0 << 0;
+    QTest::newRow("W/wday-lone-wide/C/greg/0")
+        << u"W"_s << Fields{ Field{ empty, 0, Flag::Standalone | Flag::Wide, Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("W/wday-lone-short/C/greg/0")
+        << u"W"_s << Fields{ Field{ empty, 0, Flag::Standalone | Flag::Short, Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("W/wday-lone-narrow/C/greg/0")
+        << u"W"_s << Fields{ Field{ empty, 0, Flag::Standalone | Flag::Narrow, Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 1 << wall << -1 << -1 << -1 << -1 << 3 << 0 << 0 << 0;
 }
 
 void tst_QtParseTemporal::prefix()

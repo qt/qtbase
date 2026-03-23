@@ -6,6 +6,7 @@
 #include "private/qstringiterator_p.h"
 #include "private/qttemporalpattern_p.h"
 
+#include <algorithm> // sort
 #include <optional>
 #include <utility> // exchange, move
 #include <vector>
@@ -207,12 +208,34 @@ QtParseCommon::ParsedText matchesAt(QStringView text, qsizetype from, const QStr
     return {};
 }
 
+bool longerEarlier(const PartialParse &left, const PartialParse &right)
+{
+    // True if we want left before right in our sorted lists.
+    // We want longer matches before shorter:
+    return left.results.endIndex > right.results.endIndex;
+}
+
+template <typename Action>
+void forEachLocaleFormat(TemporalFieldFlags flags, Action action)
+{
+    using Flag = TemporalFieldFlag;
+    constexpr auto Widths = FieldGroup::WidthMask;
+    if (matchesFlagWithin(flags, Flag::Wide, Widths))
+        action(QLocale::LongFormat);
+    if (matchesFlagsWithin(flags, Flag::Short | Flag::Abbreviated, Widths))
+        action(QLocale::ShortFormat);
+    if (matchesFlagWithin(flags, Flag::Narrow, Widths))
+        action(QLocale::NarrowFormat);
+}
+
 class TemporalFieldMatcher
 {
     const QLocale locale;
     const QCalendar calendar;
     const std::optional<int> baseYear;
 
+    std::vector<PartialParse> dayNameExtend(const PartialParse &base, QStringView text,
+                                            TemporalFieldFlags flags) const;
 public:
     TemporalFieldMatcher(const QLocale &loc, QCalendar cal, std::optional<int> centuryStart)
         : locale(loc), calendar(cal), baseYear(centuryStart)
@@ -239,6 +262,57 @@ bool TemporalFieldMatcher::resolve(PartialParse &) const
     // checks, given what isSelfConsistent() already checked. May record flaws
     // in parse.wanton where relevant tests reveal them.
     return true;
+}
+
+std::vector<PartialParse>
+TemporalFieldMatcher::dayNameExtend(const PartialParse &base, QStringView text,
+                                    TemporalFieldFlags flags) const
+{
+    std::vector<PartialParse> matches;
+    using Flag = TemporalFieldFlag;
+
+    auto addIfMatch = [&matches, base, text, flags](int dow, QString &&name) {
+        // tryEachDayOfWeek() has ensured this:
+        Q_ASSERT(!base.results.dayOfWeek || base.results.dayOfWeek == dow);
+        if (name.isEmpty()) // Locale doesn't know this day of the week's name.
+            return;
+        // If matchesAt(), add to matches:
+        auto match = matchesAt(text, base.results.endIndex, name, flags);
+        if (match) {
+            PartialParse grow(base,match);
+            grow.results.dayOfWeek = dow;
+            matches.push_back(grow);
+            if (flags.testFlag(Flag::SpacePad))
+                matches = spacePadExtend(std::move(matches), text);
+        }
+    };
+
+    constexpr auto Forms = FieldGroup::FormMask;
+    const bool verb = matchesFlagWithin(flags, Flag::Verbal, Forms);
+    const bool lone = matchesFlagWithin(flags, Flag::Standalone, Forms);
+    auto tryEachNameType = [this, addIfMatch, verb, lone](QLocale::FormatType form, int dow) {
+        if (lone)
+            addIfMatch(dow, calendar.standaloneWeekDayName(locale, dow, form));
+        if (verb)
+            addIfMatch(dow, calendar.weekDayName(locale, dow, form));
+    };
+
+    auto tryEachDayOfWeek = [dow = base.results.dayOfWeek,
+                             tryEachNameType](QLocale::FormatType form) {
+        if (dow > 0) {
+            tryEachNameType(form, dow);
+        } else {
+            // Iterate possible day numbers. Issue: some calendars might have
+            // intercalary days with numbers > 7. When that happens, we may
+            // need to let this run past 7 until it's seen some empty answers.
+            for (int i = 1; i <= 7; ++i)
+                tryEachNameType(form, i);
+        }
+    };
+    forEachLocaleFormat(flags, tryEachDayOfWeek);
+
+    std::sort(matches.begin(), matches.end(), longerEarlier);
+    return matches;
 }
 
 /*!
@@ -312,6 +386,7 @@ TemporalFieldMatcher::continuations(const PartialParse &base, QStringView text,
         break;
 
     case Cat::DayOfWeek:
+        matches = dayNameExtend(base, text, field.options);
         break;
     case Cat::DayOfMonth:
         break;
