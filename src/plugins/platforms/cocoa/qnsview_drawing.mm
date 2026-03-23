@@ -12,7 +12,6 @@
     if ((self = [super init])) {
         m_contentLayer = contentLayer;
         [self addSublayer:contentLayer];
-        contentLayer.autoresizingMask = kCALayerWidthSizable | kCALayerHeightSizable;
     }
     return self;
 }
@@ -20,6 +19,15 @@
 - (CALayer*)contentLayer
 {
     return m_contentLayer;
+}
+
+- (void)layoutSublayers
+{
+    // Layout the content layer explicitly, as using a autoresizingMask
+    // of kCALayerWidthSizable | kCALayerHeightSizable has been seen to
+    // drift out of sync, resulting in a content layer larger than its
+    // container layer.
+    m_contentLayer.frame = self.bounds;
 }
 
 - (void)setNeedsDisplay
