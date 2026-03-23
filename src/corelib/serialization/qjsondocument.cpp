@@ -168,18 +168,18 @@ QJsonDocument QJsonDocument::fromVariant(const QVariant &variant)
 {
     QJsonDocument doc;
 
-    switch (variant.metaType().id()) {
+    switch (variant.userType()) {
     case QMetaType::QVariantMap:
-        doc.setObject(QJsonObject::fromVariantMap(variant.toMap()));
+        doc.setObject(QJsonObject::fromVariantMap(get<QVariantMap>(variant)));
         break;
     case QMetaType::QVariantHash:
-        doc.setObject(QJsonObject::fromVariantHash(variant.toHash()));
+        doc.setObject(QJsonObject::fromVariantHash(get<QVariantHash>(variant)));
         break;
     case QMetaType::QVariantList:
-        doc.setArray(QJsonArray::fromVariantList(variant.toList()));
+        doc.setArray(QJsonArray::fromVariantList(get<QVariantList>(variant)));
         break;
     case QMetaType::QStringList:
-        doc = QJsonDocument(QCborArray::fromStringList(variant.toStringList()));
+        doc = QJsonDocument(QCborArray::fromStringList(get<QStringList>(variant)));
         break;
     default:
         break;
