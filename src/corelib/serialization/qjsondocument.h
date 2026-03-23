@@ -36,7 +36,9 @@ public:
 
     QJsonDocument();
     explicit QJsonDocument(const QJsonObject &object);
+    explicit QJsonDocument(QJsonObject &&object);
     explicit QJsonDocument(const QJsonArray &array);
+    explicit QJsonDocument(QJsonArray &&array);
     ~QJsonDocument();
 
     QJsonDocument(const QJsonDocument &other);

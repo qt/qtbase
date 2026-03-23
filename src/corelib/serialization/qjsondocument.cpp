@@ -76,11 +76,31 @@ QJsonDocument::QJsonDocument(const QJsonObject &object)
 }
 
 /*!
+ * \since 6.12
+ * Creates a QJsonDocument from \a object.
+ */
+QJsonDocument::QJsonDocument(QJsonObject &&object)
+    : QJsonDocument(QCborMap::fromJsonObject(std::move(object)))
+{
+
+}
+
+/*!
  * Constructs a QJsonDocument from \a array.
  */
 QJsonDocument::QJsonDocument(const QJsonArray &array)
     : QJsonDocument(QCborArray::fromJsonArray(array))
 {
+}
+
+/*!
+ * \since 6.12
+ * Constructs a QJsonDocument from \a array.
+ */
+QJsonDocument::QJsonDocument(QJsonArray &&array)
+    : QJsonDocument(QCborArray::fromJsonArray(std::move(array)))
+{
+
 }
 
 /*!
