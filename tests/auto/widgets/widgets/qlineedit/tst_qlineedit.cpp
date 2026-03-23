@@ -3228,6 +3228,7 @@ public:
     };
 
     State state;
+    QRect cursorRect() const { return QLineEdit::cursorRect(); }
 
     friend class tst_QLineEdit;
 };
@@ -4059,7 +4060,8 @@ void tst_QLineEdit::QTBUG697_paletteCurrentColorGroup()
     if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
         QSKIP("Wayland: This fails. Figure out why.");
 
-    QLineEdit le;
+    LineEdit le;
+    const int cursorXStartPosition = le.cursorRect().x();
     le.setText("               ");
     QPalette p = le.palette();
     p.setBrush(QPalette::Active, QPalette::Highlight, Qt::green);
@@ -4074,7 +4076,8 @@ void tst_QLineEdit::QTBUG697_paletteCurrentColorGroup()
 
     QImage img(le.size(),QImage::Format_ARGB32 );
     le.render(&img);
-    QCOMPARE(img.pixel(10, le.height()/2), QColor(Qt::green).rgb());
+    const QPoint pixelPosition(cursorXStartPosition + 10, le.height()/2);
+    QCOMPARE(img.pixel(pixelPosition), QColor(Qt::green).rgb());
 
     QWindow window;
     window.resize(100, 50);
@@ -4082,12 +4085,13 @@ void tst_QLineEdit::QTBUG697_paletteCurrentColorGroup()
     QVERIFY(QTest::qWaitForWindowActive(&window));
     QVERIFY(QTest::qWaitForWindowFocused(&window));
     le.render(&img);
-    QCOMPARE(img.pixel(10, le.height()/2), QColor(Qt::red).rgb());
+    QCOMPARE(img.pixel(pixelPosition), QColor(Qt::red).rgb());
 }
 
 void tst_QLineEdit::QTBUG13520_textNotVisible()
 {
     LineEdit le;
+    const int cursorXStartPosition = le.cursorRect().x();
     le.setAlignment( Qt::AlignRight | Qt::AlignVCenter);
     le.show();
     QVERIFY(QTest::qWaitForWindowExposed(&le));
@@ -4102,7 +4106,8 @@ void tst_QLineEdit::QTBUG13520_textNotVisible()
         expectedCursorCoordinate = 0;
 
     // compare with some tolerance for margins
-    QVERIFY(qAbs(le.cursorRect().center().x() - expectedCursorCoordinate) < 10);
+    const int marginTolerance = cursorXStartPosition + 10;
+    QVERIFY(qAbs(le.cursorRect().center().x() - expectedCursorCoordinate) < marginTolerance);
 }
 
 class UpdateRegionLineEdit : public QLineEdit
