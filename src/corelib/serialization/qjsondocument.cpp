@@ -85,11 +85,11 @@ QJsonDocument::QJsonDocument(const QJsonArray &array)
 
 /*!
     \internal
+    Only called from this .cpp file.
  */
-QJsonDocument::QJsonDocument(const QCborValue &data)
-    : d(std::make_unique<QJsonDocumentPrivate>(data))
+QJsonDocument::QJsonDocument(QCborValue data)
+    : d(new QJsonDocumentPrivate(std::move(data)))
 {
-    Q_ASSERT(d);
 }
 
 /*!
@@ -259,9 +259,9 @@ QJsonDocument QJsonDocument::fromJson(const QByteArray &json, QJsonParseError *e
 {
     QJsonPrivate::Parser parser(json);
     QJsonDocument result;
-    const QCborValue val = parser.parse(error);
+    QCborValue val = parser.parse(error);
     if (val.isArray() || val.isMap()) {
-        result = QJsonDocument(val);
+        result = QJsonDocument(std::move(val));
     } else if (!val.isUndefined() && error) {
         // parsed a valid string/number/bool/null,
         // but QJsonDocument only stores objects and arrays.

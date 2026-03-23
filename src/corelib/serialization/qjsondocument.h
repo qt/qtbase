@@ -105,7 +105,7 @@ private:
                                             const QJsonDocument &rhs) noexcept;
     Q_DECLARE_EQUALITY_COMPARABLE(QJsonDocument)
 
-    QJsonDocument(const QCborValue &data);
+    inline explicit QJsonDocument(QCborValue data);
 
     std::unique_ptr<QJsonDocumentPrivate> d;
 };
