@@ -24,6 +24,9 @@ private Q_SLOTS:
 
 void tst_QtParseTemporal::prefix_data()
 {
+    using Cat = QtTemporalPattern::TemporalFieldCategory;
+    using Flag = QtTemporalPattern::TemporalFieldFlag;
+    using Flags = QtTemporalPattern::TemporalFieldFlags;
     using Field = QtTemporalPattern::TemporalField;
     using Fields = QList<Field>;
     // Inputs
@@ -58,6 +61,88 @@ void tst_QtParseTemporal::prefix_data()
         << empty << Fields{} << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
         << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
     // Those are technically successful parses of the no fields asked for.
+
+    // Single field tests:
+    // Literal:
+    QTest::newRow("The quick brown fox jumped over the lazy dogs./literal/C/greg/0")
+        << u"The quick brown fox jumped over the lazy dogs."_s
+        << Fields{ Field{ u"The quick brown fox jumped over the lazy dogs."_s,
+                          0, Flags{}, Cat::Literal } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 46 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    // Case-sensitive:
+    QTest::newRow("The quIck brOWN fox JUMped over the LAZY Dogs./literal/C/greg/0")
+        << u"The quIck brOWN fox JUMped over the LAZY Dogs."_s
+        << Fields{ Field{ u"The quick brown fox jumped over the lazy dogs."_s,
+                          0, Flags{}, Cat::Literal } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("THE QUICK BROWN FOX JUMPED OVER THE LAZY DOGS./literal/C/greg/0")
+        << u"THE QUICK BROWN FOX JUMPED OVER THE LAZY DOGS."_s
+        << Fields{ Field{ u"The quick brown fox jumped over the lazy dogs."_s,
+                          0, Flags{}, Cat::Literal } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("the quick brown fox jumped over the lazy dogs./literal/C/greg/0")
+        << u"the quick brown fox jumped over the lazy dogs."_s
+        << Fields{ Field{ u"The quick brown fox jumped over the lazy dogs."_s,
+                          0, Flags{}, Cat::Literal } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    // Case-insensitive:
+    QTest::newRow("The quIck brOWN fox JUMped over the LAZY Dogs./literal-case/C/greg/0")
+        << u"the quick brown fox jumped over the lazy dogs."_s
+        << Fields{ Field{ u"The quick brown fox jumped over the lazy dogs."_s,
+                          0, Flags{ Flag::IgnoreCase }, Cat::Literal } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 46 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    // Case-insensitive takes precedence over upper and lower:
+    QTest::newRow("The quIck brOWN fox JUMped over the LAZY Dogs./literal-allcase/C/greg/0")
+        << u"the quick brown fox jumped over the lazy dogs."_s
+        << Fields{ Field{ u"The quick brown fox jumped over the lazy dogs."_s,
+                          0, Flags{ Flag::IgnoreCase | Flag::UpperCase | Flag::LowerCase },
+                          Cat::Literal } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 46 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    // Case-specific - upper:
+    QTest::newRow("The quick brown fox jumped over the lazy dogs./literal+upper/C/greg/0")
+        << u"The quick brown fox jumped over the lazy dogs."_s
+        << Fields{ Field{ u"The quick brown fox jumped over the lazy dogs."_s,
+                          0, Flags{ Flag::UpperCase }, Cat::Literal } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("THE QUICK BROWN FOX JUMPED OVER THE LAZY DOGS./literal+upper/C/greg/0")
+        << u"THE QUICK BROWN FOX JUMPED OVER THE LAZY DOGS."_s
+        << Fields{ Field{ u"The quick brown fox jumped over the lazy dogs."_s,
+                          0, Flags{ Flag::UpperCase }, Cat::Literal } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 46 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    // Case-specific - lower:
+    QTest::newRow("The quick brown fox jumped over the lazy dogs./literal+lower/C/greg/0")
+        << u"The quick brown fox jumped over the lazy dogs."_s
+        << Fields{ Field{ u"The quick brown fox jumped over the lazy dogs."_s,
+                          0, Flags{ Flag::LowerCase }, Cat::Literal } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("the quick brown fox jumped over the lazy dogs./literal+lower/C/greg/0")
+        << u"the quick brown fox jumped over the lazy dogs."_s
+        << Fields{ Field{ u"The quick brown fox jumped over the lazy dogs."_s,
+                          0, Flags{ Flag::LowerCase }, Cat::Literal } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 46 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    // Space-padding:
+    QTest::newRow(" The quick brown fox jumped over the lazy dogs. /literal/C/greg/0")
+        << u" The quick brown fox jumped over the lazy dogs. "_s
+        << Fields{ Field{ u"The quick brown fox jumped over the lazy dogs."_s,
+                          0, Flags{}, Cat::Literal } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow(" The quick brown fox jumped over the lazy dogs. /literal+space/C/greg/0")
+        << u" The quick brown fox jumped over the lazy dogs. "_s
+        << Fields{ Field{ u"The quick brown fox jumped over the lazy dogs."_s,
+                          0, Flags{ Flag::SpacePad }, Cat::Literal } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 48 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
 }
 
 void tst_QtParseTemporal::prefix()
