@@ -350,6 +350,245 @@ void tst_QtParseTemporal::prefix_data()
         << u"W"_s << Fields{ Field{ empty, 0, Flag::Standalone | Flag::Narrow, Cat::DayOfWeek } }
         << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
         << 1 << wall << -1 << -1 << -1 << -1 << 3 << 0 << 0 << 0;
+
+    // DayOfYear (when we get round to implementing it)
+    // JulianDay (when we get round to implementing it)
+    // WeekOfMonth (when we get round to implementing it)
+    // WeekOfYear (when we get round to implementing it)
+    // Month:
+    QTest::newRow("December/month/C/greg/0")
+        << u"December"_s << Fields{ Field{ empty, 0, Flags{}, Cat::Month } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 8 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 12 << 0;
+    QTest::newRow("December/month-wide/C/greg/0")
+        << u"December"_s << Fields{ Field{ empty, 0, Flag::Wide, Cat::Month } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 8 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 12 << 0;
+    QTest::newRow("December/month-short/C/greg/0") // ignores "ember"
+        << u"December"_s << Fields{ Field{ empty, 0, Flag::Short, Cat::Month } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 3 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 12 << 0;
+    QTest::newRow("December/month-abbr/C/greg/0") // ignores "ember"
+        << u"December"_s << Fields{ Field{ empty, 0, Flag::Abbreviated, Cat::Month } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 3 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 12 << 0;
+    QTest::newRow("December/month-narrow/C/greg/0") // ignores "ecember"
+        << u"December"_s << Fields{ Field{ empty, 0, Flag::Narrow, Cat::Month } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 1 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 12 << 0;
+    QTest::newRow("Nov/month/C/greg/0")
+        << u"Nov"_s << Fields{ Field{ empty, 0, Flags{}, Cat::Month } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 3 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 11 << 0;
+    QTest::newRow("Nov/month-wide/C/greg/0")
+        << u"Nov"_s << Fields{ Field{ empty, 0, Flag::Wide, Cat::Month } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("Nov/month-short/C/greg/0")
+        << u"Nov"_s << Fields{ Field{ empty, 0, Flag::Short, Cat::Month } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 3 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 11 << 0;
+    QTest::newRow("Nov/month-narrow/C/greg/0") // ignores "ov"
+        << u"Nov"_s << Fields{ Field{ empty, 0, Flag::Narrow, Cat::Month } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 1 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 11 << 0;
+    QTest::newRow("10/month/C/greg/0")
+        << u"10"_s << Fields{ Field{ empty, 0, Flags{}, Cat::Month } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 2 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 10 << 0;
+    QTest::newRow("10/month-wide/C/greg/0")
+        << u"10"_s << Fields{ Field{ empty, 0, Flag::Wide, Cat::Month } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("10/month-short/C/greg/0")
+        << u"10"_s << Fields{ Field{ empty, 0, Flag::Short, Cat::Month } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("10/month-narrow/C/greg/0")
+        << u"10"_s << Fields{ Field{ empty, 0, Flag::Narrow, Cat::Month } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 2 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 10 << 0;
+    QTest::newRow("S/month/C/greg/0")
+        << u"S"_s << Fields{ Field{ empty, 0, Flags{}, Cat::Month } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 1 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 9 << 0;
+    QTest::newRow("S/month-wide/C/greg/0")
+        << u"S"_s << Fields{ Field{ empty, 0, Flag::Wide, Cat::Month } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("S/month-short/C/greg/0")
+        << u"S"_s << Fields{ Field{ empty, 0, Flag::Short, Cat::Month } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("S/month-narrow/C/greg/0")
+        << u"S"_s << Fields{ Field{ empty, 0, Flag::Narrow, Cat::Month } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 1 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 9 << 0;
+#if QT_CONFIG(islamiccivilcalendar)
+    // See comments on TemporalFieldMatcher::monthNameExtend() about month names
+    // that are prefixes of others. These tests expect a greedy parse or a parse
+    // in which a trailing 'I' literal forces the less greedy parse to win out.
+    QTest::newRow("Jum. II/month-short/C/islam/0")
+        << u"Jum. II"_s << Fields{ Field{ empty, 0, Flag::Short, Cat::Month } }
+        << QLocale::c() << QCalendar::System::IslamicCivil << 0 << 0
+        << 7 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 6 << 0;
+    QTest::newRow("Jum. I'I'/month-short/C/islam/0")
+        << u"Jum. II"_s << Fields{ Field{ empty, 0, Flag::Short, Cat::Month },
+            Field{ u"I"_s, 0, Flags{}, Cat::Literal } }
+        << QLocale::c() << QCalendar::System::IslamicCivil << 0 << 0
+        << 7 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 5 << 0;
+    QTest::newRow("Rabiʻ II/month-wide/C/islam/0")
+        << u"Rabiʻ II"_s << Fields{ Field{ empty, 0, Flag::Wide, Cat::Month } }
+        << QLocale::c() << QCalendar::System::IslamicCivil << 0 << 0
+        << 8 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 4 << 0;
+    QTest::newRow("Rabiʻ I'I'/month-wide/C/islam/0")
+        << u"Rabiʻ II"_s << Fields{ Field{ empty, 0, Flag::Wide, Cat::Month },
+            Field{ u"I"_s, 0, Flags{}, Cat::Literal } }
+        << QLocale::c() << QCalendar::System::IslamicCivil << 0 << 0
+        << 8 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 3 << 0;
+#endif // Islamic Civil Calendar support
+
+    // Verbal (Narrow is number)
+    QTest::newRow("December/month-verb/C/greg/0")
+        << u"December"_s << Fields{ Field{ empty, 0, Flag::Verbal, Cat::Month } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 8 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 12 << 0;
+    QTest::newRow("December/month-verb-wide/C/greg/0")
+        << u"December"_s << Fields{ Field{ empty, 0, Flag::Verbal | Flag::Wide, Cat::Month } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 8 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 12 << 0;
+    QTest::newRow("December/month-verb-short/C/greg/0") // ignores "ember"
+        << u"December"_s << Fields{ Field{ empty, 0, Flag::Verbal | Flag::Short, Cat::Month } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 3 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 12 << 0;
+    QTest::newRow("December/month-verb-abbr/C/greg/0") // ignores "ember"
+        << u"December"_s << Fields{ Field{ empty, 0,
+                                           Flag::Verbal | Flag::Abbreviated, Cat::Month } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 3 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 12 << 0;
+    QTest::newRow("December/month-verb-narrow/C/greg/0")
+        << u"December"_s << Fields{ Field{ empty, 0, Flag::Verbal | Flag::Narrow, Cat::Month } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("Nov/month-verb/C/greg/0")
+        << u"Nov"_s << Fields{ Field{ empty, 0, Flag::Verbal, Cat::Month } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 3 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 11 << 0;
+    QTest::newRow("Nov/month-verb-wide/C/greg/0")
+        << u"Nov"_s << Fields{ Field{ empty, 0, Flag::Verbal | Flag::Wide, Cat::Month } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("Nov/month-verb-short/C/greg/0")
+        << u"Nov"_s << Fields{ Field{ empty, 0, Flag::Verbal | Flag::Short, Cat::Month } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 3 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 11 << 0;
+    QTest::newRow("Nov/month-verb-narrow/C/greg/0")
+        << u"Nov"_s << Fields{ Field{ empty, 0, Flag::Verbal | Flag::Narrow, Cat::Month } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("10/month-verb/C/greg/0")
+        << u"10"_s << Fields{ Field{ empty, 0, Flag::Verbal, Cat::Month } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 2 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 10 << 0;
+    QTest::newRow("10/month-verb-wide/C/greg/0")
+        << u"10"_s << Fields{ Field{ empty, 0, Flag::Verbal | Flag::Wide, Cat::Month } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("10/month-verb-short/C/greg/0")
+        << u"10"_s << Fields{ Field{ empty, 0, Flag::Verbal | Flag::Short, Cat::Month } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("10/month-verb-narrow/C/greg/0")
+        << u"10"_s << Fields{ Field{ empty, 0, Flag::Verbal | Flag::Narrow, Cat::Month } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 2 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 10 << 0;
+    QTest::newRow("S/month-verb/C/greg/0")
+        << u"S"_s << Fields{ Field{ empty, 0, Flag::Verbal, Cat::Month } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("S/month-verb-wide/C/greg/0")
+        << u"S"_s << Fields{ Field{ empty, 0, Flag::Verbal | Flag::Wide, Cat::Month } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("S/month-verb-short/C/greg/0")
+        << u"S"_s << Fields{ Field{ empty, 0, Flag::Verbal | Flag::Short, Cat::Month } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("S/month-verb-narrow/C/greg/0")
+        << u"S"_s << Fields{ Field{ empty, 0, Flag::Verbal | Flag::Narrow, Cat::Month } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+
+    // Standalone (Narrow is first letter)
+    QTest::newRow("December/month-lone/C/greg/0")
+        << u"December"_s << Fields{ Field{ empty, 0, Flag::Standalone, Cat::Month } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 8 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 12 << 0;
+    QTest::newRow("December/month-lone-wide/C/greg/0")
+        << u"December"_s << Fields{ Field{ empty, 0, Flag::Standalone | Flag::Wide, Cat::Month } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 8 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 12 << 0;
+    QTest::newRow("December/month-lone-short/C/greg/0") // ignores "ember"
+        << u"December"_s << Fields{ Field{ empty, 0, Flag::Standalone | Flag::Short, Cat::Month } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 3 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 12 << 0;
+    QTest::newRow("December/month-lone-abbr/C/greg/0") // ignores "ember"
+        << u"December"_s << Fields{ Field{ empty, 0,
+                                           Flag::Standalone | Flag::Abbreviated, Cat::Month } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 3 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 12 << 0;
+    QTest::newRow("December/month-lone-narrow/C/greg/0") // ignores "ecember"
+        << u"December"_s << Fields{ Field{ empty, 0, Flag::Standalone | Flag::Narrow, Cat::Month } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 1 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 12 << 0;
+    QTest::newRow("Nov/month-lone/C/greg/0")
+        << u"Nov"_s << Fields{ Field{ empty, 0, Flag::Standalone, Cat::Month } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 3 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 11 << 0;
+    QTest::newRow("Nov/month-lone-wide/C/greg/0")
+        << u"Nov"_s << Fields{ Field{ empty, 0, Flag::Standalone | Flag::Wide, Cat::Month } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("Nov/month-lone-short/C/greg/0")
+        << u"Nov"_s << Fields{ Field{ empty, 0, Flag::Standalone | Flag::Short, Cat::Month } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 3 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 11 << 0;
+    QTest::newRow("Nov/month-lone-narrow/C/greg/0") // ignores "ov"
+        << u"Nov"_s << Fields{ Field{ empty, 0, Flag::Standalone | Flag::Narrow, Cat::Month } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 1 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 11 << 0;
+    QTest::newRow("10/month-lone/C/greg/0")
+        << u"10"_s << Fields{ Field{ empty, 0, Flag::Standalone, Cat::Month } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("10/month-lone-wide/C/greg/0")
+        << u"10"_s << Fields{ Field{ empty, 0, Flag::Standalone | Flag::Wide, Cat::Month } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("10/month-lone-short/C/greg/0")
+        << u"10"_s << Fields{ Field{ empty, 0, Flag::Standalone | Flag::Short, Cat::Month } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("10/month-lone-narrow/C/greg/0")
+        << u"10"_s << Fields{ Field{ empty, 0, Flag::Standalone | Flag::Narrow, Cat::Month } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("S/month-lone/C/greg/0")
+        << u"S"_s << Fields{ Field{ empty, 0, Flag::Standalone, Cat::Month } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 1 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 9 << 0;
+    QTest::newRow("S/month-lone-wide/C/greg/0")
+        << u"S"_s << Fields{ Field{ empty, 0, Flag::Standalone | Flag::Wide, Cat::Month } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("S/month-lone-short/C/greg/0")
+        << u"S"_s << Fields{ Field{ empty, 0, Flag::Standalone | Flag::Short, Cat::Month } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("S/month-lone-narrow/C/greg/0")
+        << u"S"_s << Fields{ Field{ empty, 0, Flag::Standalone | Flag::Narrow, Cat::Month } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 1 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 9 << 0;
 }
 
 void tst_QtParseTemporal::prefix()

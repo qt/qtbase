@@ -234,6 +234,8 @@ class TemporalFieldMatcher
     const QCalendar calendar;
     const std::optional<int> baseYear;
 
+    std::vector<PartialParse> monthNameExtend(const PartialParse &base, QStringView text,
+                                              TemporalFieldFlags flags) const;
     std::vector<PartialParse> dayNameExtend(const PartialParse &base, QStringView text,
                                             TemporalFieldFlags flags) const;
 public:
@@ -262,6 +264,84 @@ bool TemporalFieldMatcher::resolve(PartialParse &) const
     // checks, given what isSelfConsistent() already checked. May record flaws
     // in parse.wanton where relevant tests reveal them.
     return true;
+}
+
+/* Some month names may be prefixes of others.
+   For example, the English long forms of Islamic calendar month names include:
+   * Rabiʻ I, Rabiʻ II
+   * Jumada I, Jumada II
+   Their short-forms are likewise:
+   * Rab. I, Rab. II
+   * Jum. I, Jum. II
+   In each case, one month name is a prefix of the next month's name.
+
+   In any sane format, greedy parsing shall suffice but ill-considered formats
+   happen. So the initial parse recognizes every possible match and we sort out
+   any mistakes greed might make as we parse later fields.
+*/
+std::vector<PartialParse>
+TemporalFieldMatcher::monthNameExtend(const PartialParse &base, QStringView text,
+                                      TemporalFieldFlags flags) const
+{
+    std::vector<PartialParse> matches;
+    using Flag = TemporalFieldFlag;
+
+    auto addIfMatch = [&matches, base, text, flags](int month, QString &&name) {
+        // tryEachMonth() has ensured this:
+        Q_ASSERT(!base.results.month || base.results.month == month);
+        if (name.isEmpty()) // Locale doesn't know this month's name.
+            return;
+        // If matchesAt(), add to matches:
+        auto match = matchesAt(text, base.results.endIndex, name, flags);
+        if (match) {
+            PartialParse grow(base, match);
+            grow.results.month = month;
+            matches.push_back(grow);
+            if (flags.testFlag(Flag::SpacePad))
+                matches = spacePadExtend(std::move(matches), text);
+        }
+    };
+
+    constexpr auto Forms = FieldGroup::FormMask;
+    constexpr int noYear = QCalendar::Unspecified;
+    const bool verb = matchesFlagWithin(flags, Flag::Verbal, Forms);
+    const bool lone = matchesFlagWithin(flags, Flag::Standalone, Forms);
+    const int year = base.results.year ? *base.results.year : noYear;
+    // We could try to take account of baseYear, when yearWithinCentury is
+    // known, but that's susceptible to tweaks and perturbation from other
+    // fields, so stick with noYear and the usual naming of months if we don't
+    // know year. We can consider adding a QCalendar::parseMonthName() that can
+    // consult the internal lists of localized month names, both for efficiency
+    // and to ensure we try all names, including those that appear only in some
+    // years. If we do that, its return should package month number, whether the
+    // month appears in all years and whether it was standalone or plain, along
+    // with the start and end indices of the match within the text.
+    auto tryEachNameType = [this, verb, lone, year,
+                            addIfMatch](QLocale::FormatType form, int month) {
+        if (lone)
+            addIfMatch(month, calendar.standaloneMonthName(locale, month, year, form));
+        if (verb)
+            addIfMatch(month, calendar.monthName(locale, month, year, form));
+    };
+    // This could in principle, for non-system locales, be done more efficiently
+    // by walking the internal ';'-joined list of month names QCalendarBackend
+    // can give us. The entanglement between QCalendarBackend and QLocale
+    // internals is, however, already quite untidy enough, so leave that for
+    // if/when we discover it's a significant bottle-neck and/or we've unpicked
+    // the existing entanglement a bit first.
+
+    auto tryEachMonth = [month = base.results.month, bound = calendar.maximumMonthsInYear(),
+                         tryEachNameType](QLocale::FormatType form) {
+        if (month > 0) {
+            tryEachNameType(form, month);
+        } else {
+            for (int i = bound; i > 0; --i)
+                tryEachNameType(form, i);
+        }
+    };
+    forEachLocaleFormat(flags, tryEachMonth);
+
+    return matches;
 }
 
 std::vector<PartialParse>
@@ -296,6 +376,9 @@ TemporalFieldMatcher::dayNameExtend(const PartialParse &base, QStringView text,
         if (verb)
             addIfMatch(dow, calendar.weekDayName(locale, dow, form));
     };
+    // As for month names (see above), some collaboration with QCalendarBackend
+    // might make this more efficient for non-system locales, at the expense of
+    // adding to the existing tangle of complexity.
 
     auto tryEachDayOfWeek = [dow = base.results.dayOfWeek,
                              tryEachNameType](QLocale::FormatType form) {
@@ -395,6 +478,10 @@ TemporalFieldMatcher::continuations(const PartialParse &base, QStringView text,
         // case Cat::WeekOfMonth: break;
         // case Cat::WeekOfYear: break;
     case Cat::Month:
+        // Verbal and Standalone, in so far as supported:
+        matches = monthNameExtend(base, text, field.options);
+        // TODO: Numeric, too.
+        std::sort(matches.begin(), matches.end(), longerEarlier);
         break;
         // case Cat::Quarter: break;
     case Cat::YearWithinCentury:
