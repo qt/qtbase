@@ -126,8 +126,8 @@ QWhatsThat *QWhatsThat::instance = nullptr;
 
 // shadowWidth not const, for XP drop-shadow-fu turns it to 0
 static int shadowWidth = 6;   // also used as '5' and '6' and even '8' below
-static const int vMargin = 8;
-static const int hMargin = 12;
+static constexpr int vMargin = 8;
+static constexpr int hMargin = 12;
 
 static inline bool dropShadow()
 {
@@ -198,7 +198,7 @@ void QWhatsThat::mousePressEvent(QMouseEvent* e)
     pressed = true;
     if (e->button() == Qt::LeftButton && rect().contains(e->position().toPoint())) {
         if (doc)
-            anchor = doc->documentLayout()->anchorAt(e->position().toPoint() -  QPoint(hMargin, vMargin));
+            anchor = doc->documentLayout()->anchorAt(e->position() - QPointF(hMargin, vMargin));
         return;
     }
     close();
@@ -209,7 +209,7 @@ void QWhatsThat::mouseReleaseEvent(QMouseEvent* e)
     if (!pressed)
         return;
     if (widget && e->button() == Qt::LeftButton && doc && rect().contains(e->position().toPoint())) {
-        QString a = doc->documentLayout()->anchorAt(e->position().toPoint() -  QPoint(hMargin, vMargin));
+        QString a = doc->documentLayout()->anchorAt(e->position() - QPointF(hMargin, vMargin));
         QString href;
         if (anchor == a)
             href = a;
@@ -230,7 +230,7 @@ void QWhatsThat::mouseMoveEvent(QMouseEvent* e)
 #else
     if (!doc)
         return;
-    QString a = doc->documentLayout()->anchorAt(e->position().toPoint() -  QPoint(hMargin, vMargin));
+    QString a = doc->documentLayout()->anchorAt(e->position() - QPointF(hMargin, vMargin));
     if (!a.isEmpty())
         setCursor(Qt::PointingHandCursor);
     else
