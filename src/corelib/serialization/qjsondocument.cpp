@@ -116,7 +116,7 @@ QJsonDocument::QJsonDocument(const QJsonDocument &other)
  */
 QJsonDocument &QJsonDocument::operator =(const QJsonDocument &other)
 {
-    if (this != &other) {
+    if (d != other.d) {
         if (other.d) {
             if (!d)
                 d = new QJsonDocumentPrivate;
