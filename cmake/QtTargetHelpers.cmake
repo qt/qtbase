@@ -2081,3 +2081,53 @@ function(qt_internal_enable_optimized_tools_lto target)
         set_target_properties("${target}" PROPERTIES INTERPROCEDURAL_OPTIMIZATION_DEBUG ON)
     endif()
 endfunction()
+
+# Adds dependencies from ${target} to the specified PLUGIN_TARGETS. The latter
+# must be a list of Qt plugin target names that qt_import_plugins would accept.
+#
+# This is mostly useful for command line tools that depend on more than the
+# default QPA plugin.
+#
+# Example:
+#   qt_internal_add_plugin_dependencies(svgtoqml PLUGIN_TARGETS Qt::QMinimalIntegrationPlugin)
+function(qt_internal_add_plugin_dependencies target)
+    set(no_value_options "")
+    set(single_value_options "")
+    set(multi_value_options PLUGIN_TARGETS)
+    cmake_parse_arguments(PARSE_ARGV 1 arg
+        "${no_value_options}" "${single_value_options}" "${multi_value_options}"
+    )
+
+    if(NOT DEFINED arg_PLUGIN_TARGETS)
+        message(FATAL_ERROR "PLUGIN_TARGETS argument needs to be specified")
+    endif()
+
+
+    if(QT_BUILD_SHARED_LIBS)
+        # Add a dependency such that building ${target} builds the plugin targets too.
+        add_dependencies(${target} ${arg_PLUGIN_TARGETS})
+    else()
+        if(QT_SUPERBUILD)
+            # In a top-level build, qt_import_plugins() is a no-op because
+            # __qt_internal_add_static_plugins_once() is not called.
+            # So we need to initialize and link the plugin manually.
+            set(out_file_path "${CMAKE_CURRENT_BINARY_DIR}/${target}_plugin_imports_custom.cpp")
+
+            # Create a string with the necessary Q_IMPORT_PLUGIN(...) statements.
+            __qt_internal_get_plugin_include_prelude(import_plugin_code)
+            string(APPEND import_plugin_code "\n")
+            string(PREPEND import_plugin_code "// This file is auto-generated. Do not edit.\n\n")
+            foreach(plugin_target IN LISTS arg_PLUGIN_TARGETS)
+                __qt_internal_get_plugin_import_macro("${plugin_target}" import_macro)
+                string(APPEND import_plugin_code "${import_macro}")
+            endforeach()
+            file(GENERATE OUTPUT "${out_file_path}" CONTENT "${import_plugin_code}\n")
+            _qt_internal_set_source_file_generated(SOURCES "${out_file_path}")
+
+            target_sources(${target} PRIVATE "${out_file_path}")
+            target_link_libraries(${target} PRIVATE ${arg_PLUGIN_TARGETS})
+        else()
+            qt_import_plugins(${target} INCLUDE ${arg_PLUGIN_TARGETS})
+        endif()
+    endif()
+endfunction()
