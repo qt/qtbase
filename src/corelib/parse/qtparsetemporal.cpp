@@ -3,10 +3,11 @@
 // Qt-Security score:critical reason:data-parser
 #include "private/qtparsetemporal_p.h"
 
+#include "private/qlocale_p.h"
 #include "private/qstringiterator_p.h"
 #include "private/qttemporalpattern_p.h"
 
-#include <algorithm> // sort
+#include <algorithm> // sort, stable_sort
 #include <optional>
 #include <utility> // exchange, move, pair
 #include <vector>
@@ -29,6 +30,8 @@ struct PartialParse
         Irreconcilable = 1, // field values cannot be reconciled
         // Ideally continuations() would catch irreconcilable issues, but if one
         // is expensive to spot it can be left for resolve() to flag up.
+        ZeroPad = 8, // used zero-padded part of text where field didn't require it
+        Narrow = 0x10, // used fewer digits from text than field width, where allowed
 
         // Flaws not worth giving up a longer parse over, in decreasing order of
         // strength of preference among those of equal length:
@@ -72,7 +75,13 @@ struct PartialParse
         if (auto res = order(Flaw::Irreconcilable); res != 0)
             return res;
 
-        // The above takes precedence over size: a shorter parse without those
+        // In decreasing order of severity
+        if (auto res = order(Flaw::ZeroPad); res != 0)
+            return res;
+        if (auto res = order(Flaw::Narrow); res != 0)
+            return res;
+
+        // The above take precedence over size: a shorter parse without those
         // flaws is better than a longer one with them.
 
         // Longer is better, to be understood as "sorts before" i.e. less than.
@@ -87,6 +96,17 @@ struct PartialParse
     }
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(PartialParse::Flaws)
+
+QLocaleData::DigitSequence
+parseDigitSequence(QStringView text, qsizetype from, const QLocale &locale, bool allowSign)
+{
+    const auto *const data = QLocalePrivate::get(locale)->m_data;
+    using DS = QLocaleData::DigitSequence;
+    DS::Options flags;
+    if (allowSign)
+        flags.setFlag(DS::Option::AllowSign, true);
+    return data->digitSequence(text, flags, from);
+}
 
 std::vector<PartialParse> spacePadExtend(std::vector<PartialParse> &&matched, QStringView text)
 {
@@ -312,12 +332,105 @@ bool TemporalFieldMatcher::resolve(PartialParse &) const
 }
 
 std::vector<PartialParse>
-TemporalFieldMatcher::numericExtend([[maybe_unused]] const PartialParse &base,
-                                    [[maybe_unused]] QStringView text,
-                                    [[maybe_unused]] TemporalFieldFlags flags,
-                                    [[maybe_unused]] FieldConfig &&config) const
+TemporalFieldMatcher::numericExtend(const PartialParse &base, QStringView text,
+                                    TemporalFieldFlags flags, FieldConfig &&config) const
 {
-    return {};
+    using Flag = TemporalFieldFlag;
+    qsizetype leadingSpace = 0;
+    const bool spacePad = flags.testFlag(Flag::SpacePad);
+    if (spacePad) {
+        QStringIterator iter(text, base.results.endIndex);
+        while (iter.hasNext() && QChar::isSpace(iter.next()))
+            ++leadingSpace;
+        // If that's used up the string, the code below shall reject the field.
+    }
+
+    const auto parsed = parseDigitSequence(text, base.results.endIndex + leadingSpace,
+                                           locale, config.allowSign);
+    const bool zeroPad = flags.testFlag(Flag::ZeroPad);
+    // If !zeroPad, we allow < config.width but flag with Narrow in wanton fields.
+    const int width = zeroPad || spacePad ? qMax(1, config.width - leadingSpace) : 1;
+    // This is necessarily positive: the use of chop(1) below depends on that.
+
+    QByteArrayView digits{parsed.digits};
+    if (config.maxDigits > 0) {
+        // Allow config.width to override config.maxDigits:
+        const int maxWidth = qMax(config.maxDigits, config.width);
+        if (digits.size() > maxWidth)
+            digits = digits.first(maxWidth);
+    } else if (flags.testFlag(Flag::YearSignIso8601) && !parsed.sign) {
+        // Limit width because a field longer than width would need a sign.
+        const int maxWidth = config.width > 0 ? config.width : qMax(-config.maxDigits, 1);
+        if (digits.size() > maxWidth)
+            digits = digits.first(maxWidth);
+    }
+    // For unbounded, work out in advance when to switch from prepending to
+    // appending; otherwise, set a cut-off that'll be true already.
+    const qsizetype appendThreshold = config.maxDigits <= 0
+        ? qMax(-config.maxDigits, qMax(config.width, config.roundAfter)) - 1
+        : digits.size();
+
+    std::vector<PartialParse> matches;
+    for (; digits.size() >= width; digits.chop(1)) {
+        bool ok = false;
+        unsigned whole = digits.toUInt(&ok);
+        if (!ok)
+            continue;
+        if (config.maxValue > 0 && config.roundAfter < 0 && whole > unsigned(config.maxValue))
+            continue;
+
+        int value = whole;
+        if (value < 0 || value <= config.unset) // Overflow or too low
+            continue;
+        if (parsed.sign == '-')
+            value = -value;
+
+        if (config.roundAfter >= 0) {
+            // Fractional part
+            if (digits.size() < config.roundAfter) {
+                // Interpolate omitted zero-padding up to rounding size:
+                for (int i = int(digits.size()); i < config.roundAfter; ++i)
+                    value *= 10;
+            } else if (digits.size() > config.roundAfter) {
+                double v = value;
+                for (int i = int(digits.size()); i > config.roundAfter; --i)
+                    v /= 10.;
+                // A timestamp that's before the end of a specified second
+                // should be rounded to the last we can before that second,
+                // especially if it's the last second of its minute, in turn
+                // especially if that's the last second of its hour (and so on).
+                value = v > config.maxValue ? config.maxValue : qRound(v);
+                // There may of course be use-cases where rounding up to the
+                // next second is desired. If it turns out those are
+                // significant, we can perhaps add a field option for it.
+            }
+            // else: exact match to number of digits, nothing to frob.
+        }
+
+        PartialParse grow = base;
+        int &target = config.target(grow);
+        if (target <= config.unset) // If unset, store:
+            target = value;
+        else if (target != value) // Conflicts with earlier field: skip this reading.
+            continue;
+        grow.results.endIndex = parsed.digitStart + digits.size() * parsed.digitWidth;
+
+        if (!zeroPad && digits.size() > qMax(1, config.width)
+            && (config.roundAfter < 0 ? digits.startsWith('0') : digits.endsWith('0'))) {
+            grow.wanton |= PartialParse::Flaw::ZeroPad;
+        }
+        if (digits.size() + leadingSpace < config.width) // (can only happen if !zeroPad)
+            grow.wanton |= PartialParse::Flaw::Narrow;
+
+        // Entries in matches are all longer than this one, as we're reducing
+        // digits. Mostly we want shorter after longer, but (for example) we
+        // prefer 4-digit years over longer matches.
+        if (digits.size() > appendThreshold)
+            matches.insert(matches.begin(), std::move(grow));
+        else
+            matches.push_back(std::move(grow));
+    }
+    return matches;
 }
 
 /* Some month names may be prefixes of others.
@@ -679,7 +792,13 @@ ParsedTemporal prefix(QStringView text, QSpan<const QtTemporalPattern::TemporalF
     }
     // Now select our most favourable entry from maybe.
 
-    // Preference can be fine-tuned via .wanton, see PartialParse::Flaw.
+    // Although we've, thus far, prefered sensible-length matches over longer
+    // ones in individual numeric fields, so that later numeric fields can take
+    // up the slack and win, we still want to be greedy over-all, so prefer
+    // overall longer matches to shorter ones. None the less, between matches of
+    // equal length, preserve our preference, up to now, for sane lengths of
+    // each field within that, as long as later fields are taking up the slack.
+    // That preference can be fine-tuned via .wanton, see PartialParse::Flaw.
     PartialParse best = maybe.front();
     for (const PartialParse &match : QSpan{maybe}.sliced(1)) {
         if (match.compare(best) < 0)

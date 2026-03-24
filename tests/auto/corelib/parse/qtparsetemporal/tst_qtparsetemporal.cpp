@@ -147,6 +147,132 @@ void tst_QtParseTemporal::prefix_data()
     // TimeZone: taken care of by ../qtparsetimezone/.
 
     // Time:
+    // MillisecondInDay (when we get round to implementing it)
+    // SecondFraction:
+    QTest::newRow("999/millis:3/C/greg/0")
+        << u"999"_s << Fields{ Field{ empty, 3, Flags{}, Cat::SecondFraction } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 3 << wall << 999 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("999/millis+num:3/C/greg/0")
+        << u"999"_s << Fields{ Field{ empty, 3, Flag::Numeric, Cat::SecondFraction } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 3 << wall << 999 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("99/centis:2/C/greg/0")
+        << u"99"_s << Fields{ Field{ empty, 2, Flags{}, Cat::SecondFraction } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 2 << wall << 990 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("99/centis+num:2/C/greg/0")
+        << u"99"_s << Fields{ Field{ empty, 2, Flag::Numeric, Cat::SecondFraction } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 2 << wall << 990 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("99/centis+0pad:2/C/greg/0")
+        << u"99"_s << Fields{ Field{ empty, 2, Flag::ZeroPad, Cat::SecondFraction } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 2 << wall << 990 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("99/centis+0pad:3/C/greg/0")
+        << u"99"_s << Fields{ Field{ empty, 3, Flag::ZeroPad, Cat::SecondFraction } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("99/centis+num:3/C/greg/0")
+        << u"99"_s << Fields{ Field{ empty, 3, Flag::Numeric, Cat::SecondFraction } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 2 << wall << 990 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("9/decis:2/C/greg/0")
+        << u"9"_s << Fields{ Field{ empty, 2, Flags{}, Cat::SecondFraction } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 1 << wall << 900 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("9/decis+0pad:1/C/greg/0")
+        << u"9"_s << Fields{ Field{ empty, 1, Flag::ZeroPad, Cat::SecondFraction } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 1 << wall << 900 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("9/decis+num:1/C/greg/0")
+        << u"9"_s << Fields{ Field{ empty, 1, Flag::Numeric, Cat::SecondFraction } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 1 << wall << 900 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("9/decis+0pad:2/C/greg/0")
+        << u"9"_s << Fields{ Field{ empty, 2, Flag::ZeroPad, Cat::SecondFraction } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("9/decis+num:2/C/greg/0")
+        << u"9"_s << Fields{ Field{ empty, 2, Flag::Numeric, Cat::SecondFraction } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 1 << wall << 900 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("9/decis+0pad:3/C/greg/0")
+        << u"9"_s << Fields{ Field{ empty, 3, Flag::ZeroPad, Cat::SecondFraction } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("9/decis+num:3/C/greg/0")
+        << u"9"_s << Fields{ Field{ empty, 3, Flag::Numeric, Cat::SecondFraction } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 1 << wall << 900 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+
+    // Second:
+    QTest::newRow("59/second/C/greg/0")
+        << u"59"_s << Fields{ Field{ empty, 2, Flags{}, Cat::Second } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 2 << wall << -1 << 59 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("59/second+num/C/greg/0")
+        << u"59"_s << Fields{ Field{ empty, 2, Flag::Numeric, Cat::Second } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 2 << wall << -1 << 59 << -1 << -1 << 0 << 0 << 0 << 0;
+    // For digital complications, see Minute; no point duplicating.
+
+    // MinuteFraction (when we get round to implementing it)
+    // Minute:
+    QTest::newRow("59/minute+num/C/greg/0")
+        << u"59"_s << Fields{ Field{ empty, 2, Flag::Numeric, Cat::Minute } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 2 << wall << -1 << -1 << 59 << -1 << 0 << 0 << 0 << 0;
+    // Always numeric, so the flag is redundant:
+    QTest::newRow("59/minute:2/C/greg/0")
+        << u"59"_s << Fields{ Field{ empty, 2, Flags{}, Cat::Minute } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 2 << wall << -1 << -1 << 59 << -1 << 0 << 0 << 0 << 0;
+    // Will read two digits even if you only ask for one:
+    QTest::newRow("59/minute:1/C/greg/0")
+        << u"59"_s << Fields{ Field{ empty, 1, Flags{}, Cat::Minute } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 2 << wall << -1 << -1 << 59 << -1 << 0 << 0 << 0 << 0;
+    // Number of digits is restricted to two:
+    QTest::newRow("159/minute:1/C/greg/0")
+        << u"159"_s << Fields{ Field{ empty, 1, Flags{}, Cat::Minute } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 2 << wall << -1 << -1 << 15 << -1 << 0 << 0 << 0 << 0;
+    // ... unless we override (which we can):
+    QTest::newRow("059/minute:3/C/greg/0")
+        << u"059"_s << Fields{ Field{ empty, 3, Flags{}, Cat::Minute } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 3 << wall << -1 << -1 << 59 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("059/minute+0pad:3/C/greg/0")
+        << u"059"_s << Fields{ Field{ empty, 3, Flag::ZeroPad, Cat::Minute } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 3 << wall << -1 << -1 << 59 << -1 << 0 << 0 << 0 << 0;
+    // ... and, if we don't, a leading zero counts against an over-width field:
+    QTest::newRow("059/minute:1/C/greg/0")
+        << u"059"_s << Fields{ Field{ empty, 1, Flags{}, Cat::Minute } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 1 << wall << -1 << -1 << 0 << -1 << 0 << 0 << 0 << 0;
+    // ... unless ZeroPad was asked for, when it's tolerated:
+    QTest::newRow("059/minute+0pad:1/C/greg/0")
+        << u"059"_s << Fields{ Field{ empty, 1, Flag::ZeroPad, Cat::Minute } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 2 << wall << -1 << -1 << 5 << -1 << 0 << 0 << 0 << 0;
+    // Value is limited to 0 through 59:
+    QTest::newRow("60/minute:1/C/greg/0")
+        << u"60"_s << Fields{ Field{ empty, 1, Flags{}, Cat::Minute } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 1 << wall << -1 << -1 << 6 << -1 << 0 << 0 << 0 << 0;
+    // ... and a single digit is acceptable for width 2:
+    QTest::newRow("60/minute:2/C/greg/0")
+        << u"60"_s << Fields{ Field{ empty, 2, Flags{}, Cat::Minute } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 1 << wall << -1 << -1 << 6 << -1 << 0 << 0 << 0 << 0;
+    // ... unless ZeroPad is set:
+    QTest::newRow("60/minute+0pad:2/C/greg/0")
+        << u"60"_s << Fields{ Field{ empty, 2, Flag::ZeroPad, Cat::Minute } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+
     // PeriodInDay:
     QTest::newRow("AM/daypart/C/greg/0")
         << u"AM"_s << Fields{ Field{ empty, 0, Flag::Verbal, Cat::PeriodInDay } }
@@ -284,6 +410,85 @@ void tst_QtParseTemporal::prefix_data()
         << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
         << 2 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
 
+    // HourMod12:
+    QTest::newRow("12/hr%12:2/C/greg/0")
+        << u"12"_s << Fields{ Field{ empty, 2, Flags{}, Cat::HourMod12 } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        // until == 2 reveals that it was parsed, even though prefix() doesn't report it:
+        << 2 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("12/hr%12:1/C/greg/0")
+        << u"12"_s << Fields{ Field{ empty, 1, Flags{}, Cat::HourMod12 } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 2 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("1/hr%12:2/C/greg/0")
+        << u"1"_s << Fields{ Field{ empty, 2, Flags{}, Cat::HourMod12 } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 1 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("1/hr%12+0pad:2/C/greg/0")
+        << u"1"_s << Fields{ Field{ empty, 2, Flag::ZeroPad, Cat::HourMod12 } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("1/hr%12:1/C/greg/0")
+        << u"1"_s << Fields{ Field{ empty, 1, Flags{}, Cat::HourMod12 } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 1 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("12/hr%12+num:2/C/greg/0")
+        << u"12"_s << Fields{ Field{ empty, 2, Flag::Numeric, Cat::HourMod12 } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 2 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("12/hr%12+num:1/C/greg/0")
+        << u"12"_s << Fields{ Field{ empty, 1, Flag::Numeric, Cat::HourMod12 } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 2 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("1/hr%12+num:2/C/greg/0")
+        << u"1"_s << Fields{ Field{ empty, 2, Flag::Numeric, Cat::HourMod12 } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 1 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("1/hr%12+num+0pad:2/C/greg/0")
+        << u"1"_s << Fields{ Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::HourMod12 } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("1/hr%12+num:1/C/greg/0")
+        << u"1"_s << Fields{ Field{ empty, 1, Flag::Numeric, Cat::HourMod12 } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 1 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+
+    // HourMod12 + PeriodInDay:
+    QTest::newRow("12AM/hr%12/C/greg/0")
+        << u"12AM"_s
+        << Fields{ Field{ empty, 2, Flags{}, Cat::HourMod12 },
+            Field{ empty, 0, Flag::Verbal, Cat::PeriodInDay } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 4 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("12PM/hr%12/C/greg/0")
+        << u"12PM"_s
+        << Fields{ Field{ empty, 2, Flags{}, Cat::HourMod12 },
+            Field{ empty, 0, Flag::Verbal, Cat::PeriodInDay } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 4 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("12AM/hr%12+num/C/greg/0")
+        << u"12AM"_s
+        << Fields{ Field{ empty, 2, Flag::Numeric, Cat::HourMod12 },
+            Field{ empty, 0, Flag::Verbal, Cat::PeriodInDay } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 4 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("12PM/hr%12+num/C/greg/0")
+        << u"12PM"_s
+        << Fields{ Field{ empty, 2, Flag::Numeric, Cat::HourMod12 },
+            Field{ empty, 0, Flag::Verbal, Cat::PeriodInDay } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 4 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+
+    // HourFraction (when we get round to implementing it)
+    // Hour:
+    QTest::newRow("23/hour/C/greg/0")
+        << u"23"_s << Fields{ Field{ empty, 2, Flags{}, Cat::Hour } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 2 << wall << -1 << -1 << -1 << 23 << 0 << 0 << 0 << 0;
+    QTest::newRow("23/hour+num/C/greg/0")
+        << u"23"_s << Fields{ Field{ empty, 2, Flag::Numeric, Cat::Hour } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 2 << wall << -1 << -1 << -1 << 23 << 0 << 0 << 0 << 0;
 
     // Date:
     // DayOfWeek:
@@ -492,6 +697,61 @@ void tst_QtParseTemporal::prefix_data()
         << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
         << 1 << wall << -1 << -1 << -1 << -1 << 3 << 0 << 0 << 0;
 
+    // DayOfMonth:
+    QTest::newRow("31/mday+num/C/greg/0")
+        << u"31"_s << Fields{ Field{ empty, 2, Flag::Numeric, Cat::DayOfMonth } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 2 << wall << -1 << -1 << -1 << -1 << 0 << 31 << 0 << 0;
+    // Always numeric, so the flag is redundant:
+    QTest::newRow("31/mday:2/C/greg/0")
+        << u"31"_s << Fields{ Field{ empty, 2, Flags{}, Cat::DayOfMonth } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 2 << wall << -1 << -1 << -1 << -1 << 0 << 31 << 0 << 0;
+    // Will read two digits even if you only ask for one:
+    QTest::newRow("31/mday:1/C/greg/0")
+        << u"31"_s << Fields{ Field{ empty, 1, Flags{}, Cat::DayOfMonth } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 2 << wall << -1 << -1 << -1 << -1 << 0 << 31 << 0 << 0;
+    // Number of digits is restricted to two:
+    QTest::newRow("031/mday:1/C/greg/0")
+        << u"031"_s << Fields{ Field{ empty, 1, Flags{}, Cat::DayOfMonth } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 2 << wall << -1 << -1 << -1 << -1 << 0 << 3 << 0 << 0;
+    // ... unless we override (which we can):
+    QTest::newRow("031/mday:3/C/greg/0")
+        << u"031"_s << Fields{ Field{ empty, 3, Flags{}, Cat::DayOfMonth } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 3 << wall << -1 << -1 << -1 << -1 << 0 << 31 << 0 << 0;
+    // Zero isn't a valid value
+    QTest::newRow("0031/mday:1/C/greg/0")
+        << u"0031"_s << Fields{ Field{ empty, 1, Flags{}, Cat::DayOfMonth } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    // ... but overriding width can pull in later digits:
+    QTest::newRow("0031/mday:3/C/greg/0")
+        << u"0031"_s << Fields{ Field{ empty, 3, Flags{}, Cat::DayOfMonth } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 3 << wall << -1 << -1 << -1 << -1 << 0 << 3 << 0 << 0;
+    QTest::newRow("0031/mday:4/C/greg/0")
+        << u"0031"_s << Fields{ Field{ empty, 4, Flags{}, Cat::DayOfMonth } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 4 << wall << -1 << -1 << -1 << -1 << 0 << 31 << 0 << 0;
+    // Value is limited to calendar's max days in month,
+    QTest::newRow("32/mday/C/greg/0")
+        << u"32"_s << Fields{ Field{ empty, 1, Flags{}, Cat::DayOfMonth } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 1 << wall << -1 << -1 << -1 << -1 << 0 << 3 << 0 << 0;
+    // ... which may limit digits:
+    QTest::newRow("301/mday:1/C/greg/0")
+        << u"301"_s << Fields{ Field{ empty, 1, Flags{}, Cat::DayOfMonth } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 2 << wall << -1 << -1 << -1 << -1 << 0 << 30 << 0 << 0;
+    // ... even when width tries to override:
+    QTest::newRow("301/mday:3/C/greg/0")
+        << u"301"_s << Fields{ Field{ empty, 3, Flags{}, Cat::DayOfMonth } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 2 << wall << -1 << -1 << -1 << -1 << 0 << 30 << 0 << 0;
+
     // DayOfYear (when we get round to implementing it)
     // JulianDay (when we get round to implementing it)
     // WeekOfMonth (when we get round to implementing it)
@@ -537,14 +797,14 @@ void tst_QtParseTemporal::prefix_data()
         << u"10"_s << Fields{ Field{ empty, 0, Flags{}, Cat::Month } }
         << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
         << 2 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 10 << 0;
-    QTest::newRow("10/month-wide/C/greg/0")
+    QTest::newRow("10/month-wide/C/greg/0") // Read as numeric
         << u"10"_s << Fields{ Field{ empty, 0, Flag::Wide, Cat::Month } }
         << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
-        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
-    QTest::newRow("10/month-short/C/greg/0")
+        << 2 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 10 << 0;
+    QTest::newRow("10/month-short/C/greg/0") // Read as numeric
         << u"10"_s << Fields{ Field{ empty, 0, Flag::Short, Cat::Month } }
         << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
-        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+        << 2 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 10 << 0;
     QTest::newRow("10/month-narrow/C/greg/0")
         << u"10"_s << Fields{ Field{ empty, 0, Flag::Narrow, Cat::Month } }
         << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
@@ -730,6 +990,97 @@ void tst_QtParseTemporal::prefix_data()
         << u"S"_s << Fields{ Field{ empty, 0, Flag::Standalone | Flag::Narrow, Cat::Month } }
         << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
         << 1 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 9 << 0;
+
+    // Numeric (ignores Wide, used here to exclude Verbal | Narrow):
+    QTest::newRow("7/month+wide:0/C/greg/0")
+        << u"7"_s << Fields{ Field{ empty, 0, Flag::Wide, Cat::Month } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 1 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 7 << 0;
+    QTest::newRow("7/month+wide:1/C/greg/0")
+        << u"7"_s << Fields{ Field{ empty, 1, Flag::Wide, Cat::Month } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 1 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 7 << 0;
+    QTest::newRow("7/month+wide:2/C/greg/0")
+        << u"7"_s << Fields{ Field{ empty, 2, Flag::Wide, Cat::Month } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 1 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 7 << 0;
+    QTest::newRow("7/month+wide+0pad:2/C/greg/0") // Must meet minimum width
+        << u"7"_s << Fields{ Field{ empty, 2, Flag::Wide | Flag::ZeroPad, Cat::Month } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("7/month+num:0/C/greg/0")
+        << u"7"_s << Fields{ Field{ empty, 0, Flag::Numeric, Cat::Month } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 1 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 7 << 0;
+    QTest::newRow("7/month+num:1/C/greg/0")
+        << u"7"_s << Fields{ Field{ empty, 1, Flag::Numeric, Cat::Month } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 1 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 7 << 0;
+    QTest::newRow("7/month+num:2/C/greg/0")
+        << u"7"_s << Fields{ Field{ empty, 2, Flag::Numeric, Cat::Month } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 1 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 7 << 0;
+    QTest::newRow("7/month+num+0pad:1/C/greg/0")
+        << u"7"_s << Fields{ Field{ empty, 1, Flag::Numeric | Flag::ZeroPad, Cat::Month } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 1 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 7 << 0;
+    QTest::newRow("7/month+num+0pad:2/C/greg/0") // Must meet minimum width
+        << u"7"_s << Fields{ Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Month } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+
+    // Quarter (when we get round to implementing it)
+    // YearWithinCentury
+    QTest::newRow("42/yr%100/C/greg/0")
+        << u"42"_s << Fields{ Field{ empty, 2, Flag::Numeric, Cat::YearWithinCentury } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 2 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+
+    // RelatedGregorianYear (when we get round to implementing it)
+    // Year:
+    QTest::newRow("1942/year:0/C/greg/0")
+        << u"1942"_s << Fields{ Field{ empty, 0, Flags{}, Cat::Year } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 4 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 1942;
+    QTest::newRow("-212/year:0/C/greg/0")
+        << u"-212"_s << Fields{ Field{ empty, 0, Flags{}, Cat::Year } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 4 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << -212;
+    QTest::newRow("1942/year:4/C/greg/0")
+        << u"1942"_s << Fields{ Field{ empty, 4, Flags{}, Cat::Year } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 4 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 1942;
+    QTest::newRow("1942/year+num/C/greg/0")
+        << u"1942"_s << Fields{ Field{ empty, 4, Flag::Numeric, Cat::Year } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 4 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 1942;
+    QTest::newRow("2147483647/year:10/C/greg/0")
+        << u"2147483647"_s << Fields{ Field{ empty, 10, Flags{}, Cat::Year } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 10 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 2147483647;
+    QTest::newRow("-2147483647/year:10/C/greg/0") // sign doesn't count towards width
+        << u"-2147483647"_s << Fields{ Field{ empty, 10, Flags{}, Cat::Year } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 11 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << -2147483647;
+    QTest::newRow("+2147483647/year:10/C/greg/0")
+        << u"+2147483647"_s << Fields{ Field{ empty, 10, Flags{}, Cat::Year } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 11 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 2147483647;
+    QTest::newRow("2147483647/year:4/C/greg/0")
+        << u"2147483647"_s << Fields{ Field{ empty, 4, Flags{}, Cat::Year } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 10 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 2147483647;
+    QTest::newRow("+2147483647/year:4/C/greg/0")
+        << u"+2147483647"_s << Fields{ Field{ empty, 4, Flags{}, Cat::Year } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 11 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 2147483647;
+    QTest::newRow("-2147483647/year:4/C/greg/0")
+        << u"-2147483647"_s << Fields{ Field{ empty, 4, Flags{}, Cat::Year } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 11 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << -2147483647;
+
+    // Century (when we get round to implementing it)
+    // Era (when we get round to implementing it)
 }
 
 void tst_QtParseTemporal::prefix()
