@@ -2868,7 +2868,8 @@ void QWindows11Style::dwmSetWindowCornerPreference(const QWidget *widget, bool b
     static constexpr auto dwmcpRoundSmall = 3;
     static constexpr auto dwmcpDefault = 0;
 #endif
-    if (widget && widget->isWindow() && widget->testAttribute(Qt::WA_WState_Created)) {
+    if (widget && widget->isWindow() && widget->testAttribute(Qt::WA_WState_Created)
+        && !widget->windowFlags().testFlag(Qt::FramelessWindowHint)) {
         const auto window = widget->windowHandle();
         if (window && window->handle()) {
             const auto wId = reinterpret_cast<HWND>(widget->winId());
