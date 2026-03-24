@@ -144,6 +144,8 @@ void tst_QtParseTemporal::prefix_data()
         << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
         << 48 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
 
+    // TimeZone: taken care of by ../qtparsetimezone/.
+
     // Time:
     // PeriodInDay:
     QTest::newRow("AM/daypart/C/greg/0")

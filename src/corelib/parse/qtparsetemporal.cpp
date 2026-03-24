@@ -39,12 +39,18 @@ struct PartialParse
 
     // Constructor for initial empty parse:
     PartialParse(qsizetype from) { results.startIndex = results.endIndex = from; }
-    // Constructor extending a parse with something more:
+    // Constructors extending a parse with something more:
     PartialParse(const PartialParse &base, const QtParseCommon::ParsedText &more)
         : PartialParse(base)
     {
         Q_ASSERT(results.endIndex == more.startIndex);
         results.endIndex = more.endIndex;
+    }
+    PartialParse(const PartialParse &base, const QtParseTimeZone::ParsedZone &more)
+        : PartialParse(base, (const QtParseCommon::ParsedText &)more)
+    {
+        results.zone = more.zone;
+        results.timeType = more.timeType;
     }
 
     Qt::weak_ordering compare(const PartialParse &alt) const noexcept
@@ -459,17 +465,26 @@ TemporalFieldMatcher::continuations(const PartialParse &base, QStringView text,
                                     const TemporalField &field) const
 {
     std::vector<PartialParse> matches;
+    const qsizetype textPos = base.results.endIndex;
     switch (field.category) {
         using Cat = TemporalFieldCategory;
         using Flag = TemporalFieldFlag;
     case Cat::Literal:
-        if (auto match = matchesAt(text, base.results.endIndex, field.literal, field.options)) {
+        if (auto match = matchesAt(text, textPos, field.literal, field.options)) {
             matches.push_back(PartialParse(base, match));
             if (field.options.testFlag(Flag::SpacePad))
                 matches = spacePadExtend(std::move(matches), text);
         }
         break;
     case Cat::TimeZone:
+        if (const auto zones = QtParseTimeZone::prefix(text, locale, textPos, field.options);
+            !zones.isEmpty()) {
+            for (const auto &match : zones) {
+                matches.push_back(PartialParse(base, match));
+                if (field.options.testFlag(Flag::SpacePad))
+                    matches = spacePadExtend(std::move(matches), text);
+            }
+        }
         break;
 
         // case Cat::MillisecondInDay: break;
