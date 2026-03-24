@@ -106,7 +106,8 @@ static QTimeZonePrivate::Data ucalTimeZoneTransition(UCalendar *m_ucal,
 
     // Set the date to find the transition for
     status = U_ZERO_ERROR;
-    ucal_setMillis(ucal, atMSecsSinceEpoch, &status);
+    const UDate when = UDate(atMSecsSinceEpoch);
+    ucal_setMillis(ucal, when, &status);
 
     // Find the transition time
     UDate tranMSecs = 0;
@@ -118,7 +119,7 @@ static QTimeZonePrivate::Data ucalTimeZoneTransition(UCalendar *m_ucal,
         // At the end of time, that can "succeed" with tranMSecs ==
         // atMSecsSinceEpoch, which should be treated as a failure.
         // (At the start of time, previous correctly fails.)
-        ok = qint64(tranMSecs) > atMSecsSinceEpoch;
+        ok = tranMSecs > when;
     }
 
     // Set the transition time to find the offsets for
@@ -142,7 +143,7 @@ static QTimeZonePrivate::Data ucalTimeZoneTransition(UCalendar *m_ucal,
     ucal_close(ucal);
     if (!U_SUCCESS(status) || !ok)
         return tran;
-    tran.atMSecsSinceEpoch = tranMSecs;
+    tran.atMSecsSinceEpoch = qint64(tranMSecs);
     tran.offsetFromUtc = utc + dst;
     tran.standardTimeOffset = utc;
     tran.daylightTimeOffset = dst;
