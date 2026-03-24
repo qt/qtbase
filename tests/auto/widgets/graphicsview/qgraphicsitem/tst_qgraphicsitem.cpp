@@ -8243,6 +8243,8 @@ void tst_QGraphicsItem::sorting()
     view.setWindowFlags(view.windowFlags() | Qt::Tool);
     view.setResizeAnchor(QGraphicsView::NoAnchor);
     view.setTransformationAnchor(QGraphicsView::NoAnchor);
+    view.setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    view.setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     view.resize(120, 100);
     view.setFrameStyle(0);
     view.show();
@@ -8256,11 +8258,12 @@ void tst_QGraphicsItem::sorting()
     _paintedItems.clear();
 
     view.viewport()->update();
-    const GraphicsItems expected{grid[0][0], grid[0][1], grid[0][2], grid[0][3],
-                                 grid[1][0], grid[1][1], grid[1][2], grid[1][3],
-                                 grid[2][0], grid[2][1], grid[2][2], grid[2][3],
-                                 grid[3][0], grid[3][1], grid[3][2], grid[3][3],
-                                 grid[4][0], grid[4][1], grid[4][2], grid[4][3],
+    const GraphicsItems expected{grid[0][0], grid[0][1], grid[0][2], grid[0][3], grid[0][4],
+                                 grid[1][0], grid[1][1], grid[1][2], grid[1][3], grid[1][4],
+                                 grid[2][0], grid[2][1], grid[2][2], grid[2][3], grid[2][4],
+                                 grid[3][0], grid[3][1], grid[3][2], grid[3][3], grid[3][4],
+                                 grid[4][0], grid[4][1], grid[4][2], grid[4][3], grid[4][4],
+                                 grid[5][0], grid[5][1], grid[5][2], grid[5][3], grid[5][4],
                                  item1, item2};
     QTRY_COMPARE(_paintedItems, expected);
 }
