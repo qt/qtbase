@@ -620,8 +620,8 @@ void QWindowsKeyMapper::changeKeyboard()
     WCHAR buffer[KL_NAMELENGTH];
     if (GetKeyboardLayoutName(buffer)) {
         // https://learn.microsoft.com/en-us/windows-hardware/manufacture/desktop/windows-language-pack-default-values
-        QString newKLID = QString::fromStdWString(buffer);
-        m_isHebrewLayout = newKLID.endsWith(QLatin1String("40D"), Qt::CaseInsensitive);
+        m_isHebrewLayout = buffer[KL_NAMELENGTH - 4] == L'4' && buffer[KL_NAMELENGTH - 3] == L'0'
+                           && buffer[KL_NAMELENGTH - 2] == L'D';
     } else
         m_isHebrewLayout = false;
 
