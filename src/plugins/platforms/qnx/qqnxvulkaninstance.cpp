@@ -74,6 +74,16 @@ bool QQnxVulkanInstance::supportsPresent(VkPhysicalDevice physicalDevice,
     return true;
 }
 
+void QQnxVulkanInstance::presentAboutToBeQueued(QWindow *window)
+{
+    auto *w = static_cast<QQnxWindow *>(window->handle());
+    if (!w) {
+        qWarning("QQnxVulkanInstance: presentAboutToBeQueued() called without a valid platform window");
+        return;
+    }
+    w->windowPosted();
+}
+
 VkSurfaceKHR QQnxVulkanInstance::createSurface(QQnxWindow *window)
 {
     VkSurfaceKHR surface = VK_NULL_HANDLE;

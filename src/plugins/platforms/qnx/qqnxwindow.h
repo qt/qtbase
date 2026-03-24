@@ -78,6 +78,9 @@ public:
 
     void setWindowTitle(const QString &title);
 
+    void requestUpdate() override;
+    void handlePostEvent();
+
 protected:
     virtual int pixelFormat() const = 0;
     virtual void resetBuffers() = 0;
@@ -130,6 +133,11 @@ private:
         DesktopNotifyPosition = 0x2,
         DesktopNotifyVisible = 0x2
     };
+
+    QAtomicInt m_waitingForPost = 0;
+    QAtomicInt m_fallbackQueued = 0;
+    bool m_postEventRegistered = false;
+    QSharedPointer<bool> m_alive { new bool(true) };
 };
 
 QT_END_NAMESPACE

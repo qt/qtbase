@@ -5,6 +5,7 @@
 #include "qqnxintegration.h"
 #include "qqnxscreen.h"
 #include "qqnxeglwindow.h"
+#include "qqnxwindow.h"
 
 #include "private/qeglconvenience_p.h"
 
@@ -55,10 +56,9 @@ void QQnxGLContext::swapBuffers(QPlatformSurface *surface)
 {
     qCDebug(lcQpaGLContext) << Q_FUNC_INFO;
 
-    QEGLPlatformContext::swapBuffers(surface);
-
     QQnxEglWindow *platformWindow = static_cast<QQnxEglWindow*>(surface);
     platformWindow->windowPosted();
+    QEGLPlatformContext::swapBuffers(surface);
 }
 
 void QQnxGLContext::doneCurrent()

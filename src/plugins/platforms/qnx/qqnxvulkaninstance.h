@@ -32,6 +32,11 @@ public:
     // presentQueued() is intentionally not overridden: the QNX Screen ICD calls
     // screen_post_window() internally during vkQueuePresentKHR, so no explicit
     // screen_flush_context() is needed (unlike the raster path).
+    //
+    // presentAboutToBeQueued() sets the frame-pacing gate on the window so that
+    // requestUpdate() is suppressed until the SCREEN_NOTIFY_UPDATE pulse fires.
+    // This mirrors QWaylandVulkanInstance::presentAboutToBeQueued().
+    void presentAboutToBeQueued(QWindow *window) override;
 
     VkSurfaceKHR createSurface(QQnxWindow *window);
 
