@@ -93,7 +93,9 @@ file(TIMESTAMP "${meta_types_file}" new_metatypes_timestamp)
 # change the resulting .json file content.
 set(extract_metatypes_uses_dep_files FALSE)
 if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.17") # Requires automoc changes present only in 3.17
-    if(CMAKE_GENERATOR STREQUAL "Ninja" OR CMAKE_GENERATOR STREQUAL "Ninja Multi-Config")
+    if(CMAKE_GENERATOR STREQUAL "Ninja" OR CMAKE_GENERATOR STREQUAL "Ninja Multi-Config"
+        OR (CMAKE_VERSION VERSION_GREATER_EQUAL "4.4"
+            AND (CMAKE_GENERATOR STREQUAL "Xcode" OR CMAKE_GENERATOR MATCHES "^Visual Studio ")))
         set(extract_metatypes_uses_dep_files TRUE)
     endif()
 endif()
