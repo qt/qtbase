@@ -435,6 +435,11 @@ namespace QRangeModelDetails
         static constexpr bool isMultiRole = rowCategory == RowCategory::MultiRoleItem;
     };
 
+    template <typename RowOptions>
+    using hasHeaderData_test = decltype(RowOptions::headerData(0, Qt::DisplayRole));
+    template <typename row_type>
+    static constexpr bool hasHeaderData = qxp::is_detected_v<hasHeaderData_test, QRangeModelRowOptions<row_type>>;
+
     // Find out how many fixed elements can be retrieved from a row element.
     // main template for simple values and ranges. Specializing for ranges
     // is ambiguous with arrays, as they are also ranges
@@ -1334,6 +1339,16 @@ public:
     QVariant headerData(int section, Qt::Orientation orientation, int role) const
     {
         QVariant result;
+        if constexpr (QRangeModelDetails::hasHeaderData<wrapped_row_type>) {
+            if (orientation == Qt::Horizontal) {
+                result = QRangeModelDetails::QRangeModelRowOptions<wrapped_row_type>::headerData(
+                    section, role
+                );
+                if (result.isValid())
+                    return result;
+            }
+        }
+
         if (role != Qt::DisplayRole || orientation != Qt::Horizontal
          || section < 0 || section >= columnCount({})) {
             return this->itemModel().QAbstractItemModel::headerData(section, orientation, role);

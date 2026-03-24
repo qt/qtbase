@@ -1,6 +1,7 @@
 // Copyright (C) 2025 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
+#include <QtCore/qcoreapplication.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qrangemodel.h>
 #include <QtCore/qstring.h>
@@ -95,6 +96,15 @@ template <>
 struct QRangeModel::RowOptions<MultiRoleGadget>
 {
     static constexpr auto rowCategory = QRangeModel::RowCategory::MultiRoleItem;
+    static QVariant headerData(int section, int role)
+    {
+        if (role == Qt::DisplayRole) {
+            switch (section) {
+            case 0: return QCoreApplication::translate("MultiRoleGadget", "The Gadget");
+            }
+        }
+        return {};
+    }
 };
 
 struct ItemAccessType

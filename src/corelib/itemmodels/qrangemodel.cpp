@@ -723,10 +723,14 @@ Q_CORE_EXPORT QVariant qVariantAtIndex(const QModelIndex &index)
     \table
     \header
         \li Member
-        \li Values
+        \li Documentation
     \row
         \li static constexpr RowCategory rowCategory
         \li RowCategory
+    \row
+        \li static QVariant headerData(int section, int role)
+        \li \l{QAbstractItemModel::headerData}{Header data} with \a role for
+            the \c section of the horizontal header.
     \endtable
 
     \snippet qrangemodel/main.cpp color_gadget_decl

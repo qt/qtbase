@@ -50,6 +50,26 @@ private:
     QString m_toolTip;
 };
 
+template <>
+struct QRangeModel::RowOptions<Gadget>
+{
+    static QVariant headerData(int section, int role)
+    {
+        if (role == Qt::DisplayRole) {
+            switch (section) {
+            case 0: return QCoreApplication::translate("Gadget", "Display");
+            case 1: return QCoreApplication::translate("Gadget", "Decoration");
+            case 2: return QCoreApplication::translate("Gadget", "ToolTip");
+            default:
+                break;
+            }
+        }
+        return {};
+    }
+};
+
+static_assert(QRangeModelDetails::hasHeaderData<Gadget>);
+
 struct QMetaEnumerator
 {
     struct iterator
