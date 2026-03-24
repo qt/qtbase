@@ -1431,7 +1431,9 @@ function(qt6_extract_metatypes target)
             if(CMAKE_GENERATOR STREQUAL "Ninja" OR
                CMAKE_GENERATOR STREQUAL "Ninja Multi-Config" OR
                (CMAKE_GENERATOR MATCHES "Makefiles" AND
-                CMAKE_VERSION VERSION_GREATER_EQUAL "3.28"))
+                CMAKE_VERSION VERSION_GREATER_EQUAL "3.28") OR
+               ((CMAKE_GENERATOR STREQUAL "Xcode" OR CMAKE_GENERATOR MATCHES "^Visual Studio ")
+                AND CMAKE_VERSION VERSION_GREATER_EQUAL "4.4"))
                 if(DEFINED QT_USE_CMAKE_DEPFILES)
                     set(use_dep_files ${QT_USE_CMAKE_DEPFILES})
                 else()
@@ -1455,7 +1457,7 @@ function(qt6_extract_metatypes target)
             # Ensure the PRE_BUILD path is not taken by generating a dummy header file and adding it
             # as a source file to the target. This causes the file to be added to
             # cmQtAutoGenInitializer::AutogenTarget.DependFiles, which disables the PRE_BUILD path.
-            if(CMAKE_GENERATOR MATCHES "Visual Studio")
+            if(CMAKE_GENERATOR MATCHES "Visual Studio" AND CMAKE_VERSION VERSION_LESS "4.4")
                 # The file name should be target specific, but still short, so we don't hit path
                 # length issues.
                 string(MAKE_C_IDENTIFIER "ddf_${target}" dummy_dependency_file)
