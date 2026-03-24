@@ -240,6 +240,43 @@ class TemporalFieldMatcher
     const QCalendar calendar;
     const std::optional<int> baseYear;
 
+    // Numeric
+    struct FieldConfig
+    {
+        // Where to write the int, once read:
+        int &(*target)(PartialParse &);
+        // Acceptable values:
+        int maxValue = 0; // 0 means unbounded
+        int unset; // Default value in ParsedTemporal, invalid for field.
+        // Form of the parsed text:
+        qsizetype width; // min digits
+        qsizetype maxDigits = 0; // <= 0 means unbounded
+        // If unbounded, beyond max(width, roundAfter, -maxDigits) prefer fewer digits to more.
+        qsizetype roundAfter = -1; // >= 0: is fractional part: round to this many digits
+        bool allowSign = false;
+    };
+    // For use as FieldConfig::target:
+    static int &millisTarget(PartialParse &grow) { return grow.results.millis; }
+    static int &secondTarget(PartialParse &grow) { return grow.results.second; }
+    static int &minuteTarget(PartialParse &grow) { return grow.results.minute; }
+    static int &hourTarget(PartialParse &grow) { return grow.results.hour; }
+    static int &hourMod12Target(PartialParse &grow) { return grow.hourMod12; }
+    static int &dayOfWeekTarget(PartialParse &grow) { return grow.results.dayOfWeek; }
+    static int &dayOfMonthTarget(PartialParse &grow) { return grow.results.dayOfMonth; }
+    static int &monthTarget(PartialParse &grow) { return grow.results.month; }
+    static int &yearTarget(PartialParse &grow)
+    {
+        if (!grow.results.year)
+            grow.results.year = 0;
+        return *grow.results.year;
+    }
+    static int &yearWithinCenturyTarget(PartialParse &grow) { return grow.yearWithinCentury; }
+
+    std::vector<PartialParse>
+    numericExtend(const PartialParse &base, QStringView text,
+                  TemporalFieldFlags flags, FieldConfig &&config) const;
+
+    // Verbal, Standalone:
     std::vector<PartialParse> monthNameExtend(const PartialParse &base, QStringView text,
                                               TemporalFieldFlags flags) const;
     std::vector<PartialParse> dayNameExtend(const PartialParse &base, QStringView text,
@@ -272,6 +309,15 @@ bool TemporalFieldMatcher::resolve(PartialParse &) const
     // checks, given what isSelfConsistent() already checked. May record flaws
     // in parse.wanton where relevant tests reveal them.
     return true;
+}
+
+std::vector<PartialParse>
+TemporalFieldMatcher::numericExtend([[maybe_unused]] const PartialParse &base,
+                                    [[maybe_unused]] QStringView text,
+                                    [[maybe_unused]] TemporalFieldFlags flags,
+                                    [[maybe_unused]] FieldConfig &&config) const
+{
+    return {};
 }
 
 /* Some month names may be prefixes of others.
@@ -489,16 +535,23 @@ TemporalFieldMatcher::continuations(const PartialParse &base, QStringView text,
 
         // case Cat::MillisecondInDay: break;
     case Cat::SecondFraction:
+        matches = numericExtend(base, text, field.options,
+                                {millisTarget, 999, -1, field.width, 0, 3});
         break;
     case Cat::Second:
+        matches = numericExtend(base, text, field.options, {secondTarget, 59, -1, field.width, 2});
         break;
         // case Cat::MinuteFraction: break;
     case Cat::Minute:
+        matches = numericExtend(base, text, field.options, {minuteTarget, 59, -1, field.width, 2});
         break;
         // case Cat::HourFraction: break;
     case Cat::HourMod12:
+        matches = numericExtend(base, text, field.options,
+                                {hourMod12Target, 12, 0, field.width, 2});
         break;
     case Cat::Hour:
+        matches = numericExtend(base, text, field.options, {hourTarget, 23, -1, field.width, 2});
         break;
     case Cat::PeriodInDay: // am/pm; LDML also has noon, midnight, "at night" and others.
         if (const auto match = dayPeriodPrefix(base, text, field.options); match.second >= 0) {
@@ -516,7 +569,12 @@ TemporalFieldMatcher::continuations(const PartialParse &base, QStringView text,
     case Cat::DayOfWeek:
         matches = dayNameExtend(base, text, field.options);
         break;
-    case Cat::DayOfMonth:
+    case Cat::DayOfMonth: {
+        const int maxDays = calendar.maximumDaysInMonth();
+        matches = numericExtend(base, text, field.options,
+                                {dayOfMonthTarget, maxDays, 0, field.width,
+                                 maxDays < 10 ? 1 : maxDays < 100 ? 2 : 3});
+    }
         break;
         // case Cat::DayOfYear: break;
         // case Cat::JulianDay: break;
@@ -525,13 +583,25 @@ TemporalFieldMatcher::continuations(const PartialParse &base, QStringView text,
     case Cat::Month:
         // Verbal and Standalone, in so far as supported:
         matches = monthNameExtend(base, text, field.options);
-        // TODO: Numeric, too.
+        if (matchesFlagWithin(field.options, Flag::Numeric, FieldGroup::FormMask)) {
+            auto extend = numericExtend(base, text, field.options,
+                                        {monthTarget, calendar.maximumMonthsInYear(),
+                                         0, field.width, 2});
+            if (matches.empty())
+                matches = std::move(extend);
+            else
+                matches.insert(matches.end(), extend.begin(), extend.end());
+        }
         std::sort(matches.begin(), matches.end(), longerEarlier);
         break;
         // case Cat::Quarter: break;
     case Cat::YearWithinCentury:
+        matches = numericExtend(base, text, field.options,
+                                {yearWithinCenturyTarget, 99, -1, field.width, 2});
         break;
     case Cat::Year:
+        matches = numericExtend(base, text, field.options,
+                                {yearTarget, 0, 0, field.width, -4, -1, true});
         break;
         // case Cat::RelatedGregorianYear: break;
         // case Cat::Century: break;
