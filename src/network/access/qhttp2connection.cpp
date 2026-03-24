@@ -2077,11 +2077,16 @@ void QHttp2Connection::handleWINDOW_UPDATE()
         const auto blockedStreams = std::exchange(m_blockedStreams, {});
         for (quint32 blockedStreamID : blockedStreams) {
             const QPointer<QHttp2Stream> stream = m_streams.value(blockedStreamID);
-            if (!stream || !stream->isActive())
+            if (!stream || !stream->isActive() || !stream->isUploadingDATA())
                 continue;
-            if (stream->isUploadingDATA() && !stream->isUploadBlocked())
+            if (stream->isUploadBlocked()) {
+                m_blockedStreams.insert(blockedStreamID);
+
+
+            } else {
                 QMetaObject::invokeMethod(stream, &QHttp2Stream::maybeResumeUpload,
                                           Qt::QueuedConnection);
+            }
         }
     } else {
         QHttp2Stream *stream = m_streams.value(streamID);
