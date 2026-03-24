@@ -43,6 +43,7 @@ protected:
 
 private Q_SLOTS:
     void processEvents();
+    void processPostEvent(screen_window_t window);
 
 private:
     void handleKeyboardEvent(screen_event_t event);

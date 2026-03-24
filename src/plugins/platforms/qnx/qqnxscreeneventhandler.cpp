@@ -13,6 +13,8 @@
 #include "qqnxscreeneventfilter.h"
 #include "qqnxscreentraits.h"
 
+#include "qqnxwindow.h"
+
 #include <QDebug>
 #include <QGuiApplication>
 
@@ -244,6 +246,8 @@ void QQnxScreenEventHandler::setScreenEventThread(QQnxScreenEventThread *eventTh
     m_eventThread = eventThread;
     connect(m_eventThread, &QQnxScreenEventThread::eventsPending,
             this, &QQnxScreenEventHandler::processEvents);
+    connect(m_eventThread, &QQnxScreenEventThread::postEventReceived,
+            this, &QQnxScreenEventHandler::processPostEvent);
 }
 
 void QQnxScreenEventHandler::processEvents()
@@ -803,6 +807,15 @@ void QQnxScreenEventHandler::handleManagerEvent(screen_event_t event)
         // event ignored
         qCDebug(lcQpaScreenEvents) << "Ignore manager event for subtype: " << subtype;
     }
+}
+
+void QQnxScreenEventHandler::processPostEvent(screen_window_t qnxWindow)
+{
+    QWindow *w = QQnxIntegration::instance()->window(qnxWindow);
+    if (!w)
+        return;
+    if (QQnxWindow *platformWindow = static_cast<QQnxWindow *>(w->handle()))
+        platformWindow->handlePostEvent();
 }
 
 #include "moc_qqnxscreeneventhandler.cpp"

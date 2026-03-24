@@ -17,6 +17,7 @@
 static const int c_screenCode = _PULSE_CODE_MINAVAIL + 0;
 static const int c_armCode = _PULSE_CODE_MINAVAIL + 1;
 static const int c_quitCode = _PULSE_CODE_MINAVAIL + 2;
+static const int c_postCode = _PULSE_CODE_MINAVAIL + 3;
 
 #if !defined(screen_register_event)
 int screen_register_event(screen_context_t, struct sigevent *event)
@@ -53,6 +54,7 @@ QQnxScreenEventThread::QQnxScreenEventThread(screen_context_t context)
     }
 
     screen_notify(m_screenContext, SCREEN_NOTIFY_EVENT, nullptr, &m_screenEvent);
+    qRegisterMetaType<screen_window_t>("screen_window_t");
 }
 
 QQnxScreenEventThread::~QQnxScreenEventThread()
@@ -92,6 +94,42 @@ void QQnxScreenEventThread::armEventsPending(int count)
     MsgSendPulse(m_connectionId, SIGEV_PULSE_PRIO_INHERIT, c_armCode, count);
 }
 
+bool QQnxScreenEventThread::registerUpdateNotification(screen_window_t window)
+{
+    struct sigevent evt;
+    SIGEV_PULSE_INIT(&evt, m_connectionId, SIGEV_PULSE_PRIO_INHERIT, c_postCode, 0);
+    evt.sigev_value.sival_ptr = window;
+    if (screen_register_event(m_screenContext, &evt) == -1) {
+        qWarning() << "QQnxScreenEventThread: Failed to register post event for window" << window;
+        return false;
+    }
+    int rc = screen_notify(m_screenContext, SCREEN_NOTIFY_UPDATE, window, &evt);
+    qCDebug(lcQpaScreenEvents) << "registerUpdateNotification window=" << window << "rc=" << rc;
+    if (rc != 0) {
+        qWarning() << "screen_notify(SCREEN_NOTIFY_UPDATE) failed for window=" << window << strerror(errno);
+        screen_unregister_event(&evt);
+        return false;
+    }
+    m_postEvents.insert(window, evt);
+    return true;
+}
+
+void QQnxScreenEventThread::unregisterUpdateNotification(screen_window_t window)
+{
+    int rc = screen_notify(m_screenContext, SCREEN_NOTIFY_UPDATE, window, nullptr);
+    qCDebug(lcQpaScreenEvents) << "unregisterUpdateNotification window=" << window << "rc=" << rc;
+    if (m_postEvents.contains(window)) {
+        screen_unregister_event(&m_postEvents[window]);
+        m_postEvents.remove(window);
+    }
+}
+
+void QQnxScreenEventThread::handlePostPulse(const struct _pulse &msg)
+{
+    screen_window_t window = static_cast<screen_window_t>(msg.value.sival_ptr);
+    Q_EMIT postEventReceived(window);
+}
+
 void QQnxScreenEventThread::handleScreenPulse(const struct _pulse &msg)
 {
     Q_UNUSED(msg);
@@ -120,6 +158,8 @@ void QQnxScreenEventThread::handlePulse(const struct _pulse &msg)
         handleScreenPulse(msg);
     else if (msg.code == c_armCode)
         handleArmPulse(msg);
+    else if (msg.code == c_postCode)
+        handlePostPulse(msg);
     else
         qWarning() << "Unexpected pulse" << msg.code;
 }

@@ -9,6 +9,7 @@
 #include "qqnxintegration.h"
 #include "qqnxscreen.h"
 #include "qqnxlgmon.h"
+#include "qqnxscreeneventthread.h"
 
 #include <QUuid>
 
@@ -285,12 +286,15 @@ QQnxWindow::QQnxWindow(QWindow *window, screen_context_t context, screen_window_
 QQnxWindow::~QQnxWindow()
 {
     qCDebug(lcQpaWindow) << "window =" << window();
+    *m_alive = false;
 
     // Qt should have already deleted the children before deleting the parent.
     Q_ASSERT(m_childWindows.size() == 0);
 
     // Remove from plugin's window mapper
     QQnxIntegration::instance()->removeWindow(m_window);
+    if (m_postEventRegistered)
+        QQnxIntegration::instance()->m_screenEventThread->unregisterUpdateNotification(m_window);
 
     // Remove from parent's Hierarchy.
     removeFromParent();
@@ -805,6 +809,8 @@ void QQnxWindow::initWindow()
 
     // Add window to plugin's window mapper
     QQnxIntegration::instance()->addWindow(m_window, window());
+    m_postEventRegistered =
+        QQnxIntegration::instance()->m_screenEventThread->registerUpdateNotification(m_window);
 
     // Qt never calls these setters after creating the window, so we need to do that ourselves here
     setWindowState(window()->windowState());
@@ -915,6 +921,10 @@ void QQnxWindow::applyWindowState()
 
 void QQnxWindow::windowPosted()
 {
+    if (m_postEventRegistered) {
+        m_waitingForPost.storeRelease(1);
+    }
+
     if (m_cover) {
         m_cover->updateCover();
         qqnxLgmonFramePosted(true);  // for performance measurements
@@ -963,6 +973,50 @@ void QQnxWindow::setWindowTitle(const QString &title)
     if (m_desktopNotify & DesktopNotifyTitle) {
         QString titleStr = "Title=" + title;
         notifyManager(titleStr);
+    }
+}
+
+void QQnxWindow::requestUpdate()
+{
+    Q_ASSERT(hasPendingUpdateRequest());
+
+    if (!m_postEventRegistered) {
+        qCDebug(lcQpaWindow) << "requestUpdate: post event not registered, using fallback timer" << window();
+        QPlatformWindow::requestUpdate();
+        return;
+    }
+
+    if (m_waitingForPost.loadAcquire()) {
+        qCDebug(lcQpaWindow) << "requestUpdate: frame in-flight, deferring" << window();
+        return;
+    }
+
+    if (m_fallbackQueued.testAndSetRelaxed(0, 1)) {
+        QSharedPointer<bool> alive = m_alive;
+        QMetaObject::invokeMethod(window(), [this, alive]() {
+            if (!*alive)
+                return;
+            m_fallbackQueued.storeRelaxed(0);
+            if (m_waitingForPost.loadAcquire())
+                return;
+            if (hasPendingUpdateRequest())
+                deliverUpdateRequest();
+        }, Qt::QueuedConnection);
+    }
+}
+
+void QQnxWindow::handlePostEvent()
+{
+    if (!m_waitingForPost.testAndSetAcquire(1, 0)) {
+        qCDebug(lcQpaWindow) << "handlePostEvent: duplicate/early pulse, ignoring" << window();
+        return;
+    }
+
+    qCDebug(lcQpaWindow) << "handlePostEvent: post pulse received" << window();
+
+    if (isExposed() && hasPendingUpdateRequest()) {
+        qCDebug(lcQpaWindow) << "handlePostEvent: delivering update" << window();
+        deliverUpdateRequest();
     }
 }
 
