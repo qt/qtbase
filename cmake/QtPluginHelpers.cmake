@@ -344,10 +344,9 @@ function(qt_internal_add_plugin target)
         qt_internal_wrap_private_modules("${target}"
             OUT_VAR qt_libs_private
             LIBRARIES ${qt_libs_private})
-        list(APPEND qt_register_target_depentdencies_args PRIVATE ${qt_libs_private})
+        list(APPEND qt_register_target_dependencies_args PRIVATE ${qt_libs_private})
     endif()
-    qt_internal_register_target_dependencies("${target}"
-        ${qt_register_target_dependencies_args})
+    qt_internal_register_target_dependencies("${target}" ${qt_register_target_dependencies_args})
 
     if(target_type STREQUAL STATIC_LIBRARY)
         if(qt_module_target)
