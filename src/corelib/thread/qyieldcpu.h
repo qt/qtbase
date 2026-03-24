@@ -20,6 +20,11 @@ extern "C"
 void _mm_pause(void);       // the compiler recognizes as intrinsic
 #endif
 
+#if defined(Q_CC_CLANG) && (defined(Q_PROCESSOR_ARM) || defined(Q_PROCESSOR_ARM_64))
+// Clang defines __yield() in <arm_acle.h>
+#  include <arm_acle.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 Q_ALWAYS_INLINE
