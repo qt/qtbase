@@ -89,7 +89,7 @@ private slots:
     // for the following reasons:
     //   Mac: use of GetCurrentEventButtonState() in QDragManager::drag()
     //   Win: unknown reason
-#if !defined(Q_OS_MAC) && !defined(Q_OS_WIN)
+#if !defined(Q_OS_MACOS) && !defined(Q_OS_WIN)
 #if 0
     void dragAndDrop();
     void dragAndDropOnChild();
@@ -774,7 +774,7 @@ void tst_QAbstractItemView::pressClosesReleaseDoesntOpenEditor()
 }
 
 
-#if !defined(Q_OS_MAC) && !defined(Q_OS_WIN)
+#if !defined(Q_OS_MACOS) && !defined(Q_OS_WIN)
 
 #if 0
 
@@ -991,7 +991,7 @@ void tst_QAbstractItemView::dragAndDropOnChild()
 }
 
 #endif // 0
-#endif // !Q_OS_MAC && !Q_OS_WIN
+#endif // !Q_OS_MACOS && !Q_OS_WIN
 
 class TestModel : public QStandardItemModel
 {

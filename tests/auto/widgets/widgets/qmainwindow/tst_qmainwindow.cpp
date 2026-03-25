@@ -126,7 +126,7 @@ private slots:
     void dockWidgetSize();
     void QTBUG2774_stylechange();
     void QTBUG15080_restoreState();
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     void toggleUnifiedTitleAndToolBarOnMac();
 #endif
     void QTBUG21378_animationFinished();
@@ -2081,7 +2081,7 @@ void tst_QMainWindow::QTBUG15080_restoreState()
     QCOMPARE(dw2->width(), 101);
 }
 
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
 void tst_QMainWindow::toggleUnifiedTitleAndToolBarOnMac()
 {
     QMainWindow mw;

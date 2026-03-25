@@ -827,7 +827,7 @@ void tst_QTreeView::editTriggers()
         break;
     case QAbstractItemView::EditKeyPressed:
         view.setFocus();
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
         // OS X uses Enter for editing
         QTest::keyPress(&view, Qt::Key_Enter);
 #else

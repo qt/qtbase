@@ -34,7 +34,7 @@ QString TestCompiler::targetName(BuildType buildMode, const QString& target, con
         // no conversion
         break;
     }
-#elif defined( Q_OS_MAC )
+#elif defined( Q_OS_MACOS )
     switch (buildMode)
     {
     case Exe: // app

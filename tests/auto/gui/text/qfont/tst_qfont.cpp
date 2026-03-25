@@ -552,7 +552,7 @@ void tst_QFont::deserializeQt515()
 
 void tst_QFont::styleName()
 {
-#if !defined(Q_OS_MAC)
+#if !defined(Q_OS_MACOS)
     QSKIP("Only tested on Mac");
 #else
     QFont font("Helvetica Neue");

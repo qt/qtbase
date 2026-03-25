@@ -177,7 +177,7 @@ private slots:
     void setWindowTitle();
     void resizeEvents_data();
     void resizeEvents();
-#if defined(Q_OS_MAC)
+#if defined(Q_OS_MACOS)
     void defaultSizeGrip();
 #endif
     void hideAndShow();
@@ -611,7 +611,7 @@ void tst_QMdiSubWindow::showShaded()
     int offset = window->style()->pixelMetric(QStyle::PM_MdiSubWindowFrameWidth) / 2;
     QPoint mousePosition(window->width() - qMax(offset, 2), window->height() - qMax(offset, 2));
     QWidget *mouseReceiver = nullptr;
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     if (window->style()->inherits("QMacStyle"))
         mouseReceiver = window->findChild<QSizeGrip *>();
     else
@@ -794,7 +794,7 @@ void tst_QMdiSubWindow::setOpaqueResizeAndMove()
     QStyleOptionTitleBar options;
     options.initFrom(window);
     int height = window->style()->pixelMetric(QStyle::PM_TitleBarHeight, &options);
-#if defined(Q_OS_MAC)
+#if defined(Q_OS_MACOS)
     // ### Remove this after mac style has been fixed
     height -= 4;
 #endif
@@ -1466,7 +1466,7 @@ void tst_QMdiSubWindow::resizeEvents()
     QCOMPARE(widgetResizeEventSpy.count(), expectedWidgetResizeEvents);
 }
 
-#if defined(Q_OS_MAC)
+#if defined(Q_OS_MACOS)
 void tst_QMdiSubWindow::defaultSizeGrip()
 {
     if (!qApp->style()->inherits("QMacStyle"))
@@ -1560,7 +1560,7 @@ void tst_QMdiSubWindow::hideAndShow()
         QCOMPARE(window->size(), window->sizeHint());
 
     subWindow->showMaximized();
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
     QCOMPARE(menuBar->cornerWidget(Qt::TopRightCorner), subWindow->maximizedButtonsWidget());
 #endif
 

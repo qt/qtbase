@@ -39,7 +39,7 @@ public:
         TopicChooser->resize(391, 223);
         TopicChooser->setSizeGripEnabled(true);
         unnamed = new QVBoxLayout(TopicChooser);
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         unnamed->setSpacing(6);
 #endif
         unnamed->setContentsMargins(11, 11, 11, 11);
@@ -55,7 +55,7 @@ public:
         unnamed->addWidget(listWidget);
 
         unnamed1 = new QHBoxLayout();
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         unnamed1->setSpacing(6);
 #endif
         unnamed1->setContentsMargins(0, 0, 0, 0);

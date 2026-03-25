@@ -3342,7 +3342,7 @@ bool QFontInfo::fixedPitch() const
 {
     QFontEngine *engine = d->engineForScript(QChar::Script_Common);
     Q_ASSERT(engine != nullptr);
-#ifdef Q_OS_MAC
+#ifdef Q_OS_APPLE
     if (!engine->fontDef.fixedPitchComputed) {
         QChar ch[2] = { u'i', u'm' };
         QGlyphLayoutArray<2> g;

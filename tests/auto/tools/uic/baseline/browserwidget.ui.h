@@ -55,7 +55,7 @@ public:
         deleteRowAction->setObjectName("deleteRowAction");
         deleteRowAction->setEnabled(false);
         vboxLayout = new QVBoxLayout(Browser);
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         vboxLayout->setSpacing(6);
 #endif
         vboxLayout->setContentsMargins(8, 8, 8, 8);
@@ -98,10 +98,10 @@ public:
         groupBox->setSizePolicy(sizePolicy3);
         groupBox->setMaximumSize(QSize(16777215, 180));
         vboxLayout1 = new QVBoxLayout(groupBox);
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         vboxLayout1->setSpacing(6);
 #endif
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         vboxLayout1->setContentsMargins(9, 9, 9, 9);
 #endif
         vboxLayout1->setObjectName("vboxLayout1");
@@ -118,7 +118,7 @@ public:
         vboxLayout1->addWidget(sqlEdit);
 
         hboxLayout = new QHBoxLayout();
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         hboxLayout->setSpacing(6);
 #endif
         hboxLayout->setContentsMargins(1, 1, 1, 1);

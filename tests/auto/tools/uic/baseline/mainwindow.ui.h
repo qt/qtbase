@@ -95,20 +95,20 @@ public:
         centralwidget = new QWidget(MainWindow);
         centralwidget->setObjectName("centralwidget");
         vboxLayout = new QVBoxLayout(centralwidget);
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         vboxLayout->setSpacing(6);
 #endif
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         vboxLayout->setContentsMargins(9, 9, 9, 9);
 #endif
         vboxLayout->setObjectName("vboxLayout");
         groupBox = new QGroupBox(centralwidget);
         groupBox->setObjectName("groupBox");
         hboxLayout = new QHBoxLayout(groupBox);
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         hboxLayout->setSpacing(6);
 #endif
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         hboxLayout->setContentsMargins(9, 9, 9, 9);
 #endif
         hboxLayout->setObjectName("hboxLayout");
@@ -158,10 +158,10 @@ public:
         groupBox_2 = new QGroupBox(centralwidget);
         groupBox_2->setObjectName("groupBox_2");
         vboxLayout1 = new QVBoxLayout(groupBox_2);
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         vboxLayout1->setSpacing(6);
 #endif
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         vboxLayout1->setContentsMargins(9, 9, 9, 9);
 #endif
         vboxLayout1->setObjectName("vboxLayout1");
@@ -172,7 +172,7 @@ public:
         vboxLayout1->addWidget(chooseFromCodePoints);
 
         vboxLayout2 = new QVBoxLayout();
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         vboxLayout2->setSpacing(6);
 #endif
         vboxLayout2->setContentsMargins(0, 0, 0, 0);
@@ -183,7 +183,7 @@ public:
         vboxLayout2->addWidget(characterRangeView);
 
         hboxLayout1 = new QHBoxLayout();
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         hboxLayout1->setSpacing(6);
 #endif
         hboxLayout1->setContentsMargins(0, 0, 0, 0);
@@ -219,7 +219,7 @@ public:
         vboxLayout1->addWidget(chooseFromSampleFile);
 
         hboxLayout2 = new QHBoxLayout();
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         hboxLayout2->setSpacing(6);
 #endif
         hboxLayout2->setContentsMargins(0, 0, 0, 0);
@@ -257,10 +257,10 @@ public:
         groupBox_3 = new QGroupBox(centralwidget);
         groupBox_3->setObjectName("groupBox_3");
         hboxLayout3 = new QHBoxLayout(groupBox_3);
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         hboxLayout3->setSpacing(6);
 #endif
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         hboxLayout3->setContentsMargins(9, 9, 9, 9);
 #endif
         hboxLayout3->setObjectName("hboxLayout3");
@@ -275,10 +275,10 @@ public:
         groupBox_4 = new QGroupBox(centralwidget);
         groupBox_4->setObjectName("groupBox_4");
         hboxLayout4 = new QHBoxLayout(groupBox_4);
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         hboxLayout4->setSpacing(6);
 #endif
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         hboxLayout4->setContentsMargins(9, 9, 9, 9);
 #endif
         hboxLayout4->setObjectName("hboxLayout4");
@@ -312,7 +312,7 @@ public:
         vboxLayout->addWidget(groupBox_4);
 
         hboxLayout5 = new QHBoxLayout();
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         hboxLayout5->setSpacing(6);
 #endif
         hboxLayout5->setContentsMargins(0, 0, 0, 0);

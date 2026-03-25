@@ -1516,7 +1516,7 @@ void tst_QAbstractSlider::wheelEvent_data()
                                    << 1                                  // delta
                                    << Qt::Vertical                       // orientation of slider
                                    << Qt::Vertical                       // orientation of wheel
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
                                    << 1                                  // expected position after
 #else
                                    // We don't restrict scrolling to pageStep on Mac
@@ -1534,7 +1534,7 @@ void tst_QAbstractSlider::wheelEvent_data()
                                         << 1                             // delta
                                         << Qt::Horizontal                // orientation of slider
                                         << Qt::Vertical                  // orientation of wheel
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
                                         << 1                             // expected position after
 #else
                                         // We don't restrict scrolling to pageStep on Mac
@@ -1553,7 +1553,7 @@ void tst_QAbstractSlider::wheelEvent_data()
                                         << 1                             // delta
                                         << Qt::Horizontal                // orientation of slider
                                         << Qt::Vertical                  // orientation of wheel
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
                                         << 1                             // expected position after
 #else
                                         // We don't restrict scrolling to pageStep on Mac
@@ -1654,7 +1654,7 @@ void tst_QAbstractSlider::wheelEvent()
     QWheelEvent event(wheelPoint, slider->mapToGlobal(wheelPoint), QPoint(), angleDelta,
                       Qt::NoButton, k, Qt::NoScrollPhase, false);
     QVERIFY(applicationInstance->sendEvent(slider,&event));
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     QEXPECT_FAIL("Normal data page", "QTBUG-23679", Continue);
     QEXPECT_FAIL("Different orientation", "QTBUG-23679", Continue);
     QEXPECT_FAIL("Different orientation2", "QTBUG-23679", Continue);
@@ -1668,7 +1668,7 @@ void tst_QAbstractSlider::wheelEvent()
     QSignalSpy spy1(slider, SIGNAL(actionTriggered(int)));
     QSignalSpy spy2(slider, SIGNAL(valueChanged(int)));
     QVERIFY(applicationInstance->sendEvent(slider,&event2));
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     QEXPECT_FAIL("Normal data page", "QTBUG-23679", Continue);
     QEXPECT_FAIL("Different orientation", "QTBUG-23679", Continue);
     QEXPECT_FAIL("Different orientation2", "QTBUG-23679", Continue);

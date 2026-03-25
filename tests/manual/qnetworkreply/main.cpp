@@ -150,7 +150,7 @@ void tst_qnetworkreply::setSslConfiguration()
     bool rootCertLoadingAllowed = QSslSocketPrivate::rootCertOnDemandLoadingSupported();
 #if defined(Q_OS_LINUX)
     QCOMPARE(rootCertLoadingAllowed, true);
-#elif defined(Q_OS_MAC)
+#elif defined(Q_OS_APPLE)
     QCOMPARE(rootCertLoadingAllowed, false);
 #else
     Q_UNUSED(rootCertLoadingAllowed);

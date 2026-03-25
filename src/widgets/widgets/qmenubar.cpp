@@ -153,7 +153,7 @@ void QMenuBarPrivate::updateGeometries()
         }
     }
 
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     if (q->isNativeMenuBar()) {//nothing to see here folks, move along..
         itemsDirty = false;
         return;

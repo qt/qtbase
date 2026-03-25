@@ -14,13 +14,13 @@ public:
     tst_MacPlist() {}
 
 private slots:
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     void test_plist_data();
     void test_plist();
 #endif
 };
 
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
 void tst_MacPlist::test_plist_data()
 {
     QTest::addColumn<QString>("test_plist");

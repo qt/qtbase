@@ -24,7 +24,7 @@ private slots:
     void format();
     void setValueRepaint_data();
     void setValueRepaint();
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
     void setMinMaxRepaint();
 #endif
     void sizeHint();
@@ -213,7 +213,7 @@ void tst_QProgressBar::setValueRepaint()
 // This test is invalid on Mac, since progressbars
 // are animated there
 
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
 void tst_QProgressBar::setMinMaxRepaint()
 {
     if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))

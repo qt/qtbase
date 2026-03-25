@@ -1958,7 +1958,7 @@ void tst_QLineEdit::noCursorBlinkWhenReadOnly()
 
 static void figureOutProperKey(Qt::Key &key, Qt::KeyboardModifiers &pressState)
 {
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     long roll = QRandomGenerator::global()->bounded(3);
     switch (roll) {
     case 0:
@@ -2164,14 +2164,14 @@ void tst_QLineEdit::cursorPositionChanged_data()
     keys.addKeyClick(Qt::Key_Home);
     keys.addKeyClick(Qt::Key_Right, Qt::ControlModifier);
     QTest::newRow("abc efg<home><ctrl-right>") << keys
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         << 0 << 4;
 #else
         << 6 << 7;
 #endif
     keys.clear();
 
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     keys.addKeyClick(Qt::Key_A);
     keys.addKeyClick(Qt::Key_B);
     keys.addKeyClick(Qt::Key_C);
@@ -2194,13 +2194,13 @@ void tst_QLineEdit::cursorPositionChanged_data()
     keys.addKeyClick(Qt::Key_F);
     keys.addKeyClick(Qt::Key_Left, Qt::ControlModifier);
     QTest::newRow("abc efg<ctrl-left>") << keys << 7
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         << 4;
 #else
         << 0;
 #endif
     keys.clear();
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     keys.addKeyClick(Qt::Key_A);
     keys.addKeyClick(Qt::Key_B);
     keys.addKeyClick(Qt::Key_C);
@@ -3443,7 +3443,7 @@ void tst_QLineEdit::inlineCompletion()
     QCOMPARE(testWidget->selectedText(), QString("tem1"));
 
     Qt::KeyboardModifiers keyboardModifiers = Qt::ControlModifier;
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     keyboardModifiers |= Qt::AltModifier;
 #endif
     QTest::keyClick(testWidget, Qt::Key_Down, keyboardModifiers);
@@ -3962,7 +3962,7 @@ void tst_QLineEdit::taskQTBUG_4401_enterKeyClearsPassword()
 
 void tst_QLineEdit::taskQTBUG_4679_moveToStartEndOfBlock()
 {
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     const QString text("there are no blocks for lineEdit");
     QLineEdit *testWidget = ensureTestWidget();
     testWidget->setText(text);
@@ -3973,12 +3973,12 @@ void tst_QLineEdit::taskQTBUG_4679_moveToStartEndOfBlock()
     QCOMPARE(testWidget->cursorPosition(), 0);
     QTest::keyPress(testWidget, Qt::Key_E, Qt::MetaModifier);
     QCOMPARE(testWidget->cursorPosition(), text.size());
-#endif // Q_OS_MAC
+#endif // Q_OS_MACOS
 }
 
 void tst_QLineEdit::taskQTBUG_4679_selectToStartEndOfBlock()
 {
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     const QString text("there are no blocks for lineEdit, select all");
     QLineEdit *testWidget = ensureTestWidget();
     testWidget->setText(text);
@@ -3994,7 +3994,7 @@ void tst_QLineEdit::taskQTBUG_4679_selectToStartEndOfBlock()
     QCOMPARE(testWidget->cursorPosition(), text.size());
     QVERIFY(testWidget->hasSelectedText());
     QCOMPARE(testWidget->selectedText(), text.mid(5));
-#endif // Q_OS_MAC
+#endif // Q_OS_MACOS
 }
 
 #ifndef QT_NO_CONTEXTMENU

@@ -548,7 +548,7 @@ bool QProgressBar::event(QEvent *e)
     Q_D(QProgressBar);
     switch (e->type()) {
     case QEvent::StyleChange:
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     case QEvent::MacSizeChange:
 #endif
         d->resetLayoutItemMargins();

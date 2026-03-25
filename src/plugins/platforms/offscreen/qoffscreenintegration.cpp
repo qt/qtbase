@@ -7,7 +7,7 @@
 
 #if defined(Q_OS_UNIX)
 #include <QtGui/private/qgenericunixeventdispatcher_p.h>
-#if defined(Q_OS_MAC)
+#if defined(Q_OS_APPLE)
 #include <qpa/qplatformfontdatabase.h>
 #include <QtGui/private/qcoretextfontdatabase_p.h>
 #else
@@ -62,7 +62,7 @@ public:
 QOffscreenIntegration::QOffscreenIntegration(const QStringList& paramList)
 {
 #if defined(Q_OS_UNIX)
-#if defined(Q_OS_MAC)
+#if defined(Q_OS_APPLE)
     m_fontDatabase.reset(new QCoreTextFontDatabaseEngineFactory<QCoreTextFontEngine>);
 #else
     m_fontDatabase.reset(new QGenericUnixFontDatabase());

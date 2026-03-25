@@ -1130,7 +1130,7 @@ bool QDateTimeEdit::event(QEvent *event)
         d->updateEdit();
         break;
     case QEvent::StyleChange:
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     case QEvent::MacSizeChange:
 #endif
         d->setLayoutItemMargins(QStyle::SE_DateTimeEditLayoutItem);

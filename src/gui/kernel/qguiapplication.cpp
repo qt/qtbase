@@ -85,7 +85,7 @@
 #include <QtCore/QLibrary>
 #endif
 
-#if defined(Q_OS_MAC)
+#if defined(Q_OS_APPLE)
 #  include "private/qcore_mac_p.h"
 #elif defined(Q_OS_WIN)
 #  include <QtCore/qt_windows.h>
@@ -1703,7 +1703,7 @@ void Q_TRACE_INSTRUMENT(qtgui) QGuiApplicationPrivate::init()
                 pluginList << argv[i];
         } else if (strcmp(arg, "-reverse") == 0) {
             force_reverse = true;
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
         } else if (strncmp(arg, "-psn_", 5) == 0) {
             // eat "-psn_xxxx" on Mac, which is passed when starting an app from Finder.
             // special hack to change working directory (for an app bundle) when running from finder

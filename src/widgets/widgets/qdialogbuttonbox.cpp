@@ -1003,7 +1003,7 @@ void QDialogButtonBox::changeEvent(QEvent *event)
             for (auto key : d->standardButtonMap.keys())
                 key->setStyle(newStyle);
         }
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
         Q_FALLTHROUGH();
     case QEvent::MacSizeChange:
 #endif

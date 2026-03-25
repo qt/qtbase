@@ -316,7 +316,7 @@ void tst_QDoubleSpinBox::setTracking_data()
     QTestEventList keys;
     QStringList texts1;
     QStringList texts2;
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     keys.addKeyClick(Qt::Key_Right, Qt::ControlModifier);
 #else
     keys.addKeyClick(Qt::Key_End);
@@ -389,7 +389,7 @@ void tst_QDoubleSpinBox::setWrapping_data()
 
     keys.clear();
     values.clear();
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     keys.addKeyClick(Qt::Key_Right, Qt::ControlModifier);
 #else
     keys.addKeyClick(Qt::Key_End);
@@ -404,7 +404,7 @@ void tst_QDoubleSpinBox::setWrapping_data()
 
     keys.clear();
     values.clear();
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     keys.addKeyClick(Qt::Key_Left, Qt::ControlModifier);
 #else
     keys.addKeyClick(Qt::Key_Home);
@@ -676,7 +676,7 @@ void tst_QDoubleSpinBox::setDecimals()
         QCOMPARE(spin.text(), expected);
 
     if (spin.decimals() > 0) {
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
         QTest::keyClick(&spin, Qt::Key_Right, Qt::ControlModifier);
 #else
         QTest::keyClick(&spin, Qt::Key_End);
@@ -899,13 +899,13 @@ void tst_QDoubleSpinBox::removeAll()
     spin.setValue(0.2);
     spin.setDecimals(1);
     spin.show();
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     QTest::keyClick(&spin, Qt::Key_Left, Qt::ControlModifier);
 #else
     QTest::keyClick(&spin, Qt::Key_Home);
 #endif
 
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     QTest::keyClick(&spin, Qt::Key_Right, Qt::ControlModifier|Qt::ShiftModifier);
 #else
     QTest::keyClick(&spin, Qt::Key_End, Qt::ShiftModifier);
@@ -955,7 +955,7 @@ void tst_QDoubleSpinBox::germanTest()
     DoubleSpinBox spin;
     spin.show();
     spin.setValue(2.12);
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     QTest::keyClick(&spin, Qt::Key_Right, Qt::ControlModifier);
 #else
     QTest::keyClick(&spin, Qt::Key_End);
@@ -973,7 +973,7 @@ void tst_QDoubleSpinBox::doubleDot()
     spin.setValue(2.12);
     QTest::keyClick(&spin, Qt::Key_Backspace);
     QCOMPARE(spin.text(), QString("2.12"));
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     QTest::keyClick(&spin, Qt::Key_Left, Qt::ControlModifier);
 #else
     QTest::keyClick(&spin, Qt::Key_Home);

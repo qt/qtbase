@@ -44,10 +44,10 @@ public:
             StyleSheetEditor->setObjectName("StyleSheetEditor");
         StyleSheetEditor->resize(445, 289);
         gridLayout = new QGridLayout(StyleSheetEditor);
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         gridLayout->setSpacing(6);
 #endif
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         gridLayout->setContentsMargins(9, 9, 9, 9);
 #endif
         gridLayout->setObjectName("gridLayout");
@@ -92,7 +92,7 @@ public:
         gridLayout->addWidget(label_7, 0, 1, 1, 1);
 
         hboxLayout = new QHBoxLayout();
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         hboxLayout->setSpacing(6);
 #endif
         hboxLayout->setContentsMargins(0, 0, 0, 0);

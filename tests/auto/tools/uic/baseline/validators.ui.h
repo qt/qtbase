@@ -79,18 +79,18 @@ public:
             ValidatorsForm->setObjectName("ValidatorsForm");
         ValidatorsForm->resize(536, 668);
         vboxLayout = new QVBoxLayout(ValidatorsForm);
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         vboxLayout->setSpacing(6);
 #endif
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         vboxLayout->setContentsMargins(9, 9, 9, 9);
 #endif
         vboxLayout->setObjectName("vboxLayout");
         hboxLayout = new QHBoxLayout();
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         hboxLayout->setSpacing(6);
 #endif
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         hboxLayout->setContentsMargins(0, 0, 0, 0);
 #endif
         hboxLayout->setObjectName("hboxLayout");
@@ -109,26 +109,26 @@ public:
         groupBox = new QGroupBox(ValidatorsForm);
         groupBox->setObjectName("groupBox");
         vboxLayout1 = new QVBoxLayout(groupBox);
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         vboxLayout1->setSpacing(6);
 #endif
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         vboxLayout1->setContentsMargins(9, 9, 9, 9);
 #endif
         vboxLayout1->setObjectName("vboxLayout1");
         hboxLayout1 = new QHBoxLayout();
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         hboxLayout1->setSpacing(6);
 #endif
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         hboxLayout1->setContentsMargins(0, 0, 0, 0);
 #endif
         hboxLayout1->setObjectName("hboxLayout1");
         gridLayout = new QGridLayout();
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         gridLayout->setSpacing(6);
 #endif
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         gridLayout->setContentsMargins(0, 0, 0, 0);
 #endif
         gridLayout->setObjectName("gridLayout");
@@ -174,10 +174,10 @@ public:
         frame->setFrameShape(QFrame::Shape::StyledPanel);
         frame->setFrameShadow(QFrame::Shadow::Sunken);
         vboxLayout2 = new QVBoxLayout(frame);
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         vboxLayout2->setSpacing(6);
 #endif
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         vboxLayout2->setContentsMargins(9, 9, 9, 9);
 #endif
         vboxLayout2->setObjectName("vboxLayout2");
@@ -219,26 +219,26 @@ public:
         groupBox_2 = new QGroupBox(ValidatorsForm);
         groupBox_2->setObjectName("groupBox_2");
         vboxLayout3 = new QVBoxLayout(groupBox_2);
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         vboxLayout3->setSpacing(6);
 #endif
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         vboxLayout3->setContentsMargins(9, 9, 9, 9);
 #endif
         vboxLayout3->setObjectName("vboxLayout3");
         hboxLayout2 = new QHBoxLayout();
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         hboxLayout2->setSpacing(6);
 #endif
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         hboxLayout2->setContentsMargins(0, 0, 0, 0);
 #endif
         hboxLayout2->setObjectName("hboxLayout2");
         gridLayout1 = new QGridLayout();
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         gridLayout1->setSpacing(6);
 #endif
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         gridLayout1->setContentsMargins(0, 0, 0, 0);
 #endif
         gridLayout1->setObjectName("gridLayout1");
@@ -307,10 +307,10 @@ public:
         frame_2->setFrameShape(QFrame::Shape::StyledPanel);
         frame_2->setFrameShadow(QFrame::Shadow::Sunken);
         vboxLayout4 = new QVBoxLayout(frame_2);
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         vboxLayout4->setSpacing(6);
 #endif
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         vboxLayout4->setContentsMargins(9, 9, 9, 9);
 #endif
         vboxLayout4->setObjectName("vboxLayout4");
@@ -349,7 +349,7 @@ public:
         vboxLayout->addItem(spacerItem3);
 
         hboxLayout3 = new QHBoxLayout();
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         hboxLayout3->setSpacing(6);
 #endif
         hboxLayout3->setContentsMargins(0, 0, 0, 0);

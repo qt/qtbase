@@ -53,7 +53,7 @@ Q_DECLARE_METATYPE(QPainterPath)
 Q_DECLARE_METATYPE(Qt::ScrollBarPolicy)
 Q_DECLARE_METATYPE(ScrollBarCount)
 
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
 //On mac we get full update. So check that the expected region is contained inside the actual
 #define COMPARE_REGIONS(ACTUAL, EXPECTED) QVERIFY((EXPECTED).subtracted(ACTUAL).isEmpty())
 #else
@@ -2434,7 +2434,7 @@ void tst_QGraphicsView::viewportUpdateMode()
 
     // The view gets two updates for the update scene updates.
     QTRY_VERIFY(!view.lastUpdateRegions.isEmpty());
-#ifndef Q_OS_MAC //cocoa doesn't support drawing regions
+#ifndef Q_OS_MACOS //cocoa doesn't support drawing regions
     QCOMPARE(view.lastUpdateRegions.last().rectCount(), 2);
     QCOMPARE(view.lastUpdateRegions.last().begin()[0].size(), QSize(14, 14));
     QCOMPARE(view.lastUpdateRegions.last().begin()[1].size(), QSize(14, 14));
@@ -5215,7 +5215,7 @@ void tst_QGraphicsView::exposeRegion()
     COMPARE_REGIONS(view.lastUpdateRegions.at(0), expectedExposeRegion);
 
     // Make sure the item didn't get any repaints.
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
     QCOMPARE(item->paints, 0);
 #endif
 }
@@ -5378,7 +5378,7 @@ void tst_QGraphicsView::update2()
     rect->update();
     QTRY_VERIFY(view.painted);
 
-#ifndef Q_OS_MAC //cocoa doesn't support drawing regions
+#ifndef Q_OS_MACOS //cocoa doesn't support drawing regions
     QTRY_VERIFY(view.painted);
     QCOMPARE(view.lastUpdateRegions.size(), 1);
     QCOMPARE(view.lastUpdateRegions.at(0), expectedUpdateRegion);
@@ -5436,7 +5436,7 @@ void tst_QGraphicsView::update_ancestorClipsChildrenToShape()
     child->update();
     QTRY_VERIFY(view.painted);
 
-#ifndef Q_OS_MAC //cocoa doesn't support drawing regions
+#ifndef Q_OS_MACOS //cocoa doesn't support drawing regions
     QTRY_VERIFY(view.painted);
     QCOMPARE(view.lastUpdateRegions.size(), 1);
     QCOMPARE(view.lastUpdateRegions.at(0), QRegion(expected.toAlignedRect()));
@@ -5490,7 +5490,7 @@ void tst_QGraphicsView::update_ancestorClipsChildrenToShape2()
     child->update();
     QTRY_VERIFY(view.painted);
 
-#ifndef Q_OS_MAC //cocoa doesn't support drawing regions
+#ifndef Q_OS_MACOS //cocoa doesn't support drawing regions
     QTRY_VERIFY(view.painted);
     QCOMPARE(view.lastUpdateRegions.size(), 1);
     QCOMPARE(view.lastUpdateRegions.at(0), QRegion(expected.toAlignedRect()));
@@ -5508,7 +5508,7 @@ void tst_QGraphicsView::update_ancestorClipsChildrenToShape2()
     expected = child->deviceTransform(view.viewportTransform()).mapRect(child->boundingRect());
     expected.adjust(-2, -2, 2, 2); // Antialiasing
 
-#ifndef Q_OS_MAC //cocoa doesn't support drawing regions
+#ifndef Q_OS_MACOS //cocoa doesn't support drawing regions
     QTRY_VERIFY(view.painted);
     QCOMPARE(view.lastUpdateRegions.size(), 1);
     QCOMPARE(view.lastUpdateRegions.at(0), QRegion(expected.toAlignedRect()));
@@ -5785,7 +5785,7 @@ void tst_QGraphicsView::task255529_transformationAnchorMouseAndViewportMargins()
     if (!isActiveWindow)
         QSKIP("Window activation failed, skipping test", Abort);
     // This is highly unstable (observed to pass on Windows and some Linux configurations).
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
     for (int i = 0; i < 4; ++i) {
         QPoint mouseViewPos(20, 20);
         sendMouseMove(view.viewport(), mouseViewPos);

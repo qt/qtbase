@@ -463,7 +463,7 @@ void QDialogPrivate::resetModalitySetByOpen()
         // open() changed the window modality and the user didn't touch it afterwards; restore it
         q->setWindowModality(Qt::WindowModality(resetModalityTo));
         q->setAttribute(Qt::WA_SetWindowModality, wasModalitySet);
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
         Q_ASSERT(resetModalityTo != Qt::WindowModal);
         q->setParent(q->parentWidget(), Qt::Dialog);
 #endif
@@ -517,7 +517,7 @@ void QDialog::open()
         d->wasModalitySet = testAttribute(Qt::WA_SetWindowModality);
         setWindowModality(Qt::WindowModal);
         setAttribute(Qt::WA_SetWindowModality, false);
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
         setParent(parentWidget(), Qt::Sheet);
 #endif
     }

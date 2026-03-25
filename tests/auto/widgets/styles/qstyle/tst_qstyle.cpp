@@ -54,7 +54,7 @@ private slots:
 #if defined(Q_OS_WIN) && !defined(QT_NO_STYLE_WINDOWSVISTA)
     void testWindowsVistaStyle();
 #endif
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     void testMacStyle();
 #endif
     void testStyleFactory();
@@ -311,7 +311,7 @@ void tst_QStyle::testWindowsVistaStyle()
 }
 #endif
 
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
 void tst_QStyle::testMacStyle()
 {
     QStyle *mstyle = QStyleFactory::create("macos");

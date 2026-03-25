@@ -53,7 +53,7 @@ QT_END_NAMESPACE
 static inline bool isCaseSensitiveFileSystem(const QString &path)
 {
     Q_UNUSED(path);
-#if defined(Q_OS_MAC)
+#if defined(Q_OS_MACOS)
     return pathconf(QFile::encodeName(path).constData(), _PC_CASE_SENSITIVE) == 1;
 #elif defined(Q_OS_WIN)
     return false;
@@ -1250,7 +1250,7 @@ void tst_QFiledialog::disableSaveButton_data()
 
     QTest::newRow("valid path") << QDir::temp().absolutePath() + QDir::separator() + "qfiledialog.new_file" << true;
     QTest::newRow("no path") << "" << false;
-#if defined(Q_OS_UNIX) && !defined(Q_OS_MAC) && !defined(Q_OS_OPENBSD)
+#if defined(Q_OS_UNIX) && !defined(Q_OS_MACOS) && !defined(Q_OS_OPENBSD)
     QTest::newRow("too long path") << "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii" << false;
 #endif
     QTest::newRow("file") << "foo.html" << true;
@@ -1385,7 +1385,7 @@ void tst_QFiledialog::clearLineEdit()
     SelectDirTestPredicate selectTestDir(list, dirName);
     QTRY_VERIFY(selectTestDir);
 
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
     QTest::keyClick(list, Qt::Key_Return);
 #else
     QTest::keyClick(list, Qt::Key_O, Qt::ControlModifier);
@@ -1404,7 +1404,7 @@ void tst_QFiledialog::clearLineEdit()
 
     QTRY_VERIFY(selectTestDir);
 
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
     QTest::keyClick(list, Qt::Key_Return);
 #else
     QTest::keyClick(list, Qt::Key_O, Qt::ControlModifier);

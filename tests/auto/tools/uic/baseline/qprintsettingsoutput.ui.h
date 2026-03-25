@@ -99,7 +99,7 @@ public:
         _3->addWidget(printAll);
 
         _4 = new QHBoxLayout();
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         _4->setSpacing(6);
 #endif
         _4->setContentsMargins(0, 0, 0, 0);

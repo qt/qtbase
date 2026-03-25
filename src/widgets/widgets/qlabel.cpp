@@ -959,7 +959,7 @@ bool QLabel::event(QEvent *e)
             d->textLayoutDirty = true;
         break;
     case QEvent::StyleChange:
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     case QEvent::MacSizeChange:
 #endif
         d->setLayoutItemMargins(QStyle::SE_LabelLayoutItem);

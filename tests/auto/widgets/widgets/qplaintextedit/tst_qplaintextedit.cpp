@@ -244,14 +244,14 @@ void tst_QPlainTextEdit::createSelection()
 {
     QTest::keyClicks(ed, "Hello World");
     /* go to start */
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
     QTest::keyClick(ed, Qt::Key_Home, Qt::ControlModifier);
 #else
     QTest::keyClick(ed, Qt::Key_Home);
 #endif
     QCOMPARE(ed->textCursor().position(), 0);
     /* select until end of text */
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
     QTest::keyClick(ed, Qt::Key_End, Qt::ControlModifier | Qt::ShiftModifier);
 #else
     QTest::keyClick(ed, Qt::Key_End, Qt::ShiftModifier);
@@ -1000,7 +1000,7 @@ void tst_QPlainTextEdit::copyAvailable()
     QFETCH(QList<bool>, copyAvailable);
     QFETCH(QString, function);
 
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     QSKIP("QTBUG-22283: copyAvailable has never passed on Mac");
 #endif
     ed->clear();

@@ -215,7 +215,7 @@ QComboBoxPrivate::QComboBoxPrivate()
 QComboBoxPrivate::~QComboBoxPrivate()
 {
     disconnectModel();
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     cleanupNativePopup();
 #endif
 }
@@ -2794,7 +2794,7 @@ QSize QComboBox::sizeHint() const
     return d->recomputeSizeHint(d->sizeHint);
 }
 
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
 void QComboBoxPrivate::cleanupNativePopup()
 {
     if (!m_platformMenu)
@@ -2880,7 +2880,7 @@ bool QComboBoxPrivate::showNativePopup()
     return true;
 }
 
-#endif // Q_OS_MAC
+#endif // Q_OS_MACOS
 
 /*!
     Displays the list of items in the combobox. If the list is empty
@@ -2902,7 +2902,7 @@ void QComboBox::showPopup()
     initStyleOption(&opt);
     const bool usePopup = style->styleHint(QStyle::SH_ComboBox_Popup, &opt, this);
 
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     if (usePopup
         && (!d->container
             || (qobject_cast<QComboBoxListView*>(view())
@@ -2910,7 +2910,7 @@ void QComboBox::showPopup()
         && style->styleHint(QStyle::SH_ComboBox_UseNativePopup, &opt, this)
         && d->showNativePopup())
         return;
-#endif // Q_OS_MAC
+#endif // Q_OS_MACOS
 
     QComboBoxPrivateContainer* container = d->viewContainer();
     QRect listRect(style->subControlRect(QStyle::CC_ComboBox, &opt,
@@ -3067,7 +3067,7 @@ void QComboBox::showPopup()
     container->hideScrollers();
     container->setGeometry(listRect);
 
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
     const bool updatesEnabled = container->updatesEnabled();
 #endif
 
@@ -3083,7 +3083,7 @@ void QComboBox::showPopup()
 // If updates are disabled at this point we'll miss our chance at painting the popup
 // menu before it's shown, causing flicker since the window then displays the standard gray
 // background.
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
     container->setUpdatesEnabled(false);
 #endif
 
@@ -3126,7 +3126,7 @@ void QComboBox::showPopup()
                              ? QAbstractItemView::PositionAtCenter
                              : QAbstractItemView::EnsureVisible);
 
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
     container->setUpdatesEnabled(updatesEnabled);
 #endif
 
@@ -3291,7 +3291,7 @@ void QComboBox::changeEvent(QEvent *e)
             d->container->updateStyleSettings();
         d->updateDelegate();
 
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     case QEvent::MacSizeChange:
 #endif
         d->sizeHint = QSize(); // invalidate size hint

@@ -246,7 +246,7 @@ int main(int argc, char *argv[])
     bool touch = (a.arguments().contains(QLatin1String("--touch")));
     MainWindow mw(touch);
     mw.show();
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     mw.raise();
 #endif
     return a.exec();

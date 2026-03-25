@@ -321,7 +321,7 @@ public:
 
 void tst_QLayout::layoutItemRect()
 {
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     if (QApplication::style()->inherits("QMacStyle")) {
         QWidget *window = new QWidget;
         QRadioButton *radio = new QRadioButton(window);

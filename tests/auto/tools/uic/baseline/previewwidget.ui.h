@@ -75,18 +75,18 @@ public:
         sizePolicy.setHeightForWidth(qdesigner_internal__PreviewWidget->sizePolicy().hasHeightForWidth());
         qdesigner_internal__PreviewWidget->setSizePolicy(sizePolicy);
         gridLayout = new QGridLayout(qdesigner_internal__PreviewWidget);
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         gridLayout->setSpacing(6);
 #endif
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         gridLayout->setContentsMargins(9, 9, 9, 9);
 #endif
         gridLayout->setObjectName("gridLayout");
         vboxLayout = new QVBoxLayout();
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         vboxLayout->setSpacing(6);
 #endif
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         vboxLayout->setContentsMargins(0, 0, 0, 0);
 #endif
         vboxLayout->setObjectName("vboxLayout");
@@ -102,7 +102,7 @@ public:
         vboxLayout->addWidget(ComboBox1);
 
         hboxLayout = new QHBoxLayout();
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         hboxLayout->setSpacing(6);
 #endif
         hboxLayout->setContentsMargins(0, 0, 0, 0);
@@ -154,10 +154,10 @@ public:
         ButtonGroup2 = new QGroupBox(qdesigner_internal__PreviewWidget);
         ButtonGroup2->setObjectName("ButtonGroup2");
         vboxLayout1 = new QVBoxLayout(ButtonGroup2);
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         vboxLayout1->setSpacing(6);
 #endif
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         vboxLayout1->setContentsMargins(9, 9, 9, 9);
 #endif
         vboxLayout1->setObjectName("vboxLayout1");
@@ -178,10 +178,10 @@ public:
         ButtonGroup1 = new QGroupBox(qdesigner_internal__PreviewWidget);
         ButtonGroup1->setObjectName("ButtonGroup1");
         vboxLayout2 = new QVBoxLayout(ButtonGroup1);
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         vboxLayout2->setSpacing(6);
 #endif
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         vboxLayout2->setContentsMargins(9, 9, 9, 9);
 #endif
         vboxLayout2->setObjectName("vboxLayout2");

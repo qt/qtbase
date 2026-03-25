@@ -51,21 +51,21 @@ public:
         sizePolicy.setHeightForWidth(CalculatorForm->sizePolicy().hasHeightForWidth());
         CalculatorForm->setSizePolicy(sizePolicy);
         gridLayout = new QGridLayout(CalculatorForm);
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         gridLayout->setSpacing(6);
 #endif
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         gridLayout->setContentsMargins(9, 9, 9, 9);
 #endif
         gridLayout->setObjectName("gridLayout");
         hboxLayout = new QHBoxLayout();
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         hboxLayout->setSpacing(6);
 #endif
         hboxLayout->setContentsMargins(1, 1, 1, 1);
         hboxLayout->setObjectName("hboxLayout");
         vboxLayout = new QVBoxLayout();
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         vboxLayout->setSpacing(6);
 #endif
         vboxLayout->setContentsMargins(1, 1, 1, 1);
@@ -91,7 +91,7 @@ public:
         hboxLayout->addWidget(label_3);
 
         vboxLayout1 = new QVBoxLayout();
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         vboxLayout1->setSpacing(6);
 #endif
         vboxLayout1->setContentsMargins(1, 1, 1, 1);
@@ -117,7 +117,7 @@ public:
         hboxLayout->addWidget(label_3_2);
 
         vboxLayout2 = new QVBoxLayout();
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         vboxLayout2->setSpacing(6);
 #endif
         vboxLayout2->setContentsMargins(1, 1, 1, 1);

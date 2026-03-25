@@ -2239,7 +2239,7 @@ public slots:
         attemptedToConnect = true;
         sock->connectToHost(QtNetworkSettings::httpServerName(), 80);
 
-#if defined(Q_OS_MAC)
+#if defined(Q_OS_MACOS)
         pthread_yield_np();
 #elif defined Q_OS_LINUX && !defined Q_OS_ANDROID
         sched_yield();

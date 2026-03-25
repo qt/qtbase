@@ -40,7 +40,7 @@ private slots:
     void optionsEmptyByDefault();
     void changeNativeOption();
 
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
     void shortcut();
 #endif
 
@@ -431,7 +431,7 @@ void tst_QMessageBox::statics()
 }
 
 // shortcuts are not used on OS X
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
 void tst_QMessageBox::shortcut()
 {
     QMessageBox msgBox;
@@ -451,7 +451,7 @@ void tst_QMessageBox::about()
     QMessageBox::about(nullptr, "Caption", "This is an auto test");
     // On Mac, about and aboutQt are not modal, so we need to
     // explicitly run the event loop
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     QTRY_VERIFY(closeHelper.done());
 #else
     QVERIFY(closeHelper.done());
@@ -461,7 +461,7 @@ void tst_QMessageBox::about()
 
     closeHelper.start(keyToSend);
     QMessageBox::aboutQt(nullptr, "Caption");
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     QTRY_VERIFY(closeHelper.done());
 #else
     QVERIFY(closeHelper.done());
@@ -538,7 +538,7 @@ void tst_QMessageBox::instanceSourceCompat()
     QCOMPARE(mb.exec(), int(QMessageBox::Yes));
     closeHelper.start(Qt::Key_Escape, &mb);
     QCOMPARE(mb.exec(), int(QMessageBox::Cancel));
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
     // mnemonics are not used on OS X
     closeHelper.start(QKeyCombination(Qt::ALT | Qt::Key_R).toCombined(), &mb);
     QCOMPARE(mb.exec(), 2);

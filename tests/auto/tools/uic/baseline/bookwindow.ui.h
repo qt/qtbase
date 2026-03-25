@@ -54,20 +54,20 @@ public:
         centralWidget = new QWidget(BookWindow);
         centralWidget->setObjectName("centralWidget");
         vboxLayout = new QVBoxLayout(centralWidget);
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         vboxLayout->setSpacing(6);
 #endif
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         vboxLayout->setContentsMargins(9, 9, 9, 9);
 #endif
         vboxLayout->setObjectName("vboxLayout");
         groupBox = new QGroupBox(centralWidget);
         groupBox->setObjectName("groupBox");
         vboxLayout1 = new QVBoxLayout(groupBox);
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         vboxLayout1->setSpacing(6);
 #endif
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         vboxLayout1->setContentsMargins(9, 9, 9, 9);
 #endif
         vboxLayout1->setObjectName("vboxLayout1");

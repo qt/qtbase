@@ -64,7 +64,7 @@ void tst_QScrollBar::scrollSingleStep()
     QTest::mouseClick(&testWidget, Qt::LeftButton, Qt::NoModifier, QPoint(sr.x(), sr.y()));
     QTest::qWait(510); // initial delay is 500 for setRepeatAction
     disconnect(&testWidget, &QAbstractSlider::actionTriggered, &testWidget, &SingleStepTestScrollBar::hideAndShow);
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     QEXPECT_FAIL("", "This test fails on OS X, see QTBUG-25272", Abort);
 #endif
     QCOMPARE(testWidget.value(), testWidget.singleStep());
@@ -106,7 +106,7 @@ void tst_QScrollBar::task_209492()
 
     // Check that the action was triggered once.
 
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     QSKIP("The result depends on system setting and is not relevant on Mac");
 #endif
     QCOMPARE(scrollArea.scrollCount, 1);

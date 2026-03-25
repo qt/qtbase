@@ -655,7 +655,7 @@ void QGroupBox::changeEvent(QEvent *ev)
                 d->_q_setChildrenEnabled(false);
         }
     } else if (ev->type() == QEvent::FontChange
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
                || ev->type() == QEvent::MacSizeChange
 #endif
                || ev->type() == QEvent::StyleChange) {

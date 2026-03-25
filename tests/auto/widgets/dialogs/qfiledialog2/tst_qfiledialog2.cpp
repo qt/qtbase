@@ -87,7 +87,7 @@ private slots:
     void task178897_minimumSize();
     void task180459_lastDirectory_data();
     void task180459_lastDirectory();
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
     void task227930_correctNavigationKeyboardBehavior();
 #endif
 #if defined(Q_OS_WIN)
@@ -636,7 +636,7 @@ void tst_QFileDialog2::task227304_proxyOnFileDialog()
 }
 #endif
 
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
 // The following test implies the folder created will appear first in
 // the list. On Mac files sorting depends on the locale and the order
 // displayed cannot be known for sure.

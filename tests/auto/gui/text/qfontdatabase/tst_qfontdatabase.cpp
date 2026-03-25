@@ -36,7 +36,7 @@ private slots:
     void fixedPitch();
     void systemFixedFont();
 
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     void trickyFonts_data();
     void trickyFonts();
 #endif
@@ -143,7 +143,7 @@ void tst_QFontDatabase::fixedPitch_data()
     QTest::newRow( "Andale Mono" ) << QString( "Andale Mono" ) << true;
     QTest::newRow( "Courier" ) << QString( "Courier" ) << true;
     QTest::newRow( "Courier New" ) << QString( "Courier New" ) << true;
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
     QTest::newRow( "Script" ) << QString( "Script" ) << false;
     QTest::newRow( "Lucida Console" ) << QString( "Lucida Console" ) << true;
     QTest::newRow( "DejaVu Sans" ) << QString( "DejaVu Sans" ) << false;
@@ -182,7 +182,7 @@ void tst_QFontDatabase::systemFixedFont() // QTBUG-54623
     QVERIFY(fontInfo.fixedPitch());
 }
 
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
 void tst_QFontDatabase::trickyFonts_data()
 {
     QTest::addColumn<QString>("font");

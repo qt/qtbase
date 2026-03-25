@@ -65,7 +65,7 @@ public:
         frontpage = new QWidget();
         frontpage->setObjectName("frontpage");
         gridLayout = new QGridLayout(frontpage);
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         gridLayout->setSpacing(6);
 #endif
         gridLayout->setContentsMargins(8, 8, 8, 8);
@@ -79,7 +79,7 @@ public:
         frameFind->setFrameShape(QFrame::Shape::StyledPanel);
         frameFind->setFrameShadow(QFrame::Shadow::Raised);
         hboxLayout = new QHBoxLayout(frameFind);
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         hboxLayout->setSpacing(6);
 #endif
         hboxLayout->setContentsMargins(0, 0, 0, 0);

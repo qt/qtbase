@@ -3224,7 +3224,7 @@ void tst_QGraphicsProxyWidget::comboboxWindowFlags()
 
 void tst_QGraphicsProxyWidget::updateAndDelete()
 {
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     QSKIP("Test case unstable on this platform, QTBUG-23700");
 #endif
     QGraphicsScene scene;

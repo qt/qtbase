@@ -69,7 +69,7 @@ private slots:
     void dynamicProperty();
     // NB! Invoking this slot after layoutSpacing crashes on Mac.
     void namespaces();
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     void layoutSpacing();
 #endif
     void qproperty();
@@ -659,7 +659,7 @@ void tst_QStyleSheetStyle::dynamicProperty()
     QVERIFY(COLOR(pb2) == Qt::blue);
 }
 
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
 void tst_QStyleSheetStyle::layoutSpacing()
 {
     qApp->setStyleSheet("* { color: red }");
@@ -1490,11 +1490,11 @@ void tst_QStyleSheetStyle::minmaxSizes()
     QVERIFY(qAbs(page3->minimumSize().height() - 250 - 2) <= 2);
     QTabBar *bar = tabWidget.findChild<QTabBar*>();
     QVERIFY(bar);
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     QEXPECT_FAIL("", "QTBUG-23686", Continue);
 #endif
     QVERIFY(qAbs(bar->tabRect(index1).width() - 100 - 2) <= 2);
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     QEXPECT_FAIL("", "QTBUG-23686", Continue);
 #endif
     QVERIFY(qAbs(bar->tabRect(index3).width() - 130 - 2) <= 2);

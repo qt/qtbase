@@ -30,7 +30,7 @@ LicenseWizard::LicenseWizard(QWidget *parent)
 //! [2]
 
 //! [3]
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
 //! [3] //! [4]
     setWizardStyle(ModernStyle);
 #endif

@@ -822,7 +822,7 @@ void tst_QDateTimeEdit::displayFormat()
 
 void tst_QDateTimeEdit::selectAndScrollWithKeys()
 {
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     QSKIP("QTBUG-23674");
     return;
 #endif
@@ -830,7 +830,7 @@ void tst_QDateTimeEdit::selectAndScrollWithKeys()
     testWidget->setDate(QDate(2004, 05, 11));
     testWidget->setDisplayFormat("dd/MM/yyyy");
     testWidget->show();
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     QTest::keyClick(testWidget, Qt::Key_Left, Qt::ControlModifier);
 #else
     QTest::keyClick(testWidget, Qt::Key_Home);
@@ -869,7 +869,7 @@ void tst_QDateTimeEdit::selectAndScrollWithKeys()
     QCOMPARE(testWidget->lineEdit()->selectedText(), QString("2004"));
 
 
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     QTest::keyClick(testWidget, Qt::Key_Right, Qt::ControlModifier);
 #else
     QTest::keyClick(testWidget, Qt::Key_End);
@@ -896,7 +896,7 @@ void tst_QDateTimeEdit::selectAndScrollWithKeys()
     QCOMPARE(testWidget->lineEdit()->selectedText(), QString("11/05/2004"));
     QTest::keyClick(testWidget, Qt::Key_Left, Qt::ShiftModifier);
     QCOMPARE(testWidget->lineEdit()->selectedText(), QString("11/05/2004"));
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     QTest::keyClick(testWidget, Qt::Key_Left, Qt::ControlModifier);
 #else
     QTest::keyClick(testWidget, Qt::Key_Home);
@@ -912,7 +912,7 @@ void tst_QDateTimeEdit::selectAndScrollWithKeys()
     QCOMPARE(testWidget->currentSection(), QDateTimeEdit::DaySection);
     QCOMPARE(testWidget->lineEdit()->selectedText(), QString("11"));
 
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     QTest::keyClick(testWidget, Qt::Key_Left, Qt::ControlModifier);
 #else
     QTest::keyClick(testWidget, Qt::Key_Home);
@@ -931,14 +931,14 @@ void tst_QDateTimeEdit::backspaceKey()
     testWidget->setDate(QDate(2004, 05, 11));
     testWidget->setDisplayFormat("d/MM/yyyy");
     testWidget->show();
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     QTest::keyClick(testWidget, Qt::Key_Right, Qt::ControlModifier);
 #else
     QTest::keyClick(testWidget, Qt::Key_End);
 #endif
     QCOMPARE(testWidget->text(), QString("11/05/2004"));
     QTest::keyClick(testWidget, Qt::Key_Backspace);
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     QEXPECT_FAIL("", "QTBUG-23674", Abort);
 #endif
     QCOMPARE(testWidget->text(), QString("11/05/200"));
@@ -948,7 +948,7 @@ void tst_QDateTimeEdit::backspaceKey()
     for (int i=0;i<3;i++)
         QTest::keyClick(testWidget, Qt::Key_Left);
     QCOMPARE(testWidget->text(), QString("11/05/2004"));
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     QTest::keyClick(testWidget, Qt::Key_Right, Qt::ControlModifier);
 #else
     QTest::keyClick(testWidget, Qt::Key_End);
@@ -962,7 +962,7 @@ void tst_QDateTimeEdit::backspaceKey()
     QTest::keyClick(testWidget, Qt::Key_Backspace);
     QCOMPARE(testWidget->text(), QString("11/0/2004"));
     testWidget->interpretText();
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     QTest::keyClick(testWidget, Qt::Key_Right, Qt::ControlModifier);
 #else
     QTest::keyClick(testWidget, Qt::Key_End);
@@ -995,7 +995,7 @@ void tst_QDateTimeEdit::deleteKey()
 {
     testWidget->setDate(QDate(2004, 05, 11));
     testWidget->setDisplayFormat("d/MM/yyyy");
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     QTest::keyClick(testWidget, Qt::Key_Left, Qt::ControlModifier);
 #else
     QTest::keyClick(testWidget, Qt::Key_Home);
@@ -1064,24 +1064,24 @@ void tst_QDateTimeEdit::enterKey()
     testWidget->setDisplayFormat("prefix d/MM/yyyy 'suffix'");
     testWidget->lineEdit()->setFocus();
 
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     QTest::keyClick(testWidget, Qt::Key_Left, Qt::ControlModifier);
 #else
     QTest::keyClick(testWidget, Qt::Key_Home);
 #endif
     QTest::keyClick(testWidget, Qt::Key_Enter);
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     QEXPECT_FAIL("", "QTBUG-23674", Abort);
 #endif
     QVERIFY(!testWidget->lineEdit()->hasSelectedText());
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     QTest::keyClick(testWidget, Qt::Key_Right, Qt::ControlModifier);
 #else
     QTest::keyClick(testWidget, Qt::Key_End);
 #endif
     QTest::keyClick(testWidget, Qt::Key_Enter);
     QVERIFY(!testWidget->lineEdit()->hasSelectedText());
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     QTest::keyClick(testWidget, Qt::Key_Left, Qt::ControlModifier);
 #else
     QTest::keyClick(testWidget, Qt::Key_Home);
@@ -1144,7 +1144,7 @@ void tst_QDateTimeEdit::specialValueText()
     QCOMPARE(testWidget->date(), QDate(2000, 1, 1));
     QCOMPARE(testWidget->text(), QString("fOo"));
 
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     QTest::keyClick(testWidget, Qt::Key_Right, Qt::ControlModifier);
 #else
     QTest::keyClick(testWidget, Qt::Key_End);
@@ -1155,7 +1155,7 @@ void tst_QDateTimeEdit::specialValueText()
     QTest::keyClick(testWidget, Qt::Key_Down);
     QCOMPARE(testWidget->text(), QString("fOo"));
 
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     QTest::keyClick(testWidget, Qt::Key_Right, Qt::ControlModifier);
 #else
     QTest::keyClick(testWidget, Qt::Key_End);
@@ -2695,7 +2695,7 @@ void tst_QDateTimeEdit::newCase()
     testWidget->setDisplayFormat("MMMM'a'MbMMMcMM");
     testWidget->setDate(QDate(2005, 6, 1));
     QCOMPARE(testWidget->text(), QString("Junea6bJunc06"));
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     QTest::keyClick(testWidget, Qt::Key_Left, Qt::ControlModifier);
 #else
     QTest::keyClick(testWidget, Qt::Key_Home);
@@ -2703,12 +2703,12 @@ void tst_QDateTimeEdit::newCase()
     QTest::keyClick(testWidget, Qt::Key_Up);
     QCOMPARE(testWidget->text(), QString("Julya7bJulc07"));
     QCOMPARE(testWidget->lineEdit()->selectedText(), QString("July"));
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     QTest::keyClick(testWidget, Qt::Key_Left, Qt::ControlModifier);
 #else
     QTest::keyClick(testWidget, Qt::Key_Home);
 #endif
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     QEXPECT_FAIL("", "QTBUG-23674", Abort);
 #endif
     QCOMPARE(testWidget->lineEdit()->selectedText(), QString());
@@ -2777,7 +2777,7 @@ void tst_QDateTimeEdit::cursorPos()
     //l.exec();
     QTest::keyClick(testWidget, Qt::Key_Y);
     QCOMPARE(testWidget->lineEdit()->cursorPosition(), 11);
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     QTest::keyClick(testWidget, Qt::Key_Left, Qt::ControlModifier);
 #else
     QTest::keyClick(testWidget, Qt::Key_Home);
@@ -2785,7 +2785,7 @@ void tst_QDateTimeEdit::cursorPos()
     QTest::keyClick(testWidget, Qt::Key_Return);
     QTest::keyClick(testWidget, Qt::Key_3);
     QTest::keyClick(testWidget, Qt::Key_1);
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     QEXPECT_FAIL("", "QTBUG-23674", Abort);
 #endif
     QCOMPARE(testWidget->lineEdit()->cursorPosition(), 3);
@@ -2810,7 +2810,7 @@ void tst_QDateTimeEdit::newCase5()
     testWidget->setDateTime(QDateTime(QDate(2005, 10, 7), QTime(17, 44, 13, 100)));
     testWidget->show();
     QCOMPARE(testWidget->lineEdit()->displayText(), QString("2005-10-07 17:44:13 100 ms"));
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     QTest::keyClick(testWidget, Qt::Key_Right, Qt::ControlModifier);
 #else
     QTest::keyClick(testWidget, Qt::Key_End);
@@ -2821,7 +2821,7 @@ void tst_QDateTimeEdit::newCase5()
     QTest::keyClick(testWidget, Qt::Key_1);
     QTest::keyClick(testWidget, Qt::Key_2);
     QTest::keyClick(testWidget, Qt::Key_4);
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     QEXPECT_FAIL("", "QTBUG-23674", Abort);
 #endif
     QCOMPARE(testWidget->lineEdit()->displayText(), QString("2005-10-07 17:44:13 124 ms"));
@@ -2836,7 +2836,7 @@ void tst_QDateTimeEdit::newCase6()
     testWidget->setDate(QDate(2005, 10, 7));
     testWidget->show();
     QCOMPARE(testWidget->lineEdit()->displayText(), QString("7-2005-10-07"));
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     QTest::keyClick(testWidget, Qt::Key_Left, Qt::ControlModifier);
 #else
     QTest::keyClick(testWidget, Qt::Key_Home);
@@ -2907,7 +2907,7 @@ void tst_QDateTimeEdit::setCurrentSection()
     QCOMPARE(setCurrentSections.size(), expectedCursorPositions.size());
     testWidget->setDisplayFormat(format);
     testWidget->setDateTime(dateTime);
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     QTest::keyClick(testWidget, Qt::Key_Left, Qt::ControlModifier);
 #else
     QTest::keyClick(testWidget, Qt::Key_Home);
@@ -2926,12 +2926,12 @@ void tst_QDateTimeEdit::setSelectedSection()
     testWidget->setDisplayFormat("mm.ss.zzz('ms') m");
     testWidget->setTime(QTime(0, 0, 9));
     testWidget->show();
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     QTest::keyClick(testWidget, Qt::Key_Left, Qt::ControlModifier);
 #else
     QTest::keyClick(testWidget, Qt::Key_Home);
 #endif
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     QEXPECT_FAIL("", "QTBUG-23674", Abort);
 #endif
     QVERIFY(!testWidget->lineEdit()->hasSelectedText());
@@ -3048,12 +3048,12 @@ void tst_QDateTimeEdit::reverseTest()
     testWidget->setDisplayFormat("dd/MM/yyyy");
     testWidget->setDate(QDate(2001, 3, 30));
     QCOMPARE(testWidget->lineEdit()->displayText(), QString("2001/03/30"));
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     QTest::keyClick(testWidget, Qt::Key_Right, Qt::ControlModifier);
 #else
     QTest::keyClick(testWidget, Qt::Key_End);
 #endif
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     QEXPECT_FAIL("", "QTBUG-23674", Abort);
 #endif
     QCOMPARE(testWidget->currentSection(), QDateTimeEdit::DaySection);
@@ -3201,13 +3201,13 @@ void tst_QDateTimeEdit::ddMMMMyyyy()
     testWidget->setCurrentSection(QDateTimeEdit::YearSection);
     QTest::keyClick(testWidget, Qt::Key_Enter);
     QCOMPARE(testWidget->lineEdit()->selectedText(), QString("2000"));
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     QTest::keyClick(testWidget, Qt::Key_Right, Qt::ControlModifier);
 #else
     QTest::keyClick(testWidget, Qt::Key_End);
 #endif
     QTest::keyClick(testWidget, Qt::Key_Backspace);
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     QEXPECT_FAIL("", "QTBUG-23674", Abort);
 #endif
     QCOMPARE(testWidget->lineEdit()->text(), "01." + QLocale::system().monthName(1, QLocale::LongFormat) + ".200");
@@ -3674,13 +3674,13 @@ void tst_QDateTimeEdit::potentialYYValueBug()
     edit.setDate(edit.minimumDate());
     edit.lineEdit()->setFocus();
 
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     QTest::keyClick(&edit, Qt::Key_Right, Qt::ControlModifier);
 #else
     QTest::keyClick(&edit, Qt::Key_End);
 #endif
     QTest::keyClick(&edit, Qt::Key_Backspace);
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     QEXPECT_FAIL("", "QTBUG-23674", Abort);
 #endif
     QCOMPARE(edit.text(), QString("14/09/5"));
@@ -3692,13 +3692,13 @@ void tst_QDateTimeEdit::textSectionAtEnd()
     edit.setDisplayFormat("MMMM");
     edit.setDate(QDate(2000, 1, 1));
     edit.lineEdit()->setFocus();
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     QTest::keyClick(&edit, Qt::Key_Right, Qt::ControlModifier);
 #else
     QTest::keyClick(&edit, Qt::Key_End);
 #endif
     QTest::keyClick(&edit, Qt::Key_Backspace);
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     QEXPECT_FAIL("", "QTBUG-23674", Abort);
 #endif
     QCOMPARE(edit.text(), QString("Januar"));
@@ -3720,7 +3720,7 @@ void tst_QDateTimeEdit::keypadAutoAdvance()
     EditorDateEdit edit;
     edit.setDate(QDate(2000, 2, 1));
     edit.setDisplayFormat("dd/MM");
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     QTest::keyClick(&edit, Qt::Key_Left, Qt::ControlModifier);
 #else
     QTest::keyClick(&edit, Qt::Key_Home);

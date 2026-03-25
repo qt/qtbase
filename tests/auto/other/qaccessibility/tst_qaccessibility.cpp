@@ -1605,7 +1605,7 @@ void tst_QAccessibility::menuTest()
     QCOMPARE(iSeparator->role(), QAccessible::Separator);
     QCOMPARE(iHelp->role(), QAccessible::MenuItem);
     QCOMPARE(iAction->role(), QAccessible::MenuItem);
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
     QCOMPARE(mw.mapFromGlobal(interface->rect().topLeft()), mw.menuBar()->geometry().topLeft());
     QCOMPARE(interface->rect().size(), mw.menuBar()->size());
 
@@ -1623,7 +1623,7 @@ void tst_QAccessibility::menuTest()
     QCOMPARE(iAction->text(QAccessible::Name), QString("Action!"));
 
 // TODO: Currently not working, task to fix is #100019.
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
     QCOMPARE(iFile->text(QAccessible::Accelerator), tr("Alt+F"));
     QCOMPARE(iEdit->text(QAccessible::Accelerator), tr("Alt+E"));
     QCOMPARE(iSeparator->text(QAccessible::Accelerator), QString());
@@ -2178,7 +2178,7 @@ void tst_QAccessibility::mdiSubWindowTest()
     const QRect widgetGeometry = testWindow->contentsRect();
     const QPoint globalWidgetPos = QPoint(globalPos.x() + widgetGeometry.x(),
                                           globalPos.y() + widgetGeometry.y());
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     QSKIP("QTBUG-22812");
 #endif
     QCOMPARE(childRect(interface), QRect(globalWidgetPos, widgetGeometry.size()));
@@ -3905,7 +3905,7 @@ void tst_QAccessibility::dockWidgetTest()
     QCOMPARE(dock1Widget->role(), QAccessible::Button);
     QCOMPARE(dock1Widget->text(QAccessible::Name), pb1->text());
 
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     QEXPECT_FAIL("", "Dock Widget geometry on Mac seems broken.", Continue);
 #endif
     QVERIFY(accDock1->rect().contains(dock1Widget->rect()));
@@ -3934,7 +3934,7 @@ void tst_QAccessibility::dockWidgetTest()
     QAccessibleInterface *dock2Widget = accDock2->child(0);
     QCOMPARE(dock2Widget->role(), QAccessible::Button);
     QCOMPARE(dock2Widget->text(QAccessible::Name), pb1->text());
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     QEXPECT_FAIL("", "Dock Widget geometry on Mac seems broken.", Continue);
 #endif
     QVERIFY(accDock2->rect().contains(dock2Widget->rect()));

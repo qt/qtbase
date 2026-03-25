@@ -203,7 +203,7 @@ private slots:
     void drawRect_task215378();
     void drawRect_task247505();
 
-#if defined(Q_OS_MAC)
+#if defined(Q_OS_MACOS)
     void drawText_subPixelPositionsInRaster_qtbug5053();
 #endif
 
@@ -433,7 +433,7 @@ QRgb qt_compose_alpha(QRgb source, QRgb dest)
 */
 void tst_QPainter::drawPixmap_comp()
 {
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     QSKIP("Mac has other ideas about alpha composition");
 #endif
     QFETCH(uint, dest);
@@ -4729,7 +4729,7 @@ void tst_QPainter::scaledClipConsistency()
     }
 }
 
-#if defined(Q_OS_MAC)
+#if defined(Q_OS_MACOS)
 // Only Mac supports sub pixel positions in raster engine currently
 void tst_QPainter::drawText_subPixelPositionsInRaster_qtbug5053()
 {

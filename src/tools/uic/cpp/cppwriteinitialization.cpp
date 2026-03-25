@@ -505,7 +505,7 @@ void WriteInitialization::LayoutDefaultHandler::writeProperty(int p, const QStri
             bool ifndefMac = (!(m_state[p] & (HasDefaultFunction|HasDefaultValue))
                              && value == defaultStyleValue);
             if (ifndefMac)
-                str << "#ifndef Q_OS_MAC\n";
+                str << "#ifndef Q_OS_MACOS\n";
             if (p == Margin) { // Use setContentsMargins for numeric values
                 writeContentsMargins(indent, objectName, value, str);
             } else {

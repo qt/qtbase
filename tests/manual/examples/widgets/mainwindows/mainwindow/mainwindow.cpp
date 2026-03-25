@@ -38,7 +38,7 @@ static const char message[] =
     "<p>Each dock widget contains a colored frame and a context "
     "(right-click) menu.</p>"
 
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     "<p>On OS X, the \"Black\" dock widget has been created as a "
     "<em>Drawer</em>, which is a special kind of QDockWidget.</p>"
 #endif
@@ -290,7 +290,7 @@ void MainWindow::setupDockWidgets(const CustomSizeHintMap &customSizeHints)
         uint flags;
         Qt::DockWidgetArea area;
     } sets [] = {
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         { "Black", 0, Qt::LeftDockWidgetArea },
 #else
         { "Black", Qt::Drawer, Qt::LeftDockWidgetArea },

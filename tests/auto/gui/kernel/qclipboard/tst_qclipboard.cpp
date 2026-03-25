@@ -36,7 +36,7 @@ private slots:
     void initTestCase();
 #if QT_CONFIG(clipboard)
     void init();
-#if defined(Q_OS_WIN) || defined(Q_OS_MAC) || defined(Q_OS_QNX)
+#if defined(Q_OS_WIN) || defined(Q_OS_MACOS) || defined(Q_OS_QNX)
     void copy_exit_paste();
     void copyImage();
 #endif
@@ -212,7 +212,7 @@ void tst_QClipboard::testSignals()
     QCOMPARE(dataChangedSpy.size(), 1);
 }
 
-#if defined(Q_OS_WIN) || defined(Q_OS_MAC) || defined(Q_OS_QNX)
+#if defined(Q_OS_WIN) || defined(Q_OS_MACOS) || defined(Q_OS_QNX)
 static bool runHelper(const QString &program, const QStringList &arguments, QByteArray *errorMessage)
 {
 #if QT_CONFIG(process)
@@ -271,10 +271,10 @@ void tst_QClipboard::copy_exit_paste()
     QByteArray errorMessage;
     QVERIFY2(runHelper(QStringLiteral("copier/copier"), QStringList(stringArgument), &errorMessage),
              errorMessage.constData());
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     // The Pasteboard needs a moment to breathe (at least on older Macs).
     QTest::qWait(100);
-#endif // Q_OS_MAC
+#endif // Q_OS_MACOS
     QVERIFY2(runHelper(QStringLiteral("paster/paster"),
                        QStringList() << QStringLiteral("--text") << stringArgument,
                        &errorMessage),
@@ -303,7 +303,7 @@ void tst_QClipboard::copyImage()
 #endif // QT_CONFIG(process)
 }
 
-#endif // Q_OS_WIN || Q_OS_MAC || Q_OS_QNX
+#endif // Q_OS_WIN || Q_OS_MACOS || Q_OS_QNX
 
 void tst_QClipboard::setMimeData()
 {

@@ -97,7 +97,7 @@ public:
             opt.palette = palette();
             opt.state = QStyle::State_None;
             style()->drawPrimitive(QStyle::PE_FrameFocusRect, &opt, &p, this);
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
             p.setPen(Qt::red);
             p.drawRect(r);
 #endif

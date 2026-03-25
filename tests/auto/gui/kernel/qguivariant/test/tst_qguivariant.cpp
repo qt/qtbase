@@ -352,7 +352,7 @@ void tst_QGuiVariant::toString_data()
     QTest::addColumn<QString>("result");
 
     QTest::newRow( "qkeysequence" ) << QVariant::fromValue( QKeySequence( Qt::CTRL | Qt::Key_A ) )
-#ifndef Q_OS_MAC
+#ifndef Q_OS_APPLE
         << QString( "Ctrl+A" );
 #else
         << QString(QChar(0x2318)) + QLatin1Char('A');

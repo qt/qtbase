@@ -1137,7 +1137,7 @@ void tst_QFileSystemModel::dirsBeforeFiles()
     for (int i = 1, count = model->rowCount(root); i < count; ++i) {
         const QFileInfo previous = model->fileInfo(model->index(i - 1, 0, root));
         const QFileInfo current = model->fileInfo(model->index(i, 0, root));
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         QVERIFY2(!(previous.isFile() && current.isDir()), diagnosticMsg(i, previous, current).constData());
 #else
         QVERIFY2(previous.fileName() < current.fileName(), diagnosticMsg(i, previous, current).constData());

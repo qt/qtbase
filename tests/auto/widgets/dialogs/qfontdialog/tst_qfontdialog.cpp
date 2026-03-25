@@ -89,7 +89,7 @@ void tst_QFontDialog::postKeyReturn() {
 
 void tst_QFontDialog::testGetFont()
 {
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     QEXPECT_FAIL("", "Sending QTest::keyClick to OSX font dialog helper fails, see QTBUG-24321", Continue);
 #endif
     bool ok = false;

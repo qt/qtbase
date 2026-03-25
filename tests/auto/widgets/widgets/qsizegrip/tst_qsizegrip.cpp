@@ -94,7 +94,7 @@ void tst_QSizeGrip::hideAndShowOnWindowStateChange()
     QTRY_VERIFY(sizeGrip->isVisible());
 
     widget->showMaximized();
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
     QTRY_VERIFY(!sizeGrip->isVisible());
 #else
     QEXPECT_FAIL("", "QTBUG-23681", Abort);

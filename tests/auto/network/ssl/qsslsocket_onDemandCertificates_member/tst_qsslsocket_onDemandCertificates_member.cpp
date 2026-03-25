@@ -230,7 +230,7 @@ void tst_QSslSocket_onDemandCertificates_member::onDemandRootCertLoadingMemberMe
     const bool works = QSslSocketPrivate::rootCertOnDemandLoadingSupported();
 #if defined(Q_OS_LINUX) || defined(Q_OS_WIN)
     QVERIFY2(works, ERR(socket4));
-#elif defined(Q_OS_MAC)
+#elif defined(Q_OS_APPLE)
     QVERIFY2(!works, ERR(socket4));
 #endif // other platforms: undecided.
     // When we *allow* on-demand loading, we enable it by default; so, on Unix,

@@ -6345,7 +6345,7 @@ void QWidget::setWindowFilePath(const QString &filePath)
 void QWidgetPrivate::setWindowFilePath_helper(const QString &filePath)
 {
     if (extra->topextra && extra->topextra->caption.isEmpty()) {
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
         setWindowTitle_helper(QFileInfo(filePath).fileName());
 #else
         Q_Q(QWidget);
@@ -6353,7 +6353,7 @@ void QWidgetPrivate::setWindowFilePath_helper(const QString &filePath)
         setWindowTitle_helper(q->windowTitle());
 #endif
     }
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     setWindowFilePath_sys(filePath);
 #endif
 }
@@ -9530,7 +9530,7 @@ void QWidget::changeEvent(QEvent * event)
         }
         break;
 
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     case QEvent::MacSizeChange:
         updateGeometry();
         break;
@@ -11409,7 +11409,7 @@ static void setAttribute_internal(Qt::WidgetAttribute attribute, bool on, QWidge
     }
 }
 
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
 void QWidgetPrivate::macUpdateSizeAttribute()
 {
     Q_Q(QWidget);
@@ -11500,7 +11500,7 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
     case Qt::WA_MacNormalSize:
     case Qt::WA_MacSmallSize:
     case Qt::WA_MacMiniSize:
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
         {
             // We can only have one of these set at a time
             const Qt::WidgetAttribute MacSizes[] = { Qt::WA_MacNormalSize, Qt::WA_MacSmallSize,

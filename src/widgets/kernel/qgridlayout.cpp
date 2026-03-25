@@ -212,7 +212,7 @@ void QGridLayoutPrivate::effectiveMargins(int *left, int *top, int *right, int *
     int t = topMargin;
     int r = rightMargin;
     int b = bottomMargin;
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     int leftMost = INT_MAX;
     int topMost = INT_MAX;
     int rightMost = 0;

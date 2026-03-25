@@ -53,10 +53,10 @@ public:
         verticalLayout = new QVBoxLayout(centralwidget);
         verticalLayout->setObjectName("verticalLayout");
         vboxLayout = new QVBoxLayout();
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         vboxLayout->setSpacing(6);
 #endif
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         vboxLayout->setContentsMargins(0, 0, 0, 0);
 #endif
         vboxLayout->setObjectName("vboxLayout");
@@ -66,10 +66,10 @@ public:
         verticalLayout_4 = new QVBoxLayout(inputGroupBox);
         verticalLayout_4->setObjectName("verticalLayout_4");
         _2 = new QVBoxLayout();
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         _2->setSpacing(6);
 #endif
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         _2->setContentsMargins(0, 0, 0, 0);
 #endif
         _2->setObjectName("_2");
@@ -111,10 +111,10 @@ public:
         verticalLayout_6 = new QVBoxLayout(outputGroupBox);
         verticalLayout_6->setObjectName("verticalLayout_6");
         _3 = new QVBoxLayout();
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         _3->setSpacing(6);
 #endif
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         _3->setContentsMargins(0, 0, 0, 0);
 #endif
         _3->setObjectName("_3");

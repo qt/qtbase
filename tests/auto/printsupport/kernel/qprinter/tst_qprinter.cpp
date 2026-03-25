@@ -769,9 +769,9 @@ void tst_QPrinter::colorMode()
         // Test set/get
         QPrinter::ColorMode expected = QPrinter::GrayScale;
         native.setColorMode(expected);
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
         expected = QPrinter::Color;
-#endif // Q_OS_MAC
+#endif // Q_OS_MACOS
         QCOMPARE(native.colorMode(), expected);
 
         // Test value preservation
@@ -1113,9 +1113,9 @@ void tst_QPrinter::pageOrder()
         // Test set/get
         QPrinter::PageOrder expected = QPrinter::LastPageFirst;
         native.setPageOrder(expected);
-#if defined Q_OS_MAC || defined Q_OS_WIN
+#if defined Q_OS_MACOS || defined Q_OS_WIN
         expected = QPrinter::FirstPageFirst;
-#endif // Q_OS_MAC || Q_OS_WIN
+#endif // Q_OS_MACOS || Q_OS_WIN
         QCOMPARE(native.pageOrder(), expected);
 
         // Test value preservation
@@ -1207,9 +1207,9 @@ void tst_QPrinter::paperSource()
         }
 #endif // Q_OS_WIN
         native.setPaperSource(expected);
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
         expected = QPrinter::Auto;
-#endif // Q_OS_MAC
+#endif // Q_OS_MACOS
         QCOMPARE(native.paperSource(), expected);
 
         // Test value preservation
@@ -1244,9 +1244,9 @@ void tst_QPrinter::printProgram()
         // Test set/get
         QString expected = QStringLiteral("/usr/bin/lpr");
         native.setPrintProgram(expected);
-#if defined Q_OS_MAC || defined Q_OS_WIN
+#if defined Q_OS_MACOS || defined Q_OS_WIN
         expected.clear();
-#endif // Q_OS_MAC || Q_OS_WIN
+#endif // Q_OS_MACOS || Q_OS_WIN
         QCOMPARE(native.printProgram(), expected);
 
         // Test value preservation
@@ -1363,9 +1363,9 @@ void tst_QPrinter::printerSelectionOption()
         // Test set/get
         QString expected = QStringLiteral("Optional option");
         native.setPrinterSelectionOption(expected);
-#if defined Q_OS_MAC || defined Q_OS_WIN
+#if defined Q_OS_MACOS || defined Q_OS_WIN
         expected.clear();
-#endif // Q_OS_MAC || Q_OS_WIN
+#endif // Q_OS_MACOS || Q_OS_WIN
         QCOMPARE(native.printerSelectionOption(), expected);
 
         // Test value preservation
@@ -1412,7 +1412,7 @@ void tst_QPrinter::resolution()
 
         // Test set/get
         int expected = 333;
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
         // QMacPrintEngine chooses the closest supported resolution.
         const QList<int> all_supported = native.supportedResolutions();
         for (int supported : all_supported) {
@@ -1432,7 +1432,7 @@ void tst_QPrinter::resolution()
         }
 
         expected = native.resolution();
-#endif // Q_OS_MAC
+#endif // Q_OS_MACOS
         native.setResolution(expected);
         QCOMPARE(native.resolution(), expected);
 

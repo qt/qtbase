@@ -11,7 +11,7 @@
 #include <QTest>
 #include <QTestEventLoop>
 
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
 #   include <ApplicationServices/ApplicationServices.h>
 #endif
 
@@ -107,7 +107,7 @@ WidgetNavigator::~WidgetNavigator()
 ///////////////////////////////////////////////////////////////////////////////
 
 namespace NativeEvents {
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
    void mouseClick(const QPoint &globalPos, Qt::MouseButtons buttons)
     {
         CGPoint position;

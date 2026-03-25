@@ -61,7 +61,7 @@ public:
         AddTorrentFile->setSizeGripEnabled(false);
         AddTorrentFile->setModal(true);
         vboxLayout = new QVBoxLayout(AddTorrentFile);
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         vboxLayout->setSpacing(6);
 #endif
         vboxLayout->setContentsMargins(8, 8, 8, 8);
@@ -72,7 +72,7 @@ public:
         widget->setObjectName("widget");
         widget->setGeometry(QRect(10, 40, 364, 33));
         gridLayout = new QGridLayout(groupBox);
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         gridLayout->setSpacing(6);
 #endif
         gridLayout->setContentsMargins(8, 8, 8, 8);
@@ -167,7 +167,7 @@ public:
         vboxLayout->addWidget(groupBox);
 
         hboxLayout = new QHBoxLayout();
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         hboxLayout->setSpacing(6);
 #endif
         hboxLayout->setContentsMargins(0, 0, 0, 0);

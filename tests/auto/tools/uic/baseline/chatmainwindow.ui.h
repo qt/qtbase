@@ -59,18 +59,18 @@ public:
         centralwidget = new QWidget(ChatMainWindow);
         centralwidget->setObjectName("centralwidget");
         hboxLayout = new QHBoxLayout(centralwidget);
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         hboxLayout->setSpacing(6);
 #endif
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         hboxLayout->setContentsMargins(9, 9, 9, 9);
 #endif
         hboxLayout->setObjectName("hboxLayout");
         vboxLayout = new QVBoxLayout();
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         vboxLayout->setSpacing(6);
 #endif
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         vboxLayout->setContentsMargins(0, 0, 0, 0);
 #endif
         vboxLayout->setObjectName("vboxLayout");
@@ -82,7 +82,7 @@ public:
         vboxLayout->addWidget(chatHistory);
 
         hboxLayout1 = new QHBoxLayout();
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         hboxLayout1->setSpacing(6);
 #endif
         hboxLayout1->setContentsMargins(0, 0, 0, 0);

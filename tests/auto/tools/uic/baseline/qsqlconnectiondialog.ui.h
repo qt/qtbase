@@ -58,7 +58,7 @@ public:
             QSqlConnectionDialogUi->setObjectName("QSqlConnectionDialogUi");
         QSqlConnectionDialogUi->resize(321, 343);
         vboxLayout = new QVBoxLayout(QSqlConnectionDialogUi);
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         vboxLayout->setSpacing(6);
 #endif
         vboxLayout->setContentsMargins(8, 8, 8, 8);
@@ -66,7 +66,7 @@ public:
         connGroupBox = new QGroupBox(QSqlConnectionDialogUi);
         connGroupBox->setObjectName("connGroupBox");
         gridLayout = new QGridLayout(connGroupBox);
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         gridLayout->setSpacing(6);
 #endif
         gridLayout->setContentsMargins(8, 8, 8, 8);
@@ -139,7 +139,7 @@ public:
         vboxLayout->addWidget(connGroupBox);
 
         hboxLayout = new QHBoxLayout();
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         hboxLayout->setSpacing(6);
 #endif
         hboxLayout->setContentsMargins(0, 0, 0, 0);
@@ -157,7 +157,7 @@ public:
         vboxLayout->addLayout(hboxLayout);
 
         hboxLayout1 = new QHBoxLayout();
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         hboxLayout1->setSpacing(6);
 #endif
         hboxLayout1->setContentsMargins(0, 0, 0, 0);

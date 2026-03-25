@@ -1049,7 +1049,7 @@ void tst_QGraphicsAnchorLayout::setSpacing()
     p->show();
 
     QApplication::processEvents();
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     QTest::qWait(200);
 #endif
 

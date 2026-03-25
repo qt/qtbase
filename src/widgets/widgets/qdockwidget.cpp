@@ -1117,13 +1117,13 @@ void QDockWidgetPrivate::nonClientAreaMouseEvent(QMouseEvent *event)
             if (state == nullptr || !state->dragging)
                 break;
 
-#if !defined(Q_OS_MAC) && !defined(Q_OS_WASM)
+#if !defined(Q_OS_MACOS) && !defined(Q_OS_WASM)
             if (state->nca)
                 endDrag(EndDragMode::LocationChange);
 #endif
             break;
         case QEvent::NonClientAreaMouseButtonRelease:
-#if defined(Q_OS_MAC) || defined(Q_OS_WASM)
+#if defined(Q_OS_MACOS) || defined(Q_OS_WASM)
                         if (state)
                             endDrag(EndDragMode::LocationChange);
 #endif

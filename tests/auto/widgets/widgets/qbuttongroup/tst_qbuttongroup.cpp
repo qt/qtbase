@@ -15,7 +15,7 @@
 #include <qpushbutton.h>
 #include <qlineedit.h>
 #include <qtoolbutton.h>
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
 #include <qsettings.h>
 #endif
 

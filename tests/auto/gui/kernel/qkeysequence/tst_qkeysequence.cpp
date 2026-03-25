@@ -10,7 +10,7 @@
 #include <QTranslator>
 #include <QLibraryInfo>
 
-#ifdef Q_OS_MAC
+#ifdef Q_OS_APPLE
 struct MacSpecialKey {
     int key;
     ushort macSymbol;
@@ -119,7 +119,7 @@ private:
     int m_keyboardScheme;
     QTranslator *ourTranslator;
     QTranslator *qtTranslator;
-#ifdef Q_OS_MAC
+#ifdef Q_OS_APPLE
     static const QString MacCtrl;
     static const QString MacMeta;
     static const QString MacAlt;
@@ -129,7 +129,7 @@ private:
 
 };
 
-#ifdef Q_OS_MAC
+#ifdef Q_OS_APPLE
 const QString tst_QKeySequence::MacCtrl = QString(QChar(0x2318));
 const QString tst_QKeySequence::MacMeta = QString(QChar(0x2303));
 const QString tst_QKeySequence::MacAlt = QString(QChar(0x2325));
@@ -173,7 +173,7 @@ void tst_QKeySequence::operatorQString_data()
 
     QTest::newRow( "No modifier" ) << 0 << int(Qt::Key_Aring) << QString::fromLatin1( "\x0c5" );
 
-#ifndef Q_OS_MAC
+#ifndef Q_OS_APPLE
     QTest::newRow( "Ctrl+Left" ) << int(Qt::CTRL) << int(Qt::Key_Left) << QString( "Ctrl+Left" );
     QTest::newRow( "Ctrl+," ) << int(Qt::CTRL) << int(Qt::Key_Comma) << QString( "Ctrl+," );
     QTest::newRow( "Alt+Left" ) << int(Qt::ALT) << int(Qt::Key_Left) << QString( "Alt+Left" );
@@ -316,7 +316,7 @@ void tst_QKeySequence::standardKeys_data()
     QTest::newRow("zoomOut") << (int)QKeySequence::ZoomOut<< QString("CTRL+-");
     QTest::newRow("whatsthis") << (int)QKeySequence::WhatsThis<< QString("SHIFT+F1");
 
-#if defined(Q_OS_MAC)
+#if defined(Q_OS_APPLE)
     QTest::newRow("help") << (int)QKeySequence::HelpContents<< QString("Ctrl+?");
     QTest::newRow("nextChild") << (int)QKeySequence::NextChild << QString("CTRL+}");
     QTest::newRow("previousChild") << (int)QKeySequence::PreviousChild << QString("CTRL+{");
@@ -391,7 +391,7 @@ void tst_QKeySequence::mnemonic_data()
 void tst_QKeySequence::mnemonic()
 {
     const auto resetAutoMnemonic = qScopeGuard([] {
-#ifndef Q_OS_MAC
+#ifndef Q_OS_APPLE
         qt_set_sequence_auto_mnemonic(true);
 #else
         qt_set_sequence_auto_mnemonic(false);
@@ -426,7 +426,7 @@ void tst_QKeySequence::toString_data()
     QTest::addColumn<QString>("platformString");
 
 
-#ifndef Q_OS_MAC
+#ifndef Q_OS_APPLE
     QTest::newRow("Ctrl+Left") << QString("Ctrl+Left") << QString("Ctrl+Left") << QString("Ctrl+Left");
     QTest::newRow("Alt+Left") << QString("Alt+Left") << QString("Alt+Left") << QString("Alt+Left");
     QTest::newRow("Alt+Shift+Left") << QString("Alt+Shift+Left") << QString("Alt+Shift+Left") << QString("Alt+Shift+Left");

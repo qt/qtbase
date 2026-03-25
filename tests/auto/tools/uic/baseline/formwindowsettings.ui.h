@@ -89,7 +89,7 @@ public:
         gridLayout->addWidget(line, 5, 0, 1, 2);
 
         hboxLayout = new QHBoxLayout();
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         hboxLayout->setSpacing(6);
 #endif
         hboxLayout->setContentsMargins(0, 0, 0, 0);
@@ -98,7 +98,7 @@ public:
         layoutDefaultGroupBox->setObjectName("layoutDefaultGroupBox");
         layoutDefaultGroupBox->setCheckable(true);
         gridLayout1 = new QGridLayout(layoutDefaultGroupBox);
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         gridLayout1->setSpacing(6);
 #endif
         gridLayout1->setContentsMargins(8, 8, 8, 8);
@@ -130,7 +130,7 @@ public:
         layoutFunctionGroupBox->setObjectName("layoutFunctionGroupBox");
         layoutFunctionGroupBox->setCheckable(true);
         gridLayout2 = new QGridLayout(layoutFunctionGroupBox);
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         gridLayout2->setSpacing(6);
 #endif
         gridLayout2->setContentsMargins(8, 8, 8, 8);
@@ -164,7 +164,7 @@ public:
         pixmapFunctionGroupBox_2 = new QGroupBox(FormWindowSettings);
         pixmapFunctionGroupBox_2->setObjectName("pixmapFunctionGroupBox_2");
         vboxLayout = new QVBoxLayout(pixmapFunctionGroupBox_2);
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         vboxLayout->setSpacing(6);
 #endif
         vboxLayout->setContentsMargins(8, 8, 8, 8);
@@ -180,7 +180,7 @@ public:
         includeHintsGroupBox = new QGroupBox(FormWindowSettings);
         includeHintsGroupBox->setObjectName("includeHintsGroupBox");
         vboxLayout1 = new QVBoxLayout(includeHintsGroupBox);
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         vboxLayout1->setSpacing(6);
 #endif
         vboxLayout1->setContentsMargins(8, 8, 8, 8);
@@ -194,7 +194,7 @@ public:
         gridLayout->addWidget(includeHintsGroupBox, 3, 0, 2, 1);
 
         hboxLayout1 = new QHBoxLayout();
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         hboxLayout1->setSpacing(6);
 #endif
         hboxLayout1->setContentsMargins(0, 0, 0, 0);
@@ -203,7 +203,7 @@ public:
         pixmapFunctionGroupBox->setObjectName("pixmapFunctionGroupBox");
         pixmapFunctionGroupBox->setCheckable(true);
         vboxLayout2 = new QVBoxLayout(pixmapFunctionGroupBox);
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         vboxLayout2->setSpacing(6);
 #endif
         vboxLayout2->setContentsMargins(8, 8, 8, 8);

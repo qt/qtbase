@@ -1001,7 +1001,7 @@ void tst_QToolBar::widgetAction()
     delete a;
 }
 
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
 QT_BEGIN_NAMESPACE
 extern void qt_set_sequence_auto_mnemonic(bool b);
 QT_END_NAMESPACE
@@ -1012,7 +1012,7 @@ void tst_QToolBar::accel()
     if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
         QSKIP("Wayland: This fails. Figure out why.");
 
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     qt_set_sequence_auto_mnemonic(true);
 #endif
     QMainWindow mw;
@@ -1028,7 +1028,7 @@ void tst_QToolBar::accel()
     QTest::keyClick(&mw, Qt::Key_T, Qt::AltModifier);
 
     QTRY_COMPARE(spy.size(), 1);
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     qt_set_sequence_auto_mnemonic(false);
 #endif
 }

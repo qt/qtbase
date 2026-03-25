@@ -1292,7 +1292,7 @@ QFont QApplication::font(const QWidget *widget)
     FontHash *hash = app_fonts();
 
     if (widget && hash  && hash->size()) {
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
         // short circuit for small and mini controls
         if (widget->testAttribute(Qt::WA_MacSmallSize)) {
             return hash->value(QByteArrayLiteral("QSmallFont"));
@@ -3196,7 +3196,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             break;
         }
 #endif // QT_NO_GESTURES
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
         // Enable touch events on enter, disable on leave.
         typedef void (*RegisterTouchWindowFn)(QWindow *,  bool);
         case QEvent::Enter:

@@ -41,7 +41,7 @@
 #endif
 #endif
 
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
 const QString rsrcPath = ":/images/mac";
 #else
 const QString rsrcPath = ":/images/win";

@@ -782,7 +782,7 @@ public:
     // *************************** Platform specific ************************************
 #if defined(Q_OS_WIN)
     uint noPaintOnScreen : 1; // see qwidget.cpp ::paintEngine()
-#elif defined(Q_OS_MAC)
+#elif defined(Q_OS_MACOS)
     void macUpdateSizeAttribute();
 #endif
     void setNetWmWindowTypes(bool skipIfMissing = false);

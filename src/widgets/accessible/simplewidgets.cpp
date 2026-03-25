@@ -58,7 +58,7 @@
 #endif
 #include <QtGui/qvalidator.h>
 
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
 #include <qfocusframe.h>
 #endif
 

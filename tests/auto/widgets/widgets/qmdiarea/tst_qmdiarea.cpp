@@ -63,7 +63,7 @@ static bool tabBetweenSubWindowsIn(QMdiArea *mdiArea, int tabCount = -1, bool re
 
     Qt::KeyboardModifiers modifiers = reverse ? Qt::ShiftModifier : Qt::NoModifier;
     Qt::Key key;
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     key = Qt::Key_Meta;
     modifiers |= Qt::MetaModifier;
 #else
@@ -472,7 +472,7 @@ void tst_QMdiArea::subWindowActivated2()
     // Check that we only emit _one_ signal and the active window
     // is unchanged after showMinimized/showNormal.
     mdiArea.showMinimized();
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     QSKIP("QTBUG-25298: This test is unstable on Mac.");
 #endif
     if (!QGuiApplication::platformName().compare(QLatin1String("xcb"), Qt::CaseInsensitive))
@@ -1743,7 +1743,7 @@ void tst_QMdiArea::cascadeAndTileSubWindows()
 
     // Check dy between two cascaded windows
     const int dy = cascadedDeltaY(&workspace);
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     QEXPECT_FAIL("", "QTBUG-25298", Abort);
 #endif
     QCOMPARE(windows.at(2)->geometry().top() - windows.at(1)->geometry().top(), dy);
@@ -2183,7 +2183,7 @@ void tst_QMdiArea::setActivationOrder()
     QVERIFY(verifyArrangement(&mdiArea, Tiled, expectedTileIndices));
 
     mdiArea.cascadeSubWindows();
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     QEXPECT_FAIL("", "QTBUG-25298", Abort);
 #endif
     QVERIFY(verifyArrangement(&mdiArea, Cascaded, expectedCascadeIndices));
@@ -2230,7 +2230,7 @@ void tst_QMdiArea::tabBetweenSubWindows()
     QCOMPARE(spy.size(), 0);
 
     // Walk through the entire list of sub windows.
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     QEXPECT_FAIL("", "QTBUG-25298", Abort);
 #endif
     QVERIFY(tabBetweenSubWindowsIn(&mdiArea));

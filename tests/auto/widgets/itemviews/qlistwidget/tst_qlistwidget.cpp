@@ -86,7 +86,7 @@ private slots:
     void changeDataWithSorting();
     void itemData();
     void itemWidget();
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
     void fastScroll();
 #endif
     void insertUnchanged();
@@ -1619,7 +1619,7 @@ void tst_QListWidget::itemWidget()
     QCOMPARE(list.itemWidget(item), nullptr);
 }
 
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
 class MyListWidget : public QListWidget
 {
     Q_OBJECT
@@ -1670,7 +1670,7 @@ void tst_QListWidget::fastScroll()
     // only one item should be repainted, the rest should be scrolled in memory
     QCOMPARE(actualItemSize, itemSize);
 }
-#endif // Q_OS_MAC
+#endif // Q_OS_MACOS
 
 void tst_QListWidget::insertUnchanged()
 {

@@ -34,10 +34,10 @@ public:
             Controller->setObjectName("Controller");
         Controller->resize(285, 120);
         gridLayout = new QGridLayout(Controller);
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         gridLayout->setSpacing(6);
 #endif
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         gridLayout->setContentsMargins(9, 9, 9, 9);
 #endif
         gridLayout->setObjectName("gridLayout");

@@ -43,10 +43,10 @@ public:
             WorldTimeForm->setObjectName("WorldTimeForm");
         WorldTimeForm->resize(400, 300);
         hboxLayout = new QHBoxLayout(WorldTimeForm);
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         hboxLayout->setSpacing(6);
 #endif
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         hboxLayout->setContentsMargins(9, 9, 9, 9);
 #endif
         hboxLayout->setObjectName("hboxLayout");
@@ -56,7 +56,7 @@ public:
         hboxLayout->addWidget(worldTimeClock);
 
         vboxLayout = new QVBoxLayout();
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         vboxLayout->setSpacing(6);
 #endif
         vboxLayout->setContentsMargins(1, 1, 1, 1);
@@ -66,7 +66,7 @@ public:
         vboxLayout->addItem(spacerItem);
 
         hboxLayout1 = new QHBoxLayout();
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         hboxLayout1->setSpacing(6);
 #endif
         hboxLayout1->setContentsMargins(1, 1, 1, 1);
@@ -86,7 +86,7 @@ public:
         vboxLayout->addLayout(hboxLayout1);
 
         hboxLayout2 = new QHBoxLayout();
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         hboxLayout2->setSpacing(6);
 #endif
         hboxLayout2->setContentsMargins(1, 1, 1, 1);

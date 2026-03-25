@@ -112,7 +112,7 @@ void QBoxLayoutPrivate::effectiveMargins(int *left, int *top, int *right, int *b
     int t = topMargin;
     int r = rightMargin;
     int b = bottomMargin;
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     Q_Q(const QBoxLayout);
     if (horz(dir)) {
         QBoxLayoutItem *leftBox = nullptr;
@@ -261,7 +261,7 @@ void QBoxLayoutPrivate::setupGeom()
         if (!empty) {
             if (fixedSpacing >= 0) {
                 spacing = (previousNonEmptyIndex >= 0) ? fixedSpacing : 0;
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
                 if (!horz(dir) && previousNonEmptyIndex >= 0) {
                     QBoxLayoutItem *sibling = (dir == QBoxLayout::TopToBottom  ? box : list.at(previousNonEmptyIndex));
                     if (sibling) {

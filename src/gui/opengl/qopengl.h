@@ -126,7 +126,7 @@ typedef char GLchar;
 #define QT_OPENGL_3
 #define QT_OPENGL_3_2
 #define QT_OPENGL_4
-# if !defined(Q_OS_MAC)
+# if !defined(Q_OS_APPLE)
 #  define QT_OPENGL_4_3
 # endif
 #endif

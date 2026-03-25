@@ -371,7 +371,7 @@ bool QCheckBox::event(QEvent *e)
 {
     Q_D(QCheckBox);
     if (e->type() == QEvent::StyleChange
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
             || e->type() == QEvent::MacSizeChange
 #endif
             )

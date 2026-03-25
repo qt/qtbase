@@ -7297,7 +7297,7 @@ start_lengthVariant:
                     range.format.setFontUnderline(true);
                     underlineFormats.append(range);
                 }
-#ifdef Q_OS_MAC
+#ifdef Q_OS_APPLE
             } else if (hidemnmemonic && *cin == u'(' && l >= 4 &&
                        cin[1] == u'&' && cin[2] != u'&' &&
                        cin[3] == u')') {
@@ -7309,7 +7309,7 @@ start_lengthVariant:
                 length -= n + 4;
                 l -= 4;
                 continue;
-#endif //Q_OS_MAC
+#endif //Q_OS_APPLE
             }
             *cout = *cin;
             ++cout;

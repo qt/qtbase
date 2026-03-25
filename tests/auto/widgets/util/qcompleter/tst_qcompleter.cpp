@@ -618,7 +618,7 @@ void tst_QCompleter::fileSystemModel_data()
 #if defined(Q_OS_WIN)
         QTest::newRow("()") << "C" << "" << "C:" << "C:";
         QTest::newRow("()") << "C:\\Program" << "" << "Program Files" << "C:\\Program Files";
-#elif defined (Q_OS_MAC)
+#elif defined (Q_OS_MACOS)
         QTest::newRow("()") << "" << "" << "/" << "/";
         QTest::newRow("(/a)") << "/a" << "" << "Applications" << "/Applications";
 //        QTest::newRow("(/d)") << "/d" << "" << "Developer" << "/Developer";

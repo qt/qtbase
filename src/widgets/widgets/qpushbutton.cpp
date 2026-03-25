@@ -685,7 +685,7 @@ bool QPushButton::event(QEvent *e)
         }
 #endif
     } else if (e->type() == QEvent::StyleChange
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
                || e->type() == QEvent::MacSizeChange
 #endif
                ) {
