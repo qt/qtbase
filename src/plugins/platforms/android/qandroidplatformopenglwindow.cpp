@@ -51,8 +51,11 @@ void QAndroidPlatformOpenGLWindow::setGeometry(const QRect &rect)
 // surface is already locked when calling this
 EGLSurface QAndroidPlatformOpenGLWindow::eglSurface(EGLConfig config)
 {
-    if (QAndroidEventDispatcherStopper::stopped() ||
-        QGuiApplication::applicationState() == Qt::ApplicationSuspended) {
+    // Avoid early return on initial suspension unless a surface was already created.
+    // This avoids the multi‑window startup race.
+    if (m_androidSurfaceCreated &&
+        (QAndroidEventDispatcherStopper::stopped() ||
+        QGuiApplication::applicationState() == Qt::ApplicationSuspended)) {
         qCDebug(lcQpaWindow) << "Application not active, return existing surface.";
         return m_eglSurface;
     }
