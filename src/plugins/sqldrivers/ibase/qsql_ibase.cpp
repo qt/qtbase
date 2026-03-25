@@ -731,7 +731,7 @@ QVariant QIBaseResultPrivate::fetchArray(int pos, ISC_QUAD *arr)
     }
 
     ISC_LONG bufLen;
-    /* varying arrayelements are stored with 2 trailing null bytes
+    /* varying array elements are stored with 2 trailing null bytes
        indicating the length of the string
      */
     if (desc.array_desc_dtype == blr_varying
@@ -784,7 +784,7 @@ static char* qFillBufferWithString(char *buffer, const QString& string,
         short tmpBuflen = buflen;
         if (str.length() < buflen)
             buflen = str.length();
-        if (array) { // interbase stores varying arrayelements different than normal varying elements
+        if (array) { // interbase stores varying array elements different than normal varying elements
             memcpy(buffer, str.constData(), buflen);
             memset(buffer + buflen, 0, tmpBuflen - buflen);
         } else {
@@ -926,7 +926,7 @@ bool QIBaseResultPrivate::writeArray(qsizetype column, const QList<QVariant> &li
                       desc.array_desc_bounds[i].array_bound_lower + 1);
     }
 
-    /* varying arrayelements are stored with 2 trailing null bytes
+    /* varying array elements are stored with 2 trailing null bytes
        indicating the length of the string
      */
     if (desc.array_desc_dtype == blr_varying ||
