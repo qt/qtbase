@@ -931,7 +931,8 @@ void tst_QTreeView::iconSize()
 
 void tst_QTreeView::indexAt()
 {
-    QtTestModel model(5, 5);
+    int columnCount = 5;
+    QtTestModel model(5, columnCount);
 
     QTreeView view;
     QCOMPARE(view.indexAt(QPoint()), QModelIndex());
@@ -958,9 +959,10 @@ void tst_QTreeView::indexAt()
     }
 
     view.show();
-    view.resize(600, 600);
+    int columnWidth = view.header()->sectionSize(0);
+    view.resize(columnWidth * (columnCount + 1), 600);
     view.header()->setStretchLastSection(false);
-    QCOMPARE(view.indexAt(QPoint(550, 20)), QModelIndex());
+    QCOMPARE(view.indexAt(QPoint(columnWidth * (columnCount + 0.5), 20)), QModelIndex());
 }
 
 void tst_QTreeView::indexWidget()
