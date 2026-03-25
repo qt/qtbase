@@ -62,7 +62,7 @@ path = ["**/README*", "src/plugins/**/README*", "examples/**/README*",# "tests/*
         "src/widgets/doc/snippets/common-table-model/README", "cmake/README.md",
         "lib/README", "coin/instructions/README.md", "src/3rdparty/README",
         "**.qdocconf", "**.qdocinc", "config_help.txt",
-        "doc/global/template/style/*", "**/doc/**/images/**"]
+        "doc/global/template/style/*", "**/doc/**/images/**", "CONTRIBUTING.md"]
 comment = "documentation"
 precedence = "closest"
 SPDX-FileCopyrightText = "Copyright (C) The Qt Company Ltd."

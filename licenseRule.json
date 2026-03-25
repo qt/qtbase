@@ -106,7 +106,7 @@
     {
         "comment": "Files with the following endings are Documentation licensed.",
         "file_pattern_ending": [".qdoc", ".qdocinc" , ".qdocconf", "README", "qt_attribution.json",
-                                 "README.md", "README.txt", "config_help.txt",
+                                 "README.md", "README.txt", "config_help.txt", "CONTRIBUTING.md",
                                  "READ-THIS-BEFORE-MANUALLY-ADDING-FILES-TO-PACKAGE.txt"],
         "location":{
             "": {
