@@ -52,6 +52,7 @@ void tst_QtParseTemporal::prefix_data()
     // since a timestamp with no zone indicator is assumed to mean that.
     const QTimeZone wall(QTimeZone::LocalTime);
     const QString empty;
+    using namespace QtParseTemporal;
 
     // Mainly to check we don't crash or trigger assertions:
     QTest::newRow("null/null/C/greg/0")
@@ -1081,6 +1082,513 @@ void tst_QtParseTemporal::prefix_data()
 
     // Century (when we get round to implementing it)
     // Era (when we get round to implementing it)
+
+    // Composite tests, combining various fields:
+
+    // Whole datetime with zone abbreviation (various combinations of fields):
+    QTest::newRow("Wed, 11 Feb 15:10:22 CET 2026/null/C/greg/0")
+        << u"Wed, 11 Feb 15:10:22 CET 2026"_s << Fields{}
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("Wed, 11 Feb 15:10:22 CET 2026/date/C/greg/0")
+        << u"Wed, 11 Feb 15:10:22 CET 2026"_s
+        << Fields{ Field{ empty, 0, Flag::Verbal | Flag::Short, Cat::DayOfWeek },
+            Field{ u","_s, 0, Flags{ Flag::SpacePad }, Cat::Literal },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::DayOfMonth },
+            Field{ u" "_s, 0, Flags{}, Cat::Literal },
+            Field{ empty, 0, Flag::Verbal | Flag::Short, Cat::Month },
+            Field{ u" 15:10:22 CET "_s, 0, Flags{}, Cat::Literal },
+            Field{ empty, 4, Flag::Numeric | Flag::ZeroPad, Cat::Year } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 29 << wall << -1 << -1 << -1 << -1 << 3 << 11 << 2 << 2026;
+    QTest::newRow("Wed, 11 Feb 15:10:22 CET 2026/time/C/greg/0")
+        << u"Wed, 11 Feb 15:10:22 CET 2026"_s
+        << Fields{ Field{ u"Wed, 11 Feb "_s, 0, Flags{}, Cat::Literal },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Hour },
+            Field{ u":"_s, 0, Flags{}, Cat::Literal },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Minute },
+            Field{ u":"_s, 0, Flags{}, Cat::Literal },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Second },
+            Field{ u" CET 2026"_s, 0, Flags{}, Cat::Literal } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 29 << wall << -1 << 22 << 10 << 15 << 0 << 0 << 0 << 0;
+    QTest::newRow("Wed, 11 Feb 15:10:22 CET 2026/time/C/greg/11")
+        << u"Wed, 11 Feb 15:10:22 CET 2026"_s
+        << Fields{ Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Hour },
+            Field{ u":"_s, 0, Flags{}, Cat::Literal },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Minute },
+            Field{ u":"_s, 0, Flags{}, Cat::Literal },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Second } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 12
+        << 20 << wall << -1 << 22 << 10 << 15 << 0 << 0 << 0 << 0;
+    QTest::newRow("Wed, 11 Feb 15:10:22 CET 2026/date+time/C/greg/0")
+        << u"Wed, 11 Feb 15:10:22 CET 2026"_s
+        << Fields{ Field{ empty, 0, Flag::Verbal | Flag::Short, Cat::DayOfWeek },
+            Field{ u", "_s, 0, Flags{ Flag::SpacePad }, Cat::Literal },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::DayOfMonth },
+            Field{ u" "_s, 0, Flags{}, Cat::Literal },
+            Field{ empty, 0, Flag::Verbal | Flag::Short, Cat::Month },
+            Field{ u" "_s, 0, Flags{}, Cat::Literal },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Hour },
+            Field{ u":"_s, 0, Flags{}, Cat::Literal },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Minute },
+            Field{ u":"_s, 0, Flags{}, Cat::Literal },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Second },
+            Field{ u" CET "_s, 0, Flags{}, Cat::Literal },
+            Field{ empty, 4, Flag::Numeric | Flag::ZeroPad, Cat::Year } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 29 << wall << -1 << 22 << 10 << 15 << 3 << 11 << 2 << 2026;
+
+    const QTimeZone cet("Europe/Oslo");
+    // Variations on how to express the zone:
+    QTest::newRow("Wed, 11 Feb 15:10:22 CET 2026/date+time+abbr/C/greg/0")
+        << u"Wed, 11 Feb 15:10:22 CET 2026"_s
+        << Fields{ Field{ empty, 0, Flag::Verbal | Flag::Short, Cat::DayOfWeek },
+            Field{ u", "_s, 0, Flags{}, Cat::Literal },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::DayOfMonth },
+            Field{ u" "_s, 0, Flags{}, Cat::Literal },
+            Field{ empty, 0, Flag::Verbal | Flag::Short, Cat::Month },
+            Field{ u" "_s, 0, Flags{}, Cat::Literal },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Hour },
+            Field{ u":"_s, 0, Flags{}, Cat::Literal },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Minute },
+            Field{ u":"_s, 0, Flags{}, Cat::Literal },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Second },
+            Field{ u" "_s, 0, Flags{}, Cat::Literal },
+            // Unsupported at present:
+            Field{ empty, 0, Flag::LocalizedZone | Flag::Verbal | Flag::Abbreviated,
+                   Cat::TimeZone },
+            Field{ u" "_s, 0, Flags{}, Cat::Literal },
+            Field{ empty, 4, Flag::Numeric | Flag::ZeroPad, Cat::Year } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 29 << cet << -1 << 22 << 10 << 15 << 3 << 11 << 2 << 2026;
+    QTest::newRow("Wed, 11 Feb 15:10:22 Europe/Oslo 2026/date+time+iana/C/greg/0")
+        << u"Wed, 11 Feb 15:10:22 Europe/Oslo 2026"_s
+        << Fields{ Field{ empty, 0, Flag::Verbal | Flag::Short, Cat::DayOfWeek },
+            Field{ u","_s, 0, Flags{ Flag::SpacePad }, Cat::Literal },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::DayOfMonth },
+            Field{ u" "_s, 0, Flags{}, Cat::Literal },
+            Field{ empty, 0, Flag::Verbal | Flag::Short, Cat::Month },
+            Field{ u" "_s, 0, Flags{}, Cat::Literal },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Hour },
+            Field{ u":"_s, 0, Flags{}, Cat::Literal },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Minute },
+            Field{ u":"_s, 0, Flags{}, Cat::Literal },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Second },
+            Field{ u" "_s, 0, Flags{}, Cat::Literal },
+            Field{ empty, 0, Flag::Standalone | Flag::Short, Cat::TimeZone },
+            Field{ u" "_s, 0, Flags{}, Cat::Literal },
+            Field{ empty, 4, Flag::Numeric | Flag::ZeroPad, Cat::Year } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 37 << cet << -1 << 22 << 10 << 15 << 3 << 11 << 2 << 2026;
+    // See tst_qtpaarsetimezone for further permutations.
+
+    // ISO-style formats (with juxtaposed numeric fields):
+    QTest::newRow("20260211T151022+0100/date/C/greg/0")
+        << u"20260211T151022+0100"_s
+        << Fields{ Field{ empty, 4, Flag::Numeric | Flag::ZeroPad, Cat::Year },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Month },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::DayOfMonth },
+            Field{ u"T151022+0100"_s, 0, Flags{}, Cat::Literal } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 20 << wall << -1 << -1 << -1 << -1 << 0 << 11 << 2 << 2026;
+    QTest::newRow("20260211/date/C/greg/0")
+        << u"20260211T151022+0100"_s
+        << Fields{ Field{ empty, 4, Flag::Numeric | Flag::ZeroPad, Cat::Year },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Month },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::DayOfMonth } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 8 << wall << -1 << -1 << -1 << -1 << 0 << 11 << 2 << 2026;
+    QTest::newRow("20260211T151022+0100/time/C/greg/0")
+        << u"20260211T151022+0100"_s
+        << Fields{ Field{ u"20260211T"_s, 0, Flags{}, Cat::Literal },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Hour },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Minute },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Second },
+            Field{ u"+0100"_s, 0, Flags{}, Cat::Literal } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 20 << wall << -1 << 22 << 10 << 15 << 0 << 0 << 0 << 0;
+    QTest::newRow("20260211T151022+0100/time/C/greg/9")
+        << u"20260211T151022+0100"_s
+        << Fields{ Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Hour },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Minute },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Second } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 9
+        << 15 << wall << -1 << 22 << 10 << 15 << 0 << 0 << 0 << 0;
+    QTest::newRow("20260211T151022+0100/date+time/C/greg/0")
+        << u"20260211T151022+0100"_s
+        << Fields{ Field{ empty, 4, Flag::Numeric | Flag::ZeroPad, Cat::Year },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Month },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::DayOfMonth },
+            Field{ u"T"_s, 0, Flags{}, Cat::Literal },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Hour },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Minute },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Second },
+            Field{ u"+0100"_s, 0, Flags{}, Cat::Literal } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 20 << wall << -1 << 22 << 10 << 15 << 0 << 11 << 2 << 2026;
+    QTest::newRow("20260211T151022+0100/date+time+offset/C/greg/0")
+        << u"20260211T151022+0100"_s
+        << Fields{ Field{ empty, 4, Flag::Numeric | Flag::ZeroPad, Cat::Year },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Month },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::DayOfMonth },
+            Field{ u"T"_s, 0, Flags{}, Cat::Literal },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Hour },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Minute },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Second },
+            Field{ empty, 0, Flag::Iso8601 | Flag::Numeric | Flag::Abbreviated | Flag::ZeroPad,
+                   Cat::TimeZone } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 20 << QTimeZone::fromSecondsAheadOfUtc(3600)
+        << -1 << 22 << 10 << 15 << 0 << 11 << 2 << 2026;
+
+    // Now let's try that without ZeroPad:
+    QTest::newRow("202621T132+0100/date/C/greg/0")
+        << u"202621T132+0100"_s
+        << Fields{ Field{ empty, 4, Flag::Numeric, Cat::Year },
+            Field{ empty, 1, Flag::Numeric, Cat::Month },
+            Field{ empty, 1, Flag::Numeric, Cat::DayOfMonth },
+            Field{ u"T132+0100"_s, 0, Flags{}, Cat::Literal } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 15 << wall << -1 << -1 << -1 << -1 << 0 << 1 << 2 << 2026;
+    QTest::newRow("202621/date/C/greg/0")
+        << u"202621T132+0100"_s
+        << Fields{ Field{ empty, 4, Flag::Numeric, Cat::Year },
+            Field{ empty, 1, Flag::Numeric, Cat::Month },
+            Field{ empty, 1, Flag::Numeric, Cat::DayOfMonth } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 6 << wall << -1 << -1 << -1 << -1 << 0 << 1 << 2 << 2026;
+    QTest::newRow("202621T132+0100/time/C/greg/0")
+        << u"202621T132+0100"_s
+        << Fields{ Field{ u"202621T"_s, 0, Flags{}, Cat::Literal },
+            Field{ empty, 1, Flag::Numeric, Cat::Hour },
+            Field{ empty, 1, Flag::Numeric, Cat::Minute },
+            Field{ empty, 1, Flag::Numeric, Cat::Second },
+            Field{ u"+0100"_s, 0, Flags{}, Cat::Literal } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 15 << wall << -1 << 2 << 3 << 1 << 0 << 0 << 0 << 0;
+    QTest::newRow("202621T132+0100/time/C/greg/7")
+        << u"202621T132+0100"_s
+        << Fields{ Field{ empty, 1, Flag::Numeric, Cat::Hour },
+            Field{ empty, 1, Flag::Numeric, Cat::Minute },
+            Field{ empty, 1, Flag::Numeric, Cat::Second } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 7
+        << 10 << wall << -1 << 2 << 3 << 1 << 0 << 0 << 0 << 0;
+    QTest::newRow("202621T132+0100/date+time/C/greg/0")
+        << u"202621T132+0100"_s
+        << Fields{ Field{ empty, 4, Flag::Numeric, Cat::Year },
+            Field{ empty, 1, Flag::Numeric, Cat::Month },
+            Field{ empty, 1, Flag::Numeric, Cat::DayOfMonth },
+            Field{ u"T"_s, 0, Flags{}, Cat::Literal },
+            Field{ empty, 1, Flag::Numeric, Cat::Hour },
+            Field{ empty, 1, Flag::Numeric, Cat::Minute },
+            Field{ empty, 1, Flag::Numeric, Cat::Second },
+            Field{ u"+0100"_s, 0, Flags{}, Cat::Literal } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 15 << wall << -1 << 2 << 3 << 1 << 0 << 1 << 2 << 2026;
+    QTest::newRow("202621T132+0100/date+time+offset/C/greg/0")
+        << u"202621T132+0100"_s
+        << Fields{ Field{ empty, 4, Flag::Numeric, Cat::Year },
+            Field{ empty, 1, Flag::Numeric, Cat::Month },
+            Field{ empty, 1, Flag::Numeric, Cat::DayOfMonth },
+            Field{ u"T"_s, 0, Flags{}, Cat::Literal },
+            Field{ empty, 1, Flag::Numeric, Cat::Hour },
+            Field{ empty, 1, Flag::Numeric, Cat::Minute },
+            Field{ empty, 1, Flag::Numeric, Cat::Second },
+            Field{ empty, 0, Flag::Iso8601 | Flag::Numeric | Flag::Abbreviated,
+                   Cat::TimeZone } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 15 << QTimeZone::fromSecondsAheadOfUtc(3600)
+        << -1 << 2 << 3 << 1 << 0 << 1 << 2 << 2026;
+
+    // ... and again, but now with some ambiguities
+    QTest::newRow("2026102T132+0100/date/C/greg/0")
+        << u"2026102T132+0100"_s
+        << Fields{ Field{ empty, 4, Flag::Numeric, Cat::Year },
+            Field{ empty, 1, Flag::Numeric, Cat::Month },
+            Field{ empty, 1, Flag::Numeric, Cat::DayOfMonth },
+            Field{ u"T132+0100"_s, 0, Flags{}, Cat::Literal } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        // Ambiguous, 10 2 vs 1 02, but the latter zero-pads when we didn't ask to.
+        << 16 << wall << -1 << -1 << -1 << -1 << 0 << 2 << 10 << 2026;
+    QTest::newRow("2026112T132+0100/date/C/greg/0")
+        << u"2026112T132+0100"_s
+        << Fields{ Field{ empty, 4, Flag::Numeric, Cat::Year },
+            Field{ empty, 1, Flag::Numeric, Cat::Month },
+            Field{ empty, 1, Flag::Numeric, Cat::DayOfMonth },
+            Field{ u"T132+0100"_s, 0, Flags{}, Cat::Literal } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        // Ambiguous: 112 could be (Nov) 11 2 or (Jan) 1 12;
+        // resolved by letting the earlier field be greedy.
+        << 16 << wall << -1 << -1 << -1 << -1 << 0 << 2 << 11 << 2026;
+    QTest::newRow("2026102/date/C/greg/0")
+        << u"2026102T132+0100"_s
+        << Fields{ Field{ empty, 4, Flag::Numeric, Cat::Year },
+            Field{ empty, 1, Flag::Numeric, Cat::Month },
+            Field{ empty, 1, Flag::Numeric, Cat::DayOfMonth } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 7 << wall << -1 << -1 << -1 << -1 << 0 << 2 << 10 << 2026;
+    QTest::newRow("2026112/date/C/greg/0")
+        << u"2026112T132+0100"_s
+        << Fields{ Field{ empty, 4, Flag::Numeric, Cat::Year },
+            Field{ empty, 1, Flag::Numeric, Cat::Month },
+            Field{ empty, 1, Flag::Numeric, Cat::DayOfMonth } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 7 << wall << -1 << -1 << -1 << -1 << 0 << 2 << 11 << 2026;
+
+    QTest::newRow("202621T1032+0100/time/C/greg/0")
+        << u"202621T1032+0100"_s
+        << Fields{ Field{ u"202621T"_s, 0, Flags{}, Cat::Literal },
+            Field{ empty, 1, Flag::Numeric, Cat::Hour },
+            Field{ empty, 1, Flag::Numeric, Cat::Minute },
+            Field{ empty, 1, Flag::Numeric, Cat::Second },
+            Field{ u"+0100"_s, 0, Flags{}, Cat::Literal } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        // Ambiguous but no zero-pad asked for so prefer resolution with no
+        // leading zeros (10 3 2 vs 1 03 2) and let earlier field be greedy
+        // (10 3 2 vs 1 0 32).
+        << 16 << wall << -1 << 2 << 3 << 10 << 0 << 0 << 0 << 0;
+    QTest::newRow("202621T1132+0100/time/C/greg/0")
+        << u"202621T1132+0100"_s
+        << Fields{ Field{ u"202621T"_s, 0, Flags{}, Cat::Literal },
+            Field{ empty, 1, Flag::Numeric, Cat::Hour },
+            Field{ empty, 1, Flag::Numeric, Cat::Minute },
+            Field{ empty, 1, Flag::Numeric, Cat::Second },
+            Field{ u"+0100"_s, 0, Flags{}, Cat::Literal } }
+        // Ambiguous: let earlier field's greed win.
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 16 << wall << -1 << 2 << 3 << 11 << 0 << 0 << 0 << 0;
+    // There is no minute 73 in an hour:
+    QTest::newRow("202621T0732+0100/time/C/greg/0")
+        << u"202621T0732+0100"_s
+        << Fields{ Field{ u"202621T"_s, 0, Flags{}, Cat::Literal },
+            Field{ empty, 1, Flag::Numeric, Cat::Hour },
+            Field{ empty, 1, Flag::Numeric, Cat::Minute },
+            Field{ empty, 1, Flag::Numeric, Cat::Second },
+            Field{ u"+0100"_s, 0, Flags{}, Cat::Literal } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        // 07 3 2 vs 0 7 32: prefer not zero-padded
+        << 16 << wall << -1 << 32 << 7 << 0 << 0 << 0 << 0 << 0;
+    QTest::newRow("202621T07325+0100/time/C/greg/0")
+        << u"202621T07325+0100"_s
+        << Fields{ Field{ u"202621T"_s, 0, Flags{}, Cat::Literal },
+            Field{ empty, 1, Flag::Numeric, Cat::Hour },
+            Field{ empty, 1, Flag::Numeric, Cat::Minute },
+            Field{ empty, 1, Flag::Numeric, Cat::Second },
+            Field{ u"+0100"_s, 0, Flags{}, Cat::Literal } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        // 07 3 25 vs 07 32 5: prefer earlier greed
+        << 17 << wall << -1 << 5 << 32 << 7 << 0 << 0 << 0 << 0;
+    // But there is a minute 13:
+    QTest::newRow("202621T01325+0100/time/C/greg/0")
+        << u"202621T01325+0100"_s
+        << Fields{ Field{ u"202621T"_s, 0, Flags{}, Cat::Literal },
+            Field{ empty, 1, Flag::Numeric, Cat::Hour },
+            Field{ empty, 1, Flag::Numeric, Cat::Minute },
+            Field{ empty, 1, Flag::Numeric, Cat::Second },
+            Field{ u"+0100"_s, 0, Flags{}, Cat::Literal } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        // 0 13 25 vs 01 3 25 vs 01 32 5: not zero-padded
+        << 17 << wall << -1 << 25 << 13 << 0 << 0 << 0 << 0 << 0;
+
+    // Millisecond fields
+    QTest::newRow("20260211T151022.765+0100/date/C/greg/0")
+        << u"20260211T151022.765+0100"_s
+        << Fields{ Field{ empty, 4, Flag::Numeric | Flag::ZeroPad, Cat::Year },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Month },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::DayOfMonth },
+            Field{ u"T"_s, 0, Flags{}, Cat::Literal },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Hour },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Minute },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Second },
+            Field{ u"."_s, 0, Flags{}, Cat::Literal },
+            Field{ empty, 3, Flag::Numeric, Cat::SecondFraction },
+            Field{ empty, 0, Flag::Iso8601 | Flag::Numeric | Flag::Abbreviated | Flag::ZeroPad,
+                   Cat::TimeZone } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 24 << QTimeZone::fromSecondsAheadOfUtc(3600)
+        << 765 << 22 << 10 << 15 << 0 << 11 << 2 << 2026;
+    // Centiseconds:
+    QTest::newRow("20260211T151022.76+0100/date/C/greg/0")
+        << u"20260211T151022.76+0100"_s
+        << Fields{ Field{ empty, 4, Flag::Numeric | Flag::ZeroPad, Cat::Year },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Month },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::DayOfMonth },
+            Field{ u"T"_s, 0, Flags{}, Cat::Literal },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Hour },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Minute },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Second },
+            Field{ u"."_s, 0, Flags{}, Cat::Literal },
+            Field{ empty, 2, Flag::Numeric, Cat::SecondFraction },
+            Field{ empty, 0, Flag::Iso8601 | Flag::Numeric | Flag::Abbreviated | Flag::ZeroPad,
+                   Cat::TimeZone } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 23 << QTimeZone::fromSecondsAheadOfUtc(3600)
+        << 760 << 22 << 10 << 15 << 0 << 11 << 2 << 2026;
+    // Deciseconds:
+    QTest::newRow("20260211T151022.7+0100/date/C/greg/0")
+        << u"20260211T151022.7+0100"_s
+        << Fields{ Field{ empty, 4, Flag::Numeric | Flag::ZeroPad, Cat::Year },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Month },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::DayOfMonth },
+            Field{ u"T"_s, 0, Flags{}, Cat::Literal },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Hour },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Minute },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Second },
+            Field{ u"."_s, 0, Flags{}, Cat::Literal },
+            Field{ empty, 1, Flag::Numeric, Cat::SecondFraction },
+            Field{ empty, 0, Flag::Iso8601 | Flag::Numeric | Flag::Abbreviated | Flag::ZeroPad,
+                   Cat::TimeZone } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 22 << QTimeZone::fromSecondsAheadOfUtc(3600)
+        << 700 << 22 << 10 << 15 << 0 << 11 << 2 << 2026;
+    // Surplus precision:
+    QTest::newRow("20260211T151022.76543210+0100/date/C/greg/0")
+        << u"20260211T151022.76543210+0100"_s
+        << Fields{ Field{ empty, 4, Flag::Numeric | Flag::ZeroPad, Cat::Year },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Month },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::DayOfMonth },
+            Field{ u"T"_s, 0, Flags{}, Cat::Literal },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Hour },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Minute },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Second },
+            Field{ u"."_s, 0, Flags{}, Cat::Literal },
+            Field{ empty, 8, Flag::Numeric, Cat::SecondFraction },
+            Field{ empty, 0, Flag::Iso8601 | Flag::Numeric | Flag::Abbreviated | Flag::ZeroPad,
+                   Cat::TimeZone } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 29 << QTimeZone::fromSecondsAheadOfUtc(3600)
+        << 765 << 22 << 10 << 15 << 0 << 11 << 2 << 2026;
+    // Rounding up:
+    QTest::newRow("20260211T151022.876543210+0100/date/C/greg/0")
+        << u"20260211T151022.876543210+0100"_s
+        << Fields{ Field{ empty, 4, Flag::Numeric | Flag::ZeroPad, Cat::Year },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Month },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::DayOfMonth },
+            Field{ u"T"_s, 0, Flags{}, Cat::Literal },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Hour },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Minute },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Second },
+            Field{ u"."_s, 0, Flags{}, Cat::Literal },
+            Field{ empty, 9, Flag::Numeric, Cat::SecondFraction },
+            Field{ empty, 0, Flag::Iso8601 | Flag::Numeric | Flag::Abbreviated | Flag::ZeroPad,
+                   Cat::TimeZone } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 30 << QTimeZone::fromSecondsAheadOfUtc(3600)
+        << 877 << 22 << 10 << 15 << 0 << 11 << 2 << 2026;
+    // Overflow (controversial) - don't round up past 999:
+    QTest::newRow("20260211T151022.9999+0100/date/C/greg/0")
+        << u"20260211T151022.9999+0100"_s
+        << Fields{ Field{ empty, 4, Flag::Numeric | Flag::ZeroPad, Cat::Year },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Month },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::DayOfMonth },
+            Field{ u"T"_s, 0, Flags{}, Cat::Literal },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Hour },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Minute },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Second },
+            Field{ u"."_s, 0, Flags{}, Cat::Literal },
+            Field{ empty, 4, Flag::Numeric, Cat::SecondFraction },
+            Field{ empty, 0, Flag::Iso8601 | Flag::Numeric | Flag::Abbreviated | Flag::ZeroPad,
+                   Cat::TimeZone } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 25 << QTimeZone::fromSecondsAheadOfUtc(3600)
+        << 999 << 22 << 10 << 15 << 0 << 11 << 2 << 2026;
+    // Without a separator:
+    QTest::newRow("20260211T151022765+0100/date/C/greg/0")
+        << u"20260211T151022765+0100"_s
+        << Fields{ Field{ empty, 4, Flag::Numeric | Flag::ZeroPad, Cat::Year },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Month },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::DayOfMonth },
+            Field{ u"T"_s, 0, Flags{}, Cat::Literal },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Hour },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Minute },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Second },
+            Field{ empty, 3, Flag::Numeric, Cat::SecondFraction },
+            Field{ empty, 0, Flag::Iso8601 | Flag::Numeric | Flag::Abbreviated | Flag::ZeroPad,
+                   Cat::TimeZone } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 23 << QTimeZone::fromSecondsAheadOfUtc(3600)
+        << 765 << 22 << 10 << 15 << 0 << 11 << 2 << 2026;
+    // Centiseconds:
+    QTest::newRow("20260211T15102276+0100/date/C/greg/0")
+        << u"20260211T15102276+0100"_s
+        << Fields{ Field{ empty, 4, Flag::Numeric | Flag::ZeroPad, Cat::Year },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Month },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::DayOfMonth },
+            Field{ u"T"_s, 0, Flags{}, Cat::Literal },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Hour },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Minute },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Second },
+            Field{ empty, 2, Flag::Numeric, Cat::SecondFraction },
+            Field{ empty, 0, Flag::Iso8601 | Flag::Numeric | Flag::Abbreviated | Flag::ZeroPad,
+                   Cat::TimeZone } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 22 << QTimeZone::fromSecondsAheadOfUtc(3600)
+        << 760 << 22 << 10 << 15 << 0 << 11 << 2 << 2026;
+    // Deciseconds:
+    QTest::newRow("20260211T1510227+0100/date/C/greg/0")
+        << u"20260211T1510227+0100"_s
+        << Fields{ Field{ empty, 4, Flag::Numeric | Flag::ZeroPad, Cat::Year },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Month },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::DayOfMonth },
+            Field{ u"T"_s, 0, Flags{}, Cat::Literal },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Hour },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Minute },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Second },
+            Field{ empty, 1, Flag::Numeric, Cat::SecondFraction },
+            Field{ empty, 0, Flag::Iso8601 | Flag::Numeric | Flag::Abbreviated | Flag::ZeroPad,
+                   Cat::TimeZone } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 21 << QTimeZone::fromSecondsAheadOfUtc(3600)
+        << 700 << 22 << 10 << 15 << 0 << 11 << 2 << 2026;
+    // Surplus precision:
+    QTest::newRow("20260211T15102276543210+0100/date/C/greg/0")
+        << u"20260211T15102276543210+0100"_s
+        << Fields{ Field{ empty, 4, Flag::Numeric | Flag::ZeroPad, Cat::Year },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Month },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::DayOfMonth },
+            Field{ u"T"_s, 0, Flags{}, Cat::Literal },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Hour },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Minute },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Second },
+            Field{ empty, 8, Flag::Numeric, Cat::SecondFraction },
+            Field{ empty, 0, Flag::Iso8601 | Flag::Numeric | Flag::Abbreviated | Flag::ZeroPad,
+                   Cat::TimeZone } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 28 << QTimeZone::fromSecondsAheadOfUtc(3600)
+        << 765 << 22 << 10 << 15 << 0 << 11 << 2 << 2026;
+    // Rounding up:
+    QTest::newRow("20260211T151022876543210+0100/date/C/greg/0")
+        << u"20260211T151022876543210+0100"_s
+        << Fields{ Field{ empty, 4, Flag::Numeric | Flag::ZeroPad, Cat::Year },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Month },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::DayOfMonth },
+            Field{ u"T"_s, 0, Flags{}, Cat::Literal },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Hour },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Minute },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Second },
+            Field{ empty, 9, Flag::Numeric, Cat::SecondFraction },
+            Field{ empty, 0, Flag::Iso8601 | Flag::Numeric | Flag::Abbreviated | Flag::ZeroPad,
+                   Cat::TimeZone } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 29 << QTimeZone::fromSecondsAheadOfUtc(3600)
+        << 877 << 22 << 10 << 15 << 0 << 11 << 2 << 2026;
+    // Overflow (controversial) - don't round up past 999:
+    QTest::newRow("20260211T1510229999+0100/date/C/greg/0")
+        << u"20260211T1510229999+0100"_s
+        << Fields{ Field{ empty, 4, Flag::Numeric | Flag::ZeroPad, Cat::Year },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Month },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::DayOfMonth },
+            Field{ u"T"_s, 0, Flags{}, Cat::Literal },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Hour },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Minute },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::Second },
+            Field{ empty, 4, Flag::Numeric, Cat::SecondFraction },
+            Field{ empty, 0, Flag::Iso8601 | Flag::Numeric | Flag::Abbreviated | Flag::ZeroPad,
+                   Cat::TimeZone } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 24 << QTimeZone::fromSecondsAheadOfUtc(3600)
+        << 999 << 22 << 10 << 15 << 0 << 11 << 2 << 2026;
 }
 
 void tst_QtParseTemporal::prefix()
@@ -1099,6 +1607,8 @@ void tst_QtParseTemporal::prefix()
         century = baseYear;
     const auto parsed = QtParseTemporal::prefix(text, fields, locale, calendar, century, from);
     if (until) {
+        QEXPECT_FAIL("Wed, 11 Feb 15:10:22 CET 2026/date+time+abbr/C/greg/0",
+                     "Zone abbreviations not yet supported", Abort);
         QVERIFY(!parsed.isEmpty());
         QCOMPARE(parsed.startIndex, from);
         QCOMPARE(parsed.endIndex, until);
