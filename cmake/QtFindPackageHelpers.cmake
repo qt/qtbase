@@ -649,10 +649,13 @@ function(qt_internal_register_target_dependencies target)
     get_target_property(target_type ${target} TYPE)
     set(target_is_shared FALSE)
     set(target_is_static FALSE)
+    set(target_is_module FALSE)
     if(target_type STREQUAL "SHARED_LIBRARY")
         set(target_is_shared TRUE)
     elseif(target_type STREQUAL "STATIC_LIBRARY")
         set(target_is_static TRUE)
+    elseif(target_type STREQUAL "MODULE_LIBRARY")
+        set(target_is_module TRUE)
     endif()
 
     # Record 'Qt::Foo'-like private dependencies of static library targets, this will be used to
@@ -680,14 +683,20 @@ function(qt_internal_register_target_dependencies target)
         endif()
     endforeach()
 
-    # Record 'Qt::Foo'-like shared private dependencies of shared library targets.
+    # Record 'Qt::Foo'-like private dependencies of SHARED and MODULE library targets.
     #
     # Private shared library dependencies are listed in the target's
     # IMPORTED_LINK_DEPENDENT_LIBRARIES and used in rpath-link calculation.
     # See QTBUG-86533 for some details.
+    #
+    # MODULE (i.e. plugin) library dependencies are recorded and will be used to
+    # generate _qt_internal_find_qt_dependencies() calls in the plugin's
+    # ${target}Dependencies.cmake, because we need to query those targets
+    # for (Android) deployment reasons.
+    #
     # We filter out static libraries and common platform targets, but include both SHARED and
     # INTERFACE libraries. INTERFACE libraries in most cases will be FooPrivate libraries.
-    if(target_is_shared AND arg_PRIVATE)
+    if((target_is_shared OR target_is_module) AND arg_PRIVATE)
         foreach(lib IN LISTS arg_PRIVATE)
             set(lib_namespaced "${lib}")
             if("${lib}" MATCHES "^Qt::(.*)")
