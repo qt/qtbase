@@ -2439,6 +2439,7 @@ void tst_QTreeView::spanningItems()
     QtTestModel model(10, 10);
     model.onlyValidCalls = true;
     QTreeView view;
+    view.header()->setMinimumSectionSize(20);
     view.setModel(&model);
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
