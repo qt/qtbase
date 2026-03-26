@@ -467,17 +467,30 @@ void tst_QGroupBox::propagateFocus()
     QTRY_COMPARE(qApp->focusWidget(), static_cast<QWidget*>(&lineEdit));
 }
 
+// A helper class to expose the protected initStyleOption() for use in tests,
+// ensuring the QStyleOptionGroupBox is fully populated with the current
+// QGroupBox state when calculating subControlRect().
+class CustomGroupBox: public QGroupBox
+{
+public:
+    using QGroupBox::QGroupBox;
+    QStyleOptionGroupBox styleOption() const
+    {
+        QStyleOptionGroupBox option;
+        initStyleOption(&option);
+        return option;
+    }
+};
+
 void tst_QGroupBox::task_QTBUG_19170_ignoreMouseReleaseEvent()
 {
-    QGroupBox box;
+    CustomGroupBox box;
     box.setCheckable(true);
     box.setChecked(false);
     box.setTitle("This is a test for QTBUG-19170");
     box.show();
 
-    QStyleOptionGroupBox option;
-    option.initFrom(&box);
-    option.subControls = QStyle::SubControls(QStyle::SC_All);
+    QStyleOptionGroupBox option = box.styleOption();
     QRect rect = box.style()->subControlRect(QStyle::CC_GroupBox, &option,
                                              QStyle::SC_GroupBoxCheckBox, &box);
 
@@ -523,16 +536,14 @@ protected:
 void tst_QGroupBox::task_QTBUG_15519_propagateMouseEvents()
 {
     MouseEventTestWidget parent;
-    QGroupBox box(&parent);
+    CustomGroupBox box(&parent);
     parent.setMouseTracking(true);
     box.setMouseTracking(true);
-    box.resize(100, 100);
+    box.resize(640, 480);
     box.setTitle("This is a test for QTBUG-15519");
     box.show();
 
-    QStyleOptionGroupBox option;
-    option.initFrom(&box);
-    option.subControls = QStyle::SubControls(QStyle::SC_All);
+    QStyleOptionGroupBox option = box.styleOption();
     QRect checkBoxRect = box.style()->subControlRect(QStyle::CC_GroupBox, &option,
                                                      QStyle::SC_GroupBoxCheckBox, &box);
 
@@ -565,6 +576,9 @@ void tst_QGroupBox::task_QTBUG_15519_propagateMouseEvents()
     // With a checkbox, presses and releases to the checkbox should not propagate
 
     box.setCheckable(true);
+    option = box.styleOption();
+    checkBoxRect = box.style()->subControlRect(QStyle::CC_GroupBox, &option,
+                                                     QStyle::SC_GroupBoxCheckBox, &box);
 
     parent.reset();
     QTest::mousePress(&box, Qt::LeftButton, {}, checkBoxRect.center());
