@@ -592,7 +592,7 @@ bool QWaylandXdgSurface::requestActivate()
             // At least GNOME requires to request the token in order to get the
             // focus stealing prevention indication, so requestXdgActivationToken call
             // is still necessary in that case.
-            const auto wlWindow = focusWindow ? static_cast<QWaylandWindow*>(focusWindow->handle()) : m_window;
+            const auto wlWindow = focusWindow && focusWindow->handle() ? static_cast<QWaylandWindow*>(focusWindow->handle()) : m_window;
 
             QString appId;
             if (const auto xdgSurface = qobject_cast<QWaylandXdgSurface *>(wlWindow->shellSurface()))
