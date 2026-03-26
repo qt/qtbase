@@ -190,6 +190,12 @@ namespace QT_NAMESPACE {}
 //
 
 #if QT_ENABLE_STRICT_MODE_UP_TO >= QT_VERSION_CHECK(6, 12, 0)
+# ifndef QT_LEAN_HEADERS
+#  define QT_LEAN_HEADERS 2
+# endif
+# ifndef QT_NO_QPAIR
+#  define QT_NO_QPAIR
+# endif
 # ifndef QT_NO_SINGLE_ARGUMENT_QHASH_OVERLOAD
 #  define QT_NO_SINGLE_ARGUMENT_QHASH_OVERLOAD
 # endif

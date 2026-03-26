@@ -362,6 +362,8 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
     \row \li 6.8.0 \li The qAsConst() function (see \l{QT_NO_QASCONST})
     \row \li 6.8.0 \li File-related I/O classes have their \c{open()} functions marked \c{[[nodiscard]]} (see \l{QT_USE_NODISCARD_FILE_OPEN})
     \row\li  6.9.0 \li The qsnprintf() and qvnprintf() functions (see \l{QT_NO_QSNPRINTF}).
+    \row\li 6.12.0 \li The QPair type-alias and the qMakePair() function template (use \c{std::pair}/\c{std::make_pair}).
+    \row\li 6.12.0 \li Certain transitive includes in public Qt headers (include what you need yourself).
     \row\li 6.12.0 \li Support for qHash overloads without a seed (see \l{QT_NO_SINGLE_ARGUMENT_QHASH_OVERLOAD}).
     \endtable
 
