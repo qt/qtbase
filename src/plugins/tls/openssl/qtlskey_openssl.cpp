@@ -486,9 +486,12 @@ QByteArray doCrypt(QSslKeyPrivate::Cipher cipher, const QByteArray &data,
     output.resize(data.size() + EVP_MAX_BLOCK_LENGTH);
 
     EVP_CIPHER_CTX *ctx = q_EVP_CIPHER_CTX_new();
+    const auto ctxRaii = qScopeGuard([ctx] {
+        q_EVP_CIPHER_CTX_reset(ctx);
+        q_EVP_CIPHER_CTX_free(ctx);
+    });
     q_EVP_CIPHER_CTX_reset(ctx);
     if (q_EVP_CipherInit(ctx, type, nullptr, nullptr, enc) != 1) {
-        q_EVP_CIPHER_CTX_free(ctx);
         QTlsBackendOpenSSL::logAndClearErrorQueue();
         return {};
     }
@@ -497,19 +500,25 @@ QByteArray doCrypt(QSslKeyPrivate::Cipher cipher, const QByteArray &data,
     if (cipher == Cipher::Rc2Cbc)
         q_EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_SET_RC2_KEY_BITS, 8 * key.size(), nullptr);
 
-    q_EVP_CipherInit_ex(ctx, nullptr, nullptr,
-                        reinterpret_cast<const unsigned char *>(key.constData()),
-                        reinterpret_cast<const unsigned char *>(iv.constData()),
-                        enc);
-    q_EVP_CipherUpdate(ctx,
-        reinterpret_cast<unsigned char *>(output.data()), &len,
-        reinterpret_cast<const unsigned char *>(data.constData()), data.size());
-    q_EVP_CipherFinal(ctx,
-        reinterpret_cast<unsigned char *>(output.data()) + len, &i);
+    if (q_EVP_CipherInit_ex(ctx, nullptr, nullptr,
+                            reinterpret_cast<const unsigned char *>(key.constData()),
+                            reinterpret_cast<const unsigned char *>(iv.constData()),
+                            enc) != 1) {
+        QTlsBackendOpenSSL::logAndClearErrorQueue();
+        return {};
+    }
+    if (q_EVP_CipherUpdate(ctx,
+            reinterpret_cast<unsigned char *>(output.data()), &len,
+            reinterpret_cast<const unsigned char *>(data.constData()), data.size()) != 1) {
+        QTlsBackendOpenSSL::logAndClearErrorQueue();
+        return {};
+    }
+    if (q_EVP_CipherFinal(ctx,
+            reinterpret_cast<unsigned char *>(output.data()) + len, &i) != 1) {
+        QTlsBackendOpenSSL::logAndClearErrorQueue();
+        return {};
+    }
     len += i;
-
-    q_EVP_CIPHER_CTX_reset(ctx);
-    q_EVP_CIPHER_CTX_free(ctx);
 
     return output.left(len);
 }
