@@ -33,7 +33,9 @@ void qYieldCpu(void)
     noexcept
 #endif
 {
-#if __has_builtin(__yield)
+#if __has_builtin(__builtin_arm_yield)
+    __builtin_arm_yield();
+#elif __has_builtin(__yield)
     __yield();              // Generic
 #elif defined(_YIELD_PROCESSOR) && defined(Q_CC_MSVC)
     _YIELD_PROCESSOR();     // Generic; MSVC's <atomic>
@@ -47,9 +49,6 @@ void qYieldCpu(void)
     _mm_pause();
 #elif defined(Q_PROCESSOR_X86)
     __asm__("pause");           // hopefully asm() works in this compiler
-
-#elif __has_builtin(__builtin_arm_yield)
-    __builtin_arm_yield();
 #elif defined(Q_PROCESSOR_ARM) && Q_PROCESSOR_ARM >= 7 && defined(Q_CC_GNU)
     __asm__("yield");           // this works everywhere
 
