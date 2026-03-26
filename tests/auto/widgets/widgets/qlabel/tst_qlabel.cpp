@@ -135,6 +135,9 @@ void tst_QLabel::cleanupTestCase()
     delete testWidget;
     testWidget = 0;
     delete test_box;
+
+    const QPoint safeCursorPos = QGuiApplication::primaryScreen()->availableGeometry().bottomRight() - QPoint(40, 40);
+    QCursor::setPos(safeCursorPos);
 }
 
 void tst_QLabel::init()
