@@ -3653,6 +3653,7 @@ void tst_QSslSocket::ecdhServer()
     if (cipher.isNull())
         QSKIP("The current backend doesn't support ECDHE-RSA-AES128-SHA");
     server.ciphers = {cipher};
+    server.protocol = QSsl::TlsV1_2;
     QVERIFY(server.listen());
 
     QEventLoop loop;
@@ -3663,6 +3664,10 @@ void tst_QSslSocket::ecdhServer()
     connect(socket, SIGNAL(errorOccurred(QAbstractSocket::SocketError)), &loop, SLOT(quit()));
     connect(socket, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(ignoreErrorSlot()));
     connect(socket, SIGNAL(encrypted()), &loop, SLOT(quit()));
+
+    QSslConfiguration config = client.sslConfiguration();
+    config.setProtocol(QSsl::TlsV1_2);
+    client.setSslConfiguration(config);
 
     client.connectToHostEncrypted(QHostAddress(QHostAddress::LocalHost).toString(), server.serverPort());
 
