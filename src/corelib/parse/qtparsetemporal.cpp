@@ -3,6 +3,7 @@
 // Qt-Security score:critical reason:data-parser
 #include "private/qtparsetemporal_p.h"
 
+#include "private/qcalendarmath_p.h"
 #include "private/qlocale_p.h"
 #include "private/qstringiterator_p.h"
 #include "private/qttemporalpattern_p.h"
@@ -322,12 +323,25 @@ bool TemporalFieldMatcher::isSelfConsistent(const PartialParse &, TemporalFieldC
     return true;
 }
 
-bool TemporalFieldMatcher::resolve(PartialParse &) const
+bool TemporalFieldMatcher::resolve(PartialParse &parse) const
 {
     // Final pass, modifying parsed as needed, true if parse.result has been
     // given a value consistent with all fields of parse. Applies fully rigorous
     // checks, given what isSelfConsistent() already checked. May record flaws
     // in parse.wanton where relevant tests reveal them.
+    if (parse.yearWithinCentury >= 0) {
+        if (parse.results.year) {
+            // Previously checked by isSelfConsistent():
+            Q_ASSERT((*parse.results.year - parse.yearWithinCentury) % 100 == 0);
+        } else if (baseYear) {
+            const auto baseSplit =QRoundingDown::qDivMod<100>(*baseYear);
+            int year = baseSplit.quotient * 100 + parse.yearWithinCentury;
+            if (parse.yearWithinCentury < baseSplit.remainder)
+                year += 100;
+
+            parse.results.year = year;
+        }
+    }
     return true;
 }
 

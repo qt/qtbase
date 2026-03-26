@@ -1036,6 +1036,28 @@ void tst_QtParseTemporal::prefix_data()
         << u"42"_s << Fields{ Field{ empty, 2, Flag::Numeric, Cat::YearWithinCentury } }
         << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
         << 2 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    // Sets year, to baseYear through baseYear+99, when baseYear is provided:
+    QTest::newRow("42/yr%100:1900/C/greg/0")
+        << u"42"_s << Fields{ Field{ empty, 2, Flag::Numeric, Cat::YearWithinCentury } }
+        << QLocale::c() << QCalendar::System::Gregorian << 1900 << 0
+        << 2 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 1942;
+    QTest::newRow("42/yr%100:1941/C/greg/0")
+        << u"42"_s << Fields{ Field{ empty, 2, Flag::Numeric, Cat::YearWithinCentury } }
+        << QLocale::c() << QCalendar::System::Gregorian << 1941 << 0
+        << 2 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 1942;
+    QTest::newRow("42/yr%100:1942/C/greg/0")
+        << u"42"_s << Fields{ Field{ empty, 2, Flag::Numeric, Cat::YearWithinCentury } }
+        << QLocale::c() << QCalendar::System::Gregorian << 1942 << 0
+        << 2 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 1942;
+    QTest::newRow("42/yr%100:1943/C/greg/0")
+        << u"42"_s << Fields{ Field{ empty, 2, Flag::Numeric, Cat::YearWithinCentury } }
+        << QLocale::c() << QCalendar::System::Gregorian << 1943 << 0
+        << 2 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 2042;
+    QTest::newRow("42/yr%100:2000/C/greg/0")
+        << u"42"_s << Fields{ Field{ empty, 2, Flag::Numeric, Cat::YearWithinCentury } }
+        << QLocale::c() << QCalendar::System::Gregorian << 2000 << 0
+        << 2 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 2042;
+    // Combinations with other fields may also affect resolution, see below, after Era.
 
     // RelatedGregorianYear (when we get round to implementing it)
     // Year:
