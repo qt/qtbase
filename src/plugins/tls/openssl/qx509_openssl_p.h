@@ -72,7 +72,7 @@ public:
     static QSslError openSSLErrorToQSslError(int errorCode, const QSslCertificate &cert);
 private:
     void parseExtensions();
-    static X509CertificateExtension convertExtension(X509_EXTENSION *ext);
+    static X509CertificateExtension convertExtension(QT_OPENSSL4_CONST X509_EXTENSION *ext);
 
     X509 *x509 = nullptr;
 

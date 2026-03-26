@@ -143,10 +143,11 @@ OCSP_SINGLERESP *q_OCSP_basic_add1_status(OCSP_BASICRESP *rsp, OCSP_CERTID *cid,
                                           int status, int reason, ASN1_TIME *revtime,
                                           ASN1_TIME *thisupd, ASN1_TIME *nextupd);
 int q_OCSP_basic_sign(OCSP_BASICRESP *brsp, X509 *signer, EVP_PKEY *key, const EVP_MD *dgst,
-                      STACK_OF(X509) *certs, unsigned long flags);
+                      const STACK_OF(X509) *certs, unsigned long flags);
 OCSP_BASICRESP *q_OCSP_BASICRESP_new();
 void q_OCSP_BASICRESP_free(OCSP_BASICRESP *bs);
-OCSP_CERTID *q_OCSP_cert_to_id(const EVP_MD *dgst, X509 *subject, X509 *issuer);
+OCSP_CERTID *q_OCSP_cert_to_id(const EVP_MD *dgst, const X509 *subject,
+                               const X509 *issuer);
 void q_OCSP_CERTID_free(OCSP_CERTID *cid);
 
 #endif // QT_CONFIG(ocsp)
@@ -356,10 +357,12 @@ DEFINEFUNC(void, OCSP_RESPONSE_free, OCSP_RESPONSE *rs, rs, return, DUMMYARG)
 DEFINEFUNC7(OCSP_SINGLERESP *, OCSP_basic_add1_status, OCSP_BASICRESP *r, r, OCSP_CERTID *c, c, int s, s,
             int re, re, ASN1_TIME *rt, rt, ASN1_TIME *t, t, ASN1_TIME *n, n, return nullptr, return)
 DEFINEFUNC6(int, OCSP_basic_sign, OCSP_BASICRESP *br, br, X509 *signer, signer, EVP_PKEY *key, key,
-            const EVP_MD *dg, dg, STACK_OF(X509) *cs, cs, unsigned long flags, flags, return 0, return)
+            const EVP_MD *dg, dg, const STACK_OF(X509) *cs, cs, unsigned long flags, flags, return 0, return)
 DEFINEFUNC(OCSP_BASICRESP *, OCSP_BASICRESP_new, DUMMYARG, DUMMYARG, return nullptr, return)
 DEFINEFUNC(void, OCSP_BASICRESP_free, OCSP_BASICRESP *bs, bs, return, DUMMYARG)
-DEFINEFUNC3(OCSP_CERTID *, OCSP_cert_to_id, const EVP_MD *dgst, dgst, X509 *subject, subject, X509 *issuer, issuer, return nullptr, return)
+DEFINEFUNC3(OCSP_CERTID *, OCSP_cert_to_id, const EVP_MD *dgst, dgst,
+            const X509 *subject, subject, const X509 *issuer, issuer,
+            return nullptr, return)
 DEFINEFUNC(void, OCSP_CERTID_free, OCSP_CERTID *cid, cid, return, DUMMYARG)
 
 #endif // QT_CONFIG(ocsp)
@@ -504,9 +507,9 @@ QStringList findAllLibCrypto()
 
 #if (OPENSSL_VERSION_NUMBER >> 28) < 3
 #define QT_OPENSSL_VERSION "1_1"
-#elif OPENSSL_VERSION_MAJOR == 3 // Starting with 3.0 this define is available
-#define QT_OPENSSL_VERSION "3"
-#endif // > 3 intentionally left undefined
+#elif OPENSSL_VERSION_MAJOR >= 3
+#define QT_OPENSSL_VERSION QT_STRINGIFY(OPENSSL_VERSION_MAJOR)
+#endif
 
 struct LoadedOpenSsl {
     std::unique_ptr<QSystemLibrary> ssl, crypto;

@@ -1063,10 +1063,15 @@ void tst_QSslCertificate::toText()
     QVERIFY(f305.open(QIODevice::ReadOnly | QFile::Text));
     QByteArray txt305 = f305.readAll();
 
+    QFile f400(testDataDir + "more-certificates/cert-large-expiration-date.txt.4.0.0");
+    QVERIFY(f400.open(QIODevice::ReadOnly | QFile::Text));
+    QByteArray txt400 = f400.readAll();
+
     QString txtcert = cert.toText();
 
-    QVERIFY(QString::fromLatin1(txt111) == txtcert  ||
-            QString::fromLatin1(txt305) == txtcert);
+    QVERIFY2(QString::fromLatin1(txt111) == txtcert  ||
+            QString::fromLatin1(txt305) == txtcert  ||
+            QString::fromLatin1(txt400) == txtcert, u"Unexpected output: %1"_s.arg(txtcert).toUtf8().data());
 }
 
 void tst_QSslCertificate::multipleCommonNames()
