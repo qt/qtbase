@@ -1395,82 +1395,7 @@ function(_qt_internal_android_get_qt_paths out_qt_prefix out_qt_libs_dir out_qt_
     set(${out_qt_data_dir} "${qt_data_dir}" PARENT_SCOPE)
 endfunction()
 
-function(_qt_internal_android_dependency_xml_path target out_xml_path)
-    _qt_internal_android_get_module_library_name("${target}" module_lib_name)
-    if(module_lib_name STREQUAL "")
-        set(${out_xml_path} "" PARENT_SCOPE)
-        return()
-    endif()
 
-    _qt_internal_android_get_qt_paths(qt_prefix qt_libs_dir qt_data_dir)
-
-    _qt_internal_path_join(candidate "${qt_libs_dir}"
-        "${module_lib_name}_${CMAKE_ANDROID_ARCH_ABI}-android-dependencies.xml")
-    if(EXISTS "${candidate}")
-        set(${out_xml_path} "${candidate}" PARENT_SCOPE)
-    else()
-        set(${out_xml_path} "" PARENT_SCOPE)
-    endif()
-endfunction()
-
-function(_qt_internal_android_extract_xml_file_attrs nodes_var out_attrs)
-    set(filter "${ARGN}")
-    set(files "")
-    foreach(node IN LISTS ${nodes_var})
-        if(filter AND NOT node MATCHES "${filter}")
-            continue()
-        endif()
-        if(node MATCHES "file=\"([^\"]+)\"")
-            list(APPEND files "${CMAKE_MATCH_1}")
-        endif()
-    endforeach()
-    set(${out_attrs} "${files}" PARENT_SCOPE)
-endfunction()
-
-function(_qt_internal_android_read_dependency_xml target out_jars out_libs)
-    _qt_internal_android_dependency_xml_path("${target}" dependency_xml)
-    if(NOT dependency_xml)
-        set(${out_jars} "" PARENT_SCOPE)
-        set(${out_libs} "" PARENT_SCOPE)
-        return()
-    endif()
-
-    file(READ "${dependency_xml}" xml_contents)
-
-    string(REGEX MATCHALL "<jar[^>]*/>" jar_nodes "${xml_contents}")
-    string(REGEX MATCHALL "<lib[^>]*/>" lib_nodes "${xml_contents}")
-
-    _qt_internal_android_extract_xml_file_attrs(jar_nodes parsed_jars)
-    _qt_internal_android_extract_xml_file_attrs(lib_nodes parsed_libs)
-
-    list(REMOVE_DUPLICATES parsed_jars)
-    list(REMOVE_DUPLICATES parsed_libs)
-
-    set(${out_jars} "${parsed_jars}" PARENT_SCOPE)
-    set(${out_libs} "${parsed_libs}" PARENT_SCOPE)
-endfunction()
-
-function(_qt_internal_android_get_module_jar_dependencies target xml_jars out_var)
-    get_target_property(module_jar_dependencies "${target}"
-        QT_ANDROID_BUNDLED_JAR_DEPENDENCIES)
-    if(module_jar_dependencies STREQUAL "module_jar_dependencies-NOTFOUND")
-        set(module_jar_dependencies "")
-    endif()
-    list(APPEND module_jar_dependencies ${xml_jars})
-    list(REMOVE_DUPLICATES module_jar_dependencies)
-    set(${out_var} "${module_jar_dependencies}" PARENT_SCOPE)
-endfunction()
-
-function(_qt_internal_android_get_module_lib_dependencies target xml_libs out_var)
-    get_target_property(module_lib_dependencies "${target}"
-        QT_ANDROID_LIB_DEPENDENCIES)
-    if(module_lib_dependencies STREQUAL "module_lib_dependencies-NOTFOUND")
-        set(module_lib_dependencies "")
-    endif()
-    list(APPEND module_lib_dependencies ${xml_libs})
-    list(REMOVE_DUPLICATES module_lib_dependencies)
-    set(${out_var} "${module_lib_dependencies}" PARENT_SCOPE)
-endfunction()
 
 function(_qt_internal_android_get_clean_dependency dependency out_dependency)
     if(dependency MATCHES "^\$<.*>$")
@@ -1521,13 +1446,16 @@ function(_qt_internal_android_get_dependency_abs_path target dependency out_abs_
 endfunction()
 
 # Processes JAR dependencies for a Qt module and appends copy_commands in-place
-function(_qt_internal_android_process_module_jars target module libs_root_dir xml_jars
+function(_qt_internal_android_process_module_jars target module libs_root_dir
         inout_seen_destinations inout_copy_commands inout_copy_depends)
     set(seen_destinations "${${inout_seen_destinations}}")
     set(copy_commands "${${inout_copy_commands}}")
     set(copy_depends "${${inout_copy_depends}}")
 
-    _qt_internal_android_get_module_jar_dependencies("${module}" "${xml_jars}" module_jar_deps)
+    get_target_property(module_jar_deps "${module}" QT_ANDROID_BUNDLED_JAR_DEPENDENCIES)
+    if(NOT module_jar_deps)
+        set(module_jar_deps "")
+    endif()
     foreach(dep IN LISTS module_jar_deps)
         _qt_internal_android_get_clean_dependency("${dep}" jar_dep)
         _qt_internal_android_get_dependency_abs_path("${module}" "${jar_dep}" jar_absolute)
@@ -1581,14 +1509,17 @@ function(_qt_internal_android_process_module_self target module libs_abi_dir
     set(${inout_copy_depends} "${copy_depends}" PARENT_SCOPE)
 endfunction()
 
-# Deploys XML dependency <lib> files for a module
-function(_qt_internal_android_process_module_lib_deps target module libs_abi_dir xml_libs
+# Deploys QT_ANDROID_LIB_DEPENDENCIES for a module
+function(_qt_internal_android_process_module_lib_deps target module libs_abi_dir
         inout_seen_destinations inout_copy_commands inout_copy_depends)
     set(seen_destinations "${${inout_seen_destinations}}")
     set(copy_commands "${${inout_copy_commands}}")
     set(copy_depends "${${inout_copy_depends}}")
 
-    _qt_internal_android_get_module_lib_dependencies("${module}" "${xml_libs}" module_lib_deps)
+    get_target_property(module_lib_deps "${module}" QT_ANDROID_LIB_DEPENDENCIES)
+    if(NOT module_lib_deps)
+        set(module_lib_deps "")
+    endif()
     foreach(lib IN LISTS module_lib_deps)
         _qt_internal_android_get_clean_dependency("${lib}" lib_dep)
         _qt_internal_android_get_dependency_abs_path("${module}" "${lib_dep}" lib_absolute)
@@ -1738,10 +1669,7 @@ function(_qt_internal_android_copy_qt_dependencies target deployment_dir)
             endif()
             list(APPEND processed_modules "${module}")
 
-            _qt_internal_android_read_dependency_xml("${module}" xml_jars xml_libs)
-
-            _qt_internal_android_process_module_jars("${target}" "${module}"
-                "${libs_root_dir}" "${xml_jars}"
+            _qt_internal_android_process_module_jars("${target}" "${module}" "${libs_root_dir}"
                 seen_destinations copy_commands copy_depends)
 
             if(no_deploy_qt_libs)
@@ -1752,8 +1680,7 @@ function(_qt_internal_android_copy_qt_dependencies target deployment_dir)
                 "${libs_abi_dir}"
                 seen_destinations copy_commands copy_depends)
 
-            _qt_internal_android_process_module_lib_deps("${target}" "${module}"
-                "${libs_abi_dir}" "${xml_libs}"
+            _qt_internal_android_process_module_lib_deps("${target}" "${module}" "${libs_abi_dir}"
                 seen_destinations copy_commands copy_depends)
 
             _qt_internal_android_list_module_plugins("${module}" new_plugins)

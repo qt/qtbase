@@ -970,6 +970,9 @@ set(QT_ALLOW_MISSING_TOOLS_PACKAGES TRUE)")
         # qt_internal_android_dependencies without having to specify it again.
         set_target_properties(${target} PROPERTIES
             QT_ANDROID_MODULE_INSTALL_DIR ${INSTALL_LIBDIR})
+        set_property(TARGET ${target} APPEND PROPERTY EXPORT_PROPERTIES
+            QT_ANDROID_BUNDLED_JAR_DEPENDENCIES
+            QT_ANDROID_LIB_DEPENDENCIES)
     endif()
 
     ### fixme: cmake is missing a built-in variable for this. We want to apply it only to modules and plugins
