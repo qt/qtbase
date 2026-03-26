@@ -8,7 +8,7 @@
 #include <QLoggingCategory>
 #include <qevent.h>
 
-static const int SWAPCHAIN_BUFFER_COUNT = 2;
+static const int MAX_SWAPCHAIN_BUFFERS = 16;
 static const int FRAME_LAG = 2;
 
 class VWindow : public QWindow
@@ -60,7 +60,7 @@ private:
         VkFence cmdFence = 0;
         bool cmdFenceWaitable = false;
         VkFramebuffer fb = 0;
-    } m_imageRes[SWAPCHAIN_BUFFER_COUNT];
+    } m_imageRes[MAX_SWAPCHAIN_BUFFERS];
 
     uint32_t m_currentImage;
 
@@ -299,9 +299,11 @@ void VWindow::recreateSwapChain()
 
     VkSurfaceCapabilitiesKHR surfaceCaps;
     m_vkGetPhysicalDeviceSurfaceCapabilitiesKHR(m_vkPhysDev, m_vkSurface, &surfaceCaps);
-    uint32_t reqBufferCount = SWAPCHAIN_BUFFER_COUNT;
+    uint32_t reqBufferCount = qMax(2u, surfaceCaps.minImageCount);
     if (surfaceCaps.maxImageCount)
-        reqBufferCount = qBound(surfaceCaps.minImageCount, reqBufferCount, surfaceCaps.maxImageCount);
+        reqBufferCount = qMin(reqBufferCount, surfaceCaps.maxImageCount);
+    if (reqBufferCount > MAX_SWAPCHAIN_BUFFERS)
+        qFatal("Swap chain image count %d exceeds MAX_SWAPCHAIN_BUFFERS (%d)", reqBufferCount, MAX_SWAPCHAIN_BUFFERS);
 
     VkExtent2D bufferSize = surfaceCaps.currentExtent;
     if (bufferSize.width == uint32_t(-1))
@@ -357,9 +359,9 @@ void VWindow::recreateSwapChain()
         qFatal("Failed to get swapchain images: %d (count=%d)", err, m_swapChainBufferCount);
 
     qDebug("actual swap chain buffer count: %d", m_swapChainBufferCount);
-    Q_ASSERT(m_swapChainBufferCount <= SWAPCHAIN_BUFFER_COUNT);
+    Q_ASSERT(m_swapChainBufferCount <= MAX_SWAPCHAIN_BUFFERS);
 
-    VkImage swapChainImages[SWAPCHAIN_BUFFER_COUNT];
+    VkImage swapChainImages[MAX_SWAPCHAIN_BUFFERS];
     err = m_vkGetSwapchainImagesKHR(m_vkDev, m_swapChain, &m_swapChainBufferCount, swapChainImages);
     if (err != VK_SUCCESS)
         qFatal("Failed to get swapchain images: %d", err);
