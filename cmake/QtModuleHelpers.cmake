@@ -664,7 +664,7 @@ function(qt_internal_add_module target)
             PRECOMPILED_HEADER
     )
 
-    # Put this behind a scoped var for now, to allow disabling it per repo.
+    # Allow disabling this check per repo if needed.
     if(NOT DEFINED QT_WARN_PUBLIC_MODULE_LINKS_PRIVATE_MODULES_PUBLICLY)
         set(QT_WARN_PUBLIC_MODULE_LINKS_PRIVATE_MODULES_PUBLICLY ON)
     endif()
@@ -675,7 +675,7 @@ function(qt_internal_add_module target)
         )
         foreach(public_lib IN LISTS arg_PUBLIC_LIBRARIES)
             if("${public_lib}" MATCHES "^(Qt|${QT_CMAKE_EXPORT_NAMESPACE})::(.*)Private$")
-                message(AUTHOR_WARNING
+                message(FATAL_ERROR
                     "${target} specifies ${public_lib} in its PUBLIC_LIBRARIES option. "
                     "Public modules should not link publicly to Private modules, because that "
                     "exposes private module headers to user projects without them opting into it. "
