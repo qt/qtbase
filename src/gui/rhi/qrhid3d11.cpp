@@ -5459,7 +5459,11 @@ bool QD3D11SwapChain::createOrResize()
                 rhiD->dxgiFactory->MakeWindowAssociation(hwnd, DXGI_MWA_NO_WINDOW_CHANGES);
             }
         }
-        if (FAILED(hr)) {
+        if (hr == DXGI_ERROR_DEVICE_REMOVED || hr == DXGI_ERROR_DEVICE_RESET) {
+            qWarning("Device loss detected during swapchain creation");
+            rhiD->deviceLost = true;
+            return false;
+        } else if (FAILED(hr)) {
             qWarning("Failed to create D3D11 swapchain: %s"
                      " (Width=%u Height=%u Format=%u SampleCount=%u BufferCount=%u Scaling=%u SwapEffect=%u Stereo=%u)",
                      qPrintable(QSystemError::windowsComString(hr)),
