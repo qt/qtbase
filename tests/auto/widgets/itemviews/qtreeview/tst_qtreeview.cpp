@@ -2353,19 +2353,24 @@ void tst_QTreeView::resizeColumnToContents()
             for (int i = 0; i < 6; ++i) {
                 const QString iS = QString::number(i);
                 for (int j = 0; j < 2 ; ++j) {
-                    model.setData(model.index(i, j, idx), QLatin1String("child") + iS + QString::number(j));
+                    model.setData(model.index(i, j, idx), QLatin1String("child number ") + iS + QString::number(j));
                 }
             }
         }
     }
     QTreeView view;
     view.setModel(&model);
+    view.header()->setMinimumSectionSize(10);
+    view.setColumnWidth(0, 200);
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
+    int oldColumnSize = view.header()->sectionSize(0);
 
     view.scrollToBottom();
     view.resizeColumnToContents(0);
-    int oldColumnSize = view.header()->sectionSize(0);
+    QCOMPARE_LT(view.header()->sectionSize(0), oldColumnSize);
+
+    oldColumnSize = view.header()->sectionSize(0);
     view.setRootIndex(model.index(0, 0));
     view.resizeColumnToContents(0);        //Earlier, this gave an assert
     QCOMPARE_GT(view.header()->sectionSize(0), oldColumnSize);
