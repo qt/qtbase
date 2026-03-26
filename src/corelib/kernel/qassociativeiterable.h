@@ -133,6 +133,10 @@ public:
 
     QVariant value(const QVariant &key) const;
     void setValue(const QVariant &key, const QVariant &mapped);
+
+    // Random access iteration is broken on QAssociativeIterator.
+    // That's why this class is deprecated after all.
+    constexpr bool canRandomAccessIterate() const { return false; }
 };
 
 template<>

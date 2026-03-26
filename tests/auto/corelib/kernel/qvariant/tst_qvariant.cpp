@@ -5443,9 +5443,7 @@ static void testSequentialIteration()
 
     QCOMPARE(listIter.size(), 6);
 
-    if (listIter.canRandomAccessIterate())
-        sortIterable<QSequentialIterable::RandomAccessIterator>(&listIter);
-    else if (listIter.canReverseIterate())
+    if (listIter.canReverseIterate())
         sortIterable<QSequentialIterable::BidirectionalIterator>(&listIter);
     else if (listIter.canForwardIterate())
         return; // std::sort cannot sort with only forward iterators.

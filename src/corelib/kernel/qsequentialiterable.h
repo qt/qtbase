@@ -124,6 +124,10 @@ public:
     void removeValue(Position position = Unspecified);
 
     QMetaType valueMetaType() const;
+
+    // Random access iteration is broken on QSequentialIterator.
+    // That's why this class is deprecated after all.
+    constexpr bool canRandomAccessIterate() const { return false; }
 };
 
 template<>
