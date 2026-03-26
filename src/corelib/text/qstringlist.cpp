@@ -41,6 +41,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QStringList
     \inmodule QtCore
+    \meta qdoc-suppress-inheritance true
     \brief The QStringList class provides a list of strings.
 
     \ingroup tools

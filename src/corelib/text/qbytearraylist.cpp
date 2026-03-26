@@ -37,6 +37,7 @@ QT_BEGIN_NAMESPACE
     \class QByteArrayList
     \inmodule QtCore
     \since 5.4
+    \meta qdoc-suppress-inheritance true
     \brief The QByteArrayList class provides a list of byte arrays.
 
     \ingroup tools
