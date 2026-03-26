@@ -339,6 +339,15 @@ bool TemporalFieldMatcher::resolve(PartialParse &parse) const
             if (parse.yearWithinCentury < baseSplit.remainder)
                 year += 100;
 
+            if (parse.results.dayOfWeek && parse.results.month && parse.results.dayOfMonth) {
+                QCalendar::YearMonthDay ymd
+                    = { year, parse.results.month, parse.results.dayOfMonth };
+                QDate resolved = calendar.matchCenturyToWeekday(ymd, parse.results.dayOfWeek);
+                if (!resolved.isValid())
+                    return false;
+                year = resolved.year(calendar);
+            }
+
             parse.results.year = year;
         }
     }

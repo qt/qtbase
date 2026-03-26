@@ -1107,6 +1107,201 @@ void tst_QtParseTemporal::prefix_data()
 
     // Composite tests, combining various fields:
 
+    // Date with day of week and of month, month and two-digit year can confirm
+    // or adjust from a baseYear's century to an adjacent one:
+    QTest::newRow("260211Wed/date:1800/C/greg/0") // Ambiguous, picks forward option:
+        << u"260211Wed"_s
+        << Fields{ Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::YearWithinCentury },
+            Field{ empty, 0, Flag::Numeric | Flag::ZeroPad, Cat::Month },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::DayOfMonth },
+            Field{ empty, 0, Flag::Verbal | Flag::Short, Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 1800 << 0
+        << 9 << wall << -1 << -1 << -1 << -1 << 3 << 11 << 2 << 2026;
+    QTest::newRow("260211Wed/date:1900/C/greg/0")
+        << u"260211Wed"_s
+        << Fields{ Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::YearWithinCentury },
+            Field{ empty, 0, Flag::Numeric | Flag::ZeroPad, Cat::Month },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::DayOfMonth },
+            Field{ empty, 0, Flag::Verbal | Flag::Short, Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 1900 << 0
+        << 9 << wall << -1 << -1 << -1 << -1 << 3 << 11 << 2 << 2026;
+    QTest::newRow("260211Wed/date:2000/C/greg/0")
+        << u"260211Wed"_s
+        << Fields{ Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::YearWithinCentury },
+            Field{ empty, 0, Flag::Numeric | Flag::ZeroPad, Cat::Month },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::DayOfMonth },
+            Field{ empty, 0, Flag::Verbal | Flag::Short, Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 2000 << 0
+        << 9 << wall << -1 << -1 << -1 << -1 << 3 << 11 << 2 << 2026;
+    QTest::newRow("260211Wed/date:2100/C/greg/0")
+        << u"260211Wed"_s
+        << Fields{ Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::YearWithinCentury },
+            Field{ empty, 0, Flag::Numeric | Flag::ZeroPad, Cat::Month },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::DayOfMonth },
+            Field{ empty, 0, Flag::Verbal | Flag::Short, Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 2100 << 0
+        << 9 << wall << -1 << -1 << -1 << -1 << 3 << 11 << 2 << 2026;
+    QTest::newRow("260211Wed/date:2200/C/greg/0") // Ambiguous, picks forward option:
+        << u"260211Wed"_s
+        << Fields{ Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::YearWithinCentury },
+            Field{ empty, 0, Flag::Numeric | Flag::ZeroPad, Cat::Month },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::DayOfMonth },
+            Field{ empty, 0, Flag::Verbal | Flag::Short, Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 2200 << 0
+        << 9 << wall << -1 << -1 << -1 << -1 << 3 << 11 << 2 << 2426;
+    QTest::newRow("260211Thu/date:2000/C/greg/0") // Can shunt out of the 21st century, too.
+        << u"260211Thu"_s
+        << Fields{ Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::YearWithinCentury },
+            Field{ empty, 0, Flag::Numeric | Flag::ZeroPad, Cat::Month },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::DayOfMonth },
+            Field{ empty, 0, Flag::Verbal | Flag::Short, Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 2000 << 0
+        << 9 << wall << -1 << -1 << -1 << -1 << 4 << 11 << 2 << 1926;
+    QTest::newRow("260211Mon/date:2000/C/greg/0")
+        << u"260211Mon"_s
+        << Fields{ Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::YearWithinCentury },
+            Field{ empty, 0, Flag::Numeric | Flag::ZeroPad, Cat::Month },
+            Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::DayOfMonth },
+            Field{ empty, 0, Flag::Verbal | Flag::Short, Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 2000 << 0
+        << 9 << wall << -1 << -1 << -1 << -1 << 1 << 11 << 2 << 2126;
+
+    // Similar, with variations in the form of the week-day name:
+    QTest::newRow("26 April 8, Wednesday/date+wide-dow:1900/C/greg/0")
+        << u"26 April 8, Wednesday"_s
+        << Fields{ Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::YearWithinCentury },
+            Field{ u" "_s, 0, Flags{}, Cat::Literal },
+            Field { empty, 0, Flag::Verbal, Cat::Month },
+            Field{ u" "_s, 0, Flags{}, Cat::Literal },
+            Field { empty, 1, Flag::Numeric, Cat::DayOfMonth },
+            Field{ u","_s, 0, Flags{ Flag::SpacePad }, Cat::Literal },
+            Field{ empty, 0, Flag::Verbal | Flag::Wide, Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 1900 << 0
+        << 21 << wall << -1 << -1 << -1 << -1 << 3 << 8 << 4 << 2026;
+    QTest::newRow("26 April 8, Wednesday/date+dow:1900/C/greg/0") // greedy by default
+        << u"26 April 8, Wednesday"_s
+        << Fields{ Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::YearWithinCentury },
+            Field{ u" "_s, 0, Flags{}, Cat::Literal },
+            Field { empty, 0, Flag::Verbal, Cat::Month },
+            Field{ u" "_s, 0, Flags{}, Cat::Literal },
+            Field { empty, 1, Flag::Numeric, Cat::DayOfMonth },
+            Field{ u","_s, 0, Flags{ Flag::SpacePad }, Cat::Literal },
+            Field{ empty, 0, Flag::Verbal, Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 1900 << 0
+        << 21 << wall << -1 << -1 << -1 << -1 << 3 << 8 << 4 << 2026;
+    QTest::newRow("26 April 8, Wednesday/date+short-dow:1900/C/greg/0") // ignores nesday
+        << u"26 April 8, Wednesday"_s
+        << Fields{ Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::YearWithinCentury },
+            Field{ u" "_s, 0, Flags{}, Cat::Literal },
+            Field { empty, 0, Flag::Verbal, Cat::Month },
+            Field{ u" "_s, 0, Flags{}, Cat::Literal },
+            Field { empty, 1, Flag::Numeric, Cat::DayOfMonth },
+            Field{ u","_s, 0, Flags{ Flag::SpacePad }, Cat::Literal },
+            Field{ empty, 0, Flag::Verbal | Flag::Short, Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 1900 << 0
+        << 15 << wall << -1 << -1 << -1 << -1 << 3 << 8 << 4 << 2026;
+    QTest::newRow("26 April 8, Wedding/date+short-dow:1900/C/greg/0") // ignores ding
+        << u"26 April 8, Wedding"_s
+        << Fields{ Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::YearWithinCentury },
+            Field{ u" "_s, 0, Flags{}, Cat::Literal },
+            Field { empty, 0, Flag::Verbal, Cat::Month },
+            Field{ u" "_s, 0, Flags{}, Cat::Literal },
+            Field { empty, 1, Flag::Numeric, Cat::DayOfMonth },
+            Field{ u","_s, 0, Flags{ Flag::SpacePad }, Cat::Literal },
+            Field{ empty, 0, Flag::Verbal, Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 1900 << 0
+        << 15 << wall << -1 << -1 << -1 << -1 << 3 << 8 << 4 << 2026;
+    // Now with correct century:
+    QTest::newRow("26 April 8, Wednesday/date+wide-dow:2000/C/greg/0")
+        << u"26 April 8, Wednesday"_s
+        << Fields{ Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::YearWithinCentury },
+            Field{ u" "_s, 0, Flags{}, Cat::Literal },
+            Field { empty, 0, Flag::Verbal, Cat::Month },
+            Field{ u" "_s, 0, Flags{}, Cat::Literal },
+            Field { empty, 1, Flag::Numeric, Cat::DayOfMonth },
+            Field{ u","_s, 0, Flags{ Flag::SpacePad }, Cat::Literal },
+            Field{ empty, 0, Flag::Verbal | Flag::Wide, Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 2000 << 0
+        << 21 << wall << -1 << -1 << -1 << -1 << 3 << 8 << 4 << 2026;
+    QTest::newRow("26 April 8, Wednesday/date+dow:2000/C/greg/0") // greedy by default
+        << u"26 April 8, Wednesday"_s
+        << Fields{ Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::YearWithinCentury },
+            Field{ u" "_s, 0, Flags{}, Cat::Literal },
+            Field { empty, 0, Flag::Verbal, Cat::Month },
+            Field{ u" "_s, 0, Flags{}, Cat::Literal },
+            Field { empty, 1, Flag::Numeric, Cat::DayOfMonth },
+            Field{ u","_s, 0, Flags{ Flag::SpacePad }, Cat::Literal },
+            Field{ empty, 0, Flag::Verbal, Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 2000 << 0
+        << 21 << wall << -1 << -1 << -1 << -1 << 3 << 8 << 4 << 2026;
+    QTest::newRow("26 April 8, Wednesday/date+short-dow:2000/C/greg/0") // ignores nesday
+        << u"26 April 8, Wednesday"_s
+        << Fields{ Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::YearWithinCentury },
+            Field{ u" "_s, 0, Flags{}, Cat::Literal },
+            Field { empty, 0, Flag::Verbal, Cat::Month },
+            Field{ u" "_s, 0, Flags{}, Cat::Literal },
+            Field { empty, 1, Flag::Numeric, Cat::DayOfMonth },
+            Field{ u","_s, 0, Flags{ Flag::SpacePad }, Cat::Literal },
+            Field{ empty, 0, Flag::Verbal | Flag::Short, Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 2000 << 0
+        << 15 << wall << -1 << -1 << -1 << -1 << 3 << 8 << 4 << 2026;
+    QTest::newRow("26 April 8, Wedding/date+short-dow:2000/C/greg/0") // ignores ding
+        << u"26 April 8, Wedding"_s
+        << Fields{ Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::YearWithinCentury },
+            Field{ u" "_s, 0, Flags{}, Cat::Literal },
+            Field { empty, 0, Flag::Verbal, Cat::Month },
+            Field{ u" "_s, 0, Flags{}, Cat::Literal },
+            Field { empty, 1, Flag::Numeric, Cat::DayOfMonth },
+            Field{ u","_s, 0, Flags{ Flag::SpacePad }, Cat::Literal },
+            Field{ empty, 0, Flag::Verbal, Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 2000 << 0
+        << 15 << wall << -1 << -1 << -1 << -1 << 3 << 8 << 4 << 2026;
+    // ... and future century:
+    QTest::newRow("26 April 8, Wednesday/date+wide-dow:2100/C/greg/0")
+        << u"26 April 8, Wednesday"_s
+        << Fields{ Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::YearWithinCentury },
+            Field{ u" "_s, 0, Flags{}, Cat::Literal },
+            Field { empty, 0, Flag::Verbal, Cat::Month },
+            Field{ u" "_s, 0, Flags{}, Cat::Literal },
+            Field { empty, 1, Flag::Numeric, Cat::DayOfMonth },
+            Field{ u","_s, 0, Flags{ Flag::SpacePad }, Cat::Literal },
+            Field{ empty, 0, Flag::Verbal | Flag::Wide, Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 2100 << 0
+        << 21 << wall << -1 << -1 << -1 << -1 << 3 << 8 << 4 << 2026;
+    QTest::newRow("26 April 8, Wednesday/date+dow:2100/C/greg/0") // greedy by default
+        << u"26 April 8, Wednesday"_s
+        << Fields{ Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::YearWithinCentury },
+            Field{ u" "_s, 0, Flags{}, Cat::Literal },
+            Field { empty, 0, Flag::Verbal, Cat::Month },
+            Field{ u" "_s, 0, Flags{}, Cat::Literal },
+            Field { empty, 1, Flag::Numeric, Cat::DayOfMonth },
+            Field{ u","_s, 0, Flags{ Flag::SpacePad }, Cat::Literal },
+            Field{ empty, 0, Flag::Verbal, Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 2100 << 0
+        << 21 << wall << -1 << -1 << -1 << -1 << 3 << 8 << 4 << 2026;
+    QTest::newRow("26 April 8, Wednesday/date+short-dow:2100/C/greg/0") // ignores nesday
+        << u"26 April 8, Wednesday"_s
+        << Fields{ Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::YearWithinCentury },
+            Field{ u" "_s, 0, Flags{}, Cat::Literal },
+            Field { empty, 0, Flag::Verbal, Cat::Month },
+            Field{ u" "_s, 0, Flags{}, Cat::Literal },
+            Field { empty, 1, Flag::Numeric, Cat::DayOfMonth },
+            Field{ u","_s, 0, Flags{ Flag::SpacePad }, Cat::Literal },
+            Field{ empty, 0, Flag::Verbal | Flag::Short, Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 2100 << 0
+        << 15 << wall << -1 << -1 << -1 << -1 << 3 << 8 << 4 << 2026;
+    QTest::newRow("26 April 8, Wedding/date+short-dow:2100/C/greg/0") // ignores ding
+        << u"26 April 8, Wedding"_s
+        << Fields{ Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::YearWithinCentury },
+            Field{ u" "_s, 0, Flags{}, Cat::Literal },
+            Field { empty, 0, Flag::Verbal, Cat::Month },
+            Field{ u" "_s, 0, Flags{}, Cat::Literal },
+            Field { empty, 1, Flag::Numeric, Cat::DayOfMonth },
+            Field{ u","_s, 0, Flags{ Flag::SpacePad }, Cat::Literal },
+            Field{ empty, 0, Flag::Verbal, Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 2100 << 0
+        << 15 << wall << -1 << -1 << -1 << -1 << 3 << 8 << 4 << 2026;
+
     // Whole datetime with zone abbreviation (various combinations of fields):
     QTest::newRow("Wed, 11 Feb 15:10:22 CET 2026/null/C/greg/0")
         << u"Wed, 11 Feb 15:10:22 CET 2026"_s << Fields{}
