@@ -1287,7 +1287,8 @@ function(_qt_internal_android_collect_qt_modules target out_qt_modules)
             list(POP_BACK pending_stack)
             get_target_property(target_type "${current_target}" TYPE)
             if(target_type AND target_type MATCHES "^(SHARED|MODULE)_LIBRARY$")
-                if(current_target MATCHES "^Qt[0-9]*::" OR TARGET "Qt6::${current_target}")
+                set(qt_ns ${QT_CMAKE_EXPORT_NAMESPACE})
+                if(current_target MATCHES "^${qt_ns}::" OR TARGET "${qt_ns}::${current_target}")
                     # Skip QML plugin targets, they are deployed by _copy_qml_plugins.
                     get_target_property(is_qml_plugin "${current_target}"
                         _qt_qml_module_is_plugin_target)
