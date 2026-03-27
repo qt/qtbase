@@ -4,7 +4,7 @@
  *
  *   Signed Distance Field support for outline fonts (body).
  *
- * Copyright (C) 2020-2025 by
+ * Copyright (C) 2020-2026 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * Written by Anuj Verma.
@@ -3281,6 +3281,11 @@
       goto Exit;
     }
 
+    if ( bitmap->rows > FT_INT_MAX / bitmap->width )
+    {
+      error = FT_THROW( Array_Too_Large );
+      goto Exit;
+    }
     if ( FT_NEW_ARRAY( dists, bitmap->rows * bitmap->width ) )
       goto Exit;
 

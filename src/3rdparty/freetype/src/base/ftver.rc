@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    FreeType VERSIONINFO resource for Windows DLLs.                      */
 /*                                                                         */
-/*  Copyright (C) 2018-2025 by                                             */
+/*  Copyright (C) 2018-2026 by                                             */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -18,8 +18,8 @@
 
 #include<windows.h>
 
-#define FT_VERSION      2,14,2,0
-#define FT_VERSION_STR  "2.14.2"
+#define FT_VERSION      2,14,3,0
+#define FT_VERSION_STR  "2.14.3"
 
 VS_VERSION_INFO      VERSIONINFO
 FILEVERSION          FT_VERSION
