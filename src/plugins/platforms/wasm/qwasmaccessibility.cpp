@@ -771,16 +771,40 @@ void QWasmAccessibility::handleEventFromHtmlElement(const emscripten::val event)
     if (m_elements.find(iface) == m_elements.end())
         return;
 
-    const QString eventType = QString::fromStdString(event["type"].as<std::string>());
+    const auto eventType = QString::fromStdString(event["type"].as<std::string>());
     const auto& actionNames = QAccessibleBridgeUtils::effectiveActionNames(iface);
+    bool handled = false;
 
-    if (eventType == "focus") {
+    if (eventType == "blur") {
+        ;
+    } else if (eventType == "keydown") {
+        ;
+    } else if (eventType == "keyup") {
+        ;
+    } else if (eventType == "focus") {
         if (actionNames.contains(QAccessibleActionInterface::setFocusAction()))
             iface->actionInterface()->doAction(QAccessibleActionInterface::setFocusAction());
-    } else if (actionNames.contains(QAccessibleActionInterface::pressAction())) {
-       iface->actionInterface()->doAction(QAccessibleActionInterface::pressAction());
-    } else if (actionNames.contains(QAccessibleActionInterface::toggleAction())) {
-        iface->actionInterface()->doAction(QAccessibleActionInterface::toggleAction());
+    } else if (eventType == "click") {
+        handled = true;
+        if (actionNames.contains(QAccessibleActionInterface::pressAction()))
+            iface->actionInterface()->doAction(QAccessibleActionInterface::pressAction());
+        else if (actionNames.contains(QAccessibleActionInterface::showMenuAction()))
+            iface->actionInterface()->doAction(QAccessibleActionInterface::showMenuAction());
+    } else if (eventType == "change") {
+        handled = true;
+        // Checkboxes can have both toggle and press, in this case it is
+        // important to invoke press to handle tristate correctly
+        if (actionNames.contains(QAccessibleActionInterface::pressAction()))
+            iface->actionInterface()->doAction(QAccessibleActionInterface::pressAction());
+        else if (actionNames.contains(QAccessibleActionInterface::toggleAction()))
+            iface->actionInterface()->doAction(QAccessibleActionInterface::toggleAction());
+    } else {
+        qWarning() << " Unknown event" << eventType;
+    }
+
+    if (handled) {
+        event.call<void>("preventDefault");
+        event.call<void>("stopPropagation");
     }
 }
 
