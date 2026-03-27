@@ -149,6 +149,8 @@ class WidgetTestCase(unittest.TestCase):
         screen.click(pushbuttonc2);
         self.assertEqual(pushbuttonc1.get_attribute("aria-label"), "PushC1 - Clicked");
         self.assertEqual(pushbuttonc2.get_attribute("aria-label"), "PushC2 - Clicked");
+        w0.close();
+        clearWidgets(self._driver)
 
     def test_zz_a11y_text(self):
         screen = Screen(self._driver, ScreenPosition.FIXED,
@@ -235,6 +237,51 @@ class WidgetTestCase(unittest.TestCase):
         self.assertEqual(plaintexteditc1.get_dom_attribute("aria-label"), None);
         self.assertEqual(plaintexteditc2.get_dom_attribute("aria-label"), None);
         self.assertEqual(labeld1.get_dom_attribute("aria-label"), None);
+        w0.close();
+        clearWidgets(self._driver)
+
+    def test_zz_a11y_group_box(self):
+        screen = Screen(self._driver, ScreenPosition.FIXED,
+                    x=0, y=0, width=600, height=600)
+
+        w0 = Widget(self._driver, "w0", 4);
+        w0.show();
+
+        box1Label = screen.find_element(By.ID, f'GroupBox1');
+        box2Checkbox = screen.find_element(By.ID, f'GroupBox2');
+        label1 = screen.find_element(By.ID, f'Label1');
+        label2 = screen.find_element(By.ID, f'Label2');
+        button1 = screen.find_element(By.ID, f'Button1');
+        button2 = screen.find_element(By.ID, f'Button2');
+        checkbox2 = box2Checkbox.find_element(By.XPATH, ".//input");
+        box1LabelDB = screen.find_element(By.ID, box1Label.get_attribute("aria-describedby"));
+        box2CheckboxDB = screen.find_element(By.ID, box2Checkbox.get_attribute("aria-describedby"));
+
+        box1LabelLB = screen.find_element(By.ID, box1Label.get_attribute("aria-labelledby"));
+        box2CheckboxLB = screen.find_element(By.ID, box2Checkbox.get_attribute("aria-labelledby"));
+
+        label1DB = screen.find_element(By.ID, label1.get_attribute("aria-describedby"));
+        label2DB = screen.find_element(By.ID, label2.get_attribute("aria-describedby"));
+        button1DB = screen.find_element(By.ID, button1.get_attribute("aria-describedby"));
+        button2DB = screen.find_element(By.ID, button2.get_attribute("aria-describedby"));
+
+        self.assertEqual(box1LabelDB.get_attribute("innerHTML"), "GroupBox1 - Description");
+        self.assertEqual(box2CheckboxDB.get_attribute("innerHTML"), "GroupBox2 - Description");
+        self.assertEqual(label1DB.get_attribute("innerHTML"), "Label1 - Description");
+        self.assertEqual(label2DB.get_attribute("innerHTML"), "Label2 - Description");
+        self.assertEqual(button1DB.get_attribute("innerHTML"), "Button1 - Description");
+        self.assertEqual(button2DB.get_attribute("innerHTML"), "Button2 - Description");
+
+        self.assertEqual(box1LabelLB.get_attribute("innerHTML"), "Group1");
+        self.assertEqual(box2CheckboxLB.get_attribute("innerHTML"), "Group2");
+        self.assertEqual(checkbox2.get_attribute("type"), "checkbox");
+        self.assertEqual(checkbox2.get_attribute("checked"), "true");
+        self.assertEqual(label1.get_attribute("innerHTML"), "Label1");
+        self.assertEqual(label2.get_attribute("innerHTML"), "Label2");
+        self.assertEqual(button1.get_attribute("aria-label"), "Button1");
+        self.assertEqual(button2.get_attribute("aria-label"), "Button2");
+        w0.close();
+        clearWidgets(self._driver);
 
     #
     #  This is a manual test
@@ -253,6 +300,8 @@ class WidgetTestCase(unittest.TestCase):
         self.assertEqual(color.g, 255)
         self.assertEqual(color.b, 255)
         self.assertEqual(w0.hasFocus(), True)
+        w0.close();
+        clearWidgets(self._driver)
 
     def test_hasFocus_returnsFalse_whenSetNoFocusShowWasCalled(self):
         screen = Screen(self._driver, ScreenPosition.FIXED,
@@ -924,6 +973,20 @@ class Widget:
                 '''
             )
 
+        if isNative == 4:
+            self.driver.execute_script(
+                f'''
+                    instance.createNativeA11yGroupBoxWidgets('{self.name}');
+                '''
+            )
+
+        if isNative == 5:
+            self.driver.execute_script(
+                f'''
+                    instance.createNativeA11yComboBoxWidgets('{self.name}');
+                '''
+            )
+
         if isNative == 1:
             information = self.__window_information()
             self.screen = Screen(self.driver, screen_name=information['screen']['name'])
@@ -979,6 +1042,13 @@ class Widget:
         self.driver.execute_script(
             f'''
                 instance.showToolTipWidget('{self.name}');
+            '''
+        )
+
+    def setComboMenu(self):
+        self.driver.execute_script(
+            f'''
+                instance.setWidgetComboMenu('{self.name}');
             '''
         )
 
