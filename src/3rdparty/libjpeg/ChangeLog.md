@@ -1,3 +1,65 @@
+3.1.4
+=====
+
+### Significant changes relative to 3.1.3:
+
+1. Fixed an issue in the TurboJPEG 2.x compatibility wrapper whereby, if a
+calling program attempted to decompress a lossless JPEG image using
+`tjDecompress2()` with decompression scaling, the decompressed image was
+unexpectedly unscaled.  This could have led to a buffer overrun if the caller
+allocated the packed-pixel destination buffer based on the assumption that the
+decompressed image would be scaled down.
+
+2. The SIMD dispatchers now use `getauxval()` or `elf_aux_info()`, if
+available, to detect support for Neon and AltiVec instructions on AArch32 and
+PowerPC Linux, Android, and *BSD systems.
+
+3. Hardened the libjpeg API against hypothetical applications that may
+erroneously set one of the exposed quantization table values to 0 just before
+calling `jpeg_start_compress()`.  (This would never happen in a
+correctly-written program, because `jpeg_add_quant_table()` clamps all values
+less than 1.)
+
+4. Fixed a division-by-zero error that occurred when attempting to use the
+jpegtran `-drop` option with a specially-crafted malformed drop image
+(specifically an image in which one or more of the quantization table values
+was 0.)
+
+5. Fixed an issue in the TurboJPEG API library's data destination manager that
+manifested as:
+
+     - a memory leak that occurred if a pre-allocated JPEG destination buffer
+was passed to `tj3Compress*()` or `tj3Transform()`, `TJPARAM_NOREALLOC` was
+unset, and it was necessary for the library to re-allocate the buffer to
+accommodate the destination image, and
+     - a potential caller double free that occurred if pre-allocated JPEG
+destination buffers were passed to `tj3Transform()`, multiple lossless
+transform operations were performed, and it was necessary for the library to
+re-allocate the second buffer to accommodate the second destination image.
+
+6. Fixed an issue in `tj3Transform()` whereby, if `TJPARAM_SAVEMARKERS` was set
+to 2 or 4, `TJXOPT_COPYNONE` was not specified, an ICC profile was extracted
+from the source image, and another ICC profile was associated with the
+TurboJPEG instance using `tj3SetICCProfile()`, both profiles were embedded in
+the destination image.  The documented API behavior is for `TJXOPT_COPYNONE` to
+take precedence over `TJPARAM_SAVEMARKERS` and for `TJPARAM_SAVEMARKERS` to
+take precedence over the associated ICC profile.  Thus, `tj3Transform()` now
+ignores the associated ICC profile unless `TJXOPT_COPYNONE` is specified or
+`TJPARAM_SAVEMARKERS` is set to something other than 2 or 4.
+
+7. Fixed an oversight in the libjpeg API whereby, if a calling application
+manually set `cinfo.Ss` (the predictor selection value) to a value less than 1
+or greater than 7 after calling `jpeg_enable_lossless()` and prior to calling
+`jpeg_start_compress()`, an incorrect (all white) lossless JPEG image was
+silently generated.
+
+8. Further hardened the TurboJPEG Java API against hypothetical applications
+that may erroneously pass huge values to one of the compression, YUV encoding,
+decompression, YUV decoding, or packed-pixel image I/O methods, leading to
+signed integer overflow in the JNI wrapper's buffer size checks that rendered
+those checks ineffective.
+
+
 3.1.3
 =====
 
@@ -91,8 +153,8 @@ instance, and setting `TJPARAM_LOSSLESS`/`TJ.PARAM_LOSSLESS` to `0` now
 disables lossless JPEG compression in a TurboJPEG instance.
 
 
-3.1 beta1
-=========
+3.0.90 (3.1 beta1)
+==================
 
 ### Significant changes relative to 3.0.4:
 
@@ -2227,8 +2289,8 @@ be used to build both OS X and iOS applications.
 
 ### Significant changes relative to 1.1.1:
 
-1. Added a Java wrapper for the TurboJPEG API.  See [java/README](java/README)
-for more details.
+1. Added a Java wrapper for the TurboJPEG API.  See
+[java/README.md](java/README.md) for more details.
 
 2. The TurboJPEG API can now be used to scale down images during
 decompression.
