@@ -434,6 +434,7 @@ emscripten::val QWasmAccessibility::createHtmlElement(QAccessibleInterface *ifac
             addEventListener(iface, element, "change");
         } break;
 
+        case QAccessible::Dial:
         case QAccessible::SpinBox:
         case QAccessible::Slider: {
             const auto minValue = iface->valueInterface()->minimumValue().toString().toStdString();
@@ -447,6 +448,7 @@ emscripten::val QWasmAccessibility::createHtmlElement(QAccessibleInterface *ifac
             setAttribute(element, "max", maxValue);
             setAttribute(element, "step", stepValue);
             setProperty(element, "value", value);
+            addEventListener(iface, element, "change");
         } break;
 
         case QAccessible::PageTabList:{
@@ -470,11 +472,17 @@ emscripten::val QWasmAccessibility::createHtmlElement(QAccessibleInterface *ifac
         } break;
 
         case QAccessible::ScrollBar: {
-            const std::string valueString =
-                    iface->valueInterface()->currentValue().toString().toStdString();
+            // Events for scrollbars are handled by Qt, but setFocusPolicy must
+            // be called for this to happen.
+            const auto minValue = iface->valueInterface()->minimumValue().toString().toStdString();
+            const auto maxValue = iface->valueInterface()->maximumValue().toString().toStdString();
+            const auto value = iface->valueInterface()->currentValue().toString().toStdString();
             element = document.call<emscripten::val>("createElement", std::string("div"));
+            setAttribute(element, "tabindex", "0");
             setAttribute(element, "role", "scrollbar");
-            setAttribute(element, "aria-valuenow", valueString);
+            setAttribute(element, "aria-valuemin", minValue);
+            setAttribute(element, "aria-valuemax", maxValue);
+            setAttribute(element, "aria-valuenow", value);
             setHtmlElementOrientation(element, iface);
             addEventListener(iface, element, "change");
         } break;
@@ -725,6 +733,28 @@ void QWasmAccessibility::handleListItemUpdate(QAccessibleEvent *event)
     } break;
     default:
         qCDebug(lcQpaAccessibility) << "TODO: implement handleListItemUpdate for event" << event->type();
+    break;
+    }
+}
+
+void QWasmAccessibility::handleDialUpdate(QAccessibleEvent *event)
+{
+    switch (event->type()) {
+    case QAccessible::ObjectCreated:
+    case QAccessible::StateChanged: {
+    } break;
+    case QAccessible::Focus:
+    case QAccessible::NameChanged: {
+        setNamedAttribute(event->accessibleInterface(), "aria-label", QAccessible::Name);
+    } break;
+    case QAccessible::ValueChanged: {
+        QAccessibleInterface *accessible = event->accessibleInterface();
+        const emscripten::val element = getHtmlElement(accessible);
+        std::string valueString = accessible->valueInterface()->currentValue().toString().toStdString();
+        setProperty(element, "value", valueString);
+    } break;
+    default:
+        qDebug() << "TODO: implement handleSpinBoxUpdate for event" << event->type();
     break;
     }
 }
@@ -1373,6 +1403,9 @@ void QWasmAccessibility::handleUpdateByInterfaceRole(QAccessibleEvent *event)
        handleToolUpdate(event);
     case QAccessible::RadioButton:
         handleRadioButtonUpdate(event);
+    break;
+    case QAccessible::Dial:
+        handleDialUpdate(event);
     break;
     case QAccessible::SpinBox:
         handleSpinBoxUpdate(event);

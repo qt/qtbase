@@ -89,6 +89,7 @@ private:
     void handleToolUpdate(QAccessibleEvent *event);
     void handleLineEditUpdate(QAccessibleEvent *event);
     void handleRadioButtonUpdate(QAccessibleEvent *event);
+    void handleDialUpdate(QAccessibleEvent *event);
     void handleSpinBoxUpdate(QAccessibleEvent *event);
     void handlePageTabUpdate(QAccessibleEvent *event);
     void handleSliderUpdate(QAccessibleEvent *event);
