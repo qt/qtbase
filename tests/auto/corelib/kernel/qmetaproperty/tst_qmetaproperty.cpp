@@ -54,6 +54,8 @@ private slots:
     void enumsFlags();
     void notifySignalIndex();
     void qflags();
+    void metaEnums_data();
+    void metaEnums();
 
 public:
     enum EnumType { EnumType1 };
@@ -124,6 +126,66 @@ void tst_QMetaProperty::qflags()
     QVERIFY(prop.isFlagType());
 }
 
+class MyClass : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(EnumFlags1 prop1 READ prop1)
+    Q_PROPERTY(Enum1 plainEnum1 READ plainEnum1)
+
+    Q_PROPERTY(QFlags<Enum2> prop2 READ prop2)
+    Q_PROPERTY(Enum2 plainEnum2 READ plainEnum2)
+
+    Q_PROPERTY(Qt::Alignment outOfScope READ outOfScope)
+
+public:
+    enum Enum1 { A = 0x01, B = 0x02 };
+    Q_DECLARE_FLAGS(EnumFlags1, Enum1)
+    Q_FLAG(EnumFlags1)
+    EnumFlags1 prop1() const { return A; }
+    Enum1 plainEnum1() const { return A; }
+
+    enum Enum2 { C, D };
+    Q_DECLARE_FLAGS(EnumFlags2, Enum2)
+    Q_FLAG(EnumFlags2)
+    QFlags<Enum2> prop2() const { return C; }
+    Enum2 plainEnum2() const { return C; }
+
+    Qt::Alignment outOfScope() const { return {}; }
+};
+
+void tst_QMetaProperty::metaEnums_data()
+{
+    QTest::addColumn<QByteArray>("propName");
+    QTest::addColumn<bool>("isFlag");
+
+    auto addRow = [](const char *name, bool isFlag) {
+        QTest::newRow(name) << QByteArray(name) << isFlag;
+    };
+
+    addRow("prop1", true);
+    addRow("prop2", true);
+    addRow("plainEnum1", true); // `true` because we have Q_FLAG(EnumFlags1), no Q_ENUM
+    addRow("plainEnum2", true); // ditto
+    addRow("outOfScope", true);
+}
+
+void tst_QMetaProperty::metaEnums()
+{
+    QFETCH(QByteArray, propName);
+    QFETCH(bool, isFlag);
+
+
+    const QMetaObject *mo = &MyClass::staticMetaObject;
+    const int idx = mo->indexOfProperty(propName.constData());
+    QCOMPARE_NE(idx, -1);
+    QMetaProperty prop = mo->property(idx);
+    QEXPECT_FAIL("prop2",
+                 "QMetaProperty with flags type using plain 'QFlags<E>' (no scope prefix) "
+                 "can't find the meta-enum data",
+                 Abort);
+    QVERIFY(prop.isEnumType());
+    QCOMPARE(prop.isFlagType(), isFlag);
+}
 
 class MyGadget {
     Q_GADGET
