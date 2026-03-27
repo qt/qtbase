@@ -188,3 +188,5 @@ The following table describes the mapping of configure options to CMake argument
 | -force-system-libs                    | -DFEATURE_force_system_libs=ON                    |                                                                 |
 | -ffmpeg-dir <dir>                     | -DFFMPEG_DIR=<dir>                                | FFmpeg development libraries directory                          |
 | -ffmpeg-deploy                        | -DQT_DEPLOY_FFMPEG=ON                             | FFmpeg binaries will be copied to Qt's install directory        |
+| -default-media-backend <name>         | -DQT_DEFAULT_MEDIA_BACKEND=<name>                 | Default multimedia decoding&encoding backend                    |
+
