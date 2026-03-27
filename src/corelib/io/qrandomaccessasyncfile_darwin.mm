@@ -540,29 +540,6 @@ void QRandomAccessAsyncFileNativeBackend::executeFlush(OperationInfo &opInfo)
     });
 }
 
-// stolen from qfsfileengine_unix.cpp
-static inline int openModeToOpenFlags(QIODevice::OpenMode mode)
-{
-    int oflags = QT_OPEN_RDONLY;
-#ifdef QT_LARGEFILE_SUPPORT
-    oflags |= QT_OPEN_LARGEFILE;
-#endif
-    if ((mode & QIODevice::ReadWrite) == QIODevice::ReadWrite)
-        oflags = QT_OPEN_RDWR;
-    else if (mode & QIODevice::WriteOnly)
-        oflags = QT_OPEN_WRONLY;
-    if ((mode & QIODevice::WriteOnly)
-        && !(mode & QIODevice::ExistingOnly)) // QFSFileEnginePrivate::openModeCanCreate(mode))
-        oflags |= QT_OPEN_CREAT;
-    if (mode & QIODevice::Truncate)
-        oflags |= QT_OPEN_TRUNC;
-    if (mode & QIODevice::Append)
-        oflags |= QT_OPEN_APPEND;
-    if (mode & QIODevice::NewOnly)
-        oflags |= QT_OPEN_EXCL;
-    return oflags;
-}
-
 void QRandomAccessAsyncFileNativeBackend::executeOpen(OperationInfo &opInfo)
 {
     if (m_fileState != FileState::OpenPending) {
@@ -572,7 +549,7 @@ void QRandomAccessAsyncFileNativeBackend::executeOpen(OperationInfo &opInfo)
 
     const QByteArray nativeName = QFile::encodeName(QDir::toNativeSeparators(m_filePath));
 
-    int openFlags = openModeToOpenFlags(m_openMode);
+    int openFlags = QFSFileEnginePrivate::openModeToOpenFlags(m_openMode);
     openFlags |= O_NONBLOCK;
 
     auto sharedThis = this;

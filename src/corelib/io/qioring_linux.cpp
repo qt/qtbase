@@ -10,6 +10,7 @@ QT_REQUIRE_CONFIG(liburing);
 #include <QtCore/qscopedvaluerollback.h>
 #include <QtCore/private/qcore_unix_p.h>
 #include <QtCore/private/qfiledevice_p.h>
+#include <QtCore/private/qfsfileengine_p.h>
 
 #include <liburing.h>
 #include <sys/mman.h>
@@ -459,35 +460,6 @@ static void prepareFileReadWrite(io_uring_sqe *sqe, const QIORingRequestOffsetFd
     sqe->addr = quint64(address);
 }
 
-// @todo: stolen from qfsfileengine_unix.cpp
-static inline int openModeToOpenFlags(QIODevice::OpenMode mode)
-{
-    int oflags = QT_OPEN_RDONLY;
-#ifdef QT_LARGEFILE_SUPPORT
-    oflags |= QT_OPEN_LARGEFILE;
-#endif
-
-    if ((mode & QIODevice::ReadWrite) == QIODevice::ReadWrite)
-        oflags = QT_OPEN_RDWR;
-    else if (mode & QIODevice::WriteOnly)
-        oflags = QT_OPEN_WRONLY;
-
-    if ((mode & QIODevice::WriteOnly)
-        && !(mode & QIODevice::ExistingOnly)) // QFSFileEnginePrivate::openModeCanCreate(mode))
-        oflags |= QT_OPEN_CREAT;
-
-    if (mode & QIODevice::Truncate)
-        oflags |= QT_OPEN_TRUNC;
-
-    if (mode & QIODevice::Append)
-        oflags |= QT_OPEN_APPEND;
-
-    if (mode & QIODevice::NewOnly)
-        oflags |= QT_OPEN_EXCL;
-
-    return oflags;
-}
-
 /*!
     \internal
     Because vectored operations are also affected by the maximum size
@@ -598,7 +570,7 @@ auto QIORing::prepareRequest(io_uring_sqe *sqe, GenericRequestType &request) -> 
                 *openRequest = request.template requestData<Operation::Open>();
         sqe->fd = AT_FDCWD; // Could also support proper openat semantics
         sqe->addr = reinterpret_cast<quint64>(openRequest->path.native().c_str());
-        sqe->open_flags = openModeToOpenFlags(openRequest->flags);
+        sqe->open_flags = QFSFileEnginePrivate::openModeToOpenFlags(openRequest->flags);
         auto &mode = sqe->len;
         mode = 0666; // With an explicit API we can use QtPrivate::toMode_t() for this
         break;
