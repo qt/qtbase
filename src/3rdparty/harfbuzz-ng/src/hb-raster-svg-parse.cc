@@ -216,7 +216,7 @@ svg_arc_endpoint_to_center (float x1, float y1, float x2, float y2,
   auto angle = [] (float ux, float uy, float vx, float vy) -> float {
     float dot = ux * vx + uy * vy;
     float len = sqrtf ((ux * ux + uy * uy) * (vx * vx + vy * vy));
-    if (!(len > 0.f) || !isfinite (len))
+    if (!(len > 0.f) || !std::isfinite (len))
       return 0.f;
     float a = acosf (hb_clamp (dot / len, -1.f, 1.f));
     if (ux * vy - uy * vx < 0.f) a = -a;
@@ -246,9 +246,12 @@ hb_raster_svg_parse_path_data (hb_svg_str_t d, hb_draw_funcs_t *dfuncs, void *dr
   float last_cx = 0, last_cy = 0;
   char last_cmd = 0;
   char cmd = 0;
+  unsigned segments = 0;
 
   while (fp.p < fp.end)
   {
+    if (unlikely (segments++ >= HB_SVG_MAX_PATH_SEGMENTS))
+      break;
     fp.skip_ws_comma ();
     if (fp.p >= fp.end) break;
 

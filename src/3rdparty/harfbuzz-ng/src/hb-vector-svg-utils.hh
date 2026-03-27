@@ -51,7 +51,7 @@ hb_svg_append_len (hb_vector_t<char> *buf,
 static inline bool
 hb_svg_append_c (hb_vector_t<char> *buf, char c)
 {
-  return !!buf->push (c);
+  return buf->push_or_fail (c);
 }
 
 static inline void
@@ -80,7 +80,7 @@ hb_svg_append_num (hb_vector_t<char> *buf,
   if (fabsf (v) < rounded_zero_threshold)
     v = 0.f;
 
-  if (!(v == v) || !isfinite (v))
+  if (!(v == v) || !std::isfinite (v))
   {
     hb_svg_append_c (buf, '0');
     return;

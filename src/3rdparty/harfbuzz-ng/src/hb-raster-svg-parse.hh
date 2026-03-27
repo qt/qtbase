@@ -202,6 +202,19 @@ struct hb_svg_xml_parser_t
   }
 };
 
+static inline void
+svg_skip_subtree (hb_svg_xml_parser_t &parser)
+{
+  int depth = 1;
+  while (depth > 0)
+  {
+    hb_svg_token_type_t tok = parser.next ();
+    if (tok == SVG_TOKEN_EOF) break;
+    if (tok == SVG_TOKEN_CLOSE_TAG) depth--;
+    else if (tok == SVG_TOKEN_OPEN_TAG) depth++;
+  }
+}
+
 static inline hb_svg_str_t
 svg_pick_attr_or_style (const hb_svg_xml_parser_t &parser,
                         hb_svg_str_t style_value,
@@ -320,7 +333,7 @@ struct hb_svg_float_parser_t
     }
     buf[n] = '\0';
     float v = strtof (buf, nullptr);
-    return isfinite (v) ? v : 0.f;
+    return std::isfinite (v) ? v : 0.f;
   }
 
   bool next_flag ()

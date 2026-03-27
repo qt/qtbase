@@ -27,8 +27,10 @@
 
 #include "../../../hb-open-type.hh"
 #include "../../../hb-blob.hh"
+#include "../../../hb-limits.hh"
 #include "../../../hb-map.hh"
 #include "../../../hb-paint.hh"
+#include "../../../hb-zlib.hh"
 #include <ctype.h>
 #include <string.h>
 
@@ -42,6 +44,50 @@
 
 namespace OT {
 
+static inline hb_blob_t *
+hb_ot_svg_reference_normalized_blob (hb_blob_t *image,
+                                     const char **svg,
+                                     unsigned *len)
+{
+  hb_blob_t *blob = hb_blob_reference (image);
+  unsigned data_len = 0;
+  const char *data = hb_blob_get_data (blob, &data_len);
+
+  if (!data || !data_len)
+    goto fail;
+
+  if (hb_blob_is_gzip (data, data_len))
+  {
+    uint32_t expected_size = 0;
+    if (hb_gzip_get_uncompressed_size (data, data_len, &expected_size) &&
+        unlikely ((size_t) expected_size > (size_t) HB_SVG_MAX_DOCUMENT_SIZE))
+      goto fail;
+
+    hb_blob_t *uncompressed = hb_blob_decompress_gzip (blob,
+                                                       HB_SVG_MAX_DOCUMENT_SIZE);
+    if (!uncompressed)
+      goto fail;
+
+    hb_blob_destroy (blob);
+    blob = uncompressed;
+    data = hb_blob_get_data (blob, &data_len);
+    if (!data || !data_len)
+      goto fail;
+  }
+
+  if (unlikely ((size_t) data_len > (size_t) HB_SVG_MAX_DOCUMENT_SIZE))
+    goto fail;
+
+  if (svg) *svg = data;
+  if (len) *len = data_len;
+  return blob;
+
+fail:
+  hb_blob_destroy (blob);
+  if (svg) *svg = nullptr;
+  if (len) *len = 0;
+  return nullptr;
+}
 
 struct SVGDocumentIndexEntry
 {
@@ -386,8 +432,10 @@ parse_cache_entries_linear (const char *svg,
 {
   open_elem_t stack[MAX_DEPTH];
   unsigned depth = 0;
-  defs_entries->alloc (256);
-  id_entries->alloc (256);
+  if (unlikely (!defs_entries->alloc (256) ||
+                !glyph_spans->alloc (256) ||
+                !id_entries->alloc (256)))
+    return false;
 
   unsigned defs_depth = 0;
   unsigned i = 0;
@@ -470,30 +518,24 @@ parse_cache_entries_linear (const char *svg,
 
       if (e.id.len)
       {
-        auto *id_slot = id_entries->push ();
-        if (unlikely (!id_slot))
+        if (unlikely (!id_entries->push_or_fail (id_entry_t {e.id, (uint32_t) e.start, (uint32_t) end})))
           return false;
-        *id_slot = {e.id, (uint32_t) e.start, (uint32_t) end};
 
         if (e.in_defs_content)
         {
-          auto *slot = defs_entries->push ();
-          if (unlikely (!slot))
+          if (unlikely (!defs_entries->push_or_fail ()))
             return false;
-          slot->id = e.id;
-          slot->start = e.start;
-          slot->end = end;
+          auto &slot = defs_entries->tail ();
+          slot.id = e.id;
+          slot.start = e.start;
+          slot.end = end;
         }
 
         hb_codepoint_t gid;
         if (parse_glyph_id_span (e.id, &gid))
         {
-          auto *span = glyph_spans->push ();
-          if (unlikely (!span))
+          if (unlikely (!glyph_spans->push_or_fail (glyph_entry_t {gid, (uint32_t) e.start, (uint32_t) end})))
             return false;
-          span->glyph = gid;
-          span->start = (uint32_t) e.start;
-          span->end = (uint32_t) end;
         }
       }
 
@@ -518,30 +560,24 @@ parse_cache_entries_linear (const char *svg,
       unsigned end = gt + 1;
       if (e.id.len)
       {
-        auto *id_slot = id_entries->push ();
-        if (unlikely (!id_slot))
+        if (unlikely (!id_entries->push_or_fail (id_entry_t {e.id, (uint32_t) e.start, (uint32_t) end})))
           return false;
-        *id_slot = {e.id, (uint32_t) e.start, (uint32_t) end};
 
         if (e.in_defs_content)
         {
-          auto *slot = defs_entries->push ();
-          if (unlikely (!slot))
+          if (unlikely (!defs_entries->push_or_fail ()))
             return false;
-          slot->id = e.id;
-          slot->start = e.start;
-          slot->end = end;
+          auto &slot = defs_entries->tail ();
+          slot.id = e.id;
+          slot.start = e.start;
+          slot.end = end;
         }
 
         hb_codepoint_t gid;
         if (parse_glyph_id_span (e.id, &gid))
         {
-          auto *span = glyph_spans->push ();
-          if (unlikely (!span))
+          if (unlikely (!glyph_spans->push_or_fail (glyph_entry_t {gid, (uint32_t) e.start, (uint32_t) end})))
             return false;
-          span->glyph = gid;
-          span->start = (uint32_t) e.start;
-          span->end = (uint32_t) end;
         }
       }
     }
@@ -742,6 +778,8 @@ SVG::accelerator_t::doc_cache_get_glyph_span (const svg_doc_cache_t *doc,
   const auto &span = doc->glyph_spans.arrayZ[glyph - doc->start_glyph];
   if (span.first == INVALID_SPAN)
     return false;
+  if (unlikely (span.first > span.second || span.second > doc->len))
+    return false;
 
   if (start) *start = span.first;
   if (end) *end = span.second;
@@ -758,6 +796,8 @@ SVG::accelerator_t::doc_cache_find_id_span (const svg_doc_cache_t *doc,
     return false;
   hb_pair_t<uint32_t, uint32_t> *span = nullptr;
   if (!doc->id_spans.has (id, &span))
+    return false;
+  if (unlikely (span->first > span->second || span->second > doc->len))
     return false;
   if (start) *start = span->first;
   if (end) *end = span->second;
