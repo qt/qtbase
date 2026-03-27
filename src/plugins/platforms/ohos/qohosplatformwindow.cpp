@@ -506,6 +506,11 @@ std::shared_ptr<void> QOhosPlatformWindow::setSurfaceConsumer(
     if (view == nullptr)
         return nullptr;
 
+    if (surfaceConsumerContext->thread() != view->thread() || view->thread() != QThread::currentThread()) {
+        qOhosReportFatalErrorAndAbort(
+            "%s: inter-thread surface consumer connection is not supported", Q_FUNC_INFO);
+    }
+
     auto sharedSurfaceConsumer = QtOhos::moveToSharedPtr(std::move(surfaceConsumer));
 
     auto *surface = view->surfaceOrNull();
@@ -533,7 +538,7 @@ std::shared_ptr<void> QOhosPlatformWindow::setSurfaceConsumer(
 
     auto surfaceStatusChangedConnectionHandle = QObject::connect(
         view, &QOhosView::surfaceStatusChanged, surfaceConsumerContext,
-        [view = QPointer<QOhosView>(view), sharedSurfaceConsumer]() {
+        [view = QPointer<QOhosView>(view), sharedSurfaceConsumer](const QOhosOptional<QSize> &) {
             if (view == nullptr)
                 return;
             auto *surface = view->surfaceOrNull();
@@ -541,7 +546,7 @@ std::shared_ptr<void> QOhosPlatformWindow::setSurfaceConsumer(
                 surface != nullptr
                     ? QOhosOptional<void *>(surface->nativeWindow())
                     : makeEmptyQOhosOptional());
-        }, Qt::QueuedConnection);
+        });
 
     if (!surfaceStatusChangedConnectionHandle) {
         qCCritical(
