@@ -18,7 +18,7 @@ static QStringList imageMimeFormats(const QList<QByteArray> &imageFormats)
     QStringList formats;
     formats.reserve(imageFormats.size());
     for (const auto &format : imageFormats)
-        formats.append("image/"_L1 + QLatin1StringView(format.toLower()));
+        formats.append(QLatin1StringView(format));
 
     //put png at the front because it is best
     const qsizetype pngIndex = formats.indexOf("image/png"_L1);
@@ -30,12 +30,12 @@ static QStringList imageMimeFormats(const QList<QByteArray> &imageFormats)
 
 static inline QStringList imageReadMimeFormats()
 {
-    return imageMimeFormats(QImageReader::supportedImageFormats());
+    return imageMimeFormats(QImageReader::supportedMimeTypes());
 }
 
 static inline QStringList imageWriteMimeFormats()
 {
-    return imageMimeFormats(QImageWriter::supportedImageFormats());
+    return imageMimeFormats(QImageWriter::supportedMimeTypes());
 }
 
 QInternalMimeData::QInternalMimeData()
@@ -189,12 +189,15 @@ QByteArray QInternalMimeData::renderDataHelper(const QString &mimeType, const QM
                 buf.open(QBuffer::WriteOnly);
                 // would there not be PNG ??
                 image.save(&buf, "PNG");
-            } else if (auto prefix = "image/"_L1; mimeType.startsWith(prefix) && data->hasImage()) {
+            } else if (mimeType.startsWith("image/"_L1) && data->hasImage()) {
                 QImage image = qvariant_cast<QImage>(data->imageData());
                 QBuffer buf(&ba);
                 buf.open(QBuffer::WriteOnly);
-                auto type = QStringView{mimeType}.sliced(prefix.size());
-                image.save(&buf, type.toLatin1().toUpper().constData());
+                const auto types = QImageWriter::imageFormatsForMimeType(mimeType.toLatin1());
+                if (!types.isEmpty())
+                    image.save(&buf, types.first().constData());
+                else
+                    qWarning("Qt: Unsupported image format %s", qPrintable(mimeType));
             }
         }
     }
