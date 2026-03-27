@@ -4,7 +4,7 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1991-2020, Thomas G. Lane, Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2010, 2012-2024, D. R. Commander.
+ * Copyright (C) 2010, 2012-2026, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -37,11 +37,11 @@
  */
 
 #define JCOPYRIGHT1 \
-  "Copyright (C) 2009-2024 D. R. Commander\n" \
+  "Copyright (C) 2009-2026 D. R. Commander\n" \
+  "Copyright (C) 2015-2016, 2018, 2022 Matthieu Darbois\n" \
+  "Copyright (C) 2019-2021 Arm Limited\n" \
   "Copyright (C) 2015, 2020 Google, Inc.\n" \
-  "Copyright (C) 2019-2020 Arm Limited\n" \
-  "Copyright (C) 2015-2016, 2018 Matthieu Darbois\n" \
-  "Copyright (C) 2011-2016 Siarhei Siamashka\n" \
+  "Copyright (C) 2011, 2014, 2016 Siarhei Siamashka\n" \
   "Copyright (C) 2015 Intel Corporation\n"
 #define JCOPYRIGHT2 \
   "Copyright (C) 2013-2014 Linaro Limited\n" \
@@ -53,4 +53,4 @@
   "Copyright (C) 1991-2020 Thomas G. Lane, Guido Vollbeding\n"
 
 #define JCOPYRIGHT_SHORT \
-  "Copyright (C) 1991-2025 The libjpeg-turbo Project and many others"
+  "Copyright (C) 1991-2026 The libjpeg-turbo Project and many others"
