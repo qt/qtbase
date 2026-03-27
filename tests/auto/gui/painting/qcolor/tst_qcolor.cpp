@@ -5,8 +5,11 @@
 #include <QTest>
 #include <QFloat16>
 
+#include <functional>
+#include <limits>
 #include <limits.h>
 
+#include <QRegularExpression>
 #include <qcolor.h>
 #include <qdebug.h>
 #include <private/qcolortrclut_p.h>
@@ -18,6 +21,9 @@
 #else
 # define DEPRECATED_IN_6_6(...)
 #endif
+
+using ColorFactory = std::function<QColor()>;
+Q_DECLARE_METATYPE(ColorFactory)
 
 class tst_QColor : public QObject
 {
@@ -97,6 +103,26 @@ private slots:
 
     void qcolorprofile_data();
     void qcolorprofile();
+
+    void rangeChecksRgb_data();
+    void rangeChecksRgb();
+    void rangeChecksRgbF_data();
+    void rangeChecksRgbF();
+    void rangeChecksHsv_data();
+    void rangeChecksHsv();
+    void rangeChecksHsvF_data();
+    void rangeChecksHsvF();
+    void rangeChecksHsl_data();
+    void rangeChecksHsl();
+    void rangeChecksHslF_data();
+    void rangeChecksHslF();
+    void rangeChecksCmyk_data();
+    void rangeChecksCmyk();
+    void rangeChecksCmykF_data();
+    void rangeChecksCmykF();
+    void nanChecks_data();
+    void nanChecks();
+    void nanChecksChannels();
 };
 
 // Testing get/set functions
@@ -1881,6 +1907,623 @@ void tst_QColor::qcolorprofile()
     }
     QVERIFY(error <= tolerance);
 }
+
+
+void tst_QColor::rangeChecksRgb_data()
+{
+    QTest::addColumn<ColorFactory>("makeColor");
+    QTest::addColumn<QByteArray>("warning");
+    QTest::addColumn<bool>("valid");
+
+    // QColor constructor: out-of-range parameters produce an invalid color without warnings
+    QTest::newRow("ctor(256,0,0)")         << ColorFactory([] { return QColor(256, 0, 0); })         << QByteArray{} << false;
+    QTest::newRow("ctor(-1,0,0)")          << ColorFactory([] { return QColor(-1, 0, 0); })          << QByteArray{} << false;
+    QTest::newRow("ctor(0,-1,0)")          << ColorFactory([] { return QColor(0, -1, 0); })          << QByteArray{} << false;
+    QTest::newRow("ctor(0,256,0)")         << ColorFactory([] { return QColor(0, 256, 0); })         << QByteArray{} << false;
+    QTest::newRow("ctor(0,0,-1)")          << ColorFactory([] { return QColor(0, 0, -1); })          << QByteArray{} << false;
+    QTest::newRow("ctor(0,0,256)")         << ColorFactory([] { return QColor(0, 0, 256); })         << QByteArray{} << false;
+    QTest::newRow("ctor(0,0,0,-1)")        << ColorFactory([] { return QColor(0, 0, 0, -1); })       << QByteArray{} << false;
+    QTest::newRow("ctor(0,0,0,256)")       << ColorFactory([] { return QColor(0, 0, 0, 256); })      << QByteArray{} << false;
+    QTest::newRow("ctor(0,0,0,0)")         << ColorFactory([] { return QColor(0, 0, 0, 0); })        << QByteArray{} << true;
+    QTest::newRow("ctor(255,255,255,255)") << ColorFactory([] { return QColor(255, 255, 255, 255); }) << QByteArray{} << true;
+
+    // fromRgb: out-of-range parameters produce an invalid color with a warning
+    const QByteArray w = "QColor::fromRgb: RGB parameters out of range";
+    QTest::newRow("fromRgb(-1,0,0)")     << ColorFactory([] { return QColor::fromRgb(-1, 0, 0); })     << w << false;
+    QTest::newRow("fromRgb(256,0,0)")    << ColorFactory([] { return QColor::fromRgb(256, 0, 0); })    << w << false;
+    QTest::newRow("fromRgb(0,-1,0)")     << ColorFactory([] { return QColor::fromRgb(0, -1, 0); })     << w << false;
+    QTest::newRow("fromRgb(0,256,0)")    << ColorFactory([] { return QColor::fromRgb(0, 256, 0); })    << w << false;
+    QTest::newRow("fromRgb(0,0,-1)")     << ColorFactory([] { return QColor::fromRgb(0, 0, -1); })     << w << false;
+    QTest::newRow("fromRgb(0,0,256)")    << ColorFactory([] { return QColor::fromRgb(0, 0, 256); })    << w << false;
+    QTest::newRow("fromRgb(0,0,0,-1)")   << ColorFactory([] { return QColor::fromRgb(0, 0, 0, -1); })  << w << false;
+    QTest::newRow("fromRgb(0,0,0,256)")  << ColorFactory([] { return QColor::fromRgb(0, 0, 0, 256); }) << w << false;
+}
+
+void tst_QColor::rangeChecksRgb()
+{
+    QTest::failOnWarning();
+    QFETCH(ColorFactory, makeColor);
+    QFETCH(QByteArray, warning);
+    QFETCH(bool, valid);
+
+    if (!warning.isEmpty())
+        QTest::ignoreMessage(QtWarningMsg, warning.constData());
+    QCOMPARE(makeColor().isValid(), valid);
+}
+
+void tst_QColor::rangeChecksRgbF_data()
+{
+    QTest::addColumn<ColorFactory>("makeColor");
+    QTest::addColumn<QByteArray>("warning");
+    QTest::addColumn<bool>("valid");
+    QTest::addColumn<QColor::Spec>("expectedSpec");
+
+    // fromRgbF: alpha out of range → invalid color
+    QTest::newRow("fromRgbF(0,0,0,-0.1f)")
+        << ColorFactory([] { return QColor::fromRgbF(0, 0, 0, -0.1f); })
+        << QByteArray("QColor::fromRgbF: invalid value -0.1") << false << QColor::Invalid;
+    QTest::newRow("fromRgbF(0,0,0,1.1f)")
+        << ColorFactory([] { return QColor::fromRgbF(0, 0, 0, 1.1f); })
+        << QByteArray("QColor::fromRgbF: invalid value 1.1") << false << QColor::Invalid;
+
+    // fromRgbF: r/g/b out of [0,1] → ExtendedRgb (valid)
+    QTest::newRow("fromRgbF(2,0,0) ExtendedRgb")
+        << ColorFactory([] { return QColor::fromRgbF(2.0f, 0.0f, 0.0f); })
+        << QByteArray{} << true << QColor::ExtendedRgb;
+    QTest::newRow("fromRgbF(-0.5,0,0) ExtendedRgb")
+        << ColorFactory([] { return QColor::fromRgbF(-0.5f, 0.0f, 0.0f); })
+        << QByteArray{} << true << QColor::ExtendedRgb;
+
+    // setRgbF: alpha out of range → invalid color
+    QTest::newRow("setRgbF(0,0,0,-0.1f)")
+        << ColorFactory([] { QColor c(Qt::red); c.setRgbF(0.0f, 0.0f, 0.0f, -0.1f); return c; })
+        << QByteArray("QColor::setRgbF: invalid value -0.1") << false << QColor::Invalid;
+    QTest::newRow("setRgbF(0,0,0,1.1f)")
+        << ColorFactory([] { QColor c(Qt::red); c.setRgbF(0.0f, 0.0f, 0.0f, 1.1f); return c; })
+        << QByteArray("QColor::setRgbF: invalid value 1.1") << false << QColor::Invalid;
+}
+
+void tst_QColor::rangeChecksRgbF()
+{
+    QTest::failOnWarning();
+    QFETCH(ColorFactory, makeColor);
+    QFETCH(QByteArray, warning);
+    QFETCH(bool, valid);
+    QFETCH(QColor::Spec, expectedSpec);
+
+    if (!warning.isEmpty())
+        QTest::ignoreMessage(QtWarningMsg, warning.constData());
+    const QColor c = makeColor();
+    QCOMPARE(c.isValid(), valid);
+    if (expectedSpec != QColor::Invalid)
+        QCOMPARE(c.spec(), expectedSpec);
+}
+
+void tst_QColor::rangeChecksHsv_data()
+{
+    QTest::addColumn<ColorFactory>("makeColor");
+    QTest::addColumn<QByteArray>("warning");
+    QTest::addColumn<bool>("valid");
+    QTest::addColumn<int>("expectedHue");
+
+    constexpr int noHueCheck = std::numeric_limits<int>::min();
+    const QByteArray fw = "QColor::fromHsv: HSV parameters out of range";
+    const QByteArray sw = "QColor::setHsv: HSV parameters out of range";
+
+    // fromHsv: out-of-range parameters → invalid
+    QTest::newRow("fromHsv(360,0,0)")    << ColorFactory([] { return QColor::fromHsv(360, 0, 0); })    << fw << false << noHueCheck;
+    QTest::newRow("fromHsv(-2,0,0)")     << ColorFactory([] { return QColor::fromHsv(-2, 0, 0); })     << fw << false << noHueCheck;
+    QTest::newRow("fromHsv(0,-1,0)")     << ColorFactory([] { return QColor::fromHsv(0, -1, 0); })     << fw << false << noHueCheck;
+    QTest::newRow("fromHsv(0,256,0)")    << ColorFactory([] { return QColor::fromHsv(0, 256, 0); })    << fw << false << noHueCheck;
+    QTest::newRow("fromHsv(0,0,-1)")     << ColorFactory([] { return QColor::fromHsv(0, 0, -1); })     << fw << false << noHueCheck;
+    QTest::newRow("fromHsv(0,0,256)")    << ColorFactory([] { return QColor::fromHsv(0, 0, 256); })    << fw << false << noHueCheck;
+    QTest::newRow("fromHsv(0,0,0,-1)")   << ColorFactory([] { return QColor::fromHsv(0, 0, 0, -1); })  << fw << false << noHueCheck;
+    QTest::newRow("fromHsv(0,0,0,256)")  << ColorFactory([] { return QColor::fromHsv(0, 0, 0, 256); }) << fw << false << noHueCheck;
+    // fromHsv: valid boundary values
+    QTest::newRow("fromHsv(-1,0,0,0)")       << ColorFactory([] { return QColor::fromHsv(-1, 0, 0, 0); })       << QByteArray{} << true << noHueCheck;
+    QTest::newRow("fromHsv(359,255,255,255)") << ColorFactory([] { return QColor::fromHsv(359, 255, 255, 255); }) << QByteArray{} << true << noHueCheck;
+
+    // setHsv: out-of-range parameters → invalid
+    QTest::newRow("setHsv(-2,0,0)")      << ColorFactory([] { QColor c(Qt::red); c.setHsv(-2, 0, 0); return c; })      << sw << false << noHueCheck;
+    // hue=360 wraps to 0 (valid)
+    QTest::newRow("setHsv(360,0,0)")     << ColorFactory([] { QColor c(Qt::red); c.setHsv(360, 0, 0); return c; })     << QByteArray{} << true << 0;
+    QTest::newRow("setHsv(0,-1,0)")      << ColorFactory([] { QColor c(Qt::red); c.setHsv(0, -1, 0); return c; })      << sw << false << noHueCheck;
+    QTest::newRow("setHsv(0,256,0)")     << ColorFactory([] { QColor c(Qt::red); c.setHsv(0, 256, 0); return c; })     << sw << false << noHueCheck;
+    QTest::newRow("setHsv(0,0,-1)")      << ColorFactory([] { QColor c(Qt::red); c.setHsv(0, 0, -1); return c; })      << sw << false << noHueCheck;
+    QTest::newRow("setHsv(0,0,256)")     << ColorFactory([] { QColor c(Qt::red); c.setHsv(0, 0, 256); return c; })     << sw << false << noHueCheck;
+    QTest::newRow("setHsv(0,0,0,-1)")    << ColorFactory([] { QColor c(Qt::red); c.setHsv(0, 0, 0, -1); return c; })   << sw << false << noHueCheck;
+    QTest::newRow("setHsv(0,0,0,256)")   << ColorFactory([] { QColor c(Qt::red); c.setHsv(0, 0, 0, 256); return c; })  << sw << false << noHueCheck;
+    // setHsv: valid boundary values (with hue check)
+    QTest::newRow("setHsv(-1,0,0)")      << ColorFactory([] { QColor c(Qt::red); c.setHsv(-1, 0, 0); return c; })      << QByteArray{} << true << -1;
+    QTest::newRow("setHsv(359,255,255)") << ColorFactory([] { QColor c(Qt::red); c.setHsv(359, 255, 255); return c; }) << QByteArray{} << true << 359;
+}
+
+void tst_QColor::rangeChecksHsv()
+{
+    QTest::failOnWarning();
+    QFETCH(ColorFactory, makeColor);
+    QFETCH(QByteArray, warning);
+    QFETCH(bool, valid);
+    QFETCH(int, expectedHue);
+
+    if (!warning.isEmpty())
+        QTest::ignoreMessage(QtWarningMsg, warning.constData());
+    const QColor c = makeColor();
+    QCOMPARE(c.isValid(), valid);
+    if (expectedHue != std::numeric_limits<int>::min())
+        QCOMPARE(c.hsvHue(), expectedHue);
+}
+
+void tst_QColor::rangeChecksHsvF_data()
+{
+    QTest::addColumn<ColorFactory>("makeColor");
+    QTest::addColumn<QByteArray>("warning");
+    QTest::addColumn<bool>("valid");
+
+    const QByteArray fw = "QColor::fromHsvF: HSV parameters out of range";
+    const QByteArray sw = "QColor::setHsvF: HSV parameters out of range";
+
+    // fromHsvF: out-of-range parameters → invalid
+    QTest::newRow("fromHsvF(-1.1,0,0)")    << ColorFactory([] { return QColor::fromHsvF(-1.1f, 0.0f, 0.0f); })    << fw << false;
+    QTest::newRow("fromHsvF(-0.1,0,0)")    << ColorFactory([] { return QColor::fromHsvF(-0.1f, 0.0f, 0.0f); })    << fw << false;
+    QTest::newRow("fromHsvF(1.1,0,0)")     << ColorFactory([] { return QColor::fromHsvF(1.1f, 0.0f, 0.0f); })     << fw << false;
+    QTest::newRow("fromHsvF(0,-0.1,0)")    << ColorFactory([] { return QColor::fromHsvF(0.0f, -0.1f, 0.0f); })    << fw << false;
+    QTest::newRow("fromHsvF(0,1.1,0)")     << ColorFactory([] { return QColor::fromHsvF(0.0f, 1.1f, 0.0f); })     << fw << false;
+    QTest::newRow("fromHsvF(0,0,-0.1)")    << ColorFactory([] { return QColor::fromHsvF(0.0f, 0.0f, -0.1f); })    << fw << false;
+    QTest::newRow("fromHsvF(0,0,1.1)")     << ColorFactory([] { return QColor::fromHsvF(0.0f, 0.0f, 1.1f); })     << fw << false;
+    QTest::newRow("fromHsvF(0,0,0,-0.1)")  << ColorFactory([] { return QColor::fromHsvF(0.0f, 0.0f, 0.0f, -0.1f); }) << fw << false;
+    QTest::newRow("fromHsvF(0,0,0,1.1)")   << ColorFactory([] { return QColor::fromHsvF(0.0f, 0.0f, 0.0f, 1.1f); })  << fw << false;
+    // fromHsvF: valid boundary values
+    QTest::newRow("fromHsvF(-1,0,0,0)")    << ColorFactory([] { return QColor::fromHsvF(-1.0f, 0.0f, 0.0f, 0.0f); }) << QByteArray{} << true;
+    QTest::newRow("fromHsvF(0,0,0,0)")     << ColorFactory([] { return QColor::fromHsvF(0.0f, 0.0f, 0.0f, 0.0f); })  << QByteArray{} << true;
+    QTest::newRow("fromHsvF(1,1,1,1)")     << ColorFactory([] { return QColor::fromHsvF(1.0f, 1.0f, 1.0f, 1.0f); })  << QByteArray{} << true;
+
+    // setHsvF: out-of-range parameters → invalid
+    QTest::newRow("setHsvF(-1.1,0,0)")   << ColorFactory([] { QColor c(Qt::red); c.setHsvF(-1.1f, 0.0f, 0.0f); return c; })   << sw << false;
+    QTest::newRow("setHsvF(-0.1,0,0)")   << ColorFactory([] { QColor c(Qt::red); c.setHsvF(-0.1f, 0.0f, 0.0f); return c; })   << sw << false;
+    QTest::newRow("setHsvF(1.1,0,0)")    << ColorFactory([] { QColor c(Qt::red); c.setHsvF(1.1f, 0.0f, 0.0f); return c; })    << sw << false;
+    QTest::newRow("setHsvF(0,-1.1,0)")   << ColorFactory([] { QColor c(Qt::red); c.setHsvF(0.0f, -1.1f, 0.0f); return c; })   << sw << false;
+    QTest::newRow("setHsvF(0,1.1,0)")    << ColorFactory([] { QColor c(Qt::red); c.setHsvF(0.0f, 1.1f, 0.0f); return c; })    << sw << false;
+    QTest::newRow("setHsvF(0,0,-1.1)")   << ColorFactory([] { QColor c(Qt::red); c.setHsvF(0.0f, 0.0f, -1.1f); return c; })   << sw << false;
+    QTest::newRow("setHsvF(0,0,1.1)")    << ColorFactory([] { QColor c(Qt::red); c.setHsvF(0.0f, 0.0f, 1.1f); return c; })    << sw << false;
+    QTest::newRow("setHsvF(0,0,0,-1.1)") << ColorFactory([] { QColor c(Qt::red); c.setHsvF(0.0f, 0.0f, 0.0f, -1.1f); return c; }) << sw << false;
+    QTest::newRow("setHsvF(0,0,0,1.1)")  << ColorFactory([] { QColor c(Qt::red); c.setHsvF(0.0f, 0.0f, 0.0f, 1.1f); return c; })  << sw << false;
+    // setHsvF: valid boundary values
+    QTest::newRow("setHsvF(-1,0,0,0)")   << ColorFactory([] { QColor c(Qt::red); c.setHsvF(-1.0f, 0.0f, 0.0f, 0.0f); return c; }) << QByteArray{} << true;
+    QTest::newRow("setHsvF(0,0,0,0)")    << ColorFactory([] { QColor c(Qt::red); c.setHsvF(0.0f, 0.0f, 0.0f, 0.0f); return c; })  << QByteArray{} << true;
+    QTest::newRow("setHsvF(1,1,1,1)")    << ColorFactory([] { QColor c(Qt::red); c.setHsvF(1.0f, 1.0f, 1.0f, 1.0f); return c; })  << QByteArray{} << true;
+}
+
+void tst_QColor::rangeChecksHsvF()
+{
+    QTest::failOnWarning();
+    QFETCH(ColorFactory, makeColor);
+    QFETCH(QByteArray, warning);
+    QFETCH(bool, valid);
+
+    if (!warning.isEmpty())
+        QTest::ignoreMessage(QtWarningMsg, warning.constData());
+    QCOMPARE(makeColor().isValid(), valid);
+}
+
+void tst_QColor::rangeChecksHsl_data()
+{
+    QTest::addColumn<ColorFactory>("makeColor");
+    QTest::addColumn<QByteArray>("warning");
+    QTest::addColumn<bool>("valid");
+    QTest::addColumn<int>("expectedHue");
+
+    constexpr int noHueCheck = std::numeric_limits<int>::min();
+    const QByteArray fw = "QColor::fromHsl: HSL parameters out of range";
+    const QByteArray sw = "QColor::setHsl: HSL parameters out of range";
+
+    // fromHsl: out-of-range parameters → invalid
+    QTest::newRow("fromHsl(-2,0,0)")     << ColorFactory([] { return QColor::fromHsl(-2, 0, 0); })     << fw << false << noHueCheck;
+    QTest::newRow("fromHsl(360,0,0)")    << ColorFactory([] { return QColor::fromHsl(360, 0, 0); })    << fw << false << noHueCheck;
+    QTest::newRow("fromHsl(0,-1,0)")     << ColorFactory([] { return QColor::fromHsl(0, -1, 0); })     << fw << false << noHueCheck;
+    QTest::newRow("fromHsl(0,256,0)")    << ColorFactory([] { return QColor::fromHsl(0, 256, 0); })    << fw << false << noHueCheck;
+    QTest::newRow("fromHsl(0,0,-1)")     << ColorFactory([] { return QColor::fromHsl(0, 0, -1); })     << fw << false << noHueCheck;
+    QTest::newRow("fromHsl(0,0,256)")    << ColorFactory([] { return QColor::fromHsl(0, 0, 256); })    << fw << false << noHueCheck;
+    QTest::newRow("fromHsl(0,0,0,-1)")   << ColorFactory([] { return QColor::fromHsl(0, 0, 0, -1); })  << fw << false << noHueCheck;
+    QTest::newRow("fromHsl(0,0,0,256)")  << ColorFactory([] { return QColor::fromHsl(0, 0, 0, 256); }) << fw << false << noHueCheck;
+    // fromHsl: valid boundary values
+    QTest::newRow("fromHsl(-1,0,0)")     << ColorFactory([] { return QColor::fromHsl(-1, 0, 0); })     << QByteArray{} << true << noHueCheck;
+    QTest::newRow("fromHsl(359,255,255)") << ColorFactory([] { return QColor::fromHsl(359, 255, 255); }) << QByteArray{} << true << noHueCheck;
+
+    // setHsl: out-of-range parameters → invalid
+    QTest::newRow("setHsl(-2,0,0)")      << ColorFactory([] { QColor c(Qt::red); c.setHsl(-2, 0, 0); return c; })      << sw << false << noHueCheck;
+    // hue=360 wraps to 0 (valid)
+    QTest::newRow("setHsl(360,0,0)")     << ColorFactory([] { QColor c(Qt::red); c.setHsl(360, 0, 0); return c; })     << QByteArray{} << true << 0;
+    QTest::newRow("setHsl(0,-1,0)")      << ColorFactory([] { QColor c(Qt::red); c.setHsl(0, -1, 0); return c; })      << sw << false << noHueCheck;
+    QTest::newRow("setHsl(0,256,0)")     << ColorFactory([] { QColor c(Qt::red); c.setHsl(0, 256, 0); return c; })     << sw << false << noHueCheck;
+    QTest::newRow("setHsl(0,0,-1)")      << ColorFactory([] { QColor c(Qt::red); c.setHsl(0, 0, -1); return c; })      << sw << false << noHueCheck;
+    QTest::newRow("setHsl(0,0,256)")     << ColorFactory([] { QColor c(Qt::red); c.setHsl(0, 0, 256); return c; })     << sw << false << noHueCheck;
+    QTest::newRow("setHsl(0,0,0,-1)")    << ColorFactory([] { QColor c(Qt::red); c.setHsl(0, 0, 0, -1); return c; })   << sw << false << noHueCheck;
+    QTest::newRow("setHsl(0,0,0,256)")   << ColorFactory([] { QColor c(Qt::red); c.setHsl(0, 0, 0, 256); return c; })  << sw << false << noHueCheck;
+    // setHsl: valid boundary values (with hue check)
+    QTest::newRow("setHsl(-1,0,0)")      << ColorFactory([] { QColor c(Qt::red); c.setHsl(-1, 0, 0); return c; })      << QByteArray{} << true << -1;
+    QTest::newRow("setHsl(359,255,255)") << ColorFactory([] { QColor c(Qt::red); c.setHsl(359, 255, 255); return c; }) << QByteArray{} << true << 359;
+}
+
+void tst_QColor::rangeChecksHsl()
+{
+    QTest::failOnWarning();
+    QFETCH(ColorFactory, makeColor);
+    QFETCH(QByteArray, warning);
+    QFETCH(bool, valid);
+    QFETCH(int, expectedHue);
+
+    if (!warning.isEmpty())
+        QTest::ignoreMessage(QtWarningMsg, warning.constData());
+    const QColor c = makeColor();
+    QCOMPARE(c.isValid(), valid);
+    if (expectedHue != std::numeric_limits<int>::min())
+        QCOMPARE(c.hslHue(), expectedHue);
+}
+
+void tst_QColor::rangeChecksHslF_data()
+{
+    QTest::addColumn<ColorFactory>("makeColor");
+    QTest::addColumn<QByteArray>("warning");
+    QTest::addColumn<bool>("valid");
+
+    const QByteArray fw = "QColor::fromHslF: HSL parameters out of range";
+    const QByteArray sw = "QColor::setHslF: HSL parameters out of range";
+
+    // fromHslF: out-of-range parameters → invalid
+    QTest::newRow("fromHslF(-1.1,0,0)")   << ColorFactory([] { return QColor::fromHslF(-1.1f, 0.0f, 0.0f); })    << fw << false;
+    QTest::newRow("fromHslF(-0.1,0,0)")   << ColorFactory([] { return QColor::fromHslF(-0.1f, 0.0f, 0.0f); })    << fw << false;
+    QTest::newRow("fromHslF(1.1,0,0)")    << ColorFactory([] { return QColor::fromHslF(1.1f, 0.0f, 0.0f); })     << fw << false;
+    QTest::newRow("fromHslF(0,-0.1,0)")   << ColorFactory([] { return QColor::fromHslF(0.0f, -0.1f, 0.0f); })    << fw << false;
+    QTest::newRow("fromHslF(0,1.1,0)")    << ColorFactory([] { return QColor::fromHslF(0.0f, 1.1f, 0.0f); })     << fw << false;
+    QTest::newRow("fromHslF(0,0,-0.1)")   << ColorFactory([] { return QColor::fromHslF(0.0f, 0.0f, -0.1f); })    << fw << false;
+    QTest::newRow("fromHslF(0,0,1.1)")    << ColorFactory([] { return QColor::fromHslF(0.0f, 0.0f, 1.1f); })     << fw << false;
+    QTest::newRow("fromHslF(0,0,0,-0.1)") << ColorFactory([] { return QColor::fromHslF(0.0f, 0.0f, 0.0f, -0.1f); }) << fw << false;
+    QTest::newRow("fromHslF(0,0,0,1.1)")  << ColorFactory([] { return QColor::fromHslF(0.0f, 0.0f, 0.0f, 1.1f); })  << fw << false;
+    // fromHslF: valid boundary values
+    QTest::newRow("fromHslF(-1,0,0,0)")   << ColorFactory([] { return QColor::fromHslF(-1.0f, 0.0f, 0.0f, 0.0f); }) << QByteArray{} << true;
+    QTest::newRow("fromHslF(0,0,0,0)")    << ColorFactory([] { return QColor::fromHslF(0.0f, 0.0f, 0.0f, 0.0f); })  << QByteArray{} << true;
+    QTest::newRow("fromHslF(1,1,1,1)")    << ColorFactory([] { return QColor::fromHslF(1.0f, 1.0f, 1.0f, 1.0f); })  << QByteArray{} << true;
+
+    // setHslF: out-of-range parameters → invalid
+    QTest::newRow("setHslF(-1.1,0,0)")    << ColorFactory([] { QColor c(Qt::red); c.setHslF(-1.1f, 0.0f, 0.0f); return c; })    << sw << false;
+    QTest::newRow("setHslF(-0.1,0,0)")    << ColorFactory([] { QColor c(Qt::red); c.setHslF(-0.1f, 0.0f, 0.0f); return c; })    << sw << false;
+    QTest::newRow("setHslF(1.1,0,0)")     << ColorFactory([] { QColor c(Qt::red); c.setHslF(1.1f, 0.0f, 0.0f); return c; })     << sw << false;
+    QTest::newRow("setHslF(0,-1.1,0)")    << ColorFactory([] { QColor c(Qt::red); c.setHslF(0.0f, -1.1f, 0.0f); return c; })    << sw << false;
+    QTest::newRow("setHslF(0,1.1,0)")     << ColorFactory([] { QColor c(Qt::red); c.setHslF(0.0f, 1.1f, 0.0f); return c; })     << sw << false;
+    QTest::newRow("setHslF(0,0,-1.1)")    << ColorFactory([] { QColor c(Qt::red); c.setHslF(0.0f, 0.0f, -1.1f); return c; })    << sw << false;
+    QTest::newRow("setHslF(0,0,1.1)")     << ColorFactory([] { QColor c(Qt::red); c.setHslF(0.0f, 0.0f, 1.1f); return c; })     << sw << false;
+    QTest::newRow("setHslF(0,0,0,-1.1)")  << ColorFactory([] { QColor c(Qt::red); c.setHslF(0.0f, 0.0f, 0.0f, -1.1f); return c; }) << sw << false;
+    QTest::newRow("setHslF(0,0,0,1.1)")   << ColorFactory([] { QColor c(Qt::red); c.setHslF(0.0f, 0.0f, 0.0f, 1.1f); return c; })  << sw << false;
+    // setHslF: valid boundary values
+    QTest::newRow("setHslF(-1,0,0,0)")    << ColorFactory([] { QColor c(Qt::red); c.setHslF(-1.0f, 0.0f, 0.0f, 0.0f); return c; }) << QByteArray{} << true;
+    QTest::newRow("setHslF(0,0,0,0)")     << ColorFactory([] { QColor c(Qt::red); c.setHslF(0.0f, 0.0f, 0.0f, 0.0f); return c; })  << QByteArray{} << true;
+    QTest::newRow("setHslF(1,1,1,1)")     << ColorFactory([] { QColor c(Qt::red); c.setHslF(1.0f, 1.0f, 1.0f, 1.0f); return c; })  << QByteArray{} << true;
+}
+
+void tst_QColor::rangeChecksHslF()
+{
+    QTest::failOnWarning();
+    QFETCH(ColorFactory, makeColor);
+    QFETCH(QByteArray, warning);
+    QFETCH(bool, valid);
+
+    if (!warning.isEmpty())
+        QTest::ignoreMessage(QtWarningMsg, warning.constData());
+    QCOMPARE(makeColor().isValid(), valid);
+}
+
+void tst_QColor::rangeChecksCmyk_data()
+{
+    QTest::addColumn<ColorFactory>("makeColor");
+    QTest::addColumn<QByteArray>("warning");
+    QTest::addColumn<bool>("valid");
+
+    const QByteArray fw = "QColor::fromCmyk: CMYK parameters out of range";
+    const QByteArray sw = "QColor::setCmyk: CMYK parameters out of range";
+
+    // fromCmyk: out-of-range parameters → invalid
+    QTest::newRow("fromCmyk(-1,0,0,0)")    << ColorFactory([] { return QColor::fromCmyk(-1, 0, 0, 0); })    << fw << false;
+    QTest::newRow("fromCmyk(256,0,0,0)")   << ColorFactory([] { return QColor::fromCmyk(256, 0, 0, 0); })   << fw << false;
+    QTest::newRow("fromCmyk(0,-1,0,0)")    << ColorFactory([] { return QColor::fromCmyk(0, -1, 0, 0); })    << fw << false;
+    QTest::newRow("fromCmyk(0,256,0,0)")   << ColorFactory([] { return QColor::fromCmyk(0, 256, 0, 0); })   << fw << false;
+    QTest::newRow("fromCmyk(0,0,-1,0)")    << ColorFactory([] { return QColor::fromCmyk(0, 0, -1, 0); })    << fw << false;
+    QTest::newRow("fromCmyk(0,0,256,0)")   << ColorFactory([] { return QColor::fromCmyk(0, 0, 256, 0); })   << fw << false;
+    QTest::newRow("fromCmyk(0,0,0,-1)")    << ColorFactory([] { return QColor::fromCmyk(0, 0, 0, -1); })    << fw << false;
+    QTest::newRow("fromCmyk(0,0,0,256)")   << ColorFactory([] { return QColor::fromCmyk(0, 0, 0, 256); })   << fw << false;
+    QTest::newRow("fromCmyk(0,0,0,0,-1)")  << ColorFactory([] { return QColor::fromCmyk(0, 0, 0, 0, -1); }) << fw << false;
+    QTest::newRow("fromCmyk(0,0,0,0,256)") << ColorFactory([] { return QColor::fromCmyk(0, 0, 0, 0, 256); }) << fw << false;
+    // fromCmyk: valid boundary values
+    QTest::newRow("fromCmyk(0,0,0,0,0)")         << ColorFactory([] { return QColor::fromCmyk(0, 0, 0, 0, 0); })         << QByteArray{} << true;
+    QTest::newRow("fromCmyk(255,255,255,255,255)") << ColorFactory([] { return QColor::fromCmyk(255, 255, 255, 255, 255); }) << QByteArray{} << true;
+
+    // setCmyk: out-of-range parameters → invalid
+    QTest::newRow("setCmyk(-1,0,0,0)")    << ColorFactory([] { QColor c(Qt::red); c.setCmyk(-1, 0, 0, 0); return c; })    << sw << false;
+    QTest::newRow("setCmyk(256,0,0,0)")   << ColorFactory([] { QColor c(Qt::red); c.setCmyk(256, 0, 0, 0); return c; })   << sw << false;
+    QTest::newRow("setCmyk(0,-1,0,0)")    << ColorFactory([] { QColor c(Qt::red); c.setCmyk(0, -1, 0, 0); return c; })    << sw << false;
+    QTest::newRow("setCmyk(0,256,0,0)")   << ColorFactory([] { QColor c(Qt::red); c.setCmyk(0, 256, 0, 0); return c; })   << sw << false;
+    QTest::newRow("setCmyk(0,0,-1,0)")    << ColorFactory([] { QColor c(Qt::red); c.setCmyk(0, 0, -1, 0); return c; })    << sw << false;
+    QTest::newRow("setCmyk(0,0,256,0)")   << ColorFactory([] { QColor c(Qt::red); c.setCmyk(0, 0, 256, 0); return c; })   << sw << false;
+    QTest::newRow("setCmyk(0,0,0,-1)")    << ColorFactory([] { QColor c(Qt::red); c.setCmyk(0, 0, 0, -1); return c; })    << sw << false;
+    QTest::newRow("setCmyk(0,0,0,256)")   << ColorFactory([] { QColor c(Qt::red); c.setCmyk(0, 0, 0, 256); return c; })   << sw << false;
+    QTest::newRow("setCmyk(0,0,0,0,-1)")  << ColorFactory([] { QColor c(Qt::red); c.setCmyk(0, 0, 0, 0, -1); return c; }) << sw << false;
+    QTest::newRow("setCmyk(0,0,0,0,256)") << ColorFactory([] { QColor c(Qt::red); c.setCmyk(0, 0, 0, 0, 256); return c; }) << sw << false;
+    // setCmyk: valid boundary values
+    QTest::newRow("setCmyk(0,0,0,0,0)")         << ColorFactory([] { QColor c(Qt::red); c.setCmyk(0, 0, 0, 0, 0); return c; })         << QByteArray{} << true;
+    QTest::newRow("setCmyk(255,255,255,255,255)") << ColorFactory([] { QColor c(Qt::red); c.setCmyk(255, 255, 255, 255, 255); return c; }) << QByteArray{} << true;
+}
+
+void tst_QColor::rangeChecksCmyk()
+{
+    QTest::failOnWarning();
+    QFETCH(ColorFactory, makeColor);
+    QFETCH(QByteArray, warning);
+    QFETCH(bool, valid);
+
+    if (!warning.isEmpty())
+        QTest::ignoreMessage(QtWarningMsg, warning.constData());
+    QCOMPARE(makeColor().isValid(), valid);
+}
+
+void tst_QColor::rangeChecksCmykF_data()
+{
+    QTest::addColumn<ColorFactory>("makeColor");
+    QTest::addColumn<QByteArray>("warning");
+    QTest::addColumn<bool>("valid");
+
+    const QByteArray fw = "QColor::fromCmykF: CMYK parameters out of range";
+    const QByteArray sw = "QColor::setCmykF: CMYK parameters out of range";
+
+    // fromCmykF: out-of-range parameters → invalid
+    QTest::newRow("fromCmykF(-0.1,0,0,0)")    << ColorFactory([] { return QColor::fromCmykF(-0.1f, 0.0f, 0.0f, 0.0f); })    << fw << false;
+    QTest::newRow("fromCmykF(1.1,0,0,0)")     << ColorFactory([] { return QColor::fromCmykF(1.1f, 0.0f, 0.0f, 0.0f); })     << fw << false;
+    QTest::newRow("fromCmykF(0,-0.1,0,0)")    << ColorFactory([] { return QColor::fromCmykF(0.0f, -0.1f, 0.0f, 0.0f); })    << fw << false;
+    QTest::newRow("fromCmykF(0,1.1,0,0)")     << ColorFactory([] { return QColor::fromCmykF(0.0f, 1.1f, 0.0f, 0.0f); })     << fw << false;
+    QTest::newRow("fromCmykF(0,0,-0.1,0)")    << ColorFactory([] { return QColor::fromCmykF(0.0f, 0.0f, -0.1f, 0.0f); })    << fw << false;
+    QTest::newRow("fromCmykF(0,0,1.1,0)")     << ColorFactory([] { return QColor::fromCmykF(0.0f, 0.0f, 1.1f, 0.0f); })     << fw << false;
+    QTest::newRow("fromCmykF(0,0,0,-0.1)")    << ColorFactory([] { return QColor::fromCmykF(0.0f, 0.0f, 0.0f, -0.1f); })    << fw << false;
+    QTest::newRow("fromCmykF(0,0,0,1.1)")     << ColorFactory([] { return QColor::fromCmykF(0.0f, 0.0f, 0.0f, 1.1f); })     << fw << false;
+    QTest::newRow("fromCmykF(0,0,0,0,-0.1)")  << ColorFactory([] { return QColor::fromCmykF(0.0f, 0.0f, 0.0f, 0.0f, -0.1f); }) << fw << false;
+    QTest::newRow("fromCmykF(0,0,0,0,1.1)")   << ColorFactory([] { return QColor::fromCmykF(0.0f, 0.0f, 0.0f, 0.0f, 1.1f); })  << fw << false;
+    // fromCmykF: valid boundary values
+    QTest::newRow("fromCmykF(0,0,0,0,0)")     << ColorFactory([] { return QColor::fromCmykF(0.0f, 0.0f, 0.0f, 0.0f, 0.0f); }) << QByteArray{} << true;
+    QTest::newRow("fromCmykF(1,1,1,1,1)")     << ColorFactory([] { return QColor::fromCmykF(1.0f, 1.0f, 1.0f, 1.0f, 1.0f); }) << QByteArray{} << true;
+
+    // setCmykF: out-of-range parameters → invalid
+    QTest::newRow("setCmykF(-0.1,0,0,0)")    << ColorFactory([] { QColor c(Qt::red); c.setCmykF(-0.1f, 0.0f, 0.0f, 0.0f); return c; })    << sw << false;
+    QTest::newRow("setCmykF(1.1,0,0,0)")     << ColorFactory([] { QColor c(Qt::red); c.setCmykF(1.1f, 0.0f, 0.0f, 0.0f); return c; })     << sw << false;
+    QTest::newRow("setCmykF(0,-1.1,0,0)")    << ColorFactory([] { QColor c(Qt::red); c.setCmykF(0.0f, -1.1f, 0.0f, 0.0f); return c; })    << sw << false;
+    QTest::newRow("setCmykF(0,1.1,0,0)")     << ColorFactory([] { QColor c(Qt::red); c.setCmykF(0.0f, 1.1f, 0.0f, 0.0f); return c; })     << sw << false;
+    QTest::newRow("setCmykF(0,0,-1.1,0)")    << ColorFactory([] { QColor c(Qt::red); c.setCmykF(0.0f, 0.0f, -1.1f, 0.0f); return c; })    << sw << false;
+    QTest::newRow("setCmykF(0,0,1.1,0)")     << ColorFactory([] { QColor c(Qt::red); c.setCmykF(0.0f, 0.0f, 1.1f, 0.0f); return c; })     << sw << false;
+    QTest::newRow("setCmykF(0,0,0,-1.1)")    << ColorFactory([] { QColor c(Qt::red); c.setCmykF(0.0f, 0.0f, 0.0f, -1.1f); return c; })    << sw << false;
+    QTest::newRow("setCmykF(0,0,0,1.1)")     << ColorFactory([] { QColor c(Qt::red); c.setCmykF(0.0f, 0.0f, 0.0f, 1.1f); return c; })     << sw << false;
+    QTest::newRow("setCmykF(0,0,0,0,-1.1)")  << ColorFactory([] { QColor c(Qt::red); c.setCmykF(0.0f, 0.0f, 0.0f, 0.0f, -1.1f); return c; }) << sw << false;
+    QTest::newRow("setCmykF(0,0,0,0,1.1)")   << ColorFactory([] { QColor c(Qt::red); c.setCmykF(0.0f, 0.0f, 0.0f, 0.0f, 1.1f); return c; })  << sw << false;
+    // setCmykF: valid boundary values
+    QTest::newRow("setCmykF(0,0,0,0,0)")     << ColorFactory([] { QColor c(Qt::red); c.setCmykF(0.0f, 0.0f, 0.0f, 0.0f, 0.0f); return c; }) << QByteArray{} << true;
+    QTest::newRow("setCmykF(1,1,1,1,1)")     << ColorFactory([] { QColor c(Qt::red); c.setCmykF(1.0f, 1.0f, 1.0f, 1.0f, 1.0f); return c; }) << QByteArray{} << true;
+}
+
+void tst_QColor::rangeChecksCmykF()
+{
+    QTest::failOnWarning();
+    QFETCH(ColorFactory, makeColor);
+    QFETCH(QByteArray, warning);
+    QFETCH(bool, valid);
+
+    if (!warning.isEmpty())
+        QTest::ignoreMessage(QtWarningMsg, warning.constData());
+    QCOMPARE(makeColor().isValid(), valid);
+}
+
+void tst_QColor::nanChecks_data()
+{
+    QTest::addColumn<ColorFactory>("makeColor");
+    QTest::addColumn<QByteArray>("warning");
+
+    const float nan = std::numeric_limits<float>::quiet_NaN();
+
+    // setRgbF with NaN → invalid
+    QTest::newRow("setRgbF(nan,0,0)")
+        << ColorFactory([nan] { QColor c(Qt::red); c.setRgbF(nan, 0.0f, 0.0f); return c; })
+        << QByteArray("QColor::setRgbF: RGB parameters out of range");
+    QTest::newRow("setRgbF(0,nan,0)")
+        << ColorFactory([nan] { QColor c(Qt::red); c.setRgbF(0.0f, nan, 0.0f); return c; })
+        << QByteArray("QColor::setRgbF: RGB parameters out of range");
+    QTest::newRow("setRgbF(0,0,nan)")
+        << ColorFactory([nan] { QColor c(Qt::red); c.setRgbF(0.0f, 0.0f, nan); return c; })
+        << QByteArray("QColor::setRgbF: RGB parameters out of range");
+    QTest::newRow("setRgbF(0,0,0,nan)")
+        << ColorFactory([nan] { QColor c(Qt::red); c.setRgbF(0.0f, 0.0f, 0.0f, nan); return c; })
+        << QByteArray("QColor::setRgbF: invalid value nan");
+
+    // fromRgbF with NaN → invalid
+    QTest::newRow("fromRgbF(nan,0,0)")
+        << ColorFactory([nan] { return QColor::fromRgbF(nan, 0.0f, 0.0f); })
+        << QByteArray("QColor::fromRgbF: RGB parameters out of range");
+    QTest::newRow("fromRgbF(0,nan,0)")
+        << ColorFactory([nan] { return QColor::fromRgbF(0.0f, nan, 0.0f); })
+        << QByteArray("QColor::fromRgbF: RGB parameters out of range");
+    QTest::newRow("fromRgbF(0,0,nan)")
+        << ColorFactory([nan] { return QColor::fromRgbF(0.0f, 0.0f, nan); })
+        << QByteArray("QColor::fromRgbF: RGB parameters out of range");
+    QTest::newRow("fromRgbF(0,0,0,nan)")
+        << ColorFactory([nan] { return QColor::fromRgbF(0.0f, 0.0f, 0.0f, nan); })
+        << QByteArray("QColor::fromRgbF: invalid value nan");
+
+    // setHsvF with NaN → invalid
+    QTest::newRow("setHsvF(nan,0,0)")
+        << ColorFactory([nan] { QColor c(Qt::red); c.setHsvF(nan, 0.0f, 0.0f); return c; })
+        << QByteArray("QColor::setHsvF: HSV parameters out of range");
+    QTest::newRow("setHsvF(0,nan,0)")
+        << ColorFactory([nan] { QColor c(Qt::red); c.setHsvF(0.0f, nan, 0.0f); return c; })
+        << QByteArray("QColor::setHsvF: HSV parameters out of range");
+    QTest::newRow("setHsvF(0,0,nan)")
+        << ColorFactory([nan] { QColor c(Qt::red); c.setHsvF(0.0f, 0.0f, nan); return c; })
+        << QByteArray("QColor::setHsvF: HSV parameters out of range");
+    QTest::newRow("setHsvF(0,0,0,nan)")
+        << ColorFactory([nan] { QColor c(Qt::red); c.setHsvF(0.0f, 0.0f, 0.0f, nan); return c; })
+        << QByteArray("QColor::setHsvF: HSV parameters out of range");
+
+    // fromHsvF with NaN → invalid
+    QTest::newRow("fromHsvF(nan,0,0)")
+        << ColorFactory([nan] { return QColor::fromHsvF(nan, 0.0f, 0.0f); })
+        << QByteArray("QColor::fromHsvF: HSV parameters out of range");
+    QTest::newRow("fromHsvF(0,nan,0)")
+        << ColorFactory([nan] { return QColor::fromHsvF(0.0f, nan, 0.0f); })
+        << QByteArray("QColor::fromHsvF: HSV parameters out of range");
+    QTest::newRow("fromHsvF(0,0,nan)")
+        << ColorFactory([nan] { return QColor::fromHsvF(0.0f, 0.0f, nan); })
+        << QByteArray("QColor::fromHsvF: HSV parameters out of range");
+    QTest::newRow("fromHsvF(0,0,0,nan)")
+        << ColorFactory([nan] { return QColor::fromHsvF(0.0f, 0.0f, 0.0f, nan); })
+        << QByteArray("QColor::fromHsvF: HSV parameters out of range");
+
+    // setHslF with NaN → invalid
+    QTest::newRow("setHslF(nan,0,0)")
+        << ColorFactory([nan] { QColor c(Qt::red); c.setHslF(nan, 0.0f, 0.0f); return c; })
+        << QByteArray("QColor::setHslF: HSL parameters out of range");
+    QTest::newRow("setHslF(0,nan,0)")
+        << ColorFactory([nan] { QColor c(Qt::red); c.setHslF(0.0f, nan, 0.0f); return c; })
+        << QByteArray("QColor::setHslF: HSL parameters out of range");
+    QTest::newRow("setHslF(0,0,nan)")
+        << ColorFactory([nan] { QColor c(Qt::red); c.setHslF(0.0f, 0.0f, nan); return c; })
+        << QByteArray("QColor::setHslF: HSL parameters out of range");
+    QTest::newRow("setHslF(0,0,0,nan)")
+        << ColorFactory([nan] { QColor c(Qt::red); c.setHslF(0.0f, 0.0f, 0.0f, nan); return c; })
+        << QByteArray("QColor::setHslF: HSL parameters out of range");
+
+    // fromHslF with NaN → invalid
+    QTest::newRow("fromHslF(nan,0,0)")
+        << ColorFactory([nan] { return QColor::fromHslF(nan, 0.0f, 0.0f); })
+        << QByteArray("QColor::fromHslF: HSL parameters out of range");
+    QTest::newRow("fromHslF(0,nan,0)")
+        << ColorFactory([nan] { return QColor::fromHslF(0.0f, nan, 0.0f); })
+        << QByteArray("QColor::fromHslF: HSL parameters out of range");
+    QTest::newRow("fromHslF(0,0,nan)")
+        << ColorFactory([nan] { return QColor::fromHslF(0.0f, 0.0f, nan); })
+        << QByteArray("QColor::fromHslF: HSL parameters out of range");
+    QTest::newRow("fromHslF(0,0,0,nan)")
+        << ColorFactory([nan] { return QColor::fromHslF(0.0f, 0.0f, 0.0f, nan); })
+        << QByteArray("QColor::fromHslF: HSL parameters out of range");
+
+    // setCmykF with NaN → invalid
+    QTest::newRow("setCmykF(nan,0,0,0)")
+        << ColorFactory([nan] { QColor c(Qt::red); c.setCmykF(nan, 0.0f, 0.0f, 0.0f); return c; })
+        << QByteArray("QColor::setCmykF: CMYK parameters out of range");
+    QTest::newRow("setCmykF(0,nan,0,0)")
+        << ColorFactory([nan] { QColor c(Qt::red); c.setCmykF(0.0f, nan, 0.0f, 0.0f); return c; })
+        << QByteArray("QColor::setCmykF: CMYK parameters out of range");
+    QTest::newRow("setCmykF(0,0,nan,0)")
+        << ColorFactory([nan] { QColor c(Qt::red); c.setCmykF(0.0f, 0.0f, nan, 0.0f); return c; })
+        << QByteArray("QColor::setCmykF: CMYK parameters out of range");
+    QTest::newRow("setCmykF(0,0,0,nan)")
+        << ColorFactory([nan] { QColor c(Qt::red); c.setCmykF(0.0f, 0.0f, 0.0f, nan); return c; })
+        << QByteArray("QColor::setCmykF: CMYK parameters out of range");
+    QTest::newRow("setCmykF(0,0,0,0,nan)")
+        << ColorFactory([nan] { QColor c(Qt::red); c.setCmykF(0.0f, 0.0f, 0.0f, 0.0f, nan); return c; })
+        << QByteArray("QColor::setCmykF: CMYK parameters out of range");
+
+    // fromCmykF with NaN → invalid
+    QTest::newRow("fromCmykF(nan,0,0,0)")
+        << ColorFactory([nan] { return QColor::fromCmykF(nan, 0.0f, 0.0f, 0.0f); })
+        << QByteArray("QColor::fromCmykF: CMYK parameters out of range");
+    QTest::newRow("fromCmykF(0,nan,0,0)")
+        << ColorFactory([nan] { return QColor::fromCmykF(0.0f, nan, 0.0f, 0.0f); })
+        << QByteArray("QColor::fromCmykF: CMYK parameters out of range");
+    QTest::newRow("fromCmykF(0,0,nan,0)")
+        << ColorFactory([nan] { return QColor::fromCmykF(0.0f, 0.0f, nan, 0.0f); })
+        << QByteArray("QColor::fromCmykF: CMYK parameters out of range");
+    QTest::newRow("fromCmykF(0,0,0,nan)")
+        << ColorFactory([nan] { return QColor::fromCmykF(0.0f, 0.0f, 0.0f, nan); })
+        << QByteArray("QColor::fromCmykF: CMYK parameters out of range");
+    QTest::newRow("fromCmykF(0,0,0,0,nan)")
+        << ColorFactory([nan] { return QColor::fromCmykF(0.0f, 0.0f, 0.0f, 0.0f, nan); })
+        << QByteArray("QColor::fromCmykF: CMYK parameters out of range");
+}
+
+void tst_QColor::nanChecks()
+{
+    QTest::failOnWarning();
+    QFETCH(ColorFactory, makeColor);
+    QFETCH(QByteArray, warning);
+
+    QTest::ignoreMessage(QtWarningMsg, warning.constData());
+    QVERIFY(!makeColor().isValid());
+}
+
+void tst_QColor::nanChecksChannels()
+{
+    QTest::failOnWarning();
+
+    const float nan = std::numeric_limits<float>::quiet_NaN();
+
+    // setRedF/setGreenF/setBlueF/setAlphaF with NaN clamp to 0.0, color remains valid
+    {
+        QColor c(Qt::red);
+        QTest::ignoreMessage(QtWarningMsg, QRegularExpression("QColor::setRedF: invalid value .*"));
+        c.setRedF(nan);
+        QVERIFY(c.isValid());
+        QCOMPARE(c.redF(), 0.0f);
+    }
+    {
+        QColor c(Qt::red);
+        QTest::ignoreMessage(QtWarningMsg, QRegularExpression("QColor::setGreenF: invalid value .*"));
+        c.setGreenF(nan);
+        QVERIFY(c.isValid());
+        QCOMPARE(c.greenF(), 0.0f);
+    }
+    {
+        QColor c(Qt::red);
+        QTest::ignoreMessage(QtWarningMsg, QRegularExpression("QColor::setBlueF: invalid value .*"));
+        c.setBlueF(nan);
+        QVERIFY(c.isValid());
+        QCOMPARE(c.blueF(), 0.0f);
+    }
+    {
+        QColor c(Qt::red);
+        QTest::ignoreMessage(QtWarningMsg, QRegularExpression("QColor::setAlphaF: invalid value .*"));
+        c.setAlphaF(nan);
+        QVERIFY(c.isValid());
+        QCOMPARE(c.alphaF(), 0.0f);
+    }
+
+    // same behavior for ExtendedRgb colors
+    {
+        QColor c = QColor::fromRgbF(2.0f, 0.0f, 0.0f);
+        QCOMPARE(c.spec(), QColor::ExtendedRgb);
+        QTest::ignoreMessage(QtWarningMsg, QRegularExpression("QColor::setRedF: invalid value .*"));
+        c.setRedF(nan);
+        QVERIFY(c.isValid());
+        QCOMPARE(c.redF(), 0.0f);
+    }
+    {
+        QColor c = QColor::fromRgbF(0.0f, 2.0f, 0.0f);
+        QCOMPARE(c.spec(), QColor::ExtendedRgb);
+        QTest::ignoreMessage(QtWarningMsg, QRegularExpression("QColor::setGreenF: invalid value .*"));
+        c.setGreenF(nan);
+        QVERIFY(c.isValid());
+        QCOMPARE(c.greenF(), 0.0f);
+    }
+    {
+        QColor c = QColor::fromRgbF(0.0f, 0.0f, 2.0f);
+        QCOMPARE(c.spec(), QColor::ExtendedRgb);
+        QTest::ignoreMessage(QtWarningMsg, QRegularExpression("QColor::setBlueF: invalid value .*"));
+        c.setBlueF(nan);
+        QVERIFY(c.isValid());
+        QCOMPARE(c.blueF(), 0.0f);
+    }
+    {
+        QColor c = QColor::fromRgbF(2.0f, 2.0f, 2.0f, 0.5f);
+        QCOMPARE(c.spec(), QColor::ExtendedRgb);
+        QTest::ignoreMessage(QtWarningMsg, QRegularExpression("QColor::setAlphaF: invalid value .*"));
+        c.setAlphaF(nan);
+        QVERIFY(c.isValid());
+        QCOMPARE(c.alphaF(), 0.0f);
+    }
+}
+
 
 QTEST_MAIN(tst_QColor)
 #include "tst_qcolor.moc"
