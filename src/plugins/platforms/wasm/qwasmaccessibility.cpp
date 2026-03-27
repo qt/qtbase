@@ -1307,7 +1307,7 @@ bool QWasmAccessibility::handleUpdateByEventType(QAccessibleEvent *event)
         break;
 
     case QAccessible::ObjectHide:
-        linkToParent(iface);
+        // Do not call linkToParent, only set visibility to false
         setHtmlElementVisibility(iface, false);
         return false;
 
