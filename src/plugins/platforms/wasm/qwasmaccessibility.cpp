@@ -494,6 +494,7 @@ emscripten::val QWasmAccessibility::createHtmlElement(QAccessibleInterface *ifac
             addEventListener(iface, element, "click");
         }break;
         case QAccessible::MenuItem:
+        case QAccessible::ButtonDropDown:
         case QAccessible::ButtonMenu: {
             const QString text = iface->text(QAccessible::Name);
             element = document.call<emscripten::val>("createElement", std::string("button"));
