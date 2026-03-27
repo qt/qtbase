@@ -154,8 +154,6 @@ qt_commandline_option(xplatform TYPE string CMAKE_VARIABLE QT_QMAKE_TARGET_MKSPE
 qt_commandline_option(zlib CONTROLS_FEATURE TYPE enum NAME system-zlib MAPPING system yes qt no)
 qt_commandline_option(zstd TYPE boolean)
 qt_commandline_option(coverage TYPE optionalString VALUES gcov)
-qt_commandline_option(ffmpeg-dir TYPE path CMAKE_VARIABLE FFMPEG_DIR)
-qt_commandline_option(ffmpeg-deploy TYPE boolean CMAKE_VARIABLE QT_DEPLOY_FFMPEG)
 qt_commandline_prefix(D defines)
 qt_commandline_prefix(F fpaths)
 qt_commandline_prefix(I includes)
