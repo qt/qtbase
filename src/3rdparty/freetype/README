@@ -1,4 +1,4 @@
-FreeType 2.14.2
+FreeType 2.14.3
 ===============
 
 Homepage: https://freetype.org
@@ -32,9 +32,9 @@ sites.  Go to
 
 and download one of the following files.
 
-  freetype-doc-2.14.2.tar.xz
-  freetype-doc-2.14.2.tar.gz
-  ftdoc2142.zip
+  freetype-doc-2.14.3.tar.xz
+  freetype-doc-2.14.3.tar.gz
+  ftdoc2143.zip
 
 To view the documentation online, go to
 
@@ -66,10 +66,13 @@ Please submit bug reports at
 
   https://gitlab.freedesktop.org/freetype/freetype/-/issues
 
-Alternatively,    you    might    report    bugs    by    e-mail    to
-`freetype-devel@nongnu.org`.    Don't  forget   to  send   a  detailed
-explanation of the problem -- there  is nothing worse than receiving a
-terse message that only says 'it doesn't work'.
+This gitlab instance also supports confidential reports.
+
+Alternatively, but less  preferable, you might report  bugs by sending
+an  e-mail to  the  public  mailing list  `freetype-devel@nongnu.org`.
+Don't forget to submit a detailed  explanation of the problem -- there
+is nothing  worse than receiving  a terse  message that only  says 'it
+doesn't work'.
 
 
 Patches
@@ -94,7 +97,7 @@ Enjoy!
 
 ----------------------------------------------------------------------
 
-Copyright (C) 2006-2025 by
+Copyright (C) 2006-2026 by
 David Turner, Robert Wilhelm, and Werner Lemberg.
 
 This  file is  part of  the FreeType  project, and  may only  be used,
