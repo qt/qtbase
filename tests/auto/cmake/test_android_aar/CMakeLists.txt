@@ -9,11 +9,9 @@ find_package(Qt6 COMPONENTS Core Gui REQUIRED)
 
 qt6_add_executable(test_aar main.cpp)
 
-# To support opening the project in QtCreator
-if($CACHE{QT_USE_TARGET_ANDROID_BUILD_DIR})
-    set(TARGET_ANDROID_BUILD_DIR ${CMAKE_BINARY_DIR}/android-build-test_aar)
-else()
-    set(TARGET_ANDROID_BUILD_DIR ${CMAKE_BINARY_DIR}/android-build)
+get_target_property(target_build_dir test_aar QT_ANDROID_BUILD_DIR)
+if(NOT target_build_dir)
+    message(FATAL_ERROR "QT_ANDROID_BUILD_DIR property is not set on target test_aar")
 endif()
 
 # Add common libs for available ABIs that should be present in the aar package in a list
@@ -35,7 +33,7 @@ list(JOIN aar_content_filepaths_to_verify "|"  grep_pattern)
 # The overall number of lines we should expect to be filtered by grep regex
 list(LENGTH aar_content_filepaths_to_verify expected_file_count)
 
-set(zipinfo_command "zipinfo -1 ${TARGET_ANDROID_BUILD_DIR}/test_aar.aar")
+set(zipinfo_command "zipinfo -1 ${target_build_dir}/test_aar.aar")
 
 # Runs zipinfo on the aar package, greps and outputs the number of matching lines
 # and finally compares the expected number of lines with the output

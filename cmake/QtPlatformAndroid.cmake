@@ -110,6 +110,17 @@ define_property(TARGET
         "This variable can be used to exclude Qt shared libraries from being packaged inside the APK when deploying on Android. Not supported when deploying as Android Application Bundle."
 )
 
+define_property(TARGET
+    PROPERTY QT_ANDROID_BUILD_DIR
+    BRIEF_DOCS "Read-only path to the Android build directory for the target."
+    FULL_DOCS
+        "Contains the path to the android-build directory used for packaging the target as
+        an Android package. The path depends on QT_USE_TARGET_ANDROID_BUILD_DIR: when TRUE
+        the path is <binary-dir>/android-build-<target>; otherwise <binary-dir>/android-build.
+        The property is set when qt6_add_executable() is called and is immediately available
+        without waiting for target finalization."
+)
+
 option(QT_ANDROID_POST_BUILD_GRADLE_CLEANUP
     "Clean Android libs and Gradle's build directories after APK creation." OFF)
 

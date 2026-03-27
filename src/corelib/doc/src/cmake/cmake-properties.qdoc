@@ -567,6 +567,47 @@ and overwritten by that command.
 */
 
 /*!
+\page cmake-target-property-qt-android-build-dir.html
+\ingroup cmake-properties-qtcore
+\ingroup cmake-target-properties-qtcore
+\ingroup cmake-android-build-properties
+
+\title QT_ANDROID_BUILD_DIR
+\target cmake-target-property-QT_ANDROID_BUILD_DIR
+
+\summary {Read-only path to the Android build directory for the target.}
+
+\cmakepropertysince 6.12
+\cmakepropertyandroidonly
+
+Contains the path to the \c{android-build} directory used for packaging the
+target as an Android APK or AAB. The exact path depends on whether
+\l{cmake-variable-QT_USE_TARGET_ANDROID_BUILD_DIR}{QT_USE_TARGET_ANDROID_BUILD_DIR}
+is set: when \c TRUE the path is \c{<binary-dir>/android-build-<target>};
+otherwise \c{<binary-dir>/android-build}.
+
+The property is set when \l{qt6_add_executable}{qt_add_executable()} is called
+and is immediately available without waiting for target finalization.
+
+This property is useful when referencing the build directory in custom commands:
+
+\badcode
+qt_add_executable(MyApp main.cpp)
+
+get_target_property(android_build_dir MyApp QT_ANDROID_BUILD_DIR)
+add_custom_command(POST_BUILD TARGET MyApp
+    WORKING_DIRECTORY "${android_build_dir}"
+    COMMAND cmd /c "${android_build_dir}/postbuild.cmd"
+)
+\endcode
+
+Projects should not set this property manually.
+
+\sa {QT_ANDROID_DEPLOYMENT_SETTINGS_FILE}
+\sa {cmake-variable-QT_USE_TARGET_ANDROID_BUILD_DIR}{QT_USE_TARGET_ANDROID_BUILD_DIR}
+*/
+
+/*!
 \page cmake-target-property-qt-android-system-libs-prefix.html
 \ingroup cmake-properties-qtcore
 \ingroup cmake-target-properties-qtcore
