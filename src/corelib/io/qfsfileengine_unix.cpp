@@ -28,38 +28,6 @@
 
 QT_BEGIN_NAMESPACE
 
-/*!
-    \internal
-
-    Returns the stdio open flags corresponding to a QIODevice::OpenMode.
-*/
-static inline int openModeToOpenFlags(QIODevice::OpenMode mode)
-{
-    int oflags = QT_OPEN_RDONLY;
-#ifdef QT_LARGEFILE_SUPPORT
-    oflags |= QT_OPEN_LARGEFILE;
-#endif
-
-    if ((mode & QFile::ReadWrite) == QFile::ReadWrite)
-        oflags = QT_OPEN_RDWR;
-    else if (mode & QFile::WriteOnly)
-        oflags = QT_OPEN_WRONLY;
-
-    if (QFSFileEnginePrivate::openModeCanCreate(mode))
-        oflags |= QT_OPEN_CREAT;
-
-    if (mode & QFile::Truncate)
-        oflags |= QT_OPEN_TRUNC;
-
-    if (mode & QFile::Append)
-        oflags |= QT_OPEN_APPEND;
-
-    if (mode & QFile::NewOnly)
-        oflags |= QT_OPEN_EXCL;
-
-    return oflags;
-}
-
 static inline QString msgOpenDirectory()
 {
     const char message[] = QT_TRANSLATE_NOOP("QIODevice", "file to open is a directory");
