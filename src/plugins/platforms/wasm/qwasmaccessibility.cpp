@@ -523,6 +523,16 @@ emscripten::val QWasmAccessibility::createHtmlElement(QAccessibleInterface *ifac
             setAttribute(element, "autocorrect", "off");
             setProperty(element, "inputMode", "text");
         } break;
+        case QAccessible::List: {
+            element = document.call<emscripten::val>("createElement", std::string("div"));
+            setAttribute(element, "tabindex", "0");
+            setAttribute(element, "role", "list");
+        } break;
+        case QAccessible::ListItem: {
+            element = document.call<emscripten::val>("createElement", std::string("div"));
+            setAttribute(element, "tabindex", "0");
+            setAttribute(element, "role", "listitem");
+        } break;
         default:
             qCDebug(lcQpaAccessibility) << "TODO: createHtmlElement() handle" << iface->role();
             element = document.call<emscripten::val>("createElement", std::string("div"));
@@ -700,6 +710,21 @@ void QWasmAccessibility::setHtmlElementOrientation(emscripten::val element, QAcc
             const std::string value = orientation == Qt::Horizontal ? "horizontal" : "vertical";
             setAttribute(element, "aria-orientation", value);
         }
+    }
+}
+
+void QWasmAccessibility::handleListItemUpdate(QAccessibleEvent *event)
+{
+    auto iface = event->accessibleInterface();
+
+    switch (event->type()) {
+    case QAccessible::NameChanged: {
+        // ListItem is a div
+        setNamedProperty(iface, "innerText", QAccessible::Name);
+    } break;
+    default:
+        qCDebug(lcQpaAccessibility) << "TODO: implement handleListItemUpdate for event" << event->type();
+    break;
     }
 }
 
@@ -1311,6 +1336,11 @@ void QWasmAccessibility::handleUpdateByInterfaceRole(QAccessibleEvent *event)
     // Switch on interface role, see
     // https://doc.qt.io/qt-5/qaccessibleinterface.html#role
     switch (iface->role()) {
+    case QAccessible::List:
+    break;
+    case QAccessible::ListItem:
+        handleListItemUpdate(event);
+    break;
     case QAccessible::StaticText:
         handleStaticTextUpdate(event);
     break;

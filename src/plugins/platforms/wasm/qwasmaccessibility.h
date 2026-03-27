@@ -78,6 +78,7 @@ private:
     void setHtmlElementDisabled(QAccessibleInterface *iface);
     void setHtmlElementOrientation(emscripten::val element, QAccessibleInterface *iface);
 
+    void handleListItemUpdate(QAccessibleEvent *event);
     void handleStaticTextUpdate(QAccessibleEvent *event);
     void handleButtonUpdate(QAccessibleEvent *event);
     void handleCheckBoxUpdate(QAccessibleEvent *event);
