@@ -638,7 +638,7 @@ void QWasmAccessibility::linkToParent(QAccessibleInterface *iface)
 void QWasmAccessibility::setHtmlElementVisibility(QAccessibleInterface *iface, bool visible)
 {
     emscripten::val element = getHtmlElement(iface);
-    setAttribute(element, "aria-hidden", !visible);
+    setAttribute(element, "inert", !visible);
 }
 
 void QWasmAccessibility::setHtmlElementGeometry(QAccessibleInterface *iface)
@@ -1133,7 +1133,7 @@ void QWasmAccessibility::handleDescriptionChanged(QAccessibleInterface *iface)
                 container.call<void>("appendChild", describedBy);
             }
             setAttribute(describedBy, "id", id);
-            setAttribute(describedBy, "aria-hidden", true);
+            setAttribute(describedBy, "inert", true);
             setAttribute(element, "aria-describedby", id);
             setProperty(describedBy, "innerText", desc);
         }
