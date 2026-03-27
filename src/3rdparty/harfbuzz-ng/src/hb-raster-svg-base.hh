@@ -92,7 +92,7 @@ struct hb_svg_str_t
     memcpy (buf, data, n);
     buf[n] = '\0';
     float v = strtof (buf, nullptr);
-    return isfinite (v) ? v : 0.f;
+    return std::isfinite (v) ? v : 0.f;
   }
 
   hb_svg_str_t trim_left () const
@@ -217,6 +217,7 @@ hb_raster_svg_tag_is_container (hb_svg_str_t tag)
 {
   return tag.eq ("g") || tag.eq ("a") || tag.eq ("svg") || tag.eq ("symbol");
 }
+
 
 static inline bool
 hb_raster_svg_tag_is_container_or_use (hb_svg_str_t tag)
