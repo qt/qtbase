@@ -482,14 +482,14 @@ SPDX-License-Identifier = "FTL OR GPL-2.0-only"
 path = ["src/autofit/afgsub.*"]
 comment = "Copyright continuation line ignored by reuse for lack of word Copyright at start."
 precedence = "override"
-SPDX-FileCopyrightText = ["Copyright (C) 2025 by David Turner, Robert Wilhelm, and Werner Lemberg."]
+SPDX-FileCopyrightText = ["Copyright (C) 2026 by David Turner, Robert Wilhelm, and Werner Lemberg."]
 SPDX-License-Identifier = "FTL OR GPL-2.0-only"
 
 [[annotations]]
 path = ["src/autofit/afadjust.*"]
 comment = "Copyright continuation line ignored by reuse for lack of word Copyright at start."
 precedence = "override"
-SPDX-FileCopyrightText = ["Copyright (C) 2023-2025 by David Turner, Robert Wilhelm, and Werner Lemberg and Craig White"]
+SPDX-FileCopyrightText = ["Copyright (C) 2023-2026 by David Turner, Robert Wilhelm, and Werner Lemberg and Craig White"]
 SPDX-License-Identifier = "FTL OR GPL-2.0-only"
 
 
