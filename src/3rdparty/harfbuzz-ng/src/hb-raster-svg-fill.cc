@@ -147,8 +147,7 @@ hb_raster_svg_emit_fill (const hb_svg_fill_context_t *ctx,
       if (unlikely (!node.visit ((uintptr_t) cur)))
         break;
 
-      chain.push (cur);
-      if (unlikely (chain.in_error ()))
+      if (unlikely (!chain.push_or_fail (cur)))
       {
         if (fallback_paint.len)
           hb_raster_svg_emit_fill (ctx, fallback_paint, fill_opacity, object_bbox, current_color);
@@ -220,24 +219,28 @@ hb_raster_svg_emit_fill (const hb_svg_fill_context_t *ctx,
     };
 
     bool has_bbox_transform = !effective.units_user_space && object_bbox && !object_bbox->is_empty ();
+    bool pushed_bbox_transform = false;
     if (has_bbox_transform)
     {
       float w = object_bbox->xmax - object_bbox->xmin;
       float h = object_bbox->ymax - object_bbox->ymin;
-      if (isfinite (w) && isfinite (h) && w > 0.f && h > 0.f)
-        hb_paint_push_transform (ctx->pfuncs, ctx->paint, w, 0, 0, h, object_bbox->xmin, object_bbox->ymin);
+      if (std::isfinite (w) && std::isfinite (h) && w > 0.f && h > 0.f)
+        pushed_bbox_transform = hb_raster_svg_push_transform (ctx->pfuncs, ctx->paint,
+                                                              w, 0, 0, h,
+                                                              object_bbox->xmin, object_bbox->ymin);
       else
         has_bbox_transform = false;
     }
 
+    bool pushed_gradient_transform = false;
     if (effective.has_gradient_transform)
-      hb_paint_push_transform (ctx->pfuncs, ctx->paint,
-                               effective.gradient_transform.xx,
-                               effective.gradient_transform.yx,
-                               effective.gradient_transform.xy,
-                               effective.gradient_transform.yy,
-                               effective.gradient_transform.dx,
-                               effective.gradient_transform.dy);
+      pushed_gradient_transform = hb_raster_svg_push_transform (ctx->pfuncs, ctx->paint,
+                                                                effective.gradient_transform.xx,
+                                                                effective.gradient_transform.yx,
+                                                                effective.gradient_transform.xy,
+                                                                effective.gradient_transform.yy,
+                                                                effective.gradient_transform.dx,
+                                                                effective.gradient_transform.dy);
 
     if (effective.type == SVG_GRADIENT_LINEAR)
     {
@@ -249,11 +252,11 @@ hb_raster_svg_emit_fill (const hb_svg_fill_context_t *ctx,
     }
     else
     {
-      if (!isfinite (effective.r) || effective.r < 0.f)
+      if (!std::isfinite (effective.r) || effective.r < 0.f)
       {
-        if (effective.has_gradient_transform)
+        if (pushed_gradient_transform)
           hb_paint_pop_transform (ctx->pfuncs, ctx->paint);
-        if (has_bbox_transform)
+        if (pushed_bbox_transform)
           hb_paint_pop_transform (ctx->pfuncs, ctx->paint);
         if (fallback_paint.len)
           hb_raster_svg_emit_fill (ctx, fallback_paint, fill_opacity, object_bbox, current_color);
@@ -263,7 +266,7 @@ hb_raster_svg_emit_fill (const hb_svg_fill_context_t *ctx,
       float fx = effective.has_fx ? effective.fx : effective.cx;
       float fy = effective.has_fy ? effective.fy : effective.cy;
       float fr = effective.has_fr ? effective.fr : 0.f;
-      if (!isfinite (fr) || fr < 0.f)
+      if (!std::isfinite (fr) || fr < 0.f)
         fr = 0.f;
       fr = hb_min (fr, effective.r);
 
@@ -272,9 +275,9 @@ hb_raster_svg_emit_fill (const hb_svg_fill_context_t *ctx,
                                 effective.cx, effective.cy, effective.r);
     }
 
-    if (effective.has_gradient_transform)
+    if (pushed_gradient_transform)
       hb_paint_pop_transform (ctx->pfuncs, ctx->paint);
-    if (has_bbox_transform)
+    if (pushed_bbox_transform)
       hb_paint_pop_transform (ctx->pfuncs, ctx->paint);
 
     return;
