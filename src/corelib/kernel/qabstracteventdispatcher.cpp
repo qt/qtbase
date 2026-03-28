@@ -61,7 +61,7 @@ template <typename T> static T fromDuration(std::chrono::nanoseconds interval)
 {
     using namespace std::chrono;
     qint64 value = ceil<milliseconds>(interval).count();
-    return q26::saturate_cast<T>(value);
+    return q26::saturating_cast<T>(value);
 }
 
 #if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)

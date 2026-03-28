@@ -732,7 +732,7 @@ QByteArray qCompress(const uchar* data, qsizetype nbytes, int compressionLevel)
     if (out.data() == nullptr) // allocation failed
       return tooMuchData(ZLibOp::Compression);
 
-    qToBigEndian(q26::saturate_cast<CompressSizeHint_t>(nbytes), out.data());
+    qToBigEndian(q26::saturating_cast<CompressSizeHint_t>(nbytes), out.data());
     out.size = HeaderSize;
 
     return xxflate(ZLibOp::Compression, std::move(out), {data, nbytes},

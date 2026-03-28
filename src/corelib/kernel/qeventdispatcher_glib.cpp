@@ -106,7 +106,7 @@ static gboolean timerSourcePrepareHelper(GTimerSource *src, gint *timeout)
     }
 
     auto remaining = src->timerList.timerWait().value_or(-1ms);
-    *timeout = q26::saturate_cast<gint>(ceil<milliseconds>(remaining).count());
+    *timeout = q26::saturating_cast<gint>(ceil<milliseconds>(remaining).count());
 
     return (*timeout == 0);
 }

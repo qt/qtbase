@@ -83,7 +83,7 @@ static HRESULT buildReadOperation(HIORING ioRingHandle, qintptr fd, QSpan<std::b
     // NOLINTNEXTLINE(performance-no-int-to-ptr)
     const IORING_HANDLE_REF fileRef((HANDLE(fd)));
     const IORING_BUFFER_REF bufferRef(destination.data());
-    const auto maxSize = q26::saturate_cast<UINT32>(destination.size());
+    const auto maxSize = q26::saturating_cast<UINT32>(destination.size());
     Q_ASSERT(maxSize == destination.size());
     const auto *apiTable = QtPrivate::getApiTable();
     Q_ASSERT(apiTable); // If we got this far it needs to be here
@@ -97,7 +97,7 @@ static HRESULT buildWriteOperation(HIORING ioRingHandle, qintptr fd, QSpan<const
     // NOLINTNEXTLINE(performance-no-int-to-ptr)
     const IORING_HANDLE_REF fileRef((HANDLE(fd)));
     const IORING_BUFFER_REF bufferRef(const_cast<std::byte *>(source.data()));
-    const auto maxSize = q26::saturate_cast<UINT32>(source.size());
+    const auto maxSize = q26::saturating_cast<UINT32>(source.size());
     Q_ASSERT(maxSize == source.size());
     const auto *apiTable = QtPrivate::getApiTable();
     Q_ASSERT(apiTable); // If we got this far it needs to be here
@@ -300,7 +300,7 @@ bool QIORing::waitForCompletions(QDeadlineTimer deadline)
         if (deadline.isForever()) {
             timeout = INFINITE;
         } else {
-            timeout = q26::saturate_cast<DWORD>(deadline.remainingTime());
+            timeout = q26::saturating_cast<DWORD>(deadline.remainingTime());
             if (timeout == INFINITE)
                 --timeout;
         }

@@ -24,7 +24,7 @@
 #include <limits>
 #include <type_traits>
 
-#include <QtCore/q26numeric.h> // temporarily, for saturate_cast
+#include <QtCore/q26numeric.h> // temporarily, for saturating_cast
 
 #ifndef __has_extension
 #  define __has_extension(X)    0
@@ -437,7 +437,7 @@ template <auto V2, typename T> bool mul_overflow(T v1, T *r)
 template <typename To, typename From>
 static constexpr auto qt_saturate(From x)
 {
-    return q26::saturate_cast<To>(x);
+    return q26::saturating_cast<To>(x);
 }
 
 QT_END_NAMESPACE

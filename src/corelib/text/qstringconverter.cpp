@@ -1562,12 +1562,12 @@ QString QLocal8Bit::convertToUnicode_sys(QByteArrayView in, quint32 codePage,
 
     // Need it in this scope, since we try to decrease our window size if we
     // encounter an error
-    int nextIn = q26::saturate_cast<int>(mblen);
+    int nextIn = q26::saturating_cast<int>(mblen);
     while (mblen > 0) {
         std::tie(out, outlen) = growOut(1); // Need space for at least one character
         if (!out)
             return {};
-        const int nextOut = q26::saturate_cast<int>(outlen);
+        const int nextOut = q26::saturating_cast<int>(outlen);
         int len = MultiByteToWideChar(codePage, MB_ERR_INVALID_CHARS, mb, nextIn, out, nextOut);
         if (len) {
             mb += nextIn;
@@ -1627,7 +1627,7 @@ QString QLocal8Bit::convertToUnicode_sys(QByteArrayView in, quint32 codePage,
                 break;
             }
         }
-        nextIn = q26::saturate_cast<int>(mblen);
+        nextIn = q26::saturating_cast<int>(mblen);
     }
 
     if (sp.isEmpty()) {
@@ -1749,7 +1749,7 @@ QByteArray QLocal8Bit::convertFromUnicode_sys(QStringView in, quint32 codePage,
     };
 
     const auto getNextWindowSize = [&]() {
-        int nextIn = q26::saturate_cast<int>(uclen);
+        int nextIn = q26::saturating_cast<int>(uclen);
         // The Windows API has some issues if the current window ends in the
         // middle of a surrogate pair, so we avoid that:
         if (nextIn > 1 && QChar::isHighSurrogate(ch[nextIn - 1]))
@@ -1763,7 +1763,7 @@ QByteArray QLocal8Bit::convertFromUnicode_sys(QStringView in, quint32 codePage,
         std::tie(out, outlen) = growOut(1); // We need at least one byte
         if (!out)
             return {};
-        const int nextOut = q26::saturate_cast<int>(outlen);
+        const int nextOut = q26::saturating_cast<int>(outlen);
         len = WideCharToMultiByte(codePage, 0, ch, nextIn, out, nextOut, nullptr, nullptr);
         if (len > 0) {
             ch += nextIn;
@@ -2515,7 +2515,7 @@ static int partiallyParsedDataCount(QStringConverter::State *state)
         return std::max(leftOver, 0);
     }
 #endif
-    return q26::saturate_cast<int>(state->remainingChars);
+    return q26::saturating_cast<int>(state->remainingChars);
 }
 } // namespace QtPrivate
 
@@ -2765,7 +2765,7 @@ auto QStringDecoder::finalize(char16_t *out, qsizetype maxlen) -> FinalizeResult
     if (isValid())
         count = QtPrivate::partiallyParsedDataCount(&state);
     using Error = FinalizeResult::Error;
-    const qint16 invalidChars = q26::saturate_cast<qint16>(state.invalidChars + count);
+    const qint16 invalidChars = q26::saturating_cast<qint16>(state.invalidChars + count);
     if (count == 0 || !out) {
         resetState();
         return {out, invalidChars, invalidChars ? Error::InvalidCharacters : Error::NoError};
@@ -2824,7 +2824,7 @@ auto QStringEncoder::finalize(char *out, qsizetype maxlen) -> QStringEncoder::Fi
     // some state, otherwise we have nothing to do with count == 0
     using Error = FinalizeResult::Error;
     const bool usesIcu = !!(state.flags & QStringConverter::Flag::UsesIcu) && !!state.d[0];
-    const qint16 invalidChars = q26::saturate_cast<qint16>(state.invalidChars + count);
+    const qint16 invalidChars = q26::saturating_cast<qint16>(state.invalidChars + count);
     if (!isValid() || (!count && !usesIcu) || !out) {
         resetState();
         return {out, invalidChars, invalidChars ? Error::InvalidCharacters : Error::NoError};

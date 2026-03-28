@@ -155,7 +155,7 @@ qint64 QRandomAccessAsyncFileNativeBackend::size() const
             Q_UNUSED(err);
             finalSize = -1;
         } else if (const auto *res = std::get_if<QIORingResult<QIORing::Operation::Stat>>(&request.result)) {
-            finalSize = q26::saturate_cast<qint64>(res->size);
+            finalSize = q26::saturating_cast<qint64>(res->size);
         }
     });
     auto *handle = m_ioring->queueRequest(std::move(statRequest));
