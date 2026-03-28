@@ -34,7 +34,7 @@ using namespace Qt::StringLiterals;
 
 #ifndef qPrintableView
 // expands to x.size(), x.data() for use with "%.*s"
-#  define qPrintableView(x) q26::saturate_cast<int>((x).size()), (x).data()
+#  define qPrintableView(x) q26::saturating_cast<int>((x).size()), (x).data()
 #endif
 
 namespace {

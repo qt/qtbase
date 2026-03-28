@@ -184,14 +184,14 @@ public:
     std::chrono::seconds tcpKeepAliveIdleTimeBeforeProbes() const;
     void setTcpKeepAliveIdleTimeBeforeProbes(std::chrono::seconds idle)
     {
-        const auto r = q26::saturate_cast<int>(idle.count());
+        const auto r = q26::saturating_cast<int>(idle.count());
         Q_PRE(q20::cmp_equal(r, idle.count()));
         doSetIdleTimeBeforeProbes(std::chrono::duration<int>(r));
     }
     std::chrono::seconds tcpKeepAliveIntervalBetweenProbes() const;
     void setTcpKeepAliveIntervalBetweenProbes(std::chrono::seconds interval)
     {
-        const auto r = q26::saturate_cast<int>(interval.count());
+        const auto r = q26::saturating_cast<int>(interval.count());
         Q_PRE(q20::cmp_equal(r, interval.count()));
         doSetIntervalBetweenProbes(std::chrono::duration<int>(r));
     }
@@ -220,7 +220,7 @@ Q_DECLARE_SHARED(QNetworkRequest)
 #if QT_CONFIG(http) || defined (Q_OS_WASM)
 int QNetworkRequest::transferTimeout() const
 {
-    return q26::saturate_cast<int>(transferTimeoutAsDuration().count());
+    return q26::saturating_cast<int>(transferTimeoutAsDuration().count());
 }
 
 void QNetworkRequest::setTransferTimeout(int timeout)

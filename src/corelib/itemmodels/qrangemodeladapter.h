@@ -1601,7 +1601,7 @@ private:
     template <typename Assigner>
     void assignImpl(std::size_t newSize, Assigner &&assigner)
     {
-        const auto sz = q26::saturate_cast<int>(newSize);
+        const auto sz = q26::saturating_cast<int>(newSize);
         Q_ASSERT_X(q20::cmp_equal(sz, newSize),
                    "QRangeModelAdapter::assign", "New range is too large");
         const int newLastRow = sz - 1;

@@ -68,7 +68,7 @@ int qvsnprintf(char *str, size_t n, const char *fmt, va_list ap)
     const auto realSize = ba.size();
     int result;
     if constexpr (sizeof(int) != sizeof(realSize)) {
-        result = q26::saturate_cast<int>(realSize);
+        result = q26::saturating_cast<int>(realSize);
         if (result != realSize) {
             errno = EOVERFLOW;
             return -1;

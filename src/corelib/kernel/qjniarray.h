@@ -904,7 +904,7 @@ auto QJniArrayBase::makeObjectArray(List &&list)
         return ResultType();
 
     JNIEnv *env = QJniEnvironment::getJniEnv();
-    const size_type length = q26::saturate_cast<size_type>(std::size(list));
+    const size_type length = q26::saturating_cast<size_type>(std::size(list));
 
     // this assumes that all objects in the list have the same class
     jclass elementClass = nullptr;

@@ -27,7 +27,7 @@ static inline jstring fromQString(const QString &string, JNIEnv *env)
 {
     if (!q20::in_range<jsize>(string.size()))
         qWarning("String is too large for a Java string and will be truncated");
-    const jsize length = q26::saturate_cast<jsize>(string.size());
+    const jsize length = q26::saturating_cast<jsize>(string.size());
     return env->NewString(reinterpret_cast<const jchar*>(string.constData()), length);
 }
 

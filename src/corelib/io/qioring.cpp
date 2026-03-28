@@ -118,7 +118,7 @@ QIORing::ReadWriteStatus QIORing::handleReadCompletion(size_t value, QSpan<std::
         return ReadWriteStatus::Finished;
     }
     if (auto *extra = static_cast<QtPrivate::ReadWriteExtra *>(voidExtra)) {
-        const qsizetype bytesRead = q26::saturate_cast<qsizetype>(value);
+        const qsizetype bytesRead = q26::saturating_cast<qsizetype>(value);
         qCDebug(lcQIORing) << "Partial read of" << bytesRead << "bytes completed";
         extra->totalProcessed = setResultFn(bytesRead);
         // [0/1] Add the number of bytes processed to the spanOffset - we use this to test how many
@@ -138,7 +138,7 @@ QIORing::ReadWriteStatus QIORing::handleReadCompletion(size_t value, QSpan<std::
         }
         return ReadWriteStatus::MoreToDo;
     }
-    setResultFn(q26::saturate_cast<qsizetype>(value));
+    setResultFn(q26::saturating_cast<qsizetype>(value));
     return ReadWriteStatus::Finished;
 }
 
@@ -147,7 +147,7 @@ QIORing::ReadWriteStatus QIORing::handleWriteCompletion(size_t value,
                                                         void *voidExtra, SetResultFn setResultFn)
 {
     if (auto *extra = static_cast<QtPrivate::ReadWriteExtra *>(voidExtra)) {
-        const qsizetype bytesWritten = q26::saturate_cast<qsizetype>(value);
+        const qsizetype bytesWritten = q26::saturating_cast<qsizetype>(value);
         qCDebug(lcQIORing) << "Partial write of" << bytesWritten << "bytes completed";
         extra->totalProcessed = setResultFn(bytesWritten);
         // [0/1] Add the number of bytes processed to the spanOffset - we use this to test how many
@@ -167,7 +167,7 @@ QIORing::ReadWriteStatus QIORing::handleWriteCompletion(size_t value,
         }
         return ReadWriteStatus::MoreToDo;
     }
-    setResultFn(q26::saturate_cast<qsizetype>(value));
+    setResultFn(q26::saturating_cast<qsizetype>(value));
     return ReadWriteStatus::Finished;
 }
 

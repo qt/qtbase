@@ -1635,7 +1635,7 @@ QString QTextStream::read(qint64 maxlen)
     if (maxlen <= 0)
         return QString::fromLatin1("");     // empty, not null
 
-    return d->read(q26::saturate_cast<qsizetype>(maxlen));
+    return d->read(q26::saturating_cast<qsizetype>(maxlen));
 }
 
 /*!
