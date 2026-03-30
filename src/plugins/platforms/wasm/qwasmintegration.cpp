@@ -177,7 +177,7 @@ QWasmIntegration::~QWasmIntegration()
         elementAndScreen.wasmScreen->deleteScreen();
 
     m_screens.clear();
-
+    delete m_clipboard;
     s_instance = nullptr;
 }
 
