@@ -252,7 +252,7 @@ struct QVkShaderResourceBindings : public QRhiShaderResourceBindings
     bool create() override;
     void updateResources(UpdateFlags flags) override;
 
-    QVarLengthArray<QRhiShaderResourceBinding, 8> sortedBindings;
+    QVarLengthArray<QRhiShaderResourceBinding, BINDING_PREALLOC> sortedBindings;
     bool hasDynamicOffset = false;
     int poolIndex = -1;
     VkDescriptorSetLayout layout = VK_NULL_HANDLE;
@@ -292,7 +292,7 @@ struct QVkShaderResourceBindings : public QRhiShaderResourceBindings
             BoundStorageBufferData sbuf;
         };
     };
-    QVarLengthArray<BoundResourceData, 8> boundResourceData[QVK_FRAMES_IN_FLIGHT];
+    QVarLengthArray<BoundResourceData, BINDING_PREALLOC> boundResourceData[QVK_FRAMES_IN_FLIGHT];
 
     friend class QRhiVulkan;
 };
