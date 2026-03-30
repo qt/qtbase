@@ -489,9 +489,14 @@ void QWaylandXdgSurface::setSizeHints()
         if (minWidth > maxWidth || minHeight > maxHeight)
             return;
 
-        if (maxWidth == QWINDOWSIZE_MAX)
+        // Use 0 to signal "no maximum" per xdg-shell protocol.
+        // When no maximum is set, windowMaximumSize() returns QWINDOWSIZE_MAX.
+        // After shrunkBy(margins) where margins can be negative (e.g. when CSD
+        // decorations make clientSideMargins() larger than windowContentMargins()),
+        // the result can exceed QWINDOWSIZE_MAX. Use >= to catch both cases.
+        if (maxWidth >= QWINDOWSIZE_MAX)
             maxWidth = 0;
-        if (maxHeight == QWINDOWSIZE_MAX)
+        if (maxHeight >= QWINDOWSIZE_MAX)
             maxHeight = 0;
 
         m_toplevel->set_min_size(minWidth, minHeight);
