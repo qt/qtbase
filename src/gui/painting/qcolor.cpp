@@ -1125,7 +1125,7 @@ void QColor::setHsv(int h, int s, int v, int a)
 */
 void QColor::getHslF(float *h, float *s, float *l, float *a) const
 {
-        if (!h || !s || !l)
+    if (!h || !s || !l)
         return;
 
     if (cspec != Invalid && cspec != Hsl) {
