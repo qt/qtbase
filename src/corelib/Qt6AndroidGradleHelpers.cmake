@@ -855,7 +855,7 @@ function(_qt_internal_android_copy_android_resources target deployment_dir)
 
     # Exclude res outputs that are copied by QT_ANDROID_PACKAGE_SOURCE_DIR.
     get_target_property(package_res_outputs ${target} _qt_android_package_res_outputs)
-    if(package_res_outputs AND NOT package_res_outputs STREQUAL "package_res_outputs-NOTFOUND")
+    if(package_res_outputs)
         list(REMOVE_ITEM dst_res_files ${package_res_outputs})
     endif()
 
@@ -1162,7 +1162,7 @@ function(_qt_internal_android_copy_non_qt_linked_libs target deployment_dir)
 
         foreach(property_name IN ITEMS LINK_LIBRARIES INTERFACE_LINK_LIBRARIES)
             get_target_property(link_entries "${current_target}" ${property_name})
-            if(NOT link_entries OR link_entries STREQUAL "${property_name}-NOTFOUND")
+            if(NOT link_entries)
                 continue()
             endif()
 
@@ -1327,7 +1327,7 @@ function(_qt_internal_android_collect_qt_modules target out_qt_modules)
                 IMPORTED_LINK_DEPENDENT_LIBRARIES
                 "IMPORTED_LINK_DEPENDENT_LIBRARIES_${build_type_upper}")
             get_target_property(link_entries "${current_target}" ${property_name})
-            if(NOT link_entries OR link_entries STREQUAL "${property_name}-NOTFOUND")
+            if(NOT link_entries)
                 continue()
             endif()
 
@@ -1530,7 +1530,7 @@ function(_qt_internal_android_list_module_plugins module out_plugin_paths)
 
     string(TOUPPER "${CMAKE_BUILD_TYPE}" build_type_upper)
     get_target_property(qt_plugins "${module}" _qt_plugins)
-    if (NOT qt_plugins)
+    if(NOT qt_plugins)
         set(qt_plugins "")
     endif()
     foreach(qt_plugin IN LISTS qt_plugins)
@@ -1720,7 +1720,7 @@ function(_qt_internal_android_append_to_libs_xml_section target section_name lib
 
     set(full_section_name "_android_libs_xml_${section_name}")
     get_target_property(current_libs ${target} ${full_section_name})
-    if(NOT current_libs OR current_libs STREQUAL "${full_section_name}-NOTFOUND")
+    if(NOT current_libs)
         set(current_libs "")
     endif()
 
@@ -1735,7 +1735,7 @@ endfunction()
 function(_qt_internal_android_assemble_libs_xml_section target section_name out_section)
     set(property_name "_android_libs_xml_${section_name}")
     get_target_property(libs ${target} ${property_name})
-    if(NOT libs OR libs STREQUAL "${property_name}-NOTFOUND")
+    if(NOT libs)
         set(libs "")
     endif()
 
@@ -1840,12 +1840,12 @@ endfunction()
 
 function(_qt_internal_android_get_absolute_qml_paths target out_import_paths out_root_paths)
     get_target_property(qml_import_paths ${target} _qt_native_qml_import_paths)
-    if(qml_import_paths STREQUAL "_qt_native_qml_import_paths-NOTFOUND")
+    if(NOT qml_import_paths)
         set(qml_import_paths "")
     endif()
 
     get_target_property(qml_root_paths ${target} _qt_android_native_qml_root_paths)
-    if(qml_root_paths STREQUAL "_qt_android_native_qml_root_paths-NOTFOUND")
+    if(NOT qml_root_paths)
         set(qml_root_paths "")
     endif()
 
