@@ -1038,6 +1038,7 @@ macro(_qt_internal_get_sbom_add_target_common_options opt_args single_args multi
         NO_DEFAULT_QT_COPYRIGHTS
         NO_DEFAULT_QT_PACKAGE_VERSION
         NO_DEFAULT_QT_SUPPLIER
+        NO_DEFAULT_PROJECT_CONTAINS_RELATIONSHIP
         SBOM_INCOMPLETE_3RD_PARTY_DEPENDENCIES
         IS_QT_3RD_PARTY_HEADER_MODULE
         IS_EXTERNAL_SBOM_ENTITY
@@ -1580,6 +1581,8 @@ function(_qt_internal_sbom_add_target target)
     _qt_internal_forward_function_args(
         FORWARD_PREFIX arg
         FORWARD_OUT_VAR relationship_args
+        FORWARD_OPTIONS
+            NO_DEFAULT_PROJECT_CONTAINS_RELATIONSHIP
         FORWARD_MULTI
             LIBRARIES
             PUBLIC_LIBRARIES

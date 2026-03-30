@@ -36,6 +36,24 @@ function(sbom_assert_needle_in_spdx doc_path needle)
     set(RunCMake_TEST_FAILED "${RunCMake_TEST_FAILED}" PARENT_SCOPE)
 endfunction()
 
+# Asserts needle does NOT exist in the SPDX v2.3 document at path doc_path.
+function(sbom_assert_needle_not_in_spdx doc_path needle)
+    if(NOT EXISTS "${doc_path}")
+        string(APPEND RunCMake_TEST_FAILED
+            "Cannot check needle absence; SPDX document '${doc_path}' does not exist.\n")
+        set(RunCMake_TEST_FAILED "${RunCMake_TEST_FAILED}" PARENT_SCOPE)
+        return()
+    endif()
+
+    file(READ "${doc_path}" doc_contents)
+    if(doc_contents MATCHES "${needle}")
+        string(APPEND RunCMake_TEST_FAILED
+            "Expected NOT to find '${needle}' in SPDX v2.3 document '${doc_path}', "
+            "but it was found.\n")
+    endif()
+    set(RunCMake_TEST_FAILED "${RunCMake_TEST_FAILED}" PARENT_SCOPE)
+endfunction()
+
 # Verifies the recorded CycloneDX dependencies of one document's known targets.
 function(sbom_check_cydx_deps_for_document doc_path doc_id)
     if(NOT doc_path OR NOT EXISTS "${doc_path}")
@@ -163,6 +181,10 @@ function(sbom_check_documents)
 
         foreach(needle IN LISTS SBOM_DOC_${doc_id}_SPDX_NEEDLES)
             sbom_assert_needle_in_spdx("${SBOM_DOC_${doc_id}_SPDX}" "${needle}")
+        endforeach()
+
+        foreach(needle IN LISTS SBOM_DOC_${doc_id}_SPDX_ABSENT_NEEDLES)
+            sbom_assert_needle_not_in_spdx("${SBOM_DOC_${doc_id}_SPDX}" "${needle}")
         endforeach()
 
         sbom_check_cydx_deps_for_document("${SBOM_DOC_${doc_id}_CYDX}" "${doc_id}")
