@@ -1095,10 +1095,10 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
     case PE_PanelButtonBevel:{
             const bool isEnabled = state & QStyle::State_Enabled;
             const bool isMouseOver = state & QStyle::State_MouseOver;
-            const bool isRaised = state & QStyle::State_Raised;
+            const bool isAutoRaise = state & QStyle::State_AutoRaise;
             const int fw = proxy()->pixelMetric(PM_DefaultFrameWidth, option, widget);
             const QRectF rect = option->rect.marginsRemoved(QMargins(fw, fw, fw, fw));
-            if (element == PE_PanelButtonTool && ((!isMouseOver && !isRaised) || !isEnabled))
+            if (element == PE_PanelButtonTool && ((!isMouseOver && isAutoRaise) || !isEnabled))
                 painter->setPen(Qt::NoPen);
             else
                 painter->setPen(winUI3Color(controlStrokePrimary));
