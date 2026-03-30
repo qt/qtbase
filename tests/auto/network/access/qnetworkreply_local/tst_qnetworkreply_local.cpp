@@ -16,6 +16,7 @@
 
 using namespace Qt::StringLiterals;
 
+
 /*
     The tests here are meant to be self-contained, using servers in the same
     process if needed. This enables externals to more easily run the tests too.
@@ -23,11 +24,18 @@ using namespace Qt::StringLiterals;
 class tst_QNetworkReply_local : public QObject
 {
     Q_OBJECT
+    enum Method {
+        Get,
+        Put,
+        Post,
+        Custom,
+    };
 private slots:
     void initTestCase_data();
 
     void get();
-    void post();
+    void requestWithPayload_data();
+    void requestWithPayload();
     void emptyDeviceUpload_data();
     void emptyDeviceUpload();
 
@@ -97,8 +105,24 @@ void tst_QNetworkReply_local::get()
     QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), 200);
 }
 
-void tst_QNetworkReply_local::post()
+void tst_QNetworkReply_local::requestWithPayload_data()
 {
+    QTest::addColumn<Method>("method");
+    QTest::addColumn<QString>("customVerb");
+    QTest::addRow("get") << Put << "";
+    QTest::addRow("put") << Put << "";
+    QTest::addRow("post") << Post << "";
+    QTest::addRow("custom-get") << Custom << "get";
+    QTest::addRow("custom-put") << Custom << "put";
+    QTest::addRow("custom-post") << Custom << "post";
+    QTest::addRow("custom-delete") << Custom << "delete";
+}
+
+
+void tst_QNetworkReply_local::requestWithPayload()
+{
+    QFETCH(const Method, method);
+    QFETCH(const QString, customVerb);
     std::unique_ptr<MiniHttpServerV2> server = getServerForCurrentScheme();
     const QUrl url = getUrlForCurrentScheme(server.get());
 
@@ -106,7 +130,21 @@ void tst_QNetworkReply_local::post()
     const QByteArray payload = "Hello from the other side!"_ba;
     QNetworkRequest req(url);
     req.setHeader(QNetworkRequest::ContentTypeHeader, "text/plain");
-    std::unique_ptr<QNetworkReply> reply(manager.post(req, payload));
+    auto reply = [&]() -> std::unique_ptr<QNetworkReply> {
+        using unique_ptr = std::unique_ptr<QNetworkReply>;
+        switch (method) {
+        case Get:
+            return unique_ptr{ manager.get(req, payload) };
+        case Put:
+            return unique_ptr{ manager.put(req, payload) };
+        case Post:
+            return unique_ptr{ manager.post(req, payload) };
+        case Custom:
+            return unique_ptr{ manager.sendCustomRequest(req, customVerb.toUtf8(),
+                                                         payload) };
+        }
+        Q_UNREACHABLE_RETURN({});
+    }();
 
     const bool res = QTest::qWaitFor([reply = reply.get()] { return reply->isFinished(); });
     QVERIFY(res);
@@ -125,12 +163,6 @@ void tst_QNetworkReply_local::post()
     QCOMPARE(firstRequest.receivedData.last(payload.size() + 4), "\r\n\r\n" + payload);
 }
 
-enum Method {
-    Get,
-    Put,
-    Post,
-    Custom,
-};
 void tst_QNetworkReply_local::emptyDeviceUpload_data()
 {
     QTest::addColumn<Method>("method");

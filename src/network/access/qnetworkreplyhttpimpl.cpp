@@ -808,6 +808,7 @@ void QNetworkReplyHttpImplPrivate::postRequest(const QNetworkRequest &newHttpReq
     case QNetworkAccessManager::DeleteOperation:
         invalidateCache();
         httpRequest.setOperation(QHttpNetworkRequest::Delete);
+        createUploadByteDevice();
         break;
 
     case QNetworkAccessManager::CustomOperation:
