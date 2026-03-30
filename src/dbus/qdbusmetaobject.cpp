@@ -173,6 +173,7 @@ QDBusMetaObjectGenerator::findType(const QByteArray &signature,
             // type is still unknown or doesn't match back to the signature that it
             // was expected to, so synthesize a fake type
             typeName = "QDBusRawType<0x" + signature.toHex() + ">*";
+            Q_ASSERT(typeName == QMetaObject::normalizedType(typeName));
             type = registerComplexDBusType(typeName);
         }
 
@@ -195,6 +196,7 @@ QDBusMetaObjectGenerator::findType(const QByteArray &signature,
             type = qMetaTypeId<QByteArrayList>();
         } else {
             result.name = "{D-Bus type \"" + signature + "\"}";
+            result.name = QMetaObject::normalizedType(result.name);
             type = registerComplexDBusType(result.name);
         }
     } else {
