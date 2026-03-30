@@ -1513,9 +1513,9 @@ function(_qt_internal_android_process_plugin_item target plugin_target_or_path l
     set(copy_depends "${${inout_copy_depends}}")
 
     if(TARGET "${plugin_target_or_path}")
-        string(TOUPPER "${CMAKE_BUILD_TYPE}" _build_type_upper)
+        string(TOUPPER "${CMAKE_BUILD_TYPE}" build_type_upper)
         get_target_property(plugin_path "${plugin_target_or_path}"
-            "IMPORTED_LOCATION_${_build_type_upper}")
+            "IMPORTED_LOCATION_${build_type_upper}")
         if(NOT plugin_path)
             get_target_property(plugin_path "${plugin_target_or_path}" IMPORTED_LOCATION)
         endif()
