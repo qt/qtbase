@@ -81,6 +81,7 @@ macro.QOI                 = "Qt Online Installer"
 macro.QQEM                = "Qt Quick Effect Maker"
 macro.QQV                 = "Qt QML Viewer"
 macro.QtAA                = "Qt for Android Automotive"
+macro.QTOB                = "Qt Onboard"
 macro.QUL                 = "Qt Quick Ultralite"
 macro.QtTAS               = "Qt Tools for Android Studio"
 
