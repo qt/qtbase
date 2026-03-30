@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
 #include "pythonwriteimports.h"
+#include "language.h"
 
 #include <customwidgetsinfo.h>
 #include <option.h>
@@ -78,7 +79,10 @@ static void formatImportClasses(QTextStream &str, QStringList classList)
     for (qsizetype i = 0; i < size; ++i) {
         if (i > 0)
             str << (i % 4 == 0 ? ",\n    " : ", ");
-        str << classList.at(i);
+        QString name = language::fixClassName(classList.at(i));
+        if (const auto dotPos = name.indexOf(u'.'); dotPos != -1)
+            name.truncate(dotPos); // Import outer class only in case of nested
+        str << name;
     }
     if (size > 1)
         str << ')';
@@ -215,9 +219,6 @@ bool WriteImports::addQtClass(const QString &className)
 
 void WriteImports::addPythonCustomWidget(const QString &className, const DomCustomWidget *node)
 {
-    if (className.contains("::"_L1))
-        return; // Exclude namespaced names (just to make tests pass).
-
     if (addQtClass(className))  // Qt custom widgets like QQuickWidget, QAxWidget, etc
         return;
 

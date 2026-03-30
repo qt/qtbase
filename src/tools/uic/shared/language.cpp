@@ -104,8 +104,14 @@ QLatin1StringView lookupEnum(const EnumLookup(&array)[N], int value, int default
 
 QString fixClassName(QString className)
 {
-    if (language() == Language::Python)
-        className.replace(cppQualifier, "_"_L1);
+    switch (language()) {
+    case Language::Cpp:
+        className.replace(u'.', cppQualifier); // Nested Python class name
+        break;
+    case Language::Python:
+        className.replace(cppQualifier, "."_L1);
+        break;
+    }
     return className;
 }
 
