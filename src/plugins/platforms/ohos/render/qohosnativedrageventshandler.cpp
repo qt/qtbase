@@ -22,6 +22,7 @@
 #include <info/application_target_sdk_version.h>
 #include <memory>
 #include <qarkui/qarkuiutils.h>
+#include <qarkui/qnativenodeapi.h>
 #include <qohosjsutils.h>
 #include <qohosplatformdrag.h>
 #include <qohosudmf.h>
@@ -54,7 +55,7 @@ constexpr auto Q_DROP_DISABLED = static_cast<ArkUI_DragResult>(4);
 
 struct DragEventInfo
 {
-    QPoint globalDropPos;
+    QPoint localDropPos;
     Qt::DropActions dropActions;
     Qt::KeyboardModifiers keyboardModifiers;
 };
@@ -228,8 +229,7 @@ Qt::DropAction processDropInQWindow(
     QPlatformDropQtResponse qtResponse = QWindowSystemInterface::handleDrop(
         &qWindow,
         currentDrag != nullptr ? currentDrag->mimeData() : dropDataFactory().get(),
-        QHighDpi::toNativeLocalPosition(
-            qWindow.mapFromGlobal(QHighDpi::fromNativePixels(dragEventInfo.globalDropPos, &qWindow)), &qWindow),
+        dragEventInfo.localDropPos,
         currentDrag != nullptr ? currentDrag->supportedActions() : dragEventInfo.dropActions,
         Qt::LeftButton, dragEventInfo.keyboardModifiers);
     auto updatedDropAction =
@@ -349,13 +349,19 @@ QOhosConsumer<::ArkUI_NodeEvent *> makeQOhosNativeDragEventsHandler(
         QtOhos::JsState &jsState, ::ArkUI_NodeEvent *nodeEvent) {
         auto eventType = QArkUi::callArkUi(Q_OHOS_NAMED_FUNC(OH_ArkUI_NodeEvent_GetEventType), nodeEvent);
         auto *dragEvent = QArkUi::callArkUiOrFailOnNullResult(Q_OHOS_NAMED_FUNC(::OH_ArkUI_NodeEvent_GetDragEvent), nodeEvent);
+        auto node = QArkUi::callArkUiOrFailOnNullResult(Q_OHOS_NAMED_FUNC(OH_ArkUI_NodeEvent_GetNodeHandle), nodeEvent);
+
+        auto touchDisplayPosition = getDragEventTouchDisplayPosition(dragEvent);
+        auto nodeDisplayPosition = QArkUi::Node::nodeDisplayPosition(node);
+        auto localPosition = touchDisplayPosition - nodeDisplayPosition;
+
         DragEventInfo dragEventInfo = {
-            .globalDropPos = getDragEventTouchDisplayPosition(dragEvent),
+            .localDropPos = localPosition,
             .dropActions = mapQOhosArkUiDropOperationToQt(getQOhosDragEventDropOperation(dragEvent)),
             .keyboardModifiers = mapArkUiModifierKeyStatesToQt(getDragEventModifierKeyStates(dragEvent)),
         };
 
-        qOhosPrintfDebug("QNativeNode: got drag event: %d, (%d,%d)", eventType, dragEventInfo.globalDropPos.x(), dragEventInfo.globalDropPos.y());
+        qOhosPrintfDebug("QNativeNode: got drag event: %d, (%d,%d)", eventType, dragEventInfo.localDropPos.x(), dragEventInfo.localDropPos.y());
 
         switch (eventType) {
         case ::NODE_ON_DRAG_ENTER:
@@ -369,8 +375,7 @@ QOhosConsumer<::ArkUI_NodeEvent *> makeQOhosNativeDragEventsHandler(
                         QPlatformDragQtResponse qtResponse = QWindowSystemInterface::handleDrag(
                             &qWindow,
                             currentDrag != nullptr ? currentDrag->mimeData() : dropDataFactory().get(),
-                            QHighDpi::toNativeLocalPosition(
-                                qWindow.mapFromGlobal(QHighDpi::fromNativePixels(dragEventInfo.globalDropPos, &qWindow)), &qWindow),
+                            dragEventInfo.localDropPos,
                             currentDrag != nullptr ? currentDrag->supportedActions() : dragEventInfo.dropActions,
                             Qt::LeftButton, dragEventInfo.keyboardModifiers);
                         if (currentDrag != nullptr && qtResponse.isAccepted() && qtResponse.acceptedAction() != Qt::IgnoreAction)
