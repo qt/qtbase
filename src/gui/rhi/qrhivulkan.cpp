@@ -8475,10 +8475,11 @@ bool QVkShaderResourceBindings::create()
         }
     }
 
-    QVarLengthArray<VkDescriptorSetLayoutBinding, 4> vkbindings;
+    QVarLengthArray<VkDescriptorSetLayoutBinding, BINDING_PREALLOC> vkbindings;
+    vkbindings.reserve(sortedBindings.size());
     for (const QRhiShaderResourceBinding &binding : std::as_const(sortedBindings)) {
         const QRhiShaderResourceBinding::Data *b = QRhiImplementation::shaderResourceBindingData(binding);
-        VkDescriptorSetLayoutBinding vkbinding = {};
+        VkDescriptorSetLayoutBinding &vkbinding = vkbindings.emplace_back();
         vkbinding.binding = uint32_t(b->binding);
         vkbinding.descriptorType = toVkDescriptorType(b);
         if (b->type == QRhiShaderResourceBinding::SampledTexture || b->type == QRhiShaderResourceBinding::Texture)
@@ -8486,7 +8487,6 @@ bool QVkShaderResourceBindings::create()
         else
             vkbinding.descriptorCount = 1;
         vkbinding.stageFlags = toVkShaderStageFlags(b->stage);
-        vkbindings.append(vkbinding);
     }
 
     VkDescriptorSetLayoutCreateInfo layoutInfo = {};
