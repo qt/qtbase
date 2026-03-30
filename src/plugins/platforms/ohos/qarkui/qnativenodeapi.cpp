@@ -341,6 +341,24 @@ QOhosOptional<::ArkUI_NodeHandle> Node::tryfindChild(
     return makeEmptyQOhosOptional();
 }
 
+QPoint Node::nodeGlobalPosition(::ArkUI_NodeHandle nodeHandle)
+{
+    ::ArkUI_IntOffset globalPositionPx;
+    callArkUiOrFailOnErrorResult(
+        Q_OHOS_NAMED_FUNC(::OH_ArkUI_NodeUtils_GetLayoutPositionInGlobalDisplay),
+        nodeHandle, &globalPositionPx);
+    return QPoint(globalPositionPx.x, globalPositionPx.y);
+}
+
+QPoint Node::nodeDisplayPosition(::ArkUI_NodeHandle nodeHandle)
+{
+    ::ArkUI_IntOffset displayPosition;
+    callArkUiOrFailOnErrorResult(
+        Q_OHOS_NAMED_FUNC(::OH_ArkUI_NodeUtils_GetLayoutPositionInScreen),
+        nodeHandle, &displayPosition);
+    return QPoint(displayPosition.x, displayPosition.y);
+}
+
 }
 
 QT_END_NAMESPACE
