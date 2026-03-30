@@ -795,6 +795,15 @@ QJsonObject::const_iterator QJsonObject::constFindImpl(T key) const
     \overload
 */
 
+/*! \fn QJsonObject::const_iterator QJsonObject::cbegin() const
+    \since 6.12
+
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first item
+    in the object.
+
+    \sa begin(), cend()
+*/
+
 /*! \fn QJsonObject::const_iterator QJsonObject::constBegin() const
 
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first item
@@ -814,6 +823,15 @@ QJsonObject::const_iterator QJsonObject::constFindImpl(T key) const
 /*! \fn QJsonObject::const_iterator QJsonObject::end() const
 
     \overload
+*/
+
+/*! \fn QJsonObject::const_iterator QJsonObject::cend() const
+    \since 6.12
+
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
+    item after the last item in the object.
+
+    \sa cbegin(), end()
 */
 
 /*! \fn QJsonObject::const_iterator QJsonObject::constEnd() const

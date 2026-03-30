@@ -305,9 +305,11 @@ public:
     // STL style
     inline iterator begin() { detach(); return iterator(this, 0); }
     inline const_iterator begin() const { return const_iterator(this, 0); }
+    inline const_iterator cbegin() const { return const_iterator(this, 0); }
     inline const_iterator constBegin() const { return const_iterator(this, 0); }
     inline iterator end() { detach(); return iterator(this, size()); }
     inline const_iterator end() const { return const_iterator(this, size()); }
+    inline const_iterator cend() const { return const_iterator(this, size()); }
     inline const_iterator constEnd() const { return const_iterator(this, size()); }
     key_value_iterator keyValueBegin() { return key_value_iterator(begin()); }
     key_value_iterator keyValueEnd() { return key_value_iterator(end()); }
