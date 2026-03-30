@@ -555,7 +555,16 @@ function(_qt_internal_sbom_get_external_reference_search_paths out_var)
 
     list(REMOVE_DUPLICATES search_paths)
 
-    set(${out_var} "${search_paths}" PARENT_SCOPE)
+    # On Windows we might get backslash paths from e.g. CMAKE_PREFIX_PATH. Convert them to forward
+    # slashes to avoid syntax errors when operating on them in
+    # _qt_internal_sbom_generate_add_external_reference.
+    set(search_paths_posix "")
+    foreach(search_path IN LISTS search_paths)
+        file(TO_CMAKE_PATH "${search_path}" search_path_posix)
+        list(APPEND search_paths_posix "${search_path_posix}")
+    endforeach()
+
+    set(${out_var} "${search_paths_posix}" PARENT_SCOPE)
 endfunction()
 
 # Given an absolute or relative path for an external document, searches for it in the given
