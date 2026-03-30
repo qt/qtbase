@@ -687,7 +687,7 @@ function(_qt_internal_sbom_generate_add_external_reference)
     # File path may not exist yet, and it could be a generator expression.
     set(content "
         set(find_external_document \"${find_external_document}\")
-        set(document_search_paths ${document_search_paths})
+        set(document_search_paths \"${document_search_paths}\")
         set(maybe_external_document_file_path \"${arg_EXTERNAL_DOCUMENT_FILE_PATH}\")
         set(sbom_format \"${arg_SBOM_FORMAT}\")
 
