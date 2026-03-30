@@ -329,11 +329,16 @@ void QWaylandWindow::reset()
         {
             QWriteLocker lock(&mSurfaceLock);
             invalidateSurface();
-            mSurface.reset();
-            mViewport.reset();
-            mFractionalScale.reset();
             mColorManagementSurface.reset();
             mPendingImageDescription.reset();
+            mFractionalScale.reset();
+            mViewport.reset();
+
+            // Destroy surface last.
+            // Some compositors (e.g. ChromeOS Sommelier) crash if they receive
+            // destroy requests for these objects after the associated surface
+            // has already been destroyed.
+            mSurface.reset();
         }
         emit wlSurfaceDestroyed();
     }
