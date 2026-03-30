@@ -449,7 +449,9 @@ endfunction()
 # - custom relationship entries
 # - always adds a "contains" relationship to the parent project package
 function(_qt_internal_sbom_handle_target_relationships target)
-    set(opt_args "")
+    set(opt_args
+        NO_DEFAULT_PROJECT_CONTAINS_RELATIONSHIP
+    )
     set(single_args
         SPDX_ID
         PROJECT_SPDX_ID
@@ -524,17 +526,40 @@ function(_qt_internal_sbom_handle_target_relationships target)
         list(APPEND spdx_relationships ${extra_spdx_v2_relationships})
     endif()
 
-    # Add default "contains" spdx relationship to the project package.
-    _qt_internal_sbom_get_current_project_target(project_target)
-    list(PREPEND sbom_relationship_entries
-        SBOM_RELATIONSHIP_ENTRY
-            SBOM_RELATIONSHIP_FROM
-                "${project_target}"
-            SBOM_RELATIONSHIP_TYPE
-                CONTAINS
-            SBOM_RELATIONSHIP_TO
-                "${target}"
+    # Add a default 'project package CONTAINS the target package' spdx relationship, but only for
+    # targets built as part of the project. Skip it for system libraries, system build tools or
+    # when opted out.
+    set(should_add_project_contains_relationship TRUE)
+
+    set(entity_types_without_project_contains
+        SYSTEM_BUILD_TOOL
+        SYSTEM_LIBRARY
     )
+    get_target_property(sbom_entity_type "${target}" _qt_sbom_entity_type)
+    if(NOT sbom_entity_type)
+        message(FATAL_ERROR "Target ${target} does not have a _qt_sbom_entity_type property set.")
+    endif()
+
+    if(sbom_entity_type IN_LIST entity_types_without_project_contains)
+        set(should_add_project_contains_relationship FALSE)
+    endif()
+
+    if(arg_NO_DEFAULT_PROJECT_CONTAINS_RELATIONSHIP)
+        set(should_add_project_contains_relationship FALSE)
+    endif()
+
+    if(should_add_project_contains_relationship)
+        _qt_internal_sbom_get_current_project_target(project_target)
+        list(PREPEND sbom_relationship_entries
+            SBOM_RELATIONSHIP_ENTRY
+                SBOM_RELATIONSHIP_FROM
+                    "${project_target}"
+                SBOM_RELATIONSHIP_TYPE
+                    CONTAINS
+                SBOM_RELATIONSHIP_TO
+                    "${target}"
+        )
+    endif()
 
     set(${arg_OUT_VAR_SBOM_RELATIONSHIP_ENTRIES} "${sbom_relationship_entries}" PARENT_SCOPE)
     set(${arg_OUT_VAR_SPDX_V2_RELATIONSHIPS} "${spdx_relationships}" PARENT_SCOPE)

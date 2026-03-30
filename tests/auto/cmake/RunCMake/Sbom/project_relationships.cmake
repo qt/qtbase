@@ -80,6 +80,66 @@ add_assert_str_exists_in_spdx_v2_3_doc("Relationship: ${t2_spdx_id} BUILD_DEPEND
 add_assert_str_exists_in_spdx_v2_3_doc("Relationship: ${t2_spdx_id} BUILD_DEPENDENCY_OF ${project_spdx_id}")
 add_cydx_v1_6_deps_to_result_file(t2 DEPS ${project_spdx_id} ${t1_spdx_id})
 
+# Asserts that the given target is part of the document, but without the default
+# 'project package CONTAINS the target package' relationship.
+function(assert_project_does_not_have_contains_relationship_for_target target)
+    if(NOT QT_GENERATE_SBOM)
+        return()
+    endif()
+
+    _qt_internal_sbom_get_spdx_id_for_target(${target} target_spdx_id)
+    add_assert_str_exists_in_spdx_v2_3_doc("SPDXID: ${target_spdx_id}")
+    add_assert_str_not_exists_in_spdx_v2_3_doc(
+        "Relationship: ${project_spdx_id} CONTAINS ${target_spdx_id}")
+endfunction()
+
+# Case 3
+# A regular library gets the default 'project package CONTAINS the target package' relationship.
+add_library(normal_lib STATIC)
+target_sources(normal_lib PRIVATE sources/utils_helper.cpp)
+install(TARGETS normal_lib ARCHIVE DESTINATION lib)
+_qt_internal_add_sbom(normal_lib
+    TYPE "LIBRARY"
+    RUNTIME_PATH bin
+    ARCHIVE_PATH lib
+    LIBRARY_PATH lib
+)
+if(QT_GENERATE_SBOM)
+    _qt_internal_sbom_get_spdx_id_for_target(normal_lib normal_lib_spdx_id)
+    add_assert_str_exists_in_spdx_v2_3_doc(
+        "Relationship: ${project_spdx_id} CONTAINS ${normal_lib_spdx_id}")
+endif()
+
+# Case 4
+# A system library does not get the 'project contains' relationship, but is still part of the
+# document.
+_qt_internal_add_sbom(sys_lib
+    SBOM_ENTITY_TYPE SYSTEM_LIBRARY
+)
+assert_project_does_not_have_contains_relationship_for_target(sys_lib)
+
+# Case 5
+# A system build tool does not get the 'project contains' relationship, but is still part of the
+# document.
+_qt_internal_add_sbom(sys_build_tool
+    SBOM_ENTITY_TYPE SYSTEM_BUILD_TOOL
+)
+assert_project_does_not_have_contains_relationship_for_target(sys_build_tool)
+
+# Case 6
+# A regular library can opt out of the 'project contains' relationship.
+add_library(optout_lib STATIC)
+target_sources(optout_lib PRIVATE sources/utils_helper.cpp)
+install(TARGETS optout_lib ARCHIVE DESTINATION lib)
+_qt_internal_add_sbom(optout_lib
+    TYPE "LIBRARY"
+    RUNTIME_PATH bin
+    ARCHIVE_PATH lib
+    LIBRARY_PATH lib
+    NO_DEFAULT_PROJECT_CONTAINS_RELATIONSHIP
+)
+assert_project_does_not_have_contains_relationship_for_target(optout_lib)
+
 _qt_internal_sbom_end_project()
 
 sbom_test_end()
