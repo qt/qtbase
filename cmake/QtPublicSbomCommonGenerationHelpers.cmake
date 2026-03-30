@@ -551,6 +551,7 @@ function(_qt_internal_sbom_create_build_time_sbom_targets)
         # Include helpers functions.
         include(\"${macro_module_base_dir}/QtPublicCMakeHelpers.cmake\")
         include(\"${macro_module_base_dir}/QtPublicSbomExternalReferenceHelpers.cmake\")
+        include(\"${macro_module_base_dir}/QtPublicSbomOpsHelpers.cmake\")
 
         # QT_SBOM_BUILD_TIME be set to FALSE at install time, so don't override if it's set.
         # This allows reusing the same cmake file for both build and install.
