@@ -455,11 +455,7 @@ QPoint QQtEmbeddedWindowNode::parentRelativeOffsetPixels() const
 
 QPoint QQtEmbeddedWindowNode::globalRelativeOffsetPixels() const
 {
-    ::ArkUI_IntOffset globalPositionPx;
-    callArkUiOrFailOnErrorResult(
-        Q_OHOS_NAMED_FUNC(::OH_ArkUI_NodeUtils_GetLayoutPositionInGlobalDisplay),
-        stackNode().handle(), &globalPositionPx);
-    return QPoint(globalPositionPx.x, globalPositionPx.y);
+    return QArkUi::Node::nodeGlobalPosition(stackNode().handle());
 }
 
 }

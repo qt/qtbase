@@ -5,6 +5,7 @@
 #define QNATIVENODE_API
 
 #include <QtCore/qglobal.h>
+#include <QtCore/qpoint.h>
 #include <QtCore/private/qohoscommon_p.h>
 #include <arkui/native_node.h>
 #include <arkui/native_type.h>
@@ -31,6 +32,9 @@ public:
     static bool isQtManagedNode(::ArkUI_NodeHandle nodeHandle);
     static QOhosOptional<::ArkUI_NodeHandle> tryfindChild(
         ::ArkUI_NodeHandle nodeHandle, const std::function<bool(::ArkUI_NodeHandle)> predicate);
+
+    static QPoint nodeGlobalPosition(::ArkUI_NodeHandle nodeHandle);
+    static QPoint nodeDisplayPosition(::ArkUI_NodeHandle nodeHandle);
 
     Node(const Node &) = delete;
     Node &operator=(const Node &) = delete;
