@@ -8,6 +8,8 @@
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/private/qhighdpiscaling_p.h>
 #include <algorithm>
+#include <arkui/drag_and_drop.h>
+#include <arkui/native_node.h>
 #include <arkui/ui_input_event.h>
 #include <array>
 #include <chrono>
@@ -330,13 +332,15 @@ QOhosSupplier<ch::nanoseconds> makeDragMoveQtThreadWaitTimeoutsSupplier()
 
 }
 
-QOhosConsumer<::ArkUI_NodeEventType, ::ArkUI_DragEvent *> makeQOhosNativeDragEventsHandler(
+QOhosConsumer<::ArkUI_NodeEvent *> makeQOhosNativeDragEventsHandler(
     QtOhos::QThreadSafeRef<QWindow> qWindowRef)
 {
     auto qtThreadMoveEventsProcessor = makeBestEffortQtThreadFunctionsExecutor<QWindow, Qt::DropAction>(
         qWindowRef, makeDragMoveQtThreadWaitTimeoutsSupplier());
     auto eventsHandler = [qWindowRef, qtThreadMoveEventsProcessor = std::move(qtThreadMoveEventsProcessor)](
-        QtOhos::JsState &jsState, ::ArkUI_NodeEventType eventType, ::ArkUI_DragEvent *dragEvent) {
+        QtOhos::JsState &jsState, ::ArkUI_NodeEvent *nodeEvent) {
+        auto eventType = QArkUi::callArkUi(Q_OHOS_NAMED_FUNC(OH_ArkUI_NodeEvent_GetEventType), nodeEvent);
+        auto *dragEvent = QArkUi::callArkUiOrFailOnNullResult(Q_OHOS_NAMED_FUNC(::OH_ArkUI_NodeEvent_GetDragEvent), nodeEvent);
         DragEventInfo dragEventInfo = {
             .globalDropPos = QPoint(
                 ::OH_ArkUI_DragEvent_GetTouchPointXToDisplay(dragEvent),
@@ -422,10 +426,10 @@ QOhosConsumer<::ArkUI_NodeEventType, ::ArkUI_DragEvent *> makeQOhosNativeDragEve
         }
     };
 
-    return [eventsHandler = std::move(eventsHandler)](::ArkUI_NodeEventType eventType, ::ArkUI_DragEvent *dragEvent) {
+    return [eventsHandler = std::move(eventsHandler)](::ArkUI_NodeEvent *nodeEvent) {
         QtOhos::runInJsThreadAndWait(
             [&](QtOhos::JsState &jsState) {
-                eventsHandler(jsState, eventType, dragEvent);
+                eventsHandler(jsState, nodeEvent);
             },
             Q_FUNC_INFO);
     };
