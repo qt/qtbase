@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <arkui/drag_and_drop.h>
 #include <arkui/native_node.h>
+#include <arkui/native_type.h>
 #include <arkui/ui_input_event.h>
 #include <array>
 #include <chrono>
@@ -330,6 +331,13 @@ QOhosSupplier<ch::nanoseconds> makeDragMoveQtThreadWaitTimeoutsSupplier()
     };
 }
 
+QPoint getDragEventTouchDisplayPosition(::ArkUI_DragEvent *dragEvent)
+{
+    return QPoint(
+        ::OH_ArkUI_DragEvent_GetTouchPointXToDisplay(dragEvent),
+        ::OH_ArkUI_DragEvent_GetTouchPointYToDisplay(dragEvent));
+}
+
 }
 
 QOhosConsumer<::ArkUI_NodeEvent *> makeQOhosNativeDragEventsHandler(
@@ -342,9 +350,7 @@ QOhosConsumer<::ArkUI_NodeEvent *> makeQOhosNativeDragEventsHandler(
         auto eventType = QArkUi::callArkUi(Q_OHOS_NAMED_FUNC(OH_ArkUI_NodeEvent_GetEventType), nodeEvent);
         auto *dragEvent = QArkUi::callArkUiOrFailOnNullResult(Q_OHOS_NAMED_FUNC(::OH_ArkUI_NodeEvent_GetDragEvent), nodeEvent);
         DragEventInfo dragEventInfo = {
-            .globalDropPos = QPoint(
-                ::OH_ArkUI_DragEvent_GetTouchPointXToDisplay(dragEvent),
-                ::OH_ArkUI_DragEvent_GetTouchPointYToDisplay(dragEvent)),
+            .globalDropPos = getDragEventTouchDisplayPosition(dragEvent),
             .dropActions = mapQOhosArkUiDropOperationToQt(getQOhosDragEventDropOperation(dragEvent)),
             .keyboardModifiers = mapArkUiModifierKeyStatesToQt(getDragEventModifierKeyStates(dragEvent)),
         };
