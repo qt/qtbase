@@ -12,7 +12,7 @@
 
 QT_BEGIN_NAMESPACE
 
-QOhosConsumer<::ArkUI_NodeEventType, ::ArkUI_DragEvent *> makeQOhosNativeDragEventsHandler(
+QOhosConsumer<::ArkUI_NodeEvent *> makeQOhosNativeDragEventsHandler(
     QtOhos::QThreadSafeRef<QWindow> qWindowRef);
 
 QT_END_NAMESPACE

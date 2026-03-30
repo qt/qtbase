@@ -476,7 +476,7 @@ void QEmbeddedWindowNode::setGesturesHandler(
 }
 
 void QEmbeddedWindowNode::setDragEventsHandler(
-    QOhosConsumer<::ArkUI_NodeEventType, ::ArkUI_DragEvent *> dragEventsHandler)
+    QOhosConsumer<::ArkUI_NodeEvent *> dragEventsHandler)
 {
     static const ::ArkUI_NodeEventType dragEventTypes[] = {
         ::NODE_ON_DRAG_ENTER,
@@ -490,14 +490,14 @@ void QEmbeddedWindowNode::setDragEventsHandler(
     for (auto dragEventType : dragEventTypes) {
         contentNode().setEventHandler(
             dragEventType,
-            [dragEventType, sharedDragEventsHandler](::ArkUI_NodeEvent *nodeEvent) {
+            [sharedDragEventsHandler](::ArkUI_NodeEvent *nodeEvent) {
                 auto *dragEvent = QArkUi::callArkUi(
                     Q_OHOS_NAMED_FUNC(::OH_ArkUI_NodeEvent_GetDragEvent), nodeEvent);
                 if (dragEvent == nullptr) {
                     qOhosPrintfError("Got illegal drag event as ArkUI_NodeEvent, ignoring");
                     return;
                 }
-                (*sharedDragEventsHandler)(dragEventType, dragEvent);
+                (*sharedDragEventsHandler)(nodeEvent);
             });
     }
 }

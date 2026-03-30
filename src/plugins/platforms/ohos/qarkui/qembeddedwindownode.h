@@ -101,7 +101,7 @@ public:
     void setSaturation(int saturation);
     void setGesturesHandler(QOhosConsumer<const NativeGestureInfo &> gesturesHandler);
     void setHitTestMode(::ArkUI_HitTestMode hitTestMode);
-    void setDragEventsHandler(QOhosConsumer<::ArkUI_NodeEventType, ::ArkUI_DragEvent *> dragEventsHandler);
+    void setDragEventsHandler(QOhosConsumer<::ArkUI_NodeEvent *> dragEventsHandler);
     void setKeyEventsHandler(QOhosConsumer<::ArkUI_UIInputEvent *> keyEventsHandler);
     void setHoverEventsHandler(QOhosConsumer<NativeNodeHoverEvent> hoverEventsHandler);
     void setAxisEventsHandler(QOhosConsumer<::ArkUI_UIInputEvent *> axisEventsHandler);
