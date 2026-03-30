@@ -30,11 +30,20 @@ void QWasmInputContext::inputCallback(emscripten::val event)
         return;
     const auto inputTypeString = inputType.as<std::string>();
 
-    // also may be dataTransfer
-    // containing rich text
     emscripten::val inputData = event["data"];
     QString inputStr = (!inputData.isNull() && !inputData.isUndefined())
         ? QString::fromEcmaString(inputData) : QString();
+
+
+    // also do dataTransfer
+    // containing rich text
+    emscripten::val dataTr = event["dataTransfer"];
+    if (!dataTr.isUndefined() && !dataTr.isNull()) {
+        qCDebug(qLcQpaWasmInputContext) << "inputEvent dataTransfer" << inputStr;
+        inputStr = QString::fromStdString(dataTr.
+                                          call<emscripten::val>("getData",
+                                                                std::string("text")).as<std::string>());
+    }
 
     // There are many inputTypes for InputEvent
     // https://www.w3.org/TR/input-events-1/
