@@ -323,9 +323,13 @@ function(_qt_internal_sbom_handle_default_build_tool_type)
 
         set(sbom_args
             FRIENDLY_PACKAGE_NAME "Compiler ${CMAKE_CXX_COMPILER_ID}"
-            PACKAGE_VERSION "${CMAKE_CXX_COMPILER_VERSION}"
             PACKAGE_SUMMARY "${package_summary}"
         )
+
+        # CMake might not be able to extract the compiler version for all compilers.
+        if(CMAKE_CXX_COMPILER_VERSION)
+            list(APPEND sbom_args PACKAGE_VERSION "${CMAKE_CXX_COMPILER_VERSION}")
+        endif()
 
         if(arg_GET_RELATIONSHIP_COMMENT)
             string(CONCAT relationship_comment
@@ -339,8 +343,13 @@ function(_qt_internal_sbom_handle_default_build_tool_type)
         # this when the info is not available.
         set(sbom_args
             FRIENDLY_PACKAGE_NAME "Linker ${CMAKE_CXX_COMPILER_LINKER_ID}"
-            PACKAGE_VERSION "${CMAKE_CXX_COMPILER_LINKER_VERSION}"
         )
+
+        # CMake might not be able to extract the linker version for all platforms, e.g. for
+        # MinGW + GCC.
+        if(CMAKE_CXX_COMPILER_LINKER_VERSION)
+            list(APPEND sbom_args PACKAGE_VERSION "${CMAKE_CXX_COMPILER_LINKER_VERSION}")
+        endif()
 
         if(arg_GET_RELATIONSHIP_COMMENT)
             string(CONCAT relationship_comment
