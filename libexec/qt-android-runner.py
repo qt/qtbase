@@ -25,7 +25,7 @@ def die(msg):
 
 # Define and parse arguments
 parser = argparse.ArgumentParser(description="Qt for Android app runner.",
-                                 epilog=f'''
+                                 epilog='''
 This is a helper script to run Qt for Android apps directly from the terminal.
 It supports starting apps with parameters and forwards environment variables to
 the device. It prints live logcat messages as the app is running. The script exits
@@ -73,7 +73,7 @@ try:
     if not devices:
         die("No devices are connected.")
 
-    if args.serial and not args.serial in devices:
+    if args.serial and args.serial not in devices:
         die("No connected devices with the specified serial number.")
 except Exception as e:
     die(f"Failed to check for running devices, received error: {e}")
@@ -245,7 +245,7 @@ def terminate_app(signum, frame):
 signal.signal(signal.SIGINT, terminate_app)
 
 # Show app's logs
-logcat_process = None;
+logcat_process = None
 try:
     format_arg = "-v brief -v color"
     time_arg = f"-T '{start_timestamp}'"
