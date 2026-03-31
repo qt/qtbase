@@ -2805,6 +2805,15 @@ relayout:
                 break;
             };
 
+            // If the cell span straddles a page break, vertical-align is ignored
+            // per CSS paged-media spec (browsers top-align such cells).
+            if (offset > 0 && pageHeight > 0) {
+                const QFixed cellTop = absoluteTableY + td->rowPositions.at(r);
+                const QFixed cellBottom = cellTop + availableHeight;
+                if ((cellBottom / pageHeight).truncate() != (cellTop / pageHeight).truncate())
+                    offset = 0;
+            }
+
             for (int rd = 0; rd < cell.rowSpan(); ++rd) {
                 for (int cd = 0; cd < cell.columnSpan(); ++cd) {
                     const int index = (c + cd) + (r + rd) * columns;
