@@ -5755,6 +5755,7 @@ void QRhiVulkan::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBin
         {
             QVkBuffer *bufD = QRHI_RES(QVkBuffer, b->u.ubuf.buf);
             Q_ASSERT(bufD->m_usage.testFlag(QRhiBuffer::UniformBuffer));
+            sanityCheckResourceOwnership(bufD);
 
             if (bufD->m_type == QRhiBuffer::Dynamic)
                 executeBufferHostWritesForSlot(bufD, currentFrameSlot);
@@ -5791,6 +5792,8 @@ void QRhiVulkan::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBin
                 // images and samplers, so tex or sampler (but not both) can be
                 // null here.
                 Q_ASSERT(texD || samplerD);
+                sanityCheckResourceOwnership(texD);
+                sanityCheckResourceOwnership(samplerD);
                 if (texD) {
                     texD->lastActiveFrameSlot = currentFrameSlot;
                     trackedRegisterTexture(&passResTracker, texD,
@@ -5822,6 +5825,7 @@ void QRhiVulkan::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBin
         case QRhiShaderResourceBinding::ImageLoadStore:
         {
             QVkTexture *texD = QRHI_RES(QVkTexture, b->u.simage.tex);
+            sanityCheckResourceOwnership(texD);
             Q_ASSERT(texD->m_flags.testFlag(QRhiTexture::UsedWithLoadStore));
             texD->lastActiveFrameSlot = currentFrameSlot;
             QRhiPassResourceTracker::TextureAccess access;
@@ -5861,6 +5865,7 @@ void QRhiVulkan::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBin
         {
             QVkBuffer *bufD = QRHI_RES(QVkBuffer, b->u.sbuf.buf);
             Q_ASSERT(bufD->m_usage.testFlag(QRhiBuffer::StorageBuffer));
+            sanityCheckResourceOwnership(bufD);
 
             if (bufD->m_type == QRhiBuffer::Dynamic)
                 executeBufferHostWritesForSlot(bufD, currentFrameSlot);

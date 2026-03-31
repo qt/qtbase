@@ -200,6 +200,7 @@ public:
 
     bool sanityCheckGraphicsPipeline(QRhiGraphicsPipeline *ps);
     bool sanityCheckShaderResourceBindings(QRhiShaderResourceBindings *srb);
+    bool sanityCheckResourceOwnership(QRhiResource *maybeResource);
     void updateLayoutDesc(QRhiShaderResourceBindings *srb);
 
     quint32 pipelineCacheRhiId() const

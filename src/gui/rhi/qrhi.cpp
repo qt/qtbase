@@ -8815,6 +8815,24 @@ bool QRhiImplementation::sanityCheckShaderResourceBindings(QRhiShaderResourceBin
     return true;
 }
 
+bool QRhiImplementation::sanityCheckResourceOwnership(QRhiResource *maybeResource)
+{
+    if (!maybeResource)
+        return true;
+
+    if (maybeResource->m_rhi->q != q) {
+        qWarning("%s %p (%s) belongs to QRhi %p, but client code attempted to use it with QRhi %p. This is wrong.",
+                  resourceTypeStr(maybeResource),
+                  maybeResource,
+                  maybeResource->m_objectName.constData(),
+                  maybeResource->m_rhi->q,
+                  q);
+        return false;
+    }
+
+    return true;
+}
+
 int QRhiImplementation::effectiveSampleCount(int sampleCount) const
 {
     // Stay compatible with QSurfaceFormat and friends where samples == 0 means the same as 1.

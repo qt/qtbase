@@ -1590,6 +1590,7 @@ void QRhiMetal::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
         {
             QMetalBuffer *bufD = QRHI_RES(QMetalBuffer, b->u.ubuf.buf);
             Q_ASSERT(bufD->m_usage.testFlag(QRhiBuffer::UniformBuffer));
+            sanityCheckResourceOwnership(bufD);
             executeBufferHostWritesForCurrentFrame(bufD);
             if (bufD->d->slotted)
                 hasSlottedResourceInSrb = true;
@@ -1616,6 +1617,8 @@ void QRhiMetal::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
                 QMetalTexture *texD = QRHI_RES(QMetalTexture, data->texSamplers[elem].tex);
                 QMetalSampler *samplerD = QRHI_RES(QMetalSampler, data->texSamplers[elem].sampler);
                 Q_ASSERT(texD || samplerD);
+                sanityCheckResourceOwnership(texD);
+                sanityCheckResourceOwnership(samplerD);
                 const quint64 texId = texD ? texD->m_id : 0;
                 const uint texGen = texD ? texD->generation : 0;
                 const quint64 samplerId = samplerD ? samplerD->m_id : 0;
@@ -1643,6 +1646,7 @@ void QRhiMetal::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
         case QRhiShaderResourceBinding::ImageLoadStore:
         {
             QMetalTexture *texD = QRHI_RES(QMetalTexture, b->u.simage.tex);
+            sanityCheckResourceOwnership(texD);
             if (texD->generation != bd.simage.generation || texD->m_id != bd.simage.id) {
                 resNeedsRebind = true;
                 bd.simage.id = texD->m_id;
@@ -1657,6 +1661,7 @@ void QRhiMetal::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
         {
             QMetalBuffer *bufD = QRHI_RES(QMetalBuffer, b->u.sbuf.buf);
             Q_ASSERT(bufD->m_usage.testFlag(QRhiBuffer::StorageBuffer));
+            sanityCheckResourceOwnership(bufD);
 
             if (needsBufferSizeBuffer) {
                 for (int i = 0; i < 6; ++i) {
