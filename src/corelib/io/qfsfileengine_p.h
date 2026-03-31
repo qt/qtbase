@@ -225,10 +225,6 @@ public:
     static int openModeToOpenFlags(QIODevice::OpenMode mode)
     {
         int oflags = QT_OPEN_RDONLY;
-#  ifdef QT_LARGEFILE_SUPPORT
-        oflags |= QT_OPEN_LARGEFILE;
-#  endif
-
         if ((mode & QIODevice::ReadWrite) == QIODevice::ReadWrite)
             oflags = QT_OPEN_RDWR;
         else if (mode & QIODevice::WriteOnly)
@@ -246,6 +242,9 @@ public:
         if (mode & QIODevice::NewOnly)
             oflags |= QT_OPEN_EXCL;
 
+#  ifdef QT_LARGEFILE_SUPPORT
+        oflags |= QT_OPEN_LARGEFILE;
+#  endif
         return oflags;
     }
 #endif // Q_OS_UNIX
