@@ -1396,10 +1396,17 @@ size_t qHash(long double key, size_t seed) noexcept
         key += static_cast<long double>(0.0);
         qToUnaligned(key, buffer);
 
-        if constexpr (QSysInfo::ByteOrder == QSysInfo::BigEndian)
-            memset(buffer, 0, sizeof(long double) - Size);
-        else
-            memset(buffer + Size, 0, sizeof(long double) - Size);
+        // Work around: https://issuetracker.google.com/issues/400937647
+        // An over-eager Bionic diagnostic in NDK 30 Clang LLVM 21.0.0:
+        // "error: 'memset' will set 0 bytes; maybe the arguments got flipped? [-Werror,-Wuser-defined-warnings]""
+        // Note! Trying to work around the problem with an if-constexpr does not work.
+        size_t paddingSize = sizeof(long double) - Size;
+        if (paddingSize > 0) {
+            if constexpr (QSysInfo::ByteOrder == QSysInfo::BigEndian)
+                (memset)(buffer, 0, paddingSize);
+            else
+                (memset)(buffer + Size, 0, paddingSize);
+        }
         return murmurhash(buffer, sizeof(long double), seed);
     }
 }
