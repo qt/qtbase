@@ -54,11 +54,10 @@ public:
     bool isActive() const {
         return m_focusObject && m_inputMethodAccepted;
     }
+    bool m_ignoreNextInput = false;
 
 private:
     void updateInputElement();
-
-private:
     QString m_preeditString;
     int m_replaceIndex = 0;
 

@@ -715,13 +715,17 @@ void QWasmWindow::handleKeyForInputContextEvent(const KeyEvent &keyEvent)
     // let those be handled by by the input event key handler. Check for the
     // keyCode 229 as well as isComposing in order catch all cases (see mdn
     // docs for the keyDown event)
+
     if (keyEvent.isComposing || keyEvent.keyCode == 229)
         return;
 
     qCDebug(qLcQpaWasmInputContext) << "processKey as KeyEvent";
     emscripten::val event = keyEvent.webEvent;
-    if (processKeyForInputContext(keyEvent))
-        event.call<void>("preventDefault");
+    if (processKeyForInputContext(keyEvent)) {
+        // this event is already handled in Qt, but let it
+        // go to inputCallback to facilitate word suggestions
+        QWasmIntegration::get()->wasmInputContext()->m_ignoreNextInput = true;
+    }
     event.call<void>("stopImmediatePropagation");
 }
 
