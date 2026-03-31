@@ -1257,7 +1257,7 @@ QT_WARNING_POP // QT_WARNING_DISABLE_DEPRECATED
 
 // Forward declaration. Impl should be added after compareThreeWay() overload
 // for std::pair.
-template <bool Condition, typename LT, typename RT = LT>
+template <typename LT, typename RT>
 auto threeWayOrWeakCompare(const LT &lhs, const RT &rhs);
 
 } // namespace QtOrderingPrivate
@@ -1301,24 +1301,18 @@ template <typename T1, typename T2, typename U1, typename U2,
 #endif
 auto compareThreeWay(const std::pair<T1, T2> &lhs, const std::pair<U1, U2> &rhs)
 {
-    using namespace QtOrderingPrivate;
-    using Qt::compareThreeWay;
-
-    constexpr bool firstHasCompareThreeWay = CompareThreeWayTester::hasCompareThreeWay_v<T1, U1>;
-    constexpr bool secondHasCompareThreeWay = CompareThreeWayTester::hasCompareThreeWay_v<T2, U2>;
-
     using FirstType =
-            decltype(threeWayOrWeakCompare<firstHasCompareThreeWay>(std::declval<T1>(),
-                                                                    std::declval<U1>()));
+            decltype(QtOrderingPrivate::threeWayOrWeakCompare(std::declval<T1>(),
+                                                              std::declval<U1>()));
     using SecondType =
-            decltype(threeWayOrWeakCompare<secondHasCompareThreeWay>(std::declval<T2>(),
-                                                                     std::declval<U2>()));
+            decltype(QtOrderingPrivate::threeWayOrWeakCompare(std::declval<T2>(),
+                                                              std::declval<U2>()));
 
     using R = std::common_type_t<FirstType, SecondType>;
 
-    if (auto r = threeWayOrWeakCompare<firstHasCompareThreeWay>(lhs.first, rhs.first); !is_eq(r))
+    if (auto r = QtOrderingPrivate::threeWayOrWeakCompare(lhs.first, rhs.first); !is_eq(r))
         return R{r};
-    return R{threeWayOrWeakCompare<secondHasCompareThreeWay>(lhs.second, rhs.second)};
+    return R{QtOrderingPrivate::threeWayOrWeakCompare(lhs.second, rhs.second)};
 }
 
 } // namespace Qt
@@ -1338,11 +1332,12 @@ struct HasCompareThreeWay<
 
 } // namespace CompareThreeWayTester
 
-template <bool Condition, typename LT, typename RT>
+template <typename LT, typename RT>
 auto threeWayOrWeakCompare(const LT &lhs, const RT &rhs)
 {
     using Qt::compareThreeWay;
-    if constexpr (Condition)
+    constexpr bool haveCompareThreeWay = CompareThreeWayTester::hasCompareThreeWay_v<LT, RT>;
+    if constexpr (haveCompareThreeWay)
         return compareThreeWay(lhs, rhs);
     else
         return weakComparator(lhs, rhs);
