@@ -93,9 +93,9 @@ void userConfirmationRequestedNative(JNIEnv *, jobject, jstring callId, int erro
     emit handler->confirmationRequest(errorCode, QJniObject(errorMessage).toString());
 }
 
-void downloadProgressChangedNative(JNIEnv *, jobject, jstring callId, long bytes, long total)
+void downloadProgressChangedNative(JNIEnv *, jobject, jstring callId, jlong bytes, jlong total)
 {
-    qDebug("Download progress changed %ld/%ld.", bytes, total);
+    qDebug() << "Download progress changed" << bytes << "/" << total;
     auto *handler = loaderInstance->findHandler(callId);
     if (!handler)
         return;
