@@ -1099,7 +1099,7 @@ qt_internal_extend_target(Gui CONDITION QT_FEATURE_xkbcommon AND UNIX
 
 qt_internal_extend_target(Gui CONDITION QT_FEATURE_metal
     SOURCES
-        rhi/qrhimetal.mm rhi/qrhimetal_p.h
+        rhi/qrhimetal.mm rhi/qrhimetal_p.h rhi/qrhimetal_icb_p.h
     PUBLIC_LIBRARIES
         ${FWMetal}
 )

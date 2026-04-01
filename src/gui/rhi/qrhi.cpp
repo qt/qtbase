@@ -6865,6 +6865,15 @@ QDebug operator<<(QDebug dbg, const QRhiShaderResourceBindings &srb)
     value will be set via QRhiCommandBuffer::setShadingRate(). Not specifying
     this flag and still calling setShadingRate() may lead to varying, unexpected
     results depending on the underlying graphics API.
+
+    \value [since 6.12] UsesIndirectDraws Indicates that this pipeline will be used with
+    indirect draw calls (QRhiCommandBuffer::drawIndirect() or
+    QRhiCommandBuffer::drawIndexedIndirect()). Setting this flag allows the
+    Metal backend to use Indirect Command Buffers (ICB) for GPU-driven
+    rendering, which significantly reduces CPU overhead for large draw counts.
+    Not setting this flag when using indirect draws is still functional but may
+    result in less optimal performance on Metal. This flag has no effect on
+    other backends.
  */
 
 /*!

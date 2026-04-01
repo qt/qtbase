@@ -1315,7 +1315,8 @@ public:
         UsesStencilRef = 1 << 1,
         UsesScissor = 1 << 2,
         CompileShadersWithDebugInfo = 1 << 3,
-        UsesShadingRate = 1 << 4
+        UsesShadingRate = 1 << 4,
+        UsesIndirectDraws = 1 << 5
     };
     Q_DECLARE_FLAGS(Flags, Flag)
 

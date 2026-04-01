@@ -538,6 +538,7 @@ public:
         bool isAppleGPU = false;
         int maxThreadGroupSize = 512;
         bool multiView = false;
+        bool indirectCommandBuffers = false;
         bool shadingRateMap = false;
         bool depthClamp = true;
     } caps;
