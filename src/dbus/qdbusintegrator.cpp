@@ -1422,15 +1422,21 @@ bool QDBusConnectionPrivate::activateInternalFilters(const ObjectTreeNode &node,
 
         if (msg.member() == "Get"_L1 && msg.signature() == "ss"_L1) {
             QDBusMessage reply = qDBusPropertyGet(node, msg);
-            send(reply);
+            if (!msg.isDelayedReply()) {
+                send(reply);
+            }
             return true;
         } else if (msg.member() == "Set"_L1 && msg.signature() == "ssv"_L1) {
             QDBusMessage reply = qDBusPropertySet(node, msg);
-            send(reply);
+            if (!msg.isDelayedReply()) {
+                send(reply);
+            }
             return true;
         } else if (msg.member() == "GetAll"_L1 && msg.signature() == "s"_L1) {
             QDBusMessage reply = qDBusPropertyGetAll(node, msg);
-            send(reply);
+            if (!msg.isDelayedReply()) {
+                send(reply);
+            }
             return true;
         }
 

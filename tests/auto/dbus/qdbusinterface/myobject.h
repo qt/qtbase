@@ -8,6 +8,7 @@
 #include <QDBusMessage>
 #include <QDBusContext>
 #include <QDBusConnection>
+#include <QDBusVariant>
 
 class MyObject: public QObject, protected QDBusContext
 {
@@ -16,6 +17,7 @@ class MyObject: public QObject, protected QDBusContext
     Q_CLASSINFO("D-Bus Introspection", ""
 "  <interface name=\"org.qtproject.QtDBus.MyObject\" >\n"
 "    <property access=\"readwrite\" type=\"i\" name=\"prop1\" />\n"
+"    <property access=\"read\" type=\"i\" name=\"delayedProp\" />\n"
 "    <property name=\"complexProp\" type=\"ai\" access=\"readwrite\">\n"
 "      <annotation name=\"org.qtproject.QtDBus.QtTypeName\" value=\"QList&lt;int&gt;\"/>\n"
 "    </property>\n"
@@ -58,6 +60,7 @@ class MyObject: public QObject, protected QDBusContext
         "")
     Q_PROPERTY(int prop1 READ prop1 WRITE setProp1)
     Q_PROPERTY(QList<int> complexProp READ complexProp WRITE setComplexProp)
+    Q_PROPERTY(int delayedProp READ delayedProp)
 
 public:
     static int callCount;
@@ -94,6 +97,23 @@ public:
         Q_ASSERT(QDBusContext::calledFromDBus());
         ++callCount;
         m_complexProp = value;
+    }
+
+    int delayedProp() const
+    {
+        Q_ASSERT(QDBusContext::calledFromDBus());
+
+        setDelayedReply(true);
+
+        QMetaObject::invokeMethod(
+                const_cast<MyObject *>(this),
+                [message = message(), connection = connection()] {
+                    auto reply = message.createReply(QVariant::fromValue(QDBusVariant(5)));
+                    connection.send(reply);
+                },
+                Qt::QueuedConnection);
+
+        return 0;
     }
 
     Q_INVOKABLE void ping_invokable(QDBusMessage msg)

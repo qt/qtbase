@@ -194,6 +194,8 @@ private slots:
     void complexPropertyRead();
     void complexPropertyWrite();
 
+    void delayedPropertyReadPeer();
+
     void propertyReadPeer();
     void propertyWritePeer();
     void complexPropertyReadPeer();
@@ -359,7 +361,7 @@ void tst_QDBusInterface::introspect()
     QCOMPARE(mo->methodCount() - mo->methodOffset(), 7);
     QVERIFY(mo->indexOfSignal(TEST_SIGNAL_NAME "(QString)") != -1);
 
-    QCOMPARE(mo->propertyCount() - mo->propertyOffset(), 2);
+    QCOMPARE(mo->propertyCount() - mo->propertyOffset(), 3);
     QVERIFY(mo->indexOfProperty("prop1") != -1);
     QVERIFY(mo->indexOfProperty("complexProp") != -1);
 }
@@ -689,7 +691,7 @@ void tst_QDBusInterface::introspectPeer()
     QCOMPARE(mo->methodCount() - mo->methodOffset(), 7);
     QVERIFY(mo->indexOfSignal(TEST_SIGNAL_NAME "(QString)") != -1);
 
-    QCOMPARE(mo->propertyCount() - mo->propertyOffset(), 2);
+    QCOMPARE(mo->propertyCount() - mo->propertyOffset(), 3);
     QVERIFY(mo->indexOfProperty("prop1") != -1);
     QVERIFY(mo->indexOfProperty("complexProp") != -1);
 }
@@ -1064,6 +1066,19 @@ void tst_QDBusInterface::complexPropertyWrite()
     QVERIFY(iface.setProperty("complexProp", QVariant::fromValue(arg)));
     QCOMPARE(MyObject::callCount, 1);
     QCOMPARE(obj.m_complexProp, arg);
+}
+
+void tst_QDBusInterface::delayedPropertyReadPeer()
+{
+    QDBusConnection con("peer");
+    QDBusInterface iface(QString(), QLatin1String("/"), TEST_INTERFACE_NAME, con);
+
+    resetPeer();
+
+    QVariant v = iface.property("delayedProp");
+    QVERIFY(v.isValid());
+    QCOMPARE(v.userType(), int(QMetaType::Int));
+    QCOMPARE(v.toInt(), 5);
 }
 
 void tst_QDBusInterface::propertyReadPeer()
