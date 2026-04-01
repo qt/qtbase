@@ -258,6 +258,15 @@ template <typename Container, typename ...Ts>
 using map_has_operator_less_than =
         std::conjunction<QTypeTraits::has_operator_less_than_container<Container, Ts>...>;
 
+// The is_base_of<Container, T> check is required for recursive containers.
+// Without it MSVC produces errors like:
+//
+// error C2968:
+// 'if_map_has_relational_operators<QMap<NoCmpParamRecursiveMapK, Empty>,
+//                                  NoCmpParamRecursiveMapK, Empty>':
+// recursive alias declaration
+//
+// The solution is similar to QTypeTraits::*_container checks.
 template <typename Container, typename T>
 using map_has_qt_compare_three_way_container =
         std::disjunction<std::is_base_of<Container, T>, Qt::has_qt_compare_three_way<T>>;
