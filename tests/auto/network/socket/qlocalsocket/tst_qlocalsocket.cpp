@@ -18,6 +18,7 @@
 #include <qdatastream.h>
 #include <qelapsedtimer.h>
 #include <qproperty.h>
+#include <qstandardpaths.h>
 #include <QtNetwork/qlocalsocket.h>
 #include <QtNetwork/qlocalserver.h>
 
@@ -1019,13 +1020,15 @@ void tst_QLocalSocket::simpleCommandProtocol2()
 void tst_QLocalSocket::fullPath()
 {
     CrashSafeLocalServer server;
-    QString name = "qlocalsocket_pathtest";
+    const QString name = QStringLiteral("qlocalsocket_pathtest_%1").arg(QCoreApplication::applicationPid());
 #if defined(QT_LOCALSOCKET_TCP)
     QString path = "QLocalServer";
 #elif defined(Q_OS_WIN)
     QString path = "\\\\.\\pipe\\";
 #else
-    QString path = "/tmp";
+    QString path = QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation);
+    if (path.isEmpty())
+        path = QDir::tempPath();
 #endif
     QString serverName = path + '/' + name;
     QVERIFY2(server.listen(serverName), qUtf8Printable(server.errorString()));
