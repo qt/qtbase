@@ -2,7 +2,12 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 cmake_minimum_required(VERSION 3.16)
-if(NOT PROJECT_NAME STREQUAL "QtBase" AND NOT PROJECT_NAME STREQUAL "Qt")
+
+# Read by _qt_internal_should_include_targets via qt_internal_add_plugin.
+set(QT_PARENT_PROJECT_NAME "QtBase")
+set(QT_STANDALONE_PROJECT_NAME "QSQLiteDriverPlugins")
+
+if(NOT PROJECT_NAME STREQUAL "${QT_PARENT_PROJECT_NAME}" AND NOT PROJECT_NAME STREQUAL "Qt")
     include(.cmake.conf)
     # Store initial build type (if any is specified) to be read by
     # qt_internal_set_cmake_build_type().
@@ -12,7 +17,7 @@ if(NOT PROJECT_NAME STREQUAL "QtBase" AND NOT PROJECT_NAME STREQUAL "Qt")
             "${CMAKE_BUILD_TYPE}")
     endif()
 
-    project(QSQLiteDriverPlugins
+    project("${QT_STANDALONE_PROJECT_NAME}"
         VERSION "${QT_REPO_MODULE_VERSION}"
         DESCRIPTION "Qt6 SQL driver plugins"
         HOMEPAGE_URL "https://qt.io/"
@@ -78,6 +83,6 @@ if(QT_FEATURE_sql_mimer)
     add_subdirectory(mimer)
 endif()
 
-if(NOT PROJECT_NAME STREQUAL "QtBase" AND NOT PROJECT_NAME STREQUAL "Qt")
+if(NOT PROJECT_NAME STREQUAL "${QT_PARENT_PROJECT_NAME}" AND NOT PROJECT_NAME STREQUAL "Qt")
     qt_build_repo_end()
 endif()

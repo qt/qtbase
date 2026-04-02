@@ -418,6 +418,28 @@ function(qt_internal_add_plugin target)
             set(test_plugin_arg TEST_PLUGIN)
         endif()
 
+        # Some plugins like the sqldriver ones can be built as part of the main repo or as a
+        # separate standalone project. We need to make sure we exclude loading the Qt prebuilt
+        # plugins when loading such a project regardless which way it is built.
+        if(QT_STANDALONE_PROJECT_NAME)
+            set(project_names_arg "${QT_STANDALONE_PROJECT_NAME}")
+
+            if(QT_PARENT_PROJECT_NAME)
+                list(APPEND project_names_arg "${QT_PARENT_PROJECT_NAME}")
+            else()
+                message(WARNING
+                    "QT_STANDALONE_PROJECT_NAME is set to '${QT_STANDALONE_PROJECT_NAME}', but "
+                    "QT_PARENT_PROJECT_NAME is not set. This can cause issues when building the "
+                    "standalone project. Set QT_PARENT_PROJECT_NAME to the submodule's "
+                    "root CMakeLists.txt project name to avoid this warning."
+                )
+            endif()
+        else()
+            set(project_names_arg "${PROJECT_NAME}")
+        endif()
+        list(PREPEND project_names_arg "PROJECT_NAMES")
+        string(REPLACE ";" " " project_names_arg "${project_names_arg}")
+
         configure_package_config_file(
             "${QT_CMAKE_DIR}/QtPluginConfig.cmake.in"
             "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}Config.cmake"
@@ -432,7 +454,7 @@ function(qt_internal_add_plugin target)
 _qt_internal_should_include_targets(
     TARGETS ${target}
     NAMESPACE ${INSTALL_CMAKE_NAMESPACE}::
-    PROJECT_NAME ${PROJECT_NAME}
+    ${project_names_arg}
     OUT_VAR_SHOULD_SKIP __qt_${target}_skip_include_targets_file
     ${test_plugin_arg}
 )
