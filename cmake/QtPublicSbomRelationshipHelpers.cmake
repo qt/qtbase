@@ -72,6 +72,18 @@ function(_qt_internal_sbom_serialize_sbom_relationship_entry)
         message(FATAL_ERROR "SBOM_RELATIONSHIP_TYPE is required.")
     endif()
 
+    set(filtered_argn "${ARGN}")
+    list(FILTER filtered_argn INCLUDE REGEX "SBOM_RELATIONSHIP_FROM")
+    list(LENGTH filtered_argn from_count)
+    if(from_count GREATER 1)
+        message(FATAL_ERROR
+            "Multiple SBOM_RELATIONSHIP_FROM arguments found. Only one is expected for a single "
+            "entry. Perhaps you forgot to prepend a new SBOM_RELATIONSHIP_ENTRY before the next "
+            "relationship? \n"
+            "Relationship entry values below:\n${ARGN}"
+        )
+    endif()
+
     _qt_internal_sbom_validate_spdx_v2_relationship_type(
         RELATIONSHIP_TYPE "${arg_SBOM_RELATIONSHIP_TYPE}"
         OUT_VAR_IS_VALID relationship_type_is_valid
