@@ -561,8 +561,12 @@ instructions:
       variableValue: >-
         -DQT_GENERATE_SBOM=ON
         -DQT_GENERATE_SOURCE_SBOM=ON
-        -DQT_SBOM_REQUIRE_GENERATE_CYDX_V1_6=ON
+        -DQT_SBOM_VERIFY_SPDX_V2=ON
+        -DQT_SBOM_REQUIRE_GENERATE_SPDX_V2_JSON=ON
+        -DQT_SBOM_REQUIRE_VERIFY_SPDX_V2=ON
         -DQT_SBOM_VERIFY_CYDX_V1_6=ON
+        -DQT_SBOM_REQUIRE_GENERATE_CYDX_V1_6=ON
+        -DQT_SBOM_REQUIRE_VERIFY_CYDX_V1_6=ON
     - type: AppendToEnvironmentVariable
       variableName: COMMON_CMAKE_ARGS
       variableValue: " {{.Env.SBOM_COMMON_ARGS}} "
