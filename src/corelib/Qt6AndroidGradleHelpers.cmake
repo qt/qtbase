@@ -2014,6 +2014,11 @@ function(_qt_internal_android_parse_qmlimportscanner_output
                 if(NOT plugin_target)
                     set(plugin_target "${link_target}")
                 endif()
+                # Don't pass STATIC targets to the Android loader.
+                get_target_property(plugin_type "${plugin_target}" TYPE)
+                if(NOT plugin_type MATCHES "^(SHARED|MODULE)_LIBRARY$")
+                    continue()
+                endif()
                 list(APPEND qml_plugins "${plugin_target}")
             else()
                 _qt_internal_android_json_get_bool("${qml_scan}" ${mod_index}
