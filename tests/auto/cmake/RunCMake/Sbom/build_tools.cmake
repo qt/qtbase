@@ -140,14 +140,15 @@ _qt_internal_add_sbom_build_tool("${build_tool_target}"
         SUPPLIER "Handyman Central"
         COPYRIGHTS "Handyman Central Copyright (C)"
         SBOM_RELATIONSHIP_ENTRIES
-            SBOM_RELATIONSHIP_FROM
-                "${build_tool_target}"
-            SBOM_RELATIONSHIP_TYPE
-                DEV_DEPENDENCY_OF
-            SBOM_RELATIONSHIP_TO
-                "${project_target}"
-            SBOM_RELATIONSHIP_COMMENT
-                "Project is hammered in using Hammer version 1.2.3"
+            SBOM_RELATIONSHIP_ENTRY
+                SBOM_RELATIONSHIP_FROM
+                    "${build_tool_target}"
+                SBOM_RELATIONSHIP_TYPE
+                    DEV_DEPENDENCY_OF
+                SBOM_RELATIONSHIP_TO
+                    "${project_target}"
+                SBOM_RELATIONSHIP_COMMENT
+                    "Project is hammered in using Hammer version 1.2.3"
 )
 
 if(QT_GENERATE_SBOM)
