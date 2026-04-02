@@ -1966,12 +1966,18 @@ function(_qt_internal_android_parse_qmlimportscanner_output
     set(${out_qml_plugins} "${qml_plugins}" PARENT_SCOPE)
 endfunction()
 
-function(_qt_internal_android_copy_qml_modules_outputs
-    target qml_bundle_dir qml_modules out_outputs)
+function(_qt_internal_android_create_rcc_bundle target qml_modules)
     if(NOT qml_modules)
-        set(${out_outputs} "" PARENT_SCOPE)
         return()
     endif()
+
+    __qt_internal_get_tool_imported_location(rcc_path "rcc")
+    if(NOT rcc_path)
+        message(WARNING "rcc not found. Skipping QML dependency bundling for ${target}.")
+        return()
+    endif()
+
+    set(qml_bundle_dir "${deployment_dir}/assets/android_rcc_bundle")
 
     set(commands "")
     foreach(module_entry IN LISTS qml_modules)
@@ -1998,7 +2004,6 @@ function(_qt_internal_android_copy_qml_modules_outputs
     endforeach()
 
     if(NOT commands)
-        set(${out_outputs} "" PARENT_SCOPE)
         return()
     endif()
 
@@ -2008,7 +2013,21 @@ function(_qt_internal_android_copy_qml_modules_outputs
         VERBATIM
     )
 
-    set(${out_outputs} "${target}_copy_qml_modules" PARENT_SCOPE)
+    set(bundle_rcc "${deployment_dir}/assets/android_rcc_bundle.rcc")
+    add_custom_command(OUTPUT "${bundle_rcc}"
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${qml_bundle_dir}"
+        COMMAND ${CMAKE_COMMAND} -E chdir "${qml_bundle_dir}"
+            "${rcc_path}" --project -o "${qml_bundle_dir}/android_rcc_bundle.qrc"
+        COMMAND "${rcc_path}" --binary --root=/android_rcc_bundle/ -o "${bundle_rcc}"
+            "${qml_bundle_dir}/android_rcc_bundle.qrc"
+        COMMAND ${CMAKE_COMMAND} -E remove_directory "${qml_bundle_dir}"
+        DEPENDS ${target}_copy_qml_modules
+        COMMENT "Generating QML resource bundle for ${target}"
+        VERBATIM
+    )
+
+    set_property(TARGET ${target} APPEND PROPERTY _qt_android_deployment_files "${bundle_rcc}")
+    add_custom_target(${target}_build_qml_bundle DEPENDS "${bundle_rcc}")
 endfunction()
 
 function(_qt_internal_android_copy_qml_dependencies target deployment_dir)
@@ -2022,12 +2041,6 @@ function(_qt_internal_android_copy_qml_dependencies target deployment_dir)
     if(NOT qmlimportscanner_path)
         message(WARNING
             "qmlimportscanner not found. Skipping QML dependency scanning for ${target}.")
-        return()
-    endif()
-
-    __qt_internal_get_tool_imported_location(rcc_path "rcc")
-    if(NOT rcc_path)
-        message(WARNING "rcc not found. Skipping QML dependency bundling for ${target}.")
         return()
     endif()
 
@@ -2054,26 +2067,5 @@ function(_qt_internal_android_copy_qml_dependencies target deployment_dir)
         return()
     endif()
 
-    set(qml_bundle_dir "${deployment_dir}/assets/android_rcc_bundle")
-    _qt_internal_android_copy_qml_modules_outputs(${target} "${qml_bundle_dir}" "${qml_modules}"
-        copy_qml_modules_outputs)
-
-    if(copy_qml_modules_outputs)
-        set(bundle_rcc "${deployment_dir}/assets/android_rcc_bundle.rcc")
-        add_custom_command(OUTPUT "${bundle_rcc}"
-            COMMAND ${CMAKE_COMMAND} -E make_directory "${qml_bundle_dir}"
-            COMMAND ${CMAKE_COMMAND} -E chdir "${qml_bundle_dir}"
-                "${rcc_path}" --project -o "${qml_bundle_dir}/android_rcc_bundle.qrc"
-            COMMAND "${rcc_path}" --binary --root=/android_rcc_bundle/ -o "${bundle_rcc}"
-                "${qml_bundle_dir}/android_rcc_bundle.qrc"
-            COMMAND ${CMAKE_COMMAND} -E remove_directory "${qml_bundle_dir}"
-            DEPENDS ${copy_qml_modules_outputs}
-            COMMENT "Generating QML resource bundle for ${target}"
-            VERBATIM
-        )
-
-        set_property(TARGET ${target} APPEND PROPERTY _qt_android_deployment_files "${bundle_rcc}")
-        add_custom_target(${target}_build_qml_bundle DEPENDS "${bundle_rcc}")
-        add_dependencies(${target}_build_qml_bundle "${copy_qml_modules_outputs}")
-    endif()
+    _qt_internal_android_create_rcc_bundle(${target} "${qml_modules}")
 endfunction()
