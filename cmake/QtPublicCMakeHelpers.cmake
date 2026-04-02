@@ -1055,9 +1055,14 @@ endfunction()
 # `OUT_VAR_SHOULD_SKIP`
 #   Output variable indicating if the `include(*Targets.cmake)` should be skipped
 #
+# `PROJECT_NAMES`
+#   The original project names that defined the current Config.cmake file at the time of the
+#   generation. For now only used for plugins. Mostly it's just the main repo project name,
+#   but for some projects like the sqldriver one that can be built standalone, there can be
+#   more than one.
+#
 # `PROJECT_NAME`
-#   The original project that defined the current Config.cmake file at the time of the
-#   generation. For now only used for plugins.
+#   Deprecated. Same as the one above, but only takes a single value. Kept for compatibility.
 #
 # `TEST_PLUGIN`
 #   If the module is a TEST_PLUGIN, we do additional checks based on
@@ -1073,10 +1078,11 @@ function(_qt_internal_should_include_targets)
     set(single_args
         NAMESPACE
         OUT_VAR_SHOULD_SKIP
-        PROJECT_NAME
+        PROJECT_NAME # deprecated
     )
     set(multi_args
         TARGETS
+        PROJECT_NAMES
     )
     cmake_parse_arguments(PARSE_ARGV 0 arg "${option_args}" "${single_args}" "${multi_args}")
 
@@ -1124,7 +1130,15 @@ function(_qt_internal_should_include_targets)
         endif()
     endforeach()
 
+    set(project_names "")
+    if(arg_PROJECT_NAMES)
+        list(APPEND project_names ${arg_PROJECT_NAMES})
+    endif()
     if(arg_PROJECT_NAME)
+        list(APPEND project_names ${arg_PROJECT_NAME})
+    endif()
+
+    if(project_names)
         # Check if we are in a top-level build and which submodules will be included
         if(NOT QT_INTERNAL_BUILD_STANDALONE_PARTS AND DEFINED Qt_SOURCE_DIR)
             # All projects will be rebuilt so skip any include targets
@@ -1134,7 +1148,7 @@ function(_qt_internal_should_include_targets)
 
         # Check if we are building the current project
         if(NOT QT_INTERNAL_BUILD_STANDALONE_PARTS AND
-            PROJECT_NAME STREQUAL arg_PROJECT_NAME)
+            PROJECT_NAME IN_LIST project_names)
             # We are currently building the project, so skip the include targets
             set(${arg_OUT_VAR_SHOULD_SKIP} ON PARENT_SCOPE)
             return()
@@ -1142,7 +1156,7 @@ function(_qt_internal_should_include_targets)
 
         # Check if we are building the standalone tests
         if(arg_TEST_PLUGIN AND QT_BUILD_STANDALONE_TESTS AND
-            PROJECT_NAME STREQUAL arg_PROJECT_NAME)
+            PROJECT_NAME IN_LIST project_names)
             set(${arg_OUT_VAR_SHOULD_SKIP} ON PARENT_SCOPE)
             return()
         endif()
