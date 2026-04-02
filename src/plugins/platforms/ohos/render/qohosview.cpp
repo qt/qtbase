@@ -1305,7 +1305,7 @@ void QOhosView::setNativeNodeVisibility(bool visible)
 
 void QOhosView::hideMainWindow()
 {
-    if (QOhosDeviceInfo::is2in1() && m_ohosWindowProxy->tryHideAbility()) {
+    if (m_ohosWindowProxy->tryHideAbility()) {
         m_lastMainWindowHideMethod = WindowHideMethod::HideAbility;
         return;
     }
