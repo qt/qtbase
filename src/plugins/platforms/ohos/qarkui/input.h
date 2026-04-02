@@ -60,6 +60,7 @@ struct TouchEvent
 QInputDevice::DeviceType getTouchDeviceType(const ::ArkUI_UIInputEvent *inputEvent);
 QPointF getPointerEventLocalPosition(const ::ArkUI_UIInputEvent *event);
 QPointF getPointerEventDisplayPosition(const ::ArkUI_UIInputEvent *event);
+QPointF getPointerEventGlobalPosition(const ::ArkUI_UIInputEvent *event);
 std::chrono::milliseconds getInputEventTimeMs(const ::ArkUI_UIInputEvent *event);
 
 struct NativeNodeMouseEvent
