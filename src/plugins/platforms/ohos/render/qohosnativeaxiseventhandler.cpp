@@ -26,7 +26,7 @@ private:
     QtOhos::QThreadSafeRef<QOhosInputMethodEventHandler> m_imEventHandlerRef;
 
     QOhosOptional<QPointF> m_localPosition;
-    QOhosOptional<QPointF> m_screenPosition;
+    QOhosOptional<QPointF> m_globalPosition;
     QOhosOptional<std::int32_t> m_wheelScrollLines;
 
     QOhosConsumer<const QOhosNativeGestureEvent &> m_nativeGesturesHandler;
@@ -114,7 +114,7 @@ void QOhosAxisEventHandler::handleUiAxisEvent(ArkUI_UIInputEvent *event)
 
     auto eventTimestamp = OH_ArkUI_UIInputEvent_GetEventTime(event);
     auto localPosition = QArkUi::getPointerEventLocalPosition(event);
-    auto screenPosition = QArkUi::getPointerEventDisplayPosition(event);
+    auto globalPosition = QArkUi::getPointerEventGlobalPosition(event);
     double horizontalAxisValue = OH_ArkUI_AxisEvent_GetHorizontalAxisValue(event);
     double verticalAxisValue = OH_ArkUI_AxisEvent_GetVerticalAxisValue(event);
     auto eventToolType = OH_ArkUI_UIInputEvent_GetToolType(event);
@@ -123,13 +123,13 @@ void QOhosAxisEventHandler::handleUiAxisEvent(ArkUI_UIInputEvent *event)
     wheelScrollLines = OH_ArkUI_AxisEvent_GetScrollStep(event);
 
     m_localPosition = makeQOhosOptional(localPosition);
-    m_screenPosition = makeQOhosOptional(screenPosition);
+    m_globalPosition = makeQOhosOptional(globalPosition);
     m_wheelScrollLines = makeQOhosOptional(wheelScrollLines);
 
     QOhosWheelEvent ohosWheelEvent = {
         .timestamp = eventTimestamp,
         .localPoint = localPosition,
-        .globalPoint = screenPosition,
+        .globalPoint = globalPosition,
         .horizontalValue = horizontalAxisValue,
         .verticalValue = verticalAxisValue,
         .eventToolType = eventToolType,
@@ -160,7 +160,7 @@ void QOhosAxisEventHandler::handleUiAxisEvent(ArkUI_UIInputEvent *event)
             .gestureTimestamp = eventTimestamp,
             .value = totalScale,
             .localPosition = localPosition,
-            .displayBasedPosition = screenPosition,
+            .displayBasedPosition = globalPosition,
             .gestureType = gestureType,
             .deviceType = deviceType,
         };
@@ -173,7 +173,7 @@ void QOhosAxisEventHandler::handleUiAxisEvent(ArkUI_UIInputEvent *event)
 
 void QOhosAxisEventHandler::handleUiCoastingAxisEvent(::ArkUI_UIInputEvent *event)
 {
-    if (!m_localPosition.hasValue() || !m_screenPosition.hasValue() || !m_wheelScrollLines.hasValue()) {
+    if (!m_localPosition.hasValue() || !m_globalPosition.hasValue() || !m_wheelScrollLines.hasValue()) {
         qOhosPrintfWarning(
             "%s: Cannot create wheel event - incomplete data, ignoring coasting event.", Q_FUNC_INFO);
         return;
@@ -194,7 +194,7 @@ void QOhosAxisEventHandler::handleUiCoastingAxisEvent(::ArkUI_UIInputEvent *even
     QOhosWheelEvent ohosWheelEvent = {
         .timestamp = eventTime,
         .localPoint = m_localPosition.value(),
-        .globalPoint = m_screenPosition.value(),
+        .globalPoint = m_globalPosition.value(),
         .horizontalValue = delta.x(),
         .verticalValue = delta.y(),
         .eventToolType = ::UI_INPUT_EVENT_TOOL_TYPE_TOUCHPAD,
