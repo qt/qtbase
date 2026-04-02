@@ -35,30 +35,6 @@ function(run_cmake_and_build case format_case)
         list(APPEND options "-DCMAKE_PREFIX_PATH=${extra_install_prefixes}")
     endif()
 
-    if(format_case STREQUAL "spdx23")
-        list(APPEND options
-            -DQT_GENERATE_SBOM=ON
-            -DQT_SBOM_GENERATE_SPDX_V2=ON
-            -DQT_SBOM_GENERATE_CYDX_V1_6=OFF
-        )
-    elseif(format_case STREQUAL "cydx16")
-        list(APPEND options
-            -DQT_GENERATE_SBOM=ON
-            -DQT_SBOM_GENERATE_SPDX_V2=OFF
-            -DQT_SBOM_GENERATE_CYDX_V1_6=ON
-        )
-    elseif(format_case STREQUAL "all")
-        list(APPEND options
-            -DQT_GENERATE_SBOM=ON
-            -DQT_SBOM_GENERATE_SPDX_V2=ON
-            -DQT_SBOM_GENERATE_CYDX_V1_6=ON
-        )
-    elseif(format_case STREQUAL "none")
-        list(APPEND options
-            -DQT_GENERATE_SBOM=OFF
-        )
-    endif()
-
     # Check CI environment variables for SBOM options to ensure we only enabled checks that
     # require additional dependencies on machines that actually have them.
     # Also allow force enabling all checks via QT_SBOM_FORCE_ALL_CHECKS env var.
@@ -80,9 +56,100 @@ function(run_cmake_and_build case format_case)
         list(APPEND options "-DQT_INTERNAL_SBOM_AUDIT_NO_ERROR=ON")
     endif()
 
-    if(maybe_sbom_env_args MATCHES "QT_SBOM_REQUIRE_GENERATE_CYDX_V1_6=ON"
-            OR force_all_checks)
-        list(APPEND options "-DQT_SBOM_REQUIRE_GENERATE_CYDX_V1_6=ON")
+    set(require_spdx_json FALSE)
+    if(maybe_sbom_env_args MATCHES "QT_SBOM_REQUIRE_GENERATE_SPDX_V2_JSON=ON" OR force_all_checks)
+        set(require_spdx_json TRUE)
+    endif()
+
+    set(require_cydx FALSE)
+    if(maybe_sbom_env_args MATCHES "QT_SBOM_REQUIRE_GENERATE_CYDX_V1_6=ON" OR force_all_checks)
+        set(require_cydx TRUE)
+    endif()
+
+    if(format_case STREQUAL "spdx23")
+        list(APPEND options
+            -DQT_GENERATE_SBOM=ON
+            -DEXPECTED_QT_GENERATE_SBOM=ON
+
+            # Don't explicitly enable QT_SBOM_GENERATE_SPDX_V2 and QT_SBOM_GENERATE_SPDX_V2_JSON,
+            # The are implicitly ON.
+            # Make sure the tag value format is always generated.
+            -DEXPECTED_QT_SBOM_GENERATE_SPDX_V2=ON
+
+            # Explicitly disable CYDX though.
+            -DQT_SBOM_GENERATE_CYDX_V1_6=OFF
+            -DEXPECTED_QT_SBOM_GENERATE_CYDX_V1_6=OFF
+        )
+        if(require_spdx_json)
+            # Require spdx json because because we assume we have the required dependencies from
+            # reading the env var.
+            list(APPEND options
+                -DQT_SBOM_REQUIRE_GENERATE_SPDX_V2_JSON=ON
+                -DEXPECTED_QT_SBOM_GENERATE_SPDX_V2_JSON=ON
+            )
+        endif()
+    elseif(format_case STREQUAL "cydx16")
+        list(APPEND options
+            -DQT_GENERATE_SBOM=ON
+
+            # Don't explicitly enable QT_SBOM_GENERATE_CYDX_V1_6.
+            # It is implicitly ON.
+
+            # Explicitly disable SPDX though.
+            -DQT_SBOM_GENERATE_SPDX_V2=OFF
+            -DEXPECTED_QT_SBOM_GENERATE_SPDX_V2=OFF
+            -DQT_SBOM_GENERATE_SPDX_V2_JSON=OFF
+            -DEXPECTED_QT_SBOM_GENERATE_SPDX_V2_JSON=OFF
+        )
+        if(require_cydx)
+            list(APPEND options
+                # This case is different from the others because if cydx deps are not found,
+                # we will end up disabling both CYDX and GENERATE_SBOM, so we can only expect
+                # this to be ON when we require cydx and the deps are found.
+                # The assymetry is not very intuitive, but changing the behavior is too late.
+                -DEXPECTED_QT_GENERATE_SBOM=ON
+
+                # Require cydx because because we assume we have the required dependencies from
+                # reading the env var.
+                -DQT_SBOM_REQUIRE_GENERATE_CYDX_V1_6=ON
+                -DEXPECTED_QT_SBOM_GENERATE_CYDX_V1_6=ON
+            )
+        endif()
+    elseif(format_case STREQUAL "all")
+        list(APPEND options
+            -DQT_GENERATE_SBOM=ON
+            -DEXPECTED_QT_GENERATE_SBOM=ON
+
+            # Don't explicitly enable neither spdx nor cydx, they are both implicitly ON.
+            # Make sure the tag value format is always generated.
+            -DEXPECTED_QT_SBOM_GENERATE_SPDX_V2=ON
+        )
+        if(require_spdx_json)
+            # Require spdx json because because we assume we have the required dependencies from
+            # reading the env var.
+            list(APPEND options
+                -DQT_SBOM_REQUIRE_GENERATE_SPDX_V2_JSON=ON
+                -DEXPECTED_QT_SBOM_GENERATE_SPDX_V2_JSON=ON
+            )
+        endif()
+        if(require_cydx)
+            # Require cydx because because we assume we have the required dependencies from
+            # reading the env var.
+            list(APPEND options
+                -DQT_SBOM_REQUIRE_GENERATE_CYDX_V1_6=ON
+                -DEXPECTED_QT_SBOM_GENERATE_CYDX_V1_6=ON
+            )
+        endif()
+    elseif(format_case STREQUAL "none")
+        list(APPEND options
+            -DQT_GENERATE_SBOM=OFF
+            -DEXPECTED_QT_GENERATE_SBOM=OFF
+
+            # Confirm that the other values are implicitly ON, even though they won't be
+            # generated.
+            -DEXPECTED_QT_SBOM_GENERATE_SPDX_V2_JSON=ON
+            -DEXPECTED_QT_SBOM_GENERATE_CYDX_V1_6=ON
+        )
     endif()
 
     # Need to pass the python interpreter paths, to avoid sbom2doc not found errors.
