@@ -1914,20 +1914,11 @@ function(_qt_internal_android_parse_qmlimportscanner_output target)
         if(NOT module_path)
             continue()
         endif()
-        get_filename_component(module_abs "${module_path}" ABSOLUTE)
 
         _qt_internal_android_find_subdir_parent("${module_abs}" "${qml_root_paths}" skip_root)
         if(skip_root)
             continue()
         endif()
-
-        _qt_internal_android_find_subdir_parent("${module_abs}" "${qml_import_paths}" import_root)
-        if(NOT import_root)
-            continue()
-        endif()
-
-        file(RELATIVE_PATH module_relative "${import_root}" "${module_abs}")
-        file(TO_CMAKE_PATH "${module_relative}" module_relative)
 
         set(skip_module FALSE)
         _qt_internal_android_json_get_string("${qml_scan}" ${mod_index} plugin plugin_name)
@@ -1959,10 +1950,11 @@ function(_qt_internal_android_parse_qmlimportscanner_output target)
             endif()
         endif()
 
-        _qt_internal_android_json_get_string("${qml_scan}" ${mod_index} prefer module_prefer)
-
         if(NOT skip_module)
-            list(APPEND qml_modules "${module_abs}::${module_relative}::${module_prefer}")
+            get_filename_component(module_abs "${module_path}" ABSOLUTE)
+            _qt_internal_android_json_get_string("${qml_scan}" ${mod_index} relativePath module_rel)
+            _qt_internal_android_json_get_string("${qml_scan}" ${mod_index} prefer module_prefer)
+            list(APPEND qml_modules "${module_abs}::${module_rel}::${module_prefer}")
         endif()
     endforeach()
 
