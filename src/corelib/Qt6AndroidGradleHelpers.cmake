@@ -1798,14 +1798,6 @@ function(_qt_internal_android_find_subdir_parent child parents out_parent)
     set(${out_parent} "${found}" PARENT_SCOPE)
 endfunction()
 
-
-function(_qt_internal_android_library_base_name path out_base_name)
-    get_filename_component(file_name "${path}" NAME)
-    string(REGEX REPLACE "^lib(.+)\\.so$" "\\1" trimmed "${file_name}")
-    string(REGEX REPLACE "\\.so$" "" trimmed "${trimmed}")
-    set(${out_base_name} "${trimmed}" PARENT_SCOPE)
-endfunction()
-
 function(_qt_internal_android_get_qml_root_paths target out_root_paths)
     get_target_property(qml_root_paths ${target} QT_QML_ROOT_PATH)
     if(NOT qml_root_paths)
