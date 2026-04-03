@@ -1755,20 +1755,14 @@ function(_qt_internal_android_generate_libs_xml target deployment_dir)
     string(REPLACE "<!-- %%SYSTEM_LIBS_PREFIX%% -->" "" content "${content}")
 
     set(libs_xml_dst "${deployment_dir}/res/values/libs.xml")
-    set(libs_xml_dst_tmp "${deployment_dir}/res/values/libs.xml.tmp")
 
     string(REPLACE "::" "_" sanitized_target "${target}")
-    set(cmake_files_dir "${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles")
-    set(libs_xml_update_script "${cmake_files_dir}/${sanitized_target}_update_libs_xml.cmake")
-    file(GENERATE OUTPUT "${libs_xml_update_script}" CONTENT
-"file(MAKE_DIRECTORY \"${deployment_dir}/res/values\")
-file(WRITE \"${libs_xml_dst}\" [=[${content}]=])
-")
+    set(libs_xml_staged "${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/${sanitized_target}_libs.xml")
+    file(GENERATE OUTPUT "${libs_xml_staged}" CONTENT "${content}")
 
     add_custom_target(${target}_update_libs_xml
-        COMMAND ${CMAKE_COMMAND} -P "${libs_xml_update_script}"
-        DEPENDS
-            ${target}_copy_android_res_files
+        COMMAND ${CMAKE_COMMAND} -E copy "${libs_xml_staged}" "${libs_xml_dst}"
+        DEPENDS ${target}_copy_android_res_files
         COMMENT "Updating libs.xml for ${target}"
         VERBATIM
     )
