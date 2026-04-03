@@ -1718,12 +1718,14 @@ function(_qt_internal_android_get_qml_root_paths target out_root_paths)
     set(${out_root_paths} "${qml_root_paths}" PARENT_SCOPE)
 endfunction()
 
-function(_qt_internal_android_get_qmlimportscanner_scan
-    target qmlimportscanner_path qml_root_paths qml_import_paths out_scan_output)
+function(_qt_internal_android_get_qmlimportscanner_scan target qmlimportscanner_path out_qml_scan)
     if(NOT qmlimportscanner_path)
-        set(${out_scan_output} "" PARENT_SCOPE)
+        set(${out_qml_scan} "" PARENT_SCOPE)
         return()
     endif()
+
+    _qt_internal_android_get_qml_root_paths(${target} qml_root_paths)
+    _qt_internal_collect_qml_import_paths(qml_import_paths ${target})
 
     set(qmlimportscanner_command "${qmlimportscanner_path}")
     foreach(root_path IN LISTS qml_root_paths)
@@ -1741,12 +1743,12 @@ function(_qt_internal_android_get_qmlimportscanner_scan
     )
     if(NOT qml_scan_result EQUAL 0)
         message(WARNING "qmlimportscanner failed for ${target}: ${qml_scan_error}")
-        set(${out_scan_output} "" PARENT_SCOPE)
+        set(${out_qml_scan} "" PARENT_SCOPE)
         return()
     endif()
 
     string(STRIP "${qml_scan_output}" qml_scan_output)
-    set(${out_scan_output} "${qml_scan_output}" PARENT_SCOPE)
+    set(${out_qml_scan} "${qml_scan_output}" PARENT_SCOPE)
 endfunction()
 
 function(_qt_internal_android_json_get_string json index key out_value)
@@ -1784,9 +1786,7 @@ function(_qt_internal_android_json_get_bool json index key out_value)
 endfunction()
 
 function(_qt_internal_android_parse_qmlimportscanner_output target)
-    _qt_internal_android_get_qml_root_paths(${target} qml_root_paths)
-    _qt_internal_collect_qml_import_paths(qml_import_paths ${target})
-    if(NOT qml_import_paths OR NOT qml_root_paths)
+    if(NOT TARGET ${QT_CMAKE_EXPORT_NAMESPACE}::Qml)
         return()
     endif()
 
@@ -1797,8 +1797,7 @@ function(_qt_internal_android_parse_qmlimportscanner_output target)
         return()
     endif()
 
-    _qt_internal_android_get_qmlimportscanner_scan(${target} "${qmlimportscanner_path}"
-        "${qml_root_paths}" "${qml_import_paths}" qml_scan)
+    _qt_internal_android_get_qmlimportscanner_scan(${target} "${qmlimportscanner_path}" qml_scan)
     if(qml_scan STREQUAL "")
         return()
     endif()
