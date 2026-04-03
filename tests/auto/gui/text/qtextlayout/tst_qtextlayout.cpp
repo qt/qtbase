@@ -129,6 +129,14 @@ private slots:
     void embeddedImageLineHeight();
     void unmatchedShapedSubstring();
     void maximumLayoutWidthInWrappedLayout();
+    void standaloneInlineObject_lineHeight();
+    void standaloneInlineObject_verticalAlignment();
+#ifdef QT_BUILD_INTERNAL
+    void standaloneInlineObject_cursorToX_data();
+    void standaloneInlineObject_cursorToX();
+    void standaloneInlineObject_wrapping();
+    void standaloneInlineObject_eliding();
+#endif
 
 private:
     QFont testFont;
@@ -2872,6 +2880,229 @@ void tst_QTextLayout::maximumLayoutWidthInWrappedLayout()
 
     QCOMPARE(reference.maximumWidth(), breakByWidth.maximumWidth());
 }
+
+// Helper: build a standalone QTextLayout with ObjectReplacementCharacter
+// at each position listed in |objectPositions|, sized via QTextImageFormat.
+
+static constexpr qreal TEST_OBJECT_WIDTH = 32;
+
+static void setupStandaloneLayoutWithObjects(QTextLayout &layout, const QString &text,
+                                             const QFont &font, const QList<int> &objectPositions,
+                                             qreal objWidth, qreal objHeight)
+{
+    layout.setText(text);
+    layout.setFont(font);
+
+    QList<QTextLayout::FormatRange> formats;
+    for (int pos : objectPositions) {
+        Q_ASSERT(text.at(pos) == QChar::ObjectReplacementCharacter);
+        QTextLayout::FormatRange range;
+        QTextImageFormat imgFmt;
+        imgFmt.setWidth(objWidth);
+        imgFmt.setHeight(objHeight);
+        range.format = imgFmt;
+        range.start = pos;
+        range.length = 1;
+        formats.append(range);
+    }
+    layout.setFormats(formats);
+}
+
+void tst_QTextLayout::standaloneInlineObject_lineHeight()
+{
+    // Not data-driven because expected values depend on testFont metrics
+    // which are only available after initTestCase() loads the test font.
+    const QChar orc = QChar::ObjectReplacementCharacter;
+    QString text = QStringLiteral("X") + orc + QStringLiteral("Y");
+
+    // Reference: plain text line metrics (no inline object).
+    QTextLayout refLayout(QStringLiteral("XY"), testFont);
+    refLayout.beginLayout();
+    QTextLine refLine = refLayout.createLine();
+    refLine.setLineWidth(1000);
+    refLayout.endLayout();
+
+    const qreal fontHeight = refLine.height();
+    const qreal fontDescent = refLine.descent();
+
+    auto testCase = [&](qreal objHeight, qreal expectedHeight) {
+        QTextLayout layout;
+        setupStandaloneLayoutWithObjects(layout, text, testFont, { 1 }, 20, objHeight);
+        layout.beginLayout();
+        QTextLine line = layout.createLine();
+        line.setLineWidth(1000);
+        layout.endLayout();
+
+        QCOMPARE(line.height(), expectedHeight);
+        QCOMPARE(line.descent(), fontDescent);
+    };
+
+    // Large object (taller than font) — line height equals object height.
+    testCase(80, 80);
+    // Font-sized object — line height equals font height.
+    testCase(TESTFONT_SIZE, fontHeight);
+    // Small object (shorter than font) — line height equals font height.
+    testCase(TESTFONT_SIZE / 4, fontHeight);
+}
+
+void tst_QTextLayout::standaloneInlineObject_verticalAlignment()
+{
+    // Verify that the three vertical alignment modes from
+    // QTextDocumentLayout::resizeInlineObject() are supported.
+    const QChar orc = QChar::ObjectReplacementCharacter;
+    const qreal objHeight = 80;
+    const qreal objWidth = 20;
+    QString text = QStringLiteral("X") + orc + QStringLiteral("Y");
+
+    auto layoutWithAlignment = [&](QTextCharFormat::VerticalAlignment align) {
+        QTextLayout layout;
+        layout.setText(text);
+        layout.setFont(testFont);
+
+        QTextLayout::FormatRange range;
+        QTextImageFormat imgFmt;
+        imgFmt.setWidth(objWidth);
+        imgFmt.setHeight(objHeight);
+        imgFmt.setVerticalAlignment(align);
+        range.format = imgFmt;
+        range.start = 1;
+        range.length = 1;
+        layout.setFormats({ range });
+
+        layout.beginLayout();
+        QTextLine line = layout.createLine();
+        line.setLineWidth(1000);
+        layout.endLayout();
+        return std::make_pair(line.ascent(), line.descent());
+    };
+
+    // Default: descent=0, ascent=h → baseline at bottom of image.
+    {
+        auto [ascent, descent] = layoutWithAlignment(QTextCharFormat::AlignNormal);
+        QCOMPARE(ascent, objHeight);
+        QCOMPARE(descent, qreal(0));
+    }
+
+    // AlignBaseline: descent=fm.descent(), ascent=h-descent.
+    {
+        const QFontMetricsF fm(testFont);
+        auto [ascent, descent] = layoutWithAlignment(QTextCharFormat::AlignBaseline);
+        QCOMPARE(descent, fm.descent());
+        QCOMPARE(ascent, objHeight - fm.descent());
+    }
+
+    // AlignMiddle: centered on x-height/2.
+    {
+        const QFontMetricsF fm(testFont);
+        const qreal halfX = fm.xHeight() / 2.0;
+        auto [ascent, descent] = layoutWithAlignment(QTextCharFormat::AlignMiddle);
+        QCOMPARE(ascent, (objHeight + halfX) / 2.0);
+        QCOMPARE(descent, (objHeight - halfX) / 2.0);
+    }
+}
+
+#ifdef QT_BUILD_INTERNAL
+void tst_QTextLayout::standaloneInlineObject_cursorToX_data()
+{
+    QTest::addColumn<QString>("text");
+    QTest::addColumn<QList<int>>("objectPositions");
+    QTest::addColumn<int>("cursorPos");
+    QTest::addColumn<qreal>("expectedX");
+
+    const QChar orc = QChar::ObjectReplacementCharacter;
+
+    // Single object: "A<ORC>B"
+    const QString single = QStringLiteral("A") + orc + QStringLiteral("B");
+    QTest::newRow("single: before text") << single << QList<int>{1} << 0 << qreal(0);
+    QTest::newRow("single: before object") << single << QList<int>{1} << 1 << qreal(TESTFONT_SIZE);
+    QTest::newRow("single: after object") << single << QList<int>{1} << 2 << qreal(TESTFONT_SIZE + TEST_OBJECT_WIDTH);
+
+    // Multiple adjacent objects: "A<ORC><ORC>B"
+    const QString multi = QStringLiteral("A") + orc + orc + QStringLiteral("B");
+    QTest::newRow("multi: before first object") << multi << QList<int>{1, 2} << 1 << qreal(TESTFONT_SIZE);
+    QTest::newRow("multi: between objects") << multi << QList<int>{1, 2} << 2 << qreal(TESTFONT_SIZE + TEST_OBJECT_WIDTH);
+    QTest::newRow("multi: after second object") << multi << QList<int>{1, 2} << 3 << qreal(TESTFONT_SIZE + TEST_OBJECT_WIDTH * 2);
+
+    // Object at start: "<ORC>B"
+    const QString atStart = QString(orc) + QStringLiteral("B");
+    QTest::newRow("start: before object") << atStart << QList<int>{0} << 0 << qreal(0);
+    QTest::newRow("start: after object") << atStart << QList<int>{0} << 1 << qreal(TEST_OBJECT_WIDTH);
+
+    // Object at end: "A<ORC>"
+    const QString atEnd = QStringLiteral("A") + orc;
+    QTest::newRow("end: before object") << atEnd << QList<int>{1} << 1 << qreal(TESTFONT_SIZE);
+    QTest::newRow("end: after object") << atEnd << QList<int>{1} << 2 << qreal(TESTFONT_SIZE + TEST_OBJECT_WIDTH);
+}
+
+void tst_QTextLayout::standaloneInlineObject_cursorToX()
+{
+    QFETCH(QString, text);
+    QFETCH(QList<int>, objectPositions);
+    QFETCH(int, cursorPos);
+    QFETCH(qreal, expectedX);
+
+    QTextLayout layout;
+    setupStandaloneLayoutWithObjects(layout, text, testFont, objectPositions,
+                                     TEST_OBJECT_WIDTH, TEST_OBJECT_WIDTH);
+    layout.beginLayout();
+    QTextLine line = layout.createLine();
+    line.setLineWidth(1000);
+    layout.endLayout();
+
+    QCOMPARE(line.cursorToX(cursorPos), expectedX);
+}
+
+void tst_QTextLayout::standaloneInlineObject_wrapping()
+{
+    // "<ORC>A" — object is 3*TESTFONT_SIZE wide, line width fits the object
+    // but not object + 'A', so 'A' must wrap to the second line.
+    const QChar orc = QChar::ObjectReplacementCharacter;
+    const qreal objWidth = 3 * TESTFONT_SIZE;
+    QString text = QString(orc) + QStringLiteral("A");
+
+    QTextLayout layout;
+    setupStandaloneLayoutWithObjects(layout, text, testFont, { 0 }, objWidth, 10);
+
+    QTextOption opt;
+    opt.setWrapMode(QTextOption::WrapAnywhere);
+    layout.setTextOption(opt);
+
+    layout.beginLayout();
+    QTextLine line1 = layout.createLine();
+    line1.setLineWidth(3.5 * TESTFONT_SIZE);
+    QTextLine line2 = layout.createLine();
+    if (line2.isValid())
+        line2.setLineWidth(3.5 * TESTFONT_SIZE);
+    layout.endLayout();
+
+    QVERIFY(line2.isValid());
+    QCOMPARE(line1.textLength(), 1);
+}
+
+void tst_QTextLayout::standaloneInlineObject_eliding()
+{
+    // "A<ORC>B" — total width exceeds availableWidth, so eliding must truncate.
+    const QChar orc = QChar::ObjectReplacementCharacter;
+    QString text = QStringLiteral("A") + orc + QStringLiteral("B");
+
+    QTextLayout layout;
+    setupStandaloneLayoutWithObjects(layout, text, testFont, { 1 }, TEST_OBJECT_WIDTH, 16);
+
+    const qreal availableWidth = TESTFONT_SIZE + TEST_OBJECT_WIDTH;
+
+    layout.beginLayout();
+    QTextLine line = layout.createLine();
+    line.setLineWidth(availableWidth);
+    layout.endLayout();
+
+    QString elided = layout.engine()->elidedText(Qt::ElideRight, QFixed::fromReal(availableWidth),
+                                                 0, 0, text.size());
+
+    QVERIFY(!elided.isEmpty());
+    QVERIFY(elided.size() < text.size());
+    QVERIFY(elided.contains(QChar(0x2026)) || elided.contains(QLatin1String("...")));
+}
+#endif
 
 QTEST_MAIN(tst_QTextLayout)
 #include "tst_qtextlayout.moc"

@@ -1906,8 +1906,12 @@ void QTextLine::layout_helper(int maxGlyphs)
         lbh.tmpData.leading = qMax(lbh.tmpData.leading + lbh.tmpData.ascent,
                                    current.leading + current.ascent) - qMax(lbh.tmpData.ascent,
                                                                             current.ascent);
-        if (current.analysis.flags != QScriptAnalysis::Object) {
-            // objects need some special treatment as they can special alignment or be floating
+        if (current.analysis.flags != QScriptAnalysis::Object
+            || QTextDocumentPrivate::get(eng->block) == nullptr) {
+            // Objects with a QTextDocument may need special vertical alignment
+            // or floating treatment handled later, so skip the ascent/descent
+            // update for them here.  Standalone objects (no document) are
+            // always included because no such post-processing exists.
             lbh.tmpData.ascent = qMax(lbh.tmpData.ascent, current.ascent);
             lbh.tmpData.descent = qMax(lbh.tmpData.descent, current.descent);
         }
