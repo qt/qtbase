@@ -1160,40 +1160,29 @@ function(_qt_internal_android_copy_non_qt_linked_libs target deployment_dir)
         endif()
         list(APPEND processed "${current_target}")
 
-        foreach(property_name IN ITEMS LINK_LIBRARIES INTERFACE_LINK_LIBRARIES)
-            get_target_property(link_entries "${current_target}" ${property_name})
-            if(NOT link_entries)
+        _qt_internal_android_extract_link_libraries_targets("${current_target}" link_targets)
+        foreach(entry IN LISTS link_targets)
+            if(NOT entry IN_LIST processed AND NOT entry IN_LIST queue)
+                list(APPEND queue "${entry}")
+            endif()
+
+            get_target_property(entry_type "${entry}" TYPE)
+            if(NOT entry_type OR NOT entry_type MATCHES "^(SHARED|MODULE)_LIBRARY$")
                 continue()
             endif()
 
-            foreach(raw_entry IN LISTS link_entries)
-                _qt_internal_android_extract_link_target("${raw_entry}" entry)
-                if(NOT entry OR NOT TARGET "${entry}")
-                    continue()
-                endif()
+            get_target_property(entry_imported "${entry}" IMPORTED)
+            if(entry_imported)
+                continue()
+            endif()
 
-                if(NOT entry IN_LIST processed AND NOT entry IN_LIST queue)
-                    list(APPEND queue "${entry}")
-                endif()
+            # Skip if it's a Qt library.
+            get_target_property(entry_qt_package_version "${entry}" _qt_package_version)
+            if(entry_qt_package_version)
+                continue()
+            endif()
 
-                get_target_property(entry_type "${entry}" TYPE)
-                if(NOT entry_type OR NOT entry_type MATCHES "^(SHARED|MODULE)_LIBRARY$")
-                    continue()
-                endif()
-
-                get_target_property(entry_imported "${entry}" IMPORTED)
-                if(entry_imported)
-                    continue()
-                endif()
-
-                # Skip if it's a Qt library.
-                get_target_property(entry_qt_package_version "${entry}" _qt_package_version)
-                if(entry_qt_package_version)
-                    continue()
-                endif()
-
-                list(APPEND linked_libs "${entry}")
-            endforeach()
+            list(APPEND linked_libs "${entry}")
         endforeach()
     endwhile()
 
@@ -1255,23 +1244,38 @@ function(_qt_internal_android_get_deploy_command out_cmd src dst)
     endif()
 endfunction()
 
-function(_qt_internal_android_extract_link_target raw_entry out_entry)
-    set(entry "${raw_entry}")
-
-    if(entry MATCHES
-        "^\\\$<(LINK_ONLY|TARGET_NAME_IF_EXISTS|BUILD_LOCAL_INTERFACE|BUILD_INTERFACE):([^>]+)>$")
-        set(entry "${CMAKE_MATCH_2}")
-    elseif(entry MATCHES "^\\\$<")
-        string(REGEX MATCH "Qt[0-9]*::[A-Za-z0-9_]+" entry "${entry}")
-    endif()
-
-    set(${out_entry} "${entry}" PARENT_SCOPE)
+# Returns the list of valid CMake targets from the link library properties of the given target.
+function(_qt_internal_android_extract_link_libraries_targets target out_targets)
+    string(TOUPPER "${CMAKE_BUILD_TYPE}" build_type_upper)
+    set(result "")
+    foreach(property_name IN ITEMS
+            LINK_LIBRARIES
+            INTERFACE_LINK_LIBRARIES
+            IMPORTED_LINK_DEPENDENT_LIBRARIES
+            "IMPORTED_LINK_DEPENDENT_LIBRARIES_${build_type_upper}")
+        get_target_property(link_entries "${target}" ${property_name})
+        if(NOT link_entries)
+            continue()
+        endif()
+        foreach(raw_entry IN LISTS link_entries)
+            # Unwrap genex wrappers (e.g. $<LINK_ONLY:Qt6::Core>) to get the target name.
+            if(raw_entry MATCHES "^\\$<[^:]+:(.+)>$")
+                set(entry "${CMAKE_MATCH_1}")
+            else()
+                set(entry "${raw_entry}")
+            endif()
+            if(TARGET "${entry}")
+                list(APPEND result "${entry}")
+            endif()
+        endforeach()
+    endforeach()
+    list(REMOVE_DUPLICATES result)
+    set(${out_targets} "${result}" PARENT_SCOPE)
 endfunction()
 
 # Collects Qt modules that 'target' and its plugins depends on, with dependencies
 # listed before targets that depend on them.
 function(_qt_internal_android_collect_qt_modules target out_qt_modules)
-    string(TOUPPER "${CMAKE_BUILD_TYPE}" build_type_upper)
     set(pending_stack "${target}")
     set(expanded_targets "")
     set(collected "")
@@ -1321,31 +1325,16 @@ function(_qt_internal_android_collect_qt_modules target out_qt_modules)
             endif()
         endif()
 
-        foreach(property_name IN ITEMS
-                LINK_LIBRARIES
-                INTERFACE_LINK_LIBRARIES
-                IMPORTED_LINK_DEPENDENT_LIBRARIES
-                "IMPORTED_LINK_DEPENDENT_LIBRARIES_${build_type_upper}")
-            get_target_property(link_entries "${current_target}" ${property_name})
-            if(NOT link_entries)
-                continue()
+        _qt_internal_android_extract_link_libraries_targets("${current_target}" link_targets)
+        foreach(entry IN LISTS link_targets)
+            get_target_property(entry_alias "${entry}" ALIASED_TARGET)
+            if(entry_alias)
+                set(entry "${entry_alias}")
             endif()
 
-            foreach(raw_entry IN LISTS link_entries)
-                _qt_internal_android_extract_link_target("${raw_entry}" entry)
-                if(NOT entry OR NOT TARGET "${entry}")
-                    continue()
-                endif()
-
-                get_target_property(entry_alias "${entry}" ALIASED_TARGET)
-                if(entry_alias)
-                    set(entry "${entry_alias}")
-                endif()
-
-                if(NOT entry IN_LIST expanded_targets)
-                    list(APPEND direct_deps "${entry}")
-                endif()
-            endforeach()
+            if(NOT entry IN_LIST expanded_targets)
+                list(APPEND direct_deps "${entry}")
+            endif()
         endforeach()
 
         list(REMOVE_DUPLICATES direct_deps)
