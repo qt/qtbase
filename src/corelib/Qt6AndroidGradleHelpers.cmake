@@ -1926,8 +1926,7 @@ function(_qt_internal_android_parse_qmlimportscanner_output target)
         if(NOT skip_module)
             get_filename_component(module_abs "${module_path}" ABSOLUTE)
             _qt_internal_android_json_get_string("${qml_scan}" ${mod_index} relativePath module_rel)
-            _qt_internal_android_json_get_string("${qml_scan}" ${mod_index} prefer module_prefer)
-            list(APPEND qml_modules "${module_abs}::${module_rel}::${module_prefer}")
+            list(APPEND qml_modules "${module_abs}::${module_rel}")
         endif()
     endforeach()
 
@@ -1961,23 +1960,18 @@ function(_qt_internal_android_create_rcc_bundle target deployment_dir)
         string(REPLACE "::" ";" module_parts "${module_entry}")
         list(GET module_parts 0 module_abs)
         list(GET module_parts 1 module_rel)
-        list(GET module_parts 2 module_prefer)
-
         if(NOT module_abs OR NOT module_rel)
+            continue()
+        endif()
+
+        if(NOT EXISTS "${module_abs}/qmldir")
             continue()
         endif()
 
         set(destination_dir "${qml_bundle_dir}/qml/${module_rel}")
         list(APPEND commands COMMAND ${CMAKE_COMMAND} -E make_directory "${destination_dir}")
-
-        if(module_prefer MATCHES "^:/")
-            # QML sources are compiled into the plugin's resources, so copy only the qmldir file.
-            list(APPEND commands COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                    "${module_abs}/qmldir" "${destination_dir}/qmldir")
-        else()
-            list(APPEND commands COMMAND ${CMAKE_COMMAND} -E copy_directory
-                "${module_abs}" "${destination_dir}")
-        endif()
+        list(APPEND commands COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${module_abs}/qmldir" "${destination_dir}/qmldir")
     endforeach()
 
     if(NOT commands)
