@@ -293,7 +293,8 @@ function(_qt_internal_android_prepare_gradle_build target)
     _qt_internal_android_copy_stdlib(${target} "${deployment_dir}")
     _qt_internal_android_copy_extra_libs(${target} "${deployment_dir}")
     _qt_internal_android_copy_extra_plugins(${target} "${deployment_dir}")
-    _qt_internal_android_copy_qml_dependencies(${target} "${deployment_dir}")
+    # TODO: don't call qmlimportscanner again at all for multi-ABI external builds.
+    _qt_internal_android_parse_qmlimportscanner_output(${target})
     _qt_internal_android_copy_non_qt_linked_libs(${target} "${deployment_dir}")
     _qt_internal_android_copy_qt_dependencies(${target} "${deployment_dir}")
     _qt_internal_android_copy_qml_plugins(${target} "${deployment_dir}")
@@ -305,6 +306,7 @@ function(_qt_internal_android_prepare_gradle_build target)
         return()
     endif()
 
+    _qt_internal_android_create_rcc_bundle(${target} "${deployment_dir}")
     _qt_internal_android_generate_libs_xml(${target} "${deployment_dir}")
 
     _qt_internal_android_generate_bundle_gradle_properties(${target})
@@ -1097,11 +1099,15 @@ function(_qt_internal_android_copy_qml_plugins target deployment_dir)
         return()
     endif()
 
+    get_target_property(plugin_targets ${target} _qt_android_qml_plugins)
+    if(NOT plugin_targets)
+        return()
+    endif()
+
     set(libs_abi_dir "${deployment_dir}/libs/${CMAKE_ANDROID_ARCH_ABI}")
     set(copy_commands "")
     set(copy_depends "")
 
-    get_target_property(plugin_targets ${target} _qt_android_qml_plugins)
     set(seen_destinations "")
     foreach(plugin_target IN LISTS plugin_targets)
         if(NOT TARGET "${plugin_target}")
@@ -1884,21 +1890,31 @@ function(_qt_internal_android_json_get_bool json index key out_value)
     endif()
 endfunction()
 
-function(_qt_internal_android_parse_qmlimportscanner_output
-        target qml_scan qml_import_paths qml_root_paths out_qml_modules out_qml_plugins)
-    set(qml_modules "")
-    set(qml_plugins "")
-
-    if(qml_scan STREQUAL "")
-        set(${out_qml_modules} "" PARENT_SCOPE)
-        set(${out_qml_plugins} "" PARENT_SCOPE)
+function(_qt_internal_android_parse_qmlimportscanner_output target)
+    _qt_internal_android_get_qml_root_paths(${target} qml_root_paths)
+    _qt_internal_collect_qml_import_paths(qml_import_paths ${target})
+    if(NOT qml_import_paths OR NOT qml_root_paths)
         return()
     endif()
 
+    __qt_internal_get_tool_imported_location(qmlimportscanner_path "qmlimportscanner")
+    if(NOT qmlimportscanner_path)
+        message(WARNING
+            "qmlimportscanner not found. Skipping QML dependency scanning for ${target}.")
+        return()
+    endif()
+
+    _qt_internal_android_get_qmlimportscanner_scan(${target} "${qmlimportscanner_path}"
+        "${qml_root_paths}" "${qml_import_paths}" qml_scan)
+    if(qml_scan STREQUAL "")
+        return()
+    endif()
+
+    set(qml_modules "")
+    set(qml_plugins "")
+
     string(JSON module_count LENGTH "${qml_scan}")
     if(NOT module_count GREATER 0)
-        set(${out_qml_modules} "" PARENT_SCOPE)
-        set(${out_qml_plugins} "" PARENT_SCOPE)
         return()
     endif()
 
@@ -1962,11 +1978,17 @@ function(_qt_internal_android_parse_qmlimportscanner_output
 
     list(REMOVE_DUPLICATES qml_plugins)
 
-    set(${out_qml_modules} "${qml_modules}" PARENT_SCOPE)
-    set(${out_qml_plugins} "${qml_plugins}" PARENT_SCOPE)
+    if(qml_modules)
+        set_property(TARGET ${target} APPEND PROPERTY _qt_android_qml_modules "${qml_modules}")
+    endif()
+
+    if(qml_plugins)
+        set_property(TARGET ${target} APPEND PROPERTY _qt_android_qml_plugins "${qml_plugins}")
+    endif()
 endfunction()
 
-function(_qt_internal_android_create_rcc_bundle target qml_modules)
+function(_qt_internal_android_create_rcc_bundle target deployment_dir)
+    get_target_property(qml_modules ${target} _qt_android_qml_modules)
     if(NOT qml_modules)
         return()
     endif()
@@ -2028,44 +2050,4 @@ function(_qt_internal_android_create_rcc_bundle target qml_modules)
 
     set_property(TARGET ${target} APPEND PROPERTY _qt_android_deployment_files "${bundle_rcc}")
     add_custom_target(${target}_build_qml_bundle DEPENDS "${bundle_rcc}")
-endfunction()
-
-function(_qt_internal_android_copy_qml_dependencies target deployment_dir)
-    _qt_internal_android_get_qml_root_paths(${target} qml_root_paths)
-    _qt_internal_collect_qml_import_paths(qml_import_paths ${target})
-    if(NOT qml_import_paths OR NOT qml_root_paths)
-        return()
-    endif()
-
-    __qt_internal_get_tool_imported_location(qmlimportscanner_path "qmlimportscanner")
-    if(NOT qmlimportscanner_path)
-        message(WARNING
-            "qmlimportscanner not found. Skipping QML dependency scanning for ${target}.")
-        return()
-    endif()
-
-    _qt_internal_android_get_qmlimportscanner_scan(${target} "${qmlimportscanner_path}"
-        "${qml_root_paths}" "${qml_import_paths}" qml_scan_output)
-    if(qml_scan_output STREQUAL "")
-        return()
-    endif()
-
-    _qt_internal_android_parse_qmlimportscanner_output(${target} "${qml_scan_output}"
-        "${qml_import_paths}" "${qml_root_paths}" qml_modules qml_plugins)
-
-    if(NOT qml_modules AND NOT qml_plugins)
-        return()
-    endif()
-
-    if(qml_plugins)
-        set_property(TARGET ${target} APPEND PROPERTY _qt_android_qml_plugins "${qml_plugins}")
-    endif()
-
-    # TODO: don't call qmlimportscanner again at all for multi-ABI external builds.
-    # QML assets are ABI-independent, only the main ABI packages them.
-    if(QT_IS_ANDROID_MULTI_ABI_EXTERNAL_PROJECT)
-        return()
-    endif()
-
-    _qt_internal_android_create_rcc_bundle(${target} "${qml_modules}")
 endfunction()
