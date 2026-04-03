@@ -1373,54 +1373,6 @@ function(_qt_internal_android_collect_qt_modules_and_plugins target out_qt_modul
     set(${out_qt_plugins} "${collected_plugins}" PARENT_SCOPE)
 endfunction()
 
-function(_qt_internal_android_get_qt_paths out_qt_prefix out_qt_libs_dir out_qt_data_dir)
-    _qt_internal_get_android_abi_prefix_path(qt_prefix ${CMAKE_ANDROID_ARCH_ABI})
-    _qt_internal_get_android_abi_subdir_path(qt_libs_dir QT6_INSTALL_LIBS ${CMAKE_ANDROID_ARCH_ABI})
-    _qt_internal_get_android_abi_subdir_path(qt_data_dir QT6_INSTALL_DATA ${CMAKE_ANDROID_ARCH_ABI})
-
-    _qt_internal_path_join(qt_libs_dir "${qt_prefix}" "${qt_libs_dir}")
-    _qt_internal_path_join(qt_data_dir "${qt_prefix}" "${qt_data_dir}")
-
-    set(${out_qt_prefix} "${qt_prefix}" PARENT_SCOPE)
-    set(${out_qt_libs_dir} "${qt_libs_dir}" PARENT_SCOPE)
-    set(${out_qt_data_dir} "${qt_data_dir}" PARENT_SCOPE)
-endfunction()
-
-function(_qt_internal_android_get_dependency_abs_path target dependency out_abs_path)
-    if(dependency STREQUAL "")
-        set(${out_abs_path} "" PARENT_SCOPE)
-        return()
-    endif()
-
-    _qt_internal_android_get_qt_paths(qt_prefix qt_libs_dir qt_data_dir)
-
-    if(IS_ABSOLUTE "${dependency}")
-        set(abs_path "${dependency}")
-    else()
-        set(base_dir "${qt_prefix}")
-        if(dependency MATCHES "^lib/")
-            string(REGEX REPLACE "^lib/" "" dependency "${dependency}")
-            set(base_dir "${qt_libs_dir}")
-        elseif(dependency MATCHES "^jar/")
-            set(base_dir "${qt_data_dir}")
-        endif()
-        _qt_internal_path_join(abs_path "${base_dir}" "${dependency}")
-    endif()
-
-    # Add abi suffix if file name doesn't have it.
-    set(abi_so_suffix "_${CMAKE_ANDROID_ARCH_ABI}.so")
-    if(NOT abs_path MATCHES "${abi_so_suffix}$")
-        string(REGEX REPLACE "\\.so$" "${abi_so_suffix}" abs_path "${abs_path}")
-    endif()
-
-    if(NOT EXISTS "${abs_path}")
-        set(${out_abs_path} "" PARENT_SCOPE)
-        return()
-    endif()
-
-    set(${out_abs_path} "${abs_path}" PARENT_SCOPE)
-endfunction()
-
 # Processes JAR dependencies for a Qt module and appends copy_commands in-place
 function(_qt_internal_android_process_module_jars target module libs_root_dir
         inout_seen_destinations inout_copy_commands inout_copy_depends)
@@ -1432,10 +1384,19 @@ function(_qt_internal_android_process_module_jars target module libs_root_dir
     if(NOT module_jar_deps)
         set(module_jar_deps "")
     endif()
+
+    _qt_internal_get_android_abi_prefix_path(qt_prefix ${CMAKE_ANDROID_ARCH_ABI})
+    _qt_internal_get_android_abi_subdir_path(qt_data_dir QT6_INSTALL_DATA ${CMAKE_ANDROID_ARCH_ABI})
+    _qt_internal_path_join(qt_data_dir "${qt_prefix}" "${qt_data_dir}")
+
     foreach(jar IN LISTS module_jar_deps)
-        _qt_internal_android_get_dependency_abs_path("${module}" "${jar}" jar_absolute)
-        if(NOT jar_absolute)
-            message(WARNING "The JAR dependency '${jar}' is missing for ${module}.")
+        if(IS_ABSOLUTE "${jar}")
+            set(jar_absolute "${jar}")
+        else()
+            _qt_internal_path_join(jar_absolute "${qt_data_dir}" "${jar}")
+        endif()
+        if(NOT EXISTS "${jar_absolute}")
+            message(WARNING "The JAR dependency '${jar_absolute}' is missing for ${module}.")
             continue()
         endif()
 
@@ -1497,10 +1458,24 @@ function(_qt_internal_android_process_module_lib_deps target module libs_abi_dir
     if(NOT module_lib_deps)
         set(module_lib_deps "")
     endif()
+
+    _qt_internal_get_android_abi_prefix_path(qt_prefix ${CMAKE_ANDROID_ARCH_ABI})
+    set(abi_so_suffix "_${CMAKE_ANDROID_ARCH_ABI}.so")
+
     foreach(lib IN LISTS module_lib_deps)
-        _qt_internal_android_get_dependency_abs_path("${module}" "${lib}" lib_absolute)
-        if(NOT lib_absolute)
-            message(WARNING "The library dependency '${lib}' is missing for ${module}.")
+        if(IS_ABSOLUTE "${lib}")
+            set(lib_absolute "${lib}")
+        else()
+            _qt_internal_path_join(lib_absolute "${qt_prefix}" "${lib}")
+        endif()
+
+        # Add abi suffix if file name doesn't have it.
+        if(NOT lib_absolute MATCHES "${abi_so_suffix}$")
+            string(REGEX REPLACE "\\.so$" "${abi_so_suffix}" lib_absolute "${lib_absolute}")
+        endif()
+
+        if(NOT EXISTS "${lib_absolute}")
+            message(WARNING "The library dependency '${lib_absolute}' is missing for ${module}.")
             continue()
         endif()
 
