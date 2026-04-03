@@ -1643,9 +1643,7 @@ function(_qt_internal_android_copy_qt_dependencies target deployment_dir)
 
     set(libs_root_dir "${deployment_dir}/libs")
     set(libs_abi_dir "${libs_root_dir}/${CMAKE_ANDROID_ARCH_ABI}")
-    set(assets_bundle_dir "${deployment_dir}/assets/android_rcc_bundle")
     list(APPEND copy_commands COMMAND ${CMAKE_COMMAND} -E make_directory "${libs_abi_dir}")
-    list(APPEND copy_commands COMMAND ${CMAKE_COMMAND} -E make_directory "${assets_bundle_dir}")
 
     get_target_property(no_deploy_qt_libs ${target} QT_ANDROID_NO_DEPLOY_QT_LIBS)
 
