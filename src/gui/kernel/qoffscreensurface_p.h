@@ -16,7 +16,7 @@
 // We mean it.
 //
 
-#include "qplatformoffscreensurface.h"
+#include <qpa/qplatformoffscreensurface.h>
 
 #include <private/qwindow_p.h>
 
