@@ -85,6 +85,7 @@ qt_internal_extend_target(QWasmIntegrationPlugin CONDITION QT_FEATURE_opengl
 set(wasm_support_files
     wasm_shell.html
     qtloader.js
+    asan.js
     resources/qtlogo.svg
 )
 

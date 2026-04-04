@@ -4,13 +4,32 @@
 
 # WARNING must keep in sync with wasm-emscripten/qmake.conf!
 function (qt_internal_setup_wasm_target_properties wasmTarget)
+    if(QT6_INSTALL_PREFIX)
+        set(WASM_BUILD_DIR "${QT6_INSTALL_PREFIX}")
+    elseif(QT_BUILD_DIR)
+        set(WASM_BUILD_DIR "${QT_BUILD_DIR}")
+    endif()
 
     target_link_options("${wasmTarget}" INTERFACE
     "SHELL:-s MAX_WEBGL_VERSION=2"
     "SHELL:-s WASM_BIGINT=1"
     "SHELL:-s STACK_SIZE=5MB")
 
+    if (QT_FEATURE_sanitize_address OR QT_FEATURE_sanitize_undefined)
+        # It is important to set ASAN_OPTIONS for the address sanitizer, in asan.js
+        target_link_options("${wasmTarget}" INTERFACE "SHELL:--pre-js ${WASM_BUILD_DIR}/plugins/platforms/asan.js" )
+        target_link_options("${wasmTarget}" INTERFACE "SHELL:-g")
+        target_link_options("${wasmTarget}" INTERFACE "SHELL:-sALLOW_MEMORY_GROWTH=1")
+
+        # The default is changed to 1, when asan is in use, force to 0
+        target_link_options("${wasmTarget}" INTERFACE "SHELL:-sEXIT_RUNTIME=0")
+
+        target_compile_options("${wasmTarget}" INTERFACE "SHELL:-fno-inline")
+        target_compile_options("${wasmTarget}" INTERFACE "SHELL:-O1")
+    endif()
+
     set(executable_link_flags "-sFETCH")
+
     ## wasm64
     if (WASM64)
         target_compile_options("${wasmTarget}" INTERFACE "SHELL:-s MEMORY64=1" )
