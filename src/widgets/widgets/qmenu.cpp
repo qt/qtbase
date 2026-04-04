@@ -2974,6 +2974,9 @@ void QMenu::mouseReleaseEvent(QMouseEvent *e)
 
     QAction *action = d->actionAt(e->position().toPoint());
     if (action && action == d->currentAction) {
+        // The widget style may need to repaint the action without the sunken state.
+        update(d->actionRect(action));
+
         if (!action->menu()) {
 #if defined(Q_OS_WIN)
             //On Windows only context menus can be activated with the right button
