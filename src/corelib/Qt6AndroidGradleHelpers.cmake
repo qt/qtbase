@@ -1154,11 +1154,6 @@ function(_qt_internal_android_copy_non_qt_linked_libs target deployment_dir)
                 continue()
             endif()
 
-            get_target_property(entry_imported "${entry}" IMPORTED)
-            if(entry_imported)
-                continue()
-            endif()
-
             # Skip if it's a Qt library.
             get_target_property(entry_qt_package_version "${entry}" _qt_package_version)
             if(entry_qt_package_version)
@@ -1178,9 +1173,11 @@ function(_qt_internal_android_copy_non_qt_linked_libs target deployment_dir)
     set(libs_abi_dir "${deployment_dir}/libs/${CMAKE_ANDROID_ARCH_ABI}")
     set(linked_libs_copy_commands COMMAND ${CMAKE_COMMAND} -E make_directory "${libs_abi_dir}")
     foreach(lib IN LISTS linked_libs)
-        list(APPEND linked_libs_copy_commands COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                "$<TARGET_FILE:${lib}>" "${libs_abi_dir}/$<TARGET_FILE_NAME:${lib}>"
-        )
+        _qt_internal_android_get_deploy_command(deploy_cmd
+            "$<TARGET_FILE:${lib}>" "${libs_abi_dir}/$<TARGET_FILE_NAME:${lib}>")
+        list(APPEND linked_libs_copy_commands COMMAND ${deploy_cmd})
+        _qt_internal_android_append_to_libs_xml_section(${target}
+            extra_libs "$<TARGET_FILE_NAME:${lib}>")
     endforeach()
 
     add_custom_target(${target}_copy_non_qt_linked_libs
