@@ -454,6 +454,13 @@ if(APPLE)
             DESTINATION "${__GlobalConfig_build_dir}/ios"
         )
     endif()
+elseif(ANDROID)
+    qt_copy_or_install(FILES "cmake/android/qt-android-init.gradle"
+        DESTINATION "${__GlobalConfig_install_dir}/android"
+    )
+    file(COPY "cmake/android/qt-android-init.gradle"
+        DESTINATION "${__GlobalConfig_build_dir}/android"
+    )
 elseif(WASM)
     configure_file("${CMAKE_CURRENT_SOURCE_DIR}/util/wasm/wasmtestrunner/qt-wasmtestrunner.py"
         "${QT_BUILD_DIR}/${INSTALL_LIBEXECDIR}/qt-wasmtestrunner.py" @ONLY)

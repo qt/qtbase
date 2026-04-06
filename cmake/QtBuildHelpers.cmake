@@ -265,6 +265,7 @@ function(qt_internal_get_qt_build_private_files_to_install out_var)
         QtProcessConfigureArgs.cmake
         QtSeparateDebugInfo.Info.plist.in
         QtSetup.cmake
+        QtSetupAndroid.cmake
         QtStandaloneTestsConfig.cmake.in
         QtVcpkgManifestHelpers.cmake
         QtVersionlessAliasTargets.cmake.in

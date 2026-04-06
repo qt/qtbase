@@ -30,6 +30,16 @@ instructions:
   - type: EnvironmentVariable
     variableName: CONFIGURE_ENV_PREFIX
     variableValue: "{{.Env.TARGET_ENV_PREFIX}}"
+  - type: ExecuteCommand
+    command: "cmake -DACTION_RESOLVE_GRADLE=ON -DQT_ROOT_DIR={{.SourceDir}} -P {{.SourceDir}}/cmake/QtSetupAndroid.cmake"
+    maxTimeInSeconds: 600
+    maxTimeBetweenOutput: 600
+    userMessageOnFailure: >
+      Failed to resolve Gradle dependencies for Android JAR builds.
+    enable_if:
+      condition: property
+      property: target.osVersion
+      equals_value: Android_ANY
   - !include "{{qt/qtbase}}/call_configure_qtbase.yaml"
 
   - type: ExecuteCommand

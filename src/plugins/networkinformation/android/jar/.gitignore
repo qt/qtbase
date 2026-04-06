@@ -1,6 +1,4 @@
-.gradle/
-build/
-gradle/
+# Ignore Gradle scripts and wrapper since CMake will call them from the templates
+gradle/wrapper/
 gradlew
 gradlew.bat
-local.properties

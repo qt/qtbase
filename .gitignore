@@ -339,3 +339,12 @@ tst_*.xml
 CMakeUserPresets.json
 /.vs/
 /out/
+
+# Gradle generated files
+.gradle/
+local.properties
+
+# JDTLS generated files
+.project
+.classpath
+.settings/

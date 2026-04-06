@@ -1,0 +1,74 @@
+// Copyright (C) 2026 The Qt Company Ltd.
+// SPDX-License-Identifier: BSD-3-Clause
+
+// CMake-specific overrides for Qt Android library builds.
+// Values are passed as command line properties (i.e. -Pproperty=<value>).
+//
+// Arguments:
+//   buildDir        Build output directory
+//   jarOutputDir    Where to write the extracted JAR
+//   buildVariant    Either debug or release
+//   includeJars     Comma-separated JAR dependencies
+//   javacSource     Java source compatibility
+//   javacTarget     Java target compatibility
+
+allprojects {
+    def buildDir = project.findProperty('buildDir')
+    if (buildDir)
+        layout.buildDirectory = file(buildDir)
+
+    pluginManager.withPlugin('com.android.library') {
+        android {
+            compileOptions {
+                def javaSource = findProperty('javacSource')
+                def javaTarget = findProperty('javacTarget')
+                if (javaSource) sourceCompatibility = JavaVersion.toVersion(javaSource)
+                if (javaTarget) targetCompatibility = JavaVersion.toVersion(javaTarget)
+            }
+        }
+        tasks.withType(JavaCompile).configureEach {
+            options.compilerArgs += ['-Xlint:all', '-Xdoclint:all,-missing']
+        }
+    }
+
+    def includeJars = project.findProperty('includeJars')
+    if (includeJars) {
+        afterEvaluate {
+            dependencies {
+                includeJars.tokenize(',').each { compileOnly files(it) }
+            }
+        }
+    }
+
+    tasks.register("${rootProject.name}Jar", Copy) {
+        def variant = findProperty('buildVariant') ?: 'release'
+        def buildOutput = layout.buildDirectory
+        def jarOut = findProperty('jarOutputDir')
+
+        dependsOn "assemble${variant.capitalize()}"
+
+        def outputDir = jarOut ? file(jarOut) : buildOutput.dir('libs').get().asFile
+        def aarFile = buildOutput.file("outputs/aar/${rootProject.name}-${variant}.aar")
+
+        from zipTree(aarFile)
+        include 'classes.jar'
+        into outputDir
+        rename 'classes.jar', "${rootProject.name}.jar"
+    }
+
+    tasks.register("resolveDependencies") {
+        // Assemble only in verify mode, composite builds might fail for relative dependencies.
+        // FIXME: resolve tools dependencies (aapt2, lint-gradle) without full assemble.
+        if (!gradle.startParameter.offline) {
+            dependsOn 'assembleRelease'
+        }
+
+        doLast {
+            buildscript.configurations.findAll { it.canBeResolved }.each { it.resolve() }
+            project.configurations.findAll {
+                // Disable test variants to avoid ambiguity in single-projects.
+                it.canBeResolved && !it.name.toLowerCase().contains('test')
+            }.each { it.resolve() }
+        }
+    }
+}

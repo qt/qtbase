@@ -1,61 +1,20 @@
-// This is mainly used to allow Android Studio to easily read this folder as an android project.
-
-buildscript {
-    repositories {
-        google()
-        mavenCentral()
-    }
-
-    dependencies {
-        classpath 'com.android.tools.build:gradle:9.0.0'
-    }
+plugins {
+    alias(libs.plugins.android.library)
 }
 
-apply plugin: 'com.android.library'
-
-dependencies {
-    implementation fileTree(dir: "libs", include: ["*.jar"])
-}
-
-repositories {
-    google()
-    mavenCentral()
-}
+group = 'org.qtproject.qt'
 
 android {
-    compileSdk 36
-    namespace = "org.qtproject.qt.android"
+    namespace = 'org.qtproject.qt.android'
+    compileSdk = (project.findProperty('compileSdk') ?: '36') as int
 
     defaultConfig {
-        minSdkVersion 28
+        minSdk = (project.findProperty('minSdk') ?: '28') as int
     }
 
     sourceSets {
         main {
-            java.srcDirs = ['src/', '../../../../qtbase/src/network/android/jar/src',
-                            '../../../../qtbase/src/plugins/networkinformation/android/jar/src',
-                            '../../../../qtwebview/src/jar/src',
-                            '../../../../qtdeclarative/src/quick/platform/android/jar/src',
-                            '../../../../qtconnectivity/src/android/nfc/src',
-                            '../../../../qtconnectivity/src/android/bluetooth/src',
-                            '../../../../qtspeech/src/plugins/tts/android/jar/src',
-                            '../../../../qtmultimedia/src/android/jar/src',
-                            '../../../../qtpositioning/src/plugins/position/android/jar/src'
-            ]
-            resources.srcDir 'libs/'
-            manifest.srcFile 'AndroidManifest.xml'
-            res.srcDirs = ['res/']
-        }
-    }
-
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_17
-        targetCompatibility JavaVersion.VERSION_17
-    }
-
-    android {
-        lintOptions {
-            abortOnError = true
+            java.srcDirs = ['src']
         }
     }
 }
