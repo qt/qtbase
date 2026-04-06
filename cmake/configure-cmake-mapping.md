@@ -105,8 +105,8 @@ The following table describes the mapping of configure options to CMake argument
 | -android-ndk-platform android-28      | -DANDROID_PLATFORM=android-28                     |                                                                 |
 | -android-abis <abi_1>,...,<abi_n>     | -DANDROID_ABI=<abi_1>                             | only one ABI can be specified                                   |
 | -android-style-assets                 | -DFEATURE_android_style_assets=ON                 |                                                                 |
-| -android-javac-source                 | -DQT_ANDROID_JAVAC_SOURCE=7                       | Set the javac build source version.                             |
-| -android-javac-target                 | -DQT_ANDROID_JAVAC_TARGET=7                       | Set the javac build target version.                             |
+| -android-javac-source                 | -DQT_ANDROID_JAVAC_SOURCE=17                       | Set the javac build source version.                             |
+| -android-javac-target                 | -DQT_ANDROID_JAVAC_TARGET=17                       | Set the javac build target version.                             |
 | -skip <repo>,...,<repo_n>             | -DBUILD_<repo>=OFF                                |                                                                 |
 | -skip-tests <repo>,...,<repo_n>       | -DQT_BUILD_TESTS_PROJECT_<repo>=OFF               |                                                                 |
 | -skip-examples <repo>,...,<repo_n>    | -DQT_BUILD_EXAMPLES_PROJECT_<repo>=OFF            |                                                                 |
@@ -189,4 +189,3 @@ The following table describes the mapping of configure options to CMake argument
 | -ffmpeg-dir <dir>                     | -DFFMPEG_DIR=<dir>                                | FFmpeg development libraries directory                          |
 | -ffmpeg-deploy                        | -DQT_DEPLOY_FFMPEG=ON                             | FFmpeg binaries will be copied to Qt's install directory        |
 | -default-media-backend <name>         | -DQT_DEFAULT_MEDIA_BACKEND=<name>                 | Default multimedia decoding&encoding backend                    |
-
