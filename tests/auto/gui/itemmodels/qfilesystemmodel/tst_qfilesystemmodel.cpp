@@ -167,6 +167,9 @@ void tst_QFileSystemModel::indexPath()
     QAbstractItemModelTester tester(model.get());
     tester.setUseFetchMore(false);
     int depth = QDir::currentPath().count('/');
+    QVERIFY2(depth > 1, "currentPath() depth is too shallow; "
+                        "ensure the test is not run with '/' as PWD");
+
     model->setRootPath(QDir::currentPath());
     QString backPath;
     for (int i = 0; i <= depth * 2 + 1; ++i) {
