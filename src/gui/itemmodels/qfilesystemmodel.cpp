@@ -415,7 +415,7 @@ QFileSystemModelPrivate::QFileSystemNode *QFileSystemModelPrivate::node(const QS
 
     for (int i = 0; i < pathElements.size(); ++i) {
         QString element = pathElements.at(i);
-        if (i != 0)
+        if (i != 0 && !elementPath.endsWith(separator))
             elementPath.append(separator);
         elementPath.append(element);
         if (i == pathElements.size() - 1)

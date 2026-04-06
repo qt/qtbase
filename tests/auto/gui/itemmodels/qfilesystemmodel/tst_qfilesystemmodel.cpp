@@ -119,7 +119,9 @@ private slots:
 
 #ifdef Q_OS_WIN
     void correctFileInfoForDriveRootPath();
+    void fileInfoPathNoDoubleSlashUNC();
 #endif
+    void fileInfoPathNoDoubleSlash();
 
 protected:
     bool createFiles(QFileSystemModel *model, const QString &test_path,
@@ -1407,7 +1409,40 @@ void tst_QFileSystemModel::correctFileInfoForDriveRootPath()
     QCOMPARE(info.absoluteFilePath(), slashDrive);
     QCOMPARE(info.absolutePath(), slashDrive);
 }
+
+void tst_QFileSystemModel::fileInfoPathNoDoubleSlashUNC()
+{
+    // Verify that UNC paths are not affected by the double slash fix.
+    // UNC paths are handled before the loop in QFileSystemModelPrivate::node(),
+    // so the fix should have no impact on them.
+    QFileSystemModel model;
+    const QModelIndex idx = model.setRootPath(u"//localhost/c$"_s);
+    if (!idx.isValid())
+        QSKIP("UNC path //localhost/c$ is not accessible on this machine");
+
+    const QString resultPath = model.fileInfo(idx).filePath();
+    QVERIFY2(!resultPath.startsWith("///"_L1),
+             qPrintable("fileInfo() returned UNC path with triple slash: " + resultPath));
+    QCOMPARE(resultPath, u"//localhost/c$"_s);
+}
 #endif
+
+void tst_QFileSystemModel::fileInfoPathNoDoubleSlash()
+{
+    const QString dirPath = flatDirTestPath;
+    QDir dir(dirPath);
+    const QString subdir = QStringLiteral("subdir");
+    QVERIFY(dir.mkdir(subdir));
+    const QString subdirPath = dir.absoluteFilePath(subdir);
+
+    QFileSystemModel model;
+    const QModelIndex idx = model.setRootPath(subdirPath);
+
+    const QString resultPath = model.fileInfo(idx).filePath();
+    QVERIFY2(!resultPath.startsWith("//"_L1),
+             qPrintable("fileInfo() returned path with double slash: " + resultPath));
+    QCOMPARE(resultPath, subdirPath);
+}
 
 QTEST_MAIN(tst_QFileSystemModel)
 #include "tst_qfilesystemmodel.moc"
