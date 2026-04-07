@@ -2230,11 +2230,33 @@ QString QTime::toString(Qt::DateFormat format) const
              \l{QLocale::toString()}), the locale-appropriate text (returned by
              \l{QLocale::amText()} or \l{QLocale::pmText()}) is used without
              change of case.
+    \row \li t
+         \li The timezone abbreviation (for example "CEST"). Note that time zone
+             abbreviations are not unique. In particular, \l fromString() cannot
+             parse this.
+    \row \li tt
+         \li The timezone's offset from UTC with no colon between the hours and
+             minutes (for example "+0200").
+    \row \li ttt
+         \li The timezone's offset from UTC with a colon between the hours and
+             minutes (for example "+02:00").
+    \row \li tttt
+         \li The timezone name, as provided by \l QTimeZone::displayName() with
+             the \l QTimeZone::LongName type. This may depend on the operating
+             system in use. If no such name is available, the IANA ID of the
+             zone (such as "Europe/Berlin") may be used.  It may give no
+             indication of whether the datetime was in daylight-saving time or
+             standard time, which may lead to ambiguity if the datetime falls in
+             an hour repeated by a transition between the two.
     \endtable
 
     \note To get localized forms of AM or PM (the \c{AP}, \c{ap}, \c{A}, \c{a},
     \c{aP} or \c{Ap} formats) or of time zone representations (the \c{t}
     formats), use QLocale::system().toString().
+
+    When the timezone cannot be determined or no suitable representation of it
+    is available, the \c{t} forms to represent it may be skipped. See \l
+    QTimeZone::displayName() for details of when it returns an empty string.
 
     Any non-empty sequence of characters enclosed in single quotes will be
     included verbatim in the output string (stripped of the quotes), even if it
@@ -2262,26 +2284,13 @@ QString QTime::toString(Qt::DateFormat format) const
     residue that may be a shorter expression. Thus \c{'HHHHH'} for the time
     08:00 will contribute \c{"08088"} to the output.
 
-    Prior to Qt 6.12 the 't' family of format expressions (see
-    QDateTime::toString() for details) was supported for QTime, using the
-    timezone information of QDateTime::currentDateTime(). This is misleading and
-    does not match the \c fromString() behavior, which only supports timezone
-    expressions for QDateTime. While Qt 6 does still support this usage for
-    QTime, a warning is issued if it is exercised and support for it shall be
-    withdrawn at Qt 7.  Where the date is implied by context it is, of course,
-    possible to format a datetime using a format string that only exercises time
-    and timezone expressions, but the datetime should use the date implied by
-    context to ensure that its timezone description is correct for that date.
-    As a further side-effect, any 't' charaters in a time format that you don't
-    want interpreted as a zone specifier should be enclosed within single
-    quotes.
-
     \sa fromString(), QDate::toString(), QDateTime::toString(), QLocale::toString()
 */
 QString QTime::toString(QStringView format) const
 {
     return QLocale::c().toString(*this, format);
 }
+// ### Qt 7 The 't' format specifiers should be specific to QDateTime (compare fromString).
 #endif // datestring
 
 /*!
@@ -4742,37 +4751,8 @@ QString QDateTime::toString(Qt::DateFormat format) const
     format of the result string. If \a cal is supplied, it determines the
     calendar used to represent the date; it defaults to Gregorian. Prior to Qt
     5.14, there was no \a cal parameter and the Gregorian calendar was always
-    used.
-
-    In addition to the expressions, recognized in the format string to represent
-    parts of the date and time, by QDate::toString() and QTime::toString(), this
-    method supports:
-
-    \table
-    \header \li Expression \li Output
-    \row \li t
-         \li The timezone abbreviation (for example "CEST"). Note that time zone
-             abbreviations are not unique. In particular, \l fromString() cannot
-             parse this.
-    \row \li tt
-         \li The timezone's offset from UTC with no colon between the hours and
-             minutes (for example "+0200").
-    \row \li ttt
-         \li The timezone's offset from UTC with a colon between the hours and
-             minutes (for example "+02:00").
-    \row \li tttt
-         \li The timezone name, as provided by \l QTimeZone::displayName() with
-             the \l QTimeZone::LongName type. This may depend on the operating
-             system in use. If no such name is available, the IANA ID of the
-             zone (such as "Europe/Berlin") may be used.  It may give no
-             indication of whether the datetime was in daylight-saving time or
-             standard time, which may lead to ambiguity if the datetime falls in
-             an hour repeated by a transition between the two.
-    \endtable
-
-    When the timezone cannot be determined or no suitable representation of it
-    is available, these representions of it may be skipped. See \l
-    QTimeZone::displayName() for details of when it returns an empty string.
+    used. See QTime::toString() and QDate::toString() for the supported
+    specifiers for time and date, respectively, in the \a format parameter.
 
     Any sequence of characters enclosed in single quotes will be included
     verbatim in the output string (stripped of the quotes), even if it contains

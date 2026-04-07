@@ -3976,22 +3976,7 @@ QString QCalendarBackend::dateTimeToString(QStringView format, const QDateTime &
                 }
                 break;
 
-            case 't':
-#if QT_VERSION < QT_VERSION_CHECK(7,0,0) && !defined(QT_BOOTSTRAPPED)
-                if (!formatDate) {
-                    /* Was mistakenly defined for QTime, using
-                       currentDateTime()'s zone info. It has been documented
-                       only for QDateTime since 6.12, but retain implementation
-                       until Qt 7, as this is a significant behavior change.
-                    */
-                    qWarning("Zone specifiers are only meaningful for a full datetime. "
-                             "Their use in formatting QTime is deprecated and "
-                             "shall be retired in Qt 7.");
-                }
-#else
-                if (formatDate)
-#endif
-            {
+            case 't': {
                 enum AbbrType { Long, Offset, Short };
                 const auto tzAbbr = [locale](const QDateTime &when, AbbrType type) {
                     QString text;
@@ -4033,12 +4018,8 @@ QString QCalendarBackend::dateTimeToString(QStringView format, const QDateTime &
 
                 used = true;
                 repeat = qMin(repeat, 4);
-#if QT_VERSION < QT_VERSION_CHECK(7,0,0) && !defined(QT_BOOTSTRAPPED)
                 // If we don't have a date-time, use the current system time:
                 const QDateTime when = formatDate ? datetime : QDateTime::currentDateTime();
-#else
-                const QDateTime when = datetime;
-#endif
                 QString text;
                 switch (repeat) {
                 case 4:
