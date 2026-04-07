@@ -1290,7 +1290,9 @@ QOhosWindowProxy::JsScopeData::JsScopeData(
 
 QOhosWindowProxy::JsScopeData::~JsScopeData()
 {
-    if (QtOhos::JsWindowsTracker::isWindowClosing(jsWindowRef->jsObject()) || qAbilityPeer->isTerminating()) {
+    bool windowBoundToQAbility = windowProxyType != WindowProxyType::FloatWindow;
+    if (QtOhos::JsWindowsTracker::isWindowClosing(jsWindowRef->jsObject())
+        || (windowBoundToQAbility && qAbilityPeer->isTerminating())) {
         windowDestroyedFromSystem = true;
         return;
     }
@@ -1489,7 +1491,9 @@ void QOhosWindowProxy::JsScopeData::onWindowEvent(QtOhos::JsState &, const Windo
 
 bool QOhosWindowProxy::JsScopeData::isWindowClosing() const
 {
-    return QtOhos::JsWindowsTracker::isWindowClosing(jsWindowRef->jsObject()) || qAbilityPeer->isTerminating();
+    bool windowBoundToQAbility = windowProxyType != WindowProxyType::FloatWindow;
+    return QtOhos::JsWindowsTracker::isWindowClosing(jsWindowRef->jsObject())
+        || (windowBoundToQAbility && qAbilityPeer->isTerminating());
 }
 
 void QOhosWindowProxy::JsScopeData::onMouseEventFromArkUi(const QArkUi::MouseEvent &event)
