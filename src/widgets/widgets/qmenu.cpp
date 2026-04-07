@@ -1354,7 +1354,7 @@ bool QMenuPrivate::mouseEventTaken(QMouseEvent *e)
         if (scroll && scroll->scrollFlags & QMenuPrivate::QMenuScroller::ScrollUp)
             tearRect.translate(0, scrollerHeight());
         q->update(tearRect);
-        if (tearRect.contains(pos) && hasMouseMoved(e->globalPosition().toPoint())) {
+        if (tearRect.contains(pos) && hasMouseMoved(e->globalPosition())) {
             setCurrentAction(nullptr);
             tearoffHighlighted = 1;
             if (e->type() == QEvent::MouseButtonRelease) {
@@ -1576,7 +1576,7 @@ void QMenuPrivate::_q_platformMenuAboutToShow()
 #endif
 }
 
-bool QMenuPrivate::hasMouseMoved(const QPoint &globalPos)
+bool QMenuPrivate::hasMouseMoved(const QPointF &globalPos) const
 {
     //determines if the mouse has moved (ie its initial position has
     //changed by more than QApplication::startDragDistance()
@@ -2921,7 +2921,7 @@ void QMenu::mousePressEvent(QMouseEvent *e)
     // Only when mouse clicks in QPoint(0,0) on second screen, the menu doesn't hide.
     if ((e->position().toPoint().isNull() && !e->globalPosition().isNull())
         || !rect().contains(e->position().toPoint())
-        || !d->hasMouseMoved(e->globalPosition().toPoint())) {
+        || !d->hasMouseMoved(e->globalPosition())) {
          if (d->noReplayFor
              && QRect(d->noReplayFor->mapToGlobal(QPoint()), d->noReplayFor->size()).contains(e->globalPosition().toPoint()))
              setAttribute(Qt::WA_NoMouseReplay);
@@ -2965,7 +2965,7 @@ void QMenu::mouseReleaseEvent(QMouseEvent *e)
 
     d->setSyncAction();
 
-    if (sawMousePress && !d->hasMouseMoved(e->globalPosition().toPoint())) {
+    if (sawMousePress && !d->hasMouseMoved(e->globalPosition())) {
         // We don't want to trigger a menu item if the mouse hasn't moved
         // since the popup was opened. Instead we want to close the menu.
         d->hideUpToMenuBar();
@@ -3488,7 +3488,7 @@ void QMenu::mouseMoveEvent(QMouseEvent *e)
         return;
 
     d->motions++;
-    if (!d->hasMouseMoved(e->globalPosition().toPoint()))
+    if (!d->hasMouseMoved(e->globalPosition()))
         return;
 
     d->hasHadMouse = d->hasHadMouse || rect().contains(e->position().toPoint());
