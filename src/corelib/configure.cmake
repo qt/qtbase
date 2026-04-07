@@ -61,6 +61,10 @@ set_package_properties(WrapPCRE2 PROPERTIES TYPE REQUIRED)
 if((QNX) OR QT_FIND_ALL_PACKAGES_ALWAYS)
     qt_find_package(PPS MODULE PROVIDED_TARGETS PPS::PPS MODULE_NAME core QMAKE_LIB pps)
 endif()
+if((QNX) OR QT_FIND_ALL_PACKAGES_ALWAYS)
+    qt_find_package(Eventfd MODULE PROVIDED_TARGETS Eventfd::Eventfd MODULE_NAME core
+    QMAKE_LIB eventfd)
+endif()
 qt_find_package(Slog2 MODULE PROVIDED_TARGETS Slog2::Slog2 MODULE_NAME core QMAKE_LIB slog2)
 
 
@@ -965,6 +969,11 @@ qt_feature("pthread_timedjoin" PRIVATE
     LABEL "pthread_timedjoin() function"
     AUTODETECT UNIX
     CONDITION UNIX AND QT_FEATURE_thread AND TEST_pthread_timedjoin
+)
+qt_feature("qqnx_eventfd" PRIVATE
+    LABEL "eventfd"
+    CONDITION QNX AND Eventfd_FOUND
+    EMIT_IF QNX
 )
 qt_feature("qqnx_pps" PRIVATE
     LABEL "PPS"

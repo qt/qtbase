@@ -777,6 +777,11 @@ qt_internal_extend_target(Core CONDITION QNX AND QT_FEATURE_fsnotify
         fsnotify
 )
 
+qt_internal_extend_target(Core CONDITION QT_FEATURE_qqnx_eventfd
+    LIBRARIES
+        Eventfd::Eventfd
+)
+
 qt_internal_extend_target(Core CONDITION LINUX AND QT_BUILD_SHARED_LIBS
     SOURCES
         global/minimum-linux_p.h
