@@ -29,6 +29,7 @@ private:
     QQnxRasterWindow *platformWindow() const;
 
     QWindow *m_window;
+    QSize m_requestedSize;
     bool m_needsPosting;
     bool m_scrolled;
 };

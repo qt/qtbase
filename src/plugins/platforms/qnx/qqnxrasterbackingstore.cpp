@@ -62,12 +62,12 @@ void QQnxRasterBackingStore::flush(QWindow *window, const QRegion &region, const
 
 void QQnxRasterBackingStore::resize(const QSize &size, const QRegion &staticContents)
 {
-    Q_UNUSED(size);
     Q_UNUSED(staticContents);
     qCDebug(lcQpaBackingStore) << Q_FUNC_INFO << "w =" << window() << ", s =" << size;
 
     // NOTE: defer resizing window buffers until next paint as
     // resize() can be called multiple times before a paint occurs
+    m_requestedSize = size;
 }
 
 bool QQnxRasterBackingStore::scroll(const QRegion &area, int dx, int dy)
@@ -99,7 +99,8 @@ void QQnxRasterBackingStore::beginPaint(const QRegion &region)
     qCDebug(lcQpaBackingStore) << Q_FUNC_INFO << "w =" << window();
     m_needsPosting = true;
 
-    platformWindow()->adjustBufferSize();
+    platformWindow()->adjustBufferSize(
+        QHighDpi::toNativePixels(m_requestedSize, window()));
 
 #if defined(QQNX_INCREMENTAL_RASTER_UPDATE)
     if (window()->requestedFormat().alphaBufferSize() > 0) {

@@ -140,10 +140,13 @@ void QQnxRasterWindow::setParent(const QPlatformWindow *wnd)
 
 void QQnxRasterWindow::adjustBufferSize()
 {
-    const QSize windowSize = QHighDpi::toNativePixels(window()->size(), window());
+    adjustBufferSize(QHighDpi::toNativePixels(window()->size(), window()));
+}
 
-    if (windowSize != bufferSize())
-        setBufferSize(windowSize);
+void QQnxRasterWindow::adjustBufferSize(const QSize &size)
+{
+    if (size != bufferSize())
+        setBufferSize(size);
 }
 
 int QQnxRasterWindow::pixelFormat() const
