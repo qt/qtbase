@@ -1,7 +1,6 @@
 <?xml version="1.0"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:dist="http://schemas.android.com/apk/distribution"
-    package="${applicationId}"
     android:installLocation="auto">
     @APP_PERMISSIONS@
     @APP_FEATURES@
