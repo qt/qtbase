@@ -444,7 +444,7 @@ public:
     void _q_actionHovered();
     void _q_platformMenuAboutToShow();
 
-    bool hasMouseMoved(const QPoint &globalPos);
+    bool hasMouseMoved(const QPointF &globalPos) const;
 
     void updateLayoutDirection();
 
