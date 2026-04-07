@@ -911,6 +911,10 @@ void tst_QMimeDatabase::symlinkToFifo() // QTBUG-48529
     if (!m_hasFreedesktopOrg)
         QSKIP("Special devices are not available in tika");
 
+#ifdef Q_OS_HARMONY
+    QSKIP("OHOS does not support symlink creation");
+#endif
+
     QTemporaryDir tempDir;
     QVERIFY(tempDir.isValid());
     const QString dir = tempDir.path();

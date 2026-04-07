@@ -78,7 +78,7 @@ qt_internal_extend_target(tst_qmimedatabase-xml-builtin CONDITION GCC
         -Wshadow
 )
 
-qt_internal_extend_target(tst_qmimedatabase-xml-builtin CONDITION UNIX AND NOT APPLE AND NOT QNX
+qt_internal_extend_target(tst_qmimedatabase-xml-builtin CONDITION UNIX AND NOT APPLE AND NOT QNX AND NOT OHOS
     DEFINES
         USE_XDG_DATA_DIRS
 )
