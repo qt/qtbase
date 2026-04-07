@@ -5,6 +5,7 @@
 
 #include <QtCore/private/qohoslogger_p.h>
 #include "QtGui/private/qguiapplication_p.h"
+#include <QtGui/private/qwindow_p.h>
 #include <qohosdeviceinfo_p.h>
 #include <qohosinputcontext.h>
 #include <qohosinputmethodeventhandler.h>
@@ -62,7 +63,8 @@ void QOhosFloatingWindow::setGeometry(const QRect &rect)
 
     if (view != nullptr) {
         auto frameGeometry = rect.marginsAdded(frameMargins());
-        view->setPosition(frameGeometry.topLeft());
+        if (!qt_window_private(window())->positionAutomatic)
+            view->setPosition(frameGeometry.topLeft());
         view->setSize(frameGeometry.size());
     }
 }

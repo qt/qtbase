@@ -1317,10 +1317,12 @@ void QOhosView::syncWindowStateImmediate(WindowStateSyncReason reason)
         submitOrResetSystemPropertyUpdate(
             m_updateData.size, targetGeometryToSet.size(), windowGeometryPersistenceState);
 
-        submitOrResetSystemPropertyUpdate(
-            m_updateData.position,
-            std::make_pair(targetGeometryToSet.topLeft(), targetDisplayId),
-            windowGeometryPersistenceState);
+        if (!qt_window_private(m_ownerWindow)->positionAutomatic) {
+            submitOrResetSystemPropertyUpdate(
+                m_updateData.position,
+                std::make_pair(targetGeometryToSet.topLeft(), targetDisplayId),
+                windowGeometryPersistenceState);
+        }
     }
 
     submitSystemPropertyUpdate(m_updateData.backgroundTransparent, isWindowTransparencyRequested());
@@ -1384,6 +1386,22 @@ void QOhosView::syncWindowStateImmediate(WindowStateSyncReason reason)
         .tryGetProperty<bool, &QOhosPlatformWindow::windowDragResizableProperty>();
     if (windowDragResizable.hasValue())
         setWindowDragResizable(windowDragResizable.value());
+
+    // NOTE - when position automatic is set we do not control window position
+    // therefore no window callback about window position change will be sent
+    // and the screen that given window belongs to needs to be synchronized
+    bool shouldSynchronizeTargetDisplayIdWithQpa =
+        qt_window_private(m_ownerWindow)->positionAutomatic
+        && reason == WindowStateSyncReason::ViewTypeChanged
+        && m_ohosWindowProxy != nullptr;
+
+    if (shouldSynchronizeTargetDisplayIdWithQpa) {
+        auto optTargetDisplayId = m_ohosWindowProxy->getWindowProperties().displayId;
+        if (optTargetDisplayId.hasValue()) {
+            QOhosDisplayInfo::JsDisplayId syntheticDisplayIdChangeEvent = optTargetDisplayId.value();
+            Q_EMIT windowDisplayIdChanged(syntheticDisplayIdChangeEvent);
+        }
+    }
 }
 
 void QOhosView::flushSystemPropertyUpdatesImmediate()
