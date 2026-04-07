@@ -16,6 +16,7 @@
 //
 
 #include <QtGui/qiconengine.h>
+#include <QtGui/qpalette.h>
 
 #include <QtCore/qhash.h>
 
@@ -57,17 +58,22 @@ private:
     const UIImage *m_image;
 #endif
     struct CacheKey {
-        constexpr CacheKey(QIcon::Mode mode, QIcon::State state, QSize size, qreal scale) noexcept
-            : modeAndState((quint64(mode) << 32) | state), size(size), scale(scale)
+        constexpr CacheKey(QIcon::Mode mode, QIcon::State state, const QPalette &palette, QSize size, qreal scale) noexcept
+            : modeAndState((quint64(mode) << 32) | state)
+            , paletteCacheKey(palette.cacheKey())
+            , size(size)
+            , scale(scale)
         {}
 
         quint64 modeAndState;
+        quint64 paletteCacheKey;
         QSize size;
         qreal scale;
 
         friend constexpr bool operator==(const CacheKey &lhs, const CacheKey &rhs) noexcept
         {
             return lhs.modeAndState == rhs.modeAndState
+                && lhs.paletteCacheKey == rhs.paletteCacheKey
                 && lhs.size == rhs.size
                 && lhs.scale == rhs.scale;
         }

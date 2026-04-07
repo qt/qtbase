@@ -25,6 +25,7 @@
 #include <QtGui/qpainterpath.h>
 #include <QtGui/qstylehints.h>
 #include <QtGui/private/qcoregraphics_p.h>
+#include <QtGui/private/qappleiconengine_p.h>
 #include <QtGui/qpa/qplatformfontdatabase.h>
 #include <QtGui/qpa/qplatformtheme.h>
 
@@ -3186,6 +3187,21 @@ QPixmap QMacStyle::standardPixmap(StandardPixmap standardPixmap, const QStyleOpt
     }
     qreal dpr = widget ? widget->devicePixelRatio() : qApp->devicePixelRatio();
     return icon.pixmap(QSize(size, size), dpr);
+}
+
+QIcon QMacStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption *option,
+                                 const QWidget *widget) const
+{
+    switch (standardIcon) {
+    case SP_ToolBarHorizontalExtensionButton:
+        return QAppleIconEngine::fromTheme("chevron.forward.2");
+    case SP_ToolBarVerticalExtensionButton:
+        return QAppleIconEngine::fromTheme("chevron.down.2");
+    default:
+        break;
+    }
+
+    return QCommonStyle::standardIcon(standardIcon, option, widget);
 }
 
 void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPainter *p,

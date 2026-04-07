@@ -405,7 +405,7 @@ auto *configuredImage(const UIImage *image, const QColor &color)
 
 QPixmap QAppleIconEngine::scaledPixmap(const QSize &size, QIcon::Mode mode, QIcon::State state, qreal scale)
 {
-    const CacheKey key(mode, state, size, scale);
+    const CacheKey key(mode, state, QPalette(), size, scale);
     QPixmap pixmap = m_cache.value(key);
     if (pixmap.isNull()) {
         const QSize paintSize = actualSize(size, mode, state);

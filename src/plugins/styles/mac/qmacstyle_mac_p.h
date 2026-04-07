@@ -68,6 +68,9 @@ public:
     QPixmap standardPixmap(StandardPixmap sp, const QStyleOption *opt,
                            const QWidget *widget = nullptr) const;
 
+    QIcon standardIcon(StandardPixmap standardIcon, const QStyleOption *option,
+                                 const QWidget *widget) const;
+
     QPixmap generatedIconPixmap(QIcon::Mode iconMode, const QPixmap &pixmap,
                                 const QStyleOption *opt) const;
 
