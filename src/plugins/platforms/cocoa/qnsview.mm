@@ -267,6 +267,14 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSViewMenuHelper);
         return;
 
     qCDebug(lcQpaWindow) << "Done moving" << self << "to" << self.window;
+
+    // Moving to a new window might result in a new screen. This is normally
+    // handled for top level windows via windowDidChangeScreen, but for child
+    // windows we need to handle it manually.
+    auto *previousScreen = self.previousWindow ? QCocoaScreen::get(self.previousWindow.screen) : nullptr;
+    auto *currentScreen = self.window ? QCocoaScreen::get(self.window.screen) : nullptr;
+    if (currentScreen && currentScreen != previousScreen)
+        m_platformWindow->windowDidChangeScreen();
 }
 
 // QWindow::setParent() promises that the child window will be clipped
