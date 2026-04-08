@@ -948,7 +948,7 @@ void tst_QAccessibility::actionTest()
     QTestAccessibility::clearEvents();
 
     {
-    QCOMPARE(QAccessibleActionInterface::showMenuAction(), QString(QStringLiteral("ShowMenu")));
+    QCOMPARE(QAccessibleActionInterface::showMenuAction(), QString(QStringLiteral("Show Menu")));
 
     auto widgetHolder = std::make_unique<QWidget>();
     auto widget = widgetHolder.get();
