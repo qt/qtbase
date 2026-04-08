@@ -28,6 +28,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 static inline int mapToQtWeightForRange(int fcweight, int fcLower, int fcUpper, int qtLower, int qtUpper)
 {
     return qtLower + ((fcweight - fcLower) * (qtUpper - qtLower)) / (fcUpper - fcLower);
@@ -470,6 +472,13 @@ static void populateFromPattern(FcPattern *pattern,
     }
 
     QString fileName = QString::fromLocal8Bit((const char *)file_value);
+
+    // FcStrCanonFilename() was changed after fontconfig 2.17.1 (commit e421882) to
+    // prepend a '/' to paths it cannot canonicalize, turning Qt resource paths
+    // like ":/foo.ttf" into "/:/foo.ttf". Strip the spurious leading '/' to
+    // restore a valid Qt resource path.
+    if (fileName.startsWith("/:/"_L1))
+        fileName = fileName.mid(1);
 
     QFont::Style style = (slant_value == FC_SLANT_ITALIC)
                      ? QFont::StyleItalic
