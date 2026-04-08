@@ -764,6 +764,13 @@ void QDockWidgetGroupWindow::reparentToMainWindow(QDockWidget *dockWidget)
     QMainWindowLayout *mwLayout = qt_mainwindow_layout(mainWindow);
     Q_ASSERT(mwLayout);
     mwLayout->widgetAnimator.abort(dockWidget);
+
+    // The saved state is now invalid because it contains
+    // a reference to the dock widget inside the group window.
+    // - the dock widget has been reparented.
+    // - if it was the last dock widget, the group window will be deleted
+    // => clear saved state.
+    mwLayout->savedState.clear();
     QDockAreaLayoutInfo &parentInfo = mwLayout->layoutState.dockAreaLayout.docks[layoutInfo()->dockPos];
     dockWidget->removeEventFilter(this);
     parentInfo.add(dockWidget);
@@ -2907,7 +2914,7 @@ QLayoutItem *QMainWindowLayout::unplug(QWidget *widget, QDockWidgetPrivate::Drag
             qCDebug(lcQpaDockWidgets) << "Drag only:" << widget << "Group:" << (scope == QDockWidgetPrivate::DragScope::Group);
             return nullptr;
         }
-        QList<int> path = groupWindow->layoutInfo()->indexOf(widget);
+        const QList<int> path = groupWindow->layoutInfo()->indexOf(widget);
         QDockAreaLayoutItem parentItem = groupWindow->layoutInfo()->item(path);
         QLayoutItem *item = parentItem.widgetItem;
         if (scope == QDockWidgetPrivate::DragScope::Group && path.size() > 1
@@ -2920,7 +2927,7 @@ QLayoutItem *QMainWindowLayout::unplug(QWidget *widget, QDockWidgetPrivate::Drag
             Q_ASSERT(dockWidget); // cannot be a QDockWidgetGroupWindow because it's not floating.
             dockWidget->d_func()->unplug(widget->geometry());
 
-            qCDebug(lcQpaDockWidgets) << "Unplugged from floating dock:" << widget << "from" << parentItem.widgetItem;
+            qCDebug(lcQpaDockWidgets) << "Unplugged from floating dock:" << widget << "from" << groupWindow;
             return item;
         }
     }
