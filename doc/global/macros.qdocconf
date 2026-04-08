@@ -57,7 +57,6 @@ macro.examplecategory     = "\\meta category {\1}\n\\ingroup category \1"
 
 macro.B2Q                 = "Boot to Qt"
 macro.B2QSS               = "Boot to Qt Software Stack"
-macro.B2QST               = "Boot to Qt Startup Screen"
 macro.IFW                 = "Qt Installer Framework"
 macro.Q4A                 = "Qt for Android"
 macro.QA                  = "Qt Assistant"
