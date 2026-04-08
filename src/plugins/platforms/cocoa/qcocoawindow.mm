@@ -1349,6 +1349,14 @@ void QCocoaWindow::viewDidMoveToWindow(NSWindow *previousWindow)
     // Get rid of our Qt managed NSWindow if we're now embedded
     if (isEmbedded())
         recreateWindowIfNeeded();
+
+    // Moving to a new window might result in a new screen. This is normally
+    // handled for top level windows via windowDidChangeScreen, but for child
+    // windows we need to handle it manually.
+    auto *previousScreen = previousWindow ? QCocoaScreen::get(previousWindow.screen) : nullptr;
+    auto *currentScreen = m_view.window ? QCocoaScreen::get(m_view.window.screen) : nullptr;
+    if (currentScreen && currentScreen != previousScreen)
+        windowDidChangeScreen();
 }
 
 // ----------------------- NSWindow notifications -----------------------
