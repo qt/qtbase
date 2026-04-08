@@ -2797,14 +2797,23 @@ void QGuiApplicationPrivate::processWindowScreenChangedEvent(QWindowSystemInterf
     if (!window)
         return;
 
-    if (window->screen() == wse->screen.data())
+    QScreen *screen = wse->screen.data();
+    if (window->screen() == screen)
         return;
 
-    if (QWindow *topLevelWindow = window->d_func()->topLevelWindow(QWindow::ExcludeTransients)) {
-        if (QScreen *screen = wse->screen.data())
+    auto *windowPrivate = QWindowPrivate::get(window);
+    QWindow *topLevelWindow = windowPrivate->topLevelWindow(QWindow::ExcludeTransients);
+    if (window == topLevelWindow) {
+        if (screen)
             topLevelWindow->d_func()->setTopLevelScreen(screen, false /* recreate */);
         else // Fall back to default behavior, and try to find some appropriate screen
             topLevelWindow->setScreen(nullptr);
+    } else if (screen) {
+        // Child windows reflect the screen of their top level parent. When a
+        // window is reparented into a window that lives on a different screen
+        // we don't need to update the top level screen, but do need to emit
+        // screen changes for the child and its children,
+        windowPrivate->emitScreenChangedRecursion(screen);
     }
 }
 
