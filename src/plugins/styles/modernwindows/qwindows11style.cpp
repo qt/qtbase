@@ -68,6 +68,10 @@ inline bool isPressed(const QStyleOption *option)
 {
     return option->state.testFlag(QStyle::State_Sunken);
 }
+inline bool isSelected(const QStyleOption *option)
+{
+    return option->state.testFlag(QStyle::State_Selected);
+}
 inline bool isHover(const QStyleOption *option)
 {
     return option->state.testFlag(QStyle::State_MouseOver);
@@ -1776,18 +1780,29 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
 
     case CE_MenuItem:
         if (const auto *menuitem = qstyleoption_cast<const QStyleOptionMenuItem *>(option)) {
+            using namespace StyleOptionHelper;
+
             const auto visualMenuRect = [&](const QRect &rect) {
                 return visualRect(option->direction, menuitem->rect, rect);
             };
-            bool dis = !(menuitem->state & State_Enabled);
-            bool checked = menuitem->checkType != QStyleOptionMenuItem::NotCheckable
-                    ? menuitem->checked : false;
-            bool act = menuitem->state & State_Selected;
+
+            const bool checked =
+                    menuitem->checkType != QStyleOptionMenuItem::NotCheckable && menuitem->checked;
 
             const QRect rect = menuitem->rect.marginsRemoved(QMargins(2,2,2,2));
-            if (act && dis == false) {
-                drawRoundedRect(painter, rect, Qt::NoPen, highContrastTheme ? menuitem->palette.brush(QPalette::Highlight)
-                                                                            : QBrush(winUI3Color(subtleHighlightColor)));
+            if (!isDisabled(menuitem)) {
+                QPen pen(Qt::NoPen);
+                QBrush brush(Qt::NoBrush);
+                if (highContrastTheme) {
+                    pen = QPen(menuitem->palette.highlight().color(), 2);
+                    brush = menuitem->palette.window();
+                } else if (isPressed(menuitem)) {
+                    brush = winUI3Color(subtlePressedColor);
+                } else if (isSelected(menuitem)) { // == hover
+                    brush = winUI3Color(subtleHighlightColor);
+                }
+                if (pen != Qt::NoPen || brush != Qt::NoBrush)
+                    drawRoundedRect(painter, rect, pen, brush);
             }
             if (menuitem->menuItemType == QStyleOptionMenuItem::Separator) {
                 constexpr int yoff = 1;
@@ -1816,9 +1831,9 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
                                                  rect.y(),
                                                  menuitem->maxIconWidth - 4,
                                                  rect.height())));
-                QIcon::Mode mode = dis ? QIcon::Disabled : QIcon::Normal;
-                if (act && !dis)
-                    mode = QIcon::Active;
+                const auto mode = isDisabled(menuitem)
+                        ? QIcon::Disabled
+                        : (isSelected(menuitem) ? QIcon::Active : QIcon::Normal);
                 const auto size = proxy()->pixelMetric(PM_SmallIconSize, option, widget);
                 QRect pmr(QPoint(0, 0), QSize(size, size));
                 pmr.moveCenter(vRect.center());
@@ -1838,10 +1853,12 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
 
                 QColor penColor;
                 if (highContrastTheme) {
-                    penColor = menuitem->palette.color(act ? QPalette::HighlightedText
-                                                           : QPalette::Text);
+                    penColor = menuitem->palette.color(
+                            isSelected(menuitem) ? QPalette::HighlightedText : QPalette::Text);
                 } else {
-                    penColor = controlTextColor(option);
+                    QStyleOption tmpOpt(*option);
+                    tmpOpt.state.setFlag(State_Sunken, false);
+                    penColor = controlTextColor(&tmpOpt);
                 }
                 painter->setPen(penColor);
 
