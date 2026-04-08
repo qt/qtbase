@@ -2088,10 +2088,14 @@ endfunction()
 # This is mostly useful for command line tools that depend on more than the
 # default QPA plugin.
 #
+# The function yields an error if ${target} or a plugin target cannot be found.
+# The check for plugin targets can be turned off with the
+# SKIP_MISSING_PLUGIN_TARGETS option.
+#
 # Example:
 #   qt_internal_add_plugin_dependencies(svgtoqml PLUGIN_TARGETS Qt::QMinimalIntegrationPlugin)
 function(qt_internal_add_plugin_dependencies target)
-    set(no_value_options "")
+    set(no_value_options SKIP_MISSING_PLUGIN_TARGETS)
     set(single_value_options "")
     set(multi_value_options PLUGIN_TARGETS)
     cmake_parse_arguments(PARSE_ARGV 1 arg
@@ -2102,10 +2106,23 @@ function(qt_internal_add_plugin_dependencies target)
         message(FATAL_ERROR "PLUGIN_TARGETS argument needs to be specified")
     endif()
 
+    if(NOT TARGET "${target}")
+        message(FATAL_ERROR "Target '${target}' does not exist.")
+    endif()
+
+    # Filter out non-existent plugin targets / yield an error.
+    set(plugin_targets "")
+    foreach(plugin_target IN LISTS arg_PLUGIN_TARGETS)
+        if(TARGET "${plugin_target}")
+            list(APPEND plugin_targets "${plugin_target}")
+        elseif(NOT arg_SKIP_MISSING_PLUGIN_TARGETS)
+            message(FATAL_ERROR "Plugin target '${plugin_target}' does not exist.")
+        endif()
+    endforeach()
 
     if(QT_BUILD_SHARED_LIBS)
         # Add a dependency such that building ${target} builds the plugin targets too.
-        add_dependencies(${target} ${arg_PLUGIN_TARGETS})
+        add_dependencies(${target} ${plugin_targets})
     else()
         if(QT_SUPERBUILD)
             # In a top-level build, qt_import_plugins() is a no-op because
@@ -2117,7 +2134,7 @@ function(qt_internal_add_plugin_dependencies target)
             __qt_internal_get_plugin_include_prelude(import_plugin_code)
             string(APPEND import_plugin_code "\n")
             string(PREPEND import_plugin_code "// This file is auto-generated. Do not edit.\n\n")
-            foreach(plugin_target IN LISTS arg_PLUGIN_TARGETS)
+            foreach(plugin_target IN LISTS plugin_targets)
                 __qt_internal_get_plugin_import_macro("${plugin_target}" import_macro)
                 string(APPEND import_plugin_code "${import_macro}")
             endforeach()
@@ -2125,9 +2142,9 @@ function(qt_internal_add_plugin_dependencies target)
             _qt_internal_set_source_file_generated(SOURCES "${out_file_path}")
 
             target_sources(${target} PRIVATE "${out_file_path}")
-            target_link_libraries(${target} PRIVATE ${arg_PLUGIN_TARGETS})
+            target_link_libraries(${target} PRIVATE ${plugin_targets})
         else()
-            qt_import_plugins(${target} INCLUDE ${arg_PLUGIN_TARGETS})
+            qt_import_plugins(${target} INCLUDE ${plugin_targets})
         endif()
     endif()
 endfunction()
