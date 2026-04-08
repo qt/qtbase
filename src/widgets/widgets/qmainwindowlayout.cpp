@@ -673,8 +673,11 @@ void QDockWidgetGroupWindow::childEvent(QChildEvent *event)
         destroyIfSingleItemLeft();
         break;
     case QEvent::ChildAdded:
-        if (auto *dockWidget = qobject_cast<QDockWidget *>(event->child()))
+        if (auto *dockWidget = qobject_cast<QDockWidget *>(event->child())) {
             dockWidget->installEventFilter(this);
+            if (objectName().isEmpty())
+                setObjectName(dockWidget->objectName() + QLatin1String("_groupWindow"));
+        }
         break;
     default:
         break;
