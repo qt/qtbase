@@ -1066,6 +1066,21 @@ QRect QTreeView::visualRect(const QModelIndex &index) const
     return d->visualRect(index, QTreeViewPrivate::SingleSection);
 }
 
+
+/*!
+    Returns the rect occupied by the decoration of the given item at \a index.
+    If the index has no decoration, the returned rect is empty.
+
+    \since 6.12
+    \sa QStyle::SE_TreeViewDisclosureItem
+ */
+QRect QTreeView::itemDecorationRect(const QModelIndex &index) const
+{
+    Q_D(const QTreeView);
+    return d->itemDecorationRect(index);
+}
+
+
 /*!
    \internal
    \return the visual rectangle at \param index, according to \param rule.

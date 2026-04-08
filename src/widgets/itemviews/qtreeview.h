@@ -100,6 +100,7 @@ public:
     void keyboardSearch(const QString &search) override;
 
     QRect visualRect(const QModelIndex &index) const override;
+    QRect itemDecorationRect(const QModelIndex &index) const;
     void scrollTo(const QModelIndex &index, ScrollHint hint = EnsureVisible) override;
     QModelIndex indexAt(const QPoint &p) const override;
     QModelIndex indexAbove(const QModelIndex &index) const;
