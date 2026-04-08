@@ -35,7 +35,7 @@
     QT_IF_DEPRECATED_SINCE(major, minor, constexpr, /* not inline */)
 #  define QT_@module_define_infix@_INLINE_IMPL_SINCE(major, minor) 1
 #else
-/* inside library, outside removed_api.cpp:
+/* inside library, outside removed_api.cpp, and outside library, using static builds
  * keep deprecated API -> non-inline decl, no defi;
  * remove deprecated API -> inline decl, defi */
 #  define QT_@module_define_infix@_INLINE_SINCE(major, minor) \
