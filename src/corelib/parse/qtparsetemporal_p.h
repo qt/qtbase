@@ -36,7 +36,8 @@ struct ParsedTemporal : public QtParseTimeZone::ParsedZone {
     int millis = -1;
     int second = -1;
     int minute = -1;
-    int hour = -1;
+    int hour = -1; // Before parsing last field, -1 just means unknown hour.
+    // After: -1: fully unknown, < -1: unknown am, > 24 unknown pm, otherwise known,
     // Date fields:
     int dayOfWeek = 0;
     int dayOfMonth = 0;
@@ -51,6 +52,7 @@ struct ParsedTemporal : public QtParseTimeZone::ParsedZone {
     // Convenience accessors for the data fields:
     QDate date(QCalendar cal, QDate defaults = {}) const;
     QTime time(QTime defaults = {}) const;
+    // The latter uses hour's quirky am/pm hints to adapt defaults.hour().
 };
 
 Q_AUTOTEST_EXPORT

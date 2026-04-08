@@ -275,15 +275,16 @@ void tst_QtParseTemporal::prefix_data()
         << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
 
     // PeriodInDay:
+    // Successful match (with no hour info) of AM => hour = -12; of PM => hour = 36
     QTest::newRow("AM/daypart/C/greg/0")
         << u"AM"_s << Fields{ Field{ empty, 0, Flag::Verbal, Cat::PeriodInDay } }
         << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
-        // Not returned directly by prefix(), but until == 2 reveals that it was matched:
-        << 2 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+        // until == 2 (as well as the value of hour) reveals that it was matched:
+        << 2 << wall << -1 << -1 << -1 << -12 << 0 << 0 << 0 << 0;
     QTest::newRow("PM/daypart/C/greg/0")
         << u"PM"_s << Fields{ Field{ empty, 0, Flag::Verbal, Cat::PeriodInDay } }
         << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
-        << 2 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+        << 2 << wall << -1 << -1 << -1 << 36 << 0 << 0 << 0 << 0;
     QTest::newRow("Am/daypart/C/greg/0")
         << u"Am"_s << Fields{ Field{ empty, 0, Flag::Verbal, Cat::PeriodInDay } }
         << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
@@ -313,45 +314,45 @@ void tst_QtParseTemporal::prefix_data()
     QTest::newRow("AM/daypart-case/C/greg/0")
         << u"AM"_s << Fields{ Field{ empty, 0, Flag::Verbal | Flag::IgnoreCase, Cat::PeriodInDay } }
         << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
-        << 2 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+        << 2 << wall << -1 << -1 << -1 << -12 << 0 << 0 << 0 << 0;
     QTest::newRow("PM/daypart-case/C/greg/0")
         << u"PM"_s << Fields{ Field{ empty, 0, Flag::Verbal | Flag::IgnoreCase, Cat::PeriodInDay } }
         << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
-        << 2 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+        << 2 << wall << -1 << -1 << -1 << 36 << 0 << 0 << 0 << 0;
     QTest::newRow("Am/daypart-case/C/greg/0")
         << u"Am"_s << Fields{ Field{ empty, 0, Flag::Verbal | Flag::IgnoreCase, Cat::PeriodInDay } }
         << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
-        << 2 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+        << 2 << wall << -1 << -1 << -1 << -12 << 0 << 0 << 0 << 0;
     QTest::newRow("Pm/daypart-case/C/greg/0")
         << u"Pm"_s << Fields{ Field{ empty, 0, Flag::Verbal | Flag::IgnoreCase, Cat::PeriodInDay } }
         << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
-        << 2 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+        << 2 << wall << -1 << -1 << -1 << 36 << 0 << 0 << 0 << 0;
     QTest::newRow("aM/daypart-case/C/greg/0")
         << u"aM"_s << Fields{ Field{ empty, 0, Flag::Verbal | Flag::IgnoreCase, Cat::PeriodInDay } }
         << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
-        << 2 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+        << 2 << wall << -1 << -1 << -1 << -12 << 0 << 0 << 0 << 0;
     QTest::newRow("pM/daypart-case/C/greg/0")
         << u"pM"_s << Fields{ Field{ empty, 0, Flag::Verbal | Flag::IgnoreCase, Cat::PeriodInDay } }
         << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
-        << 2 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+        << 2 << wall << -1 << -1 << -1 << 36 << 0 << 0 << 0 << 0;
     QTest::newRow("am/daypart-case/C/greg/0")
         << u"am"_s << Fields{ Field{ empty, 0, Flag::Verbal | Flag::IgnoreCase, Cat::PeriodInDay } }
         << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
-        << 2 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+        << 2 << wall << -1 << -1 << -1 << -12 << 0 << 0 << 0 << 0;
     QTest::newRow("pm/daypart-case/C/greg/0")
         << u"pm"_s << Fields{ Field{ empty, 0, Flag::Verbal | Flag::IgnoreCase, Cat::PeriodInDay } }
         << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
-        << 2 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+        << 2 << wall << -1 << -1 << -1 << 36 << 0 << 0 << 0 << 0;
 
     // Upper case (happens to coincide with locale):
     QTest::newRow("AM/daypart-upper/C/greg/0")
         << u"AM"_s << Fields{ Field{ empty, 0, Flag::Verbal | Flag::UpperCase, Cat::PeriodInDay } }
         << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
-        << 2 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+        << 2 << wall << -1 << -1 << -1 << -12 << 0 << 0 << 0 << 0;
     QTest::newRow("PM/daypart-upper/C/greg/0")
         << u"PM"_s << Fields{ Field{ empty, 0, Flag::Verbal | Flag::UpperCase, Cat::PeriodInDay } }
         << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
-        << 2 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+        << 2 << wall << -1 << -1 << -1 << 36 << 0 << 0 << 0 << 0;
     QTest::newRow("Am/daypart-upper/C/greg/0")
         << u"Am"_s << Fields{ Field{ empty, 0, Flag::Verbal | Flag::UpperCase, Cat::PeriodInDay } }
         << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
@@ -405,26 +406,26 @@ void tst_QtParseTemporal::prefix_data()
     QTest::newRow("am/daypart-lower/C/greg/0")
         << u"am"_s << Fields{ Field{ empty, 0, Flag::Verbal | Flag::LowerCase, Cat::PeriodInDay } }
         << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
-        << 2 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+        << 2 << wall << -1 << -1 << -1 << -12 << 0 << 0 << 0 << 0;
     QTest::newRow("pm/daypart-lower/C/greg/0")
         << u"pm"_s << Fields{ Field{ empty, 0, Flag::Verbal | Flag::LowerCase, Cat::PeriodInDay } }
         << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
-        << 2 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+        << 2 << wall << -1 << -1 << -1 << 36 << 0 << 0 << 0 << 0;
 
-    // HourMod12:
+    // HourMod12 - when no PeriodInDay is specified, its value is used directly as hour:
     QTest::newRow("12/hr%12:2/C/greg/0")
         << u"12"_s << Fields{ Field{ empty, 2, Flags{}, Cat::HourMod12 } }
         << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
-        // until == 2 reveals that it was parsed, even though prefix() doesn't report it:
-        << 2 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+        // until == 2 reveals that it was parsed, in addition to setting hour:
+        << 2 << wall << -1 << -1 << -1 << 12 << 0 << 0 << 0 << 0;
     QTest::newRow("12/hr%12:1/C/greg/0")
         << u"12"_s << Fields{ Field{ empty, 1, Flags{}, Cat::HourMod12 } }
         << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
-        << 2 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+        << 2 << wall << -1 << -1 << -1 << 12 << 0 << 0 << 0 << 0;
     QTest::newRow("1/hr%12:2/C/greg/0")
         << u"1"_s << Fields{ Field{ empty, 2, Flags{}, Cat::HourMod12 } }
         << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
-        << 1 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+        << 1 << wall << -1 << -1 << -1 << 1 << 0 << 0 << 0 << 0;
     QTest::newRow("1/hr%12+0pad:2/C/greg/0")
         << u"1"_s << Fields{ Field{ empty, 2, Flag::ZeroPad, Cat::HourMod12 } }
         << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
@@ -432,19 +433,19 @@ void tst_QtParseTemporal::prefix_data()
     QTest::newRow("1/hr%12:1/C/greg/0")
         << u"1"_s << Fields{ Field{ empty, 1, Flags{}, Cat::HourMod12 } }
         << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
-        << 1 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+        << 1 << wall << -1 << -1 << -1 << 1 << 0 << 0 << 0 << 0;
     QTest::newRow("12/hr%12+num:2/C/greg/0")
         << u"12"_s << Fields{ Field{ empty, 2, Flag::Numeric, Cat::HourMod12 } }
         << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
-        << 2 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+        << 2 << wall << -1 << -1 << -1 << 12 << 0 << 0 << 0 << 0;
     QTest::newRow("12/hr%12+num:1/C/greg/0")
         << u"12"_s << Fields{ Field{ empty, 1, Flag::Numeric, Cat::HourMod12 } }
         << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
-        << 2 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+        << 2 << wall << -1 << -1 << -1 << 12 << 0 << 0 << 0 << 0;
     QTest::newRow("1/hr%12+num:2/C/greg/0")
         << u"1"_s << Fields{ Field{ empty, 2, Flag::Numeric, Cat::HourMod12 } }
         << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
-        << 1 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+        << 1 << wall << -1 << -1 << -1 << 1 << 0 << 0 << 0 << 0;
     QTest::newRow("1/hr%12+num+0pad:2/C/greg/0")
         << u"1"_s << Fields{ Field{ empty, 2, Flag::Numeric | Flag::ZeroPad, Cat::HourMod12 } }
         << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
@@ -452,7 +453,7 @@ void tst_QtParseTemporal::prefix_data()
     QTest::newRow("1/hr%12+num:1/C/greg/0")
         << u"1"_s << Fields{ Field{ empty, 1, Flag::Numeric, Cat::HourMod12 } }
         << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
-        << 1 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+        << 1 << wall << -1 << -1 << -1 << 1 << 0 << 0 << 0 << 0;
 
     // HourMod12 + PeriodInDay:
     QTest::newRow("12AM/hr%12/C/greg/0")
@@ -460,25 +461,25 @@ void tst_QtParseTemporal::prefix_data()
         << Fields{ Field{ empty, 2, Flags{}, Cat::HourMod12 },
             Field{ empty, 0, Flag::Verbal, Cat::PeriodInDay } }
         << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
-        << 4 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+        << 4 << wall << -1 << -1 << -1 << 0 << 0 << 0 << 0 << 0;
     QTest::newRow("12PM/hr%12/C/greg/0")
         << u"12PM"_s
         << Fields{ Field{ empty, 2, Flags{}, Cat::HourMod12 },
             Field{ empty, 0, Flag::Verbal, Cat::PeriodInDay } }
         << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
-        << 4 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+        << 4 << wall << -1 << -1 << -1 << 12 << 0 << 0 << 0 << 0;
     QTest::newRow("12AM/hr%12+num/C/greg/0")
         << u"12AM"_s
         << Fields{ Field{ empty, 2, Flag::Numeric, Cat::HourMod12 },
             Field{ empty, 0, Flag::Verbal, Cat::PeriodInDay } }
         << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
-        << 4 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+        << 4 << wall << -1 << -1 << -1 << 0 << 0 << 0 << 0 << 0;
     QTest::newRow("12PM/hr%12+num/C/greg/0")
         << u"12PM"_s
         << Fields{ Field{ empty, 2, Flag::Numeric, Cat::HourMod12 },
             Field{ empty, 0, Flag::Verbal, Cat::PeriodInDay } }
         << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
-        << 4 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+        << 4 << wall << -1 << -1 << -1 << 12 << 0 << 0 << 0 << 0;
 
     // HourFraction (when we get round to implementing it)
     // Hour:

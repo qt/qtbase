@@ -25,6 +25,7 @@ struct PartialParse
     int periodInDay = -1; // 0: am, 1: pm
     int hourMod12 = 0; // 1 through 12
     int yearWithinCentury = -1; // 0 through 99
+    static constexpr int UnknownAmHour = -12, UnknownPmHour = 36;
     enum Flaw : quint16 {
         // Flaws that justify prefering a shorter parse without the flaw over
         // longer with it, in order of decreasing severity:
@@ -350,6 +351,19 @@ bool TemporalFieldMatcher::isSelfConsistent(const PartialParse &parse,
             return false;
         }
     }
+
+    if ((category == Cat::PeriodInDay && parse.results.hour >= 0)
+        || (category == Cat::Hour && parse.periodInDay >= 0)) {
+        // 00, 01, ... 11 are 12, 1, ... 11 am; 12, 13, ... 23 are 12, 1, ..., 11 pm.
+        if (parse.periodInDay ? parse.results.hour < 12 : parse.results.hour >= 12)
+            return false;
+    }
+
+    if ((category == Cat::Hour && parse.hourMod12 > 0)
+        || (category == Cat::HourMod12 && parse.results.hour >= 0)) {
+        if ((parse.results.hour - parse.hourMod12) % 12)
+            return false;
+    }
     return true;
 }
 
@@ -380,6 +394,21 @@ bool TemporalFieldMatcher::resolve(PartialParse &parse) const
 
             parse.results.year = year;
         }
+    }
+
+    if (parse.results.hour < 0 && parse.hourMod12 > 0) {
+        Q_ASSERT(parse.hourMod12 <= 12);
+        parse.results.hour = parse.hourMod12 < 12 || parse.periodInDay < 0 ? parse.hourMod12 : 0;
+        if (parse.periodInDay > 0)
+            parse.results.hour += 12;
+    }
+
+    if (parse.results.hour < 0) {
+        // Leave ParsedTemporal::time() a clue to am/pm, if known:
+        if (parse.periodInDay > 0)
+            parse.results.hour = PartialParse::UnknownPmHour;
+        else if (parse.periodInDay == 0)
+            parse.results.hour = PartialParse::UnknownAmHour;
     }
     return true;
 }
@@ -793,7 +822,16 @@ QDate ParsedTemporal::date(QCalendar cal, QDate defaults) const
 QTime ParsedTemporal::time(QTime defaults) const
 {
     if (defaults.isValid()) {
-        return QTime(hour < 0 ? defaults.hour() : hour,
+        int hr = defaults.hour();
+        // hour: -1 means we have no information, less means unknown am, > 24 means unknown pm.
+        if (hour < -1) // UnknownAmHour
+            hr = hr % 12;
+        else if (hour > 24) // UnknownPmHour
+            hr = hr % 12 + 12;
+        else if (hour >= 0)
+            hr = hour;
+        // (Note: hour == 24 is currently unused but may be relevant for 24:00:00 in future.)
+        return QTime(hr,
                      minute < 0 ? defaults.minute() : minute,
                      second < 0 ? defaults.second() : second,
                      millis < 0 ? defaults.msec() : millis);
