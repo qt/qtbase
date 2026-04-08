@@ -14,6 +14,12 @@
 #  endif
 #endif
 
+#if defined(QT_STATIC)
+// Static consumers must use the same deprecation cutoff that Qt was built with.
+#  undef QT_DISABLE_DEPRECATED_UP_TO
+#  define QT_DISABLE_DEPRECATED_UP_TO @QT_DISABLE_DEPRECATED_UP_TO@
+#endif
+
 #if QT_DISABLE_DEPRECATED_UP_TO < @QT_DISABLE_DEPRECATED_UP_TO@ && defined(Q_CC_GNU)
 #  warning QT_DISABLE_DEPRECATED_UP_TO is set to the version that is lower than the version that \
            Qt was built with. This may lead to linking issues.
