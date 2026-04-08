@@ -17,6 +17,7 @@
 //
 
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
+#include <QtWidgets/private/qwidgetanimator_p.h>
 #include "QtWidgets/qlayout.h"
 #include "QtCore/qlist.h"
 #include "QtCore/qrect.h"
@@ -148,7 +149,7 @@ public:
     QList<int> indexOfPlaceHolder(const QString &objectName) const;
     std::unique_ptr<QLayoutItem> takeWidgetItem(QWidget *widget);
 
-    QDockWidget *apply(bool animate);
+    QDockWidget *apply(QWidgetAnimator::AnimationRule rule);
 
     void paintSeparators(QPainter *p, QWidget *widget, const QRegion &clip,
                             const QPoint &mouse) const;
@@ -256,7 +257,7 @@ public:
 #endif
     void resizeDocks(const QList<QDockWidget *> &docks, const QList<int> &sizes, Qt::Orientation o);
 
-    void apply(bool animate);
+    void apply(QWidgetAnimator::AnimationRule rule);
 
     void paintSeparators(QPainter *p, QWidget *widget, const QRegion &clip,
                             const QPoint &mouse) const;

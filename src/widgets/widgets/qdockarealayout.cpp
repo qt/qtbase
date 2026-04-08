@@ -14,7 +14,6 @@
 #include "qdockarealayout_p.h"
 #include "qdockwidget.h"
 #include "qmainwindow.h"
-#include "qwidgetanimator_p.h"
 #include "qmainwindowlayout_p.h"
 #include "qmenu_p.h"
 #include "qdockwidget_p.h"
@@ -1525,7 +1524,7 @@ bool QDockAreaLayoutInfo::hasFixedSize() const
 /*! \internal
     Applies the layout and returns the activated QDockWidget or nullptr.
  */
-QDockWidget *QDockAreaLayoutInfo::apply(bool animate)
+QDockWidget *QDockAreaLayoutInfo::apply(QWidgetAnimator::AnimationRule rule)
 {
     QWidgetAnimator &widgetAnimator = mainWindowLayout()->widgetAnimator;
 
@@ -1560,7 +1559,7 @@ QDockWidget *QDockAreaLayoutInfo::apply(bool animate)
             }
         }
 
-        widgetAnimator.animate(tabBar, tab_rect, animate);
+        widgetAnimator.animate(tabBar, tab_rect, rule);
     }
 #endif // QT_CONFIG(tabbar)
 
@@ -1573,7 +1572,7 @@ QDockWidget *QDockAreaLayoutInfo::apply(bool animate)
             continue;
 
         if (item.subinfo != nullptr) {
-            item.subinfo->apply(animate);
+            item.subinfo->apply(rule);
             continue;
         }
 
@@ -1585,7 +1584,7 @@ QDockWidget *QDockAreaLayoutInfo::apply(bool animate)
         QWidget *w = item.widgetItem->widget();
 
         QRect geo = w->geometry();
-        widgetAnimator.animate(w, r, animate);
+        widgetAnimator.animate(w, r, rule);
         if (!w->isHidden() && w->window()->isVisible()) {
             QDockWidget *dw = qobject_cast<QDockWidget*>(w);
             if (!r.isValid() && geo.right() >= 0 && geo.bottom() >= 0) {
@@ -3276,15 +3275,15 @@ void QDockAreaLayout::splitDockWidget(QDockWidget *after,
     removePlaceHolder(dockWidget->objectName());
 }
 
-void QDockAreaLayout::apply(bool animate)
+void QDockAreaLayout::apply(QWidgetAnimator::AnimationRule rule)
 {
     QWidgetAnimator &widgetAnimator = qt_mainwindow_layout(mainWindow)->widgetAnimator;
 
     for (int i = 0; i < QInternal::DockCount; ++i)
-        docks[i].apply(animate);
+        docks[i].apply(rule);
     if (centralWidgetItem != nullptr && !centralWidgetItem->isEmpty()) {
         widgetAnimator.animate(centralWidgetItem->widget(), centralWidgetRect,
-                                animate);
+                                rule);
     }
 #if QT_CONFIG(tabbar)
     if (sep == 1)
@@ -3344,7 +3343,7 @@ int QDockAreaLayout::separatorMove(const QList<int> &separator, const QPoint &or
         delta = pick(info->o, dest - origin);
         if (delta != 0)
             delta = info->separatorMove(dockPosition, delta);
-        info->apply(/* animate = */ false);
+        info->apply(QWidgetAnimator::AnimationRule::Stop);
         return delta;
     }
 
@@ -3374,7 +3373,7 @@ int QDockAreaLayout::separatorMove(const QList<int> &separator, const QPoint &or
     else
         setGrid(&list, nullptr);
 
-    apply(/* animate = */ false);
+    apply(QWidgetAnimator::AnimationRule::Stop);
 
     return delta;
 }
@@ -3388,7 +3387,7 @@ int QDockAreaLayoutInfo::separatorMove(const QList<int> &separator, const QPoint
     delta = pick(info->o, dest - origin);
     if (delta != 0)
         delta = info->separatorMove(index, delta);
-    info->apply(/* animate = */ false);
+    info->apply(QWidgetAnimator::AnimationRule::Stop);
     return delta;
 }
 

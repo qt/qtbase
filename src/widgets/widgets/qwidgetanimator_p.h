@@ -32,8 +32,14 @@ class QWidgetAnimator : public QObject
 {
     Q_OBJECT
 public:
+    enum class AnimationRule {
+        Run,
+        Stop,
+    };
+    Q_ENUM(AnimationRule)
+
     QWidgetAnimator(QMainWindowLayout *layout);
-    void animate(QWidget *widget, const QRect &final_geometry, bool animate);
+    void animate(QWidget *widget, const QRect &final_geometry, AnimationRule rule);
     bool animating() const;
 
     void abort(QWidget *widget);

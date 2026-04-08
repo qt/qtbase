@@ -37,8 +37,9 @@ void QWidgetAnimator::abort(QWidget *w)
 #endif // animation
 }
 
-void QWidgetAnimator::animate(QWidget *widget, const QRect &_final_geometry, bool animate)
+void QWidgetAnimator::animate(QWidget *widget, const QRect &_final_geometry, AnimationRule rule)
 {
+    bool animate = rule == AnimationRule::Run;
     QRect r = widget->geometry();
     if (r.right() < 0 || r.bottom() < 0)
         r = QRect();

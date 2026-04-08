@@ -17,6 +17,7 @@
 //
 
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
+#include "QtWidgets/private/qwidgetanimator_p.h"
 #include "qmainwindow.h"
 
 #include "QtWidgets/qlayout.h"
@@ -444,7 +445,7 @@ public:
     QRect centralWidgetRect;
 #endif
 
-    void apply(bool animated);
+    void apply(QWidgetAnimator::AnimationRule rule);
     void deleteAllLayoutItems();
     void deleteCentralWidgetItem();
 

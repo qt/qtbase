@@ -657,7 +657,9 @@ void QToolBarLayout::setExpanded(bool exp)
                 layoutActions(rect.size());
             }
         }
-        layout->layoutState.toolBarAreaLayout.apply(animating);
+        const auto rule = animating ? QWidgetAnimator::AnimationRule::Run
+                                    : QWidgetAnimator::AnimationRule::Stop;
+        layout->layoutState.toolBarAreaLayout.apply(rule);
     }
 }
 

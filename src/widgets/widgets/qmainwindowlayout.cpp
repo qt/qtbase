@@ -16,7 +16,6 @@
 #include "qtoolbarlayout_p.h"
 #endif
 #include "qmainwindow.h"
-#include "qwidgetanimator_p.h"
 #if QT_CONFIG(rubberband)
 #include "qrubberband.h"
 #endif
@@ -267,7 +266,7 @@ public:
 #endif
         li->rect = r.adjusted(fw, fw, -fw, -fw);
         li->fitItems();
-        li->apply(false);
+        li->apply(QWidgetAnimator::AnimationRule::Stop);
         if (savedState.rect.isValid())
             savedState.rect = li->rect;
         resizer->setEnabled(!nativeWindowDeco());
@@ -572,6 +571,12 @@ bool QDockWidgetGroupWindow::hasNativeDecos() const
 #endif
 }
 
+static constexpr QWidgetAnimator::AnimationRule toAnimationRule(QMainWindow::DockOptions options)
+{
+    return options.testFlag(QMainWindow::AnimatedDocks) ? QWidgetAnimator::AnimationRule::Run
+                                                        : QWidgetAnimator::AnimationRule::Stop;
+}
+
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_GCC("-Waggressive-loop-optimizations")
 /*
@@ -622,7 +627,8 @@ bool QDockWidgetGroupWindow::hover(QLayoutItem *widgetItem, const QPoint &mouseP
     newState.fitItems();
     *layoutInfo() = std::move(newState);
     updateCurrentGapRect();
-    layoutInfo()->apply(opts & QMainWindow::AnimatedDocks);
+    const auto rule = toAnimationRule(opts);
+    layoutInfo()->apply(rule);
     return true;
 }
 QT_WARNING_POP
@@ -647,8 +653,9 @@ void QDockWidgetGroupWindow::restore()
     currentGapPos.clear();
     adjustFlags();
     layoutInfo()->fitItems();
-    layoutInfo()->apply(static_cast<QMainWindow *>(parentWidget())->dockOptions()
-                        & QMainWindow::AnimatedDocks);
+    const auto *mw = static_cast<QMainWindow *>(parentWidget());
+    const auto rule = toAnimationRule(mw->dockOptions());
+    layoutInfo()->apply(rule);
 }
 
 /*
@@ -661,7 +668,7 @@ void QDockWidgetGroupWindow::apply()
     layoutInfo()->plug(currentGapPos);
     currentGapPos.clear();
     adjustFlags();
-    layoutInfo()->apply(false);
+    layoutInfo()->apply(QWidgetAnimator::AnimationRule::Stop);
 }
 
 void QDockWidgetGroupWindow::childEvent(QChildEvent *event)
@@ -853,20 +860,20 @@ bool QMainWindowLayoutState::fits() const
     return size.width() <= mainWindow->width() && size.height() <= mainWindow->height();
 }
 
-void QMainWindowLayoutState::apply(bool animated)
+void QMainWindowLayoutState::apply(QWidgetAnimator::AnimationRule rule)
 {
 #if QT_CONFIG(toolbar)
-    toolBarAreaLayout.apply(animated);
+    toolBarAreaLayout.apply(rule);
 #endif
 
 #if QT_CONFIG(dockwidget)
 //    dumpLayout(dockAreaLayout, QString());
-    dockAreaLayout.apply(animated);
+    dockAreaLayout.apply(rule);
 #else
     if (centralWidgetItem) {
         QMainWindowLayout *layout = qt_mainwindow_layout(mainWindow);
         Q_ASSERT(layout);
-        layout->widgetAnimator.animate(centralWidgetItem->widget(), centralWidgetRect, animated);
+        layout->widgetAnimator.animate(centralWidgetItem->widget(), centralWidgetRect, rule);
     }
 #endif
 }
@@ -2267,7 +2274,7 @@ void QMainWindowLayout::tabChanged()
     if (info == nullptr)
         return;
 
-    QDockWidget *activated = info->apply(false);
+    QDockWidget *activated = info->apply(QWidgetAnimator::AnimationRule::Stop);
 
     if (activated)
         emit static_cast<QMainWindow *>(parentWidget())->tabifiedDockWidgetActivated(activated);
@@ -2597,7 +2604,8 @@ bool QMainWindowLayout::plug(QLayoutItem *widgetItem)
         QRect globalRect = currentHoveredFloat->currentGapRect;
         globalRect.moveTopLeft(currentHoveredFloat->mapToGlobal(globalRect.topLeft()));
         pluggingWidget = widget;
-        widgetAnimator.animate(widget, globalRect, dockOptions & QMainWindow::AnimatedDocks);
+        const auto rule = toAnimationRule(dockOptions);
+        widgetAnimator.animate(widget, globalRect, rule);
         return true;
     }
 #endif
@@ -2643,7 +2651,8 @@ bool QMainWindowLayout::plug(QLayoutItem *widgetItem)
         }
     }
 #endif
-    widgetAnimator.animate(widget, globalRect, dockOptions & QMainWindow::AnimatedDocks);
+    const auto rule = toAnimationRule(dockOptions);
+    widgetAnimator.animate(widget, globalRect, rule);
 
     return true;
 }
@@ -2736,7 +2745,7 @@ void QMainWindowLayout::animationFinished(QWidget *widget)
 #endif
         //applying the state will make sure that the currentGap is updated correctly
         //and all the geometries (especially the one from the central widget) is correct
-        layoutState.apply(false);
+        layoutState.apply(QWidgetAnimator::AnimationRule::Stop);
 
 #if QT_CONFIG(dockwidget)
 #if QT_CONFIG(tabbar)
@@ -3285,7 +3294,8 @@ void QMainWindowLayout::applyState(QMainWindowLayoutState &newState, bool animat
         newState.dockAreaLayout.docks[i].reparentWidgets(parentWidget());
 
 #endif // QT_CONFIG(dockwidget) && QT_CONFIG(tabwidget)
-    newState.apply(dockOptions & QMainWindow::AnimatedDocks && animate);
+    const auto rule = animate ? toAnimationRule(dockOptions) : QWidgetAnimator::AnimationRule::Stop;
+    newState.apply(rule);
     isInApplyState = false;
 }
 

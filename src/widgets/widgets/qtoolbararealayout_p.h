@@ -17,6 +17,7 @@
 //
 
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
+#include <QtWidgets/private/qwidgetanimator_p.h>
 #include "qmenu_p.h"
 #include <QList>
 #include <QSize>
@@ -144,7 +145,7 @@ public:
     QSize minimumSize(const QSize &centerMin) const;
     QRect rectHint(const QRect &r) const;
     QSize sizeHint(const QSize &center) const;
-    void apply(bool animate);
+    void apply(QWidgetAnimator::AnimationRule rule);
 
     QLayoutItem *itemAt(int *x, int index) const;
     QLayoutItem *takeAt(int *x, int index);

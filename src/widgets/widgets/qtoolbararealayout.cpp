@@ -10,7 +10,6 @@
 
 #include "qtoolbararealayout_p.h"
 #include "qmainwindowlayout_p.h"
-#include "qwidgetanimator_p.h"
 #include "qtoolbarlayout_p.h"
 #include "qtoolbar_p.h"
 
@@ -840,7 +839,7 @@ void QToolBarAreaLayout::insertItem(QToolBar *before, QLayoutItem *item)
     docks[pos].insertItem(before, item);
 }
 
-void QToolBarAreaLayout::apply(bool animate)
+void QToolBarAreaLayout::apply(QWidgetAnimator::AnimationRule rule)
 {
     QMainWindowLayout *layout = qt_mainwindow_layout(mainWindow);
     Q_ASSERT(layout != nullptr);
@@ -897,7 +896,7 @@ void QToolBarAreaLayout::apply(bool animate)
                 if (visible && dock.o == Qt::Horizontal)
                     geo = QStyle::visualRect(dir, line.rect, geo);
 
-                layout->widgetAnimator.animate(widget, geo, animate);
+                layout->widgetAnimator.animate(widget, geo, rule);
             }
         }
     }
