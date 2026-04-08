@@ -2711,8 +2711,7 @@ void QHeaderView::mouseMoveEvent(QMouseEvent *e)
         }
         case QHeaderViewPrivate::MoveSection: {
             if (d->shouldAutoScroll(e->position().toPoint())) {
-                d->draggedPosition = e->pos();
-                d->draggedPositionOffset = d->offset();
+                d->draggedPosition = e->pos() + d->offset();
                 d->startAutoScroll();
             }
             if (qAbs(pos - d->firstPos) >= QApplication::startDragDistance()
