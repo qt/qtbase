@@ -378,6 +378,12 @@ void QQnxWindow::setVisible(bool visible)
 
     if (visible) {
         applyWindowState();
+
+        // Activate the window when shown, similar to how eglfs handles
+        // window activation through its compositor. Without a window manager,
+        // the platform must proactively activate windows on show.
+        if (m_isTopLevel && !showWithoutActivating())
+            requestActivateWindow();
     } else {
         if (showWithoutActivating() && focusable() && m_firstActivateHandled) {
             m_firstActivateHandled = false;
@@ -389,6 +395,26 @@ void QQnxWindow::setVisible(bool visible)
 
         // Flush the context, otherwise it won't disappear immediately
         screen_flush_context(m_screenContext, 0);
+
+        // When hiding the focused window, activate the next appropriate window.
+        // Similar to eglfs compositor behavior on window removal.
+        if (m_isTopLevel && window() == QGuiApplication::focusWindow()) {
+            QWindow *nextFocus = QGuiApplication::modalWindow();
+            if (!nextFocus) {
+                // Find the topmost visible window to activate
+                const auto windows = QGuiApplication::topLevelWindows();
+                for (auto it = windows.rbegin(); it != windows.rend(); ++it) {
+                    if (*it != window() && (*it)->isVisible() && (*it)->handle()) {
+                        nextFocus = *it;
+                        break;
+                    }
+                }
+            }
+            if (nextFocus)
+                nextFocus->requestActivate();
+            else
+                QWindowSystemInterface::handleFocusWindowChanged(nullptr);
+        }
     }
 }
 
@@ -665,6 +691,18 @@ void QQnxWindow::requestActivateWindow()
     }
 
     screen_flush_context(m_screenContext, 0);
+
+    // Proactively notify Qt about the focus change. The QNX screen service
+    // may not reliably send back a FOCUS property event after we set it.
+    // If a modal window is blocking the requested window, redirect focus
+    // to the blocking modal window instead.
+    QWindow *activateTarget = window();
+    QWindow *blockingWindow = nullptr;
+    if (QGuiApplicationPrivate::instance()->isWindowBlocked(activateTarget, &blockingWindow)
+        && blockingWindow) {
+        activateTarget = blockingWindow;
+    }
+    QWindowSystemInterface::handleFocusWindowChanged(activateTarget, Qt::ActiveWindowFocusReason);
 }
 
 void QQnxWindow::setFocus(screen_window_t newFocusWindow)
