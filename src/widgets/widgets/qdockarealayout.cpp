@@ -35,7 +35,12 @@ Q_LOGGING_CATEGORY(lcQpaDockWidgets, "qt.widgets.dockwidgets");
 // qmainwindow.cpp
 extern QMainWindowLayout *qt_mainwindow_layout(const QMainWindow *window);
 
-enum { StateFlagVisible = 1, StateFlagFloating = 2 };
+enum class StateFlag
+{
+    Visible = 0x01,
+    Floating = 0x02,
+};
+Q_DECLARE_FLAGS(StateFlags, StateFlag);
 
 /******************************************************************************
 ** QPlaceHolderItem
@@ -202,9 +207,26 @@ QDebug operator<<(QDebug dbg, const QDockAreaLayoutItem &item)
     } else if (item.subinfo) {
         dbg << "subInfo(" << item.subinfo << "->(" << item.subinfo->item_list << ")";
     } else if (item.placeHolderItem) {
-        dbg << "placeHolderItem(" << item.placeHolderItem << ")";
+        dbg << "placeHolderItem(" << item.placeHolderItem
+            << "objectName:" << item.placeHolderItem->objectName << "; "
+            << "hidden:" << item.placeHolderItem->hidden << "; "
+            << "window:" << item.placeHolderItem->window << "; "
+            << "topLevelRect:" << item.placeHolderItem->topLevelRect << ")";
     }
     dbg << ")";
+    return dbg;
+}
+
+QDebug operator<<(QDebug dbg, StateFlags flags)
+{
+    QDebugStateSaver saver(dbg);
+    dbg.nospace().noquote();
+    QStringList f;
+    if (flags.testFlag(StateFlag::Visible))
+        f << QLatin1StringView("Visible");
+    if (flags.testFlag(StateFlag::Floating))
+        f << QLatin1StringView("Floating");
+    dbg << "StateFlags(" << f.join(u'|') << ")";
     return dbg;
 }
 #endif // QT_NO_DEBUG_STREAM
@@ -1864,6 +1886,8 @@ void QDockAreaLayoutInfo::saveState(QDataStream &stream) const
         if (item.widgetItem != nullptr) {
             stream << (uchar) WidgetMarker;
             QWidget *w = item.widgetItem->widget();
+            if (qobject_cast<QDockWidgetGroupWindow *>(w))
+                qCDebug(lcQpaDockWidgets) << "Found dock widget group window" << w;
             QString name = w->objectName();
             if (Q_UNLIKELY(name.isEmpty())) {
                 qWarning() << "QMainWindow::saveState(): 'objectName' not set for"
@@ -1871,13 +1895,14 @@ void QDockAreaLayoutInfo::saveState(QDataStream &stream) const
             }
             stream << name;
 
-            uchar flags = 0;
+            StateFlags flags;
             if (!w->isHidden())
-                flags |= StateFlagVisible;
+                flags.setFlag(StateFlag::Visible);
             if (w->isWindow())
-                flags |= StateFlagFloating;
-            stream << flags;
+                flags.setFlag(StateFlag::Floating);
+            stream << static_cast<uchar>(flags.toInt());
 
+            qCDebug(lcQpaDockWidgets) << "Saving state for dock widget:" << w->objectName() << flags;
             if (w->isWindow()) {
                 const QRect geometry = w->geometry();
                 stream << geometry.x() << geometry.y() << geometry.width() << geometry.height();
@@ -1888,12 +1913,13 @@ void QDockAreaLayoutInfo::saveState(QDataStream &stream) const
         } else if (item.placeHolderItem != nullptr) {
             stream << (uchar) WidgetMarker;
             stream << item.placeHolderItem->objectName;
-            uchar flags = 0;
+            StateFlags flags;
             if (!item.placeHolderItem->hidden)
-                flags |= StateFlagVisible;
+                flags.setFlag(StateFlag::Visible);
             if (item.placeHolderItem->window)
-                flags |= StateFlagFloating;
-            stream << flags;
+                flags.setFlag(StateFlag::Floating);
+            qCDebug(lcQpaDockWidgets) << "Saving state for placeholder item:" << item << flags;
+            stream << static_cast<uchar>(flags.toInt());
             if (item.placeHolderItem->window) {
                 QRect r = item.placeHolderItem->topLevelRect;
                 stream << r.x() << r.y() << r.width() << r.height();
@@ -1922,6 +1948,8 @@ static Qt::DockWidgetArea toDockWidgetArea(QInternal::DockPosition pos)
 bool QDockAreaLayoutInfo::restoreState(QDataStream &stream, QList<QDockWidget*> &widgets, QInternal::CallMode callMode)
 {
     const bool testing = callMode == QInternal::Testing;
+    const QLatin1StringView debugCallMode = testing ? QLatin1StringView("(testing)")
+                                                    : QLatin1StringView("(restoring)");
     uchar marker;
     stream >> marker;
     if (marker != TabMarker && marker != SequenceMarker)
@@ -1947,8 +1975,9 @@ bool QDockAreaLayoutInfo::restoreState(QDataStream &stream, QList<QDockWidget*> 
         stream >> nextMarker;
         if (nextMarker == WidgetMarker) {
             QString name;
-            uchar flags;
-            stream >> name >> flags;
+            uchar f;
+            stream >> name >> f;
+            StateFlags flags(f);
             if (name.isEmpty()) {
                 int dummy;
                 stream >> dummy >> dummy >> dummy >> dummy;
@@ -1956,7 +1985,7 @@ bool QDockAreaLayoutInfo::restoreState(QDataStream &stream, QList<QDockWidget*> 
             }
 
             QDockWidget *widget = nullptr;
-            for (int j = 0; j < widgets.size(); ++j) {
+            for (qsizetype j = 0; j < widgets.size(); ++j) {
                 if (widgets.at(j)->objectName() == name) {
                     widget = widgets.takeAt(j);
                     break;
@@ -1967,8 +1996,8 @@ bool QDockAreaLayoutInfo::restoreState(QDataStream &stream, QList<QDockWidget*> 
                 QPlaceHolderItem *placeHolder = new QPlaceHolderItem;
                 QDockAreaLayoutItem item(placeHolder);
 
-                placeHolder->window = flags & StateFlagFloating;
-                placeHolder->hidden = !(flags & StateFlagVisible);
+                placeHolder->window = flags.testFlag(StateFlag::Floating);
+                placeHolder->hidden = !flags.testFlag(StateFlag::Visible);
                 if (placeHolder->window) {
                     int x, y, w, h;
                     stream >> x >> y >> w >> h;
@@ -1980,17 +2009,15 @@ bool QDockAreaLayoutInfo::restoreState(QDataStream &stream, QList<QDockWidget*> 
                 if (item.size != -1)
                     item.flags |= QDockAreaLayoutItem::KeepSize;
                 placeHolder->objectName = std::move(name);
+                qCDebug(lcQpaDockWidgets) << "Restoring placeholder" << item << debugCallMode << flags;
                 if (!testing)
                     item_list.append(item);
             } else {
                 QDockAreaLayoutItem item(new QDockWidgetItem(widget));
-                if (flags & StateFlagFloating) {
-                    bool drawer = false;
-
+                if (flags.testFlag(StateFlag::Floating)) {
                     if (!testing) {
                         widget->hide();
-                        if (!drawer)
-                            widget->setFloating(true);
+                        widget->setFloating(true);
                     }
 
                     int x, y, w, h;
@@ -2000,7 +2027,7 @@ bool QDockAreaLayoutInfo::restoreState(QDataStream &stream, QList<QDockWidget*> 
                         widget->setGeometry(QDockAreaLayout::constrainedRect(QRect(x, y, w, h), widget));
 
                     if (!testing) {
-                        widget->setVisible(flags & StateFlagVisible);
+                        widget->setVisible(flags.testFlag(StateFlag::Visible));
                         item_list.append(item);
                     }
                 } else {
@@ -2009,10 +2036,11 @@ bool QDockAreaLayoutInfo::restoreState(QDataStream &stream, QList<QDockWidget*> 
                     if (!testing) {
                         item_list.append(item);
                         widget->setFloating(false);
-                        widget->setVisible(flags & StateFlagVisible);
+                        widget->setVisible(flags.setFlag(StateFlag::Visible));
                         emit widget->dockLocationChanged(toDockWidgetArea(dockPos));
                     }
                 }
+                qCDebug(lcQpaDockWidgets) << "Restoring QDockWidget" << item << flags << debugCallMode;
                 if (testing) {
                     //was it is not really added to the layout, we need to delete the object here
                     delete item.widgetItem;
@@ -2027,6 +2055,7 @@ bool QDockAreaLayoutInfo::restoreState(QDataStream &stream, QList<QDockWidget*> 
             QDockAreaLayoutItem item(new QDockAreaLayoutInfo(sep, dockPos, o,
                                                                 tabBarShape, mainWindow));
             stream >> item.pos >> item.size >> dummy >> dummy;
+            qCDebug(lcQpaDockWidgets) << "Restoring separator item" << item << debugCallMode;
             //we need to make sure the element is in the list so the dock widget can eventually be docked correctly
             if (!testing)
                 item_list.append(item);
