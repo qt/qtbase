@@ -90,8 +90,8 @@ public:
     void repaintContents(const QRectF &contentsRect);
     void updatePlaceholderVisibility();
 
-    inline QPoint mapToContents(const QPoint &point) const
-        { return QPoint(point.x() + horizontalOffset(), point.y() + verticalOffset()); }
+    inline QPointF mapToContents(QPointF point) const
+        { return QPointF(point.x() + horizontalOffset(), point.y() + verticalOffset()); }
 
     void adjustScrollbars();
     void verticalScrollbarActionTriggered(int action);

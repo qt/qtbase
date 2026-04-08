@@ -2409,9 +2409,15 @@ QMenu *QPlainTextEdit::createStandardContextMenu(const QPoint &position)
 #endif // QT_NO_CONTEXTMENU
 
 /*!
-  returns a QTextCursor at position \a pos (in viewport coordinates).
+  \fn QTextCursor QPlainTextEdit::cursorForPosition(const QPoint &pos) const
+  \overload
 */
-QTextCursor QPlainTextEdit::cursorForPosition(const QPoint &pos) const
+
+/*!
+  returns a QTextCursor at position \a pos (in viewport coordinates).
+  \since 6.12
+*/
+QTextCursor QPlainTextEdit::cursorForPosition(QPointF pos) const
 {
     Q_D(const QPlainTextEdit);
     return d->control->cursorForPosition(d->mapToContents(pos));
