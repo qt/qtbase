@@ -1806,6 +1806,83 @@ void tst_QtParseTemporal::prefix_data()
         << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
         << 24 << QTimeZone::fromSecondsAheadOfUtc(3600)
         << 999 << 22 << 10 << 15 << 0 << 11 << 2 << 2026;
+
+    // Inconsistent fields
+    QTest::newRow("November 10/month-name/C/greg/0") // ignoring 10
+        << u"November 10"_s
+        << Fields{ Field { empty, 0, Flag::Verbal, Cat::Month },
+            Field{ u" "_s, 0, Flags{}, Cat::Literal } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 9 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 11 << 0;
+    QTest::newRow("November 10/month/C/greg/0") // 11 != 10
+        << u"November 10"_s
+        << Fields{ Field { empty, 0, Flag::Verbal, Cat::Month },
+            Field{ u" "_s, 0, Flags{}, Cat::Literal },
+            Field { empty, 1, Flag::Numeric, Cat::Month } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("2017 42/full-year/C/greg/o") // Ignoring 42
+        << u"2017 42"_s
+        << Fields{ Field { empty, 0, Flags{}, Cat::Year },
+            Field{ u" "_s, 0, Flags{}, Cat::Literal } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 5 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 2017;
+    QTest::newRow("2017 42/year/C/greg/o") // 2017 % 100 != 42
+        << u"2017 42"_s
+        << Fields{ Field { empty, 0, Flags{}, Cat::Year },
+            Field{ u" "_s, 0, Flags{}, Cat::Literal },
+            Field { empty, 1, Flag::Numeric, Cat::YearWithinCentury } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+
+    // Conflicting month fields:
+    QTest::newRow("March 7/month-only/C/greg/0") // ignoring 7
+        << u"March 7"_s
+        << Fields{ Field { empty, 0, Flag::Verbal, Cat::Month },
+            Field{ u" "_s, 0, Flags{}, Cat::Literal } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 6 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 3 << 0;
+    QTest::newRow("March 7/month/C/greg/0") // 3 != 7
+        << u"March 7"_s
+        << Fields{ Field { empty, 0, Flag::Verbal, Cat::Month },
+            Field{ u" "_s, 0, Flags{}, Cat::Literal },
+            Field { empty, 1, Flag::Numeric, Cat::Month } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+
+    // Cross-talk between date fields:
+    QTest::newRow("2026 April 8, Thursday/date-dow/C/greg/0") // Ignoring Thursday
+        << u"2026 April 8, Thursday"_s
+        << Fields{ Field{ empty, 4, Flag::Numeric | Flag::ZeroPad, Cat::Year },
+            Field{ u" "_s, 0, Flags{}, Cat::Literal },
+            Field { empty, 0, Flag::Verbal, Cat::Month },
+            Field{ u" "_s, 0, Flags{}, Cat::Literal },
+            Field { empty, 1, Flag::Numeric, Cat::DayOfMonth },
+            Field{ u","_s, 0, Flags{ Flag::SpacePad }, Cat::Literal } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 14 << wall << -1 << -1 << -1 << -1 << 0 << 8 << 4 << 2026;
+    QTest::newRow("2026 April 8, Thursday/date+short-dow/C/greg/0") // It's a Wednesday
+        << u"2026 April 8, Thursday"_s
+        << Fields{ Field{ empty, 4, Flag::Numeric | Flag::ZeroPad, Cat::Year },
+            Field{ u" "_s, 0, Flags{}, Cat::Literal },
+            Field { empty, 0, Flag::Verbal, Cat::Month },
+            Field{ u" "_s, 0, Flags{}, Cat::Literal },
+            Field { empty, 1, Flag::Numeric, Cat::DayOfMonth },
+            Field{ u","_s, 0, Flags{ Flag::SpacePad }, Cat::Literal },
+            Field{ empty, 0, Flag::Verbal | Flag::Short, Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("2026 April 8, Thursday/date+dow/C/greg/0") // It's a Wednesday
+        << u"2026 April 8, Thursday"_s
+        << Fields{ Field{ empty, 4, Flag::Numeric | Flag::ZeroPad, Cat::Year },
+            Field{ u" "_s, 0, Flags{}, Cat::Literal },
+            Field { empty, 0, Flag::Verbal, Cat::Month },
+            Field{ u" "_s, 0, Flags{}, Cat::Literal },
+            Field { empty, 1, Flag::Numeric, Cat::DayOfMonth },
+            Field{ u","_s, 0, Flags{ Flag::SpacePad }, Cat::Literal },
+            Field{ empty, 0, Flag::Verbal | Flag::Wide, Cat::DayOfWeek } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
 }
 
 void tst_QtParseTemporal::prefix()

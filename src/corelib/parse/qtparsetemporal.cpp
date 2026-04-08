@@ -315,11 +315,41 @@ public:
     bool resolve(PartialParse &parsed) const;
 };
 
-bool TemporalFieldMatcher::isSelfConsistent(const PartialParse &, TemporalFieldCategory) const
+bool TemporalFieldMatcher::isSelfConsistent(const PartialParse &parse,
+                                            TemporalFieldCategory category) const
 {
     // Take into account calendar, and potentially baseYear, but only do cheap
     // checks. This will be run on *each* candidate parse after *each* field,
     // need not check conditions the current field could not have affected.
+    using Cat = TemporalFieldCategory;
+    if (category == Cat::Literal) // Can't have introduced any inconsistency.
+        return true;
+
+    const bool newYear = category == Cat::Year || category == Cat::YearWithinCentury;
+    if (newYear && parse.yearWithinCentury >= 0 && parse.results.year
+        && (*parse.results.year - parse.yearWithinCentury) % 100) {
+        return false;
+    }
+
+    const bool newDate = (newYear || category == Cat::Month || category == Cat::DayOfMonth
+                          || category == Cat::DayOfWeek);
+    if (newDate && parse.results.month && parse.results.dayOfMonth) {
+        // Calendrical calculations: somewhat expensive, but still arithmetic.
+        if (parse.results.year) {
+            if (!calendar.isDateValid(*parse.results.year, parse.results.month,
+                                      parse.results.dayOfMonth)) {
+                return false;
+            }
+            if (parse.results.dayOfWeek) {
+                QDate date = calendar.dateFromParts(*parse.results.year, parse.results.month,
+                                                    parse.results.dayOfMonth);
+                if (calendar.dayOfWeek(date) != parse.results.dayOfWeek)
+                    return false;
+            }
+        } else if (calendar.daysInMonth(parse.results.month) < parse.results.dayOfMonth) {
+            return false;
+        }
+    }
     return true;
 }
 
