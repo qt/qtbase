@@ -3081,10 +3081,10 @@ bool QMenu::event(QEvent *e)
     case QEvent::ToolTip:
         if (d->toolTipsVisible) {
             const QHelpEvent *ev = static_cast<const QHelpEvent*>(e);
-            if (const QAction *action = actionAt(ev->pos())) {
+            if (QAction *action = actionAt(ev->pos())) {
                 const QString toolTip = action->d_func()->tooltip;
                 if (!toolTip.isEmpty())
-                    QToolTip::showText(ev->globalPos(), toolTip, this);
+                    QToolTip::showText(ev->globalPos(), toolTip, this, actionGeometry(action));
                 else
                     QToolTip::hideText();
                 return true;
