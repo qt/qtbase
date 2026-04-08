@@ -793,9 +793,10 @@ void QWindow::setParent(QWindow *parent)
     if (d->parentWindow == parent)
         return;
 
-    QScreen *newScreen = parent ? parent->screen() : screen();
+    QScreen *oldScreen = screen();
+    QScreen *newScreen = parent ? parent->screen() : oldScreen;
     if (d->windowRecreationRequired(newScreen)) {
-        qWarning() << this << '(' << parent << "): Cannot change screens (" << screen() << newScreen << ')';
+        qWarning() << this << '(' << parent << "): Cannot change screens (" << oldScreen << newScreen << ')';
         return;
     }
 
@@ -844,6 +845,15 @@ void QWindow::setParent(QWindow *parent)
         QAccessible::updateAccessibility(&qaEvent);
     }
 #endif
+
+    // The QPA layer should detect screen changes for child windows, and emit
+    // QWSI::handleWindowScreenChanged, but due to the ordering above where the
+    // parentWindow member is updated before calling setParent on the platform
+    // window we'll end up treating those callbacks from the QPA layer as noops
+    // in processWindowScreenChangedEvent since the screen is already up to date.
+    // To work around this we emit an explicit update here.
+    if (parent && screen() != oldScreen)
+        d->emitScreenChangedRecursion(screen());
 }
 
 /*!
