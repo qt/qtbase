@@ -1850,13 +1850,12 @@ void QAbstractItemView::mousePressEvent(QMouseEvent *event)
     QItemSelectionModel::SelectionFlags command = selectionCommand(index, event);
     d->noSelectionOnMousePress = command == QItemSelectionModel::NoUpdate || !index.isValid();
     QPoint offset = d->offset();
-    d->draggedPosition = pos;
-    d->draggedPositionOffset = offset;
+    d->draggedPosition = pos + offset;
 
 #if QT_CONFIG(draganddrop)
     // update the pressed position when drag was enable
     if (d->dragEnabled)
-        d->pressedPosition = d->draggedPosition + d->draggedPositionOffset;
+        d->pressedPosition = d->draggedPosition;
 #endif
 
     if (!(command & QItemSelectionModel::Current)) {
@@ -1913,8 +1912,7 @@ void QAbstractItemView::mouseMoveEvent(QMouseEvent *event)
     Q_D(QAbstractItemView);
     QPoint bottomRight = event->position().toPoint();
 
-    d->draggedPosition = bottomRight;
-    d->draggedPositionOffset = d->offset();
+    d->draggedPosition = bottomRight + d->offset();
 
     if (state() == ExpandingState || state() == CollapsingState)
         return;
@@ -2089,8 +2087,7 @@ void QAbstractItemView::dragEnterEvent(QDragEnterEvent *event)
 void QAbstractItemView::dragMoveEvent(QDragMoveEvent *event)
 {
     Q_D(QAbstractItemView);
-    d->draggedPosition = event->position().toPoint();
-    d->draggedPositionOffset = d->offset();
+    d->draggedPosition = event->position().toPoint() + d->offset();
     if (dragDropMode() == InternalMove
         && (event->source() != this || !(event->possibleActions() & Qt::MoveAction)))
         return;
@@ -4161,8 +4158,7 @@ void QAbstractItemView::doAutoScroll()
     const int verticalValue = verticalScroll->value();
     const int horizontalValue = horizontalScroll->value();
 
-    const QPoint pos = d->draggedPosition;
-
+    const QPoint pos = d->draggedPosition - d->offset();
     const QRect area = QWidgetPrivate::get(d->viewport)->clipRect();
 
     // do the scrolling if we are in the scroll margins
@@ -4202,8 +4198,7 @@ void QAbstractItemView::doAutoScroll()
             // update our dragged position manually after the scroll. "pos" is the old
             // draggedPosition - d->offset(), and d->offset() is now updated after scrolling, so
             // pos + d->offset() gives us the new position.
-            d->draggedPosition = pos;
-            d->draggedPositionOffset = d->offset();
+            d->draggedPosition = pos + d->offset();
             break;
         }
         default:
