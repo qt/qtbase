@@ -158,7 +158,10 @@ public:
     QRect cursorRect(const QTextCursor &cursor) const;
     QRect cursorRect() const;
 
-    QString anchorAt(const QPoint& pos) const;
+    // ### Qt7: remove
+    QT_WIDGETS_INLINE_SINCE(6, 12)
+    QString anchorAt(const QPoint &pos) const;
+    QString anchorAt(QPointF pos) const;
 
     bool overwriteMode() const;
     void setOverwriteMode(bool overwrite);
@@ -293,6 +296,10 @@ private:
 };
 
 #if QT_WIDGETS_INLINE_IMPL_SINCE(6, 12)
+QString QTextEdit::anchorAt(const QPoint &pos) const
+{
+    return anchorAt(QPointF(pos));
+}
 QTextCursor QTextEdit::cursorForPosition(const QPoint &pos) const
 {
     return cursorForPosition(QPointF(pos));
