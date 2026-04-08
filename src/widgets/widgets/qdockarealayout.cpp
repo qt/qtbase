@@ -39,6 +39,7 @@ enum class StateFlag
 {
     Visible = 0x01,
     Floating = 0x02,
+    FloatingTabs = 0x04,
 };
 Q_DECLARE_FLAGS(StateFlags, StateFlag);
 
@@ -226,6 +227,8 @@ QDebug operator<<(QDebug dbg, StateFlags flags)
         f << QLatin1StringView("Visible");
     if (flags.testFlag(StateFlag::Floating))
         f << QLatin1StringView("Floating");
+    if (flags.testFlag(StateFlag::FloatingTabs))
+        f << QLatin1StringView("FloatingTabs");
     dbg << "StateFlags(" << f.join(u'|') << ")";
     return dbg;
 }
@@ -1859,6 +1862,15 @@ void QDockAreaLayoutInfo::deleteAllLayoutItems()
 
 void QDockAreaLayoutInfo::saveState(QDataStream &stream) const
 {
+    qsizetype cnt = 0;
+    for (qsizetype i = 0; i < item_list.size(); ++i) {
+        const QDockAreaLayoutItem &item = item_list.at(i);
+        if (item.widgetItem && qobject_cast<QDockWidgetGroupWindow *>(item.widgetItem->widget())) {
+            continue;
+        }
+        ++cnt;
+    }
+
 #if QT_CONFIG(tabbar)
     if (tabbed) {
         stream << (uchar) TabMarker;
@@ -1879,15 +1891,17 @@ void QDockAreaLayoutInfo::saveState(QDataStream &stream) const
         stream << (uchar) SequenceMarker;
     }
 
-    stream << (uchar) o << int(item_list.size());
+    stream << static_cast<uchar>(o)  << static_cast<int>(cnt);
 
     for (int i = 0; i < item_list.size(); ++i) {
         const QDockAreaLayoutItem &item = item_list.at(i);
         if (item.widgetItem != nullptr) {
-            stream << (uchar) WidgetMarker;
             QWidget *w = item.widgetItem->widget();
-            if (qobject_cast<QDockWidgetGroupWindow *>(w))
-                qCDebug(lcQpaDockWidgets) << "Found dock widget group window" << w;
+            if (qobject_cast<QDockWidgetGroupWindow *>(w)) {
+                qCDebug(lcQpaDockWidgets) << "Ignoring dock widget group window" << w;
+                continue;
+            }
+            stream << (uchar) WidgetMarker;
             QString name = w->objectName();
             if (Q_UNLIKELY(name.isEmpty())) {
                 qWarning() << "QMainWindow::saveState(): 'objectName' not set for"
@@ -1900,6 +1914,8 @@ void QDockAreaLayoutInfo::saveState(QDataStream &stream) const
                 flags.setFlag(StateFlag::Visible);
             if (w->isWindow())
                 flags.setFlag(StateFlag::Floating);
+            if (qobject_cast<QDockWidgetGroupWindow *>(w->parent()))
+                flags.setFlag(StateFlag::FloatingTabs);
             stream << static_cast<uchar>(flags.toInt());
 
             qCDebug(lcQpaDockWidgets) << "Saving state for dock widget:" << w->objectName() << flags;
@@ -2013,6 +2029,8 @@ bool QDockAreaLayoutInfo::restoreState(QDataStream &stream, QList<QDockWidget*> 
                 if (!testing)
                     item_list.append(item);
             } else {
+                if (flags.testFlag(StateFlag::FloatingTabs))
+                    qCDebug(lcQpaDockWidgets) << "Found floating tab:" << name << flags << debugCallMode;
                 QDockAreaLayoutItem item(new QDockWidgetItem(widget));
                 if (flags.testFlag(StateFlag::Floating)) {
                     if (!testing) {
@@ -2023,10 +2041,8 @@ bool QDockAreaLayoutInfo::restoreState(QDataStream &stream, QList<QDockWidget*> 
                     int x, y, w, h;
                     stream >> x >> y >> w >> h;
 
-                    if (!testing)
-                        widget->setGeometry(QDockAreaLayout::constrainedRect(QRect(x, y, w, h), widget));
-
                     if (!testing) {
+                        widget->setGeometry(QDockAreaLayout::constrainedRect(QRect(x, y, w, h), widget));
                         widget->setVisible(flags.testFlag(StateFlag::Visible));
                         item_list.append(item);
                     }

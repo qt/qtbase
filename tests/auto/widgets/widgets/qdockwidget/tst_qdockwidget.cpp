@@ -2085,6 +2085,40 @@ void tst_QDockWidget::saveAndRestore()
         isFloating2 = d2->isFloating();
     }
 
+    // Test save / restore consistency (QTBUG-142797)
+    {
+        constexpr auto compare = [](const QList<QDockWidget *> actual, std::initializer_list<QDockWidget *> expected) {
+            const auto expectedSize = static_cast<int>(expected.size());
+            if (actual.size() != expectedSize) {
+                qCDebug(lcTestDockWidget) << "expected size:" << expectedSize << "actual size:" << actual.size();
+                return false;
+            }
+            for (auto *widget : expected) {
+                if (!actual.contains(widget)) {
+                    qCDebug(lcTestDockWidget) << "expected:" << expected << "actual:" << actual;
+                    return false;
+                }
+            }
+            return true;
+        };
+
+        QPointer<QDockWidget> d1;
+        QPointer<QDockWidget> d2;
+        QPointer<QWidget> cent;
+        QMainWindow* mainWindow;
+        QList<int> path1;
+        QList<int> path2;
+        qCreateFloatingTabs(mainWindow, cent, d1, d2, path1, path2);
+        QPointer<QDockWidgetGroupWindow> groupWindow = mainWindow->findChild<QDockWidgetGroupWindow *>();
+        QVERIFY(groupWindow);
+        QVERIFY(compare(groupWindow->dockWidgets(), {d1, d2}));
+        const auto &ba = mainWindow->saveState();
+        mainWindow->restoreState(ba);
+        QTRY_VERIFY(!groupWindow);
+        groupWindow = mainWindow->findChild<QDockWidgetGroupWindow *>();
+        QVERIFY(compare(groupWindow->dockWidgets(), {d1, d2}));
+    }
+
     // Create a mainwindow with a central widget and two dock widgets.
     // Assign different properties to each dock widgets.
     // Write properties to a byte array.
