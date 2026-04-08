@@ -127,7 +127,7 @@ EGLSurface QQnxEglWindow::surface() const
 
 void QQnxEglWindow::setGeometry(const QRect &rect)
 {
-    //If this is the root window, it has to be shown fullscreen
+    // In fullscreen mode, top-level windows are forced to screen geometry
     const QRect &newGeometry = shouldMakeFullScreen() ? screen()->geometry() : rect;
 
     //We need to request that the GL context updates
