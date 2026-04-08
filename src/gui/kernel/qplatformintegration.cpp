@@ -234,6 +234,11 @@ QPlatformServices *QPlatformIntegration::services() const
     On resize of the backingstore the static contents region is provided, and the backing
     store is expected to propagate the static content to the resized backing store, without
     clients needing to repaint the static content region.
+
+    \value OffscreenSurface The platform supports creating a platform offscreen surface
+    without falling back to an implementation utilizing an invisible QWindow. A platform
+    without this capability requires QOffscreenSurface::create to be called from the GUI
+    thread.
  */
 
 /*!
