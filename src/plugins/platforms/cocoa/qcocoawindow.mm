@@ -1541,6 +1541,10 @@ void QCocoaWindow::windowDidChangeScreen()
         // same screen.
         currentScreen->requestUpdate();
     }
+    // If there are no exposed windows left on the previous screen
+    // we can stop its display link if it was running.
+    if (previousScreen)
+        previousScreen->maybeStopDisplayLink();
 }
 
 // ----------------------- NSWindowDelegate callbacks -----------------------
