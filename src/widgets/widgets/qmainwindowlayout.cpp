@@ -1380,6 +1380,22 @@ bool QMainWindowLayoutState::restoreState(QDataStream &_stream,
             case QDockAreaLayout::FloatingDockWidgetTabMarker:
             {
                 auto dockWidgets = allMyDockWidgets(mainWindow);
+                // dissolve all floating tabs first.
+                for (auto *dockWidget : std::as_const(dockWidgets)) {
+                    QPointer<QDockWidgetGroupWindow> gw = qobject_cast<QDockWidgetGroupWindow *>(dockWidget->parent());
+                    if (!gw)
+                        continue;
+                    const bool visible = gw->isVisible();
+                    gw->reparentToMainWindow(dockWidget);
+                    dockWidget->setFloating(true);
+                    dockWidget->setVisible(visible);
+                }
+#ifndef QT_NO_DEBUG
+                const auto groupWindows = mainWindow->findChildren<QDockWidgetGroupWindow *>();
+                for (auto *gw : groupWindows)
+                    Q_ASSERT(gw->dockWidgets().isEmpty());
+#endif
+
                 QDockWidgetGroupWindow* floatingTab = qt_mainwindow_layout(mainWindow)->createTabbedDockWindow();
                 *floatingTab->layoutInfo() = QDockAreaLayoutInfo(
                     &dockAreaLayout.sep, QInternal::LeftDock, // FIXME: DockWidget doesn't save original docking area
