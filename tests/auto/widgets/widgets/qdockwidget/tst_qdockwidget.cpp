@@ -655,6 +655,7 @@ void tst_QDockWidget::visibilityChanged()
     QDockWidget dw;
     QSignalSpy spy(&dw, SIGNAL(visibilityChanged(bool)));
 
+    mw.setWindowFlag(Qt::FramelessWindowHint);
     mw.addDockWidget(Qt::LeftDockWidgetArea, &dw);
     mw.show();
 
