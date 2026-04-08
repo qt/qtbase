@@ -760,8 +760,11 @@ void QQnxScreenEventHandler::handleGeometryPropertyEvent(screen_window_t window)
     QRect rect(pos[0], pos[1], size[0], size[1]);
     QWindow *qtWindow = QQnxIntegration::instance()->window(window);
     if (qtWindow) {
-        qtWindow->setGeometry(rect);
-        QWindowSystemInterface::handleGeometryChange(qtWindow, rect);
+        // Only update if the geometry actually changed to avoid duplicate events.
+        // QQnxWindow::setGeometry() already calls handleGeometryChange() internally,
+        // so we must not call it again here.
+        if (qtWindow->handle() && qtWindow->handle()->geometry() != rect)
+            qtWindow->handle()->setGeometry(rect);
     }
 
     qCDebug(lcQpaScreenEvents) << qtWindow << "moved to" << rect;
