@@ -52,8 +52,8 @@ public:
     void paint(QPainter *p, QPaintEvent *e);
     void repaintContents(const QRectF &contentsRect);
 
-    inline QPoint mapToContents(const QPoint &point) const
-    { return QPoint(point.x() + horizontalOffset(), point.y() + verticalOffset()); }
+    inline QPointF mapToContents(QPointF point) const
+    { return QPointF(point.x() + horizontalOffset(), point.y() + verticalOffset()); }
 
     void adjustScrollbars();
     void ensureVisible(const QRectF &rect);

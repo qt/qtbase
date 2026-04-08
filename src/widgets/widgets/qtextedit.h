@@ -151,7 +151,10 @@ public:
     QMenu *createStandardContextMenu(const QPoint &position);
 #endif
 
+    // ### Qt7: remove
+    QT_WIDGETS_INLINE_SINCE(6, 12)
     QTextCursor cursorForPosition(const QPoint &pos) const;
+    QTextCursor cursorForPosition(QPointF pos) const;
     QRect cursorRect(const QTextCursor &cursor) const;
     QRect cursorRect() const;
 
@@ -288,6 +291,13 @@ private:
     friend class QWidgetTextControl;
     friend class ::tst_QTextEdit;
 };
+
+#if QT_WIDGETS_INLINE_IMPL_SINCE(6, 12)
+QTextCursor QTextEdit::cursorForPosition(const QPoint &pos) const
+{
+    return cursorForPosition(QPointF(pos));
+}
+#endif
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QTextEdit::AutoFormatting)
 
