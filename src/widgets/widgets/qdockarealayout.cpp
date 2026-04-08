@@ -1865,8 +1865,8 @@ void QDockAreaLayoutInfo::saveState(QDataStream &stream) const
             QWidget *w = item.widgetItem->widget();
             QString name = w->objectName();
             if (Q_UNLIKELY(name.isEmpty())) {
-                qWarning("QMainWindow::saveState(): 'objectName' not set for QDockWidget %p '%ls;",
-                         w, qUtf16Printable(w->windowTitle()));
+                qWarning() << "QMainWindow::saveState(): 'objectName' not set for"
+                           << w << qUtf16Printable(w->windowTitle());
             }
             stream << name;
 
