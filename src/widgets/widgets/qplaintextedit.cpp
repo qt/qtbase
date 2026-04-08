@@ -600,7 +600,7 @@ QRectF QPlainTextEditControl::blockBoundingRect(const QTextBlock &block) const {
 
 QString QPlainTextEditControl::anchorAt(const QPointF &pos) const
 {
-    return textEdit->anchorAt(pos.toPoint());
+    return textEdit->anchorAt(pos);
 }
 
 void QPlainTextEditPrivate::setTopLine(int visualTopLine, int dx)
@@ -1369,16 +1369,22 @@ QTextCursor QPlainTextEdit::textCursor() const
 }
 
 /*!
+    \fn QString QPlainTextEdit::anchorAt(const QPoint &pos) const
+    \since 4.7
+    \overload
+ */
+
+/*!
     Returns the reference of the anchor at position \a pos, or an
     empty string if no anchor exists at that point.
 
-    \since 4.7
+    \since 6.12
  */
-QString QPlainTextEdit::anchorAt(const QPoint &pos) const
+QString QPlainTextEdit::anchorAt(QPointF pos) const
 {
     Q_D(const QPlainTextEdit);
     int cursorPos = d->control->hitTest(pos + QPointF(d->horizontalOffset(),
-                                                     d->verticalOffset()),
+                                                      d->verticalOffset()),
                                         Qt::ExactHit);
     if (cursorPos < 0)
         return QString();
