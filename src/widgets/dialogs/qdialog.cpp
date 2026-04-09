@@ -2,7 +2,9 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 // Qt-Security score:significant reason:default
 
+#include "kernel/qwidget_p.h"
 #include <QtWidgets/qtwidgetsglobal.h>
+#include <utility>
 #if QT_CONFIG(colordialog)
 #include "qcolordialog.h"
 #endif
@@ -148,6 +150,16 @@ void QDialogPrivate::close(int resultCode)
     }
 
     resetModalitySetByOpen();
+}
+
+void QDialogPrivate::recreate()
+{
+    // Calling destroy while having the eventLoop pointer in place would cause the
+    // event loop to exit - however, with recreate, we do not actually want this behavior
+    // but want to keep the QDialog alive, just with a different RHI configuration
+    QPointer<QEventLoop> existingEventLoop = std::exchange(eventLoop, nullptr);
+    QWidgetPrivate::recreate();
+    eventLoop = existingEventLoop;
 }
 
 QWindow *QDialogPrivate::transientParentWindow() const

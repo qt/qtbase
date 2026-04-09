@@ -18,6 +18,7 @@
 #include <QGraphicsProxyWidget>
 #include <QGraphicsView>
 #include <QWindow>
+#include <QRhiWidget>
 #include <private/qguiapplication_p.h>
 #include <qpa/qplatformtheme.h>
 #include <qpa/qplatformtheme_p.h>
@@ -52,6 +53,7 @@ private slots:
     void toolDialogPosition();
     void deleteMainDefault();
     void deleteInExec();
+    void execBlocksEvenIfRecreated();
 #if QT_CONFIG(sizegrip)
     void showSizeGrip();
 #endif
@@ -372,6 +374,38 @@ void tst_QDialog::deleteInExec()
     QDialog *dialog = new QDialog(0);
     QMetaObject::invokeMethod(dialog, "deleteLater", Qt::QueuedConnection);
     QCOMPARE(dialog->exec(), int(QDialog::Rejected));
+}
+
+
+class RecreatedDialog : public QDialog {
+    int tId = -1;
+public:
+    bool didBlock = false;
+
+    void showEvent(QShowEvent* ) override
+    {
+        QTimer::singleShot(0, [this] {
+            auto rhiWidget = new QRhiWidget();
+            rhiWidget->setParent(this);
+        });
+        tId = startTimer(300);
+    }
+
+    void timerEvent(QTimerEvent *event) override
+    {
+        if (tId == event->timerId()) {
+            killTimer(tId);
+            didBlock = true;
+            accept();
+        }
+    }
+};
+
+void tst_QDialog::execBlocksEvenIfRecreated()
+{
+    RecreatedDialog dialog;
+    QCOMPARE(dialog.exec(), QDialog::Accepted);
+    QVERIFY(dialog.didBlock);
 }
 
 #if QT_CONFIG(sizegrip)

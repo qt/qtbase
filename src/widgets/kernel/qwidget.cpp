@@ -10970,8 +10970,7 @@ void QWidget::setParent(QWidget *parent, Qt::WindowFlags f)
                     const auto windowStateBeforeDestroy = newParentWithWindow->windowState();
                     const auto visibilityBeforeDestroy = newParentWithWindow->isVisible();
                     const auto positionBeforeDestroy = newParentWithWindow->pos();
-                    newParentWithWindow->destroy();
-                    newParentWithWindow->create();
+                    newParentWithWindow->d_func()->recreate();
                     Q_ASSERT(newParentWithWindow->windowHandle());
                     newParentWithWindow->windowHandle()->setWindowStates(windowStateBeforeDestroy);
                     newParentWithWindow->move(positionBeforeDestroy);
