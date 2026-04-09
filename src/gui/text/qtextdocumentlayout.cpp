@@ -3905,7 +3905,7 @@ void QTextDocumentLayout::resizeInlineObject(QTextInlineObject item, int posInDo
         break;
     }
     case QTextCharFormat::AlignBaseline: {
-        QFontMetrics m(f.font());
+        QFontMetricsF m(f.font());
         qreal descent = m.descent();
         item.setDescent(descent);
         item.setAscent(inlineSize.height() - descent);
