@@ -679,7 +679,15 @@ inline Napi::Value callMethodWithValueResultImpl(
         obj.Env(),
         [&]() {
             auto funcWithCtx = evalWithContextImpl<Napi::Function>(obj, methodName);
-            auto funcResult = funcWithCtx.second.Call(funcWithCtx.first, args);
+            Napi::Value funcResult;
+            try {
+                funcResult = funcWithCtx.second.Call(funcWithCtx.first, args);
+            } catch (const Napi::Error &error) {
+                auto message = "QNapi: got exception from method call '"s + methodName + "': "s + error.what();
+                qOhosPrintfError("%s", message.c_str());
+                throw;
+            }
+
             return funcResult;
         });
 }
