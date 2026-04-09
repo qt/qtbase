@@ -217,7 +217,7 @@ QOhosClipboardObject::PasteboardData QOhosClipboardObject::getPasteboardDataWith
     std::tie(dataSource, mimeDataFactory) = QtOhos::evalInJsThreadWithPromise<std::pair<QOhosOptional<PasteboardDataSource>, QOhosSupplier<std::unique_ptr<QMimeData>>>>(
         [&](QtOhos::JsState &jsState, auto evalPromise) {
             static constexpr const char *ohosGetPasteboardDataPermission = "ohos.permission.READ_PASTEBOARD";
-            auto sharedEvalPromise = QtOhos::moveToSharedPtr(std::move(evalPromise));
+            auto sharedEvalPromise = QtOhos::moveToSharedPtr(std::move(evalPromise).makeChained(Q_FUNC_INFO));
             QOhosAppPermissions::checkAppPermissionGrantedWithConsumer(
                 jsState, ohosGetPasteboardDataPermission,
                 [this, sharedEvalPromise](auto &, bool permissionGranted) {
