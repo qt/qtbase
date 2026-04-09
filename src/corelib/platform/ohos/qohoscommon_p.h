@@ -15,13 +15,16 @@
 // We mean it.
 //
 
+#include <QtCore/private/qohoslogger_p.h>
 #include <QtCore/qglobal.h>
 #include <QtCore/qlogging.h>
 #include <QtCore/qdebug.h>
+#include <array>
 #include <cstdlib>
 #include <functional>
 #include <memory>
 #include <mutex>
+#include <string>
 #ifndef QT_NO_EXCEPTIONS
 #include <stdexcept>
 #endif
@@ -52,7 +55,9 @@ class QOhosTaskPromise
 {
 public:
     template<typename F, typename = std::enable_if_t<!std::is_same<std::decay_t<F>, QOhosTaskPromise>::value>>
-    QOhosTaskPromise(F &&callable);
+    QOhosTaskPromise(F &&callable, std::string callerContextName = {});
+
+    ~QOhosTaskPromise();
 
     QOhosTaskPromise(QOhosTaskPromise &&) = default;
     QOhosTaskPromise &operator=(QOhosTaskPromise &&) = default;
@@ -61,6 +66,13 @@ public:
     QOhosTaskPromise &operator=(const QOhosTaskPromise &) = delete;
 
     void operator()(Args... args) const;
+
+    QOhosTaskPromise makeChained(std::string callerContextName) &&;
+
+    template<typename... ContextNames>
+    std::array<QOhosTaskPromise, sizeof...(ContextNames)> makeBranched(ContextNames &&...branchContextNames) &&;
+
+    std::pair<QOhosTaskPromise, QOhosTaskPromise> makeThenCatchBranches(std::string callerContextName) &&;
 
     operator std::function<void(Args...)>() &&;
 
@@ -85,7 +97,34 @@ private:
         Func m_func;
     };
 
-    std::unique_ptr<Callable> m_callable;
+    struct TrackingUsageState
+    {
+        TrackingUsageState() = default;
+        explicit TrackingUsageState(std::size_t activeCount);
+
+        bool used = false;
+        std::size_t activeCount = 1;
+    };
+
+    struct TrackingNode
+    {
+        TrackingNode(
+            std::string callerContext, std::shared_ptr<TrackingNode> optParent,
+            std::shared_ptr<TrackingUsageState> usage);
+
+        void markUsed(const char *callerContextString);
+        std::string rootCallerContextOrUnknown() const;
+        void logCallerContextChainAsErrors(const char *messagePrefix) const;
+
+        std::string callerContext;
+        std::shared_ptr<TrackingNode> optParent;
+        std::shared_ptr<TrackingUsageState> usage;
+    };
+
+    QOhosTaskPromise(std::shared_ptr<Callable> callable, std::shared_ptr<TrackingNode> tracking);
+
+    std::shared_ptr<Callable> m_callable;
+    std::shared_ptr<TrackingNode> m_tracking;
 };
 
 template<typename Func, Func func>
@@ -282,16 +321,48 @@ inline std::shared_ptr<void> makeDestroyNotifier(std::function<void()> callOnDes
 
 template<typename... Args>
 template<typename F, typename>
-QOhosTaskPromise<Args...>::QOhosTaskPromise(F &&callable)
-    : m_callable(std::make_unique<CallableImpl<std::decay_t<F>>>(std::forward<F>(callable)))
+QOhosTaskPromise<Args...>::QOhosTaskPromise(F &&callable, std::string callerContextName)
+    : m_callable(std::make_shared<CallableImpl<std::decay_t<F>>>(std::forward<F>(callable)))
+    , m_tracking(
+        std::make_shared<TrackingNode>(
+            std::move(callerContextName), nullptr, std::make_shared<TrackingUsageState>()))
+{
+}
+
+template<typename... Args>
+QOhosTaskPromise<Args...>::~QOhosTaskPromise()
+{
+    if (!m_tracking || m_tracking->usage->used)
+        return;
+
+    --m_tracking->usage->activeCount;
+
+    if (m_tracking->usage->activeCount == 0) {
+        m_tracking->logCallerContextChainAsErrors(Q_FUNC_INFO);
+        qOhosReportFatalErrorAndAbort(
+            "%s: promise destroyed without notifying the caller: %s",
+            Q_FUNC_INFO, m_tracking->rootCallerContextOrUnknown().c_str());
+    }
+}
+
+template<typename... Args>
+QOhosTaskPromise<Args...>::QOhosTaskPromise(
+    std::shared_ptr<Callable> callable, std::shared_ptr<TrackingNode> tracking)
+    : m_callable(std::move(callable))
+    , m_tracking(std::move(tracking))
 {
 }
 
 template<typename... Args>
 void QOhosTaskPromise<Args...>::operator()(Args... args) const
 {
+    if (!m_tracking)
+        qOhosReportFatalErrorAndAbort("%s: called on moved-from instance", Q_FUNC_INFO);
+
     if (!m_callable)
         qOhosReportFatalErrorAndAbort("%s: called on empty QOhosTaskPromise", Q_FUNC_INFO);
+
+    m_tracking->markUsed(Q_FUNC_INFO);
 
     m_callable->call(std::forward<Args>(args)...);
 }
@@ -299,12 +370,82 @@ void QOhosTaskPromise<Args...>::operator()(Args... args) const
 template<typename... Args>
 QOhosTaskPromise<Args...>::operator std::function<void(Args...)>() &&
 {
+    const auto funcInfo = Q_FUNC_INFO;
+
+    if (!m_tracking)
+        qOhosReportFatalErrorAndAbort("%s: called on moved-from instance", funcInfo);
+
     if (!m_callable)
         return {};
 
-    return [callable = std::shared_ptr<Callable>(std::move(m_callable))](Args... args) {
+    m_tracking->markUsed(funcInfo);
+
+    auto callable = std::move(m_callable);
+    auto tracking = std::move(m_tracking);
+
+    auto sharedCalledFlag = std::make_shared<bool>(false);
+    auto destroyNotifier = QtOhos::makeDestroyNotifier(
+        [sharedCalledFlag, tracking, funcInfo]() {
+            if (!*sharedCalledFlag) {
+                tracking->logCallerContextChainAsErrors(funcInfo);
+                qOhosReportFatalErrorAndAbort(
+                    "%s: promise (as std::function) destroyed without notifying the caller: %s",
+                    funcInfo, tracking->rootCallerContextOrUnknown().c_str());
+            }
+        });
+
+    return [callable, sharedCalledFlag, tracking, funcInfo, destroyNotifier](Args... args) {
+        if (*sharedCalledFlag) {
+            qOhosReportFatalErrorAndAbort(
+                "%s: promise (as std::function) called more than once for: %s",
+                funcInfo, tracking->rootCallerContextOrUnknown().c_str());
+        }
+        *sharedCalledFlag = true;
         callable->call(std::forward<Args>(args)...);
     };
+}
+
+template<typename... Args>
+QOhosTaskPromise<Args...> QOhosTaskPromise<Args...>::makeChained(std::string callerContextName) &&
+{
+    if (!m_tracking)
+        qOhosReportFatalErrorAndAbort("%s: called on moved-from instance", Q_FUNC_INFO);
+
+    m_tracking->markUsed(Q_FUNC_INFO);
+
+    return QOhosTaskPromise(
+        std::move(m_callable),
+        std::make_shared<TrackingNode>(
+            std::move(callerContextName), std::move(m_tracking), std::make_shared<TrackingUsageState>()));
+}
+
+template<typename... Args>
+template<typename... ContextNames>
+std::array<QOhosTaskPromise<Args...>, sizeof...(ContextNames)>
+QOhosTaskPromise<Args...>::makeBranched(ContextNames &&...branchContextNames) &&
+{
+    if (!m_tracking)
+        qOhosReportFatalErrorAndAbort("%s: called on moved-from instance", Q_FUNC_INFO);
+
+    m_tracking->markUsed(Q_FUNC_INFO);
+
+    auto sharedUsage = std::make_shared<TrackingUsageState>(
+        sizeof...(ContextNames));
+    return {{
+        QOhosTaskPromise(
+            m_callable,
+            std::make_shared<TrackingNode>(
+                std::forward<ContextNames>(branchContextNames),
+                m_tracking, sharedUsage))...
+    }};
+}
+
+template<typename... Args>
+std::pair<QOhosTaskPromise<Args...>, QOhosTaskPromise<Args...>>
+QOhosTaskPromise<Args...>::makeThenCatchBranches(std::string callerContextName) &&
+{
+    auto branches = std::move(*this).makeChained(std::move(callerContextName)).makeBranched("then", "catch");
+    return {std::move(branches[0]), std::move(branches[1])};
 }
 
 template<typename... Args>
@@ -320,6 +461,59 @@ template<typename Func>
 void QOhosTaskPromise<Args...>::CallableImpl<Func>::call(Args &&...args)
 {
     m_func(std::forward<Args>(args)...);
+}
+
+template<typename... Args>
+QOhosTaskPromise<Args...>::TrackingUsageState::TrackingUsageState(std::size_t activeCount)
+    : activeCount(activeCount)
+{
+}
+
+template<typename... Args>
+QOhosTaskPromise<Args...>::TrackingNode::TrackingNode(
+    std::string callerContext, std::shared_ptr<TrackingNode> optParent,
+    std::shared_ptr<TrackingUsageState> usage)
+    : callerContext(std::move(callerContext))
+    , optParent(std::move(optParent))
+    , usage(std::move(usage))
+{
+}
+
+template<typename... Args>
+void QOhosTaskPromise<Args...>::TrackingNode::markUsed(const char *callerContextString)
+{
+    if (usage->used) {
+        logCallerContextChainAsErrors(callerContextString);
+        qOhosReportFatalErrorAndAbort(
+            "%s: using a dead promise branch (%s) from this caller: %s",
+            callerContextString, callerContext.c_str(), rootCallerContextOrUnknown().c_str());
+    }
+    usage->used = true;
+}
+
+template<typename... Args>
+std::string QOhosTaskPromise<Args...>::TrackingNode::rootCallerContextOrUnknown() const
+{
+    const TrackingNode *rootContextNode = nullptr;
+    for (auto currentNode = this; currentNode != nullptr; currentNode = currentNode->optParent.get()) {
+        if (!currentNode->callerContext.empty())
+            rootContextNode = currentNode;
+    }
+    return rootContextNode != nullptr ? rootContextNode->callerContext : "<unknown>";
+}
+
+template<typename... Args>
+void QOhosTaskPromise<Args...>::TrackingNode::logCallerContextChainAsErrors(const char *messagePrefix) const
+{
+    int index = 0;
+    for (auto currentNode = this; currentNode; currentNode = currentNode->optParent.get()) {
+        if (!currentNode->callerContext.empty()) {
+            qOhosPrintfError(
+                "%s [caller context #%d]: %s",
+                messagePrefix, index, currentNode->callerContext.c_str());
+            ++index;
+        }
+    }
 }
 
 QT_END_NAMESPACE
