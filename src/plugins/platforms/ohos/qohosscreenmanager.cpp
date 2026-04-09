@@ -34,7 +34,8 @@ QOhosScreenManager::QOhosScreenManager()
                     },
                 }));
         registeredDisplays = m_jsScopeData->getRegisteredDisplayInfos();
-    });
+    },
+    Q_FUNC_INFO);
 
     rebuildScreenList(registeredDisplays);
 }

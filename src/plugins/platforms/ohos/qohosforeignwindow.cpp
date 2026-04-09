@@ -49,7 +49,8 @@ QOhosForeignWindow::QOhosForeignWindow(QWindow *qWindow, WId windowId)
                     std::move(stackNode), std::move(embeddedComponentNode),
                     std::move(windowIdStruct)),
             }));
-    });
+    },
+    Q_FUNC_INFO);
 }
 
 void QOhosForeignWindow::initialize()
@@ -69,7 +70,8 @@ void QOhosForeignWindow::setGeometry(const QRect &unscaledGeometry)
     QtOhos::runInJsThreadAndWait([&](QtOhos::JsState &) {
         m_jsStateData->embeddedWindow->setSize(scaledGeometry.size());
         m_jsStateData->embeddedWindow->setPosition(scaledGeometry.topLeft());
-    });
+    },
+    Q_FUNC_INFO);
 
     setWindowGeometryFromOhos(unscaledGeometry);
 }
@@ -78,7 +80,8 @@ WId QOhosForeignWindow::winId() const
 {
     return QtOhos::evalInJsThread([this](QtOhos::JsState &) {
         return reinterpret_cast<WId>(m_jsStateData->embeddedWindow->qtWindowId());
-    });
+    },
+    Q_FUNC_INFO);
 }
 
 void QOhosForeignWindow::setParent(const QPlatformWindow *window)
@@ -89,7 +92,8 @@ void QOhosForeignWindow::setParent(const QPlatformWindow *window)
     if (window == nullptr) {
         QtOhos::runInJsThreadAndWait([&](QtOhos::JsState &) {
             m_jsStateData->embeddedWindow->detachFromParentIfPresent();
-        });
+        },
+        Q_FUNC_INFO);
         return;
     }
 
@@ -106,7 +110,8 @@ void QOhosForeignWindow::setVisible(bool visible)
 {
     QtOhos::runInJsThreadAndWait([&](QtOhos::JsState &) {
         m_jsStateData->embeddedWindow->setNodeVisibility(visible);
-    });
+    },
+    Q_FUNC_INFO);
 
     setExposedFromOhos(visible);
 }

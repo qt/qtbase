@@ -221,7 +221,8 @@ QNativeNode::QNativeNode(const CreateInfo &nativeNodeCreateInfo)
                     hoverEventsGenerator->handleQOhosHoverEvent(hoverEvent.isHovered);
                 });
         }
-    });
+    },
+    Q_FUNC_INFO);
 }
 
 QRectF QNativeNode::geometry() const
@@ -234,7 +235,8 @@ void QNativeNode::setSizeParentFillPercentNormalized(const QSizeF &size)
     QtOhos::runInJsThreadAndWait(
         [&](QtOhos::JsState &) {
             m_jsStateData->embeddedWindow->setSizeParentFillPercentageNormalized(size);
-        });
+        },
+        Q_FUNC_INFO);
 }
 
 void QNativeNode::setSize(const QSizeF &size)
@@ -243,7 +245,8 @@ void QNativeNode::setSize(const QSizeF &size)
     QtOhos::runInJsThreadAndWait(
         [&](QtOhos::JsState &) {
             m_jsStateData->embeddedWindow->setSize(size);
-        });
+        },
+        Q_FUNC_INFO);
 }
 
 void QNativeNode::setPosition(QPoint position)
@@ -252,7 +255,8 @@ void QNativeNode::setPosition(QPoint position)
     QtOhos::runInJsThreadAndWait(
         [&](QtOhos::JsState &) {
             m_jsStateData->embeddedWindow->setPosition(position);
-        });
+        },
+        Q_FUNC_INFO);
 }
 
 void QNativeNode::setVisibility(bool visible)
@@ -260,7 +264,8 @@ void QNativeNode::setVisibility(bool visible)
     QtOhos::runInJsThreadAndWait(
         [&](QtOhos::JsState &) {
             m_jsStateData->embeddedWindow->setNodeVisibility(visible);
-        });
+        },
+        Q_FUNC_INFO);
 }
 
 QOhosSurface *QNativeNode::surfaceOrNull() const
@@ -277,7 +282,8 @@ void QNativeNode::fillToParent(const QSize &surfaceResolution)
             m_jsStateData->embeddedWindow->setSurfaceResolution(
                 static_cast<std::uint32_t>(surfaceResolution.width()),
                 static_cast<std::uint32_t>(surfaceResolution.height()));
-        });
+        },
+        Q_FUNC_INFO);
 }
 
 void QNativeNode::handleSurfaceEvent(
@@ -313,7 +319,8 @@ WId QNativeNode::windowId() const
 {
     return QtOhos::evalInJsThread([&](QtOhos::JsState &) {
         return reinterpret_cast<WId>(m_jsStateData->embeddedWindow->qtWindowId());
-    });
+    },
+    Q_FUNC_INFO);
 }
 
 void QNativeNode::setParent(std::shared_ptr<QXComponentNode> xComponent)
@@ -321,7 +328,8 @@ void QNativeNode::setParent(std::shared_ptr<QXComponentNode> xComponent)
     QtOhos::runInJsThreadAndWait([&](QtOhos::JsState &){
         m_jsStateData->embeddedWindow->setParentOrReparent(
             QArkUi::QEmbeddedWindowNode::ParentDescriptor(xComponent));
-    });
+    },
+    Q_FUNC_INFO);
 }
 
 void QNativeNode::setParent(QNativeNode &other)
@@ -329,7 +337,8 @@ void QNativeNode::setParent(QNativeNode &other)
     QtOhos::runInJsThreadAndWait([&](QtOhos::JsState &){
         m_jsStateData->embeddedWindow->setParentOrReparent(
             QArkUi::QEmbeddedWindowNode::ParentDescriptor(*other.m_jsStateData->embeddedWindow));
-    });
+    },
+    Q_FUNC_INFO);
 }
 
 void QNativeNode::raise()
@@ -337,7 +346,8 @@ void QNativeNode::raise()
     QtOhos::runInJsThreadAndWait([&](QtOhos::JsState &){
         auto &window = *m_jsStateData->embeddedWindow;
         window.raise();
-    });
+    },
+    Q_FUNC_INFO);
 }
 
 void QNativeNode::lower()
@@ -345,7 +355,8 @@ void QNativeNode::lower()
     QtOhos::runInJsThreadAndWait([&](QtOhos::JsState &){
         auto &window = *m_jsStateData->embeddedWindow;
         window.lower();
-    });
+    },
+    Q_FUNC_INFO);
 }
 
 void QNativeNode::detachFromParentIfPresent()
@@ -353,28 +364,32 @@ void QNativeNode::detachFromParentIfPresent()
     QtOhos::runInJsThreadAndWait([&](QtOhos::JsState &) {
         auto &window = *m_jsStateData->embeddedWindow;
         window.detachFromParentIfPresent();
-    });
+    },
+    Q_FUNC_INFO);
 }
 
 void QNativeNode::setFocused(bool focused)
 {
     QtOhos::runInJsThreadAndWait([&](QtOhos::JsState &) {
         m_jsStateData->embeddedWindow->setFocused(focused);
-    });
+    },
+    Q_FUNC_INFO);
 }
 
 void QNativeNode::setFocusable(bool focusable)
 {
     QtOhos::runInJsThreadAndWait([&](QtOhos::JsState &) {
         m_jsStateData->embeddedWindow->setFocusable(focusable);
-    });
+    },
+    Q_FUNC_INFO);
 }
 
 void QNativeNode::setBackgroundColor(const QColor &color)
 {
     QtOhos::runInJsThreadAndWait([&](QtOhos::JsState &) {
         m_jsStateData->embeddedWindow->setBackgroundColor(color);
-    });
+    },
+    Q_FUNC_INFO);
 }
 
 void QNativeNode::setBrightness(int brightness)
@@ -382,7 +397,8 @@ void QNativeNode::setBrightness(int brightness)
     QtOhos::runInJsThreadAndWait(
         [&](QtOhos::JsState &) {
             m_jsStateData->embeddedWindow->setBrightness(brightness);
-        });
+        },
+        Q_FUNC_INFO);
 }
 
 void QNativeNode::setContrast(int contrast)
@@ -390,7 +406,8 @@ void QNativeNode::setContrast(int contrast)
     QtOhos::runInJsThreadAndWait(
         [&](QtOhos::JsState &) {
             m_jsStateData->embeddedWindow->setContrast(contrast);
-        });
+        },
+        Q_FUNC_INFO);
 }
 
 void QNativeNode::setSaturation(int saturation)
@@ -398,7 +415,8 @@ void QNativeNode::setSaturation(int saturation)
     QtOhos::runInJsThreadAndWait(
         [&](QtOhos::JsState &) {
             m_jsStateData->embeddedWindow->setSaturation(saturation);
-        });
+        },
+        Q_FUNC_INFO);
 }
 
 void QNativeNode::startDrag(
@@ -460,7 +478,8 @@ void QNativeNode::startDrag(
                     }
                 });
             context->startedDragHandle = startedDragHandle;
-    });
+    },
+    Q_FUNC_INFO);
 }
 
 void QNativeNode::addForeignWindowChild(QOhosForeignWindow *foreignWindow)
@@ -469,7 +488,8 @@ void QNativeNode::addForeignWindowChild(QOhosForeignWindow *foreignWindow)
         auto &child = foreignWindow->embeddedWindowNodeInJsThread();
         auto parentDescriptor = QArkUi::QEmbeddedWindowNode::ParentDescriptor(*m_jsStateData->embeddedWindow);
         child.setParentOrReparent(parentDescriptor);
-    });
+    },
+    Q_FUNC_INFO);
 }
 
 void QNativeNode::setTransparentForInput(bool transparentForInput)
@@ -479,7 +499,8 @@ void QNativeNode::setTransparentForInput(bool transparentForInput)
             transparentForInput
                 ? ::ARKUI_HIT_TEST_MODE_NONE
                 : ::ARKUI_HIT_TEST_MODE_DEFAULT);
-    });
+    },
+    Q_FUNC_INFO);
 }
 
 void QNativeNode::setNodeAreaChangeHandler(QOhosConsumer<QArkUi::QQtEmbeddedWindowNode::NodeAreaInfo> areaChangeEventConsumer)
@@ -494,7 +515,8 @@ void QNativeNode::setNodeAreaChangeHandler(QOhosConsumer<QArkUi::QQtEmbeddedWind
                         task();
                     });
                 }));
-    });
+    },
+    Q_FUNC_INFO);
 }
 
 void QNativeNode::setNodeFocusChangeHandler(QOhosConsumer<bool> focusedChangedConsumer)
@@ -508,7 +530,8 @@ void QNativeNode::setNodeFocusChangeHandler(QOhosConsumer<bool> focusedChangedCo
                     (*sharedConsumer)(focused);
                 });
             });
-    });
+    },
+    Q_FUNC_INFO);
 }
 
 void QNativeNode::setNodeVisibilityChangeHandler(QOhosConsumer<bool> visibilityChangedConsumer)
@@ -522,7 +545,8 @@ void QNativeNode::setNodeVisibilityChangeHandler(QOhosConsumer<bool> visibilityC
                     (*sharedConsumer)(visibile);
                 });
             });
-    });
+    },
+    Q_FUNC_INFO);
 }
 
 QRect QNativeNode::nodeScreenGeometryPixels() const
@@ -530,7 +554,8 @@ QRect QNativeNode::nodeScreenGeometryPixels() const
     return QtOhos::evalInJsThread(
         [&](QtOhos::JsState &) {
             return m_jsStateData->embeddedWindow->nodeScreenGeometryPixels();
-        });
+        },
+        Q_FUNC_INFO);
 }
 
 QRect QNativeNode::nodeParentRelativeGeometryPixels() const
@@ -540,7 +565,8 @@ QRect QNativeNode::nodeParentRelativeGeometryPixels() const
             return QRect(
                 m_jsStateData->embeddedWindow->parentRelativeOffsetPixels(),
                 m_jsStateData->embeddedWindow->nodeScreenGeometryPixels().size());
-        });
+        },
+        Q_FUNC_INFO);
 }
 
 QArkUi::QQtEmbeddedWindowNode::NodeAreaInfo QNativeNode::nodeAreaInfo() const
@@ -548,7 +574,8 @@ QArkUi::QQtEmbeddedWindowNode::NodeAreaInfo QNativeNode::nodeAreaInfo() const
     return QtOhos::evalInJsThread(
         [&](QtOhos::JsState &) {
             return m_jsStateData->embeddedWindow->nodeAreaInfo();
-        });
+        },
+        Q_FUNC_INFO);
 }
 
 QT_END_NAMESPACE

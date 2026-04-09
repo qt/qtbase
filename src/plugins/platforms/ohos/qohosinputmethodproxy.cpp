@@ -326,7 +326,8 @@ QOhosInputMethodProxy::QOhosInputMethodProxy(
                         .inputMethodProxy = inputMethodProxy,
                         .callbacksRegistrationHandle = callbacksRegistrationHandle,
                     }));
-        });
+        },
+        Q_FUNC_INFO);
 }
 
 bool QOhosInputMethodProxy::hasAttachedSuccessfully()
@@ -358,7 +359,8 @@ void QOhosInputMethodProxy::showTextInput(::InputMethod_RequestKeyboardReason re
             m_jsScopeData->textEditorProxyData->textInputShown = errcode == ::InputMethod_ErrorCode::IME_ERR_OK;
             if (errcode != ::InputMethod_ErrorCode::IME_ERR_OK)
                 qOhosPrintfError("%s: OH_InputMethodProxy_ShowTextInput failed!", Q_FUNC_INFO);
-        });
+        },
+        Q_FUNC_INFO);
 }
 
 void QOhosInputMethodProxy::notifyConfigurationChange(
@@ -377,7 +379,8 @@ void QOhosInputMethodProxy::notifyConfigurationChange(
                 enterKeyType, textInputType);
             if (errcode != ::InputMethod_ErrorCode::IME_ERR_OK)
                 qOhosPrintfError("%s: OH_InputMethodProxy_NotifyConfigurationChange failed!", Q_FUNC_INFO);
-        });
+        },
+        Q_FUNC_INFO);
 }
 
 void QOhosInputMethodProxy::notifyCursorUpdate(const QRectF &cursorRect)
@@ -401,7 +404,8 @@ void QOhosInputMethodProxy::notifyCursorUpdate(const QRectF &cursorRect)
                 m_jsScopeData->inputMethodProxy.get(), ohCursorInfo.get());
             if (errcode != ::InputMethod_ErrorCode::IME_ERR_OK)
                 qOhosPrintfError("%s: OH_InputMethodProxy_NotifyCursorUpdate failed!", Q_FUNC_INFO);
-        });
+        },
+        Q_FUNC_INFO);
 }
 
 QOhosInputMethodProxy::ClientCallbacks::ClientCallbacks() = default;

@@ -43,7 +43,8 @@ QOhosOptional<std::string> tryGetDataItemValue(const std::string &name, const st
                 name.c_str(), domainName.c_str());
             evalPromise(makeEmptyQOhosOptional());
         });
-    });
+    },
+    Q_FUNC_INFO);
 }
 
 template<typename T>
@@ -70,7 +71,8 @@ std::string getOhosSettingsUserPropertyDomainName()
 {
     return QtOhos::evalInJsThread([](QtOhos::JsState &jsState) {
         return jsState.eval<QNapi::String>("@ohos.settings.domainName.USER_PROPERTY").Utf8Value();
-    });
+    },
+    Q_FUNC_INFO);
 }
 
 }

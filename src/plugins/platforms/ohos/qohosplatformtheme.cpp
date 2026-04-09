@@ -894,7 +894,8 @@ QPixmap QOhosFileIconEngine::filePixmap(const QSize &size, QIcon::Mode, QIcon::S
     auto optPixmap = QtOhos::evalInJsThread(
         [&](QtOhos::JsState &jsState) {
             return tryGetFilePixmapByFilenameExtension(jsState, fileNameSuffix.toStdString());
-        });
+        },
+        Q_FUNC_INFO);
 
     return optPixmap.hasValue()
         ? optPixmap.value().scaled(size, Qt::KeepAspectRatio, Qt::SmoothTransformation)

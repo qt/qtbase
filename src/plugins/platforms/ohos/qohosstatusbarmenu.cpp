@@ -322,7 +322,8 @@ QOhosStatusBarMenuImpl::QOhosStatusBarMenuImpl()
                             self.handleRightClickEvent(menuCode);
                         });
                 });
-        });
+        },
+        Q_FUNC_INFO);
 }
 
 void QOhosStatusBarMenuImpl::insertMenuItem(QPlatformMenuItem *menuItem, QPlatformMenuItem *before)

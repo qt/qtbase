@@ -217,7 +217,8 @@ void notifyOhosInputMethodAboutPossibleAutocorrection(const QOhosInsertedText &i
                 "@ohos.inputMethod.getController().changeSelection(*)", {insertedText.text(), startPosition, endPosition})
             .onCatch(QtOhos::makeErrorLoggingJsCallback("changeSelection()"))
             .onFinally(std::move(taskPromise));
-        });
+        },
+        Q_FUNC_INFO);
 }
 
 inline QPoint clampToRect(const QPoint &p, const QRect &rect)

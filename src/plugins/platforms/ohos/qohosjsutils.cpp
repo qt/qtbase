@@ -148,7 +148,8 @@ std::shared_ptr<void> startDelayedJsThreadTask(
                 runInJsThreadAndWait(
                     [&](JsState &jsState) {
                         jsState.eval("Global.clearTimeout(*)", {context->timerId.value()});
-                    });
+                    },
+                    Q_FUNC_INFO);
                 context->task = nullptr;
                 context->timerId.reset();
             }

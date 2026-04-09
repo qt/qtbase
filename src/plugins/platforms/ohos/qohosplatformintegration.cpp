@@ -103,7 +103,8 @@ std::set<QInputDevice::DeviceType> getAvailableDeviceTypes()
                         qOhosPrintfError("Error while obtaining device list (@ohos.multimodalInput.inputDevice.getDeviceList())");
                         evalPromise({});
                     });
-        });
+        },
+        Q_FUNC_INFO);
 }
 
 }

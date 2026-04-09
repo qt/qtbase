@@ -314,7 +314,8 @@ QRect QOhosPlatformScreen::getAvailableArea() const
                     QtOhos::logJsCallbackError(cbInfo, "Error occurred in JS getAvailableArea()");
                     evalPromise(QRect());
                 });
-        });
+        },
+        Q_FUNC_INFO);
 }
 
 void QOhosPlatformScreen::releaseSurface()
@@ -390,7 +391,8 @@ QPixmap QOhosPlatformScreen::grabWindow(WId wId, int x, int y, int width, int he
                             ? QPixmap::fromImage(createQImageFromNativePixelMap(optPixelMap.get()))
                             : QPixmap());
                 });
-        });
+        },
+        Q_FUNC_INFO);
 
     return capturedScreenPixmap.copy(captureRect);
 }

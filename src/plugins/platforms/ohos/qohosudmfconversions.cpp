@@ -765,7 +765,8 @@ QOhosSupplier<std::unique_ptr<QMimeData>> makeLazyFetchingQMimeDataFactoryFromUd
                 return QtOhos::evalInJsThread(
                     [&](QtOhos::JsState &) {
                         return baseSupplier();
-                    });
+                    },
+                    Q_FUNC_INFO);
             });
     }
 
