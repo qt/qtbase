@@ -216,24 +216,25 @@ QOhosClipboardObject::PasteboardData QOhosClipboardObject::getPasteboardDataWith
     std::tie(dataSource, mimeDataFactory) = QtOhos::evalInJsThreadWithPromise<std::pair<QOhosOptional<PasteboardDataSource>, QOhosSupplier<std::unique_ptr<QMimeData>>>>(
         [&](QtOhos::JsState &jsState, auto evalPromise) {
             static constexpr const char *ohosGetPasteboardDataPermission = "ohos.permission.READ_PASTEBOARD";
+            auto sharedEvalPromise = QtOhos::moveToSharedPtr(std::move(evalPromise));
             QOhosAppPermissions::checkAppPermissionGrantedWithConsumer(
                 jsState, ohosGetPasteboardDataPermission,
-                [this, evalPromise = std::move(evalPromise)](auto &, bool permissionGranted) {
+                [this, sharedEvalPromise](auto &, bool permissionGranted) {
                     if (!permissionGranted) {
                         qOhosPrintfError(
                             "%s: %s hasn't been granted by user. Cannot read pasteboard data.", Q_FUNC_INFO,
                             ohosGetPasteboardDataPermission);
-                        evalPromise({{}, std::make_unique<QMimeData>});
+                        (*sharedEvalPromise)({{}, std::make_unique<QMimeData>});
                         return;
                     }
 
                     auto optPasteboardUdmfData = tryGetUdmfDataFromPasteboard(m_pasteboard.get());
                     if (!optPasteboardUdmfData) {
-                        evalPromise({{}, std::make_unique<QMimeData>});
+                        (*sharedEvalPromise)({{}, std::make_unique<QMimeData>});
                         return;
                     }
 
-                    evalPromise(
+                    (*sharedEvalPromise)(
                         {
                             makeQOhosOptional(
                                 isQOhosUdmfDataConvertedFromThisProcessMimeData(*optPasteboardUdmfData)

@@ -92,11 +92,12 @@ QStringList getInstalledFontPaths()
                     }
 
                     auto fontsNames = QNapi::getArrayElements<std::vector<std::string>, QNapi::String>(fontsNamesArray);
+                    auto sharedEvalPromise = QtOhos::moveToSharedPtr(std::move(evalPromise));
                     auto pathsCollector = std::make_shared<QOhosConsumer<std::string>>(
-                        [evalPromise = std::move(evalPromise), pushSize = fontsNames.size(), result = std::vector<std::string>()](auto element) mutable {
+                        [sharedEvalPromise, pushSize = fontsNames.size(), result = std::vector<std::string>()](auto element) mutable {
                             result.push_back(std::move(element));
                             if (result.size() == pushSize)
-                                evalPromise(std::move(result));
+                                (*sharedEvalPromise)(std::move(result));
                         });
 
                     for (const auto &fontName : fontsNames) {

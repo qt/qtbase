@@ -48,7 +48,45 @@ template<typename T>
 using QOhosSupplier = std::function<T()>;
 
 template<typename... Args>
-using QOhosTaskPromise = QOhosConsumer<Args...>;
+class QOhosTaskPromise
+{
+public:
+    template<typename F, typename = std::enable_if_t<!std::is_same<std::decay_t<F>, QOhosTaskPromise>::value>>
+    QOhosTaskPromise(F &&callable);
+
+    QOhosTaskPromise(QOhosTaskPromise &&) = default;
+    QOhosTaskPromise &operator=(QOhosTaskPromise &&) = default;
+
+    QOhosTaskPromise(const QOhosTaskPromise &) = delete;
+    QOhosTaskPromise &operator=(const QOhosTaskPromise &) = delete;
+
+    void operator()(Args... args) const;
+
+    operator std::function<void(Args...)>() &&;
+
+private:
+    class Callable
+    {
+    public:
+        virtual ~Callable() = default;
+        virtual void call(Args &&...args) = 0;
+    };
+
+    template<typename Func>
+    class CallableImpl : public Callable
+    {
+    public:
+        template<typename F>
+        explicit CallableImpl(F &&f);
+
+        void call(Args &&...args) override;
+
+    private:
+        Func m_func;
+    };
+
+    std::unique_ptr<Callable> m_callable;
+};
 
 template<typename Func, Func func>
 class QOhosNamedFunc
@@ -240,6 +278,48 @@ inline std::shared_ptr<void> makeDestroyNotifier(std::function<void()> callOnDes
     return std::make_shared<DestroyNotifier>(std::move(callOnDestroy));
 }
 
+}
+
+template<typename... Args>
+template<typename F, typename>
+QOhosTaskPromise<Args...>::QOhosTaskPromise(F &&callable)
+    : m_callable(std::make_unique<CallableImpl<std::decay_t<F>>>(std::forward<F>(callable)))
+{
+}
+
+template<typename... Args>
+void QOhosTaskPromise<Args...>::operator()(Args... args) const
+{
+    if (!m_callable)
+        qOhosReportFatalErrorAndAbort("%s: called on empty QOhosTaskPromise", Q_FUNC_INFO);
+
+    m_callable->call(std::forward<Args>(args)...);
+}
+
+template<typename... Args>
+QOhosTaskPromise<Args...>::operator std::function<void(Args...)>() &&
+{
+    if (!m_callable)
+        return {};
+
+    return [callable = std::shared_ptr<Callable>(std::move(m_callable))](Args... args) {
+        callable->call(std::forward<Args>(args)...);
+    };
+}
+
+template<typename... Args>
+template<typename Func>
+template<typename F>
+QOhosTaskPromise<Args...>::CallableImpl<Func>::CallableImpl(F &&f)
+    : m_func(std::forward<F>(f))
+{
+}
+
+template<typename... Args>
+template<typename Func>
+void QOhosTaskPromise<Args...>::CallableImpl<Func>::call(Args &&...args)
+{
+    m_func(std::forward<Args>(args)...);
 }
 
 QT_END_NAMESPACE

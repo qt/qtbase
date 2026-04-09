@@ -1397,13 +1397,14 @@ void QOhosQpaFunctionsImpl::startAppProcess(
                 ? convertStartOptionsToNapiObject(jsState, optStartOptions.value())
                 : QNapi::Object();
 
+            auto sharedTaskPromise = QtOhos::moveToSharedPtr(std::move(taskPromise));
             jsState.startAppProcess(
                 processId.toStdString(),
                 QNapi::checkedCast<QNapi::Object>(
                     QOhosJsEnv::toNapiValue(jsState.env(), requestWant)),
                 startOptions,
-                [taskPromise = std::move(taskPromise)](QtOhos::JsState &) {
-                    taskPromise();
+                [sharedTaskPromise](QtOhos::JsState &) {
+                    (*sharedTaskPromise)();
                 });
     });
 }
