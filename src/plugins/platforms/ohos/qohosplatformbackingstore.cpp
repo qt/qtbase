@@ -128,7 +128,8 @@ std::function<void()> makeVSyncFrameRequestFunc(
             return [sharedFrameRequestFunc]() {
                 (*sharedFrameRequestFunc)();
             };
-        });
+        },
+        Q_FUNC_INFO);
 }
 
 }

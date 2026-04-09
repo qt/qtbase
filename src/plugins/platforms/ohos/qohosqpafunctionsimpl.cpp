@@ -356,7 +356,8 @@ std::shared_ptr<void> registerAppContextEnvironmentCallback(
                     appContextRef.call(
                         "off",
                         {"environment", environmentCallbackId});
-                });
+                },
+                Q_FUNC_INFO);
         });
 }
 
@@ -397,7 +398,8 @@ void setOhosConfigColorMode(OhosConfigurationColorMode colorMode)
             auto qAbility = jsState.defaultQAbilityPeer()->qAbility();
             const auto jsColorMode = jsState.mapOhosEnumToJs(colorMode);
             qAbility.call("context.getApplicationContext().setColorMode", {jsColorMode});
-        });
+        },
+        Q_FUNC_INFO);
 }
 
 template<typename ConfigValue>
@@ -431,7 +433,8 @@ QOhosSupplier<ConfigValue> makeOhosConfigValueDataSource(
                         });
                 });
             return context;
-        });
+        },
+        Q_FUNC_INFO);
 
     return [context]() {
         return context->receivedValue;
@@ -855,7 +858,8 @@ QOhosOptional<QList<QOhosQpaFunctions::ShareKit::SharedRecord>> WantInfoImpl::tr
                     QtOhos::logJsCallbackError(cbInfo, "@kit.ShareKit.systemShare.getSharedData() failed");
                     evalPromise(makeEmptyQOhosOptional());
                 });
-        });
+        },
+        Q_FUNC_INFO);
 }
 
 QOhosOptional<QOhosQpaFunctions::WantInfo::ContactInfo> WantInfoImpl::tryGetContactInfo() const
@@ -883,7 +887,8 @@ QOhosOptional<QOhosQpaFunctions::WantInfo::ContactInfo> WantInfoImpl::tryGetCont
                     QtOhos::logJsCallbackError(cbInfo, "@kit.ShareKit.systemShare.getContactInfo() failed");
                     evalPromise(makeEmptyQOhosOptional());
                 });
-        });
+        },
+        Q_FUNC_INFO);
 }
 
 QOhosQpaFunctions::WantInfo::LaunchReason WantInfoImpl::launchReason() const
@@ -1256,7 +1261,8 @@ void QOhosQpaFunctionsImpl::setOnContinueRequestsHandlerForAbilityInstanceWindow
                                 });
                         });
                 });
-        });
+        },
+        Q_FUNC_INFO);
 }
 
 void QOhosQpaFunctionsImpl::setAbilityContinuationActive(
@@ -1282,7 +1288,8 @@ void QOhosQpaFunctionsImpl::setAbilityContinuationActive(
                 "context.setMissionContinueState", {jsState.mapOhosEnumToJs(continueState)})
             .onCatch(QtOhos::makeErrorLoggingJsCallback("setMissionContinueState()"))
             .onFinally(std::move(taskPromise));
-        });
+        },
+        Q_FUNC_INFO);
 }
 
 Q_NORETURN void QOhosQpaFunctionsImpl::restartApp(QOhosOptional<QJsonObject> want)
@@ -1333,7 +1340,8 @@ Q_NORETURN void QOhosQpaFunctionsImpl::restartApp(QOhosOptional<QJsonObject> wan
                     }
                 }
             }
-        });
+        },
+        Q_FUNC_INFO);
 
     qOhosReportFatalErrorAndAbort("%s: unexpected return from the JS thread call", Q_FUNC_INFO);
 }
@@ -1354,7 +1362,8 @@ QSharedPointer<QOhosQpaFunctions::WantInfo> QOhosQpaFunctionsImpl::getAppLaunchW
                 });
             auto appLaunchReason = optAppLaunchReason.valueOr(QOhosQpaFunctions::WantInfo::LaunchReason::UNKNOWN);
             return QSharedPointer<WantInfoImpl>::create(jsState.appLaunchWant(), appLaunchReason);
-        });
+        },
+        Q_FUNC_INFO);
 }
 
 void QOhosQpaFunctionsImpl::addNewWantConsumer(QObject *context, QOhosConsumer<QJsonObject> wantConsumer)
@@ -1384,7 +1393,8 @@ void QOhosQpaFunctionsImpl::addNewWantConsumer(
                             (*sharedWantConsumer)(wantInfo);
                         });
                 });
-        });
+        },
+        Q_FUNC_INFO);
 }
 
 void QOhosQpaFunctionsImpl::startAppProcess(
@@ -1406,7 +1416,8 @@ void QOhosQpaFunctionsImpl::startAppProcess(
                 [sharedTaskPromise](QtOhos::JsState &) {
                     (*sharedTaskPromise)();
                 });
-    });
+    },
+    Q_FUNC_INFO);
 }
 
 bool QOhosQpaFunctionsImpl::startAbility(const QJsonObject &want, const QOhosOptional<QOhosQpaFunctions::StartOptions> &options)
@@ -1427,7 +1438,8 @@ bool QOhosQpaFunctionsImpl::startAbility(const QJsonObject &want, const QOhosOpt
             // * there should be error code taken from a call to JS `startAbility` function
             // * error code should be checked and provided to the returned `operationStatus`
             return true;
-        });
+        },
+        Q_FUNC_INFO);
 }
 
 bool QOhosQpaFunctionsImpl::startAbilityByType(const QString &appType, const QJsonObject &wantParameters)
@@ -1474,7 +1486,8 @@ bool QOhosQpaFunctionsImpl::startAbilityByType(const QString &appType, const QJs
                     QtOhos::logJsCallbackError(cbInfo, "startAbilityByType: failed");
                     evalPromise(false);
                 });
-        });
+        },
+        Q_FUNC_INFO);
 }
 
 void QOhosQpaFunctionsImpl::startAbilityForResult(
@@ -1559,7 +1572,8 @@ void QOhosQpaFunctionsImpl::setDestroyAllowedFlagForAbilityInstances(
                 if (abilityPeer)
                     abilityPeer->destroyAllowedFlag()->store(destroyEnabled);
             }
-        });
+        },
+        Q_FUNC_INFO);
 }
 
 void QOhosQpaFunctionsImpl::setOhosConfigDarkModeFlag(QOhosOptional<bool> darkModeFlag)
@@ -1610,7 +1624,8 @@ int QOhosQpaFunctionsImpl::getCurrentApplicationVersionCode()
             int versionCode = bundleInfo.get<QNapi::Number>("versionCode");
 
             return versionCode;
-        });
+        },
+        Q_FUNC_INFO);
 }
 
 bool QOhosQpaFunctionsImpl::readOhosNoUiChildMode()
@@ -1618,7 +1633,8 @@ bool QOhosQpaFunctionsImpl::readOhosNoUiChildMode()
     return QtOhos::evalInJsThread(
         [&](auto &jsState) {
             return jsState.defaultQAbilityPeer()->instanceId().empty();
-        });
+        },
+        Q_FUNC_INFO);
 }
 
 void QOhosQpaFunctionsImpl::startNoUiChildProcess(QString libraryName, QStringList args)
@@ -1630,7 +1646,8 @@ void QOhosQpaFunctionsImpl::startNoUiChildProcess(QString libraryName, QStringLi
                 args.begin(), args.end(), std::back_inserter(argsVector),
                 std::mem_fn(&QString::toStdString));
             jsState.startNoUiChildProcess(libraryName.toStdString(), argsVector);
-        });
+        },
+        Q_FUNC_INFO);
 }
 
 std::pair<bool, QList<QOhosQpaFunctions::FileShare::PolicyErrorResult>> QOhosQpaFunctionsImpl::persistPermission(
@@ -1643,7 +1660,8 @@ std::pair<bool, QList<QOhosQpaFunctions::FileShare::PolicyErrorResult>> QOhosQpa
                 convertToFileSharePolicyInfos(policyInfos), outResults);
 
             return std::make_pair(isSuccessErrorCode(retCode), convertToPolicyErrorResults(outResults));
-        });
+        },
+        Q_FUNC_INFO);
 }
 
 std::pair<bool, QList<QOhosQpaFunctions::FileShare::PolicyErrorResult>> QOhosQpaFunctionsImpl::revokePermission(
@@ -1656,7 +1674,8 @@ std::pair<bool, QList<QOhosQpaFunctions::FileShare::PolicyErrorResult>> QOhosQpa
                 convertToFileSharePolicyInfos(policyInfos), outResults);
 
             return std::make_pair(isSuccessErrorCode(retCode), convertToPolicyErrorResults(outResults));
-        });
+        },
+        Q_FUNC_INFO);
 }
 
 std::pair<bool, QList<QOhosQpaFunctions::FileShare::PolicyErrorResult>> QOhosQpaFunctionsImpl::activatePermission(
@@ -1669,7 +1688,8 @@ std::pair<bool, QList<QOhosQpaFunctions::FileShare::PolicyErrorResult>> QOhosQpa
                 convertToFileSharePolicyInfos(policyInfos), outResults);
 
             return std::make_pair(isSuccessErrorCode(retCode), convertToPolicyErrorResults(outResults));
-        });
+        },
+        Q_FUNC_INFO);
 }
 
 std::pair<bool, QList<QOhosQpaFunctions::FileShare::PolicyErrorResult>> QOhosQpaFunctionsImpl::deactivatePermission(
@@ -1682,7 +1702,8 @@ std::pair<bool, QList<QOhosQpaFunctions::FileShare::PolicyErrorResult>> QOhosQpa
                 convertToFileSharePolicyInfos(policyInfos), outResults);
 
             return std::make_pair(isSuccessErrorCode(retCode), convertToPolicyErrorResults(outResults));
-        });
+        },
+        Q_FUNC_INFO);
 }
 
 std::pair<bool, std::vector<bool>> QOhosQpaFunctionsImpl::checkPersistent(
@@ -1695,7 +1716,8 @@ std::pair<bool, std::vector<bool>> QOhosQpaFunctionsImpl::checkPersistent(
                 convertToFileSharePolicyInfos(policyInfos), outResults);
 
             return std::make_pair(isSuccessErrorCode(retCode), outResults);
-        });
+        },
+        Q_FUNC_INFO);
 }
 
 bool QOhosQpaFunctionsImpl::showFileDialogToAuthorizeFilePath(QObject *parentWindow, const QString &filePath)
@@ -1858,7 +1880,8 @@ bool QOhosQpaFunctionsImpl::tryOpenLink(QObject *optInstanceMainWindow, const QS
                     QtOhos::logJsCallbackError(cbInfo, "Got error from openLink()");
                     evalPromise(false);
                 });
-        });
+        },
+        Q_FUNC_INFO);
 }
 
 QObject *QOhosQpaFunctionsImpl::getActiveWindowOrNull() const

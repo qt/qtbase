@@ -276,7 +276,8 @@ void processPendingDropRequestAsynchronously(
             QtOhos::runInJsThreadAndWait(
                 [&](QtOhos::JsState &jsState) {
                     (*qtDropActionConsumer)(jsState, dropAction);
-                });
+                },
+                Q_FUNC_INFO);
         });
 }
 
@@ -425,7 +426,8 @@ QOhosConsumer<::ArkUI_NodeEventType, ::ArkUI_DragEvent *> makeQOhosNativeDragEve
         QtOhos::runInJsThreadAndWait(
             [&](QtOhos::JsState &jsState) {
                 eventsHandler(jsState, eventType, dragEvent);
-            });
+            },
+            Q_FUNC_INFO);
     };
 }
 

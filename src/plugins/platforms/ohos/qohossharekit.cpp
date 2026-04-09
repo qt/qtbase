@@ -272,7 +272,8 @@ std::shared_ptr<void> shareData(
             shareDataImpl(
                 jsState, uiAbilityPeer, recordsToShare, controllerOptions, std::move(panelClosedJsCallback),
                 std::move(shareCompletedJsCallback), std::move(evalPromise));
-        });
+        },
+        Q_FUNC_INFO);
 }
 
 }

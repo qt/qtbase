@@ -199,7 +199,8 @@ QOhosClipboardObject::QOhosClipboardObject(
                         ::Pasteboard_NotifyType::NOTIFY_REMOTE_DATA_CHANGE,
                     }),
                 sharedPasteboardUpdatesNotifier);
-        });
+        },
+        Q_FUNC_INFO);
 }
 
 std::unique_ptr<QOhosClipboardObject> QOhosClipboardObject::makeInstance(
@@ -243,7 +244,8 @@ QOhosClipboardObject::PasteboardData QOhosClipboardObject::getPasteboardDataWith
                             makeLazyFetchingQMimeDataFactoryFromUdmfData(std::move(*optPasteboardUdmfData))
                         });
                 });
-        });
+        },
+        Q_FUNC_INFO);
 
     return PasteboardData{
         .dataSource = dataSource,
@@ -270,7 +272,8 @@ void QOhosClipboardObject::setMimeDataSync(
                 qOhosPrintfError("%s: cannot set data for pasteboard.", Q_FUNC_INFO);
                 return;
             }
-        });
+        },
+        Q_FUNC_INFO);
 }
 
 QT_END_NAMESPACE

@@ -162,7 +162,8 @@ bool QOhosPlatformServices::openUrl(const QUrl &url)
                                 },
                             });
             callStartAbility(mainUiAbility, want, std::move(evalPromise));
-        });
+        },
+        Q_FUNC_INFO);
 }
 
 bool QOhosPlatformServices::openDocument(const QUrl &url)

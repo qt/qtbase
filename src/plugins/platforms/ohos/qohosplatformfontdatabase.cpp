@@ -123,7 +123,8 @@ QStringList getInstalledFontPaths()
                     QtOhos::logJsCallbackError(cbInfo, "getSystemFontFullNamesByType() failed");
                     evalPromise({});
                 });
-        });
+        },
+        Q_FUNC_INFO);
 
     QStringList result;
     std::transform(
@@ -160,7 +161,8 @@ void registerSystemFonts()
         [&](auto &jsState) {
             fontPaths.append(getSystemFontPaths(jsState));
             fontPaths.append(getUIFontPaths(jsState));
-        });
+        },
+        Q_FUNC_INFO);
     fontPaths.append(getInstalledFontPaths());
     fontPaths.removeDuplicates();
 
@@ -230,7 +232,8 @@ QFont QOhosPlatformFontDatabase::defaultFont() const
             : QtOhos::evalInJsThread(
                 [&](auto &jsState) {
                     return QString::fromStdString(getDefaultFontFamily(jsState));
-                });
+                },
+                Q_FUNC_INFO);
     return QFont(defaultFontFamily);
 }
 

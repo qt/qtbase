@@ -328,7 +328,8 @@ QUiAbilityPeerImpl::QUiAbilityPeerImpl(
                         bool isWindowClosing = evalInJsThread(
                             [&](JsState &) {
                                 return JsWindowsTracker::isWindowClosing(window);
-                            });
+                            },
+                            Q_FUNC_INFO);
                         auto qAbilityValue = qAbilityWeakRef->Value();
                         return
                             !isWindowClosing

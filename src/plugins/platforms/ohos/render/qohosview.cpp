@@ -490,7 +490,8 @@ std::shared_ptr<QOhosWindowProxy> QOhosView::tryCreateWindowProxyIfNeeded(ViewTy
             createInfo.qWindowRef = QtOhos::QObjectThreadSafeRef(qWindow);
             createInfo.qAbilityInstanceId =  QtOhos::evalInJsThread([](QtOhos::JsState &jsState) {
                 return jsState.defaultQAbilityPeer()->instanceId();
-            });
+            },
+            Q_FUNC_INFO);
             result = QOhosWindowProxy::createForExistingMainWindow(createInfo);
             m_geometryPersistencePolicy = determineViewGeometryPersistencePolicy();
         } else {

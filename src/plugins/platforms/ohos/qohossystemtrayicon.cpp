@@ -394,7 +394,8 @@ void QOhosSystemTrayIcon::init()
                             Q_EMIT self.activated(QPlatformSystemTrayIcon::Trigger);
                         });
                 });
-        });
+        },
+        Q_FUNC_INFO);
 
     m_initialized = true;
 
@@ -406,7 +407,7 @@ void QOhosSystemTrayIcon::cleanup()
     if (!m_initialized)
         return;
 
-    QtOhos::runInJsThreadAndWait(&removeIconFromOhosStatusBar);
+    QtOhos::runInJsThreadAndWait(&removeIconFromOhosStatusBar, Q_FUNC_INFO);
 
     m_jsScopeData.reset();
 
@@ -423,7 +424,8 @@ void QOhosSystemTrayIcon::updateIcon(const QIcon &icon)
     QtOhos::runInJsThreadAndWait(
         [&](QtOhos::JsState &jsState) {
             updateOhosStatusBarIcon(jsState, makeJsStatusBarIcon(jsState, icon));
-        });
+        },
+        Q_FUNC_INFO);
 }
 
 void QOhosSystemTrayIcon::updateToolTip(const QString &tooltip)
@@ -445,7 +447,8 @@ void QOhosSystemTrayIcon::updateToolTip(const QString &tooltip)
                     {getContextForStatusBarManager(jsState), applyWorkaroundForEmptyHoverTips(tooltip.toStdString())})
                 .onCatch(QtOhos::makeErrorLoggingJsCallback("updateStatusBarHoverTips()"))
                 .onFinally(std::move(taskPromise));
-            });
+            },
+            Q_FUNC_INFO);
     }
 }
 
@@ -466,7 +469,8 @@ void QOhosSystemTrayIcon::showMessage(
             jsState.eval<QNapi::Promise>("@ohos.notificationManager.publish(*)", {notificationRequest})
             .onCatch(QtOhos::makeErrorLoggingJsCallback("publish()"))
             .onFinally(std::move(taskPromise));
-        });
+        },
+        Q_FUNC_INFO);
 }
 
 bool QOhosSystemTrayIcon::isSystemTrayAvailable() const
@@ -505,7 +509,8 @@ void QOhosSystemTrayIcon::updateMenu(QPlatformMenu *menu)
     QtOhos::runInJsThreadAndWait(
         [&](QtOhos::JsState &jsState) {
             updateOhosStatusBarMenu(jsState, jsStatusBarGroupMenusFactory(jsState));
-        });
+        },
+        Q_FUNC_INFO);
 }
 
 }
