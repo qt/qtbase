@@ -91,6 +91,7 @@ private slots:
     void testPageMetrics_data();
     void testPageMetrics();
     void reusePageMetrics();
+    void customPageSizePaintMetrics();
 #endif
 private:
     QString testFileName(const QString &prefix, const QString &suffix);
@@ -1743,6 +1744,43 @@ void tst_QPrinter::reusePageMetrics()
     QVERIFY(defaultP.pageLayout().pageSize().isEquivalentTo(unavailableSizeToSet));
     QVERIFY(defaultP.pageLayout().pageSize().name() != unavailableSizeToSet.name());
     QCOMPARE(defaultP.pageLayout().pageSize().sizePoints(), unavailableSizeToSet.sizePoints());
+}
+
+void tst_QPrinter::customPageSizePaintMetrics()
+{
+    // QTBUG-142745: When a custom page size is set, the paint rect should match
+    // that size. On Windows, GetDeviceCaps() can return the default paper size
+    // instead of the custom one, which makes the paint rect shrink or stretch
+    // to fit the default paper.
+    QPrinter printer;
+    printer.setOutputFormat(QPrinter::NativeFormat);
+    if (printer.outputFormat() != QPrinter::NativeFormat)
+        QSKIP("This test requires a native printer");
+
+    // Pick a custom page size that is very different from standard sizes
+    const QSizeF customSizeMM(100.0, 300.0);
+    printer.setPageSize(QPageSize(customSizeMM, QPageSize::Millimeter));
+    printer.setFullPage(true);
+
+    // width()/height() read from the engine's cached paint rect (m_paintRectPixels),
+    // but pageRect(DevicePixel) is calculated fresh from the page layout.
+    // These two should give the same result for custom page sizes.
+    const QRectF pageRectPixels = printer.pageRect(QPrinter::DevicePixel);
+    QCOMPARE(printer.width(), int(pageRectPixels.width()));
+    QCOMPARE(printer.height(), int(pageRectPixels.height()));
+
+    // The aspect ratio should match the custom size, not the default paper
+    const qreal expectedRatio = customSizeMM.width() / customSizeMM.height();
+    const qreal actualRatio = qreal(printer.width()) / printer.height();
+    QVERIFY2(qAbs(actualRatio - expectedRatio) < 0.01,
+             qPrintable(QString("Aspect ratio mismatch: expected %1, got %2")
+                        .arg(expectedRatio).arg(actualRatio)));
+
+    // Same check in landscape
+    printer.setPageOrientation(QPageLayout::Landscape);
+    const QRectF landscapeRectPixels = printer.pageRect(QPrinter::DevicePixel);
+    QCOMPARE(printer.width(), int(landscapeRectPixels.width()));
+    QCOMPARE(printer.height(), int(landscapeRectPixels.height()));
 }
 
 #endif // QT_CONFIG(printer)
