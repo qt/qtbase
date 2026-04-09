@@ -69,7 +69,7 @@ public:
     iterator begin() const { return c.cbegin(); }
     iterator end() const { return c.cend(); }
     iterator cbegin() const { return begin(); }
-    iterator cend() const { return cend(); }
+    iterator cend() const { return end(); }
 
     reverse_iterator rbegin() const { return c.crbegin(); }
     reverse_iterator rend() const { return c.crend(); }
