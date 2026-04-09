@@ -17,6 +17,7 @@ private slots:
     void method();
     void slot();
     void signal();
+    void signalAdditionOrderDoesNotMatter();
     void constructor();
     void property();
     void variantProperty();
@@ -438,6 +439,46 @@ void tst_QMetaObjectBuilder::signal()
     QVERIFY(checkForSideEffects(builder, QMetaObjectBuilder::Methods));
 }
 
+void tst_QMetaObjectBuilder::signalAdditionOrderDoesNotMatter()
+{
+    QMetaObjectBuilder builder;
+    auto property1 = builder.addProperty("prop1", "int", QMetaType::fromType<int>());
+    auto property2 = builder.addProperty("prop2", "int", QMetaType::fromType<int>());
+    auto signal1 = builder.addSignal("sig1()");
+    builder.addMethod("m(const QString&, int)");
+    auto signal2 = builder.addSignal("sig2()");
+    property1.setNotifySignal(signal1);
+    property2.setNotifySignal(signal2);
+
+    MetaObjectPtr meta{builder.toMetaObject()};
+
+    int idx1 = meta->indexOfSignal("sig1()");
+    QCOMPARE_NE(idx1, -1);
+    QMetaProperty metaProp1 = meta->property(meta->indexOfProperty("prop1"));
+    QCOMPARE(idx1, metaProp1.notifySignalIndex());
+
+    int idx2 = meta->indexOfSignal("sig2()");
+    QCOMPARE_NE(idx2, -1);
+    QMetaProperty metaProp2 = meta->property(meta->indexOfProperty("prop2"));
+    QCOMPARE(idx2, metaProp2.notifySignalIndex());
+
+    builder.removeSignal(signal1.index());
+    meta = MetaObjectPtr{builder.toMetaObject()};
+    QCOMPARE(meta->indexOfSignal("sig1()"), -1);
+    metaProp1 = meta->property(meta->indexOfProperty("prop1"));
+    QCOMPARE(metaProp1.notifySignalIndex(), -1);
+    metaProp2 = meta->property(meta->indexOfProperty("prop2"));
+    QCOMPARE(metaProp2.notifySignalIndex(), idx2 - 1);
+
+    auto signal3 = builder.addSignal("sig3()");
+    property1.setNotifySignal(signal3);
+    meta = MetaObjectPtr{builder.toMetaObject()};
+    metaProp1 = meta->property(meta->indexOfProperty("prop1"));
+    metaProp2 = meta->property(meta->indexOfProperty("prop2"));
+    // Signals are always grouped together near the beginning of the meta-object
+    QCOMPARE(metaProp1.notifySignalIndex(), metaProp2.notifySignalIndex() + 1);
+}
+
 void tst_QMetaObjectBuilder::constructor()
 {
     QMetaObjectBuilder builder;
@@ -808,7 +849,7 @@ void tst_QMetaObjectBuilder::property()
     QVERIFY(prototypeProp.hasNotifySignal());
     QCOMPARE(prototypeProp.notifySignal().signature(), QByteArray("propChanged(QString)"));
     QCOMPARE(builder.methodCount(), 1);
-    QCOMPARE(builder.method(0).signature(), QByteArray("propChanged(QString)"));
+    QCOMPARE(builder.signal(0).signature(), QByteArrayView{"propChanged(QString)"});
 
     // virt specifiers
     { //Q_PROPERTY(int virtualP READ prop VIRTUAL)
@@ -845,6 +886,7 @@ void tst_QMetaObjectBuilder::notifySignal()
 
     QMetaPropertyBuilder prop = builder.addProperty("foo", "const QString &");
     builder.addSlot("setFoo(QString)");
+    builder.addSignal("dummy()");
     QMetaMethodBuilder notify = builder.addSignal("fooChanged(QString)");
 
     QVERIFY(!prop.hasNotifySignal());
@@ -863,7 +905,7 @@ void tst_QMetaObjectBuilder::notifySignal()
     QVERIFY(!prop.hasNotifySignal());
     QCOMPARE(prop.notifySignal().index(), 0);
 
-    QCOMPARE(builder.methodCount(), 2);
+    QCOMPARE(builder.methodCount(), 3);
     QCOMPARE(builder.propertyCount(), 1);
 
     // Check that nothing else changed except methods and properties.
@@ -1232,12 +1274,12 @@ void tst_QMetaObjectBuilder::removeNotifySignal()
     QCOMPARE(prop.notifySignal().index(), 1);
 
     // Remove non-notify signal
-    builder.removeMethod(0);
+    builder.removeSignal(0);
     QVERIFY(prop.hasNotifySignal());
     QCOMPARE(prop.notifySignal().index(), 0);
 
     // Remove notify signal
-    builder.removeMethod(0);
+    builder.removeSignal(0);
     QVERIFY(!prop.hasNotifySignal());
 }
 

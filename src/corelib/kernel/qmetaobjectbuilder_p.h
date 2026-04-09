@@ -103,6 +103,7 @@ public:
     void addMetaObject(const QMetaObject *prototype, QMetaObjectBuilder::AddMembers members = AllMembers);
 
     QMetaMethodBuilder method(int index) const;
+    QMetaMethodBuilder signal(int index) const;
     QMetaMethodBuilder constructor(int index) const;
     QMetaPropertyBuilder property(int index) const;
     QMetaEnumBuilder enumerator(int index) const;
@@ -112,6 +113,7 @@ public:
     QByteArray classInfoValue(int index) const;
 
     void removeMethod(int index);
+    void removeSignal(int index);
     void removeConstructor(int index);
     void removeProperty(int index);
     void removeEnumerator(int index);
