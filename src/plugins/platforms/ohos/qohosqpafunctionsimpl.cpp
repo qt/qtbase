@@ -823,13 +823,13 @@ QOhosOptional<QList<QOhosQpaFunctions::ShareKit::SharedRecord>> WantInfoImpl::tr
 {
     using SharedRecord = QOhosQpaFunctions::ShareKit::SharedRecord;
 
-    return QtOhos::evalInJsThreadWithConsumer<QOhosOptional<QList<SharedRecord>>>(
-        [&](QtOhos::JsState &jsState, QOhosConsumer<QOhosOptional<QList<SharedRecord>>> resultConsumer) {
+    return QtOhos::evalInJsThreadWithPromise<QOhosOptional<QList<SharedRecord>>>(
+        [&](QtOhos::JsState &jsState, QOhosTaskPromise<QOhosOptional<QList<SharedRecord>>> evalPromise) {
             jsState.eval<QNapi::Promise>(
                 "@kit.ShareKit.systemShare.getSharedData(*)", {m_jsScopeData->want.Value()})
-            .withContext(std::move(resultConsumer))
+            .withContext(std::move(evalPromise))
             .onThenWithContext(
-                [](const QtOhos::CallbackInfo &cbInfo, auto &resultConsumer) {
+                [](const QtOhos::CallbackInfo &cbInfo, auto &evalPromise) {
                     QNapi::Object sharedData = cbInfo.getFirstArg<QNapi::Object>(Q_FUNC_INFO);
 
                     auto optRecords = QNapi::getArrayElements<QList<QOhosOptional<SharedRecord>>, QNapi::Object>(
@@ -848,12 +848,12 @@ QOhosOptional<QList<QOhosQpaFunctions::ShareKit::SharedRecord>> WantInfoImpl::tr
                             Q_FUNC_INFO, unconvertedRecordsCount);
                     }
 
-                    resultConsumer(makeQOhosOptional(records));
+                    evalPromise(makeQOhosOptional(records));
                 })
             .onCatchWithContext(
-                [](const QtOhos::CallbackInfo &cbInfo, auto &resultConsumer) {
+                [](const QtOhos::CallbackInfo &cbInfo, auto &evalPromise) {
                     QtOhos::logJsCallbackError(cbInfo, "@kit.ShareKit.systemShare.getSharedData() failed");
-                    resultConsumer(makeEmptyQOhosOptional());
+                    evalPromise(makeEmptyQOhosOptional());
                 });
         });
 }
@@ -862,13 +862,13 @@ QOhosOptional<QOhosQpaFunctions::WantInfo::ContactInfo> WantInfoImpl::tryGetCont
 {
     using ContactInfo = QOhosQpaFunctions::WantInfo::ContactInfo;
 
-    return QtOhos::evalInJsThreadWithConsumer<QOhosOptional<ContactInfo>>(
-        [&](QtOhos::JsState &jsState, QOhosConsumer<QOhosOptional<ContactInfo>> resultConsumer) {
+    return QtOhos::evalInJsThreadWithPromise<QOhosOptional<ContactInfo>>(
+        [&](QtOhos::JsState &jsState, QOhosTaskPromise<QOhosOptional<ContactInfo>> evalPromise) {
             jsState.eval<QNapi::Promise>(
                 "@kit.ShareKit.systemShare.getContactInfo(*)", {m_jsScopeData->want.Value()})
-            .withContext(std::move(resultConsumer))
+            .withContext(std::move(evalPromise))
             .onThenWithContext(
-                [](const QtOhos::CallbackInfo &cbInfo, QOhosConsumer<QOhosOptional<ContactInfo>> &resultConsumer) {
+                [](const QtOhos::CallbackInfo &cbInfo, QOhosTaskPromise<QOhosOptional<ContactInfo>> &evalPromise) {
                     auto contactInfoObj = cbInfo.getFirstArg<QNapi::Object>(Q_FUNC_INFO);
                     ContactInfo contactInfo = {
                         .contactType = QString::fromStdString(
@@ -876,12 +876,12 @@ QOhosOptional<QOhosQpaFunctions::WantInfo::ContactInfo> WantInfoImpl::tryGetCont
                         .contactId = QString::fromStdString(
                             contactInfoObj.get<QNapi::String>("contactId")),
                     };
-                    resultConsumer(makeQOhosOptional(contactInfo));
+                    evalPromise(makeQOhosOptional(contactInfo));
                 })
             .onCatchWithContext(
-                [](const QtOhos::CallbackInfo &cbInfo, auto &resultConsumer) {
+                [](const QtOhos::CallbackInfo &cbInfo, auto &evalPromise) {
                     QtOhos::logJsCallbackError(cbInfo, "@kit.ShareKit.systemShare.getContactInfo() failed");
-                    resultConsumer(makeEmptyQOhosOptional());
+                    evalPromise(makeEmptyQOhosOptional());
                 });
         });
 }
@@ -1270,10 +1270,10 @@ void QOhosQpaFunctionsImpl::setAbilityContinuationActive(
            : makeEmptyQOhosOptional();
 
     QtOhos::invokeInJsThreadAndWaitForContinue(
-        [&](JsState &jsState, std::function<void()> continueFunc) {
+        [&](JsState &jsState, QOhosTaskPromise<> taskPromise) {
             auto optAbilityPeer = tryMapOptMainWindowToAbilityPeer(jsState, optInstanceMainWindowRef);
             if (!optAbilityPeer) {
-                continueFunc();
+                taskPromise();
                 return;
             }
 
@@ -1281,7 +1281,7 @@ void QOhosQpaFunctionsImpl::setAbilityContinuationActive(
             optAbilityPeer->qAbility().call<QNapi::Promise>(
                 "context.setMissionContinueState", {jsState.mapOhosEnumToJs(continueState)})
             .onCatch(QtOhos::makeErrorLoggingJsCallback("setMissionContinueState()"))
-            .onFinally(std::move(continueFunc));
+            .onFinally(std::move(taskPromise));
         });
 }
 
@@ -1392,7 +1392,7 @@ void QOhosQpaFunctionsImpl::startAppProcess(
     const QOhosOptional<StartOptions> &optStartOptions)
 {
     QtOhos::invokeInJsThreadAndWaitForContinue(
-        [&](auto &jsState, std::function<void()> continueFunc) {
+        [&](auto &jsState, QOhosTaskPromise<> taskPromise) {
             auto startOptions = optStartOptions.hasValue()
                 ? convertStartOptionsToNapiObject(jsState, optStartOptions.value())
                 : QNapi::Object();
@@ -1402,8 +1402,8 @@ void QOhosQpaFunctionsImpl::startAppProcess(
                 QNapi::checkedCast<QNapi::Object>(
                     QOhosJsEnv::toNapiValue(jsState.env(), requestWant)),
                 startOptions,
-                [continueFunc = std::move(continueFunc)](QtOhos::JsState &) {
-                    continueFunc();
+                [taskPromise = std::move(taskPromise)](QtOhos::JsState &) {
+                    taskPromise();
                 });
     });
 }
@@ -1433,11 +1433,11 @@ bool QOhosQpaFunctionsImpl::startAbilityByType(const QString &appType, const QJs
 {
     // The call result of "context.startAbilityByType" will be synced and returned.
     // However, the started ability result won't be synced here.
-    return QtOhos::evalInJsThreadWithConsumer<bool>(
-        [&](QtOhos::JsState &jsState, QOhosConsumer<bool> resultConsumer) {
+    return QtOhos::evalInJsThreadWithPromise<bool>(
+        [&](QtOhos::JsState &jsState, QOhosTaskPromise<bool> evalPromise) {
             auto qAbility = jsState.defaultQAbilityPeer()->qAbility();
             if (qAbility.IsEmpty()) {
-                resultConsumer(false);
+                evalPromise(false);
                 return;
             }
 
@@ -1463,15 +1463,15 @@ bool QOhosQpaFunctionsImpl::startAbilityByType(const QString &appType, const QJs
                             }
                         })
                 })
-            .withContext(std::move(resultConsumer))
+            .withContext(std::move(evalPromise))
             .onThenWithContext(
-                [](QOhosConsumer<bool> &resultConsumer) {
-                    resultConsumer(true);
+                [](QOhosTaskPromise<bool> &evalPromise) {
+                    evalPromise(true);
                 })
             .onCatchWithContext(
-                [](const QtOhos::CallbackInfo &cbInfo, QOhosConsumer<bool> &resultConsumer) {
+                [](const QtOhos::CallbackInfo &cbInfo, QOhosTaskPromise<bool> &evalPromise) {
                     QtOhos::logJsCallbackError(cbInfo, "startAbilityByType: failed");
-                    resultConsumer(false);
+                    evalPromise(false);
                 });
         });
 }
@@ -1829,11 +1829,11 @@ bool QOhosQpaFunctionsImpl::tryOpenLink(QObject *optInstanceMainWindow, const QS
         ? makeQOhosOptional(QtOhos::QObjectThreadSafeRef(optInstanceMainWindow))
         : makeEmptyQOhosOptional();
 
-    return QtOhos::evalInJsThreadWithConsumer<bool>(
-        [&](QtOhos::JsState &jsState, QOhosConsumer<bool> resultConsumer) {
+    return QtOhos::evalInJsThreadWithPromise<bool>(
+        [&](QtOhos::JsState &jsState, QOhosTaskPromise<bool> evalPromise) {
             auto optAbilityPeer = tryMapOptMainWindowToAbilityPeer(jsState, optInstanceMainWindowRef);
             if (!optAbilityPeer) {
-                resultConsumer(false);
+                evalPromise(false);
                 return;
             }
 
@@ -1847,15 +1847,15 @@ bool QOhosQpaFunctionsImpl::tryOpenLink(QObject *optInstanceMainWindow, const QS
                     link.toStdString(),
                     QNapi::makeObject(jsState.env(), openLinkOptions),
                 })
-            .withContext(std::move(resultConsumer))
+            .withContext(std::move(evalPromise))
             .onThenWithContext(
-                [](QOhosConsumer<bool> &resultConsumer) {
-                    resultConsumer(true);
+                [](QOhosTaskPromise<bool> &evalPromise) {
+                    evalPromise(true);
                 })
             .onCatchWithContext(
-                [](const QtOhos::CallbackInfo &cbInfo, QOhosConsumer<bool> &resultConsumer) {
+                [](const QtOhos::CallbackInfo &cbInfo, QOhosTaskPromise<bool> &evalPromise) {
                     QtOhos::logJsCallbackError(cbInfo, "Got error from openLink()");
-                    resultConsumer(false);
+                    evalPromise(false);
                 });
         });
 }

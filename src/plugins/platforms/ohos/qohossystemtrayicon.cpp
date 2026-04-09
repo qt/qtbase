@@ -439,12 +439,12 @@ void QOhosSystemTrayIcon::updateToolTip(const QString &tooltip)
         }
 
         QtOhos::invokeInJsThreadAndWaitForContinue(
-            [&](QtOhos::JsState &jsState, std::function<void()> continueFunc) {
+            [&](QtOhos::JsState &jsState, QOhosTaskPromise<> taskPromise) {
                 jsState.eval<QNapi::Promise>(
                     "@kit.StatusBarExtensionKit.statusBarManager.updateStatusBarHoverTips(*)",
                     {getContextForStatusBarManager(jsState), applyWorkaroundForEmptyHoverTips(tooltip.toStdString())})
                 .onCatch(QtOhos::makeErrorLoggingJsCallback("updateStatusBarHoverTips()"))
-                .onFinally(std::move(continueFunc));
+                .onFinally(std::move(taskPromise));
             });
     }
 }
@@ -459,13 +459,13 @@ void QOhosSystemTrayIcon::showMessage(
 {
     Q_UNUSED(iconType);
     QtOhos::invokeInJsThreadAndWaitForContinue(
-        [&](QtOhos::JsState &jsState, std::function<void()> continueFunc) {
+        [&](QtOhos::JsState &jsState, QOhosTaskPromise<> taskPromise) {
             auto notificationRequest = makeJsNotificationRequest(
                 jsState, title.toStdString(), msg.toStdString(), icon,
                 msecs > 0 ? makeQOhosOptional(msecs) : makeEmptyQOhosOptional());
             jsState.eval<QNapi::Promise>("@ohos.notificationManager.publish(*)", {notificationRequest})
             .onCatch(QtOhos::makeErrorLoggingJsCallback("publish()"))
-            .onFinally(std::move(continueFunc));
+            .onFinally(std::move(taskPromise));
         });
 }
 

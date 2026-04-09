@@ -213,27 +213,27 @@ QOhosClipboardObject::PasteboardData QOhosClipboardObject::getPasteboardDataWith
 {
     QOhosOptional<PasteboardDataSource> dataSource;
     QOhosSupplier<std::unique_ptr<QMimeData>> mimeDataFactory;
-    std::tie(dataSource, mimeDataFactory) = QtOhos::evalInJsThreadWithConsumer<std::pair<QOhosOptional<PasteboardDataSource>, QOhosSupplier<std::unique_ptr<QMimeData>>>>(
-        [&](QtOhos::JsState &jsState, QOhosConsumer<std::pair<QOhosOptional<PasteboardDataSource>, QOhosSupplier<std::unique_ptr<QMimeData>>>> resultConsumer) {
+    std::tie(dataSource, mimeDataFactory) = QtOhos::evalInJsThreadWithPromise<std::pair<QOhosOptional<PasteboardDataSource>, QOhosSupplier<std::unique_ptr<QMimeData>>>>(
+        [&](QtOhos::JsState &jsState, auto evalPromise) {
             static constexpr const char *ohosGetPasteboardDataPermission = "ohos.permission.READ_PASTEBOARD";
             QOhosAppPermissions::checkAppPermissionGrantedWithConsumer(
                 jsState, ohosGetPasteboardDataPermission,
-                [this, resultConsumer = std::move(resultConsumer)](auto &, bool permissionGranted) {
+                [this, evalPromise = std::move(evalPromise)](auto &, bool permissionGranted) {
                     if (!permissionGranted) {
                         qOhosPrintfError(
                             "%s: %s hasn't been granted by user. Cannot read pasteboard data.", Q_FUNC_INFO,
                             ohosGetPasteboardDataPermission);
-                        resultConsumer({{}, std::make_unique<QMimeData>});
+                        evalPromise({{}, std::make_unique<QMimeData>});
                         return;
                     }
 
                     auto optPasteboardUdmfData = tryGetUdmfDataFromPasteboard(m_pasteboard.get());
                     if (!optPasteboardUdmfData) {
-                        resultConsumer({{}, std::make_unique<QMimeData>});
+                        evalPromise({{}, std::make_unique<QMimeData>});
                         return;
                     }
 
-                    resultConsumer(
+                    evalPromise(
                         {
                             makeQOhosOptional(
                                 isQOhosUdmfDataConvertedFromThisProcessMimeData(*optPasteboardUdmfData)

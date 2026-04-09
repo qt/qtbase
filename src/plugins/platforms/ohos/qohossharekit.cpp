@@ -257,21 +257,21 @@ std::shared_ptr<void> shareData(
     auto shareCompletedJsCallback = makeAsyncConsumer(
         std::move(shareCompletedCallback), &QtOhos::invokeInQtThread);
 
-    return QtOhos::evalInJsThreadWithConsumer<std::shared_ptr<void>>(
-        [&](QtOhos::JsState &jsState, QOhosConsumer<std::shared_ptr<void>> resultConsumer) {
+    return QtOhos::evalInJsThreadWithPromise<std::shared_ptr<void>>(
+        [&](QtOhos::JsState &jsState, QOhosTaskPromise<std::shared_ptr<void>> evalPromise) {
             auto uiAbilityPeer = QtOhos::QUiAbilityPeer::tryCastFromQAbilityPeerOrNull(
                 optMainWindowInstanceObjectRef.hasValue()
                     ? jsState.tryGetQAbilityPeerByQWindow(optMainWindowInstanceObjectRef.value())
                     : jsState.defaultQAbilityPeer());
             if (!uiAbilityPeer) {
                 qOhosPrintfWarning("%s only UIAbilities can share data with ShareKit", Q_FUNC_INFO);
-                resultConsumer(nullptr);
+                evalPromise(nullptr);
                 return;
             }
 
             shareDataImpl(
                 jsState, uiAbilityPeer, recordsToShare, controllerOptions, std::move(panelClosedJsCallback),
-                std::move(shareCompletedJsCallback), std::move(resultConsumer));
+                std::move(shareCompletedJsCallback), std::move(evalPromise));
         });
 }
 

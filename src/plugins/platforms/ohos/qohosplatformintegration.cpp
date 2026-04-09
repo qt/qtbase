@@ -83,12 +83,12 @@ bool isDeviceTypeInDeviceIds(
 
 std::set<QInputDevice::DeviceType> getAvailableDeviceTypes()
 {
-    return QtOhos::evalInJsThreadWithConsumer<std::set<QInputDevice::DeviceType>>(
-        [](QtOhos::JsState &jsState, QOhosConsumer<std::set<QInputDevice::DeviceType>> resultConsumer) {
+    return QtOhos::evalInJsThreadWithPromise<std::set<QInputDevice::DeviceType>>(
+        [](QtOhos::JsState &jsState, QOhosTaskPromise<std::set<QInputDevice::DeviceType>> evalPromise) {
             jsState.eval<QNapi::Promise>("@ohos.multimodalInput.inputDevice.getDeviceList()")
-                .withContext(std::move(resultConsumer))
+                .withContext(std::move(evalPromise))
                 .onThenWithContext(
-                    [](const QtOhos::CallbackInfo &cbInfo, auto &resultConsumer) {
+                    [](const QtOhos::CallbackInfo &cbInfo, auto &evalPromise) {
                         auto deviceIdsJsArray = cbInfo.getFirstArg<QNapi::Array>(Q_FUNC_INFO);
                         auto deviceIds = QNapi::getArrayElements<std::vector<std::uint32_t>, QNapi::Number>(deviceIdsJsArray);
                         std::set<QInputDevice::DeviceType> deviceTypes;
@@ -96,12 +96,12 @@ std::set<QInputDevice::DeviceType> getAvailableDeviceTypes()
                             deviceTypes.insert(QInputDevice::DeviceType::TouchScreen);
                         if (isDeviceTypeInDeviceIds(cbInfo.jsState(), deviceIds, isInputDeviceWithTouchpad))
                             deviceTypes.insert(QInputDevice::DeviceType::TouchPad);
-                        resultConsumer(deviceTypes);
+                        evalPromise(deviceTypes);
                     })
                 .onCatchWithContext(
-                    [](const QtOhos::CallbackInfo &, auto &resultConsumer) {
+                    [](const QtOhos::CallbackInfo &, auto &evalPromise) {
                         qOhosPrintfError("Error while obtaining device list (@ohos.multimodalInput.inputDevice.getDeviceList())");
-                        resultConsumer({});
+                        evalPromise({});
                     });
         });
 }

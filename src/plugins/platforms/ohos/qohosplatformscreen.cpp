@@ -282,8 +282,8 @@ Qt::ScreenOrientation QOhosPlatformScreen::nativeOrientation() const
 
 QRect QOhosPlatformScreen::getAvailableArea() const
 {
-    return QtOhos::evalInJsThreadWithConsumer<QRect>(
-        [&](QtOhos::JsState &jsState, QOhosConsumer<QRect> resultConsumer) {
+    return QtOhos::evalInJsThreadWithPromise<QRect>(
+        [&](QtOhos::JsState &jsState, QOhosTaskPromise<QRect> evalPromise) {
 
             QNapi::Object display;
             try {
@@ -293,16 +293,16 @@ QRect QOhosPlatformScreen::getAvailableArea() const
                 qOhosPrintfError(
                     "%s: getDisplayByIdSync(%f) failed with error: %s",
                     Q_FUNC_INFO, m_displayInfo.id.value(), error.Message().c_str());
-                resultConsumer(QRect());
+                evalPromise(QRect());
                 return;
             }
 
             display.call<QNapi::Promise>("getAvailableArea")
-            .withContext(std::move(resultConsumer))
+            .withContext(std::move(evalPromise))
             .onThenWithContext(
-                [](const QtOhos::CallbackInfo &cbInfo, QOhosConsumer<QRect> &resultConsumer) {
+                [](const QtOhos::CallbackInfo &cbInfo, QOhosTaskPromise<QRect> &evalPromise) {
                     auto availableArea = cbInfo.getFirstArg<QNapi::Object>(Q_FUNC_INFO);
-                    resultConsumer(
+                    evalPromise(
                         QRect(
                             availableArea.get<QNapi::Number>("left"),
                             availableArea.get<QNapi::Number>("top"),
@@ -310,9 +310,9 @@ QRect QOhosPlatformScreen::getAvailableArea() const
                             availableArea.get<QNapi::Number>("height")));
                 })
             .onCatchWithContext(
-                [](const QtOhos::CallbackInfo &cbInfo, QOhosConsumer<QRect> &resultConsumer) {
+                [](const QtOhos::CallbackInfo &cbInfo, QOhosTaskPromise<QRect> &evalPromise) {
                     QtOhos::logJsCallbackError(cbInfo, "Error occurred in JS getAvailableArea()");
-                    resultConsumer(QRect());
+                    evalPromise(QRect());
                 });
         });
 }
@@ -377,14 +377,14 @@ QPixmap QOhosPlatformScreen::grabWindow(WId wId, int x, int y, int width, int he
             this, QOhosPlatformWindow::fromQWindow(window)->makeSnapshot(), captureRect);
     }
 
-    auto capturedScreenPixmap = QtOhos::evalInJsThreadWithConsumer<QPixmap>(
+    auto capturedScreenPixmap = QtOhos::evalInJsThreadWithPromise<QPixmap>(
         [displayId = m_displayInfo.id](
-            QtOhos::JsState &jsState, QOhosConsumer<QPixmap> resultConsumer) {
+            QtOhos::JsState &jsState, QOhosTaskPromise<QPixmap> evalPromise) {
             tryCaptureScreenPixelmapWithPermissionCheck(
                 jsState, displayId,
-                [resultConsumer = std::move(resultConsumer)](
+                [evalPromise = std::move(evalPromise)](
                     std::shared_ptr<::OH_PixelmapNative> optPixelMap) {
-                    resultConsumer(
+                    evalPromise(
                         optPixelMap
                             ? QPixmap::fromImage(createQImageFromNativePixelMap(optPixelMap.get()))
                             : QPixmap());

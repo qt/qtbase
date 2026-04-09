@@ -118,11 +118,11 @@ bool QOhosPlatformServices::hasCapability(Capability capability) const
 
 bool QOhosPlatformServices::openUrl(const QUrl &url)
 {
-    return QtOhos::evalInJsThreadWithConsumer<bool>(
-        [&](QtOhos::JsState &jsState, QOhosConsumer<bool> resultConsumer) {
+    return QtOhos::evalInJsThreadWithPromise<bool>(
+        [&](QtOhos::JsState &jsState, QOhosTaskPromise<bool> evalPromise) {
             auto mainUiAbility = jsState.defaultQAbilityPeer()->qAbility();
             if (mainUiAbility.IsEmpty()) {
-                resultConsumer(false);
+                evalPromise(false);
                 return;
             }
 
@@ -161,7 +161,7 @@ bool QOhosPlatformServices::openUrl(const QUrl &url)
                                     | jsState.mapOhosEnumToJs(QOhosWantConstantFlags::FLAG_AUTH_WRITE_URI_PERMISSION).Int32Value()
                                 },
                             });
-            callStartAbility(mainUiAbility, want, std::move(resultConsumer));
+            callStartAbility(mainUiAbility, want, std::move(evalPromise));
         });
 }
 

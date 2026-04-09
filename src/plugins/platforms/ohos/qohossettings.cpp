@@ -21,27 +21,27 @@ constexpr const char *windowPcModeSwitchStatusPropertyName = "window_pcmode_swit
 
 QOhosOptional<std::string> tryGetDataItemValue(const std::string &name, const std::string &domainName)
 {
-    return QtOhos::evalInJsThreadWithConsumer<QOhosOptional<std::string>>(
-        [&](QtOhos::JsState &jsState, auto resultConsumer) {
+    return QtOhos::evalInJsThreadWithPromise<QOhosOptional<std::string>>(
+        [&](QtOhos::JsState &jsState, auto evalPromise) {
         auto defaultQAbility = jsState.defaultQAbilityPeer()->qAbility();
         if (defaultQAbility.IsEmpty()) {
-            resultConsumer(makeEmptyQOhosOptional());
+            evalPromise(makeEmptyQOhosOptional());
             return;
         }
 
         jsState.eval<QNapi::Promise>(
             "@ohos.settings.getValue(*)",
             {defaultQAbility.get("context"), name, domainName})
-        .withContext(std::move(resultConsumer))
-        .onThenWithContext([](const QtOhos::CallbackInfo &cbInfo, auto &resultConsumer) {
+        .withContext(std::move(evalPromise))
+        .onThenWithContext([](const QtOhos::CallbackInfo &cbInfo, auto &evalPromise) {
             std::string result = cbInfo.getFirstArg<QNapi::String>(Q_FUNC_INFO);
-            resultConsumer(makeQOhosOptional(result));
+            evalPromise(makeQOhosOptional(result));
         })
-        .onCatchWithContext([name, domainName](const QtOhos::CallbackInfo &, auto &resultConsumer) {
+        .onCatchWithContext([name, domainName](const QtOhos::CallbackInfo &, auto &evalPromise) {
             qOhosPrintfError(
                 "Got error from @ohos.settings.getValue(..., '%s', '%s').",
                 name.c_str(), domainName.c_str());
-            resultConsumer(makeEmptyQOhosOptional());
+            evalPromise(makeEmptyQOhosOptional());
         });
     });
 }

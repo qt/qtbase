@@ -210,13 +210,13 @@ void notifyOhosInputMethodAboutPossibleAutocorrection(const QOhosInsertedText &i
     }
 
     QtOhos::invokeInJsThreadAndWaitForContinue(
-        [&](QtOhos::JsState &jsState, std::function<void()> continueFunc) {
+        [&](QtOhos::JsState &jsState, QOhosTaskPromise<> taskPromise) {
             auto startPosition = cursorPosition;
             auto endPosition = cursorPosition + insertedText.text().length();
             jsState.eval<QNapi::Promise>(
                 "@ohos.inputMethod.getController().changeSelection(*)", {insertedText.text(), startPosition, endPosition})
             .onCatch(QtOhos::makeErrorLoggingJsCallback("changeSelection()"))
-            .onFinally(std::move(continueFunc));
+            .onFinally(std::move(taskPromise));
         });
 }
 
