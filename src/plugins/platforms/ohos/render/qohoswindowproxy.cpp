@@ -347,20 +347,20 @@ QOhosWindowProxy::~QOhosWindowProxy()
 void QOhosWindowProxy::removeStartingWindow()
 {
     QtOhos::invokeInJsThreadAndWaitForContinue(
-        [&](QtOhos::JsState &, std::function<void()> continueFunc) {
+        [&](QtOhos::JsState &, QOhosTaskPromise<> taskPromise) {
             if (m_jsScopeData->isWindowClosing()) {
-                continueFunc();
+                taskPromise();
                 return;
             }
             auto optQUiAbilityPeer
                 = QtOhos::QUiAbilityPeer::tryCastFromQAbilityPeerOrNull(m_jsScopeData->qAbilityPeer);
             if (!optQUiAbilityPeer) {
-                continueFunc();
+                taskPromise();
                 return;
             }
             auto promise = optQUiAbilityPeer->windowStage().call<QNapi::Promise>(
                 "removeStartingWindow");
-            promise.onFinally(std::move(continueFunc));
+            promise.onFinally(std::move(taskPromise));
         });
 }
 
@@ -369,14 +369,14 @@ void QOhosWindowProxy::setSize(const QSize &size)
     qOhosPrintfDebug("%s: %d,%d", Q_FUNC_INFO, size.width(), size.height());
 
     QtOhos::invokeInJsThreadAndWaitForContinue(
-        [&](QtOhos::JsState &, std::function<void()> continueFunc) {
+        [&](QtOhos::JsState &, QOhosTaskPromise<> taskPromise) {
             if (m_jsScopeData->isWindowClosing()) {
-                continueFunc();
+                taskPromise();
                 return;
             }
             auto promise = m_jsScopeData->jsWindowRef->call<QNapi::Promise>(
                 "resizeAsync", {size.width(), size.height()});
-            promise.onFinally(std::move(continueFunc));
+            promise.onFinally(std::move(taskPromise));
         });
 }
 
@@ -405,9 +405,9 @@ void QOhosWindowProxy::setCustomCursor(const QImage &customCursorImage, const QP
     }
 
     auto convertedImage = customCursorImage.convertToFormat(QImage::Format_RGBA8888);
-    QtOhos::invokeInJsThreadAndWaitForContinue([&](QtOhos::JsState &jsState, std::function<void()> continueFunc) {
+    QtOhos::invokeInJsThreadAndWaitForContinue([&](QtOhos::JsState &jsState, QOhosTaskPromise<> taskPromise) {
         if (m_jsScopeData->isWindowClosing()) {
-            continueFunc();
+            taskPromise();
             return;
         }
         auto windowId = m_jsScopeData->jsWindowRef->jsObject().get<QNapi::Number>("getWindowProperties().id");
@@ -429,7 +429,7 @@ void QOhosWindowProxy::setCustomCursor(const QImage &customCursorImage, const QP
         jsState.eval<QNapi::Promise>(
             "@ohos.multimodalInput.pointer.setCustomCursor(*)", {windowId, jsCursor, jsCursorConfig})
         .onCatch(QtOhos::makeErrorLoggingJsCallback("setCustomCursor()"))
-        .onFinally(std::move(continueFunc));
+        .onFinally(std::move(taskPromise));
     });
 }
 
@@ -531,22 +531,22 @@ WindowProxyType QOhosWindowProxy::windowProxyType() const
 void QOhosWindowProxy::raiseToAppTop()
 {
     qCDebug(QtForOhos, "%s", Q_FUNC_INFO);
-    QtOhos::invokeInJsThreadAndWaitForContinue([&](QtOhos::JsState &, std::function<void()> continueFunc) {
+    QtOhos::invokeInJsThreadAndWaitForContinue([&](QtOhos::JsState &, QOhosTaskPromise<> taskPromise) {
         if (m_jsScopeData->isWindowClosing()) {
-            continueFunc();
+            taskPromise();
             return;
         }
         auto promise = m_jsScopeData->jsWindowRef->call<QNapi::Promise>("raiseToAppTop");
-        promise.onFinally(std::move(continueFunc));
+        promise.onFinally(std::move(taskPromise));
     });
 }
 
 void QOhosWindowProxy::showWindow(const ShowWindowOptions &options)
 {
     qCDebug(QtForOhos, "%s", Q_FUNC_INFO);
-    QtOhos::invokeInJsThreadAndWaitForContinue([&](QtOhos::JsState &jsState, std::function<void()> continueFunc) {
+    QtOhos::invokeInJsThreadAndWaitForContinue([&](QtOhos::JsState &jsState, QOhosTaskPromise<> taskPromise) {
         if (m_jsScopeData->isWindowClosing()) {
-            continueFunc();
+            taskPromise();
             return;
         }
 
@@ -569,7 +569,7 @@ void QOhosWindowProxy::showWindow(const ShowWindowOptions &options)
         }
 
         auto promise = m_jsScopeData->jsWindowRef->call<QNapi::Promise>("showWindow", showWindowArgs);
-        promise.onFinally(std::move(continueFunc));
+        promise.onFinally(std::move(taskPromise));
     });
 }
 
@@ -586,25 +586,25 @@ void QOhosWindowProxy::recover()
 void QOhosWindowProxy::restore()
 {
     qCDebug(QtForOhos, "%s", Q_FUNC_INFO);
-    QtOhos::invokeInJsThreadAndWaitForContinue([&](QtOhos::JsState &, std::function<void()> continueFunc) {
+    QtOhos::invokeInJsThreadAndWaitForContinue([&](QtOhos::JsState &, QOhosTaskPromise<> taskPromise) {
         if (m_jsScopeData->isWindowClosing()) {
-            continueFunc();
+            taskPromise();
             return;
         }
-        m_jsScopeData->jsWindowRef->call<QNapi::Promise>("restore").onFinally(std::move(continueFunc));
+        m_jsScopeData->jsWindowRef->call<QNapi::Promise>("restore").onFinally(std::move(taskPromise));
     });
 }
 
 void QOhosWindowProxy::minimize()
 {
     qCDebug(QtForOhos, "%s", Q_FUNC_INFO);
-    QtOhos::invokeInJsThreadAndWaitForContinue([&](QtOhos::JsState &, std::function<void()> continueFunc) {
+    QtOhos::invokeInJsThreadAndWaitForContinue([&](QtOhos::JsState &, QOhosTaskPromise<> taskPromise) {
         if (m_jsScopeData->isWindowClosing()) {
-            continueFunc();
+            taskPromise();
             return;
         }
         auto promise = m_jsScopeData->jsWindowRef->call<QNapi::Promise>("minimize");
-        promise.onFinally(std::move(continueFunc));
+        promise.onFinally(std::move(taskPromise));
     });
 }
 
@@ -628,9 +628,9 @@ void QOhosWindowProxy::showAbility()
 {
     qCDebug(QtForOhos, "%s", Q_FUNC_INFO);
 
-    QtOhos::invokeInJsThreadAndWaitForContinue([&](QtOhos::JsState &, std::function<void()> continueFunc) {
+    QtOhos::invokeInJsThreadAndWaitForContinue([&](QtOhos::JsState &, QOhosTaskPromise<> taskPromise) {
         if (m_jsScopeData->isWindowClosing()) {
-            continueFunc();
+            taskPromise();
             return;
         }
 
@@ -639,13 +639,13 @@ void QOhosWindowProxy::showAbility()
             showAbilityPromise = m_jsScopeData->qAbilityPeer->qAbility().call<QNapi::Promise>("context.showAbility");
         } catch (const Napi::Error &error) {
             qOhosPrintfError("showAbility failed with error: %s", error.what());
-            continueFunc();
+            taskPromise();
             return;
         }
 
         showAbilityPromise
         .onCatch(QtOhos::makeErrorLoggingJsCallback("showAbility()"))
-        .onFinally(std::move(continueFunc));
+        .onFinally(std::move(taskPromise));
     });
 }
 
@@ -653,9 +653,9 @@ bool QOhosWindowProxy::tryHideAbility()
 {
     qCDebug(QtForOhos, "%s", Q_FUNC_INFO);
 
-    return QtOhos::evalInJsThreadWithConsumer<bool>([&](QtOhos::JsState &, QOhosConsumer<bool> resultConsumer) {
+    return QtOhos::evalInJsThreadWithPromise<bool>([&](QtOhos::JsState &, QOhosTaskPromise<bool> evalPromise) {
         if (m_jsScopeData->isWindowClosing()) {
-            resultConsumer(false);
+            evalPromise(false);
             return;
         }
 
@@ -664,20 +664,20 @@ bool QOhosWindowProxy::tryHideAbility()
             hidePromise = m_jsScopeData->qAbilityPeer->qAbility().call<QNapi::Promise>("context.hideAbility");
         } catch (const Napi::Error &error) {
             qOhosPrintfError("hideAbility failed with error: %s", error.what());
-            resultConsumer(false);
+            evalPromise(false);
             return;
         }
 
         hidePromise
-            .withContext(std::move(resultConsumer))
+            .withContext(std::move(evalPromise))
             .onThenWithContext(
-                [](const QtOhos::CallbackInfo &, auto &resultConsumer) {
-                    resultConsumer(true);
+                [](const QtOhos::CallbackInfo &, auto &evalPromise) {
+                    evalPromise(true);
                 })
             .onCatchWithContext(
-                [](const QtOhos::CallbackInfo &cbInfo, auto &resultConsumer) {
+                [](const QtOhos::CallbackInfo &cbInfo, auto &evalPromise) {
                     QtOhos::logJsCallbackError(cbInfo, "got error from hideAbility()");
-                    resultConsumer(false);
+                    evalPromise(false);
                 });
         });
 }
@@ -696,9 +696,9 @@ void QOhosWindowProxy::setWindowPrivacyMode(bool privacyMode)
 {
     qCDebug(QtForOhos, "%s: %s", Q_FUNC_INFO, privacyMode ? "true" : "false");
 
-    QtOhos::invokeInJsThreadAndWaitForContinue([&](QtOhos::JsState &, std::function<void()> continueFunc) {
+    QtOhos::invokeInJsThreadAndWaitForContinue([&](QtOhos::JsState &, QOhosTaskPromise<> taskPromise) {
         if (m_jsScopeData->isWindowClosing()) {
-            continueFunc();
+            taskPromise();
             return;
         }
 
@@ -708,13 +708,13 @@ void QOhosWindowProxy::setWindowPrivacyMode(bool privacyMode)
                 "setWindowPrivacyMode", {privacyMode});
         } catch (const Napi::Error &error) {
             qOhosPrintfError("setPrivacyMode failed with error: %s", error.what());
-            continueFunc();
+            taskPromise();
             return;
         }
 
         setPrivacyModePromise
         .onCatch(QtOhos::makeErrorLoggingJsCallback("setPrivacyMode()"))
-        .onFinally(std::move(continueFunc));
+        .onFinally(std::move(taskPromise));
     });
 }
 
@@ -744,9 +744,9 @@ void QOhosWindowProxy::setWindowLimits(const QSize &minSize, const QSize &maxSiz
         QtForOhos, "%s: (%d x %d)-(%d x %d)", Q_FUNC_INFO, minSize.width(), minSize.height(),
         maxSize.width(), maxSize.height());
     QtOhos::invokeInJsThreadAndWaitForContinue(
-        [&](QtOhos::JsState &jsState, std::function<void()> continueFunc) {
+        [&](QtOhos::JsState &jsState, QOhosTaskPromise<> taskPromise) {
             if (m_jsScopeData->isWindowClosing()) {
-                continueFunc();
+                taskPromise();
                 return;
             }
             auto windowLimits = QNapi::makeObject(
@@ -767,10 +767,10 @@ void QOhosWindowProxy::setWindowLimits(const QSize &minSize, const QSize &maxSiz
                 "setWindowLimits", setWindowLimitsArgs);
 
             if (setWindowLimitsPromiseOrValue.IsPromise()) {
-                QNapi::checkedCast<QNapi::Promise>(setWindowLimitsPromiseOrValue).onFinally(std::move(continueFunc));
+                QNapi::checkedCast<QNapi::Promise>(setWindowLimitsPromiseOrValue).onFinally(std::move(taskPromise));
             } else {
                 qOhosPrintfWarning("setWindowLimits() didn't return a Promise, ignoring result");
-                continueFunc();
+                taskPromise();
             }
         });
 }
@@ -827,9 +827,9 @@ void QOhosWindowProxy::setWindowMask(
         return;
     }
 
-    QtOhos::invokeInJsThreadAndWaitForContinue([&](QtOhos::JsState &jsState, std::function<void()> continueFunc) {
+    QtOhos::invokeInJsThreadAndWaitForContinue([&](QtOhos::JsState &jsState, QOhosTaskPromise<> taskPromise) {
         if (m_jsScopeData->isWindowClosing()) {
-            continueFunc();
+            taskPromise();
             return;
         }
         auto *env = jsState.env();
@@ -865,13 +865,13 @@ void QOhosWindowProxy::setWindowMask(
                 "setWindowMask", {maskRowsArray});
         } catch (const Napi::Error &error) {
             qOhosPrintfError("setWindowMask failed with error: %s", error.what());
-            continueFunc();
+            taskPromise();
             return;
         }
 
         setWindowMaskPromise
             .onCatch(QtOhos::makeErrorLoggingJsCallback("setWindowMask()"))
-            .onFinally(std::move(continueFunc));
+            .onFinally(std::move(taskPromise));
     });
 }
 
@@ -881,14 +881,14 @@ void QOhosWindowProxy::setSubWindowModalDisabled()
         return;
 
     QtOhos::invokeInJsThreadAndWaitForContinue(
-        [&](QtOhos::JsState &, std::function<void()> continueFunc) {
+        [&](QtOhos::JsState &, QOhosTaskPromise<> taskPromise) {
             if (m_jsScopeData->isWindowClosing()) {
-                continueFunc();
+                taskPromise();
                 return;
             }
             m_jsScopeData->jsWindowRef->call<QNapi::Promise>("setSubWindowModal", {false})
             .onCatch(QtOhos::makeErrorLoggingJsCallback("setSubWindowModal()"))
-            .onFinally(std::move(continueFunc));
+            .onFinally(std::move(taskPromise));
         });
 }
 
@@ -905,29 +905,29 @@ void QOhosWindowProxy::setSubWindowModalEnabled(ModalityType modalityType)
     }
 
     QtOhos::invokeInJsThreadAndWaitForContinue(
-        [&](QtOhos::JsState &jsState, std::function<void()> continueFunc) {
+        [&](QtOhos::JsState &jsState, QOhosTaskPromise<> taskPromise) {
             if (m_jsScopeData->isWindowClosing()) {
-                continueFunc();
+                taskPromise();
                 return;
             }
             m_jsScopeData->jsWindowRef->call<QNapi::Promise>(
                 "setSubWindowModal", {true, jsState.mapOhosEnumToJs(modalityType)})
             .onCatch(QtOhos::makeErrorLoggingJsCallback("setSubWindowModal()"))
-            .onFinally(std::move(continueFunc));
+            .onFinally(std::move(taskPromise));
         });
 }
 
 void QOhosWindowProxy::setTitle(const QString &title)
 {
     QtOhos::invokeInJsThreadAndWaitForContinue(
-        [&](QtOhos::JsState &, std::function<void()> continueFunc) {
+        [&](QtOhos::JsState &, QOhosTaskPromise<> taskPromise) {
             if (m_jsScopeData->isWindowClosing()) {
-                continueFunc();
+                taskPromise();
                 return;
             }
 
             m_jsScopeData->jsWindowRef->call<QNapi::Promise>("setWindowTitle", {title.toStdString()})
-            .onFinally(std::move(continueFunc));
+            .onFinally(std::move(taskPromise));
         });
 }
 
@@ -969,14 +969,14 @@ void QOhosWindowProxy::setWindowTopmost(bool topmost)
     qOhosPrintfDebug("%s: topMost: %s", Q_FUNC_INFO, topmost ? "true" : "false");
 
     QtOhos::invokeInJsThreadAndWaitForContinue(
-        [&](QtOhos::JsState &, std::function<void()> continueFunc) {
+        [&](QtOhos::JsState &, QOhosTaskPromise<> taskPromise) {
             if (m_jsScopeData->isWindowClosing()) {
-                continueFunc();
+                taskPromise();
                 return;
             }
 
             m_jsScopeData->jsWindowRef->call<QNapi::Promise>("setWindowTopmost", {topmost})
-                .onFinally(std::move(continueFunc));
+                .onFinally(std::move(taskPromise));
         });
 }
 
@@ -1026,9 +1026,9 @@ void QOhosWindowProxy::setWindowCornerRadius(double radius)
         return;
 
     QtOhos::invokeInJsThreadAndWaitForContinue(
-        [&](QtOhos::JsState &, std::function<void()> continueFunc) {
+        [&](QtOhos::JsState &, QOhosTaskPromise<> taskPromise) {
             m_jsScopeData->jsWindowRef->call<QNapi::Promise>("setWindowCornerRadius", {radius})
-            .onFinally(std::move(continueFunc));
+            .onFinally(std::move(taskPromise));
         });
 }
 
@@ -1042,30 +1042,30 @@ bool QOhosWindowProxy::isWindowRectAutoSave() const
         return false;
     }
 
-    return QtOhos::evalInJsThreadWithConsumer<bool>(
-        [&](QtOhos::JsState &, QOhosConsumer<bool> windowRectAutoSaveEnabledConsumer) {
+    return QtOhos::evalInJsThreadWithPromise<bool>(
+        [&](QtOhos::JsState &, QOhosTaskPromise<bool> evalPromise) {
             if (m_jsScopeData->isWindowClosing()) {
-                windowRectAutoSaveEnabledConsumer(false);
+                evalPromise(false);
                 return;
             }
             auto optQUiAbilityPeer = QtOhos::QUiAbilityPeer::tryCastFromQAbilityPeerOrNull(m_jsScopeData->qAbilityPeer);
             if (!optQUiAbilityPeer) {
-                windowRectAutoSaveEnabledConsumer(false);
+                evalPromise(false);
                 return;
             }
 
             optQUiAbilityPeer->windowStage()
             .call<QNapi::Promise>("isWindowRectAutoSave")
-            .withContext(std::move(windowRectAutoSaveEnabledConsumer))
+            .withContext(std::move(evalPromise))
             .onThenWithContext(
-                [](const QtOhos::CallbackInfo &cbInfo, auto &windowRectAutoSaveEnabledConsumer) {
+                [](const QtOhos::CallbackInfo &cbInfo, auto &evalPromise) {
                     bool windowRectAutoSaveEnabled = cbInfo.getFirstArg<QNapi::Boolean>(Q_FUNC_INFO);
-                    windowRectAutoSaveEnabledConsumer(windowRectAutoSaveEnabled);
+                    evalPromise(windowRectAutoSaveEnabled);
                 })
             .onCatchWithContext(
-                [](const QtOhos::CallbackInfo &cbInfo, auto &windowRectAutoSaveEnabledConsumer) {
+                [](const QtOhos::CallbackInfo &cbInfo, auto &evalPromise) {
                     QtOhos::logJsCallbackError(cbInfo, "isWindowRectAutoSave()");
-                    windowRectAutoSaveEnabledConsumer(false);
+                    evalPromise(false);
                 });
         });
 }
@@ -1076,14 +1076,14 @@ void QOhosWindowProxy::setFollowParentMultiScreenPolicy(bool enabled)
         return;
 
     QtOhos::invokeInJsThreadAndWaitForContinue(
-        [&](QtOhos::JsState &, std::function<void()> continueFunc) {
+        [&](QtOhos::JsState &, QOhosTaskPromise<> taskPromise) {
             if (m_jsScopeData->isWindowClosing()) {
-                continueFunc();
+                taskPromise();
                 return;
             }
             m_jsScopeData->jsWindowRef->call<QNapi::Promise>("setFollowParentMultiScreenPolicy", {enabled})
             .onCatch(QtOhos::makeErrorLoggingJsCallback("setFollowParentMultiScreenPolicy()"))
-            .onFinally(std::move(continueFunc));
+            .onFinally(std::move(taskPromise));
         });
 }
 
@@ -1092,15 +1092,15 @@ void QOhosWindowProxy::setWindowKeepScreenOn(bool keepScreenOn)
     qCDebug(QtForOhos, "%s: %s", Q_FUNC_INFO, QtOhos::mapBoolToTrueFalseStr(keepScreenOn));
 
     QtOhos::invokeInJsThreadAndWaitForContinue(
-        [&](QtOhos::JsState &, std::function<void()> continueFunc) {
+        [&](QtOhos::JsState &, QOhosTaskPromise<> taskPromise) {
             if (m_jsScopeData->isWindowClosing()) {
-                continueFunc();
+                taskPromise();
                 return;
             }
 
             m_jsScopeData->jsWindowRef->call<QNapi::Promise>("setWindowKeepScreenOn", {keepScreenOn})
             .onCatch(QtOhos::makeErrorLoggingJsCallback("setWindowKeepScreenOn()"))
-            .onFinally(std::move(continueFunc));
+            .onFinally(std::move(taskPromise));
         });
 }
 
@@ -1109,14 +1109,14 @@ void QOhosWindowProxy::setSupportedWindowModes(const std::set<SupportWindowMode>
     qCDebug(QtForOhos, "%s: %s", Q_FUNC_INFO, mapEnumsToLogString(supportedWindowModes).c_str());
 
     QtOhos::invokeInJsThreadAndWaitForContinue(
-        [&](QtOhos::JsState &jsState, std::function<void()> continueFunc) {
+        [&](QtOhos::JsState &jsState, QOhosTaskPromise<> taskPromise) {
             if (m_jsScopeData->isWindowClosing()) {
-                continueFunc();
+                taskPromise();
                 return;
             }
             auto qUiAbilityPeer = QtOhos::QUiAbilityPeer::tryCastFromQAbilityPeerOrNull(m_jsScopeData->qAbilityPeer);
             if (!qUiAbilityPeer) {
-                continueFunc();
+                taskPromise();
                 return;
             }
 
@@ -1126,7 +1126,7 @@ void QOhosWindowProxy::setSupportedWindowModes(const std::set<SupportWindowMode>
 
             qUiAbilityPeer->windowStage().call<QNapi::Promise>("setSupportedWindowModes", {QNapi::makeArray(jsState.env(), jsSupportedWindowModes)})
                 .onCatch(QtOhos::makeErrorLoggingJsCallback("setSupportedWindowModes()"))
-                .onFinally(std::move(continueFunc));
+                .onFinally(std::move(taskPromise));
         });
 }
 
@@ -1135,21 +1135,21 @@ void QOhosWindowProxy::setWindowRectAutoSave(bool enabled)
     constexpr bool isSaveBySpecifiedFlag = true;
 
     QtOhos::invokeInJsThreadAndWaitForContinue(
-        [&](QtOhos::JsState &, std::function<void()> continueFunc) {
+        [&](QtOhos::JsState &, QOhosTaskPromise<> taskPromise) {
             if (m_jsScopeData->isWindowClosing()) {
-                continueFunc();
+                taskPromise();
                 return;
             }
             auto optQUiAbilityPeer = QtOhos::QUiAbilityPeer::tryCastFromQAbilityPeerOrNull(m_jsScopeData->qAbilityPeer);
             if (!optQUiAbilityPeer) {
-                continueFunc();
+                taskPromise();
                 return;
             }
 
             optQUiAbilityPeer->windowStage()
             .call<QNapi::Promise>("setWindowRectAutoSave", {enabled, isSaveBySpecifiedFlag})
             .onCatch(QtOhos::makeErrorLoggingJsCallback("setWindowRectAutoSave()"))
-            .onFinally(std::move(continueFunc));
+            .onFinally(std::move(taskPromise));
         });
 }
 
@@ -1192,13 +1192,13 @@ std::shared_ptr<void> QOhosWindowProxy::registerSubWindowCloseHandler(
 std::shared_ptr<QOhosWindowProxy>
 QOhosWindowProxy::createForExistingMainWindow(const ExistingMainWindowCreateInfo &createInfo)
 {
-    return QtOhos::evalInJsThreadWithConsumer<std::shared_ptr<QOhosWindowProxy>>(
-        [&](QtOhos::JsState &jsState, QOhosConsumer<std::shared_ptr<QOhosWindowProxy>> resultConsumer) {
+    return QtOhos::evalInJsThreadWithPromise<std::shared_ptr<QOhosWindowProxy>>(
+        [&](QtOhos::JsState &jsState, QOhosTaskPromise<std::shared_ptr<QOhosWindowProxy>> evalPromise) {
             makeWindowProxyDataForExistingMainWindowInJsThread(
                 jsState,
                 createInfo,
-                [resultConsumer = std::move(resultConsumer)](QtOhos::JsState &jsState, QOhosWindowProxyData windowProxyData) {
-                    resultConsumer(QOhosWindowProxy::create(jsState, std::move(windowProxyData)));
+                [evalPromise = std::move(evalPromise)](QtOhos::JsState &jsState, QOhosWindowProxyData windowProxyData) {
+                    evalPromise(QOhosWindowProxy::create(jsState, std::move(windowProxyData)));
                 });
         });
 }
@@ -1206,12 +1206,12 @@ QOhosWindowProxy::createForExistingMainWindow(const ExistingMainWindowCreateInfo
 std::shared_ptr<QOhosWindowProxy>
 QOhosWindowProxy::createFloatWindow(const FloatWindowCreateInfo &createInfo)
 {
-    return QtOhos::evalInJsThreadWithConsumer<std::shared_ptr<QOhosWindowProxy>>(
-        [&](QtOhos::JsState &jsState, QOhosConsumer<std::shared_ptr<QOhosWindowProxy>> resultConsumer) {
+    return QtOhos::evalInJsThreadWithPromise<std::shared_ptr<QOhosWindowProxy>>(
+        [&](QtOhos::JsState &jsState, QOhosTaskPromise<std::shared_ptr<QOhosWindowProxy>> evalPromise) {
             makeWindowProxyDataForFloatWindowInJsThread(
                 jsState, createInfo,
-                [resultConsumer = std::move(resultConsumer)](QtOhos::JsState &jsState, QOhosWindowProxyData windowProxyData) {
-                    resultConsumer(QOhosWindowProxy::create(jsState, std::move(windowProxyData)));
+                [evalPromise = std::move(evalPromise)](QtOhos::JsState &jsState, QOhosWindowProxyData windowProxyData) {
+                    evalPromise(QOhosWindowProxy::create(jsState, std::move(windowProxyData)));
                 });
         });
 }
@@ -1219,13 +1219,13 @@ QOhosWindowProxy::createFloatWindow(const FloatWindowCreateInfo &createInfo)
 std::shared_ptr<QOhosWindowProxy>
 QOhosWindowProxy::createMainWindow(const MainWindowCreateInfo &createInfo)
 {
-    return QtOhos::evalInJsThreadWithConsumer<std::shared_ptr<QOhosWindowProxy>>(
-        [&](QtOhos::JsState &jsState, QOhosConsumer<std::shared_ptr<QOhosWindowProxy>> resultConsumer) {
+    return QtOhos::evalInJsThreadWithPromise<std::shared_ptr<QOhosWindowProxy>>(
+        [&](QtOhos::JsState &jsState, QOhosTaskPromise<std::shared_ptr<QOhosWindowProxy>> evalPromise) {
             makeWindowProxyDataForMainWindowInJsThread(
                 jsState,
                 createInfo,
-                [resultConsumer = std::move(resultConsumer)](QtOhos::JsState &jsState, QOhosWindowProxyData windowProxyData) {
-                    resultConsumer(QOhosWindowProxy::create(jsState, std::move(windowProxyData)));
+                [evalPromise = std::move(evalPromise)](QtOhos::JsState &jsState, QOhosWindowProxyData windowProxyData) {
+                    evalPromise(QOhosWindowProxy::create(jsState, std::move(windowProxyData)));
                 });
         });
 }
@@ -1243,11 +1243,11 @@ std::string QOhosWindowProxy::qAbilityInstanceId() const
 std::shared_ptr<QOhosWindowProxy>
 QOhosWindowProxy::createSubWindow(const SubWindowCreateInfo &createInfo)
 {
-    return QtOhos::evalInJsThreadWithConsumer<std::shared_ptr<QOhosWindowProxy>>(
-        [&](QtOhos::JsState &jsState, QOhosConsumer<std::shared_ptr<QOhosWindowProxy>> resultConsumer) {
+    return QtOhos::evalInJsThreadWithPromise<std::shared_ptr<QOhosWindowProxy>>(
+        [&](QtOhos::JsState &jsState, QOhosTaskPromise<std::shared_ptr<QOhosWindowProxy>> evalPromise) {
             auto proxyDataConsumer =
-                [resultConsumer = std::move(resultConsumer)](QtOhos::JsState &jsState, QOhosWindowProxyData windowProxyData) {
-                    resultConsumer(QOhosWindowProxy::create(jsState, std::move(windowProxyData)));
+                [evalPromise = std::move(evalPromise)](QtOhos::JsState &jsState, QOhosWindowProxyData windowProxyData) {
+                    evalPromise(QOhosWindowProxy::create(jsState, std::move(windowProxyData)));
                 };
             // HACK - calling createSubWindow from window may throw while the context is termination
             // This is only a problem because we currenlty do not properly handle main window closing
@@ -1568,12 +1568,12 @@ void QOhosWindowProxy::JsScopeData::onTouchEventFromArkUi(const QArkUi::TouchEve
 
 QPixmap QOhosWindowProxy::snapshot() const
 {
-    return QtOhos::evalInJsThreadWithConsumer<QPixmap>(
-        [&](QtOhos::JsState &, QOhosConsumer<QPixmap> resultConsumer) {
+    return QtOhos::evalInJsThreadWithPromise<QPixmap>(
+        [&](QtOhos::JsState &, QOhosTaskPromise<QPixmap> evalPromise) {
             m_jsScopeData->jsWindowRef->call<QNapi::Promise>("snapshot")
-            .withContext(std::move(resultConsumer))
+            .withContext(std::move(evalPromise))
             .onThenWithContext(
-                [](const QtOhos::CallbackInfo &cbInfo, auto &resultConsumer) {
+                [](const QtOhos::CallbackInfo &cbInfo, auto &evalPromise) {
                     auto napiPixmap = cbInfo.getFirstArg<QNapi::Object>(Q_FUNC_INFO);
 
                     ::OH_PixelmapNative *pixelMapNativePtr;
@@ -1582,13 +1582,13 @@ QPixmap QOhosWindowProxy::snapshot() const
                         cbInfo.Env(), napiPixmap, &pixelMapNativePtr);
                     auto pixelMap = wrapNativePixelMapPtr(pixelMapNativePtr);
 
-                    resultConsumer(
+                    evalPromise(
                         QPixmap::fromImage(createQImageFromNativePixelMap(pixelMap.get())));
                 })
             .onCatchWithContext(
-                [](const QtOhos::CallbackInfo &cbInfo, auto &resultConsumer) {
+                [](const QtOhos::CallbackInfo &cbInfo, auto &evalPromise) {
                     QtOhos::logJsCallbackError(cbInfo, "Got error from snapshot()");
-                    resultConsumer(QPixmap());
+                    evalPromise(QPixmap());
                 });
         });
 }
@@ -1596,15 +1596,15 @@ QPixmap QOhosWindowProxy::snapshot() const
 bool QOhosWindowProxy::startMoving()
 {
     QtOhos::invokeInJsThreadAndWaitForContinue(
-        [&](QtOhos::JsState &, std::function<void()> continueFunc) {
+        [&](QtOhos::JsState &, QOhosTaskPromise<> taskPromise) {
             if (m_jsScopeData->isWindowClosing()) {
-                continueFunc();
+                taskPromise();
                 return;
             }
 
             m_jsScopeData->jsWindowRef->call<QNapi::Promise>("startMoving")
             .onCatch(QtOhos::makeErrorLoggingJsCallback("startMoving()"))
-            .onFinally(std::move(continueFunc));
+            .onFinally(std::move(taskPromise));
         });
 
     return true;
@@ -1620,14 +1620,14 @@ void QOhosWindowProxy::enableDrag(bool enable)
     }
 
     QtOhos::invokeInJsThreadAndWaitForContinue(
-        [&](QtOhos::JsState &, std::function<void()> continueFunc) {
+        [&](QtOhos::JsState &, QOhosTaskPromise<> taskPromise) {
             if (m_jsScopeData->isWindowClosing()) {
-                continueFunc();
+                taskPromise();
                 return;
             }
             m_jsScopeData->jsWindowRef->call<QNapi::Promise>("enableDrag", {enable})
             .onCatch(QtOhos::makeErrorLoggingJsCallback("enableDrag()"))
-            .onFinally(std::move(continueFunc));
+            .onFinally(std::move(taskPromise));
         });
 }
 
@@ -1646,28 +1646,28 @@ QOhosOptional<bool> QOhosWindowProxy::isFocused() const
 std::vector<QArkUi::JsWindowId> QOhosWindowProxy::queryWindowIdsByCoordinate(
     QOhosDisplayInfo::JsDisplayId displayId, const QPoint &queryLocation, std::uint32_t queryLimit)
 {
-    return QtOhos::evalInJsThreadWithConsumer<std::vector<QArkUi::JsWindowId>>(
-        [&](QtOhos::JsState &jsState, auto resultConsumer) {
+    return QtOhos::evalInJsThreadWithPromise<std::vector<QArkUi::JsWindowId>>(
+        [&](QtOhos::JsState &jsState, auto evalPromise) {
             jsState.eval<QNapi::Promise>("@ohos.window.getWindowsByCoordinate(*)", {
                 displayId.value(),
                 queryLimit,
                 queryLocation.x(),
                 queryLocation.y()
             })
-            .withContext(std::move(resultConsumer))
-            .onThenWithContext([](const QtOhos::CallbackInfo &cbInfo, auto &resultConsumer) {
+            .withContext(std::move(evalPromise))
+            .onThenWithContext([](const QtOhos::CallbackInfo &cbInfo, auto &evalPromise) {
                 auto windowsArray = cbInfo.getFirstArg<QNapi::Array>(Q_FUNC_INFO);
-                resultConsumer(
+                evalPromise(
                     QNapi::getArrayElements<std::vector<QArkUi::JsWindowId>, QNapi::Object>(
                         windowsArray,
                         [&](QNapi::Object jsWindow) {
                             return getWindowPropertiesFromJsWindow(jsWindow).id;
                         }));
             })
-            .onCatchWithContext([](const QtOhos::CallbackInfo &cbInfo, auto &resultConsumer) {
+            .onCatchWithContext([](const QtOhos::CallbackInfo &cbInfo, auto &evalPromise) {
                 QtOhos::logJsCallbackError(
                     cbInfo, "got error from @ohos.window.getWindowsByCoordinate()");
-                resultConsumer({});
+                evalPromise({});
             });
         });
 }
@@ -1685,9 +1685,9 @@ void QOhosWindowProxy::moveWindowToGlobal(
     const QPoint &position, const MoveConfiguration &moveConfiguration)
 {
     QtOhos::invokeInJsThreadAndWaitForContinue(
-        [&](QtOhos::JsState &jsState, std::function<void()> continueFunc) {
+        [&](QtOhos::JsState &jsState, QOhosTaskPromise<> taskPromise) {
             if (m_jsScopeData->isWindowClosing()) {
-                continueFunc();
+                taskPromise();
                 return;
             }
 
@@ -1700,7 +1700,7 @@ void QOhosWindowProxy::moveWindowToGlobal(
 
             m_jsScopeData->jsWindowRef->call<QNapi::Promise>(
                 "moveWindowToGlobal", {position.x(), position.y(), moveConfigurationObject})
-                .onFinally(std::move(continueFunc));
+                .onFinally(std::move(taskPromise));
         });
 }
 

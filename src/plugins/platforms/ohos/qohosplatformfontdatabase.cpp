@@ -76,27 +76,27 @@ QStringList getInstalledFontPaths()
     if (ohosNoUiChildMode)
         return {};
 
-    auto fontsPaths = QtOhos::evalInJsThreadWithConsumer<std::vector<std::string>>(
-        [](QtOhos::JsState &jsState, QOhosConsumer<std::vector<std::string>> resultConsumer) {
+    auto fontsPaths = QtOhos::evalInJsThreadWithPromise<std::vector<std::string>>(
+        [](QtOhos::JsState &jsState, QOhosTaskPromise<std::vector<std::string>> evalPromise) {
             jsState.eval<QNapi::Promise>(
                 "@ohos.graphics.text.getSystemFontFullNamesByType(*)",
                 {static_cast<int>(JsSystemFontType::INSTALLED)})
-            .withContext(std::move(resultConsumer))
+            .withContext(std::move(evalPromise))
             .onThenWithContext(
-                [](const QtOhos::CallbackInfo &cbInfo, auto &resultConsumer) {
+                [](const QtOhos::CallbackInfo &cbInfo, auto &evalPromise) {
                     auto fontsNamesArray = cbInfo.getFirstArg<QNapi::Array>(Q_FUNC_INFO);
 
                     if (fontsNamesArray.Length() == 0) {
-                        resultConsumer({});
+                        evalPromise({});
                         return;
                     }
 
                     auto fontsNames = QNapi::getArrayElements<std::vector<std::string>, QNapi::String>(fontsNamesArray);
                     auto pathsCollector = std::make_shared<QOhosConsumer<std::string>>(
-                        [resultConsumer = std::move(resultConsumer), pushSize = fontsNames.size(), result = std::vector<std::string>()](auto element) mutable {
+                        [evalPromise = std::move(evalPromise), pushSize = fontsNames.size(), result = std::vector<std::string>()](auto element) mutable {
                             result.push_back(std::move(element));
                             if (result.size() == pushSize)
-                                resultConsumer(std::move(result));
+                                evalPromise(std::move(result));
                         });
 
                     for (const auto &fontName : fontsNames) {
@@ -118,9 +118,9 @@ QStringList getInstalledFontPaths()
                     }
                 })
             .onCatchWithContext(
-                [](const QtOhos::CallbackInfo &cbInfo, auto &resultConsumer) {
+                [](const QtOhos::CallbackInfo &cbInfo, auto &evalPromise) {
                     QtOhos::logJsCallbackError(cbInfo, "getSystemFontFullNamesByType() failed");
-                    resultConsumer({});
+                    evalPromise({});
                 });
         });
 

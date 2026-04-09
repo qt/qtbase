@@ -47,6 +47,9 @@ using QOhosConsumer = std::function<void(Ts...)>;
 template<typename T>
 using QOhosSupplier = std::function<T()>;
 
+template<typename... Args>
+using QOhosTaskPromise = QOhosConsumer<Args...>;
+
 template<typename Func, Func func>
 class QOhosNamedFunc
 {

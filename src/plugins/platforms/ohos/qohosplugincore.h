@@ -353,6 +353,9 @@ auto evalInJsThread(Func &&func) -> decltype(func(std::declval<JsState &>()));
 template<typename T>
 T evalInJsThreadWithConsumer(std::function<void(QtOhos::JsState &, std::function<void(T)>)> evalFunc);
 
+template<typename T>
+T evalInJsThreadWithPromise(std::function<void(QtOhos::JsState &, std::function<void(T)>)> evalFunc);
+
 // Invokes the task inside the Qt thread and blocks the caller's thread until either:
 //  - the "continue" function (std::function<void()>, passed as second argument to
 //    the task) is called on the Qt side and returns,
@@ -404,6 +407,12 @@ T evalInJsThreadWithConsumer(std::function<void(QtOhos::JsState &, std::function
         [evalFunc = std::move(evalFunc)](QOhosJsState &jsState, std::function<void(T)> consumer) {
             evalFunc(static_cast<JsState &>(jsState), std::move(consumer));
         });
+}
+
+template<typename T>
+T evalInJsThreadWithPromise(std::function<void(QtOhos::JsState &, std::function<void(T)>)> evalFunc)
+{
+    return evalInJsThreadWithConsumer<T>(std::move(evalFunc));
 }
 
 template<>
