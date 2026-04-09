@@ -85,6 +85,7 @@ bool QWin32PrintEngine::begin(QPaintDevice *pdev)
     if (d->reinit) {
        d->resetDC();
        d->reinit = false;
+       d->updateMetrics();
     }
 
     // ### set default colors and stuff...
@@ -191,6 +192,7 @@ bool QWin32PrintEngine::newPage()
         if (!d->resetDC())
             return false;
         d->reinit = false;
+        d->updateMetrics();
     }
 
     if (StartPage(d->hdc) <= 0) {
@@ -994,6 +996,7 @@ void QWin32PrintEnginePrivate::doReinit()
     } else {
         resetDC();
         reinit = false;
+        updateMetrics();
     }
 }
 
@@ -1642,6 +1645,7 @@ void QWin32PrintEnginePrivate::setPageSize(const QPageSize &pageSize)
         devMode->dmPaperWidth = 0;
         devMode->dmPaperLength = 0;
     } else {
+        has_custom_paper_size = true;
         devMode->dmPaperSize = DMPAPER_USER;
         devMode->dmFields |= DM_PAPERLENGTH | DM_PAPERWIDTH;
         // Size in tenths of a millimeter
@@ -1699,14 +1703,23 @@ void QWin32PrintEnginePrivate::updatePageLayout()
 void QWin32PrintEnginePrivate::updateMetrics()
 {
     m_paintRectPixels = m_pageLayout.paintRectPixels(resolution);
-    // Some print devices allow scaling, so that "virtual" page size != current paper size
-    const int devWidth = GetDeviceCaps(hdc, PHYSICALWIDTH);
-    const int devHeight = GetDeviceCaps(hdc, PHYSICALHEIGHT);
-    const int pageWidth = m_pageLayout.fullRectPixels(dpi_x).width();
-    const int pageHeight = m_pageLayout.fullRectPixels(dpi_y).height();
-    const qreal pageScaleX = (devWidth && pageWidth) ? qreal(devWidth) / pageWidth : 1;
-    const qreal pageScaleY = (devHeight && pageHeight) ? qreal(devHeight) / pageHeight : 1;
-    m_paintRectPixels = QTransform::fromScale(pageScaleX, pageScaleY).mapRect(m_paintRectPixels);
+
+    qreal pageScaleX = 1;
+    qreal pageScaleY = 1;
+
+    // Some print devices allow scaling, so that "virtual" page size != current paper size.
+    // Skip this scaling for custom page sizes, since the driver may not report the custom
+    // dimensions via GetDeviceCaps, which would incorrectly squash the paint rect to the
+    // default paper size (QTBUG-142745).
+    if (!has_custom_paper_size) {
+        const int devWidth = GetDeviceCaps(hdc, PHYSICALWIDTH);
+        const int devHeight = GetDeviceCaps(hdc, PHYSICALHEIGHT);
+        const int pageWidth = m_pageLayout.fullRectPixels(dpi_x).width();
+        const int pageHeight = m_pageLayout.fullRectPixels(dpi_y).height();
+        pageScaleX = (devWidth && pageWidth) ? qreal(devWidth) / pageWidth : 1;
+        pageScaleY = (devHeight && pageHeight) ? qreal(devHeight) / pageHeight : 1;
+        m_paintRectPixels = QTransform::fromScale(pageScaleX, pageScaleY).mapRect(m_paintRectPixels);
+    }
 
     QSizeF sizeMM = m_pageLayout.paintRect(QPageLayout::Millimeter).size();
     m_paintSizeMM = QSize(qRound(sizeMM.width()), qRound(sizeMM.height()));
