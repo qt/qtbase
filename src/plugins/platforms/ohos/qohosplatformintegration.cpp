@@ -165,6 +165,8 @@ QOhosPlatformIntegration::QOhosPlatformIntegration(const QStringList &paramList)
         m_drag = makeQOhosPlatformDrag();
 #endif // QT_CONFIG(draganddrop)
 
+    QWindowSystemInterfacePrivate::TabletEvent::setPlatformSynthesizesMouse(false);
+
     // QCoreApplication::postEvent takes ownership of the created event.
     QCoreApplication::postEvent(m_ohosPlatformNativeInterface.data(), new QEvent(QEvent::User));
 }
