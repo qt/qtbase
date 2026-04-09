@@ -42,6 +42,8 @@ enum class StateFlag
 };
 Q_DECLARE_FLAGS(StateFlags, StateFlag);
 
+using StateMarkers = QMainWindowLayoutState::StateMarkers;
+
 /******************************************************************************
 ** QPlaceHolderItem
 */
@@ -1872,7 +1874,7 @@ void QDockAreaLayoutInfo::saveState(QDataStream &stream) const
 
 #if QT_CONFIG(tabbar)
     if (tabbed) {
-        stream << (uchar) TabMarker;
+        stream << StateMarkers::Tab;
 
         // write the index in item_list of the widget that's currently on top.
         quintptr id = currentTabId();
@@ -1887,7 +1889,7 @@ void QDockAreaLayoutInfo::saveState(QDataStream &stream) const
     } else
 #endif // QT_CONFIG(tabbar)
     {
-        stream << (uchar) SequenceMarker;
+        stream << StateMarkers::Sequence;
     }
 
     stream << static_cast<uchar>(o)  << static_cast<int>(cnt);
@@ -1900,7 +1902,7 @@ void QDockAreaLayoutInfo::saveState(QDataStream &stream) const
                 qCDebug(lcQpaDockWidgets) << "Ignoring dock widget group window" << w;
                 continue;
             }
-            stream << (uchar) WidgetMarker;
+            stream << StateMarkers::Widget;
             QString name = w->objectName();
             if (Q_UNLIKELY(name.isEmpty())) {
                 qWarning() << "QMainWindow::saveState(): 'objectName' not set for"
@@ -1926,7 +1928,7 @@ void QDockAreaLayoutInfo::saveState(QDataStream &stream) const
                         << pick(o, item.maximumSize());
             }
         } else if (item.placeHolderItem != nullptr) {
-            stream << (uchar) WidgetMarker;
+            stream << StateMarkers::Widget;
             stream << item.placeHolderItem->objectName;
             StateFlags flags;
             if (!item.placeHolderItem->hidden)
@@ -1942,7 +1944,8 @@ void QDockAreaLayoutInfo::saveState(QDataStream &stream) const
                 stream << item.pos << item.size << (int)0 << (int)0;
             }
         } else if (item.subinfo != nullptr) {
-            stream << (uchar) SequenceMarker << item.pos << item.size << pick(o, item.minimumSize()) << pick(o, item.maximumSize());
+            stream << StateMarkers::Sequence;
+            stream << item.pos << item.size << pick(o, item.minimumSize()) << pick(o, item.maximumSize());
             item.subinfo->saveState(stream);
         }
     }
@@ -1965,13 +1968,13 @@ bool QDockAreaLayoutInfo::restoreState(QDataStream &stream, QList<QDockWidget*> 
     const bool testing = callMode == QInternal::Testing;
     const QLatin1StringView debugCallMode = testing ? QLatin1StringView("(testing)")
                                                     : QLatin1StringView("(restoring)");
-    uchar marker;
+    QMainWindowLayoutState::StateMarkers marker;
     stream >> marker;
-    if (marker != TabMarker && marker != SequenceMarker)
+    if (marker != StateMarkers::Tab && marker != StateMarkers::Sequence)
         return false;
 
 #if QT_CONFIG(tabbar)
-    tabbed = marker == TabMarker;
+    tabbed = marker == StateMarkers::Tab;
 
     int index = -1;
     if (tabbed)
@@ -1986,9 +1989,9 @@ bool QDockAreaLayoutInfo::restoreState(QDataStream &stream, QList<QDockWidget*> 
     stream >> cnt;
 
     for (int i = 0; i < cnt; ++i) {
-        uchar nextMarker;
+        QMainWindowLayoutState::StateMarkers nextMarker;
         stream >> nextMarker;
-        if (nextMarker == WidgetMarker) {
+        if (nextMarker == StateMarkers::Widget) {
             QString name;
             uchar f;
             stream >> name >> f;
@@ -2062,7 +2065,7 @@ bool QDockAreaLayoutInfo::restoreState(QDataStream &stream, QList<QDockWidget*> 
                     item.widgetItem = nullptr;
                 }
             }
-        } else if (nextMarker == SequenceMarker) {
+        } else if (nextMarker == StateMarkers::Sequence) {
             int dummy;
 #if !QT_CONFIG(tabbar)
             const int tabBarShape = 0;
@@ -2444,7 +2447,7 @@ bool QDockAreaLayout::isValid() const
 
 void QDockAreaLayout::saveState(QDataStream &stream) const
 {
-    stream << (uchar) DockWidgetStateMarker;
+    stream << StateMarkers::DockWidget;
     int cnt = 0;
     for (int i = 0; i < QInternal::DockCount; ++i) {
         if (!docks[i].item_list.isEmpty())

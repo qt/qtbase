@@ -429,6 +429,16 @@ private:
 class Q_AUTOTEST_EXPORT QMainWindowLayoutState
 {
 public:
+    enum class StateMarkers {
+        FloatingDockWidgetTab = 0xf9,
+        Tab = 0xfa,
+        Widget = 0xfb,
+        Sequence = 0xfc,
+        ToolBarEx = Sequence, // Extended toolbar marker (same value as Sequence for backward compatibility)
+        DockWidget = 0xfd,
+        ToolBar = 0xfe,
+    };
+
     QRect rect;
     QMainWindow *mainWindow;
 
@@ -479,6 +489,9 @@ public:
     void saveState(QDataStream &stream) const;
     bool checkFormat(QDataStream &stream);
     bool restoreState(QDataStream &stream, const QMainWindowLayoutState &oldState);
+    friend QDebug operator<<(QDebug debug, StateMarkers marker);
+    friend QDataStream &operator<<(QDataStream &stream, StateMarkers marker);
+    friend QDataStream &operator>>(QDataStream &stream, StateMarkers &marker);
 };
 
 class QMainWindowTabBar;

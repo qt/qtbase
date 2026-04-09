@@ -21,6 +21,7 @@ QT_BEGIN_NAMESPACE
 
 // qmainwindow.cpp
 extern QMainWindowLayout *qt_mainwindow_layout(const QMainWindow *mainWindow);
+using StateMarkers = QMainWindowLayoutState::StateMarkers;
 
 QSize QToolBarAreaLayoutItem::minimumSize() const
 {
@@ -1217,7 +1218,7 @@ static void packRect(uint *geom0, uint *geom1, const QRect &rect, bool floating)
 void QToolBarAreaLayout::saveState(QDataStream &stream) const
 {
     // save toolbar state
-    stream << (uchar) ToolBarStateMarkerEx;
+    stream << static_cast<uchar>(StateMarkers::ToolBarEx);
 
     int lineCount = 0;
     for (int i = 0; i < QInternal::DockCount; ++i)
@@ -1273,6 +1274,7 @@ static inline int getInt(QDataStream &stream)
 
 bool QToolBarAreaLayout::restoreState(QDataStream &stream, const QList<QToolBar*> &_toolBars, uchar tmarker, QInternal::CallMode callMode)
 {
+    const auto marker = static_cast<StateMarkers>(tmarker);
     const bool testing = callMode == QInternal::Testing;
     QList<QToolBar*> toolBars = _toolBars;
     int lines;
@@ -1312,7 +1314,7 @@ bool QToolBarAreaLayout::restoreState(QDataStream &stream, const QList<QToolBar*
             bool floating = false;
             uint geom0, geom1;
             geom0 = getInt(stream);
-            if (tmarker == ToolBarStateMarkerEx) {
+            if (marker == StateMarkers::ToolBarEx) {
                 geom1 = getInt(stream);
                 rect = unpackRect(geom0, geom1, &floating);
             }

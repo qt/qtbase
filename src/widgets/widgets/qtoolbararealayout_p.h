@@ -128,11 +128,6 @@ Q_DECLARE_TYPEINFO(QToolBarAreaLayoutInfo, Q_RELOCATABLE_TYPE);
 class QToolBarAreaLayout
 {
 public:
-    enum { // sentinel values used to validate state data
-        ToolBarStateMarker = 0xfe,
-        ToolBarStateMarkerEx = 0xfc
-    };
-
     QRect rect;
     const QMainWindow *mainWindow;
     QToolBarAreaLayoutInfo docks[4];

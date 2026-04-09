@@ -54,8 +54,10 @@
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
+using StateMarkers = QMainWindowLayoutState::StateMarkers;
 
 extern QMainWindowLayout *qt_mainwindow_layout(const QMainWindow *window);
+using StateMarkers = QMainWindowLayoutState::StateMarkers;
 
 static constexpr QWidgetAnimator::AnimationRule toAnimationRule(QMainWindow::DockOptions options)
 {
@@ -174,6 +176,42 @@ static void dumpItemLists(const QMainWindowLayout *layout, const char *function,
 
 #endif // QT_CONFIG(dockwidget) && !defined(QT_NO_DEBUG)
 
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug debug, StateMarkers marker)
+{
+#define CASE(val) case QMainWindowLayoutState::StateMarkers::val:\
+    debug.noquote().nospace() << "StateMarkers::" << #val;\
+    break
+
+    QDebugStateSaver saver(debug);
+    switch (marker) {
+        CASE(FloatingDockWidgetTab);
+        CASE(Tab);
+        CASE(Widget);
+        CASE(Sequence);
+        CASE(DockWidget);
+        CASE(ToolBar);
+    }
+    return debug;
+#undef CASE
+}
+
+QDataStream &operator<<(QDataStream &stream, StateMarkers marker)
+{
+    stream << uchar(marker);
+    qCDebug(lcQpaDockWidgets) << "Writing state marker" << marker;
+    return stream;
+}
+
+QDataStream &operator>>(QDataStream &stream, StateMarkers &marker)
+{
+    uchar m;
+    stream >> m;
+    marker = static_cast<StateMarkers>(m);
+    qCDebug(lcQpaDockWidgets) << "Reading state marker" << marker;
+    return stream;
+}
+#endif // QT_NO_DEBUG_STREAM
 
 /*!
     \internal
@@ -1256,7 +1294,8 @@ void QMainWindowLayoutState::saveState(QDataStream &stream) const
     for (QDockWidgetGroupWindow *floating : floatingTabs) {
         if (floating->layoutInfo()->isEmpty())
             continue;
-        stream << uchar(QDockAreaLayout::FloatingDockWidgetTabMarker) << floating->geometry();
+        stream << StateMarkers::FloatingDockWidgetTab;
+        stream << floating->geometry();
         floating->layoutInfo()->saveState(stream);
     }
 #endif
@@ -1270,23 +1309,23 @@ void QMainWindowLayoutState::saveState(QDataStream &stream) const
 bool QMainWindowLayoutState::checkFormat(QDataStream &stream)
 {
     while (!stream.atEnd()) {
-        uchar marker;
+        StateMarkers marker;
         stream >> marker;
         switch(marker)
         {
 #if QT_CONFIG(toolbar)
-            case QToolBarAreaLayout::ToolBarStateMarker:
-            case QToolBarAreaLayout::ToolBarStateMarkerEx:
+            case StateMarkers::ToolBar:
+            case StateMarkers::ToolBarEx:
                 {
                     const auto toolBars = mainWindow->findChildren<QToolBar*>();
-                    if (!toolBarAreaLayout.restoreState(stream, toolBars, marker, QInternal::Testing))
+                if (!toolBarAreaLayout.restoreState(stream, toolBars, static_cast<uchar>(marker), QInternal::Testing))
                         return false;
                 }
                 break;
 #endif // QT_CONFIG(toolbar)
 
 #if QT_CONFIG(dockwidget)
-            case QDockAreaLayout::DockWidgetStateMarker:
+                case StateMarkers::DockWidget:
                 {
                     const auto dockWidgets = mainWindow->findChildren<QDockWidget *>(Qt::FindChildrenRecursively);
                     if (!dockAreaLayout.restoreState(stream, dockWidgets, QInternal::Testing))
@@ -1294,7 +1333,7 @@ bool QMainWindowLayoutState::checkFormat(QDataStream &stream)
                 }
                 break;
 #if QT_CONFIG(tabbar)
-            case QDockAreaLayout::FloatingDockWidgetTabMarker:
+            case StateMarkers::FloatingDockWidgetTab:
                 {
                     QRect geom;
                     stream >> geom;
@@ -1338,12 +1377,12 @@ bool QMainWindowLayoutState::restoreState(QDataStream &_stream,
     stream.setVersion(_stream.version());
 
     while (!stream.atEnd()) {
-        uchar marker;
+        StateMarkers marker;
         stream >> marker;
         switch(marker)
         {
 #if QT_CONFIG(dockwidget)
-            case QDockAreaLayout::DockWidgetStateMarker:
+            case StateMarkers::DockWidget:
             {
                 const auto dockWidgets = mainWindow->findChildren<QDockWidget *>(Qt::FindChildrenRecursively);
                 if (!dockAreaLayout.restoreState(stream, dockWidgets, QInternal::Live))
@@ -1365,7 +1404,7 @@ bool QMainWindowLayoutState::restoreState(QDataStream &_stream,
             }
             break;
 #if QT_CONFIG(tabwidget)
-            case QDockAreaLayout::FloatingDockWidgetTabMarker:
+            case StateMarkers::FloatingDockWidgetTab:
             {
                 auto dockWidgets = mainWindow->findChildren<QDockWidget *>(Qt::FindChildrenRecursively);
                 // dissolve all floating tabs first.
@@ -1409,11 +1448,11 @@ bool QMainWindowLayoutState::restoreState(QDataStream &_stream,
 #endif // QT_CONFIG(dockwidget)
 
 #if QT_CONFIG(toolbar)
-            case QToolBarAreaLayout::ToolBarStateMarker:
-            case QToolBarAreaLayout::ToolBarStateMarkerEx:
+            case StateMarkers::ToolBar:
+            case StateMarkers::ToolBarEx:
                 {
                     const auto toolBars = mainWindow->findChildren<QToolBar*>();
-                    if (!toolBarAreaLayout.restoreState(stream, toolBars, marker, QInternal::Live))
+                    if (!toolBarAreaLayout.restoreState(stream, toolBars, static_cast<uchar>(marker), QInternal::Live))
                         return false;
 
                     for (auto *bar : toolBars) {
