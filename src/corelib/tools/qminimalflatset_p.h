@@ -30,7 +30,7 @@
 # define QMINIMAL_FLAT_SET_PRINT_AT_END
 #endif
 
-#include <algorithm> // for std::lower_bound
+#include <algorithm> // for std::lower_bound, std::sort
 #include <functional> // for std::less, std::ref
 
 QT_BEGIN_NAMESPACE
@@ -53,6 +53,24 @@ class QMinimalFlatSet : QtPrivate::CompactStorage<Compare>
 public:
     QMinimalFlatSet() = default;
     explicit QMinimalFlatSet(const Compare &cmp) : CompareStorage{cmp} {}
+    explicit QMinimalFlatSet(std::initializer_list<T> init, const Compare &cmp = Compare())
+        : QMinimalFlatSet(init.begin(), init.end(), cmp)
+    {
+    }
+    explicit QMinimalFlatSet(Container init, const Compare &cmp = Compare())
+        : CompareStorage{cmp}, c(std::move(init))
+    {
+        std::sort(c.begin(), c.end(), comparisonObject());
+        c.erase(std::unique(c.begin(), c.end()), c.end());
+    }
+    template <typename InputIt>
+    QMinimalFlatSet(InputIt first, InputIt last, const Compare &cmp = Compare())
+        : CompareStorage{cmp}, c(first, last)
+    {
+        std::sort(c.begin(), c.end(), comparisonObject());
+        c.erase(std::unique(c.begin(), c.end()), c.end());
+    }
+
     // Rule Of Zero applies
 
     using const_iterator = typename Container::const_iterator;
@@ -122,6 +140,8 @@ public:
     Container values() && { return std::move(c); }
 
 private:
+    auto comparisonObject() const { return std::cref(this->object()); }
+
     auto lookup(const value_type &v) const
     {
         struct R {
@@ -129,10 +149,8 @@ private:
             bool exists;
         };
 
-        auto cmp = std::ref(this->object()); // don't let std::lower_bound copy it
-
-        const auto it = std::lower_bound(c.cbegin(), c.cend(), v, cmp);
-        return R{it, it != c.cend() && !cmp(v, *it)};
+        const auto it = std::lower_bound(c.cbegin(), c.cend(), v, comparisonObject());
+        return R{it, it != c.cend() && !comparisonObject()(v, *it)};
     }
 
 #ifdef QMINIMAL_FLAT_SET_DEBUG
