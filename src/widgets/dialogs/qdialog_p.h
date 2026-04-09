@@ -90,6 +90,8 @@ public:
 
     void close(int resultCode);
 
+    void recreate() override;
+
 protected:
     virtual int dialogCode() const { return rescode; }
 

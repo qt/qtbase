@@ -441,6 +441,14 @@ public:
     // sub-classes that their internals are about to be released.
     virtual void aboutToDestroy() {}
 
+    // customization point for widget re-creation to deal with different RHI types
+    virtual void recreate()
+    {
+        Q_Q(QWidget);
+        q->destroy();
+        q->create();
+    }
+
     inline QWidget *effectiveFocusWidget() {
         QWidget *w = q_func();
         while (w->focusProxy())
