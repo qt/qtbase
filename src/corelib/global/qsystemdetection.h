@@ -154,7 +154,8 @@
 #ifdef Q_OS_DARWIN
 #  pragma clang diagnostic push
 #  pragma clang diagnostic ignored "-Wunknown-pragmas"
-#  define Q_OS_MAC // FIXME: Deprecate
+#  define Q_OS_MAC
+#  pragma clang deprecated(Q_OS_MAC, "use Q_OS_MACOS for macOS or Q_OS_APPLE for all Apple platforms instead")
 #  ifdef __LP64__
 #    define Q_OS_DARWIN64
 #    pragma clang deprecated(Q_OS_DARWIN64, "use Q_OS_DARWIN and QT_POINTER_SIZE/Q_PROCESSOR_* instead")
