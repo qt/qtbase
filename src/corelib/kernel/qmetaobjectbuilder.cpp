@@ -1315,8 +1315,7 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
 
     // Output the method parameters in the class.
     Q_ASSERT(!buf || dataIndex == pmeta->methodData + int(d->methods.size()) * QMetaObjectPrivate::IntsPerMethod);
-    for (int x = 0; x < 2; ++x) {
-        const std::vector<QMetaMethodBuilderPrivate> &methods = (x == 0) ? d->methods : d->constructors;
+    auto processMethodParameters = [&](const auto &methods) {
         for (const auto &method : methods) {
             if (method.revision) {
                 if constexpr (mode == Construct)
@@ -1347,7 +1346,9 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
                 ++dataIndex;
             }
         }
-    }
+    };
+    processMethodParameters(d->methods);
+    processMethodParameters(d->constructors);
 
     // Output the properties in the class.
     Q_ASSERT(!buf || dataIndex == pmeta->propertyData);
