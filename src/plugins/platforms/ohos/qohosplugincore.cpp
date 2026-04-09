@@ -892,36 +892,43 @@ void invokeInJsThread(std::function<void(JsState &)> task)
     getJsStateImpl().invokeTask(std::move(task));
 }
 
-void invokeInJsThreadAndWaitForContinue(std::function<void(JsState &, std::function<void()>)> &&task)
+void invokeInJsThreadAndWaitForContinue(
+    std::function<void(JsState &, QOhosTaskPromise<>)> &&task,
+    std::string callerContextName)
 {
     if (getQtState().isQtThread()) {
-        getQtJsBlockingCallsGateway().runInSlaveThreadAndWaitForContinue(std::move(task));
+        getQtJsBlockingCallsGateway().runInSlaveThreadAndWaitForContinue(
+            std::move(task), std::move(callerContextName));
     } else {
         auto taskReadyPromise = std::make_shared<std::promise<void>>();
         auto taskReadyFuture = taskReadyPromise->get_future();
 
-        auto continueFunc = [taskReadyPromise]() {
-            taskReadyPromise->set_value();
-        };
+        auto sharedTaskPromise = std::make_shared<QOhosTaskPromise<>>(
+            [taskReadyPromise]() {
+                taskReadyPromise->set_value();
+            },
+            std::move(callerContextName));
 
         invokeInJsThread(
-            [task = std::move(task), continueFunc = std::move(continueFunc)](JsState &jsState) mutable {
-                task(jsState, std::move(continueFunc));
+            [task = std::move(task), sharedTaskPromise](JsState &jsState) {
+                task(jsState, std::move(*sharedTaskPromise));
             });
         taskReadyFuture.wait();
     }
 }
 
-void runInJsThreadAndWait(const std::function<void(JsState &)> &task)
+void runInJsThreadAndWait(
+    const std::function<void(JsState &)> &task, std::string callerContextName)
 {
     if (getJsStateImpl().isJsThread()) {
         task(getJsStateImpl());
     } else {
         invokeInJsThreadAndWaitForContinue(
-            [&](auto &jsState, auto continueFunc) {
+            [&](auto &jsState, auto taskPromise) {
                 task(jsState);
-                continueFunc();
-            });
+                taskPromise();
+            },
+            std::move(callerContextName));
     }
 }
 

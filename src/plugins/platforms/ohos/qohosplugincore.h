@@ -340,21 +340,26 @@ void invokeInJsThread(std::function<void(JsState &)> task);
 // It can be called from the Qt thread at any time, calling it from the JS
 // thread is illegal.
 void invokeInJsThreadAndWaitForContinue(
-    std::function<void(JsState &, std::function<void()>)> &&task);
+    std::function<void(JsState &, QOhosTaskPromise<>)> &&task,
+    std::string callerContextName = {});
 
 // Runs the task inside the JS thread and waits until its execution ends.
 // When called from the JS thread, it calls the task directly. For other threads
 // it behaves like a wrapper around the invokeInJsThreadAndWaitForContinue().
-void runInJsThreadAndWait(const std::function<void(JsState &)> &task);
+void runInJsThreadAndWait(
+    const std::function<void(JsState &)> &task,
+    std::string callerContextName = {});
 
 template<typename Func>
-auto evalInJsThread(Func &&func) -> decltype(func(std::declval<JsState &>()));
+auto evalInJsThread(Func &&func, std::string callerContextName = {}) -> decltype(func(std::declval<JsState &>()));
 
 template<typename T>
 T evalInJsThreadWithConsumer(std::function<void(QtOhos::JsState &, std::function<void(T)>)> evalFunc);
 
 template<typename T>
-T evalInJsThreadWithPromise(std::function<void(QtOhos::JsState &, std::function<void(T)>)> evalFunc);
+T evalInJsThreadWithPromise(
+    std::function<void(QtOhos::JsState &, QOhosTaskPromise<T>)> evalFunc,
+    std::string callerContextName = {});
 
 // Invokes the task inside the Qt thread and blocks the caller's thread until either:
 //  - the "continue" function (std::function<void()>, passed as second argument to
@@ -392,8 +397,9 @@ QNapi::Symbol JsState::getJsSymbolForType()
 }
 
 template<typename Func>
-auto evalInJsThread(Func &&func) -> decltype(func(std::declval<JsState &>()))
+auto evalInJsThread(Func &&func, std::string callerContextName) -> decltype(func(std::declval<JsState &>()))
 {
+    Q_UNUSED(callerContextName);
     return QOhosJsThreadGateway::eval(
         [&func](QOhosJsState &jsState) {
             return func(static_cast<JsState &>(jsState));
@@ -410,9 +416,14 @@ T evalInJsThreadWithConsumer(std::function<void(QtOhos::JsState &, std::function
 }
 
 template<typename T>
-T evalInJsThreadWithPromise(std::function<void(QtOhos::JsState &, std::function<void(T)>)> evalFunc)
+T evalInJsThreadWithPromise(
+    std::function<void(QtOhos::JsState &, QOhosTaskPromise<T>)> evalFunc,
+    std::string callerContextName)
 {
-    return evalInJsThreadWithConsumer<T>(std::move(evalFunc));
+    return evalInJsThreadWithConsumer<T>(
+        [evalFunc = std::move(evalFunc), callerContextName](QtOhos::JsState &jsState, std::function<void(T)> consumer) {
+            evalFunc(jsState, QOhosTaskPromise<T>(std::move(consumer), callerContextName));
+        });
 }
 
 template<>

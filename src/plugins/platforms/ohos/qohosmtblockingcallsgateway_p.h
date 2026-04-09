@@ -50,7 +50,8 @@ public:
     void invokeInSlaveThread(std::function<void(SlaveContext &)> &&task);
 
     void runInSlaveThreadAndWaitForContinue(
-        QOhosConsumer<SlaveContext &, std::function<void()>> &&task);
+        std::function<void(SlaveContext &, QOhosTaskPromise<>)> &&task,
+        const std::string &callerContextName = std::string());
     Q_REQUIRED_RESULT MasterThreadTaskResult tryInvokeInMasterThreadAndTryWaitForContinue(
         QOhosConsumer<std::function<void()>> &&task,
         std::chrono::nanoseconds timeout);
@@ -107,7 +108,8 @@ void QOhosMtBlockingCallsGateway<SlaveContext>::invokeInSlaveThread(std::functio
 
 template<typename SlaveContext>
 void QOhosMtBlockingCallsGateway<SlaveContext>::runInSlaveThreadAndWaitForContinue(
-    QOhosConsumer<SlaveContext &, std::function<void()>> &&task)
+    std::function<void(SlaveContext &, QOhosTaskPromise<>)> &&task,
+    const std::string &callerContextName)
 {
     {
         std::lock_guard<std::mutex> waitStateLock(m_waitStateMutex);
@@ -122,13 +124,15 @@ void QOhosMtBlockingCallsGateway<SlaveContext>::runInSlaveThreadAndWaitForContin
     auto taskFinishedPromise = std::make_shared<std::promise<void>>();
     auto taskFinishedFuture = taskFinishedPromise->get_future();
 
-    auto continueFunc = [taskFinishedPromise]() {
-        taskFinishedPromise->set_value();
-    };
+    auto sharedTaskPromise = std::make_shared<QOhosTaskPromise<>>(
+        [taskFinishedPromise]() {
+            taskFinishedPromise->set_value();
+        },
+        callerContextName);
 
     invokeInSlaveThread(
-        [task = std::move(task), continueFunc = std::move(continueFunc)](SlaveContext &context) mutable {
-            task(context, std::move(continueFunc));
+        [task = std::move(task), sharedTaskPromise](SlaveContext &context) {
+            task(context, std::move(*sharedTaskPromise));
         });
     taskFinishedFuture.wait();
 
