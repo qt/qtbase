@@ -16,8 +16,7 @@ SPDX-FileCopyrightText = "Copyright (C) The Qt Company Ltd."
 SPDX-License-Identifier = "LicenseRef-Qt-Commercial OR GPL-3.0-only"
 
 [[annotations]]
-path = ["**.qmake.conf", "networkinformation/android/jar/build.gradle",
-        "networkinformation/android/jar/settings.gradle"]
+path = ["**.qmake.conf"]
 precedence = "closest"
 SPDX-FileCopyrightText = "Copyright (C) The Qt Company Ltd."
 SPDX-License-Identifier = "BSD-3-Clause"
