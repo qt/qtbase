@@ -207,6 +207,7 @@ bool QWasmWindowStack<Window>::raiseImpl(Window *window)
         raiseImpl(w);
     }
     invariant();
+    Q_ASSERT(m_windowStack.count(window) == 1);
     return true;
 }
 
@@ -256,6 +257,7 @@ bool QWasmWindowStack<Window>::lowerImpl(Window *window)
         lowerImpl(w);
     }
     invariant();
+    Q_ASSERT(m_windowStack.count(window) == 1);
     return true;
 }
 
@@ -264,6 +266,7 @@ void QWasmWindowStack<Window>::windowPositionPreferenceChanged(Window *window,
                                                                    PositionPreference position)
 {
     invariant();
+    Q_ASSERT(m_windowStack.count(window) == 1);
 
     auto it = std::find(m_windowStack.begin(), m_windowStack.end(), window);
     const auto currentPosition = getWindowPositionPreference(it);
@@ -301,6 +304,7 @@ void QWasmWindowStack<Window>::windowPositionPreferenceChanged(Window *window,
         m_windowOrderChangedCallback();
     }
     invariant();
+    Q_ASSERT(m_windowStack.count(window) == 1);
 }
 
 template <typename Window>
@@ -393,6 +397,8 @@ typename QWasmWindowStack<Window>::PositionPreference
 QWasmWindowStack<Window>::getWindowPositionPreference(
     typename StorageType::const_iterator windowIt, bool testStayAbove) const
 {
+    Q_ASSERT(windowIt != m_windowStack.end());
+    Q_ASSERT(m_windowStack.contains(*windowIt));
     Window *window = *windowIt;
     if (testStayAbove && shouldBeAboveTransientParent(window))
         return PositionPreference::StayAboveTransientParent;

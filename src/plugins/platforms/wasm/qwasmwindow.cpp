@@ -562,11 +562,16 @@ void QWasmWindow::setWindowFlags(Qt::WindowFlags flags)
 {
     flags = fixTopLevelWindowFlags(flags);
 
-    if ((flags.testFlag(Qt::WindowStaysOnTopHint) != m_flags.testFlag(Qt::WindowStaysOnTopHint))
-        || (flags.testFlag(Qt::WindowStaysOnBottomHint)
-            != m_flags.testFlag(Qt::WindowStaysOnBottomHint))
-        || shouldBeAboveTransientParentFlags(flags) != shouldBeAboveTransientParentFlags(m_flags)) {
-        onPositionPreferenceChanged(positionPreferenceFromWindowFlags(flags));
+    // Note: This function is also called from the constructor,
+    // and in this case we should not call onPositionPreferenceChanged
+    // since we haven't inserted the window yet.
+    if (std::find(childStack().begin(), childStack().end(), this) != childStack().end()) {
+        if ((flags.testFlag(Qt::WindowStaysOnTopHint) != m_flags.testFlag(Qt::WindowStaysOnTopHint))
+            || (flags.testFlag(Qt::WindowStaysOnBottomHint)
+                != m_flags.testFlag(Qt::WindowStaysOnBottomHint))
+            || shouldBeAboveTransientParentFlags(flags) != shouldBeAboveTransientParentFlags(m_flags)) {
+            onPositionPreferenceChanged(positionPreferenceFromWindowFlags(flags));
+        }
     }
     m_flags = flags;
     dom::syncCSSClassWith(m_decoratedWindow, "frameless", !hasFrame() || !window()->isTopLevel());
