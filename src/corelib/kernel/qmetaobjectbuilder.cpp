@@ -423,14 +423,20 @@ QMetaMethodBuilder QMetaObjectBuilder::addMethod(const QByteArray &signature,
 QMetaMethodBuilder QMetaObjectBuilder::addMethod(const QMetaMethod &prototype)
 {
     QMetaMethodBuilder method;
-    if (prototype.methodType() == QMetaMethod::Method)
+    switch (prototype.methodType()) {
+    case QMetaMethod::Method:
         method = addMethod(prototype.methodSignature());
-    else if (prototype.methodType() == QMetaMethod::Signal)
+        break;
+    case QMetaMethod::Signal:
         method = addSignal(prototype.methodSignature());
-    else if (prototype.methodType() == QMetaMethod::Slot)
+        break;
+    case QMetaMethod::Slot:
         method = addSlot(prototype.methodSignature());
-    else if (prototype.methodType() == QMetaMethod::Constructor)
+        break;
+    case QMetaMethod::Constructor:
         method = addConstructor(prototype.methodSignature());
+        break;
+    }
     method.setReturnType(prototype.typeName());
     method.setParameterNames(prototype.parameterNames());
     method.setTag(prototype.tag());
@@ -669,21 +675,36 @@ void QMetaObjectBuilder::addMetaObject(const QMetaObject *prototype,
         for (index = prototype->methodOffset(); index < prototype->methodCount(); ++index) {
             QMetaMethod method = prototype->method(index);
             if (method.methodType() != QMetaMethod::Signal) {
-                if (method.access() == QMetaMethod::Public && (members & PublicMethods) == 0)
-                    continue;
-                if (method.access() == QMetaMethod::Private && (members & PrivateMethods) == 0)
-                    continue;
-                if (method.access() == QMetaMethod::Protected && (members & ProtectedMethods) == 0)
-                    continue;
+                switch (method.access()) {
+                case QMetaMethod::Public:
+                    if ((members & PublicMethods) == 0)
+                        continue;
+                    break;
+                case QMetaMethod::Private:
+                    if ((members & PrivateMethods) == 0)
+                        continue;
+                    break;
+                case QMetaMethod::Protected:
+                    if ((members & ProtectedMethods) == 0)
+                        continue;
+                    break;
+                }
             }
-            if (method.methodType() == QMetaMethod::Method && (members & Methods) != 0) {
-                addMethod(method);
-            } else if (method.methodType() == QMetaMethod::Signal &&
-                       (members & Signals) != 0) {
-                addMethod(method);
-            } else if (method.methodType() == QMetaMethod::Slot &&
-                       (members & Slots) != 0) {
-                addMethod(method);
+            switch (method.methodType()) {
+            case QMetaMethod::Method:
+                if (members & Methods)
+                    addMethod(method);
+                break;
+            case QMetaMethod::Signal:
+                if (members & Signals)
+                    addMethod(method);
+                break;
+            case QMetaMethod::Slot:
+                if (members & Slots)
+                    addMethod(method);
+                break;
+            case QMetaMethod::Constructor:
+                ;
             }
         }
     }
