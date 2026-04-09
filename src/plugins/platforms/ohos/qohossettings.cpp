@@ -29,19 +29,19 @@ QOhosOptional<std::string> tryGetDataItemValue(const std::string &name, const st
             return;
         }
 
+        auto thenCatchPromises = std::move(evalPromise).makeThenCatchBranches(Q_FUNC_INFO);
         jsState.eval<QNapi::Promise>(
             "@ohos.settings.getValue(*)",
             {defaultQAbility.get("context"), name, domainName})
-        .withContext(std::move(evalPromise))
-        .onThenWithContext([](const QtOhos::CallbackInfo &cbInfo, auto &evalPromise) {
+        .onThen([thenPromise = std::move(thenCatchPromises.first)](const QtOhos::CallbackInfo &cbInfo) {
             std::string result = cbInfo.getFirstArg<QNapi::String>(Q_FUNC_INFO);
-            evalPromise(makeQOhosOptional(result));
+            thenPromise(makeQOhosOptional(result));
         })
-        .onCatchWithContext([name, domainName](const QtOhos::CallbackInfo &, auto &evalPromise) {
+        .onCatch([catchPromise = std::move(thenCatchPromises.second), name, domainName](const QtOhos::CallbackInfo &) {
             qOhosPrintfError(
                 "Got error from @ohos.settings.getValue(..., '%s', '%s').",
                 name.c_str(), domainName.c_str());
-            evalPromise(makeEmptyQOhosOptional());
+            catchPromise(makeEmptyQOhosOptional());
         });
     },
     Q_FUNC_INFO);

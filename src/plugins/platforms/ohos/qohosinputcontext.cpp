@@ -216,7 +216,7 @@ void notifyOhosInputMethodAboutPossibleAutocorrection(const QOhosInsertedText &i
             jsState.eval<QNapi::Promise>(
                 "@ohos.inputMethod.getController().changeSelection(*)", {insertedText.text(), startPosition, endPosition})
             .onCatch(QtOhos::makeErrorLoggingJsCallback("changeSelection()"))
-            .onFinally(std::move(taskPromise));
+            .onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
         },
         Q_FUNC_INFO);
 }

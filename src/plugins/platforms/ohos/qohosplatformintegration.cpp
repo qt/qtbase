@@ -85,10 +85,10 @@ std::set<QInputDevice::DeviceType> getAvailableDeviceTypes()
 {
     return QtOhos::evalInJsThreadWithPromise<std::set<QInputDevice::DeviceType>>(
         [](QtOhos::JsState &jsState, QOhosTaskPromise<std::set<QInputDevice::DeviceType>> evalPromise) {
+            auto thenCatchPromises = std::move(evalPromise).makeThenCatchBranches(Q_FUNC_INFO);
             jsState.eval<QNapi::Promise>("@ohos.multimodalInput.inputDevice.getDeviceList()")
-                .withContext(std::move(evalPromise))
-                .onThenWithContext(
-                    [](const QtOhos::CallbackInfo &cbInfo, auto &evalPromise) {
+                .onThen(
+                    [thenPromise = std::move(thenCatchPromises.first)](const QtOhos::CallbackInfo &cbInfo) {
                         auto deviceIdsJsArray = cbInfo.getFirstArg<QNapi::Array>(Q_FUNC_INFO);
                         auto deviceIds = QNapi::getArrayElements<std::vector<std::uint32_t>, QNapi::Number>(deviceIdsJsArray);
                         std::set<QInputDevice::DeviceType> deviceTypes;
@@ -96,12 +96,12 @@ std::set<QInputDevice::DeviceType> getAvailableDeviceTypes()
                             deviceTypes.insert(QInputDevice::DeviceType::TouchScreen);
                         if (isDeviceTypeInDeviceIds(cbInfo.jsState(), deviceIds, isInputDeviceWithTouchpad))
                             deviceTypes.insert(QInputDevice::DeviceType::TouchPad);
-                        evalPromise(deviceTypes);
+                        thenPromise(deviceTypes);
                     })
-                .onCatchWithContext(
-                    [](const QtOhos::CallbackInfo &, auto &evalPromise) {
+                .onCatch(
+                    [catchPromise = std::move(thenCatchPromises.second)](const QtOhos::CallbackInfo &) {
                         qOhosPrintfError("Error while obtaining device list (@ohos.multimodalInput.inputDevice.getDeviceList())");
-                        evalPromise({});
+                        catchPromise({});
                     });
         },
         Q_FUNC_INFO);

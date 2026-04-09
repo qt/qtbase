@@ -297,22 +297,22 @@ QRect QOhosPlatformScreen::getAvailableArea() const
                 return;
             }
 
+            auto thenCatchPromises = std::move(evalPromise).makeThenCatchBranches(Q_FUNC_INFO);
             display.call<QNapi::Promise>("getAvailableArea")
-            .withContext(std::move(evalPromise))
-            .onThenWithContext(
-                [](const QtOhos::CallbackInfo &cbInfo, QOhosTaskPromise<QRect> &evalPromise) {
+            .onThen(
+                [thenPromise = std::move(thenCatchPromises.first)](const QtOhos::CallbackInfo &cbInfo) {
                     auto availableArea = cbInfo.getFirstArg<QNapi::Object>(Q_FUNC_INFO);
-                    evalPromise(
+                    thenPromise(
                         QRect(
                             availableArea.get<QNapi::Number>("left"),
                             availableArea.get<QNapi::Number>("top"),
                             availableArea.get<QNapi::Number>("width"),
                             availableArea.get<QNapi::Number>("height")));
                 })
-            .onCatchWithContext(
-                [](const QtOhos::CallbackInfo &cbInfo, QOhosTaskPromise<QRect> &evalPromise) {
+            .onCatch(
+                [catchPromise = std::move(thenCatchPromises.second)](const QtOhos::CallbackInfo &cbInfo) {
                     QtOhos::logJsCallbackError(cbInfo, "Error occurred in JS getAvailableArea()");
-                    evalPromise(QRect());
+                    catchPromise(QRect());
                 });
         },
         Q_FUNC_INFO);
@@ -381,7 +381,7 @@ QPixmap QOhosPlatformScreen::grabWindow(WId wId, int x, int y, int width, int he
     auto capturedScreenPixmap = QtOhos::evalInJsThreadWithPromise<QPixmap>(
         [displayId = m_displayInfo.id](
             QtOhos::JsState &jsState, QOhosTaskPromise<QPixmap> evalPromise) {
-            auto sharedEvalPromise = QtOhos::moveToSharedPtr(std::move(evalPromise));
+            auto sharedEvalPromise = QtOhos::moveToSharedPtr(std::move(evalPromise).makeChained(Q_FUNC_INFO));
             tryCaptureScreenPixelmapWithPermissionCheck(
                 jsState, displayId,
                 [sharedEvalPromise](

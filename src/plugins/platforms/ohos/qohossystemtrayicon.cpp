@@ -446,7 +446,7 @@ void QOhosSystemTrayIcon::updateToolTip(const QString &tooltip)
                     "@kit.StatusBarExtensionKit.statusBarManager.updateStatusBarHoverTips(*)",
                     {getContextForStatusBarManager(jsState), applyWorkaroundForEmptyHoverTips(tooltip.toStdString())})
                 .onCatch(QtOhos::makeErrorLoggingJsCallback("updateStatusBarHoverTips()"))
-                .onFinally(std::move(taskPromise));
+                .onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
             },
             Q_FUNC_INFO);
     }
@@ -468,7 +468,7 @@ void QOhosSystemTrayIcon::showMessage(
                 msecs > 0 ? makeQOhosOptional(msecs) : makeEmptyQOhosOptional());
             jsState.eval<QNapi::Promise>("@ohos.notificationManager.publish(*)", {notificationRequest})
             .onCatch(QtOhos::makeErrorLoggingJsCallback("publish()"))
-            .onFinally(std::move(taskPromise));
+            .onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
         },
         Q_FUNC_INFO);
 }
