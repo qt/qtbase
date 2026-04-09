@@ -736,6 +736,12 @@ endif()\n")
                    "set(OPENSSL_ROOT_DIR \"${openssl_root_cmake_path}\" CACHE STRING \"\")\n")
         endif()
 
+        if(DEFINED FFMPEG_DIR)
+            file(TO_CMAKE_PATH "${FFMPEG_DIR}" ffmpeg_dir_cmake_path)
+            string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
+                   "set(FFMPEG_DIR \"${ffmpeg_dir_cmake_path}\" CACHE PATH \"\")\n")
+        endif()
+
         qt_generate_install_prefixes(install_prefix_content)
 
         string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS "${install_prefix_content}")
