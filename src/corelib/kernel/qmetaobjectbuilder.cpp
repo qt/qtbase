@@ -389,7 +389,7 @@ QMetaMethodBuilder QMetaObjectBuilder::addMethod(const QByteArray &signature)
 {
     int index = int(d->methods.size());
     d->methods.push_back(QMetaMethodBuilderPrivate(QMetaMethod::Method, signature));
-    return QMetaMethodBuilder(this, index);
+    return QMetaMethodBuilder(this, index, QMetaMethod::Method);
 }
 
 /*!
@@ -406,7 +406,7 @@ QMetaMethodBuilder QMetaObjectBuilder::addMethod(const QByteArray &signature,
 {
     int index = int(d->methods.size());
     d->methods.push_back(QMetaMethodBuilderPrivate(QMetaMethod::Method, signature, returnType));
-    return QMetaMethodBuilder(this, index);
+    return QMetaMethodBuilder(this, index, QMetaMethod::Method);
 }
 
 /*!
@@ -459,7 +459,7 @@ QMetaMethodBuilder QMetaObjectBuilder::addSlot(const QByteArray &signature)
 {
     int index = int(d->methods.size());
     d->methods.push_back(QMetaMethodBuilderPrivate(QMetaMethod::Slot, signature));
-    return QMetaMethodBuilder(this, index);
+    return QMetaMethodBuilder(this, index, QMetaMethod::Slot);
 }
 
 /*!
@@ -475,7 +475,7 @@ QMetaMethodBuilder QMetaObjectBuilder::addSignal(const QByteArray &signature)
     int index = int(d->methods.size());
     d->methods.push_back(QMetaMethodBuilderPrivate(QMetaMethod::Signal, signature,
                                                    QByteArray("void"), QMetaMethod::Public));
-    return QMetaMethodBuilder(this, index);
+    return QMetaMethodBuilder(this, index, QMetaMethod::Signal);
 }
 
 /*!
@@ -492,7 +492,7 @@ QMetaMethodBuilder QMetaObjectBuilder::addConstructor(const QByteArray &signatur
     int index = int(d->constructors.size());
     d->constructors.push_back(QMetaMethodBuilderPrivate(QMetaMethod::Constructor, signature,
                                                         /*returnType=*/QByteArray()));
-    return QMetaMethodBuilder(this, -(index + 1));
+    return QMetaMethodBuilder(this, index, QMetaMethod::Constructor);
 }
 
 /*!
@@ -757,7 +757,7 @@ void QMetaObjectBuilder::addMetaObject(const QMetaObject *prototype,
 QMetaMethodBuilder QMetaObjectBuilder::method(int index) const
 {
     if (uint(index) < d->methods.size())
-        return QMetaMethodBuilder(this, index);
+        return QMetaMethodBuilder(this, index, QMetaMethod::Method);
     else
         return QMetaMethodBuilder();
 }
@@ -770,7 +770,7 @@ QMetaMethodBuilder QMetaObjectBuilder::method(int index) const
 QMetaMethodBuilder QMetaObjectBuilder::constructor(int index) const
 {
     if (uint(index) < d->constructors.size())
-        return QMetaMethodBuilder(this, -(index + 1));
+        return QMetaMethodBuilder(this, index, QMetaMethod::Constructor);
     else
         return QMetaMethodBuilder();
 }
@@ -1557,13 +1557,21 @@ void QMetaObjectBuilder::setStaticMetacallFunction
 
 QMetaMethodBuilderPrivate *QMetaMethodBuilder::d_func() const
 {
-    // Positive indices indicate methods, negative indices indicate constructors.
-    if (_mobj && _index >= 0 && _index < int(_mobj->d->methods.size()))
-        return &(_mobj->d->methods[_index]);
-    else if (_mobj && -_index >= 1 && -_index <= int(_mobj->d->constructors.size()))
-        return &(_mobj->d->constructors[(-_index) - 1]);
-    else
+    if (!_mobj)
         return nullptr;
+    switch (_type) {
+    case QMetaMethod::Signal:
+    case QMetaMethod::Method:
+    case QMetaMethod::Slot:
+        if (_index < int(_mobj->d->methods.size()))
+            return &(_mobj->d->methods[_index]);
+        break;
+    case QMetaMethod::Constructor:
+        if (_index < int(_mobj->d->constructors.size()))
+            return &(_mobj->d->constructors[_index]);
+        break;
+    }
+    return nullptr;
 }
 
 /*!
@@ -1576,10 +1584,7 @@ QMetaMethodBuilderPrivate *QMetaMethodBuilder::d_func() const
 */
 int QMetaMethodBuilder::index() const
 {
-    if (_index >= 0)
-        return _index;          // Method, signal, or slot
-    else
-        return (-_index) - 1;   // Constructor
+    return _index;
 }
 
 /*!
@@ -1891,7 +1896,7 @@ QMetaMethodBuilder QMetaPropertyBuilder::notifySignal() const
 {
     QMetaPropertyBuilderPrivate *d = d_func();
     if (d && d->notifySignal >= 0)
-        return QMetaMethodBuilder(_mobj, d->notifySignal);
+        return QMetaMethodBuilder(_mobj, d->notifySignal, QMetaMethod::Signal);
     else
         return QMetaMethodBuilder();
 }

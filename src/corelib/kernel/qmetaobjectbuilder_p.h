@@ -178,12 +178,13 @@ public:
 private:
     const QMetaObjectBuilder *_mobj;
     int _index;
+    QMetaMethod::MethodType _type;
 
     friend class QMetaObjectBuilder;
     friend class QMetaPropertyBuilder;
 
-    QMetaMethodBuilder(const QMetaObjectBuilder *mobj, int index)
-        : _mobj(mobj), _index(index) {}
+    QMetaMethodBuilder(const QMetaObjectBuilder *mobj, int index, QMetaMethod::MethodType type)
+        : _mobj(mobj), _index(index), _type(type) {}
 
     QMetaMethodBuilderPrivate *d_func() const;
 };
