@@ -1194,11 +1194,12 @@ QOhosWindowProxy::createForExistingMainWindow(const ExistingMainWindowCreateInfo
 {
     return QtOhos::evalInJsThreadWithPromise<std::shared_ptr<QOhosWindowProxy>>(
         [&](QtOhos::JsState &jsState, QOhosTaskPromise<std::shared_ptr<QOhosWindowProxy>> evalPromise) {
+            auto sharedEvalPromise = QtOhos::moveToSharedPtr(std::move(evalPromise));
             makeWindowProxyDataForExistingMainWindowInJsThread(
                 jsState,
                 createInfo,
-                [evalPromise = std::move(evalPromise)](QtOhos::JsState &jsState, QOhosWindowProxyData windowProxyData) {
-                    evalPromise(QOhosWindowProxy::create(jsState, std::move(windowProxyData)));
+                [sharedEvalPromise](QtOhos::JsState &jsState, QOhosWindowProxyData windowProxyData) {
+                    (*sharedEvalPromise)(QOhosWindowProxy::create(jsState, std::move(windowProxyData)));
                 });
         });
 }
@@ -1208,10 +1209,11 @@ QOhosWindowProxy::createFloatWindow(const FloatWindowCreateInfo &createInfo)
 {
     return QtOhos::evalInJsThreadWithPromise<std::shared_ptr<QOhosWindowProxy>>(
         [&](QtOhos::JsState &jsState, QOhosTaskPromise<std::shared_ptr<QOhosWindowProxy>> evalPromise) {
+            auto sharedEvalPromise = QtOhos::moveToSharedPtr(std::move(evalPromise));
             makeWindowProxyDataForFloatWindowInJsThread(
                 jsState, createInfo,
-                [evalPromise = std::move(evalPromise)](QtOhos::JsState &jsState, QOhosWindowProxyData windowProxyData) {
-                    evalPromise(QOhosWindowProxy::create(jsState, std::move(windowProxyData)));
+                [sharedEvalPromise](QtOhos::JsState &jsState, QOhosWindowProxyData windowProxyData) {
+                    (*sharedEvalPromise)(QOhosWindowProxy::create(jsState, std::move(windowProxyData)));
                 });
         });
 }
@@ -1221,11 +1223,12 @@ QOhosWindowProxy::createMainWindow(const MainWindowCreateInfo &createInfo)
 {
     return QtOhos::evalInJsThreadWithPromise<std::shared_ptr<QOhosWindowProxy>>(
         [&](QtOhos::JsState &jsState, QOhosTaskPromise<std::shared_ptr<QOhosWindowProxy>> evalPromise) {
+            auto sharedEvalPromise = QtOhos::moveToSharedPtr(std::move(evalPromise));
             makeWindowProxyDataForMainWindowInJsThread(
                 jsState,
                 createInfo,
-                [evalPromise = std::move(evalPromise)](QtOhos::JsState &jsState, QOhosWindowProxyData windowProxyData) {
-                    evalPromise(QOhosWindowProxy::create(jsState, std::move(windowProxyData)));
+                [sharedEvalPromise](QtOhos::JsState &jsState, QOhosWindowProxyData windowProxyData) {
+                    (*sharedEvalPromise)(QOhosWindowProxy::create(jsState, std::move(windowProxyData)));
                 });
         });
 }
@@ -1245,9 +1248,10 @@ QOhosWindowProxy::createSubWindow(const SubWindowCreateInfo &createInfo)
 {
     return QtOhos::evalInJsThreadWithPromise<std::shared_ptr<QOhosWindowProxy>>(
         [&](QtOhos::JsState &jsState, QOhosTaskPromise<std::shared_ptr<QOhosWindowProxy>> evalPromise) {
+            auto sharedEvalPromise = QtOhos::moveToSharedPtr(std::move(evalPromise));
             auto proxyDataConsumer =
-                [evalPromise = std::move(evalPromise)](QtOhos::JsState &jsState, QOhosWindowProxyData windowProxyData) {
-                    evalPromise(QOhosWindowProxy::create(jsState, std::move(windowProxyData)));
+                [sharedEvalPromise](QtOhos::JsState &jsState, QOhosWindowProxyData windowProxyData) {
+                    (*sharedEvalPromise)(QOhosWindowProxy::create(jsState, std::move(windowProxyData)));
                 };
             // HACK - calling createSubWindow from window may throw while the context is termination
             // This is only a problem because we currenlty do not properly handle main window closing

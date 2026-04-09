@@ -380,11 +380,12 @@ QPixmap QOhosPlatformScreen::grabWindow(WId wId, int x, int y, int width, int he
     auto capturedScreenPixmap = QtOhos::evalInJsThreadWithPromise<QPixmap>(
         [displayId = m_displayInfo.id](
             QtOhos::JsState &jsState, QOhosTaskPromise<QPixmap> evalPromise) {
+            auto sharedEvalPromise = QtOhos::moveToSharedPtr(std::move(evalPromise));
             tryCaptureScreenPixelmapWithPermissionCheck(
                 jsState, displayId,
-                [evalPromise = std::move(evalPromise)](
+                [sharedEvalPromise](
                     std::shared_ptr<::OH_PixelmapNative> optPixelMap) {
-                    evalPromise(
+                    (*sharedEvalPromise)(
                         optPixelMap
                             ? QPixmap::fromImage(createQImageFromNativePixelMap(optPixelMap.get()))
                             : QPixmap());
