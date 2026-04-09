@@ -380,7 +380,7 @@ function(qt_internal_add_example_external_project subdir)
 
     set(vars_to_pass_if_defined)
     set(var_defs)
-    if(QT_HOST_PATH OR CMAKE_CROSSCOMPILING)
+    if(QT_HOST_PATH OR CMAKE_CROSSCOMPILING OR QT_USE_VCPKG)
         list(APPEND var_defs
             -DCMAKE_TOOLCHAIN_FILE:FILEPATH=${qt_cmake_dir}/qt.toolchain.cmake
         )
