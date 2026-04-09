@@ -1262,25 +1262,6 @@ void QMainWindowLayoutState::saveState(QDataStream &stream) const
 #endif
 }
 
-#if QT_CONFIG(dockwidget)
-static QList<QDockWidget*> allMyDockWidgets(const QWidget *mainWindow)
-{
-    QList<QDockWidget*> result;
-    for (QObject *c : mainWindow->children()) {
-        if (auto *dw = qobject_cast<QDockWidget*>(c)) {
-            result.append(dw);
-        } else if (auto *gw = qobject_cast<QDockWidgetGroupWindow*>(c)) {
-            for (QObject *c : gw->children()) {
-                if (auto *dw = qobject_cast<QDockWidget*>(c))
-                    result.append(dw);
-            }
-        }
-    }
-
-    return result;
-}
-#endif // QT_CONFIG(dockwidget)
-
 //pre4.3 tests the format that was used before 4.3
 bool QMainWindowLayoutState::checkFormat(QDataStream &stream)
 {
@@ -1303,7 +1284,7 @@ bool QMainWindowLayoutState::checkFormat(QDataStream &stream)
 #if QT_CONFIG(dockwidget)
             case QDockAreaLayout::DockWidgetStateMarker:
                 {
-                    const auto dockWidgets = allMyDockWidgets(mainWindow);
+                    const auto dockWidgets = mainWindow->findChildren<QDockWidget *>(Qt::FindChildrenRecursively);
                     if (!dockAreaLayout.restoreState(stream, dockWidgets, QInternal::Testing))
                         return false;
                 }
@@ -1314,7 +1295,7 @@ bool QMainWindowLayoutState::checkFormat(QDataStream &stream)
                     QRect geom;
                     stream >> geom;
                     QDockAreaLayoutInfo info;
-                    auto dockWidgets = allMyDockWidgets(mainWindow);
+                    auto dockWidgets = mainWindow->findChildren<QDockWidget *>(Qt::FindChildrenRecursively);
                     if (!info.restoreState(stream, dockWidgets, QInternal::Testing))
                         return false;
                 }
@@ -1360,7 +1341,7 @@ bool QMainWindowLayoutState::restoreState(QDataStream &_stream,
 #if QT_CONFIG(dockwidget)
             case QDockAreaLayout::DockWidgetStateMarker:
             {
-                const auto dockWidgets = allMyDockWidgets(mainWindow);
+                const auto dockWidgets = mainWindow->findChildren<QDockWidget *>(Qt::FindChildrenRecursively);
                 if (!dockAreaLayout.restoreState(stream, dockWidgets, QInternal::Live))
                     return false;
 
@@ -1382,7 +1363,7 @@ bool QMainWindowLayoutState::restoreState(QDataStream &_stream,
 #if QT_CONFIG(tabwidget)
             case QDockAreaLayout::FloatingDockWidgetTabMarker:
             {
-                auto dockWidgets = allMyDockWidgets(mainWindow);
+                auto dockWidgets = mainWindow->findChildren<QDockWidget *>(Qt::FindChildrenRecursively);
                 // dissolve all floating tabs first.
                 for (auto *dockWidget : std::as_const(dockWidgets)) {
                     QPointer<QDockWidgetGroupWindow> gw = qobject_cast<QDockWidgetGroupWindow *>(dockWidget->parent());
