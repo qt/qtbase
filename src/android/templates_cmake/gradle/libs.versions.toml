@@ -1,0 +1,14 @@
+[versions]
+agp = "9.0.0"
+kotlin = "2.3.0"
+play-feature-delivery = "2.1.0"
+androidx-core = "1.17.0"
+
+[libraries]
+androidx-core = { module = "androidx.core:core", version.ref = "androidx-core" }
+play-feature-delivery = { module = "com.google.android.play:feature-delivery", version.ref = "play-feature-delivery" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+android-dynamic-feature = { id = "com.android.dynamic-feature", version.ref = "agp" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }

@@ -1,5 +1,5 @@
 plugins {
-    id '@GRADLE_PLUGIN_TYPE@' version '9.0.0'
+    alias(libs.plugins.android.application)
 }
 
 dependencies {

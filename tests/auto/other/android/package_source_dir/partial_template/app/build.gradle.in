@@ -9,7 +9,7 @@ buildscript {
     }
 }
 
-apply plugin: '@GRADLE_PLUGIN_TYPE@'
+apply plugin: 'com.android.application'
 
 dependencies {
     @GRADLE_DEPENDENCIES@

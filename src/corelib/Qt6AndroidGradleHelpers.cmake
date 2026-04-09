@@ -32,7 +32,10 @@ function(_qt_internal_android_get_template_path out_var target template_name)
         endif()
 
         # Add user template with the higher priority
-        list(PREPEND possible_paths "${user_template_directory}/${template_name}.in")
+        list(PREPEND possible_paths
+            "${user_template_directory}/${template_name}.in"
+            "${user_template_directory}/${template_name}"
+        )
 
         # When the user’s package source dir is already the module's subdir
         # (i.e app/ or dynamic_feature/), then don't add yet another app subdir.
@@ -42,6 +45,7 @@ function(_qt_internal_android_get_template_path out_var target template_name)
             if(template_name MATCHES "^${user_template_dir_basename_re}/(.+)$")
                 set(trailing_name "${CMAKE_MATCH_1}")
                 list(INSERT possible_paths 1 "${user_template_directory}/${trailing_name}.in")
+                list(INSERT possible_paths 2 "${user_template_directory}/${trailing_name}")
             endif()
         endif()
     endif()
@@ -155,11 +159,10 @@ function(_qt_internal_set_android_application_gradle_defaults target)
 
     set(target_dynamic_features "$<TARGET_PROPERTY:${target},_qt_android_dynamic_features>")
     string(JOIN "" implementation_dependencies
-        "$<$<BOOL:${target_dynamic_features}>:'com.google.android.play:feature-delivery:2.1.0'>"
+        "$<$<BOOL:${target_dynamic_features}>:libs.play.feature.delivery>"
     )
-    # TODO: make androidx.core:core version configurable.
-    # Currently, it is hardcoded to 1.17.0.
-    list(APPEND implementation_dependencies "'androidx.core:core:1.17.0'")
+    # Default dependency versions are defined in the version catalog.
+    list(APPEND implementation_dependencies "libs.androidx.core")
 
     set_target_properties(${target} PROPERTIES
         _qt_android_gradle_java_source_dirs "${android_java_dir}/src;src;java"
@@ -191,10 +194,6 @@ function(_qt_internal_android_generate_target_build_gradle target)
     if("${out_file}" IN_LIST deployment_files)
         return()
     endif()
-
-    # TODO: The current build.gradle.in templates hardcodes couple values that needs to be
-    # configurable in the future. For example the buildscript dependencies, or the use of
-    # androidx.core:core:1.13.1 and the dependency for all user applications.
 
     _qt_internal_android_get_gradle_property(PACKAGE_NAME ${target}
         QT_ANDROID_PACKAGE_NAME "org.qtproject.example.$<MAKE_C_IDENTIFIER:${target}>")
@@ -271,10 +270,8 @@ function(_qt_internal_android_generate_target_build_gradle target)
             OUTPUT_NAME "${target}")
         set(APP_ARGUMENTS "${QT_ANDROID_APPLICATION_ARGUMENTS}")
 
-        set(GRADLE_PLUGIN_TYPE "com.android.application")
         set(template_subdir "app")
     elseif(android_target_type STREQUAL "DYNAMIC_FEATURE")
-        set(GRADLE_PLUGIN_TYPE "com.android.dynamic-feature")
         set(template_subdir "dynamic_feature")
     else()
         message(FATAL_ERROR "Unsupported target type for android bundle deployment ${target}")
@@ -835,6 +832,7 @@ endfunction()
 function(_qt_internal_android_copy_gradle_files target output_directory)
     _qt_internal_android_gradlew_name(gradlew_file_name)
     _qt_internal_android_gradle_template_dir(gradle_template_dir)
+    _qt_internal_android_template_dir(android_template_dir)
 
     set(gradlew_file_src "${gradle_template_dir}/${gradlew_file_name}")
     set(gradlew_file_dst "${output_directory}/${gradlew_file_name}")
@@ -858,10 +856,21 @@ function(_qt_internal_android_copy_gradle_files target output_directory)
         VERBATIM
     )
 
+    set(libs_versions_src "${android_template_dir}/gradle/libs.versions.toml")
+    set(libs_versions_dst "${gradle_dir_dst}/libs.versions.toml")
+    add_custom_command(OUTPUT "${libs_versions_dst}"
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${gradle_dir_dst}"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${libs_versions_src}" "${libs_versions_dst}"
+        DEPENDS "${libs_versions_src}"
+        COMMENT "Copying libs.versions.toml for ${target}"
+        VERBATIM
+    )
+
     add_custom_target(${target}_copy_gradle_files
         DEPENDS
             "${gradlew_file_dst}"
             "${gradle_dir_dst}"
+            "${libs_versions_dst}"
     )
 endfunction()
 
