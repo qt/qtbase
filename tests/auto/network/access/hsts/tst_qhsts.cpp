@@ -4,7 +4,7 @@
 #include <QTest>
 
 #include <QtCore/qdatetime.h>
-#include <QtCore/qdir.h>
+#include <QtCore/qtemporarydir.h>
 #include <QtCore/qlist.h>
 #include <QtCore/qurl.h>
 
@@ -295,22 +295,11 @@ void tst_QHsts::testSTSHeaderParser()
     QVERIFY(!parser.expirationDate().isValid());
 }
 
-const QLatin1String storeDir(".");
-
-struct TestStoreDeleter
-{
-    ~TestStoreDeleter()
-    {
-        QDir cwd;
-        if (!cwd.remove(QHstsStore::absoluteFilePath(storeDir)))
-            qWarning() << "tst_QHsts::testStore: failed to remove the hsts store file";
-    }
-};
-
 void tst_QHsts::testStore()
 {
-    // Delete the store's file after we finish the test.
-    TestStoreDeleter cleaner;
+    QTemporaryDir tempDir;
+    QVERIFY(tempDir.isValid());
+    const QString storeDir = tempDir.path();
 
     const QUrl exampleCom(QStringLiteral("http://example.com"));
     const QUrl subDomain(QStringLiteral("http://subdomain.example.com"));
