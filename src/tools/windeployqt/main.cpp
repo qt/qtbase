@@ -1785,10 +1785,12 @@ static DeployResult deploy(const Options &options, const QMap<QString, QString> 
         if (options.systemDxc) {
             const QStringList dxcLibs = findDxc(options.platform, qtBinDir,
                                                 peHeaderInfo.wordSize);
-            if (!dxcLibs.isEmpty())
+            if (!dxcLibs.isEmpty()) {
                 deployedQtLibraries.append(dxcLibs);
-            else
-                std::wcerr << "Warning: Cannot find any version of the dxcompiler.dll and dxil.dll.\n";
+            } else {
+                std::wcerr << "Warning: Cannot find any version of the dxcompiler.dll and dxil.dll."
+                           << " This is not a problem unless Direct3D 12 and certain features are used by the application.\n";
+            }
         }
     } // Windows
 
