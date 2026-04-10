@@ -1555,6 +1555,10 @@ qt_feature("waylandscanner" PUBLIC
     LABEL "Wayland Scanner"
     CONDITION TARGET Wayland::Scanner
 )
+qt_feature("xdg-desktop-portal-file-transfer" PRIVATE
+    LABEL "portal file transfer for clipboard and drag and drop"
+    CONDITION QT_FEATURE_wayland AND QT_FEATURE_dbus AND (QT_FEATURE_clipboard OR QT_FEATURE_draganddrop)
+)
 
 # qt wayland client
 qt_feature("wayland-client" PRIVATE

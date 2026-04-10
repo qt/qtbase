@@ -5,6 +5,9 @@
 #include "qwaylanddataoffer_p.h"
 #include "qwaylanddatadevicemanager_p.h"
 #include "qwaylanddisplay_p.h"
+#if QT_CONFIG(xdg_desktop_portal_file_transfer)
+#include <QtGui/private/qxdgdesktopportalfiletransfer_p.h>
+#endif
 
 #include <QtCore/private/qcore_unix_p.h>
 #include <QtGui/private/qguiapplication_p.h>
@@ -13,7 +16,7 @@
 #include <QtCore/QDebug>
 
 using namespace std::chrono;
-
+using namespace Qt::StringLiterals;
 QT_BEGIN_NAMESPACE
 
 namespace QtWaylandClient {
@@ -36,11 +39,6 @@ static QString uriList()
 static QString mozUrl()
 {
     return QStringLiteral("text/x-moz-url");
-}
-
-static QString portalFileTransfer()
-{
-    return QStringLiteral("application/vnd.portal.filetransfer");
 }
 
 static QByteArray convertData(const QString &originalMime, const QString &newMime, const QByteArray &data)
@@ -83,7 +81,6 @@ static QByteArray convertData(const QString &originalMime, const QString &newMim
             }
         }
     }
-
     return data;
 }
 
@@ -197,7 +194,6 @@ QStringList QWaylandMimeData::formats_sys() const
 QVariant QWaylandMimeData::retrieveData_sys(const QString &mimeType, QMetaType type) const
 {
     Q_UNUSED(type);
-
     auto it = m_data.constFind(mimeType);
     if (it != m_data.constEnd())
         return *it;
@@ -213,55 +209,75 @@ QVariant QWaylandMimeData::retrieveData_sys(const QString &mimeType, QMetaType t
             return QVariant();
     }
 
-    int pipefd[2];
-    if (qt_safe_pipe(pipefd) == -1) {
-        qWarning("QWaylandMimeData: pipe2() failed");
-        return QVariant();
+#if QT_CONFIG(xdg_desktop_portal_file_transfer)
+    const bool retrieveFilesFromPortal = mimeType == uriList() && m_types.contains(QXdgDesktopPortalFileTransfer::fileTransferMimeType());
+    if (retrieveFilesFromPortal) {
+        mime = QXdgDesktopPortalFileTransfer::fileTransferMimeType();
     }
+#endif
 
-    m_dataOffer->startReceiving(mime, pipefd[1]);
-
-    close(pipefd[1]);
-
-    QByteArray content;
-    if (readData(pipefd[0], content) != 0) {
-        qWarning("QWaylandDataOffer: error reading data for mimeType %s", qPrintable(mimeType));
-        content = QByteArray();
-    }
-
-    close(pipefd[0]);
+    QByteArray content = readData(mime).value_or(QByteArray());
 
     content = convertData(mimeType, mime, content);
 
-    if (mimeType != portalFileTransfer())
+#if QT_CONFIG(xdg_desktop_portal_file_transfer)
+    if (retrieveFilesFromPortal && !content.isEmpty()) {
+        const auto paths = QXdgDesktopPortalFileTransfer::retrieveFiles(QString::fromUtf8(content));
+        if (!paths.empty()) {
+            content.clear();
+            for (const auto &path : paths) {
+                content += QUrl::fromLocalFile(path).toEncoded();
+                content += "\r\n";
+            }
+        } else {
+            qCInfo(lcQpaWayland) << "Failed retrieving files, falling back to uris";
+            content = readData(mime).value_or(QByteArray());
+        }
+    }
+#endif
+
+    if (mimeType != QXdgDesktopPortalFileTransfer::fileTransferMimeType())
         m_data.insert(mimeType, content);
 
     return content;
 }
 
-int QWaylandMimeData::readData(int fd, QByteArray &data) const
+std::optional<QByteArray> QWaylandMimeData::readData(const QString &mimeType) const
 {
+    int pipefd[2];
+    if (qt_safe_pipe(pipefd) == -1) {
+        qWarning("QWaylandMimeData: pipe2() failed");
+        return std::nullopt;
+    }
+
+    m_dataOffer->startReceiving(mimeType, pipefd[1]);
+
+    close(pipefd[1]);
+    const QScopeGuard closeGuard([fd = pipefd[0]] { close(fd); });
+
+    QByteArray data;
+
     struct pollfd readset;
-    readset.fd = fd;
+    readset.fd = pipefd[0];
     readset.events = POLLIN;
 
     Q_FOREVER {
         int ready = qt_safe_poll(&readset, 1, QDeadlineTimer(1s));
         if (ready < 0) {
-            qWarning() << "QWaylandDataOffer: qt_safe_poll() failed";
-            return -1;
+            qCWarning(lcQpaWayland) << "QWaylandDataOffer: qt_safe_poll() failed while reading data for mimeType %s", qPrintable(mimeType);
+            return std::nullopt;
         } else if (ready == 0) {
-            qWarning("QWaylandDataOffer: timeout reading from pipe");
-            return -1;
+            qCWarning(lcQpaWayland, "QWaylandDataOffer: timeout reading from pipe while reading data for mimeType %s", qPrintable(mimeType));
+            return std::nullopt;
         } else {
             char buf[4096];
-            int n = QT_READ(fd, buf, sizeof buf);
+            int n = QT_READ(pipefd[0], buf, sizeof buf);
 
             if (n < 0) {
-                qWarning("QWaylandDataOffer: read() failed");
-                return -1;
+                qWarning(lcQpaWayland, "QWaylandDataOffer: read() failed");
+                return std::nullopt;
             } else if (n == 0) {
-                return 0;
+                return data;
             } else if (n > 0) {
                 data.append(buf, n);
             }
