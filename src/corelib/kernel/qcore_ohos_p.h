@@ -62,6 +62,9 @@ public:
     template<typename T = QNapi::Value>
     T eval(const std::string &expr, const std::vector<QNapi::ValueWrapper> &exprArgs = {});
 
+    QNapi::Promise evalToPromiseOrRejectOnThrow(
+        const std::string &expr, const std::vector<QNapi::ValueWrapper> &exprArgs = {});
+
     template<typename Enum>
     QNapi::Number mapOhosEnumToJs(Enum enumValue);
 
@@ -344,6 +347,16 @@ T QOhosJsState::eval(const std::string &expr, const std::vector<QNapi::ValueWrap
             [&]() {
                 return "module '"s + expr + "'"s;
             });
+}
+
+inline QNapi::Promise QOhosJsState::evalToPromiseOrRejectOnThrow(
+    const std::string &expr, const std::vector<QNapi::ValueWrapper> &exprArgs)
+{
+    QNapi::Object module;
+    std::string subExpr;
+    std::tie(module, subExpr) = extractModuleFromEvalExpr(expr);
+
+    return module.evalToPromiseOrRejectOnThrow(subExpr, exprArgs);
 }
 
 template<typename Enum>
