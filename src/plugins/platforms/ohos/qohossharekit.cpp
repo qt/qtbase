@@ -209,7 +209,7 @@ void shareDataImpl(
             registerOnOffShareCompletedEventHandler(controller, std::move(shareCompletedCallback)),
         });
 
-    controller.eval<QNapi::Promise>(
+    controller.evalToPromiseOrRejectOnThrow(
         "show(*)",
         {
             uiAbilityPeer->qAbility().get<QNapi::Object>("context"),

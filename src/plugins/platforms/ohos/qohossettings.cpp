@@ -30,7 +30,7 @@ QOhosOptional<std::string> tryGetDataItemValue(const std::string &name, const st
         }
 
         auto thenCatchPromises = std::move(evalPromise).makeThenCatchBranches(Q_FUNC_INFO);
-        jsState.eval<QNapi::Promise>(
+        jsState.evalToPromiseOrRejectOnThrow(
             "@ohos.settings.getValue(*)",
             {defaultQAbility.get("context"), name, domainName})
         .onThen([thenPromise = std::move(thenCatchPromises.first)](const QtOhos::CallbackInfo &cbInfo) {

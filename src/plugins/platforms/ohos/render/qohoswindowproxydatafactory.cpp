@@ -114,7 +114,7 @@ QNapi::Promise createSubWindowWithOptions(
                 }
             });
 
-    return windowStageOrWindowObject.eval<QNapi::Promise>(
+    return windowStageOrWindowObject.evalToPromiseOrRejectOnThrow(
         "createSubWindowWithOptions(*)",
         {windowName, subWindowOptionsObject});
 }
@@ -145,7 +145,7 @@ makeSubWindowOnAppearCallbackHandler(SubWindowOnAppearContext subWindowOnAppearC
 
 QNapi::Promise loadWindowContents(QNapi::Object window, QNapi::Object localStorage, const std::string &contentPagePath)
 {
-    return window.eval<QNapi::Promise>("loadContent(*)", {contentPagePath, localStorage});
+    return window.evalToPromiseOrRejectOnThrow("loadContent(*)", {contentPagePath, localStorage});
 }
 
 QNapi::Object makeLocalStorageForWindow(
@@ -196,7 +196,7 @@ QNapi::Promise onWindowCreatedLoadWindowContents(
 
     return !context.disableWindowFocusableBeforeLoadContentHack
         ? loadWindowContents(windowObject, context.localStorage, context.contentPagePath)
-        : windowObject.eval<QNapi::Promise>("setWindowFocusable(*)", {false})
+        : windowObject.evalToPromiseOrRejectOnThrow("setWindowFocusable(*)", {false})
             .withContext(LoadWindowContentsArgs {
                 .window = Napi::Persistent(windowObject),
                 .localStorage = Napi::Persistent(context.localStorage),
@@ -383,7 +383,7 @@ void makeWindowProxyDataForFloatWindowInJsThread(
     };
 
     jsState
-        .eval<QNapi::Promise>("@ohos.window.createWindow(*)", {configurationObject})
+        .evalToPromiseOrRejectOnThrow("@ohos.window.createWindow(*)", {configurationObject})
         .withContext(Context {
             .xComponentId = xComponentId,
             .qAbilityPeer = qAbilityPeer,

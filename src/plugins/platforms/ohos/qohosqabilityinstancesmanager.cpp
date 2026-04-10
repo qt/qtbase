@@ -86,7 +86,7 @@ void sendWantToSelfQAbility(
     if (!optStartOptions.IsEmpty())
         startAbilityArgs.push_back(optStartOptions);
 
-    baseQAbility.eval<QNapi::Promise>("context.startAbility(*)", startAbilityArgs)
+    baseQAbility.evalToPromiseOrRejectOnThrow("context.startAbility(*)", startAbilityArgs)
     .onCatch(
         [instanceId](const CallbackInfo &cbInfo) {
             logJsCallbackError(cbInfo, "context.startAbility()");

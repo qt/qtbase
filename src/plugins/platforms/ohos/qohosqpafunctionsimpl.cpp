@@ -829,7 +829,7 @@ QOhosOptional<QList<QOhosQpaFunctions::ShareKit::SharedRecord>> WantInfoImpl::tr
     return QtOhos::evalInJsThreadWithPromise<QOhosOptional<QList<SharedRecord>>>(
         [&](QtOhos::JsState &jsState, QOhosTaskPromise<QOhosOptional<QList<SharedRecord>>> evalPromise) {
             auto thenCatchPromises = std::move(evalPromise).makeThenCatchBranches(Q_FUNC_INFO);
-            jsState.eval<QNapi::Promise>(
+            jsState.evalToPromiseOrRejectOnThrow(
                 "@kit.ShareKit.systemShare.getSharedData(*)", {m_jsScopeData->want.Value()})
             .onThen(
                 [thenPromise = std::move(thenCatchPromises.first)](const QtOhos::CallbackInfo &cbInfo) {
@@ -869,7 +869,7 @@ QOhosOptional<QOhosQpaFunctions::WantInfo::ContactInfo> WantInfoImpl::tryGetCont
     return QtOhos::evalInJsThreadWithPromise<QOhosOptional<ContactInfo>>(
         [&](QtOhos::JsState &jsState, QOhosTaskPromise<QOhosOptional<ContactInfo>> evalPromise) {
             auto thenCatchPromises = std::move(evalPromise).makeThenCatchBranches(Q_FUNC_INFO);
-            jsState.eval<QNapi::Promise>(
+            jsState.evalToPromiseOrRejectOnThrow(
                 "@kit.ShareKit.systemShare.getContactInfo(*)", {m_jsScopeData->want.Value()})
             .onThen(
                 [thenPromise = std::move(thenCatchPromises.first)](const QtOhos::CallbackInfo &cbInfo) {
@@ -1035,7 +1035,7 @@ std::shared_ptr<void> QOhosQpaFunctionsImpl::startPickingColorFromScreenWithCons
 
     QtOhos::invokeInJsThread(
         [colorConsumerProxy](QtOhos::JsState &jsState) {
-            jsState.eval<QNapi::Promise>("@kit.Penkit.imageFeaturePicker.pickForResult()")
+            jsState.evalToPromiseOrRejectOnThrow("@kit.Penkit.imageFeaturePicker.pickForResult()")
             .onThen(
                 [colorConsumerProxy](const QtOhos::CallbackInfo &cbInfo) {
                     auto pickedColorInfo = cbInfo.getFirstArg<QNapi::Object>(Q_FUNC_INFO);
@@ -1284,7 +1284,7 @@ void QOhosQpaFunctionsImpl::setAbilityContinuationActive(
             }
 
             auto continueState = continuationActive ? ContinueState::ACTIVE : ContinueState::INACTIVE;
-            optAbilityPeer->qAbility().eval<QNapi::Promise>(
+            optAbilityPeer->qAbility().evalToPromiseOrRejectOnThrow(
                 "context.setMissionContinueState(*)", {jsState.mapOhosEnumToJs(continueState)})
             .onCatch(QtOhos::makeErrorLoggingJsCallback("setMissionContinueState()"))
             .onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
@@ -1455,7 +1455,7 @@ bool QOhosQpaFunctionsImpl::startAbilityByType(const QString &appType, const QJs
             }
 
             auto thenCatchPromises = std::move(evalPromise).makeThenCatchBranches(Q_FUNC_INFO);
-            qAbility.eval<QNapi::Promise>(
+            qAbility.evalToPromiseOrRejectOnThrow(
                 "context.startAbilityByType(*)",
                 {
                     appType.toStdString(),
@@ -1527,7 +1527,7 @@ void QOhosQpaFunctionsImpl::startAbilityForResult(
             if (options.hasValue())
                 arguments.push_back(convertStartOptionsToNapiObject(jsState, options.value()));
 
-            optAbilityPeer->qAbility().eval<QNapi::Promise>("context.startAbilityForResult(*)", arguments)
+            optAbilityPeer->qAbility().evalToPromiseOrRejectOnThrow("context.startAbilityForResult(*)", arguments)
             .onThen(
                 [context](const QtOhos::CallbackInfo &cbInfo) {
                     QNapi::Object abilityResult = cbInfo.getFirstArg<QNapi::Object>(Q_FUNC_INFO);
@@ -1865,7 +1865,7 @@ bool QOhosQpaFunctionsImpl::tryOpenLink(QObject *optInstanceMainWindow, const QS
                 openLinkOptions.emplace_back("appLinkingOnly", appLinkingOnly.value());
 
             auto thenCatchPromises = std::move(evalPromise).makeThenCatchBranches(Q_FUNC_INFO);
-            optAbilityPeer->qAbility().eval<QNapi::Promise>(
+            optAbilityPeer->qAbility().evalToPromiseOrRejectOnThrow(
                 "context.openLink(*)",
                 {
                     link.toStdString(),

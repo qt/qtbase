@@ -79,7 +79,7 @@ void startOhosFilePicker(
     auto documentViewPicker = QtOhos::moveToSharedPtr(
         QNapi::Reference<>::makePersistentFrom(
             makeDocumentViewPicker(jsState, qAbilityPeer, optContextJsWinId)));
-    documentViewPicker->eval<QNapi::Promise>(pickerActionName + "(*)", {pickerActionOptions}).onThen(
+    documentViewPicker->evalToPromiseOrRejectOnThrow(pickerActionName + "(*)", {pickerActionOptions}).onThen(
         [documentViewPicker, pickerActionName, sharedResultConsumer](const QtOhos::CallbackInfo &cbInfo) {
             auto actionResult = cbInfo.getFirstArg<QNapi::Array>(Q_FUNC_INFO);
             auto resultOhosUris = QNapi::getArrayElements<std::vector<std::string>, QNapi::String>(actionResult);
