@@ -1950,6 +1950,8 @@ QString QFont::substitute(const QString &familyName)
 {
     QFontSubst *fontSubst = globalFontSubst();
     Q_ASSERT(fontSubst != nullptr);
+    if (fontSubst->isEmpty())
+        return familyName;
     QFontSubst::ConstIterator it = fontSubst->constFind(familyName.toLower());
     if (it != fontSubst->constEnd() && !(*it).isEmpty())
         return (*it).first();
@@ -1971,6 +1973,8 @@ QStringList QFont::substitutes(const QString &familyName)
 {
     QFontSubst *fontSubst = globalFontSubst();
     Q_ASSERT(fontSubst != nullptr);
+    if (fontSubst->isEmpty())
+        return {};
     return fontSubst->value(familyName.toLower(), QStringList());
 }
 
