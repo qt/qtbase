@@ -1176,13 +1176,16 @@ public:
             d.swap(newData);
             return result;
         }
-        // value may belong to this map. As such, we need to copy it to ensure
-        // it stays valid throughout the iteration below (which may destroy it)
-        const T valueCopy = value;
 
         // d->m.erase_if(....) would be nice, but that's C++20.
         // So let's do like find(keyCopy, valueCopy):
         auto [i, e] = d->m.equal_range(key);
+        if (i == e)
+            return result;
+
+        // value may belong to this map. As such, we need to copy it to ensure
+        // it stays valid throughout the iteration below (which may destroy it)
+        const T valueCopy = value;
         while (i != e) {
             if (i->second == valueCopy) {
                 i = d->m.erase(i);
