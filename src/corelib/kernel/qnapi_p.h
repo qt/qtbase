@@ -85,6 +85,8 @@ using External = Napi::External<ExternalT>;
 template<typename T>
 using TypedArrayOf = Napi::TypedArrayOf<T>;
 
+class Promise;
+
 class ValueWrapper
 {
 public:
@@ -128,6 +130,8 @@ public:
 
     template<typename T>
     T eval(const std::string &expr, const std::vector<ValueWrapper> &exprArgs = {}) const;
+
+    QNapi::Promise evalToPromiseOrRejectOnThrow(const std::string &expr, const std::vector<ValueWrapper> &exprArgs = {}) const;
 
     void set(const std::string &name, const ValueWrapper &value);
 
@@ -216,6 +220,8 @@ public:
 
     template<typename T>
     T eval(const std::string &expr, const std::vector<ValueWrapper> &exprArgs = {}) const;
+
+    QNapi::Promise evalToPromiseOrRejectOnThrow(const std::string &expr, const std::vector<ValueWrapper> &exprArgs = {}) const;
 
     void set(const std::string &name, const ValueWrapper &value);
 
@@ -911,6 +917,22 @@ T Object::eval(const std::string &expr, const std::vector<ValueWrapper> &exprArg
         });
 }
 
+inline QNapi::Promise Object::evalToPromiseOrRejectOnThrow(
+    const std::string &expr, const std::vector<ValueWrapper> &exprArgs) const
+{
+    return runEscapingHandleScope<QNapi::Promise>(
+        Env(),
+        [&]() {
+            try {
+                return eval<QNapi::Promise>(expr, exprArgs);
+            } catch (const Napi::Error &error) {
+                auto deferred = Napi::Promise::Deferred::New(Env());
+                deferred.Reject(error.Value());
+                return QNapi::Promise(deferred.Promise());
+            }
+        });
+}
+
 inline void Object::set(const std::string &name, const ValueWrapper &value)
 {
     Napi::HandleScope setPropScope(Env());
@@ -1114,6 +1136,16 @@ T Reference<Object>::eval(const std::string &expr, const std::vector<ValueWrappe
         Env(),
         [&]() {
             return Value().eval<T>(expr, exprArgs);
+        });
+}
+
+inline QNapi::Promise Reference<Object>::evalToPromiseOrRejectOnThrow(
+    const std::string &expr, const std::vector<ValueWrapper> &exprArgs) const
+{
+    return runEscapingHandleScope<QNapi::Promise>(
+        Env(),
+        [&]() {
+            return Value().evalToPromiseOrRejectOnThrow(expr, exprArgs);
         });
 }
 
