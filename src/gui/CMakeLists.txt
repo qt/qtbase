@@ -1129,6 +1129,11 @@ qt_internal_extend_target(Gui CONDITION QT_FEATURE_xkbcommon AND UNIX
         XKB::XKB
 )
 
+qt_internal_extend_target(Gui CONDITION QT_FEATURE_xdg_desktop_portal_file_transfer AND TARGET Qt::DBus AND QT_FEATURE_wayland
+    SOURCES
+        platform/unix/qxdgdesktopportalfiletransfer.cpp platform/unix/qxdgdesktopportalfiletransfer_p.h
+)
+
 qt_internal_extend_target(Gui CONDITION QT_FEATURE_metal
     SOURCES
         rhi/qrhimetal.mm rhi/qrhimetal_p.h rhi/qrhimetal_icb_p.h
