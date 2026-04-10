@@ -23,6 +23,8 @@
 #include <private/qcoregraphics_p.h>
 #include <qpa/qwindowsysteminterface.h>
 
+#include <Metal/Metal.h>
+
 #include <sys/sysctl.h>
 
 // -------------------------------------------------------------------------
@@ -215,14 +217,16 @@ QIOSScreen::QIOSScreen(UIScreen *screen)
             }
         });
 
-    // We're pausing the display link if the application moves out of the active state,
-    // so make sure to deliver to any windows that need it once the app becomes active.
-    QObject::connect(qGuiApp, &QGuiApplication::applicationStateChanged, this, [this](auto newState) {
-        if (newState == Qt::ApplicationActive) {
-            qCDebug(lcQpaApplication) << "Attempting update request delivery after becoming active";
-            deliverUpdateRequests();
-        }
-    });
+    if (shouldPauseDisplayLinkWhenInactive()) {
+        // We're pausing the display link if the application moves out of the active state,
+        // so make sure to deliver to any windows that need it once the app becomes active.
+        QObject::connect(qGuiApp, &QGuiApplication::applicationStateChanged, this, [this](auto newState) {
+            if (newState == Qt::ApplicationActive) {
+                qCDebug(lcQpaApplication) << "Attempting update request delivery after becoming active";
+                deliverUpdateRequests();
+            }
+        });
+    }
 
 #endif // !defined(Q_OS_VISIONOS))
 
@@ -309,7 +313,8 @@ void QIOSScreen::deliverUpdateRequests() const
 {
     bool pauseUpdates = true;
 
-    if (QGuiApplication::applicationState() != Qt::ApplicationActive) {
+    if (shouldPauseDisplayLinkWhenInactive()
+        && QGuiApplication::applicationState() != Qt::ApplicationActive) {
         // The applicationWillResignActive documentation describes that the app
         // should "use this method to pause ongoing tasks, disable timers, and
         // throttle down OpenGL ES frame rates", so we skip update request
@@ -495,6 +500,25 @@ QPixmap QIOSScreen::grabWindow(WId window, int x, int y, int width, int height) 
     }];
 
     return QPixmap::fromImage(qt_mac_toQImage(screenshot.CGImage));
+}
+
+bool QIOSScreen::shouldPauseDisplayLinkWhenInactive() const
+{
+    // iPad 7 with iOS 18 has been observed to crash during swapBuffers
+    // if the user enters split-view mode and drags the divider around.
+    // This is likely a GL driver issue. To reduce the chance of hitting
+    // this crash we pause the display link when the app is inactive.
+    // We limit it to A10 devices, as the crash has not been observed on
+    // other SoCs. See QTBUG-132314 for more information.
+
+    static const bool isA10GPU = []{
+        auto device = MTLCreateSystemDefaultDevice();
+        return [device.name containsString:@"A10"];
+    }();
+
+    static const bool pauseWhenInactive = qEnvironmentVariableIntegerValue(
+        "QT_IOS_PAUSE_DISPLAY_LINK_WHEN_INACTIVE").value_or(isA10GPU);
+    return pauseWhenInactive;
 }
 
 #if !defined(Q_OS_VISIONOS)

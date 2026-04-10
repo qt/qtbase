@@ -55,6 +55,8 @@ private:
     static void initializeScreens();
     void deliverUpdateRequests() const;
 
+    bool shouldPauseDisplayLinkWhenInactive() const;
+
 #if !defined(Q_OS_VISIONOS)
     UIScreen *m_uiScreen = nullptr;
     QMacNotificationObserver m_screenBrightnessObserver;
