@@ -79,7 +79,7 @@ QStringList getInstalledFontPaths()
     auto fontsPaths = QtOhos::evalInJsThreadWithPromise<std::vector<std::string>>(
         [](QtOhos::JsState &jsState, QOhosTaskPromise<std::vector<std::string>> evalPromise) {
             auto thenCatchPromises = std::move(evalPromise).makeThenCatchBranches(Q_FUNC_INFO);
-            jsState.eval<QNapi::Promise>(
+            jsState.evalToPromiseOrRejectOnThrow(
                 "@ohos.graphics.text.getSystemFontFullNamesByType(*)",
                 {static_cast<int>(JsSystemFontType::INSTALLED)})
             .onThen(
@@ -101,7 +101,7 @@ QStringList getInstalledFontPaths()
                         });
 
                     for (const auto &fontName : fontsNames) {
-                        cbInfo.jsState().eval<QNapi::Promise>(
+                        cbInfo.jsState().evalToPromiseOrRejectOnThrow(
                             "@ohos.graphics.text.getFontDescriptorByFullName(*)",
                             {fontName, static_cast<int>(JsSystemFontType::INSTALLED)})
                         .onThen(

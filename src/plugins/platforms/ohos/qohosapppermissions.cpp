@@ -18,7 +18,7 @@ void tryGetBundleAccessTokenIdWithConsumer(
     auto bundleFlags = jsState.eval<QNapi::Number>(
         "@ohos.bundle.bundleManager.BundleFlag.GET_BUNDLE_INFO_WITH_APPLICATION");
 
-    jsState.eval<QNapi::Promise>(
+    jsState.evalToPromiseOrRejectOnThrow(
         "@ohos.bundle.bundleManager.getBundleInfoForSelf(*)", {bundleFlags})
     .withContext(std::move(resultConsumer))
     .onThenWithContext([](const QtOhos::CallbackInfo &cbInfo, auto &resultConsumer) {
@@ -37,7 +37,7 @@ void checkAppPermissionStatusGrantedWithConsumer(
     QtOhos::JsState &jsState, int bundleAccessToken, const std::string &permissionName,
     QOhosConsumer<QtOhos::JsState &, bool> resultConsumer)
 {
-    jsState.eval<QNapi::Promise>(
+    jsState.evalToPromiseOrRejectOnThrow(
         "@ohos.abilityAccessCtrl.createAtManager().checkAccessToken(*)",
         {bundleAccessToken, permissionName})
     .withContext(std::move(resultConsumer))
@@ -111,7 +111,7 @@ void requestAppPermissionsFromUserWithResult(
     const std::vector<std::string> &permissionNames,
     QOhosConsumer<QtOhos::JsState &, std::vector<AppPermissionResult>> resultConsumer)
 {
-    jsState.eval<QNapi::Promise>(
+    jsState.evalToPromiseOrRejectOnThrow(
         "@ohos.abilityAccessCtrl.createAtManager().requestPermissionsFromUser(*)",
         {
             abilityPeer->qAbility().eval<QNapi::Object>("context"),
@@ -187,7 +187,7 @@ void requestAppPermissionsOnSetting(
     const std::vector<std::string> &permissionNames,
     QOhosConsumer<QtOhos::JsState &, std::vector<bool>> resultConsumer)
 {
-    jsState.eval<QNapi::Promise>(
+    jsState.evalToPromiseOrRejectOnThrow(
         "@ohos.abilityAccessCtrl.createAtManager().requestPermissionOnSetting(*)",
         {
             abilityPeer->qAbility().eval<QNapi::Object>("context"),

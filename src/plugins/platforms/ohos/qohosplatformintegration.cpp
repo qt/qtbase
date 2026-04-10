@@ -86,7 +86,7 @@ std::set<QInputDevice::DeviceType> getAvailableDeviceTypes()
     return QtOhos::evalInJsThreadWithPromise<std::set<QInputDevice::DeviceType>>(
         [](QtOhos::JsState &jsState, QOhosTaskPromise<std::set<QInputDevice::DeviceType>> evalPromise) {
             auto thenCatchPromises = std::move(evalPromise).makeThenCatchBranches(Q_FUNC_INFO);
-            jsState.eval<QNapi::Promise>("@ohos.multimodalInput.inputDevice.getDeviceList()")
+            jsState.evalToPromiseOrRejectOnThrow("@ohos.multimodalInput.inputDevice.getDeviceList()")
                 .onThen(
                     [thenPromise = std::move(thenCatchPromises.first)](const QtOhos::CallbackInfo &cbInfo) {
                         auto deviceIdsJsArray = cbInfo.getFirstArg<QNapi::Array>(Q_FUNC_INFO);

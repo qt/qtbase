@@ -40,7 +40,7 @@ void callStartAbility(QNapi::Object baseQAbility, QNapi::Object want, QOhosConsu
 {
     qOhosPrintfDebug("Calling startAbility() with Want '%s'", QNapi::toJsonString(want).c_str());
 
-    baseQAbility.eval<QNapi::Promise>("context.startAbility(*)", {want})
+    baseQAbility.evalToPromiseOrRejectOnThrow("context.startAbility(*)", {want})
     .withContext(std::move(resultConsumer))
     .onThenWithContext(
         [](const QtOhos::CallbackInfo &, auto &resultConsumer) {

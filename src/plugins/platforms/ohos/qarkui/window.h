@@ -48,6 +48,9 @@ public:
     template<typename Result = QNapi::Value>
     Result eval(const std::string &expr, const std::vector<QNapi::ValueWrapper> &exprArgs = {}) const;
 
+    QNapi::Promise evalToPromiseOrRejectOnThrow(
+        const std::string &expr, const std::vector<QNapi::ValueWrapper> &exprArgs = {}) const;
+
     QNapi::Object jsObject();
 
 private:
@@ -59,6 +62,12 @@ template<typename Result>
 Result JsWindowRef::eval(const std::string &expr, const std::vector<QNapi::ValueWrapper> &exprArgs) const
 {
     return m_jsWindow.eval<Result>(expr, exprArgs);
+}
+
+inline QNapi::Promise JsWindowRef::evalToPromiseOrRejectOnThrow(
+    const std::string &expr, const std::vector<QNapi::ValueWrapper> &exprArgs) const
+{
+    return m_jsWindow.evalToPromiseOrRejectOnThrow(expr, exprArgs);
 }
 
 }
