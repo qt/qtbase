@@ -389,7 +389,7 @@ QPushButton *QDialogButtonBoxPrivate::createButton(QDialogButtonBox::StandardBut
         return nullptr;
         ;
     }
-    QPushButton *button = new QPushButton(QGuiApplicationPrivate::platformTheme()->standardButtonText(sbutton), q);
+    QPushButton *button = new QPushButton(QDialogButtonBox::standardButtonText(sbutton), q);
     QStyle *style = q->style();
     if (style->styleHint(QStyle::SH_DialogButtonBox_ButtonsHaveIcons, nullptr, q) && icon != 0)
         button->setIcon(style->standardIcon(QStyle::StandardPixmap(icon), nullptr, q));
@@ -402,7 +402,7 @@ QPushButton *QDialogButtonBoxPrivate::createButton(QDialogButtonBox::StandardBut
     else
         addButton(button, static_cast<QDialogButtonBox::ButtonRole>(role), layoutRule);
 #if QT_CONFIG(shortcut)
-    const QKeySequence standardShortcut = QGuiApplicationPrivate::platformTheme()->standardButtonShortcut(sbutton);
+    const QKeySequence standardShortcut = QDialogButtonBox::standardButtonShortcut(sbutton);
     if (!standardShortcut.isEmpty())
         button->setShortcut(standardShortcut);
 #endif
@@ -448,7 +448,7 @@ void QDialogButtonBoxPrivate::createStandardButtons(QDialogButtonBox::StandardBu
 void QDialogButtonBoxPrivate::retranslateStrings()
 {
     for (const auto &it : std::as_const(standardButtonMap)) {
-        const QString text = QGuiApplicationPrivate::platformTheme()->standardButtonText(it.second);
+        const QString text = QDialogButtonBox::standardButtonText(it.second);
         if (!text.isEmpty())
             it.first->setText(text);
     }
@@ -888,6 +888,28 @@ QDialogButtonBox::StandardButton QDialogButtonBox::standardButton(QAbstractButto
 {
     Q_D(const QDialogButtonBox);
     return d->standardButtonMap.value(static_cast<QPushButton *>(button));
+}
+
+/*!
+    Returns the display text for the standard \a button.
+
+    \since 6.12
+    \sa StandardButton
+*/
+QString QDialogButtonBox::standardButtonText(StandardButton button)
+{
+    return QGuiApplicationPrivate::platformTheme()->standardButtonText(button);
+}
+
+/*!
+    Returns the shortcut for the standard \a button.
+
+    \since 6.12
+    \sa StandardButton
+*/
+QKeySequence QDialogButtonBox::standardButtonShortcut(StandardButton button)
+{
+    return QGuiApplicationPrivate::platformTheme()->standardButtonShortcut(button);
 }
 
 void QDialogButtonBoxPrivate::handleButtonClicked()
