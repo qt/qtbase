@@ -6436,120 +6436,127 @@ void tst_QRhi::oneDimTexture()
         QVERIFY(submitResourceUpdates(rhi.data(), batch));
     }
 
-    // Copy from 2D texture to 1D texture
-    {
-        const int WIDTH = 256;
-        const int HEIGHT = 256;
+    // On Vulkan cannot copy between 1D and 2D/3D, unless VK_KHR_maintenance5 is
+    // present and enabled, according to the validation layer. Yet it seems to
+    // work, and enabling that device extension seem to make no difference when
+    // it comes to the validation layer warnings, which is odd. In any case,
+    // skip these on Vulkan for now.
+    if (impl != QRhi::Vulkan) {
+        // Copy from 2D texture to 1D texture
+        {
+            const int WIDTH = 256;
+            const int HEIGHT = 256;
 
-        QScopedPointer<QRhiTexture> srcTexture(rhi->newTexture(
-                QRhiTexture::RGBA8, WIDTH, HEIGHT, 0, 1, QRhiTexture::Flag::UsedAsTransferSource));
-        QVERIFY(srcTexture->create());
+            QScopedPointer<QRhiTexture> srcTexture(rhi->newTexture(
+                    QRhiTexture::RGBA8, WIDTH, HEIGHT, 0, 1, QRhiTexture::Flag::UsedAsTransferSource));
+            QVERIFY(srcTexture->create());
 
-        QRhiResourceUpdateBatch *batch = rhi->nextResourceUpdateBatch();
-        QVERIFY(batch);
+            QRhiResourceUpdateBatch *batch = rhi->nextResourceUpdateBatch();
+            QVERIFY(batch);
 
-        QImage img(WIDTH, HEIGHT, QImage::Format_RGBA8888);
-        for (int x = 0; x < WIDTH; ++x) {
-            for (int y = 0; y < HEIGHT; ++y) {
-                img.setPixelColor(x, y, QColor::fromRgb(x, y, 0));
+            QImage img(WIDTH, HEIGHT, QImage::Format_RGBA8888);
+            for (int x = 0; x < WIDTH; ++x) {
+                for (int y = 0; y < HEIGHT; ++y) {
+                    img.setPixelColor(x, y, QColor::fromRgb(x, y, 0));
+                }
             }
-        }
-        QRhiTextureUploadEntry upload(0, 0, QRhiTextureSubresourceUploadDescription(img));
-        batch->uploadTexture(srcTexture.data(), upload);
+            QRhiTextureUploadEntry upload(0, 0, QRhiTextureSubresourceUploadDescription(img));
+            batch->uploadTexture(srcTexture.data(), upload);
 
-        QScopedPointer<QRhiTexture> dstTexture(rhi->newTexture(
-                QRhiTexture::RGBA8, WIDTH, 0, 0, 1, QRhiTexture::Flag::UsedAsTransferSource));
-        QVERIFY(dstTexture->create());
+            QScopedPointer<QRhiTexture> dstTexture(rhi->newTexture(
+                    QRhiTexture::RGBA8, WIDTH, 0, 0, 1, QRhiTexture::Flag::UsedAsTransferSource));
+            QVERIFY(dstTexture->create());
 
-        QRhiTextureCopyDescription copy;
-        copy.setPixelSize(QSize(WIDTH / 2, 1));
-        copy.setDestinationTopLeft(QPoint(WIDTH / 2, 0));
-        copy.setSourceTopLeft(QPoint(33, 67));
-        batch->copyTexture(dstTexture.data(), srcTexture.data(), copy);
+            QRhiTextureCopyDescription copy;
+            copy.setPixelSize(QSize(WIDTH / 2, 1));
+            copy.setDestinationTopLeft(QPoint(WIDTH / 2, 0));
+            copy.setSourceTopLeft(QPoint(33, 67));
+            batch->copyTexture(dstTexture.data(), srcTexture.data(), copy);
 
-        copy.setDestinationTopLeft(QPoint(0, 0));
-        copy.setSourceTopLeft(QPoint(99, 12));
-        batch->copyTexture(dstTexture.data(), srcTexture.data(), copy);
+            copy.setDestinationTopLeft(QPoint(0, 0));
+            copy.setSourceTopLeft(QPoint(99, 12));
+            batch->copyTexture(dstTexture.data(), srcTexture.data(), copy);
 
-        QRhiReadbackResult readResult;
-        QImage result;
-        readResult.completed = [&readResult, &result] {
-            result = QImage(reinterpret_cast<const uchar *>(readResult.data.constData()),
-                            readResult.pixelSize.width(), readResult.pixelSize.height(),
-                            QImage::Format_RGBA8888);
-        };
+            QRhiReadbackResult readResult;
+            QImage result;
+            readResult.completed = [&readResult, &result] {
+                result = QImage(reinterpret_cast<const uchar *>(readResult.data.constData()),
+                                readResult.pixelSize.width(), readResult.pixelSize.height(),
+                                QImage::Format_RGBA8888);
+            };
 
-        QRhiReadbackDescription readbackDescription(dstTexture.data());
-        batch->readBackTexture(readbackDescription, &readResult);
-        QVERIFY(submitResourceUpdates(rhi.data(), batch));
-        QVERIFY(!result.isNull());
-        QImage referenceImage(WIDTH, 1, result.format());
-        for (int i = 0; i < WIDTH / 2; ++i) {
-            referenceImage.setPixelColor(i, 0, img.pixelColor(99 + i, 12));
-            referenceImage.setPixelColor(WIDTH / 2 + i, 0, img.pixelColor(33 + i, 67));
-        }
-
-        QVERIFY(imageRGBAEquals(result, referenceImage));
-    }
-
-    // Copy from 2D texture to 1D texture array
-    {
-        const int WIDTH = 256;
-        const int HEIGHT = 256;
-        const int LAYERS = 64;
-
-        QScopedPointer<QRhiTexture> srcTexture(rhi->newTexture(
-                QRhiTexture::RGBA8, WIDTH, HEIGHT, 0, 1, QRhiTexture::Flag::UsedAsTransferSource));
-        QVERIFY(srcTexture->create());
-
-        QRhiResourceUpdateBatch *batch = rhi->nextResourceUpdateBatch();
-        QVERIFY(batch);
-
-        QImage img(WIDTH, HEIGHT, QImage::Format_RGBA8888);
-        for (int x = 0; x < WIDTH; ++x) {
-            for (int y = 0; y < HEIGHT; ++y) {
-                img.setPixelColor(x, y, QColor::fromRgb(x, y, 0));
+            QRhiReadbackDescription readbackDescription(dstTexture.data());
+            batch->readBackTexture(readbackDescription, &readResult);
+            QVERIFY(submitResourceUpdates(rhi.data(), batch));
+            QVERIFY(!result.isNull());
+            QImage referenceImage(WIDTH, 1, result.format());
+            for (int i = 0; i < WIDTH / 2; ++i) {
+                referenceImage.setPixelColor(i, 0, img.pixelColor(99 + i, 12));
+                referenceImage.setPixelColor(WIDTH / 2 + i, 0, img.pixelColor(33 + i, 67));
             }
-        }
-        QRhiTextureUploadEntry upload(0, 0, QRhiTextureSubresourceUploadDescription(img));
-        batch->uploadTexture(srcTexture.data(), upload);
 
-        QScopedPointer<QRhiTexture> dstTexture(
-                rhi->newTextureArray(QRhiTexture::RGBA8, LAYERS, QSize(WIDTH, 0), 1,
-                                     QRhiTexture::Flag::UsedAsTransferSource));
-        QVERIFY(dstTexture->create());
-
-        QRhiTextureCopyDescription copy;
-        copy.setPixelSize(QSize(WIDTH / 2, 1));
-        copy.setDestinationTopLeft(QPoint(WIDTH / 2, 0));
-        copy.setSourceTopLeft(QPoint(33, 67));
-        copy.setDestinationLayer(12);
-        batch->copyTexture(dstTexture.data(), srcTexture.data(), copy);
-
-        copy.setDestinationTopLeft(QPoint(0, 0));
-        copy.setSourceTopLeft(QPoint(99, 12));
-        batch->copyTexture(dstTexture.data(), srcTexture.data(), copy);
-
-        QRhiReadbackResult readResult;
-        QImage result;
-        readResult.completed = [&readResult, &result] {
-            result = QImage(reinterpret_cast<const uchar *>(readResult.data.constData()),
-                            readResult.pixelSize.width(), readResult.pixelSize.height(),
-                            QImage::Format_RGBA8888);
-        };
-
-        QRhiReadbackDescription readbackDescription(dstTexture.data());
-        readbackDescription.setLayer(12);
-        batch->readBackTexture(readbackDescription, &readResult);
-        QVERIFY(submitResourceUpdates(rhi.data(), batch));
-        QVERIFY(!result.isNull());
-        QImage referenceImage(WIDTH, 1, result.format());
-        for (int i = 0; i < WIDTH / 2; ++i) {
-            referenceImage.setPixelColor(i, 0, img.pixelColor(99 + i, 12));
-            referenceImage.setPixelColor(WIDTH / 2 + i, 0, img.pixelColor(33 + i, 67));
+            QVERIFY(imageRGBAEquals(result, referenceImage));
         }
 
-        QVERIFY(imageRGBAEquals(result, referenceImage));
+        // Copy from 2D texture to 1D texture array
+        {
+            const int WIDTH = 256;
+            const int HEIGHT = 256;
+            const int LAYERS = 64;
+
+            QScopedPointer<QRhiTexture> srcTexture(rhi->newTexture(
+                    QRhiTexture::RGBA8, WIDTH, HEIGHT, 0, 1, QRhiTexture::Flag::UsedAsTransferSource));
+            QVERIFY(srcTexture->create());
+
+            QRhiResourceUpdateBatch *batch = rhi->nextResourceUpdateBatch();
+            QVERIFY(batch);
+
+            QImage img(WIDTH, HEIGHT, QImage::Format_RGBA8888);
+            for (int x = 0; x < WIDTH; ++x) {
+                for (int y = 0; y < HEIGHT; ++y) {
+                    img.setPixelColor(x, y, QColor::fromRgb(x, y, 0));
+                }
+            }
+            QRhiTextureUploadEntry upload(0, 0, QRhiTextureSubresourceUploadDescription(img));
+            batch->uploadTexture(srcTexture.data(), upload);
+
+            QScopedPointer<QRhiTexture> dstTexture(
+                    rhi->newTextureArray(QRhiTexture::RGBA8, LAYERS, QSize(WIDTH, 0), 1,
+                                        QRhiTexture::Flag::UsedAsTransferSource));
+            QVERIFY(dstTexture->create());
+
+            QRhiTextureCopyDescription copy;
+            copy.setPixelSize(QSize(WIDTH / 2, 1));
+            copy.setDestinationTopLeft(QPoint(WIDTH / 2, 0));
+            copy.setSourceTopLeft(QPoint(33, 67));
+            copy.setDestinationLayer(12);
+            batch->copyTexture(dstTexture.data(), srcTexture.data(), copy);
+
+            copy.setDestinationTopLeft(QPoint(0, 0));
+            copy.setSourceTopLeft(QPoint(99, 12));
+            batch->copyTexture(dstTexture.data(), srcTexture.data(), copy);
+
+            QRhiReadbackResult readResult;
+            QImage result;
+            readResult.completed = [&readResult, &result] {
+                result = QImage(reinterpret_cast<const uchar *>(readResult.data.constData()),
+                                readResult.pixelSize.width(), readResult.pixelSize.height(),
+                                QImage::Format_RGBA8888);
+            };
+
+            QRhiReadbackDescription readbackDescription(dstTexture.data());
+            readbackDescription.setLayer(12);
+            batch->readBackTexture(readbackDescription, &readResult);
+            QVERIFY(submitResourceUpdates(rhi.data(), batch));
+            QVERIFY(!result.isNull());
+            QImage referenceImage(WIDTH, 1, result.format());
+            for (int i = 0; i < WIDTH / 2; ++i) {
+                referenceImage.setPixelColor(i, 0, img.pixelColor(99 + i, 12));
+                referenceImage.setPixelColor(WIDTH / 2 + i, 0, img.pixelColor(33 + i, 67));
+            }
+
+            QVERIFY(imageRGBAEquals(result, referenceImage));
+        }
     }
 
     // Copy from 1D texture array to 1D texture
