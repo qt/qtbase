@@ -230,6 +230,8 @@ bool QMimeTypeParserBase::parse(QIODevice *dev, const QString &fileName, QString
                 const QString comment = reader.readElementText();
                 if (locale.isEmpty())
                     locale = QString::fromLatin1("default");
+                else
+                    locale.replace(u'-', u'_');
                 data.localeComments.insert(locale, comment);
             }
                 break;

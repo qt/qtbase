@@ -829,6 +829,9 @@ QMimeBinaryProvider::loadMimeTypeExtra(const QString &mimeName)
                     const QString text = xml.readElementText();
                     if (lang.isEmpty()) {
                         lang = "default"_L1; // no locale attribute provided, treat it as default.
+                    } else {
+                        // normalize BCP 47 to internal underscore-splitted language tags
+                        lang.replace(u'-', u'_');
                     }
                     extra.localeComments.insert(lang, text);
                     continue; // we called readElementText, so we're at the EndElement already.
