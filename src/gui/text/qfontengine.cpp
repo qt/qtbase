@@ -27,6 +27,10 @@
 #include <algorithm>
 #include <limits.h>
 
+#if !defined(QT_MAX_CACHED_GLYPH_SIZE)
+#  define QT_MAX_CACHED_GLYPH_SIZE 64
+#endif
+
 QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(lcColrv1, "qt.text.font.colrv1")
@@ -1657,6 +1661,17 @@ bool QFontEngine::disableEmojiSegmenter()
     static const bool sDisableEmojiSegmenter = qEnvironmentVariableIntValue("QT_DISABLE_EMOJI_SEGMENTER") > 0;
     return sDisableEmojiSegmenter;
 #endif
+}
+
+int QFontEngine::maxCachedGlyphSize()
+{
+    static const int maxCachedSize = []{
+        if (int env = qEnvironmentVariableIntValue("QT_MAX_CACHED_GLYPH_SIZE"))
+            return env;
+        return QT_MAX_CACHED_GLYPH_SIZE;
+    }();
+
+    return maxCachedSize;
 }
 
 // ------------------------------------------------------------------

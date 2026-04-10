@@ -16,9 +16,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#if !defined(QT_MAX_CACHED_GLYPH_SIZE)
-#  define QT_MAX_CACHED_GLYPH_SIZE 64
-#endif
 
 /*******************************************************************************
  *
@@ -1086,13 +1083,8 @@ bool QPaintEngineEx::shouldDrawCachedGlyphs(QFontEngine *fontEngine, const QTran
     if (fontEngine->glyphFormat == QFontEngine::Format_ARGB)
         return true;
 
-    static const int maxCachedGlyphSizeSquared = std::pow([]{
-        if (int env = qEnvironmentVariableIntValue("QT_MAX_CACHED_GLYPH_SIZE"))
-            return env;
-        return QT_MAX_CACHED_GLYPH_SIZE;
-    }(), 2);
-
     qreal pixelSize = fontEngine->fontDef.pixelSize;
+    static const int maxCachedGlyphSizeSquared = std::pow(QFontEngine::maxCachedGlyphSize(), 2);
     return (pixelSize * pixelSize * qAbs(m.determinant())) <= maxCachedGlyphSizeSquared;
 }
 

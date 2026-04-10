@@ -163,6 +163,8 @@ public:
                || QChar::category(ucs4) == QChar::Other_Control;
     }
 
+    static int maxCachedGlyphSize();
+
     virtual QFixed emSquareSize() const;
 
     /* returns 0 as glyph index for non existent glyphs */

@@ -52,10 +52,6 @@
 #include FT_ERRORS_H
 #endif
 
-#if !defined(QT_MAX_CACHED_GLYPH_SIZE)
-#  define QT_MAX_CACHED_GLYPH_SIZE 64
-#endif
-
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
@@ -598,11 +594,14 @@ void QFreetypeFace::computeSize(const QFontDef &fontDef, int *xsize, int *ysize,
         }
     } else {
 #if defined FT_HAS_COLOR
-        if (FT_HAS_COLOR(face))
+        if (FT_HAS_COLOR(face)) {
             *outline_drawing = false;
-        else
+        } else
 #endif
-            *outline_drawing = (*xsize > (QT_MAX_CACHED_GLYPH_SIZE<<6) || *ysize > (QT_MAX_CACHED_GLYPH_SIZE<<6));
+        {
+            int maxCachedGlyphSize = QFontEngine::maxCachedGlyphSize();
+            *outline_drawing = (*xsize > (maxCachedGlyphSize << 6) || *ysize > (maxCachedGlyphSize << 6));
+        }
     }
 }
 
@@ -2261,7 +2260,8 @@ QFontEngineFT::QGlyphSet *QFontEngineFT::TransformedGlyphSets::findSet(const QTr
     QGlyphSet *gs = sets[0];
     gs->clear();
     gs->transformationMatrix = m;
-    gs->outline_drawing = fontDef.pixelSize * fontDef.pixelSize * qAbs(matrix.determinant()) > QT_MAX_CACHED_GLYPH_SIZE * QT_MAX_CACHED_GLYPH_SIZE;
+    const int maxCachedSize = maxCachedGlyphSize();
+    gs->outline_drawing = fontDef.pixelSize * fontDef.pixelSize * qAbs(matrix.determinant()) > maxCachedSize * maxCachedSize;
     Q_ASSERT(gs != nullptr);
 
     return gs;
