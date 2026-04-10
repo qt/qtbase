@@ -1305,7 +1305,7 @@ bool QWasmAccessibility::handleUpdateByEventType(QAccessibleEvent *event)
         return false;
 
     // Handle some common event types. See
-    // https://doc.qt.io/qt-5/qaccessible.html#Event-enum
+    // https://doc.qt.io/qt-6/qaccessible.html#Event-enum
     switch (event->type()) {
     case QAccessible::StateChanged: {
         QAccessibleStateChangeEvent *stateChangeEvent = (QAccessibleStateChangeEvent *)event;
