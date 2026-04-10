@@ -258,7 +258,7 @@ void QSplitterHandle::mouseMoveEvent(QMouseEvent *e)
     if (!d->pressed)
         return;
 
-    const int pos = d->pick(parentWidget()->mapFromGlobal(e->globalPosition().toPoint()))
+    const int pos = d->pick(parentWidget()->mapFromGlobal(e->globalPosition()).toPoint())
                     - d->mouseOffset;
     if (opaqueResize()) {
         moveSplitter(pos);
@@ -290,7 +290,7 @@ void QSplitterHandle::mouseReleaseEvent(QMouseEvent *e)
         return;
 
     if (!opaqueResize()) {
-        const int pos = d->pick(parentWidget()->mapFromGlobal(e->globalPosition().toPoint()))
+        const int pos = d->pick(parentWidget()->mapFromGlobal(e->globalPosition()).toPoint())
                         - d->mouseOffset;
         d->s->setRubberBand(-1);
         moveSplitter(pos);
