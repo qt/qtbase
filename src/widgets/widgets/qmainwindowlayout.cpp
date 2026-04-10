@@ -57,6 +57,12 @@ using namespace Qt::StringLiterals;
 
 extern QMainWindowLayout *qt_mainwindow_layout(const QMainWindow *window);
 
+static constexpr QWidgetAnimator::AnimationRule toAnimationRule(QMainWindow::DockOptions options)
+{
+    return options.testFlag(QMainWindow::AnimatedDocks) ? QWidgetAnimator::AnimationRule::Run
+                                                        : QWidgetAnimator::AnimationRule::Stop;
+}
+
 /******************************************************************************
 ** debug
 */
@@ -571,12 +577,6 @@ bool QDockWidgetGroupWindow::hasNativeDecos() const
 #endif
 }
 
-static constexpr QWidgetAnimator::AnimationRule toAnimationRule(QMainWindow::DockOptions options)
-{
-    return options.testFlag(QMainWindow::AnimatedDocks) ? QWidgetAnimator::AnimationRule::Run
-                                                        : QWidgetAnimator::AnimationRule::Stop;
-}
-
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_GCC("-Waggressive-loop-optimizations")
 /*
@@ -778,7 +778,7 @@ void QDockWidgetGroupWindow::reparentToMainWindow(QDockWidget *dockWidget)
     dockWidget->setFloating(wasFloating);
     dockWidget->setVisible(wasVisible);
 }
-#endif
+#endif // QT_CONFIG(dockwidget)
 
 /******************************************************************************
 ** QMainWindowLayoutState
