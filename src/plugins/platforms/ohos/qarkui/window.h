@@ -46,7 +46,7 @@ public:
     JsWindowId id() const;
 
     template<typename Result = QNapi::Value>
-    Result call(const std::string &methodName, const std::vector<QNapi::ValueWrapper> &args = {}) const;
+    Result eval(const std::string &expr, const std::vector<QNapi::ValueWrapper> &exprArgs = {}) const;
 
     QNapi::Object jsObject();
 
@@ -56,9 +56,9 @@ private:
 };
 
 template<typename Result>
-Result JsWindowRef::call(const std::string &methodName, const std::vector<QNapi::ValueWrapper> &args) const
+Result JsWindowRef::eval(const std::string &expr, const std::vector<QNapi::ValueWrapper> &exprArgs) const
 {
-    return m_jsWindow.call<Result>(methodName, args);
+    return m_jsWindow.eval<Result>(expr, exprArgs);
 }
 
 }
