@@ -194,7 +194,11 @@ void QIOSContext::swapBuffers(QPlatformSurface *surface)
         return; // Nothing to do
 
     FramebufferObject &framebufferObject = backingFramebufferObjectFor(surface);
-    Q_ASSERT_X(framebufferObject.isComplete, "QIOSContext", "swapBuffers on incomplete FBO");
+    if (!framebufferObject.isComplete) {
+        qCWarning(lcQpaGLContext, "swapBuffers on incomplete framebuffer object (%s). Skipping flush",
+            qPrintable(fboStatusString(glCheckFramebufferStatus(GL_FRAMEBUFFER))));
+        return;
+    }
 
     if (needsRenderbufferResize(surface)) {
         qCWarning(lcQpaGLContext, "CAEAGLLayer was resized between makeCurrent and swapBuffers, skipping flush");
