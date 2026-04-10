@@ -1348,7 +1348,35 @@ void QWidgetPrivate::create()
     if (QWidget *nativeParent = q->nativeParentWidget()) {
         if (nativeParent->windowHandle()) {
             if (flags & Qt::Window) {
-                win->setTransientParent(nativeParent->window()->windowHandle());
+                // When setting the transient parent for a top-level window, skip
+                // past any popup-based windows (Popup, Tool, ToolTip, SplashScreen)
+                // in the native parent chain. These window types are typically short-
+                // lived and dismissed as a side-effect of showing other top-level
+                // windows. On some platforms (e.g., Wayland), closing a parent window
+                // sends close events to all registered transient children; if a stable
+                // dialog retained a popup-based parent, it could be unexpectedly closed
+                // when that parent is dismissed.
+                //
+                // Popup-based windows that are themselves children of popup-based
+                // parents intentionally retain the popup parent relationship so they
+                // stay visually stacked and are dismissed together.
+                const auto winType = Qt::WindowType((flags & Qt::WindowType_Mask).toInt());
+                auto isPopupBased = [](Qt::WindowType type) {
+                    return type == Qt::Popup || type == Qt::Tool || type == Qt::ToolTip
+                            || type == Qt::SplashScreen;
+                };
+
+                QWindow *transientParent = nativeParent->window()->windowHandle();
+                if (!isPopupBased(winType)) {
+                    // Walk up past popup-based ancestors to find a stable parent.
+                    while (transientParent) {
+                        const Qt::WindowType tp = transientParent->type();
+                        if (!isPopupBased(tp))
+                            break;
+                        transientParent = transientParent->transientParent();
+                    }
+                }
+                win->setTransientParent(transientParent);
                 win->setParent(nullptr);
             } else {
                 win->setTransientParent(nullptr);
