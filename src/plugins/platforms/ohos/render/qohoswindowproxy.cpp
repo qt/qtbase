@@ -358,8 +358,8 @@ void QOhosWindowProxy::removeStartingWindow()
                 taskPromise();
                 return;
             }
-            auto promise = optQUiAbilityPeer->windowStage().call<QNapi::Promise>(
-                "removeStartingWindow");
+            auto promise = optQUiAbilityPeer->windowStage().eval<QNapi::Promise>(
+                "removeStartingWindow()");
             promise.onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
         },
         Q_FUNC_INFO);
@@ -651,7 +651,7 @@ void QOhosWindowProxy::showAbility()
 
         QNapi::Promise showAbilityPromise;
         try {
-            showAbilityPromise = m_jsScopeData->qAbilityPeer->qAbility().call<QNapi::Promise>("context.showAbility");
+            showAbilityPromise = m_jsScopeData->qAbilityPeer->qAbility().eval<QNapi::Promise>("context.showAbility()");
         } catch (const Napi::Error &error) {
             qOhosPrintfError("showAbility failed with error: %s", error.what());
             taskPromise();
@@ -677,7 +677,7 @@ bool QOhosWindowProxy::tryHideAbility()
 
         QNapi::Promise hidePromise;
         try {
-            hidePromise = m_jsScopeData->qAbilityPeer->qAbility().call<QNapi::Promise>("context.hideAbility");
+            hidePromise = m_jsScopeData->qAbilityPeer->qAbility().eval<QNapi::Promise>("context.hideAbility()");
         } catch (const Napi::Error &error) {
             qOhosPrintfError("hideAbility failed with error: %s", error.what());
             evalPromise(false);
@@ -1090,7 +1090,7 @@ bool QOhosWindowProxy::isWindowRectAutoSave() const
 
             auto thenCatchPromises = std::move(evalPromise).makeThenCatchBranches(Q_FUNC_INFO);
             optQUiAbilityPeer->windowStage()
-            .call<QNapi::Promise>("isWindowRectAutoSave")
+            .eval<QNapi::Promise>("isWindowRectAutoSave()")
             .onThen(
                 [thenPromise = std::move(thenCatchPromises.first)](const QtOhos::CallbackInfo &cbInfo) {
                     bool windowRectAutoSaveEnabled = cbInfo.getFirstArg<QNapi::Boolean>(Q_FUNC_INFO);
@@ -1161,7 +1161,7 @@ void QOhosWindowProxy::setSupportedWindowModes(const std::set<SupportWindowMode>
             for (const auto mode : supportedWindowModes)
                 jsSupportedWindowModes.push_back(jsState.mapOhosEnumToJs(mode));
 
-            qUiAbilityPeer->windowStage().call<QNapi::Promise>("setSupportedWindowModes", {QNapi::makeArray(jsState.env(), jsSupportedWindowModes)})
+            qUiAbilityPeer->windowStage().eval<QNapi::Promise>("setSupportedWindowModes(*)", {QNapi::makeArray(jsState.env(), jsSupportedWindowModes)})
                 .onCatch(QtOhos::makeErrorLoggingJsCallback("setSupportedWindowModes()"))
                 .onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
         },
@@ -1185,7 +1185,7 @@ void QOhosWindowProxy::setWindowRectAutoSave(bool enabled)
             }
 
             optQUiAbilityPeer->windowStage()
-            .call<QNapi::Promise>("setWindowRectAutoSave", {enabled, isSaveBySpecifiedFlag})
+            .eval<QNapi::Promise>("setWindowRectAutoSave(*)", {enabled, isSaveBySpecifiedFlag})
             .onCatch(QtOhos::makeErrorLoggingJsCallback("setWindowRectAutoSave()"))
             .onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
         },

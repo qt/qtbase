@@ -209,8 +209,8 @@ void shareDataImpl(
             registerOnOffShareCompletedEventHandler(controller, std::move(shareCompletedCallback)),
         });
 
-    controller.call<QNapi::Promise>(
-        "show",
+    controller.eval<QNapi::Promise>(
+        "show(*)",
         {
             uiAbilityPeer->qAbility().get<QNapi::Object>("context"),
             makeShareKitControllerOptionsObject(jsState, controllerOptions),

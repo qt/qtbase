@@ -298,7 +298,7 @@ QRect QOhosPlatformScreen::getAvailableArea() const
             }
 
             auto thenCatchPromises = std::move(evalPromise).makeThenCatchBranches(Q_FUNC_INFO);
-            display.call<QNapi::Promise>("getAvailableArea")
+            display.eval<QNapi::Promise>("getAvailableArea()")
             .onThen(
                 [thenPromise = std::move(thenCatchPromises.first)](const QtOhos::CallbackInfo &cbInfo) {
                     auto availableArea = cbInfo.getFirstArg<QNapi::Object>(Q_FUNC_INFO);
