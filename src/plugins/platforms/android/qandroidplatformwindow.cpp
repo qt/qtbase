@@ -118,7 +118,6 @@ void QAndroidPlatformWindow::raise()
 {
     if (m_nativeParentQtWindow.isValid()) {
         m_nativeParentQtWindow.callMethod<void>("bringChildToFront", nativeViewId());
-        QWindowSystemInterface::handleFocusWindowChanged(window(), Qt::ActiveWindowFocusReason);
         return;
     }
     updateSystemUiVisibility(window()->windowStates(), window()->flags());
@@ -240,9 +239,12 @@ void QAndroidPlatformWindow::propagateSizeHints()
 
 void QAndroidPlatformWindow::requestActivateWindow()
 {
-    // raise() will handle differences between top level and child windows, and requesting focus
-    if (!blockedByModal())
-        raise();
+    if (blockedByModal())
+        return;
+    raise();
+    // For child windows, raise() only updates "Z-order", so focus must be requested explicitly.
+    if (m_nativeParentQtWindow.isValid())
+        QWindowSystemInterface::handleFocusWindowChanged(window(), Qt::ActiveWindowFocusReason);
 }
 
 void QAndroidPlatformWindow::updateSystemUiVisibility(Qt::WindowStates states, Qt::WindowFlags flags)
