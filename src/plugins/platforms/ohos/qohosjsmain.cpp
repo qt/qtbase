@@ -909,7 +909,7 @@ QNapi::Promise AppFunctionsImpl::startAppProcessImpl(
     std::vector<QNapi::ValueWrapper> startAbilityArgs = {startWant};
     if (!optStartOptions.IsEmpty())
         startAbilityArgs.push_back(optStartOptions);
-    return baseQAbility.call<QNapi::Promise>("context.startAbility", startAbilityArgs);
+    return baseQAbility.eval<QNapi::Promise>("context.startAbility(*)", startAbilityArgs);
 }
 
 void AppFunctionsImpl::startNoUiChildProcess(
@@ -1308,7 +1308,7 @@ void loadWindowStageContentPage(JsState &jsState, QNapi::Object &qAbility, const
     qAbility.set("localStorage", localStorage);
 
     const std::string mainWindowNativeNodePagePath = "pages/MainWindowNativeNode";
-    windowStage.call<QNapi::Promise>("loadContent", {mainWindowNativeNodePagePath, localStorage})
+    windowStage.eval<QNapi::Promise>("loadContent(*)", {mainWindowNativeNodePagePath, localStorage})
     .onThen([qAbilityRef](const CallbackInfo &) {
         auto launchWant = qAbilityRef->eval<QNapi::Object>("launchWant");
         qOhosPrintfDebug("%s: launchWant: %s", Q_FUNC_INFO, QNapi::toJsonString(launchWant).c_str());

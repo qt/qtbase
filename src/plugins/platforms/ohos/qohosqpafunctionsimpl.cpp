@@ -1284,8 +1284,8 @@ void QOhosQpaFunctionsImpl::setAbilityContinuationActive(
             }
 
             auto continueState = continuationActive ? ContinueState::ACTIVE : ContinueState::INACTIVE;
-            optAbilityPeer->qAbility().call<QNapi::Promise>(
-                "context.setMissionContinueState", {jsState.mapOhosEnumToJs(continueState)})
+            optAbilityPeer->qAbility().eval<QNapi::Promise>(
+                "context.setMissionContinueState(*)", {jsState.mapOhosEnumToJs(continueState)})
             .onCatch(QtOhos::makeErrorLoggingJsCallback("setMissionContinueState()"))
             .onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
         },
@@ -1455,8 +1455,8 @@ bool QOhosQpaFunctionsImpl::startAbilityByType(const QString &appType, const QJs
             }
 
             auto thenCatchPromises = std::move(evalPromise).makeThenCatchBranches(Q_FUNC_INFO);
-            qAbility.call<QNapi::Promise>(
-                "context.startAbilityByType",
+            qAbility.eval<QNapi::Promise>(
+                "context.startAbilityByType(*)",
                 {
                     appType.toStdString(),
                     QOhosJsEnv::toNapiValue(jsState.env(), wantParameters),
@@ -1527,7 +1527,7 @@ void QOhosQpaFunctionsImpl::startAbilityForResult(
             if (options.hasValue())
                 arguments.push_back(convertStartOptionsToNapiObject(jsState, options.value()));
 
-            optAbilityPeer->qAbility().call<QNapi::Promise>("context.startAbilityForResult", arguments)
+            optAbilityPeer->qAbility().eval<QNapi::Promise>("context.startAbilityForResult(*)", arguments)
             .onThen(
                 [context](const QtOhos::CallbackInfo &cbInfo) {
                     QNapi::Object abilityResult = cbInfo.getFirstArg<QNapi::Object>(Q_FUNC_INFO);
@@ -1865,8 +1865,8 @@ bool QOhosQpaFunctionsImpl::tryOpenLink(QObject *optInstanceMainWindow, const QS
                 openLinkOptions.emplace_back("appLinkingOnly", appLinkingOnly.value());
 
             auto thenCatchPromises = std::move(evalPromise).makeThenCatchBranches(Q_FUNC_INFO);
-            optAbilityPeer->qAbility().call<QNapi::Promise>(
-                "context.openLink",
+            optAbilityPeer->qAbility().eval<QNapi::Promise>(
+                "context.openLink(*)",
                 {
                     link.toStdString(),
                     QNapi::makeObject(jsState.env(), openLinkOptions),
