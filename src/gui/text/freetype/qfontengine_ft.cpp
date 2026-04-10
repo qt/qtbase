@@ -2258,11 +2258,12 @@ QFontEngineFT::QGlyphSet *QFontEngineFT::TransformedGlyphSets::findSet(const QTr
     if (!sets[0])
         sets[0] = new QGlyphSet;
     QGlyphSet *gs = sets[0];
+    Q_ASSERT(gs != nullptr);
+
     gs->clear();
     gs->transformationMatrix = m;
     const int maxCachedSize = maxCachedGlyphSize();
     gs->outline_drawing = fontDef.pixelSize * fontDef.pixelSize * qAbs(matrix.determinant()) > maxCachedSize * maxCachedSize;
-    Q_ASSERT(gs != nullptr);
 
     return gs;
 }
