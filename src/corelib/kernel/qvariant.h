@@ -886,9 +886,10 @@ protected:
     void create(int type, const void *copy);
     QT_DEPRECATED_VERSION_6_16
     void create(QMetaType type, const void *copy);
+    QT_DEPRECATED_VERSION_6_16
+    bool convert(int type, void *ptr) const;
 #endif
     bool equals(const QVariant &other) const;
-    bool convert(int type, void *ptr) const;
     bool view(int type, void *ptr);
 
 private:
