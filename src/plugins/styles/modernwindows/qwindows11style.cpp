@@ -1365,7 +1365,6 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
                                   QPainter *painter, const QWidget *widget) const
 {
     Q_D(const QWindows11Style);
-    State flags = option->state;
 
     QPainterStateGuard psg(painter);
     painter->setRenderHint(QPainter::Antialiasing);
@@ -1691,36 +1690,21 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
     case CE_PushButtonBevel:
         if (const QStyleOptionButton *btn = qstyleoption_cast<const QStyleOptionButton *>(option))  {
             using namespace StyleOptionHelper;
+            QPainterStateGuard psg(painter);
 
-            QRectF rect = btn->rect.marginsRemoved(QMargins(2, 2, 2, 2));
-            painter->setPen(Qt::NoPen);
+            const auto rect = QRectF(btn->rect).marginsRemoved(QMarginsF(1.5, 1.5, 1.5, 1.5));
             if (btn->features.testFlag(QStyleOptionButton::Flat)) {
-                painter->setBrush(btn->palette.button());
-                painter->drawRoundedRect(rect, secondLevelRoundingRadius, secondLevelRoundingRadius);
-                if (flags & (State_Sunken | State_On)) {
-                    painter->setBrush(WINUI3Colors[colorSchemeIndex][subtlePressedColor]);
-                }
-                else if (flags & State_MouseOver) {
-                    painter->setBrush(WINUI3Colors[colorSchemeIndex][subtleHighlightColor]);
-                }
-                painter->drawRoundedRect(rect, secondLevelRoundingRadius, secondLevelRoundingRadius);
+                const QBrush brush = isPressed(option)
+                        ? winUI3Color(subtlePressedColor)
+                        : (isHover(option) ? winUI3Color(subtleHighlightColor) : Qt::transparent);
+                drawRoundedRect(painter, rect, Qt::NoPen, brush);
             } else {
-                painter->setBrush(controlFillBrush(option, ControlType::Control));
-                painter->drawRoundedRect(rect, secondLevelRoundingRadius, secondLevelRoundingRadius);
-
-                rect.adjust(0.5,0.5,-0.5,-0.5);
                 const bool defaultButton = btn->features.testFlag(QStyleOptionButton::DefaultButton);
-                painter->setBrush(Qt::NoBrush);
-                painter->setPen(defaultButton ? option->palette.accent().color()
-                                              : WINUI3Colors[colorSchemeIndex][controlStrokePrimary]);
-                painter->drawRoundedRect(rect, secondLevelRoundingRadius, secondLevelRoundingRadius);
-
-                painter->setPen(defaultButton ? WINUI3Colors[colorSchemeIndex][controlStrokeOnAccentSecondary]
-                                              : WINUI3Colors[colorSchemeIndex][controlStrokeSecondary]);
+                const QPen pen = defaultButton ? option->palette.color(QPalette::Accent)
+                                               : winUI3Color(controlStrokePrimary);
+                drawRoundedRect(painter, rect, pen, controlFillBrush(option, ControlType::Control));
             }
             if (btn->features.testFlag(QStyleOptionButton::HasMenu)) {
-                QPainterStateGuard psg(painter);
-
                 QRect textRect = btn->rect.marginsRemoved(QMargins(contentHMargin, 0, contentHMargin, 0));
                 const auto indSize = proxy()->pixelMetric(PM_MenuButtonIndicator, btn, widget);
                 const auto indRect =
