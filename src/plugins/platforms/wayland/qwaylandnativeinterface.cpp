@@ -12,6 +12,7 @@
 #include "qwaylandwindowmanagerintegration_p.h"
 #include "qwaylandscreen_p.h"
 #include "qwaylandinputdevice_p.h"
+#include <QtCore/qbytearrayview.h>
 #include <QtCore/private/qnativeinterface_p.h>
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/QScreen>
@@ -24,6 +25,11 @@ QT_BEGIN_NAMESPACE
 
 namespace QtWaylandClient {
 
+static bool equalsIgnoringCase(QByteArrayView lhs, QByteArrayView rhs)
+{
+    return lhs.compare(rhs, Qt::CaseInsensitive) == 0;
+}
+
 QWaylandNativeInterface::QWaylandNativeInterface(QWaylandIntegration *integration)
     : m_integration(integration)
 {
@@ -31,46 +37,47 @@ QWaylandNativeInterface::QWaylandNativeInterface(QWaylandIntegration *integratio
 
 void *QWaylandNativeInterface::nativeResourceForIntegration(const QByteArray &resourceString)
 {
-    QByteArray lowerCaseResource = resourceString.toLower();
-
-    if (lowerCaseResource == "display" || lowerCaseResource == "wl_display" || lowerCaseResource == "nativedisplay")
+    if (equalsIgnoringCase(resourceString, "display")
+            || equalsIgnoringCase(resourceString, "wl_display")
+            || equalsIgnoringCase(resourceString, "nativedisplay")) {
         return m_integration->display()->wl_display();
-    if (lowerCaseResource == "compositor") {
+    }
+    if (equalsIgnoringCase(resourceString, "compositor")) {
         if (auto compositor = m_integration->display()->compositor())
             return compositor->object();
     }
-    if (lowerCaseResource == "server_buffer_integration")
+    if (equalsIgnoringCase(resourceString, "server_buffer_integration"))
         return m_integration->serverBufferIntegration();
 
-    if (lowerCaseResource == "egldisplay" && m_integration->clientBufferIntegration())
+    if (equalsIgnoringCase(resourceString, "egldisplay") && m_integration->clientBufferIntegration())
         return m_integration->clientBufferIntegration()->nativeResource(QWaylandClientBufferIntegration::EglDisplay);
 
-    if (lowerCaseResource == "wl_seat")
+    if (equalsIgnoringCase(resourceString, "wl_seat"))
         return m_integration->display()->defaultInputDevice()->wl_seat();
-    if (lowerCaseResource == "wl_keyboard") {
+    if (equalsIgnoringCase(resourceString, "wl_keyboard")) {
         auto *keyboard = m_integration->display()->defaultInputDevice()->keyboard();
         if (keyboard)
             return keyboard->wl_keyboard();
         return nullptr;
     }
-    if (lowerCaseResource == "wl_pointer") {
+    if (equalsIgnoringCase(resourceString, "wl_pointer")) {
         auto *pointer = m_integration->display()->defaultInputDevice()->pointer();
         if (pointer)
             return pointer->wl_pointer();
         return nullptr;
     }
-    if (lowerCaseResource == "wl_touch") {
+    if (equalsIgnoringCase(resourceString, "wl_touch")) {
         auto *touch = m_integration->display()->defaultInputDevice()->touch();
         if (touch)
             return touch->wl_touch();
         return nullptr;
     }
 #if QT_CONFIG(xkbcommon)
-    if (lowerCaseResource == "xkb_context") {
+    if (equalsIgnoringCase(resourceString, "xkb_context")) {
         return m_integration->display()->xkbContext();
     }
 #endif
-    if (lowerCaseResource == "serial")
+    if (equalsIgnoringCase(resourceString, "serial"))
         return reinterpret_cast<void *>(quintptr(m_integration->display()->defaultInputDevice()->serial()));
 
     return nullptr;
@@ -141,24 +148,22 @@ struct xkb_context *QtWaylandClient::QWaylandNativeInterface::xkbContext() const
 
 void *QWaylandNativeInterface::nativeResourceForWindow(const QByteArray &resourceString, QWindow *window)
 {
-    QByteArray lowerCaseResource = resourceString.toLower();
-
-    if (lowerCaseResource == "display")
+    if (equalsIgnoringCase(resourceString, "display"))
         return m_integration->display()->wl_display();
-    if (lowerCaseResource == "compositor") {
+    if (equalsIgnoringCase(resourceString, "compositor")) {
         if (auto compositor = m_integration->display()->compositor())
             return compositor->object();
     }
-    if (lowerCaseResource == "surface") {
+    if (equalsIgnoringCase(resourceString, "surface")) {
         QWaylandWindow *w = static_cast<QWaylandWindow*>(window->handle());
         return w ? w->wlSurface() : nullptr;
     }
 
-    if (lowerCaseResource == "egldisplay" && m_integration->clientBufferIntegration())
+    if (equalsIgnoringCase(resourceString, "egldisplay") && m_integration->clientBufferIntegration())
         return m_integration->clientBufferIntegration()->nativeResource(QWaylandClientBufferIntegration::EglDisplay);
 
 #if QT_CONFIG(vulkan)
-    if (lowerCaseResource == "vksurface") {
+    if (equalsIgnoringCase(resourceString, "vksurface")) {
         if (window->surfaceType() == QSurface::VulkanSurface && window->handle()) {
             // return a pointer to the VkSurfaceKHR value, not the value itself
             return static_cast<QWaylandVulkanWindow *>(window->handle())->vkSurface();
@@ -175,9 +180,7 @@ void *QWaylandNativeInterface::nativeResourceForWindow(const QByteArray &resourc
 
 void *QWaylandNativeInterface::nativeResourceForScreen(const QByteArray &resourceString, QScreen *screen)
 {
-    QByteArray lowerCaseResource = resourceString.toLower();
-
-    if (lowerCaseResource == "output" && !screen->handle()->isPlaceholder())
+    if (equalsIgnoringCase(resourceString, "output") && !screen->handle()->isPlaceholder())
         return ((QWaylandScreen *) screen->handle())->output();
 
     return nullptr;
@@ -187,15 +190,13 @@ void *QWaylandNativeInterface::nativeResourceForScreen(const QByteArray &resourc
 void *QWaylandNativeInterface::nativeResourceForContext(const QByteArray &resource, QOpenGLContext *context)
 {
 #if QT_CONFIG(opengl)
-    QByteArray lowerCaseResource = resource.toLower();
-
-    if (lowerCaseResource == "eglconfig" && m_integration->clientBufferIntegration())
+    if (equalsIgnoringCase(resource, "eglconfig") && m_integration->clientBufferIntegration())
         return m_integration->clientBufferIntegration()->nativeResourceForContext(QWaylandClientBufferIntegration::EglConfig, context->handle());
 
-    if (lowerCaseResource == "eglcontext" && m_integration->clientBufferIntegration())
+    if (equalsIgnoringCase(resource, "eglcontext") && m_integration->clientBufferIntegration())
         return m_integration->clientBufferIntegration()->nativeResourceForContext(QWaylandClientBufferIntegration::EglContext, context->handle());
 
-    if (lowerCaseResource == "egldisplay" && m_integration->clientBufferIntegration())
+    if (equalsIgnoringCase(resource, "egldisplay") && m_integration->clientBufferIntegration())
         return m_integration->clientBufferIntegration()->nativeResourceForContext(QWaylandClientBufferIntegration::EglDisplay, context->handle());
 #endif
 
@@ -205,9 +206,7 @@ void *QWaylandNativeInterface::nativeResourceForContext(const QByteArray &resour
 
 QPlatformNativeInterface::NativeResourceForWindowFunction QWaylandNativeInterface::nativeResourceFunctionForWindow(const QByteArray &resource)
 {
-    QByteArray lowerCaseResource = resource.toLower();
-
-    if (lowerCaseResource == "setmargins") {
+    if (equalsIgnoringCase(resource, "setmargins")) {
         return NativeResourceForWindowFunction(reinterpret_cast<void *>(setWindowMargins));
     }
 
