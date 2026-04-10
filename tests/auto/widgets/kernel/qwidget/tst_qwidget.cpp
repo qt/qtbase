@@ -306,6 +306,9 @@ private slots:
     void setFocus();
 #ifndef QT_NO_CURSOR
     void setCursor();
+#if defined(Q_OS_WIN)
+    void cursorAfterModalDialog();
+#endif
 #endif
     void setToolTip();
     void testWindowIconChangeEventPropagation();
@@ -7407,7 +7410,52 @@ void tst_QWidget::setCursor()
         QCOMPARE(spy.count(), 2);
     }
 }
-#endif
+
+#if defined(Q_OS_WIN)
+void tst_QWidget::cursorAfterModalDialog()
+{
+    /*
+        QTBUG-140455: Verify that a widget's cursor is correctly restored after
+        a modal dialog is shown and closed. The dialog's arrow cursor must not
+        persist on the parent window.
+    */
+    QWidget window;
+    window.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
+    window.resize(200, 200);
+    window.setCursor(Qt::WaitCursor);
+    window.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
+
+    const QPoint windowCenter = window.geometry().center();
+    QCursor::setPos(windowCenter);
+    QTRY_VERIFY(window.underMouse());
+
+    auto *ni = QGuiApplication::platformNativeInterface();
+    const HCURSOR waitCursor = reinterpret_cast<HCURSOR>(
+        ni->nativeResourceForCursor(QByteArrayLiteral("hcursor"), QCursor(Qt::WaitCursor)));
+    QVERIFY(waitCursor);
+    QTRY_COMPARE(GetCursor(), waitCursor);
+
+    // Show a modal dialog and simulate the OS cursor changing to arrow
+    // (as happens when the user interacts with the dialog), then close.
+    QDialog dialog(&window);
+    dialog.setWindowTitle(QLatin1String("Modal"));
+    dialog.resize(100, 80);
+    QTimer::singleShot(0, &dialog, [&]() {
+        QVERIFY(QTest::qWaitForWindowExposed(&dialog));
+        // Simulate the cursor change that occurs during dialog interaction
+        SetCursor(LoadCursor(nullptr, IDC_ARROW));
+        QVERIFY(GetCursor() != waitCursor);
+        dialog.accept();
+    });
+    dialog.exec();
+
+    // The parent widget's cursor must be restored right after exec() returns,
+    // without requiring mouse movement or event loop iterations.
+    QCOMPARE(GetCursor(), waitCursor);
+}
+#endif // Q_OS_WIN
+#endif // QT_NO_CURSOR
 
 void tst_QWidget::setToolTip()
 {
