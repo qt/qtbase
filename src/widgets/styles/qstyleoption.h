@@ -341,7 +341,7 @@ public:
 #if QT_DEPRECATED_SINCE(6, 11)
                         Margin Q_DECL_ENUMERATOR_DEPRECATED_X("Not used anywhere"),
 #endif
-                        EmptyArea };
+                        EmptyArea = TearOff + 2 };
     enum CheckType { NotCheckable, Exclusive, NonExclusive };
 
     MenuItemType menuItemType;
