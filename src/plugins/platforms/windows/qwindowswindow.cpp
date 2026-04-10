@@ -1877,6 +1877,20 @@ void QWindowsWindow::setVisible(bool visible)
                 ShowWindow(m_data.hwnd, SW_HIDE);
             else
                 hide_sys();
+#ifndef QT_NO_CURSOR
+            // QTBUG-140455: After hiding a modal dialog, directly re-apply
+            // the parent window's cursor via SetCursor(). This is needed
+            // because hide_sys() uses SWP_NOACTIVATE which does not trigger
+            // WM_SETCURSOR, and the normal changeCursor() path is blocked
+            // by multiple optimizations (unchanged cursor shape/handle,
+            // stale windowUnderMouse).
+            if (win->isModal()) {
+                if (QWindow *parent = win->transientParent()) {
+                    if (auto *pw = QWindowsWindow::windowsWindowOf(parent))
+                        pw->applyCursor();
+                }
+            }
+#endif
             fireExpose(QRegion());
         }
     }
