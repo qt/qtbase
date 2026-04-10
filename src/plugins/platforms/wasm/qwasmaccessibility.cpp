@@ -1197,6 +1197,23 @@ void QWasmAccessibility::handleDescriptionChanged(QAccessibleInterface *iface)
     }
 }
 
+void QWasmAccessibility::handleAnnouncement(QAccessibleInterface *iface,
+                                            QAccessibleAnnouncementEvent *announcementEvent)
+{
+    emscripten::val element = getHtmlElement(iface);
+    if (element["ariaNotify"].isUndefined())
+        return;
+
+    const std::string message = announcementEvent->message().toStdString();
+    const std::string prio(announcementEvent->politeness()
+                                           == QAccessible::AnnouncementPoliteness::Assertive
+                                   ? "high"
+                                   : "normal");
+    emscripten::val options = emscripten::val::object();
+    options.set("priority", prio);
+    element.call<void>("ariaNotify", message, options);
+}
+
 void QWasmAccessibility::createObject(QAccessibleInterface *iface)
 {
     if (getHtmlElement(iface).isUndefined())
@@ -1307,6 +1324,10 @@ bool QWasmAccessibility::handleUpdateByEventType(QAccessibleEvent *event)
     // Handle some common event types. See
     // https://doc.qt.io/qt-6/qaccessible.html#Event-enum
     switch (event->type()) {
+    case QAccessible::Announcement:
+        handleAnnouncement(iface, static_cast<QAccessibleAnnouncementEvent *>(event));
+        return false;
+
     case QAccessible::StateChanged: {
         QAccessibleStateChangeEvent *stateChangeEvent = (QAccessibleStateChangeEvent *)event;
         if (stateChangeEvent->changedStates().disabled)

@@ -97,6 +97,8 @@ private:
     void handlePageTabListUpdate(QAccessibleEvent *event);
     void handleIdentifierUpdate(QAccessibleInterface *iface);
     void handleDescriptionChanged(QAccessibleInterface *iface);
+    void handleAnnouncement(QAccessibleInterface *iface,
+                            QAccessibleAnnouncementEvent *announcementEvent);
 
     void handleEventFromHtmlElement(const emscripten::val event);
 
