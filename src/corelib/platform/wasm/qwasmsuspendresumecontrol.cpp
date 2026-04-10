@@ -6,6 +6,7 @@
 #include "qstdweb_p.h"
 
 #include <QtCore/qapplicationstatic.h>
+#include <QtCore/qdebug.h>
 
 #include <emscripten.h>
 #include <emscripten/val.h>
