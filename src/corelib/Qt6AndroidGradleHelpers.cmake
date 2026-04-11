@@ -1265,6 +1265,10 @@ function(_qt_internal_android_extract_link_libraries_targets target out_targets)
                 set(entry "${raw_entry}")
             endif()
             if(TARGET "${entry}")
+                get_target_property(entry_alias "${entry}" ALIASED_TARGET)
+                if(entry_alias)
+                    set(entry "${entry_alias}")
+                endif()
                 list(APPEND result "${entry}")
             endif()
         endforeach()
@@ -1273,76 +1277,87 @@ function(_qt_internal_android_extract_link_libraries_targets target out_targets)
     set(${out_targets} "${result}" PARENT_SCOPE)
 endfunction()
 
-# Collects Qt modules that 'target' and its plugins depends on, with dependencies
-# listed before targets that depend on them.
-function(_qt_internal_android_collect_qt_modules target out_qt_modules)
-    set(pending_stack "${target}")
-    set(expanded_targets "")
-    set(collected "")
-
-    # Collect Qt modules from QML plugin targets
-    get_target_property(plugin_targets ${target} _qt_android_qml_plugins)
-    if(plugin_targets)
-        list(APPEND pending_stack ${plugin_targets})
+# Resolves a QML's module backing target
+function(_qt_internal_android_resolve_backing_target target out_var)
+    set(${out_var} "" PARENT_SCOPE)
+    get_target_property(qml_backing "${target}" _qt_qml_module_backing_target)
+    if(NOT qml_backing)
+        return()
     endif()
 
+    if(TARGET "${qml_backing}")
+        set(${out_var} "${qml_backing}" PARENT_SCOPE)
+    elseif(TARGET "${QT_CMAKE_EXPORT_NAMESPACE}::${qml_backing}")
+        set(${out_var} "${QT_CMAKE_EXPORT_NAMESPACE}::${qml_backing}" PARENT_SCOPE)
+    else()
+        message(WARNING
+            "The plugin ${target} depends on ${QT_CMAKE_EXPORT_NAMESPACE}::${qml_backing}, "
+            "but it wasn't found. Add it using:\n"
+            "find_package(${QT_CMAKE_EXPORT_NAMESPACE} OPTIONAL_COMPONENTS ${qml_backing})")
+    endif()
+endfunction()
+
+# Collects Qt modules that a target depends on and their associated plugins.
+function(_qt_internal_android_collect_qt_modules_and_plugins target out_qt_modules out_qt_plugins)
+    set(pending_stack "${target}")
+    set(visited "")
+    set(collected_modules "")
+    set(collected_plugins "")
+
+    get_target_property(qml_plugins ${target} _qt_android_qml_plugins)
+    if(qml_plugins)
+        list(APPEND pending_stack ${qml_plugins})
+    endif()
+
+    set(qt_ns ${QT_CMAKE_EXPORT_NAMESPACE})
     while(pending_stack)
         list(GET pending_stack -1 current_target)
-        if(current_target IN_LIST expanded_targets)
+
+        if(current_target IN_LIST visited)
             list(POP_BACK pending_stack)
             get_target_property(target_type "${current_target}" TYPE)
-            if(target_type AND target_type MATCHES "^(SHARED|MODULE)_LIBRARY$")
-                set(qt_ns ${QT_CMAKE_EXPORT_NAMESPACE})
-                if(current_target MATCHES "^${qt_ns}::" OR TARGET "${qt_ns}::${current_target}")
-                    # Skip QML plugin targets, they are deployed by _copy_qml_plugins.
-                    get_target_property(is_qml_plugin "${current_target}"
-                        _qt_qml_module_is_plugin_target)
-                    if(NOT is_qml_plugin)
-                        list(APPEND collected "${current_target}")
-                    endif()
+            get_target_property(is_qml_plugin "${current_target}" _qt_qml_module_is_plugin_target)
+            if (is_qml_plugin OR NOT target_type MATCHES "^(SHARED|MODULE)_LIBRARY$")
+                continue()
+            endif()
+            if(current_target MATCHES "^${qt_ns}::" OR TARGET "${qt_ns}::${current_target}")
+                if(NOT current_target IN_LIST collected_modules)
+                    list(APPEND collected_modules "${current_target}")
                 endif()
             endif()
             continue()
         endif()
-
-        list(APPEND expanded_targets "${current_target}")
+        list(APPEND visited "${current_target}")
 
         set(direct_deps "")
+        _qt_internal_android_resolve_backing_target("${current_target}" backing)
+        list(APPEND direct_deps "${backing}")
 
-        # For QML plugin targets, use _qt_qml_module_backing_target to find the Qt module.
-        get_target_property(qml_backing "${current_target}" _qt_qml_module_backing_target)
-        if(qml_backing)
-            set(qml_backing_target "${QT_CMAKE_EXPORT_NAMESPACE}::${qml_backing}")
-            if(TARGET "${qml_backing_target}")
-                if(NOT "${qml_backing_target}" IN_LIST expanded_targets)
-                    list(APPEND direct_deps "${qml_backing_target}")
-                endif()
-            else()
-                message(WARNING
-                    "The plugin ${current_target} depends on ${qml_backing_target}, "
-                    "but it wasn't found. Add it using:\n"
-                    "find_package(${QT_CMAKE_EXPORT_NAMESPACE} OPTIONAL_COMPONENTS ${qml_backing})")
-            endif()
-        endif()
-
-        _qt_internal_android_extract_link_libraries_targets("${current_target}" link_targets)
-        foreach(entry IN LISTS link_targets)
-            get_target_property(entry_alias "${entry}" ALIASED_TARGET)
-            if(entry_alias)
-                set(entry "${entry_alias}")
-            endif()
-
-            if(NOT entry IN_LIST expanded_targets)
-                list(APPEND direct_deps "${entry}")
+        _qt_internal_android_list_module_plugins("${current_target}" module_plugins)
+        foreach(plugin_target IN LISTS module_plugins)
+            if(NOT plugin_target IN_LIST collected_plugins)
+                list(APPEND collected_plugins "${plugin_target}")
             endif()
         endforeach()
 
+        foreach(dep_source IN ITEMS "${current_target}" ${module_plugins})
+            _qt_internal_android_list_plugin_modules("${dep_source}" plugin_module_deps)
+            list(APPEND direct_deps ${plugin_module_deps})
+        endforeach()
+
+        _qt_internal_android_extract_link_libraries_targets("${current_target}" link_targets)
+        list(APPEND direct_deps ${link_targets})
+
+        list(FILTER direct_deps EXCLUDE REGEX "^$")
         list(REMOVE_DUPLICATES direct_deps)
+        list(REMOVE_ITEM direct_deps "${current_target}")
         list(APPEND pending_stack ${direct_deps})
     endwhile()
 
-    list(REMOVE_DUPLICATES collected)
-    set(${out_qt_modules} "${collected}" PARENT_SCOPE)
+    list(REMOVE_DUPLICATES collected_modules)
+    list(REMOVE_DUPLICATES collected_plugins)
+    set(${out_qt_modules} "${collected_modules}" PARENT_SCOPE)
+    set(${out_qt_plugins} "${collected_plugins}" PARENT_SCOPE)
 endfunction()
 
 function(_qt_internal_android_get_qt_paths out_qt_prefix out_qt_libs_dir out_qt_data_dir)
@@ -1603,9 +1618,7 @@ function(_qt_internal_android_list_plugin_modules plugin_target out_module_deps)
     set(${out_module_deps} "${result}" PARENT_SCOPE)
 endfunction()
 
-# Copy Qt dependencies (libs, jars, plugins, other files, assets) to the deployment dir.
-# Queue both Qt modules and QML plugins, then scan for their dependencies and add
-# them to queue until we drain both module and plugin queues.
+# Copy Qt dependencies (libs, jars, plugins) to the deployment dir.
 function(_qt_internal_android_copy_qt_dependencies target deployment_dir)
     set(copy_commands "")
     set(copy_depends "")
@@ -1619,62 +1632,25 @@ function(_qt_internal_android_copy_qt_dependencies target deployment_dir)
 
     get_target_property(no_deploy_qt_libs ${target} QT_ANDROID_NO_DEPLOY_QT_LIBS)
 
-    # Start with CMake links of this target
-    _qt_internal_android_collect_qt_modules(${target} module_queue)
+    _qt_internal_android_collect_qt_modules_and_plugins(${target} qt_modules qt_plugins)
 
-    set(plugin_queue "")
-    set(processed_modules "")
-    set(processed_plugins "")
-
-    while(module_queue OR plugin_queue)
-        while(module_queue)
-            list(POP_FRONT module_queue module)
-            if(module IN_LIST processed_modules)
-                continue()
-            endif()
-            list(APPEND processed_modules "${module}")
-
-            _qt_internal_android_process_module_jars("${target}" "${module}" "${libs_root_dir}"
+    foreach(module IN LISTS qt_modules)
+        _qt_internal_android_process_module_jars("${target}" "${module}" "${libs_root_dir}"
+            seen_destinations copy_commands copy_depends)
+        if(NOT no_deploy_qt_libs)
+            _qt_internal_android_process_module_self("${target}" "${module}" "${libs_abi_dir}"
                 seen_destinations copy_commands copy_depends)
-
-            if(no_deploy_qt_libs)
-                continue()
-            endif()
-
-            _qt_internal_android_process_module_self("${target}" "${module}"
-                "${libs_abi_dir}"
-                seen_destinations copy_commands copy_depends)
-
             _qt_internal_android_process_module_lib_deps("${target}" "${module}" "${libs_abi_dir}"
                 seen_destinations copy_commands copy_depends)
+        endif()
+    endforeach()
 
-            _qt_internal_android_list_module_plugins("${module}" new_plugins)
-            list(APPEND plugin_queue ${new_plugins})
-        endwhile()
-
-        while(plugin_queue)
-            list(POP_FRONT plugin_queue plugin_item)
-            if(plugin_item IN_LIST processed_plugins)
-                continue()
-            endif()
-            list(APPEND processed_plugins "${plugin_item}")
-
-            if(TARGET "${plugin_item}")
-                # Collect extra Qt module deps declared by this plugin and feed them back into
-                # module_queue; the outer loop re-enters while(module_queue) to process them.
-                _qt_internal_android_list_plugin_modules("${plugin_item}" plugin_module_deps)
-                foreach(dep_target IN LISTS plugin_module_deps)
-                    if(NOT "${dep_target}" IN_LIST processed_modules
-                            AND NOT "${dep_target}" IN_LIST module_queue)
-                        list(APPEND module_queue "${dep_target}")
-                    endif()
-                endforeach()
-            endif()
-
-            _qt_internal_android_process_plugin_item("${target}" "${plugin_item}" "${libs_abi_dir}"
+    if(NOT no_deploy_qt_libs)
+        foreach(plugin IN LISTS qt_plugins)
+            _qt_internal_android_process_plugin_item("${target}" "${plugin}" "${libs_abi_dir}"
                 seen_destinations copy_commands copy_depends)
-        endwhile()
-    endwhile()
+        endforeach()
+    endif()
 
     list(REMOVE_DUPLICATES copy_depends)
     list(FILTER copy_depends EXCLUDE REGEX "^$")
