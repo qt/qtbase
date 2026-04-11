@@ -1579,9 +1579,10 @@ void QHttp2Connection::handleDATA()
                 "[%p] Received DATA frame with payload size %u, "
                 "but SETTINGS_MAX_FRAME_SIZE is %u, sending FRAME_SIZE_ERROR",
                 this, inboundFrame.payloadSize(), m_config.maxFrameSize());
-        return stream->streamError(
-                Http2Error::FRAME_SIZE_ERROR,
-                QLatin1String("DATA payload size exceeds SETTINGS_MAX_FRAME_SIZE"));
+        if (stream)
+            return stream->streamError(Http2Error::FRAME_SIZE_ERROR,
+                                       QLatin1String("DATA payload size exceeds SETTINGS_MAX_FRAME_SIZE"));
+        return connectionError(FRAME_SIZE_ERROR, "DATA payload size exceeds SETTINGS_MAX_FRAME_SIZE");
     }
 
     if (qint32(inboundFrame.payloadSize()) > sessionReceiveWindowSize) {
@@ -1800,7 +1801,7 @@ void QHttp2Connection::handleSETTINGS()
     if (inboundFrame.flags().testFlag(FrameFlag::ACK)) {
         // RFC 9113, 6.5: Receipt of a SETTINGS frame with the ACK flag set and a length field
         // value other than 0 MUST be treated as a connection error
-        if (inboundFrame.payloadSize ())
+        if (inboundFrame.payloadSize())
             return connectionError(FRAME_SIZE_ERROR, "SETTINGS ACK with data");
         if (!waitingForSettingsACK)
             return connectionError(PROTOCOL_ERROR, "unexpected SETTINGS ACK");
@@ -1814,7 +1815,7 @@ void QHttp2Connection::handleSETTINGS()
         // RFC 9113, 6.5: A SETTINGS frame with a length other than a multiple of 6 octets MUST be
         // treated as a connection error (Section 5.4.1) of type FRAME_SIZE_ERROR.
         // checked in Frame::validateHeader()
-        Q_ASSERT (inboundFrame.payloadSize() % 6 == 0);
+        Q_ASSERT(inboundFrame.payloadSize() % 6 == 0);
 
         auto src = inboundFrame.dataBegin();
         for (const uchar *end = src + inboundFrame.dataSize(); src != end; src += 6) {
