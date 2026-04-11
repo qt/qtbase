@@ -1505,39 +1505,29 @@ function(_qt_internal_android_list_module_plugins module out_plugin_paths)
     set(${out_plugin_paths} "${result}" PARENT_SCOPE)
 endfunction()
 
-# Deploys a single plugin, accepts either a CMake target name or a file path.
-function(_qt_internal_android_process_plugin_item target plugin_target_or_path libs_abi_dir
+# Deploys a single plugin target.
+function(_qt_internal_android_process_plugin_item target plugin_target libs_abi_dir
         inout_seen_destinations inout_copy_commands inout_copy_depends)
     set(seen_destinations "${${inout_seen_destinations}}")
     set(copy_commands "${${inout_copy_commands}}")
     set(copy_depends "${${inout_copy_depends}}")
 
-    if(TARGET "${plugin_target_or_path}")
-        string(TOUPPER "${CMAKE_BUILD_TYPE}" build_type_upper)
-        get_target_property(plugin_path "${plugin_target_or_path}"
-            "IMPORTED_LOCATION_${build_type_upper}")
-        if(NOT plugin_path)
-            get_target_property(plugin_path "${plugin_target_or_path}" IMPORTED_LOCATION)
-        endif()
-    else()
-        set(plugin_path "${plugin_target_or_path}")
-    endif()
+    set(plugin_path "$<TARGET_FILE:${plugin_target}>")
+    set(plugin_name "$<TARGET_FILE_NAME:${plugin_target}>")
 
-    if(NOT plugin_path)
+    set(plugin_dst "${libs_abi_dir}/${plugin_name}")
+    if(plugin_dst IN_LIST seen_destinations)
         return()
     endif()
+    list(APPEND seen_destinations "${plugin_dst}")
 
-    get_filename_component(plugin_name "${plugin_path}" NAME)
-    _qt_internal_path_join(plugin_dst "${libs_abi_dir}" "${plugin_name}")
-    if(NOT plugin_dst IN_LIST seen_destinations)
-        list(APPEND seen_destinations "${plugin_dst}")
-        if(NOT plugin_name MATCHES "^libplugins_")
-            _qt_internal_android_append_to_libs_xml_section(${target} qt_libs "${plugin_name}")
-        endif()
-        _qt_internal_android_get_deploy_command(deploy_plugin_cmd "${plugin_path}" "${plugin_dst}")
-        list(APPEND copy_commands COMMAND ${deploy_plugin_cmd})
-        list(APPEND copy_depends "${plugin_path}")
+    get_target_property(plugin_type "${plugin_target}" QT_PLUGIN_TYPE)
+    if(NOT plugin_type)
+        _qt_internal_android_append_to_libs_xml_section(${target} qt_libs "${plugin_name}")
     endif()
+    _qt_internal_android_get_deploy_command(deploy_plugin_cmd "${plugin_path}" "${plugin_dst}")
+    list(APPEND copy_commands COMMAND ${deploy_plugin_cmd})
+    list(APPEND copy_depends "${plugin_target}")
 
     set(${inout_seen_destinations} "${seen_destinations}" PARENT_SCOPE)
     set(${inout_copy_commands} "${copy_commands}" PARENT_SCOPE)
