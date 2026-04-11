@@ -830,6 +830,7 @@ void tst_QHttp2Connection::testBadFrameSize_data()
 
 void tst_QHttp2Connection::testBadFrameSize()
 {
+    using namespace std::chrono_literals;
     QFETCH(uchar, frametype);
     QFETCH(int, loadsize);
     QFETCH(bool, rst_received);
@@ -883,7 +884,11 @@ void tst_QHttp2Connection::testBadFrameSize()
         QCOMPARE(writtenN, qint64(buffer.size()));
         QCOMPARE(clientStream->state(), QHttp2Stream::State::Open);
         QCOMPARE(serverStream->state(), QHttp2Stream::State::Open);
-        QCOMPARE(rstClientSpy.wait(), false);
+        // No RST/GOAWAY expected after an empty HEADERS.  Use a short wait to
+        // flush the QueuedConnection chain (QBuffer emits readyRead deferred,
+        // so the path client-write → server readyRead → potential RST → client
+        // readyRead takes at least two event-loop rounds).
+        QVERIFY(!rstClientSpy.wait(50ms));
         QCOMPARE(rstServerSpy.count(), 0);
         QCOMPARE(goawayClientSpy.count(), 0);
     }
@@ -916,7 +921,19 @@ void tst_QHttp2Connection::testBadFrameSize()
         QCOMPARE(writtenN, qint64(buffer.size()));
     }
 
-    QCOMPARE(rstClientSpy.wait(), rst_received);
+    // Wait on whichever signal *should* arrive (fast path), then verify the
+    // other spy is still empty.  Avoid the inverse pattern (spy.wait()==false)
+    // which unconditionally burns the full 5-second QSignalSpy timeout.
+    if (rst_received) {
+        QVERIFY(rstClientSpy.wait());
+    } else if (goaway_received) {
+        QVERIFY(goawayClientSpy.wait());
+        QCOMPARE(rstClientSpy.count(), 0);
+    } else {
+        // Neither RST nor GOAWAY expected.  A 50 ms wait flushes the
+        // QueuedConnection chain; any late signal would arrive in the same window.
+        QVERIFY(!rstClientSpy.wait(50ms));
+    }
     QCOMPARE(rstServerSpy.count(), 0);
     QCOMPARE(goawayClientSpy.count(), goaway_received);
 
