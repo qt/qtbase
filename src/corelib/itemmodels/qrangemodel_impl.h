@@ -1057,6 +1057,7 @@ protected:
     {}
 
     inline QModelIndex createIndex(int row, int column, const void *ptr = nullptr) const;
+    inline QModelIndexList persistentIndexList() const;
     inline void changePersistentIndexList(const QModelIndexList &from, const QModelIndexList &to);
     inline void dataChanged(const QModelIndex &from, const QModelIndex &to,
                             const QList<int> &roles);
@@ -2759,7 +2760,24 @@ protected:
 
     void resetParentInChildren(range_type *children)
     {
+        const auto persistentIndexList = this->persistentIndexList();
+        const auto [firstColumn, lastColumn] = [&persistentIndexList]{
+            int first = std::numeric_limits<int>::max();
+            int last = -1;
+            for (const auto &pmi : persistentIndexList) {
+                first = (std::min)(pmi.column(), first);
+                last = (std::max)(pmi.column(), last);
+            }
+            return std::pair(first, last);
+        }();
+
+        resetParentInChildrenRecursive(children, firstColumn, lastColumn);
+    }
+
+    void resetParentInChildrenRecursive(range_type *children, int pmiFromColumn, int pmiToColumn)
+    {
         if constexpr (tree_traits::has_setParentRow && !rows_are_any_refs_or_pointers) {
+            const bool changePersistentIndexes = pmiToColumn >= pmiFromColumn;
             const auto begin = QRangeModelDetails::adl_begin(*children);
             const auto end = QRangeModelDetails::adl_end(*children);
             for (auto it = begin; it != end; ++it) {
@@ -2768,22 +2786,29 @@ protected:
                     auto &childrenRef = QRangeModelDetails::refTo(maybeChildren);
                     QModelIndexList fromIndexes;
                     QModelIndexList toIndexes;
-                    fromIndexes.reserve(Base::size(childrenRef));
-                    toIndexes.reserve(Base::size(childrenRef));
+                    if (changePersistentIndexes) {
+                        fromIndexes.reserve(Base::size(childrenRef) * (pmiToColumn - pmiFromColumn + 1));
+                        toIndexes.reserve(Base::size(childrenRef) * (pmiToColumn - pmiFromColumn + 1));
+                    }
                     auto *parentRow = QRangeModelDetails::pointerTo(*it);
 
                     int row = 0;
                     for (auto &child : childrenRef) {
                         const_row_ptr oldParent = this->protocol().parentRow(child);
                         if (oldParent != parentRow) {
-                            fromIndexes.append(this->createIndex(row, 0, oldParent));
-                            toIndexes.append(this->createIndex(row, 0, parentRow));
+                            if (changePersistentIndexes) {
+                                for (int column = pmiFromColumn; column <= pmiToColumn; ++column) {
+                                    fromIndexes.append(this->createIndex(row, column, oldParent));
+                                    toIndexes.append(this->createIndex(row, column, parentRow));
+                                }
+                            }
                             this->protocol().setParentRow(child, parentRow);
                         }
                         ++row;
                     }
-                    this->changePersistentIndexList(fromIndexes, toIndexes);
-                    resetParentInChildren(&childrenRef);
+                    if (changePersistentIndexes)
+                        this->changePersistentIndexList(fromIndexes, toIndexes);
+                    resetParentInChildrenRecursive(&childrenRef, pmiFromColumn, pmiToColumn);
                 }
             }
         }

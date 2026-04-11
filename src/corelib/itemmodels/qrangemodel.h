@@ -137,6 +137,10 @@ QModelIndex QRangeModelImplBase::createIndex(int row, int column, const void *pt
 {
     return m_rangeModel->createIndex(row, column, ptr);
 }
+QModelIndexList QRangeModelImplBase::persistentIndexList() const
+{
+    return m_rangeModel->persistentIndexList();
+}
 void QRangeModelImplBase::changePersistentIndexList(const QModelIndexList &from,
                                                           const QModelIndexList &to)
 {

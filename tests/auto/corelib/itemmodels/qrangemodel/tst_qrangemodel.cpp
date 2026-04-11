@@ -112,10 +112,12 @@ private:
     {
         QList<QPersistentModelIndex> pmiList;
         for (int row = 0; row < model->rowCount(parent); ++row) {
-            const QModelIndex mi = model->index(row, 0, parent);
-            pmiList += mi;
-            if (model->hasChildren(mi))
-                pmiList += allIndexes(model, mi);
+            for (int column = 0; column < model->columnCount(parent); ++column) {
+                const QModelIndex mi = model->index(row, column, parent);
+                pmiList += mi;
+                if (model->hasChildren(mi))
+                    pmiList += allIndexes(model, mi);
+            }
         }
         return pmiList;
     }
