@@ -1289,30 +1289,48 @@ qt_feature("relro_now_linker" PRIVATE
 qt_feature_config("relro_now_linker" QMAKE_PUBLIC_CONFIG)
 
 
-if("${INPUT_coverage}" STREQUAL "gcov")
-    qt_config_compile_test(gcov
-        LABEL "gcov compiler flags"
-        COMPILE_OPTIONS "--coverage"
-        CODE
-    "int main(void)
-    {
-        /* BEGIN TEST: */
-        /* END TEST: */
-        return 0;
-    }
-    ")
-endif()
+qt_config_compile_test(gcov
+    LABEL "gcov compiler flags"
+    COMPILE_OPTIONS "--coverage"
+    CODE
+"int main(void)
+{
+    /* BEGIN TEST: */
+    /* END TEST: */
+    return 0;
+}
+")
+
+qt_config_compile_test(llvm_cov_flags
+    LABEL "LLVM source-based coverage flags"
+    COMPILE_OPTIONS "-fprofile-instr-generate" "-fcoverage-mapping"
+    CODE
+"int main(void)
+{
+    /* BEGIN TEST: */
+    /* END TEST: */
+    return 0;
+}
+")
 
 qt_feature("coverage-gcov"
     LABEL "Gcov"
+    AUTODETECT OFF
     ENABLE INPUT_coverage STREQUAL "gcov"
     CONDITION TEST_gcov AND
         ( QT_FEATURE_debug OR QT_FEATURE_debug_and_release )
 )
 
+qt_feature("coverage-llvm"
+    LABEL "LLVM source-based"
+    AUTODETECT OFF
+    ENABLE INPUT_coverage STREQUAL "llvm-cov"
+    CONDITION TEST_llvm_cov_flags
+)
+
 qt_feature("coverage"
     LABEL "Coverage"
-    CONDITION QT_FEATURE_coverage_gcov
+    CONDITION QT_FEATURE_coverage_gcov OR QT_FEATURE_coverage_llvm
 )
 
 # Mark the feature as PRIVATE because we want it to be exported, but we don't want modifications

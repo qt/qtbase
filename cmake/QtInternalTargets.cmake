@@ -580,6 +580,11 @@ function(qt_internal_apply_coverage_flags)
         target_compile_options(PlatformCommonInternal INTERFACE
             "$<$<CONFIG:Debug>:--coverage>")
         target_link_options(PlatformCommonInternal INTERFACE "$<$<CONFIG:Debug>:--coverage>")
+    elseif(QT_FEATURE_coverage_llvm)
+        target_compile_options(PlatformCommonInternal INTERFACE
+            -fprofile-instr-generate
+            -fcoverage-mapping)
+        target_link_options(PlatformCommonInternal INTERFACE -fprofile-instr-generate)
     endif()
 endfunction()
 qt_internal_apply_coverage_flags()
