@@ -1416,13 +1416,11 @@ public:
         return result;
     }
 
-    void multiData(const QModelIndex &index, QModelRoleDataSpan roleDataSpan) const
+    struct ItemReader
     {
-        bool tried = false;
-        readAt(index, [this, &index, roleDataSpan, &tried](const auto &value) {
-            Q_UNUSED(this);
-            Q_UNUSED(index);
-            using value_type = q20::remove_cvref_t<decltype(value)>;
+        template <typename value_type>
+        void operator()(const value_type &value) const
+        {
             using multi_role = QRangeModelDetails::is_multi_role<value_type>;
             using wrapped_value_type = QRangeModelDetails::wrapped_t<value_type>;
 
@@ -1462,7 +1460,7 @@ public:
                 const auto roleNames = [this]() -> QHash<int, QByteArray> {
                     Q_UNUSED(this);
                     if constexpr (!multi_role::int_key)
-                        return this->itemModel().roleNames();
+                        return that->itemModel().roleNames();
                     else
                         return {};
                 }();
@@ -1485,8 +1483,8 @@ public:
                     tried = true;
                     for (auto &roleData : roleDataSpan) {
                         if (!readModelData(roleData)) {
-                            roleData.setData(readRole(index, roleData.role(),
-                                                      QRangeModelDetails::pointerTo(value)));
+                            roleData.setData(that->readRole(index, roleData.role(),
+                                                            QRangeModelDetails::pointerTo(value)));
                         }
                     }
                 } else if (index.column() <= row_traits::fixed_size()) {
@@ -1494,8 +1492,8 @@ public:
                     for (auto &roleData : roleDataSpan) {
                         const int role = roleData.role();
                         if (isPrimaryRole(role)) {
-                            roleData.setData(readProperty(index,
-                                                          QRangeModelDetails::pointerTo(value)));
+                            roleData.setData(that->readProperty(index,
+                                                                QRangeModelDetails::pointerTo(value)));
                         } else {
                             roleData.clearData();
                         }
@@ -1511,7 +1509,18 @@ public:
                         roleData.clearData();
                 }
             }
-        });
+        }
+
+        const QModelIndex &index;
+        QModelRoleDataSpan roleDataSpan;
+        const QRangeModelImpl *that;
+        bool &tried;
+    };
+
+    void multiData(const QModelIndex &index, QModelRoleDataSpan roleDataSpan) const
+    {
+        bool tried = false;
+        readAt(index, ItemReader{index, roleDataSpan, this, tried});
 
         Q_ASSERT(tried);
     }
