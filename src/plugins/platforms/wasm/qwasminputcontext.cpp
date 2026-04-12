@@ -84,15 +84,16 @@ void QWasmInputContext::inputCallback(emscripten::val event)
 
         qCDebug(qLcQpaWasmInputContext) << "insertCompositionText : " << inputStr;
         event.call<void>("stopImmediatePropagation");
+        if (event["isComposing"].as<bool>()) {
+            int replaceLength = rangesPair.second  - rangesPair.first;
 
-        int replaceLength = rangesPair.second  - rangesPair.first;
+            setPreeditString(inputStr, 0);
+            insertPreedit(replaceLength);
 
-        setPreeditString(inputStr, 0);
-        insertPreedit(replaceLength);
-
-        rangesPair.first = 0;
-        rangesPair.second = 0;
-        event.call<void>("stopImmediatePropagation");
+            rangesPair.first = 0;
+            rangesPair.second = 0;
+            event.call<void>("stopImmediatePropagation");
+        }
         return;
     } else if (!inputTypeString.compare("insertReplacementText")) {
 
