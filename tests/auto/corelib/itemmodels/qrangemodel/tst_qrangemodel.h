@@ -91,6 +91,12 @@ private slots:
     void itemAccess_data();
     void itemAccess();
 
+    void sortBasic();
+    void sort_data() { createTestData(); }
+    void sort();
+    void sortTree_data(){ tree_data(); }
+    void sortTree();
+
 private:
     void createTestData();
     void createTree();

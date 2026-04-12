@@ -999,6 +999,8 @@ public:
     void multiData(const QModelIndex &index, QModelRoleDataSpan roleDataSpan) const;
     void setAutoConnectPolicy();
 
+    void sort(int column, Qt::SortOrder order);
+
     // bindings for overriding
 
     using InvalidateCaches = Method<&Self::invalidateCaches>;
@@ -1028,6 +1030,9 @@ public:
     using MultiData = Method<&Self::multiData>;
     using SetAutoConnectPolicy = Method<&Self::setAutoConnectPolicy>;
 
+    // 6.12
+    using Sort = Method<&Self::sort>;
+
     template <typename C>
     using MethodTemplates = std::tuple<
         typename C::Destroy,
@@ -1053,7 +1058,8 @@ public:
         typename C::ItemData,
         typename C::RoleNames,
         typename C::MultiData,
-        typename C::SetAutoConnectPolicy
+        typename C::SetAutoConnectPolicy,
+        typename C::Sort
     >;
 
     static Q_CORE_EXPORT QRangeModelImplBase *getImplementation(QRangeModel *model);
@@ -1072,6 +1078,7 @@ protected:
 
     inline QModelIndex createIndex(int row, int column, const void *ptr = nullptr) const;
     inline QModelIndexList persistentIndexList() const;
+    inline void changePersistentIndex(const QModelIndex &from, const QModelIndex &to);
     inline void changePersistentIndexList(const QModelIndexList &from, const QModelIndexList &to);
     inline void dataChanged(const QModelIndex &from, const QModelIndex &to,
                             const QList<int> &roles);
@@ -1091,6 +1098,8 @@ protected:
     inline bool beginMoveRows(const QModelIndex &sourceParent, int sourceFirst, int sourceLast,
                               const QModelIndex &destParent, int destRow);
     inline void endMoveRows();
+    inline void beginLayoutChange();
+    inline void endLayoutChange();
     inline AutoConnectPolicy autoConnectPolicy() const;
 
 public:
@@ -1538,7 +1547,7 @@ public:
 
         const QModelIndex &index;
         QModelRoleDataSpan roleDataSpan;
-        const QRangeModelImpl *that;
+        const QRangeModelImpl * const that;
     };
 
     void multiData(const QModelIndex &index, QModelRoleDataSpan roleDataSpan) const
@@ -1920,6 +1929,221 @@ public:
         }
     }
 
+    struct unordered {
+        friend constexpr bool operator<(unordered, QtPrivate::CompareAgainstLiteralZero) noexcept
+        { return false; }
+        friend constexpr bool operator>(unordered, QtPrivate::CompareAgainstLiteralZero) noexcept
+        { return false; }
+    };
+
+    struct Compare
+    {
+        template <typename C, typename LessThan>
+        using sortMember_test = decltype(std::declval<C&>().sort(std::declval<LessThan &&>()));
+        static constexpr bool hasSortMember = qxp::is_detected_v<sortMember_test, range_type, Compare>;
+
+        Compare(const QRangeModelImpl *impl, int column, Qt::SortOrder order)
+            : that(impl), m_index(impl->createIndex(-1, column, nullptr))
+            , m_order(order)
+        {
+        }
+
+        template <typename Item>
+        auto operator()(const Item &lhs, const Item &rhs) const
+        {
+            auto ordering = compare(lhs, rhs);
+            return m_order == Qt::AscendingOrder ? ordering < 0 : ordering > 0;
+        }
+
+        template <typename Item>
+        auto compare(const Item &lhs, const Item &rhs) const
+        {
+            using value_type = QRangeModelDetails::wrapped_t<Item>;
+            using multi_role = QRangeModelDetails::is_multi_role<value_type>;
+
+            if constexpr (QRangeModelDetails::item_access<value_type>()
+                        || multi_role() || has_metaobject<value_type>) {
+                QModelRoleData result(Qt::DisplayRole);
+                // Minor abuse of QModelIndex: the reader needs an index to implement
+                // lazy auto-connections, but we only have a column. So we construct
+                // an invalid QModelIndex that carries only that column value. That's
+                // enough for reading values, and the auto-connection logic skips for
+                // invalid indexes.
+                ItemReader reader{m_index, result, that};
+                Q_ASSERT(!reader.index.isValid());
+                reader(lhs);
+                const QVariant lhsVariant = std::move(result.data());
+                reader(rhs);
+                const QVariant rhsVariant = std::move(result.data());
+                return QVariant::compare(lhsVariant, rhsVariant);
+            } else if constexpr (std::is_same_v<QVariant, value_type>) {
+                return QVariant::compare(lhs, rhs);
+            } else if constexpr (QtOrderingPrivate::CompareThreeWayTester::hasCompareThreeWay_v
+                                                                            <value_type, value_type>) {
+                return qCompareThreeWay(lhs, rhs);
+            } else {
+                return unordered{};
+            }
+        }
+
+        bool checkComparable() const
+        {
+            return that->readAt(that->index(0, 0, {}), [this](const auto &item){
+                // before we call std::stable_sort, check that we can compare the
+                // types we'll ultimately get called with. This doesn't catch cases
+                // where we end up comparing QVariant, and we cannot make this a
+                // compile time check as long as readAt etc are not constexpr.
+                using ordering = decltype(compare(item, item));
+                if constexpr (std::is_same_v<ordering, unordered>) {
+#ifndef QT_NO_DEBUG
+                    const QMetaType itemtype = QMetaType::fromType<QRangeModelDetails::wrapped_t<
+                                                    q20::remove_cvref_t<decltype(item)>>
+                                                >();
+                    qCritical("QRangeModel: Cannot compare items of type %s in column %d!",
+                              itemtype.name(), m_index.column());
+#endif
+                    return false;
+                } else {
+                    return true;
+                }
+            });
+        }
+
+        template <typename Item>
+        static std::optional<bool> compareInvalid(const Item &lhs, const Item &rhs)
+        {
+            // invalid data > valid data
+            if (!QRangeModelDetails::isValid(lhs))
+                return false;
+            if (!QRangeModelDetails::isValid(rhs))
+                return true;
+            return std::nullopt;
+        }
+
+        const QRangeModelImpl * const that;
+        const QModelIndex m_index;
+        const Qt::SortOrder m_order;
+    };
+
+    void sort(int column, Qt::SortOrder order)
+    {
+        if constexpr (isMutable() && std::is_swappable_v<row_type>) {
+            if (rowCount({}) < 2 || column >= columnCount({}))
+                return;
+            Compare compare(this, column, order);
+            if (!compare.checkComparable())
+                return;
+
+            this->beginLayoutChange();
+            that().sortImpl([&compare](const auto &leftRow, const auto &rightRow) {
+                if (auto anyInvalid = Compare::compareInvalid(leftRow, rightRow))
+                    return *anyInvalid;
+                return row_traits::for_element_at(leftRow, compare.m_index.column(),
+                                                  [&rightRow, &compare](const auto &leftItem){
+                    return row_traits::for_element_at(rightRow, compare.m_index.column(),
+                                                      [&leftItem, &compare](const auto &rightItem){
+                        // Called by std::stable_sort. Since "column" is a runtime value, we
+                        // can't statically assert that lhs and rhs are of the same type.
+                        if constexpr (std::is_same_v<decltype(leftItem), decltype(rightItem)>) {
+                            if (auto anyInvalid = Compare::compareInvalid(leftItem, rightItem))
+                                return *anyInvalid;
+                            return compare(QRangeModelDetails::refTo(leftItem),
+                                           QRangeModelDetails::refTo(rightItem));
+                        } else {
+                            Q_UNREACHABLE();
+                        }
+                        return false;
+                    });
+                });
+            });
+            this->endLayoutChange();
+        }
+    }
+
+    template <typename LessThan>
+    void sortSubRange(range_type &range, row_ptr expectedParent, const LessThan &lessThan)
+    {
+        auto begin = QRangeModelDetails::adl_begin(range);
+        auto end = QRangeModelDetails::adl_end(range);
+        if (begin == end)
+            return;
+
+        QModelIndexList persistentIndexes = this->persistentIndexList();
+        that().prunePersistentIndexList(persistentIndexes, expectedParent);
+
+        if (persistentIndexes.isEmpty()) {
+            using It = typename range_features::iterator;
+            constexpr bool is_random_access = std::is_base_of_v<std::random_access_iterator_tag,
+                                                typename std::iterator_traits<It>::iterator_category>;
+            // fast path if we have no persistent indexes: sort the range in place
+            if constexpr (Compare::hasSortMember) {
+                range.sort(lessThan);
+                return;
+            } else if constexpr (is_random_access) {
+                std::stable_sort(begin, end, lessThan);
+                return;
+            }
+        }
+
+        // slow path: create an indexed version of the range by adding a
+        // column that records row movements.
+        struct SortTracker
+        {
+            row_type row;
+            int index;
+        };
+
+        const int rangeSize = size(range);
+        std::vector<SortTracker> tracked;
+        tracked.reserve(rangeSize);
+
+        // move all rows into that index paired with its unsorted position
+        int row = -1;
+        for (auto &&it = std::move_iterator(begin); it != std::move_iterator(end); ++it)
+            tracked.emplace_back(SortTracker{*it, ++row});
+
+        // sort the index based on a comparions of the data
+        std::stable_sort(tracked.begin(), tracked.end(),
+                            [&lessThan](const SortTracker &lhs, const SortTracker &rhs){
+            return lessThan(lhs.row, rhs.row);
+        });
+
+        // write the values back to the range in (now ordered) sequence,
+        // and create a mapping from old to new row
+        std::vector<int> newRows;
+        newRows.resize(rangeSize);
+        auto sorted = std::move_iterator(tracked.begin());
+        auto write = QRangeModelDetails::adl_begin(range);
+        qsizetype changedIndexCount = 0;
+        for (int newIndex = 0; newIndex < rangeSize; ++write, ++sorted, ++newIndex) {
+            auto &&tracker = *sorted;
+            changedIndexCount += (tracker.index != newIndex);
+            *write = std::move(tracker.row);
+            newRows[tracker.index] = newIndex;
+        }
+
+        // free memory from intermediate vector
+        tracked.clear();
+        tracked.shrink_to_fit();
+
+        // update relevant persistent model indexes
+        QModelIndexList fromIndexes;
+        QModelIndexList toIndexes;
+        fromIndexes.reserve(changedIndexCount);
+        toIndexes.reserve(changedIndexCount);
+        for (const auto &fromIndex : std::as_const(persistentIndexes)) {
+            const int newRow = newRows.at(fromIndex.row());
+            if (fromIndex.row() == newRow)
+                continue;
+            const QModelIndex toIndex = that().indexImpl(newRow,
+                                                         fromIndex.column(),
+                                                         fromIndex.parent());
+            fromIndexes.append(fromIndex);
+            toIndexes.append(toIndex);
+        }
+        this->changePersistentIndexList(fromIndexes, toIndexes);
+    }
+
     template <typename InsertFn>
     bool doInsertColumns(int column, int count, const QModelIndex &parent, InsertFn insertFn)
     {
@@ -2237,6 +2461,7 @@ public:
     using SetAutoConnectPolicy = Override<QRangeModelImplBase::SetAutoConnectPolicy,
                                           &Self::setAutoConnectPolicy>;
 
+    using Sort = Override<QRangeModelImplBase::Sort, &Self::sort>;
 protected:
     ~QRangeModelImpl()
     {
@@ -2395,6 +2620,8 @@ protected:
     void connectPropertyOnRead(const QModelIndex &index, int role,
                                const QObject *gadget, const QMetaProperty &prop) const
     {
+        if (!index.isValid())
+            return;
         const typename ModelData::Connection connection = {gadget, role};
         if (prop.hasNotifySignal() && this->autoConnectPolicy() == AutoConnectPolicy::OnRead
                                    && !m_data.connections.contains(connection)) {
@@ -2931,6 +3158,33 @@ protected:
                    : *this->m_data.model();
     }
 
+    template <typename LessThan>
+    void sortImplRecursive(range_type &range, row_ptr parentRow, const LessThan &lessThan)
+    {
+        for (auto &row : range) {
+            decltype(auto) children = this->protocol().childRows(QRangeModelDetails::refTo(row));
+            if (QRangeModelDetails::isValid(children)) {
+                sortImplRecursive(QRangeModelDetails::refTo(children),
+                                  QRangeModelDetails::pointerTo(row), lessThan);
+            }
+        }
+        this->sortSubRange(range, parentRow, lessThan);
+    }
+
+    template <typename LessThan>
+    void sortImpl(const LessThan &lessThan)
+    {
+        sortImplRecursive(*this->m_data.model(), nullptr, lessThan);
+        resetParentInChildren(this->m_data.model());
+    }
+
+    void prunePersistentIndexList(QModelIndexList &list, row_ptr expectedParent)
+    {
+        erase_if(list, [expectedParent](const QModelIndex &index){
+            return static_cast<row_ptr>(index.internalPointer()) != expectedParent;
+        });
+    }
+
 private:
     range_type &childrenOf(row_ptr row)
     {
@@ -3100,6 +3354,14 @@ protected:
         }
         return result;
     }
+
+    template <typename LessThan>
+    void sortImpl(const LessThan &lessThan)
+    {
+        this->sortSubRange(*this->m_data.model(), nullptr, lessThan);
+    }
+
+    void prunePersistentIndexList(QModelIndexList &, typename Base::row_ptr) {}
 };
 
 QT_END_NAMESPACE

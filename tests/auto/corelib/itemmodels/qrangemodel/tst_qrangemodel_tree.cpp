@@ -479,3 +479,27 @@ void tst_QRangeModel::treeMoveRowBranches()
 
     verifyPmiList(pmiList);
 }
+
+void tst_QRangeModel::sortTree()
+{
+    auto model = makeTreeModel();
+    QFETCH(const QList<int>, rowsWithChildren);
+
+    int branchRow = rowsWithChildren.first();
+#if QT_CONFIG(itemmodeltester)
+    QAbstractItemModelTester modelTest(model.get());
+#endif
+
+    QPersistentModelIndex pmiParent = model->index(branchRow, 0, {});
+    const QVariant parentData = pmiParent.data();
+    QPersistentModelIndex pmiChild = model->index(0, 1, pmiParent);
+    const QVariant childData = pmiChild.data();
+
+    model->sort(0, Qt::AscendingOrder);
+    QCOMPARE(pmiParent.data(), parentData);
+    QCOMPARE(pmiChild.data(), childData);
+
+    model->sort(0, Qt::DescendingOrder);
+    QCOMPARE(pmiParent.data(), parentData);
+    QCOMPARE(pmiChild.data(), childData);
+}

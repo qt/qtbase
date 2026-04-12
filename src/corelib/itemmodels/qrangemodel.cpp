@@ -1486,10 +1486,25 @@ void QRangeModel::setAutoConnectPolicy(QRangeModel::AutoConnectPolicy policy)
 
 /*!
     \reimp
+
+    Sorts the the underlying range in the given \a order, based on the
+    Qt::DisplayRole data of the items in \a column.
+
+    \note This implementation uses a member function \c{sort(Compare comp)} of
+    the C++ range if available (such as in \c{std::list}), or otherwise
+    \c{std::stable_sort()} if the range provides random-access iterators. If
+    neither is available then the implementation does nothing and returns
+    immediately.
+
+    \note Accessing the item does not dispatch the reading of data through
+    overrides of data().
+
+    \sa QSortFilterProxyModel
 */
 void QRangeModel::sort(int column, Qt::SortOrder order)
 {
-    return QAbstractItemModel::sort(column, order);
+    Q_D(QRangeModel);
+    d->impl->call<QRangeModelImplBase::Sort>(column, order);
 }
 
 /*!

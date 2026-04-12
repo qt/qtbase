@@ -10,6 +10,7 @@
 
 #include <QtGui/qcolor.h>
 #include <QtGui/qpolygon.h>
+#include <QtGui/qpen.h>
 
 #if QT_CONFIG(itemmodeltester)
 #include <QtTest/qabstractitemmodeltester.h>
@@ -37,67 +38,77 @@ void tst_QRangeModel::createTestData()
     // references, only adding either pointer, ref, or copy, as they all operate
     // on the same data.
 
-    ADD_ALL(fixedArrayOfNumbers, 1, ChangeAction::SetData, 1);
+    ADD_ALL(fixedArrayOfNumbers, 1, ChangeAction::SetData | ChangeAction::Sort, 1);
 
-    ADD_POINTER(cArrayOfNumbers, 1, ChangeAction::SetData, 1);
+    ADD_POINTER(cArrayOfNumbers, 1, ChangeAction::SetData | ChangeAction::Sort, 1);
     ADD_REF(cArrayFixedColumns,
             std::tuple_size_v<Row>,
-            ChangeAction::SetData | ChangeAction::SetItemData, u"Item"_s);
+            ChangeAction::SetData | ChangeAction::SetItemData | ChangeAction::Sort, u"Item"_s);
 
-    ADD_ALL(vectorOfFixedColumns, 2, ChangeAction::ChangeRows | ChangeAction::SetData, u"int"_s);
+    ADD_ALL(vectorOfFixedColumns, 2,
+            ChangeAction::ChangeRows | ChangeAction::SetData | ChangeAction::Sort, u"int"_s);
 
     // TODO: create a new instance with shared pointers inside for each test
-    ADD_COPY(vectorOfFixedSPtrColumns, 2, ChangeAction::ChangeRows | ChangeAction::SetData, u"int"_s);
+    ADD_COPY(vectorOfFixedSPtrColumns, 2,
+            ChangeAction::ChangeRows | ChangeAction::SetData | ChangeAction::Sort, u"int"_s);
 
-    ADD_ALL(vectorOfArrays, 10, ChangeAction::ChangeRows | ChangeAction::SetData, 0);
+    ADD_ALL(vectorOfArrays, 10,
+            ChangeAction::ChangeRows | ChangeAction::SetData | ChangeAction::Sort, 0);
 
     ADD_ALL(vectorOfStructs,
             std::tuple_size_v<Row>,
-            ChangeAction::ChangeRows | ChangeAction::SetData | ChangeAction::SetItemData,
+            ChangeAction::ChangeRows | ChangeAction::SetData | ChangeAction::SetItemData | ChangeAction::Sort,
             u"Item"_s);
 
-    ADD_ALL(vectorOfConstStructs, std::tuple_size_v<ConstRow>, ChangeAction::ChangeRows,
+    ADD_ALL(vectorOfConstStructs, std::tuple_size_v<ConstRow>, ChangeAction::ChangeRows | ChangeAction::Sort,
             u"QString"_s);
 
-    ADD_ALL(vectorOfGadgets, 3, ChangeAction::ChangeRows | ChangeAction::SetData | ChangeAction::SetItemData,
+    ADD_ALL(vectorOfGadgets, 3,
+            ChangeAction::ChangeRows | ChangeAction::SetData | ChangeAction::SetItemData | ChangeAction::Sort,
             u"display"_s);
 
-    ADD_ALL(listOfGadgets, 1, ChangeAction::ChangeRows | ChangeAction::SetData | ChangeAction::SetItemData,
+    ADD_ALL(listOfGadgets, 1,
+            ChangeAction::ChangeRows | ChangeAction::SetData | ChangeAction::SetItemData | ChangeAction::Sort,
             u"Item"_s);
-    ADD_ALL(listOfMultiRoleGadgets, 1, ChangeAction::ChangeRows | ChangeAction::SetData | ChangeAction::SetItemData,
+    ADD_ALL(listOfMultiRoleGadgets, 1,
+            ChangeAction::ChangeRows | ChangeAction::SetData | ChangeAction::SetItemData | ChangeAction::Sort,
             u"The Gadget"_s);
-    ADD_COPY(listOfSharedMultiRoleGadgets, 1, ChangeAction::ChangeRows | ChangeAction::SetData | ChangeAction::SetItemData,
+    ADD_COPY(listOfSharedMultiRoleGadgets, 1,
+            ChangeAction::ChangeRows | ChangeAction::SetData | ChangeAction::SetItemData | ChangeAction::Sort,
             u"The Gadget"_s);
-    ADD_POINTER(arrayOfUniqueMultiRoleGadgets, 1, ChangeAction::SetData | ChangeAction::SetItemData,
+    ADD_POINTER(arrayOfUniqueMultiRoleGadgets, 1,
+            ChangeAction::SetData | ChangeAction::SetItemData | ChangeAction::Sort,
             u"The Gadget"_s);
 
-    ADD_ALL(vectorOfItemAccess, 1, ChangeAction::ChangeRows | ChangeAction::SetData | ChangeAction::SetItemData,
+    ADD_ALL(vectorOfItemAccess, 1,
+            ChangeAction::ChangeRows | ChangeAction::SetData | ChangeAction::SetItemData | ChangeAction::Sort,
             1);
 
-    ADD_MOVE(listOfObjects, 2, ChangeAction::ChangeRows | ChangeAction::SetData | ChangeAction::SetItemData,
+    ADD_MOVE(listOfObjects, 2,
+             ChangeAction::ChangeRows | ChangeAction::SetData | ChangeAction::SetItemData | ChangeAction::Sort,
              u"string"_s);
-    ADD_REF(arrayOfUniqueObjects, 2, ChangeAction::SetData | ChangeAction::SetItemData,
+    ADD_REF(arrayOfUniqueObjects, 2, ChangeAction::SetData | ChangeAction::SetItemData | ChangeAction::Sort,
             u"string"_s);
 
     ADD_COPY(listOfMetaObjectTuple, 1,
-             ChangeAction::ChangeRows | ChangeAction::SetData | ChangeAction::SetItemData,
+             ChangeAction::ChangeRows | ChangeAction::SetData | ChangeAction::SetItemData | ChangeAction::Sort,
              u"MetaObjectTuple"_s);
     ADD_REF(tableOfMetaObjectTuple,
             std::tuple_size_v<MetaObjectTuple>,
-            ChangeAction::ChangeRows | ChangeAction::SetData | ChangeAction::SetItemData,
+            ChangeAction::ChangeRows | ChangeAction::SetData | ChangeAction::SetItemData | ChangeAction::Sort,
             u"QString"_s);
 #if !defined(Q_OS_VXWORKS) && !defined(Q_OS_INTEGRITY)
     // don't use the correct createBackup overload and fails to build
-    ADD_REF(arrayOfUniqueMultiObjectTuples, 1, ChangeAction::SetData | ChangeAction::SetItemData,
+    ADD_REF(arrayOfUniqueMultiObjectTuples, 1, ChangeAction::SetData | ChangeAction::SetItemData | ChangeAction::Sort,
             u"MetaObjectTuple"_s);
 #endif
 
-    ADD_ALL(tableOfNumbers, 5, ChangeAction::All, 1);
+    ADD_ALL(tableOfNumbers, 5, ChangeAction::All | ChangeAction::Sort, 1);
 
-    ADD_POINTER(tableOfPointers, 2, ChangeAction::All | ChangeAction::SetItemData, 1);
+    ADD_POINTER(tableOfPointers, 2, ChangeAction::All | ChangeAction::SetItemData | ChangeAction::Sort, 1);
     ADD_REF(tableOfRowRefs,
             std::tuple_size_v<Row>,
-            ChangeAction::RemoveRows | ChangeAction::SetData | ChangeAction::SetItemData,
+            ChangeAction::RemoveRows | ChangeAction::SetData | ChangeAction::SetItemData | ChangeAction::Sort,
             u"Item"_s);
 
     ADD_ALL(arrayOfConstNumbers, 1, ChangeAction::ReadOnly, 1);
@@ -106,16 +117,17 @@ void tst_QRangeModel::createTestData()
 
     ADD_ALL(constTableOfNumbers, 5, ChangeAction::ReadOnly, 1);
 
-    ADD_ALL(listOfNamedRoles, 1, ChangeAction::ChangeRows | ChangeAction::SetData | ChangeAction::SetItemData,
+    ADD_ALL(listOfNamedRoles, 1,
+            ChangeAction::ChangeRows | ChangeAction::SetData | ChangeAction::SetItemData | ChangeAction::Sort,
             1);
 
-    ADD_ALL(tableOfEnumRoles, 1, ChangeAction::All | ChangeAction::SetItemData, 1);
+    ADD_ALL(tableOfEnumRoles, 1, ChangeAction::All | ChangeAction::SetItemData | ChangeAction::Sort, 1);
 
-    ADD_ALL(tableOfIntRoles, 1, ChangeAction::All | ChangeAction::SetItemData, 1);
+    ADD_ALL(tableOfIntRoles, 1, ChangeAction::All | ChangeAction::SetItemData | ChangeAction::Sort, 1);
 
-    ADD_ALL(stdTableOfIntRoles, 1, ChangeAction::All | ChangeAction::SetItemData, 1);
+    ADD_ALL(stdTableOfIntRoles, 1, ChangeAction::All | ChangeAction::SetItemData | ChangeAction::Sort, 1);
 
-    ADD_COPY(stdTableOfIntRolesWithSharedRows, 1, ChangeAction::All | ChangeAction::SetItemData,
+    ADD_COPY(stdTableOfIntRolesWithSharedRows, 1, ChangeAction::All | ChangeAction::SetItemData | ChangeAction::Sort,
              1);
 
     QTest::addRow("Moved table") << Factory([]{
@@ -126,32 +138,33 @@ void tst_QRangeModel::createTestData()
             {"3/0", "3/1", "3/2", "3/3"},
         };
         return std::unique_ptr<QAbstractItemModel>(new QRangeModel(std::move(movedTable)));
-    }) << 4 << 4 << ChangeActions(ChangeAction::All) << QVariant(1);
+    }) << 4 << 4 << ChangeActions(ChangeAction::All | ChangeAction::Sort) << QVariant(1);
 
     // moved list of pointers -> model takes ownership
     QTest::addRow("movedListOfObjects") << Factory([]{
         std::list<Object *> movedListOfObjects = {
-            new Object, new Object, new Object,
-            new Object, new Object, new Object
+            new Object("-3", -3), new Object("-2", -2), new Object("-1", -1),
+            new Object("0", 0), new Object("1", 1), new Object("2", 2)
         };
 
         return std::unique_ptr<QAbstractItemModel>(
             new QRangeModel(std::move(movedListOfObjects))
         );
-    }) << 6 << 2 << (ChangeAction::ChangeRows | ChangeAction::SetData) << QVariant(u"string"_s);
+    }) << 6 << 2 << (ChangeAction::ChangeRows | ChangeAction::SetData | ChangeAction::Sort)
+       << QVariant(u"string"_s);
 
     // special case: tree
     QTest::addRow("value tree (ref)") << Factory([this]{
         return std::unique_ptr<QAbstractItemModel>(new QRangeModel(std::ref(*m_data->m_tree)));
     }) << int(std::size(*m_data->m_tree.get())) << int(std::tuple_size_v<tree_row>)
-       << (ChangeAction::ChangeRows | ChangeAction::SetData) << QVariant(u"QString"_s);
+       << (ChangeAction::ChangeRows | ChangeAction::SetData | ChangeAction::Sort) << QVariant(u"QString"_s);
 
     QTest::addRow("pointer tree") << Factory([this]{
         return std::unique_ptr<QAbstractItemModel>(
             new QRangeModel(m_data->m_pointer_tree.get(), tree_row::ProtocolPointerImpl{})
         );
     }) << int(std::size(*m_data->m_pointer_tree.get())) << int(std::tuple_size_v<tree_row>)
-       << (ChangeAction::ChangeRows | ChangeAction::SetData) << QVariant(u"QString"_s);
+       << (ChangeAction::ChangeRows | ChangeAction::SetData | ChangeAction::Sort) << QVariant(u"QString"_s);
 }
 
 QList<QPersistentModelIndex> tst_QRangeModel::allIndexes(QAbstractItemModel *model,
@@ -1742,6 +1755,100 @@ void tst_QRangeModel::itemAccess()
     QVERIFY(model->setData(index, "Two"));
     QCOMPARE(model->data(index), "TWO");
     QVERIFY(!model->setData(index, QVariant::fromValue(Qt::blue), Qt::DecorationRole));
+}
+
+void tst_QRangeModel::sortBasic()
+{
+    { // fast path: no PMIs
+        QList<int> list = {1, 10, 3, 8, 5, 6, 7, 4, 9, 2, 11};
+        auto sorted = list;
+        std::sort(sorted.begin(), sorted.end(), [](int a, int b){ return a > b; });
+        QRangeModel(&list).sort(0, Qt::DescendingOrder);
+        QCOMPARE(list, sorted);
+    }
+
+    { // slow path: with PMIs
+        QList<int> list = {1, 10, 3, 8, 5, 6, 7, 4, 9, 2, 11};
+        auto sorted = list;
+        std::sort(sorted.begin(), sorted.end());
+
+        QRangeModel model(&list);
+        QPersistentModelIndex pmi0(model.index(0, 0));
+        QPersistentModelIndex pmi4(model.index(4, 0));
+        const auto oldData0 = pmi0.data();
+        const auto oldData4 = pmi4.data();
+
+        model.sort(0, Qt::AscendingOrder);
+        QCOMPARE(list, sorted);
+
+        QCOMPARE(pmi0.data(), oldData0);
+        QCOMPARE(pmi4.data(), oldData4);
+    }
+
+    { // two columns
+        using Item = std::pair<QString, int>;
+        QList<Item> list = {
+            {"b", 2}, {"d", 4}, {"e", 5}, {"c", 3}, {"a", 1}
+        };
+        QRangeModel model(&list);
+        QPersistentModelIndex pmi0(model.index(0, 0));
+        QPersistentModelIndex pmi4(model.index(4, 1));
+        const auto oldData0 = pmi0.data();
+        const auto oldData4 = pmi4.data();
+
+        model.sort(0, Qt::AscendingOrder);
+        QCOMPARE(list, (QList<Item>{
+            {"a", 1}, {"b", 2}, {"c", 3}, {"d", 4}, {"e", 5}
+        }));
+        QCOMPARE(pmi0.data(), oldData0);
+        QCOMPARE(pmi4.data(), oldData4);
+
+        model.sort(1, Qt::DescendingOrder);
+        QCOMPARE(list, (QList<Item>{
+            {"e", 5}, {"d", 4}, {"c", 3}, {"b", 2}, {"a", 1}
+        }));
+        QCOMPARE(pmi0.data(), oldData0);
+        QCOMPARE(pmi4.data(), oldData4);
+    }
+
+    { // unordered
+#ifndef QT_NO_DEBUG
+        QTest::ignoreMessage(QtCriticalMsg, "QRangeModel: "
+                             "Cannot compare items of type QPen in column 0!");
+#endif
+        QRangeModel model(QList<QPen>{{Qt::red}, {Qt::green}, {Qt::blue}});
+        model.sort(0);
+    }
+}
+
+void tst_QRangeModel::sort()
+{
+    QFETCH(Factory, factory);
+    QFETCH(ChangeActions, changeActions);
+    auto model = factory();
+
+    QTest::failOnWarning();
+
+    model->sort(0, Qt::AscendingOrder);
+    {
+        QPersistentModelIndex pmi = model->index(0, 0);
+        model->sort(0, Qt::DescendingOrder);
+        if (changeActions.testFlag(ChangeAction::Sort))
+            QCOMPARE_NE(pmi.row(), 0);
+        else
+            QCOMPARE(pmi.row(), 0);
+    }
+
+    const int column = model->columnCount() - 1;
+    model->sort(column, Qt::DescendingOrder);
+    {
+        QPersistentModelIndex pmi = model->index(0, column);
+        model->sort(column, Qt::AscendingOrder);
+        if (changeActions.testFlag(ChangeAction::Sort))
+            QCOMPARE_NE(pmi.row(), 0);
+        else
+            QCOMPARE(pmi.row(), 0);
+    }
 }
 
 QTEST_MAIN(tst_QRangeModel)

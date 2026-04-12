@@ -45,6 +45,11 @@ public:
     void setToolTip(const QString &toolTip) { m_toolTip = toolTip; }
 
 private:
+    friend QDebug operator<<(QDebug dbg, const Gadget &gadget)
+    {
+        dbg << "Gadget(" << gadget.m_display << gadget.m_decoration << gadget.m_toolTip << ")";
+        return dbg;
+    }
     QString m_display;
     QColor m_decoration;
     QString m_toolTip;
@@ -175,6 +180,12 @@ private:
         else if constexpr (I == 1)
             return q23::forward_like<Row>(row.m_title);
     }
+
+    friend QDebug operator<<(QDebug dbg, const TreeRow &row)
+    {
+        dbg << "TreeRow(" << row.m_name << row.m_title << ")";
+        return dbg;
+    }
 };
 
 namespace std {
@@ -227,7 +238,7 @@ class ModelFactory : public QObject
 {
     Q_OBJECT
 
-    std::vector<int> numbers = {1, 2, 3, 4, 5};
+    std::vector<int> numbers = {1, 10, 3, 8, 5, 6, 7, 4, 9, 2, 11};
     QList<QString> strings = {u"one"_s, u"two"_s, u"three"_s};
     std::array<int, 1000000> largeArray = {};
     QTimer updater;
@@ -247,6 +258,8 @@ public slots:
 
     QRangeModel *makeLargeArray()
     {
+        for (int i = 0; i < int(largeArray.size()); ++i)
+            largeArray[i] = i;
         return new QRangeModel(&largeArray);
     }
 
@@ -472,11 +485,8 @@ public slots:
         const QList<int> path = {1, 0};
         QRangeModel *model = adapter.model();
         connect(&updater, &QTimer::timeout, model, [adapter] mutable {
-            // adapter[0] = tree_row{"Deutschland", "Berlin"};
-            for (auto row : adapter) {
+            for (auto row : adapter)
                 qDebug() << row[0] << row[1];
-            }
-            adapter[QSpan<const int>{ 0, 0, 0 }, 1] = "Munich";
         });
         updater.start(1000);
 
@@ -650,6 +660,11 @@ public:
         QToolBar *toolBar = addToolBar(tr("Model Operations"));
         toolBar->addWidget(modelPicker);
 
+        toolBar->addSeparator();
+
+        QAction *sortAction = toolBar->addAction(tr("Sort"));
+        sortAction->setCheckable(true);
+        connect(sortAction, &QAction::toggled, treeview, &QTreeView::setSortingEnabled);
         toolBar->addSeparator();
 
         QAction *addAction = toolBar->addAction(tr("Add"), this, &MainWindow::onAdd);

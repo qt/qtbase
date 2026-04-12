@@ -141,6 +141,11 @@ QModelIndexList QRangeModelImplBase::persistentIndexList() const
 {
     return m_rangeModel->persistentIndexList();
 }
+void QRangeModelImplBase::changePersistentIndex(const QModelIndex &from,
+                                                const QModelIndex &to)
+{
+    m_rangeModel->changePersistentIndex(from, to);
+}
 void QRangeModelImplBase::changePersistentIndexList(const QModelIndexList &from,
                                                           const QModelIndexList &to)
 {
@@ -217,6 +222,15 @@ void QRangeModelImplBase::endMoveRows()
 {
     m_rangeModel->endMoveRows();
 }
+void QRangeModelImplBase::beginLayoutChange()
+{
+    Q_EMIT m_rangeModel->layoutAboutToBeChanged();
+}
+void QRangeModelImplBase::endLayoutChange()
+{
+    Q_EMIT m_rangeModel->layoutChanged();
+}
+
 QAbstractItemModel &QRangeModelImplBase::itemModel()
 {
     return *m_rangeModel;
