@@ -3657,36 +3657,24 @@ void QRhiVulkan::dispatch(QRhiCommandBuffer *cb, int x, int y, int z)
 
     if (cbD->passUsesSecondaryCb) {
         VkCommandBuffer secondaryCb = cbD->activeSecondaryCbStack.last();
-        if (!imageBarriers.isEmpty()) {
+        if (!imageBarriers.isEmpty() || !bufferBarriers.isEmpty()) {
             df->vkCmdPipelineBarrier(secondaryCb, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
                                      0, 0, nullptr,
-                                     0, nullptr,
-                                     imageBarriers.size(), imageBarriers.constData());
-        }
-        if (!bufferBarriers.isEmpty()) {
-            df->vkCmdPipelineBarrier(secondaryCb, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-                                     0, 0, nullptr,
-                                     bufferBarriers.size(), bufferBarriers.constData(),
-                                     0, nullptr);
+                                     bufferBarriers.size(), bufferBarriers.isEmpty() ? nullptr : bufferBarriers.constData(),
+                                     imageBarriers.size(),  imageBarriers.isEmpty()  ? nullptr : imageBarriers.constData());
         }
         df->vkCmdDispatch(secondaryCb, uint32_t(x), uint32_t(y), uint32_t(z));
     } else {
-        if (!imageBarriers.isEmpty()) {
+        if (!imageBarriers.isEmpty() || !bufferBarriers.isEmpty()) {
             QVkCommandBuffer::Command &cmd(cbD->commands.get());
-            cmd.cmd = QVkCommandBuffer::Command::ImageBarrier;
-            cmd.args.imageBarrier.srcStageMask = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
-            cmd.args.imageBarrier.dstStageMask = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
-            cmd.args.imageBarrier.count = imageBarriers.size();
-            cmd.args.imageBarrier.index = cbD->pools.imageBarrier.size();
+            cmd.cmd = QVkCommandBuffer::Command::ImageAndBufferBarrier;
+            cmd.args.imageAndBufferBarrier.srcStageMask = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+            cmd.args.imageAndBufferBarrier.dstStageMask = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+            cmd.args.imageAndBufferBarrier.imageCount = imageBarriers.size();
+            cmd.args.imageAndBufferBarrier.imageIndex = cbD->pools.imageBarrier.size();
             cbD->pools.imageBarrier.append(imageBarriers.constData(), imageBarriers.size());
-        }
-        if (!bufferBarriers.isEmpty()) {
-            QVkCommandBuffer::Command &cmd(cbD->commands.get());
-            cmd.cmd = QVkCommandBuffer::Command::BufferBarrier;
-            cmd.args.bufferBarrier.srcStageMask = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
-            cmd.args.bufferBarrier.dstStageMask = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
-            cmd.args.bufferBarrier.count = bufferBarriers.size();
-            cmd.args.bufferBarrier.index = cbD->pools.bufferBarrier.size();
+            cmd.args.imageAndBufferBarrier.bufferCount = bufferBarriers.size();
+            cmd.args.imageAndBufferBarrier.bufferIndex = cbD->pools.bufferBarrier.size();
             cbD->pools.bufferBarrier.append(bufferBarriers.constData(), bufferBarriers.size());
         }
         QVkCommandBuffer::Command &cmd(cbD->commands.get());
@@ -5021,6 +5009,17 @@ void QRhiVulkan::recordPrimaryCommandBuffer(QVkCommandBuffer *cbD)
                                      cmd.args.bufferBarrier.count, cbD->pools.bufferBarrier.constData() + cmd.args.bufferBarrier.index,
                                      0, nullptr);
             break;
+        case QVkCommandBuffer::Command::ImageAndBufferBarrier: {
+            const auto &barrier = cmd.args.imageAndBufferBarrier;
+            const VkBufferMemoryBarrier *bufferBarrierData = barrier.bufferCount
+                    ? cbD->pools.bufferBarrier.constData() + barrier.bufferIndex : nullptr;
+            const VkImageMemoryBarrier *imageBarrierData = barrier.imageCount
+                    ? cbD->pools.imageBarrier.constData() + barrier.imageIndex : nullptr;
+            df->vkCmdPipelineBarrier(cbD->cb, barrier.srcStageMask, barrier.dstStageMask,
+                                     0, 0, nullptr,
+                                     barrier.bufferCount, bufferBarrierData,
+                                     barrier.imageCount, imageBarrierData);
+        } break;
         case QVkCommandBuffer::Command::BlitImage:
             df->vkCmdBlitImage(cbD->cb, cmd.args.blitImage.src, cmd.args.blitImage.srcLayout,
                                cmd.args.blitImage.dst, cmd.args.blitImage.dstLayout,

@@ -417,6 +417,7 @@ struct QVkCommandBuffer : public QRhiCommandBuffer
             CopyImageToBuffer,
             ImageBarrier,
             BufferBarrier,
+            ImageAndBufferBarrier,
             BlitImage,
             BeginRenderPass,
             EndRenderPass,
@@ -488,6 +489,14 @@ struct QVkCommandBuffer : public QRhiCommandBuffer
                 int count;
                 int index;
             } bufferBarrier;
+            struct {
+                VkPipelineStageFlags srcStageMask;
+                VkPipelineStageFlags dstStageMask;
+                int imageCount;
+                int imageIndex;
+                int bufferCount;
+                int bufferIndex;
+            } imageAndBufferBarrier;
             struct {
                 VkImage src;
                 VkImageLayout srcLayout;
