@@ -16,6 +16,7 @@
 #include <QtWaylandClient/private/qwaylandabstractdecoration_p.h>
 #include <QtWaylandClient/private/qwaylandwindow_p.h>
 #include <QtWaylandClient/private/qwaylandshellsurface_p.h>
+#include <QtWaylandClient/private/qwaylanddisplay_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -54,6 +55,10 @@ private:
     void processPointerRight(QWaylandInputDevice *inputDevice, const QPointF &local, Qt::MouseButtons b,Qt::KeyboardModifiers mods, PointerType type);
     bool clickButton(Qt::MouseButtons b, Button btn);
 
+    bool hasMaximizeButton() const;
+    bool hasMinimizeButton() const;
+    bool hasCloseButton() const;
+
     QRectF closeButtonRect() const;
     QRectF maximizeButtonRect() const;
     QRectF minimizeButtonRect() const;
@@ -72,9 +77,25 @@ QWaylandBradientDecoration::QWaylandBradientDecoration()
     m_windowTitle.setTextFormat(Qt::PlainText);
 }
 
+bool QWaylandBradientDecoration::hasMaximizeButton() const
+{
+    return window()->flags() & Qt::WindowMaximizeButtonHint;
+}
+
+bool QWaylandBradientDecoration::hasMinimizeButton() const
+{
+    return window()->flags() & Qt::WindowMinimizeButtonHint;
+}
+
+bool QWaylandBradientDecoration::hasCloseButton() const
+{
+    return window()->flags() & Qt::WindowCloseButtonHint;
+}
+
 QRectF QWaylandBradientDecoration::closeButtonRect() const
 {
     const int windowRight = waylandWindow()->surfaceSize().width() - margins(ShadowsOnly).right();
+    // Close button is always slot 1 from right (rightmost), if shown at all
     return QRectF(windowRight - BUTTON_WIDTH - BUTTON_SPACING * 0 - BUTTONS_RIGHT_MARGIN,
                   (margins().top() - BUTTON_WIDTH) / 2, BUTTON_WIDTH, BUTTON_WIDTH);
 }
@@ -82,14 +103,27 @@ QRectF QWaylandBradientDecoration::closeButtonRect() const
 QRectF QWaylandBradientDecoration::maximizeButtonRect() const
 {
     const int windowRight = waylandWindow()->surfaceSize().width() - margins(ShadowsOnly).right();
-    return QRectF(windowRight - BUTTON_WIDTH * 2 - BUTTON_SPACING * 1 - BUTTONS_RIGHT_MARGIN,
+    // Maximize position: depends on whether close is shown
+    // If close is shown: maximize is slot 2
+    // If close is hidden: maximize is slot 1
+    const int slot = hasCloseButton() ? 2 : 1;
+    const int spacingCount = slot - 1;
+    return QRectF(windowRight - BUTTON_WIDTH * slot - BUTTON_SPACING * spacingCount - BUTTONS_RIGHT_MARGIN,
                   (margins().top() - BUTTON_WIDTH) / 2, BUTTON_WIDTH, BUTTON_WIDTH);
 }
 
 QRectF QWaylandBradientDecoration::minimizeButtonRect() const
 {
     const int windowRight = waylandWindow()->surfaceSize().width() - margins(ShadowsOnly).right();
-    return QRectF(windowRight - BUTTON_WIDTH * 3 - BUTTON_SPACING * 2 - BUTTONS_RIGHT_MARGIN,
+    // Minimize slot depends on which buttons before it are shown
+    // Rightmost shown button determines the starting point
+    int slot = 1;
+    if (hasCloseButton())
+        slot++;
+    if (hasMaximizeButton())
+        slot++;
+    const int spacingCount = slot - 1;
+    return QRectF(windowRight - BUTTON_WIDTH * slot - BUTTON_SPACING * spacingCount - BUTTONS_RIGHT_MARGIN,
                   (margins().top() - BUTTON_WIDTH) / 2, BUTTON_WIDTH, BUTTON_WIDTH);
 }
 
@@ -103,6 +137,15 @@ QMargins QWaylandBradientDecoration::margins(MarginsType marginsType) const
 
 void QWaylandBradientDecoration::paint(QPaintDevice *device)
 {
+    const bool showClose = hasCloseButton();
+    const bool showMaximize = hasMaximizeButton();
+    const bool showMinimize = hasMinimizeButton();
+
+    qCDebug(lcQpaWayland) << "QWaylandBradientDecoration::paint: showClose=" << showClose
+                          << "showMaximize=" << showMaximize
+                          << "showMinimize=" << showMinimize
+                          << "windowFlags=" << window()->flags();
+
     bool active = window()->handle()->isActive();
     QRect wg = QRect(QPoint(), waylandWindow()->surfaceSize()).marginsRemoved(margins(ShadowsOnly));
     QRect cg = wg.marginsRemoved(margins(ShadowsExcluded));
@@ -143,7 +186,7 @@ void QWaylandBradientDecoration::paint(QPaintDevice *device)
         icon.paint(&p, iconRect.toRect());
     }
 
-    // Window title
+    // Window title — right boundary is the leftmost visible button
     QString windowTitleText = waylandWindow()->windowTitle();
     if (!windowTitleText.isEmpty()) {
         if (m_windowTitle.text() != windowTitleText) {
@@ -154,7 +197,14 @@ void QWaylandBradientDecoration::paint(QPaintDevice *device)
         QRect titleBar = top;
         titleBar.setLeft(margins().left() + BUTTON_SPACING +
             (icon.isNull() ? 0 : 22 + BUTTON_SPACING));
-        titleBar.setRight(minimizeButtonRect().left() - BUTTON_SPACING);
+
+        // Right boundary is the leftmost visible button
+        if (showMinimize)
+            titleBar.setRight(minimizeButtonRect().left() - BUTTON_SPACING);
+        else if (showMaximize)
+            titleBar.setRight(maximizeButtonRect().left() - BUTTON_SPACING);
+        else if (showClose)
+            titleBar.setRight(closeButtonRect().left() - BUTTON_SPACING);
 
         p.save();
         p.setClipRect(titleBar);
@@ -178,42 +228,48 @@ void QWaylandBradientDecoration::paint(QPaintDevice *device)
     p.setPen(pen);
 
     // Close button
-    p.save();
-    rect = closeButtonRect();
-    qreal crossSize = rect.height() / 2.3;
-    QPointF crossCenter(rect.center());
-    QRectF crossRect(crossCenter.x() - crossSize / 2, crossCenter.y() - crossSize / 2, crossSize, crossSize);
-    pen.setWidth(2);
-    p.setPen(pen);
-    p.drawLine(crossRect.topLeft(), crossRect.bottomRight());
-    p.drawLine(crossRect.bottomLeft(), crossRect.topRight());
-    p.restore();
+    if (showClose) {
+        p.save();
+        rect = closeButtonRect();
+        qreal crossSize = rect.height() / 2.3;
+        QPointF crossCenter(rect.center());
+        QRectF crossRect(crossCenter.x() - crossSize / 2, crossCenter.y() - crossSize / 2, crossSize, crossSize);
+        pen.setWidth(2);
+        p.setPen(pen);
+        p.drawLine(crossRect.topLeft(), crossRect.bottomRight());
+        p.drawLine(crossRect.bottomLeft(), crossRect.topRight());
+        p.restore();
+    }
 
     // Maximize button
-    p.save();
-    p.setRenderHint(QPainter::Antialiasing, false);
-    rect = maximizeButtonRect().adjusted(4, 5, -4, -5);
-    if ((window()->windowStates() & Qt::WindowMaximized)) {
-        qreal inset = 2;
-        QRectF rect1 = rect.adjusted(inset, 0, 0, -inset);
-        QRectF rect2 = rect.adjusted(0, inset, -inset, 0);
-        p.drawRect(rect1);
-        p.setBrush(backgroundColor); // need to cover up some lines from the other rect
-        p.drawRect(rect2);
-    } else {
-        p.drawRect(rect);
-        p.drawLine(rect.left(), rect.top() + 1, rect.right(), rect.top() + 1);
+    if (showMaximize) {
+        p.save();
+        p.setRenderHint(QPainter::Antialiasing, false);
+        rect = maximizeButtonRect().adjusted(4, 5, -4, -5);
+        if ((window()->windowStates() & Qt::WindowMaximized)) {
+            qreal inset = 2;
+            QRectF rect1 = rect.adjusted(inset, 0, 0, -inset);
+            QRectF rect2 = rect.adjusted(0, inset, -inset, 0);
+            p.drawRect(rect1);
+            p.setBrush(backgroundColor); // need to cover up some lines from the other rect
+            p.drawRect(rect2);
+        } else {
+            p.drawRect(rect);
+            p.drawLine(rect.left(), rect.top() + 1, rect.right(), rect.top() + 1);
+        }
+        p.restore();
     }
-    p.restore();
 
     // Minimize button
-    p.save();
-    p.setRenderHint(QPainter::Antialiasing, false);
-    rect = minimizeButtonRect().adjusted(5, 5, -5, -5);
-    pen.setWidth(2);
-    p.setPen(pen);
-    p.drawLine(rect.bottomLeft(), rect.bottomRight());
-    p.restore();
+    if (showMinimize) {
+        p.save();
+        p.setRenderHint(QPainter::Antialiasing, false);
+        rect = minimizeButtonRect().adjusted(5, 5, -5, -5);
+        pen.setWidth(2);
+        p.setPen(pen);
+        p.drawLine(rect.bottomLeft(), rect.bottomRight());
+        p.restore();
+    }
 }
 
 bool QWaylandBradientDecoration::clickButton(Qt::MouseButtons b, Button btn)
@@ -323,13 +379,13 @@ void QWaylandBradientDecoration::processPointerTop(QWaylandInputDevice *inputDev
         processPointerRight(inputDevice, local, b, mods, type);
     } else if (isRightClicked(b)) {
         showWindowMenu(inputDevice);
-    } else if (closeButtonRect().contains(local)) {
+    } else if (hasCloseButton() && closeButtonRect().contains(local)) {
         if (type == PointerType::Touch || clickButton(b, Close))
             QWindowSystemInterface::handleCloseEvent(window());
-    } else if (maximizeButtonRect().contains(local)) {
+    } else if (hasMaximizeButton() && maximizeButtonRect().contains(local)) {
         if (type == PointerType::Touch || clickButton(b, Maximize))
             window()->setWindowStates(window()->windowStates() ^ Qt::WindowMaximized);
-    } else if (minimizeButtonRect().contains(local)) {
+    } else if (hasMinimizeButton() && minimizeButtonRect().contains(local)) {
         if (type == PointerType::Touch || clickButton(b, Minimize))
             window()->setWindowState(Qt::WindowMinimized);
     } else {
