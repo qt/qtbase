@@ -599,6 +599,8 @@ std::shared_ptr<QOhosWindowProxy> QOhosView::tryCreateWindowProxyIfNeeded(ViewTy
                     .onTouchOutside = makeViewConditionalSignalEmitter(viewPtr, shouldEmitSignalPredicate, &QOhosView::windowTouchOutside),
                     .onAvoidAreaChange = makeViewConditionalSignalEmitter(viewPtr, shouldEmitSignalPredicate, &QOhosView::avoidAreaChanged),
                     .onWindowRectChange = makeViewConditionalSignalEmitter(viewPtr, shouldEmitSignalPredicate, &QOhosView::windowRectChanged),
+                    .onWindowRectChangeInGlobalDisplay = makeViewConditionalSignalEmitter(
+                        viewPtr, shouldEmitSignalPredicate, &QOhosView::windowRectChangedInGlobalDisplay),
                     .onWindowDisplayIdChange = makeViewConditionalSignalEmitter(viewPtr, shouldEmitSignalPredicate, &QOhosView::windowDisplayIdChanged),
                 }));
 

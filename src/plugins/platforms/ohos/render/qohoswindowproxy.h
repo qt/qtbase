@@ -163,6 +163,7 @@ public:
         std::function<void()> onTouchOutside;
         QOhosConsumer<QOhosWindowProxy::AvoidAreaType, QOhosWindowProxy::AvoidArea> onAvoidAreaChange;
         QOhosConsumer<QOhosWindowProxy::RectChangeOptions> onWindowRectChange;
+        QOhosConsumer<QOhosWindowProxy::RectChangeOptions> onWindowRectChangeInGlobalDisplay;
         QOhosConsumer<QOhosDisplayInfo::JsDisplayId> onWindowDisplayIdChange;
     };
 
@@ -284,6 +285,7 @@ private:
         void handleWindowTouchOutsideCallback(const QtOhos::CallbackInfo &cbInfo);
         void handleAvoidAreaChangeCallback(const QtOhos::CallbackInfo &cbInfo);
         void handleWindowRectChangeCallback(const QtOhos::CallbackInfo &cbInfo);
+        void handleWindowRectChangeInGlobalDisplayCallback(const QtOhos::CallbackInfo &cbInfo);
         void handleWindowDisplayIdChangeCallback(const QtOhos::CallbackInfo &cbInfo);
         void onWindowEvent(QtOhos::JsState &jsState, const WindowEvent &windowEvent);
         bool isWindowClosing() const;

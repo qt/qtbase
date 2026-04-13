@@ -289,6 +289,11 @@ const QOhosWindowProxy::EventHandlerDescriptor QOhosWindowProxy::eventHandlerDes
         .eventHandlerFlags = {},
     },
     {
+        .eventName = "rectChangeInGlobalDisplay",
+        .eventHandler = &QOhosWindowProxy::JsScopeData::handleWindowRectChangeInGlobalDisplayCallback,
+        .eventHandlerFlags = {},
+    },
+    {
         .eventName = "windowStatusChange",
         .eventHandler = &QOhosWindowProxy::JsScopeData::handleWindowStatusCallback,
         .eventHandlerFlags = {},
@@ -460,6 +465,7 @@ void QOhosWindowProxy::setWindowCallbackReceiver(std::unique_ptr<WindowCallbacks
             .onTouchOutside = makeQtThreadWindowCallbackDelegate(&WindowCallbacks::onTouchOutside, sharedWindowCallbackReceiver),
             .onAvoidAreaChange = makeQtThreadWindowCallbackDelegate(&WindowCallbacks::onAvoidAreaChange, sharedWindowCallbackReceiver),
             .onWindowRectChange = makeCompressingQtThreadWindowCallbackDelegate(&WindowCallbacks::onWindowRectChange, sharedWindowCallbackReceiver),
+            .onWindowRectChangeInGlobalDisplay = makeCompressingQtThreadWindowCallbackDelegate(&WindowCallbacks::onWindowRectChangeInGlobalDisplay, sharedWindowCallbackReceiver),
             .onWindowDisplayIdChange = makeQtThreadWindowCallbackDelegate(&WindowCallbacks::onWindowDisplayIdChange, sharedWindowCallbackReceiver),
         });
     });
@@ -1467,6 +1473,18 @@ void QOhosWindowProxy::JsScopeData::handleWindowRectChangeCallback(const QtOhos:
 
     if (windowCallbackReceiver != nullptr)
         windowCallbackReceiver->onWindowRectChange(rectChangeOptions);
+}
+
+void QOhosWindowProxy::JsScopeData::handleWindowRectChangeInGlobalDisplayCallback(const QtOhos::CallbackInfo &cbInfo)
+{
+    auto rectChangeOptionsObjectArg = cbInfo.getFirstArg<QNapi::Object>(Q_FUNC_INFO);
+    auto rectChangeOptions = RectChangeOptions {
+        .rect = ohosWindowRectToQRect(rectChangeOptionsObjectArg.get<QNapi::Object>("rect")),
+        .reason = cbInfo.jsState().mapOhosEnumFromJs<RectChangeReason>(rectChangeOptionsObjectArg.get<QNapi::Number>("reason")),
+    };
+
+    if (windowCallbackReceiver != nullptr)
+        windowCallbackReceiver->onWindowRectChangeInGlobalDisplay(rectChangeOptions);
 }
 
 void QOhosWindowProxy::JsScopeData::handleWindowDisplayIdChangeCallback(const QtOhos::CallbackInfo &cbInfo)
