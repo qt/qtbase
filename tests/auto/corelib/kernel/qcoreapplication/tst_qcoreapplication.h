@@ -34,6 +34,7 @@ private slots:
     void globalPostedEventsCount();
 #endif
     void processEventsAlwaysSendsPostedEvents();
+    void queuedConnectionProcessEventsInSlot();
 #ifdef Q_OS_WIN
     void sendPostedEventsInNativeLoop();
 #endif
