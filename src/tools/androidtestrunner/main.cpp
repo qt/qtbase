@@ -1012,6 +1012,8 @@ int main(int argc, char *argv[])
 
         if (!execBundletoolCommand({ "install-apks"_L1, "--apks"_L1, apksFilePath }))
             return EXIT_ERROR;
+
+        g_testInfo.isPackageInstalled.store(true);
     }
 
     const QStringList dangerousPermisisons = queryDangerousPermissions();
