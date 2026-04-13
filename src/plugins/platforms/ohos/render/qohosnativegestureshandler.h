@@ -22,7 +22,7 @@ struct QOhosNativeGestureEvent
     std::int64_t gestureTimestamp;
     qreal value;
     QPointF localPosition;
-    QPointF displayBasedPosition;
+    QPointF globalPosition;
     Qt::NativeGestureType gestureType;
     QInputDevice::DeviceType deviceType;
 };

@@ -160,7 +160,7 @@ void QOhosAxisEventHandler::handleUiAxisEvent(ArkUI_UIInputEvent *event)
             .gestureTimestamp = eventTimestamp,
             .value = totalScale,
             .localPosition = localPosition,
-            .displayBasedPosition = globalPosition,
+            .globalPosition = globalPosition,
             .gestureType = gestureType,
             .deviceType = deviceType,
         };

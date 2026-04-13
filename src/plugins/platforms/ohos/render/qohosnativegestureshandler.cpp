@@ -91,7 +91,7 @@ void QOhosNativeGesturesHandler::processGestureEventsInQtThread(std::vector<QOho
                 .timestamp = event.gestureTimestamp,
                 .value = event.value,
                 .localPosition = event.localPosition,
-                .screenPosition = event.displayBasedPosition,
+                .globalPosition = event.globalPosition,
                 .gestureType = event.gestureType,
                 .deviceType = event.deviceType,
             });

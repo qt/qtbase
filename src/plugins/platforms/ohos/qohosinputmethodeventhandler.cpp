@@ -181,7 +181,7 @@ void QOhosInputMethodEventHandler::onGestureEventFromNativeNode(const QOhosGestu
 {
     auto *touchDevice = getTouchDeviceOrCreateIfNeeded(gestureEvent.deviceType);
     auto localPosition = gestureEvent.localPosition;
-    auto screenPosition = gestureEvent.screenPosition;
+    auto globalPosition = gestureEvent.globalPosition;
 
     QWindowSystemInterface::handleGestureEventWithRealValue(
         gestureEvent.targetWindow,
@@ -190,7 +190,7 @@ void QOhosInputMethodEventHandler::onGestureEventFromNativeNode(const QOhosGestu
         gestureEvent.gestureType,
         gestureEvent.value,
         localPosition,
-        screenPosition);
+        globalPosition);
 }
 
 void QOhosInputMethodEventHandler::onKeyEvent(const QOhosKeyEvent &keyEvent, QWindow *targetWindow)
