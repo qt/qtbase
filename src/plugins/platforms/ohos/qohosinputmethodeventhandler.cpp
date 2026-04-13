@@ -136,6 +136,10 @@ void QOhosInputMethodEventHandler::onTouchEventFromXComponent(
 
     std::vector<QPoint> activeTouchPointDisplayPositions;
 
+    auto displayOffset = targetWindow != nullptr
+        ? determineScreenGlobalDisplayOffset(targetWindow)
+        : QPoint(0, 0);
+
     for (const auto &touchPointData : touchPoints) {
         const auto &touchPoint = touchPointData.touchPoint;
         QEventPoint::State state =
@@ -153,13 +157,9 @@ void QOhosInputMethodEventHandler::onTouchEventFromXComponent(
         qwsiTouchPoint.normalPosition =
             calculateTouchPointNormalPosition(targetWindow, clickPoint);
         qwsiTouchPoint.state = state;
-        qwsiTouchPoint.area = calculateTouchPointArea(clickPoint);
+        qwsiTouchPoint.area = calculateTouchPointArea(clickPoint + displayOffset);
         wsiTouchPoints.push_back(qwsiTouchPoint);
     }
-
-    auto displayOffset = targetWindow != nullptr
-        ? determineScreenGlobalDisplayOffset(targetWindow)
-        : QPoint(0, 0);
 
     auto singleActiveTouchEventGlobalPosition = activeTouchPointDisplayPositions.size() == 1
         ? makeQOhosOptional(displayOffset + activeTouchPointDisplayPositions.front())
