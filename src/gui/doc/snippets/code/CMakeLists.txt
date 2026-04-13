@@ -8,7 +8,6 @@ add_library(gui_snippets_code OBJECT
     src_gui_image_qimagewriter.cpp
     src_gui_image_qpixmap.cpp
     src_gui_image_qpixmapcache.cpp
-    src_gui_kernel_qevent.cpp
     src_gui_kernel_qguiapplication_x11.cpp
     src_gui_kernel_qshortcut.cpp
     src_gui_kernel_qshortcutmap.cpp
@@ -35,6 +34,12 @@ target_link_libraries(gui_snippets_code PRIVATE
     Qt::Core
     Qt::Gui
 )
+
+if(QT_FEATURE_wheelevent)
+    target_sources(gui_snippets_code PRIVATE
+        src_gui_kernel_qevent.cpp
+    )
+endif()
 
 if(QT_FEATURE_widgets)
     target_link_libraries(gui_snippets_code PRIVATE

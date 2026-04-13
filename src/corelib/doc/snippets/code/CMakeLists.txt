@@ -41,10 +41,8 @@ add_library(corelib_snippets_code OBJECT
     src_corelib_kernel_qmath.cpp
     src_corelib_kernel_qmetaobject.cpp
     src_corelib_kernel_qmetatype.cpp
-    src_corelib_kernel_qmimedata.cpp
     src_corelib_kernel_qproperty.cpp
     src_corelib_kernel_qvariant.cpp
-    src_corelib_mimetype_qmimedatabase.cpp
     src_corelib_plugin_qlibrary.cpp
     src_corelib_plugin_quuid.cpp
     src_corelib_serialization_qcborstream.cpp
@@ -88,7 +86,6 @@ add_library(corelib_snippets_code OBJECT
     src_corelib_tools_qsharedpointer.cpp
     src_corelib_tools_qsize.cpp
     src_corelib_xml_qxmlstream.cpp
-    src_gui_itemviews_qidentityproxymodel.cpp
     src_gui_itemviews_qitemselectionmodel.cpp
 )
 
@@ -103,6 +100,14 @@ target_link_libraries(corelib_snippets_code PRIVATE
 if(APPLE)
     target_sources(corelib_snippets_code PRIVATE
         src_corelib_kernel_qabstractnativeeventfilter.mm
+    )
+endif()
+
+
+if(QT_FEATURE_mimetype)
+    target_sources(corelib_snippets_code PRIVATE
+        src_corelib_kernel_qmimedata.cpp
+        src_corelib_mimetype_qmimedatabase.cpp
     )
 endif()
 
@@ -137,6 +142,11 @@ if(QT_FEATURE_gui)
     target_link_libraries(corelib_snippets_code PRIVATE
         Qt::Gui
     )
+    if(QT_FEATURE_identityproxymodel)
+        target_sources(corelib_snippets_code PRIVATE
+            src_gui_itemviews_qidentityproxymodel.cpp
+        )
+    endif()
 endif()
 
 if(QT_FEATURE_concurrent)
@@ -145,10 +155,14 @@ if(QT_FEATURE_concurrent)
     )
     target_sources(corelib_snippets_code PRIVATE
         src_corelib_thread_qexception.cpp
-        src_corelib_thread_qfuture.cpp
         src_corelib_thread_qfuturesynchronizer.cpp
         src_corelib_thread_qfuturewatcher.cpp
     )
+    if(QT_FEATURE_network)
+        target_sources(corelib_snippets_code PRIVATE
+            src_corelib_thread_qfuture.cpp
+        )
+    endif()
 endif()
 
 if(QT_FEATURE_network)
