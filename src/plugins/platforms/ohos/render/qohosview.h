@@ -165,6 +165,7 @@ Q_SIGNALS:
     void windowTouchOutside();
     void avoidAreaChanged(QOhosWindowProxy::AvoidAreaType avoidAreaType, const QOhosWindowProxy::AvoidArea &avoidArea);
     void windowRectChanged(QOhosWindowProxy::RectChangeOptions rectChangeOptions);
+    void windowRectChangedInGlobalDisplay(QOhosWindowProxy::RectChangeOptions rectChangeOptions);
     void surfaceStatusChanged(const QOhosOptional<QSize> &optSurfaceSize);
     void windowDisplayIdChanged(QOhosDisplayInfo::JsDisplayId);
     void externalContentInteractionDetected();
