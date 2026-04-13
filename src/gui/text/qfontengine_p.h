@@ -231,6 +231,7 @@ public:
 
     virtual int glyphCount() const;
     virtual int glyphMargin(GlyphFormat format) { return format == Format_A32 ? 2 : 0; }
+    bool hasHinting() const;
 
     virtual QFontEngine *cloneWithSize(qreal /*pixelSize*/) const { return nullptr; }
 
@@ -384,6 +385,7 @@ private:
 private:
     mutable qreal m_minLeftBearing;
     mutable qreal m_minRightBearing;
+    mutable int m_hasHinting = -1;
 };
 Q_DECLARE_TYPEINFO(QFontEngine::KernPair, Q_PRIMITIVE_TYPE);
 

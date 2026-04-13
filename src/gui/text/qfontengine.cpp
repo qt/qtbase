@@ -1287,6 +1287,30 @@ end:
 //        qDebug() << 'i' << i << "left_right" << Qt::hex << kerning_pairs.at(i).left_right;
 }
 
+bool QFontEngine::hasHinting() const
+{
+    if (m_hasHinting < 0) {
+        m_hasHinting = false;
+
+        const QByteArray maxpTable = getSfntTable(QFont::Tag("maxp").value());
+        if (maxpTable.size() >= 28) {
+            const uchar *start = reinterpret_cast<const uchar *>(maxpTable.constData());
+            const quint32 version = qFromBigEndian<quint32>(start);
+
+            if (version == 0x00010000) {
+                const quint16 maxSizeOfInstructions = qFromBigEndian<quint16>(start + 26);
+                m_hasHinting = maxSizeOfInstructions > 0;
+            } else {
+                // If unrecognized maxp table, assume we might have hinting
+                qDebug("maxp table of format %d not implemented. Assuming hinting exists.",
+                       version);
+                m_hasHinting = true;
+            }
+        }
+    }
+
+    return m_hasHinting;
+}
 
 int QFontEngine::glyphCount() const
 {

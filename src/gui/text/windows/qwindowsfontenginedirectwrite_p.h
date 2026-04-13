@@ -169,6 +169,8 @@ private:
     IDWriteFontFace *m_directWriteFontFace;
     IDWriteBitmapRenderTarget *m_directWriteBitmapRenderTarget;
 
+    bool useSymmetricAntialiasing() const;
+
     QFixed m_lineThickness;
     QFixed m_underlinePosition;
     int m_unitsPerEm;
@@ -179,6 +181,8 @@ private:
     QString m_uniqueFamilyName;
     QList<QFontVariableAxis> m_variableAxes;
     DWRITE_PIXEL_GEOMETRY m_pixelGeometry = DWRITE_PIXEL_GEOMETRY_RGB;
+
+    mutable int m_useSymmetricAntialiasing = -1;
 };
 
 QT_END_NAMESPACE
