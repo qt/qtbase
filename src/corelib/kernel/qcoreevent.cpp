@@ -80,8 +80,8 @@ Q_TRACE_POINT(qtcore, QEvent_dtor, QEvent *event, QEvent::Type type);
     \value ChildAdded                       An object gets a child (QChildEvent).
     \value ChildPolished                    A widget child gets polished (QChildEvent).
     \value ChildRemoved                     An object loses a child (QChildEvent).
-    \value [since 6.7] ChildWindowAdded     A child window was added to the window.
-    \value [since 6.7] ChildWindowRemoved   A child window was removed from the window.
+    \value [since 6.7] ChildWindowAdded     A child window was added to the window (QChildWindowEvent).
+    \value [since 6.7] ChildWindowRemoved   A child window was removed from the window (QChildWindowEvent).
     \value Clipboard                        The clipboard contents have changed.
     \value Close                            Widget was closed (QCloseEvent).
     \value CloseSoftwareInputPanel          A widget wants to close the software input panel (SIP).
