@@ -215,6 +215,7 @@ struct GPostEventSource
     GSource source;
     QAtomicInt serialNumber;
     int lastSerialNumber;
+    int pendingSerialNumber;
     QEventDispatcherGlibPrivate *d;
 };
 
@@ -243,8 +244,9 @@ static gboolean postEventSourceCheck(GSource *source)
 static gboolean postEventSourceDispatch(GSource *s, GSourceFunc, gpointer)
 {
     GPostEventSource *source = reinterpret_cast<GPostEventSource *>(s);
-    source->lastSerialNumber = source->serialNumber.loadRelaxed();
+    source->pendingSerialNumber = source->serialNumber.loadRelaxed();
     QCoreApplication::sendPostedEvents();
+    source->lastSerialNumber = source->pendingSerialNumber;
     source->d->runTimersOnceWithNormalPriority();
     return true; // i dunno, george...
 }

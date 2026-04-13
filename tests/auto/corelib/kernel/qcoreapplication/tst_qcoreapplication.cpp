@@ -815,6 +815,43 @@ void tst_QCoreApplication::processEventsAlwaysSendsPostedEvents()
     } while (t.elapsed() < 1000);
 }
 
+void tst_QCoreApplication::queuedConnectionProcessEventsInSlot()
+{
+    // Regression test for QTBUG-142807
+
+    int argc = 1;
+    char *argv[] = { const_cast<char*>(QTest::currentAppName()) };
+    TestApplication app(argc, argv);
+
+    bool slot1Executed = false;
+    bool slot2Executed = false;
+    bool slot2DuringSlot1 = false;
+
+    QObject signalSource;
+    QObject *receiver1 = new QObject(&app);
+    QObject *receiver2 = new QObject(&app);
+
+    QObject::connect(&signalSource, &QObject::objectNameChanged, receiver1, [&] {
+        slot1Executed = true;
+        for (int i = 0; i < 10 && !slot2Executed; ++i)
+            QCoreApplication::processEvents();
+
+        if (slot2Executed)
+            slot2DuringSlot1 = true;
+    }, Qt::QueuedConnection);
+
+    QObject::connect(&signalSource, &QObject::objectNameChanged, receiver2, [&] {
+        slot2Executed = true;
+    }, Qt::QueuedConnection);
+
+    signalSource.setObjectName("trigger");
+    app.processEvents();
+
+    QVERIFY(slot1Executed);
+    QVERIFY(slot2Executed);
+    QVERIFY(slot2DuringSlot1);
+}
+
 #ifdef Q_OS_WIN
 void tst_QCoreApplication::sendPostedEventsInNativeLoop()
 {
