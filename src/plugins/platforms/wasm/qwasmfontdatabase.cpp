@@ -174,8 +174,6 @@ QWasmFontDatabase::QWasmFontDatabase()
 :QFreeTypeFontDatabase()
 {
     m_localFontsApiSupported = val::global("window")["queryLocalFonts"].isUndefined() == false;
-    if (m_localFontsApiSupported)
-        beginFontDatabaseStartupTask();
 }
 
 QWasmFontDatabase *QWasmFontDatabase::get()
@@ -348,24 +346,6 @@ QFont QWasmFontDatabase::defaultFont() const
 
 namespace {
     int g_pendingFonts = 0;
-    bool g_fontStartupTaskCompleted = false;
-}
-
-// Registers font loading as a startup task, which makes Qt delay
-// sending onLoaded event until font loading has completed.
-void QWasmFontDatabase::beginFontDatabaseStartupTask()
-{
-    g_fontStartupTaskCompleted = false;
-    QEventDispatcherWasm::registerStartupTask();
-}
-
-// Ends the font loading startup task.
-void QWasmFontDatabase::endFontDatabaseStartupTask()
-{
-    if (!g_fontStartupTaskCompleted) {
-        g_fontStartupTaskCompleted = true;
-        QEventDispatcherWasm::completeStarupTask();
-    }
 }
 
 // Registers that a font file will be loaded.
@@ -381,7 +361,6 @@ void QWasmFontDatabase::derefFontFileLoading()
     if (--g_pendingFonts <= 0) {
         QFontCache::instance()->clear();
         emit qGuiApp->fontDatabaseChanged();
-        endFontDatabaseStartupTask();
     }
 }
 
@@ -397,8 +376,6 @@ void QWasmFontDatabase::endAllFontFileLoading()
         QFontCache::instance()->clear();
         emit qGuiApp->fontDatabaseChanged();
     }
-
-    endFontDatabaseStartupTask();
 }
 
 

@@ -14,8 +14,6 @@
 
 using namespace emscripten;
 
-bool QWasmCompositor::m_requestUpdateHoldEnabled = false;
-
 QWasmCompositor::QWasmCompositor(QWasmScreen *screen)
 : QObject(screen)
 {
@@ -48,16 +46,6 @@ void QWasmCompositor::setEnabled(bool enabled)
     m_isEnabled = enabled;
 }
 
-// requestUpdate delivery is initially disabled at startup, while Qt completes
-// startup tasks such as font loading. This function enables requestUpdate delivery
-// again.
-bool QWasmCompositor::releaseRequestUpdateHold()
-{
-    const bool wasEnabled = m_requestUpdateHoldEnabled;
-    m_requestUpdateHoldEnabled = false;
-    return wasEnabled;
-}
-
 void QWasmCompositor::requestUpdateWindow(QWasmWindow *window, const QRect &updateRect, UpdateRequestDeliveryType updateType)
 {
     auto it = m_requestUpdateWindows.find(window);
@@ -84,9 +72,6 @@ void QWasmCompositor::requestUpdateWindow(QWasmWindow *window, const QRect &upda
 void QWasmCompositor::requestUpdate()
 {
     if (m_drawCallbackHandle != 0)
-        return;
-
-    if (m_requestUpdateHoldEnabled)
         return;
 
     m_drawCallbackHandle = QWasmAnimationFrameMultiHandler::instance()->registerDrawCallback(

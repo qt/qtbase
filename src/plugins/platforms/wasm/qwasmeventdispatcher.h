@@ -20,7 +20,6 @@ public:
 
 protected:
     bool sendPostedEvents() override;
-    void onLoaded() override;
 };
 
 QT_END_NAMESPACE

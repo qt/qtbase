@@ -29,8 +29,6 @@ public:
     void populateLocalFontFamilies(emscripten::val families);
     void populateLocalFontFamilies(const QStringList &famliies, bool allFamilies);
 
-    static void beginFontDatabaseStartupTask();
-    static void endFontDatabaseStartupTask();
     static void refFontFileLoading();
     static void derefFontFileLoading();
     static void endAllFontFileLoading();

@@ -36,8 +36,6 @@ public:
     QWasmScreen *screen();
     void setEnabled(bool enabled);
 
-    static bool releaseRequestUpdateHold();
-
     void requestUpdate();
     enum UpdateRequestDeliveryType { ExposeEventDelivery, UpdateRequestDelivery };
     void requestUpdateWindow(QWasmWindow *window, const QRect &updateRect, UpdateRequestDeliveryType updateType = ExposeEventDelivery);
@@ -57,7 +55,6 @@ private:
     QMap<QWasmWindow *, std::tuple<QRect, UpdateRequestDeliveryType>> m_requestUpdateWindows;
     uint32_t m_drawCallbackHandle = 0;
     bool m_inDeliverUpdateRequest = false;
-    static bool m_requestUpdateHoldEnabled;
 };
 
 QT_END_NAMESPACE

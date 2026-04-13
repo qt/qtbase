@@ -57,11 +57,6 @@ public:
     static void socketSelect(int timeout, int socket, bool waitForRead, bool waitForWrite,
                             bool *selectForRead, bool *selectForWrite, bool *socketDisconnect);
 
-    static void registerStartupTask();
-    static void completeStarupTask();
-    static void callOnLoadedIfRequired();
-    virtual void onLoaded();
-
     static void onTimer();
     static void onWakeup();
     static void onProcessNativeEventsResume();

@@ -544,43 +544,6 @@ namespace {
     int g_startupTasks = 0;
 }
 
-// The following functions manages sending the "qtLoaded" event/callback
-// from qtloader.js on startup, once Qt initialization has been completed
-// and the application is ready to display the first frame. This can be
-// either as soon as the event loop is running, or later, if additional
-// startup tasks (e.g. local font loading) have been registered.
-
-void QEventDispatcherWasm::registerStartupTask()
-{
-    ++g_startupTasks;
-}
-
-void QEventDispatcherWasm::completeStarupTask()
-{
-    --g_startupTasks;
-    callOnLoadedIfRequired();
-}
-
-void QEventDispatcherWasm::callOnLoadedIfRequired()
-{
-    if (g_startupTasks > 0)
-        return;
-
-    static bool qtLoadedCalled = false;
-    if (qtLoadedCalled)
-        return;
-    qtLoadedCalled = true;
-}
-
-void QEventDispatcherWasm::onLoaded()
-{
-    // TODO: call qtloader.js onLoaded from here, in order to delay
-    // hiding the "Loading..." message until the app is ready to paint
-    // the first frame. Currently onLoaded must be called early before
-    // main() in order to ensure that the screen/container elements
-    // have valid geometry at startup.
-}
-
 void QEventDispatcherWasm::registerSocketNotifier(QSocketNotifier *notifier)
 {
     QWasmSocket::registerSocketNotifier(notifier);
