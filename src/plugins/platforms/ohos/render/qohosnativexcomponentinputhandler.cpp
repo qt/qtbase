@@ -167,18 +167,18 @@ void QOhosNativeXComponentInputHandler::handleTouchEvent(void *window)
 
     std::vector<QOhosTouchEventTouchPointData> validTouchPoints;
 
-    ::OH_NativeXComponent_EventSourceType tool = ::OH_NATIVEXCOMPONENT_SOURCE_TYPE_UNKNOWN;
-    std::int32_t res = ::OH_NativeXComponent_GetTouchEventSourceType(m_xComponent.handle(), touchEvent.id, &tool);
-    if (res != ::OH_NATIVEXCOMPONENT_RESULT_SUCCESS) {
+    ::OH_NativeXComponent_EventSourceType sourceType = ::OH_NATIVEXCOMPONENT_SOURCE_TYPE_UNKNOWN;
+    std::int32_t resSourceType = ::OH_NativeXComponent_GetTouchEventSourceType(m_xComponent.handle(), touchEvent.id, &sourceType);
+    if (resSourceType != ::OH_NATIVEXCOMPONENT_RESULT_SUCCESS) {
         qOhosCritical(QtForOhos)
             << "OH_NativeXComponent_GetTouchEventSourceType() failed,"
-            << "touchEvent id:" << touchEvent.id << "result:" << res;
-        tool = ::OH_NATIVEXCOMPONENT_SOURCE_TYPE_UNKNOWN;
+            << "touchEvent id:" << touchEvent.id << "result:" << resSourceType;
+        sourceType = ::OH_NATIVEXCOMPONENT_SOURCE_TYPE_UNKNOWN;
     }
 
     bool isMouseOrUnknownTouchType =
-        tool == OH_NATIVEXCOMPONENT_SOURCE_TYPE_UNKNOWN
-        || tool == OH_NATIVEXCOMPONENT_SOURCE_TYPE_MOUSE;
+        sourceType == OH_NATIVEXCOMPONENT_SOURCE_TYPE_UNKNOWN
+        || sourceType == OH_NATIVEXCOMPONENT_SOURCE_TYPE_MOUSE;
     if (isMouseOrUnknownTouchType)
         return;
 
