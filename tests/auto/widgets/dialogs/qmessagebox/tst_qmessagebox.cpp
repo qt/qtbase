@@ -620,11 +620,41 @@ void tst_QMessageBox::expandDetailsWithoutMoving() // QTBUG-32473
     QCOMPARE(box.geometry().topLeft(), geom.topLeft());
 }
 
+class MessageBox : public QMessageBox
+{
+    Q_OBJECT
+protected:
+    bool event(QEvent *e) override
+    {
+        if (e->type() == QEvent::Polish) {
+            const bool result = QMessageBox::event(e);
+            polished = true;
+            return result;
+        }
+        return QMessageBox::event(e);
+    }
+public:
+    bool polished = false;
+};
+
 void tst_QMessageBox::optionsEmptyByDefault()
 {
     QMessageBox b;
     QCOMPARE(b.options(), QMessageBox::Options());
     QVERIFY(!b.testOption(QMessageBox::Option::DontUseNativeDialog));
+
+    {
+        MessageBox subclassed;
+        QCOMPARE(subclassed.options(), QMessageBox::Options());
+        QTRY_VERIFY(subclassed.testOption(QMessageBox::Option::DontUseNativeDialog));
+    }
+    {
+        MessageBox subclassed;
+        subclassed.setOption(QMessageBox::Option::DontUseNativeDialog, false);
+        QCOMPARE(subclassed.options(), QMessageBox::Options());
+        QTRY_VERIFY(subclassed.polished);
+        QVERIFY(!subclassed.testOption(QMessageBox::Option::DontUseNativeDialog));
+    }
 }
 
 void tst_QMessageBox::changeNativeOption()
