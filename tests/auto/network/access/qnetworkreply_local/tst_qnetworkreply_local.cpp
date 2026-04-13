@@ -11,6 +11,7 @@
 #include <QtNetwork/qnetworkaccessmanager.h>
 
 #include <QtCore/qbuffer.h>
+#include <QtCore/qstandardpaths.h>
 
 #include "minihttpserver.h"
 
@@ -276,7 +277,8 @@ void tst_QNetworkReply_local::fullServerName()
     path = uR"(\\.\pipe\qt_networkreply_test_fullServerName)"_s
             % QString::number(QCoreApplication::applicationPid());
 #else
-    path = u"/tmp/qt_networkreply_test_fullServerName"_s
+    path = QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation)
+            % u"/qt_networkreply_test_fullServerName"_s
             % QString::number(QCoreApplication::applicationPid()) % u".sock"_s;
 #endif
 
