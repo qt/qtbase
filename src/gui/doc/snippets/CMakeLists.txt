@@ -6,7 +6,6 @@ qt_add_library(gui_snippets OBJECT
     brush/gradientcreationsnippet.cpp
     image/image.cpp
     image/supportedformat.cpp
-    picture/picture.cpp
     polygon/polygon.cpp
     qimagewriter/main.cpp
     qtextobject/textobjectinterface.h
@@ -19,6 +18,13 @@ target_link_libraries(gui_snippets PRIVATE
     Qt::Gui
     Qt::GuiPrivate
 )
+
+
+if(QT_FEATURE_picture)
+    target_sources(gui_snippets PRIVATE
+        picture/picture.cpp
+    )
+endif()
 
 if(QT_FEATURE_widgets)
     target_link_libraries(gui_snippets PRIVATE
