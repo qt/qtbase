@@ -472,7 +472,8 @@ Q_STATIC_LOGGING_CATEGORY(lcAccessibilityCore, "qt.accessibility.core");
 
     With \a QAccessible::AnouncementPoliteness::Polite, assistive technologies
     should announce the message at the next graceful opportunity such as at the
-    end of speaking the current sentence or when the user pauses typing.
+    end of speaking the current sentence or when the user pauses typing. A
+    polite announcement might still interrupt an ongoing polite announcement.
 
     When specifying \a QAccessible::AnouncementPoliteness::Assertive, assistive
     technologies should notify the user immediately.
