@@ -16,6 +16,8 @@
 // We mean it.
 //
 
+#include <QtGui/qtgui-config.h>
+
 #ifndef QT_NO_SESSIONMANAGER
 
 #include <QtGui/qpa/qplatformsessionmanager.h>
