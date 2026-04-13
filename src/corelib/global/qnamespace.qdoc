@@ -2303,15 +2303,27 @@
     \value WindowMinimizeButtonHint  Adds a minimize button. On
            some platforms this implies Qt::WindowSystemMenuHint for it to work.
 
+           \note On many Wayland-based systems, button hints are not supported for
+           server-side decorations.
+
     \value WindowMaximizeButtonHint  Adds a maximize button. On
            some platforms this implies Qt::WindowSystemMenuHint for it to work.
+
+           \note On many Wayland-based systems, button hints are not supported for
+           server-side decorations.
 
     \value WindowMinMaxButtonsHint  Adds a minimize and a maximize
            button. On some platforms this implies Qt::WindowSystemMenuHint for it to work.
 
+           \note On many Wayland-based systems, button hints are not supported for
+           server-side decorations.
+
     \value WindowCloseButtonHint  Adds a close button. On
            some platforms this implies Qt::WindowSystemMenuHint for it
            to work.
+
+           \note On many Wayland-based systems, button hints are not supported for
+           server-side decorations.
 
     \value WindowContextHelpButtonHint  Adds a context help button to dialogs.
            On some platforms this implies Qt::WindowSystemMenuHint for it to work.
