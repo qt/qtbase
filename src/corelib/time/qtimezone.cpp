@@ -1262,6 +1262,11 @@ QTimeZone::OffsetData QTimeZone::offsetData(const QDateTime &forDateTime) const
 
     This method is only available when feature \c timezone is enabled.
 
+    \note this is not a property of the timezone described by this object but of
+    the backend that provides data about the zone, typically from system
+    libraries. It tells you whether the other transition-related functions have
+    anything to offer.
+
     \sa nextTransition(), previousTransition(), transitions()
 */
 

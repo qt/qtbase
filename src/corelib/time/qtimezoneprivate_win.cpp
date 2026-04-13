@@ -629,7 +629,16 @@ int QWinTimeZonePrivate::daylightTimeOffset(qint64 atMSecsSinceEpoch) const
 
 bool QWinTimeZonePrivate::hasDaylightTime() const
 {
-    return hasTransitions();
+    // The Windows data doesn't tell us unambiguously about whether a transition
+    // is to or from daylight-saving time, so at best we can know whether it has
+    // done any transitions. These might be one-off changes to standard time,
+    // though. We could perhaps check to see if it's done several transitions,
+    // but a zone might have tried DST briefly and changed its mind quickly.
+    for (const QWinTransitionRule &rule : m_tranRules) {
+        if (rule.standardTimeRule.wMonth > 0 && rule.daylightTimeRule.wMonth > 0)
+            return true;
+    }
+    return false;
 }
 
 bool QWinTimeZonePrivate::isDaylightTime(qint64 atMSecsSinceEpoch) const
@@ -685,11 +694,8 @@ QTimeZonePrivate::Data QWinTimeZonePrivate::data(qint64 forMSecsSinceEpoch) cons
 
 bool QWinTimeZonePrivate::hasTransitions() const
 {
-    for (const QWinTransitionRule &rule : m_tranRules) {
-        if (rule.standardTimeRule.wMonth > 0 && rule.daylightTimeRule.wMonth > 0)
-            return true;
-    }
-    return false;
+    // NB: this is about the backend capability, not the particular zone.
+    return true; // Albeit with caveats, see hasDaylightTime()
 }
 
 QTimeZonePrivate::Data QWinTimeZonePrivate::nextTransition(qint64 afterMSecsSinceEpoch) const
