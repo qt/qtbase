@@ -138,6 +138,8 @@ QHttp2ProtocolHandler::QHttp2ProtocolHandler(QHttpNetworkConnectionChannel *chan
                 if (!h2Connection->isGoingAway())
                     h2Connection->close(Http2::PROTOCOL_ERROR);
             });
+    connect(h2Connection, &QHttp2Connection::connectionClosed, this,
+            &QHttp2ProtocolHandler::closeSession);
 }
 
 void QHttp2ProtocolHandler::handleConnectionClosure()
