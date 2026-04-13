@@ -6101,31 +6101,27 @@ void QRhiVulkan::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBin
 
     // make sure the descriptors for the correct slot will get bound.
     // also, dynamic offsets always need a bind.
-    const bool forceRebind = cbD->currentDescSetSlot != currentFrameSlot || srbD->hasDynamicOffset;
+    const bool forceRebind = cbD->currentDescSetSlot != currentFrameSlot
+            || !srbD->sortedDynamicOffsetBindingNumbers.isEmpty();
 
     const bool srbChanged = gfxPsD ? (cbD->currentGraphicsSrb != srb) : (cbD->currentComputeSrb != srb);
 
     if (forceRebind || rewriteDescSet || srbChanged || cbD->currentSrbGeneration != srbD->generation) {
         QVarLengthArray<uint32_t, 4> dynOfs;
-        if (srbD->hasDynamicOffset) {
-            // Filling out dynOfs based on the sorted bindings is important
-            // because dynOfs has to be ordered based on the binding numbers,
-            // and neither srb nor dynamicOffsets has any such ordering
-            // requirement.
-            for (const QRhiShaderResourceBinding &binding : std::as_const(srbD->sortedBindings)) {
-                const QRhiShaderResourceBinding::Data *b = shaderResourceBindingData(binding);
-                if (b->type == QRhiShaderResourceBinding::UniformBuffer && b->u.ubuf.hasDynamicOffset) {
-                    uint32_t offset = 0;
-                    for (int i = 0; i < dynamicOffsetCount; ++i) {
-                        const QRhiCommandBuffer::DynamicOffset &bindingOffsetPair(dynamicOffsets[i]);
-                        if (bindingOffsetPair.first == b->binding) {
-                            offset = bindingOffsetPair.second;
-                            break;
-                        }
-                    }
-                    dynOfs.append(offset); // use 0 if dynamicOffsets did not contain this binding
+        // Filling out dynOfs based on the sorted bindings is important
+        // because dynOfs has to be ordered based on the binding numbers,
+        // and neither srb nor dynamicOffsets has any such ordering
+        // requirement.
+        for (int bindingNumber : std::as_const(srbD->sortedDynamicOffsetBindingNumbers)) {
+            uint32_t offset = 0;
+            for (int i = 0; i < dynamicOffsetCount; ++i) {
+                const QRhiCommandBuffer::DynamicOffset &bindingOffsetPair(dynamicOffsets[i]);
+                if (bindingOffsetPair.first == bindingNumber) {
+                    offset = bindingOffsetPair.second;
+                    break;
                 }
             }
+            dynOfs.append(offset); // use 0 if dynamicOffsets did not contain this binding
         }
 
         if (cbD->passUsesSecondaryCb) {
@@ -8482,6 +8478,7 @@ void QVkShaderResourceBindings::destroy()
         return;
 
     sortedBindings.clear();
+    sortedDynamicOffsetBindingNumbers.clear();
 
     QRhiVulkan::DeferredReleaseEntry e;
     e.type = QRhiVulkan::DeferredReleaseEntry::ShaderResourceBindings;
@@ -8520,12 +8517,12 @@ bool QVkShaderResourceBindings::create()
     std::copy(m_bindings.cbegin(), m_bindings.cend(), std::back_inserter(sortedBindings));
     std::sort(sortedBindings.begin(), sortedBindings.end(), QRhiImplementation::sortedBindingLessThan);
 
-    hasDynamicOffset = false;
+    sortedDynamicOffsetBindingNumbers.clear();
     for (const QRhiShaderResourceBinding &binding : std::as_const(sortedBindings)) {
         const QRhiShaderResourceBinding::Data *b = QRhiImplementation::shaderResourceBindingData(binding);
         if (b->type == QRhiShaderResourceBinding::UniformBuffer && b->u.ubuf.buf) {
             if (b->u.ubuf.hasDynamicOffset)
-                hasDynamicOffset = true;
+                sortedDynamicOffsetBindingNumbers.append(b->binding);
         }
     }
 
@@ -8586,6 +8583,15 @@ void QVkShaderResourceBindings::updateResources(UpdateFlags flags)
     std::copy(m_bindings.cbegin(), m_bindings.cend(), std::back_inserter(sortedBindings));
     if (!flags.testFlag(BindingsAreSorted))
         std::sort(sortedBindings.begin(), sortedBindings.end(), QRhiImplementation::sortedBindingLessThan);
+
+    sortedDynamicOffsetBindingNumbers.clear();
+    for (const QRhiShaderResourceBinding &binding : std::as_const(sortedBindings)) {
+        const QRhiShaderResourceBinding::Data *b = QRhiImplementation::shaderResourceBindingData(binding);
+        if (b->type == QRhiShaderResourceBinding::UniformBuffer && b->u.ubuf.buf) {
+            if (b->u.ubuf.hasDynamicOffset)
+                sortedDynamicOffsetBindingNumbers.append(b->binding);
+        }
+    }
 
     // Reset the state tracking table too - it can deal with assigning a
     // different QRhiBuffer/Texture/Sampler for a binding point, but it cannot

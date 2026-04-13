@@ -255,7 +255,7 @@ struct QVkShaderResourceBindings : public QRhiShaderResourceBindings
     void updateResources(UpdateFlags flags) override;
 
     QVarLengthArray<QRhiShaderResourceBinding, BINDING_PREALLOC> sortedBindings;
-    bool hasDynamicOffset = false;
+    QVarLengthArray<int, BINDING_PREALLOC> sortedDynamicOffsetBindingNumbers;
     int poolIndex = -1;
     VkDescriptorSetLayout layout = VK_NULL_HANDLE;
     VkDescriptorSet descSets[QVK_FRAMES_IN_FLIGHT]; // multiple sets to support dynamic buffers
