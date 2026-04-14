@@ -1311,7 +1311,6 @@ void tst_QAbstractItemView::task250754_fontChange()
     tree.setModel(m);
 
     tree.setHeaderHidden(true); // The header is (in certain styles) dpi dependent
-    w.resize(160, 350); // Minimum width for windows with frame on Windows 8
     centerOnScreen(&w);
     moveCursorAway(&w);
     w.showNormal();
@@ -1319,6 +1318,11 @@ void tst_QAbstractItemView::task250754_fontChange()
     QFont font = tree.font();
     font.setPixelSize(10);
     tree.setFont(font);
+
+    int itemHeight = tree.visualRect(m->index(0, 0)).height();
+    int margin = vLayout->contentsMargins().top() + vLayout->contentsMargins().bottom();
+    w.resize(160, itemHeight * tree.model()->rowCount() + margin + tree.frameWidth() * 2);
+
     QTRY_VERIFY(!tree.verticalScrollBar()->isVisible());
 
     font.setPixelSize(60);
