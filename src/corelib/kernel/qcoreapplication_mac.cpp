@@ -14,14 +14,12 @@ QT_BEGIN_NAMESPACE
 QString qAppFileName()
 {
     // QCoreApplication::applicationFilePath() expects a canonical path
-    static QString appFileName;
-    if (appFileName.isEmpty()) {
-        QCFType<CFURLRef> bundleURL(CFBundleCopyExecutableURL(CFBundleGetMainBundle()));
-        if (bundleURL) {
-            QCFString cfPath(CFURLCopyFileSystemPath(bundleURL, kCFURLPOSIXPathStyle));
-            if (cfPath)
-                appFileName = cfPath;
-        }
+    QString appFileName;
+    QCFType<CFURLRef> bundleURL(CFBundleCopyExecutableURL(CFBundleGetMainBundle()));
+    if (bundleURL) {
+        QCFString cfPath(CFURLCopyFileSystemPath(bundleURL, kCFURLPOSIXPathStyle));
+        if (cfPath)
+            appFileName = cfPath;
     }
     return appFileName;
 }
