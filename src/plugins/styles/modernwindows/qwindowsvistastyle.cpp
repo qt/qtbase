@@ -2930,7 +2930,7 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
                 const auto size = proxy()->pixelMetric(PM_SmallIconSize, option, widget);
                 QRect pmr(QPoint(0, 0), QSize(size, size));
                 pmr.moveCenter(vCheckRect.center());
-                menuitem->icon.paint(painter, vCheckRect, Qt::AlignCenter, mode,
+                menuitem->icon.paint(painter, pmr, Qt::AlignCenter, mode,
                                      checked ? QIcon::On : QIcon::Off);
             }
 
