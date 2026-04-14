@@ -778,7 +778,7 @@ static_assert(QtPrivate::IsContainerCompatibleWithQUtf8StringView<QAnyStringView
     Outputs \a s to debug stream \a d.
 
     If \c{d.quotedString()} is \c true, indicates which encoding the string is
-    in. If you just want the string data, use visit() like this:
+    in. If you just want the string data, use \l{QAnyStringView::visit()}{visit()} like this:
 
     \code
     s.visit([&d) (auto s) { d << s; });
