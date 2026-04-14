@@ -13,7 +13,6 @@
 #include <vector>
 #include <set>
 #include <stdexcept>
-#include <functional>
 #include <memory>
 
 // A wrapper for a test function. Calls a function, if it fails, reports failure
