@@ -303,7 +303,7 @@ QOhosWindowProxy::QOhosWindowProxy(
     : m_jsScopeData(
         QtOhos::makeProxyWithJsThreadDeleter(
             std::make_shared<JsScopeData>(
-                windowProxyData.windowProxyType == WindowProxyType::MainWindow,
+                windowProxyData.windowProxyType,
                 std::move(windowProxyData.jsWindow),
                 std::move(windowProxyData.jsKeepAliveData),
                 std::move(windowProxyData.qAbilityPeer))))
@@ -1261,10 +1261,10 @@ QOhosWindowProxy::createSubWindow(const SubWindowCreateInfo &createInfo)
 }
 
 QOhosWindowProxy::JsScopeData::JsScopeData(
-    bool mainWindow, QNapi::Reference<QNapi::Object> jsWindow,
+    WindowProxyType windowProxyType, QNapi::Reference<QNapi::Object> jsWindow,
     std::shared_ptr<void> optKeepAliveData,
     std::shared_ptr<QtOhos::QAbilityPeer> qAbilityPeer)
-    : mainWindow(mainWindow)
+    : windowProxyType(windowProxyType)
     , windowCallbackReceiver(nullptr)
     , windowDestroyedFromSystem(false)
     , optKeepAliveData(optKeepAliveData)
@@ -1302,7 +1302,7 @@ QOhosWindowProxy::JsScopeData::~JsScopeData()
 
     QtOhos::JsWindowsTracker::tagWindowAsClosing(jsWindowRef->jsObject(), "QOhosWindowProxy::JsScopeData destructor");
 
-    if (mainWindow) {
+    if (windowProxyType == WindowProxyType::MainWindow) {
         // NOTE - Set the windowDestroyedFromSystem flag here early
         // to avoid callbacks being invoked directly as a result of
         // calling terminate

@@ -265,7 +265,7 @@ private:
     struct JsScopeData : public std::enable_shared_from_this<JsScopeData>
     {
         JsScopeData(
-            bool mainWindow, QNapi::Reference<QNapi::Object> jsWindow,
+            WindowProxyType windowProxyType, QNapi::Reference<QNapi::Object> jsWindow,
             std::shared_ptr<void> optKeepAliveData,
             std::shared_ptr<QtOhos::QAbilityPeer> qAbilityPeer);
         ~JsScopeData();
@@ -290,7 +290,7 @@ private:
         void onMouseEventFromArkUi(const QArkUi::MouseEvent &event);
         void onTouchEventFromArkUi(const QArkUi::TouchEvent &event);
 
-        bool mainWindow;
+        WindowProxyType windowProxyType;
         std::shared_ptr<WindowCallbacks> windowCallbackReceiver;
         bool windowDestroyedFromSystem;
         std::shared_ptr<void> optKeepAliveData;
