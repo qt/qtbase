@@ -4284,13 +4284,13 @@ QByteArray &QByteArray::setNum(qulonglong n, int base)
 
 /*!
     \overload
-
+//! [set-num]
     Represent the floating-point number \a n as text.
 
     Sets this byte array to a string representing \a n, with a given \a format
-    and \a precision (with the same meanings as for \l {QString::number(double,
+    and \a precision (with the same meanings as for \l {QLocale::toString(double,
     char, int)}), and returns a reference to this byte array.
-
+//! [set-num]
     \sa toDouble(), QLocale::FloatingPointPrecisionOption
 */
 
@@ -4300,16 +4300,12 @@ QByteArray &QByteArray::setNum(double n, char format, int precision)
 }
 
 /*!
-    \fn QByteArray &QByteArray::setNum(float n, char format, int precision)
     \overload
+    \fn QByteArray &QByteArray::setNum(float n, char format, int precision)
 
-    Represent the floating-point number \a n as text.
+    \include qbytearray.cpp set-num
 
-    Sets this byte array to a string representing \a n, with a given \a format
-    and \a precision (with the same meanings as for \l {QString::number(double,
-    char, int)}), and returns a reference to this byte array.
-
-    \sa toFloat()
+    \sa toFloat(), QLocale::FloatingPointPrecisionOption
 */
 
 /*!
