@@ -26,10 +26,7 @@ public:
     typedef typename std::conditional<pass_parameter_by_value, T, const T &>::type parameter_type;
 
     Q_NODISCARD_CTOR
-    constexpr QArrayDataPointer() noexcept
-        : d(nullptr), ptr(nullptr), size(0)
-    {
-    }
+    constexpr QArrayDataPointer() = default;
 
     Q_NODISCARD_CTOR
     QArrayDataPointer(const QArrayDataPointer &other) noexcept
@@ -419,9 +416,9 @@ public:
         return lhs.data() != rhs.data() || lhs.size != rhs.size;
     }
 
-    Data *d;
-    T *ptr;
-    qsizetype size;
+    Data *d = nullptr;
+    T *ptr = nullptr;
+    qsizetype size = 0;
 };
 
 template <class T>
