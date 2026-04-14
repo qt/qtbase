@@ -138,15 +138,19 @@ private:
     { return data; }
 
 public:
-    constexpr QByteArrayView() noexcept
-        : m_size(0), m_data(nullptr) {}
+    constexpr QByteArrayView() = default;
     constexpr QByteArrayView(std::nullptr_t) noexcept
         : QByteArrayView() {}
 
     template <typename Byte, if_compatible_byte<Byte> = true>
     constexpr QByteArrayView(const Byte *data, qsizetype len)
+#if QT_VERSION >= QT_VERSION_CHECK(7, 0, 0) || defined(QT_BOOTSTRAPPED)
+        : m_data(castHelper(data)),
+          m_size((Q_ASSERT(len >= 0), Q_ASSERT(data || !len), len)) {}
+#else
         : m_size((Q_ASSERT(len >= 0), Q_ASSERT(data || !len), len)),
           m_data(castHelper(data)) {}
+#endif
 
     template <typename Byte, if_compatible_byte<Byte> = true>
     constexpr QByteArrayView(const Byte *first, const Byte *last)
@@ -381,8 +385,13 @@ private:
     Q_DECLARE_STRONGLY_ORDERED(QByteArrayView, char16_t, QT_ASCII_CAST_WARN)
 #endif // !defined(QT_NO_CAST_FROM_ASCII) && !defined(QT_RESTRICTED_CAST_FROM_ASCII)
 
-    qsizetype m_size;
-    const storage_type *m_data;
+#if QT_VERSION >= QT_VERSION_CHECK(7, 0, 0) || defined(QT_BOOTSTRAPPED)
+    const storage_type *m_data = nullptr;
+    qsizetype m_size = 0;
+#else
+    qsizetype m_size = 0;
+    const storage_type *m_data = nullptr;
+#endif
 };
 Q_DECLARE_TYPEINFO(QByteArrayView, Q_PRIMITIVE_TYPE);
 
