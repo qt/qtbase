@@ -151,12 +151,6 @@ static void setPaletteColor(const QVariantMap &object,
         palette.setColor(QPalette::Inactive, QPalette::Text, palette.color(QPalette::Inactive, role));
         palette.setColor(QPalette::Disabled, QPalette::Text, palette.color(QPalette::Disabled, role));
         palette.setColor(QPalette::Current, QPalette::Text, palette.color(QPalette::Current, role));
-
-        // And for ButtonText
-        palette.setColor(QPalette::Active, QPalette::ButtonText, palette.color(QPalette::Active, role));
-        palette.setColor(QPalette::Inactive, QPalette::ButtonText, palette.color(QPalette::Inactive, role));
-        palette.setColor(QPalette::Disabled, QPalette::ButtonText, palette.color(QPalette::Disabled, role));
-        palette.setColor(QPalette::Current, QPalette::ButtonText, palette.color(QPalette::Current, role));
     }
 }
 
