@@ -167,8 +167,8 @@ private:
 
 #undef QMINIMAL_FLAT_SET_PRINT_AT_END
 
-template <typename T, qsizetype N = QVarLengthArrayDefaultPrealloc>
-using QMinimalVarLengthFlatSet = QMinimalFlatSet<T, QVarLengthArray<T, N>>;
+template <typename T, qsizetype N = QVarLengthArrayDefaultPrealloc, typename Compare = std::less<T>>
+using QMinimalVarLengthFlatSet = QMinimalFlatSet<T, QVarLengthArray<T, N>, Compare>;
 
 QT_END_NAMESPACE
 
