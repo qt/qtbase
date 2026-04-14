@@ -258,6 +258,13 @@ std::string mapEnumsToLogString(const EnumsContainer &enums)
     return output;
 }
 
+bool isWindowClosingFromSystem(
+    QNapi::Object jsWindow, WindowProxyType windowType, std::shared_ptr<QtOhos::QAbilityPeer> abilityPeer)
+{
+    const bool boundToAbility = windowType != WindowProxyType::FloatWindow;
+    return QtOhos::JsWindowsTracker::isWindowClosing(jsWindow) || (boundToAbility && abilityPeer->isTerminating());
+}
+
 }
 
 const QOhosWindowProxy::EventHandlerDescriptor QOhosWindowProxy::eventHandlerDescriptors[] = {
@@ -1290,9 +1297,7 @@ QOhosWindowProxy::JsScopeData::JsScopeData(
 
 QOhosWindowProxy::JsScopeData::~JsScopeData()
 {
-    bool windowBoundToQAbility = windowProxyType != WindowProxyType::FloatWindow;
-    if (QtOhos::JsWindowsTracker::isWindowClosing(jsWindowRef->jsObject())
-        || (windowBoundToQAbility && qAbilityPeer->isTerminating())) {
+    if (isWindowClosingFromSystem(jsWindowRef->jsObject(), windowProxyType, qAbilityPeer)) {
         windowDestroyedFromSystem = true;
         return;
     }
@@ -1491,9 +1496,7 @@ void QOhosWindowProxy::JsScopeData::onWindowEvent(QtOhos::JsState &, const Windo
 
 bool QOhosWindowProxy::JsScopeData::isWindowClosing() const
 {
-    bool windowBoundToQAbility = windowProxyType != WindowProxyType::FloatWindow;
-    return QtOhos::JsWindowsTracker::isWindowClosing(jsWindowRef->jsObject())
-        || (windowBoundToQAbility && qAbilityPeer->isTerminating());
+    return isWindowClosingFromSystem(jsWindowRef->jsObject(), windowProxyType, qAbilityPeer);
 }
 
 void QOhosWindowProxy::JsScopeData::onMouseEventFromArkUi(const QArkUi::MouseEvent &event)
