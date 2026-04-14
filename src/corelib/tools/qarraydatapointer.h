@@ -37,7 +37,11 @@ public:
 
     Q_NODISCARD_CTOR
     constexpr QArrayDataPointer(Data *header, T *adata, qsizetype n = 0) noexcept
+#if QT_VERSION >= QT_VERSION_CHECK(7, 0, 0) || defined(QT_BOOTSTRAPPED)
+        : ptr(adata), size(n), d(header)
+#else
         : d(header), ptr(adata), size(n)
+#endif
     {
     }
 
@@ -416,9 +420,14 @@ public:
         return lhs.data() != rhs.data() || lhs.size != rhs.size;
     }
 
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0) && !defined(QT_BOOTSTRAPPED)
     Data *d = nullptr;
+#endif
     T *ptr = nullptr;
     qsizetype size = 0;
+#if QT_VERSION >= QT_VERSION_CHECK(7, 0, 0) || defined(QT_BOOTSTRAPPED)
+    Data *d = nullptr;
+#endif
 };
 
 template <class T>
