@@ -86,6 +86,7 @@ private slots:
     void bufferCreate();
     void bufferMapRange();
     void defaultQGLCurrentBuffer();
+    void makeCurrentAfterResizeWithNonDefaultFBOBound();
 #if QT_CONFIG(egl)
     void dontCrashOnInvalidContextThreadTeardown();
 #endif
@@ -1780,6 +1781,74 @@ void tst_QOpenGL::dontCrashOnInvalidContextThreadTeardown()
     thread.wait();
 }
 #endif
+
+// QTBUG-143779: On macOS, when a window has been resized, QOpenGLContext::makeCurrent()
+// does a lazy update of the context, which recreates the window's default FBO and any
+// associcated structures. If client code has a different FBO bound at this point, the
+// update logic fails to set up these internal structures, and we end up crashing when
+// we later swap. This test checks that a makeCurrent after a resize doesn't crash, and
+// that the user's FBO is still bound.
+void tst_QOpenGL::makeCurrentAfterResizeWithNonDefaultFBOBound()
+{
+    class FBOWindow : public QWindow
+    {
+    public:
+        FBOWindow() {
+            QSurfaceFormat format;
+            format.setSamples(4);
+
+            setSurfaceType(QWindow::OpenGLSurface);
+            setFormat(format);
+            create();
+
+            context.reset(new QOpenGLContext);
+            context->setFormat(format);
+            QVERIFY(context->create());
+            QVERIFY(context->makeCurrent(this));
+            fbo.reset(new QOpenGLFramebufferObject(64, 64));
+            fbo->bind();
+        }
+
+        void exposeEvent(QExposeEvent *) override
+        {
+            ++paintCount;
+
+            // If FBO was bound in a previous frame we shouldn't crash
+            QVERIFY(context->makeCurrent(this));
+
+            // makeCurrent shouldn't affect the bound FBO
+            QVERIFY(fbo->isBound());
+
+            // Temporarily bind the default FBO, and render to it
+            auto *f = context->functions();
+            fbo->release();
+            f->glClearColor(1.0, 0.0, 0.0, 1.0);
+            f->glClear(GL_COLOR_BUFFER_BIT);
+            context->swapBuffers(this);
+
+            // Then rebind the non-default FBO bound for next frame
+            fbo->bind();
+        }
+
+        QScopedPointer<QOpenGLContext> context;
+        QScopedPointer<QOpenGLFramebufferObject> fbo;
+        int paintCount = 0;
+    };
+
+    FBOWindow window;
+
+    if (!QOpenGLFramebufferObject::hasOpenGLFramebufferObjects())
+        QSKIP("QOpenGLFramebufferObject not supported on this platform");
+
+    window.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
+
+    for (int i = 0; i < 10; ++i) {
+        int paintCount = window.paintCount;
+        window.resize(window.width() + 1, 600);
+        QTRY_VERIFY(window.paintCount > paintCount);
+    }
+}
 
 QTEST_MAIN(tst_QOpenGL)
 
