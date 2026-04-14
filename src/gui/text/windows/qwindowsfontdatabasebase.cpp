@@ -1007,6 +1007,7 @@ static const char *ch_TW_tryFonts [] = {
 };
 
 static const char *kr_tryFonts[] = {
+    "Malgun Gothic",
     "Gulim",
     "Arial",
     "PMingLiU",
