@@ -15,6 +15,7 @@
 #include <QtCore/qglobal.h>
 #include <QtCore/qtypeinfo.h>
 
+#include <QtCore/q20type_traits.h>
 #include <QtCore/qxptype_traits.h>
 
 #include <cstring>
@@ -33,11 +34,17 @@ namespace QtPrivate
   Returns whether \a p is within a range [b, e). In simplest form equivalent to:
   b <= p < e.
 */
-template<typename T, typename Cmp = std::less<>>
-static constexpr bool q_points_into_range(const T *p, const T *b, const T *e,
-                                          Cmp less = {})
+template<typename T>
+static constexpr bool q_points_into_range(const T *p, const T *b, const T *e)
 {
-    return !less(p, b) && less(p, e);
+    if (q20::is_constant_evaluated()) {
+        for (; b != e; ++b) {
+            if (b == p)
+                return true;
+        }
+        return false;
+    }
+    return !std::less{}(p, b) && std::less{}(p, e);
 }
 
 /*!

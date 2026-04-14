@@ -3647,5 +3647,18 @@ void tst_Collections::detachAssociativeContainerImpl()
     }
 }
 
+// Compile-time check for q_points_into_range
+#if (!defined(Q_CC_GNU_ONLY) || Q_CC_GNU_ONLY >= 1200)
+static_assert([]() {
+    int a[4] = {1, 2, 3, 4};
+    int *p1 = a + 1;
+    bool b1 = QtPrivate::q_points_into_range(p1, a, a + 4);
+    int c = 42;
+    int *p2 = &c;
+    bool b2 = QtPrivate::q_points_into_range(p2, a, a + 4);
+    return b1 && !b2;
+}());
+#endif
+
 QTEST_APPLESS_MAIN(tst_Collections)
 #include "tst_collections.moc"
