@@ -6,6 +6,8 @@
 #include "private/qcoreapplication_p.h"
 #include <private/qcore_mac_p.h>
 
+#include <qfileinfo.h>
+
 QT_BEGIN_NAMESPACE
 
 /*****************************************************************************
@@ -19,7 +21,7 @@ QString qAppFileName()
     if (bundleURL) {
         QCFString cfPath(CFURLCopyFileSystemPath(bundleURL, kCFURLPOSIXPathStyle));
         if (cfPath)
-            appFileName = cfPath;
+            appFileName = QFileInfo(cfPath).canonicalFilePath();
     }
     return appFileName;
 }
