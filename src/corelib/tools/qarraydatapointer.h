@@ -30,7 +30,7 @@ public:
 
     Q_NODISCARD_CTOR
     QArrayDataPointer(const QArrayDataPointer &other) noexcept
-        : d(other.d), ptr(other.ptr), size(other.size)
+        : QArrayDataPointer(other.d, other.ptr, other.size)
     {
         ref();
     }
@@ -43,7 +43,7 @@ public:
 
     Q_NODISCARD_CTOR
     explicit QArrayDataPointer(std::pair<QTypedArrayData<T> *, T *> adata, qsizetype n = 0) noexcept
-        : d(adata.first), ptr(adata.second), size(n)
+        : QArrayDataPointer(adata.first, adata.second, n)
     {
     }
 
@@ -70,9 +70,9 @@ public:
 
     Q_NODISCARD_CTOR
     QArrayDataPointer(QArrayDataPointer &&other) noexcept
-        : d(std::exchange(other.d, nullptr)),
-          ptr(std::exchange(other.ptr, nullptr)),
-          size(std::exchange(other.size, 0))
+        : QArrayDataPointer(std::exchange(other.d, nullptr),
+                            std::exchange(other.ptr, nullptr),
+                            std::exchange(other.size, 0))
     {
     }
 
