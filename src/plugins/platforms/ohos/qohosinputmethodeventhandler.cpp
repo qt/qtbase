@@ -165,7 +165,33 @@ void QOhosInputMethodEventHandler::onTouchEventFromXComponent(
             wsiTouchPoints.push_back(qwsiTouchPoint);
             break;
         }
-        case ::OH_NATIVEXCOMPONENT_TOOL_TYPE_PEN:
+        case ::OH_NATIVEXCOMPONENT_TOOL_TYPE_PEN: {
+            Qt::MouseButtons buttons = Qt::NoButton;
+            switch (touchPoint.type) {
+            case OH_NATIVEXCOMPONENT_DOWN:
+            case OH_NATIVEXCOMPONENT_MOVE:
+                buttons = Qt::LeftButton;
+                break;
+            case OH_NATIVEXCOMPONENT_UP:
+            case OH_NATIVEXCOMPONENT_CANCEL:
+            case OH_NATIVEXCOMPONENT_UNKNOWN:
+                buttons = Qt::NoButton;
+                break;
+            }
+            constexpr int xTilt = 0;
+            constexpr int yTilt = 0;
+            constexpr qreal tangentialPressure = 0;
+            constexpr qreal rotation = 0;
+            constexpr int z = 0;
+            QWindowSystemInterface::handleTabletEvent(
+                targetWindow, timeStampMs.count(), {touchPoint.x, touchPoint.y},
+                clickPoint,
+                static_cast<int>(QInputDevice::DeviceType::Stylus),
+                static_cast<int>(QPointingDevice::PointerType::Pen),
+                buttons, touchPoint.force, xTilt, yTilt, tangentialPressure, rotation,
+                z, touchPoint.id, convertOhosToQtKeyboardModifiers(modifiers));
+            break;
+        }
         case ::OH_NATIVEXCOMPONENT_TOOL_TYPE_RUBBER:
         case ::OH_NATIVEXCOMPONENT_TOOL_TYPE_BRUSH:
         case ::OH_NATIVEXCOMPONENT_TOOL_TYPE_PENCIL:
@@ -180,20 +206,22 @@ void QOhosInputMethodEventHandler::onTouchEventFromXComponent(
         }
     }
 
-    auto singleActiveTouchEventGlobalPosition = activeTouchPointDisplayPositions.size() == 1
-        ? makeQOhosOptional(displayOffset + activeTouchPointDisplayPositions.front())
-        : makeEmptyQOhosOptional();
+    if (!wsiTouchPoints.isEmpty()) {
+        auto singleActiveTouchEventGlobalPosition = activeTouchPointDisplayPositions.size() == 1
+            ? makeQOhosOptional(displayOffset + activeTouchPointDisplayPositions.front())
+            : makeEmptyQOhosOptional();
 
-    QWindowSystemInterfaceTouchEvent touchEvent = {
-        .targetWindow = targetWindow,
-        .touchPoints = wsiTouchPoints,
-        .touchDevice = touchDevice,
-        .timestampMs = timeStampMs,
-        .modifiers = modifiers,
-        .singleTouchPointEventGlobalPosition = singleActiveTouchEventGlobalPosition,
-    };
+        QWindowSystemInterfaceTouchEvent touchEvent = {
+            .targetWindow = targetWindow,
+            .touchPoints = wsiTouchPoints,
+            .touchDevice = touchDevice,
+            .timestampMs = timeStampMs,
+            .modifiers = modifiers,
+            .singleTouchPointEventGlobalPosition = singleActiveTouchEventGlobalPosition,
+        };
 
-    handleTouchEvent(touchEvent);
+        handleTouchEvent(touchEvent);
+    }
 }
 
 void QOhosInputMethodEventHandler::onGestureEventFromNativeNode(const QOhosGestureEvent &gestureEvent)
