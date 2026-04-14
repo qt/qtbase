@@ -1070,34 +1070,21 @@ void tst_QWizard::setOption_ExtendedWatermarkPixmap()
     QPixmap watermarkPixmap(200, 400);
     watermarkPixmap.fill(Qt::black);
 
-    QWizard wizard1;
-    wizard1.setButtonLayout(QList<QWizard::WizardButton>() << QWizard::CancelButton);
-    QVERIFY(!wizard1.testOption(QWizard::ExtendedWatermarkPixmap));
-    QWizardPage *page11 = new QWizardPage;
-    page11->setTitle("Page X");
-    page11->setPixmap(QWizard::WatermarkPixmap, watermarkPixmap);
+    QWizard wizard;
+    wizard.setButtonLayout(QList<QWizard::WizardButton>() << QWizard::CancelButton);
+    QVERIFY(!wizard.testOption(QWizard::ExtendedWatermarkPixmap));
+    QWizardPage *page1 = new QWizardPage;
+    page1->setTitle("Page X");
+    page1->setPixmap(QWizard::WatermarkPixmap, watermarkPixmap);
 
-    QWizardPage *page12 = new QWizardPage;
-    page12->setTitle("Page X");
+    QWizardPage *page2 = new QWizardPage;
+    page2->setTitle("Page X");
 
-    wizard1.addPage(page11);
-    wizard1.addPage(page12);
+    wizard.addPage(page1);
+    wizard.addPage(page2);
 
-    QWizard wizard2;
-    wizard2.setButtonLayout(QList<QWizard::WizardButton>() << QWizard::CancelButton);
-    wizard2.setOption(QWizard::ExtendedWatermarkPixmap, true);
-    QWizardPage *page21 = new QWizardPage;
-    page21->setTitle("Page X");
-    page21->setPixmap(QWizard::WatermarkPixmap, watermarkPixmap);
-
-    QWizardPage *page22 = new QWizardPage;
-    page22->setTitle("Page X");
-
-    wizard2.addPage(page21);
-    wizard2.addPage(page22);
-
-    wizard1.show();
-    wizard2.show();
+    wizard.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&wizard));
 
     // Check the impact of watermark pixmaps on the rest of the layout.
 
@@ -1105,23 +1092,23 @@ void tst_QWizard::setOption_ExtendedWatermarkPixmap()
         QImage i1[2];
         QImage i2[2];
         for (int j = 0; j < 2; ++j) {
-            wizard1.setOption(QWizard::ExtendedWatermarkPixmap, j == 0);
+            wizard.setOption(QWizard::ExtendedWatermarkPixmap, j == 0);
 
-            wizard1.setWizardStyle(i == 0 ? QWizard::ClassicStyle
+            wizard.setWizardStyle(i == 0 ? QWizard::ClassicStyle
                                    : i == 1 ? QWizard::ModernStyle
                                             : QWizard::MacStyle);
-            wizard1.restart();
-            wizard1.setMaximumSize(1000, 1000);
-            wizard1.resize(600, 600);
-            i1[j] = grabWidget(&wizard1);
+            wizard.restart();
+            wizard.setMaximumSize(1000, 1000);
+            wizard.resize(600, 600);
+            i1[j] = grabWidget(&wizard);
 
-            wizard1.next();
-            wizard1.setMaximumSize(1000, 1000);
-            wizard1.resize(600, 600);
-            i2[j] = grabWidget(&wizard1);
+            wizard.next();
+            wizard.setMaximumSize(1000, 1000);
+            wizard.resize(600, 600);
+            i2[j] = grabWidget(&wizard);
         }
 
-        if (wizard1.wizardStyle() == QWizard::MacStyle) {
+        if (wizard.wizardStyle() == QWizard::MacStyle) {
             QCOMPARE(i1[0], i1[1]);
             QCOMPARE(i2[0], i2[1]);
             QCOMPARE(i1[0], i2[0]);
@@ -2088,6 +2075,8 @@ void tst_QWizard::combinations()
 #endif
     wizard.applyOperations(operations);
     wizard.show(); // ### TODO: Required, but why? Should wizard.createImage() care?
+
+    QVERIFY(QTest::qWaitForWindowExposed(&wizard));
 
     static QImage refImage;
     static QSize refMinSize;
