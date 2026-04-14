@@ -1979,6 +1979,26 @@ QRect QWaylandWindow::parentControlGeometry() const
     return m_popupInfo.parentControlGeometry;
 }
 
+void QWaylandWindow::handleMousePressActivation()
+{
+    if (!window() || window()->flags() & Qt::WindowDoesNotAcceptFocus)
+        return;
+
+    const QWaylandWindow *currentActiveSubSurface = mDisplay->activeSubSurface();
+    const bool isSubsurface = !!subSurfaceWindow();
+
+    auto toplevelIsActive = [&](QWaylandWindow *w) -> bool {
+        while (w && w->subSurfaceWindow())
+            w = static_cast<QWaylandWindow *>(w->QPlatformWindow::parent());
+        return mDisplay->isWindowActivated(w);
+    };
+
+    if (isSubsurface && currentActiveSubSurface != this && toplevelIsActive(this))
+        mDisplay->setActiveSubSurface(this);
+    else if (!isSubsurface && currentActiveSubSurface)
+        mDisplay->setActiveSubSurface(nullptr);
+}
+
 }
 
 QT_END_NAMESPACE

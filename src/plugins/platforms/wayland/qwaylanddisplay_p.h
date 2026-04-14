@@ -286,6 +286,9 @@ public:
 
     void initEventThread();
 
+    QWaylandWindow *activeSubSurface() const;
+    void setActiveSubSurface(QWaylandWindow *window);
+
 public Q_SLOTS:
     void flushRequests();
 
@@ -386,6 +389,7 @@ private:
     QPointer<QWaylandWindow> mLastInputWindow;
     QPointer<QWaylandWindow> mLastKeyboardFocus;
     QList<QWaylandWindow *> mActiveWindows;
+    QPointer<QWaylandWindow> mActiveSubSurface;
     struct wl_callback *mSyncCallback = nullptr;
     static const wl_callback_listener syncCallbackListener;
     bool mWaylandTryReconnect = false;

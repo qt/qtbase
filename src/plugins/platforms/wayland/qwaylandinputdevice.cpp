@@ -871,6 +871,8 @@ void QWaylandInputDevice::Pointer::pointer_button(uint32_t serial, uint32_t time
     }
 
     if (state)
+        window->handleMousePressActivation();
+    if (state)
         setFrameEvent(new PressEvent(window, time, pos, global, mButtons, qt_button, mParent->modifiers()));
     else
         setFrameEvent(new ReleaseEvent(window, time, pos, global, mButtons, qt_button, mParent->modifiers()));
@@ -1341,7 +1343,9 @@ void QWaylandInputDevice::Keyboard::handleKey(ulong timestamp, QEvent::Type type
     }
 
     if (!filtered) {
-        auto window = focusWindow()->window();
+        auto window = mParent->mQDisplay->activeSubSurface()
+                ? mParent->mQDisplay->activeSubSurface()->window()
+                : focusWindow()->window();
 
         if (type == QEvent::KeyPress && key == Qt::Key_Menu) {
             auto cursor = window->screen()->handle()->cursor();

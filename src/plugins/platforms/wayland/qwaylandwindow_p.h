@@ -265,6 +265,8 @@ public:
     void setParentControlGeometry(const QRect &parentAnchor) override;
     QRect parentControlGeometry() const;
 
+    void handleMousePressActivation();
+
 public Q_SLOTS:
     void applyConfigure();
 

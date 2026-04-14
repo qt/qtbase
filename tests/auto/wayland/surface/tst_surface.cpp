@@ -27,6 +27,7 @@ private slots:
     void createSubsurface();
     void createSubsurfaceForHiddenParent();
     void changeToSubsurface();
+    void subsurfaceFocus();
 };
 
 tst_surface::tst_surface()
@@ -241,6 +242,93 @@ void tst_surface::changeToSubsurface()
     window2.setParent(nullptr);
     window2.show();
     QCOMPOSITOR_TRY_VERIFY(xdgToplevel(1));
+}
+
+// QTBUG-123455
+void tst_surface::subsurfaceFocus()
+{
+    m_config.autoFrameCallback = true;
+    auto autoFrameCallback = qScopeGuard([&] { m_config.autoFrameCallback = false; });
+
+    class CountingWindow : public QRasterWindow {
+    public:
+        int keyPressEventCount = 0;
+        int focusInEventCount = 0;
+    protected:
+        void keyPressEvent(QKeyEvent *) override { ++keyPressEventCount; }
+        void focusInEvent(QFocusEvent *) override { ++focusInEventCount; }
+    };
+
+    CountingWindow window;
+    window.setObjectName("main");
+    window.resize(200, 200);
+    CountingWindow subWindow;
+    subWindow.setObjectName("subwindow");
+    subWindow.setParent(&window);
+    subWindow.setGeometry(50, 50, 64, 64);
+    window.show();
+    subWindow.show();
+
+    QCOMPOSITOR_TRY_VERIFY(subSurface());
+    QCOMPOSITOR_TRY_VERIFY(xdgToplevel());
+    exec([&] { xdgToplevel()->sendCompleteConfigure(); });
+    QCOMPOSITOR_TRY_VERIFY(xdgSurface()->m_committedConfigureSerial);
+
+    Surface *mainSurface = exec([&] {return surface(0);});
+    Surface *childSurface = exec([&] {return surface(1);});
+
+    // Activate the toplevel by sending keyboard focus to it
+    exec([&] {
+        keyboard()->sendEnter(mainSurface);
+    });
+    QTRY_COMPARE(window.focusInEventCount, 1);
+    QCOMPARE(QGuiApplication::focusWindow(), &window);
+
+    // Click on the subsurface
+    exec([&] {
+        pointer()->sendLeave(mainSurface);
+        pointer()->sendFrame(client());
+        pointer()->sendEnter(childSurface, {10, 10});
+        pointer()->sendFrame(client());
+        pointer()->sendButton(client(), BTN_LEFT, Pointer::button_state_pressed);
+        pointer()->sendFrame(client());
+        pointer()->sendButton(client(), BTN_LEFT, Pointer::button_state_released);
+        pointer()->sendFrame(client());
+    });
+    QTRY_COMPARE(subWindow.focusInEventCount, 1);
+    QCOMPARE(QGuiApplication::focusWindow(), &subWindow);
+
+    // Key events should go to the subsurface, not the toplevel
+    uint keyCode = 80;
+    exec([&] {
+        keyboard()->sendKey(client(), keyCode - 8, Keyboard::key_state_pressed);
+    });
+    QTRY_COMPARE(subWindow.keyPressEventCount, 1);
+    QCOMPARE(window.keyPressEventCount, 0);
+    exec([&] {
+        keyboard()->sendKey(client(), keyCode - 8, Keyboard::key_state_released);
+    });
+
+    // Click on the toplevel - subsurface should lose focus and toplevel should gain focus
+    exec([&] {
+        pointer()->sendLeave(childSurface);
+        pointer()->sendFrame(client());
+        pointer()->sendEnter(mainSurface, {10, 10});
+        pointer()->sendFrame(client());
+        pointer()->sendButton(client(), BTN_LEFT, Pointer::button_state_pressed);
+        pointer()->sendFrame(client());
+        pointer()->sendButton(client(), BTN_LEFT, Pointer::button_state_released);
+        pointer()->sendFrame(client());
+    });
+    QTRY_COMPARE(window.focusInEventCount, 2);
+    QCOMPARE(QGuiApplication::focusWindow(), &window);
+
+    // Key events should now go back to the toplevel
+    exec([&] {
+        keyboard()->sendKey(client(), keyCode - 8, Keyboard::key_state_pressed);
+    });
+    QTRY_COMPARE(window.keyPressEventCount, 1);
+    QCOMPARE(subWindow.keyPressEventCount, 1); // unchanged
 }
 
 QCOMPOSITOR_TEST_MAIN(tst_surface)

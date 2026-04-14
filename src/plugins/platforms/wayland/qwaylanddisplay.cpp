@@ -453,6 +453,7 @@ void QWaylandDisplay::reconnect()
     mLastInputWindow.clear();
     mLastKeyboardFocus.clear();
     mActiveWindows.clear();
+    mActiveSubSurface.clear();
 
     const auto windows = QGuiApplication::allWindows();
     QList<QWaylandWindow *> allPlatformWindows;
@@ -954,7 +955,7 @@ void QWaylandDisplay::setLastInputDevice(QWaylandInputDevice *device, uint32_t s
 
 bool QWaylandDisplay::isWindowActivated(const QWaylandWindow *window)
 {
-    return mActiveWindows.contains(const_cast<QWaylandWindow *>(window));
+    return mActiveWindows.contains(const_cast<QWaylandWindow *>(window)) || mActiveSubSurface == window;
 }
 
 void QWaylandDisplay::handleWindowActivated(QWaylandWindow *window)
@@ -963,6 +964,7 @@ void QWaylandDisplay::handleWindowActivated(QWaylandWindow *window)
         return;
 
     mActiveWindows.append(window);
+    mActiveSubSurface.clear();
     requestWaylandSync();
 
     if (auto *decoration = window->decoration())
@@ -977,6 +979,7 @@ void QWaylandDisplay::handleWindowDeactivated(QWaylandWindow *window)
         requestWaylandSync();
 
     mActiveWindows.removeOne(window);
+    mActiveSubSurface.clear();
 
     if (QCoreApplication::closingDown())
         return;
@@ -1004,6 +1007,24 @@ void QWaylandDisplay::handleWindowDestroyed(QWaylandWindow *window)
 {
     if (mActiveWindows.contains(window))
         handleWindowDeactivated(window);
+    if (mActiveSubSurface) {
+        auto *parent = mActiveSubSurface.get();
+        while (parent && parent != window)
+            parent = static_cast<QWaylandWindow *>(parent->QPlatformWindow::parent());
+        if (parent)
+            mActiveSubSurface.clear();
+    }
+}
+
+void QWaylandDisplay::setActiveSubSurface(QWaylandWindow *window)
+{
+    mActiveSubSurface = window;
+    requestWaylandSync();
+}
+
+QWaylandWindow *QWaylandDisplay::activeSubSurface() const
+{
+    return mActiveSubSurface;
 }
 
 void QWaylandDisplay::handleWaylandSync()
@@ -1012,9 +1033,10 @@ void QWaylandDisplay::handleWaylandSync()
     // pair, and the latter one would be lost in the QWindowSystemInterface queue, if we issue the
     // handleWindowActivated() calls immediately.
     QWindow *activeWindow = mActiveWindows.empty() ? nullptr : mActiveWindows.last()->window();
+    if (mActiveSubSurface)
+        activeWindow = mActiveSubSurface->window();
     if (activeWindow != QGuiApplication::focusWindow())
         QWindowSystemInterface::handleFocusWindowChanged(activeWindow);
-
     if (!activeWindow) {
         if (lastInputDevice()) {
 #if QT_CONFIG(clipboard)
