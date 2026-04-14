@@ -35,7 +35,7 @@ namespace QtPrivate
 */
 template<typename T, typename Cmp = std::less<>>
 static constexpr bool q_points_into_range(const T *p, const T *b, const T *e,
-                                          Cmp less = {}) noexcept
+                                          Cmp less = {})
 {
     return !less(p, b) && less(p, e);
 }
