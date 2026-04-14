@@ -485,7 +485,11 @@ void QCocoaGLContext::update()
     }
 #endif
 
+    GLint previousFBO;
+    glGetIntegerv(GL_FRAMEBUFFER_BINDING, &previousFBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
     [m_context update];
+    glBindFramebuffer(GL_FRAMEBUFFER, previousFBO);
 }
 
 void QCocoaGLContext::swapBuffers(QPlatformSurface *surface)
