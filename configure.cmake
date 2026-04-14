@@ -247,14 +247,12 @@ qt_config_compile_test(glibc
 int main() {}"
 )
 
-# glibc 2.34, for _FORTIFY_SOURCE == 3
-qt_config_compile_test(glibc_234
-    LABEL "Using Glibc >= 2.34"
+# glibc 2.34 and gcc >= 12 or clang >= 9, for _FORTIFY_SOURCE=3
+qt_config_compile_test(glibc_fortify_source_3
+    LABEL "_FORTIFY_SOURCE=3 support"
+    COMPILE_OPTIONS "-Werror=cpp -D_FORTIFY_SOURCE=3"
     CODE
 "#include <features.h>
-#if !defined(__GLIBC__) || !__GLIBC_PREREQ(2, 34)
-#error
-#endif
 int main() {}"
 )
 
@@ -1247,9 +1245,9 @@ qt_feature("intelcet" PRIVATE
 )
 qt_feature_config("intelcet" QMAKE_PUBLIC_CONFIG)
 qt_feature("glibc_fortify_source" PRIVATE
-    LABEL "Using Glibc function fortification"
+    LABEL "Using Glibc function fortification level 3, if it's supported, otherwise level 2"
     AUTODETECT ON
-    CONDITION TEST_glibc
+    CONDITION TEST_glibc_fortify_source_3 OR TEST_glibc
 )
 qt_feature_config("glibc_fortify_source" QMAKE_PUBLIC_CONFIG)
 qt_feature("trivial_auto_var_init_pattern" PRIVATE
