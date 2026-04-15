@@ -58,6 +58,8 @@ private:
     void handleGeometryPropertyEvent(screen_window_t window);
     void handleManagerEvent(screen_event_t event);
 
+    void initializeTouchDevices();
+
 private:
     enum {
         MaximumTouchPoints = 10
@@ -68,9 +70,10 @@ private:
     QPoint m_lastLocalMousePoint;
     Qt::MouseButtons m_lastButtonState;
     screen_window_t m_lastMouseWindow;
-    QPointingDevice *m_touchDevice;
     QPointingDevice *m_mouseDevice;
-    QWindowSystemInterface::TouchPoint m_touchPoints[MaximumTouchPoints];
+    QList<QPointingDevice *> m_touchDevices;
+    QList<QWindowSystemInterface::TouchPoint> m_touchPoints;
+    QList<screen_window_t> m_touchPointWindows;
     QList<QQnxScreenEventFilter*> m_eventFilters;
     QQnxScreenEventThread *m_eventThread;
     QBasicTimer m_focusLostTimer;

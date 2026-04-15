@@ -65,6 +65,7 @@ public:
 
     int nativeFormat() const { return (depth() == 32) ? SCREEN_FORMAT_RGBA8888 : SCREEN_FORMAT_RGB565; }
     screen_display_t nativeDisplay() const { return m_display; }
+    int displayId() const { return m_displayId; }
     screen_context_t nativeContext() const { return m_screenContext; }
     const char *windowGroupName() const { return m_rootWindow ? m_rootWindow->groupName().constData() : 0; }
 
@@ -112,6 +113,7 @@ private:
     QQnxWindow *m_rootWindow;
     const bool m_primaryScreen;
 
+    int m_displayId;
     int m_initialRotation;
     int m_currentRotation;
     int m_keyboardHeight;

@@ -109,37 +109,13 @@ QQnxScreenEventHandler::QQnxScreenEventHandler(QQnxIntegration *integration)
     : m_qnxIntegration(integration)
     , m_lastButtonState(Qt::NoButton)
     , m_lastMouseWindow(0)
-    , m_touchDevice(0)
     , m_mouseDevice(0)
     , m_eventThread(0)
 {
-    // Create a touch device
-    m_touchDevice = new QPointingDevice(
-            "touchscreen"_L1, 1, QInputDevice::DeviceType::TouchScreen,
-            QPointingDevice::PointerType::Finger,
-            QPointingDevice::Capability::Position | QPointingDevice::Capability::Area
-                    | QPointingDevice::Capability::Pressure
-                    | QPointingDevice::Capability::NormalizedPosition,
-            MaximumTouchPoints, 8);
-    QWindowSystemInterface::registerInputDevice(m_touchDevice);
-
     m_mouseDevice = new QPointingDevice("mouse"_L1, 2, QInputDevice::DeviceType::Mouse,
                                         QPointingDevice::PointerType::Generic,
                                         QPointingDevice::Capability::Position, 1, 8);
     QWindowSystemInterface::registerInputDevice(m_mouseDevice);
-
-    // initialize array of touch points
-    for (int i = 0; i < MaximumTouchPoints; i++) {
-
-        // map array index to id
-        m_touchPoints[i].id = i;
-
-        // pressure is not supported - use default
-        m_touchPoints[i].pressure = 1.0;
-
-        // nothing touching
-        m_touchPoints[i].state = QEventPoint::State::Released;
-    }
 }
 
 void QQnxScreenEventHandler::addScreenEventFilter(QQnxScreenEventFilter *filter)
@@ -471,8 +447,52 @@ void QQnxScreenEventHandler::handlePointerEvent(screen_event_t event)
     m_lastButtonState = buttons;
 }
 
+void QQnxScreenEventHandler::initializeTouchDevices()
+{
+    const auto &screens = QQnxIntegration::instance()->screens();
+    if (screens.isEmpty())
+        return;
+
+    const int screenCount = screens.size();
+    m_touchDevices.resize(screenCount);
+    m_touchPoints.resize(screenCount * MaximumTouchPoints);
+    m_touchPointWindows.resize(screenCount * MaximumTouchPoints);
+    m_touchPointWindows.fill(nullptr);
+
+    for (int i = 0; i < m_touchPoints.size(); i++) {
+        m_touchPoints[i].id = i % MaximumTouchPoints;
+        m_touchPoints[i].pressure = 1.0;
+        m_touchPoints[i].state = QEventPoint::State::Released;
+    }
+
+    for (int i = 0; i < m_touchDevices.size(); i++) {
+        const int displayId = screens[i]->displayId();
+        // Use the hardware display ID offset by 0x10000 to stay well above the
+        // reserved low-id range (mouse=2, keyboard). Fall back to 0x20000 + screenIndex
+        // if the display ID could not be queried.
+        const int systemId = displayId >= 0 ? 0x10000 + displayId : 0x20000 + i;
+        m_touchDevices[i] = new QPointingDevice(
+                "touchscreen-"_L1 + QString::number(displayId >= 0 ? displayId : i), systemId,
+                QInputDevice::DeviceType::TouchScreen,
+                QPointingDevice::PointerType::Finger,
+                QPointingDevice::Capability::Position | QPointingDevice::Capability::Area
+                        | QPointingDevice::Capability::Pressure
+                        | QPointingDevice::Capability::NormalizedPosition,
+                MaximumTouchPoints, 8, QString(), QPointingDeviceUniqueId(), this);
+        QWindowSystemInterface::registerInputDevice(m_touchDevices[i]);
+    }
+}
+
 void QQnxScreenEventHandler::handleTouchEvent(screen_event_t event, int qnxType)
 {
+    if (m_touchDevices.isEmpty()) {
+        initializeTouchDevices();
+        if (m_touchDevices.isEmpty()) {
+            qCDebug(lcQpaScreenEvents) << "Touch event dropped: no screens available";
+            return;
+        }
+    }
+
     // get display coordinates of touch
     int pos[2];
     Q_SCREEN_CHECKERROR(screen_get_event_property_iv(event, SCREEN_PROPERTY_POSITION, pos),
@@ -507,94 +527,120 @@ void QQnxScreenEventHandler::handleTouchEvent(screen_event_t event, int qnxType)
 
     screen_window_t qnxWindow = static_cast<screen_window_t>(handle);
 
-    // check if finger is valid
-    if (touchId < MaximumTouchPoints) {
+    if (touchId < 0 || touchId >= MaximumTouchPoints) {
+        qCWarning(lcQpaScreenEvents) << "Touch event dropped: touchId" << touchId
+                                     << "out of range [0," << MaximumTouchPoints << ")";
+        return;
+    }
 
-        // Map window handle to top-level QWindow
-        QWindow *w = QQnxIntegration::instance()->window(qnxWindow);
+    // Map window handle to top-level QWindow
+    QWindow *w = QQnxIntegration::instance()->window(qnxWindow);
 
-        // Generate enter and leave events as needed.
-        if (qnxWindow != m_lastMouseWindow) {
-            QWindow *wOld = QQnxIntegration::instance()->window(m_lastMouseWindow);
+    // Generate enter and leave events as needed.
+    if (qnxWindow != m_lastMouseWindow) {
+        QWindow *wOld = QQnxIntegration::instance()->window(m_lastMouseWindow);
 
-            if (wOld) {
-                QWindowSystemInterface::handleLeaveEvent(wOld);
-                qCDebug(lcQpaScreenEvents) << "Qt leave, w=" << wOld;
-            }
-
-            if (w) {
-                QWindowSystemInterface::handleEnterEvent(w);
-                qCDebug(lcQpaScreenEvents) << "Qt enter, w=" << w;
-            }
+        if (wOld) {
+            QWindowSystemInterface::handleLeaveEvent(wOld);
+            qCDebug(lcQpaScreenEvents) << "Qt leave, w=" << wOld;
         }
-        m_lastMouseWindow = qnxWindow;
 
         if (w) {
-            if (qnxType == SCREEN_EVENT_MTOUCH_RELEASE)
-                (static_cast<QQnxWindow *>(w->handle()))->handleActivationEvent();
-
-            // get size of screen which contains window
-            QPlatformScreen *platformScreen = QPlatformScreen::platformScreenForWindow(w);
-            QSizeF screenSize = platformScreen->geometry().size();
-
-            // update cached position of current touch point
-            m_touchPoints[touchId].normalPosition =
-                            QPointF(static_cast<qreal>(pos[0]) / screenSize.width(),
-                                    static_cast<qreal>(pos[1]) / screenSize.height());
-
-            m_touchPoints[touchId].area = QRectF(w->geometry().left() + windowPos[0] - (touchArea[0]>>1),
-                                                 w->geometry().top()  + windowPos[1] - (touchArea[1]>>1),
-                                                 (touchArea[0]>>1), (touchArea[1]>>1));
-            QWindow *parent = w->parent();
-            while (parent) {
-                m_touchPoints[touchId].area.translate(parent->geometry().topLeft());
-                parent = parent->parent();
-            }
-
-            //Qt expects the pressure between 0 and 1. There is however no definite upper limit for
-            //the integer value of touch event pressure. The 200 was determined by experiment, it
-            //usually does not get higher than that.
-            m_touchPoints[touchId].pressure = static_cast<qreal>(touchPressure)/200.0;
-            // Can happen, because there is no upper limit for pressure
-            if (m_touchPoints[touchId].pressure > 1)
-                m_touchPoints[touchId].pressure = 1;
-
-            // determine event type and update state of current touch point
-            QEvent::Type type = QEvent::None;
-            switch (qnxType) {
-            case SCREEN_EVENT_MTOUCH_TOUCH:
-                m_touchPoints[touchId].state = QEventPoint::State::Pressed;
-                type = QEvent::TouchBegin;
-                break;
-            case SCREEN_EVENT_MTOUCH_MOVE:
-                m_touchPoints[touchId].state = QEventPoint::State::Updated;
-                type = QEvent::TouchUpdate;
-                break;
-            case SCREEN_EVENT_MTOUCH_RELEASE:
-                m_touchPoints[touchId].state = QEventPoint::State::Released;
-                type = QEvent::TouchEnd;
-                break;
-            }
-
-            // build list of active touch points
-            QList<QWindowSystemInterface::TouchPoint> pointList;
-            for (int i = 0; i < MaximumTouchPoints; i++) {
-                if (i == touchId) {
-                    // current touch point is always active
-                    pointList.append(m_touchPoints[i]);
-                } else if (m_touchPoints[i].state != QEventPoint::State::Released) {
-                    // finger is down but did not move
-                    m_touchPoints[i].state = QEventPoint::State::Stationary;
-                    pointList.append(m_touchPoints[i]);
-                }
-            }
-
-            // inject event into Qt
-            QWindowSystemInterface::handleTouchEvent(w, m_touchDevice, pointList);
-            qCDebug(lcQpaScreenEvents) << "Qt touch, w =" << w
-                                       << ", p=" << m_touchPoints[touchId].area.topLeft()
-                                       << ", t=" << type;
+            QWindowSystemInterface::handleEnterEvent(w);
+            qCDebug(lcQpaScreenEvents) << "Qt enter, w=" << w;
         }
+    }
+    m_lastMouseWindow = qnxWindow;
+
+    // offset touchId by screen index to avoid collision across displays
+    const auto &screens = QQnxIntegration::instance()->screens();
+    QPlatformScreen *platformScreen = w ? QPlatformScreen::platformScreenForWindow(w) : nullptr;
+    const int screenIndex = screens.indexOf(static_cast<QQnxScreen *>(platformScreen));
+    if (screenIndex < 0) {
+        qCDebug(lcQpaScreenEvents) << "Touch event: screen not found, dropping";
+        return;
+    }
+    const int uniqueTouchId = screenIndex * MaximumTouchPoints + touchId;
+    if (uniqueTouchId >= m_touchPoints.size()) {
+        qCWarning(lcQpaScreenEvents) << "Touch event dropped: uniqueTouchId" << uniqueTouchId
+                                     << "exceeds touch point array size" << m_touchPoints.size();
+        return;
+    }
+
+    if (w && platformScreen) {
+        if (qnxType == SCREEN_EVENT_MTOUCH_RELEASE)
+            (static_cast<QQnxWindow *>(w->handle()))->handleActivationEvent();
+
+        m_touchPointWindows[uniqueTouchId] = qnxWindow;
+
+        // get size of screen which contains window
+        QSizeF screenSize = platformScreen->geometry().size();
+
+        m_touchPoints[uniqueTouchId].id = touchId;
+
+        // update cached position of current touch point
+        m_touchPoints[uniqueTouchId].normalPosition =
+                        QPointF(static_cast<qreal>(pos[0]) / screenSize.width(),
+                                static_cast<qreal>(pos[1]) / screenSize.height());
+
+        m_touchPoints[uniqueTouchId].area = QRectF(w->geometry().left() + windowPos[0] - (touchArea[0]>>1),
+                                             w->geometry().top()  + windowPos[1] - (touchArea[1]>>1),
+                                             (touchArea[0]>>1), (touchArea[1]>>1));
+        QWindow *parent = w->parent();
+        while (parent) {
+            m_touchPoints[uniqueTouchId].area.translate(parent->geometry().topLeft());
+            parent = parent->parent();
+        }
+
+        //Qt expects the pressure between 0 and 1. There is however no definite upper limit for
+        //the integer value of touch event pressure. The 200 was determined by experiment, it
+        //usually does not get higher than that.
+        m_touchPoints[uniqueTouchId].pressure = static_cast<qreal>(touchPressure)/200.0;
+        // Can happen, because there is no upper limit for pressure
+        if (m_touchPoints[uniqueTouchId].pressure > 1)
+            m_touchPoints[uniqueTouchId].pressure = 1;
+
+        // determine event type and update state of current touch point
+        QEvent::Type type = QEvent::None;
+        switch (qnxType) {
+        case SCREEN_EVENT_MTOUCH_TOUCH:
+            m_touchPoints[uniqueTouchId].state = QEventPoint::State::Pressed;
+            type = QEvent::TouchBegin;
+            break;
+        case SCREEN_EVENT_MTOUCH_MOVE:
+            m_touchPoints[uniqueTouchId].state = QEventPoint::State::Updated;
+            type = QEvent::TouchUpdate;
+            break;
+        case SCREEN_EVENT_MTOUCH_RELEASE:
+            m_touchPoints[uniqueTouchId].state = QEventPoint::State::Released;
+            type = QEvent::TouchEnd;
+            break;
+        }
+
+        // build list of active touch points
+        QList<QWindowSystemInterface::TouchPoint> pointList;
+        pointList.reserve(MaximumTouchPoints);
+        const int base = screenIndex * MaximumTouchPoints;
+        for (int i = base; i < base + MaximumTouchPoints; i++) {
+            if (i == uniqueTouchId) {
+                pointList.append(m_touchPoints[i]);
+            } else if (m_touchPoints[i].state != QEventPoint::State::Released
+                       && m_touchPointWindows[i] == qnxWindow) {
+                m_touchPoints[i].state = QEventPoint::State::Stationary;
+                pointList.append(m_touchPoints[i]);
+            }
+        }
+
+        // inject event into Qt
+        if (Q_UNLIKELY(screenIndex >= m_touchDevices.size())) {
+            qCDebug(lcQpaScreenEvents) << "Touch event: screenIndex out of range, dropping";
+            return;
+        }
+        QPointingDevice *touchDevice = m_touchDevices[screenIndex];
+        QWindowSystemInterface::handleTouchEvent(w, touchDevice, pointList);
+        qCDebug(lcQpaScreenEvents) << "Qt touch, w =" << w
+                                   << ", p=" << m_touchPoints[uniqueTouchId].area.topLeft()
+                                   << ", t=" << type;
     }
 }
 
@@ -604,6 +650,13 @@ void QQnxScreenEventHandler::handleCloseEvent(screen_event_t event)
     Q_SCREEN_CHECKERROR(
             screen_get_event_property_pv(event, SCREEN_PROPERTY_WINDOW, (void**)&window),
             "Failed to query window property");
+
+    for (int i = 0; i < m_touchPointWindows.size(); ++i) {
+        if (m_touchPointWindows[i] == window) {
+            m_touchPointWindows[i] = nullptr;
+            m_touchPoints[i].state = QEventPoint::State::Released;
+        }
+    }
 
     Q_EMIT windowClosed(window);
 
@@ -674,6 +727,8 @@ void QQnxScreenEventHandler::handleDisplayEvent(screen_event_t event)
 
             qCDebug(lcQpaScreenEvents) << "Creating new QQnxScreen for newly attached display";
             m_qnxIntegration->createDisplay(nativeDisplay, false /* not primary, we assume */);
+            qDeleteAll(m_touchDevices);
+            m_touchDevices.clear();
         }
     } else if (!isAttached) {
         // We never remove the primary display, the qpa plugin doesn't support that and it crashes.
@@ -687,6 +742,8 @@ void QQnxScreenEventHandler::handleDisplayEvent(screen_event_t event)
             // libscreen display is deactivated, let's remove the QQnxScreen / QScreen
             qCDebug(lcQpaScreenEvents) << "Removing display";
             m_qnxIntegration->removeDisplay(screen);
+            qDeleteAll(m_touchDevices);
+            m_touchDevices.clear();
         }
     }
 }
