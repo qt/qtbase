@@ -34,7 +34,7 @@ bool QFSFileEngineIterator::advance()
         return false;
 
     if (auto r = nativeIterator->advance()) {
-        m_fileInfo = QFileInfo(new QFileInfoPrivate(r->entry, r->metaData));
+        m_fileInfo = r->fileInfo();
         return true;
     } else {
         nativeIterator.reset();

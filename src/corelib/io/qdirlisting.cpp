@@ -229,8 +229,8 @@ void QDirListingPrivate::init()
         nameRegExps.emplace_back(QRegularExpression::fromWildcard(filter, cs));
 #endif
 
-    engine = QFileSystemEngine::createLegacyEngine(initialEntryInfo.entry,
-                                                   initialEntryInfo.metaData);
+    QDirEntryInfo::Native &native = std::get<QDirEntryInfo::Native>(initialEntryInfo.content);
+    engine = QFileSystemEngine::createLegacyEngine(native.entry, native.metaData);
 }
 
 /*!
@@ -275,12 +275,11 @@ void QDirListingPrivate::pushDirectory(QDirEntryInfo &entryInfo)
         }
     } else {
 #ifndef QT_NO_FILESYSTEMITERATOR
-        QFileSystemEntry *fentry = nullptr;
-        if (entryInfo.fileInfoOpt)
-            fentry = &entryInfo.fileInfoOpt->d_ptr->fileEntry;
-        else
-            fentry = &entryInfo.entry;
-        nativeIterators.push(std::make_unique<QFileSystemIterator>(*fentry, iteratorFlags));
+        nativeIterators.push(std::make_unique<QFileSystemIterator>(
+                entryInfo.query(
+                        [](const QDirEntryInfo::Native &native) { return native.entry; },
+                        [](const QFileInfo &fileInfo) { return fileInfo.d_ptr->fileEntry; }),
+                iteratorFlags));
 #else
         qWarning("Qt was built with -no-feature-filesystemiterator: no files/plugins will be found!");
 #endif
@@ -457,7 +456,7 @@ bool QDirListingPrivate::hasIterators() const
 QDirListing::QDirListing(const QString &path, IteratorFlags flags)
     : d(new QDirListingPrivate)
 {
-    d->initialEntryInfo.entry = QFileSystemEntry(path);
+    d->initialEntryInfo.content = QDirEntryInfo::Native { QFileSystemEntry(path), {} };
     d->iteratorFlags = flags;
     d->init();
 }
@@ -488,7 +487,7 @@ QDirListing::QDirListing(const QString &path, IteratorFlags flags)
 QDirListing::QDirListing(const QString &path, const QStringList &nameFilters, IteratorFlags flags)
     : d(new QDirListingPrivate)
 {
-    d->initialEntryInfo.entry = QFileSystemEntry(path);
+    d->initialEntryInfo.content = QDirEntryInfo::Native { QFileSystemEntry(path), {} };
     d->nameFilters = nameFilters;
     d->iteratorFlags = flags;
     d->init();
