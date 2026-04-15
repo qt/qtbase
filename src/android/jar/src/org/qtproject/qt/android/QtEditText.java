@@ -106,7 +106,9 @@ class QtEditText extends View
     public InputConnection onCreateInputConnection(EditorInfo outAttrs)
     {
         outAttrs.inputType = m_inputType;
-        outAttrs.imeOptions = m_imeOptions;
+        outAttrs.imeOptions = System.getenv("QT_ANDROID_NO_FULLSCREEN_KEYBOARD") != null
+                ? m_imeOptions | EditorInfo.IME_FLAG_NO_FULLSCREEN
+                : m_imeOptions;
         outAttrs.initialCapsMode = m_initialCapsMode;
         m_inputConnection = new QtInputConnection(this,m_qtInputConnectionListener);
 
