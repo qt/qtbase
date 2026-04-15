@@ -32,12 +32,14 @@ struct PartialParse
         Irreconcilable = 1, // field values cannot be reconciled
         // Ideally continuations() would catch irreconcilable issues, but if one
         // is expensive to spot it can be left for resolve() to flag up.
+        LegacyResolves = 2, // field values can only be resolved by ignoring timeType
+        ResolutionChanges = 4, // resolved values don't match parsed values
         ZeroPad = 8, // used zero-padded part of text where field didn't require it
         Narrow = 0x10, // used fewer digits from text than field width, where allowed
 
         // Flaws not worth giving up a longer parse over, in decreasing order of
         // strength of preference among those of equal length:
-        // None, for now
+        SelfResolved = 0x100, // ambiguous field values resolve cleanly
     };
     Q_DECLARE_FLAGS(Flaws, Flaw)
     Flaws wanton = {};
@@ -78,6 +80,10 @@ struct PartialParse
             return res;
 
         // In decreasing order of severity
+        if (auto res = order(Flaw::LegacyResolves); res != 0)
+            return res;
+        if (auto res = order(Flaw::ResolutionChanges); res != 0)
+            return res;
         if (auto res = order(Flaw::ZeroPad); res != 0)
             return res;
         if (auto res = order(Flaw::Narrow); res != 0)
@@ -92,7 +98,9 @@ struct PartialParse
 
         // The following remains as a preference only among matches of the same
         // length: it's nice to avoid, but a longer parse is still better.
-        // None, for now.
+
+        if (auto res = order(Flaw::SelfResolved); res != 0)
+            return res;
 
         return Qt::weak_ordering::equivalent;
     }
@@ -401,6 +409,51 @@ bool TemporalFieldMatcher::resolve(PartialParse &parse) const
         parse.results.hour = parse.hourMod12 < 12 || parse.periodInDay < 0 ? parse.hourMod12 : 0;
         if (parse.periodInDay > 0)
             parse.results.hour += 12;
+    }
+
+    if (parse.results.year && parse.results.month && parse.results.dayOfMonth
+        && parse.results.zone.isValid() && parse.results.hour >= 0) {
+        // Should be able to construct a datetime with this:
+        const QDate date(*parse.results.year, parse.results.month, parse.results.dayOfMonth,
+                         calendar);
+        Q_ASSERT(date.isValid()); // Should be ensured by earlier checks.
+        const QTime time = parse.results.time(QTime());
+        Q_ASSERT(time.isValid()); // Should be ensured by earlier checks.
+
+        // Is the given time in a transition of the given zone, on the given date ?
+        if (!Q_LIKELY(QDateTime(date, time, parse.results.zone,
+                                QDateTime::TransitionResolution::Reject).isValid())) {
+            // Ambiguity, gap or outright borkage.
+            const auto res = [type = parse.results.timeType]() {
+                using Res = QDateTime::TransitionResolution;
+                switch (type) {
+                case QTimeZone::StandardTime: return Res::PreferStandard;
+                case QTimeZone::DaylightTime: return Res::PreferDaylightSaving;
+                case QTimeZone::GenericTime: return Res::LegacyBehavior;
+                }
+                Q_UNREACHABLE_RETURN(Res::LegacyBehavior);
+            }();
+            using Flaw = PartialParse::Flaw;
+            QDateTime dt(date, time, parse.results.zone, res);
+            if (!dt.isValid()) {
+                // Fall back to default resolution (same as LegacyBehavior):
+                dt = QDateTime(date, time, parse.results.zone);
+                // If that succeeded, Abbreviated (bad); otherwise Narrow (worse).
+                parse.wanton |= dt.isValid() ? Flaw::LegacyResolves : Flaw::Irreconcilable;
+            }
+            if (dt.date() != date || dt.time() != time
+                || dt.timeRepresentation() != parse.results.zone) {
+                // OK, resolution *worked* but didn't get exactly what we asked
+                // for (presumably a spring-forward's gap):
+                parse.wanton |= Flaw::ResolutionChanges;
+                // ... but we don't change parse.results because they should
+                // reflect what parsing learned; the caller can rediscover this.
+            } else {
+                // We got what we asked for (presumably the expected branch of a
+                // fall-back):
+                parse.wanton |= Flaw::SelfResolved;
+            }
+        }
     }
 
     if (parse.results.hour < 0) {
