@@ -186,7 +186,8 @@ void tst_QTimer::singleShotNormalizes()
     // control test: regular connection
     {
         QTimer timer;
-        QVERIFY(QObject::connect(&timer, SIGNAL(timeout()), &QTestEventLoop::instance(), slotName));
+        QVERIFY(QObject::connect(&timer, SIGNAL(timeout()),
+                                 &QTestEventLoop::instance(), slotName.constData()));
         timer.setSingleShot(true);
         timer.start(1);
         QTestEventLoop::instance().enterLoop(TestTimeout);
@@ -194,20 +195,20 @@ void tst_QTimer::singleShotNormalizes()
     }
 
     // non-zero time
-    QTimer::singleShot(1, &QTestEventLoop::instance(), slotName);
+    QTimer::singleShot(1, &QTestEventLoop::instance(), slotName.constData());
     QTestEventLoop::instance().enterLoop(TestTimeout);
     QVERIFY(!QTestEventLoop::instance().timeout());
 
-    QTimer::singleShot(1ms, &QTestEventLoop::instance(), slotName);
+    QTimer::singleShot(1ms, &QTestEventLoop::instance(), slotName.constData());
     QTestEventLoop::instance().enterLoop(TestTimeout);
     QVERIFY(!QTestEventLoop::instance().timeout());
 
     // zero time
-    QTimer::singleShot(0, &QTestEventLoop::instance(), slotName);
+    QTimer::singleShot(0, &QTestEventLoop::instance(), slotName.constData());
     QTestEventLoop::instance().enterLoop(TestTimeout);
     QVERIFY(!QTestEventLoop::instance().timeout());
 
-    QTimer::singleShot(0ms, &QTestEventLoop::instance(), slotName);
+    QTimer::singleShot(0ms, &QTestEventLoop::instance(), slotName.constData());
     QTestEventLoop::instance().enterLoop(TestTimeout);
     QVERIFY(!QTestEventLoop::instance().timeout());
 }
