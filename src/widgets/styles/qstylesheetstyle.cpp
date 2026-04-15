@@ -3942,7 +3942,17 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                 if (mi.menuItemType == QStyleOptionMenuItem::SubMenu) {// draw sub menu arrow
                     PrimitiveElement arrow = (opt->direction == Qt::RightToLeft) ? PE_IndicatorArrowLeft : PE_IndicatorArrowRight;
                     QRenderRule subRule2 = renderRule(w, opt, PseudoElement_MenuRightArrow);
-                    mi.rect = positionRect(w, subRule, subRule2, PseudoElement_MenuRightArrow, opt->rect, mi.direction);
+                    if (subRule2.hasContentsSize()) {
+                        mi.rect = positionRect(w, subRule, subRule2, PseudoElement_MenuRightArrow, opt->rect, mi.direction);
+                    } else {
+                        // Derive arrow size from the item height
+                        int dim = opt->rect.height() / 2;
+                        QRect arrowRect(0, 0, dim, dim);
+                        // Right-align arrow
+                        arrowRect.moveCenter(QPoint(opt->rect.right() - dim, opt->rect.center().y()));
+                        mi.rect = visualRect(opt->direction, opt->rect, arrowRect);
+                    }
+
                     drawPrimitive(arrow, &mi, p, w);
                 }
             } else if (!mi.icon.isNull() && hasStyleRule(w, PseudoElement_MenuIcon)) {
