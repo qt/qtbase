@@ -2863,19 +2863,18 @@ void instantiateContainer()
     typename ContainerType::const_iterator constIt;
     constIt = constContainer.begin();
     constIt = container.cbegin();
-    container.constBegin();
+    constIt = container.constBegin();
 
     constIt = constContainer.end();
     constIt = constContainer.cend();
-    container.constEnd();
+    constIt = container.constEnd();
     Q_UNUSED(constIt);
 
     container.clear();
     container.contains(value);
-    container.size();
+    (void)container.size();
     Q_UNUSED(container.empty());
     Q_UNUSED(container.isEmpty());
-    container.size();
 
     Q_UNUSED((container != constContainer));
     Q_UNUSED((container == constContainer));
