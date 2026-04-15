@@ -27,11 +27,9 @@
         return Qt::PermissionStatus::Denied;
     case EKAuthorizationStatusAuthorized:
         return Qt::PermissionStatus::Granted;
-#if QT_MACOS_IOS_PLATFORM_SDK_EQUAL_OR_ABOVE(140000, 170000)
     case EKAuthorizationStatusWriteOnly:
         // FIXME: Add WriteOnly AccessMode
         return Qt::PermissionStatus::Denied;
-#endif
     }
 
     qCWarning(lcPermissions) << "Unknown permission status" << status << "detected in" << self;

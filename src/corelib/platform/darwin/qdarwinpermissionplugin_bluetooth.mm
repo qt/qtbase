@@ -73,14 +73,7 @@
 - (QStringList)usageDescriptionsFor:(QPermission)permission
 {
     Q_UNUSED(permission);
-#ifdef Q_OS_MACOS
-    if (QOperatingSystemVersion::current() > QOperatingSystemVersion::MacOSBigSur)
-#endif
-    {
-        return { "NSBluetoothAlwaysUsageDescription" };
-    }
-
-    return {};
+    return { "NSBluetoothAlwaysUsageDescription" };
 }
 @end
 
