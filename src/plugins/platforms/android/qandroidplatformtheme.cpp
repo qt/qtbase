@@ -245,9 +245,9 @@ static void loadAndroidStyle(QPalette *defaultPalette, std::shared_ptr<AndroidSt
             // Font style
             attributeIterator = item.find("TextAppearance_textStyle"_L1);
             if (attributeIterator != item.constEnd()) {
-                const int style = int(attributeIterator.value().toDouble());
-                font.setBold(style & textStyle_bold);
-                font.setItalic(style & textStyle_italic);
+                const int textStyle = int(attributeIterator.value().toDouble());
+                font.setBold(textStyle & textStyle_bold);
+                font.setItalic(textStyle & textStyle_italic);
             }
 
             // Font typeface
