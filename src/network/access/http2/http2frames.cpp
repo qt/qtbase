@@ -178,9 +178,10 @@ FrameStatus Frame::validatePayload() const
     case FrameType::DATA:
     case FrameType::HEADERS:
         if (frameFlags.testFlag(FrameFlag::PADDED)) {
-            if (!size || size < src[0])
+            // size must cover the 1-byte pad-length field plus src[0] padding bytes
+            if (!size || size - 1 < src[0])
                 return FrameStatus::sizeError;
-            size -= src[0];
+            size -= src[0] + 1;
         }
         if (type() == FrameType::HEADERS && frameFlags.testFlag(FrameFlag::PRIORITY)) {
             if (size < 5)
@@ -190,9 +191,10 @@ FrameStatus Frame::validatePayload() const
     // 6.6 PUSH_PROMISE
     case FrameType::PUSH_PROMISE:
         if (frameFlags.testFlag(FrameFlag::PADDED)) {
-            if (!size || size < src[0])
+            // size must cover the 1-byte pad-length field plus src[0] padding bytes
+            if (!size || size - 1 < src[0])
                 return FrameStatus::sizeError;
-            size -= src[0];
+            size -= src[0] + 1;
         }
 
         if (size < 4)
