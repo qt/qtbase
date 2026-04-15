@@ -41,6 +41,8 @@ struct Q_AUTOTEST_EXPORT Frame
     FrameFlags flags() const;
     quint32 payloadSize() const;
     uchar padding() const;
+    bool supportsPaddedFlag() const;
+    bool isPadded() const;
     // In HTTP/2 a stream's priority is specified by its weight and a stream
     // (id) it depends on:
     bool priority(quint32 *streamID = nullptr,
