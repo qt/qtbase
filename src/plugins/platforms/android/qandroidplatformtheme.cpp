@@ -579,6 +579,8 @@ QVariant QAndroidPlatformTheme::themeHint(ThemeHint hint) const
         return QStringList("Fusion"_L1);
     case DialogButtonBoxLayout:
         return QVariant(QPlatformDialogHelper::AndroidLayout);
+    case PreferFileIconFromTheme:
+        return true;
     case MouseDoubleClickDistance:
     {
             int minimumDistance = qEnvironmentVariableIntValue("QT_ANDROID_MINIMUM_MOUSE_DOUBLE_CLICK_DISTANCE");
@@ -602,8 +604,6 @@ QVariant QAndroidPlatformTheme::themeHint(ThemeHint hint) const
 
             Q_FALLTHROUGH();
     }
-    case PreferFileIconFromTheme:
-        return true;
     default:
         return QPlatformTheme::themeHint(hint);
     }
