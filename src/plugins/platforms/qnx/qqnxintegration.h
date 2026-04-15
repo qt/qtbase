@@ -110,6 +110,8 @@ public:
 
     QQnxNavigatorEventHandler *navigatorEventHandler();
 
+    const QList<QQnxScreen *> &screens() const { return m_screens; }
+
 private:
     void createDisplays();
     void destroyDisplays();

@@ -82,12 +82,17 @@ QQnxScreen::QQnxScreen(screen_context_t screenContext, screen_display_t display,
       m_display(display),
       m_rootWindow(0),
       m_primaryScreen(primaryScreen),
+      m_displayId(-1),
       m_keyboardHeight(0),
       m_nativeOrientation(Qt::PrimaryOrientation),
       m_coverWindow(0),
       m_cursor(new QQnxCursor(screenContext))
 {
     qCDebug(lcQpaScreen) << Q_FUNC_INFO;
+
+    Q_SCREEN_CHECKERROR(screen_get_display_property_iv(m_display, SCREEN_PROPERTY_ID, &m_displayId),
+                        "Failed to query display id");
+
     // Cache initial orientation of this display
     int result = screen_get_display_property_iv(m_display, SCREEN_PROPERTY_ROTATION,
                                                 &m_initialRotation);
