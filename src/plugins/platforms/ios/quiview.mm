@@ -95,9 +95,7 @@ inline ulong getTimeStamp(UIEvent *event)
         // handled by the UIView. Scroll gestures, even those coming from touch devices,
         // such as trackpads will still be received as they are not touch events
         m_scrollGestureRecognizer.allowedTouchTypes = [NSArray array];
-        if (@available(ios 13.4, *)) {
-            m_scrollGestureRecognizer.allowedScrollTypesMask = UIScrollTypeMaskAll;
-        }
+        m_scrollGestureRecognizer.allowedScrollTypesMask = UIScrollTypeMaskAll;
         m_scrollGestureRecognizer.maximumNumberOfTouches = 0;
         m_lastScrollDelta = CGPointZero;
         m_lastScrollCursorPos = CGPointZero;
@@ -608,19 +606,17 @@ inline ulong getTimeStamp(UIEvent *event)
     case UIPressTypeMenu: return Qt::Key_Menu;
     case UIPressTypePlayPause: return Qt::Key_MediaTogglePlayPause;
     }
-    if (@available(ios 13.4, *)) {
-        Qt::Key key = QAppleKeyMapper::fromUIKitKey(press.key.keyCode);
-        if (key != Qt::Key_unknown)
-            return key;
-        NSString *charactersIgnoringModifiers = press.key.charactersIgnoringModifiers;
-        key = QAppleKeyMapper::fromUIKitKey(charactersIgnoringModifiers);
-        if (key != Qt::Key_unknown)
-            return key;
-        key = QAppleKeyMapper::fromNSString(qtModifiers, press.key.characters,
-                                           charactersIgnoringModifiers, text);
-        if (key != Qt::Key_unknown)
-            return key;
-    }
+    Qt::Key key = QAppleKeyMapper::fromUIKitKey(press.key.keyCode);
+    if (key != Qt::Key_unknown)
+        return key;
+    NSString *charactersIgnoringModifiers = press.key.charactersIgnoringModifiers;
+    key = QAppleKeyMapper::fromUIKitKey(charactersIgnoringModifiers);
+    if (key != Qt::Key_unknown)
+        return key;
+    key = QAppleKeyMapper::fromNSString(qtModifiers, press.key.characters,
+                                        charactersIgnoringModifiers, text);
+    if (key != Qt::Key_unknown)
+        return key;
     return Qt::Key_unknown;
 }
 
@@ -652,9 +648,7 @@ inline ulong getTimeStamp(UIEvent *event)
     const bool imEnabled = QIOSInputContext::instance()->inputMethodAccepted();
 
     for (UIPress* press in presses) {
-        Qt::KeyboardModifiers qtModifiers = Qt::NoModifier;
-        if (@available(ios 13.4, *))
-            qtModifiers = QAppleKeyMapper::fromUIKitModifiers(press.key.modifierFlags);
+        Qt::KeyboardModifiers qtModifiers = QAppleKeyMapper::fromUIKitModifiers(press.key.modifierFlags);
         QString text;
         int key = [self mapPressTypeToKey:press withModifiers:qtModifiers text:text];
         if (key == Qt::Key_unknown)
@@ -762,9 +756,7 @@ inline ulong getTimeStamp(UIEvent *event)
     NSTimeInterval time_stamp = [[NSProcessInfo processInfo] systemUptime];
     ulong qt_timestamp = time_stamp * 1000;
 
-    Qt::KeyboardModifiers qt_modifierFlags = Qt::NoModifier;
-    if (@available(ios 13.4, *))
-        qt_modifierFlags = QAppleKeyMapper::fromUIKitModifiers(recognizer.modifierFlags);
+    Qt::KeyboardModifiers qt_modifierFlags = QAppleKeyMapper::fromUIKitModifiers(recognizer.modifierFlags);
 
     if (recognizer.state == UIGestureRecognizerStateBegan)
         // locationInView: doesn't return the cursor position at the time of the wheel event,
@@ -797,16 +789,10 @@ inline ulong getTimeStamp(UIEvent *event)
 
     ulong timeStamp = [[NSProcessInfo processInfo] systemUptime] * 1000;
 
-    CGFloat zOffset = 0;
-    if (@available(ios 16.1, *))
-        zOffset = [recognizer zOffset];
+    CGFloat zOffset = [recognizer zOffset];
 
-    CGVector azimuth;
-    CGFloat altitudeAngleRadian = 0;
-    if (@available(ios 16.4, *)) {
-        azimuth = [recognizer azimuthUnitVectorInView:self];
-        altitudeAngleRadian = recognizer.altitudeAngle;
-    }
+    CGVector azimuth = [recognizer azimuthUnitVectorInView:self];
+    CGFloat altitudeAngleRadian = recognizer.altitudeAngle;
 
     [self handlePencilEventForLocationInView:[recognizer locationInView:self] withState:QEventPoint::State::Released
         withTimestamp:timeStamp withForce:0 withMaximumPossibleForce:0 withZOffset:zOffset

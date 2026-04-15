@@ -201,19 +201,17 @@ QIOSScreen::QIOSScreen(UIScreen *screen)
     // which might affect the rendering of windows that opt in to EDR.
     m_screenBrightnessObserver = QMacNotificationObserver(m_uiScreen,
         UIScreenBrightnessDidChangeNotification, [&]() {
-            if (@available(iOS 17, *)) {
-                for (auto *window : QPlatformScreen::windows()) {
-                    auto *platformWindow = static_cast<QIOSWindow*>(window->handle());
-                    if (!platformWindow)
-                        continue;
+            for (auto *window : QPlatformScreen::windows()) {
+                auto *platformWindow = static_cast<QIOSWindow*>(window->handle());
+                if (!platformWindow)
+                    continue;
 
-                    UIView *view = platformWindow->view();
+                UIView *view = platformWindow->view();
 
-                    if (!view.layer.wantsExtendedDynamicRangeContent)
-                        continue;
+                if (!view.layer.wantsExtendedDynamicRangeContent)
+                    continue;
 
-                    [view setNeedsDisplay];
-                }
+                [view setNeedsDisplay];
             }
         });
 
