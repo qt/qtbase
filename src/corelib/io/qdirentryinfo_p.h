@@ -22,37 +22,109 @@
 
 QT_BEGIN_NAMESPACE
 
+namespace QDirEntryInfoPrivate {
+template<class... Ts>
+struct overloaded : Ts... { using Ts::operator()...; };
+template<class... Ts>
+overloaded(Ts...) -> overloaded<Ts...>;
+};
+
 class QDirEntryInfo
 {
-    const QFileSystemMetaData &ensureFilled(QFileSystemMetaData::MetaDataFlags what)
+    template<typename QueryNative, typename QueryFileInfo, typename QueryIterator>
+    auto query(
+            QueryNative &&queryNative, QueryFileInfo &&queryFileInfo, QueryIterator &&queryIterator)
     {
-        if (!metaData.hasFlags(what))
-            QFileSystemEngine::fillMetaData(entry, metaData, what);
-        return metaData;
+        return std::visit(QDirEntryInfoPrivate::overloaded {
+            std::forward<QueryNative>(queryNative),
+            std::forward<QueryFileInfo>(queryFileInfo),
+            [&](const Iterator &iterator) { return queryIterator(iterator.iterator); }
+        }, content);
+    }
+
+    template<typename QueryNative, typename QueryFileInfo>
+    auto query(QueryNative &&queryNative, const QueryFileInfo &queryFileInfo)
+    {
+        return std::visit(QDirEntryInfoPrivate::overloaded {
+            std::forward<QueryNative>(queryNative),
+            [&](Iterator &iterator) { return queryFileInfo(iterator.ensureFileInfo()); },
+            queryFileInfo,
+        }, content);
     }
 
 public:
+    QDirEntryInfo() = default;
+
+    explicit QDirEntryInfo(const QAbstractFileEngineIterator *iterator)
+        : content(Iterator {iterator, {}})
+    {
+    }
+
+    explicit QDirEntryInfo(QFileSystemEntry &&e, QFileSystemMetaData &&md)
+        : content(Native { std::move(e), std::move(md) })
+    {
+    }
+
+    explicit QDirEntryInfo(QFileInfo &&info)
+        : content(std::move(info))
+    {
+    }
+
     const QFileInfo &fileInfo()
     {
-        if (!fileInfoOpt) {
-            fileInfoOpt.emplace(new QFileInfoPrivate(entry, metaData));
-            metaData.clear();
-        }
-        return *fileInfoOpt;
+        return std::visit(QDirEntryInfoPrivate::overloaded {
+            [](Iterator &iterator) -> const QFileInfo & { return iterator.ensureFileInfo(); },
+            [this](const Native &native) -> const QFileInfo & {
+                content = QFileInfo(new QFileInfoPrivate(native.entry, native.metaData));
+                return std::get<QFileInfo>(content);
+            },
+            [](const QFileInfo &fileInfo) -> const QFileInfo & { return fileInfo; }
+        }, content);
     }
 
     QString fileName()
-    { return fileInfoOpt ? fileInfoOpt->fileName() : entry.fileName(); }
+    {
+        return query(
+                [](const Native &native) { return native.entry.fileName(); },
+                [](const QFileInfo &info) { return info.fileName(); },
+                [](const QAbstractFileEngineIterator *it) { return it->currentFileName(); });
+    }
+
     QString baseName()
-    { return fileInfoOpt ? fileInfoOpt->baseName() : entry.baseName(); }
-    QString completeBaseName() const
-    { return fileInfoOpt ? fileInfoOpt->completeBaseName() : entry.completeBaseName(); }
-    QString suffix() const
-    { return fileInfoOpt ? fileInfoOpt->suffix() : entry.suffix(); }
-    QString completeSuffix() const
-    { return fileInfoOpt ? fileInfoOpt->completeSuffix() : entry.completeSuffix(); }
+    {
+        return query(
+                [](const Native &native) { return native.entry.baseName(); },
+                [](const QFileInfo &info) { return info.baseName(); });
+    }
+
+    QString completeBaseName()
+    {
+        return query(
+                [](const Native &native) { return native.entry.completeBaseName(); },
+                [](const QFileInfo &info) { return info.completeBaseName(); });
+    }
+
+    QString suffix()
+    {
+        return query(
+                [](const Native &native) { return native.entry.suffix(); },
+                [](const QFileInfo &info) { return info.suffix(); });
+    }
+
+    QString completeSuffix()
+    {
+        return query(
+                [](const Native &native) { return native.entry.completeSuffix(); },
+                [](const QFileInfo &info) { return info.completeSuffix(); });
+    }
+
     QString filePath()
-    { return fileInfoOpt ? fileInfoOpt->filePath() : entry.filePath(); }
+    {
+        return query(
+                [](const Native &native) { return native.entry.filePath(); },
+                [](const QFileInfo &info) { return info.filePath(); },
+                [](const QAbstractFileEngineIterator *it) { return it->currentFilePath(); });
+    }
 
     QString bundleName() { return fileInfo().bundleName(); }
 
@@ -74,66 +146,76 @@ public:
 
 
     bool isDir() {
-        if (fileInfoOpt)
-            return fileInfoOpt->isDir();
-
-        return ensureFilled(QFileSystemMetaData::DirectoryType).isDirectory();
+        return query(
+            [](Native &native) {
+                return native.ensureFilled(QFileSystemMetaData::DirectoryType).isDirectory();
+            },
+            [](const QFileInfo &fileInfo) {return fileInfo.isDir(); });
     }
 
     bool isFile() {
-        if (fileInfoOpt)
-            return fileInfoOpt->isFile();
-
-        return ensureFilled(QFileSystemMetaData::FileType).isFile();
+        return query(
+            [](Native &native) {
+                return native.ensureFilled(QFileSystemMetaData::FileType).isFile();
+            },
+            [](const QFileInfo &fileInfo) {return fileInfo.isFile(); });
     }
 
     bool isSymLink() {
-        if (fileInfoOpt)
-            return fileInfoOpt->isSymLink();
-
-        return ensureFilled(QFileSystemMetaData::LegacyLinkType).isLegacyLink();
+        return query(
+            [](Native &native) {
+                return native.ensureFilled(QFileSystemMetaData::LegacyLinkType).isLegacyLink();
+            },
+            [](const QFileInfo &fileInfo) {return fileInfo.isSymLink(); });
     }
 
     bool isSymbolicLink() {
-        if (fileInfoOpt)
-            return fileInfoOpt->isSymbolicLink();
-
-        return ensureFilled(QFileSystemMetaData::LinkType).isLink();
+        return query(
+            [](Native &native) {
+                return native.ensureFilled(QFileSystemMetaData::LinkType).isLink();
+            },
+            [](const QFileInfo &fileInfo) {return fileInfo.isSymbolicLink(); });
     }
 
     bool exists() {
-        if (fileInfoOpt)
-            return fileInfoOpt->exists();
-
-        return ensureFilled(QFileSystemMetaData::ExistsAttribute).exists();
+        return query(
+            [](Native &native) {
+                return native.ensureFilled(QFileSystemMetaData::ExistsAttribute).exists();
+            },
+            [](const QFileInfo &fileInfo) {return fileInfo.exists(); });
     }
 
     bool isHidden() {
-        if (fileInfoOpt)
-            return fileInfoOpt->isHidden();
-
-        return ensureFilled(QFileSystemMetaData::HiddenAttribute).isHidden();
+        return query(
+            [](Native &native) {
+                return native.ensureFilled(QFileSystemMetaData::HiddenAttribute).isHidden();
+            },
+            [](const QFileInfo &fileInfo) {return fileInfo.isHidden(); });
     }
 
     bool isReadable() {
-        if (fileInfoOpt)
-            return fileInfoOpt->isReadable();
-
-        return ensureFilled(QFileSystemMetaData::UserReadPermission).isReadable();
+        return query(
+            [](Native &native) {
+                return native.ensureFilled(QFileSystemMetaData::UserReadPermission).isReadable();
+            },
+            [](const QFileInfo &fileInfo) {return fileInfo.isReadable(); });
     }
 
     bool isWritable() {
-        if (fileInfoOpt)
-            return fileInfoOpt->isWritable();
-
-        return ensureFilled(QFileSystemMetaData::UserWritePermission).isWritable();
+        return query(
+            [](Native &native) {
+                return native.ensureFilled(QFileSystemMetaData::UserWritePermission).isWritable();
+            },
+            [](const QFileInfo &fileInfo) {return fileInfo.isWritable(); });
     }
 
     bool isExecutable() {
-        if (fileInfoOpt)
-            return fileInfoOpt->isExecutable();
-
-        return ensureFilled(QFileSystemMetaData::UserExecutePermission).isExecutable();
+        return query(
+            [](Native &native) {
+                return native.ensureFilled(QFileSystemMetaData::UserExecutePermission)
+                            .isExecutable();
+            },
+            [](const QFileInfo &fileInfo) {return fileInfo.isExecutable(); });
     }
 
     qint64 size() { return fileInfo().size(); }
@@ -147,9 +229,35 @@ private:
     friend class QDirListingPrivate;
     friend class QDirListing;
 
-    QFileSystemEntry entry;
-    QFileSystemMetaData metaData;
-    std::optional<QFileInfo> fileInfoOpt = std::nullopt;
+    struct Iterator
+    {
+        // The data we can query from both the QFileInfo and the iterator is cheaper to retrieve
+        // from the iterator. Therefore, keep the iterator around even if we create a the QFileInfo.
+        const QAbstractFileEngineIterator *iterator = nullptr;
+        std::optional<QFileInfo> fileInfo;
+
+        const QFileInfo &ensureFileInfo()
+        {
+            if (!fileInfo.has_value())
+                fileInfo = iterator->currentFileInfo();
+            return *fileInfo;
+        }
+    };
+
+    struct Native
+    {
+        QFileSystemEntry entry;
+        QFileSystemMetaData metaData;
+
+        const QFileSystemMetaData &ensureFilled(QFileSystemMetaData::MetaDataFlag what)
+        {
+            if (!metaData.hasFlags(what))
+                QFileSystemEngine::fillMetaData(entry, metaData, what);
+            return metaData;
+        }
+    };
+
+    std::variant<Native, QFileInfo, Iterator> content;
 };
 
 QT_END_NAMESPACE

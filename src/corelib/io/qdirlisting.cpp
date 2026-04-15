@@ -229,8 +229,8 @@ void QDirListingPrivate::init()
         nameRegExps.emplace_back(QRegularExpression::fromWildcard(filter, cs));
 #endif
 
-    engine = QFileSystemEngine::createLegacyEngine(initialEntryInfo.entry,
-                                                   initialEntryInfo.metaData);
+    QDirEntryInfo::Native &native = std::get<QDirEntryInfo::Native>(initialEntryInfo.content);
+    engine = QFileSystemEngine::createLegacyEngine(native.entry, native.metaData);
 }
 
 /*!
@@ -275,12 +275,11 @@ void QDirListingPrivate::pushDirectory(QDirEntryInfo &entryInfo)
         }
     } else {
 #ifndef QT_NO_FILESYSTEMITERATOR
-        QFileSystemEntry *fentry = nullptr;
-        if (entryInfo.fileInfoOpt)
-            fentry = &entryInfo.fileInfoOpt->d_ptr->fileEntry;
-        else
-            fentry = &entryInfo.entry;
-        nativeIterators.push(std::make_unique<QFileSystemIterator>(*fentry, iteratorFlags));
+        nativeIterators.push(std::make_unique<QFileSystemIterator>(
+                entryInfo.query(
+                        [](const QDirEntryInfo::Native &native) { return native.entry; },
+                        [](const QFileInfo &fileInfo) { return fileInfo.d_ptr->fileEntry; }),
+                iteratorFlags));
 #else
         qWarning("Qt was built with -no-feature-filesystemiterator: no files/plugins will be found!");
 #endif
@@ -314,8 +313,7 @@ void QDirListingPrivate::advance()
             // Find the next valid iterator that matches the filters.
             // Always use top() because entryMatches() may modify `fileEngineIterators`!
             while (fileEngineIterators.top()->advance()) {
-                QDirEntryInfo entryInfo;
-                entryInfo.fileInfoOpt = fileEngineIterators.top()->currentFileInfo();
+                QDirEntryInfo entryInfo{fileEngineIterators.top()->currentFileInfo()};
                 if (entryMatches(entryInfo)) {
                     currentEntryInfo = std::move(entryInfo);
                     return;
@@ -326,16 +324,19 @@ void QDirListingPrivate::advance()
         }
     } else {
 #ifndef QT_NO_FILESYSTEMITERATOR
-        QDirEntryInfo entryInfo;
+        QFileSystemEntry fileEntry;
+        QFileSystemMetaData metaData;
         while (!nativeIterators.empty()) {
             // Find the next valid iterator that matches the filters.
             // Always use top() because entryMatches() may modify `nativeIterators`!
-            while (nativeIterators.top()->advance(entryInfo.entry, entryInfo.metaData)) {
-                if (entryMatches(entryInfo)) {
+            while (nativeIterators.top()->advance(fileEntry, metaData)) {
+                if (QDirEntryInfo entryInfo{ std::move(fileEntry), std::move(metaData) };
+                        entryMatches(entryInfo)) {
                     currentEntryInfo = std::move(entryInfo);
                     return;
                 }
-                entryInfo = {};
+                fileEntry = {};
+                metaData = {};
             }
 
             nativeIterators.pop();
@@ -460,7 +461,7 @@ bool QDirListingPrivate::hasIterators() const
 QDirListing::QDirListing(const QString &path, IteratorFlags flags)
     : d(new QDirListingPrivate)
 {
-    d->initialEntryInfo.entry = QFileSystemEntry(path);
+    d->initialEntryInfo.content = QDirEntryInfo::Native { QFileSystemEntry(path), {} };
     d->iteratorFlags = flags;
     d->init();
 }
@@ -491,7 +492,7 @@ QDirListing::QDirListing(const QString &path, IteratorFlags flags)
 QDirListing::QDirListing(const QString &path, const QStringList &nameFilters, IteratorFlags flags)
     : d(new QDirListingPrivate)
 {
-    d->initialEntryInfo.entry = QFileSystemEntry(path);
+    d->initialEntryInfo.content = QDirEntryInfo::Native { QFileSystemEntry(path), {} };
     d->nameFilters = nameFilters;
     d->iteratorFlags = flags;
     d->init();
