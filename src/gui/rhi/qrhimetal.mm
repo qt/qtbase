@@ -177,7 +177,7 @@ struct QRhiMetalData
     QRhiMetal *q;
     id<MTLDevice> dev = nil;
     id<MTLCommandQueue> cmdQueue = nil;
-    API_AVAILABLE(macosx(11.0), ios(14.0)) id<MTLBinaryArchive> binArch = nil;
+    id<MTLBinaryArchive> binArch = nil;
 
     id<MTLCommandBuffer> newCommandBuffer();
     MTLRenderPassDescriptor *createDefaultRenderPass(bool hasDepthStencil,
@@ -4989,11 +4989,7 @@ id<MTLLibrary> QRhiMetalData::createMetalLib(const QShader &shader, QShader::Var
                                              QString *error, QByteArray *entryPoint, QShaderKey *activeKey)
 {
     QVarLengthArray<int, 8> versions;
-    if (@available(macOS 13, iOS 16, *))
-        versions << 30;
-    if (@available(macOS 12, iOS 15, *))
-        versions << 24;
-    versions << 23 << 22 << 21 << 20 << 12;
+    versions << 30 << 24 << 23 << 22 << 21 << 20 << 12;
 
     const QList<QShaderKey> shaders = shader.availableShaders();
 
@@ -6479,15 +6475,9 @@ QSize QMetalSwapChain::surfacePixelSize()
 bool QMetalSwapChain::isFormatSupported(Format f)
 {
     if (f == HDRExtendedSrgbLinear) {
-        if (@available(iOS 16.0, *))
-            return hdrInfo().limits.colorComponentValue.maxPotentialColorComponentValue > 1.0f;
-        else
-            return false;
+        return hdrInfo().limits.colorComponentValue.maxPotentialColorComponentValue > 1.0f;
     } else if (f == HDR10) {
-        if (@available(iOS 16.0, *))
-            return hdrInfo().limits.colorComponentValue.maxPotentialColorComponentValue > 1.0f;
-        else
-            return false;
+        return hdrInfo().limits.colorComponentValue.maxPotentialColorComponentValue > 1.0f;
     } else if (f == HDRExtendedDisplayP3Linear) {
         return hdrInfo().limits.colorComponentValue.maxPotentialColorComponentValue > 1.0f;
     }
@@ -6581,20 +6571,14 @@ bool QMetalSwapChain::createOrResize()
         d->layer.pixelFormat = d->colorFormat;
 
     if (m_format == HDRExtendedSrgbLinear) {
-        if (@available(iOS 16.0, *)) {
-            d->layer.colorspace = CGColorSpaceCreateWithName(kCGColorSpaceExtendedLinearSRGB);
-            d->layer.wantsExtendedDynamicRangeContent = YES;
-        }
+        d->layer.colorspace = CGColorSpaceCreateWithName(kCGColorSpaceExtendedLinearSRGB);
+        d->layer.wantsExtendedDynamicRangeContent = YES;
     } else if (m_format == HDR10) {
-        if (@available(iOS 16.0, *)) {
-            d->layer.colorspace = CGColorSpaceCreateWithName(kCGColorSpaceITUR_2100_PQ);
-            d->layer.wantsExtendedDynamicRangeContent = YES;
-        }
+        d->layer.colorspace = CGColorSpaceCreateWithName(kCGColorSpaceITUR_2100_PQ);
+        d->layer.wantsExtendedDynamicRangeContent = YES;
     } else if (m_format == HDRExtendedDisplayP3Linear) {
-        if (@available(iOS 16.0, *)) {
-            d->layer.colorspace = CGColorSpaceCreateWithName(kCGColorSpaceExtendedLinearDisplayP3);
-            d->layer.wantsExtendedDynamicRangeContent = YES;
-        }
+        d->layer.colorspace = CGColorSpaceCreateWithName(kCGColorSpaceExtendedLinearDisplayP3);
+        d->layer.wantsExtendedDynamicRangeContent = YES;
     }
 
     if (m_flags.testFlag(UsedAsTransferSource))
@@ -6718,12 +6702,12 @@ QRhiSwapChainHdrInfo QMetalSwapChain::hdrInfo()
         info.limits.colorComponentValue.maxColorComponentValue = screen.maximumExtendedDynamicRangeColorComponentValue;
         info.limits.colorComponentValue.maxPotentialColorComponentValue = screen.maximumPotentialExtendedDynamicRangeColorComponentValue;
 #elif defined(Q_OS_IOS)
-        if (@available(iOS 16.0, *)) {
-            UIView *view = reinterpret_cast<UIView *>(m_window->winId());
-            UIScreen *screen = view.window.windowScene.screen;
-            info.limits.colorComponentValue.maxColorComponentValue = view.window.windowScene.screen.currentEDRHeadroom;
-            info.limits.colorComponentValue.maxPotentialColorComponentValue = screen.potentialEDRHeadroom;
-        }
+        UIView *view = reinterpret_cast<UIView *>(m_window->winId());
+        UIScreen *screen = view.window.windowScene.screen;
+        info.limits.colorComponentValue.maxColorComponentValue =
+                view.window.windowScene.screen.currentEDRHeadroom;
+        info.limits.colorComponentValue.maxPotentialColorComponentValue =
+                screen.potentialEDRHeadroom;
 #endif
     }
 
