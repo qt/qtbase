@@ -15,6 +15,8 @@ function(addTimerTest test)
     qt_internal_add_test(${test}
         SOURCES
             tst_qtimer.cpp
+        DEFINES
+            QT_NO_CAST_FROM_BYTEARRAY
         LIBRARIES
             Qt::CorePrivate
             Qt::TestPrivate

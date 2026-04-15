@@ -14,6 +14,8 @@ endif()
 qt_internal_add_test(tst_qabstractanimation
     SOURCES
         tst_qabstractanimation.cpp
+    DEFINES
+        QT_NO_CAST_FROM_BYTEARRAY
     LIBRARIES
         Qt::TestPrivate
 )
