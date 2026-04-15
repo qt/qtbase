@@ -206,7 +206,7 @@ public:
     virtual glyph_metrics_t boundingBox(const QGlyphLayout &glyphs);
     virtual glyph_metrics_t boundingBox(glyph_t glyph) = 0;
     virtual glyph_metrics_t boundingBox(glyph_t glyph, const QTransform &matrix);
-    glyph_metrics_t tightBoundingBox(const QGlyphLayout &glyphs);
+    glyph_metrics_t tightBoundingBox(const QGlyphLayout &glyphs, QTextItem::RenderFlags flags);
 
     virtual QFixed ascent() const;
     virtual QFixed capHeight() const = 0;

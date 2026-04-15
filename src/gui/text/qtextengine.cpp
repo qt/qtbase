@@ -2368,7 +2368,12 @@ glyph_metrics_t QTextEngine::tightBoundingBox(int from,  int len) const
         if (glyphStart <= glyphEnd) {
             QGlyphLayout glyphs = this->shapedGlyphs(si);
             QFontEngine *fe = fontEngine(*si);
-            glyph_metrics_t m = fe->tightBoundingBox(glyphs.mid(glyphStart, glyphEnd - glyphStart));
+
+            QTextItem::RenderFlags flags = si->analysis.bidiLevel % 2
+                                               ? QTextItem::RightToLeft
+                                               : QTextItem::RenderFlags();
+            glyph_metrics_t m = fe->tightBoundingBox(glyphs.mid(glyphStart, glyphEnd - glyphStart), flags);
+
             gm.x = qMin(gm.x, m.x + gm.xoff);
             gm.y = qMin(gm.y, m.y + gm.yoff);
             gm.width = qMax(gm.width, m.width + gm.xoff);

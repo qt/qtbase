@@ -21,6 +21,8 @@ private slots:
     void tst_synthesizedObliqueAndRotation();
     void tst_disableEmojiParsing_data();
     void tst_disableEmojiParsing();
+    void tst_tightBoundingRect_data();
+    void tst_tightBoundingRect();
 
 private:
     QDir htmlDir;
@@ -178,6 +180,52 @@ void tst_Text::tst_disableEmojiParsing()
     }
 
     QBASELINE_CHECK(image, "tst_disableEmojiParsing");
+}
+
+void tst_Text::tst_tightBoundingRect_data()
+{
+    QTest::addColumn<QString>("text");
+    QTest::addColumn<bool>("italic");
+    QTest::addColumn<bool>("underline");
+
+    QBaselineTest::newRow("Latin") << "f" << false << false;
+    QBaselineTest::newRow("Italic") << "f" << true << false;
+    QBaselineTest::newRow("Underlined") << "f" << false << true;
+    QBaselineTest::newRow("Arabic") << QString::fromUtf8("ماً") << false << false;
+}
+
+void tst_Text::tst_tightBoundingRect()
+{
+    QFETCH(QString, text);
+    QFETCH(bool, italic);
+    QFETCH(bool, underline);
+
+    QFont font("Arial");
+    font.setPixelSize(440);
+    font.setWeight(QFont::Weight::Normal);
+    font.setHintingPreference(QFont::PreferVerticalHinting);
+    font.setItalic(italic);
+    font.setUnderline(underline);
+    font.setStyleStrategy(QFont::StyleStrategy(QFont::NoFontMerging | QFont::PreferMatch));
+
+    QFontMetricsF metric(font);
+    QRectF box = metric.tightBoundingRect(text);
+
+    QImage image(440, 400, QImage::Format_RGB32);
+    image.fill(Qt::white);
+
+    {
+        QPainter painter(&image);
+        painter.setFont(font);
+        painter.translate(QPoint(20, 20));
+        painter.save();
+        painter.translate(QPoint(20, 20 - box.top()));
+        painter.fillRect(box, QColor{ "lightgreen" });
+        painter.drawText(0, 0, text);
+        painter.restore();
+    }
+
+    QBASELINE_CHECK(image, "tst_tightBoundingRect");
 }
 
 QBASELINETEST_MAIN(tst_Text)
