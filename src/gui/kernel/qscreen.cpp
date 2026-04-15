@@ -671,6 +671,20 @@ QScreen *QScreen::virtualSiblingAt(QPoint point)
     that are not part of the application, window system frames, and so
     on.
 
+    When \a window is \e{0}, the behavior is platform-dependent.
+    \list
+        \li On platforms where coordinates are screen-local (Windows, X11),
+        (\a{x}, \a{y}) are relative to this screen's origin.
+        \li On platforms where coordinates are global (macOS),
+        (\a{x}, \a{y}) are relative to the virtual desktop.
+        This requires callers to subtract \c{screen->geometry().topLeft()}
+        to achieve the same result as on Windows.
+    \endlist
+
+    To grab the entire screen portably across platforms, use \c{grabWindow(0)}
+    without specifying coordinates. Code that grabs a sub-area must account for
+    this difference explicitly.
+
     \warning Grabbing windows that are not part of the application is
     not supported on systems such as iOS, where sandboxing/security
     prevents reading pixels of windows not owned by the application.
@@ -683,7 +697,7 @@ QScreen *QScreen::virtualSiblingAt(QPoint point)
     Note on X11 that if the given \a window doesn't have the same depth
     as the root window, and another window partially or entirely
     obscures the one you grab, you will \e not get pixels from the
-    overlying window.  The contents of the obscured areas in the
+    overlying window. The contents of the obscured areas in the
     pixmap will be undefined and uninitialized.
 
     On Windows Vista and above grabbing a layered window, which is
