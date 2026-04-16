@@ -470,12 +470,12 @@ namespace QRangeModelDetails
         }
 
         template <typename C, typename Fn>
-        static void for_element_at(C &&container, std::size_t idx, Fn &&fn)
+        static bool for_element_at(C &&container, std::size_t idx, Fn &&fn)
         {
             if constexpr (is_range)
-                std::forward<Fn>(fn)(*QRangeModelDetails::pos(std::forward<C>(container), idx));
+                return std::forward<Fn>(fn)(*QRangeModelDetails::pos(std::forward<C>(container), idx));
             else
-                std::forward<Fn>(fn)(std::forward<C>(container));
+                return std::forward<Fn>(fn)(std::forward<C>(container));
         }
 
         template <typename Fn>
@@ -521,8 +521,8 @@ namespace QRangeModelDetails
             using type = q20::remove_cvref_t<QRangeModelDetails::wrapped_t<C>>;
             constexpr size_t size = std::tuple_size_v<type>;
             Q_ASSERT(idx < size);
-            QtPrivate::applyIndexSwitch<size>(idx, [&](auto idxConstant) {
-                function(get<idxConstant>(QRangeModelDetails::refTo(std::forward<C>(container))));
+            return QtPrivate::applyIndexSwitch<size>(idx, [&](auto idxConstant) {
+                return function(get<idxConstant>(QRangeModelDetails::refTo(std::forward<C>(container))));
             });
         }
 
@@ -574,7 +574,7 @@ namespace QRangeModelDetails
         static auto for_element_at(C &&container, std::size_t idx, F &&function)
         {
             Q_ASSERT(idx < size(QRangeModelDetails::refTo(std::forward<C>(container))));
-            function(QRangeModelDetails::refTo(std::forward<C>(container))[idx]);
+            return function(QRangeModelDetails::refTo(std::forward<C>(container))[idx]);
         }
 
         static QVariant column_name(int section)
@@ -622,7 +622,7 @@ namespace QRangeModelDetails
         template <typename C, typename F>
         static auto for_element_at(C &&container, std::size_t, F &&function)
         {
-            std::forward<F>(function)(std::forward<C>(container));
+            return std::forward<F>(function)(std::forward<C>(container));
         }
 
         static QVariant column_name(int section)
@@ -1321,7 +1321,9 @@ public:
                 customFlags = ItemAccess::flags(ref);
                 if constexpr (!isMutable())
                     *customFlags &= ~Qt::ItemIsEditable;
+                return true;
             }
+            return false;
         });
         if (customFlags)
             return *customFlags;
@@ -1412,16 +1414,14 @@ public:
         QMap<int, QVariant> result;
 
         if (index.isValid()) {
-            bool tried = false;
-
             // optimisation for items backed by a QMap<int, QVariant> or equivalent
-            readAt(index, [&result, &tried](const auto &value) {
+            if (!readAt(index, [&result](const auto &value) {
                 if constexpr (std::is_convertible_v<decltype(value), decltype(result)>) {
-                    tried = true;
                     result = value;
+                    return true;
                 }
-            });
-            if (!tried) {
+                return false;
+            })) {
                 const auto roles = this->itemModel().roleNames().keys();
                 QVarLengthArray<QModelRoleData, 16> roleDataArray;
                 roleDataArray.reserve(roles.size());
@@ -1445,8 +1445,9 @@ public:
     struct ItemReader
     {
         template <typename value_type>
-        void operator()(const value_type &value) const
+        bool operator()(const value_type &value) const
         {
+            bool tried = false;
             using multi_role = QRangeModelDetails::is_multi_role<value_type>;
             using wrapped_value_type = QRangeModelDetails::wrapped_t<value_type>;
 
@@ -1535,19 +1536,17 @@ public:
                         roleData.clearData();
                 }
             }
+            return tried;
         }
 
         const QModelIndex &index;
         QModelRoleDataSpan roleDataSpan;
         const QRangeModelImpl *that;
-        bool &tried;
     };
 
     void multiData(const QModelIndex &index, QModelRoleDataSpan roleDataSpan) const
     {
-        bool tried = false;
-        readAt(index, ItemReader{index, roleDataSpan, this, tried});
-
+        bool tried = readAt(index, ItemReader{index, roleDataSpan, this});
         Q_ASSERT(tried);
     }
 
@@ -1556,15 +1555,12 @@ public:
         if (!index.isValid())
             return false;
 
-        bool success = false;
         if constexpr (isMutable()) {
-            auto emitDataChanged = qScopeGuard([&success, this, &index, role]{
-                if (success) {
-                    Q_EMIT this->dataChanged(index, index,
-                                       role == Qt::EditRole || role == Qt::RangeModelDataRole
-                                    || role == Qt::RangeModelAdapterRole
-                                            ? QList<int>{} : QList<int>{role});
-                }
+            auto emitDataChanged = qScopeGuard([this, &index, role]{
+                Q_EMIT this->dataChanged(index, index,
+                                    role == Qt::EditRole || role == Qt::RangeModelDataRole
+                                || role == Qt::RangeModelAdapterRole
+                                        ? QList<int>{} : QList<int>{role});
             });
             // we emit dataChanged at the end, block dispatches from auto-connected properties
             [[maybe_unused]] auto dataChangedBlocker = maybeBlockDataChangedDispatch();
@@ -1673,16 +1669,18 @@ public:
                 return false;
             };
 
-            success = writeAt(index, writeData);
-
-            if constexpr (itemsAreQObjects || rowsAreQObjects) {
-                if (success && isRangeModelRole(role) && this->autoConnectPolicy() == AutoConnectPolicy::Full) {
+            if (!writeAt(index, writeData)) {
+                emitDataChanged.dismiss();
+                return false;
+            } else if constexpr (itemsAreQObjects || rowsAreQObjects) {
+                if (isRangeModelRole(role) && this->autoConnectPolicy() == AutoConnectPolicy::Full) {
                     if (QObject *item = data.value<QObject *>())
                         Self::connectProperties(index, item, m_data.context, m_data.properties);
                 }
             }
+            return true;
         }
-        return success;
+        return false;
     }
 
     template <typename LHS, typename RHS>
@@ -1706,11 +1704,9 @@ public:
         if (!index.isValid() || data.isEmpty())
             return false;
 
-        bool success = false;
         if constexpr (isMutable()) {
-            auto emitDataChanged = qScopeGuard([&success, this, &index, &data]{
-                if (success)
-                    Q_EMIT this->dataChanged(index, index, data.keys());
+            auto emitDataChanged = qScopeGuard([this, &index, &data]{
+                Q_EMIT this->dataChanged(index, index, data.keys());
             });
             // we emit dataChanged at the end, block dispatches from auto-connected properties
             [[maybe_unused]] auto dataChangedBlocker = maybeBlockDataChangedDispatch();
@@ -1803,16 +1799,14 @@ public:
                 return false;
             };
 
-            success = writeAt(index, writeItemData);
-
-            if (!tried) {
-                // setItemData will emit the dataChanged signal
-                Q_ASSERT(!success);
+            if (!writeAt(index, writeItemData)) {
                 emitDataChanged.dismiss();
-                success = this->itemModel().QAbstractItemModel::setItemData(index, data);
+                if (!tried)
+                    return this->itemModel().QAbstractItemModel::setItemData(index, data);
             }
+            return true;
         }
-        return success;
+        return false;
     }
 
     bool clearItemData(const QModelIndex &index)
@@ -1820,11 +1814,9 @@ public:
         if (!index.isValid())
             return false;
 
-        bool success = false;
         if constexpr (isMutable()) {
-            auto emitDataChanged = qScopeGuard([&success, this, &index]{
-                if (success)
-                    Q_EMIT this->dataChanged(index, index, {});
+            auto emitDataChanged = qScopeGuard([this, &index]{
+                Q_EMIT this->dataChanged(index, index, {});
             });
 
             auto clearData = [column = index.column()](auto &&target) {
@@ -1842,9 +1834,13 @@ public:
                 return false;
             };
 
-            success = writeAt(index, clearData);
+            if (!writeAt(index, clearData)) {
+                emitDataChanged.dismiss();
+                return false;
+            }
+            return true;
         }
-        return success;
+        return false;
     }
 
     QHash<int, QByteArray> roleNames() const
@@ -2310,28 +2306,27 @@ protected:
     template <typename F>
     bool writeAt(const QModelIndex &index, F&& writer)
     {
-        bool result = false;
         row_reference row = rowData(index);
-
-        if (QRangeModelDetails::isValid(row)) {
-            row_traits::for_element_at(row, index.column(), [&writer, &result](auto &&target) {
-                using target_type = decltype(target);
-                // we can only assign to an lvalue reference
-                if constexpr (std::is_lvalue_reference_v<target_type>
-                           && !std::is_const_v<std::remove_reference_t<target_type>>) {
-                    result = writer(std::forward<target_type>(target));
-                }
-            });
-        }
-
-        return result;
+        if (!QRangeModelDetails::isValid(row))
+            return false;
+        return row_traits::for_element_at(row, index.column(), [&writer](auto &&target) {
+            using target_type = decltype(target);
+            // we can only assign to an lvalue reference
+            if constexpr (std::is_lvalue_reference_v<target_type>
+                        && !std::is_const_v<std::remove_reference_t<target_type>>) {
+                return writer(std::forward<target_type>(target));
+            } else {
+                return false;
+            }
+        });
     }
 
     template <typename F>
-    void readAt(const QModelIndex &index, F&& reader) const {
+    bool readAt(const QModelIndex &index, F&& reader) const {
         const_row_reference row = rowData(index);
-        if (QRangeModelDetails::isValid(row))
-            row_traits::for_element_at(row, index.column(), std::forward<F>(reader));
+        if (!QRangeModelDetails::isValid(row))
+            return false;
+        return row_traits::for_element_at(row, index.column(), std::forward<F>(reader));
     }
 
     template <typename Value>

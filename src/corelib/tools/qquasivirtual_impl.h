@@ -26,21 +26,31 @@ QT_BEGIN_NAMESPACE
 namespace QtPrivate {
 
 template <typename Applier, size_t ...Is>
-void applyIndexSwitch(size_t index, Applier&& applier, std::index_sequence<Is...>)
+bool applyIndexSwitch(size_t index, Applier&& applier, std::index_sequence<Is...>)
 {
     // Performance considerations:
     // The folding expression used here represents the same logic as a sequence of
     // linear if/else if/... statements. Experiments show that Clang, GCC, and MSVC
     // optimize it to essentially the same bytecode as a normal C++ switch,
     // ensuring O(1) lookup complexity.
-    static_cast<void>(((Is == index && (applier(std::integral_constant<size_t, Is>{}), true)) || ...));
+    constexpr bool boolResult = (std::is_same_v<
+                                        std::invoke_result_t<Applier, std::integral_constant<size_t, Is>>,
+                                        bool> && ...);
+    auto doApply = [&applier](auto i) {
+        if constexpr (boolResult)
+             return std::forward<Applier>(applier)(i);
+        else
+            return (std::forward<Applier>(applier)(i), true);
+    };
+
+    return ((Is == index && doApply(std::integral_constant<size_t, Is>{})) || ...);
 }
 
 template <size_t IndexCount, typename Applier>
-void applyIndexSwitch(size_t index, Applier&& applier)
+bool applyIndexSwitch(size_t index, Applier&& applier)
 {
-    QtPrivate::applyIndexSwitch(index, std::forward<Applier>(applier),
-                                std::make_index_sequence<IndexCount>());
+    return QtPrivate::applyIndexSwitch(index, std::forward<Applier>(applier),
+                                       std::make_index_sequence<IndexCount>());
 }
 
 template <typename Interface>
