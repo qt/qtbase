@@ -213,6 +213,12 @@ public:
 
     // Loop protection
     QDuplicateTracker<QString> visitedLinks;
+
+private:
+    bool matchesFilters(const QFileInfo &fileInfo) const;
+    bool matchesFilters(QDirEntryInfo::Iterator &iterator) const;
+    bool matchesFilters(const QFileInfo &fileInfo, const QString &fileName) const;
+    bool matchesFilters(QDirEntryInfo::Native &native) const;
 };
 
 void QDirListingPrivate::init()
@@ -377,25 +383,19 @@ void QDirListingPrivate::checkAndPushDirectory(QDirEntryInfo &entryInfo)
     pushDirectory(entryInfo);
 }
 
-/*!
-    \internal
-
-    This function returns \c true if the current entry matches the filters
-    (i.e., the current entry will be returned as part of the directory
-    iteration); otherwise, \c false is returned.
-*/
-bool QDirListingPrivate::matchesFilters(QDirEntryInfo &entryInfo) const
+bool QDirListingPrivate::matchesFilters(QDirEntryInfo::Native &native) const
 {
     using F = QDirListing::IteratorFlag;
+    using M = QFileSystemMetaData;
 
-    const QString &fileName = entryInfo.fileName();
+    const QString fileName = native.entry.fileName();
     if (fileName.isEmpty())
         return false;
 
     // name filter
 #if QT_CONFIG(regularexpression)
     const bool skipNameFilters = iteratorFlags.testAnyFlags(F::NoNameFiltersForDirs)
-                                 && entryInfo.isDir();
+            && native.ensureFilled(M::DirectoryType).isDirectory();
     if (!skipNameFilters) {
         if (!regexMatchesName(fileName))
             return false;
@@ -405,35 +405,149 @@ bool QDirListingPrivate::matchesFilters(QDirEntryInfo &entryInfo) const
     if (isDotOrDotDot(fileName))
         return iteratorFlags.testFlags(F::IncludeDotAndDotDot);
 
-    if (!iteratorFlags.testAnyFlag(F::IncludeHidden) && entryInfo.isHidden())
+    if (!iteratorFlags.testAnyFlag(F::IncludeHidden)
+            && native.ensureFilled(M::HiddenAttribute).isHidden()) {
         return false;
+    }
 
-    const bool includeBrokenSymlinks = iteratorFlags.testAnyFlags(F::IncludeBrokenSymlinks);
-    if (includeBrokenSymlinks && entryInfo.isSymLink() && !entryInfo.exists())
+    if (iteratorFlags.testAnyFlags(F::IncludeBrokenSymlinks)
+            && native.ensureFilled(M::LegacyLinkType).isLegacyLink()
+            && !native.ensureFilled(M::ExistsAttribute).exists()) {
         return true;
+    }
 
     if (iteratorFlags.testFlag(F::ResolveSymlinks)) {
-        if (entryInfo.isSymLink() && !entryInfo.exists())
+        if (native.ensureFilled(M::LegacyLinkType).isLegacyLink()
+                && !native.ensureFilled(M::ExistsAttribute).exists()) {
             return false; // Exclude broken symlinks; anything else will be filtered below
+        }
     } else {
         constexpr auto f = F::ExcludeFiles | F::ExcludeDirs | F::ExcludeOther;
         const bool filterByTargetType = iteratorFlags.testAnyFlags(f);
-        if (filterByTargetType && entryInfo.isSymLink())
+        if (filterByTargetType && native.ensureFilled(M::LegacyLinkType).isLegacyLink())
             return false;
     }
 
     if (iteratorFlags.testAnyFlag(F::ExcludeOther)
-        && !entryInfo.isFile() && !entryInfo.isDir() && !entryInfo.isSymLink()) {
+            && !native.ensureFilled(M::FileType).isFile()
+            && !native.ensureFilled(M::DirectoryType).isDirectory()
+            && !native.ensureFilled(M::LegacyLinkType).isLegacyLink()) {
         return false;
     }
 
-    if (iteratorFlags.testAnyFlags(F::ExcludeDirs) && entryInfo.isDir())
+    if (iteratorFlags.testAnyFlags(F::ExcludeDirs)
+            && native.ensureFilled(M::DirectoryType).isDirectory()) {
         return false;
+    }
 
-    if (iteratorFlags.testAnyFlags(F::ExcludeFiles) && entryInfo.isFile())
+    if (iteratorFlags.testAnyFlags(F::ExcludeFiles) && native.ensureFilled(M::FileType).isFile())
         return false;
 
     return true;
+}
+
+bool QDirListingPrivate::matchesFilters(const QFileInfo &fileInfo, const QString &fileName) const
+{
+    using F = QDirListing::IteratorFlag;
+
+    Q_ASSERT(!fileName.isEmpty());
+
+    // name filter
+#if QT_CONFIG(regularexpression)
+    const bool skipNameFilters = iteratorFlags.testFlag(F::NoNameFiltersForDirs)
+            && fileInfo.isDir();
+    if (!skipNameFilters) {
+        if (!regexMatchesName(fileName))
+            return false;
+    }
+#endif // QT_CONFIG(regularexpression)
+
+    if (isDotOrDotDot(fileName))
+        return iteratorFlags.testFlag(F::IncludeDotAndDotDot);
+
+    if (!iteratorFlags.testFlag(F::IncludeHidden) && fileInfo.isHidden())
+        return false;
+
+    const bool includeBrokenSymlinks = iteratorFlags.testAnyFlags(F::IncludeBrokenSymlinks);
+    if (includeBrokenSymlinks && fileInfo.isSymLink() && !fileInfo.exists())
+        return true;
+
+    if (iteratorFlags.testFlag(F::ResolveSymlinks)) {
+        if (fileInfo.isSymLink() && !fileInfo.exists())
+            return false; // Exclude broken symlinks; anything else will be filtered below
+    } else {
+        constexpr auto f = F::ExcludeFiles | F::ExcludeDirs | F::ExcludeOther;
+        const bool filterByTargetType = iteratorFlags.testAnyFlags(f);
+        if (filterByTargetType && fileInfo.isSymLink())
+            return false;
+    }
+
+    if (iteratorFlags.testFlag(F::ExcludeOther)
+            && !fileInfo.isFile() && !fileInfo.isDir() && !fileInfo.isSymLink()) {
+        return false;
+    }
+
+    if (iteratorFlags.testFlag(F::ExcludeDirs) && fileInfo.isDir())
+        return false;
+
+    if (iteratorFlags.testFlag(F::ExcludeFiles) && fileInfo.isFile())
+        return false;
+
+    return true;
+}
+
+bool QDirListingPrivate::matchesFilters(QDirEntryInfo::Iterator &iterator) const
+{
+    using F = QDirListing::IteratorFlag;
+
+    const QString fileName = iterator.iterator->currentFileName();
+    if (fileName.isEmpty())
+        return false;
+
+    // Fast path that doesn't require conversion to QFileInfo
+    if (iteratorFlags.testFlag(F::IncludeHidden)
+        && !iteratorFlags.testAnyFlags(
+                F::NoNameFiltersForDirs |
+                F::IncludeBrokenSymlinks |
+                F::ResolveSymlinks |
+                F::ExcludeFiles |
+                F::ExcludeDirs |
+                F::ExcludeOther)) {
+
+#if QT_CONFIG(regularexpression)
+        if (!regexMatchesName(fileName))
+            return false;
+#endif
+        if (isDotOrDotDot(fileName))
+            return iteratorFlags.testFlags(F::IncludeDotAndDotDot);
+
+        return true;
+    }
+
+    // Conversion to QFileInfo can be expensife, but now we need to do it.
+    return matchesFilters(iterator.ensureFileInfo(), fileName);
+}
+
+bool QDirListingPrivate::matchesFilters(const QFileInfo &fileInfo) const
+{
+    const QString fileName = fileInfo.fileName();
+    return !fileName.isEmpty() && matchesFilters(fileInfo, fileName);
+}
+
+/*!
+    \internal
+
+    This function returns \c true if the current entry matches the filters
+    (i.e., the current entry will be returned as part of the directory
+    iteration); otherwise, \c false is returned.
+*/
+bool QDirListingPrivate::matchesFilters(QDirEntryInfo &entryInfo) const
+{
+    return std::visit(QDirEntryInfoPrivate::overloaded {
+        [this](QDirEntryInfo::Native &native) { return matchesFilters(native); },
+        [this](const QFileInfo &fileInfo) { return matchesFilters(fileInfo); },
+        [this](QDirEntryInfo::Iterator &iterator) { return matchesFilters(iterator); }
+    }, entryInfo.content);
 }
 
 bool QDirListingPrivate::hasIterators() const
