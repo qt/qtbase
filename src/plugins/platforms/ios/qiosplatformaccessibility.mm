@@ -79,6 +79,13 @@ void QIOSPlatformAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *even
             UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification, element);
         break;
     }
+    case QAccessible::StateChanged:
+    case QAccessible::ValueChanged: {
+        auto *element = [QMacAccessibilityElement elementWithId:event->uniqueId()];
+        if (element)
+            UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification, element);
+        break;
+    }
     case QAccessible::ObjectCreated:
     case QAccessible::ObjectShow:
     case QAccessible::ObjectHide:
