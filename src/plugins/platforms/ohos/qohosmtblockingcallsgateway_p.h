@@ -111,6 +111,8 @@ void QOhosMtBlockingCallsGateway<SlaveContext>::runInSlaveThreadAndWaitForContin
     std::function<void(SlaveContext &, QOhosTaskPromise<>)> &&task,
     const std::string &callerContextName)
 {
+    const auto funcInfo = Q_FUNC_INFO;
+
     {
         std::lock_guard<std::mutex> waitStateLock(m_waitStateMutex);
         if (m_masterThreadTaskState) {
@@ -127,6 +129,11 @@ void QOhosMtBlockingCallsGateway<SlaveContext>::runInSlaveThreadAndWaitForContin
     auto sharedTaskPromise = std::make_shared<QOhosTaskPromise<>>(
         [taskFinishedPromise]() {
             taskFinishedPromise->set_value();
+        },
+        [funcInfo, callerContextName]() {
+            qOhosReportFatalErrorAndAbort(
+                "%s: promise destroyed without notifying the caller: %s",
+                funcInfo, callerContextName.c_str());
         },
         callerContextName);
 

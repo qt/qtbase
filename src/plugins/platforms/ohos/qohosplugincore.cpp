@@ -896,6 +896,8 @@ void invokeInJsThreadAndWaitForContinue(
     std::function<void(JsState &, QOhosTaskPromise<>)> &&task,
     std::string callerContextName)
 {
+    const auto funcInfo = Q_FUNC_INFO;
+
     if (getQtState().isQtThread()) {
         getQtJsBlockingCallsGateway().runInSlaveThreadAndWaitForContinue(
             std::move(task), std::move(callerContextName));
@@ -907,7 +909,12 @@ void invokeInJsThreadAndWaitForContinue(
             [taskReadyPromise]() {
                 taskReadyPromise->set_value();
             },
-            std::move(callerContextName));
+            [funcInfo, callerContextName]() {
+                qOhosReportFatalErrorAndAbort(
+                    "%s: promise destroyed without notifying the caller: %s",
+                    funcInfo, callerContextName.c_str());
+            },
+            callerContextName);
 
         invokeInJsThread(
             [task = std::move(task), sharedTaskPromise](JsState &jsState) {
