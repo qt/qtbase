@@ -725,6 +725,10 @@ void QCoreApplicationPrivate::initLocale()
     QGuiApplication/QApplication) instance.
 
     If no instance has been allocated, \nullptr is returned.
+
+    \b{Data race notice}: this function should not be used to test for the
+    existence of the QCoreApplication instance from auxiliary threads, unless
+    the caller code is compiled as C++20.
 */
 
 /*!
@@ -799,7 +803,11 @@ void Q_TRACE_INSTRUMENT(qtcore) QCoreApplicationPrivate::init()
 
     Q_ASSERT_X(!QCoreApplication::self, "QCoreApplication", "there should be only one application object");
 #if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+#  ifdef __cpp_lib_atomic_ref
+    std::atomic_ref(QCoreApplication::self).store(q, std::memory_order_relaxed);
+#  else
     QCoreApplication::self = q;
+#  endif
     g_self.storeRelaxed(q);
 #else
     QCoreApplication::self.storeRelaxed(q);
@@ -907,7 +915,11 @@ QCoreApplication::~QCoreApplication()
     qt_call_post_routines();
 
 #if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+#  ifdef __cpp_lib_atomic_ref
+    std::atomic_ref(self).store(nullptr, std::memory_order_relaxed);
+#  else
     self = nullptr;
+#  endif
     g_self.storeRelaxed(nullptr);
 #else
     self.storeRelaxed(nullptr);
