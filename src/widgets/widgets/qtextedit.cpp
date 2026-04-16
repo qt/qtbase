@@ -1988,15 +1988,9 @@ QMenu *QTextEdit::createStandardContextMenu(const QPoint &position)
 #endif // QT_NO_CONTEXTMENU
 
 /*!
-  \fn QTextCursor QTextEdit::cursorForPosition(const QPoint &pos) const
-  \overload
-*/
-
-/*!
   returns a QTextCursor at position \a pos (in viewport coordinates).
-  \since 6.12
 */
-QTextCursor QTextEdit::cursorForPosition(QPointF pos) const
+QTextCursor QTextEdit::cursorForPosition(const QPoint &pos) const
 {
     Q_D(const QTextEdit);
     return d->control->cursorForPosition(d->mapToContents(pos));
