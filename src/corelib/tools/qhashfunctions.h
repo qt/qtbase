@@ -232,7 +232,7 @@ Q_DECL_CONST_FUNCTION constexpr inline size_t qHash(QFlags<Enum> flags, size_t s
 
 // ### Qt 7: remove this "catch-all" overload logic, and require users
 // to provide the two-argument version of qHash.
-#if (QT_VERSION < QT_VERSION_CHECK(7, 0, 0)) && !defined(QT_NO_SINGLE_ARGUMENT_QHASH_OVERLOAD)
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
 // Beware of moving this code from here. It needs to see all the
 // declarations of qHash overloads for C++ fundamental types *before*
 // its own declaration.
@@ -252,7 +252,11 @@ template <typename T, typename...Args,
           std::enable_if_t<QHashPrivate::HasQHashSingleArgOverload<T>
                            && sizeof...(Args) == 0 && !std::is_enum_v<T>, bool> = true>
 constexpr size_t qHash(const T &t, size_t seed, Args&&...) noexcept(noexcept(qHash(t)))
+#ifdef QT_NO_SINGLE_ARGUMENT_QHASH_OVERLOAD
+    = delete;
+#else
 { return qHash(t) ^ seed; }
+#endif // QT_NO_SINGLE_ARGUMENT_QHASH_OVERLOAD
 #endif // < Qt 7
 
 namespace QHashPrivate {
