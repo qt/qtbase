@@ -397,14 +397,25 @@ void QWizardHeader::paintEvent(QPaintEvent * /* event */)
         painter.drawPixmap(0, 0, bannerPixmap);
     }
 
-    int x = width() - 2;
-    int y = height() - 2;
+    // With fractional scaling the 1px difference in y-coordinate can map to
+    // the same pixel, so make sure that we take DPR into account when drawing
+    // the lines.
+    const qreal dpr = devicePixelRatio();
+    const int devHeight = qRound(height() * dpr);
+    const int devWidth = qRound(width() * dpr);
+
+    const qreal x = (devWidth - 2) / dpr;
+    const qreal y = (devHeight - 2) / dpr;
+
+    const qreal x1 = (devWidth - 1) / dpr;
+    const qreal y1 = (devHeight - 1) / dpr;
+
     const QPalette &pal = palette();
     painter.setPen(pal.mid().color());
-    painter.drawLine(0, y, x, y);
+    painter.drawLine(QLineF(0, y, x, y));
     painter.setPen(pal.base().color());
-    painter.drawPoint(x + 1, y);
-    painter.drawLine(0, y + 1, x + 1, y + 1);
+    painter.drawPoint(QPointF(x1, y));
+    painter.drawLine(QLineF(0, y1, x1, y1));
 }
 
 // We save one vtable by basing QWizardRuler on QWizardHeader
