@@ -185,6 +185,16 @@ namespace QT_NAMESPACE {}
 #  define QT_DISABLE_DEPRECATED_UP_TO QT_ENABLE_STRICT_MODE_UP_TO
 #endif
 
+//
+// Add new versions _here_, newest first!
+//
+
+#if QT_ENABLE_STRICT_MODE_UP_TO >= QT_VERSION_CHECK(6, 12, 0)
+# ifndef QT_NO_SINGLE_ARGUMENT_QHASH_OVERLOAD
+#  define QT_NO_SINGLE_ARGUMENT_QHASH_OVERLOAD
+# endif
+#endif // 6.12.0
+
 #if QT_ENABLE_STRICT_MODE_UP_TO >= QT_VERSION_CHECK(6, 0, 0)
 # ifndef QT_NO_FOREACH
 #  define QT_NO_FOREACH
@@ -233,11 +243,10 @@ namespace QT_NAMESPACE {}
 # endif
 #endif // 6.9.0
 
-#if QT_ENABLE_STRICT_MODE_UP_TO >= QT_VERSION_CHECK(6, 11, 0)
-# ifndef QT_NO_SINGLE_ARGUMENT_QHASH_OVERLOAD
-#  define QT_NO_SINGLE_ARGUMENT_QHASH_OVERLOAD
-# endif
-#endif // 6.11.0
+//
+// newer versions are added newest-first at the _front_!
+//
+
 #endif // QT_ENABLE_STRICT_MODE_UP_TO
 
 #endif /* QTCONFIGMACROS_H */
