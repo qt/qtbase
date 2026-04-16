@@ -125,10 +125,7 @@ public:
     QMenu *createStandardContextMenu(const QPoint &position);
 #endif
 
-    // ### Qt7: remove
-    QT_WIDGETS_INLINE_SINCE(6, 12)
     QTextCursor cursorForPosition(const QPoint &pos) const;
-    QTextCursor cursorForPosition(QPointF pos) const;
     QRect cursorRect(const QTextCursor &cursor) const;
     QRect cursorRect() const;
 
@@ -248,12 +245,6 @@ private:
     friend class QPlainTextEditControl;
 };
 
-#if QT_WIDGETS_INLINE_IMPL_SINCE(6, 12)
-QTextCursor QPlainTextEdit::cursorForPosition(const QPoint &pos) const
-{
-    return cursorForPosition(QPointF(pos));
-}
-#endif
 
 class QPlainTextDocumentLayoutPrivate;
 class Q_WIDGETS_EXPORT QPlainTextDocumentLayout : public QAbstractTextDocumentLayout
