@@ -2638,8 +2638,6 @@ void tst_QLocale::toDateTime()
     QFETCH(bool, clean);
 
     QLocale l(localeName);
-    QEXPECT_FAIL("ccp:short", "QTBUG-87111: Handling of code points outside BMP is broken", Abort);
-    QEXPECT_FAIL("ccp:long", "QTBUG-87111: Handling of code points outside BMP is broken", Abort);
     QCOMPARE(l.toDateTime(string, format), result);
     if (clean) {
         QCOMPARE(l.toDateTime(string.toLower(), format), result);
@@ -2858,8 +2856,6 @@ void tst_QLocale::toDate()
     QFETCH(const QString, string);
     QFETCH(const bool, clean);
 
-    QEXPECT_FAIL("ccp:short", "QTBUG-87111: Handling of code points outside BMP is broken", Abort);
-    QEXPECT_FAIL("ccp:long", "QTBUG-87111: Handling of code points outside BMP is broken", Abort);
     QCOMPARE(locale.toDate(string, format), result);
     if (clean) {
         QCOMPARE(locale.toDate(string.toLower(), format), result);
@@ -3003,8 +2999,6 @@ void tst_QLocale::toTime()
     QFETCH(const QString, string);
     QFETCH(const bool, clean);
 
-    QEXPECT_FAIL("ccp:short", "QTBUG-87111: Handling of code points outside BMP is broken", Abort);
-    QEXPECT_FAIL("ccp:long", "QTBUG-87111: Handling of code points outside BMP is broken", Abort);
     QCOMPARE(locale.toTime(string, format), result);
     if (clean) {
         QCOMPARE(locale.toTime(string.toLower(), format), result);

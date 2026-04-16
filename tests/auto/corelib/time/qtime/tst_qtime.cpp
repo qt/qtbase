@@ -399,7 +399,7 @@ void tst_QTime::fromStringFormat_data()
     QTest::addColumn<QTime>("expected");
 
     QTest::newRow("data0") << u"1010"_s << u"mmm"_s << QTime(0, 10, 0);
-    QTest::newRow("data1") << u"00"_s << u"hm"_s << invalidTime();
+    QTest::newRow("data1") << u"00"_s << u"hm"_s << QTime(0, 0);
     QTest::newRow("data2") << u"10am"_s << u"hap"_s << QTime(10, 0, 0);
     QTest::newRow("data3") << u"10pm"_s << u"hap"_s << QTime(22, 0, 0);
     QTest::newRow("data4") << u"10pmam"_s << u"hapap"_s << invalidTime();

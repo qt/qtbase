@@ -2793,17 +2793,16 @@ QDateTime QLocale::toDateTime(const QString &string, FormatType format, QCalenda
 */
 QTime QLocale::toTime(const QString &string, const QString &format) const
 {
-    QTime time;
 #if QT_CONFIG(datetimeparser)
-    QDateTimeParser dt(QMetaType::QTime, QDateTimeParser::FromString, QCalendar());
-    dt.setDefaultLocale(*this);
-    if (dt.parseFormat(format))
-        dt.fromString(string, nullptr, &time);
+    QTimePattern pattern = QTimePattern::fromQtFormat(format);
+    pattern.setLocale(*this);
+    if (auto match = pattern.parse(string, QTime(0, 0)); match.size == string.size())
+        return std::move(match.payload);
 #else
     Q_UNUSED(string);
     Q_UNUSED(format);
 #endif
-    return time;
+    return {};
 }
 
 /*!
@@ -2842,19 +2841,22 @@ QDate QLocale::toDate(const QString &string, const QString &format, int baseYear
 */
 QDate QLocale::toDate(const QString &string, const QString &format, QCalendar cal, int baseYear) const
 {
-    QDate date;
 #if QT_CONFIG(datetimeparser)
-    QDateTimeParser dt(QMetaType::QDate, QDateTimeParser::FromString, cal);
-    dt.setDefaultLocale(*this);
-    if (dt.parseFormat(format))
-        dt.fromString(string, &date, nullptr, baseYear);
+    QDatePattern pattern = QDatePattern::fromQtFormat(format);
+    pattern.setLocale(*this);
+    pattern.setCalendar(cal);
+    pattern.setBaseYear(baseYear);
+    if (auto match = pattern.parse(string, QDate(baseYear, 1, 1, cal));
+             match.size == string.size()) {
+        return std::move(match.payload);
+    }
 #else
     Q_UNUSED(string);
     Q_UNUSED(format);
-    Q_UNUSED(baseYear);
     Q_UNUSED(cal);
+    Q_UNUSED(baseYear);
 #endif
-    return date;
+    return {};
 }
 
 /*!
@@ -2873,8 +2875,9 @@ QDate QLocale::toDate(const QString &string, const QString &format, QCalendar ca
 
     If the string could not be parsed, returns an invalid QDateTime.  If the
     string can be parsed and represents an invalid date-time (e.g. in a gap
-    skipped by a time-zone transition), an invalid QDateTime is returned, whose
-    toMSecsSinceEpoch() represents a near-by date-time that is valid. Passing
+    skipped by a time-zone transition), the returned QDateTime represents a
+    near-by datetime that is valid (typically differing from it by the width of
+    the gap in valid datetimes, e.g. the hour skipped by a transition). Passing
     that to fromMSecsSinceEpoch() will produce a valid date-time that isn't
     faithfully represented by the string parsed.
 
@@ -2893,21 +2896,21 @@ QDateTime QLocale::toDateTime(const QString &string, const QString &format, QCal
                               int baseYear) const
 {
 #if QT_CONFIG(datetimeparser)
-    QDateTime datetime;
-
-    QDateTimeParser dt(QMetaType::QDateTime, QDateTimeParser::FromString, cal);
-    dt.setDefaultLocale(*this);
-    if (dt.parseFormat(format) && (dt.fromString(string, &datetime, baseYear)
-                                   || !datetime.isValid())) {
-        return datetime;
+    QDateTimePattern pattern = QDateTimePattern::fromQtFormat(format);
+    pattern.setLocale(*this);
+    pattern.setCalendar(cal);
+    pattern.setBaseYear(baseYear);
+    if (auto match = pattern.parse(string, QDate(baseYear, 1, 1, cal).startOfDay());
+             match.size == string.size()) {
+        return std::move(match.payload);
     }
 #else
     Q_UNUSED(string);
     Q_UNUSED(format);
-    Q_UNUSED(baseYear);
     Q_UNUSED(cal);
+    Q_UNUSED(baseYear);
 #endif
-    return QDateTime();
+    return {};
 }
 #endif // datestring
 
