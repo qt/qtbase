@@ -52,9 +52,16 @@ public:
     // For iOS and macOS platform themes
     QFont *themeFont(QPlatformTheme::Font) const;
 
+protected:
+    virtual bool shouldForceColorFont(CTFontDescriptorRef descriptor) const = 0;
+
 private:
     void populateThemeFonts();
-    void populateFromDescriptor(CTFontDescriptorRef font, const QString &familyName = QString(), QFontDatabasePrivate::ApplicationFont *applicationFont = nullptr);
+    enum class PopulateDescriptorFlag : quint8 { None = 0, ForceColorFont = 0x1 };
+    void populateFromDescriptor(CTFontDescriptorRef font,
+                                const QString &familyName = QString(),
+                                QFontDatabasePrivate::ApplicationFont *applicationFont = nullptr,
+                                PopulateDescriptorFlag = PopulateDescriptorFlag::None);
     static CFArrayRef fallbacksForFamily(const QString &family);
     QStringList fallbacksForScript(QFontDatabasePrivate::ExtendedScript script) const;
 
@@ -79,6 +86,9 @@ class Q_GUI_EXPORT QCoreTextFontDatabaseEngineFactory : public QCoreTextFontData
 public:
     QFontEngine *fontEngine(const QFontDef &fontDef, void *handle) override;
     QFontEngine *fontEngine(const QByteArray &fontData, qreal pixelSize, QFont::HintingPreference hintingPreference) override;
+
+protected:
+    bool shouldForceColorFont(CTFontDescriptorRef descriptor) const override;
 };
 
 QT_END_NAMESPACE
