@@ -3092,6 +3092,13 @@ void tst_QAbstractItemView::mouseSelection()
     view->setDragEnabled(dragEnabled);
     view->setSelectionMode(selectionMode);
     view->setEditTriggers(editTrigger);
+
+    // Ensure all items are visible in the viewport
+    const int rowHeight = view->sizeHintForRow(0);
+    const auto *treeView = static_cast<QTreeView *>(view);
+    const int headerHeight = treeView->header()->isHidden() ? 0: treeView->header()->height();
+    view->resize(view->sizeHint().width(),
+            rowHeight * model.rowCount() + headerHeight + 2 * view->frameWidth());
     view->show();
     QVERIFY(QTest::qWaitForWindowActive(view));
 
