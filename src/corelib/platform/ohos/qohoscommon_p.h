@@ -55,7 +55,9 @@ class QOhosTaskPromise
 {
 public:
     template<typename F, typename = std::enable_if_t<!std::is_same<std::decay_t<F>, QOhosTaskPromise>::value>>
-    QOhosTaskPromise(F &&callable, std::string callerContextName = {});
+    QOhosTaskPromise(
+        F &&callable, std::function<void()> optOnDestroyedWithoutCall,
+        std::string callerContextName = {});
 
     ~QOhosTaskPromise();
 
@@ -99,9 +101,11 @@ private:
 
     struct TrackingUsageState
     {
-        TrackingUsageState() = default;
-        explicit TrackingUsageState(std::size_t activeCount);
+        TrackingUsageState(
+            std::size_t activeCount,
+            std::shared_ptr<std::function<void()>> onDestroyedWithoutCall);
 
+        std::shared_ptr<std::function<void()>> onDestroyedWithoutCall;
         bool used = false;
         std::size_t activeCount = 1;
     };
@@ -321,11 +325,18 @@ inline std::shared_ptr<void> makeDestroyNotifier(std::function<void()> callOnDes
 
 template<typename... Args>
 template<typename F, typename>
-QOhosTaskPromise<Args...>::QOhosTaskPromise(F &&callable, std::string callerContextName)
+QOhosTaskPromise<Args...>::QOhosTaskPromise(
+    F &&callable, std::function<void()> optOnDestroyedWithoutCall, std::string callerContextName)
     : m_callable(std::make_shared<CallableImpl<std::decay_t<F>>>(std::forward<F>(callable)))
     , m_tracking(
         std::make_shared<TrackingNode>(
-            std::move(callerContextName), nullptr, std::make_shared<TrackingUsageState>()))
+            std::move(callerContextName), nullptr,
+            std::make_shared<TrackingUsageState>(
+                1,
+                QtOhos::moveToSharedPtr(
+                    optOnDestroyedWithoutCall
+                        ? std::move(optOnDestroyedWithoutCall)
+                        : makeQOhosNoOpConsumer<>()))))
 {
 }
 
@@ -339,9 +350,10 @@ QOhosTaskPromise<Args...>::~QOhosTaskPromise()
 
     if (m_tracking->usage->activeCount == 0) {
         m_tracking->logCallerContextChainAsErrors(Q_FUNC_INFO);
-        qOhosReportFatalErrorAndAbort(
+        qOhosPrintfError(
             "%s: promise destroyed without notifying the caller: %s",
             Q_FUNC_INFO, m_tracking->rootCallerContextOrUnknown().c_str());
+        (*m_tracking->usage->onDestroyedWithoutCall)();
     }
 }
 
@@ -388,9 +400,10 @@ QOhosTaskPromise<Args...>::operator std::function<void(Args...)>() &&
         [sharedCalledFlag, tracking, funcInfo]() {
             if (!*sharedCalledFlag) {
                 tracking->logCallerContextChainAsErrors(funcInfo);
-                qOhosReportFatalErrorAndAbort(
+                qOhosPrintfError(
                     "%s: promise (as std::function) destroyed without notifying the caller: %s",
                     funcInfo, tracking->rootCallerContextOrUnknown().c_str());
+                (*tracking->usage->onDestroyedWithoutCall)();
             }
         });
 
@@ -413,10 +426,12 @@ QOhosTaskPromise<Args...> QOhosTaskPromise<Args...>::makeChained(std::string cal
 
     m_tracking->markUsed(Q_FUNC_INFO);
 
+    auto newUsage = std::make_shared<TrackingUsageState>(1, m_tracking->usage->onDestroyedWithoutCall);
+
     return QOhosTaskPromise(
         std::move(m_callable),
         std::make_shared<TrackingNode>(
-            std::move(callerContextName), std::move(m_tracking), std::make_shared<TrackingUsageState>()));
+            std::move(callerContextName), std::move(m_tracking), newUsage));
 }
 
 template<typename... Args>
@@ -430,7 +445,7 @@ QOhosTaskPromise<Args...>::makeBranched(ContextNames &&...branchContextNames) &&
     m_tracking->markUsed(Q_FUNC_INFO);
 
     auto sharedUsage = std::make_shared<TrackingUsageState>(
-        sizeof...(ContextNames));
+        sizeof...(ContextNames), m_tracking->usage->onDestroyedWithoutCall);
     return {{
         QOhosTaskPromise(
             m_callable,
@@ -464,8 +479,10 @@ void QOhosTaskPromise<Args...>::CallableImpl<Func>::call(Args &&...args)
 }
 
 template<typename... Args>
-QOhosTaskPromise<Args...>::TrackingUsageState::TrackingUsageState(std::size_t activeCount)
-    : activeCount(activeCount)
+QOhosTaskPromise<Args...>::TrackingUsageState::TrackingUsageState(
+    std::size_t activeCount, std::shared_ptr<std::function<void()>> onDestroyedWithoutCall)
+    : onDestroyedWithoutCall(onDestroyedWithoutCall)
+    , activeCount(activeCount)
 {
 }
 

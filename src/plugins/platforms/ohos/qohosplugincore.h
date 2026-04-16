@@ -422,7 +422,7 @@ T evalInJsThreadWithPromise(
 {
     return evalInJsThreadWithConsumer<T>(
         [evalFunc = std::move(evalFunc), callerContextName](QtOhos::JsState &jsState, std::function<void(T)> consumer) {
-            evalFunc(jsState, QOhosTaskPromise<T>(std::move(consumer), callerContextName));
+            evalFunc(jsState, QOhosTaskPromise<T>(std::move(consumer), {}, callerContextName));
         });
 }
 
