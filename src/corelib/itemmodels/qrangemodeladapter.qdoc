@@ -375,19 +375,19 @@
 */
 
 /*!
-    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::if_list<I>> QModelIndex QRangeModelAdapter<Range, Protocol, Model>::index(int row) const
+    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::if_list<I>> QModelIndex QRangeModelAdapter<Range, Protocol, Model>::index(int listRow) const
     \overload
 
-    Returns the QModelIndex for \a row.
+    Returns the QModelIndex for \a listRow.
 
     \constraints \c Range is a one-dimensional list.
 */
 
 /*!
-    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::unless_list<I>> QModelIndex QRangeModelAdapter<Range, Protocol, Model>::index(int row, int column) const
+    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::unless_list<I>> QModelIndex QRangeModelAdapter<Range, Protocol, Model>::index(int tableRow, int column) const
     \overload
 
-    Returns the QModelIndex for the item at \a row, \a column.
+    Returns the QModelIndex for the item at \a tableRow, \a column.
 
     \constraints \c Range is a table or tree.
 */
@@ -436,11 +436,11 @@
 */
 
 /*!
-    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::if_list<I>> QVariant QRangeModelAdapter<Range, Protocol, Model>::data(int row) const
-    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::if_list<I>> QVariant QRangeModelAdapter<Range, Protocol, Model>::data(int row, int role) const
+    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::if_list<I>> QVariant QRangeModelAdapter<Range, Protocol, Model>::data(int listRow) const
+    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::if_list<I>> QVariant QRangeModelAdapter<Range, Protocol, Model>::data(int listRow, int role) const
 
     \return a QVariant holding the data stored under the given \a role for the
-    item at \a row, or an invalid QVariant if there is no item. If \a role is
+    item at \a listRow, or an invalid QVariant if there is no item. If \a role is
     not specified, then returns a QVariant holding the complete item.
 
     \constraints \c Range is a list.
@@ -449,9 +449,9 @@
 */
 
 /*!
-    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::if_list<I>, QRangeModelAdapter<Range, Protocol, Model>::if_writable<I>> bool QRangeModelAdapter<Range, Protocol, Model>::setData(int row, const QVariant &value, int role)
+    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::if_list<I>, QRangeModelAdapter<Range, Protocol, Model>::if_writable<I>> bool QRangeModelAdapter<Range, Protocol, Model>::setData(int listRow, const QVariant &value, int role)
 
-    Sets the \a role data for the item at \a row to \a value.
+    Sets the \a role data for the item at \a listRow to \a value.
 
     Returns \c{true} if successful; otherwise returns \c{false}.
 
@@ -461,11 +461,11 @@
 */
 
 /*!
-    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::unless_list<I>> QVariant QRangeModelAdapter<Range, Protocol, Model>::data(int row, int column) const
-    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::unless_list<I>> QVariant QRangeModelAdapter<Range, Protocol, Model>::data(int row, int column, int role) const
+    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::unless_list<I>> QVariant QRangeModelAdapter<Range, Protocol, Model>::data(int tableRow, int column) const
+    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::unless_list<I>> QVariant QRangeModelAdapter<Range, Protocol, Model>::data(int tableRow, int column, int role) const
 
     \return a QVariant holding the data stored under the given \a role for the
-    item referred to by a \a row and \a column, or an invalid QVariant if there
+    item referred to by a \a tableRow and \a column, or an invalid QVariant if there
     is no data stored for that position or role. If \a role is not specified,
     then returns a QVariant holding the complete item.
 
@@ -475,9 +475,9 @@
 */
 
 /*!
-    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::unless_list<I>, QRangeModelAdapter<Range, Protocol, Model>::if_writable<I>> bool QRangeModelAdapter<Range, Protocol, Model>::setData(int row, int column, const QVariant &value, int role)
+    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::unless_list<I>, QRangeModelAdapter<Range, Protocol, Model>::if_writable<I>> bool QRangeModelAdapter<Range, Protocol, Model>::setData(int tableRow, int column, const QVariant &value, int role)
 
-    Sets the \a role data for the item referred to by \a row and \a column to
+    Sets the \a role data for the item referred to by \a tableRow and \a column to
     \a value.
 
     Returns \c{true} if successful; otherwise returns \c{false}.
@@ -515,17 +515,17 @@
 */
 
 /*!
-    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::if_list<I>> auto QRangeModelAdapter<Range, Protocol, Model>::at(int row) const
-    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::if_list<I>> auto QRangeModelAdapter<Range, Protocol, Model>::operator[](int row) const
+    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::if_list<I>> auto QRangeModelAdapter<Range, Protocol, Model>::at(int listRow) const
+    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::if_list<I>> auto QRangeModelAdapter<Range, Protocol, Model>::operator[](int listRow) const
 
-    \return the value at \a row as the type stored in \c Range.
+    \return the value at \a listRow as the type stored in \c Range.
 
     \constraints \c Range is a list.
 */
 
 /*!
-    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::if_list<I>, QRangeModelAdapter<Range, Protocol, Model>::if_writable<I>> auto QRangeModelAdapter<Range, Protocol, Model>::at(int row)
-    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::if_list<I>, QRangeModelAdapter<Range, Protocol, Model>::if_writable<I>> auto QRangeModelAdapter<Range, Protocol, Model>::operator[](int row)
+    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::if_list<I>, QRangeModelAdapter<Range, Protocol, Model>::if_writable<I>> auto QRangeModelAdapter<Range, Protocol, Model>::at(int listRow)
+    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::if_list<I>, QRangeModelAdapter<Range, Protocol, Model>::if_writable<I>> auto QRangeModelAdapter<Range, Protocol, Model>::operator[](int listRow)
 
     \return a \l{DataReference}{mutable reference} to the value stored in
     \c Range.
@@ -541,30 +541,30 @@
 */
 
 /*!
-    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::unless_list<I>> decltype(auto) QRangeModelAdapter<Range, Protocol, Model>::at(int row) const
-    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::unless_list<I>> decltype(auto) QRangeModelAdapter<Range, Protocol, Model>::operator[](int row) const
+    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::unless_list<I>> decltype(auto) QRangeModelAdapter<Range, Protocol, Model>::at(int tableRow) const
+    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::unless_list<I>> decltype(auto) QRangeModelAdapter<Range, Protocol, Model>::operator[](int tableRow) const
 
-    \return a constant reference to the row at \a row, as stored in \c Range.
+    \return a constant reference to the row at \a tableRow, as stored in \c Range.
 
     \constraints \c Range is a table or tree.
 */
 
 /*!
-    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::if_table<I>, QRangeModelAdapter<Range, Protocol, Model>::if_writable<I>> auto QRangeModelAdapter<Range, Protocol, Model>::at(int row)
-    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::if_table<I>, QRangeModelAdapter<Range, Protocol, Model>::if_writable<I>> auto QRangeModelAdapter<Range, Protocol, Model>::operator[](int row)
+    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::if_table<I>, QRangeModelAdapter<Range, Protocol, Model>::if_writable<I>> auto QRangeModelAdapter<Range, Protocol, Model>::at(int tableRow)
+    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::if_table<I>, QRangeModelAdapter<Range, Protocol, Model>::if_writable<I>> auto QRangeModelAdapter<Range, Protocol, Model>::operator[](int tableRow)
 
     \return a \l{QRangeModelAdapter::RowReference}{reference wrapper} to the row
-    at \a row, as stored in \c Range.
+    at \a tableRow, as stored in \c Range.
 
     \constraints \c Range is a mutable table, but not a tree.
 */
 
 /*!
-    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::if_tree<I>, QRangeModelAdapter<Range, Protocol, Model>::if_writable<I>> auto QRangeModelAdapter<Range, Protocol, Model>::at(int row)
-    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::if_tree<I>, QRangeModelAdapter<Range, Protocol, Model>::if_writable<I>> auto QRangeModelAdapter<Range, Protocol, Model>::operator[](int row)
+    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::if_tree<I>, QRangeModelAdapter<Range, Protocol, Model>::if_writable<I>> auto QRangeModelAdapter<Range, Protocol, Model>::at(int treeRow)
+    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::if_tree<I>, QRangeModelAdapter<Range, Protocol, Model>::if_writable<I>> auto QRangeModelAdapter<Range, Protocol, Model>::operator[](int treeRow)
 
     \return a \l{QRangeModelAdapter::RowReference}{reference wrapper} to the row
-    at \a row, as stored in \c Range.
+    at \a treeRow, as stored in \c Range.
 
 //! [treerow-ref]
     To modify the tree row, assign a new value to it. Assigning a new tree row
@@ -580,12 +580,12 @@
 */
 
 /*!
-    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::unless_list<I>> auto QRangeModelAdapter<Range, Protocol, Model>::at(int row, int column) const
+    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::unless_list<I>> auto QRangeModelAdapter<Range, Protocol, Model>::at(int tableRow, int column) const
 \omit
-    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::unless_list<I>> auto QRangeModelAdapter<Range, Protocol, Model>::operator[](int row, int column) const
+    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::unless_list<I>> auto QRangeModelAdapter<Range, Protocol, Model>::operator[](int tableRow, int column) const
 \endomit
 
-    \return a copy of the value stored as the item specified by \a row and
+    \return a copy of the value stored as the item specified by \a tableRow and
     \a column. If the item is a multi-role item, then this returns a copy of
     the entire item. If the rows in the \c Range store different types at
     different columns, then the return type will be a QVariant.
@@ -594,13 +594,13 @@
 */
 
 /*!
-    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::unless_list<I>, QRangeModelAdapter<Range, Protocol, Model>::if_writable<I>> auto QRangeModelAdapter<Range, Protocol, Model>::at(int row, int column)
+    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::unless_list<I>, QRangeModelAdapter<Range, Protocol, Model>::if_writable<I>> auto QRangeModelAdapter<Range, Protocol, Model>::at(int tableRow, int column)
 \omit
-    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::unless_list<I>, QRangeModelAdapter<Range, Protocol, Model>::if_writable<I>> auto QRangeModelAdapter<Range, Protocol, Model>::operator[](int row, int column)
+    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::unless_list<I>, QRangeModelAdapter<Range, Protocol, Model>::if_writable<I>> auto QRangeModelAdapter<Range, Protocol, Model>::operator[](int tableRow, int column)
 \endomit
 
     \return a \l{DataReference}{mutable reference} to the value stored as the
-    item specified by \a row and \a column. If the item is a multi-role item,
+    item specified by \a tableRow and \a column. If the item is a multi-role item,
     then this will be a reference to the entire item.
 
     \include qrangemodeladapter.qdoc data-ref
