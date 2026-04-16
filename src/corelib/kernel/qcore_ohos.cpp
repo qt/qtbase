@@ -5,7 +5,9 @@
 #include <QtCore/qmetaobject.h>
 #include <QtCore/private/qohoslogger_p.h>
 #include <deque>
+#include <exception>
 #include <mutex>
+#include <stdexcept>
 #include <napi.h>
 #include <tuple>
 #include <utility>
