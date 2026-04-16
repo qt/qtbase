@@ -1404,14 +1404,14 @@ void tst_QDate::fromStringFormat_data()
     QTest::newRow("yearless:19") << u"10.01.1"_s << u"M.dd.d"_s << 1900 << QDate(1900, 10, 1);
     QTest::newRow("yearless:20") << u"10.01.1"_s << u"M.dd.d"_s << 2000 << QDate(2000, 10, 1);
     QTest::newRow("neg-month") << u"-1.01.1"_s << u"M.dd.d"_s << 1900 << invalidDate();
-    QTest::newRow("greedy-break") << u"11010"_s << u"dMMyy"_s << 1900 << invalidDate();
+    QTest::newRow("restrained-greed") << u"11010"_s << u"dMMyy"_s << 1900 << QDate(1910, 10, 1);
     QTest::newRow("neg-day") << u"-2"_s << u"d"_s << 1900 << invalidDate();
     QTest::newRow("Md:132") << u"132"_s << u"Md"_s << 1900 << invalidDate();
     QTest::newRow("February") << u"February"_s << u"MMMM"_s << 1900 << QDate(1900, 2, 1);
 
     QTest::newRow("mon-aug-8th")
             << u"Mon August 8 2005"_s << u"ddd MMMM d yyyy"_s << 1900 << QDate(2005, 8, 8);
-    QTest::newRow("year-match-20000") << u"2000:00"_s << u"yyyy:yy"_s << 1900 << QDate(2000, 1, 1);
+    QTest::newRow("year-match-2000") << u"2000:00"_s << u"yyyy:yy"_s << 1900 << QDate(2000, 1, 1);
     QTest::newRow("year-match-1999") << u"1999:99"_s << u"yyyy:yy"_s << 1900 << QDate(1999, 1, 1);
     QTest::newRow("year-match-2099") << u"2099:99"_s << u"yyyy:yy"_s << 1900 << QDate(2099, 1, 1);
     QTest::newRow("year-match-2001") << u"2001:01"_s << u"yyyy:yy"_s << 1900 << QDate(2001, 1, 1);
@@ -1555,6 +1555,13 @@ void tst_QDate::fromStringFormat_data()
             << u"05-00206-21"_s << u"MM-yyyy-dd"_s << 1900 << QDate();
     QTest::newRow("5digit year, back")
             << u"05-21-00206"_s << u"MM-dd-yyyy"_s << 1900 << QDate();
+    // ... unless they have an overt sign:
+    QTest::newRow("signed 5digit year, front")
+            << u"+00206-05-21"_s << u"yyyy-MM-dd"_s << 1900 << QDate(206, 5, 21);
+    QTest::newRow("signed 5digit year, mid")
+            << u"05-+00206-21"_s << u"MM-yyyy-dd"_s << 1900 << QDate(206, 5, 21);
+    QTest::newRow("signed 5digit year, back")
+            << u"05-21-+00206"_s << u"MM-dd-yyyy"_s << 1900 << QDate(206, 5, 21);
     QTest::newRow("non-leap-feb-29") // QTBUG-132115: should fail but not assert
             << u"290215"_s << u"ddMMyy"_s << 1900 << QDate();
 
@@ -1576,8 +1583,6 @@ void tst_QDate::fromStringFormat()
     QFETCH(const QString, format);
     QFETCH(const int, baseYear);
 
-    QEXPECT_FAIL("quotes-empty", "QTBUG-110669: doubled single-quotes in format mishandled",
-                 Continue);
     QTEST(QDate::fromString(string, format, baseYear), "expected");
 }
 

@@ -13,9 +13,6 @@
 
 #include "private/qcalendarmath_p.h"
 #include "private/qdatetime_p.h"
-#if QT_CONFIG(datetimeparser)
-#include "private/qdatetimeparser_p.h"
-#endif
 #ifdef Q_OS_DARWIN
 #include "private/qcore_mac_p.h"
 #endif
@@ -27,6 +24,9 @@
 #include "private/qstringiterator_p.h"
 #if QT_CONFIG(timezone)
 #include "private/qtimezoneprivate_p.h"
+#endif
+#if QT_CONFIG(datestring)
+#  include "private/qttemporalpattern_p.h"
 #endif
 
 #include <cmath>
@@ -1867,19 +1867,22 @@ QDate QDate::fromString(QStringView string, Qt::DateFormat format)
 */
 QDate QDate::fromString(const QString &string, QStringView format, int baseYear, QCalendar cal)
 {
-    QDate date;
 #if QT_CONFIG(datetimeparser)
-    QDateTimeParser dt(QMetaType::QDate, QDateTimeParser::FromString, cal);
-    dt.setDefaultLocale(QLocale::c());
-    if (dt.parseFormat(format))
-        dt.fromString(string, &date, nullptr, baseYear);
+    QDatePattern pattern = QDatePattern::fromQtFormat(format);
+    pattern.setLocale(QLocale::c());
+    pattern.setCalendar(cal);
+    pattern.setBaseYear(baseYear);
+    if (auto match = pattern.parse(string, QDate(baseYear, 1, 1, cal));
+             match.size == string.size()) {
+        return std::move(match.payload);
+    }
 #else
     Q_UNUSED(string);
     Q_UNUSED(format);
     Q_UNUSED(baseYear);
     Q_UNUSED(cal);
 #endif
-    return date;
+    return {};
 }
 
 /*!
@@ -2702,17 +2705,16 @@ QTime QTime::fromString(QStringView string, Qt::DateFormat format)
 */
 QTime QTime::fromString(const QString &string, QStringView format)
 {
-    QTime time;
 #if QT_CONFIG(datetimeparser)
-    QDateTimeParser dt(QMetaType::QTime, QDateTimeParser::FromString, QCalendar());
-    dt.setDefaultLocale(QLocale::c());
-    if (dt.parseFormat(format))
-        dt.fromString(string, nullptr, &time);
+    QTimePattern pattern = QTimePattern::fromQtFormat(format);
+    pattern.setLocale(QLocale::c());
+    if (auto match = pattern.parse(string, QTime(0, 0)); match.size == string.size())
+        return std::move(match.payload);
 #else
     Q_UNUSED(string);
     Q_UNUSED(format);
 #endif
-    return time;
+    return {};
 }
 #endif // datestring
 
@@ -6034,13 +6036,13 @@ QDateTime QDateTime::fromString(const QString &string, QStringView format, int b
                                 QCalendar cal)
 {
 #if QT_CONFIG(datetimeparser)
-    QDateTime datetime;
-
-    QDateTimeParser dt(QMetaType::QDateTime, QDateTimeParser::FromString, cal);
-    dt.setDefaultLocale(QLocale::c());
-    if (dt.parseFormat(format) && (dt.fromString(string, &datetime, baseYear)
-                                   || !datetime.isValid())) {
-        return datetime;
+    QDateTimePattern pattern = QDateTimePattern::fromQtFormat(format);
+    pattern.setLocale(QLocale::c());
+    pattern.setCalendar(cal);
+    pattern.setBaseYear(baseYear);
+    if (auto match = pattern.parse(string, QDate(baseYear, 1, 1, cal).startOfDay());
+             match.size == string.size()) {
+        return std::move(match.payload);
     }
 #else
     Q_UNUSED(string);
@@ -6048,7 +6050,7 @@ QDateTime QDateTime::fromString(const QString &string, QStringView format, int b
     Q_UNUSED(baseYear);
     Q_UNUSED(cal);
 #endif
-    return QDateTime();
+    return {};
 }
 
 /*!

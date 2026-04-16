@@ -3349,9 +3349,10 @@ void tst_QDateTime::fromStringStringFormat_data()
     QTest::newRow("invalid-offset-from-utc:out-of-range")
             << u"2001-09-15T09:33:01.001-50"_s << u"yyyy-MM-ddThh:mm:ss.zt"_s << 1900 << greg
             << QDateTime();
-    QTest::newRow("invalid-offset-from-utc:single-digit-format")
+    QTest::newRow("single-digit-offset-from-utc")
             << u"2001-09-15T09:33:01.001+5"_s << u"yyyy-MM-ddThh:mm:ss.zt"_s << 1900 << greg
-            << QDateTime();
+            << QDateTime(QDate(2001, 9, 15), QTime(9, 33, 1, 1),
+                         QTimeZone::fromSecondsAheadOfUtc(18000));
     QTest::newRow("invalid-offset-from-utc:three-digit-format")
             << u"2001-09-15T09:33:01.001-701"_s << u"yyyy-MM-ddThh:mm:ss.zt"_s << 1900 << greg
             << QDateTime();
@@ -3404,8 +3405,10 @@ void tst_QDateTime::fromStringStringFormat_data()
     QTest::newRow("invalid-time-spec:random-digit")
             << u"2001-09-15T09:33:01.001 1"_s << u"yyyy-MM-ddThh:mm:ss.z t"_s << 1900 << greg
             << QDateTime();
-    QTest::newRow("invalid-offset-from-utc:merged-with-time")
-            << u"2008-10-13 UTC+0111.50"_s << u"yyyy-MM-dd thh.mm"_s << 1900 << greg << QDateTime();
+    QTest::newRow("restrained-greed-in-offset-from-utc:merged-with-time")
+            << u"2008-10-13 UTC+0111.50"_s << u"yyyy-MM-dd thh.mm"_s << 1900 << greg
+            << QDateTime(QDate(2008, 10, 13), QTime(11, 50),
+                         QTimeZone::fromSecondsAheadOfUtc(3600));
     QTest::newRow("invalid-offset-from-utc:with-colon-3-digit-merged-with-time")
             << u"2008-10-13 UTC+01:011.50"_s
             << u"yyyy-MM-dd thh.mm"_s << 1900 << greg << QDateTime();
@@ -3563,14 +3566,6 @@ void tst_QDateTime::fromStringStringFormat()
     QFETCH(const int, baseYear);
     QFETCH(const QCalendar, calendar);
     QFETCH(const QDateTime, expected);
-
-    if (futureTimeType == LocalTimeAheadOfUtc) {
-        // The new parser should remove the bounds, removing this limitation.
-        QEXPECT_FAIL("ASN.1:max", "QTBUG-77948: min/max are local times", Abort);
-        QEXPECT_FAIL("UTC:max", "QTBUG-77948: min/max are local times", Abort);
-    }
-    // For contrast, UTC::min gets away with it, which probably means there are
-    // genuinely out-of-range cases the old parser gets wrong.
 
     const QDateTime dt = QDateTime::fromString(string, format, baseYear, calendar);
 #ifdef USING_MS_TZDB
