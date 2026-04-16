@@ -7,11 +7,13 @@
 #include <QtCore/private/qohoslogger_p.h>
 #include <algorithm>
 #include <deque>
+#include <exception>
 #include <future>
 #include <mutex>
 #include <napi.h>
 #include <napi/native_api.h>
 #include <optional>
+#include <stdexcept>
 #include <tuple>
 #include <typeindex>
 #include <utility>
@@ -896,11 +898,61 @@ void invokeInJsThreadAndWaitForContinue(
     std::function<void(JsState &, QOhosTaskPromise<>)> &&task,
     std::string callerContextName)
 {
+    using namespace std::string_literals;
+
     const auto funcInfo = Q_FUNC_INFO;
+
+    struct JsTaskCompletionState
+    {
+        std::mutex mutex;
+        bool outerTaskPromiseSettled = false;
+        QOhosOptional<std::string> jsThreadExceptionMsg;
+    };
+    auto completionState = std::make_shared<JsTaskCompletionState>();
+
+    auto catchingTaskWrapper =
+        [task = std::move(task), completionState, callerContextName, funcInfo](
+            JsState &jsState, QOhosTaskPromise<> outerTaskPromise) {
+            auto sharedOuterTaskPromise =
+                std::make_shared<QOhosTaskPromise<>>(std::move(outerTaskPromise));
+
+            auto settleOuterTaskPromise =
+                [completionState, sharedOuterTaskPromise](QOhosOptional<std::string> exceptionMsg) {
+                    {
+                        std::lock_guard<std::mutex> lock(completionState->mutex);
+                        if (completionState->outerTaskPromiseSettled)
+                            return;
+                        completionState->outerTaskPromiseSettled = true;
+                        completionState->jsThreadExceptionMsg = std::move(exceptionMsg);
+                    }
+                    (*sharedOuterTaskPromise)();
+                };
+
+            auto innerTaskPromise = QOhosTaskPromise<>(
+                [settleOuterTaskPromise]() {
+                    settleOuterTaskPromise({});
+                },
+                [funcInfo, callerContextName]() {
+                    if (!std::uncaught_exception()) {
+                        qOhosReportFatalErrorAndAbort(
+                            "%s: promise destroyed without notifying the caller: %s",
+                            funcInfo, callerContextName.c_str());
+                    }
+                },
+                callerContextName);
+
+            try {
+                task(jsState, std::move(innerTaskPromise));
+            } catch (const std::exception &e) {
+                settleOuterTaskPromise(QOhosOptional<std::string>(e.what()));
+            } catch (...) {
+                settleOuterTaskPromise(QOhosOptional<std::string>("<unknown exception>"));
+            }
+        };
 
     if (getQtState().isQtThread()) {
         getQtJsBlockingCallsGateway().runInSlaveThreadAndWaitForContinue(
-            std::move(task), std::move(callerContextName));
+            std::move(catchingTaskWrapper), callerContextName);
     } else {
         auto taskReadyPromise = std::make_shared<std::promise<void>>();
         auto taskReadyFuture = taskReadyPromise->get_future();
@@ -917,10 +969,17 @@ void invokeInJsThreadAndWaitForContinue(
             callerContextName);
 
         invokeInJsThread(
-            [task = std::move(task), sharedTaskPromise](JsState &jsState) {
-                task(jsState, std::move(*sharedTaskPromise));
+            [catchingTaskWrapper = std::move(catchingTaskWrapper), sharedTaskPromise](JsState &jsState) {
+                catchingTaskWrapper(jsState, std::move(*sharedTaskPromise));
             });
         taskReadyFuture.wait();
+    }
+
+    if (completionState->jsThreadExceptionMsg.hasValue()) {
+        throw std::runtime_error(
+            "Got exception from task invoked in JS thread"s
+            + " (caller: \""s + callerContextName + "\"): "
+            + completionState->jsThreadExceptionMsg.value());
     }
 }
 
