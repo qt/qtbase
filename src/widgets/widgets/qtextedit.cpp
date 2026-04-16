@@ -2031,16 +2031,10 @@ QRect QTextEdit::cursorRect() const
 
 
 /*!
-    \fn QString QTextEdit::anchorAt(const QPoint &pos) const
-    \overload
-*/
-
-/*!
     Returns the reference of the anchor at position \a pos, or an
     empty string if no anchor exists at that point.
-    \since 6.12
 */
-QString QTextEdit::anchorAt(QPointF pos) const
+QString QTextEdit::anchorAt(const QPoint& pos) const
 {
     Q_D(const QTextEdit);
     return d->control->anchorAt(d->mapToContents(pos));
