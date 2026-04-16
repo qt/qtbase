@@ -1084,7 +1084,8 @@ bool QPaintEngineEx::shouldDrawCachedGlyphs(QFontEngine *fontEngine, const QTran
         return true;
 
     qreal pixelSize = fontEngine->fontDef.pixelSize;
-    static const int maxCachedGlyphSizeSquared = std::pow(QFontEngine::maxCachedGlyphSize(), 2);
+    static const int maxCachedGlyphSize = std::min(0x7fff, QFontEngine::maxCachedGlyphSize());
+    static const int maxCachedGlyphSizeSquared = maxCachedGlyphSize * maxCachedGlyphSize;
     return (pixelSize * pixelSize * qAbs(m.determinant())) <= maxCachedGlyphSizeSquared;
 }
 
