@@ -508,7 +508,12 @@ bool QNetworkAddressEntry::isPermanent() const
     Not all operating systems support reporting all features. Only the
     IPv4 addresses are guaranteed to be listed by this class in all
     platforms. In particular, IPv6 address listing is only supported
-    on Windows, Linux, \macos and the BSDs.
+    on Windows, Linux, \macos and the BSDs. Similarly, the interface
+    type reported by type() may not be available on all platforms.
+
+    \note On Android, the interface type is always reported as \l Unknown,
+    as the platform does not expose hardware type information for physical
+    interfaces.
 
     \sa QNetworkAddressEntry
 */
