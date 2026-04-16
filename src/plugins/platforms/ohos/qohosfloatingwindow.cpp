@@ -178,7 +178,7 @@ void QOhosFloatingWindow::initialize()
     }
 
     QObject::connect(
-        m_view.get(), &QOhosView::windowRectChanged,
+        m_view.get(), &QOhosView::windowRectChangedInGlobalDisplay,
         qWindow,
         [this](const QOhosWindowProxy::RectChangeOptions &rectChangeOptions) {
             handleWindowRectChanged(rectChangeOptions);
