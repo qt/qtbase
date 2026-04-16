@@ -95,7 +95,12 @@ public:
     static QCoreApplication *instance() noexcept { return self.loadRelaxed(); }
     static bool instanceExists() noexcept { return instance() != nullptr; }
 #else
+#  ifdef __cpp_lib_atomic_ref
+    static QCoreApplication *instance() noexcept
+    { return std::atomic_ref(self).load(std::memory_order_relaxed); }
+#  else
     static QCoreApplication *instance() noexcept { return self; }
+#  endif
     static bool instanceExists() noexcept;
 #endif
 
