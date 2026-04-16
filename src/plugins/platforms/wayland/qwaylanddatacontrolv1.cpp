@@ -150,7 +150,8 @@ void QWaylandDataControlSourceV1::zwlr_data_control_source_v1_send(const QString
     if (!content.isEmpty()) {
         // Create a sigpipe handler that does nothing, or clients may be forced to terminate
         // if the pipe is closed in the other end.
-        struct sigaction action, oldAction;
+        struct sigaction action = {};
+        struct sigaction oldAction = {};
         action.sa_handler = SIG_IGN;
         sigemptyset (&action.sa_mask);
         action.sa_flags = 0;
