@@ -85,6 +85,12 @@ extern void qt_format_text(const QFont& font, const QRectF &_r,
     to return a rectangle large enough to contain the rendered string,
     and size(), to return the size of that rectangle.
 
+    QFontMetrics has two different functions for calculating the bounds of a string, each with
+    multiple overloads: boundingRect() and tightBoundingRect(). If a precise bounding rect is
+    needed, then tightBoundingRect() should be preferred. This will measure each glyph individually
+    to return a bounding rect that fits tightly around the rendered text. Depending on the platform,
+    the boundingRect() function may return approximated bounds, but require less computation.
+
     \note The advance width can be different from the width of the actual
     rendered text. It refers to the distance from the origin of the string to
     where you would append additional characters. As text may have overhang
@@ -722,14 +728,6 @@ QRect QFontMetrics::boundingRect(QChar ch) const
     Despite the different actual character heights, the heights of the
     bounding rectangles of "Yes" and "yes" are the same.
 
-    The bounding rectangle returned by this function is somewhat larger
-    than that calculated by the simpler boundingRect() function. This
-    function uses the \l{minLeftBearing()}{maximum left} and
-    \l{minRightBearing()}{right} font bearings as is
-    necessary for multi-line text to align correctly. Also,
-    fontHeight() and lineSpacing() are used to calculate the height,
-    rather than individual character heights.
-
     \sa horizontalAdvance(), QPainter::boundingRect(), Qt::Alignment
 */
 QRect QFontMetrics::boundingRect(const QRect &rect, int flags, const QString &text, int tabStops,
@@ -985,6 +983,12 @@ qreal QFontMetrics::fontDpi() const
     string in pixels (or points, for a printer), boundingRect(), to
     return a rectangle large enough to contain the rendered string,
     and size(), to return the size of that rectangle.
+
+    QFontMetrics has two different functions for calculating the bounds of a string, each with
+    multiple overloads: boundingRect() and tightBoundingRect(). If a precise bounding rect is
+    needed, then tightBoundingRect() should be preferred. This will measure each glyph individually
+    to return a bounding rect that fits tightly around the rendered text. Depending on the platform,
+    the boundingRect() function may return approximated bounds, but require less computation.
 
     Example:
     \snippet code/src_gui_text_qfontmetrics.cpp 1
