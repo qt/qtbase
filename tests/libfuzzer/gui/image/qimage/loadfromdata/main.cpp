@@ -3,6 +3,7 @@
 
 #include <QGuiApplication>
 #include <QByteArray>
+#include <QFont>
 #include <QImage>
 #include <QtGlobal>
 
@@ -18,5 +19,6 @@ extern "C" int LLVMFuzzerTestOneInput(const char *Data, size_t Size) {
     static char *argv[] = {arg1, arg2, arg3, nullptr};
     static QGuiApplication qga(argc, argv);
     QImage().loadFromData(QByteArray::fromRawData(Data, Size));
+    QFont::cleanup(); // avoid memleaks, QTBUG-140076
     return 0;
 }
