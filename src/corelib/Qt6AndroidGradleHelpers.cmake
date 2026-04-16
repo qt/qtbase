@@ -358,7 +358,7 @@ function(_qt_internal_android_prepare_gradle_build target)
 endfunction()
 
 # Returns the path to the output package file for the target.
-function(_qt_internal_android_get_output_package_name out_var target)
+function(_qt_internal_android_get_output_package_name out_var target type)
     _qt_internal_android_package_path(package_build_dir ${target} ${type})
     _qt_internal_android_get_deployment_type_option(deployment_type_suffix "release" "debug")
     if(type STREQUAL "apk")
