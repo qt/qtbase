@@ -85,7 +85,7 @@ QFbVtHandler::QFbVtHandler(QObject *parent)
     connect(m_signalNotifier, &QSocketNotifier::activated, this, &QFbVtHandler::handleSignal);
 
     if (!qEnvironmentVariableIntValue("QT_QPA_NO_SIGNAL_HANDLER")) {
-        struct sigaction sa;
+        struct sigaction sa = {};
         sa.sa_flags = 0;
         sa.sa_handler = signalHandler;
         sigemptyset(&sa.sa_mask);
