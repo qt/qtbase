@@ -298,7 +298,7 @@ private:
     HintStyle defaultHintStyle() const { return default_hint_style; }
 
     static QFontEngineFT *create(const QFontDef &fontDef, FaceId faceId, const QByteArray &fontData = QByteArray());
-    static QFontEngineFT *create(const QByteArray &fontData, qreal pixelSize, QFont::HintingPreference hintingPreference, const QMap<QFont::Tag, float> &variableAxisValue);
+    static QFontEngineFT *create(const QByteArray &fontData, qreal pixelSize, QFont::HintingPreference hintingPreference, const QMap<QFont::Tag, float> &variableAxisValue, int instanceIndex = 0);
 
 protected:
 

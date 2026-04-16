@@ -465,6 +465,7 @@ void QCoreTextFontDatabase::populateFromDescriptor(CTFontDescriptorRef font, con
 }
 
 static NSString * const kQtFontDataAttribute = @"QtFontDataAttribute";
+static NSString * const kQtFontInstanceIndexAttribute = @"QtFontInstanceIndexAttribute";
 
 template <typename T>
 T *descriptorAttribute(CTFontDescriptorRef descriptor, CFStringRef name)
@@ -540,10 +541,17 @@ QFontEngine *QCoreTextFontDatabaseEngineFactory<QFontEngineFT>::fontEngine(const
 
     CTFontDescriptorRef descriptor = static_cast<CTFontDescriptorRef>(usrPtr);
 
+    int instanceIndex = 0;
+    if (NSNumber *numberRef = descriptorAttribute<NSNumber>(descriptor, (CFStringRef)kQtFontInstanceIndexAttribute))
+        instanceIndex = numberRef.integerValue;
+
     if (NSValue *fontDataValue = descriptorAttribute<NSValue>(descriptor, (CFStringRef)kQtFontDataAttribute)) {
         QByteArray *fontData = static_cast<QByteArray *>(fontDataValue.pointerValue);
-        return QFontEngineFT::create(*fontData, fontDef.pixelSize,
-            static_cast<QFont::HintingPreference>(fontDef.hintingPreference), fontDef.variableAxisValues);
+        return QFontEngineFT::create(*fontData,
+                                     fontDef.pixelSize,
+                                     static_cast<QFont::HintingPreference>(fontDef.hintingPreference),
+                                     fontDef.variableAxisValues,
+                                     instanceIndex);
     } else if (NSURL *url = descriptorAttribute<NSURL>(descriptor, kCTFontURLAttribute)) {
         QFontEngine::FaceId faceId;
 
@@ -553,7 +561,7 @@ QFontEngine *QCoreTextFontDatabaseEngineFactory<QFontEngineFT>::fontEngine(const
 
         QString styleName = QCFString(CTFontDescriptorCopyAttribute(descriptor, kCTFontStyleNameAttribute));
         faceId.index = QFreetypeFace::getFaceIndexByStyleName(faceFileName, styleName);
-
+        faceId.instanceIndex = instanceIndex;
         faceId.variableAxes = fontDef.variableAxisValues;
 
         return QFontEngineFT::create(fontDef, faceId);
@@ -768,29 +776,36 @@ QStringList QCoreTextFontDatabase::addApplicationFont(const QByteArray &fontData
 
     if (!fontData.isEmpty()) {
         QCFType<CFDataRef> fontDataReference = fontData.toRawCFData();
-        if (QCFType<CFArrayRef> descriptors = CTFontManagerCreateFontDescriptorsFromData(fontDataReference)) {
-            CFMutableArrayRef array = CFArrayCreateMutable(kCFAllocatorDefault, 0, &kCFTypeArrayCallBacks);
-            const int count = CFArrayGetCount(descriptors);
-
-            for (int i = 0; i < count; ++i) {
-                CTFontDescriptorRef descriptor = CTFontDescriptorRef(CFArrayGetValueAtIndex(descriptors, i));
-
-                // There's no way to get the data back out of a font descriptor created with
-                // CTFontManagerCreateFontDescriptorFromData, so we attach the data manually.
-                NSDictionary *attributes = @{ kQtFontDataAttribute : [NSValue valueWithPointer:new QByteArray(fontData)] };
-                QCFType<CTFontDescriptorRef> copiedDescriptor = CTFontDescriptorCreateCopyWithAttributes(descriptor, (CFDictionaryRef)attributes);
-                CFArrayAppendValue(array, copiedDescriptor);
-            }
-
-            fonts = array;
-        }
+        fonts = CTFontManagerCreateFontDescriptorsFromData(fontDataReference);
     } else {
         QCFType<CFURLRef> fontURL = QUrl::fromLocalFile(fileName).toCFURL();
         fonts = CTFontManagerCreateFontDescriptorsFromURL(fontURL);
     }
 
-    if (!fonts)
+    if (fonts) {
+        CFMutableArrayRef array = CFArrayCreateMutable(kCFAllocatorDefault, 0, &kCFTypeArrayCallBacks);
+        const int count = CFArrayGetCount(fonts);
+
+        for (int i = 0; i < count; ++i) {
+            CTFontDescriptorRef descriptor = CTFontDescriptorRef(CFArrayGetValueAtIndex(fonts, i));
+
+            NSDictionary *attributes = !fontData.isEmpty()
+              ? @{
+                  kQtFontDataAttribute: [NSValue valueWithPointer:new QByteArray(fontData)],
+                  kQtFontInstanceIndexAttribute: @(i)
+                }
+              : @{
+                  kQtFontInstanceIndexAttribute: @(i)
+            };
+
+            QCFType<CTFontDescriptorRef> copiedDescriptor = CTFontDescriptorCreateCopyWithAttributes(descriptor, (CFDictionaryRef)attributes);
+            CFArrayAppendValue(array, copiedDescriptor);
+        }
+
+        fonts = array;
+    } else {
         return QStringList();
+    }
 
     QStringList families;
     const int numFonts = CFArrayGetCount(fonts);

@@ -841,6 +841,23 @@ QFontEngineFT *QFontEngineFT::create(const QFontDef &fontDef, FaceId faceId, con
     return engine.release();
 }
 
+static FT_UShort calculateActualWeight(QFreetypeFace *freetypeFace, FT_Face face, QFontEngine::FaceId faceId)
+{
+    FT_MM_Var *var = freetypeFace->mm_var;
+    if (var != nullptr && faceId.instanceIndex >= 0 && FT_UInt(faceId.instanceIndex) < var->num_namedstyles) {
+        for (FT_UInt axis = 0; axis < var->num_axis; ++axis) {
+            if (var->axis[axis].tag == QFont::Tag("wght").value()) {
+                return var->namedstyle[faceId.instanceIndex].coords[axis] >> 16;
+            }
+        }
+    }
+    if (const TT_OS2 *os2 = reinterpret_cast<const TT_OS2 *>(FT_Get_Sfnt_Table(face, ft_sfnt_os2))) {
+        return os2->usWeightClass;
+    }
+
+    return 700;
+}
+
 namespace {
     class QFontEngineFTRawData: public QFontEngineFT
     {
@@ -858,15 +875,20 @@ namespace {
 
             if (freetype->face->style_flags & FT_STYLE_FLAG_BOLD)
                 fontDef.weight = QFont::Bold;
+            else
+                fontDef.weight = calculateActualWeight(freetype, freetype->face, faceId());
         }
 
-        bool initFromData(const QByteArray &fontData, const QMap<QFont::Tag, float> &variableAxisValues)
+        bool initFromData(const QByteArray &fontData,
+                          const QMap<QFont::Tag, float> &variableAxisValues,
+                          int instanceIndex)
         {
             FaceId faceId;
             faceId.filename = "";
             faceId.index = 0;
             faceId.uuid = QUuid::createUuid().toByteArray();
             faceId.variableAxes = variableAxisValues;
+            faceId.instanceIndex = instanceIndex;
 
             return init(faceId, true, Format_None, fontData);
         }
@@ -876,7 +898,8 @@ namespace {
 QFontEngineFT *QFontEngineFT::create(const QByteArray &fontData,
                                      qreal pixelSize,
                                      QFont::HintingPreference hintingPreference,
-                                     const QMap<QFont::Tag, float> &variableAxisValues)
+                                     const QMap<QFont::Tag, float> &variableAxisValues,
+                                     int instanceIndex)
 {
     QFontDef fontDef;
     fontDef.pixelSize = pixelSize;
@@ -885,7 +908,7 @@ QFontEngineFT *QFontEngineFT::create(const QByteArray &fontData,
     fontDef.variableAxisValues = variableAxisValues;
 
     QFontEngineFTRawData *fe = new QFontEngineFTRawData(fontDef);
-    if (!fe->initFromData(fontData, variableAxisValues)) {
+    if (!fe->initFromData(fontData, variableAxisValues, instanceIndex)) {
         delete fe;
         return nullptr;
     }
@@ -937,23 +960,6 @@ bool QFontEngineFT::init(FaceId faceId, bool antialias, GlyphFormat format,
 }
 
 static void dont_delete(void*) {}
-
-static FT_UShort calculateActualWeight(QFreetypeFace *freetypeFace, FT_Face face, QFontEngine::FaceId faceId)
-{
-    FT_MM_Var *var = freetypeFace->mm_var;
-    if (var != nullptr && faceId.instanceIndex >= 0 && FT_UInt(faceId.instanceIndex) < var->num_namedstyles) {
-        for (FT_UInt axis = 0; axis < var->num_axis; ++axis) {
-            if (var->axis[axis].tag == QFont::Tag("wght").value()) {
-                return var->namedstyle[faceId.instanceIndex].coords[axis] >> 16;
-            }
-        }
-    }
-    if (const TT_OS2 *os2 = reinterpret_cast<const TT_OS2 *>(FT_Get_Sfnt_Table(face, ft_sfnt_os2))) {
-        return os2->usWeightClass;
-    }
-
-    return 700;
-}
 
 static bool calculateActualItalic(QFreetypeFace *freetypeFace, FT_Face face, QFontEngine::FaceId faceId)
 {
