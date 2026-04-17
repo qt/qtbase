@@ -498,7 +498,7 @@ inline ulong getTimeStamp(UIEvent *event)
     // an id for use by Qt.
     for (UITouch *touch in touches) {
 #if QT_CONFIG(tabletevent)
-        if (touch.type == UITouchTypeStylus) {
+        if (touch.type == UITouchTypePencil) {
             if (Q_UNLIKELY(m_activePencilTouch)) {
                 qWarning("ignoring additional Pencil while first is still active");
                 continue;
@@ -541,7 +541,7 @@ inline ulong getTimeStamp(UIEvent *event)
 #ifndef Q_OS_TVOS
     for (UITouch *touch in touches) {
 #if QT_CONFIG(tabletevent)
-        if (touch.type == UITouchTypeStylus) {
+        if (touch.type == UITouchTypePencil) {
             m_activePencilTouch = nil;
         } else
 #endif
