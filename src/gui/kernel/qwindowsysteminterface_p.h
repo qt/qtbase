@@ -366,13 +366,13 @@ public:
         // TODO take QPointingDevice* instead of types and IDs
         static void handleTabletEvent(QWindow *w, const QPointF &local, const QPointF &global,
                                       int device, int pointerType, Qt::MouseButtons buttons, qreal pressure, qreal xTilt, qreal yTilt,
-                                      qreal tangentialPressure, qreal rotation, int z, qint64 uid,
+                                      qreal tangentialPressure, qreal rotation, qreal z, qint64 uid,
                                       Qt::KeyboardModifiers modifiers = Qt::NoModifier);
         static void setPlatformSynthesizesMouse(bool v);
 
         TabletEvent(QWindow *w, ulong time, const QPointF &local, const QPointF &global,
                     const QPointingDevice *device, Qt::MouseButtons b, qreal pressure, qreal xTilt, qreal yTilt, qreal tpressure,
-                    qreal rotation, int z, Qt::KeyboardModifiers mods)
+                    qreal rotation, qreal z, Qt::KeyboardModifiers mods)
             : PointerEvent(w, time, Tablet, mods, device),
               buttons(b), local(local), global(global),
               pressure(pressure), xTilt(xTilt), yTilt(yTilt), tangentialPressure(tpressure),
@@ -385,7 +385,7 @@ public:
         qreal yTilt;
         qreal tangentialPressure;
         qreal rotation;
-        int z;
+        qreal z;
         static bool platformSynthesizesMouse;
     };
 
