@@ -59,6 +59,8 @@
 #include <private/qstyleanimation_p.h>
 #endif
 
+#include <QtCore/qoperatingsystemversion.h>
+
 #include <algorithm>
 
 QT_BEGIN_NAMESPACE
@@ -547,7 +549,8 @@ int QWindowsStyle::styleHint(StyleHint hint, const QStyleOption *opt, const QWid
 #endif // QT_CONFIG(rubberband)
 #if QT_CONFIG(wizard)
     case SH_WizardStyle:
-        ret = QWizard::ModernStyle;
+        ret = QOperatingSystemVersion::currentType() == QOperatingSystemVersion::Windows
+                ? QWizard::AeroStyle : QWizard::ModernStyle;
         break;
 #endif
     case SH_ItemView_ArrowKeysNavigateIntoChildren:

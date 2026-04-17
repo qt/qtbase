@@ -4,6 +4,7 @@
 
 #include <QFont>
 #include <QTest>
+#include <QApplication>
 #include <QCheckBox>
 #include <QLabel>
 #include <QLineEdit>
@@ -2268,6 +2269,12 @@ void tst_QWizard::setCommitPage()
     // ### test relabeling of the Cancel button to "Close" once this is implemented
 }
 
+static QWizard::WizardStyle defaultWizardStyle(const QWidget *w = nullptr)
+{
+    const QStyle *style = w != nullptr ? w->style() : QApplication::style();
+    return QWizard::WizardStyle(style->styleHint(QStyle::SH_WizardStyle, 0, w));
+}
+
 void tst_QWizard::setWizardStyle()
 {
     QWizard wizard;
@@ -2276,14 +2283,7 @@ void tst_QWizard::setWizardStyle()
     qApp->processEvents();
 
     // defaults
-    const bool styleHintMatch =
-        wizard.wizardStyle() ==
-        QWizard::WizardStyle(wizard.style()->styleHint(QStyle::SH_WizardStyle, 0, &wizard));
-#if !defined(QT_NO_STYLE_WINDOWSVISTA)
-    QVERIFY(styleHintMatch || wizard.wizardStyle() == QWizard::AeroStyle);
-#else
-    QVERIFY(styleHintMatch);
-#endif
+    QCOMPARE(wizard.wizardStyle(), defaultWizardStyle(&wizard));
 
     // set/get consistency
     for (int wstyle = 0; wstyle < QWizard::NStyles; ++wstyle) {
@@ -2444,7 +2444,10 @@ void tst_QWizard::objectNames_data()
     QTest::addColumn<QWizard::WizardButton>("wizardButton");
     QTest::addColumn<QString>("buttonName");
 
-    QTest::newRow("BackButton")    << QWizard::BackButton    << QStringLiteral("__qt__passive_wizardbutton0");
+    if (defaultWizardStyle() != QWizard::AeroStyle) {
+        QTest::newRow("BackButton") << QWizard::BackButton
+                                    << QStringLiteral("__qt__passive_wizardbutton0");
+    }
     QTest::newRow("NextButton")    << QWizard::NextButton    << QStringLiteral("__qt__passive_wizardbutton1");
     QTest::newRow("CommitButton")  << QWizard::CommitButton  << QStringLiteral("qt_wizard_commit");
     QTest::newRow("FinishButton")  << QWizard::FinishButton  << QStringLiteral("qt_wizard_finish");
@@ -2620,9 +2623,6 @@ void tst_QWizard::task177022_setFixedSize()
     int page1_id = wiz.addPage(&page1);
     int page2_id = wiz.addPage(&page2);
     wiz.setFixedSize(width, height);
-    if (wiz.wizardStyle() == QWizard::AeroStyle)
-        QEXPECT_FAIL("", "this probably relates to non-client area hack for AeroStyle titlebar "
-                     "effect; not sure if it qualifies as a bug or not", Continue);
     QCOMPARE(wiz.size(), QSize(width, height));
     QCOMPARE(wiz.minimumWidth(), width);
     QCOMPARE(wiz.minimumHeight(), height);

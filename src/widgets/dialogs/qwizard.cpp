@@ -622,7 +622,7 @@ public:
 #  if QT_CONFIG(shortcut)
     QPointer<QShortcut> vistaNextShortcut;
 #  endif
-    bool vistaInitPending = true;
+    bool vistaInitPending = false;
     bool vistaDirty = true;
     bool vistaStateChanged = false;
     bool inHandleAeroStyleChange = false;
@@ -669,10 +669,19 @@ void QWizardPrivate::init()
 
     antiFlickerWidget = new QWizardAntiFlickerWidget(q, this);
     wizStyle = QWizard::WizardStyle(q->style()->styleHint(QStyle::SH_WizardStyle, nullptr, q));
-    if (wizStyle == QWizard::MacStyle) {
-        opts = (QWizard::NoDefaultButton | QWizard::NoCancelButton);
-    } else if (wizStyle == QWizard::ModernStyle) {
+    switch (wizStyle) {
+    case QWizard::ModernStyle:
         opts = QWizard::HelpButtonOnRight;
+        break;
+    case QWizard::MacStyle:
+        opts = (QWizard::NoDefaultButton | QWizard::NoCancelButton);
+        break;
+#if QT_CONFIG(style_windowsvista)
+    case QWizard::AeroStyle:
+        vistaInitPending = true;
+#endif
+    default:
+        break;
     }
 
 #if QT_CONFIG(style_windowsvista)
