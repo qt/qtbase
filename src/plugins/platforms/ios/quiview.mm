@@ -787,6 +787,13 @@ inline ulong getTimeStamp(UIEvent *event)
     if (!self.platformWindow)
         return;
 
+    // Just before lifting the pencil we might receive a hover event,
+    // but the event's position wrongly reflects the position where the
+    // pencil was first pressed instead of the current position, and
+    // semantically it doesn't make sense to send hover before release.
+    if (m_activePencilTouch)
+        return;
+
     ulong timeStamp = [[NSProcessInfo processInfo] systemUptime] * 1000;
 
     CGFloat zOffset = [recognizer zOffset];
