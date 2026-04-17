@@ -184,6 +184,15 @@ template <class T> inline size_t qHash(const T *key, size_t seed = 0) noexcept
 {
     return qHash(reinterpret_cast<quintptr>(key), seed);
 }
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0) && !defined(QT_BOOTSTRAPPED)
+
+// this used to be matched by the 1-to-2-arg adapter, which mixed the seed in differently
+// in Qt 7, when the adapter is gone, this will use the const T* overload above instead
+template <class T> inline size_t qHash(T *key, size_t seed = 0) noexcept
+{
+    return qHash(reinterpret_cast<quintptr>(key)) ^ seed;
+}
+#endif // Qt 6
 Q_DECL_CONST_FUNCTION constexpr inline size_t qHash(std::nullptr_t, size_t seed = 0) noexcept
 {
     return seed;
