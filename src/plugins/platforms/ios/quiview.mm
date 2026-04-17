@@ -57,12 +57,8 @@ inline ulong getTimeStamp(UIEvent *event)
     QHash<NSUInteger, QWindowSystemInterface::TouchPoint> m_activeTouches;
     UITouch *m_activePencilTouch;
     NSMutableArray<UIAccessibilityElement *> *m_accessibleElements;
-    UIPanGestureRecognizer *m_scrollGestureRecognizer;
     CGPoint m_lastScrollCursorPos;
     CGPoint m_lastScrollDelta;
-#if QT_CONFIG(tabletevent)
-    UIHoverGestureRecognizer *m_hoverGestureRecognizer;
-#endif
 }
 
 + (Class)layerClass
@@ -87,27 +83,24 @@ inline ulong getTimeStamp(UIEvent *event)
         self.multipleTouchEnabled = YES;
 #endif
 
-        m_scrollGestureRecognizer = [[UIPanGestureRecognizer alloc]
-                                      initWithTarget:self
-                                      action:@selector(handleScroll:)];
+        auto scrollGestureRecognizer = [[UIPanGestureRecognizer alloc]
+            initWithTarget:self action:@selector(handleScroll:)];
         // The gesture recognizer should only care about scroll gestures (for now)
         // Set allowedTouchTypes to empty array here to not interfere with touch events
         // handled by the UIView. Scroll gestures, even those coming from touch devices,
         // such as trackpads will still be received as they are not touch events
-        m_scrollGestureRecognizer.allowedTouchTypes = [NSArray array];
-        if (@available(ios 13.4, *)) {
-            m_scrollGestureRecognizer.allowedScrollTypesMask = UIScrollTypeMaskAll;
-        }
-        m_scrollGestureRecognizer.maximumNumberOfTouches = 0;
+        scrollGestureRecognizer.allowedTouchTypes = @[];
+        if (@available(ios 13.4, *))
+            scrollGestureRecognizer.allowedScrollTypesMask = UIScrollTypeMaskAll;
+        scrollGestureRecognizer.maximumNumberOfTouches = 0;
         m_lastScrollDelta = CGPointZero;
         m_lastScrollCursorPos = CGPointZero;
-        [self addGestureRecognizer:m_scrollGestureRecognizer];
+        [self addGestureRecognizer:[scrollGestureRecognizer autorelease]];
 
 #if QT_CONFIG(tabletevent)
-        m_hoverGestureRecognizer = [[UIHoverGestureRecognizer alloc]
-                                     initWithTarget:self
-                                     action:@selector(handleHover:)];
-        [self addGestureRecognizer:m_hoverGestureRecognizer];
+        auto hoverGestureRecognizer = [[UIHoverGestureRecognizer alloc]
+            initWithTarget:self action:@selector(handleHover:)];
+        [self addGestureRecognizer:[hoverGestureRecognizer autorelease]];
 #endif
 
         // Set up layer
@@ -147,7 +140,6 @@ inline ulong getTimeStamp(UIEvent *event)
 - (void)dealloc
 {
     [m_accessibleElements release];
-    [m_scrollGestureRecognizer release];
 
     [super dealloc];
 }
