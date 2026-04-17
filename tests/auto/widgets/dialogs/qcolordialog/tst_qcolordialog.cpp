@@ -32,6 +32,7 @@ private slots:
     void hexColor();
 
     void hideNativeByDestruction();
+    void optionsEmptyByDefault();
 };
 
 class TestNativeDialog : public QColorDialog
@@ -219,6 +220,43 @@ void tst_QColorDialog::hideNativeByDestruction()
     // active
     window.activateWindow();
     QVERIFY(QTest::qWaitFor(windowActive));
+}
+
+class ColorDialog : public QColorDialog
+{
+    Q_OBJECT
+protected:
+    bool event(QEvent *e) override
+    {
+        if (e->type() == QEvent::Polish) {
+            const bool result = QColorDialog::event(e);
+            polished = true;
+            return result;
+        }
+        return QColorDialog::event(e);
+    }
+public:
+    bool polished = false;
+};
+
+void tst_QColorDialog::optionsEmptyByDefault()
+{
+    ColorDialog cd;
+    QCOMPARE(cd.options(), QColorDialog::ColorDialogOptions());
+    QVERIFY(!cd.testOption(QColorDialog::DontUseNativeDialog));
+
+    {
+        ColorDialog subclassed;
+        QCOMPARE(subclassed.options(), QColorDialog::ColorDialogOptions());
+        QTRY_VERIFY(subclassed.testOption(QColorDialog::DontUseNativeDialog));
+    }
+    {
+        ColorDialog subclassed;
+        subclassed.setOption(QColorDialog::DontUseNativeDialog, false);
+        QCOMPARE(subclassed.options(), QColorDialog::ColorDialogOptions());
+        QTRY_VERIFY(subclassed.polished);
+        QVERIFY(!subclassed.testOption(QColorDialog::DontUseNativeDialog));
+    }
 }
 
 QTEST_MAIN(tst_QColorDialog)
