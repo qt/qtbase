@@ -24,6 +24,7 @@
 #include <QtGui/private/qpointingdevice_p.h>
 #include <qpa/qwindowsysteminterface_p.h>
 
+Q_LOGGING_CATEGORY(lcQpaMouse, "qt.qpa.input.mouse")
 Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
 Q_LOGGING_CATEGORY(lcQpaInputEvents, "qt.qpa.input.events")
 
@@ -97,10 +98,16 @@ inline ulong getTimeStamp(UIEvent *event)
         m_lastScrollCursorPos = CGPointZero;
         [self addGestureRecognizer:[scrollGestureRecognizer autorelease]];
 
+        auto mouseHoverGestureRecognizer = [[UIHoverGestureRecognizer alloc]
+            initWithTarget:self action:@selector(handleMouseHover:)];
+        mouseHoverGestureRecognizer.allowedTouchTypes = @[ @(UITouchTypeIndirectPointer) ];
+        [self addGestureRecognizer:[mouseHoverGestureRecognizer autorelease]];
+
 #if QT_CONFIG(tabletevent)
-        auto hoverGestureRecognizer = [[UIHoverGestureRecognizer alloc]
-            initWithTarget:self action:@selector(handleHover:)];
-        [self addGestureRecognizer:[hoverGestureRecognizer autorelease]];
+        auto pencilHoverGestureRecognizer = [[UIHoverGestureRecognizer alloc]
+            initWithTarget:self action:@selector(handlePencilHover:)];
+        pencilHoverGestureRecognizer.allowedTouchTypes = @[ @(UITouchTypePencil) ];
+        [self addGestureRecognizer:[pencilHoverGestureRecognizer autorelease]];
 #endif
 
         // Set up layer
@@ -589,6 +596,34 @@ inline ulong getTimeStamp(UIEvent *event)
         self.platformWindow->window(), timestamp, iosIntegration->touchDevice());
 }
 
+- (void)handleMouseHover:(UIHoverGestureRecognizer *)recognizer
+{
+    if (!self.platformWindow)
+        return;
+
+    auto *window = self.platformWindow->window();
+    auto localPosition = QPointF::fromCGPoint([recognizer locationInView:self]);
+    auto globalPosition = self.platformWindow->mapToGlobalF(localPosition);
+
+    switch (recognizer.state) {
+    case UIGestureRecognizerStateBegan:
+        qCDebug(lcQpaMouse) << "🖱️ enter" << window << "local =" << localPosition;
+        QWindowSystemInterface::handleEnterEvent(window, localPosition, globalPosition);
+        break;
+    case UIGestureRecognizerStateEnded:
+        qCDebug(lcQpaMouse) << "🖱️ leave" << window;
+        QWindowSystemInterface::handleLeaveEvent(window);
+        break;
+    case UIGestureRecognizerStateChanged:
+        qCDebug(lcQpaMouse) << "🖱️ move" << "local =" << localPosition << "global =" << globalPosition;
+        QWindowSystemInterface::handleMouseEvent(window, localPosition, globalPosition,
+            Qt::NoButton, Qt::NoButton, QEvent::MouseMove);
+        break;
+    default:
+        qCWarning(lcQpaMouse) << "Unknown hover state for" << recognizer;
+    }
+}
+
 - (int)mapPressTypeToKey:(UIPress*)press withModifiers:(Qt::KeyboardModifiers)qtModifiers text:(QString &)text
 {
     switch (press.type) {
@@ -782,7 +817,7 @@ inline ulong getTimeStamp(UIEvent *event)
 #endif // QT_CONFIG(wheelevent)
 
 #if QT_CONFIG(tabletevent)
-- (void)handleHover:(UIHoverGestureRecognizer *)recognizer
+- (void)handlePencilHover:(UIHoverGestureRecognizer *)recognizer
 {
     if (!self.platformWindow)
         return;
