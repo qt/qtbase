@@ -277,3 +277,13 @@
 
     \sa QRgba64::alpha8(), QColor::alpha()
 */
+
+/*!
+    \fn size_t QRgba64::qHash(QRgba64 key, size_t seed = 0);
+    \qhash{QRgba64}
+    \since 6.11.1
+
+    In Qt versions prior to 6.11.1, the type was hashable via its implicit
+    conversion to quint64. This explicit qHash() overload retains compatibility
+    with that implicit qHash().
+*/
