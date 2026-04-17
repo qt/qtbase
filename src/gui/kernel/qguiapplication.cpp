@@ -3071,8 +3071,10 @@ void QGuiApplicationPrivate::processTabletEnterProximityEvent(QWindowSystemInter
 {
 #if QT_CONFIG(tabletevent)
     const QPointingDevice *dev = static_cast<const QPointingDevice *>(e->device);
-    QTabletEvent ev(QEvent::TabletEnterProximity, dev, QPointF(), QPointF(),
-                    0, 0, 0, 0, 0, 0, e->modifiers, Qt::NoButton,
+    QTabletEvent ev(QEvent::TabletEnterProximity, dev, e->local, e->global,
+                    e->pressure, e->xTilt, e->yTilt,
+                    e->tangentialPressure, e->rotation, e->z,
+                    e->modifiers, Qt::NoButton,
                     tabletDevicePoint(dev->uniqueId().numericId()).state);
     ev.setTimestamp(e->timestamp);
     QGuiApplication::sendSpontaneousEvent(qGuiApp, &ev);
@@ -3085,8 +3087,10 @@ void QGuiApplicationPrivate::processTabletLeaveProximityEvent(QWindowSystemInter
 {
 #if QT_CONFIG(tabletevent)
     const QPointingDevice *dev = static_cast<const QPointingDevice *>(e->device);
-    QTabletEvent ev(QEvent::TabletLeaveProximity, dev, QPointF(), QPointF(),
-                    0, 0, 0, 0, 0, 0, e->modifiers, Qt::NoButton,
+    QTabletEvent ev(QEvent::TabletLeaveProximity, dev, e->local, e->global,
+                    e->pressure, e->xTilt, e->yTilt,
+                    e->tangentialPressure, e->rotation, e->z,
+                    e->modifiers, Qt::NoButton,
                     tabletDevicePoint(dev->uniqueId().numericId()).state);
     ev.setTimestamp(e->timestamp);
     QGuiApplication::sendSpontaneousEvent(qGuiApp, &ev);

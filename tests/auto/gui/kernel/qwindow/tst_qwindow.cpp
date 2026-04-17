@@ -2193,8 +2193,7 @@ void tst_QWindow::tabletEvents()
     QCoreApplication::processEvents();
     qCDebug(lcTests) << "expect TabletEnterProximity:" << window.singlePointEvents;
     QTRY_COMPARE_GE(window.singlePointEvents.size(), 1);
-    // the positions given to handleTabletEnterLeaveProximityEvent are not currently delivered (QTBUG-111400)
-    QCOMPARE(window.singlePointEvents.last(), PointerEvent({ QEvent::TabletEnterProximity, Qt::NoButton, &tabletStylus, {}, {} }));
+    QCOMPARE(window.singlePointEvents.last(), PointerEvent({ QEvent::TabletEnterProximity, Qt::NoButton, &tabletStylus, local, global }));
     window.singlePointEvents.clear();
 
     // the eraser is pressed into contact with the tablet surface
@@ -2253,8 +2252,7 @@ void tst_QWindow::tabletEvents()
     // and is taken away (goes out of proxmity)
     QWindowSystemInterface::handleTabletEnterLeaveProximityEvent(&window, timestamp, &tabletStylus, false, local, global);
     QCoreApplication::processEvents();
-    // the positions given to handleTabletEnterLeaveProximityEvent are not currently delivered (QTBUG-111400)
-    QTRY_COMPARE(window.singlePointEvents.last(), PointerEvent({ QEvent::TabletLeaveProximity, Qt::NoButton, &tabletStylus, {}, {} }));
+    QTRY_COMPARE(window.singlePointEvents.last(), PointerEvent({ QEvent::TabletLeaveProximity, Qt::NoButton, &tabletStylus, local, global }));
     QCOMPARE(window.doubleClickCount, 0);
 #endif
 }
