@@ -30,6 +30,8 @@ Q_LOGGING_CATEGORY(lcQpaInputEvents, "qt.qpa.input.events")
 namespace {
 inline ulong getTimeStamp(UIEvent *event)
 {
+    bool useEvent = event != nil;
+
 #if TARGET_OS_SIMULATOR == 1
     // We currently build Qt for simulator using X86_64, even on ARM based macs.
     // This results in the simulator running on ARM, while the app is running
@@ -46,10 +48,10 @@ inline ulong getTimeStamp(UIEvent *event)
 #if defined(Q_PROCESSOR_ARM)
     #warning The timestamp work-around for x86_64 can (probably) be removed when building for ARM
 #endif
-    return ulong(NSProcessInfo.processInfo.systemUptime * 1000);
+    useEvent = false;
 #endif
 
-    return ulong(event.timestamp * 1000);
+    return ulong(useEvent ? event.timestamp : NSProcessInfo.processInfo.systemUptime) * 1000;
 }
 }
 
@@ -404,10 +406,11 @@ inline ulong getTimeStamp(UIEvent *event)
 }
 #endif
 
-- (void)handleTouches:(NSSet *)touches withEvent:(UIEvent *)event withState:(QEventPoint::State)state withTimestamp:(ulong)timeStamp
+- (void)handleTouches:(NSSet *)touches withEvent:(UIEvent *)event withState:(QEventPoint::State)state
 {
     QIOSIntegration *iosIntegration = QIOSIntegration::instance();
     bool supportsPressure = QIOSIntegration::instance()->touchDevice()->capabilities() & QPointingDevice::Capability::Pressure;
+    const ulong timeStamp = getTimeStamp(event);
 
 #if QT_CONFIG(tabletevent)
     if (m_activePencilTouch && [touches containsObject:m_activePencilTouch]) {
@@ -522,17 +525,17 @@ inline ulong getTimeStamp(UIEvent *event)
             topLevel->requestActivateWindow();
     }
 
-    [self handleTouches:touches withEvent:event withState:QEventPoint::State::Pressed withTimestamp:getTimeStamp(event)];
+    [self handleTouches:touches withEvent:event withState:QEventPoint::State::Pressed];
 }
 
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
 {
-    [self handleTouches:touches withEvent:event withState:QEventPoint::State::Updated withTimestamp:getTimeStamp(event)];
+    [self handleTouches:touches withEvent:event withState:QEventPoint::State::Updated];
 }
 
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
 {
-    [self handleTouches:touches withEvent:event withState:QEventPoint::State::Released withTimestamp:getTimeStamp(event)];
+    [self handleTouches:touches withEvent:event withState:QEventPoint::State::Released];
 
     // Remove ended touch points from the active set:
 #ifndef Q_OS_TVOS
@@ -584,15 +587,13 @@ inline ulong getTimeStamp(UIEvent *event)
     m_activeTouches.clear();
     m_activePencilTouch = nil;
 
-    ulong timestamp = event ? getTimeStamp(event) : ([[NSProcessInfo processInfo] systemUptime] * 1000);
-
     QIOSIntegration *iosIntegration = static_cast<QIOSIntegration *>(QGuiApplicationPrivate::platformIntegration());
 
     // Send the touch event asynchronously, as the application might spin a recursive
     // event loop in response to the touch event (a dialog e.g.), which will deadlock
     // the UIKit event delivery system (QTBUG-98651).
     QWindowSystemInterface::handleTouchCancelEvent<QWindowSystemInterface::AsynchronousDelivery>(
-        self.platformWindow->window(), timestamp, iosIntegration->touchDevice());
+        self.platformWindow->window(), getTimeStamp(event), iosIntegration->touchDevice());
 }
 
 - (int)mapPressTypeToKey:(UIPress*)press withModifiers:(Qt::KeyboardModifiers)qtModifiers text:(QString &)text
@@ -753,10 +754,8 @@ inline ulong getTimeStamp(UIEvent *event)
     pixelDelta.setX(deltaX);
     pixelDelta.setY(deltaY);
 
-    NSTimeInterval time_stamp = [[NSProcessInfo processInfo] systemUptime];
-    ulong qt_timestamp = time_stamp * 1000;
-
-    Qt::KeyboardModifiers qt_modifierFlags = QAppleKeyMapper::fromUIKitModifiers(recognizer.modifierFlags);
+    Qt::KeyboardModifiers qt_modifierFlags =
+            QAppleKeyMapper::fromUIKitModifiers(recognizer.modifierFlags);
 
     if (recognizer.state == UIGestureRecognizerStateBegan)
         // locationInView: doesn't return the cursor position at the time of the wheel event,
@@ -777,7 +776,8 @@ inline ulong getTimeStamp(UIEvent *event)
     qCInfo(lcQpaInputEvents).nospace() << "wheel event" << " at " << qt_local
     << " pixelDelta=" << pixelDelta << " angleDelta=" << angleDelta;
 
-    QWindowSystemInterface::handleWheelEvent(self.platformWindow->window(), qt_timestamp, qt_local, qt_global, pixelDelta, angleDelta, qt_modifierFlags);
+    QWindowSystemInterface::handleWheelEvent(self.platformWindow->window(),
+        getTimeStamp(nil), qt_local, qt_global, pixelDelta, angleDelta, qt_modifierFlags);
 }
 #endif // QT_CONFIG(wheelevent)
 
