@@ -3129,7 +3129,7 @@ QBrush QWindows11Style::controlFillBrush(const QStyleOption *option, ControlType
     };
 
     if (option->palette.isBrushSet(QPalette::Current, QPalette::Button))
-        return option->palette.button();
+        return option->palette.brush(QPalette::Current, QPalette::Button);
 
     if (!isChecked(option) && isAutoRaise(option))
         return Qt::NoBrush;
@@ -3148,7 +3148,7 @@ QBrush QWindows11Style::inputFillBrush(const QStyleOption *option, const QWidget
     using namespace StyleOptionHelper;
     const auto role = widget ? widget->backgroundRole() : QPalette::Window;
     if (option->palette.isBrushSet(QPalette::Current, role))
-        return option->palette.button();
+        return option->palette.brush(QPalette::Current, role);
 
     if (isDisabled(option))
         return winUI3Color(fillControlDisabled);
@@ -3170,7 +3170,7 @@ QColor QWindows11Style::controlTextColor(const QStyleOption *option, bool ignore
     };
 
     if (option->palette.isBrushSet(QPalette::Current, QPalette::ButtonText))
-        return option->palette.buttonText().color();
+        return option->palette.color(QPalette::Current, QPalette::ButtonText);
 
     const int colorIndex = !ignoreIsChecked && isChecked(option) ? 1 : 0;
     const auto state = calcControlState(option);
