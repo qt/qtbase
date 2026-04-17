@@ -94,7 +94,9 @@ void QIOSIntegration::initialize()
     m_pencilDevice = new QPointingDevice(
             "Apple Pencil", 0, QInputDevice::DeviceType::Stylus, QPointingDevice::PointerType::Pen,
             QInputDevice::Capability::Position | QInputDevice::Capability::Pressure
-                    | QInputDevice::Capability::XTilt | QInputDevice::Capability::YTilt,
+                    | QInputDevice::Capability::XTilt | QInputDevice::Capability::YTilt
+                    | QInputDevice::Capability::Hover | QInputDevice::Capability::ZPosition
+                    | QInputDevice::Capability::Rotation,
             1, 0);
     QWindowSystemInterface::registerInputDevice(m_pencilDevice);
 #endif
