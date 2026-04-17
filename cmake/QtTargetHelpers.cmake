@@ -2113,12 +2113,21 @@ function(qt_internal_add_plugin_dependencies target)
     # Filter out non-existent plugin targets / yield an error.
     set(plugin_targets "")
     foreach(plugin_target IN LISTS arg_PLUGIN_TARGETS)
-        if(TARGET "${plugin_target}")
+        string(REGEX REPLACE "^.*::" "" bare "${plugin_target}")
+        set(versioned "${QT_CMAKE_EXPORT_NAMESPACE}::${bare}")
+        if(TARGET "${versioned}")
+            list(APPEND plugin_targets "${versioned}")
+        elseif(TARGET "${plugin_target}")
             list(APPEND plugin_targets "${plugin_target}")
         elseif(NOT arg_SKIP_MISSING_PLUGIN_TARGETS)
             message(FATAL_ERROR "Plugin target '${plugin_target}' does not exist.")
         endif()
     endforeach()
+
+    # Bail out if there are no valid plugin targets.
+    if(plugin_targets STREQUAL "")
+        return()
+    endif()
 
     if(QT_BUILD_SHARED_LIBS)
         # Add a dependency such that building ${target} builds the plugin targets too.
