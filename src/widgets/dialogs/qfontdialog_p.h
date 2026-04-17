@@ -111,6 +111,8 @@ public:
     void setVisible(bool visible) override;
     void _q_runNativeAppModalPanel();
 
+    bool optionsExplicitlySet = false;
+
 private:
     virtual void initHelper(QPlatformDialogHelper *) override;
     virtual void helperPrepareShow(QPlatformDialogHelper *) override;

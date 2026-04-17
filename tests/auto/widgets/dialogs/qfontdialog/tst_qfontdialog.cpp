@@ -47,6 +47,7 @@ private slots:
     void noCrashWhenParentIsDeleted();
 
     void hideNativeByDestruction();
+    void optionsEmptyByDefault();
 
 private:
     void runSlotWithFailsafeTimer(const char *member);
@@ -296,6 +297,43 @@ void tst_QFontDialog::hideNativeByDestruction()
     // active
     window.activateWindow();
     QVERIFY(QTest::qWaitFor(windowActive));
+}
+
+class FontDialog : public QFontDialog
+{
+    Q_OBJECT
+protected:
+    bool event(QEvent *e) override
+    {
+        if (e->type() == QEvent::Polish) {
+            const bool result = QFontDialog::event(e);
+            polished = true;
+            return result;
+        }
+        return QFontDialog::event(e);
+    }
+public:
+    bool polished = false;
+};
+
+void tst_QFontDialog::optionsEmptyByDefault()
+{
+    FontDialog fd;
+    QCOMPARE(fd.options(), QFontDialog::FontDialogOptions());
+    QVERIFY(!fd.testOption(QFontDialog::DontUseNativeDialog));
+
+    {
+        FontDialog subclassed;
+        QCOMPARE(subclassed.options(), QFontDialog::FontDialogOptions());
+        QTRY_VERIFY(subclassed.testOption(QFontDialog::DontUseNativeDialog));
+    }
+    {
+        FontDialog subclassed;
+        subclassed.setOption(QFontDialog::DontUseNativeDialog, false);
+        QCOMPARE(subclassed.options(), QFontDialog::FontDialogOptions());
+        QTRY_VERIFY(subclassed.polished);
+        QVERIFY(!subclassed.testOption(QFontDialog::DontUseNativeDialog));
+    }
 }
 
 QTEST_MAIN(tst_QFontDialog)
