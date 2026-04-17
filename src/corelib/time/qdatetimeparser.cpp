@@ -461,10 +461,10 @@ bool QDateTimeParser::parseFormat(QStringView newFormat)
             case 'H':
             case 'h':
                 if (parserType != QMetaType::QDate) {
+                    appendSeparator(&newSeparators, newFormat, index, i - index, lastQuote);
                     const Section hour = (sect == 'h') ? Hour12Section : Hour24Section;
                     const SectionNode sn{hour, i - add, countRepeat(newFormat, i, 2)};
                     newSectionNodes.append(sn);
-                    appendSeparator(&newSeparators, newFormat, index, i - index, lastQuote);
                     i += sn.count - 1;
                     index = i + 1;
                     newDisplay |= hour;
@@ -472,9 +472,9 @@ bool QDateTimeParser::parseFormat(QStringView newFormat)
                 break;
             case 'm':
                 if (parserType != QMetaType::QDate) {
+                    appendSeparator(&newSeparators, newFormat, index, i - index, lastQuote);
                     const SectionNode sn{MinuteSection, i - add, countRepeat(newFormat, i, 2)};
                     newSectionNodes.append(sn);
-                    appendSeparator(&newSeparators, newFormat, index, i - index, lastQuote);
                     i += sn.count - 1;
                     index = i + 1;
                     newDisplay |= MinuteSection;
@@ -482,9 +482,9 @@ bool QDateTimeParser::parseFormat(QStringView newFormat)
                 break;
             case 's':
                 if (parserType != QMetaType::QDate) {
+                    appendSeparator(&newSeparators, newFormat, index, i - index, lastQuote);
                     const SectionNode sn{SecondSection, i - add, countRepeat(newFormat, i, 2)};
                     newSectionNodes.append(sn);
-                    appendSeparator(&newSeparators, newFormat, index, i - index, lastQuote);
                     i += sn.count - 1;
                     index = i + 1;
                     newDisplay |= SecondSection;
@@ -493,10 +493,10 @@ bool QDateTimeParser::parseFormat(QStringView newFormat)
 
             case 'z':
                 if (parserType != QMetaType::QDate) {
+                    appendSeparator(&newSeparators, newFormat, index, i - index, lastQuote);
                     const int repeat = countRepeat(newFormat, i, 3);
                     const SectionNode sn{MSecSection, i - add, repeat < 3 ? 1 : 3};
                     newSectionNodes.append(sn);
-                    appendSeparator(&newSeparators, newFormat, index, i - index, lastQuote);
                     i += repeat - 1;
                     index = i + 1;
                     newDisplay |= MSecSection;
@@ -505,9 +505,9 @@ bool QDateTimeParser::parseFormat(QStringView newFormat)
             case 'A':
             case 'a':
                 if (parserType != QMetaType::QDate) {
+                    appendSeparator(&newSeparators, newFormat, index, i - index, lastQuote);
                     const int pos = i - add;
                     Case caseOpt = sect == 'A' ? UpperCase : LowerCase;
-                    appendSeparator(&newSeparators, newFormat, index, i - index, lastQuote);
                     newDisplay |= AmPmSection;
                     if (i + 1 < newFormat.size()
                         && newFormat.sliced(i + 1).startsWith(u'p', Qt::CaseInsensitive)) {
@@ -524,10 +524,10 @@ bool QDateTimeParser::parseFormat(QStringView newFormat)
                 if (parserType != QMetaType::QTime) {
                     const int repeat = countRepeat(newFormat, i, 4);
                     if (repeat >= 2) {
+                        appendSeparator(&newSeparators, newFormat, index, i - index, lastQuote);
                         const SectionNode sn{repeat == 4 ? YearSection : YearSection2Digits,
                                              i - add, repeat == 4 ? 4 : 2};
                         newSectionNodes.append(sn);
-                        appendSeparator(&newSeparators, newFormat, index, i - index, lastQuote);
                         i += sn.count - 1;
                         index = i + 1;
                         newDisplay |= sn.type;
@@ -536,9 +536,9 @@ bool QDateTimeParser::parseFormat(QStringView newFormat)
                 break;
             case 'M':
                 if (parserType != QMetaType::QTime) {
+                    newSeparators.append(unquote(newFormat.first(i).sliced(index)));
                     const SectionNode sn{MonthSection, i - add, countRepeat(newFormat, i, 4)};
                     newSectionNodes.append(sn);
-                    newSeparators.append(unquote(newFormat.first(i).sliced(index)));
                     i += sn.count - 1;
                     index = i + 1;
                     newDisplay |= MonthSection;
@@ -546,12 +546,12 @@ bool QDateTimeParser::parseFormat(QStringView newFormat)
                 break;
             case 'd':
                 if (parserType != QMetaType::QTime) {
+                    appendSeparator(&newSeparators, newFormat, index, i - index, lastQuote);
                     const int repeat = countRepeat(newFormat, i, 4);
                     const Section sectionType = (repeat == 4 ? DayOfWeekSectionLong
                         : (repeat == 3 ? DayOfWeekSectionShort : DaySection));
                     const SectionNode sn{sectionType, i - add, repeat};
                     newSectionNodes.append(sn);
-                    appendSeparator(&newSeparators, newFormat, index, i - index, lastQuote);
                     i += sn.count - 1;
                     index = i + 1;
                     newDisplay |= sn.type;
@@ -559,9 +559,9 @@ bool QDateTimeParser::parseFormat(QStringView newFormat)
                 break;
             case 't':
                 if (parserType == QMetaType::QDateTime) {
+                    appendSeparator(&newSeparators, newFormat, index, i - index, lastQuote);
                     const SectionNode sn{TimeZoneSection, i - add, countRepeat(newFormat, i, 4)};
                     newSectionNodes.append(sn);
-                    appendSeparator(&newSeparators, newFormat, index, i - index, lastQuote);
                     i += sn.count - 1;
                     index = i + 1;
                     newDisplay |= TimeZoneSection;
