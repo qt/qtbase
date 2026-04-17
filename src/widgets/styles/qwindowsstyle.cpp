@@ -46,6 +46,7 @@
 #include <qmath.h>
 #include <QtGui/qpainterpath.h>
 #include <QtGui/qscreen.h>
+#include <QtGui/qstylehints.h>
 #include <QtGui/qwindow.h>
 #include <qpa/qplatformtheme.h>
 #include <qpa/qplatformscreen.h>
@@ -550,6 +551,7 @@ int QWindowsStyle::styleHint(StyleHint hint, const QStyleOption *opt, const QWid
 #if QT_CONFIG(wizard)
     case SH_WizardStyle:
         ret = QOperatingSystemVersion::currentType() == QOperatingSystemVersion::Windows
+                        && QGuiApplication::styleHints()->colorScheme() != Qt::ColorScheme::Dark
                 ? QWizard::AeroStyle : QWizard::ModernStyle;
         break;
 #endif
