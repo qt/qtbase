@@ -992,6 +992,8 @@ void tst_QDockWidget::restoreStateOfFloating()
     QMainWindow mw;
     QDockWidget *dock = createTestDock(mw);
     mw.addDockWidget(Qt::TopDockWidgetArea, dock);
+    mw.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&mw));
     QVERIFY(!dock->isFloating());
     QByteArray ba = mw.saveState();
     dock->setFloating(true);
