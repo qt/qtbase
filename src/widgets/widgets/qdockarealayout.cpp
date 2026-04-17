@@ -39,6 +39,7 @@ enum class StateFlag
     Visible = 0x01,
     Floating = 0x02,
     FloatingTabs = 0x04,
+    Closed = 0x08,
 };
 Q_DECLARE_FLAGS(StateFlags, StateFlag);
 
@@ -230,6 +231,8 @@ QDebug operator<<(QDebug dbg, StateFlags flags)
         f << QLatin1StringView("Floating");
     if (flags.testFlag(StateFlag::FloatingTabs))
         f << QLatin1StringView("FloatingTabs");
+    if (flags.testFlag(StateFlag::Closed))
+        f << QLatin1StringView("Closed");
     dbg << "StateFlags(" << f.join(u'|') << ")";
     return dbg;
 }
@@ -1917,6 +1920,8 @@ void QDockAreaLayoutInfo::saveState(QDataStream &stream) const
                 flags.setFlag(StateFlag::Floating);
             if (qobject_cast<QDockWidgetGroupWindow *>(w->parent()))
                 flags.setFlag(StateFlag::FloatingTabs);
+            if (auto *dw = qobject_cast<QDockWidget *>(w))
+                flags.setFlag(StateFlag::Closed, !dw->toggleViewAction()->isChecked());
             stream << static_cast<uchar>(flags.toInt());
 
             qCDebug(lcQpaDockWidgets) << "Saving state for dock widget:" << w->objectName() << flags;
@@ -2053,8 +2058,12 @@ bool QDockAreaLayoutInfo::restoreState(QDataStream &stream, QList<QDockWidget*> 
                     stream >> item.pos >> item.size >> dummy >> dummy;
                     if (!testing) {
                         item_list.append(item);
-                        widget->setFloating(false);
-                        widget->setVisible(flags.setFlag(StateFlag::Visible));
+                        if (flags.testFlag(StateFlag::Closed)) {
+                           widget->close();
+                        } else {
+                            widget->setFloating(false);
+                            widget->setVisible(flags.setFlag(StateFlag::Visible));
+                        }
                         emit widget->dockLocationChanged(toDockWidgetArea(dockPos));
                     }
                 }

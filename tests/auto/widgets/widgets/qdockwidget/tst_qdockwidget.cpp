@@ -2124,14 +2124,22 @@ void tst_QDockWidget::saveAndRestore()
         QList<int> path1;
         QList<int> path2;
         qCreateFloatingTabs(mainWindow, cent, d1, d2, path1, path2);
+        auto *d3 = new QDockWidget;
+        d3->setObjectName("D3");
+        mainWindow->addDockWidget(Qt::LeftDockWidgetArea, d3);
+        d3->setFloating(true);
+        QTRY_VERIFY(d3->isFloating());
         QPointer<QDockWidgetGroupWindow> groupWindow = mainWindow->findChild<QDockWidgetGroupWindow *>();
         QVERIFY(groupWindow);
         QVERIFY(compare(groupWindow->dockWidgets(), {d1, d2}));
+        d3->close();
+        QVERIFY(!d3->toggleViewAction()->isChecked());
         const auto &ba = mainWindow->saveState();
         mainWindow->restoreState(ba);
         QTRY_VERIFY(!groupWindow);
         groupWindow = mainWindow->findChild<QDockWidgetGroupWindow *>();
         QVERIFY(compare(groupWindow->dockWidgets(), {d1, d2}));
+        QVERIFY(!d3->toggleViewAction()->isChecked()); // d3 must still be closed after restore
     }
 
     // Create a mainwindow with a central widget and two dock widgets.
