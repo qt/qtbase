@@ -108,6 +108,37 @@ QFontDialogPrivate::~QFontDialogPrivate()
       {Standard Dialogs Example}
 */
 
+/*
+    Internal event filter used to adjust dialog options during widget polish.
+
+    Enables DontUseNativeDialog automatically when QFontDialog is subclassed
+    and no explicit options were set by the user.
+*/
+
+class QFontPolishFilter : public QObject
+{
+public:
+    explicit QFontPolishFilter(QFontDialog *fd) : QObject(fd)
+    {
+        fd->installEventFilter(this);
+    }
+
+    bool eventFilter(QObject *obj, QEvent *event) override
+    {
+        if (event->type() == QEvent::Polish ) {
+            Q_ASSERT(qobject_cast<QFontDialog *>(obj));
+            auto *fd = static_cast<QFontDialog *>(obj);
+            auto *d = static_cast<QFontDialogPrivate *>(QObjectPrivate::get(fd));
+
+            if (fd->metaObject() != &QFontDialog::staticMetaObject && !d->optionsExplicitlySet)
+                fd->setOption(QFontDialog::DontUseNativeDialog);
+
+            deleteLater(); // no longer needed after first polish
+        }
+        return false;
+    }
+};
+
 /*!
     Constructs a standard font dialog.
 
@@ -121,6 +152,7 @@ QFontDialog::QFontDialog(QWidget *parent)
     : QDialog(*new QFontDialogPrivate, parent, qfd_DefaultWindowFlags)
 {
     Q_D(QFontDialog);
+    new QFontPolishFilter(this);
     d->init();
 }
 
@@ -132,6 +164,7 @@ QFontDialog::QFontDialog(const QFont &initial, QWidget *parent)
     : QFontDialog(parent)
 {
     setCurrentFont(initial);
+    new QFontPolishFilter(this);
 }
 
 void QFontDialogPrivate::init()
@@ -853,6 +886,9 @@ QFont QFontDialog::selectedFont() const
 */
 void QFontDialog::setOption(FontDialogOption option, bool on)
 {
+    Q_D(QFontDialog);
+    d->optionsExplicitlySet = true;
+
     const QFontDialog::FontDialogOptions previousOptions = options();
     if (!(previousOptions & option) != !on)
         setOptions(previousOptions ^ option);
@@ -885,6 +921,7 @@ bool QFontDialog::testOption(FontDialogOption option) const
 void QFontDialog::setOptions(FontDialogOptions options)
 {
     Q_D(QFontDialog);
+    d->optionsExplicitlySet = true;
 
     if (QFontDialog::options() == options)
         return;
