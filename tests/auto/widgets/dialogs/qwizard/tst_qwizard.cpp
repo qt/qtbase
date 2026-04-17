@@ -1000,7 +1000,7 @@ void tst_QWizard::setOption_IgnoreSubTitles()
 
     wizard1.show();
     wizard2.show();
-    QVERIFY(QTest::qWaitForWindowExposed(&wizard2));
+    QVERIFY(QTest::qWaitForWindowActive(&wizard2));
 
     // Check that subtitles are shown when they should (i.e.,
     // they're set and IgnoreSubTitles is off).
