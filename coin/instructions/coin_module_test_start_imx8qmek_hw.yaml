@@ -1,0 +1,60 @@
+type: Group
+instructions:
+  - type: ChangeDirectory
+    directory: "{{.Env.HOME}}"
+  - type: ExecuteCommand
+    command: ["git", "clone", "git@git.qt.io:timolahti/rta_hw.git"]
+    maxTimeInSeconds: 900
+    maxTimeBetweenOutput: 900
+    userMessageOnFailure: "Failed to clone repository"
+  - type: ChangeDirectory
+    directory: "{{.Env.HOME}}/rta_hw"
+  - type: WriteFile
+    fileContents: |
+      #!/usr/bin/env python3
+      import os
+      import rta_hw
+
+      version = None
+      home = os.environ.get('HOME')
+      module = os.environ.get('TESTED_MODULE_COIN')
+      conf = f"{home}/work/qt/{module}/.cmake.conf"
+      qbsp = None
+      with open(conf) as f:
+        for line in f:
+          if "QT_REPO_MODULE_VERSION" in line:
+            version = line.split('"')[1]
+            qbsp = f"../meta-b2qt-embedded-qbsp-x86_64-imx8qm-mek-{version}.qbsp"
+            break
+      device_id, device_ip = rta_hw.get("imx8qmmek", qbsp)
+      with open("imx8_env.txt", "w") as file:
+        file.write(f"IMX8_ID={device_id}\n")
+        file.write(f"IMX8_IP={device_ip}\n")
+        file.close()
+
+    filename: "get_imx8qmek_hw.py"
+    fileMode: 493
+  - type: WriteFile
+    fileContents: |
+      #!/usr/bin/env python3
+      import rta_hw
+      import os
+
+      rta_hw.end_device_reservation(os.environ.get('IMX8_ID'))
+    filename: "end_imx8qmek_hw_reservation.py"
+    fileMode: 493
+  - type: ExecuteCommand
+    command: ["bash", "-c", "python3 ./get_imx8qmek_hw.py"]
+    maxTimeInSeconds: 14400
+    maxTimeBetweenOutput: 14400
+    userMessageOnFailure: "Getting IMX8 HW failed!"
+  - type: ParseEnvironmentVariableFromFile
+    regex: "IMX8_ID=(?P<IMX8_ID>.*)\nIMX8_IP=(?P<IMX8_IP>.*)"
+    filename: "imx8_env.txt"
+    maxTimeInSeconds: 300
+    maxTimeBetweenOutput: 300
+    userMessageOnFailure: "Failed to parse IMX8 ID and IP from imx8_env.txt"
+enable_if:
+    condition: runtime
+    env_var: ELINUX_TEST
+    equals_value: "1"

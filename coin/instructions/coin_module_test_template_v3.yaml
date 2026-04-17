@@ -17,6 +17,7 @@ instructions:
       - type: Group
         instructions:
           - !include "{{qt/qtbase}}/cmake_regular_test_instructions.yaml"
+          - !include "{{qt/qtbase}}/coin_module_test_release_imx8_hw.yaml"
         enable_if:
           condition: or
           conditions:
@@ -25,7 +26,7 @@ instructions:
               equals_property: target.os
             - condition: property
               property: target.osVersion
-              in_values: [QEMU, QNX_710, QNX_800, IOS_ANY]
+              in_values: [QEMU, IMX8, QNX_710, QNX_800, IOS_ANY]
             - condition: property
               property: features
               contains_value: AndroidTestRun

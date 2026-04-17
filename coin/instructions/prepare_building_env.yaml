@@ -67,6 +67,13 @@ instructions:
       property: features
       contains_value: Axivion
 
+  - type: EnvironmentVariable
+    variableName: ELINUX_TEST
+    variableValue: "1"
+    enable_if:
+      condition: property
+      property: features
+      contains_value: Elinux
 
   # Export ICC specific env. variables
   - type: Group
@@ -374,21 +381,21 @@ instructions:
       enable_if:
         condition: property
         property: target.osVersion
-        equals_value: QEMU
+        in_values: [QEMU, IMX8]
     - type: EnvironmentVariable
       variableName: TARGET_ENV_PREFIX
       variableValue: "{{.Env.HOME}}/prefix.sh"
       enable_if:
         condition: property
         property: target.osVersion
-        in_values: [QEMU]
+        in_values: [QEMU, IMX8]
     - type: EnvironmentVariable
       variableName: TARGET_ENV_PREFIX
       variableValue: ""
       disable_if:
         condition: property
         property: target.osVersion
-        in_values: [QEMU]
+        in_values: [QEMU, IMX8]
     # This fixes an issue where binfmts is sometimes disabled on the test VMs
     - type: ExecuteCommand
       command: sudo update-binfmts --enable
@@ -930,7 +937,7 @@ instructions:
       # Only enable if cross-compiling
       condition: property
       property: target.osVersion
-      in_values: [Android_ANY, QEMU, IOS_ANY, QNX_710, QNX_800, WebAssembly, INTEGRITY, VxWorks]
+      in_values: [Android_ANY, QEMU, IMX8, IOS_ANY, QNX_710, QNX_800, WebAssembly, INTEGRITY, VxWorks]
 
   # Dump important version information
   - type: Group

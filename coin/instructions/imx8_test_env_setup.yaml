@@ -1,0 +1,85 @@
+type: Group
+instructions:
+  - type: ChangeDirectory
+    directory: "{{.Env.HOME}}"
+  - type: ExecuteCommand
+    command: ["tar", "czf", "work.tar.gz", "work/"]
+    maxTimeInSeconds: 14400
+    maxTimeBetweenOutput: 14400
+    userMessageOnFailure: "Packing work folder failed!"
+  - type: ExecuteCommand
+    command: ["scp", "work.tar.gz", "qt@10.204.0.42:/home/qt/"]
+    maxTimeInSeconds: 14400
+    maxTimeBetweenOutput: 14400
+    userMessageOnFailure: "Copy work.tar.gz failed!"
+  - type: ExecuteCommand
+    command: ["ssh", "qt@10.204.0.42", "tar xzf work.tar.gz"]
+    maxTimeInSeconds: 14400
+    maxTimeBetweenOutput: 14400
+    userMessageOnFailure: "Unpacking work -folder failed!"
+  - type: ExecuteCommand
+    command: ["ssh", "qt@10.204.0.42", "rm work.tar.gz"]
+    maxTimeInSeconds: 14400
+    maxTimeBetweenOutput: 14400
+    userMessageOnFailure: "Could not remove work.tar.gz!"
+  - type: ExecuteCommand
+    command: ["ssh", "qt@10.204.0.42", "sudo exportfs -o rw,sync,no_subtree_check {{.Env.IMX8_IP}}:/home/qt/work"]
+    maxTimeInSeconds: 60
+    maxTimeBetweenOutput: 60
+    userMessageOnFailure: "Exporting work folder failed!"
+  - type: ExecuteCommand
+    command: ["ssh", "qt@10.204.0.42", "sudo exportfs -o rw,sync,no_subtree_check {{.Env.IPADDRESS}}:/home/qt/work/testresults"]
+    maxTimeInSeconds: 60
+    maxTimeBetweenOutput: 60
+    userMessageOnFailure: "Exporting testresults folder failed!"
+  - type: ExecuteCommand
+    command: ["ssh", "qt@10.204.0.42", "chmod 777 /home/qt/work/testresults"]
+    maxTimeInSeconds: 60
+    maxTimeBetweenOutput: 60
+    userMessageOnFailure: "chmod failed!"
+  - type: ExecuteCommand
+    command: ["ssh", "root@{{.Env.IMX8_IP}}", "mkdir -p /home/qt/work"]
+    maxTimeInSeconds: 60
+    maxTimeBetweenOutput: 60
+    userMessageOnFailure: "Creating /home/qt/work folder failed!"
+  - type: ExecuteCommand
+    command: ["ssh", "root@{{.Env.IMX8_IP}}", "mount -t nfs 10.204.0.42:/home/qt/work /home/qt/work"]
+    maxTimeInSeconds: 300
+    maxTimeBetweenOutput: 300
+    userMessageOnFailure: "Mount failed!"
+  - type: ExecuteCommand
+    command: ["sudo", "mount", "-t", "nfs", "10.204.0.42:/home/qt/work/testresults", "/home/qt/work/testresults"]
+    maxTimeInSeconds: 300
+    maxTimeBetweenOutput: 300
+    userMessageOnFailure: "Mount failed!"
+  - type: ChangeDirectory
+    directory: "{{.SourceDir}}_standalone_tests"
+  - type: WriteFile
+    fileContents: |
+      #!/usr/bin/env bash
+
+      # Many tests require changing into their directory, in order to find
+      # files they depend on.
+      testdir=$(dirname "$1")
+
+      # The remote SSH server executes everything we send under "sh -c". So
+      # the only way to preserve arguments is to shell-quote them and send
+      # them as a single string. We use python's shlex module for that.
+
+      quoted_args=$(python3 -c  'import sys, shlex; print(shlex.join(sys.argv[1:]))'  "$@")
+
+      ssh "root@$IMX8_IP" "
+        cd \"$testdir\"
+        set -a
+        . /etc/default/qt
+        set +a
+        export QT_MEDIA_BACKEND=gstreamer
+        $quoted_args
+      "
+    filename: "coin_imx8_runner.sh"
+    fileMode: 493
+enable_if:
+    condition: runtime
+    env_var: ELINUX_TEST
+    equals_value: "1"
+
