@@ -1,0 +1,46 @@
+prepare_elinux_build_environment: &prepare_elinux_build_environment
+  type: Group
+  instructions:
+    - type: ChangeDirectory
+      directory: "{{.Env.HOME}}"
+    - type: WriteFile
+      fileContents: |
+        #!/usr/bin/env bash
+
+        VERSION=$(grep -oP 'QT_REPO_MODULE_VERSION\s+"\K[^"]+' $HOME/work/qt/$TESTED_MODULE_COIN/.cmake.conf)
+        wget -q https://ci-files02-hki.ci.qt.io/packages/jenkins/yocto/boot2qt/dev/imx8qm-mek/meta-b2qt-embedded-qbsp-x86_64-imx8qm-mek-$VERSION.qbsp
+        7z x meta-b2qt-embedded-qbsp-x86_64-imx8qm-mek-$VERSION.qbsp
+        cd embedded.b2qt.*.imx8qmmek.toolchain
+        7z x *toolchain.7z
+        ./b2qt-x86_64-meta-toolchain-b2qt-embedded-qt6-sdk-imx8qm-mek.sh -d /opt/b2qt/imx8qm -y
+      filename: "install_b2qt_toolchain.sh"
+      fileMode: 493
+    - type: ExcuteCommand
+      command: ["./install_b2qt_toolchain.sh"]
+      maxTimeInSeconds: 3600
+      maxTimeBetweenOutput: 3600
+      userMessageOnFailure: "boot2qt toolchain installation failed!"
+    - type: ExecuteCommand
+      command: ["sudo", "rm", "-rf", "/opt/b2qt/imx8qm/sysroots/cortexa72-cortexa53-crypto-poky-linux/usr/lib/cmake"]
+      maxTimeInSeconds: 3600
+      maxTimeBetweenOutput: 3600
+      userMessageOnFailure: "Remove cmake folder failed!"
+    - type: ExecuteCommand
+      command: ["sudo", "rm", "-rf", "/opt/b2qt/imx8qm/sysroots/x86_64-pokysdk-linux/usr/lib/cmake"]
+      maxTimeInSeconds: 3600
+      maxTimeBetweenOutput: 3600
+      userMessageOnFailure: "Remove cmake folder failed!"
+    - type: ExecuteCommand
+      command: ["sudo", "rm", "-rf", "/opt/b2qt/imx8qm/sysroots/x86_64-pokysdk-linux/usr/share/cmake/OEToolchainConfig.cmake.d/OEQt6Toolchain.cmake"]
+      maxTimeInSeconds: 3600
+      maxTimeBetweenOutput: 3600
+      userMessageOnFailure: "Remove cmake file failed!"
+
+type: Group
+instructions:
+  - *prepare_elinux_build_environment
+enable_if:
+  condition: runtime
+  env_var: ELINUX_TEST
+  equals_value: "1"
+

@@ -30,6 +30,13 @@ instructions:
       condition: property
       property: target.osVersion
       in_values: [VxWorks]
+  - type: AppendToEnvironmentVariable
+    variableName: TESTRUNNER
+    variableValue: " {{.SourceDir}}_standalone_tests/coin_imx8_runner.sh"
+    enable_if:
+      condition: property
+      property: target.osVersion
+      equals_value: IMX8
   - type: Group
     enable_if:
       condition: property
@@ -60,6 +67,7 @@ instructions:
       equals_value: Windows
 
   - !include "{{qt/qtbase}}/vxworks_test_env_setup.yaml"
+  - !include "{{qt/qtbase}}/imx8_test_env_setup.yaml"
 
   # Only output verbose test output for failures, unless
   # the VerboseCTestOutput feature is enabled. The full

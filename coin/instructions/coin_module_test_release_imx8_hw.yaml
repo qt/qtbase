@@ -1,0 +1,51 @@
+type: Group
+instructions:
+  - type: ExecuteCommand
+    command: ["ssh", "root@{{.Env.IMX8_IP}}", "umount /home/qt/work"]
+    maxTimeInSeconds: 60
+    maxTimeBetweenOutput: 60
+    userMessageOnFailure: "Umount failed!"
+    executeOn: always
+  - type: ExecuteCommand
+    command: ["sudo", "umount", "/home/qt/work/testresults"]
+    maxTimeInSeconds: 60
+    maxTimeBetweenOutput: 60
+    userMessageOnFailure: "Umount failed!"
+    executeOn: always
+  - type: ExecuteCommand
+    command: ["ssh", "qt@10.204.0.42", "sudo exportfs -u {{.Env.IMX8_IP}}:/home/qt/work"]
+    maxTimeInSeconds: 60
+    maxTimeBetweenOutput: 60
+    userMessageOnFailure: "Removing export failed!"
+    executeOn: always
+  - type: ExecuteCommand
+    command: ["ssh", "qt@10.204.0.42", "sudo exportfs -u {{.Env.IPADDRESS}}:/home/qt/work/testresults"]
+    maxTimeInSeconds: 60
+    maxTimeBetweenOutput: 60
+    userMessageOnFailure: "Removing export failed!"
+    executeOn: always
+  - type: ExecuteCommand
+    command: ["scp", "qt@10.204.0.42:/home/qt/work/testresults/*", "{{.Env.HOME}}/work/testresults/"]
+    maxTimeInSeconds: 3600
+    maxTimeBetweenOutput: 3600
+    userMessageOnFailure: "Copy testresults failed!"
+    executeOn: always
+  - type: ExecuteCommand
+    command: ["ssh", "qt@10.204.0.42", "rm -rf work"]
+    maxTimeInSeconds: 14400
+    maxTimeBetweenOutput: 14400
+    userMessageOnFailure: "Could not remove work -folder!"
+    executeOn: always
+  - type: ChangeDirectory
+    directory: "{{.Env.HOME}}/rta_hw"
+    executeOn: always
+  - type: ExecuteCommand
+    command: ["bash", "-c", "python3 ./end_imx8qmek_hw_reservation.py"]
+    executeOn: always
+    maxTimeInSeconds: 900
+    maxTimeBetweenOutput: 900
+    userMessageOnFailure: "End resevation of IMX8 HW failed!"
+enable_if:
+    condition: runtime
+    env_var: ELINUX_TEST
+    equals_value: "1"
