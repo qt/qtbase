@@ -49,6 +49,15 @@ struct QComObjectTraits
 // ...
 // };
 //
+// If the object is a QObject that needs to go through deleteLater(), inherit from
+//  QComObjectWithDeleteLater instead of QComObject:
+// class SinkCallback : public QObject,
+//                      public QComObjectWithDeleteLater<SinkCallback, IMFSampleGrabberSinkCallback>
+// {
+// ...
+// };
+//
+//
 // namespace QtPrivate {
 //
 // template <>
@@ -88,14 +97,9 @@ public:
 
     STDMETHODIMP_(ULONG) Release() override
     {
-        const LONG referenceCount = m_referenceCount.fetch_sub(1, std::memory_order_release) - 1;
-        if (referenceCount == 0) {
-            // This acquire fence synchronizes with the release operation in other threads.
-            // It ensures that all memory writes made to this object by other threads
-            // are visible to this thread before we proceed to delete it.
-            std::atomic_thread_fence(std::memory_order_acquire);
+        const LONG referenceCount = unref();
+        if (referenceCount == 0)
             delete this;
-        }
 
         return referenceCount;
     }
@@ -109,6 +113,18 @@ protected:
 
     // allow derived classes to access the reference count
     std::atomic<LONG> m_referenceCount = 1;
+
+    [[nodiscard]] LONG unref()
+    {
+        const LONG referenceCount = m_referenceCount.fetch_sub(1, std::memory_order_release) - 1;
+        if (referenceCount == 0) {
+            // This acquire fence synchronizes with the release operation in other threads.
+            // It ensures that all memory writes made to this object by other threads
+            // are visible to this thread before we proceed to delete it.
+            std::atomic_thread_fence(std::memory_order_acquire);
+        }
+        return referenceCount;
+    }
 
 private:
     template <typename TInterface, typename... TRest>
@@ -127,6 +143,20 @@ private:
         *ppvObject = nullptr;
 
         return E_NOINTERFACE;
+    }
+};
+
+template <typename Self, typename... Interfaces>
+class QComObjectWithDeleteLater : public QComObject<Interfaces...>
+{
+public:
+    STDMETHODIMP_(ULONG) Release() override
+    {
+        const LONG referenceCount = QComObject<Interfaces...>::unref();
+        if (referenceCount == 0)
+            static_cast<Self *>(this)->deleteLater();
+
+        return referenceCount;
     }
 };
 
