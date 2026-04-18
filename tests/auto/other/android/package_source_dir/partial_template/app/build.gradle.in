@@ -37,10 +37,6 @@ android {
         targetCompatibility JavaVersion.VERSION_17
     }
 
-    lintOptions {
-        abortOnError false
-    }
-
     aaptOptions {
         // Do not compress Qt binary resources file
         noCompress 'rcc'
