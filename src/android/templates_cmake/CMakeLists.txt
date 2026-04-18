@@ -13,7 +13,6 @@ set(gradle_template_files
 )
 
 set(app_template_files
-    "${CMAKE_CURRENT_SOURCE_DIR}/app/gradle.properties.in"
     "${CMAKE_CURRENT_SOURCE_DIR}/app/build.gradle.in"
     "${CMAKE_CURRENT_SOURCE_DIR}/app/AndroidManifest.xml.in"
 )
