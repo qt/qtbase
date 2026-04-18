@@ -1531,10 +1531,12 @@ bool isDeployment(const Options *options, Options::DeploymentMechanism deploymen
     return options->deploymentMechanism == deployment;
 }
 
-bool copyFiles(const QDir &sourceDirectory, const QDir &destinationDirectory, const Options &options, bool forceOverwrite = false)
+bool copyFiles(const QDir &sourceDirectory, const QDir &destinationDirectory, const Options &options, bool forceOverwrite = false, const QSet<QString> &excludedAbsolutePaths = {})
 {
     const QFileInfoList entries = sourceDirectory.entryInfoList(QDir::NoDotAndDotDot | QDir::Files | QDir::Dirs);
     for (const QFileInfo &entry : entries) {
+        if (excludedAbsolutePaths.contains(entry.absoluteFilePath()))
+            continue;
         if (entry.isDir()) {
             QDir dir(entry.absoluteFilePath());
             const bool destinationInCopyDir = destinationDirectory.absolutePath().startsWith(dir.absolutePath());
@@ -1546,7 +1548,7 @@ bool copyFiles(const QDir &sourceDirectory, const QDir &destinationDirectory, co
                 return false;
             }
 
-            if (!copyFiles(dir, QDir(destinationDirectory.path() + u'/' + dir.dirName()), options, forceOverwrite))
+            if (!copyFiles(dir, QDir(destinationDirectory.path() + u'/' + dir.dirName()), options, forceOverwrite, excludedAbsolutePaths))
                 return false;
         } else {
             QString destination = destinationDirectory.absoluteFilePath(entry.fileName());
@@ -1650,7 +1652,21 @@ bool copyAndroidSources(const Options &options)
         return false;
     }
 
-    return copyFiles(sourceDirectory, QDir(options.outputDirectory), options, true);
+    QSet<QString> excludedAbsolutePaths;
+    const QString providerPaths = sourceDirectory.absoluteFilePath(
+        QStringLiteral("res/xml/qtprovider_paths.xml"));
+    if (QFileInfo::exists(providerPaths)) {
+        fprintf(stderr,
+            "Warning: %s in the package source directory is being excluded. Qt "
+            "now bundles its own copy of it under the Android sources directory, "
+            "and a duplicate would fail the Gradle build. Remove this file from "
+            "your package source directory to silence this warning.\n",
+            qPrintable(providerPaths));
+        excludedAbsolutePaths.insert(providerPaths);
+    }
+
+    return copyFiles(sourceDirectory, QDir(options.outputDirectory), options, true,
+                     excludedAbsolutePaths);
 }
 
 bool copyAndroidExtraLibs(Options *options)

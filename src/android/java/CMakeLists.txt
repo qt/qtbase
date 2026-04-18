@@ -37,10 +37,15 @@ set(strings_resouces
     "${CMAKE_CURRENT_SOURCE_DIR}/res/values-zh-rTW/strings.xml"
 )
 
+set(xml_resources
+    "${CMAKE_CURRENT_SOURCE_DIR}/res/xml/qtprovider_paths.xml"
+)
+
 add_custom_target(Qt${QtBase_VERSION_MAJOR}AndroidBindings
     SOURCES
         ${java_bindings}
         ${strings_resouces}
+        ${xml_resources}
 )
 
 qt_path_join(destination ${QT_INSTALL_DIR} ${INSTALL_DATADIR} "src/android/java")

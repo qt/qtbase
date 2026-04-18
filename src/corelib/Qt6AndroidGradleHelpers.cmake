@@ -770,6 +770,16 @@ function(_qt_internal_android_copy_target_package_sources target deployment_dir)
     # _qt_internal_android_generate_target_android_manifest().
     list(REMOVE_ITEM package_files "AndroidManifest.xml")
 
+    if("res/xml/qtprovider_paths.xml" IN_LIST package_files)
+        message(WARNING
+            "${package_source_dir}/res/xml/qtprovider_paths.xml in the package "
+            "source directory of ${target} is being excluded. Qt now bundles "
+            "its own copy of it under the Android sources directory, and a "
+            "duplicate would fail the Gradle build. Remove this file from your "
+            "package source directory to silence this warning.")
+        list(REMOVE_ITEM package_files "res/xml/qtprovider_paths.xml")
+    endif()
+
     # Save res outputs so default resources templates know to not override them.
     set(package_res_files "${package_files}")
     list(FILTER package_res_files INCLUDE REGEX "^res/")
