@@ -66,6 +66,13 @@ function(_qt_internal_android_get_template_path out_var target template_name)
     set(${out_var} "${template_path}" PARENT_SCOPE)
 endfunction()
 
+# Reads template into out_var and adds it to CMAKE_CONFIGURE_DEPENDS for reconfigure-on-edit.
+function(_qt_internal_android_read_template out_var template)
+    file(READ "${template}" content)
+    _qt_internal_append_cmake_configure_depends("${template}")
+    set(${out_var} "${content}" PARENT_SCOPE)
+endfunction()
+
 # Generates the settings.gradle file for the target. Writes the result to the target android build
 # directory.
 function(_qt_internal_android_generate_bundle_settings_gradle target)
@@ -96,8 +103,9 @@ function(_qt_internal_android_generate_bundle_settings_gradle target)
         ">"
     )
 
+    _qt_internal_android_read_template(settings_gradle_content "${template_file}")
     _qt_internal_configure_file(GENERATE OUTPUT ${settings_gradle_file}
-        INPUT "${template_file}")
+        CONTENT "${settings_gradle_content}")
     set_property(TARGET ${target} APPEND PROPERTY _qt_android_deployment_files
         "${settings_gradle_file}")
 endfunction()
@@ -286,9 +294,10 @@ function(_qt_internal_android_generate_target_build_gradle target)
 
     _qt_internal_android_get_template_path(template_file ${target}
         "${template_subdir}/${build_gradle_filename}")
+    _qt_internal_android_read_template(build_gradle_content "${template_file}")
     _qt_internal_configure_file(GENERATE
         OUTPUT "${out_file}"
-        INPUT "${template_file}"
+        CONTENT "${build_gradle_content}"
     )
     set_property(TARGET ${target} APPEND PROPERTY _qt_android_deployment_files "${out_file}")
 endfunction()
@@ -391,6 +400,7 @@ function(_qt_internal_android_add_gradle_build target type)
                  ${target}_copy_apk_dependencies
                  ${target}_copy_gradle_files
                  ${target}_copy_android_res_files
+                 ${target}_copy_package_sources
                  ${target}_build_qml_bundle
                  ${target}_update_libs_xml)
         if(TARGET ${dep})
@@ -651,23 +661,6 @@ function(_qt_internal_android_generate_target_android_manifest target)
 
     _qt_internal_android_get_template_path(template_file ${target}
         "app/${android_manifest_filename}")
-    set(temporary_file "${out_file}.tmp")
-
-    # The file cannot be generated at cmake configure time because target properties
-    # (app name, version, permissions) are resolved at generate/build time. We use a
-    # temporary file and copy it as a build step to keep the manifest in sync.
-    set(manifest_depends
-        "${template_file}"
-        "${temporary_file}"
-    )
-    if(TARGET ${target}_copy_package_sources)
-        list(APPEND manifest_depends ${target}_copy_package_sources)
-    endif()
-
-    add_custom_command(OUTPUT "${out_file}"
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${temporary_file}" "${out_file}"
-        DEPENDS ${manifest_depends}
-    )
 
     _qt_internal_android_get_manifest_property(APP_PACKAGE_NAME ${target}
         QT_ANDROID_PACKAGE_NAME "org.qtproject.example.$<MAKE_C_IDENTIFIER:${target}>")
@@ -688,7 +681,7 @@ function(_qt_internal_android_generate_target_android_manifest target)
         ">"
     )
 
-    file(READ "${template_file}" manifest_content)
+    _qt_internal_android_read_template(manifest_content "${template_file}")
     _qt_internal_android_convert_manifest_placeholders("${manifest_content}" manifest_content)
     string(REPLACE ">" "$<ANGLE-R>" manifest_content "${manifest_content}")
     string(REPLACE ";" "$<SEMICOLON>" manifest_content "${manifest_content}")
@@ -709,11 +702,10 @@ function(_qt_internal_android_generate_target_android_manifest target)
 
     set(APP_ARGUMENTS "${QT_ANDROID_APPLICATION_ARGUMENTS}")
 
-    _qt_internal_configure_file(GENERATE OUTPUT "${temporary_file}"
+    _qt_internal_configure_file(GENERATE OUTPUT "${out_file}"
         CONTENT "${manifest_content}")
 
-    set_property(TARGET ${target} APPEND PROPERTY
-        _qt_android_deployment_files "${out_file}" "${temporary_file}")
+    set_property(TARGET ${target} APPEND PROPERTY _qt_android_deployment_files "${out_file}")
 endfunction()
 
 # Generates the top-level gradle.properties in the android-build directory
