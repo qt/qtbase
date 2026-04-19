@@ -85,18 +85,18 @@ function(_qt_internal_android_convert_permissions out_var target type)
             ">\n    ]$<COMMA>\n"
         )
     elseif(type STREQUAL "XML")
-        set(pref "<uses-permission\n android:")
-        set(post "' /$<ANGLE-R>\n")
+        set(pref "<uses-permission android:")
+        set(post "' /$<ANGLE-R>")
         string(APPEND permissions_genex
             "$<JOIN:"
                 "$<JOIN:"
                     "${pref}$<JOIN:"
                         "${permissions_property},"
-                        "${post}${pref}"
-                    ">${post}\n,"
+                        "${post}\n    ${pref}"
+                    ">${post},"
                     "='"
                 ">,"
-                "' android:"
+                "' \n        android:"
             ">"
         )
     else()
