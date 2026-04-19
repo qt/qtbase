@@ -836,43 +836,34 @@ function(_qt_internal_android_copy_gradle_files target output_directory)
     _qt_internal_android_gradle_template_dir(gradle_template_dir)
     _qt_internal_android_template_dir(android_template_dir)
 
-    set(gradlew_file_src "${gradle_template_dir}/${gradlew_file_name}")
-    set(gradlew_file_dst "${output_directory}/${gradlew_file_name}")
+    set(gradlew_src "${gradle_template_dir}/${gradlew_file_name}")
+    set(gradlew_dst "${output_directory}/${gradlew_file_name}")
 
-    add_custom_command(OUTPUT "${gradlew_file_dst}"
-        COMMAND
-            ${CMAKE_COMMAND} -E copy_if_different "${gradlew_file_src}" "${gradlew_file_dst}"
-        DEPENDS "${gradlew_file_src}"
-        COMMENT "Copying gradlew script for ${target}"
-        VERBATIM
-    )
+    set(wrapper_srcs "")
+    set(wrapper_dsts "")
+    set(wrapper_src_dir "${gradle_template_dir}/gradle/wrapper")
+    set(wrapper_dst_dir "${output_directory}/gradle/wrapper")
+    set(wrapper_filenames "gradle-wrapper.jar" "gradle-wrapper.properties")
+    foreach(file IN LISTS wrapper_filenames)
+        list(APPEND wrapper_srcs "${wrapper_src_dir}/${file}")
+        list(APPEND wrapper_dsts "${wrapper_dst_dir}/${file}")
+    endforeach()
 
-    # TODO: make a more precise directory copying
-    set(gradle_dir_src "${gradle_template_dir}/gradle")
-    set(gradle_dir_dst "${output_directory}/gradle")
-    add_custom_command(OUTPUT "${gradle_dir_dst}"
-        COMMAND
-            ${CMAKE_COMMAND} -E copy_directory "${gradle_dir_src}" "${gradle_dir_dst}"
-        DEPENDS "${gradle_dir_src}"
-        COMMENT "Copying gradle support files for ${target}"
-        VERBATIM
-    )
+    set(libs_versions_filename "libs.versions.toml")
+    set(libs_versions_src "${android_template_dir}/gradle/${libs_versions_filename}")
+    set(libs_versions_dst "${output_directory}/gradle/${libs_versions_filename}")
 
-    set(libs_versions_src "${android_template_dir}/gradle/libs.versions.toml")
-    set(libs_versions_dst "${gradle_dir_dst}/libs.versions.toml")
-    add_custom_command(OUTPUT "${libs_versions_dst}"
-        COMMAND ${CMAKE_COMMAND} -E make_directory "${gradle_dir_dst}"
+    add_custom_command(
+        OUTPUT "${gradlew_dst}" ${wrapper_dsts} "${libs_versions_dst}"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${gradlew_src}" "${gradlew_dst}"
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${wrapper_dst_dir}"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${wrapper_srcs} "${wrapper_dst_dir}"
         COMMAND ${CMAKE_COMMAND} -E copy_if_different "${libs_versions_src}" "${libs_versions_dst}"
-        DEPENDS "${libs_versions_src}"
-        COMMENT "Copying libs.versions.toml for ${target}"
+        DEPENDS "${gradlew_src}" ${wrapper_srcs} "${libs_versions_src}"
         VERBATIM
     )
-
     add_custom_target(${target}_copy_gradle_files
-        DEPENDS
-            "${gradlew_file_dst}"
-            "${gradle_dir_dst}"
-            "${libs_versions_dst}"
+        DEPENDS "${gradlew_dst}" ${wrapper_dsts} "${libs_versions_dst}"
     )
 endfunction()
 
