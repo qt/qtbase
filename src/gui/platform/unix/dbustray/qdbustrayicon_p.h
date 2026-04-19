@@ -127,6 +127,15 @@ private:
     bool m_registered;
 };
 
+struct QDBusTrayImage
+{
+    QIcon ico;
+    qreal dpr = 0;
+};
+
+
 QT_END_NAMESPACE
+
+Q_DECLARE_METATYPE(QDBusTrayImage)
 
 #endif // QDBUSTRAYICON_H

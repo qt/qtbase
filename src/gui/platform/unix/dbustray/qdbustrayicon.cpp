@@ -81,6 +81,26 @@ static inline QString tempFileTemplate()
     return TempFileTemplate;
 }
 
+QDBusArgument &operator<<(QDBusArgument &argument, const QDBusTrayImage &img)
+{
+    QImage image = img.ico.pixmap(QSize(64, 64), img.dpr).toImage();
+    const bool hasAlpha = image.hasAlphaChannel();
+    image = image.convertToFormat(hasAlpha ? QImage::Format_RGBA8888 : QImage::Format_RGB888);
+
+    argument.beginStructure();
+    argument << image.width() << image.height()
+             << image.bytesPerLine() << hasAlpha
+             << 8 << (hasAlpha ? 4 : 3)
+             << QByteArray((const char *)image.constBits(), image.sizeInBytes());
+    argument.endStructure();
+    return argument;
+}
+const QDBusArgument &operator>>(const QDBusArgument &argument, QDBusTrayImage &)
+{
+    Q_ASSERT_X(false, __FUNCTION__, "Not implemented");
+    return argument;
+}
+
 /*!
     \class QDBusTrayIcon
     \internal
@@ -318,6 +338,11 @@ void QDBusTrayIcon::showMessage(const QString &title, const QString &msg, const 
     if (urgency < 0) // no icon
         urgency = 0;
     hints.insert("urgency"_L1, QVariant(urgency));
+    if (m_attentionIconName.isEmpty()) {
+        qDBusRegisterMetaType<QDBusTrayImage>();
+        const QDBusTrayImage img = {icon, qGuiApp->devicePixelRatio()};
+        hints.insert("image_data"_L1, QVariant::fromValue(img));
+    }
     m_notifier->notify(QCoreApplication::applicationName(), 0,
                        m_attentionIconName, title, msg, notificationActions, hints, msecs);
 }
