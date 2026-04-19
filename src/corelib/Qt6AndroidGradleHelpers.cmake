@@ -235,7 +235,6 @@ function(_qt_internal_android_generate_target_build_gradle target)
     get_target_property(android_target_type ${target} _qt_android_target_type)
 
     set(default_config_lines
-        "resConfig 'en'"
         "minSdk = ${min_sdk_version}"
         "targetSdk = ${target_sdk_version}"
     )
