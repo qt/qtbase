@@ -29,11 +29,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
-          <meta-data
+            <meta-data
                 android:name="android.app.lib_name"
                 android:value="tst_package_source_dir_custom_android_manifest" />
 
-          <meta-data
+            <meta-data
                 android:name="android.app.arguments"
                 android:value="" />
         </activity>

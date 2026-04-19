@@ -31,11 +31,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
-          <meta-data
+            <meta-data
                 android:name="android.app.lib_name"
                 android:value="-- %%INSERT_APP_LIB_NAME%% --" />
 
-          <meta-data
+            <meta-data
                 android:name="android.app.arguments"
                 android:value="-- %%INSERT_APP_ARGUMENTS%% --" />
         </activity>
