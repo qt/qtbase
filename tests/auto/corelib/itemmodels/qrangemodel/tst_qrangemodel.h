@@ -107,6 +107,9 @@ private slots:
     void match_data() { createTestData(); }
     void match();
 
+    void dragDropActions_data();
+    void dragDropActions();
+
 private:
     void createTestData();
     void createTree();

@@ -22,6 +22,7 @@ qt_internal_add_test(tst_qrangemodel
         tst_qrangemodel.h
         tst_qrangemodel.cpp
         tst_qrangemodel_testdata.cpp
+        tst_qrangemodel_dragdrop.cpp
         tst_qrangemodel_tree.cpp
         data.h
     LIBRARIES

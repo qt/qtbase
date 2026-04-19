@@ -21,6 +21,11 @@ public:
         : impl(std::move(impl))
     {
         this->impl->call<QRangeModelImplBase::InterfaceVersion>(m_interfaceVersion);
+        if (m_interfaceVersion >= QT_VERSION_CHECK(6, 12, 0)) {
+            m_supportedDropActions = this->impl->call<QRangeModelImplBase::AdjustSupportedDropActions>(
+                m_supportedDropActions
+            );
+        }
     }
 
     std::unique_ptr<QRangeModelImplBase, QRangeModelImplBase::Deleter> impl;
@@ -35,6 +40,8 @@ public:
     int m_interfaceVersion = -1;
     int m_sortRole = Qt::DisplayRole;
     std::optional<QCollator> m_sortCollator;
+    Qt::DropActions m_supportedDragActions = Qt::CopyAction;
+    Qt::DropActions m_supportedDropActions = Qt::CopyAction;
 
     static void emitDataChanged(const QModelIndex &index, int role)
     {
@@ -1691,19 +1698,70 @@ QSize QRangeModel::span(const QModelIndex &index) const
 }
 
 /*!
-    \reimp
+    \property QRangeModel::supportedDragActions
+    \since 6.12
+    \brief the drag-actions supported by this model.
+
+    Actions that the model cannot support, such as moving data out of a
+    read-only model, will be removed when setting the actions.
+
+    \note Overriding this function in a QRangeModel subclass is possible,
+    but might break the behavior of the property.
+
+    \sa supportedDropActions
 */
 Qt::DropActions QRangeModel::supportedDragActions() const
 {
-    return QAbstractItemModel::supportedDragActions();
+    Q_D(const QRangeModel);
+    return d->m_supportedDragActions;
+}
+
+void QRangeModel::setSupportedDragActions(Qt::DropActions actions)
+{
+    Q_D(QRangeModel);
+    actions = d->impl->call<QRangeModelImplBase::AdjustSupportedDragActions>(actions);
+    if (actions == d->m_supportedDragActions)
+        return;
+    d->m_supportedDragActions = actions;
+    Q_EMIT supportedDragActionsChanged(d->m_supportedDragActions);
+}
+
+void QRangeModel::resetSupportedDragActions()
+{
+    setSupportedDragActions(Qt::CopyAction);
 }
 
 /*!
-    \reimp
+    \property QRangeModel::supportedDropActions
+    \since 6.12
+    \brief the drop-actions supported by this model.
+
+    Read-only models cannot support any drop-actions.
+
+    \note Overriding this function in a QRangeModel subclass is possible,
+    but might break the behavior of the property.
+
+    \sa supportedDragActions
 */
 Qt::DropActions QRangeModel::supportedDropActions() const
 {
-    return QAbstractItemModel::supportedDropActions();
+    Q_D(const QRangeModel);
+    return d->m_supportedDropActions;
+}
+
+void QRangeModel::setSupportedDropActions(Qt::DropActions actions)
+{
+    Q_D(QRangeModel);
+    actions = d->impl->call<QRangeModelImplBase::AdjustSupportedDropActions>(actions);
+    if (actions == d->m_supportedDropActions)
+        return;
+    d->m_supportedDropActions = actions;
+    Q_EMIT supportedDropActionsChanged(d->m_supportedDropActions);
+}
+
+void QRangeModel::resetSupportedDropActions()
+{
+    setSupportedDropActions(Qt::CopyAction);
 }
 
 /*!

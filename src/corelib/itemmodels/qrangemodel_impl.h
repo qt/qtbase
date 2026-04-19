@@ -1000,6 +1000,9 @@ public:
     QModelIndexList match(const QModelIndex &start, int role, const QVariant &value,
                           int hits, Qt::MatchFlags flags) const;
 
+    Qt::DropActions adjustSupportedDragActions(Qt::DropActions dragActions);
+    Qt::DropActions adjustSupportedDropActions(Qt::DropActions dropActions);
+
     // bindings for overriding
 
     using InvalidateCaches = Method<&Self::invalidateCaches>;
@@ -1033,6 +1036,8 @@ public:
     using InterfaceVersion = Method<&Self::interfaceVersion>;
     using Sort = Method<&Self::sort>;
     using Match = Method<&Self::match>;
+    using AdjustSupportedDragActions = Method<&Self::adjustSupportedDragActions>;
+    using AdjustSupportedDropActions = Method<&Self::adjustSupportedDropActions>;
 
     template <typename C>
     using MethodTemplates = std::tuple<
@@ -1062,7 +1067,9 @@ public:
         typename C::SetAutoConnectPolicy,
         typename C::InterfaceVersion,
         typename C::Sort,
-        typename C::Match
+        typename C::Match,
+        typename C::AdjustSupportedDragActions,
+        typename C::AdjustSupportedDropActions
     >;
 
     static Q_CORE_EXPORT QRangeModelImplBase *getImplementation(QRangeModel *model);
@@ -2517,6 +2524,19 @@ public:
 
     void destroy() { delete std::addressof(that()); }
 
+    Qt::DropActions adjustSupportedDragActions(Qt::DropActions dragActions) {
+        if constexpr (!isMutable())
+            dragActions &= ~Qt::MoveAction;
+        return dragActions;
+    }
+    Qt::DropActions adjustSupportedDropActions(Qt::DropActions dropActions)
+    {
+        if constexpr (!isMutable())
+            dropActions = Qt::IgnoreAction;
+
+        return dropActions;
+    }
+
     template <typename BaseMethod, typename BaseMethod::template Overridden<Self> overridden>
     using Override = typename Ancestor::template Override<BaseMethod, overridden>;
 
@@ -2551,6 +2571,11 @@ public:
     using InterfaceVersion = Override<QRangeModelImplBase::InterfaceVersion, &Self::interfaceVersion>;
     using Sort = Override<QRangeModelImplBase::Sort, &Self::sort>;
     using Match = Override<QRangeModelImplBase::Match, &Self::match>;
+    using AdjustSupportedDragActions = Override<QRangeModelImplBase::AdjustSupportedDragActions,
+                                                &Self::adjustSupportedDragActions>;
+    using AdjustSupportedDropActions = Override<QRangeModelImplBase::AdjustSupportedDropActions,
+                                                &Self::adjustSupportedDropActions>;
+
 protected:
     ~QRangeModelImpl()
     {

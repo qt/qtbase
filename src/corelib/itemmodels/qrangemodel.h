@@ -23,6 +23,14 @@ class Q_CORE_EXPORT QRangeModel : public QAbstractItemModel
                             NOTIFY sortRoleChanged REVISION(6, 12))
     Q_PROPERTY(QCollator sortCollator READ sortCollator WRITE setSortCollator
                                       RESET resetSortCollator NOTIFY sortCollatorChanged REVISION(6, 12))
+    Q_PROPERTY(Qt::DropActions supportedDropActions READ supportedDropActions
+                                                    WRITE setSupportedDropActions
+                                                    RESET resetSupportedDropActions
+                                                    NOTIFY supportedDropActionsChanged REVISION(6, 12))
+    Q_PROPERTY(Qt::DropActions supportedDragActions READ supportedDragActions
+                                                    WRITE setSupportedDragActions
+                                                    RESET resetSupportedDragActions
+                                                    NOTIFY supportedDragActionsChanged REVISION(6, 12))
     Q_CLASSINFO("RegisterEnumClassesUnscoped", "false")
 
 public:
@@ -121,8 +129,13 @@ public:
     void resetSortRole();
 
     QSize span(const QModelIndex &index) const override;
+
     Qt::DropActions supportedDragActions() const override;
+    void setSupportedDragActions(Qt::DropActions actions);
+    void resetSupportedDragActions();
     Qt::DropActions supportedDropActions() const override;
+    void setSupportedDropActions(Qt::DropActions actions);
+    void resetSupportedDropActions();
 
     AutoConnectPolicy autoConnectPolicy() const;
     void setAutoConnectPolicy(AutoConnectPolicy policy);
@@ -132,6 +145,8 @@ Q_SIGNALS:
     Q_REVISION(6, 11) void autoConnectPolicyChanged(AutoConnectPolicy policy);
     Q_REVISION(6, 12) void sortRoleChanged(int role);
     Q_REVISION(6, 12) void sortCollatorChanged(const QCollator &collator);
+    Q_REVISION(6, 12) void supportedDragActionsChanged(Qt::DropActions actions);
+    Q_REVISION(6, 12) void supportedDropActionsChanged(Qt::DropActions actions);
 
 protected Q_SLOTS:
     void resetInternalData() override;
