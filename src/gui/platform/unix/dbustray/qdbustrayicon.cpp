@@ -224,7 +224,8 @@ QTemporaryFile *QDBusTrayIcon::tempIcon(const QIcon &icon)
         delete ret;
         return nullptr;
     }
-    icon.pixmap(QSize(22, 22)).save(ret);
+    const qreal dpr = qGuiApp->devicePixelRatio();
+    icon.pixmap(QSize(22, 22), dpr).save(ret);
     ret->close();
     return ret;
 }
