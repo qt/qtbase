@@ -13,7 +13,9 @@ endif()
 
 qt_internal_add_test(tst_qrangemodel
     SOURCES
+        tst_qrangemodel.h
         tst_qrangemodel.cpp
+        tst_qrangemodel_tree.cpp
         data.h
     LIBRARIES
         Qt::Gui
