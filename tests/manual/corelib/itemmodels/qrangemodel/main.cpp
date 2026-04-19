@@ -58,6 +58,13 @@ private:
 template <>
 struct QRangeModel::RowOptions<Gadget>
 {
+    static Qt::ItemFlags flags(const Gadget &)
+    {
+        return Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemNeverHasChildren
+             | Qt::ItemIsEditable
+             | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled;
+    }
+
     static QVariant headerData(int section, int role)
     {
         if (role == Qt::DisplayRole) {
@@ -74,6 +81,7 @@ struct QRangeModel::RowOptions<Gadget>
 };
 
 static_assert(QRangeModelDetails::hasHeaderData<Gadget>);
+static_assert(QRangeModelDetails::hasRowFlags<Gadget>);
 
 struct QMetaEnumerator
 {
@@ -637,10 +645,27 @@ public:
         : QMainWindow(parent), model(nullptr)
     {
         QSplitter *splitter = new QSplitter;
+        QSplitter *viewSplitter = new QSplitter(Qt::Vertical);
 
         treeview = new QTreeView;
         treeview->setUniformRowHeights(true);
-        splitter->addWidget(treeview);
+        treeview->setDragEnabled(true);
+        treeview->setDropIndicatorShown(true);
+        treeview->setAcceptDrops(true);
+        treeview->viewport()->setAcceptDrops(true);
+        treeview->setDragDropMode(QAbstractItemView::InternalMove);
+        viewSplitter->addWidget(treeview);
+
+        tableview = new QTableView;
+        tableview->setDragEnabled(true);
+        tableview->setDropIndicatorShown(true);
+        tableview->setAcceptDrops(true);
+        tableview->viewport()->setAcceptDrops(true);
+        tableview->setDragDropOverwriteMode(true);
+        tableview->setDragDropMode(QAbstractItemView::DragDrop);
+        viewSplitter->addWidget(tableview);
+
+        splitter->addWidget(viewSplitter);
 
 #ifdef QUICK_UI
         quickWidget = new QQuickWidget;
@@ -731,6 +756,9 @@ private:
             newModel->setParent(this);
             newModel->setObjectName(QString::fromUtf8(method.name()).slice(4));
             treeview->setModel(newModel);
+            tableview->setModel(newModel);
+            newModel->setSupportedDragActions(Qt::CopyAction | Qt::MoveAction);
+            newModel->setSupportedDropActions(Qt::CopyAction | Qt::MoveAction);
 #ifdef QUICK_UI
             if (!quickWidget->rootObject())
                 statusBar()->showMessage(tr("Failed to load QML"));
@@ -816,6 +844,7 @@ private:
     ModelFactory factory;
     QPointer<QRangeModel> model; // might be owned by an adapter
     QTreeView *treeview;
+    QTableView *tableview;
 #ifdef QUICK_UI
     QQuickWidget *quickWidget;
 #endif

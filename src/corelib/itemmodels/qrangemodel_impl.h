@@ -440,6 +440,11 @@ namespace QRangeModelDetails
     template <typename row_type>
     static constexpr bool hasHeaderData = qxp::is_detected_v<hasHeaderData_test, QRangeModelRowOptions<row_type>>;
 
+    template <typename row_type>
+    using hasRowFlags_test = decltype(QRangeModelRowOptions<row_type>::flags(std::declval<const row_type &>()));
+    template <typename row_type>
+    static constexpr bool hasRowFlags = qxp::is_detected_v<hasRowFlags_test, row_type>;
+
     // Find out how many fixed elements can be retrieved from a row element.
     // main template for simple values and ranges. Specializing for ranges
     // is ambiguous with arrays, as they are also ranges
@@ -1321,6 +1326,11 @@ public:
 
         // try customization
         std::optional<Qt::ItemFlags> customFlags;
+        if constexpr (QRangeModelDetails::hasRowFlags<wrapped_row_type>) {
+            const_row_reference row = rowData(index);
+            customFlags = QRangeModelDetails::QRangeModelRowOptions<wrapped_row_type>::flags(row);
+        }
+
         readAt(index, [&customFlags](auto &&ref){
             Q_UNUSED(ref);
             using wrapped_value_type = q20::remove_cvref_t<QRangeModelDetails::wrapped_t<decltype(ref)>>;

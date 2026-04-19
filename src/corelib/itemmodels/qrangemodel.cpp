@@ -740,9 +740,13 @@ Q_CORE_EXPORT QVariant qVariantAtIndex(const QModelIndex &index)
         \li static constexpr RowCategory rowCategory
         \li RowCategory
     \row
-        \li static QVariant headerData(int section, int role)
+        \li [since 6.12] static QVariant headerData(int section, int role)
         \li \l{QAbstractItemModel::headerData}{Header data} with \a role for
             the \c section of the horizontal header.
+    \row
+        \li [since 6.12] static Qt::ItemFlags flags(const T &row)
+        \li \l{QAbstractItemModel::flags}(Flags) for all items in \a row.
+            Will be overwritten by a customization of \l{ItemAccess}{ItemAccess::flags}
     \endtable
 
     \snippet qrangemodel/main.cpp color_gadget_decl
@@ -808,7 +812,7 @@ Q_CORE_EXPORT QVariant qVariantAtIndex(const QModelIndex &index)
     };
     \endcode
 
-    Optionally, a \c{flags()} implementation can return a combination of
+    Optionally [since 6.12], a \c{flags()} implementation can return a combination of
     Qt::ItemFlags:
 
     \code
