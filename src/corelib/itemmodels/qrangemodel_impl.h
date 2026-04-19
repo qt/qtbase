@@ -1129,6 +1129,7 @@ protected:
     Q_CORE_EXPORT static bool connectPropertiesConst(const QModelIndex &index, const QObject *item,
                                                      QRangeModelDetails::AutoConnectContext *context,
                                                      const QHash<int, QMetaProperty> &properties);
+    Q_CORE_EXPORT int sortRole() const;
 };
 
 template <typename Structure, typename Range,
@@ -1944,7 +1945,7 @@ public:
 
         Compare(const QRangeModelImpl *impl, int column, Qt::SortOrder order)
             : that(impl), m_index(impl->createIndex(-1, column, nullptr))
-            , m_order(order)
+            , m_order(order), m_sortRole(impl->sortRole())
         {
         }
 
@@ -1963,7 +1964,7 @@ public:
 
             if constexpr (QRangeModelDetails::item_access<value_type>()
                         || multi_role() || has_metaobject<value_type>) {
-                QModelRoleData result(Qt::DisplayRole);
+                QModelRoleData result(m_sortRole);
                 // Minor abuse of QModelIndex: the reader needs an index to implement
                 // lazy auto-connections, but we only have a column. So we construct
                 // an invalid QModelIndex that carries only that column value. That's
@@ -2023,6 +2024,7 @@ public:
         const QRangeModelImpl * const that;
         const QModelIndex m_index;
         const Qt::SortOrder m_order;
+        const int m_sortRole;
     };
 
     void sort(int column, Qt::SortOrder order)

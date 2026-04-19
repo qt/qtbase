@@ -18,6 +18,8 @@ class Q_CORE_EXPORT QRangeModel : public QAbstractItemModel
                                                 NOTIFY roleNamesChanged FINAL)
     Q_PROPERTY(AutoConnectPolicy autoConnectPolicy READ autoConnectPolicy WRITE setAutoConnectPolicy
                                                 NOTIFY autoConnectPolicyChanged REVISION(6, 11))
+    Q_PROPERTY(int sortRole READ sortRole WRITE setSortRole RESET resetSortRole
+                            NOTIFY sortRoleChanged REVISION(6, 12))
     Q_CLASSINFO("RegisterEnumClassesUnscoped", "false")
 
 public:
@@ -106,6 +108,11 @@ public:
                           Qt::MatchFlags flags) const override;
     void multiData(const QModelIndex &index, QModelRoleDataSpan roleDataSpan) const override;
     void sort(int column, Qt::SortOrder order = Qt::AscendingOrder) override;
+
+    int sortRole() const;
+    void setSortRole(int role);
+    void resetSortRole();
+
     QSize span(const QModelIndex &index) const override;
     Qt::DropActions supportedDragActions() const override;
     Qt::DropActions supportedDropActions() const override;
@@ -116,6 +123,7 @@ public:
 Q_SIGNALS:
     void roleNamesChanged();
     Q_REVISION(6, 11) void autoConnectPolicyChanged(AutoConnectPolicy policy);
+    Q_REVISION(6, 12) void sortRoleChanged(int role);
 
 protected Q_SLOTS:
     void resetInternalData() override;

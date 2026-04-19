@@ -29,6 +29,7 @@ public:
     mutable QHash<int, QByteArray> m_roleNames;
     QRangeModel::AutoConnectPolicy m_autoConnectPolicy = QRangeModel::AutoConnectPolicy::None;
     bool m_dataChangedDispatchBlocked = false;
+    int m_sortRole = Qt::DisplayRole;
 
     static void emitDataChanged(const QModelIndex &index, int role)
     {
@@ -127,6 +128,11 @@ const QRangeModelImplBase *QRangeModelImplBase::getImplementation(const QRangeMo
 QScopedValueRollback<bool> QRangeModelImplBase::blockDataChangedDispatch()
 {
     return QScopedValueRollback(m_rangeModel->d_func()->m_dataChangedDispatchBlocked, true);
+}
+
+int QRangeModelImplBase::sortRole() const
+{
+    return m_rangeModel->sortRole();
 }
 
 /*!
@@ -1487,8 +1493,8 @@ void QRangeModel::setAutoConnectPolicy(QRangeModel::AutoConnectPolicy policy)
 /*!
     \reimp
 
-    Sorts the the underlying range in the given \a order, based on the
-    Qt::DisplayRole data of the items in \a column.
+    Sorts the the underlying range in the given \a order, based on the data for
+    the \l{sortRole} (Qt::DisplayRole by default) of the items in \a column.
 
     \note This implementation uses a member function \c{sort(Compare comp)} of
     the C++ range if available (such as in \c{std::list}), or otherwise
@@ -1499,12 +1505,41 @@ void QRangeModel::setAutoConnectPolicy(QRangeModel::AutoConnectPolicy policy)
     \note Accessing the item does not dispatch the reading of data through
     overrides of data().
 
-    \sa QSortFilterProxyModel
+    \sa sortRole, QSortFilterProxyModel
 */
 void QRangeModel::sort(int column, Qt::SortOrder order)
 {
     Q_D(QRangeModel);
     d->impl->call<QRangeModelImplBase::Sort>(column, order);
+}
+
+/*!
+    \property QRangeModel::sortRole
+    \since 6.12
+    \brief the data role used when sorting items.
+
+    The default value is Qt::DisplayRole.
+
+    \sa sort(), QSortFilterProxyModel
+*/
+int QRangeModel::sortRole() const
+{
+    Q_D(const QRangeModel);
+    return d->m_sortRole;
+}
+
+void QRangeModel::setSortRole(int role)
+{
+    Q_D(QRangeModel);
+    if (d->m_sortRole == role)
+        return;
+    d->m_sortRole = role;
+    Q_EMIT sortRoleChanged(d->m_sortRole);
+}
+
+void QRangeModel::resetSortRole()
+{
+    setSortRole(Qt::DisplayRole);
 }
 
 /*!

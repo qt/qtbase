@@ -1821,6 +1821,40 @@ void tst_QRangeModel::sortBasic()
     }
 }
 
+void tst_QRangeModel::sortRole()
+{
+    QRangeModel model(QList<QMap<int, QVariant>>{
+        {
+            {Qt::DisplayRole, 4},
+            {Qt::DecorationRole, 1},
+        },
+        {
+            {Qt::DisplayRole, 3},
+            {Qt::DecorationRole, 2},
+        },
+        {
+            {Qt::DisplayRole, 2},
+            {Qt::DecorationRole, 3},
+        },
+        {
+            {Qt::DisplayRole, 1},
+            {Qt::DecorationRole, 4},
+        },
+    });
+
+    QModelIndex index = model.index(0, 0);
+    model.setSortRole(Qt::DisplayRole);
+    model.sort(0);
+    QCOMPARE(model.data(index, Qt::DisplayRole), 1);
+    QCOMPARE(model.data(index, Qt::DecorationRole), 4);
+
+    index = model.index(0, 0);
+    model.setSortRole(Qt::DecorationRole);
+    model.sort(0);
+    QCOMPARE(model.data(index, Qt::DisplayRole), 4);
+    QCOMPARE(model.data(index, Qt::DecorationRole), 1);
+}
+
 void tst_QRangeModel::sort()
 {
     QFETCH(Factory, factory);

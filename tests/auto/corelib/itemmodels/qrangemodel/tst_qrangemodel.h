@@ -94,6 +94,7 @@ private slots:
     void sortBasic();
     void sort_data() { createTestData(); }
     void sort();
+    void sortRole();
     void sortTree_data(){ tree_data(); }
     void sortTree();
 
