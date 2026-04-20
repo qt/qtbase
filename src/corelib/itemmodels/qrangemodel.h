@@ -10,6 +10,7 @@
 QT_BEGIN_NAMESPACE
 
 class QRangeModelPrivate;
+class QCollator;
 
 class Q_CORE_EXPORT QRangeModel : public QAbstractItemModel
 {
@@ -20,6 +21,8 @@ class Q_CORE_EXPORT QRangeModel : public QAbstractItemModel
                                                 NOTIFY autoConnectPolicyChanged REVISION(6, 11))
     Q_PROPERTY(int sortRole READ sortRole WRITE setSortRole RESET resetSortRole
                             NOTIFY sortRoleChanged REVISION(6, 12))
+    Q_PROPERTY(QCollator sortCollator READ sortCollator WRITE setSortCollator
+                                      RESET resetSortCollator NOTIFY sortCollatorChanged REVISION(6, 12))
     Q_CLASSINFO("RegisterEnumClassesUnscoped", "false")
 
 public:
@@ -109,6 +112,10 @@ public:
     void multiData(const QModelIndex &index, QModelRoleDataSpan roleDataSpan) const override;
     void sort(int column, Qt::SortOrder order = Qt::AscendingOrder) override;
 
+    QCollator sortCollator() const;
+    void setSortCollator(const QCollator &collator);
+    void resetSortCollator();
+
     int sortRole() const;
     void setSortRole(int role);
     void resetSortRole();
@@ -124,6 +131,7 @@ Q_SIGNALS:
     void roleNamesChanged();
     Q_REVISION(6, 11) void autoConnectPolicyChanged(AutoConnectPolicy policy);
     Q_REVISION(6, 12) void sortRoleChanged(int role);
+    Q_REVISION(6, 12) void sortCollatorChanged(const QCollator &collator);
 
 protected Q_SLOTS:
     void resetInternalData() override;
@@ -251,6 +259,12 @@ const QAbstractItemModel &QRangeModelImplBase::itemModel() const
 QRangeModelImplBase::AutoConnectPolicy QRangeModelImplBase::autoConnectPolicy() const
 {
     return QRangeModelImplBase::AutoConnectPolicy(m_rangeModel->autoConnectPolicy());
+}
+
+Qt::partial_ordering QRangeModelImplBase::compareData(const QVariant &lhs, const QVariant &rhs,
+                                                      const QCollator *collator)
+{
+    return QRangeModel::compareData(lhs, rhs, collator);
 }
 
 // Helper templates that we can forward declare in the _impl header,

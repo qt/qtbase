@@ -3,6 +3,7 @@
 // Qt-Security score:significant reason:default
 
 #include "qrangemodel.h"
+#include <QtCore/qcollator.h>
 #include <QtCore/qsize.h>
 
 #include <QtCore/private/qabstractitemmodel_p.h>
@@ -30,6 +31,7 @@ public:
     QRangeModel::AutoConnectPolicy m_autoConnectPolicy = QRangeModel::AutoConnectPolicy::None;
     bool m_dataChangedDispatchBlocked = false;
     int m_sortRole = Qt::DisplayRole;
+    std::optional<QCollator> m_sortCollator;
 
     static void emitDataChanged(const QModelIndex &index, int role)
     {
@@ -133,6 +135,12 @@ QScopedValueRollback<bool> QRangeModelImplBase::blockDataChangedDispatch()
 int QRangeModelImplBase::sortRole() const
 {
     return m_rangeModel->sortRole();
+}
+
+const QCollator *QRangeModelImplBase::sortCollator() const
+{
+    const QRangeModelPrivate *d = QRangeModelPrivate::get(m_rangeModel);
+    return d->m_sortCollator ? &d->m_sortCollator.value() : nullptr;
 }
 
 /*!
@@ -1520,7 +1528,7 @@ void QRangeModel::sort(int column, Qt::SortOrder order)
 
     The default value is Qt::DisplayRole.
 
-    \sa sort(), QSortFilterProxyModel
+    \sa sort(), sortCollator, QSortFilterProxyModel
 */
 int QRangeModel::sortRole() const
 {
@@ -1540,6 +1548,41 @@ void QRangeModel::setSortRole(int role)
 void QRangeModel::resetSortRole()
 {
     setSortRole(Qt::DisplayRole);
+}
+
+/*!
+    \property QRangeModel::sortCollator
+    \since 6.12
+    \brief the collator that will be used when sorting the model
+
+    The default value of this property is a QCollator for the C-locale.
+    Sorting will not be locale aware, and case sensitive. Setting a collator
+    will make the sorting locale-aware.
+
+    \sa sort(), sortRole, QSortFilterProxyModel
+*/
+QCollator QRangeModel::sortCollator() const
+{
+    Q_D(const QRangeModel);
+    return d->m_sortCollator.value_or(QCollator(QLocale::C));
+}
+
+void QRangeModel::setSortCollator(const QCollator &collator)
+{
+    Q_D(QRangeModel);
+    if (sortCollator() == collator)
+        return;
+    d->m_sortCollator = collator;
+    Q_EMIT sortCollatorChanged(*d->m_sortCollator);
+}
+
+void QRangeModel::resetSortCollator()
+{
+    Q_D(QRangeModel);
+    if (!d->m_sortCollator)
+        return;
+    d->m_sortCollator = std::nullopt;
+    Q_EMIT sortCollatorChanged(sortCollator());
 }
 
 /*!

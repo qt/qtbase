@@ -17,6 +17,7 @@
 #endif
 
 #include <QtCore/qabstractitemmodel.h>
+#include <QtCore/qcollator.h>
 #include <QtCore/qquasivirtual_impl.h>
 #include <QtCore/qmetaobject.h>
 #include <QtCore/qvariant.h>
@@ -1101,6 +1102,8 @@ protected:
     inline void beginLayoutChange();
     inline void endLayoutChange();
     inline AutoConnectPolicy autoConnectPolicy() const;
+    inline static Qt::partial_ordering compareData(const QVariant &lhs, const QVariant &rhs,
+                                                   const QCollator *collator);
 
 public:
     inline QAbstractItemModel &itemModel();
@@ -1130,6 +1133,7 @@ protected:
                                                      QRangeModelDetails::AutoConnectContext *context,
                                                      const QHash<int, QMetaProperty> &properties);
     Q_CORE_EXPORT int sortRole() const;
+    Q_CORE_EXPORT const QCollator *sortCollator() const;
 };
 
 template <typename Structure, typename Range,
@@ -1943,9 +1947,19 @@ public:
         using sortMember_test = decltype(std::declval<C&>().sort(std::declval<LessThan &&>()));
         static constexpr bool hasSortMember = qxp::is_detected_v<sortMember_test, range_type, Compare>;
 
+        template <typename Stringish>
+        using collatedCompare_test = decltype(
+            std::declval<const QCollator&>().compare(std::declval<const Stringish&>(),
+                                                     std::declval<const Stringish&>())
+        );
+        template <typename Stringish>
+        static constexpr bool hasCollatedCompare = qxp::is_detected_v<collatedCompare_test,
+                                                                        Stringish>;
+
+
         Compare(const QRangeModelImpl *impl, int column, Qt::SortOrder order)
             : that(impl), m_index(impl->createIndex(-1, column, nullptr))
-            , m_order(order), m_sortRole(impl->sortRole())
+            , collator(impl->sortCollator()), m_order(order), m_sortRole(impl->sortRole())
         {
         }
 
@@ -1976,11 +1990,23 @@ public:
                 const QVariant lhsVariant = std::move(result.data());
                 reader(rhs);
                 const QVariant rhsVariant = std::move(result.data());
-                return QVariant::compare(lhsVariant, rhsVariant);
+                return QRangeModelImplBase::compareData(lhsVariant, rhsVariant, collator);
             } else if constexpr (std::is_same_v<QVariant, value_type>) {
-                return QVariant::compare(lhs, rhs);
+                return QRangeModelImplBase::compareData(lhs, rhs, collator);
             } else if constexpr (QtOrderingPrivate::CompareThreeWayTester::hasCompareThreeWay_v
                                                                             <value_type, value_type>) {
+                // all types supported by QCollator are also three-way comparable
+                if constexpr (hasCollatedCompare<value_type>) {
+                    if (collator) {
+                        using ordering = decltype(qCompareThreeWay(lhs, rhs));
+                        int res = collator->compare(lhs, rhs);
+                        if (res < 0)
+                            return ordering::less;
+                        if (res > 0)
+                            return ordering::greater;
+                        return ordering::equal;
+                    }
+                }
                 return qCompareThreeWay(lhs, rhs);
             } else {
                 return unordered{};
@@ -2023,6 +2049,7 @@ public:
 
         const QRangeModelImpl * const that;
         const QModelIndex m_index;
+        const QCollator * const collator;
         const Qt::SortOrder m_order;
         const int m_sortRole;
     };

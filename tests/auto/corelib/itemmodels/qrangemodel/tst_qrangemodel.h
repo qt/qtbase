@@ -95,6 +95,8 @@ private slots:
     void sort_data() { createTestData(); }
     void sort();
     void sortRole();
+    void sortCollator_data();
+    void sortCollator();
     void sortTree_data(){ tree_data(); }
     void sortTree();
 

@@ -1855,6 +1855,70 @@ void tst_QRangeModel::sortRole()
     QCOMPARE(model.data(index, Qt::DecorationRole), 1);
 }
 
+void tst_QRangeModel::sortCollator_data()
+{
+    QTest::addColumn<QVariantList>("data");
+    QTest::addColumn<QCollator>("collator");
+    QTest::addColumn<QVariantList>("sorted");
+
+    QVariantList caseData{"C", "b", "A", "d"};
+
+    QCollator nullCollator = QCollator(QLocale::C);
+    QCollator caseSensitive = nullCollator;
+    caseSensitive.setCaseSensitivity(Qt::CaseSensitive);
+    QCollator caseInsensitive;
+    caseInsensitive.setCaseSensitivity(Qt::CaseInsensitive);
+    QCollator localeAware = QCollator(QLocale::German);
+
+    QTest::addRow("CaseSensitive")
+        << caseData << caseSensitive << QVariantList{"A", "C", "b", "d"};
+    if (caseInsensitive.compare("b", "A") < 0) {
+        QTest::addRow("CaseInsensitive")
+            << caseData << caseInsensitive << QVariantList{"A", "b", "C", "d"};
+    } else {
+        qInfo("Platform doesn't implement case insensitive collation.");
+    }
+
+
+    QVariantList i18nData{"a", "z", "ö", "ä"};
+
+    QTest::addRow("LocaleUnaware")
+        << i18nData << nullCollator << QVariantList{"a", "z", "ä", "ö"};
+    if (localeAware.compare("ä", "z") < 0) {
+        QTest::addRow("LocaleAware")
+            << i18nData << localeAware << QVariantList{"a", "ä", "ö", "z"};
+    } else {
+        qInfo("Platform doesn't implement collation with a German locale.");
+    }
+}
+
+void tst_QRangeModel::sortCollator()
+{
+    QFETCH(QVariantList, data);
+    QFETCH(const QCollator, collator);
+    QFETCH(const QVariantList, sorted);
+
+    { // QVariant comparison
+        QRangeModel model(std::ref(data));
+        model.setSortCollator(collator);
+        model.sort(0);
+        QCOMPARE(data, sorted);
+    }
+
+    { // test shortcut for compile-time typed values
+        QStringList stringData;
+        for (const auto &var : std::as_const(data))
+            stringData << var.toString();
+        QStringList sortedStrings;
+        for (const auto &var : std::as_const(sorted))
+            sortedStrings << var.toString();
+        QRangeModel model(std::ref(stringData));
+        model.setSortCollator(collator);
+        model.sort(0);
+        QCOMPARE(stringData, sortedStrings);
+    }
+}
+
 void tst_QRangeModel::sort()
 {
     QFETCH(Factory, factory);
