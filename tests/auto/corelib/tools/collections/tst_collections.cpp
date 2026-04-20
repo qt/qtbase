@@ -3178,7 +3178,8 @@ public:
 
     inline bool operator==(const AlignedClass &other) const { return i == other.i; }
     inline bool operator<(const AlignedClass &other) const { return i < other.i; }
-    friend inline size_t qHash(const AlignedClass &a) { return qHash(a.i); }
+    friend size_t qHash(const AlignedClass &a, size_t seed = 0) noexcept
+    { return qHash(a.i, seed); }
 };
 
 using Aligned4 = AlignedClass<4>;
