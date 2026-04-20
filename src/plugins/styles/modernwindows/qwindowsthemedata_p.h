@@ -17,9 +17,13 @@
 //
 
 #include <qwidget.h>
+
+#include <QtCore/qhashfunctions.h>
 #include <qt_windows.h>
+
 #include <uxtheme.h>
 #include <vssym32.h>
+
 #include <limits.h>
 
 
@@ -104,10 +108,9 @@ struct ThemeMapKey {
         : theme(data.theme), partId(data.partId), stateId(data.stateId),
         noBorder(data.noBorder), noContent(data.noContent) {}
 
+    friend size_t qHash(const ThemeMapKey &key, size_t seed = 0) noexcept
+    { return qHashMulti(seed, key.theme, key.partId, key.stateId); }
 };
-
-inline size_t qHash(const ThemeMapKey &key)
-{ return key.theme ^ key.partId ^ key.stateId; }
 
 inline bool operator==(const ThemeMapKey &k1, const ThemeMapKey &k2)
 {
