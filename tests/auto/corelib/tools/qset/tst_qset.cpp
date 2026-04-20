@@ -62,9 +62,10 @@ private:
 
 struct IdentityTracker {
     int value, id;
+    friend size_t qHash(IdentityTracker key, size_t seed = 0)
+    { return qHash(key.value, seed); }
 };
 
-inline size_t qHash(IdentityTracker key) { return qHash(key.value); }
 inline bool operator==(IdentityTracker lhs, IdentityTracker rhs) { return lhs.value == rhs.value; }
 
 void tst_QSet::comparisonCompiles()
