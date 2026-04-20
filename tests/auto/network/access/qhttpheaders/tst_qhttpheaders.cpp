@@ -237,7 +237,7 @@ void tst_QHttpHeaders::accessors()
     QCOMPARE(list.at(0).second, v1);
     QCOMPARE(list.at(1).first, n2);
     QCOMPARE(list.at(1).second, v2);
-    QCOMPARE(list.at(2).first, n3); // N3 has been lower-cased
+    QCOMPARE(list.at(2).first, n3);
     QCOMPARE(list.at(2).second, V3);
 
     // toMultiMap()
@@ -317,7 +317,7 @@ void tst_QHttpHeaders::accessors()
 void tst_QHttpHeaders::wellKnownHeader()
 {
     QByteArrayView view = QHttpHeaders::wellKnownHeaderName(QHttpHeaders::WellKnownHeader::AIM);
-    QCOMPARE(view, "a-im");
+    QCOMPARE(view, "A-IM");
 }
 
 #define TEST_ILLEGAL_HEADER_NAME_CHARACTER(NAME)       \

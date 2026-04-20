@@ -131,19 +131,8 @@ QByteArray QHttpNetworkRequestPrivate::header(const QHttpNetworkRequest &request
     ba += QByteArray::number(request.minorVersion());
     ba += "\r\n";
 
-    constexpr auto titlecase = [](QByteArrayView name) {
-        std::string n;
-        n.reserve(size_t(name.size()));
-        bool toUpperNext = true;
-        for (char c : name) {
-            n += toUpperNext ? QtMiscUtils::toAsciiUpper(c) : c;
-            toUpperNext = c == '-';
-        }
-        return n;
-    };
-
     for (qsizetype i = 0; i < headers.size(); ++i) {
-        ba += titlecase(headers.nameAt(i));
+        ba += headers.nameAt(i);
         ba += ": ";
         ba += headers.valueAt(i);
         ba += "\r\n";

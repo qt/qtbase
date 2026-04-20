@@ -1479,7 +1479,8 @@ void QNetworkReplyHttpImplPrivate::replyDownloadMetaData(const QHttpHeaders &hm,
         if (key.compare(locationHeader(), Qt::CaseInsensitive) == 0)
             h.removeAll(key);
 
-        if (shouldDecompress && !decompressHelper.isValid() && key == "content-encoding"_L1) {
+        if (shouldDecompress && !decompressHelper.isValid()
+            && key == QHttpHeaders::wellKnownHeaderName(QHttpHeaders::WellKnownHeader::ContentEncoding)) {
             if (!synchronous) // with synchronous all the data is expected to be handled at once
                 decompressHelper.setCountingBytesEnabled(true);
 

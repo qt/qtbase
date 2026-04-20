@@ -257,7 +257,7 @@ void tst_QNetworkCacheMetaData::rawHeaders_data()
     QTest::newRow("valid") << headers;
     headers.append(QNetworkCacheMetaData::RawHeader("n1", "V1, v2, v3"));
     headers.append(QNetworkCacheMetaData::RawHeader("n2", "V2"));
-    headers.append(QNetworkCacheMetaData::RawHeader("set-cookie", "v1\nV2\nV3"));
+    headers.append(QNetworkCacheMetaData::RawHeader("Set-Cookie", "v1\nV2\nV3"));
     QTest::newRow("valid-2") << headers;
 }
 

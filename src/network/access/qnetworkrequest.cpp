@@ -748,8 +748,10 @@ QList<QByteArray> QNetworkRequest::rawHeaderList() const
     the same name, you should concatenate the two values, separating
     them with a comma (",") and set one single raw header.
 
-    \note Since Qt 6.8, the header field names are normalized
-    by converting them to lowercase.
+    \note Since Qt 6.8, the header field names are normalized by converting
+    them to lowercase. Since Qt 6.12, well-known header field names are
+    instead stored in their canonical IANA form (for example, \c "Content-Type"),
+    and custom header names are stored as provided.
 
     \sa KnownHeaders, setHeader(), hasRawHeader(), rawHeader()
 */

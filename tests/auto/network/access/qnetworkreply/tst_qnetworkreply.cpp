@@ -2869,6 +2869,8 @@ void tst_QNetworkReply::postToHttpMultipart_data()
     QUrl url("http://" + QtNetworkSettings::httpServerName() + "/qtest/cgi-bin/multipart.cgi");
     QByteArray expectedData;
 
+    using WK = QHttpHeaders::WellKnownHeader;
+    const auto wkName = [](WK wk) { return QHttpHeaders::wellKnownHeaderName(wk).toByteArray(); };
 
     // empty parts
 
@@ -2898,8 +2900,8 @@ void tst_QNetworkReply::postToHttpMultipart_data()
 
     QHttpMultiPart *customMultiPart = new QHttpMultiPart;
     customMultiPart->append(textPart);
-    expectedData = "header: content-type, value: 'text/plain'\n"
-                   "header: content-disposition, value: 'form-data; name=\"text\"'\n"
+    expectedData = "header: " + wkName(WK::ContentType) + ", value: 'text/plain'\n"
+                   "header: " + wkName(WK::ContentDisposition) + ", value: 'form-data; name=\"text\"'\n"
                    "content: 7 bytes\n"
                    "\n";
     QTest::newRow("text-custom") << url << customMultiPart << expectedData << QByteArray("custom");
@@ -2935,18 +2937,18 @@ void tst_QNetworkReply::postToHttpMultipart_data()
     multiPart3->append(textPart);
     multiPart3->append(textPart2);
     multiPart3->append(textPart3);
-    expectedData = "header: content-type, value: 'text/plain'\n"
-                   "header: content-disposition, value: 'form-data; name=\"text\"'\n"
+    expectedData = "header: " + wkName(WK::ContentType) + ", value: 'text/plain'\n"
+                   "header: " + wkName(WK::ContentDisposition) + ", value: 'form-data; name=\"text\"'\n"
                    "content: 7 bytes\n"
                    "\n"
-                   "header: content-type, value: 'text/plain'\n"
-                   "header: myrawheader, value: 'myValue'\n"
-                   "header: content-disposition, value: 'form-data; name=\"text2\"'\n"
+                   "header: " + wkName(WK::ContentType) + ", value: 'text/plain'\n"
+                   "header: myRawHeader, value: 'myValue'\n"
+                   "header: " + wkName(WK::ContentDisposition) + ", value: 'form-data; name=\"text2\"'\n"
                    "content: some more bytes\n"
                    "\n"
-                   "header: content-type, value: 'text/plain'\n"
-                   "header: content-disposition, value: 'form-data; name=\"text3\"'\n"
-                   "header: content-location, value: 'http://my.test.location.tld'\n"
+                   "header: " + wkName(WK::ContentType) + ", value: 'text/plain'\n"
+                   "header: " + wkName(WK::ContentDisposition) + ", value: 'form-data; name=\"text3\"'\n"
+                   "header: " + wkName(WK::ContentLocation) + ", value: 'http://my.test.location.tld'\n"
                    "content: even more bytes\n\n";
     QTest::newRow("text-text-text") << url << multiPart3 << expectedData << QByteArray("alternative");
 

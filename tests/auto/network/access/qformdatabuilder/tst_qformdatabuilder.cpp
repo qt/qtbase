@@ -350,34 +350,34 @@ void tst_QFormDataBuilder::setHeadersDoesNotAffectHeaderFieldsManagedByBuilder_d
             << "text"_L1 << QAnyStringView("rfc3252.txt"_L1)
             << false << false
             << QList{
-                    R"(content-disposition: form-data; name="text"; filename="rfc3252.txt")"_ba ,
-                    "content-type: text/plain"_ba,
+                    R"(Content-Disposition: form-data; name="text"; filename="rfc3252.txt")"_ba ,
+                    "Content-Type: text/plain"_ba,
                };
 
     QTest::newRow("default-overwrites-preset-content-disposition")
             << "text"_L1 << QAnyStringView("rfc3252.txt"_L1)
             << true << false
             << QList{
-                    R"(content-disposition: form-data; name="text"; filename="rfc3252.txt")"_ba ,
-                    "content-type: text/plain"_ba,
+                    R"(Content-Disposition: form-data; name="text"; filename="rfc3252.txt")"_ba ,
+                    "Content-Type: text/plain"_ba,
                };
 
     QTest::newRow("added-extra-header")
             << "text"_L1 << QAnyStringView("rfc3252.txt"_L1)
             << false << true
             << QList{
-                    R"(content-disposition: form-data; name="text"; filename="rfc3252.txt")"_ba ,
-                    "content-type: text/plain"_ba,
-                    "content-length: 70"_ba,
+                    R"(Content-Disposition: form-data; name="text"; filename="rfc3252.txt")"_ba ,
+                    "Content-Type: text/plain"_ba,
+                    "Content-Length: 70"_ba,
                };
 
     QTest::newRow("extra-header-and-overwrite")
             << "text"_L1 << QAnyStringView("rfc3252.txt"_L1)
             << true << true
             << QList{
-                    R"(content-disposition: form-data; name="text"; filename="rfc3252.txt")"_ba ,
-                    "content-type: text/plain"_ba,
-                    "content-length: 70"_ba,
+                    R"(Content-Disposition: form-data; name="text"; filename="rfc3252.txt")"_ba ,
+                    "Content-Type: text/plain"_ba,
+                    "Content-Length: 70"_ba,
                };
 }
 
@@ -422,12 +422,12 @@ void tst_QFormDataBuilder::specifyMimeType_data()
     QTest::addColumn<QByteArray>("expected_content_type_data");
 
     QTest::newRow("not-specified") << "text"_L1 << QAnyStringView("rfc3252.txt"_L1)
-        << QAnyStringView("text/plain"_L1) << "content-type: text/plain"_ba;
+        << QAnyStringView("text/plain"_L1) << "Content-Type: text/plain"_ba;
     QTest::newRow("mime-specified") << "text"_L1 << QAnyStringView("rfc3252.txt"_L1)
-        << QAnyStringView("text/plain"_L1) << "content-type: text/plain"_ba;
+        << QAnyStringView("text/plain"_L1) << "Content-Type: text/plain"_ba;
     // wrong mime type specified but it is not overridden by the deduction
     QTest::newRow("wrong-mime-specified") << "text"_L1 << QAnyStringView("rfc3252.txt"_L1)
-        << QAnyStringView("image/jpeg"_L1) << "content-type: image/jpeg"_ba;
+        << QAnyStringView("image/jpeg"_L1) << "Content-Type: image/jpeg"_ba;
 }
 
 void tst_QFormDataBuilder::specifyMimeType()
@@ -486,7 +486,7 @@ void tst_QFormDataBuilder::picksUtf8NameEncodingIfAsciiDoesNotSuffice()
 void tst_QFormDataBuilder::moveSemantics()
 {
     constexpr QByteArrayView expected = "--boundary_.oOo._4SUrZy7x9lPHMF3fbRSsE15hiWu5Sbmy\r\n"
-                                        "content-type: text/plain\r\ncontent-disposition: form-data; name=\"text\"; filename=\"rfc3252.txt\"\r\n\r\n"
+                                        "Content-Type: text/plain\r\nContent-Disposition: form-data; name=\"text\"; filename=\"rfc3252.txt\"\r\n\r\n"
                                         "some text for reference\r\n"
                                         "--boundary_.oOo._4SUrZy7x9lPHMF3fbRSsE15hiWu5Sbmy--\r\n";
 

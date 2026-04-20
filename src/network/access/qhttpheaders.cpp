@@ -190,184 +190,184 @@ Q_STATIC_LOGGING_CATEGORY(lcQHttpHeaders, "qt.network.http.headers");
 // and also check if the enums benefit from reordering
 static constexpr auto headerNames = qOffsetStringArray(
     // IANA Permanent status:
-    "a-im",
-    "accept",
-    "accept-additions",
-    "accept-ch",
-    "accept-datetime",
-    "accept-encoding",
-    "accept-features",
-    "accept-language",
-    "accept-patch",
-    "accept-post",
-    "accept-ranges",
-    "accept-signature",
-    "access-control-allow-credentials",
-    "access-control-allow-headers",
-    "access-control-allow-methods",
-    "access-control-allow-origin",
-    "access-control-expose-headers",
-    "access-control-max-age",
-    "access-control-request-headers",
-    "access-control-request-method",
-    "age",
-    "allow",
-    "alpn",
-    "alt-svc",
-    "alt-used",
-    "alternates",
-    "apply-to-redirect-ref",
-    "authentication-control",
-    "authentication-info",
-    "authorization",
-    "cache-control",
-    "cache-status",
-    "cal-managed-id",
-    "caldav-timezones",
-    "capsule-protocol",
-    "cdn-cache-control",
-    "cdn-loop",
-    "cert-not-after",
-    "cert-not-before",
-    "clear-site-data",
-    "client-cert",
-    "client-cert-chain",
-    "close",
-    "connection",
-    "content-digest",
-    "content-disposition",
-    "content-encoding",
-    "content-id",
-    "content-language",
-    "content-length",
-    "content-location",
-    "content-range",
-    "content-security-policy",
-    "content-security-policy-report-only",
-    "content-type",
-    "cookie",
-    "cross-origin-embedder-policy",
-    "cross-origin-embedder-policy-report-only",
-    "cross-origin-opener-policy",
-    "cross-origin-opener-policy-report-only",
-    "cross-origin-resource-policy",
-    "dasl",
-    "date",
-    "dav",
-    "delta-base",
-    "depth",
-    "destination",
-    "differential-id",
-    "dpop",
-    "dpop-nonce",
-    "early-data",
-    "etag",
-    "expect",
-    "expect-ct",
-    "expires",
-    "forwarded",
-    "from",
-    "hobareg",
-    "host",
-    "if",
-    "if-match",
-    "if-modified-since",
-    "if-none-match",
-    "if-range",
-    "if-schedule-tag-match",
-    "if-unmodified-since",
-    "im",
-    "include-referred-token-binding-id",
-    "keep-alive",
-    "label",
-    "last-event-id",
-    "last-modified",
-    "link",
-    "location",
-    "lock-token",
-    "max-forwards",
-    "memento-datetime",
-    "meter",
-    "mime-version",
-    "negotiate",
-    "nel",
-    "odata-entityid",
-    "odata-isolation",
-    "odata-maxversion",
-    "odata-version",
-    "optional-www-authenticate",
-    "ordering-type",
-    "origin",
-    "origin-agent-cluster",
-    "oscore",
-    "oslc-core-version",
-    "overwrite",
-    "ping-from",
-    "ping-to",
-    "position",
-    "prefer",
-    "preference-applied",
-    "priority",
-    "proxy-authenticate",
-    "proxy-authentication-info",
-    "proxy-authorization",
-    "proxy-status",
-    "public-key-pins",
-    "public-key-pins-report-only",
-    "range",
-    "redirect-ref",
-    "referer",
-    "refresh",
-    "replay-nonce",
-    "repr-digest",
-    "retry-after",
-    "schedule-reply",
-    "schedule-tag",
-    "sec-purpose",
-    "sec-token-binding",
-    "sec-websocket-accept",
-    "sec-websocket-extensions",
-    "sec-websocket-key",
-    "sec-websocket-protocol",
-    "sec-websocket-version",
-    "server",
-    "server-timing",
-    "set-cookie",
-    "signature",
-    "signature-input",
-    "slug",
-    "soapaction",
-    "status-uri",
-    "strict-transport-security",
-    "sunset",
-    "surrogate-capability",
-    "surrogate-control",
-    "tcn",
-    "te",
-    "timeout",
-    "topic",
-    "traceparent",
-    "tracestate",
-    "trailer",
-    "transfer-encoding",
-    "ttl",
-    "upgrade",
-    "urgency",
-    "user-agent",
-    "variant-vary",
-    "vary",
-    "via",
-    "want-content-digest",
-    "want-repr-digest",
-    "www-authenticate",
-    "x-content-type-options",
-    "x-frame-options",
+    "A-IM",
+    "Accept",
+    "Accept-Additions",
+    "Accept-CH",
+    "Accept-Datetime",
+    "Accept-Encoding",
+    "Accept-Features",
+    "Accept-Language",
+    "Accept-Patch",
+    "Accept-Post",
+    "Accept-Ranges",
+    "Accept-Signature",
+    "Access-Control-Allow-Credentials",
+    "Access-Control-Allow-Headers",
+    "Access-Control-Allow-Methods",
+    "Access-Control-Allow-Origin",
+    "Access-Control-Expose-Headers",
+    "Access-Control-Max-Age",
+    "Access-Control-Request-Headers",
+    "Access-Control-Request-Method",
+    "Age",
+    "Allow",
+    "ALPN",
+    "Alt-Svc",
+    "Alt-Used",
+    "Alternates",
+    "Apply-To-Redirect-Ref",
+    "Authentication-Control",
+    "Authentication-Info",
+    "Authorization",
+    "Cache-Control",
+    "Cache-Status",
+    "Cal-Managed-ID",
+    "CalDAV-Timezones",
+    "Capsule-Protocol",
+    "CDN-Cache-Control",
+    "CDN-Loop",
+    "Cert-Not-After",
+    "Cert-Not-Before",
+    "Clear-Site-Data",
+    "Client-Cert",
+    "Client-Cert-Chain",
+    "Close",
+    "Connection",
+    "Content-Digest",
+    "Content-Disposition",
+    "Content-Encoding",
+    "Content-ID",
+    "Content-Language",
+    "Content-Length",
+    "Content-Location",
+    "Content-Range",
+    "Content-Security-Policy",
+    "Content-Security-Policy-Report-Only",
+    "Content-Type",
+    "Cookie",
+    "Cross-Origin-Embedder-Policy",
+    "Cross-Origin-Embedder-Policy-Report-Only",
+    "Cross-Origin-Opener-Policy",
+    "Cross-Origin-Opener-Policy-Report-Only",
+    "Cross-Origin-Resource-Policy",
+    "DASL",
+    "Date",
+    "DAV",
+    "Delta-Base",
+    "Depth",
+    "Destination",
+    "Differential-ID",
+    "DPoP",
+    "DPoP-Nonce",
+    "Early-Data",
+    "ETag",
+    "Expect",
+    "Expect-CT",
+    "Expires",
+    "Forwarded",
+    "From",
+    "Hobareg",
+    "Host",
+    "If",
+    "If-Match",
+    "If-Modified-Since",
+    "If-None-Match",
+    "If-Range",
+    "If-Schedule-Tag-Match",
+    "If-Unmodified-Since",
+    "IM",
+    "Include-Referred-Token-Binding-ID",
+    "Keep-Alive",
+    "Label",
+    "Last-Event-ID",
+    "Last-Modified",
+    "Link",
+    "Location",
+    "Lock-Token",
+    "Max-Forwards",
+    "Memento-Datetime",
+    "Meter",
+    "MIME-Version",
+    "Negotiate",
+    "NEL",
+    "OData-EntityId",
+    "OData-Isolation",
+    "OData-MaxVersion",
+    "OData-Version",
+    "Optional-WWW-Authenticate",
+    "Ordering-Type",
+    "Origin",
+    "Origin-Agent-Cluster",
+    "OSCORE",
+    "OSLC-Core-Version",
+    "Overwrite",
+    "Ping-From",
+    "Ping-To",
+    "Position",
+    "Prefer",
+    "Preference-Applied",
+    "Priority",
+    "Proxy-Authenticate",
+    "Proxy-Authentication-Info",
+    "Proxy-Authorization",
+    "Proxy-Status",
+    "Public-Key-Pins",
+    "Public-Key-Pins-Report-Only",
+    "Range",
+    "Redirect-Ref",
+    "Referer",
+    "Refresh",
+    "Replay-Nonce",
+    "Repr-Digest",
+    "Retry-After",
+    "Schedule-Reply",
+    "Schedule-Tag",
+    "Sec-Purpose",
+    "Sec-Token-Binding",
+    "Sec-WebSocket-Accept",
+    "Sec-WebSocket-Extensions",
+    "Sec-WebSocket-Key",
+    "Sec-WebSocket-Protocol",
+    "Sec-WebSocket-Version",
+    "Server",
+    "Server-Timing",
+    "Set-Cookie",
+    "Signature",
+    "Signature-Input",
+    "SLUG",
+    "SoapAction",
+    "Status-URI",
+    "Strict-Transport-Security",
+    "Sunset",
+    "Surrogate-Capability",
+    "Surrogate-Control",
+    "TCN",
+    "TE",
+    "Timeout",
+    "Topic",
+    "Traceparent",
+    "Tracestate",
+    "Trailer",
+    "Transfer-Encoding",
+    "TTL",
+    "Upgrade",
+    "Urgency",
+    "User-Agent",
+    "Variant-Vary",
+    "Vary",
+    "Via",
+    "Want-Content-Digest",
+    "Want-Repr-Digest",
+    "WWW-Authenticate",
+    "X-Content-Type-Options",
+    "X-Frame-Options",
     // IANA Deprecated status:
-    "accept-charset",
-    "c-pep-info",
-    "pragma",
-    "protocol-info",
-    "protocol-query"
+    "Accept-Charset",
+    "C-PEP-Info",
+    "Pragma",
+    "Protocol-Info",
+    "Protocol-Query"
     // If you append here, regenerate the index table
 );
 
@@ -388,8 +388,7 @@ struct ByIndirectHeaderName
     }
     constexpr bool operator()(QByteArrayView lhs, QByteArrayView rhs) const noexcept
     {
-        // ### just `lhs < rhs` when QByteArrayView relational operators are constexpr
-        return std::string_view(lhs) < std::string_view(rhs);
+        return QtPrivate::qstrnicmp_impl(lhs.data(), lhs.size(), rhs.data(), rhs.size()) < 0;
     }
 private:
     static constexpr QByteArrayView map(quint8 i) noexcept
@@ -793,9 +792,9 @@ static QByteArray fieldToByteArray(QStringView s)
     return s.toLatin1();
 }
 
-static QByteArray normalizedName(QAnyStringView name)
+static QByteArray fieldToByteArray(QAnyStringView name)
 {
-    return name.visit([](auto name){ return fieldToByteArray(name); }).toLower();
+    return name.visit([](auto name){ return fieldToByteArray(name); });
 }
 
 static bool headerNameValidImpl(QUtf8StringView) noexcept;
@@ -810,7 +809,7 @@ struct HeaderName
 
     explicit HeaderName(QAnyStringView name)
     {
-        auto nname = normalizedName(name);
+        auto nname = fieldToByteArray(name);
         if (auto h = HeaderName::toWellKnownHeader(nname))
             wellKnownHeader = *h;
         else
@@ -826,7 +825,7 @@ struct HeaderName
 
         auto result = std::lower_bound(indexesBegin, indexesEnd, name, ByIndirectHeaderName{});
 
-        if (result != indexesEnd && name == headerNames[*result])
+        if (result != indexesEnd && name.compare(headerNames[*result], Qt::CaseInsensitive) == 0)
             return static_cast<QHttpHeaders::WellKnownHeader>(*result);
         return std::nullopt;
     }
@@ -890,7 +889,7 @@ private:
         // from this point on we know that the two wellKnownHeaders are equal
         // if they are NonWellKnownHeaders, check the QByteArrays
         if (lhs.wellKnownHeader == NonWellKnownHeader)
-            return lhs.headerName == rhs.headerName;
+            return lhs.headerName.compare(rhs.headerName, Qt::CaseInsensitive) == 0;
 
         // both of them are well-known headers and are equal
         return true;
@@ -1021,7 +1020,7 @@ void QHttpHeadersPrivate::forEachHeader(QAnyStringView name,
                                         qxp::function_ref<void(QByteArrayView)> yield)
 {
     for (const auto &h : std::as_const(headers)) {
-        if (h.name.asView() == name)
+        if (h.name == HeaderName(name))
             yield(h.value);
     }
 }
@@ -1562,7 +1561,8 @@ QByteArrayView QHttpHeaders::valueAt(qsizetype i) const noexcept
     Returns the header name at index \a i. The index \a i must be valid
     (see \l size()).
 
-    Header names are case-insensitive, and the returned names are lower-cased.
+    Header names are case-insensitive, and the returned names are in canonical
+    form for known headers, and return as-is for others.
 
     \sa size(), valueAt()
 */
@@ -1982,7 +1982,7 @@ QList<std::pair<QByteArray, QByteArray>> QHttpHeaders::toListOfPairs() const
         return list;
     list.reserve(size());
     for (const auto & h : std::as_const(d->headers))
-        list.append({h.name.asByteArray(), h.value});
+        list.append({h.name.asByteArray().toLower(), h.value});
     return list;
 }
 
@@ -1996,7 +1996,7 @@ QMultiMap<QByteArray, QByteArray> QHttpHeaders::toMultiMap() const
     if (isEmpty())
         return map;
     for (const auto &h : std::as_const(d->headers))
-        map.insert(h.name.asByteArray(), h.value);
+        map.insert(h.name.asByteArray().toLower(), h.value);
     return map;
 }
 
@@ -2011,7 +2011,7 @@ QMultiHash<QByteArray, QByteArray> QHttpHeaders::toMultiHash() const
         return hash;
     hash.reserve(size());
     for (const auto &h : std::as_const(d->headers))
-        hash.insert(h.name.asByteArray(), h.value);
+        hash.insert(h.name.asByteArray().toLower(), h.value);
     return hash;
 }
 
