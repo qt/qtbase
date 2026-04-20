@@ -3324,9 +3324,9 @@ template<template<class, class> class C> void QTBUG13079_collectionInsideCollect
 }
 
 
-size_t qHash(const QTBUG13079_Node<QSet> &)
+size_t qHash(const QTBUG13079_Node<QSet> &, size_t seed = 0) noexcept
 {
-    return 0;
+    return seed;
 }
 
 bool operator==(const QTBUG13079_Node<QSet> &a, const QTBUG13079_Node<QSet> &b)
