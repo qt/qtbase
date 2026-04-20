@@ -167,6 +167,11 @@ static const QPointingDevice *tabletToolInstance(NSEvent *theEvent)
         break;
     }
 
+    // Assume it's a stylus device if the pointer type is pen
+    if (device == QInputDevice::DeviceType::Unknown
+        && pointerType == QPointingDevice::PointerType::Pen)
+        device = QInputDevice::DeviceType::Stylus;
+
     const auto uniqueID = QPointingDeviceUniqueId::fromNumericId(uid);
     auto windowSystemId = theEvent.deviceID;
     const QPointingDevice *ret = QPointingDevicePrivate::queryTabletDevice(device, pointerType, uniqueID, caps, windowSystemId);
