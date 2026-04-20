@@ -355,6 +355,9 @@ struct KeyType
 
 private:
     KeyType &operator=(const KeyType &);
+
+    friend size_t qHash(const KeyType &key, size_t seed = 0) noexcept
+    { return qHash(key.foo, seed); }
 };
 
 struct ValueType
@@ -371,11 +374,6 @@ private:
 bool operator==(const KeyType &key1, const KeyType &key2)
 {
     return key1.foo == key2.foo;
-}
-
-size_t qHash(const KeyType &key)
-{
-    return qHash(key.foo);
 }
 
 void tst_QCache::axioms_on_key_type()
