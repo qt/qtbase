@@ -1982,7 +1982,7 @@ bool QStandardItem::operator<(const QStandardItem &other) const
 {
     const int role = model() ? model()->sortRole() : Qt::DisplayRole;
     const QVariant l = data(role), r = other.data(role);
-    return QAbstractItemModelPrivate::isVariantLessThan(l, r);
+    return QStandardItemModel::compareData(l, r) < 0;
 }
 
 /*!

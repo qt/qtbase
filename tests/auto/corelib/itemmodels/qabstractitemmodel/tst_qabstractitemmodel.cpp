@@ -2727,28 +2727,19 @@ void tst_QAbstractItemModel::compareData_data()
 
 void tst_QAbstractItemModel::compareData()
 {
+    struct OrderingModel : QAbstractItemModel
+    {
+        using QAbstractItemModel::compareData;
+    };
+
     QFETCH(QVariant, lhs);
     QFETCH(QVariant, rhs);
     QFETCH(bool, expected);
     QFETCH(QCollator, collator);
 
-    auto resetLocale = qScopeGuard([defaultLocale = QLocale()]{
-        QLocale::setDefault(defaultLocale);
-    });
+    bool lessThan = OrderingModel::compareData(lhs, rhs, &collator) < 0;
 
-    bool localeAware = collator.locale() != QLocale::C;
-    if (localeAware)
-        QLocale::setDefault(collator.locale());
-    else
-        resetLocale.dismiss();
-
-    Qt::CaseSensitivity caseSensitivity = collator.caseSensitivity();
-    bool lessThan = QAbstractItemModelPrivate::isVariantLessThan(lhs, rhs,
-                                                                 caseSensitivity, localeAware);
-
-    QEXPECT_FAIL("today<now:true", "We compare LHS date with RHS datetime as date", Continue);
-    QEXPECT_FAIL("4<4.1:true", "We compare LHS int with RHS double as int", Continue);
-    QEXPECT_FAIL("3<3.1:true", "We compare LHS int with RHS float as int", Continue);
+    QEXPECT_FAIL("today<now:true", "Comparing QDate with QDateTime compares only QDate", Continue);
     QCOMPARE(lessThan, expected);
 }
 

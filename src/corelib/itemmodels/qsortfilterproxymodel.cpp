@@ -5,6 +5,7 @@
 #include "qsortfilterproxymodel.h"
 #include "qitemselectionmodel.h"
 #include <qsize.h>
+#include <qcollator.h>
 #include <qdebug.h>
 #include <qdatetime.h>
 #include <qstringlist.h>
@@ -174,6 +175,7 @@ public:
         q_func()->setFilterRegularExpression(re);
     }
 
+    QCollator sort_collator;
     int source_sort_column = -1;
     int proxy_sort_column = -1;
     Qt::SortOrder sort_order = Qt::AscendingOrder;
@@ -614,6 +616,12 @@ bool QSortFilterProxyModelPrivate::can_create_mapping(const QModelIndex &source_
 void QSortFilterProxyModelPrivate::sort()
 {
     Q_Q(QSortFilterProxyModel);
+    if (sort_localeaware)
+        sort_collator = QCollator(QLocale::system());
+    else
+        sort_collator = QCollator(QLocale::C);
+    sort_collator.setCaseSensitivity(sort_casesensitivity);
+
     emit q->layoutAboutToBeChanged(QList<QPersistentModelIndex>(), QAbstractItemModel::VerticalSortHint);
     QModelIndexPairList source_indexes = store_persistent_indexes();
     const auto end = source_index_mapping.constEnd();
@@ -3322,25 +3330,8 @@ void QSortFilterProxyModel::endFilterChange(QSortFilterProxyModel::Directions di
     index \a source_left is less than the value of the item referred to by
     the given index \a source_right, otherwise returns \c false.
 
-    This function is used as the < operator when sorting, and handles
-    the following QVariant types:
-
-    \list
-    \li QMetaType::Int
-    \li QMetaType::UInt
-    \li QMetaType::LongLong
-    \li QMetaType::ULongLong
-    \li QMetaType::Float
-    \li QMetaType::Double
-    \li QMetaType::QChar
-    \li QMetaType::QDate
-    \li QMetaType::QTime
-    \li QMetaType::QDateTime
-    \li QMetaType::QString
-    \endlist
-
-    Any other type will be converted to a QString using
-    QVariant::toString().
+    This function is used as the \c{operator<} when sorting, and uses
+    QAbstractItemModel::compareData().
 
     Comparison of \l{QString}s is case sensitive by default; this can
     be changed using the \l {QSortFilterProxyModel::sortCaseSensitivity}
@@ -3359,7 +3350,7 @@ bool QSortFilterProxyModel::lessThan(const QModelIndex &source_left, const QMode
     Q_D(const QSortFilterProxyModel);
     const QVariant l = source_left.data(d->sort_role);
     const QVariant r = source_right.data(d->sort_role);
-    return QAbstractItemModelPrivate::isVariantLessThan(l, r, d->sort_casesensitivity, d->sort_localeaware);
+    return QAbstractItemModel::compareData(l, r, &d->sort_collator) < 0;
 }
 
 /*!

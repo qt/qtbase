@@ -16,6 +16,8 @@ QT_REQUIRE_CONFIG(itemmodel);
 
 QT_BEGIN_NAMESPACE
 
+class QCollator;
+
 class QModelRoleData
 {
     int m_role;
@@ -421,6 +423,9 @@ protected:
     void changePersistentIndex(const QModelIndex &from, const QModelIndex &to);
     void changePersistentIndexList(const QModelIndexList &from, const QModelIndexList &to);
     QModelIndexList persistentIndexList() const;
+
+    static Qt::weak_ordering compareData(const QVariant &lhs, const QVariant &rhs,
+                                         const QCollator *collator = nullptr);
 
 private:
     Q_DECLARE_PRIVATE(QAbstractItemModel)

@@ -5,6 +5,7 @@
 
 #include "qabstractitemmodel.h"
 #include <private/qabstractitemmodel_p.h>
+#include <qcollator.h>
 #include <qdatastream.h>
 #include <qstringlist.h>
 #include <qsize.h>
@@ -757,43 +758,106 @@ const QHash<int,QByteArray> &QAbstractItemModelPrivate::defaultRoleNames()
     return *qDefaultRoleNames();
 }
 
-bool QAbstractItemModelPrivate::isVariantLessThan(const QVariant &left, const QVariant &right,
-                                                  Qt::CaseSensitivity cs, bool isLocaleAware)
+/*!
+    \since 6.12
+
+    Compares the \a left QVariant with the \a right QVariant, and returns
+    the ordering as a \l{Qt::weak_ordering}{weak ordering}.
+
+    If the QVariant is compared as a string, then the optional \a collator
+    object is used for \l{QCollator::locale()}{locale-aware} and
+    \l{QCollator::caseSensitivity()}{case-sensitive} comparison. If no collator
+    is provided, then strings are compared exclusively on the numeric Unicode
+    values of the characters. This is fast, but often not what a user expects
+    from a user interface.
+
+    This function is suitable for implementations of QAbstractItemModel::sort(),
+    providing weak ordering even for variant values that cannot be compared, i.e.
+    where QVariant::compare would return \l{QParitalOrdering}{unordered}. This
+    makes it safe to use in \c{std::sort} and \c{std::stable_sort}, which
+    require data that can be ordered.
+
+    \code
+    void Model::sort(int column, Qt::SortOrder sortOrder)
+    {
+        // Model operates on a QList<QVariant> data
+        std::sort(data.begin(), data.end(), [=](const QVariant &lhs, const Variant &rhs){
+            const auto ordering = compareData(lhs, rhs);
+            return sortOrder == Qt::AscendingOrder ? sortOrder < 0 : sortOrder > 0;
+        });
+    }
+    \endcode
+
+    The implementation handles the following QVariant types:
+
+    \list
+    \li QMetaType::Int
+    \li QMetaType::UInt
+    \li QMetaType::LongLong
+    \li QMetaType::ULongLong
+    \li QMetaType::Float
+    \li QMetaType::Double
+    \li QMetaType::QChar
+    \li QMetaType::QDate
+    \li QMetaType::QTime
+    \li QMetaType::QDateTime
+    \li QMetaType::QString
+    \endlist
+
+    Any other type will be converted to a QString using QVariant::toString().
+    \l{QVariant::isValid}{Invalid variants} always compare as greater than
+    variants holding a valid value.
+
+    \sa {three-way comparison}, sort(), QVariant::compare, QSortFilterProxyModel
+*/
+Qt::weak_ordering QAbstractItemModel::compareData(const QVariant &left, const QVariant &right,
+                                                     const QCollator *collator)
 {
-    if (left.userType() == QMetaType::UnknownType)
-        return false;
-    if (right.userType() == QMetaType::UnknownType)
-        return true;
+    // invalid is greater than everything, except another invalid variant
+    if (!left.isValid()) {
+        if (!right.isValid())
+            return Qt::weak_ordering::equivalent;
+        return Qt::weak_ordering::greater;
+    }
+    if (!right.isValid())
+        return Qt::weak_ordering::less;
     switch (left.userType()) {
     case QMetaType::Int:
-        return left.toInt() < right.toInt();
     case QMetaType::UInt:
-        return left.toUInt() < right.toUInt();
     case QMetaType::LongLong:
-        return left.toLongLong() < right.toLongLong();
     case QMetaType::ULongLong:
-        return left.toULongLong() < right.toULongLong();
     case QMetaType::Float:
-        return left.toFloat() < right.toFloat();
     case QMetaType::Double:
-        return left.toDouble() < right.toDouble();
     case QMetaType::QChar:
-        return left.toChar() < right.toChar();
     case QMetaType::QDate:
-        return left.toDate() < right.toDate();
     case QMetaType::QTime:
-        return left.toTime() < right.toTime();
-    case QMetaType::QDateTime:
-        return left.toDateTime() < right.toDateTime();
-    case QMetaType::QString:
+    case QMetaType::QDateTime: {
+        QPartialOrdering partialOrder = QVariant::compare(left, right);
+        if (partialOrder == Qt::partial_ordering::unordered) {
+            if (right.canConvert(left.metaType())) {
+                QVariant rightAsLeft = right;
+                rightAsLeft.convert(left.metaType());
+                partialOrder = QVariant::compare(left, rightAsLeft);
+            }
+            if (partialOrder == Qt::partial_ordering::unordered)
+                return Qt::weak_ordering::greater;
+        }
+        if (partialOrder == Qt::partial_ordering::equivalent)
+            return Qt::weak_ordering::equivalent;
+        return partialOrder < 0 ? Qt::weak_ordering::less
+                                : Qt::weak_ordering::greater;
+    }
     default:
-        if (isLocaleAware)
-            return left.toString().localeAwareCompare(right.toString()) < 0;
-        else
-            return left.toString().compare(right.toString(), cs) < 0;
+    case QMetaType::QString: {
+        const Qt::CaseSensitivity cs = collator ? collator->caseSensitivity()
+                                     : Qt::CaseSensitive;
+        const int res = collator
+                      ? collator->compare(left.toString(), right.toString())
+                      : left.toString().compare(right.toString(), cs);
+        return Qt::compareThreeWay(res, 0);
+    }
     }
 }
-
 
 static uint typeOfVariant(const QVariant &value)
 {
