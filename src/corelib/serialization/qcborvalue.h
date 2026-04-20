@@ -302,6 +302,8 @@ private:
 };
 Q_DECLARE_SHARED(QCborValue)
 
+Q_CORE_EXPORT size_t qHash(const QCborValue &value, size_t seed = 0);
+
 class QCborValueConstRef
 {
 public:
@@ -402,6 +404,10 @@ protected:
     friend class QCborContainerPrivate;
 
     QCborValue concrete() const noexcept  { return concrete(*this); }
+
+    friend size_t qHash(const QCborValueConstRef &key, size_t seed = 0) noexcept
+    { return QHashPrivate::ex1to2arg(key.concrete(), seed); }
+
     static Q_CORE_EXPORT Q_DECL_PURE_FUNCTION bool
     comparesEqual_helper(QCborValueConstRef lhs, QCborValueConstRef rhs) noexcept;
     static Q_CORE_EXPORT Q_DECL_PURE_FUNCTION Qt::strong_ordering
@@ -610,8 +616,6 @@ private:
 QT_WARNING_POP
 Q_DECLARE_OPERATORS_FOR_FLAGS(QCborValue::EncodingOptions)
 Q_DECLARE_OPERATORS_FOR_FLAGS(QCborValue::DiagnosticNotationOptions)
-
-Q_CORE_EXPORT size_t qHash(const QCborValue &value, size_t seed = 0);
 
 #if !defined(QT_NO_DEBUG_STREAM)
 Q_CORE_EXPORT QDebug operator<<(QDebug, const QCborValue &v);
