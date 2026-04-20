@@ -71,12 +71,12 @@ struct ComplexType
     int a;
     int b;
     int c;
-};
 
-inline uint qHash(const ComplexType &key, uint seed = 0)
-{
-    return uint(key.a) ^ seed;
-}
+    friend size_t qHash(const ComplexType &key, size_t seed = 0) noexcept
+    {
+        return size_t(key.a) ^ seed;
+    }
+};
 
 inline bool operator==(const ComplexType &lhs, const ComplexType &rhs)
 {
