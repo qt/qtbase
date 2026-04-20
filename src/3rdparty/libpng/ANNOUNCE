@@ -1,5 +1,5 @@
-libpng 1.6.57 - April 8, 2026
-=============================
+libpng 1.6.58 - April 15, 2026
+==============================
 
 This is a public release of libpng, intended for use in production code.
 
@@ -9,10 +9,10 @@ Files available for download
 
 Source files:
 
- * libpng-1.6.57.tar.xz (LZMA-compressed, recommended)
- * libpng-1.6.57.tar.gz (deflate-compressed)
- * lpng1657.7z (LZMA-compressed)
- * lpng1657.zip (deflate-compressed)
+ * libpng-1.6.58.tar.xz (LZMA-compressed, recommended)
+ * libpng-1.6.58.tar.gz (deflate-compressed)
+ * lpng1658.7z (LZMA-compressed)
+ * lpng1658.zip (deflate-compressed)
 
 Other information:
 
@@ -22,18 +22,13 @@ Other information:
  * TRADEMARK.md
 
 
-Changes from version 1.6.56 to version 1.6.57
+Changes from version 1.6.57 to version 1.6.58
 ---------------------------------------------
 
- * Fixed CVE-2026-34757 (medium severity):
-   Use-after-free in `png_set_PLTE`, `png_set_tRNS` and `png_set_hIST`
-   leading to corrupted chunk data and potential heap information disclosure.
-   Also hardened the append-style setters (`png_set_text`, `png_set_sPLT`,
-   `png_set_unknown_chunks`) against a theoretical variant of the same
-   aliasing pattern.
-   (Reported by Iv4n <Iv4n550@users.noreply.github.com>.)
- * Fixed integer overflow in rowbytes computation in read transforms.
-   (Contributed by Mohammad Seet.)
+ * Fixed a regression introduced in version 1.6.56 that caused `png_get_PLTE`
+   to return stale palette data after applying gamma and background transforms
+   in-place.
+   (Reported by ralfjunker <ralfjunker@users.noreply.github.com>.)
 
 
 Send comments/corrections/commendations to png-mng-implement at lists.sf.net.
