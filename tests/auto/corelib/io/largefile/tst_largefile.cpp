@@ -504,6 +504,8 @@ void tst_LargeFile::mapFile()
 //Windows: memory-mapping beyond EOF is not allowed
 //wasm: as for linux
 //VxWorks: memory-mapping beyond EOF is not allowed
+//QNX: 7.x permits mapping beyond EOF (access faults with SIGBUS);
+//     8.0 rejects it with ENXIO at mmap() time
 void tst_LargeFile::mapOffsetOverflow()
 {
 #if defined(Q_OS_WIN)
@@ -515,7 +517,7 @@ void tst_LargeFile::mapOffsetOverflow()
 #elif (defined(Q_OS_LINUX) || defined(Q_OS_ANDROID)) && (Q_PROCESSOR_WORDSIZE == 4)
     constexpr bool Succeeds = true;
     constexpr int MaxOffset = sizeof(QT_OFF_T) > 4 ? 43 : 30;
-#elif defined(Q_OS_VXWORKS)
+#elif defined(Q_OS_VXWORKS) || (defined(__QNX__) && __QNX__ >= 800)
     constexpr bool Succeeds = false;
     constexpr int MaxOffset = 8 * sizeof(QT_OFF_T) - 1;
 #else
