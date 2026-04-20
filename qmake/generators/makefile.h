@@ -306,8 +306,9 @@ struct ReplaceExtraCompilerCacheKey
             hash = (size_t)forShell ^ qHash(var) ^ qHash(in) ^ qHash(out) /*^ qHash(pwd)*/;
         return hash;
     }
+    friend size_t qHash(const ReplaceExtraCompilerCacheKey &key, size_t seed = 0) noexcept
+    { return key.hashCode() ^ seed; }
 };
-inline size_t qHash(const ReplaceExtraCompilerCacheKey &f) { return f.hashCode(); }
 
 QT_END_NAMESPACE
 
