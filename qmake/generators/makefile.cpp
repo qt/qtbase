@@ -2820,20 +2820,22 @@ MakefileGenerator::writeMakeQmake(QTextStream &t, bool noDummyQmakeAll)
 QFileInfo
 MakefileGenerator::fileInfo(QString file) const
 {
-    Q_CONSTINIT static QHash<FileInfoCacheKey, QFileInfo> *cache = nullptr;
-    static QFileInfo noInfo = QFileInfo();
+    using HashMap = std::unordered_map<FileInfoCacheKey, QFileInfo>;
+    Q_CONSTINIT static HashMap *cache = nullptr;
     if(!cache) {
-        cache = new QHash<FileInfoCacheKey, QFileInfo>;
-        qmakeAddCacheClear(qmakeDeleteCacheClear<QHash<FileInfoCacheKey, QFileInfo> >, (void**)&cache);
+        cache = new HashMap;
+        qmakeAddCacheClear(qmakeDeleteCacheClear<HashMap>, (void**)&cache);
     }
     FileInfoCacheKey cacheKey(file);
-    QFileInfo value = cache->value(cacheKey, noInfo);
-    if (value != noInfo)
-        return value;
+
+    const auto it = cache->find(cacheKey);
+
+    if (it != cache->end())
+        return it->second;
 
     QFileInfo fi(file);
     if (fi.exists())
-        cache->insert(cacheKey, fi);
+        cache->emplace(cacheKey, fi);
     return fi;
 }
 

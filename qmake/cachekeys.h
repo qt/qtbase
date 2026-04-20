@@ -88,7 +88,15 @@ struct FileInfoCacheKey
                 || (c0 == QLatin1Char('\\') && c1 == QLatin1Char('\\')));
     }
 };
-inline size_t qHash(const FileInfoCacheKey &f) { return f.hashCode(); }
+QT_BEGIN_INCLUDE_NAMESPACE
+namespace std {
+template <> struct hash<QT_PREPEND_NAMESPACE(FileInfoCacheKey)>
+{
+    size_t operator()(const QT_PREPEND_NAMESPACE(FileInfoCacheKey) &key) const noexcept
+    { return key.hashCode(); }
+};
+} // namespace std
+QT_END_INCLUDE_NAMESPACE
 
 // -------------------------------------------------------------------------------------------------
 template <typename T>
