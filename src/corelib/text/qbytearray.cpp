@@ -328,12 +328,12 @@ int qstricmp(const char *str1, const char *str2)
 
     A safe \c strnicmp() function.
 
-    Compares at most \a len bytes of \a str1 and \a str2, ignoring differences
+    Compares at most \a len bytes of \a s1 and \a s2, ignoring differences
     in the case of any ASCII characters.
 
-    Returns a negative value if \a str1 is less than \a str2, 0 if \a str1
-    is equal to \a str2 or a positive value if \a str1 is greater than \a
-    str2.
+    Returns a negative value if \a s1 is less than \a s2, 0 if \a s1
+    is equal to \a s2 or a positive value if \a s1 is greater than \a
+    s2.
 
     If both strings are \nullptr, they are deemed equal; otherwise, if either is
     \nullptr, it is treated as less than the other (even if the other is an
@@ -343,14 +343,12 @@ int qstricmp(const char *str1, const char *str2)
     QByteArray::compare()
 */
 
-int qstrnicmp(const char *str1, const char *str2, size_t len)
+int qstrnicmp(const char *s1, const char *s2, size_t len)
 {
-    const uchar *s1 = reinterpret_cast<const uchar *>(str1);
-    const uchar *s2 = reinterpret_cast<const uchar *>(str2);
     if (!s1 || !s2)
         return s1 ? 1 : (s2 ? -1 : 0);
     for (; len--; ++s1, ++s2) {
-        const uchar c = *s1;
+        const char c = *s1;
         if (int res = QtMiscUtils::caseCompareAscii(c, *s2))
             return res;
         if (!c)                                // strings are equal
@@ -363,16 +361,14 @@ int qstrnicmp(const char *str1, const char *str2, size_t len)
     \internal
     \since 5.12
 
-    A helper for QByteArray::compare. Compares \a len1 bytes from \a str1 to \a
-    len2 bytes from \a str2. If \a len2 is -1, then \a str2 is expected to be
+    A helper for QByteArray::compare. Compares \a len1 bytes from \a s1 to \a
+    len2 bytes from \a s2. If \a len2 is -1, then \a s2 is expected to be
     '\\0'-terminated.
  */
-int qstrnicmp(const char *str1, qsizetype len1, const char *str2, qsizetype len2)
+int qstrnicmp(const char *s1, qsizetype len1, const char *s2, qsizetype len2)
 {
     Q_ASSERT(len1 >= 0);
     Q_ASSERT(len2 >= -1);
-    const uchar *s1 = reinterpret_cast<const uchar *>(str1);
-    const uchar *s2 = reinterpret_cast<const uchar *>(str2);
     if (!s1 || !len1) {
         if (len2 == 0)
             return 0;
@@ -385,10 +381,10 @@ int qstrnicmp(const char *str1, qsizetype len1, const char *str2, qsizetype len2
         return len1 == 0 ? 0 : 1;
 
     if (len2 == -1) {
-        // null-terminated str2
+        // null-terminated s2
         qsizetype i;
         for (i = 0; i < len1; ++i) {
-            const uchar c = s2[i];
+            const char c = s2[i];
             if (!c)
                 return 1;
 
