@@ -248,6 +248,13 @@ constexpr size_t qHash(const T &t, size_t seed, Args&&...) noexcept(noexcept(qHa
 
 namespace QHashPrivate {
 
+// helper for qHash() calls that used to go via the above 1-to-2-arg adapter
+template <typename T>
+constexpr size_t ex1to2arg(const T &key, size_t seed)
+{
+    return QT7_ONLY(qHash(key, seed)) QT6_ONLY(qHash(key, 0U) ^ seed);
+}
+
 namespace detail {
 // approximates std::equality_comparable_with
 template <typename T, typename U, typename = void>
