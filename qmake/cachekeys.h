@@ -12,6 +12,8 @@
 #include <qfileinfo.h>
 #include <qhash.h>
 
+#include <functional>
+
 QT_BEGIN_NAMESPACE
 
 // -------------------------------------------------------------------------------------------------
@@ -40,7 +42,15 @@ struct FixStringCacheKey
         return hash;
     }
 };
-inline size_t qHash(const FixStringCacheKey &f) { return f.hashCode(); }
+QT_BEGIN_INCLUDE_NAMESPACE
+namespace std {
+template <> struct hash<QT_PREPEND_NAMESPACE(FixStringCacheKey)>
+{
+    size_t operator()(const QT_PREPEND_NAMESPACE(FixStringCacheKey) &key) const noexcept
+    { return key.hashCode(); }
+};
+} // namespace std
+QT_END_INCLUDE_NAMESPACE
 
 // -------------------------------------------------------------------------------------------------
 struct FileInfoCacheKey
