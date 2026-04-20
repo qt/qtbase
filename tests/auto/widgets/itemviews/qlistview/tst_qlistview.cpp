@@ -2997,6 +2997,7 @@ void tst_QListView::internalDragDropMove()
     // The test relies on the global position of mouse events; make sure
     // the window is properly mapped on X11.
     QVERIFY(QTest::qWaitForWindowActive(&list));
+    QTRY_VERIFY(QApplication::topLevelAt(list.geometry().center()));
     QVERIFY(QTest::qWaitFor([&]() { return list.m_gotValidResizeEvent; }));
     // execute as soon as the eventloop is running again
     // which is the case inside list.startDrag()
