@@ -161,7 +161,8 @@ private:
     int m_file;
     mutable size_t m_hash;
     size_t updatedHash() const;
-    friend size_t qHash(const ProString &str);
+    friend size_t qHash(const ProString &str, size_t seed);
+    friend size_t qHash(const ProString &str) { return qHash(str, size_t{0}); }
     friend QString operator+(const ProString &one, const ProString &two);
     friend class ProKey;
 };
@@ -195,6 +196,9 @@ public:
     ALWAYS_INLINE const ProString &toString() const { return *(const ProString *)this; }
 
 private:
+    friend size_t qHash(const ProKey &key, size_t seed = 0) noexcept
+    { return qHash(key.toString(), seed); }
+
     ProKey(const ProString &other);
 };
 Q_DECLARE_TYPEINFO(ProKey, Q_RELOCATABLE_TYPE);
@@ -230,9 +234,6 @@ template <> struct QConcatenable<ProKey> : private QAbstractConcatenable
         out += n;
     }
 };
-
-
-size_t qHash(const ProString &str);
 
 inline QString &operator+=(QString &that, const ProString &other)
     { return that += other.toQStringView(); }
