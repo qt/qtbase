@@ -50,7 +50,8 @@ QT_BEGIN_NAMESPACE
 
     \reentrant
 
-    QStringList is actually just a QList<QString>. Like QList, QStringList is
+    QStringList is a QList with a few added convenience functions for
+    handling lists of strings. Like QList, QStringList is
     \l{implicitly shared}. It provides fast index-based access as well as fast
     insertions and removals. Passing string lists as value parameters is both
     fast and safe.
@@ -59,8 +60,7 @@ QT_BEGIN_NAMESPACE
     can use isEmpty() to test whether the list is empty, and you can call
     functions like append(), prepend(), insert(), replace(), removeAll(),
     removeAt(), removeFirst(), removeLast(), and removeOne() to modify a
-    QStringList. In addition, QStringList provides a few convenience
-    functions that make handling lists of strings easier.
+    QStringList.
 
     \section1 Initializing
 
