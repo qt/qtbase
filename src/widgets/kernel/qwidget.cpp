@@ -13902,7 +13902,7 @@ bool QWidgetPrivate::isInFocusChain() const
 bool QWidgetPrivate::isFocusChainConsistent() const
 {
     Q_Q(const QWidget);
-    const bool skip = !QLoggingCategory("qt.widgets.focus").isDebugEnabled();
+    const bool skip = !lcWidgetFocus().isDebugEnabled();
     if (skip)
         return true;
 
