@@ -15,6 +15,8 @@
 #include <qtversion.h>
 #include <private/qlibraryinfo_p.h>
 
+#include <unordered_map>
+
 QT_BEGIN_NAMESPACE
 
 using namespace QMakeInternal;
@@ -474,18 +476,19 @@ QString
 Option::fixString(QString string, uchar flags)
 {
     //const QString orig_string = string;
-    static QHash<FixStringCacheKey, QString> *cache = nullptr;
+    using HashMap = std::unordered_map<FixStringCacheKey, QString>;
+    Q_CONSTINIT static HashMap *cache = nullptr;
     if(!cache) {
-        cache = new QHash<FixStringCacheKey, QString>;
-        qmakeAddCacheClear(qmakeDeleteCacheClear<QHash<FixStringCacheKey, QString> >, (void**)&cache);
+        cache = new HashMap();
+        qmakeAddCacheClear(qmakeDeleteCacheClear<HashMap>, (void**)&cache);
     }
     FixStringCacheKey cacheKey(string, flags);
 
-    QHash<FixStringCacheKey, QString>::const_iterator it = cache->constFind(cacheKey);
+    const auto it = cache->find(cacheKey);
 
-    if (it != cache->constEnd()) {
+    if (it != cache->end()) {
         //qDebug() << "Fix (cached) " << orig_string << "->" << it.value();
-        return it.value();
+        return it->second;
     }
 
     //fix the environment variables
@@ -532,7 +535,7 @@ Option::fixString(QString string, uchar flags)
 
     //cache
     //qDebug() << "Fix" << orig_string << "->" << string;
-    cache->insert(cacheKey, string);
+    cache->emplace(cacheKey, string);
     return string;
 }
 
