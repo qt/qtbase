@@ -2062,7 +2062,7 @@ bool QDockAreaLayoutInfo::restoreState(QDataStream &stream, QList<QDockWidget*> 
                            widget->close();
                         } else {
                             widget->setFloating(false);
-                            widget->setVisible(flags.setFlag(StateFlag::Visible));
+                            widget->setVisible(flags.testFlag(StateFlag::Visible));
                         }
                         emit widget->dockLocationChanged(toDockWidgetArea(dockPos));
                     }
