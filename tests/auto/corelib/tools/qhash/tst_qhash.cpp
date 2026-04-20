@@ -1,6 +1,11 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
+#include <QtCore/qtconfigmacros.h>
+#ifdef QT_NO_SINGLE_ARGUMENT_QHASH_OVERLOAD
+# undef QT_NO_SINGLE_ARGUMENT_QHASH_OVERLOAD // this file tests the 1-to-2-arg adapter
+#endif
+
 #include <QTest>
 
 #include <qdebug.h>
