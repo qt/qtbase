@@ -550,6 +550,18 @@ void Promise::suspendExclusive()
     Promise::suspendExclusive(m_state->m_handlers);
 }
 
+// Blocks/suspends until the promise settles. The returned AwaitResult
+// carries either the value (on resolve) or the error (on reject); the
+// other field is left as emscripten::val::undefined().
+Promise::AwaitResult Promise::awaitExclusive()
+{
+    AwaitResult r;
+    addThenFunction ([&r](emscripten::val v) { r.value = v; });
+    addCatchFunction([&r](emscripten::val e) { r.error = e; });
+    suspendExclusive();
+    return r;
+}
+
 emscripten::val Promise::getPromise() const
 {
     return m_state->m_promise;

@@ -280,6 +280,12 @@ namespace qstdweb {
 
         void suspendExclusive();
 
+        struct AwaitResult {
+            emscripten::val value = emscripten::val::undefined();
+            emscripten::val error = emscripten::val::undefined();
+        };
+        AwaitResult awaitExclusive();
+
         emscripten::val getPromise() const;
 
     public:
