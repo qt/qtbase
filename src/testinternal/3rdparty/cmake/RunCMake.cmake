@@ -136,8 +136,12 @@ function(run_cmake test)
     endif()
     list(APPEND RunCMake_TEST_COMMAND
       -DRunCMake_TEST=${test}
-      --no-warn-unused-cli
       )
+    if(CMAKE_VERSION VERSION_GREATER_EQUAL "4.4")
+      list(APPEND RunCMake_TEST_COMMAND -Wno-unused-cli)
+    else()
+      list(APPEND RunCMake_TEST_COMMAND --no-warn-unused-cli)
+    endif()
   else()
     set(RunCMake_TEST_OPTIONS "")
   endif()

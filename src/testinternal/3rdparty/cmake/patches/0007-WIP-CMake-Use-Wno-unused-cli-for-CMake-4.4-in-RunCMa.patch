@@ -1,0 +1,37 @@
+From 91b4ec6ba662df7037d8a784aee100b260f3ad0d Mon Sep 17 00:00:00 2001
+From: Alexandru Croitor <alexandru.croitor@qt.io>
+Date: Mon, 20 Apr 2026 12:25:18 +0200
+Subject: [PATCH] WIP: CMake: Use -Wno-unused-cli for CMake 4.4 in
+ RunCMake.cmake
+
+Since ca5d56952477e1acc345dd33480210ba1d6b03fc in upstream CMake 4.4,
+a deprecation warning is shown when using --no-warn-unused-cli.
+
+Switch to conditionally using -Wno-unused-cli.
+
+Change-Id: Ie0ef16d14dc125ad546e419e1b309043afd2b559
+---
+ src/testinternal/3rdparty/cmake/RunCMake.cmake | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/src/testinternal/3rdparty/cmake/RunCMake.cmake b/src/testinternal/3rdparty/cmake/RunCMake.cmake
+index 5d32e1c0eb8..ba66959b131 100644
+--- a/src/testinternal/3rdparty/cmake/RunCMake.cmake
++++ b/src/testinternal/3rdparty/cmake/RunCMake.cmake
+@@ -136,8 +136,12 @@ function(run_cmake test)
+     endif()
+     list(APPEND RunCMake_TEST_COMMAND
+       -DRunCMake_TEST=${test}
+-      --no-warn-unused-cli
+       )
++    if(CMAKE_VERSION VERSION_GREATER_EQUAL "4.4")
++      list(APPEND RunCMake_TEST_COMMAND -Wno-unused-cli)
++    else()
++      list(APPEND RunCMake_TEST_COMMAND --no-warn-unused-cli)
++    endif()
+   else()
+     set(RunCMake_TEST_OPTIONS "")
+   endif()
+-- 
+2.53.0
+
