@@ -35,9 +35,11 @@ public:
     QString root;
     QString stash;
     bool hostBuild;
+
+    friend size_t qHash(const QMakeBaseKey &key, size_t seed) noexcept;
+    friend size_t qHash(const QMakeBaseKey &key) noexcept { return qHash(key, size_t{0}); }
 };
 
-size_t qHash(const QMakeBaseKey &key);
 bool operator==(const QMakeBaseKey &one, const QMakeBaseKey &two);
 
 class QMakeBaseEnv
