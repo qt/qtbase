@@ -113,12 +113,12 @@ struct styleStruct {
                 && str.complex == complex && str.palette == palette && str.width == width
                 && str.height == height && str.key == key;
     }
-};
 
-uint qHash(const styleStruct &myStruct)
-{
-    return qHash(myStruct.state);
-}
+    friend size_t qHash(const styleStruct &myStruct, size_t seed = 0) noexcept
+    {
+        return qHash(myStruct.state, seed);
+    }
+};
 
 void tst_QPixmapCache::styleUseCaseComplexKey()
 {
