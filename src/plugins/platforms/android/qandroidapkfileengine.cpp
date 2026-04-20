@@ -225,6 +225,7 @@ QAndroidApkFileEngineIterator::QAndroidApkFileEngineIterator(
     : QAbstractFileEngineIterator(path, filters, filterNames)
 {
     const QString relativePath = QAndroidApkFileEngine::relativePath(path);
+    m_prefixLength = relativePath.size() + 1;
     for (QAndroidApkFileEngine::FileInfo &info : *apkFileInfos()) {
         if (info.relativePath.startsWith(relativePath))
             m_infos.append(&info);
@@ -245,12 +246,7 @@ bool QAndroidApkFileEngineIterator::advance()
 
 QString QAndroidApkFileEngineIterator::currentFileName() const
 {
-    return m_infos.at(m_index)->relativePath;
-}
-
-QString QAndroidApkFileEngineIterator::currentFilePath() const
-{
-    return QAndroidApkFileEngine::apkPath() + "!/" + currentFileName();
+    return m_infos.at(m_index)->relativePath.mid(m_prefixLength);
 }
 #endif
 
