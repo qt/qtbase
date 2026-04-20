@@ -264,6 +264,11 @@ qreal QOhosPlatformScreen::pixelScalingCoefficient() const
     return m_displayInfo.densityPixels;
 }
 
+qreal QOhosPlatformScreen::refreshRate() const
+{
+    return m_displayInfo.refreshRate;
+}
+
 QDpi QOhosPlatformScreen::logicalBaseDpi() const
 {
     return QDpi(ohosLogicalDpi, ohosLogicalDpi);

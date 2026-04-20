@@ -32,6 +32,7 @@ struct QOhosDisplayInfo
     double densityDPI;
     double densityPixels;
     double densityScaled;
+    uint refreshRate;
     QDpi dpi;
     QOhosOptional<JsDisplayOrientation> orientation;
     QOhosOptional<DisplaySourceMode> sourceMode;
