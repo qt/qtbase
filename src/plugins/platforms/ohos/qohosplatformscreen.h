@@ -40,6 +40,7 @@ public:
     QImage::Format format() const override;
     QSizeF physicalSize() const override;
     qreal pixelScalingCoefficient()  const;
+    qreal refreshRate() const override;
     QString name() const override;
 
     QWindow *topLevelAt(const QPoint & p) const override;
