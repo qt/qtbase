@@ -34,8 +34,8 @@ private:
 
     QTreeView *sourceView;
     QTreeView *proxyView;
-    QCheckBox *filterCaseSensitivityCheckBox;
     QCheckBox *sortCaseSensitivityCheckBox;
+    QCheckBox *filterCaseSensitivityCheckBox;
     QLineEdit *filterPatternLineEdit;
     enum Syntax {
         RegularExpression,
