@@ -153,6 +153,8 @@ struct Dummy
 {
     bool operator==(const Dummy &) const { return false; }
     bool operator<(const Dummy &) const { return false; }
+
+    friend size_t qHash(const Dummy &, size_t seed = 0) noexcept { return seed; }
 };
 
 struct RecursiveList : public QList<RecursiveList>
@@ -226,12 +228,11 @@ struct NoCmpRecursiveMultiHashK : public QMultiHash<NoCmpRecursiveMultiHashK, Du
     bool operator==(const NoCmpRecursiveMultiHashK &) const = delete;
 };
 
-uint qHash(const Dummy &) { return 0; }
-uint qHash(const RecursiveSet &) { return 0; }
-uint qHash(const RecursiveHashK &) { return 0; }
-uint qHash(const RecursiveHashV &) { return 0; }
-uint qHash(const RecursiveMultiHashK &) { return 0; }
-uint qHash(const RecursiveMultiHashV &) { return 0; }
+size_t qHash(const RecursiveSet &, size_t seed = 0) noexcept { return seed; }
+size_t qHash(const RecursiveHashK &, size_t seed = 0) noexcept { return seed; }
+size_t qHash(const RecursiveHashV &, size_t seed = 0) noexcept { return seed; }
+size_t qHash(const RecursiveMultiHashK &, size_t seed = 0) noexcept { return seed; }
+size_t qHash(const RecursiveMultiHashV &, size_t seed = 0) noexcept { return seed; }
 
 Q_DECLARE_METATYPE(RecursiveList);
 Q_DECLARE_METATYPE(RecursiveSet);
@@ -2818,12 +2819,8 @@ class EqualsComparable
 {
 public:
     bool operator==(const EqualsComparable &) const { return true; }
+    friend size_t qHash(const EqualsComparable &, size_t seed = 0) noexcept { return seed; }
 };
-
-size_t qHash(const EqualsComparable &)
-{
-    return 0;
-}
 
 /*
     The following functions instatiates every member functions in the
