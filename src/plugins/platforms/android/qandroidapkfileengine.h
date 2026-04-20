@@ -67,10 +67,10 @@ public:
 
     bool advance() override;
     QString currentFileName() const override;
-    QString currentFilePath() const override;
 
 private:
     int m_index = -1;
+    qsizetype m_prefixLength = 0;
     QList<QAndroidApkFileEngine::FileInfo *> m_infos;
 };
 #endif
