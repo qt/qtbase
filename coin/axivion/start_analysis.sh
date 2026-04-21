@@ -11,6 +11,24 @@ gccsetup --cc gcc --cxx g++ --config "$BAUHAUS_CONFIG"
 cd "$CAFECC_BASEPATH"
 BAUHAUS_IR_COMPRESSION=none COMPILE_ONLY=1 cmake -G Ninja -DAXIVION_ANALYSIS_TOOLCHAIN_FILE=/home/qt/bauhaus-suite/profiles/cmake/axivion-launcher-toolchain.cmake -DCMAKE_PREFIX_PATH=/home/qt/work/qt/qtbase/build -DCMAKE_PROJECT_INCLUDE_BEFORE=/home/qt/bauhaus-suite/profiles/cmake/axivion-before-project-hook.cmake -B build -S . --fresh
 cmake --build build -j4
+
+ROOT_DIR=src
+MAGIC="Qt-Security score:critical"
+
+INCLUDE_FILES=""
+
+while IFS= read -r file; do
+    if [ -z "$INCLUDE_FILES" ]; then
+        INCLUDE_FILES="$file"
+    else
+        INCLUDE_FILES="$INCLUDE_FILES:$file"
+    fi
+done <<EOF
+$(grep -rl "$MAGIC" "$ROOT_DIR")
+EOF
+
+export INCLUDE_FILES
+
 for MODULE in qtconcurrent qtcore qtdbus qtgui qtnetwork qtopengl qtopenglwidgets qtsql qttest qtwidgets qtprintsupport qtxml; do
     export MODULE
     export PLUGINS=""
