@@ -3283,7 +3283,10 @@ void tst_QAbstractItemView::inputMethodOpensEditor()
     tableWidget.setCurrentCell(editItem.y(), editItem.x());
     const QString orgText = tableWidget.currentItem()->text();
     const QModelIndex currentIndex = tableWidget.currentIndex();
-    QCOMPARE(tableWidget.inputMethodQuery(Qt::ImCursorRectangle), tableWidget.visualRect(currentIndex));
+
+    QRect currentVisualRect = tableWidget.visualRect(currentIndex);
+    QRect currentRect(tableWidget.viewport()->mapTo(&tableWidget, currentVisualRect.topLeft()), currentVisualRect.size());
+    QCOMPARE(tableWidget.inputMethodQuery(Qt::ImCursorRectangle).toRect(), currentRect);
 
     // simulate the start of input via a composing input method
     sendInputMethodEvent(preedit.left(1));
@@ -3296,7 +3299,10 @@ void tst_QAbstractItemView::inputMethodOpensEditor()
     // the item view delegates input method queries to the editor
     const QRect cursorRect = tableWidget.inputMethodQuery(Qt::ImCursorRectangle).toRect();
     QVERIFY(cursorRect.isValid());
-    QVERIFY(tableWidget.visualRect(currentIndex).intersects(cursorRect));
+
+    currentVisualRect = tableWidget.visualRect(currentIndex);
+    currentRect = QRect(tableWidget.viewport()->mapTo(&tableWidget, currentVisualRect.topLeft()), currentVisualRect.size());
+    QVERIFY(currentRect.intersects(cursorRect));
 
     // finish preediting, then commit or cancel the input
     sendInputMethodEvent(preedit);
