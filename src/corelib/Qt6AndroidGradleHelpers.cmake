@@ -1608,12 +1608,16 @@ function(_qt_internal_android_copy_qt_dependencies target deployment_dir)
         endif()
     endforeach()
 
-    if(NOT no_deploy_qt_libs)
-        foreach(plugin IN LISTS qt_plugins)
+    foreach(plugin IN LISTS qt_plugins)
+        _qt_internal_android_process_module_jars("${target}" "${plugin}" "${libs_root_dir}"
+            seen_destinations copy_commands copy_depends)
+        if(NOT no_deploy_qt_libs)
             _qt_internal_android_process_plugin_item("${target}" "${plugin}" "${libs_abi_dir}"
                 seen_destinations copy_commands copy_depends)
-        endforeach()
-    endif()
+            _qt_internal_android_process_module_lib_deps("${target}" "${plugin}" "${libs_abi_dir}"
+                seen_destinations copy_commands copy_depends)
+        endif()
+    endforeach()
 
     # Plugins aren't linked, so their permissions aren't transitive like modules.
     _qt_internal_android_collect_permissions(${target} SOURCE_TARGETS ${qt_plugins})
