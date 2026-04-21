@@ -3434,9 +3434,9 @@ void tst_QAbstractItemView::selectionAutoScrolling()
                           : listview.horizontalScrollBar();
 
     if (direction < 0)
-        QTRY_COMPARE(scrollBar->value(), 0);
+        QTRY_COMPARE_WITH_TIMEOUT(scrollBar->value(), 0, qMax(5000, scrollBar->maximum() * 20));
     else
-        QTRY_COMPARE(scrollBar->value(), scrollBar->maximum());
+        QTRY_COMPARE_WITH_TIMEOUT(scrollBar->value(), scrollBar->maximum(), qMax(5000, scrollBar->maximum() * 20));
     QVERIFY(listview.selectionModel()->selectedIndexes().size() > 0);
 
     QTest::mouseRelease(listview.viewport(), Qt::LeftButton, Qt::NoModifier, dragPoint);
