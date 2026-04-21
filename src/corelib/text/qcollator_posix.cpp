@@ -49,6 +49,9 @@ int QCollator::compare(QStringView s1, QStringView s2) const
     if (!s2.size())
         return +1;
 
+    if (!d)
+        d = new QCollatorPrivate(QLocale().collation());
+
     if (d->isC())
         return s1.compare(s2, caseSensitivity());
 
@@ -62,6 +65,9 @@ int QCollator::compare(QStringView s1, QStringView s2) const
 
 QCollatorSortKey QCollator::sortKey(const QString &string) const
 {
+    if (!d)
+        d = new QCollatorPrivate(QLocale().collation());
+
     d->ensureInitialized();
 
     QVarLengthArray<wchar_t> original;

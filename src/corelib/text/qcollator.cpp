@@ -92,9 +92,8 @@ Q_GLOBAL_STATIC(QThreadStorage<GenerationalCollator>, defaultCollator)
   \sa setLocale(), QLocale::collation(), QLocale::setDefault()
 */
 QCollator::QCollator()
-    : d(new QCollatorPrivate(QLocale().collation()))
+    : d(nullptr)
 {
-    d->init();
 }
 
 /*!
@@ -190,7 +189,10 @@ bool comparesEqual(const QCollator &lhs, const QCollator &rhs) noexcept
 */
 void QCollator::detach()
 {
-    if (d->ref.loadRelaxed() != 1) {
+    if (!d) {
+        d = new QCollatorPrivate(QLocale().collation());
+        d->init();
+    } else if (d->ref.loadRelaxed() != 1) {
         QCollatorPrivate *x = new QCollatorPrivate(d->locale);
         if (!d->ref.deref())
             delete d;
@@ -207,7 +209,7 @@ void QCollator::detach()
 */
 void QCollator::setLocale(const QLocale &locale)
 {
-    if (locale == d->locale)
+    if (locale == this->locale())
         return;
 
     detach();
@@ -224,7 +226,7 @@ void QCollator::setLocale(const QLocale &locale)
 */
 QLocale QCollator::locale() const
 {
-    return d->locale;
+    return d ? d->locale : QLocale().collation();
 }
 
 /*!
@@ -234,7 +236,7 @@ QLocale QCollator::locale() const
 */
 void QCollator::setCaseSensitivity(Qt::CaseSensitivity cs)
 {
-    if (d->caseSensitivity == cs)
+    if (cs == caseSensitivity())
         return;
 
     detach();
@@ -255,7 +257,7 @@ void QCollator::setCaseSensitivity(Qt::CaseSensitivity cs)
 */
 Qt::CaseSensitivity QCollator::caseSensitivity() const
 {
-    return d->caseSensitivity;
+    return d ? d->caseSensitivity : Qt::CaseSensitive;
 }
 
 /*!
@@ -265,7 +267,7 @@ Qt::CaseSensitivity QCollator::caseSensitivity() const
 */
 void QCollator::setNumericMode(bool on)
 {
-    if (d->numericMode == on)
+    if (on == numericMode())
         return;
 
     detach();
@@ -284,7 +286,7 @@ void QCollator::setNumericMode(bool on)
 */
 bool QCollator::numericMode() const
 {
-    return d->numericMode;
+    return d ? d->numericMode : false;
 }
 
 /*!
@@ -294,7 +296,7 @@ bool QCollator::numericMode() const
 */
 void QCollator::setIgnorePunctuation(bool on)
 {
-    if (d->ignorePunctuation == on)
+    if (on == ignorePunctuation())
         return;
 
     detach();
@@ -311,7 +313,7 @@ void QCollator::setIgnorePunctuation(bool on)
 */
 bool QCollator::ignorePunctuation() const
 {
-    return d->ignorePunctuation;
+    return d ? d->ignorePunctuation : false;
 }
 
 /*!

@@ -93,7 +93,7 @@ private:
     friend Q_CORE_EXPORT bool comparesEqual(const QCollator &lhs, const QCollator &rhs) noexcept;
     Q_DECLARE_EQUALITY_COMPARABLE(QCollator)
 
-    QCollatorPrivate *d;
+    mutable QCollatorPrivate *d;
 
     void detach();
 };

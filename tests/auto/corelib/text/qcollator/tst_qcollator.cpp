@@ -77,6 +77,7 @@ void tst_QCollator::moveSemantics()
     QCollator c2(std::move(c1));
     QCOMPARE(c2.locale(), de_AT);
     QVERIFY(dpointer_is_null(c1));
+    QCOMPARE(c1, QCollator());
 
     QCollator c3(c1);
     QVERIFY(dpointer_is_null(c3));
@@ -84,6 +85,7 @@ void tst_QCollator::moveSemantics()
     c1 = std::move(c2);
     QCOMPARE(c1.locale(), de_AT);
     QVERIFY(dpointer_is_null(c2));
+    QCOMPARE(c2, QCollator());
 
     // test QCollatorSortKey move assignment
     // posix implementation supports only C and default locale,
