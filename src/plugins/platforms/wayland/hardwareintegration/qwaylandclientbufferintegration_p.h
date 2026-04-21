@@ -18,7 +18,7 @@
 
 #include <QtCore/private/qglobal_p.h>
 #include <QtWaylandClient/qtwaylandclientglobal.h>
-#if QT_CONFIG(opengl)
+#if QT_CONFIG(opengl) && QT_CONFIG(egl)
 #include <QtGui/private/qeglplatformcontext_p.h>
 #endif
 
@@ -53,7 +53,7 @@ public:
 
     virtual QWaylandWindow *createEglWindow(QWindow *window) = 0;
     virtual bool canCreatePlatformOffscreenSurface() const { return false; }
-#if QT_CONFIG(opengl)
+#if QT_CONFIG(opengl) && QT_CONFIG(egl)
     virtual QPlatformOpenGLContext *createPlatformOpenGLContext(const QSurfaceFormat &glFormat, QPlatformOpenGLContext *share) const = 0;
     virtual QOpenGLContext *createOpenGLContext(EGLContext context, EGLDisplay contextDisplay, QOpenGLContext *shareContext) const = 0;
     virtual QPlatformOffscreenSurface *createPlatformOffscreenSurface(QOffscreenSurface *surface) const { Q_UNUSED(surface); return nullptr; }

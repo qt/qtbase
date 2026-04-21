@@ -155,7 +155,7 @@ QPlatformWindow *QWaylandIntegration::createPlatformWindow(QWindow *window) cons
     return new QWaylandShmWindow(window, mDisplay.data());
 }
 
-#if QT_CONFIG(opengl)
+#if QT_CONFIG(opengl) && QT_CONFIG(egl)
 QPlatformOpenGLContext *QWaylandIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
 {
     if (mDisplay->clientBufferIntegration())
