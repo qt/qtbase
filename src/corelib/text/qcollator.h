@@ -90,6 +90,9 @@ public:
     static QCollatorSortKey defaultSortKey(QStringView key);
 
 private:
+    friend Q_CORE_EXPORT bool comparesEqual(const QCollator &lhs, const QCollator &rhs) noexcept;
+    Q_DECLARE_EQUALITY_COMPARABLE(QCollator)
+
     QCollatorPrivate *d;
 
     void detach();

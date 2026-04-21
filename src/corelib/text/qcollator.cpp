@@ -172,6 +172,19 @@ QCollator &QCollator::operator=(const QCollator &other)
     \memberswap{collator}
 */
 
+bool comparesEqual(const QCollator &lhs, const QCollator &rhs) noexcept
+{
+    if (lhs.d == rhs.d)
+        return true;
+    if (!lhs.d || !rhs.d)
+        return false;
+
+    return lhs.d->caseSensitivity == rhs.d->caseSensitivity
+        && lhs.d->numericMode == rhs.d->numericMode
+        && lhs.d->ignorePunctuation == rhs.d->ignorePunctuation
+        && lhs.d->locale == rhs.d->locale;
+}
+
 /*!
     \internal
 */
@@ -393,6 +406,7 @@ QCollatorSortKey QCollator::defaultSortKey(QStringView key)
     \class QCollatorSortKey
     \inmodule QtCore
     \brief The QCollatorSortKey class can be used to speed up string collation.
+    \compares equality
 
     \since 5.2
 
