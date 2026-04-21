@@ -12576,6 +12576,7 @@ void tst_QWidget::synthMouseDoubleClick()
     widget.show();
     QWindow* window = widget.windowHandle();
     QVERIFY(QTest::qWaitForWindowExposed(window));
+    QTRY_VERIFY(QApplication::topLevelAt(widget.geometry().center()));
 
     // tap once; move slightly from press to release
     QPoint p(20, 20);
