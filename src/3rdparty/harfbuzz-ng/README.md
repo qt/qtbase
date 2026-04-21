@@ -14,10 +14,64 @@
 
 </div>
 
-HarfBuzz is a text shaping engine. It primarily supports [OpenType][1], but also
-[Apple Advanced Typography][2].
-Check “[What is HarfBuzz?](https://harfbuzz.github.io/what-is-harfbuzz.html)” chapter
-in the user manual for more inforamation on what HarfBuzz do and what it doesn’t do.
+HarfBuzz started as a text shaping engine but has grown into a
+full font platform — the `ffmpeg` of text shaping.  It primarily
+supports [OpenType][1], but also [Apple Advanced Typography][2].
+
+HarfBuzz shapes the majority of text on modern screens.
+
+HarfBuzz is optimized for robustness, correctness, and performance
+— in that order. Achieve all.
+
+**[Try it live at harfbuzz-world.cc](https://harfbuzz-world.cc/)** — an interactive playground for shaping, subsetting, rasterization, vector output, and GPU rendering, all running in your browser.
+
+Here is a quick map of its components:
+
+### Core libraries
+
+| Library | Description |
+|---------|-------------|
+| **libharfbuzz** | Text shaping, draw API, paint API. Highly configurable (see [CONFIG.md](CONFIG.md)). Optional integration backends compiled in: hb-ft (FreeType), hb-coretext (macOS), hb-uniscribe (Windows), hb-directwrite (Windows), hb-gdi (Windows), hb-glib, hb-graphite2. |
+| **libharfbuzz-subset** | Font subsetting and variable-font instancing. |
+
+### Auxiliary libraries
+
+| Library | Description |
+|---------|-------------|
+| **libharfbuzz-icu** | ICU Unicode integration. |
+| **libharfbuzz-cairo** | Cairo rendering integration. |
+| **libharfbuzz-gobject** | GObject/GI bindings. |
+
+### Experimental libraries
+
+| Library | Description |
+|---------|-------------|
+| **libharfbuzz-raster** | Glyph rasterization to bitmaps, including color fonts. Uses hb-draw and hb-paint. |
+| **libharfbuzz-vector** | Glyph output to vector formats (currently SVG), including color fonts. Uses hb-draw and hb-paint. |
+| **libharfbuzz-gpu** | Encodes glyph outlines for GPU rasterization (Slug algorithm). Provides shader sources in GLSL, WGSL, MSL, and HLSL. [Live demo.](https://harfbuzz.github.io/hb-gpu-demo/) |
+
+Notable missing feature: font hinting (including autohinting)
+is not implemented.  For hinted rasterization, use FreeType or
+Skrifa.
+
+For simplified builds, amalgamated sources are available:
+`harfbuzz.cc` (just libharfbuzz), `harfbuzz-subset.cc` (just
+libharfbuzz-subset), or `harfbuzz-world.cc` (everything, driven
+by a custom `hb-features.h`).  For a live in-browser playground
+plus a worked example of the world.cc single-file build, see
+[harfbuzz-world.cc][26].
+
+### Command-line tools
+
+| Tool | Description |
+|------|-------------|
+| **hb-shape** | Shape text and display glyph output. |
+| **hb-view** | Render shaped text to an image. |
+| **hb-subset** | Subset and optimize fonts. |
+| **hb-info** | Display font metadata. |
+| **hb-raster** | Render glyphs to bitmap images. |
+| **hb-vector** | Render glyphs to vector formats (SVG). |
+| **hb-gpu** | Interactive GPU text rendering. |
 
 The canonical source tree and bug trackers are available on [github][4].
 Both development and user support discussion around HarfBuzz happen on
@@ -45,9 +99,8 @@ For user manual as well as API documentation, check: https://harfbuzz.github.io
 
 ## Download
 
-Tarball releases of HarfBuzz are available on [github releases][3] page. At the same place you
-will also find Win32/Win64 binary bundles that include `libharfbuzz` DLL,
-`hb-view.exe`, `hb-shape.exe`, and all dependencies.
+Tarball releases and Win32/Win64 binary bundles are available on the
+[github releases][3] page.
 
 ## Development
 
@@ -67,12 +120,12 @@ To report bugs or submit patches please use [github][4] issues and pull-requests
 
 To get a better idea of where HarfBuzz stands in the text rendering stack you
 may want to read [State of Text Rendering 2024][6].
-Here are a few presentation slides about HarfBuzz at the
-Internationalization and Unicode Conference over the years:
+Here are a few presentation slides about HarfBuzz over the years:
 
+- 2026 – [HarfBuzz at 20!][25]
+- 2016 – [Ten Years of HarfBuzz][20]
 - 2014 – [Unicode, OpenType, and HarfBuzz: Closing the Circle][7]
 - 2012 – [HarfBuzz, The Free and Open Text Shaping Engine][8]
-- 2016 – [Ten Years of HarfBuzz][20]
 - 2009 – [HarfBuzz: the Free and Open Shaping Engine][9]
 
 More presentations and papers are available on [behdad][11]'s website.
@@ -95,9 +148,18 @@ In particular, the following _studies_ are relevant to HarfBuzz development:
 
 ## Name
 
-HarfBuzz (حرف‌باز) is the literal Persian translation of “[OpenType][1]”,
-transliterated using the Latin script. It also means "talkative" or
-"glib" (also a nod to the GNOME project where HarfBuzz originates from).
+HarfBuzz /hærfˈbɒːz/
+
+From Persian حرف (*Harf*: letter) and باز (*Buzz*: open).
+Transliteration of the Persian calque for *OpenType*.
+
+As a noun: *The* Open Source *text shaping* engine.
+
+As an adjective: Insincerely talkative; glib. A nod to the
+GNOME project where HarfBuzz originates from.
+
+The logo shows حرف‌باز in the IranNastaliq font, on a Damascus
+steel background.
 
 > Background: Originally there was this font format called TrueType. People and
 > companies started calling their type engines all things ending in Type:
@@ -106,14 +168,15 @@ transliterated using the Latin script. It also means "talkative" or
 > with the concept but use the Persian translation. Which is fitting given that
 > Persian is written in the Arabic script, and OpenType is an extension of
 > TrueType that adds support for complex script rendering, and HarfBuzz is an
-> implementation of OpenType complex text shaping.
+> implementation of OpenType text shaping.
 
 ## Users
 
-HarfBuzz is used in Android, Chrome,
-ChromeOS, Firefox, GNOME, GTK+, KDE, Qt, LibreOffice, OpenJDK, XeTeX, Scribus,
-PlayStation, Microsoft Edge, Amazon Kindle, Adobe Photoshop, Illustrator,
-InDesign, Godot Engine, Unreal Engine, QuarkXPress, Figma, and other places.
+HarfBuzz is used in Android, Chrome, ChromeOS, Firefox, GNOME, GTK+, KDE,
+Qt, LibreOffice, OpenJDK, XeTeX, Adobe Photoshop, Illustrator, InDesign,
+Microsoft Edge, Amazon Kindle, PlayStation, Godot Engine, Unreal Engine,
+Figma, Canva, QuarkXPress, Scribus, smart TVs,
+car displays, and many other places.
 
 <p align="center">
   <a href="https://xkcd.com/2347/" rel="nofollow">
@@ -153,3 +216,5 @@ InDesign, Godot Engine, Unreal Engine, QuarkXPress, Figma, and other places.
 [22]: https://docs.google.com/document/d/1aH_waagdEM5UhslQxCeFEb82ECBhPlZjy5_MwLNLBYo/preview
 [23]: https://docs.google.com/document/d/1hRd5oYQJLrt0JuwWhEJWi7wh_9rbaIJkX6IR9DW7rZQ/preview
 [24]: https://docs.google.com/document/d/1a3K6fHjsiWW36vSzwJwCwEBOgznunKs80PSpBbpfHiA/preview
+[25]: https://docs.google.com/presentation/d/1o9Exz1c-Lr-dJjA8dcBn_Vl_Y37cupmFzmclMjBE_Bc/view
+[26]: https://harfbuzz-world.cc/

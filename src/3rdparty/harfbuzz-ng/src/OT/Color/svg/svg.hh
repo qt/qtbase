@@ -430,7 +430,7 @@ parse_cache_entries_linear (const char *svg,
                             hb_vector_t<glyph_entry_t> *glyph_spans,
                             hb_vector_t<id_entry_t> *id_entries)
 {
-  open_elem_t stack[MAX_DEPTH];
+  open_elem_t stack[MAX_DEPTH] = {};
   unsigned depth = 0;
   if (unlikely (!defs_entries->alloc (256) ||
                 !glyph_spans->alloc (256) ||
@@ -546,14 +546,18 @@ parse_cache_entries_linear (const char *svg,
       continue;
     }
 
-    SVG::svg_id_span_t id = {nullptr, 0};
+    SVG::svg_id_span_t id = {};
     parse_id_in_start_tag (svg, i, gt, &id);
 
     unsigned r = gt;
     while (r > i && isspace ((unsigned char) svg[r - 1])) r--;
     bool self_closing = (r > i && svg[r - 1] == '/');
 
-    open_elem_t e = {i, id, defs_depth > 0, is_defs};
+    open_elem_t e = {};
+    e.start = i;
+    e.id = id;
+    e.in_defs_content = defs_depth > 0;
+    e.is_defs = is_defs;
 
     if (self_closing)
     {
@@ -605,7 +609,7 @@ SVG::accelerator_t::accelerator_t (hb_face_t *face)
   doc_caches.init ();
   unsigned doc_count = table->get_document_count ();
   if (doc_count && unlikely (!doc_caches.resize (doc_count)))
-    doc_caches.resize (0);
+    doc_caches.clear ();
   for (unsigned i = 0; i < doc_caches.length; i++)
     doc_caches.arrayZ[i].set_relaxed (nullptr);
 }
