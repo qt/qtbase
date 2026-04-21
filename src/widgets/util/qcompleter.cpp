@@ -889,7 +889,6 @@ void QCompleterPrivate::_q_autoResizePopup()
 void QCompleterPrivate::showPopup(const QRect& rect)
 {
     const QRect screen = widget->screen()->availableGeometry();
-    Qt::LayoutDirection dir = widget->layoutDirection();
     QPoint pos;
     int rh, w;
     int h = (popup->sizeHintForRow(0) * qMin(maxVisibleItems, popup->model()->rowCount()) + 3) + 3;
@@ -900,7 +899,7 @@ void QCompleterPrivate::showPopup(const QRect& rect)
     if (rect.isValid()) {
         rh = rect.height();
         w = rect.width();
-        pos = widget->mapToGlobal(dir == Qt::RightToLeft ? rect.bottomRight() : rect.bottomLeft());
+        pos = widget->mapToGlobal(rect.bottomLeft());
     } else {
         rh = widget->height();
         pos = widget->mapToGlobal(QPoint(0, widget->height() - 2));
