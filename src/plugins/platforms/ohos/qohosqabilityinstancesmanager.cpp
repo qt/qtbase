@@ -308,36 +308,39 @@ QUiAbilityPeerImpl::QUiAbilityPeerImpl(
     }
     m_launchParam = QNapi::Reference<>::makePersistentFrom(optLaunchParam);
 
-    if (QOhosDeviceInfo::is2in1()) {
-        m_windowWillCloseCallbackHandle = registerOnOffMethodsBasedEventHandler(
-            window(), "windowWillClose",
-            [this](const CallbackInfo &cbInfo) {
-                JsState &jsState = cbInfo.jsState();
-                return handleCloseRequestFromSystem(
-                    jsState, "Window.windowWillClose",
-                    CloseAbilityRequestSource::WindowWillClose,
-                    [](JsState &jsState, CloseAbilityRequestResolution ohosRequestResolution) {
-                        return QNapi::Boolean::New(
-                            jsState.env(),
-                            ohosRequestResolution == CloseAbilityRequestResolution::DontClose);
-                    });
+    m_windowWillCloseCallbackHandle = registerOnOffMethodsBasedEventHandler(
+        window(), "windowWillClose",
+        [this](const CallbackInfo &cbInfo) {
+            JsState &jsState = cbInfo.jsState();
+            return handleCloseRequestFromSystem(
+                jsState, "Window.windowWillClose",
+                CloseAbilityRequestSource::WindowWillClose,
+                [](JsState &jsState, CloseAbilityRequestResolution ohosRequestResolution) {
+                    return QNapi::Boolean::New(
+                        jsState.env(),
+                        ohosRequestResolution == CloseAbilityRequestResolution::DontClose);
+                });
+        },
+        {
+            .optEventSourceAliveCheckFunc =
+                [qAbilityWeakRef = moveToSharedPtr(Napi::Weak(uiAbility))](QNapi::Object window) {
+                    bool isWindowClosing = evalInJsThread(
+                        [&](JsState &) {
+                            return JsWindowsTracker::isWindowClosing(window);
+                        },
+                        Q_FUNC_INFO);
+                    auto qAbilityValue = qAbilityWeakRef->Value();
+                    return
+                        !isWindowClosing
+                        && qAbilityValue.IsObject()
+                        && !QNapi::checkedCast<QNapi::Object>(qAbilityValue).eval<QNapi::Boolean>("context.isTerminating()");
+                },
+            .optOnCallExceptionHandler = [](const Napi::Error &error) {
+                constexpr auto capabilityNotSupportedErrorCode = 801;
+                QtOhos::rethrowUnlessJsBusinessErrorIs(
+                    error, capabilityNotSupportedErrorCode, "on('windowWillClose')");
             },
-            {
-                .optEventSourceAliveCheckFunc =
-                    [qAbilityWeakRef = moveToSharedPtr(Napi::Weak(uiAbility))](QNapi::Object window) {
-                        bool isWindowClosing = evalInJsThread(
-                            [&](JsState &) {
-                                return JsWindowsTracker::isWindowClosing(window);
-                            },
-                            Q_FUNC_INFO);
-                        auto qAbilityValue = qAbilityWeakRef->Value();
-                        return
-                            !isWindowClosing
-                            && qAbilityValue.IsObject()
-                            && !QNapi::checkedCast<QNapi::Object>(qAbilityValue).eval<QNapi::Boolean>("context.isTerminating()");
-                    },
-            });
-    }
+        });
 }
 
 QNapi::Object QUiAbilityPeerImpl::uiContext()
