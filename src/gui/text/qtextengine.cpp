@@ -23,6 +23,7 @@
 #include "qrawfont_p.h"
 #include <qguiapplication.h>
 #include <qinputmethod.h>
+#include <qlocale.h>
 #include <algorithm>
 #include <stdlib.h>
 
@@ -1632,8 +1633,14 @@ int QTextEngine::shapeTextWithHarfbuzzNG(const QScriptItem &si, const ushort *st
                                ? QChar::Script(si.analysis.script)
                                : QChar::Script_Common;
     props.script = hb_qt_script_to_script(script);
-    // ### TODO get_default_for_script?
-    props.language = hb_language_get_default(); // use default language from locale
+
+    // set harfbuzz language from QLocale
+    const QByteArray localeBcp47 = QLocale().bcp47Name().toUtf8();
+    const hb_language_t hb_language = hb_language_from_string(localeBcp47.constData(), localeBcp47.size());
+    if (hb_language == HB_LANGUAGE_INVALID)
+        props.language = hb_language_get_default();
+    else
+        props.language = hb_language;
 
     for (qsizetype k = 0; k < itemBoundaries.size(); k += 3) {
         const uint item_pos = itemBoundaries[k];
