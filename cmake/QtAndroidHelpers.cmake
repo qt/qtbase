@@ -548,6 +548,16 @@ function(qt_internal_create_source_jar)
     add_dependencies(install_android_source_jars install_android_source_jar_${module})
 endfunction()
 
+function(qt_internal_android_add_target_export_properties target)
+    if(NOT ANDROID)
+        return()
+    endif()
+    set_property(TARGET ${target} APPEND PROPERTY EXPORT_PROPERTIES
+        QT_ANDROID_BUNDLED_JAR_DEPENDENCIES
+        QT_ANDROID_LIB_DEPENDENCIES
+    )
+endfunction()
+
 # The function stores Android permissions that are required by the module target.
 # The stored INTERFACE_QT_ANDROID_PERMISSIONS is the transitive property.
 function(qt_internal_android_add_interface_permissions target)

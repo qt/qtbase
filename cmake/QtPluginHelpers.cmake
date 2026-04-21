@@ -269,6 +269,8 @@ function(qt_internal_add_plugin target)
     set_property(TARGET "${target}" PROPERTY QT_DEFAULT_PLUGIN "${_default_plugin}")
     set_property(TARGET "${target}" APPEND PROPERTY EXPORT_PROPERTIES "QT_PLUGIN_CLASS_NAME;QT_PLUGIN_TYPE;QT_MODULE;QT_DEFAULT_PLUGIN;_qt_plugin_qt_module_dependencies")
 
+    qt_internal_android_add_target_export_properties(${target})
+
     set(private_includes
         "${CMAKE_CURRENT_SOURCE_DIR}"
         "${CMAKE_CURRENT_BINARY_DIR}"
