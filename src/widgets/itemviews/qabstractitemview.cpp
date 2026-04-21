@@ -941,7 +941,8 @@ QVariant QAbstractItemView::inputMethodQuery(Qt::InputMethodQuery query) const
                 result = QRect(currentEditor->mapTo(this, editorRect.topLeft()), editorRect.size());
             }
         } else if (query == Qt::ImCursorRectangle) {
-            result = visualRect(current);
+            const QRect visRect = visualRect(current);
+            result = QRect(d->viewport->mapTo(this, visRect.topLeft()), visRect.size());
         }
     }
     if (!result.isValid())
