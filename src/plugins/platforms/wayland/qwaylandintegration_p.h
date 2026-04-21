@@ -41,7 +41,7 @@ class QWaylandPlatformServices;
 class QWaylandSessionManager;
 
 class Q_WAYLANDCLIENT_EXPORT QWaylandIntegration : public QPlatformIntegration
-#if QT_CONFIG(opengl)
+#if QT_CONFIG(opengl)  && QT_CONFIG(egl)
     , public QNativeInterface::Private::QEGLIntegration
 #endif
 {
@@ -55,7 +55,7 @@ public:
 
     bool hasCapability(QPlatformIntegration::Capability cap) const override;
     QPlatformWindow *createPlatformWindow(QWindow *window) const override;
-#if QT_CONFIG(opengl)
+#if QT_CONFIG(opengl) && QT_CONFIG(egl)
     QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const override;
     QPlatformOffscreenSurface *createPlatformOffscreenSurface(QOffscreenSurface *surface) const override;
     QOpenGLContext *createOpenGLContext(EGLContext context, EGLDisplay display, QOpenGLContext *shareContext) const override;
