@@ -555,6 +555,7 @@ function(qt_internal_android_add_target_export_properties target)
     set_property(TARGET ${target} APPEND PROPERTY EXPORT_PROPERTIES
         QT_ANDROID_BUNDLED_JAR_DEPENDENCIES
         QT_ANDROID_LIB_DEPENDENCIES
+        QT_ANDROID_PERMISSIONS
     )
 endfunction()
 

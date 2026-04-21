@@ -164,3 +164,43 @@ function(_qt_internal_add_android_permission target)
     # Append the permission to the target's property
     set_property(TARGET ${target} APPEND PROPERTY QT_ANDROID_PERMISSIONS "${permission_entry}")
 endfunction()
+
+# Merges QT_ANDROID_PERMISSIONS from each SOURCE_TARGETS source into target's own property.
+#
+# Synopsis
+#   _qt_internal_android_collect_permissions(target
+#       SOURCE_TARGETS <source> [<source>...])
+function(_qt_internal_android_collect_permissions target)
+    cmake_parse_arguments(PARSE_ARGV 1 arg "" "" "SOURCE_TARGETS")
+    if(NOT arg_SOURCE_TARGETS)
+        return()
+    endif()
+
+    get_target_property(existing ${target} QT_ANDROID_PERMISSIONS)
+
+    set(new_entries "")
+    foreach(src_target IN LISTS arg_SOURCE_TARGETS)
+        if(NOT TARGET "${src_target}")
+            continue()
+        endif()
+        get_target_property(src_permissions "${src_target}" QT_ANDROID_PERMISSIONS)
+        if(NOT src_permissions)
+            continue()
+        endif()
+        foreach(entry IN LISTS src_permissions)
+            if("${entry}" IN_LIST existing OR "${entry}" IN_LIST new_entries)
+                continue()
+            endif()
+            string(REPLACE ";" [[\;]] entry_escaped "${entry}")
+            if(new_entries)
+                string(APPEND new_entries ";${entry_escaped}")
+            else()
+                set(new_entries "${entry_escaped}")
+            endif()
+        endforeach()
+    endforeach()
+
+    if(new_entries)
+        set_property(TARGET ${target} APPEND PROPERTY QT_ANDROID_PERMISSIONS "${new_entries}")
+    endif()
+endfunction()

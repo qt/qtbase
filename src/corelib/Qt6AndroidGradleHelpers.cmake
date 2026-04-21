@@ -1615,6 +1615,9 @@ function(_qt_internal_android_copy_qt_dependencies target deployment_dir)
         endforeach()
     endif()
 
+    # Plugins aren't linked, so their permissions aren't transitive like modules.
+    _qt_internal_android_collect_permissions(${target} SOURCE_TARGETS ${qt_plugins})
+
     list(REMOVE_DUPLICATES copy_depends)
     list(FILTER copy_depends EXCLUDE REGEX "^$")
 
