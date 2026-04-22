@@ -888,9 +888,9 @@ void QOhosWindowProxy::setSubWindowModalEnabled(ModalityType modalityType)
     if (qtIsMainWindow())
         return;
 
-    if (modalityType == ModalityType::APPLICATION_MODALITY && !QOhosDeviceInfo::is2in1()) {
+    if (modalityType == ModalityType::APPLICATION_MODALITY && !QOhosSettings::isWindowPcModeEnabled()) {
         qOhosPrintfWarning(
-            "%s: APPLICATION_MODALITY option can be used only on 2-in-1 devices - skipping",
+            "%s: APPLICATION_MODALITY option can be used only on devices in the freeform window state - skipping",
             Q_FUNC_INFO);
         return;
     }
