@@ -857,6 +857,7 @@ function(_qt_internal_sbom_end_project)
     set_property(GLOBAL PROPERTY _qt_internal_sbom_repo_spdx_id_unique_suffix "")
     set_property(GLOBAL PROPERTY _qt_internal_sbom_external_document_search_paths "")
     set_property(GLOBAL PROPERTY _qt_internal_sbom_auto_search_external_documents_in_paths "")
+    set_property(GLOBAL PROPERTY _qt_sbom_verify_source_sbom_script "")
 
     # Add configure-time dependency on project attribution files.
     get_property(attribution_files GLOBAL PROPERTY _qt_internal_project_attribution_files)
