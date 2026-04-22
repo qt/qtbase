@@ -1757,9 +1757,13 @@ function(_qt_internal_android_create_runner_wrapper target)
     if(NOT wrapper_output_dir AND CMAKE_RUNTIME_OUTPUT_DIRECTORY)
         set(wrapper_output_dir "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
     endif()
+
+    get_target_property(target_binary_dir ${target} BINARY_DIR)
     if(NOT wrapper_output_dir)
-        get_target_property(wrapper_output_dir ${target} BINARY_DIR)
+        set(wrapper_output_dir "${target_binary_dir}")
     endif()
+    get_filename_component(wrapper_output_dir "${wrapper_output_dir}" ABSOLUTE
+        BASE_DIR "${target_binary_dir}")
 
     get_target_property(output_name ${target} OUTPUT_NAME)
     if(NOT output_name)
@@ -1782,6 +1786,8 @@ function(_qt_internal_android_create_runner_wrapper target)
     if(CMAKE_HOST_UNIX)
         execute_process(COMMAND chmod +x ${wrapper_path})
     endif()
+
+    set_property(TARGET ${target} PROPERTY _qt_android_runner_wrapper_path "${wrapper_path}")
 endfunction()
 
 # Get the android runner script path and its arguments for a target
