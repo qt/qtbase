@@ -5298,7 +5298,7 @@ QPixmap QWidget::grab(const QRect &rectangle)
     const qreal dpr = devicePixelRatio();
     QPixmap res((QSizeF(r.size()) * dpr).toSize());
     res.setDevicePixelRatio(dpr);
-    if (!d->isOpaque)
+    if (!d->isOpaque || res.hasAlphaChannel())
         res.fill(Qt::transparent);
     d->render(&res, QPoint(), QRegion(r), renderFlags);
 
