@@ -16,7 +16,6 @@
 #include <functional>
 #include <memory>
 #include <qarkui/window.h>
-#include <qohosdeviceinfo_p.h>
 #include <qohosinputmethodeventhandler.h>
 #include <qohosjsmain.h>
 #include <qohosplatformbackingstore.h>
@@ -420,9 +419,6 @@ ViewGeometryPersistencePolicy determineViewGeometryPersistencePolicy()
 WindowGeometryPersistenceState syncWindowGeometryPersistenceState(QOhosWindowProxy *windowProxy)
 {
     using WindowGeometryPersistencePolicy = QOhosPlatformIntegration::WindowGeometryPersistencePolicy;
-
-    if (!QOhosDeviceInfo::is2in1())
-        return WindowGeometryPersistenceState::Disabled;
 
     bool geometryPersistenceEnabled = false;
     auto policy = QOhosPlatformIntegration::getMainWindowGeometryPersistencePolicy();
