@@ -1484,6 +1484,10 @@ void tst_QDate::fromStringFormat_data()
             << u"21-MM05-2006"_s << u"dd-'MM'MM-yyyy"_s << 1900 << QDate(2006, 5, 21);
     QTest::newRow("quotes-empty")
             << u"21-'05-2006"_s << u"dd-MM-''yy"_s << 1900 << QDate(2006, 5, 21);
+    QTest::newRow("quote-verbose")
+            << u"On day 22 of the Gregorian month named April in the Common Era year 2026"_s
+            << u"'On day' dd 'of the' 'Gregorian month named' MMMM 'in the' 'Common Era year' yyyy"_s
+            << 1900 << QDate(2026, 4, 22);
 
     // Test unicode handling.
     QTest::newRow("Unicode in format string")

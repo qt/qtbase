@@ -536,7 +536,7 @@ bool QDateTimeParser::parseFormat(QStringView newFormat)
                 break;
             case 'M':
                 if (parserType != QMetaType::QTime) {
-                    newSeparators.append(unquote(newFormat.first(i).sliced(index)));
+                    appendSeparator(&newSeparators, newFormat, index, i - index, lastQuote);
                     const SectionNode sn{MonthSection, i - add, countRepeat(newFormat, i, 4)};
                     newSectionNodes.append(sn);
                     i += sn.count - 1;
