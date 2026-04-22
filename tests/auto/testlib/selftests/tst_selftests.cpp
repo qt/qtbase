@@ -1003,8 +1003,9 @@ static QProcessEnvironment testEnvironment()
         // Avoid interference from any qtlogging.ini files, e.g. in /etc/xdg/QtProject/:
         environment.insert("QT_LOGGING_RULES", "*.debug=true;qt.*=false");
 
-#if defined(Q_OS_UNIX)
+#if defined(Q_OS_UNIX) && (!defined(__QNX__) || __QNX__ < 800)
         // Avoid the warning from QCoreApplication
+        // (QNX 8.0+ throws during initialisation; see QTBUG-145975).
         environment.insert("LC_ALL", "en_US.UTF-8");
 #endif
 
