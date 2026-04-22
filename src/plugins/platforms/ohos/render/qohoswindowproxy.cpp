@@ -1093,14 +1093,6 @@ void QOhosWindowProxy::setWindowCornerRadius(double radius)
 
 bool QOhosWindowProxy::isWindowRectAutoSave() const
 {
-    if (!QOhosDeviceInfo::is2in1()) {
-        qCWarning(
-            QtForOhos,
-            "%s: geometry persistence feature is only supported on 2-in-1 devices. Returning default",
-            Q_FUNC_INFO);
-        return false;
-    }
-
     return QtOhos::evalInJsThreadWithPromise<bool>(
         [&](QtOhos::JsState &, QOhosTaskPromise<bool> evalPromise) {
             if (m_jsScopeData->isWindowClosing()) {
