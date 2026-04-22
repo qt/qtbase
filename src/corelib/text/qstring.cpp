@@ -5239,7 +5239,7 @@ QString QString::section(const QRegularExpression &re, qsizetype start, qsizetyp
 
     Returns a string that contains \a n characters of this string, starting
     at the specified \a position index up to, but not including, the element
-    at index position \c {\a position + n}.
+    at index position \tt {\a position + \a n}.
 
     If you know that \a position and \a n cannot be out of bounds, use sliced()
     instead in new code, because it is faster.
@@ -5326,7 +5326,7 @@ QString QString::mid(qsizetype position, qsizetype n) &&
 
     Returns a string that contains \a n characters of this string, starting
     at position \a pos up to, but not including, the element at index position
-    \c {\a pos + n}.
+    \tt {\a pos + \a n}.
 
     \note The behavior is undefined when \a pos < 0, \a n < 0,
     or \a pos + \a n > size().
@@ -5363,8 +5363,8 @@ QString QString::sliced_helper(QString &str, qsizetype pos, qsizetype n)
     \since 6.8
 
     Modifies this string to start at position \a pos, up to, but not including,
-    the character (code point) at index position \c {\a pos + n}; and returns
-    a reference to this string.
+    the character (code point) at index position \tt {\a pos + \a n}; and
+    returns a reference to this string.
 
     \note The behavior is undefined if \a pos < 0, \a n < 0,
     or \a pos + \a n > size().
