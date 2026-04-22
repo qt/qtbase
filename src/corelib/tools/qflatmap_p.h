@@ -1024,8 +1024,8 @@ private:
     void makeUnique()
     {
         // std::unique, but over two ranges
-        auto equivalent = [this](const auto &lhs, const auto &rhs) {
-            return !key_compare::operator()(lhs, rhs) && !key_compare::operator()(rhs, lhs);
+        auto equivalent = [t=this](const auto &lhs, const auto &rhs) {
+            return !t->key_compare::operator()(lhs, rhs) && !t->key_compare::operator()(rhs, lhs);
         };
         const auto kb = c.keys.begin();
         const auto ke = c.keys.end();
