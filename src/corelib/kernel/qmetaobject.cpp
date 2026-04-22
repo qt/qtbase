@@ -1535,8 +1535,9 @@ printMethodNotFoundWarning(const QMetaObject *meta, QByteArrayView name, qsizety
     \since 6.5
     \threadsafe
 
-    Invokes the \a member (a signal or a slot name) on the object \a
-    obj. Returns \c true if the member could be invoked. Returns \c false
+    Invokes a method registered in the Meta-Object System on the object \a obj,
+    identified by its name \a member. This includes slots, signals, and Q_INVOKABLE
+    methods. Returns \c true if the member could be invoked. Returns \c false
     if there is no such member or the parameters did not match.
 
     For the overloads with a QTemplatedMetaMethodReturnArgument parameter, the
