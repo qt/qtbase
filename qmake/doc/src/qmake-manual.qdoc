@@ -832,8 +832,7 @@
     \snippet code/doc_src_qmake-manual.pro 23
 
     This is discussed in more detail in the
-    \l{Qt for Windows - Deployment#Manifest files}
-    {deployment guide for Windows}.
+    \l{qmake-manifest-files-windows}{deployment guide for Windows}.
 */
 
 /*!
