@@ -129,7 +129,7 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QMacAccessibilityElement);
             return text->text(0, text->characterCount()).toNSString();
     }
 
-    return [super accessibilityHint];
+    return [super accessibilityValue];
 }
 
 - (CGRect)accessibilityFrame
