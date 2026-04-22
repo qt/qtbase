@@ -1134,14 +1134,6 @@ void QOhosWindowProxy::setWindowRectAutoSave(bool enabled)
 {
     constexpr bool isSaveBySpecifiedFlag = true;
 
-    if (!QOhosDeviceInfo::is2in1()) {
-        qCWarning(
-            QtForOhos,
-            "%s: geometry persistence feature is only supported on 2-in-1 devices. Ignoring",
-            Q_FUNC_INFO);
-        return;
-    }
-
     QtOhos::invokeInJsThreadAndWaitForContinue(
         [&](QtOhos::JsState &, std::function<void()> continueFunc) {
             if (m_jsScopeData->isWindowClosing()) {
