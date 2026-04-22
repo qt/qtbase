@@ -823,13 +823,22 @@ function(_qt_internal_android_copy_target_package_sources target deployment_dir)
     list(TRANSFORM package_files PREPEND "${package_source_dir}/" OUTPUT_VARIABLE in_package_files)
 
     if(in_package_files)
-        # TODO: Add cmake < 3.26 support
-        if(CMAKE_VERSION VERSION_LESS 3.26)
-            message(FATAL_ERROR "The use of QT_ANDROID_PACKAGE_SOURCE_DIR property with
-                the QT_USE_ANDROID_MODERN_BUNDLE option enabled requires CMake version >= 3.26.")
-        endif()
-        set(copy_commands COMMAND "${CMAKE_COMMAND}" -E copy_directory_if_different
-            "${package_source_dir}" "${deployment_dir}")
+        # Copy files individually so that the processed AndroidManifest.xml isn't overwritten
+        # by the unprocessed user-provided copy.
+        set(copy_commands "")
+        set(seen_dirs "")
+        foreach(rel_file IN LISTS package_files)
+            get_filename_component(dst_dir "${deployment_dir}/${rel_file}" DIRECTORY)
+            if(NOT dst_dir IN_LIST seen_dirs)
+                list(APPEND seen_dirs "${dst_dir}")
+                list(APPEND copy_commands
+                    COMMAND "${CMAKE_COMMAND}" -E make_directory "${dst_dir}")
+            endif()
+            list(APPEND copy_commands
+                COMMAND "${CMAKE_COMMAND}" -E copy_if_different
+                    "${package_source_dir}/${rel_file}"
+                    "${deployment_dir}/${rel_file}")
+        endforeach()
     else()
         # We actually have nothing to deploy.
         return()
