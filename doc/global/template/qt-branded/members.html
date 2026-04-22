@@ -1,0 +1,38 @@
+{#-
+Copyright (C) 2026 The Qt Company Ltd.
+SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+-#}
+{% include "partials/html/head.html" %}
+<body>
+{% include "partials/qt-branded/header-bar.html" %}
+{% include "partials/qt-branded/sidebar.html" %}
+    <main class="content">
+    <h1>{{ title }}</h1>
+{% include "partials/qt-branded/toolbar.html" %}
+
+    <p>This is the complete list of members for {% if typeHref != "" %}<a href="{{ typeHref }}">{{ escape_html(typeName) }}</a>{% else %}{{ escape_html(typeName) }}{% endif %}, including inherited members.</p>
+
+    {% if isQmlType %}
+    {% for group in memberGroups %}
+    {% if group.typeName != "" %}
+    <p>The following members are inherited from {% if group.typeHref != "" %}<a href="{{ group.typeHref }}">{{ group.typeName }}</a>{% else %}{{ group.typeName }}{% endif %}.</p>
+    {% endif %}
+    <ul>
+    {% for entry in group.members %}
+    <li class="fn" translate="no">{% if existsIn(entry, "signatureSpans") %}{{ render_signature_spans(entry.signatureSpans) }}{% else %}{% if entry.href != "" %}<a href="{{ entry.href }}">{{ escape_html(entry.signature) }}</a>{% else %}{{ escape_html(entry.signature) }}{% endif %}{% endif %}{% if existsIn(entry, "hints") %}&#160;[{% for h in entry.hints %}{% if not loop.is_first %} {% endif %}{{ h }}{% endfor %}]{% endif %}{% if existsIn(entry, "children") %}<ul>
+    {% for child in entry.children %}
+    <li class="fn" translate="no">{% if existsIn(child, "signatureSpans") %}{{ render_signature_spans(child.signatureSpans) }}{% else %}{% if child.href != "" %}<a href="{{ child.href }}">{{ escape_html(child.signature) }}</a>{% else %}{{ escape_html(child.signature) }}{% endif %}{% endif %}{% if existsIn(child, "hints") %} [{% for h in child.hints %}{% if not loop.is_first %} {% endif %}{{ h }}{% endfor %}]{% endif %}</li>
+    {% endfor %}
+    </ul>{% endif %}</li>
+    {% endfor %}
+    </ul>
+    {% endfor %}
+    {% else %}
+    <ul>
+    {% for entry in members %}
+    <li class="fn" translate="no">{% if existsIn(entry, "signatureSpans") %}{{ render_signature_spans(entry.signatureSpans) }}{% else %}{% if entry.href != "" %}<a href="{{ entry.href }}">{{ escape_html(entry.signature) }}</a>{% else %}{{ escape_html(entry.signature) }}{% endif %}{% endif %}</li>
+    {% endfor %}
+    </ul>
+    {% endif %}
+    </main>
+{% include "partials/qt-branded/footer.html" %}

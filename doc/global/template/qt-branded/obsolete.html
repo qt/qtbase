@@ -1,0 +1,45 @@
+{#-
+Copyright (C) 2026 The Qt Company Ltd.
+SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+-#}
+{% include "partials/html/head.html" %}
+<body>
+{% include "partials/qt-branded/header-bar.html" %}
+{% include "partials/qt-branded/sidebar.html" %}
+    <main class="content">
+    <h1>{{ escape_html(title) }}</h1>
+{% include "partials/qt-branded/toolbar.html" %}
+
+    <p><b>The following members of {{ escape_html(default(typeName, "")) }} are deprecated.</b> They're provided to keep old source code working, but we strongly advise against using them in new code.</p>
+    <p>{% if typeHref != "" %}<a href="{{ typeHref }}">{{ escape_html(typeName) }}</a>{% else %}{{ escape_html(typeName) }}{% endif %}{{ " " }}reference page</p>
+
+    {% if length(sections) > 0 %}
+    {% for section in sections %}
+    <section class="section-obsolete" aria-label="{{ escape_html(section.title) }}">
+    <h2>{{ escape_html(section.title) }}</h2>
+    {% if length(section.members) > 0 %}
+    <table class="alignedsummary">
+    {% for member in section.members %}
+    <tr>
+    <td class="memItemLeft">{% if existsIn(member, "signatureSpans") %}{{ render_signature_spans(member.signatureSpans) }}{% else %}{% if existsIn(member, "href") and member.href != "" %}<a href="{{ member.href }}">{{ escape_html(member.signature) }}</a>{% else %}{{ escape_html(member.signature) }}{% endif %}{% endif %}</td>
+    <td class="memItemRight">{{ escape_html(default(member.brief, "")) }}</td>
+    </tr>
+    {% endfor %}
+    </table>
+    {% endif %}
+    </section>
+    {% endfor %}
+    {% endif %}
+
+    {% if length(detailSections) > 0 %}
+    {% for section in detailSections %}
+    {% if length(section.members) > 0 %}
+    <h2>{{ escape_html(section.title) }}</h2>
+    {% for member in section.members %}
+    {% include "partials/html/member_detail.html" %}
+    {% endfor %}
+    {% endif %}
+    {% endfor %}
+    {% endif %}
+    </main>
+{% include "partials/qt-branded/footer.html" %}

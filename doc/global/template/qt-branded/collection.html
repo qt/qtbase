@@ -1,0 +1,75 @@
+{#-
+Copyright (C) 2026 The Qt Company Ltd.
+SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+-#}
+{% include "partials/html/head.html" %}
+<body>
+{% include "partials/qt-branded/header-bar.html" %}
+{% include "partials/qt-branded/sidebar.html" %}
+    <main class="content">
+    <h1>{{ fullTitle }}</h1>
+    {% if default(brief, "") != "" %}
+    <p class="brief">{{ brief }}</p>
+    {% endif %}
+{% include "partials/qt-branded/toolbar.html" %}
+
+    {% if hasCollection %}
+    {% if existsIn(collection, "state") %}
+    <p><b>Status:</b> {{ escape_html(collection.state) }}</p>
+    {% endif %}
+
+    {% if collection.isModule and (existsIn(collection, "cmakePackage") or existsIn(collection, "qtVariable")) %}
+    <table class="requisites">
+    {% if existsIn(collection, "cmakePackage") %}
+    <tr><td class="memItemLeft">CMake:</td>
+    <td class="memItemRight"><code>find_package({{ escape_html(collection.cmakePackage) }}{{ " " }}{% if existsIn(collection, "cmakeComponent") %}REQUIRED COMPONENTS {{ escape_html(collection.cmakeComponent) }}{% else %}REQUIRED{% endif %})</code>{% if existsIn(collection, "cmakeTargetItem") %}<br/><code>target_link_libraries(mytarget PRIVATE {{ escape_html(collection.cmakeTargetItem) }})</code>{% endif %}</td></tr>
+    {% endif %}
+    {% if existsIn(collection, "qtVariable") %}
+    <tr><td class="memItemLeft">qmake:</td>
+    <td class="memItemRight"><code>QT += {{ escape_html(collection.qtVariable) }}</code></td></tr>
+    {% endif %}
+    </table>
+    {% endif %}
+    {% endif %}
+
+    {% include "partials/html/content_blocks.html" %}
+
+    {% if hasCollection %}{% if not collection.noAutoList %}
+    {% if collection.isModule %}
+    {% if length(collection.namespaces) > 0 %}
+    <h2>Namespaces</h2>
+    <table class="annotated">
+    {% for entry in collection.namespaces %}
+    <tr><td class="tblName">{% if entry.href != "" %}<a href="{{ entry.href }}">{{ escape_html(entry.name) }}</a>{% else %}{{ escape_html(entry.name) }}{% endif %}</td><td class="tblDescr">{{ escape_html(entry.brief) }}</td></tr>
+    {% endfor %}
+    </table>
+    {% endif %}
+    {% if length(collection.classes) > 0 %}
+    <h2>Classes</h2>
+    <table class="annotated">
+    {% for entry in collection.classes %}
+    <tr><td class="tblName">{% if entry.href != "" %}<a href="{{ entry.href }}">{{ escape_html(entry.name) }}</a>{% else %}{{ escape_html(entry.name) }}{% endif %}</td><td class="tblDescr">{{ escape_html(entry.brief) }}</td></tr>
+    {% endfor %}
+    </table>
+    {% endif %}
+    {% else if collection.isConcept %}
+    {% if length(collection.members) > 0 %}
+    <h2 id="users">Used by</h2>
+    <table class="annotated">
+    {% for entry in collection.members %}
+    <tr><td class="tblName">{% if entry.href != "" %}<a href="{{ entry.href }}">{{ escape_html(entry.name) }}</a>{% else %}{{ escape_html(entry.name) }}{% endif %}</td><td class="tblDescr">{{ escape_html(entry.brief) }}</td></tr>
+    {% endfor %}
+    </table>
+    {% endif %}
+    {% else %}
+    {% if length(collection.members) > 0 %}
+    <table class="annotated">
+    {% for entry in collection.members %}
+    <tr><td class="tblName">{% if entry.href != "" %}<a href="{{ entry.href }}">{{ escape_html(entry.name) }}</a>{% else %}{{ escape_html(entry.name) }}{% endif %}</td><td class="tblDescr">{{ escape_html(entry.brief) }}</td></tr>
+    {% endfor %}
+    </table>
+    {% endif %}
+    {% endif %}
+    {% endif %}{% endif %}
+    </main>
+{% include "partials/qt-branded/footer.html" %}

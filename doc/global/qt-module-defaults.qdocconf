@@ -5,3 +5,4 @@
 #The default is the offline style
 include(qt-module-defaults-offline.qdocconf)
 #include(qt-module-defaults-online.qdocconf)
+#include(qt-template-generator.qdocconf)
