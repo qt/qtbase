@@ -2571,7 +2571,7 @@ void tst_QLocale::toDateTime_data()
         << "cs_CZ" << QDateTime(QDate(1945, 8, 15), QTime(12, 0))
         << "yyyy-MM-dd hh:mm aP" << "1945-08-15 12:00 OdP." << true;
 
-    const QDateTime dt(QDate(2017, 02, 25), QTime(17, 21, 25));
+    const QDateTime dt(QDate(2017, 2, 25), QTime(17, 21, 25));
     // These formats correspond to the locale formats, with the timezone removed.
     // We hardcode them in case an update to the locale DB changes them.
 
@@ -2608,13 +2608,14 @@ void tst_QLocale::toDateTime_data()
     QTest::newRow("tr:short")
         << "tr" << dt.addSecs(-25) << "d.MM.yyyy HH:mm" << "25.02.2017 17:21" << true;
 
+    const QDateTime dtOld(QDate(1917, 2, 25), QTime(17, 21)); // A century before dt.
     QTest::newRow("ccp:short")
-        << "ccp" << dt << "dd/M/yy h:mm AP"
-        // "𑄸𑄻/𑄸/𑄷𑄽 𑄻:𑄸𑄷 PM"
+        << "ccp" << dtOld << u"dd/M/yy h:mm AP"_s
+        // "𑄸𑄻/𑄸/𑄷𑄽 𑄻:𑄸𑄷 PM" -> "25/2/17 5:25 PM" (using default century, 1900)
         << QString::fromUcs4(U"\U00011138\U0001113b/\U00011138/\U00011137\U0001113d \U0001113b:"
                              U"\U00011138\U00011137 PM") << true;
     QTest::newRow("ccp:long")
-        << "ccp" << dt << "dddd, d MMMM, yyyy h:mm:ss AP"
+        << "ccp" << dt << u"dddd, d MMMM, yyyy h:mm:ss AP"_s
         // "𑄥𑄧𑄚𑄨𑄝𑄢𑄴, 𑄸𑄻 𑄜𑄬𑄛𑄴𑄝𑄳𑄢𑄪𑄠𑄢𑄨, 𑄸𑄶𑄷𑄽 𑄻:𑄸𑄷:𑄸𑄻 PM"
         << QString::fromUcs4(U"\U00011125\U00011127\U0001111a\U00011128\U0001111d\U00011122"
                              U"\U00011134, \U00011138\U0001113b \U0001111c\U0001112c\U0001111b"
@@ -2791,7 +2792,7 @@ void tst_QLocale::toDate_data()
     QTest::newRow("shortFormat") // Use of two-digit year considered harmful.
         << usa << QDate(1909, 1, 5) << u"M/d/yy"_s << u"1/5/09"_s << true;
 
-    const QDate date(2017, 02, 25);
+    const QDate date(2017, 2, 25);
     QTest::newRow("C:long")
         << C << date << "dddd, d MMMM yyyy" << u"Saturday, 25 February 2017"_s << true;
     QTest::newRow("C:short")
@@ -2828,13 +2829,14 @@ void tst_QLocale::toDate_data()
     QTest::newRow("tr:short")
         << turk << date << u"d.MM.yyyy"_s << u"25.02.2017"_s << true;
 
+    const QDate midWar(1917, 2, 25); // A century before date.
     const QLocale chakma{QLocale::Chakma};
     QTest::newRow("ccp:short")
-        << chakma << date << "dd/M/yy"
+        << chakma << midWar << u"dd/M/yy"_s // Two-digit yeaar, default century is 1900
         // "𑄸𑄻/𑄸/𑄷𑄽"
         << QString::fromUcs4(U"\U00011138\U0001113b/\U00011138/\U00011137\U0001113d") << true;
     QTest::newRow("ccp:long")
-        << chakma << date << "dddd, d MMMM, yyyy"
+        << chakma << date << u"dddd, d MMMM, yyyy"_s
         // "𑄥𑄧𑄚𑄨𑄝𑄢𑄴, 𑄸𑄻 𑄜𑄬𑄛𑄴𑄝𑄳𑄢𑄪𑄠𑄢𑄨, 𑄸𑄶𑄷𑄽"
         << QString::fromUcs4(U"\U00011125\U00011127\U0001111a\U00011128\U0001111d\U00011122"
                              U"\U00011134, \U00011138\U0001113b \U0001111c\U0001112c\U0001111b"
@@ -2979,11 +2981,11 @@ void tst_QLocale::toTime_data()
 
     const QLocale chakma{QLocale::Chakma};
     QTest::newRow("ccp:short")
-        << chakma << time << "h:mm AP"
+        << chakma << QTime(17, 21) << u"h:mm AP"_s
         // "𑄸𑄻/𑄸/𑄷𑄽 𑄻:𑄸𑄷 PM"
         << QString::fromUcs4(U"\U0001113b:\U00011138\U00011137 PM") << true;
     QTest::newRow("ccp:long")
-        << chakma << time << "h:mm:ss AP"
+        << chakma << time << u"h:mm:ss AP"_s
         // "𑄻:𑄸𑄷:𑄸𑄻 PM"
         << QString::fromUcs4(U"\U0001113b:\U00011138\U00011137:\U00011138\U0001113b PM") << true;
 }
