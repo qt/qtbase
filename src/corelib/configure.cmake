@@ -417,6 +417,11 @@ qt_config_compile_test(liburing
 
 int main(void)
 {
+    io_uring_op op = IORING_OP_NOP;
+    (void)op;
+    struct io_uring_params params{};
+    io_uring_setup(0, &params);
+    io_uring_register(0, IORING_REGISTER_EVENTFD, nullptr, 0);
     io_uring_enter(0, 0, 0, 0, nullptr);
     return 0;
 }
@@ -890,7 +895,7 @@ qt_feature("linkat" PRIVATE
 qt_feature("liburing" PRIVATE
     LABEL "liburing"
     AUTODETECT LINUX
-    CONDITION Liburing_FOUND
+    CONDITION TEST_liburing AND Liburing_FOUND
 )
 qt_feature("std-atomic64" PUBLIC
     LABEL "64 bit atomic operations"
