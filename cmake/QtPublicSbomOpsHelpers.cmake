@@ -1271,6 +1271,68 @@ _qt_internal_sbom_generate_and_verify_reuse_source_sbom_helper(
     file(GENERATE OUTPUT "${file_op}" CONTENT "${content}")
 
     set_property(GLOBAL APPEND PROPERTY _qt_sbom_cmake_post_generation_include_files "${file_op}")
+
+    # Used by separate build target.
+    set_property(GLOBAL PROPERTY _qt_sbom_verify_source_sbom_script "${file_op}")
+endfunction()
+
+# Helper to create a build time custom target that generates and license checks the source SBOM.
+# The new target will be used in the CI to run the license verification earlier.
+function(_qt_internal_sbom_add_verify_source_sbom_build_time_target)
+    set(opt_args "")
+    set(single_args
+        REPO_PROJECT_NAME_LOWERCASE
+        SBOM_BUILD_OUTPUT_DIR
+        SBOM_BUILD_OUTPUT_PATH_WITHOUT_EXT
+    )
+    set(multi_args "")
+    cmake_parse_arguments(PARSE_ARGV 0 arg "${opt_args}" "${single_args}" "${multi_args}")
+    _qt_internal_validate_all_args_are_parsed(arg)
+
+    # Add per-repo custom targets which generate a spdx source sbom in the build dir and optionally
+    # runs the perl license checker on the output (if the required env vars are set).
+    # If the script exists, it means the builder opted into the feature and we can create the
+    # build target.
+    get_cmake_property(verify_script _qt_sbom_verify_source_sbom_script)
+    if(NOT verify_script)
+        return()
+    endif()
+
+    get_property(macro_module_base_dir GLOBAL PROPERTY __qt_sbom_generation_helpers_base_dir)
+    set(content "
+# Include helpers functions.
+include(\"${macro_module_base_dir}/QtPublicCMakeHelpers.cmake\")
+include(\"${macro_module_base_dir}/QtPublicSbomOpsHelpers.cmake\")
+
+# Setup required vars
+set(QT_SBOM_OUTPUT_PATH_WITHOUT_EXT \"${arg_SBOM_BUILD_OUTPUT_PATH_WITHOUT_EXT}\")
+
+# Create the dir
+file(MAKE_DIRECTORY \"${arg_SBOM_BUILD_OUTPUT_DIR}\")
+
+# Include actual script.
+include(\"${verify_script}\")
+")
+    _qt_internal_get_current_project_sbom_dir(sbom_dir)
+    set(script_wrapper
+        "${sbom_dir}/run_sbom_source_verify_build_time_${arg_REPO_PROJECT_NAME_LOWERCASE}.cmake")
+    file(GENERATE OUTPUT "${script_wrapper}" CONTENT "${content}")
+
+    string(CONCAT comment "Generating source sbom and verifying licenses for "
+        "'${arg_REPO_PROJECT_NAME_LOWERCASE}'.")
+
+    set(repo_sbom_target "sbom_${arg_REPO_PROJECT_NAME_LOWERCASE}")
+    add_custom_target(${repo_sbom_target}_source_verify
+        COMMAND "${CMAKE_COMMAND}" -P "${script_wrapper}"
+        COMMENT "${comment}"
+        VERBATIM
+        USES_TERMINAL # To avoid running multiple repo verifications in parallel
+    )
+
+    if(NOT TARGET sbom_source_verify)
+        add_custom_target(sbom_source_verify)
+    endif()
+    add_dependencies(sbom_source_verify ${repo_sbom_target}_source_verify)
 endfunction()
 
 # Helper to run 'reuse lint' on the project source dir.
