@@ -33,10 +33,8 @@ public:
     static void emitDataChanged(const QModelIndex &index, int role)
     {
         const auto *model = static_cast<const QRangeModel *>(index.model());
-        if (!get(model)->m_dataChangedDispatchBlocked) {
-            const auto *emitter = QRangeModelImplBase::getImplementation(model);
-            const_cast<QRangeModelImplBase *>(emitter)->dataChanged(index, index, {role});
-        }
+        if (!get(model)->m_dataChangedDispatchBlocked)
+            const_cast<QRangeModel *>(model)->dataChanged(index, index, {role});
     }
 };
 
