@@ -1066,11 +1066,6 @@ void QOhosWindowProxy::setFollowParentMultiScreenPolicy(bool enabled)
     if (qtIsMainWindow())
         return;
 
-    if (!QOhosSettings::isWindowPcModeEnabled()) {
-        qOhosPrintfDebug("%s: can be used only on 2-in-1 devices or tablets in PC mode - skipping", Q_FUNC_INFO);
-        return;
-    }
-
     QtOhos::invokeInJsThreadAndWaitForContinue(
         [&](QtOhos::JsState &, std::function<void()> continueFunc) {
             if (m_jsScopeData->isWindowClosing()) {
