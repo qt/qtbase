@@ -94,6 +94,79 @@ static inline T toIntegral(ByteArrayView data, bool *ok, int base)
     return T(*val);
 }
 
+[[nodiscard]] constexpr inline bool isAsciiUpper(char32_t c) noexcept
+{
+    return c >= 'A' && c <= 'Z';
+}
+
+[[nodiscard]] constexpr inline char toAsciiLower(char ch) noexcept
+{
+    return isAsciiUpper(ch) ? ch - 'A' + 'a' : ch;
+}
+
+[[nodiscard]] constexpr inline int caseCompareAscii(char lhs, char rhs) noexcept
+{
+    const char lhsLower = toAsciiLower(lhs);
+    const char rhsLower = toAsciiLower(rhs);
+    return int(uchar(lhsLower)) - int(uchar(rhsLower));
+}
+
+constexpr
+int qstrnicmp_impl(const char *s1, const char *s2, size_t len)
+{
+    if (!s1 || !s2)
+        return s1 ? 1 : (s2 ? -1 : 0);
+    for (; len--; ++s1, ++s2) {
+        const char c = *s1;
+        if (int res = QtPrivate::caseCompareAscii(c, *s2))
+            return res;
+        if (!c)                                // strings are equal
+            break;
+    }
+    return 0;
+}
+
+constexpr
+int qstrnicmp_impl(const char *s1, qsizetype len1, const char *s2, qsizetype len2)
+{
+    Q_PRE(len1 >= 0);
+    Q_PRE(len2 >= -1);
+    Q_PRE(s1 || len1 == 0);
+    Q_PRE(s2 || len2 == 0 || len2 == -1);
+    if (!s1 || !len1) {
+        if (len2 == 0)
+            return 0;
+        if (len2 == -1)
+            return (!s2 || !*s2) ? 0 : -1;
+        return -1;
+    }
+    if (!s2)
+        return len1 == 0 ? 0 : 1;
+
+    if (len2 == -1) {
+        // null-terminated s2
+        qsizetype i = 0;
+        for (i = 0; i < len1; ++i) {
+            const char c = s2[i];
+            if (!c)
+                return 1;
+
+            if (int res = QtPrivate::caseCompareAscii(s1[i], c))
+                return res;
+        }
+        return s2[i] ? -1 : 0;
+    } else {
+        // not null-terminated
+        const qsizetype len = qMin(len1, len2);
+        for (qsizetype i = 0; i < len; ++i) {
+            if (int res = QtPrivate::caseCompareAscii(s1[i], s2[i]))
+                return res;
+        }
+        if (len1 == len2)
+            return 0;
+        return len1 < len2 ? -1 : 1;
+    }
+}
 } // namespace QtPrivate
 
 /*****************************************************************************
@@ -136,8 +209,36 @@ inline int qstrncmp(const char *str1, const char *str2, size_t len)
         : (str1 ? 1 : (str2 ? -1 : 0));
 }
 Q_CORE_EXPORT int qstricmp(const char *, const char *);
-Q_CORE_EXPORT int qstrnicmp(const char *, const char *, size_t len);
-Q_CORE_EXPORT int qstrnicmp(const char *, qsizetype, const char *, qsizetype = -1);
+
+
+#if !QT_CORE_INLINE_IMPL_SINCE(6, 12)
+QT6_ONLY(Q_CORE_EXPORT)
+#endif
+// These are unfortunately NOT constexpr in static builds (e.g. iOS)
+QT_CORE_CONSTEXPR_INLINE_SINCE(6, 12)
+int qstrnicmp(const char *s1, const char *s2, size_t len);
+
+#if !QT_CORE_INLINE_IMPL_SINCE(6, 12)
+QT6_ONLY(Q_CORE_EXPORT)
+#endif
+QT_CORE_CONSTEXPR_INLINE_SINCE(6, 12)
+int qstrnicmp(const char *s1, qsizetype len1, const char *s2, qsizetype len2 = -1);
+
+#if QT_CORE_INLINE_IMPL_SINCE(6, 12)
+QT_CORE_CONSTEXPR_INLINE_SINCE(6, 12)
+int qstrnicmp(const char *s1, const char *s2, size_t len)
+{
+    // ### Qt7: inline the function here
+    return QtPrivate::qstrnicmp_impl(s1, s2, len);
+}
+
+QT_CORE_CONSTEXPR_INLINE_SINCE(6, 12)
+int qstrnicmp(const char *s1, qsizetype len1, const char *s2, qsizetype len2)
+{
+    // ### Qt7: inline the function here
+    return QtPrivate::qstrnicmp_impl(s1, len1, s2, len2);
+}
+#endif // INLINE_SINCE(6, 12)
 
 #ifndef QT_NO_QSNPRINTF // use std::(v)snprintf() from <cstdio> instead
 #if QT_DEPRECATED_SINCE(6, 9)

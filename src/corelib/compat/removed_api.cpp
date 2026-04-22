@@ -1544,6 +1544,8 @@ void QTimer::singleShotImpl(int msec, Qt::TimerType timerType,
 
 #if QT_CORE_REMOVED_SINCE(6, 12)
 
+#include "qbytearrayalgorithms.h" // uses QT_CORE_CONSTEXPR_INLINE_SINCE
+
 #include "qfile.h"
 
 bool QFile::copy(const QString &newName)

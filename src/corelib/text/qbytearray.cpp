@@ -325,6 +325,7 @@ int qstricmp(const char *str1, const char *str2)
 }
 
 /*! \relates QByteArray
+    \fn int qstrnicmp(const char *s1, const char *s2, size_t len)
 
     A safe \c strnicmp() function.
 
@@ -343,67 +344,15 @@ int qstricmp(const char *str1, const char *str2)
     QByteArray::compare()
 */
 
-int qstrnicmp(const char *s1, const char *s2, size_t len)
-{
-    if (!s1 || !s2)
-        return s1 ? 1 : (s2 ? -1 : 0);
-    for (; len--; ++s1, ++s2) {
-        const char c = *s1;
-        if (int res = QtMiscUtils::caseCompareAscii(c, *s2))
-            return res;
-        if (!c)                                // strings are equal
-            break;
-    }
-    return 0;
-}
-
 /*!
     \internal
+    \fn int qstrnicmp(const char *s1, qsizetype len1, const char *s2, qsizetype len2)
     \since 5.12
 
     A helper for QByteArray::compare. Compares \a len1 bytes from \a s1 to \a
     len2 bytes from \a s2. If \a len2 is -1, then \a s2 is expected to be
     '\\0'-terminated.
  */
-int qstrnicmp(const char *s1, qsizetype len1, const char *s2, qsizetype len2)
-{
-    Q_ASSERT(len1 >= 0);
-    Q_ASSERT(len2 >= -1);
-    if (!s1 || !len1) {
-        if (len2 == 0)
-            return 0;
-        if (len2 == -1)
-            return (!s2 || !*s2) ? 0 : -1;
-        Q_ASSERT(s2);
-        return -1;
-    }
-    if (!s2)
-        return len1 == 0 ? 0 : 1;
-
-    if (len2 == -1) {
-        // null-terminated s2
-        qsizetype i;
-        for (i = 0; i < len1; ++i) {
-            const char c = s2[i];
-            if (!c)
-                return 1;
-
-            if (int res = QtMiscUtils::caseCompareAscii(s1[i], c))
-                return res;
-        }
-        return s2[i] ? -1 : 0;
-    } else {
-        // not null-terminated
-        const qsizetype len = qMin(len1, len2);
-        for (qsizetype i = 0; i < len; ++i) {
-            if (int res = QtMiscUtils::caseCompareAscii(s1[i], s2[i]))
-                return res;
-        }
-        if (len1 == len2)
-            return 0;
-        return len1 < len2 ? -1 : 1;
-    }
-}
 
 /*!
     \internal
