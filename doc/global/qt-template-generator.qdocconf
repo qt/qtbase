@@ -1,0 +1,16 @@
+#Configuration for the template generator pipeline.
+#Adds TemplateHTML and TemplateMarkdown output formats alongside the
+#legacy HTML generator.
+
+outputformats += TemplateHTML TemplateMarkdown
+
+TemplateHTML.nosubdirs = true
+TemplateHTML.outputsubdir = template-html
+TemplateHTML.extension = html
+TemplateHTML.stylesheet = true
+TemplateHTML.templatedir = template/qt-branded
+
+TemplateMarkdown.nosubdirs = true
+TemplateMarkdown.outputsubdir = template-markdown
+TemplateMarkdown.extension = md
+TemplateMarkdown.templatedir = template/qt-branded

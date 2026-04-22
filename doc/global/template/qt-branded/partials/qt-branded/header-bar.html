@@ -1,0 +1,15 @@
+{#-
+Copyright (C) 2026 The Qt Company Ltd.
+SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+-#}
+    <header class="header-bar">
+        <div class="qt-logo">
+            <img src="https://doc-snapshots.qt.io/style/qt-logo-documentation-2x.png"
+                 alt="Qt Documentation" height="28">
+        </div>
+{% if hasNavigation and length(navigation.breadcrumbs) > 0 %}
+        <nav class="breadcrumbs" aria-label="Breadcrumbs">
+{% for crumb in navigation.breadcrumbs %}{% if crumb.state == "current" %}<span class="crumb current">{{ escape_html(crumb.title) }}</span>{% else if crumb.state == "link" %}<span class="crumb"><a href="{{ escape_html(crumb.href) }}">{{ escape_html(crumb.title) }}</a></span>{% if not loop.is_last %}<span class="separator">&gt;</span>{% endif %}{% else %}<span class="crumb">{{ escape_html(crumb.title) }}</span>{% if not loop.is_last %}<span class="separator">&gt;</span>{% endif %}{% endif %}{% endfor %}
+        </nav>
+{% endif %}
+    </header>

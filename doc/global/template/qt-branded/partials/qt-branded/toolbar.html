@@ -1,0 +1,22 @@
+{#-
+Copyright (C) 2026 The Qt Company Ltd.
+SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+-#}
+{% set ai_prompt = "Read the Qt documentation for " + default(title, "this page") %}
+{% if exists("genus") and existsIn(genus, "label") %}{% set ai_prompt = ai_prompt + " (" + genus.label + " documentation)" %}{% endif %}
+{% if default(url, "") != "" %}{% set ai_prompt = ai_prompt + " at " + url %}{% endif %}
+{% set ai_prompt = ai_prompt + ". Explain the key concepts and typical usage patterns." %}
+    <div class="toolbar">
+        <button class="toolbar-btn" id="copy-btn" onclick="copyPage()" title="Copy page content">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5.5" y="5.5" width="8" height="9" rx="1"/><path d="M3 10.5V3a1 1 0 011-1h6.5"/></svg> Copy
+        </button>
+        <details class="ask-ai">
+            <summary class="toolbar-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.5 3.5l1.4 1.4M11.1 11.1l1.4 1.4M12.5 3.5l-1.4 1.4M4.9 11.1l-1.4 1.4"/><circle cx="8" cy="8" r="2.5"/></svg> Ask AI
+            </summary>
+            <nav class="dropdown-content" id="ai-menu" data-prompt="{{ ai_prompt }}" aria-label="Ask AI provider menu">
+                <a class="ai-link" data-provider="claude"><span class="ai-badge ai-claude">C</span> Explain with Claude</a>
+                <a class="ai-link" data-provider="chatgpt"><span class="ai-badge ai-chatgpt">G</span> Explain with ChatGPT</a>
+            </nav>
+        </details>
+    </div>

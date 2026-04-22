@@ -1,0 +1,16 @@
+{#-
+Copyright (C) 2026 The Qt Company Ltd.
+SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+-#}
+{% if hasNavigation and navigation.tocDepth != 0 and length(navigation.tocEntries) > 0 %}
+    <div class="sidebar-toc">
+    <h3 id="toc">Contents</h3>
+    <ul>
+{% for entry in navigation.tocEntries %}
+{% if entry.level <= navigation.tocDepth or navigation.tocDepth < 0 %}
+    <li class="level{{ entry.level }}"><a href="#{{ escape_html(entry.anchorId) }}">{{ escape_html(entry.title) }}</a></li>
+{% endif %}
+{% endfor %}
+    </ul>
+    </div>
+{% endif %}

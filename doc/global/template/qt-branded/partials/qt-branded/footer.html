@@ -1,0 +1,58 @@
+{#-
+Copyright (C) 2026 The Qt Company Ltd.
+SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+-#}
+    <footer class="content footer">
+        <p class="copy-notice">
+            <abbr title="Copyright">&copy;</abbr> 2026 The Qt Company Ltd.
+            Documentation contributions included herein are the copyrights of
+            their respective owners. The documentation provided herein is licensed
+            under the terms of the
+            <a href="http://www.gnu.org/licenses/fdl.html">GNU Free Documentation License version 1.3</a>
+            as published by the Free Software Foundation.
+            Qt and respective logos are
+            <a href="https://doc.qt.io/qt/trademarks.html">trademarks</a>
+            of The Qt Company Ltd. in Finland and/or other countries worldwide.
+            All other trademarks are property of their respective owners.
+        </p>
+    </footer>
+
+    <script>
+    function copyPage() {
+        var btn = document.getElementById('copy-btn');
+        var text = document.querySelector('main.content').innerText;
+        navigator.clipboard.writeText(text).then(function() {
+            btn.textContent = 'Copied!';
+            setTimeout(function() { btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5.5" y="5.5" width="8" height="9" rx="1"/><path d="M3 10.5V3a1 1 0 011-1h6.5"/></svg> Copy'; }, 1500);
+        });
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+        var menu = document.getElementById('ai-menu');
+        if (menu) {
+            var prompt = encodeURIComponent(menu.getAttribute('data-prompt'));
+            var urls = { claude: 'https://claude.ai/new?q=', chatgpt: 'https://chatgpt.com/?q=' };
+            var links = menu.querySelectorAll('.ai-link');
+            for (var i = 0; i < links.length; i++) {
+                var provider = links[i].getAttribute('data-provider');
+                if (urls[provider]) links[i].href = urls[provider] + prompt;
+                links[i].target = '_blank';
+                links[i].rel = 'noopener';
+            }
+        }
+        document.querySelectorAll('pre').forEach(function(pre) {
+            var btn = document.createElement('button');
+            btn.className = 'code-copy-btn';
+            btn.textContent = 'Copy';
+            btn.addEventListener('click', function() {
+                navigator.clipboard.writeText(pre.textContent).then(function() {
+                    btn.textContent = 'Copied!';
+                    setTimeout(function() { btn.textContent = 'Copy'; }, 1500);
+                });
+            });
+            pre.style.position = 'relative';
+            pre.appendChild(btn);
+        });
+    });
+    </script>
+</body>
+</html>

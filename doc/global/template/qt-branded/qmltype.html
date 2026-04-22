@@ -1,0 +1,107 @@
+{#-
+Copyright (C) 2026 The Qt Company Ltd.
+SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+-#}
+{% include "partials/html/head.html" %}
+<body>
+{% include "partials/qt-branded/header-bar.html" %}
+{% include "partials/qt-branded/sidebar.html" %}
+    <main class="content">
+    <h1>{{ fullTitle }}</h1>
+    {% if default(brief, "") != "" %}
+    <p class="brief">{{ brief }}</p>
+    {% endif %}
+{% include "partials/qt-branded/toolbar.html" %}
+
+    {% if hasQmlType %}
+    <table class="requisites">
+    {% if existsIn(qmlType, "importStatement") %}
+    <tr><td class="memItemLeft">Import Statement:</td>
+    <td class="memItemRight"><code>{{ escape_html(qmlType.importStatement) }}</code></td></tr>
+    {% endif %}
+    {% if existsIn(qmlType, "inherits") %}
+    <tr><td class="memItemLeft">Inherits:</td>
+    <td class="memItemRight">{% if qmlType.inherits.href != "" %}<a href="{{ qmlType.inherits.href }}">{{ escape_html(qmlType.inherits.name) }}</a>{% else %}{{ escape_html(qmlType.inherits.name) }}{% endif %}</td></tr>
+    {% endif %}
+    {% if existsIn(qmlType, "inheritedBy") %}
+    <tr><td class="memItemLeft">Inherited By:</td>
+    <td class="memItemRight">{% for sub in qmlType.inheritedBy %}{% if not loop.is_first %}, {% endif %}{% if sub.href != "" %}<a href="{{ sub.href }}">{{ escape_html(sub.name) }}</a>{% else %}{{ escape_html(sub.name) }}{% endif %}{% endfor %}</td></tr>
+    {% endif %}
+    {% if existsIn(qmlType, "nativeType") %}
+    <tr><td class="memItemLeft">In C++:</td>
+    <td class="memItemRight">{% if qmlType.nativeType.href != "" %}<a href="{{ qmlType.nativeType.href }}">{{ escape_html(qmlType.nativeType.name) }}</a>{% else %}{{ escape_html(qmlType.nativeType.name) }}{% endif %}</td></tr>
+    {% endif %}
+    {% if qmlType.isSingleton %}
+    <tr><td class="memItemLeft">Status:</td>
+    <td class="memItemRight">Singleton</td></tr>
+    {% endif %}
+    </table>
+    {% endif %}
+
+    {% if status.id == "deprecated" %}
+    <p><b>This {{ typeNoun }} is deprecated{% if default(deprecatedSince, "") != "" %}{{ " " }}since {{ escape_html(deprecatedSinceQualified) }}{% endif %}. We strongly advise against using it in new code.</b></p>
+    {% else if status.id == "active" and default(deprecatedSince, "") != "" %}
+    <p>This {{ typeNoun }} is scheduled for deprecation in version {{ escape_html(deprecatedSince) }}.</p>
+    {% endif %}
+    {% if hasQmlType %}{% if qmlType.isSingleton %}
+    <p><b>Note:</b> This type is a QML singleton. The type isn't creatable and only a single
+    instance exists.</p>
+    {% endif %}{% endif %}
+
+    {% if membersPageUrl != "" %}
+    <ul>
+    <li><a href="{{ membersPageUrl }}">List of all members, including inherited members</a></li>
+    </ul>
+    {% endif %}
+    {% if hasQmlType and qmlType.hasObsoleteMembers %}
+
+    <ul>
+    <li><a href="{{ qmlType.obsoleteMembersUrl }}">Obsolete members</a></li>
+    </ul>
+    {% endif %}
+
+    {% if length(sections) > 0 %}
+    {% for section in sections %}
+    <section class="section-{{ section.id }}" aria-label="{{ escape_html(section.title) }}">
+    <h2 id="{{ section.id }}">{{ escape_html(section.title) }}</h2>
+    {% if length(section.members) > 0 %}
+    <ul>
+    {% for member in section.members %}
+    <li class="fn" translate="no"><b>{% if existsIn(member, "href") and member.href != "" %}<a href="{{ member.href }}">{{ escape_html(member.name) }}</a>{% else %}{{ escape_html(member.name) }}{% endif %}</b>{% if existsIn(member, "dataType") and member.dataType != "" %}&#160;: {{ escape_html(member.dataType) }}{% else %}({% if existsIn(member, "parameters") %}{% for p in member.parameters %}{% if not loop.is_first %}, {% endif %}{{ escape_html(p.type) }}&#160;<i>{{ escape_html(p.name) }}</i>{% endfor %}{% endif %}){% endif %}</li>
+    {% endfor %}
+    </ul>
+    {% endif %}
+    {% if existsIn(section, "reimplementedMembers") %}
+    <h3>Reimplemented {{ escape_html(section.plural) }}</h3>
+    <ul>
+    {% for member in section.reimplementedMembers %}
+    <li class="fn" translate="no"><b>{% if existsIn(member, "href") and member.href != "" %}<a href="{{ member.href }}">{{ escape_html(member.name) }}</a>{% else %}{{ escape_html(member.name) }}{% endif %}</b>{% if existsIn(member, "dataType") and member.dataType != "" %}&#160;: {{ escape_html(member.dataType) }}{% else %}({% if existsIn(member, "parameters") %}{% for p in member.parameters %}{% if not loop.is_first %}, {% endif %}{{ escape_html(p.type) }}&#160;<i>{{ escape_html(p.name) }}</i>{% endfor %}{% endif %}){% endif %}</li>
+    {% endfor %}
+    </ul>
+    {% endif %}
+    {% if existsIn(section, "inheritedMembers") %}
+    {% for inherited in section.inheritedMembers %}
+    <p>{{ inherited.count }} {{ escape_html(section.plural) }} inherited from {% if inherited.href != "" %}<a href="{{ inherited.href }}">{{ escape_html(inherited.className) }}</a>{% else %}{{ escape_html(inherited.className) }}{% endif %}</p>
+    {% endfor %}
+    {% endif %}
+    </section>
+    {% endfor %}
+    {% endif %}
+
+    {% if length(content.blocks) > 0 %}
+    <h2 id="details">Detailed Description</h2>
+    {% endif %}
+    {% include "partials/html/content_blocks.html" %}
+
+    {% if length(detailSections) > 0 %}
+    {% for section in detailSections %}
+    {% if length(section.members) > 0 %}
+    <h2 id="{{ section.id }}">{{ escape_html(section.title) }}</h2>
+    {% for member in section.members %}
+    {% include "partials/html/member_detail.html" %}
+    {% endfor %}
+    {% endif %}
+    {% endfor %}
+    {% endif %}
+    </main>
+{% include "partials/qt-branded/footer.html" %}

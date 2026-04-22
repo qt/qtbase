@@ -1,0 +1,165 @@
+{#-
+Copyright (C) 2026 The Qt Company Ltd.
+SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+-#}
+{% include "partials/html/head.html" %}
+<body>
+{% include "partials/qt-branded/header-bar.html" %}
+{% include "partials/qt-branded/sidebar.html" %}
+    <main class="content">
+    <h1>{{ fullTitle }}</h1>
+    {% if hasCppRef %}
+    {% if length(cppRef.templateDeclSpans) > 0 or cppRef.typeWord != "" %}
+    <p class="subtitle">{% if length(cppRef.templateDeclSpans) > 0 %}{{ render_signature_spans(cppRef.templateDeclSpans) }}{{ " " }}{% endif %}{{ escape_html(cppRef.typeWord) }}{{ " " }}{{ escape_html(title) }}</p>
+    {% endif %}
+    {% endif %}
+    {% if default(brief, "") != "" %}
+    <p class="brief">{{ brief }}</p>
+    {% endif %}
+{% include "partials/qt-branded/toolbar.html" %}
+
+    {% if hasCppRef and cppRef.isPartialNamespace %}
+    <p>The {{ escape_html(title) }} namespace is documented in the module <a href="{{ cppRef.fullNamespaceHref }}">{{ escape_html(cppRef.fullNamespaceModuleName) }}</a>.</p>
+    {% endif %}
+
+    {% if hasCppRef and not cppRef.isInnerClass %}
+    <table class="requisites">
+    {% if existsIn(cppRef, "headerInclude") and cppRef.headerInclude != "" %}
+    <tr><td class="memItemLeft">Header:</td>
+    <td class="memItemRight"><code>{{ escape_html(cppRef.headerInclude) }}</code></td></tr>
+    {% endif %}
+    {% if existsIn(cppRef, "cmakeFindPackage") and cppRef.cmakeFindPackage != "" %}
+    <tr><td class="memItemLeft">CMake:</td>
+    <td class="memItemRight"><code>{{ escape_html(cppRef.cmakeFindPackage) }}</code><br/><code>{{ escape_html(cppRef.cmakeTargetLinkLibraries) }}</code></td></tr>
+    {% endif %}
+    {% if existsIn(cppRef, "qmakeVariable") and cppRef.qmakeVariable != "" %}
+    <tr><td class="memItemLeft">qmake:</td>
+    <td class="memItemRight"><code>{{ escape_html(cppRef.qmakeVariable) }}</code></td></tr>
+    {% endif %}
+    {% if default(since, "") != "" %}
+    <tr><td class="memItemLeft">Since:</td>
+    <td class="memItemRight">Qt {{ escape_html(since) }}</td></tr>
+    {% endif %}
+    {% if existsIn(cppRef, "qmlNativeType") %}
+    <tr><td class="memItemLeft">In QML:</td>
+    <td class="memItemRight">{% if cppRef.qmlNativeType.href != "" %}<a href="{{ cppRef.qmlNativeType.href }}">{{ escape_html(cppRef.qmlNativeType.name) }}</a>{% else %}{{ escape_html(cppRef.qmlNativeType.name) }}{% endif %}</td></tr>
+    {% endif %}
+    {% if not cppRef.suppressInheritance and length(cppRef.baseClasses) > 0 %}
+    <tr><td class="memItemLeft">Inherits:</td>
+    <td class="memItemRight">{% for base in cppRef.baseClasses %}{% if not loop.is_first %}, {% endif %}{% if base.href != "" %}<a href="{{ base.href }}">{{ escape_html(base.name) }}</a>{% else %}{{ escape_html(base.name) }}{% endif %}{% if base.access.id != "public" %} ({{ escape_html(base.access.label) }}){% endif %}{% endfor %}</td></tr>
+    {% endif %}
+    {% if length(cppRef.derivedClasses) > 0 %}
+    <tr><td class="memItemLeft">Inherited By:</td>
+    <td class="memItemRight">{% for derived in cppRef.derivedClasses %}{% if not loop.is_first %}, {% endif %}{% if derived.href != "" %}<a href="{{ derived.href }}">{{ escape_html(derived.name) }}</a>{% else %}{{ escape_html(derived.name) }}{% endif %}{% endfor %}</td></tr>
+    {% endif %}
+    {% if existsIn(cppRef, "statusText") and cppRef.statusText != "" %}
+    <tr><td class="memItemLeft">Status:</td>
+    <td class="memItemRight"><span class="{{ cppRef.statusCssClass }}">{{ escape_html(cppRef.statusText) }}</span></td></tr>
+    {% endif %}
+    </table>
+    {% endif %}
+
+    {% if status.id == "deprecated" %}
+    <p><b>This {{ typeNoun }} is deprecated{% if default(deprecatedSince, "") != "" %}{{ " " }}since {{ escape_html(deprecatedSinceQualified) }}{% endif %}. We strongly advise against using it in new code.</b></p>
+    {% else if status.id == "active" and default(deprecatedSince, "") != "" %}
+    <p>This {{ typeNoun }} is scheduled for deprecation in version {{ escape_html(deprecatedSince) }}.</p>
+    {% endif %}
+    {% if hasCppRef and cppRef.isInnerClass %}
+    {% if default(since, "") != "" %}
+    <table class="requisites">
+    <tr><td class="memItemLeft">Since:</td>
+    <td class="memItemRight">Qt {{ escape_html(since) }}</td></tr>
+    </table>
+    {% endif %}
+    {% endif %}
+
+    {% if membersPageUrl != "" %}
+    <ul>
+    <li><a href="{{ membersPageUrl }}">List of all members, including inherited members</a></li>
+    </ul>
+    {% endif %}
+
+    {% if hasCppRef and cppRef.hasObsoleteMembers %}
+    <ul>
+    <li><a href="{{ cppRef.obsoleteMembersUrl }}">Obsolete members</a></li>
+    </ul>
+    {% endif %}
+
+    {% if hasCppRef and length(cppRef.groups) > 0 %}
+    <p>{{ escape_html(title) }} is part of {% for group in cppRef.groups %}{% if not loop.is_first %}, {% endif %}<a href="{{ group.href }}">{{ escape_html(group.name) }}</a>{% endfor %}.</p>
+    {% endif %}
+
+    {% if hasCppRef and existsIn(cppRef, "threadSafetyAdmonition") %}
+    {% if cppRef.threadSafety.level == "non-reentrant" %}
+    <aside class="admonition warning" role="note"><p><b>Warning:</b>{{ " " }}{% for block in cppRef.threadSafetyAdmonition %}{% for i in block.inlines %}{% if i.type == "text" %}{{ escape_html(i.text) }}{% else if i.type == "link" %}{% if existsIn(i, "href") %}<a href="{{ escape_html(i.href) }}">{% for c in i.children %}{{ escape_html(c.text) }}{% endfor %}</a>{% else %}{% for c in i.children %}{{ escape_html(c.text) }}{% endfor %}{% endif %}{% endif %}{% endfor %}{% endfor %}</p></aside>
+    {% else %}
+    <aside class="admonition note" role="note"><p><b>Note:</b>{{ " " }}{% for block in cppRef.threadSafetyAdmonition %}{% for i in block.inlines %}{% if i.type == "text" %}{{ escape_html(i.text) }}{% else if i.type == "link" %}{% if existsIn(i, "href") %}<a href="{{ escape_html(i.href) }}">{% for c in i.children %}{{ escape_html(c.text) }}{% endfor %}</a>{% else %}{% for c in i.children %}{{ escape_html(c.text) }}{% endfor %}{% endif %}{% endif %}{% endfor %}{% endfor %}</p></aside>
+    {% endif %}
+    {% endif %}
+
+    {% if hasCppRef and (existsIn(cppRef, "selfComparisonCategory") or length(cppRef.comparisonEntries) > 0) %}
+    <p><b>{{ escape_html(title) }} Comparisons</b></p>
+    <div class="table">
+    <table class="generic">
+    <tr><th>Category</th><th>Comparable Types</th><th>Description</th></tr>
+    {% if existsIn(cppRef, "selfComparisonCategory") %}
+    <tr><td>{{ escape_html(cppRef.selfComparisonCategory) }}</td><td>{{ escape_html(title) }}</td><td></td></tr>
+    {% endif %}
+    {% for entry in cppRef.comparisonEntries %}
+    <tr><td>{{ escape_html(entry.category) }}</td><td>{% for t in entry.comparableTypes %}{% if not loop.is_first %}, {% endif %}{{ escape_html(t) }}{% endfor %}</td><td>{{ escape_html(entry.description) }}</td></tr>
+    {% endfor %}
+    </table>
+    </div>
+    {% endif %}
+
+    {% if length(sections) > 0 %}
+    {% for section in sections %}
+    <section class="section-{{ section.id }}" aria-label="{{ escape_html(section.title) }}">
+    <h2 id="{{ section.id }}">{{ escape_html(section.title) }}</h2>
+    {% if length(section.members) > 0 %}
+    <table class="alignedsummary">
+    {% for member in section.members %}
+    <tr>
+    <td class="memItemLeft">{% if existsIn(member, "signatureSpans") %}{{ render_signature_spans(member.signatureSpans) }}{% else %}{% if existsIn(member, "href") and member.href != "" %}<a href="{{ member.href }}">{{ escape_html(member.signature) }}</a>{% else %}{{ escape_html(member.signature) }}{% endif %}{% endif %}</td>
+    <td class="memItemRight">{{ escape_html(default(member.brief, "")) }}</td>
+    </tr>
+    {% endfor %}
+    </table>
+    {% endif %}
+    {% if existsIn(section, "reimplementedMembers") %}
+    <h3>Reimplemented {{ escape_html(section.plural) }}</h3>
+    <table class="alignedsummary">
+    {% for member in section.reimplementedMembers %}
+    <tr>
+    <td class="memItemLeft">{% if existsIn(member, "signatureSpans") %}{{ render_signature_spans(member.signatureSpans) }}{% else %}{% if existsIn(member, "href") and member.href != "" %}<a href="{{ member.href }}">{{ escape_html(member.signature) }}</a>{% else %}{{ escape_html(member.signature) }}{% endif %}{% endif %}</td>
+    <td class="memItemRight">{{ escape_html(default(member.brief, "")) }}</td>
+    </tr>
+    {% endfor %}
+    </table>
+    {% endif %}
+    {% if existsIn(section, "inheritedMembers") %}
+    {% for inherited in section.inheritedMembers %}
+    <p>{{ inherited.count }} {{ escape_html(section.plural) }} inherited from {% if inherited.href != "" %}<a href="{{ inherited.href }}">{{ escape_html(inherited.className) }}</a>{% else %}{{ escape_html(inherited.className) }}{% endif %}</p>
+    {% endfor %}
+    {% endif %}
+    </section>
+    {% endfor %}
+    {% endif %}
+
+    {% if length(content.blocks) > 0 %}
+    <h2 id="details">Detailed Description</h2>
+    {% endif %}
+    {% include "partials/html/content_blocks.html" %}
+
+    {% if length(detailSections) > 0 %}
+    {% for section in detailSections %}
+    {% if length(section.members) > 0 %}
+    <h2 id="{{ section.id }}">{{ escape_html(section.title) }}</h2>
+    {% for member in section.members %}
+    {% include "partials/html/member_detail.html" %}
+    {% endfor %}
+    {% endif %}
+    {% endfor %}
+    {% endif %}
+    </main>
+{% include "partials/qt-branded/footer.html" %}

@@ -1,0 +1,672 @@
+/*
+    Copyright (C) 2026 The Qt Company Ltd.
+    SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+*/
+
+/* ==========================================================================
+   QDoc Template Generator — Qt-branded Default Stylesheet
+   ========================================================================== */
+
+/* --- Qt Brand Palette (custom properties themes may override) --- */
+
+:root {
+    --qt-green: #41CD52;
+    --qt-green-hover: #35A745;
+    --qt-header-bg: #222;
+    --qt-text: #404244;
+    --qt-bg: #ffffff;
+    --qt-surface: #f5f5f5;
+    --qt-border: #e0e0e0;
+    --qt-code-bg: #f8f8f8;
+    --qt-link: var(--qt-green);
+    --qt-link-hover: var(--qt-green-hover);
+    --qt-note: #1976d2;
+    --qt-warning: #f57c00;
+    --qt-important: #d32f2f;
+
+    /* Compatibility aliases matching demo qt-doc.css naming. */
+    --accent: var(--qt-green);
+    --heading: var(--qt-header-bg);
+    --text: var(--qt-text);
+    --bg: var(--qt-bg);
+    --surface: var(--qt-surface);
+    --border: var(--qt-border);
+    --code-bg: var(--qt-code-bg);
+    --link: var(--qt-link);
+    --note: var(--qt-note);
+    --warning: var(--qt-warning);
+    --important: var(--qt-important);
+}
+
+/* --- Reset and Base --- */
+
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: "Titillium Web", Inter, system-ui, -apple-system, "Segoe UI", Roboto,
+                 "Helvetica Neue", Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--qt-text);
+    background-color: var(--qt-bg);
+}
+
+/* --- Page Header Bar --- */
+
+.header-bar {
+    background-color: var(--qt-header-bg);
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    min-height: 56px;
+    border-bottom: 3px solid var(--qt-green);
+}
+
+.header-bar .qt-logo {
+    display: flex;
+    align-items: center;
+    margin-right: 24px;
+    flex-shrink: 0;
+}
+
+.header-bar .qt-logo img,
+.header-bar .qt-logo svg {
+    height: 28px;
+    width: auto;
+}
+
+/* --- Breadcrumb Navigation --- */
+
+.breadcrumbs {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.breadcrumbs .crumb {
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 14px;
+}
+
+.breadcrumbs .crumb.current {
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.breadcrumbs .separator {
+    margin: 0 8px;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 12px;
+}
+
+/* Upstream semantic breadcrumb (server-rendered <nav class="breadcrumb-nav">). */
+nav.breadcrumb-nav {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0.75rem 1.5rem 0;
+}
+
+ol.breadcrumb {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    color: #666;
+}
+
+ol.breadcrumb li {
+    margin: 0;
+    display: inline-flex;
+    align-items: center;
+}
+
+ol.breadcrumb li + li::before {
+    content: "\203A";
+    color: #aaa;
+    margin-right: 0.5rem;
+}
+
+ol.breadcrumb li a {
+    margin-right: 0;
+}
+
+ol.breadcrumb li[aria-current="page"] {
+    color: #222;
+    font-weight: 500;
+}
+
+/* --- Content Area --- */
+
+.content,
+main.content,
+main {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 32px 24px 64px;
+}
+
+/* --- Page Navigation (prev/next links) --- */
+
+nav {
+    padding: 0.5rem 0;
+    font-size: 0.9rem;
+}
+
+nav a {
+    margin-right: 1rem;
+}
+
+nav.page-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 0 1rem;
+    margin: 0 0 0.5rem;
+    font-size: 0.9rem;
+}
+
+nav.page-nav a {
+    margin-right: 0;
+}
+
+nav.page-nav a.nav-prev {
+    margin-right: auto;
+}
+
+nav.page-nav a.nav-next {
+    margin-left: auto;
+    text-align: right;
+}
+
+/* --- Sidebar Table of Contents (upstream) --- */
+
+div.sidebar-toc {
+    max-width: 960px;
+    margin: 1rem auto 0;
+    padding: 0.75rem 1.25rem;
+    background: var(--qt-surface);
+    border: 1px solid #e5e5e5;
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+div.sidebar-toc h3 {
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #666;
+    margin: 0 0 0.5rem;
+    border-bottom: none;
+    padding: 0;
+}
+
+div.sidebar-toc ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+div.sidebar-toc li {
+    margin: 0.2rem 0;
+    line-height: 1.4;
+}
+
+div.sidebar-toc li.level2 { padding-left: 0; }
+div.sidebar-toc li.level3 { padding-left: 1rem; }
+div.sidebar-toc li.level4 { padding-left: 2rem; }
+div.sidebar-toc li.level5 { padding-left: 3rem; }
+div.sidebar-toc li.level6 { padding-left: 4rem; }
+
+/* --- Toolbar --- */
+
+.toolbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 12px 0 24px;
+    flex-wrap: wrap;
+}
+
+.toolbar-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    font-size: 13px;
+    font-family: inherit;
+    color: var(--qt-text);
+    background: var(--qt-bg);
+    border: 1px solid var(--qt-border);
+    border-radius: 6px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color 0.15s, border-color 0.15s;
+}
+
+.toolbar-btn:hover {
+    background-color: var(--qt-surface);
+    border-color: #c0c0c0;
+}
+
+.toolbar-btn svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+
+/* --- Ask AI Dropdown (details/summary, no JS) --- */
+
+.ask-ai {
+    position: relative;
+    display: inline-block;
+}
+
+.ask-ai > summary {
+    list-style: none;
+}
+
+.ask-ai > summary::-webkit-details-marker {
+    display: none;
+}
+
+.ask-ai > summary::after {
+    content: "";
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-right: 1.5px solid var(--qt-text);
+    border-bottom: 1.5px solid var(--qt-text);
+    transform: rotate(45deg);
+    margin-left: 6px;
+    margin-bottom: 2px;
+    transition: transform 0.2s;
+}
+
+.ask-ai[open] > summary::after {
+    transform: rotate(-135deg);
+    margin-bottom: -2px;
+}
+
+.ask-ai .dropdown-content {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    z-index: 10;
+    min-width: 220px;
+    background: var(--qt-bg);
+    border: 1px solid var(--qt-border);
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    padding: 6px 0;
+}
+
+.dropdown-content a,
+.ai-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 16px;
+    font-size: 13px;
+    color: var(--qt-text);
+    text-decoration: none;
+}
+
+.dropdown-content a:hover,
+.ai-link:hover {
+    background-color: var(--qt-surface);
+}
+
+/* --- AI Provider Badges (Claude and ChatGPT only per D-07) --- */
+
+.ai-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: 600;
+    color: #ffffff;
+    flex-shrink: 0;
+}
+
+.ai-claude { background-color: #d97706; }
+.ai-chatgpt { background-color: #1a1a1a; }
+
+/* --- Typography --- */
+
+h1 {
+    font-size: 2em;
+    font-weight: 700;
+    margin: 0 0 8px;
+    color: var(--qt-header-bg);
+    line-height: 1.2;
+}
+
+h2 {
+    font-size: 1.5em;
+    font-weight: 600;
+    margin: 40px 0 12px;
+    color: var(--qt-header-bg);
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--qt-border);
+}
+
+h3 {
+    font-size: 1.2em;
+    font-weight: 600;
+    margin: 32px 0 8px;
+    color: var(--qt-header-bg);
+}
+
+h4 {
+    font-size: 1em;
+    font-weight: 600;
+    margin: 24px 0 8px;
+    color: var(--qt-header-bg);
+}
+
+p {
+    margin: 0 0 16px;
+}
+
+p.brief,
+.brief {
+    font-size: 1.1em;
+    color: #6b6d70;
+    font-style: italic;
+    margin-bottom: 4px;
+}
+
+/* --- Links --- */
+
+a {
+    color: var(--qt-link);
+    text-decoration: none;
+}
+
+a:hover {
+    color: var(--qt-link-hover);
+    text-decoration: underline;
+}
+
+/* --- Code Blocks --- */
+
+code, tt {
+    font-family: "SF Mono", "Fira Code", "Fira Mono", Menlo, Consolas,
+                 "DejaVu Sans Mono", monospace;
+    font-size: 0.9em;
+    background-color: var(--qt-code-bg);
+    padding: 2px 5px;
+    border-radius: 3px;
+}
+
+pre {
+    position: relative;
+    font-family: "SF Mono", "Fira Code", "Fira Mono", Menlo, Consolas,
+                 "DejaVu Sans Mono", monospace;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    background-color: var(--qt-code-bg);
+    border: 1px solid var(--qt-border);
+    border-radius: 6px;
+    padding: 16px;
+    overflow-x: auto;
+    margin: 0 0 16px;
+}
+
+pre code {
+    background: none;
+    padding: 0;
+    border-radius: 0;
+    font-size: inherit;
+}
+
+.code-copy-btn {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    padding: 3px 10px;
+    font-size: 11px;
+    font-family: inherit;
+    color: var(--qt-text);
+    background: var(--qt-bg);
+    border: 1px solid var(--qt-border);
+    border-radius: 4px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.15s;
+}
+
+pre:hover .code-copy-btn {
+    opacity: 1;
+}
+
+.code-copy-btn:hover {
+    background-color: var(--qt-surface);
+    border-color: #c0c0c0;
+}
+
+/* --- Lists --- */
+
+ul, ol {
+    margin: 0 0 16px;
+    padding-left: 24px;
+}
+
+li {
+    margin-bottom: 4px;
+}
+
+/* --- Tables (base) --- */
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0 0 16px;
+    font-size: 15px;
+}
+
+th, td {
+    padding: 10px 14px;
+    text-align: left;
+    border: 1px solid var(--qt-border);
+}
+
+th {
+    background-color: var(--qt-surface);
+    font-weight: 600;
+}
+
+/* --- Member Summary Tables (upstream selectors preserved) --- */
+
+table.alignedsummary {
+    border: none;
+}
+
+table.alignedsummary td {
+    border-bottom: 1px solid #f0f0f0;
+    padding: 0.35rem 0.5rem;
+    vertical-align: top;
+}
+
+td.memItemLeft {
+    white-space: nowrap;
+    padding-right: 1.5rem;
+    font-family: "SF Mono", "Fira Code", "Fira Mono", Menlo, Consolas, monospace;
+    font-size: 0.9em;
+}
+
+td.memItemRight {
+    width: 100%;
+    color: #555;
+}
+
+table.requisites {
+    border: none;
+    width: auto;
+    margin: 0.5rem 0 1rem;
+}
+
+table.requisites td {
+    border: none;
+    padding: 0.2rem 0.5rem;
+    vertical-align: top;
+}
+
+table.requisites td.memItemLeft {
+    font-family: "Titillium Web", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-weight: 600;
+    color: #333;
+}
+
+table.annotated {
+    border: none;
+}
+
+table.annotated td {
+    border-bottom: 1px solid #f0f0f0;
+    padding: 0.35rem 0.5rem;
+    vertical-align: top;
+}
+
+td.tblName {
+    white-space: nowrap;
+    padding-right: 1.5rem;
+}
+
+td.tblDescr {
+    width: 100%;
+    color: #555;
+}
+
+tr.qt-style th {
+    background: var(--qt-surface);
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid #ccc;
+}
+
+div.table {
+    margin: 0 0 1rem;
+    overflow-x: auto;
+}
+
+h3.fn {
+    font-family: "SF Mono", "Fira Code", "Fira Mono", Menlo, Consolas, monospace;
+    font-size: 0.95rem;
+    font-weight: 600;
+    background: var(--qt-code-bg);
+    border: 1px solid #e8e8e8;
+    border-radius: 3px;
+    padding: 0.5rem 0.75rem;
+    margin: 2rem 0 0.75rem;
+    overflow-x: auto;
+}
+
+li.fn {
+    font-family: "SF Mono", "Fira Code", "Fira Mono", Menlo, Consolas, monospace;
+    font-size: 0.9em;
+    margin-bottom: 0.35rem;
+}
+
+/* --- Admonitions (aside.admonition upstream selectors, Qt brand colors) --- */
+
+aside.admonition {
+    border-left: 4px solid var(--qt-border);
+    padding: 12px 16px;
+    margin: 0 0 16px;
+    background-color: var(--qt-surface);
+    border-radius: 0 6px 6px 0;
+}
+
+aside.admonition.note {
+    border-left-color: var(--qt-note);
+}
+
+aside.admonition.warning {
+    border-left-color: var(--qt-warning);
+    background-color: #fffcf5;
+}
+
+aside.admonition.important {
+    border-left-color: var(--qt-important);
+    background-color: #fef7f6;
+}
+
+aside.admonition p {
+    margin: 0;
+}
+
+.admonition-title {
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+/* --- Horizontal Rule, Section --- */
+
+hr {
+    border: none;
+    border-top: 1px solid var(--qt-border);
+    margin: 1.5rem 0;
+}
+
+section.content {
+    margin: 1rem 0;
+}
+
+/* --- Footer --- */
+
+.footer,
+footer {
+    max-width: 960px;
+    margin: 64px auto 0;
+    padding: 24px 1.5rem;
+    border-top: 1px solid var(--qt-border);
+    color: #9e9e9e;
+    font-size: 13px;
+}
+
+/* --- Responsive (upstream) --- */
+
+@media (max-width: 600px) {
+    body {
+        font-size: 0.95rem;
+    }
+
+    h1 {
+        font-size: 1.5em;
+    }
+
+    h2 {
+        font-size: 1.2em;
+    }
+
+    .content,
+    main.content,
+    main {
+        padding: 16px 12px 48px;
+    }
+
+    div.table {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    pre {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.8rem;
+    }
+}
