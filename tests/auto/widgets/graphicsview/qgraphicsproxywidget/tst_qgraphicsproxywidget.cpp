@@ -3477,6 +3477,9 @@ void tst_QGraphicsProxyWidget::QTBUG_6986_sendMouseEventToAlienWidget()
     connect(hideButton, &QPushButton::clicked, &scene, [&]() { topButton->hide(); });
     topButton->setFocus();
 
+    const QPoint safeCursorPos = QGuiApplication::primaryScreen()->availableGeometry().bottomRight() - QPoint(40, 40);
+    QCursor::setPos(safeCursorPos);
+
     QGraphicsView view(&scene);
     view.resize(600, 600);
     view.show();
