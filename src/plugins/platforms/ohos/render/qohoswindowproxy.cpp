@@ -993,18 +993,19 @@ void QOhosWindowProxy::setWindowTitleButtonVisible(bool maximizeVisible, bool mi
     if (!qtIsMainWindow())
         return;
 
-    if (!QOhosSettings::isWindowPcModeEnabled()) {
-        qOhosPrintfWarning("%s: can be used only on 2-in-1 devices or tablets in PC mode - skipping", Q_FUNC_INFO);
-        return;
-    }
-
     QtOhos::runInJsThreadAndWait(
-        [&](QtOhos::JsState &) {
+        [&](QtOhos::JsState &jsState) {
             if (m_jsScopeData->isWindowClosing())
                 return;
 
-            m_jsScopeData->jsWindowRef->eval(
-                "setWindowTitleButtonVisible(*)", {maximizeVisible, minimizeVisible, closeVisible});
+            constexpr auto capabilityNotSupportedErrorCode = 801;
+            QtOhos::runIgnoringJsBusinessError(
+                jsState, capabilityNotSupportedErrorCode, "setWindowTitleButtonVisible()",
+                [&]() {
+                    m_jsScopeData->jsWindowRef->eval(
+                        "setWindowTitleButtonVisible(*)",
+                        {maximizeVisible, minimizeVisible, closeVisible});
+                });
         },
         Q_FUNC_INFO);
 }
