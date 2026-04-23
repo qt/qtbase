@@ -24,11 +24,6 @@ QT_BEGIN_NAMESPACE
 struct QShaderPrivate;
 class QShaderKey;
 
-#ifdef Q_OS_INTEGRITY
-  class QShaderVersion;
-  size_t qHash(const QShaderVersion &, size_t = 0) noexcept;
-#endif
-
 class Q_GUI_EXPORT QShaderVersion
 {
 public:
@@ -47,6 +42,10 @@ public:
     void setFlags(Flags f) { m_flags = f; }
 
 private:
+    Q_GUI_EXPORT friend size_t qHash(QShaderVersion key, size_t seed) noexcept;
+    friend size_t qHash(QShaderVersion key) noexcept { return qHash(key, size_t{0}); }
+    #define QSHADERVERSION_IS_HASHABLE
+
     int m_version = 100;
     Flags m_flags;
 };

@@ -835,12 +835,17 @@ bool operator==(const QShaderVersion &lhs, const QShaderVersion &rhs) noexcept
     return lhs.version() == rhs.version() && lhs.flags() == rhs.flags();
 }
 
-#ifdef Q_OS_INTEGRITY
-size_t qHash(const QShaderVersion &s, size_t seed) noexcept
+/*!
+    \fn size_t QShaderVersion::qHash(QShaderVersion key, size_t seed)
+    \since 6.12
+    \qhash{QShaderVersion}
+
+    \note On INTEGRITY, this function has been available since 6.2.
+*/
+size_t qHash(QShaderVersion s, size_t seed) noexcept
 {
     return qHashMulti(seed, s.version(), s.flags());
 }
-#endif
 
 /*!
     \return true if \a lhs is smaller than \a rhs.
