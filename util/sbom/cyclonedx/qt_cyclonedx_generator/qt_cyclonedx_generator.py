@@ -149,6 +149,7 @@ class RootComponentDict(TypedDict):
     spdx_id: str
     # Optional fields (since TypedDict doesn't support NotRequired in Python 3.9)
     # We'll use .get() to access these safely
+    component_type: str
     version: str
     description: str
     download_location: str
@@ -476,9 +477,7 @@ def process_toml(toml_data: TomlDataDict, cydx_bom: Bom) -> None:
 def handle_root_component(
     cydx_bom: Bom, toml_data: TomlDataDict
 ) -> tuple[Component, Optional[OrganizationalEntity], str]:
-    root_components_args: dict[str, Any] = {
-        "type": ComponentType.FRAMEWORK,
-    }
+    root_components_args: dict[str, Any] = {}
 
     root_component = validate_required_field(toml_data, "root_component", "TOML data")
     error_context = "root_component"
@@ -491,6 +490,10 @@ def handle_root_component(
     # Process optional fields
     assign_optional_field(root_component, root_components_args, "version")
     assign_optional_field(root_component, root_components_args, "description")
+
+    root_components_args["type"] = get_component_type_for_str(
+        root_component.get("component_type", "framework")
+    )
 
     # Process optional fields with transformations
     assign_optional_field(
