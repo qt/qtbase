@@ -264,6 +264,14 @@ function(qt_internal_create_module_depends_file target)
         string(APPEND third_party_deps_extra_info "${packages_info}")
     endif()
 
+    # Allow modules to inject extra CMake code that runs before
+    # _qt_internal_find_third_party_dependencies, e.g. to set default values for
+    # variables like FFMPEG_DIR that are needed to find third-party packages.
+    get_target_property(third_party_extra ${target} _qt_third_party_deps_extra_code)
+    if(NOT third_party_extra)
+        set(third_party_extra "")
+    endif()
+
     # Add dependency to the main ModuleTool package to ModuleDependencies file.
     if(${target} IN_LIST QT_KNOWN_MODULES_WITH_TOOLS)
         qt_internal_get_package_version_of_target("${target}" main_module_tool_package_version)
