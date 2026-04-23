@@ -1462,8 +1462,8 @@ function(qt_internal_set_up_config_optimizations_like_in_qmake)
     # Todo:
     #   When the new toolchain is fixed, and it doesn't fall back to the legacy
     #   anymore by default, then we should be able to remove this workaround.
-    if(ANDROID AND ANDROID_COMPILER_FLAGS MATCHES "(^| )-g")
-        qt_internal_remove_compiler_flags("-g")
+    if(ANDROID AND ANDROID_COMPILER_FLAGS MATCHES "(^| )-g( |$)")
+        qt_internal_remove_compiler_flags("(^| )-g( |$)" REGEX)
         qt_internal_add_compiler_flags(FLAGS "-g" CONFIGS DEBUG RELWITHDEBINFO)
     endif()
 
