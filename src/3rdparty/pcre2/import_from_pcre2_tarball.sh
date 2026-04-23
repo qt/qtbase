@@ -68,6 +68,7 @@ FILES="
     src/pcre2_maketables.c
     src/pcre2_match.c
     src/pcre2_match_data.c
+    src/pcre2_match_next.c
     src/pcre2_newline.c
     src/pcre2_ord2utf.c
     src/pcre2_pattern_info.c
