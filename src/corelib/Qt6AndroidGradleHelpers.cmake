@@ -232,17 +232,26 @@ function(_qt_internal_android_generate_target_build_gradle target)
     _qt_internal_android_get_gradle_property(target_sdk_version ${target}
         QT_ANDROID_TARGET_SDK_VERSION "36")
 
-    set(target_abis "$<TARGET_PROPERTY:${target},_qt_android_abis>")
-    set(target_abi_list "$<JOIN:${target_abis};${CMAKE_ANDROID_ARCH_ABI},'$<COMMA> '>")
+    get_target_property(android_target_type ${target} _qt_android_target_type)
 
-    string(JOIN "\n        " DEFAULT_CONFIG_VALUES
+    set(default_config_lines
         "resConfig 'en'"
         "minSdk = ${min_sdk_version}"
         "targetSdk = ${target_sdk_version}"
-        "ndk {"
-        "    abiFilters += ['${target_abi_list}']"
-        "}"
     )
+    # AGP rejects abiFilters inside a dynamic-feature module; it inherits the
+    # set from the application module. Only emit the ndk block for the app.
+    if(android_target_type STREQUAL "APPLICATION")
+        set(target_abis "$<TARGET_PROPERTY:${target},_qt_android_abis>")
+        set(target_abi_list
+            "$<JOIN:${target_abis};${CMAKE_ANDROID_ARCH_ABI},'$<COMMA> '>")
+        list(APPEND default_config_lines
+            "ndk {"
+            "    abiFilters += ['${target_abi_list}']"
+            "}"
+        )
+    endif()
+    string(JOIN "\n        " DEFAULT_CONFIG_VALUES ${default_config_lines})
 
     set(target_dynamic_features "$<TARGET_PROPERTY:${target},_qt_android_dynamic_features>")
     set(include_prefix "\":")
@@ -256,7 +265,6 @@ function(_qt_internal_android_generate_target_build_gradle target)
         ">"
     )
 
-    get_target_property(android_target_type ${target} _qt_android_target_type)
     if(android_target_type STREQUAL "APPLICATION")
         _qt_internal_android_get_manifest_property(APP_PACKAGE_NAME ${target}
             QT_ANDROID_PACKAGE_NAME "org.qtproject.example.$<MAKE_C_IDENTIFIER:${target}>")
