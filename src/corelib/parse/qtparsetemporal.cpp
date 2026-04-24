@@ -864,8 +864,107 @@ namespace QtParseTemporal {
 QDate ParsedTemporal::date(QCalendar cal, QDate defaults) const
 {
     if (defaults.isValid()) {
-        return QDate(year ? *year : defaults.year(cal), month ? month : defaults.month(cal),
-                     dayOfMonth ? dayOfMonth : defaults.day(cal), cal);
+        QDate draft(year ? *year : defaults.year(cal), month ? month : defaults.month(cal),
+                    dayOfMonth ? dayOfMonth : defaults.day(cal), cal);
+
+        if (dayOfWeek && draft.isValid() && draft.dayOfWeek(cal) != dayOfWeek) {
+            // Defaults conflict with parsed day of the week.
+            if (!dayOfMonth) {
+                // (Assumes no intercalary days.)
+                // Number of days to the nearest with the right day of the week:
+                const int offset = (dayOfWeek + 10 - draft.dayOfWeek(cal)) % 7 - 3;
+                Q_ASSERT(offset != 0); // Otherwise, day of week matched, already.
+                Q_ASSERT(-4 < offset && offset < 4);
+                // Prefer closer unless nearby has more in common with what we asked for:
+                QDate closer = draft.addDays(offset);
+                QDate nearby = draft.addDays(offset < 0 ? offset + 7 : offset - 7);
+                if (nearby.isValid()
+                    && (!closer.isValid()
+                        || (closer.dayOfWeek(cal) != dayOfWeek
+                            && nearby.dayOfWeek(cal) == dayOfWeek)
+                        || (closer.month(cal) != draft.month(cal)
+                            && nearby.month(cal) == draft.month(cal)))) {
+                    // (We could also give year(cal) the same treatment, but
+                    // different year, for dates within ten days of one another,
+                    // plies different month, so check would be redundant.)
+                    std::swap(nearby, draft);
+                } else if (closer.isValid() && closer.dayOfWeek(cal) == dayOfWeek) {
+                    std::swap(closer, draft);
+                }
+
+            } else if (!month) {
+                Q_ASSERT(draft.day() == dayOfMonth);
+                auto use = [&draft, cal, dow=dayOfWeek](int yr, int mon, int day) {
+                    QDate maybe(yr, mon, day, cal);
+                    if (!maybe.isValid() || maybe.dayOfWeek(cal) != dow)
+                        return false;
+                    std::swap(maybe, draft);
+                    return true;
+                };
+                // Find nearest month with the right dayOfMonth and dayOfWeek.
+                // If year was specified we're limited to it; otherwise,
+                // draft.year() is derived from defaults so the search can
+                // spread to nearby years.
+                int loYear = draft.year(cal), hiYear = loYear;
+                int loMon = draft.month(cal), hiMon = loMon;
+                bool maybeLo = true, maybeHi = true;
+                while (maybeLo || maybeHi) {
+                    if (maybeHi) {
+                        if (hiMon < cal.monthsInYear(hiYear)) {
+                            ++hiMon;
+                        } else if (year) {
+                            Q_ASSERT(hiYear == *year);
+                            maybeHi = false;
+                        } else if (hiYear + 1 || cal.hasYearZero()) {
+                            ++hiYear;
+                            hiMon = 1;
+                        } else if (cal.isProleptic()) {
+                            hiYear = +1;
+                            hiMon = 1;
+                        } else {
+                            maybeHi = false;
+                        }
+                    }
+                    if (maybeHi && use(hiYear, hiMon, dayOfMonth))
+                        break;
+
+                    if (maybeLo) {
+                        if (loMon > 1) {
+                            --loMon;
+                        } else if (year) {
+                            Q_ASSERT(loYear == *year);
+                            maybeLo = false;
+                        } else if (loYear - 1 || cal.hasYearZero()) {
+                            --loYear;
+                            loMon = cal.monthsInYear(loYear);
+                        } else if (cal.isProleptic()) {
+                            loYear = -1;
+                            loMon = cal.monthsInYear(loYear);
+                        } else {
+                            maybeLo = false;
+                        }
+                    }
+                    if (maybeLo && use(loYear, loMon, dayOfMonth))
+                        break;
+
+                    // Avoid looping for ever: if we can't find a match within a
+                    // 30 year window we probably never shall. If we haven't
+                    // found a match by then, the likelihood that the input has
+                    // a typo in it is fairly high, in any case.
+                    if (hiYear - loYear > 30)
+                        break;
+                }
+            } else if (!year) {
+                // As for resolve()'s handling of two-digit centuries:
+                QCalendar::YearMonthDay ymd = { draft.year(cal), month, dayOfMonth };
+                QDate maybe = cal.matchCenturyToWeekday(ymd, dayOfWeek);
+                if (maybe.isValid() && maybe.dayOfWeek(cal) == dayOfWeek)
+                    std::swap(maybe, draft);
+            }
+            if (draft.dayOfWeek(cal) != dayOfWeek)
+                return {};
+        }
+        return draft;
     }
     if (year && month && dayOfMonth)
         return QDate(*year, month, dayOfMonth, cal);
