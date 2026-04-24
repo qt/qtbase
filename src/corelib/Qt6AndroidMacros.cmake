@@ -1564,6 +1564,11 @@ function(_qt_internal_configure_android_multiabi_target target)
             "-DQT_USE_TARGET_ANDROID_BUILD_DIR=${QT_USE_TARGET_ANDROID_BUILD_DIR}")
     endif()
 
+    if(DEFINED QT_ANDROID_CREATE_SYMLINKS_ONLY)
+        list(APPEND extra_cmake_args
+            "-DQT_ANDROID_CREATE_SYMLINKS_ONLY=${QT_ANDROID_CREATE_SYMLINKS_ONLY}")
+    endif()
+
     unset(user_cmake_args)
     foreach(var IN LISTS QT_ANDROID_MULTI_ABI_FORWARD_VARS)
         string(REPLACE ";" "$<SEMICOLON>" var_value "${${var}}")
