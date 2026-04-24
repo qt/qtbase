@@ -33,6 +33,9 @@ private slots:
     void clearFilter();
     void setSourceModel();
 
+    void sort_data();
+    void sort();
+
 private:
     QStringList m_numberList; ///< Cache the strings for efficiency.
 };
@@ -104,6 +107,39 @@ void tst_QSortFilterProxyModel::setSourceModel()
     QBENCHMARK {
         proxy.setSourceModel(&model1);
         proxy.setSourceModel(&model2);
+    }
+}
+
+void tst_QSortFilterProxyModel::sort_data()
+{
+    QTest::addColumn<Qt::CaseSensitivity>("caseSensitivity");
+    QTest::addColumn<bool>("isLocaleAware");
+
+    QTest::addRow("case sensitive") << Qt::CaseSensitive << false;
+    QTest::addRow("case insensitive") << Qt::CaseInsensitive << false;
+    QTest::addRow("case sensitive, locale-aware") << Qt::CaseInsensitive << true;
+    QTest::addRow("case insensitive, locale-aware") << Qt::CaseInsensitive << true;
+}
+
+void tst_QSortFilterProxyModel::sort()
+{
+    QFETCH(Qt::CaseSensitivity, caseSensitivity);
+    QFETCH(bool, isLocaleAware);
+
+    QStringList list;
+    list.reserve(int(QLocale::LastLanguage));
+    for (int lang = QLocale::AnyLanguage; lang < QLocale::LastLanguage; ++lang) {
+        QLocale locale = QLocale::Language(lang);
+        list.append(locale.nativeLanguageName());
+    }
+    QStringListModel model(list);
+
+    QSortFilterProxyModel proxy;
+    proxy.setSourceModel(&model);
+    proxy.setSortCaseSensitivity(caseSensitivity);
+    proxy.setSortLocaleAware(isLocaleAware);
+    QBENCHMARK {
+        proxy.sort(0, Qt::DescendingOrder);
     }
 }
 
