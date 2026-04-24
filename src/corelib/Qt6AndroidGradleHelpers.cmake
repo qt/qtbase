@@ -1384,130 +1384,165 @@ function(_qt_internal_android_collect_qt_modules_and_plugins target out_qt_modul
     set(${out_qt_plugins} "${collected_plugins}" PARENT_SCOPE)
 endfunction()
 
-# Processes JAR dependencies for a Qt module and appends copy_commands in-place
-function(_qt_internal_android_process_module_jars target module libs_root_dir
-        inout_seen_destinations inout_copy_commands inout_copy_depends)
-    set(seen_destinations "${${inout_seen_destinations}}")
-    set(copy_commands "${${inout_copy_commands}}")
-    set(copy_depends "${${inout_copy_depends}}")
+# Adds a deploy command into commands/depends lists in the caller's scope, skipping duplicates.
+function(_qt_internal_android_add_dependency_deploy_step)
+    set(one_value_args
+        SOURCE
+        DESTINATION
+        DEPENDS_ITEM
+        SEEN_DESTINATIONS_VAR
+        COPY_COMMANDS_VAR
+        COPY_DEPENDS_VAR
+    )
+    cmake_parse_arguments(PARSE_ARGV 0 arg "" "${one_value_args}" "")
 
-    get_target_property(module_jar_deps "${module}" QT_ANDROID_BUNDLED_JAR_DEPENDENCIES)
-    if(NOT module_jar_deps)
-        set(module_jar_deps "")
+    if("${arg_DESTINATION}" IN_LIST ${arg_SEEN_DESTINATIONS_VAR})
+        return()
+    endif()
+    _qt_internal_android_get_deploy_command(cmd "${arg_SOURCE}" "${arg_DESTINATION}")
+    list(APPEND ${arg_SEEN_DESTINATIONS_VAR} "${arg_DESTINATION}")
+    list(APPEND ${arg_COPY_COMMANDS_VAR} COMMAND ${cmd})
+    list(APPEND ${arg_COPY_DEPENDS_VAR} "${arg_DEPENDS_ITEM}")
+    set(${arg_SEEN_DESTINATIONS_VAR} "${${arg_SEEN_DESTINATIONS_VAR}}" PARENT_SCOPE)
+    set(${arg_COPY_COMMANDS_VAR} "${${arg_COPY_COMMANDS_VAR}}" PARENT_SCOPE)
+    set(${arg_COPY_DEPENDS_VAR} "${${arg_COPY_DEPENDS_VAR}}" PARENT_SCOPE)
+endfunction()
+
+# Deploys QT_ANDROID_BUNDLED_JAR_DEPENDENCIES declared by dep.
+function(_qt_internal_android_process_bundled_jars dep libs_root_dir
+        inout_seen_destinations inout_copy_commands inout_copy_depends)
+    get_target_property(jar_deps "${dep}" QT_ANDROID_BUNDLED_JAR_DEPENDENCIES)
+    if(NOT jar_deps)
+        return()
     endif()
 
     _qt_internal_get_android_abi_prefix_path(qt_prefix ${CMAKE_ANDROID_ARCH_ABI})
     _qt_internal_get_android_abi_subdir_path(qt_data_dir QT6_INSTALL_DATA ${CMAKE_ANDROID_ARCH_ABI})
     _qt_internal_path_join(qt_data_dir "${qt_prefix}" "${qt_data_dir}")
 
-    foreach(jar IN LISTS module_jar_deps)
+    foreach(jar IN LISTS jar_deps)
         if(IS_ABSOLUTE "${jar}")
             set(jar_absolute "${jar}")
         else()
             _qt_internal_path_join(jar_absolute "${qt_data_dir}" "${jar}")
         endif()
         if(NOT EXISTS "${jar_absolute}")
-            message(WARNING "The JAR dependency '${jar_absolute}' is missing for ${module}.")
+            message(WARNING "The JAR dependency '${jar_absolute}' is missing for ${dep}.")
             continue()
         endif()
 
         string(REGEX REPLACE "^jar/" "" jar_relative "${jar}")
         _qt_internal_path_join(destination "${libs_root_dir}" "${jar_relative}")
-        if(destination IN_LIST seen_destinations)
-            continue()
-        endif()
-
-        list(APPEND seen_destinations "${destination}")
-        _qt_internal_android_get_deploy_command(deploy_jar_cmd "${jar_absolute}" "${destination}")
-        list(APPEND copy_commands COMMAND ${deploy_jar_cmd})
-        list(APPEND copy_depends "${jar_absolute}")
+        _qt_internal_android_add_dependency_deploy_step(
+            SOURCE "${jar_absolute}"
+            DESTINATION "${destination}"
+            DEPENDS_ITEM "${jar_absolute}"
+            SEEN_DESTINATIONS_VAR ${inout_seen_destinations}
+            COPY_COMMANDS_VAR ${inout_copy_commands}
+            COPY_DEPENDS_VAR ${inout_copy_depends})
     endforeach()
 
-    set(${inout_seen_destinations} "${seen_destinations}" PARENT_SCOPE)
-    set(${inout_copy_commands} "${copy_commands}" PARENT_SCOPE)
-    set(${inout_copy_depends} "${copy_depends}" PARENT_SCOPE)
+    set(${inout_seen_destinations} "${${inout_seen_destinations}}" PARENT_SCOPE)
+    set(${inout_copy_commands} "${${inout_copy_commands}}" PARENT_SCOPE)
+    set(${inout_copy_depends} "${${inout_copy_depends}}" PARENT_SCOPE)
 endfunction()
 
-# Deploys a module's shared library
-function(_qt_internal_android_process_module_self target module libs_abi_dir
-        inout_seen_destinations inout_copy_commands inout_copy_depends)
-    set(seen_destinations "${${inout_seen_destinations}}")
-    set(copy_commands "${${inout_copy_commands}}")
-    set(copy_depends "${${inout_copy_depends}}")
+# Deploys the dep's own .so and registers it in libs.xml qt_libs, unless dep
+# has QT_PLUGIN_TYPE set (plugins are handled by the Qt plugin loader).
+function(_qt_internal_android_deploy_qt_dependency)
+    set(one_value_args
+        TARGET
+        DEPENDENCY_TARGET
+        LIBS_ABI_DIR
+        SEEN_DESTINATIONS_VAR
+        COPY_COMMANDS_VAR
+        COPY_DEPENDS_VAR
+    )
+    cmake_parse_arguments(PARSE_ARGV 0 arg "" "${one_value_args}" "")
 
-    set(module_dst "${libs_abi_dir}/$<TARGET_FILE_NAME:${module}>")
-    if(NOT module_dst IN_LIST seen_destinations)
-        list(APPEND seen_destinations "${module_dst}")
-
-        get_target_property(module_interface_name "${module}" _qt_module_interface_name)
-        if(module_interface_name)
-            set(module_lib_name "${QT_CMAKE_EXPORT_NAMESPACE}${module_interface_name}")
-        else()
-            set(module_lib_name "${module}")
-        endif()
-        set(module_lib_name "${module_lib_name}_${CMAKE_ANDROID_ARCH_ABI}")
-        _qt_internal_android_append_to_libs_xml_section(${target} qt_libs "${module_lib_name}")
-        _qt_internal_android_get_deploy_command(deploy_module_cmd
-            "$<TARGET_FILE:${module}>" "${module_dst}")
-        list(APPEND copy_commands COMMAND ${deploy_module_cmd})
-        list(APPEND copy_depends "${module}")
+    set(destination "${arg_LIBS_ABI_DIR}/$<TARGET_FILE_NAME:${arg_DEPENDENCY_TARGET}>")
+    if("${destination}" IN_LIST ${arg_SEEN_DESTINATIONS_VAR})
+        return()
     endif()
 
-    set(${inout_seen_destinations} "${seen_destinations}" PARENT_SCOPE)
-    set(${inout_copy_commands} "${copy_commands}" PARENT_SCOPE)
-    set(${inout_copy_depends} "${copy_depends}" PARENT_SCOPE)
+    get_target_property(plugin_type "${arg_DEPENDENCY_TARGET}" QT_PLUGIN_TYPE)
+    if(NOT plugin_type)
+        get_target_property(iface_name "${arg_DEPENDENCY_TARGET}" _qt_module_interface_name)
+        if(iface_name)
+            set(lib_name "${QT_CMAKE_EXPORT_NAMESPACE}${iface_name}_${CMAKE_ANDROID_ARCH_ABI}")
+        else()
+            set(lib_name "$<TARGET_FILE_NAME:${arg_DEPENDENCY_TARGET}>")
+        endif()
+        _qt_internal_android_append_to_libs_xml_section(${arg_TARGET} qt_libs "${lib_name}")
+    endif()
+
+    _qt_internal_android_add_dependency_deploy_step(
+        SOURCE "$<TARGET_FILE:${arg_DEPENDENCY_TARGET}>"
+        DESTINATION "${destination}"
+        DEPENDS_ITEM "${arg_DEPENDENCY_TARGET}"
+        SEEN_DESTINATIONS_VAR ${arg_SEEN_DESTINATIONS_VAR}
+        COPY_COMMANDS_VAR ${arg_COPY_COMMANDS_VAR}
+        COPY_DEPENDS_VAR ${arg_COPY_DEPENDS_VAR})
+
+    set(${arg_SEEN_DESTINATIONS_VAR} "${${arg_SEEN_DESTINATIONS_VAR}}" PARENT_SCOPE)
+    set(${arg_COPY_COMMANDS_VAR} "${${arg_COPY_COMMANDS_VAR}}" PARENT_SCOPE)
+    set(${arg_COPY_DEPENDS_VAR} "${${arg_COPY_DEPENDS_VAR}}" PARENT_SCOPE)
 endfunction()
 
-# Deploys QT_ANDROID_LIB_DEPENDENCIES for a module
-function(_qt_internal_android_process_module_lib_deps target module libs_abi_dir
-        inout_seen_destinations inout_copy_commands inout_copy_depends)
-    set(seen_destinations "${${inout_seen_destinations}}")
-    set(copy_commands "${${inout_copy_commands}}")
-    set(copy_depends "${${inout_copy_depends}}")
+# Deploys QT_ANDROID_LIB_DEPENDENCIES declared by dep (module or plugin),
+# registering each in the libs.xml local_libs section for JNI_OnLoad().
+function(_qt_internal_android_process_lib_deps)
+    set(one_value_args
+        TARGET
+        DEPENDENCY_TARGET
+        LIBS_ABI_DIR
+        SEEN_DESTINATIONS_VAR
+        COPY_COMMANDS_VAR
+        COPY_DEPENDS_VAR
+    )
+    cmake_parse_arguments(PARSE_ARGV 0 arg "" "${one_value_args}" "")
 
-    get_target_property(module_lib_deps "${module}" QT_ANDROID_LIB_DEPENDENCIES)
-    if(NOT module_lib_deps)
-        set(module_lib_deps "")
+    get_target_property(lib_deps "${arg_DEPENDENCY_TARGET}" QT_ANDROID_LIB_DEPENDENCIES)
+    if(NOT lib_deps)
+        return()
     endif()
 
     _qt_internal_get_android_abi_prefix_path(qt_prefix ${CMAKE_ANDROID_ARCH_ABI})
     set(abi_so_suffix "_${CMAKE_ANDROID_ARCH_ABI}.so")
 
-    foreach(lib IN LISTS module_lib_deps)
+    foreach(lib IN LISTS lib_deps)
         if(IS_ABSOLUTE "${lib}")
             set(lib_absolute "${lib}")
         else()
             _qt_internal_path_join(lib_absolute "${qt_prefix}" "${lib}")
         endif()
 
-        # Add abi suffix if file name doesn't have it.
         if(NOT lib_absolute MATCHES "${abi_so_suffix}$")
             string(REGEX REPLACE "\\.so$" "${abi_so_suffix}" lib_absolute "${lib_absolute}")
         endif()
 
         if(NOT EXISTS "${lib_absolute}")
-            message(WARNING "The library dependency '${lib_absolute}' is missing for ${module}.")
+            message(WARNING
+                "The library dependency '${lib_absolute}' is missing for ${arg_DEPENDENCY_TARGET}.")
             continue()
         endif()
 
         get_filename_component(filename "${lib_absolute}" NAME)
-        # Add lib files to libs.xml so that they are explicitly loaded and JNI_OnLoad() called
-        _qt_internal_android_append_to_libs_xml_section(${target} local_libs "${filename}")
+        _qt_internal_android_append_to_libs_xml_section(${arg_TARGET} local_libs "${filename}")
 
-        _qt_internal_path_join(destination "${libs_abi_dir}" "${filename}")
-        if(destination IN_LIST seen_destinations)
-            continue()
-        endif()
-
-        list(APPEND seen_destinations "${destination}")
-        _qt_internal_android_get_deploy_command(deploy_lib_cmd "${lib_absolute}" "${destination}")
-        list(APPEND copy_commands COMMAND ${deploy_lib_cmd})
-        list(APPEND copy_depends "${lib_absolute}")
+        _qt_internal_path_join(destination "${arg_LIBS_ABI_DIR}" "${filename}")
+        _qt_internal_android_add_dependency_deploy_step(
+            SOURCE "${lib_absolute}"
+            DESTINATION "${destination}"
+            DEPENDS_ITEM "${lib_absolute}"
+            SEEN_DESTINATIONS_VAR ${arg_SEEN_DESTINATIONS_VAR}
+            COPY_COMMANDS_VAR ${arg_COPY_COMMANDS_VAR}
+            COPY_DEPENDS_VAR ${arg_COPY_DEPENDS_VAR})
     endforeach()
 
-    set(${inout_seen_destinations} "${seen_destinations}" PARENT_SCOPE)
-    set(${inout_copy_commands} "${copy_commands}" PARENT_SCOPE)
-    set(${inout_copy_depends} "${copy_depends}" PARENT_SCOPE)
+    set(${arg_SEEN_DESTINATIONS_VAR} "${${arg_SEEN_DESTINATIONS_VAR}}" PARENT_SCOPE)
+    set(${arg_COPY_COMMANDS_VAR} "${${arg_COPY_COMMANDS_VAR}}" PARENT_SCOPE)
+    set(${arg_COPY_DEPENDS_VAR} "${${arg_COPY_DEPENDS_VAR}}" PARENT_SCOPE)
 endfunction()
 
 # Resolves plugin paths for a module using the _qt_plugins property.
@@ -1534,35 +1569,6 @@ function(_qt_internal_android_list_module_plugins module out_plugin_paths)
 
     list(REMOVE_DUPLICATES result)
     set(${out_plugin_paths} "${result}" PARENT_SCOPE)
-endfunction()
-
-# Deploys a single plugin target.
-function(_qt_internal_android_process_plugin_item target plugin_target libs_abi_dir
-        inout_seen_destinations inout_copy_commands inout_copy_depends)
-    set(seen_destinations "${${inout_seen_destinations}}")
-    set(copy_commands "${${inout_copy_commands}}")
-    set(copy_depends "${${inout_copy_depends}}")
-
-    set(plugin_path "$<TARGET_FILE:${plugin_target}>")
-    set(plugin_name "$<TARGET_FILE_NAME:${plugin_target}>")
-
-    set(plugin_dst "${libs_abi_dir}/${plugin_name}")
-    if(plugin_dst IN_LIST seen_destinations)
-        return()
-    endif()
-    list(APPEND seen_destinations "${plugin_dst}")
-
-    get_target_property(plugin_type "${plugin_target}" QT_PLUGIN_TYPE)
-    if(NOT plugin_type)
-        _qt_internal_android_append_to_libs_xml_section(${target} qt_libs "${plugin_name}")
-    endif()
-    _qt_internal_android_get_deploy_command(deploy_plugin_cmd "${plugin_path}" "${plugin_dst}")
-    list(APPEND copy_commands COMMAND ${deploy_plugin_cmd})
-    list(APPEND copy_depends "${plugin_target}")
-
-    set(${inout_seen_destinations} "${seen_destinations}" PARENT_SCOPE)
-    set(${inout_copy_commands} "${copy_commands}" PARENT_SCOPE)
-    set(${inout_copy_depends} "${copy_depends}" PARENT_SCOPE)
 endfunction()
 
 # Returns the shared Qt module targets declared as dependencies of a plugin via
@@ -1597,25 +1603,24 @@ function(_qt_internal_android_copy_qt_dependencies target deployment_dir)
 
     _qt_internal_android_collect_qt_modules_and_plugins(${target} qt_modules qt_plugins)
 
-    foreach(module IN LISTS qt_modules)
-        _qt_internal_android_process_module_jars("${target}" "${module}" "${libs_root_dir}"
+    foreach(dep IN LISTS qt_modules qt_plugins)
+        _qt_internal_android_process_bundled_jars("${dep}" "${libs_root_dir}"
             seen_destinations copy_commands copy_depends)
         if(NOT no_deploy_qt_libs)
-            _qt_internal_android_process_module_self("${target}" "${module}" "${libs_abi_dir}"
-                seen_destinations copy_commands copy_depends)
-            _qt_internal_android_process_module_lib_deps("${target}" "${module}" "${libs_abi_dir}"
-                seen_destinations copy_commands copy_depends)
-        endif()
-    endforeach()
-
-    foreach(plugin IN LISTS qt_plugins)
-        _qt_internal_android_process_module_jars("${target}" "${plugin}" "${libs_root_dir}"
-            seen_destinations copy_commands copy_depends)
-        if(NOT no_deploy_qt_libs)
-            _qt_internal_android_process_plugin_item("${target}" "${plugin}" "${libs_abi_dir}"
-                seen_destinations copy_commands copy_depends)
-            _qt_internal_android_process_module_lib_deps("${target}" "${plugin}" "${libs_abi_dir}"
-                seen_destinations copy_commands copy_depends)
+            _qt_internal_android_deploy_qt_dependency(
+                TARGET "${target}"
+                DEPENDENCY_TARGET "${dep}"
+                LIBS_ABI_DIR "${libs_abi_dir}"
+                SEEN_DESTINATIONS_VAR seen_destinations
+                COPY_COMMANDS_VAR copy_commands
+                COPY_DEPENDS_VAR copy_depends)
+            _qt_internal_android_process_lib_deps(
+                TARGET "${target}"
+                DEPENDENCY_TARGET "${dep}"
+                LIBS_ABI_DIR "${libs_abi_dir}"
+                SEEN_DESTINATIONS_VAR seen_destinations
+                COPY_COMMANDS_VAR copy_commands
+                COPY_DEPENDS_VAR copy_depends)
         endif()
     endforeach()
 
