@@ -32,6 +32,7 @@ class QOhosNativeXComponent;
 struct QOhosTouchEventTouchPointData
 {
     ::OH_NativeXComponent_TouchPoint touchPoint;
+    ::OH_NativeXComponent_TouchPointToolType toolType = ::OH_NATIVEXCOMPONENT_TOOL_TYPE_UNKNOWN;
     QPointF displayPosition;
 };
 
