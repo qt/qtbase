@@ -19,6 +19,8 @@ struct QTextOptionPrivate
     The text alignment property is set to Qt::AlignLeft. The
     word wrap property is set to QTextOption::WordWrap. The
     using of design metrics flag is set to false.
+
+    \note Calling this constructor will set the default text direction to Qt::LayoutDirectionAuto.
 */
 QTextOption::QTextOption()
     : QTextOption(Qt::AlignLeft)
@@ -30,6 +32,11 @@ QTextOption::QTextOption()
     Constructs a text option with the given \a alignment for text.
     The word wrap property is set to QTextOption::WordWrap. The using
     of design metrics flag is set to false.
+
+    \note Calling this constructor will set the default text direction to the current value of
+    QGuiApplication::layoutDirection() which depends on the system locale. For backwards
+    compatibility reasons, this does not match the default text direction set by the default
+    constructor.
 */
 QTextOption::QTextOption(Qt::Alignment alignment)
     : align(alignment),
@@ -231,6 +238,9 @@ QList<QTextOption::Tab> QTextOption::tabs() const
   \fn Qt::LayoutDirection QTextOption::textDirection() const
 
   Returns the direction of the text layout defined by the option.
+
+  \note Due to backward compatibility reasons, the default value of the text direction differs
+  depending on which constructor is used. See the documentation for each constructor for details.
 
   \sa setTextDirection()
 */
