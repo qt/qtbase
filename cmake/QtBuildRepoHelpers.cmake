@@ -13,6 +13,11 @@ macro(qt_internal_project_setup)
     qt_internal_upgrade_cmake_policies()
     # Make sure QT_INTERNAL_BUILD_STANDALONE_PARTS is defined as early as possible
     qt_internal_setup_standalone_parts()
+
+    # Should be called after qt_internal_setup_standalone_parts.
+    if(QT_INTERNAL_BUILD_STANDALONE_PARTS)
+        qt_internal_set_cmake_build_type_for_standalone_parts()
+    endif()
 endmacro()
 
 macro(qt_build_internals_set_up_private_api)
