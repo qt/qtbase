@@ -323,6 +323,8 @@ function(_qt_internal_android_prepare_gradle_build target)
     if(QT_IS_ANDROID_MULTI_ABI_EXTERNAL_PROJECT)
         add_custom_target(qt_internal_${target}_copy_apk_dependencies
             DEPENDS ${target}_deploy_libraries)
+        add_custom_target(${target}_make_apk)
+        add_custom_target(${target}_make_aab)
         return()
     endif()
 
