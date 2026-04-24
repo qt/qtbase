@@ -182,13 +182,13 @@ void QOhosNativeXComponentInputHandler::handleTouchEvent(void *window)
     if (isMouseOrUnknownTouchType)
         return;
 
-    for (std::uint32_t i = 0; i < touchEvent.numPoints; ++i) {
-        auto touchDisplayPosition = tryGetTouchPointDisplayPosition(m_xComponent, i);
+    for (std::uint32_t pointIndex = 0; pointIndex < touchEvent.numPoints; ++pointIndex) {
+        auto touchDisplayPosition = tryGetTouchPointDisplayPosition(m_xComponent, pointIndex);
         if (!touchDisplayPosition.hasValue())
             continue;
 
         validTouchPoints.push_back(QOhosTouchEventTouchPointData{
-            .touchPoint = touchEvent.touchPoints[i],
+            .touchPoint = touchEvent.touchPoints[pointIndex],
             .displayPosition = touchDisplayPosition.value(),
         });
     }
