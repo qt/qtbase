@@ -366,6 +366,8 @@ public:
 
     virtual void placeMetaCall(QObject *object) override;
 
+    int id() const { return d.method_offset_ + d.method_relative_; }
+
 protected:
     struct Data {
         QtPrivate::SlotObjUniquePtr slotObj_;
