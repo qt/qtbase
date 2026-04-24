@@ -144,23 +144,40 @@ void QOhosInputMethodEventHandler::onTouchEventFromXComponent(
 
     for (const auto &touchPointData : touchPoints) {
         const auto &touchPoint = touchPointData.touchPoint;
-        QEventPoint::State state =
-            tryMapXComponentTouchEventTypeToQt(touchPoint.type)
-                .valueOr(QEventPoint::State::Stationary);
-
         QPointF clickPoint = touchPointData.displayPosition;
 
-        if (state != QEventPoint::State::Released)
-            activeTouchPointDisplayPositions.push_back(touchPointData.displayPosition.toPoint());
+        switch (touchPointData.toolType) {
+        case ::OH_NATIVEXCOMPONENT_TOOL_TYPE_FINGER: {
+            QEventPoint::State state =
+                tryMapXComponentTouchEventTypeToQt(touchPoint.type)
+                    .valueOr(QEventPoint::State::Stationary);
 
-        QWindowSystemInterface::TouchPoint qwsiTouchPoint;
-        qwsiTouchPoint.id = touchPoint.id;
-        qwsiTouchPoint.pressure = touchPoint.force;
-        qwsiTouchPoint.normalPosition =
-            calculateTouchPointNormalPosition(targetWindow, clickPoint);
-        qwsiTouchPoint.state = state;
-        qwsiTouchPoint.area = calculateTouchPointArea(clickPoint + displayOffset);
-        wsiTouchPoints.push_back(qwsiTouchPoint);
+            if (state != QEventPoint::State::Released)
+                activeTouchPointDisplayPositions.push_back(touchPointData.displayPosition.toPoint());
+
+            QWindowSystemInterface::TouchPoint qwsiTouchPoint;
+            qwsiTouchPoint.id = touchPoint.id;
+            qwsiTouchPoint.pressure = touchPoint.force;
+            qwsiTouchPoint.normalPosition =
+                calculateTouchPointNormalPosition(targetWindow, clickPoint);
+            qwsiTouchPoint.state = state;
+            qwsiTouchPoint.area = calculateTouchPointArea(clickPoint + displayOffset);
+            wsiTouchPoints.push_back(qwsiTouchPoint);
+            break;
+        }
+        case ::OH_NATIVEXCOMPONENT_TOOL_TYPE_PEN:
+        case ::OH_NATIVEXCOMPONENT_TOOL_TYPE_RUBBER:
+        case ::OH_NATIVEXCOMPONENT_TOOL_TYPE_BRUSH:
+        case ::OH_NATIVEXCOMPONENT_TOOL_TYPE_PENCIL:
+        case ::OH_NATIVEXCOMPONENT_TOOL_TYPE_AIRBRUSH:
+        case ::OH_NATIVEXCOMPONENT_TOOL_TYPE_LENS:
+        case ::OH_NATIVEXCOMPONENT_TOOL_TYPE_UNKNOWN:
+            qOhosWarning(QtForOhos) << "Skipping unsupported tool type =" << touchPointData.toolType;
+            break;
+        case ::OH_NATIVEXCOMPONENT_TOOL_TYPE_MOUSE:
+            qOhosWarning(QtForOhos) << "Skipping mouse tool type in touch event.";
+            break;
+        }
     }
 
     auto singleActiveTouchEventGlobalPosition = activeTouchPointDisplayPositions.size() == 1
