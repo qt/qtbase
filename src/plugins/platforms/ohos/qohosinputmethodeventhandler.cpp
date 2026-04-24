@@ -134,6 +134,8 @@ void QOhosInputMethodEventHandler::onTouchEventFromXComponent(
 
     QList<QWindowSystemInterface::TouchPoint> wsiTouchPoints;
 
+    auto timeStampMs = ch::duration_cast<ch::milliseconds>(timeStamp);
+
     std::vector<QPoint> activeTouchPointDisplayPositions;
 
     auto displayOffset = targetWindow != nullptr
@@ -169,7 +171,7 @@ void QOhosInputMethodEventHandler::onTouchEventFromXComponent(
         .targetWindow = targetWindow,
         .touchPoints = wsiTouchPoints,
         .touchDevice = touchDevice,
-        .timestampMs = ch::duration_cast<ch::milliseconds>(timeStamp),
+        .timestampMs = timeStampMs,
         .modifiers = modifiers,
         .singleTouchPointEventGlobalPosition = singleActiveTouchEventGlobalPosition,
     };
