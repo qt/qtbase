@@ -16,12 +16,15 @@ import android.view.inputmethod.ExtractedText;
 import android.view.inputmethod.ExtractedTextRequest;
 import android.view.inputmethod.InputConnection;
 import android.view.KeyEvent;
+import android.util.Log;
 
 import org.qtproject.qt.android.QtInputConnection.QtInputConnectionListener;
 
 @SuppressLint("ViewConstructor")
 class QtEditText extends View
 {
+    static final String QtTAG = "QtEditText";
+
     int m_initialCapsMode = 0;
     int m_imeOptions = 0;
     int m_inputType = InputType.TYPE_CLASS_TEXT;
@@ -109,9 +112,14 @@ class QtEditText extends View
     public InputConnection onCreateInputConnection(EditorInfo outAttrs)
     {
         outAttrs.inputType = m_inputType;
-        outAttrs.imeOptions = System.getenv("QT_ANDROID_NO_FULLSCREEN_KEYBOARD") != null
-                ? m_imeOptions | EditorInfo.IME_FLAG_NO_FULLSCREEN
-                : m_imeOptions;
+
+        outAttrs.imeOptions = m_imeOptions;
+        if (System.getenv("QT_ANDROID_NO_FULLSCREEN_KEYBOARD") != null) {
+            outAttrs.imeOptions = m_imeOptions | EditorInfo.IME_FLAG_NO_FULLSCREEN;
+            Log.w(QtTAG, "Use Qt::ImhNoFullscreen instead of QT_ANDROID_NO_FULLSCREEN_KEYBOARD "
+                    + "environment variable on Qt 6.12 and newer.");
+        }
+
         outAttrs.initialCapsMode = m_initialCapsMode;
         m_inputConnection = new QtInputConnection(this,m_qtInputConnectionListener);
 
