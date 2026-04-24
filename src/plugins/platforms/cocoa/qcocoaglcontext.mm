@@ -599,7 +599,7 @@ QT_END_NAMESPACE
 @implementation QNoopDisplayDelegate
 - (void)displayLayer:(CALayer *)layer
 {
-    qCWarning(lcQpaOpenGLContext) << "Ignoring display of" << layer << "during [NSOpenGLContext update]";
+    qCInfo(lcQpaOpenGLContext) << "Ignoring display of" << layer << "during [NSOpenGLContext update]";
 }
 @end
 #endif
