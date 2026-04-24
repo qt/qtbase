@@ -260,10 +260,10 @@ public:
     void reallocate(qsizetype alloc, QArrayData::AllocationOption option)
     {
         auto pair = Data::reallocateUnaligned(this->d, this->ptr, alloc, option);
-        Q_CHECK_PTR(pair.second);
-        Q_ASSERT(pair.first != nullptr);
-        this->d = pair.first;
-        this->ptr = pair.second;
+        Q_CHECK_PTR(pair.ptr);
+        Q_ASSERT(pair.header != nullptr);
+        this->d = pair.header;
+        this->ptr = pair.ptr;
     }
 };
 
@@ -800,10 +800,10 @@ public:
     void reallocate(qsizetype alloc, QArrayData::AllocationOption option)
     {
         auto pair = Data::reallocateUnaligned(this->d, this->ptr, alloc, option);
-        Q_CHECK_PTR(pair.second);
-        Q_ASSERT(pair.first != nullptr);
-        this->d = pair.first;
-        this->ptr = pair.second;
+        Q_CHECK_PTR(pair.ptr);
+        Q_ASSERT(pair.header != nullptr);
+        this->d = pair.header;
+        this->ptr = pair.ptr;
     }
 };
 
@@ -936,7 +936,9 @@ public:
                 this->d->ref_.storeRelaxed(1);
             } else {
                 // we must allocate new memory
-                std::tie(this->d, this->ptr) = Data::allocate(newCapacity);
+                auto [hdr, p] = Data::allocate(newCapacity);
+                this->d = hdr;
+                this->ptr = p;
                 this->size = 0;
                 undoPrependOptimization = false;
             }

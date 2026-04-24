@@ -584,7 +584,10 @@ void tst_QArrayData::typedData()
     {
         Deallocator keeper(sizeof(char),
                 alignof(QTypedArrayData<char>::AlignmentDummy));
+        QT_WARNING_PUSH
+        QT_WARNING_DISABLE_DEPRECATED
         std::pair<QTypedArrayData<char> *, char *> pair = QTypedArrayData<char>::allocate(10);
+        QT_WARNING_POP
         QArrayData *array = pair.first;
         keeper.headers.append(array);
 
@@ -604,7 +607,10 @@ void tst_QArrayData::typedData()
     {
         Deallocator keeper(sizeof(short),
                 alignof(QTypedArrayData<short>::AlignmentDummy));
+        QT_WARNING_PUSH
+        QT_WARNING_DISABLE_DEPRECATED
         std::pair<QTypedArrayData<short> *, short *> pair = QTypedArrayData<short>::allocate(10);
+        QT_WARNING_POP
         QArrayData *array = pair.first;
         keeper.headers.append(array);
 
@@ -624,7 +630,10 @@ void tst_QArrayData::typedData()
     {
         Deallocator keeper(sizeof(double),
                 alignof(QTypedArrayData<double>::AlignmentDummy));
+        QT_WARNING_PUSH
+        QT_WARNING_DISABLE_DEPRECATED
         std::pair<QTypedArrayData<double> *, double *> pair = QTypedArrayData<double>::allocate(10);
+        QT_WARNING_POP
         QArrayData *array = pair.first;
         keeper.headers.append(array);
 
