@@ -187,8 +187,17 @@ void QOhosNativeXComponentInputHandler::handleTouchEvent(void *window)
         if (!touchDisplayPosition.hasValue())
             continue;
 
+        ::OH_NativeXComponent_TouchPointToolType toolType = ::OH_NATIVEXCOMPONENT_TOOL_TYPE_UNKNOWN;
+        std::int32_t resToolType = ::OH_NativeXComponent_GetTouchPointToolType(m_xComponent.handle(), pointIndex, &toolType);
+        if (resToolType != ::OH_NATIVEXCOMPONENT_RESULT_SUCCESS) {
+            qOhosCritical(QtForOhos)
+                << "OH_NativeXComponent_GetTouchPointToolType() failed,"
+                << "touchPoint id:" << touchEvent.touchPoints[pointIndex].id << "result:" << resToolType;
+            toolType = ::OH_NATIVEXCOMPONENT_TOOL_TYPE_UNKNOWN;
+        }
         validTouchPoints.push_back(QOhosTouchEventTouchPointData{
             .touchPoint = touchEvent.touchPoints[pointIndex],
+            .toolType = toolType,
             .displayPosition = touchDisplayPosition.value(),
         });
     }
