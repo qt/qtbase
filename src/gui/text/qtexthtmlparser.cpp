@@ -1925,6 +1925,7 @@ public:
     inline QTextHtmlStyleSelector(const QTextHtmlParser *parser)
         : parser(parser) { nameCaseSensitivity = Qt::CaseInsensitive; }
 
+    bool nodeNameEquals(NodePtr node, const QString& nodeName) const override;
     QStringList nodeNames(NodePtr node) const override;
     QString attributeValue(NodePtr node, const QCss::AttributeSelector &aSelector) const override;
     bool hasAttributes(NodePtr node) const override;
@@ -1937,6 +1938,11 @@ public:
 private:
     const QTextHtmlParser *parser;
 };
+
+bool QTextHtmlStyleSelector::nodeNameEquals(NodePtr node, const QString& nodeName) const
+{
+    return parser->at(node.id).tag.compare(nodeName, nameCaseSensitivity) == 0;
+}
 
 QStringList QTextHtmlStyleSelector::nodeNames(NodePtr node) const
 {
