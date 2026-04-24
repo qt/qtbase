@@ -1740,7 +1740,7 @@ void tst_QRangeModel::itemAccess()
     QVERIFY(model->setData(index, "Two"));
     QCOMPARE(model->data(index), "TWO");
     QVERIFY(!model->setData(index, QVariant::fromValue(Qt::blue), Qt::DecorationRole));
-};
+}
 
 QTEST_MAIN(tst_QRangeModel)
 #include "tst_qrangemodel.moc"
