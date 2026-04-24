@@ -759,8 +759,7 @@ void QWindowsStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, 
             points[3] = { points[2].x() + 4 * scaleh,   points[2].y() - 4 * scalev };
             points[4] = { points[3].x(),                points[3].y() - 2 * scalev };
             points[5] = { points[4].x() - 4 * scaleh,   points[4].y() + 4 * scalev };
-            p->setPen(QPen(opt->palette.text().color(), 0));
-            p->setBrush(opt->palette.text());
+            p->setBrush(p->pen().color());
             p->drawPolygon(points.data(), static_cast<int>(points.size()));
         }
         if (doRestore)
