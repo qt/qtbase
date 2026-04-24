@@ -6,6 +6,7 @@
 #include <QtCore/private/qnapi_p.h>
 #include <QtCore/private/qohoscommon_p.h>
 #include <QtCore/private/qohoslogger_p.h>
+#include <qohosdeviceinfo_p.h>
 #include <qohosjsenv_p.h>
 #include <qohosplugincore.h>
 #include <QtCore/qurl.h>
@@ -187,6 +188,10 @@ void showFileDialogSave(
                 documentSaveOptions.Set("defaultFilePathUri", QOhosPlatformServices::mapPathToOhosUriInJsThread(defaultFilePath.toStdString()));
             if (!fileSuffixChoices.isEmpty())
                 documentSaveOptions.Set("fileSuffixChoices", mapToNapiArray(env, fileSuffixChoices));
+
+            constexpr auto minSupportedAutoCreateEmptyFilePropertyOhosSdkApiVersion = 23;
+            if (QOhosDeviceInfo::sdkApiVersion() >= minSupportedAutoCreateEmptyFilePropertyOhosSdkApiVersion)
+                documentSaveOptions.Set("autoCreateEmptyFile", false);
 
             startOhosFilePicker(
                 jsState, getQAbilityPeerForOptInstanceId(jsState, qAbilityInstanceId), optContextJsWinId,
