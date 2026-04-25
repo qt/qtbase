@@ -14,10 +14,6 @@
 
 #ifndef QT_NO_NETWORKINTERFACE
 
-#if defined(QT_NO_CLOCK_MONOTONIC)
-#  include "qdatetime.h"
-#endif
-
 #if QT_CONFIG(getifaddrs)
 # include <ifaddrs.h>
 #endif
@@ -522,12 +518,7 @@ static void getAddressExtraInfo(QNetworkAddressEntry *entry, struct sockaddr *sa
     auto toDeadline = [](time_t when) {
         QDeadlineTimer deadline = QDeadlineTimer::Forever;
         if (when) {
-#if defined(QT_NO_CLOCK_MONOTONIC)
-            // no monotonic clock
-            deadline.setPreciseRemainingTime(when - QDateTime::currentSecsSinceEpoch());
-#else
             deadline.setPreciseDeadline(when);
-#endif
         }
         return deadline;
     };
