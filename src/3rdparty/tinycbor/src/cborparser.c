@@ -1387,8 +1387,8 @@ CborError cbor_value_text_string_equals(const CborValue *value, const char *stri
  * behaviour is undefined, so checking with \ref cbor_value_get_type or \ref
  * cbor_value_is_map is recommended.
  *
- * If the item is found, it is stored in \a result. If no item is found
- * matching the key, then \a result will contain an element of type \ref
+ * If the item is found, it is stored in \a element. If no item is found
+ * matching the key, then \a element will contain an element of type \ref
  * CborInvalidType. Matching is performed using
  * cbor_value_text_string_equals(), so tagged strings will also match.
  *

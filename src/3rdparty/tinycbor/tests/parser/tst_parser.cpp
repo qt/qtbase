@@ -157,7 +157,11 @@ struct ParserWrapper
     uint8_t *allocateMemory(size_t);
     void freeMemory();
 
+#if defined(Q_PROCESSOR_X86)
     static const size_t PageSize = 4096;
+#else
+    static inline const size_t PageSize = getpagesize();
+#endif
     static inline size_t mmapAllocation(size_t n)
     {
         // round up and add one page
@@ -1674,6 +1678,16 @@ void tst_Parser::strictValidation_data()
     QTest::newRow("invalid-utf8-overlong-3-6") << raw("\x66\xfc\x80\x80\x80\xa0\x80") << int(CborValidateStrictMode) << CborErrorInvalidUtf8TextString;
     QTest::newRow("invalid-utf8-overlong-4-5") << raw("\x65\xf8\x80\x84\x80\x80") << int(CborValidateStrictMode) << CborErrorInvalidUtf8TextString;
     QTest::newRow("invalid-utf8-overlong-4-6") << raw("\x66\xfc\x80\x80\x84\x80\x80") << int(CborValidateStrictMode) << CborErrorInvalidUtf8TextString;
+    // valid UTF-8 but split into CBOR chunks
+    QTest::newRow("invalid-utf8-split-u0080") << raw("\x7f\x61\xc2\x61\x80\xff") << int(CborValidateUtf8) << CborErrorInvalidUtf8TextString;
+    QTest::newRow("invalid-utf8-split-u00ff") << raw("\x7f\x61\xc3\x61\xbf\xff") << int(CborValidateUtf8) << CborErrorInvalidUtf8TextString;
+    QTest::newRow("invalid-utf8-split-u0100") << raw("\x7f\x61\xc4\x61\x80\xff") << int(CborValidateUtf8) << CborErrorInvalidUtf8TextString;
+    QTest::newRow("invalid-utf8-split-u07ff") << raw("\x7f\x61\xdf\x61\xbf\xff") << int(CborValidateUtf8) << CborErrorInvalidUtf8TextString;
+    QTest::newRow("invalid-utf8-split-u0800") << raw("\x7f\x61\xe0\x62\xa0\x80\xff") << int(CborValidateUtf8) << CborErrorInvalidUtf8TextString;
+    QTest::newRow("invalid-utf8-split-u1000") << raw("\x7f\x62\xe1\x80\x61\x80\xff") << int(CborValidateUtf8) << CborErrorInvalidUtf8TextString;
+    QTest::newRow("invalid-utf8-split-uffff") << raw("\x7f\x61\xef\x62\xbf\xbf\xff") << int(CborValidateUtf8) << CborErrorInvalidUtf8TextString;
+    QTest::newRow("invalid-utf8-split-U00010000") << raw("\x7f\x61\xf0\x63\x90\x80\x80\xff") << int(CborValidateUtf8) << CborErrorInvalidUtf8TextString;
+    QTest::newRow("invalid-utf8-split-U0010ffff") << raw("\x7f\x62\xf4\x8f\x62\xbf\xbf\xff") << int(CborValidateUtf8) << CborErrorInvalidUtf8TextString;
 
     QTest::newRow("nonunique-content-map-UU") << raw("\xa2\0\1\0\2") << int(CborValidateStrictMode) << CborErrorMapKeysNotUnique;
     QTest::newRow("nonunique-content-map-SS") << raw("\xa2\x61z\1\x61z\2") << int(CborValidateStrictMode) << CborErrorMapKeysNotUnique;
