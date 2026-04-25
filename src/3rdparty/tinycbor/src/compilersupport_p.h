@@ -52,8 +52,12 @@
 #  define cbor_static_assert(x)         ((void)sizeof(char[2*!!(x) - 1]))
 #endif
 
-#if defined(__has_cpp_attribute)    // C23 and C++17
+#if defined(__has_cpp_attribute) && defined(__cplusplus)    // C++17
 #  if __has_cpp_attribute(fallthrough)
+#    define CBOR_FALLTHROUGH            [[fallthrough]]
+#  endif
+#elif defined(__has_c_attribute) && !defined(__cplusplus)   // C23
+#  if __has_c_attribute(fallthrough)
 #    define CBOR_FALLTHROUGH            [[fallthrough]]
 #  endif
 #endif
