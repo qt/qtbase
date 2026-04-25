@@ -1319,18 +1319,21 @@ public:
             if constexpr (QRangeModelDetails::item_access<wrapped_value_type>::hasFlags) {
                 using ItemAccess = QRangeModelDetails::QRangeModelItemAccess<wrapped_value_type>;
                 customFlags = ItemAccess::flags(ref);
-                if constexpr (!isMutable())
-                    *customFlags &= ~Qt::ItemIsEditable;
                 return true;
             }
             return false;
         });
+
+        Qt::ItemFlags f = customFlags ? *customFlags : Structure::defaultFlags();
+        // adjust custom flags based on what is not possible
+        if constexpr (!isMutable())
+            f &= ~Qt::ItemIsEditable;
+        if (index.column())
+            f |= Qt::ItemNeverHasChildren;
         if (customFlags)
-            return *customFlags;
+            return f;
 
         // compute flags ourselves
-        Qt::ItemFlags f = Structure::defaultFlags();
-
         if constexpr (isMutable()) {
             if constexpr (row_traits::hasMetaObject) {
                 if (index.column() < row_traits::fixed_size()) {

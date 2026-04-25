@@ -919,6 +919,8 @@ void tst_QRangeModel::flags()
              changeActions.testFlags(ChangeAction::SetData));
     QCOMPARE(last.flags().testFlag(Qt::ItemIsEditable),
              changeActions.testFlags(ChangeAction::SetData));
+    if (last.column() != 0)
+        QVERIFY(last.flags().testFlag(Qt::ItemNeverHasChildren));
 }
 
 void tst_QRangeModel::headerData()
