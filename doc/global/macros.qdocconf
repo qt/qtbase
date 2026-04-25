@@ -84,8 +84,21 @@ macro.QTOB                = "Qt Onboard"
 macro.QUL                 = "Qt Quick Ultralite"
 macro.QtTAS               = "Qt Tools for Android Studio"
 
-# The following macros are used for various Android docs. The purpose is to keep
-# it as simple as updating these instead of updating multiple lines in scattered locations.
+####################################################################################################
+# The following macros are used for various Android docs. The purpose is to keep                   #
+# it as simple as updating these instead of updating multiple lines in scattered locations.        #
+#                                                                                                  #
+# NOTE: Make sure that the following locations are kept in sync with any update to these values:   #
+#   1. Android provisioning scripts:                                                               #
+#       - qt5/coin/provisioning/common/linux/android_linux.sh                                      #
+#       - qt5/coin/provisioning/common/macos/android.sh                                            #
+#       - qt5/coin/provisioning/common/windows/android.ps1                                         #
+#   2. Gradle provisioning scripts and cache project                                               #
+#       - qt5/coin/provisioning/common/linux/gradle.sh                                             #
+#       - qt5/coin/provisioning/common/shared/gradle/                                              #
+#   3. Qt modules' JAR project Gradle files (see qt5/settings.gradle for a full list).             #
+#   4. Android default templates (src/android/templates*) and under examples and tests.            #
+####################################################################################################
 macro.AndroidAbis         = "\\c{arm64-v8a}, \\c{x86_64}, \\c{x86}, and \\c{armeabi-v7a}"
 macro.NdkVer              = "r27c"
 macro.NdkFullVer          = "27.2.12479018"
