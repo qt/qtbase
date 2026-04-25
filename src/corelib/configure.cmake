@@ -103,29 +103,6 @@ test(fptr);
 }
 ")
 
-# clock-monotonic
-qt_config_compile_test(clock_monotonic
-    LABEL "POSIX monotonic clock"
-    LIBRARIES
-        WrapRt::WrapRt
-    CODE
-"#include <unistd.h>
-#include <time.h>
-
-int main(void)
-{
-    /* BEGIN TEST: */
-#if defined(_POSIX_MONOTONIC_CLOCK) && (_POSIX_MONOTONIC_CLOCK-0 >= 0)
-timespec ts;
-clock_gettime(CLOCK_MONOTONIC, &ts);
-#else
-#  error Feature _POSIX_MONOTONIC_CLOCK not available
-#endif
-    /* END TEST: */
-    return 0;
-}
-")
-
 # cloexec
 qt_config_compile_test(cloexec
     LABEL "O_CLOEXEC"
@@ -786,11 +763,6 @@ qt_feature("clock-gettime" PRIVATE
     LABEL "clock_gettime()"
     CONDITION UNIX AND WrapRt_FOUND
 )
-qt_feature("clock-monotonic" PUBLIC
-    LABEL "POSIX monotonic clock"
-    CONDITION QT_FEATURE_clock_gettime AND TEST_clock_monotonic
-)
-qt_feature_definition("clock-monotonic" "QT_NO_CLOCK_MONOTONIC" NEGATE VALUE "1")
 qt_feature("copy_file_range" PRIVATE
     LABEL "copy_file_range()"
     CONDITION QT_FEATURE_process AND TEST_copy_file_range
