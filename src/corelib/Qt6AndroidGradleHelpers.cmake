@@ -386,8 +386,6 @@ function(_qt_internal_android_add_gradle_build target type)
     _qt_internal_android_get_target_android_build_dir(android_build_dir ${target})
     set(gradlew "${android_build_dir}/${gradlew_file_name}")
 
-    set(package_file_path "${android_build_dir}/${target}.${type}")
-
     _qt_internal_android_get_output_package_name(package_build_file_path ${target} ${type})
 
     set(extra_deps "")
@@ -403,24 +401,28 @@ function(_qt_internal_android_add_gradle_build target type)
     endforeach()
 
     set(gradle_scripts "$<TARGET_PROPERTY:${target},_qt_android_deployment_files>")
-    add_custom_command(OUTPUT "${package_file_path}"
-        BYPRODUCTS "${package_build_file_path}"
-        COMMAND
-            "${gradlew}" ${android_deployment_type_option}
-        COMMAND
-            ${CMAKE_COMMAND} -E copy_if_different
-            "${package_build_file_path}" "${package_file_path}"
+    add_custom_command(OUTPUT "${package_build_file_path}"
+        COMMAND "${gradlew}" ${android_deployment_type_option}
         DEPENDS
             ${target}
             ${gradle_scripts}
             ${target}_deploy_libraries
             ${extra_deps}
-        WORKING_DIRECTORY
-            "${android_build_dir}"
+        WORKING_DIRECTORY "${android_build_dir}"
         VERBATIM
     )
 
-    _qt_internal_android_sign_package(signed_package ${target} ${type})
+    set(package_file_path "${android_build_dir}/${target}.${type}")
+    _qt_internal_android_sign_package(signed_package_path ${target} ${type}
+        "${package_build_file_path}")
+    if(NOT signed_package_path)
+        add_custom_command(OUTPUT "${package_file_path}"
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                    "${package_build_file_path}" "${package_file_path}"
+            DEPENDS "${package_build_file_path}"
+            VERBATIM
+        )
+    endif()
 
     _qt_internal_android_gradle_cleanup_commands(gradle_cleanup_commands
         "${gradlew}" "${android_build_dir}" "${target}")
@@ -428,20 +430,20 @@ function(_qt_internal_android_add_gradle_build target type)
     if(gradle_cleanup_commands)
         add_custom_target(${target}_${type}_cleanup
             ${gradle_cleanup_commands}
-            DEPENDS "${package_file_path}" "${signed_package}"
+            DEPENDS "${package_file_path}"
             WORKING_DIRECTORY "${android_build_dir}"
             VERBATIM
         )
         add_custom_target(${target}_make_${type})
         add_dependencies(${target}_make_${type} ${target}_${type}_cleanup)
     else()
-        add_custom_target(${target}_make_${type} DEPENDS "${package_file_path}" "${signed_package}")
+        add_custom_target(${target}_make_${type} DEPENDS "${package_file_path}")
     endif()
 endfunction()
 
-function(_qt_internal_android_sign_package out_file target type)
+function(_qt_internal_android_sign_package out_file target type unsigned_build_file_path)
     string(TOUPPER "${type}" type_upper)
-    if(NOT QT_ANDROID_SIGN_${type_upper})
+    if(type STREQUAL "aar" OR NOT QT_ANDROID_SIGN_${type_upper})
         set(${out_file} "" PARENT_SCOPE)
         return()
     endif()
@@ -476,7 +478,7 @@ function(_qt_internal_android_sign_package out_file target type)
     set(package_build_file_path_signed
         "${base_output_path}/app-${deployment_type_suffix}-signed.${type}")
 
-    set(package_file_path "${android_build_dir}/${target}-signed.${type}")
+    set(package_file_path "${android_build_dir}/${target}.${type}")
 
     set(sign_package_script "${_qt_6_config_cmake_dir}/QtAndroidSignPackage.cmake")
     add_custom_command(OUTPUT "${package_file_path}"
@@ -489,7 +491,7 @@ function(_qt_internal_android_sign_package out_file target type)
             ${CMAKE_COMMAND} -E copy_if_different
             "${package_build_file_path_signed}" "${package_file_path}"
         DEPENDS
-            ${package_build_file_path}
+            ${unsigned_build_file_path}
             ${sign_package_script}
         WORKING_DIRECTORY
             "${android_build_dir}"
