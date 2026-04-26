@@ -606,11 +606,8 @@ void tst_QArrayData::typedData()
     {
         Deallocator keeper(sizeof(short),
                 alignof(QTypedArrayData<short>::AlignmentDummy));
-        QT_WARNING_PUSH
-        QT_WARNING_DISABLE_DEPRECATED
-        std::pair<QTypedArrayData<short> *, short *> pair = QTypedArrayData<short>::allocate(10);
-        QT_WARNING_POP
-        QArrayData *array = pair.first;
+        auto allocResult = QTypedArrayData<short>::allocate(10);
+        QArrayData *array = allocResult.header;
         keeper.headers.append(array);
 
         QVERIFY(array);
@@ -618,7 +615,7 @@ void tst_QArrayData::typedData()
 
         // Check that the allocated array can be used. Best tested with a
         // memory checker, such as valgrind, running.
-        ::memset(pair.second, 0, 10 * sizeof(short));
+        ::memset(allocResult.ptr, 0, 10 * sizeof(short));
 
         keeper.headers.clear();
         QTypedArrayData<short>::deallocate(array);
@@ -629,11 +626,8 @@ void tst_QArrayData::typedData()
     {
         Deallocator keeper(sizeof(double),
                 alignof(QTypedArrayData<double>::AlignmentDummy));
-        QT_WARNING_PUSH
-        QT_WARNING_DISABLE_DEPRECATED
-        std::pair<QTypedArrayData<double> *, double *> pair = QTypedArrayData<double>::allocate(10);
-        QT_WARNING_POP
-        QArrayData *array = pair.first;
+        auto allocResult = QTypedArrayData<double>::allocate(10);
+        QArrayData *array = allocResult.header;
         keeper.headers.append(array);
 
         QVERIFY(array);
@@ -641,7 +635,7 @@ void tst_QArrayData::typedData()
 
         // Check that the allocated array can be used. Best tested with a
         // memory checker, such as valgrind, running.
-        ::memset(pair.second, 0, 10 * sizeof(double));
+        ::memset(allocResult.ptr, 0, 10 * sizeof(double));
 
         keeper.headers.clear();
         QTypedArrayData<double>::deallocate(array);
