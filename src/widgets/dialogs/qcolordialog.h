@@ -70,6 +70,7 @@ Q_SIGNALS:
 
 protected:
     void changeEvent(QEvent *event) override;
+    bool event(QEvent *e) override;
     void done(int result) override;
 
 private:

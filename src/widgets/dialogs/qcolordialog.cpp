@@ -431,36 +431,6 @@ private:
 
 } // namespace QtPrivate
 
-/*
-    Internal event filter used to adjust dialog options during widget polish.
-
-    Enables DontUseNativeDialog automatically when QColorDialog is subclassed
-    and no explicit options were set by the user.
-*/
-class QColorPolishFilter : public QObject
-{
-public:
-    explicit QColorPolishFilter(QColorDialog *cd) : QObject(cd)
-    {
-        cd->installEventFilter(this);
-    }
-
-    bool eventFilter(QObject *obj, QEvent *event) override
-    {
-        if (event->type() == QEvent::Polish ) {
-            Q_ASSERT(qobject_cast<QColorDialog *>(obj));
-            auto *cd = static_cast<QColorDialog *>(obj);
-            auto *d = static_cast<QColorDialogPrivate *>(QObjectPrivate::get(cd));
-
-            if (cd->metaObject() != &QColorDialog::staticMetaObject && !d->optionsExplicitlySet)
-                cd->setOption(QColorDialog::DontUseNativeDialog);
-
-            deleteLater(); // no longer needed after first polish
-        }
-        return false;
-    }
-};
-
 /*!
     Returns the number of custom colors supported by QColorDialog. All
     color dialogs share the same custom colors.
@@ -1980,7 +1950,6 @@ static const Qt::WindowFlags qcd_DefaultWindowFlags =
 QColorDialog::QColorDialog(QWidget *parent)
     : QColorDialog(QColor(Qt::white), parent)
 {
-    new QColorPolishFilter(this);
 }
 
 /*!
@@ -1991,7 +1960,6 @@ QColorDialog::QColorDialog(const QColor &initial, QWidget *parent)
     : QDialog(*new QColorDialogPrivate, parent, qcd_DefaultWindowFlags)
 {
     Q_D(QColorDialog);
-    new QColorPolishFilter(this);
     d->init(initial);
 }
 
@@ -2240,6 +2208,23 @@ void QColorDialog::changeEvent(QEvent *e)
     if (e->type() == QEvent::LanguageChange)
         d->retranslateStrings();
     QDialog::changeEvent(e);
+}
+
+/*!
+    \reimp
+*/
+bool QColorDialog::event(QEvent *e)
+{
+    Q_D(QColorDialog);
+    switch (e->type()) {
+    case QEvent::Polish:
+        if (!d->optionsExplicitlySet && metaObject() != &QColorDialog::staticMetaObject)
+            setOption(QColorDialog::DontUseNativeDialog);
+        break;
+    default:
+        break;
+    }
+    return QDialog::event(e);
 }
 
 void QColorDialogPrivate::updateColorPicking()
