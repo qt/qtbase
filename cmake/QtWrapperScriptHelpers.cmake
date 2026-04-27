@@ -96,8 +96,6 @@ export CMAKE_GENERATOR=Xcode
         file(RELATIVE_PATH __relative_path_to_cmake_scripts_dir
             "${__qt_bin_dir_absolute}" "${CMAKE_CURRENT_LIST_DIR}")
     endif()
-    file(TO_NATIVE_PATH "${__relative_path_to_cmake_scripts_dir}"
-        __relative_path_to_cmake_scripts_dir)
 
     # Store arguments we want to forward from configure to qt-configure-module arguments in a
     # side-car file. If there's nothing to forward, create an empty file.
@@ -112,6 +110,9 @@ export CMAKE_GENERATOR=Xcode
     qt_copy_or_install(FILES "${side_car_file_path}" DESTINATION "${__GlobalConfig_install_dir}")
 
     if(generate_unix)
+        # Ensure forward slashes for Unix shell scripts.
+        file(TO_CMAKE_PATH "${__relative_path_to_cmake_scripts_dir}"
+            __relative_path_to_cmake_scripts_dir)
         configure_file("${CMAKE_CURRENT_SOURCE_DIR}/bin/qt-configure-module.in"
             "${QT_BUILD_DIR}/${INSTALL_BINDIR}/qt-configure-module" @ONLY
             NEWLINE_STYLE LF)
@@ -119,6 +120,9 @@ export CMAKE_GENERATOR=Xcode
             DESTINATION "${INSTALL_BINDIR}")
     endif()
     if(generate_non_unix)
+        # Ensure native separators for Windows batch scripts.
+        string(REPLACE "/" "\\" __relative_path_to_cmake_scripts_dir
+            "${__relative_path_to_cmake_scripts_dir}")
         configure_file("${CMAKE_CURRENT_SOURCE_DIR}/bin/qt-configure-module.bat.in"
             "${QT_BUILD_DIR}/${INSTALL_BINDIR}/qt-configure-module.bat" @ONLY
             NEWLINE_STYLE CRLF)
@@ -290,10 +294,11 @@ function(qt_internal_create_qt_configure_part_wrapper_script component)
     file(RELATIVE_PATH relative_path_from_libexec_dir_to_bin_dir
         ${__qt_libexec_dir_absolute}
         ${__qt_bin_dir_absolute})
-    file(TO_NATIVE_PATH "${relative_path_from_libexec_dir_to_bin_dir}"
-                        relative_path_from_libexec_dir_to_bin_dir)
 
     if(generate_unix)
+        # Ensure forward slashes for Unix shell scripts.
+        file(TO_CMAKE_PATH "${relative_path_from_libexec_dir_to_bin_dir}"
+                            relative_path_from_libexec_dir_to_bin_dir)
         configure_file("${CMAKE_CURRENT_SOURCE_DIR}/libexec/${script_name}.in"
             "${QT_BUILD_DIR}/${INSTALL_LIBEXECDIR}/${script_name}" @ONLY
             NEWLINE_STYLE LF)
@@ -302,6 +307,9 @@ function(qt_internal_create_qt_configure_part_wrapper_script component)
                    DESTINATION "${INSTALL_LIBEXECDIR}")
     endif()
     if(generate_non_unix)
+        # Ensure native separators for Windows batch scripts.
+        string(REPLACE "/" "\\" relative_path_from_libexec_dir_to_bin_dir
+            "${relative_path_from_libexec_dir_to_bin_dir}")
         configure_file("${CMAKE_CURRENT_SOURCE_DIR}/libexec/${script_name}.bat.in"
             "${QT_BUILD_DIR}/${INSTALL_BINDIR}/${script_name}.bat" @ONLY
             NEWLINE_STYLE CRLF)
