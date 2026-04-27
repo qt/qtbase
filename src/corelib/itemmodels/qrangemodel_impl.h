@@ -24,6 +24,7 @@
 #include <QtCore/qmap.h>
 #include <QtCore/qscopedvaluerollback.h>
 #include <QtCore/qset.h>
+#include <QtCore/qregularexpression.h>
 #include <QtCore/qvarlengtharray.h>
 
 #include <algorithm>
@@ -1001,6 +1002,8 @@ public:
     void setAutoConnectPolicy();
 
     void sort(int column, Qt::SortOrder order);
+    QModelIndexList match(const QModelIndex &start, int role, const QVariant &value,
+                          int hits, Qt::MatchFlags flags) const;
 
     // bindings for overriding
 
@@ -1033,6 +1036,7 @@ public:
 
     // 6.12
     using Sort = Method<&Self::sort>;
+    using Match = Method<&Self::match>;
 
     template <typename C>
     using MethodTemplates = std::tuple<
@@ -1060,7 +1064,8 @@ public:
         typename C::RoleNames,
         typename C::MultiData,
         typename C::SetAutoConnectPolicy,
-        typename C::Sort
+        typename C::Sort,
+        typename C::Match
     >;
 
     static Q_CORE_EXPORT QRangeModelImplBase *getImplementation(QRangeModel *model);
@@ -2173,6 +2178,108 @@ public:
         this->changePersistentIndexList(fromIndexes, toIndexes);
     }
 
+    QModelIndexList match(const QModelIndex &start, int role, const QVariant &value, int hits,
+                          Qt::MatchFlags flags) const
+    {
+        QModelIndexList result;
+        uint matchType = (flags & Qt::MatchTypeMask).toInt();
+        Qt::CaseSensitivity cs = flags & Qt::MatchCaseSensitive ? Qt::CaseSensitive : Qt::CaseInsensitive;
+        QString text; // only convert to a string if it is needed
+#if QT_CONFIG(regularexpression)
+        QRegularExpression rx; // only create it if needed
+#endif
+        // QString or regular expression based matching
+        auto matchString = [&](const QString &str) -> bool {
+            if (text.isEmpty())
+                text = value.toString();
+            switch (matchType) {
+#if QT_CONFIG(regularexpression)
+            case Qt::MatchRegularExpression:
+                if (rx.pattern().isEmpty()) {
+                    if (value.userType() == QMetaType::QRegularExpression)
+                        rx = value.toRegularExpression();
+                    else {
+                        rx.setPattern(value.toString());
+                        if (cs == Qt::CaseInsensitive)
+                            rx.setPatternOptions(QRegularExpression::CaseInsensitiveOption);
+                    }
+                }
+                return str.contains(rx);
+            case Qt::MatchWildcard:
+                if (rx.pattern().isEmpty()) {
+                    rx.setPattern(QRegularExpression::wildcardToRegularExpression(
+                            value.toString(), QRegularExpression::NonPathWildcardConversion));
+                    if (cs == Qt::CaseInsensitive)
+                        rx.setPatternOptions(QRegularExpression::CaseInsensitiveOption);
+                }
+                return str.contains(rx);
+#endif
+            case Qt::MatchStartsWith:
+                return str.startsWith(text, cs);
+            case Qt::MatchEndsWith:
+                return str.endsWith(text, cs);
+            case Qt::MatchFixedString:
+                return str.compare(text, cs) == 0;
+            case Qt::MatchContains:
+                return str.contains(text, cs);
+            default:
+                return false;
+            }
+        };
+
+        auto matchElement = [&](const auto &element, const QModelIndex &idx) {
+            using value_type = q20::remove_cvref_t<decltype(element)>;
+            using wrapped_value_type = QRangeModelDetails::wrapped_t<value_type>;
+            using multi_role = QRangeModelDetails::is_multi_role<value_type>;
+
+            if constexpr (QRangeModelDetails::item_access<wrapped_value_type>()
+                          || multi_role() || has_metaobject<value_type>) {
+                QModelRoleData roleData(role);
+                ItemReader reader{idx, roleData, this};
+                reader(element);
+                const QVariant item = roleData.data();
+                if (matchType == Qt::MatchExactly) {
+                    if (item == value)
+                        result.append(idx);
+                } else {
+                    if (matchString(item.toString()))
+                        result.append(idx);
+                }
+            } else if constexpr (std::is_same_v<wrapped_value_type, QVariant>) {
+                if (matchType == Qt::MatchExactly) {
+                    if (element == value)
+                        result.append(idx);
+                } else {
+                    if (matchString(element.toString()))
+                        result.append(idx);
+                }
+            } else {
+                const QMetaType mt = QMetaType::fromType<wrapped_value_type>();
+                if (mt == value.metaType()) {
+                    if (matchType == Qt::MatchExactly) {
+                        if (mt.equals(&element, value.constData()))
+                            result.append(idx);
+                    } else if constexpr (std::is_same_v<wrapped_value_type, QString>) {
+                        if (matchString(element))
+                            result.append(idx);
+                    }
+                } else {
+                    const QVariant item = QVariant::fromValue(QRangeModelDetails::refTo(element));
+                    if (matchType == Qt::MatchExactly) {
+                        if (item == value)
+                            result.append(idx);
+                    } else {
+                        if (matchString(item.toString()))
+                            result.append(idx);
+                    }
+                }
+            }
+        };
+
+        that().matchImpl(start, hits, flags, result, matchElement);
+        return result;
+    }
+
     template <typename InsertFn>
     bool doInsertColumns(int column, int count, const QModelIndex &parent, InsertFn insertFn)
     {
@@ -2491,6 +2598,7 @@ public:
                                           &Self::setAutoConnectPolicy>;
 
     using Sort = Override<QRangeModelImplBase::Sort, &Self::sort>;
+    using Match = Override<QRangeModelImplBase::Match, &Self::match>;
 protected:
     ~QRangeModelImpl()
     {
@@ -3214,6 +3322,55 @@ protected:
         });
     }
 
+    template <typename MatchElement>
+    void matchImplRecursive(const range_type &range, const_row_ptr parentPtr, int from,
+                            int to, int hits, bool recurse, bool allHits, int column,
+                            QModelIndexList &result, MatchElement &&matchElement) const
+    {
+        using row_traits = typename Base::row_traits;
+        auto it = QRangeModelDetails::pos(range, from);
+        auto end = QRangeModelDetails::adl_end(range);
+
+        for (int r = from; it != end && r < to && (allHits || result.size() < hits);
+             ++it, ++r) {
+            const QModelIndex idx = this->createIndex(r, column, parentPtr);
+            row_traits::for_element_at(*it, column, [&](const auto &element) -> bool {
+                matchElement(element, idx);
+                return true;
+            });
+
+            if (recurse) {
+                decltype(auto) children = this->protocol().childRows(QRangeModelDetails::refTo(*it));
+
+                if (QRangeModelDetails::isValid(children)) {
+                    matchImplRecursive(QRangeModelDetails::refTo(children),
+                                       QRangeModelDetails::pointerTo(*it), 0,
+                                       int(QRangeModelDetails::size(QRangeModelDetails::refTo(children))),
+                                       hits, recurse, allHits, column, result, matchElement);
+                }
+            }
+        }
+    }
+
+    template <typename MatchElement>
+    void matchImpl(const QModelIndex &start, int hits, Qt::MatchFlags flags,
+                   QModelIndexList &result, MatchElement &&matchElement) const
+    {
+        const bool wrap = flags.testAnyFlag(Qt::MatchWrap);
+        const bool recurse = flags.testAnyFlag(Qt::MatchRecursive);
+        const bool allHits = (hits == -1);
+        const int column = start.column();
+        const int from = start.row();
+        const int to = this->rowCount(start.parent());
+
+        for (int i = 0; (wrap && i < 2) || (!wrap && i < 1); ++i) {
+            const int fromRow = (i == 0) ? from : 0;
+            const int toRow = (i == 0) ? to : from;
+            matchImplRecursive(*this->m_data.model(), nullptr, fromRow, toRow,
+                               hits, recurse, allHits, column, result, matchElement);
+        }
+    }
+
 private:
     range_type &childrenOf(row_ptr row)
     {
@@ -3391,6 +3548,35 @@ protected:
     }
 
     void prunePersistentIndexList(QModelIndexList &, typename Base::row_ptr) {}
+
+    template <typename MatchElement>
+    void matchImpl(const QModelIndex &start, int hits, Qt::MatchFlags flags,
+                   QModelIndexList &result, MatchElement &&matchElement) const
+    {
+        const bool wrap = flags.testAnyFlag(Qt::MatchWrap);
+        const bool allHits = (hits == -1);
+        const int column = start.column();
+        int from = start.row();
+        int to = this->rowCount({});
+        decltype(auto) siblings = *this->m_data.model();
+
+        for (int i = 0; (wrap && i < 2) || (!wrap && i < 1); ++i) {
+            auto it = QRangeModelDetails::pos(siblings, from);
+            auto end = QRangeModelDetails::adl_end(siblings);
+            for (int r = from; it != end && r < to && (allHits || result.size() < hits);
+                 ++it, ++r) {
+                if (!QRangeModelDetails::isValid(*it))
+                    continue;
+                const QModelIndex idx = this->createIndex(r, column, nullptr);
+                row_traits::for_element_at(*it, column, [&](const auto &element) -> bool {
+                    matchElement(element, idx);
+                    return true;
+                });
+            }
+            from = 0;
+            to = start.row();
+        }
+    }
 };
 
 QT_END_NAMESPACE

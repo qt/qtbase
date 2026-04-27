@@ -503,3 +503,27 @@ void tst_QRangeModel::sortTree()
     QCOMPARE(pmiParent.data(), parentData);
     QCOMPARE(pmiChild.data(), childData);
 }
+
+void tst_QRangeModel::matchRecursive()
+{
+    auto model = makeTreeModel();
+    QFETCH(QList<int>, rowsWithChildren);
+
+    const QModelIndex parent = model->index(rowsWithChildren.first(), 0);
+    QVERIFY(parent.isValid());
+    QVERIFY(model->hasChildren(parent));
+
+    const QModelIndex child = model->index(0, 0, parent);
+    QVERIFY(child.isValid());
+    const QVariant childValue = model->data(child);
+
+    const QModelIndex start = model->index(0, 0);
+    // Flat search - only root level rows
+    const auto resultsFlat = model->match(start, Qt::DisplayRole, childValue,
+                                          -1, Qt::MatchExactly);
+    // Descends into children - more matches
+    const auto results = model->match(start, Qt::DisplayRole, childValue,
+                                      -1, Qt::MatchExactly | Qt::MatchRecursive);
+    QVERIFY(results.size() > 0);
+    QVERIFY(results.size() > resultsFlat.size());
+}

@@ -86,6 +86,9 @@ private slots:
     void treeMoveRowBranches_data() { tree_data(); }
     void treeMoveRowBranches();
 
+    void matchRecursive_data() { tree_data(); }
+    void matchRecursive();
+
     void adlTest();
 
     void itemAccess_data();
@@ -99,6 +102,10 @@ private slots:
     void sortCollator();
     void sortTree_data(){ tree_data(); }
     void sortTree();
+
+    void matchBasic();
+    void match_data() { createTestData(); }
+    void match();
 
 private:
     void createTestData();

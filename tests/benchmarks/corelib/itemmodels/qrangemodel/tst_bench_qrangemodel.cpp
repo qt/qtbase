@@ -107,6 +107,10 @@ private Q_SLOTS:
 
     void gadgetWriteAccess_data() { gadgetReadAccess_data(); }
     void gadgetWriteAccess();
+
+    void matchIntRange();
+    void matchStringRange();
+    void matchQObjectRange();
 };
 
 tst_bench_QRangeModel::tst_bench_QRangeModel(QObject *parent)
@@ -193,6 +197,90 @@ void tst_bench_QRangeModel::gadgetWriteAccess()
     QBENCHMARK {
         QVERIFY(model->setData(index, display, Qt::DisplayRole));
         QVERIFY(model->setData(index, user, Qt::UserRole));
+    }
+}
+
+class Person : public QObject {
+    Q_OBJECT
+    Q_PROPERTY(QString name MEMBER m_name)
+    Q_PROPERTY(int age MEMBER m_age)
+public:
+    Person(const QString &name, int age)
+        : m_name(name), m_age(age)
+    {}
+private:
+    QString m_name;
+    int m_age;
+};
+
+template <>
+struct QRangeModel::RowOptions<Person>
+{
+    static constexpr auto rowCategory = QRangeModel::RowCategory::MultiRoleItem;
+};
+
+void tst_bench_QRangeModel::matchIntRange()
+{
+    QList<int> list;
+    list.reserve(100000);
+    for (int i = 0; i < 100000; ++i)
+        list.append(i);
+
+    QRangeModel model(list);
+    const QModelIndex start = model.index(0, 0);
+
+    QBENCHMARK {
+        model.match(start, Qt::DisplayRole, 99999, -1, Qt::MatchExactly);
+    }
+    QBENCHMARK {
+        model.match(start, Qt::DisplayRole, QVariant(99999), -1, Qt::MatchExactly);
+    }
+    QBENCHMARK {
+        model.QAbstractItemModel::match(start, Qt::DisplayRole, 99999, -1, Qt::MatchExactly);
+    }
+}
+
+void tst_bench_QRangeModel::matchStringRange()
+{
+    QList<QString> list;
+    list.reserve(10000);
+    for (int i = 0; i < 10000; ++i)
+        list.append(QString::number(i));
+
+    QRangeModel model(list);
+    const QModelIndex start = model.index(0, 0);
+
+    // Match Exactly
+    QBENCHMARK {
+        model.match(start, Qt::DisplayRole, QString("9999"), -1, Qt::MatchExactly);
+    }
+    QBENCHMARK {
+        model.QAbstractItemModel::match(start, Qt::DisplayRole, QString("9999"), -1, Qt::MatchExactly);
+    }
+    // Match Contains
+    QBENCHMARK {
+        model.match(start, Qt::DisplayRole, QString("99"), -1, Qt::MatchContains);
+    }
+    QBENCHMARK {
+        model.QAbstractItemModel::match(start, Qt::DisplayRole, QString("99"), -1, Qt::MatchContains);
+    }
+}
+
+void tst_bench_QRangeModel::matchQObjectRange()
+{
+    std::vector<std::unique_ptr<Person>> list;
+    for (int i = 0; i < 10000; ++i)
+        list.push_back(std::make_unique<Person>(QString::number(i), i));
+
+    QRangeModel model(std::move(list));
+    const QModelIndex start = model.index(0, 0);
+    const int nameRole = model.roleNames().key("name");
+
+    QBENCHMARK {
+        model.match(start, nameRole, QString("9999"), -1, Qt::MatchExactly);
+    }
+    QBENCHMARK {
+        model.QAbstractItemModel::match(start, nameRole, QString("9999"), -1, Qt::MatchExactly);
     }
 }
 

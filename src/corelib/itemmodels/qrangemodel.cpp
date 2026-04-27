@@ -1330,11 +1330,19 @@ QStringList QRangeModel::mimeTypes() const
 
 /*!
     \reimp
+
+    Returns a list of indexes for the items in the column of \a start where
+    the data stored under \a role matches \a value, using the match criteria
+    defined by \a flags. Use \a hits = -1 to find all matching items.
+
+    \note This implementation reads data directly from the underlying C++
+    range and does not dispatch through overrides of data().
 */
 QModelIndexList QRangeModel::match(const QModelIndex &start, int role, const QVariant &value,
                                          int hits, Qt::MatchFlags flags) const
 {
-    return QAbstractItemModel::match(start, role, value, hits, flags);
+    Q_D(const QRangeModel);
+    return d->impl->call<QRangeModelImplBase::Match>(start, role, value, hits, flags);
 }
 
 /*!

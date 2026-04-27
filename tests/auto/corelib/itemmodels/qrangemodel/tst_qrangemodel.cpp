@@ -1949,6 +1949,139 @@ void tst_QRangeModel::sort()
     }
 }
 
+class Person : public QObject {
+    Q_OBJECT
+    Q_PROPERTY(QString name MEMBER m_name)
+    Q_PROPERTY(int age MEMBER m_age)
+public:
+    Person(const QString &name, int age)
+        : m_name(name), m_age(age)
+    {}
+private:
+    QString m_name;
+    int m_age;
+};
+
+template <>
+struct QRangeModel::RowOptions<Person>
+{
+    static constexpr auto rowCategory = QRangeModel::RowCategory::MultiRoleItem;
+};
+
+void tst_QRangeModel::matchBasic()
+{
+    {
+        QList<int> list = {13, 23, 3, 34, 5};
+        QRangeModel model(list);
+        const QModelIndex start = model.index(0, 0);
+        const auto result = model.match(start, Qt::DisplayRole, 3, -1, Qt::MatchExactly);
+        QCOMPARE(result.size(), 1);
+        QCOMPARE(model.data(result.at(0)), 3);
+    }
+
+    {
+        QList<QString> list = {"1", "2", "35", "435", "5321"};
+        QRangeModel model(list);
+        const QModelIndex start = model.index(0, 0);
+        const auto result = model.match(start, Qt::DisplayRole, "3", -1, Qt::MatchContains);
+        QCOMPARE(result.size(), 3);
+        QCOMPARE(model.data(result.at(0)), "35");
+        QCOMPARE(model.data(result.at(1)), "435");
+        QCOMPARE(model.data(result.at(2)), "5321");
+    }
+
+    {
+        QList<QString> list = {"1", "2", "133", "43", "15"};
+        QRangeModel model(list);
+        const QModelIndex start = model.index(0, 0);
+        const auto result = model.match(start, Qt::DisplayRole, "1", -1, Qt::MatchStartsWith);
+        QCOMPARE(result.size(), 3);
+        QCOMPARE(model.data(result.at(0)), "1");
+        QCOMPARE(model.data(result.at(1)), "133");
+        QCOMPARE(model.data(result.at(2)), "15");
+    }
+
+    {
+        QList<QString> list = {"1", "2", "33", "43", "5"};
+        QRangeModel model(list);
+        const QModelIndex start = model.index(0, 0);
+        const auto result = model.match(start, Qt::DisplayRole, "3", -1, Qt::MatchEndsWith);
+        QCOMPARE(result.size(), 2);
+        QCOMPARE(model.data(result.at(0)), "33");
+        QCOMPARE(model.data(result.at(1)), "43");
+    }
+
+    {
+        QList<QString> list = {"ALICE", "Alice", "AliCe", "ALIce"};
+        QRangeModel model(list);
+        const QModelIndex start = model.index(0, 0);
+        const auto result = model.match(start, Qt::DisplayRole, "Alice", -1, Qt::MatchCaseSensitive);
+        QCOMPARE(result.size(), 1);
+        QCOMPARE(model.data(result.at(0)), "Alice");
+    }
+
+    {
+        QList<int> list = {1, 2, 3, 2, 4, 2};
+        QRangeModel model(list);
+        const QModelIndex start = model.index(0, 0);
+        const auto result = model.match(start, Qt::DisplayRole, 2, 1, Qt::MatchExactly);
+        QCOMPARE(result.size(), 1);
+        QCOMPARE(model.data(result.at(0)), 2);
+    }
+
+    {
+        std::vector<std::unique_ptr<Person>> list;
+        list.push_back(std::make_unique<Person>("Alice", 30));
+        list.push_back(std::make_unique<Person>("Marie", 25));
+        list.push_back(std::make_unique<Person>("Charlie", 30));
+
+        QRangeModel model(std::move(list));
+        const QModelIndex start = model.index(0, 0);
+
+        const int nameRole = model.roleNames().key("name");
+        const auto matchName = model.match(start, nameRole, "Marie", -1, Qt::MatchExactly);
+        QCOMPARE(matchName.size(), 1);
+        QCOMPARE(model.data(matchName.at(0), nameRole).toString(), "Marie");
+
+        const int ageRole = model.roleNames().key("age");
+        const auto matchAge = model.match(start, ageRole, 30, -1, Qt::MatchExactly);
+        QCOMPARE(matchAge.size(), 2);
+        QCOMPARE(model.data(matchAge.at(0), ageRole).toInt(), 30);
+        QCOMPARE(model.data(matchAge.at(1), ageRole).toInt(), 30);
+    }
+}
+
+void tst_QRangeModel::match()
+{
+    QFETCH(Factory, factory);
+    QFETCH(QVariant, headerValue);
+    auto model = factory();
+
+    const int role = model->roleNames().key(headerValue.toByteArray());
+    const QModelIndex start = model->index(0, 0);
+    const QVariant value = model->data(start, role);
+    { // find one
+        const auto result = model->match(start, role, value, 1, Qt::MatchExactly);
+        QCOMPARE(result.size(), 1);
+        QCOMPARE(result.first(), start);
+    }
+
+    { // find all
+        const QVariant value = model->data(start, role);
+        const auto result = model->match(start, role, value, -1, Qt::MatchExactly);
+        QVERIFY(result.size() >= 1);
+        QCOMPARE(result.first(), start);
+    }
+
+    { // wrap
+        const int lastRow = model->rowCount() - 1;
+        const QModelIndex lastIndex = model->index(lastRow, 0);
+        const auto result = model->match(lastIndex, role, value, 1,
+                                         Qt::MatchExactly | Qt::MatchWrap);
+        QVERIFY(result.size() >= 1);
+    }
+}
+
 QTEST_MAIN(tst_QRangeModel)
 #include "tst_qrangemodel.moc"
 
