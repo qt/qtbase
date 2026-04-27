@@ -200,7 +200,22 @@ function(qt_auto_detect_vcpkg)
                 "Usage of vcpkg was requested but the environment variable VCPKG_ROOT is not set."
             )
         endif()
-        set(vcpkg_toolchain_file "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake")
+
+        set(vcpkg_root "$ENV{VCPKG_ROOT}")
+        if(NOT vcpkg_root OR NOT EXISTS "${vcpkg_root}")
+            message(FATAL_ERROR
+                "The vcpkg root directory specified by the VCPKG_ROOT env var was not found: "
+                "'${vcpkg_root}'"
+            )
+        endif()
+
+        set(vcpkg_toolchain_file "${vcpkg_root}/scripts/buildsystems/vcpkg.cmake")
+        if(NOT EXISTS "${vcpkg_toolchain_file}")
+            message(FATAL_ERROR
+                "The vcpkg toolchain file was not found at the expected location: "
+                "'${vcpkg_toolchain_file}'"
+            )
+        endif()
         get_filename_component(vcpkg_toolchain_file "${vcpkg_toolchain_file}" ABSOLUTE)
 
         if(DEFINED CMAKE_TOOLCHAIN_FILE)

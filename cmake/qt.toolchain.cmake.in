@@ -29,9 +29,28 @@ if(NOT "${QT_CHAINLOAD_TOOLCHAIN_FILE}" STREQUAL "")
 endif()
 
 @init_vcpkg@
+
+set(__qt_toolchain_use_vcpkg FALSE)
 if(QT_USE_VCPKG OR (NOT DEFINED QT_USE_VCPKG AND __qt_initially_configured_use_vcpkg)
     AND DEFINED ENV{VCPKG_ROOT})
+    set(__qt_toolchain_use_vcpkg TRUE)
+endif()
 
+if(__qt_toolchain_use_vcpkg)
+    set(__qt_toolchain_vcpkg_root "$ENV{VCPKG_ROOT}")
+    if(NOT __qt_toolchain_vcpkg_root OR NOT EXISTS "${__qt_toolchain_vcpkg_root}")
+        set(__qt_toolchain_use_vcpkg FALSE)
+
+        if(NOT QT_NO_SHOW_INVALID_VCPKG_ROOT_WARNING)
+            message(WARNING "The VCPKG_ROOT environment variable is set to "
+                "'${__qt_toolchain_vcpkg_root}', but this path doesn't exist. "
+                "Vcpkg support will be disabled.")
+        endif()
+    endif()
+    unset(__qt_toolchain_vcpkg_root)
+endif()
+
+if(__qt_toolchain_use_vcpkg)
     # Ensure QT_USE_VCPKG value persists in cache
     set(QT_USE_VCPKG TRUE CACHE BOOL "Enable the use of vcpkg")
 
@@ -62,6 +81,7 @@ if(QT_USE_VCPKG OR (NOT DEFINED QT_USE_VCPKG AND __qt_initially_configured_use_v
     unset(__qt_chainload_toolchain_file_real_path)
     unset(__qt_vcpkg_toolchain_file)
 endif()
+unset(__qt_toolchain_use_vcpkg)
 
 if(NOT VCPKG_CHAINLOAD_TOOLCHAIN_FILE AND __qt_initially_configured_vcpkg_chainload_toolchain_file)
     set(VCPKG_CHAINLOAD_TOOLCHAIN_FILE
