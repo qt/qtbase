@@ -35,6 +35,7 @@ namespace QtAndroidAccessibility
     static jmethodID m_addActionMethodID = 0;
     static jmethodID m_setCheckableMethodID = 0;
     static jmethodID m_setCheckedMethodID = 0;
+    static jmethodID m_setExpandedStateMethodID = 0;
     static jmethodID m_setClickableMethodID = 0;
     static jmethodID m_setContentDescriptionMethodID = 0;
     static jmethodID m_setEditableMethodID = 0;
@@ -51,6 +52,13 @@ namespace QtAndroidAccessibility
     static int RANGE_TYPE_FLOAT = 0;
     static int RANGE_TYPE_PERCENT = 0;
     static int RANGE_TYPE_INDETERMINATE = 0;
+
+    static int EXPANDED_STATE_UNDEFINED = 0;
+    static int EXPANDED_STATE_COLLAPSED = 0;
+    static int EXPANDED_STATE_FULL = 0;
+
+    static int ACTION_COLLAPSE = 0;
+    static int ACTION_EXPAND = 0;
 
     static bool m_accessibilityActivated = false;
 
@@ -451,6 +459,28 @@ namespace QtAndroidAccessibility
         return result;
     }
 
+    static jboolean expand(JNIEnv * /*env*/, jobject /*thiz*/, jint objectId)
+    {
+        bool result = false;
+        if (m_accessibilityContext) {
+            runInObjectContext(
+                    m_accessibilityContext, [objectId]() { return clickAction_helper(objectId); },
+                    &result);
+        }
+        return result;
+    }
+
+    static jboolean collapse(JNIEnv * /*env*/, jobject /*thiz*/, jint objectId)
+    {
+        bool result = false;
+        if (m_accessibilityContext) {
+            runInObjectContext(
+                    m_accessibilityContext, [objectId]() { return clickAction_helper(objectId); },
+                    &result);
+        }
+        return result;
+    }
+
     static QString textFromValue(QAccessibleInterface *iface)
     {
         QString valueStr;
@@ -640,6 +670,14 @@ namespace QtAndroidAccessibility
         }
     }
 
+    static int expandedStateFromState(QAccessible::State state)
+    {
+        if (!state.expandable)
+            return EXPANDED_STATE_UNDEFINED;
+
+        return state.expanded ? EXPANDED_STATE_FULL : EXPANDED_STATE_COLLAPSED;
+    }
+
     static QString descriptionForInterface(QAccessibleInterface *iface)
     {
         QString desc;
@@ -819,6 +857,10 @@ namespace QtAndroidAccessibility
 
         env->CallVoidMethod(node, m_setCheckableMethodID, (bool)info.state.checkable);
         env->CallVoidMethod(node, m_setCheckedMethodID, (bool)info.state.checked);
+        if (QtAndroidPrivate::androidSdkVersion() >= 36) {
+            env->CallVoidMethod(node, m_setExpandedStateMethodID,
+                                expandedStateFromState(info.state));
+        }
         env->CallVoidMethod(node, m_setEditableMethodID, info.state.editable);
         env->CallVoidMethod(node, m_setEnabledMethodID, !info.state.disabled);
         env->CallVoidMethod(node, m_setFocusableMethodID, (bool)info.state.focusable);
@@ -840,6 +882,15 @@ namespace QtAndroidAccessibility
         // Add ACTION_SCROLL_BACKWARD
         if (hasDecreaseAction)
             env->CallVoidMethod(node, m_addActionMethodID, (int)0x00002000);    // ACTION_SCROLL_BACKWARD defined in AccessibilityNodeInfo
+
+        // Add ACTION_EXPAND / ACTION_COLLAPSE
+        if (info.state.expandable) {
+            if (info.state.expanded) {
+                env->CallVoidMethod(node, m_addActionMethodID, ACTION_COLLAPSE);
+            } else {
+                env->CallVoidMethod(node, m_addActionMethodID, ACTION_EXPAND);
+            }
+        }
 
         // try to fill in the text property, this is what the screen reader reads
         jstring jdesc = env->NewString((jchar*)info.description.constData(),
@@ -865,7 +916,9 @@ namespace QtAndroidAccessibility
         {"focusAction", "(I)Z", (void*)focusAction},
         {"scrollForward", "(I)Z", (void*)scrollForward},
         {"scrollBackward", "(I)Z", (void*)scrollBackward},
-        {"showOnScreen", "(I)Z", (void *)showOnScreen}
+        {"showOnScreen", "(I)Z", (void *)showOnScreen},
+        {"expand", "(I)Z", (void *)expand},
+        {"collapse", "(I)Z", (void *)collapse}
     };
 
 #define GET_AND_CHECK_STATIC_METHOD(VAR, CLASS, METHOD_NAME, METHOD_SIGNATURE) \
@@ -896,6 +949,10 @@ namespace QtAndroidAccessibility
         GET_AND_CHECK_STATIC_METHOD(m_addActionMethodID, nodeInfoClass, "addAction", "(I)V");
         GET_AND_CHECK_STATIC_METHOD(m_setCheckableMethodID, nodeInfoClass, "setCheckable", "(Z)V");
         GET_AND_CHECK_STATIC_METHOD(m_setCheckedMethodID, nodeInfoClass, "setChecked", "(Z)V");
+        if (QtAndroidPrivate::androidSdkVersion() >= 36) {
+            GET_AND_CHECK_STATIC_METHOD(m_setExpandedStateMethodID, nodeInfoClass,
+                                        "setExpandedState", "(I)V");
+        }
         GET_AND_CHECK_STATIC_METHOD(m_setClickableMethodID, nodeInfoClass, "setClickable", "(Z)V");
         GET_AND_CHECK_STATIC_METHOD(m_setContentDescriptionMethodID, nodeInfoClass, "setContentDescription", "(Ljava/lang/CharSequence;)V");
         GET_AND_CHECK_STATIC_METHOD(m_setEditableMethodID, nodeInfoClass, "setEditable", "(Z)V");
@@ -923,6 +980,18 @@ namespace QtAndroidAccessibility
         } else {
             RANGE_TYPE_INDETERMINATE = RANGE_TYPE_FLOAT;
         }
+
+        if (QtAndroidPrivate::androidSdkVersion() >= 36) {
+            CHECK_AND_INIT_STATIC_FIELD(int, EXPANDED_STATE_UNDEFINED, nodeInfoClass,
+                                        "EXPANDED_STATE_UNDEFINED");
+            CHECK_AND_INIT_STATIC_FIELD(int, EXPANDED_STATE_COLLAPSED, nodeInfoClass,
+                                        "EXPANDED_STATE_COLLAPSED");
+            CHECK_AND_INIT_STATIC_FIELD(int, EXPANDED_STATE_FULL, nodeInfoClass,
+                                        "EXPANDED_STATE_FULL");
+        }
+
+        CHECK_AND_INIT_STATIC_FIELD(int, ACTION_COLLAPSE, nodeInfoClass, "ACTION_COLLAPSE");
+        CHECK_AND_INIT_STATIC_FIELD(int, ACTION_EXPAND, nodeInfoClass, "ACTION_EXPAND");
 
         return true;
     }

@@ -593,6 +593,12 @@ class QtAccessibilityDelegate extends View.AccessibilityDelegate
         case AccessibilityNodeInfo.ACTION_SCROLL_BACKWARD:
             success = QtNativeAccessibility.scrollBackward(virtualViewId);
             break;
+        case AccessibilityNodeInfo.ACTION_EXPAND:
+            success = QtNativeAccessibility.expand(virtualViewId);
+            break;
+        case AccessibilityNodeInfo.ACTION_COLLAPSE:
+            success = QtNativeAccessibility.collapse(virtualViewId);
+            break;
         }
         return success;
     }
