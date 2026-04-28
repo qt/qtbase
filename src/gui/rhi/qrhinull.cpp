@@ -439,7 +439,8 @@ void QRhiNull::simulateTextureUpload(const QRhiResourceUpdateBatchPrivate::Textu
                         h = subresDesc.sourceSize().height();
                     }
                     // sourceTopLeft is not supported on this path as per QRhi docs
-                    const char *src = subresDesc.data().constData();
+                    const QByteArray srcData = subresDesc.data();
+                    const char *src = srcData.constData();
                     const int srcBpl = w * 4;
                     int srcStride = srcBpl;
                     if (subresDesc.dataStride())

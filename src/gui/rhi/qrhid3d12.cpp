@@ -2421,7 +2421,7 @@ void QD3D12CpuDescriptorPool::destroy()
     static bool leakCheck = qEnvironmentVariableIntValue("QT_RHI_LEAK_CHECK");
 #endif
     if (leakCheck) {
-        for (HeapWithMap &heap : heaps) {
+        for (const HeapWithMap &heap : std::as_const(heaps)) {
             const int leakedDescriptorCount = heap.map.count(true);
             if (leakedDescriptorCount > 0) {
                 qWarning("QD3D12CpuDescriptorPool::destroy(): "

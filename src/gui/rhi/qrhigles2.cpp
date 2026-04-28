@@ -1227,7 +1227,7 @@ void QRhiGles2::destroy()
             vao = 0;
         }
 
-        for (uint shader : m_shaderCache)
+        for (uint shader : std::as_const(m_shaderCache))
             f->glDeleteShader(shader);
         m_shaderCache.clear();
     }
@@ -1735,7 +1735,7 @@ void QRhiGles2::releaseCachedResources()
     if (!ensureContext())
         return;
 
-    for (uint shader : m_shaderCache)
+    for (uint shader : std::as_const(m_shaderCache))
         f->glDeleteShader(shader);
 
     m_shaderCache.clear();
@@ -5124,7 +5124,7 @@ QByteArray QRhiGles2::shaderSource(const QRhiShaderStage &shaderStage, QShaderVe
         } else {
             versionsToTry << 100;
         }
-        for (int v : versionsToTry) {
+        for (int v : std::as_const(versionsToTry)) {
             QShaderVersion ver(v, QShaderVersion::GlslEs);
             source = bakedShader.shader({ QShader::GlslShader, ver, shaderStage.shaderVariant() }).shader();
             if (!source.isEmpty()) {
@@ -5159,7 +5159,7 @@ QByteArray QRhiGles2::shaderSource(const QRhiShaderStage &shaderStage, QShaderVe
         }
         if (!caps.coreProfile)
             versionsToTry << 120;
-        for (int v : versionsToTry) {
+        for (int v : std::as_const(versionsToTry)) {
             source = bakedShader.shader({ QShader::GlslShader, v, shaderStage.shaderVariant() }).shader();
             if (!source.isEmpty()) {
                 if (shaderVersion)
@@ -5207,7 +5207,7 @@ bool QRhiGles2::compileShader(GLuint program, const QRhiShaderStage &shaderStage
         }
         if (m_shaderCache.size() >= MAX_SHADER_CACHE_ENTRIES) {
             // Use the simplest strategy: too many cached shaders -> drop them all.
-            for (uint shader : m_shaderCache)
+            for (uint shader : std::as_const(m_shaderCache))
                 f->glDeleteShader(shader); // does not actually get released yet when attached to a not-yet-released program
             m_shaderCache.clear();
         }
@@ -5349,8 +5349,10 @@ void QRhiGles2::sanityCheckVertexFragmentInterface(const QShaderDescription &vsD
     // name that does not match the vertex shader output at the same location.
     // This is not an error with any other API and not with GLSL >= 330 either,
     // but matters for older GLSL code that has no location qualifiers.
-    for (const QShaderDescription::InOutVariable &outVar : vsDesc.outputVariables()) {
-        for (const QShaderDescription::InOutVariable &inVar : fsDesc.inputVariables()) {
+    const auto vsOutputs = vsDesc.outputVariables();
+    const auto fsInputs = fsDesc.inputVariables();
+    for (const QShaderDescription::InOutVariable &outVar : vsOutputs) {
+        for (const QShaderDescription::InOutVariable &inVar : fsInputs) {
             if (inVar.location == outVar.location) {
                 if (inVar.name != outVar.name) {
                     qWarning("Vertex output name '%s' does not match fragment input '%s'. "
@@ -6652,7 +6654,8 @@ bool QGles2GraphicsPipeline::create()
         }
 
         // important when GLSL <= 150 is used that does not have location qualifiers
-        for (const QShaderDescription::InOutVariable &inVar : desc[VtxIdx].inputVariables())
+        const auto vtxInputVars = desc[VtxIdx].inputVariables();
+        for (const QShaderDescription::InOutVariable &inVar : vtxInputVars)
             rhiD->f->glBindAttribLocation(program, GLuint(inVar.location), inVar.name);
 
         if (vertexFragmentOnly)
@@ -6687,11 +6690,13 @@ bool QGles2GraphicsPipeline::create()
     for (const QRhiShaderStage &shaderStage : std::as_const(m_shaderStages)) {
         if (isGraphicsStage(shaderStage)) {
             const int idx = descIdxForStage(shaderStage);
-            for (const QShaderDescription::UniformBlock &ub : desc[idx].uniformBlocks())
+            const auto uniformBlocks = desc[idx].uniformBlocks();
+            for (const QShaderDescription::UniformBlock &ub : uniformBlocks)
                 rhiD->gatherUniforms(program, ub, &activeUniformLocations, &uniforms);
-            for (const QShaderDescription::InOutVariable &v : desc[idx].combinedImageSamplers())
+            const auto combinedImageSamplers = desc[idx].combinedImageSamplers();
+            for (const QShaderDescription::InOutVariable &v : combinedImageSamplers)
                 rhiD->gatherSamplers(program, v, &samplers);
-            for (const QShader::SeparateToCombinedImageSamplerMapping &mapping : samplerMappingList[idx])
+            for (const QShader::SeparateToCombinedImageSamplerMapping &mapping : std::as_const(samplerMappingList[idx]))
                 rhiD->gatherGeneratedSamplers(program, mapping, &samplers);
         }
     }
@@ -6800,11 +6805,13 @@ bool QGles2ComputePipeline::create()
     }
 
     QRhiGles2::ActiveUniformLocationTracker activeUniformLocations;
-    for (const QShaderDescription::UniformBlock &ub : csDesc.uniformBlocks())
+    const auto csUniformBlocks = csDesc.uniformBlocks();
+    for (const QShaderDescription::UniformBlock &ub : csUniformBlocks)
         rhiD->gatherUniforms(program, ub, &activeUniformLocations, &uniforms);
-    for (const QShaderDescription::InOutVariable &v : csDesc.combinedImageSamplers())
+    const auto csCombinedImageSamplers = csDesc.combinedImageSamplers();
+    for (const QShaderDescription::InOutVariable &v : csCombinedImageSamplers)
         rhiD->gatherSamplers(program, v, &samplers);
-    for (const QShader::SeparateToCombinedImageSamplerMapping &mapping : csSamplerMappingList)
+    for (const QShader::SeparateToCombinedImageSamplerMapping &mapping : std::as_const(csSamplerMappingList))
         rhiD->gatherGeneratedSamplers(program, mapping, &samplers);
 
     // storage images and buffers need no special steps here

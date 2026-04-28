@@ -1508,7 +1508,7 @@ QJsonDocument QShaderDescriptionPrivate::makeDoc()
         root[outputsKey()] = joutputs;
 
     QJsonArray juniformBlocks;
-    for (const QShaderDescription::UniformBlock &b : uniformBlocks) {
+    for (const QShaderDescription::UniformBlock &b : std::as_const(uniformBlocks)) {
         QJsonObject juniformBlock;
         juniformBlock[blockNameKey()] = QString::fromUtf8(b.blockName);
         juniformBlock[structNameKey()] = QString::fromUtf8(b.structName);
@@ -1527,7 +1527,7 @@ QJsonDocument QShaderDescriptionPrivate::makeDoc()
         root[uniformBlocksKey()] = juniformBlocks;
 
     QJsonArray jpushConstantBlocks;
-    for (const QShaderDescription::PushConstantBlock &b : pushConstantBlocks) {
+    for (const QShaderDescription::PushConstantBlock &b : std::as_const(pushConstantBlocks)) {
         QJsonObject jpushConstantBlock;
         jpushConstantBlock[nameKey()] = QString::fromUtf8(b.name);
         jpushConstantBlock[sizeKey()] = b.size;
@@ -1541,7 +1541,7 @@ QJsonDocument QShaderDescriptionPrivate::makeDoc()
         root[pushConstantBlocksKey()] = jpushConstantBlocks;
 
     QJsonArray jstorageBlocks;
-    for (const QShaderDescription::StorageBlock &b : storageBlocks) {
+    for (const QShaderDescription::StorageBlock &b : std::as_const(storageBlocks)) {
         QJsonObject jstorageBlock;
         jstorageBlock[blockNameKey()] = QString::fromUtf8(b.blockName);
         jstorageBlock[instanceNameKey()] = QString::fromUtf8(b.instanceName);
@@ -1652,7 +1652,7 @@ void QShaderDescriptionPrivate::writeToStream(QDataStream *stream, int version)
         serializeInOutVar(stream, v, version);
 
     (*stream) << int(uniformBlocks.size());
-    for (const QShaderDescription::UniformBlock &b : uniformBlocks) {
+    for (const QShaderDescription::UniformBlock &b : std::as_const(uniformBlocks)) {
         (*stream) << QString::fromUtf8(b.blockName);
         (*stream) << QString::fromUtf8(b.structName);
         (*stream) << b.size;
@@ -1664,7 +1664,7 @@ void QShaderDescriptionPrivate::writeToStream(QDataStream *stream, int version)
     }
 
     (*stream) << int(pushConstantBlocks.size());
-    for (const QShaderDescription::PushConstantBlock &b : pushConstantBlocks) {
+    for (const QShaderDescription::PushConstantBlock &b : std::as_const(pushConstantBlocks)) {
         (*stream) << QString::fromUtf8(b.name);
         (*stream) << b.size;
         (*stream) << int(b.members.size());
@@ -1673,7 +1673,7 @@ void QShaderDescriptionPrivate::writeToStream(QDataStream *stream, int version)
     }
 
     (*stream) << int(storageBlocks.size());
-    for (const QShaderDescription::StorageBlock &b : storageBlocks) {
+    for (const QShaderDescription::StorageBlock &b : std::as_const(storageBlocks)) {
         (*stream) << QString::fromUtf8(b.blockName);
         (*stream) << QString::fromUtf8(b.instanceName);
         (*stream) << b.knownSize;

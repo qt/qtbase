@@ -420,7 +420,7 @@ bool QRhiD3D11::create(QRhi::Flags flags)
 
 void QRhiD3D11::clearShaderCache()
 {
-    for (Shader &s : m_shaderCache)
+    for (const Shader &s : std::as_const(m_shaderCache))
         s.s->Release();
 
     m_shaderCache.clear();
