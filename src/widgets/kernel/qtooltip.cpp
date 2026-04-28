@@ -350,7 +350,7 @@ void QTipLabel::placeTip(const QPoint &pos, QWidget *w)
         }
 #endif
 
-        QRect screenRect = screen->geometry();
+        QRect screenRect = screen->availableGeometry();
         if (p.x() + this->width() > screenRect.x() + screenRect.width())
             p.rx() -= 4 + this->width();
         if (p.y() + this->height() > screenRect.y() + screenRect.height())
