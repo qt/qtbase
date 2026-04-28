@@ -28,7 +28,6 @@
 #include "qandroidplatformscreen.h"
 #include "qandroidplatformservices.h"
 #include "qandroidplatformtheme.h"
-#include "qandroidsystemlocale.h"
 
 #include <QGuiApplication>
 #include <QOffscreenSurface>
@@ -241,8 +240,6 @@ QAndroidPlatformIntegration::QAndroidPlatformIntegration(const QStringList &para
     m_androidPlatformDrag = new QAndroidPlatformDrag();
 #endif
 
-    m_androidSystemLocale = new QAndroidSystemLocale;
-
 #if QT_CONFIG(accessibility)
         m_accessibility = new QAndroidPlatformAccessibility();
 #endif // QT_CONFIG(accessibility)
@@ -447,7 +444,6 @@ QAndroidPlatformIntegration::~QAndroidPlatformIntegration()
 
     delete m_androidPlatformNativeInterface;
     delete m_androidFDB;
-    delete m_androidSystemLocale;
 
 #ifndef QT_NO_CLIPBOARD
     delete m_androidPlatformClipboard;

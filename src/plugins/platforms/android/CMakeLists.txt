@@ -34,7 +34,6 @@ qt_internal_add_plugin(QAndroidIntegrationPlugin
         qandroidplatformservices.cpp qandroidplatformservices.h
         qandroidplatformtheme.cpp qandroidplatformtheme.h
         qandroidplatformwindow.cpp qandroidplatformwindow.h
-        qandroidsystemlocale.cpp qandroidsystemlocale.h
         androidwindowembedding.cpp androidwindowembedding.h
         androidbackendregister.cpp androidbackendregister.h
     NO_UNITY_BUILD_SOURCES
@@ -52,7 +51,6 @@ qt_internal_add_plugin(QAndroidIntegrationPlugin
         qandroidplatformscreen.cpp
         qandroidplatformservices.cpp
         qandroidplatformwindow.cpp
-        qandroidsystemlocale.cpp
     INCLUDE_DIRECTORIES
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${QtBase_SOURCE_DIR}/src/3rdparty/android

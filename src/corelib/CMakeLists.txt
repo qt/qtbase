@@ -941,7 +941,7 @@ qt_internal_extend_target(Core CONDITION APPLE
         text/qlocale_mac.mm
 )
 
-qt_internal_extend_target(Core CONDITION UNIX AND NOT APPLE AND NOT WASM
+qt_internal_extend_target(Core CONDITION UNIX AND NOT APPLE AND NOT WASM AND NOT ANDROID
     SOURCES
         text/qlocale_unix.cpp
 )
@@ -1191,6 +1191,7 @@ qt_internal_extend_target(Core CONDITION ANDROID
         platform/android/qandroidtypeconverter_p.h
         platform/android/qandroiditemmodelproxy_p.h platform/android/qandroiditemmodelproxy.cpp
         platform/android/qandroidmodelindexproxy_p.h platform/android/qandroidmodelindexproxy.cpp
+        text/qlocale_android.cpp
     NO_UNITY_BUILD_SOURCES
         platform/android/qandroidextras.cpp
         # qtNativeClassName conflicts with similar symbols in android headers
