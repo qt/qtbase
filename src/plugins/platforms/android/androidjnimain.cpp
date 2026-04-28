@@ -35,6 +35,7 @@
 #include <android/bitmap.h>
 
 #include <QtCore/private/qjnihelpers_p.h>
+#include <QtCore/private/qlocale_p.h>
 #include <QtCore/qbasicatomic.h>
 #include <QtCore/qjnienvironment.h>
 #include <QtCore/qjniobject.h>
@@ -647,6 +648,10 @@ static void updateApplicationState(JNIEnv */*env*/, jobject /*thiz*/, jint state
 
 static void updateLocale(JNIEnv */*env*/, jobject /*thiz*/)
 {
+#ifndef QT_NO_SYSTEMLOCALE
+    // Transient instance marks the cached system locale data as stale (QTBUG-116642).
+    { QSystemLocale dummy; }
+#endif
     QCoreApplication::postEvent(QCoreApplication::instance(), new QEvent(QEvent::LocaleChange));
     QCoreApplication::postEvent(QCoreApplication::instance(), new QEvent(QEvent::LanguageChange));
 }
