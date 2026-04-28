@@ -2192,7 +2192,7 @@ QList<QCss::Declaration> standardDeclarationForNode(const QTextHtmlParserNode &n
         decl.d->propertyId = QCss::FontFamily;
         QList<QCss::Value> values;
         val.type = QCss::Value::String;
-        val.variant = QFontDatabase::systemFont(QFontDatabase::FixedFont).families().constFirst();
+        val.variant = QFontDatabase::systemFont(QFontDatabase::FixedFont).family();
         values << val;
         decl.d->values = values;
         decl.d->inheritable = true;

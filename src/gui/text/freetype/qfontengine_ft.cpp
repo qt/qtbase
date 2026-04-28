@@ -2100,7 +2100,7 @@ QFontEngine::Properties QFontEngineFT::properties() const
 {
     Properties p = freetype->properties();
     if (p.postscriptName.isEmpty()) {
-        p.postscriptName = QFontEngine::convertToPostscriptFontFamilyName(fontDef.families.constFirst().toUtf8());
+        p.postscriptName = QFontEngine::convertToPostscriptFontFamilyName(fontDef.family().toUtf8());
     }
 
     return freetype->properties();

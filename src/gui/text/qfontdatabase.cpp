@@ -754,7 +754,7 @@ QFontEngine *QFontDatabasePrivate::loadSingleEngine(int script,
                 // Also check for OpenType tables when using complex scripts
                 if (Q_UNLIKELY(!engine->supportsScript(QChar::Script(script)))) {
                     qCInfo(lcFontDb, "OpenType support missing for \"%ls\", script %d",
-                           qUtf16Printable(def.families.constFirst()), script);
+                           qUtf16Printable(def.family()), script);
                     return nullptr;
                 }
 
@@ -779,7 +779,7 @@ QFontEngine *QFontDatabasePrivate::loadSingleEngine(int script,
             // Also check for OpenType tables when using complex scripts
             if (script < QChar::ScriptCount && !engine->supportsScript(QChar::Script(script))) {
                 qCInfo(lcFontDb, "OpenType support missing for \"%ls\", script %d",
-                       qUtf16Printable(def.families.constFirst()), script);
+                       qUtf16Printable(def.family()), script);
                 if (engine->ref.loadRelaxed() == 0)
                     delete engine;
                 return nullptr;
@@ -2651,7 +2651,7 @@ QFontEngine *QFontDatabasePrivate::findFont(const QFontDef &req,
 
 #if defined(QT_BUILD_INTERNAL)
     // For testing purpose only, emulates an exact-matching monospace font
-    if (qt_enable_test_font && request.families.first() == "__Qt__Box__Engine__"_L1) {
+    if (qt_enable_test_font && request.family() == "__Qt__Box__Engine__"_L1) {
         engine = new QTestFontEngine(request.pixelSize);
         engine->fontDef = request;
         return engine;
@@ -2774,7 +2774,7 @@ QFontEngine *QFontDatabasePrivate::findFont(const QFontDef &req,
                         do {
                             index = match(lookupScript,
                                           def,
-                                          def.families.constFirst(),
+                                          def.family(),
                                           ""_L1,
                                           &desc,
                                           blackListed);

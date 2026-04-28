@@ -3926,7 +3926,7 @@ void QPainter::setFont(const QFont &font)
 
 #ifdef QT_DEBUG_DRAW
     if constexpr (qt_show_painter_debug_output)
-        printf("QPainter::setFont(), family=%s, pointSize=%d\n", font.families().first().toLatin1().constData(), font.pointSize());
+        printf("QPainter::setFont(), family=%s, pointSize=%d\n", font.family().toLatin1().constData(), font.pointSize());
 #endif
 
     if (!d->engine) {

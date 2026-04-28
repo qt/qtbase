@@ -1098,7 +1098,7 @@ QImage QWindowsFontEngine::alphaRGBMapForGlyph(glyph_t glyph,
 QFontEngine *QWindowsFontEngine::cloneWithSize(qreal pixelSize) const
 {
     QFontDef request = fontDef;
-    QString actualFontName = request.families.constFirst();
+    QString actualFontName = request.family();
     if (!uniqueFamilyName.isEmpty())
         request.families = QStringList(uniqueFamilyName);
     request.pixelSize = pixelSize;

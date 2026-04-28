@@ -53,6 +53,13 @@ struct QFontDef
     {
     }
 
+    // Convenience that returns the first family in the list or an empty string if the list
+    // is empty.
+    inline QString family() const
+    {
+        return families.value(0);
+    }
+
     QStringList families;
     QString styleName;
 

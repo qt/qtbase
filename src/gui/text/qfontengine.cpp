@@ -607,7 +607,7 @@ qreal QFontEngine::minRightBearing() const
 
         if (m_minLeftBearing == kBearingNotInitialized || m_minRightBearing == kBearingNotInitialized)
             qWarning() << "Failed to compute left/right minimum bearings for"
-                       << fontDef.families.first();
+                       << fontDef.family();
     }
 
     return m_minRightBearing;
@@ -1060,7 +1060,7 @@ QFontEngine::Properties QFontEngine::properties() const
 {
     Properties p;
     p.postscriptName =
-            QFontEngine::convertToPostscriptFontFamilyName(fontDef.families.first().toUtf8()) + '-'
+            QFontEngine::convertToPostscriptFontFamilyName(fontDef.family().toUtf8()) + '-'
             + QByteArray::number(fontDef.style) + '-' + QByteArray::number(fontDef.weight);
     p.ascent = ascent();
     p.descent = descent();
@@ -1933,7 +1933,7 @@ void QFontEngineMulti::ensureFallbackFamiliesQueried()
     if (styleHint == QFont::AnyStyle && fontDef.fixedPitch)
         styleHint = QFont::TypeWriter;
 
-    setFallbackFamiliesList(qt_fallbacksForFamily(fontDef.families.constFirst(),
+    setFallbackFamiliesList(qt_fallbacksForFamily(fontDef.family(),
                                                   QFont::Style(fontDef.style), styleHint,
                                                   QFontDatabasePrivate::ExtendedScript(m_script)));
 }
@@ -1949,7 +1949,7 @@ void QFontEngineMulti::setFallbackFamiliesList(const QStringList &fallbackFamili
         QFontEngine *engine = m_engines.at(0);
         engine->ref.ref();
         m_engines[1] = engine;
-        m_fallbackFamilies << fontDef.families.constFirst();
+        m_fallbackFamilies << fontDef.family();
     } else {
         m_engines.resize(m_fallbackFamilies.size() + 1);
     }

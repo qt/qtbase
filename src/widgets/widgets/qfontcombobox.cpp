@@ -104,7 +104,7 @@ static QFontDatabase::WritingSystem writingSystemFromLocale()
 
 static QFontDatabase::WritingSystem writingSystemForFont(const QFont &font, bool *hasLatin)
 {
-    QList<QFontDatabase::WritingSystem> writingSystems = QFontDatabase::writingSystems(font.families().constFirst());
+    QList<QFontDatabase::WritingSystem> writingSystems = QFontDatabase::writingSystems(font.family());
 //     qDebug() << font.families().first() << writingSystems;
 
     // this just confuses the algorithm below. Vietnamese is Latin with lots of special chars
