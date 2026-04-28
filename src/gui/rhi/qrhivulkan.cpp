@@ -547,7 +547,8 @@ bool QRhiVulkan::create(QRhi::Flags flags)
     f = inst->functions();
     if (QRHI_LOG_INFO().isEnabled(QtDebugMsg)) {
         qCDebug(QRHI_LOG_INFO, "Enabled instance extensions:");
-        for (const char *ext : inst->extensions())
+        const QByteArrayList extensions = inst->extensions();
+        for (const char *ext : extensions)
             qCDebug(QRHI_LOG_INFO, "  %s", ext);
     }
 
@@ -847,7 +848,7 @@ bool QRhiVulkan::create(QRhi::Flags flags)
         }
 #endif
 
-        for (const QByteArray &ext : requestedDeviceExtensions) {
+        for (const QByteArray &ext : std::as_const(requestedDeviceExtensions)) {
             if (!ext.isEmpty() && !requestedDevExts.contains(ext)) {
                 if (devExts.contains(ext)) {
                     requestedDevExts.append(ext.constData());
@@ -858,7 +859,7 @@ bool QRhiVulkan::create(QRhi::Flags flags)
             }
         }
 
-        QByteArrayList envExtList = qgetenv("QT_VULKAN_DEVICE_EXTENSIONS").split(';');
+        const QByteArrayList envExtList = qgetenv("QT_VULKAN_DEVICE_EXTENSIONS").split(';');
         for (const QByteArray &ext : envExtList) {
             if (!ext.isEmpty() && !requestedDevExts.contains(ext)) {
                 if (devExts.contains(ext)) {
@@ -872,7 +873,7 @@ bool QRhiVulkan::create(QRhi::Flags flags)
 
         if (QRHI_LOG_INFO().isEnabled(QtDebugMsg)) {
             qCDebug(QRHI_LOG_INFO, "Enabling device extensions:");
-            for (const char *ext : requestedDevExts)
+            for (const char *ext : std::as_const(requestedDevExts))
                 qCDebug(QRHI_LOG_INFO, "  %s", ext);
         }
 
@@ -4875,7 +4876,7 @@ void QRhiVulkan::finishActiveReadbacks(bool forced)
         }
     }
 
-    for (auto f : completedCallbacks)
+    for (const auto &f : completedCallbacks)
         f();
 }
 
@@ -8642,6 +8643,7 @@ bool QVkGraphicsPipeline::create()
 
     QVarLengthArray<VkShaderModule, 4> shaders;
     QVarLengthArray<VkPipelineShaderStageCreateInfo, 4> shaderStageCreateInfos;
+    QVarLengthArray<QByteArray, 4> entryPointNames;
     for (const QRhiShaderStage &shaderStage : m_shaderStages) {
         const QShader bakedShader = shaderStage.shader();
         const QShaderCode spirv = bakedShader.shader({ QShader::SpirvShader, 100, shaderStage.shaderVariant() });
@@ -8656,10 +8658,14 @@ bool QVkGraphicsPipeline::create()
             shaderInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
             shaderInfo.stage = toVkShaderStage(shaderStage.type());
             shaderInfo.module = shader;
-            shaderInfo.pName = spirv.entryPoint().constData();
+            entryPointNames.append(spirv.entryPoint());
+            shaderInfo.pName = nullptr;
             shaderStageCreateInfos.append(shaderInfo);
         }
     }
+    for (qsizetype i = 0, ie = shaders.count(); i != ie; ++i)
+        shaderStageCreateInfos[i].pName = entryPointNames[i].constData();
+
     pipelineInfo.stageCount = uint32_t(shaderStageCreateInfos.size());
     pipelineInfo.pStages = shaderStageCreateInfos.constData();
 
@@ -8939,7 +8945,8 @@ bool QVkComputePipeline::create()
     shaderInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     shaderInfo.stage = VK_SHADER_STAGE_COMPUTE_BIT;
     shaderInfo.module = shader;
-    shaderInfo.pName = spirv.entryPoint().constData();
+    const QByteArray entryPointName = spirv.entryPoint();
+    shaderInfo.pName = entryPointName.constData();
     pipelineInfo.stage = shaderInfo;
 
     err = rhiD->df->vkCreateComputePipelines(rhiD->dev, rhiD->pipelineCache, 1, &pipelineInfo, nullptr, &pipeline);
