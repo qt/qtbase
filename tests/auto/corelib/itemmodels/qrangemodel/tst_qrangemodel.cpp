@@ -176,7 +176,7 @@ void tst_QRangeModel::verifyPmiList(const QList<QPersistentModelIndex> &pmiList)
             qCritical() << "Failing index" << pmi << pmi.isValid();
         });
         QVERIFY(pmi.isValid());
-        QVERIFY(pmi.data().isValid());
+        QCOMPARE_NE(pmi.flags(), Qt::NoItemFlags);
         QCOMPARE(pmi.parent().isValid(), pmi.parent().data().isValid());
         debug.dismiss();
     }

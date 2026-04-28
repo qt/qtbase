@@ -524,26 +524,32 @@ struct Data {
     };
 
     std::list<Object *> listOfObjects = {
-        new Object, new Object, new Object
+        new Object, new Object, nullptr, new Object
     };
 
-    std::array<std::unique_ptr<Object>, 3> arrayOfUniqueObjects = {
-        std::make_unique<Object>(), std::make_unique<Object>(), std::make_unique<Object>()
+    std::array<std::unique_ptr<Object>, 4> arrayOfUniqueObjects = {
+        std::make_unique<Object>(),
+        std::make_unique<Object>(),
+        std::unique_ptr<Object>(),
+        std::make_unique<Object>()
     };
 
     std::vector<std::tuple<MetaObjectTuple *>> listOfMetaObjectTuple = {
         new MetaObjectTuple,
         new MetaObjectTuple,
+        nullptr,
         new MetaObjectTuple,
     };
     std::vector<MetaObjectTuple *> tableOfMetaObjectTuple = {
         new MetaObjectTuple,
         new MetaObjectTuple,
+        nullptr,
         new MetaObjectTuple,
     };
-    std::array<std::tuple<std::unique_ptr<MetaObjectTuple>>, 3> arrayOfUniqueMultiObjectTuples {
+    std::array<std::tuple<std::unique_ptr<MetaObjectTuple>>, 4> arrayOfUniqueMultiObjectTuples {
         std::make_unique<MetaObjectTuple>(),
         std::make_unique<MetaObjectTuple>(),
+        std::unique_ptr<MetaObjectTuple>(),
         std::make_unique<MetaObjectTuple>()
     };
 

@@ -1450,7 +1450,6 @@ public:
         template <typename value_type>
         bool operator()(const value_type &value) const
         {
-            bool tried = false;
             using multi_role = QRangeModelDetails::is_multi_role<value_type>;
             using wrapped_value_type = QRangeModelDetails::wrapped_t<value_type>;
 
@@ -1478,7 +1477,6 @@ public:
 
             if constexpr (QRangeModelDetails::item_access<wrapped_value_type>()) {
                 using ItemAccess = QRangeModelDetails::QRangeModelItemAccess<wrapped_value_type>;
-                tried = true;
                 for (auto &roleData : roleDataSpan) {
                     if (!readModelData(roleData)) {
                         roleData.setData(ItemAccess::readRole(QRangeModelDetails::refTo(value),
@@ -1486,7 +1484,6 @@ public:
                     }
                 }
             } else if constexpr (multi_role()) {
-                tried = true;
                 const auto roleNames = [this]() -> QHash<int, QByteArray> {
                     Q_UNUSED(this);
                     if constexpr (!multi_role::int_key)
@@ -1510,7 +1507,6 @@ public:
                 }
             } else if constexpr (has_metaobject<value_type>) {
                 if (row_traits::fixed_size() <= 1) {
-                    tried = true;
                     for (auto &roleData : roleDataSpan) {
                         if (!readModelData(roleData)) {
                             roleData.setData(that->readRole(index, roleData.role(),
@@ -1518,7 +1514,6 @@ public:
                         }
                     }
                 } else if (index.column() <= row_traits::fixed_size()) {
-                    tried = true;
                     for (auto &roleData : roleDataSpan) {
                         const int role = roleData.role();
                         if (isPrimaryRole(role)) {
@@ -1530,7 +1525,6 @@ public:
                     }
                 }
             } else {
-                tried = true;
                 for (auto &roleData : roleDataSpan) {
                     const int role = roleData.role();
                     if (isPrimaryRole(role) || isRangeModelRole(role))
@@ -1539,7 +1533,7 @@ public:
                         roleData.clearData();
                 }
             }
-            return tried;
+            return true;
         }
 
         const QModelIndex &index;
@@ -1549,8 +1543,10 @@ public:
 
     void multiData(const QModelIndex &index, QModelRoleDataSpan roleDataSpan) const
     {
-        bool tried = readAt(index, ItemReader{index, roleDataSpan, this});
-        Q_ASSERT(tried);
+        if (!readAt(index, ItemReader{index, roleDataSpan, this})) {
+            for (auto &roleData : roleDataSpan)
+                roleData.clearData();
+        }
     }
 
     bool setData(const QModelIndex &index, const QVariant &data, int role)

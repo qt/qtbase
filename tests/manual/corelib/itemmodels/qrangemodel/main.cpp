@@ -398,9 +398,10 @@ public slots:
 
     QRangeModel *makeUniqueObjects()
     {
-        std::array<std::unique_ptr<Object>, 3> data = {
+        std::array<std::unique_ptr<Object>, 4> data = {
             std::make_unique<Object>(1),
             std::make_unique<Object>(2),
+            std::unique_ptr<Object>(),
             std::make_unique<Object>(3),
         };
         return new QRangeModel(std::move(data));
