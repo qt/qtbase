@@ -1003,7 +1003,7 @@ QSize QCommonStylePrivate::viewItemSize(const QStyleOptionViewItem *option, int 
 void QCommonStylePrivate::viewItemDrawText(QPainter *p, const QStyleOptionViewItem *option, const QRect &rect) const
 {
     const QWidget *widget = option->widget;
-    const int textMargin = proxyStyle->pixelMetric(QStyle::PM_FocusFrameHMargin, nullptr, widget) + 1;
+    const int textMargin = proxyStyle->pixelMetric(QStyle::PM_FocusFrameHMargin, option, widget) + 1;
 
     QRect textRect = rect.adjusted(textMargin, 0, -textMargin, 0); // remove width padding
     const bool wrapText = option->features & QStyleOptionViewItem::WrapText;
