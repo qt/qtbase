@@ -24,7 +24,6 @@
 QT_BEGIN_NAMESPACE
 
 class QAndroidPlatformServices;
-class QAndroidSystemLocale;
 class QPlatformAccessibility;
 
 struct AndroidStyle;
@@ -155,7 +154,6 @@ private:
     QPlatformDrag *m_androidPlatformDrag = nullptr;
 #endif
 
-    QAndroidSystemLocale *m_androidSystemLocale;
 #if QT_CONFIG(accessibility)
     mutable QPlatformAccessibility *m_accessibility;
 #endif
