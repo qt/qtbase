@@ -228,7 +228,7 @@ void QBasicPlatformVulkanInstance::initInstance(QVulkanInstance *instance, const
         QByteArray envExts = qgetenv("QT_VULKAN_INSTANCE_EXTENSIONS");
         if (!envExts.isEmpty()) {
             QByteArrayList envExtList =  envExts.split(';');
-            for (auto ext : m_enabledExtensions)
+            for (const QByteArray &ext : std::as_const(m_enabledExtensions))
                 envExtList.removeAll(ext);
             m_enabledExtensions.append(envExtList);
         }
@@ -236,7 +236,7 @@ void QBasicPlatformVulkanInstance::initInstance(QVulkanInstance *instance, const
         QByteArray envLayers = qgetenv("QT_VULKAN_INSTANCE_LAYERS");
         if (!envLayers.isEmpty()) {
             QByteArrayList envLayerList = envLayers.split(';');
-            for (auto ext : m_enabledLayers)
+            for (const QByteArray &ext : std::as_const(m_enabledLayers))
                 envLayerList.removeAll(ext);
             m_enabledLayers.append(envLayerList);
         }
@@ -402,7 +402,8 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL defaultDebugCallbackFunc(VkDebugUtilsMessa
     }
 
     // filters with new signature
-    for (QVulkanInstance::DebugUtilsFilter filter : *self->debugUtilsFilters()) {
+    const QList<QVulkanInstance::DebugUtilsFilter> *filters = self->debugUtilsFilters();
+    for (const QVulkanInstance::DebugUtilsFilter &filter : *filters) {
         QVulkanInstance::DebugMessageSeverityFlags severity;
         if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT)
             severity |= QVulkanInstance::VerboseSeverity;
