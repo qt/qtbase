@@ -682,12 +682,12 @@ void QVulkanWindowPrivate::init()
     QByteArray envExts = qgetenv("QT_VULKAN_DEVICE_EXTENSIONS");
     if (!envExts.isEmpty()) {
         QByteArrayList envExtList =  envExts.split(';');
-        for (auto ext : reqExts)
+        for (const QByteArray &ext : std::as_const(reqExts))
             envExtList.removeAll(ext);
         reqExts.append(envExtList);
     }
 
-    for (const QByteArray &ext : reqExts) {
+    for (const QByteArray &ext : std::as_const(reqExts)) {
         if (supportedExtensions.contains(ext))
             devExts.append(ext.constData());
     }
@@ -718,6 +718,9 @@ void QVulkanWindowPrivate::init()
         devInfo.pEnabledFeatures = &features;
     }
 
+    const QByteArray stdValName = QByteArrayLiteral("VK_LAYER_KHRONOS_validation");
+    const char *stdValNamePtr = stdValName.constData();
+
     // Device layers are not supported by QVulkanWindow since that's an already deprecated
     // API. However, have a workaround for systems with older API and layers (f.ex. L4T
     // 24.2 for the Jetson TX1 provides API 1.0.13 and crashes when the validation layer
@@ -728,8 +731,6 @@ void QVulkanWindowPrivate::init()
         && VK_VERSION_PATCH(apiVersion) <= 13)
     {
         // Make standard validation work at least.
-        const QByteArray stdValName = QByteArrayLiteral("VK_LAYER_KHRONOS_validation");
-        const char *stdValNamePtr = stdValName.constData();
         if (inst->layers().contains(stdValName)) {
             uint32_t count = 0;
             VkResult err = f->vkEnumerateDeviceLayerProperties(physDev, &count, nullptr);
