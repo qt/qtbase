@@ -293,6 +293,9 @@ void tst_QDialog::showAsTool()
     if (QStringList{"xcb", "offscreen"}.contains(QGuiApplication::platformName()))
         QSKIP("activeWindow() is not respected by all Xcb window managers and the offscreen plugin");
 
+    if (QGuiApplication::platformName() == "ohos")
+        QSKIP("OHOS activates Qt::Tool subwindows when shown");
+
     if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
         QSKIP("QWindow::requestActivate() is not supported.");
 
