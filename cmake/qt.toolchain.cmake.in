@@ -122,6 +122,48 @@ endif()
 
 @init_post_chainload_toolchain@
 
+# If CMake does not have a mapping for MinSizeRel, RelWithDebInfo, Release in imported targets,
+# it will map those configurations to the first valid configuration in CMAKE_CONFIGURATION_TYPES or
+# the target's IMPORTED_CONFIGURATIONS property. In most cases this is the Debug configuration,
+# which is wrong when targeting Windows, and can lead to linker errors in the best case, or silent
+# corruption in the worst case.
+# Set appropriate mappings if they are not already set. Inspired by the vcpkg toolchain file.
+#
+# Release mappings are only set for Windows, because that's where mixed runtime issues happen. On
+# other platforms it's usually ok to mix different configurations.
+# Provide a way to add additional mappings to each config.
+# Provide an opt out.
+if(NOT QT_NO_SET_CMAKE_MAP_IMPORTED_CONFIG)
+    if(NOT DEFINED CMAKE_MAP_IMPORTED_CONFIG_MINSIZEREL)
+        set(_qt_mapping "MinSizeRel;Release;RelWithDebInfo;None;NoConfig;")
+        if(QT_MAP_IMPORTED_CONFIG_MINSIZEREL)
+            set(_qt_mapping "${_qt_mapping};${QT_MAP_IMPORTED_CONFIG_MINSIZEREL}")
+        endif()
+        set(CMAKE_MAP_IMPORTED_CONFIG_MINSIZEREL "${_qt_mapping}")
+        message(DEBUG "Setting CMAKE_MAP_IMPORTED_CONFIG_MINSIZEREL to '${_qt_mapping}'")
+        unset(_qt_mapping)
+    endif()
+    if(NOT DEFINED CMAKE_MAP_IMPORTED_CONFIG_RELWITHDEBINFO)
+        set(_qt_mapping "RelWithDebInfo;Release;MinSizeRel;None;NoConfig;")
+        if(QT_MAP_IMPORTED_CONFIG_RELWITHDEBINFO)
+            set(_qt_mapping "${_qt_mapping};${QT_MAP_IMPORTED_CONFIG_RELWITHDEBINFO}")
+        endif()
+        set(CMAKE_MAP_IMPORTED_CONFIG_RELWITHDEBINFO "${_qt_mapping}")
+        message(DEBUG "Setting CMAKE_MAP_IMPORTED_CONFIG_RELWITHDEBINFO to '${_qt_mapping}'")
+        unset(_qt_mapping)
+    endif()
+    if((WIN32 OR QT_FORCE_MAP_IMPORTED_CONFIG_RELEASE)
+            AND NOT DEFINED CMAKE_MAP_IMPORTED_CONFIG_RELEASE)
+        set(_qt_mapping "Release;RelWithDebInfo;MinSizeRel;None;NoConfig;")
+        if(QT_MAP_IMPORTED_CONFIG_RELEASE)
+            set(_qt_mapping "${_qt_mapping};${QT_MAP_IMPORTED_CONFIG_RELEASE}")
+        endif()
+        set(CMAKE_MAP_IMPORTED_CONFIG_RELEASE" ${_qt_mapping}")
+        message(DEBUG "Setting CMAKE_MAP_IMPORTED_CONFIG_RELEASE to '${_qt_mapping}'")
+        unset(_qt_mapping)
+    endif()
+endif()
+
 # Compute dynamically the Qt installation prefix from the location of this file. This allows
 # the usage of the toolchain file when the Qt installation is relocated.
 get_filename_component(QT_TOOLCHAIN_RELOCATABLE_INSTALL_PREFIX
