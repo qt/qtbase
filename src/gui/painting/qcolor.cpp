@@ -392,7 +392,7 @@ Q_DECL_COLD_FUNCTION void qColorWarnInvalidInt(int value, const char *fn)
 
 Q_DECL_COLD_FUNCTION void qColorWarnInvalidFloat(float value, const char *fn)
 {
-    qWarning("QColor::%s: invalid value %g", fn, value);
+    qWarning("QColor::%s: invalid value %g", fn, double(value));
 }
 
 Q_DECL_COLD_FUNCTION void qColorWarnParametersOutOfRange(const char *name, const char *fn)
