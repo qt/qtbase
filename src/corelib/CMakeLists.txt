@@ -209,6 +209,7 @@ qt_internal_add_module(Core
         kernel/qtranslator.cpp kernel/qtranslator.h kernel/qtranslator_p.h
         kernel/qvariant.cpp kernel/qvariant.h kernel/qvariant_p.h
         kernel/qvariantmap.h kernel/qvarianthash.h kernel/qvariantlist.h
+        parse/qtparsecommon_p.h
         plugin/qfactoryinterface.cpp plugin/qfactoryinterface.h
         plugin/qfactoryloader.cpp plugin/qfactoryloader_p.h
         plugin/qplugin.h plugin/qplugin_p.h
@@ -1119,6 +1120,7 @@ qt_internal_extend_target(Core CONDITION QT_FEATURE_datestring
 qt_internal_extend_target(Core CONDITION QT_FEATURE_datetimeparser
     SOURCES
         time/qdatetimeparser.cpp time/qdatetimeparser_p.h
+        parse/qtparsetimezone.cpp parse/qtparsetimezone_p.h
 )
 
 qt_internal_extend_target(Core CONDITION QT_FEATURE_zstd
