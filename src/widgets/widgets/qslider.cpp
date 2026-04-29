@@ -488,10 +488,11 @@ QSlider::TickPosition QSlider::tickPosition() const
     \property QSlider::tickInterval
     \brief the interval between tickmarks
 
-    This is a value interval, not a pixel interval. If it is 0, the
+    This is a value interval, not a pixel interval. If it is \c 0, the
     slider will choose between singleStep and pageStep.
 
-    The default value is 0.
+    The default is \c 0. Negative values are invalid and therefore
+    clamped to \c 0.
 
     \sa tickPosition, singleStep, pageStep
 */
