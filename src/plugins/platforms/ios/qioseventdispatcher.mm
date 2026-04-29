@@ -271,8 +271,6 @@ enum SetJumpResult
     kJumpedFromUserMainTrampoline,
 };
 
-extern "C" int main(int argc, char *argv[]);
-
 static void __attribute__((noinline, noreturn)) user_main_trampoline()
 {
     NSArray<NSString *> *arguments = [[NSProcessInfo processInfo] arguments];
@@ -291,6 +289,8 @@ static void __attribute__((noinline, noreturn)) user_main_trampoline()
     }
 
     updateStackLimit();
+
+    int main(int argc, char *argv[]);
 
     int exitCode = main(argc, argv);
     delete[] argv;
