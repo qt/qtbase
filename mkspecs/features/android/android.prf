@@ -36,8 +36,10 @@ build_pass|if(single_android_abi:!single_arch) {
                        else:TARGET = lib$${TARGET}_$${QT_ARCH}.so
             }
             QMAKE_LFLAGS += -Wl,-soname,$$shell_quote($$TARGET)
-            qtConfig(android_16kb_pages) {
-                QMAKE_LFLAGS += -Wl,-z,max-page-size=16384
+            contains(ANDROID_TARGET_ARCH, "arm64-v8a|x86_64") {
+                qtConfig(android_16kb_pages) {
+                    QMAKE_LFLAGS += -Wl,-z,max-page-size=16384
+                }
             }
             android_install {
                 target.path=/libs/$$ANDROID_TARGET_ARCH/
