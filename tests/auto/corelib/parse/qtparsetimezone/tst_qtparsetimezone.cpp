@@ -7,6 +7,7 @@
 #include <QtCore/qdatetime.h>
 #include <QtCore/qlocale.h>
 #include <QtCore/private/qlocale_p.h>
+#include <QtCore/private/qlocaltime_p.h>
 #include <QtCore/qstring.h>
 
 using namespace Qt::StringLiterals;
@@ -36,6 +37,7 @@ private Q_SLOTS:
 void tst_QtParseTimeZone::prefix_data()
 {
     using QTZ = QTimeZone;
+    using Flag = QtTemporalPattern::TemporalFieldFlag;
     using Flags = QtTemporalPattern::TemporalFieldFlags;
     QTest::addColumn<QString>("text");
     QTest::addColumn<QLocale>("locale");
@@ -61,6 +63,55 @@ void tst_QtParseTimeZone::prefix_data()
         << u""_s << QLocale::c() << AnyZoneForm << 0 << 0 << QTZ::GenericTime << lt;
     QTest::addRow("empty/C/any/7")
         << u""_s << QLocale::c() << AnyZoneForm << 7 << 0 << QTZ::GenericTime << lt;
+
+    // Local time's name as reported by (maybe QTZ::system() and) the native system:
+    {
+        const QDateTime now = QDateTime::currentDateTime(QTimeZone::LocalTime);
+        // Dates unlikely to be when a zone has a transition and likely to differ as to DST
+        const QDateTime jan = QDateTime(QDate(now.date().year(), 1, 12), QTime(12, 0),
+                                        QTimeZone::LocalTime);
+        const QDateTime jul = QDateTime(QDate(now.date().year(), 7, 12), QTime(12, 0),
+                                        QTimeZone::LocalTime);
+        QTZ::TimeType janType = QTZ::GenericTime, julType = QTZ::GenericTime;
+        if (jan.isDaylightTime()) {
+            janType = QTZ::DaylightTime;
+            julType = jul.isDaylightTime() ? QTZ::DaylightTime : QTZ::StandardTime;
+        } else if (jul.isDaylightTime()) {
+            janType = QTZ::StandardTime;
+            julType = QTZ::DaylightTime;
+        } // If neither is DST, both are generic
+#ifdef QT_BUILD_INTERNAL
+        constexpr QDateTimePrivate::TransitionOptions
+            legacy = QDateTimePrivate::GapUseAfter | QDateTimePrivate::FoldUseBefore;
+        const QString janLoc = QLocalTime::localTimeAbbreviationAt(jan.toMSecsSinceEpoch(), legacy);
+        if (!janLoc.isEmpty()) {
+            QTest::addRow("jan-LocalTime/C/local/varies")
+                << janLoc << QLocale::c() << Flags{ Flag::LocalTimeName }
+                << 0 << janLoc.size() << janType << lt;
+        }
+        const QString julLoc = QLocalTime::localTimeAbbreviationAt(jul.toMSecsSinceEpoch(), legacy);
+        if (!julLoc.isEmpty() && julLoc != janLoc) {
+            QTest::addRow("jul-LocalTime/C/local/varies")
+                << julLoc << QLocale::c() << Flags{ Flag::LocalTimeName }
+                << 0 << julLoc.size() << julType << lt;
+        }
+#endif
+#if QT_CONFIG(timezone)
+        const auto sys = QTimeZone::systemTimeZone();
+        const QString janSys = sys.abbreviation(jan);
+        if (!janSys.isEmpty()) {
+            QTest::addRow("jan-SystemZone/C/local/varies")
+                << janSys << QLocale::c() << Flags{ Flag::LocalTimeName }
+                << 0 << janSys.size() << janType << lt;
+        }
+        const QString julSys = sys.abbreviation(jul);
+        if (!julSys.isEmpty() && julSys != janSys) {
+            QTest::addRow("jul-SystemZone/C/local/varies")
+                << julSys << QLocale::c() << Flags{ Flag::LocalTimeName }
+                << 0 << julSys.size() << julType << lt;
+        }
+#endif // timezone backends
+    }
 }
 
 void tst_QtParseTimeZone::prefix()

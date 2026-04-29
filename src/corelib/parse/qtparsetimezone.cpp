@@ -18,6 +18,100 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
+namespace {
+
+QList<QtParseTimeZone::ParsedZone>
+addMatch(QList<QtParseTimeZone::ParsedZone> &&matches,
+         QtParseTimeZone::ParsedZone &&match, bool gmtStart)
+{
+    // Input matches is sorted with x before y when isBetter(x, y); add our new
+    // entry just after the last that isBetter(than, it).
+    using namespace QtParseTimeZone;
+
+    // How discerning isBetter() can be depends on whether zones can have backends.
+    const auto isBetter = [
+#if QT_CONFIG(timezone)
+        // GMT may be recognized as various other things, but if named as such
+        // and supported by our backend, prefer it over others (of the same
+        // length) that aren't, with the exception of LocalTime:
+        newIsBackendGmt = gmtStart && match.size() == 3
+            && match.zone.timeSpec() == Qt::TimeZone && match.zone.id() == "GMT",
+#endif
+        newAddr = &match] (const ParsedZone &left, const ParsedZone &right) {
+        Q_ASSERT(left.startIndex == right.startIndex);
+        if (left.endIndex > right.endIndex)
+            return true;
+        if (left.endIndex < right.endIndex)
+            return false;
+        // For historical reasons (e.g. QTBUG-114575) we prefer local time over
+        // other ways of referring to the same zone:
+        if (left.zone.timeSpec() == Qt::LocalTime && right.zone.timeSpec() != Qt::LocalTime)
+            return true;
+        if (left.zone.timeSpec() != Qt::LocalTime && right.zone.timeSpec() == Qt::LocalTime)
+            return false;
+#if QT_CONFIG(timezone)
+        if (newIsBackendGmt) // The following is true exactly when left is the same as match:
+            return right.zone.timeSpec() != Qt::TimeZone || right.zone.id() != "GMT";
+#endif
+        return &right == newAddr;
+    };
+    const auto pos = std::upper_bound(matches.begin(), matches.end(), match, isBetter);
+    // Could condition the following on match not being a duplicate of pos[-1],
+    // for pos != begin(), but hopefully we simply aren't sending duplicates
+    // this way, anyway.
+    matches.insert(pos, match);
+    return std::move(matches);
+}
+
+auto matchSystemName(QStringView text, const QLocale &locale)
+{
+    struct R {
+        qsizetype length = 0;
+        QTimeZone::TimeType season = QTimeZone::GenericTime;
+        operator bool() const noexcept { return length > 0; }
+    } best;
+    qTzSet();
+    // On MS-Win, at least when system zone is UTC, qTzName() can return empty.
+    for (int i = 0; i < 2; ++i) {
+        const QString zone(qTzName(i));
+        if (zone.size() > best.length && text.startsWith(zone))
+            best = { zone.size(), i ? QTimeZone::DaylightTime : QTimeZone::StandardTime };
+    }
+#if QT_CONFIG(timezone)
+    // Mimic each candidate QLocale::toString() could have used, to ensure round-trips work:
+    const auto consider = [text, &best](QStringView zone, QTimeZone::TimeType season) {
+        if (text.startsWith(zone)) {
+            // UTC-based zone's displayName() only includes minutes if non-zero:
+            constexpr qsizetype utcSignHourWidth = 6, withMinutesWidth = 9;
+            if (withMinutesWidth > best.length && zone.size() == utcSignHourWidth
+                    && zone.startsWith("UTC"_L1)
+                    && text.sliced(utcSignHourWidth).startsWith(":00"_L1)) {
+                best = { withMinutesWidth, QTimeZone::GenericTime };
+            } else if (zone.size() > best.length) {
+                best = { zone.size(), season };
+            }
+        }
+    };
+    /* QLocale::toString would skip this if locale == QLocale::system(), but we
+       might not be using the same system locale as whoever generated the text
+       we're parsing. So consider it anyway. */
+    if (const QTimeZone sys = QTimeZone::systemTimeZone(); sys.hasDaylightTime()) {
+        constexpr QTimeZone::TimeType types[] = {
+            QTimeZone::GenericTime, QTimeZone::StandardTime, QTimeZone::DaylightTime };
+        for (const auto timeType : types)
+            consider(sys.displayName(timeType, QTimeZone::ShortName, locale), timeType);
+    } else {
+        consider(sys.displayName(QTimeZone::GenericTime, QTimeZone::ShortName, locale),
+                 QTimeZone::GenericTime);
+    }
+#else
+    Q_UNUSED(locale);
+#endif
+    return best;
+}
+
+}
+
 namespace QtParseTimeZone {
 
 /*!
@@ -51,6 +145,7 @@ namespace QtParseTimeZone {
 
     \endlist
 */
+// TODO: this is not, currently, quite true. The colon distinction is a myth.
 
 /*!
     \internal
@@ -94,10 +189,28 @@ namespace QtParseTimeZone {
 
     The acceptable forms of a timezone text are controlled by \a flags.
 */
-QList<ParsedZone> prefix(QStringView, const QLocale &, qsizetype,
-                         QtTemporalPattern::TemporalFieldFlags)
+QList<ParsedZone> prefix(QStringView text, const QLocale &locale, qsizetype from,
+                         QtTemporalPattern::TemporalFieldFlags flags)
 {
     QList<ParsedZone> matches;
+    if (from < 0 || from >= text.size())
+        return matches;
+
+    QStringView tail = text.sliced(from);
+    const auto includeMatch = [&matches, from, gmtStart = tail.startsWith(u"GMT")]
+        (qsizetype used, QTimeZone &&zone, QTimeZone::TimeType type) {
+        Q_ASSERT(zone.isValid());
+        matches = addMatch(std::move(matches), {{from, from + used}, zone, type}, gmtStart);
+    };
+
+    using namespace QtTemporalPattern;
+    using namespace FieldGroup;
+    using Flag = TemporalFieldFlag;
+
+    if (flags.testFlag(Flag::LocalTimeName)) {
+        if (const auto sys = matchSystemName(tail, locale))
+            includeMatch(sys.length, QTimeZone(QTimeZone::LocalTime), sys.season);
+    }
 
     return matches;
 }
