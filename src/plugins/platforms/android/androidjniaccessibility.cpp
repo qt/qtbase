@@ -573,6 +573,7 @@ namespace QtAndroidAccessibility
         case QAccessible::Role::Clock:
             return QStringLiteral("android.widget.TextClock");
         case QAccessible::Role::ComboBox:
+        case QAccessible::Role::ButtonDropDown:
             return QStringLiteral("android.widget.Spinner");
         case QAccessible::Role::Graphic:
             // QQuickImage does not provide this role it inherits Client from QQuickItem
@@ -629,7 +630,6 @@ namespace QtAndroidAccessibility
         case QAccessible::Role::BlockQuote:
         case QAccessible::Role::Border:
         case QAccessible::Role::ButtonDropGrid:
-        case QAccessible::Role::ButtonDropDown:
         case QAccessible::Role::ButtonMenu:
         case QAccessible::Role::Canvas:
         case QAccessible::Role::Caret:
