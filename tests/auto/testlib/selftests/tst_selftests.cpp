@@ -981,15 +981,19 @@ static QProcessEnvironment testEnvironment()
             const bool useVariable = key == "PATH" || key == "QT_QPA_PLATFORM"
                 || key == "QTEST_THROW_ON_FAIL"_L1 || key == "QTEST_THROW_ON_SKIP"_L1
                 || key == "ASAN_OPTIONS"
-#if defined(Q_OS_QNX)
+#if defined(Q_OS_UNIX)
+                || key == "HOME" || key == "USER" // Required for X11 on openSUSE; fontconfig on QNX
+#  if defined(Q_OS_QNX)
                 || key == "GRAPHICS_ROOT" || key == "TZ"
-#elif defined(Q_OS_UNIX)
-                || key == "HOME" || key == "USER" // Required for X11 on openSUSE
+                || key == "FONTCONFIG_FILE" || key == "FONTCONFIG_PATH"
+                || key.startsWith("XDG_")
+#  else
                 || key == "QEMU_SET_ENV" || key == "QEMU_LD_PREFIX" // Required for QEMU
-#  if !defined(Q_OS_MACOS)
+#    if !defined(Q_OS_MACOS)
                 || key == "DISPLAY" || key == "XAUTHLOCALHOSTNAME"
                 || key.startsWith("XDG_") || key == "XAUTHORITY"
-#  endif // !Q_OS_MACOS
+#    endif
+#  endif
 #endif // Q_OS_UNIX
 #ifdef __COVERAGESCANNER__
                 || key == "QT_TESTCOCOON_ACTIVE"
