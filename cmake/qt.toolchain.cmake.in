@@ -40,12 +40,9 @@ if(__qt_toolchain_use_vcpkg)
     set(__qt_toolchain_vcpkg_root "$ENV{VCPKG_ROOT}")
     if(NOT __qt_toolchain_vcpkg_root OR NOT EXISTS "${__qt_toolchain_vcpkg_root}")
         set(__qt_toolchain_use_vcpkg FALSE)
-
-        if(NOT QT_NO_SHOW_INVALID_VCPKG_ROOT_WARNING)
-            message(WARNING "The VCPKG_ROOT environment variable is set to "
-                "'${__qt_toolchain_vcpkg_root}', but this path doesn't exist. "
-                "Vcpkg support will be disabled.")
-        endif()
+        message(FATAL_ERROR "The VCPKG_ROOT environment variable is set to "
+            "'${__qt_toolchain_vcpkg_root}', but this path doesn't exist. "
+            "Vcpkg support will be disabled.")
     endif()
     unset(__qt_toolchain_vcpkg_root)
 endif()
