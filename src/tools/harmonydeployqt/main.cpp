@@ -64,6 +64,14 @@ struct Options
     // HarmonyOS permissions injected via qt_add_harmonyos_permission
     QJsonArray permissions;
 
+    // App-level metadata from qt_set_harmonyos_app_metadata. Empty/zero means
+    // "user did not set this", so harmonydeployqt leaves the template default in place.
+    QString harmonyOsAppVendor;
+    int harmonyOsAppVersionCode = 0;
+    QString harmonyOsAppVersionName;
+    QString harmonyOsAppLabel;
+    QString harmonyOsAppIcon;
+
     // Test bundle mode
     bool testBundleMode = false;
     QString testBinariesDirectory;   // Directory to scan for libtst_*.so
@@ -219,6 +227,13 @@ static bool readInputConfiguration(Options *options)
 
     // Parse HarmonyOS permissions injected via qt_add_harmonyos_permission
     options->permissions = obj["permissions"_L1].toArray();
+
+    // App-level metadata injected via qt_set_harmonyos_app_metadata.
+    options->harmonyOsAppVendor = obj["harmonyos-app-vendor"_L1].toString();
+    options->harmonyOsAppVersionCode = obj["harmonyos-app-version-code"_L1].toInt();
+    options->harmonyOsAppVersionName = obj["harmonyos-app-version-name"_L1].toString();
+    options->harmonyOsAppLabel = obj["harmonyos-app-label"_L1].toString();
+    options->harmonyOsAppIcon = obj["harmonyos-app-icon"_L1].toString();
 
     // Validate required fields
     if (!options->testBundleMode && options->applicationBinary.isEmpty()) {
@@ -513,6 +528,18 @@ static QString synthesizePermissionReasonId(const QString &permissionName)
     return "qt_permission_reason_"_L1 + suffix;
 }
 
+// Escape a string for safe inclusion between double quotes in a JSON/JSON5
+// scalar. User-supplied metadata (vendor, label, etc.) is substituted into
+// the OHOS manifest files verbatim, so embedded '"' or '\' would otherwise
+// produce invalid JSON that hvigor rejects. Re-uses Qt's own JSON writer
+// for the canonical escape: wrap in a single-element array, serialize, strip
+// the surrounding `["` and `"]`.
+static QString jsonStringEscape(const QString &s)
+{
+    QByteArray ba = QJsonDocument(QJsonArray{s}).toJson(QJsonDocument::Compact);
+    return QString::fromUtf8(ba.sliced(2, ba.size() - 4));
+}
+
 struct PromotedReason
 {
     QString id;
@@ -562,7 +589,47 @@ static bool customizeTemplate(const Options &options)
             fprintf(stdout, "  Updated QtAppConstants.ets with app name: %s\n", qPrintable(appLibName));
     }
 
-    // Customize app.json5
+    // Resolve the icon value once -- it is consumed by both the app.json5
+    // (app-level icon) and module.json5 (ability/launcher icon) customizations
+    // below. $media: references pass through; literal filesystem paths get
+    // copied into the AppScope *and* entry resource dirs and rewritten to a
+    // $media:<basename> reference. OHOS restool restricts resource names to
+    // [a-zA-Z0-9_]; sanitize the basename so files like "qt-logo.png" are
+    // accepted (becomes "qt_logo.png" / $media:qt_logo).
+    QString iconValue = options.harmonyOsAppIcon;
+    if (!iconValue.isEmpty() && !iconValue.startsWith("$media:"_L1)) {
+        QFileInfo iconInfo(iconValue);
+        if (!iconInfo.exists() || !iconInfo.isFile()) {
+            fprintf(stderr, "App icon does not exist: %s\n", qPrintable(iconValue));
+            return false;
+        }
+        QString safeStem = iconInfo.completeBaseName();
+        for (QChar &c : safeStem) {
+            if (!c.isLetterOrNumber() && c != QLatin1Char('_'))
+                c = QLatin1Char('_');
+        }
+        const QString destFileName = iconInfo.suffix().isEmpty()
+                ? safeStem
+                : safeStem + "."_L1 + iconInfo.suffix();
+        const QStringList destDirs = {
+            options.outputDirectory + "/AppScope/resources/base/media"_L1,
+            options.outputDirectory + "/entry/src/main/resources/base/media"_L1,
+        };
+        for (const QString &destDir : destDirs) {
+            QDir().mkpath(destDir);
+            const QString destPath = destDir + "/"_L1 + destFileName;
+            if (!copyFileIfNewer(iconValue, destPath, options.verbose)) {
+                fprintf(stderr, "Failed to copy app icon to: %s\n", qPrintable(destPath));
+                return false;
+            }
+        }
+        iconValue = "$media:"_L1 + safeStem;
+    }
+
+    // Customize AppScope/app.json5. Use targeted text substitution rather
+    // than parse-and-rewrite so JSON5 features in the template (comments,
+    // trailing commas, single-quoted strings) survive the round trip --
+    // QJsonDocument is a strict JSON parser and would reject those.
     QString appJsonPath = options.outputDirectory + "/AppScope/app.json5"_L1;
     QFile appJsonFile(appJsonPath);
 
@@ -571,27 +638,59 @@ static bool customizeTemplate(const Options &options)
             fprintf(stderr, "Failed to open app.json5 for reading\n");
             return false;
         }
-
         QString content = QString::fromUtf8(appJsonFile.readAll());
         appJsonFile.close();
 
-        // Replace bundleName
-        content.replace(QRegularExpression("\"bundleName\":\\s*\"[^\"]*\""_L1),
-                       "\"bundleName\": \""_L1 + options.harmonyOsAppBundleName + "\""_L1);
+        auto replaceStringField =
+                [&content](QLatin1StringView key, const QString &value) {
+            if (value.isEmpty())
+                return;
+            content.replace(
+                    QRegularExpression("\""_L1 + key + "\":\\s*\"[^\"]*\""_L1),
+                    "\""_L1 + key + "\": \""_L1 + jsonStringEscape(value) + "\""_L1);
+        };
+
+        replaceStringField("bundleName"_L1, options.harmonyOsAppBundleName);
+        replaceStringField("vendor"_L1, options.harmonyOsAppVendor);
+        replaceStringField("versionName"_L1, options.harmonyOsAppVersionName);
+        // The OHOS schema for app.label requires either "$string:<id>" or a
+        // brace-substituted value -- a plain literal is rejected. So only
+        // substitute the label field directly when the user supplied a
+        // $string: reference. Literal labels are routed below to the
+        // app_name/QAbility_label string resources, which app.json5 and
+        // module.json5 already reference via $string:.
+        if (options.harmonyOsAppLabel.startsWith("$string:"_L1))
+            replaceStringField("label"_L1, options.harmonyOsAppLabel);
+        replaceStringField("icon"_L1, iconValue);
+
+        if (options.harmonyOsAppVersionCode > 0) {
+            content.replace(
+                    QRegularExpression("\"versionCode\":\\s*\\d+"_L1),
+                    "\"versionCode\": "_L1 + QString::number(options.harmonyOsAppVersionCode));
+        }
 
         if (!appJsonFile.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate)) {
             fprintf(stderr, "Failed to open app.json5 for writing\n");
             return false;
         }
-
         appJsonFile.write(content.toUtf8());
         appJsonFile.close();
 
         if (options.verbose) {
-            fprintf(stdout, "  Updated app.json5 with bundle name: %s\n",
-                   qPrintable(options.harmonyOsAppBundleName));
+            fprintf(stdout, "  Updated app.json5 (bundle: %s)\n",
+                    qPrintable(options.harmonyOsAppBundleName));
         }
     }
+
+    // Display label that lands in the app_name and QAbility_label string
+    // resources. A literal LABEL wins; a "$string:..." LABEL was substituted
+    // into app.json5 above and is therefore the user's own resource id, so we
+    // fall back to the target name here.
+    const QString displayLabel =
+        (!options.harmonyOsAppLabel.isEmpty()
+         && !options.harmonyOsAppLabel.startsWith("$string:"_L1))
+            ? options.harmonyOsAppLabel
+            : options.harmonyOsAppName;
 
     // Auto-promote plain-literal permission reasons to $string: references.
     // The literal values are appended to the entry/.../string.json files below
@@ -658,7 +757,7 @@ static bool customizeTemplate(const Options &options)
             const QString name = e["name"_L1].toString();
             existingNames.insert(name);
             if (name == "QAbility_label"_L1) {
-                e["value"_L1] = options.harmonyOsAppName;
+                e["value"_L1] = displayLabel;
                 strings[i] = e;
             }
         }
@@ -687,7 +786,7 @@ static bool customizeTemplate(const Options &options)
         if (options.verbose) {
             fprintf(stdout,
                     "  Updated %s string.json (label: %s, +%lld promoted permission reasons)\n",
-                    qPrintable(locale), qPrintable(options.harmonyOsAppName),
+                    qPrintable(locale), qPrintable(displayLabel),
                     static_cast<long long>(promotedReasons.size()));
         }
     }
@@ -707,7 +806,7 @@ static bool customizeTemplate(const Options &options)
 
         // Replace app_name value
         QRegularExpression appNameRegex("(\"name\":\\s*\"app_name\"[^}]*\"value\":\\s*)\"[^\"]*\""_L1);
-        content.replace(appNameRegex, "\\1\""_L1 + options.harmonyOsAppName + "\""_L1);
+        content.replace(appNameRegex, "\\1\""_L1 + jsonStringEscape(displayLabel) + "\""_L1);
 
         if (!appScopeStringFile.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate)) {
             fprintf(stderr, "Failed to open AppScope string.json for writing\n");
@@ -719,7 +818,7 @@ static bool customizeTemplate(const Options &options)
 
         if (options.verbose)
             fprintf(stdout, "  Updated AppScope string.json with app name: %s\n",
-                   qPrintable(options.harmonyOsAppName));
+                   qPrintable(displayLabel));
     }
 
     // Customize module.json5
@@ -740,6 +839,16 @@ static bool customizeTemplate(const Options &options)
         // The module name must remain "entry" to match build-profile.json5
         QString descReplacement = "\"description\": \"$description of "_L1 + options.harmonyOsAppName + "\""_L1;
         content.replace(QRegularExpression("\"description\":\\s*\"\\$string:module_desc\""_L1), descReplacement);
+
+        // Override the ability/launcher icon so qt_set_harmonyos_app_metadata(ICON ...)
+        // is reflected on the device home screen, not just in Settings. The
+        // template ships "$media:layered_image" -- only replace that specific
+        // value so user-customized icons in subsequent runs aren't clobbered.
+        if (!iconValue.isEmpty()) {
+            content.replace(
+                    QRegularExpression("\"icon\":\\s*\"\\$media:layered_image\""_L1),
+                    "\"icon\": \""_L1 + iconValue + "\""_L1);
+        }
 
         // Build the requestPermissions array fragment from the (possibly
         // promoted) transformedPermissions computed above.  The sentinel

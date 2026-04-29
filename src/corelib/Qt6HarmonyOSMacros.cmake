@@ -252,6 +252,31 @@ function(_qt_internal_harmonyos_generate_deployment_settings target)
     string(APPEND JSON_CONTENT "    \"harmonyos-app-bundle-name\": \"${bundle_name}\",\n")
     string(APPEND JSON_CONTENT "    \"harmonyos-target-arch\": [${TARGET_ARCHS_JSON}]")
 
+    # App-level metadata set via qt_set_harmonyos_app_metadata; emit only what the
+    # user explicitly set so harmonydeployqt knows to leave the others as the
+    # template default.
+    foreach(prop_kv IN ITEMS
+            "QT_HARMONYOS_APP_VENDOR;harmonyos-app-vendor;string"
+            "QT_HARMONYOS_APP_VERSION_CODE;harmonyos-app-version-code;integer"
+            "QT_HARMONYOS_APP_VERSION_NAME;harmonyos-app-version-name;string"
+            "QT_HARMONYOS_APP_LABEL;harmonyos-app-label;string"
+            "QT_HARMONYOS_APP_ICON;harmonyos-app-icon;path")
+        list(GET prop_kv 0 prop_name)
+        list(GET prop_kv 1 json_key)
+        list(GET prop_kv 2 json_type)
+        get_target_property(prop_value ${target} ${prop_name})
+        if(prop_value)
+            if(json_type STREQUAL "integer")
+                string(APPEND JSON_CONTENT ",\n    \"${json_key}\": ${prop_value}")
+            else()
+                if(json_type STREQUAL "path")
+                    file(TO_CMAKE_PATH "${prop_value}" prop_value)
+                endif()
+                string(APPEND JSON_CONTENT ",\n    \"${json_key}\": \"${prop_value}\"")
+            endif()
+        endif()
+    endforeach()
+
     if(sdk_root)
         file(TO_CMAKE_PATH "${sdk_root}" sdk_root)
         string(APPEND JSON_CONTENT ",\n    \"sdk-root\": \"${sdk_root}\"")
@@ -551,5 +576,77 @@ endfunction()
 if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
     function(qt_add_harmonyos_permission target)
         qt6_add_harmonyos_permission(${ARGV})
+    endfunction()
+endif()
+
+# Set HarmonyOS app-level metadata that lands in AppScope/app.json5.
+# These values are conceptually app-scoped (one app = one bundle); on a target
+# that builds the app's main module they get baked into the deployment-settings
+# JSON and consumed by harmonydeployqt at HAP build time.
+#
+# Synopsis
+#   qt_set_harmonyos_app_metadata(target
+#       [VENDOR <string>]
+#       [VERSION_CODE <integer>]
+#       [VERSION_NAME <string>]
+#       [LABEL <string-or-$string:ref>]
+#       [ICON <path-or-$media:ref>]
+#   )
+#
+# ICON accepts either a host filesystem path (deploy tool copies the image into
+# AppScope/resources/base/media/ and emits a $media: reference) or a $media:
+# reference (passed through verbatim). Relative paths resolve against the
+# call site's CMAKE_CURRENT_SOURCE_DIR.
+function(_qt_internal_set_harmonyos_app_metadata target)
+    if(NOT TARGET ${target})
+        message(FATAL_ERROR
+            "Empty or invalid target for setting HarmonyOS app metadata: (${target})")
+    endif()
+
+    set(no_value_options "")
+    set(single_value_options
+        VENDOR
+        VERSION_CODE
+        VERSION_NAME
+        LABEL
+        ICON
+    )
+    set(multi_value_options "")
+    cmake_parse_arguments(PARSE_ARGV 1 arg
+        "${no_value_options}" "${single_value_options}" "${multi_value_options}"
+    )
+
+    if(DEFINED arg_VENDOR)
+        set_target_properties(${target} PROPERTIES QT_HARMONYOS_APP_VENDOR "${arg_VENDOR}")
+    endif()
+    if(DEFINED arg_VERSION_CODE)
+        set_target_properties(${target} PROPERTIES
+            QT_HARMONYOS_APP_VERSION_CODE "${arg_VERSION_CODE}")
+    endif()
+    if(DEFINED arg_VERSION_NAME)
+        set_target_properties(${target} PROPERTIES
+            QT_HARMONYOS_APP_VERSION_NAME "${arg_VERSION_NAME}")
+    endif()
+    if(DEFINED arg_LABEL)
+        set_target_properties(${target} PROPERTIES QT_HARMONYOS_APP_LABEL "${arg_LABEL}")
+    endif()
+    if(DEFINED arg_ICON)
+        set(icon_value "${arg_ICON}")
+        if(NOT icon_value MATCHES "^\\$media:")
+            if(NOT IS_ABSOLUTE "${icon_value}")
+                set(icon_value "${CMAKE_CURRENT_SOURCE_DIR}/${icon_value}")
+            endif()
+        endif()
+        set_target_properties(${target} PROPERTIES QT_HARMONYOS_APP_ICON "${icon_value}")
+    endif()
+endfunction()
+
+function(qt6_set_harmonyos_app_metadata target)
+    _qt_internal_set_harmonyos_app_metadata(${ARGV})
+endfunction()
+
+if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
+    function(qt_set_harmonyos_app_metadata target)
+        qt6_set_harmonyos_app_metadata(${ARGV})
     endfunction()
 endif()
