@@ -773,7 +773,7 @@ const QHash<int,QByteArray> &QAbstractItemModelPrivate::defaultRoleNames()
 
     This function is suitable for implementations of QAbstractItemModel::sort(),
     providing weak ordering even for variant values that cannot be compared, i.e.
-    where QVariant::compare would return \l{QParitalOrdering}{unordered}. This
+    where QVariant::compare would return \l{QPartialOrdering}{unordered}. This
     makes it safe to use in \c{std::sort} and \c{std::stable_sort}, which
     require data that can be ordered.
 
@@ -788,23 +788,20 @@ const QHash<int,QByteArray> &QAbstractItemModelPrivate::defaultRoleNames()
     }
     \endcode
 
-    The implementation handles the following QVariant types:
+    If the \a left QVariant holds a string, then the variants are compared
+    \l{QVariant::toString()}{as strings}, using the optional \a collator.
 
-    \list
-    \li QMetaType::Int
-    \li QMetaType::UInt
-    \li QMetaType::LongLong
-    \li QMetaType::ULongLong
-    \li QMetaType::Float
-    \li QMetaType::Double
-    \li QMetaType::QChar
-    \li QMetaType::QDate
-    \li QMetaType::QTime
-    \li QMetaType::QDateTime
-    \li QMetaType::QString
-    \endlist
+    Otherwise, the implementation compares \a left and \a right using
+    QVariant::compare(), which can only provide a partial ordering. If the
+    comparison produces an \l{Qt::partial_ordering::}{unordered} result, and the
+    \l{QVariant::metaType()}{meta type} of \a left and \a right are not the same,
+    then the function attempts to \l{QVariant::convert()}{convert} the variants
+    to a common type, and the comparison is tried again.
 
-    Any other type will be converted to a QString using QVariant::toString().
+    If this still produces an \l{Qt::partial_ordering::}{unordered} result, then
+    the string-representation of both variants is compared. This might compare
+    two empty strings, which are \{Qt::weak_ordering::}{equivalent}.
+
     \l{QVariant::isValid}{Invalid variants} always compare as greater than
     variants holding a valid value.
 
@@ -821,42 +818,33 @@ Qt::weak_ordering QAbstractItemModel::compareData(const QVariant &left, const QV
     }
     if (!right.isValid())
         return Qt::weak_ordering::less;
-    switch (left.userType()) {
-    case QMetaType::Int:
-    case QMetaType::UInt:
-    case QMetaType::LongLong:
-    case QMetaType::ULongLong:
-    case QMetaType::Float:
-    case QMetaType::Double:
-    case QMetaType::QChar:
-    case QMetaType::QDate:
-    case QMetaType::QTime:
-    case QMetaType::QDateTime: {
+
+    if (left.userType() != QMetaType::QString) {
         QPartialOrdering partialOrder = QVariant::compare(left, right);
-        if (partialOrder == Qt::partial_ordering::unordered) {
+        if (partialOrder == Qt::partial_ordering::unordered && right.metaType() != left.metaType()) {
             if (right.canConvert(left.metaType())) {
                 QVariant rightAsLeft = right;
                 rightAsLeft.convert(left.metaType());
                 partialOrder = QVariant::compare(left, rightAsLeft);
+            } else if (left.canConvert(right.metaType())) {
+                QVariant leftAsRight = left;
+                leftAsRight.convert(right.metaType());
+                partialOrder = QVariant::compare(leftAsRight, right);
             }
-            if (partialOrder == Qt::partial_ordering::unordered)
-                return Qt::weak_ordering::greater;
         }
         if (partialOrder == Qt::partial_ordering::equivalent)
             return Qt::weak_ordering::equivalent;
-        return partialOrder < 0 ? Qt::weak_ordering::less
-                                : Qt::weak_ordering::greater;
+        if (partialOrder < 0)
+            return Qt::weak_ordering::less;
+        if (partialOrder > 0)
+            return Qt::weak_ordering::greater;
     }
-    default:
-    case QMetaType::QString: {
-        const Qt::CaseSensitivity cs = collator ? collator->caseSensitivity()
-                                     : Qt::CaseSensitive;
-        const int res = collator
-                      ? collator->compare(left.toString(), right.toString())
-                      : left.toString().compare(right.toString(), cs);
-        return Qt::compareThreeWay(res, 0);
-    }
-    }
+
+    // unordered so far, or QString in the first place - compare as strings
+    const int res = collator
+                  ? collator->compare(left.toString(), right.toString())
+                  : left.toString().compare(right.toString());
+    return Qt::compareThreeWay(res, 0);
 }
 
 static uint typeOfVariant(const QVariant &value)
