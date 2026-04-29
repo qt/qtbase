@@ -621,8 +621,10 @@ QContactsPermission::AccessMode QContactsPermission::accessMode() const
       \row
         \li Android
         \li \l{android-uses-permission}{\c{uses-permission}}
-        \li \c android.permission.READ_CALENDAR. \c android.permission.WRITE_CALENDAR if
-            QCalendarPermission::accessMode() is set to AccessMode::ReadWrite.
+        \li \c android.permission.READ_CALENDAR if QCalendarPermission::accessMode() is set
+            to AccessMode::ReadOnly or AccessMode::ReadWrite.
+            \c android.permission.WRITE_CALENDAR if QCalendarPermission::accessMode() is set
+            to AccessMode::WriteOnly or AccessMode::ReadWrite.
     \include permissions.qdocinc end-usage-declarations
 
     \include permissions.qdocinc permission-metadata
@@ -635,6 +637,7 @@ QContactsPermission::AccessMode QContactsPermission::accessMode() const
 
     \value ReadOnly Read-only access to the calendar data (the default).
     \value ReadWrite Read and write access to the calendar data.
+    \value WriteOnly Write-only access to the calendar data.
 
     \sa setAccessMode, accessMode
 */
@@ -644,8 +647,7 @@ QT_PERMISSION_IMPL_COMMON(QCalendarPermission)
 {}
 
 /*!
-    Sets whether the request is for read-write (\a mode == AccessMode::ReadWrite) or
-    read-only (\a mode == AccessMode::ReadOnly) access to the calendar.
+    Sets the access mode to \a mode.
 */
 void QCalendarPermission::setAccessMode(AccessMode mode)
 {
@@ -653,8 +655,7 @@ void QCalendarPermission::setAccessMode(AccessMode mode)
 }
 
 /*!
-    Returns AccessMode::ReadWrite when the request is for read-write and
-    AccessMode::ReadOnly when it is for read-only access to the calendar.
+    Returns the requested access mode.
 */
 QCalendarPermission::AccessMode QCalendarPermission::accessMode() const
 {

@@ -37,6 +37,9 @@ void tst_QPermissions::initTestCase_data()
     QTest::newRow("Bluetooth") << QPermission(QBluetoothPermission{});
     QTest::newRow("Contacts") << QPermission(QContactsPermission{});
     QTest::newRow("Calendar") << QPermission(QCalendarPermission{});
+    QCalendarPermission calendarWriteOnly;
+    calendarWriteOnly.setAccessMode(QCalendarPermission::WriteOnly);
+    QTest::newRow("Calendar (WriteOnly)") << QPermission(calendarWriteOnly);
     QTest::newRow("Location") << QPermission(QLocationPermission{});
 }
 

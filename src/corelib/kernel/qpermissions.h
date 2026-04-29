@@ -136,6 +136,7 @@ public:
     enum AccessMode : quint8 {
         ReadOnly,
         ReadWrite,
+        WriteOnly,
     };
     Q_ENUM(AccessMode)
 
