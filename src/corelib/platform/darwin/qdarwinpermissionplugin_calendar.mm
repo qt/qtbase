@@ -25,7 +25,7 @@
     case EKAuthorizationStatusRestricted:
     case EKAuthorizationStatusDenied:
         return Qt::PermissionStatus::Denied;
-    case EKAuthorizationStatusAuthorized:
+    case EKAuthorizationStatusFullAccess:
         return Qt::PermissionStatus::Granted;
     case EKAuthorizationStatusWriteOnly:
         // FIXME: Add WriteOnly AccessMode
@@ -51,8 +51,8 @@
         self.eventStore = [[EKEventStore new] autorelease];
     }
 
-    [self.eventStore requestAccessToEntityType:EKEntityTypeEvent
-        completion:^(BOOL granted, NSError * _Nullable error) {
+    [self.eventStore requestFullAccessToEventsWithCompletion:
+        ^(BOOL granted, NSError * _Nullable error) {
             Q_UNUSED(granted); // We use status instead
             // Permission denied will result in an error, which we don't
             // want to report/log, so we ignore the error and just report
