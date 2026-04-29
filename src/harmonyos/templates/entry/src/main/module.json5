@@ -3,15 +3,9 @@
     "name": "entry",
     "type": "entry",
     "srcEntry": "./ets/qabilitystage/QAbilityStage.ets",
-    "description": "$string:module_desc",
+    "description": "%%INSERT_MODULE_DESCRIPTION%%",
     "mainElement": "QAbility",
-    "deviceTypes": [
-      // When 'phone' is added to the list, the main window does not restore itself to
-      // the desired state after being minimized (QTFOROH-1076). Before it is added
-      // back, be sure that the issue has been resolved.
-      "tablet",
-      "2in1"
-    ],
+    "deviceTypes": [/* %%INSERT_DEVICE_TYPES%% */],
     "deliveryWithInstall": true,
     "installationFree": false,
     "pages": "$profile:main_pages",

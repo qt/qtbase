@@ -72,6 +72,10 @@ struct Options
     QString harmonyOsAppLabel;
     QString harmonyOsAppIcon;
 
+    // Module-level metadata from qt_set_harmonyos_module_metadata.
+    QString harmonyOsModuleDescription;
+    QStringList harmonyOsModuleDeviceTypes;
+
     // Test bundle mode
     bool testBundleMode = false;
     QString testBinariesDirectory;   // Directory to scan for libtst_*.so
@@ -234,6 +238,12 @@ static bool readInputConfiguration(Options *options)
     options->harmonyOsAppVersionName = obj["harmonyos-app-version-name"_L1].toString();
     options->harmonyOsAppLabel = obj["harmonyos-app-label"_L1].toString();
     options->harmonyOsAppIcon = obj["harmonyos-app-icon"_L1].toString();
+
+    // Module-level metadata injected via qt_set_harmonyos_module_metadata.
+    options->harmonyOsModuleDescription = obj["harmonyos-module-description"_L1].toString();
+    const QJsonArray deviceTypesArray = obj["harmonyos-module-device-types"_L1].toArray();
+    for (const QJsonValue &value : deviceTypesArray)
+        options->harmonyOsModuleDeviceTypes.append(value.toString());
 
     // Validate required fields
     if (!options->testBundleMode && options->applicationBinary.isEmpty()) {
@@ -499,6 +509,18 @@ static bool copyTemplate(const Options &options)
     if (!copyRecursively(options.harmonyOsPackageSourceDirectory, options.outputDirectory, options.verbose))
         return false;
 
+    // Force-overwrite the manifest files. customizeTemplate() does one-shot
+    // sentinel/regex substitutions on these; if the destination is left over
+    // from a previous deploy the sentinels are already gone and any change to
+    // the CMake-supplied metadata would be silently ignored.
+    for (const char *relPath : { "AppScope/app.json5", "entry/src/main/module.json5" }) {
+        const QString src = options.harmonyOsPackageSourceDirectory
+            + QLatin1Char('/') + QLatin1String(relPath);
+        const QString dst = options.outputDirectory + QLatin1Char('/') + QLatin1String(relPath);
+        if (QFile::exists(src) && !copyFileIfNewer(src, dst, options.verbose, true))
+            return false;
+    }
+
     if (options.verbose)
         fprintf(stdout, "Template copied successfully\n");
 
@@ -528,7 +550,6 @@ static QString synthesizePermissionReasonId(const QString &permissionName)
     return "qt_permission_reason_"_L1 + suffix;
 }
 
-// Escape a string for safe inclusion between double quotes in a JSON/JSON5
 // scalar. User-supplied metadata (vendor, label, etc.) is substituted into
 // the OHOS manifest files verbatim, so embedded '"' or '\' would otherwise
 // produce invalid JSON that hvigor rejects. Re-uses Qt's own JSON writer
@@ -835,10 +856,28 @@ static bool customizeTemplate(const Options &options)
         QString content = QString::fromUtf8(moduleJsonFile.readAll());
         moduleJsonFile.close();
 
-        // Only replace the description at the module level, not ability names
-        // The module name must remain "entry" to match build-profile.json5
-        QString descReplacement = "\"description\": \"$description of "_L1 + options.harmonyOsAppName + "\""_L1;
-        content.replace(QRegularExpression("\"description\":\\s*\"\\$string:module_desc\""_L1), descReplacement);
+        // Substitute the module description sentinel. The user's value (if set
+        // via qt_set_harmonyos_module_metadata DESCRIPTION) takes precedence;
+        // otherwise fall back to the template's $string:module_desc reference,
+        // which resolves via the entry/.../resources/.../string.json file.
+        const QString descriptionSentinel = "%%INSERT_MODULE_DESCRIPTION%%"_L1;
+        const QString descriptionValue = options.harmonyOsModuleDescription.isEmpty()
+            ? "$string:module_desc"_L1
+            : jsonStringEscape(options.harmonyOsModuleDescription);
+        content.replace(descriptionSentinel, descriptionValue);
+
+        // Substitute the deviceTypes sentinel. Default excludes 'phone' because
+        // of QTFOROH-1076 (main window does not restore properly after being
+        // minimized on phone); revisit when that is fixed.
+        const QString deviceTypesSentinel = "/* %%INSERT_DEVICE_TYPES%% */"_L1;
+        QStringList deviceTypes = options.harmonyOsModuleDeviceTypes;
+        if (deviceTypes.isEmpty())
+            deviceTypes = QStringList{ "tablet"_L1, "2in1"_L1 };
+        QStringList quotedDeviceTypes;
+        quotedDeviceTypes.reserve(deviceTypes.size());
+        for (const QString &dt : std::as_const(deviceTypes))
+            quotedDeviceTypes.append("\""_L1 + dt + "\""_L1);
+        content.replace(deviceTypesSentinel, quotedDeviceTypes.join(", "_L1));
 
         // Override the ability/launcher icon so qt_set_harmonyos_app_metadata(ICON ...)
         // is reflected on the device home screen, not just in Settings. The

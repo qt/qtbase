@@ -260,7 +260,8 @@ function(_qt_internal_harmonyos_generate_deployment_settings target)
             "QT_HARMONYOS_APP_VERSION_CODE;harmonyos-app-version-code;integer"
             "QT_HARMONYOS_APP_VERSION_NAME;harmonyos-app-version-name;string"
             "QT_HARMONYOS_APP_LABEL;harmonyos-app-label;string"
-            "QT_HARMONYOS_APP_ICON;harmonyos-app-icon;path")
+            "QT_HARMONYOS_APP_ICON;harmonyos-app-icon;path"
+            "QT_HARMONYOS_MODULE_DESCRIPTION;harmonyos-module-description;string")
         list(GET prop_kv 0 prop_name)
         list(GET prop_kv 1 json_key)
         list(GET prop_kv 2 json_type)
@@ -272,10 +273,25 @@ function(_qt_internal_harmonyos_generate_deployment_settings target)
                 if(json_type STREQUAL "path")
                     file(TO_CMAKE_PATH "${prop_value}" prop_value)
                 endif()
+                _qt_internal_json_escape_content("${prop_value}" prop_value)
                 string(APPEND JSON_CONTENT ",\n    \"${json_key}\": \"${prop_value}\"")
             endif()
         endif()
     endforeach()
+
+    # Module-level deviceTypes is a list; emit as a JSON array of quoted strings.
+    get_target_property(module_device_types ${target} QT_HARMONYOS_MODULE_DEVICE_TYPES)
+    if(module_device_types AND NOT module_device_types STREQUAL "module_device_types-NOTFOUND")
+        set(device_types_json "")
+        foreach(dt IN LISTS module_device_types)
+            if(device_types_json)
+                string(APPEND device_types_json ", ")
+            endif()
+            string(APPEND device_types_json "\"${dt}\"")
+        endforeach()
+        string(APPEND JSON_CONTENT
+            ",\n    \"harmonyos-module-device-types\": [${device_types_json}]")
+    endif()
 
     if(sdk_root)
         file(TO_CMAKE_PATH "${sdk_root}" sdk_root)
@@ -648,5 +664,55 @@ endfunction()
 if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
     function(qt_set_harmonyos_app_metadata target)
         qt6_set_harmonyos_app_metadata(${ARGV})
+    endfunction()
+endif()
+
+# Set HarmonyOS module-level metadata that lands in entry/src/main/module.json5.
+#
+# Synopsis
+#   qt_set_harmonyos_module_metadata(target
+#       [DESCRIPTION <string-or-$string:ref>]
+#       [DEVICE_TYPES <type> [<type>...]]
+#   )
+#
+# DESCRIPTION accepts a literal string (appears verbatim in the manifest and
+# is not localizable) or a $string:<ref> resource reference (localizable via
+# the user's string.json files).
+#
+# DEVICE_TYPES is a list of HarmonyOS device-type identifiers (e.g. tablet,
+# 2in1, phone). When unset, harmonydeployqt picks the Qt default. Note that
+# 'phone' is intentionally excluded from the default because of QTFOROH-1076
+# (main window does not restore itself to the desired state after being
+# minimized on phone); revisit once that is fixed.
+function(_qt_internal_set_harmonyos_module_metadata target)
+    if(NOT TARGET ${target})
+        message(FATAL_ERROR
+            "Empty or invalid target for setting HarmonyOS module metadata: (${target})")
+    endif()
+
+    set(no_value_options "")
+    set(single_value_options DESCRIPTION)
+    set(multi_value_options DEVICE_TYPES)
+    cmake_parse_arguments(PARSE_ARGV 1 arg
+        "${no_value_options}" "${single_value_options}" "${multi_value_options}"
+    )
+
+    if(DEFINED arg_DESCRIPTION)
+        set_target_properties(${target} PROPERTIES
+            QT_HARMONYOS_MODULE_DESCRIPTION "${arg_DESCRIPTION}")
+    endif()
+    if(arg_DEVICE_TYPES)
+        set_target_properties(${target} PROPERTIES
+            QT_HARMONYOS_MODULE_DEVICE_TYPES "${arg_DEVICE_TYPES}")
+    endif()
+endfunction()
+
+function(qt6_set_harmonyos_module_metadata target)
+    _qt_internal_set_harmonyos_module_metadata(${ARGV})
+endfunction()
+
+if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
+    function(qt_set_harmonyos_module_metadata target)
+        qt6_set_harmonyos_module_metadata(${ARGV})
     endfunction()
 endif()
