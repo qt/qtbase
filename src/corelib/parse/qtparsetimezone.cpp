@@ -63,6 +63,69 @@ addMatch(QList<QtParseTimeZone::ParsedZone> &&matches,
     return std::move(matches);
 }
 
+#if QT_CONFIG(timezone)
+constexpr char zoneNamePunctuation[] = "+-./:_";
+
+auto matchIanaId(QStringView text)
+{
+    struct R {
+        QTimeZone zone;
+        qsizetype length = 0;
+        operator bool() const noexcept { return length > 0; }
+    };
+    // Collect up plausibly-valid characters; let QTimeZone work out what's
+    // truly valid.
+    const auto invalidZoneNameCharacter = [] (const QChar &c) {
+        constexpr auto matcher = QtPrivate::makeCharacterSetMatch<zoneNamePunctuation>();
+        const auto cu = c.unicode();
+        return cu >= 127u || !(matcher.matches(uchar(cu)) || c.isLetterOrNumber());
+    };
+    int index = std::distance(text.cbegin(),
+                              std::find_if(text.cbegin(), text.cend(), invalidZoneNameCharacter));
+    Q_ASSERT(index <= text.size());
+    text.truncate(index);
+
+    // Limit name fragments (between slashes) to 20 characters.
+    // (Valid time-zone IDs are allowed up to 14 and Android has quirks up to 17.)
+    // Limit number of fragments to six; no known zone name has more than four.
+    int lastSlash = -1;
+    int count = 0;
+    while (lastSlash < index) {
+        const int newToken = lastSlash + 1;
+        int slash = text.indexOf(u'/', newToken);
+        if (slash < 0)
+            slash = index; // i.e. the end of the candidate text
+        else if (++count > 5)
+            index = slash; // Truncate
+        if (slash - newToken > 20)
+            index = newToken + 20; // Truncate
+        // If any of those conditions was met, index <= slash, so this exits the loop:
+        lastSlash = slash;
+    }
+    // Only ASCII characters aren't invalid, so we can now convert to Latin1.
+    QByteArray name = text.first(index).toLatin1();
+    // Subsequent truncation won't trigger reallocation, so is efficient despite
+    // the owning container.
+
+    // Find longest IANA ID match:
+    for (; index > 3; name.truncate(--index)) {
+        QTimeZone zone(name);
+        if (zone.isValid())
+            return R{zone, index};
+    }
+    // GMT may be recognized as other things, but if it's the actual name given
+    // and our backend supports it, prefer the backend version over other forms.
+    if (index == 3 && name == "GMT") {
+        QTimeZone zone(name);
+        if (zone.isValid())
+            return R{zone, index};
+    }
+
+    // Not a known IANA ID.
+    return R{};
+}
+#endif // feature timezone
+
 auto matchSystemName(QStringView text, const QLocale &locale)
 {
     struct R {
@@ -206,6 +269,17 @@ QList<ParsedZone> prefix(QStringView text, const QLocale &locale, qsizetype from
     using namespace QtTemporalPattern;
     using namespace FieldGroup;
     using Flag = TemporalFieldFlag;
+
+    // Locale-dependent forms:
+#if QT_CONFIG(timezone)
+    if (matchesFlagWithin(flags, Flag::LocalizedZone, FieldGroup::LocalizationMask)) {
+        if (matchesFlagWithin(flags, Flag::Standalone, FormMask)
+            && matchesFlagWithin(flags, Flag::Short, WidthMask)) {
+            if (auto match = matchIanaId(tail))
+                includeMatch(match.length, std::move(match.zone), QTimeZone::GenericTime);
+        }
+    }
+#endif
 
     if (flags.testFlag(Flag::LocalTimeName)) {
         if (const auto sys = matchSystemName(tail, locale))
