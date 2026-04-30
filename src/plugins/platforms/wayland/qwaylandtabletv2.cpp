@@ -571,6 +571,7 @@ void QWaylandTabletToolV2::zwp_tablet_tool_v2_frame(uint32_t time)
                                                           buttons, pressure,
                                                           xTilt, yTilt, tangentialPressure, rotation, z,
                                                           m_tabletSeat->seat()->modifiers());
+                m_tabletSeat->seat()->display()->waylandCursor()->setPosFromEnterEvent(globalPosition.toPoint());
             }
         }
     }
