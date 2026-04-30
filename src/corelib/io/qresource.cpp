@@ -1086,7 +1086,7 @@ public:
     ResourceRootType type() const override { return Resource_Buffer; }
 
     // size == -1 means "unknown"
-    bool registerSelf(const uchar *b, qsizetype size)
+    bool registerSelf(const uchar *b, qsizetype size, const QString &source = {})
     {
         // 5 int "pointers"
         if (size >= 0 && size < 20)
@@ -1131,8 +1131,12 @@ public:
 #endif
         if (QT_CONFIG(zstd))
             acceptableFlags |= CompressedZstd;
-        if (file_flags & ~acceptableFlags)
+        if (const quint32 unsupportedFlags = file_flags & ~acceptableFlags) {
+            const QString id = source.isEmpty() ? QString::asprintf("<buffer at %p>", b) : source;
+            qWarning("QResource: %s uses unsupported compression flags 0x%x (supported: 0x%x)",
+                     qUtf8Printable(id), unsupportedFlags, acceptableFlags);
             return false;
+        }
 
         if (version >= 0x01 && version <= 0x03) {
             buffer = b;
@@ -1244,7 +1248,7 @@ bool QDynamicFileResourceRoot::registerSelf(const QString &f)
             return false;
         }
     }
-    if (data && QDynamicBufferResourceRoot::registerSelf(data, data_len)) {
+    if (data && QDynamicBufferResourceRoot::registerSelf(data, data_len, f)) {
         if (fromMM) {
             unmapPointer = data;
             unmapLength = data_len;
