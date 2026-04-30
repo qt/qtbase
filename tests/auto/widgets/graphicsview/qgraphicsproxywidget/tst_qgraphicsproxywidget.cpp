@@ -3060,6 +3060,9 @@ void tst_QGraphicsProxyWidget::bypassGraphicsProxyWidget_data()
 
 void tst_QGraphicsProxyWidget::bypassGraphicsProxyWidget()
 {
+    if (QSysInfo::productType() == QLatin1String("rhel") && QSysInfo::productVersion() == QLatin1String("10.0"))
+        QSKIP("Crash on RHEL 10 - QTBUG-146207");
+
     if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
         QSKIP("QWindow::requestActivate() is not supported.");
 
