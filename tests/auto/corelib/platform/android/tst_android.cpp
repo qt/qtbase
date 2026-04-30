@@ -17,7 +17,10 @@
 #include <QWidget>
 #endif
 #include <QSignalSpy>
+#include <QtCore/private/qexpected_p.h>
 
+template <typename T>
+using QJniResult = q23::expected<T, jthrowable>;
 using namespace Qt::StringLiterals;
 
 Q_DECLARE_JNI_CLASS(Display, "android/view/Display")
@@ -33,6 +36,7 @@ Q_DECLARE_JNI_CLASS(WindowManager, "android/view/WindowManager")
 Q_DECLARE_JNI_CLASS(WindowMetrics, "android/view/WindowMetrics")
 Q_DECLARE_JNI_CLASS(ApplicationInfo, "android/content/pm/ApplicationInfo")
 Q_DECLARE_JNI_CLASS(WindowInsetsType, "android/view/WindowInsets$Type")
+Q_DECLARE_JNI_CLASS(QtActivityLoader, "org/qtproject/qt/android/QtActivityLoader")
 
 class tst_Android : public QObject
 {
@@ -44,6 +48,7 @@ private slots:
     void testAndroidSdkVersion();
     void testAndroidActivity();
     void testRunOnAndroidMainThread();
+    void gracefullyFailLoadingMissingLibrary();
 #if QT_CONFIG(widgets)
     void safeAreaWithWindowFlagsAndStates_data();
     void safeAreaWithWindowFlagsAndStates();
@@ -98,6 +103,24 @@ void tst_Android::assetsIterating()
     auto entryList = QDir{"assets:/"_L1}.entryList(QStringList{"*.txt"_L1});
     QCOMPARE(entryList.size(), 1);
     QCOMPARE(entryList[0], "test.txt"_L1);
+}
+
+void tst_Android::gracefullyFailLoadingMissingLibrary()
+{
+    using namespace QtJniTypes;
+    using namespace Qt::StringLiterals;
+
+    auto *iface = qGuiApp->nativeInterface<QNativeInterface::QAndroidApplication>();
+    QVERIFY(iface);
+    QtJniTypes::Activity activity = iface->context().object();
+    QVERIFY(activity.isValid());
+    auto loader = QtActivityLoader::callStaticMethod<QJniResult<QtActivityLoader>>(
+            "getActivityLoader", activity);
+    QVERIFY(loader);
+    const auto result = loader->callMethod<QJniResult<String>>(
+        "loadLibraryHelper", u"invalid-libname"_s);
+    QVERIFY(result);
+    QVERIFY(!result->isValid());
 }
 
 void tst_Android::testAndroidSdkVersion()
