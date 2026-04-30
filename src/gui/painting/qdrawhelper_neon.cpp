@@ -16,8 +16,6 @@ QT_BEGIN_NAMESPACE
 void qt_memfill32(quint32 *dest, quint32 value, qsizetype count)
 {
     const int epilogueSize = count % 16;
-#if defined(Q_CC_GHS) || defined(Q_CC_MSVC)
-    // inline assembler free version:
     if (count >= 16) {
         quint32 *const neonEnd = dest + count - epilogueSize;
         const uint32x4_t valueVector1 = vdupq_n_u32(value);
@@ -27,37 +25,6 @@ void qt_memfill32(quint32 *dest, quint32 value, qsizetype count)
             dest += 16;
         } while (dest != neonEnd);
     }
-#elif !defined(Q_PROCESSOR_ARM_64)
-    if (count >= 16) {
-        quint32 *const neonEnd = dest + count - epilogueSize;
-        register uint32x4_t valueVector1 asm ("q0") = vdupq_n_u32(value);
-        register uint32x4_t valueVector2 asm ("q1") = valueVector1;
-        while (dest != neonEnd) {
-            asm volatile (
-                "vst2.32     { d0, d1, d2, d3 }, [%[DST]] !\n\t"
-                "vst2.32     { d0, d1, d2, d3 }, [%[DST]] !\n\t"
-                : [DST]"+r" (dest)
-                : [VALUE1]"w"(valueVector1), [VALUE2]"w"(valueVector2)
-                : "memory"
-            );
-        }
-    }
-#else
-    if (count >= 16) {
-        quint32 *const neonEnd = dest + count - epilogueSize;
-        register uint32x4_t valueVector1 asm ("v0") = vdupq_n_u32(value);
-        register uint32x4_t valueVector2 asm ("v1") = valueVector1;
-        while (dest != neonEnd) {
-            asm volatile (
-                "st2     { v0.4s, v1.4s }, [%[DST]], #32 \n\t"
-                "st2     { v0.4s, v1.4s }, [%[DST]], #32 \n\t"
-                : [DST]"+r" (dest)
-                : [VALUE1]"w"(valueVector1), [VALUE2]"w"(valueVector2)
-                : "memory"
-            );
-        }
-    }
-#endif
 
     switch (epilogueSize)
     {
