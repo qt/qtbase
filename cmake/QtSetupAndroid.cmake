@@ -86,9 +86,14 @@ function(_qt_setup_android_resolve_gradle_dependencies)
         list(APPEND extra_args "--no-daemon")
     endif()
 
+    set(resolve_dir "${CMAKE_CURRENT_BINARY_DIR}/qt-gradle-resolve")
+    file(MAKE_DIRECTORY "${resolve_dir}")
+
     execute_process(
         COMMAND ${gradlew}
             --init-script "${init_script}"
+            "-PbuildDir=${resolve_dir}/build"
+            --project-cache-dir "${resolve_dir}/.gradle"
             --no-configuration-cache
             "-PisQtCMakeBuild=true" # Ignore composite build relative dependencies
             ${extra_args}
@@ -97,6 +102,8 @@ function(_qt_setup_android_resolve_gradle_dependencies)
         RESULT_VARIABLE gradle_result
         ${output_args}
     )
+
+    file(REMOVE_RECURSE "${resolve_dir}")
 
     if(NOT gradle_result EQUAL 0)
         message(FATAL_ERROR "Failed to resolve Gradle dependencies.")
