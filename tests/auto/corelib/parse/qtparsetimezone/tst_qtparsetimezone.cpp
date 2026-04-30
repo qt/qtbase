@@ -113,6 +113,35 @@ void tst_QtParseTimeZone::prefix_data()
 #endif // timezone backends
     }
 
+    // Some UTC tests, with offsets.
+    QTest::addRow("UTC+01:00/C/num+wide/0")
+        << u"UTC+01:00"_s << QLocale::c()
+        << Flags{ Flag::Numeric | Flag::Wide }
+        << 0 << 9 << QTZ::GenericTime << QTimeZone(3600);
+
+    // The only locale (in CLDR v48) that doesn't use a separator:
+    const QLocale am_ET(QLocale::Amharic, QLocale::Ethiopia);
+    {
+        // What CLDR says we should be using:
+        const QString correct = u"\u1302 \u12a4\u121d \u1272+0300"_s;
+#if QT_CONFIG(icu) || defined(Q_OS_DARWIN)
+        // We haven't found an ICU C API to localize offset locale names properly :-(
+        const QString formatted = QTimeZone(3600 * 3).displayName(QTimeZone::GenericTime,
+                                                            QTimeZone::LongName, am_ET);
+        // UTC+03:00; this is wrong.
+        if (formatted == correct) // Notify if that ever gets fixed:
+            qInfo("We can now remove the special case for ICU on am_ET prefix tests");
+#else
+        const QString formatted = correct;
+#endif
+        QTest::addRow("UTC+0300/am_ET/num+wide/0")
+            << formatted << am_ET << Flags{ Flag::Numeric | Flag::Wide }
+            << 0 << formatted.size() << QTZ::GenericTime << QTimeZone(3600 * 3);
+        QTest::addRow("UTC+0300/am_ET/num+wide/11") // Date of Haile Selassie's murder:
+            << u"1975-08-27 " + formatted << am_ET << Flags{ Flag::Numeric | Flag::Wide }
+            << 11 << 11 + formatted.size() << QTZ::GenericTime << QTimeZone(3600 * 3);
+    }
+
 #if QT_CONFIG(timezone) // Basic well-known zones in relevant locales:
     // First the GMT-based ones, in order of simplicity:
     if (QTZ gmt("GMT"); gmt.isValid()) {
@@ -121,7 +150,7 @@ void tst_QtParseTimeZone::prefix_data()
             << u"GMT"_s << enGB
             << AnyGlobalZoneForm << 0 << 3 << QTZ::GenericTime << gmt;
         QTest::addRow("16:47 GMT/en/any/6")
-            << u"16:47 GMT"_s << enGB
+            << u"16:47 GMT in the UK"_s << enGB
             << AnyGlobalZoneForm << 6 << 9 << QTZ::GenericTime << gmt;
     } else {
         qDebug("Skipping GMT tests, not recognised by system backend");
@@ -129,11 +158,113 @@ void tst_QtParseTimeZone::prefix_data()
     // Skip Etc/GMT-with-offset as they do weird things; treat as unsupported.
 
     const auto zoneTests = [](const QTimeZone &zone, const QLocale &locale,
-                              QTimeZone::TimeType,
+                              QTimeZone::TimeType season,
                               QStringView prefix = {}, QStringView suffix = {}) {
         using QTZ = QTimeZone;
+        constexpr QTZ::NameType nameTypes[] = {
+            QTZ::LongName,
+#if 0 // If we ever support abbreviation-parsing ...
+            QTZ::ShortName,
+#endif
+            QTZ::OffsetName,
+        };
+        const auto nameTypeName = [](QTZ::NameType type) {
+            switch (type) {
+            case QTZ::DefaultName: return "dfl"; // (not used)
+            case QTZ::LongName: return "lng";
+            case QTZ::ShortName: return "srt"; // (not currently active)
+            case QTZ::OffsetName: return "off";
+            }
+            Q_UNREACHABLE_RETURN("");
+        };
+        constexpr QTZ::TimeType timeTypes[] = {
+            QTZ::GenericTime, QTZ::StandardTime, QTZ::DaylightTime
+        };
+        const auto timeTypeName = [](QTZ::TimeType type) {
+            switch (type) {
+            case QTZ::StandardTime: return "std";
+            case QTZ::DaylightTime: return "dst";
+            case QTZ::GenericTime: return "gen";
+            }
+            Q_UNREACHABLE_RETURN("");
+        };
+        const auto matchesOffset = [zone, locale](QStringView lhs, QTZ::TimeType type) {
+            const QString offsetName = zone.displayName(type, QTZ::OffsetName, locale);
+            QStringView rhs{offsetName};
+            if (lhs == rhs)
+                return true;
+            const auto crossCheck = [lhs, rhs](QLatin1StringView one, QLatin1StringView two) {
+                const qsizetype len = one.size();
+                Q_ASSERT(len == two.size());
+                if (!lhs.startsWith(one) || !rhs.startsWith(two))
+                    return false;
+                if (len == 3)
+                    return true;
+                return lhs.sliced(len) == rhs.sliced(len);
+            };
+            return crossCheck("UTC"_L1, "GMT"_L1) || crossCheck("GMT"_L1, "UTC"_L1);
+        };
         const QByteArray loc = QLocalePrivate::get(locale)->m_data->id().name();
         const QByteArray zoneId = zone.id();
+        QByteArrayView zid{zoneId}; // Find last /-component:
+        for (qsizetype cut; (cut = zid.indexOf('/')) >= 0 && cut + 1 < zid.size();)
+            zid = zid.sliced(cut + 1);
+
+        for (const QTZ::NameType nameType : nameTypes) {
+            QString generic;
+            for (const QTZ::TimeType timeType : timeTypes) {
+                if (timeType == QTZ::DaylightTime && !zone.hasDaylightTime())
+                    continue;
+                QString name = zone.displayName(timeType, nameType, locale);
+                if (name.isEmpty())
+                    continue;
+                const QTimeZone expect = [timeType, nameType, zone, name, matchesOffset]() {
+                    // Use zone unless name is or looks like an offset name:
+                    if (nameType != QTZ::OffsetName && !matchesOffset(name, timeType))
+                        return zone;
+                    // Otherwise, expect the relevant offset-zone instead:
+                    const QDateTime noon(QDate::currentDate(), QTime(12, 0), zone);
+                    if (noon.date().year() == 2026 && zone.id() == "America/Vancouver") {
+                        // IANA DB revision 2026b: British Columbia changes its
+                        // standard time offset to its former DST as it exits
+                        // DST for the last time. This confuses the GenericTime
+                        // test, so use the year-end standard time for it:
+                        if (timeType == QTZ::GenericTime)
+                            return QTZ(zone.standardTimeOffset(QDateTime(QDate(2026, 12, 1),
+                                                                         QTime(12, 0), zone)));
+                    }
+                    if (timeType != QTZ::DaylightTime)
+                        return QTZ(zone.standardTimeOffset(noon));
+                    const QDateTime june(QDate(noon.date().year(), 6, 21), QTime(12, 0), zone);
+                    if (zone.daylightTimeOffset(june))
+                        return QTZ(june.offsetFromUtc());
+                    const QDateTime yule(QDate(noon.date().year(), 12, 21), QTime(12, 0), zone);
+                    if (zone.daylightTimeOffset(yule))
+                        return QTZ(yule.offsetFromUtc());
+                    return QTZ(); // Abandon test case.
+                }();
+                if (!expect.isValid())
+                    continue;
+                if (timeType == QTZ::GenericTime)
+                    generic = name;
+                else if (name == generic)
+                    continue;
+                QTZ::TimeType expectType = zone.id() == expect.id() && nameType != QTZ::OffsetName
+                    ? timeType : QTZ::GenericTime;
+
+                QTest::addRow("%s/%s/%s/%s/any/0", zid.data(), loc.data(),
+                              nameTypeName(nameType), timeTypeName(timeType))
+                    << name << locale << AnyGlobalZoneForm << 0
+                    << name.size() << expectType << expect;
+                if (timeType == season && !prefix.isEmpty()) {
+                    const int inset = int(prefix.size());
+                    QTest::addRow("%s/%s/%s/%s/any/%d", zid.data(), loc.data(),
+                                  nameTypeName(nameType), timeTypeName(timeType), inset)
+                        << (prefix + name + suffix) << locale << AnyGlobalZoneForm << inset
+                        << inset + name.size() << expectType << expect;
+                }
+            }
+        }
 
         constexpr Flags IanaForm = Flag::Standalone | Flag::Short;
         const QString ianaStr = QLatin1String(zoneId);
@@ -406,6 +537,24 @@ void tst_QtParseTimeZone::prefix_data()
     if (const QTZ ahu("Chile/EasterIsland"); ahu.isValid()) { // Alias for Pacific/Easter
         const QLocale esCL(QLocale::Spanish, QLocale::Chile); // (No CLDR data for Rapa Nui)
         zoneTests(ahu, esCL, QTZ::GenericTime, u"1990-03-11 ");
+#if QT_CONFIG(icu) || defined(Q_OS_DARWIN)
+        // ICU uses Isla de Pascua in displayName()s.
+        // Darwin uses ICU.
+#else
+        // qDebug() << ahu.displayName(QTZ::GenericTime, QTZ::LongName, esCL);
+        // Actual ahu.displayName()s use "Easter" where these use "Isla de Pascua"
+        // (This probably means QTZLocale is missing (at least) this translation.)
+        QTest::addRow("EasterIslandT/es-CL/any/0")
+            << u"hora de Isla de Pascua"_s
+            << esCL << AnyGlobalZoneForm << 0 << 22 << QTZ::GenericTime << ahu;
+        QTest::addRow("EasterIslandST/es-CL/any/0")
+            << u"hora estándar de Isla de Pascua"_s
+            << esCL << AnyGlobalZoneForm << 0 << 31 << QTZ::StandardTime << ahu;
+        // Zone has no actual DST, so hits a fall-back.
+        QTest::addRow("EasterIslandDST/es-CL/any/0")
+            << u"hora de verano de Easter"_s
+            << esCL << AnyGlobalZoneForm << 0 << 24 << QTZ::DaylightTime << ahu;
+#endif
     } else {
         qDebug("Skipping Chile/EasterIsland tests, not recognised by system backend");
     }
@@ -520,6 +669,33 @@ void tst_QtParseTimeZone::prefix_data()
 
     // Some tests use "Vulcan/ShiKahr" as an invalid name; but it is indeed invalid.
 #endif
+    // Should be matched by the UTC backend.
+    if (const QTZ west("UTC-02:00"); west.isValid()) {
+        const QLocale nuuk(QLocale::Kalaallisut, QLocale::Greenland);
+        QTest::addRow("UTC-02:00/kl-GL/any/0")
+            << u"UTC-02:00"_s << nuuk << AnyGlobalZoneForm << 0 << 9 << QTZ::GenericTime << west;
+        QTest::addRow("GMT-02:00/kl-GL/any/0")
+            << u"GMT-02:00"_s << nuuk << AnyGlobalZoneForm << 0 << 9 << QTZ::GenericTime << west;
+    } else {
+        qDebug("Skipping UTC-02:00 tests, not recognised by UTC-offset backend :-(");
+    }
+    if (const QTZ east("UTC+02:00"); east.isValid()) {
+        const QLocale sudan(QLocale::Arabic, QLocale::Sudan);
+        // ICU uses this offset form also for ar-SD long and offset forms:
+        QTest::addRow("[short]/ar-SD/any/all")
+            << u"UTC+02:00"_s << sudan
+            << AnyGlobalZoneForm << 0 << 9 << QTZ::GenericTime << east;
+#if !QT_CONFIG(icu) && !defined(Q_OS_DARWIN) // Darwin uses ICU
+        QTest::addRow("[long]/ar-SD/any/all")
+            << u"\u063a\u0631\u064a\u0646\u062a\u0634+\u0662"_s << sudan
+            << AnyGlobalZoneForm << 0 << 8 << QTZ::GenericTime << east;
+        QTest::addRow("[offset]/ar-SD/any/all")
+            << u"\u063a\u0631\u064a\u0646\u062a\u0634+\u0660\u0662:\u0660\u0660"_s << sudan
+            << AnyGlobalZoneForm << 0 << 12 << QTZ::GenericTime << east;
+#endif
+    } else {
+        qDebug("Skipping UTC+02:00 tests, not recognised by UTC-offset backend :-(");
+    }
 }
 
 void tst_QtParseTimeZone::prefix()

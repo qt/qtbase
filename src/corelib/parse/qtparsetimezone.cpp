@@ -273,10 +273,43 @@ QList<ParsedZone> prefix(QStringView text, const QLocale &locale, qsizetype from
     // Locale-dependent forms:
 #if QT_CONFIG(timezone)
     if (matchesFlagWithin(flags, Flag::LocalizedZone, FieldGroup::LocalizationMask)) {
+        const auto addPrefixIfMatch = [includeMatch] (QTimeZonePrivate::NamePrefixMatch &&prefix) {
+            if (prefix)
+                includeMatch(prefix.nameLength, QTimeZone(prefix.ianaId), prefix.timeType);
+        };
+        bool checkOffsetFallbacks = false;
+
+        if (matchesFlagWithin(flags, Flag::Numeric, FormMask)
+            && matchesFlagsWithin(flags, Flag::Wide | Flag::Short, WidthMask)) {
+            // TODO: have findOffsetPrefix() return a list:
+            addPrefixIfMatch(QTimeZonePrivate::findOffsetPrefix(tail, locale, flags));
+            checkOffsetFallbacks = true; // Might cover some corner cases differently:
+        }
+
+        // IANA after offset-as-such because we prefer offset from UTC
+        // representations over more complex backend representations:
         if (matchesFlagWithin(flags, Flag::Standalone, FormMask)
             && matchesFlagWithin(flags, Flag::Short, WidthMask)) {
             if (auto match = matchIanaId(tail))
                 includeMatch(match.length, std::move(match.zone), QTimeZone::GenericTime);
+        }
+        // ... but before long name, even though that may match some offset forms,
+        // but it only does that as a fall-back, so the IANA choice is better in
+        // that case.
+
+        if (matchesFlagWithin(flags, Flag::Verbal, FormMask)
+            && matchesFlagsWithin(flags, Flag::Wide | Flag::Short, WidthMask)) {
+            // TODO: findLongNamePrefix() would prefer to be first tried with a date-time.
+            addPrefixIfMatch(QTimeZonePrivate::findLongNamePrefix(tail, locale));
+            // (We don't want offset format to match 'tttt', so do need to limit this.)
+            // The final fall-back for QTZL's localeName() is a
+            // zoneOffsetFormat(,, Numeric | Abbreviated | NeedNoUtcPrefix | ZeroPad ,,):
+            checkOffsetFallbacks = true;
+        }
+
+        if (checkOffsetFallbacks) {
+            addPrefixIfMatch(QTimeZonePrivate::findNarrowOffsetPrefix(tail, locale));
+            addPrefixIfMatch(QTimeZonePrivate::findLongUtcPrefix(tail));
         }
     }
 #endif
