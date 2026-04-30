@@ -20,6 +20,7 @@ class tst_QVulkan : public QObject
     Q_OBJECT
 
 private slots:
+    void init();
     void vulkanInstance();
     void vulkanCheckSupported();
     void vulkanPlainWindow();
@@ -29,6 +30,21 @@ private slots:
     void vulkanWindowRenderer();
     void vulkanWindowGrab();
 };
+
+void tst_QVulkan::init()
+{
+    if (QSysInfo::productType() == QLatin1String("rhel") && QSysInfo::productVersion() == QLatin1String("10.0")) {
+        const char *testName = QTest::currentTestFunction();
+        if (!testName)
+            return;
+
+        if (qstrcmp(testName, "vulkanWindow") == 0 ||
+            qstrcmp(testName, "vulkanWindowRenderer") == 0 ||
+            qstrcmp(testName, "vulkanWindowGrab") == 0) {
+                QSKIP("Vulkan/Wayland crash on RHEL 10.0 (QTBUG-146206)");
+        }
+    }
+}
 
 void tst_QVulkan::vulkanInstance()
 {
