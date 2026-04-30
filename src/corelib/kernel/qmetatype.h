@@ -687,7 +687,7 @@ public:
         auto converter = [function = std::move(function)](const void *from, void *to) -> bool {
             const From *f = static_cast<const From *>(from);
             To *t = static_cast<To *>(to);
-            auto &&r = function(*f);
+            decltype(auto) r = function(*f);
             if constexpr (std::is_same_v<q20::remove_cvref_t<decltype(r)>, std::optional<To>>) {
                 if (!r)
                     return false;
