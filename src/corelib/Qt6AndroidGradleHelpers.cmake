@@ -1939,12 +1939,18 @@ function(_qt_internal_android_create_rcc_bundle target deployment_dir)
         VERBATIM
     )
 
+    set(extra_args "")
+    if(NOT QT_FEATURE_zstd)
+        list(APPEND extra_args "--no-zstd")
+    endif()
+
     set(bundle_rcc "${deployment_dir}/assets/android_rcc_bundle.rcc")
     add_custom_command(OUTPUT "${bundle_rcc}"
         COMMAND ${CMAKE_COMMAND} -E make_directory "${qml_bundle_dir}"
         COMMAND ${CMAKE_COMMAND} -E chdir "${qml_bundle_dir}"
             "${rcc_path}" --project -o "${qml_bundle_dir}/android_rcc_bundle.qrc"
-        COMMAND "${rcc_path}" --binary --root=/android_rcc_bundle/ -o "${bundle_rcc}"
+        COMMAND "${rcc_path}" --binary ${extra_args}
+            --root=/android_rcc_bundle/ -o "${bundle_rcc}"
             "${qml_bundle_dir}/android_rcc_bundle.qrc"
         COMMAND ${CMAKE_COMMAND} -E remove_directory "${qml_bundle_dir}"
         DEPENDS ${target}_copy_qml_modules
