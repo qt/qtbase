@@ -147,14 +147,15 @@ bool QLocalServerPrivate::addListener()
 
     listener->handle = CreateNamedPipe(
                  reinterpret_cast<const wchar_t *>(fullServerName.utf16()), // pipe name
-                 PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED,       // read/write access
-                 PIPE_TYPE_BYTE |          // byte type pipe
-                 PIPE_READMODE_BYTE |      // byte-read mode
-                 PIPE_WAIT,                // blocking mode
-                 PIPE_UNLIMITED_INSTANCES, // max. instances
-                 BUFSIZE,                  // output buffer size
-                 BUFSIZE,                  // input buffer size
-                 3000,                     // client time-out
+                 PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED,  // read/write access
+                 PIPE_TYPE_BYTE |                            // byte type pipe
+                     PIPE_READMODE_BYTE |                    // byte-read mode
+                     PIPE_WAIT |                             // blocking mode
+                     PIPE_REJECT_REMOTE_CLIENTS,             // because this is a local server
+                 PIPE_UNLIMITED_INSTANCES,                   // max. instances
+                 BUFSIZE,                                    // output buffer size
+                 BUFSIZE,                                    // input buffer size
+                 3000,                                       // client time-out
                  &sa);
 
     if (listener->handle == INVALID_HANDLE_VALUE) {
