@@ -201,7 +201,8 @@ public:
     bool isTabInMacUnifiedToolbarArea() const;
     void setupMovableTab();
     void autoHideTabs();
-    QRect normalizedScrollRect(int index = -1);
+    QRect scrollRect(int index = -1) const;
+    QRect normalizedScrollRect(int index = -1) const;
     int hoveredTabIndex() const;
 
     void initBasicStyleOption(QStyleOptionTab *option, int tabIndex) const;
