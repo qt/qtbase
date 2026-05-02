@@ -592,14 +592,20 @@ void QTabBarPrivate::layoutTabs()
     q->tabLayoutChange();
 }
 
-QRect QTabBarPrivate::normalizedScrollRect(int index)
+QRect QTabBarPrivate::scrollRect(int index) const
+{
+    const QRect r = normalizedScrollRect(index);
+    return verticalTabs(shape) ? QRect(QPoint(r.y(), r.x()), r.size().transposed()) : r;
+}
+
+QRect QTabBarPrivate::normalizedScrollRect(int index) const
 {
     // "Normalized scroll rect" means return the free space on the tab bar
     // that doesn't overlap with scroll buttons or tear indicators, and
     // always return the rect as horizontal Qt::LeftToRight, even if the
     // tab bar itself is in a different orientation.
 
-    Q_Q(QTabBar);
+    Q_Q(const QTabBar);
     // If scrollbuttons are not visible, then there's no tear either, and
     // the entire widget is the scroll rect.
     if (leftB->isHidden())
@@ -1016,7 +1022,7 @@ int QTabBar::insertTab(int index, const QIcon& icon, const QString &text)
     }
 
     if (isVisible() && tabAt(d->mousePosition) == index) {
-        if (d->normalizedScrollRect(index).contains(d->mousePosition)) {
+        if (d->scrollRect(index).contains(d->mousePosition)) {
             d->hoverIndex = index;
             d->hoverRect = tabRect(index);
         } else {
@@ -1114,7 +1120,7 @@ void QTabBar::removeTab(int index)
             update(d->hoverRect);
             d->hoverIndex = tabAt(d->mousePosition);
             if (d->validIndex(d->hoverIndex)
-                && d->normalizedScrollRect(d->hoverIndex).contains(d->mousePosition)) {
+                && d->scrollRect(d->hoverIndex).contains(d->mousePosition)) {
                 d->hoverRect = tabRect(d->hoverIndex);
                 update(d->hoverRect);
             } else {
@@ -1711,7 +1717,7 @@ bool QTabBar::event(QEvent *event)
     case QEvent::HoverEnter: {
         QHoverEvent *he = static_cast<QHoverEvent *>(event);
         d->mousePosition = he->position().toPoint();
-        const auto sr = d->normalizedScrollRect();
+        const auto sr = d->scrollRect();
         const auto oldHoverRect = d->hoverRect & sr;
         if (!oldHoverRect.contains(d->mousePosition)) {
             if (d->hoverRect.isValid())
@@ -1851,7 +1857,8 @@ void QTabBar::paintEvent(QPaintEvent *)
     selected = d->currentIndex;
     if (d->dragInProgress)
         selected = d->pressedIndex;
-    const QRect scrollRect = d->normalizedScrollRect();
+    const QRect scrollRect = d->scrollRect();
+    const QRect normalizedScrollRect = d->normalizedScrollRect();
 
     for (int i = 0; i < d->tabList.size(); ++i)
          optTabBase.tabBarRect |= tabRect(i);
@@ -1905,10 +1912,10 @@ void QTabBar::paintEvent(QPaintEvent *)
         QRect tabRect = tab->rect;
         int tabStart = vertical ? tabRect.top() : tabRect.left();
         int tabEnd = vertical ? tabRect.bottom() : tabRect.right();
-        if (tabStart < scrollRect.left() + d->scrollOffset) {
+        if (tabStart < normalizedScrollRect.left() + d->scrollOffset) {
             cutLeft = i;
             cutTabLeft = tabOption;
-        } else if (tabEnd > scrollRect.right() + d->scrollOffset) {
+        } else if (tabEnd > normalizedScrollRect.right() + d->scrollOffset) {
             cutRight = i;
             cutTabRight = tabOption;
         }
