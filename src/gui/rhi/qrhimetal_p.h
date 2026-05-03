@@ -447,6 +447,8 @@ public:
     void endComputePass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resourceUpdates) override;
     void setComputePipeline(QRhiCommandBuffer *cb, QRhiComputePipeline *ps) override;
     void dispatch(QRhiCommandBuffer *cb, int x, int y, int z) override;
+    void dispatchIndirect(QRhiCommandBuffer *cb, QRhiBuffer *indirectBuffer,
+                          quint32 indirectBufferOffset) override;
 
     const QRhiNativeHandles *nativeHandles(QRhiCommandBuffer *cb) override;
     void beginExternal(QRhiCommandBuffer *cb) override;

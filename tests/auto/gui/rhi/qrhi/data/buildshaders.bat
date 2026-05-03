@@ -44,3 +44,6 @@ qsb --glsl "100 es,120,150" --hlsl 50 --msl 12 -o uniformtypes.frag.qsb uniformt
 qsb --glsl "300 es,130,150" --hlsl 50 --msl 12 -o uniformtypes_uint.frag.qsb uniformtypes_uint.frag
 qsb --glsl "420,430,460" -o indirect_multi_draw_sdp.vert.qsb indirect_multi_draw_sdp.vert
 qsb --glsl "420,430,460" -o indirect_multi_draw_sdp.frag.qsb indirect_multi_draw_sdp.frag
+qsb --glsl "310 es,430" --hlsl 50 --msl 12 -o dispatch_indirect_args.comp.qsb dispatch_indirect_args.comp
+qsb --glsl "310 es,430" --hlsl 50 --msl 12 -o dispatch_indirect_consume.comp.qsb dispatch_indirect_consume.comp
+qsb --glsl "310 es,430" --hlsl 50 --msl 12 -o dispatch_indirect_consume_readargs.comp.qsb dispatch_indirect_consume_readargs.comp

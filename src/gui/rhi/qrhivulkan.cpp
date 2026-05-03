@@ -3623,93 +3623,111 @@ inline void qrhivk_accumulateComputeResource(T *writtenResources, QRhiResource *
         writtenResources->insert(resource, { access, true });
 }
 
+static inline bool accessIsWrite(VkAccessFlags access)
+{
+    return (access & VK_ACCESS_SHADER_WRITE_BIT) != 0
+            || (access & VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT) != 0
+            || (access & VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT) != 0
+            || (access & VK_ACCESS_TRANSFER_WRITE_BIT) != 0
+            || (access & VK_ACCESS_HOST_WRITE_BIT) != 0
+            || (access & VK_ACCESS_MEMORY_WRITE_BIT) != 0;
+}
+
+// When there are multiple dispatches, read-after-write and write-after-write
+// need a barrier. Updates writtenResources, so call once per dispatch.
+void QRhiVulkan::collectComputeBarriers(QVkCommandBuffer *cbD,
+                                        QVarLengthArray<VkImageMemoryBarrier, 8> *imageBarriers,
+                                        QVarLengthArray<VkBufferMemoryBarrier, 8> *bufferBarriers)
+{
+    if (!cbD->currentComputeSrb)
+        return;
+
+    // The key in the writtenResources map indicates that the resource was
+    // written in a previous dispatch, whereas the value accumulates the
+    // access mask in the current one.
+    for (auto [res, accessAndIsNewFlag] : cbD->computePassState.writtenResources)
+        accessAndIsNewFlag = { 0, false }; // note: accessAndIsNewFlag is a reference
+
+    QVkShaderResourceBindings *srbD = QRHI_RES(QVkShaderResourceBindings, cbD->currentComputeSrb);
+    for (auto &binding : srbD->m_bindings) {
+        const QRhiShaderResourceBinding::Data *b = shaderResourceBindingData(binding);
+        switch (b->type) {
+        case QRhiShaderResourceBinding::ImageLoad:
+        case QRhiShaderResourceBinding::ImageStore:
+        case QRhiShaderResourceBinding::ImageLoadStore:
+            qrhivk_accumulateComputeResource(&cbD->computePassState.writtenResources,
+                                             b->u.simage.tex,
+                                             b->type,
+                                             QRhiShaderResourceBinding::ImageLoad,
+                                             QRhiShaderResourceBinding::ImageStore,
+                                             QRhiShaderResourceBinding::ImageLoadStore);
+            break;
+        case QRhiShaderResourceBinding::BufferLoad:
+        case QRhiShaderResourceBinding::BufferStore:
+        case QRhiShaderResourceBinding::BufferLoadStore:
+            qrhivk_accumulateComputeResource(&cbD->computePassState.writtenResources,
+                                             b->u.sbuf.buf,
+                                             b->type,
+                                             QRhiShaderResourceBinding::BufferLoad,
+                                             QRhiShaderResourceBinding::BufferStore,
+                                             QRhiShaderResourceBinding::BufferLoadStore);
+            break;
+        default:
+            break;
+        }
+    }
+
+    for (auto it = cbD->computePassState.writtenResources.begin(); it != cbD->computePassState.writtenResources.end(); ) {
+        const VkAccessFlags accessInThisDispatch = it->second.accessFlags;
+        const bool isNewInThisDispatch = it->second.isNew;
+        if (accessInThisDispatch && !isNewInThisDispatch) {
+            if (it.key()->resourceType() == QRhiResource::Texture) {
+                QVkTexture *texD = QRHI_RES(QVkTexture, it.key());
+                VkImageMemoryBarrier barrier = {};
+                barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+                barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+                // won't care about subresources, pretend the whole resource was written
+                barrier.subresourceRange.baseMipLevel = 0;
+                barrier.subresourceRange.levelCount = VK_REMAINING_MIP_LEVELS;
+                barrier.subresourceRange.baseArrayLayer = 0;
+                barrier.subresourceRange.layerCount = VK_REMAINING_ARRAY_LAYERS;
+                barrier.oldLayout = texD->usageState.layout;
+                barrier.newLayout = texD->usageState.layout;
+                barrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+                barrier.dstAccessMask = accessInThisDispatch;
+                barrier.image = texD->image;
+                imageBarriers->append(barrier);
+            } else {
+                QVkBuffer *bufD = QRHI_RES(QVkBuffer, it.key());
+                VkBufferMemoryBarrier barrier = {};
+                barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+                barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+                barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+                barrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+                barrier.dstAccessMask = accessInThisDispatch;
+                barrier.buffer = bufD->buffers[bufD->m_type == QRhiBuffer::Dynamic ? currentFrameSlot : 0];
+                barrier.size = VK_WHOLE_SIZE;
+                bufferBarriers->append(barrier);
+            }
+        }
+        // Anything that was previously written, but is only read now, can be
+        // removed from the written list (because that previous write got a
+        // corresponding barrier now).
+        if (accessInThisDispatch == VK_ACCESS_SHADER_READ_BIT)
+            it = cbD->computePassState.writtenResources.erase(it);
+        else
+            ++it;
+    }
+}
+
 void QRhiVulkan::dispatch(QRhiCommandBuffer *cb, int x, int y, int z)
 {
     QVkCommandBuffer *cbD = QRHI_RES(QVkCommandBuffer, cb);
     Q_ASSERT(cbD->recordingPass == QVkCommandBuffer::ComputePass);
 
-    // When there are multiple dispatches, read-after-write and
-    // write-after-write need a barrier.
     QVarLengthArray<VkImageMemoryBarrier, 8> imageBarriers;
     QVarLengthArray<VkBufferMemoryBarrier, 8> bufferBarriers;
-    if (cbD->currentComputeSrb) {
-        // The key in the writtenResources map indicates that the resource was
-        // written in a previous dispatch, whereas the value accumulates the
-        // access mask in the current one.
-        for (auto [res, accessAndIsNewFlag] : cbD->computePassState.writtenResources)
-            accessAndIsNewFlag = { 0, false }; // note: accessAndIsNewFlag is a reference
-
-        QVkShaderResourceBindings *srbD = QRHI_RES(QVkShaderResourceBindings, cbD->currentComputeSrb);
-        for (auto &binding : srbD->m_bindings) {
-            const QRhiShaderResourceBinding::Data *b = shaderResourceBindingData(binding);
-            switch (b->type) {
-            case QRhiShaderResourceBinding::ImageLoad:
-            case QRhiShaderResourceBinding::ImageStore:
-            case QRhiShaderResourceBinding::ImageLoadStore:
-                qrhivk_accumulateComputeResource(&cbD->computePassState.writtenResources,
-                                                 b->u.simage.tex,
-                                                 b->type,
-                                                 QRhiShaderResourceBinding::ImageLoad,
-                                                 QRhiShaderResourceBinding::ImageStore,
-                                                 QRhiShaderResourceBinding::ImageLoadStore);
-                break;
-            case QRhiShaderResourceBinding::BufferLoad:
-            case QRhiShaderResourceBinding::BufferStore:
-            case QRhiShaderResourceBinding::BufferLoadStore:
-                qrhivk_accumulateComputeResource(&cbD->computePassState.writtenResources,
-                                                 b->u.sbuf.buf,
-                                                 b->type,
-                                                 QRhiShaderResourceBinding::BufferLoad,
-                                                 QRhiShaderResourceBinding::BufferStore,
-                                                 QRhiShaderResourceBinding::BufferLoadStore);
-                break;
-            default:
-                break;
-            }
-        }
-
-        for (auto it = cbD->computePassState.writtenResources.begin(); it != cbD->computePassState.writtenResources.end(); ) {
-            const VkAccessFlags accessInThisDispatch = it->second.accessFlags;
-            const bool isNewInThisDispatch = it->second.isNew;
-            if (accessInThisDispatch && !isNewInThisDispatch) {
-                if (it.key()->resourceType() == QRhiResource::Texture) {
-                    QVkTexture *texD = QRHI_RES(QVkTexture, it.key());
-                    VkImageMemoryBarrier barrier = {};
-                    barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-                    barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-                    // won't care about subresources, pretend the whole resource was written
-                    barrier.subresourceRange.baseMipLevel = 0;
-                    barrier.subresourceRange.levelCount = VK_REMAINING_MIP_LEVELS;
-                    barrier.subresourceRange.baseArrayLayer = 0;
-                    barrier.subresourceRange.layerCount = VK_REMAINING_ARRAY_LAYERS;
-                    barrier.oldLayout = texD->usageState.layout;
-                    barrier.newLayout = texD->usageState.layout;
-                    barrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
-                    barrier.dstAccessMask = accessInThisDispatch;
-                    barrier.image = texD->image;
-                    imageBarriers.append(barrier);
-                } else {
-                    QVkBuffer *bufD = QRHI_RES(QVkBuffer, it.key());
-                    VkBufferMemoryBarrier barrier = {};
-                    barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
-                    barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-                    barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-                    barrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
-                    barrier.dstAccessMask = accessInThisDispatch;
-                    barrier.buffer = bufD->buffers[bufD->m_type == QRhiBuffer::Dynamic ? currentFrameSlot : 0];
-                    barrier.size = VK_WHOLE_SIZE;
-                    bufferBarriers.append(barrier);
-                }
-            }
-            // Anything that was previously written, but is only read now, can be
-            // removed from the written list (because that previous write got a
-            // corresponding barrier now).
-            if (accessInThisDispatch == VK_ACCESS_SHADER_READ_BIT)
-                it = cbD->computePassState.writtenResources.erase(it);
-            else
-                ++it;
-        }
-    }
+    collectComputeBarriers(cbD, &imageBarriers, &bufferBarriers);
 
     if (cbD->passUsesSecondaryCb) {
         VkCommandBuffer secondaryCb = cbD->activeSecondaryCbStack.last();
@@ -3738,6 +3756,115 @@ void QRhiVulkan::dispatch(QRhiCommandBuffer *cb, int x, int y, int z)
         cmd.args.dispatch.x = x;
         cmd.args.dispatch.y = y;
         cmd.args.dispatch.z = z;
+    }
+}
+
+void QRhiVulkan::dispatchIndirect(QRhiCommandBuffer *cb, QRhiBuffer *indirectBuffer,
+                                  quint32 indirectBufferOffset)
+{
+    QVkCommandBuffer *cbD = QRHI_RES(QVkCommandBuffer, cb);
+    Q_ASSERT(cbD->recordingPass == QVkCommandBuffer::ComputePass);
+    QRhiPassResourceTracker &passResTracker(cbD->passResTrackers[cbD->currentPassResTrackerIndex]);
+
+    QVkBuffer *indirectBufD = QRHI_RES(QVkBuffer, indirectBuffer);
+    indirectBufD->lastActiveFrameSlot = currentFrameSlot;
+    if (indirectBufD->m_type == QRhiBuffer::Dynamic)
+        executeBufferHostWritesForSlot(indirectBufD, currentFrameSlot);
+    const int indirectBufSlot = indirectBufD->m_type == QRhiBuffer::Dynamic ? currentFrameSlot : 0;
+    VkBuffer indirectBufVk = indirectBufD->buffers[indirectBufSlot];
+
+    // Make a preceding write visible to the INDIRECT_COMMAND_READ at the
+    // DRAW_INDIRECT stage. The write may have happened in an earlier dispatch
+    // in this pass, or before the pass.
+    VkAccessFlags indirectSrcAccess = 0;
+    VkPipelineStageFlags indirectSrcStage = 0;
+
+    // Sample before collectComputeBarriers(), which drops entries for anything
+    // the upcoming dispatch only reads - including this buffer, if the
+    // consuming shader also binds it as a storage buffer.
+    if (cbD->computePassState.writtenResources.contains(indirectBufD)) {
+        indirectSrcAccess |= VK_ACCESS_SHADER_WRITE_BIT;
+        indirectSrcStage |= VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+    }
+
+    // A write before the pass is normally covered by registering the indirect
+    // usage with the tracker. That is not possible when the buffer is also
+    // bound as a storage buffer here - which is how the arguments get generated
+    // on the GPU - because registerBuffer() rejects a second, differing access.
+    // Synchronize against the pre-pass state instead.
+    const auto trackedIt = passResTracker.buffers().find(indirectBufD);
+    if (trackedIt != passResTracker.buffers().cend()
+            && trackedIt->second.access != QRhiPassResourceTracker::BufIndirectDraw)
+    {
+        indirectSrcAccess |= VkAccessFlags(trackedIt->second.stateAtPassBegin.access);
+        indirectSrcStage |= VkPipelineStageFlags(trackedIt->second.stateAtPassBegin.stage);
+        // So that a later write to the buffer waits for the indirect read.
+        QVkBuffer::UsageState &u(indirectBufD->usageState[indirectBufSlot]);
+        u.access |= VK_ACCESS_INDIRECT_COMMAND_READ_BIT;
+        u.stage |= VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT;
+    } else {
+        trackedRegisterBuffer(&passResTracker, indirectBufD, indirectBufSlot,
+                              QRhiPassResourceTracker::BufIndirectDraw,
+                              QRhiPassResourceTracker::BufIndirectDrawStage);
+    }
+
+    QVarLengthArray<VkImageMemoryBarrier, 8> imageBarriers;
+    QVarLengthArray<VkBufferMemoryBarrier, 8> bufferBarriers;
+    collectComputeBarriers(cbD, &imageBarriers, &bufferBarriers);
+
+    VkBufferMemoryBarrier indirectBarrier = {};
+    const bool needsIndirectBarrier = indirectSrcStage != 0 && accessIsWrite(indirectSrcAccess);
+    if (needsIndirectBarrier) {
+        indirectBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+        indirectBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        indirectBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        indirectBarrier.srcAccessMask = indirectSrcAccess;
+        indirectBarrier.dstAccessMask = VK_ACCESS_INDIRECT_COMMAND_READ_BIT;
+        indirectBarrier.buffer = indirectBufVk;
+        indirectBarrier.size = VK_WHOLE_SIZE;
+    }
+
+    if (cbD->passUsesSecondaryCb) {
+        VkCommandBuffer secondaryCb = cbD->activeSecondaryCbStack.last();
+        if (!imageBarriers.isEmpty() || !bufferBarriers.isEmpty()) {
+            df->vkCmdPipelineBarrier(secondaryCb, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+                                     0, 0, nullptr,
+                                     bufferBarriers.size(), bufferBarriers.isEmpty() ? nullptr : bufferBarriers.constData(),
+                                     imageBarriers.size(),  imageBarriers.isEmpty()  ? nullptr : imageBarriers.constData());
+        }
+        if (needsIndirectBarrier) {
+            df->vkCmdPipelineBarrier(secondaryCb, indirectSrcStage, VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT,
+                                     0, 0, nullptr,
+                                     1, &indirectBarrier,
+                                     0, nullptr);
+        }
+        df->vkCmdDispatchIndirect(secondaryCb, indirectBufVk, VkDeviceSize(indirectBufferOffset));
+    } else {
+        if (!imageBarriers.isEmpty() || !bufferBarriers.isEmpty()) {
+            QVkCommandBuffer::Command &cmd(cbD->commands.get());
+            cmd.cmd = QVkCommandBuffer::Command::ImageAndBufferBarrier;
+            cmd.args.imageAndBufferBarrier.srcStageMask = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+            cmd.args.imageAndBufferBarrier.dstStageMask = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+            cmd.args.imageAndBufferBarrier.imageCount = imageBarriers.size();
+            cmd.args.imageAndBufferBarrier.imageIndex = cbD->pools.imageBarrier.size();
+            cbD->pools.imageBarrier.append(imageBarriers.constData(), imageBarriers.size());
+            cmd.args.imageAndBufferBarrier.bufferCount = bufferBarriers.size();
+            cmd.args.imageAndBufferBarrier.bufferIndex = cbD->pools.bufferBarrier.size();
+            cbD->pools.bufferBarrier.append(bufferBarriers.constData(), bufferBarriers.size());
+        }
+        if (needsIndirectBarrier) {
+            QVkCommandBuffer::Command &cmd(cbD->commands.get());
+            cmd.cmd = QVkCommandBuffer::Command::BufferBarrier;
+            cmd.args.bufferBarrier.srcStageMask = indirectSrcStage;
+            cmd.args.bufferBarrier.dstStageMask = VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT;
+            cmd.args.bufferBarrier.count = 1;
+            cmd.args.bufferBarrier.index = cbD->pools.bufferBarrier.size();
+            cbD->pools.bufferBarrier.append(indirectBarrier);
+        }
+        QVkCommandBuffer::Command &cmd(cbD->commands.get());
+        cmd.cmd = QVkCommandBuffer::Command::DispatchIndirect;
+        cmd.args.dispatchIndirect.indirectBuffer = indirectBufVk;
+        cmd.args.dispatchIndirect.indirectBufferOffset = VkDeviceSize(indirectBufferOffset);
     }
 }
 
@@ -3927,16 +4054,6 @@ void QRhiVulkan::updateShaderResourceBindings(QRhiShaderResourceBindings *srb)
     }
 
     df->vkUpdateDescriptorSets(dev, uint32_t(writeInfos.size()), writeInfos.constData(), 0, nullptr);
-}
-
-static inline bool accessIsWrite(VkAccessFlags access)
-{
-    return (access & VK_ACCESS_SHADER_WRITE_BIT) != 0
-            || (access & VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT) != 0
-            || (access & VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT) != 0
-            || (access & VK_ACCESS_TRANSFER_WRITE_BIT) != 0
-            || (access & VK_ACCESS_HOST_WRITE_BIT) != 0
-            || (access & VK_ACCESS_MEMORY_WRITE_BIT) != 0;
 }
 
 void QRhiVulkan::trackedBufferBarrier(QVkCommandBuffer *cbD, QVkBuffer *bufD, int slot,
@@ -5198,6 +5315,11 @@ void QRhiVulkan::recordPrimaryCommandBuffer(QVkCommandBuffer *cbD)
         case QVkCommandBuffer::Command::Dispatch:
             df->vkCmdDispatch(cbD->cb, uint32_t(cmd.args.dispatch.x), uint32_t(cmd.args.dispatch.y), uint32_t(cmd.args.dispatch.z));
             break;
+        case QVkCommandBuffer::Command::DispatchIndirect:
+            df->vkCmdDispatchIndirect(cbD->cb,
+                                      cmd.args.dispatchIndirect.indirectBuffer,
+                                      cmd.args.dispatchIndirect.indirectBufferOffset);
+            break;
         case QVkCommandBuffer::Command::ExecuteSecondary:
             df->vkCmdExecuteCommands(cbD->cb, 1, &cmd.args.executeSecondary.cb);
             break;
@@ -5645,6 +5767,8 @@ bool QRhiVulkan::isFeatureSupported(QRhi::Feature feature) const
         return caps.drawIndirectMulti;
     case QRhi::ShaderDrawParameters:
         return caps.shaderDrawParameters;
+    case QRhi::DispatchIndirect:
+        return true; // available in Vulkan 1.0
     default:
         Q_UNREACHABLE_RETURN(false);
     }

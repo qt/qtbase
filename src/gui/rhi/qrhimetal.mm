@@ -925,6 +925,8 @@ bool QRhiMetal::isFeatureSupported(QRhi::Feature feature) const
     case QRhi::DrawIndirectMulti:
     case QRhi::ShaderDrawParameters:
         return false;
+    case QRhi::DispatchIndirect:
+        return true;
     default:
         Q_UNREACHABLE();
         return false;
@@ -3591,6 +3593,29 @@ void QRhiMetal::dispatch(QRhiCommandBuffer *cb, int x, int y, int z)
 
     [cbD->d->currentComputePassEncoder dispatchThreadgroups: MTLSizeMake(NSUInteger(x), NSUInteger(y), NSUInteger(z))
       threadsPerThreadgroup: psD->d->localSize];
+}
+
+void QRhiMetal::dispatchIndirect(QRhiCommandBuffer *cb, QRhiBuffer *indirectBuffer,
+                                 quint32 indirectBufferOffset)
+{
+    QMetalCommandBuffer *cbD = QRHI_RES(QMetalCommandBuffer, cb);
+    Q_ASSERT(cbD->recordingPass == QMetalCommandBuffer::ComputePass);
+    QMetalComputePipeline *psD = QRHI_RES(QMetalComputePipeline, cbD->currentComputePipeline);
+
+    QMetalBuffer *indirectBufD = QRHI_RES(QMetalBuffer, indirectBuffer);
+    executeBufferHostWritesForCurrentFrame(indirectBufD);
+    indirectBufD->lastActiveFrameSlot = currentFrameSlot;
+    id<MTLBuffer> indirectBufMtl = indirectBufD->d->buf[indirectBufD->d->slotted ? currentFrameSlot : 0];
+
+    // dispatchThreadgroups still wants threadsPerThreadgroup explicitly; the
+    // indirect buffer only supplies the grid size in threadgroups. The
+    // threads-per-threadgroup value comes from the bound compute pipeline
+    // (set in QMetalComputePipeline::create() from the SPIR-V shader's
+    // local_size_x/y/z layout qualifiers).
+    [cbD->d->currentComputePassEncoder
+            dispatchThreadgroupsWithIndirectBuffer: indirectBufMtl
+                              indirectBufferOffset: indirectBufferOffset
+                             threadsPerThreadgroup: psD->d->localSize];
 }
 
 static void qrhimtl_releaseBuffer(const QRhiMetalData::DeferredReleaseEntry &e)

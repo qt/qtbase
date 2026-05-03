@@ -127,6 +127,8 @@ public:
     virtual void endComputePass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resourceUpdates) = 0;
     virtual void setComputePipeline(QRhiCommandBuffer *cb, QRhiComputePipeline *ps) = 0;
     virtual void dispatch(QRhiCommandBuffer *cb, int x, int y, int z) = 0;
+    virtual void dispatchIndirect(QRhiCommandBuffer *cb, QRhiBuffer *indirectBuffer,
+                                  quint32 offset) = 0;
 
     virtual const QRhiNativeHandles *nativeHandles(QRhiCommandBuffer *cb) = 0;
     virtual void beginExternal(QRhiCommandBuffer *cb) = 0;

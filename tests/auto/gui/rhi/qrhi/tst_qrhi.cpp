@@ -158,6 +158,14 @@ private slots:
     void indexedIndirectMultiDrawFromCompute();
     void indexedIndirectMultiDrawHighDrawCount_data();
     void indexedIndirectMultiDrawHighDrawCount();
+    void dispatchIndirectBaseline_data();
+    void dispatchIndirectBaseline();
+    void dispatchIndirectFromCompute_data();
+    void dispatchIndirectFromCompute();
+    void dispatchIndirectFromComputeSamePass_data();
+    void dispatchIndirectFromComputeSamePass();
+    void dispatchIndirectConsumerReadsArgs_data();
+    void dispatchIndirectConsumerReadsArgs();
     void indexedIndirectMultiDrawShaderDrawParams_data();
     void indexedIndirectMultiDrawShaderDrawParams();
 
@@ -6552,6 +6560,559 @@ void tst_QRhi::indexedIndirectMultiDrawShaderDrawParams()
     QCOMPARE(redCount,   64); // We should see the left red quad (drawID == 0)
     QCOMPARE(greenCount, 64); // We should see the right green quad (drawID == 1)
     QCOMPARE(blueCount,   0); // We should not see the background
+}
+
+void tst_QRhi::dispatchIndirectBaseline_data()
+{
+    rhiTestData();
+}
+
+void tst_QRhi::dispatchIndirectBaseline()
+{
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+    QRhi *rhi = sharedRhi(impl, initParams);
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing dispatchIndirectBaseline");
+    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi))
+        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
+    if (!rhi->isFeatureSupported(QRhi::Compute))
+        QSKIP("Compute not supported on this backend");
+    if (!rhi->isFeatureSupported(QRhi::DispatchIndirect))
+        QSKIP("Indirect compute dispatch not supported on this backend");
+
+    // Indirect dispatch arguments uploaded directly from the CPU. Groups
+    // must fit the 16-wide fixed stride encoded in the consumer shader.
+    static constexpr quint32 GroupsX = 4u;
+    static constexpr quint32 GroupsY = 3u;
+    static constexpr quint32 GroupsZ = 2u;
+    const QRhiDispatchIndirectCommand cmdArgs = { GroupsX, GroupsY, GroupsZ };
+    const quint32 expectedGroupCount = GroupsX * GroupsY * GroupsZ;
+
+    QRhiCommandBuffer *cb = nullptr;
+    QVERIFY(rhi->beginOffscreenFrame(&cb) == QRhi::FrameOpSuccess);
+    QVERIFY(cb);
+    OffscreenFrameGuard frameGuard(rhi);
+
+    QRhiResourceUpdateBatch *u = rhi->nextResourceUpdateBatch();
+
+    std::unique_ptr<QRhiBuffer> indirectBuf(rhi->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::IndirectBuffer,
+                                                           sizeof(QRhiDispatchIndirectCommand)));
+    QVERIFY(indirectBuf->create());
+    u->uploadStaticBuffer(indirectBuf.get(), &cmdArgs);
+
+    // The consumer shader writes at slot (x + y*16 + z*16*16); size the
+    // output buffer to cover every slot in the 16^3 lattice, pre-filled
+    // with a sentinel so we can detect over- or under-dispatch.
+    static constexpr quint32 SlotStride = 16u;
+    static constexpr quint32 SlotCount = SlotStride * SlotStride * SlotStride;
+    QByteArray sentinel(int(SlotCount * sizeof(quint32)), 0);
+    quint32 *sentinelPtr = reinterpret_cast<quint32 *>(sentinel.data());
+    for (quint32 i = 0; i < SlotCount; ++i)
+        sentinelPtr[i] = 0xFFFFFFFFu;
+
+    std::unique_ptr<QRhiBuffer> outBuf(rhi->newBuffer(QRhiBuffer::Static, QRhiBuffer::StorageBuffer,
+                                                      SlotCount * sizeof(quint32)));
+    QVERIFY(outBuf->create());
+    u->uploadStaticBuffer(outBuf.get(), sentinel.constData());
+
+    std::unique_ptr<QRhiShaderResourceBindings> srb(rhi->newShaderResourceBindings());
+    srb->setBindings({
+        QRhiShaderResourceBinding::bufferLoadStore(0, QRhiShaderResourceBinding::ComputeStage, outBuf.get())
+    });
+    QVERIFY(srb->create());
+
+    std::unique_ptr<QRhiComputePipeline> ps(rhi->newComputePipeline());
+    const QShader cs = loadShader(":/data/dispatch_indirect_consume.comp.qsb");
+    QVERIFY(cs.isValid());
+    ps->setShaderStage({ QRhiShaderStage::Compute, cs });
+    ps->setShaderResourceBindings(srb.get());
+    QVERIFY(ps->create());
+
+    cb->beginComputePass(u);
+    cb->setComputePipeline(ps.get());
+    cb->setShaderResources(srb.get());
+    cb->dispatchIndirect(indirectBuf.get(), 0);
+    cb->endComputePass();
+
+    QRhiReadbackResult rb;
+    QByteArray result;
+    rb.completed = [&] { result = rb.data; };
+    QRhiResourceUpdateBatch *u2 = rhi->nextResourceUpdateBatch();
+    u2->readBackBuffer(outBuf.get(), 0, SlotCount * sizeof(quint32), &rb);
+    cb->resourceUpdate(u2);
+
+    frameGuard.endFrame();
+
+    if (impl == QRhi::Null)
+        return;
+
+    QCOMPARE(quint32(result.size()), SlotCount * sizeof(quint32));
+    const quint32 *p = reinterpret_cast<const quint32 *>(result.constData());
+
+    quint32 written = 0;
+    for (quint32 i = 0; i < SlotCount; ++i) {
+        if (p[i] != 0xFFFFFFFFu)
+            ++written;
+    }
+    QCOMPARE(written, expectedGroupCount);
+
+    // Verify that every (x, y, z) work group inside the dispatch grid wrote
+    // the expected encoding at its own slot and that no other slot was
+    // touched.
+    for (quint32 z = 0; z < SlotStride; ++z) {
+        for (quint32 y = 0; y < SlotStride; ++y) {
+            for (quint32 x = 0; x < SlotStride; ++x) {
+                const quint32 idx = x + y * SlotStride + z * SlotStride * SlotStride;
+                const bool inGrid = x < GroupsX && y < GroupsY && z < GroupsZ;
+                if (inGrid) {
+                    const quint32 expected = (z << 20) | (y << 10) | x;
+                    QCOMPARE(p[idx], expected);
+                } else {
+                    QCOMPARE(p[idx], 0xFFFFFFFFu);
+                }
+            }
+        }
+    }
+}
+
+void tst_QRhi::dispatchIndirectFromCompute_data()
+{
+    rhiTestData();
+}
+
+void tst_QRhi::dispatchIndirectFromCompute()
+{
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+    QRhi *rhi = sharedRhi(impl, initParams);
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing dispatchIndirectFromCompute");
+    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi))
+        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
+    if (!rhi->isFeatureSupported(QRhi::Compute))
+        QSKIP("Compute not supported on this backend");
+    if (!rhi->isFeatureSupported(QRhi::DispatchIndirect))
+        QSKIP("Indirect compute dispatch not supported on this backend");
+
+    // First compute pass: a single-thread shader writes the dispatch
+    // arguments into the indirect buffer based on a uniform. Second compute
+    // pass: dispatchIndirect() consumes those arguments. Validates GPU-side
+    // handoff between the two passes (in particular the write -> indirect
+    // read barrier).
+    // Groups must fit the 16-wide stride encoded in the consumer shader.
+    static constexpr quint32 GroupsX = 5u;
+    static constexpr quint32 GroupsY = 2u;
+    static constexpr quint32 GroupsZ = 3u;
+    const quint32 expectedGroupCount = GroupsX * GroupsY * GroupsZ;
+
+    QRhiCommandBuffer *cb = nullptr;
+    QVERIFY(rhi->beginOffscreenFrame(&cb) == QRhi::FrameOpSuccess);
+    QVERIFY(cb);
+    OffscreenFrameGuard frameGuard(rhi);
+
+    QRhiResourceUpdateBatch *u = rhi->nextResourceUpdateBatch();
+
+    // The same buffer is used as a storage buffer (write-target for the
+    // first compute pass) and as the indirect dispatch buffer (read by the
+    // device for the second compute pass).
+    static constexpr QRhiDispatchIndirectCommand zeroCmd = { 0u, 0u, 0u };
+    std::unique_ptr<QRhiBuffer> indirectBuf(rhi->newBuffer(QRhiBuffer::Static,
+                                                           QRhiBuffer::StorageBuffer | QRhiBuffer::IndirectBuffer,
+                                                           sizeof(QRhiDispatchIndirectCommand)));
+    QVERIFY(indirectBuf->create());
+    u->uploadStaticBuffer(indirectBuf.get(), &zeroCmd);
+
+    struct ArgsUbuf {
+        quint32 groupsX;
+        quint32 groupsY;
+        quint32 groupsZ;
+        quint32 _pad;
+    };
+    const ArgsUbuf argsUbufData = { GroupsX, GroupsY, GroupsZ, 0u };
+    std::unique_ptr<QRhiBuffer> argsUbuf(rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer,
+                                                        sizeof(ArgsUbuf)));
+    QVERIFY(argsUbuf->create());
+    u->updateDynamicBuffer(argsUbuf.get(), 0, sizeof(ArgsUbuf), &argsUbufData);
+
+    static constexpr quint32 SlotStride = 16u;
+    static constexpr quint32 SlotCount = SlotStride * SlotStride * SlotStride;
+    QByteArray sentinel(int(SlotCount * sizeof(quint32)), 0);
+    quint32 *sentinelPtr = reinterpret_cast<quint32 *>(sentinel.data());
+    for (quint32 i = 0; i < SlotCount; ++i)
+        sentinelPtr[i] = 0xFFFFFFFFu;
+
+    std::unique_ptr<QRhiBuffer> outBuf(rhi->newBuffer(QRhiBuffer::Static, QRhiBuffer::StorageBuffer,
+                                                      SlotCount * sizeof(quint32)));
+    QVERIFY(outBuf->create());
+    u->uploadStaticBuffer(outBuf.get(), sentinel.constData());
+
+    // Pipeline #1: writes the indirect command into indirectBuf.
+    std::unique_ptr<QRhiShaderResourceBindings> writeSrb(rhi->newShaderResourceBindings());
+    writeSrb->setBindings({
+        QRhiShaderResourceBinding::bufferLoadStore(0, QRhiShaderResourceBinding::ComputeStage, indirectBuf.get()),
+        QRhiShaderResourceBinding::uniformBuffer(1, QRhiShaderResourceBinding::ComputeStage, argsUbuf.get())
+    });
+    QVERIFY(writeSrb->create());
+
+    std::unique_ptr<QRhiComputePipeline> writePs(rhi->newComputePipeline());
+    const QShader writeCs = loadShader(":/data/dispatch_indirect_args.comp.qsb");
+    QVERIFY(writeCs.isValid());
+    writePs->setShaderStage({ QRhiShaderStage::Compute, writeCs });
+    writePs->setShaderResourceBindings(writeSrb.get());
+    QVERIFY(writePs->create());
+
+    // Pipeline #2: indirect-dispatched consumer that fills outBuf.
+    std::unique_ptr<QRhiShaderResourceBindings> consumeSrb(rhi->newShaderResourceBindings());
+    consumeSrb->setBindings({
+        QRhiShaderResourceBinding::bufferLoadStore(0, QRhiShaderResourceBinding::ComputeStage, outBuf.get())
+    });
+    QVERIFY(consumeSrb->create());
+
+    std::unique_ptr<QRhiComputePipeline> consumePs(rhi->newComputePipeline());
+    const QShader consumeCs = loadShader(":/data/dispatch_indirect_consume.comp.qsb");
+    QVERIFY(consumeCs.isValid());
+    consumePs->setShaderStage({ QRhiShaderStage::Compute, consumeCs });
+    consumePs->setShaderResourceBindings(consumeSrb.get());
+    QVERIFY(consumePs->create());
+
+    cb->beginComputePass(u);
+    cb->setComputePipeline(writePs.get());
+    cb->setShaderResources(writeSrb.get());
+    cb->dispatch(1, 1, 1);
+    cb->endComputePass();
+
+    cb->beginComputePass();
+    cb->setComputePipeline(consumePs.get());
+    cb->setShaderResources(consumeSrb.get());
+    cb->dispatchIndirect(indirectBuf.get(), 0);
+    cb->endComputePass();
+
+    QRhiReadbackResult rb;
+    QByteArray result;
+    rb.completed = [&] { result = rb.data; };
+    QRhiResourceUpdateBatch *u2 = rhi->nextResourceUpdateBatch();
+    u2->readBackBuffer(outBuf.get(), 0, SlotCount * sizeof(quint32), &rb);
+    cb->resourceUpdate(u2);
+
+    frameGuard.endFrame();
+
+    if (impl == QRhi::Null)
+        return;
+
+    QCOMPARE(quint32(result.size()), SlotCount * sizeof(quint32));
+    const quint32 *p = reinterpret_cast<const quint32 *>(result.constData());
+
+    quint32 written = 0;
+    for (quint32 i = 0; i < SlotCount; ++i) {
+        if (p[i] != 0xFFFFFFFFu)
+            ++written;
+    }
+    QCOMPARE(written, expectedGroupCount);
+
+    for (quint32 z = 0; z < SlotStride; ++z) {
+        for (quint32 y = 0; y < SlotStride; ++y) {
+            for (quint32 x = 0; x < SlotStride; ++x) {
+                const quint32 idx = x + y * SlotStride + z * SlotStride * SlotStride;
+                const bool inGrid = x < GroupsX && y < GroupsY && z < GroupsZ;
+                if (inGrid) {
+                    const quint32 expected = (z << 20) | (y << 10) | x;
+                    QCOMPARE(p[idx], expected);
+                } else {
+                    QCOMPARE(p[idx], 0xFFFFFFFFu);
+                }
+            }
+        }
+    }
+}
+
+void tst_QRhi::dispatchIndirectFromComputeSamePass_data()
+{
+    rhiTestData();
+}
+
+void tst_QRhi::dispatchIndirectFromComputeSamePass()
+{
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+    QRhi *rhi = sharedRhi(impl, initParams);
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing dispatchIndirectFromComputeSamePass");
+    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi))
+        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
+    if (!rhi->isFeatureSupported(QRhi::Compute))
+        QSKIP("Compute not supported on this backend");
+    if (!rhi->isFeatureSupported(QRhi::DispatchIndirect))
+        QSKIP("Indirect compute dispatch not supported on this backend");
+
+    // Like dispatchIndirectFromCompute, but with the producing dispatch and the
+    // consuming dispatchIndirect() in the same compute pass, so that the
+    // indirect buffer is used both as a storage buffer and as the source of the
+    // work group counts within one pass.
+    static constexpr quint32 GroupsX = 5u;
+    static constexpr quint32 GroupsY = 2u;
+    static constexpr quint32 GroupsZ = 3u;
+    const quint32 expectedGroupCount = GroupsX * GroupsY * GroupsZ;
+
+    QRhiCommandBuffer *cb = nullptr;
+    QVERIFY(rhi->beginOffscreenFrame(&cb) == QRhi::FrameOpSuccess);
+    QVERIFY(cb);
+    OffscreenFrameGuard frameGuard(rhi);
+
+    QRhiResourceUpdateBatch *u = rhi->nextResourceUpdateBatch();
+
+    static constexpr QRhiDispatchIndirectCommand zeroCmd = { 0u, 0u, 0u };
+    std::unique_ptr<QRhiBuffer> indirectBuf(rhi->newBuffer(QRhiBuffer::Static,
+                                                           QRhiBuffer::StorageBuffer | QRhiBuffer::IndirectBuffer,
+                                                           sizeof(QRhiDispatchIndirectCommand)));
+    QVERIFY(indirectBuf->create());
+    u->uploadStaticBuffer(indirectBuf.get(), &zeroCmd);
+
+    struct ArgsUbuf {
+        quint32 groupsX;
+        quint32 groupsY;
+        quint32 groupsZ;
+        quint32 _pad;
+    };
+    const ArgsUbuf argsUbufData = { GroupsX, GroupsY, GroupsZ, 0u };
+    std::unique_ptr<QRhiBuffer> argsUbuf(rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer,
+                                                        sizeof(ArgsUbuf)));
+    QVERIFY(argsUbuf->create());
+    u->updateDynamicBuffer(argsUbuf.get(), 0, sizeof(ArgsUbuf), &argsUbufData);
+
+    static constexpr quint32 SlotStride = 16u;
+    static constexpr quint32 SlotCount = SlotStride * SlotStride * SlotStride;
+    QByteArray sentinel(int(SlotCount * sizeof(quint32)), 0);
+    quint32 *sentinelPtr = reinterpret_cast<quint32 *>(sentinel.data());
+    for (quint32 i = 0; i < SlotCount; ++i)
+        sentinelPtr[i] = 0xFFFFFFFFu;
+
+    std::unique_ptr<QRhiBuffer> outBuf(rhi->newBuffer(QRhiBuffer::Static, QRhiBuffer::StorageBuffer,
+                                                      SlotCount * sizeof(quint32)));
+    QVERIFY(outBuf->create());
+    u->uploadStaticBuffer(outBuf.get(), sentinel.constData());
+
+    std::unique_ptr<QRhiShaderResourceBindings> writeSrb(rhi->newShaderResourceBindings());
+    writeSrb->setBindings({
+        QRhiShaderResourceBinding::bufferLoadStore(0, QRhiShaderResourceBinding::ComputeStage, indirectBuf.get()),
+        QRhiShaderResourceBinding::uniformBuffer(1, QRhiShaderResourceBinding::ComputeStage, argsUbuf.get())
+    });
+    QVERIFY(writeSrb->create());
+
+    std::unique_ptr<QRhiComputePipeline> writePs(rhi->newComputePipeline());
+    const QShader writeCs = loadShader(":/data/dispatch_indirect_args.comp.qsb");
+    QVERIFY(writeCs.isValid());
+    writePs->setShaderStage({ QRhiShaderStage::Compute, writeCs });
+    writePs->setShaderResourceBindings(writeSrb.get());
+    QVERIFY(writePs->create());
+
+    std::unique_ptr<QRhiShaderResourceBindings> consumeSrb(rhi->newShaderResourceBindings());
+    consumeSrb->setBindings({
+        QRhiShaderResourceBinding::bufferLoadStore(0, QRhiShaderResourceBinding::ComputeStage, outBuf.get())
+    });
+    QVERIFY(consumeSrb->create());
+
+    std::unique_ptr<QRhiComputePipeline> consumePs(rhi->newComputePipeline());
+    const QShader consumeCs = loadShader(":/data/dispatch_indirect_consume.comp.qsb");
+    QVERIFY(consumeCs.isValid());
+    consumePs->setShaderStage({ QRhiShaderStage::Compute, consumeCs });
+    consumePs->setShaderResourceBindings(consumeSrb.get());
+    QVERIFY(consumePs->create());
+
+    cb->beginComputePass(u);
+    cb->setComputePipeline(writePs.get());
+    cb->setShaderResources(writeSrb.get());
+    cb->dispatch(1, 1, 1);
+    cb->setComputePipeline(consumePs.get());
+    cb->setShaderResources(consumeSrb.get());
+    cb->dispatchIndirect(indirectBuf.get(), 0);
+    cb->endComputePass();
+
+    QRhiReadbackResult rb;
+    QByteArray result;
+    rb.completed = [&] { result = rb.data; };
+    QRhiResourceUpdateBatch *u2 = rhi->nextResourceUpdateBatch();
+    u2->readBackBuffer(outBuf.get(), 0, SlotCount * sizeof(quint32), &rb);
+    cb->resourceUpdate(u2);
+
+    frameGuard.endFrame();
+
+    if (impl == QRhi::Null)
+        return;
+
+    QCOMPARE(quint32(result.size()), SlotCount * sizeof(quint32));
+    const quint32 *p = reinterpret_cast<const quint32 *>(result.constData());
+
+    quint32 written = 0;
+    for (quint32 i = 0; i < SlotCount; ++i) {
+        if (p[i] != 0xFFFFFFFFu)
+            ++written;
+    }
+    QCOMPARE(written, expectedGroupCount);
+
+    for (quint32 z = 0; z < SlotStride; ++z) {
+        for (quint32 y = 0; y < SlotStride; ++y) {
+            for (quint32 x = 0; x < SlotStride; ++x) {
+                const quint32 idx = x + y * SlotStride + z * SlotStride * SlotStride;
+                const bool inGrid = x < GroupsX && y < GroupsY && z < GroupsZ;
+                if (inGrid) {
+                    const quint32 expected = (z << 20) | (y << 10) | x;
+                    QCOMPARE(p[idx], expected);
+                } else {
+                    QCOMPARE(p[idx], 0xFFFFFFFFu);
+                }
+            }
+        }
+    }
+}
+
+void tst_QRhi::dispatchIndirectConsumerReadsArgs_data()
+{
+    rhiTestData();
+}
+
+void tst_QRhi::dispatchIndirectConsumerReadsArgs()
+{
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+    QRhi *rhi = sharedRhi(impl, initParams);
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing dispatchIndirectConsumerReadsArgs");
+    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi))
+        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
+    if (!rhi->isFeatureSupported(QRhi::Compute))
+        QSKIP("Compute not supported on this backend");
+    if (!rhi->isFeatureSupported(QRhi::DispatchIndirect))
+        QSKIP("Indirect compute dispatch not supported on this backend");
+
+    // Like dispatchIndirectFromCompute, but the consuming pipeline also binds the
+    // indirect buffer as a read-only storage buffer, so that it is used with two
+    // different accesses in that pass: a shader read via the SRB and an indirect
+    // command read via dispatchIndirect().
+    static constexpr quint32 GroupsX = 4u;
+    static constexpr quint32 GroupsY = 3u;
+    static constexpr quint32 GroupsZ = 2u;
+    const quint32 expectedGroupCount = GroupsX * GroupsY * GroupsZ;
+
+    QRhiCommandBuffer *cb = nullptr;
+    QVERIFY(rhi->beginOffscreenFrame(&cb) == QRhi::FrameOpSuccess);
+    QVERIFY(cb);
+    OffscreenFrameGuard frameGuard(rhi);
+
+    QRhiResourceUpdateBatch *u = rhi->nextResourceUpdateBatch();
+
+    static constexpr QRhiDispatchIndirectCommand zeroCmd = { 0u, 0u, 0u };
+    std::unique_ptr<QRhiBuffer> indirectBuf(rhi->newBuffer(QRhiBuffer::Static,
+                                                           QRhiBuffer::StorageBuffer | QRhiBuffer::IndirectBuffer,
+                                                           sizeof(QRhiDispatchIndirectCommand)));
+    QVERIFY(indirectBuf->create());
+    u->uploadStaticBuffer(indirectBuf.get(), &zeroCmd);
+
+    struct ArgsUbuf {
+        quint32 groupsX;
+        quint32 groupsY;
+        quint32 groupsZ;
+        quint32 _pad;
+    };
+    const ArgsUbuf argsUbufData = { GroupsX, GroupsY, GroupsZ, 0u };
+    std::unique_ptr<QRhiBuffer> argsUbuf(rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer,
+                                                        sizeof(ArgsUbuf)));
+    QVERIFY(argsUbuf->create());
+    u->updateDynamicBuffer(argsUbuf.get(), 0, sizeof(ArgsUbuf), &argsUbufData);
+
+    static constexpr quint32 SlotStride = 16u;
+    static constexpr quint32 SlotCount = SlotStride * SlotStride * SlotStride;
+    QByteArray sentinel(int(SlotCount * sizeof(quint32)), 0);
+    quint32 *sentinelPtr = reinterpret_cast<quint32 *>(sentinel.data());
+    for (quint32 i = 0; i < SlotCount; ++i)
+        sentinelPtr[i] = 0xFFFFFFFFu;
+
+    std::unique_ptr<QRhiBuffer> outBuf(rhi->newBuffer(QRhiBuffer::Static, QRhiBuffer::StorageBuffer,
+                                                      SlotCount * sizeof(quint32)));
+    QVERIFY(outBuf->create());
+    u->uploadStaticBuffer(outBuf.get(), sentinel.constData());
+
+    std::unique_ptr<QRhiShaderResourceBindings> writeSrb(rhi->newShaderResourceBindings());
+    writeSrb->setBindings({
+        QRhiShaderResourceBinding::bufferLoadStore(0, QRhiShaderResourceBinding::ComputeStage, indirectBuf.get()),
+        QRhiShaderResourceBinding::uniformBuffer(1, QRhiShaderResourceBinding::ComputeStage, argsUbuf.get())
+    });
+    QVERIFY(writeSrb->create());
+
+    std::unique_ptr<QRhiComputePipeline> writePs(rhi->newComputePipeline());
+    const QShader writeCs = loadShader(":/data/dispatch_indirect_args.comp.qsb");
+    QVERIFY(writeCs.isValid());
+    writePs->setShaderStage({ QRhiShaderStage::Compute, writeCs });
+    writePs->setShaderResourceBindings(writeSrb.get());
+    QVERIFY(writePs->create());
+
+    std::unique_ptr<QRhiShaderResourceBindings> consumeSrb(rhi->newShaderResourceBindings());
+    consumeSrb->setBindings({
+        QRhiShaderResourceBinding::bufferLoadStore(0, QRhiShaderResourceBinding::ComputeStage, outBuf.get()),
+        QRhiShaderResourceBinding::bufferLoad(1, QRhiShaderResourceBinding::ComputeStage, indirectBuf.get())
+    });
+    QVERIFY(consumeSrb->create());
+
+    std::unique_ptr<QRhiComputePipeline> consumePs(rhi->newComputePipeline());
+    const QShader consumeCs = loadShader(":/data/dispatch_indirect_consume_readargs.comp.qsb");
+    QVERIFY(consumeCs.isValid());
+    consumePs->setShaderStage({ QRhiShaderStage::Compute, consumeCs });
+    consumePs->setShaderResourceBindings(consumeSrb.get());
+    QVERIFY(consumePs->create());
+
+    cb->beginComputePass(u);
+    cb->setComputePipeline(writePs.get());
+    cb->setShaderResources(writeSrb.get());
+    cb->dispatch(1, 1, 1);
+    cb->endComputePass();
+
+    cb->beginComputePass();
+    cb->setComputePipeline(consumePs.get());
+    cb->setShaderResources(consumeSrb.get());
+    cb->dispatchIndirect(indirectBuf.get(), 0);
+    cb->endComputePass();
+
+    QRhiReadbackResult rb;
+    QByteArray result;
+    rb.completed = [&] { result = rb.data; };
+    QRhiResourceUpdateBatch *u2 = rhi->nextResourceUpdateBatch();
+    u2->readBackBuffer(outBuf.get(), 0, SlotCount * sizeof(quint32), &rb);
+    cb->resourceUpdate(u2);
+
+    frameGuard.endFrame();
+
+    if (impl == QRhi::Null)
+        return;
+
+    QCOMPARE(quint32(result.size()), SlotCount * sizeof(quint32));
+    const quint32 *p = reinterpret_cast<const quint32 *>(result.constData());
+
+    quint32 written = 0;
+    for (quint32 i = 0; i < SlotCount; ++i) {
+        if (p[i] != 0xFFFFFFFFu)
+            ++written;
+    }
+    QCOMPARE(written, expectedGroupCount);
+
+    for (quint32 z = 0; z < SlotStride; ++z) {
+        for (quint32 y = 0; y < SlotStride; ++y) {
+            for (quint32 x = 0; x < SlotStride; ++x) {
+                const quint32 idx = x + y * SlotStride + z * SlotStride * SlotStride;
+                const bool inGrid = x < GroupsX && y < GroupsY && z < GroupsZ;
+                if (inGrid) {
+                    // Top bit set means the shader saw stale, all-zero arguments.
+                    const quint32 expected = (z << 20) | (y << 10) | x;
+                    QCOMPARE(p[idx], expected);
+                } else {
+                    QCOMPARE(p[idx], 0xFFFFFFFFu);
+                }
+            }
+        }
+    }
 }
 
 void tst_QRhi::srbLayoutCompatibility_data()

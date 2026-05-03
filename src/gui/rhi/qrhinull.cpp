@@ -384,6 +384,14 @@ void QRhiNull::dispatch(QRhiCommandBuffer *cb, int x, int y, int z)
     Q_UNUSED(z);
 }
 
+void QRhiNull::dispatchIndirect(QRhiCommandBuffer *cb, QRhiBuffer *indirectBuffer,
+                                quint32 indirectBufferOffset)
+{
+    Q_UNUSED(cb);
+    Q_UNUSED(indirectBuffer);
+    Q_UNUSED(indirectBufferOffset);
+}
+
 const QRhiNativeHandles *QRhiNull::nativeHandles(QRhiCommandBuffer *cb)
 {
     Q_UNUSED(cb);

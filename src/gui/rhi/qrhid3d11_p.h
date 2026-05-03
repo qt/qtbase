@@ -437,7 +437,8 @@ struct QD3D11CommandBuffer : public QRhiCommandBuffer
             DebugMarkEnd,
             DebugMarkMsg,
             BindComputePipeline,
-            Dispatch
+            Dispatch,
+            DispatchIndirect
         };
         enum ClearFlag { Color = 1, Depth = 2, Stencil = 4 };
         Cmd cmd;
@@ -578,6 +579,10 @@ struct QD3D11CommandBuffer : public QRhiCommandBuffer
                 UINT y;
                 UINT z;
             } dispatch;
+            struct {
+                ID3D11Buffer *indirectBuffer;
+                quint32 indirectBufferOffset;
+            } dispatchIndirect;
         } args;
     };
 
@@ -825,6 +830,8 @@ public:
     void endComputePass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resourceUpdates) override;
     void setComputePipeline(QRhiCommandBuffer *cb, QRhiComputePipeline *ps) override;
     void dispatch(QRhiCommandBuffer *cb, int x, int y, int z) override;
+    void dispatchIndirect(QRhiCommandBuffer *cb, QRhiBuffer *indirectBuffer,
+                          quint32 indirectBufferOffset) override;
 
     const QRhiNativeHandles *nativeHandles(QRhiCommandBuffer *cb) override;
     void beginExternal(QRhiCommandBuffer *cb) override;

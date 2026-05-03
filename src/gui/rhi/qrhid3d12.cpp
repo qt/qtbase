@@ -611,6 +611,22 @@ bool QRhiD3D12::create(QRhi::Flags flags)
         }
     }
 
+    {
+        D3D12_INDIRECT_ARGUMENT_DESC arg = {};
+        arg.Type = D3D12_INDIRECT_ARGUMENT_TYPE_DISPATCH;
+
+        D3D12_COMMAND_SIGNATURE_DESC sigDesc = {};
+        sigDesc.ByteStride = sizeof(D3D12_DISPATCH_ARGUMENTS);
+        sigDesc.NumArgumentDescs = 1;
+        sigDesc.pArgumentDescs = &arg;
+
+        hr = dev->CreateCommandSignature(&sigDesc, nullptr, IID_PPV_ARGS(&dispatchCommandSignature));
+        if (FAILED(hr)) {
+            qWarning("Failed to create dispatch command signature: %s", qPrintable(QSystemError::windowsComString(hr)));
+            return false;
+        }
+    }
+
     deviceLost = false;
     offscreenActive = false;
 
@@ -728,6 +744,11 @@ void QRhiD3D12::destroy()
     if (drawIndexedCommandSignature) {
         drawIndexedCommandSignature->Release();
         drawIndexedCommandSignature = nullptr;
+    }
+
+    if (dispatchCommandSignature) {
+        dispatchCommandSignature->Release();
+        dispatchCommandSignature = nullptr;
     }
 
     destroyPipelineLibrary();
@@ -983,6 +1004,8 @@ bool QRhiD3D12::isFeatureSupported(QRhi::Feature feature) const
         return drawCommandSignature != nullptr && drawIndexedCommandSignature != nullptr;
     case QRhi::ShaderDrawParameters:
         return false;
+    case QRhi::DispatchIndirect:
+        return dispatchCommandSignature != nullptr;
     }
     return false;
 }
@@ -2840,6 +2863,33 @@ void QRhiD3D12::dispatch(QRhiCommandBuffer *cb, int x, int y, int z)
     QD3D12CommandBuffer *cbD = QRHI_RES(QD3D12CommandBuffer, cb);
     Q_ASSERT(cbD->recordingPass == QD3D12CommandBuffer::ComputePass);
     cbD->cmdList->Dispatch(UINT(x), UINT(y), UINT(z));
+}
+
+void QRhiD3D12::dispatchIndirect(QRhiCommandBuffer *cb, QRhiBuffer *indirectBuffer,
+                                 quint32 indirectBufferOffset)
+{
+    QD3D12CommandBuffer *cbD = QRHI_RES(QD3D12CommandBuffer, cb);
+    Q_ASSERT(cbD->recordingPass == QD3D12CommandBuffer::ComputePass);
+
+    QD3D12Buffer *indirectBufferD = QRHI_RES(QD3D12Buffer, indirectBuffer);
+    const bool isDynamic = indirectBufferD->m_type == QRhiBuffer::Dynamic;
+    const QD3D12ObjectHandle indirectBufferHandle = indirectBufferD->handles[isDynamic ? currentFrameSlot : 0];
+    if (isDynamic) {
+        indirectBufferD->executeHostWritesForFrameSlot(currentFrameSlot);
+    } else {
+        // For Static/Immutable buffers, transition to INDIRECT_ARGUMENT state
+        // so any earlier UAV writes (e.g. by a compute shader that produced
+        // the dispatch arguments) are flushed before ExecuteIndirect reads.
+        barrierGen.addTransitionBarrier(indirectBufferHandle, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT);
+        barrierGen.enqueueBufferedTransitionBarriers(cbD);
+    }
+    QD3D12Resource *indirectRes = resourcePool.lookupRef(indirectBufferHandle);
+    if (!indirectRes)
+        return;
+
+    cbD->cmdList->ExecuteIndirect(dispatchCommandSignature, 1,
+                                  indirectRes->resource, indirectBufferOffset,
+                                  nullptr, 0);
 }
 
 bool QD3D12DescriptorHeap::create(ID3D12Device *device,

@@ -1,0 +1,32 @@
+#version 440
+
+// Resets every particle to its grid position and to white. Dispatched
+// directly (not via dispatchIndirect) every frame, so the subsequent
+// indirect dispatch's red "paint" strictly reflects what it touched this
+// frame only.
+
+layout (local_size_x = 256) in;
+
+struct Particle
+{
+    vec4 pos;
+    vec4 color;
+};
+
+layout(std430, binding = 0) buffer ParticleBuf
+{
+    Particle particles[];
+} buf;
+
+void main()
+{
+    uint row = gl_WorkGroupID.x;
+    uint col = gl_LocalInvocationID.x;
+    uint index = row * 256u + col;
+
+    float restX = -1.0 + 2.0 * (float(col) + 0.5) / 256.0;
+    float restY = 1.0 - 2.0 * (float(row) + 0.5) / 128.0;
+
+    buf.particles[index].pos = vec4(restX, restY, 0.0, 1.0);
+    buf.particles[index].color = vec4(1.0, 1.0, 1.0, 1.0);
+}

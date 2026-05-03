@@ -1354,6 +1354,8 @@ public:
     void endComputePass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resourceUpdates) override;
     void setComputePipeline(QRhiCommandBuffer *cb, QRhiComputePipeline *ps) override;
     void dispatch(QRhiCommandBuffer *cb, int x, int y, int z) override;
+    void dispatchIndirect(QRhiCommandBuffer *cb, QRhiBuffer *indirectBuffer,
+                          quint32 indirectBufferOffset) override;
 
     const QRhiNativeHandles *nativeHandles(QRhiCommandBuffer *cb) override;
     void beginExternal(QRhiCommandBuffer *cb) override;
@@ -1466,6 +1468,7 @@ public:
     UINT shadingRateImageTileSize = 0;
     ID3D12CommandSignature *drawCommandSignature = nullptr;
     ID3D12CommandSignature *drawIndexedCommandSignature = nullptr;
+    ID3D12CommandSignature *dispatchCommandSignature = nullptr;
 #ifdef QRHI_D3D12_PIPELINE_LIBRARY_AVAILABLE
     ID3D12PipelineLibrary1 *pipelineLibrary = nullptr;
     // CreatePipelineLibrary() does not copy: the blob must stay alive and

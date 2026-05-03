@@ -438,6 +438,7 @@ struct QVkCommandBuffer : public QRhiCommandBuffer
             DebugMarkerInsert,
             TransitionPassResources,
             Dispatch,
+            DispatchIndirect,
             ExecuteSecondary,
             SetShadingRate,
             MemoryBarrier
@@ -591,6 +592,10 @@ struct QVkCommandBuffer : public QRhiCommandBuffer
             struct {
                 int x, y, z;
             } dispatch;
+            struct {
+                VkBuffer indirectBuffer;
+                VkDeviceSize indirectBufferOffset;
+            } dispatchIndirect;
             struct {
                 VkCommandBuffer cb;
             } executeSecondary;
@@ -810,6 +815,9 @@ public:
     void drawIndexedIndirect(QRhiCommandBuffer *cb, QRhiBuffer *indirectBuffer,
                              quint32 indirectBufferOffset, quint32 drawCount, quint32 stride) override;
 
+    void dispatchIndirect(QRhiCommandBuffer *cb, QRhiBuffer *indirectBuffer,
+                          quint32 indirectBufferOffset) override;
+
     void debugMarkBegin(QRhiCommandBuffer *cb, const QByteArray &name) override;
     void debugMarkEnd(QRhiCommandBuffer *cb) override;
     void debugMarkMsg(QRhiCommandBuffer *cb, const QByteArray &msg) override;
@@ -904,6 +912,9 @@ public:
                                 QVkTexture *texD,
                                 QRhiPassResourceTracker::TextureAccess access,
                                 QRhiPassResourceTracker::TextureStage stage);
+    void collectComputeBarriers(QVkCommandBuffer *cbD,
+                                QVarLengthArray<VkImageMemoryBarrier, 8> *imageBarriers,
+                                QVarLengthArray<VkBufferMemoryBarrier, 8> *bufferBarriers);
     void recordTransitionPassResources(QVkCommandBuffer *cbD, const QRhiPassResourceTracker &tracker);
     void activateTextureRenderTarget(QVkCommandBuffer *cbD, QVkTextureRenderTarget *rtD);
     void executeDeferredReleases(bool forced = false);

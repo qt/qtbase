@@ -345,6 +345,7 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
             GenMip,
             BindComputePipeline,
             Dispatch,
+            DispatchIndirect,
             BarriersForPass,
             Barrier,
             InvalidateFramebuffer
@@ -558,6 +559,10 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
                 GLuint y;
                 GLuint z;
             } dispatch;
+            struct {
+                GLuint buffer;
+                quint32 offset;
+            } dispatchIndirect;
             struct {
                 int trackerIndex;
             } barriersForPass;
@@ -869,6 +874,9 @@ public:
     void drawIndexedIndirect(QRhiCommandBuffer *cb, QRhiBuffer *indirectBuffer,
                              quint32 indirectBufferOffset, quint32 drawCount, quint32 stride) override;
 
+    void dispatchIndirect(QRhiCommandBuffer *cb, QRhiBuffer *indirectBuffer,
+                          quint32 indirectBufferOffset) override;
+
     void debugMarkBegin(QRhiCommandBuffer *cb, const QByteArray &name) override;
     void debugMarkEnd(QRhiCommandBuffer *cb) override;
     void debugMarkMsg(QRhiCommandBuffer *cb, const QByteArray &msg) override;
@@ -922,6 +930,7 @@ public:
                                 QGles2Texture *texD,
                                 QRhiPassResourceTracker::TextureAccess access,
                                 QRhiPassResourceTracker::TextureStage stage);
+    GLbitfield barriersForNextDispatch(QGles2CommandBuffer *cbD);
     void executeCommandBuffer(QRhiCommandBuffer *cb);
     void executeBindGraphicsPipeline(QGles2CommandBuffer *cbD, QGles2GraphicsPipeline *psD);
     void bindCombinedSampler(QGles2CommandBuffer *cbD, QGles2Texture *texD, QGles2Sampler *samplerD,
@@ -1063,7 +1072,8 @@ public:
               glesMultisampleRenderToTexture(false),
               glesMultiviewMultisampleRenderToTexture(false),
               unpackRowLength(false),
-              perRenderTargetBlending(false)
+              perRenderTargetBlending(false),
+              dispatchIndirect(false)
         { }
         int ctxMajor;
         int ctxMinor;
@@ -1134,6 +1144,7 @@ public:
         uint drawIndirectMulti : 1;
         uint shaderDrawParameters : 1;
         uint imageLoadStore : 1;
+        uint dispatchIndirect : 1;
     } caps;
     QGles2SwapChain *currentSwapChain = nullptr;
     QSet<GLint> supportedCompressedFormats;

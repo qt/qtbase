@@ -1719,9 +1719,17 @@ struct QRhiIndexedIndirectDrawCommand
     quint32 firstInstance = 0;
 };
 
+struct QRhiDispatchIndirectCommand
+{
+    quint32 x;
+    quint32 y = 1;
+    quint32 z = 1;
+};
+
 // Check that the compiler isn't doing anything nasty.
 static_assert(sizeof(QRhiIndirectDrawCommand) == 16);
 static_assert(sizeof(QRhiIndexedIndirectDrawCommand) == 20);
+static_assert(sizeof(QRhiDispatchIndirectCommand) == 12);
 
 class Q_GUI_EXPORT QRhiCommandBuffer : public QRhiResource
 {
@@ -1793,6 +1801,8 @@ public:
     void endComputePass(QRhiResourceUpdateBatch *resourceUpdates = nullptr);
     void setComputePipeline(QRhiComputePipeline *ps);
     void dispatch(int x, int y, int z);
+    void dispatchIndirect(QRhiBuffer *indirectBuffer,
+                          quint32 indirectBufferOffset = 0);
 
     const QRhiNativeHandles *nativeHandles();
     void beginExternal();
@@ -1979,6 +1989,7 @@ public:
         DrawIndirect,
         DrawIndirectMulti,
         ShaderDrawParameters,
+        DispatchIndirect,
     };
 
     enum BeginFrameFlag {

@@ -370,12 +370,12 @@ QT_BEGIN_NAMESPACE
 #define GL_BUFFER_UPDATE_BARRIER_BIT       0x00000200
 #endif
 
-#ifndef GL_SHADER_STORAGE_BARRIER_BIT
-#define GL_SHADER_STORAGE_BARRIER_BIT      0x00002000
-#endif
-
 #ifndef GL_COMMAND_BARRIER_BIT
 #define GL_COMMAND_BARRIER_BIT             0x00000040
+#endif
+
+#ifndef GL_SHADER_STORAGE_BARRIER_BIT
+#define GL_SHADER_STORAGE_BARRIER_BIT      0x00002000
 #endif
 
 #ifndef GL_TEXTURE_FETCH_BARRIER_BIT
@@ -612,6 +612,10 @@ QT_BEGIN_NAMESPACE
 
 #ifndef GL_DRAW_INDIRECT_BUFFER
 #define GL_DRAW_INDIRECT_BUFFER           0x8F3F
+#endif
+
+#ifndef GL_DISPATCH_INDIRECT_BUFFER
+#define GL_DISPATCH_INDIRECT_BUFFER       0x90EE
 #endif
 
 /*!
@@ -1299,6 +1303,10 @@ bool QRhiGles2::create(QRhi::Flags flags)
         caps.shaderDrawParameters = caps.ctxMajor > 4 || (caps.ctxMajor == 4 && caps.ctxMinor >= 6);
     if (ctx->hasExtension(QByteArrayLiteral("GL_ARB_shader_draw_parameters")))
         caps.shaderDrawParameters = true;
+    // glDispatchComputeIndirect was introduced together with the compute
+    // pipeline in OpenGL 4.3 and OpenGL ES 3.1, so its availability matches
+    // caps.compute. The function pointer is exposed by QOpenGLExtraFunctions.
+    caps.dispatchIndirect = caps.compute;
 
     nativeHandlesStruct.context = ctx;
 
@@ -1762,6 +1770,8 @@ bool QRhiGles2::isFeatureSupported(QRhi::Feature feature) const
         return caps.drawIndirectMulti;
     case QRhi::ShaderDrawParameters:
         return caps.shaderDrawParameters;
+    case QRhi::DispatchIndirect:
+        return caps.dispatchIndirect;
     default:
         Q_UNREACHABLE_RETURN(false);
     }
@@ -4184,6 +4194,13 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
         case QGles2CommandBuffer::Command::Dispatch:
             f->glDispatchCompute(cmd.args.dispatch.x, cmd.args.dispatch.y, cmd.args.dispatch.z);
             break;
+        case QGles2CommandBuffer::Command::DispatchIndirect:
+        {
+            f->glBindBuffer(GL_DISPATCH_INDIRECT_BUFFER, cmd.args.dispatchIndirect.buffer);
+            f->glDispatchComputeIndirect(GLintptr(cmd.args.dispatchIndirect.offset));
+            f->glBindBuffer(GL_DISPATCH_INDIRECT_BUFFER, 0);
+        }
+            break;
         case QGles2CommandBuffer::Command::BarriersForPass:
         {
             if (!caps.compute)
@@ -5354,73 +5371,81 @@ inline void qrhigl_accumulateComputeResource(T *writtenResources, QRhiResource *
         writtenResources->insert(resource, { access, true });
 }
 
+// The glMemoryBarrier() bits needed based on what previous dispatches in the
+// pass wrote. Updates writtenResources, so call once per dispatch.
+GLbitfield QRhiGles2::barriersForNextDispatch(QGles2CommandBuffer *cbD)
+{
+    if (!cbD->currentComputeSrb)
+        return 0;
+
+    GLbitfield barriers = 0;
+
+    // The key in the writtenResources map indicates that the resource was
+    // written in a previous dispatch, whereas the value accumulates the
+    // access mask in the current one.
+    for (auto &accessAndIsNewFlag : cbD->computePassState.writtenResources)
+        accessAndIsNewFlag = { 0, false };
+
+    QGles2ShaderResourceBindings *srbD = QRHI_RES(QGles2ShaderResourceBindings, cbD->currentComputeSrb);
+    const int bindingCount = srbD->m_bindings.size();
+    for (int i = 0; i < bindingCount; ++i) {
+        const QRhiShaderResourceBinding::Data *b = shaderResourceBindingData(srbD->m_bindings.at(i));
+        switch (b->type) {
+        case QRhiShaderResourceBinding::ImageLoad:
+        case QRhiShaderResourceBinding::ImageStore:
+        case QRhiShaderResourceBinding::ImageLoadStore:
+            qrhigl_accumulateComputeResource(&cbD->computePassState.writtenResources,
+                                             b->u.simage.tex,
+                                             b->type,
+                                             QRhiShaderResourceBinding::ImageLoad,
+                                             QRhiShaderResourceBinding::ImageStore,
+                                             QRhiShaderResourceBinding::ImageLoadStore);
+            break;
+        case QRhiShaderResourceBinding::BufferLoad:
+        case QRhiShaderResourceBinding::BufferStore:
+        case QRhiShaderResourceBinding::BufferLoadStore:
+            qrhigl_accumulateComputeResource(&cbD->computePassState.writtenResources,
+                                             b->u.sbuf.buf,
+                                             b->type,
+                                             QRhiShaderResourceBinding::BufferLoad,
+                                             QRhiShaderResourceBinding::BufferStore,
+                                             QRhiShaderResourceBinding::BufferLoadStore);
+            break;
+        default:
+            break;
+        }
+    }
+
+    for (auto it = cbD->computePassState.writtenResources.begin(); it != cbD->computePassState.writtenResources.end(); ) {
+        const int accessInThisDispatch = it->first;
+        const bool isNewInThisDispatch = it->second;
+        if (accessInThisDispatch && !isNewInThisDispatch) {
+            if (it.key()->resourceType() == QRhiResource::Texture)
+                barriers |= GL_SHADER_IMAGE_ACCESS_BARRIER_BIT;
+            else
+                barriers |= GL_SHADER_STORAGE_BARRIER_BIT;
+        }
+        // Anything that was previously written, but is only read now, can be
+        // removed from the written list (because that previous write got a
+        // corresponding barrier now).
+        if (accessInThisDispatch == QGles2CommandBuffer::ComputePassState::Read)
+            it = cbD->computePassState.writtenResources.erase(it);
+        else
+            ++it;
+    }
+
+    return barriers;
+}
+
 void QRhiGles2::dispatch(QRhiCommandBuffer *cb, int x, int y, int z)
 {
     QGles2CommandBuffer *cbD = QRHI_RES(QGles2CommandBuffer, cb);
     Q_ASSERT(cbD->recordingPass == QGles2CommandBuffer::ComputePass);
 
-    if (cbD->currentComputeSrb) {
-        GLbitfield barriers = 0;
-
-        // The key in the writtenResources map indicates that the resource was
-        // written in a previous dispatch, whereas the value accumulates the
-        // access mask in the current one.
-        for (auto &accessAndIsNewFlag : cbD->computePassState.writtenResources)
-            accessAndIsNewFlag = { 0, false };
-
-        QGles2ShaderResourceBindings *srbD = QRHI_RES(QGles2ShaderResourceBindings, cbD->currentComputeSrb);
-        const int bindingCount = srbD->m_bindings.size();
-        for (int i = 0; i < bindingCount; ++i) {
-            const QRhiShaderResourceBinding::Data *b = shaderResourceBindingData(srbD->m_bindings.at(i));
-            switch (b->type) {
-            case QRhiShaderResourceBinding::ImageLoad:
-            case QRhiShaderResourceBinding::ImageStore:
-            case QRhiShaderResourceBinding::ImageLoadStore:
-                qrhigl_accumulateComputeResource(&cbD->computePassState.writtenResources,
-                                                 b->u.simage.tex,
-                                                 b->type,
-                                                 QRhiShaderResourceBinding::ImageLoad,
-                                                 QRhiShaderResourceBinding::ImageStore,
-                                                 QRhiShaderResourceBinding::ImageLoadStore);
-                break;
-            case QRhiShaderResourceBinding::BufferLoad:
-            case QRhiShaderResourceBinding::BufferStore:
-            case QRhiShaderResourceBinding::BufferLoadStore:
-                qrhigl_accumulateComputeResource(&cbD->computePassState.writtenResources,
-                                                 b->u.sbuf.buf,
-                                                 b->type,
-                                                 QRhiShaderResourceBinding::BufferLoad,
-                                                 QRhiShaderResourceBinding::BufferStore,
-                                                 QRhiShaderResourceBinding::BufferLoadStore);
-                break;
-            default:
-                break;
-            }
-        }
-
-        for (auto it = cbD->computePassState.writtenResources.begin(); it != cbD->computePassState.writtenResources.end(); ) {
-            const int accessInThisDispatch = it->first;
-            const bool isNewInThisDispatch = it->second;
-            if (accessInThisDispatch && !isNewInThisDispatch) {
-                if (it.key()->resourceType() == QRhiResource::Texture)
-                    barriers |= GL_SHADER_IMAGE_ACCESS_BARRIER_BIT;
-                else
-                    barriers |= GL_SHADER_STORAGE_BARRIER_BIT;
-            }
-            // Anything that was previously written, but is only read now, can be
-            // removed from the written list (because that previous write got a
-            // corresponding barrier now).
-            if (accessInThisDispatch == QGles2CommandBuffer::ComputePassState::Read)
-                it = cbD->computePassState.writtenResources.erase(it);
-            else
-                ++it;
-        }
-
-        if (barriers) {
-            QGles2CommandBuffer::Command &cmd(cbD->commands.get());
-            cmd.cmd = QGles2CommandBuffer::Command::Barrier;
-            cmd.args.barrier.barriers = barriers;
-        }
+    if (const GLbitfield barriers = barriersForNextDispatch(cbD)) {
+        QGles2CommandBuffer::Command &cmd(cbD->commands.get());
+        cmd.cmd = QGles2CommandBuffer::Command::Barrier;
+        cmd.args.barrier.barriers = barriers;
     }
 
     QGles2CommandBuffer::Command &cmd(cbD->commands.get());
@@ -5428,6 +5453,57 @@ void QRhiGles2::dispatch(QRhiCommandBuffer *cb, int x, int y, int z)
     cmd.args.dispatch.x = GLuint(x);
     cmd.args.dispatch.y = GLuint(y);
     cmd.args.dispatch.z = GLuint(z);
+}
+
+void QRhiGles2::dispatchIndirect(QRhiCommandBuffer *cb, QRhiBuffer *indirectBuffer,
+                                 quint32 indirectBufferOffset)
+{
+    if (!caps.dispatchIndirect) {
+        qWarning("dispatchIndirect called but the DispatchIndirect feature is not supported");
+        return;
+    }
+
+    QGles2CommandBuffer *cbD = QRHI_RES(QGles2CommandBuffer, cb);
+    Q_ASSERT(cbD->recordingPass == QGles2CommandBuffer::ComputePass);
+
+    // Sample before barriersForNextDispatch(), which drops entries for anything
+    // the upcoming dispatch only reads - including this buffer, if the consuming
+    // shader also binds it as a storage buffer.
+    const bool indirectBufWrittenInThisPass =
+            cbD->computePassState.writtenResources.contains(indirectBuffer);
+
+    GLbitfield barriers = barriersForNextDispatch(cbD);
+
+    // The work group counts are read via the command processor, not as a shader
+    // storage read, hence GL_COMMAND_BARRIER_BIT.
+    if (indirectBufWrittenInThisPass)
+        barriers |= GL_COMMAND_BARRIER_BIT;
+
+    if (barriers) {
+        QGles2CommandBuffer::Command &cmd(cbD->commands.get());
+        cmd.cmd = QGles2CommandBuffer::Command::Barrier;
+        cmd.args.barrier.barriers = barriers;
+    }
+
+    QGles2Buffer *indirectBufD = QRHI_RES(QGles2Buffer, indirectBuffer);
+
+    if (cbD->passNeedsResourceTracking) {
+        QRhiPassResourceTracker &passResTracker(cbD->passResTrackers[cbD->currentPassResTrackerIndex]);
+        // When already registered - typically as the storage buffer the
+        // arguments were generated into - registerBuffer() would reject the
+        // differing access with a warning. Skipping it is fine because
+        // BarriersForPass sets all buffer barrier bits anyway.
+        if (!passResTracker.buffers().contains(indirectBufD)) {
+            trackedRegisterBuffer(&passResTracker, indirectBufD,
+                                  QRhiPassResourceTracker::BufIndirectDraw,
+                                  QRhiPassResourceTracker::BufIndirectDrawStage);
+        }
+    }
+
+    QGles2CommandBuffer::Command &cmd(cbD->commands.get());
+    cmd.cmd = QGles2CommandBuffer::Command::DispatchIndirect;
+    cmd.args.dispatchIndirect.buffer = indirectBufD->buffer;
+    cmd.args.dispatchIndirect.offset = indirectBufferOffset;
 }
 
 static inline GLenum toGlShaderType(QRhiShaderStage::Type type)

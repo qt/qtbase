@@ -1,0 +1,9 @@
+<!DOCTYPE RCC><RCC version="1.0">
+  <qresource>
+    <file>dispatch_args.comp.qsb</file>
+    <file>dispatch_consume.comp.qsb</file>
+    <file>dispatch_reset.comp.qsb</file>
+    <file>main.vert.qsb</file>
+    <file>main.frag.qsb</file>
+</qresource>
+</RCC>

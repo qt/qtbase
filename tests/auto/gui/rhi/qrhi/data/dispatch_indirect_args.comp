@@ -1,0 +1,29 @@
+#version 430
+
+layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+
+struct DispatchIndirectCommand
+{
+    uint x;
+    uint y;
+    uint z;
+};
+
+layout(std430, binding = 0) buffer IndirectDispatchBuffer
+{
+    DispatchIndirectCommand cmd;
+} args;
+
+layout(std140, binding = 1) uniform Ubuf
+{
+    uint groupsX;
+    uint groupsY;
+    uint groupsZ;
+} ubuf;
+
+void main()
+{
+    args.cmd.x = ubuf.groupsX;
+    args.cmd.y = ubuf.groupsY;
+    args.cmd.z = ubuf.groupsZ;
+}

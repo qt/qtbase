@@ -1,0 +1,34 @@
+#version 440
+
+// Single-thread shader: writes the indirect dispatch arguments for the
+// upcoming dispatchIndirect() call. The same QRhiBuffer is bound here as a
+// storage buffer (write target) and consumed by the next compute pass via
+// vkCmdDispatchIndirect / glDispatchComputeIndirect.
+
+layout (local_size_x = 1) in;
+
+struct DispatchIndirectCommand
+{
+    uint x;
+    uint y;
+    uint z;
+};
+
+layout(std430, binding = 0) buffer IndirectBuf
+{
+    DispatchIndirectCommand cmd;
+} args;
+
+layout(std140, binding = 1) uniform Args
+{
+    uint groupsX;
+    uint groupsY;
+    uint groupsZ;
+} ubuf;
+
+void main()
+{
+    args.cmd.x = ubuf.groupsX;
+    args.cmd.y = ubuf.groupsY;
+    args.cmd.z = ubuf.groupsZ;
+}

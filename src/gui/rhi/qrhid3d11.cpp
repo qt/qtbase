@@ -719,6 +719,8 @@ bool QRhiD3D11::isFeatureSupported(QRhi::Feature feature) const
     case QRhi::DrawIndirectMulti:
     case QRhi::ShaderDrawParameters:
         return false;
+    case QRhi::DispatchIndirect:
+        return featureLevel >= D3D_FEATURE_LEVEL_11_0;
     default:
         Q_UNREACHABLE();
         return false;
@@ -2421,6 +2423,18 @@ void QRhiD3D11::dispatch(QRhiCommandBuffer *cb, int x, int y, int z)
     cmd.args.dispatch.z = UINT(z);
 }
 
+void QRhiD3D11::dispatchIndirect(QRhiCommandBuffer *cb, QRhiBuffer *indirectBuffer,
+                                 quint32 indirectBufferOffset)
+{
+    QD3D11CommandBuffer *cbD = QRHI_RES(QD3D11CommandBuffer, cb);
+    Q_ASSERT(cbD->recordingPass == QD3D11CommandBuffer::ComputePass);
+
+    QD3D11CommandBuffer::Command &cmd(cbD->commands.get());
+    cmd.cmd = QD3D11CommandBuffer::Command::DispatchIndirect;
+    cmd.args.dispatchIndirect.indirectBuffer = QRHI_RES(QD3D11Buffer, indirectBuffer)->buffer;
+    cmd.args.dispatchIndirect.indirectBufferOffset = indirectBufferOffset;
+}
+
 static inline std::pair<int, int> mapBinding(int binding,
                                              int stageIndex,
                                              const QShader::NativeResourceBindingMap *nativeResourceBindingMaps[])
@@ -3195,6 +3209,10 @@ void QRhiD3D11::executeCommandBuffer(QD3D11CommandBuffer *cbD)
             break;
         case QD3D11CommandBuffer::Command::Dispatch:
             context->Dispatch(cmd.args.dispatch.x, cmd.args.dispatch.y, cmd.args.dispatch.z);
+            break;
+        case QD3D11CommandBuffer::Command::DispatchIndirect:
+            context->DispatchIndirect(cmd.args.dispatchIndirect.indirectBuffer,
+                                      cmd.args.dispatchIndirect.indirectBufferOffset);
             break;
         default:
             break;

@@ -1,0 +1,39 @@
+#version 440
+
+// One work group per ROW of the particle grid (dispatched indirectly, so
+// the group count is what ultimately controls how many rows get painted).
+// 256 threads per work group = one thread per COLUMN.
+
+layout (local_size_x = 256) in;
+
+struct Particle
+{
+    vec4 pos;
+    vec4 color;
+};
+
+layout(std430, binding = 0) buffer ParticleBuf
+{
+    Particle particles[];
+} buf;
+
+layout(std140, binding = 1) uniform Frame
+{
+    float time;
+} ubuf;
+
+void main()
+{
+    uint row = gl_WorkGroupID.x;
+    uint col = gl_LocalInvocationID.x;
+    uint index = row * 256u + col;
+
+    // Slight sine wiggle on X so "painted" rows are also visually moving.
+    float phase = float(col) * 0.05 + ubuf.time * 2.0;
+    float restX = -1.0 + 2.0 * (float(col) + 0.5) / 256.0;
+    vec4 p = buf.particles[index].pos;
+    p.x = restX + sin(phase) * 0.02;
+    buf.particles[index].pos = p;
+
+    buf.particles[index].color = vec4(1.0, 0.1, 0.1, 1.0);
+}
