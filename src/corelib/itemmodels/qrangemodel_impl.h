@@ -394,32 +394,21 @@ namespace QRangeModelDetails
     // Detect an ItemAccess specialization with static read/writeRole members
     template <typename T> struct QRangeModelItemAccess;
 
-    template <typename T, typename = void>
-    struct item_access : std::false_type
-    {
-        static constexpr bool hasFlags = false;
-    };
-
     template <typename T>
-    struct item_access<T,
-        std::void_t<decltype(QRangeModelItemAccess<T>::readRole(std::declval<const std::remove_pointer_t<T>&>(),
-                                                                Qt::DisplayRole)),
-                    decltype(QRangeModelItemAccess<T>::writeRole(std::declval<std::remove_pointer_t<T>&>(),
-                                                                 std::declval<QVariant>(),
-                                                                 Qt::DisplayRole))
-                   >
-        > : std::true_type
+    struct item_access
     {
         using ItemType = std::remove_pointer_t<T>;
         using ItemAccess = QRangeModelItemAccess<ItemType>;
-        static_assert(std::is_invocable_r_v<bool,
-            decltype(ItemAccess::writeRole), ItemType&, QVariant, Qt::ItemDataRole>,
-            "The return type of the ItemAccess::writeRole implementation "
-            "needs to be convertible to a bool!");
-        static_assert(std::is_invocable_r_v<QVariant,
-            decltype(ItemAccess::readRole), const ItemType&, Qt::ItemDataRole>,
-            "The return type of the ItemAccess::readRole implementation "
-            "needs to be convertible to QVariant!");
+
+        template <typename Access, typename Test>
+        using hasReadRole_test = decltype(Access::readRole(std::declval<const Test &>(),
+                                                           Qt::DisplayRole));
+        static constexpr bool hasReadRole = qxp::is_detected_v<hasReadRole_test, ItemAccess, ItemType>;
+
+        template <typename Access, typename Test>
+        using hasWriteRole_test = decltype(Access::writeRole(std::declval<Test&>(),
+                                                             std::declval<QVariant>(), Qt::DisplayRole));
+        static constexpr bool hasWriteRole = qxp::is_detected_v<hasWriteRole_test, ItemAccess, ItemType>;
 
         template <typename Access, typename Test>
         using hasFlags_test = decltype(Access::flags(std::declval<const Test&>()));
@@ -434,7 +423,7 @@ namespace QRangeModelDetails
     template <typename T, typename = void>
     struct row_category : std::false_type
     {
-        static constexpr bool isMultiRole = item_access<std::remove_pointer_t<T>>::value;
+        static constexpr bool isMultiRole = item_access<std::remove_pointer_t<T>>::hasReadRole;
     };
 
     template <typename T>
@@ -1494,7 +1483,7 @@ public:
                 return true;
             };
 
-            if constexpr (QRangeModelDetails::item_access<wrapped_value_type>()) {
+            if constexpr (QRangeModelDetails::item_access<wrapped_value_type>::hasReadRole) {
                 using ItemAccess = QRangeModelDetails::QRangeModelItemAccess<wrapped_value_type>;
                 for (auto &roleData : roleDataSpan) {
                     if (!readModelData(roleData)) {
@@ -1643,7 +1632,7 @@ public:
                     return false;
                 };
 
-                if constexpr (QRangeModelDetails::item_access<wrapped_value_type>()) {
+                if constexpr (QRangeModelDetails::item_access<wrapped_value_type>::hasWriteRole) {
                     using ItemAccess = QRangeModelDetails::QRangeModelItemAccess<wrapped_value_type>;
                     if (isRangeModelRole(role))
                         return setRangeModelDataRole();
@@ -1751,7 +1740,7 @@ public:
 
                 const auto roleNames = this->itemModel().roleNames();
 
-                if constexpr (QRangeModelDetails::item_access<wrapped_value_type>()) {
+                if constexpr (QRangeModelDetails::item_access<wrapped_value_type>::hasWriteRole) {
                     tried = true;
                     using ItemAccess = QRangeModelDetails::QRangeModelItemAccess<wrapped_value_type>;
                     const auto roles = roleNames.keys();
@@ -1981,7 +1970,7 @@ public:
             using value_type = QRangeModelDetails::wrapped_t<Item>;
             using multi_role = QRangeModelDetails::is_multi_role<value_type>;
 
-            if constexpr (QRangeModelDetails::item_access<value_type>()
+            if constexpr (QRangeModelDetails::item_access<value_type>::hasReadRole
                         || multi_role() || has_metaobject<value_type>) {
                 QModelRoleData result(m_sortRole);
                 // Minor abuse of QModelIndex: the reader needs an index to implement
@@ -2232,7 +2221,7 @@ public:
             using wrapped_value_type = QRangeModelDetails::wrapped_t<value_type>;
             using multi_role = QRangeModelDetails::is_multi_role<value_type>;
 
-            if constexpr (QRangeModelDetails::item_access<wrapped_value_type>()
+            if constexpr (QRangeModelDetails::item_access<wrapped_value_type>::hasReadRole
                           || multi_role() || has_metaobject<value_type>) {
                 QModelRoleData roleData(role);
                 ItemReader reader{idx, roleData, this};

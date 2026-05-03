@@ -781,8 +781,8 @@ Q_CORE_EXPORT QVariant qVariantAtIndex(const QModelIndex &index)
 
     ItemAccess\<T\> is a struct template where \a T specifies the item type.
     Specialize this template for the type used in your data structure, and
-    implement \c{readRole()} and \c{writeRole()} members to access the role-
-    specific data of your type.
+    implement \c{readRole()} and (optionally since 6.12) \c{writeRole()} members
+    to access the role-specific data of your type.
 
     \code
     template <>
@@ -820,8 +820,8 @@ Q_CORE_EXPORT QVariant qVariantAtIndex(const QModelIndex &index)
 
     A specialization of this type will take precedence over any predefined
     behavior. Do not specialize this template for types you do not own. Types
-    for which ItemAccess is specialized are implicitly interpreted as
-    \l{RowCategory}{multi-role items}.
+    for which ItemAccess is specialized with a \c{readRole} implementation are
+    implicitly interpreted as \l{RowCategory}{multi-role items}.
 */
 
 /*!
@@ -970,7 +970,10 @@ int QRangeModel::columnCount(const QModelIndex &parent) const
     models operating on a range with mutable data, it also sets the flag
     that allows the item to be editable (\c ItemIsEditable).
 
-    \sa Qt::ItemFlags
+    To customize the flags for your own data types, provide a specialization
+    of RowOptions and/or ItemAccess for your row or item types.
+
+    \sa Qt::ItemFlags, RowOptions, ItemAccess
 */
 Qt::ItemFlags QRangeModel::flags(const QModelIndex &index) const
 {

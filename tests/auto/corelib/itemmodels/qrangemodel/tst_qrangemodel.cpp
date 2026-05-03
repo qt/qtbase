@@ -1495,12 +1495,6 @@ void tst_QRangeModel::filterAsRange()
 }
 
 template <>
-struct QRangeModel::RowOptions<QPolygon>
-{
-    static constexpr auto rowCategory = QRangeModel::RowCategory::MultiRoleItem;
-};
-
-template <>
 struct QRangeModel::ItemAccess<QPolygon>
 {
     static QVariant readRole(const QPolygon &polygon, int role)
@@ -1546,7 +1540,7 @@ struct QRangeModel::ItemAccess<QPolygon>
 
 void tst_QRangeModel::multiRoleContainer()
 {
-    static_assert(QRangeModelDetails::item_access<QPolygon>::value);
+    static_assert(QRangeModelDetails::item_access<QPolygon>::hasReadRole);
 
     QList<QPolygon> listOfPolygons = {
         QPolygon{{0, 0}, {1, 0}, {1, 1}, {0, 1}},
