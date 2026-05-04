@@ -359,6 +359,23 @@
                 QWindowSystemInterface::handleWindowScreenChanged(window, newScreen);
             }
         }
+
+        // Check if we have any windows on the new screen that needs
+        // an update, in which case we need to kick the display link.
+        for (auto *window : qGuiApp->allWindows()) {
+            if (window->screen() != newScreen)
+                continue;
+            auto *platformWindow = window->handle();
+            if (!platformWindow)
+                continue;
+            if (!platformWindow->hasPendingUpdateRequest())
+                continue;
+
+            qCDebug(lcQpaWindow) << "Starting display link for" << newScreen
+                                 << "because" << window << "needs update";
+            newPlatformScreen->setUpdatesPaused(false);
+            break;
+        }
     }
 }
 
