@@ -75,8 +75,9 @@ Prefer to use snake case for new property names.
       `_qt_internal_`
     * some internal functions that live in public CMake API files are prefixed with
       `__qt_internal_`, prefer not to introduce such functions for now
-* If a public function takes more than 1 parameter, consider using `cmake_parse_arguments`
-* If an internal Qt function takes more than 1 parameter, consider using `qt_parse_all_arguments`
+* If a public or internal Qt function takes more than 1 parameter,
+  consider using `cmake_parse_arguments(PARSE_ARGV)` followed by
+  `_qt_internal_validate_all_args_are_parsed`
 * Public functions should usually have both a version-full and version-less name => `qt_add_plugin`
   and `qt6_add_plugin`
 

@@ -21,18 +21,6 @@ function(qt_configure_file)
     endif()
 endfunction()
 
-# A version of cmake_parse_arguments that makes sure all arguments are processed and errors out
-# with a message about ${type} having received unknown arguments.
-#
-# TODO: Remove when all usage of qt_parse_all_arguments were replaced by
-# cmake_parse_all_arguments(PARSEARGV) instances
-macro(qt_parse_all_arguments result type flags options multiopts)
-    cmake_parse_arguments(${result} "${flags}" "${options}" "${multiopts}" ${ARGN})
-    if(DEFINED ${result}_UNPARSED_ARGUMENTS)
-        message(FATAL_ERROR "Unknown arguments were passed to ${type} (${${result}_UNPARSED_ARGUMENTS}).")
-    endif()
-endmacro()
-
 # Print all variables defined in the current scope.
 macro(qt_debug_print_variables)
     cmake_parse_arguments(__arg "DEDUP" "" "MATCH;IGNORE" ${ARGN})
