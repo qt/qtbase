@@ -50,7 +50,7 @@ public:
             Expires = 0x01,
             Shareable = 0x02,
         };
-        typedef QFlags<Option> Options; // #### QTBUG-127269
+        typedef QFlags<Option> Options;
 
         virtual ~CacheableObject();
         virtual void dispose() = 0;
