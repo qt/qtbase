@@ -28,6 +28,8 @@ import android.view.WindowManager;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.view.inputmethod.InputMethodManager;
+import android.window.OnBackInvokedCallback;
+import android.window.OnBackInvokedDispatcher;
 
 class QtInputDelegate implements QtInputConnection.QtInputConnectionListener, QtInputInterface
 {
@@ -75,6 +77,8 @@ class QtInputDelegate implements QtInputConnection.QtInputConnectionListener, Qt
     private int m_lastChar = 0;
     private boolean m_backKeyPressedSent = false;
 
+    private final OnBackInvokedCallback m_backInvokeCallback;
+
     // Note: because of the circular call to updateFullScreen() from the delegate, we need
     // a listener to be able to do that call from the delegate, because that's where that
     // logic lives
@@ -87,6 +91,14 @@ class QtInputDelegate implements QtInputConnection.QtInputConnectionListener, Qt
     QtInputDelegate(KeyboardVisibilityListener listener)
     {
         m_keyboardVisibilityListener = listener;
+        m_backInvokeCallback = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+            ? () -> {
+                onKeyDown(KeyEvent.KEYCODE_BACK,
+                        new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
+                onKeyUp(KeyEvent.KEYCODE_BACK,
+                        new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK));
+            }
+            : null;
     }
 
     void initInputMethodManager(Activity activity)
@@ -560,6 +572,31 @@ class QtInputDelegate implements QtInputConnection.QtInputConnectionListener, Qt
     boolean handleDispatchGenericMotionEvent(MotionEvent event)
     {
         return dispatchGenericMotionEvent(event);
+    }
+
+    void registerBackGestureCallback(Activity activity)
+    {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU)
+            return;
+        try {
+            activity.getOnBackInvokedDispatcher().registerOnBackInvokedCallback(
+                    OnBackInvokedDispatcher.PRIORITY_SYSTEM_NAVIGATION_OBSERVER,
+                    m_backInvokeCallback);
+        } catch (IllegalStateException ise) {
+            Log.e(TAG, "Failed to register OnBackInvokedCallback: " + ise.getMessage());
+        }
+    }
+
+    void unregisterBackGestureCallback(Activity activity)
+    {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU)
+            return;
+        try {
+            activity.getOnBackInvokedDispatcher().unregisterOnBackInvokedCallback(
+                m_backInvokeCallback);
+        } catch (IllegalStateException ise) {
+            Log.e(TAG, "Failed to unregister OnBackInvokedCallback: " + ise.getMessage());
+        }
     }
 
     //////////////////////////////
