@@ -1002,6 +1002,12 @@ public:
 
     Qt::DropActions adjustSupportedDragActions(Qt::DropActions dragActions);
     Qt::DropActions adjustSupportedDropActions(Qt::DropActions dropActions);
+    QStringList mimeTypes() const;
+    bool canDropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column,
+                         const QModelIndex &parent) const;
+    bool dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column,
+                      const QModelIndex &parent);
+    QMimeData *mimeData(const QModelIndexList &indexes) const;
 
     // bindings for overriding
 
@@ -1039,6 +1045,11 @@ public:
     using AdjustSupportedDragActions = Method<&Self::adjustSupportedDragActions>;
     using AdjustSupportedDropActions = Method<&Self::adjustSupportedDropActions>;
 
+    using MimeTypes = Method<&Self::mimeTypes>;
+    using CanDropMimeData = Method<&Self::canDropMimeData>;
+    using DropMimeData = Method<&Self::dropMimeData>;
+    using MimeData = Method<&Self::mimeData>;
+
     template <typename C>
     using MethodTemplates = std::tuple<
         typename C::Destroy,
@@ -1069,7 +1080,11 @@ public:
         typename C::Sort,
         typename C::Match,
         typename C::AdjustSupportedDragActions,
-        typename C::AdjustSupportedDropActions
+        typename C::AdjustSupportedDropActions,
+        typename C::MimeTypes,
+        typename C::CanDropMimeData,
+        typename C::DropMimeData,
+        typename C::MimeData
     >;
 
     static Q_CORE_EXPORT QRangeModelImplBase *getImplementation(QRangeModel *model);
@@ -2537,6 +2552,34 @@ public:
         return dropActions;
     }
 
+    QStringList mimeTypes() const
+    {
+        return this->itemModel().QAbstractItemModel::mimeTypes();
+    }
+
+    bool canDropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column,
+                         const QModelIndex &parent) const
+    {
+        if constexpr (isMutable())
+            return this->itemModel().QAbstractItemModel::canDropMimeData(data, action, row, column, parent);
+        else
+            return false;
+    }
+
+    bool dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column,
+                      const QModelIndex &parent)
+    {
+        if constexpr (isMutable())
+            return this->itemModel().QAbstractItemModel::dropMimeData(data, action, row, column, parent);
+        else
+            return false;
+    }
+
+    QMimeData *mimeData(const QModelIndexList &indexes) const
+    {
+        return this->itemModel().QAbstractItemModel::mimeData(indexes);
+    }
+
     template <typename BaseMethod, typename BaseMethod::template Overridden<Self> overridden>
     using Override = typename Ancestor::template Override<BaseMethod, overridden>;
 
@@ -2575,6 +2618,11 @@ public:
                                                 &Self::adjustSupportedDragActions>;
     using AdjustSupportedDropActions = Override<QRangeModelImplBase::AdjustSupportedDropActions,
                                                 &Self::adjustSupportedDropActions>;
+
+    using MimeTypes = Override<QRangeModelImplBase::MimeTypes, &Self::mimeTypes>;
+    using CanDropMimeData = Override<QRangeModelImplBase::CanDropMimeData, &Self::canDropMimeData>;
+    using DropMimeData = Override<QRangeModelImplBase::DropMimeData, &Self::dropMimeData>;
+    using MimeData = Override<QRangeModelImplBase::MimeData, &Self::mimeData>;
 
 protected:
     ~QRangeModelImpl()

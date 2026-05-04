@@ -1384,18 +1384,29 @@ QModelIndex QRangeModel::buddy(const QModelIndex &index) const
     \reimp
 */
 bool QRangeModel::canDropMimeData(const QMimeData *data, Qt::DropAction action,
-                                        int row, int column, const QModelIndex &parent) const
+                                  int row, int column, const QModelIndex &parent) const
 {
-    return QAbstractItemModel::canDropMimeData(data, action, row, column, parent);
+    Q_D(const QRangeModel);
+    if (d->m_interfaceVersion < QT_VERSION_CHECK(6, 12, 0))
+        return QAbstractItemModel::canDropMimeData(data, action, row, column, parent);
+    return d->impl->call<QRangeModelImplBase::CanDropMimeData>(data, action, row, column, parent);
 }
 
 /*!
     \reimp
 */
 bool QRangeModel::dropMimeData(const QMimeData *data, Qt::DropAction action,
-                                     int row, int column, const QModelIndex &parent)
+                               int row, int column, const QModelIndex &parent)
 {
-    return QAbstractItemModel::dropMimeData(data, action, row, column, parent);
+    if (!data)
+        return false;
+    if (action == Qt::IgnoreAction)
+        return true;
+
+    Q_D(QRangeModel);
+    if (d->m_interfaceVersion < QT_VERSION_CHECK(6, 12, 0))
+        return QAbstractItemModel::dropMimeData(data, action, row, column, parent);
+    return d->impl->call<QRangeModelImplBase::DropMimeData>(data, action, row, column, parent);
 }
 
 /*!
@@ -1403,7 +1414,10 @@ bool QRangeModel::dropMimeData(const QMimeData *data, Qt::DropAction action,
 */
 QMimeData *QRangeModel::mimeData(const QModelIndexList &indexes) const
 {
-    return QAbstractItemModel::mimeData(indexes);
+    Q_D(const QRangeModel);
+    if (d->m_interfaceVersion < QT_VERSION_CHECK(6, 12, 0))
+        return QAbstractItemModel::mimeData(indexes);
+    return d->impl->call<QRangeModelImplBase::MimeData>(indexes);
 }
 
 /*!
@@ -1411,7 +1425,10 @@ QMimeData *QRangeModel::mimeData(const QModelIndexList &indexes) const
 */
 QStringList QRangeModel::mimeTypes() const
 {
-    return QAbstractItemModel::mimeTypes();
+    Q_D(const QRangeModel);
+    if (d->m_interfaceVersion < QT_VERSION_CHECK(6, 12, 0))
+        return QAbstractItemModel::mimeTypes();
+    return d->impl->call<QRangeModelImplBase::MimeTypes>();
 }
 
 /*!
