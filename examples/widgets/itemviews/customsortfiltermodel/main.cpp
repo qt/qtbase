@@ -71,6 +71,6 @@ int main(int argc, char *argv[])
     Window window;
     window.setSourceModel(new MailModel(&window));
     window.show();
-    return QCoreApplication::exec();
+    return QApplication::exec();
 }
 //! [1]

@@ -28,5 +28,5 @@ int main(int argc, char *argv[])
     const auto screenSize = view.screen()->availableSize();
     view.resize({screenSize.width() / 2, screenSize.height() * 2 / 3});
     view.show();
-    return QCoreApplication::exec();
+    return QApplication::exec();
 }

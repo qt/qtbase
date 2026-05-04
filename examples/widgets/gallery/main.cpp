@@ -12,5 +12,5 @@ int main(int argc, char *argv[])
     QGuiApplication::styleHints()->setColorScheme(Qt::ColorScheme::Dark);
     WidgetGallery gallery;
     gallery.show();
-    return QCoreApplication::exec();
+    return QApplication::exec();
 }

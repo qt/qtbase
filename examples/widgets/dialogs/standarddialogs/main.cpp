@@ -35,5 +35,5 @@ int main(int argc, char *argv[])
     }
     dialog.show();
 
-    return QCoreApplication::exec();
+    return QApplication::exec();
 }

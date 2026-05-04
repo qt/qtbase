@@ -17,6 +17,6 @@ int main(int argc, char *argv[])
     const auto availableGeometry = mw.screen()->availableGeometry();
     mw.resize(availableGeometry.width() / 3, availableGeometry.height() / 3);
     mw.show();
-    return QCoreApplication::exec();
+    return QApplication::exec();
 }
 //! [0]
