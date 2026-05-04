@@ -1239,7 +1239,8 @@ bool QMimerSQLResult::exec()
         case MimerColumnTypes::Unknown:
         default:
             setLastError(qMakeError(
-                    QCoreApplication::translate("QMimerSQLResult", "Unknown datatype, parameter %1")
+                    QCoreApplication::translate("QMimerSQLResult",
+                                                "Unknown data type, parameter %1")
                             .arg(i),
                     genericError, QSqlError::StatementError, nullptr));
             return false;
