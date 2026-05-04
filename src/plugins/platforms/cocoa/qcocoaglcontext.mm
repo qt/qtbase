@@ -21,9 +21,7 @@ static inline QByteArray getGlString(GLenum param)
     return QByteArray();
 }
 
-#if defined(Q_PROCESSOR_X86_64)
 QT_DECLARE_NAMESPACED_OBJC_INTERFACE(QNoopDisplayDelegate, NSObject<CALayerDelegate>)
-#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -471,10 +469,10 @@ void QCocoaGLContext::update()
     QMutexLocker locker(&s_reentrancyMutex);
     qCInfo(lcQpaOpenGLContext) << "Updating" << m_context << "for" << QT_IGNORE_DEPRECATIONS(m_context.view);
 
-    // On macOS 26 on Intel machines, when using the software GL backend,
-    // -[NSOpenGLContext update] triggers a display of the GL layer, and
-    // then crashes in glClear during the display.
-#if defined(Q_PROCESSOR_X86_64)
+    // On macOS 26.0-26.4, when using the software GL backend,
+    // -[NSOpenGLContext update] may trigger a display of the GL layer,
+    // which then crashes in glClear during the display, or deadlocks
+    // when we try to swap with the reentrancy mutex still held.
     static bool tahoeOrAbove = QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSTahoe;
     auto *layer = QT_IGNORE_DEPRECATIONS(m_context.view.layer);
     if (tahoeOrAbove && isSoftwareContext() && layer.needsDisplay) {
@@ -491,7 +489,6 @@ void QCocoaGLContext::update()
 
         return;
     }
-#endif
 
     GLint previousFBO;
     glGetIntegerv(GL_FRAMEBUFFER_BINDING, &previousFBO);
@@ -595,11 +592,9 @@ QDebug operator<<(QDebug debug, const QCocoaGLContext *context)
 
 QT_END_NAMESPACE
 
-#if defined(Q_PROCESSOR_X86_64)
 @implementation QNoopDisplayDelegate
 - (void)displayLayer:(CALayer *)layer
 {
     qCInfo(lcQpaOpenGLContext) << "Ignoring display of" << layer << "during [NSOpenGLContext update]";
 }
 @end
-#endif
