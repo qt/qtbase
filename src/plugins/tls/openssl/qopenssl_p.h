@@ -68,6 +68,9 @@
 #include <openssl/crypto.h>
 #include <openssl/tls1.h>
 #include <openssl/dh.h>
+#if defined(OPENSSL_VERSION_MAJOR) && OPENSSL_VERSION_MAJOR >= 3
+#include <openssl/provider.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 

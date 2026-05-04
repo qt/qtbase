@@ -687,6 +687,9 @@ int q_EVP_PKEY_get_base_id(const EVP_PKEY *pkey);
 #define q_EVP_PKEY_base_id q_EVP_PKEY_get_base_id
 const char *q_EVP_PKEY_get0_type_name(const EVP_PKEY *pkey);
 #define q_EVP_PKEY_type_name q_EVP_PKEY_get0_type_name
+OSSL_PROVIDER *q_OSSL_PROVIDER_load(OSSL_LIB_CTX *libctx, const char *name);
+int q_OSSL_PROVIDER_unload(OSSL_PROVIDER *prov);
+int q_EVP_default_properties_is_fips_enabled(OSSL_LIB_CTX *libctx);
 #else
 X509 *q_SSL_get_peer_certificate(SSL *a);
 int q_EVP_PKEY_base_id(EVP_PKEY *a);
