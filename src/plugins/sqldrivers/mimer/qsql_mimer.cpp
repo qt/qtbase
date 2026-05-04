@@ -557,7 +557,7 @@ bool QMimerSQLResult::fetchLast()
             row = MimerCurrentRow(d->statementhandle) - 1;
         } else {
             setLastError(qMakeError(
-                    QCoreApplication::translate("QMimerSQLResult:", "Fetch last did not succeed"),
+                    QCoreApplication::translate("QMimerSQLResult", "Fetch last did not succeed"),
                     err, QSqlError::StatementError, d->drv_d_func()));
             return false;
         }
@@ -607,7 +607,7 @@ QVariant QMimerSQLResult::data(int i)
     if (d->callWithOut) {
         if (i >= MimerParameterCount(d->statementhandle)) {
             setLastError(qMakeError(
-                    QCoreApplication::translate("QMimerSQLResult:", "Column %1 out of range")
+                    QCoreApplication::translate("QMimerSQLResult", "Column %1 out of range")
                             .arg(i),
                     genericError, QSqlError::StatementError, nullptr));
             return QVariant();
@@ -616,7 +616,7 @@ QVariant QMimerSQLResult::data(int i)
     } else {
         if (i >= MimerColumnCount(d->statementhandle)) {
             setLastError(qMakeError(
-                    QCoreApplication::translate("QMimerSQLResult:", "Column %1 out of range")
+                    QCoreApplication::translate("QMimerSQLResult", "Column %1 out of range")
                             .arg(i),
                     genericError, QSqlError::StatementError, nullptr));
             return QVariant();
