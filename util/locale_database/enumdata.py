@@ -428,27 +428,26 @@ language_map = {
 # ("Caddo",                       "cad"),
 # ("Choctaw",                     "cho"),
 # ("Hakka",                       "hak"), # or Hakka Chinese
-# ("Hassaniyya",                  "mey"),
 # ("Hmong Njua",                  "hnj"),
 # ("Qʼeqchiʼ",                    "kek"),
 # ("Lombard",                     "lmo"),
 # ("Latgalian",                   "ltg"),
 # ("Laz",                         "lzz"),
-# ("Min Nan",                     "nan"), # or Min Nan Chinese
-# ("Mi'kmaw",                     "mic"),
+# ("Hassaniyya",                  "mey"),
 # ("Mócheno",                     "mhn"),
-# ("Mundari",                     "unr"),
-# ("Okanagan",                    "oka"),
+# ("Mi'kmaw",                     "mic"),
 # ("Hmong Daw",                   "mww"),
+# ("Min Nan",                     "nan"), # or Min Nan Chinese
 # ("Okanagan",                    "oka"),
 # ("Piedmontese",                 "pms"),
 # ("Pontic",                      "pnt"),
-# ("Riffian",                     "rif"),
+# ("Riffian",                     "rif"), # getting there !
 # ("Samogitian",                  "sgs"),
-# ("Samtao",                      "stu"),
 # ("Saraiki",                     "skr"),
+# ("Samtao",                      "stu"),
 # ("Sunwar",                      "suz"),
 # ("Tuvinian",                    "tyv"), # not far short of adequate
+# ("Mundari",                     "unr"),
 # ("Makhuwa",                     "vmw"),
 
 # It can be helpful to look in supplemental/supplementalData.xml for
