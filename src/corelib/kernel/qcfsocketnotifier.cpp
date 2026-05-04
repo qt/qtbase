@@ -13,7 +13,7 @@ QT_BEGIN_NAMESPACE
     Socket Notifiers
  *************************************************************************/
 void qt_mac_socket_callback(CFSocketRef s, CFSocketCallBackType callbackType, CFDataRef,
-                            const void *data, void *info)
+                            const void *, void *info)
 {
 
     QCFSocketNotifier *cfSocketNotifier = static_cast<QCFSocketNotifier *>(info);
@@ -26,15 +26,7 @@ void qt_mac_socket_callback(CFSocketRef s, CFSocketCallBackType callbackType, CF
     // notification after we've successfully disabled the CFSocket, but our Qt
     // notifier is now gone. The upshot is we have to check the notifier
     // every time.
-    if (callbackType == kCFSocketConnectCallBack) {
-        // The data pointer will be non-null on connection error
-        if (data) {
-            if (socketInfo->readNotifier)
-                QCoreApplication::sendEvent(socketInfo->readNotifier, &notifierEvent);
-            if (socketInfo->writeNotifier)
-                QCoreApplication::sendEvent(socketInfo->writeNotifier, &notifierEvent);
-        }
-    } else if (callbackType == kCFSocketReadCallBack) {
+    if (callbackType == kCFSocketReadCallBack) {
         if (socketInfo->readNotifier && socketInfo->readEnabled) {
             socketInfo->readEnabled = false;
             QCoreApplication::sendEvent(socketInfo->readNotifier, &notifierEvent);
@@ -125,7 +117,7 @@ void QCFSocketNotifier::registerSocketNotifier(QSocketNotifier *notifier)
 
         // Create CFSocket, specify that we want both read and write callbacks (the callbacks
         // are enabled/disabled later on).
-        const int callbackTypes = kCFSocketConnectCallBack | kCFSocketReadCallBack | kCFSocketWriteCallBack;
+        const int callbackTypes = kCFSocketReadCallBack | kCFSocketWriteCallBack;
         CFSocketContext context = {0, this, 0, 0, 0};
         socketInfo->socket = CFSocketCreateWithNative(kCFAllocatorDefault, nativeSocket, callbackTypes, qt_mac_socket_callback, &context);
         if (CFSocketIsValid(socketInfo->socket) == false) {
@@ -138,6 +130,9 @@ void QCFSocketNotifier::registerSocketNotifier(QSocketNotifier *notifier)
         flags &= ~kCFSocketCloseOnInvalidate;
         // Explicitly disable automatic re-enable, as we do that manually on each runloop pass
         flags &= ~(kCFSocketAutomaticallyReenableWriteCallBack | kCFSocketAutomaticallyReenableReadCallBack);
+        // Leave SO_ERROR intact so Qt can read it in nativeCheckConnection(), effectively makes
+        // kCFSocketConnectCallBack emit as success every time, so we don't use it anymore.
+        flags |= kCFSocketLeaveErrors;
         CFSocketSetSocketFlags(socketInfo->socket, flags);
 
         macSockets.insert(nativeSocket, socketInfo);
