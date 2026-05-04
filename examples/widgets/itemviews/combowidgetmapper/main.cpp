@@ -10,5 +10,5 @@ int main(int argc, char **argv)
     QApplication app(argc, argv);
     Window window;
     window.show();
-    return QCoreApplication::exec();
+    return QApplication::exec();
 }

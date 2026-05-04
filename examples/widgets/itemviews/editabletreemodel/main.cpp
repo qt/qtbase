@@ -13,5 +13,5 @@ int main(int argc, char *argv[])
     const auto screenSize = window.screen()->availableSize();
     window.resize({screenSize.width() / 2, screenSize.height() * 2 / 3});
     window.show();
-    return QCoreApplication::exec();
+    return QApplication::exec();
 }
