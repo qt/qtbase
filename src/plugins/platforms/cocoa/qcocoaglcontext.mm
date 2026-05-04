@@ -473,9 +473,12 @@ void QCocoaGLContext::update()
     // -[NSOpenGLContext update] may trigger a display of the GL layer,
     // which then crashes in glClear during the display, or deadlocks
     // when we try to swap with the reentrancy mutex still held.
-    static bool tahoeOrAbove = QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSTahoe;
+    using OSV = QOperatingSystemVersion;
+    static const bool affectedTahoeVersion =
+        OSV::current() >= OSV(OSV::MacOS, 26, 0) &&
+        OSV::current() < OSV(OSV::MacOS, 26, 5);
     auto *layer = QT_IGNORE_DEPRECATIONS(m_context.view.layer);
-    if (tahoeOrAbove && isSoftwareContext() && layer.needsDisplay) {
+    if (affectedTahoeVersion && isSoftwareContext() && layer.needsDisplay) {
         static QNoopDisplayDelegate *noopDisplayDelegate = [QNoopDisplayDelegate new];
         qCDebug(lcQpaOpenGLContext) << "Layer needs display. Installing noop display delegate" << noopDisplayDelegate;
         auto *orignalDelegate = layer.delegate;
