@@ -27,6 +27,7 @@
 #include <QTestEventLoop>
 #include <QSignalSpy>
 #include <QSemaphore>
+#include <QProcess>
 
 #include "private/qhostinfo_p.h"
 #include "private/qiodevice_p.h" // for QIODEVICE_BUFFERSIZE
@@ -46,6 +47,7 @@
 #include <memory>
 
 using namespace std::chrono_literals;
+using namespace Qt::StringLiterals;
 
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
@@ -143,6 +145,7 @@ private slots:
     void activeBackend();
     void backends();
     void constructing();
+    void opensslHashBeforeSslInit();
     void configNoOnDemandLoad();
     void simpleConnect();
     void simpleConnectWithIgnore();
@@ -780,6 +783,35 @@ void tst_QSslSocket::constructing()
     QVERIFY(QSslConfiguration::defaultConfiguration().ciphers().isEmpty());
 
     QSslConfiguration::setDefaultConfiguration(savedDefault);
+}
+
+void tst_QSslSocket::opensslHashBeforeSslInit()
+{
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        return;
+    if (!QSslSocket::availableBackends().contains(u"openssl"_s))
+        QSKIP("OpenSSL backend not available");
+
+#if !QT_CONFIG(process)
+    QSKIP("This test requires QProcess support");
+#else
+    // Regression test: QCryptographicHash (openssl_hash feature) loads and
+    // then unloads the OpenSSL default provider. If that happens before the
+    // TLS backend's ensureLibraryLoaded() runs, RAND_status() finds no active
+    // providers and permanently disables SSL support. The helper binary
+    // reproduces the ordering: hash-use -> destructor -> supportsSsl().
+    const QString helper = QFINDTESTDATA("opensslhash_before_ssl");
+    if (helper.isEmpty())
+        QSKIP("Helper binary not found");
+
+    QProcess proc;
+    proc.start(helper, {});
+    QVERIFY(proc.waitForFinished(10'000));
+    const QString err = QString::fromLocal8Bit(proc.readAllStandardError());
+    QVERIFY2(!err.contains("Random number generator not seeded"_L1), qPrintable(err));
+    QCOMPARE(proc.exitCode(), EXIT_SUCCESS);
+#endif
 }
 
 void tst_QSslSocket::configNoOnDemandLoad()
