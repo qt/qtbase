@@ -7,7 +7,7 @@
         "QtUsage": "Memory management for the Vulkan backend of QRhi.",
 
         "Homepage": "https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator",
-        "Version": "3.2.1",
+        "Version": "3.3.0",
         "PURL": "pkg:github/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator@v$<VERSION>",
         "License": "MIT License",
         "LicenseId": "MIT",
