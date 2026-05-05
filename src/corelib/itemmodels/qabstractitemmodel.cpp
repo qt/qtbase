@@ -4133,6 +4133,9 @@ bool QAbstractTableModel::dropMimeData(const QMimeData *data, Qt::DropAction act
         return true;
     }
 
+    if (row == -1)
+        row = rowCount(parent);
+
     // otherwise insert new rows for the data
     return decodeData(row, column, parent, stream);
 }
@@ -4176,8 +4179,9 @@ bool QAbstractListModel::dropMimeData(const QMimeData *data, Qt::DropAction acti
 
         for (int i = 0; i < data.size(); ++i) {
             int r = (rows.at(i) - top) + parent.row();
-            if (columns.at(i) == left && hasIndex(r, 0))
-                setItemData(index(r), data.at(i));
+            int c = (columns.at(i) - left) + parent.column();
+            if (hasIndex(r, c))
+                setItemData(index(r, c), data.at(i));
         }
 
         return true;
