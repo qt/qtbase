@@ -109,6 +109,14 @@ public:
 
     bool participatesInLastWindowClosed() const override;
     bool treatAsVisible() const override;
+
+    QPalette windowPalette() const override
+    {
+        Q_Q(const QWidgetWindow);
+        if (const auto *widget = q->widget())
+            return widget->palette();
+        return QWindowPrivate::windowPalette();
+    }
 };
 
 QRectF QWidgetWindowPrivate::closestAcceptableGeometry(const QRectF &rect) const
