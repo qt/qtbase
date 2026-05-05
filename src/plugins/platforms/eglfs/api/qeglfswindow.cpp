@@ -143,7 +143,8 @@ void QEglFSWindow::destroy()
                 qt_gl_set_global_share_context(nullptr);
             delete m_rasterCompositingContext;
         } else {
-            auto topWindow = static_cast<QEglFSWindow *>(compositor->windows().last());
+            auto windows = compositor->windows();
+            auto topWindow = static_cast<QEglFSWindow *>(windows.last());
             // Make fullscreen
             topWindow->setGeometry(screen->rawGeometry());
             topWindow->resetSurface();
