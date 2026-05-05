@@ -11,7 +11,8 @@
                          "00-include-guard.patch",
                          "01-rename-ticks.patch",
                          "02-preprocesor-checks.patch",
-                         "03-parisc-compile.patch"
+                         "03-parisc-compile.patch",
+                         "04-wrapper-check.patch"
                      ],
                      "General": "no relevant CPE found"
                    },

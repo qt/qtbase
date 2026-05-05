@@ -1,0 +1,15 @@
+diff --git b/src/testlib/3rdparty/cycle/cycle_p.h a/src/testlib/3rdparty/cycle/cycle_p.h
+index 3ea40dc2282..04cd70444e7 100644
+--- b/src/testlib/3rdparty/cycle/cycle_p.h
++++ a/src/testlib/3rdparty/cycle/cycle_p.h
+@@ -80,6 +80,10 @@
+ #define QBENCHLIB_CYCLE_H
+ #define ticks CycleCounterTicks
+ 
++#ifndef QBENCHLIB_INCLUDING_CYCLE_P
++#error Include cycle_include_p.h instead of this file
++#endif
++
+ /***************************************************************************/
+ 
+ #if TIME_WITH_SYS_TIME
