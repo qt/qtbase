@@ -1257,6 +1257,7 @@ void QApplicationPrivate::initializeWidgetPalettesFromTheme()
         { "QTextEdit", QPlatformTheme::TextEditPalette },
         { "QTextControl", QPlatformTheme::TextEditPalette },
         { "QLineEdit", QPlatformTheme::TextLineEditPalette },
+        { "QComboBox", QPlatformTheme::ComboBoxPalette },
     };
 
     for (const auto themedWidget : themedWidgets) {
