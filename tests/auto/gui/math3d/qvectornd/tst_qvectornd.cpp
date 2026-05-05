@@ -38,6 +38,8 @@ CHECK(const &&);
 #undef CHECK
 
 #include <QTest>
+#include <QtTest/private/qcomparisontesthelper_p.h>
+
 #include <QtCore/qmath.h>
 #include <QtGui/qvector2d.h>
 #include <QtGui/qvector3d.h>
@@ -81,8 +83,11 @@ private slots:
     void normalize4_data();
     void normalize4();
 
+    void compare2_data();
     void compare2();
+    void compare3_data();
     void compare3();
+    void compare4_data();
     void compare4();
 
     void add2_data();
@@ -887,37 +892,78 @@ void tst_QVectorND::normalize4()
         QVERIFY(qFuzzyCompare(v.length(), 1.0f));
 }
 
-// Test the comparison operators for 2D vectors.
-void tst_QVectorND::compare2()
+void tst_QVectorND::compare2_data()
 {
+    QTest::addColumn<QVector2D>("lhs");
+    QTest::addColumn<QVector2D>("rhs");
+    QTest::addColumn<bool>("expected");
+
     QVector2D v1(1, 2);
     QVector2D v2(1, 2);
     QVector2D v3(3, 2);
     QVector2D v4(1, 3);
 
-    QCOMPARE(v1, v2);
-    QVERIFY(v1 != v3);
-    QVERIFY(v1 != v4);
+    auto row = [](QVector2D lhs, QVector2D rhs, bool expected) {
+        QTest::addRow("%f-%f_%f-%f",
+                      lhs.x(), lhs.y(),
+                      rhs.x(), rhs.y())
+                << lhs << rhs << expected;
+    };
+
+    row(v1, v2, true);
+    row(v1, v3, false);
+    row(v1, v4, false);
 }
 
-// Test the comparison operators for 3D vectors.
-void tst_QVectorND::compare3()
+void tst_QVectorND::compare2()
 {
+    QFETCH(const QVector2D, lhs);
+    QFETCH(const QVector2D, rhs);
+    QFETCH(const bool, expected);
+
+    QT_TEST_EQUALITY_OPS(lhs, rhs, expected);
+}
+
+void tst_QVectorND::compare3_data()
+{
+    QTest::addColumn<QVector3D>("lhs");
+    QTest::addColumn<QVector3D>("rhs");
+    QTest::addColumn<bool>("expected");
+
     QVector3D v1(1, 2, 4);
     QVector3D v2(1, 2, 4);
     QVector3D v3(3, 2, 4);
     QVector3D v4(1, 3, 4);
     QVector3D v5(1, 2, 3);
 
-    QCOMPARE(v1, v2);
-    QVERIFY(v1 != v3);
-    QVERIFY(v1 != v4);
-    QVERIFY(v1 != v5);
+    auto row = [](QVector3D lhs, QVector3D rhs, bool expected) {
+        QTest::addRow("%f-%f-%f_%f-%f-%f",
+                      lhs.x(), lhs.y(), lhs.z(),
+                      rhs.x(), rhs.y(), rhs.z())
+                << lhs << rhs << expected;
+    };
+
+    row(v1, v2, true);
+    row(v1, v3, false);
+    row(v1, v4, false);
+    row(v1, v5, false);
 }
 
-// Test the comparison operators for 4D vectors.
-void tst_QVectorND::compare4()
+void tst_QVectorND::compare3()
 {
+    QFETCH(const QVector3D, lhs);
+    QFETCH(const QVector3D, rhs);
+    QFETCH(const bool, expected);
+
+    QT_TEST_EQUALITY_OPS(lhs, rhs, expected);
+}
+
+void tst_QVectorND::compare4_data()
+{
+    QTest::addColumn<QVector4D>("lhs");
+    QTest::addColumn<QVector4D>("rhs");
+    QTest::addColumn<bool>("expected");
+
     QVector4D v1(1, 2, 4, 8);
     QVector4D v2(1, 2, 4, 8);
     QVector4D v3(3, 2, 4, 8);
@@ -925,11 +971,27 @@ void tst_QVectorND::compare4()
     QVector4D v5(1, 2, 3, 8);
     QVector4D v6(1, 2, 4, 3);
 
-    QCOMPARE(v1, v2);
-    QVERIFY(v1 != v3);
-    QVERIFY(v1 != v4);
-    QVERIFY(v1 != v5);
-    QVERIFY(v1 != v6);
+    auto row = [](QVector4D lhs, QVector4D rhs, bool expected) {
+        QTest::addRow("%f-%f-%f-%f_%f-%f-%f-%f",
+                      lhs.x(), lhs.y(), lhs.z(), lhs.w(),
+                      rhs.x(), rhs.y(), rhs.z(), rhs.w())
+                << lhs << rhs << expected;
+    };
+
+    row(v1, v2, true);
+    row(v1, v3, false);
+    row(v1, v4, false);
+    row(v1, v5, false);
+    row(v1, v6, false);
+}
+
+void tst_QVectorND::compare4()
+{
+    QFETCH(const QVector4D, lhs);
+    QFETCH(const QVector4D, rhs);
+    QFETCH(const bool, expected);
+
+    QT_TEST_EQUALITY_OPS(lhs, rhs, expected);
 }
 
 // Test vector addition for 2D vectors.
