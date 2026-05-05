@@ -1007,6 +1007,8 @@ enumdata.py (keeping the old name as an alias):
         seen = set()
         for elt in node.dom.childNodes:
             try:
+                if 'menu' in elt.attributes:
+                    continue
                 key, value = elt.attributes['type'].nodeValue, elt.childNodes[0].wholeText
             except (KeyError, ValueError, TypeError):
                 pass
