@@ -880,7 +880,7 @@ public:
             delete d;
     }
 
-    QHash &operator=(const QHash &other) noexcept(std::is_nothrow_destructible<Node>::value)
+    QHash &operator=(const QHash &other) noexcept
     {
         if (d != other.d) {
             Data *o = other.d;
