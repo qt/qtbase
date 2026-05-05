@@ -932,3 +932,41 @@ instructions:
       property: target.osVersion
       in_values: [Android_ANY, QEMU, IOS_ANY, QNX_710, QNX_800, WebAssembly, INTEGRITY, VxWorks]
 
+  # Dump important version information
+  - type: Group
+    instructions:
+    # macOS
+    - type: Group
+      enable_if:
+        condition: property
+        property: host.os
+        equals_value: MacOS
+      instructions:
+        - type: ExecuteCommand
+          command: "sw_vers"
+          ignoreExitCode: true
+          userMessageOnFailure: "Failed to run command"
+        - type: ExecuteCommand
+          command: "arch"
+          ignoreExitCode: true
+          userMessageOnFailure: "Failed to run command"
+        - type: ExecuteCommand
+          command: "pkgutil --pkg-info com.apple.pkg.RosettaUpdateAuto"
+          ignoreExitCode: true
+          userMessageOnFailure: "Failed to run command"
+          enable_if:
+            condition: property
+            property: host.arch
+            equals_value: "ARM64"
+        - type: ExecuteCommand
+          command: "xcode-select -p"
+          ignoreExitCode: true
+          userMessageOnFailure: "Failed to run command"
+        - type: ExecuteCommand
+          command: "xcodebuild -version"
+          ignoreExitCode: true
+          userMessageOnFailure: "Failed to run command"
+        - type: ExecuteCommand
+          command: "brew list --versions"
+          ignoreExitCode: true
+          userMessageOnFailure: "Failed to run command"
