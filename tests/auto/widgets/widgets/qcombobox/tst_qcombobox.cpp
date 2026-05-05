@@ -6,8 +6,10 @@
 #include <QSortFilterProxyModel>
 
 #include "qcombobox.h"
+
 #include <private/qcombobox_p.h>
 #include <private/qguiapplication_p.h>
+#include <QtWidgets/private/qstyle_p.h>
 #include <qpa/qplatformintegration.h>
 #include <qpa/qplatformtheme.h>
 
@@ -247,9 +249,11 @@ void tst_QComboBox::getSetCheck()
 
     // QCompleter *QComboBox::completer()
     // void QComboBox::setCompleter(QCompleter *)
+    QTest::ignoreMessage(QtWarningMsg, "Setting a QCompleter on non-editable QComboBox is not allowed.");
     obj1.setCompleter(nullptr);
     QCOMPARE(nullptr, obj1.completer());
     QCompleter completer;
+    QTest::ignoreMessage(QtWarningMsg, "Setting a QCompleter on non-editable QComboBox is not allowed.");
     obj1.setCompleter(&completer);
     QVERIFY(obj1.completer() == nullptr); // no QLineEdit is set
 
@@ -294,6 +298,10 @@ void tst_QComboBox::getSetCheck()
     QCOMPARE(100, obj1.minimumContentsLength());
     obj1.setMinimumContentsLength(INT_MIN);
     QCOMPARE(100, obj1.minimumContentsLength()); // Cannot be set to something negative => old value
+    QTest::ignoreMessage(QtWarningMsg, // not necessarily here, but upon first sizeHint() call
+                         "QComboBox: cannot take minimumContentsLength 2147483647 into account for sizeHint(), "
+                         "since it causes the widget to be wider than QWIDGETSIZE_MAX. "
+                         "Consider setting it to a less extreme value.");
     obj1.setMinimumContentsLength(INT_MAX);
     QCOMPARE(INT_MAX, obj1.minimumContentsLength());
 
@@ -321,13 +329,13 @@ void tst_QComboBox::getSetCheck()
 
     // QAbstractItemDelegate * QComboBox::itemDelegate()
     // void QComboBox::setItemDelegate(QAbstractItemDelegate *)
-    MyAbstractItemDelegate *var10 = new MyAbstractItemDelegate;
-    obj1.setItemDelegate(var10);
-    QCOMPARE(obj1.itemDelegate(), var10);
+    auto var10 = std::make_unique<MyAbstractItemDelegate>();
+    obj1.setItemDelegate(var10.get());
+    QCOMPARE(obj1.itemDelegate(), var10.get());
     QTest::ignoreMessage(QtWarningMsg, "QComboBox::setItemDelegate: cannot set a 0 delegate");
     obj1.setItemDelegate((QAbstractItemDelegate *)0);
-    QCOMPARE(obj1.itemDelegate(), var10);
-    // delete var10; // No delete, since QComboBox takes ownership
+    QCOMPARE(obj1.itemDelegate(), var10.get());
+    var10.reset();
 
     // QAbstractItemModel * QComboBox::model()
     // void QComboBox::setModel(QAbstractItemModel *)
@@ -2395,7 +2403,7 @@ void tst_QComboBox::task190205_setModelAdjustToContents()
     //wait needed in order to get the combo initial size
     QTRY_VERIFY(box.isVisible());
 
-    box.setModel(new QStringListModel(finalContent));
+    box.setModel(new QStringListModel(finalContent, &box));
 
     QComboBox correctBox;
     setFrameless(&correctBox);
@@ -2588,7 +2596,7 @@ void tst_QComboBox::noScrollbar()
 void tst_QComboBox::setItemDelegate()
 {
     QComboBox comboBox;
-    QStyledItemDelegate *itemDelegate = new QStyledItemDelegate;
+    QStyledItemDelegate *itemDelegate = new QStyledItemDelegate(&comboBox);
     comboBox.setItemDelegate(itemDelegate);
     // the cast is a workaround for the XLC and Metrowerks compilers
     QCOMPARE(static_cast<QStyledItemDelegate *>(comboBox.itemDelegate()), itemDelegate);
@@ -2597,7 +2605,7 @@ void tst_QComboBox::setItemDelegate()
 void tst_QComboBox::task253944_itemDelegateIsReset()
 {
     QComboBox comboBox;
-    QStyledItemDelegate *itemDelegate = new QStyledItemDelegate;
+    QStyledItemDelegate *itemDelegate = new QStyledItemDelegate(&comboBox);
     comboBox.setItemDelegate(itemDelegate);
 
     // the casts are workarounds for the XLC and Metrowerks compilers
@@ -3329,11 +3337,25 @@ public:
 
 class QTBUG_56693_ProxyStyle : public QProxyStyle
 {
+    QStyle *oldProxyStyle;
 public:
     QTBUG_56693_ProxyStyle(QStyle *style)
-        : QProxyStyle(style), italicItemsNo(0)
-    {
+        : QTBUG_56693_ProxyStyle(style, style->parent(),
+                                 QStylePrivate::get(style)->proxyStyle) {}
 
+private:
+    QTBUG_56693_ProxyStyle(QStyle *style, QObject *styleParent, QStyle *proxy)
+        : QProxyStyle(style), oldProxyStyle(proxy), italicItemsNo(0)
+    {
+        // Undo the reparenting of QProxyStyle ctor again:
+        // We should not take ownership of the qApp->style()!
+        style->setParent(styleParent);
+    }
+public:
+    ~QTBUG_56693_ProxyStyle()
+    {
+        // private in QStyle: baseStyle()->setProxy(nullptr);
+        QStylePrivate::get(baseStyle())->proxyStyle = oldProxyStyle;
     }
 
     void drawControl(ControlElement element, const QStyleOption *opt, QPainter *p, const QWidget *w = nullptr) const override
@@ -3346,6 +3368,7 @@ public:
         baseStyle()->drawControl(element, opt, p, w);
     }
 
+public:
     mutable int italicItemsNo;
 };
 
@@ -3358,8 +3381,8 @@ void tst_QComboBox::task_QTBUG_56693_itemFontFromModel()
     QTBUG_56693_Model model;
     box.setModel(&model);
 
-    QTBUG_56693_ProxyStyle *proxyStyle = new QTBUG_56693_ProxyStyle(box.style());
-    box.setStyle(proxyStyle);
+    QTBUG_56693_ProxyStyle proxyStyle{box.style()}; // does _not_ take ownership of box.style()!
+    box.setStyle(&proxyStyle);
     box.setFont(QApplication::font());
 
     for (int i = 0; i < 10; i++)
@@ -3372,13 +3395,17 @@ void tst_QComboBox::task_QTBUG_56693_itemFontFromModel()
     QVERIFY(container);
     QVERIFY(QTest::qWaitForWindowExposed(container));
 
-    QCOMPARE(proxyStyle->italicItemsNo, 5);
+    QCOMPARE(proxyStyle.italicItemsNo, 5);
 
     box.hidePopup();
 }
 
+#ifndef QT_NO_STYLE_FUSION
 void tst_QComboBox::popupPositionAfterStyleChange()
 {
+#ifdef Q_OS_QNX
+    QSKIP("Fails on QNX, QTBUG-123798");
+#endif
     // Check that the popup opens up centered on top of the current
     // index if the style has changed since the last time it was
     // opened (QTBUG-113765).
@@ -3391,6 +3418,7 @@ void tst_QComboBox::popupPositionAfterStyleChange()
         QSKIP("Flaky on QEMU, QTBUG-114760");
 
     box.addItems({"first", "middle", "last"});
+    centerOnScreen(&box);
     box.show();
     QVERIFY(QTest::qWaitForWindowExposed(&box));
     box.showPopup();
@@ -3423,13 +3451,14 @@ void tst_QComboBox::popupPositionAfterStyleChange()
     QTest::mouseClick(&box, Qt::LeftButton);
 
     // Click on item under mouse. But wait a bit, to avoid a double click
-    QTest::qWait(qApp->styleHints()->mouseDoubleClickInterval());
+    QTest::qWait(2 * QGuiApplication::styleHints()->mouseDoubleClickInterval());
     QTest::mouseClick(&box, Qt::LeftButton);
 
     // Ensure that the item that was centered on top of the combobox, and which
     // we therefore clicked, was the same item we clicked on the first time.
-    QCOMPARE(box.currentText(), QStringLiteral("last"));
+    QTRY_COMPARE(box.currentText(), QStringLiteral("last"));
 }
+#endif // QT_NO_STYLE_FUSION
 
 void tst_QComboBox::inputMethodUpdate()
 {
@@ -3505,7 +3534,7 @@ void tst_QComboBox::task_QTBUG_52027_mapCompleterIndex()
     cbox.setInsertPolicy(QComboBox::NoInsert);
     cbox.addItems(words);
 
-    QCompleter *completer = new QCompleter(altWords);
+    QCompleter *completer = new QCompleter(altWords, &cbox);
     completer->setCaseSensitivity(Qt::CaseInsensitive);
     cbox.setCompleter(completer);
 
@@ -3529,7 +3558,7 @@ void tst_QComboBox::task_QTBUG_52027_mapCompleterIndex()
     cbox.lineEdit()->selectAll();
     cbox.lineEdit()->del();
 
-    QSortFilterProxyModel* model = new QSortFilterProxyModel();
+    QSortFilterProxyModel* model = new QSortFilterProxyModel(&cbox);
     model->setSourceModel(cbox.model());
     model->setFilterFixedString("foobar1");
     completer->setModel(model);

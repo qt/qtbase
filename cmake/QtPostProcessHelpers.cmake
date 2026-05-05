@@ -373,7 +373,7 @@ endif()")
         # to the target CMAKE_INSTALL_DIR, if at all possible to do so in a reliable way.
         get_filename_component(qt_host_path_absolute "${QT_HOST_PATH}" ABSOLUTE)
         get_filename_component(qt_host_path_cmake_dir_absolute
-            "${Qt${PROJECT_VERSION_MAJOR}HostInfo_DIR}/.." ABSOLUTE)
+            "${${INSTALL_CMAKE_NAMESPACE}HostInfo_DIR}/.." ABSOLUTE)
     endif()
 
     if(third_party_deps OR platform_requires_host_info_package)
@@ -532,7 +532,15 @@ function(qt_create_hostinfo_package)
         INSTALL_DESTINATION "${install_destination}"
         NO_SET_AND_CHECK_MACRO
         NO_CHECK_REQUIRED_COMPONENTS_MACRO)
-    qt_install(FILES "${config_file_path}" DESTINATION "${install_destination}")
+
+    set(version_file "${QT_CONFIG_BUILD_DIR}/${package}/${package}ConfigVersion.cmake")
+    write_basic_package_version_file(
+        "${version_file}"
+        VERSION ${PROJECT_VERSION}
+        COMPATIBILITY AnyNewerVersion
+        ARCH_INDEPENDENT
+    )
+    qt_install(FILES "${config_file_path}" "${version_file}" DESTINATION "${install_destination}")
 endfunction()
 
 function(qt_generate_build_internals_extra_cmake_code)

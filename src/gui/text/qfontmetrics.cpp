@@ -31,8 +31,13 @@ extern void qt_format_text(const QFont& font, const QRectF &_r,
     \ingroup shared
 
     QFontMetrics functions calculate the size of characters and
-    strings for a given font. There are three ways you can create a
-    QFontMetrics object:
+    strings for a given font. The class is an integer-based version
+    of QFontMetricsF and will round all numbers to the nearest
+    integer. This means its results will be inaccurate for any font
+    with fractional metrics. In most cases QFontMetricsF should be
+    used instead.
+
+    There are three ways you can create a QFontMetrics object:
 
     \list 1
     \li Calling the QFontMetrics constructor with a QFont creates a

@@ -24,12 +24,17 @@ void tst_QDuplicateTracker::hasSeen()
 {
     {
         QDuplicateTracker<int, 2> tracker;
+        QVERIFY(!tracker.contains(0));
+        QVERIFY(!tracker.contains(0));
         QVERIFY(!tracker.hasSeen(0));
         QVERIFY(tracker.hasSeen(0));
+        QVERIFY(tracker.contains(0));
         QVERIFY(!tracker.hasSeen(1));
         QVERIFY(tracker.hasSeen(1));
         // past the prealloc amount
+        QVERIFY(!tracker.contains(2));
         QVERIFY(!tracker.hasSeen(2));
+        QVERIFY(tracker.contains(2));
         QVERIFY(tracker.hasSeen(2));
     }
 
@@ -41,12 +46,16 @@ void tst_QDuplicateTracker::hasSeen()
         QString string3("string3");
 
         // Move when seen
+        QVERIFY(!tracker.contains(string1));
         QVERIFY(!tracker.hasSeen(string1));
+        QVERIFY(tracker.contains(string1));
         QVERIFY(tracker.hasSeen(std::move(string1)));
 
         // Move when unseen
+        QVERIFY(!tracker.contains(string2));
         QVERIFY(!tracker.hasSeen(std::move(string2)));
         QVERIFY(tracker.hasSeen(string2_2));
+        QVERIFY(tracker.contains(string2_2));
 
         // Past the prealloc amount
         QVERIFY(!tracker.hasSeen(string3));
@@ -62,17 +71,19 @@ void tst_QDuplicateTracker::hasSeen()
 
         // Move when seen
         QVERIFY(!tracker.hasSeen(string1));
+        QVERIFY(tracker.contains(string1));
         QVERIFY(tracker.hasSeen(std::move(string1)));
 
         // Move when unseen
         QVERIFY(!tracker.hasSeen(std::move(string2)));
         QVERIFY(tracker.hasSeen(string2_2));
+        QVERIFY(tracker.contains(string2_2));
 
         // Past the prealloc amount
+        QVERIFY(!tracker.contains(string3));
         QVERIFY(!tracker.hasSeen(string3));
         QVERIFY(tracker.hasSeen(string3));
     }
-
 }
 
 void tst_QDuplicateTracker::clear()
@@ -80,14 +91,20 @@ void tst_QDuplicateTracker::clear()
     QDuplicateTracker<int, 2> tracker;
     QVERIFY(!tracker.hasSeen(0));
     QVERIFY(tracker.hasSeen(0));
+    QVERIFY(tracker.contains(0));
+    QVERIFY(!tracker.contains(1));
     QVERIFY(!tracker.hasSeen(1));
     QVERIFY(tracker.hasSeen(1));
 
-    tracker.clear();
-    QVERIFY(!tracker.hasSeen(0));
-    QVERIFY(tracker.hasSeen(0));
-    QVERIFY(!tracker.hasSeen(1));
-    QVERIFY(tracker.hasSeen(1));
+    for (int i = 0; i < 100; ++i) {
+        tracker.clear();
+        QVERIFY(!tracker.contains(0));
+        QVERIFY(!tracker.hasSeen(0));
+        QVERIFY(tracker.hasSeen(0));
+        QVERIFY(!tracker.hasSeen(1));
+        QVERIFY(tracker.hasSeen(1));
+        QVERIFY(tracker.contains(1));
+    }
 }
 
 void tst_QDuplicateTracker::appendTo()

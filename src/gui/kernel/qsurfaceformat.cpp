@@ -179,6 +179,7 @@ public:
 
 /*!
     \enum QSurfaceFormat::ColorSpace
+    \deprecated [6.0] Use setColorSpace(QColorSpace) instead
 
     This enum is used to specify the preferred color space, controlling if the
     window's associated default framebuffer is able to do updates and blending

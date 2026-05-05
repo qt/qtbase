@@ -7,5 +7,6 @@
     "License": "Apache License 2.0",
     "LicenseId": "Apache-2.0",
     "LicenseFile": "LICENSE",
-    "Copyright": "Copyright (C) 2005 The Android Open Source Project"
+    "Copyright": "Copyright (C) 2005 The Android Open Source Project",
+    "Comment": "no relevant PURL or CPE found"
 }

@@ -23,6 +23,7 @@
 
 #include <QtCore/QDebug>
 #include <QtCore/QLoggingCategory>
+#include <QtCore/qscopeguard.h>
 
 #include <private/qgraphicsscene_p.h>
 #include <private/qgraphicssceneindex_p.h>
@@ -986,6 +987,7 @@ void tst_QGraphicsScene::selectionChanged()
     QCOMPARE(spy.size(), 3); // the grandchild was added, so the selection changed once
 
     scene.removeItem(parentItem);
+    const auto reaper = qScopeGuard([=] { delete parentItem; });
     QCOMPARE(spy.size(), 4); // the grandchild was removed, so the selection changed
 
     rect->setSelected(true);
@@ -1279,6 +1281,7 @@ void tst_QGraphicsScene::removeItem()
     item2->setSelected(true);
     QVERIFY(scene.selectedItems().contains(item2));
     scene.removeItem(item2);
+    const auto reaper = qScopeGuard([=] { delete item2; });
     QVERIFY(scene.selectedItems().isEmpty());
 
     // Check that we are in a state that can receive paint events
@@ -4405,17 +4408,17 @@ void tst_QGraphicsScene::taskQTBUG_5904_crashWithDeviceCoordinateCache()
 void tst_QGraphicsScene::taskQT657_paintIntoCacheWithTransparentParts()
 {
     // Test using DeviceCoordinateCache and opaque item
-    QScopedPointer<QWidget> w(new QWidget);
+    auto w = std::make_unique<QWidget>();
     w->setPalette(QColor(0, 0, 255));
     w->setGeometry(0, 0, 50, 50);
 
-    QGraphicsScene *scene = new QGraphicsScene();
+    QGraphicsScene scene;
     CustomView view;
     view.resize(m_testSize);
     view.setWindowTitle(QTest::currentTestFunction());
-    view.setScene(scene);
+    view.setScene(&scene);
 
-    QGraphicsProxyWidget *proxy = scene->addWidget(w.data());
+    QGraphicsProxyWidget *proxy = scene.addWidget(w.release());
     proxy->setCacheMode(QGraphicsItem::DeviceCoordinateCache);
     proxy->setTransform(QTransform().rotate(15), true);
 
@@ -4454,13 +4457,13 @@ void tst_QGraphicsScene::taskQTBUG_7863_paintIntoCacheWithTransparentParts()
         rectItem->setBrush(QColor(0, 0, 255, 125));
         rectItem->setParentItem(backItem);
 
-        QGraphicsScene *scene = new QGraphicsScene();
+        QGraphicsScene scene;
         CustomView view;
         view.resize(m_testSize);
         view.setWindowTitle(QTest::currentTestFunction());
-        view.setScene(scene);
+        view.setScene(&scene);
 
-        scene->addItem(backItem);
+        scene.addItem(backItem);
         rectItem->setCacheMode(QGraphicsItem::DeviceCoordinateCache);
         backItem->setTransform(QTransform().rotate(15), true);
 
@@ -4495,13 +4498,13 @@ void tst_QGraphicsScene::taskQTBUG_7863_paintIntoCacheWithTransparentParts()
         QGraphicsRectItem *rectItem = new QGraphicsRectItem(0, 0, 50, 50);
         rectItem->setBrush(QColor(0, 0, 255));
 
-        QGraphicsScene *scene = new QGraphicsScene();
+        QGraphicsScene scene;
         CustomView view;
         view.setWindowTitle(QTest::currentTestFunction());
         view.resize(m_testSize);
-        view.setScene(scene);
+        view.setScene(&scene);
 
-        scene->addItem(rectItem);
+        scene.addItem(rectItem);
         rectItem->setCacheMode(QGraphicsItem::ItemCoordinateCache);
         rectItem->setTransform(QTransform().rotate(15), true);
 
@@ -4535,13 +4538,13 @@ void tst_QGraphicsScene::taskQTBUG_7863_paintIntoCacheWithTransparentParts()
         QGraphicsRectItem *rectItem = new QGraphicsRectItem(0, 0, 50, 50);
         rectItem->setBrush(QColor(0, 0, 255, 125));
 
-        QGraphicsScene *scene = new QGraphicsScene();
+        QGraphicsScene scene;
         CustomView view;
         view.setWindowTitle(QTest::currentTestFunction());
         view.resize(m_testSize);
-        view.setScene(scene);
+        view.setScene(&scene);
 
-        scene->addItem(rectItem);
+        scene.addItem(rectItem);
         rectItem->setCacheMode(QGraphicsItem::ItemCoordinateCache);
         rectItem->setTransform(QTransform().rotate(15), true);
 

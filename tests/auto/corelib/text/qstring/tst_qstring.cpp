@@ -5991,6 +5991,17 @@ void tst_QString::arg()
     QCOMPARE( s4.arg(Q_UINT64_C(9223372036854775808)), // LLONG_MAX + 1
              QLatin1String("[9223372036854775808]") );
 
+    // (unscoped) enums
+    enum Enum {
+        Foo1, Foo2,           // reproducer for QTBUG-131906,
+        RangeExtended = -667, // but w/o the UB of out-of-range values
+    };
+    QCOMPARE(s4.arg(Enum(-666)), QLatin1String("[-666]"));
+    enum : int { FooS = -1 };
+    enum : uint { FooU = 1 };
+    QCOMPARE(s4.arg(FooS), QLatin1String("[-1]"));
+    QCOMPARE(s4.arg(FooU), QLatin1String("[1]"));
+
     // FP overloads
     QCOMPARE(s4.arg(2.25), QLatin1String("[2.25]"));
     QCOMPARE(s4.arg(3.75f), QLatin1String("[3.75]"));

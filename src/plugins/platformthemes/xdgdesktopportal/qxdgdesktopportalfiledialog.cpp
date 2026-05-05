@@ -80,7 +80,7 @@ public:
 
     QEventLoop loop;
     QString acceptLabel;
-    QString directory;
+    QUrl directory;
     QString title;
     QStringList nameFilters;
     QStringList mimeTypesFilters;
@@ -170,7 +170,7 @@ void QXdgDesktopPortalFileDialog::openPortal(Qt::WindowFlags windowFlags, Qt::Wi
     options.insert("directory"_L1, d->directoryMode);
 
     if (!d->directory.isEmpty())
-        options.insert("current_folder"_L1, QFile::encodeName(d->directory).append('\0'));
+        options.insert("current_folder"_L1, QFile::encodeName(d->directory.toLocalFile()).append('\0'));
 
     if (d->saveFile && !d->selectedFiles.isEmpty()) {
         // current_file for the file to be pre-selected, current_name for the file name to be
@@ -318,7 +318,7 @@ void QXdgDesktopPortalFileDialog::setDirectory(const QUrl &directory)
         d->nativeFileDialog->setDirectory(directory);
     }
 
-    d->directory = directory.path();
+    d->directory = directory;
 }
 
 QUrl QXdgDesktopPortalFileDialog::directory() const

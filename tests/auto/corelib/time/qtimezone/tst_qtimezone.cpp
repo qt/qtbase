@@ -1158,6 +1158,7 @@ void tst_QTimeZone::utcTest()
     QCOMPARE(tzp.daylightTimeOffset(0), 0);
     QCOMPARE(tzp.hasDaylightTime(), false);
     QCOMPARE(tzp.hasTransitions(), false);
+#endif // QT_BUILD_INTERNAL
 
     // Test create from UTC Offset (uses minimal id, skipping minutes if 0)
     QDateTime now = QDateTime::currentDateTime();
@@ -1198,7 +1199,6 @@ void tst_QTimeZone::utcTest()
     QCOMPARE(tz.offsetFromUtc(now), 123456);
     QCOMPARE(tz.standardTimeOffset(now), 123456);
     QCOMPARE(tz.daylightTimeOffset(now), 0);
-#endif // QT_BUILD_INTERNAL
 }
 
 // Relies on local variable names: zone tzp and locale enUS.
@@ -1276,6 +1276,11 @@ void tst_QTimeZone::tzTest()
     QTimeZone tzposix("MET-1METDST-2,M3.5.0/02:00:00,M10.5.0/03:00:00");
     QVERIFY(tzposix.isValid());
     QVERIFY(tzposix.hasDaylightTime());
+
+    // Cope with stray space at start of value (QTBUG-135109):
+    QTimeZone syd(" AEST-10AEDT,M10.1.0,M4.1.0/3");
+    QVERIFY(syd.isValid());
+    QVERIFY(syd.hasDaylightTime());
 
     // RHEL has been seen with this as Africa/Casablanca's POSIX rule:
     QTzTimeZonePrivate permaDst("<+00>0<+01>,0/0,J365/25");

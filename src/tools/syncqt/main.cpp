@@ -204,6 +204,8 @@ public:
 
     const std::string &includeDir() const { return m_includeDir; }
 
+    const std::string &installIncludeDir() const { return m_installIncludeDir; }
+
     const std::string &privateIncludeDir() const { return m_privateIncludeDir; }
 
     const std::string &qpaIncludeDir() const { return m_qpaIncludeDir; }
@@ -316,10 +318,11 @@ private:
         std::string qpaHeadersFilter;
         std::string privateHeadersFilter;
         std::string publicNamespaceFilter;
-        static std::unordered_map<std::string, CommandLineOption<std::string>> stringArgumentMap = {
+        const std::unordered_map<std::string, CommandLineOption<std::string>> stringArgumentMap = {
             { "-module", { &m_moduleName } },
             { "-sourceDir", { &m_sourceDir } },
             { "-binaryDir", { &m_binaryDir } },
+            { "-installIncludeDir", { &m_installIncludeDir, true } },
             { "-privateHeadersFilter", { &privateHeadersFilter, true } },
             { "-qpaHeadersFilter", { &qpaHeadersFilter, true } },
             { "-includeDir", { &m_includeDir } },
@@ -330,14 +333,14 @@ private:
             { "-publicNamespaceFilter", { &publicNamespaceFilter, true } },
         };
 
-        static const std::unordered_map<std::string, CommandLineOption<std::set<std::string>>>
+        const std::unordered_map<std::string, CommandLineOption<std::set<std::string>>>
                 listArgumentMap = {
                     { "-headers", { &m_headers, true } },
                     { "-generatedHeaders", { &m_generatedHeaders, true } },
                     { "-knownModules", { &m_knownModules, true } },
                 };
 
-        static const std::unordered_map<std::string, CommandLineOption<bool>> boolArgumentMap = {
+        const std::unordered_map<std::string, CommandLineOption<bool>> boolArgumentMap = {
             { "-nonQt", { &m_isNonQtModule, true } }, { "-debug", { &m_debug, true } },
             { "-help", { &m_printHelpOnly, true } },
             { "-internal", { &m_isInternal, true } }, { "-all", { &m_scanAllMode, true } },
@@ -349,7 +352,7 @@ private:
         std::string *currentValue = nullptr;
         std::set<std::string> *currentListValue = nullptr;
 
-        auto parseArgument = [&currentValue, &currentListValue](const std::string &arg) -> bool {
+        auto parseArgument = [&](const std::string &arg) -> bool {
             if (arg[0] == '-') {
                 currentValue = nullptr;
                 currentListValue = nullptr;
@@ -470,10 +473,10 @@ private:
     // Convert all paths from command line to a generic one.
     void normilizePaths()
     {
-        static std::array<std::string *, 7> paths = {
-            &m_sourceDir,     &m_binaryDir,  &m_includeDir,        &m_privateIncludeDir,
-            &m_qpaIncludeDir, &m_stagingDir, &m_versionScriptFile
-        };
+        std::array<std::string *, 8> paths = { &m_sourceDir,         &m_binaryDir,
+                                               &m_includeDir,        &m_installIncludeDir,
+                                               &m_privateIncludeDir, &m_qpaIncludeDir,
+                                               &m_stagingDir,        &m_versionScriptFile };
         for (auto path : paths) {
             if (!path->empty())
                 *path = utils::normilizedPath(*path).generic_string();
@@ -484,6 +487,7 @@ private:
     std::string m_sourceDir;
     std::string m_binaryDir;
     std::string m_includeDir;
+    std::string m_installIncludeDir;
     std::string m_privateIncludeDir;
     std::string m_qpaIncludeDir;
     std::string m_stagingDir;
@@ -1268,8 +1272,11 @@ public:
                         }
                         for (const auto &module : m_commandLineArgs->knownModules()) {
                             std::string suggestedHeader = "Qt" + module + '/' + includedHeader;
-                            if (std::filesystem::exists(m_commandLineArgs->includeDir() + "/../"
-                                                        + suggestedHeader)) {
+                            const std::string suggestedHeaderReversePath = "/../" + suggestedHeader;
+                            if (std::filesystem::exists(m_commandLineArgs->includeDir()
+                                                        + suggestedHeaderReversePath)
+                                || std::filesystem::exists(m_commandLineArgs->installIncludeDir()
+                                                           + '/' + suggestedHeader)) {
                                 faults |= IncludeChecks;
                                 std::cerr << m_warningMessagePreamble << m_currentFileString
                                           << ":" << m_currentFileLineNumber
@@ -1495,7 +1502,7 @@ public:
     [[nodiscard]] bool generateDeprecatedHeaders()
     {
         static std::regex cIdentifierSymbolsRegex("[^a-zA-Z0-9_]");
-        static std::string guard_base = "DEPRECATED_HEADER_" + m_commandLineArgs->moduleName();
+        const std::string guard_base = "DEPRECATED_HEADER_" + m_commandLineArgs->moduleName();
         bool result = true;
         for (auto it = m_deprecatedHeaders.begin(); it != m_deprecatedHeaders.end(); ++it) {
             const std::string &descriptor = it->first;

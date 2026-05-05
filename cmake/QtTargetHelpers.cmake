@@ -184,6 +184,9 @@ function(qt_internal_extend_target target)
             endif()
         endforeach()
 
+        set(all_libraries ${arg_LIBRARIES} ${arg_PUBLIC_LIBRARIES})
+        qt_internal_work_around_autogen_discarded_dependencies(${target} ${all_libraries})
+
         set(target_private "${target}Private")
         get_target_property(is_internal_module ${target} _qt_is_internal_module)
         # Internal modules don't have Private targets but we still need to

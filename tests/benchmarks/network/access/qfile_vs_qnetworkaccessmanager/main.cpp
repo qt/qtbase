@@ -37,7 +37,7 @@ public:
 
 void qfile_vs_qnetworkaccessmanager::initTestCase()
 {
-    testFile.open();
+    QVERIFY2(testFile.open(), "Cannot open temporary file");
     QByteArray qba(1*1024*1024, 'x'); // 1 MB
     for (int i = 0; i < 100; i++) {
         testFile.write(qba);

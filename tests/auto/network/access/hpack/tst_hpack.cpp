@@ -36,6 +36,8 @@ private Q_SLOTS:
     void lookupTableStatic();
     void lookupTableDynamic();
 
+    void dynamicTableSizeUpdate();
+
     void hpackEncodeRequest_data();
     void hpackEncodeRequest();
     void hpackDecodeRequest_data();
@@ -468,6 +470,30 @@ void tst_Hpack::lookupTableDynamic()
     QVERIFY(table.numberOfDynamicEntries() == 0);
     QVERIFY(table.indexOf("name1") == 0);
 }
+
+void tst_Hpack::dynamicTableSizeUpdate()
+{
+    std::vector<uchar> buffer;
+    buffer.reserve(4096);
+
+    BitOStream out(buffer);
+
+    HPack::Encoder encoder(4096u, true);
+
+    QVERIFY(encoder.encodeSizeUpdate(out, 2048u));
+    QVERIFY(encoder.encodeRequest(out, {{":method", "GET"}, {":path", "/"}, {":scheme", "https"}}));
+
+    BitIStream in(buffer.data(), buffer.data() + buffer.size());
+    HPack::Decoder decoder(4096u);
+    QCOMPARE(decoder.dynamicTableCapacity(), 4096u);
+    QCOMPARE(decoder.maxDynamicTableCapacity(), 4096u);
+
+    QVERIFY(decoder.decodeHeaderFields(in));
+    QCOMPARE(decoder.dynamicTableCapacity(), 2048u);
+    // The max is adjusted out-of-band, so it's not changed here:
+    QCOMPARE(decoder.maxDynamicTableCapacity(), 4096u);
+}
+
 
 void  tst_Hpack::hpackEncodeRequest_data()
 {

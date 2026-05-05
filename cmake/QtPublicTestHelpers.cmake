@@ -68,7 +68,10 @@ is not specified")
         # It's necessary to call actual test inside 'cmd.exe', because 'execute_process' uses
         # SW_HIDE to avoid showing a console window, it affects other GUI as well.
         # See https://gitlab.kitware.com/cmake/cmake/-/issues/17690 for details.
-        set(extra_runner "cmd /c")
+        #
+        # Run the command using the proxy 'call' command to avoid issues related to invalid
+        # processing of quotes and spaces in cmd.exe arguments.
+        set(extra_runner "cmd /c call")
     endif()
 
     if(arg_PRE_RUN)

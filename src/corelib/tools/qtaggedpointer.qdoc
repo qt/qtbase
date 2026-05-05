@@ -187,7 +187,5 @@
 
 /*!
     \fn template <typename T, typename Tag> qHash(QTaggedPointer<T, Tag> key, std::size_t seed = 0)
-    \relates QTaggedPointer
-
-    Returns the hash value for the \a key, using \a seed to seed the calculation.
+    \qhashold{QTaggedPointer}
 */

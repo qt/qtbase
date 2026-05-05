@@ -765,6 +765,21 @@ void tst_QPainterPath::testOperatorDatastream()
     }
 
     QCOMPARE(other, path);
+
+    // Check reset & detach
+    QPainterPath p3;
+    p3.lineTo(1, 1);
+    QCOMPARE(p3.elementCount(), 2);
+    QPainterPath p4 = p3;
+    QCOMPARE(p4.elementCount(), 2);
+    {
+        QFile data(tempDir.path() + "/data");
+        QVERIFY(data.open(QFile::ReadOnly));
+        QDataStream stream(&data);
+        stream >> p3;
+    }
+    QCOMPARE(p3.elementCount(), path.elementCount());
+    QCOMPARE(p4.elementCount(), 2);
 }
 
 void tst_QPainterPath::closing()

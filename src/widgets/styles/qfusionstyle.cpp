@@ -424,10 +424,10 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
     QRect rect = option->rect;
     int state = option->state;
 
-    QColor outline = d->outline(option->palette);
-    QColor highlightedOutline = d->highlightedOutline(option->palette);
+    const QColor outline = d->outline(option->palette);
+    const QColor highlightedOutline = d->highlightedOutline(option->palette);
 
-    QColor tabFrameColor = d->tabFrameColor(option->palette);
+    const QColor tabFrameColor = d->tabFrameColor(option->palette);
 
     switch (elem) {
 
@@ -2833,13 +2833,13 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                     }
                     QColor highlight = d->highlight(option->palette);
                     QColor highlightedoutline = highlight.darker(140);
-                    if (qGray(outline.rgb()) > qGray(highlightedoutline.rgb()))
-                        outline = highlightedoutline;
-
+                    QColor grooveOutline = outline;
+                    if (qGray(grooveOutline.rgb()) > qGray(highlightedoutline.rgb()))
+                        grooveOutline = highlightedoutline;
 
                     groovePainter.setRenderHint(QPainter::Antialiasing, true);
                     groovePainter.translate(0.5, 0.5);
-                    groovePainter.setPen(QPen(outline));
+                    groovePainter.setPen(QPen(grooveOutline));
                     gradient.setColorAt(0, activeHighlight);
                     gradient.setColorAt(1, activeHighlight.lighter(130));
                     groovePainter.setBrush(gradient);
@@ -3308,23 +3308,28 @@ QRect QFusionStyle::subControlRect(ComplexControl control, const QStyleOptionCom
             int tickSize = proxy()->pixelMetric(PM_SliderTickmarkOffset, option, widget);
             switch (subControl) {
             case SC_SliderHandle: {
+                const bool bothTicks = (slider->tickPosition & QSlider::TicksBothSides) == QSlider::TicksBothSides;
                 if (slider->orientation == Qt::Horizontal) {
                     rect.setHeight(proxy()->pixelMetric(PM_SliderThickness, option));
                     rect.setWidth(proxy()->pixelMetric(PM_SliderLength, option));
                     int centerY = slider->rect.center().y() - rect.height() / 2;
-                    if (slider->tickPosition & QSlider::TicksAbove)
-                        centerY += tickSize;
-                    if (slider->tickPosition & QSlider::TicksBelow)
-                        centerY -= tickSize;
+                    if (!bothTicks) {
+                        if (slider->tickPosition & QSlider::TicksAbove)
+                            centerY += tickSize;
+                        if (slider->tickPosition & QSlider::TicksBelow)
+                            centerY -= tickSize - 1;
+                    }
                     rect.moveTop(centerY);
                 } else {
                     rect.setWidth(proxy()->pixelMetric(PM_SliderThickness, option));
                     rect.setHeight(proxy()->pixelMetric(PM_SliderLength, option));
                     int centerX = slider->rect.center().x() - rect.width() / 2;
-                    if (slider->tickPosition & QSlider::TicksAbove)
-                        centerX += tickSize;
-                    if (slider->tickPosition & QSlider::TicksBelow)
-                        centerX -= tickSize;
+                    if (!bothTicks) {
+                        if (slider->tickPosition & QSlider::TicksAbove)
+                            centerX += tickSize;
+                        if (slider->tickPosition & QSlider::TicksBelow)
+                            centerX -= tickSize - 1;
+                    }
                     rect.moveLeft(centerX);
                 }
             }
@@ -3332,18 +3337,23 @@ QRect QFusionStyle::subControlRect(ComplexControl control, const QStyleOptionCom
             case SC_SliderGroove: {
                 QPoint grooveCenter = slider->rect.center();
                 const int grooveThickness = QStyleHelper::dpiScaled(7, option);
+                const bool bothTicks = (slider->tickPosition & QSlider::TicksBothSides) == QSlider::TicksBothSides;
                 if (slider->orientation == Qt::Horizontal) {
                     rect.setHeight(grooveThickness);
-                    if (slider->tickPosition & QSlider::TicksAbove)
-                        grooveCenter.ry() += tickSize;
-                    if (slider->tickPosition & QSlider::TicksBelow)
-                        grooveCenter.ry() -= tickSize;
+                    if (!bothTicks) {
+                        if (slider->tickPosition & QSlider::TicksAbove)
+                            grooveCenter.ry() += tickSize;
+                        if (slider->tickPosition & QSlider::TicksBelow)
+                            grooveCenter.ry() -= tickSize - 1;
+                    }
                 } else {
                     rect.setWidth(grooveThickness);
-                    if (slider->tickPosition & QSlider::TicksAbove)
-                        grooveCenter.rx() += tickSize;
-                    if (slider->tickPosition & QSlider::TicksBelow)
-                        grooveCenter.rx() -= tickSize;
+                    if (!bothTicks) {
+                        if (slider->tickPosition & QSlider::TicksAbove)
+                            grooveCenter.rx() += tickSize;
+                        if (slider->tickPosition & QSlider::TicksBelow)
+                            grooveCenter.rx() -= tickSize - 1;
+                    }
                 }
                 rect.moveCenter(grooveCenter);
                 break;

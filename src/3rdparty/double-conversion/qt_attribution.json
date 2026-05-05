@@ -7,6 +7,8 @@
     "Homepage": "https://github.com/google/double-conversion",
     "Version": "3.3.0",
     "DownloadLocation": "https://github.com/google/double-conversion/releases/tag/v3.3.0",
+    "PURL": "pkg:github/google/double-conversion@v$<VERSION>",
+    "CPE": "cpe:2.3:a:google:double-conversion:$<VERSION>:*:*:*:*:*:*:*",
     "License": "BSD 3-clause \"New\" or \"Revised\" License",
     "LicenseId": "BSD-3-Clause",
     "LicenseFile": "LICENSE",

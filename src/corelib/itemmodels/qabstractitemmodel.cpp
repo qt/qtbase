@@ -34,7 +34,7 @@ QPersistentModelIndexData *QPersistentModelIndexData::create(const QModelIndex &
     Q_ASSERT(index.isValid()); // we will _never_ insert an invalid index in the list
     QPersistentModelIndexData *d = nullptr;
     QAbstractItemModel *model = const_cast<QAbstractItemModel *>(index.model());
-    QMultiHash<QModelIndex, QPersistentModelIndexData *> &indexes = model->d_func()->persistent.indexes;
+    QMultiHash<QtPrivate::QModelIndexWrapper, QPersistentModelIndexData *> &indexes = model->d_func()->persistent.indexes;
     const auto it = indexes.constFind(index);
     if (it != indexes.cend()) {
         d = (*it);
@@ -4140,12 +4140,9 @@ bool QAbstractListModel::dropMimeData(const QMimeData *data, Qt::DropAction acti
 */
 
 /*!
-    \fn size_t qHash(const QPersistentModelIndex &index, size_t seed = 0)
+    \fn size_t qHash(const QPersistentModelIndex &key, size_t seed)
     \since 5.0
-    \relates QPersistentModelIndex
-
-    Returns a hash of the QPersistentModelIndex \a index, using \a seed to
-    seed the calculation.
+    \qhashold{QPersistentModelIndex}
 */
 
 

@@ -283,6 +283,7 @@ private slots:
     void renderTargetOffset();
     void renderInvisible();
     void renderWithPainter();
+    void renderRTL();
     void render_task188133();
     void render_task211796();
     void render_task217815();
@@ -399,7 +400,11 @@ private slots:
 
     void styleSheetPropagation();
 
-    void destroyedSignal();
+    void destroyedSignal_QWidget_data() { destroyedSignal_data_impl(); }
+    void destroyedSignal_QWidget() { destroyedSignal_impl<QWidget>(); }
+    // difference: QObject::destroyed() connect()ed from QObject* vs. QWidget*
+    void destroyedSignal_QObject_data() { destroyedSignal_data_impl(); }
+    void destroyedSignal_QObject() { destroyedSignal_impl<QObject>(); }
 
     void keyboardModifiers();
     void mouseDoubleClickBubbling_QTBUG29680();
@@ -455,6 +460,10 @@ private:
         OffRight,
         Contained
     };
+
+private:
+    void destroyedSignal_data_impl();
+    template <typename Object> void destroyedSignal_impl();
 };
 
 // Testing get/set functions
@@ -4154,18 +4163,12 @@ void tst_QWidget::saveRestoreGeometry()
 
     {
         QWidget widget;
+        widget.setWindowFlags(Qt::X11BypassWindowManagerHint);
         widget.move(position);
         widget.resize(size);
         widget.showNormal();
         QVERIFY(QTest::qWaitForWindowExposed(&widget));
         QApplication::processEvents();
-
-
-    /* ---------------------------------------------------------------------
-     * This test function is likely to flake when debugged with Qt Creator.
-     * (29px offset making the following QTRY_VERIFY2 fail)
-     * ---------------------------------------------------------------------
-     */
 
         QTRY_VERIFY2(HighDpi::fuzzyCompare(widget.pos(), position, m_fuzz),
                      qPrintable(HighDpi::msgPointMismatch(widget.pos(), position)));
@@ -4175,6 +4178,7 @@ void tst_QWidget::saveRestoreGeometry()
 
     {
         QWidget widget;
+        widget.setWindowFlags(Qt::X11BypassWindowManagerHint);
         widget.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
 
         const QByteArray empty;
@@ -4194,7 +4198,6 @@ void tst_QWidget::saveRestoreGeometry()
         QVERIFY(widget.restoreGeometry(savedGeometry));
         widget.showNormal();
         QVERIFY(QTest::qWaitForWindowExposed(&widget));
-        QApplication::processEvents();
 
         QVERIFY2(HighDpi::fuzzyCompare(widget.pos(), position, m_fuzz),
                  qPrintable(HighDpi::msgPointMismatch(widget.pos(), position)));
@@ -4220,65 +4223,46 @@ void tst_QWidget::saveRestoreGeometry()
         geom = widget.geometry();
         widget.setWindowState(widget.windowState() | Qt::WindowFullScreen);
         QTRY_VERIFY((widget.windowState() & Qt::WindowFullScreen));
-        QTest::qWait(500);
         QVERIFY(widget.restoreGeometry(savedGeometry));
-        QTest::qWait(120);
         QTRY_VERIFY(!(widget.windowState() & Qt::WindowFullScreen));
         QTRY_COMPARE(widget.geometry(), geom);
 
         //Restore to full screen
         widget.setWindowState(widget.windowState() | Qt::WindowFullScreen);
-        QTest::qWait(120);
         QTRY_VERIFY((widget.windowState() & Qt::WindowFullScreen));
-        QTest::qWait(500);
         savedGeometry = widget.saveGeometry();
         geom = widget.geometry();
         widget.setWindowState(widget.windowState() ^ Qt::WindowFullScreen);
-        QTest::qWait(120);
         QTRY_VERIFY(!(widget.windowState() & Qt::WindowFullScreen));
-        QTest::qWait(400);
         QVERIFY(widget.restoreGeometry(savedGeometry));
-        QTest::qWait(120);
         QTRY_VERIFY((widget.windowState() & Qt::WindowFullScreen));
         QTRY_COMPARE(widget.geometry(), geom);
         QVERIFY((widget.windowState() & Qt::WindowFullScreen));
         widget.setWindowState(widget.windowState() ^ Qt::WindowFullScreen);
-        QTest::qWait(120);
         QTRY_VERIFY(!(widget.windowState() & Qt::WindowFullScreen));
-        QTest::qWait(120);
 
         //Restore from Maximised
         widget.move(position);
         widget.resize(size);
-        QTest::qWait(10);
         QTRY_COMPARE(widget.size(), size);
-        QTest::qWait(500);
         savedGeometry = widget.saveGeometry();
         geom = widget.geometry();
         widget.setWindowState(widget.windowState() | Qt::WindowMaximized);
-        QTest::qWait(120);
         QTRY_VERIFY((widget.windowState() & Qt::WindowMaximized));
         QTRY_VERIFY(widget.geometry() != geom);
-        QTest::qWait(500);
         QVERIFY(widget.restoreGeometry(savedGeometry));
-        QTest::qWait(120);
         QTRY_COMPARE(widget.geometry(), geom);
 
         QVERIFY(!(widget.windowState() & Qt::WindowMaximized));
 
         //Restore to maximised
         widget.setWindowState(widget.windowState() | Qt::WindowMaximized);
-        QTest::qWait(120);
         QTRY_VERIFY((widget.windowState() & Qt::WindowMaximized));
-        QTest::qWait(500);
         geom = widget.geometry();
         savedGeometry = widget.saveGeometry();
         widget.setWindowState(widget.windowState() ^ Qt::WindowMaximized);
-        QTest::qWait(120);
         QTRY_VERIFY(!(widget.windowState() & Qt::WindowMaximized));
-        QTest::qWait(500);
         QVERIFY(widget.restoreGeometry(savedGeometry));
-        QTest::qWait(120);
         QTRY_VERIFY((widget.windowState() & Qt::WindowMaximized));
         QTRY_COMPARE(widget.geometry(), geom);
     }
@@ -8134,6 +8118,47 @@ void tst_QWidget::renderWithPainter()
     QCOMPARE(painter.renderHints(), oldRenderHints);
 }
 
+void tst_QWidget::renderRTL()
+{
+    QFont f;
+    f.setStyleStrategy(QFont::NoAntialias);
+    const QScopedPointer<QStyle> style(QStyleFactory::create(QLatin1String("Windows")));
+
+    QMenu menu;
+    menu.setMinimumWidth(200);
+    menu.setFont(f);
+    menu.setStyle(style.data());
+    menu.addAction("I");
+    menu.show();
+    menu.setLayoutDirection(Qt::LeftToRight);
+    QVERIFY(QTest::qWaitForWindowExposed(&menu));
+
+    QImage imageLTR(menu.size(), QImage::Format_ARGB32);
+    menu.render(&imageLTR);
+    //imageLTR.save("/tmp/rendered_1.png");
+
+    menu.setLayoutDirection(Qt::RightToLeft);
+    QImage imageRTL(menu.size(), QImage::Format_ARGB32);
+    menu.render(&imageRTL);
+    imageRTL = imageRTL.mirrored(true, false);
+    //imageRTL.save("/tmp/rendered_2.png");
+
+    QCOMPARE(imageLTR.height(), imageRTL.height());
+    QCOMPARE(imageLTR.width(), imageRTL.width());
+    static constexpr auto border = 4;
+    for (int h = border; h < imageRTL.height() - border; ++h) {
+        // there should be no difference on the right (aka no text)
+        for (int w = imageRTL.width() / 2; w < imageRTL.width() - border; ++w) {
+            auto pixLTR = imageLTR.pixel(w, h);
+            auto pixRTL = imageRTL.pixel(w, h);
+            if (pixLTR != pixRTL)
+                qDebug() << "Pixel do not match at" << w << h << ":"
+                         << Qt::hex << pixLTR << "<->" << pixRTL;
+            QCOMPARE(pixLTR, pixRTL);
+        }
+    }
+}
+
 void tst_QWidget::render_task188133()
 {
     QMainWindow mainWindow;
@@ -11410,11 +11435,12 @@ void tst_QWidget::imEnabledNotImplemented()
     QVERIFY(imEnabled.isValid());
     QVERIFY(imEnabled.toBool());
 
-    // ...even if it's read-only
+    // ImEnabled should be false when a lineedit is read-only since
+    // ImEnabled indicates the widget accepts input method _input_.
     edit.setReadOnly(true);
     imEnabled = QApplication::inputMethod()->queryFocusObject(Qt::ImEnabled, QVariant());
     QVERIFY(imEnabled.isValid());
-    QVERIFY(imEnabled.toBool());
+    QVERIFY(!imEnabled.toBool());
 }
 
 #ifdef QT_BUILD_INTERNAL
@@ -12229,88 +12255,40 @@ public slots:
 
 int DestroyTester::parentDestroyed = 0;
 
-void tst_QWidget::destroyedSignal()
+enum class Parent { None, Widget };
+enum class Signals { Unblocked, Blocked };
+
+void tst_QWidget::destroyedSignal_data_impl()
 {
-    {
-        QWidget *w = new QWidget;
-        DestroyTester *t = new DestroyTester(w);
-        connect(w, &QObject::destroyed, t, &DestroyTester::parentDestroyedSlot);
-        QCOMPARE(DestroyTester::parentDestroyed, 0);
-        delete w;
-        QCOMPARE(DestroyTester::parentDestroyed, 1);
+    QTest::addColumn<Signals>("blocked");
+    QTest::addColumn<Parent>("parent");
+    for (auto blocked : {Signals::Unblocked, Signals::Blocked}) {
+        for (auto parent : {Parent::None, Parent::Widget}) {
+            QTest::addRow("%s/%s",
+                          blocked == Signals::Blocked ? "blocked" : "unblocked",
+                          parent == Parent::None ? "not child" : "child")
+                    << blocked << parent;
+        }
     }
+}
 
-    {
-        QWidget *w = new QWidget;
-        DestroyTester *t = new DestroyTester(w);
-        connect(w, &QObject::destroyed, t, &DestroyTester::parentDestroyedSlot);
+template <typename Object>
+void tst_QWidget::destroyedSignal_impl()
+{
+    QFETCH(const Signals, blocked);
+    QFETCH(const Parent, parent);
+
+    auto w = std::unique_ptr<Object>(new QWidget);
+    auto t = new DestroyTester(parent == Parent::Widget ? w.get() : nullptr);
+    // don't use QPointer, we're testing the low-level destroyed signal...
+    const auto destroyT = qScopeGuard([=] { if (parent == Parent::None) delete t; });
+    connect(w.get(), &QObject::destroyed,
+            t, &DestroyTester::parentDestroyedSlot);
+    if (blocked == Signals::Blocked)
         w->blockSignals(true);
-        QCOMPARE(DestroyTester::parentDestroyed, 0);
-        delete w;
-        QCOMPARE(DestroyTester::parentDestroyed, 1);
-    }
-
-    {
-        QObject *o = new QWidget;
-        DestroyTester *t = new DestroyTester(o);
-        connect(o, &QObject::destroyed, t, &DestroyTester::parentDestroyedSlot);
-        QCOMPARE(DestroyTester::parentDestroyed, 0);
-        delete o;
-        QCOMPARE(DestroyTester::parentDestroyed, 1);
-    }
-
-    {
-        QObject *o = new QWidget;
-        auto t = new DestroyTester;
-        connect(o, &QObject::destroyed, t, &DestroyTester::parentDestroyedSlot);
-        o->blockSignals(true);
-        QCOMPARE(DestroyTester::parentDestroyed, 0);
-        delete o;
-        QCOMPARE(DestroyTester::parentDestroyed, 1);
-    }
-
-    {
-        QWidget *w = new QWidget;
-        auto t = new DestroyTester;
-        connect(w, &QObject::destroyed, t, &DestroyTester::parentDestroyedSlot);
-        QCOMPARE(DestroyTester::parentDestroyed, 0);
-        delete w;
-        QCOMPARE(DestroyTester::parentDestroyed, 1);
-        delete t;
-    }
-
-    {
-        QWidget *w = new QWidget;
-        auto t = new DestroyTester;
-        connect(w, &QObject::destroyed, t, &DestroyTester::parentDestroyedSlot);
-        w->blockSignals(true);
-        QCOMPARE(DestroyTester::parentDestroyed, 0);
-        delete w;
-        QCOMPARE(DestroyTester::parentDestroyed, 1);
-        delete t;
-    }
-
-    {
-        QObject *o = new QWidget;
-        auto t = new DestroyTester;
-        connect(o, &QObject::destroyed, t, &DestroyTester::parentDestroyedSlot);
-        QCOMPARE(DestroyTester::parentDestroyed, 0);
-        delete o;
-        QCOMPARE(DestroyTester::parentDestroyed, 1);
-        delete t;
-    }
-
-    {
-        QObject *o = new QWidget;
-        auto t = new DestroyTester;
-        connect(o, &QObject::destroyed, t, &DestroyTester::parentDestroyedSlot);
-        o->blockSignals(true);
-        QCOMPARE(DestroyTester::parentDestroyed, 0);
-        delete o;
-        QCOMPARE(DestroyTester::parentDestroyed, 1);
-        delete t;
-    }
-
+    QCOMPARE(DestroyTester::parentDestroyed, 0);
+    w.reset();
+    QCOMPARE(DestroyTester::parentDestroyed, 1);
 }
 
 #ifndef QT_NO_CURSOR

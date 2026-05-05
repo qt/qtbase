@@ -139,7 +139,7 @@ macro(_qt_internal_execute_proccess_in_qt_env execute_process_args_var)
     # We avoid escaping issues this way.
     execute_process(${${execute_process_args_var}})
     if(CMAKE_HOST_WIN32)
-        set(ENV{PATH} "${path_backup}")
+        set(ENV{PATH} "${_qt_internal_execute_proccess_in_qt_env_path_backup}")
         unset(_qt_internal_execute_proccess_in_qt_env_path_backup)
     endif()
 endmacro()

@@ -16,6 +16,16 @@
 
 using namespace Qt::StringLiterals;
 
+Q_DECLARE_JNI_CLASS(Display, "android/view/Display")
+Q_DECLARE_JNI_CLASS(Point, "android/graphics/Point")
+Q_DECLARE_JNI_CLASS(Rect, "android/graphics/Rect")
+Q_DECLARE_JNI_CLASS(View, "android/view/View")
+Q_DECLARE_JNI_CLASS(Window, "android/view/Window")
+Q_DECLARE_JNI_CLASS(WindowInsets, "android/view/WindowInsets")
+Q_DECLARE_JNI_CLASS(WindowManager, "android/view/WindowManager")
+Q_DECLARE_JNI_CLASS(WindowMetrics, "android/view/WindowMetrics")
+Q_DECLARE_JNI_CLASS(ApplicationInfo, "android/content/pm/ApplicationInfo")
+
 class tst_Android : public QObject
 {
 Q_OBJECT
@@ -201,100 +211,123 @@ void tst_Android::testRunOnAndroidMainThread()
     }
 }
 
-void setSystemUiVisibility(int visibility)
-{
-    QNativeInterface::QAndroidApplication::runOnAndroidMainThread([visibility] {
-        QJniObject::callStaticMethod<void>("org/qtproject/qt/android/QtNative",
-                                           "setSystemUiVisibility", "(I)V", visibility);
-    }).waitForFinished();
-}
-
 // QTBUG-107604
 void tst_Android::testFullScreenDimensions()
 {
-    static int SYSTEM_UI_VISIBILITY_NORMAL = 0;
-    static int SYSTEM_UI_VISIBILITY_FULLSCREEN = 1;
-    static int SYSTEM_UI_VISIBILITY_TRANSLUCENT = 2;
-
-    // this will trigger new layout updates
-    setSystemUiVisibility(SYSTEM_UI_VISIBILITY_FULLSCREEN);
-    setSystemUiVisibility(SYSTEM_UI_VISIBILITY_NORMAL);
-
     QJniObject activity = QNativeInterface::QAndroidApplication::context();
     QVERIFY(activity.isValid());
 
-    QJniObject windowManager =
-            activity.callObjectMethod("getWindowManager", "()Landroid/view/WindowManager;");
+    QJniObject windowManager = activity.callMethod<QtJniTypes::WindowManager>("getWindowManager");
     QVERIFY(windowManager.isValid());
 
-    QJniObject display = windowManager.callObjectMethod("getDefaultDisplay", "()Landroid/view/Display;");
+    QJniObject display = windowManager.callMethod<QtJniTypes::Display>("getDefaultDisplay");
     QVERIFY(display.isValid());
 
-    QJniObject appSize("android/graphics/Point");
-    QVERIFY(appSize.isValid());
+    QSize appSize;
+    if (QNativeInterface::QAndroidApplication::sdkVersion() >= __ANDROID_API_R__) {
+        using namespace QtJniTypes;
+        auto windowMetrics = windowManager.callMethod<WindowMetrics>("getCurrentWindowMetrics");
+        auto bounds = windowMetrics.callMethod<Rect>("getBounds");
+        appSize.setWidth(bounds.callMethod<int>("width"));
+        appSize.setHeight(bounds.callMethod<int>("height"));
+    } else {
+        QJniObject jappSize(QtJniTypes::className<QtJniTypes::Point>());
+        QVERIFY(jappSize.isValid());
+        display.callMethod<void>("getSize", jappSize.object<QtJniTypes::Point>());
+        appSize.setWidth(jappSize.getField<jint>("x"));
+        appSize.setHeight(jappSize.getField<jint>("y"));
+    }
 
-    display.callMethod<void>("getSize", "(Landroid/graphics/Point;)V", appSize.object());
-
-    QJniObject realSize("android/graphics/Point");
+    QJniObject realSize(QtJniTypes::className<QtJniTypes::Point>());
+    display.callMethod<void>("getRealSize", realSize.object<QtJniTypes::Point>());
     QVERIFY(realSize.isValid());
+    display.callMethod<void>("getRealSize", realSize.object<QtJniTypes::Point>());
 
-    display.callMethod<void>("getRealSize", "(Landroid/graphics/Point;)V", realSize.object());
-
+    QWidget widget;
     QPlatformScreen *screen = QGuiApplication::primaryScreen()->handle();
-
     {
         // Normal -
         // available geometry == app size (system bars visible and removed from available geometry)
+        widget.showNormal();
         QCoreApplication::processEvents();
-        QJniObject window = activity.callObjectMethod("getWindow", "()Landroid/view/Window;");
-        QVERIFY(window.isValid());
 
-        QJniObject decorView = window.callObjectMethod("getDecorView", "()Landroid/view/View;");
-        QVERIFY(decorView.isValid());
+        int expectedWidth;
+        int expectedHeight;
 
-        QJniObject insets =
-                decorView.callObjectMethod("getRootWindowInsets", "()Landroid/view/WindowInsets;");
-        QVERIFY(insets.isValid());
+        const auto appContext = activity.callMethod<QtJniTypes::Context>("getApplicationContext");
+        const auto appInfo = appContext.callMethod<QtJniTypes::ApplicationInfo>("getApplicationInfo");
+        const int targetSdkVersion = appInfo.getField<jint>("targetSdkVersion");
+        const int sdkVersion = QNativeInterface::QAndroidApplication::sdkVersion();
 
-        int insetsWidth = insets.callMethod<jint>("getSystemWindowInsetRight")
-                + insets.callMethod<jint>("getSystemWindowInsetLeft");
+        if (sdkVersion >= __ANDROID_API_V__  && targetSdkVersion >= __ANDROID_API_V__) {
+            expectedWidth = appSize.width();
+            expectedHeight = appSize.height();
+        } else {
+            QJniObject window = activity.callMethod<QtJniTypes::Window>("getWindow");
+            QVERIFY(window.isValid());
 
-        int insetsHeight = insets.callMethod<jint>("getSystemWindowInsetTop")
-                + insets.callMethod<jint>("getSystemWindowInsetBottom");
+            QJniObject decorView = window.callMethod<QtJniTypes::View>("getDecorView");
+            QVERIFY(decorView.isValid());
 
-        QTRY_COMPARE(screen->availableGeometry().width(),
-                     int(appSize.getField<jint>("x")) - insetsWidth);
-        QTRY_COMPARE(screen->availableGeometry().height(),
-                     int(appSize.getField<jint>("y")) - insetsHeight);
+            auto insets = decorView.callMethod<QtJniTypes::WindowInsets>("getRootWindowInsets");
+            QVERIFY(insets.isValid());
 
-        QTRY_COMPARE(screen->geometry().width(), int(realSize.getField<jint>("x")));
-        QTRY_COMPARE(screen->geometry().height(), int(realSize.getField<jint>("y")));
+            int insetRight = insets.callMethod<jint>("getSystemWindowInsetRight");
+            int insetLeft = insets.callMethod<jint>("getSystemWindowInsetLeft");
+            int insetsWidth = insetRight + insetLeft;
+
+            int insetTop = insets.callMethod<jint>("getSystemWindowInsetTop");
+            int insetBottom = insets.callMethod<jint>("getSystemWindowInsetBottom");
+            int insetsHeight = insetTop + insetBottom;
+
+            expectedWidth = appSize.width() - insetsWidth;
+            expectedHeight = appSize.height() - insetsHeight;
+        }
+
+        QTRY_COMPARE(screen->availableGeometry().width(), expectedWidth);
+        QTRY_COMPARE(screen->availableGeometry().height(), expectedHeight);
+
+        QTRY_COMPARE(screen->geometry().width(), realSize.getField<jint>("x"));
+        QTRY_COMPARE(screen->geometry().height(), realSize.getField<jint>("y"));
     }
 
     {
-        setSystemUiVisibility(SYSTEM_UI_VISIBILITY_FULLSCREEN);
-
         // Fullscreen
         // available geometry == full display size (system bars hidden)
+        widget.showFullScreen();
         QCoreApplication::processEvents();
-        QTRY_COMPARE(screen->availableGeometry().width(), int(realSize.getField<jint>("x")));
-        QTRY_COMPARE(screen->availableGeometry().height(), int(realSize.getField<jint>("y")));
+        QTRY_COMPARE(screen->availableGeometry().width(), realSize.getField<jint>("x"));
+        QTRY_COMPARE(screen->availableGeometry().height(), realSize.getField<jint>("y"));
 
-        QTRY_COMPARE(screen->geometry().width(), int(realSize.getField<jint>("x")));
-        QTRY_COMPARE(screen->geometry().height(), int(realSize.getField<jint>("y")));
+        QTRY_COMPARE(screen->geometry().width(), realSize.getField<jint>("x"));
+        QTRY_COMPARE(screen->geometry().height(), realSize.getField<jint>("y"));
+        widget.showNormal();
     }
 
     {
-        setSystemUiVisibility(SYSTEM_UI_VISIBILITY_TRANSLUCENT);
-
         // Translucent
         // available geometry == full display size (system bars visible but drawable under)
+        widget.setWindowFlags(widget.windowFlags() | Qt::MaximizeUsingFullscreenGeometryHint);
+        widget.show();
         QCoreApplication::processEvents();
-        QTRY_COMPARE(screen->availableGeometry().width(), int(realSize.getField<jint>("x")));
-        QTRY_COMPARE(screen->availableGeometry().height(), int(realSize.getField<jint>("y")));
+        QTRY_COMPARE(screen->availableGeometry().width(), realSize.getField<jint>("x"));
+        QTRY_COMPARE(screen->availableGeometry().height(), realSize.getField<jint>("y"));
 
-        QTRY_COMPARE(screen->geometry().width(), int(realSize.getField<jint>("x")));
-        QTRY_COMPARE(screen->geometry().height(), int(realSize.getField<jint>("y")));
+        QTRY_COMPARE(screen->geometry().width(), realSize.getField<jint>("x"));
+        QTRY_COMPARE(screen->geometry().height(), realSize.getField<jint>("y"));
+        widget.showNormal();
+    }
+
+    {
+        // Translucent
+        // available geometry == full display size (system bars visible but drawable under)
+        widget.showMaximized();
+        QCoreApplication::processEvents();
+        QTRY_COMPARE(screen->availableGeometry().width(), realSize.getField<jint>("x"));
+        QTRY_COMPARE(screen->availableGeometry().height(), realSize.getField<jint>("y"));
+
+        QTRY_COMPARE(screen->geometry().width(), realSize.getField<jint>("x"));
+        QTRY_COMPARE(screen->geometry().height(), realSize.getField<jint>("y"));
     }
 }
 

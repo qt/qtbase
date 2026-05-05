@@ -19,6 +19,12 @@
 #include <QtCore/qtcore-config.h>
 #endif
 
+#ifdef __cplusplus /* keep in sync with qcompilerdetection.h */
+# if __has_include(<version>) /* remove this check once Integrity, QNX have caught up */
+#  include <version>
+# endif
+#endif
+
 /*
    QT_VERSION is (major << 16) | (minor << 8) | patch.
 */

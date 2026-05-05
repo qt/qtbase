@@ -201,7 +201,9 @@ void tst_qdbusxml2cpp::process_data()
                    .arg(basicTypeList[i].dbusType)
                 << QRegularExpression(QString("Q_SLOTS:.*\\bQDBusPendingReply<%1> Method\\((const )?%1 ")
                                       .arg(basicTypeList[i].cppType), QRegularExpression::DotMatchesEverythingOption)
-                << QRegularExpression(QString("Q_SLOTS:.*\\b%1 Method\\((const )?%1 ")
+                << QRegularExpression(QString("Q_SLOTS:.*\\b%1 Method\\((const )?%1 &?in0\\);"
+                                              ".*%1 .*::Method\\((const )?%1 &?in0\\)\n{\n"
+                                              ".*%1 out0{};")
                                       .arg(basicTypeList[i].cppType), QRegularExpression::DotMatchesEverythingOption);
     }
 
@@ -224,7 +226,9 @@ void tst_qdbusxml2cpp::process_data()
                "</method>"
             << QRegularExpression("Q_SLOTS:.*\\bQDBusPendingReply<Point> Method\\(PointF ",
                                   QRegularExpression::DotMatchesEverythingOption)
-            << QRegularExpression("Q_SLOTS:.*\\bPoint Method\\(PointF ",
+            << QRegularExpression("Q_SLOTS:.*\\bPoint Method\\(PointF in0\\);"
+                                  ".*Point .*::Method\\(PointF in0\\)\n{\n"
+                                  ".*Point out0{};",
                                   QRegularExpression::DotMatchesEverythingOption);
 
     QTest::newRow("method-ss")

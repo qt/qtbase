@@ -66,9 +66,6 @@ void QEglFSWindow::create()
 
     m_flags = Created;
 
-    if (window()->type() == Qt::Desktop)
-        return;
-
     // Stop if there is already a window backed by a native window and surface. Additional
     // raster windows will not have their own native window, surface and context. Instead,
     // they will be composited onto the root window's surface.
@@ -134,29 +131,42 @@ void QEglFSWindow::destroy()
     if (!m_flags.testFlag(Created))
         return; // already destroyed
 
-#ifndef QT_NO_OPENGL
-    QOpenGLCompositor::instance()->removeWindow(this);
-#endif
-
     QEglFSScreen *screen = this->screen();
-    if (m_flags.testFlag(HasNativeWindow)) {
 #ifndef QT_NO_OPENGL
+    QOpenGLCompositor *compositor = QOpenGLCompositor::instance();
+    compositor->removeWindow(this);
+    if (compositor->targetWindow() == window()) {
         QEglFSCursor *cursor = qobject_cast<QEglFSCursor *>(screen->cursor());
         if (cursor)
             cursor->resetResources();
-#endif
+
         if (screen->primarySurface() == m_surface)
             screen->setPrimarySurface(EGL_NO_SURFACE);
 
         invalidateSurface();
 
-#ifndef QT_NO_OPENGL
-        QOpenGLCompositor::destroy();
-        if (qt_gl_global_share_context() == m_rasterCompositingContext)
-            qt_gl_set_global_share_context(nullptr);
-        delete m_rasterCompositingContext;
-#endif
+        if (compositor->windows().isEmpty()) {
+            compositor->destroy();
+            if (qt_gl_global_share_context() == m_rasterCompositingContext)
+                qt_gl_set_global_share_context(nullptr);
+            delete m_rasterCompositingContext;
+        } else {
+            auto topWindow = static_cast<QEglFSWindow *>(compositor->windows().last());
+            // Make fullscreen
+            topWindow->setGeometry(screen->rawGeometry());
+            topWindow->resetSurface();
+            screen->setPrimarySurface(topWindow->surface());
+            compositor->setTargetWindow(topWindow->sourceWindow(), screen->rawGeometry());
+        }
     }
+#else
+    if (m_flags.testFlag(HasNativeWindow)) {
+        if (screen->primarySurface() == m_surface)
+            screen->setPrimarySurface(EGL_NO_SURFACE);
+
+        invalidateSurface();
+    }
+#endif
 
     m_flags = { };
 }
@@ -183,7 +193,6 @@ void QEglFSWindow::invalidateSurface()
 
         if (screen()->primarySurface() == m_surface)
             screen()->setPrimarySurface(EGL_NO_SURFACE);
-
 
         m_surface = EGL_NO_SURFACE;
         m_flags = m_flags & ~Created;

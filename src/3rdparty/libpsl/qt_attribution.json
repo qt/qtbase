@@ -19,9 +19,11 @@ supported by Qt (by the QNetworkCookieJar class).",
 
     "Comment": "Consult https://github.com/publicsuffix/list for the sha1 but download from ...",
     "Homepage": "http://publicsuffix.org/",
-    "Comment": "Suggested update schedule: twice per year (before a 6.x.0 release)",
-    "Version": "903a83ff7bfc3148e3692e09396f9f3bdc9462ef, fetched on 2024-06-05",
+    "Comment": "Suggested update schedule: twice per year (before a 6.x.0 release), no relevant CPE found",
+    "Comment": "Updated by util/update_public_suffix_list.sh; if you add fields here, update the script, too!",
+    "Version": "47264b57765919188b9f4144de8d95cf77e1b6dc, fetched on 2025-01-22",
     "DownloadLocation": "https://publicsuffix.org/list/public_suffix_list.dat",
+    "PURL": "pkg:generic/psl-data@47264b57765919188b9f4144de8d95cf77e1b6dc?download_url=https://publicsuffix.org/list/public_suffix_list.dat",
 
     "License": "Mozilla Public License 2.0",
     "LicenseFile": "PSL-LICENSE.txt",
@@ -38,9 +40,11 @@ supported by Qt (by the QNetworkCookieJar class).",
 to lookup entries in it.",
     "Homepage": "https://github.com/rockdaboot/libpsl",
     "Version": "664f3dc85259ec65e30248a61fa1c45b7b0e4c3f",
+    "PURL": "pkg:github/rockdaboot/libpsl@$<VERSION>",
     "License": "BSD 3-clause \"New\" or \"Revised\" License",
     "LicenseFile": "src/LICENSE.chromium",
     "LicenseId": "BSD-3-Clause",
-    "Copyright": "Copyright 2014-2016 The Chromium Authors. All rights reserved."
+    "Copyright": "Copyright 2014-2016 The Chromium Authors. All rights reserved.",
+    "Comment": "no relevant CPE found"
 }
 ]

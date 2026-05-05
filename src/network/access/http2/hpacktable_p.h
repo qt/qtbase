@@ -125,6 +125,8 @@ public:
     quint32 numberOfStaticEntries() const;
     quint32 numberOfDynamicEntries() const;
     quint32 dynamicDataSize() const;
+    quint32 dynamicDataCapacity() const;
+    quint32 maxDynamicDataCapacity() const;
     void clearDynamicTable();
 
     bool indexIsValid(quint32 index) const;

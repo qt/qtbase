@@ -3789,17 +3789,17 @@ void tst_QGraphicsProxyWidget::forwardTouchEvent()
 
     EventSpy eventSpy(widget);
 
-    QPointingDevice *device = QTest::createTouchDevice();
+    const std::unique_ptr<QPointingDevice> device{QTest::createTouchDevice()};
 
     QVERIFY(device);
     QCOMPARE(eventSpy.counts[QEvent::TouchBegin], 0);
     QCOMPARE(eventSpy.counts[QEvent::TouchUpdate], 0);
     QCOMPARE(eventSpy.counts[QEvent::TouchEnd], 0);
 
-    QTest::touchEvent(&view, device).press(0, QPoint(10, 10), &view);
-    QTest::touchEvent(&view, device).move(0, QPoint(15, 15), &view);
-    QTest::touchEvent(&view, device).move(0, QPoint(16, 16), &view);
-    QTest::touchEvent(&view, device).release(0, QPoint(15, 15), &view);
+    QTest::touchEvent(&view, device.get()).press(0, QPoint(10, 10), &view);
+    QTest::touchEvent(&view, device.get()).move(0, QPoint(15, 15), &view);
+    QTest::touchEvent(&view, device.get()).move(0, QPoint(16, 16), &view);
+    QTest::touchEvent(&view, device.get()).release(0, QPoint(15, 15), &view);
 
     QApplication::processEvents();
 
@@ -3900,7 +3900,7 @@ void tst_QGraphicsProxyWidget::touchEventPropagation()
     } eventSpy;
     qApp->installEventFilter(&eventSpy);
 
-    auto touchDevice = QTest::createTouchDevice();
+    const std::unique_ptr<QPointingDevice> touchDevice{QTest::createTouchDevice()};
     const QPointF simpleCenter = simpleProxy->geometry().center();
 
     // On systems without double conversion we might get different rounding behavior.
@@ -3914,7 +3914,7 @@ void tst_QGraphicsProxyWidget::touchEventPropagation()
     };
 
     // verify that the embedded widget gets the correctly translated event
-    QTest::touchEvent(&view, touchDevice).press(0, simpleCenter.toPoint());
+    QTest::touchEvent(&view, touchDevice.get()).press(0, simpleCenter.toPoint());
     // window, viewport, scene, simpleProxy, simpleWidget
     QCOMPARE(eventSpy.count(), 5);
     QCOMPARE(eventSpy.at(0).receiver, view.windowHandle());
@@ -3949,9 +3949,9 @@ void tst_QGraphicsProxyWidget::touchEventPropagation()
     // Single touch point to nested widget not accepting event.
     // Event should bubble up and translate correctly, TouchUpdate and TouchEnd events
     // stop at the window since nobody accepted the TouchBegin. A mouse event will be generated.
-    QTest::touchEvent(&view, touchDevice).press(0, pb1TouchPos);
-    QTest::touchEvent(&view, touchDevice).move(0, pb1TouchPos + QPoint(1, 1));
-    QTest::touchEvent(&view, touchDevice).release(0, pb1TouchPos + QPoint(1, 1));
+    QTest::touchEvent(&view, touchDevice.get()).press(0, pb1TouchPos);
+    QTest::touchEvent(&view, touchDevice.get()).move(0, pb1TouchPos + QPoint(1, 1));
+    QTest::touchEvent(&view, touchDevice.get()).release(0, pb1TouchPos + QPoint(1, 1));
     // ..., formProxy, pushButton1, formWidget, window, window
     QCOMPARE(eventSpy.count(), 8);
     QCOMPARE(eventSpy.at(3).receiver, formProxy); // formProxy dispatches to the right subwidget
@@ -3976,9 +3976,9 @@ void tst_QGraphicsProxyWidget::touchEventPropagation()
     clickedSpy.clear();
 
     // Single touch point to nested widget accepting event.
-    QTest::touchEvent(&view, touchDevice).press(0, tw1TouchPos);
-    QTest::touchEvent(&view, touchDevice).move(0, tw1TouchPos + QPoint(5, 5));
-    QTest::touchEvent(&view, touchDevice).release(0, tw1TouchPos + QPoint(5, 5));
+    QTest::touchEvent(&view, touchDevice.get()).press(0, tw1TouchPos);
+    QTest::touchEvent(&view, touchDevice.get()).move(0, tw1TouchPos + QPoint(5, 5));
+    QTest::touchEvent(&view, touchDevice.get()).release(0, tw1TouchPos + QPoint(5, 5));
     // Press: ..., formProxy, touchWidget1 (5)
     // Move: window, touchWidget1 (2)
     // Release: window, touchWidget1 (2)
@@ -4009,17 +4009,17 @@ void tst_QGraphicsProxyWidget::touchEventPropagation()
     touchWidget2->installEventFilter(&eventSpy);
 
     // multi-touch to different widgets, some do and some don't accept the event
-    QTest::touchEvent(&view, touchDevice)
+    QTest::touchEvent(&view, touchDevice.get())
         .press(0, pb1TouchPos)
         .press(1, tw1TouchPos)
         .press(2, pb2TouchPos)
         .press(3, tw2TouchPos);
-    QTest::touchEvent(&view, touchDevice)
+    QTest::touchEvent(&view, touchDevice.get())
         .move(0, pb1TouchPos + QPoint(1, 1))
         .move(1, tw1TouchPos + QPoint(1, 1))
         .move(2, pb2TouchPos + QPoint(1, 1))
         .move(3, tw2TouchPos + QPoint(1, 1));
-    QTest::touchEvent(&view, touchDevice)
+    QTest::touchEvent(&view, touchDevice.get())
         .release(0, pb1TouchPos + QPoint(1, 1))
         .release(1, tw1TouchPos + QPoint(1, 1))
         .release(2, pb2TouchPos + QPoint(1, 1))

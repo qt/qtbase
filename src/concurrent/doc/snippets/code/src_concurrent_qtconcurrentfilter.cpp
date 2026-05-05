@@ -188,3 +188,22 @@ QFuture<int> sum = QtConcurrent::filteredReduced(list,
     }
 );
 //! [17]
+
+//! [18]
+auto keepPositive = [](int val) {
+    return val > 0;
+};
+
+QList<int> inputs { -1, 1, 2, -3, 5 };
+auto badFuture = QtConcurrent::filtered(inputs, keepPositive)
+                         .then([](int val) {
+                             qDebug() << val;
+                         });
+
+auto goodFuture = QtConcurrent::filtered(inputs, keepPositive)
+                          .then([](QFuture<int> f) {
+                              for (auto r : f.results()) {
+                                  qDebug() << r;
+                              }
+                          });
+//! [18]

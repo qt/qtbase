@@ -265,6 +265,7 @@ public:
 
     size_type size() const { return d ? size_type(d->m.size()) : size_type(0); }
 
+    [[nodiscard]]
     bool isEmpty() const { return d ? d->m.empty() : true; }
 
     void detach()
@@ -757,6 +758,7 @@ public:
     }
 
     // STL compatibility
+    [[nodiscard]]
     inline bool empty() const
     {
         return isEmpty();
@@ -910,6 +912,7 @@ public:
 
     size_type size() const { return d ? size_type(d->m.size()) : size_type(0); }
 
+    [[nodiscard]]
     bool isEmpty() const { return d ? d->m.empty() : true; }
 
     void detach()
@@ -1490,6 +1493,7 @@ public:
     }
 
     // STL compatibility
+    [[nodiscard]]
     inline bool empty() const { return isEmpty(); }
 
     QPair<iterator, iterator> equal_range(const Key &akey)

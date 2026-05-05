@@ -55,6 +55,18 @@
     return any results via QFuture. However, you can still use QFuture and
     QFutureWatcher to monitor the status of the filter.
 
+    \section2 Concurrent Filtered and Continuations
+
+    The result of QtConcurrent::filtered() call is a QFuture that contains
+    multiple results. When attaching a \c {.then()} continuation to such
+    QFuture, make sure to use a continuation that takes QFuture as a parameter,
+    otherwise only the first result will be processed:
+
+    \snippet code/src_concurrent_qtconcurrentfilter.cpp 18
+
+    In this example \c {badFuture} will only print a single result, while
+    \c {goodFuture} will print all results.
+
     \section1 Concurrent Filter-Reduce
 
     QtConcurrent::filteredReduced() is similar to QtConcurrent::filtered(),

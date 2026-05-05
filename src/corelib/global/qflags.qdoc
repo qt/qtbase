@@ -398,20 +398,16 @@
 */
 
 /*!
-    \fn template <typename Enum> size_t qHash(QFlags<Enum> flags, size_t seed = 0) noexcept
+    \fn template <typename Enum> size_t qHash(QFlags<Enum> key, size_t seed)
     \since 6.2
-    \relates QFlags
-
-    Calculates the hash for the flags \a flags, using \a seed
-    to seed the calculation.
+    \qhashold{QFlags}
 */
 
 /*!
-    \fn template <typename Enum> bool operator==(QFlags<Enum> lhs, QFlags<Enum> rhs)
-    \fn template <typename Enum> bool operator==(QFlags<Enum> lhs, Enum rhs)
-    \fn template <typename Enum> bool operator==(Enum lhs, QFlags<Enum> rhs)
+    \fn template <typename Enum> bool QFlags<Enum>::operator==(QFlags<Enum> lhs, QFlags<Enum> rhs)
+    \fn template <typename Enum> bool QFlags<Enum>::operator==(QFlags<Enum> lhs, Enum rhs)
+    \fn template <typename Enum> bool QFlags<Enum>::operator==(Enum lhs, QFlags<Enum> rhs)
     \since 6.2
-    \relates QFlags
 
     Compares \a lhs and \a rhs for equality; the two arguments are
     considered equal if they represent exactly the same value
@@ -419,11 +415,10 @@
 */
 
 /*!
-    \fn template <typename Enum> bool operator!=(QFlags<Enum> lhs, QFlags<Enum> rhs)
-    \fn template <typename Enum> bool operator!=(QFlags<Enum> lhs, Enum rhs)
-    \fn template <typename Enum> bool operator!=(Enum lhs, QFlags<Enum> rhs)
+    \fn template <typename Enum> bool QFlags<Enum>::operator!=(QFlags<Enum> lhs, QFlags<Enum> rhs)
+    \fn template <typename Enum> bool QFlags<Enum>::operator!=(QFlags<Enum> lhs, Enum rhs)
+    \fn template <typename Enum> bool QFlags<Enum>::operator!=(Enum lhs, QFlags<Enum> rhs)
     \since 6.2
-    \relates QFlags
 
     Compares \a lhs and \a rhs for inequality; the two arguments are
     considered different if they don't represent exactly the same value

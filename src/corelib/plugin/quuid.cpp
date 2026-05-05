@@ -939,16 +939,15 @@ QDebug operator<<(QDebug dbg, const QUuid &id)
 #endif
 
 /*!
+    \fn size_t qHash(const QUuid &key, size_t seed)
     \since 5.0
-    \relates QUuid
-    Returns a hash of the UUID \a uuid, using \a seed to seed the calculation.
+    \qhashold{QUuid}
 */
 size_t qHash(const QUuid &uuid, size_t seed) noexcept
 {
-    return uuid.data1 ^ uuid.data2 ^ (uuid.data3 << 16)
-            ^ ((uuid.data4[0] << 24) | (uuid.data4[1] << 16) | (uuid.data4[2] << 8) | uuid.data4[3])
-            ^ ((uuid.data4[4] << 24) | (uuid.data4[5] << 16) | (uuid.data4[6] << 8) | uuid.data4[7])
-            ^ seed;
+    static_assert(std::has_unique_object_representations_v<QUuid>,
+                  "Can't use qHashBits() if the type has padding holes.");
+    return qHashBits(&uuid, sizeof(QUuid), seed);
 }
 
 

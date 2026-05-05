@@ -788,10 +788,7 @@ bool QTransform::operator==(const QTransform &o) const
 
 /*!
     \since 5.6
-    \relates QTransform
-
-    Returns the hash value for \a key, using
-    \a seed to seed the calculation.
+    \qhashold{QTransform}
 */
 size_t qHash(const QTransform &key, size_t seed) noexcept
 {
@@ -1760,7 +1757,7 @@ QPolygon QTransform::mapToPolygon(const QRect &rect) const
 */
 bool QTransform::squareToQuad(const QPolygonF &quad, QTransform &trans)
 {
-    if (quad.size() != 4)
+    if (quad.size() != (quad.isClosed() ? 5 : 4))
         return false;
 
     qreal dx0 = quad[0].x();

@@ -273,9 +273,9 @@ void QOpenGLCompositor::addWindow(QOpenGLCompositorWindow *window)
 
 void QOpenGLCompositor::removeWindow(QOpenGLCompositorWindow *window)
 {
-    m_windows.removeOne(window);
-    if (!m_windows.isEmpty())
-        emit topWindowChanged(m_windows.last());
+    bool couldChangeTopWindow = (m_windows.size() > 1) ? (window == m_windows.constLast()) : false;
+    if (m_windows.removeOne(window) && couldChangeTopWindow)
+        emit topWindowChanged(m_windows.constLast());
 }
 
 void QOpenGLCompositor::moveToTop(QOpenGLCompositorWindow *window)

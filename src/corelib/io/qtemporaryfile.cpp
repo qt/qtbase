@@ -595,6 +595,7 @@ QString QTemporaryFilePrivate::defaultTemplateName()
     auto-generated portion of the filename. Note that the template is
     case sensitive. If the template is not present in the filename,
     QTemporaryFile appends the generated part to the filename given.
+    Only the last occurrence of \c {"XXXXXX"} will be considered.
 
     \note On Linux, QTemporaryFile will attempt to create unnamed temporary
     files. If that succeeds, open() will return true but exists() will be
@@ -833,22 +834,28 @@ void QTemporaryFile::setFileTemplate(const QString &name)
 bool QTemporaryFile::rename(const QString &newName)
 {
     Q_D(QTemporaryFile);
-    auto tef = static_cast<QTemporaryFileEngine *>(d->fileEngine.get());
-    if (!tef || !tef->isReallyOpen() || !tef->filePathWasTemplate)
-        return QFile::rename(newName);
+    return d->rename(newName, false);
+}
 
-    unsetError();
-    close();
-    if (error() == QFile::NoError) {
-        if (tef->rename(newName)) {
-            unsetError();
+bool QTemporaryFilePrivate::rename(const QString &newName, bool overwrite)
+{
+    Q_Q(QTemporaryFile);
+    auto tef = static_cast<QTemporaryFileEngine *>(fileEngine.get());
+    if (!tef || !tef->isReallyOpen() || !tef->filePathWasTemplate)
+        return q->QFile::rename(newName);
+
+    q->unsetError();
+    q->close();
+    if (q->error() == QFile::NoError) {
+        if (overwrite ? tef->renameOverwrite(newName) : tef->rename(newName)) {
+            q->unsetError();
             // engine was able to handle the new name so we just reset it
             tef->setFileName(newName);
-            d->fileName = newName;
+            fileName = newName;
             return true;
         }
 
-        d->setError(QFile::RenameError, tef->errorString());
+        setError(QFile::RenameError, tef->errorString());
     }
     return false;
 }

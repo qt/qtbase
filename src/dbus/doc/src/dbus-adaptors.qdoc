@@ -6,7 +6,7 @@
     \title Using Qt D-Bus Adaptors
     \brief How to create and use DBus adaptors in Qt.
 
-    \ingroup best-practices
+    \ingroup how-to
 
     Adaptors are special classes that are attached to any QObject-derived class
     and provide the interface to the external world using D-Bus. Adaptors are

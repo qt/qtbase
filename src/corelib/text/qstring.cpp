@@ -1238,8 +1238,9 @@ Q_NEVER_INLINE static int ucstricmp8(const char *utf8, const char *utf8end, cons
     QStringIterator src2(utf16, utf16end);
 
     while (src1 < end1 && src2.hasNext()) {
-        char32_t uc1 = 0;
-        char32_t *output = &uc1;
+        char32_t decoded[1];
+        char32_t *output = decoded;
+        char32_t &uc1 = decoded[0];
         uchar b = *src1++;
         int res = QUtf8Functions::fromUtf8<QUtf8BaseTraits>(b, output, src1, end1);
         if (res < 0) {
@@ -1809,7 +1810,8 @@ void qtWarnAboutInvalidRegularExpression(const QString &pattern, const char *whe
     constructor. Similarly, you can pass a QString to a function that
     takes a \c{const char *} argument using the \l qPrintable() macro
     which returns the given QString as a \c{const char *}. This is
-    equivalent to calling <QString>.toLocal8Bit().constData().
+    equivalent to calling toLocal8Bit().\l{QByteArray::}{constData()}
+    on the QString.
 
     \section1 Manipulating String Data
 
@@ -2008,7 +2010,7 @@ void qtWarnAboutInvalidRegularExpression(const QString &pattern, const char *whe
     \snippet qstring/main.cpp 8
 
     All functions except isNull() treat null strings the same as empty
-    strings. For example, toUtf8().constData() returns a valid pointer
+    strings. For example, toUtf8().\l{QByteArray::}{constData()} returns a valid pointer
     (\e not nullptr) to a '\\0' character for a null string. We
     recommend that you always use the isEmpty() function and avoid isNull().
 
@@ -11177,7 +11179,7 @@ void QAbstractConcatenable::appendLatin1To(QLatin1StringView in, QChar *out) noe
     \relates QString
 
     Returns \a str as a \c{const char *}. This is equivalent to
-    \a{str}.toLocal8Bit().constData().
+    \a{str}.toLocal8Bit().\l{QByteArray::}{constData()}.
 
     The char pointer will be invalid after the statement in which
     qPrintable() is used. This is because the array returned by
@@ -11197,7 +11199,7 @@ void QAbstractConcatenable::appendLatin1To(QLatin1StringView in, QChar *out) noe
     \since 5.4
 
     Returns \a str as a \c{const char *}. This is equivalent to
-    \a{str}.toUtf8().constData().
+    \a{str}.toUtf8().\l{QByteArray::}{constData()}.
 
     The char pointer will be invalid after the statement in which
     qUtf8Printable() is used. This is because the array returned by

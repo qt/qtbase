@@ -106,6 +106,8 @@ private slots:
     // validation & errors
     void checkedIntegers_data();
     void checkedIntegers();
+    void validationValid_data() { arrays_data(); }
+    void validationValid();
     void validation_data();
     void validation();
     void strictValidation_data();
@@ -256,7 +258,7 @@ CborError parseOneChunk(CborValue *it, QString *parsed)
         if (text)
             *parsed = '"' + QString::fromUtf8(text, len) + '"';
     } else {
-        Q_ASSERT(false);
+        Q_UNREACHABLE();
     }
     return err;
 }
@@ -1335,6 +1337,21 @@ void tst_Parser::checkedIntegers()
     } else {
         QCOMPARE(int64_t(v2), expected);
     }
+}
+
+void tst_Parser::validationValid()
+{
+    // verify that all valid data validate properly
+    QFETCH(QByteArray, data);
+
+    QString decoded;
+    ParserWrapper w;
+    CborError err = w.init(data);
+    QVERIFY2(!err, QByteArray("Got error \"") + cbor_error_string(err) + "\"");
+
+    QCOMPARE(cbor_value_validate_basic(&w.first), CborNoError);
+    QCOMPARE(cbor_value_validate(&w.first, CborValidateBasic), CborNoError);
+    QCOMPARE(cbor_value_validate(&w.first, CborValidateCompleteData), CborNoError);
 }
 
 void tst_Parser::validation_data()

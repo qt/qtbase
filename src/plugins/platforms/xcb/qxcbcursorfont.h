@@ -3,8 +3,7 @@
 
 // copied from <X11/cursorfont.h>
 
-#ifndef QXCBCURSORFONT_H
-#define QXCBCURSORFONT_H
+#pragma once
 
 #define XC_num_glyphs 154
 #define XC_X_cursor 0
@@ -84,5 +83,3 @@
 #define XC_ur_angle 148
 #define XC_watch 150
 #define XC_xterm 152
-
-#endif /* QXCBCURSORFONT_H */

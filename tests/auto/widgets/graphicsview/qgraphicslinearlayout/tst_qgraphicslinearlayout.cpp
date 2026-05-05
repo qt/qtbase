@@ -12,6 +12,8 @@
 #include <QtWidgets/qstyle.h>
 #include <QtWidgets/qproxystyle.h>
 
+#include <QtCore/qvarlengtharray.h>
+
 class tst_QGraphicsLinearLayout : public QObject {
 Q_OBJECT
 
@@ -24,8 +26,6 @@ private slots:
     void alignment();
     void count_data();
     void count();
-    void dump_data();
-    void dump();
     void geometry_data();
     void geometry();
     void insertItem_data();
@@ -34,7 +34,6 @@ private slots:
     void insertStretch();
     void invalidate_data();
     void invalidate();
-    void itemAt_data();
     void itemAt();
     void itemAt_visualOrder();
     void orientation_data();
@@ -359,8 +358,10 @@ void tst_QGraphicsLinearLayout::count()
     SubQGraphicsLinearLayout layout;
     QCOMPARE(layout.count(), 0);
 
-    for (int i = 0; i < itemCount; ++i)
-        layout.addItem(new QGraphicsWidget);
+    QVarLengthArray<QGraphicsWidget, 5> widgets(itemCount);
+
+    for (auto &w : widgets)
+        layout.addItem(&w);
     QCOMPARE(layout.count(), itemCount);
 
     for (int i = 0; i < layoutCount; ++i)
@@ -368,31 +369,6 @@ void tst_QGraphicsLinearLayout::count()
     QCOMPARE(layout.count(), itemCount + layoutCount);
 
     // see also removeAt()
-}
-
-void tst_QGraphicsLinearLayout::dump_data()
-{
-    QTest::addColumn<int>("itemCount");
-    QTest::addColumn<int>("layoutCount");
-    for (int i = -1; i < 3; ++i) {
-        const QByteArray iB = QByteArray::number(i);
-        QTest::newRow((iB + ", 0, 0").constData()) << 0 << 0;
-        QTest::newRow((iB + ", 0, 5").constData()) << 5 << 5;
-        QTest::newRow((iB + ", 5, 0").constData()) << 5 << 5;
-        QTest::newRow((iB + ", 5, 5").constData()) << 5 << 5;
-    }
-}
-
-// void dump(int indent = 0) const public
-void tst_QGraphicsLinearLayout::dump()
-{
-    QFETCH(int, itemCount);
-    QFETCH(int, layoutCount);
-    SubQGraphicsLinearLayout layout;
-    for (int i = 0; i < itemCount; ++i)
-        layout.addItem(new QGraphicsWidget);
-    for (int i = 0; i < layoutCount; ++i)
-        layout.addItem(new SubQGraphicsLinearLayout);
 }
 
 void tst_QGraphicsLinearLayout::geometry_data()
@@ -484,23 +460,26 @@ void tst_QGraphicsLinearLayout::insertItem()
         return;
 
     SubQGraphicsLinearLayout layout;
-    for (int i = 0; i < itemCount; ++i)
-        layout.addItem(new QGraphicsWidget);
+
+    QVarLengthArray<QGraphicsWidget> widgets(itemCount);
+
+    for (auto &w : widgets)
+        layout.addItem(&w);
     for (int i = 0; i < layoutCount; ++i)
         layout.addItem(new SubQGraphicsLinearLayout);
 
-    QGraphicsLayoutItem *item = nullptr;
+    std::unique_ptr<QGraphicsLayoutItem> item = nullptr;
     if (isWidget)
-        item = new QGraphicsWidget;
+        item = std::make_unique<QGraphicsWidget>();
     else
-        item = new SubQGraphicsLinearLayout;
+        item = std::make_unique<SubQGraphicsLinearLayout>();
 
     QSizeF oldSizeHint = layout.sizeHint(Qt::PreferredSize, QSizeF());
-    layout.insertItem(insertItemAt, item);
+    layout.insertItem(insertItemAt, item.get());
     QCOMPARE(layout.count(), itemCount + layoutCount + 1);
 
     if (insertItemAt >= 0 && (itemCount + layoutCount >= 0)) {
-        QCOMPARE(layout.itemAt(insertItemAt), item);
+        QCOMPARE(layout.itemAt(insertItemAt), item.get());
     }
 
     layout.activate();
@@ -633,46 +612,41 @@ void tst_QGraphicsLinearLayout::invalidate()
     delete widget;
 }
 
-void tst_QGraphicsLinearLayout::itemAt_data()
-{
-    QTest::addColumn<int>("index");
-    QTest::newRow("0") << 0;
-    QTest::newRow("1") << 1;
-    QTest::newRow("2") << 2;
-}
-
 // QGraphicsLayoutItem* itemAt(int index) const public
 void tst_QGraphicsLinearLayout::itemAt()
 {
     // see also the insertItem() etc tests
-    QFETCH(int, index);
     SubQGraphicsLinearLayout layout;
-    for (int i = 0; i < 3; ++i)
-        layout.addItem(new QGraphicsWidget);
 
-    QVERIFY(layout.itemAt(index) != 0);
+    QGraphicsWidget widgets[3];
+    for (auto &w : widgets)
+        layout.addItem(&w);
+
+    int i = 0;
+    for (const auto &w : widgets)
+        QCOMPARE(layout.itemAt(i++), &w);
 }
 
 void tst_QGraphicsLinearLayout::itemAt_visualOrder()
 {
-    QGraphicsLinearLayout *l = new QGraphicsLinearLayout;
+    QGraphicsLinearLayout l;
 
-    QGraphicsWidget *w1 = new QGraphicsWidget;
-    l->addItem(w1);
+    QGraphicsWidget w1;
+    l.addItem(&w1);
 
-    QGraphicsWidget *w3 = new QGraphicsWidget;
-    l->addItem(w3);
+    QGraphicsWidget w3;
+    l.addItem(&w3);
 
-    QGraphicsWidget *w0 = new QGraphicsWidget;
-    l->insertItem(0, w0);
+    QGraphicsWidget w0;
+    l.insertItem(0, &w0);
 
-    QGraphicsWidget *w2 = new QGraphicsWidget;
-    l->insertItem(2, w2);
+    QGraphicsWidget w2;
+    l.insertItem(2, &w2);
 
-    QCOMPARE(l->itemAt(0), static_cast<QGraphicsLayoutItem*>(w0));
-    QCOMPARE(l->itemAt(1), static_cast<QGraphicsLayoutItem*>(w1));
-    QCOMPARE(l->itemAt(2), static_cast<QGraphicsLayoutItem*>(w2));
-    QCOMPARE(l->itemAt(3), static_cast<QGraphicsLayoutItem*>(w3));
+    QCOMPARE(l.itemAt(0), static_cast<QGraphicsLayoutItem*>(&w0));
+    QCOMPARE(l.itemAt(1), static_cast<QGraphicsLayoutItem*>(&w1));
+    QCOMPARE(l.itemAt(2), static_cast<QGraphicsLayoutItem*>(&w2));
+    QCOMPARE(l.itemAt(3), static_cast<QGraphicsLayoutItem*>(&w3));
 }
 
 void tst_QGraphicsLinearLayout::orientation_data()
@@ -740,12 +714,12 @@ void tst_QGraphicsLinearLayout::removeAt_data()
     QTest::addColumn<Qt::Orientation>("orientation");
     for (int i = -1; i < 4; ++i) {
         const QByteArray iB = QByteArray::number(i);
-        for (int k = 0; k < 2; ++k) {
-            Qt::Orientation orientation = (k == 0) ? Qt::Vertical : Qt::Horizontal;
-            QTest::newRow(("0, 0, " + iB).constData()) << 0 << 0 << i << orientation;
-            QTest::newRow(("1, 0, " + iB).constData()) << 1 << 0 << i << orientation;
-            QTest::newRow(("0, 1, " + iB).constData()) << 0 << 1 << i << orientation;
-            QTest::newRow(("2, 2, " + iB).constData()) << 2 << 2 << i << orientation;
+        for (Qt::Orientation orientation : {Qt::Vertical, Qt::Horizontal}) {
+            const QByteArray orientStr = orientation == Qt::Vertical ? ", vertical" : ", horizontal";
+            QTest::newRow(("0, 0, " + iB + orientStr).constData()) << 0 << 0 << i << orientation;
+            QTest::newRow(("1, 0, " + iB + orientStr).constData()) << 1 << 0 << i << orientation;
+            QTest::newRow(("0, 1, " + iB + orientStr).constData()) << 0 << 1 << i << orientation;
+            QTest::newRow(("2, 2, " + iB + orientStr).constData()) << 2 << 2 << i << orientation;
         }
     }
 }
@@ -761,10 +735,15 @@ void tst_QGraphicsLinearLayout::removeAt()
         return;
 
     SubQGraphicsLinearLayout layout(orientation);
-    for (int i = 0; i < itemCount; ++i)
-        layout.addItem(new QGraphicsWidget);
-    for (int i = 0; i < layoutCount; ++i)
-        layout.addItem(new SubQGraphicsLinearLayout);
+
+    QVarLengthArray<QGraphicsWidget> widgets(itemCount);
+    for (auto &w : widgets)
+        layout.addItem(&w);
+
+    QVarLengthArray<SubQGraphicsLinearLayout> layouts(layoutCount);
+    for (auto &l : layouts)
+        layout.addItem(&l);
+
     QSizeF oldSizeHint = layout.sizeHint(Qt::PreferredSize, QSizeF());
 
     QGraphicsLayoutItem *w = nullptr;
@@ -776,7 +755,6 @@ void tst_QGraphicsLinearLayout::removeAt()
         layout.removeAt(removeItemAt);
         wParent = w->parentLayoutItem();
         QCOMPARE(wParent, nullptr);
-        delete w;
     }
     QCOMPARE(layout.count(), itemCount + layoutCount - (w ? 1 : 0));
 
@@ -812,19 +790,22 @@ void tst_QGraphicsLinearLayout::removeItem()
         return;
 
     SubQGraphicsLinearLayout layout;
-    for (int i = 0; i < itemCount; ++i)
-        layout.addItem(new QGraphicsWidget);
-    for (int i = 0; i < layoutCount; ++i)
-        layout.addItem(new SubQGraphicsLinearLayout);
+
+    QVarLengthArray<QGraphicsWidget> widgets(itemCount);
+    for (auto &w : widgets)
+        layout.addItem(&w);
+
+    QVarLengthArray<SubQGraphicsLinearLayout> layouts(layoutCount);
+    for (auto &l : layouts)
+        layout.addItem(&l);
 
     QGraphicsLayoutItem *w = nullptr;
     if (removeItemAt >= 0 && removeItemAt < layout.count())
         w = layout.itemAt(removeItemAt);
     QSizeF oldSizeHint = layout.sizeHint(Qt::PreferredSize, QSizeF());
-    if (w) {
+    if (w)
         layout.removeItem(w);
-        delete w;
-    }
+
     QCOMPARE(layout.count(), itemCount + layoutCount - (w ? 1 : 0));
 
     layout.activate();
@@ -886,15 +867,15 @@ void tst_QGraphicsLinearLayout::defaultSpacing()
 {
     QGraphicsScene scene;
     QGraphicsView view(&scene);
-    LayoutStyle *style = new LayoutStyle(QLatin1String("windows"));
+    const auto style = std::make_unique<LayoutStyle>(QLatin1String("windows"));
     style->horizontalSpacing = 5;
     style->verticalSpacing = 3;
-    LayoutStyle *style2 = new LayoutStyle(QLatin1String("windows"));
+    const auto style2 = std::make_unique<LayoutStyle>(QLatin1String("windows"));
     style2->horizontalSpacing = 25;
     style2->verticalSpacing = 23;
 
     QGraphicsWidget *widget = new QGraphicsWidget(0, Qt::Window);
-    widget->setStyle(style);
+    widget->setStyle(style.get());
 
     // Horizontal layout
     SubQGraphicsLinearLayout *layout = new SubQGraphicsLinearLayout(Qt::Horizontal);
@@ -921,13 +902,13 @@ void tst_QGraphicsLinearLayout::defaultSpacing()
     QCOMPARE(styleSpacing, qreal(15));
     QCOMPARE(styleSpacing, layout->spacing());
     QCOMPARE(layout->effectiveSizeHint(Qt::PreferredSize).width(), qreal(115));
-    widget->setStyle(style2);
+    widget->setStyle(style2.get());
     // If the style itself changes, the layout will pick that up
     QCOMPARE(layout->effectiveSizeHint(Qt::PreferredSize).width(), qreal(125));
     QCOMPARE(layout->spacing(), qreal(25));
 
     // Vertical layout
-    widget->setStyle(style);
+    widget->setStyle(style.get());
     layout->setOrientation(Qt::Vertical);
     styleSpacing = (qreal)style->pixelMetric(QStyle::PM_LayoutVerticalSpacing);
     QCOMPARE(styleSpacing, qreal(3));
@@ -940,7 +921,7 @@ void tst_QGraphicsLinearLayout::defaultSpacing()
     QCOMPARE(styleSpacing, qreal(13));
     QCOMPARE(styleSpacing, layout->spacing());
     QCOMPARE(layout->effectiveSizeHint(Qt::PreferredSize).height(), qreal(113));
-    widget->setStyle(style2);
+    widget->setStyle(style2.get());
     // If the style itself changes, the layout will pick that up
     QCOMPARE(layout->effectiveSizeHint(Qt::PreferredSize).height(), qreal(123));
     QCOMPARE(layout->spacing(), qreal(23));
@@ -1165,8 +1146,7 @@ void tst_QGraphicsLinearLayout::setStretchFactor()
 void tst_QGraphicsLinearLayout::testStretch()
 {
     QGraphicsScene scene;
-    QGraphicsView *view = new QGraphicsView(&scene);
-    Q_UNUSED(view);
+    QGraphicsView view(&scene);
     QGraphicsWidget *form = new QGraphicsWidget(0, Qt::Window);
 
     scene.addItem(form);

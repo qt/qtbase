@@ -110,7 +110,6 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSViewMouseMoveHelper);
     // Text
     QString m_composingText;
     QPointer<QObject> m_composingFocusObject;
-    NSDraggingContext m_lastSeenContext;
 }
 
 - (instancetype)initWithCocoaWindow:(QCocoaWindow *)platformWindow
@@ -139,7 +138,6 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSViewMouseMoveHelper);
         m_lastKeyDead = false;
         m_sendKeyEvent = false;
         m_currentlyInterpretedKeyEvent = nil;
-        m_lastSeenContext = NSDraggingContextWithinApplication;
     }
     return self;
 }

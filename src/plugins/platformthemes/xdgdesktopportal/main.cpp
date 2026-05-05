@@ -20,12 +20,7 @@ public:
 QPlatformTheme *QXdgDesktopPortalThemePlugin::create(const QString &key, const QStringList &params)
 {
     Q_UNUSED(params);
-    if (!key.compare("xdgdesktopportal"_L1, Qt::CaseInsensitive) ||
-        !key.compare("flatpak"_L1, Qt::CaseInsensitive) ||
-        !key.compare("snap"_L1, Qt::CaseInsensitive))
-        return new QXdgDesktopPortalTheme;
-
-    return nullptr;
+    return QXdgDesktopPortalTheme::isXdgPlugin(key) ? new QXdgDesktopPortalTheme : nullptr;
 }
 
 QT_END_NAMESPACE

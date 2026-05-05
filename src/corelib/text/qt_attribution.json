@@ -4,7 +4,10 @@
     "Name": "Unicode Character Database (UCD)",
     "QDocModule": "qtcore",
     "QtUsage": "Qt Core uses data obtained from UCD files for working with characters and strings.",
-    "Comment": { "Files": "For update, see qtbase/util/unicode/README" },
+    "Comment": {
+        "Files": "For update, see qtbase/util/unicode/README",
+        "General": "no relevant CPE and PURL found"
+    },
     "Files": [ "qunicodetables_p.h", "qunicodetables.cpp" ],
 
     "Description": "The Unicode Character Database (UCD) is a set of files that
@@ -13,13 +16,10 @@
     "Comment": {
         "Version": [ "Don't use the Unicode standard version;",
                      "UCD has its own 'Revision' numbers",
-                     "see the 'UAX #44, UCD' page (https://www.unicode.org/reports/tr44/)" ],
-        "License": [ "Will change to Unicode-3.0 on next update",
-                     "util/unicode/main.cpp is updated to do that already",
-                     "Please update the following and delete this note when that happens" ] },
-    "Version": "30",
+                     "see the 'UAX #44, UCD' page (https://www.unicode.org/reports/tr44/)" ] },
+    "Version": "34",
     "License": "Unicode License Agreement - Data Files and Software (2016)",
-    "LicenseId": "Unicode-DFS-2016",
+    "LicenseId": "Unicode-3.0",
     "Copyright": "Copyright (C) 1991-2022 Unicode, Inc."
 },
 {
@@ -27,7 +27,10 @@
     "Name": "Unicode Common Locale Data Repository (CLDR)",
     "QDocModule": "qtcore",
     "QtUsage": "Used in Qt Core (QTimeZone, QLocale).",
-    "Comment": { "Files": "For update, see qtbase/util/locale_database/cldr2qlocalexml.py" },
+    "Comment": {
+        "Files": "For update, see qtbase/util/locale_database/cldr2qlocalexml.py",
+        "General": "no relevant CPE and PURL found"
+    },
     "Files": [ "qlocale_data_p.h",
                "../time/qtimezoneprivate_data_p.h", "../time/qhijricalendar_data_p.h",
                "../time/qjalalicalendar_data_p.h", "../time/qromancalendar_data_p.h" ],

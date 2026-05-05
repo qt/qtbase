@@ -76,6 +76,7 @@ qt_internal_add_module(Core
         global/qoverload.h
         global/qprocessordetection.h
         global/qrandom.cpp global/qrandom.h global/qrandom_p.h
+        global/qstdlibdetection.h
         global/qswap.h
         global/qsysinfo.cpp global/qsysinfo.h
         global/qsystemdetection.h
@@ -165,7 +166,7 @@ qt_internal_add_module(Core
         kernel/qobjectcleanuphandler.cpp kernel/qobjectcleanuphandler.h
         kernel/qobjectdefs.h
         kernel/qobjectdefs_impl.h
-        kernel/qpointer.cpp kernel/qpointer.h
+        kernel/qpointer.h
         kernel/qproperty.cpp kernel/qproperty.h kernel/qproperty_p.h
         kernel/qpropertyprivate.h
         kernel/qsequentialiterable.cpp kernel/qsequentialiterable.h
@@ -320,6 +321,7 @@ qt_internal_add_module(Core
     NO_PCH_SOURCES
         compat/removed_api.cpp
         global/qsimd.cpp
+        kernel/qsocketnotifier.cpp # defines BUILDING_QSOCKETNOTIFIER
     DEFINES
         QT_NO_FOREACH
         QT_NO_USING_NAMESPACE

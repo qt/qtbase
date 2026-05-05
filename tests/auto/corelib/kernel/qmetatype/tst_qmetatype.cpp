@@ -1703,7 +1703,8 @@ void tst_QMetaType::selfCompare()
     case QMetaType::MetaTypeName:
 FOR_EACH_PRIMITIVE_METATYPE(ADD_METATYPE_CASE)
 #undef ADD_METATYPE_CASE
-        QCOMPARE(memcmp(v1, v2, t.sizeOf()), 0);
+        if (type != QMetaType::Void)
+            QCOMPARE(memcmp(v1, v2, t.sizeOf()), 0);
     }
 }
 

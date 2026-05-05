@@ -279,10 +279,8 @@ bool QRawFont::operator==(const QRawFont &other) const
 }
 
 /*!
-    Returns the hash value for \a font. If specified, \a seed is used
-    to initialize the hash.
-
-    \relates QRawFont
+    \fn size_t qHash(const QRawFont &key, size_t seed)
+    \qhashold{QRawFont}
     \since 5.8
 */
 size_t qHash(const QRawFont &font, size_t seed) noexcept

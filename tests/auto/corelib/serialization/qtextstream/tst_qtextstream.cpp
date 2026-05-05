@@ -984,7 +984,7 @@ void tst_QTextStream::performance()
     };
     int elapsed[N] = {0, 0, 0};
 
-        stopWatch.restart();
+        stopWatch.start();
         int nlines1 = 0;
         QFile file(m_rfc3261FilePath);
         QVERIFY(file.open(QFile::ReadOnly));
@@ -994,8 +994,7 @@ void tst_QTextStream::performance()
             file.readLine();
         }
 
-        elapsed[0] = stopWatch.elapsed();
-        stopWatch.restart();
+        elapsed[0] = stopWatch.restart();
 
         int nlines2 = 0;
         QFile file2(m_rfc3261FilePath);
@@ -1007,8 +1006,7 @@ void tst_QTextStream::performance()
             stream.readLine();
         }
 
-        elapsed[1] = stopWatch.elapsed();
-        stopWatch.restart();
+        elapsed[1] = stopWatch.restart();
 
         int nlines3 = 0;
         QFile file3(m_rfc3261FilePath);
@@ -1019,7 +1017,7 @@ void tst_QTextStream::performance()
         while (stream2.readLineInto(&line))
             ++nlines3;
 
-        elapsed[2] = stopWatch.elapsed();
+        elapsed[2] = stopWatch.restart();
 
         QCOMPARE(nlines1, nlines2);
         QCOMPARE(nlines2, nlines3);
@@ -1122,6 +1120,7 @@ void tst_QTextStream::octTest_data()
     QTest::addColumn<QByteArray>("data");
 
     QTest::newRow("0") << 0 << QByteArray("00");
+    QTest::newRow("40") << 40 << QByteArray("050");
 }
 
 // ------------------------------------------------------------------------------
@@ -1202,7 +1201,7 @@ void tst_QTextStream::stillOpenWhenAtEnd()
 
     QTcpSocket socket;
     socket.connectToHost(QtNetworkSettings::imapServerName(), 143);
-    QVERIFY(socket.waitForReadyRead(5000));
+    QTRY_VERIFY_WITH_TIMEOUT(socket.bytesAvailable() > 0, 20000);
 
     QTextStream stream2(&socket);
     while (!stream2.readLine().isNull()) {}
@@ -2424,8 +2423,8 @@ void tst_QTextStream::generateRealNumbersDataWrite()
     QTest::newRow("0") << 0.0 << QByteArray("0") << QByteArray("0");
     QTest::newRow("3.14") << 3.14 << QByteArray("3.14") << QByteArray("3.14");
     QTest::newRow("-3.14") << -3.14 << QByteArray("-3.14") << QByteArray("-3.14");
-    QTest::newRow("1.2e+10") << 1.2e+10 << QByteArray("1.2e+10") << QByteArray("1.2E+10");
-    QTest::newRow("-1.2e+10") << -1.2e+10 << QByteArray("-1.2e+10") << QByteArray("-1.2E+10");
+    QTest::newRow("1.2e+10") << 1.2e+10 << QByteArray("1.2e+10") << QByteArray("1.2e+10");
+    QTest::newRow("-1.2e+10") << -1.2e+10 << QByteArray("-1.2e+10") << QByteArray("-1.2e+10");
     QTest::newRow("12345") << 12345. << QByteArray("12345") << QByteArray("12,345");
 }
 
@@ -2443,7 +2442,7 @@ void tst_QTextStream::generateRealNumbersDataWrite()
         buffer.open(QBuffer::WriteOnly); \
         QTextStream stream(&buffer); \
         stream.setLocale(QLocale::c()); \
-        float f = (float)number; \
+        type f = type(number); \
         stream << f; \
         stream.flush(); \
         QCOMPARE(buffer.data().constData(), data.constData()); \
@@ -2455,7 +2454,7 @@ void tst_QTextStream::generateRealNumbersDataWrite()
         QCOMPARE(buffer.data(), dataWithSeparators); \
     }
 IMPLEMENT_STREAM_LEFT_REAL_OPERATOR_TEST(float, float)
-IMPLEMENT_STREAM_LEFT_REAL_OPERATOR_TEST(double, float)
+IMPLEMENT_STREAM_LEFT_REAL_OPERATOR_TEST(double, double)
     ;
 
 // ------------------------------------------------------------------------------
@@ -2645,46 +2644,54 @@ void tst_QTextStream::useCase2()
 void tst_QTextStream::manipulators_data()
 {
     QTest::addColumn<int>("base");
-    QTest::addColumn<int>("alignFlag");
-    QTest::addColumn<int>("numberFlag");
+    QTest::addColumn<QTextStream::FieldAlignment>("alignFlag");
+    QTest::addColumn<QTextStream::NumberFlags>("numberFlag");
     QTest::addColumn<int>("width");
     QTest::addColumn<double>("realNumber");
-    QTest::addColumn<int>("intNumber");
+    QTest::addColumn<qlonglong>("intNumber");
     QTest::addColumn<QString>("textData");
     QTest::addColumn<QByteArray>("result");
 
     QTest::newRow("no flags")
-        << 10 << 0 << 0 << 0  << 5.0 << 5 << QString("five") << QByteArray("55five");
+        << 10 << QTextStream::AlignLeft << QTextStream::NumberFlags{}
+        << 0  << 5.0 << 5LL << QString("five") << QByteArray("55five");
     QTest::newRow("rightadjust")
-        << 10 << int(QTextStream::AlignRight) << 0 << 10 << 5.0 << 5 << QString("five")
-        << QByteArray("         5         5      five");
+        << 10 << QTextStream::AlignRight << QTextStream::NumberFlags{}
+        << 10 << 5.0 << 5LL << QString("five") << QByteArray("         5         5      five");
     QTest::newRow("leftadjust")
-        << 10 << int(QTextStream::AlignLeft) << 0 << 10 << 5.0 << 5 << QString("five")
-        << QByteArray("5         5         five      ");
+        << 10 << QTextStream::AlignLeft << QTextStream::NumberFlags{}
+        << 10 << 5.0 << 5LL << QString("five") << QByteArray("5         5         five      ");
     QTest::newRow("showpos-wide")
-        << 10 << int(QTextStream::AlignRight) << int(QTextStream::ForceSign) << 10 << 5.0 << 5 <<
-        QString("five") << QByteArray("        +5        +5      five");
+        << 10 << QTextStream::AlignRight << QTextStream::NumberFlags{QTextStream::ForceSign}
+        << 10 << 5.0 << 5LL << QString("five") << QByteArray("        +5        +5      five");
     QTest::newRow("showpos-pi")
-        << 10 << int(QTextStream::AlignRight) << int(QTextStream::ForceSign) << 5 << 3.14 << -5 <<
-        QString("five") << QByteArray("+3.14   -5 five");
+        << 10 << QTextStream::AlignRight << QTextStream::NumberFlags{QTextStream::ForceSign}
+        << 5 << 3.14 << -5LL << QString("five") << QByteArray("+3.14   -5 five");
+    QTest::newRow("min-value")
+        << 10 << QTextStream::AlignRight << QTextStream::NumberFlags{} << 5
+        << 3.14 << (std::numeric_limits<qlonglong>::min)()
+        << QString("five") << QByteArray(" 3.14-9223372036854775808 five");
     QTest::newRow("hex-lower")
-        << 16 << int(QTextStream::AlignRight) << int(QTextStream::ShowBase) << 5 << 3.14 << -5 <<
-        QString("five") << QByteArray(" 3.14 -0x5 five");
+        << 16 << QTextStream::AlignRight << QTextStream::NumberFlags{QTextStream::ShowBase}
+        << 5 << 3.14 << -5LL << QString("five") << QByteArray(" 3.14 -0x5 five");
     QTest::newRow("hex-upper")
-        << 16 << int(QTextStream::AlignRight)
-        << int(QTextStream::ShowBase | QTextStream::UppercaseBase)
-        << 5 << 3.14 << -5 << QString("five") << QByteArray(" 3.14 -0X5 five");
+        << 16 << QTextStream::AlignRight
+        << (QTextStream::ShowBase | QTextStream::UppercaseBase)
+        << 5 << 3.14 << -5LL << QString("five") << QByteArray(" 3.14 -0X5 five");
+    QTest::newRow("hex-negative")
+        << 16 << QTextStream::AlignRight << (QTextStream::ShowBase | QTextStream::ForceSign)
+        << 5 << 3.14 << -5LL << QString("five") << QByteArray("+3.14 -0x5 five");
 }
 
 // ------------------------------------------------------------------------------
 void tst_QTextStream::manipulators()
 {
     QFETCH(int, base);
-    QFETCH(int, alignFlag);
-    QFETCH(int, numberFlag);
+    QFETCH(QTextStream::FieldAlignment, alignFlag);
+    QFETCH(QTextStream::NumberFlags, numberFlag);
     QFETCH(int, width);
     QFETCH(double, realNumber);
-    QFETCH(int, intNumber);
+    QFETCH(qlonglong, intNumber);
     QFETCH(QString, textData);
     QFETCH(QByteArray, result);
 
@@ -2696,8 +2703,8 @@ void tst_QTextStream::manipulators()
     stream.setAutoDetectUnicode(true);
 
     stream.setIntegerBase(base);
-    stream.setFieldAlignment(QTextStream::FieldAlignment(alignFlag));
-    stream.setNumberFlags(QTextStream::NumberFlag(numberFlag));
+    stream.setFieldAlignment(alignFlag);
+    stream.setNumberFlags(numberFlag);
     stream.setFieldWidth(width);
     stream << realNumber;
     stream << intNumber;

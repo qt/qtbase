@@ -2679,10 +2679,16 @@ int QObject::senderSignalIndex() const
 
     \snippet code/src_corelib_kernel_qobject.cpp 21
 
+    As the code snippet above illustrates, you can use this function to avoid
+    expensive operations or emitting a signal that nobody listens to.
+
+    \warning In a multithreaded application, consecutive calls to this
+    function are not guaranteed to yield the same results.
+
     \warning This function violates the object-oriented principle of
-    modularity. However, it might be useful when you need to perform
-    expensive initialization only if something is connected to a
-    signal.
+    modularity. In particular, this function must not be called from an
+    override of connectNotify() or disconnectNotify(), as those might get
+    called from any thread.
 
     \sa isSignalConnected()
 */
@@ -2739,14 +2745,17 @@ int QObject::receivers(const char *signal) const
     \snippet code/src_corelib_kernel_qobject.cpp 49
 
     As the code snippet above illustrates, you can use this function to avoid
-    expensive initialization or emitting a signal that nobody listens to.
-    However, in a multithreaded application, connections might change after
-    this function returns and before the signal gets emitted.
+    expensive operations or emitting a signal that nobody listens to.
+
+    \warning In a multithreaded application, consecutive calls to this
+    function are not guaranteed to yield the same results.
 
     \warning This function violates the object-oriented principle of
     modularity. In particular, this function must not be called from an
     override of connectNotify() or disconnectNotify(), as those might get
     called from any thread.
+
+    \sa receivers()
 */
 bool QObject::isSignalConnected(const QMetaMethod &signal) const
 {
@@ -3416,8 +3425,7 @@ bool QObject::disconnect(const QObject *sender, const QMetaMethod &signal,
 
     \warning This function violates the object-oriented principle of
     modularity. However, it might be useful when you need to perform
-    expensive initialization only if something is connected to a
-    signal.
+    an expensive operation only if something is connected to a signal.
 
     \warning This function is called from the thread which performs the
     connection, which may be a different thread from the thread in which

@@ -1,8 +1,7 @@
 // Copyright (C) 2018 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#ifndef QT_X11_P_H
-#define QT_X11_P_H
+#pragma once
 
 #define register        /* C++17 deprecated register */
 #include <X11/Xlib.h>
@@ -161,5 +160,3 @@ constexpr inline int lowest_bit(T v) noexcept
 }
 
 QT_END_NAMESPACE
-
-#endif // QT_X11_P_H

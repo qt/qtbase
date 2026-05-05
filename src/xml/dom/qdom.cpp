@@ -3607,47 +3607,57 @@ static QString encodeText(const QString &str,
                           const bool performAVN = false,
                           const bool encodeEOLs = false)
 {
-    QString retval(str);
-    int len = retval.size();
-    int i = 0;
+    QString retval;
+    qsizetype start = 0;
+    auto appendToOutput = [&](qsizetype cur, const auto &replacement)
+    {
+        if (start < cur) {
+            retval.reserve(str.size() + replacement.size());
+            retval.append(QStringView(str).first(cur).sliced(start));
+        }
+        // Skip over str[cur], replaced by replacement
+        start = cur + 1;
+        retval.append(replacement);
+    };
 
-    while (i < len) {
-        const QChar ati(retval.at(i));
-
-        if (ati == u'<') {
-            retval.replace(i, 1, "&lt;"_L1);
-            len += 3;
-            i += 4;
-        } else if (encodeQuotes && (ati == u'"')) {
-            retval.replace(i, 1, "&quot;"_L1);
-            len += 5;
-            i += 6;
-        } else if (ati == u'&') {
-            retval.replace(i, 1, "&amp;"_L1);
-            len += 4;
-            i += 5;
-        } else if (ati == u'>' && i >= 2 && retval[i - 1] == u']' && retval[i - 2] == u']') {
-            retval.replace(i, 1, "&gt;"_L1);
-            len += 3;
-            i += 4;
-        } else if (performAVN &&
-                   (ati == QChar(0xA) ||
-                    ati == QChar(0xD) ||
-                    ati == QChar(0x9))) {
-            const QString replacement(u"&#x"_s + QString::number(ati.unicode(), 16) + u';');
-            retval.replace(i, 1, replacement);
-            i += replacement.size();
-            len += replacement.size() - 1;
-        } else if (encodeEOLs && ati == QChar(0xD)) {
-            retval.replace(i, 1, "&#xd;"_L1); // Replace a single 0xD with a ref for 0xD
-            len += 4;
-            i += 5;
-        } else {
-            ++i;
+    const qsizetype len = str.size();
+    for (qsizetype cur = 0; cur < len; ++cur) {
+        switch (str[cur].unicode()) {
+            case u'<':
+                appendToOutput(cur, "&lt;"_L1);
+                break;
+            case u'"':
+                if (encodeQuotes)
+                    appendToOutput(cur, "&quot;"_L1);
+                break;
+            case u'&':
+                appendToOutput(cur, "&amp;"_L1);
+                break;
+            case u'>':
+                if (cur >= 2 && str[cur - 1] == u']' && str[cur - 2] == u']')
+                    appendToOutput(cur, "&gt;"_L1);
+                break;
+            case u'\r':
+                if (performAVN || encodeEOLs)
+                    appendToOutput(cur, "&#xd;"_L1);    // \r == 0x0d
+                break;
+            case u'\n':
+                if (performAVN)
+                    appendToOutput(cur, "&#xa;"_L1);    // \n == 0x0a
+                break;
+            case u'\t':
+                if (performAVN)
+                    appendToOutput(cur, "&#x9;"_L1);    // \t == 0x09
+                break;
+            default:
+                break;
         }
     }
-
-    return retval;
+    if (start > 0) {
+        retval.append(QStringView(str).first(len).sliced(start));
+        return retval;
+    }
+    return str;
 }
 
 void QDomAttrPrivate::save(QTextStream& s, int, int) const
@@ -3938,14 +3948,18 @@ QDomAttrPrivate* QDomElementPrivate::attributeNodeNS(const QString& nsURI, const
 
 QDomAttrPrivate* QDomElementPrivate::setAttributeNode(QDomAttrPrivate* newAttr)
 {
-    QDomNodePrivate* n = m_attr->namedItem(newAttr->nodeName());
+    if (!newAttr)
+        return nullptr;
+
+    QDomNodePrivate* foundAttr = m_attr->namedItem(newAttr->nodeName());
+    if (foundAttr)
+        m_attr->removeNamedItem(newAttr->nodeName());
 
     // Referencing is done by the maps
     m_attr->setNamedItem(newAttr);
-
     newAttr->setParent(this);
 
-    return static_cast<QDomAttrPrivate *>(n);
+    return static_cast<QDomAttrPrivate *>(foundAttr);
 }
 
 QDomAttrPrivate* QDomElementPrivate::setAttributeNodeNS(QDomAttrPrivate* newAttr)
@@ -5498,9 +5512,17 @@ void QDomProcessingInstructionPrivate::save(QTextStream& s, int, int) const
     not a processing instruction; among other differences, it cannot be
     inserted into a document anywhere but on the first line.
 
-    Do not use this function to create an xml declaration, since although it
-    has the same syntax as a processing instruction, it isn't, and might not
-    be treated by QDom as such.
+    \note Do not use this function to create an XML declaration. Although the
+    XML declaration shares the same syntax as a processing instruction, it
+    is not one. According to the
+    \l{https://www.w3.org/TR/xml/#sec-prolog-dtd}{XML 1.0 Specification} and the
+    \l{https://www.w3.org/TR/REC-DOM-Level-1/level-one-core.html#ID-1590626202}{W3C DOM Structure Model},
+    the XML declaration is part of the document prolog and not part of the
+    DOM tree - meaning it should not be represented as a DOM node and cannot be
+    created or inserted via the DOM API.
+    If you need to generate a well-formed XML document that includes an XML
+    declaration, use QXmlStreamWriter, which provides proper support for
+    writing the declaration through \l {QXmlStreamWriter::}{writeStartDocument}.
 
     The content of the processing instruction is retrieved with data()
     and set with setData(). The processing instruction's target is

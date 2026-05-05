@@ -851,14 +851,8 @@ struct QWidgetExceptionCleaner
     \sa windowFlags
 */
 QWidget::QWidget(QWidget *parent, Qt::WindowFlags f)
-    : QObject(*new QWidgetPrivate, nullptr), QPaintDevice()
+    : QWidget(*new QWidgetPrivate, parent, f)
 {
-    QT_TRY {
-        d_func()->init(parent, f);
-    } QT_CATCH(...) {
-        QWidgetExceptionCleaner::cleanup(this, d_func());
-        QT_RETHROW;
-    }
 }
 
 
@@ -866,6 +860,7 @@ QWidget::QWidget(QWidget *parent, Qt::WindowFlags f)
 */
 QWidget::QWidget(QWidgetPrivate &dd, QWidget* parent, Qt::WindowFlags f)
     : QObject(dd, nullptr), QPaintDevice()
+    , data(&dd.data)
 {
     Q_D(QWidget);
     QT_TRY {
@@ -948,8 +943,6 @@ void QWidgetPrivate::init(QWidget *parentWidget, Qt::WindowFlags f)
     Q_ASSERT(allWidgets);
     if (allWidgets)
         allWidgets->insert(q);
-
-    q->data = &data;
 
 #if QT_CONFIG(thread)
     if (!parent) {
@@ -5170,6 +5163,7 @@ void QWidget::render(QPainter *painter, const QPoint &targetOffset,
     const QRegion oldSystemClip = enginePriv->systemClip;
     const QRegion oldBaseClip = enginePriv->baseSystemClip;
     const QRegion oldSystemViewport = enginePriv->systemViewport;
+    const Qt::LayoutDirection oldLayoutDirection = painter->layoutDirection();
 
     // This ensures that all painting triggered by render() is clipped to the current engine clip.
     if (painter->hasClipping()) {
@@ -5178,6 +5172,7 @@ void QWidget::render(QPainter *painter, const QPoint &targetOffset,
     } else {
         enginePriv->setSystemViewport(oldSystemClip);
     }
+    painter->setLayoutDirection(layoutDirection());
 
     d->render(target, targetOffset, toBePainted, renderFlags);
 
@@ -5185,6 +5180,7 @@ void QWidget::render(QPainter *painter, const QPoint &targetOffset,
     enginePriv->baseSystemClip = oldBaseClip;
     enginePriv->setSystemTransformAndViewport(oldTransform, oldSystemViewport);
     enginePriv->systemStateChanged();
+    painter->setLayoutDirection(oldLayoutDirection);
 
     // Restore shared painter.
     d->setSharedPainter(oldPainter);

@@ -133,7 +133,7 @@ QStringList nameFilterExtensions(const QString nameFilters)
 {
     QStringList ret;
 #if QT_CONFIG(regularexpression)
-    QRegularExpression re("(\\*\\.[a-z .]+)");
+    QRegularExpression re("(\\*\\.[a-z0-9 .]+)");
     QRegularExpressionMatchIterator i = re.globalMatch(nameFilters);
     while (i.hasNext())
         ret << i.next().captured(1).trimmed();

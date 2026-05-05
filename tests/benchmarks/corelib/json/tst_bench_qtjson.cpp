@@ -56,7 +56,7 @@ void BenchmarkQtJson::parseNumbers()
     QString testFile = QFINDTESTDATA("numbers.json");
     QVERIFY2(!testFile.isEmpty(), "cannot find test file numbers.json!");
     QFile file(testFile);
-    file.open(QFile::ReadOnly);
+    QVERIFY2(file.open(QFile::ReadOnly), qPrintable(file.errorString()));
     QByteArray testJson = file.readAll();
 
     QBENCHMARK {
@@ -70,7 +70,7 @@ void BenchmarkQtJson::parseJson()
     QString testFile = QFINDTESTDATA("test.json");
     QVERIFY2(!testFile.isEmpty(), "cannot find test file test.json!");
     QFile file(testFile);
-    file.open(QFile::ReadOnly);
+    QVERIFY2(file.open(QFile::ReadOnly), qPrintable(file.errorString()));
     QByteArray testJson = file.readAll();
 
     QBENCHMARK {
@@ -84,7 +84,7 @@ void BenchmarkQtJson::parseJsonToVariant()
     QString testFile = QFINDTESTDATA("test.json");
     QVERIFY2(!testFile.isEmpty(), "cannot find test file test.json!");
     QFile file(testFile);
-    file.open(QFile::ReadOnly);
+    QVERIFY2(file.open(QFile::ReadOnly), qPrintable(file.errorString()));
     QByteArray testJson = file.readAll();
 
     QBENCHMARK {

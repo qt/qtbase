@@ -1112,6 +1112,11 @@
 
     \snippet code/src_corelib_thread_qfuture.cpp 5
 
+    \warning If the previous future contains multiple results of type \c {T},
+    and the continuation takes an argument of type \c {T} as a parameter, only
+    the first result from the previous QFuture will be handled in the
+    continuation!
+
     If the previous future throws an exception and it is not handled inside the
     continuation, the exception will be propagated to the continuation future, to
     allow the caller to handle it:

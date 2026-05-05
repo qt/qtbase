@@ -789,6 +789,9 @@ void tst_QLocale::toReal_data()
     QTest::newRow("C 1.")              << QString("C") << QString("1.")              << true  << 1.0;
     QTest::newRow("C 1.E10")           << QString("C") << QString("1.E10")           << true  << 1.0e10;
     QTest::newRow("C 1e+10")           << QString("C") << QString("1e+10")           << true  << 1.0e+10;
+    QTest::newRow("C e+10")            << QString("C") << QString("e+10")            << false << 0.0;
+    QTest::newRow("C .e+10")           << QString("C") << QString(".e+10")           << false << 0.0;
+    QTest::newRow("C 1e+2e+10")        << QString("C") << QString("1e+2e+10")        << false << 0.0;
 
     QTest::newRow("de_DE 1.")          << QString("de_DE") << QString("1.")          << false << 0.0;
     QTest::newRow("de_DE 1.2")         << QString("de_DE") << QString("1.2")         << false << 0.0;
@@ -911,6 +914,18 @@ void tst_QLocale::stringToDouble_data()
     }
     if (std::numeric_limits<double>::has_quiet_NaN)
         QTest::newRow("C qnan") << QString("C") << QString("NaN") << true << std::numeric_limits<double>::quiet_NaN();
+
+    // Malformed
+    QTest::newRow("infe10") << QString("C") << QString("infe10") << false << 0.;
+    QTest::newRow("inf.10") << QString("C") << QString("inf.10") << false << 0.;
+    QTest::newRow("i1n0f") << QString("C") << QString("i1n0f") << false << 0.;
+    QTest::newRow("inf,000") << QString("en_US") << QString("inf,000") << false << 0.;
+    QTest::newRow("1,inf") << QString("en_US") << QString("1,inf") << false << 0.;
+    QTest::newRow("NaNe10") << QString("C") << QString("NaNe10") << false << 0.;
+    QTest::newRow("NaN.10") << QString("C") << QString("NaN.10") << false << 0.;
+    QTest::newRow("N1a0N") << QString("C") << QString("N1a0N") << false << 0.;
+    QTest::newRow("NaN,000") << QString("en_US") << QString("NaN,000") << false << 0.;
+    QTest::newRow("1,NaN") << QString("en_US") << QString("1,NaN") << false << 0.;
 
     // In range (but outside float's range):
     QTest::newRow("C big") << QString("C") << QString("3.5e38") << true << 3.5e38;
@@ -1115,8 +1130,10 @@ void tst_QLocale::doubleToString_data()
 
     QTest::newRow("de_DE 3,4 f 1") << QString("de_DE") << QString("3,4")     << 3.4 << 'f' << 1;
     QTest::newRow("de_DE 3,4 f -") << QString("de_DE") << QString("3,4")     << 3.4 << 'f' << shortest;
-    QTest::newRow("de_DE 3,4 e 1") << QString("de_DE") << QString("3,4E+00") << 3.4 << 'e' << 1;
-    QTest::newRow("de_DE 3,4 e -") << QString("de_DE") << QString("3,4E+00") << 3.4 << 'e' << shortest;
+    QTest::newRow("de_DE 3,4 e 1") << QString("de_DE") << QString("3,4e+00") << 3.4 << 'e' << 1;
+    QTest::newRow("de_DE 3,4 E 1") << QString("de_DE") << QString("3,4E+00") << 3.4 << 'E' << 1;
+    QTest::newRow("de_DE 3,4 e -") << QString("de_DE") << QString("3,4e+00") << 3.4 << 'e' << shortest;
+    QTest::newRow("de_DE 3,4 E -") << QString("de_DE") << QString("3,4E+00") << 3.4 << 'E' << shortest;
     QTest::newRow("de_DE 3,4 g 2") << QString("de_DE") << QString("3,4")     << 3.4 << 'g' << 2;
     QTest::newRow("de_DE 3,4 g -") << QString("de_DE") << QString("3,4")     << 3.4 << 'g' << shortest;
 
@@ -1136,29 +1153,33 @@ void tst_QLocale::doubleToString_data()
 
     QTest::newRow("de_DE 0,035003945 f 9") << QString("de_DE") << QString("0,035003945")   << 0.035003945 << 'f' << 9;
     QTest::newRow("de_DE 0,035003945 f -") << QString("de_DE") << QString("0,035003945")   << 0.035003945 << 'f' << shortest;
-    QTest::newRow("de_DE 0,035003945 e 7") << QString("de_DE") << QString("3,5003945E-02") << 0.035003945 << 'e' << 7;
-    QTest::newRow("de_DE 0,035003945 e -") << QString("de_DE") << QString("3,5003945E-02") << 0.035003945 << 'e' << shortest;
+    QTest::newRow("de_DE 0,035003945 e 7") << QString("de_DE") << QString("3,5003945e-02") << 0.035003945 << 'e' << 7;
+    QTest::newRow("de_DE 0,035003945 E 7") << QString("de_DE") << QString("3,5003945E-02") << 0.035003945 << 'E' << 7;
+    QTest::newRow("de_DE 0,035003945 e -") << QString("de_DE") << QString("3,5003945e-02") << 0.035003945 << 'e' << shortest;
+    QTest::newRow("de_DE 0,035003945 E -") << QString("de_DE") << QString("3,5003945E-02") << 0.035003945 << 'E' << shortest;
     QTest::newRow("de_DE 0,035003945 g 8") << QString("de_DE") << QString("0,035003945")   << 0.035003945 << 'g' << 8;
     QTest::newRow("de_DE 0,035003945 g -") << QString("de_DE") << QString("0,035003945")   << 0.035003945 << 'g' << shortest;
     // Check 'f/F' iff (adjusted) precision > exponent >= -4:
-    QTest::newRow("de_DE 12345 g 4") << QString("de_DE") << QString("1,235E+04") << 12345. << 'g' << 4;
+    QTest::newRow("de_DE 12345 g 4") << QString("de_DE") << QString("1,235e+04") << 12345. << 'g' << 4;
+    QTest::newRow("de_DE 12345 G 4") << QString("de_DE") << QString("1,235E+04") << 12345. << 'G' << 4;
     QTest::newRow("de_DE 1e7 g 8")   << QString("de_DE") << QString("10.000.000") << 1e7 << 'g' << 8;
-    QTest::newRow("de_DE 1e8 g 8")   << QString("de_DE") << QString("1E+08") << 1e8  << 'g' << 8;
-    QTest::newRow("de_DE 10.0 g 1")  << QString("de_DE") << QString("1E+01") << 10.0  << 'g' << 1;
-    QTest::newRow("de_DE 10.0 g 0")  << QString("de_DE") << QString("1E+01") << 10.0  << 'g' << 0;
+    QTest::newRow("de_DE 1e8 g 8")   << QString("de_DE") << QString("1e+08") << 1e8  << 'g' << 8;
+    QTest::newRow("de_DE 1e8 G 8")   << QString("de_DE") << QString("1E+08") << 1e8  << 'G' << 8;
+    QTest::newRow("de_DE 10.0 g 1")  << QString("de_DE") << QString("1e+01") << 10.0  << 'g' << 1;
+    QTest::newRow("de_DE 10.0 g 0")  << QString("de_DE") << QString("1e+01") << 10.0  << 'g' << 0;
     QTest::newRow("de_DE 1.0 g 0")   << QString("de_DE") << QString("1") << 1.0  << 'g' << 0;
     QTest::newRow("de_DE 0.0001 g 0")  << QString("de_DE") << QString("0,0001") << 0.0001  << 'g' << 0;
-    QTest::newRow("de_DE 0.00001 g 0") << QString("de_DE") << QString("1E-05") << 0.00001 << 'g' << 0;
+    QTest::newRow("de_DE 0.00001 g 0") << QString("de_DE") << QString("1e-05") << 0.00001 << 'g' << 0;
     // Check transition to exponent form:
     QTest::newRow("de_DE 1245678900 g -")  << QString("de_DE") << QString("1.245.678.900") << 12456789e2 << 'g' << shortest;
     QTest::newRow("de_DE 12456789100 g -") << QString("de_DE") << QString("12.456.789.100") << 124567891e2 << 'g' << shortest;
-    QTest::newRow("de_DE 12456789000 g -") << QString("de_DE") << QString("1,2456789E+10")  << 12456789e3 << 'g' << shortest;
+    QTest::newRow("de_DE 12456789000 g -") << QString("de_DE") << QString("1,2456789e+10")  << 12456789e3 << 'g' << shortest;
     QTest::newRow("de_DE 12000 g -")
         << QString("de_DE") << QString("12.000") << 12e3 << 'g' << shortest;
-    // 12e4 has "120.000" and "1.2E+05" of equal length; which shortest picks is unspecified.
-    QTest::newRow("de_DE 1200000 g -") << QString("de_DE") << QString("1,2E+06") << 12e5 << 'g' << shortest;
+    // 12e4 has "120.000" and "1.2e+05" of equal length; which shortest picks is unspecified.
+    QTest::newRow("de_DE 1200000 g -") << QString("de_DE") << QString("1,2e+06") << 12e5 << 'g' << shortest;
     QTest::newRow("de_DE 1000 g -")  << QString("de_DE") << QString("1.000") << 1e3 << 'g' << shortest;
-    QTest::newRow("de_DE 10000 g -") << QString("de_DE") << QString("1E+04") << 1e4 << 'g' << shortest;
+    QTest::newRow("de_DE 10000 g -") << QString("de_DE") << QString("1e+04") << 1e4 << 'g' << shortest;
 
     QTest::newRow("C 0.000003945 f 12") << QString("C") << QString("0.000003945000") << 0.000003945 << 'f' << 12;
     QTest::newRow("C 0.000003945 f 6")  << QString("C") << QString("0.000004")       << 0.000003945 << 'f' << 6;
@@ -1189,10 +1210,14 @@ void tst_QLocale::doubleToString_data()
 
     QTest::newRow("de_DE 0,000003945 f 9") << QString("de_DE") << QString("0,000003945") << 0.000003945 << 'f' << 9;
     QTest::newRow("de_DE 0,000003945 f -") << QString("de_DE") << QString("0,000003945") << 0.000003945 << 'f' << shortest;
-    QTest::newRow("de_DE 0,000003945 e 3") << QString("de_DE") << QString("3,945E-06")   << 0.000003945 << 'e' << 3;
-    QTest::newRow("de_DE 0,000003945 e -") << QString("de_DE") << QString("3,945E-06")   << 0.000003945 << 'e' << shortest;
-    QTest::newRow("de_DE 0,000003945 g 4") << QString("de_DE") << QString("3,945E-06")   << 0.000003945 << 'g' << 4;
-    QTest::newRow("de_DE 0,000003945 g -") << QString("de_DE") << QString("3,945E-06")   << 0.000003945 << 'g' << shortest;
+    QTest::newRow("de_DE 0,000003945 e 3") << QString("de_DE") << QString("3,945e-06")   << 0.000003945 << 'e' << 3;
+    QTest::newRow("de_DE 0,000003945 E 3") << QString("de_DE") << QString("3,945E-06")   << 0.000003945 << 'E' << 3;
+    QTest::newRow("de_DE 0,000003945 e -") << QString("de_DE") << QString("3,945e-06")   << 0.000003945 << 'e' << shortest;
+    QTest::newRow("de_DE 0,000003945 E -") << QString("de_DE") << QString("3,945E-06")   << 0.000003945 << 'E' << shortest;
+    QTest::newRow("de_DE 0,000003945 g 4") << QString("de_DE") << QString("3,945e-06")   << 0.000003945 << 'g' << 4;
+    QTest::newRow("de_DE 0,000003945 G 4") << QString("de_DE") << QString("3,945E-06")   << 0.000003945 << 'G' << 4;
+    QTest::newRow("de_DE 0,000003945 g -") << QString("de_DE") << QString("3,945e-06")   << 0.000003945 << 'g' << shortest;
+    QTest::newRow("de_DE 0,000003945 G -") << QString("de_DE") << QString("3,945E-06")   << 0.000003945 << 'G' << shortest;
 
     QTest::newRow("C 12456789012 f 3")  << QString("C") << QString("12456789012.000")     << 12456789012.0 << 'f' << 3;
     QTest::newRow("C 12456789012 e 13") << QString("C") << QString("1.2456789012000e+10") << 12456789012.0 << 'e' << 13;
@@ -1226,8 +1251,8 @@ void tst_QLocale::doubleToString_data()
 
     QTest::newRow("de_DE 12456789012 f 0")  << QString("de_DE") << QString("12.456.789.012")   << 12456789012.0 << 'f' << 0;
     QTest::newRow("de_DE 12456789012 f -")  << QString("de_DE") << QString("12.456.789.012")   << 12456789012.0 << 'f' << shortest;
-    QTest::newRow("de_DE 12456789012 e 10") << QString("de_DE") << QString("1,2456789012E+10") << 12456789012.0 << 'e' << 10;
-    QTest::newRow("de_DE 12456789012 e -")  << QString("de_DE") << QString("1,2456789012E+10") << 12456789012.0 << 'e' << shortest;
+    QTest::newRow("de_DE 12456789012 e 10") << QString("de_DE") << QString("1,2456789012e+10") << 12456789012.0 << 'e' << 10;
+    QTest::newRow("de_DE 12456789012 e -")  << QString("de_DE") << QString("1,2456789012e+10") << 12456789012.0 << 'e' << shortest;
     QTest::newRow("de_DE 12456789012 g 11") << QString("de_DE") << QString("12.456.789.012")   << 12456789012.0 << 'g' << 11;
     QTest::newRow("de_DE 12456789012 g -")  << QString("de_DE") << QString("12.456.789.012")   << 12456789012.0 << 'g' << shortest;
 }
@@ -3499,7 +3524,7 @@ void tst_QLocale::formattedDataSize_data()
     QTest::addColumn<QLocale::Language>("language");
     QTest::addColumn<int>("decimalPlaces");
     QTest::addColumn<QLocale::DataSizeFormats>("units");
-    QTest::addColumn<int>("bytes");
+    QTest::addColumn<qint64>("bytes");
     QTest::addColumn<QString>("output");
 
     struct {
@@ -3514,45 +3539,60 @@ void tst_QLocale::formattedDataSize_data()
         { "C", QLocale::C, "bytes", 'B', '.' }
     };
 
+    constexpr auto min64 = (std::numeric_limits<qint64>::min)();
+    constexpr auto max64 = (std::numeric_limits<qint64>::max)();
+
     for (const auto row : data) {
 #define ROWB(id, deci, num, text)                 \
         QTest::addRow("%s-%s", row.name, id)      \
             << row.lang << deci << format         \
-            << num << (QString(text) + QChar(' ') + QString(row.bytes))
+            << qint64{num} << (QString(text) + QChar(' ') + QString(row.bytes))
 #define ROWQ(id, deci, num, head, tail)           \
         QTest::addRow("%s-%s", row.name, id)      \
             << row.lang << deci << format         \
-            << num << (QString(head) + QChar(row.sep) + QString(tail) + QChar(row.abbrev))
+            << qint64{num} << (QString(head) + QChar(row.sep) + QString(tail) + QChar(row.abbrev))
 
         // Metatype system fails to handle raw enum members as format; needs variable
         {
             const QLocale::DataSizeFormats format = QLocale::DataSizeIecFormat;
             ROWB("IEC-0", 2, 0, "0");
             ROWB("IEC-10", 2, 10, "10");
+            ROWB("IEC--10", 2, -10, "-10");
             ROWQ("IEC-12Ki", 2, 12345, "12", "06 Ki");
             ROWQ("IEC-16Ki", 2, 16384, "16", "00 Ki");
+            ROWQ("IEC--16Ki", 2, -16384, "-16", "00 Ki");
             ROWQ("IEC-1235k", 2, 1234567, "1", "18 Mi");
             ROWQ("IEC-1374k", 2, 1374744, "1", "31 Mi");
             ROWQ("IEC-1234M", 2, 1234567890, "1", "15 Gi");
+            ROWQ("IEC-min", 2, min64, "-8", "00 Ei");
+            ROWQ("IEC-max", 2, max64, "8", "00 Ei");
         }
         {
             const QLocale::DataSizeFormats format = QLocale::DataSizeTraditionalFormat;
             ROWB("Trad-0", 2, 0, "0");
             ROWB("Trad-10", 2, 10, "10");
+            ROWB("Trad--10", 2, -10, "-10");
             ROWQ("Trad-12Ki", 2, 12345, "12", "06 k");
             ROWQ("Trad-16Ki", 2, 16384, "16", "00 k");
             ROWQ("Trad-1235k", 2, 1234567, "1", "18 M");
+            ROWQ("Trad--1235k", 2, -1234567, "-1", "18 M");
             ROWQ("Trad-1374k", 2, 1374744, "1", "31 M");
             ROWQ("Trad-1234M", 2, 1234567890, "1", "15 G");
+            ROWQ("Trad-min", 2, min64, "-8", "00 E");
+            ROWQ("Trad-max", 2, max64, "8", "00 E");
         }
         {
             const QLocale::DataSizeFormats format = QLocale::DataSizeSIFormat;
             ROWB("Decimal-0", 2, 0, "0");
             ROWB("Decimal-10", 2, 10, "10");
+            ROWB("Decimal--10", 2, -10, "-10");
             ROWQ("Decimal-16Ki", 2, 16384, "16", "38 k");
             ROWQ("Decimal-1234k", 2, 1234567, "1", "23 M");
             ROWQ("Decimal-1374k", 2, 1374744, "1", "37 M");
             ROWQ("Decimal-1234M", 2, 1234567890, "1", "23 G");
+            ROWQ("Decimal--1234M", 2, -1234567890, "-1", "23 G");
+            ROWQ("Decimal-min", 2, min64, "-9", "22 E");
+            ROWQ("Decimal-max", 2, max64, "9", "22 E");
         }
 #undef ROWQ
 #undef ROWB
@@ -3565,29 +3605,29 @@ void tst_QLocale::formattedDataSize_data()
     const QLocale::DataSizeFormats siFormat = QLocale::DataSizeSIFormat;
     const QLocale::Language lang = QLocale::Russian;
 
-    QTest::newRow("Russian-IEC-0") << lang << 2 << iecFormat << 0 << QString("0 \u0431\u0430\u0439\u0442\u044B");
-    QTest::newRow("Russian-IEC-10") << lang << 2 << iecFormat << 10 << QString("10 \u0431\u0430\u0439\u0442\u044B");
+    QTest::newRow("Russian-IEC-0") << lang << 2 << iecFormat << 0LL << QString("0 \u0431\u0430\u0439\u0442\u044B");
+    QTest::newRow("Russian-IEC-10") << lang << 2 << iecFormat << 10LL << QString("10 \u0431\u0430\u0439\u0442\u044B");
     // CLDR doesn't provide IEC prefixes (yet?) so they aren't getting translated
-    QTest::newRow("Russian-IEC-12Ki") << lang << 2 << iecFormat << 12345 << QString("12,06 KiB");
-    QTest::newRow("Russian-IEC-16Ki") << lang << 2 << iecFormat << 16384 << QString("16,00 KiB");
-    QTest::newRow("Russian-IEC-1235k") << lang << 2 << iecFormat << 1234567 << QString("1,18 MiB");
-    QTest::newRow("Russian-IEC-1374k") << lang << 2 << iecFormat << 1374744 << QString("1,31 MiB");
-    QTest::newRow("Russian-IEC-1234M") << lang << 2 << iecFormat << 1234567890 << QString("1,15 GiB");
+    QTest::newRow("Russian-IEC-12Ki") << lang << 2 << iecFormat << 12345LL << QString("12,06 KiB");
+    QTest::newRow("Russian-IEC-16Ki") << lang << 2 << iecFormat << 16384LL << QString("16,00 KiB");
+    QTest::newRow("Russian-IEC-1235k") << lang << 2 << iecFormat << 1234567LL << QString("1,18 MiB");
+    QTest::newRow("Russian-IEC-1374k") << lang << 2 << iecFormat << 1374744LL << QString("1,31 MiB");
+    QTest::newRow("Russian-IEC-1234M") << lang << 2 << iecFormat << 1234567890LL << QString("1,15 GiB");
 
-    QTest::newRow("Russian-Trad-0") << lang << 2 << traditionalFormat << 0 << QString("0 \u0431\u0430\u0439\u0442\u044B");
-    QTest::newRow("Russian-Trad-10") << lang << 2 << traditionalFormat << 10 << QString("10 \u0431\u0430\u0439\u0442\u044B");
-    QTest::newRow("Russian-Trad-12Ki") << lang << 2 << traditionalFormat << 12345 << QString("12,06 \u043A\u0411");
-    QTest::newRow("Russian-Trad-16Ki") << lang << 2 << traditionalFormat << 16384 << QString("16,00 \u043A\u0411");
-    QTest::newRow("Russian-Trad-1235k") << lang << 2 << traditionalFormat << 1234567 << QString("1,18 \u041C\u0411");
-    QTest::newRow("Russian-Trad-1374k") << lang << 2 << traditionalFormat << 1374744 << QString("1,31 \u041C\u0411");
-    QTest::newRow("Russian-Trad-1234M") << lang << 2 << traditionalFormat << 1234567890 << QString("1,15 \u0413\u0411");
+    QTest::newRow("Russian-Trad-0") << lang << 2 << traditionalFormat << 0LL << QString("0 \u0431\u0430\u0439\u0442\u044B");
+    QTest::newRow("Russian-Trad-10") << lang << 2 << traditionalFormat << 10LL << QString("10 \u0431\u0430\u0439\u0442\u044B");
+    QTest::newRow("Russian-Trad-12Ki") << lang << 2 << traditionalFormat << 12345LL << QString("12,06 \u043A\u0411");
+    QTest::newRow("Russian-Trad-16Ki") << lang << 2 << traditionalFormat << 16384LL << QString("16,00 \u043A\u0411");
+    QTest::newRow("Russian-Trad-1235k") << lang << 2 << traditionalFormat << 1234567LL << QString("1,18 \u041C\u0411");
+    QTest::newRow("Russian-Trad-1374k") << lang << 2 << traditionalFormat << 1374744LL << QString("1,31 \u041C\u0411");
+    QTest::newRow("Russian-Trad-1234M") << lang << 2 << traditionalFormat << 1234567890LL << QString("1,15 \u0413\u0411");
 
-    QTest::newRow("Russian-Decimal-0") << lang << 2 << siFormat << 0 << QString("0 \u0431\u0430\u0439\u0442\u044B");
-    QTest::newRow("Russian-Decimal-10") << lang << 2 << siFormat << 10 << QString("10 \u0431\u0430\u0439\u0442\u044B");
-    QTest::newRow("Russian-Decimal-16Ki") << lang << 2 << siFormat << 16384 << QString("16,38 \u043A\u0411");
-    QTest::newRow("Russian-Decimal-1234k") << lang << 2 << siFormat << 1234567 << QString("1,23 \u041C\u0411");
-    QTest::newRow("Russian-Decimal-1374k") << lang << 2 << siFormat << 1374744 << QString("1,37 \u041C\u0411");
-    QTest::newRow("Russian-Decimal-1234M") << lang << 2 << siFormat << 1234567890 << QString("1,23 \u0413\u0411");
+    QTest::newRow("Russian-Decimal-0") << lang << 2 << siFormat << 0LL << QString("0 \u0431\u0430\u0439\u0442\u044B");
+    QTest::newRow("Russian-Decimal-10") << lang << 2 << siFormat << 10LL << QString("10 \u0431\u0430\u0439\u0442\u044B");
+    QTest::newRow("Russian-Decimal-16Ki") << lang << 2 << siFormat << 16384LL << QString("16,38 \u043A\u0411");
+    QTest::newRow("Russian-Decimal-1234k") << lang << 2 << siFormat << 1234567LL << QString("1,23 \u041C\u0411");
+    QTest::newRow("Russian-Decimal-1374k") << lang << 2 << siFormat << 1374744LL << QString("1,37 \u041C\u0411");
+    QTest::newRow("Russian-Decimal-1234M") << lang << 2 << siFormat << 1234567890LL << QString("1,23 \u0413\u0411");
 }
 
 void tst_QLocale::formattedDataSize()
@@ -3595,7 +3635,7 @@ void tst_QLocale::formattedDataSize()
     QFETCH(QLocale::Language, language);
     QFETCH(int, decimalPlaces);
     QFETCH(QLocale::DataSizeFormats, units);
-    QFETCH(int, bytes);
+    QFETCH(const qint64, bytes);
     QFETCH(QString, output);
     QCOMPARE(QLocale(language).formattedDataSize(bytes, decimalPlaces, units), output);
 }
@@ -4003,6 +4043,11 @@ void tst_QLocale::numberGrouping()
             QCOMPARE(u"%L1"_s.arg(double(number), 0, 'f', 0), string);
         }
     }
+    // Check round-trip via toInt():
+    bool ok;
+    int actual = locale.toInt(string, &ok);
+    QVERIFY(ok);
+    QCOMPARE(actual, number);
 }
 
 void tst_QLocale::numberGroupingIndia()
@@ -4048,6 +4093,13 @@ void tst_QLocale::numberGroupingIndia()
     const uint uInteger32 = 2030405010u;
     QCOMPARE(indian.toString(uInteger32), strResult32);
     QCOMPARE(indian.toUInt(strResult32), uInteger32);
+
+    bool ok = false;
+    QCOMPARE(indian.toInt(u"1,23,45,678"_s, &ok), 12345678);
+    QVERIFY(ok);
+    // Malformed (bad grouping):
+    QCOMPARE(indian.toInt(u"123,45,678"_s, &ok), 0);
+    QVERIFY(!ok);
 
     // 63-bit:
     const QString strResult64("60,05,00,40,03,00,20,01,000");
@@ -4120,6 +4172,29 @@ void tst_QLocale::numberFormatChakma()
     const int integer32 = 2030405010;
     QCOMPARE(chakma.toString(integer32), strResult32);
     QCOMPARE(chakma.toInt(strResult32), integer32);
+
+    bool ok = false; // Lakh is the Hindi name for 1,00,000
+    const QString goodLakh = one + separator + two + three + separator + four + five + six;
+    QCOMPARE(chakma.toInt(goodLakh, &ok), 123456);
+    QVERIFY(ok);
+    const QString longThousand = one + two + three + separator + four + five + six;
+    QCOMPARE(chakma.toInt(longThousand, &ok), 0);
+    QVERIFY(!ok);
+    const QString goodCrore // Crore is Hindi for 1,00,00,000
+        = one + separator + two + three + separator + zero + zero + separator + four + five + six;
+    QCOMPARE(chakma.toInt(goodCrore, &ok), 12300456);
+    QVERIFY(ok);
+    // Officially should be grouped, but we tolerate a complete lack of grouping
+    // for backwards-compatibility reasons.
+    const QString badLakh
+        = one + two + three + four + five + six;
+    QCOMPARE(chakma.toInt(badLakh, &ok), 123456);
+    QVERIFY(ok);
+    // However, even one group separator requires all to be correctly placed:
+    const QString longLakh
+        = one + two + three + separator + zero + zero + separator + four + five + six;
+    QCOMPARE(chakma.toInt(longLakh, &ok), 0);
+    QVERIFY(!ok);
 
     const uint uInteger32 = 2030405010u;
     QCOMPARE(chakma.toString(uInteger32), strResult32);

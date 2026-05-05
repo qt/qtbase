@@ -130,7 +130,7 @@ struct QWindowsIntegrationPrivate
 #if QT_CONFIG(accessibility)
    QWindowsUiaAccessibility m_accessibility;
 #endif
-    QWindowsServices m_services;
+    mutable QScopedPointer<QWindowsServices> m_services;
 };
 
 template <typename IntType>
@@ -643,7 +643,10 @@ QPlatformTheme *QWindowsIntegration::createPlatformTheme(const QString &name) co
 
 QPlatformServices *QWindowsIntegration::services() const
 {
-    return &d->m_services;
+    if (d->m_services.isNull())
+        d->m_services.reset(new QWindowsServices);
+
+    return d->m_services.data();
 }
 
 void QWindowsIntegration::beep() const
@@ -665,12 +668,16 @@ void QWindowsIntegration::setApplicationBadge(qint64 number)
     // We prefer the native BadgeUpdater API, that allows us to set a number directly,
     // but it requires that the application has a package identity, and also doesn't
     // seem to work in all cases on < Windows 11.
-    if (isWindows11 && qt_win_hasPackageIdentity()) {
-        using namespace winrt::Windows::UI::Notifications;
-        auto badgeXml = BadgeUpdateManager::GetTemplateContent(BadgeTemplateType::BadgeNumber);
-        badgeXml.SelectSingleNode(L"//badge/@value").NodeValue(winrt::box_value(winrt::to_hstring(number)));
-        BadgeUpdateManager::CreateBadgeUpdaterForApplication().Update(BadgeNotification(badgeXml));
-        return;
+    QT_TRY {
+        if (isWindows11 && qt_win_hasPackageIdentity()) {
+            using namespace winrt::Windows::UI::Notifications;
+            auto badgeXml = BadgeUpdateManager::GetTemplateContent(BadgeTemplateType::BadgeNumber);
+            badgeXml.SelectSingleNode(L"//badge/@value").NodeValue(winrt::box_value(winrt::to_hstring(number)));
+            BadgeUpdateManager::CreateBadgeUpdaterForApplication().Update(BadgeNotification(badgeXml));
+            return;
+        }
+    } QT_CATCH(...) {
+        // fall back to win32 implementation
     }
 #endif
 

@@ -416,6 +416,7 @@ void tst_QGraphicsGridLayout::addItem()
     }
     layout->addItem(wid, row, column, rowSpan, columnSpan, alignment);
 
+    delete wid;
     delete layout;
 }
 
@@ -602,6 +603,7 @@ void tst_QGraphicsGridLayout::columnCount()
     // ### Talk with Jasmin. Not sure if removeAt() should adjust columnCount().
     widget->setLayout(0);
     layout = new QGraphicsGridLayout();
+    widget->setLayout(layout);
     populateLayout(layout, 3, 2, hasHeightForWidth);
     QCOMPARE(layout->columnCount(), 3);
     layout->removeAt(5);
@@ -864,6 +866,8 @@ void tst_QGraphicsGridLayout::columnSpacing()
         // don't include items and spacings that was previously part of the layout
         // (horizontal)
         QGraphicsGridLayout *layout = new QGraphicsGridLayout;
+        QGraphicsWidget parent;
+        parent.setLayout(layout);
         populateLayout(layout, 3, 1);
         layout->setContentsMargins(0, 0, 0, 0);
         layout->setSpacing(0);
@@ -876,12 +880,13 @@ void tst_QGraphicsGridLayout::columnSpacing()
         QCOMPARE(layout->preferredSize(), QSizeF(60, 25));
         layout->removeAt(1);
         QCOMPARE(layout->preferredSize(), QSizeF(25, 25));
-        delete layout;
     }
     {
         // don't include items and spacings that was previously part of the layout
         // (vertical)
         QGraphicsGridLayout *layout = new QGraphicsGridLayout;
+        QGraphicsWidget parent;
+        parent.setLayout(layout);
         populateLayout(layout, 2, 2);
         layout->setContentsMargins(0, 0, 0, 0);
         layout->setSpacing(0);
@@ -896,7 +901,6 @@ void tst_QGraphicsGridLayout::columnSpacing()
         QCOMPARE(layout->preferredSize(), QSizeF(60, 25));
         layout->removeAt(1);
         QCOMPARE(layout->preferredSize(), QSizeF(25, 25));
-        delete layout;
     }
 
 }
@@ -1105,7 +1109,7 @@ void tst_QGraphicsGridLayout::removeItem()
     QCOMPARE(l->count(), 4);
 
     QTest::ignoreMessage(QtWarningMsg, QString::fromLatin1("QGraphicsGridLayout::removeAt: invalid index -1").toLatin1().constData());
-    l->removeItem(new QGraphicsWidget);
+    l->removeItem(new QGraphicsWidget(widget));
     QCOMPARE(l->count(), 4);
 }
 
@@ -1206,6 +1210,7 @@ void tst_QGraphicsGridLayout::rowCount()
     // with spans and holes...
     widget->setLayout(0);
     layout = new QGraphicsGridLayout();
+    widget->setLayout(layout);
     populateLayoutWithSpansAndHoles(layout, hasHeightForWidth);
     QCOMPARE(layout->rowCount(), 2);
     QCOMPARE(layout->columnCount(), 3);
@@ -1253,8 +1258,6 @@ void tst_QGraphicsGridLayout::rowMaximumHeight()
     QCOMPARE(layout->itemAt(1,1)->geometry().height(), 25.0);
     QCOMPARE(layout->itemAt(2,0)->geometry().height(), 25.0);
     QCOMPARE(layout->itemAt(2,1)->geometry().height(), 25.0);
-
-    delete widget;
 }
 
 void tst_QGraphicsGridLayout::rowMinimumHeight_data()
@@ -1492,7 +1495,7 @@ void tst_QGraphicsGridLayout::setGeometry()
 {
     QFETCH(QRectF, rect);
 
-    QGraphicsWidget *window = new QGraphicsWidget;
+    const auto window = std::make_unique<QGraphicsWidget>();
     QGraphicsGridLayout *layout = new QGraphicsGridLayout();
     window->setLayout(layout);
     QGraphicsGridLayout *layout2 = new QGraphicsGridLayout();
@@ -3175,8 +3178,9 @@ void tst_QGraphicsGridLayout::spanningItem2x2()
     QFETCH(QSizePolicy::Policy, sizePolicy);
     QFETCH(int, itemHeight);
     QFETCH(int, expectedHeight);
-    QGraphicsWidget *form = new QGraphicsWidget(0, Qt::Window);
-    QGraphicsGridLayout *layout = new QGraphicsGridLayout(form);
+
+    QGraphicsWidget form(0, Qt::Window);
+    QGraphicsGridLayout *layout = new QGraphicsGridLayout(&form);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
 
@@ -3230,7 +3234,12 @@ void tst_QGraphicsGridLayout::spanningItem2x3()
     QFETCH(bool, w3_fixed);
     QFETCH(bool, w4_fixed);
     QFETCH(bool, w5_fixed);
+
     QGraphicsGridLayout *layout = new QGraphicsGridLayout;
+
+    QGraphicsWidget parent;
+    parent.setLayout(layout);
+
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
 
@@ -3310,8 +3319,8 @@ void tst_QGraphicsGridLayout::spanningItem()
 
 void tst_QGraphicsGridLayout::spanAcrossEmptyRow()
 {
-    QGraphicsWidget *form = new QGraphicsWidget(0, Qt::Window);
-    QGraphicsGridLayout *layout = new QGraphicsGridLayout(form);
+    const auto form = std::make_unique<QGraphicsWidget>(nullptr, Qt::Window);
+    QGraphicsGridLayout *layout = new QGraphicsGridLayout(form.get());
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
     RectWidget *w1 = new RectWidget;

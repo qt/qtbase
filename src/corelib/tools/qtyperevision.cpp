@@ -202,11 +202,8 @@ QDebug operator<<(QDebug debug, const QTypeRevision &revision)
 #endif
 
 /*!
-    \relates QHash
+    \qhashold{QHash}
     \since 6.0
-
-    Returns the hash value for the \a key, using \a seed to seed the
-    calculation.
 */
 size_t qHash(const QTypeRevision &key, size_t seed)
 {

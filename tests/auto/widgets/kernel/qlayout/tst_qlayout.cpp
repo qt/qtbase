@@ -22,6 +22,8 @@
 
 #include <QtTest/private/qtesthelpers_p.h>
 
+#include <QtCore/qscopeguard.h>
+
 using namespace QTestPrivate;
 
 class tst_QLayout : public QObject
@@ -378,10 +380,10 @@ void tst_QLayout::removeWidget()
 {
     QHBoxLayout layout;
     QCOMPARE(layout.count(), 0);
-    QWidget w;
-    layout.addWidget(&w);
+    std::unique_ptr<QWidget> w(new QWidget);
+    layout.addWidget(w.get());
     QCOMPARE(layout.count(), 1);
-    layout.removeWidget(&w);
+    layout.removeWidget(w.get());
     QCOMPARE(layout.count(), 0);
 
     QPointer<QLayout> childLayout(new QHBoxLayout);
@@ -392,9 +394,16 @@ void tst_QLayout::removeWidget()
     QCOMPARE(layout.count(), 1);
 
     layout.removeItem(childLayout);
+    const auto reaper = qScopeGuard([&] { delete childLayout; });
     QCOMPARE(layout.count(), 0);
 
     QVERIFY(!childLayout.isNull());
+
+    // Test inactive layout consumes ChildRemoved event (QTBUG-124151)
+    layout.addWidget(w.get());
+    layout.setEnabled(false);
+    w.reset();
+    layout.setEnabled(true);
 }
 
 QTEST_MAIN(tst_QLayout)

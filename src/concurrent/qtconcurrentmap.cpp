@@ -168,6 +168,18 @@
     return any results via QFuture. However, you can still use QFuture and
     QFutureWatcher to monitor the status of the map.
 
+    \section2 Concurrent Mapped and Continuations
+
+    The result of QtConcurrent::mapped() call is a QFuture that contains
+    multiple results. When attaching a \c {.then()} continuation to such
+    QFuture, make sure to use a continuation that takes QFuture as a parameter,
+    otherwise only the first result will be processed:
+
+    \snippet code/src_concurrent_qtconcurrentmap.cpp 18
+
+    In this example \c {badFuture} will only print a single result, while
+    \c {goodFuture} will print all results.
+
     \section1 Concurrent Map-Reduce
 
     QtConcurrent::mappedReduced() is similar to QtConcurrent::mapped(), but

@@ -7,8 +7,10 @@
     "Description": "pixman is a library that provides low-level pixel manipulation features such as image compositing and trapezoid rasterization.",
     "Homepage": "http://www.pixman.org/",
     "Version": "0.17.12",
+    "PURL": "pkg:generic/pixman@$<VERSION>?download_url=http://www.pixman.org/",
     "License": "MIT License",
     "LicenseFile": "LICENSE",
     "LicenseId": "MIT",
-    "Copyright": "Copyright © 2009 Nokia Corporation"
+    "Copyright": "Copyright © 2009 Nokia Corporation",
+    "Comment": "no relevant CPE found"
 }

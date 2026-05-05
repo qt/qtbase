@@ -230,6 +230,7 @@ EGLDeviceEXT device = 0;
 EGLStreamKHR stream = 0;
 EGLOutputLayerEXT layer = 0;
 (void) EGL_DRM_CRTC_EXT;
+(void) EGL_DRM_MASTER_FD_EXT;
     /* END TEST: */
     return 0;
 }

@@ -32,6 +32,9 @@
 #include <private/qabstractitemview_p.h>
 #include <QtWidgets/private/qapplication_p.h>
 
+#include <vector>
+#include <memory>
+
 Q_DECLARE_METATYPE(Qt::ItemFlags);
 
 using namespace QTestPrivate;
@@ -109,6 +112,7 @@ private slots:
     void QTBUG6407_extendedSelection();
     void QTBUG6753_selectOnSelection();
     void testDelegateDestroyEditor();
+    void testDelegateDestroyEditorChild();
     void testClickedSignal();
     void testChangeEditorState();
     void deselectInSingleSelection();
@@ -178,17 +182,19 @@ public:
     QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &, const QModelIndex &) const override
     {
         openedEditor = new QWidget(parent);
+        virtualCtorCallCount++;
         return openedEditor;
     }
     void destroyEditor(QWidget *editor, const QModelIndex &) const override
     {
-        calledVirtualDtor = true;
+        virtualDtorCallCount++;
         editor->deleteLater();
     }
     void changeSize() { size = QSize(50, 50); emit sizeHintChanged(QModelIndex()); }
     mutable QWidget *openedEditor = nullptr;
     QSize size;
-    mutable bool calledVirtualDtor = false;
+    mutable int virtualCtorCallCount = 0;
+    mutable int virtualDtorCallCount = 0;
 };
 
 class DialogItemDelegate : public QStyledItemDelegate
@@ -1618,9 +1624,34 @@ void tst_QAbstractItemView::testDelegateDestroyEditor()
     table.setItemDelegate(&delegate);
     table.edit(table.model()->index(1, 1));
     QAbstractItemView *tv = &table;
-    QVERIFY(!delegate.calledVirtualDtor);
+    QCOMPARE(delegate.virtualDtorCallCount, 0);
     tv->closeEditor(delegate.openedEditor, QAbstractItemDelegate::NoHint);
-    QVERIFY(delegate.calledVirtualDtor);
+    QCOMPARE(delegate.virtualDtorCallCount, 1);
+}
+
+void tst_QAbstractItemView::testDelegateDestroyEditorChild()
+{
+    std::vector<std::unique_ptr<QTreeWidgetItem>> reaper;
+    QTreeWidget tree;
+    MyAbstractItemDelegate delegate;
+    tree.setItemDelegate(&delegate);
+    QTreeWidgetItem *topLevel = new QTreeWidgetItem;
+    QTreeWidgetItem *levelOne1 = new QTreeWidgetItem(topLevel);
+    QTreeWidgetItem *levelTwo1 = new QTreeWidgetItem(levelOne1);
+    QTreeWidgetItem *levelOne2 = new QTreeWidgetItem(topLevel);
+    QTreeWidgetItem *levelTwo2 = new QTreeWidgetItem(levelOne2);
+    tree.insertTopLevelItem(0, topLevel);
+    tree.openPersistentEditor(levelOne1);
+    tree.openPersistentEditor(levelTwo1);
+    tree.openPersistentEditor(levelOne2);
+    tree.openPersistentEditor(levelTwo2);
+    QCOMPARE(delegate.virtualCtorCallCount, 4);
+    levelOne1->removeChild(levelTwo1);
+    reaper.emplace_back(levelTwo1);
+    QCOMPARE(delegate.virtualDtorCallCount, 1);
+    topLevel->removeChild(levelOne2);
+    reaper.emplace_back(levelOne2);
+    QCOMPARE(delegate.virtualDtorCallCount, 3);
 }
 
 void tst_QAbstractItemView::testClickedSignal()

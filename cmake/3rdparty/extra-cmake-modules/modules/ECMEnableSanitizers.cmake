@@ -118,6 +118,16 @@ macro (enable_sanitizer_flags sanitize_option)
             set(XSAN_COMPILE_FLAGS "-fsanitize=address -fno-omit-frame-pointer -fno-optimize-sibling-calls")
             set(XSAN_LINKER_FLAGS "asan")
         endif()
+        if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+            # fixes "note: variable tracking size limit exceeded with
+            # -fvar-tracking-assignments, retrying without" (which is
+            # another way of saying "I'll go ahead and compile this
+            # thing _twice_") by making it unlimited
+            # Reference:
+            #  https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html
+            #  -> max-vartrack-size
+            string(APPEND XSAN_COMPILE_FLAGS " --param=max-vartrack-size=0")
+        endif ()
     elseif (${sanitize_option} MATCHES "thread")
         check_compiler_version("4.8" "3.1" "99.99")
         set(XSAN_COMPILE_FLAGS "-fsanitize=thread")

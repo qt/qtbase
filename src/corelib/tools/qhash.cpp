@@ -1163,11 +1163,7 @@ uint qt_hash(QStringView key, uint chained) noexcept
 /*!
     \fn template <typename T1, typename T2> size_t qHash(const std::pair<T1, T2> &key, size_t seed = 0)
     \since 5.7
-    \relates QHash
-
-    Returns the hash value for the \a key, using \a seed to seed the calculation.
-
-    Types \c T1 and \c T2 must be supported by qHash().
+    \qhashbuiltinTS{T1}{T2}
 */
 
 /*!
@@ -1309,121 +1305,88 @@ uint qt_hash(QStringView key, uint chained) noexcept
 */
 
 /*! \fn size_t qHash(char key, size_t seed = 0)
-    \relates QHash
     \since 5.0
-
-    Returns the hash value for the \a key, using \a seed to seed the calculation.
+    \qhashbuiltin
 */
 
 /*! \fn size_t qHash(uchar key, size_t seed = 0)
-    \relates QHash
     \since 5.0
-
-    Returns the hash value for the \a key, using \a seed to seed the calculation.
+    \qhashbuiltin
 */
 
 /*! \fn size_t qHash(signed char key, size_t seed = 0)
-    \relates QHash
     \since 5.0
-
-    Returns the hash value for the \a key, using \a seed to seed the calculation.
+    \qhashbuiltin
 */
 
 /*! \fn size_t qHash(ushort key, size_t seed = 0)
-    \relates QHash
     \since 5.0
-
-    Returns the hash value for the \a key, using \a seed to seed the calculation.
+    \qhashbuiltin
 */
 
 /*! \fn size_t qHash(short key, size_t seed = 0)
-    \relates QHash
     \since 5.0
-
-    Returns the hash value for the \a key, using \a seed to seed the calculation.
+    \qhashbuiltin
 */
 
 /*! \fn size_t qHash(uint key, size_t seed = 0)
-    \relates QHash
     \since 5.0
-
-    Returns the hash value for the \a key, using \a seed to seed the calculation.
+    \qhashbuiltin
 */
 
 /*! \fn size_t qHash(int key, size_t seed = 0)
-    \relates QHash
     \since 5.0
-
-    Returns the hash value for the \a key, using \a seed to seed the calculation.
+    \qhashbuiltin
 */
 
 /*! \fn size_t qHash(ulong key, size_t seed = 0)
-    \relates QHash
     \since 5.0
-
-    Returns the hash value for the \a key, using \a seed to seed the calculation.
+    \qhashbuiltin
 */
 
 /*! \fn size_t qHash(long key, size_t seed = 0)
-    \relates QHash
     \since 5.0
-
-    Returns the hash value for the \a key, using \a seed to seed the calculation.
+    \qhashbuiltin
 */
 
 /*! \fn size_t qHash(quint64 key, size_t seed = 0)
-    \relates QHash
     \since 5.0
-
-    Returns the hash value for the \a key, using \a seed to seed the calculation.
+    \qhashbuiltin
 */
 
 /*! \fn size_t qHash(qint64 key, size_t seed = 0)
-    \relates QHash
     \since 5.0
-
-    Returns the hash value for the \a key, using \a seed to seed the calculation.
+    \qhashbuiltin
 */
 
 /*! \fn size_t qHash(char8_t key, size_t seed = 0)
-    \relates QHash
     \since 6.0
-
-    Returns the hash value for the \a key, using \a seed to seed the calculation.
+    \qhashbuiltin
 */
 
 /*! \fn size_t qHash(char16_t key, size_t seed = 0)
-    \relates QHash
     \since 6.0
-
-    Returns the hash value for the \a key, using \a seed to seed the calculation.
+    \qhashbuiltin
 */
 
 /*! \fn size_t qHash(char32_t key, size_t seed = 0)
-    \relates QHash
     \since 6.0
-
-    Returns the hash value for the \a key, using \a seed to seed the calculation.
+    \qhashbuiltin
 */
 
 /*! \fn size_t qHash(wchar_t key, size_t seed = 0)
-    \relates QHash
     \since 6.0
-
-    Returns the hash value for the \a key, using \a seed to seed the calculation.
+    \qhashbuiltin
 */
 
 /*! \fn size_t qHash(float key, size_t seed = 0) noexcept
-    \relates QHash
     \since 5.3
-
-    Returns the hash value for the \a key, using \a seed to seed the calculation.
+    \qhashbuiltin
 */
 
-/*! \relates QHash
+/*!
     \since 5.3
-
-    Returns the hash value for the \a key, using \a seed to seed the calculation.
+    \qhashbuiltin
 */
 size_t qHash(double key, size_t seed) noexcept
 {
@@ -1439,10 +1402,9 @@ size_t qHash(double key, size_t seed) noexcept
 }
 
 #if !defined(Q_OS_DARWIN) || defined(Q_QDOC)
-/*! \relates QHash
+/*
     \since 5.3
-
-    Returns the hash value for the \a key, using \a seed to seed the calculation.
+    \qhashbuiltin
 */
 size_t qHash(long double key, size_t seed) noexcept
 {
@@ -1458,67 +1420,55 @@ size_t qHash(long double key, size_t seed) noexcept
 }
 #endif
 
-/*! \fn size_t qHash(const QChar key, size_t seed = 0)
-    \relates QHash
-    \since 5.0
+/*!
+    \fn template <typename Enum, std::enable_if_t<std::is_enum_v<Enum>, bool> = true> size_t qHash(Enum key, size_t seed)
+    \since 6.5
+    \qhashbuiltin
 
-    Returns the hash value for the \a key, using \a seed to seed the calculation.
+    \note Prior to Qt 6.5, unscoped enums relied on the integer overloads of this
+    function due to implicit conversion to their underlying integer types.
+    For scoped enums, you had to implement an overload yourself. This is still the
+    backwards-compatible fix to remain compatible with older Qt versions.
+*/
+
+/*! \fn size_t qHash(const QChar key, size_t seed = 0)
+    \since 5.0
+    \qhashold{QHash}
 */
 
 /*! \fn size_t qHash(const QByteArray &key, size_t seed = 0)
-    \relates QHash
     \since 5.0
-
-    Returns the hash value for the \a key, using \a seed to seed the calculation.
+    \qhashold{QHash}
 */
 
 /*! \fn size_t qHash(const QByteArrayView &key, size_t seed = 0)
-    \relates QHash
     \since 6.0
-
-    Returns the hash value for the \a key, using \a seed to seed the calculation.
+    \qhashold{QHash}
 */
 
 /*! \fn size_t qHash(const QBitArray &key, size_t seed = 0)
-    \relates QHash
     \since 5.0
-
-    Returns the hash value for the \a key, using \a seed to seed the calculation.
+    \qhashold{QHash}
 */
 
 /*! \fn size_t qHash(const QString &key, size_t seed = 0)
-    \relates QHash
     \since 5.0
-
-    Returns the hash value for the \a key, using \a seed to seed the calculation.
-*/
-
-/*! \fn size_t qHash(QStringView key, size_t seed = 0)
-    \relates QStringView
-    \since 5.10
-
-    Returns the hash value for the \a key, using \a seed to seed the calculation.
+    \qhashold{QHash}
 */
 
 /*! \fn size_t qHash(QLatin1StringView key, size_t seed = 0)
-    \relates QHash
     \since 5.0
-
-    Returns the hash value for the \a key, using \a seed to seed the calculation.
+    \qhashold{QHash}
 */
 
 /*! \fn template <class T> size_t qHash(const T *key, size_t seed = 0)
-    \relates QHash
     \since 5.0
-
-    Returns the hash value for the \a key, using \a seed to seed the calculation.
+    \qhashbuiltin
 */
 
 /*! \fn template <class T> size_t qHash(std::nullptr_t key, size_t seed = 0)
-    \relates QHash
     \since 6.0
-
-    Returns the hash value for the \a key, using \a seed to seed the calculation.
+    \qhashbuiltin
 */
 
 /*! \fn template<typename T> bool qHashEquals(const T &a, const T &b)
@@ -3804,21 +3754,13 @@ size_t qHash(long double key, size_t seed) noexcept
 /*!
     \fn template <class Key, class T> size_t qHash(const QHash<Key, T> &key, size_t seed = 0)
     \since 5.8
-    \relates QHash
-
-    Returns the hash value for the \a key, using \a seed to seed the calculation.
-
-    Type \c T must be supported by qHash().
+    \qhasholdTS{QHash}{Key}{T}
 */
 
 /*!
     \fn template <class Key, class T> size_t qHash(const QMultiHash<Key, T> &key, size_t seed = 0)
     \since 5.8
-    \relates QMultiHash
-
-    Returns the hash value for the \a key, using \a seed to seed the calculation.
-
-    Type \c T must be supported by qHash().
+    \qhasholdTS{QMultiHash}{Key}{T}
 */
 
 /*! \fn template <typename Key, typename T, typename Predicate> qsizetype erase_if(QHash<Key, T> &hash, Predicate pred)

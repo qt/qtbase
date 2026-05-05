@@ -30,7 +30,6 @@ using namespace Qt::StringLiterals;
 QBsdFbIntegration::QBsdFbIntegration(const QStringList &paramList)
 {
     m_fontDb.reset(new QGenericUnixFontDatabase);
-    m_services.reset(new QGenericUnixServices);
     m_primaryScreen.reset(new QBsdFbScreen(paramList));
 }
 
@@ -97,6 +96,9 @@ QPlatformFontDatabase *QBsdFbIntegration::fontDatabase() const
 
 QPlatformServices *QBsdFbIntegration::services() const
 {
+    if (m_services.isNull())
+        m_services.reset(new QGenericUnixServices);
+
     return m_services.data();
 }
 

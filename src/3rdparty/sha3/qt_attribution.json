@@ -8,11 +8,13 @@
         "Files": "brg_endian.h",
 
         "Description": "SHA-3, originally known as Keccak, is a cryptographic hash function.",
-        "Version": "https://github.com/BrianGladman/sha/ commit 4b9e13ead2c5b5e41ca27c65de4dd69ae0bac228",
+        "Version": "4b9e13ead2c5b5e41ca27c65de4dd69ae0bac228",
+        "PURL": "pkg:github/BrianGladman/sha@$<VERSION>",
         "License": "BSD 2-clause \"Simplified\" License",
         "LicenseFile": "BRG_ENDIAN_LICENSE",
         "LicenseId": "BSD-2-Clause",
-        "Copyright": "Copyright (c) 1998-2013, Brian Gladman, Worcester, UK. All rights reserved."
+        "Copyright": "Copyright (c) 1998-2013, Brian Gladman, Worcester, UK. All rights reserved.",
+        "Comment": "no relevant CPE found"
     },
     {
         "Id": "sha3_keccak",
@@ -36,10 +38,12 @@
 
         "Description": "SHA-3, originally known as Keccak, is a cryptographic hash function.",
         "Version": "3.2",
+        "PURL": "pkg:generic/sha3_keccak@$<VERSION>?download_url=https://keccak.team/obsolete/KeccakReferenceAndOptimized-3.2.zip",
         "License": "Creative Commons Zero v1.0 Universal",
         "LicenseId": "CC0-1.0",
         "LicenseFile": "CC0_LICENSE",
         "Copyright": "Guido Bertoni, Joan Daemen, Michaël Peeters and Gilles Van Assche.\nTo the extent possible under law, the implementers have waived all copyright
-and related or neighboring rights to the source code in this file."
+and related or neighboring rights to the source code in this file.",
+        "Comment": "no relevant CPE found"
     }
 ]
