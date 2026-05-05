@@ -6,7 +6,103 @@
 #include "ui4.h"
 #include "uic.h"
 
+#include <qstringview.h>
+
 QT_BEGIN_NAMESPACE
+
+using namespace Qt::StringLiterals;
+
+// An approximation of "Unicode Standard Annex #31" for checking property
+// and enumeration identifiers to prevent code injection attacks.
+// FIXME 6.9: Simplify according to QTBUG-126860
+static bool isIdStart(QChar c)
+{
+    bool result = false;
+    switch (c.category()) {
+    case QChar::Letter_Uppercase:
+    case QChar::Letter_Lowercase:
+    case QChar::Letter_Titlecase:
+    case QChar::Letter_Modifier:
+    case QChar::Letter_Other:
+    case QChar::Number_Letter:
+        result = true;
+        break;
+    default:
+        result = c == u'_';
+        break;
+    }
+    return result;
+}
+
+static bool isIdContinuation(QChar c)
+{
+    bool result = false;
+    switch (c.category()) {
+    case QChar::Letter_Uppercase:
+    case QChar::Letter_Lowercase:
+    case QChar::Letter_Titlecase:
+    case QChar::Letter_Modifier:
+    case QChar::Letter_Other:
+    case QChar::Number_Letter:
+    case QChar::Mark_NonSpacing:
+    case QChar::Mark_SpacingCombining:
+    case QChar::Number_DecimalDigit:
+    case QChar::Punctuation_Connector: // '_'
+        result = true;
+        break;
+    default:
+        break;
+    }
+    return result;
+}
+
+static bool isEnumIdContinuation(QChar c)
+{
+    return c == u':' || c == u'|' || c == u' ' || isIdContinuation(c);
+}
+
+static bool checkPropertyName(QStringView name)
+{
+    return !name.isEmpty() && isIdStart(name.at(0))
+    && std::all_of(name.cbegin() + 1, name.cend(), isIdContinuation);
+}
+
+static bool checkEnumValue(QStringView name)
+{
+    return !name.isEmpty() && isIdStart(name.at(0))
+    && std::all_of(name.cbegin() + 1, name.cend(), isEnumIdContinuation);
+}
+
+static QString msgInvalidValue(const QString &name, const QString &value)
+{
+    return "Invalid property value: \""_L1 + name + "\": \""_L1 + value + u'"';
+}
+
+static QString msgInvalidPropertyName(const QString &name)
+{
+    return "Invalid property name: \""_L1 + name + u'"';
+}
+
+static void checkProperties(const QList<DomProperty *> &properties, QStringList *errors)
+{
+    for (const DomProperty *p : properties) {
+        const bool isDynamicProperty = p->hasAttributeStdset() && p->attributeStdset() == 0;
+        const QString &name = p->attributeName();
+        if (!isDynamicProperty && !checkPropertyName(name))
+            errors->append(msgInvalidPropertyName(name));
+        switch (p->kind()) {
+        case DomProperty::Set:
+            if (!checkEnumValue(p->elementSet()))
+                errors->append(msgInvalidValue(name, p->elementSet()));
+            break;
+        case DomProperty::Enum:
+            if (!checkEnumValue(p->elementEnum()))
+                errors->append(msgInvalidValue(name, p->elementEnum()));
+        default:
+            break;
+        }
+    }
+}
 
 Validator::Validator(Uic *uic)   :
     m_driver(uic->driver())
@@ -22,6 +118,8 @@ void Validator::acceptWidget(DomWidget *node)
 {
     (void) m_driver->findOrInsertWidget(node);
 
+    checkProperties(node->elementProperty(), &m_errors);
+
     TreeWalker::acceptWidget(node);
 }
 
@@ -36,6 +134,8 @@ void Validator::acceptLayout(DomLayout *node)
 {
     (void) m_driver->findOrInsertLayout(node);
 
+    checkProperties(node->elementProperty(), &m_errors);
+
     TreeWalker::acceptLayout(node);
 }
 
@@ -43,12 +143,16 @@ void Validator::acceptActionGroup(DomActionGroup *node)
 {
     (void) m_driver->findOrInsertActionGroup(node);
 
+    checkProperties(node->elementProperty(), &m_errors);
+
     TreeWalker::acceptActionGroup(node);
 }
 
 void Validator::acceptAction(DomAction *node)
 {
     (void) m_driver->findOrInsertAction(node);
+
+    checkProperties(node->elementProperty(), &m_errors);
 
     TreeWalker::acceptAction(node);
 }

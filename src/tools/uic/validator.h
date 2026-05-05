@@ -6,6 +6,8 @@
 
 #include "treewalker.h"
 
+#include <qstringlist.h>
+
 QT_BEGIN_NAMESPACE
 
 class QTextStream;
@@ -27,7 +29,10 @@ struct Validator : public TreeWalker
     void acceptActionGroup(DomActionGroup *node) override;
     void acceptAction(DomAction *node) override;
 
+    const QStringList &errors() const { return m_errors; }
+
 private:
+    QStringList m_errors;
     Driver *m_driver;
 };
 
