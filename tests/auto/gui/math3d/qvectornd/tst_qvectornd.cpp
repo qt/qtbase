@@ -917,6 +917,13 @@ void tst_QVectorND::compare2_data()
     // tests with negative vs. positive zero:
     row({1, 0.0f}, {1, -0.0f}, true);
     row({0.0f, 1}, {-0.0f, 1}, true);
+
+    // tests with ±ε (ensuring that op== isn't fuzzy):
+    constexpr auto eps = 1e-6f;
+    QCOMPARE_NE(1.0f, 1 + eps);
+    QVERIFY(qFuzzyCompare(1, 1 + eps));
+    row({1, 1}, {1, 1 + eps}, false);
+    row({1, 1}, {1 + eps, 1}, false);
 }
 
 void tst_QVectorND::compare2()
@@ -956,6 +963,14 @@ void tst_QVectorND::compare3_data()
     row({1, 1, 0.0f}, {1, 1, -0.0f}, true);
     row({1, 0.0f, 1}, {1, -0.0f, 1}, true);
     row({0.0f, 1, 1}, {-0.0f, 1, 1}, true);
+
+    // tests with ±ε (ensuring that op== isn't fuzzy):
+    constexpr auto eps = 1e-6f;
+    QCOMPARE_NE(1.0f, 1 + eps);
+    QVERIFY(qFuzzyCompare(1, 1 + eps));
+    row({1, 1, 1}, {1, 1, 1 + eps}, false);
+    row({1, 1, 1}, {1, 1 + eps, 1}, false);
+    row({1, 1, 1}, {1 + eps, 1, 1}, false);
 }
 
 void tst_QVectorND::compare3()
@@ -998,6 +1013,15 @@ void tst_QVectorND::compare4_data()
     row({1, 1, 0.0f, 1}, {1, 1, -0.0f, 1}, true);
     row({1, 0.0f, 1, 1}, {1, -0.0f, 1, 1}, true);
     row({0.0f, 1, 1, 1}, {-0.0f, 1, 1, 1}, true);
+
+    // tests with ±ε (ensuring that op== isn't fuzzy):
+    constexpr auto eps = 1e-6f;
+    QCOMPARE_NE(1.0f, 1 + eps);
+    QVERIFY(qFuzzyCompare(1, 1 + eps));
+    row({1, 1, 1, 1}, {1, 1, 1, 1 + eps}, false);
+    row({1, 1, 1, 1}, {1, 1, 1 + eps, 1}, false);
+    row({1, 1, 1, 1}, {1, 1 + eps, 1, 1}, false);
+    row({1, 1, 1, 1}, {1 + eps, 1, 1, 1}, false);
 }
 
 void tst_QVectorND::compare4()
