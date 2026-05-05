@@ -913,6 +913,10 @@ void tst_QVectorND::compare2_data()
     row(v1, v2, true);
     row(v1, v3, false);
     row(v1, v4, false);
+
+    // tests with negative vs. positive zero:
+    row({1, 0.0f}, {1, -0.0f}, true);
+    row({0.0f, 1}, {-0.0f, 1}, true);
 }
 
 void tst_QVectorND::compare2()
@@ -947,6 +951,11 @@ void tst_QVectorND::compare3_data()
     row(v1, v3, false);
     row(v1, v4, false);
     row(v1, v5, false);
+
+    // tests with negative vs. positive zero:
+    row({1, 1, 0.0f}, {1, 1, -0.0f}, true);
+    row({1, 0.0f, 1}, {1, -0.0f, 1}, true);
+    row({0.0f, 1, 1}, {-0.0f, 1, 1}, true);
 }
 
 void tst_QVectorND::compare3()
@@ -983,6 +992,12 @@ void tst_QVectorND::compare4_data()
     row(v1, v4, false);
     row(v1, v5, false);
     row(v1, v6, false);
+
+    // tests with negative vs. positive zero:
+    row({1, 1, 1, 0.0f}, {1, 1, 1, -0.0f}, true);
+    row({1, 1, 0.0f, 1}, {1, 1, -0.0f, 1}, true);
+    row({1, 0.0f, 1, 1}, {1, -0.0f, 1, 1}, true);
+    row({0.0f, 1, 1, 1}, {-0.0f, 1, 1, 1}, true);
 }
 
 void tst_QVectorND::compare4()
