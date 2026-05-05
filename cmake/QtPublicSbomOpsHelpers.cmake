@@ -124,10 +124,7 @@ function(_qt_internal_sbom_setup_project_ops_generation)
             set(lint_no_error_option NO_ERROR)
         endif()
         _qt_internal_sbom_find_python_dependency_program(NAME reuse REQUIRED)
-        _qt_internal_sbom_run_reuse_lint(
-            ${lint_no_error_option}
-            BUILD_TIME_SCRIPT_PATH_OUT_VAR reuse_lint_script
-        )
+        _qt_internal_sbom_run_reuse_lint(${lint_no_error_option})
     endif()
 endfunction()
 
@@ -1198,9 +1195,7 @@ function(_qt_internal_sbom_run_reuse_lint)
     set(opt_args
         NO_ERROR
     )
-    set(single_args
-        BUILD_TIME_SCRIPT_PATH_OUT_VAR
-    )
+    set(single_args "")
     set(multi_args "")
     cmake_parse_arguments(PARSE_ARGV 0 arg "${opt_args}" "${single_args}" "${multi_args}")
     _qt_internal_validate_all_args_are_parsed(arg)
@@ -1250,8 +1245,6 @@ function(_qt_internal_sbom_run_reuse_lint)
     endif()
 
     set_property(GLOBAL APPEND PROPERTY _qt_sbom_cmake_verify_include_files "${file_op_install}")
-
-    if(arg_BUILD_TIME_SCRIPT_PATH_OUT_VAR)
-        set(${arg_BUILD_TIME_SCRIPT_PATH_OUT_VAR} "${file_op_build}" PARENT_SCOPE)
-    endif()
+    set_property(GLOBAL APPEND PROPERTY _qt_sbom_cmake_reuse_lint_build_time_script
+        "${file_op_build}")
 endfunction()
