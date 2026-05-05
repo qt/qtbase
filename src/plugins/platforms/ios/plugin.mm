@@ -32,9 +32,3 @@ QPlatformIntegration * QIOSIntegrationPlugin::create(const QString& system, cons
 QT_END_NAMESPACE
 
 #include "plugin.moc"
-
-// Dummy function that we explicitly tell the linker to look for,
-// so that the plugin's static initializer is included and run.
-extern "C" void qt_registerPlatformPlugin() {}
-
-Q_IMPORT_PLUGIN(QIOSIntegrationPlugin)
