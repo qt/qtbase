@@ -73,6 +73,17 @@ static bool checkEnumValue(QStringView name)
     && std::all_of(name.cbegin() + 1, name.cend(), isEnumIdContinuation);
 }
 
+static bool isClassNameContinuation(QChar c)
+{
+    return c == u':' || c == u'.' || isIdContinuation(c);
+}
+
+static bool checkClassName(QStringView name)
+{
+    return !name.isEmpty() && isIdStart(name.at(0))
+            && std::all_of(name.cbegin() + 1, name.cend(), isClassNameContinuation);
+}
+
 static QString msgInvalidValue(const QString &name, const QString &value)
 {
     return "Invalid property value: \""_L1 + name + "\": \""_L1 + value + u'"';
@@ -81,6 +92,11 @@ static QString msgInvalidValue(const QString &name, const QString &value)
 static QString msgInvalidPropertyName(const QString &name)
 {
     return "Invalid property name: \""_L1 + name + u'"';
+}
+
+static QString msgInvalidClassName(const QString &name)
+{
+    return "Invalid class name: \""_L1 + name + u'"';
 }
 
 static void checkProperties(const QList<DomProperty *> &properties, QStringList *errors)
@@ -112,6 +128,9 @@ Validator::Validator(Uic *uic)   :
 void Validator::acceptUI(DomUI *node)
 {
     TreeWalker::acceptUI(node);
+
+    if (!checkClassName(node->elementClass()))
+        m_errors.append(msgInvalidClassName(node->elementClass()));
 }
 
 void Validator::acceptWidget(DomWidget *node)
@@ -119,6 +138,9 @@ void Validator::acceptWidget(DomWidget *node)
     (void) m_driver->findOrInsertWidget(node);
 
     checkProperties(node->elementProperty(), &m_errors);
+
+    if (!checkClassName(node->attributeClass()))
+        m_errors.append(msgInvalidClassName(node->attributeClass()));
 
     TreeWalker::acceptWidget(node);
 }
