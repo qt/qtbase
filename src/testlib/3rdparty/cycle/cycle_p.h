@@ -551,7 +551,7 @@ INLINE_ELAPSED(inline)
 #define HAVE_TICK_COUNTER
 #endif
 
-#if defined(__aarch64__) && defined(HAVE_ARMV8_CNTVCT_EL0) && !defined(HAVE_ARMV8_PMCCNTR_EL0)
+#if defined(__aarch64__) && (defined(__APPLE__) || defined(HAVE_ARMV8_CNTVCT_EL0)) && !defined(HAVE_ARMV8_PMCCNTR_EL0)
 typedef uint64_t ticks;
 static inline ticks getticks(void)
 {
@@ -570,6 +570,44 @@ static inline ticks getticks(void)
         uint64_t cc = 0;
         asm volatile("mrs %0, PMCCNTR_EL0" : "=r"(cc));
         return cc;
+}
+INLINE_ELAPSED(inline)
+#define HAVE_TICK_COUNTER
+#endif
+
+#if defined(__riscv_xlen) && !defined(HAVE_TICK_COUNTER)
+typedef uint64_t ticks;
+static inline ticks getticks(void)
+{
+  uint64_t result;
+#if __riscv_xlen == 64
+  asm volatile("rdtime %0" : "=r" (result));
+#elif __riscv_xlen == 32
+  uint32_t l, h, h2;
+  asm volatile(	"start:\n"
+		"rdtimeh %0\n"
+		"rdtime %1\n"
+		"rdtimeh %2\n"
+		"bne %0, %2, start\n"
+		: "=r" (h), "=r" (l), "=r" (h2));
+  result = (((uint64_t)h)<<32) | ((uint64_t)l);
+#else
+#error "unknown __riscv_xlen"
+#endif
+  return result;
+}
+INLINE_ELAPSED(inline)
+#define HAVE_TICK_COUNTER
+#endif
+
+#if defined(__loongarch64) && !defined(HAVE_TICK_COUNTER)
+typedef uint64_t ticks;
+static inline ticks getticks(void)
+{
+  uint64_t counter = 0;
+  uint64_t id = 0;
+  asm volatile("rdtime.d %0, %1" : "=r"(counter), "=r"(id));
+  return counter;
 }
 INLINE_ELAPSED(inline)
 #define HAVE_TICK_COUNTER
