@@ -111,7 +111,7 @@ static bool parseModeline(const QByteArray &text, drmModeModeInfoPtr mode)
     mode->vrefresh = 0;
     mode->flags = 0;
 
-    if (sscanf(text.constData(), "%f %hd %hd %hd %hd %hd %hd %hd %hd %15s %15s",
+    if (sscanf(text.constData(), "%f %hu %hu %hu %hu %hu %hu %hu %hu %15s %15s",
                &fclock,
                &mode->hdisplay,
                &mode->hsync_start,
@@ -667,7 +667,7 @@ void QKmsDevice::checkConnectedScreens()
                        QList<QPlatformScreen *>() << m_headlessScreen);
     }
 
-    for (uint32_t connectorId : newDisconnects) {
+    for (uint32_t connectorId : std::as_const(newDisconnects)) {
         OrderedScreen orderedScreen = m_registeredScreens.take(connectorId);
         QPlatformScreen *screen = orderedScreen.screen;
 
@@ -704,7 +704,7 @@ void QKmsDevice::checkConnectedScreens()
         unregisterScreen(screen);
     }
 
-    for (uint32_t connectorId : newConnects) {
+    for (uint32_t connectorId : std::as_const(newConnects)) {
         drmModeConnectorPtr connector = drmModeGetConnector(m_dri_fd, connectorId);
         if (!connector) {
             qErrnoWarning(errno, "drmModeGetConnector failed");
@@ -935,15 +935,15 @@ void QKmsDevice::registerScreens(QList<uint32_t> newConnects)
 
     // The final list of screens is available, so do the second phase setup.
     // Hook up clone sources and targets.
-    for (const OrderedScreen &orderedScreen : screens) {
+    for (const OrderedScreen &orderedScreen : std::as_const(screens)) {
         QList<QPlatformScreen *> screensCloningThisScreen;
-        for (const OrderedScreen &s : screens) {
+        for (const OrderedScreen &s : std::as_const(screens)) {
             if (s.vinfo.output.clone_source == orderedScreen.vinfo.output.name)
                 screensCloningThisScreen.append(s.screen);
         }
         QPlatformScreen *screenThisScreenClones = nullptr;
         if (!orderedScreen.vinfo.output.clone_source.isEmpty()) {
-            for (const OrderedScreen &s : screens) {
+            for (const OrderedScreen &s : std::as_const(screens)) {
                 if (s.vinfo.output.name == orderedScreen.vinfo.output.clone_source) {
                     screenThisScreenClones = s.screen;
                     break;
@@ -965,7 +965,7 @@ void QKmsDevice::registerScreens(QList<uint32_t> newConnects)
     int primarySiblingIdx = -1;
     QRegion deskRegion;
 
-    for (const OrderedScreen &orderedScreen : screens) {
+    for (const OrderedScreen &orderedScreen : std::as_const(screens)) {
         QPlatformScreen *s = orderedScreen.screen;
         QPoint virtualPos(0, 0);
         // set up a horizontal or vertical virtual desktop
