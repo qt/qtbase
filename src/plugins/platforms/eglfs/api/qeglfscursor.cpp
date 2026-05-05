@@ -248,7 +248,8 @@ bool QEglFSCursor::event(QEvent *e)
                 QWindowSystemInterface::flushWindowSystemEvents(QEventLoop::ExcludeUserInputEvents);
             }
         } else {
-            for (QWindow *w : qGuiApp->topLevelWindows())
+            const auto windows = qGuiApp->topLevelWindows();
+            for (QWindow *w : windows)
                 QWindowSystemInterface::handleExposeEvent(w, w->geometry());
             QWindowSystemInterface::flushWindowSystemEvents(QEventLoop::ExcludeUserInputEvents);
         }
@@ -284,7 +285,8 @@ void QEglFSCursor::setPos(const QPoint &pos)
     const QRect oldCursorRect = cursorRect();
     m_cursor.pos = pos;
     update(oldCursorRect | cursorRect(), false);
-    for (QPlatformScreen *screen : m_screen->virtualSiblings())
+    const auto siblings = m_screen->virtualSiblings();
+    for (QPlatformScreen *screen : siblings)
         static_cast<QEglFSScreen *>(screen)->handleCursorMove(m_cursor.pos);
 }
 
@@ -295,7 +297,8 @@ void QEglFSCursor::pointerEvent(const QMouseEvent &event)
     const QRect oldCursorRect = cursorRect();
     m_cursor.pos = event.globalPosition().toPoint();
     update(oldCursorRect | cursorRect(), false);
-    for (QPlatformScreen *screen : m_screen->virtualSiblings())
+    const auto siblings = m_screen->virtualSiblings();
+    for (QPlatformScreen *screen : siblings)
         static_cast<QEglFSScreen *>(screen)->handleCursorMove(m_cursor.pos);
 }
 
@@ -312,7 +315,8 @@ void QEglFSCursor::paintOnScreen()
     // variants of KMS/DRM) will enable this by default. In this case all
     // screens are siblings of each other. When not enabled, the sibling list
     // only contains m_screen itself.
-    for (QPlatformScreen *screen : m_screen->virtualSiblings()) {
+    const auto siblings = m_screen->virtualSiblings();
+    for (QPlatformScreen *screen : siblings) {
         if (screen->geometry().contains(cr.topLeft().toPoint() + m_cursor.hotSpot))
         {
             cr.translate(-screen->geometry().topLeft());
