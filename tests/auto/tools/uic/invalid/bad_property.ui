@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Dialog</class>
+ <widget class="QDialog" name="Dialog">
+  <widget class="QDialogButtonBox" name="buttonBox">
+   <property name="Invalid Property Name">
+    <set>QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok</set>
+   </property>
+  </widget>
+ </widget>
+</ui>

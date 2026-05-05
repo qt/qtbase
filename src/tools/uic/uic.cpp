@@ -222,6 +222,16 @@ bool Uic::write(DomUI *ui)
     if (!ui || !ui->elementWidget())
         return false;
 
+    {
+        Validator validator(this);
+        validator.acceptUI(ui);
+        if (!validator.errors().isEmpty()) {
+            for (const QString &error : validator.errors())
+                fprintf(stderr, "%s: %s\n", qPrintable(opt.messagePrefix()), qPrintable(error));
+            return false;
+        }
+    }
+
     const auto lang = language::language();
 
     if (lang == Language::Python)
@@ -257,14 +267,12 @@ bool Uic::write(DomUI *ui)
     case Language::Cpp: {
         CPP::WriteIncludes writeIncludes(this);
         writeIncludes.acceptUI(ui);
-        Validator(this).acceptUI(ui);
         CPP::WriteDeclaration(this).acceptUI(ui);
     }
         break;
     case Language::Python: {
         Python::WriteImports writeImports(this);
         writeImports.acceptUI(ui);
-        Validator(this).acceptUI(ui);
         Python::WriteDeclaration(this).acceptUI(ui);
     }
         break;

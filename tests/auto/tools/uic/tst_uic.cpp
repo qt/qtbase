@@ -62,6 +62,9 @@ private Q_SLOTS:
     void compare();
     void compare_data() const;
 
+    void invalidFiles();
+    void invalidFiles_data() const;
+
     void pythonCompile();
     void pythonCompile_data() const;
 
@@ -72,6 +75,7 @@ private:
 
     const QString m_command;
     QString m_baseline;
+    QString m_invalid;
     QTemporaryDir m_generated;
     TestEntries m_testEntries;
     QRegularExpression m_versionRegexp;
@@ -128,6 +132,8 @@ void tst_uic::initTestCase()
     QVERIFY(m_versionRegexp.isValid());
     m_baseline = QFINDTESTDATA("baseline");
     QVERIFY2(!m_baseline.isEmpty(), "Could not find 'baseline'.");
+    m_invalid = QFINDTESTDATA("invalid");
+    QVERIFY2(!m_baseline.isEmpty(), "Could not find 'invalid'.");
     QProcess process;
     process.start(m_command, {"-help"_L1});
     QVERIFY2(process.waitForStarted(), msgProcessStartFailed(m_command, process.errorString()));
@@ -403,6 +409,30 @@ static inline QByteArray msgCompilePythonFailed(const QByteArray &error)
         }
     }
     return lines.join(u'\n');
+}
+
+// For invalid files, verify that uic does not crash, prints an error
+// and outputs nothing.
+void tst_uic::invalidFiles_data() const
+{
+    QTest::addColumn<QString>("file");
+    for (const auto &f : { "property"_L1, "enum"_L1 })
+        QTest::newRow(f.constData()) << (m_invalid + "/bad_"_L1 + f + ".ui"_L1);
+}
+
+void tst_uic::invalidFiles()
+{
+    QFETCH(QString, file);
+    QProcess process;
+    process.start(m_command, { file });
+    QVERIFY2(process.waitForStarted(), msgProcessStartFailed(m_command, process.errorString()));
+    QVERIFY(process.waitForFinished());
+    QCOMPARE(process.exitStatus(), QProcess::NormalExit);
+    QVERIFY(process.exitCode() != 0);
+    auto stdOut = process.readAllStandardOutput();
+    QVERIFY(stdOut.isEmpty());
+    auto stdErr = process.readAllStandardError();
+    QVERIFY(!stdErr.isEmpty());
 }
 
 // Test Python code generation by compiling the file
