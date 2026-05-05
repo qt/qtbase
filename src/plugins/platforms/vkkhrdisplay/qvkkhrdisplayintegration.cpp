@@ -62,7 +62,8 @@ void QVkKhrDisplayScreen::setVk(QVkKhrDisplayVulkanInstance *inst)
     // Thanks to this deferred screen setup, a QWindow with a size based on the
     // dummy screen size may already exist. Try to resize it.
     QScreen *thisScreen = screen();
-    for (QWindow *window : QGuiApplication::allWindows()) {
+    const auto windows = QGuiApplication::allWindows();
+    for (QWindow *window : windows) {
         if (window->isTopLevel() && window->screen() == thisScreen)
             window->handle()->setGeometry(QRect()); // set fullscreen geometry
     }
