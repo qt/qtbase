@@ -1,21 +1,21 @@
-From 57f112e8a8b826a761bb3af272cd33a76ee3c861 Mon Sep 17 00:00:00 2001
+From 33b8d053b876ff22f529220c2ced27c39f4c3686 Mon Sep 17 00:00:00 2001
 From: Laszlo Agocs <laszlo.agocs@qt.io>
-Date: Sat, 21 Jan 2023 20:07:00 +0100
-Subject: [PATCH] Eliminate warnings in D3D12MA
+Date: Tue, 5 May 2026 13:45:21 +0200
+Subject: [PATCH] Make it compile without warning with MinGW, on ARM Windows,
+ etc.
 
-Change-Id: If703c50cc1239248b94967edb4047868aaf07f1a
+Change-Id: I7c2ecc16147239a3096391346a87417164409f62
 ---
- .../D3D12MemoryAllocator/D3D12MemAlloc.cpp    | 31 ++++++++++++++++++-
- .../D3D12MemoryAllocator/D3D12MemAlloc.h      |  6 ++--
- 2 files changed, 33 insertions(+), 4 deletions(-)
+ .../D3D12MemoryAllocator/D3D12MemAlloc.cpp    | 31 +++++++++++++++++--
+ 1 file changed, 29 insertions(+), 2 deletions(-)
 
 diff --git a/src/3rdparty/D3D12MemoryAllocator/D3D12MemAlloc.cpp b/src/3rdparty/D3D12MemoryAllocator/D3D12MemAlloc.cpp
-index 8e2488091a4..42b0ed9a39a 100644
+index 6c90ae4990a..408fc3c43d5 100644
 --- a/src/3rdparty/D3D12MemoryAllocator/D3D12MemAlloc.cpp
 +++ b/src/3rdparty/D3D12MemoryAllocator/D3D12MemAlloc.cpp
-@@ -132,6 +132,26 @@ especially to test compatibility with D3D12_RESOURCE_HEAP_TIER_1 on modern GPUs.
-     #define D3D12MA_CREATE_NOT_ZEROED_AVAILABLE 1
- #endif
+@@ -182,6 +182,26 @@ especially to test compatibility with D3D12_RESOURCE_HEAP_TIER_1 on modern GPUs.
+ ////////////////////////////////////////////////////////////////////////////////
+ ////////////////////////////////////////////////////////////////////////////////
  
 +#if defined(__clang__) || defined(__GNUC__)
 +#pragma GCC diagnostic push
@@ -26,6 +26,7 @@ index 8e2488091a4..42b0ed9a39a 100644
 +#pragma GCC diagnostic ignored "-Wswitch"
 +#pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
 +#pragma GCC diagnostic ignored "-Wunused-function"
++#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 +#endif
 +
 +#if defined(__clang__)
@@ -36,11 +37,10 @@ index 8e2488091a4..42b0ed9a39a 100644
 +#pragma GCC diagnostic ignored "-Wnonnull-compare"
 +#endif
 +
-+
+ #define D3D12MA_IID_PPV_ARGS(ppType)   __uuidof(**(ppType)), reinterpret_cast<void**>(ppType)
+ 
  namespace D3D12MA
- {
- static constexpr UINT HEAP_TYPE_COUNT = 4;
-@@ -7584,12 +7604,14 @@ void AllocatorPimpl::BuildStatsString(WCHAR** ppStatsString, BOOL detailedMap)
+@@ -7131,13 +7151,13 @@ void AllocatorPimpl::BuildStatsString(WCHAR** ppStatsString, BOOL detailedMap)
                          json.WriteString(L"HEAP_FLAG_ALLOW_DISPLAY");
                      if (flags & D3D12_HEAP_FLAG_SHARED_CROSS_ADAPTER)
                          json.WriteString(L"HEAP_FLAG_CROSS_ADAPTER");
@@ -51,11 +51,11 @@ index 8e2488091a4..42b0ed9a39a 100644
                          json.WriteString(L"HEAP_FLAG_ALLOW_WRITE_WATCH");
                      if (flags & D3D12_HEAP_FLAG_ALLOW_SHADER_ATOMICS)
                          json.WriteString(L"HEAP_FLAG_ALLOW_SHADER_ATOMICS");
-+#endif
- #ifdef __ID3D12Device8_INTERFACE_DEFINED__
+-#ifdef __ID3D12Device8_INTERFACE_DEFINED__
                      if (flags & D3D12_HEAP_FLAG_CREATE_NOT_RESIDENT)
                          json.WriteString(L"HEAP_FLAG_CREATE_NOT_RESIDENT");
-@@ -7610,9 +7632,12 @@ void AllocatorPimpl::BuildStatsString(WCHAR** ppStatsString, BOOL detailedMap)
+                     if (flags & D3D12_HEAP_FLAG_CREATE_NOT_ZEROED)
+@@ -7157,9 +7177,12 @@ void AllocatorPimpl::BuildStatsString(WCHAR** ppStatsString, BOOL detailedMap)
                          | D3D12_HEAP_FLAG_SHARED_CROSS_ADAPTER
                          | D3D12_HEAP_FLAG_DENY_RT_DS_TEXTURES
                          | D3D12_HEAP_FLAG_DENY_NON_RT_DS_TEXTURES
@@ -69,7 +69,7 @@ index 8e2488091a4..42b0ed9a39a 100644
  #ifdef __ID3D12Device8_INTERFACE_DEFINED__
                      flags &= ~(D3D12_HEAP_FLAG_CREATE_NOT_RESIDENT
                          | D3D12_HEAP_FLAG_CREATE_NOT_ZEROED);
-@@ -10542,3 +10567,7 @@ VirtualBlock::~VirtualBlock()
+@@ -10207,3 +10230,7 @@ VirtualBlock::~VirtualBlock()
  #endif // _D3D12MA_VIRTUAL_BLOCK_FUNCTIONS
  #endif // _D3D12MA_PUBLIC_INTERFACE
  } // namespace D3D12MA
@@ -77,23 +77,6 @@ index 8e2488091a4..42b0ed9a39a 100644
 +#if defined(__clang__) || defined(__GNUC__)
 +#pragma GCC diagnostic pop
 +#endif
-diff --git a/src/3rdparty/D3D12MemoryAllocator/D3D12MemAlloc.h b/src/3rdparty/D3D12MemoryAllocator/D3D12MemAlloc.h
-index 4ab7be318e6..d80dcb1e892 100644
---- a/src/3rdparty/D3D12MemoryAllocator/D3D12MemAlloc.h
-+++ b/src/3rdparty/D3D12MemoryAllocator/D3D12MemAlloc.h
-@@ -151,9 +151,9 @@ class D3D12MA_API IUnknownImpl : public IUnknown
- {
- public:
-     virtual ~IUnknownImpl() = default;
--    virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void** ppvObject);
--    virtual ULONG STDMETHODCALLTYPE AddRef();
--    virtual ULONG STDMETHODCALLTYPE Release();
-+    HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void** ppvObject) override;
-+    ULONG STDMETHODCALLTYPE AddRef() override;
-+    ULONG STDMETHODCALLTYPE Release() override;
- protected:
-     virtual void ReleaseThis() { delete this; }
- private:
 -- 
-2.48.1
+2.44.0.windows.1
 

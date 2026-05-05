@@ -7,12 +7,12 @@
         "QtUsage": "Memory management for the D3D12 backend of QRhi.",
 
         "Homepage": "https://github.com/GPUOpen-LibrariesAndSDKs/D3D12MemoryAllocator",
-        "Version": "f128d39b7a95b4235bd228d231646278dc6c24b2",
+        "Version": "v3.1.0",
         "PURL": "pkg:github/GPUOpen-LibrariesAndSDKs/D3D12MemoryAllocator@$<VERSION>",
         "License": "MIT License",
         "LicenseId": "MIT",
         "LicenseFile": "LICENSE.txt",
-        "Copyright": "Copyright (c) 2019-2022 Advanced Micro Devices, Inc. All rights reserved.",
+        "Copyright": "Copyright (c) 2019-2026 Advanced Micro Devices, Inc. All rights reserved.",
         "Comment": "no relevant CPE found"
     }
 ]
