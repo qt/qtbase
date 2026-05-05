@@ -187,7 +187,7 @@ void QOffscreenIntegration::setConfiguration(const QJsonObject &configuration)
 
     auto getScreenNames = [](const QJsonArray &screens) -> QList<QString> {
         QList<QString> names;
-        for (QJsonValue screen : screens) {
+        for (const QJsonValue &screen : screens) {
             names.append(screen["name"].toString());
         };
         std::sort(names.begin(), names.end());
@@ -207,7 +207,7 @@ void QOffscreenIntegration::setConfiguration(const QJsonObject &configuration)
     std::set_difference(currentNames.begin(), currentNames.end(), newNames.begin(), newNames.end(),
                               std::inserter(removed, removed.begin()));
 
-    auto platformScreenByName = [](const QString &name, QList<QOffscreenScreen *> screens) -> QOffscreenScreen * {
+    auto platformScreenByName = [](const QString &name, const QList<QOffscreenScreen *> &screens) -> QOffscreenScreen * {
         for (QOffscreenScreen *screen : screens) {
             if (screen->m_name == name)
                 return screen;
@@ -215,8 +215,8 @@ void QOffscreenIntegration::setConfiguration(const QJsonObject &configuration)
         Q_UNREACHABLE();
     };
 
-    auto screenConfigByName = [](const QString &name, QJsonArray screenConfigs) -> QJsonValue {
-        for (QJsonValue screenConfig : screenConfigs) {
+    auto screenConfigByName = [](const QString &name, const QJsonArray &screenConfigs) -> QJsonValue {
+        for (const QJsonValue &screenConfig : screenConfigs) {
             if (screenConfig["name"].toString() == name)
                 return screenConfig;
         }
@@ -228,14 +228,14 @@ void QOffscreenIntegration::setConfiguration(const QJsonObject &configuration)
     };
 
     // Remove removed screens
-    for (const QString &remove : removed) {
+    for (const QString &remove : std::as_const(removed)) {
         QOffscreenScreen *screen = platformScreenByName(remove, m_screens);
         m_screens.removeAll(screen);
         QWindowSystemInterface::handleScreenRemoved(screen);
     }
 
     // Add new screens
-    for (const QString &add : added) {
+    for (const QString &add : std::as_const(added)) {
         QJsonValue configValue = screenConfigByName(add, newScreens);
         QJsonObject config  = configValue.toObject();
         if (config.isEmpty()) {
@@ -253,7 +253,7 @@ void QOffscreenIntegration::setConfiguration(const QJsonObject &configuration)
     }
 
     // Update present screens
-    for (const QString &pres : present) {
+    for (const QString &pres : std::as_const(present)) {
         QOffscreenScreen *screen = platformScreenByName(pres, m_screens);
         Q_ASSERT(screen);
         QJsonObject currentConfig = screenConfigByName(pres, currentScreens).toObject();
