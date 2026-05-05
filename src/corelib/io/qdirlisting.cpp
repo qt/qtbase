@@ -235,7 +235,8 @@ void QDirListingPrivate::init()
         nameRegExps.emplace_back(QRegularExpression::fromWildcard(filter, cs));
 #endif
 
-    QDirEntryInfo::Native &native = std::get<QDirEntryInfo::Native>(initialEntryInfo.content);
+    Q_ASSERT(std::holds_alternative<QDirEntryInfo::Native>(initialEntryInfo.content));
+    QDirEntryInfo::Native &native = *std::get_if<QDirEntryInfo::Native>(&initialEntryInfo.content);
     engine = QFileSystemEngine::createLegacyEngine(native.entry, native.metaData);
 }
 
