@@ -381,14 +381,6 @@ macro(qt_internal_setup_find_host_info_package)
         ${INSTALL_CMAKE_NAMESPACE})
 endmacro()
 
-macro(qt_internal_setup_poor_mans_scope_finalizer)
-    # This sets up the poor man's scope finalizer mechanism.
-    # For newer CMake versions, we use cmake_language(DEFER CALL) instead.
-    if(CMAKE_VERSION VERSION_LESS "3.19.0")
-        variable_watch(CMAKE_CURRENT_LIST_DIR qt_watch_current_list_dir)
-    endif()
-endmacro()
-
 macro(qt_internal_set_qt_namespace)
     set(QT_NAMESPACE "" CACHE STRING "Qt Namespace")
 endmacro()
@@ -494,7 +486,6 @@ macro(qt_internal_setup_build_and_global_variables)
     qt_internal_set_top_level_source_dir()
     qt_internal_set_apple_archiver_flags()
     qt_internal_set_debug_extend_target()
-    qt_internal_setup_poor_mans_scope_finalizer()
 
     qt_internal_set_compiler_optimization_flags()
     qt_internal_set_compiler_warning_flags()
