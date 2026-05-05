@@ -21,7 +21,8 @@ QPlatformWindow *QOffscreenScreen::windowContainingCursor = nullptr;
 QList<QPlatformScreen *> QOffscreenScreen::virtualSiblings() const
 {
     QList<QPlatformScreen *> platformScreens;
-    for (auto screen : m_integration->screens()) {
+    const auto screens = m_integration->screens();
+    for (auto screen : screens) {
         platformScreens.append(screen);
     }
     return platformScreens;
