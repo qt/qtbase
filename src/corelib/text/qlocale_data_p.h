@@ -60,7 +60,7 @@ struct LanguageCodeEntry
 // GENERATED PART STARTS HERE
 
 /*
-    This part of the file was generated on 2026-01-28 from the
+    This part of the file was generated on 2026-05-06 from the
     Common Locale Data Repository v48.1
 
     http://www.unicode.org/cldr/
@@ -6296,7 +6296,7 @@ static inline constexpr char language_name_list[] =
 "Catalan\0"
 "Cebuano\0"
 "Central Atlas Tamazight\0"
-"Central\0" // Central Kurdish
+"Central Kurdish\0"
 "Chakma\0"
 "Chamorro\0"
 "Chechen\0"
@@ -6393,7 +6393,7 @@ static inline constexpr char language_name_list[] =
 "Koyra Chiini\0"
 "Kpelle\0"
 "Kuanyama\0"
-"Kurmanji\0" // Kurdish
+"Kurdish\0"
 "Kwasio\0"
 "Kyrgyz\0"
 "Lakota\0"
@@ -6511,7 +6511,7 @@ static inline constexpr char language_name_list[] =
 "Slovenian\0"
 "Soga\0"
 "Somali\0"
-"Southern\0" // Southern Kurdish
+"Southern Kurdish\0"
 "Southern Sami\0"
 "Southern Sotho\0"
 "South Ndebele\0"
@@ -6649,303 +6649,303 @@ static inline constexpr quint16 language_name_index[] = {
    406, // Cebuano
    414, // Central Atlas Tamazight
    438, // Central Kurdish
-   446, // Chakma
-   453, // Chamorro
-   462, // Chechen
-   470, // Cherokee
-   479, // Chickasaw
-   489, // Chiga
-   495, // Chinese
-   503, // Church
-   517, // Chuvash
-   525, // Colognian
-   535, // Coptic
-   542, // Cornish
-   550, // Corsican
-   559, // Cree
-   564, // Croatian
-   573, // Czech
-   579, // Danish
-   586, // Divehi
-   593, // Dogri
-   599, // Duala
-   605, // Dutch
-   611, // Dzongkha
-   620, // Embu
-   625, // English
-   633, // Erzya
-   639, // Esperanto
-   649, // Estonian
-   658, // Ewe
-   662, // Ewondo
-   669, // Faroese
-   677, // Fijian
-   684, // Filipino
-   693, // Finnish
-   701, // French
-   708, // Friulian
-   717, // Fulah
-   722, // Gaelic
-   738, // Ga
-   741, // Galician
-   750, // Ganda
-   756, // Geez
-   761, // Georgian
-   770, // German
-   777, // Gothic
-   784, // Greek
-   790, // Guarani
-   798, // Gujarati
-   807, // Gusii
-   813, // Haitian
-   828, // Hausa
-   834, // Hawaiian
-   843, // Hebrew
-   850, // Herero
-   857, // Hindi
-   863, // Hiri Motu
-   873, // Hungarian
-   883, // Icelandic
-   893, // Ido
-   897, // Igbo
-   902, // Inari Sami
-   913, // Indonesian
-   924, // Ingush
-   931, // Interlingua
-   943, // Interlingue
-   955, // Inuktitut
-   965, // Inupiaq
-   973, // Irish
-   979, // Italian
-   987, // Japanese
-   996, // Javanese
-  1005, // Jju
-  1009, // Jola-Fonyi
-  1020, // Kabuverdianu
-  1033, // Kabyle
-  1040, // Kako
-  1045, // Kalaallisut
-  1057, // Kalenjin
-  1066, // Kamba
-  1072, // Kannada
-  1080, // Kanuri
-  1087, // Kashmiri
-  1096, // Kazakh
-  1103, // Kenyang
-  1111, // Khmer
-  1117, // Kiche
-  1127, // Kikuyu
-  1134, // Kinyarwanda
-  1146, // Komi
-  1151, // Kongo
-  1157, // Konkani
-  1165, // Korean
-  1172, // Koro
-  1177, // Koyraboro Senni
-  1193, // Koyra Chiini
-  1206, // Kpelle
-  1213, // Kuanyama
-  1222, // Kurdish
-  1231, // Kwasio
-  1238, // Kyrgyz
-  1245, // Lakota
-  1252, // Langi
-  1258, // Lao
-  1262, // Latin
-  1268, // Latvian
-  1276, // Lezghian
-  1285, // Limburgish
-  1296, // Lingala
-  1304, // Literary Chinese
-  1321, // Lithuanian
-  1332, // Lojban
-  1339, // Lower Sorbian
-  1353, // Low German
-  1364, // Luba-Katanga
-  1377, // Lule Sami
-  1387, // Luo
-  1391, // Luxembourgish
-  1405, // Luyia
-  1411, // Macedonian
-  1422, // Machame
-  1430, // Maithili
-  1439, // Makhuwa-Meetto
-  1454, // Makonde
-  1462, // Malagasy
-  1471, // Malayalam
-  1481, // Malay
-  1487, // Maltese
-  1495, // Mandingo
-  1504, // Manipuri
-  1513, // Manx
-  1518, // Maori
-  1525, // Mapuche
-  1533, // Marathi
-  1541, // Marshallese
-  1553, // Masai
-  1559, // Mazanderani
-  1571, // Mende
-  1577, // Meru
-  1582, // Meta
-  1589, // Mohawk
-  1596, // Mongolian
-  1606, // Morisyen
-  1615, // Mundang
-  1623, // Muscogee
-  1632, // Nama
-  1637, // Nauru
-  1643, // Navajo
-  1650, // Ndonga
-  1657, // Nepali
-  1664, // Newari
-  1671, // Ngiemboon
-  1681, // Ngomba
-  1688, // Nigerian Pidgin
-  1704, // Nko
-  1711, // Northern Luri
-  1725, // Northern Sami
-  1739, // Northern Sotho
-  1754, // North Ndebele
-  1768, // Norwegian Bokmal
-  1786, // Norwegian Nynorsk
-  1804, // Nuer
-  1809, // Nyanja
-  1816, // Nyankole
-  1825, // Occitan
-  1833, // Odia
-  1838, // Ojibwa
-  1845, // Old Irish
-  1855, // Old Norse
-  1865, // Old Persian
-  1877, // Oromo
-  1883, // Osage
-  1889, // Ossetic
-  1897, // Pahlavi
-  1905, // Palauan
-  1913, // Pali
-  1918, // Papiamento
-  1929, // Pashto
-  1936, // Persian
-  1944, // Phoenician
-  1955, // Polish
-  1962, // Portuguese
-  1973, // Prussian
-  1982, // Punjabi
-  1990, // Quechua
-  1998, // Romanian
-  2007, // Romansh
-  2015, // Rombo
-  2021, // Rundi
-  2027, // Russian
-  2035, // Rwa
-  2039, // Saho
-  2044, // Sakha
-  2050, // Samburu
-  2058, // Samoan
-  2065, // Sango
-  2071, // Sangu
-  2077, // Sanskrit
-  2086, // Santali
-  2094, // Sardinian
-  2104, // Saurashtra
-  2115, // Sena
-  2120, // Serbian
-  2128, // Shambala
-  2137, // Shona
-  2143, // Sichuan Yi
-  2154, // Sicilian
-  2163, // Sidamo
-  2170, // Silesian
-  2179, // Sindhi
-  2186, // Sinhala
-  2194, // Skolt Sami
-  2205, // Slovak
-  2212, // Slovenian
-  2222, // Soga
-  2227, // Somali
-  2234, // Southern Kurdish
-  2243, // Southern Sami
-  2257, // Southern Sotho
-  2272, // South Ndebele
-  2286, // Spanish
-  2294, // Standard Moroccan Tamazight
-  2322, // Sundanese
-  2332, // Swahili
-  2340, // Swati
-  2346, // Swedish
-  2354, // Swiss German
-  2367, // Syriac
-  2374, // Tachelhit
-  2384, // Tahitian
-  2393, // Tai Dam
-  2401, // Taita
-  2407, // Tajik
-  2413, // Tamil
-  2419, // Taroko
-  2426, // Tasawaq
-  2434, // Tatar
-  2440, // Telugu
-  2447, // Teso
-  2452, // Thai
-  2457, // Tibetan
-  2465, // Tigre
-  2471, // Tigrinya
-  2480, // Tokelau
-  2490, // Tok Pisin
-  2500, // Tongan
-  2507, // Tsonga
-  2514, // Tswana
-  2521, // Turkish
-  2529, // Turkmen
-  2537, // Tuvalu
-  2544, // Tyap
-  2549, // Ugaritic
-  2558, // Ukrainian
-  2568, // Upper Sorbian
-  2582, // Urdu
-  2587, // Uyghur
-  2594, // Uzbek
-  2600, // Vai
-  2604, // Venda
-  2610, // Vietnamese
-  2621, // Volapuk
-  2630, // Vunjo
-  2636, // Walloon
-  2644, // Walser
-  2651, // Warlpiri
-  2660, // Welsh
-  2666, // Western Balochi
-  2682, // Western Frisian
-  2698, // Wolaytta
-  2707, // Wolof
-  2713, // Xhosa
-  2719, // Yangben
-  2727, // Yiddish
-  2735, // Yoruba
-  2742, // Zarma
-  2748, // Zhuang
-  2755, // Zulu
-  2760, // Kaingang
-  2769, // Nheengatu
-  2779, // Haryanvi
-  2788, // Northern Frisian
-  2805, // Rajasthani
-  2816, // Moksha
-  2823, // Toki Pona
-  2833, // Pijin
-  2839, // Obolo
-  2845, // Baluchi
-  2853, // Ligurian
-  2862, // Rohingya
-  2871, // Torwali
-  2879, // Anii
-  2884, // Kangri
-  2891, // Venetian
-  2900, // Kuvi
-  2905, // Kara-Kalpak
-  2917, // Swampy Cree
-  2929, // Ladin
-  2935, // Shan
+   454, // Chakma
+   461, // Chamorro
+   470, // Chechen
+   478, // Cherokee
+   487, // Chickasaw
+   497, // Chiga
+   503, // Chinese
+   511, // Church
+   525, // Chuvash
+   533, // Colognian
+   543, // Coptic
+   550, // Cornish
+   558, // Corsican
+   567, // Cree
+   572, // Croatian
+   581, // Czech
+   587, // Danish
+   594, // Divehi
+   601, // Dogri
+   607, // Duala
+   613, // Dutch
+   619, // Dzongkha
+   628, // Embu
+   633, // English
+   641, // Erzya
+   647, // Esperanto
+   657, // Estonian
+   666, // Ewe
+   670, // Ewondo
+   677, // Faroese
+   685, // Fijian
+   692, // Filipino
+   701, // Finnish
+   709, // French
+   716, // Friulian
+   725, // Fulah
+   730, // Gaelic
+   746, // Ga
+   749, // Galician
+   758, // Ganda
+   764, // Geez
+   769, // Georgian
+   778, // German
+   785, // Gothic
+   792, // Greek
+   798, // Guarani
+   806, // Gujarati
+   815, // Gusii
+   821, // Haitian
+   836, // Hausa
+   842, // Hawaiian
+   851, // Hebrew
+   858, // Herero
+   865, // Hindi
+   871, // Hiri Motu
+   881, // Hungarian
+   891, // Icelandic
+   901, // Ido
+   905, // Igbo
+   910, // Inari Sami
+   921, // Indonesian
+   932, // Ingush
+   939, // Interlingua
+   951, // Interlingue
+   963, // Inuktitut
+   973, // Inupiaq
+   981, // Irish
+   987, // Italian
+   995, // Japanese
+  1004, // Javanese
+  1013, // Jju
+  1017, // Jola-Fonyi
+  1028, // Kabuverdianu
+  1041, // Kabyle
+  1048, // Kako
+  1053, // Kalaallisut
+  1065, // Kalenjin
+  1074, // Kamba
+  1080, // Kannada
+  1088, // Kanuri
+  1095, // Kashmiri
+  1104, // Kazakh
+  1111, // Kenyang
+  1119, // Khmer
+  1125, // Kiche
+  1135, // Kikuyu
+  1142, // Kinyarwanda
+  1154, // Komi
+  1159, // Kongo
+  1165, // Konkani
+  1173, // Korean
+  1180, // Koro
+  1185, // Koyraboro Senni
+  1201, // Koyra Chiini
+  1214, // Kpelle
+  1221, // Kuanyama
+  1230, // Kurdish
+  1238, // Kwasio
+  1245, // Kyrgyz
+  1252, // Lakota
+  1259, // Langi
+  1265, // Lao
+  1269, // Latin
+  1275, // Latvian
+  1283, // Lezghian
+  1292, // Limburgish
+  1303, // Lingala
+  1311, // Literary Chinese
+  1328, // Lithuanian
+  1339, // Lojban
+  1346, // Lower Sorbian
+  1360, // Low German
+  1371, // Luba-Katanga
+  1384, // Lule Sami
+  1394, // Luo
+  1398, // Luxembourgish
+  1412, // Luyia
+  1418, // Macedonian
+  1429, // Machame
+  1437, // Maithili
+  1446, // Makhuwa-Meetto
+  1461, // Makonde
+  1469, // Malagasy
+  1478, // Malayalam
+  1488, // Malay
+  1494, // Maltese
+  1502, // Mandingo
+  1511, // Manipuri
+  1520, // Manx
+  1525, // Maori
+  1532, // Mapuche
+  1540, // Marathi
+  1548, // Marshallese
+  1560, // Masai
+  1566, // Mazanderani
+  1578, // Mende
+  1584, // Meru
+  1589, // Meta
+  1596, // Mohawk
+  1603, // Mongolian
+  1613, // Morisyen
+  1622, // Mundang
+  1630, // Muscogee
+  1639, // Nama
+  1644, // Nauru
+  1650, // Navajo
+  1657, // Ndonga
+  1664, // Nepali
+  1671, // Newari
+  1678, // Ngiemboon
+  1688, // Ngomba
+  1695, // Nigerian Pidgin
+  1711, // Nko
+  1718, // Northern Luri
+  1732, // Northern Sami
+  1746, // Northern Sotho
+  1761, // North Ndebele
+  1775, // Norwegian Bokmal
+  1793, // Norwegian Nynorsk
+  1811, // Nuer
+  1816, // Nyanja
+  1823, // Nyankole
+  1832, // Occitan
+  1840, // Odia
+  1845, // Ojibwa
+  1852, // Old Irish
+  1862, // Old Norse
+  1872, // Old Persian
+  1884, // Oromo
+  1890, // Osage
+  1896, // Ossetic
+  1904, // Pahlavi
+  1912, // Palauan
+  1920, // Pali
+  1925, // Papiamento
+  1936, // Pashto
+  1943, // Persian
+  1951, // Phoenician
+  1962, // Polish
+  1969, // Portuguese
+  1980, // Prussian
+  1989, // Punjabi
+  1997, // Quechua
+  2005, // Romanian
+  2014, // Romansh
+  2022, // Rombo
+  2028, // Rundi
+  2034, // Russian
+  2042, // Rwa
+  2046, // Saho
+  2051, // Sakha
+  2057, // Samburu
+  2065, // Samoan
+  2072, // Sango
+  2078, // Sangu
+  2084, // Sanskrit
+  2093, // Santali
+  2101, // Sardinian
+  2111, // Saurashtra
+  2122, // Sena
+  2127, // Serbian
+  2135, // Shambala
+  2144, // Shona
+  2150, // Sichuan Yi
+  2161, // Sicilian
+  2170, // Sidamo
+  2177, // Silesian
+  2186, // Sindhi
+  2193, // Sinhala
+  2201, // Skolt Sami
+  2212, // Slovak
+  2219, // Slovenian
+  2229, // Soga
+  2234, // Somali
+  2241, // Southern Kurdish
+  2258, // Southern Sami
+  2272, // Southern Sotho
+  2287, // South Ndebele
+  2301, // Spanish
+  2309, // Standard Moroccan Tamazight
+  2337, // Sundanese
+  2347, // Swahili
+  2355, // Swati
+  2361, // Swedish
+  2369, // Swiss German
+  2382, // Syriac
+  2389, // Tachelhit
+  2399, // Tahitian
+  2408, // Tai Dam
+  2416, // Taita
+  2422, // Tajik
+  2428, // Tamil
+  2434, // Taroko
+  2441, // Tasawaq
+  2449, // Tatar
+  2455, // Telugu
+  2462, // Teso
+  2467, // Thai
+  2472, // Tibetan
+  2480, // Tigre
+  2486, // Tigrinya
+  2495, // Tokelau
+  2505, // Tok Pisin
+  2515, // Tongan
+  2522, // Tsonga
+  2529, // Tswana
+  2536, // Turkish
+  2544, // Turkmen
+  2552, // Tuvalu
+  2559, // Tyap
+  2564, // Ugaritic
+  2573, // Ukrainian
+  2583, // Upper Sorbian
+  2597, // Urdu
+  2602, // Uyghur
+  2609, // Uzbek
+  2615, // Vai
+  2619, // Venda
+  2625, // Vietnamese
+  2636, // Volapuk
+  2645, // Vunjo
+  2651, // Walloon
+  2659, // Walser
+  2666, // Warlpiri
+  2675, // Welsh
+  2681, // Western Balochi
+  2697, // Western Frisian
+  2713, // Wolaytta
+  2722, // Wolof
+  2728, // Xhosa
+  2734, // Yangben
+  2742, // Yiddish
+  2750, // Yoruba
+  2757, // Zarma
+  2763, // Zhuang
+  2770, // Zulu
+  2775, // Kaingang
+  2784, // Nheengatu
+  2794, // Haryanvi
+  2803, // Northern Frisian
+  2820, // Rajasthani
+  2831, // Moksha
+  2838, // Toki Pona
+  2848, // Pijin
+  2854, // Obolo
+  2860, // Baluchi
+  2868, // Ligurian
+  2877, // Rohingya
+  2886, // Torwali
+  2894, // Anii
+  2899, // Kangri
+  2906, // Venetian
+  2915, // Kuvi
+  2920, // Kara-Kalpak
+  2932, // Swampy Cree
+  2944, // Ladin
+  2950, // Shan
 };
 
 constexpr std::array<LanguageCodeEntry, 349> languageCodeList {
