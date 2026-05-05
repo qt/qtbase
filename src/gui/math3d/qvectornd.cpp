@@ -289,6 +289,12 @@ QT_BEGIN_NAMESPACE
     This operator uses an exact floating-point comparison.
 */
 
+/*!
+    \since 6.12
+    \fn size_t QVector2D::qHash(QVector2D key, size_t seed)
+    \qhash{QVector2D}
+*/
+
 /*! //! friend
     \fn const QVector2D QVector2D::operator+(QVector2D v1, QVector2D v2)
 
@@ -894,6 +900,12 @@ QVector3D QVector3D::unproject(const QMatrix4x4 &modelView, const QMatrix4x4 &pr
     This operator uses an exact floating-point comparison.
 */
 
+/*!
+    \since 6.12
+    \fn size_t QVector3D::qHash(QVector3D key, size_t seed)
+    \qhash{QVector3D}
+*/
+
 /*! //! friend
     \fn const QVector3D QVector3D::operator+(QVector3D v1, QVector3D v2)
 
@@ -1414,6 +1426,12 @@ QDataStream &operator>>(QDataStream &stream, QVector3D &vector)
 
     Returns \c true if \a v1 is not equal to \a v2; otherwise returns \c false.
     This operator uses an exact floating-point comparison.
+*/
+
+/*!
+    \since 6.12
+    \fn size_t QVector4D::qHash(QVector4D key, size_t seed)
+    \qhash{QVector4D}
 */
 
 /*! //! friend

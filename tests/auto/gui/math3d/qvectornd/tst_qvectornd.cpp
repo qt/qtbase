@@ -926,6 +926,14 @@ void tst_QVectorND::compare2_data()
     row({1, 1}, {1 + eps, 1}, false);
 }
 
+template <typename T>
+static void check_hashing(const T &lhs, const T &rhs)
+{
+    constexpr size_t max = -1;
+    QCOMPARE_EQ(qHash(lhs), qHash(rhs, 0)); // sic! testing 1/2-arg consistency!
+    QCOMPARE_EQ(qHash(lhs, max), qHash(rhs, max));
+}
+
 void tst_QVectorND::compare2()
 {
     QFETCH(const QVector2D, lhs);
@@ -933,6 +941,9 @@ void tst_QVectorND::compare2()
     QFETCH(const bool, expected);
 
     QT_TEST_EQUALITY_OPS(lhs, rhs, expected);
+
+    if (expected)
+        check_hashing(lhs, rhs);
 }
 
 void tst_QVectorND::compare3_data()
@@ -980,6 +991,9 @@ void tst_QVectorND::compare3()
     QFETCH(const bool, expected);
 
     QT_TEST_EQUALITY_OPS(lhs, rhs, expected);
+
+    if (expected)
+        check_hashing(lhs, rhs);
 }
 
 void tst_QVectorND::compare4_data()
@@ -1031,6 +1045,9 @@ void tst_QVectorND::compare4()
     QFETCH(const bool, expected);
 
     QT_TEST_EQUALITY_OPS(lhs, rhs, expected);
+
+    if (expected)
+        check_hashing(lhs, rhs);
 }
 
 // Test vector addition for 2D vectors.
