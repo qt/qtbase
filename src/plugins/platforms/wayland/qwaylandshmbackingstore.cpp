@@ -50,12 +50,28 @@ extern void qt_scrollRectInImage(QImage &, const QRect &, const QPoint &);
 
 namespace QtWaylandClient {
 
+static int alignTo(int input, int alignment)
+{
+    Q_ASSERT(alignment > 0);
+    if (int remainder = input % alignment)
+        return input + (alignment - remainder);
+    else
+        return input;
+}
+
 QWaylandShmBuffer::QWaylandShmBuffer(QWaylandDisplay *display,
                                      const QSize &size, QImage::Format format, qreal scale, wl_event_queue *customEventQueue)
     : mDirtyRegion(QRect(QPoint(0, 0), size / scale))
 {
-    int stride = size.width() * 4;
-    int alloc = stride * size.height();
+    // This alignment of stride and size is done to improve performance of
+    // buffer accesses on the compositor side.
+    // Aligning the size of the shm pool to pages means the buffer can be
+    // imported as a udmabuf, and if the stride is additionally compatible with
+    // the GPU, that udmabuf can be used directly for rendering instead of needing
+    // to first copy to a GPU-accessible buffer.
+    // The 256 bytes stride alignment used here is what all common GPUs can read from.
+    const int stride = alignTo(size.width() * 4, 256);
+    const int alloc = alignTo(stride * size.height(), getpagesize());
     int fd = -1;
 
 #ifdef SYS_memfd_create
