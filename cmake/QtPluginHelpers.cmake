@@ -457,6 +457,7 @@ _qt_internal_should_include_targets(
     TARGETS ${target}
     NAMESPACE ${INSTALL_CMAKE_NAMESPACE}::
     ${project_names_arg}
+    SKIP_IF_PROJECT_NAME_NOT_IN_QT_REPO_DEPENDENCIES
     OUT_VAR_SHOULD_SKIP __qt_${target}_skip_include_targets_file
     ${test_plugin_arg}
 )
