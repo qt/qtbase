@@ -19,4 +19,5 @@ exec qlalr \
      --qt \
      --no-debug \
      --no-lines \
+     --use-pragma-once \
      lalr.g
