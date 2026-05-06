@@ -146,6 +146,67 @@ const QCollator *QRangeModelImplBase::sortCollator() const
     return d->m_sortCollator ? &d->m_sortCollator.value() : nullptr;
 }
 
+QVariant QRangeModelImplBase::convertMatchValue(const QVariant &value, Qt::MatchFlags flags)
+{
+    QVariant matchValue = value;
+    const Qt::CaseSensitivity cs = flags & Qt::MatchCaseSensitive
+                                 ? Qt::CaseSensitive : Qt::CaseInsensitive;
+    switch ((flags & Qt::MatchTypeMask).toInt()) {
+#if QT_CONFIG(regularexpression)
+    case Qt::MatchRegularExpression:
+    case Qt::MatchWildcard:
+        if (value.metaType() != QMetaType::fromType<QRegularExpression>()) {
+            QRegularExpression rx;
+            if (flags & Qt::MatchWildcard) {
+                rx.setPattern(QRegularExpression::wildcardToRegularExpression(
+                        value.toString(), QRegularExpression::NonPathWildcardConversion));
+            } else {
+                rx.setPattern(value.toString());
+            }
+            if (cs == Qt::CaseInsensitive)
+                rx.setPatternOptions(QRegularExpression::CaseInsensitiveOption);
+            matchValue = rx;
+        }
+        break;
+#endif // QT_CONFIG(regularexpression)
+    case Qt::MatchStartsWith:
+    case Qt::MatchEndsWith:
+    case Qt::MatchFixedString:
+    case Qt::MatchContains:
+        matchValue.convert(QMetaType::fromType<QString>());
+        break;
+    default:
+        break;
+    }
+    return matchValue;
+}
+
+bool QRangeModelImplBase::matchValue(const QString &itemData, const QVariant &value,
+                                     Qt::MatchFlags flags)
+{
+    // QString or regular expression based matching
+    const uint matchType = (flags & Qt::MatchTypeMask).toInt();
+    const Qt::CaseSensitivity cs = flags & Qt::MatchCaseSensitive
+                                 ? Qt::CaseSensitive : Qt::CaseInsensitive;
+    switch (matchType) {
+#if QT_CONFIG(regularexpression)
+    case Qt::MatchRegularExpression:
+    case Qt::MatchWildcard:
+        return itemData.contains(value.toRegularExpression());
+#endif // QT_CONFIG(regularexpression)
+    case Qt::MatchStartsWith:
+        return itemData.startsWith(value.toString(), cs);
+    case Qt::MatchEndsWith:
+        return itemData.endsWith(value.toString(), cs);
+    case Qt::MatchFixedString:
+        return itemData.compare(value.toString(), cs) == 0;
+    case Qt::MatchContains:
+        return itemData.contains(value.toString(), cs);
+    default:
+        return false;
+    }
+}
+
 /*!
     \internal
 
