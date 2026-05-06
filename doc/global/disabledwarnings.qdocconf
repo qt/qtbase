@@ -1,4 +1,4 @@
-spurious = \
+spurious += \
     "Undocumented template parameter .*" \
     "No such template parameter .*" \
     "Undocumented property .*" \
