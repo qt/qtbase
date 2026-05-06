@@ -12,7 +12,7 @@
 
 #if defined(Q_OS_MACOS)
 Q_FORWARD_DECLARE_OBJC_CLASS(NSView);
-#elif defined(Q_OS_IOS)
+#elif defined(QT_PLATFORM_UIKIT)
 Q_FORWARD_DECLARE_OBJC_CLASS(UIView);
 #elif defined(Q_OS_WIN)
 #  include <QtCore/qt_windows.h>
