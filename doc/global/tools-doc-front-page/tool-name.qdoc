@@ -65,6 +65,7 @@
                         \li <link to a topic>
                     \endlist
                 \li <Topic category 2>
+                    \list
                         \li <link to a topic>
                         \li <link to a topic>
                     \endlist
