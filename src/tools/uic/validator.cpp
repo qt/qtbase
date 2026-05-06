@@ -99,6 +99,11 @@ static QString msgInvalidClassName(const QString &name)
     return "Invalid class name: \""_L1 + name + u'"';
 }
 
+static QString msgInvalidPixmapFunction(const QString &name)
+{
+    return "Invalid pixmap function name: \""_L1 + name + u'"';
+}
+
 static void checkProperties(const QList<DomProperty *> &properties, QStringList *errors)
 {
     for (const DomProperty *p : properties) {
@@ -131,6 +136,13 @@ void Validator::acceptUI(DomUI *node)
 
     if (!checkClassName(node->elementClass()))
         m_errors.append(msgInvalidClassName(node->elementClass()));
+
+    if (node->hasElementPixmapFunction()) {
+        const QString &pixmapFunction = node->elementPixmapFunction();
+        // Accommodate for legacy forms with empty entries
+        if (!pixmapFunction.isEmpty() && !checkClassName(pixmapFunction))
+            m_errors.append(msgInvalidPixmapFunction(node->elementPixmapFunction()));
+    }
 }
 
 void Validator::acceptWidget(DomWidget *node)

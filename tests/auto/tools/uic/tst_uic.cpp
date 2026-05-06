@@ -416,7 +416,7 @@ static inline QByteArray msgCompilePythonFailed(const QByteArray &error)
 void tst_uic::invalidFiles_data() const
 {
     QTest::addColumn<QString>("file");
-    for (const auto &f : { "property"_L1, "enum"_L1, "class"_L1 })
+    for (const auto &f : { "property"_L1, "enum"_L1, "class"_L1, "pixmapfunction"_L1 })
         QTest::newRow(f.constData()) << (m_invalid + "/bad_"_L1 + f + ".ui"_L1);
 }
 
