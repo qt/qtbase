@@ -85,6 +85,7 @@ public:
     void itemsAboutToBeMoved(const QModelIndex &srcParent, int srcFirst, int srcLast, const QModelIndex &destinationParent, int destinationChild, Qt::Orientation);
     void itemsMoved(const QModelIndex &srcParent, int srcFirst, int srcLast, const QModelIndex &destinationParent, int destinationChild, Qt::Orientation orientation);
     bool allowMove(const QModelIndex &srcParent, int srcFirst, int srcLast, const QModelIndex &destinationParent, int destinationChild, Qt::Orientation orientation);
+    bool dropOnItem(const QModelIndex &index, QDataStream &stream);
 
     // ugly hack for QTreeModel, see QTBUG-94546
     virtual void executePendingOperations() const;

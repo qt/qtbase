@@ -474,6 +474,7 @@ protected:
     QAbstractTableModel(QAbstractItemModelPrivate &dd, QObject *parent);
 
 private:
+    Q_DECLARE_PRIVATE(QAbstractItemModel) // no own private type
     Q_DISABLE_COPY(QAbstractTableModel)
     QModelIndex parent(const QModelIndex &child) const override;
     bool hasChildren(const QModelIndex &parent) const override;
@@ -500,6 +501,7 @@ protected:
     QAbstractListModel(QAbstractItemModelPrivate &dd, QObject *parent);
 
 private:
+    Q_DECLARE_PRIVATE(QAbstractItemModel) // no own private type
     Q_DISABLE_COPY(QAbstractListModel)
     QModelIndex parent(const QModelIndex &child) const override;
     int columnCount(const QModelIndex &parent) const override;

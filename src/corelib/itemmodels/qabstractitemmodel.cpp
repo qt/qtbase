@@ -2287,18 +2287,23 @@ bool QAbstractItemModel::dropMimeData(const QMimeData *data, Qt::DropAction acti
     if (!data || !(action == Qt::CopyAction || action == Qt::MoveAction))
         return false;
     // check if the format is supported
-    QStringList types = mimeTypes();
+    const QStringList types = mimeTypes();
     if (types.isEmpty())
         return false;
-    QString format = types.at(0);
+    const QString format = types.at(0);
     if (!data->hasFormat(format))
         return false;
-    if (row > rowCount(parent))
-        row = rowCount(parent);
-    if (row == -1)
-        row = rowCount(parent);
-    if (column == -1)
-        column = 0;
+    const bool dropOnItem = row == -1 && column == -1 && parent.isValid();
+    if (!dropOnItem || !parent.flags().testFlag(Qt::ItemNeverHasChildren)) {
+        // drop in between items, or on an item that cannot have children
+        // -> insert new item
+        if (row > rowCount(parent))
+            row = rowCount(parent);
+        if (row == -1)
+            row = rowCount(parent);
+        if (column == -1)
+            column = 0;
+    }
     // decode and insert
     QByteArray encoded = data->data(format);
     QDataStream stream(&encoded, QDataStream::ReadOnly);
@@ -4086,12 +4091,43 @@ bool QAbstractListModel::hasChildren(const QModelIndex &parent) const
     Synonym for QList<QModelIndex>.
 */
 
+bool QAbstractItemModelPrivate::dropOnItem(const QModelIndex &index, QDataStream &stream)
+{
+    Q_Q(QAbstractItemModel);
+
+    int top = INT_MAX;
+    int left = INT_MAX;
+    QList<int> rows, columns;
+    QList<QMap<int, QVariant>> data;
+
+    while (!stream.atEnd()) {
+        int r, c;
+        QMap<int, QVariant> v;
+        stream >> r >> c >> v;
+        rows.append(r);
+        columns.append(c);
+        data.append(v);
+        top = qMin(r, top);
+        left = qMin(c, left);
+    }
+
+    for (int i = 0; i < data.size(); ++i) {
+        int r = (rows.at(i) - top) + index.row();
+        int c = (columns.at(i) - left) + index.column();
+        if (q->hasIndex(r, c))
+            q->setItemData(q->index(r, c), data.at(i));
+    }
+
+    return true;
+}
+
 /*!
   \reimp
 */
 bool QAbstractTableModel::dropMimeData(const QMimeData *data, Qt::DropAction action,
                                        int row, int column, const QModelIndex &parent)
 {
+    Q_D(QAbstractItemModel);
     if (!data || !(action == Qt::CopyAction || action == Qt::MoveAction))
         return false;
 
@@ -4106,32 +4142,8 @@ bool QAbstractTableModel::dropMimeData(const QMimeData *data, Qt::DropAction act
     QDataStream stream(&encoded, QDataStream::ReadOnly);
 
     // if the drop is on an item, replace the data in the items
-    if (parent.isValid() && row == -1 && column == -1) {
-        int top = INT_MAX;
-        int left = INT_MAX;
-        QList<int> rows, columns;
-        QList<QMap<int, QVariant>> data;
-
-        while (!stream.atEnd()) {
-            int r, c;
-            QMap<int, QVariant> v;
-            stream >> r >> c >> v;
-            rows.append(r);
-            columns.append(c);
-            data.append(v);
-            top = qMin(r, top);
-            left = qMin(c, left);
-        }
-
-        for (int i = 0; i < data.size(); ++i) {
-            int r = (rows.at(i) - top) + parent.row();
-            int c = (columns.at(i) - left) + parent.column();
-            if (hasIndex(r, c))
-                setItemData(index(r, c), data.at(i));
-        }
-
-        return true;
-    }
+    if (parent.isValid() && row == -1 && column == -1)
+        return d->dropOnItem(parent, stream);
 
     if (row == -1)
         row = rowCount(parent);
@@ -4146,6 +4158,7 @@ bool QAbstractTableModel::dropMimeData(const QMimeData *data, Qt::DropAction act
 bool QAbstractListModel::dropMimeData(const QMimeData *data, Qt::DropAction action,
                                       int row, int column, const QModelIndex &parent)
 {
+    Q_D(QAbstractItemModel);
     if (!data || !(action == Qt::CopyAction || action == Qt::MoveAction))
         return false;
 
@@ -4160,32 +4173,8 @@ bool QAbstractListModel::dropMimeData(const QMimeData *data, Qt::DropAction acti
     QDataStream stream(&encoded, QDataStream::ReadOnly);
 
     // if the drop is on an item, replace the data in the items
-    if (parent.isValid() && row == -1 && column == -1) {
-        int top = INT_MAX;
-        int left = INT_MAX;
-        QList<int> rows, columns;
-        QList<QMap<int, QVariant>> data;
-
-        while (!stream.atEnd()) {
-            int r, c;
-            QMap<int, QVariant> v;
-            stream >> r >> c >> v;
-            rows.append(r);
-            columns.append(c);
-            data.append(v);
-            top = qMin(r, top);
-            left = qMin(c, left);
-        }
-
-        for (int i = 0; i < data.size(); ++i) {
-            int r = (rows.at(i) - top) + parent.row();
-            int c = (columns.at(i) - left) + parent.column();
-            if (hasIndex(r, c))
-                setItemData(index(r, c), data.at(i));
-        }
-
-        return true;
-    }
+    if (parent.isValid() && row == -1 && column == -1)
+        return d->dropOnItem(parent, stream);
 
     if (row == -1)
         row = rowCount(parent);
