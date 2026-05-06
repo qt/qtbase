@@ -705,6 +705,11 @@ function(qt_internal_add_test name)
         endif()
 
         set(test_working_dir "${CMAKE_CURRENT_BINARY_DIR}")
+    elseif(APPLE AND NOT MACOS)
+        set(test_executable "${name}")
+        set(test_working_dir "${CMAKE_CURRENT_BINARY_DIR}")
+        set_property(TARGET "${name}" PROPERTY CROSSCOMPILING_EMULATOR
+            "${QT6_INSTALL_PREFIX}/${QT6_INSTALL_LIBEXECS}/qt-apple-runner.sh")
     elseif(QNX)
         set(test_working_dir "")
         set(test_executable "${name}")

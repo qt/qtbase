@@ -298,6 +298,18 @@ static void __attribute__((noinline, noreturn)) user_main_trampoline()
     logActivity.applicationDidFinishLaunching.enter();
     qCDebug(lcEventDispatcher) << "Returned from main with exit code " << exitCode;
 
+#if TARGET_OS_SIMULATOR
+    if (qEnvironmentVariableIntegerValue("QT_RUNNING_VIA_TEST_RUNNER")) {
+        // When running on simulator via `simctl launch` the exit code
+        // is not propagated, so we manually save it to disk instead.
+        QFile exitCodeFile(QDir::tempPath() + "/qt_exit_code.txt");
+        if (exitCodeFile.open(QIODevice::WriteOnly | QIODevice::Text))
+            exitCodeFile.write(QByteArray::number(exitCode));
+        else
+            qCWarning(lcEventDispatcher) << "Failed to write exit code to" << exitCodeFile.fileName();
+    }
+#endif
+
     if (Q_UNLIKELY(debugStackUsage))
         userMainStack.printUsage();
 

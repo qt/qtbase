@@ -257,6 +257,9 @@ export CMAKE_GENERATOR=Xcode
     if(NOT CMAKE_CROSSCOMPILING)
         qt_internal_create_qt_android_runner_wrapper_script()
     endif()
+    if(APPLE AND NOT MACOS)
+        qt_internal_install_qt_apple_runner_script()
+    endif()
 endfunction()
 
 function(qt_internal_create_qt_configure_part_wrapper_script component)
@@ -424,4 +427,19 @@ function(qt_internal_create_qt_android_runner_wrapper_script)
     qt_path_join(android_runner_destination "${QT_INSTALL_DIR}" "${INSTALL_LIBEXECDIR}")
     qt_path_join(android_runner "${CMAKE_CURRENT_SOURCE_DIR}" "libexec" "qt-android-runner.py")
     qt_copy_or_install(PROGRAMS "${android_runner}" DESTINATION "${android_runner_destination}")
+endfunction()
+
+function(qt_internal_install_qt_apple_runner_script)
+    qt_path_join(apple_runner_destination "${QT_INSTALL_DIR}" "${INSTALL_LIBEXECDIR}")
+    qt_path_join(apple_runner "${CMAKE_CURRENT_SOURCE_DIR}" "libexec" "qt-apple-runner.sh")
+    qt_copy_or_install(PROGRAMS "${apple_runner}" DESTINATION "${apple_runner_destination}")
+    if(NOT QT_WILL_INSTALL)
+        add_custom_target(Qt${QtBase_VERSION_MAJOR}AppleRunnerScript
+            SOURCES ${apple_runner}
+        )
+        qt_internal_copy_at_build_time(TARGET Qt${QtBase_VERSION_MAJOR}AppleRunnerScript
+            FILES ${apple_runner}
+            DESTINATION ${apple_runner_destination}
+        )
+    endif()
 endfunction()
