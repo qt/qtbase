@@ -22,3 +22,12 @@ qt_internal_add_test(tst_qdecompresshelper
     LIBRARIES
         Qt::NetworkPrivate
 )
+
+qt_internal_add_resource(tst_qdecompresshelper "tst_qdecompresshelper_testdata"
+    PREFIX
+        "/"
+    BASE
+        "${CMAKE_CURRENT_SOURCE_DIR}"
+    FILES
+        10K.gz
+)

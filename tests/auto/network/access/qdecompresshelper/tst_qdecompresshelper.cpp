@@ -385,7 +385,7 @@ void tst_QDecompressHelper::archiveBomb_data()
     QTest::addColumn<QString>("path");
     QTest::addColumn<bool>("shouldFail");
 
-    QTest::newRow("gzip-10K") << QByteArray("gzip") << (srcDir + "/10K.gz") << false;
+    QTest::newRow("gzip-10K") << QByteArray("gzip") << QString(":/10K.gz") << false;
     QTest::newRow("gzip-4G") << QByteArray("gzip") << QString(":/4G.gz") << true;
 }
 
