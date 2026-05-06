@@ -10,7 +10,7 @@
 #if defined(Q_OS_MACOS)
 #  include <AppKit/AppKit.h>
 #  define VIEW_BASE NSView
-#elif defined(Q_OS_IOS)
+#elif defined(QT_PLATFORM_UIKIT)
 #  include <UIKit/UIKit.h>
 #  define VIEW_BASE UIView
 #endif
