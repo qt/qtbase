@@ -76,16 +76,20 @@ void NativeWindow::setVisible(bool visible)
 
 void NativeWindow::setGeometry(const QRect &rect)
 {
+#if defined(Q_OS_MACOS)
     if (m_handle.window.contentView == m_handle)
         return; // Not supported for top level
+#endif
 
     m_handle.frame = QRectF(rect).toCGRect();
 }
 
 QRect NativeWindow::geometry() const
 {
+#if defined(Q_OS_MACOS)
     if (m_handle.window.contentView == m_handle)
         return {}; // Not supported for top level
+#endif
 
     return QRectF::fromCGRect(m_handle.frame).toRect();
 }
