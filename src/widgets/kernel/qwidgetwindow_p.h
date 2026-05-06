@@ -35,7 +35,6 @@ class QWidgetWindowPrivate;
 class QWidgetWindow : public QWindow
 {
     Q_OBJECT
-    Q_PROPERTY(QWidget *widget READ widget CONSTANT)
     Q_DECLARE_PRIVATE(QWidgetWindow)
 public:
     QWidgetWindow(QWidget *widget);
