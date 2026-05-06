@@ -1130,13 +1130,10 @@ QPalette QApplication::palette(const QWidget* w)
 {
     auto &widgetPalettes = QApplicationPrivate::widgetPalettes;
     if (w && !widgetPalettes.isEmpty()) {
-        auto it = widgetPalettes.constFind(w->metaObject()->className());
-        const auto cend = widgetPalettes.constEnd();
-        if (it != cend)
-            return *it;
-        for (it = widgetPalettes.constBegin(); it != cend; ++it) {
-            if (w->inherits(it.key()))
-                return it.value();
+        for (const auto *metaObject = w->metaObject(); metaObject != nullptr; metaObject = metaObject->superClass()) {
+            auto it = widgetPalettes.constFind(metaObject->className());
+            if (it != widgetPalettes.constEnd())
+                return *it;
         }
     }
     return palette();
