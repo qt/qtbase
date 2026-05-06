@@ -162,11 +162,6 @@ void QRangeModelImplBase::changePersistentIndex(const QModelIndex &from,
 {
     m_rangeModel->changePersistentIndex(from, to);
 }
-void QRangeModelImplBase::changePersistentIndexList(const QModelIndexList &from,
-                                                          const QModelIndexList &to)
-{
-    m_rangeModel->changePersistentIndexList(from, to);
-}
 QHash<int, QByteArray> QRangeModelImplBase::roleNames() const
 {
     return m_rangeModel->roleNames();
