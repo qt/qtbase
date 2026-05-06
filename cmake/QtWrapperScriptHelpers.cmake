@@ -146,10 +146,10 @@ export CMAKE_GENERATOR=Xcode
             "${INSTALL_BINDIR}/${__qt_cmake_standalone_test_name}")
     endif()
 
-    # Configuring a standalone test on iOS should use the Xcode generator, but qt-cmake-private uses
-    # the generator that was used to build Qt itself (e.g. Ninja).
+    # Configuring a standalone test on non-macOS Apple OSes should use the Xcode generator,
+    # but qt-cmake-private uses the generator that was used to build Qt itself (e.g. Ninja).
     # Use qt-cmake instead, which does use the Xcode generator since Qt 6.2.5, 6.3.1, 6.4.
-    if(IOS)
+    if(APPLE AND NOT MACOS)
         set(__qt_cmake_private_path
             "${QT_STAGING_PREFIX}/${INSTALL_BINDIR}/qt-cmake")
     else()
