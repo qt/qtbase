@@ -1866,7 +1866,7 @@ void tst_QRangeModel::sortCollator_data()
 
     QTest::addRow("CaseSensitive")
         << caseData << caseSensitive << QVariantList{"A", "C", "b", "d"};
-    if (caseInsensitive.compare("b", "A") < 0) {
+    if (caseInsensitive.compare("b", "C") < 0) {
         QTest::addRow("CaseInsensitive")
             << caseData << caseInsensitive << QVariantList{"A", "b", "C", "d"};
     } else {
