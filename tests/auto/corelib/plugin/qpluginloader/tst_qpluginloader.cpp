@@ -10,6 +10,7 @@
 #include <qpluginloader.h>
 #include <qtemporaryfile.h>
 #include <QScopeGuard>
+#include <QStandardPaths>
 #include "theplugin/plugininterface.h"
 
 #include <QtCore/private/qsimd_p.h>
@@ -136,7 +137,7 @@ static std::unique_ptr<QTemporaryFile> patchElf(const QString &source, ElfPatche
         const char *basename = QTest::currentDataTag();
         if (!basename)
             basename = QTest::currentTestFunction();
-        tmplib.reset(new QTemporaryFile(QDir::currentPath() + u'/' + basename + u".XXXXXX" SUFFIX ""_s));
+        tmplib.reset(new QTemporaryFile(QStandardPaths::writableLocation(QStandardPaths::TempLocation) + u'/' + basename + u".XXXXXX" SUFFIX ""_s));
         QVERIFY2(tmplib->open(), qPrintable(tmplib->errorString()));
 
         // sanity-check
