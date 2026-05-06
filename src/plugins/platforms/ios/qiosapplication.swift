@@ -50,7 +50,7 @@ public struct QIOSLayerConfiguration: CompositorLayerConfiguration {
     }
 }
 
-public func runSwiftAppMain() {
+@_cdecl("runSwiftAppMain") public func runSwiftAppMain() {
     QIOSSwiftApplication.main()
 }
 

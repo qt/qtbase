@@ -20,7 +20,6 @@ endif()
 
 qt_internal_add_plugin(QIOSIntegrationPlugin
     OUTPUT_NAME qios
-    STATIC # Force static, even in shared builds
     DEFAULT_IF "ios" IN_LIST QT_QPA_PLATFORMS
     PLUGIN_TYPE platforms
     SOURCES

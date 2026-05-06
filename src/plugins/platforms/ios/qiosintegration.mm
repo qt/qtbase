@@ -17,6 +17,7 @@
 #include "qiostheme.h"
 #include "qiosservices.h"
 #include "qiosoptionalplugininterface.h"
+#include "qiosapplicationdelegate.h"
 
 #if defined(Q_OS_VISIONOS)
 #include "qiosswiftintegration.h"
@@ -112,6 +113,12 @@ void QIOSIntegration::initialize()
     qsizetype size = QList<QPluginParsedMetaData>(m_optionalPlugins->metaData()).size();
     for (qsizetype i = 0; i < size; ++i)
         qobject_cast<QIosOptionalPluginInterface *>(m_optionalPlugins->instance(i))->initPlugin();
+
+    if (QIOSEventDispatcher::isQtApplication()) {
+        qCDebug(lcQpaWindowScene) << "Replacing application delegate"
+            << UIApplication.sharedApplication.delegate << "with QIOSApplicationDelegate";
+        UIApplication.sharedApplication.delegate = [QIOSApplicationDelegate new];
+    }
 }
 
 QIOSIntegration::~QIOSIntegration()

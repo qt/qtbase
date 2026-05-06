@@ -34,8 +34,6 @@ public:
     // Public since we can't friend Objective-C methods
     void handleRunLoopExit(CFRunLoopActivity activity);
 
-    void interruptEventLoopExec();
-
 private:
     uint m_processEventLevel;
     RunLoopObserver<QIOSJumpingEventDispatcher> m_runLoopExitObserver;

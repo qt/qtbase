@@ -1688,6 +1688,10 @@ if(APPLE AND QT_FEATURE_framework AND QT_FEATURE_separate_debug_info)
     )
 endif()
 
+qt_internal_extend_target(Core CONDITION UIKIT
+    SOURCES platform/ios/qiosrunloopintegration_p.h
+)
+
 if(IOS)
     qt_internal_set_apple_privacy_manifest(Core
         "${CMAKE_CURRENT_SOURCE_DIR}/platform/ios/PrivacyInfo.xcprivacy")

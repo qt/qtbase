@@ -412,7 +412,7 @@ function(qt_auto_detect_apple)
     endif()
 
     if(CMAKE_SYSTEM_NAME STREQUAL iOS OR CMAKE_SYSTEM_NAME STREQUAL visionOS)
-        if(NOT DEFINED BUILD_SHARED_LIBS)
+        if(NOT DEFINED BUILD_SHARED_LIBS OR CMAKE_SYSTEM_NAME STREQUAL visionOS)
             qt_internal_ensure_static_qt_config()
         endif()
 

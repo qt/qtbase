@@ -59,7 +59,7 @@ set_target_properties(EntryPointPrivate PROPERTIES
     INTERFACE_COMPILE_DEFINITIONS ""
 )
 
-if(WIN32)
+if(WIN32 OR UIKIT)
     # Not all platforms require the static library
     set(using_entrypoint_library "yes")
 endif()
@@ -69,6 +69,7 @@ if(using_entrypoint_library)
     qt_internal_add_cmake_library(EntryPointImplementation STATIC
         INCLUDE_DIRECTORIES
            $<TARGET_PROPERTY:Qt::Core,INTERFACE_INCLUDE_DIRECTORIES>
+           $<TARGET_PROPERTY:Qt::CorePrivate,INTERFACE_INCLUDE_DIRECTORIES>
     )
 
     list(APPEND export_targets EntryPointImplementation)
@@ -113,6 +114,12 @@ if(WIN32)
 endif()
 
 if(UIKIT)
+    qt_internal_extend_target(EntryPointImplementation
+        SOURCES qtentrypoint_ios.mm
+        LIBRARIES
+          ${FWFoundation}
+          ${FWUIKit}
+    )
     set_target_properties(EntryPointPrivate PROPERTIES
         INTERFACE_LINK_OPTIONS "-Wl,-e,_qt_main_wrapper"
     )
