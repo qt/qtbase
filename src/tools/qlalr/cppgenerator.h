@@ -28,6 +28,8 @@ public:
   bool debugInfo () const { return debug_info; }
   void setDebugInfo (bool d) { debug_info = d; }
 
+  void setUsePragmaOnce(bool use) { use_pragma_once = use; }
+
   void setCopyright (bool t) { copyright = t; }
 
   void setWarningsAreErrors (bool e) { warnings_are_errors = e; }
@@ -41,8 +43,8 @@ private:
   QString privateCopyrightHeader() const;
 
 private:
-  static QString startIncludeGuard(const QString &fileName);
-  static QString endIncludeGuard(const QString &fileName);
+  QString startIncludeGuard(const QString &fileName) const;
+  QString endIncludeGuard(const QString &fileName) const;
 
   const Recognizer &p;
   Grammar &grammar;
@@ -53,6 +55,7 @@ private:
   int terminal_count;
   int non_terminal_count;
   bool debug_info;
+  bool use_pragma_once = false;
   bool copyright;
   bool warnings_are_errors;
   Compress compressed_action;

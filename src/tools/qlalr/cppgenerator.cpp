@@ -73,16 +73,22 @@ static QString includeGuard(const QString &fileName)
     return fileName.toUpper().replace(u'.', u'_');
 }
 
-QString CppGenerator::startIncludeGuard(const QString &fileName)
+QString CppGenerator::startIncludeGuard(const QString &fileName) const
 {
+    if (use_pragma_once)
+        return u"#pragma once\n"_s;
+
     const QString normalized = includeGuard(fileName);
 
     return QString::fromLatin1("#ifndef %1\n"
                                "#define %2\n").arg(normalized, normalized);
 }
 
-QString CppGenerator::endIncludeGuard(const QString &fileName)
+QString CppGenerator::endIncludeGuard(const QString &fileName) const
 {
+    if (use_pragma_once)
+        return QString();
+
     const QString normalized = includeGuard(fileName);
 
     return QString::fromLatin1("#endif // %1\n").arg(normalized);
