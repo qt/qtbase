@@ -1427,6 +1427,8 @@ void tst_QTextStream::readStdin()
 {
 #if !QT_CONFIG(process)
     QSKIP("No qprocess support");
+#elif defined(Q_OS_ANDROID)
+    QSKIP("Spawning helper processes is not supported on this platform");
 #else
     QProcess stdinProcess;
     stdinProcess.start("stdinProcess/stdinProcess");
@@ -1454,6 +1456,8 @@ void tst_QTextStream::readAllFromStdin()
 {
 #if !QT_CONFIG(process)
     QSKIP("No qprocess support");
+#elif defined(Q_OS_ANDROID)
+    QSKIP("Spawning helper processes is not supported on this platform");
 #else
     QProcess stdinProcess;
     stdinProcess.start("readAllStdinProcess/readAllStdinProcess", {}, QIODevice::ReadWrite | QIODevice::Text);
@@ -1475,6 +1479,8 @@ void tst_QTextStream::readLineFromStdin()
 {
 #if !QT_CONFIG(process)
     QSKIP("No qprocess support");
+#elif defined(Q_OS_ANDROID)
+    QSKIP("Spawning helper processes is not supported on this platform");
 #else
     QProcess stdinProcess;
     stdinProcess.start("readLineStdinProcess/readLineStdinProcess", {}, QIODevice::ReadWrite | QIODevice::Text);
