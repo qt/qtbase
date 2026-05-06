@@ -540,11 +540,14 @@ bool __attribute__((returns_twice)) QIOSJumpingEventDispatcher::processEvents(QE
         return false;
     }
 
-    if (!m_processEventLevel && (flags & QEventLoop::EventLoopExec)) {
+    const bool rootLevelProcessEvents = !m_processEventLevel;
+
+    ++m_processEventLevel;
+    bool processedEvents = false;
+
+    if (rootLevelProcessEvents && (flags & QEventLoop::EventLoopExec)) {
         QT_APPLE_SCOPED_LOG_ACTIVITY(lcEventDispatcher().isDebugEnabled(), "processEvents");
         qCDebug(lcEventDispatcher) << "Processing events with flags" << flags;
-
-        ++m_processEventLevel;
 
         m_runLoopExitObserver.addToMode(kCFRunLoopCommonModes);
 
@@ -554,26 +557,27 @@ bool __attribute__((returns_twice)) QIOSJumpingEventDispatcher::processEvents(QE
         case kJumpPointSetSuccessfully:
             qCDebug(lcEventDispatcher) << "QEventLoop exec detected, jumping back to system runloop ↵";
             longjmp(processEventEnterJumpPoint, kJumpedFromEventDispatcherProcessEvents);
+            Q_UNREACHABLE();
             break;
         case kJumpedFromEventLoopExecInterrupt:
             // The event loop has exited (either by the hand of the user, or the iOS termination
             // signal), and we jumped back though processEventExitJumpPoint. We return from processEvents,
             // which will emit aboutToQuit if it's QApplication's event loop, and then return to the user's
             // main, which can do whatever it wants, including calling exec() on the application again.
-            qCDebug(lcEventDispatcher) << "⇢ System runloop exited, returning with eventsProcessed = true";
+            qCDebug(lcEventDispatcher) << "⇢ System runloop exited, returning with processedEvents = true";
             updateStackLimit();
-            return true;
+            processedEvents = true;
+            break;
         default:
             qFatal("Unexpected jump result in event loop integration");
         }
 
-        Q_UNREACHABLE();
+        m_runLoopExitObserver.removeFromMode(kCFRunLoopCommonModes);
+    } else {
+        processedEvents = QEventDispatcherCoreFoundation::processEvents(flags);
     }
 
-    ++m_processEventLevel;
-    bool processedEvents = QEventDispatcherCoreFoundation::processEvents(flags);
     --m_processEventLevel;
-
     return processedEvents;
 }
 
@@ -588,12 +592,6 @@ void QIOSJumpingEventDispatcher::handleRunLoopExit(CFRunLoopActivity activity)
 
 void QIOSJumpingEventDispatcher::interruptEventLoopExec()
 {
-    Q_ASSERT(m_processEventLevel == 1);
-
-    --m_processEventLevel;
-
-    m_runLoopExitObserver.removeFromMode(kCFRunLoopCommonModes);
-
     // We re-set applicationProcessEventsReturnPoint here so that future
     // calls to QEventLoop::exec() will end up back here after entering
     // processEvents, instead of back in didFinishLaunchingWithOptions.
