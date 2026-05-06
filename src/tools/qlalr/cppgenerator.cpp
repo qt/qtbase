@@ -551,7 +551,7 @@ void CppGenerator::generateImpl (QTextStream &out)
           QString spell = grammar.spells.value (t);
 
           if (spell.isEmpty ())
-            out << "0";
+            out << "nullptr";
           else
             out << "\"" << spell << "\"";
         }

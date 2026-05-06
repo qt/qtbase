@@ -128,7 +128,7 @@ using namespace Qt::StringLiterals;
 Recognizer::Recognizer (Grammar *grammar, bool no_lines):
   tos(0),
   stack_size(0),
-  state_stack(0),
+  state_stack(nullptr),
   _M_line(1),
   _M_action_line(0),
   _M_grammar(grammar),
