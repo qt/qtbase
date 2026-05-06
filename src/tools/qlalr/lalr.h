@@ -1,8 +1,7 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
-#ifndef LALR_H
-#define LALR_H
+#pragma once
 
 #include <QtCore/qset.h>
 #include <QtCore/qstack.h>
@@ -378,5 +377,3 @@ QT_BEGIN_NAMESPACE
 QTextStream &qerr();
 QTextStream &qout();
 QT_END_NAMESPACE
-
-#endif // LALR_H

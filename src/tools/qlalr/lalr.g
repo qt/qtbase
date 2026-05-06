@@ -39,8 +39,7 @@
 /:// Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
-#ifndef RECOGNIZER_H
-#define RECOGNIZER_H
+#pragma once
 
 #include "$header"
 
@@ -112,8 +111,6 @@ protected:
   QString _M_current_value;
   bool _M_no_lines;
 };
-
-#endif // RECOGNIZER_H
 :/
 
 /.// Copyright (C) 2016 The Qt Company Ltd.
