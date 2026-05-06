@@ -2904,7 +2904,7 @@ bool QAbstractItemModel::decodeData(int row, int column, const QModelIndex &pare
         int flat = (relativeRow * dragColumnCount) + relativeColumn;
         // if the item was already written to, or we just can't fit it in the table, create a new row
         if (destinationColumn >= colCount || isWrittenTo.testBit(flat)) {
-            destinationColumn = qBound(column, destinationColumn, colCount - 1);
+            destinationColumn = qBound(column, destinationColumn, qMax(colCount - 1, column));
             destinationRow = row + dragRowCount;
             insertRows(row + dragRowCount, 1, parent);
             flat = (dragRowCount * dragColumnCount) + relativeColumn;

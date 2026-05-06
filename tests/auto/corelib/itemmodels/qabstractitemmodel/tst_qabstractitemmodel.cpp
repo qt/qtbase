@@ -202,6 +202,8 @@ bool QtTestModel::setData(const QModelIndex &idx, const QVariant &value, int)
 
 bool QtTestModel::insertRows(int row, int count, const QModelIndex &parent)
 {
+    if (parent.isValid()) // it's a table, not a tree
+        return false;
     QAbstractItemModel::beginInsertRows(parent, row, row + count - 1);
     int cc = columnCount(parent);
     table.insert(row, count, QList<QString>(cc));
@@ -212,6 +214,8 @@ bool QtTestModel::insertRows(int row, int count, const QModelIndex &parent)
 
 bool QtTestModel::insertColumns(int column, int count, const QModelIndex &parent)
 {
+    if (parent.isValid()) // it's a table, not a tree
+        return false;
     QAbstractItemModel::beginInsertColumns(parent, column, column + count - 1);
     int rc = rowCount(parent);
     for (int i = 0; i < rc; ++i)
@@ -228,6 +232,9 @@ void QtTestModel::setPersistent(const QModelIndex &from, const QModelIndex &to)
 
 bool QtTestModel::removeRows( int row, int count, const QModelIndex & parent)
 {
+    if (parent.isValid()) // it's a table, not a tree
+        return false;
+
     QAbstractItemModel::beginRemoveRows(parent, row, row + count - 1);
 
     for (int r = row+count-1; r >= row; --r)
@@ -240,6 +247,9 @@ bool QtTestModel::removeRows( int row, int count, const QModelIndex & parent)
 
 bool QtTestModel::removeColumns(int column, int count, const QModelIndex & parent)
 {
+    if (parent.isValid()) // it's a table, not a tree
+        return false;
+
     QAbstractItemModel::beginRemoveColumns(parent, column, column + count - 1);
 
     for (int c = column+count-1; c > column; --c)
@@ -255,6 +265,9 @@ bool QtTestModel::removeColumns(int column, int count, const QModelIndex & paren
 bool QtTestModel::moveRows(const QModelIndex &sourceParent, int src, int cnt,
                            const QModelIndex &destinationParent, int dst)
 {
+    if (sourceParent.isValid() || destinationParent.isValid()) // it's a table, not a tree
+        return false;
+
     if (!QAbstractItemModel::beginMoveRows(sourceParent, src, src + cnt - 1,
                                            destinationParent, dst))
         return false;
@@ -283,6 +296,9 @@ bool QtTestModel::moveRows(const QModelIndex &sourceParent, int src, int cnt,
 bool QtTestModel::moveColumns(const QModelIndex &sourceParent, int src, int cnt,
                               const QModelIndex &destinationParent, int dst)
 {
+    if (sourceParent.isValid() || destinationParent.isValid()) // it's a table, not a tree
+        return false;
+
     if (!QAbstractItemModel::beginMoveColumns(sourceParent, src, src + cnt - 1,
                                               destinationParent, dst))
         return false;
