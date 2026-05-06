@@ -2085,6 +2085,7 @@ public:
                 return;
 
             this->beginLayoutChange();
+            QScopeGuard endLayoutChange([this]{ this->endLayoutChange(); });
             that().sortImpl([&compare](const auto &leftRow, const auto &rightRow) {
                 if (auto anyInvalid = Compare::compareInvalid(leftRow, rightRow))
                     return *anyInvalid;
@@ -2106,7 +2107,6 @@ public:
                     });
                 });
             });
-            this->endLayoutChange();
         }
     }
 
@@ -2144,8 +2144,12 @@ public:
         };
 
         const int rangeSize = size(range);
+        // Allocate all necessary memory here so that a potential exception
+        // gets thrown before we have made any modifications.
         std::vector<SortTracker> tracked;
         tracked.reserve(rangeSize);
+        std::vector<int> newRows;
+        newRows.resize(rangeSize);
 
         // move all rows into that index paired with its unsorted position
         int row = -1;
@@ -2160,8 +2164,6 @@ public:
 
         // write the values back to the range in (now ordered) sequence,
         // and create a mapping from old to new row
-        std::vector<int> newRows;
-        newRows.resize(rangeSize);
         auto sorted = std::move_iterator(tracked.begin());
         auto write = QRangeModelDetails::adl_begin(range);
         qsizetype changedIndexCount = 0;

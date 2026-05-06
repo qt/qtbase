@@ -1611,7 +1611,11 @@ void QRangeModel::sort(int column, Qt::SortOrder order)
     Q_D(QRangeModel);
     if (d->m_interfaceVersion < QT_VERSION_CHECK(6, 12, 0))
         return QAbstractItemModel::sort(column, order);
-    d->impl->call<QRangeModelImplBase::Sort>(column, order);
+    QT_TRY {
+        d->impl->call<QRangeModelImplBase::Sort>(column, order);
+    } QT_CATCH(const std::bad_alloc &) {
+        qCritical("QRangeModel::sort ran out of memory, sort likely incomplete.");
+    }
 }
 
 /*!
