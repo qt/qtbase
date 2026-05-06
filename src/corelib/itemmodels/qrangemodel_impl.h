@@ -995,6 +995,7 @@ public:
     void multiData(const QModelIndex &index, QModelRoleDataSpan roleDataSpan) const;
     void setAutoConnectPolicy();
 
+    void interfaceVersion(int &version) const;
     void sort(int column, Qt::SortOrder order);
     QModelIndexList match(const QModelIndex &start, int role, const QVariant &value,
                           int hits, Qt::MatchFlags flags) const;
@@ -1029,6 +1030,7 @@ public:
     using SetAutoConnectPolicy = Method<&Self::setAutoConnectPolicy>;
 
     // 6.12
+    using InterfaceVersion = Method<&Self::interfaceVersion>;
     using Sort = Method<&Self::sort>;
     using Match = Method<&Self::match>;
 
@@ -1058,6 +1060,7 @@ public:
         typename C::RoleNames,
         typename C::MultiData,
         typename C::SetAutoConnectPolicy,
+        typename C::InterfaceVersion,
         typename C::Sort,
         typename C::Match
     >;
@@ -1284,6 +1287,11 @@ public:
 
 
     // static interface, called by QRangeModelImplBase
+
+    void interfaceVersion(int &versionNumber) const
+    {
+        versionNumber = QT_VERSION;
+    }
 
     void invalidateCaches() { m_data.invalidateCaches(); }
 
@@ -2596,6 +2604,7 @@ public:
     using SetAutoConnectPolicy = Override<QRangeModelImplBase::SetAutoConnectPolicy,
                                           &Self::setAutoConnectPolicy>;
 
+    using InterfaceVersion = Override<QRangeModelImplBase::InterfaceVersion, &Self::interfaceVersion>;
     using Sort = Override<QRangeModelImplBase::Sort, &Self::sort>;
     using Match = Override<QRangeModelImplBase::Match, &Self::match>;
 protected:

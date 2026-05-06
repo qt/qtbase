@@ -19,7 +19,9 @@ class QRangeModelPrivate : QAbstractItemModelPrivate
 public:
     explicit QRangeModelPrivate(std::unique_ptr<QRangeModelImplBase, QRangeModelImplBase::Deleter> impl)
         : impl(std::move(impl))
-    {}
+    {
+        this->impl->call<QRangeModelImplBase::InterfaceVersion>(m_interfaceVersion);
+    }
 
     std::unique_ptr<QRangeModelImplBase, QRangeModelImplBase::Deleter> impl;
     friend class QRangeModelImplBase;
@@ -30,6 +32,7 @@ public:
     mutable QHash<int, QByteArray> m_roleNames;
     QRangeModel::AutoConnectPolicy m_autoConnectPolicy = QRangeModel::AutoConnectPolicy::None;
     bool m_dataChangedDispatchBlocked = false;
+    int m_interfaceVersion = -1;
     int m_sortRole = Qt::DisplayRole;
     std::optional<QCollator> m_sortCollator;
 
@@ -1349,6 +1352,8 @@ QModelIndexList QRangeModel::match(const QModelIndex &start, int role, const QVa
                                          int hits, Qt::MatchFlags flags) const
 {
     Q_D(const QRangeModel);
+    if (d->m_interfaceVersion < QT_VERSION_CHECK(6, 12, 0))
+        return QAbstractItemModel::match(start, role, value, hits, flags);
     return d->impl->call<QRangeModelImplBase::Match>(start, role, value, hits, flags);
 }
 
@@ -1358,6 +1363,8 @@ QModelIndexList QRangeModel::match(const QModelIndex &start, int role, const QVa
 void QRangeModel::multiData(const QModelIndex &index, QModelRoleDataSpan roleDataSpan) const
 {
     Q_D(const QRangeModel);
+    if (d->m_interfaceVersion < QT_VERSION_CHECK(6, 11, 0))
+        return QAbstractItemModel::multiData(index, roleDataSpan);
     d->impl->call<QRangeModelImplBase::MultiData>(index, roleDataSpan);
 }
 
@@ -1533,6 +1540,8 @@ void QRangeModel::setAutoConnectPolicy(QRangeModel::AutoConnectPolicy policy)
 void QRangeModel::sort(int column, Qt::SortOrder order)
 {
     Q_D(QRangeModel);
+    if (d->m_interfaceVersion < QT_VERSION_CHECK(6, 12, 0))
+        return QAbstractItemModel::sort(column, order);
     d->impl->call<QRangeModelImplBase::Sort>(column, order);
 }
 
