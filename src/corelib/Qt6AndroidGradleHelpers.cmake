@@ -355,7 +355,7 @@ function(_qt_internal_android_sign_package out_file target type)
         endif()
         set(build_tools_base_path "${ANDROID_SDK_ROOT}/build-tools/${build_tools_version}")
         set(program "${build_tools_base_path}/apksigner${suffix}")
-        set(extra_args "-DZIPALIGN_PATH=${build_tools_base_path}/build-tools/zipalign${suffix}")
+        set(extra_args "-DZIPALIGN_PATH=${build_tools_base_path}/zipalign${suffix}")
     endif()
 
     _qt_internal_android_get_output_package_name(package_build_file_path ${target} ${type})
