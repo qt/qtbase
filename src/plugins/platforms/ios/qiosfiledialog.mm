@@ -25,6 +25,11 @@ using namespace Qt::StringLiterals;
 QIOSFileDialog::QIOSFileDialog()
     : m_viewController(nullptr)
 {
+    // The photos picker can only communicate with the QPlatformFileDialogHelper
+    // API, as it lives in a separate plugin, so we tie into its signaling here
+    // to update our own state, and emit single file change.
+    connect(this, &QPlatformFileDialogHelper::filesSelected,
+            this, &QIOSFileDialog::selectedFilesChanged);
 }
 
 QIOSFileDialog::~QIOSFileDialog()
@@ -153,7 +158,6 @@ QList<QUrl> QIOSFileDialog::selectedFiles() const
 void QIOSFileDialog::selectedFilesChanged(const QList<QUrl> &selection)
 {
     m_selection = selection;
-    emit filesSelected(m_selection);
     if (m_selection.count() == 1)
         emit fileSelected(m_selection[0]);
 }

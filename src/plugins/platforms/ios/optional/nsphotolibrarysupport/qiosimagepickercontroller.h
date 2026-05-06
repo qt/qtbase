@@ -10,7 +10,7 @@
 #include "../../qiosfiledialog.h"
 
 @interface QIOSImagePickerController : UIImagePickerController <UIImagePickerControllerDelegate, UINavigationControllerDelegate>
-- (instancetype)initWithQIOSFileDialog:(QIOSFileDialog *)fileDialog;
+- (instancetype)initWithQIOSFileDialog:(QPlatformFileDialogHelper *)fileDialog;
 @end
 
 #endif // QIOSIMAGEPICKERCONTROLLER_H

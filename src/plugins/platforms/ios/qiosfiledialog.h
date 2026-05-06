@@ -30,6 +30,7 @@ public:
     void selectNameFilter(const QString &) override {}
     QString selectedNameFilter() const override { return QString(); }
 
+private slots:
     void selectedFilesChanged(const QList<QUrl> &selection);
 
 private:

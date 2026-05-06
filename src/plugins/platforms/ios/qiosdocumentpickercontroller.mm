@@ -95,7 +95,7 @@
     for (NSURL* url in urls)
         files.append(qt_apple_urlFromPossiblySecurityScopedURL(url));
 
-    m_fileDialog->selectedFilesChanged(files);
+    emit m_fileDialog->filesSelected(files);
     emit m_fileDialog->accept();
 }
 

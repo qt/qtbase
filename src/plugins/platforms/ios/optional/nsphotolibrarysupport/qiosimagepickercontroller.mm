@@ -7,10 +7,10 @@
 #include "qiosimagepickercontroller.h"
 
 @implementation QIOSImagePickerController {
-    QIOSFileDialog *m_fileDialog;
+    QPlatformFileDialogHelper *m_fileDialog;
 }
 
-- (instancetype)initWithQIOSFileDialog:(QIOSFileDialog *)fileDialog
+- (instancetype)initWithQIOSFileDialog:(QPlatformFileDialogHelper *)fileDialog
 {
     self = [super init];
     if (self) {
@@ -26,7 +26,7 @@
     Q_UNUSED(picker);
     NSURL *url = info[UIImagePickerControllerReferenceURL];
     QUrl fileUrl = QUrl::fromLocalFile(QString::fromNSString(url.description));
-    m_fileDialog->selectedFilesChanged(QList<QUrl>() << fileUrl);
+    emit m_fileDialog->filesSelected(QList<QUrl>() << fileUrl);
     emit m_fileDialog->accept();
 }
 
