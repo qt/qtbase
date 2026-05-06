@@ -66,9 +66,14 @@ QString CppGenerator::privateCopyrightHeader() const
     "//\n"_L1;
 }
 
+static QString includeGuard(const QString &fileName)
+{
+    return fileName.toUpper().replace(u'.', u'_');
+}
+
 QString CppGenerator::startIncludeGuard(const QString &fileName)
 {
-    const QString normalized(QString(fileName).replace(u'.', u'_').toUpper());
+    const QString normalized = includeGuard(fileName);
 
     return QString::fromLatin1("#ifndef %1\n"
                                "#define %2\n").arg(normalized, normalized);
@@ -76,7 +81,7 @@ QString CppGenerator::startIncludeGuard(const QString &fileName)
 
 QString CppGenerator::endIncludeGuard(const QString &fileName)
 {
-    const QString normalized(QString(fileName).replace(u'.', u'_').toUpper());
+    const QString normalized = includeGuard(fileName);
 
     return QString::fromLatin1("#endif // %1\n").arg(normalized);
 }
@@ -359,7 +364,7 @@ void CppGenerator::operator () ()
       }
     QTextStream out (&f);
 
-    QString prot = declFileName.toUpper ().replace (QLatin1Char ('.'), QLatin1Char ('_'));
+    const QString prot = includeGuard(declFileName);
 
     // copyright headers must come first, otherwise the headers tests will fail
     if (copyright)
