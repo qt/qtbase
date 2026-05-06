@@ -28,7 +28,7 @@
 
     <Describe how to navigate and access different parts of the example/UI.>
 
-    \setion1 Relevant modules and classes
+    \section1 Relevant modules and classes
     <Optional - Use this section for more complicated examples.>
 
     This example introduces the following Qt <modules/classes>:
@@ -58,3 +58,4 @@
     \section1 Source files
 
     \sa {All Qt Examples}, <Link to other relevant docs.>
+*/
