@@ -287,8 +287,11 @@ private slots:
     void openDirectory();
     void writeNothing();
 
+#ifdef Q_OS_WIN
+    // All file paths are potentially valid, outside of Windows
     void invalidFile_data();
     void invalidFile();
+#endif
 
     void reuseQFile();
 
@@ -1235,19 +1238,11 @@ static inline QChar invalidDriveLetter()
     return QChar();
 }
 
-#endif // Q_OS_WIN
 
 void tst_QFile::invalidFile_data()
 {
     QTest::addColumn<QString>("fileName");
 
-#if defined(Q_OS_WASM)
-    QSKIP("No invalid files on wasm");
-#endif
-
-#if !defined(Q_OS_WIN)
-    QTest::newRow( "x11" ) << QString( "qwe//" );
-#else
     QTest::newRow( "colon2" ) << invalidDriveLetter() + QString::fromLatin1(":ail:invalid");
     QTest::newRow( "colon3" ) << QString( ":failinvalid" );
     QTest::newRow( "forwardslash" ) << QString( "fail/invalid" );
@@ -1257,7 +1252,6 @@ void tst_QFile::invalidFile_data()
     QTest::newRow( "lt" ) << QString( "fail<invalid" );
     QTest::newRow( "gt" ) << QString( "fail>invalid" );
     QTest::newRow( "pipe" ) << QString( "fail|invalid" );
-#endif
 }
 void tst_QFile::invalidFile()
 {
@@ -1265,6 +1259,7 @@ void tst_QFile::invalidFile()
     QFile f( fileName );
     QVERIFY2( !f.open( QIODevice::ReadWrite ), qPrintable(fileName) );
 }
+#endif // Q_OS_WIN
 
 void tst_QFile::createFile()
 {
