@@ -178,7 +178,7 @@ int Recognizer::nextToken()
     {
       inp(); // skip "
       text.clear ();
-      while (! ch.isNull () && ch != u'"')
+      while (!ch.isNull () && ch != u'"')
         {
           if (ch == u'\\')
             {
@@ -256,7 +256,7 @@ int Recognizer::nextToken()
   if (token == '-' && ch == u'-')
     {
       do { inp (); }
-      while (! ch.isNull () && ch != u'\n');
+      while (!ch.isNull () && ch != u'\n');
       goto Lagain;
     }
 
