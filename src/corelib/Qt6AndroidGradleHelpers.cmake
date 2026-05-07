@@ -778,6 +778,7 @@ function(_qt_internal_android_copy_target_package_sources target deployment_dir)
     # Collect deployment files from use-defined package source directory
     file(GLOB_RECURSE package_files
         LIST_DIRECTORIES false
+        CONFIGURE_DEPENDS
         RELATIVE "${package_source_dir}"
         "${package_source_dir}/*"
     )
