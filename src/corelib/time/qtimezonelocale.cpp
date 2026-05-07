@@ -33,6 +33,8 @@ QT_END_NAMESPACE
 #  endif
 #endif
 
+#include <algorithm>
+
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
@@ -390,15 +392,23 @@ struct OffsetFormatMatch
 OffsetFormatMatch matchOffsetText(QStringView text, QStringView format, const QLocale &locale,
                                   QtTemporalPattern::TemporalFieldFlags flags)
 {
-    const bool zeroPad = flags.testFlag(QtTemporalPattern::TemporalFieldFlag::ZeroPad);
-    // Sign is taken care of by caller.
-    // For now, don't try to be general, it gets too tricky.
+    using namespace QtTemporalPattern;
+    using namespace FieldGroup;
+    using Flag = TemporalFieldFlag;
+    const bool zeroPad = flags.testFlag(Flag::ZeroPad);
     OffsetFormatMatch res;
-    // At least at CLDR v46:
+
+    // At least at CLDR v48:
     // Amharic in Ethiopia has ±HHmm formats; all others use separators.
-    // None have single m. All have H or HH before mm. (None has anything after mm.)
-    // In narrow format, mm and its preceding separator are elided for 0
-    // minutes; and hour may be single digit even if the format says HH.
+    // None have single m. All have H or HH before mm. None has anything after mm.
+    // (If a user has configured a system locale to violate that, they get to
+    // endure the resulting failure to parse.)
+    // Some Balkan states have a space before the minus sign of the negative format.
+    // Sign is taken care of by caller; it's part of the format's text, before
+    // H, but here we just match it as a literal.
+    // TODO: flexible matching of space, when present in format; ignoring Unicode
+    // invisibles; matching variations on U+2212, dash and other forms of minus sign.
+
     qsizetype cut = format.indexOf(u'H');
     if (cut < 0 || !text.startsWith(format.first(cut)) || !format.endsWith(u"mm"))
         return res;
@@ -413,65 +423,56 @@ OffsetFormatMatch matchOffsetText(QStringView text, QStringView format, const QL
     using Digits = QLocaleData::DigitSequence;
     const Digits early = locDat->digitSequence(text, {}, cut);
     Q_ASSERT(!early.sign);
-    int digits = qMin(early.digits.size(), 4);
 
-    Digits mins = early.sliced(qMin(2, digits)); // Initial guess.
-    qsizetype endIndex = mins.endIndex();
-    if (sep.isEmpty()) {
-        if (digits > hlen) {
-            // Even ZeroPad formats allow short hour match when hlen < 2. TODO: revisit
-            if (!zeroPad || (hlen < 2 && !early.digits.startsWith('0')))
-                hlen = digits - 2;
-            else if (digits < hlen + 2)
-                return res;
-            mins = early.sliced(hlen).first(2);
-            endIndex = mins.endIndex();
-        } else if (!zeroPad) {
-            hlen = digits;
-            Q_ASSERT(mins.isEmpty()); // and its endIndex() is in the right place.
-        } else if (hlen != digits) {
-            return res;
-        }
-    } else {
-        const qsizetype sepAt = text.indexOf(sep, cut); // May be -1; endIndex isn't < -1.
-        if (endIndex < sepAt) // Separator doesn't immediately follow hour digits.
-            return res;
-        if (!zeroPad || (hlen < 2 && !early.digits.startsWith('0')))
-            hlen = digits;
-        else if (digits != hlen)
-            return res;
-        const qsizetype hourEnd = early.first(hlen).endIndex();
-        if (sepAt < 0 || sepAt > hourEnd) {
-            endIndex = hourEnd;
-        } else {
-            const Digits late = locDat->digitSequence(text, {}, sepAt + sep.size());
-            Q_ASSERT(!late.sign);
-            if (late.digits.size() >= 2) // Minutes require zero-padding ...
-                mins = late.first(2);
-            else if (!zeroPad) // ... but be forgiving ? TODO: revisit
-                mins = late;
-            endIndex = mins.isEmpty() ? sepAt : mins.endIndex();
-        }
-        // ZeroPad requires minute field even when zero:
-        if (mins.isEmpty() && zeroPad)
-            return res;
-    }
-    if (hlen < 1) // There must be an hour field.
+    Digits hrs = early;
+    if (qsizetype maxLen = std::max(2, hlen); maxLen < hrs.digits.size())
+        hrs = hrs.first(maxLen);
+    if (hrs.digits.size() < 1) // There must be an hour field.
         return res;
-    Digits hrs = early.first(hlen);
+    if (zeroPad && hrs.digits.size() < hlen) // ZeroPad requires full width
+        return res;
+
+    Digits mins = early.sliced(hrs.digits.size()); // Initial guess.
+    if (!sep.isEmpty()) {
+        const qsizetype sepAt = text.indexOf(sep, cut);
+        if (sepAt == hrs.endIndex()) // Separator must immediately follow hour field:
+            mins = locDat->digitSequence(text, {}, sepAt + sep.size());
+        else // If missing or misplaced, we only have an hour field:
+            mins = mins.first(0);
+    }
+    Q_ASSERT(!mins.sign);
+    if (mins.digits.size() > 2)
+        mins = mins.first(2);
+    else if (!mins.isEmpty() && mins.digits.size() < 2) // Not long enough: ignore
+        mins = mins.first(0);
+
+    constexpr int MaxOffsetHours
+        = (std::max)(-QTimeZone::MinUtcOffsetSecs, QTimeZone::MaxUtcOffsetSecs) / 3600;
 
     bool ok = true;
-    uint minute = mins.isEmpty() ? 0 : mins.digits.toUInt(&ok);
-    if (!ok && !zeroPad) {
-        // Fall back to matching hour-only form:
-        endIndex = hrs.endIndex();
-        ok = true;
+    uint hour = hrs.digits.toUInt(&ok);
+    if (!ok || hour > MaxOffsetHours || (zeroPad && mins.isEmpty())) {
+        // MaxOffsetHours > 10, so hrs.digits().size() > 1.
+        if (zeroPad) // Hour field must have full width.
+            return res;
+        // Truncated hour field at first digit and exclude minutes:
+        hrs = hrs.first(1);
+        mins = mins.first(0);
+        hour = hrs.digits.toUInt(&ok);
     }
-    if (ok && minute < 60) {
-        uint hour = hrs.digits.toUInt(&ok);
-        if (ok) {
-            res.offset = (hour * 60 + minute) * 60;
-            res.size = endIndex;
+    if (ok) {
+        if (!mins.isEmpty()
+            && (!zeroPad || matchesFlagWithin(flags, Flag::Abbreviated, WidthMask))) {
+            uint minute = mins.digits.toUInt(&ok);
+            if (ok && minute < 60) {
+                res.offset = (hour * 60 + minute) * 60;
+                res.size = mins.endIndex();
+                return res;
+            }
+        }
+        if (!zeroPad || matchesFlagWithin(flags, Flag::Narrow, WidthMask)) {
+            res.offset = hour * 60 * 60;
+            res.size = hrs.endIndex();
         }
     }
     return res;
