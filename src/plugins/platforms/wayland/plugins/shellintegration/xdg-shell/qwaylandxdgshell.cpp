@@ -796,9 +796,6 @@ std::unique_ptr<QWaylandXdgSurface::Positioner> QWaylandXdgSurface::createPositi
     placementAnchor.translate(windowMargins.left(), windowMargins.top());
 
     // Override from window type
-    if (m_window->parentControlGeometry().isValid())
-        placementAnchor = m_window->parentControlGeometry();
-
     switch (m_window->extendedWindowType()) {
     case QNativeInterface::Private::QWaylandWindow::Menu:
     case QNativeInterface::Private::QWaylandWindow::WindowType::ComboBox:
@@ -823,11 +820,18 @@ std::unique_ptr<QWaylandXdgSurface::Positioner> QWaylandXdgSurface::createPositi
         break;
     }
 
-    if (qApp->layoutDirection() == Qt::RightToLeft) {
-        if (anchor & (Qt::RightEdge | Qt::LeftEdge))
-            anchor ^= (Qt::RightEdge | Qt::LeftEdge);
-        if (gravity & (Qt::RightEdge | Qt::LeftEdge))
-            gravity ^= (Qt::RightEdge | Qt::LeftEdge);
+    if (m_window->parentControlGeometry().isValid()) {
+        placementAnchor = m_window->parentControlGeometry();
+
+        // Only apply RTL if the parent control geometry is valid
+        // if it's implicit from the window geometry the application code might'
+        // have internally applied some logic
+        if (qApp->layoutDirection() == Qt::RightToLeft) {
+            if (anchor & (Qt::RightEdge | Qt::LeftEdge))
+                anchor ^= (Qt::RightEdge | Qt::LeftEdge);
+            if (gravity & (Qt::RightEdge | Qt::LeftEdge))
+                gravity ^= (Qt::RightEdge | Qt::LeftEdge);
+        }
     }
 
     // Override with properties fauxAPI
