@@ -1483,7 +1483,7 @@ endfunction()
 
 # Adds the custom build step to the multi-ABI Android project
 function(_qt_internal_add_android_abi_step project abi step)
-    cmake_parse_arguments(arg "" "" "COMMAND;DEPENDS;TARGET_DEPENDS" ${ARGV})
+    cmake_parse_arguments(arg "" "" "COMMAND;DEPENDS;TARGET_DEPENDS;BYPRODUCTS" ${ARGV})
 
     if(NOT arg_COMMAND)
         message(FATAL_ERROR "COMMAND is not set for ${project} step ${step} Android ABI ${abi}.")
@@ -1507,6 +1507,11 @@ function(_qt_internal_add_android_abi_step project abi step)
         set(arg_TARGET_DEPENDS "")
     endif()
 
+    set(byproducts_arg "")
+    if(arg_BYPRODUCTS)
+        set(byproducts_arg BYPRODUCTS ${arg_BYPRODUCTS})
+    endif()
+
     _qt_internal_get_android_abi_step_stampfile(stamp ${project} ${abi} ${step})
     if(step STREQUAL "configure" AND EXISTS "${stamp}")
         file(REMOVE "${stamp}")
@@ -1514,6 +1519,7 @@ function(_qt_internal_add_android_abi_step project abi step)
     add_custom_command(OUTPUT "${stamp}"
         COMMAND ${arg_COMMAND}
         COMMAND "${CMAKE_COMMAND}" -E touch "${stamp}"
+        ${byproducts_arg}
         ${add_to_pool}
         DEPENDS
             ${dep_stamps}
@@ -1718,6 +1724,12 @@ function(_qt_internal_configure_android_multiabi_target target)
                 --target ${target}
         )
 
+        # List a secondary ABI's deploy files to give gradle file-level deps on them.
+        set(abi_deploy_files "")
+        if(QT_USE_ANDROID_MODERN_BUNDLE)
+            _qt_internal_android_get_abi_deploy_files(abi_deploy_files ${target} ${abi})
+        endif()
+
         _qt_internal_add_android_abi_step(qt_internal_android_${abi} ${abi}
             ${target}_copy_apk_dependencies
             DEPENDS
@@ -1727,7 +1739,11 @@ function(_qt_internal_configure_android_multiabi_target target)
                 --build "${android_abi_build_dir}"
                 --config $<CONFIG>
                 --target qt_internal_${target}_copy_apk_dependencies
+            BYPRODUCTS ${abi_deploy_files}
         )
+        if(abi_deploy_files)
+            _qt_internal_android_register_deploy_files(${target} ${abi_deploy_files})
+        endif()
         set(external_project_copy_target
             "qt_internal_android_${abi}_${target}_copy_apk_dependencies")
 
