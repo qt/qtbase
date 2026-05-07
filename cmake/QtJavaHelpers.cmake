@@ -24,6 +24,15 @@
 #       [GRADLE_PROJECT_DIR <dir>]          : defaults to CMAKE_CURRENT_SOURCE_DIR
 #   )
 
+# Maps CMAKE_BUILD_TYPE to the Gradle build variant ('Debug' or 'Release').
+function(_qt_internal_resolve_gradle_build_variant out_var)
+    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+        set(${out_var} "Debug" PARENT_SCOPE)
+    else()
+        set(${out_var} "Release" PARENT_SCOPE)
+    endif()
+endfunction()
+
 function(qt_internal_add_jar target)
     set(options)
     set(oneValueArgs OUTPUT_DIR GRADLE_PROJECT_DIR)
@@ -73,13 +82,6 @@ function(qt_internal_add_jar target)
     set(min_sdk "${ANDROID_PLATFORM}")
     string(REGEX REPLACE "^android-" "" min_sdk "${min_sdk}")
 
-    # Gradle build type/variant
-    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-        set(build_variant "debug")
-    else()
-        set(build_variant "release")
-    endif()
-
     # Evaluate common paths
     if(PROJECT_NAME STREQUAL "QtBase" OR QT_SUPERBUILD)
         set(qt_jar_dir "${QT_BUILD_DIR}/jar")
@@ -112,6 +114,8 @@ function(qt_internal_add_jar target)
     # Build directory in the build tree to keeps source tree clean
     set(gradle_build_dir "${CMAKE_CURRENT_BINARY_DIR}/${target}_gradle")
     file(TO_CMAKE_PATH "${gradle_build_dir}" gradle_build_dir)
+
+    _qt_internal_resolve_gradle_build_variant(build_variant)
 
     # Gradle command line properties
     set(gradle_props
@@ -244,6 +248,8 @@ function(_qt_internal_verify_gradle_offline_cache gradle_source_dir)
     set(action_resolve_arg "-DACTION_RESOLVE_GRADLE=ON")
     set(qt_dir_arg "-DQT_ROOT_DIR=${qt_dir}")
     set(project_dir_arg "-DGRADLE_PROJECT_DIR=${gradle_source_dir}")
+    _qt_internal_resolve_gradle_build_variant(build_variant)
+    set(build_variant_arg "-DGRADLE_BUILD_VARIANT=${build_variant}")
     set(only_verify_arg "-DONLY_VERIFY_GRADLE_CACHE=ON")
     set(gradle_env "ANDROID_SDK_ROOT=${ANDROID_SDK_ROOT}")
     execute_process(
@@ -252,6 +258,7 @@ function(_qt_internal_verify_gradle_offline_cache gradle_source_dir)
             "${action_resolve_arg}"
             "${qt_dir_arg}"
             "${project_dir_arg}"
+            "${build_variant_arg}"
             "${only_verify_arg}"
             -P "${setup_script}"
         RESULT_VARIABLE verify_result
@@ -260,11 +267,12 @@ function(_qt_internal_verify_gradle_offline_cache gradle_source_dir)
     )
 
     if(NOT verify_result EQUAL 0)
+        set(resolve_cmd_args
+            "${action_resolve_arg} ${qt_dir_arg} ${project_dir_arg} ${build_variant_arg}")
         message(FATAL_ERROR
             "Downloads are disabled when building Qt and Gradle dependencies haven't been cached "
             "for such offline builds. Run the following command to populate the Gradle cache:\n"
-            "  cmake -E env ${gradle_env} "
-            "cmake ${action_resolve_arg} ${qt_dir_arg} ${project_dir_arg} -P ${setup_script}\n"
+            "  cmake -E env ${gradle_env} cmake ${resolve_cmd_args} -P ${setup_script}\n"
             "Or configure Qt with QT_ALLOW_DOWNLOAD=ON to allow Gradle downloads at build time.")
     endif()
 endfunction()

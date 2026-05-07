@@ -7,7 +7,7 @@
 // Arguments:
 //   buildDir        Build output directory
 //   jarOutputDir    Where to write the extracted JAR
-//   buildVariant    Either debug or release
+//   buildVariant    Either Debug or Release
 //   includeJars     Comma-separated JAR dependencies
 //   javacSource     Java source compatibility
 //   javacTarget     Java target compatibility
@@ -40,15 +40,16 @@ allprojects {
         }
     }
 
+    def variant = findProperty('buildVariant')
+    def variantLower = variant?.toLowerCase()
     tasks.register("${rootProject.name}Jar", Copy) {
-        def variant = findProperty('buildVariant') ?: 'release'
         def buildOutput = layout.buildDirectory
         def jarOut = findProperty('jarOutputDir')
 
-        dependsOn "assemble${variant.capitalize()}"
+        dependsOn "assemble${variant}"
 
         def outputDir = jarOut ? file(jarOut) : buildOutput.dir('libs').get().asFile
-        def aarFile = buildOutput.file("outputs/aar/${rootProject.name}-${variant}.aar")
+        def aarFile = buildOutput.file("outputs/aar/${rootProject.name}-${variantLower}.aar")
 
         from zipTree(aarFile)
         include 'classes.jar'
@@ -60,14 +61,19 @@ allprojects {
         // Assemble only in verify mode, composite builds might fail for relative dependencies.
         // FIXME: resolve tools dependencies (aapt2, lint-gradle) without full assemble.
         if (!gradle.startParameter.offline) {
-            dependsOn 'assembleRelease'
+            dependsOn "assemble${variant}"
         }
 
         doLast {
-            buildscript.configurations.findAll { it.canBeResolved }.each { it.resolve() }
             project.configurations.findAll {
+                if (!it.canBeResolved) return false
+                // Only resolve the variant's own configurations.
+                def name = it.name.toLowerCase()
+                if (!name.startsWith(variantLower)) return false
                 // Disable test variants to avoid ambiguity in single-projects.
-                it.canBeResolved && !it.name.toLowerCase().contains('test')
+                if (name.contains('test')) return false
+
+                return true
             }.each { it.resolve() }
         }
     }

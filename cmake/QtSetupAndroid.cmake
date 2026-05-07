@@ -14,6 +14,8 @@
 #
 #     QT_ROOT_DIR: points to Qt install directory or qtbase source. Required when running
 #       outside the qtbase source tree.
+#
+#     GRADLE_BUILD_VARIANT: Gradle build variant ('Debug' or 'Release').
 
 cmake_minimum_required(VERSION 3.16)
 
@@ -93,6 +95,7 @@ function(_qt_setup_android_resolve_gradle_dependencies)
         COMMAND ${gradlew}
             --init-script "${init_script}"
             "-PbuildDir=${resolve_dir}/build"
+            "-PbuildVariant=${GRADLE_BUILD_VARIANT}"
             --project-cache-dir "${resolve_dir}/.gradle"
             --no-configuration-cache
             "-PisQtCMakeBuild=true" # Ignore composite build relative dependencies
