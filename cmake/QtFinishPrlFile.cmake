@@ -13,11 +13,10 @@
 # - Prepends '-l' to values that are not absolute paths, and don't start with a dash
 #   aka, '-lfoo', '-framework', '-pthread'.
 #
-# The path to the final .prl file is stored in the input file as assignment to FINAL_PRL_FILE_PATH.
-#
 # This file is to be used in CMake script mode with the following variables set:
 # IN_FILE: path to the step 1 preliminary .prl file
 # OUT_FILE: path to the step 2 preliminary .prl file that is going to be created
+# FINAL_PRL_FILE_PATH: path where the final .prl file should be placed
 # QT_LIB_DIRS: list of paths where Qt libraries are located.
 #              This includes the install prefix and the current repo build dir.
 #              These paths get replaced with relocatable paths or linker / framework flags.
@@ -152,17 +151,5 @@ foreach(line ${lines})
 endforeach()
 file(WRITE "${OUT_FILE}" "${content}")
 
-# Read the prl meta file to find out where should the final prl file be placed,
-# Copy it there, if the contents hasn't changed.
-file(STRINGS "${IN_META_FILE}" lines)
-
-foreach(line ${lines})
-    if(line MATCHES "^FINAL_PRL_FILE_PATH = (.*)")
-        set(final_prl_file_path "${CMAKE_MATCH_1}")
-        configure_file(
-            "${OUT_FILE}"
-            "${final_prl_file_path}"
-            COPYONLY
-            )
-    endif()
-endforeach()
+# Copy the result to its final location, if the contents have changed.
+configure_file("${OUT_FILE}" "${FINAL_PRL_FILE_PATH}" COPYONLY)

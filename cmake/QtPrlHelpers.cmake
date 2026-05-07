@@ -78,31 +78,15 @@ function(qt_generate_prl_file target install_dir)
         string(APPEND prefix_for_final_prl_name "Versions/${fw_version}/Resources/")
     endif()
 
-    # What follows is a complicated setup for generating configuration-specific
-    # prl files. It has to be this way, because add_custom_command doesn't support
-    # generator expressions in OUTPUT or DEPENDS.
-    # To circumvent that, we create well known file names with file(GENERATE)
-    # with configuration specific content, which are then fed to add_custom_command
-    # that uses these genex-less file names. The actual command will extract the info
-    # from the configuration-specific files, and create a properly named final prl file.
+    # Generate configuration-specific prl files in two steps:
+    # - step1: a file(GENERATE) writes the preliminary prl content with absolute paths.
+    # - step2: an add_custom_command runs QtFinishPrlFile.cmake to transform absolute paths into
+    #          qmake link flags / relocatable references and write the final prl file.
+    set(prl_step1_path
+        "${CMAKE_CURRENT_BINARY_DIR}/preliminary_prl_for_${target}_step1_$<CONFIG>.prl")
 
-    # The file is named according to a pattern, that is then used in the
-    # add_custom_command.
-    set(prl_step1_name_prefix "preliminary_prl_for_${target}_step1_")
-    set(prl_step1_name_suffix ".prl" )
-    qt_path_join(prl_step1_path
-                 "${CMAKE_CURRENT_BINARY_DIR}"
-                 "${prl_step1_name_prefix}$<CONFIG>${prl_step1_name_suffix}")
-
-    # Same, except instead of containing the prl contents, it will contain the final prl file
-    # name computed via a generator expression.
-    set(prl_meta_info_name_prefix "preliminary_prl_meta_info_for_${target}_")
-    set(prl_meta_info_name_suffix ".txt")
-    qt_path_join(prl_meta_info_path
-                 "${CMAKE_CURRENT_BINARY_DIR}"
-                 "${prl_meta_info_name_prefix}$<CONFIG>${prl_meta_info_name_suffix}")
-
-    # The final prl file name that will be embedded in the file above.
+    # The final prl file path is passed to the custom command verbatim; its
+    # $<TARGET_FILE_BASE_NAME> genex is evaluated at build time per config.
     set(final_prl_file_name "${prefix_for_final_prl_name}$<TARGET_FILE_BASE_NAME:${target}>")
     if(ANDROID)
         string(APPEND final_prl_file_name "_${CMAKE_ANDROID_ARCH_ABI}")
@@ -110,8 +94,6 @@ function(qt_generate_prl_file target install_dir)
     string(APPEND final_prl_file_name ".prl")
     qt_path_join(final_prl_file_path "${QT_BUILD_DIR}/${install_dir}" "${final_prl_file_name}")
 
-    # Generate the prl content and its final file name into configuration specific files
-    # whose names we know, and can be used in add_custom_command.
     set(prl_step1_content
         "RCC_OBJECTS = ${rcc_objects}
 QMAKE_PRL_TARGET = $<TARGET_LINKER_FILE_NAME:${target}>
@@ -124,22 +106,12 @@ ${prl_step1_content_libs}
     file(GENERATE
         OUTPUT "${prl_step1_path}"
         CONTENT "${prl_step1_content}")
-    file(GENERATE
-         OUTPUT "${prl_meta_info_path}"
-         CONTENT
-         "FINAL_PRL_FILE_PATH = ${final_prl_file_path}")
 
     set(library_prefixes ${CMAKE_SHARED_LIBRARY_PREFIX} ${CMAKE_STATIC_LIBRARY_PREFIX})
     set(library_suffixes
         ${CMAKE_SHARED_LIBRARY_SUFFIX}
         ${CMAKE_EXTRA_SHARED_LIBRARY_SUFFIXES}
         ${CMAKE_STATIC_LIBRARY_SUFFIX})
-
-    if(QT_GENERATOR_IS_MULTI_CONFIG)
-        set(configs ${CMAKE_CONFIGURATION_TYPES})
-    else()
-        set(configs ${CMAKE_BUILD_TYPE})
-    endif()
 
     set(qt_lib_dirs "${QT_BUILD_DIR}/${INSTALL_LIBDIR}")
     if(QT_WILL_INSTALL)
@@ -159,56 +131,53 @@ ${prl_step1_content_libs}
              "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}/${INSTALL_QMLDIR}")
     endif()
 
-    foreach(config ${configs})
-        # Output file for dependency tracking, and which will contain the final content.
-        qt_path_join(prl_step2_path
-                     "${CMAKE_CURRENT_BINARY_DIR}" "preliminary_prl_for_${target}_step2_${config}.prl")
+    if(MSVC)
+        set(link_library_flag "-l")
+        file(TO_CMAKE_PATH "$ENV{LIB};${CMAKE_CXX_IMPLICIT_LINK_DIRECTORIES}" implicit_link_directories)
+    else()
+        set(link_library_flag ${CMAKE_LINK_LIBRARY_FLAG})
+        set(implicit_link_directories ${CMAKE_CXX_IMPLICIT_LINK_DIRECTORIES})
+    endif()
 
-        # Input dependency names that are constructed for each config manually
-        # (no genexes allowed).
-        qt_path_join(prl_step1_path
-                     "${CMAKE_CURRENT_BINARY_DIR}"
-                     "${prl_step1_name_prefix}${config}${prl_step1_name_suffix}")
-        qt_path_join(prl_meta_info_path
-                     "${CMAKE_CURRENT_BINARY_DIR}"
-                     "${prl_meta_info_name_prefix}${config}${prl_meta_info_name_suffix}")
-        if(MSVC)
-            set(link_library_flag "-l")
-            file(TO_CMAKE_PATH "$ENV{LIB};${CMAKE_CXX_IMPLICIT_LINK_DIRECTORIES}" implicit_link_directories)
-        else()
-            set(link_library_flag ${CMAKE_LINK_LIBRARY_FLAG})
-            set(implicit_link_directories ${CMAKE_CXX_IMPLICIT_LINK_DIRECTORIES})
-        endif()
-        add_custom_command(
-            OUTPUT  "${prl_step2_path}"
-            DEPENDS "${prl_step1_path}"
-                    "${prl_meta_info_path}"
-                    "${QT_CMAKE_DIR}/QtFinishPrlFile.cmake"
-                    "${QT_CMAKE_DIR}/QtGenerateLibHelpers.cmake"
-            COMMAND ${CMAKE_COMMAND}
-                    "-DIN_FILE=${prl_step1_path}"
-                    "-DIN_META_FILE=${prl_meta_info_path}"
-                    "-DOUT_FILE=${prl_step2_path}"
-                    "-DLIBRARY_PREFIXES=${library_prefixes}"
-                    "-DLIBRARY_SUFFIXES=${library_suffixes}"
-                    "-DLINK_LIBRARY_FLAG=${link_library_flag}"
-                    "-DQT_LIB_DIRS=${qt_lib_dirs}"
-                    "-DQT_PLUGIN_DIRS=${qt_plugin_dirs}"
-                    "-DQT_QML_DIRS=${qt_qml_dirs}"
-                    "-DIMPLICIT_LINK_DIRECTORIES=${implicit_link_directories}"
-                    -P "${QT_CMAKE_DIR}/QtFinishPrlFile.cmake"
-            VERBATIM
-            COMMENT "Generating prl file for target ${target}"
-            )
+    set(prl_step2_path
+        "${CMAKE_CURRENT_BINARY_DIR}/preliminary_prl_for_${target}_step2_$<CONFIG>.prl")
 
-        # Tell the target to depend on the preliminary prl file, to ensure the custom command
-        # is executed. As a side-effect, this will also create the final prl file that
-        # is named appropriately. It should not be specified as a BYPRODUCT.
-        # This allows proper per-file dependency tracking, without having to resort on a POST_BUILD
-        # step, which means that relinking would happen as well as transitive rebuilding of any
-        # dependees.
-        # This is inspired by https://gitlab.kitware.com/cmake/cmake/-/issues/20842
-        target_sources(${target} PRIVATE "${prl_step2_path}")
+    add_custom_command(
+        OUTPUT  "${prl_step2_path}"
+        DEPENDS "${prl_step1_path}"
+                "${QT_CMAKE_DIR}/QtFinishPrlFile.cmake"
+                "${QT_CMAKE_DIR}/QtGenerateLibHelpers.cmake"
+        COMMAND ${CMAKE_COMMAND}
+                "-DIN_FILE=${prl_step1_path}"
+                "-DOUT_FILE=${prl_step2_path}"
+                "-DFINAL_PRL_FILE_PATH=${final_prl_file_path}"
+                "-DLIBRARY_PREFIXES=${library_prefixes}"
+                "-DLIBRARY_SUFFIXES=${library_suffixes}"
+                "-DLINK_LIBRARY_FLAG=${link_library_flag}"
+                "-DQT_LIB_DIRS=${qt_lib_dirs}"
+                "-DQT_PLUGIN_DIRS=${qt_plugin_dirs}"
+                "-DQT_QML_DIRS=${qt_qml_dirs}"
+                "-DIMPLICIT_LINK_DIRECTORIES=${implicit_link_directories}"
+                -P "${QT_CMAKE_DIR}/QtFinishPrlFile.cmake"
+        VERBATIM
+        COMMENT "Generating prl file for target ${target}"
+        )
+
+    # Attach the per-config preliminary prl file to the library target so that the custom command
+    # runs before linking. This is inspired by
+    # https://gitlab.kitware.com/cmake/cmake/-/issues/20842
+    # add_custom_command(OUTPUT) does not register a path containing a generator expression as a
+    # GENERATED source, so at generation time the per-config source resolution for target_sources
+    # cannot match it and fails with "Cannot find source file" (CMake bug
+    # https://gitlab.kitware.com/cmake/cmake/-/issues/24678). Pre-expand the path per config.
+    if(QT_GENERATOR_IS_MULTI_CONFIG)
+        set(prl_configs ${CMAKE_CONFIGURATION_TYPES})
+    else()
+        set(prl_configs ${CMAKE_BUILD_TYPE})
+    endif()
+    foreach(prl_config ${prl_configs})
+        string(REPLACE "$<CONFIG>" "${prl_config}" prl_step2_path_for_config "${prl_step2_path}")
+        target_sources(${target} PRIVATE "${prl_step2_path_for_config}")
     endforeach()
 
     # Install the final .prl file that's generated by the QtFinishPrlFile.cmake script.
