@@ -1864,7 +1864,7 @@ void TlsCryptographOpenSSL::caRootLoaded(QSslCertificate cert, QSslCertificate t
             QSslConfiguration::setDefaultConfiguration(defaultConfig);
         }
         //Add the new root cert to this socket for future connections
-        QTlsBackend::addTustedRoot(d, trustedRoot);
+        QTlsBackend::addTrustedRoot(d, trustedRoot);
         //Remove the broken chain ssl errors (as chain is verified by windows)
         for (int i=sslErrors.count() - 1; i >= 0; --i) {
             if (sslErrors.at(i).certificate() == cert) {
