@@ -80,7 +80,9 @@ void QWaylandTextInputv3::zwp_text_input_v3_leave(struct ::wl_surface *surface)
     if (!m_surface)
         return; // Nothing to leave
 
-    if (m_surface != surface)
+    // surface == nullptr means the wl_surface proxy was already freed (surface destroyed
+    // before the leave event was dispatched); treat it as normal teardown, not a mismatch.
+    if (surface && m_surface != surface)
         qCWarning(qLcQpaWaylandTextInput()) << Q_FUNC_INFO << "Got leave event for surface" << surface << "with focusing surface" << m_surface;
 
     m_currentPreeditString.clear();
