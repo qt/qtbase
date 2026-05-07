@@ -3,9 +3,15 @@
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 # Qt-Security score:insignificant reason:build-tool-containing-no-compiled-source
 
+# run this script with qlalr in PATH
+
 me=$(dirname $0)
 mkdir -p $me/out
-(cd $me/out && ../../../../util/qlalr/qlalr --qt --no-debug --no-lines ../qxmlstream.g)
+(cd $me/out && qlalr \
+                   --qt \
+                   --no-debug \
+                   --no-lines \
+                   ../qxmlstream.g)
 
 for f in $me/out/*.h; do
     n=$(basename $f)
