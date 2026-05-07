@@ -709,7 +709,6 @@ struct QVkSwapChain : public QRhiSwapChain
     } frameRes[QVK_FRAMES_IN_FLIGHT];
 
     quint32 currentImageIndex = 0; // index in imageRes
-    quint32 currentFrameSlot = 0; // index in frameRes
     int frameCount = 0;
 
     friend class QRhiVulkan;
@@ -1046,8 +1045,12 @@ public:
     struct OffscreenFrame {
         OffscreenFrame(QRhiImplementation *rhi)
         {
-            for (int i = 0; i < QVK_FRAMES_IN_FLIGHT; ++i)
+            for (int i = 0; i < QVK_FRAMES_IN_FLIGHT; ++i) {
                 cbWrapper[i] = new QVkCommandBuffer(rhi);
+                cmdFence[i] = VK_NULL_HANDLE;
+                cmdFenceWaitable[i] = false;
+                timestampQueryIndex[i] = -1;
+            }
         }
         ~OffscreenFrame()
         {
@@ -1056,8 +1059,9 @@ public:
         }
         bool active = false;
         QVkCommandBuffer *cbWrapper[QVK_FRAMES_IN_FLIGHT];
-        VkFence cmdFence = VK_NULL_HANDLE;
-        int timestampQueryIndex = -1;
+        VkFence cmdFence[QVK_FRAMES_IN_FLIGHT];
+        bool cmdFenceWaitable[QVK_FRAMES_IN_FLIGHT];
+        int timestampQueryIndex[QVK_FRAMES_IN_FLIGHT];
     } ofr;
 
     struct TextureReadback {
