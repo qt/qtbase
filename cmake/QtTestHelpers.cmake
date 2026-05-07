@@ -46,8 +46,8 @@ function(qt_internal_add_benchmark target)
         ${exec_args}
     )
 
-    # Benchmarks on iOS must be app bundles.
-    if(IOS)
+    # Benchmarks on non-macOS Apple OSes must be app bundles.
+    if(APPLE AND NOT MACOS)
         set_target_properties(${target} PROPERTIES MACOSX_BUNDLE TRUE)
     endif()
 
@@ -584,8 +584,8 @@ function(qt_internal_add_test name)
             endif()
         endif()
 
-        # Tests on iOS must be app bundles.
-        if(IOS)
+        # Tests on non-macOS Apple OSes must be app bundles.
+        if(APPLE AND NOT MACOS)
             set_target_properties(${name} PROPERTIES MACOSX_BUNDLE TRUE)
         endif()
 
