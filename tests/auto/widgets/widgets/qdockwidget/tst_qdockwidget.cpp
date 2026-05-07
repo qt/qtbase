@@ -2175,6 +2175,35 @@ void tst_QDockWidget::saveAndRestore()
         QCOMPARE(d2->isFloating(), isFloating2);
     }
 
+    // MainWindow is child of another toplevel window
+    {
+        QWidget topLevel;
+        auto *layout = new QVBoxLayout(&topLevel);
+
+        auto *tabs = new QTabWidget(&topLevel);
+        layout->addWidget(tabs);
+
+        // Tab 1: Save Settings button
+        auto *tab1 = new QWidget;
+        tabs->addTab(tab1, "Front");
+
+        // Tab 2: QMainWindow with a left dock widget
+        auto *tab2 = new QMainWindow;
+        auto *dock = new QDockWidget("Dock1", tab2);
+        dock->setObjectName("dock1");
+        tab2->addDockWidget(Qt::LeftDockWidgetArea, dock);
+        tab2->setCentralWidget(new QWidget);
+        tabs->addTab(tab2, "Main");
+
+        topLevel.resize(400, 400);
+        topLevel.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
+        tab2->restoreState(tab2->saveState());
+        tabs->setCurrentIndex(1);
+        QTRY_VERIFY(dock->isVisible());
+        QVERIFY(!dock->isFloating());
+    }
+
     // Create a new main window, central window and two dock widgets.
     QPointer<QDockWidget> d1;
     QPointer<QDockWidget> d2;

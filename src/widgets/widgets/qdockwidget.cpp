@@ -1609,6 +1609,8 @@ void QDockWidget::closeEvent(QCloseEvent *event)
     const QMainWindow *win = qobject_cast<QMainWindow*>(parentWidget());
     const bool canClose = (d->features & DockWidgetClosable)
                        || (!win || !win->isVisible());
+    if (canClose)
+        d->closed = true;
     event->setAccepted(canClose);
 }
 
@@ -1664,6 +1666,7 @@ bool QDockWidget::event(QEvent *event)
         break;
     case QEvent::Show: {
         d->toggleViewAction->setChecked(true);
+        d->closed = false;
         QPoint parentTopLeft(0, 0);
         if (isWindow()) {
             const QScreen *screen = d->associatedScreen();

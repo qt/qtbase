@@ -1920,8 +1920,10 @@ void QDockAreaLayoutInfo::saveState(QDataStream &stream) const
                 flags.setFlag(StateFlag::Floating);
             if (qobject_cast<QDockWidgetGroupWindow *>(w->parent()))
                 flags.setFlag(StateFlag::FloatingTabs);
-            if (auto *dw = qobject_cast<QDockWidget *>(w))
-                flags.setFlag(StateFlag::Closed, !dw->toggleViewAction()->isChecked());
+            if (auto *dw = qobject_cast<QDockWidget *>(w)) {
+                const auto priv = static_cast<QDockWidgetPrivate *>(QObjectPrivate::get(dw));
+                flags.setFlag(StateFlag::Closed, priv->closed);
+            }
             stream << static_cast<uchar>(flags.toInt());
 
             qCDebug(lcQpaDockWidgets) << "Saving state for dock widget:" << w->objectName() << flags;
