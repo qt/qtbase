@@ -70,7 +70,7 @@ function(qt_generate_qmake_libraries_pri_content module_name output_root_dir out
                     # Skip object files.
                     continue()
 
-                elseif(lib_target MATCHES "/([^/]+).framework$")
+                elseif(lib_target MATCHES "/([^/]+)\\.framework$")
                     # Handle frameworks
                     list(APPEND lib_libs "-framework ${CMAKE_MATCH_1}")
 
