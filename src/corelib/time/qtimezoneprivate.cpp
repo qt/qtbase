@@ -1052,16 +1052,18 @@ QTimeZonePrivate::findLongUtcPrefix(QStringView text)
     if (text.startsWith(u"UTC")) {
         if (text.size() > 4 && (text[3] == u'+' || text[3] == u'-')) {
             // Compare QUtcTimeZonePrivate::offsetFromUtcString()
-            using QtMiscUtils::isAsciiDigit;
+            const auto digitAt = [text](qsizetype index) {
+                using QtMiscUtils::isAsciiDigit;
+                return index < text.size() && isAsciiDigit(text[index].unicode());
+            };
             qsizetype length = 3;
             int groups = 0; // Number of groups of digits seen (allow up to three).
             do {
                 // text[length] is sign or the colon after last digit-group.
                 Q_ASSERT(length < text.size());
-                if (length + 1 >= text.size() || !isAsciiDigit(text[length + 1].unicode()))
+                if (!digitAt(length + 1) || (groups && !digitAt(length + 2)))
                     break;
-                length +=
-                    (length + 2 < text.size() && isAsciiDigit(text[length + 2].unicode())) ? 3 : 2;
+                length += digitAt(length + 2) ? 3 : 2;
             } while (++groups < 3 && length < text.size() && text[length] == u':');
             if (length > 4)
                 return { text.first(length).toLatin1(), length, QTimeZone::GenericTime };
@@ -1235,6 +1237,8 @@ qint64 QUtcTimeZonePrivate::offsetFromUtcString(QByteArrayView id)
     qint32 seconds = 0;
     int prior = 0; // Number of fields parsed thus far
     for (auto offset : QLatin1StringView(id.mid(4)).tokenize(':'_L1)) {
+        if (offset.size() > 2 || (prior && offset.size() < 2))
+            return invalidSeconds(); // Field too long or too short
         bool ok = false;
         unsigned short field = offset.toUShort(&ok);
         // Bound hour above at 24, minutes and seconds at 60:
