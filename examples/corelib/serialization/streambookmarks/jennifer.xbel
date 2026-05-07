@@ -26,16 +26,13 @@
             <bookmark href="https://forum.qt.io/">
                 <title>Forum.Qt.org</title>
             </bookmark>
-            <bookmark href="https://digitalfanatics.org/projects/qt_tutorial/">
-                <title>The Independent Qt Tutorial</title>
-            </bookmark>
             <bookmark href="https://www.qtforum.de/">
                 <title>German Qt Forum</title>
             </bookmark>
             <bookmark href="https://www.qt-dev.com/">
                 <title>Korean Qt Community Site</title>
             </bookmark>
-            <bookmark href="http://www.prog.org.ru/">
+            <bookmark href="https://prog.org.ru/">
                 <title>Russian Qt Forum</title>
             </bookmark>
         </folder>
@@ -55,13 +52,6 @@
             <title>OneLook Dictionary Search</title>
         </bookmark>
         <separator/>
-        <bookmark href="https://dict.tu-chemnitz.de/">
-            <title>BEOLINGUS, a service of TU Chemnitz</title>
-        </bookmark>
-        <separator/>
-        <bookmark href="http://atilf.atilf.fr/tlf.htm">
-            <title>Trésor de la Langue Française informatisé</title>
-        </bookmark>
         <bookmark href="https://www.dictionnaire-academie.fr/">
             <title>Dictionnaire de l'Académie Française</title>
         </bookmark>
