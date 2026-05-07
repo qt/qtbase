@@ -1198,9 +1198,12 @@ void QRhiVulkan::destroy()
     dxgiHdrInfo = nullptr;
 #endif
 
-    if (ofr.cmdFence) {
-        df->vkDestroyFence(dev, ofr.cmdFence, nullptr);
-        ofr.cmdFence = VK_NULL_HANDLE;
+    for (int i = 0; i < QVK_FRAMES_IN_FLIGHT; ++i) {
+        if (ofr.cmdFence[i]) {
+            df->vkDestroyFence(dev, ofr.cmdFence[i], nullptr);
+            ofr.cmdFence[i] = VK_NULL_HANDLE;
+        }
+        ofr.cmdFenceWaitable[i] = false;
     }
 
     if (pipelineCache) {
@@ -2585,8 +2588,6 @@ bool QRhiVulkan::recreateSwapChain(QRhiSwapChain *swapChain)
         frame.cmdFenceWaitable = true; // fence was created in signaled state
     }
 
-    swapChainD->currentFrameSlot = 0;
-
     return true;
 }
 
@@ -2690,7 +2691,7 @@ double QRhiVulkan::elapsedSecondsFromTimestamp(quint64 timestamp[2], bool *ok)
 QRhi::FrameOpResult QRhiVulkan::beginFrame(QRhiSwapChain *swapChain, QRhi::BeginFrameFlags)
 {
     QVkSwapChain *swapChainD = QRHI_RES(QVkSwapChain, swapChain);
-    const int frameResIndex = swapChainD->bufferCount > 1 ? swapChainD->currentFrameSlot : 0;
+    const int frameResIndex = swapChainD->bufferCount > 1 ? currentFrameSlot : 0;
     QVkSwapChain::FrameResources &frame(swapChainD->frameRes[frameResIndex]);
 
     inst->handle()->beginFrame(swapChainD->window);
@@ -2698,11 +2699,11 @@ QRhi::FrameOpResult QRhiVulkan::beginFrame(QRhiSwapChain *swapChain, QRhi::Begin
     // Make sure the previous commands for the same frame slot have finished.
     //
     // Do this also for any other swapchain's commands with the same frame slot
-    // While this reduces concurrency, it keeps resource usage safe: swapchain
-    // A starting its frame 0, followed by swapchain B starting its own frame 0
-    // will make B wait for A's frame 0 commands, so if a resource is written
-    // in B's frame or when B checks for pending resource releases, that won't
-    // mess up A's in-flight commands (as they are not in flight anymore).
+    // It keeps resource usage safe: swapchain A starting its frame 0, followed
+    // by swapchain B starting its own frame 0 will make B wait for A's frame 0
+    // commands, so if a resource is written in B's frame or when B checks for
+    // pending resource releases, that won't mess up A's in-flight commands (as
+    // they are not in flight anymore).
     QRhi::FrameOpResult waitResult = waitCommandCompletion(frameResIndex);
     if (waitResult != QRhi::FrameOpSuccess)
         return waitResult;
@@ -2731,7 +2732,6 @@ QRhi::FrameOpResult QRhiVulkan::beginFrame(QRhiSwapChain *swapChain, QRhi::Begin
         }
     }
 
-    currentFrameSlot = int(swapChainD->currentFrameSlot);
     currentSwapChain = swapChainD;
     if (swapChainD->ds)
         swapChainD->ds->lastActiveFrameSlot = currentFrameSlot;
@@ -2808,7 +2808,7 @@ QRhi::FrameOpResult QRhiVulkan::endFrame(QRhiSwapChain *swapChain, QRhi::EndFram
 
     recordPrimaryCommandBuffer(&swapChainD->cbWrapper);
 
-    int frameResIndex = swapChainD->bufferCount > 1 ? swapChainD->currentFrameSlot : 0;
+    int frameResIndex = swapChainD->bufferCount > 1 ? currentFrameSlot : 0;
     QVkSwapChain::FrameResources &frame(swapChainD->frameRes[frameResIndex]);
     QVkSwapChain::ImageResources &image(swapChainD->imageRes[swapChainD->currentImageIndex]);
 
@@ -2898,8 +2898,8 @@ QRhi::FrameOpResult QRhiVulkan::endFrame(QRhiSwapChain *swapChain, QRhi::EndFram
 
         // mark the current swapchain buffer as unused from our side
         frame.imageAcquired = false;
-        // and move on to the next buffer
-        swapChainD->currentFrameSlot = (swapChainD->currentFrameSlot + 1) % QVK_FRAMES_IN_FLIGHT;
+        // and move on to the next slot
+        currentFrameSlot = (currentFrameSlot + 1) % QVK_FRAMES_IN_FLIGHT;
     }
 
     swapChainD->frameCount += 1;
@@ -2915,11 +2915,6 @@ void QRhiVulkan::prepareNewFrame(QRhiCommandBuffer *cb)
     // decide if something is safe to handle now a simple "lastActiveFrameSlot
     // == currentFrameSlot" is sufficient (remember that e.g. with F==2
     // currentFrameSlot goes 0, 1, 0, 1, 0, ...)
-    //
-    // With multiple swapchains on the same QRhi things get more convoluted
-    // (and currentFrameSlot strictly alternating is not true anymore) but
-    // begin(Offscreen)Frame() blocks anyway waiting for its current frame
-    // slot's previous commands to complete so this here is safe regardless.
 
     executeDeferredReleases();
 
@@ -3049,22 +3044,27 @@ QRhi::FrameOpResult QRhiVulkan::waitCommandCompletion(int frameSlot)
         }
     }
 
+    if (ofr.cmdFenceWaitable[frameSlot]) {
+        VkResult err = df->vkWaitForFences(dev, 1, &ofr.cmdFence[frameSlot], VK_TRUE, UINT64_MAX);
+        if (err != VK_SUCCESS) {
+            if (err == VK_ERROR_DEVICE_LOST) {
+                qWarning("Device loss detected in vkWaitForFences()");
+                printExtraErrorInfo(err);
+                deviceLost = true;
+                return QRhi::FrameOpDeviceLost;
+            }
+            qWarning("Failed to wait for offscreen fence: %d", err);
+            return QRhi::FrameOpError;
+        }
+        df->vkResetFences(dev, 1, &ofr.cmdFence[frameSlot]);
+        ofr.cmdFenceWaitable[frameSlot] = false;
+    }
+
     return QRhi::FrameOpSuccess;
 }
 
 QRhi::FrameOpResult QRhiVulkan::beginOffscreenFrame(QRhiCommandBuffer **cb, QRhi::BeginFrameFlags)
 {
-    // Switch to the next slot manually. Swapchains do not know about this
-    // which is good. So for example an onscreen, onscreen, offscreen,
-    // onscreen, onscreen, onscreen sequence of frames leads to 0, 1, 0, 0, 1,
-    // 0. (no strict alternation anymore) But this is not different from what
-    // happens when multiple swapchains are involved. Offscreen frames are
-    // synchronous anyway in the sense that they wait for execution to complete
-    // in endOffscreenFrame, so no resources used in that frame are busy
-    // anymore in the next frame.
-
-    currentFrameSlot = (currentFrameSlot + 1) % QVK_FRAMES_IN_FLIGHT;
-
     QRhi::FrameOpResult waitResult = waitCommandCompletion(currentFrameSlot);
     if (waitResult != QRhi::FrameOpSuccess)
         return waitResult;
@@ -3078,6 +3078,24 @@ QRhi::FrameOpResult QRhiVulkan::beginOffscreenFrame(QRhiCommandBuffer **cb, QRhi
 
     prepareNewFrame(cbWrapper);
     ofr.active = true;
+
+    if (ofr.timestampQueryIndex[currentFrameSlot] >= 0) {
+        quint64 timestamp[2] = { 0, 0 };
+        VkResult err = df->vkGetQueryPoolResults(dev, timestampQueryPool,
+                                                 uint32_t(ofr.timestampQueryIndex[currentFrameSlot]), 2,
+                                                 2 * sizeof(quint64), timestamp, sizeof(quint64),
+                                                 VK_QUERY_RESULT_64_BIT | VK_QUERY_RESULT_WAIT_BIT);
+        timestampQueryPoolMap.clearBit(ofr.timestampQueryIndex[currentFrameSlot] / 2);
+        ofr.timestampQueryIndex[currentFrameSlot] = -1;
+        if (err == VK_SUCCESS) {
+            bool ok = false;
+            const double elapsedSec = elapsedSecondsFromTimestamp(timestamp, &ok);
+            if (ok)
+                cbWrapper->lastGpuTime = elapsedSec;
+        } else {
+            qWarning("Failed to query timestamp: %d", err);
+        }
+    }
 
     if (rhiFlags.testFlag(QRhi::EnableTimestamps)) {
         int timestampQueryIdx = -1;
@@ -3093,7 +3111,7 @@ QRhi::FrameOpResult QRhiVulkan::beginOffscreenFrame(QRhiCommandBuffer **cb, QRhi
             // record timestamp at the start of the command buffer
             df->vkCmdWriteTimestamp(cbWrapper->cb, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
                                     timestampQueryPool, uint32_t(timestampQueryIdx));
-            ofr.timestampQueryIndex = timestampQueryIdx;
+            ofr.timestampQueryIndex[currentFrameSlot] = timestampQueryIdx;
         }
     }
 
@@ -3110,51 +3128,43 @@ QRhi::FrameOpResult QRhiVulkan::endOffscreenFrame(QRhi::EndFrameFlags flags)
     QVkCommandBuffer *cbWrapper(ofr.cbWrapper[currentFrameSlot]);
     recordPrimaryCommandBuffer(cbWrapper);
 
-    // record another timestamp, when enabled
-    if (ofr.timestampQueryIndex >= 0) {
+    const bool readbacksPending = !activeTextureReadbacks.isEmpty() || !activeBufferReadbacks.isEmpty();
+
+    // record the end timestamp, when enabled; results are read back in the
+    // next beginOffscreenFrame for this slot, after the fence wait.
+    if (ofr.timestampQueryIndex[currentFrameSlot] >= 0) {
         df->vkCmdWriteTimestamp(cbWrapper->cb, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
-                                timestampQueryPool, uint32_t(ofr.timestampQueryIndex + 1));
+                                timestampQueryPool, uint32_t(ofr.timestampQueryIndex[currentFrameSlot] + 1));
     }
 
-    if (!ofr.cmdFence) {
+    if (!ofr.cmdFence[currentFrameSlot]) {
         VkFenceCreateInfo fenceInfo = {};
         fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-        VkResult err = df->vkCreateFence(dev, &fenceInfo, nullptr, &ofr.cmdFence);
+        VkResult err = df->vkCreateFence(dev, &fenceInfo, nullptr, &ofr.cmdFence[currentFrameSlot]);
         if (err != VK_SUCCESS) {
             qWarning("Failed to create command buffer fence: %d", err);
             return QRhi::FrameOpError;
         }
     }
 
-    QRhi::FrameOpResult submitres = endAndSubmitPrimaryCommandBuffer(cbWrapper->cb, ofr.cmdFence, nullptr, nullptr);
+    QRhi::FrameOpResult submitres = endAndSubmitPrimaryCommandBuffer(cbWrapper->cb, ofr.cmdFence[currentFrameSlot], nullptr, nullptr);
     if (submitres != QRhi::FrameOpSuccess)
         return submitres;
 
-    // wait for completion
-    df->vkWaitForFences(dev, 1, &ofr.cmdFence, VK_TRUE, UINT64_MAX);
-    df->vkResetFences(dev, 1, &ofr.cmdFence);
+    ofr.cmdFenceWaitable[currentFrameSlot] = true;
 
-    // Here we know that executing the host-side reads for this (or any
-    // previous) frame is safe since we waited for completion above.
-    finishActiveReadbacks(true);
+    // Synchronously wait only when readbacks were scheduled.
+    if (readbacksPending) {
+        df->vkWaitForFences(dev, 1, &ofr.cmdFence[currentFrameSlot], VK_TRUE, UINT64_MAX);
+        df->vkResetFences(dev, 1, &ofr.cmdFence[currentFrameSlot]);
+        ofr.cmdFenceWaitable[currentFrameSlot] = false;
 
-    // Read the timestamps, if we wrote them.
-    if (ofr.timestampQueryIndex >= 0) {
-        quint64 timestamp[2] = { 0, 0 };
-        VkResult err = df->vkGetQueryPoolResults(dev, timestampQueryPool, uint32_t(ofr.timestampQueryIndex), 2,
-                                                 2 * sizeof(quint64), timestamp, sizeof(quint64),
-                                                 VK_QUERY_RESULT_64_BIT | VK_QUERY_RESULT_WAIT_BIT);
-        timestampQueryPoolMap.clearBit(ofr.timestampQueryIndex / 2);
-        ofr.timestampQueryIndex = -1;
-        if (err == VK_SUCCESS) {
-            bool ok = false;
-            const double elapsedSec = elapsedSecondsFromTimestamp(timestamp, &ok);
-            if (ok)
-                cbWrapper->lastGpuTime = elapsedSec;
-        } else {
-            qWarning("Failed to query timestamp: %d", err);
-        }
+        // Here we know that executing the host-side reads for this (or any
+        // previous) frame is safe since we waited for completion above.
+        finishActiveReadbacks(true);
     }
+
+    currentFrameSlot = (currentFrameSlot + 1) % QVK_FRAMES_IN_FLIGHT;
 
     return QRhi::FrameOpSuccess;
 }
@@ -3195,7 +3205,7 @@ QRhi::FrameOpResult QRhiVulkan::finish()
         if (ofr.active) {
             startPrimaryCommandBuffer(&ofr.cbWrapper[currentFrameSlot]->cb);
         } else {
-            QVkSwapChain::FrameResources &frame(swapChainD->frameRes[swapChainD->currentFrameSlot]);
+            QVkSwapChain::FrameResources &frame(swapChainD->frameRes[currentFrameSlot]);
             startPrimaryCommandBuffer(&frame.cmdBuf);
             swapChainD->cbWrapper.cb = frame.cmdBuf;
         }

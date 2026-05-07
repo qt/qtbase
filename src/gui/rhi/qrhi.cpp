@@ -10938,13 +10938,11 @@ void QRhiCommandBuffer::endExternal()
     the values between different graphics APIs and hardware is discouraged and
     may be meaningless.
 
-    When the frame was recorded with \l{QRhi::beginFrame()}{beginFrame()} and
-    \l{QRhi::endFrame()}{endFrame()}, i.e., with a swapchain, the timing values
-    will likely become available asynchronously. The returned value may
-    therefore be 0 (e.g., for the first 1-2 frames) or the last known value
-    referring to some previous frame. The value may also
-    become 0 again under certain conditions, such as when resizing the window.
-    It can be expected that the most up-to-date available value is retrieved in
+    The timing values will likely become available asynchronously. The returned
+    value may therefore be 0 (e.g., for the first 1-2 frames) or the last known
+    value referring to some previous frame. The value my also become 0 again
+    under certain conditions, such as when resizing the window. It can be
+    expected that the most up-to-date available value is retrieved in
     beginFrame() and becomes queriable via this function once beginFrame()
     returns.
 
@@ -10952,16 +10950,6 @@ void QRhiCommandBuffer::endExternal()
     (\c{currently_recorded - 1}) frame. It may refer to \c{currently_recorded -
     2} or \c{currently_recorded - 3} as well. The exact behavior may depend on
     the graphics API and its implementation.
-
-    On the other hand, with offscreen frames the returned value is up-to-date
-    once \l{QRhi::endOffscreenFrame()}{endOffscreenFrame()} returns, because
-    offscreen frames reduce GPU pipelining and wait for the commands to be
-    complete.
-
-    \note This means that, unlike with swapchain frames, with offscreen frames
-    the returned value is guaranteed to refer to the frame that has just been
-    submitted and completed. (assuming this function is called after
-    endOffscreenFrame() but before the next beginOffscreenFrame())
 
     Watch out for the consequences of GPU frequency scaling and GPU clock
     changes, depending on the platform. For example, on Windows the returned
@@ -11897,15 +11885,16 @@ int QRhi::currentFrameSlot() const
     sequences by rendering and reading back without ever showing a window.
 
     Usage in on-screen applications (so beginFrame, endFrame,
-    beginOffscreenFrame, endOffscreenFrame, beginFrame, ...) is possible too
-    but it does reduce parallelism so it should be done only infrequently.
+    beginOffscreenFrame, endOffscreenFrame, beginFrame, ...) is possible too.
 
-    Offscreen frames do not let the CPU potentially generate another frame
-    while the GPU is still processing the previous one. This has the side
+    When a \l{QRhiResourceUpdateBatch::readBackTexture()}{texture} or
+    \l{QRhiResourceUpdateBatch::readBackBuffer()}{buffer} readback was
+    scheduled, offscreen frames do not let the CPU potentially generate another
+    frame while the GPU is still processing the previous one. This has the side
     effect that if readbacks are scheduled, the results are guaranteed to be
-    available once endOffscreenFrame() returns. That is not the case with
-    frames targeting a swapchain: there the GPU is potentially better utilized,
-    but working with readback operations needs more care from the application
+    available once endOffscreenFrame() returns. That is not the case with frames
+    targeting a swapchain: there the GPU is potentially better utilized, but
+    working with readback operations needs more care from the application
     because endFrame(), unlike endOffscreenFrame(), does not guarantee that the
     results from the readback are available at that point.
 
@@ -11942,7 +11931,10 @@ QRhi::FrameOpResult QRhi::beginOffscreenFrame(QRhiCommandBuffer **cb, BeginFrame
 }
 
 /*!
-    Ends, submits, and waits for the offscreen frame.
+    Ends, submits, and potentially waits for the offscreen frame.
+
+    Unlike endFrame(), this function will block and wait for completion of the
+    GPU-side work when there are active buffer or texture readbacks.
 
     \a flags is not currently used.
 
