@@ -1115,6 +1115,26 @@ function(_qt_internal_check_apple_sdk_and_xcode_versions)
     endif()
 endfunction()
 
+function(_qt_internal_set_apple_bundle_frameworks_rpath target)
+    # Make sure the install rpath has at least the minimum needed if the app
+    # has any non-static frameworks. We can't rigorously know if the app will
+    # have any, even with a static Qt, so always add this. If there are no
+    # frameworks, it won't do any harm.
+    if(NOT CMAKE_SYSTEM_NAME OR CMAKE_SYSTEM_NAME STREQUAL "Darwin") # macOS
+        set(frameworks_rpath "@executable_path/../Frameworks")
+    else()
+        set(frameworks_rpath "@executable_path/Frameworks")
+    endif()
+    # Set BUILD_RPATH so the path ends up in LD_RUNPATH_SEARCH_PATHS for the Xcode
+    # generator, and INSTALL_RPATH for the installed binary with other generators.
+    foreach(prop BUILD_RPATH INSTALL_RPATH)
+        get_property(rpath TARGET ${target} PROPERTY ${prop})
+        list(APPEND rpath "${frameworks_rpath}")
+        list(REMOVE_DUPLICATES rpath)
+        set_property(TARGET ${target} PROPERTY ${prop} "${rpath}")
+    endforeach()
+endfunction()
+
 function(_qt_internal_finalize_apple_app target)
     # Shared between macOS and UIKit apps
 
@@ -1137,6 +1157,7 @@ function(_qt_internal_finalize_apple_app target)
     _qt_internal_set_xcode_bundle_name("${target}")
     _qt_internal_set_apple_bundle_identifier("${target}")
     _qt_internal_set_placeholder_apple_bundle_version("${target}")
+    _qt_internal_set_apple_bundle_frameworks_rpath("${target}")
 endfunction()
 
 function(_qt_internal_finalize_uikit_app target)
@@ -1166,13 +1187,4 @@ function(_qt_internal_finalize_macos_app target)
     endif()
 
     _qt_internal_finalize_apple_app("${target}")
-
-    # Make sure the install rpath has at least the minimum needed if the app
-    # has any non-static frameworks. We can't rigorously know if the app will
-    # have any, even with a static Qt, so always add this. If there are no
-    # frameworks, it won't do any harm.
-    get_property(install_rpath TARGET ${target} PROPERTY INSTALL_RPATH)
-    list(APPEND install_rpath "@executable_path/../Frameworks")
-    list(REMOVE_DUPLICATES install_rpath)
-    set_property(TARGET ${target} PROPERTY INSTALL_RPATH "${install_rpath}")
 endfunction()
