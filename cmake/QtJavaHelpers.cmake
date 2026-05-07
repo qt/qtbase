@@ -152,7 +152,8 @@ function(qt_internal_add_jar target)
     # Invoke Gradle
     add_custom_command(OUTPUT "${jar_output_file}"
         COMMAND ${CMAKE_COMMAND} -E make_directory "${jar_output_dir}"
-        COMMAND "${gradlew}"
+        COMMAND ${CMAKE_COMMAND} -E env "ANDROID_SDK_ROOT=${ANDROID_SDK_ROOT}"
+            "${gradlew}"
             --init-script "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/android/qt-android-init.gradle"
             --project-cache-dir "${gradle_build_dir}/.gradle"
             --no-configuration-cache
@@ -244,8 +245,10 @@ function(_qt_internal_verify_gradle_offline_cache gradle_source_dir)
     set(qt_dir_arg "-DQT_ROOT_DIR=${qt_dir}")
     set(project_dir_arg "-DGRADLE_PROJECT_DIR=${gradle_source_dir}")
     set(only_verify_arg "-DONLY_VERIFY_GRADLE_CACHE=ON")
+    set(gradle_env "ANDROID_SDK_ROOT=${ANDROID_SDK_ROOT}")
     execute_process(
-        COMMAND "${CMAKE_COMMAND}"
+        COMMAND "${CMAKE_COMMAND}" -E env "${gradle_env}"
+            "${CMAKE_COMMAND}"
             "${action_resolve_arg}"
             "${qt_dir_arg}"
             "${project_dir_arg}"
@@ -260,7 +263,8 @@ function(_qt_internal_verify_gradle_offline_cache gradle_source_dir)
         message(FATAL_ERROR
             "Downloads are disabled when building Qt and Gradle dependencies haven't been cached "
             "for such offline builds. Run the following command to populate the Gradle cache:\n"
-            "  cmake ${action_resolve_arg} ${qt_dir_arg} ${project_dir_arg} -P ${setup_script}\n"
+            "  cmake -E env ${gradle_env} "
+            "cmake ${action_resolve_arg} ${qt_dir_arg} ${project_dir_arg} -P ${setup_script}\n"
             "Or configure Qt with QT_ALLOW_DOWNLOAD=ON to allow Gradle downloads at build time.")
     endif()
 endfunction()
