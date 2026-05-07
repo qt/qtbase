@@ -8817,7 +8817,7 @@ bool QRhiImplementation::sanityCheckShaderResourceBindings(QRhiShaderResourceBin
 
 bool QRhiImplementation::sanityCheckResourceOwnership(QRhiResource *maybeResource)
 {
-    if (!maybeResource)
+    if (maybeResource == nullptr || maybeResource->m_rhi == nullptr)
         return true;
 
     if (maybeResource->m_rhi->q != q) {
