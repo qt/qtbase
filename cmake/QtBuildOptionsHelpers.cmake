@@ -315,7 +315,6 @@ macro(qt_internal_setup_build_tests)
     option(QT_BUILD_MINIMAL_ANDROID_MULTI_ABI_TESTS
         "Build minimal subset of tests for Android multi-ABI Qt builds" OFF)
 
-    include(CTest)
     enable_testing()
 endmacro()
 
