@@ -3,7 +3,7 @@
 
 # Finish a preliminary .prl file.
 #
-# - Replaces occurrences of the build libdir with $$[QT_INSTALL_LIBDIR].
+# - For Qt modules, replaces occurrences of the build libdir with $$[QT_INSTALL_LIBS].
 # - Strips version number suffixes from absolute paths, because qmake's lflag
 #   merging does not handle them correctly.
 # - Transforms absolute library paths into link flags
