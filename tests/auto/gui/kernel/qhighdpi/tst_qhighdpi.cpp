@@ -60,6 +60,7 @@ private slots:
     void setCursor_data();
     void setGlobalFactorEmits();
     void setScreenFactorEmits();
+    void moveWindowBetweenScreens();
 };
 
 /// Offscreen platform plugin test setup
@@ -886,6 +887,37 @@ void tst_QHighDpi::setScreenFactorEmits()
         QHighDpiScaling::setScreenFactor(screen, 2);
         QCOMPARE(spy.count(), 1);
     }
+}
+
+void tst_QHighDpi::moveWindowBetweenScreens()
+{
+    QList<qreal> dpiValues{ 96, 96 * 1.6, 96 * 1.4 };
+    QJsonArray arr = createStandardScreens(dpiValues);
+    qputenv("QT_SCALE_FACTOR_ROUNDING_POLICY", "Round");
+    std::unique_ptr<QGuiApplication> app(createStandardOffscreenApp(arr));
+
+    const auto screens = app->screens();
+    QCOMPARE(screens.size(), 3);
+    const auto primaryScreen = screens[0];
+    QRect r(screens[0]->geometry().center(), QSize(10, 10));
+    QWindow w;
+    w.create();
+    w.show();
+    QTest::qWaitForWindowExposed(&w);
+    w.setGeometry(r);
+    QCOMPARE(w.geometry(), r);
+    QCOMPARE(w.screen(), screens[0]);
+
+    QTransform tf(QTransform::fromScale(2, 2));
+    r = QRect(screens[1]->geometry().center(), QSize(10, 10));
+    w.setGeometry(r);
+    QCOMPARE(w.geometry(), r);
+    QCOMPARE(w.screen(), screens[1]);
+
+    r = QRect(screens[2]->geometry().center(), QSize(10, 10));
+    w.setGeometry(r);
+    QCOMPARE(w.geometry(), r);
+    QCOMPARE(w.screen(), screens[2]);
 }
 
 #include "tst_qhighdpi.moc"
