@@ -313,6 +313,38 @@ function(_qt_internal_android_add_deploy_libraries_dependency target dep_target)
     add_dependencies(${target}_deploy_libraries ${dep_target})
 endfunction()
 
+# Records deploy artifact files for gradle's file-level dependency tracking.
+function(_qt_internal_android_register_deploy_files target)
+    set_property(TARGET ${target} APPEND PROPERTY _qt_android_deploy_files "${ARGN}")
+endfunction()
+
+# Lists the files a secondary ABI deploys, matching what the copy steps actually write.
+function(_qt_internal_android_get_abi_deploy_files out_var target abi)
+    _qt_internal_android_get_target_deployment_dir(deployment_dir ${target})
+    set(libs_abi_dir "${deployment_dir}/libs/${abi}")
+
+    # The app binary is always deployed.
+    set(deploy_files "${libs_abi_dir}/lib${target}_${abi}.so")
+
+    # libc++ and the extra libs are skipped when Qt libs aren't deployed
+    get_target_property(no_deploy_qt_libs ${target} QT_ANDROID_NO_DEPLOY_QT_LIBS)
+    if(NOT no_deploy_qt_libs)
+        list(APPEND deploy_files "${libs_abi_dir}/libc++_shared.so")
+
+        get_target_property(extra_libs ${target} QT_ANDROID_EXTRA_LIBS)
+        if(extra_libs)
+            foreach(lib IN LISTS extra_libs)
+                get_filename_component(lib_name "${lib}" NAME)
+                if(lib_name)
+                    list(APPEND deploy_files "${libs_abi_dir}/${lib_name}")
+                endif()
+            endforeach()
+        endif()
+    endif()
+
+    set(${out_var} "${deploy_files}" PARENT_SCOPE)
+endfunction()
+
 # Prepares the artifacts for the gradle build of the target.
 function(_qt_internal_android_prepare_gradle_build target)
     _qt_internal_android_get_target_android_build_dir(android_build_dir ${target})
@@ -412,11 +444,14 @@ function(_qt_internal_android_add_gradle_build target type)
     endforeach()
 
     set(gradle_scripts "$<TARGET_PROPERTY:${target},_qt_android_deployment_files>")
+    # File-level deps so gradle re-runs on deploy artifact changes.
+    set(deploy_files "$<TARGET_PROPERTY:${target},_qt_android_deploy_files>")
     add_custom_command(OUTPUT "${package_build_file_path}"
         COMMAND "${gradlew}" ${android_deployment_type_option}
         DEPENDS
             ${target}
             ${gradle_scripts}
+            ${deploy_files}
             ${target}_deploy_libraries
             ${extra_deps}
         WORKING_DIRECTORY "${android_build_dir}"
