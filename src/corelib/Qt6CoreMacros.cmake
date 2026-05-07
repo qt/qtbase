@@ -3828,6 +3828,12 @@ macro(qt6_standard_project_setup)
             unset(__qt_reldir)
         endif()
 
+        if(CMAKE_GENERATOR STREQUAL "Xcode" AND CMAKE_VERSION VERSION_GREATER_EQUAL "4.4")
+            if(NOT DEFINED CMAKE_XCODE_LINK_BUILD_PHASE_MODE)
+                set(CMAKE_XCODE_LINK_BUILD_PHASE_MODE KNOWN_LOCATION)
+            endif()
+        endif()
+
         # Turn these on by default, unless they are already set. Projects can
         # always turn off any they really don't want after we return.
         foreach(auto_set IN ITEMS MOC UIC)

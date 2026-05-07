@@ -51,6 +51,12 @@ defined before, with possibly confusing results. It does the following things:
 \li CMake's \l USE_FOLDERS property is set to \c{ON}, and \l QT_TARGETS_FOLDER is
     set to \c{QtInternalTargets}. IDEs that support folders will display
     Qt-internal targets in this folder.
+\li When using the Xcode generator with CMake 4.4 or later,
+    \c{CMAKE_XCODE_LINK_BUILD_PHASE_MODE} is set to \c{KNOWN_LOCATION} if it is
+    not already defined. This causes linked libraries and frameworks to be added
+    to Xcode's \e{Link Binary With Libraries} build phase, making them visible
+    in the Xcode target's \e{General} tab rather than being passed as raw linker
+    flags.
 \endlist
 
 Since Qt 6.5, it is possible to change the default behavior of Qt's CMake
