@@ -1123,7 +1123,7 @@ void QTlsBackend::storePeerCertificateChain(QSslSocketPrivate *d,
 
     \note In Qt 6.1 it's only used on Windows, during so called 'CA fetch'.
 */
-void QTlsBackend::addTustedRoot(QSslSocketPrivate *d, const QSslCertificate &rootCert)
+void QTlsBackend::addTrustedRoot(QSslSocketPrivate *d, const QSslCertificate &rootCert)
 {
     Q_ASSERT(d);
     if (!d->configuration.caCertificates.contains(rootCert))

@@ -387,7 +387,7 @@ public:
     static void setNegotiatedProtocol(QSslSocketPrivate *d, const QByteArray &protocol);
     static void storePeerCertificate(QSslSocketPrivate *d, const QSslCertificate &peerCert);
     static void storePeerCertificateChain(QSslSocketPrivate *d, const QList<QSslCertificate> &peerChain);
-    static void addTustedRoot(QSslSocketPrivate *d, const QSslCertificate &rootCert);// TODO: "addTrusted..."
+    static void addTrustedRoot(QSslSocketPrivate *d, const QSslCertificate &rootCert);
     // The next one - is a "very important" feature! Kidding ...
     static void setEphemeralKey(QSslSocketPrivate *d, const QSslKey &key);
 
