@@ -11,6 +11,7 @@ mkdir -p $me/out
                    --qt \
                    --no-debug \
                    --no-lines \
+                   --qt-security=critical \
                    ../qxmlstream.g)
 
 for f in $me/out/*.h; do
