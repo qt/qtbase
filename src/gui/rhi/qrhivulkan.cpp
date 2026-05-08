@@ -8615,7 +8615,7 @@ void QVkGraphicsPipeline::destroy()
 
 bool QVkGraphicsPipeline::create()
 {
-    if (pipeline)
+    if (pipeline || layout)
         destroy();
 
     QRHI_RES_RHI(QRhiVulkan);
@@ -8637,11 +8637,19 @@ bool QVkGraphicsPipeline::create()
         qWarning("Failed to create pipeline layout: %d", err);
         return false;
     }
+    auto pipelineLayoutCleanup = qScopeGuard([this, rhiD] {
+        rhiD->df->vkDestroyPipelineLayout(rhiD->dev, layout, nullptr);
+        layout = VK_NULL_HANDLE;
+    });
 
     VkGraphicsPipelineCreateInfo pipelineInfo = {};
     pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 
     QVarLengthArray<VkShaderModule, 4> shaders;
+    auto shaderModuleCleanup = qScopeGuard([rhiD, &shaders] {
+        for (VkShaderModule shader : shaders)
+            rhiD->df->vkDestroyShaderModule(rhiD->dev, shader, nullptr);
+    });
     QVarLengthArray<VkPipelineShaderStageCreateInfo, 4> shaderStageCreateInfos;
     QVarLengthArray<QByteArray, 4> entryPointNames;
     for (const QRhiShaderStage &shaderStage : m_shaderStages) {
@@ -8662,6 +8670,8 @@ bool QVkGraphicsPipeline::create()
             shaderInfo.pName = nullptr;
             shaderStageCreateInfos.append(shaderInfo);
         }
+        else
+            return false;
     }
     for (qsizetype i = 0, ie = shaders.count(); i != ie; ++i)
         shaderStageCreateInfos[i].pName = entryPointNames[i].constData();
@@ -8851,13 +8861,11 @@ bool QVkGraphicsPipeline::create()
 
     err = rhiD->df->vkCreateGraphicsPipelines(rhiD->dev, rhiD->pipelineCache, 1, &pipelineInfo, nullptr, &pipeline);
 
-    for (VkShaderModule shader : shaders)
-        rhiD->df->vkDestroyShaderModule(rhiD->dev, shader, nullptr);
-
     if (err != VK_SUCCESS) {
         qWarning("Failed to create graphics pipeline: %d", err);
         return false;
     }
+    pipelineLayoutCleanup.dismiss();
 
     rhiD->setObjectName(uint64_t(pipeline), VK_OBJECT_TYPE_PIPELINE, m_objectName);
 
@@ -8902,7 +8910,7 @@ void QVkComputePipeline::destroy()
 
 bool QVkComputePipeline::create()
 {
-    if (pipeline)
+    if (pipeline || layout)
         destroy();
 
     QRHI_RES_RHI(QRhiVulkan);
@@ -8921,6 +8929,10 @@ bool QVkComputePipeline::create()
         qWarning("Failed to create pipeline layout: %d", err);
         return false;
     }
+    auto pipelineLayoutCleanup = qScopeGuard([this, rhiD] {
+        rhiD->df->vkDestroyPipelineLayout(rhiD->dev, layout, nullptr);
+        layout = VK_NULL_HANDLE;
+    });
 
     VkComputePipelineCreateInfo pipelineInfo = {};
     pipelineInfo.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
@@ -8941,6 +8953,11 @@ bool QVkComputePipeline::create()
         return false;
     }
     VkShaderModule shader = rhiD->createShader(spirv.shader());
+    if (!shader)
+        return false;
+    auto shaderModuleCleanup = qScopeGuard([rhiD, shader] {
+        rhiD->df->vkDestroyShaderModule(rhiD->dev, shader, nullptr);
+    });
     VkPipelineShaderStageCreateInfo shaderInfo = {};
     shaderInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     shaderInfo.stage = VK_SHADER_STAGE_COMPUTE_BIT;
@@ -8950,11 +8967,11 @@ bool QVkComputePipeline::create()
     pipelineInfo.stage = shaderInfo;
 
     err = rhiD->df->vkCreateComputePipelines(rhiD->dev, rhiD->pipelineCache, 1, &pipelineInfo, nullptr, &pipeline);
-    rhiD->df->vkDestroyShaderModule(rhiD->dev, shader, nullptr);
     if (err != VK_SUCCESS) {
         qWarning("Failed to create graphics pipeline: %d", err);
         return false;
     }
+    pipelineLayoutCleanup.dismiss();
 
     rhiD->setObjectName(uint64_t(pipeline), VK_OBJECT_TYPE_PIPELINE, m_objectName);
 
