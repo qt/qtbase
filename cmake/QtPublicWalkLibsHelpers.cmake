@@ -125,6 +125,21 @@ function(__qt_internal_walk_libs
             endif()
         endif()
 
+        # When collecting libs for prl generation, pull in the target's
+        # INTERFACE_LINK_DIRECTORIES as -L<dir> entries. FindFFmpeg.cmake
+        # uses target_link_directories + bare lib names; without this,
+        # the resulting PRL has bare "libavformat.so" entries that the
+        # linker treats as literal file paths and fails to find. See
+        # QTBUG-144316.
+        if(operation STREQUAL "collect_libs")
+            get_target_property(target_link_dirs ${target} INTERFACE_LINK_DIRECTORIES)
+            if(target_link_dirs)
+                foreach(_dir IN LISTS target_link_dirs)
+                    __qt_internal_merge_libs(libs "-L${_dir}")
+                endforeach()
+            endif()
+        endif()
+
         # Need to record the rcc object file info not only for dependencies, but also for
         # the current target too. Otherwise the saved information is incomplete for prl static
         # build purposes.

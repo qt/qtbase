@@ -45,6 +45,16 @@ foreach(line ${lines})
                 continue()
             endif()
 
+            # A bare "-L" with no path arises when a target's
+            # INTERFACE_LINK_DIRECTORIES contains a generator expression
+            # that file(GENERATE) resolves to empty (for example
+            # $<INSTALL_INTERFACE:/path> in a non-export context). Skip
+            # such tokens; the linker would otherwise consume the next
+            # argument as the path. See QTBUG-144316.
+            if(lib STREQUAL "-L")
+                continue()
+            endif()
+
             # Check if the absolute path represents a Qt module located either in Qt's
             # $prefix/lib dir, or in the build dir of the repo.
             if(IS_ABSOLUTE "${lib}")
@@ -78,9 +88,11 @@ foreach(line ${lines})
                 # Not absolute path, most likely a library name or a linker flag.
                 # If linker flag (like -framework, -lfoo, -pthread, keep it as-is).
                 if(NOT lib MATCHES "^-")
-                    qt_is_library_file(is_library_file "${lib}")
-                    if(NOT is_library_file)
-                        string(PREPEND lib "-l")
+                    qt_extract_library_name(lib_name "${lib}")
+                    if(lib_name)
+                        set(lib "${LINK_LIBRARY_FLAG}${lib_name}")
+                    else()
+                        string(PREPEND lib "${LINK_LIBRARY_FLAG}")
                     endif()
                 endif()
                 list(APPEND adjusted_libs "${lib}")

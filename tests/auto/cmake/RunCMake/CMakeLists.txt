@@ -1,6 +1,7 @@
 # Add RunCMake tests using `add_RunCMake_test()`
 
 qt_internal_add_RunCMake_test(QtFlagHandlingHelpers)
+qt_internal_add_RunCMake_test(QtPrlHelpers)
 
 qt_internal_add_RunCMake_test(find_package)
 
