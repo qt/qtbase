@@ -1,6 +1,6 @@
 # Qt Application Examples Template
 
-Use the 'app-examples-template.qdoc' file when creating or updating any of
+Use the 'app-examples.qdoc.template' file when creating or updating any of
 the Qt application examples.
 
 The purpose of the template is to make it easier for technical writers and
