@@ -5549,7 +5549,7 @@ bool QRhiVulkan::isFeatureSupported(QRhi::Feature feature) const
     case QRhi::InstanceIndexIncludesBaseInstance:
         return true;
     case QRhi::DepthClamp:
-        return true;
+        return caps.depthClamp;
     case QRhi::DrawIndirect:
         return true; // available in Vulkan 1.0
     case QRhi::DrawIndirectMulti:
