@@ -181,9 +181,7 @@ AppContextDirs AppContextDirs::mapFromNapiObject(QNapi::Object appContextObj)
     AppContextDirs appContextDirs;
     for (const auto &propEntry : propsNames)
         appContextDirs.*propEntry.second = appContextObj.get<QNapi::String>(propEntry.first);
-    // FIXME:
-    // Context.resourceDir is just an empty string. This seems like a platform-related issue.
-    // Use hardcoded path instead. Remove this once fixed by the platform provider.
+
     if (appContextDirs.resourceDir.empty()) {
         appContextDirs.resourceDir = appContextDirs.bundleCodeDir + "/entry/resources/resfile";
         qOhosPrintfWarning(
