@@ -652,7 +652,7 @@ public:
         treeview->setDropIndicatorShown(true);
         treeview->setAcceptDrops(true);
         treeview->viewport()->setAcceptDrops(true);
-        treeview->setDragDropMode(QAbstractItemView::InternalMove);
+        treeview->setDragDropMode(QAbstractItemView::DragDrop);
         viewSplitter->addWidget(treeview);
 
         tableview = new QTableView;

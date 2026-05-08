@@ -4,6 +4,8 @@
 
 #include "qrangemodel.h"
 #include <QtCore/qcollator.h>
+#include <QtCore/qmimedata.h>
+#include <QtCore/qpoint.h>
 #include <QtCore/qsize.h>
 
 #include <QtCore/private/qabstractitemmodel_p.h>
@@ -1415,6 +1417,33 @@ bool QRangeModel::dropMimeData(const QMimeData *data, Qt::DropAction action,
     if (d->m_interfaceVersion < QT_VERSION_CHECK(6, 12, 0))
         return QAbstractItemModel::dropMimeData(data, action, row, column, parent);
     return d->impl->call<QRangeModelImplBase::DropMimeData>(data, action, row, column, parent);
+}
+
+bool QRangeModelImplBase::dropDataOnItem(const QMimeData *data, const QModelIndex &index)
+{
+#if !defined(QT_NO_DATASTREAM)
+    const QString defaultFormat = m_rangeModel->QAbstractItemModel::mimeTypes().at(0);
+    if (data->hasFormat(defaultFormat)) {
+        QByteArray encoded = data->data(defaultFormat);
+        QDataStream stream(&encoded, QDataStream::ReadOnly);
+        return m_rangeModel->d_func()->dropOnItem(index, stream);
+    }
+#endif
+    return false;
+}
+
+bool QRangeModelImplBase::insertMimeData(const QMimeData *data,
+                                         int row, int column, const QModelIndex &index)
+{
+#if !defined(QT_NO_DATASTREAM)
+    const QString defaultFormat = m_rangeModel->QAbstractItemModel::mimeTypes().at(0);
+    if (data->hasFormat(defaultFormat)) {
+        QByteArray encoded = data->data(defaultFormat);
+        QDataStream stream(&encoded, QDataStream::ReadOnly);
+        return m_rangeModel->decodeData(row, column, index, stream);
+    }
+#endif
+    return false;
 }
 
 /*!

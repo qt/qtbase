@@ -1167,6 +1167,10 @@ protected:
             return itemData == value;
         return matchValue(itemData.toString(), value, flags);
     }
+
+    Q_CORE_EXPORT bool dropDataOnItem(const QMimeData *data, const QModelIndex &index);
+    Q_CORE_EXPORT bool insertMimeData(const QMimeData *data,
+                                      int row, int column, const QModelIndex &index);
 };
 
 template <typename Structure, typename Range,
@@ -2612,10 +2616,21 @@ public:
     bool dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column,
                       const QModelIndex &parent)
     {
-        if constexpr (isMutable())
-            return this->itemModel().QAbstractItemModel::dropMimeData(data, action, row, column, parent);
-        else
+        if constexpr (isMutable()) {
+            if (!canDropMimeData(data, action, row, column, parent))
+                return false;
+
+            // default mime type handling: dropping on item -> try to set the data
+            if (row == -1 && column == -1 && parent.isValid() && that().dropOnItem(data, parent))
+                return true;
+            // failing that, insert the data as new indexes. A row of -1 indicates
+            // that data should be appended to the model
+            if (row == -1)
+                row = rowCount(parent);
+            return this->insertMimeData(data, row, column, parent);
+        } else {
             return false;
+        }
     }
 
     QMimeData *mimeData(const QModelIndexList &indexes) const
@@ -3428,6 +3443,13 @@ protected:
         return result;
     }
 
+    // tree models don't overwrite the data at index, but instead insert a
+    // child item
+    bool dropOnItem(const QMimeData *, const QModelIndex &)
+    {
+        return false;
+    }
+
 private:
     range_type &childrenOf(row_ptr row)
     {
@@ -3633,6 +3655,12 @@ protected:
         }
 
         return result;
+    }
+
+    // flat models can overwrite data of the dropped-on item
+    bool dropOnItem(const QMimeData *data, const QModelIndex &index)
+    {
+        return this->dropDataOnItem(data, index);
     }
 };
 
