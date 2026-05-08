@@ -51,6 +51,11 @@ if(NOT QT_BUILD_INTERNALS_SKIP_CMAKE_MODULE_PATH_ADDITION)
     qt_set_up_build_internals_paths()
 endif()
 
+# This is included early, to make its macro available early for various Helpers.cmake files.
+# We can't include it earlier, because it depends on qt_set_up_build_internals_paths() setting
+# the module path.
+include(QtPublicCMakeIncludeGuardHelpers)
+
 include(QtBuildHelpers)
 
 qt_internal_include_all_helpers()

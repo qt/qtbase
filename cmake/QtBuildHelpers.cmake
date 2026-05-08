@@ -334,6 +334,7 @@ function(qt_internal_get_qt_build_public_files_to_install out_var)
         QtCopyFileIfDifferent.cmake
         QtInitProject.cmake
         QtPublicCMakeEarlyPolicyHelpers.cmake
+        QtPublicCMakeIncludeGuardHelpers.cmake
 
         # Public CMake files that are installed next Qt6Config.cmake, but are NOT included by it.
         # Instead they are included by the generated CMake toolchain file.
