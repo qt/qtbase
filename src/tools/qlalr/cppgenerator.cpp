@@ -40,7 +40,9 @@ void generateList(const QList<int> &list, QTextStream &out)
     }
 }
 
-}
+} // unnamed namespace
+
+
 // REUSE-IgnoreStart
 QString CppGenerator::copyrightHeader() const
 {
