@@ -1,6 +1,8 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
+__qt_internal_cmake_include_guard(GLOBAL GUARD_KEY "QtPublicTargetHelpers")
+
 function(__qt_internal_strip_target_directory_scope_token target out_var)
     # In CMake versions earlier than CMake 3.18, a subdirectory scope id is appended to the
     # target name if the target is referenced in a target_link_libraries command from a

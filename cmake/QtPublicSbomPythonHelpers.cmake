@@ -1,6 +1,8 @@
 # Copyright (C) 2024 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
+__qt_internal_cmake_include_guard(GLOBAL GUARD_KEY "QtPublicSbomPythonHelpers")
+
 # Helper macro to find python and a given dependency. Expects the caller to set all of the vars.
 # Meant to reduce the line noise due to the repeated calls.
 macro(_qt_internal_sbom_find_python_and_dependency_helper_lambda)

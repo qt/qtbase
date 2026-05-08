@@ -1,6 +1,8 @@
 # Copyright (C) 2024 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
+__qt_internal_cmake_include_guard(GLOBAL GUARD_KEY "QtPublicSbomSystemDepHelpers")
+
 # Records information about a system library target, usually due to a qt_find_package call.
 # This information is later used to generate packages for the system libraries, but only after
 # confirming that the library was used (linked) into any of the Qt targets.

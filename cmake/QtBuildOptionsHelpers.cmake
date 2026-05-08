@@ -1,6 +1,8 @@
 # Copyright (C) 2023 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
+__qt_internal_cmake_include_guard(GLOBAL GUARD_KEY "QtBuildOptionsHelpers")
+
 # Try to detect if CMAKE_BUILD_TYPE is default initialized by CMake, or it was set by the user.
 #
 # CMake initializes CMAKE_BUILD_TYPE to the value of CMAKE_BUILD_TYPE_INIT during the first

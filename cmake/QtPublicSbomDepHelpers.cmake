@@ -1,6 +1,8 @@
 # Copyright (C) 2024 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
+__qt_internal_cmake_include_guard(GLOBAL GUARD_KEY "QtPublicSbomDepHelpers")
+
 # Walks a target's direct dependencies and assembles a list of relationships between the packages
 # of the target dependencies.
 # Currently handles various Qt targets and system libraries.

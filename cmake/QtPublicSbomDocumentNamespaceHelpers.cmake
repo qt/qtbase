@@ -1,6 +1,8 @@
 # Copyright (C) 2025 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
+__qt_internal_cmake_include_guard(GLOBAL GUARD_KEY "QtPublicSbomDocumentNamespaceHelpers")
+
 # Computes the SPDX document namespace field.
 # See https://spdx.github.io/spdx-spec/v2.3/document-creation-information/#65-spdx-document-namespace-field
 # The document namespace is used in SPDX external references and dependency relationships.

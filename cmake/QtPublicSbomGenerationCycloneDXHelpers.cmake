@@ -1,6 +1,8 @@
 # Copyright (C) 2025 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
+__qt_internal_cmake_include_guard(GLOBAL GUARD_KEY "QtPublicSbomGenerationCycloneDXHelpers")
+
 # Helper to return the path to staging cydx file, where content will be incrementally appended to.
 function(_qt_internal_get_staging_area_cydx_file_path out_var)
     _qt_internal_get_current_project_sbom_dir(sbom_dir)

@@ -1,6 +1,8 @@
 # Copyright (C) 2024 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
+__qt_internal_cmake_include_guard(GLOBAL GUARD_KEY "QtPublicSbomPurlHelpers")
+
 # Parse purl arguments for a specific purl entry.
 # arguments_var_name is the variable name that contains the args.
 # prefix is the prefix passed to cmake_parse_arguments.

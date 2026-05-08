@@ -2,6 +2,8 @@
 # Copyright (C) 2023-2024 Jochem Rutgers
 # SPDX-License-Identifier: BSD-3-Clause AND MIT
 
+__qt_internal_cmake_include_guard(GLOBAL GUARD_KEY "QtPublicGitHelpers")
+
 macro(_qt_internal_find_git_package)
     find_package(Git)
 endmacro()

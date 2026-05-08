@@ -1,6 +1,8 @@
 # Copyright (C) 2024 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
+__qt_internal_cmake_include_guard(GLOBAL GUARD_KEY "QtPublicSbomQtEntityHelpers")
+
 # Helper macro to prepare forwarding all set sbom options to some other function.
 # Expects the options names to be set in the parent scope by calling
 # _qt_internal_get_sbom_add_target_options(opt_args single_args multi_args)

@@ -1,6 +1,8 @@
 # Copyright (C) 2025 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
+__qt_internal_cmake_include_guard(GLOBAL GUARD_KEY "QtPublicSbomCommonGenerationHelpers")
+
 # Save the 'macros base dir' in a global property instead of a variable, to allow access in a
 # deferred function where the variable might not be accessible by the function scope.
 # We explicitly don't set CMAKE_CURRENT_FUNCTION_LIST_DIR as we do in some other cases, because
@@ -549,6 +551,7 @@ function(_qt_internal_sbom_create_build_time_sbom_targets)
     _qt_internal_get_current_project_sbom_dir(sbom_dir)
     set(content "
         # Include helpers functions.
+        include(\"${macro_module_base_dir}/QtPublicCMakeIncludeGuardHelpers.cmake\")
         include(\"${macro_module_base_dir}/QtPublicCMakeHelpers.cmake\")
         include(\"${macro_module_base_dir}/QtPublicSbomExternalReferenceHelpers.cmake\")
         include(\"${macro_module_base_dir}/QtPublicSbomOpsHelpers.cmake\")

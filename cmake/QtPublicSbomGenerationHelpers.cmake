@@ -2,6 +2,8 @@
 # Copyright (C) 2023-2024 Jochem Rutgers
 # SPDX-License-Identifier: MIT AND BSD-3-Clause
 
+__qt_internal_cmake_include_guard(GLOBAL GUARD_KEY "QtPublicSbomGenerationHelpers")
+
 # Helper to set a single arg option to a default value if not set.
 function(_qt_internal_sbom_set_default_option_value option_name default)
     if(NOT arg_${option_name})

@@ -3,6 +3,8 @@
 
 # These internal sbom functions are meant to be used in qt repo CMakeLists.txt files.
 
+__qt_internal_cmake_include_guard(GLOBAL GUARD_KEY "QtSbomHelpers")
+
 function(qt_internal_add_sbom target)
     if(NOT QT_GENERATE_SBOM)
         return()

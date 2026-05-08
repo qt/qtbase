@@ -2,6 +2,8 @@
 # Copyright (C) 2023-2024 Jochem Rutgers
 # SPDX-License-Identifier: MIT AND BSD-3-Clause
 
+__qt_internal_cmake_include_guard(GLOBAL GUARD_KEY "QtPublicSbomOpsHelpers")
+
 # Handles the look up of Python, Python spdx dependencies and other various post-installation steps
 # like NTIA validation, auditing, json generation, etc.
 function(_qt_internal_sbom_setup_project_ops_generation)
@@ -1301,6 +1303,7 @@ function(_qt_internal_sbom_add_verify_source_sbom_build_time_target)
     get_property(macro_module_base_dir GLOBAL PROPERTY __qt_sbom_generation_helpers_base_dir)
     set(content "
 # Include helpers functions.
+include(\"${macro_module_base_dir}/QtPublicCMakeIncludeGuardHelpers.cmake\")
 include(\"${macro_module_base_dir}/QtPublicCMakeHelpers.cmake\")
 include(\"${macro_module_base_dir}/QtPublicSbomOpsHelpers.cmake\")
 
