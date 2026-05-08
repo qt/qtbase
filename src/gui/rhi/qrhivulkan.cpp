@@ -1576,6 +1576,29 @@ bool QRhiVulkan::createTransientImage(VkFormat format,
     VkMemoryRequirements memReq;
     VkResult err;
 
+    *mem = VK_NULL_HANDLE;
+    for (int i = 0; i < count; ++i) {
+        images[i] = VK_NULL_HANDLE;
+        views[i] = VK_NULL_HANDLE;
+    }
+
+    auto cleanup = qScopeGuard([this, mem, images, views, count] {
+        for (int i = 0; i < count; ++i) {
+            if (views[i]) {
+                df->vkDestroyImageView(dev, views[i], nullptr);
+                views[i] = VK_NULL_HANDLE;
+            }
+            if (images[i]) {
+                df->vkDestroyImage(dev, images[i], nullptr);
+                images[i] = VK_NULL_HANDLE;
+            }
+        }
+        if (*mem) {
+            df->vkFreeMemory(dev, *mem, nullptr);
+            *mem = VK_NULL_HANDLE;
+        }
+    });
+
     for (int i = 0; i < count; ++i) {
         VkImageCreateInfo imgInfo = {};
         imgInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -1649,6 +1672,7 @@ bool QRhiVulkan::createTransientImage(VkFormat format,
         }
     }
 
+    cleanup.dismiss();
     return true;
 }
 
