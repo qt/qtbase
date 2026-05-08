@@ -3,6 +3,9 @@
 
 @PACKAGE_INIT@
 
+# This is included very early, to make its macro available early for public Helpers files.
+include("${CMAKE_CURRENT_LIST_DIR}/QtPublicCMakeIncludeGuardHelpers.cmake")
+
 # This is included before the cmake_minimum_required on purpose.
 include("${CMAKE_CURRENT_LIST_DIR}/QtPublicCMakeEarlyPolicyHelpers.cmake")
 __qt_internal_save_directory_scope_policy_cmp0156()
