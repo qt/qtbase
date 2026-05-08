@@ -1,6 +1,7 @@
 // REUSE-IgnoreStart
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// Qt-Security score:insignificant reason:build-tool
 // REUSE-IgnoreEnd
 
 #include "cppgenerator.h"
@@ -43,13 +44,62 @@ void generateList(const QList<int> &list, QTextStream &out)
 } // unnamed namespace
 
 
+auto CppGenerator::SecurityHeader::parse(QStringView input)
+    -> std::optional<SecurityHeader>
+{
+    QStringView score;
+    QStringView reason;
+
+    if (const auto colon = input.indexOf(u':'); colon >= 0) {
+        score = input.first(colon);
+        reason = input.sliced(colon + 1);
+    } else {
+        score = input;
+    }
+
+    if (score == "critical"_L1)
+        return SecurityHeader{Security::Critical, reason.isEmpty() ? "data-parser"_ba : reason.toUtf8()};
+
+    if (score == "significant"_L1)
+        return SecurityHeader{Security::Significant, reason.isEmpty() ? "default"_ba : reason.toUtf8()};
+
+    if (score == "insignificant"_L1)
+        return SecurityHeader{Security::Insignificant, reason.toUtf8()}; // no default
+
+    return std::nullopt;
+}
+
+QByteArray CppGenerator::SecurityHeader::print() const
+{
+    QByteArray res;
+
+    using Security = CppGenerator::SecurityHeader::Security;
+
+    res += "// Qt-Security score:";
+    switch (score) {
+    case Security::Critical:      res += "critical";      break;
+    case Security::Significant:   res += "significant";   break;
+    case Security::Insignificant: res += "insignificant"; break;
+    }
+
+    if (!reason.isEmpty()) {
+        res += " reason:";
+        res += reason;
+    }
+
+    res += '\n';
+
+    return res;
+}
+
 // REUSE-IgnoreStart
-QString CppGenerator::copyrightHeader() const
+QByteArray CppGenerator::copyrightHeader() const
 {
   return
     "// " QT_COPYRIGHT "\n"
     "// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0\n"
-    "\n"_L1;
+       + (security ? security->print() : QByteArray())
+       + '\n';
 }
 // REUSE-IgnoreEnd
 

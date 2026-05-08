@@ -1,5 +1,6 @@
 // Copyright (C) The Qt Company Ltd. and other contributors.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// Qt-Security score:insignificant reason:build-tool
 
 //
 //  W A R N I N G
