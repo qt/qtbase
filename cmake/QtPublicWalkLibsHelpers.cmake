@@ -1,6 +1,8 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
+__qt_internal_cmake_include_guard(GLOBAL GUARD_KEY "QtPublicWalkLibsHelpers")
+
 # Add libraries to variable ${out_libs_var} in a way that duplicates
 # are added at the end. This ensures the library order needed for the
 # linker.

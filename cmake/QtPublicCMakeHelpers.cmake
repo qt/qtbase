@@ -1,6 +1,8 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
+__qt_internal_cmake_include_guard(GLOBAL GUARD_KEY "QtPublicCMakeHelpers")
+
 # copy_if_different works incorrect in Windows if file size if bigger than 2GB.
 # See https://gitlab.kitware.com/cmake/cmake/-/issues/23052 and QTBUG-99491 for details.
 function(_qt_internal_copy_file_if_different_command out_var src_file dst_file)

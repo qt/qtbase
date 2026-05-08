@@ -1,6 +1,8 @@
 # Copyright (C) 2024 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
+__qt_internal_cmake_include_guard(GLOBAL GUARD_KEY "QtPublicSbomAttributionHelpers")
+
 # Handles attribution information for a target.
 #
 # If CREATE_SBOM_FOR_EACH_ATTRIBUTION is set, a separate sbom target is created for each parsed

@@ -1,6 +1,8 @@
 # Copyright (C) 2024 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
+__qt_internal_cmake_include_guard(GLOBAL GUARD_KEY "QtPublicSbomLicenseHelpers")
+
 # Adds a license id and its text to the sbom.
 function(_qt_internal_sbom_add_license)
     if(NOT QT_GENERATE_SBOM)

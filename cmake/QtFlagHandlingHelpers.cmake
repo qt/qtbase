@@ -1,6 +1,8 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
+__qt_internal_cmake_include_guard(GLOBAL GUARD_KEY "QtFlagHandlingHelpers")
+
 # Sets '${var}' to a genex that extracts the target's property.
 # Sets 'have_${var}' to a genex that checks that the property has a
 # non-empty value.

@@ -1,6 +1,8 @@
 # Copyright (C) 2025 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
+__qt_internal_cmake_include_guard(GLOBAL GUARD_KEY "QtPublicSbomCycloneDXHelpers")
+
 # Gets the helper python script name and relative dir in the source dir.
 function(_qt_internal_sbom_get_cyclone_dx_generator_script_name
         out_var_generator_name
