@@ -905,7 +905,7 @@ findUtcOffsetPrefix(QStringView text, const QLocale &locale)
     qsizetype hourEnd = 0, hmMid = 0, minEnd = 0;
     int digits = 0;
     char32_t ch = 0;
-    while (iter.hasNext()) {
+    while (digits < 4 && iter.hasNext()) {
         ch = iter.next();
         if (!QChar::isDigit(ch))
             break;
@@ -915,11 +915,13 @@ findUtcOffsetPrefix(QStringView text, const QLocale &locale)
         // we have that many; use hmMid to hold the last-but-one.
         hourEnd = std::exchange(hmMid, std::exchange(minEnd, iter.index()));
     }
-    if (digits < 1 || digits > 4) // No offset or something other than an offset.
+    if (!digits) // No offset.
         return {};
 
     QStringView hourStr, minStr;
-    if (digits < 3 && iter.hasNext() && QChar::isPunct(ch)) {
+    if (digits == 4) {
+        minStr = offset.first(minEnd).sliced(hourEnd);
+    } else if (digits < 3 && iter.hasNext() && QChar::isPunct(ch)) {
         hourEnd = minEnd; // Use all digits seen thus far for hour.
         hmMid = iter.index(); // Reuse as minStart, in effect.
         int mindig = 0;
@@ -931,8 +933,8 @@ findUtcOffsetPrefix(QStringView text, const QLocale &locale)
             minStr = offset.first(minEnd).sliced(hmMid);
         else
             minEnd = hourEnd; // Ignore punctuator and beyond
-    } else {
-        minStr = offset.first(minEnd).sliced(hourEnd);
+    } else { // Not enough digits for a minute field.
+        minEnd = hourEnd;
     }
     hourStr = offset.first(hourEnd);
 
