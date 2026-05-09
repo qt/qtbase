@@ -159,10 +159,78 @@ struct QRangeModel::RowOptions<Gadget>
     }
 };
 
+template <>
+struct QRangeModel::ItemAccess<Gadget>
+{
+    using RowOptions = typename QRangeModel::RowOptions<Gadget>;
+    static QMimeData *mimeData(auto &&gadgets)
+    {
+        if (gadgets.isEmpty())
+            return nullptr;
+
+        const QModelIndex topLeft = gadgets.first().index();
+        const QModelIndex bottomRight = gadgets.last().index();
+        QRect span = {QPoint(topLeft.column(), topLeft.row()),
+                      QPoint(bottomRight.column(), bottomRight.row())};
+        span.moveTo(0, 0);
+
+        QByteArray data;
+        QTextStream stream(&data, QIODevice::WriteOnly);
+
+        QModelIndex lastIndex;
+        for (const auto &[gadget, index] : gadgets) {
+            stream << Qt::flush;
+            if (index.row() != lastIndex.row() && stream.pos()) {
+                stream.seek(stream.pos() - 1);
+                stream << Qt::endl;
+            }
+            stream << gadget.display() << ','
+                   << gadget.decoration().name()
+                   << ',' << gadget.toolTip()
+                   << ';';
+            lastIndex = index;
+        }
+        stream << Qt::endl;
+        if (data.isEmpty())
+            return nullptr;
+        QMimeData *mimeData = new QMimeData;
+        mimeData->setData(RowOptions::mimeTypes().first(), data);
+        return mimeData;
+    }
+
+    static bool dropMimeData(const QMimeData *mimeData, auto inserter)
+    {
+        if (!mimeData->hasFormat(RowOptions::mimeTypes().first()))
+            return false;
+        QByteArray data = mimeData->data(RowOptions::mimeTypes().first());
+        if (data.isEmpty())
+            return false;
+
+        QTextStream stream(&data, QIODevice::ReadOnly);
+        while (!stream.atEnd()) {
+            const QString row = stream.readLine();
+            if (row.isEmpty())
+                continue;
+            const QStringList cells = row.split(u';', Qt::SkipEmptyParts);
+            for (const auto &cell : cells) {
+                const QStringList values = cell.split(u',');
+                inserter = Gadget(
+                    values.size() > 0 ? values[0] : QString(),
+                    QColor::fromString(values.size() > 1 ? values[1] : QString()),
+                    values.size() > 2 ? values[2] : QString()
+                );
+            }
+        }
+        return true;
+    }
+};
+
 static_assert(QRangeModelDetails::hasHeaderData<Gadget>);
 static_assert(QRangeModelDetails::hasRowFlags<Gadget>);
 static_assert(QRangeModelDetails::hasMimeDataRowSpan<Gadget>);
 static_assert(QRangeModelDetails::hasDropMimeData<Gadget>);
+static_assert(QRangeModelDetails::item_access<Gadget>::hasMimeData);
+static_assert(QRangeModelDetails::item_access<Gadget>::hasDropMimeData);
 
 struct QMetaEnumerator
 {

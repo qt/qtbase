@@ -4,6 +4,7 @@
 #include "tst_qrangemodel.h"
 #include <QtCore/qmimedata.h>
 #include <QtCore/qstringlistmodel.h>
+#include <QtCore/qxmlstream.h>
 
 using namespace Qt::StringLiterals;
 
@@ -85,6 +86,72 @@ struct QRangeModel::RowOptions<DragDropRow>
 
 static_assert(QRangeModelDetails::hasMimeDataIndexList<DragDropRow>);
 
+struct DragDropItem
+{
+    Q_GADGET
+    Q_PROPERTY(QString string MEMBER m_string)
+    Q_PROPERTY(int number MEMBER m_number)
+
+public:
+    DragDropItem() = default;
+    DragDropItem(const QString &string, int number)
+        : m_string(string), m_number(number)
+    {}
+
+    QString m_string;
+    int m_number = 0;
+};
+
+template <>
+struct QRangeModel::ItemAccess<DragDropItem>
+{
+    static QVariant readRole(const DragDropItem &item, int role)
+    {
+        switch (role) {
+        case Qt::DisplayRole:
+            return item.m_string;
+        case Qt::DecorationRole:
+            return item.m_number;
+        }
+        return {};
+    }
+    static bool writeRole(DragDropItem &item, const QVariant &value, int role)
+    {
+        switch (role) {
+        case Qt::DisplayRole:
+            item.m_string = value.toString();
+            break;
+        case Qt::DecorationRole:
+            item.m_number = value.toInt();
+            break;
+        default:
+            return false;
+        }
+        return true;
+    }
+
+    static QStringList mimeTypes() { return {u"text/html"_s}; }
+    template <typename Items>
+    static QMimeData *mimeData(const Items &items)
+    {
+        if (items.isEmpty())
+            return nullptr;
+        QByteArray data;
+        QXmlStreamWriter stream(&data);
+        stream.writeStartElement("ul");
+        for (const auto &[item, index] : items) {
+            stream.writeTextElement("li", item.m_string);
+        }
+        stream.writeEndElement();
+
+        QMimeData *mimeData = new QMimeData;
+        mimeData->setData(mimeTypes().first(), data);
+        return mimeData;
+    }
+};
+
+static_assert(QRangeModelDetails::item_access<DragDropItem>::hasMimeTypes);
+
 struct NoDragDropRow : std::tuple<int> {};
 
 template <>
@@ -107,6 +174,14 @@ void tst_QRangeModel::mimeTypes_data()
     QTest::addRow("QList<DragDropRow>") << Factory([]() -> std::unique_ptr<QAbstractItemModel> {
         return std::make_unique<QRangeModel>(QList<DragDropRow>{});
     }) << QRangeModel::RowOptions<DragDropRow>::mimeTypes();
+
+    QTest::addRow("QList<DragDropItem>") << Factory([]() -> std::unique_ptr<QAbstractItemModel> {
+        return std::make_unique<QRangeModel>(QList<DragDropItem>{
+            {"one", 1},
+            {"two", 2},
+            {"three", 3},
+        });
+    }) << QRangeModel::ItemAccess<DragDropItem>::mimeTypes();
 
     QTest::addRow("QList<NoDragDropRow>") << Factory([]() -> std::unique_ptr<QAbstractItemModel> {
         return std::make_unique<QRangeModel>(QList<NoDragDropRow>{});
@@ -138,9 +213,20 @@ void tst_QRangeModel::mimeData_data()
             DragDropRow{u"two"_s, 2},
             DragDropRow{u"three"_s, 3}
         });
-    }) << QList<QPoint>{{0, 0}, {0, 1}}
+    }) << QList<QPoint>{{0, 0}, {1, 0}}
        << MimeDataList{std::pair{u"application/vnd.text.list"_s, QByteArray("one,1\n")}};
+
+    QTest::addRow("QList<DragDropItem>") << Factory([]() -> std::unique_ptr<QAbstractItemModel> {
+        return std::make_unique<QRangeModel>(QList<DragDropItem>{
+            {"one", 1},
+            {"two", 2},
+            {"three", 3},
+        });
+    }) << QList<QPoint>{{0, 0}, {0, 2}}
+       << MimeDataList{std::pair{u"text/html"_s,
+                                 QByteArray("<ul><li>one</li><li>three</li></ul>")}};
 }
+
 
 void tst_QRangeModel::mimeData()
 {
@@ -152,7 +238,7 @@ void tst_QRangeModel::mimeData()
 
     QModelIndexList indexes;
     for (const auto &cell : cells) {
-        auto index = model->index(cell.x(), cell.y());
+        auto index = model->index(cell.y(), cell.x());
         QVERIFY(index.isValid());
         indexes.append(index);
     }
@@ -194,3 +280,5 @@ void tst_QRangeModel::dropMimeData()
     QVERIFY(model->dropMimeData(mime.get(), Qt::CopyAction, -1, -1, {}));
     QCOMPARE(model->rowCount(), expectedRowCount);
 }
+
+#include "tst_qrangemodel_dragdrop.moc"
