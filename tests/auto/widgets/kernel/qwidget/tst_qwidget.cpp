@@ -6202,7 +6202,7 @@ using Rects = QList<QRect>;
 void tst_QWidget::setWindowGeometry_data()
 {
     QTest::addColumn<Rects>("rects");
-    QTest::addColumn<int>("windowFlags");
+    QTest::addColumn<Qt::WindowFlags>("windowFlags");
 
     QList<Rects> rects;
     const int width = m_testWidgetSize.width();
@@ -6236,23 +6236,44 @@ void tst_QWidget::setWindowGeometry_data()
 
     const Qt::WindowFlags windowFlags[] = {Qt::WindowFlags(), Qt::FramelessWindowHint};
 
+    int iCnt = 0;
     const bool skipEmptyRects = (m_platform == QStringLiteral("windows"));
     for (Rects l : std::as_const(rects)) {
         if (skipEmptyRects)
             l.removeIf([] (const QRect &r) { return r.isEmpty(); });
         const QRect &rect = l.constFirst();
-        for (int windowFlag : windowFlags) {
-            QTest::newRow(QString("%1,%2 %3x%4, flags %5")
+        for (Qt::WindowFlags windowFlag : windowFlags) {
+            QTest::newRow(QString("%6:%1,%2 %3x%4, flags %5")
                           .arg(rect.x())
                           .arg(rect.y())
                           .arg(rect.width())
                           .arg(rect.height())
-                          .arg(windowFlag, 0, 16).toLatin1())
+                          .arg(int(windowFlag), 0, 16)
+                          .arg(++iCnt).toLatin1())
                 << l
                 << windowFlag;
         }
     }
 }
+
+class HideWaitWidget : public QWidget
+{
+public:
+    bool hideAndWaitForEvent()
+    {
+        numHideEvents = 0;
+        hide();
+        return QTest::qWaitFor([&]() { return numHideEvents > 0; });
+    }
+
+protected:
+    void hideEvent(QHideEvent *event) override
+    {
+        QWidget::hideEvent(event);
+        ++numHideEvents;
+    }
+    int numHideEvents = 0;
+};
 
 void tst_QWidget::setWindowGeometry()
 {
@@ -6260,68 +6281,56 @@ void tst_QWidget::setWindowGeometry()
          QSKIP("X11/Wayland: Skip this test due to Window manager positioning issues.");
 
     QFETCH(Rects, rects);
-    QFETCH(int, windowFlags);
-    QRect rect = rects.takeFirst();
+    QFETCH(Qt::WindowFlags, windowFlags);
+    const QRect rect = rects.takeFirst();
 
     {
         // test setGeometry() without actually showing the window
         QWidget widget;
         if (windowFlags != 0)
-            widget.setWindowFlags(Qt::WindowFlags(windowFlags));
+            widget.setWindowFlags(windowFlags);
 
         widget.setGeometry(rect);
-        QTest::qWait(100);
-        QCOMPARE(widget.geometry(), rect);
+        QTRY_COMPARE(widget.geometry(), rect);
 
         // setGeometry() without showing
         for (const QRect &r : std::as_const(rects)) {
             widget.setGeometry(r);
-            QTest::qWait(100);
-            QCOMPARE(widget.geometry(), r);
+            QTRY_COMPARE(widget.geometry(), r);
         }
     }
 
     {
         // setGeometry() first, then show()
-        QWidget widget;
+        HideWaitWidget widget;
         widget.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
         if (windowFlags != 0)
             widget.setWindowFlags(Qt::WindowFlags(windowFlags));
 
         widget.setGeometry(rect);
         widget.showNormal();
-        if (rect.isValid()) {
+        if (rect.isValid())
             QVERIFY(QTest::qWaitForWindowExposed(&widget));
-        } else {
-            // in case of an invalid rect, wait for the geometry to become
-            // adjusted to the actual (valid) value.
-            QApplication::processEvents();
-        }
         QTRY_COMPARE(widget.geometry(), rect);
 
         // setGeometry() while shown
         for (const QRect &r : std::as_const(rects)) {
             widget.setGeometry(r);
-            QTest::qWait(10);
             QTRY_COMPARE(widget.geometry(), r);
         }
         widget.setGeometry(rect);
-        QTest::qWait(20);
         QTRY_COMPARE(widget.geometry(), rect);
 
         // now hide
-        widget.hide();
-        QTest::qWait(20);
+        QVERIFY(widget.hideAndWaitForEvent());
         QTRY_COMPARE(widget.geometry(), rect);
 
         // setGeometry() after hide()
         for (const QRect &r : std::as_const(rects)) {
             widget.setGeometry(r);
-            QTest::qWait(10);
             QTRY_COMPARE(widget.geometry(), r);
         }
         widget.setGeometry(rect);
-        QTest::qWait(10);
         QTRY_COMPARE(widget.geometry(), rect);
 
         // show() again, geometry() should still be the same
@@ -6331,60 +6340,51 @@ void tst_QWidget::setWindowGeometry()
         QTRY_COMPARE(widget.geometry(), rect);
 
         // final hide(), again geometry() should be unchanged
-        widget.hide();
-        QTest::qWait(10);
+        QVERIFY(widget.hideAndWaitForEvent());
         QTRY_COMPARE(widget.geometry(), rect);
     }
 
     {
         // show() first, then setGeometry()
-        QWidget widget;
+        HideWaitWidget widget;
         widget.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
         if (windowFlags != 0)
             widget.setWindowFlags(Qt::WindowFlags(windowFlags));
 
         widget.showNormal();
+        widget.setGeometry(rect);
         if (rect.isValid())
             QVERIFY(QTest::qWaitForWindowExposed(&widget));
-        widget.setGeometry(rect);
-        QTest::qWait(10);
         QTRY_COMPARE(widget.geometry(), rect);
 
         // setGeometry() while shown
         for (const QRect &r : std::as_const(rects)) {
             widget.setGeometry(r);
-            QTest::qWait(10);
             QTRY_COMPARE(widget.geometry(), r);
         }
         widget.setGeometry(rect);
-        QTest::qWait(10);
         QTRY_COMPARE(widget.geometry(), rect);
 
         // now hide
-        widget.hide();
-        QTest::qWait(10);
+        QVERIFY(widget.hideAndWaitForEvent());
         QTRY_COMPARE(widget.geometry(), rect);
 
         // setGeometry() after hide()
         for (const QRect &r : std::as_const(rects)) {
             widget.setGeometry(r);
-            QTest::qWait(10);
             QTRY_COMPARE(widget.geometry(), r);
         }
         widget.setGeometry(rect);
-        QTest::qWait(10);
         QTRY_COMPARE(widget.geometry(), rect);
 
         // show() again, geometry() should still be the same
         QTestPrivate::androidCompatibleShow(&widget);
         if (rect.isValid())
             QVERIFY(QTest::qWaitForWindowExposed(&widget));
-        QTest::qWait(10);
         QTRY_COMPARE(widget.geometry(), rect);
 
         // final hide(), again geometry() should be unchanged
-        widget.hide();
-        QTest::qWait(10);
+        QVERIFY(widget.hideAndWaitForEvent());
         QTRY_COMPARE(widget.geometry(), rect);
     }
 }
@@ -6428,9 +6428,9 @@ void tst_QWidget::windowMoveResize()
         QSKIP("Wayland: This fails. Figure out why.");
 
     QFETCH(Rects, rects);
-    QFETCH(int, windowFlags);
+    QFETCH(Qt::WindowFlags, windowFlags);
 
-    QRect rect = rects.takeFirst();
+    const QRect rect = rects.takeFirst();
 
     {
         // test setGeometry() without actually showing the window
@@ -6440,7 +6440,6 @@ void tst_QWidget::windowMoveResize()
 
         widget.move(rect.topLeft());
         widget.resize(rect.size());
-        QTest::qWait(10);
         QTRY_COMPARE(widget.pos(), rect.topLeft());
         QTRY_COMPARE(widget.size(), rect.size());
 
@@ -6448,7 +6447,6 @@ void tst_QWidget::windowMoveResize()
         for (const QRect &r : std::as_const(rects)) {
             widget.move(r.topLeft());
             widget.resize(r.size());
-            QApplication::processEvents();
             QTRY_COMPARE(widget.pos(), r.topLeft());
             QTRY_COMPARE(widget.size(), r.size());
         }
@@ -6456,7 +6454,7 @@ void tst_QWidget::windowMoveResize()
 
     {
         // move() first, then show()
-        QWidget widget;
+        HideWaitWidget widget;
         widget.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
         if (windowFlags != 0)
             widget.setWindowFlags(Qt::WindowFlags(windowFlags));
@@ -6465,7 +6463,6 @@ void tst_QWidget::windowMoveResize()
         widget.resize(rect.size());
         widget.showNormal();
 
-        QTest::qWait(10);
         QTRY_VERIFY2(HighDpi::fuzzyCompare(widget.pos(), rect.topLeft(), m_fuzz),
                      qPrintable(HighDpi::msgPointMismatch(widget.pos(), rect.topLeft())));
         // Windows: Minimum size of decorated windows.
@@ -6485,7 +6482,6 @@ void tst_QWidget::windowMoveResize()
                     || rect == QRect(QPoint(130, 50), QSize(0, 0)));
             widget.move(r.topLeft());
             widget.resize(r.size());
-            QApplication::processEvents();
             if (!expectMoveFail) {
                 QTRY_COMPARE(widget.pos(), r.topLeft());
                 QTRY_COMPARE(widget.size(), r.size());
@@ -6493,13 +6489,11 @@ void tst_QWidget::windowMoveResize()
         }
         widget.move(rect.topLeft());
         widget.resize(rect.size());
-        QApplication::processEvents();
         QTRY_COMPARE(widget.pos(), rect.topLeft());
         QTRY_COMPARE(widget.size(), rect.size());
 
         // now hide
-        widget.hide();
-        QTest::qWait(10);
+        QVERIFY(widget.hideAndWaitForEvent());
         QTRY_COMPARE(widget.pos(), rect.topLeft());
         QTRY_COMPARE(widget.size(), rect.size());
 
@@ -6507,7 +6501,6 @@ void tst_QWidget::windowMoveResize()
         for (const QRect &r : std::as_const(rects)) {
             widget.move(r.topLeft());
             widget.resize(r.size());
-            QApplication::processEvents();
 #if defined(Q_OS_MACOS)
             if (r.width() == 0 && r.height() > 0) {
                 widget.move(r.topLeft());
@@ -6519,7 +6512,6 @@ void tst_QWidget::windowMoveResize()
         }
         widget.move(rect.topLeft());
         widget.resize(rect.size());
-        QTest::qWait(10);
         QTRY_COMPARE(widget.pos(), rect.topLeft());
         QTRY_COMPARE(widget.size(), rect.size());
 
@@ -6527,30 +6519,26 @@ void tst_QWidget::windowMoveResize()
         QTestPrivate::androidCompatibleShow(&widget);
         if (rect.isValid())
             QVERIFY(QTest::qWaitForWindowExposed(&widget));
-        QApplication::processEvents();
         QTRY_COMPARE(widget.pos(), rect.topLeft());
         QTRY_COMPARE(widget.size(), rect.size());
 
         // final hide(), again pos() should be unchanged
-        widget.hide();
-        QApplication::processEvents();
+        QVERIFY(widget.hideAndWaitForEvent());
         QTRY_COMPARE(widget.pos(), rect.topLeft());
         QTRY_COMPARE(widget.size(), rect.size());
     }
 
     {
         // show() first, then move()
-        QWidget widget;
+        HideWaitWidget widget;
         if (windowFlags != 0)
             widget.setWindowFlags(Qt::WindowFlags(windowFlags));
 
         widget.showNormal();
         if (rect.isValid())
             QVERIFY(QTest::qWaitForWindowExposed(&widget));
-        QApplication::processEvents();
         widget.move(rect.topLeft());
         widget.resize(rect.size());
-        QApplication::processEvents();
         QTRY_COMPARE(widget.pos(), rect.topLeft());
         QTRY_COMPARE(widget.size(), rect.size());
 
@@ -6558,19 +6546,16 @@ void tst_QWidget::windowMoveResize()
         for (const QRect &r : std::as_const(rects)) {
             widget.move(r.topLeft());
             widget.resize(r.size());
-            QApplication::processEvents();
             QTRY_COMPARE(widget.pos(), r.topLeft());
             QTRY_COMPARE(widget.size(), r.size());
         }
         widget.move(rect.topLeft());
         widget.resize(rect.size());
-        QApplication::processEvents();
         QTRY_COMPARE(widget.pos(), rect.topLeft());
         QTRY_COMPARE(widget.size(), rect.size());
 
         // now hide
-        widget.hide();
-        QApplication::processEvents();
+        QVERIFY(widget.hideAndWaitForEvent());
         QTRY_COMPARE(widget.pos(), rect.topLeft());
         QTRY_COMPARE(widget.size(), rect.size());
 
@@ -6578,7 +6563,6 @@ void tst_QWidget::windowMoveResize()
         for (const QRect &r : std::as_const(rects)) {
             widget.move(r.topLeft());
             widget.resize(r.size());
-            QApplication::processEvents();
 #if defined(Q_OS_MACOS)
             if (r.width() == 0 && r.height() > 0) {
                 widget.move(r.topLeft());
@@ -6590,7 +6574,6 @@ void tst_QWidget::windowMoveResize()
         }
         widget.move(rect.topLeft());
         widget.resize(rect.size());
-        QApplication::processEvents();
         QTRY_COMPARE(widget.pos(), rect.topLeft());
         QTRY_COMPARE(widget.size(), rect.size());
 
@@ -6598,13 +6581,11 @@ void tst_QWidget::windowMoveResize()
         QTestPrivate::androidCompatibleShow(&widget);
         if (rect.isValid())
             QVERIFY(QTest::qWaitForWindowExposed(&widget));
-        QTest::qWait(10);
         QTRY_COMPARE(widget.pos(), rect.topLeft());
         QTRY_COMPARE(widget.size(), rect.size());
 
         // final hide(), again pos() should be unchanged
-        widget.hide();
-        QTest::qWait(10);
+        QVERIFY(widget.hideAndWaitForEvent());
         QTRY_COMPARE(widget.pos(), rect.topLeft());
         QTRY_COMPARE(widget.size(), rect.size());
     }
@@ -9573,58 +9554,58 @@ void tst_QWidget::adjustSize_data()
     const int MagicH = 100;
 
     QTest::addColumn<QSize>("sizeHint");
-    QTest::addColumn<int>("hPolicy");
-    QTest::addColumn<int>("vPolicy");
+    QTest::addColumn<QSizePolicy::Policy>("hPolicy");
+    QTest::addColumn<QSizePolicy::Policy>("vPolicy");
     QTest::addColumn<bool>("hfwSP");
     QTest::addColumn<bool>("layout");
     QTest::addColumn<bool>("hfwLayout");
     QTest::addColumn<bool>("haveParent");
     QTest::addColumn<QSize>("expectedSize");
 
-    QTest::newRow("1") << QSize(5, 6) << int(QSizePolicy::Minimum) << int(QSizePolicy::Expanding)
+    QTest::newRow("1") << QSize(5, 6) << QSizePolicy::Minimum << QSizePolicy::Expanding
         << false << false << false << false << QSize(5, qMax(6, MagicH));
-    QTest::newRow("2") << QSize(5, 6) << int(QSizePolicy::Minimum) << int(QSizePolicy::Expanding)
+    QTest::newRow("2") << QSize(5, 6) << QSizePolicy::Minimum << QSizePolicy::Expanding
         << true << false << false << false << QSize(5, qMax(10, MagicH));
-    QTest::newRow("3") << QSize(5, 6) << int(QSizePolicy::Minimum) << int(QSizePolicy::Expanding)
+    QTest::newRow("3") << QSize(5, 6) << QSizePolicy::Minimum << QSizePolicy::Expanding
         << false << true << false << false << QSize(35, 26);
-    QTest::newRow("4") << QSize(5, 6) << int(QSizePolicy::Minimum) << int(QSizePolicy::Expanding)
+    QTest::newRow("4") << QSize(5, 6) << QSizePolicy::Minimum << QSizePolicy::Expanding
         << false << true << true << false << QSize(35, 70);
-    QTest::newRow("5") << QSize(40001, 30001) << int(QSizePolicy::Minimum) << int(QSizePolicy::Expanding)
+    QTest::newRow("5") << QSize(40001, 30001) << QSizePolicy::Minimum << QSizePolicy::Expanding
         << false << false << false << false << QSize(100000, 100000);
-    QTest::newRow("6") << QSize(40001, 30001) << int(QSizePolicy::Minimum) << int(QSizePolicy::Expanding)
+    QTest::newRow("6") << QSize(40001, 30001) << QSizePolicy::Minimum << QSizePolicy::Expanding
         << true << false << false << false << QSize(100000, 100000);
-    QTest::newRow("7") << QSize(40001, 30001) << int(QSizePolicy::Minimum) << int(QSizePolicy::Expanding)
+    QTest::newRow("7") << QSize(40001, 30001) << QSizePolicy::Minimum << QSizePolicy::Expanding
         << false << true << false << false << QSize(100000, 100000);
-    QTest::newRow("8") << QSize(40001, 30001) << int(QSizePolicy::Minimum) << int(QSizePolicy::Expanding)
+    QTest::newRow("8") << QSize(40001, 30001) << QSizePolicy::Minimum << QSizePolicy::Expanding
         << false << true << true << false << QSize(100000, 100000);
-    QTest::newRow("9") << QSize(5, 6) << int(QSizePolicy::Expanding) << int(QSizePolicy::Minimum)
+    QTest::newRow("9") << QSize(5, 6) << QSizePolicy::Expanding << QSizePolicy::Minimum
         << true << false << false << false << QSize(qMax(5, MagicW), 10);
 
-    QTest::newRow("1c") << QSize(5, 6) << int(QSizePolicy::Minimum) << int(QSizePolicy::Expanding)
+    QTest::newRow("1c") << QSize(5, 6) << QSizePolicy::Minimum << QSizePolicy::Expanding
         << false << false << false << true << QSize(5, 6);
-    QTest::newRow("2c") << QSize(5, 6) << int(QSizePolicy::Minimum) << int(QSizePolicy::Expanding)
+    QTest::newRow("2c") << QSize(5, 6) << QSizePolicy::Minimum << QSizePolicy::Expanding
         << true << false << false << true << QSize(5, 6 /* or 10 would be OK too, since hfw contradicts sizeHint() */);
-    QTest::newRow("3c") << QSize(5, 6) << int(QSizePolicy::Minimum) << int(QSizePolicy::Expanding)
+    QTest::newRow("3c") << QSize(5, 6) << QSizePolicy::Minimum << QSizePolicy::Expanding
         << false << true << false << true << QSize(35, 26);
-    QTest::newRow("4c") << QSize(5, 6) << int(QSizePolicy::Minimum) << int(QSizePolicy::Expanding)
+    QTest::newRow("4c") << QSize(5, 6) << QSizePolicy::Minimum << QSizePolicy::Expanding
         << false << true << true << true << QSize(35, 70);
-    QTest::newRow("5c") << QSize(40001, 30001) << int(QSizePolicy::Minimum) << int(QSizePolicy::Expanding)
+    QTest::newRow("5c") << QSize(40001, 30001) << QSizePolicy::Minimum << QSizePolicy::Expanding
         << false << false << false << true << QSize(40001, 30001);
-    QTest::newRow("6c") << QSize(40001, 30001) << int(QSizePolicy::Minimum) << int(QSizePolicy::Expanding)
+    QTest::newRow("6c") << QSize(40001, 30001) << QSizePolicy::Minimum << QSizePolicy::Expanding
         << true << false << false << true << QSize(40001, 30001 /* or 80002 would be OK too, since hfw contradicts sizeHint() */);
-    QTest::newRow("7c") << QSize(40001, 30001) << int(QSizePolicy::Minimum) << int(QSizePolicy::Expanding)
+    QTest::newRow("7c") << QSize(40001, 30001) << QSizePolicy::Minimum << QSizePolicy::Expanding
         << false << true << false << true << QSize(40001 + 30, 30001 + 20);
-    QTest::newRow("8c") << QSize(40001, 30001) << int(QSizePolicy::Minimum) << int(QSizePolicy::Expanding)
+    QTest::newRow("8c") << QSize(40001, 30001) << QSizePolicy::Minimum << QSizePolicy::Expanding
         << false << true << true << true << QSize(40001 + 30, 80002 + 60);
-    QTest::newRow("9c") << QSize(5, 6) << int(QSizePolicy::Expanding) << int(QSizePolicy::Minimum)
+    QTest::newRow("9c") << QSize(5, 6) << QSizePolicy::Expanding << QSizePolicy::Minimum
         << true << false << false << true << QSize(5, 6);
 }
 
 void tst_QWidget::adjustSize()
 {
     QFETCH(QSize, sizeHint);
-    QFETCH(int, hPolicy);
-    QFETCH(int, vPolicy);
+    QFETCH(QSizePolicy::Policy, hPolicy);
+    QFETCH(QSizePolicy::Policy, vPolicy);
     QFETCH(bool, hfwSP);
     QFETCH(bool, layout);
     QFETCH(bool, hfwLayout);
@@ -9633,7 +9614,7 @@ void tst_QWidget::adjustSize()
 
     QScopedPointer<QWidget> parent(new QWidget);
 
-    QSizePolicy sp = QSizePolicy(QSizePolicy::Policy(hPolicy), QSizePolicy::Policy(vPolicy));
+    QSizePolicy sp = QSizePolicy(hPolicy, vPolicy);
     sp.setHeightForWidth(hfwSP);
 
     QWidget *child = new ASWidget(sizeHint, sp, layout, hfwLayout, haveParent ? parent.data() : nullptr);
