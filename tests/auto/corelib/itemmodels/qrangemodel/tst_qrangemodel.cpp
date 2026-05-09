@@ -776,6 +776,7 @@ void tst_QRangeModel::flags()
     auto model = factory();
     QFETCH(const ChangeActions, changeActions);
 
+    const bool hasMimeTypes = !model->mimeTypes().isEmpty();
     const QModelIndex first = model->index(0, 0);
     QVERIFY(first.isValid());
     const QModelIndex last = model->index(model->rowCount() - 1, model->columnCount() - 1);
@@ -787,6 +788,9 @@ void tst_QRangeModel::flags()
              changeActions.testFlags(ChangeAction::SetData));
     if (last.column() != 0)
         QVERIFY(last.flags().testFlag(Qt::ItemNeverHasChildren));
+    QCOMPARE(first.flags().testFlag(Qt::ItemIsDragEnabled), hasMimeTypes);
+    QCOMPARE(first.flags().testFlag(Qt::ItemIsDropEnabled),
+             changeActions.testAnyFlags(ChangeAction::SetData | ChangeAction::InsertRows));
 }
 
 void tst_QRangeModel::headerData()

@@ -119,7 +119,7 @@ struct QRangeModel::ItemAccess<ItemAccessType>
 {
     static Qt::ItemFlags flags(const ItemAccessType &)
     {
-        return Qt::ItemIsEditable;
+        return Qt::ItemIsEditable | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled;
     }
 
     static QVariant readRole(const ItemAccessType &item, int role)

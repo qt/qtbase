@@ -61,8 +61,7 @@ struct QRangeModel::RowOptions<Gadget>
     static Qt::ItemFlags flags(const Gadget &)
     {
         return Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemNeverHasChildren
-             | Qt::ItemIsEditable
-             | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled;
+             | Qt::ItemIsEditable;
     }
 
     static QVariant headerData(int section, int role)

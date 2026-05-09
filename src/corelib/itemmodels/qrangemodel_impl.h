@@ -1360,8 +1360,12 @@ public:
 
     Qt::ItemFlags flags(const QModelIndex &index) const
     {
-        if (!index.isValid())
-            return Qt::NoItemFlags;
+        if (!index.isValid()) {
+            if constexpr (isMutable())
+                return Qt::ItemIsDropEnabled;
+            else
+                return Qt::NoItemFlags;
+        }
 
         // try customization
         std::optional<Qt::ItemFlags> customFlags;
@@ -1384,14 +1388,24 @@ public:
         Qt::ItemFlags f = customFlags ? *customFlags : Structure::defaultFlags();
         // adjust custom flags based on what is not possible
         if constexpr (!isMutable())
-            f &= ~Qt::ItemIsEditable;
+            f &= ~(Qt::ItemIsEditable | Qt::ItemIsDropEnabled);
         if (index.column())
             f |= Qt::ItemNeverHasChildren;
         if (customFlags)
             return f;
 
         // compute flags ourselves
+        if (!this->itemModel().mimeTypes().isEmpty()) {
+            f |= Qt::ItemIsDragEnabled;
+            if constexpr (isMutable())
+                f |= Qt::ItemIsDropEnabled;
+        }
+
         if constexpr (isMutable()) {
+            // Note: Read-only items are still droppable - we can't know here
+            // whether the model will insert data as new rows or children, or if
+            // it will overwrite the data of the dropped-on item. So we allow
+            // dropping on items that are not editable.
             if constexpr (row_traits::hasMetaObject) {
                 if (index.column() < row_traits::fixed_size()) {
                     const QMetaObject mo = wrapped_row_type::staticMetaObject;
@@ -1416,7 +1430,7 @@ public:
                     });
                 } else {
                     // If there's no usable value stored in the row, then we can't
-                    // do anything with this item.
+                    // do anything with this item, except perhaps drop data into it
                     f &= ~Qt::ItemIsEditable;
                 }
             }

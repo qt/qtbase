@@ -40,6 +40,7 @@ public:
     int m_interfaceVersion = -1;
     int m_sortRole = Qt::DisplayRole;
     std::optional<QCollator> m_sortCollator;
+    mutable std::optional<QStringList> m_mimeTypes;
     Qt::DropActions m_supportedDragActions = Qt::CopyAction;
     Qt::DropActions m_supportedDropActions = Qt::CopyAction;
 
@@ -1053,6 +1054,13 @@ int QRangeModel::columnCount(const QModelIndex &parent) const
     models operating on a range with mutable data, it also sets the flag
     that allows the item to be editable (\c ItemIsEditable).
 
+    Models that return a non-empty list of \l{mimeTypes()}{mimeTypes()} also
+    set the Qt::ItemIsDragEnabled, and - unless read-only - the
+    Qt::ItemIsDropEnabled flag.
+
+    Flat models set the Qt::ItemNeverHasChildren for all items, while
+    hierarchical models set that flag for all items in columns above 0.
+
     To customize the flags for your own data types, provide a specialization
     of RowOptions and/or ItemAccess for your row or item types.
 
@@ -1426,9 +1434,12 @@ QMimeData *QRangeModel::mimeData(const QModelIndexList &indexes) const
 QStringList QRangeModel::mimeTypes() const
 {
     Q_D(const QRangeModel);
-    if (d->m_interfaceVersion < QT_VERSION_CHECK(6, 12, 0))
-        return QAbstractItemModel::mimeTypes();
-    return d->impl->call<QRangeModelImplBase::MimeTypes>();
+    if (!d->m_mimeTypes) {
+        d->m_mimeTypes = d->m_interfaceVersion < QT_VERSION_CHECK(6, 12, 0)
+                       ? QAbstractItemModel::mimeTypes()
+                       : d->impl->call<QRangeModelImplBase::MimeTypes>();
+    }
+    return *d->m_mimeTypes;
 }
 
 /*!
