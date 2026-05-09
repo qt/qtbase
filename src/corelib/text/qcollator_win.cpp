@@ -96,7 +96,7 @@ QCollatorSortKey QCollator::sortKey(const QString &string) const
     if (string.isEmpty()) {
         // empty strings sort before everything and LCMapString doesn't
         // like them
-        return QCollatorSortKey(nullptr);
+        return QCollatorSortKey(new QCollatorSortKeyPrivate(QByteArray()));
     }
 
     if (!d)
@@ -128,10 +128,6 @@ QCollatorSortKey QCollator::sortKey(const QString &string) const
 
 int QCollatorSortKey::compare(const QCollatorSortKey &otherKey) const noexcept
 {
-    if (!d)
-        return otherKey.d ? -1 : 0;
-    if (!otherKey.d)
-        return +1;
     return d->m_key.compare(otherKey.d->m_key);
 }
 
