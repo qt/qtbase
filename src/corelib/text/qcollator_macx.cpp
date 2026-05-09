@@ -91,15 +91,16 @@ QCollatorSortKey QCollator::sortKey(const QString &string) const
 
     d->ensureInitialized();
 
+    QList<UCCollationValue> ret;
     if (!d->collator) {
         // What should (or even *can*) we do here ? (See init()'s comment.)
         qWarning("QCollator doesn't support sort keys for the C locale on Darwin");
-        return QCollatorSortKey(nullptr);
+        return QCollatorSortKey(new QCollatorSortKeyPrivate(std::move(ret)));
     }
 
     auto text = reinterpret_cast<const UniChar *>(string.constData());
     // Documentation recommends having it 5 times as big as the input
-    QList<UCCollationValue> ret(string.size() * 5);
+    ret.resizeForOverwrite(string.size() * 5);
     ItemCount actualSize;
     int status = UCGetCollationKey(d->collator, text, string.size(),
                                    ret.size(), &actualSize, ret.data());
@@ -117,9 +118,6 @@ QCollatorSortKey QCollator::sortKey(const QString &string) const
 
 int QCollatorSortKey::compare(const QCollatorSortKey &key) const noexcept
 {
-    if (!d.data())
-        return 0;
-
     SInt32 order;
     UCCompareCollationKeys(d->m_key.data(), d->m_key.size(),
                            key.d->m_key.data(), key.d->m_key.size(),
