@@ -120,6 +120,7 @@ private slots:
     void showInputPanelLater(Qt::ApplicationState);
 
 private:
+    bool isImhNoEditMenuSet();
     bool isImhNoTextHandlesSet();
     void sendInputMethodEvent(QInputMethodEvent *event);
     QSharedPointer<QInputMethodQueryEvent> focusObjectInputMethodQuery(Qt::InputMethodQueries queries = Qt::ImQueryAll);

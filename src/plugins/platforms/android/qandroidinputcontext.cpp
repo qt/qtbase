@@ -585,6 +585,14 @@ void QAndroidInputContext::updateCursorPosition()
     }
 }
 
+bool QAndroidInputContext::isImhNoEditMenuSet()
+{
+    QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQuery();
+    if (query.isNull())
+        return false;
+    return query->value(Qt::ImHints).toUInt() & Qt::ImhNoEditMenu;
+}
+
 bool QAndroidInputContext::isImhNoTextHandlesSet()
 {
     QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQuery();
@@ -647,9 +655,13 @@ void QAndroidInputContext::updateSelectionHandles()
         QPoint editMenuPoint(x, y);
         m_handleMode &= ShowEditPopup;
         m_handleMode |= ShowCursor;
-        uint32_t buttons = readOnly ? 0 : EditContext::PasteButton;
-        if (!query.value(Qt::ImSurroundingText).toString().isEmpty())
-            buttons |= EditContext::SelectAllButton;
+        uint32_t buttons = 0;
+        const bool withEditMenu = !isImhNoEditMenuSet();
+        if (withEditMenu) {
+            buttons = readOnly ? 0 : EditContext::PasteButton;
+            if (!query.value(Qt::ImSurroundingText).toString().isEmpty())
+                buttons |= EditContext::SelectAllButton;
+        }
         QtAndroidInput::updateHandles(m_handleMode, editMenuPoint, buttons, cursorPointGlobal);
         m_hideCursorHandleTimer.start();
 
@@ -682,8 +694,12 @@ void QAndroidInputContext::updateSelectionHandles()
         rightPoint = qPlatformWindow->mapFromGlobal(rightPoint);
 
         QPoint editPoint(leftRect.united(rightRect).topLeft().toPoint());
-        uint32_t buttons = readOnly ? EditContext::CopyButton | EditContext::SelectAllButton
-                                    : EditContext::AllButtons;
+        uint32_t buttons = 0;
+        const bool withEditMenu = !isImhNoEditMenuSet();
+        if (withEditMenu) {
+            buttons = readOnly ? EditContext::CopyButton | EditContext::SelectAllButton
+                               : EditContext::AllButtons;
+        }
 
         QtAndroidInput::updateHandles(m_handleMode, editPoint, buttons, leftPoint, rightPoint,
                                       query.value(Qt::ImCurrentSelection).toString().isRightToLeft());
