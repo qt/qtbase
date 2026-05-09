@@ -8210,16 +8210,17 @@ void tst_QGraphicsItem::moveLineItem()
 
 void tst_QGraphicsItem::sorting_data()
 {
-    QTest::addColumn<int>("index");
+    QTest::addColumn<QGraphicsScene::ItemIndexMethod>("indexMethod");
 
-    QTest::newRow("NoIndex") << int(QGraphicsScene::NoIndex);
-    QTest::newRow("BspTreeIndex") << int(QGraphicsScene::BspTreeIndex);
+    QTest::newRow("NoIndex") << QGraphicsScene::NoIndex;
+    QTest::newRow("BspTreeIndex") << QGraphicsScene::BspTreeIndex;
 }
 
 void tst_QGraphicsItem::sorting()
 {
     if (qGuiApp->styleHints()->showIsFullScreen())
         QSKIP("Skipped because Platform is auto maximizing");
+    QFETCH(QGraphicsScene::ItemIndexMethod, indexMethod);
 
     _paintedItems.clear();
 
@@ -8235,6 +8236,7 @@ void tst_QGraphicsItem::sorting()
             scene.addItem(item);
         }
     }
+    scene.setItemIndexMethod(indexMethod);
 
     PainterItem *item1 = new PainterItem;
     PainterItem *item2 = new PainterItem;

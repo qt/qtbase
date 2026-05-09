@@ -3163,41 +3163,38 @@ void tst_QGraphicsProxyWidget::dragDrop()
 
 void tst_QGraphicsProxyWidget::windowFlags_data()
 {
-    QTest::addColumn<int>("proxyFlags");
-    QTest::addColumn<int>("widgetFlags");
-    QTest::addColumn<int>("resultingProxyFlags");
-    QTest::addColumn<int>("resultingWidgetFlags");
+    QTest::addColumn<Qt::WindowType>("proxyFlags");
+    QTest::addColumn<Qt::WindowType>("widgetFlags");
+    QTest::addColumn<Qt::WindowType>("resultingProxyFlags");
+    QTest::addColumn<Qt::WindowType>("resultingWidgetFlags");
 
-    QTest::newRow("proxy(0) widget(0)") << 0 << 0 << 0 << int(Qt::Window);
-    QTest::newRow("proxy(window)") << int(Qt::Window) << 0 << int(Qt::Window) << int(Qt::Window);
-    QTest::newRow("proxy(window) widget(window)") << int(Qt::Window) << int(Qt::Window) << int(Qt::Window) << int(Qt::Window);
-    QTest::newRow("proxy(0) widget(window)") << int(0) << int(Qt::Window) << int(0) << int(Qt::Window);
+    QTest::newRow("proxy(0) widget(0)") << Qt::Widget << Qt::Widget << Qt::Widget << Qt::Window;
+    QTest::newRow("proxy(window)") << Qt::Window << Qt::Widget << Qt::Window << Qt::Window;
+    QTest::newRow("proxy(window) widget(window)") << Qt::Window << Qt::Window << Qt::Window << Qt::Window;
+    QTest::newRow("proxy(0) widget(window)") << Qt::Widget << Qt::Window << Qt::Widget << Qt::Window;
 }
 
 void tst_QGraphicsProxyWidget::windowFlags()
 {
-    QFETCH(int, proxyFlags);
-    QFETCH(int, widgetFlags);
-    QFETCH(int, resultingProxyFlags);
-    QFETCH(int, resultingWidgetFlags);
-    const Qt::WindowFlags proxyWFlags(proxyFlags);
-    const Qt::WindowFlags widgetWFlags(widgetFlags);
-    const Qt::WindowFlags resultingProxyWFlags(resultingProxyFlags);
-    const Qt::WindowFlags resultingWidgetWFlags(resultingWidgetFlags);
+    QFETCH(Qt::WindowType, proxyFlags);
+    QFETCH(Qt::WindowType, widgetFlags);
+    QFETCH(Qt::WindowType, resultingProxyFlags);
+    QFETCH(Qt::WindowType, resultingWidgetFlags);
 
-    QGraphicsProxyWidget proxy(nullptr, proxyWFlags);
-    QVERIFY((proxy.windowFlags() & proxyWFlags) == proxyWFlags);
+    QGraphicsProxyWidget proxy(nullptr, proxyFlags);
+    QVERIFY((proxy.windowFlags() & proxyFlags) == proxyFlags);
 
-    auto *widget = new QWidget(nullptr, widgetWFlags);
-    QVERIFY((widget->windowFlags() & widgetWFlags) == widgetWFlags);
+    auto *widget = new QWidget(nullptr, widgetFlags);
+    QVERIFY((widget->windowFlags() & widgetFlags) == widgetFlags);
 
     proxy.setWidget(widget);
 
-    if (resultingProxyFlags == 0)
+    // Qt::Widget is 0 so bit testing will not work
+    if (resultingWidgetFlags == Qt::Widget)
         QVERIFY(!proxy.windowFlags());
     else
-        QVERIFY((proxy.windowFlags() & resultingProxyWFlags) == resultingProxyWFlags);
-    QVERIFY((widget->windowFlags() & resultingWidgetWFlags) == resultingWidgetWFlags);
+        QVERIFY((proxy.windowFlags() & resultingProxyFlags) == resultingProxyFlags);
+    QVERIFY((widget->windowFlags() & resultingWidgetFlags) == resultingWidgetFlags);
 }
 
 void tst_QGraphicsProxyWidget::comboboxWindowFlags()
