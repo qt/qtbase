@@ -82,18 +82,17 @@ public:
     void init();
     void cleanup();
 
+    static QCollatorSortKey sortKeyFromData(CollatorKeyType &&data);
+
 private:
     Q_DISABLE_COPY_MOVE(QCollatorPrivate)
 };
 
 class QCollatorSortKeyPrivate : public QSharedData
 {
-    friend class QCollator;
 public:
-    template <typename...T>
-    explicit QCollatorSortKeyPrivate(T &&...args)
-        : QSharedData()
-        , m_key(std::forward<T>(args)...)
+    explicit QCollatorSortKeyPrivate(CollatorKeyType &&list)
+        : QSharedData(), m_key(std::move(list))
     {
     }
 
@@ -103,6 +102,10 @@ private:
     Q_DISABLE_COPY_MOVE(QCollatorSortKeyPrivate)
 };
 
+inline QCollatorSortKey QCollatorPrivate::sortKeyFromData(CollatorKeyType &&data)
+{
+    return QCollatorSortKey(new QCollatorSortKeyPrivate(std::move(data)));
+}
 
 QT_END_NAMESPACE
 

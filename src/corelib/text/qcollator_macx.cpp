@@ -95,7 +95,7 @@ QCollatorSortKey QCollator::sortKey(const QString &string) const
     if (!d->collator) {
         // What should (or even *can*) we do here ? (See init()'s comment.)
         qWarning("QCollator doesn't support sort keys for the C locale on Darwin");
-        return QCollatorSortKey(new QCollatorSortKeyPrivate(std::move(ret)));
+        return QCollatorPrivate::sortKeyFromData(std::move(ret));
     }
 
     auto text = reinterpret_cast<const UniChar *>(string.constData());
@@ -113,7 +113,7 @@ QCollatorSortKey QCollator::sortKey(const QString &string) const
         Q_ASSERT(ret.size() == qsizetype(actualSize + 1));
     }
     ret[actualSize] = 0;
-    return QCollatorSortKey(new QCollatorSortKeyPrivate(std::move(ret)));
+    return QCollatorPrivate::sortKeyFromData(std::move(ret));
 }
 
 int QCollatorSortKey::compare(const QCollatorSortKey &key) const noexcept

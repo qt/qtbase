@@ -90,7 +90,7 @@ QCollatorSortKey QCollator::sortKey(const QString &string) const
         result.resize(neededSizeExcludingNullTerminator + 1);
         result[neededSizeExcludingNullTerminator] = 0;
     }
-    return QCollatorSortKey(new QCollatorSortKeyPrivate(std::move(result)));
+    return QCollatorPrivate::sortKeyFromData(std::move(result));
 }
 
 int QCollatorSortKey::compare(const QCollatorSortKey &otherKey) const noexcept

@@ -96,7 +96,7 @@ QCollatorSortKey QCollator::sortKey(const QString &string) const
     if (string.isEmpty()) {
         // empty strings sort before everything and LCMapString doesn't
         // like them
-        return QCollatorSortKey(new QCollatorSortKeyPrivate(QByteArray()));
+        return QCollatorPrivate::sortKeyFromData(QByteArray());
     }
 
     if (!d)
@@ -104,7 +104,7 @@ QCollatorSortKey QCollator::sortKey(const QString &string) const
     d->ensureInitialized();
 
     if (d->isC())
-        return QCollatorSortKey(new QCollatorSortKeyPrivate(string.toUtf8()));
+        return QCollatorPrivate::sortKeyFromData(string.toUtf8());
 
     const QString localeName = d->locale.bcp47Name();
     auto callLcMapString = [&](LPWSTR lpDestStr, int cchDest) {
@@ -123,7 +123,7 @@ QCollatorSortKey QCollator::sortKey(const QString &string) const
     if (size == 0)
         qErrnoWarning("Error when generating the ::sortKey by LCMapStringEx");
 
-    return QCollatorSortKey(new QCollatorSortKeyPrivate(std::move(ret)));
+    return QCollatorPrivate::sortKeyFromData(std::move(ret));
 }
 
 int QCollatorSortKey::compare(const QCollatorSortKey &otherKey) const noexcept

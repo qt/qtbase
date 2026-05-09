@@ -18,7 +18,7 @@ QT_DECLARE_QESDP_SPECIALIZATION_DTOR(QCollatorSortKeyPrivate)
 
 class Q_CORE_EXPORT QCollatorSortKey
 {
-    friend class QCollator;
+    friend class QCollatorPrivate;
 public:
     QCollatorSortKey() = delete;
     QCollatorSortKey(const QCollatorSortKey &other);
