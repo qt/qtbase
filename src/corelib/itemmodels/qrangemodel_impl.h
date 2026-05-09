@@ -447,6 +447,58 @@ namespace QRangeModelDetails
     template <typename row_type>
     static constexpr bool hasRowFlags = qxp::is_detected_v<hasRowFlags_test, row_type>;
 
+    // drag'n'drop handling
+    template <typename row_type>
+    using hasMimeTypes_test = decltype(QRangeModelRowOptions<row_type>::mimeTypes());
+    template <typename row_type>
+    static constexpr bool hasMimeTypes = qxp::is_detected_v<hasMimeTypes_test, row_type>;
+    template <typename row_type>
+    using hasMimeDataIndexList_test = decltype(QRangeModelRowOptions<row_type>::mimeData(
+        std::declval<const QModelIndexList &>())
+    );
+    template <typename row_type>
+    static constexpr bool hasMimeDataIndexList = qxp::is_detected_v<hasMimeDataIndexList_test, row_type>;
+    template <typename row_type>
+    using hasMimeDataRowSpan_test = decltype(QRangeModelRowOptions<row_type>::mimeData(
+        // we don't call it with a QSpan, but with a range type. QSpan is a close enough match.
+        std::declval<QSpan<const row_type>>())
+    );
+    template <typename row_type>
+    static constexpr bool hasMimeDataRowSpan = qxp::is_detected_v<hasMimeDataRowSpan_test, row_type>;
+
+    // we allow simplified versions of (can)DropMimeData
+    template <typename row_type>
+    using hasCanDropMimeData_test = decltype(QRangeModelRowOptions<row_type>::canDropMimeData(
+        std::declval<const QMimeData *>()
+    ));
+    template <typename row_type>
+    static constexpr bool hasCanDropMimeData = qxp::is_detected_v<hasCanDropMimeData_test, row_type>;
+    template <typename row_type>
+    using hasDropMimeData_test = decltype(QRangeModelRowOptions<row_type>::dropMimeData(
+        std::declval<const QMimeData *>(),
+        std::declval<std::back_insert_iterator<std::vector<row_type>>>()
+    ));
+    template <typename row_type>
+    static constexpr bool hasDropMimeData = qxp::is_detected_v<hasDropMimeData_test, row_type>;
+
+    // the full versions get all the parameters
+    template <typename row_type>
+    using hasCanDropMimeDataFull_test = decltype(QRangeModelRowOptions<row_type>::canDropMimeData(
+        std::declval<const QMimeData *>(), Qt::CopyAction, 0, 0, std::declval<const QModelIndex &>()
+    ));
+    template <typename row_type>
+    static constexpr bool hasCanDropMimeDataFull = qxp::is_detected_v<hasCanDropMimeDataFull_test,
+                                                                      row_type>;
+    template <typename row_type>
+    using hasDropMimeDataFull_test = decltype(QRangeModelRowOptions<row_type>::dropMimeData(
+        std::declval<const QMimeData *>(),
+        Qt::CopyAction, 0, 0, std::declval<const QModelIndex &>(),
+        std::declval<std::back_insert_iterator<std::vector<row_type>>>()
+    ));
+    template <typename row_type>
+    static constexpr bool hasDropMimeDataFull = qxp::is_detected_v<hasDropMimeDataFull_test,
+                                                                   row_type>;
+
     // Find out how many fixed elements can be retrieved from a row element.
     // main template for simple values and ranges. Specializing for ranges
     // is ambiguous with arrays, as they are also ranges
@@ -839,6 +891,103 @@ namespace QRangeModelDetails
         static constexpr bool is_default = is_any_of<protocol, ListProtocol, TableProtocol, DefaultTreeProtocol>();
     };
 
+    // Helpers for drag'n'drop:
+    // MimeDataEntry gives customisations access to a pair of a row (as
+    // a reference to their underlying type, i.e. unwrapped, as that's
+    // what customizations specialize RowOptions for), and the
+    // corresponding index, with decomposition support for easy iteration.
+    template <typename Entry>
+    struct MimeDataEntry
+    {
+        using wrapped_entry = QRangeModelDetails::wrapped_t<q20::remove_cvref_t<Entry>>;
+
+        bool isValid() const { return QRangeModelDetails::isValid(m_entry); }
+        const wrapped_entry &entry() const
+        {
+            if constexpr (QRangeModelDetails::is_owning_or_raw_pointer<Entry>()) {
+                // While we mark null-items or indexes in null-rows as not draggable,
+                // client code might override that, or explicitly call QRM::mimeData()
+                // with indexes that point at null-rows or -items.
+                if (!QRangeModelDetails::isValid(m_entry)) {
+#ifndef QT_NO_DEBUG
+                    qDebug("QRangeModel::mimeData: null-entry, test with isValid before accessing");
+#endif
+                    static const wrapped_entry emptyDefault;
+                    return QRangeModelDetails::refTo(emptyDefault);
+                }
+            }
+            return std::as_const(QRangeModelDetails::refTo(m_entry));
+        }
+
+        const QModelIndex &index() const { return m_index; }
+
+        template <std::size_t N>
+        friend decltype(auto) get(const MimeDataEntry &entry)
+        {
+            if constexpr (N == 0)
+                return entry.entry();
+            else if constexpr (N == 1)
+                return entry.index();
+        }
+        const Entry &m_entry;
+        const QModelIndex m_index;
+    };
+} // namespace QRangeModelDetails
+
+QT_END_NAMESPACE
+
+// decomposition protocol
+namespace std {
+template <typename T>
+struct tuple_size<QT_PREPEND_NAMESPACE(QRangeModelDetails::MimeDataEntry<T>)>
+    : std::integral_constant<std::size_t, 2> {};
+template <typename T>
+struct tuple_element<0, QT_PREPEND_NAMESPACE(QRangeModelDetails::MimeDataEntry<T>)>
+{ using type = QT_PREPEND_NAMESPACE(QRangeModelDetails)::wrapped_t<T>; };
+template <typename T>
+struct tuple_element<1, QT_PREPEND_NAMESPACE(QRangeModelDetails::MimeDataEntry<T>)>
+{ using type = QT_PREPEND_NAMESPACE(QModelIndex); };
+}  // namespace QRangeModelDetails
+
+QT_BEGIN_NAMESPACE
+
+namespace QRangeModelDetails {
+    // A helper type for drop-support. Client code populates a sequence of
+    // dropped things via an insertion iterator, and those get wrapped in a
+    // DroppedEntry, which allows user code to also specify the position of the
+    // thing in the target model.
+    template <typename Entry>
+    struct DroppedEntry
+    {
+        struct Cell {
+            int m_row;
+            int m_column;
+
+            // implicit conversion is intentional
+            Q_IMPLICIT Cell() noexcept : m_row(-1), m_column(-1)  {}
+            Q_IMPLICIT Cell(int row, int column = 0) noexcept : m_row(row), m_column(column) {}
+
+            friend bool operator==(const Cell &lhs, const Cell &rhs) noexcept
+            {
+                return lhs.m_row == rhs.m_row && lhs.m_column == rhs.m_column;
+            }
+        };
+
+        // implicit conversion from and to entry is intentional
+        Q_IMPLICIT DroppedEntry(Entry &&entry)
+            : m_entry(std::move(entry)), m_cell{-1, -1}
+        {}
+        Q_IMPLICIT DroppedEntry(Entry &&entry, Cell cell)
+            : m_entry(std::move(entry)), m_cell(cell)
+        {}
+
+        // we only move the actual data out
+        operator Entry&&() && { return std::move(m_entry); }
+
+        Entry m_entry;
+        Cell m_cell;
+    };
+
     class Q_CORE_EXPORT AutoConnectContext : public QObject
     {
         Q_DISABLE_COPY_MOVE(AutoConnectContext)
@@ -968,6 +1117,16 @@ public:
         None,
         Full,
         OnRead,
+    };
+
+    // keep in sync with QRangeModel::DropOperation
+    enum class DropOperation {
+        DontDrop,
+        Automatic,
+        OverwriteAndIgnore,
+        OverwriteAndExtend,
+        InsertAsSiblings,
+        InsertAsChildren,
     };
 
     // overridable prototypes (quasi-pure-virtual methods)
@@ -1171,8 +1330,6 @@ protected:
     }
 
     Q_CORE_EXPORT bool dropDataOnItem(const QMimeData *data, const QModelIndex &index);
-    Q_CORE_EXPORT bool insertMimeData(const QMimeData *data,
-                                      int row, int column, const QModelIndex &index);
 };
 
 template <typename Structure, typename Range,
@@ -1304,6 +1461,7 @@ protected:
                   "The range holding a move-only row-type must support insert(pos, start, end)");
 
     using AutoConnectPolicy = typename Ancestor::AutoConnectPolicy;
+    using DropOperation = typename Ancestor::DropOperation;
 
 public:
     static constexpr bool isMutable()
@@ -1351,7 +1509,8 @@ public:
         if (row == index.row() && column == index.column())
             return index;
 
-        if (column < 0 || column >= this->columnCount({}))
+        // we use indexes at column -1 in drag'n'drop handling to mark full rows
+        if (column >= this->columnCount({}))
             return {};
 
         if (row == index.row())
@@ -2611,41 +2770,296 @@ public:
 
     QStringList mimeTypes() const
     {
-        return this->itemModel().QAbstractItemModel::mimeTypes();
+        if constexpr (QRangeModelDetails::hasMimeTypes<wrapped_row_type>)
+            return QRangeModelDetails::QRangeModelRowOptions<wrapped_row_type>::mimeTypes();
+        else
+            return this->itemModel().QAbstractItemModel::mimeTypes();
     }
 
     bool canDropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column,
-                         const QModelIndex &parent) const
-    {
-        if constexpr (isMutable())
-            return this->itemModel().QAbstractItemModel::canDropMimeData(data, action, row, column, parent);
-        else
-            return false;
-    }
-
-    bool dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column,
-                      const QModelIndex &parent)
+                         const QModelIndex &target) const
     {
         if constexpr (isMutable()) {
-            if (!canDropMimeData(data, action, row, column, parent))
-                return false;
-
-            // default mime type handling: dropping on item -> try to set the data
-            if (row == -1 && column == -1 && parent.isValid() && that().dropOnItem(data, parent))
-                return true;
-            // failing that, insert the data as new indexes. A row of -1 indicates
-            // that data should be appended to the model
-            if (row == -1)
-                row = rowCount(parent);
-            return this->insertMimeData(data, row, column, parent);
+            bool canDrop;
+            using RowOptions = QRangeModelDetails::QRangeModelRowOptions<wrapped_row_type>;
+            if constexpr (QRangeModelDetails::hasCanDropMimeDataFull<wrapped_row_type>) {
+                canDrop = RowOptions::canDropMimeData(data, action, row, column, target);
+            } else {
+                canDrop = this->itemModel().QAbstractItemModel::canDropMimeData(data, action, row,
+                                                                                column, target);
+                if constexpr (QRangeModelDetails::hasCanDropMimeData<wrapped_row_type>)
+                    canDrop &= RowOptions::canDropMimeData(data);
+            }
+            return canDrop;
         } else {
             return false;
         }
     }
 
+    // generic so that we can reuse for dropping of individual items
+    template <typename Entry>
+    bool doDropMimeData(std::vector<QRangeModelDetails::DroppedEntry<Entry>> &droppedEntries,
+                        DropOperation dropOperation, int row, int column, const QModelIndex &target)
+    {
+        using DroppedEntry = QRangeModelDetails::DroppedEntry<Entry>;
+        using Cell = typename DroppedEntry::Cell;
+        if (dropOperation == DropOperation::DontDrop)
+            return false;
+
+        const bool dropOnTarget = row == -1 && column == -1 && target.isValid();
+        const QModelIndex parent = dropOperation == DropOperation::InsertAsChildren
+                                 ? target.siblingAtColumn(0) : target.parent();
+
+        Cell lastCell = {-1, 0};
+        int bottomRow = -1;
+        int rightColumn = -1;
+        // set the target cell for all dropped entries and find the bottom-right
+        // cell relative to the drop position
+        int maxColumn = that().columnCount(parent) - 1;
+        for (auto &droppedEntry : droppedEntries) {
+            if (droppedEntry.m_cell == Cell{-1, -1})
+                droppedEntry.m_cell = {lastCell.m_row + 1, lastCell.m_column};
+            lastCell = droppedEntry.m_cell;
+            bottomRow = std::max(lastCell.m_row, bottomRow);
+            rightColumn = std::max(lastCell.m_column, rightColumn);
+        }
+
+        if (dropOperation == DropOperation::InsertAsChildren) {
+            row = rowCount(parent);
+            column = 0;
+        } else if (dropOnTarget) {
+            row = target.row();
+            column = target.column();
+        } else {
+            if (row < 0)
+                row = rowCount(parent);
+            // dropping into empty space to the right of a table doesn't widen
+            if (column < 0)
+                column = 0;
+        }
+        const bool overwrite = dropOperation == DropOperation::OverwriteAndIgnore
+                            || dropOperation == DropOperation::OverwriteAndExtend;
+
+        // Compute if we need more rows, and try to add them. Abort if that fails.
+        const int overwriteRows = overwrite
+                                ? std::min(bottomRow + 1, rowCount(parent) - row)
+                                : 0;
+        const int newRows = dropOperation == DropOperation::OverwriteAndExtend
+                          ? bottomRow - overwriteRows + 1
+                          : (dropOperation == DropOperation::InsertAsChildren
+                             || dropOperation == DropOperation::InsertAsSiblings)
+                            ? bottomRow + 1
+                            : 0;
+        if (newRows > 0 && !insertRows(row, newRows, parent))
+            return false;
+
+        // Ditto for columns, but InsertAsSiblings/Children only applies to rows
+        const int overwriteColumns = overwrite
+                                   ? std::min(rightColumn + 1, columnCount(parent) - column)
+                                   : 0;
+        const int newColumns = dropOperation == DropOperation::OverwriteAndExtend
+                             ? rightColumn - overwriteColumns + 1 : 0;
+        if (newColumns > 0 && !insertColumns(column, newColumns, parent))
+            return false;
+
+        // access the target range
+        range_type *parentRange = that().childRange(parent);
+        if (!parentRange)
+            return false;
+        range_type &targetRange = *parentRange;
+
+        int maxRow = that().rowCount(parent) - 1;
+        maxColumn = that().columnCount(parent) - 1;
+        auto begin = std::move_iterator(droppedEntries.begin());
+        auto end = std::move_iterator(droppedEntries.end());
+        for (; begin != end; ++begin) {
+            DroppedEntry droppedEntry = *begin;
+            const Cell cell = {droppedEntry.m_cell.m_row + row, droppedEntry.m_cell.m_column + column};
+            if (cell.m_row > maxRow || cell.m_column > maxColumn) // Ignore
+                continue;
+            auto writeRow = QRangeModelDetails::pos(targetRange, cell.m_row);
+            if constexpr (QRangeModelDetails::is_owning_or_raw_pointer<row_type>()) {
+                if (!*writeRow)
+                    *writeRow = this->protocol().newRow();
+                **writeRow = std::move(droppedEntry);
+            } else {
+                *writeRow = std::move(droppedEntry);
+            }
+        }
+
+        that().resetParentInChildren(&targetRange);
+
+        const QModelIndex topLeft = index(row, column, parent);
+        const QModelIndex bottomRight = sibling(row + bottomRow, maxColumn, topLeft);
+        this->dataChanged(topLeft, bottomRight, {});
+
+        return true;
+    }
+
+    bool dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column,
+                      const QModelIndex &target)
+    {
+        if constexpr (isMutable()) {
+            if (!canDropMimeData(data, action, row, column, target))
+                return false;
+
+            const bool dropOnTarget = row == -1 && column == -1 && target.isValid();
+
+            auto automaticDropOption = [=](auto dropResult){
+                DropOperation dropOperation;
+                if constexpr (std::is_same_v<bool, decltype(dropResult)>) {
+                    dropOperation = dropResult ? DropOperation::Automatic
+                                               : DropOperation::DontDrop;
+                } else { // it's a QRangeModel::DropOperation
+                    dropOperation = static_cast<DropOperation>(dropResult);
+                }
+
+                if (dropOperation == DropOperation::Automatic) {
+                    if constexpr (!canInsertRows())
+                        dropOperation = DropOperation::OverwriteAndIgnore;
+                    else if (!dropOnTarget)
+                        dropOperation = DropOperation::InsertAsSiblings;
+                    else if (target.siblingAtColumn(0).flags().testFlag(Qt::ItemNeverHasChildren))
+                        dropOperation = DropOperation::OverwriteAndExtend;
+                    else
+                        dropOperation = DropOperation::InsertAsChildren;
+                }
+                return dropOperation;
+            };
+
+            if constexpr (QRangeModelDetails::hasDropMimeDataFull<wrapped_row_type>
+                       || QRangeModelDetails::hasDropMimeData<wrapped_row_type>) {
+                using RowOptions = QRangeModelDetails::QRangeModelRowOptions<wrapped_row_type>;
+                using DroppedRow = QRangeModelDetails::DroppedEntry<wrapped_row_type>;
+                std::vector<DroppedRow> droppedRows;
+                DropOperation dropOperation = automaticDropOption([&]{
+                    auto inserter = std::back_inserter(droppedRows);
+                    if constexpr (QRangeModelDetails::hasDropMimeDataFull<wrapped_row_type>)
+                        return RowOptions::dropMimeData(data, action, row, column, target, inserter);
+                    else
+                        return RowOptions::dropMimeData(data, inserter);
+                }());
+                if (doDropMimeData(droppedRows, dropOperation, row, column, target))
+                    return true;
+            }
+            // default mime type handling: dropping on item -> try to set the data
+            if (dropOnTarget && that().dropOnItem(data, target))
+                return true;
+        }
+        return false;
+    }
+
+    // A bidirectional-iterator that, given a list of QModelIndex, dereferences
+    // to a list of rows plus QModelIndex, without copying any data.
+    // For segments in indexes covering full rows, we skip over the individual
+    // indexes and give the dereferenced index a column value of -1.
+    struct MimeDataRowIterator
+    {
+        using base_iterator = QModelIndexList::const_iterator;
+        using difference_type = typename base_iterator::difference_type;
+        using iterator_category = std::bidirectional_iterator_tag;
+        using value_type = QRangeModelDetails::MimeDataEntry<const_row_reference>;
+        using reference [[maybe_unused]] = value_type;
+        using const_reference = value_type;
+        using pointer [[maybe_unused]] = void;
+
+        MimeDataRowIterator() = default;
+        MimeDataRowIterator(base_iterator it, base_iterator begin, base_iterator end,
+                            const QRangeModelImpl *model)
+            : m_it(it), m_begin(begin), m_end(end), m_model(model)
+            , m_columnCount(model->columnCount({}))
+        {
+            updateCurrentIndexFullRow();
+        }
+
+        const_reference operator*() const
+        {
+            const QModelIndex &index = *m_it;
+            return {m_model->rowData(index),
+                    m_currentIndexIsFullRow
+                    ? m_model->createIndex(m_it->row(), -1, m_it->internalPointer()) : index};
+        }
+
+        MimeDataRowIterator &operator++() {
+            if (m_currentIndexIsFullRow)
+                m_it += m_columnCount;
+            else
+                ++m_it;
+            updateCurrentIndexFullRow();
+            return *this;
+        }
+        MimeDataRowIterator operator++(int) { auto tmp = *this; ++(*this); return tmp; }
+
+        MimeDataRowIterator &operator--() {
+            --m_it;
+            m_currentIndexIsFullRow = false;
+            const int lastColumn = m_columnCount - 1;
+            if (m_it - m_begin >= lastColumn && m_it->column() == lastColumn) {
+                const QModelIndex &firstInRow = m_it[-lastColumn];
+                if (m_it->row() == firstInRow.row()
+                 && firstInRow.internalPointer() == m_it->internalPointer()) {
+                    m_currentIndexIsFullRow = true;
+                    m_it -= lastColumn;
+                }
+            }
+            return *this;
+        }
+        MimeDataRowIterator operator--(int) { auto tmp = *this; --(*this); return tmp; }
+
+        MimeDataRowIterator operator-(difference_type n) const
+        {
+            auto tmp = *this; tmp.m_it -= n; return tmp;
+        }
+
+        bool operator==(const MimeDataRowIterator &other) const { return m_it == other.m_it; }
+        bool operator!=(const MimeDataRowIterator &other) const { return m_it != other.m_it; }
+
+    private:
+        void updateCurrentIndexFullRow()
+        {
+            m_currentIndexIsFullRow = false;
+            if (m_it == m_end || m_it->column() || m_end - m_it < m_columnCount)
+                return;
+            const QModelIndex &lastInRow = m_it[m_columnCount - 1];
+            m_currentIndexIsFullRow = lastInRow.row() == m_it->row()
+                                   && lastInRow.internalPointer() == m_it->internalPointer();
+        }
+
+        base_iterator m_it;
+        base_iterator m_begin;
+        base_iterator m_end;
+        const QRangeModelImpl *m_model;
+        int m_columnCount = 0;
+        bool m_currentIndexIsFullRow = false;
+    };
+
+    struct MimeDataRange {
+        MimeDataRowIterator begin() const { return m_begin; }
+        MimeDataRowIterator end() const { return m_end; }
+        auto rbegin() const { return std::reverse_iterator(m_end); }
+        auto rend() const { return std::reverse_iterator(m_begin); }
+        auto first() const { return *m_begin;}
+        auto last() const { return *(m_end - 1);}
+        bool isEmpty() const { return m_begin == m_end; }
+        bool empty() const { return m_begin == m_end; }
+        MimeDataRowIterator m_begin;
+        MimeDataRowIterator m_end;
+    };
+
     QMimeData *mimeData(const QModelIndexList &indexes) const
     {
-        return this->itemModel().QAbstractItemModel::mimeData(indexes);
+        QMimeData *result = nullptr;
+        using RowOptions = QRangeModelDetails::QRangeModelRowOptions<wrapped_row_type>;
+
+        if constexpr (QRangeModelDetails::hasMimeDataRowSpan<wrapped_row_type>) {
+            const auto begin = MimeDataRowIterator(indexes.begin(), indexes.begin(), indexes.end(), this);
+            const auto end = MimeDataRowIterator(indexes.end(), indexes.begin(), indexes.end(), this);
+            result = RowOptions::mimeData(MimeDataRange{begin, end});
+        } else if constexpr (QRangeModelDetails::hasMimeDataIndexList<wrapped_row_type>) {
+            result = RowOptions::mimeData(indexes);
+        }
+
+        return result;
     }
 
     template <typename BaseMethod, typename BaseMethod::template Overridden<Self> overridden>
@@ -3380,6 +3794,12 @@ protected:
                    : *this->m_data.model();
     }
 
+    range_type &childrenOf(row_ptr row)
+    {
+        return row ? QRangeModelDetails::refTo(this->protocol().childRows(*row))
+                   : *this->m_data.model();
+    }
+
     template <typename LessThan>
     void sortImplRecursive(range_type &range, row_ptr parentRow, const LessThan &lessThan)
     {
@@ -3459,13 +3879,6 @@ protected:
     {
         return false;
     }
-
-private:
-    range_type &childrenOf(row_ptr row)
-    {
-        return row ? QRangeModelDetails::refTo(this->protocol().childRows(*row))
-                   : *this->m_data.model();
-    }
 };
 
 // specialization for flat models without protocol
@@ -3482,6 +3895,7 @@ public:
     using range_type = typename Base::range_type;
     using range_features = typename Base::range_features;
     using row_type = typename Base::row_type;
+    using row_ptr = typename Base::row_ptr;
     using const_row_ptr = typename Base::const_row_ptr;
     using row_traits = typename Base::row_traits;
     using row_features = typename Base::row_features;
@@ -3610,6 +4024,12 @@ protected:
     }
 
     const range_type &childrenOf(const_row_ptr row) const
+    {
+        Q_ASSERT(!row);
+        return *this->m_data.model();
+    }
+
+    range_type &childrenOf(row_ptr row)
     {
         Q_ASSERT(!row);
         return *this->m_data.model();

@@ -46,6 +46,16 @@ public:
         MultiRoleItem,
     };
 
+    enum class DropOperation {
+        DontDrop,
+        Automatic,
+        OverwriteAndIgnore,
+        OverwriteAndExtend,
+        InsertAsSiblings,
+        InsertAsChildren,
+    };
+    Q_ENUM(DropOperation);
+
     template <typename T>
     struct RowOptions {};
 

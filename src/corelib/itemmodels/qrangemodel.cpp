@@ -52,6 +52,8 @@ public:
         if (!get(model)->m_dataChangedDispatchBlocked)
             const_cast<QRangeModel *>(model)->dataChanged(index, index, {role});
     }
+
+    static bool compareModelIndex(const QModelIndex &left, const QModelIndex &right);
 };
 
 struct PropertyChangedHandler
@@ -1391,6 +1393,30 @@ QModelIndex QRangeModel::buddy(const QModelIndex &index) const
 }
 
 /*!
+    \enum QRangeModel::DropOperation
+    \since 6.12
+
+    This enum defines how data decoded in a dropMimeData() customization gets
+    written to the model.
+
+    \value DontDrop             The data should not be added to the model.
+    \value Automatic            Qt determines how data gets added to the model.
+    \value OverwriteAndIgnore   Overwrite the dropped-on item and following items,
+                                and discard any dropped data that doesn't fit.
+    \value OverwriteAndExtend   Overwrite the dropped-on item and following items,
+                                and grow the model to fit all dropped data.
+    \value InsertAsSiblings     Insert all dropped data as siblings of the dropped-on
+                                item.
+    \value InsertAsChildren     Insert all dropped data as children of the dropped-on
+                                item.
+
+    A dropMimeData() customization can return a bool value instead, in which
+    case \c{false} maps to the DontDrop value, and \c{true} to Automatic.
+
+    \sa canDropMimeData(), dropMimeData()
+*/
+
+/*!
     \reimp
 */
 bool QRangeModel::canDropMimeData(const QMimeData *data, Qt::DropAction action,
@@ -1416,7 +1442,22 @@ bool QRangeModel::dropMimeData(const QMimeData *data, Qt::DropAction action,
     Q_D(QRangeModel);
     if (d->m_interfaceVersion < QT_VERSION_CHECK(6, 12, 0))
         return QAbstractItemModel::dropMimeData(data, action, row, column, parent);
-    return d->impl->call<QRangeModelImplBase::DropMimeData>(data, action, row, column, parent);
+    if (d->impl->call<QRangeModelImplBase::DropMimeData>(data, action, row, column, parent))
+        return true;
+
+    // failing that, insert the data as new indexes. A row of -1 indicates
+    // that data should be appended to the model
+    if (row == -1)
+        row = rowCount(parent);
+#if !defined(QT_NO_DATASTREAM)
+    const QString defaultFormat = QAbstractItemModel::mimeTypes().at(0);
+    if (data->hasFormat(defaultFormat)) {
+        QByteArray encoded = data->data(defaultFormat);
+        QDataStream stream(&encoded, QDataStream::ReadOnly);
+        return decodeData(row, column, parent, stream);
+    }
+#endif
+    return false;
 }
 
 bool QRangeModelImplBase::dropDataOnItem(const QMimeData *data, const QModelIndex &index)
@@ -1432,18 +1473,46 @@ bool QRangeModelImplBase::dropDataOnItem(const QMimeData *data, const QModelInde
     return false;
 }
 
-bool QRangeModelImplBase::insertMimeData(const QMimeData *data,
-                                         int row, int column, const QModelIndex &index)
+// QModelIndex::operator< is not useful as it compares the internal data pointer.
+// We need to compare indexes based on the row path, taking into account
+// that only items at column zero can have children.
+bool QRangeModelPrivate::compareModelIndex(const QModelIndex &left, const QModelIndex &right)
 {
-#if !defined(QT_NO_DATASTREAM)
-    const QString defaultFormat = m_rangeModel->QAbstractItemModel::mimeTypes().at(0);
-    if (data->hasFormat(defaultFormat)) {
-        QByteArray encoded = data->data(defaultFormat);
-        QDataStream stream(&encoded, QDataStream::ReadOnly);
-        return m_rangeModel->decodeData(row, column, index, stream);
+    if (!left.isValid())
+        return right.isValid();
+    if (!right.isValid())
+        return false;
+    const QModelIndex leftCol0 = left.column() ? left.siblingAtColumn(0) : left;
+    const QModelIndex rightCol0 = right.column() ? right.siblingAtColumn(0) : right;
+    const QModelIndex leftParent = leftCol0.parent();
+    const QModelIndex rightParent = rightCol0.parent();
+    if (leftParent == rightParent) {
+        if (left.row() == right.row())
+            return left.column() < right.column();
+        return left.row() < right.row();
     }
-#endif
-    return false;
+    // parents come before their children
+    if (leftCol0 == rightParent)
+        return true;
+    if (rightCol0 == leftParent)
+        return false;
+
+    // indexes are not directly related, so generate and compare their paths
+    auto makePath = [](const QModelIndex &index) {
+        // we call with col0 indexes and a parent can never be at another column
+        Q_ASSERT(index.column() == 0);
+        QVarLengthArray<int, 32> path{index.row()};
+        QModelIndex parent = index.parent();
+        while (parent.isValid()) {
+            path.append(parent.row());
+            parent = parent.parent();
+        }
+        std::reverse(path.begin(), path.end());
+        return path;
+    };
+    const auto leftPath = makePath(leftCol0);
+    const auto rightPath = makePath(rightCol0);
+    return leftPath < rightPath;
 }
 
 /*!
@@ -1452,9 +1521,32 @@ bool QRangeModelImplBase::insertMimeData(const QMimeData *data,
 QMimeData *QRangeModel::mimeData(const QModelIndexList &indexes) const
 {
     Q_D(const QRangeModel);
+    if (indexes.isEmpty())
+        return nullptr;
+
     if (d->m_interfaceVersion < QT_VERSION_CHECK(6, 12, 0))
         return QAbstractItemModel::mimeData(indexes);
-    return d->impl->call<QRangeModelImplBase::MimeData>(indexes);
+
+    // sort the indexes so that all indexes in the same row are in sequence.
+    QModelIndexList groupedList = indexes;
+    std::sort(groupedList.begin(), groupedList.end(), QRangeModelPrivate::compareModelIndex);
+    QMimeData *data = d->impl->call<QRangeModelImplBase::MimeData>(groupedList);
+
+    // finalize with default mime type
+    const QString defaultFormat = QAbstractItemModel::mimeTypes().at(0);
+    if (!mimeTypes().contains(defaultFormat))
+        return data;
+
+    std::unique_ptr<QMimeData> defaultMimeData(QAbstractItemModel::mimeData(indexes));
+    if (!data)
+        return defaultMimeData.release();
+    // add default mime data into the custom data
+    if (defaultMimeData) {
+        const QStringList defaultTypes = defaultMimeData->formats();
+        for (const auto &defaultType : defaultTypes)
+            data->setData(defaultType, defaultMimeData->data(defaultType));
+    }
+    return data;
 }
 
 /*!

@@ -110,6 +110,15 @@ private slots:
     void dragDropActions_data();
     void dragDropActions();
 
+    void mimeTypes_data();
+    void mimeTypes();
+
+    void mimeData_data();
+    void mimeData();
+
+    void dropMimeData_data();
+    void dropMimeData();
+
 private:
     void createTestData();
     void createTree();

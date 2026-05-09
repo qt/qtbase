@@ -61,8 +61,88 @@ struct QRangeModel::RowOptions<Gadget>
     static Qt::ItemFlags flags(const Gadget &)
     {
         return Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemNeverHasChildren
-             | Qt::ItemIsEditable;
+             | Qt::ItemIsEditable
+             | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled;
     }
+
+    static QStringList mimeTypes()
+    {
+        return QStringList{u"text/plain"_s};
+    }
+
+    template <typename Range>
+    static QMimeData *mimeData(const Range &gadgets)
+    {
+        QByteArray data;
+        QTextStream stream(&data, QIODevice::WriteOnly);
+        for (const auto &row : gadgets) {
+            if (!row.isValid()) {
+                qCritical("Skipping invalid row");
+                continue;
+            }
+            const auto &[gadget, index] = row;
+            stream << Qt::flush;
+            if (index.column() < 0) {
+                stream << gadget.display() << ',' << gadget.decoration().name() << ','
+                       << gadget.toolTip() << Qt::endl;
+            } else {
+                switch (index.column()) {
+                case 0:
+                    stream << gadget.display() << ",,";
+                    break;
+                case 1:
+                    stream << ',' << gadget.decoration().name() << u',';
+                    break;
+                case 2:
+                    stream << ",," << gadget.toolTip();
+                    break;
+                }
+                stream << Qt::endl;
+            }
+        }
+        if (data.isEmpty())
+            return nullptr;
+        QMimeData *mimeData = new QMimeData;
+        mimeData->setData(mimeTypes().first(), data);
+        return mimeData;
+    }
+
+    static QRangeModel::DropOperation dropMimeData(const QMimeData *mimeData, auto &&inserter)
+    {
+        if (!mimeData->hasFormat(mimeTypes().first()))
+            return QRangeModel::DropOperation::DontDrop;
+        QByteArray data = mimeData->data(mimeTypes().first());
+        if (data.isEmpty())
+            return QRangeModel::DropOperation::DontDrop;
+        QTextStream stream(&data, QIODevice::ReadOnly);
+        int newRow = 0;
+        while (!stream.atEnd()) {
+            const auto line = stream.readLine().split(",");
+            if (line.isEmpty())
+                continue;
+            inserter = {Gadget(line.size() > 0 ? line[0] : QString(),
+                              QColor::fromString(line.size() > 1 ? line[1] : QString()),
+                              line.size() > 2 ? line[2] : QString()),
+                        newRow};
+            ++newRow; // += 2 would leave a gap
+        }
+        return QRangeModel::DropOperation::Automatic;
+    }
+
+    // simplified version, only called when the default implementation
+    // accepts the drop, so action and mime type check already done
+    static bool canDropMimeData(const QMimeData *)
+    {
+        return true;
+    }
+
+    // a full implementation to only support drops in between items
+    // static bool canDropMimeData(const QMimeData *data, Qt::DropAction, int row, int column, const QModelIndex &)
+    // {
+    //     if (!data->hasFormat(mimeTypes().first()))
+    //         return false;
+    //     return row > -1 && column > -1;
+    // }
 
     static QVariant headerData(int section, int role)
     {
@@ -81,6 +161,8 @@ struct QRangeModel::RowOptions<Gadget>
 
 static_assert(QRangeModelDetails::hasHeaderData<Gadget>);
 static_assert(QRangeModelDetails::hasRowFlags<Gadget>);
+static_assert(QRangeModelDetails::hasMimeDataRowSpan<Gadget>);
+static_assert(QRangeModelDetails::hasDropMimeData<Gadget>);
 
 struct QMetaEnumerator
 {
@@ -360,11 +442,44 @@ public slots:
         return new QRangeModel(gadgetList);
     }
 
+    QRangeModel *makeGadgetPointerList()
+    {
+        std::vector<std::unique_ptr<Gadget>> gadgetList;
+        std::array gadgets = {
+            std::make_unique<Gadget>("1/1", Qt::red, "red"),
+            std::make_unique<Gadget>("1/2", Qt::black, "black"),
+            std::unique_ptr<Gadget>(),
+            std::make_unique<Gadget>("3/1", Qt::blue, "blue"),
+            std::make_unique<Gadget>("3/2", Qt::green, "green"),
+        };
+        std::copy(std::move_iterator(gadgets.begin()), std::move_iterator(gadgets.end()),
+                  std::back_inserter(gadgetList));
+        return new QRangeModel(std::move(gadgetList));
+    }
+
     QRangeModel *makeGadgetTable()
     {
         QList<QList<Gadget>> gadgetTable = {
             {{"1/1", Qt::red, "red"}, {"1/2", Qt::black, "black"}},
             {{"2/1", Qt::blue, "blue"}, {"2/2", Qt::green, "green"}},
+        };
+        return new QRangeModel(gadgetTable);
+    }
+
+   QRangeModel *makeGadgetPointerTable()
+    {
+        QList<std::vector<std::shared_ptr<Gadget>>> gadgetTable = {
+            {
+                std::make_shared<Gadget>("1/1", Qt::red, "red"),
+                std::make_shared<Gadget>("1/2", Qt::black, "black")
+            },
+            {
+                std::shared_ptr<Gadget>(), std::make_shared<Gadget>("2/1", Qt::blue, "blue"),
+            },
+            {
+                std::make_shared<Gadget>("3/1", Qt::blue, "blue"),
+                std::make_shared<Gadget>("3/2", Qt::green, "green")
+            },
         };
         return new QRangeModel(gadgetTable);
     }
@@ -647,6 +762,7 @@ public:
         QSplitter *viewSplitter = new QSplitter(Qt::Vertical);
 
         treeview = new QTreeView;
+        treeview->setSelectionMode(QAbstractItemView::ExtendedSelection);
         treeview->setUniformRowHeights(true);
         treeview->setDragEnabled(true);
         treeview->setDropIndicatorShown(true);

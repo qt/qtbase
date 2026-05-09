@@ -2,6 +2,10 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include "tst_qrangemodel.h"
+#include <QtCore/qmimedata.h>
+#include <QtCore/qstringlistmodel.h>
+
+using namespace Qt::StringLiterals;
 
 void tst_QRangeModel::dragDropActions_data()
 {
@@ -44,4 +48,149 @@ void tst_QRangeModel::dragDropActions()
     QCOMPARE(model->supportedDragActions(), possibleDragActions);
     rangeModel->setSupportedDropActions(Qt::CopyAction | Qt::MoveAction | Qt::LinkAction);
     QCOMPARE(model->supportedDropActions(), possibleDropActions);
+}
+
+using DragDropRow = std::tuple<QString, int>;
+
+template <>
+struct QRangeModel::RowOptions<DragDropRow>
+{
+    static QStringList mimeTypes() { return {u"application/vnd.text.list"_s}; }
+    template <typename Range>
+    static QMimeData *mimeData(Range &&rows)
+    {
+        QMimeData *result = new QMimeData;
+        QByteArray data;
+        QTextStream stream(&data, QIODevice::WriteOnly);
+        for (const auto &[row, index] : rows)
+            stream << std::get<0>(row) << "," << std::get<1>(row) << Qt::endl;
+        result->setData(mimeTypes().first(), data);
+        return result;
+    }
+
+    template <typename Range>
+    static bool dropMimeData(const QMimeData *data, Range &&inserter)
+    {
+        QByteArray textData = data->data(mimeTypes().first());
+        if (textData.isEmpty())
+            return false;
+        QTextStream stream(&textData, QIODevice::ReadOnly);
+        while (!stream.atEnd()) {
+            const auto line = stream.readLine().split(",");
+            inserter = DragDropRow{line[0], line[1].toInt()};
+        }
+        return true;
+    }
+};
+
+static_assert(QRangeModelDetails::hasMimeDataIndexList<DragDropRow>);
+
+struct NoDragDropRow : std::tuple<int> {};
+
+template <>
+struct QRangeModel::RowOptions<NoDragDropRow>
+{
+    static QStringList mimeTypes() { return {}; }
+};
+
+void tst_QRangeModel::mimeTypes_data()
+{
+    QTest::addColumn<Factory>("factory");
+    QTest::addColumn<QStringList>("expected");
+
+    const QStringList defaultMimeTypes = QStringListModel().mimeTypes();
+
+    QTest::addRow("QStringList") << Factory([]() -> std::unique_ptr<QAbstractItemModel> {
+        return std::make_unique<QRangeModel>(QStringList{});
+    }) << defaultMimeTypes;
+
+    QTest::addRow("QList<DragDropRow>") << Factory([]() -> std::unique_ptr<QAbstractItemModel> {
+        return std::make_unique<QRangeModel>(QList<DragDropRow>{});
+    }) << QRangeModel::RowOptions<DragDropRow>::mimeTypes();
+
+    QTest::addRow("QList<NoDragDropRow>") << Factory([]() -> std::unique_ptr<QAbstractItemModel> {
+        return std::make_unique<QRangeModel>(QList<NoDragDropRow>{});
+    }) << QRangeModel::RowOptions<NoDragDropRow>::mimeTypes();
+}
+
+void tst_QRangeModel::mimeTypes()
+{
+    QFETCH(Factory, factory);
+    QFETCH(const QStringList, expected);
+
+    auto model = factory();
+
+    const QStringList actualMimeTypes = model->mimeTypes();
+    QCOMPARE(actualMimeTypes, expected);
+}
+
+using MimeDataList = QList<std::pair<QString, QByteArray>>;
+
+void tst_QRangeModel::mimeData_data()
+{
+    QTest::addColumn<Factory>("factory");
+    QTest::addColumn<QList<QPoint>>("cells");
+    QTest::addColumn<MimeDataList>("expected");
+
+    QTest::addRow("QList<DragDropRow>") << Factory([]() -> std::unique_ptr<QAbstractItemModel> {
+        return std::make_unique<QRangeModel>(QList<DragDropRow>{
+            DragDropRow{u"one"_s, 1},
+            DragDropRow{u"two"_s, 2},
+            DragDropRow{u"three"_s, 3}
+        });
+    }) << QList<QPoint>{{0, 0}, {0, 1}}
+       << MimeDataList{std::pair{u"application/vnd.text.list"_s, QByteArray("one,1\n")}};
+}
+
+void tst_QRangeModel::mimeData()
+{
+    QFETCH(Factory, factory);
+    QFETCH(const QList<QPoint>, cells);
+    QFETCH(const MimeDataList, expected);
+
+    auto model = factory();
+
+    QModelIndexList indexes;
+    for (const auto &cell : cells) {
+        auto index = model->index(cell.x(), cell.y());
+        QVERIFY(index.isValid());
+        indexes.append(index);
+    }
+
+    QMimeData *data = model->mimeData(indexes);
+    QVERIFY(data || expected.isEmpty());
+
+    MimeDataList actual;
+    for (const auto &format : data->formats())
+        actual.append({format, data->data(format)});
+
+    QCOMPARE(actual, expected);
+}
+
+void tst_QRangeModel::dropMimeData_data()
+{
+    QTest::addColumn<Factory>("factory");
+    QTest::addColumn<MimeDataList>("mimeData");
+    QTest::addColumn<int>("expectedRowCount");
+
+    QTest::addRow("QList<DragDropRow>") << Factory([]() -> std::unique_ptr<QAbstractItemModel> {
+        return std::make_unique<QRangeModel>(QList<DragDropRow>{});
+    }) << MimeDataList{std::pair{u"application/vnd.text.list"_s, QByteArray("one,1\n")}}
+       << 1;
+}
+
+void tst_QRangeModel::dropMimeData()
+{
+    QFETCH(Factory, factory);
+    QFETCH(MimeDataList, mimeData);
+    QFETCH(int, expectedRowCount);
+
+    auto model = factory();
+
+    auto mime = std::make_unique<QMimeData>();
+    for (const auto &data : mimeData)
+        mime->setData(data.first, data.second);
+
+    QVERIFY(model->dropMimeData(mime.get(), Qt::CopyAction, -1, -1, {}));
+    QCOMPARE(model->rowCount(), expectedRowCount);
 }
