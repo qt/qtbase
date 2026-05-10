@@ -20,11 +20,14 @@
 #include <QtWidgets/private/qwidgetanimator_p.h>
 #include "QtWidgets/qlayout.h"
 #include "QtCore/qlist.h"
+#include "QtCore/qloggingcategory.h"
 #include "QtCore/qrect.h"
 
 QT_REQUIRE_CONFIG(dockwidget);
 
 QT_BEGIN_NAMESPACE
+
+Q_DECLARE_LOGGING_CATEGORY(lcQpaDockWidgets);
 
 class QLayoutItem;
 class QWidget;

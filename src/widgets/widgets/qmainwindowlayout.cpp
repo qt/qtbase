@@ -55,6 +55,8 @@
 
 QT_BEGIN_NAMESPACE
 
+Q_LOGGING_CATEGORY(lcMainWindowLayout, "qt.mainwindow.layout");
+
 #if defined(Q_OS_MACOS)
 Q_STATIC_LOGGING_CATEGORY(lcUnifiedToolBar, "qt.mainwindow.unifiedtoolbar");
 #endif
@@ -205,7 +207,7 @@ QDebug operator<<(QDebug debug, StateMarkers marker)
 QDataStream &operator<<(QDataStream &stream, StateMarkers marker)
 {
     stream << uchar(marker);
-    qCDebug(lcQpaDockWidgets) << "Writing state marker" << marker;
+    qCDebug(lcMainWindowLayout) << "Writing state marker" << marker;
     return stream;
 }
 
@@ -214,7 +216,7 @@ QDataStream &operator>>(QDataStream &stream, StateMarkers &marker)
     uchar m;
     stream >> m;
     marker = static_cast<StateMarkers>(m);
-    qCDebug(lcQpaDockWidgets) << "Reading state marker" << marker;
+    qCDebug(lcMainWindowLayout) << "Reading state marker" << marker;
     return stream;
 }
 #endif // QT_NO_DEBUG_STREAM

@@ -55,7 +55,7 @@ QT_REQUIRE_CONFIG(mainwindow);
 
 QT_BEGIN_NAMESPACE
 
-Q_DECLARE_LOGGING_CATEGORY(lcQpaDockWidgets);
+Q_DECLARE_LOGGING_CATEGORY(lcMainWindowLayout);
 
 class QToolBar;
 class QRubberBand;
