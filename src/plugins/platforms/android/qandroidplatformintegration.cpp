@@ -364,15 +364,20 @@ QPlatformBackingStore *QAndroidPlatformIntegration::createPlatformBackingStore(Q
 }
 
 #if QT_CONFIG(egl)
+static void fillUnsetColorBufferSizes(QSurfaceFormat &format)
+{
+    if (format.redBufferSize()   < 0) format.setRedBufferSize(8);
+    if (format.greenBufferSize() < 0) format.setGreenBufferSize(8);
+    if (format.blueBufferSize()  < 0) format.setBlueBufferSize(8);
+    if (format.alphaBufferSize() < 0) format.setAlphaBufferSize(8);
+}
+
 QPlatformOpenGLContext *QAndroidPlatformIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
 {
     if (!isValidAndroidContextForRendering())
         return nullptr;
     QSurfaceFormat format(context->format());
-    format.setAlphaBufferSize(8);
-    format.setRedBufferSize(8);
-    format.setGreenBufferSize(8);
-    format.setBlueBufferSize(8);
+    fillUnsetColorBufferSizes(format);
     auto ctx = new QAndroidPlatformOpenGLContext(format, context->shareHandle(), m_eglDisplay);
     return ctx;
 }
@@ -388,10 +393,7 @@ QPlatformOffscreenSurface *QAndroidPlatformIntegration::createPlatformOffscreenS
         return nullptr;
 
     QSurfaceFormat format(surface->requestedFormat());
-    format.setAlphaBufferSize(8);
-    format.setRedBufferSize(8);
-    format.setGreenBufferSize(8);
-    format.setBlueBufferSize(8);
+    fillUnsetColorBufferSizes(format);
 
     return new QEGLPbuffer(m_eglDisplay, format, surface);
 }
