@@ -54,6 +54,8 @@
 #include <QScopedValueRollback>
 #include <QtCore/private/qoffsetstringarray_p.h>
 
+#include <optional>
+
 QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(lcMainWindowLayout, "qt.mainwindow.layout");
@@ -1679,7 +1681,7 @@ void QMainWindowLayout::toggleToolBarsVisible()
 
 #if QT_CONFIG(dockwidget)
 
-static QInternal::DockPosition toDockPos(Qt::DockWidgetArea area)
+static std::optional<QInternal::DockPosition> toDockPos(Qt::DockWidgetArea area)
 {
     switch (area) {
         case Qt::LeftDockWidgetArea: return QInternal::LeftDock;
@@ -1691,7 +1693,7 @@ static QInternal::DockPosition toDockPos(Qt::DockWidgetArea area)
             break;
     }
 
-    return QInternal::DockCount;
+    return std::nullopt;
 }
 
 enum class WarnInvalidDockAreaLocation {
@@ -1777,10 +1779,10 @@ Qt::DockWidgetArea QMainWindowLayout::corner(Qt::Corner corner) const
 // the current visible rectangle otherwise
 QRect QMainWindowLayout::dockWidgetAreaRect(const Qt::DockWidgetArea area, DockWidgetAreaSize size) const
 {
-    const QInternal::DockPosition dockPosition = toDockPos(area);
+    const std::optional dockPosition = toDockPos(area);
 
     // Called with invalid dock widget area
-    if (dockPosition == QInternal::DockCount) {
+    if (!dockPosition) {
         warn_invalid_dock_area(area, WarnInvalidDockAreaLocation::DockWidgetAreaRect);
         return QRect();
     }
@@ -1788,7 +1790,7 @@ QRect QMainWindowLayout::dockWidgetAreaRect(const Qt::DockWidgetArea area, DockW
     const QDockAreaLayout dl = layoutState.dockAreaLayout;
 
     // Return maximum or visible rectangle
-    return (size == Maximum) ? dl.gapRect(dockPosition) : dl.docks[dockPosition].rect;
+    return size == Maximum ? dl.gapRect(*dockPosition) : dl.docks[*dockPosition].rect;
 }
 
 /*!
@@ -1806,11 +1808,11 @@ void QMainWindowLayout::addDockWidget(Qt::DockWidgetArea area,
     if (!movingSeparator.isEmpty())
         endSeparatorMove(movingSeparatorPos);
 
-    const QInternal::DockPosition dockPos = toDockPos(area);
-    if (dockPos == QInternal::DockCount)
+    const std::optional dockPos = toDockPos(area);
+    if (!dockPos)
         return warn_invalid_dock_area(area, WarnInvalidDockAreaLocation::AddDockWidget);
 
-    layoutState.dockAreaLayout.addDockWidget(dockPos, dockwidget, orientation);
+    layoutState.dockAreaLayout.addDockWidget(*dockPos, dockwidget, orientation);
     invalidate();
 }
 
@@ -1897,9 +1899,9 @@ void QMainWindowLayout::tabifyWhileFloating(QDockWidget *first, QDockWidget *sec
     QDockAreaLayoutInfo *info = floatingTabs->layoutInfo();
     const QTabBar::Shape shape = tabwidgetPositionToTabBarShape(first);
 
-    const QInternal::DockPosition dockPosition = toDockPos(dockWidgetArea(first));
-    Q_ASSERT(dockPosition != QInternal::DockPosition::DockCount);
-    *info = QDockAreaLayoutInfo(&layoutState.dockAreaLayout.sep, dockPosition,
+    const std::optional dockPosition = toDockPos(dockWidgetArea(first));
+    Q_ASSERT(dockPosition);
+    *info = QDockAreaLayoutInfo(&layoutState.dockAreaLayout.sep, *dockPosition,
                                 Qt::Horizontal, shape,
                                 static_cast<QMainWindow *>(parentWidget()));
     info->tabBar = getTabBar();
@@ -1907,7 +1909,7 @@ void QMainWindowLayout::tabifyWhileFloating(QDockWidget *first, QDockWidget *sec
     info->add(first);
     info->add(second);
     second->d_func()->plug(first->geometry());
-    QDockAreaLayoutInfo &parentInfo = layoutState.dockAreaLayout.docks[dockPosition];
+    QDockAreaLayoutInfo &parentInfo = layoutState.dockAreaLayout.docks[*dockPosition];
     parentInfo.add(floatingTabs);
     first->setParent(floatingTabs);
     second->setParent(floatingTabs);
@@ -1960,9 +1962,8 @@ void QMainWindowLayout::setTabShape(QTabWidget::TabShape tabShape)
 
 QTabWidget::TabPosition QMainWindowLayout::tabPosition(Qt::DockWidgetArea area) const
 {
-    const QInternal::DockPosition dockPos = toDockPos(area);
-    if (dockPos < QInternal::DockCount)
-        return tabPositions[dockPos];
+    if (const std::optional dockPos = toDockPos(area))
+        return tabPositions[*dockPos];
     warn_invalid_dock_area(area, WarnInvalidDockAreaLocation::TabPosition);
     return QTabWidget::North;
 }
@@ -3229,19 +3230,19 @@ void QMainWindowLayout::hover(QLayoutItem *hoverTarget,
                     // In that case, their path to a main window dock may not have been
                     // updated yet.
                     // => ask both and fall back to dock 1 (right dock)
-                    QInternal::DockPosition dockPosition = toDockPos(dockWidgetArea(dropTo));
-                    if (dockPosition == QInternal::DockPosition::DockCount)
+                    std::optional dockPosition = toDockPos(dockWidgetArea(dropTo));
+                    if (!dockPosition)
                         dockPosition = toDockPos(dockWidgetArea(widget));
-                    if (dockPosition == QInternal::DockPosition::DockCount)
+                    if (!dockPosition)
                         dockPosition = QInternal::DockPosition::RightDock;
 
-                    *info = QDockAreaLayoutInfo(&layoutState.dockAreaLayout.sep, dockPosition,
+                    *info = QDockAreaLayoutInfo(&layoutState.dockAreaLayout.sep, *dockPosition,
                                                 Qt::Horizontal, shape,
                                                 static_cast<QMainWindow *>(parentWidget()));
                     info->tabBar = getTabBar();
                     info->tabbed = true;
                     info->add(dropTo);
-                    QDockAreaLayoutInfo &parentInfo = layoutState.dockAreaLayout.docks[dockPosition];
+                    QDockAreaLayoutInfo &parentInfo = layoutState.dockAreaLayout.docks[*dockPosition];
                     parentInfo.add(floatingTabs);
                     dropTo->setParent(floatingTabs);
                     qCDebug(lcQpaDockWidgets) << "Wrapping" << widget << "into floating tabs" << floatingTabs;
