@@ -782,8 +782,58 @@ By default, this property is not set.
 
 This property only has an effect if CMake's \l USE_FOLDERS property is \c{ON}.
 
-You can use the \l{qt6_standard_project_setup}{qt_standard_project_setup}
-function to enable folder support and initialize the \c{QT_TARGETS_FOLDER}.
+\note The property \c QT_TARGETS_FOLDER must be set before calling
+\l{qt6_standard_project_setup}{qt_standard_project_setup}.
+
+\section1 Example
+
+\section2 Enable folder support with default values
+
+Calling \l{qt6_standard_project_setup}{qt_standard_project_setup} without any
+parameters enables CMake's folder support. CMake's \c AUTOGEN targets and Qt's
+internal targets are placed into the folder \c QtInternalTargets.
+
+\badcode
+cmake_minimum_required(VERSION 3.16...3.22)
+project(MyProject)
+
+find_package(Qt6 REQUIRED COMPONENTS Core)
+qt_standard_project_setup()
+
+qt_add_executable(MyApp main.cpp)
+\endcode
+
+\section2 Explicitly set folder names
+
+This example shows how to set the folder names for internal Qt targets.
+
+\badcode
+cmake_minimum_required(VERSION 3.16...3.22)
+project(MyProject)
+
+find_package(Qt6 REQUIRED COMPONENTS Core)
+
+set_property(GLOBAL PROPERTY QT_TARGETS_FOLDER "MyQtTargets")
+qt_standard_project_setup()
+
+qt_add_executable(MyApp main.cpp)
+\endcode
+
+If you want CMake's \c AUTOGEN targets to appear in a separate folder, set \c
+AUTOGEN_TARGETS_FOLDER too.
+
+\badcode
+cmake_minimum_required(VERSION 3.16...3.22)
+project(MyProject)
+
+find_package(Qt6 REQUIRED COMPONENTS Core)
+
+set_property(GLOBAL PROPERTY QT_TARGETS_FOLDER "MyQtTargets")
+set_property(GLOBAL PROPERTY AUTOGEN_TARGETS_FOLDER "MyAutogenTargets")
+qt_standard_project_setup()
+
+qt_add_executable(MyApp main.cpp)
+\endcode
 
 \sa{qt6_standard_project_setup}{qt_standard_project_setup}
 */
