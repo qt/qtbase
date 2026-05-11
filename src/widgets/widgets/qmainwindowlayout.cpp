@@ -1685,7 +1685,8 @@ static QInternal::DockPosition toDockPos(Qt::DockWidgetArea area)
         case Qt::RightDockWidgetArea: return QInternal::RightDock;
         case Qt::TopDockWidgetArea: return QInternal::TopDock;
         case Qt::BottomDockWidgetArea: return QInternal::BottomDock;
-        default:
+        case Qt::DockWidgetArea::NoDockWidgetArea:
+        case Qt::DockWidgetArea::AllDockWidgetAreas:
             break;
     }
 
