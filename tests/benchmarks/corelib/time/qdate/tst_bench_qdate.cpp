@@ -193,10 +193,114 @@ void tst_QDate::fromString_data()
     QTest::addColumn<QString>("string");
     QTest::addColumn<QString>("format");
     QTest::addColumn<int>("baseYear");
+    QTest::addColumn<QCalendar>("calendar");
 
-    QTest::newRow("yyyyMMdd") << u"20240412"_s << u"yyyyMMdd"_s << 2000;
-    QTest::newRow("yyyy-MM-dd") << u"2024-04-12"_s << u"yyyy-MM-dd"_s << 2000;
-    QTest::newRow("YYYYMMDD") << u"20240412"_s << u"YYYYMMDD"_s << 2000; // Invalid, QTBUG-124465.
+    const QCalendar greg(QCalendar::System::Gregorian);
+
+    QTest::newRow("yyyy-MM-dd") << u"2024-04-12"_s << u"yyyy-MM-dd"_s << 2000 << greg;
+    QTest::newRow("yyyy/MM/dd") << u"2024/04/12"_s << u"yyyy/MM/dd"_s << 2000 << greg;
+    QTest::newRow("yyyy MM dd") << u"2024 04 12"_s << u"yyyy MM dd"_s << 2000 << greg;
+    QTest::newRow("yyyy MM dd, ddd")
+        << u"2024 04 12, Fri"_s << u"yyyy MM dd, ddd"_s << 2000 << greg;
+    QTest::newRow("yyyy.MM.dd, ddd")
+        << u"2024.04.12, Fri"_s << u"yyyy.MM.dd, ddd"_s << 2000 << greg;
+    QTest::newRow("ddd, dd MM yyyy")
+        << u"Fri, 12 04 2024"_s << u"ddd, dd MM yyyy"_s << 2000 << greg;
+    QTest::newRow("ddd, d-MMM-yyyy")
+        << u"Fri, 12-Apr-2024"_s << u"ddd, d-MMM-yyyy"_s << 2000 << greg;
+    QTest::newRow("dddd, dd MMMM yyyy")
+        << u"Friday, 12 April 2024"_s << u"dddd, dd MMMM yyyy"_s << 2000 << greg;
+
+    struct YearInput
+    {
+        const char format[5];
+        std::string input;
+    };
+
+    const YearInput years[] = {
+        YearInput{"yyyy", "2024"},
+        YearInput{"yy", "24"}
+    };
+
+    struct MonthInput
+    {
+        const char format[5];
+        std::string input;
+    };
+
+    struct DayInput
+    {
+        const char format[5];
+        std::string input;
+    };
+
+    struct CalendarInput
+    {
+        std::string name;
+        QCalendar::System system;
+    };
+
+    const CalendarInput calendars[] = {
+        CalendarInput{"Gregorian", QCalendar::System::Gregorian},
+#if QT_CONFIG(islamiccivilcalendar)
+        CalendarInput{"IslamicCivil", QCalendar::System::IslamicCivil},
+#endif
+#if QT_CONFIG(jalalicalendar)
+        CalendarInput{"Jalali", QCalendar::System::Jalali}
+#endif
+    };
+
+    const QLocale cLocale = QLocale::c();
+
+    for (const auto &calSys : calendars) {
+        const QCalendar calendar(calSys.system);
+
+        const MonthInput months[] = {
+            MonthInput{"M", "4"},
+            MonthInput{"MM", "04"},
+            MonthInput{"MMM",
+                       calendar.monthName(cLocale, 4, 2024, QLocale::ShortFormat).toStdString()},
+            MonthInput{"MMMM",
+                       calendar.monthName(cLocale, 4, 2024, QLocale::LongFormat).toStdString()}
+        };
+
+        // Construct a Gregorian QDate from the expected calendar-specific date
+        const int dayOfWeek = calendar.dayOfWeek(calendar.dateFromParts({2024, 4, 12}));
+
+        const DayInput days[] = {
+            DayInput{"d", "12"},
+            DayInput{"dd", "12"},
+            DayInput{"ddd",
+                     calendar.weekDayName(cLocale, dayOfWeek, QLocale::ShortFormat).toStdString()},
+            DayInput{"dddd",
+                     calendar.weekDayName(cLocale, dayOfWeek, QLocale::LongFormat).toStdString()}
+        };
+
+        for (const auto &year : years) {
+            for (const auto &month : months) {
+                for (const auto &day : days) {
+                    QTest::addRow("%s%s%s_%s", year.format, month.format,
+                                  day.format, calSys.name.data())
+                        << QString::asprintf("%s%s%s", year.input.data(), month.input.data(),
+                                             day.input.data())
+                        << QString::asprintf("%s%s%s", year.format, month.format, day.format)
+                        << 2000 << calendar;
+                }
+
+                QTest::addRow("ddd, d%s%s_%s", month.format, year.format, calSys.name.data())
+                    << QString::asprintf("%s, 12%s%s", days[2].input.data(), month.input.data(),
+                                         year.input.data())
+                    << QString::asprintf("ddd, d%s%s", month.format, year.format)
+                    << 2000 << calendar;
+
+                QTest::addRow("dddd, dd%s%s_%s", month.format, year.format, calSys.name.data())
+                    << QString::asprintf("%s, 12%s%s", days[3].input.data(), month.input.data(),
+                                         year.input.data())
+                    << QString::asprintf("dddd, dd%s%s", month.format, year.format)
+                    << 2000 << calendar;
+            }
+        }
+    }
 }
 
 void tst_QDate::fromString()
@@ -204,11 +308,13 @@ void tst_QDate::fromString()
     QFETCH(const QString, string);
     QFETCH(const QString, format);
     QFETCH(const int, baseYear);
+    QFETCH(const QCalendar, calendar);
+
     QDate date;
     QBENCHMARK {
-        date = QDate::fromString(string, format, baseYear);
+        date = QDate::fromString(string, format, baseYear, calendar);
     }
-    Q_UNUSED(date);
+    QVERIFY(date.isValid());
 }
 
 QTEST_MAIN(tst_QDate)
