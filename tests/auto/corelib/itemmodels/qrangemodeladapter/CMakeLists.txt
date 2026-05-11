@@ -13,7 +13,10 @@ endif()
 
 qt_internal_add_test(tst_qrangemodeladapter
     SOURCES
+        tst_qrangemodeladapter.h
         tst_qrangemodeladapter.cpp
+        tst_qrangemodeladapter_api.cpp
+        tst_qrangemodeladapter_tree.cpp
         ../qrangemodel/data.h
     LIBRARIES
         Qt::Gui
