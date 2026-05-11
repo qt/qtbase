@@ -230,7 +230,8 @@ Q_INLINE_TEMPLATE QMatrix4x4::QMatrix4x4
 template <int N, int M>
 QGenericMatrix<N, M, float> QMatrix4x4::toGenericMatrix() const
 {
-    QGenericMatrix<N, M, float> result;
+    Q_DECL_UNINITIALIZED
+    QGenericMatrix<N, M, float> result(Qt::Uninitialized);
     float *values = result.data();
     for (int matrixCol = 0; matrixCol < N; ++matrixCol) {
         for (int matrixRow = 0; matrixRow < M; ++matrixRow) {
