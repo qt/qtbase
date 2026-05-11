@@ -295,6 +295,7 @@ function(qt_internal_get_qt_build_public_helpers out_var)
         QtPublicFinalizerHelpers
         QtPublicFindPackageHelpers
         QtPublicGitHelpers
+        QtPublicJsonHelpers
         QtPublicPluginHelpers
         QtPublicPluginHelpers_v2
         QtPublicSbomAttributionHelpers
