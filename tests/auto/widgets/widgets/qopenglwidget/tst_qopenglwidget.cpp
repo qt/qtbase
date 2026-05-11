@@ -775,6 +775,13 @@ static QPixmap grabWidgetWithoutRepaint(const QWidget *widget, QRect clipArea)
     QScreen *screen = window->screen();
     Q_ASSERT(screen);
 
+    []{
+        QTest::ThrowOnSkipEnabler throwOnSkip;
+        const auto platformIntegration = QGuiApplicationPrivate::platformIntegration();
+        if (!platformIntegration->hasCapability(QPlatformIntegration::ScreenWindowGrabbing))
+            QSKIP("QScreen::grabWindow is not supported in this config");
+    }();
+
     const QSize size = clipArea.size();
     const QPixmap result = screen->grabWindow(windowId,
                                               clipArea.x(),

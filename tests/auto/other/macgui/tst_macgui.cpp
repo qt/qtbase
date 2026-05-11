@@ -13,6 +13,9 @@
 #include <QTestEventLoop>
 #include <QTimer>
 
+#include <QtGui/qpa/qplatformintegration.h>
+#include <QtGui/private/qguiapplication_p.h>
+
 #include <guitest.h>
 
 class tst_MacGui : public GuiTester
@@ -36,6 +39,14 @@ QPixmap grabWindowContents(QWidget * widget)
         qWarning() << "Grabbing pixmap failed, no QScreen for" << widget;
         return QPixmap();
     }
+
+    []{
+        QTest::ThrowOnSkipEnabler throwOnSkip;
+        const auto platformIntegration = QGuiApplicationPrivate::platformIntegration();
+        if (!platformIntegration->hasCapability(QPlatformIntegration::ScreenWindowGrabbing))
+            QSKIP("QScreen::grabWindow is not supported in this config");
+    }();
+
     return screen->grabWindow(widget->winId());
 }
 

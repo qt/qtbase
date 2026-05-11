@@ -42,6 +42,7 @@ macro(qt_find_apple_system_frameworks)
         qt_internal_find_apple_system_framework(FWNetwork Network)
         qt_internal_find_apple_system_framework(FWOpenGL OpenGL)
         qt_internal_find_apple_system_framework(FWAccelerate Accelerate)
+        qt_internal_find_apple_system_framework(FWScreenCaptureKit ScreenCaptureKit)
     endif()
 endmacro()
 

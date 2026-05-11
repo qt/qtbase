@@ -6648,6 +6648,13 @@ static inline QByteArray msgRgbMismatch(unsigned actual, unsigned expected)
 
 static QPixmap grabWindow(QWindow *window, int x, int y, int width, int height)
 {
+    []{
+        QTest::ThrowOnSkipEnabler throwOnSkip;
+        const auto platformIntegration = QGuiApplicationPrivate::platformIntegration();
+        if (!platformIntegration->hasCapability(QPlatformIntegration::ScreenWindowGrabbing))
+            QSKIP("QScreen::grabWindow is not supported in this config");
+    }();
+
     QScreen *screen = window->screen();
     Q_ASSERT(screen);
     return screen->grabWindow(window->winId(), x, y, width, height);

@@ -3076,6 +3076,10 @@ void tst_QTextEdit::linkSelectionArtifact()
     // clips the selection region, creating an extra outline edge inside
     // the link area (visible as a double vertical line).
 
+    const auto platformIntegration = QGuiApplicationPrivate::platformIntegration();
+    if (!platformIntegration->hasCapability(QPlatformIntegration::ScreenWindowGrabbing))
+        QSKIP("QScreen::grabWindow is not supported in this config");
+
     CountingTextEdit e;
     e.resize(800, 600);
 

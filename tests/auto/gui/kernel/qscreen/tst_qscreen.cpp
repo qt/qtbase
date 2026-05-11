@@ -186,6 +186,7 @@ void tst_QScreen::grabWindow_data()
     if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::ScreenWindowGrabbing)
             || (QGuiApplication::platformName().toLower() == QStringLiteral("xcb") && !qEnvironmentVariableIsEmpty("WAYLAND_DISPLAY")))
         QSKIP("This platform does not support grabbing windows on screen.");
+
     QTest::addColumn<int>("screenIndex");
     QTest::addColumn<QByteArray>("screenName");
     QTest::addColumn<bool>("grabWindow");

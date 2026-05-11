@@ -3,6 +3,7 @@
 // Qt-Security score:significant reason:default
 
 #include <AppKit/AppKit.h>
+#include <ScreenCaptureKit/ScreenCaptureKit.h>
 
 #include "qcocoascreen.h"
 
@@ -602,36 +603,126 @@ QWindow *QCocoaScreen::topLevelAt(const QPoint &point) const
 */
 QPixmap QCocoaScreen::grabWindow(WId view, int x, int y, int width, int height) const
 {
+    // ScreenCaptureKit brings down WindowServer on macOS 14 x86_64 VMs in CI
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(
+        QPlatformIntegration::ScreenWindowGrabbing)) {
+        qCWarning(lcQpaScreen) << "Ignoring grabWindow to not bring down WindowServer";
+        return {};
+    }
+
     auto grabFromDisplay = [](CGDirectDisplayID displayId, const QRect &grabRect) -> QPixmap {
-        QCFType<CGImageRef> image = CGDisplayCreateImageForRect(displayId, grabRect.toCGRect());
-        QPixmap pixmap = QPixmap::fromImage(qt_mac_toQImage(image));
-        pixmap.setDevicePixelRatio(nativeScreenForDisplayId(displayId).backingScaleFactor);
+        QMacAutoReleasePool pool;
+
+        const qreal scale = QCocoaScreen::nativeScreenForDisplayId(displayId).backingScaleFactor;
+
+        dispatch_semaphore_t sem = dispatch_semaphore_create(0);
+        auto cleanup = qScopeGuard([sem]() { dispatch_release(sem); });
+
+        auto captureShareableContent = [sem](void (^capture)(SCShareableContent *)) {
+            // Try capturing all applications first, as that's the expectation of
+            // grabWindow. This will also trigger the permission system prompt on
+            // first use, matching the behavior of CGDisplayCreateImageForRect.
+            [SCShareableContent getShareableContentWithCompletionHandler:
+                ^(SCShareableContent *content, NSError *error) {
+                    if (error)
+                        qCDebug(lcQpaScreen) << "Failed to capture all windows" << error;
+                    if (content) {
+                        capture(content);
+                        return;
+                    }
+                    // Fall back to capturing only our app, again matching the behavior
+                    // of CGDisplayCreateImageForRect when we don't have permission to
+                    // capture all applications. This also includes the Dock and wallpaper.
+                    [SCShareableContent getCurrentProcessShareableContentWithCompletionHandler:
+                        ^(SCShareableContent *content, NSError *error) {
+                            if (error)
+                                qCWarning(lcQpaScreen) << "Failed to capture own windows" << error;
+                            if (content)
+                                capture(content);
+                            else
+                                dispatch_semaphore_signal(sem);
+                        }
+                    ];
+                }
+            ];
+        };
+
+        __block QImage image;
+        captureShareableContent(^(SCShareableContent *content) {
+            Q_ASSERT(content);
+
+            QMacAutoReleasePool pool;
+
+            SCDisplay *scDisplay = nil;
+            for (SCDisplay *d in content.displays) {
+                if (d.displayID == displayId) {
+                    scDisplay = d;
+                    break;
+                }
+            }
+            if (!scDisplay) {
+                qCWarning(lcQpaScreen) << "No SCDisplay for display" << displayId;
+                dispatch_semaphore_signal(sem);
+                return;
+            }
+
+            SCContentFilter *filter = [[[SCContentFilter alloc]
+                initWithDisplay:scDisplay
+                includingApplications:content.applications
+                exceptingWindows:@[]] autorelease];
+            filter.includeMenuBar = YES;
+
+            SCStreamConfiguration *config = [[SCStreamConfiguration new] autorelease];
+            config.sourceRect = grabRect.toCGRect();
+            config.width = qRound(grabRect.width()  * scale);
+            config.height = qRound(grabRect.height() * scale);
+            config.showsCursor = NO;
+            config.capturesAudio = NO;
+            config.ignoreShadowsDisplay = NO;
+            config.ignoreShadowsSingleWindow = NO;
+
+            [SCScreenshotManager captureImageWithFilter:filter configuration:config
+                completionHandler:^(CGImageRef cgImage, NSError *error) {
+                    if (error)
+                        qCWarning(lcQpaScreen) << "Failed screen capture" << error;
+                    else if (cgImage)
+                        image = qt_mac_toQImage(cgImage);
+                    dispatch_semaphore_signal(sem);
+                }
+            ];
+        });
+
+        // Wait for screen capture to complete
+        if (dispatch_semaphore_wait(sem, dispatch_time(DISPATCH_TIME_NOW, 5 * NSEC_PER_SEC)) != 0) {
+            qCWarning(lcQpaScreen) << "Screen capture timed out for display" << displayId;
+            return QPixmap();
+        }
+
+        QPixmap pixmap = QPixmap::fromImage(image);
+        pixmap.setDevicePixelRatio(scale);
         return pixmap;
     };
 
     QRect grabRect = QRect(x, y, width, height);
     qCDebug(lcQpaScreen) << "input grab rect" << grabRect;
 
-    if (!view) {
-        // coordinates are relative to the screen
-        if (!grabRect.isValid()) // entire screen
-            grabRect = QRect(QPoint(0, 0), geometry().size());
+    if (view) {
+        // Window local coordinates, so turn into global
+        NSView *nsView = reinterpret_cast<NSView*>(view);
+        NSPoint windowPoint = [nsView convertPoint:NSMakePoint(0, 0) toView:nil];
+        NSRect screenRect = [nsView.window convertRectToScreen:NSMakeRect(windowPoint.x, windowPoint.y, 1, 1)];
+        QPoint position = mapFromNative(screenRect.origin).toPoint();
+        QSize size = QRectF::fromCGRect(NSRectToCGRect(nsView.bounds)).toRect().size();
+        QRect windowRect = QRect(position, size);
+        if (!grabRect.isValid())
+            grabRect = windowRect;
         else
-            grabRect.translate(-geometry().topLeft());
-        return grabFromDisplay(displayId(), grabRect);
+            grabRect.translate(windowRect.topLeft());
+    } else {
+        // Screen global coordinates
+        if (!grabRect.isValid())
+            grabRect = geometry();
     }
-
-    // grab the window; grab rect in window coordinates might span multiple screens
-    NSView *nsView = reinterpret_cast<NSView*>(view);
-    NSPoint windowPoint = [nsView convertPoint:NSMakePoint(0, 0) toView:nil];
-    NSRect screenRect = [nsView.window convertRectToScreen:NSMakeRect(windowPoint.x, windowPoint.y, 1, 1)];
-    QPoint position = mapFromNative(screenRect.origin).toPoint();
-    QSize size = QRectF::fromCGRect(NSRectToCGRect(nsView.bounds)).toRect().size();
-    QRect windowRect = QRect(position, size);
-    if (!grabRect.isValid())
-        grabRect = windowRect;
-    else
-        grabRect.translate(windowRect.topLeft());
 
     // Find which displays to grab from
     const int maxDisplays = 128;
@@ -644,15 +735,18 @@ QPixmap QCocoaScreen::grabWindow(WId view, int x, int y, int width, int height) 
 
     qCDebug(lcQpaScreen) << "final grab rect" << grabRect << "from" << displayCount << "displays";
 
-    // Grab images from each display
+    // Grab images from each display, accumulating the global bounding box of the
+    // captured content. The output pixmap covers exactly that bounding box, so
+    // empty virtual-desktop space inside grabRect is not padded into the result.
     QVector<QPixmap> pixmaps;
-    QVector<QRect> destinations;
+    QVector<QRect> globalGrabBounds;
+    QRect outputRect;
     for (uint i = 0; i < displayCount; ++i) {
         auto display = displays[i];
         const QRect displayBounds = QRectF::fromCGRect(CGDisplayBounds(display)).toRect();
         const QRect grabBounds = displayBounds.intersected(grabRect);
         if (grabBounds.isNull()) {
-            destinations.append(QRect());
+            globalGrabBounds.append(QRect());
             pixmaps.append(QPixmap());
             continue;
         }
@@ -666,8 +760,8 @@ QPixmap QCocoaScreen::grabWindow(WId view, int x, int y, int width, int height) 
 
         qCDebug(lcQpaScreen) << "grab sub-image size" << displayPixmap.size() << "devicePixelRatio" << displayPixmap.devicePixelRatio();
         pixmaps.append(displayPixmap);
-        const QRect destBounds = QRect(QPoint(grabBounds.topLeft() - grabRect.topLeft()), grabBounds.size());
-        destinations.append(destBounds);
+        globalGrabBounds.append(grabBounds);
+        outputRect = outputRect.united(grabBounds);
     }
 
     // Determine the highest dpr, which becomes the dpr for the returned pixmap.
@@ -676,13 +770,18 @@ QPixmap QCocoaScreen::grabWindow(WId view, int x, int y, int width, int height) 
         dpr = qMax(dpr, pixmaps.at(i).devicePixelRatio());
 
     // Allocate target pixmap and draw each screen's content
-    qCDebug(lcQpaScreen) << "Create grap pixmap" << grabRect.size() << "at devicePixelRatio" << dpr;
-    QPixmap windowPixmap(grabRect.size() * dpr);
+    qCDebug(lcQpaScreen) << "Create grap pixmap" << outputRect.size() << "at devicePixelRatio" << dpr;
+    QPixmap windowPixmap(outputRect.size() * dpr);
     windowPixmap.setDevicePixelRatio(dpr);
     windowPixmap.fill(Qt::transparent);
     QPainter painter(&windowPixmap);
-    for (uint i = 0; i < displayCount; ++i)
-        painter.drawPixmap(destinations.at(i), pixmaps.at(i));
+    for (uint i = 0; i < displayCount; ++i) {
+        const QRect grabBounds = globalGrabBounds.at(i);
+        if (grabBounds.isNull())
+            continue;
+        const QRect dest(grabBounds.topLeft() - outputRect.topLeft(), grabBounds.size());
+        painter.drawPixmap(dest, pixmaps.at(i));
+    }
 
     return windowPixmap;
 }

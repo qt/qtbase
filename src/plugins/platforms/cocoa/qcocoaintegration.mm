@@ -266,6 +266,16 @@ bool QCocoaIntegration::hasCapability(QPlatformIntegration::Capability cap) cons
     case BackingStoreStaticContents:
     case OffscreenSurface:
         return true;
+    case ScreenWindowGrabbing: {
+#if defined(Q_PROCESSOR_X86_64)
+        // ScreenCaptureKit brings down WindowServer on macOS 14 x86_64 VMs in CI
+        if (QOperatingSystemVersion::current() <= QOperatingSystemVersion::MacOSSonoma
+            && qEnvironmentVariable("QTEST_ENVIRONMENT") == "ci") {
+                return false;
+        }
+#endif
+        return true;
+    }
     default:
         return QPlatformIntegration::hasCapability(cap);
     }
