@@ -1,0 +1,3 @@
+load(resolve_config)
+load(ohos)
+load(resolve_target)

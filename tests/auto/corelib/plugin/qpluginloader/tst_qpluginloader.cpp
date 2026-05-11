@@ -23,6 +23,10 @@
 #include <private/qjnihelpers_p.h>
 #endif
 
+#ifdef Q_OS_OHOS
+#include <QStandardPaths>
+#endif
+
 using namespace Qt::StringLiterals;
 
 // Helper macros to let us know if some suffixes are valid
@@ -1035,9 +1039,12 @@ void tst_QPluginLoader::reloadPlugin()
 
 void tst_QPluginLoader::loadSectionTableStrippedElf()
 {
-#ifdef Q_OS_ANDROID
+#if defined(Q_OS_ANDROID)
     if (QNativeInterface::QAndroidApplication::sdkVersion() >= 24)
         QSKIP("Android 7+ (API 24+) linker doesn't allow missing or bad section header");
+#elif defined(Q_OS_OHOS)
+    QSKIP("HarmonyOS linker fails to load section-header-stripped ELFs "
+          "(LOAD_ORDER_RANDOMIZATION depends on e_shoff/e_shnum)");
 #endif
 #if !defined(QT_SHARED)
     QSKIP("This test requires a shared build of Qt, as QPluginLoader::setFileName is a no-op in static builds");

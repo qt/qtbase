@@ -25,7 +25,11 @@ function(qt_generate_qconfig_cpp in_file out_file)
     string(APPEND QT_CONFIG_STRS "    R\"qconfig(${INSTALL_LIBDIR})qconfig\",\n")
     string(APPEND QT_CONFIG_STRS "    R\"qconfig(${INSTALL_LIBEXECDIR})qconfig\",\n")
     string(APPEND QT_CONFIG_STRS "    R\"qconfig(${INSTALL_BINDIR})qconfig\",\n")
-    string(APPEND QT_CONFIG_STRS "    R\"qconfig(${INSTALL_PLUGINSDIR})qconfig\",\n")
+    if(OHOS)
+        string(APPEND QT_CONFIG_STRS "    R\"qconfig(.)qconfig\",\n")
+    else()
+        string(APPEND QT_CONFIG_STRS "    R\"qconfig(${INSTALL_PLUGINSDIR})qconfig\",\n")
+    endif()
     string(APPEND QT_CONFIG_STRS "    R\"qconfig(${INSTALL_QMLDIR})qconfig\",\n")
     string(APPEND QT_CONFIG_STRS "    R\"qconfig(${INSTALL_ARCHDATADIR})qconfig\",\n")
     string(APPEND QT_CONFIG_STRS "    R\"qconfig(${INSTALL_DATADIR})qconfig\",\n")
@@ -44,10 +48,13 @@ function(qt_generate_qconfig_cpp in_file out_file)
         set(lib_location_absolute_path
             "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}/${INSTALL_LIBDIR}")
     endif()
-    file(RELATIVE_PATH from_lib_location_to_prefix
-         "${lib_location_absolute_path}" "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}")
-    set(QT_CONFIGURE_LIBLOCATION_TO_PREFIX_PATH "${from_lib_location_to_prefix}")
-
+    if(OHOS)
+        set(QT_CONFIGURE_LIBLOCATION_TO_PREFIX_PATH ".")
+    else()
+        file(RELATIVE_PATH from_lib_location_to_prefix
+            "${lib_location_absolute_path}" "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}")
+        set(QT_CONFIGURE_LIBLOCATION_TO_PREFIX_PATH "${from_lib_location_to_prefix}")
+    endif()
     # Ensure Windows drive letter is prepended to the install prefix hardcoded
     # into qconfig.cpp, otherwise qmake can't find Qt modules in a static Qt
     # build if there's no qt.conf. Mostly relevant for CI.
@@ -105,7 +112,7 @@ function(qt_generate_qmake_and_qtpaths_wrapper_for_target)
     # then qmake generates incorrect Qt module include flags (among other things). Do the same for
     # darwin uikit cross-compilation.
     set(sysroot "")
-    if(CMAKE_SYSROOT AND NOT ANDROID AND NOT UIKIT)
+    if(CMAKE_SYSROOT AND NOT ANDROID AND NOT UIKIT AND NOT OHOS)
         set(sysroot "${CMAKE_SYSROOT}")
     endif()
 

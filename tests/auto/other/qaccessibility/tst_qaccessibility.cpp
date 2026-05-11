@@ -2043,6 +2043,10 @@ void tst_QAccessibility::textBrowserTest()
     QTextBrowser textBrowser;
     QString text = QLatin1String("Hello world\nhow are you today?\n");
     textBrowser.setText(text);
+#ifdef Q_OS_OHOS
+    constexpr int widthWarrantingNoExtraLineBreaks = 500;
+    textBrowser.resize(widthWarrantingNoExtraLineBreaks, textBrowser.height());
+#endif
     textBrowser.show();
 
     QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(&textBrowser);

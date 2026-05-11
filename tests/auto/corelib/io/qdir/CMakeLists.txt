@@ -31,7 +31,7 @@ foreach(dir  ${test_data_dirs})
     set(test_data_files ${test_data_files} ${out})
 endforeach()
 
-set(android_testdata_resource_files
+set(testdata_resource_files
 "entrylist/directory/dummy"
 "entrylist/file"
 "resources/entryList/file1.data"
@@ -45,6 +45,9 @@ set(android_testdata_resource_files
 "testdir/dir/qrc_qdir.cpp"
 "testdir/dir/tmp/empty"
 "testdir/dir/tst_qdir.cpp"
+"testdir/dir.lnk/aaaaa.txt"
+"testdir/dir.lnk/subdir/subdir.txt"
+"testdir/dir.lnk/subdir.lnk/subdir.lnk.txt"
 "testdir/spaces/foo. bar"
 "testdir/spaces/foo.bar"
 "tst_qdir.cpp"
@@ -90,7 +93,7 @@ if (WASM)
         FILES
             ${test_data_files}
     )
-elseif (ANDROID)
+elseif (ANDROID OR OHOS)
     qt_internal_add_test(tst_qdir
         SOURCES
             tst_qdir.cpp
@@ -112,11 +115,11 @@ elseif (ANDROID)
             ${qdir_resource_files}
     )
 
-    qt_internal_add_resource(tst_qdir "android_testdata"
+    qt_internal_add_resource(tst_qdir "testdata"
         PREFIX
-            "/android_testdata"
+            "/testdata"
         FILES
-            ${android_testdata_resource_files}
+            ${testdata_resource_files}
     )
 
 else()

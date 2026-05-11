@@ -46,6 +46,10 @@ qt_feature("style-android" PRIVATE
     LABEL "Android"
     AUTODETECT ANDROID
 )
+qt_feature("style-ohos" PRIVATE
+    LABEL "HarmonyOS/OHOS"
+    AUTODETECT OHOS
+)
 qt_feature("style-stylesheet" PUBLIC
     SECTION "Styles"
     LABEL "QStyleSheetStyle"

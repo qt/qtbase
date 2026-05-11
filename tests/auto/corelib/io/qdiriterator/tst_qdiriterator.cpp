@@ -13,7 +13,7 @@
 
 #include <QtCore/private/qfsfileengine_p.h>
 
-#if defined(Q_OS_VXWORKS)
+#if defined(Q_OS_VXWORKS) || defined(Q_OS_OHOS)
 #define Q_NO_SYMLINKS
 #endif
 

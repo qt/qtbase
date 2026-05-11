@@ -7,7 +7,7 @@ add_subdirectory(qsignalspy)
 add_subdirectory(tostring)
 
 # QTBUG-88507
-if(QT_FEATURE_process AND NOT ANDROID)
+if(QT_FEATURE_process AND NOT ANDROID AND NOT OHOS)
     add_subdirectory(selftests)
 endif()
 if(TARGET Qt::Widgets)

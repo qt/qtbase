@@ -364,8 +364,20 @@ qt_internal_extend_target(Gui CONDITION QT_FEATURE_standarditemmodel
 # available until the qt_internal_add_module call.
 if(QT_FEATURE_opengl)
     if(QT_FEATURE_opengles2)
-        find_package(GLESv2)
-        target_link_libraries(Gui PUBLIC GLESv2::GLESv2)
+        # On HarmonyOS, libGLESv2.so and libGLESv3.so have different OpenGLWrapper behavior.
+        # Prefer GLESv3 when ES3 features are configured and the library is available.
+        if(QT_FEATURE_opengles3 AND OHOS)
+            find_package(GLESv3)
+            if(TARGET GLESv3::GLESv3)
+                target_link_libraries(Gui PUBLIC GLESv3::GLESv3)
+            else()
+                find_package(GLESv2)
+                target_link_libraries(Gui PUBLIC GLESv2::GLESv2)
+            endif()
+        else()
+            find_package(GLESv2)
+            target_link_libraries(Gui PUBLIC GLESv2::GLESv2)
+        endif()
 
         if(TARGET PlatformGraphics::PlatformGraphics)
             qt_internal_extend_target(Gui
@@ -709,6 +721,20 @@ qt_internal_extend_target(Gui CONDITION ANDROID
         painting/qrasterbackingstore.cpp painting/qrasterbackingstore_p.h
         painting/qrhibackingstore.cpp painting/qrhibackingstore_p.h
 )
+
+qt_internal_extend_target(Gui CONDITION OHOS
+    SOURCES
+        painting/qrasterbackingstore.cpp painting/qrasterbackingstore_p.h
+        painting/qrhibackingstore.cpp painting/qrhibackingstore_p.h
+)
+
+if(OHOS)
+    qt_internal_add_harmonyos_permission(Gui
+        NAME ohos.permission.READ_PASTEBOARD
+        REASON "Used to read clipboard contents."
+        USED_SCENE_WHEN always
+    )
+endif()
 
 qt_internal_extend_target(Gui CONDITION ANDROID AND (TEST_architecture_arch STREQUAL arm64 OR TEST_architecture_arch STREQUAL arm)
     SOURCES

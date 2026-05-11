@@ -440,8 +440,10 @@ void tst_QFile::cleanup()
                 QDir remainingDir(absoluteFilePath);
                 QVERIFY2(remainingDir.removeRecursively(), qPrintable(absoluteFilePath));
             } else {
+#ifndef Q_OS_OHOS
                 if (!(QFile::permissions(absoluteFilePath) & QFile::WriteUser))
                     QVERIFY2(QFile::setPermissions(absoluteFilePath, QFile::WriteUser), qPrintable(absoluteFilePath));
+#endif
                 QVERIFY2(QFile::remove(absoluteFilePath), qPrintable(absoluteFilePath));
             }
         }
@@ -486,7 +488,10 @@ void tst_QFile::initTestCase()
 #else
     m_stdinProcess = QFINDTESTDATA("stdinprocess_helper");
 #endif
+// TODO: OHOS: Skip tests depending on external executables
+#if !defined(Q_OS_OHOS)
     QVERIFY(!m_stdinProcess.isEmpty());
+#endif
 #endif
     m_testLogFile = QFINDTESTDATA("testlog.txt");
     QVERIFY(!m_testLogFile.isEmpty());
@@ -545,10 +550,12 @@ void tst_QFile::initTestCase()
 
 void tst_QFile::cleanupTestCase()
 {
+#ifndef Q_OS_OHOS
     QFile file(QString::fromLatin1(readOnlyFile));
     QVERIFY(file.setPermissions(QFile::ReadOwner | QFile::WriteOwner));
     file.setFileName(QString::fromLatin1(noReadFile));
     QVERIFY(file.setPermissions(QFile::ReadOwner | QFile::WriteOwner));
+#endif
     QVERIFY(QDir::setCurrent(m_oldDir)); //release test directory for removal
 }
 
@@ -1017,6 +1024,10 @@ void tst_QFile::readAllStdin()
 #if defined(Q_OS_ANDROID)
     QSKIP("This test crashes when doing nanosleep. See QTBUG-69034.");
 #endif
+#if defined(Q_OS_OHOS)
+    // TODO: OHOS: Skip tests depending on external executables
+    QSKIP("Currently, OHOS platform cannot run test depending on external executables");
+#endif
     QByteArray lotsOfData(1024, '@'); // 10 megs
 
     QProcess process;
@@ -1041,6 +1052,10 @@ void tst_QFile::readLineStdin()
 #else
 #if defined(Q_OS_ANDROID)
     QSKIP("This test crashes when doing nanosleep. See QTBUG-69034.");
+#endif
+#if defined(Q_OS_OHOS)
+    // TODO: OHOS: Skip tests depending on external executables
+    QSKIP("Currently, OHOS platform cannot run test depending on external executables");
 #endif
     QByteArray lotsOfData(1024, '@'); // 10 megs
     for (int i = 0; i < lotsOfData.size(); ++i) {
@@ -1084,6 +1099,10 @@ void tst_QFile::readLineStdin_lineByLine()
 #else
 #if defined(Q_OS_ANDROID)
     QSKIP("This test crashes when calling ::poll. See QTBUG-69034.");
+#endif
+#if defined(Q_OS_OHOS)
+    // TODO: OHOS: Skip tests depending on external executables
+    QSKIP("Currently, OHOS platform cannot run test depending on external executables");
 #endif
     for (int i = 0; i < 2; ++i) {
         QProcess process;
@@ -1405,11 +1424,14 @@ void tst_QFile::permissions_data()
 
 #ifndef Q_OS_WASM
     // Application path is empty on wasm
-#ifdef Q_OS_ANDROID
+#if defined(Q_OS_ANDROID)
     // Android in-APK application path doesn't report exec permission
     if (!QtAndroidPrivate::isUncompressedNativeLibs())
-#endif
+        QTest::newRow("data0") << QCoreApplication::instance()->applicationFilePath() << uint(QFile::ExeUser) << true << false;
+#elif !defined(Q_OS_OHOS)
+    // OHOS app binary(.so) does not report exec permission
     QTest::newRow("data0") << QCoreApplication::instance()->applicationFilePath() << uint(QFile::ExeUser) << true << false;
+#endif
 #endif
     QTest::newRow("data1") << m_testSourceFile << uint(QFile::ReadUser) << true << false;
     QTest::newRow("readonly") << QString::fromLatin1("readonlyfile") << uint(QFile::WriteUser) << false << false;
@@ -1604,8 +1626,10 @@ void tst_QFile::copyFallback()
     QVERIFY(!file.isOpen());
 
      // Need to reset permissions on Windows to be able to delete
+#ifndef Q_OS_OHOS
     QVERIFY(QFile::setPermissions("file-copy-destination.txt",
            QFile::ReadOwner | QFile::WriteOwner));
+#endif
     QVERIFY(QFile::remove("file-copy-destination.txt"));
 
     // Fallback copy of open file.
@@ -1656,6 +1680,9 @@ static QString getWorkingDirectoryForLink(const QString &linkFileName)
 
 void tst_QFile::link()
 {
+#ifdef Q_OS_OHOS
+    QSKIP("OHOS does not support symlink creation");
+#endif
     QFile::remove("myLink.lnk");
 
     QFileInfo info1(m_testSourceFile);
@@ -1682,6 +1709,9 @@ void tst_QFile::link()
 
 void tst_QFile::linkToDir()
 {
+#ifdef Q_OS_OHOS
+    QSKIP("OHOS does not support symlink creation");
+#endif
     QFile::remove("myLinkToDir.lnk");
     QDir dir;
     dir.mkdir("myDir");
@@ -1700,6 +1730,9 @@ void tst_QFile::linkToDir()
 
 void tst_QFile::absolutePathLinkToRelativePath()
 {
+#ifdef Q_OS_OHOS
+    QSKIP("OHOS does not support symlink creation");
+#endif
     QFile::remove("myDir/test.txt");
     QFile::remove("myDir/myLink.lnk");
     QDir dir;
@@ -1718,6 +1751,9 @@ void tst_QFile::absolutePathLinkToRelativePath()
 
 void tst_QFile::readBrokenLink()
 {
+#ifdef Q_OS_OHOS
+    QSKIP("OHOS does not support symlink creation");
+#endif
     QFile::remove("myLink2.lnk");
     QFileInfo info1("file12");
     QVERIFY(QFile::link("file12", "myLink2.lnk"));
@@ -2830,6 +2866,12 @@ void tst_QFile::virtualFile()
 //    https://emscripten.org/docs/porting/networking.html
 static void unixPipe_helper(int pipes[2])
 {
+#ifdef Q_OS_OHOS
+    if (QByteArray(QTest::currentDataTag()).contains("with-stdio"))
+        QSKIP("fread() incorrectly sets the EOF flag on a FILE* wrapping"
+            " a pipe/fifo/socket fd when no data is available on a non-blocking fd,"
+            " see also QTBUG-146579");
+#endif
     // start a thread and wait for it to write a first byte
     static constexpr int Timeout = 1000;
     QScopedPointer<QThread> thr(QThread::create([fd = pipes[1]]() {
@@ -2884,6 +2926,12 @@ void tst_QFile::unixPipe()
 
 void tst_QFile::unixFifo()
 {
+#ifdef Q_OS_OHOS
+    if (QByteArray(QTest::currentDataTag()).contains("with-stdio"))
+        QSKIP("fread() incorrectly sets the EOF flag on a FILE* wrapping"
+            " a pipe/fifo/socket fd when no data is available on a non-blocking fd,"
+            " see also QTBUG-146579");
+#endif
     QByteArray fifopath = []() -> QByteArray {
         QByteArray dir = qgetenv("XDG_RUNTIME_DIR");
         if (dir.isEmpty())
@@ -4136,6 +4184,9 @@ void tst_QFile::moveToTrash_data()
 
 void tst_QFile::moveToTrash()
 {
+#if defined(Q_OS_OHOS)
+    QSKIP("OHOS: moveToTrash requires user input via FilePicker to get temp permissions");
+#endif
     if (!QFile::supportsMoveToTrash())
         QSKIP("This platform doesn't implement a trash bin");
 
@@ -4238,6 +4289,9 @@ void tst_QFile::moveToTrash()
 
 void tst_QFile::moveToTrashDuplicateName()
 {
+#if defined(Q_OS_OHOS)
+    QSKIP("OHOS: moveToTrash requires user input via FilePicker to get temp permissions");
+#endif
     if (!QFile::supportsMoveToTrash())
         QSKIP("This platform doesn't implement a trash bin");
 
@@ -4293,6 +4347,9 @@ void tst_QFile::moveToTrashOpenFile_data()
 
 void tst_QFile::moveToTrashOpenFile()
 {
+#if defined(Q_OS_OHOS)
+    QSKIP("OHOS: moveToTrash requires user input via FilePicker to get temp permissions");
+#endif
     if (!QFile::supportsMoveToTrash())
         QSKIP("This platform doesn't implement a trash bin");
 
@@ -4353,6 +4410,9 @@ void tst_QFile::moveToTrashOpenFile()
 
 void tst_QFile::moveToTrashSymlinkToFile()
 {
+#ifdef Q_OS_OHOS
+    QSKIP("OHOS does not support symlink creation");
+#endif
     if (!QFile::supportsMoveToTrash())
         QSKIP("This platform doesn't implement a trash bin");
 
@@ -4392,6 +4452,9 @@ void tst_QFile::moveToTrashSymlinkToDirectory_data()
 
 void tst_QFile::moveToTrashSymlinkToDirectory()
 {
+#ifdef Q_OS_OHOS
+    QSKIP("OHOS does not support symlink creation");
+#endif
     if (!QFile::supportsMoveToTrash())
         QSKIP("This platform doesn't implement a trash bin");
 
@@ -4429,7 +4492,7 @@ void tst_QFile::moveToTrashXdgHomeTrashIsSymlink()
     if (!QFile::supportsMoveToTrash())
         QSKIP("This platform doesn't implement a trash bin");
 
-#if defined(Q_OS_WIN) || defined(Q_OS_DARWIN) || defined(Q_OS_ANDROID) || defined(Q_OS_WEBOS)
+#if defined(Q_OS_WIN) || defined(Q_OS_DARWIN) || defined(Q_OS_ANDROID) || defined(Q_OS_WEBOS) || defined(Q_OS_OHOS)
     QSKIP("This test is specific to XDG Unix systems");
 #else
     if (!QStandardPaths::isTestModeEnabled())
@@ -4476,7 +4539,7 @@ void tst_QFile::moveToTrashXdgSafety()
     if (!QFile::supportsMoveToTrash())
         QSKIP("This platform doesn't implement a trash bin");
 
-#if defined(Q_OS_WIN) || defined(Q_OS_DARWIN) || defined(Q_OS_ANDROID) || defined(Q_OS_WEBOS)
+#if defined(Q_OS_WIN) || defined(Q_OS_DARWIN) || defined(Q_OS_ANDROID) || defined(Q_OS_WEBOS) || defined(Q_OS_OHOS)
     QSKIP("This test is specific to XDG Unix systems");
 #else
     QDir(m_temporaryDir.path()).mkdir("emptydir");
@@ -4594,13 +4657,34 @@ void tst_QFile::stdfilesystem()
 #else
     fs::path linkfile { "test-link" };
 #endif
+#if defined(Q_OS_OHOS)
+    QEXPECT_FAIL("", "OHOS does not support symlink creation", Continue);
+#endif
     QVERIFY(file.link(linkfile));
+#if defined(Q_OS_OHOS)
+    QEXPECT_FAIL("", "OHOS does not support symlink creation", Continue);
+#endif
     QVERIFY(fs::exists(linkfile));
+#if defined(Q_OS_OHOS)
+    QEXPECT_FAIL("", "OHOS does not support symlink creation", Continue);
+#endif
     QVERIFY(QFile::remove(linkfile));
+#if defined(Q_OS_OHOS)
+    QEXPECT_FAIL("", "OHOS does not support symlink creation", Continue);
+#endif
     QVERIFY(QFile::link(file.filesystemFileName(), linkfile));
+#if defined(Q_OS_OHOS)
+    QEXPECT_FAIL("", "OHOS does not support symlink creation", Continue);
+#endif
     QVERIFY(fs::exists(linkfile));
+#if defined(Q_OS_OHOS)
+    QEXPECT_FAIL("", "OHOS does not support symlink creation", Continue);
+#endif
     QCOMPARE(QFileInfo(QFile::filesystemSymLinkTarget(linkfile)),
              QFileInfo(file.filesystemFileName()));
+#if defined(Q_OS_OHOS)
+    QEXPECT_FAIL("", "OHOS does not support symlink creation", Continue);
+#endif
     QCOMPARE(QFileInfo(QFile(linkfile).filesystemSymLinkTarget()),
              QFileInfo(file.filesystemFileName()));
 

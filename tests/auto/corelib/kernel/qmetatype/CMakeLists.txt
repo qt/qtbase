@@ -58,6 +58,16 @@ qt_internal_add_test(tst_qmetatype
     TESTDATA ${test_data}
 )
 
+# On OHOS the binary runs from a target directory that differs from the build
+# output directory, so the runtime loader cannot find the co-located test helper
+# libraries (qmetatype_lib1, qmetatype_lib2). Setting BUILD_RPATH_USE_ORIGIN
+# makes the loader search the executable's own directory first.
+if(OHOS)
+    set_target_properties(tst_qmetatype PROPERTIES
+        BUILD_RPATH_USE_ORIGIN TRUE
+    )
+endif()
+
 qt_internal_extend_target(tst_qmetatype CONDITION MSVC
     COMPILE_OPTIONS
         /bigobj

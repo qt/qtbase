@@ -1,0 +1,16 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "module description"
+    },
+    {
+      "name": "QAbility_desc",
+      "value": "description"
+    },
+    {
+      "name": "QAbility_label",
+      "value": "label"
+    }
+  ]
+}

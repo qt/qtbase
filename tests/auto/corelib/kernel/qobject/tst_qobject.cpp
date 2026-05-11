@@ -3206,6 +3206,9 @@ void tst_QObject::recursiveSignalEmission()
 {
 #if !QT_CONFIG(process)
     QSKIP("No qprocess support");
+#elif defined(Q_OS_OHOS)
+    // TODO: OHOS: Skip tests depending on external executables
+    QSKIP("Currently, OHOS platform cannot run test depending on external executables");
 #else
     QProcess proc;
     // signalbug helper app should always be next to this test binary

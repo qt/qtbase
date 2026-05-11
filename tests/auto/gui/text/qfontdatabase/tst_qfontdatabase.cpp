@@ -173,6 +173,8 @@ void tst_QFontDatabase::systemFixedFont() // QTBUG-54623
 {
 #if defined(Q_OS_VXWORKS)
     QSKIP("QTBUG-130071: VxWorks doesn't support fixed system font out of the box");
+#elif defined(Q_OS_OHOS)
+    QSKIP("QT6HAROS-190: OHOS doesn't support fixed system font out of the box");
 #endif
     QFont font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
     QFontInfo fontInfo(font);

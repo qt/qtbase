@@ -221,6 +221,9 @@ Build environment:
                          correctly, but also makes the Android platform plugin
                          incompatible with the LGPL2.1. [yes]
 
+  -ohos-sdk path ....... Set OpenHarmony SDK root path [$OHOS_SDK_ROOT]
+  -ohos-abis ........... Only one ABI can be specified, default is: arm64-v8a
+
 Component selection:
 
   -submodules <repo>[,<repo>] ... Build the listed repositories and those they

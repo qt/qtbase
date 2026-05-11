@@ -214,3 +214,9 @@ qt_internal_extend_target(PrintSupport CONDITION QT_FEATURE_printpreviewdialog
 qt_internal_add_docs(PrintSupport
     doc/qtprintsupport.qdocconf
 )
+
+if(OHOS)
+    qt_internal_add_harmonyos_permission(PrintSupport
+        NAME ohos.permission.PRINT
+    )
+endif()

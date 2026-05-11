@@ -38,6 +38,10 @@
 #include <android/log.h>
 #endif
 
+#ifdef Q_OS_OHOS
+#include <QtCore/private/qohoslogger_p.h>
+#endif
+
 #ifdef Q_OS_DARWIN
 #include <QtCore/private/qcore_mac_p.h>
 #endif
@@ -262,6 +266,10 @@ static bool qt_append_thread_name_to(QString &message)
 */
 static bool systemHasStderr()
 {
+#if defined(Q_OS_OHOS)
+    return false; // OHOS has no stderr
+#endif
+
     return true;
 }
 
@@ -1959,6 +1967,28 @@ static bool android_default_message_handler(QtMsgType type,
 }
 #endif //Q_OS_ANDROID
 
+#if defined(Q_OS_OHOS)
+static bool ohos_default_message_handler(QtMsgType type,
+                                  const QMessageLogContext &context,
+                                  const QString &message)
+{
+    QString formattedMessage = qFormatLogMessage(type, context, message);
+
+    LogLevel priority = LOG_DEBUG;
+    switch (type) {
+    case QtDebugMsg: priority = LOG_DEBUG; break;
+    case QtInfoMsg: priority = LOG_INFO; break;
+    case QtWarningMsg: priority = LOG_WARN; break;
+    case QtCriticalMsg: priority = LOG_ERROR; break;
+    case QtFatalMsg: priority = LOG_FATAL; break;
+    };
+
+    qOhosLogMessage(priority, qPrintable(QCoreApplication::applicationName()), qPrintable(formattedMessage));
+
+    return true; // Prevent further output to stderr
+}
+#endif //Q_OS_OHOS
+
 #ifdef Q_OS_WIN
 static void win_outputDebugString_helper(const QString &message)
 {
@@ -2059,6 +2089,8 @@ static constexpr SystemMessageSink systemMessageSink = {
         syslog_default_message_handler
 #elif defined(Q_OS_ANDROID)
         android_default_message_handler
+# elif defined(Q_OS_OHOS)
+        ohos_default_message_handler
 #elif defined(QT_USE_APPLE_UNIFIED_LOGGING)
         AppleUnifiedLogger::messageHandler, true
 #elif defined Q_OS_WASM

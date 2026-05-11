@@ -19,7 +19,7 @@ qt_internal_add_test(tst_qthreadstorage
 ## Scopes:
 #####################################################################
 
-if(QT_FEATURE_process AND NOT ANDROID)
+if(QT_FEATURE_process AND NOT ANDROID AND NOT OHOS)
     add_subdirectory(crashonexit)
     add_dependencies(tst_qthreadstorage crashOnExit_helper)
 

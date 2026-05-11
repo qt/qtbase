@@ -1,0 +1,6 @@
+{
+  "name": "libqohos.so",
+  "types": "./libqohos.d.ts",
+  "version": "5.12.12",
+  "description": "Qt Platform Abstraction"
+}

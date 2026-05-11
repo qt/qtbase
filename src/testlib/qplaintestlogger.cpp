@@ -29,6 +29,10 @@
 #  include <qt_windows.h>
 #endif
 
+#ifdef Q_OS_OHOS
+#  include <QtCore/private/qohoslogger_p.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
@@ -205,6 +209,8 @@ void QPlainTestLogger::outputMessage(const char *str)
     }
 #elif defined(Q_OS_ANDROID)
     __android_log_write(ANDROID_LOG_INFO, "QTestLib", str);
+#elif defined(Q_OS_OHOS)
+    qOhosLogMessage(LOG_INFO, "QTestLib", str);
 #endif
     outputString(str);
 }

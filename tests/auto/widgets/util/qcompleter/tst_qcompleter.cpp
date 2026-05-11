@@ -179,6 +179,16 @@ static QString androidHomePath()
 }
 #endif
 
+#ifdef Q_OS_OHOS
+static QString ohosBasePath()
+{
+    const auto homePaths = QStandardPaths::standardLocations(QStandardPaths::HomeLocation);
+    QDir dir = homePaths.isEmpty() ? QDir() : homePaths.first();
+    dir.cdUp();
+    return dir.path();
+}
+#endif
+
 void tst_QCompleter::setSourceModel(ModelType type)
 {
     QTreeWidgetItem *parent, *child;
@@ -235,6 +245,8 @@ void tst_QCompleter::setSourceModel(ModelType type)
             // Android 11 and above doesn't allow accessing root filesystem as before,
             // so let's opt int for the app's home.
             m->setRootPath(androidHomePath());
+#elif defined(Q_OS_OHOS)
+            m->setRootPath(ohosBasePath());
 #else
             m->setRootPath("/");
 #endif
@@ -627,6 +639,11 @@ void tst_QCompleter::fileSystemModel_data()
         const QString androidDir = androidHomePath();
         const QString tag = QStringLiteral("%1/fil").arg(androidDir);
         QTest::newRow(tag.toUtf8().data()) << tag << "" << "files" << androidDir + "/files";
+#elif defined(Q_OS_OHOS)
+        QTest::newRow("()") << "" << "" << "/" << "/";
+        const QString ohosDir = ohosBasePath();
+        const QString tag = QStringLiteral("%1/fi").arg(ohosDir);
+        QTest::newRow(tag.toUtf8().data()) << tag << "" << "files" << ohosDir + "/files";
 #elif defined(Q_OS_VXWORKS)
         QTest::newRow("()") << "" << "" << "/" << "/";
         QTest::newRow("(/tm)") << "/tm" << "" << "tmp" << "/tmp";

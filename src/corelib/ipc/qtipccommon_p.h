@@ -70,7 +70,11 @@ constexpr bool isIpcSupported(IpcType ipcType, QNativeIpcKey::Type type)
 {
     switch (type) {
     case QNativeIpcKey::Type::SystemV:
+#ifdef Q_OS_OHOS
+        return false;
+#else
         break;
+#endif
 
     case QNativeIpcKey::Type::PosixRealtime:
         if (ipcType == IpcType::SharedMemory)

@@ -4,3 +4,7 @@
 if(QT_FEATURE_cups AND UNIX AND NOT APPLE)
     add_subdirectory(cups)
 endif()
+if(OHOS)
+    add_subdirectory(ohos)
+endif()
+

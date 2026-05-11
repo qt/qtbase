@@ -10,3 +10,7 @@ endif()
 if(QT_FEATURE_style_windowsvista)
     add_subdirectory(modernwindows)
 endif()
+if(QT_FEATURE_style_ohos)
+    add_subdirectory(ohos)
+endif()
+

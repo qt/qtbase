@@ -100,6 +100,36 @@ define_property(TARGET
         "Specifies the qml module's version."
 )
 
+define_property(TARGET
+    PROPERTY
+        QT_HARMONYOS_APP_NAME
+    BRIEF_DOCS
+        "Specifies the application name for HarmonyOS deployment."
+    FULL_DOCS
+        "The application name used in HarmonyOS HAP packaging. If not set, defaults to the target name."
+)
+
+define_property(TARGET
+    PROPERTY
+        QT_HARMONYOS_APP_BUNDLE_NAME
+    BRIEF_DOCS
+        "Specifies the bundle identifier for HarmonyOS deployment."
+    FULL_DOCS
+        "The bundle identifier (e.g., com.company.app) used in HarmonyOS HAP packaging.
+        This is required for HarmonyOS deployment."
+)
+
+define_property(TARGET
+    PROPERTY
+        QT_HARMONYOS_TARGET_ARCHS
+    BRIEF_DOCS
+        "Specifies target architecture for HarmonyOS deployment."
+    FULL_DOCS
+        "Target architecture for HarmonyOS deployment (e.g., arm64-v8a, x86_64).
+        If not set, defaults to arm64-v8a.
+        Note: Multi-architecture HAP generation is not yet supported."
+)
+
 define_property(GLOBAL
     PROPERTY
         QT_TARGETS_FOLDER

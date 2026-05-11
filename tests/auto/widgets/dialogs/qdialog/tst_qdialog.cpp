@@ -525,6 +525,10 @@ void tst_QDialog::snapToDefaultButton()
     QSKIP("Android does not support cursor");
 #endif
 
+#ifdef Q_OS_OHOS
+    QSKIP("OHOS does not support setting cursor position.");
+#endif
+
     const QRect dialogGeometry(QGuiApplication::primaryScreen()->availableGeometry().topLeft()
                                + QPoint(100, 100), QSize(200, 200));
     const QPoint startingPos = dialogGeometry.bottomRight() + QPoint(100, 100);

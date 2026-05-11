@@ -601,7 +601,7 @@ qt_feature("msvc_obj_debug_info"
 qt_feature_config("msvc_obj_debug_info" QMAKE_PRIVATE_CONFIG)
 qt_feature("pkg-config" PUBLIC
     LABEL "Using pkg-config"
-    AUTODETECT NOT APPLE AND NOT WIN32 AND NOT ANDROID
+    AUTODETECT NOT APPLE AND NOT WIN32 AND NOT ANDROID AND NOT OHOS
     CONDITION PKG_CONFIG_FOUND
 )
 qt_feature_config("pkg-config" QMAKE_PUBLIC_QT_CONFIG
@@ -710,7 +710,7 @@ qt_feature_config("framework" QMAKE_PUBLIC_CONFIG
 )
 qt_feature("largefile"
     LABEL "Large file support"
-    CONDITION NOT ANDROID AND NOT INTEGRITY AND NOT rtems
+    CONDITION NOT ANDROID AND NOT INTEGRITY AND NOT rtems AND NOT OHOS
 )
 qt_feature_definition("largefile" "QT_LARGEFILE_SUPPORT" VALUE "64")
 qt_feature_config("largefile" QMAKE_PRIVATE_CONFIG)
@@ -1005,6 +1005,7 @@ qt_feature_config("arm_crc32" QMAKE_PRIVATE_CONFIG)
 qt_feature("arm_crypto" PRIVATE
     LABEL "AES"
     CONDITION ( ( TEST_architecture_arch STREQUAL arm ) OR ( TEST_architecture_arch STREQUAL arm64 ) ) AND ( TEST_arch_${TEST_architecture_arch}_subarch_crypto OR TEST_subarch_crypto )
+    AUTODETECT NOT OHOS
 )
 qt_feature_definition("arm_crypto" "QT_COMPILER_SUPPORTS_CRYPTO" VALUE "1")
 qt_feature_definition("arm_crypto" "QT_COMPILER_SUPPORTS_AES" VALUE "1")
@@ -1176,7 +1177,7 @@ qt_feature("xml" PRIVATE
 )
 qt_feature("libudev" PRIVATE
     LABEL "udev"
-    CONDITION Libudev_FOUND AND NOT INTEGRITY
+    CONDITION Libudev_FOUND AND NOT INTEGRITY AND NOT OHOS
 )
 qt_feature("openssl" PRIVATE
     LABEL "OpenSSL"

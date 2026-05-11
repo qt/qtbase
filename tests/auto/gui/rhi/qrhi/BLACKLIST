@@ -2,3 +2,10 @@
 # won't be available.
 [tessellation vulkan]
 android
+# Tessellation with custom per-vertex varyings is not supported on HarmonyOS OpenGL ES.
+[tessellation:OpenGL]
+ohos
+# HarmonyOS OpenGL ES driver reports GL_MAX_VERTEX_SHADER_STORAGE_BLOCKS = 0,
+# so SSBOs in graphics (vertex/tessellation) shader stages are not supported.
+[storageBufferRuntimeSizeGraphics:OpenGL]
+ohos

@@ -59,4 +59,7 @@ endif()
 if(QT_FEATURE_wayland)
     add_subdirectory(wayland)
 endif()
+if(OHOS)
+    add_subdirectory(ohos)
+endif()
 

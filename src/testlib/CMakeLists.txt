@@ -155,6 +155,11 @@ qt_internal_extend_target(Test CONDITION MACOS
         ${FWIOKit}
 )
 
+qt_internal_extend_target(Test CONDITION OHOS
+    LIBRARIES
+        hilog_ndk.z
+)
+
 qt_internal_extend_target(Test CONDITION UNIX
     SOURCES
         qtestcrashhandler_unix.cpp

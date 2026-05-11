@@ -1,0 +1,547 @@
+// Copyright (C) 2025 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+
+#include <qohosfloatingwindow.h>
+
+#include <QtCore/private/qohoslogger_p.h>
+#include "QtGui/private/qguiapplication_p.h"
+#include <qohosdeviceinfo_p.h>
+#include <qohosinputcontext.h>
+#include <qohosinputmethodeventhandler.h>
+#include <qohosjsmain.h>
+#include <qohosplatformbackingstore.h>
+#include <qohosplatformintegration.h>
+#include <qohosplatformwindow.h>
+#include <qohosruntimedevicetypeandmode.h>
+#include <qohossettings.h>
+#include <render/qohossurface.h>
+#include <render/qohoswindowproxy.h>
+#include <render/qwindowproxyregistry.h>
+#include <utility>
+
+QT_BEGIN_NAMESPACE
+
+namespace {
+
+bool isWindowRotatedByTabletScreenRotation(
+    QWindow *window, QOhosWindowProxy::RectChangeOptions rectChangeOptions)
+{
+    return !QOhosSettings::isWindowPcModeEnabled()
+        && window->geometry() != rectChangeOptions.rect
+        && rectChangeOptions.reason == QOhosWindowProxy::RectChangeReason::UNDEFINED;
+}
+
+}
+
+QOhosFloatingWindow::QOhosFloatingWindow(QWindow *window)
+: QOhosPlatformWindow(window)
+{
+}
+
+QOhosFloatingWindow::~QOhosFloatingWindow() = default;
+
+void QOhosFloatingWindow::setGeometry(const QRect &rect)
+{
+    auto *view = ownedViewOrNull();
+    bool geometryControlledBySystem =
+        !QOhosSettings::isWindowPcModeEnabled()
+        && view != nullptr
+        && view->viewType() == QOhosView::ViewType::MainWindow;
+
+    if (geometryControlledBySystem) {
+        setWindowGeometryFromOhos(windowGeometry());
+        return;
+    }
+
+    auto oldWindowFrameGeometry = windowFrameGeometry();
+
+    QOhosPlatformWindow::setGeometry(rect);
+
+    if (view != nullptr) {
+        auto frameGeometry = windowFrameGeometry();
+        if (oldWindowFrameGeometry.topLeft() != frameGeometry.topLeft())
+            view->setPosition(frameGeometry.topLeft());
+        if (oldWindowFrameGeometry.size() != frameGeometry.size())
+            view->setSize(frameGeometry.size());
+    }
+}
+
+void QOhosFloatingWindow::setVisible(bool visible)
+{
+    if (!visible) {
+        // Avoid ´minimize´ animation when the window is being closed or destroyed
+        if (!QOhosPlatformWindow::isWindowBeingClosedOrDestroyed(window()))
+            m_view->hide();
+    } else {
+        m_view->showImmediate();
+    }
+}
+
+WId QOhosFloatingWindow::winId() const
+{
+    auto windowObjectName = window()->objectName();
+
+    qOhosPrintfDebug(
+        "%s: winId called for window named: \"%s\"",
+        Q_FUNC_INFO,
+        windowObjectName.toStdString().c_str());
+
+    return reinterpret_cast<WId>(m_view->viewWindowId());
+}
+
+void QOhosFloatingWindow::raise()
+{
+    auto *view = ownedViewOrNull();
+    if (view != nullptr) {
+        view->raise();
+        window()->requestUpdate();
+    }
+}
+
+void QOhosFloatingWindow::lower()
+{
+    auto *view = ownedViewOrNull();
+    if (view != nullptr) {
+        view->lower();
+        window()->requestUpdate();
+    }
+}
+
+QOhosSurface *QOhosFloatingWindow::ownedSurfaceOrNull() const
+{
+    auto *view = ownedViewOrNull();
+    return view != nullptr ? view->surfaceOrNull() : nullptr;
+}
+
+QOhosView *QOhosFloatingWindow::ownedViewOrNull() const
+{
+    return m_view.get();
+}
+
+void QOhosFloatingWindow::initialize()
+{
+    QOhosPlatformWindow::initialize();
+    m_view = QOhosView::createForWindow(this, propertiesProvider());
+    auto &view = *m_view;
+
+    auto *qWindow = window();
+
+    // HACK
+    // There is no functionality to fetch the initial window status from ohos
+    // We can only listen for the changes - we need to assume sane default for tablets
+    // so assign the default most-likely status of the tablet here.
+    if (view.viewType() == QOhosView::ViewType::MainWindow
+        && !QOhosSettings::isWindowPcModeEnabled()
+        && !m_lastWindowStatusType.hasValue()) {
+        m_lastWindowStatusType = QOhosWindowProxy::WindowStatusType::FULL_SCREEN;
+    }
+
+    QObject::connect(
+        &view, &QOhosView::externalContentInteractionDetected,
+        &QOhosPlatformWindow::closeAllActivePopups);
+
+    QObject::connect(
+        &view, &QOhosView::windowEvent,
+        qWindow,
+        [this, qWindow, &view](QOhosWindowProxy::WindowEvent evt) {
+            bool windowAcceptsFocusAndInput = checkWindowAcceptsFocus() && checkWindowAcceptsInput();
+            Qt::WindowStates windowStatesToSet = windowStates();
+            bool windowActive = true;
+            auto previousWindowEventType = std::exchange(m_lastWindowEventType, makeQOhosOptional(evt.type));
+
+            switch (evt.type) {
+            case QOhosWindowProxy::WindowEventType::WINDOW_ACTIVE:
+            {
+                QWindow *modalWindow = nullptr;
+                if (QGuiApplicationPrivate::instance()->isWindowBlocked(qWindow, &modalWindow)
+                    && qWindow != modalWindow) {
+                    modalWindow->requestActivate();
+                    return;
+                }
+
+                // FIXME - restore cursor set by the User every time window is activated.
+                // Perform it because Ohos overrides it with default "standard arrow" cursor (when
+                // window is deactivated) and does not bring selected cursor back (when window is
+                // activated again). This bahaviour is Ohos platform issue.
+                restoreWindowCurrentCursorIfNeeded();
+                if (windowAcceptsFocusAndInput) {
+                    QWindowSystemInterface::handleFocusWindowChanged(qWindow);
+                    notifyInputSystemsWindowActiveStatusChanged(true);
+                }
+                break;
+            }
+            case QOhosWindowProxy::WindowEventType::WINDOW_INACTIVE:
+                windowActive = false;
+                if (!windowAcceptsFocusAndInput)
+                    break;
+                if (QGuiApplicationPrivate::focus_window == qWindow
+                    || (QGuiApplicationPrivate::focus_window != nullptr
+                        && QOhosPlatformWindow::platformWindowFlagsForQWindow(
+                            QGuiApplicationPrivate::focus_window).testFlag(Qt::WindowDoesNotAcceptFocus))) {
+                    QWindowSystemInterface::handleFocusWindowChanged(nullptr, Qt::ActiveWindowFocusReason);
+                }
+                notifyInputSystemsWindowActiveStatusChanged(false);
+                break;
+            case QOhosWindowProxy::WindowEventType::WINDOW_HIDDEN:
+                if (!checkWindowAcceptsFocus() && QGuiApplicationPrivate::focus_window == qWindow)
+                    focusHijackingPopupHidden();
+                clearExposed();
+                windowActive = false;
+                break;
+            case QOhosWindowProxy::WindowEventType::WINDOW_SHOWN:
+                // HACK
+                // This is a fix for the windows hidden using `QWidget::hide()`.
+                // When a window is hidden and then bring back from the system Dock
+                // Qt side keeps wrong (hidden) state. This causes different issues due to
+                // improper state. To fix it - change visibility state based on the system
+                // window state.
+                if (previousWindowEventType == QOhosWindowProxy::WindowEventType::WINDOW_HIDDEN && !qWindow->isVisible())
+                    qWindow->setVisible(true);
+                setExposedRegionFromGeometry();
+                updateWindowGeometryFromView(view);
+                break;
+            case QOhosWindowProxy::WindowEventType::WINDOW_DESTROYED:
+                windowActive = false;
+                notifyWindowDestroyedFromOhos();
+                return;
+            }
+
+            windowStatesToSet.setFlag(Qt::WindowState::WindowActive, windowActive && windowAcceptsFocusAndInput);
+            setWindowStateFromOhos(windowStatesToSet);
+        });
+
+    QObject::connect(
+        &view, &QOhosView::windowStatusChange,
+        qWindow,
+        [this, qWindow, &view](QOhosWindowProxy::WindowStatus evt) {
+            qCDebug(
+                QtForOhos,
+                "Window status changed, window: %p(%s) status: %d",
+                qWindow,
+                qPrintable(qWindow->objectName()),
+                evt.type);
+            Qt::WindowStates windowStatesToSet = windowStates();
+            Qt::WindowState flagToSet;
+            m_lastWindowStatusType = evt.type;
+
+            switch (evt.type) {
+            case QOhosWindowProxy::WindowStatusType::FULL_SCREEN:
+                flagToSet = Qt::WindowState::WindowFullScreen;
+                break;
+            case QOhosWindowProxy::WindowStatusType::MAXIMIZE:
+                flagToSet = Qt::WindowState::WindowMaximized;
+                break;
+            case QOhosWindowProxy::WindowStatusType::MINIMIZE:
+                flagToSet = Qt::WindowState::WindowMinimized;
+                break;
+            case QOhosWindowProxy::WindowStatusType::UNDEFINED:
+            case QOhosWindowProxy::WindowStatusType::FLOATING:
+                Q_FALLTHROUGH();
+            case QOhosWindowProxy::WindowStatusType::SPLIT_SCREEN:
+                flagToSet = Qt::WindowState::WindowNoState;
+                break;
+            }
+
+            // NOTE - Qt::WindowFullScreen and Qt::WindowMaximized represent the exact same
+            // OHOS Window state.
+            if (flagToSet == Qt::WindowState::WindowFullScreen
+                || flagToSet == Qt::WindowState::WindowMaximized) {
+                windowStatesToSet = view.isFullscreenImmersiveModeEnabled()
+                    ? Qt::WindowState::WindowFullScreen
+                    : Qt::WindowState::WindowMaximized;
+            } else {
+                static constexpr Qt::WindowState mutuallyExclusiveFlags[] = {
+                    Qt::WindowState::WindowFullScreen,
+                    Qt::WindowState::WindowMaximized,
+                    Qt::WindowState::WindowMinimized,
+                    Qt::WindowState::WindowNoState,
+                };
+
+                for (const auto exclusiveState : mutuallyExclusiveFlags)
+                    windowStatesToSet.setFlag(exclusiveState, flagToSet == exclusiveState);
+            }
+
+            setWindowStateFromOhos(windowStatesToSet);
+
+            // HACK
+            // There is no functionality in OHOS to fetch the window status that would allow checking
+            // the value while processing the WINDOW_SHOWN window event type. Therefore, the window
+            // geometry view needs to be recalculated with any change.
+            updateWindowGeometryFromView(view);
+        });
+
+    QObject::connect(
+        &view, &QOhosView::windowVisibilityChange,
+        qWindow,
+        [qWindow, &view, this](bool visible) {
+            qCDebug(
+                QtForOhos,
+                "Window %p(%s) visibility changed: %s",
+                qWindow,
+                qPrintable(qWindow->objectName()),
+                visible ? "true" : "false");
+            if (visible && m_windowMask.hasValue())
+                view.setWindowMask(QOhosWindowProxy::WindowMask {m_windowMask.value()});
+
+            if (visible)
+                setExposedRegionFromGeometry();
+            else
+                clearExposed();
+        });
+
+    bool monitorAvoidAreaChange =
+        !(isHandheldDeviceType() && view.viewType() == QOhosView::ViewType::SubWindow);
+
+    if (monitorAvoidAreaChange) {
+        QObject::connect(
+            &view, &QOhosView::avoidAreaChanged,
+            qWindow,
+            [&view, this, cachedMap = QMap<QOhosWindowProxy::AvoidAreaType, QOhosWindowProxy::AvoidArea>{}](
+                const QOhosWindowProxy::AvoidAreaType avoidAreaType,
+                const QOhosWindowProxy::AvoidArea &systemAvoidArea) mutable {
+
+                const auto &cached = cachedMap[avoidAreaType];
+
+                bool actuallyChanged =
+                    cached.visible != systemAvoidArea.visible
+                    || cached.leftRect != systemAvoidArea.leftRect
+                    || cached.rightRect != systemAvoidArea.rightRect
+                    || cached.bottomRect != systemAvoidArea.bottomRect
+                    || cached.topRect != systemAvoidArea.topRect;
+
+                if (actuallyChanged) {
+                    cachedMap[avoidAreaType] = systemAvoidArea;
+                    qCDebug(QtForOhos) << "Avoid area changed:"
+                        << static_cast<int>(avoidAreaType)
+                        << "visible:" << systemAvoidArea.visible
+                        << "top:" <<  systemAvoidArea.topRect
+                        << "left:" <<  systemAvoidArea.leftRect
+                        << "right:" <<  systemAvoidArea.rightRect
+                        << "bottom:" <<  systemAvoidArea.bottomRect;
+                    updateWindowGeometryFromView(view);
+                }
+            });
+    }
+
+    QObject::connect(
+        &view, &QOhosView::windowRectChanged,
+        qWindow,
+        [this, &view](const QOhosWindowProxy::RectChangeOptions &rectChangeOptions) {
+            bool shouldUpdateWindowGeometryFromView = true;
+            bool needsCloseAllActivePopups = false;
+            m_lastRectChangeOptions = rectChangeOptions;
+
+            qCDebug(QtForOhos)
+                << "windowRectChanged window:" << window()
+                << "rect:" << rectChangeOptions.rect
+                << "reason:" << static_cast<int>(rectChangeOptions.reason);
+
+            switch (rectChangeOptions.reason) {
+            case QOhosWindowProxy::RectChangeReason::UNDEFINED:
+            case QOhosWindowProxy::RectChangeReason::MAXIMIZE:
+                break;
+            case QOhosWindowProxy::RectChangeReason::DRAG_START:
+                shouldUpdateWindowGeometryFromView = false;
+                needsCloseAllActivePopups = true;
+                break;
+            case QOhosWindowProxy::RectChangeReason::RECOVER:
+            case QOhosWindowProxy::RectChangeReason::MOVE:
+            case QOhosWindowProxy::RectChangeReason::DRAG:
+            case QOhosWindowProxy::RectChangeReason::DRAG_END:
+                shouldUpdateWindowGeometryFromView = false;
+                break;
+            }
+
+            if (shouldUpdateWindowGeometryFromView)
+                updateWindowGeometryFromView(view);
+            else
+                updateWindowGeometryFromSurface();
+
+            if (isWindowRotatedByTabletScreenRotation(window(), rectChangeOptions))
+                needsCloseAllActivePopups = true;
+
+            if (needsCloseAllActivePopups)
+                QOhosPlatformWindow::closeAllActivePopups();
+        });
+
+    QObject::connect(
+        qWindow, &QWindow::modalityChanged, &view,
+        [&view](Qt::WindowModality windowModality) {
+            view.setModality(windowModality);
+        });
+
+    QObject::connect(
+        &view, &QOhosView::surfaceStatusChanged,
+        qWindow, [this](const QOhosOptional<QSize> &optSurfaceSize) {
+            m_optLastSurfaceSize = optSurfaceSize;
+            bool hasSurface = m_view->surfaceOrNull() != nullptr;
+            if (m_view->viewType() == QOhosView::ViewType::EmbeddedWindow) {
+                if (hasSurface)
+                    setExposedRegionFromGeometry();
+                else
+                    clearExposed();
+            }
+
+            updateWindowGeometryFromSurface();
+        });
+
+    QObject::connect(qWindow, &QWindow::windowTitleChanged, &view, &QOhosView::setTitle);
+
+    QObject::connect(
+        &view, &QOhosView::windowDisplayIdChanged,
+        qWindow, [this](QOhosDisplayInfo::JsDisplayId displayId) {
+            setDisplayIdFromOhos(makeQOhosOptional(displayId));
+        });
+}
+
+void QOhosFloatingWindow::updateWindowGeometryFromView(QOhosView &view)
+{
+    auto viewGeometry = view.viewGeometry();
+    qCDebug(QtForOhos) << "View Geometry: " << viewGeometry.frameGeometry << viewGeometry.geometry;
+
+    if (view.viewType() != QOhosView::ViewType::EmbeddedWindow)
+        setDisplayIdFromOhos(viewGeometry.displayId);
+
+    if (viewGeometry.geometry.size().isEmpty()) {
+        qCCritical(QtForOhos, "%s: Failed as the received geometry is invalid", Q_FUNC_INFO);
+        return;
+    }
+
+    bool shouldSkipMarginCalculation =
+        view.viewType() == QOhosView::ViewType::MainWindow
+        && queryQOhosRuntimeDeviceAndMode() == QOhosRuntimeDeviceTypeAndMode::HandheldDeviceFullScreen;
+
+    QMargins margins =
+        shouldSkipMarginCalculation
+            ? QMargins()
+            : [&]() {
+                QMargins margins;
+                margins.setTop(qAbs(viewGeometry.frameGeometry.top() - viewGeometry.geometry.top()));
+                margins.setLeft(qAbs(viewGeometry.frameGeometry.left() - viewGeometry.geometry.left()));
+                margins.setRight(viewGeometry.frameGeometry.right() - viewGeometry.geometry.right());
+                margins.setBottom(viewGeometry.frameGeometry.bottom() - viewGeometry.geometry.bottom());
+                return margins;
+            }();
+
+    const auto oldOhosWindowFrameMargins = frameMargins();
+    bool shouldResizeWindowDueToInconsistentMargins =
+        shouldSkipMarginCalculation
+        && oldOhosWindowFrameMargins != margins;
+
+    setWindowMarginsFromOhos(margins);
+
+    if (shouldResizeWindowDueToInconsistentMargins) {
+        const auto newGeometry = viewGeometry.frameGeometry - oldOhosWindowFrameMargins;
+        setGeometry(newGeometry);
+        return;
+    }
+
+    if (shouldSkipMarginCalculation) {
+        auto targetGeometry = view.isSubWindowCoveringFullScreen()
+            ? viewGeometry.frameGeometry
+            : viewGeometry.frameGeometry
+                .marginsRemoved(view.avoidAreaMargins(QOhosWindowProxy::AvoidAreaType::TYPE_SYSTEM))
+                .marginsRemoved(view.avoidAreaMargins(QOhosWindowProxy::AvoidAreaType::TYPE_NAVIGATION_INDICATOR));
+        setWindowGeometryFromOhos(targetGeometry);
+        return;
+    }
+
+    // WORKAROUND
+    // This is temporary fix, that only regards state when "free windows mode" is on and window
+    // is maximized. System returns invalid geometry and system bottom bar covers application
+    // contents.
+    // TODO: remove when system returns correct geometry in this state.
+    bool maximized = windowStates().testFlag(Qt::WindowState::WindowMaximized);
+    if (queryQOhosRuntimeDeviceAndMode() == QOhosRuntimeDeviceTypeAndMode::HandheldDeviceWindowPcMode && maximized) {
+        auto targetGeometry = viewGeometry.geometry.marginsRemoved(
+            view.avoidAreaMargins(QOhosWindowProxy::AvoidAreaType::TYPE_NAVIGATION_INDICATOR));
+        setWindowGeometryFromOhos(targetGeometry);
+        return;
+    }
+
+    if (windowFrameGeometry() != viewGeometry.frameGeometry)
+        setWindowGeometryFromOhos(viewGeometry.geometry);
+}
+
+void QOhosFloatingWindow::updateWindowGeometryFromSurface()
+{
+    if (!m_lastRectChangeOptions.hasValue())
+        return;
+
+    auto drawableRect = m_lastRectChangeOptions.value().rect.marginsRemoved(frameMargins());
+    setWindowGeometryFromOhos(
+        QRect(
+            drawableRect.topLeft(),
+            m_optLastSurfaceSize.valueOr(drawableRect.size())));
+}
+
+void QOhosFloatingWindow::restoreWindowCurrentCursorIfNeeded()
+{
+    auto *view = ownedViewOrNull();
+    if (view != nullptr && m_cursor.hasValue())
+        view->setCursor(m_cursor.value());
+}
+
+void QOhosFloatingWindow::onWindowFlagsChanged(
+    Qt::WindowFlags previousWindowFlags, Qt::WindowFlags currentWindowFlags)
+{
+    auto *view = ownedViewOrNull();
+    if (view == nullptr)
+        return;
+
+    view->handleWindowFlagsChange(previousWindowFlags, currentWindowFlags);
+}
+
+void QOhosFloatingWindow::onWindowStateChanged(
+    Qt::WindowStates oldWindowState, Qt::WindowStates currentWindowState)
+{
+    auto *view = ownedViewOrNull();
+    if (view == nullptr)
+        return;
+
+    view->handleWindowStateChange(oldWindowState, currentWindowState);
+}
+
+void QOhosFloatingWindow::internalHijackSystemFocusAsPopup()
+{
+    QWindowSystemInterface::handleFocusWindowChanged(window(), Qt::PopupFocusReason);
+}
+
+void QOhosFloatingWindow::focusHijackingPopupHidden()
+{
+    auto systemFocusedWindows = QWindowProxyRegistry::instance().queryWindowsWithSystemWindowAndFocus();
+    QWindowSystemInterface::handleFocusWindowChanged(
+        !systemFocusedWindows.empty() ? systemFocusedWindows.front() : nullptr,
+        Qt::ActiveWindowFocusReason);
+}
+
+void QOhosFloatingWindow::setMask(const QRegion &region)
+{
+    m_windowMask = region;
+
+    auto *view = ownedViewOrNull();
+    if (view == nullptr)
+        return;
+
+    view->setWindowMask(QOhosWindowProxy::WindowMask{region});
+}
+
+bool QOhosFloatingWindow::startSystemMove()
+{
+    auto *view = ownedViewOrNull();
+    if (view != nullptr)
+        return view->startMoving();
+    return false;
+}
+
+void QOhosFloatingWindow::requestActivateWindow()
+{
+    if (windowFlags().testFlag(Qt::WindowDoesNotAcceptFocus) && window()->type() == Qt::Popup) {
+        internalHijackSystemFocusAsPopup();
+        return;
+    }
+
+    QOhosPlatformWindow::requestActivateWindow();
+}
+
+QT_END_NAMESPACE

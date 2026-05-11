@@ -84,6 +84,9 @@
 #elif defined(__ANDROID__) || defined(ANDROID)
 #  define Q_OS_ANDROID
 #  define Q_OS_LINUX
+#elif defined(__OHOS__)
+#  define Q_OS_OHOS
+#  define Q_OS_LINUX
 #elif defined(__CYGWIN__)
 #  define Q_OS_CYGWIN
 #elif !defined(SAG_COM) && (!defined(WINAPI_FAMILY) || WINAPI_FAMILY==WINAPI_FAMILY_DESKTOP_APP) && (defined(WIN64) || defined(_WIN64) || defined(__WIN64__))

@@ -20,6 +20,10 @@ class tst_QLoggingRegistry : public QObject
 {
     Q_OBJECT
 
+#ifdef BUILTIN_TESTDATA
+    QSharedPointer<QTemporaryDir> m_dataDir;
+#endif
+
 private slots:
 
     void initTestCase()
@@ -29,6 +33,20 @@ private slots:
         qputenv("XDG_CONFIG_DIRS", "/does/not/exist");
         qunsetenv("QT_LOGGING_CONF");
         qunsetenv("QT_LOGGING_RULES");
+
+#ifdef BUILTIN_TESTDATA
+        m_dataDir = QEXTRACTTESTDATA("/");
+        QVERIFY2(!m_dataDir.isNull(), "Failed to extract test data");
+        QVERIFY2(QDir::setCurrent(m_dataDir->path()),
+                 qPrintable("Could not chdir to " + m_dataDir->path()));
+#endif
+    }
+
+    void cleanupTestCase()
+    {
+#ifdef BUILTIN_TESTDATA
+        QDir::setCurrent(QCoreApplication::applicationDirPath());
+#endif
     }
 
     void QLoggingRule_parse_data()
@@ -194,6 +212,10 @@ private slots:
 
         qputenv("QT_LOGGING_RULES", "qt.foo.bar=true");
         QLoggingCategory qtEnabledByLoggingRule("qt.foo.bar");
+#if defined(Q_OS_OHOS)
+        QEXPECT_FAIL("", "QT_LOGGING_RULES is not automatically applied without "
+                         "qApp on OHOS (intentional behavior)", Continue);
+#endif
         QCOMPARE(qtEnabledByLoggingRule.isDebugEnabled(), true);
         QLoggingCategory qtDisabledByDefault("qt.foo.baz");
         QCOMPARE(qtDisabledByDefault.isDebugEnabled(), false);
@@ -205,7 +227,11 @@ private slots:
         QCOMPARE(registry.ruleSets[QLoggingRegistry::EnvironmentRules].size(), 1);
 
         qunsetenv("QT_LOGGING_RULES");
+#ifdef BUILTIN_TESTDATA
+        qputenv("QT_LOGGING_CONF", (m_dataDir->path() + "/qtlogging.ini").toLocal8Bit());
+#else
         qputenv("QT_LOGGING_CONF", QFINDTESTDATA("qtlogging.ini").toLocal8Bit());
+#endif
         registry.initializeRules();
 
         QCOMPARE(registry.ruleSets[QLoggingRegistry::ApiRules].size(), 0);

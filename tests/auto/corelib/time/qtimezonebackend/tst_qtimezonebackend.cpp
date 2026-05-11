@@ -285,7 +285,7 @@ void tst_QTimeZoneBackend::roundtripDisplayNames()
 
 void tst_QTimeZoneBackend::icuTest()
 {
-#if QT_CONFIG(icu) && !QT_CONFIG(timezone_tzdb) && (defined(Q_OS_VXWORKS) || !defined(Q_OS_UNIX))
+#if QT_CONFIG(icu) && !QT_CONFIG(timezone_tzdb) && (defined(Q_OS_VXWORKS) || defined(Q_OS_OHOS) || !defined(Q_OS_UNIX))
     // Known datetimes
     qint64 std = QDateTime(QDate(2012, 1, 1), QTime(0, 0), QTimeZone::UTC).toMSecsSinceEpoch();
     qint64 dst = QDateTime(QDate(2012, 6, 1), QTime(0, 0), QTimeZone::UTC).toMSecsSinceEpoch();
@@ -307,7 +307,7 @@ void tst_QTimeZoneBackend::icuTest()
     // Only test names in debug mode, names used can vary by ICU version installed
     if constexpr (debug) {
         // Test display names by type
-        QLocale enUS("en_US");
+        QLocale enUS(u"en_US");
         ZONE_DNAME_CHECK(StandardTime, LongName, u"Central European Standard Time");
         ZONE_DNAME_CHECK(StandardTime, ShortName, u"GMT+01:00");
         ZONE_DNAME_CHECK(StandardTime, OffsetName, u"UTC+01:00");
@@ -334,7 +334,7 @@ void tst_QTimeZoneBackend::icuTest()
 void tst_QTimeZoneBackend::tzTest()
 {
 #if defined(Q_OS_UNIX) && !(QT_CONFIG(timezone_tzdb) || defined(Q_OS_DARWIN) \
-                            || defined(Q_OS_ANDROID) || defined(Q_OS_VXWORKS))
+                            || defined(Q_OS_ANDROID) || defined(Q_OS_VXWORKS) || defined(Q_OS_OHOS))
     const auto UTC = QTimeZone::UTC;
     // Known datetimes
     qint64 std = QDateTime(QDate(2012, 1, 1), QTime(0, 0), UTC).toMSecsSinceEpoch();
@@ -538,7 +538,7 @@ void tst_QTimeZoneBackend::tzTest()
         QDateTime dt(QDate(2016, 3, 28), QTime(0, 0), UTC);
         QCOMPARE(tzBarnaul.data(dt.toMSecsSinceEpoch()).abbreviation, u"+07");
     }
-#endif // Unix && !(timezone_tzdb || Darwin || Android || VxWorks)
+#endif // Unix && !(timezone_tzdb || Darwin || Android || VxWorks || OHOS)
 }
 
 void tst_QTimeZoneBackend::macTest()

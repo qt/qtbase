@@ -16,7 +16,7 @@ if(QT_FEATURE_localserver AND NOT ANDROID)
     add_subdirectory(qlocalsocket)
 endif()
 
-if(QT_FEATURE_networkinterface AND NOT ANDROID)
+if(QT_FEATURE_networkinterface AND NOT ANDROID AND NOT OHOS)
     # QTBUG-87388
     add_subdirectory(qtcpserver)
 endif()

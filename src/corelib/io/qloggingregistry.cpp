@@ -267,7 +267,7 @@ QLoggingRegistry::QLoggingRegistry()
     auto cat = new (defaultLoggingCategory) QLoggingCategory(U{}, defaultCategoryName);
     categories.emplace(cat, QtDebugMsg);
 
-#if defined(Q_OS_ANDROID)
+#if defined(Q_OS_ANDROID) || defined(Q_OS_OHOS)
     // Unless QCoreApplication has been constructed we can't be sure that
     // we are on Qt's main thread. If we did allow logging here, we would
     // potentially set Qt's main thread to Android's thread 0, which would

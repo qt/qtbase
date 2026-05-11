@@ -36,6 +36,10 @@ if(QT_FEATURE_windeployqt)
     add_subdirectory(windeployqt)
 endif()
 
+if(QT_FEATURE_harmonydeployqt)
+    add_subdirectory(harmonydeployqt)
+endif()
+
 if(QT_FEATURE_qtwaylandscanner)
     add_subdirectory(qtwaylandscanner)
 endif()

@@ -107,6 +107,10 @@ The following table describes the mapping of configure options to CMake argument
 | -android-style-assets                 | -DFEATURE_android_style_assets=ON                 |                                                                 |
 | -android-javac-source                 | -DQT_ANDROID_JAVAC_SOURCE=17                       | Set the javac build source version.                             |
 | -android-javac-target                 | -DQT_ANDROID_JAVAC_TARGET=17                       | Set the javac build target version.                             |
+| -ohos-sdk <path>                      | -DOHOS_SDK_ROOT=<path>                            |                                                                 |
+| -ohos-ndk <path>                      | -DCMAKE_TOOLCHAIN_FILE=<toolchain file in NDK>    |                                                                 |
+| -ohos-ndk-platform 20                 | -DOHOS_PLATFORM=20                                |                                                                 |
+| -ohos-abis <abi_1>,...,<abi_n>        | -DOHOS_ABI=<abi_1>                                | only one ABI can be specified                                   |
 | -skip <repo>,...,<repo_n>             | -DBUILD_<repo>=OFF                                |                                                                 |
 | -skip-tests <repo>,...,<repo_n>       | -DQT_BUILD_TESTS_PROJECT_<repo>=OFF               |                                                                 |
 | -skip-examples <repo>,...,<repo_n>    | -DQT_BUILD_EXAMPLES_PROJECT_<repo>=OFF            |                                                                 |

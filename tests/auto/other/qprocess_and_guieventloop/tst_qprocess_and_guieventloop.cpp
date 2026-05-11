@@ -17,8 +17,8 @@ private slots:
 
 void tst_QProcess_and_GuiEventLoop::waitForAndEventLoop()
 {
-#ifdef Q_OS_ANDROID
-    QSKIP("Not supported on Android");
+#if defined(Q_OS_ANDROID) || defined(Q_OS_OHOS)
+    QSKIP("Not supported on this platform");
 #else
 
     // based on testcase provided in QTBUG-39488

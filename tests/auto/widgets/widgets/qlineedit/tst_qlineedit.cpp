@@ -4962,7 +4962,7 @@ void tst_QLineEdit::QTBUG59957_clearButtonLeftmostAction()
 
 bool tst_QLineEdit::unselectingWithLeftOrRightChangesCursorPosition()
 {
-#if defined Q_OS_WIN || defined Q_OS_QNX || defined Q_OS_VXWORKS || defined Q_OS_ANDROID // Android, Windows, QNX and VxWorks do not jump to the beginning of the selection
+#if defined Q_OS_WIN || defined Q_OS_QNX || defined Q_OS_VXWORKS || defined Q_OS_ANDROID || defined Q_OS_OHOS // Android, Windows, QNX, VxWorks and HarmonyOS do not jump to the beginning of the selection
     return true;
 #endif
     // Platforms minimal/offscreen also need left after unselecting with right
@@ -5005,7 +5005,7 @@ void tst_QLineEdit::testQuickSelectionWithMouse()
 #endif
 
    auto mouseReleaseIfNeeded = [&lineEdit](QPoint p) {
-#ifdef Q_OS_ANDROID
+#if defined (Q_OS_ANDROID) || defined (Q_OS_OHOS)
         // Android expects that mouse click will be released before next click.
         // If it will not happen, the next selection will not work correctly
         QTest::mouseRelease(lineEdit.windowHandle(), Qt::LeftButton, Qt::NoModifier, p);
@@ -5019,10 +5019,10 @@ void tst_QLineEdit::testQuickSelectionWithMouse()
 
     // Test sends mouse press events on center position of the lineEdit.
     // We need to make sure that the text does not already ended before center position,
-    // We are adding adittional some extra pixels to make sure text that will not move when selecting
+    // We are adding some extra pixels to make sure text that will not move when selecting
     QFontMetrics metrics(lineEdit.font());
     const int widthForWholeText =  metrics.horizontalAdvance(lineEdit.text());
-    lineEdit.setFixedWidth(widthForWholeText + 20);
+    lineEdit.setFixedWidth(widthForWholeText + 40);
 
     const QPoint center = lineEdit.contentsRect().center();
 

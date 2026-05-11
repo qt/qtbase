@@ -534,6 +534,10 @@ void tst_QSharedMemory::readOnly()
     QSKIP("QTBUG-59936: Times out on macOS");
 #elif defined(Q_OS_WIN)
     QSKIP("This test opens a crash dialog on Windows.");
+#elif defined(Q_OS_OHOS)
+    // TODO: Due to limitation in ohos template application, its not
+    // possible to launch an application from the auto test.
+    QSKIP("Fail to launch produceconsumer application through QProcess");
 #elif defined(__SANITIZE_ADDRESS__) || __has_feature(address_sanitizer)
     QSKIP("ASan prevents the crash this test is looking for.");
 #else

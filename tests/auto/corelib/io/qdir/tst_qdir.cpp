@@ -35,7 +35,7 @@
 #include "qplatformdefs.h"
 #endif
 
-#if defined(Q_OS_VXWORKS)
+#if defined(Q_OS_VXWORKS) || defined(Q_OS_OHOS)
 #define Q_NO_SYMLINKS
 #endif
 
@@ -264,6 +264,8 @@ void tst_QDir::initTestCase()
 #ifdef BUILTIN_TESTDATA
 #ifdef Q_OS_WASM
     m_dataDir = QEXTRACTTESTDATA("/tst_qdir");
+#elif defined(Q_OS_OHOS)
+    m_dataDir = QEXTRACTTESTDATA("/testdata");
 #else
     m_dataDir = QEXTRACTTESTDATA("/");
 #endif
@@ -2337,7 +2339,7 @@ void tst_QDir::equalityOperator_data()
     //need a path in the root directory that is unlikely to be a symbolic link.
 #if defined (Q_OS_WIN)
     QString pathinroot("c:/windows/..");
-#elif defined(Q_OS_ANDROID)
+#elif defined(Q_OS_ANDROID) || defined(Q_OS_OHOS)
     QString pathinroot("/system/..");
 #elif defined(Q_OS_HAIKU)
     QString pathinroot("/boot/..");
@@ -2466,7 +2468,7 @@ void tst_QDir::cdBelowRoot_data()
     QTest::addColumn<QString>("cdInto");
     QTest::addColumn<QString>("targetPath");
 
-#if defined(Q_OS_ANDROID)
+#if defined(Q_OS_ANDROID) || defined(Q_OS_OHOS)
     QTest::newRow("android") << "/" << "system" << "/system";
 #elif defined(Q_OS_UNIX)
     QTest::newRow("unix") << "/" << "tmp" << "/tmp";

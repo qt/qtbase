@@ -322,6 +322,7 @@ void tst_QCoreApplication::libraryPaths()
         if (appDirPath != installPathPlugins)
             QCOMPARE(QCoreApplication::libraryPaths().size(), count + 2);
     }
+#if !defined(Q_OS_OHOS)
     {
         int argc = 1;
         QCoreApplication app(argc, &argv0);
@@ -349,6 +350,7 @@ void tst_QCoreApplication::libraryPaths()
         qCDebug(lcTests) << "After adding appDirPath + /tmp/..:" << QCoreApplication::libraryPaths();
         QCOMPARE(QCoreApplication::libraryPaths().size(), count + 1);
     }
+#endif
 }
 
 void tst_QCoreApplication::libraryPaths_qt_plugin_path()
@@ -376,6 +378,8 @@ void tst_QCoreApplication::libraryPaths_qt_plugin_path_2()
     QByteArray validPath = "C:\\windows";
     QByteArray nonExistentPath = "Z:\\nonexistent";
     QByteArray pluginPath = validPath + ';' + nonExistentPath;
+#elif defined(Q_OS_OHOS)
+    QByteArray pluginPath = "/nonexistent";
 #endif
 
     {
@@ -393,8 +397,12 @@ void tst_QCoreApplication::libraryPaths_qt_plugin_path_2()
             //Android doesn't use plugins dir at runtime, see QTBUG-141732
             << QLibraryInfo::path(QLibraryInfo::PluginsPath)
 #endif
+#if defined(Q_OS_OHOS)
+            << QDir(QCoreApplication::applicationDirPath()).canonicalPath();
+#else
             << QDir(QCoreApplication::applicationDirPath()).canonicalPath()
             << QDir(QDir::fromNativeSeparators(QString::fromLatin1(validPath))).canonicalPath();
+#endif
 
 #if defined(Q_OS_VXWORKS)
         QEXPECT_FAIL("", "QTBUG-130736: Actual paths on VxWorks differ from expected", Abort);
@@ -1305,6 +1313,10 @@ static bool theMainThreadIsSet()
 static bool theMainThreadWasUnset = !theMainThreadIsSet(); // global static
 void tst_QCoreApplication::theMainThread()
 {
+#if defined(Q_OS_OHOS)
+    QSKIP("Skipped on OHOS: QPA sets theMainThread early to prevent the JS thread from being "
+          "misregistered as Qt's main thread during initialization");
+#endif
     QVERIFY2(theMainThreadWasUnset, "Something set the theMainThread before main()");
     QVERIFY(theMainThreadIsSet()); // we have at LEAST one QObject alive: tst_QCoreApplication
 

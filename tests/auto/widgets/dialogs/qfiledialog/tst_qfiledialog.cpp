@@ -275,7 +275,7 @@ void tst_QFiledialog::directoryEnteredSignal()
 Q_DECLARE_METATYPE(QFileDialog::FileMode)
 void tst_QFiledialog::filesSelectedSignal_data()
 {
-#ifdef Q_OS_ANDROID
+#if defined(Q_OS_ANDROID) || defined(Q_OS_OHOS)
     const auto homePaths = QStandardPaths::standardLocations(QStandardPaths::HomeLocation);
     QVERIFY(!homePaths.isEmpty());
     QDir testDir(homePaths.first());
@@ -441,13 +441,13 @@ void tst_QFiledialog::completer_data()
     QTest::newRow("../, -1") << QString() << "../" << -1;
 
 
-#ifndef Q_OS_ANDROID
+#if !defined(Q_OS_ANDROID) && !defined(Q_OS_OHOS)
     const QString rootPath = QDir::rootPath();
     QTest::newRow("goto root")     << QString()        << rootPath << -1;
     QTest::newRow("start at root") << rootPath << QString()        << -1;
 #endif
 
-#ifdef Q_OS_ANDROID
+#if defined(Q_OS_ANDROID) || defined(Q_OS_OHOS)
     const auto homePaths = QStandardPaths::standardLocations(QStandardPaths::HomeLocation);
     QVERIFY(!homePaths.isEmpty());
     const QString folder = homePaths.first();
@@ -1440,8 +1440,8 @@ void tst_QFiledialog::widgetlessNativeDialog()
     if (!QGuiApplicationPrivate::platformTheme()->usePlatformNativeDialog(QPlatformTheme::FileDialog))
         QSKIP("This platform always uses widgets to realize its QFileDialog, instead of the native file dialog.");
 
-#ifdef Q_OS_ANDROID
-    QSKIP("It's not possible to hide the native file dialog because its owned by Android system.");
+#if defined(Q_OS_ANDROID) || defined(Q_OS_OHOS)
+    QSKIP("It's not possible to hide the native file dialog because its owned by system.");
 #endif
     QApplication::setAttribute(Qt::AA_DontUseNativeDialogs, false);
     QFileDialog fd;
@@ -1460,8 +1460,8 @@ void tst_QFiledialog::hideNativeByDestruction()
     if (!QGuiApplicationPrivate::platformTheme()->usePlatformNativeDialog(QPlatformTheme::FileDialog))
         QSKIP("This platform always uses widgets to realize its QFileDialog, instead of the native file dialog.");
 
-#ifdef Q_OS_ANDROID
-    QSKIP("It's not possible to hide the native file dialog because its owned by Android system.");
+#if defined(Q_OS_ANDROID) || defined(Q_OS_OHOS)
+    QSKIP("It's not possible to hide the native file dialog because its owned by system.");
 #endif
 
     QApplication::setAttribute(Qt::AA_DontUseNativeDialogs, false);
@@ -1551,7 +1551,9 @@ void tst_QFiledialog::tildeExpansion_data()
     QTest::addColumn<QString>("expandedPath");
 
     const QString tilde = QStringLiteral("~");
+#if !defined(Q_OS_OHOS)
     const QString tildeUser = tilde + QString(qgetenv("USER"));
+#endif
     const QLatin1String someSubDir("/some/sub/dir");
     const QString homePath = QDir::homePath();
     const QString invalid = QStringLiteral("~thisIsNotAValidUserName");
@@ -1559,8 +1561,10 @@ void tst_QFiledialog::tildeExpansion_data()
     QTest::newRow("empty path") << QString() << QString();
     QTest::newRow("~")                    << tilde                  << homePath;
     QTest::newRow("~/some/sub/dir/")      << tilde     + someSubDir << homePath + someSubDir;
+#if !defined(Q_OS_OHOS)
     QTest::newRow("~<user>")              << tildeUser              << homePath;
     QTest::newRow("~<user>/some/sub/dir") << tildeUser + someSubDir << homePath + someSubDir;
+#endif
     QTest::newRow("invalid user name")    << invalid                << invalid;
 }
 #endif // QT_BUILD_INTERNAL

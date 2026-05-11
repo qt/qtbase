@@ -1,0 +1,11 @@
+contains(TEMPLATE, "app") {
+    !contains(TARGET, "\\.so") {
+        TARGET = lib$${TARGET}.so
+    }
+    QMAKE_LFLAGS += -Wl,-soname,$$shell_quote($$TARGET)
+}
+
+ohos_install:!static:contains(TEMPLATE, "app|lib") {
+    target.path = /libs/$$OHOS_TARGET_ARCH/
+    INSTALLS *= target
+}

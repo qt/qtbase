@@ -20,6 +20,11 @@
 #include <QJniObject>
 #endif
 
+#if defined(Q_OS_OHOS)
+#include <QtCore/private/qcore_ohos_p.h>
+#include <array>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -193,6 +198,20 @@ QOperatingSystemVersionBase QOperatingSystemVersionBase::current_impl()
 
     // API level 6 was exactly version 2.0.1
     version.m_micro = versionIdx == 5 ? 1 : -1;
+#elif defined(Q_OS_OHOS)
+    static auto ohosVersionProps = QOhosJsThreadGateway::eval(
+        [](QOhosJsState &jsState) {
+            auto deviceInfoObj = jsState.eval<QNapi::Object>("@ohos.deviceInfo");
+            return std::array<int, 3>{{
+                deviceInfoObj.get<QNapi::Number>("majorVersion"),
+                deviceInfoObj.get<QNapi::Number>("seniorVersion"),
+                deviceInfoObj.get<QNapi::Number>("featureVersion"),
+            }};
+        });
+
+    version.m_major = ohosVersionProps[0];
+    version.m_minor = ohosVersionProps[1];
+    version.m_micro = ohosVersionProps[2];
 #else
     version.m_major = -1;
     version.m_minor = -1;
@@ -332,6 +351,8 @@ QString QOperatingSystemVersionBase::name(QOperatingSystemVersionBase osversion)
         return QStringLiteral("visionOS");
     case QOperatingSystemVersionBase::Android:
         return QStringLiteral("Android");
+    case QOperatingSystemVersionBase::OHOS:
+        return QStringLiteral("OpenHarmony");
     case QOperatingSystemVersionBase::Unknown:
     default:
         return QString();

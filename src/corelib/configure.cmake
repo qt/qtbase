@@ -66,6 +66,10 @@ if((QNX) OR QT_FIND_ALL_PACKAGES_ALWAYS)
     QMAKE_LIB eventfd)
 endif()
 qt_find_package(Slog2 MODULE PROVIDED_TARGETS Slog2::Slog2 MODULE_NAME core QMAKE_LIB slog2)
+if(OHOS)
+    qt_find_package(NodeAddonApi MODULE
+        PROVIDED_TARGETS NodeAddonApi::NodeAddonApi MODULE_NAME core)
+endif()
 
 
 #### Tests
@@ -1392,4 +1396,9 @@ qt_configure_add_report_entry(
     TYPE ERROR
     MESSAGE "Qt requires pcre2 or system-pcre2 feature"
     CONDITION NOT QT_FEATURE_pcre2 AND NOT QT_FEATURE_system_pcre2
+)
+qt_configure_add_report_entry(
+    TYPE ERROR
+    MESSAGE "Qt for OHOS requires node-api-addon. Set NODE_ADDON_API_ROOT to point to its location."
+    CONDITION OHOS AND NOT TARGET NodeAddonApi::NodeAddonApi
 )

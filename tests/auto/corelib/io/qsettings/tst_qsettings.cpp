@@ -3778,7 +3778,7 @@ QT_END_NAMESPACE
 #endif
 void tst_QSettings::testXdg()
 {
-#if defined(QT_BUILD_INTERNAL) && defined(Q_OS_UNIX) && !defined(Q_OS_DARWIN) && !defined(Q_OS_ANDROID) && !defined(Q_OS_WASM) && !defined(QT_NO_STANDARDPATHS)
+#if defined(QT_BUILD_INTERNAL) && defined(Q_OS_UNIX) && !defined(Q_OS_DARWIN) && !defined(Q_OS_ANDROID) && !defined(Q_OS_OHOS) && !defined(Q_OS_WASM) && !defined(QT_NO_STANDARDPATHS)
     // Note: The XDG_CONFIG_DIRS test must be done before overriding the system path
     // by QSettings::setPath/setSystemIniPath (used in cleanupTestFiles()).
     clearDefaultPaths();

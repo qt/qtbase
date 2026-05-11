@@ -12,7 +12,7 @@ instructions:
       conditions:
         - condition: property
           property: target.osVersion
-          in_values: [Android_ANY, QEMU, IOS_ANY, QNX_710, WebAssembly, INTEGRITY, VxWorks]
+          in_values: [HarmonyOS_ANY, Android_ANY, QEMU, IOS_ANY, QNX_710, WebAssembly, INTEGRITY, VxWorks]
         - condition: property
           property: features
           contains_value: UseToolchainFromTargetDir
@@ -24,7 +24,7 @@ instructions:
       conditions:
         - condition: property
           property: target.osVersion
-          in_values: [Android_ANY, QEMU, IOS_ANY, QNX_710, WebAssembly, INTEGRITY, VxWorks]
+          in_values: [HarmonyOS_ANY, Android_ANY, QEMU, IOS_ANY, QNX_710, WebAssembly, INTEGRITY, VxWorks]
         - condition: property
           property: features
           contains_value: UseToolchainFromTargetDir

@@ -49,6 +49,13 @@ inline void QSharedMemoryPrivate::destructBackend()
 #if QT_CONFIG(systemsemaphore)
 inline QNativeIpcKey QSharedMemoryPrivate::semaphoreNativeKey() const
 {
+#if defined(Q_OS_OHOS)
+    auto suffix = "_sem"_L1;
+    QString semkey = nativeKey.nativeKey();
+    semkey.truncate(MAX_PATH - suffix.size() - 1);
+    semkey += suffix;
+    return { semkey, nativeKey.type() };
+#else
     if (isIpcSupported(IpcType::SharedMemory, QNativeIpcKey::Type::Windows)
             && nativeKey.type() == QNativeIpcKey::Type::Windows) {
         // native keys are plain kernel object names, limited to MAX_PATH
@@ -58,6 +65,7 @@ inline QNativeIpcKey QSharedMemoryPrivate::semaphoreNativeKey() const
         semkey += suffix;
         return { semkey, QNativeIpcKey::Type::Windows };
     }
+#endif
 
     // System V and POSIX keys appear to operate in different namespaces, so we
     // can just use the same native key

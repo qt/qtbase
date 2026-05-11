@@ -378,6 +378,11 @@ qt_internal_extend_target(Widgets CONDITION MACOS
         z
 )
 
+qt_internal_extend_target(Widgets CONDITION OHOS
+    SOURCES
+        kernel/qohosgesturerecognizer.cpp kernel/qohosgesturerecognizer_p.h
+)
+
 qt_internal_extend_target(Widgets CONDITION WIN32
     LIBRARIES
         dwmapi
@@ -928,6 +933,14 @@ qt_internal_add_docs(Widgets
 if(IOS)
     qt_internal_set_apple_privacy_manifest(Widgets
         "${CMAKE_CURRENT_SOURCE_DIR}/platform/ios/PrivacyInfo.xcprivacy")
+endif()
+
+if(OHOS)
+    qt_internal_add_harmonyos_permission(Widgets
+        NAME ohos.permission.SYSTEM_FLOAT_WINDOW
+        REASON "Used to display windows on top of other applications."
+        USED_SCENE_WHEN always
+    )
 endif()
 
 if(QT_FEATURE_doc_snippets)

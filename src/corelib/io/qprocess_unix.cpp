@@ -64,6 +64,12 @@ __attribute__((weak))
 #endif
 extern char **environ;
 
+#ifdef Q_OS_OHOS
+// OHOS SDK defines PTHREAD_CANCEL_DISABLE but lacks matching pthread_*() functions
+// Details in QTBUG-146708
+#  undef PTHREAD_CANCEL_DISABLE
+#endif
+
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;

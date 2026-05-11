@@ -97,6 +97,8 @@ qt_find_package(Mtdev MODULE PROVIDED_TARGETS PkgConfig::Mtdev MODULE_NAME gui Q
 qt_find_package(WrapOpenGL MODULE PROVIDED_TARGETS WrapOpenGL::WrapOpenGL MODULE_NAME gui QMAKE_LIB opengl)
 qt_find_package(GLESv2 MODULE
     PROVIDED_TARGETS GLESv2::GLESv2 MODULE_NAME gui QMAKE_LIB opengl_es2)
+qt_find_package(GLESv3 MODULE
+    PROVIDED_TARGETS GLESv3::GLESv3 MODULE_NAME gui QMAKE_LIB opengl_es3)
 qt_find_package(Tslib MODULE PROVIDED_TARGETS PkgConfig::Tslib MODULE_NAME gui QMAKE_LIB tslib)
 qt_find_package(WrapVulkanHeaders MODULE PROVIDED_TARGETS WrapVulkanHeaders::WrapVulkanHeaders
     MODULE_NAME gui QMAKE_LIB vulkan MARK_OPTIONAL)
@@ -541,7 +543,7 @@ endif()
 qt_config_compile_test(opengles3
     LABEL "OpenGL ES 3.0"
     LIBRARIES
-        GLESv2::GLESv2
+        GLESv3::GLESv3
         ${plaform_graphics_libs}
     COMPILE_OPTIONS ${extra_compiler_options}
     CODE
@@ -570,7 +572,7 @@ glMapBufferRange(GL_ARRAY_BUFFER, 0, 0, GL_MAP_READ_BIT);
 qt_config_compile_test(opengles31
     LABEL "OpenGL ES 3.1"
     LIBRARIES
-        GLESv2::GLESv2
+        GLESv3::GLESv3
         ${plaform_graphics_libs}
     CODE
 "#include <GLES3/gl31.h>
@@ -589,7 +591,7 @@ glProgramUniform1i(0, 0, 0);
 qt_config_compile_test(opengles32
     LABEL "OpenGL ES 3.2"
     LIBRARIES
-        GLESv2::GLESv2
+        GLESv3::GLESv3
         ${plaform_graphics_libs}
     CODE
 "#include <GLES3/gl32.h>
@@ -972,7 +974,7 @@ qt_feature("system-freetype" PRIVATE SYSTEM_LIBRARY
 qt_feature("fontconfig" PUBLIC PRIVATE
     LABEL "Fontconfig"
     AUTODETECT NOT APPLE
-    CONDITION NOT APPLE AND NOT WIN32 AND QT_FEATURE_system_freetype AND Fontconfig_FOUND
+    CONDITION NOT APPLE AND NOT WIN32 AND QT_FEATURE_freetype AND Fontconfig_FOUND
 )
 qt_feature_definition("fontconfig" "QT_NO_FONTCONFIG" NEGATE VALUE "1")
 qt_feature("gbm"

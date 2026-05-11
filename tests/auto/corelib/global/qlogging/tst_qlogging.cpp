@@ -851,8 +851,8 @@ void tst_qmessagehandler::qMessagePattern()
 #if !QT_CONFIG(process)
     QSKIP("This test requires QProcess support");
 #else
-#ifdef Q_OS_ANDROID
-    QSKIP("This test is disabled on Android");
+#if defined(Q_OS_ANDROID) || defined(Q_OS_OHOS)
+    QSKIP("Spawning helper processes is not supported on this platform.");
 #endif
     QFETCH(QString, pattern);
     QFETCH(bool, valid);
@@ -897,8 +897,8 @@ void tst_qmessagehandler::setMessagePattern()
 #if !QT_CONFIG(process)
     QSKIP("This test requires QProcess support");
 #else
-#ifdef Q_OS_ANDROID
-    QSKIP("This test is disabled on Android");
+#if defined(Q_OS_ANDROID) || defined(Q_OS_OHOS)
+    QSKIP("Spawning helper processes is not supported on this platform.");
 #endif
 
     //
@@ -955,8 +955,8 @@ void tst_qmessagehandler::fatalWarnings_data()
 
 void tst_qmessagehandler::fatalWarnings()
 {
-#ifdef Q_OS_ANDROID
-    QSKIP("This test is disabled on Android");
+#if defined(Q_OS_ANDROID) || defined(Q_OS_OHOS)
+    QSKIP("Spawning helper processes is not supported on this platform.");
 #endif
 #if QT_CONFIG(process)
     QFETCH(QString, varName);
@@ -1009,8 +1009,8 @@ void tst_qmessagehandler::fatalWarningsRaceCondition()
     QSKIP("This test requires QProcess support");
 #elif !defined(Q_OS_UNIX)
     QSKIP("This test only works on Unix systems (need a SIGABRT handler)");
-#elif defined(Q_OS_ANDROID)
-    QSKIP("No helper for this");
+#elif defined(Q_OS_ANDROID) || defined(Q_OS_OHOS)
+    QSKIP("Spawning helper processes is not supported on this platform.");
 #else
     QProcess process;
     const QString appExe(QCoreApplication::applicationDirPath() + "/qlogging_race_helper");

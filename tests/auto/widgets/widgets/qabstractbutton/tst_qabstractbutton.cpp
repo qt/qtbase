@@ -354,6 +354,12 @@ void tst_QAbstractButton::setText()
 
 void tst_QAbstractButton::setIcon()
 {
+#if defined(Q_OS_OHOS)
+    if (QGuiApplication::highDpiScaleFactorRoundingPolicy()
+            == Qt::HighDpiScaleFactorRoundingPolicy::PassThrough) {
+           QSKIP("DPR-sensitive setIcon test is not reliable on OHOS with PassThrough rounding.");
+    }
+#endif
     const char *test1_xpm[] = {
     "12 8 2 1",
     ". c None",

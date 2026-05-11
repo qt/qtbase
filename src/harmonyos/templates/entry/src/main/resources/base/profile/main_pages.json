@@ -1,0 +1,8 @@
+{
+  "src": [
+    "pages/MainWindowNativeNode",
+    "pages/FloatWindowNativeNode",
+    "pages/SubWindowNativeNode",
+    "pages/UiExtensionNativeNode"
+  ]
+}

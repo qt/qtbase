@@ -31,17 +31,24 @@ qt_feature("windeployqt" PRIVATE
     AUTODETECT CMAKE_HOST_WIN32
     CONDITION WIN32)
 
+qt_feature("harmonydeployqt" PRIVATE
+    SECTION "Deployment"
+    LABEL "HarmonyOS deployment tool"
+    PURPOSE "The HarmonyOS deployment tool automates the process of creating HarmonyOS HAP packages."
+    CONDITION NOT CMAKE_CROSSCOMPILING AND QT_FEATURE_regularexpression AND QT_FEATURE_settings)
+
 qt_feature("qmake" PRIVATE
     PURPOSE "The qmake tool helps simplify the build process for development projects across different platforms."
     CONDITION QT_FEATURE_settings AND QT_FEATURE_cborstreamwriter AND
         QT_FEATURE_datestring AND QT_FEATURE_regularexpression AND QT_FEATURE_temporaryfile)
 
 qt_feature("qtwaylandscanner" PRIVATE
-    CONDITION TARGET Wayland::Scanner AND NOT INTEGRITY AND NOT ANDROID AND NOT WASM AND NOT IOS AND NOT QNX AND NOT VXWORKS
+    CONDITION TARGET Wayland::Scanner AND NOT INTEGRITY AND NOT ANDROID AND NOT WASM AND NOT IOS AND NOT QNX AND NOT VXWORKS AND NOT OHOS
 )
 
 qt_configure_add_summary_section(NAME "Core tools")
 qt_configure_add_summary_entry(ARGS "androiddeployqt")
+qt_configure_add_summary_entry(ARGS "harmonydeployqt")
 qt_configure_add_summary_entry(ARGS "macdeployqt")
 qt_configure_add_summary_entry(ARGS "windeployqt")
 qt_configure_add_summary_entry(ARGS "qmake")

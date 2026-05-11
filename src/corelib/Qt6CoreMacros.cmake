@@ -737,7 +737,7 @@ function(_qt_internal_setup_warnings_are_errors_for_example_target target)
 endfunction()
 
 function(_qt_internal_create_executable target)
-    if(ANDROID)
+    if(ANDROID OR OHOS)
         list(REMOVE_ITEM ARGN "WIN32" "MACOSX_BUNDLE")
         cmake_policy(PUSH)
         __qt_internal_set_cmp0156()
@@ -752,13 +752,21 @@ function(_qt_internal_create_executable target)
             CXX_VISIBILITY_PRESET default
             OBJC_VISIBILITY_PRESET default
             OBJCXX_VISIBILITY_PRESET default
-            _qt_android_apply_arch_suffix_called_from_qt_impl TRUE
-            _qt_android_target_type APPLICATION
         )
+        if(OHOS)
+            set_target_properties("${target}" PROPERTIES
+                _qt_harmonyos_target_type APPLICATION
+            )
+        else()
+            set_target_properties("${target}" PROPERTIES
+                _qt_android_apply_arch_suffix_called_from_qt_impl TRUE
+                _qt_android_target_type APPLICATION
+            )
 
-        qt6_android_apply_arch_suffix("${target}")
-        if(QT_USE_ANDROID_MODERN_BUNDLE)
-            _qt_internal_set_android_application_gradle_defaults(${target})
+            qt6_android_apply_arch_suffix("${target}")
+            if(QT_USE_ANDROID_MODERN_BUNDLE)
+                _qt_internal_set_android_application_gradle_defaults(${target})
+            endif()
         endif()
     else()
         cmake_policy(PUSH)
@@ -893,8 +901,11 @@ function(qt6_finalize_target target)
     _qt_internal_finalize_source_groups(${target})
     get_target_property(target_type ${target} TYPE)
     get_target_property(android_type "${target}" _qt_android_target_type)
+    get_target_property(harmonyos_type "${target}" _qt_harmonyos_target_type)
 
-    if(target_type STREQUAL "EXECUTABLE" OR android_type STREQUAL "APPLICATION")
+    if(target_type STREQUAL "EXECUTABLE" OR
+        android_type STREQUAL "APPLICATION" OR
+        harmonyos_type STREQUAL "APPLICATION")
         _qt_internal_finalize_executable(${ARGV})
     endif()
 
@@ -3399,7 +3410,7 @@ function(_qt_internal_write_target_deploy_info out_file)
     set(dynamic_target_types EXECUTABLE SHARED_LIBRARY MODULE_LIBRARY)
     _qt_internal_collect_buildsystem_targets(targets
         "${CMAKE_SOURCE_DIR}" INCLUDE ${dynamic_target_types} STATIC_LIBRARY)
-    set(content "")
+    set(content "set(__QT_DEPLOY_TARGETS \"${targets}\")\n")
     foreach(target IN LISTS targets)
         set(var_prefix "__QT_DEPLOY_TARGET_${target}")
         string(APPEND content "set(${var_prefix}_FILE $<TARGET_FILE:${target}>)\n")

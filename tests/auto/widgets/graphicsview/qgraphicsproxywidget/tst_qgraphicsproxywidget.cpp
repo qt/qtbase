@@ -2342,8 +2342,8 @@ void tst_QGraphicsProxyWidget::popup_basic()
     QTRY_COMPARE(proxy->pos(), QPointF(box->pos()));
     QCOMPARE(child->x(), qreal(box->x()));
     QCOMPARE(child->y(), qreal(box->rect().bottom()));
-#ifndef Q_OS_WIN
-    // The popup's coordinates on Windows are in global space,
+#if !defined(Q_OS_WIN) && !defined(Q_OS_OHOS)
+    // The popup's coordinates on Windows and OHOS are in global space,
     // regardless.
     QCOMPARE(child->widget()->x(), box->x());
     QCOMPARE(child->widget()->y(), box->rect().bottom());

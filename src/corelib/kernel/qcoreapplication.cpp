@@ -2420,7 +2420,7 @@ QString QCoreApplication::applicationDirPath()
 // qcoreapplication_win.cpp or qcoreapplication_mac.cpp for those
 static QString qAppFileName()
 {
-#  if defined(Q_OS_ANDROID)
+#  if defined(Q_OS_ANDROID) || defined(Q_OS_OHOS)
     // the actual process on Android is the Java VM, so this doesn't help us
     return QString();
 #  elif defined(Q_OS_LINUX)

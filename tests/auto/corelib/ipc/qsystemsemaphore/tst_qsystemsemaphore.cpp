@@ -231,6 +231,9 @@ void tst_QSystemSemaphore::twoSemaphores()
 
 void tst_QSystemSemaphore::basicProcesses()
 {
+#if defined(Q_OS_OHOS)
+    QSKIP("This test is not supported on OHOS because it cannot launch processes.");
+#endif
 #if !QT_CONFIG(process)
     QSKIP("No qprocess support");
 #else
@@ -268,6 +271,9 @@ void tst_QSystemSemaphore::processes_data()
 
 void tst_QSystemSemaphore::processes()
 {
+#if defined(Q_OS_OHOS)
+    QSKIP("This test is not supported on OHOS because it cannot launch processes.");
+#endif
 #if !QT_CONFIG(process)
     QSKIP("No qprocess support");
 #else
@@ -296,6 +302,9 @@ void tst_QSystemSemaphore::processes()
 
 void tst_QSystemSemaphore::undo()
 {
+#if defined(Q_OS_OHOS)
+    QSKIP("This test is not supported on OHOS because it cannot launch processes.");
+#endif
 #if !QT_CONFIG(process)
     QSKIP("No qprocess support");
 #else
@@ -330,6 +339,9 @@ void tst_QSystemSemaphore::undo()
 
 void tst_QSystemSemaphore::initialValue()
 {
+#if defined(Q_OS_OHOS)
+    QSKIP("This test is not supported on OHOS because it cannot launch processes.");
+#endif
 #if !QT_CONFIG(process)
     QSKIP("No qprocess support");
 #else

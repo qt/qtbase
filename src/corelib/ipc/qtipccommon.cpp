@@ -191,7 +191,20 @@ QNativeIpcKey QtIpcCommon::platformSafeKey(const QString &key, QtIpcCommon::IpcT
             // hope that there won't be too many collisions...
             k.setNativeKey(u'/' + QStringView(key).left(SHM_NAME_MAX - 1));
 #else
+#if defined(Q_OS_OHOS)
+            // HarmonyOS appears to have same namespace for POSIX shared memory
+            // and semaphores, so we need to add a suffix to avoid collisions
+            QStringView suffix;
+            switch (ipcType) {
+            case IpcType::SharedMemory:
+                suffix = u"_shm"; break;
+            case IpcType::SystemSemaphore:
+                suffix = u"_sem"; break;
+            }
+            k.setNativeKey(u'/' + key + suffix);
+#else
             k.setNativeKey(u'/' + key);
+#endif
 #endif
         }
         return k;

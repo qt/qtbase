@@ -97,7 +97,11 @@ public:
     {
         m_key = key;
         m_testCandidate = testCandidate;
+#if defined(Q_OS_OHOS)
+        m_timerId = startTimer(200);
+#else
         m_timerId = startTimer(50);
+#endif
     }
 
     bool done() const { return !m_timerId; }

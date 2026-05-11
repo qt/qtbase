@@ -299,6 +299,15 @@ if(ANDROID AND (ANDROID))
     )
 endif()
 
+if(OHOS)
+    qt_internal_add_harmonyos_permission(Network
+        NAME ohos.permission.INTERNET
+    )
+    qt_internal_add_harmonyos_permission(Network
+        NAME ohos.permission.GET_WIFI_INFO
+    )
+endif()
+
 qt_internal_extend_target(Network CONDITION QT_FEATURE_socks5
     SOURCES
         socket/qsocks5socketengine.cpp socket/qsocks5socketengine_p.h

@@ -94,3 +94,7 @@ if(QT_FEATURE_printsupport)
    add_subdirectory(printsupport)
 endif()
 add_subdirectory(plugins)
+
+if(OHOS)
+    add_subdirectory(harmonyos)
+endif()

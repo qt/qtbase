@@ -2974,6 +2974,7 @@ QList<QByteArray> QSslSocketPrivate::unixRootCertDirectories()
         ba("/etc/openssl/certs/"), // BlackBerry
         ba("/opt/openssl/certs/"), // HP-UX
         ba("/etc/ssl/"), // OpenBSD
+        ba("/etc/security/certificates/"), // HarmonyOS
     };
     QList<QByteArray> result = QList<QByteArray>::fromReadOnlyData(dirs);
     if constexpr (isVxworks) {

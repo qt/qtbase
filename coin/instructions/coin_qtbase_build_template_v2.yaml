@@ -18,7 +18,7 @@ instructions:
           equals_property: target.os
         - condition: property
           property: target.osVersion
-          not_in_values: [QEMU, IMX8, WebAssembly, INTEGRITY, VxWorks]
+          not_in_values: [HarmonyOS_ANY, QEMU, IMX8, WebAssembly, INTEGRITY, VxWorks]
         - condition: property
           property: features
           not_contains_value: "TargetBuildOnly"
@@ -59,7 +59,7 @@ instructions:
       conditions:
         - condition: property
           property: target.osVersion
-          in_values: [Android_ANY, QEMU, IMX8, IOS_ANY, QNX_710, QNX_800, WebAssembly, INTEGRITY, VxWorks]
+          in_values: [HarmonyOS_ANY, Android_ANY, QEMU, IMX8, IOS_ANY, QNX_710, QNX_800, WebAssembly, INTEGRITY, VxWorks]
         - condition: and
           conditions:
             - condition: property

@@ -7,10 +7,14 @@ android
 osx
 android
 windows
+# QT6HAROS-118
+ohos
 [spuriousMouseMove]
 # QTBUG-69162
 windows-10
 android
+# QT6HAROS-119
+ohos
 [modalWindowPosition]
 # QTBUG-69161
 android
@@ -26,5 +30,10 @@ windows-10
 windows-11
 android
 macos-26 # QTBUG-142157
+# QT6HAROS-120
+ohos
 [stateChangeSignal]
 macos # QTBUG-140388
+[mouseToTouchTranslation]
+# QT6HAROS-113
+ohos

@@ -23,6 +23,6 @@ qt_internal_extend_target(tst_quuid CONDITION APPLE
         ${FWFoundation}
 )
 
-if(QT_FEATURE_process AND NOT ANDROID)
+if(QT_FEATURE_process AND NOT ANDROID AND NOT OHOS)
     add_dependencies(tst_quuid testProcessUniqueness)
 endif()

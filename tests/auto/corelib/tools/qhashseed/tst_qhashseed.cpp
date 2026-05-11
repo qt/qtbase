@@ -41,7 +41,7 @@ void tst_QHashSeed::initTestCase()
 
 void tst_QHashSeed::environmentVariable_data()
 {
-#ifdef Q_OS_ANDROID
+#if defined(Q_OS_ANDROID) || defined(Q_OS_OHOS)
     QSKIP("This test needs a helper binary, so is excluded from this platform.");
 #endif
 

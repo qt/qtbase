@@ -6,7 +6,14 @@
 # Expects various global variables to be set.
 function(qt_internal_create_toolchain_file)
     if(CMAKE_TOOLCHAIN_FILE)
-        file(TO_CMAKE_PATH "${CMAKE_TOOLCHAIN_FILE}" __qt_chainload_toolchain_file)
+        # For OHOS, CMAKE_TOOLCHAIN_FILE is replaced with a build-dir wrapper during configure.
+        # Store the real SDK toolchain path so builds on other machines (e.g. CI prefix builds)
+        # can resolve it from the installed qt.toolchain.cmake.
+        if(OHOS AND QT_OHOS_REAL_TOOLCHAIN_FILE)
+            file(TO_CMAKE_PATH "${QT_OHOS_REAL_TOOLCHAIN_FILE}" __qt_chainload_toolchain_file)
+        else()
+            file(TO_CMAKE_PATH "${CMAKE_TOOLCHAIN_FILE}" __qt_chainload_toolchain_file)
+        endif()
         set(init_original_toolchain_file
             "
 set(__qt_initially_configured_toolchain_file \"${__qt_chainload_toolchain_file}\")
@@ -324,10 +331,54 @@ endif()")
         list(APPEND init_platform "    endif()")
         list(APPEND init_platform "endif()")
 
-        qt_internal_get_android_cmake_policy_version_minimum_assignment(
+        qt_internal_get_cmake_policy_version_minimum_assignment(ANDROID
             android_cmake_policy_version_minimum TYPE TOOLCHAIN_FILE_ASSIGNMENT)
         if(android_cmake_policy_version_minimum)
             list(APPEND init_platform "${android_cmake_policy_version_minimum}")
+        endif()
+
+    elseif(OHOS)
+        foreach(var OHOS_PLATFORM OHOS_STL OHOS_ABI OHOS_SDK_ROOT)
+            list(APPEND init_additional_used_variables
+                "list(APPEND __qt_toolchain_used_variables ${var})")
+        endforeach()
+
+        qt_internal_get_cmake_policy_version_minimum_assignment(OHOS
+            ohos_cmake_policy_version_minimum TYPE TOOLCHAIN_FILE_ASSIGNMENT)
+        if(ohos_cmake_policy_version_minimum)
+            list(APPEND init_platform "${ohos_cmake_policy_version_minimum}")
+        endif()
+
+        # Read the post-load fixes from the canonical source (QtOHOSToolchainFixes.cmake)
+        # and inline them into the generated qt.toolchain.cmake.
+        file(READ "${CMAKE_CURRENT_LIST_DIR}/QtOHOSToolchainFixes.cmake" _qt_ohos_fixes)
+        list(APPEND init_post_chainload_toolchain "${_qt_ohos_fixes}")
+        unset(_qt_ohos_fixes)
+
+        # Propagate any CMAKE_FIND_ROOT_PATH entries set at Qt configure time (e.g. paths to
+        # third-party dependency prefixes such as ohos-additional-packages) into the generated
+        # toolchain file as QT_ADDITIONAL_PACKAGES_PREFIX_PATH. This ensures that downstream
+        # builds (standalone tests, user apps using qt-cmake) have the same search paths, which
+        # in turn causes Qt6HarmonyOSMacros.cmake to populate extra-libs-dirs in deployment
+        # settings so harmonydeployqt bundles the required third-party libs into the HAP.
+        if(CMAKE_FIND_ROOT_PATH)
+            string(REPLACE ";" "LITERAL_SEMICOLON" _qt_ohos_extra_root_paths
+                "${CMAKE_FIND_ROOT_PATH}")
+            list(APPEND init_platform
+                "set(__qt_initially_configured_ohos_extra_root_paths \"${_qt_ohos_extra_root_paths}\")"
+                "if(NOT QT_ADDITIONAL_PACKAGES_PREFIX_PATH)"
+                "    set(__qt_existing_paths \"\")"
+                "    foreach(__qt_existing_path IN LISTS __qt_initially_configured_ohos_extra_root_paths)"
+                "        if(EXISTS \"\${__qt_existing_path}\")"
+                "            list(APPEND __qt_existing_paths \"\${__qt_existing_path}\")"
+                "        endif()"
+                "    endforeach()"
+                "    if(NOT __qt_existing_paths STREQUAL \"\")"
+                "        set(QT_ADDITIONAL_PACKAGES_PREFIX_PATH \"\${__qt_existing_paths}\" CACHE STRING \"Additional packages prefix paths inherited from Qt build\")"
+                "    endif()"
+                "endif()"
+            )
+            unset(_qt_ohos_extra_root_paths)
         endif()
 
     elseif(EMSCRIPTEN)

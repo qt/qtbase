@@ -18,6 +18,12 @@ qt_internal_add_test(tst_qlibrary
 
 add_dependencies(tst_qlibrary mylib mylib2)
 
+if(OHOS)
+    set_target_properties(tst_qlibrary PROPERTIES
+        BUILD_RPATH_USE_ORIGIN TRUE
+    )
+endif()
+
 if(ANDROID)
     list(APPEND extra_libs
         "${CMAKE_CURRENT_BINARY_DIR}/../libmylib.so")

@@ -728,7 +728,7 @@ function(qt_generate_global_config_pri_file)
     list(JOIN corrected_qt_public_config " " qt_public_config_joined)
 
     set(content "")
-    if(GCC OR CLANG AND NOT "${CMAKE_SYSROOT}" STREQUAL "")
+    if((GCC OR CLANG) AND NOT "${CMAKE_SYSROOT}" STREQUAL "" AND NOT OHOS)
         string(APPEND content "!host_build {
     QMAKE_CFLAGS    += --sysroot=\$\$[QT_SYSROOT]
     QMAKE_CXXFLAGS  += --sysroot=\$\$[QT_SYSROOT]
@@ -899,6 +899,13 @@ function(qt_generate_global_device_pri_file)
         if(QT_ANDROID_JAVAC_TARGET)
             string(APPEND content "ANDROID_JAVAC_TARGET_VERSION = ${QT_ANDROID_JAVAC_TARGET}\n")
         endif()
+    endif()
+
+    # Write OHOS specific device info.
+    if(OHOS)
+        file(TO_CMAKE_PATH ${OHOS_NDK_ROOT} ndk_root)
+        string(APPEND content "DEFAULT_OHOS_NDK_ROOT = ${ndk_root}\n")
+        string(APPEND content "DEFAULT_OHOS_TARGET_ARCH = ${OHOS_ABI}\n")
     endif()
 
     if(QT_APPLE_SDK)

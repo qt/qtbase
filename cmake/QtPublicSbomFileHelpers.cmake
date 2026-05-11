@@ -143,7 +143,7 @@ function(_qt_internal_sbom_handle_target_binary_files target)
         set(valid_executable_types
             "EXECUTABLE"
         )
-        if(ANDROID)
+        if(ANDROID OR OHOS)
             list(APPEND valid_executable_types "MODULE_LIBRARY")
         endif()
         if(NOT target_type IN_LIST valid_executable_types)

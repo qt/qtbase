@@ -60,7 +60,7 @@ if(UNIX)
                 "libmylib.2.0.0.dylib"
                 "${CMAKE_CURRENT_BINARY_DIR}/../libmylib.so2.dylib"
             VERBATIM)
-    elseif(NOT ANDROID)
+    elseif(NOT ANDROID AND NOT OHOS)
         add_custom_command(TARGET mylib2 POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
                 $<TARGET_FILE:mylib2>
@@ -81,13 +81,16 @@ if(UNIX)
                 "${CMAKE_CURRENT_BINARY_DIR}/../libmylib.so2"
             VERBATIM)
     else()
-        # Android does not use symlinks. Also, according to our conventions,
-        # libraries on Android MUST be named in the following pattern:
-        # lib*.so
+        # Android and HarmonyOS do not use symlinks. Also, according to our
+        # conventions, libraries on Android and HarmonyOS MUST be named in the
+        # following pattern: lib*.so
         add_custom_command(TARGET mylib2 POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            $<TARGET_FILE:mylib2>
-            "${CMAKE_CURRENT_BINARY_DIR}/../libsystem.qt.test.mylib.so"
+                $<TARGET_FILE:mylib2>
+                "${CMAKE_CURRENT_BINARY_DIR}/../libsystem.qt.test.mylib.so"
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                $<TARGET_FILE:mylib2>
+                "${CMAKE_CURRENT_BINARY_DIR}/../libmylib.so"
             VERBATIM)
     endif()
 else() #Win32

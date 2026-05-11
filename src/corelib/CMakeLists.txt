@@ -22,6 +22,12 @@ if(ANDROID)
         "${CMAKE_CURRENT_SOURCE_DIR}/${QT_CMAKE_EXPORT_NAMESPACE}AndroidPermissionHelpers.cmake"
     )
 endif()
+if(OHOS)
+    set(corelib_extra_cmake_files
+        "${CMAKE_CURRENT_SOURCE_DIR}/${QT_CMAKE_EXPORT_NAMESPACE}HarmonyOSMacros.cmake"
+        "${CMAKE_CURRENT_SOURCE_DIR}/${QT_CMAKE_EXPORT_NAMESPACE}HarmonyOSPermissionHelpers.cmake"
+    )
+endif()
 if(WASM)
     set(corelib_extra_cmake_files
         "${CMAKE_CURRENT_SOURCE_DIR}/${QT_CMAKE_EXPORT_NAMESPACE}WasmMacros.cmake")
@@ -506,6 +512,19 @@ if(ANDROID)
     )
     qt_internal_add_android_permission(Core
         NAME android.permission.INTERNET
+    )
+endif()
+
+if(OHOS)
+    _qt_internal_add_harmonyos_executable_finalizer(Core)
+    qt_internal_add_harmonyos_permission(Core
+        NAME ohos.permission.STORE_PERSISTENT_DATA
+    )
+    qt_internal_add_harmonyos_permission(Core
+        NAME ohos.permission.FILE_ACCESS_PERSIST
+    )
+    qt_internal_add_harmonyos_permission(Core
+        NAME ohos.permission.PREPARE_APP_TERMINATE
     )
 endif()
 
@@ -1054,7 +1073,7 @@ qt_internal_extend_target(Core
 qt_internal_extend_target(Core
     CONDITION
         QT_FEATURE_timezone AND UNIX AND NOT VXWORKS AND NOT WASM
-        AND NOT ANDROID AND NOT APPLE AND NOT QT_FEATURE_timezone_tzdb
+        AND NOT ANDROID AND NOT OHOS AND NOT APPLE AND NOT QT_FEATURE_timezone_tzdb
     SOURCES
         time/qtimezoneprivate_tz.cpp
 )
@@ -1062,9 +1081,17 @@ qt_internal_extend_target(Core
 qt_internal_extend_target(Core
     CONDITION
         QT_FEATURE_icu AND QT_FEATURE_timezone
-        AND (VXWORKS OR NOT UNIX) AND NOT QT_FEATURE_timezone_tzdb
+        AND (VXWORKS OR OHOS OR NOT UNIX) AND NOT QT_FEATURE_timezone_tzdb
     SOURCES
         time/qtimezoneprivate_icu.cpp
+)
+
+qt_internal_extend_target(Core
+    CONDITION
+        QT_FEATURE_icu AND QT_FEATURE_timezone
+        AND OHOS AND NOT QT_FEATURE_timezone_tzdb
+    LIBRARIES
+        time_service_ndk
 )
 
 # Even MS says we should prefer ICU over its APIs for TZ data:
@@ -1206,6 +1233,29 @@ qt_internal_extend_target(Core CONDITION ANDROID
         # place to put them.
 )
 
+qt_internal_extend_target(Core CONDITION OHOS
+    SOURCES
+        kernel/qcore_ohos.cpp kernel/qcore_ohos_p.h
+        kernel/qnapi_p.h
+        io/qfilesystemengine_ohos.cpp
+        io/qstandardpaths_ohos.cpp
+        io/qstorageinfo_linux.cpp io/qstorageinfo_linux_p.h
+        platform/ohos/qohospermissionshelper_p.h
+        platform/ohos/qohosappcontext.cpp platform/ohos/qohosappcontext_p.h
+        platform/ohos/qohoslogger.cpp platform/ohos/qohoslogger_p.h
+        platform/ohos/qohoscommon_p.h
+    DEFINES
+        NODE_ADDON_API_ENABLE_TYPE_CHECK_ON_AS
+        NAPI_CPP_EXCEPTIONS
+    LIBRARIES
+        NodeAddonApi::NodeAddonApi
+        ace_napi.z
+        deviceinfo_ndk.z
+        hilog_ndk.z
+        ohenvironment
+        ohfileuri
+)
+
 qt_internal_extend_target(Core CONDITION QT_FEATURE_cpp_winrt
     SOURCES
         platform/windows/qfactorycacheregistration_p.h
@@ -1222,13 +1272,14 @@ qt_internal_extend_target(Core CONDITION HAIKU AND NOT ANDROID
 )
 
 qt_internal_extend_target(Core
-    CONDITION UNIX AND NOT LINUX AND NOT APPLE AND NOT HAIKU AND NOT ANDROID AND NOT VXWORKS
+    CONDITION UNIX AND NOT LINUX AND NOT APPLE AND NOT HAIKU AND NOT ANDROID AND NOT OHOS
+        AND NOT VXWORKS
     SOURCES
         io/qstandardpaths_unix.cpp
         io/qstorageinfo_unix.cpp
 )
 
-qt_internal_extend_target(Core CONDITION LINUX AND NOT ANDROID AND NOT VXWORKS
+qt_internal_extend_target(Core CONDITION LINUX AND NOT ANDROID AND NOT OHOS AND NOT VXWORKS
     SOURCES
         io/qstandardpaths_unix.cpp
         io/qstorageinfo_linux.cpp
@@ -1462,6 +1513,11 @@ qt_internal_extend_target(Core CONDITION QT_FEATURE_permissions AND ANDROID
 qt_internal_extend_target(Core CONDITION QT_FEATURE_permissions AND WASM
     SOURCES
         kernel/qpermissions_wasm.cpp
+)
+
+qt_internal_extend_target(Core CONDITION QT_FEATURE_permissions AND OHOS
+    SOURCES
+        kernel/qpermissions_harmony.cpp
 )
 
 if(QT_FEATURE_mimetype AND QT_FEATURE_mimetype_database)

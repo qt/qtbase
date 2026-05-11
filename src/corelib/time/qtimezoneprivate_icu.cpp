@@ -24,9 +24,20 @@ QT_BEGIN_NAMESPACE
 
 // ICU utilities
 
+#ifdef Q_OS_OHOS
+#include <BasicServicesKit/time_service.h>
+#endif
+
 // Qt wrapper around ucal_getDefaultTimeZone()
 static QByteArray ucalDefaultTimeZoneId()
 {
+#ifdef Q_OS_OHOS
+    char tzBuffer[32] = { 0 };
+    TimeService_ErrCode err = OH_TimeService_GetTimeZone(tzBuffer, sizeof(tzBuffer));
+
+    if (err == TIMESERVICE_ERR_OK)
+        return QByteArray(tzBuffer);
+#endif
     int32_t size = 30;
     QString result(size, Qt::Uninitialized);
     UErrorCode status = U_ZERO_ERROR;

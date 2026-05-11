@@ -77,7 +77,7 @@ void tst_QNativeIpcKey::defaultTypes()
     QCOMPARE(legacy, QNativeIpcKey::Type::Windows);
 #elif defined(QT_POSIX_IPC)
     QCOMPARE(legacy, QNativeIpcKey::Type::PosixRealtime);
-#elif !defined(Q_OS_DARWIN)
+#elif !defined(Q_OS_DARWIN) && !defined(Q_OS_OHOS)
     QCOMPARE(legacy, QNativeIpcKey::Type::SystemV);
 #endif
 }

@@ -1335,6 +1335,9 @@ void tst_QApplication::testDeleteLaterProcessEvents5()
 void tst_QApplication::desktopSettingsAware()
 {
 #if QT_CONFIG(process)
+#if defined(Q_OS_OHOS)
+    QSKIP("Skipped on OHOS: can't launch helper");
+#endif
     QProcess testProcess;
 #ifdef Q_OS_MACOS
     QStringList environment = QProcess::systemEnvironment();
@@ -2453,6 +2456,9 @@ QString modalHelperPath()
 void tst_QApplication::modalDialog()
 {
 #if QT_CONFIG(process)
+#if defined(Q_OS_OHOS)
+    QSKIP("Skipped on OHOS: can't launch helper");
+#endif
     QProcess testProcess;
     QStringList arguments;
     testProcess.start(modalHelperPath(), arguments);

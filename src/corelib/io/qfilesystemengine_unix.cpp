@@ -102,8 +102,8 @@ static QByteArray &removeTrailingSlashes(QByteArray &path)
 }
 
 enum {
-#ifdef Q_OS_ANDROID
-    // On Android, the link(2) system call has been observed to always fail
+#if defined(Q_OS_ANDROID) || defined(Q_OS_OHOS)
+    // On Android/OHOS, the link(2) system call has been observed to always fail
     // with EACCES, regardless of whether there are permission problems or not.
     SupportsHardlinking = false
 #else
@@ -1381,6 +1381,8 @@ bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &, QFileSystemEnt
 }
 #elif defined(Q_OS_DARWIN)
 // see qfilesystemengine_mac.mm
+#elif defined(Q_OS_OHOS)
+// see qfilesystemengine_ohos.cpp
 #else
 /*
     Implementing as per https://specifications.freedesktop.org/trash-spec/1.0/

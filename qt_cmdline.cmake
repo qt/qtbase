@@ -43,6 +43,8 @@ qt_commandline_option(android-javac-source
     TYPE string
     CMAKE_VARIABLE QT_ANDROID_JAVAC_SOURCE
 )
+qt_commandline_option(ohos-sdk TYPE path CMAKE_VARIABLE OHOS_SDK_ROOT)
+qt_commandline_option(ohos-abis TYPE string)
 qt_commandline_option(android-style-assets TYPE boolean)
 qt_commandline_option(appstore-compliant TYPE boolean)
 qt_commandline_option(avx TYPE boolean)

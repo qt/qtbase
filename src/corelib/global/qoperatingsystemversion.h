@@ -33,6 +33,7 @@ public:
         WatchOS,
         Android,
         VisionOS,
+        OHOS,
     };
 
     constexpr QOperatingSystemVersionBase(OSType osType,
@@ -63,6 +64,8 @@ public:
         return VisionOS;
 #elif defined(Q_OS_ANDROID)
         return Android;
+#elif defined(Q_OS_OHOS)
+        return OHOS;
 #else
         return Unknown;
 #endif

@@ -7,5 +7,7 @@ if(NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_BUILDING_QT)
     find_package(Qt6BuildInternals REQUIRED COMPONENTS STANDALONE_TEST)
 endif()
 
-add_subdirectory(testProcessUniqueness)
+if(NOT OHOS)
+    add_subdirectory(testProcessUniqueness)
+endif()
 add_subdirectory(test)
