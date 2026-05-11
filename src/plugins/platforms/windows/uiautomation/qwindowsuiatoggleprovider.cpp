@@ -57,10 +57,10 @@ HRESULT STDMETHODCALLTYPE QWindowsUiaToggleProvider::get_ToggleState(ToggleState
     if (!accessible)
         return UIA_E_ELEMENTNOTAVAILABLE;
 
-    if (accessible->state().checked)
-        *pRetVal = accessible->state().checkStateMixed ? ToggleState_Indeterminate : ToggleState_On;
-    else
-        *pRetVal = ToggleState_Off;
+    if (accessible->state().checkStateMixed)
+        *pRetVal = ToggleState_Indeterminate;
+    else if (accessible->state().checked)
+        *pRetVal = ToggleState_On;
     return S_OK;
 }
 
