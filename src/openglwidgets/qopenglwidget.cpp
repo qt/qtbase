@@ -634,6 +634,8 @@ void QOpenGLWidgetPaintDevice::ensureActiveTarget()
     if (!wd->initialized)
         return;
 
+    wd->ensureRhiDependentResources();
+
     if (QOpenGLContext::currentContext() != wd->context)
         d->w->makeCurrent();
     else
