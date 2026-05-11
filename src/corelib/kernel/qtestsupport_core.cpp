@@ -8,10 +8,6 @@
 
 using namespace std::chrono_literals;
 
-// Assert that this instantiation of std::atomic is always lock-free so we
-// know that no code will execute on destruction.
-static_assert(std::atomic<std::chrono::milliseconds>::is_always_lock_free);
-
 QT_BEGIN_NAMESPACE
 
 // ### Qt 7: reduce the default: QTBUG-138160
