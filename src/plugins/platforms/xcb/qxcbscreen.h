@@ -96,8 +96,8 @@ private:
     QRect m_workArea;
 
     int m_forcedDpi = -1;
-    QFontEngine::HintStyle m_hintStyle = QFontEngine::HintNone;
-    QFontEngine::SubpixelAntialiasingType m_subpixelType = QFontEngine::Subpixel_None;
+    QFontEngine::HintStyle m_hintStyle = QFontEngine::HintUnset;
+    QFontEngine::SubpixelAntialiasingType m_subpixelType = QFontEngine::Subpixel_Unset;
     int m_antialiasingEnabled = -1;
     QString m_windowManagerName;
     QMap<xcb_visualid_t, xcb_visualtype_t> m_visuals;

@@ -266,6 +266,7 @@ public:
     static bool disableEmojiSegmenter();
 
     enum HintStyle {
+        HintUnset = -1,
         HintNone,
         HintLight,
         HintMedium,
@@ -274,6 +275,7 @@ public:
     virtual void setDefaultHintStyle(HintStyle) { }
 
     enum SubpixelAntialiasingType {
+        Subpixel_Unset = -1,
         Subpixel_None,
         Subpixel_RGB,
         Subpixel_BGR,
