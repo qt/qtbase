@@ -668,6 +668,11 @@ void tst_QLocale::systemLocale_data()
 #ifdef Q_OS_ANDROID
     QSKIP("Can't start QProcess to run a custom user binary on Android");
 #endif
+#if defined(__QNX__) && __QNX__ >= 800
+    QSKIP("QNX 8.0 libc++ aborts in any C++ helper if LANG/LC_ALL is not "
+          "C/POSIX (QTBUG-145975); cannot exercise system locale via "
+          "QProcess on this platform.");
+#endif
 
     QTest::addColumn<QString>("expected");
 
