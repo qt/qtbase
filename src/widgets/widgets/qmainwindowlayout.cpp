@@ -51,6 +51,7 @@
 #include <private/qwidgetresizehandler_p.h>
 
 #include <QScopedValueRollback>
+#include <QtCore/private/qoffsetstringarray_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -1651,6 +1652,25 @@ static QInternal::DockPosition toDockPos(Qt::DockWidgetArea area)
     return QInternal::DockCount;
 }
 
+enum class WarnInvalidDockAreaLocation {
+    DockWidgetAreaRect,
+    TabPosition,
+};
+
+Q_DECL_COLD_FUNCTION
+static void warn_invalid_dock_area(Qt::DockWidgetArea area, WarnInvalidDockAreaLocation loc)
+{
+    constexpr auto strings = qOffsetStringArray(
+        "dockWidgetAreaRect",
+        "tabPosition"
+    );
+
+    qCWarning(lcQpaDockWidgets,
+              "QMainWindowLayout::%s: called with out-of-bounds area value '%d'",
+              strings[qToUnderlying(loc)],
+              int(area));
+}
+
 inline static Qt::DockWidgetArea toDockWidgetArea(int pos)
 {
     return QDockWidgetPrivate::toDockWidgetArea(static_cast<QInternal::DockPosition>(pos));
@@ -1717,7 +1737,7 @@ QRect QMainWindowLayout::dockWidgetAreaRect(const Qt::DockWidgetArea area, DockW
 
     // Called with invalid dock widget area
     if (dockPosition == QInternal::DockCount) {
-        qCDebug(lcQpaDockWidgets) << "QMainWindowLayout::dockWidgetAreaRect called with" << area;
+        warn_invalid_dock_area(area, WarnInvalidDockAreaLocation::DockWidgetAreaRect);
         return QRect();
     }
 
@@ -1831,7 +1851,7 @@ QTabWidget::TabPosition QMainWindowLayout::tabPosition(Qt::DockWidgetArea area) 
     const QInternal::DockPosition dockPos = toDockPos(area);
     if (dockPos < QInternal::DockCount)
         return tabPositions[dockPos];
-    qWarning("QMainWindowLayout::tabPosition called with out-of-bounds value '%d'", int(area));
+    warn_invalid_dock_area(area, WarnInvalidDockAreaLocation::TabPosition);
     return QTabWidget::North;
 }
 
