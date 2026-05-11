@@ -3226,6 +3226,7 @@ void QDockAreaLayout::addDockWidget(QInternal::DockPosition pos, QDockWidget *do
                                              Qt::Orientation orientation)
 {
     QLayoutItem *dockWidgetItem = new QDockWidgetItem(dockWidget);
+    Q_ASSERT(size_t(pos) < size_t{QInternal::DockPosition::DockCount});
     QDockAreaLayoutInfo &info = docks[pos];
     if (orientation == info.o || info.item_list.size() <= 1) {
         // empty dock areas, or dock areas containing exactly one widget can have their orientation

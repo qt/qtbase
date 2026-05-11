@@ -1696,6 +1696,7 @@ static QInternal::DockPosition toDockPos(Qt::DockWidgetArea area)
 
 enum class WarnInvalidDockAreaLocation {
     DockWidgetAreaRect,
+    AddDockWidget,
     TabPosition,
 };
 
@@ -1704,6 +1705,7 @@ static void warn_invalid_dock_area(Qt::DockWidgetArea area, WarnInvalidDockAreaL
 {
     constexpr auto strings = qOffsetStringArray(
         "dockWidgetAreaRect",
+        "addDockWidget",
         "tabPosition"
     );
 
@@ -1804,7 +1806,11 @@ void QMainWindowLayout::addDockWidget(Qt::DockWidgetArea area,
     if (!movingSeparator.isEmpty())
         endSeparatorMove(movingSeparatorPos);
 
-    layoutState.dockAreaLayout.addDockWidget(toDockPos(area), dockwidget, orientation);
+    const QInternal::DockPosition dockPos = toDockPos(area);
+    if (dockPos == QInternal::DockCount)
+        return warn_invalid_dock_area(area, WarnInvalidDockAreaLocation::AddDockWidget);
+
+    layoutState.dockAreaLayout.addDockWidget(dockPos, dockwidget, orientation);
     invalidate();
 }
 
