@@ -110,6 +110,23 @@ QMatrix4x4::QMatrix4x4(const float *values)
     then the remaining elements are filled with elements from the
     identity matrix.
 */
+/*!
+    \internal
+*/
+void QMatrix4x4::toGenericMatrix_impl(float *dst, int cols, int rows) const
+{
+    for (int c = 0; c < cols; ++c) {
+        for (int r = 0; r < rows; ++r) {
+            if (c < 4 && r < 4)
+                *dst++ = m[c][r];
+            else if (c == r) // in particular, cols > 4 and rows > 4
+                *dst++ = 1.0f;
+            else
+                *dst++ = 0.0f;
+        }
+    }
+}
+
 
 /*!
     \internal
