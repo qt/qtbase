@@ -602,21 +602,8 @@ QWindow *QCocoaScreen::topLevelAt(const QPoint &point) const
 */
 QPixmap QCocoaScreen::grabWindow(WId view, int x, int y, int width, int height) const
 {
-    /*
-       Grab the grabRect section of the specified display into a pixmap that has
-       sRGB color spec. Once Qt supports a fully color-managed flow and conversions
-       that don't lose the colorspec information, we would want the image to maintain
-       the color spec of the display from which it was grabbed. Ultimately, rendering
-       the returned pixmap on the same display from which it was grabbed should produce
-       identical visual results.
-    */
     auto grabFromDisplay = [](CGDirectDisplayID displayId, const QRect &grabRect) -> QPixmap {
         QCFType<CGImageRef> image = CGDisplayCreateImageForRect(displayId, grabRect.toCGRect());
-        const QCFType<CGColorSpaceRef> sRGBcolorSpace = CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
-        if (CGImageGetColorSpace(image) != sRGBcolorSpace) {
-            qCDebug(lcQpaScreen) << "applying color correction for display" << displayId;
-            image = CGImageCreateCopyWithColorSpace(image, sRGBcolorSpace);
-        }
         QPixmap pixmap = QPixmap::fromImage(qt_mac_toQImage(image));
         pixmap.setDevicePixelRatio(nativeScreenForDisplayId(displayId).backingScaleFactor);
         return pixmap;
