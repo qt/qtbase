@@ -180,7 +180,7 @@ public:
 private:
     const QMetaObjectBuilder *_mobj = nullptr;
     int _index = 0;
-    QMetaMethod::MethodType _type;
+    QMetaMethod::MethodType _type = QMetaMethod::MethodType::Method;
 
     friend class QMetaObjectBuilder;
     friend class QMetaPropertyBuilder;
