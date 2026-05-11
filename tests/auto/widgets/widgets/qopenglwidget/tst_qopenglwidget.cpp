@@ -474,6 +474,15 @@ void tst_QOpenGLWidget::asViewport()
     }
 
     QVERIFY(view->paintCount() > 0);
+
+    // The viewport framebuffer must be cleared to the palette background,
+    // not left transparent (QTBUG-120498).
+    const QImage frame = static_cast<QOpenGLWidget *>(view->viewport())->grabFramebuffer();
+    const QColor bg = view->viewport()->palette().color(view->viewport()->backgroundRole());
+    const QColor px = frame.pixelColor(frame.width() - 2, frame.height() - 2);
+    QVERIFY(qAbs(px.red() - bg.red()) <= 2
+         && qAbs(px.green() - bg.green()) <= 2
+         && qAbs(px.blue() - bg.blue()) <= 2);
     view->resetPaintCount();
 
     // And now trigger a repaint on the push button. We must not

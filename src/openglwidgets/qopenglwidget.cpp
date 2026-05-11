@@ -606,7 +606,7 @@ void QOpenGLWidgetPaintDevicePrivate::beginPaint()
     // with the palette's background color.
     if (w->autoFillBackground()) {
         QOpenGLFunctions *f = QOpenGLContext::currentContext()->functions();
-        if (w->format().hasAlpha()) {
+        if (w->testAttribute(Qt::WA_TranslucentBackground)) {
             f->glClearColor(0, 0, 0, 0);
         } else {
             QColor c = w->palette().brush(w->backgroundRole()).color();
