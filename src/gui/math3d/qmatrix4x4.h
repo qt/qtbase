@@ -235,11 +235,11 @@ QGenericMatrix<N, M, float> QMatrix4x4::toGenericMatrix() const
     for (int matrixCol = 0; matrixCol < N; ++matrixCol) {
         for (int matrixRow = 0; matrixRow < M; ++matrixRow) {
             if (matrixCol < 4 && matrixRow < 4)
-                values[matrixCol * M + matrixRow] = m[matrixCol][matrixRow];
+                *values++ = m[matrixCol][matrixRow];
             else if (matrixCol == matrixRow)
-                values[matrixCol * M + matrixRow] = 1.0f;
+                *values++ = 1.0f;
             else
-                values[matrixCol * M + matrixRow] = 0.0f;
+                *values++ = 0.0f;
         }
     }
     return result;
