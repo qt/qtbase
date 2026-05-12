@@ -101,13 +101,9 @@ macro(qt_examples_build_begin)
     endif()
 
     # TODO: Change this to TRUE when all examples in all repos are ported to use
-    # qt_internal_add_example.
-    # We shouldn't need to call qt_internal_set_up_build_dir_package_paths when
-    # QT_IS_EXTERNAL_EXAMPLES_BUILD is TRUE.
-    # Due to not all examples being ported, if we don't
-    # call qt_internal_set_up_build_dir_package_paths -> set(QT_NO_CREATE_TARGETS TRUE) we'll get
-    # CMake configuration errors saying we redefine Qt targets because we both build them and find
-    # them as part of find_package.
+    # qt_internal_add_example. Until that's done, the build-dir search path setup
+    # below also runs for ExternalProject builds because legacy in-tree examples
+    # still need CMAKE_PREFIX_PATH to point at the build tree.
     set(__qt_all_examples_ported_to_external_projects FALSE)
 
     # Examples that are built as part of the Qt build need to use the CMake config files from the
