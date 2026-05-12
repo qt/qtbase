@@ -34,6 +34,9 @@ instructions:
             - condition: property
               property: id
               equals_value: "macos-26-arm64-developer-build-tests"
+            - condition: property
+              property: id
+              equals_value: "macos-26-x86_64-tests"
         - condition: runtime
           env_var: COIN_CTEST_FORCE_IGNORE_EXIT_CODE
           equals_value: null
