@@ -178,8 +178,10 @@ void QOhosInputMethodEventHandler::onTouchEventFromXComponent(
                 buttons = Qt::NoButton;
                 break;
             }
-            constexpr int xTilt = 0;
-            constexpr int yTilt = 0;
+            constexpr float tiltDegreesMin = -60.0f;
+            constexpr float tiltDegreesMax = 60.0f;
+            const int xTilt = qRound(qBound(tiltDegreesMin, touchPointData.tiltX, tiltDegreesMax));
+            const int yTilt = qRound(qBound(tiltDegreesMin, touchPointData.tiltY, tiltDegreesMax));
             constexpr qreal tangentialPressure = 0;
             constexpr qreal rotation = 0;
             constexpr int z = 0;
