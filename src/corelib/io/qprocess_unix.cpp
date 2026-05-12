@@ -96,7 +96,7 @@ namespace QtVforkSafe {
 // safe under vfork() because they do more than just place the system call to
 // the kernel and set errno on return. For those, we'll create a function
 // pointer like:
-//  static constexpr auto foobar = __libc_foobar;
+//  static constexpr auto foobar = _foobar;
 // while for all other OSes, it'll be
 //  using ::foobar;
 // allowing the code for the child side of the vfork to simply use
@@ -106,14 +106,17 @@ namespace QtVforkSafe {
 //
 // - FreeBSD's libthr sigaction() wrapper locks a rwlock
 //   https://github.com/freebsd/freebsd-src/blob/8dad5ece49479ba6cdcd5bb4c2799bbd61add3e6/lib/libthr/thread/thr_sig.c#L575-L641
-// - MUSL's sigaction() locks a mutex if the signal is SIGABR
+// - MUSL's sigaction() locks a mutex if the signal is SIGABRT
 //   https://github.com/bminor/musl/blob/718f363bc2067b6487900eddc9180c84e7739f80/src/signal/sigaction.c#L63-L85
+//   Calling the internal __libc_sigaction directly to bypass the wrapper is
+//   not possible, as it has been marked with ELF hidden visibility since
+//   MUSL v1.1.21 (January 2019):
+//   https://git.musl-libc.org/cgit/musl/commit/?id=50fea6c75f7bb610eb33bc676224e8fbd2329338
+//   Therefore MUSL platforms must avoid vfork() entirely (see globalUsingVfork()).
 //
 // All other functions called in the child side are vfork-safe, provided that
 // PThread cancellation is disabled and Unix signals are blocked.
-#if defined(__MUSL__)
-#  define LIBC_PREFIX   __libc_
-#elif defined(Q_OS_FREEBSD)
+#if defined(Q_OS_FREEBSD)
 // will cause QtCore to link to ELF version "FBSDprivate_1.0"
 #  define LIBC_PREFIX   _
 #endif
@@ -691,6 +694,11 @@ inline bool globalUsingVfork() noexcept
 #endif
 #if defined(Q_OS_CYGWIN)
     // Fails to link Qt6Core, so we avoid that..
+    return false;
+#endif
+#if defined(__MUSL__)
+    // MUSL's sigaction() is not vfork-safe (locks a mutex for SIGABRT), and the
+    // internal __libc_sigaction symbol has been hidden since v1.1.21.
     return false;
 #endif
 
