@@ -140,14 +140,6 @@ void QLineEditPrivate::cursorPositionChanged(int from, int to)
     emit q->cursorPositionChanged(from, to);
 }
 
-#ifdef QT_KEYPAD_NAVIGATION
-void QLineEditPrivate::editFocusChange(bool e)
-{
-    Q_Q(QLineEdit);
-    q->setEditFocus(e);
-}
-#endif
-
 void QLineEditPrivate::selectionChanged()
 {
     Q_Q(QLineEdit);
@@ -194,10 +186,6 @@ void QLineEditPrivate::init(const QString& txt)
                             this, &QLineEditPrivate::selectionChanged);
     QObjectPrivate::connect(control, &QWidgetLineControl::editingFinished,
                             this, &QLineEditPrivate::controlEditingFinished);
-#ifdef QT_KEYPAD_NAVIGATION
-    QObject::connect(control, &QWidgetLineControl::editFocusChange,
-                     this, &QLineEditPrivate::editFocusChange);
-#endif
     QObject::connect(control, &QWidgetLineControl::cursorPositionChanged,
                      q, qUpdateMicroFocus);
 

@@ -1525,13 +1525,6 @@ bool QPlainTextEdit::event(QEvent *e)
     case QEvent::ToolTip:
         d->sendControlEvent(e);
         break;
-#ifdef QT_KEYPAD_NAVIGATION
-    case QEvent::EnterEditFocus:
-    case QEvent::LeaveEditFocus:
-        if (QApplicationPrivate::keypadNavigationEnabled())
-            d->sendControlEvent(e);
-        break;
-#endif
 #ifndef QT_NO_GESTURES
     case QEvent::Gesture:
         if (auto *g = static_cast<QGestureEvent *>(e)->gesture(Qt::PanGesture)) {
@@ -1604,12 +1597,6 @@ void QPlainTextEdit::timerEvent(QTimerEvent *e)
                                        : QAbstractSlider::SliderSingleStepAdd);
         }
     }
-#ifdef QT_KEYPAD_NAVIGATION
-    else if (e->timerId() == d->deleteAllTimer.timerId()) {
-        d->deleteAllTimer.stop();
-        clear();
-    }
-#endif
 }
 
 /*!
@@ -1647,48 +1634,6 @@ void QPlainTextEdit::setPlainText(const QString &text)
 void QPlainTextEdit::keyPressEvent(QKeyEvent *e)
 {
     Q_D(QPlainTextEdit);
-
-#ifdef QT_KEYPAD_NAVIGATION
-    switch (e->key()) {
-        case Qt::Key_Select:
-            if (QApplicationPrivate::keypadNavigationEnabled()) {
-                if (!(d->control->textInteractionFlags() & Qt::LinksAccessibleByKeyboard))
-                    setEditFocus(!hasEditFocus());
-                else {
-                    if (!hasEditFocus())
-                        setEditFocus(true);
-                    else {
-                        QTextCursor cursor = d->control->textCursor();
-                        QTextCharFormat charFmt = cursor.charFormat();
-                        if (!cursor.hasSelection() || charFmt.anchorHref().isEmpty()) {
-                            setEditFocus(false);
-                        }
-                    }
-                }
-            }
-            break;
-        case Qt::Key_Back:
-        case Qt::Key_No:
-            if (!QApplicationPrivate::keypadNavigationEnabled() || !hasEditFocus()) {
-                e->ignore();
-                return;
-            }
-            break;
-        default:
-            if (QApplicationPrivate::keypadNavigationEnabled()) {
-                if (!hasEditFocus() && !(e->modifiers() & Qt::ControlModifier)) {
-                    if (e->text()[0].isPrint()) {
-                        setEditFocus(true);
-                        clear();
-                    } else {
-                        e->ignore();
-                        return;
-                    }
-                }
-            }
-            break;
-    }
-#endif
 
 #ifndef QT_NO_SHORTCUT
 
@@ -1746,47 +1691,6 @@ void QPlainTextEdit::keyPressEvent(QKeyEvent *e)
 #endif // QT_NO_SHORTCUT
 
     d->sendControlEvent(e);
-#ifdef QT_KEYPAD_NAVIGATION
-    if (!e->isAccepted()) {
-        switch (e->key()) {
-            case Qt::Key_Up:
-            case Qt::Key_Down:
-                if (QApplicationPrivate::keypadNavigationEnabled()) {
-                    // Cursor position didn't change, so we want to leave
-                    // these keys to change focus.
-                    e->ignore();
-                    return;
-                }
-                break;
-            case Qt::Key_Left:
-            case Qt::Key_Right:
-                if (QApplicationPrivate::keypadNavigationEnabled()
-                        && QApplication::navigationMode() == Qt::NavigationModeKeypadDirectional) {
-                    // Same as for Key_Up and Key_Down.
-                    e->ignore();
-                    return;
-                }
-                break;
-            case Qt::Key_Back:
-                if (!e->isAutoRepeat()) {
-                    if (QApplicationPrivate::keypadNavigationEnabled()) {
-                        if (document()->isEmpty()) {
-                            setEditFocus(false);
-                            e->accept();
-                        } else if (!d->deleteAllTimer.isActive()) {
-                            e->accept();
-                            d->deleteAllTimer.start(750, this);
-                        }
-                    } else {
-                        e->ignore();
-                        return;
-                    }
-                }
-                break;
-            default: break;
-        }
-    }
-#endif
 }
 
 /*! \reimp
@@ -1797,29 +1701,7 @@ void QPlainTextEdit::keyReleaseEvent(QKeyEvent *e)
     if (!isReadOnly())
         d->handleSoftwareInputPanel();
 
-#ifdef QT_KEYPAD_NAVIGATION
-    if (QApplicationPrivate::keypadNavigationEnabled()) {
-        if (!e->isAutoRepeat() && e->key() == Qt::Key_Back
-            && d->deleteAllTimer.isActive()) {
-            d->deleteAllTimer.stop();
-            QTextCursor cursor = d->control->textCursor();
-            QTextBlockFormat blockFmt = cursor.blockFormat();
-
-            QTextList *list = cursor.currentList();
-            if (list && cursor.atBlockStart()) {
-                list->remove(cursor.block());
-            } else if (cursor.atBlockStart() && blockFmt.indent() > 0) {
-                blockFmt.setIndent(blockFmt.indent() - 1);
-                cursor.setBlockFormat(blockFmt);
-            } else {
-                cursor.deletePreviousChar();
-            }
-            setTextCursor(cursor);
-        }
-    }
-#else
     QWidget::keyReleaseEvent(e);
-#endif
 }
 
 /*!
@@ -2040,10 +1922,6 @@ void QPlainTextEditPrivate::updateDefaultTextOption()
 void QPlainTextEdit::mousePressEvent(QMouseEvent *e)
 {
     Q_D(QPlainTextEdit);
-#ifdef QT_KEYPAD_NAVIGATION
-    if (QApplicationPrivate::keypadNavigationEnabled() && !hasEditFocus())
-        setEditFocus(true);
-#endif
     d->sendControlEvent(e);
 }
 
@@ -2171,14 +2049,6 @@ void QPlainTextEdit::dropEvent(QDropEvent *e)
 void QPlainTextEdit::inputMethodEvent(QInputMethodEvent *e)
 {
     Q_D(QPlainTextEdit);
-#ifdef QT_KEYPAD_NAVIGATION
-    if (d->control->textInteractionFlags() & Qt::TextEditable
-        && QApplicationPrivate::keypadNavigationEnabled()
-        && !hasEditFocus()) {
-        setEditFocus(true);
-        selectAll();    // so text is replaced rather than appended to
-    }
-#endif
     d->sendControlEvent(e);
     const bool emptyEvent = e->preeditString().isEmpty() && e->commitString().isEmpty()
                          && e->attributes().isEmpty();

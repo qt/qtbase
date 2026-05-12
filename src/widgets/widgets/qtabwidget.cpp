@@ -206,11 +206,6 @@ void QTabWidgetPrivate::init()
 
     q->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding,
                                  QSizePolicy::TabWidget));
-#ifdef QT_KEYPAD_NAVIGATION
-    if (QApplicationPrivate::keypadNavigationEnabled())
-        q->setFocusPolicy(Qt::NoFocus);
-    else
-#endif
     q->setFocusPolicy(Qt::TabFocus);
     q->setFocusProxy(tabs);
     q->setTabPosition(static_cast<QTabWidget::TabPosition> (q->style()->styleHint(
@@ -1113,31 +1108,15 @@ void QTabWidget::keyPressEvent(QKeyEvent *e)
 {
     Q_D(QTabWidget);
     if (((e->key() == Qt::Key_Tab || e->key() == Qt::Key_Backtab) &&
-          count() > 1 && e->modifiers() & Qt::ControlModifier)
-#ifdef QT_KEYPAD_NAVIGATION
-          || QApplicationPrivate::keypadNavigationEnabled() && (e->key() == Qt::Key_Left || e->key() == Qt::Key_Right) && count() > 1
-#endif
-       ) {
+          count() > 1 && e->modifiers() & Qt::ControlModifier)) {
         int pageCount = d->tabs->count();
         int page = currentIndex();
         int dx = (e->key() == Qt::Key_Backtab || e->modifiers() & Qt::ShiftModifier) ? -1 : 1;
-#ifdef QT_KEYPAD_NAVIGATION
-        if (QApplicationPrivate::keypadNavigationEnabled() && (e->key() == Qt::Key_Left || e->key() == Qt::Key_Right))
-            dx = e->key() == (isRightToLeft() ? Qt::Key_Right : Qt::Key_Left) ? -1 : 1;
-#endif
         for (int pass = 0; pass < pageCount; ++pass) {
             page+=dx;
-            if (page < 0
-#ifdef QT_KEYPAD_NAVIGATION
-                && !e->isAutoRepeat()
-#endif
-               ) {
+            if (page < 0) {
                 page = count() - 1;
-            } else if (page >= pageCount
-#ifdef QT_KEYPAD_NAVIGATION
-                       && !e->isAutoRepeat()
-#endif
-                      ) {
+            } else if (page >= pageCount) {
                 page = 0;
             }
             if (d->tabs->isTabEnabled(page) && d->tabs->isTabVisible(page)) {

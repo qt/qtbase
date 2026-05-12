@@ -708,10 +708,6 @@ QDateTimeEdit::Sections QDateTimeEdit::displayedSections() const
 QDateTimeEdit::Section QDateTimeEdit::currentSection() const
 {
     Q_D(const QDateTimeEdit);
-#ifdef QT_KEYPAD_NAVIGATION
-    if (QApplicationPrivate::keypadNavigationEnabled() && d->focusOnButton)
-        return NoSection;
-#endif
     return QDateTimeEditPrivate::convertToPublic(d->sectionType(d->currentSectionIndex));
 }
 
@@ -993,10 +989,6 @@ void QDateTimeEdit::setCalendarPopup(bool enable)
         return;
     setAttribute(Qt::WA_MacShowFocusRect, !enable);
     d->calendarPopup = enable;
-#ifdef QT_KEYPAD_NAVIGATION
-    if (!enable)
-        d->focusOnButton = false;
-#endif
     d->updateEditFieldGeometry();
     update();
 }
@@ -1162,38 +1154,6 @@ void QDateTimeEdit::keyPressEvent(QKeyEvent *event)
     bool inserted = false;
 
     switch (event->key()) {
-#ifdef QT_KEYPAD_NAVIGATION
-    case Qt::Key_NumberSign:    //shortcut to popup calendar
-        if (QApplicationPrivate::keypadNavigationEnabled() && d->calendarPopupEnabled()) {
-            d->initCalendarPopup();
-            d->positionCalendarPopup();
-            d->monthCalendar->show();
-            return;
-        }
-        break;
-    case Qt::Key_Select:
-        if (QApplicationPrivate::keypadNavigationEnabled()) {
-            if (hasEditFocus()) {
-                if (d->focusOnButton) {
-                    d->initCalendarPopup();
-                    d->positionCalendarPopup();
-                    d->monthCalendar->show();
-                    d->focusOnButton = false;
-                    return;
-                }
-                setEditFocus(false);
-                selectAll();
-            } else {
-                setEditFocus(true);
-
-                //hide cursor
-                d->edit->d_func()->setCursorVisible(false);
-                d->edit->d_func()->control->setBlinkingCursorEnabled(false);
-                d->setSelected(0);
-            }
-        }
-        return;
-#endif
     case Qt::Key_Enter:
     case Qt::Key_Return:
         d->interpret(AlwaysEmit);
@@ -1203,18 +1163,6 @@ void QDateTimeEdit::keyPressEvent(QKeyEvent *event)
         emit d->edit->returnPressed();
         return;
     default:
-#ifdef QT_KEYPAD_NAVIGATION
-        if (QApplicationPrivate::keypadNavigationEnabled() && !hasEditFocus()
-            && !event->text().isEmpty() && event->text().at(0).isLetterOrNumber()) {
-            setEditFocus(true);
-
-            //hide cursor
-            d->edit->d_func()->setCursorVisible(false);
-            d->edit->d_func()->control->setBlinkingCursorEnabled(false);
-            d->setSelected(0);
-            oldCurrent = 0;
-        }
-#endif
         if (!d->isSeparatorKey(event)) {
             inserted = select = !event->text().isEmpty() && event->text().at(0).isPrint()
                        && !(event->modifiers() & ~(Qt::ShiftModifier|Qt::KeypadModifier));
@@ -1224,12 +1172,7 @@ void QDateTimeEdit::keyPressEvent(QKeyEvent *event)
     case Qt::Key_Left:
     case Qt::Key_Right:
         if (event->key() == Qt::Key_Left || event->key() == Qt::Key_Right) {
-            if (
-#ifdef QT_KEYPAD_NAVIGATION
-                QApplicationPrivate::keypadNavigationEnabled() && !hasEditFocus()
-                || !QApplicationPrivate::keypadNavigationEnabled() &&
-#endif
-                !(event->modifiers() & Qt::ControlModifier)) {
+            if (!(event->modifiers() & Qt::ControlModifier)) {
                 select = false;
                 break;
             }
@@ -1244,24 +1187,6 @@ void QDateTimeEdit::keyPressEvent(QKeyEvent *event)
         }
         const bool forward = event->key() != Qt::Key_Left && event->key() != Qt::Key_Backtab
                              && (event->key() != Qt::Key_Tab || !(event->modifiers() & Qt::ShiftModifier));
-#ifdef QT_KEYPAD_NAVIGATION
-        int newSection = d->nextPrevSection(d->currentSectionIndex, forward);
-        if (QApplicationPrivate::keypadNavigationEnabled()) {
-            if (d->focusOnButton) {
-                newSection = forward ? 0 : d->sectionNodes.size() - 1;
-                d->focusOnButton = false;
-                update();
-            } else if (newSection < 0 && select && d->calendarPopupEnabled()) {
-                setSelectedSection(NoSection);
-                d->focusOnButton = true;
-                update();
-                return;
-            }
-        }
-        // only allow date/time sections to be selected.
-        if (newSection & ~(QDateTimeParser::TimeSectionMask | QDateTimeParser::DateSectionMask))
-            return;
-#endif
         //key tab and backtab will be managed thrgout QWidget::event
         if (event->key() != Qt::Key_Backtab && event->key() != Qt::Key_Tab)
             focusNextPrevChild(forward);
@@ -1388,43 +1313,6 @@ bool QDateTimeEdit::focusNextPrevChild(bool next)
 void QDateTimeEdit::stepBy(int steps)
 {
     Q_D(QDateTimeEdit);
-#ifdef QT_KEYPAD_NAVIGATION
-    // with keypad navigation and not editFocus, left right change the date/time by a fixed amount.
-    if (QApplicationPrivate::keypadNavigationEnabled() && !hasEditFocus()) {
-        // if date based, shift by day.  else shift by 15min
-        if (d->sections & DateSections_Mask) {
-            setDateTime(dateTime().addDays(steps));
-        } else {
-            int minutes = time().hour()*60 + time().minute();
-            int blocks = minutes/15;
-            blocks += steps;
-            /* rounding involved */
-            if (minutes % 15) {
-                if (steps < 0) {
-                    blocks += 1; // do one less step;
-                }
-            }
-
-            minutes = blocks * 15;
-
-            /* need to take wrapping into account */
-            if (!d->wrapping) {
-                int max_minutes = d->maximum.toTime().hour()*60 + d->maximum.toTime().minute();
-                int min_minutes = d->minimum.toTime().hour()*60 + d->minimum.toTime().minute();
-
-                if (minutes >= max_minutes) {
-                    setTime(maximumTime());
-                    return;
-                } else if (minutes <= min_minutes) {
-                    setTime(minimumTime());
-                    return;
-                }
-            }
-            setTime(QTime(minutes/60, minutes%60));
-        }
-        return;
-    }
-#endif
     // don't optimize away steps == 0. This is the only way to select
     // the currentSection in Qt 4.1.x
     if (d->specialValue() && displayedSections() != AmPmSection) {
@@ -1521,36 +1409,6 @@ QDateTimeEdit::StepEnabled QDateTimeEdit::stepEnabled() const
 
     QAbstractSpinBox::StepEnabled ret = { };
 
-#ifdef QT_KEYPAD_NAVIGATION
-    if (QApplicationPrivate::keypadNavigationEnabled() && !hasEditFocus()) {
-        if (d->wrapping)
-            return StepEnabled(StepUpEnabled | StepDownEnabled);
-        // 3 cases.  date, time, datetime.  each case look
-        // at just the relevant component.
-        QVariant max, min, val;
-        if (!(d->sections & DateSections_Mask)) {
-            // time only, no date
-            max = d->maximum.toTime();
-            min = d->minimum.toTime();
-            val = d->value.toTime();
-        } else if (!(d->sections & TimeSections_Mask)) {
-            // date only, no time
-            max = d->maximum.toDate();
-            min = d->minimum.toDate();
-            val = d->value.toDate();
-        } else {
-            // both
-            max = d->maximum;
-            min = d->minimum;
-            val = d->value;
-        }
-        if (val != min)
-            ret |= QAbstractSpinBox::StepDownEnabled;
-        if (val != max)
-            ret |= QAbstractSpinBox::StepUpEnabled;
-        return ret;
-    }
-#endif
     switch (d->sectionType(d->currentSectionIndex)) {
     case QDateTimeParser::NoSection:
     case QDateTimeParser::FirstSection:
@@ -1798,11 +1656,7 @@ void QDateTimeEditPrivate::updateEdit()
 
     edit->setText(newText);
 
-    if (!specialValue()
-#ifdef QT_KEYPAD_NAVIGATION
-        && !(QApplicationPrivate::keypadNavigationEnabled() && !edit->hasEditFocus())
-#endif
-            ) {
+    if (!specialValue()) {
         int cursor = sectionPos(currentSectionIndex);
         QDTEDEBUG << "cursor is " << cursor << currentSectionIndex;
         cursor = qBound(0, cursor, displayText().size());
@@ -1852,11 +1706,7 @@ QDateTime QDateTimeEditPrivate::getMaximum(const QTimeZone &zone) const
 
 void QDateTimeEditPrivate::setSelected(int sectionIndex, bool forward)
 {
-    if (specialValue()
-#ifdef QT_KEYPAD_NAVIGATION
-        || (QApplicationPrivate::keypadNavigationEnabled() && !edit->hasEditFocus())
-#endif
-        ) {
+    if (specialValue()) {
         edit->selectAll();
     } else {
         const SectionNode &node = sectionNode(sectionIndex);
@@ -2563,10 +2413,6 @@ void QDateTimeEditPrivate::init(const QVariant &var)
         Q_ASSERT_X(0, "QDateTimeEditPrivate::init", "Internal error");
         break;
     }
-#ifdef QT_KEYPAD_NAVIGATION
-    if (QApplicationPrivate::keypadNavigationEnabled())
-        q->setCalendarPopup(true);
-#endif
     q->setInputMethodHints(Qt::ImhPreferNumbers);
     setLayoutItemMargins(QStyle::SE_DateTimeEditLayoutItem);
 }
@@ -2743,10 +2589,6 @@ QCalendarWidget *QCalendarPopup::verifyCalendarInstance()
         QCalendarWidget *cw = new QCalendarWidget(this);
         cw->setCalendar(calendarSystem);
         cw->setVerticalHeaderFormat(QCalendarWidget::NoVerticalHeader);
-#ifdef QT_KEYPAD_NAVIGATION
-        if (QApplicationPrivate::keypadNavigationEnabled())
-            cw->setHorizontalHeaderFormat(QCalendarWidget::SingleLetterDayNames);
-#endif
         setCalendarWidget(cw);
         return cw;
     } else {

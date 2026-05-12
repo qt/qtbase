@@ -975,9 +975,6 @@ bool QComboBoxPrivateContainer::eventFilter(QObject *o, QEvent *e)
         switch (keyEvent->key()) {
         case Qt::Key_Enter:
         case Qt::Key_Return:
-#ifdef QT_KEYPAD_NAVIGATION
-        case Qt::Key_Select:
-#endif
             if (view->currentIndex().isValid() && view->currentIndex().flags().testFlag(Qt::ItemIsEnabled)) {
                 combo->hidePopup();
                 keyEvent->accept();
@@ -2141,14 +2138,6 @@ void QComboBox::setLineEdit(QLineEdit *edit)
         completer->setCaseSensitivity(Qt::CaseInsensitive);
         completer->setCompletionMode(QCompleter::InlineCompletion);
         completer->setCompletionColumn(d->modelColumn);
-
-#ifdef QT_KEYPAD_NAVIGATION
-        // Editable combo boxes will have a completer that is set to UnfilteredPopupCompletion.
-        // This means that when the user enters edit mode they are immediately presented with a
-        // list of possible completions.
-        if (QApplicationPrivate::keypadNavigationEnabled())
-            completer->setCompletionMode(QCompleter::UnfilteredPopupCompletion);
-#endif
         // sets up connections
         setCompleter(completer);
     }
@@ -3422,16 +3411,6 @@ bool QComboBox::event(QEvent *event)
         if (d->lineEdit)
             return d->lineEdit->event(event);
         break;
-#ifdef QT_KEYPAD_NAVIGATION
-    case QEvent::EnterEditFocus:
-        if (d->lineEdit)
-            d->lineEdit->event(event);  //so cursor starts
-        break;
-    case QEvent::LeaveEditFocus:
-        if (d->lineEdit)
-            d->lineEdit->event(event);  //so cursor stops
-        break;
-#endif
     default:
         break;
     }
@@ -3461,16 +3440,9 @@ void QComboBoxPrivate::showPopupFromMouseEvent(QMouseEvent *e)
             && !viewContainer()->isVisible()) {
         if (sc == QStyle::SC_ComboBoxArrow)
             updateArrow(QStyle::State_Sunken);
-#ifdef QT_KEYPAD_NAVIGATION
-        //if the container already exists, then d->viewContainer() is safe to call
-        if (container) {
-#else
-        if (true) {
-#endif
-            // We've restricted the next couple of lines, because by not calling
-            // viewContainer(), we avoid creating the QComboBoxPrivateContainer.
-            viewContainer()->initialClickPosition = q->mapToGlobal(e->position()).toPoint();
-        }
+        // We've restricted the next couple of lines, because by not calling
+        // viewContainer(), we avoid creating the QComboBoxPrivateContainer.
+        viewContainer()->initialClickPosition = q->mapToGlobal(e->position()).toPoint();
         QPointer<QComboBox> guard = q;
         q->showPopup();
         if (!guard)
@@ -3483,12 +3455,6 @@ void QComboBoxPrivate::showPopupFromMouseEvent(QMouseEvent *e)
             viewContainer()->maybeIgnoreMouseButtonRelease = false;
         }
     } else {
-#ifdef QT_KEYPAD_NAVIGATION
-        if (QApplicationPrivate::keypadNavigationEnabled() && sc == QStyle::SC_ComboBoxEditField && lineEdit) {
-            lineEdit->event(e);  //so lineedit can move cursor, etc
-            return;
-        }
-#endif
         e->ignore();
     }
 }
@@ -3528,9 +3494,6 @@ void QComboBox::keyPressEvent(QKeyEvent *e)
     int newIndex = currentIndex();
 
     bool pressLikeButton = !d->lineEdit;
-#ifdef QT_KEYPAD_NAVIGATION
-    pressLikeButton |= QApplicationPrivate::keypadNavigationEnabled() && !hasEditFocus();
-#endif
     auto key = e->key();
     if (pressLikeButton) {
         const auto buttonPressKeys = QGuiApplicationPrivate::platformTheme()
@@ -3548,11 +3511,6 @@ void QComboBox::keyPressEvent(QKeyEvent *e)
             break; // pass to line edit for auto completion
         Q_FALLTHROUGH();
     case Qt::Key_PageUp:
-#ifdef QT_KEYPAD_NAVIGATION
-        if (QApplicationPrivate::keypadNavigationEnabled())
-            e->ignore();
-        else
-#endif
         move = MoveUp;
         break;
     case Qt::Key_Down:
@@ -3563,11 +3521,6 @@ void QComboBox::keyPressEvent(QKeyEvent *e)
             break; // pass to line edit for auto completion
         Q_FALLTHROUGH();
     case Qt::Key_PageDown:
-#ifdef QT_KEYPAD_NAVIGATION
-        if (QApplicationPrivate::keypadNavigationEnabled())
-            e->ignore();
-        else
-#endif
         move = MoveDown;
         break;
     case Qt::Key_Home:
@@ -3590,21 +3543,6 @@ void QComboBox::keyPressEvent(QKeyEvent *e)
         if (!d->lineEdit)
             e->ignore();
         break;
-#ifdef QT_KEYPAD_NAVIGATION
-    case Qt::Key_Left:
-    case Qt::Key_Right:
-        if (QApplicationPrivate::keypadNavigationEnabled() && !hasEditFocus())
-            e->ignore();
-        break;
-    case Qt::Key_Back:
-        if (QApplicationPrivate::keypadNavigationEnabled()) {
-            if (!hasEditFocus() || !d->lineEdit)
-                e->ignore();
-        } else {
-            e->ignore(); // let the surrounding dialog have it
-        }
-        break;
-#endif
     default:
 #if QT_CONFIG(shortcut)
         if (d->container && d->container->isVisible() && e->matches(QKeySequence::Cancel)) {

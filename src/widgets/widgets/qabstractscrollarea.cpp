@@ -1211,12 +1211,6 @@ void QAbstractScrollArea::keyPressEvent(QKeyEvent * e)
         d->vbar->triggerAction(QScrollBar::SliderPageStepAdd);
 #endif
     } else {
-#ifdef QT_KEYPAD_NAVIGATION
-        if (QApplicationPrivate::keypadNavigationEnabled() && !hasEditFocus()) {
-            e->ignore();
-            return;
-        }
-#endif
         switch (e->key()) {
         case Qt::Key_Up:
             d->vbar->triggerAction(QScrollBar::SliderSingleStepSub);
@@ -1225,27 +1219,11 @@ void QAbstractScrollArea::keyPressEvent(QKeyEvent * e)
             d->vbar->triggerAction(QScrollBar::SliderSingleStepAdd);
             break;
         case Qt::Key_Left:
-#ifdef QT_KEYPAD_NAVIGATION
-        if (QApplicationPrivate::keypadNavigationEnabled() && hasEditFocus()
-            && (!d->hbar->isVisible() || d->hbar->value() == d->hbar->minimum())) {
-            //if we aren't using the hbar or we are already at the leftmost point ignore
-            e->ignore();
-            return;
-        }
-#endif
             d->hbar->triggerAction(
                 layoutDirection() == Qt::LeftToRight
                 ? QScrollBar::SliderSingleStepSub : QScrollBar::SliderSingleStepAdd);
             break;
         case Qt::Key_Right:
-#ifdef QT_KEYPAD_NAVIGATION
-        if (QApplicationPrivate::keypadNavigationEnabled() && hasEditFocus()
-            && (!d->hbar->isVisible() || d->hbar->value() == d->hbar->maximum())) {
-            //if we aren't using the hbar or we are already at the rightmost point ignore
-            e->ignore();
-            return;
-        }
-#endif
             d->hbar->triggerAction(
                 layoutDirection() == Qt::LeftToRight
                 ? QScrollBar::SliderSingleStepAdd : QScrollBar::SliderSingleStepSub);

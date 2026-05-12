@@ -500,9 +500,6 @@ Q_SIGNALS:
     void updateNeeded(const QRect &);
     void inputRejected();
 
-#ifdef QT_KEYPAD_NAVIGATION
-    void editFocusChange(bool);
-#endif
 protected:
     virtual void timerEvent(QTimerEvent *event) override;
 

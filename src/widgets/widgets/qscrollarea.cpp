@@ -277,14 +277,6 @@ bool QScrollArea::event(QEvent *e)
     if (e->type() == QEvent::StyleChange || e->type() == QEvent::LayoutRequest) {
         d->updateScrollBars();
     }
-#ifdef QT_KEYPAD_NAVIGATION
-    else if (QApplicationPrivate::keypadNavigationEnabled()) {
-        if (e->type() == QEvent::Show)
-            QApplication::instance()->installEventFilter(this);
-        else if (e->type() == QEvent::Hide)
-            QApplication::instance()->removeEventFilter(this);
-    }
-#endif
     return QAbstractScrollArea::event(e);
 }
 
@@ -295,13 +287,6 @@ bool QScrollArea::event(QEvent *e)
 bool QScrollArea::eventFilter(QObject *o, QEvent *e)
 {
     Q_D(QScrollArea);
-#ifdef QT_KEYPAD_NAVIGATION
-    if (d->widget && o != d->widget && e->type() == QEvent::FocusIn
-            && QApplicationPrivate::keypadNavigationEnabled()) {
-        if (o->isWidgetType())
-            ensureWidgetVisible(static_cast<QWidget *>(o));
-    }
-#endif
     if (o == d->widget && e->type() == QEvent::Resize)
         d->updateScrollBars();
 

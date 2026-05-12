@@ -102,11 +102,6 @@ public:
     bool hasHadFocus = false, formatExplicitlySet = false, calendarPopup = false;
     QStyle::StateFlag arrowState = QStyle::State_None;
     QCalendarPopup *monthCalendar = nullptr;
-
-#ifdef QT_KEYPAD_NAVIGATION
-    bool focusOnButton = false;
-#endif
-
     QTimeZone timeZone;
 };
 

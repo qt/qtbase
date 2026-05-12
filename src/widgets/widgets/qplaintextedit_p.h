@@ -111,9 +111,6 @@ public:
     void updateDefaultTextOption();
 
     QBasicTimer autoScrollTimer;
-#ifdef QT_KEYPAD_NAVIGATION
-    QBasicTimer deleteAllTimer;
-#endif
     QPoint autoScrollDragPos;
     QString placeholderText;
 

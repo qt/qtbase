@@ -331,10 +331,6 @@ public:
     QPointF mousePopupPos;
 
     QAction *currentAction = nullptr;
-#ifdef QT_KEYPAD_NAVIGATION
-    QAction *selectAction = nullptr;
-    QAction *cancelAction = nullptr;
-#endif
     struct DelayState {
         DelayState()
         { }

@@ -2408,22 +2408,6 @@ void QMenuPrivate::popup(const QPoint &p, QAction *atAction, PositionFunction po
         adjustToDesktop = true;
     }
 
-#ifdef QT_KEYPAD_NAVIGATION
-    if (!atAction && QApplicationPrivate::keypadNavigationEnabled()) {
-        // Try to have one item activated
-        if (defaultAction && defaultAction->isEnabled()) {
-            atAction = defaultAction;
-            // TODO: This works for first level menus, not yet sub menus
-        } else {
-            for (QAction *action : std::as_const(actions))
-                if (action->isEnabled()) {
-                    atAction = action;
-                    break;
-                }
-        }
-        currentAction = atAction;
-    }
-#endif
     if (ncols > 1) {
         pos.setY(screen.top() + desktopFrame);
     } else if (atAction) {
@@ -3329,9 +3313,6 @@ void QMenu::keyPressEvent(QKeyEvent *e)
             break;
         // for motif, fall through
         Q_FALLTHROUGH();
-#ifdef QT_KEYPAD_NAVIGATION
-    case Qt::Key_Select:
-#endif
     case Qt::Key_Return:
     case Qt::Key_Enter: {
         if (!d->currentAction) {
@@ -3365,9 +3346,6 @@ void QMenu::keyPressEvent(QKeyEvent *e)
         false
 #ifndef QT_NO_SHORTCUT
         || e->matches(QKeySequence::Cancel)
-#endif
-#ifdef QT_KEYPAD_NAVIGATION
-        || e->key() == Qt::Key_Back
 #endif
     )) {
         key_consumed = true;

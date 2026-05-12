@@ -104,10 +104,6 @@ public:
     Qt::CursorShape cursorToRestoreAfterHover = Qt::IBeamCursor;
 
     std::array<QMetaObject::Connection, 13> connections;
-
-#ifdef QT_KEYPAD_NAVIGATION
-    QBasicTimer deleteAllTimer;
-#endif
 };
 
 QT_END_NAMESPACE

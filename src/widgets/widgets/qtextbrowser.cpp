@@ -43,9 +43,6 @@ public:
     inline QTextBrowserPrivate()
         : textOrSourceChanged(false), forceLoadOnSourceChange(false), openExternalLinks(false),
           openLinks(true)
-#ifdef QT_KEYPAD_NAVIGATION
-        , lastKeypadScrollValue(-1)
-#endif
     {}
     ~QTextBrowserPrivate()
     {
@@ -125,11 +122,6 @@ public:
     inline QUrl resolveUrl(const QString &url) const
     { return resolveUrl(QUrl(url)); }
 
-#ifdef QT_KEYPAD_NAVIGATION
-    void keypadMove(bool next);
-    QTextCursor prevFocus;
-    int lastKeypadScrollValue;
-#endif
     void emitHighlighted(const QUrl &url)
     {
         Q_Q(QTextBrowser);
@@ -347,9 +339,6 @@ void QTextBrowserPrivate::setSource(const QUrl &url, QTextDocument::ResourceType
         q->QTextEdit::setPlainText(txt);
 #endif
 
-#ifdef QT_KEYPAD_NAVIGATION
-        prevFocus.movePosition(QTextCursor::Start);
-#endif
     }
 
     forceLoadOnSourceChange = false;
@@ -360,10 +349,6 @@ void QTextBrowserPrivate::setSource(const QUrl &url, QTextDocument::ResourceType
         hbar->setValue(0);
         vbar->setValue(0);
     }
-#ifdef QT_KEYPAD_NAVIGATION
-    lastKeypadScrollValue = vbar->value();
-    emitHighlighted(QUrl());
-#endif
 
 #ifndef QT_NO_CURSOR
     if (q->isVisible())
@@ -371,191 +356,6 @@ void QTextBrowserPrivate::setSource(const QUrl &url, QTextDocument::ResourceType
 #endif
     emit q->sourceChanged(url);
 }
-
-#ifdef QT_KEYPAD_NAVIGATION
-void QTextBrowserPrivate::keypadMove(bool next)
-{
-    Q_Q(QTextBrowser);
-
-    const int height = viewport->height();
-    const int overlap = qBound(20, height / 5, 40); // XXX arbitrary, but a good balance
-    const int visibleLinkAmount = overlap; // consistent, but maybe not the best choice (?)
-    int yOffset = vbar->value();
-    int scrollYOffset = qBound(0, next ? yOffset + height - overlap : yOffset - height + overlap, vbar->maximum());
-
-    bool foundNextAnchor = false;
-    bool focusIt = false;
-    int focusedPos = -1;
-
-    QTextCursor anchorToFocus;
-
-    QRectF viewRect = QRectF(0, yOffset, control->size().width(), height);
-    QRectF newViewRect = QRectF(0, scrollYOffset, control->size().width(), height);
-    QRectF bothViewRects = viewRect.united(newViewRect);
-
-    // If we don't have a previous anchor, pretend that we had the first/last character
-    // on the screen selected.
-    if (prevFocus.isNull()) {
-        if (next)
-            prevFocus = control->cursorForPosition(QPointF(0, yOffset));
-        else
-            prevFocus = control->cursorForPosition(QPointF(control->size().width(), yOffset + height));
-    }
-
-    // First, check to see if someone has moved the scroll bars independently
-    if (lastKeypadScrollValue != yOffset) {
-        // Someone (user or programmatically) has moved us, so we might
-        // need to start looking from the current position instead of prevFocus
-
-        bool findOnScreen = true;
-
-        // If prevFocus is on screen at all, we just use it.
-        if (prevFocus.hasSelection()) {
-            QRectF prevRect = control->selectionRect(prevFocus);
-            if (viewRect.intersects(prevRect))
-                findOnScreen = false;
-        }
-
-        // Otherwise, we find a new anchor that's on screen.
-        // Basically, create a cursor with the last/first character
-        // on screen
-        if (findOnScreen) {
-            if (next)
-                prevFocus = control->cursorForPosition(QPointF(0, yOffset));
-            else
-                prevFocus = control->cursorForPosition(QPointF(control->size().width(), yOffset + height));
-        }
-        foundNextAnchor = control->findNextPrevAnchor(prevFocus, next, anchorToFocus);
-    } else if (prevFocus.hasSelection()) {
-        // Check the pathological case that the current anchor is higher
-        // than the screen, and just scroll through it in that case
-        QRectF prevRect = control->selectionRect(prevFocus);
-        if ((next && prevRect.bottom() > (yOffset + height)) ||
-                (!next && prevRect.top() < yOffset)) {
-            anchorToFocus = prevFocus;
-            focusedPos = scrollYOffset;
-            focusIt = true;
-        } else {
-            // This is the "normal" case - no scroll bar adjustments, no large anchors,
-            // and no wrapping.
-            foundNextAnchor = control->findNextPrevAnchor(prevFocus, next, anchorToFocus);
-        }
-    }
-
-    // If not found yet, see if we need to wrap
-    if (!focusIt && !foundNextAnchor) {
-        if (next) {
-            if (yOffset == vbar->maximum()) {
-                prevFocus.movePosition(QTextCursor::Start);
-                yOffset = scrollYOffset = 0;
-
-                // Refresh the rectangles
-                viewRect = QRectF(0, yOffset, control->size().width(), height);
-                newViewRect = QRectF(0, scrollYOffset, control->size().width(), height);
-                bothViewRects = viewRect.united(newViewRect);
-            }
-        } else {
-            if (yOffset == 0) {
-                prevFocus.movePosition(QTextCursor::End);
-                yOffset = scrollYOffset = vbar->maximum();
-
-                // Refresh the rectangles
-                viewRect = QRectF(0, yOffset, control->size().width(), height);
-                newViewRect = QRectF(0, scrollYOffset, control->size().width(), height);
-                bothViewRects = viewRect.united(newViewRect);
-            }
-        }
-
-        // Try looking now
-        foundNextAnchor = control->findNextPrevAnchor(prevFocus, next, anchorToFocus);
-    }
-
-    // If we did actually find an anchor to use...
-    if (foundNextAnchor) {
-        QRectF desiredRect = control->selectionRect(anchorToFocus);
-
-        // XXX This is an arbitrary heuristic
-        // Decide to focus an anchor if it will be at least be
-        // in the middle region of the screen after a scroll.
-        // This can result in partial anchors with focus, but
-        // insisting on links being completely visible before
-        // selecting them causes disparities between links that
-        // take up 90% of the screen height and those that take
-        // up e.g. 110%
-        // Obviously if a link is entirely visible, we still
-        // focus it.
-        if (bothViewRects.contains(desiredRect)
-                || bothViewRects.adjusted(0, visibleLinkAmount, 0, -visibleLinkAmount).intersects(desiredRect)) {
-            focusIt = true;
-
-            // We aim to put the new link in the middle of the screen,
-            // unless the link is larger than the screen (we just move to
-            // display the first page of the link)
-            if (desiredRect.height() > height) {
-                if (next)
-                    focusedPos = (int) desiredRect.top();
-                else
-                    focusedPos = (int) desiredRect.bottom() - height;
-            } else
-                focusedPos = (int) ((desiredRect.top() + desiredRect.bottom()) / 2 - (height / 2));
-
-            // and clamp it to make sure we don't skip content.
-            if (next)
-                focusedPos = qBound(yOffset, focusedPos, scrollYOffset);
-            else
-                focusedPos = qBound(scrollYOffset, focusedPos, yOffset);
-        }
-    }
-
-    // If we didn't get a new anchor, check if the old one is still on screen when we scroll
-    // Note that big (larger than screen height) anchors also have some handling at the
-    // start of this function.
-    if (!focusIt && prevFocus.hasSelection()) {
-        QRectF desiredRect = control->selectionRect(prevFocus);
-        // XXX this may be better off also using the visibleLinkAmount value
-        if (newViewRect.intersects(desiredRect)) {
-            focusedPos = scrollYOffset;
-            focusIt = true;
-            anchorToFocus = prevFocus;
-        }
-    }
-
-    // setTextCursor ensures that the cursor is visible. save & restore
-    // the scroll bar values therefore
-    const int savedXOffset = hbar->value();
-
-    // Now actually process our decision
-    if (focusIt && control->setFocusToAnchor(anchorToFocus)) {
-        // Save the focus for next time
-        prevFocus = control->textCursor();
-
-        // Scroll
-        vbar->setValue(focusedPos);
-        lastKeypadScrollValue = focusedPos;
-        hbar->setValue(savedXOffset);
-
-        // Ensure that the new selection is highlighted.
-        const QString href = control->anchorAtCursor();
-        QUrl url = resolveUrl(href);
-        emitHighlighted(url);
-    } else {
-        // Scroll
-        vbar->setValue(scrollYOffset);
-        lastKeypadScrollValue = scrollYOffset;
-
-        // now make sure we don't have a focused anchor
-        QTextCursor cursor = control->textCursor();
-        cursor.clearSelection();
-
-        control->setTextCursor(cursor);
-
-        hbar->setValue(savedXOffset);
-        vbar->setValue(scrollYOffset);
-
-        emitHighlighted(QUrl());
-    }
-}
-#endif
 
 QTextBrowserPrivate::HistoryEntry QTextBrowserPrivate::createHistoryEntry() const
 {
@@ -588,15 +388,6 @@ void QTextBrowserPrivate::restoreHistoryEntry(const HistoryEntry &entry)
         control->setTextCursor(cursor);
         control->setCursorIsFocusIndicator(true);
     }
-#ifdef QT_KEYPAD_NAVIGATION
-    lastKeypadScrollValue = vbar->value();
-    prevFocus = control->textCursor();
-
-    Q_Q(QTextBrowser);
-    const QString href = prevFocus.charFormat().anchorHref();
-    QUrl url = resolveUrl(href);
-    emitHighlighted(url);
-#endif
 }
 
 /*!
@@ -973,42 +764,6 @@ void QTextBrowser::home()
 */
 void QTextBrowser::keyPressEvent(QKeyEvent *ev)
 {
-#ifdef QT_KEYPAD_NAVIGATION
-    Q_D(QTextBrowser);
-    switch (ev->key()) {
-    case Qt::Key_Select:
-        if (QApplicationPrivate::keypadNavigationEnabled()) {
-            if (!hasEditFocus()) {
-                setEditFocus(true);
-                return;
-            } else {
-                QTextCursor cursor = d->control->textCursor();
-                QTextCharFormat charFmt = cursor.charFormat();
-                if (!cursor.hasSelection() || charFmt.anchorHref().isEmpty()) {
-                    ev->accept();
-                    return;
-                }
-            }
-        }
-        break;
-    case Qt::Key_Back:
-        if (QApplicationPrivate::keypadNavigationEnabled()) {
-            if (hasEditFocus()) {
-                setEditFocus(false);
-                ev->accept();
-                return;
-            }
-        }
-        QTextEdit::keyPressEvent(ev);
-        return;
-    default:
-        if (QApplicationPrivate::keypadNavigationEnabled() && !hasEditFocus()) {
-            ev->ignore();
-            return;
-        }
-    }
-#endif
-
     if (ev->modifiers() & Qt::AltModifier) {
         switch (ev->key()) {
         case Qt::Key_Right:
@@ -1025,17 +780,6 @@ void QTextBrowser::keyPressEvent(QKeyEvent *ev)
             return;
         }
     }
-#ifdef QT_KEYPAD_NAVIGATION
-    else {
-        if (ev->key() == Qt::Key_Up) {
-            d->keypadMove(false);
-            return;
-        } else if (ev->key() == Qt::Key_Down) {
-            d->keypadMove(true);
-            return;
-        }
-    }
-#endif
     QTextEdit::keyPressEvent(ev);
 }
 
@@ -1081,23 +825,9 @@ void QTextBrowser::focusOutEvent(QFocusEvent *ev)
 bool QTextBrowser::focusNextPrevChild(bool next)
 {
     Q_D(QTextBrowser);
-    if (d->control->setFocusToNextOrPreviousAnchor(next)) {
-#ifdef QT_KEYPAD_NAVIGATION
-        // Might need to synthesize a highlight event.
-        if (d->prevFocus != d->control->textCursor() && d->control->textCursor().hasSelection()) {
-            const QString href = d->control->anchorAtCursor();
-            QUrl url = d->resolveUrl(href);
-            emitHighlighted(url);
-        }
-        d->prevFocus = d->control->textCursor();
-#endif
+    if (d->control->setFocusToNextOrPreviousAnchor(next))
         return true;
-    } else {
-#ifdef QT_KEYPAD_NAVIGATION
-        // We assume we have no highlight now.
-        emitHighlighted(QUrl());
-#endif
-    }
+
     return QTextEdit::focusNextPrevChild(next);
 }
 

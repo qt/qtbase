@@ -1463,13 +1463,6 @@ void QWidgetLineControl::complete(int key)
         if (!advanceToEnabledItem(n))
             return;
     } else {
-#ifndef QT_KEYPAD_NAVIGATION
-        if (text.isEmpty()) {
-            if (auto *popup = QCompleterPrivate::get(m_completer)->popup)
-                popup->hide();
-            return;
-        }
-#endif
         m_completer->setCompletionPrefix(text);
     }
 
@@ -1624,11 +1617,6 @@ void QWidgetLineControl::processKeyEvent(QKeyEvent* event)
             case Qt::Key_Enter:
             case Qt::Key_Return:
             case Qt::Key_F4:
-#ifdef QT_KEYPAD_NAVIGATION
-            case Qt::Key_Select:
-                if (!QApplicationPrivate::keypadNavigationEnabled())
-                    break;
-#endif
                 if (!m_completer->currentCompletion().isEmpty() && hasSelectedText()
                     && !m_completer->completionPrefix().isEmpty()
                     && textAfterSelection().isEmpty()) {
@@ -1666,12 +1654,6 @@ void QWidgetLineControl::processKeyEvent(QKeyEvent* event)
         && !passwordEchoEditing()
         && !isReadOnly()
         && !event->text().isEmpty()
-#ifdef QT_KEYPAD_NAVIGATION
-        && event->key() != Qt::Key_Select
-        && event->key() != Qt::Key_Up
-        && event->key() != Qt::Key_Down
-        && event->key() != Qt::Key_Back
-#endif
         && !(event->modifiers() & Qt::ControlModifier)) {
         // Clear the edit and reset to normal echo mode while editing; the
         // echo mode switches back when the edit loses focus
@@ -1881,25 +1863,6 @@ void QWidgetLineControl::processKeyEvent(QKeyEvent* event)
 #endif
                 }
                 break;
-#ifdef QT_KEYPAD_NAVIGATION
-            case Qt::Key_Back:
-                if (QApplicationPrivate::keypadNavigationEnabled() && !event->isAutoRepeat()
-                    && !isReadOnly()) {
-                    if (text().length() == 0) {
-                        setText(m_cancelText);
-
-                        if (passwordEchoEditing())
-                            updatePasswordEchoEditing(false);
-
-                        emit editFocusChange(false);
-                    } else if (!m_deleteAllTimer.isActive()) {
-                        m_deleteAllTimer.start(750ms, this);
-                    }
-                } else {
-                    unknown = true;
-                }
-                break;
-#endif
             default:
                 if (!handled)
                     unknown = true;

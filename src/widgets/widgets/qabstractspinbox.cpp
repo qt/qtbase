@@ -777,19 +777,6 @@ bool QAbstractSpinBox::event(QEvent *event)
         if (d->edit->event(event))
             return true;
         break;
-#ifdef QT_KEYPAD_NAVIGATION
-    case QEvent::EnterEditFocus:
-    case QEvent::LeaveEditFocus:
-        if (QApplicationPrivate::keypadNavigationEnabled()) {
-            const bool b = d->edit->event(event);
-            d->edit->setSelection(d->edit->displayText().size() - d->suffix.size(),0);
-            if (event->type() == QEvent::LeaveEditFocus)
-                emit editingFinished();
-            if (b)
-                return true;
-        }
-        break;
-#endif
     case QEvent::InputMethod:
         return d->edit->event(event);
     default:
@@ -1001,16 +988,6 @@ void QAbstractSpinBox::keyPressEvent(QKeyEvent *event)
         Q_FALLTHROUGH();
     case Qt::Key_Up:
     case Qt::Key_Down: {
-#ifdef QT_KEYPAD_NAVIGATION
-        if (QApplicationPrivate::keypadNavigationEnabled()) {
-            // Reserve up/down for nav - use left/right for edit.
-            if (!hasEditFocus() && (event->key() == Qt::Key_Up
-                                    || event->key() == Qt::Key_Down)) {
-                event->ignore();
-                return;
-            }
-        }
-#endif
         event->accept();
         const bool up = (event->key() == Qt::Key_PageUp || event->key() == Qt::Key_Up);
         if (!(stepEnabled() & (up ? StepUpEnabled : StepDownEnabled)))
@@ -1035,21 +1012,6 @@ void QAbstractSpinBox::keyPressEvent(QKeyEvent *event)
 #endif
         return;
     }
-#ifdef QT_KEYPAD_NAVIGATION
-    case Qt::Key_Left:
-    case Qt::Key_Right:
-        if (QApplicationPrivate::keypadNavigationEnabled() && !hasEditFocus()) {
-            event->ignore();
-            return;
-        }
-        break;
-    case Qt::Key_Back:
-        if (QApplicationPrivate::keypadNavigationEnabled() && !hasEditFocus()) {
-            event->ignore();
-            return;
-        }
-        break;
-#endif
     case Qt::Key_Enter:
     case Qt::Key_Return:
         d->edit->d_func()->control->clearUndo();
@@ -1060,15 +1022,6 @@ void QAbstractSpinBox::keyPressEvent(QKeyEvent *event)
         emit returnPressed();
         emit d->edit->returnPressed();
         return;
-
-#ifdef QT_KEYPAD_NAVIGATION
-    case Qt::Key_Select:
-        if (QApplicationPrivate::keypadNavigationEnabled()) {
-            // Toggles between left/right moving cursor and inc/dec.
-            setEditFocus(!hasEditFocus());
-        }
-        return;
-#endif
 
     case Qt::Key_U:
         if (event->modifiers() & Qt::ControlModifier
@@ -1198,10 +1151,6 @@ void QAbstractSpinBox::focusOutEvent(QFocusEvent *event)
     d->updateEdit();
     QWidget::focusOutEvent(event);
 
-#ifdef QT_KEYPAD_NAVIGATION
-    // editingFinished() is already emitted on LeaveEditFocus
-    if (!QApplicationPrivate::keypadNavigationEnabled())
-#endif
     emit editingFinished();
 }
 

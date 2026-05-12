@@ -379,14 +379,7 @@ void QTabBarPrivate::init()
     QObjectPrivate::connect(rightB, &QToolButton::clicked,
                             this, &QTabBarPrivate::scrollTabs);
     rightB->hide();
-#ifdef QT_KEYPAD_NAVIGATION
-    if (QApplicationPrivate::keypadNavigationEnabled()) {
-        leftB->setFocusPolicy(Qt::NoFocus);
-        rightB->setFocusPolicy(Qt::NoFocus);
-        q->setFocusPolicy(Qt::NoFocus);
-    } else
-#endif
-        q->setFocusPolicy(Qt::TabFocus);
+    q->setFocusPolicy(Qt::TabFocus);
 
 #if QT_CONFIG(accessibility)
     leftB->setAccessibleName(QTabBar::tr("Scroll Left"));
