@@ -182,8 +182,6 @@ AppContextDirs AppContextDirs::mapFromNapiObject(QNapi::Object appContextObj)
     for (const auto &propEntry : propsNames)
         appContextDirs.*propEntry.second = appContextObj.get<QNapi::String>(propEntry.first);
 
-    if (appContextDirs.resourceDir.empty())
-        appContextDirs.resourceDir = appContextDirs.bundleCodeDir + "/entry/resources/resfile";
     return appContextDirs;
 }
 
@@ -1591,6 +1589,9 @@ void setupQtApplicationImpl(JsState &jsState, QNapi::Object appStartupObj, QtRun
 {
     auto appContext = appStartupObj.get<QNapi::Object>("appContext");
     auto appContextDirs = AppContextDirs::mapFromNapiObject(appContext);
+    if (appContextDirs.resourceDir.empty())
+        appContextDirs.resourceDir = appContextDirs.bundleCodeDir + "/entry/resources/resfile";
+
     auto jsModulesFactories = appStartupObj.get<QNapi::Object>("modulesFactories");
 
     qOhosPrintfDebug("%s: setting up Qt in %s mode", Q_FUNC_INFO, mapQtRunModeToString(qtRunMode));
