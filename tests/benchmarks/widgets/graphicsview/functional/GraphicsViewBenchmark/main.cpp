@@ -717,7 +717,6 @@ int main(int argc, char *argv[])
         }
         returnValue = app.exec();
     } else {
-        QTEST_DISABLE_KEYPAD_NAVIGATION
         tst_GraphicsViewBenchmark tc(&settings);
         returnValue = QTest::qExec(&tc, aargc, aargv);
     }

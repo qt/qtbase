@@ -55,9 +55,6 @@ private slots:
     void stopRepeatTimer();
 
     void mouseReleased(); // QTBUG-53244
-#ifdef QT_KEYPAD_NAVIGATION
-    void keyNavigation();
-#endif
 
     void buttonPressKeys();
 
@@ -628,63 +625,6 @@ void tst_QAbstractButton::mouseReleased() // QTBUG-53244
     QCOMPARE(button.isDown(), false);
     QCOMPARE(spyRelease.size(), 1);
 }
-
-#ifdef QT_KEYPAD_NAVIGATION
-void tst_QAbstractButton::keyNavigation()
-{
-    QApplication::setNavigationMode(Qt::NavigationModeKeypadDirectional);
-
-    QWidget widget;
-    QGridLayout *layout = new QGridLayout(&widget);
-    QAbstractButton *buttons[3][3];
-    for(int y = 0; y < 3; y++) {
-        for(int x = 0; x < 3; x++) {
-            buttons[y][x] = new MyButton(&widget);
-            buttons[y][x]->setFocusPolicy(Qt::StrongFocus);
-            layout->addWidget(buttons[y][x], y, x);
-        }
-    }
-
-    widget.show();
-    QApplicationPrivate::setActiveWindow(&widget);
-    widget.activateWindow();
-    QVERIFY(QTest::qWaitForWindowActive(&widget));
-
-    buttons[1][1]->setFocus();
-    QTest::qWait(400);
-    QVERIFY(buttons[1][1]->hasFocus());
-    QTest::keyPress(buttons[1][1], Qt::Key_Up);
-    QTest::qWait(100);
-    QVERIFY(buttons[0][1]->hasFocus());
-    QTest::keyPress(buttons[0][1], Qt::Key_Down);
-    QTest::qWait(100);
-    QVERIFY(buttons[1][1]->hasFocus());
-    QTest::keyPress(buttons[1][1], Qt::Key_Left);
-    QTest::qWait(100);
-    QVERIFY(buttons[1][0]->hasFocus());
-    QTest::keyPress(buttons[1][0], Qt::Key_Down);
-    QTest::qWait(100);
-    QVERIFY(buttons[2][0]->hasFocus());
-    QTest::keyPress(buttons[2][0], Qt::Key_Right);
-    QTest::qWait(100);
-    QVERIFY(buttons[2][1]->hasFocus());
-    QTest::keyPress(buttons[2][1], Qt::Key_Right);
-    QTest::qWait(100);
-    QVERIFY(buttons[2][2]->hasFocus());
-    QTest::keyPress(buttons[2][2], Qt::Key_Up);
-    QTest::qWait(100);
-    QVERIFY(buttons[1][2]->hasFocus());
-    QTest::keyPress(buttons[1][2], Qt::Key_Up);
-    QTest::qWait(100);
-    QVERIFY(buttons[0][2]->hasFocus());
-    buttons[0][1]->hide();
-    QTest::keyPress(buttons[0][2], Qt::Key_Left);
-    QTest::qWait(100);
-    QTest::keyPress(buttons[0][2], Qt::Key_Left);
-    QEXPECT_FAIL("", "QTBUG-22286" ,Abort);
-    QVERIFY(buttons[0][0]->hasFocus());
-}
-#endif
 
 void tst_QAbstractButton::buttonPressKeys()
 {

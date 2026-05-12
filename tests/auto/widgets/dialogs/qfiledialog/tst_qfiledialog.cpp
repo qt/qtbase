@@ -1378,10 +1378,6 @@ void tst_QFiledialog::clearLineEdit()
     DirPopulatedPredicate dirPopulated(list, dirName);
     QTRY_VERIFY(dirPopulated);
 
-#ifdef QT_KEYPAD_NAVIGATION
-    list->setEditFocus(true);
-#endif
-
     SelectDirTestPredicate selectTestDir(list, dirName);
     QTRY_VERIFY(selectTestDir);
 

@@ -3,7 +3,6 @@
 
 if(TARGET Qt6::Gui AND TARGET Qt6::Widgets)
     if(TARGET Qt6::uic)
-        add_subdirectory(keypadnavigation_testsetup)
         add_subdirectory(qgraphicsitemgroup_testsetup)
     endif()
     add_subdirectory(qlayout_testsetup)

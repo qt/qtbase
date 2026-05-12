@@ -795,9 +795,6 @@ void tst_QFileDialog2::task233037_selectingDirectory()
     fd.show();
     QListView *list = fd.findChild<QListView*>("listView");
     QTest::qWait(3000); // Wait for sort to settle (I need a signal).
-#ifdef QT_KEYPAD_NAVIGATION
-    list->setEditFocus(true);
-#endif
     QTest::keyClick(list, Qt::Key_Down);
     QDialogButtonBox *buttonBox = fd.findChild<QDialogButtonBox*>("buttonBox");
     QVERIFY(buttonBox);
