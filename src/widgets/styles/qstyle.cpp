@@ -724,7 +724,6 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
     \value State_DownArrow Used to indicate if a down arrow should be visible on the widget.
     \value State_Editing Deprecated. No longer used as the editor is drawn over the itemview cell.
     \value State_Enabled Used to indicate if the widget is enabled.
-    \value State_HasEditFocus Used to indicate if the widget currently has edit focus.
     \value State_HasFocus Used to indicate if the widget has focus.
     \value State_Horizontal Used to indicate if the widget is laid out horizontally, for example. a tool bar.
     \value State_KeyboardFocusChange Used to indicate if the focus was changed with the keyboard, e.g., tab, backtab or shortcut.

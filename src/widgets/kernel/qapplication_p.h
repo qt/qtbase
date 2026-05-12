@@ -92,14 +92,6 @@ public:
     static bool modalState();
     static bool tryModalHelper(QWidget *widget, QWidget **rettop = nullptr);
 
-#ifdef QT_KEYPAD_NAVIGATION
-    static bool keypadNavigationEnabled()
-    {
-        return navigationMode == Qt::NavigationModeKeypadTabOrder ||
-                navigationMode == Qt::NavigationModeKeypadDirectional;
-    }
-#endif
-
     bool notify_helper(QObject *receiver, QEvent * e);
 
     void init();
@@ -162,11 +154,6 @@ public:
     static PaletteHash widgetPalettes;
 
     static QApplicationPrivate *instance() { return self; }
-
-#ifdef QT_KEYPAD_NAVIGATION
-    static QWidget *oldEditFocus;
-    static Qt::NavigationMode navigationMode;
-#endif
 
 #ifndef QT_NO_STYLE_STYLESHEET
     static QString styleSheet;

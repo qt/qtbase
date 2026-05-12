@@ -1795,10 +1795,6 @@ static quint64 pseudoClass(QStyle::State state)
         pc |= PseudoClass_ReadOnly;
     if (state & QStyle::State_Item)
         pc |= PseudoClass_Item;
-#ifdef QT_KEYPAD_NAVIGATION
-    if (state & QStyle::State_HasEditFocus)
-        pc |= PseudoClass_EditFocus;
-#endif
     return pc;
 }
 

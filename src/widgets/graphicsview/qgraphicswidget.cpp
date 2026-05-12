@@ -676,13 +676,6 @@ void QGraphicsWidget::initStyleOption(QStyleOption *option) const
     }
     if (isWindow())
         option->state |= QStyle::State_Window;
-    /*
-      ###
-#ifdef QT_KEYPAD_NAVIGATION
-    if (widget->hasEditFocus())
-        state |= QStyle::State_HasEditFocus;
-#endif
-    */
     option->direction = layoutDirection();
     option->rect = rect().toRect(); // ### truncation!
     option->palette = palette();

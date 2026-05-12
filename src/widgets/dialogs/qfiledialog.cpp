@@ -3998,10 +3998,6 @@ bool QFileDialogPrivate::itemViewKeyboardEvent(QKeyEvent *event) {
         navigateToParent();
         return true;
     case Qt::Key_Back:
-#ifdef QT_KEYPAD_NAVIGATION
-        if (QApplicationPrivate::keypadNavigationEnabled())
-            return false;
-#endif
     case Qt::Key_Left:
         if (event->key() == Qt::Key_Back || event->modifiers() == Qt::AltModifier) {
             navigateBackward();
@@ -4121,13 +4117,6 @@ QSize QFileDialogListView::sizeHint() const
 
 void QFileDialogListView::keyPressEvent(QKeyEvent *e)
 {
-#ifdef QT_KEYPAD_NAVIGATION
-    if (QApplication::navigationMode() == Qt::NavigationModeKeypadDirectional) {
-        QListView::keyPressEvent(e);
-        return;
-    }
-#endif // QT_KEYPAD_NAVIGATION
-
     if (!d_ptr->itemViewKeyboardEvent(e))
         QListView::keyPressEvent(e);
     e->accept();
@@ -4152,13 +4141,6 @@ void QFileDialogTreeView::setFileDialogPrivate(QFileDialogPrivate *d_pointer)
 
 void QFileDialogTreeView::keyPressEvent(QKeyEvent *e)
 {
-#ifdef QT_KEYPAD_NAVIGATION
-    if (QApplication::navigationMode() == Qt::NavigationModeKeypadDirectional) {
-        QTreeView::keyPressEvent(e);
-        return;
-    }
-#endif // QT_KEYPAD_NAVIGATION
-
     if (!d_ptr->itemViewKeyboardEvent(e))
         QTreeView::keyPressEvent(e);
     e->accept();
@@ -4183,13 +4165,6 @@ QSize QFileDialogTreeView::sizeHint() const
 */
 void QFileDialogLineEdit::keyPressEvent(QKeyEvent *e)
 {
-#ifdef QT_KEYPAD_NAVIGATION
-    if (QApplication::navigationMode() == Qt::NavigationModeKeypadDirectional) {
-        QLineEdit::keyPressEvent(e);
-        return;
-    }
-#endif // QT_KEYPAD_NAVIGATION
-
 #if QT_CONFIG(shortcut)
     int key = e->key();
 #endif

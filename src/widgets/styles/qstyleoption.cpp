@@ -164,11 +164,6 @@ void QStyleOption::initFrom(const QWidget *widget)
     default:
         ;
     }
-#ifdef QT_KEYPAD_NAVIGATION
-    if (widget->hasEditFocus())
-        state |= QStyle::State_HasEditFocus;
-#endif
-
     direction = widget->layoutDirection();
     rect = widget->rect();
     palette = widget->palette();

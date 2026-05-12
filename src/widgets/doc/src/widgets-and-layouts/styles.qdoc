@@ -533,9 +533,7 @@
     widget has focus the \c State_HasFocus flag is set. Equally, the
     \c State_Active flag is set when the widget is a child of the active
     window. The \c State_MouseOver will only be set if the widget has
-    the \c WA_HoverEnabled windows flag set. Notice that keypad
-    navigation must be enabled in Qt for the \c State_HasEditFocus to
-    be included; it is not included by default.
+    the \c WA_HoverEnabled windows flag set.
 
     In addition to setting state flags the QStyleOption contains
     other information about the widget: \c direction is the layout
@@ -764,9 +762,6 @@
         \row
             \li \c State_Active
             \li Set if the widget is a child of the active window.
-        \row
-            \li \c State_HasEditFocus
-            \li Set if the widget has the edit focus
     \endtable
 
     The other common members for widgets are:

@@ -1224,18 +1224,8 @@ QModelIndex QListView::moveCursor(CursorAction cursorAction, Qt::KeyboardModifie
     case MoveUp:
         while (intersectVector.isEmpty()) {
             rect.translate(0, -rect.height());
-            if (rect.bottom() <= 0) {
-#ifdef QT_KEYPAD_NAVIGATION
-                if (QApplicationPrivate::keypadNavigationEnabled()) {
-                    int row = d->batchStartRow() - 1;
-                    while (row >= 0 && d->isHiddenOrDisabled(row))
-                        --row;
-                    if (row >= 0)
-                        return d->model->index(row, d->column, d->root);
-                }
-#endif
+            if (rect.bottom() <= 0)
                 return current;
-            }
             if (rect.top() < 0)
                 rect.setTop(0);
             intersectVector = d->intersectingSet(rect);
@@ -1269,19 +1259,8 @@ QModelIndex QListView::moveCursor(CursorAction cursorAction, Qt::KeyboardModifie
     case MoveDown:
         while (intersectVector.isEmpty()) {
             rect.translate(0, rect.height());
-            if (rect.top() >= contents.height()) {
-#ifdef QT_KEYPAD_NAVIGATION
-                if (QApplicationPrivate::keypadNavigationEnabled()) {
-                    int rowCount = d->model->rowCount(d->root);
-                    int row = 0;
-                    while (row < rowCount && d->isHiddenOrDisabled(row))
-                        ++row;
-                    if (row < rowCount)
-                        return d->model->index(row, d->column, d->root);
-                }
-#endif
+            if (rect.top() >= contents.height())
                 return current;
-            }
             if (rect.bottom() > contents.height())
                 rect.setBottom(contents.height());
             intersectVector = d->intersectingSet(rect);

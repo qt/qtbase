@@ -2382,51 +2382,6 @@ void QAbstractItemView::keyPressEvent(QKeyEvent *event)
     Q_D(QAbstractItemView);
     d->delayedAutoScroll.stop(); //any interaction with the view cancel the auto scrolling
 
-#ifdef QT_KEYPAD_NAVIGATION
-    switch (event->key()) {
-    case Qt::Key_Select:
-        if (QApplicationPrivate::keypadNavigationEnabled()) {
-            if (!hasEditFocus()) {
-                setEditFocus(true);
-                return;
-            }
-        }
-        break;
-    case Qt::Key_Back:
-        if (QApplicationPrivate::keypadNavigationEnabled() && hasEditFocus()) {
-            setEditFocus(false);
-        } else {
-            event->ignore();
-        }
-        return;
-    case Qt::Key_Down:
-    case Qt::Key_Up:
-        // Let's ignore vertical navigation events, only if there is no other widget
-        // what can take the focus in vertical direction. This means widget can handle navigation events
-        // even the widget don't have edit focus, and there is no other widget in requested direction.
-        if (QApplicationPrivate::keypadNavigationEnabled() && !hasEditFocus()
-                && QWidgetPrivate::canKeypadNavigate(Qt::Vertical)) {
-            event->ignore();
-            return;
-        }
-        break;
-    case Qt::Key_Left:
-    case Qt::Key_Right:
-        // Similar logic as in up and down events
-        if (QApplicationPrivate::keypadNavigationEnabled() && !hasEditFocus()
-                && (QWidgetPrivate::canKeypadNavigate(Qt::Horizontal) || QWidgetPrivate::inTabWidget(this))) {
-            event->ignore();
-            return;
-        }
-        break;
-    default:
-        if (QApplicationPrivate::keypadNavigationEnabled() && !hasEditFocus()) {
-            event->ignore();
-            return;
-        }
-    }
-#endif
-
 #if !defined(QT_NO_CLIPBOARD) && !defined(QT_NO_SHORTCUT)
     if (event == QKeySequence::Copy) {
         const QModelIndex index = currentIndex();
@@ -2508,23 +2463,8 @@ void QAbstractItemView::keyPressEvent(QKeyEvent *event)
     // ignored keys
     case Qt::Key_Down:
     case Qt::Key_Up:
-#ifdef QT_KEYPAD_NAVIGATION
-        if (QApplicationPrivate::keypadNavigationEnabled()
-                && QWidgetPrivate::canKeypadNavigate(Qt::Vertical)) {
-            event->accept(); // don't change focus
-            break;
-        }
-#endif
     case Qt::Key_Left:
     case Qt::Key_Right:
-#ifdef QT_KEYPAD_NAVIGATION
-        if (QApplication::navigationMode() == Qt::NavigationModeKeypadDirectional
-                && (QWidgetPrivate::canKeypadNavigate(Qt::Horizontal)
-                || (QWidgetPrivate::inTabWidget(this) && d->model->columnCount(d->root) > 1))) {
-            event->accept(); // don't change focus
-            break;
-        }
-#endif // QT_KEYPAD_NAVIGATION
     case Qt::Key_Home:
     case Qt::Key_End:
     case Qt::Key_PageUp:
@@ -2546,17 +2486,6 @@ void QAbstractItemView::keyPressEvent(QKeyEvent *event)
                 event->accept();
             }
         }
-#ifdef QT_KEYPAD_NAVIGATION
-        if ( event->key()==Qt::Key_Select ) {
-            // Also do Key_Enter action.
-            if (currentIndex().isValid()) {
-                if (state() != EditingState)
-                    emit activated(currentIndex());
-            } else {
-                event->ignore();
-            }
-        }
-#endif
         break;
 #ifdef Q_OS_MACOS
     case Qt::Key_Enter:
@@ -4381,12 +4310,7 @@ QItemSelectionModel::SelectionFlags QAbstractItemViewPrivate::extendedSelectionC
             case Qt::Key_PageUp:
             case Qt::Key_PageDown:
             case Qt::Key_Tab:
-                if (modifiers & Qt::ControlModifier
-#ifdef QT_KEYPAD_NAVIGATION
-                    // Preserve historical tab order navigation behavior
-                    || QApplication::navigationMode() == Qt::NavigationModeKeypadTabOrder
-#endif
-                    )
+                if (modifiers & Qt::ControlModifier)
                     return QItemSelectionModel::NoUpdate;
                 break;
             case Qt::Key_Select:

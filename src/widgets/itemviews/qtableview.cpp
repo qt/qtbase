@@ -1834,11 +1834,6 @@ QModelIndex QTableView::moveCursor(CursorAction cursorAction, Qt::KeyboardModifi
     switch (cursorAction) {
     case MoveUp: {
         int originalRow = visualRow;
-#ifdef QT_KEYPAD_NAVIGATION
-        if (QApplicationPrivate::keypadNavigationEnabled() && visualRow == 0)
-            visualRow = d->visualRow(model()->rowCount() - 1) + 1;
-            // FIXME? visualRow = bottom + 1;
-#endif
         int r = d->logicalRow(visualRow);
         int c = d->logicalColumn(visualColumn);
         if (r != -1 && d->hasSpans()) {
@@ -1863,10 +1858,6 @@ QModelIndex QTableView::moveCursor(CursorAction cursorAction, Qt::KeyboardModifi
             QSpanCollection::Span span = d->span(current.row(), current.column());
             visualRow = d->visualRow(d->rowSpanEndLogical(span.top(), span.height()));
         }
-#ifdef QT_KEYPAD_NAVIGATION
-        if (QApplicationPrivate::keypadNavigationEnabled() && visualRow >= bottom)
-            visualRow = -1;
-#endif
         int r = d->logicalRow(visualRow);
         int c = d->logicalColumn(visualColumn);
         if (r != -1 && d->hasSpans()) {

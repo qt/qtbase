@@ -3558,11 +3558,6 @@
         \li The QComboBox is editable.
 
     \row
-        \li \c :edit-focus \target edit-focus-ps
-        \li The item has edit focus (See QStyle::State_HasEditFocus). This state
-           is available only for Qt Extended applications.
-
-    \row
         \li \c :enabled \target enabled-ps
         \li The item is \l{QWidget::enabled}{enabled}.
 

@@ -118,11 +118,6 @@ public:
     static int exec();
     bool notify(QObject *, QEvent *) override;
 
-#ifdef QT_KEYPAD_NAVIGATION
-    static void setNavigationMode(Qt::NavigationMode mode);
-    static Qt::NavigationMode navigationMode();
-#endif
-
     QT_DECLARE_NATIVE_INTERFACE_ACCESSOR(QApplication)
 
 Q_SIGNALS:

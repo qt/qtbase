@@ -336,10 +336,6 @@ bool qt_in_tab_key_event = false;
 int qt_antialiasing_threshold = -1;
 int QApplicationPrivate::enabledAnimations = QPlatformTheme::GeneralUiEffect;
 bool QApplicationPrivate::widgetCount = false;
-#ifdef QT_KEYPAD_NAVIGATION
-Qt::NavigationMode QApplicationPrivate::navigationMode = Qt::NavigationModeKeypadTabOrder;
-QWidget *QApplicationPrivate::oldEditFocus = nullptr;
-#endif
 
 inline bool QApplicationPrivate::isAlien(QWidget *widget)
 {
@@ -1532,12 +1528,6 @@ void QApplicationPrivate::setFocusWidget(QWidget *focus, Qt::FocusReason reason)
 
             //send events
             if (prev) {
-#ifdef QT_KEYPAD_NAVIGATION
-                if (QApplicationPrivate::keyboardNavigationEnabled()) {
-                    if (prev->hasEditFocus() && reason != Qt::PopupFocusReason)
-                        prev->setEditFocus(false);
-                }
-#endif
                 QFocusEvent out(QEvent::FocusOut, reason);
                 QPointer<QWidget> that = prev;
                 QCoreApplication::sendEvent(prev, &out);
@@ -3385,32 +3375,6 @@ void QApplicationPrivate::openPopup(QWidget *popup)
         }
     }
 }
-
-#ifdef QT_KEYPAD_NAVIGATION
-/*!
-    Sets the kind of focus navigation Qt should use to \a mode.
-
-    This feature is available in Qt for Embedded Linux only.
-
-    \since 4.6
-*/
-void QApplication::setNavigationMode(Qt::NavigationMode mode)
-{
-    QApplicationPrivate::navigationMode = mode;
-}
-
-/*!
-    Returns what kind of focus navigation Qt is using.
-
-    This feature is available in Qt for Embedded Linux only.
-
-    \since 4.6
-*/
-Qt::NavigationMode QApplication::navigationMode()
-{
-    return QApplicationPrivate::navigationMode;
-}
-#endif
 
 /*!
     \fn void QApplication::alert(QWidget *widget, int msec)
