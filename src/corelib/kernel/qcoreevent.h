@@ -183,10 +183,6 @@ public:
 
         // last event id used = 132
 
-#ifdef QT_KEYPAD_NAVIGATION
-        EnterEditFocus = 150,                   // enter edit mode in keypad navigation
-        LeaveEditFocus = 151,                   // enter edit mode in keypad navigation
-#endif
         AcceptDropsChange = 152,
 
         ZeroTimerEvent = 154,                   // Used for Windows Zero timer events

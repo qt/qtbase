@@ -280,13 +280,8 @@ Q_CONSTRUCTOR_FUNCTION(qRegister##TestObject)
 
 #if defined(QT_WIDGETS_LIB)
 #  include <QtTest/qtest_widgets.h>
-#  ifdef QT_KEYPAD_NAVIGATION
-#    define QTEST_DISABLE_KEYPAD_NAVIGATION QApplication::setNavigationMode(Qt::NavigationModeNone);
-#  else
-#    define QTEST_DISABLE_KEYPAD_NAVIGATION
-#  endif
 // Internal
-#  define QTEST_MAIN_SETUP() QTEST_QAPP_SETUP(QApplication) QTEST_DISABLE_KEYPAD_NAVIGATION
+#  define QTEST_MAIN_SETUP() QTEST_QAPP_SETUP(QApplication)
 #elif defined(QT_GUI_LIB)
 #  include <QtTest/qtest_gui.h>
 // Internal
