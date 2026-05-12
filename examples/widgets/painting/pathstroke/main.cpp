@@ -24,9 +24,5 @@ int main(int argc, char **argv)
         pathStrokeWidget.showFullScreen();
     else
         pathStrokeWidget.show();
-
-#ifdef QT_KEYPAD_NAVIGATION
-    QApplication::setNavigationMode(Qt::NavigationModeCursorAuto);
-#endif
     return app.exec();
 }

@@ -23,9 +23,5 @@ int main(int argc, char **argv)
         deformWidget.showFullScreen();
     else
         deformWidget.show();
-
-#ifdef QT_KEYPAD_NAVIGATION
-    QApplication::setNavigationMode(Qt::NavigationModeCursorAuto);
-#endif
     return app.exec();
 }

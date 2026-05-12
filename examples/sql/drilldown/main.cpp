@@ -18,8 +18,5 @@ int main(int argc, char *argv[])
 
     View view("items", "images");
     view.show();
-#ifdef QT_KEYPAD_NAVIGATION
-    QApplication::setNavigationMode(Qt::NavigationModeCursorAuto);
-#endif
     return app.exec();
 }
