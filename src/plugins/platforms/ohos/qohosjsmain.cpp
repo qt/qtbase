@@ -1589,8 +1589,13 @@ void setupQtApplicationImpl(JsState &jsState, QNapi::Object appStartupObj, QtRun
 {
     auto appContext = appStartupObj.get<QNapi::Object>("appContext");
     auto appContextDirs = AppContextDirs::mapFromNapiObject(appContext);
-    if (appContextDirs.resourceDir.empty())
-        appContextDirs.resourceDir = appContextDirs.bundleCodeDir + "/entry/resources/resfile";
+    if (appContextDirs.resourceDir.empty()) {
+        auto optResourceDirProp = QNapi::getOptionalPropOrEmpty<QNapi::String>(appStartupObj, "resourceDir");
+        std::string resourceDir = !optResourceDirProp.IsEmpty() ? optResourceDirProp : std::string();
+        appContextDirs.resourceDir = !resourceDir.empty()
+            ? resourceDir
+            : appContextDirs.bundleCodeDir + "/entry/resources/resfile";
+    }
 
     auto jsModulesFactories = appStartupObj.get<QNapi::Object>("modulesFactories");
 
