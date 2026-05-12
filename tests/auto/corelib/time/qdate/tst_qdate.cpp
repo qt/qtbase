@@ -499,17 +499,22 @@ void tst_QDate::weekNumber_invalid_data()
     QTest::addColumn<int>("month");
     QTest::addColumn<int>("day");
 
-    //next we fill it with data
-    QTest::newRow( "data0" )  << 0 << 0 << 0;
-    QTest::newRow( "data1" )  << 2001 << 1 << 32;
-    QTest::newRow( "data2" )  << 1999 << 2 << 29;
+    QTest::newRow("0000-00-00") << 0 << 0 << 0;
+    QTest::newRow("2001-01-32") << 2001 << 1 << 32;
+    QTest::newRow("1999-02-29") << 1999 << 2 << 29;
 }
 
 void tst_QDate::weekNumber_invalid()
 {
-    QDate dt;
-    int yearNumber;
-    QCOMPARE( dt.weekNumber( &yearNumber ), 0 );
+    QFETCH(const int, year);
+    QFETCH(const int, month);
+    QFETCH(const int, day);
+
+    const QDate dt(year, month, day);
+    constexpr int initialYear = (std::numeric_limits<int>::min)();
+    int yearNumber = initialYear;
+    QCOMPARE(dt.weekNumber(&yearNumber), 0);
+    QCOMPARE(yearNumber, initialYear); // weekNumber() didn't set it.
 }
 
 /* The MS backend tends to lack data for historical transitions.  So some of the
