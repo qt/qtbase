@@ -11,6 +11,12 @@ if(NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_BUILDING_QT)
     find_package(Qt6BuildInternals REQUIRED COMPONENTS STANDALONE_TEST)
 endif()
 
+# too large for static builds
+if (QT_FEATURE_static)
+    message(NOTICE "The tst_qrangemodel test is excluded from static builds.")
+    return()
+endif()
+
 qt_internal_add_test(tst_qrangemodel
     SOURCES
         tst_qrangemodel.h
