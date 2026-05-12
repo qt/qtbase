@@ -451,7 +451,6 @@ function(qt_internal_add_plugin target)
         qt_configure_file(
             OUTPUT "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}TargetsPrecheck.cmake"
             CONTENT
-# TODO: Remove the CHECK_QT_NO_CREATE_TARGETS once a better approach is developed
 "
 _qt_internal_should_include_targets(
     TARGETS ${target}
