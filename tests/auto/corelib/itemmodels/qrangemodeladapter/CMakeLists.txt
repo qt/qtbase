@@ -22,6 +22,8 @@ qt_internal_add_test(tst_qrangemodeladapter
         Qt::Gui
 )
 
+set_target_properties(tst_qrangemodeladapter PROPERTIES UNITY_BUILD OFF)
+
 if (
     # INTEGRITY and VxWorks don't come with all the concepts headers
     NOT INTEGRITY AND NOT VXWORKS AND
