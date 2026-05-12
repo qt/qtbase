@@ -87,11 +87,12 @@ QOhosOptional<QOhosTouchEventTouchPointData> tryMakeTouchEventPointData(
         toolType = ::OH_NATIVEXCOMPONENT_TOOL_TYPE_UNKNOWN;
     }
 
-    return makeQOhosOptional(QOhosTouchEventTouchPointData{
-        .touchPoint = touchEvent.touchPoints[pointIndex],
-        .toolType = toolType,
-        .displayPosition = touchDisplayPosition.value(),
-    });
+    return makeQOhosOptional(
+        QOhosTouchEventTouchPointData{
+            .touchPoint = touchEvent.touchPoints[pointIndex],
+            .toolType = toolType,
+            .displayPosition = touchDisplayPosition.value(),
+        });
 }
 
 QInputDevice::DeviceType getTouchDeviceType(::OH_NativeXComponent *component, std::int32_t pointId)
