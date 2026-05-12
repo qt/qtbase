@@ -1297,7 +1297,7 @@ QDateTimeParser::scanString(const QDateTime &defaultValue, bool fixup) const
         pos += step;
         sectionNodes[index].pos = pos;
         int *current = nullptr;
-        int zoneOffset; // Needed to serve as *current when setting zone
+        int zoneOffset = 0; // Needed to serve as *current when setting zone
         const SectionNode sn = sectionNodes.at(index);
         const QDateTime usedDateTime = [&] {
             const QDate date = actualDate(isSet, calendar, defaultCenturyStart,
