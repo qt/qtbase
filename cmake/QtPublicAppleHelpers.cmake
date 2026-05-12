@@ -772,10 +772,12 @@ function(_qt_internal_set_xcode_entrypoint_attribute target entrypoint)
         return()
     endif()
 
+    _qt_internal_get_entrypoint_conditions(entrypoint_conditions "${target}")
+
     set_target_properties("${target}"
         PROPERTIES
         "XCODE_ATTRIBUTE_LD_ENTRY_POINT"
-        "${entrypoint}")
+        "$<${entrypoint_conditions}:${entrypoint}>")
 endfunction()
 
 

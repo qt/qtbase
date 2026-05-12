@@ -1573,18 +1573,9 @@ if(WIN32 OR UIKIT)
     # it doesn't work for EntryPointPrivate since its linker line contains the generator expression.
     qt_internal_register_target_dependencies(Core PUBLIC Qt6::EntryPointPrivate)
 
-    # Also read the old qt_no_entrypoint property for backward compatibility.
-    set(genex_bool_prop "$<BOOL:$<TARGET_PROPERTY:QT_NO_ENTRYPOINT>>")
-    set(genex_bool_prop_old "$<BOOL:$<TARGET_PROPERTY:qt_no_entrypoint>>")
-    set(entrypoint_conditions "$<NOT:$<OR:${genex_bool_prop},${genex_bool_prop_old}>>")
-    list(APPEND entrypoint_conditions "$<STREQUAL:$<TARGET_PROPERTY:TYPE>,EXECUTABLE>")
-
-    if(WIN32)
-        list(APPEND entrypoint_conditions "$<BOOL:$<TARGET_PROPERTY:WIN32_EXECUTABLE>>")
-    endif()
-
-    list(JOIN entrypoint_conditions "," entrypoint_conditions)
-    set(entrypoint_conditions "$<AND:${entrypoint_conditions}>")
+    get_target_property(entrypoint_src_dir Qt6::EntryPointPrivate SOURCE_DIR)
+    include("${entrypoint_src_dir}/Qt6EntryPointPrivateMacros.cmake")
+    _qt_internal_get_entrypoint_conditions(entrypoint_conditions)
 
     target_link_libraries(Core INTERFACE
         "$<${entrypoint_conditions}:${QT_CMAKE_EXPORT_NAMESPACE}::EntryPointPrivate>"
