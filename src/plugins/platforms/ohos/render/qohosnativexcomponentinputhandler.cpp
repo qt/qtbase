@@ -87,11 +87,33 @@ QOhosOptional<QOhosTouchEventTouchPointData> tryMakeTouchEventPointData(
         toolType = ::OH_NATIVEXCOMPONENT_TOOL_TYPE_UNKNOWN;
     }
 
+    float tiltX = 0;
+    float tiltY = 0;
+    if (toolType == ::OH_NATIVEXCOMPONENT_TOOL_TYPE_PEN) {
+        std::int32_t resTiltX = ::OH_NativeXComponent_GetTouchPointTiltX(xComponent.handle(), pointIndex, &tiltX);
+        if (resTiltX != ::OH_NATIVEXCOMPONENT_RESULT_SUCCESS) {
+            qOhosCritical(QtForOhos)
+                << "OH_NativeXComponent_GetTouchPointTiltX() failed,"
+                << "touchPoint id:" << touchEvent.touchPoints[pointIndex].id << "result:" << resTiltX;
+            tiltX = 0;
+        }
+
+        std::int32_t resTiltY = ::OH_NativeXComponent_GetTouchPointTiltY(xComponent.handle(), pointIndex, &tiltY);
+        if (resTiltY != ::OH_NATIVEXCOMPONENT_RESULT_SUCCESS) {
+            qOhosCritical(QtForOhos)
+                << "OH_NativeXComponent_GetTouchPointTiltY() failed,"
+                << "touchPoint id:" << touchEvent.touchPoints[pointIndex].id << "result:" << resTiltY;
+            tiltY = 0;
+        }
+    }
+
     return makeQOhosOptional(
         QOhosTouchEventTouchPointData{
             .touchPoint = touchEvent.touchPoints[pointIndex],
             .toolType = toolType,
             .displayPosition = touchDisplayPosition.value(),
+            .tiltX = tiltX,
+            .tiltY = tiltY,
         });
 }
 

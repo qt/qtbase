@@ -34,6 +34,8 @@ struct QOhosTouchEventTouchPointData
     ::OH_NativeXComponent_TouchPoint touchPoint;
     ::OH_NativeXComponent_TouchPointToolType toolType = ::OH_NATIVEXCOMPONENT_TOOL_TYPE_UNKNOWN;
     QPointF displayPosition;
+    float tiltX = 0.0f;
+    float tiltY = 0.0f;
 };
 
 struct QOhosWheelEvent
