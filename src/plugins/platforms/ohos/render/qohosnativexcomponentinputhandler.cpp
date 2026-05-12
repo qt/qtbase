@@ -70,6 +70,30 @@ QOhosOptional<QPointF> tryGetTouchPointDisplayPosition(QXComponentRender xCompon
                 : makeEmptyQOhosOptional();
 }
 
+QOhosOptional<QOhosTouchEventTouchPointData> tryMakeTouchEventPointData(
+    QXComponentRender xComponent, const OH_NativeXComponent_TouchEvent &touchEvent,
+    std::uint32_t pointIndex)
+{
+    auto touchDisplayPosition = tryGetTouchPointDisplayPosition(xComponent, pointIndex);
+    if (!touchDisplayPosition.hasValue())
+        return makeEmptyQOhosOptional();
+
+    ::OH_NativeXComponent_TouchPointToolType toolType = ::OH_NATIVEXCOMPONENT_TOOL_TYPE_UNKNOWN;
+    std::int32_t resToolType = ::OH_NativeXComponent_GetTouchPointToolType(xComponent.handle(), pointIndex, &toolType);
+    if (resToolType != ::OH_NATIVEXCOMPONENT_RESULT_SUCCESS) {
+        qOhosCritical(QtForOhos)
+            << "OH_NativeXComponent_GetTouchPointToolType() failed,"
+            << "touchPoint id:" << touchEvent.touchPoints[pointIndex].id << "result:" << resToolType;
+        toolType = ::OH_NATIVEXCOMPONENT_TOOL_TYPE_UNKNOWN;
+    }
+
+    return makeQOhosOptional(QOhosTouchEventTouchPointData{
+        .touchPoint = touchEvent.touchPoints[pointIndex],
+        .toolType = toolType,
+        .displayPosition = touchDisplayPosition.value(),
+    });
+}
+
 QInputDevice::DeviceType getTouchDeviceType(::OH_NativeXComponent *component, std::int32_t pointId)
 {
     ::OH_NativeXComponent_EventSourceType sourceType = ::OH_NATIVEXCOMPONENT_SOURCE_TYPE_UNKNOWN;
@@ -183,23 +207,9 @@ void QOhosNativeXComponentInputHandler::handleTouchEvent(void *window)
         return;
 
     for (std::uint32_t pointIndex = 0; pointIndex < touchEvent.numPoints; ++pointIndex) {
-        auto touchDisplayPosition = tryGetTouchPointDisplayPosition(m_xComponent, pointIndex);
-        if (!touchDisplayPosition.hasValue())
-            continue;
-
-        ::OH_NativeXComponent_TouchPointToolType toolType = ::OH_NATIVEXCOMPONENT_TOOL_TYPE_UNKNOWN;
-        std::int32_t resToolType = ::OH_NativeXComponent_GetTouchPointToolType(m_xComponent.handle(), pointIndex, &toolType);
-        if (resToolType != ::OH_NATIVEXCOMPONENT_RESULT_SUCCESS) {
-            qOhosCritical(QtForOhos)
-                << "OH_NativeXComponent_GetTouchPointToolType() failed,"
-                << "touchPoint id:" << touchEvent.touchPoints[pointIndex].id << "result:" << resToolType;
-            toolType = ::OH_NATIVEXCOMPONENT_TOOL_TYPE_UNKNOWN;
-        }
-        validTouchPoints.push_back(QOhosTouchEventTouchPointData{
-            .touchPoint = touchEvent.touchPoints[pointIndex],
-            .toolType = toolType,
-            .displayPosition = touchDisplayPosition.value(),
-        });
+        auto pointData = tryMakeTouchEventPointData(m_xComponent, touchEvent, pointIndex);
+        if (pointData.hasValue())
+            validTouchPoints.push_back(pointData.value());
     }
 
     if (validTouchPoints.empty())
