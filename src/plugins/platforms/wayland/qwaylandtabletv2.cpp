@@ -536,40 +536,42 @@ void QWaylandTabletToolV2::zwp_tablet_tool_v2_frame(uint32_t time)
 
     QWaylandWindow *waylandWindow = QWaylandWindow::fromWlSurface(m_pending.proximitySurface->object());
     QWindow *window = waylandWindow->window();
+    const bool needsTabletEvent = !(m_pending == m_applied);
 
-    if (!m_applied.proximitySurface) {
-        // TODO get position etc. as below
-        QWindowSystemInterface::handleTabletEnterLeaveProximityEvent(window, this, true);
-        m_applied.proximitySurface = m_pending.proximitySurface;
-    }
-
-    if (!(m_pending == m_applied)) {
+    if (!m_applied.proximitySurface || needsTabletEvent) {
         ulong timestamp = time;
         const QPointF localPosition = waylandWindow->mapFromWlSurface(m_pending.surfacePosition);
-
         const QPointF globalPosition = waylandWindow->mapToGlobalF(localPosition);
+        const Qt::MouseButtons buttons = m_pending.buttons |
+                (m_pending.down ? Qt::MouseButton::LeftButton : Qt::MouseButton::NoButton);
+        const qreal pressure = m_pending.pressure;
+        const qreal xTilt = m_pending.xTilt;
+        const qreal yTilt = m_pending.yTilt;
+        const qreal tangentialPressure = m_pending.slider;
+        const qreal rotation = m_pending.rotation;
+        const int z = int(m_pending.distance);
 
-        Qt::MouseButtons buttons = m_pending.down ? Qt::MouseButton::LeftButton : Qt::MouseButton::NoButton;
-        buttons |= m_pending.buttons;
-        qreal pressure = m_pending.pressure;
-        qreal xTilt = m_pending.xTilt;
-        qreal yTilt = m_pending.yTilt;
-        qreal tangentialPressure = m_pending.slider;
-        qreal rotation = m_pending.rotation;
-        int z = int(m_pending.distance);
+        if (!m_applied.proximitySurface) {
+            QWindowSystemInterface::handleTabletEnterLeaveProximityEvent(window, this, true, localPosition, globalPosition,
+                                                                         buttons, xTilt, yTilt, tangentialPressure, rotation, z,
+                                                                         m_tabletSeat->seat()->modifiers());
+            m_applied.proximitySurface = m_pending.proximitySurface;
+        }
 
-        // do not use localPosition here since that is in Qt window coordinates
-        // but we need surface coordinates to include the decoration
-        bool decorationHandledEvent = waylandWindow->handleTabletEventDecoration(
-                m_tabletSeat->seat(), m_pending.surfacePosition,
-                window->mapToGlobal(m_pending.surfacePosition), buttons,
-                m_tabletSeat->seat()->modifiers());
+        if (needsTabletEvent) {
+            // do not use localPosition here since that is in Qt window coordinates
+            // but we need surface coordinates to include the decoration
+            bool decorationHandledEvent = waylandWindow->handleTabletEventDecoration(
+                    m_tabletSeat->seat(), m_pending.surfacePosition,
+                    window->mapToGlobal(m_pending.surfacePosition), buttons,
+                    m_tabletSeat->seat()->modifiers());
 
-        if (!decorationHandledEvent) {
-            QWindowSystemInterface::handleTabletEvent(window, timestamp, this, localPosition, globalPosition,
-                                                      buttons, pressure,
-                                                      xTilt, yTilt, tangentialPressure, rotation, z,
-                                                      m_tabletSeat->seat()->modifiers());
+            if (!decorationHandledEvent) {
+                QWindowSystemInterface::handleTabletEvent(window, timestamp, this, localPosition, globalPosition,
+                                                          buttons, pressure,
+                                                          xTilt, yTilt, tangentialPressure, rotation, z,
+                                                          m_tabletSeat->seat()->modifiers());
+            }
         }
     }
 
