@@ -15,6 +15,7 @@
         android:hardwareAccelerated="true"
         android:label="${appName}"
         @APP_ICON@
+        android:enableOnBackInvokedCallback="true"
         android:allowBackup="true"
         android:fullBackupOnly="false">
         <activity

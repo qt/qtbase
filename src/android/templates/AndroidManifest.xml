@@ -16,6 +16,7 @@
         android:hardwareAccelerated="true"
         android:label="-- %%INSERT_APP_NAME%% --"
         android:icon="-- %%INSERT_APP_ICON%% --"
+        android:enableOnBackInvokedCallback="true"
         android:allowBackup="true"
         android:fullBackupOnly="false">
         <activity
