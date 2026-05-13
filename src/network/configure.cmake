@@ -47,8 +47,14 @@ freeifaddrs(list);
 )
 
 # ipv6ifname
+# On QNX, if_nametoindex() and friends live in libsocket, not libc; link it
+# so the test actually validates the symbols there.
+if(QNX)
+    set(ipv6ifname_test_libs LIBRARIES socket)
+endif()
 qt_config_compile_test(ipv6ifname
     LABEL "IPv6 ifname"
+    ${ipv6ifname_test_libs}
     CODE
 "#include <sys/types.h>
 #include <sys/socket.h>
@@ -66,6 +72,7 @@ if_freenameindex(if_nameindex());
 }
 "# FIXME: use: unmapped library: network
 )
+unset(ipv6ifname_test_libs)
 
 # linux-netlink
 qt_config_compile_test(linux_netlink
