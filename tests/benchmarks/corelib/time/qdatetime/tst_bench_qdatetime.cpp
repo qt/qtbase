@@ -69,6 +69,7 @@ private Q_SLOTS:
     void currentDateTimeUtc();
     void currentMSecsSinceEpoch();
     void fromString();
+    void fromString_data();
     void fromStringText();
     void fromStringIso();
     void fromMSecsSinceEpoch();
@@ -489,15 +490,332 @@ void tst_QDateTime::currentMSecsSinceEpoch()
     }
 }
 
+void tst_QDateTime::fromString_data()
+{
+    QTest::addColumn<QString>("input");
+    QTest::addColumn<QString>("format");
+    QTest::addColumn<QCalendar>("calendar");
+    QTest::addColumn<int>("baseYear");
+
+    const QCalendar greg(QCalendar::System::Gregorian);
+
+    QTest::newRow("h:m:s.z d.M.yy(Gregorian)")
+            << "07:01:04.8 1.9.24" << "h:m:s.z d.M.yy" << greg << 2000;
+
+    QTest::newRow("dd/MM/yyyy hh:mm:ss.zzz(Gregorian)")
+            << "01/09/2024 07:01:04.783" << "dd/MM/yyyy hh:mm:ss.zzz" << greg << 2000;
+
+    QTest::newRow("H:m:s.zz ddd d-MMM-yyyy(Gregorian)")
+            << "7:1:4.78 Sun 1-Sep-2024" << "H:m:s.zz ddd d-MMM-yyyy" << greg << 2000;
+
+    QTest::newRow("dddd dd/MMMM/yy HH:mm:ss.z(Gregorian)")
+            << "Sunday 01/September/24 07:01:04.8" << "dddd dd/MMMM/yy HH:mm:ss.z" << greg << 2000;
+
+    QTest::newRow("h:m A M/d/yy(Gregorian)")
+            << "7:1 AM 9/1/24" << "h:m AP M/d/yy" << greg << 2000;
+
+    QTest::newRow("MM-dd-yyyy hh:mm:ss ap(Gregorian)")
+            << "09-01-2024 07:01:04 pm" << "MM-dd-yyyy hh:mm:ss a" << greg << 2000;
+
+    QTest::newRow("HH:mm:ss.zz yyyy.MM.dd(Gregorian)")
+            << "07:01:04.78 2024.09.01" << "HH:mm:ss.zz yyyy.MM.dd" << greg << 2000;
+
+    QTest::newRow("yyyy MM dd hh:mm:ss.z aP(Gregorian)")
+            << "2024 09 01 07:01:04.8 PM" << "yyyy MM dd hh:mm:ss.z aP" << greg << 2000;
+
+    QTest::newRow("hh:mm:ss.zzz dd.MMM.yyyy(Gregorian)")
+            << "07:01:04.783 01.Sep.2024" << "hh:mm:ss.zzz dd.MMM.yyyy" << greg << 2000;
+
+    QTest::newRow("dddd, dd MMMM yyyy H:m:s(Gregorian)")
+            << "Sunday, 01 September 2024 7:1:4" << "dddd, dd MMMM yyyy H:m:s" << greg << 2000;
+
+    QTest::newRow("hh:mm:ss.z yyyy-MM-dd t(Gregorian)")
+            << "07:01:04.8 2024-09-01 UTC+02:00" << "hh:mm:ss.z yyyy-MM-dd t" << greg << 2000;
+
+    QTest::newRow("yyyy/MM/dd HH:mm:ss.zz tt(Gregorian)")
+            << "2024/09/01 07:01:04.78 +0200" << "yyyy/MM/dd HH:mm:ss.zz tt" << greg << 2000;
+
+    QTest::newRow("H:m:s.zzz yyyy.MM.dd ttt(Gregorian)")
+            << "7:1:4.783 2024.09.01 +02:00" << "H:m:s.zzz yyyy.MM.dd ttt" << greg << 2000;
+
+    QTest::newRow("yyyy MM dd HH mm ss.z tttt(Gregorian)")
+            << "2024 09 01 07 01 04.8 Europe/Berlin" << "yyyy MM dd HH mm ss.z tttt"
+            << greg << 2000;
+
+    QTest::newRow("hh:mm AP ddd dd MMM yyyy(Gregorian)")
+            << "07:01 AM Sun 01 Sep 2024" << "hh:mm AP ddd dd MMM yyyy" << greg << 2000;
+
+    QTest::newRow("dddd MMMM dd yy HH:mm:ss ap(Gregorian)")
+            << "Sunday September 01 24 19:01:04 pm" << "dddd MMMM dd yy HH:mm:ss ap"
+            << greg << 2000;
+
+    QTest::newRow("HH:mm:ss.z d/M/yyyy(Gregorian)")
+            << "07:01:04.8 1/9/2024" << "HH:mm:ss.z d/M/yyyy" << greg << 2000;
+
+    QTest::newRow("yyyy-MM-dd h:m:s AP(Gregorian)")
+            << "2024-09-01 7:1:4 AM" << "yyyy-MM-dd h:m:s Ap" << greg << 2000;
+
+    QTest::newRow("H:m:s.z dddd dd MMMM yyyy(Gregorian)")
+            << "7:1:4.8 Sunday 01 September 2024" << "H:m:s.z dddd dd MMMM yyyy" << greg << 2000;
+
+    QTest::newRow("ddd dd MMM yy hh:mm:ss.zzz(Gregorian)")
+            << "Sun 01 Sep 24 07:01:04.783" << "ddd dd MMM yy hh:mm:ss.zzz" << greg << 2000;
+
+    QTest::newRow("hh:mm:ss t d-M-yy(Gregorian)")
+            << "07:01:04 UTC+02:00 1-9-24" << "hh:mm:ss t d-M-yy" << greg << 2000;
+
+    QTest::newRow("yyyy/MM/dd HH:mm:ss.ztt(Gregorian)")
+            << "2024/09/01 07:01:04.8+0200" << "yyyy/MM/dd HH:mm:ss.ztt" << greg << 2000;
+
+    QTest::newRow("H:m:s.zz dd.MM.yyyy(Gregorian)")
+            << "7:1:4.78 01.09.2024" << "H:m:s.zz dd.MM.yyyy" << greg << 2000;
+
+    QTest::newRow("MMMM dd yyyy hh:mm:ss AP(Gregorian)")
+            << "September 01 2024 07:01:04 AM" << "MMMM dd yyyy hh:mm:ss AP" << greg << 2000;
+
+    QTest::newRow("hh:mm:ss.zz ddd, dd MMM yyyy(Gregorian)")
+            << "07:01:04.78 Sun, 01 Sep 2024" << "hh:mm:ss.zz ddd, dd MMM yyyy" << greg << 2000;
+
+    QTest::newRow("dddd, MMMM dd yy H:m:s.z(Gregorian)")
+            << "Sunday, September 01 24 7:1:4.8" << "dddd, MMMM dd yy H:m:s.z" << greg << 2000;
+
+    QTest::newRow("yyyy-MM-ddTHH:mm:ss.zzz(Gregorian)")
+            << "2024-09-01T07:01:04.783" << "yyyy-MM-ddTHH:mm:ss.zzz" << greg << 2000;
+
+    QTest::newRow("HH:mm:ss.zzz yyyy-MM-ddT(Gregorian)")
+            << "07:01:04.783 2024-09-01T" << "HH:mm:ss.zzz yyyy-MM-ddT" << greg << 2000;
+
+    QTest::newRow("h:m:s d M yy(Gregorian)")
+            << "7:1:4 1 9 24" << "h:m:s d M yy" << greg << 2000;
+
+    QTest::newRow("yyyy MM dd HH:mm:ss.zzz(Gregorian)")
+            << "2024 09 01 07:01:04.783" << "yyyy MM dd HH:mm:ss.zzz" << greg << 2000;
+
+#if QT_CONFIG(islamiccivilcalendar)
+    const QCalendar isci(QCalendar::System::IslamicCivil);
+
+    QTest::newRow("h:m:s.z d.M.yy(IslamicCivil)")
+            << "07:01:04.8 1.9.24" << "h:m:s.z d.M.yy" << isci << 2000;
+
+    QTest::newRow("dd/MM/yyyy hh:mm:ss.zzz(IslamicCivil)")
+            << "01/09/2024 07:01:04.783" << "dd/MM/yyyy hh:mm:ss.zzz" << isci << 2000;
+
+    QTest::newRow("H:m:s.zz ddd d-MMM-yyyy(IslamicCivil)")
+            << "7:1:4.78 Wed 1-Ram.-2024" << "H:m:s.zz ddd d-MMM-yyyy" << isci << 2000;
+
+    QTest::newRow("dddd dd/MMMM/yy HH:mm:ss.z(IslamicCivil)")
+            << "Wednesday 01/Ramadan/24 07:01:04.8" << "dddd dd/MMMM/yy HH:mm:ss.z"
+            << isci << 2000;
+
+    QTest::newRow("h:m AP M/d/yy(IslamicCivil)")
+            << "7:1 AM 9/1/24" << "h:m A M/d/yy" << isci << 2000;
+
+    QTest::newRow("MM-dd-yyyy hh:mm:ss ap(IslamicCivil)")
+            << "09-01-2024 07:01:04 pm" << "MM-dd-yyyy hh:mm:ss a" << isci << 2000;
+
+    QTest::newRow("HH:mm:ss.zz yyyy.MM.dd(IslamicCivil)")
+            << "07:01:04.78 2024.09.01" << "HH:mm:ss.zz yyyy.MM.dd" << isci << 2000;
+
+    QTest::newRow("yyyy MM dd hh:mm:ss.z aP(IslamicCivil)")
+            << "2024 09 01 07:01:04.8 PM" << "yyyy MM dd hh:mm:ss.z aP" << isci << 2000;
+
+    QTest::newRow("hh:mm:ss.zzz dd.MMM.yyyy(IslamicCivil)")
+            << "07:01:04.783 01.Ram..2024" << "hh:mm:ss.zzz dd.MMM.yyyy" << isci << 2000;
+
+    QTest::newRow("dddd, dd MMMM yyyy H:m:s(IslamicCivil)")
+            << "Wednesday, 01 Ramadan 2024 7:1:4" << "dddd, dd MMMM yyyy H:m:s" << isci << 2000;
+
+    QTest::newRow("hh:mm:ss.z yyyy-MM-dd t(IslamicCivil)")
+            << "07:01:04.8 2024-09-01 UTC+02:00" << "hh:mm:ss.z yyyy-MM-dd t" << isci << 2000;
+
+    QTest::newRow("yyyy/MM/dd HH:mm:ss.zz tt(IslamicCivil)")
+            << "2024/09/01 07:01:04.78 +0200" << "yyyy/MM/dd HH:mm:ss.zz tt" << isci << 2000;
+
+    QTest::newRow("H:m:s.zzz yyyy.MM.dd ttt(IslamicCivil)")
+            << "7:1:4.783 2024.09.01 +02:00" << "H:m:s.zzz yyyy.MM.dd ttt" << isci << 2000;
+
+    QTest::newRow("yyyy MM dd HH mm ss.z tttt(IslamicCivil)")
+            << "2024 09 01 07 01 04.8 Europe/Berlin" << "yyyy MM dd HH mm ss.z tttt"
+            << isci << 2000;
+
+    QTest::newRow("hh:mm AP ddd dd MMM yyyy(IslamicCivil)")
+            << "07:01 AM Wed 01 Ram. 2024" << "hh:mm Ap ddd dd MMM yyyy" << isci << 2000;
+
+    QTest::newRow("dddd MMMM dd yy HH:mm:ss ap(IslamicCivil)")
+            << "Wednesday Ramadan 01 24 19:01:04 pm" << "dddd MMMM dd yy HH:mm:ss ap"
+            << isci << 2000;
+
+    QTest::newRow("HH:mm:ss.z d/M/yyyy(IslamicCivil)")
+            << "07:01:04.8 1/9/2024" << "HH:mm:ss.z d/M/yyyy" << isci << 2000;
+
+    QTest::newRow("yyyy-MM-dd h:m:s AP(IslamicCivil)")
+            << "2024-09-01 7:1:4 AM" << "yyyy-MM-dd h:m:s AP" << isci << 2000;
+
+    QTest::newRow("H:m:s.z dddd dd MMMM yyyy(IslamicCivil)")
+            << "7:1:4.8 Wednesday 01 Ramadan 2024" << "H:m:s.z dddd dd MMMM yyyy" << isci << 2000;
+
+    QTest::newRow("ddd dd MMM yy hh:mm:ss.zzz(IslamicCivil)")
+            << "Wed 01 Ram. 24 07:01:04.783" << "ddd dd MMM yy hh:mm:ss.zzz" << isci << 2000;
+
+    QTest::newRow("hh:mm:ss t d-M-yy(IslamicCivil)")
+            << "07:01:04 UTC+02:00 1-9-24" << "hh:mm:ss t d-M-yy" << isci << 2000;
+
+    QTest::newRow("yyyy/MM/dd HH:mm:ss.ztt(IslamicCivil)")
+            << "2024/09/01 07:01:04.8+0200" << "yyyy/MM/dd HH:mm:ss.ztt" << isci << 2000;
+
+    QTest::newRow("H:m:s.zz dd.MM.yyyy(IslamicCivil)")
+            << "7:1:4.78 01.09.2024" << "H:m:s.zz dd.MM.yyyy" << isci << 2000;
+
+    QTest::newRow("MMMM dd yyyy hh:mm:ss AP(IslamicCivil)")
+            << "Ramadan 01 2024 07:01:04 AM" << "MMMM dd yyyy hh:mm:ss AP" << isci << 2000;
+
+    QTest::newRow("hh:mm:ss.zz ddd, dd MMM yyyy(IslamicCivil)")
+            << "07:01:04.78 Wed, 01 Ram. 2024" << "hh:mm:ss.zz ddd, dd MMM yyyy" << isci << 2000;
+
+    QTest::newRow("dddd, MMMM dd yy H:m:s.z(IslamicCivil)")
+            << "Wednesday, Ramadan 01 24 7:1:4.8" << "dddd, MMMM dd yy H:m:s.z" << isci << 2000;
+
+    QTest::newRow("yyyy-MM-ddTHH:mm:ss.zzz(IslamicCivil)")
+            << "2024-09-01T07:01:04.783" << "yyyy-MM-ddTHH:mm:ss.zzz" << isci << 2000;
+
+    QTest::newRow("HH:mm:ss.zzz yyyy-MM-ddT(IslamicCivil)")
+            << "07:01:04.783 2024-09-01T" << "HH:mm:ss.zzz yyyy-MM-ddT" << isci << 2000;
+
+    QTest::newRow("h:m:s d M yy(IslamicCivil)")
+            << "7:1:4 1 9 24" << "h:m:s d M yy" << isci << 2000;
+
+    QTest::newRow("yyyy MM dd HH:mm:ss.zzz(IslamicCivil)")
+            << "2024 09 01 07:01:04.783" << "yyyy MM dd HH:mm:ss.zzz" << isci << 2000;
+#endif
+
+#if QT_CONFIG(jalalicalendar)
+    const QCalendar jali(QCalendar::System::Jalali);
+
+    QTest::newRow("h:m:s.z d.M.yy(Jalali)")
+            << "07:01:04.8 1.9.24" << "h:m:s.z d.M.yy" << jali << 2000;
+
+    QTest::newRow("dd/MM/yyyy hh:mm:ss.zzz(Jalali)")
+            << "01/09/2024 07:01:04.783" << "dd/MM/yyyy hh:mm:ss.zzz" << jali << 2000;
+
+    QTest::newRow("H:m:s.zz ddd d-MMM-yyyy(Jalali)")
+            << "7:1:4.78 Sat 1-Aza-2024" << "H:m:s.zz ddd d-MMM-yyyy" << jali << 2000;
+
+    QTest::newRow("dddd dd/MMMM/yy HH:mm:ss.z(Jalali)")
+            << "Saturday 01/Azar/24 07:01:04.8" << "dddd dd/MMMM/yy HH:mm:ss.z" << jali << 2000;
+
+    QTest::newRow("h:m AP M/d/yy(Jalali)")
+            << "7:1 AM 9/1/24" << "h:m A M/d/yy" << jali << 2000;
+
+    QTest::newRow("MM-dd-yyyy hh:mm:ss ap(Jalali)")
+            << "09-01-2024 07:01:04 pm" << "MM-dd-yyyy hh:mm:ss a" << jali << 2000;
+
+    QTest::newRow("HH:mm:ss.zz yyyy.MM.dd(Jalali)")
+            << "07:01:04.78 2024.09.01" << "HH:mm:ss.zz yyyy.MM.dd" << jali << 2000;
+
+    QTest::newRow("yyyy MM dd hh:mm:ss.z aP(Jalali)")
+            << "2024 09 01 07:01:04.8 PM" << "yyyy MM dd hh:mm:ss.z aP" << jali << 2000;
+
+    QTest::newRow("hh:mm:ss.zzz dd.MMM.yyyy(Jalali)")
+            << "07:01:04.783 01.Aza.2024" << "hh:mm:ss.zzz dd.MMM.yyyy" << jali << 2000;
+
+    QTest::newRow("dddd, dd MMMM yyyy H:m:s(Jalali)")
+            << "Saturday, 01 Azar 2024 7:1:4" << "dddd, dd MMMM yyyy H:m:s" << jali << 2000;
+
+    QTest::newRow("hh:mm:ss.z yyyy-MM-dd t(Jalali)")
+            << "07:01:04.8 2024-09-01 UTC+02:00" << "hh:mm:ss.z yyyy-MM-dd t" << jali << 2000;
+
+    QTest::newRow("yyyy/MM/dd HH:mm:ss.zz tt(Jalali)")
+            << "2024/09/01 07:01:04.78 +0200" << "yyyy/MM/dd HH:mm:ss.zz tt" << jali << 2000;
+
+    QTest::newRow("H:m:s.zzz yyyy.MM.dd ttt(Jalali)")
+            << "7:1:4.783 2024.09.01 +02:00" << "H:m:s.zzz yyyy.MM.dd ttt" << jali << 2000;
+
+    QTest::newRow("yyyy MM dd HH mm ss.z tttt(Jalali)")
+            << "2024 09 01 07 01 04.8 Europe/Berlin" << "yyyy MM dd HH mm ss.z tttt"
+            << jali << 2000;
+
+    QTest::newRow("hh:mm AP ddd dd MMM yyyy(Jalali)")
+            << "07:01 AM Sat 01 Aza 2024" << "hh:mm Ap ddd dd MMM yyyy" << jali << 2000;
+
+    QTest::newRow("dddd MMMM dd yy HH:mm:ss ap(Jalali)")
+            << "Saturday Azar 01 24 19:01:04 pm" << "dddd MMMM dd yy HH:mm:ss ap" << jali << 2000;
+
+    QTest::newRow("HH:mm:ss.z d/M/yyyy(Jalali)")
+            << "07:01:04.8 1/9/2024" << "HH:mm:ss.z d/M/yyyy" << jali << 2000;
+
+    QTest::newRow("yyyy-MM-dd h:m:s AP(Jalali)")
+            << "2024-09-01 7:1:4 AM" << "yyyy-MM-dd h:m:s AP" << jali << 2000;
+
+    QTest::newRow("H:m:s.z dddd dd MMMM yyyy(Jalali)")
+            << "7:1:4.8 Saturday 01 Azar 2024" << "H:m:s.z dddd dd MMMM yyyy" << jali << 2000;
+
+    QTest::newRow("ddd dd MMM yy hh:mm:ss.zzz(Jalali)")
+            << "Sat 01 Aza 24 07:01:04.783" << "ddd dd MMM yy hh:mm:ss.zzz" << jali << 2000;
+
+    QTest::newRow("hh:mm:ss t d-M-yy(Jalali)")
+            << "07:01:04 UTC+02:00 1-9-24" << "hh:mm:ss t d-M-yy" << jali << 2000;
+
+    QTest::newRow("yyyy/MM/dd HH:mm:ss.ztt(Jalali)")
+            << "2024/09/01 07:01:04.8+0200" << "yyyy/MM/dd HH:mm:ss.ztt" << jali << 2000;
+
+    QTest::newRow("H:m:s.zz dd.MM.yyyy(Jalali)")
+            << "7:1:4.78 01.09.2024" << "H:m:s.zz dd.MM.yyyy" << jali << 2000;
+
+    QTest::newRow("MMMM dd yyyy hh:mm:ss AP(Jalali)")
+            << "Azar 01 2024 07:01:04 AM" << "MMMM dd yyyy hh:mm:ss AP" << jali << 2000;
+
+    QTest::newRow("hh:mm:ss.zz ddd, dd MMM yyyy(Jalali)")
+            << "07:01:04.78 Sat, 01 Aza 2024" << "hh:mm:ss.zz ddd, dd MMM yyyy" << jali << 2000;
+
+    QTest::newRow("dddd, MMMM dd yy H:m:s.z(Jalali)")
+            << "Saturday, Azar 01 24 7:1:4.8" << "dddd, MMMM dd yy H:m:s.z" << jali << 2000;
+
+    QTest::newRow("yyyy-MM-ddTHH:mm:ss.zzz(Jalali)")
+            << "2024-09-01T07:01:04.783" << "yyyy-MM-ddTHH:mm:ss.zzz" << jali << 2000;
+
+    QTest::newRow("HH:mm:ss.zzz yyyy-MM-ddT(Jalali)")
+            << "07:01:04.783 2024-09-01T" << "HH:mm:ss.zzz yyyy-MM-ddT" << jali << 2000;
+
+    QTest::newRow("h:m:s d M yy(Jalali)")
+            << "7:1:4 1 9 24" << "h:m:s d M yy" << jali << 2000;
+
+    QTest::newRow("yyyy MM dd HH:mm:ss.zzz(Jalali)")
+            << "2024 09 01 07:01:04.783" << "yyyy MM dd HH:mm:ss.zzz" << jali << 2000;
+#endif
+
+    // After 2038
+    QTest::newRow("post-2038")
+            << "2040-01-01 00:00:00" << "yyyy-MM-dd hh:mm:ss" << greg << 2000;
+
+    // Before 1900
+    QTest::newRow("pre-1900")
+            << "1850-06-15 10:20:30" << "yyyy-MM-dd hh:mm:ss" << greg << 2000;
+
+    // After 3000
+    QTest::newRow("post-3000")
+            << "3500-01-01 08:00:00" << "yyyy-MM-dd hh:mm:ss" << greg << 2000;
+
+    // DST spring-forward gap (nonexistent local time)
+    QTest::newRow("dst-spring-forward")
+            << "2024-03-31 02:30:00" << "yyyy-MM-dd hh:mm:ss" << greg << 2000;
+
+    // DST fall-back ambiguous time
+    QTest::newRow("dst-fall-back")
+            << "2024-10-27 02:30:00" << "yyyy-MM-dd hh:mm:ss" << greg << 1900;
+}
+
 void tst_QDateTime::fromString()
 {
-    QString format = "yyyy-MM-dd hh:mm:ss.zzz";
-    QString input = "2010-01-01 13:12:11.999";
-    QVERIFY(QDateTime::fromString(input, format).isValid());
+    QFETCH(QString, input);
+    QFETCH(QString, format);
+    QFETCH(QCalendar, calendar);
+    QFETCH(int, baseYear);
+
+    QDateTime dt;
     QBENCHMARK {
-        for (int i = 0; i < 1000; ++i)
-            QDateTime::fromString(input, format);
+        dt = QDateTime::fromString(input, format, baseYear, calendar);
     }
+    QVERIFY(dt.isValid());
 }
 
 void tst_QDateTime::fromStringText()
