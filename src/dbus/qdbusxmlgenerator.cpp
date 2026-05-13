@@ -124,7 +124,8 @@ static QString generateInterfaceXml(const QMetaObject *mo, int flags, int method
 
         // check the return type first
         QMetaType typeId = mm.returnMetaType();
-        if (typeId.isValid() && typeId.id() != QMetaType::Void) {
+        const bool hasVoidReturn = typeId.id() == QMetaType::Void;
+        if (typeId.isValid() && !hasVoidReturn) {
             const char *typeName = QDBusMetaType::typeToSignature(typeId);
             if (typeName) {
                 xml += "      <arg type=\"%1\" direction=\"out\"/>\n"_L1
@@ -138,8 +139,7 @@ static QString generateInterfaceXml(const QMetaObject *mo, int flags, int method
                 qWarning() << "Unsupported return type" << typeId.id() << typeId.name() << "in method" << mm.name();
                 continue;
             }
-        }
-        else if (!typeId.isValid()) {
+        } else if (!typeId.isValid()) {
             qWarning() << "Invalid return type in method" << mm.name();
             continue;           // wasn't a valid type
         }
@@ -148,6 +148,7 @@ static QString generateInterfaceXml(const QMetaObject *mo, int flags, int method
         QList<QMetaType> types;
         QString errorMsg;
         int inputCount = qDBusParametersForMethod(mm, types, errorMsg);
+        const int outputArgsStart = hasVoidReturn ? 0 : 1;
         if (inputCount == -1) {
             qWarning() << "Skipped method" << mm.name() << ":" << qPrintable(errorMsg);
             continue;           // invalid form
@@ -182,7 +183,7 @@ static QString generateInterfaceXml(const QMetaObject *mo, int flags, int method
                 const char *typeName = QMetaType(types.at(j)).name();
                 xml += QString::fromLatin1("      <annotation name=\"org.qtproject.QtDBus.QtTypeName.%1%2\" value=\"%3\"/>\n")
                        .arg(isOutput ? "Out"_L1 : "In"_L1)
-                       .arg(isOutput && !isSignal ? j - inputCount : j - 1)
+                       .arg(isOutput && !isSignal ? j - 1 - inputCount + outputArgsStart : j - 1)
                        .arg(typeNameToXml(typeName));
             }
         }

@@ -422,6 +422,8 @@ private slots:
 
     void methodWithMoreThanOneReturnValue();
     void methodWithMoreThanOneReturnValuePeer();
+    void methodVoidReturnOutputArg();
+
 private:
     QProcess proc;
 };
@@ -1869,6 +1871,25 @@ void tst_QDBusAbstractAdaptor::methodWithMoreThanOneReturnValuePeer()
 
     QCOMPARE(reply.arguments().at(1).userType(), int(QMetaType::QString));
     QCOMPARE(qdbus_cast<QString>(reply.arguments().at(1)), testString);
+}
+
+void tst_QDBusAbstractAdaptor::methodVoidReturnOutputArg()
+{
+    QDBusConnection con = QDBusConnection::sessionBus();
+    QVERIFY(con.isConnected());
+
+    MyObject obj;
+    con.registerObject("/", &obj);
+
+    QDBusInterface remote(con.baseService(), "/", "local.Interface3", con);
+    int methodIndex = remote.metaObject()->indexOfMethod("methodVoidOutArg()");
+    QCOMPARE_NE(methodIndex, -1);
+    auto method = remote.metaObject()->method(methodIndex);
+    QVERIFY(method.isValid());
+    QCOMPARE(method.returnType(), qToUnderlying(QMetaType::QVariantMap));
+
+    QDBusReply<QVariantMap> reply = remote.call(QDBus::BlockWithGui, "methodVoidOutArg");
+    QCOMPARE(reply.value(), QVariantMap({ { "result", 42 } }));
 }
 
 QTEST_MAIN(tst_QDBusAbstractAdaptor)

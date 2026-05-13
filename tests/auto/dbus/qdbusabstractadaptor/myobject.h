@@ -9,6 +9,7 @@
 #include <QUrl>
 #include <QDBusMessage>
 #include <QDBusAbstractAdaptor>
+#include <QVariantMap>
 
 extern const char *slotSpy;
 extern QString valueSpy;
@@ -140,6 +141,11 @@ public slots:
         slotSpy = "int Interface3::methodStringString(const QString &, QString &)";
         out = s;
         return 42;
+    }
+    void methodVoidOutArg(QVariantMap &out)
+    {
+        slotSpy = "void Interface3::methodVoidOutArg(QVariantMap &out)";
+        out = QVariantMap{ { "result", 42 } };
     }
 
 signals:

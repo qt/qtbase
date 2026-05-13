@@ -84,7 +84,8 @@ static QString addFunction(const FunctionDef &mm, bool isSignal = false) {
 
     // check the return type first
     int typeId = QMetaType::fromName(mm.normalizedType).id();
-    if (typeId != QMetaType::Void) {
+    const bool hasVoidReturn = typeId == QMetaType::Void;
+    if (!hasVoidReturn) {
         if (typeId) {
             const char *typeName = QDBusMetaType::typeToSignature(QMetaType(typeId));
             if (typeName) {
@@ -107,6 +108,7 @@ static QString addFunction(const FunctionDef &mm, bool isSignal = false) {
     QList<QMetaType> types;
     QString errorMsg;
     int inputCount = qDBusParametersForMethod(mm, types, errorMsg);
+    const int outputArgsStart = hasVoidReturn ? 0 : 1;
     if (inputCount == -1) {
         qWarning() << qPrintable(errorMsg);
         return QString();           // invalid form
@@ -141,7 +143,7 @@ static QString addFunction(const FunctionDef &mm, bool isSignal = false) {
             const char *typeName = QMetaType(types.at(j)).name();
             xml += QString::fromLatin1("      <annotation name=\"org.qtproject.QtDBus.QtTypeName.%1%2\" value=\"%3\"/>\n")
                     .arg(isOutput ? "Out"_L1 : "In"_L1)
-                    .arg(isOutput && !isSignal ? j - inputCount : j - 1)
+                    .arg(isOutput && !isSignal ? j - 1 - inputCount + outputArgsStart  : j - 1)
                     .arg(typeNameToXml(typeName));
         }
     }

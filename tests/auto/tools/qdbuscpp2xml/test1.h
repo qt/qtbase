@@ -73,6 +73,8 @@ public slots:
     Q_SCRIPTABLE void slotVoidType_scriptable() {}
     Q_SCRIPTABLE int slotIntType_scriptable() { return 42; }
 
+    void slotVoidVariantMap(QVariantMap &) {};
+
 protected slots:
     void neverExported1() {}
     int neverExported2() { return 42; }
