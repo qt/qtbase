@@ -176,7 +176,10 @@ void QCocoaWindow::initialize()
                 QRect frameGeometryWithFrame = QCocoaScreen::mapFromNative(
                     [NSWindow frameRectForContentRect:QCocoaScreen::mapToNative(initialGeometry)
                         styleMask:windowStyleMask(window()->flags() & ~Qt::ExpandedClientAreaHint)]).toRect();
-                initialGeometry.setSize(frameGeometryWithFrame.size());
+                if (qt_window_private(window())->positionPolicy == QWindowPrivate::WindowFrameExclusive)
+                    initialGeometry = frameGeometryWithFrame;
+                else
+                    initialGeometry.setSize(frameGeometryWithFrame.size());
             }
 
             // If we're a top level window we need to create the NSWindow
@@ -229,7 +232,7 @@ QCocoaWindow::~QCocoaWindow()
         QRect contentRectWithFrame = QCocoaScreen::mapFromNative(
             [NSWindow contentRectForFrameRect:QCocoaScreen::mapToNative(geometry())
                 styleMask:windowStyleMask(window()->flags() & ~Qt::ExpandedClientAreaHint)]).toRect();
-        readjustedGeometry.setSize(contentRectWithFrame.size());
+        readjustedGeometry = contentRectWithFrame;
         setGeometry(readjustedGeometry, QWindowPrivate::PositionPolicy::WindowFrameExclusive);
     }
 

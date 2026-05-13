@@ -113,6 +113,8 @@ private slots:
     void childGeometryAfterReparent();
     void childEvents();
     void parentEvents();
+
+    void expandedClientAreaSize_data();
     void expandedClientAreaSize();
 
 private:
@@ -3572,6 +3574,13 @@ void tst_QWindow::parentEvents()
     if (QTest::currentTestFailed()) return;
 }
 
+void tst_QWindow::expandedClientAreaSize_data()
+{
+    QTest::addColumn<bool>("setFramePosition");
+    QTest::addRow("WindowFrameExclusive") << false;
+    QTest::addRow("WindowFrameInclusive") << true;
+}
+
 void tst_QWindow::expandedClientAreaSize()
 {
     const auto *platformIntegration = QGuiApplicationPrivate::platformIntegration();
@@ -3590,9 +3599,17 @@ void tst_QWindow::expandedClientAreaSize()
 
     const auto expandedHints = Qt::ExpandedClientAreaHint | Qt::NoTitleBarBackgroundHint;
 
+    QFETCH(bool, setFramePosition);
+
     ColoredWindow secondWindow(QColorConstants::Svg::palegoldenrod);
-    secondWindow.resize(300, 300);
-    secondWindow.setFramePosition(450, 100);
+    secondWindow.resize(firstWindow.size());
+    if (setFramePosition) {
+        secondWindow.setFramePosition(firstWindow.frameGeometry().right() + 50,
+                                      firstWindow.frameGeometry().top());
+    } else {
+        secondWindow.setPosition(firstWindow.geometry().right() + 50,
+                                 firstWindow.geometry().top());
+    }
     secondWindow.setFlags(expandedHints);
     secondWindow.show();
     QVERIFY(QTest::qWaitForWindowExposed(&secondWindow));

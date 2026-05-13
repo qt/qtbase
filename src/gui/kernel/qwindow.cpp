@@ -1005,16 +1005,8 @@ void QWindow::setFlags(Qt::WindowFlags flags)
     if (d->windowFlags == flags)
         return;
 
-    if (d->platformWindow) {
+    if (d->platformWindow)
         d->platformWindow->setWindowFlags(flags);
-    } else if (d->windowFlags & Qt::ExpandedClientAreaHint &&
-             !(flags & Qt::ExpandedClientAreaHint)) {
-        // A window with an expanded client area had geometry that
-        // covered the entire frame, so if the flag is removed and
-        // the window then created we need to apply the current
-        // geometry with that in mind.
-        d->positionPolicy = QWindowPrivate::WindowFrameInclusive;
-    }
 
     d->windowFlags = flags;
 
