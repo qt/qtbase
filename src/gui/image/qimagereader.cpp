@@ -188,7 +188,8 @@ static QImageIOHandler *createReadHandlerHelper(QIODevice *device,
         qCDebug(lcImageReader) << "Checking if any plugins have explicitly declared support"
                                << "for the format" << testFormat;
         const qint64 pos = device ? device->pos() : 0;
-        for (int testIndex : keyMap.keys(QLatin1StringView(testFormat))) {
+        const auto keyList = keyMap.keys(QLatin1StringView(testFormat));
+        for (int testIndex : keyList) {
             QImageIOPlugin *plugin = qobject_cast<QImageIOPlugin *>(l->instance(testIndex));
             if (plugin && plugin->capabilities(device, testFormat) & QImageIOPlugin::CanRead) {
                 qCDebug(lcImageReader) << plugin << "can read the format" << testFormat;
