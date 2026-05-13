@@ -570,7 +570,7 @@ bool ICOReader::write(QIODevice *device, const QList<QImage> &images)
 
         qint64 origOffset = device->pos();
 
-        ICONDIR id;
+        ICONDIR id = { };
         id.idReserved = 0;
         id.idType = 1;
         id.idCount = images.size();

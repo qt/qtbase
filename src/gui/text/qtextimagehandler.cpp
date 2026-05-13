@@ -73,7 +73,7 @@ static QImage getImage(QTextDocument *doc, const QTextImageFormat &format,
     const bool canUsePixmapCache = (QThread::isMainThread()
                                     || QGuiApplicationPrivate::platformIntegration()->hasCapability(
                                             QPlatformIntegration::ThreadedPixmaps));
-    const auto buildCacheKey = [](const QSizeF &size, qreal dpr) {
+    const auto buildCacheKey = [](const QSizeF &size, qreal dpr) -> QString {
         return QLatin1String("qt_textimagehandler_") % HexString<int>(size.width())
                 % HexString<int>(size.height())
                 % HexString<qint16>(qRound(dpr * 1000));

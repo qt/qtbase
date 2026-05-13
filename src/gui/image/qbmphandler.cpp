@@ -587,7 +587,7 @@ bool qt_write_dib(QDataStream &s, const QImage &image, int bpl, int bpl_bmp, int
     if (!d->isWritable())
         return false;
 
-    BMP_INFOHDR bi;
+    BMP_INFOHDR bi = { };
     bi.biSize               = BMP_WIN;                // build info header
     bi.biWidth               = image.width();
     bi.biHeight               = image.height();
