@@ -1,0 +1,9 @@
+load(qt)
+
+macx-xcode:contains(QT_PRIVATE, entrypoint_private) {
+    # Override the entry point explicitly, in case a Swift file is
+    # added to the Xcode project
+    ld_entry_point.name = LD_ENTRY_POINT
+    ld_entry_point.value = _qt_main_wrapper
+    QMAKE_MAC_XCODE_SETTINGS += ld_entry_point
+}
