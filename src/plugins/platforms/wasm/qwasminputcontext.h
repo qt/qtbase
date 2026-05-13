@@ -5,6 +5,7 @@
 #ifndef QWASMINPUTCONTEXT_H
 #define QWASMINPUTCONTEXT_H
 
+#include "qwasmwindow.h"
 
 #include <qpa/qplatforminputcontext.h>
 #include <private/qstdweb_p.h>
@@ -26,11 +27,11 @@ public:
     explicit QWasmInputContext();
     ~QWasmInputContext() override;
 
+    bool isValid() const override { return true; }
     void update(Qt::InputMethodQueries) override;
-
     void showInputPanel() override;
     void hideInputPanel() override;
-    bool isValid() const override { return true; }
+    void setFocusObject(QObject *object) override;
 
     const QString preeditString() { return m_preeditString; }
     void setPreeditString(QString preeditStr);
@@ -39,8 +40,7 @@ public:
 
     void commitText(const QString &text, int replaceFrom = 0, int replaceLength = 0);
 
-    bool usingTextInput() const { return m_inputMethodAccepted; }
-    void setFocusObject(QObject *object) override;
+    void focusOnFocusWindow(QWasmWindow::FocusTarget target);
 
     void inputCallback(emscripten::val event);
     void compositionEndCallback(emscripten::val event);
@@ -48,11 +48,7 @@ public:
     void compositionUpdateCallback(emscripten::val event);
     void beforeInputCallback(emscripten::val event);
 
-    void updateGeometry();
-
-    bool isActive() const {
-        return m_focusObject && m_inputMethodAccepted;
-    }
+    bool isActive() { return inputMethodAccepted(); }
     bool m_ignoreNextInput = false;
 
 private:
@@ -77,7 +73,6 @@ private:
 
     QString m_preeditString;
 
-    bool m_inputMethodAccepted = false;
     QObject *m_focusObject = nullptr;
     emscripten::val m_inputElement = emscripten::val::null();
     emscripten::val m_compositionRange = emscripten::val::null();

@@ -7,8 +7,6 @@
 
 #include "qwasmwindow.h"
 
-#include "qwasminputcontext.h"
-
 #include <qpa/qplatformintegration.h>
 #include <qpa/qplatformscreen.h>
 #include <qpa/qplatforminputcontext.h>
@@ -36,6 +34,7 @@ class QWasmClipboard;
 class QWasmAccessibility;
 class QWasmServices;
 class QWasmDrag;
+class QWasmInputContext;
 class QWasmSuspendResumeControl;
 
 class QWasmIntegration : public QObject, public QPlatformIntegration

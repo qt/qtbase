@@ -5,6 +5,8 @@
 #include <qpa/qwindowsysteminterface.h>
 #include <private/qguiapplication_p.h>
 #include <QtCore/qfile.h>
+#include <QtCore/qtimer.h>
+#include <QtCore/qpointer.h>
 #include <QtGui/private/qwindow_p.h>
 #include <QtGui/private/qhighdpiscaling_p.h>
 #include <private/qpixmapcache_p.h>
@@ -17,6 +19,7 @@
 #include "qwasmclipboard.h"
 #endif
 #include "qwasmintegration.h"
+#include "qwasminputcontext.h"
 #include "qwasmkeytranslator.h"
 #include "qwasmwindow.h"
 #include "qwasmscreen.h"
@@ -238,6 +241,11 @@ void QWasmWindow::registerEventHandlers()
         [this](emscripten::val event){ handleCompositionEndEvent(event); });
     m_beforeInputCallback = QWasmEventHandler(m_window, "beforeinput",
         [this](emscripten::val event){ handleBeforeInputEvent(event); });
+
+    m_focusinCallback = QWasmEventHandler(m_window, "focusin",
+        [this](emscripten::val event) { handleFocusinEvent(event); });
+    m_focusoutCallback = QWasmEventHandler(m_window, "focusout",
+        [this](emscripten::val event) { handleFocusoutEvent(event); });
     }
 
 QWasmWindow::~QWasmWindow()
@@ -250,7 +258,7 @@ QWasmWindow::~QWasmWindow()
     QObject::disconnect(m_transientWindowChangedConnection);
     QObject::disconnect(m_modalityChangedConnection);
 
-    shutdown();
+    transferFocus();
 
     emscripten::val::module_property("specialHTMLTargets").delete_(canvasSelector());
     m_window.call<void>("removeChild", m_canvas);
@@ -261,7 +269,7 @@ QWasmWindow::~QWasmWindow()
         emscripten_cancel_animation_frame(m_requestAnimationFrameId);
 }
 
-void QWasmWindow::shutdown()
+void QWasmWindow::transferFocus()
 {
     if (!window() ||
         (QGuiApplication::focusWindow() && // Don't act if we have a focus window different from this
@@ -273,7 +281,7 @@ void QWasmWindow::shutdown()
     // never been active.
     std::map<uint64_t, QWasmWindow *> allWindows;
     for (const auto &w : platformScreen()->allWindows()) {
-        if (w->getActiveIndex() > 0)
+        if (w->getActiveIndex() > 0 && w->isVisible())
             allWindows.insert({w->getActiveIndex(), w});
     }
 
@@ -302,6 +310,17 @@ QWasmWindow *QWasmWindow::fromWindow(const QWindow *window)
     if (!window ||!window->handle())
         return nullptr;
     return static_cast<QWasmWindow *>(window->handle());
+}
+
+QWasmWindow *QWasmWindow::focusWindow()
+{
+    return fromWindow(QGuiApplication::focusWindow());
+}
+
+emscripten::val QWasmWindow::focusedWindowInputElement()
+{
+    QWasmWindow *window = focusWindow();
+    return window ? window->inputElement() : emscripten::val::null();
 }
 
 QWasmWindow *QWasmWindow::transientParent() const
@@ -470,10 +489,6 @@ void QWasmWindow::setGeometry(const QRect &rect)
         m_normalGeometry = clientAreaRect;
     }
 
-    QWasmInputContext *wasmInput = QWasmIntegration::get()->wasmInputContext();
-    if (wasmInput && (QGuiApplication::focusWindow() == window()))
-        wasmInput->updateGeometry();
-
     QWindowSystemInterface::handleGeometryChange(window(), clientAreaRect);
     if (shouldInvalidate)
         invalidate();
@@ -490,10 +505,36 @@ void QWasmWindow::setVisible(bool visible)
 
     m_compositor->requestUpdateWindow(this, QRect(QPoint(0, 0), geometry().size()), QWasmCompositor::ExposeEventDelivery);
     m_decoratedWindow["style"].set("display", visible ? "block" : "none");
-    if (window() == QGuiApplication::focusWindow())
-        focus();
+
+    // Handle focus on window visiblity transition; bring focus to this window
+    // or transfer it to a different window.
+    if (visible) {
+
+        // Some window configs should not take focus
+        const auto flags = windowFlags();
+        const bool isTooltip = ((flags & Qt::ToolTip) == Qt::ToolTip);
+        const auto showWithoutActivatingProp = window()->property("_q_showWithoutActivating");
+        const bool showWithoutActivating = showWithoutActivatingProp.isValid() && showWithoutActivatingProp.toBool();
+        const bool dontFocus = isTooltip || showWithoutActivating;
+
+        // Sync focus: make the window take native focus it is the focus window.
+        const bool hasFocus = window() == QGuiApplication::focusWindow();
+
+        // Take focus if this window is a top-level window becoming visible.
+        // This is window manager level behavior: QPlatformWindow subclasses
+        // usually do not implement auto-focus on show; however for wasm we
+        // are the window manager as well.
+        const bool takeFocus = window()->isTopLevel();
+
+        if (!dontFocus && (hasFocus || takeFocus))
+            focus();
+    } else {
+        if (window()->isTopLevel())
+            transferFocus();
+    }
 
     if (visible) {
+        raise();
         applyWindowState();
 #if QT_CONFIG(accessibility)
         QWasmAccessibility::onShowWindow(window());
@@ -760,6 +801,30 @@ void QWasmWindow::handleBeforeInputEvent(emscripten::val event)
         m_focusHelper.set("innerHTML", std::string());
 }
 
+void QWasmWindow::handleFocusinEvent(emscripten::val event)
+{
+    // Determine if the focus moved from outside the html tree for the window
+    emscripten::val relatedTarget = event["relatedTarget"];
+    bool enteringWindow = relatedTarget.isNull() || relatedTarget.isUndefined()
+                          || !m_window.call<bool>("contains", relatedTarget);
+
+    if (enteringWindow)  {
+        setAsActiveNode();
+        QWindowSystemInterface::handleFocusWindowChanged(window(), Qt::ActiveWindowFocusReason);
+    }
+}
+
+void QWasmWindow::handleFocusoutEvent(emscripten::val event)
+{
+    // Determine if foucs now leaves the html tree for the window
+    emscripten::val relatedTarget = event["relatedTarget"];
+    bool leavingWindow = relatedTarget.isNull() || relatedTarget.isUndefined()
+                         || !m_window.call<bool>("contains", relatedTarget);
+
+    if (leavingWindow)
+        QWindowSystemInterface::handleFocusWindowChanged(nullptr, Qt::ActiveWindowFocusReason);
+}
+
 void QWasmWindow::handlePointerEnterLeaveEvent(const PointerEvent &event)
 {
     if (processPointerEnterLeave(event))
@@ -812,10 +877,19 @@ void QWasmWindow::processPointer(const PointerEvent &event)
         m_capturedPointerId = event.pointerId;
         m_window.call<void>("setPointerCapture", event.pointerId);
 
-        if ((window()->flags() & Qt::WindowDoesNotAcceptFocus)
-                    != Qt::WindowDoesNotAcceptFocus
-            && window()->isTopLevel())
-                window()->requestActivate();
+        // Activate (focus) the top-level window for this window on click
+        if (!window()->flags().testFlag(Qt::WindowDoesNotAcceptFocus)
+            && QGuiApplication::focusWindow() != window()) {
+            QWindow *win = window();
+            while (!win->isTopLevel())
+                win = win->parent(QWindow::ExcludeTransients);
+            win->requestActivate();
+        }
+
+        // Prevent the browser's default focus handling from
+        // moving focus away from the focus helper element.
+        event.webEvent.call<void>("preventDefault");
+
         break;
     case EventType::PointerUp:
         releasePointerGrab(event);
@@ -1089,19 +1163,21 @@ void QWasmWindow::requestActivateWindow()
     }
 
     raise();
-    setAsActiveNode();
+    focus();
 
-    if (!QWasmIntegration::get()->inputContext())
-        focus();
-    QPlatformWindow::requestActivateWindow();
+    // Don't call base class requestActivateWindow() or send as focus
+    // changed event here; that is done in the focusin event handler
+    // when native foucs actually moves.
 }
 
-void QWasmWindow::focus()
+// Moves native focus to this window, via the foucus helper or the input element.
+void QWasmWindow::focus(FocusTarget target)
 {
     if (QWasmAccessibility::isEnabled())
         return;
 
-    m_focusHelper.call<void>("focus");
+    emscripten::val &element = target == InputFocus ? m_inputElement : m_focusHelper;
+    element.call<void>("focus");
 }
 
 void QWasmWindow::onAccessibilityEnable()

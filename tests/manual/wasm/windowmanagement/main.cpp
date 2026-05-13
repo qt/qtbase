@@ -17,11 +17,13 @@ public:
         QPushButton *showNormal = new QPushButton("Show Normal");
         QPushButton *showFullscreen = new QPushButton("Show FullScreen");
         QPushButton *showMaximized = new QPushButton("Show Maximized");
+        QPushButton *hide5s = new QPushButton("Hide (5s)");
         QPushButton *close = new QPushButton("Close");
 
         showWindowLayout->addWidget(showNormal);
         showWindowLayout->addWidget(showFullscreen);
         showWindowLayout->addWidget(showMaximized);
+        showWindowLayout->addWidget(hide5s);
         showWindowLayout->addWidget(close);
 
         connect(showNormal, &QPushButton::clicked, [=]() {
@@ -32,6 +34,10 @@ public:
         });
         connect(showMaximized, &QPushButton::clicked, [=]() {
             this->showMaximized();
+        });
+        connect(hide5s, &QPushButton::clicked, [=]() {
+            this->hide();
+            QTimer::singleShot(5000, this, [=]() { this->showNormal(); });
         });
         connect(close, &QPushButton::clicked, [=]() {
             this->close();
@@ -115,6 +121,44 @@ public:
                 }
             });
         }
+
+        // Special case window
+        QHBoxLayout *specialCaseLayout = new QHBoxLayout();
+        layout->addLayout(specialCaseLayout);
+        QPushButton *addSpecialCase = new QPushButton("Add Special Case Window");
+        specialCaseLayout->addWidget(addSpecialCase);
+        specialCaseLayout->addStretch();
+
+        connect(addSpecialCase, &QPushButton::clicked, []() {
+            QWidget *w = new QWidget();
+            w->setWindowTitle("Special Case");
+            QVBoxLayout *l = new QVBoxLayout(w);
+
+            QComboBox *combo = new QComboBox();
+            combo->addItems({"Option A", "Option B", "Option C", "Option D"});
+            l->addWidget(combo);
+
+            QPushButton *menuButton = new QPushButton("Show Popup Menu");
+            l->addWidget(menuButton);
+            l->addStretch();
+
+            QObject::connect(menuButton, &QPushButton::clicked, menuButton, [menuButton]() {
+                QMenu *menu = new QMenu(menuButton);
+                menu->addAction("Action 1");
+                menu->addAction("Action 2");
+                QMenu *sub1 = menu->addMenu("Submenu");
+                sub1->addAction("Sub Action 1");
+                sub1->addAction("Sub Action 2");
+                QMenu *sub2 = sub1->addMenu("Nested Submenu");
+                sub2->addAction("Nested Action 1");
+                sub2->addAction("Nested Action 2");
+                menu->addSeparator();
+                menu->addAction("Action 3");
+                menu->popup(menuButton->mapToGlobal(menuButton->rect().bottomLeft()));
+            });
+
+            w->showNormal();
+        });
 
         // Test label
         QHBoxLayout *labelLayout = new QHBoxLayout();

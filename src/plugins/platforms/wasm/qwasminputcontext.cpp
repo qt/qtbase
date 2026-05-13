@@ -219,129 +219,39 @@ void QWasmInputContext::update(Qt::InputMethodQueries queries)
 {
     qCDebug(qLcQpaWasmInputContext) << Q_FUNC_INFO << queries;
 
-    if ((queries & Qt::ImEnabled) && (inputMethodAccepted() != m_inputMethodAccepted)) {
-        if (m_focusObject && !m_preeditString.isEmpty())
-            commitPreeditAndClear();
-        updateInputElement();
+    if (m_inputElement.isNull())
+        return;
+
+    if (queries & Qt::ImInputItemClipRectangle) {
+        const QRect inputItemRectangle = QPlatformInputContext::inputItemRectangle().toRect();
+        qCDebug(qLcQpaWasmInputContext) << Q_FUNC_INFO << "propagating inputItemRectangle:" << inputItemRectangle;
+        m_inputElement["style"].set("left", std::to_string(inputItemRectangle.x()) + "px");
+        m_inputElement["style"].set("top", std::to_string(inputItemRectangle.y()) + "px");
+        m_inputElement["style"].set("width", "1px"); // "1px" to avoid overflowing window layout FIXME: fix layout
+        m_inputElement["style"].set("height", "1px");
     }
-    QPlatformInputContext::update(queries);
 }
 
 void QWasmInputContext::showInputPanel()
 {
     qCDebug(qLcQpaWasmInputContext) << Q_FUNC_INFO;
 
-    // Note: showInputPanel not necessarily called, we shall
-    // still accept input if we have a focus object and
-    // inputMethodAccepted().
-    updateInputElement();
+    // Note: showInputPanel not necessarily called, we also
+    // need to make sure the input panel is shown in response
+    // to setFocusObject()
+    if (!m_inputElement.isNull())
+        focusOnFocusWindow(QWasmWindow::InputFocus);
 }
 
-void QWasmInputContext::updateGeometry()
+void QWasmInputContext::hideInputPanel()
 {
-    if (QWasmAccessibility::isEnabled())
+    qCDebug(qLcQpaWasmInputContext) << Q_FUNC_INFO;
+
+    // hide only if m_focusObject does not exist
+    if (m_focusObject)
         return;
 
-    if (m_inputElement.isNull())
-        return;
-
-    const QWindow *focusWindow = QGuiApplication::focusWindow();
-    if (!m_focusObject || !focusWindow || !m_inputMethodAccepted) {
-        m_inputElement["style"].set("left", "0px");
-        m_inputElement["style"].set("top", "0px");
-    } else {
-        Q_ASSERT(focusWindow);
-        Q_ASSERT(m_focusObject);
-        Q_ASSERT(m_inputMethodAccepted);
-
-        const QRect inputItemRectangle = QPlatformInputContext::inputItemRectangle().toRect();
-        qCDebug(qLcQpaWasmInputContext) << Q_FUNC_INFO << "propagating inputItemRectangle:" << inputItemRectangle;
-        m_inputElement["style"].set("left", std::to_string(inputItemRectangle.x()) + "px");
-        m_inputElement["style"].set("top", std::to_string(inputItemRectangle.y()) + "px");
-        m_inputElement["style"].set("width", "1px");
-        m_inputElement["style"].set("height", "1px");
-    }
-}
-
-void QWasmInputContext::updateInputElement()
-{
-    m_inputMethodAccepted = inputMethodAccepted();
-
-    if (QWasmAccessibility::isEnabled())
-        return;
-
-    // Mobile devices can dismiss keyboard/IME and focus is still on input.
-    // Successive clicks on the same input should open the keyboard/IME.
-    updateGeometry();
-
-    // If there is no focus object, or no visible input panel, remove focus
-    QWasmWindow *focusWindow = QWasmWindow::fromWindow(QGuiApplication::focusWindow());
-    if (!m_focusObject || !focusWindow || !m_inputMethodAccepted) {
-        if (!m_inputElement.isNull()) {
-            m_inputElement.set("value", "");
-            m_inputElement.set("inputMode", std::string("none"));
-        }
-
-        if (focusWindow) {
-            focusWindow->focus();
-        } else {
-            if (!m_inputElement.isNull())
-                m_inputElement.call<void>("blur");
-        }
-
-        m_inputElement = emscripten::val::null();
-        return;
-    }
-
-    Q_ASSERT(focusWindow);
-    Q_ASSERT(m_focusObject);
-    Q_ASSERT(m_inputMethodAccepted);
-
-    m_inputElement = focusWindow->inputElement();
-
-    qCDebug(qLcQpaWasmInputContext) << Q_FUNC_INFO << QRectF::fromDOMRect(m_inputElement.call<emscripten::val>("getBoundingClientRect"));
-
-    // Set the text input
-    QInputMethodQueryEvent queryEvent(Qt::ImQueryAll);
-    QCoreApplication::sendEvent(m_focusObject, &queryEvent);
-    qCDebug(qLcQpaWasmInputContext) << "Qt surrounding text: " << queryEvent.value(Qt::ImSurroundingText).toString();
-    qCDebug(qLcQpaWasmInputContext) << "Qt current selection: " << queryEvent.value(Qt::ImCurrentSelection).toString();
-    qCDebug(qLcQpaWasmInputContext) << "Qt text before cursor: " << queryEvent.value(Qt::ImTextBeforeCursor).toString();
-    qCDebug(qLcQpaWasmInputContext) << "Qt text after cursor: " << queryEvent.value(Qt::ImTextAfterCursor).toString();
-    qCDebug(qLcQpaWasmInputContext) << "Qt cursor position: " << queryEvent.value(Qt::ImCursorPosition).toInt();
-    qCDebug(qLcQpaWasmInputContext) << "Qt anchor position: " << queryEvent.value(Qt::ImAnchorPosition).toInt();
-
-    m_inputElement.set("value", queryEvent.value(Qt::ImSurroundingText).toString().toStdString());
-
-    m_inputElement.set("selectionStart", queryEvent.value(Qt::ImAnchorPosition).toUInt());
-    m_inputElement.set("selectionEnd", queryEvent.value(Qt::ImCursorPosition).toUInt());
-
-    QInputMethodQueryEvent query((Qt::InputMethodQueries(Qt::ImHints)));
-    QCoreApplication::sendEvent(m_focusObject, &query);
-    if (Qt::InputMethodHints(query.value(Qt::ImHints).toInt()).testFlag(Qt::ImhHiddenText))
-        m_inputElement.set("type", "password");
-    else
-        m_inputElement.set("type", "text");
-
-// change inputmode to suit Qt imhints
-
-    Qt::InputMethodHints imHints = static_cast<Qt::InputMethodHints>(query.value(Qt::ImHints).toInt());
-    std::string inMode = "text";
-
-    if (imHints & Qt::ImhDigitsOnly)
-        inMode = "numeric";
-    if (imHints & Qt::ImhFormattedNumbersOnly)
-        inMode = "decimal";
-    if (imHints & Qt::ImhDialableCharactersOnly)
-        inMode = "tel";
-    if (imHints & Qt::ImhEmailCharactersOnly)
-        inMode = "email";
-    if (imHints & Qt::ImhUrlCharactersOnly)
-        inMode = "url";
-    // search ??
-    m_inputElement.set("inputMode",inMode);
-
-    m_inputElement.call<void>("focus");
+    focusOnFocusWindow(QWasmWindow::WindowFocus);
 }
 
 void QWasmInputContext::setFocusObject(QObject *object)
@@ -354,17 +264,85 @@ void QWasmInputContext::setFocusObject(QObject *object)
 
     m_focusObject = object;
 
-    updateInputElement();
-    QPlatformInputContext::setFocusObject(object);
+    // Handle the case where the current focus object does not accept input
+    // (becuse it is e.g. a button, or is null)
+    if (!inputMethodAccepted()) {
+        // "park" the input element now that it is unused
+        if (!m_inputElement.isNull()) {
+            m_inputElement["style"].set("left", "0px");
+            m_inputElement["style"].set("top", "0px");
+            m_inputElement = emscripten::val::null();
+        }
+
+        // Set focus to the focus helper for the current focus window. This moves focus
+        // away from the input element which will hide virtual keyboards.
+        focusOnFocusWindow(QWasmWindow::WindowFocus);
+    } else {
+        // Make the input element's properties match the current focus obj
+        m_inputElement = QWasmWindow::focusedWindowInputElement();
+        if (!m_inputElement.isNull()) {
+            updateInputElement();
+
+            // Set foucs to the input element. This shows (and re-shows) the virtual
+            // keyboard on mobile devices.
+            focusOnFocusWindow(QWasmWindow::InputFocus);
+        }
+    }
 }
 
-void QWasmInputContext::hideInputPanel()
+void QWasmInputContext::updateInputElement()
 {
+    if (QWasmAccessibility::isEnabled())
+        return;
+
     qCDebug(qLcQpaWasmInputContext) << Q_FUNC_INFO;
 
-    // hide only if m_focusObject does not exist
-    if (!m_focusObject)
-        updateInputElement();
+    QInputMethodQueryEvent queryEvent(Qt::ImQueryAll);
+    QCoreApplication::sendEvent(m_focusObject, &queryEvent);
+
+    qCDebug(qLcQpaWasmInputContext) << "Qt surrounding text: " << queryEvent.value(Qt::ImSurroundingText).toString();
+    qCDebug(qLcQpaWasmInputContext) << "Qt current selection: " << queryEvent.value(Qt::ImCurrentSelection).toString();
+    qCDebug(qLcQpaWasmInputContext) << "Qt text before cursor: " << queryEvent.value(Qt::ImTextBeforeCursor).toString();
+    qCDebug(qLcQpaWasmInputContext) << "Qt text after cursor: " << queryEvent.value(Qt::ImTextAfterCursor).toString();
+    qCDebug(qLcQpaWasmInputContext) << "Qt cursor position: " << queryEvent.value(Qt::ImCursorPosition).toInt();
+    qCDebug(qLcQpaWasmInputContext) << "Qt anchor position: " << queryEvent.value(Qt::ImAnchorPosition).toInt();
+
+    m_inputElement.set("value", queryEvent.value(Qt::ImSurroundingText).toString().toStdString());
+    m_inputElement.set("selectionStart", queryEvent.value(Qt::ImAnchorPosition).toUInt());
+    m_inputElement.set("selectionEnd", queryEvent.value(Qt::ImCursorPosition).toUInt());
+
+    Qt::InputMethodHints imHints = static_cast<Qt::InputMethodHints>(queryEvent.value(Qt::ImHints).toInt());
+
+    // Set input mode, use "password" for ImhHiddenText to prevent unwanted interactions with
+    // spell checking and auto-complete.
+    if (imHints & Qt::ImhHiddenText)
+        m_inputElement.set("type", "password");
+    else
+        m_inputElement.set("type", "text");
+
+    // Change inputmode to suit Qt imhints
+    std::string inMode = "text";
+    if (imHints & Qt::ImhDigitsOnly)
+        inMode = "numeric";
+    if (imHints & Qt::ImhFormattedNumbersOnly)
+        inMode = "decimal";
+    if (imHints & Qt::ImhDialableCharactersOnly)
+        inMode = "tel";
+    if (imHints & Qt::ImhEmailCharactersOnly)
+        inMode = "email";
+    if (imHints & Qt::ImhUrlCharactersOnly)
+        inMode = "url";
+    // FIXME: handle search mode?
+    m_inputElement.set("inputMode", inMode);
+}
+
+// Moves native focus to the focus helper (WindowFocus) or the input element
+// (InputFocus) of the currently focused window. InputFocus shows the virtual
+// keyboard on mobile; WindowFocus moves focus off the input element and hides it.
+void QWasmInputContext::focusOnFocusWindow(QWasmWindow::FocusTarget target)
+{
+    if (QWasmWindow *focusWindow = QWasmWindow::focusWindow())
+        focusWindow->focus(target);
 }
 
 void QWasmInputContext::setPreeditString(QString preeditStr)

@@ -3,6 +3,7 @@
 // Qt-Security score:significant reason:default
 
 #include "qwasmintegration.h"
+#include "qwasminputcontext.h"
 #include "qwasmeventdispatcher.h"
 #include "qwasmcompositor.h"
 #include "qwasmopenglcontext.h"
@@ -187,6 +188,7 @@ bool QWasmIntegration::hasCapability(QPlatformIntegration::Capability cap) const
     case ForeignWindows: return true;
     case OpenGLOnRasterSurface: return true;
     case OffscreenSurface: return true;
+    case ApplicationState: return true;
     default: return QPlatformIntegration::hasCapability(cap);
     }
 }

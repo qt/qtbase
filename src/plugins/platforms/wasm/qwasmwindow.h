@@ -90,7 +90,8 @@ public:
     bool windowEvent(QEvent *event) final;
     void setMask(const QRegion &region) final;
     void setParent(const QPlatformWindow *window) final;
-    void focus();
+    enum FocusTarget { WindowFocus, InputFocus };
+    void focus(FocusTarget target = WindowFocus);
     void onAccessibilityEnable();
 
     QWasmScreen *platformScreen() const;
@@ -103,6 +104,9 @@ public:
     emscripten::val a11yContainer() const { return m_a11yContainer; }
     emscripten::val inputHandlerElement() const { return m_window; }
     emscripten::val inputElement() const { return m_inputElement; }
+
+    static QWasmWindow *focusWindow();
+    static emscripten::val focusedWindowInputElement();
 
     // QNativeInterface::Private::QWasmWindow
     emscripten::val document() const override { return m_document; }
@@ -129,7 +133,7 @@ private:
     void onParentChanged(QWasmWindowTreeNode *previous, QWasmWindowTreeNode *current,
                          QWasmWindowStack<>::PositionPreference positionPreference) final;
 
-    void shutdown();
+    void transferFocus();
     void invalidate();
     bool hasFrame() const;
     bool hasTitleBar() const;
@@ -146,6 +150,8 @@ private:
     void handleCompositionUpdateEvent(emscripten::val event);
     void handleCompositionEndEvent(emscripten::val event);
     void handleBeforeInputEvent(emscripten::val event);
+    void handleFocusinEvent(emscripten::val event);
+    void handleFocusoutEvent(emscripten::val event);
 
     void handlePointerEnterLeaveEvent(const PointerEvent &event);
     bool processPointerEnterLeave(const PointerEvent &event);
@@ -202,6 +208,8 @@ private:
     QWasmEventHandler m_dragLeaveCallback;
 
     QWasmEventHandler m_wheelEventCallback;
+    QWasmEventHandler m_focusinCallback;
+    QWasmEventHandler m_focusoutCallback;
 
     QMap<int, QWindowSystemInterface::TouchPoint> m_pointerIdToTouchPoints;
 
