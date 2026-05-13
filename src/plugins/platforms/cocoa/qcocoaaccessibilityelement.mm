@@ -834,12 +834,18 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
 }
 
 - (NSArray *)accessibilityAttributeNames {
+    NSMutableArray *attributes = [[NSMutableArray new] autorelease];
+
 #if QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(260000)
     if (@available(macOS 26, *))
-        return @[ NSAccessibilityLanguageAttribute ];
+        [attributes addObject:NSAccessibilityLanguageAttribute];
 #endif
 
-    return nil;
+    QAccessibleInterface *iface = self.qtInterface;
+    if (iface && iface->state().expandable)
+        [attributes addObject:NSAccessibilityExpandedAttribute];
+
+    return attributes;
 }
 
 - (id)accessibilityAttributeValue:(NSString *)attribute {
@@ -863,6 +869,9 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
         }
     }
 #endif
+
+    if ([attribute isEqualToString:NSAccessibilityExpandedAttribute])
+        return iface->state().expanded ? @YES : @NO;
 
     return nil;
 }
