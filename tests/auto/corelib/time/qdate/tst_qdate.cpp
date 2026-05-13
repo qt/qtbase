@@ -86,6 +86,8 @@ private Q_SLOTS:
 # if QT_CONFIG(datetimeparser)
     void fromStringFormat_data();
     void fromStringFormat();
+    void fromStringFormatCal_data();
+    void fromStringFormatCal();
 # endif
     void toStringFormat_data();
     void toStringFormat();
@@ -1593,6 +1595,46 @@ void tst_QDate::fromStringFormat()
     QEXPECT_FAIL("quotes-empty", "QTBUG-110669: doubled single-quotes in format mishandled",
                  Continue);
     QCOMPARE(dt, expected);
+}
+
+void tst_QDate::fromStringFormatCal_data()
+{
+    QTest::addColumn<QString>("string");
+    QTest::addColumn<QString>("format");
+    QTest::addColumn<int>("baseYear");
+    QTest::addColumn<QCalendar>("calendar");
+    QTest::addColumn<QDate>("expected");
+
+    using Sys = QCalendar::System;
+    constexpr Sys systems[] = {
+        Sys::Gregorian, Sys::Julian, Sys::Milankovic,
+#if QT_CONFIG(jalalicalendar)
+        Sys::Jalali,
+#endif
+#if QT_CONFIG(islamiccivilcalendar)
+        Sys::IslamicCivil,
+#endif
+    };
+
+    for (const Sys system : systems) {
+        const QCalendar cal(system);
+        const QDate date(2024, 4, 12, cal);
+        const QByteArray calName = cal.name().toUtf8();
+        const QString format = u"ddd, d MMM yy"_s; // QTBUG-146744
+        QTest::addRow("ddd, d MMM yy/%s", calName.constData())
+            << cal.dateTimeToString(format, QDateTime(), date, QTime(), QLocale::c())
+            << format << 2000 << cal << date;
+    }
+}
+
+void tst_QDate::fromStringFormatCal()
+{
+    QFETCH(const QString, string);
+    QFETCH(const QString, format);
+    QFETCH(const int, baseYear);
+    QFETCH(const QCalendar, calendar);
+
+    QTEST(QDate::fromString(string, format, baseYear, calendar), "expected");
 }
 #endif // datetimeparser
 

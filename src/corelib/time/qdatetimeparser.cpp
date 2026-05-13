@@ -954,7 +954,7 @@ QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionIndex, i
                 } else if (!lastVal && !calendar.hasYearZero()
                            && (sn.type == YearSection
                                || (sn.type == YearSection2Digits && currentValue.isValid()
-                                   && currentValue.date().year() / 100 == 0))) {
+                                   && currentValue.date().year(calendar) / 100 == 0))) {
                     // Year zero prohibited
                     result = ParsedSection(unfilled ? Acceptable : Invalid, lastVal, used);
                 } else {
@@ -1407,12 +1407,12 @@ QDateTimeParser::scanString(const QDateTime &defaultValue, bool fixup) const
             if (!date.isValid()) {
                 state = Invalid;
             } else if (!(isSet & YearSection)) {
-                year = date.year();
+                year = date.year(calendar);
             } else {
                 conflicts = true;
                 const SectionNode &sn = sectionNode(currentSectionIndex);
                 if (sn.type == YearSection2Digits)
-                    year = date.year();
+                    year = date.year(calendar);
             }
         }
 
