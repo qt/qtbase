@@ -54,6 +54,31 @@ instructions:
                 fi
                 sleep 1
             done
+
+            # QNX 8.0 mkqnximage no longer populates /etc/resolv.conf in
+            # static-IP boot mode (dhcpcd never runs with --ip=). Without
+            # this, DNS-dependent tests like tst_qhostinfo fail to resolve
+            # *.test.qt-project.org. The -s guard makes this a no-op on
+            # QNX 7.1, whose mkqnximage already provisions resolv.conf.
+            ssh -o PreferredAuthentications=publickey -o BatchMode=yes \
+                -o StrictHostKeyChecking=no ${QNX_QEMU_SSH} '
+                if [ ! -s /etc/resolv.conf ]; then
+                    mkdir -p /data/var/dhcpcd
+                    {
+                        d=$(getconf _CS_DOMAIN 2>/dev/null)
+                        [ -n "$d" ] && [ "$d" != undefined ] && echo "search $d"
+                        r=$(getconf _CS_RESOLVE 2>/dev/null)
+                        if [ -n "$r" ] && [ "$r" != undefined ]; then
+                            echo "$r" | sed "s/nameserver_/nameserver /"
+                        else
+                            # Fall back to the default gateway. On Coin this is
+                            # the host VM bridge running dnsmasq on :53.
+                            gw=$(netstat -rn 2>/dev/null | awk "/^default/ {print \$2; exit}")
+                            [ -n "$gw" ] && echo "nameserver $gw"
+                        fi
+                    } > /data/var/dhcpcd/resolv.conf
+                    chmod 644 /data/var/dhcpcd/resolv.conf
+                fi'
             exit $RESULT
         filename: "{{.Env.QNX_QEMU}}/start_qnx_qemu.sh"
         fileMode: 493
