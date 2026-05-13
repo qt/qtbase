@@ -184,6 +184,8 @@ NSString *macRole(QAccessibleInterface *interface)
             return NSAccessibilityMenuButtonRole;
         if (roleMap[qtRole] == NSAccessibilityTextFieldRole && interface->state().multiLine)
             return NSAccessibilityTextAreaRole;
+        if (roleMap[qtRole] == NSAccessibilityButtonRole && interface->state().expandable)
+            return NSAccessibilityDisclosureTriangleRole;
         return roleMap[qtRole];
     }
 
@@ -359,7 +361,8 @@ bool hasValueAttribute(QAccessibleInterface *interface)
     if (qtrole == QAccessible::EditableText
             || qtrole == QAccessible::StaticText
             || interface->valueInterface()
-            || interface->state().checkable) {
+            || interface->state().checkable
+            || macRole(interface) == NSAccessibilityDisclosureTriangleRole) {
         return true;
     }
 
@@ -403,6 +406,10 @@ id getValueAttribute(QAccessibleInterface *interface)
         if (interface->state().checkStateMixed)
             return @(2);
         return interface->state().checked ? @(1) : @(0);
+    }
+
+    if (macRole(interface) == NSAccessibilityDisclosureTriangleRole) {
+        return interface->state().expanded ? @(1) : @(0);
     }
 
     return nil;
