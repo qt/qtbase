@@ -109,7 +109,7 @@ public:
     }
     void resizeGL(int w, int h) override {
         m_resizeCalled = true;
-        m_resizeOk = w == m_w && h == m_h;
+        m_resizeOk = w == width() && h == height();
     }
     void setClearColor(float r, float g, float b) {
         this->r = r; this->g = g; this->b = b;
@@ -144,9 +144,6 @@ void tst_QOpenGLWidget::clearAndGrab()
 
 void tst_QOpenGLWidget::clearAndResizeAndGrab()
 {
-#ifdef Q_OS_ANDROID
-    QSKIP("Crashes on Android, figure out why (QTBUG-102043)");
-#endif
     QScopedPointer<QOpenGLWidget> w(new ClearWidget(0, 640, 480));
     w->resize(640, 480);
     w->show();
@@ -178,7 +175,6 @@ void tst_QOpenGLWidget::createNonTopLevel()
 
     QVERIFY(glw->m_resizeCalled);
     glw->m_resizeCalled = false;
-    QVERIFY(!glw->m_resizeOk);
     glw->resize(600, 700);
 
     QVERIFY(glw->m_initCalled);
@@ -306,9 +302,6 @@ void tst_QOpenGLWidget::reparentToAlreadyCreated()
 
 void tst_QOpenGLWidget::reparentToNotYetCreated()
 {
-#ifdef Q_OS_ANDROID
-    QSKIP("Crashes on Android, figure out why (QTBUG-102043)");
-#endif
     QWidget w1;
     PainterWidget *glw = new PainterWidget(&w1);
     w1.resize(640, 480);
@@ -359,9 +352,6 @@ void tst_QOpenGLWidget::reparentHidden()
 
 void tst_QOpenGLWidget::reparentTopLevel()
 {
-#ifdef Q_OS_ANDROID
-    QSKIP("Crashes on Android, figure out why (QTBUG-102043)");
-#endif
     // no GL content yet, just an ordinary tab widget, top-level
     QTabWidget tabWidget;
     tabWidget.resize(640, 480);
@@ -447,9 +437,6 @@ void CountingGraphicsView::drawForeground(QPainter *, const QRectF &)
 
 void tst_QOpenGLWidget::asViewport()
 {
-#ifdef Q_OS_ANDROID
-    QSKIP("Crashes on Android, figure out why (QTBUG-102043)");
-#endif
     // Have a QGraphicsView with a QOpenGLWidget as its viewport.
     QGraphicsScene scene;
     scene.addItem(new QGraphicsRectItem(10, 10, 100, 100));
@@ -606,9 +593,6 @@ public:
 
 void tst_QOpenGLWidget::requestUpdate()
 {
-#ifdef Q_OS_ANDROID
-    QSKIP("Crashes on Android, figure out why (QTBUG-102043)");
-#endif
 
     PaintCountWidget w;
     w.resize(640, 480);
@@ -634,9 +618,6 @@ public:
 
 void tst_QOpenGLWidget::fboRedirect()
 {
-#ifdef Q_OS_ANDROID
-    QSKIP("Crashes on Android, figure out why (QTBUG-102043)");
-#endif
     FboCheckWidget w;
     w.resize(640, 480);
     w.show();
@@ -652,9 +633,6 @@ void tst_QOpenGLWidget::fboRedirect()
 
 void tst_QOpenGLWidget::showHide()
 {
-#ifdef Q_OS_ANDROID
-    QSKIP("Crashes on Android, figure out why (QTBUG-102043)");
-#endif
     QScopedPointer<ClearWidget> w(new ClearWidget(0, 800, 600));
     w->resize(800, 600);
     w->show();
@@ -696,9 +674,6 @@ void nativeWindowMessageHandler(QtMsgType type, const QMessageLogContext &contex
 
 void tst_QOpenGLWidget::nativeWindow()
 {
-#ifdef Q_OS_ANDROID
-    QSKIP("Crashes on Android, figure out why (QTBUG-102043)");
-#endif
 
     // NB these tests do not fully verify that native child widgets are fully
     // functional since there is no guarantee that the content is composed and
@@ -869,6 +844,10 @@ static inline QString msgRgbMismatch(unsigned actual, unsigned expected)
 
 static QPixmap grabWidgetWithoutRepaint(const QWidget *widget, QRect clipArea)
 {
+#ifdef Q_OS_ANDROID
+    // QScreen::grabWindow() has no implementation on Android (QTBUG-118849).
+    return const_cast<QWidget *>(widget)->grab(clipArea);
+#endif
     const QWindow *window = widget->window()->windowHandle();
     Q_ASSERT(window);
     WId windowId = window->winId();
@@ -966,9 +945,6 @@ void tst_QOpenGLWidget::stackWidgetOpaqueChildIsVisible()
     QSKIP("QScreen::grabWindow() doesn't work properly on OSX HighDPI screen: QTBUG-46803");
     return;
 #endif
-#ifdef Q_OS_ANDROID
-    QSKIP("Crashes on Android, figure out why (QTBUG-102043)");
-#endif
     if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
         QSKIP("Platform does not support window activation");
     if (QGuiApplication::platformName().startsWith(QLatin1String("offscreen"), Qt::CaseInsensitive))
@@ -1056,9 +1032,6 @@ void tst_QOpenGLWidget::offscreen()
 
 void tst_QOpenGLWidget::offscreenThenOnscreen()
 {
-#ifdef Q_OS_ANDROID
-    QSKIP("Crashes on Android, figure out why (QTBUG-102043)");
-#endif
     QScopedPointer<ClearWidget> w(new ClearWidget(0, 800, 600));
     w->resize(800, 600);
 
@@ -1084,9 +1057,6 @@ void tst_QOpenGLWidget::offscreenThenOnscreen()
 
 void tst_QOpenGLWidget::paintWhileHidden()
 {
-#ifdef Q_OS_ANDROID
-    QSKIP("Crashes on Android, figure out why (QTBUG-102043)");
-#endif
     QScopedPointer<QWidget> tlw(new QWidget);
     tlw->resize(640, 480);
 
