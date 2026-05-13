@@ -40,7 +40,9 @@ foreach(generator IN ITEMS ${generators})
     # folder in ${hash_folder}/include.
     string(CONCAT test_ui_file "${CMAKE_CURRENT_SOURCE_DIR}/../test_qt_add_ui_"
         "common/uic_test/mainwindow.ui")
-    generate_hash_folder("example" "${test_ui_file}" hash_folder)
+    string(CONCAT test_source_dir "${CMAKE_CURRENT_SOURCE_DIR}/../"
+        "test_qt_add_ui_common/uic_test")
+    generate_hash_folder("example" "${test_ui_file}" "${test_source_dir}" hash_folder)
     string(CONCAT test_build_dir "${CMAKE_CURRENT_BINARY_DIR}/UicBuildLeak_"
         "subFolderGen${config_path}-build")
     string(CONCAT test_file_to_touch "${CMAKE_CURRENT_SOURCE_DIR}/../"
@@ -49,8 +51,7 @@ foreach(generator IN ITEMS ${generators})
         "${config_arg}/src/ui_files/ui_mainwindow.h")
     incremental_build_test(
         TEST_NAME UicBuildLeak_subFolderGen
-        SOURCE_DIR
-            "${CMAKE_CURRENT_SOURCE_DIR}/../test_qt_add_ui_common/uic_test"
+        SOURCE_DIR "${test_source_dir}"
         BUILD_DIR "${test_build_dir}"
         CONFIG "${config_arg}"
         GENERATOR "${generator}"

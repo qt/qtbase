@@ -45,6 +45,7 @@ foreach(generator IN ITEMS ${generators})
     generate_hash_folder(
         "example"
         "${ui_file}"
+        "${test_source_dir}"
         hash_folder)
     string(CONCAT test_file_to_check "${test_build_dir}/.qt/${hash_folder}/"
         "${config_arg}/src/ui_widget1.h")

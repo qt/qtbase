@@ -46,6 +46,7 @@ foreach(generator IN ITEMS ${generators})
     generate_hash_folder(
         "example"
         "${test_ui_file}"
+        "${test_source_dir}"
         hash_folder)
     incremental_build_test(
         TEST_NAME qt6_add_ui_simple_no_config

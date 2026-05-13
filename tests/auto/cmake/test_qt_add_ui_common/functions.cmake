@@ -1,9 +1,11 @@
 # Copyright (C) 2024 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-function(generate_hash_folder target_name infile out_folder)
+function(generate_hash_folder target_name infile source_dir out_folder)
     get_filename_component(infile_abs "${infile}" ABSOLUTE)
-    string(SHA1 infile_hash "${target_name}${infile_abs}")
+    get_filename_component(source_dir_abs "${source_dir}" ABSOLUTE)
+    string(REPLACE "${source_dir_abs}" "${target_name}/src_dir" infile_to_hash "${infile_abs}")
+    string(SHA1 infile_hash "${infile_to_hash}")
     string(SUBSTRING "${infile_hash}" 0 6 short_hash)
     set(${out_folder} "${short_hash}" PARENT_SCOPE)
 endfunction()

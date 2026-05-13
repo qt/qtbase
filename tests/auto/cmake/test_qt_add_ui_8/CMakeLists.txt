@@ -40,7 +40,9 @@ foreach(generator IN ITEMS ${generators})
     # "_/_/_/_/_/_/_/_/_/_/sub1/sub2/sub3" folder in ${hash_folder}/include.
     string(CONCAT test_ui_file "${CMAKE_CURRENT_SOURCE_DIR}/../"
         "test_qt_add_ui_common/uic_test/mainwindow.ui")
-    generate_hash_folder("example" "${test_ui_file}" hash_folder)
+    string(CONCAT test_source_dir "${CMAKE_CURRENT_SOURCE_DIR}/../"
+        "test_qt_add_ui_common/uic_test")
+    generate_hash_folder("example" "${test_ui_file}" "${test_source_dir}" hash_folder)
     string(CONCAT test_build_dir "${CMAKE_CURRENT_BINARY_DIR}/"
         "UicBuildLeak_subFolderGen_complex${config_path}-build")
     string(CONCAT test_additional_args "-DMAINWINDOW_UI_PATH=sub1/sub2/sub3"
@@ -53,8 +55,7 @@ foreach(generator IN ITEMS ${generators})
         "${config_arg}/_/_/_/_/_/_/_/_/_/_/sub1/sub2/sub3")
     incremental_build_test(
         TEST_NAME UicBuildLeak_subFolderGen_complex
-        SOURCE_DIR
-            "${CMAKE_CURRENT_SOURCE_DIR}/../test_qt_add_ui_common/uic_test"
+        SOURCE_DIR "${test_source_dir}"
         BUILD_DIR "${test_build_dir}"
         CONFIG "${config_arg}"
         GENERATOR "${generator}"

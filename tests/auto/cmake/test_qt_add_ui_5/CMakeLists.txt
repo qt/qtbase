@@ -59,7 +59,9 @@ foreach(generator IN ITEMS ${generators})
 
             string(CONCAT test_ui_file "${CMAKE_CURRENT_SOURCE_DIR}/../"
                 "test_qt_add_ui_common/uic_test/mainwindow.ui")
-            generate_hash_folder("example" "${test_ui_file}"
+            string(CONCAT test_source_dir "${CMAKE_CURRENT_SOURCE_DIR}/../"
+                "test_qt_add_ui_common/uic_test")
+            generate_hash_folder("example" "${test_ui_file}" "${test_source_dir}"
                 hash_folder_mainwindow)
             string(CONCAT expected_prefix_info_cmake_content
                 "include_guard()\nset(${hash_folder_mainwindow}_prefix \""
@@ -135,7 +137,7 @@ foreach(generator IN ITEMS ${generators})
 
             string(CONCAT test_ui_file "${CMAKE_CURRENT_SOURCE_DIR}/../"
                 "test_qt_add_ui_common/uic_test/subdir/mainwindow.ui")
-            generate_hash_folder("example" "${test_ui_file}"
+            generate_hash_folder("example" "${test_ui_file}" "${test_source_dir}"
                 hash_folder_subdir_mainwindow)
             set(expected_prefix_info_cmake_content
                 "include_guard()\nset(${hash_folder_subdir_mainwindow}_prefix \

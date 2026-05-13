@@ -34,12 +34,12 @@ foreach(generator IN ITEMS ${generators})
         # sub1/sub2/sub3/sub4 folder in ${hash_folder}/include
         string(CONCAT test_ui_file "${CMAKE_CURRENT_SOURCE_DIR}/../"
             "test_qt_add_ui_common/uic_test/mainwindow.ui")
-        generate_hash_folder( "example" "${test_ui_file}" hash_folder)
+        string(CONCAT test_source_dir "${CMAKE_CURRENT_SOURCE_DIR}/../"
+            "test_qt_add_ui_common/uic_test")
+        generate_hash_folder( "example" "${test_ui_file}" "${test_source_dir}" hash_folder)
         string(CONCAT test_build_dir
             "${CMAKE_CURRENT_BINARY_DIR}/UicBuildLeak_incPathGen"
             "${config_path}-build")
-        string(CONCAT test_source_dir "${CMAKE_CURRENT_SOURCE_DIR}/../"
-            "test_qt_add_ui_common/uic_test")
         string(CONCAT test_additional_args "-DMAINWINDOW_UI_PATH=sub1/sub2/"
             "sub3/sub4/../../../../src/ui_files/")
         string(CONCAT test_file_to_check "${test_build_dir}/.qt/${hash_folder}/"

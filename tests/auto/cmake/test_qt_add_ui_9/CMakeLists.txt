@@ -40,15 +40,15 @@ foreach(generator IN ITEMS ${generators})
         # Note: This test case is a mix of previous two test cases.
         string(CONCAT test_ui_file "${CMAKE_CURRENT_SOURCE_DIR}/../"
             "test_qt_add_ui_common/uic_test/mainwindow.ui")
-        generate_hash_folder("example" "${test_ui_file}" hash_folder)
+        string(CONCAT test_source_dir "${CMAKE_CURRENT_SOURCE_DIR}/../"
+            "test_qt_add_ui_common/uic_test")
+        generate_hash_folder("example" "${test_ui_file}" "${test_source_dir}" hash_folder)
         set(test_build_dir
             "${CMAKE_CURRENT_BINARY_DIR}/UicBuildLeak_mix${config_path}-build")
         string(CONCAT test_additional_args "-DMAINWINDOW_UI_PATH=sub2/sub3/"
             "../../../src/ui_files/")
         string(CONCAT test_file_to_check "${test_build_dir}/.qt/${hash_folder}/"
             "${config_arg}/src/ui_files/ui_mainwindow.h")
-        string(CONCAT test_source_dir "${CMAKE_CURRENT_SOURCE_DIR}/../"
-            "test_qt_add_ui_common/uic_test")
         incremental_build_test(
             TEST_NAME UicBuildLeak_mix
             SOURCE_DIR "${test_source_dir}"
