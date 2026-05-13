@@ -1811,6 +1811,9 @@ void tst_QOpenGL::makeCurrentAfterResizeWithNonDefaultFBOBound()
 
         void exposeEvent(QExposeEvent *) override
         {
+            if (!fbo)
+                return; // macOS 26.0-26.4 might send expose during makeCurrent
+
             ++paintCount;
 
             // If FBO was bound in a previous frame we shouldn't crash
