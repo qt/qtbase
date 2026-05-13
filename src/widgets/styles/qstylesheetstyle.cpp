@@ -5325,7 +5325,8 @@ QSize QStyleSheetStyle::sizeFromContents(ContentsType ct, const QStyleOption *op
                     QRect r = positionRect(w, rule, subRule, PseudoElement_SpinBoxUpButton,
                                            opt->rect, opt->direction);
                     sz.rwidth() += r.width();
-                } else {
+                } else if (!rule.baseStyleCanDraw()) {
+                    // Otherwise the base style's hint already accounts for the buttons.
                     QSize defaultUpSize = defaultSize(w, subRule.size(), spinbox->rect, PseudoElement_SpinBoxUpButton);
                     sz.rwidth() += defaultUpSize.width();
                 }
@@ -5396,8 +5397,15 @@ QSize QStyleSheetStyle::sizeFromContents(ContentsType ct, const QStyleOption *op
     case CT_GroupBox:
     case CT_LineEdit:
 #if QT_CONFIG(spinbox)
-        if (qobject_cast<QAbstractSpinBox *>(w ? w->parentWidget() : nullptr))
-            return csz; // we only care about the size hint of the line edit
+        if (auto *spinBox = qobject_cast<QAbstractSpinBox *>(w ? w->parentWidget() : nullptr)) {
+            // If the spin box draws its own frame (custom box or non-native border),
+            // return the contents size; otherwise defer to the base style so the line
+            // edit still contributes its natural frame.
+            const QRenderRule spinBoxRule = renderRule(spinBox, opt);
+            if (spinBoxRule.hasBox() || !spinBoxRule.hasNativeBorder())
+                return csz;
+            return baseStyle()->sizeFromContents(ct, opt, sz, w);
+        }
 #endif
         if (rule.hasBox() || !rule.hasNativeBorder()) {
             return rule.boxSize(sz);

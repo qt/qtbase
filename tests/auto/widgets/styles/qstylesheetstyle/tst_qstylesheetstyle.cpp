@@ -108,6 +108,8 @@ private slots:
     void complexWidgetFocus();
     void task188195_baseBackground();
     void task232085_spinBoxLineEditBg();
+    void QTBUG140497_spinBoxSizeHintWithEmptyStyleSheet_data();
+    void QTBUG140497_spinBoxSizeHintWithEmptyStyleSheet();
     void changeStyleInChangeEvent();
     void QTBUG15910_crashNullWidget();
     void QTBUG36933_brokenPseudoClassLookup();
@@ -1826,7 +1828,6 @@ void tst_QStyleSheetStyle::emptyStyleSheet()
         img2.save("emptyStyleSheet_img2.png");
     }
 
-    QEXPECT_FAIL("", "QTBUG-21468", Abort);
     QCOMPARE(img1,img2);
 }
 
@@ -2162,6 +2163,36 @@ void tst_QStyleSheetStyle::task232085_spinBoxLineEditBg()
             + " did not contain text color #ff0084, using style "
             + QString::fromLatin1(QApplication::style()->metaObject()->className()))
             .toLocal8Bit().constData());
+}
+
+void tst_QStyleSheetStyle::QTBUG140497_spinBoxSizeHintWithEmptyStyleSheet_data()
+{
+    QTest::addColumn<QString>("style");
+    QTest::newRow("fusion") << QString("Fusion");
+#ifdef Q_OS_WINDOWS
+    QTest::newRow("windowsvista") << QString("WindowsVista");
+#endif
+}
+
+void tst_QStyleSheetStyle::QTBUG140497_spinBoxSizeHintWithEmptyStyleSheet()
+{
+    // Setting an empty stylesheet on a QSpinBox should not change its size
+    // hint compared to the unstyled spin box. Regression test for an issue
+    // where the styled spin box ended up shorter than the unstyled one.
+    QFETCH(QString, style);
+    QStyle *appStyle = QStyleFactory::create(style);
+    QVERIFY(appStyle);
+    ApplicationStyleSetter as(appStyle);
+
+    QSpinBox unstyled;
+    QSpinBox styled;
+    styled.setStyleSheet(QStringLiteral(" "));
+
+    unstyled.ensurePolished();
+    styled.ensurePolished();
+
+    QCOMPARE(styled.sizeHint(), unstyled.sizeHint());
+    QCOMPARE(styled.minimumSizeHint(), unstyled.minimumSizeHint());
 }
 
 class ChangeEventWidget : public QWidget
