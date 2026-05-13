@@ -1090,6 +1090,7 @@ void tst_QMenuBar::task256322_highlight()
     file2->setText("file2");
     QAction *nothing = win.menuBar()->addAction("nothing");
 
+    win.resize(500, 200);
     centerOnScreen(&win);
     win.show();
     QVERIFY(QTest::qWaitForWindowActive(&win));
