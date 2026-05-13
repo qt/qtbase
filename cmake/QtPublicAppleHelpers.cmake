@@ -1177,12 +1177,125 @@ function(_qt_internal_finalize_apple_app target)
     _qt_internal_set_apple_bundle_frameworks_rpath("${target}")
 endfunction()
 
+# Resolves an imported shared library target to an absolute path on disk.
+#
+# This exists because XCODE_EMBED_FRAMEWORKS does not support imported targets
+# directly — CMake emits the target name as-is into the Xcode project, which
+# Xcode then fails to resolve. We have to feed it absolute paths instead.
+# See https://gitlab.kitware.com/cmake/cmake/-/work_items/25487
+function(_qt_internal_resolve_apple_shared_library_path target out_var)
+    set(${out_var} "" PARENT_SCOPE)
+
+    get_target_property(location "${target}" IMPORTED_LOCATION)
+    if(NOT location)
+        get_target_property(configs "${target}" IMPORTED_CONFIGURATIONS)
+        foreach(config ${configs})
+            get_target_property(location "${target}" IMPORTED_LOCATION_${config})
+            if(location)
+                break()
+            endif()
+        endforeach()
+    endif()
+
+    if(NOT location)
+        return()
+    endif()
+
+    # For framework targets, IMPORTED_LOCATION points at the binary inside the
+    # framework bundle; resolve to the enclosing .framework directory.
+    get_target_property(is_framework "${target}" FRAMEWORK)
+    if(is_framework)
+        get_filename_component(location "${location}" DIRECTORY)
+    endif()
+
+    set(${out_var} "${location}" PARENT_SCOPE)
+endfunction()
+
+# Embeds all shared libraries the app links against transitively into the
+# bundle's Frameworks directory via Xcode's XCODE_EMBED_FRAMEWORKS mechanism,
+# with code-signing on copy. Handles both .framework bundles and plain .dylib
+# shared libraries.
+#
+# Only applicable when Qt was built as shared libraries, with Xcode generator.
+#
+# Set the QT_NO_XCODE_EMBED_FRAMEWORKS target property to opt out.
+function(_qt_internal_xcode_embed_frameworks target)
+    get_target_property(opt_out "${target}" QT_NO_XCODE_EMBED_FRAMEWORKS)
+    if(opt_out)
+        return()
+    endif()
+
+    # If the user has populated XCODE_EMBED_FRAMEWORKS manually, leave it alone.
+    get_target_property(existing_embed "${target}" XCODE_EMBED_FRAMEWORKS)
+    if(existing_embed)
+        return()
+    endif()
+
+    if(NOT QT6_IS_SHARED_LIBS_BUILD)
+        return()
+    endif()
+
+    if(NOT CMAKE_GENERATOR STREQUAL "Xcode")
+        return()
+    endif()
+
+    # XCODE_EMBED_FRAMEWORKS takes a single path per entry, so we can't feed it
+    # both the debug and release variants of a framework. Bail out and leave
+    # deployment to the user in that case.
+    if(QT_FEATURE_debug_and_release)
+        return()
+    endif()
+
+    # Skip child bundles (app extensions, XPC services, etc.) — they live
+    # inside a parent app and reference its Frameworks/ directory via rpath.
+    get_target_property(product_type "${target}" XCODE_PRODUCT_TYPE)
+    if(product_type AND NOT product_type STREQUAL "com.apple.product-type.application")
+        return()
+    endif()
+
+    __qt_internal_collect_all_target_dependencies("${target}" walked_libs)
+
+    set(embed_paths "")
+    foreach(dep IN LISTS walked_libs)
+        if(NOT TARGET ${dep})
+            continue()
+        endif()
+        get_target_property(dep_type ${dep} TYPE)
+        if(NOT dep_type STREQUAL "SHARED_LIBRARY")
+            continue()
+        endif()
+
+        get_target_property(dep_opt_out ${dep} QT_NO_XCODE_EMBED_FRAMEWORK)
+        if(dep_opt_out)
+            continue()
+        endif()
+
+        _qt_internal_resolve_apple_shared_library_path(${dep} resolved)
+        if(resolved)
+            list(APPEND embed_paths "${resolved}")
+        endif()
+    endforeach()
+
+    if(NOT embed_paths)
+        return()
+    endif()
+
+    list(REMOVE_DUPLICATES embed_paths)
+
+    set_property(TARGET "${target}" APPEND PROPERTY
+        XCODE_EMBED_FRAMEWORKS ${embed_paths})
+    set_target_properties("${target}" PROPERTIES
+        XCODE_EMBED_FRAMEWORKS_CODE_SIGN_ON_COPY ON
+        XCODE_EMBED_FRAMEWORKS_REMOVE_HEADERS_ON_COPY YES)
+endfunction()
+
 function(_qt_internal_finalize_uikit_app target)
     if(CMAKE_SYSTEM_NAME STREQUAL iOS)
         _qt_internal_finalize_ios_app("${target}")
     else()
         _qt_internal_finalize_apple_app("${target}")
     endif()
+    _qt_internal_xcode_embed_frameworks("${target}")
 endfunction()
 
 function(_qt_internal_finalize_ios_app target)
