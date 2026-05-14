@@ -424,7 +424,7 @@ void addGeneralEntryToRecord(std::string mimeType, QSpan<std::uint8_t> dataBytes
 
     auto optUtdTypeId = tryMapMimeTypeToUtdTypeId(mimeType);
     if (optUtdTypeId.hasValue()) {
-        record.addGeneralEntry(optUtdTypeId.value(), dataBytes.data(), dataBytes.size());
+        record.addGeneralEntry(optUtdTypeId.value(), dataBytes);
     } else {
         qOhosPrintfWarning(
             "%s: cannot convert mime type '%s' to type id. Skip this entry.",

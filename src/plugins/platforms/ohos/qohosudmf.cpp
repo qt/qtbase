@@ -126,8 +126,7 @@ void QOhosUdmfRecord::setProviderForDataFetchFunc(
         createUdmfRecordProviderForDataFetchFunction(std::move(dataFetchFunc)).release());
 }
 
-void QOhosUdmfRecord::addGeneralEntry(
-    const std::string &typeId, std::uint8_t *buff, std::uint32_t buffSize)
+void QOhosUdmfRecord::addGeneralEntry(const std::string &typeId, QSpan<const std::uint8_t> buffer)
 {
     if (m_invalidated) {
         qOhosPrintfError("%s: This record is invalidated. Ignoring.", Q_FUNC_INFO);
@@ -136,7 +135,8 @@ void QOhosUdmfRecord::addGeneralEntry(
 
     QArkUi::callArkUiOrFailOnErrorResult(
         Q_OHOS_NAMED_FUNC(::OH_UdmfRecord_AddGeneralEntry),
-        m_nativePtr.get(), QArkUi::CZString(typeId.c_str()), buff, buffSize);
+        m_nativePtr.get(), QArkUi::CZString(typeId.c_str()),
+        const_cast<std::uint8_t *>(buffer.data()), buffer.size());
 }
 
 QOhosOptional<QSpan<const std::uint8_t>> QOhosUdmfRecord::tryGetGeneralEntry(
