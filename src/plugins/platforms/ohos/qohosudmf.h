@@ -38,7 +38,7 @@ public:
     template<typename T>
     void addEntry(QOhosUdsObject<T> udsObject);
 
-    void addGeneralEntry(const std::string &typeId, std::uint8_t *buff, std::uint32_t buffSize);
+    void addGeneralEntry(const std::string &typeId, QSpan<const std::uint8_t> buffer);
 
     template<typename T>
     QOhosUdsObject<T> getEntry() const;
