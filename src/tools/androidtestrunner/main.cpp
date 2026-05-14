@@ -612,17 +612,18 @@ static void waitForStarted()
     } while (!startDeadline.hasExpired() && !g_testInfo.isTestRunnerInterrupted.load());
 }
 
-static void waitForLoggingStarted()
+static bool waitForLoggingStarted()
 {
-    const QString lsCmd = "ls files/%1"_L1.arg(g_options.stdoutFileName);
+    const QString lsCmd = "ls files/%1 2>/dev/null"_L1.arg(g_options.stdoutFileName);
     const QStringList adbLsCmd = { "shell"_L1, runCommandAsUserArgs(lsCmd) };
 
     QDeadlineTimer deadline(5000);
     do {
         if (execAdbCommand(adbLsCmd, nullptr, false))
-            break;
-        QThread::msleep(100);
+            return true;
+        QThread::msleep(25);
     } while (!deadline.hasExpired() && !g_testInfo.isTestRunnerInterrupted.load());
+    return false;
 }
 
 static bool setupStdoutLogger()
@@ -1096,9 +1097,8 @@ int main(int argc, char *argv[])
         return EXIT_ERROR;
 
     waitForStarted();
-    waitForLoggingStarted();
 
-    if (!setupStdoutLogger())
+    if (waitForLoggingStarted() && !setupStdoutLogger())
         return EXIT_ERROR;
 
     waitForFinished();
