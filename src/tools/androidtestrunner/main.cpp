@@ -1043,6 +1043,11 @@ int main(int argc, char *argv[])
         qCritical("No connected device or running emulator with serial '%s' can be found.",
                   qPrintable(g_options.serial));
         return EXIT_ERROR;
+    } else if (g_options.serial.isEmpty() && devices.size() == 1) {
+        g_options.serial = devices.first();
+    } else if (g_options.serial.isEmpty()) {
+        qCritical("Multiple devices connected, set ANDROID_SERIAL or ANDROID_DEVICE_SERIAL.");
+        return EXIT_ERROR;
     }
 
     obtainSdkVersion();
@@ -1143,7 +1148,7 @@ int main(int argc, char *argv[])
     testRunnerLock.release();
 
     if (g_testInfo.isTestRunnerInterrupted.load()) {
-        qCritical() << "The androidtestrunner was interrupted and the was test cleaned up.";
+        qCritical() << "The androidtestrunner was interrupted and the test was cleaned up.";
         return EXIT_ERROR;
     }
 
