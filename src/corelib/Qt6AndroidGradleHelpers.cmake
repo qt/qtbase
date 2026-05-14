@@ -828,7 +828,7 @@ function(_qt_internal_android_copy_target_package_sources target deployment_dir)
         VERBATIM
     )
 
-    set_target_properties(${target} PROPERTIES _qt_android_deployment_files "${out_package_files}")
+    set_property(TARGET ${target} APPEND PROPERTY _qt_android_deployment_files ${out_package_files})
 
     # This is used by _qt_internal_android_generate_target_android_manifest()
     # to ensure it's run after the package sources are copied.
