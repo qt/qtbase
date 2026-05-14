@@ -47,7 +47,7 @@ public:
         QOhosSupplier<QOhosUdsObject<RawUdsObject>> udsObjectFactory);
 
     static UdmfRecordEntryFactory makeForGeneralDataWithMimeType(
-        std::string mimeType, QOhosSupplier<QSpan<std::uint8_t>> dataSupplier);
+        std::string mimeType, QOhosSupplier<QSpan<const std::uint8_t>> dataSupplier);
 
     static UdmfRecordEntryFactory makeDummy();
 
@@ -209,7 +209,7 @@ std::vector<std::string> utdGetMimeTypes(::OH_Utd *utd)
 }
 
 template<typename T>
-bool hasMatchingTypeEntryInRecords(QSpan<QOhosUdmfRecord> records)
+bool hasMatchingTypeEntryInRecords(QSpan<const QOhosUdmfRecord> records)
 {
     static const auto searchTypeId = QOhosUdsMeta<T>::udmfMetaId;
     return std::any_of(
@@ -222,7 +222,7 @@ bool hasMatchingTypeEntryInRecords(QSpan<QOhosUdmfRecord> records)
 
 template<typename T>
 void tryProcessEntriesOfTypeInRecords(
-    QSpan<QOhosUdmfRecord> records,
+    QSpan<const QOhosUdmfRecord> records,
     const QOhosConsumer<QOhosUdsObject<T>> &processEntryFunc)
 {
     for (auto &record : records) {
@@ -234,7 +234,7 @@ void tryProcessEntriesOfTypeInRecords(
 }
 
 void addMimeDataSuppliersForUrlLikeEntriesFromRecords(
-    std::shared_ptr<void> context, QSpan<QOhosUdmfRecord> inputRecords,
+    std::shared_ptr<void> context, QSpan<const QOhosUdmfRecord> inputRecords,
     std::map<QString, QOhosSupplier<QVariant>> &outMimeDataSuppliers)
 {
     if (!hasMatchingTypeEntryInRecords<::OH_UdsFileUri>(inputRecords)
@@ -272,7 +272,7 @@ void addMimeDataSuppliersForUrlLikeEntriesFromRecords(
 }
 
 void addMimeDataSuppliersForGeneralEntriesFromRecords(
-    std::shared_ptr<void> context, QSpan<QOhosUdmfRecord> inputRecords,
+    std::shared_ptr<void> context, QSpan<const QOhosUdmfRecord> inputRecords,
     std::map<QString, QOhosSupplier<QVariant>> &outMimeDataSuppliers)
 {
     for (auto &record : inputRecords) {
@@ -413,7 +413,7 @@ std::shared_ptr<::OH_UdmfProperty> createUdmfPropertyForUdmfData(::OH_UdmfData *
     };
 }
 
-void addGeneralEntryToRecord(std::string mimeType, QSpan<std::uint8_t> dataBytes, QOhosUdmfRecord &record)
+void addGeneralEntryToRecord(std::string mimeType, QSpan<const std::uint8_t> dataBytes, QOhosUdmfRecord &record)
 {
     if (dataBytes.size() == 0) {
         qOhosPrintfWarning(
@@ -451,7 +451,7 @@ UdmfRecordEntryFactory UdmfRecordEntryFactory::makeForUdsObjectFactory(
 }
 
 UdmfRecordEntryFactory UdmfRecordEntryFactory::makeForGeneralDataWithMimeType(
-    std::string mimeType, QOhosSupplier<QSpan<std::uint8_t>> dataSupplier)
+    std::string mimeType, QOhosSupplier<QSpan<const std::uint8_t>> dataSupplier)
 {
     return UdmfRecordEntryFactory(
         []() {
@@ -551,8 +551,8 @@ std::vector<UdmfRecordEntryMetaFactory> makeRecordEntryMetaFactoriesForMimeDataF
                         return UdmfRecordEntryFactory::makeForGeneralDataWithMimeType(
                             qStrFormat.toStdString(),
                             [dataBytes]() {
-                                return QSpan(
-                                    reinterpret_cast<std::uint8_t *>(const_cast<char *>(dataBytes.data())),
+                                return QSpan<const std::uint8_t>(
+                                    reinterpret_cast<const std::uint8_t *>(dataBytes.constData()),
                                     dataBytes.length());
                             });
                     }
@@ -659,7 +659,7 @@ std::function<QOhosUdmfData()> makeUdmfDataFactoryFromQMimeDataImpl(
             QOhosUdmfRecord record;
             auto appInfoDataBytes = getAppInfoDataForThisProcess();
             addGeneralEntryToRecord(
-                qtAppInfoDataPseudoMimeType, QSpan(&appInfoDataBytes[0], appInfoDataBytes.size()), record);
+                qtAppInfoDataPseudoMimeType, QSpan<const std::uint8_t>(appInfoDataBytes.data(), appInfoDataBytes.size()), record);
             return record;
         });
 
