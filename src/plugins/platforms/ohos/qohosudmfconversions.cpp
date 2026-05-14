@@ -296,7 +296,7 @@ void addMimeDataSuppliersForGeneralEntriesFromRecords(
 
                             return QVariant(
                                 QByteArray(
-                                    reinterpret_cast<char *>(generalEntry.value().data()),
+                                    reinterpret_cast<const char *>(generalEntry.value().data()),
                                     generalEntry.value().size()));
                         });
                 } else {

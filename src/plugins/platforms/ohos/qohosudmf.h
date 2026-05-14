@@ -41,9 +41,9 @@ public:
     void addGeneralEntry(const std::string &typeId, std::uint8_t *buff, std::uint32_t buffSize);
 
     template<typename T>
-    QOhosUdsObject<T> getEntry();
+    QOhosUdsObject<T> getEntry() const;
 
-    QOhosOptional<QSpan<std::uint8_t>> tryGetGeneralEntry(const std::string &typeId);
+    QOhosOptional<QSpan<const std::uint8_t>> tryGetGeneralEntry(const std::string &typeId) const;
 
     bool isEmpty() const;
 
@@ -141,7 +141,7 @@ void QOhosUdmfRecord::addEntry(QOhosUdsObject<T> udsObject)
 }
 
 template<typename T>
-QOhosUdsObject<T> QOhosUdmfRecord::getEntry()
+QOhosUdsObject<T> QOhosUdmfRecord::getEntry() const
 {
     if (m_invalidated) {
         qOhosPrintfError(
