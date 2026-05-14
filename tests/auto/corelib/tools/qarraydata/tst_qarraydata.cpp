@@ -39,6 +39,7 @@ private slots:
     void alignment_data();
     void alignment();
     void typedData();
+    void typedDataPairConversionOperator();
     void gccBug43247();
     void arrayOps_data();
     void arrayOps();
@@ -583,11 +584,8 @@ void tst_QArrayData::typedData()
     {
         Deallocator keeper(sizeof(char),
                 alignof(QTypedArrayData<char>::AlignmentDummy));
-        QT_WARNING_PUSH
-        QT_WARNING_DISABLE_DEPRECATED
-        std::pair<QTypedArrayData<char> *, char *> pair = QTypedArrayData<char>::allocate(10);
-        QT_WARNING_POP
-        QArrayData *array = pair.first;
+        auto allocResult = QTypedArrayData<char>::allocate(10);
+        QArrayData *array = allocResult.header;
         keeper.headers.append(array);
 
         QVERIFY(array);
@@ -595,7 +593,7 @@ void tst_QArrayData::typedData()
 
         // Check that the allocated array can be used. Best tested with a
         // memory checker, such as valgrind, running.
-        ::memset(pair.second, 0, 10 * sizeof(char));
+        ::memset(allocResult.ptr, 0, 10 * sizeof(char));
 
         keeper.headers.clear();
         QTypedArrayData<short>::deallocate(array);
@@ -642,6 +640,29 @@ void tst_QArrayData::typedData()
 
         QVERIFY(true);
     }
+}
+
+void tst_QArrayData::typedDataPairConversionOperator()
+{
+    using R = QTypedArrayAllocationResult<char>;
+    using Pair = std::pair<QTypedArrayData<char> *, char *>;
+
+    R nullAllocResult = {nullptr, nullptr};
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
+    Pair nullpair = nullAllocResult;
+    QVERIFY(!nullpair.first);
+    QVERIFY(!nullpair.second);
+QT_WARNING_POP
+
+    R allocResult = QTypedArrayData<char>::allocate(10);
+    auto guard = qScopeGuard([&allocResult]() { QTypedArrayData<char>::deallocate(allocResult.header); });
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
+    Pair pair = allocResult;
+    QCOMPARE_EQ(allocResult.header, pair.first);
+    QCOMPARE_EQ(allocResult.ptr, pair.second);
+QT_WARNING_POP
 }
 
 void tst_QArrayData::gccBug43247()
