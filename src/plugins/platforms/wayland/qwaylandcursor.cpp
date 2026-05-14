@@ -308,7 +308,15 @@ QSharedPointer<QWaylandBuffer> QWaylandCursor::cursorBitmapBuffer(QWaylandDispla
     }
 
     QSharedPointer<QWaylandShmBuffer> buffer(new QWaylandShmBuffer(display, img.size(), img.format()));
-    memcpy(buffer->image()->bits(), img.bits(), size_t(img.sizeInBytes()));
+    // The stride of the QWaylandShmBuffer image might be different to improve performance.
+    if (buffer->image()->bytesPerLine() != img.bytesPerLine()) {
+        const size_t bytesPerLine = img.width() * (img.depth() / 8);
+        for (int y = 0; y < img.height(); ++y) {
+            memcpy(buffer->image()->scanLine(y), img.constScanLine(y), bytesPerLine);
+        }
+    } else {
+        memcpy(buffer->image()->bits(), img.bits(), size_t(img.sizeInBytes()));
+    }
     return buffer;
 }
 
