@@ -19,6 +19,7 @@
 #include <QtCore/QTemporaryFile>
 
 #include <atomic>
+#include <chrono>
 #include <csignal>
 #include <functional>
 #include <optional>
@@ -600,30 +601,44 @@ static bool isRunning() {
     return psSuccess && output.trimmed() == g_options.package.toUtf8();
 }
 
+template <typename Predicate>
+static bool pollUntil(Predicate predicate, QDeadlineTimer deadline,
+                      std::chrono::milliseconds interval)
+{
+    do {
+        if (predicate())
+            return true;
+        QThread::msleep(interval.count());
+    } while (!deadline.hasExpired() && !g_testInfo.isTestRunnerInterrupted.load());
+    if (g_testInfo.isTestRunnerInterrupted.load())
+        return false;
+    // Predicate may have flipped during the final sleep; check once more.
+    return predicate();
+}
+
 static void waitForStarted()
 {
-    // wait to start and set PID
-    QDeadlineTimer startDeadline(10000);
-    do {
-        g_testInfo.pid = getPid(g_options.package);
-        if (g_testInfo.pid > 0)
-            break;
-        QThread::msleep(100);
-    } while (!startDeadline.hasExpired() && !g_testInfo.isTestRunnerInterrupted.load());
+    using namespace std::chrono_literals;
+    const bool started = pollUntil([]() {
+        const int pid = getPid(g_options.package);
+        if (pid > 0)
+            g_testInfo.pid = pid;
+        return pid > 0;
+    }, QDeadlineTimer(10s), 100ms);
+    if (!started && !g_testInfo.isTestRunnerInterrupted.load()) {
+        qWarning("Test process for '%s' never appeared in 'adb shell ps' within 10s. "
+                 "am-start may have failed silently; later steps will likely yield "
+                 "EXIT_NOEXITCODE.", qPrintable(g_options.package));
+    }
 }
 
 static bool waitForLoggingStarted()
 {
+    using namespace std::chrono_literals;
     const QString lsCmd = "ls files/%1 2>/dev/null"_L1.arg(g_options.stdoutFileName);
     const QStringList adbLsCmd = { "shell"_L1, runCommandAsUserArgs(lsCmd) };
-
-    QDeadlineTimer deadline(5000);
-    do {
-        if (execAdbCommand(adbLsCmd, nullptr, false))
-            return true;
-        QThread::msleep(25);
-    } while (!deadline.hasExpired() && !g_testInfo.isTestRunnerInterrupted.load());
-    return false;
+    return pollUntil([&]() { return execAdbCommand(adbLsCmd, nullptr, false); },
+                     QDeadlineTimer(5s), 25ms);
 }
 
 static bool setupStdoutLogger()
@@ -674,15 +689,11 @@ static bool stopStdoutLogger()
 
 static void waitForFinished()
 {
-    // Wait to finish
-    QDeadlineTimer finishedDeadline(g_options.timeoutSecs * 1000);
-    do {
-        if (!isRunning())
-            break;
-        QThread::msleep(100);
-    } while (!finishedDeadline.hasExpired() && !g_testInfo.isTestRunnerInterrupted.load());
-
-    if (finishedDeadline.hasExpired())
+    using namespace std::chrono_literals;
+    const bool finished = pollUntil([]() { return !isRunning(); },
+        QDeadlineTimer(g_options.timeoutSecs * 1s),
+        100ms);
+    if (!finished && !g_testInfo.isTestRunnerInterrupted.load())
         qWarning() << "Timed out while waiting for the test to finish";
 }
 
