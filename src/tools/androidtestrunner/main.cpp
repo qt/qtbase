@@ -7,10 +7,11 @@
 #include <QtCore/qdebug.h>
 #include <QtCore/QDir>
 #include <QtCore/QHash>
+#include <QtCore/QLockFile>
 #include <QtCore/QProcess>
 #include <QtCore/QProcessEnvironment>
 #include <QtCore/QRegularExpression>
-#include <QtCore/QSystemSemaphore>
+#include <QtCore/QStandardPaths>
 #include <QtCore/QThread>
 #include <QtCore/QXmlStreamReader>
 #include <QtCore/QFileInfo>
@@ -959,46 +960,10 @@ static bool uninstallTestPackage()
     return execAdbCommand({ "uninstall"_L1, g_options.package }, nullptr);
 }
 
-struct TestRunnerSystemSemaphore
-{
-    TestRunnerSystemSemaphore() { }
-    ~TestRunnerSystemSemaphore() { release(); }
-
-    void acquire() { isAcquired.store(semaphore.acquire()); }
-
-    void release()
-    {
-#if !defined(Q_OS_WIN32)
-        // Block signals around CAS + release sequence so that no signal arrives
-        // after isAcquired is cleared but before the OS semaphore is actually
-        // released (which would leave it held after _exit() call).
-        sigset_t newMask, oldMask;
-        sigfillset(&newMask);
-        sigprocmask(SIG_BLOCK, &newMask, &oldMask);
-#endif
-        bool expected = true;
-        if (isAcquired.compare_exchange_strong(expected, false))
-            isAcquired.store(!semaphore.release());
-#if !defined(Q_OS_WIN32)
-        sigprocmask(SIG_SETMASK, &oldMask, nullptr);
-#endif
-    }
-
-    std::atomic<bool> isAcquired { false };
-    QSystemSemaphore semaphore { QSystemSemaphore::platformSafeKey(u"androidtestrunner"_s),
-                                   1, QSystemSemaphore::Open };
-};
-
-TestRunnerSystemSemaphore testRunnerLock;
 
 void sigHandler(int signal)
 {
     std::signal(signal, SIG_DFL);
-    testRunnerLock.release();
-    // Ideally we shouldn't be doing such calls from a signal handler,
-    // and we can't use QSocketNotifier because this tool doesn't spin
-    // a main event loop. Since, there's no other alternative to do this,
-    // let's do the cleanup anyway.
     if (!g_testInfo.isPackageInstalled.load())
         _exit(EXIT_ERROR);
     g_testInfo.isTestRunnerInterrupted.store(true);
@@ -1070,8 +1035,17 @@ int main(int argc, char *argv[])
     if (!parseTestArgs())
         return EXIT_ERROR;
 
-    // do not install or run packages while another test is running
-    testRunnerLock.acquire();
+    // Per-user prefix so a shared TempLocation doesn't collide across users.
+    const QString user = qEnvironmentVariable("USER",
+        qEnvironmentVariable("USERNAME", u"default"_s));
+    const QString lockName = u"androidtestrunner-%1-%2.lock"_s.arg(user, g_options.serial);
+    const QDir tempDir(QStandardPaths::writableLocation(QStandardPaths::TempLocation));
+    QLockFile testRunnerLock(tempDir.absoluteFilePath(lockName));
+    testRunnerLock.setStaleLockTime(0);
+    if (!testRunnerLock.lock()) {
+        qCritical("Failed to acquire test runner lock for '%s'.", qPrintable(g_options.serial));
+        return EXIT_ERROR;
+    }
 
     if (g_options.packagePath.endsWith(".apk"_L1)) {
         const QStringList installArgs = { "install"_L1, "-r"_L1, g_options.packagePath };
@@ -1144,8 +1118,6 @@ int main(int argc, char *argv[])
 
     if (!uninstallTestPackage())
         return EXIT_ERROR;
-
-    testRunnerLock.release();
 
     if (g_testInfo.isTestRunnerInterrupted.load()) {
         qCritical() << "The androidtestrunner was interrupted and the test was cleaned up.";
