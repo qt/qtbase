@@ -564,6 +564,19 @@ function(_qt_internal_android_java_dir out_var)
     endif()
 endfunction()
 
+# Sanitize the target name to be used in file names
+function(_qt_internal_android_sanitize_target_name out_var target)
+    string(REPLACE "::" "_" sanitized "${target}")
+    set(${out_var} "${sanitized}" PARENT_SCOPE)
+endfunction()
+
+# Returns (and creates) the per-directory staging dir for Android build tracking artifacts.
+function(_qt_internal_android_staging_dir out_var)
+    set(dir "${CMAKE_CURRENT_BINARY_DIR}/.qt/android")
+    file(MAKE_DIRECTORY "${dir}")
+    set(${out_var} "${dir}" PARENT_SCOPE)
+endfunction()
+
 # Returns the platform-spefic name of the gradlew script.
 function(_qt_internal_android_gradlew_name out_var)
     if(CMAKE_HOST_WIN32)
@@ -1034,44 +1047,47 @@ function(_qt_internal_android_copy_extra_plugins target deployment_dir)
     _qt_internal_collect_buildsystem_targets(buildsystem_library_targets
         "${CMAKE_SOURCE_DIR}" INCLUDE SHARED_LIBRARY MODULE_LIBRARY)
 
+    set(copy_commands "")
+    set(copy_depends "")
     set(extra_plugin_targets "")
     foreach(plugin_dir IN LISTS extra_plugins)
         if(NOT plugin_dir)
             continue()
         endif()
 
-        set(plugin_path "${plugin_dir}")
-        if(NOT "${plugin_dir}" MATCHES "^[$]<")
-            file(TO_CMAKE_PATH "${plugin_dir}" plugin_path)
-            if(NOT IS_ABSOLUTE "${plugin_path}")
-                message(WARNING "QT_ANDROID_EXTRA_PLUGINS entry '${plugin_dir}' for ${target} "
-                                "is not an absolute path.")
-            endif()
-        endif()
-
-        list(APPEND copy_commands
-            COMMAND ${CMAKE_COMMAND} -E copy_directory "${plugin_path}" "${extra_plugins_dst_dir}"
-        )
-
-        # Extra plugins might not have direct dependency to ${target}, so find build system
-        # targets in the project that are needed for the extra plugins outputs.
-
-        # 1. Extract the target name from $<TARGET_FILE_DIR:name> genexes.
-        if("${plugin_dir}" MATCHES "^\\$<TARGET_FILE_DIR:([^>]+)>$")
-            if(TARGET "${CMAKE_MATCH_1}")
-                list(APPEND extra_plugin_targets "${CMAKE_MATCH_1}")
+        if("${plugin_dir}" MATCHES "^[$]<")
+            # Genex paths: defer to copy_directory which evaluates at build time.
+            list(APPEND copy_commands COMMAND ${CMAKE_COMMAND} -E copy_directory
+                "${plugin_dir}" "${extra_plugins_dst_dir}")
+            if("${plugin_dir}" MATCHES "^\\$<TARGET_FILE_DIR:([^>]+)>$")
+                if(TARGET "${CMAKE_MATCH_1}")
+                    list(APPEND extra_plugin_targets "${CMAKE_MATCH_1}")
+                else()
+                    message(WARNING "QT_ANDROID_EXTRA_PLUGINS entry '${plugin_dir}' for ${target} "
+                                    "skipped invalid auto-discovered dependency ${CMAKE_MATCH_1}")
+                endif()
             else()
                 message(WARNING "QT_ANDROID_EXTRA_PLUGINS entry '${plugin_dir}' for ${target} "
-                                "skipped invalid auto-discovered dependency ${CMAKE_MATCH_1}")
+                                "skipped dependencies auto-discovery due to unsupported genex.")
             endif()
-            continue()
-        elseif("${plugin_dir}" MATCHES "^[$]<")
-            message(WARNING "QT_ANDROID_EXTRA_PLUGINS entry '${plugin_dir}' for ${target}"
-                            "skipped dependencies auto-discovery due to unsupported genex.")
             continue()
         endif()
 
-        # 2. Find targets with LIBRARY_OUTPUT_DIRECTORY resolving to extra plugin directory.
+        file(TO_CMAKE_PATH "${plugin_dir}" plugin_path)
+        if(NOT IS_ABSOLUTE "${plugin_path}")
+            message(WARNING "QT_ANDROID_EXTRA_PLUGINS entry '${plugin_dir}' for ${target} "
+                            "is not an absolute path.")
+        endif()
+
+        # Copy at build time to also pick up plugins generated into the directory;
+        # the glob only feeds DEPENDS.
+        list(APPEND copy_commands COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${plugin_path}" "${extra_plugins_dst_dir}")
+        file(GLOB_RECURSE plugin_files CONFIGURE_DEPENDS LIST_DIRECTORIES false
+            "${plugin_path}/*")
+        list(APPEND copy_depends ${plugin_files})
+
+        # Find targets with LIBRARY_OUTPUT_DIRECTORY resolving to extra plugin directory.
         get_filename_component(plugin_path_abs "${plugin_path}" ABSOLUTE)
         foreach(library_target IN LISTS buildsystem_library_targets)
             get_target_property(library_outdir "${library_target}" LIBRARY_OUTPUT_DIRECTORY)
@@ -1091,12 +1107,21 @@ function(_qt_internal_android_copy_extra_plugins target deployment_dir)
 
     list(REMOVE_DUPLICATES extra_plugin_targets)
 
-    add_custom_target(${target}_copy_extra_plugins
+    if(NOT copy_commands)
+        return()
+    endif()
+
+    _qt_internal_android_sanitize_target_name(sanitized_target ${target})
+    _qt_internal_android_staging_dir(android_staging_dir)
+    set(stamp "${android_staging_dir}/${sanitized_target}_copy_extra_plugins.stamp")
+    add_custom_command(OUTPUT "${stamp}"
         ${copy_commands}
-        DEPENDS ${target} ${extra_plugin_targets}
+        COMMAND ${CMAKE_COMMAND} -E touch "${stamp}"
+        DEPENDS ${copy_depends} ${target} ${extra_plugin_targets}
         COMMENT "Copying extra plugins for ${target}"
         VERBATIM
     )
+    add_custom_target(${target}_copy_extra_plugins DEPENDS "${stamp}")
     _qt_internal_android_add_deploy_libraries_dependency(${target} ${target}_copy_extra_plugins)
 endfunction()
 
@@ -1136,12 +1161,17 @@ function(_qt_internal_android_copy_qml_plugins target deployment_dir)
         return()
     endif()
 
-    add_custom_target(${target}_copy_qml_plugins
+    _qt_internal_android_sanitize_target_name(sanitized_target ${target})
+    _qt_internal_android_staging_dir(android_staging_dir)
+    set(stamp "${android_staging_dir}/${sanitized_target}_copy_qml_plugins.stamp")
+    add_custom_command(OUTPUT "${stamp}"
         ${copy_commands}
+        COMMAND ${CMAKE_COMMAND} -E touch "${stamp}"
         DEPENDS ${copy_depends}
         COMMENT "Copying QML plugin targets for ${target}"
         VERBATIM
     )
+    add_custom_target(${target}_copy_qml_plugins DEPENDS "${stamp}")
     _qt_internal_android_add_deploy_libraries_dependency(${target} ${target}_copy_qml_plugins)
 endfunction()
 
@@ -1219,20 +1249,25 @@ function(_qt_internal_android_copy_non_qt_linked_libs target deployment_dir)
             extra_libs "$<TARGET_FILE_NAME:${lib}>")
     endforeach()
 
-    add_custom_target(${target}_copy_non_qt_linked_libs
+    _qt_internal_android_sanitize_target_name(sanitized_target ${target})
+    _qt_internal_android_staging_dir(android_staging_dir)
+    set(stamp "${android_staging_dir}/${sanitized_target}_copy_non_qt_linked_libs.stamp")
+    add_custom_command(OUTPUT "${stamp}"
         ${linked_libs_copy_commands}
+        COMMAND ${CMAKE_COMMAND} -E touch "${stamp}"
         DEPENDS ${linked_libs}
         COMMENT "Copying linked shared libraries for ${target}"
         VERBATIM
     )
+    add_custom_target(${target}_copy_non_qt_linked_libs DEPENDS "${stamp}")
     _qt_internal_android_add_deploy_libraries_dependency(${target}
         ${target}_copy_non_qt_linked_libs)
 endfunction()
 
 # Copies (or symlinks) the app's binary file to the deployment dir.
 function(_qt_internal_android_copy_app_binary target deployment_dir)
-    set(target_file_dst
-        "${deployment_dir}/libs/${CMAKE_ANDROID_ARCH_ABI}/$<TARGET_FILE_NAME:${target}>")
+    set(libs_abi_dir "${deployment_dir}/libs/${CMAKE_ANDROID_ARCH_ABI}")
+    set(target_file_dst "${libs_abi_dir}/$<TARGET_FILE_NAME:${target}>")
 
     _qt_internal_android_get_use_terminal_for_deployment(uses_terminal)
 
@@ -1244,14 +1279,19 @@ function(_qt_internal_android_copy_app_binary target deployment_dir)
         set(deploy_comment "Copying ${target} binary to apk folder")
     endif()
 
-    set(libs_abi_dir "${deployment_dir}/libs/${CMAKE_ANDROID_ARCH_ABI}")
-    add_custom_target(${target}_copy_app_binary ALL
+    _qt_internal_android_sanitize_target_name(sanitized_target ${target})
+    _qt_internal_android_staging_dir(android_staging_dir)
+    set(stamp "${android_staging_dir}/${sanitized_target}_copy_app_binary.stamp")
+    add_custom_command(OUTPUT "${stamp}"
         COMMAND ${CMAKE_COMMAND} -E make_directory "${libs_abi_dir}"
         COMMAND ${deploy_command}
+        COMMAND ${CMAKE_COMMAND} -E touch "${stamp}"
+        DEPENDS ${target}
         COMMENT "${deploy_comment}"
         VERBATIM
         ${uses_terminal}
     )
+    add_custom_target(${target}_copy_app_binary ALL DEPENDS "${stamp}")
     _qt_internal_android_add_deploy_libraries_dependency(${target} ${target}_copy_app_binary)
 endfunction()
 
@@ -1660,12 +1700,17 @@ function(_qt_internal_android_copy_qt_dependencies target deployment_dir)
         return()
     endif()
 
-    add_custom_target(${target}_copy_qt_files
+    _qt_internal_android_sanitize_target_name(sanitized_target ${target})
+    _qt_internal_android_staging_dir(android_staging_dir)
+    set(stamp "${android_staging_dir}/${sanitized_target}_copy_qt_files.stamp")
+    add_custom_command(OUTPUT "${stamp}"
         ${copy_commands}
+        COMMAND ${CMAKE_COMMAND} -E touch "${stamp}"
         DEPENDS ${copy_depends}
         COMMENT "Copying Qt deployment files for ${target}"
         VERBATIM
     )
+    add_custom_target(${target}_copy_qt_files DEPENDS "${stamp}")
     _qt_internal_android_add_deploy_libraries_dependency(${target} ${target}_copy_qt_files)
 endfunction()
 
@@ -1743,7 +1788,7 @@ function(_qt_internal_android_generate_libs_xml target deployment_dir)
 
     set(libs_xml_dst "${deployment_dir}/res/values/libs.xml")
 
-    string(REPLACE "::" "_" sanitized_target "${target}")
+    _qt_internal_android_sanitize_target_name(sanitized_target ${target})
     set(libs_xml_staged "${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/${sanitized_target}_libs.xml")
     file(GENERATE OUTPUT "${libs_xml_staged}" CONTENT "${content}")
 
@@ -1932,9 +1977,13 @@ function(_qt_internal_android_create_rcc_bundle target deployment_dir)
         return()
     endif()
 
-    set(qml_bundle_dir "${deployment_dir}/assets/android_rcc_bundle")
+    # Stage outside deployment_dir so the rcc bundle cleanup can't invalidate the stamp.
+    _qt_internal_android_sanitize_target_name(sanitized_target ${target})
+    _qt_internal_android_staging_dir(android_staging_dir)
+    set(qml_bundle_dir "${android_staging_dir}/${sanitized_target}-qml-bundle")
 
     set(commands "")
+    set(qmldir_inputs "")
     foreach(module_entry IN LISTS qml_modules)
         string(REPLACE "::" ";" module_parts "${module_entry}")
         list(GET module_parts 0 module_abs)
@@ -1951,17 +2000,22 @@ function(_qt_internal_android_create_rcc_bundle target deployment_dir)
         list(APPEND commands COMMAND ${CMAKE_COMMAND} -E make_directory "${destination_dir}")
         list(APPEND commands COMMAND ${CMAKE_COMMAND} -E copy_if_different
             "${module_abs}/qmldir" "${destination_dir}/qmldir")
+        list(APPEND qmldir_inputs "${module_abs}/qmldir")
     endforeach()
 
     if(NOT commands)
         return()
     endif()
 
-    add_custom_target(${target}_copy_qml_modules
+    set(qml_modules_stamp "${android_staging_dir}/${sanitized_target}_copy_qml_modules.stamp")
+    add_custom_command(OUTPUT "${qml_modules_stamp}"
         ${commands}
+        COMMAND ${CMAKE_COMMAND} -E touch "${qml_modules_stamp}"
+        DEPENDS ${qmldir_inputs}
         COMMENT "Copying QML modules for ${target}"
         VERBATIM
     )
+    add_custom_target(${target}_copy_qml_modules DEPENDS "${qml_modules_stamp}")
 
     set(extra_args "")
     if(NOT QT_FEATURE_zstd)
@@ -1969,15 +2023,13 @@ function(_qt_internal_android_create_rcc_bundle target deployment_dir)
     endif()
 
     set(bundle_rcc "${deployment_dir}/assets/android_rcc_bundle.rcc")
+    set(bundle_qrc "${qml_bundle_dir}/android_rcc_bundle.qrc")
     add_custom_command(OUTPUT "${bundle_rcc}"
-        COMMAND ${CMAKE_COMMAND} -E make_directory "${qml_bundle_dir}"
         COMMAND ${CMAKE_COMMAND} -E chdir "${qml_bundle_dir}"
-            "${rcc_path}" --project -o "${qml_bundle_dir}/android_rcc_bundle.qrc"
+            "${rcc_path}" --project -o "${bundle_qrc}"
         COMMAND "${rcc_path}" --binary ${extra_args}
-            --root=/android_rcc_bundle/ -o "${bundle_rcc}"
-            "${qml_bundle_dir}/android_rcc_bundle.qrc"
-        COMMAND ${CMAKE_COMMAND} -E remove_directory "${qml_bundle_dir}"
-        DEPENDS ${target}_copy_qml_modules
+            --root=/android_rcc_bundle/ -o "${bundle_rcc}" "${bundle_qrc}"
+        DEPENDS "${qml_modules_stamp}"
         COMMENT "Generating QML resource bundle for ${target}"
         VERBATIM
     )
