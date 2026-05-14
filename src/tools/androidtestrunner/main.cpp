@@ -744,33 +744,32 @@ static QStringList runningDevices()
     return devices;
 }
 
+static bool adbReadAppFile(const QString &fileName, QByteArray *output,
+                           int retries, std::chrono::milliseconds backoff)
+{
+    const QString catCmd = "cat files/%1 2> /dev/null"_L1.arg(fileName);
+    const QStringList args = { "shell"_L1, runCommandAsUserArgs(catCmd) };
+    while (retries > 0) {
+        output->clear();
+        if (execAdbCommand(args, output, false) && !output->isEmpty())
+            return true;
+        if (--retries)
+            QThread::msleep(backoff.count());
+    }
+    return false;
+}
+
 static bool pullResults()
 {
+    using namespace std::chrono_literals;
     for (auto it = g_options.outFiles.constBegin(); it != g_options.outFiles.constEnd(); ++it) {
         const QString filePath = it.value();
         const QString fileName = QFileInfo(filePath).fileName();
-        // Get only stdout from cat and get rid of stderr and fail later if the output is empty
-        const QString catCmd = "cat files/%1 2> /dev/null"_L1.arg(fileName);
-        const QStringList fullCatArgs = { "shell"_L1, runCommandAsUserArgs(catCmd) };
-
-        bool catSuccess = false;
         QByteArray output;
 
-        for (int i = 1; i <= g_options.resultsPullRetries; ++i) {
-            catSuccess = execAdbCommand(fullCatArgs, &output, false);
-            if (!catSuccess)
-                continue;
-            else if (!output.isEmpty())
-                break;
-        }
-
-        if (!catSuccess) {
-            qCritical() << "Error: failed to retrieve the test result file %1."_L1.arg(fileName);
-            return false;
-        }
-
-        if (output.isEmpty()) {
-            qCritical() << "Error: the test result file %1 is empty."_L1.arg(fileName);
+        if (!adbReadAppFile(fileName, &output, g_options.resultsPullRetries, 200ms)) {
+            qCritical() << "Error: failed to retrieve test result file %1 (missing or empty)."_L1
+                            .arg(fileName);
             return false;
         }
 
@@ -953,10 +952,12 @@ static QString getCurrentTimeString()
 
 static int testExitCode()
 {
+    using namespace std::chrono_literals;
     QByteArray exitCodeOutput;
-    const QString exitCodeCmd = "cat files/qtest_last_exit_code 2> /dev/null"_L1;
-    if (!execAdbCommand({ "shell"_L1, runCommandAsUserArgs(exitCodeCmd) }, &exitCodeOutput, false)) {
-        qCritical() << "[androidtestrunner] ERROR in command: adb shell cat files/qtest_last_exit_code";
+    if (!adbReadAppFile(u"qtest_last_exit_code"_s, &exitCodeOutput,
+                        g_options.resultsPullRetries, 200ms)) {
+        qCritical() << "[androidtestrunner] ERROR in command: adb shell cat"
+                       " files/qtest_last_exit_code";
         return EXIT_NOEXITCODE;
     }
     qDebug() << "[androidtestrunner] Test exitcode: " << exitCodeOutput;
