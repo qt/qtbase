@@ -1408,6 +1408,27 @@ QRect QDockAreaLayoutInfo::itemRect(const QList<int> &path) const
     return itemRect(index);
 }
 
+QRect QDockAreaLayoutInfo::separatorRect() const
+{
+    if (isEmpty())
+        return QRect();
+    const QRect &r = rect;
+    switch (dockPos) {
+        case QInternal::LeftDock:
+            return QRect(r.right() + 1, r.top(), *sep, r.height());
+        case QInternal::RightDock:
+            return QRect(r.left() - *sep, r.top(), *sep, r.height());
+        case QInternal::TopDock:
+            return QRect(r.left(), r.bottom() + 1, r.width(), *sep);
+        case QInternal::BottomDock:
+            return QRect(r.left(), r.top() - *sep, r.width(), *sep);
+        case QInternal::DockCount:
+            Q_UNREACHABLE();
+            break;
+    }
+    return QRect();
+}
+
 QRect QDockAreaLayoutInfo::separatorRect(int index) const
 {
 #if QT_CONFIG(tabbar)
@@ -2658,14 +2679,14 @@ QList<int> QDockAreaLayout::findSeparator(const QPoint &pos) const
         const QDockAreaLayoutInfo &info = docks[i];
         if (info.isEmpty())
             continue;
-        QRect rect = separatorRect(int(i));
+        QRect rect = info.separatorRect();
         if (!rect.isNull() && sep == 1)
             rect.adjust(-2, -2, 2, 2);
         if (rect.contains(pos) && !info.hasFixedSize()) {
             result << int(i);
             break;
         } else if (info.rect.contains(pos)) {
-            result = docks[i].findSeparator(pos);
+            result = info.findSeparator(pos);
             if (!result.isEmpty()) {
                 result.prepend(int(i));
                 break;
@@ -2719,27 +2740,6 @@ QRect QDockAreaLayout::itemRect(const QList<int> &path) const
     return docks[index].itemRect(path.mid(1));
 }
 
-QRect QDockAreaLayout::separatorRect(int index) const
-{
-    const QDockAreaLayoutInfo &dock = docks[index];
-    if (dock.isEmpty())
-        return QRect();
-    QRect r = dock.rect;
-    switch (index) {
-        case QInternal::LeftDock:
-            return QRect(r.right() + 1, r.top(), sep, r.height());
-        case QInternal::RightDock:
-            return QRect(r.left() - sep, r.top(), sep, r.height());
-        case QInternal::TopDock:
-            return QRect(r.left(), r.bottom() + 1, r.width(), sep);
-        case QInternal::BottomDock:
-            return QRect(r.left(), r.top() - sep, r.width(), sep);
-        default:
-            break;
-    }
-    return QRect();
-}
-
 QRect QDockAreaLayout::separatorRect(const QList<int> &path) const
 {
     Q_ASSERT(!path.isEmpty());
@@ -2747,10 +2747,11 @@ QRect QDockAreaLayout::separatorRect(const QList<int> &path) const
     const int index = path.first();
     Q_ASSERT(index >= 0 && index < int(docks.size()));
 
+    const auto &dock = docks[index];
     if (path.size() == 1)
-        return separatorRect(index);
+        return dock.separatorRect();
     else
-        return docks[index].separatorRect(path.mid(1));
+        return dock.separatorRect(path.mid(1));
 }
 
 bool QDockAreaLayout::insertGap(const QList<int> &path, QLayoutItem *dockWidgetItem)
@@ -3375,11 +3376,10 @@ void QDockAreaLayout::paintSeparators(QPainter *p, QWidget *widget,
                                                 const QRegion &clip,
                                                 const QPoint &mouse) const
 {
-    for (int i = 0; i < QInternal::DockCount; ++i) {
-        const QDockAreaLayoutInfo &dock = docks[i];
+    for (auto &dock : docks) {
         if (dock.isEmpty())
             continue;
-        QRect r = separatorRect(i);
+        const QRect r = dock.separatorRect();
         if (clip.contains(r) && !dock.hasFixedSize()) {
             Qt::Orientation opposite = dock.o == Qt::Horizontal
                                         ? Qt::Vertical : Qt::Horizontal;
@@ -3394,11 +3394,10 @@ QRegion QDockAreaLayout::separatorRegion() const
 {
     QRegion result;
 
-    for (int i = 0; i < QInternal::DockCount; ++i) {
-        const QDockAreaLayoutInfo &dock = docks[i];
+    for (auto &dock : docks) {
         if (dock.isEmpty())
             continue;
-        result |= separatorRect(i);
+        result |= dock.separatorRect();
         result |= dock.separatorRegion();
     }
 
@@ -3478,8 +3477,7 @@ void QDockAreaLayout::updateSeparatorWidgets() const
 {
     int j = 0;
 
-    for (int i = 0; i < QInternal::DockCount; ++i) {
-        const QDockAreaLayoutInfo &dock = docks[i];
+    for (auto &dock : docks) {
         if (dock.isEmpty())
             continue;
 
@@ -3500,9 +3498,10 @@ void QDockAreaLayout::updateSeparatorWidgets() const
         Q_ASSERT(sepWidget);
         raiseSeparatorWidget(sepWidget);
 
-        QRect sepRect = separatorRect(i).adjusted(-2, -2, 2, 2);
+        const QRect sr = dock.separatorRect();
+        const QRect sepRect = sr.adjusted(-2, -2, 2, 2);
         sepWidget->setGeometry(sepRect);
-        sepWidget->setMask( QRegion(separatorRect(i).translated( - sepRect.topLeft())));
+        sepWidget->setMask( QRegion(sr.translated( - sepRect.topLeft())));
         sepWidget->show();
     }
     for (int i = j; i < separatorWidgets.size(); ++i)

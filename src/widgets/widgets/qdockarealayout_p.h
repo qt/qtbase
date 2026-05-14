@@ -134,6 +134,7 @@ public:
     int changeSize(int index, int size, bool below);
     QRect itemRect(int index, bool isGap = false) const;
     QRect itemRect(const QList<int> &path) const;
+    QRect separatorRect() const;
     QRect separatorRect(int index) const;
     QRect separatorRect(const QList<int> &path) const;
 
@@ -231,7 +232,6 @@ public:
     const QDockAreaLayoutInfo *info(const QList<int> &path) const;
     QDockAreaLayoutInfo *info(QWidget *widget);
     QRect itemRect(const QList<int> &path) const;
-    QRect separatorRect(int index) const;
     QRect separatorRect(const QList<int> &path) const;
 
     bool insertGap(const QList<int> &path, QLayoutItem *dockWidgetItem);
