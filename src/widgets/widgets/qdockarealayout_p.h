@@ -23,6 +23,8 @@
 #include "QtCore/qloggingcategory.h"
 #include "QtCore/qrect.h"
 
+#include <array>
+
 QT_REQUIRE_CONFIG(dockwidget);
 
 QT_BEGIN_NAMESPACE
@@ -194,18 +196,20 @@ public:
 #endif // QT_CONFIG(tabbar)
 };
 
+using QDockAreaLayoutCorners = std::array<Qt::DockWidgetArea, 4>;
+
 class Q_AUTOTEST_EXPORT QDockAreaLayout
 {
 public:
     enum { EmptyDropAreaSize = 80 }; // when a dock area is empty, how "wide" is it?
 
-    Qt::DockWidgetArea corners[4]; // use a Qt::Corner for indexing
+    QDockAreaLayoutCorners corners; // use a Qt::Corner for indexing
     QRect rect;
     QLayoutItem *centralWidgetItem;
     QMainWindow *mainWindow;
     QRect centralWidgetRect;
     QDockAreaLayout(QMainWindow *win);
-    QDockAreaLayoutInfo docks[4];
+    std::array<QDockAreaLayoutInfo, 4> docks;
     int sep; // margin between a dock widget and its frame
     bool fallbackToSizeHints; //determines if we should use the sizehint for the dock areas (true until the layout is restored or the separator is moved by user)
     mutable QList<QWidget *> separatorWidgets;
