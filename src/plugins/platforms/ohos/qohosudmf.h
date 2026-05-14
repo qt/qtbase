@@ -56,7 +56,7 @@ private:
 
     std::unique_ptr<::OH_UdmfRecord, void(*)(::OH_UdmfRecord *)> m_nativePtr;
 
-    bool m_invalidated {false};
+    mutable bool m_invalidated {false};
 
     friend class QOhosUdmfData;
 };
