@@ -678,7 +678,7 @@ static void waitForFinished()
     do {
         if (!isRunning())
             break;
-        QThread::msleep(250);
+        QThread::msleep(100);
     } while (!finishedDeadline.hasExpired() && !g_testInfo.isTestRunnerInterrupted.load());
 
     if (finishedDeadline.hasExpired())
