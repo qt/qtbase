@@ -546,7 +546,7 @@ static bool parseTestArgs()
         testEnvVarArgs << "-e"_L1 << ("extraenvvars_"_L1 + key) << value;
     }
 
-    g_options.amStarttestArgs = { "shell"_L1, "am"_L1, "start"_L1,
+    g_options.amStarttestArgs = { "shell"_L1, "am"_L1, "start"_L1, "-W"_L1,
                                   "-n"_L1, activityName,
                                   "-e"_L1, "applicationArguments"_L1, testAppArgs };
     g_options.amStarttestArgs.append(testEnvVarArgs);
