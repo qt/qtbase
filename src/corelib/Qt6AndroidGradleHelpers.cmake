@@ -1761,6 +1761,8 @@ function(_qt_internal_android_get_qml_root_paths target out_root_paths)
     get_target_property(qml_root_paths ${target} QT_QML_ROOT_PATH)
     if(NOT qml_root_paths)
         get_target_property(qml_root_paths ${target} SOURCE_DIR)
+        get_target_property(target_binary_dir ${target} BINARY_DIR)
+        list(APPEND qml_root_paths "${target_binary_dir}")
     endif()
 
     get_target_property(extra_root_paths ${target} QT_QML_IMPORT_SCANNER_EXTRA_ROOT_PATHS)
