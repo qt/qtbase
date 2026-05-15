@@ -26,7 +26,6 @@ namespace QtPrivate {
 
 template <class T>
 struct QPodArrayOps
-        : public QArrayDataPointer<T>
 {
     static_assert (std::is_nothrow_destructible_v<T>, "Types with throwing destructors are not supported in Qt containers.");
 
@@ -34,11 +33,16 @@ protected:
     typedef QTypedArrayData<T> Data;
     using DataPointer = QArrayDataPointer<T>;
 
+private:
+    DataPointer *m_ptr;
+
 public:
+    explicit QPodArrayOps(DataPointer &dp) : m_ptr{&dp} {}
+
     DataPointer *that()
-    { return this; }
+    { return m_ptr; }
     const DataPointer *that() const
-    { return this; }
+    { return m_ptr; }
 
     typedef typename QArrayDataPointer<T>::parameter_type parameter_type;
 
@@ -272,7 +276,6 @@ public:
 
 template <class T>
 struct QGenericArrayOps
-        : public QArrayDataPointer<T>
 {
     static_assert (std::is_nothrow_destructible_v<T>, "Types with throwing destructors are not supported in Qt containers.");
 
@@ -280,11 +283,16 @@ protected:
     typedef QTypedArrayData<T> Data;
     using DataPointer = QArrayDataPointer<T>;
 
+private:
+    DataPointer *m_ptr;
+
 public:
+    explicit QGenericArrayOps(DataPointer &dp) : m_ptr{&dp} {}
+
     DataPointer *that()
-    { return this; }
+    { return m_ptr; }
     const DataPointer *that() const
-    { return this; }
+    { return m_ptr; }
 
     typedef typename QArrayDataPointer<T>::parameter_type parameter_type;
 
@@ -636,6 +644,8 @@ protected:
     using DataPointer = QArrayDataPointer<T>;
 
 public:
+    explicit QMovableArrayOps(DataPointer &dp) : Base(dp) {}
+
     DataPointer *that()
     { return Base::that(); }
     const DataPointer *that() const
@@ -857,6 +867,8 @@ protected:
     using Self = QCommonArrayOps<T>;
 
 public:
+    using Base::Base;
+
     DataPointer *that()
     { return Base::that(); }
     const DataPointer *that() const
@@ -1090,6 +1102,13 @@ template <class T>
 struct QArrayDataOps
     : QtPrivate::QCommonArrayOps<T>
 {
+private:
+    using Base = QtPrivate::QCommonArrayOps<T>;
+public:
+    using Base::Base;
+
+    QArrayDataOps *operator->() noexcept { return this; }
+    const QArrayDataOps *operator->() const noexcept { return this; }
 };
 
 QT_END_NAMESPACE
