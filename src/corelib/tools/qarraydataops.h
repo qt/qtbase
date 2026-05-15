@@ -636,6 +636,11 @@ protected:
     using DataPointer = QArrayDataPointer<T>;
 
 public:
+    DataPointer *that()
+    { return Base::that(); }
+    const DataPointer *that() const
+    { return Base::that(); }
+
     // using QGenericArrayOps<T>::copyAppend;
     // using QGenericArrayOps<T>::moveAppend;
     // using QGenericArrayOps<T>::truncate;
@@ -705,25 +710,25 @@ public:
 
     void insert(qsizetype i, const T *data, qsizetype n)
     {
-        const bool growsAtBegin = this->size != 0 && i == 0;
+        const bool growsAtBegin = that()->size != 0 && i == 0;
         const auto pos = growsAtBegin ? Data::GrowsAtBeginning : Data::GrowsAtEnd;
 
         DataPointer oldData;
-        this->detachAndGrow(pos, n, &data, &oldData);
-        Q_ASSERT((pos == Data::GrowsAtBeginning && this->freeSpaceAtBegin() >= n) ||
-                 (pos == Data::GrowsAtEnd && this->freeSpaceAtEnd() >= n));
+        that()->detachAndGrow(pos, n, &data, &oldData);
+        Q_ASSERT((pos == Data::GrowsAtBeginning && that()->freeSpaceAtBegin() >= n) ||
+                 (pos == Data::GrowsAtEnd && that()->freeSpaceAtEnd() >= n));
 
         if (growsAtBegin) {
             // copy construct items in reverse order at the begin
-            Q_ASSERT(this->freeSpaceAtBegin() >= n);
+            Q_ASSERT(that()->freeSpaceAtBegin() >= n);
             while (n) {
                 --n;
-                new (this->begin() - 1) T(data[n]);
-                --this->ptr;
-                ++this->size;
+                new (that()->begin() - 1) T(data[n]);
+                --that()->ptr;
+                ++that()->size;
             }
         } else {
-            Inserter(this, i, n).insertRange(data, n);
+            Inserter{that(), i, n}.insertRange(data, n);
         }
     }
 
@@ -731,55 +736,55 @@ public:
     {
         T copy(t);
 
-        const bool growsAtBegin = this->size != 0 && i == 0;
+        const bool growsAtBegin = that()->size != 0 && i == 0;
         const auto pos = growsAtBegin ? Data::GrowsAtBeginning : Data::GrowsAtEnd;
 
-        this->detachAndGrow(pos, n, nullptr, nullptr);
-        Q_ASSERT((pos == Data::GrowsAtBeginning && this->freeSpaceAtBegin() >= n) ||
-                 (pos == Data::GrowsAtEnd && this->freeSpaceAtEnd() >= n));
+        that()->detachAndGrow(pos, n, nullptr, nullptr);
+        Q_ASSERT((pos == Data::GrowsAtBeginning && that()->freeSpaceAtBegin() >= n) ||
+                 (pos == Data::GrowsAtEnd && that()->freeSpaceAtEnd() >= n));
 
         if (growsAtBegin) {
             // copy construct items in reverse order at the begin
-            Q_ASSERT(this->freeSpaceAtBegin() >= n);
+            Q_ASSERT(that()->freeSpaceAtBegin() >= n);
             while (n--) {
-                new (this->begin() - 1) T(copy);
-                --this->ptr;
-                ++this->size;
+                new (that()->begin() - 1) T(copy);
+                --that()->ptr;
+                ++that()->size;
             }
         } else {
-            Inserter(this, i, n).insertFill(copy, n);
+            Inserter{that(), i, n}.insertFill(copy, n);
         }
     }
 
     template<typename... Args>
     void emplace(qsizetype i, Args &&... args)
     {
-        bool detach = this->needsDetach();
+        bool detach = that()->needsDetach();
         if (!detach) {
-            if (i == this->size && this->freeSpaceAtEnd()) {
-                new (this->end()) T(std::forward<Args>(args)...);
-                ++this->size;
+            if (i == that()->size && that()->freeSpaceAtEnd()) {
+                new (that()->end()) T(std::forward<Args>(args)...);
+                ++that()->size;
                 return;
             }
-            if (i == 0 && this->freeSpaceAtBegin()) {
-                new (this->begin() - 1) T(std::forward<Args>(args)...);
-                --this->ptr;
-                ++this->size;
+            if (i == 0 && that()->freeSpaceAtBegin()) {
+                new (that()->begin() - 1) T(std::forward<Args>(args)...);
+                --that()->ptr;
+                ++that()->size;
                 return;
             }
         }
         T tmp(std::forward<Args>(args)...);
-        const bool growsAtBegin = this->size != 0 && i == 0;
+        const bool growsAtBegin = that()->size != 0 && i == 0;
         const auto pos = growsAtBegin ? Data::GrowsAtBeginning : Data::GrowsAtEnd;
 
-        this->detachAndGrow(pos, 1, nullptr, nullptr);
+        that()->detachAndGrow(pos, 1, nullptr, nullptr);
         if (growsAtBegin) {
-            Q_ASSERT(this->freeSpaceAtBegin());
-            new (this->begin() - 1) T(std::move(tmp));
-            --this->ptr;
-            ++this->size;
+            Q_ASSERT(that()->freeSpaceAtBegin());
+            new (that()->begin() - 1) T(std::move(tmp));
+            --that()->ptr;
+            ++that()->size;
         } else {
-            Inserter(this, i, 1).insertOne(std::move(tmp));
+            Inserter{that(), i, 1}.insertOne(std::move(tmp));
         }
     }
 
@@ -787,10 +792,10 @@ public:
     {
         T *e = b + n;
 
-        Q_ASSERT(this->isMutable());
+        Q_ASSERT(that()->isMutable());
         Q_ASSERT(b < e);
-        Q_ASSERT(b >= this->begin() && b < this->end());
-        Q_ASSERT(e > this->begin() && e <= this->end());
+        Q_ASSERT(b >= that()->begin() && b < that()->end());
+        Q_ASSERT(e > that()->begin() && e <= that()->end());
 
         // Comply with std::vector::erase(): erased elements and all after them
         // are invalidated. However, erasing from the beginning effectively
@@ -798,21 +803,21 @@ public:
         // erase by moving towards the end.
 
         std::destroy(b, e);
-        if (b == this->begin() && e != this->end()) {
-            this->ptr = e;
-        } else if (e != this->end()) {
-            memmove(static_cast<void *>(b), static_cast<const void *>(e), (static_cast<const T *>(this->end()) - e)*sizeof(T));
+        if (b == that()->begin() && e != that()->end()) {
+            that()->ptr = e;
+        } else if (e != that()->end()) {
+            memmove(static_cast<void *>(b), static_cast<const void *>(e), (static_cast<const T *>(that()->end()) - e)*sizeof(T));
         }
-        this->size -= n;
+        that()->size -= n;
     }
 
     void reallocate(qsizetype alloc, QArrayData::AllocationOption option)
     {
-        auto pair = Data::reallocateUnaligned(this->d, this->ptr, alloc, option);
+        auto pair = Data::reallocateUnaligned(that()->d, that()->ptr, alloc, option);
         Q_CHECK_PTR(pair.ptr);
         Q_ASSERT(pair.header != nullptr);
-        this->d = pair.header;
-        this->ptr = pair.ptr;
+        that()->d = pair.header;
+        that()->ptr = pair.ptr;
     }
 };
 
@@ -852,16 +857,21 @@ protected:
     using Self = QCommonArrayOps<T>;
 
 public:
+    DataPointer *that()
+    { return Base::that(); }
+    const DataPointer *that() const
+    { return Base::that(); }
+
     // using Base::truncate;
     // using Base::destroyAll;
 
     template<typename It>
     void appendIteratorRange(It b, It e, QtPrivate::IfIsForwardIterator<It> = true)
     {
-        Q_ASSERT(this->isMutable() || b == e);
-        Q_ASSERT(!this->isShared() || b == e);
+        Q_ASSERT(that()->isMutable() || b == e);
+        Q_ASSERT(!that()->isShared() || b == e);
         const qsizetype distance = std::distance(b, e);
-        Q_ASSERT(distance >= 0 && distance <= this->allocatedCapacity() - this->size);
+        Q_ASSERT(distance >= 0 && distance <= that()->allocatedCapacity() - that()->size);
         Q_UNUSED(distance);
 
 #if __cplusplus >= 202002L && defined(__cpp_concepts) && defined(__cpp_lib_concepts)
@@ -876,10 +886,10 @@ public:
         } else
 #endif
         {
-            T *iter = this->end();
+            T *iter = that()->end();
             for (; b != e; ++iter, ++b) {
                 new (iter) T(*b);
-                ++this->size;
+                ++that()->size;
             }
         }
     }
@@ -894,30 +904,30 @@ public:
         DataPointer old;
 
         // points into range:
-        if (QtPrivate::q_points_into_range(b, *this))
-            this->detachAndGrow(QArrayData::GrowsAtEnd, n, &b, &old);
+        if (QtPrivate::q_points_into_range(b, *that()))
+            that()->detachAndGrow(QArrayData::GrowsAtEnd, n, &b, &old);
         else
-            this->detachAndGrow(QArrayData::GrowsAtEnd, n, nullptr, nullptr);
-        Q_ASSERT(this->freeSpaceAtEnd() >= n);
+            that()->detachAndGrow(QArrayData::GrowsAtEnd, n, nullptr, nullptr);
+        Q_ASSERT(that()->freeSpaceAtEnd() >= n);
         // b might be updated so use [b, n)
         Base::copyAppend(b, b + n);
     }
 
     void appendUninitialized(qsizetype newSize)
     {
-        Q_ASSERT(this->isMutable());
-        Q_ASSERT(!this->isShared());
-        Q_ASSERT(newSize > this->size);
-        Q_ASSERT(newSize - this->size <= this->freeSpaceAtEnd());
+        Q_ASSERT(that()->isMutable());
+        Q_ASSERT(!that()->isShared());
+        Q_ASSERT(newSize > that()->size);
+        Q_ASSERT(newSize - that()->size <= that()->freeSpaceAtEnd());
 
 
-        T *const b = this->begin() + this->size;
-        T *const e = this->begin() + newSize;
+        T *const b = that()->begin() + that()->size;
+        T *const e = that()->begin() + newSize;
         if constexpr (std::is_constructible_v<T, Qt::Initialization>)
             std::uninitialized_fill(b, e, Qt::Uninitialized);
         else
             std::uninitialized_default_construct(b, e);
-        this->size = newSize;
+        that()->size = newSize;
     }
 
     using Base::assign;
@@ -931,24 +941,24 @@ public:
 
         const qsizetype n = IsFwdIt ? std::distance(first, last) : 0;
         bool undoPrependOptimization = true;
-        bool needCapacity = n > this->constAllocatedCapacity();
-        if (needCapacity || this->needsDetach()) {
-            qsizetype newCapacity = this->detachCapacity(n);
-            bool wasLastRef = !this->deref();
+        bool needCapacity = n > that()->constAllocatedCapacity();
+        if (needCapacity || that()->needsDetach()) {
+            qsizetype newCapacity = that()->detachCapacity(n);
+            bool wasLastRef = !that()->deref();
             if (wasLastRef && needCapacity) {
                 // free memory we can't reuse
                 Base::destroyAll();
-                Data::deallocate(this->d);
+                Data::deallocate(that()->d);
             }
             if (!needCapacity && wasLastRef) {
                 // we were the last reference and can reuse the storage
-                this->d->ref_.storeRelaxed(1);
+                that()->d->ref_.storeRelaxed(1);
             } else {
                 // we must allocate new memory
                 auto [hdr, p] = Data::allocate(newCapacity);
-                this->d = hdr;
-                this->ptr = p;
-                this->size = 0;
+                that()->d = hdr;
+                that()->ptr = p;
+                that()->size = 0;
                 undoPrependOptimization = false;
             }
         }
@@ -961,17 +971,17 @@ public:
             // The alternative would be to keep track of two active, disjoint ranges.
             if (undoPrependOptimization) {
                 Base::truncate(0);
-                this->setBegin(Data::dataStart(this->d, alignof(typename Data::AlignmentDummy)));
+                that()->setBegin(Data::dataStart(that()->d, alignof(typename Data::AlignmentDummy)));
                 undoPrependOptimization = false;
             }
         }
 
-        const auto dend = this->end();
-        T *dst = this->begin();
+        const auto dend = that()->end();
+        T *dst = that()->begin();
         T *capacityBegin = dst;
         if (undoPrependOptimization) {
-            capacityBegin = Data::dataStart(this->d, alignof(typename Data::AlignmentDummy));
-            this->setBegin(capacityBegin); // undo prepend optimization
+            capacityBegin = Data::dataStart(that()->d, alignof(typename Data::AlignmentDummy));
+            that()->setBegin(capacityBegin); // undo prepend optimization
         }
 
         assign_impl(first, last, capacityBegin, dst, dend, proj, Category{});
@@ -992,13 +1002,13 @@ public:
             //  have preconditons, so typically aren't noexcept)
             while (true) {
                 if (dst == prependBufferEnd) {  // ran out of prepend buffer space
-                    this->size += offset;
+                    that()->size += offset;
                     // we now have a contiguous buffer, continue with the main loop:
                     break;
                 }
                 if (first == last) {            // ran out of elements to assign
                     std::destroy(prependBufferEnd, dend);
-                    this->size = dst - this->begin();
+                    that()->size = dst - that()->begin();
                     return;
                 }
                 // construct element in prepend buffer
@@ -1014,7 +1024,7 @@ public:
             }
             if (dst == dend) {      // ran out of existing elements to overwrite
                 do {
-                    Base::emplace(this->size, std::invoke(proj, *first));
+                    Base::emplace(that()->size, std::invoke(proj, *first));
                 } while (++first != last);
                 return;         // size() is already correct (and dst invalidated)!
             }
@@ -1022,7 +1032,7 @@ public:
             ++dst;
             ++first;
         }
-        this->size = dst - this->begin();
+        that()->size = dst - that()->begin();
     }
 
     template <typename InputIterator, typename Projection>
@@ -1070,7 +1080,7 @@ public:
             if (dst < dend)
                 std::destroy(dst, dend);
         }
-        this->size = n;
+        that()->size = n;
     }
 };
 
