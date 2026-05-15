@@ -20,6 +20,7 @@ if(ANDROID)
         "${CMAKE_CURRENT_SOURCE_DIR}/${QT_CMAKE_EXPORT_NAMESPACE}AndroidDynamicFeatureHelpers.cmake"
         "${CMAKE_CURRENT_SOURCE_DIR}/${QT_CMAKE_EXPORT_NAMESPACE}AndroidGradleHelpers.cmake"
         "${CMAKE_CURRENT_SOURCE_DIR}/${QT_CMAKE_EXPORT_NAMESPACE}AndroidPermissionHelpers.cmake"
+        "${CMAKE_CURRENT_SOURCE_DIR}/QtAndroidScanQmlImports.cmake"
     )
 endif()
 if(OHOS)
