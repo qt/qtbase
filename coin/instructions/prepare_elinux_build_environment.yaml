@@ -15,7 +15,7 @@ prepare_elinux_build_environment: &prepare_elinux_build_environment
         ./b2qt-x86_64-meta-toolchain-b2qt-embedded-qt6-sdk-imx8qm-mek.sh -d /opt/b2qt/imx8qm -y
       filename: "install_b2qt_toolchain.sh"
       fileMode: 493
-    - type: ExcuteCommand
+    - type: ExecuteCommand
       command: ["./install_b2qt_toolchain.sh"]
       maxTimeInSeconds: 3600
       maxTimeBetweenOutput: 3600
