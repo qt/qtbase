@@ -35,31 +35,36 @@ protected:
     using DataPointer = QArrayDataPointer<T>;
 
 public:
+    DataPointer *that()
+    { return this; }
+    const DataPointer *that() const
+    { return this; }
+
     typedef typename QArrayDataPointer<T>::parameter_type parameter_type;
 
     void copyAppend(const T *b, const T *e) noexcept
     {
-        Q_ASSERT(this->isMutable() || b == e);
-        Q_ASSERT(!this->isShared() || b == e);
+        Q_ASSERT(that()->isMutable() || b == e);
+        Q_ASSERT(!that()->isShared() || b == e);
         Q_ASSERT(b <= e);
-        Q_ASSERT((e - b) <= this->freeSpaceAtEnd());
+        Q_ASSERT((e - b) <= that()->freeSpaceAtEnd());
 
         if (b == e)
             return;
 
-        ::memcpy(static_cast<void *>(this->end()), static_cast<const void *>(b), (e - b) * sizeof(T));
-        this->size += (e - b);
+        ::memcpy(static_cast<void *>(that()->end()), static_cast<const void *>(b), (e - b) * sizeof(T));
+        that()->size += (e - b);
     }
 
     void copyAppend(qsizetype n, parameter_type t) noexcept
     {
-        Q_ASSERT(!this->isShared() || n == 0);
-        Q_ASSERT(this->freeSpaceAtEnd() >= n);
+        Q_ASSERT(!that()->isShared() || n == 0);
+        Q_ASSERT(that()->freeSpaceAtEnd() >= n);
         if (!n)
             return;
 
-        T *where = this->end();
-        this->size += qsizetype(n);
+        T *where = that()->end();
+        that()->size += qsizetype(n);
         while (n--)
             *where++ = t;
     }
@@ -71,17 +76,17 @@ public:
 
     void truncate(size_t newSize) noexcept
     {
-        Q_ASSERT(this->isMutable());
-        Q_ASSERT(!this->isShared());
-        Q_ASSERT(newSize <= size_t(this->size));
+        Q_ASSERT(that()->isMutable());
+        Q_ASSERT(!that()->isShared());
+        Q_ASSERT(newSize <= size_t(that()->size));
 
-        this->size = qsizetype(newSize);
+        that()->size = qsizetype(newSize);
     }
 
     void destroyAll() noexcept // Call from destructors, ONLY!
     {
-        Q_ASSERT(this->d);
-        Q_ASSERT(this->d->ref_.loadRelaxed() == 0);
+        Q_ASSERT(that()->d);
+        Q_ASSERT(that()->d->ref_.loadRelaxed() == 0);
 
         // As this is to be called only from destructor, it doesn't need to be
         // exception safe; size not updated.
@@ -89,32 +94,32 @@ public:
 
     T *createHole(QArrayData::GrowthPosition pos, qsizetype where, qsizetype n)
     {
-        Q_ASSERT((pos == QArrayData::GrowsAtBeginning && n <= this->freeSpaceAtBegin()) ||
-                 (pos == QArrayData::GrowsAtEnd && n <= this->freeSpaceAtEnd()));
+        Q_ASSERT((pos == QArrayData::GrowsAtBeginning && n <= that()->freeSpaceAtBegin()) ||
+                 (pos == QArrayData::GrowsAtEnd && n <= that()->freeSpaceAtEnd()));
 
-        T *insertionPoint = this->ptr + where;
+        T *insertionPoint = that()->ptr + where;
         if (pos == QArrayData::GrowsAtEnd) {
-            if (where < this->size)
-                ::memmove(static_cast<void *>(insertionPoint + n), static_cast<void *>(insertionPoint), (this->size - where) * sizeof(T));
+            if (where < that()->size)
+                ::memmove(static_cast<void *>(insertionPoint + n), static_cast<void *>(insertionPoint), (that()->size - where) * sizeof(T));
         } else {
             Q_ASSERT(where == 0);
-            this->ptr -= n;
+            that()->ptr -= n;
             insertionPoint -= n;
         }
-        this->size += n;
+        that()->size += n;
         return insertionPoint;
     }
 
     void insert(qsizetype i, const T *data, qsizetype n)
     {
         typename Data::GrowthPosition pos = Data::GrowsAtEnd;
-        if (this->size != 0 && i == 0)
+        if (that()->size != 0 && i == 0)
             pos = Data::GrowsAtBeginning;
 
         DataPointer oldData;
-        this->detachAndGrow(pos, n, &data, &oldData);
-        Q_ASSERT((pos == Data::GrowsAtBeginning && this->freeSpaceAtBegin() >= n) ||
-                 (pos == Data::GrowsAtEnd && this->freeSpaceAtEnd() >= n));
+        that()->detachAndGrow(pos, n, &data, &oldData);
+        Q_ASSERT((pos == Data::GrowsAtBeginning && that()->freeSpaceAtBegin() >= n) ||
+                 (pos == Data::GrowsAtEnd && that()->freeSpaceAtEnd() >= n));
 
         T *where = createHole(pos, i, n);
         ::memcpy(static_cast<void *>(where), static_cast<const void *>(data), n * sizeof(T));
@@ -125,12 +130,12 @@ public:
         T copy(t);
 
         typename Data::GrowthPosition pos = Data::GrowsAtEnd;
-        if (this->size != 0 && i == 0)
+        if (that()->size != 0 && i == 0)
             pos = Data::GrowsAtBeginning;
 
-        this->detachAndGrow(pos, n, nullptr, nullptr);
-        Q_ASSERT((pos == Data::GrowsAtBeginning && this->freeSpaceAtBegin() >= n) ||
-                 (pos == Data::GrowsAtEnd && this->freeSpaceAtEnd() >= n));
+        that()->detachAndGrow(pos, n, nullptr, nullptr);
+        Q_ASSERT((pos == Data::GrowsAtBeginning && that()->freeSpaceAtBegin() >= n) ||
+                 (pos == Data::GrowsAtEnd && that()->freeSpaceAtEnd() >= n));
 
         T *where = createHole(pos, i, n);
         while (n--)
@@ -140,26 +145,26 @@ public:
     template<typename... Args>
     void emplace(qsizetype i, Args &&... args)
     {
-        bool detach = this->needsDetach();
+        bool detach = that()->needsDetach();
         if (!detach) {
-            if (i == this->size && this->freeSpaceAtEnd()) {
-                new (this->end()) T(std::forward<Args>(args)...);
-                ++this->size;
+            if (i == that()->size && that()->freeSpaceAtEnd()) {
+                new (that()->end()) T(std::forward<Args>(args)...);
+                ++that()->size;
                 return;
             }
-            if (i == 0 && this->freeSpaceAtBegin()) {
-                new (this->begin() - 1) T(std::forward<Args>(args)...);
-                --this->ptr;
-                ++this->size;
+            if (i == 0 && that()->freeSpaceAtBegin()) {
+                new (that()->begin() - 1) T(std::forward<Args>(args)...);
+                --that()->ptr;
+                ++that()->size;
                 return;
             }
         }
         T tmp(std::forward<Args>(args)...);
         typename QArrayData::GrowthPosition pos = QArrayData::GrowsAtEnd;
-        if (this->size != 0 && i == 0)
+        if (that()->size != 0 && i == 0)
             pos = QArrayData::GrowsAtBeginning;
 
-        this->detachAndGrow(pos, 1, nullptr, nullptr);
+        that()->detachAndGrow(pos, 1, nullptr, nullptr);
 
         T *where = createHole(pos, i, 1);
         new (where) T(std::move(tmp));
@@ -168,69 +173,69 @@ public:
     void erase(T *b, qsizetype n)
     {
         T *e = b + n;
-        Q_ASSERT(this->isMutable());
+        Q_ASSERT(that()->isMutable());
         Q_ASSERT(b < e);
-        Q_ASSERT(b >= this->begin() && b < this->end());
-        Q_ASSERT(e > this->begin() && e <= this->end());
+        Q_ASSERT(b >= that()->begin() && b < that()->end());
+        Q_ASSERT(e > that()->begin() && e <= that()->end());
 
         // Comply with std::vector::erase(): erased elements and all after them
         // are invalidated. However, erasing from the beginning effectively
         // means that all iterators are invalidated. We can use this freedom to
         // erase by moving towards the end.
-        if (b == this->begin() && e != this->end()) {
-            this->ptr = e;
-        } else if (e != this->end()) {
+        if (b == that()->begin() && e != that()->end()) {
+            that()->ptr = e;
+        } else if (e != that()->end()) {
             ::memmove(static_cast<void *>(b), static_cast<void *>(e),
-                      (static_cast<T *>(this->end()) - e) * sizeof(T));
+                      (static_cast<T *>(that()->end()) - e) * sizeof(T));
         }
-        this->size -= n;
+        that()->size -= n;
     }
 
     void eraseFirst() noexcept
     {
-        Q_ASSERT(this->isMutable());
-        Q_ASSERT(this->size);
-        ++this->ptr;
-        --this->size;
+        Q_ASSERT(that()->isMutable());
+        Q_ASSERT(that()->size);
+        ++that()->ptr;
+        --that()->size;
     }
 
     void eraseLast() noexcept
     {
-        Q_ASSERT(this->isMutable());
-        Q_ASSERT(this->size);
-        --this->size;
+        Q_ASSERT(that()->isMutable());
+        Q_ASSERT(that()->size);
+        --that()->size;
     }
 
     template <typename Predicate>
     qsizetype eraseIf(Predicate pred)
     {
         qsizetype result = 0;
-        if (this->size == 0)
+        if (that()->size == 0)
             return result;
 
-        if (!this->needsDetach()) {
-            auto end = this->end();
-            auto it = std::remove_if(this->begin(), end, pred);
+        if (!that()->needsDetach()) {
+            auto end = that()->end();
+            auto it = std::remove_if(that()->begin(), end, pred);
             if (it != end) {
                 result = std::distance(it, end);
                 erase(it, result);
             }
         } else {
-            const auto begin = this->begin();
-            const auto end = this->end();
+            const auto begin = that()->begin();
+            const auto end = that()->end();
             auto it = std::find_if(begin, end, pred);
             if (it == end)
                 return result;
 
-            QArrayDataPointer<T> other(this->size);
+            QArrayDataPointer<T> other(that()->size);
             Q_CHECK_PTR(other.data());
             auto dest = other.begin();
             // std::uninitialized_copy will fallback to ::memcpy/memmove()
             dest = std::uninitialized_copy(begin, it, dest);
             dest = q_uninitialized_remove_copy_if(std::next(it), end, dest, pred);
             other.size = std::distance(other.data(), dest);
-            result = this->size - other.size;
-            this->swap(other);
+            result = that()->size - other.size;
+            that()->swap(other);
         }
         return result;
     }
@@ -239,17 +244,17 @@ public:
 
     void copyRanges(std::initializer_list<Span> ranges)
     {
-        auto it = this->begin();
+        auto it = that()->begin();
         std::for_each(ranges.begin(), ranges.end(), [&it](const auto &span) {
             it = std::copy(span.begin, span.end, it);
         });
-        this->size = std::distance(this->begin(), it);
+        that()->size = std::distance(that()->begin(), it);
     }
 
     void assign(T *b, T *e, parameter_type t) noexcept
     {
         Q_ASSERT(b <= e);
-        Q_ASSERT(b >= this->begin() && e <= this->end());
+        Q_ASSERT(b >= that()->begin() && e <= that()->end());
 
         while (b != e)
             ::memcpy(static_cast<void *>(b++), static_cast<const void *>(&t), sizeof(T));
@@ -257,11 +262,11 @@ public:
 
     void reallocate(qsizetype alloc, QArrayData::AllocationOption option)
     {
-        auto pair = Data::reallocateUnaligned(this->d, this->ptr, alloc, option);
+        auto pair = Data::reallocateUnaligned(that()->d, that()->ptr, alloc, option);
         Q_CHECK_PTR(pair.ptr);
         Q_ASSERT(pair.header != nullptr);
-        this->d = pair.header;
-        this->ptr = pair.ptr;
+        that()->d = pair.header;
+        that()->ptr = pair.ptr;
     }
 };
 
@@ -276,77 +281,82 @@ protected:
     using DataPointer = QArrayDataPointer<T>;
 
 public:
+    DataPointer *that()
+    { return this; }
+    const DataPointer *that() const
+    { return this; }
+
     typedef typename QArrayDataPointer<T>::parameter_type parameter_type;
 
     void copyAppend(const T *b, const T *e)
     {
-        Q_ASSERT(this->isMutable() || b == e);
-        Q_ASSERT(!this->isShared() || b == e);
+        Q_ASSERT(that()->isMutable() || b == e);
+        Q_ASSERT(!that()->isShared() || b == e);
         Q_ASSERT(b <= e);
-        Q_ASSERT((e - b) <= this->freeSpaceAtEnd());
+        Q_ASSERT((e - b) <= that()->freeSpaceAtEnd());
 
         if (b == e) // short-cut and handling the case b and e == nullptr
             return;
 
-        T *data = this->begin();
+        T *data = that()->begin();
         while (b < e) {
-            new (data + this->size) T(*b);
+            new (data + that()->size) T(*b);
             ++b;
-            ++this->size;
+            ++that()->size;
         }
     }
 
     void copyAppend(qsizetype n, parameter_type t)
     {
-        Q_ASSERT(!this->isShared() || n == 0);
-        Q_ASSERT(this->freeSpaceAtEnd() >= n);
+        Q_ASSERT(!that()->isShared() || n == 0);
+        Q_ASSERT(that()->freeSpaceAtEnd() >= n);
         if (!n)
             return;
 
-        T *data = this->begin();
+        T *data = that()->begin();
         while (n--) {
-            new (data + this->size) T(t);
-            ++this->size;
+            new (data + that()->size) T(t);
+            ++that()->size;
         }
     }
 
     void moveAppend(T *b, T *e)
     {
-        Q_ASSERT(this->isMutable() || b == e);
-        Q_ASSERT(!this->isShared() || b == e);
+        Q_ASSERT(that()->isMutable() || b == e);
+        Q_ASSERT(!that()->isShared() || b == e);
         Q_ASSERT(b <= e);
-        Q_ASSERT((e - b) <= this->freeSpaceAtEnd());
+        Q_ASSERT((e - b) <= that()->freeSpaceAtEnd());
 
         if (b == e)
             return;
 
-        T *data = this->begin();
+        T *data = that()->begin();
         while (b < e) {
-            new (data + this->size) T(std::move(*b));
+            new (data + that()->size) T(std::move(*b));
             ++b;
-            ++this->size;
+            ++that()->size;
         }
     }
 
     void truncate(size_t newSize)
     {
-        Q_ASSERT(this->isMutable());
-        Q_ASSERT(!this->isShared());
-        Q_ASSERT(newSize <= size_t(this->size));
+        Q_ASSERT(that()->isMutable());
+        Q_ASSERT(!that()->isShared());
+        Q_ASSERT(newSize <= size_t(that()->size));
 
-        std::destroy(this->begin() + newSize, this->end());
-        this->size = newSize;
+        std::destroy(that()->begin() + newSize, that()->end());
+        that()->size = newSize;
     }
 
     void destroyAll() // Call from destructors, ONLY
     {
-        Q_ASSERT(this->d);
+        Q_ASSERT(that()->d);
         // As this is to be called only from destructor, it doesn't need to be
         // exception safe; size not updated.
 
-        Q_ASSERT(this->d->ref_.loadRelaxed() == 0);
+        Q_ASSERT(that()->d->ref_.loadRelaxed() == 0);
 
-        std::destroy(this->begin(), this->end());
+        std::destroy(that()->begin(), that()->end());
     }
 
     struct Inserter
@@ -478,25 +488,25 @@ public:
 
     void insert(qsizetype i, const T *data, qsizetype n)
     {
-        const bool growsAtBegin = this->size != 0 && i == 0;
+        const bool growsAtBegin = that()->size != 0 && i == 0;
         const auto pos = growsAtBegin ? Data::GrowsAtBeginning : Data::GrowsAtEnd;
 
         DataPointer oldData;
-        this->detachAndGrow(pos, n, &data, &oldData);
-        Q_ASSERT((pos == Data::GrowsAtBeginning && this->freeSpaceAtBegin() >= n) ||
-                 (pos == Data::GrowsAtEnd && this->freeSpaceAtEnd() >= n));
+        that()->detachAndGrow(pos, n, &data, &oldData);
+        Q_ASSERT((pos == Data::GrowsAtBeginning && that()->freeSpaceAtBegin() >= n) ||
+                 (pos == Data::GrowsAtEnd && that()->freeSpaceAtEnd() >= n));
 
         if (growsAtBegin) {
             // copy construct items in reverse order at the begin
-            Q_ASSERT(this->freeSpaceAtBegin() >= n);
+            Q_ASSERT(that()->freeSpaceAtBegin() >= n);
             while (n) {
                 --n;
-                new (this->begin() - 1) T(data[n]);
-                --this->ptr;
-                ++this->size;
+                new (that()->begin() - 1) T(data[n]);
+                --that()->ptr;
+                ++that()->size;
             }
         } else {
-            Inserter(this).insert(i, data, n);
+            Inserter{that()}.insert(i, data, n);
         }
     }
 
@@ -504,75 +514,75 @@ public:
     {
         T copy(t);
 
-        const bool growsAtBegin = this->size != 0 && i == 0;
+        const bool growsAtBegin = that()->size != 0 && i == 0;
         const auto pos = growsAtBegin ? Data::GrowsAtBeginning : Data::GrowsAtEnd;
 
-        this->detachAndGrow(pos, n, nullptr, nullptr);
-        Q_ASSERT((pos == Data::GrowsAtBeginning && this->freeSpaceAtBegin() >= n) ||
-                 (pos == Data::GrowsAtEnd && this->freeSpaceAtEnd() >= n));
+        that()->detachAndGrow(pos, n, nullptr, nullptr);
+        Q_ASSERT((pos == Data::GrowsAtBeginning && that()->freeSpaceAtBegin() >= n) ||
+                 (pos == Data::GrowsAtEnd && that()->freeSpaceAtEnd() >= n));
 
         if (growsAtBegin) {
             // copy construct items in reverse order at the begin
-            Q_ASSERT(this->freeSpaceAtBegin() >= n);
+            Q_ASSERT(that()->freeSpaceAtBegin() >= n);
             while (n--) {
-                new (this->begin() - 1) T(copy);
-                --this->ptr;
-                ++this->size;
+                new (that()->begin() - 1) T(copy);
+                --that()->ptr;
+                ++that()->size;
             }
         } else {
-            Inserter(this).insert(i, copy, n);
+            Inserter{that()}.insert(i, copy, n);
         }
     }
 
     template<typename... Args>
     void emplace(qsizetype i, Args &&... args)
     {
-        bool detach = this->needsDetach();
+        bool detach = that()->needsDetach();
         if (!detach) {
-            if (i == this->size && this->freeSpaceAtEnd()) {
-                new (this->end()) T(std::forward<Args>(args)...);
-                ++this->size;
+            if (i == that()->size && that()->freeSpaceAtEnd()) {
+                new (that()->end()) T(std::forward<Args>(args)...);
+                ++that()->size;
                 return;
             }
-            if (i == 0 && this->freeSpaceAtBegin()) {
-                new (this->begin() - 1) T(std::forward<Args>(args)...);
-                --this->ptr;
-                ++this->size;
+            if (i == 0 && that()->freeSpaceAtBegin()) {
+                new (that()->begin() - 1) T(std::forward<Args>(args)...);
+                --that()->ptr;
+                ++that()->size;
                 return;
             }
         }
         T tmp(std::forward<Args>(args)...);
-        const bool growsAtBegin = this->size != 0 && i == 0;
+        const bool growsAtBegin = that()->size != 0 && i == 0;
         const auto pos = growsAtBegin ? Data::GrowsAtBeginning : Data::GrowsAtEnd;
 
-        this->detachAndGrow(pos, 1, nullptr, nullptr);
+        that()->detachAndGrow(pos, 1, nullptr, nullptr);
 
         if (growsAtBegin) {
-            Q_ASSERT(this->freeSpaceAtBegin());
-            new (this->begin() - 1) T(std::move(tmp));
-            --this->ptr;
-            ++this->size;
+            Q_ASSERT(that()->freeSpaceAtBegin());
+            new (that()->begin() - 1) T(std::move(tmp));
+            --that()->ptr;
+            ++that()->size;
         } else {
-            Inserter(this).insertOne(i, std::move(tmp));
+            Inserter{that()}.insertOne(i, std::move(tmp));
         }
     }
 
     void erase(T *b, qsizetype n)
     {
         T *e = b + n;
-        Q_ASSERT(this->isMutable());
+        Q_ASSERT(that()->isMutable());
         Q_ASSERT(b < e);
-        Q_ASSERT(b >= this->begin() && b < this->end());
-        Q_ASSERT(e > this->begin() && e <= this->end());
+        Q_ASSERT(b >= that()->begin() && b < that()->end());
+        Q_ASSERT(e > that()->begin() && e <= that()->end());
 
         // Comply with std::vector::erase(): erased elements and all after them
         // are invalidated. However, erasing from the beginning effectively
         // means that all iterators are invalidated. We can use this freedom to
         // erase by moving towards the end.
-        if (b == this->begin() && e != this->end()) {
-            this->ptr = e;
+        if (b == that()->begin() && e != that()->end()) {
+            that()->ptr = e;
         } else {
-            const T *const end = this->end();
+            const T *const end = that()->end();
 
             // move (by assignment) the elements from e to end
             // onto b to the new end
@@ -582,32 +592,32 @@ public:
                 ++e;
             }
         }
-        this->size -= n;
+        that()->size -= n;
         std::destroy(b, e);
     }
 
     void eraseFirst() noexcept
     {
-        Q_ASSERT(this->isMutable());
-        Q_ASSERT(this->size);
-        this->begin()->~T();
-        ++this->ptr;
-        --this->size;
+        Q_ASSERT(that()->isMutable());
+        Q_ASSERT(that()->size);
+        that()->begin()->~T();
+        ++that()->ptr;
+        --that()->size;
     }
 
     void eraseLast() noexcept
     {
-        Q_ASSERT(this->isMutable());
-        Q_ASSERT(this->size);
-        (this->end() - 1)->~T();
-        --this->size;
+        Q_ASSERT(that()->isMutable());
+        Q_ASSERT(that()->size);
+        (that()->end() - 1)->~T();
+        --that()->size;
     }
 
 
     void assign(T *b, T *e, parameter_type t)
     {
         Q_ASSERT(b <= e);
-        Q_ASSERT(b >= this->begin() && e <= this->end());
+        Q_ASSERT(b >= that()->begin() && e <= that()->end());
 
         while (b != e)
             *b++ = t;
