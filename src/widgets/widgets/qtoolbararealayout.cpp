@@ -593,7 +593,7 @@ int QToolBarAreaLayoutInfo::distance(const QPoint &pos) const
 
 QToolBarAreaLayout::QToolBarAreaLayout(const QMainWindow *win) : mainWindow(win), visible(true)
 {
-    for (int i = 0; i < QInternal::DockCount; ++i) {
+    for (std::size_t i = 0; i < docks.size(); ++i) {
         QInternal::DockPosition pos = static_cast<QInternal::DockPosition>(i);
         docks[i] = QToolBarAreaLayoutInfo(pos);
     }
@@ -696,15 +696,11 @@ QLayoutItem *QToolBarAreaLayout::itemAt(int *x, int index) const
 {
     Q_ASSERT(x != nullptr);
 
-    for (int i = 0; i < QInternal::DockCount; ++i) {
-        const QToolBarAreaLayoutInfo &dock = docks[i];
-
-        for (int j = 0; j < dock.lines.size(); ++j) {
-            const QToolBarAreaLayoutLine &line = dock.lines.at(j);
-
-            for (int k = 0; k < line.toolBarItems.size(); ++k) {
+    for (const auto &dock : docks) {
+        for (const auto &line : dock.lines) {
+            for (const auto &item : line.toolBarItems) {
                 if ((*x)++ == index)
-                    return line.toolBarItems.at(k).widgetItem;
+                    return item.widgetItem;
             }
         }
     }
@@ -716,13 +712,12 @@ QLayoutItem *QToolBarAreaLayout::takeAt(int *x, int index)
 {
     Q_ASSERT(x != nullptr);
 
-    for (int i = 0; i < QInternal::DockCount; ++i) {
-        QToolBarAreaLayoutInfo &dock = docks[i];
+    for (auto &dock : docks) {
 
-        for (int j = 0; j < dock.lines.size(); ++j) {
+        for (qsizetype j = 0; j < dock.lines.size(); ++j) {
             QToolBarAreaLayoutLine &line = dock.lines[j];
 
-            for (int k = 0; k < line.toolBarItems.size(); ++k) {
+            for (qsizetype k = 0; k < line.toolBarItems.size(); ++k) {
                 if ((*x)++ == index) {
                     QLayoutItem *result = line.toolBarItems.takeAt(k).widgetItem;
                     if (line.toolBarItems.isEmpty())
@@ -738,14 +733,9 @@ QLayoutItem *QToolBarAreaLayout::takeAt(int *x, int index)
 
 void QToolBarAreaLayout::deleteAllLayoutItems()
 {
-    for (int i = 0; i < QInternal::DockCount; ++i) {
-        QToolBarAreaLayoutInfo &dock = docks[i];
-
-        for (int j = 0; j < dock.lines.size(); ++j) {
-            QToolBarAreaLayoutLine &line = dock.lines[j];
-
-            for (int k = 0; k < line.toolBarItems.size(); ++k) {
-                QToolBarAreaLayoutItem &item = line.toolBarItems[k];
+    for (auto &dock : docks) {
+        for (auto &line : dock.lines) {
+            for (auto &item : line.toolBarItems) {
                 if (!item.gap)
                     delete item.widgetItem;
                 item.widgetItem = nullptr;
@@ -830,16 +820,11 @@ void QToolBarAreaLayout::apply(QWidgetAnimator::AnimationRule rule)
 
     Qt::LayoutDirection dir = mainWindow->layoutDirection();
 
-    for (int i = 0; i < QInternal::DockCount; ++i) {
-        const QToolBarAreaLayoutInfo &dock = docks[i];
-
-        for (int j = 0; j < dock.lines.size(); ++j) {
-            const QToolBarAreaLayoutLine &line = dock.lines.at(j);
+    for (const auto &dock : docks) {
+        for (const auto &line : dock.lines) {
             if (line.skip())
                 continue;
-
-            for (int k = 0; k < line.toolBarItems.size(); ++k) {
-                const QToolBarAreaLayoutItem &item = line.toolBarItems.at(k);
+            for (const auto &item : line.toolBarItems) {
                 if (item.skip() || item.gap)
                     continue;
 
@@ -888,13 +873,12 @@ void QToolBarAreaLayout::apply(QWidgetAnimator::AnimationRule rule)
 
 bool QToolBarAreaLayout::toolBarBreak(QToolBar *toolBar) const
 {
-    for (int i = 0; i < QInternal::DockCount; ++i) {
-        const QToolBarAreaLayoutInfo &dock = docks[i];
+    for (const auto &dock : docks) {
 
-        for (int j = 0; j < dock.lines.size(); ++j) {
+        for (qsizetype j = 0; j < dock.lines.size(); ++j) {
             const QToolBarAreaLayoutLine &line = dock.lines.at(j);
 
-            for (int k = 0; k < line.toolBarItems.size(); ++k) {
+            for (qsizetype k = 0; k < line.toolBarItems.size(); ++k) {
                 if (line.toolBarItems.at(k).widgetItem->widget() == toolBar)
                     return j > 0 && k == 0;
             }
@@ -906,8 +890,7 @@ bool QToolBarAreaLayout::toolBarBreak(QToolBar *toolBar) const
 
 void QToolBarAreaLayout::getStyleOptionInfo(QStyleOptionToolBar *option, QToolBar *toolBar) const
 {
-    for (int i = 0; i < QInternal::DockCount; ++i) {
-        const QToolBarAreaLayoutInfo &dock = docks[i];
+    for (const auto &dock : docks) {
 
         for (int j = 0; j < dock.lines.size(); ++j) {
             const QToolBarAreaLayoutLine &line = dock.lines.at(j);
@@ -941,38 +924,21 @@ void QToolBarAreaLayout::getStyleOptionInfo(QStyleOptionToolBar *option, QToolBa
 
 QList<int> QToolBarAreaLayout::indexOf(QWidget *toolBar) const
 {
-    QList<int> result;
-
-    bool found = false;
-
-    for (int i = 0; i < QInternal::DockCount; ++i) {
+    for (std::size_t i = 0; i < docks.size(); ++i) {
         const QToolBarAreaLayoutInfo &dock = docks[i];
 
-        for (int j = 0; j < dock.lines.size(); ++j) {
+        for (qsizetype j = 0; j < dock.lines.size(); ++j) {
             const QToolBarAreaLayoutLine &line = dock.lines.at(j);
 
-            for (int k = 0; k < line.toolBarItems.size(); ++k) {
+            for (qsizetype k = 0; k < line.toolBarItems.size(); ++k) {
                 const QToolBarAreaLayoutItem &item = line.toolBarItems.at(k);
-                if (!item.gap && item.widgetItem->widget() == toolBar) {
-                    found = true;
-                    result.prepend(k);
-                    break;
-                }
+                if (!item.gap && item.widgetItem->widget() == toolBar)
+                    return { int(i), int(j), int(k) };
             }
-
-            if (found) {
-                result.prepend(j);
-                break;
-            }
-        }
-
-        if (found) {
-            result.prepend(i);
-            break;
         }
     }
 
-    return result;
+    return {};
 }
 
 //this functions returns the path to the possible gapindex for the position pos
@@ -981,13 +947,13 @@ QList<int> QToolBarAreaLayout::gapIndex(const QPoint &pos) const
     Qt::LayoutDirection dir = mainWindow->layoutDirection();
     int minDistance = 80; // when a dock area is empty, how "wide" is it?
     QList<int> ret; //return value
-    for (int i = 0; i < QInternal::DockCount; ++i) {
+    for (std::size_t i = 0; i < docks.size(); ++i) {
         QPoint p = pos;
         if (docks[i].o == Qt::Horizontal)
             p = QStyle::visualPos(dir, docks[i].rect, p);
         QList<int> result = docks[i].gapIndex(p, &minDistance);
         if (!result.isEmpty()) {
-            result.prepend(i);
+            result.prepend(int(i));
             ret = result;
         }
     }
@@ -997,29 +963,26 @@ QList<int> QToolBarAreaLayout::gapIndex(const QPoint &pos) const
 
 QList<int> QToolBarAreaLayout::currentGapIndex() const
 {
-    for (int i = 0; i < QInternal::DockCount; ++i) {
+    for (std::size_t i = 0; i < docks.size(); ++i) {
         const QToolBarAreaLayoutInfo &dock = docks[i];
 
-        for (int j = 0; j < dock.lines.size(); ++j) {
-            const QToolBarAreaLayoutLine &line = dock.lines[j];
+        for (qsizetype j = 0; j < dock.lines.size(); ++j) {
+            const QToolBarAreaLayoutLine &line = dock.lines.at(j);
 
-            for (int k = 0; k < line.toolBarItems.size(); k++) {
-                if (line.toolBarItems[k].gap) {
-                    QList<int> result;
-                    result << i << j << k;
-                    return result;
-                }
+            for (qsizetype k = 0; k < line.toolBarItems.size(); ++k) {
+                if (line.toolBarItems[k].gap)
+                    return { int(i), int (j), int(k) };
             }
         }
     }
-    return QList<int>();
+    return{};
 }
 
 bool QToolBarAreaLayout::insertGap(const QList<int> &path, QLayoutItem *item)
 {
     Q_ASSERT(path.size() == 3);
     const int i = path.first();
-    Q_ASSERT(i >= 0 && i < QInternal::DockCount);
+    Q_ASSERT(i >= 0 && i < int(docks.size()));
     return docks[i].insertGap(path.mid(1), item);
 }
 
@@ -1035,13 +998,12 @@ void QToolBarAreaLayout::remove(const QList<int> &path)
 
 void QToolBarAreaLayout::remove(QLayoutItem *item)
 {
-    for (int i = 0; i < QInternal::DockCount; ++i) {
-        QToolBarAreaLayoutInfo &dock = docks[i];
+    for (auto &dock : docks) {
 
-        for (int j = 0; j < dock.lines.size(); ++j) {
+        for (qsizetype j = 0; j < dock.lines.size(); ++j) {
             QToolBarAreaLayoutLine &line = dock.lines[j];
 
-            for (int k = 0; k < line.toolBarItems.size(); k++) {
+            for (qsizetype k = 0; k < line.toolBarItems.size(); k++) {
                 if (line.toolBarItems[k].widgetItem == item) {
                     line.toolBarItems.removeAt(k);
                     if (line.toolBarItems.isEmpty())
@@ -1055,8 +1017,8 @@ void QToolBarAreaLayout::remove(QLayoutItem *item)
 
 void QToolBarAreaLayout::clear()
 {
-    for (int i = 0; i < QInternal::DockCount; ++i)
-        docks[i].clear();
+    for (auto &dock : docks)
+        dock.clear();
     rect = QRect();
 }
 
@@ -1064,7 +1026,7 @@ QToolBarAreaLayoutItem *QToolBarAreaLayout::item(const QList<int> &path)
 {
     Q_ASSERT(path.size() == 3);
 
-    if (path.at(0) < 0 || path.at(0) >= QInternal::DockCount)
+    if (path.at(0) < 0 || path.at(0) >= int(docks.size()))
         return nullptr;
     QToolBarAreaLayoutInfo &info = docks[path.at(0)];
     if (path.at(1) < 0 || path.at(1) >= info.lines.size())
@@ -1204,21 +1166,19 @@ void QToolBarAreaLayout::saveState(QDataStream &stream) const
     stream << static_cast<uchar>(StateMarkers::ToolBarEx);
 
     int lineCount = 0;
-    for (int i = 0; i < QInternal::DockCount; ++i)
-        lineCount += docks[i].lines.size();
+    for (const auto &dock : docks)
+        lineCount += dock.lines.size();
 
     stream << lineCount;
 
-    for (int i = 0; i < QInternal::DockCount; ++i) {
+    for (std::size_t i = 0; i < docks.size(); ++i) {
         const QToolBarAreaLayoutInfo &dock = docks[i];
 
-        for (int j = 0; j < dock.lines.size(); ++j) {
-            const QToolBarAreaLayoutLine &line = dock.lines.at(j);
+        for (const auto &line : dock.lines) {
 
-            stream << i << int(line.toolBarItems.size());
+            stream << int(i) << int(line.toolBarItems.size());
 
-            for (int k = 0; k < line.toolBarItems.size(); ++k) {
-                const QToolBarAreaLayoutItem &item = line.toolBarItems.at(k);
+            for (const auto &item : line.toolBarItems) {
                 QWidget *widget = const_cast<QLayoutItem*>(item.widgetItem)->widget();
                 QString objectName = widget->objectName();
                 if (Q_UNLIKELY(objectName.isEmpty())) {
@@ -1266,7 +1226,7 @@ bool QToolBarAreaLayout::restoreState(QDataStream &stream, const QList<QToolBar*
     for (int j = 0; j < lines; ++j) {
         int pos;
         stream >> pos;
-        if (pos < 0 || pos >= QInternal::DockCount)
+        if (pos < 0 || pos >= int(docks.size()))
             return false;
         int cnt;
         stream >> cnt;
@@ -1339,11 +1299,8 @@ bool QToolBarAreaLayout::restoreState(QDataStream &stream, const QList<QToolBar*
 
 bool QToolBarAreaLayout::isEmpty() const
 {
-    for (int i = 0; i < QInternal::DockCount; ++i) {
-        if (!docks[i].lines.isEmpty())
-            return false;
-    }
-    return true;
+    constexpr auto empty = [](const auto &dock) { return dock.lines.isEmpty(); };
+    return std::all_of(docks.begin(), docks.end(), empty);
 }
 
 QT_END_NAMESPACE
