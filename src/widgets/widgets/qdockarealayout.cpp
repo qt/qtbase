@@ -26,6 +26,7 @@
 
 #include <qpainter.h>
 #include <qstyleoption.h>
+#include <optional>
 
 QT_BEGIN_NAMESPACE
 
@@ -678,13 +679,13 @@ void QDockAreaLayoutInfo::fitItems()
     }
 }
 
-static QInternal::DockPosition dockPosHelper(const QRect &rect, const QPoint &_pos,
-                                        Qt::Orientation o,
-                                        bool nestingEnabled,
-                                        QDockAreaLayoutInfo::TabMode tabMode)
+static std::optional<QInternal::DockPosition>
+dockPosHelper(const QRect &rect, const QPoint &_pos,
+              Qt::Orientation o, bool nestingEnabled,
+              QDockAreaLayoutInfo::TabMode tabMode)
 {
     if (tabMode == QDockAreaLayoutInfo::ForceTabs)
-        return QInternal::DockCount;
+        return std::nullopt;
 
     QPoint pos = _pos - rect.topLeft();
 
@@ -707,7 +708,7 @@ static QInternal::DockPosition dockPosHelper(const QRect &rect, const QPoint &_p
 
             QRect center(w/6, h/6, 2*w/3, 2*h/3);
             if (center.contains(pos))
-                return QInternal::DockCount;
+                return std::nullopt;
         } else if (o == Qt::Horizontal) {
         /*             2/3
                 +--------------+
@@ -719,7 +720,7 @@ static QInternal::DockPosition dockPosHelper(const QRect &rect, const QPoint &_p
                 +--------------+     */
 
             if (x > w/6 && x < w*5/6)
-                return QInternal::DockCount;
+                return std::nullopt;
         } else {
         /*
                 +--------------+
@@ -729,7 +730,7 @@ static QInternal::DockPosition dockPosHelper(const QRect &rect, const QPoint &_p
                 |              |
                 +--------------+     */
             if (y > h/6 && y < 5*h/6)
-                return QInternal::DockCount;
+                return std::nullopt;
         }
     }
 
@@ -830,10 +831,11 @@ QList<int> QDockAreaLayoutInfo::gapIndex(const QPoint& _pos,
 
     Q_ASSERT(!item_rect.isNull());
 
-    QInternal::DockPosition dock_pos
+    const auto dock_pos
         = dockPosHelper(item_rect, _pos, o, nestingEnabled, tabMode);
 
-    switch (dock_pos) {
+    if (dock_pos) {
+        switch (*dock_pos) {
         case QInternal::LeftDock:
             if (o == Qt::Horizontal)
                 result << item_index;
@@ -859,13 +861,14 @@ QList<int> QDockAreaLayoutInfo::gapIndex(const QPoint& _pos,
             else
                 result << item_index + 1;
             break;
-        case  QInternal::DockCount:
-            result << (-item_index - 1) << 0;   // negative item_index means "on top of"
-                                                // -item_index - 1, insertGap()
-                                                // will insert a tabbed subinfo
+        case QInternal::DockCount:
+            Q_UNREACHABLE();
             break;
-        default:
-            break;
+        }
+    } else {
+        result << (-item_index - 1) << 0;   // negative item_index means "on top of"
+                                            // -item_index - 1, insertGap()
+                                            // will insert a tabbed subinfo
     }
 
     return result;
