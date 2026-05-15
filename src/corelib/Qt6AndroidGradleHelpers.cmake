@@ -393,6 +393,8 @@ function(_qt_internal_android_prepare_gradle_build target)
     _qt_internal_android_add_gradle_build(${target} apk)
     _qt_internal_android_add_gradle_build(${target} aab)
 
+    _qt_internal_android_setup_qml_imports_reconfigure_trigger(${target})
+
     # Make global apk, aab, and aar targets depend on the respective targets.
     _qt_internal_android_add_global_package_dependencies(${target})
     _qt_internal_create_global_apk_all_target_if_needed()
@@ -1937,6 +1939,70 @@ function(_qt_internal_android_json_get_bool json index key out_value)
     else()
         set(${out_value} FALSE PARENT_SCOPE)
     endif()
+endfunction()
+
+# Reconfigures CMake within a single ninja build when QML imports change.
+function(_qt_internal_android_setup_qml_imports_reconfigure_trigger target)
+    if(NOT TARGET ${QT_CMAKE_EXPORT_NAMESPACE}::Qml OR QT_IS_ANDROID_MULTI_ABI_EXTERNAL_PROJECT)
+        return()
+    endif()
+
+    _qt_internal_android_staging_dir(android_staging_dir)
+    set(qml_scan_script "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/QtAndroidScanQmlImports.cmake")
+
+    _qt_internal_android_sanitize_target_name(sanitized_target ${target})
+    set(snapshot_file "${android_staging_dir}/${sanitized_target}_qml_imports.snapshot")
+    set(stamp_file "${android_staging_dir}/${sanitized_target}_qml_imports.stamp")
+
+    set(source_dirs_arg "")
+    _qt_internal_android_get_qml_root_paths(${target} qml_root_paths)
+    foreach(path IN LISTS qml_root_paths)
+        if(source_dirs_arg)
+            string(APPEND source_dirs_arg ";")
+        endif()
+        string(APPEND source_dirs_arg "${path}")
+    endforeach()
+
+    set(qml_scan_cmd "${CMAKE_COMMAND}"
+        "-DSOURCE_DIRS=${source_dirs_arg}"
+        "-DSNAPSHOT=${snapshot_file}"
+        "-DSTAMP=${stamp_file}"
+        -P "${qml_scan_script}")
+
+    # Seed the snapshot once so the first build doesn't regen on a missing snapshot.
+    if(NOT EXISTS "${snapshot_file}")
+        execute_process(COMMAND ${qml_scan_cmd})
+    endif()
+
+    # CONFIGURE_DEPENDS catches file add/remove, same list feeds the scan rule's DEPENDS.
+    set(qml_sources "")
+    foreach(path IN LISTS qml_root_paths)
+        if(IS_DIRECTORY "${path}")
+            file(GLOB_RECURSE found CONFIGURE_DEPENDS LIST_DIRECTORIES false
+                "${path}/*.qml" "${path}/*.js" "${path}/*.mjs")
+            list(APPEND qml_sources ${found})
+        endif()
+    endforeach()
+    list(REMOVE_DUPLICATES qml_sources)
+
+    # FIXME: This relies on a mid-build regen, which only ninja does. Makefiles
+    # check configure dependencies at startup, so a fresh import needs two builds.
+    add_custom_command(
+        OUTPUT "${stamp_file}"
+        BYPRODUCTS "${snapshot_file}"
+        COMMAND ${qml_scan_cmd}
+        DEPENDS ${qml_sources}
+        COMMENT "Checking QML imports for ${target}"
+        VERBATIM
+    )
+    add_custom_target(${target}_qml_imports_check ALL DEPENDS "${stamp_file}")
+    set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${snapshot_file}")
+
+    foreach(pkg_target ${target}_make_apk ${target}_make_aab)
+        if(TARGET ${pkg_target})
+            add_dependencies(${pkg_target} ${target}_qml_imports_check)
+        endif()
+    endforeach()
 endfunction()
 
 function(_qt_internal_android_parse_qmlimportscanner_output target)
