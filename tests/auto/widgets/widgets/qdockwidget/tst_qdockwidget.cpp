@@ -868,6 +868,7 @@ void tst_QDockWidget::dockLocationChanged()
     {
         // Ensure tabify is a no-op before QMainWindow::addDockWidget()
         QSignalSpy noopSpy(&dw2, &QDockWidget::dockLocationChanged);
+        QTest::ignoreMessage(QtCriticalMsg, QRegularExpression("^Coding error: QDockWidget.*"));
         mw.tabifyDockWidget(&dw, &dw2);
         QCOMPARE(noopSpy.size(), 0);
     }
