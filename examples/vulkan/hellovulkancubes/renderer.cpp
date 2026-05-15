@@ -765,7 +765,7 @@ void Renderer::ensureInstanceBuffer()
                                            reinterpret_cast<void **>(&p));
     if (err != VK_SUCCESS)
         qFatal("Failed to map memory: %d", err);
-    memcpy(p, m_instData.constData(), m_instData.size());
+    memcpy(p, m_instData.constData(), m_instCount * PER_INSTANCE_DATA_SIZE);
     m_devFuncs->vkUnmapMemory(dev, m_instBufMem);
 }
 
