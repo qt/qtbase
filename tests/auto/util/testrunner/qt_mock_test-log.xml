@@ -46,5 +46,17 @@
     <Incident type="{{fail_then_crash_result}}" file="" line="0" />
     <Duration msecs="0.828272"/>
   </TestFunction>
+  <TestFunction name="pass_then_fail_once">
+    <Incident type="{{pass_then_fail_once_result}}" file="" line="0" />
+    <Duration msecs="0.828272"/>
+  </TestFunction>
+  <TestFunction name="pass_then_crash_once">
+    <Incident type="{{pass_then_crash_once_result}}" file="" line="0" />
+    <Duration msecs="0.828272"/>
+  </TestFunction>
+  <TestFunction name="pass_then_fail_then_crash_once">
+    <Incident type="{{pass_then_fail_then_crash_once_result}}" file="" line="0" />
+    <Duration msecs="0.828272"/>
+  </TestFunction>
   <Duration msecs="1904.9"/>
 </TestCase>

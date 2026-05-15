@@ -87,9 +87,10 @@ from typing import NamedTuple, Tuple, List, Set, Optional
 class TestResult(NamedTuple):
     func: str
     tag: Optional[str] = None
-class WhatFailed(NamedTuple):
+class XMLResults(NamedTuple):
     qfatal_message: Optional[str]    = None
     failed_tests:   List[TestResult] = []
+    passed_functions: Set[str]       = set()
 
 class ReRunCrash(Exception):
     pass
@@ -261,12 +262,13 @@ Default flags: --max-repeats 5 --passes-needed 1
     return args
 
 
-def parse_log(results_file) -> WhatFailed:
+def parse_log(results_file) -> XMLResults:
     """
-    Parse the XML test log file. Return the failed testcases, if any,
-    and the first qfatal message possibly printed.
-
-    Failures are considered the "fail" and "xpass" incidents.
+    Parse the XML test log file. Return a struct with:
+    * the failed testcases, if any (fail/xpass incidents),
+    * the first qfatal message possibly printed, and
+    * a set with the names of the functions that passed
+      (ie pass/xfail, not skip or blacklists).
     """
     start_timer = timeit.default_timer()
 
@@ -292,21 +294,29 @@ def parse_log(results_file) -> WhatFailed:
 
     failures = []
     qfatal_message = None
+    # Track only "pass" results in this set, for the purpose of reruns as part of the
+    # --repeat-modified functionality.
+    # We don't add XFAIL incidents, since they are not final: a PASS will be likely emitted too.
+    # Additionally we don't add BFAIL or BPASS or similar ignored incidents, as we don't want them
+    # to re-run 10 times when modified.
+    passed_functions = set()
 
-    n_passes = 0
+    n_non_fails = 0
     for e1 in root:
         if e1.tag == "TestFunction":
+            func = e1.attrib["name"]
             for e2 in e1:                          # every <TestFunction> can have many <Incident>
                 if e2.tag == "Incident":
                     if e2.attrib["type"] in ("fail", "xpass"):
-                        func = e1.attrib["name"]
                         datatag = None
                         e3 = e2.find("DataTag")    # every <Incident> might have a <DataTag>
                         if e3 is not None:
                             datatag = e3.text
                         failures.append(TestResult(func, datatag))
                     else:
-                        n_passes += 1
+                        n_non_fails += 1
+                        if e2.attrib["type"] == "pass":
+                            passed_functions.add(func)
 
     # Use iter() here to _recursively_ search root for <Message>,
     # as we don't trust that messages are always at the same depth.
@@ -325,9 +335,9 @@ def parse_log(results_file) -> WhatFailed:
     end_timer = timeit.default_timer()
     t = end_timer - start_timer
     L.info(f"Parsed XML file {results_file} in {t:.3f} seconds")
-    L.info(f"Found {n_passes} passes and {len(failures)} failures")
+    L.info(f"Found {n_non_fails} non-failing incidents and {len(failures)} failing ones")
 
-    return WhatFailed(qfatal_message, failures)
+    return XMLResults(qfatal_message, failures, passed_functions)
 
 
 def run_test(arg_list: List[str], **kwargs):
@@ -419,15 +429,15 @@ def rerun_failed_testcase(test_basename, testargs: List[str], output_dir: str,
         # script, that can possibly fail to extract a process exit code.
         # Because of these cases, we *also* parse the XML file and signify
         # CRASH in case of QFATAL/empty/corrupt result.
-        what_failed = parse_log(f"{pathname_stem}.xml")
-        if what_failed.qfatal_message:
+        xml_results = parse_log(f"{pathname_stem}.xml")
+        if xml_results.qfatal_message:
             raise ReRunCrash(f"CRASH! returncode:{proc.returncode} "
-                             f"QFATAL:'{what_failed.qfatal_message}'")
+                             f"QFATAL:'{xml_results.qfatal_message}'")
         if proc.returncode < 0 or proc.returncode >= 128:
             raise ReRunCrash(f"CRASH! returncode:{proc.returncode}")
-        if proc.returncode == 0 and len(what_failed.failed_tests) > 0:
+        if proc.returncode == 0 and len(xml_results.failed_tests) > 0:
             raise ReRunCrash("CRASH! returncode:0 but failures were found: "
-                             + str(what_failed.failed_tests))
+                             + str(xml_results.failed_tests))
         if proc.returncode == 0:
             n_passes += 1
         if n_passes == passes_needed:
@@ -495,7 +505,8 @@ def read_modified_functions_file(filename: str, test_basename: str) -> Set[str]:
 
     return modified_functions
 
-def rerun_modified_test_functions(args: argparse.Namespace) -> int:
+def rerun_modified_test_functions(args: argparse.Namespace,
+                                  passed_functions: Set[str]) -> int:
     if not args.modified_functions:
         return 0
     if args.no_extra_args:
@@ -505,6 +516,17 @@ def rerun_modified_test_functions(args: argparse.Namespace) -> int:
         return 0
     ret = 0
     for modified_function in args.modified_functions:
+        if modified_function in NO_RERUN_FUNCTIONS:
+            L.info("Skipping modified-function re-run as QTest does not"
+                   " support running it individually: %s", modified_function)
+            continue
+        if modified_function not in passed_functions:
+            # Maybe a function that is disabled for the platform, or maybe a
+            # test class that does not match the executable name.
+            L.info("Skipping modified-function '%s' re-run as the function does not"
+                   " appear to have passed in the main run", modified_function)
+            continue
+
         filename_base = unique_filename(args.test_basename)
         pathname_stem = os.path.join(args.log_dir, filename_base)
         output_args = generate_qtest_output_args(pathname_stem)
@@ -545,51 +567,50 @@ def main():
 
         try:
             results_file = None
-            what_failed = WhatFailed()
+            xml_results = XMLResults()
             if args.parse_xml_testlog:      # do not run test, just parse file
-                what_failed = parse_log(args.parse_xml_testlog)
+                xml_results = parse_log(args.parse_xml_testlog)
                 # Pretend the test returned correct exit code
-                retcode = len(what_failed.failed_tests)
+                retcode = len(xml_results.failed_tests)
             else:                                # normal invocation, run test
                 (retcode, results_file) = \
                     run_full_test(args.test_basename, args.testargs, args.log_dir,
                                   args.no_extra_args, args.dry_run, args.timeout,
                                   args.specific_extra_args)
                 if results_file:
-                    what_failed = parse_log(results_file)
+                    xml_results = parse_log(results_file)
 
-            failed_functions = what_failed.failed_tests
+            failed_functions = xml_results.failed_tests
             if failed_functions and args.modified_functions:
                 failed_modified_functions = [tr.func for tr in failed_functions
-                                                     if tr.func in args.modified_functions]
+                                                     if  tr.func in args.modified_functions]
                 if failed_modified_functions:
                     L.info("New or modified functions failed early: %s",
                            " ".join(failed_modified_functions))
                     L.info("Exiting without re-running anything!")
                     sys.exit(2)
-            if failed_functions and retcode == 0:
+
+            if retcode == 0 and failed_functions:
                 L.warning("The test executable returned success but the logfile"
                          f" contains FAIL for function: {failed_functions[0].func}")
                 continue    # CRASH
-
-            if retcode < 0 or retcode >= 128 or what_failed.qfatal_message:
+            if retcode < 0 or retcode >= 128 or xml_results.qfatal_message:
                 L.warning("CRASH detected, re-running the whole executable")
                 continue    # CRASH
-
-            ret_modified = rerun_modified_test_functions(args)
-            if ret_modified != 0:
-                sys.exit(ret_modified)
-
-            # All (if any) modified-function reruns have PASSed!
-            if retcode == 0:
-                sys.exit(0)
-
-            if len(failed_functions) == 0:
+            if retcode != 0 and len(failed_functions) == 0:
                 if results_file:
-                    L.warning("No failures listed in the XML test log!"
+                    L.warning("Exit code not zero, but no failures listed in the XML test log!"
                               " Did the test CRASH right after all its testcases PASSed?")
                 continue    # CRASH
 
+            ret_modified = rerun_modified_test_functions(args, xml_results.passed_functions)
+            if ret_modified != 0:
+                sys.exit(ret_modified)
+
+            # The normal run and all modified-function-reruns (if any) have PASSed!
+            if retcode == 0:
+                sys.exit(0)
+            # There are non-modified functions that have failed; check if we can flaky-rerun them.
             cant_rerun = [ f.func for f in failed_functions if f.func in NO_RERUN_FUNCTIONS ]
             if cant_rerun:
                 L.warning(f"Failure detected in the special test function '{cant_rerun[0]}'"

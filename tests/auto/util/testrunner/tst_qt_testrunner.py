@@ -441,12 +441,13 @@ class Test_testrunner(unittest.TestCase):
         self.prepare_env(run_list=["initTestCase~P,always_pass"])
         proc = self.run2()
         self.assertEqual(proc.returncode, 0)
-        self.assertEqual(len(self.runlog), 1)
+        self.assertEqual(len(self.runlog), 2)
 
     # Test a PASSing function in MFF runs 1+9 times, and subsequent FAILures are handled properly.
     def test_pass_then_fail_in_mff(self):
         self.prepare_mff("pass_then_fail_once")
         self.prepare_env(run_list=["pass_then_fail_once"])
+        self.env["QT_TESTRUNNER_DEBUG_NO_UNIQUE_OUTPUT_FILENAME"] = "1"
         proc = self.run2()
         # Make sure that only one failure is recorded but 10 total runs have been done.
         self.assertEqual(self.runlog, \
@@ -459,6 +460,7 @@ class Test_testrunner(unittest.TestCase):
     def test_pass_then_fail_in_mff_with_datatag(self):
         self.prepare_mff("pass_then_fail_once")
         self.prepare_env(run_list=["pass_then_fail_once:3"])
+        self.env["QT_TESTRUNNER_DEBUG_NO_UNIQUE_OUTPUT_FILENAME"] = "1"
         proc = self.run2()
         self.assertEqual(self.runlog, \
               ["pass_then_fail_once:3\tP"]
@@ -543,6 +545,7 @@ class Test_testrunner(unittest.TestCase):
     def test_pass_crash_in_mff(self):
         self.prepare_mff("pass_then_crash_once")
         self.prepare_env(run_list=["pass_then_crash_once"])
+        self.env["QT_TESTRUNNER_DEBUG_NO_UNIQUE_OUTPUT_FILENAME"] = "1"
         proc = self.run2()
         self.assertEqual(self.runlog, \
               ['pass_then_crash_once\tP'] * 3
@@ -552,6 +555,7 @@ class Test_testrunner(unittest.TestCase):
     def test_pass_fail_crash_in_mff(self):
         self.prepare_mff("pass_then_fail_then_crash_once")
         self.prepare_env(run_list=["pass_then_fail_then_crash_once"])
+        self.env["QT_TESTRUNNER_DEBUG_NO_UNIQUE_OUTPUT_FILENAME"] = "1"
         proc = self.run2()
         self.assertEqual(self.runlog, \
               ['pass_then_fail_then_crash_once\tP'] * 3
