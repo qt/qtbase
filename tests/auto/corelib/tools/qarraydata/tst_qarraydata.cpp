@@ -1103,9 +1103,9 @@ void tst_QArrayData::arrayOpsExtra()
         auto o = QArrayDataPointer<CountedObject>::allocateGrow(QArrayDataPointer<CountedObject>(), alloc, GrowthPosition);
         if (initialSize) {
             if (GrowthPosition == QArrayData::GrowsAtEnd) {
-                i->appendInitialize(initialSize);
-                s->appendInitialize(initialSize);
-                o->appendInitialize(initialSize);
+                i.appendInitialize(initialSize);
+                s.appendInitialize(initialSize);
+                o.appendInitialize(initialSize);
             } else {
                 // there's no prependInitialize()
                 for (size_t n = 0; n < initialSize; ++n) {
@@ -1208,7 +1208,7 @@ void tst_QArrayData::arrayOpsExtra()
             const size_t originalSize = dataPointer.size;
             auto copy = cloneArrayDataPointer(dataPointer, dataPointer.size);
             const size_t distance = std::distance(first, last);
-            auto firstCopy = copy->begin() + std::distance(dataPointer->begin(), first);
+            auto firstCopy = copy.begin() + std::distance(dataPointer.begin(), first);
 
             dataPointer->copyAppend(first, last);
             QCOMPARE(size_t(dataPointer.size), originalSize + distance);
@@ -1221,9 +1221,9 @@ void tst_QArrayData::arrayOpsExtra()
 
         auto [intData, strData, objData] = setupDataPointers(inputSize * 2, inputSize / 2);
         // make no free space at the end
-        intData->appendInitialize(intData.size + intData.freeSpaceAtEnd());
-        strData->appendInitialize(strData.size + strData.freeSpaceAtEnd());
-        objData->appendInitialize(objData.size + objData.freeSpaceAtEnd());
+        intData.appendInitialize(intData.size + intData.freeSpaceAtEnd());
+        strData.appendInitialize(strData.size + strData.freeSpaceAtEnd());
+        objData.appendInitialize(objData.size + objData.freeSpaceAtEnd());
 
         // make all values unique. this would ensure that we do not have erroneously passed test
         int i = 0;
@@ -1322,9 +1322,9 @@ void tst_QArrayData::arrayOpsExtra()
 
         auto [intData, strData, objData] = setupDataPointers(inputSize * 2, inputSize / 2);
         // make no free space at the end
-        intData->appendInitialize(intData.size + intData.freeSpaceAtEnd());
-        strData->appendInitialize(strData.size + strData.freeSpaceAtEnd());
-        objData->appendInitialize(objData.size + objData.freeSpaceAtEnd());
+        intData.appendInitialize(intData.size + intData.freeSpaceAtEnd());
+        strData.appendInitialize(strData.size + strData.freeSpaceAtEnd());
+        objData.appendInitialize(objData.size + objData.freeSpaceAtEnd());
 
         // make all values unique. this would ensure that we do not have erroneously passed test
         int i = 0;
@@ -1406,8 +1406,8 @@ void tst_QArrayData::arrayOpsExtra()
             const size_t originalSize = dataPointer.size;
             auto copy = cloneArrayDataPointer(dataPointer, dataPointer.size);
             const size_t addedSize = std::distance(first, last);
-            const size_t firstPos = std::distance(dataPointer->begin(), first);
-            auto firstCopy = copy->begin() + firstPos;
+            const size_t firstPos = std::distance(dataPointer.begin(), first);
+            auto firstCopy = copy.begin() + firstPos;
 
             dataPointer->moveAppend(first, last);
             QCOMPARE(size_t(dataPointer.size), originalSize + addedSize);
@@ -1423,9 +1423,9 @@ void tst_QArrayData::arrayOpsExtra()
 
         auto [intData, strData, objData] = setupDataPointers(inputSize * 2, inputSize / 2);
         // make no free space at the end
-        intData->appendInitialize(intData.size + intData.freeSpaceAtEnd());
-        strData->appendInitialize(strData.size + strData.freeSpaceAtEnd());
-        objData->appendInitialize(objData.size + objData.freeSpaceAtEnd());
+        intData.appendInitialize(intData.size + intData.freeSpaceAtEnd());
+        strData.appendInitialize(strData.size + strData.freeSpaceAtEnd());
+        objData.appendInitialize(objData.size + objData.freeSpaceAtEnd());
 
         // make all values unique. this would ensure that we do not have erroneously passed test
         int i = 0;
@@ -1843,9 +1843,9 @@ void tst_QArrayData::literals()
 
     {
         QArrayDataPointer<LiteralType> d = Q_ARRAY_LITERAL(LiteralType, LiteralType(0), LiteralType(1), LiteralType(2));
-        QCOMPARE(d->size, 3);
+        QCOMPARE(d.size, 3);
         for (int i = 0; i < 3; ++i)
-            QCOMPARE(d->data()[i].value, i);
+            QCOMPARE(d.data()[i].value, i);
     }
 
     {
@@ -2116,7 +2116,7 @@ void tst_QArrayData::dataPointerAllocate()
         auto oldDataPointerCopy = oldDataPointer;  // force detach later
         QVERIFY(oldDataPointer.needsDetach());
 
-        auto newDataPointer = DataPointer::allocateGrow(oldDataPointer, oldDataPointer->detachCapacity(newSize), GrowthPosition);
+        auto newDataPointer = DataPointer::allocateGrow(oldDataPointer, oldDataPointer.detachCapacity(newSize), GrowthPosition);
         const auto newAlloc = newDataPointer.constAllocatedCapacity();
         const auto freeAtBegin = newDataPointer.freeSpaceAtBegin();
         const auto freeAtEnd = newDataPointer.freeSpaceAtEnd();
@@ -2489,7 +2489,7 @@ void tst_QArrayData::relocateWithExceptions()
 
     const auto createDataPointer = [](qsizetype capacity, qsizetype initSize) {
         QArrayDataPointer<ThrowingType> qadp(capacity);
-        qadp->appendInitialize(initSize);
+        qadp.appendInitialize(initSize);
         int i = 0;
         std::generate(qadp.begin(), qadp.end(), [&i]() { return ThrowingType(i++); });
         return qadp;
@@ -2504,7 +2504,7 @@ void tst_QArrayData::relocateWithExceptions()
         watch.start(storage.size);
         try {
             setDeferredThrow();
-            storage->relocate(4);
+            storage.relocate(4);
             if (throwCase != ThrowingType::NoThrow)
                 QFAIL("Unreachable line!");
         } catch (const std::runtime_error &e) {
@@ -2520,7 +2520,7 @@ void tst_QArrayData::relocateWithExceptions()
         watch.start(storage.size);
         try {
             setDeferredThrow();
-            storage->relocate(2);
+            storage.relocate(2);
             if (throwCase != ThrowingType::NoThrow)
                 QFAIL("Unreachable line!");
         } catch (const std::runtime_error &e) {
@@ -2537,7 +2537,7 @@ void tst_QArrayData::relocateWithExceptions()
         watch.start(storage.size);
         try {
             setDeferredThrow();
-            storage->relocate(-4);
+            storage.relocate(-4);
             if (throwCase != ThrowingType::NoThrow)
                 QFAIL("Unreachable line!");
         } catch (const std::runtime_error &e) {
@@ -2554,7 +2554,7 @@ void tst_QArrayData::relocateWithExceptions()
         watch.start(storage.size);
         try {
             setDeferredThrow();
-            storage->relocate(-2);
+            storage.relocate(-2);
             if (throwCase != ThrowingType::NoThrow)
                 QFAIL("Unreachable line!");
         } catch (const std::runtime_error &e) {

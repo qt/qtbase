@@ -189,7 +189,7 @@ QByteArray verifyZeroTermination(const QByteArray &ba)
     QByteArray::DataPointer baDataPtr = const_cast<QByteArray &>(ba).data_ptr();
 
     // Skip if !isMutable() as those offer no guarantees
-    if (!baDataPtr->isMutable())
+    if (!baDataPtr.isMutable())
         return ba;
 
     qsizetype baSize = ba.size();
@@ -200,7 +200,7 @@ QByteArray verifyZeroTermination(const QByteArray &ba)
                 .arg(int(baTerminator), 2, 16, QChar('0')).toUtf8();
 
     // Skip mutating checks on shared strings
-    if (baDataPtr->isShared())
+    if (baDataPtr.isShared())
         return ba;
 
     const char *baData = ba.constData();
@@ -940,7 +940,7 @@ void tst_QByteArray::append()
     {
         QByteArray prepended("abcd");
         prepended.prepend('a');
-        const qsizetype freeAtEnd = prepended.data_ptr()->freeSpaceAtEnd();
+        const qsizetype freeAtEnd = prepended.data_ptr().freeSpaceAtEnd();
         QVERIFY(prepended.size() + freeAtEnd < prepended.capacity());
         prepended += QByteArray(freeAtEnd, 'b');
         prepended.append('c');
@@ -951,8 +951,8 @@ void tst_QByteArray::append()
         QByteArray prepended2("aaaaaaaaaa");
         while (prepended2.size())
             prepended2.remove(0, 1);
-        QVERIFY(prepended2.data_ptr()->freeSpaceAtBegin() > 0);
-        QByteArray array(prepended2.data_ptr()->freeSpaceAtEnd(), 'a');
+        QVERIFY(prepended2.data_ptr().freeSpaceAtBegin() > 0);
+        QByteArray array(prepended2.data_ptr().freeSpaceAtEnd(), 'a');
         prepended2 += array;
         prepended2.append('b');
         QCOMPARE(prepended2, array + QByteArray("b"));
@@ -1304,7 +1304,7 @@ void tst_QByteArray::insert()
     {
         ba = "one";
         ba.prepend('a');
-        QByteArray b(ba.data_ptr()->freeSpaceAtEnd(), 'b');
+        QByteArray b(ba.data_ptr().freeSpaceAtEnd(), 'b');
         QCOMPARE(ba.insert(ba.size() + 1, QByteArrayView(b)), QByteArray("aone ") + b);
     }
 
@@ -1312,14 +1312,14 @@ void tst_QByteArray::insert()
         ba = "onetwothree";
         while (ba.size() - 1)
             ba.remove(0, 1);
-        QByteArray b(ba.data_ptr()->freeSpaceAtEnd() + 1, 'b');
+        QByteArray b(ba.data_ptr().freeSpaceAtEnd() + 1, 'b');
         QCOMPARE(ba.insert(ba.size() + 1, QByteArrayView(b)), QByteArray("e ") + b);
     }
 
     {
         ba = "one";
         ba.prepend('a');
-        const qsizetype freeAtEnd = ba.data_ptr()->freeSpaceAtEnd();
+        const qsizetype freeAtEnd = ba.data_ptr().freeSpaceAtEnd();
         QCOMPARE(ba.insert(ba.size() + 1, freeAtEnd + 1, 'b'),
                  QByteArray("aone ") + QByteArray(freeAtEnd + 1, 'b'));
     }
@@ -1328,7 +1328,7 @@ void tst_QByteArray::insert()
         ba = "onetwothree";
         while (ba.size() - 1)
             ba.remove(0, 1);
-        const qsizetype freeAtEnd = ba.data_ptr()->freeSpaceAtEnd();
+        const qsizetype freeAtEnd = ba.data_ptr().freeSpaceAtEnd();
         QCOMPARE(ba.insert(ba.size() + 1, freeAtEnd + 1, 'b'),
                  QByteArray("e ") + QByteArray(freeAtEnd + 1, 'b'));
     }
@@ -2977,7 +2977,7 @@ void tst_QByteArray::literals()
     QVERIFY(str.size() == 4);
     QCOMPARE(str.capacity(), 0);
     QVERIFY(str == "abcd");
-    QVERIFY(!str.data_ptr()->isMutable());
+    QVERIFY(!str.data_ptr().isMutable());
 
     const char *s = str.constData();
     QByteArray str2 = str;
@@ -3001,7 +3001,7 @@ void tst_QByteArray::userDefinedLiterals()
         QVERIFY(str.size() == 4);
         QCOMPARE(str.capacity(), 0);
         QVERIFY(str == "abcd");
-        QVERIFY(!str.data_ptr()->isMutable());
+        QVERIFY(!str.data_ptr().isMutable());
 
         const char *s = str.constData();
         QByteArray str2 = str;
@@ -3024,7 +3024,7 @@ void tst_QByteArray::userDefinedLiterals()
         QVERIFY(str.size() == 4);
         QCOMPARE(str.capacity(), 0);
         QVERIFY(str == "abcd");
-        QVERIFY(!str.data_ptr()->isMutable());
+        QVERIFY(!str.data_ptr().isMutable());
 
         const char *s = str.constData();
         QByteArray str2 = str;

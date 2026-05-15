@@ -31,7 +31,7 @@ public:
         : d(n)
     {
         if (n)
-            d->appendInitialize(n);
+            d.appendInitialize(n);
         if (capacityReserved)
             d.setFlag(QArrayData::CapacityReserved);
     }
@@ -69,26 +69,26 @@ public:
     bool isEmpty() const { return this->empty(); }
 
     bool isStatic() const { return !d.isMutable(); }
-    bool isShared() const { return d->isShared(); }
+    bool isShared() const { return d.isShared(); }
     bool isSharedWith(const SimpleVector &other) const { return d == other.d; }
 
     size_t size() const { return d.size; }
-    size_t capacity() const { return d->constAllocatedCapacity(); }
+    size_t capacity() const { return d.constAllocatedCapacity(); }
 
-    iterator begin() { detach(); return d->begin(); }
-    iterator end() { detach(); return d->end(); }
+    iterator begin() { detach(); return d.begin(); }
+    iterator end() { detach(); return d.end(); }
 
-    const_iterator begin() const { return d->constBegin(); }
-    const_iterator end() const { return d->constEnd(); }
+    const_iterator begin() const { return d.constBegin(); }
+    const_iterator end() const { return d.constEnd(); }
 
     const_iterator constBegin() const { return begin(); }
     const_iterator constEnd() const { return end(); }
 
-    T &operator[](size_t i) { Q_ASSERT(i < size_t(d->size)); detach(); return begin()[i]; }
-    T &at(size_t i) { Q_ASSERT(i < size_t(d->size)); detach(); return begin()[i]; }
+    T &operator[](size_t i) { Q_ASSERT(i < size_t(d.size)); detach(); return begin()[i]; }
+    T &at(size_t i) { Q_ASSERT(i < size_t(d.size)); detach(); return begin()[i]; }
 
-    const T &operator[](size_t i) const { Q_ASSERT(i < size_t(d->size)); return begin()[i]; }
-    const T &at(size_t i) const { Q_ASSERT(i < size_t(d->size)); return begin()[i]; }
+    const T &operator[](size_t i) const { Q_ASSERT(i < size_t(d.size)); return begin()[i]; }
+    const T &at(size_t i) const { Q_ASSERT(i < size_t(d.size)); return begin()[i]; }
 
     T &front()
     {
@@ -122,9 +122,9 @@ public:
             return;
 
         if (n <= capacity()) {
-            if (d->flags() & Data::CapacityReserved)
+            if (d.flags() & Data::CapacityReserved)
                 return;
-            if (!d->isShared()) {
+            if (!d.isShared()) {
                 d.setFlag(Data::CapacityReserved);
                 return;
             }
@@ -133,7 +133,7 @@ public:
         SimpleVector detached(DataPointer(qMax(n, size())));
         if (size()) {
             detached.d->copyAppend(constBegin(), constEnd());
-            detached.d->setFlag(QArrayData::CapacityReserved);
+            detached.d.setFlag(QArrayData::CapacityReserved);
         }
         detached.swap(*this);
     }
@@ -143,8 +143,8 @@ public:
         if (size() == newSize)
             return;
 
-        if (d->needsDetach() || newSize > capacity()) {
-            SimpleVector detached(DataPointer(d->detachCapacity(newSize)));
+        if (d.needsDetach() || newSize > capacity()) {
+            SimpleVector detached(DataPointer(d.detachCapacity(newSize)));
             if (newSize) {
                 if (newSize < size()) {
                     const T *const begin = constBegin();
@@ -154,7 +154,7 @@ public:
                         const T *const begin = constBegin();
                         detached.d->copyAppend(begin, begin + size());
                     }
-                    detached.d->appendInitialize(newSize);
+                    detached.d.appendInitialize(newSize);
                 }
             }
             detached.swap(*this);
@@ -162,14 +162,14 @@ public:
         }
 
         if (newSize > size())
-            d->appendInitialize(newSize);
+            d.appendInitialize(newSize);
         else
             d->truncate(newSize);
     }
 
     void prepend(const_iterator first, const_iterator last)
     {
-        if (!d->size) {
+        if (!d.size) {
             append(first, last);
             return;
         }
@@ -185,7 +185,7 @@ public:
     void insert(int position, const_iterator first, const_iterator last)
     {
         if (position < 0)
-            position += d->size + 1;
+            position += d.size + 1;
 
         if (position <= 0) {
             prepend(first, last);
@@ -214,11 +214,11 @@ public:
         if (first == last)
             return;
 
-        const T *const begin = d->begin();
-        const T *const end = begin + d->size;
+        const T *const begin = d.begin();
+        const T *const end = begin + d.size;
 
-        if (d->needsDetach()) {
-            SimpleVector detached(DataPointer(d->detachCapacity(size() - (last - first))));
+        if (d.needsDetach()) {
+            SimpleVector detached(DataPointer(d.detachCapacity(size() - (last - first))));
             if (first != begin)
                 detached.d->copyAppend(begin, first);
             detached.d->copyAppend(last, end);

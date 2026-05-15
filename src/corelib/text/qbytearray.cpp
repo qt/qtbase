@@ -644,7 +644,7 @@ static QByteArray xxflate(ZLibOp op, QArrayDataPointer<char> out, QByteArrayView
 
             qsizetype avail_out = capacity - out.size;
             if (avail_out == 0) {
-                out->reallocateAndGrow(QArrayData::GrowsAtEnd, 1); // grow to next natural capacity
+                out.reallocateAndGrow(QArrayData::GrowsAtEnd, 1); // grow to next natural capacity
                 if (out.data() == nullptr) // reallocation failed
                     return tooMuchData(op);
                 capacity = out.allocatedCapacity();
@@ -1919,10 +1919,10 @@ void QByteArray::resize(qsizetype size)
         size = 0;
 
     const auto capacityAtEnd = capacity() - d.freeSpaceAtBegin();
-    if (d->needsDetach() || size > capacityAtEnd)
+    if (d.needsDetach() || size > capacityAtEnd)
         reallocData(size, QArrayData::Grow);
     d.size = size;
-    if (d->allocatedCapacity())
+    if (d.allocatedCapacity())
         d.data()[size] = 0;
 }
 
@@ -1995,7 +1995,7 @@ void QByteArray::reallocData(qsizetype alloc, QArrayData::AllocationOption optio
     // at the beginning: might shift data pointer outside of allocated space
     const bool cannotUseReallocate = d.freeSpaceAtBegin() > 0;
 
-    if (d->needsDetach() || cannotUseReallocate) {
+    if (d.needsDetach() || cannotUseReallocate) {
         DataPointer dd(alloc, qMin(alloc, d.size), option);
         Q_CHECK_PTR(dd.data());
         if (dd.size > 0)
@@ -2012,7 +2012,7 @@ void QByteArray::reallocGrowData(qsizetype n)
     if (!n)  // expected to always allocate
         n = 1;
 
-    if (d->needsDetach()) {
+    if (d.needsDetach()) {
         DataPointer dd(DataPointer::allocateGrow(d, n, QArrayData::GrowsAtEnd));
         Q_CHECK_PTR(dd.data());
         dd->copyAppend(d.data(), d.data() + d.size);
@@ -2324,20 +2324,20 @@ QByteArray &QByteArray::insert(qsizetype i, QByteArrayView data)
 
     // handle this specially, as QArrayDataOps::insert() doesn't handle out of
     // bounds positions
-    if (i >= d->size) {
+    if (i >= d.size) {
         // In case when data points into the range or is == *this, we need to
         // defer a call to free() so that it comes after we copied the data from
         // the old memory:
         DataPointer detached{};  // construction is free
         d.detachAndGrow(Data::GrowsAtEnd, (i - d.size) + size, &str, &detached);
         Q_CHECK_PTR(d.data());
-        d->copyAppend(i - d->size, ' ');
+        d->copyAppend(i - d.size, ' ');
         d->copyAppend(str, str + size);
         d.data()[d.size] = '\0';
         return *this;
     }
 
-    if (!d->needsDetach() && QtPrivate::q_points_into_range(str, d)) {
+    if (!d.needsDetach() && QtPrivate::q_points_into_range(str, d)) {
         QVarLengthArray a(str, str + size);
         return insert(i, a);
     }
@@ -2405,11 +2405,11 @@ QByteArray &QByteArray::insert(qsizetype i, qsizetype count, char ch)
     if (i < 0 || count <= 0)
         return *this;
 
-    if (i >= d->size) {
+    if (i >= d.size) {
         // handle this specially, as QArrayDataOps::insert() doesn't handle out of bounds positions
         d.detachAndGrow(Data::GrowsAtEnd, (i - d.size) + count, nullptr, nullptr);
         Q_CHECK_PTR(d.data());
-        d->copyAppend(i - d->size, ' ');
+        d->copyAppend(i - d.size, ' ');
         d->copyAppend(count, ch);
         d.data()[d.size] = '\0';
         return *this;
@@ -2442,11 +2442,11 @@ QByteArray &QByteArray::remove(qsizetype pos, qsizetype len)
 {
     if (len <= 0  || pos < 0 || size_t(pos) >= size_t(size()))
         return *this;
-    if (pos + len > d->size)
-        len = d->size - pos;
+    if (pos + len > d.size)
+        len = d.size - pos;
 
     const auto toRemove_start = d.begin() + pos;
-    if (!d->isShared()) {
+    if (!d.isShared()) {
         d->erase(toRemove_start, len);
         d.data()[d.size] = '\0';
     } else {
@@ -4802,7 +4802,7 @@ QByteArray QByteArray::fromPercentEncoding(const QByteArray &input, char percent
 */
 QByteArray QByteArray::fromPercentEncoding(QByteArray &&input, char percent)
 {
-    if (input.d->needsDetach())
+    if (input.d.needsDetach())
         return fromPercentEncoding(input, percent); // lvalue overload
 
     if (input.isEmpty())

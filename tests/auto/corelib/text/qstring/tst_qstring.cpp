@@ -736,7 +736,7 @@ QString verifyZeroTermination(const QString &str)
     QString::DataPointer strDataPtr = const_cast<QString &>(str).data_ptr();
 
     // Skip if isStatic() or fromRawData(), as those offer no guarantees
-    if (!strDataPtr->isMutable())
+    if (!strDataPtr.isMutable())
         return str;
 
     qsizetype strSize = str.size();
@@ -747,7 +747,7 @@ QString verifyZeroTermination(const QString &str)
                 .arg(ushort{strTerminator.unicode()}, 4, 16, QChar(u'0'));
 
     // Skip mutating checks on shared strings
-    if (strDataPtr->isShared())
+    if (strDataPtr.isShared())
         return str;
 
     const QChar *strData = str.constData();
@@ -3458,13 +3458,13 @@ void tst_QString::insert_special_cases()
     {
         a = u"one"_s;
         a.prepend(u'a');
-        QString b(a.data_ptr()->freeSpaceAtEnd(), u'b');
+        QString b(a.data_ptr().freeSpaceAtEnd(), u'b');
         QCOMPARE(a.insert(a.size() + 1, QLatin1String(b.toLatin1())), u"aone "_s + b);
     }
     {
         a = u"one"_s;
         a.prepend(u'a');
-        QString b(a.data_ptr()->freeSpaceAtEnd(), u'b');
+        QString b(a.data_ptr().freeSpaceAtEnd(), u'b');
         QCOMPARE(a.insert(a.size() + 1, b), u"aone "_s + b);
     }
 
@@ -3472,14 +3472,14 @@ void tst_QString::insert_special_cases()
         a = u"onetwothree"_s;
         while (a.size() - 1)
             a.remove(0, 1);
-        QString b(a.data_ptr()->freeSpaceAtEnd() + 1, u'b');
+        QString b(a.data_ptr().freeSpaceAtEnd() + 1, u'b');
         QCOMPARE(a.insert(a.size() + 1, QLatin1String(b.toLatin1())), u"e "_s + b);
     }
     {
         a = u"onetwothree"_s;
         while (a.size() - 1)
             a.remove(0, 1);
-        QString b(a.data_ptr()->freeSpaceAtEnd() + 1, u'b');
+        QString b(a.data_ptr().freeSpaceAtEnd() + 1, u'b');
         QCOMPARE(a.insert(a.size() + 1, b), u"e "_s + b);
     }
 }
@@ -3611,7 +3611,7 @@ void tst_QString::append_special_cases()
     {
         QString a = u"one"_s;
         a.prepend(u'a');
-        QString b(a.data_ptr()->freeSpaceAtEnd(), u'b');
+        QString b(a.data_ptr().freeSpaceAtEnd(), u'b');
         QCOMPARE(a.append(QLatin1String(b.toLatin1())), u"aone"_s + b);
     }
 
@@ -3619,14 +3619,14 @@ void tst_QString::append_special_cases()
         QString a = u"onetwothree"_s;
         while (a.size() - 1)
             a.remove(0, 1);
-        QString b(a.data_ptr()->freeSpaceAtEnd(), u'b');
+        QString b(a.data_ptr().freeSpaceAtEnd(), u'b');
         QCOMPARE(a.append(QLatin1String(b.toLatin1())), u'e' + b);
     }
 
     {
         QString a = u"one"_s;
         a.prepend(u'a');
-        QString b(a.data_ptr()->freeSpaceAtEnd(), u'b');
+        QString b(a.data_ptr().freeSpaceAtEnd(), u'b');
         QCOMPARE(a.append(b), u"aone"_s + b);
     }
 
@@ -3634,7 +3634,7 @@ void tst_QString::append_special_cases()
         QString a = u"onetwothree"_s;
         while (a.size() - 1)
             a.remove(0, 1);
-        QString b(a.data_ptr()->freeSpaceAtEnd() + 1, u'b');
+        QString b(a.data_ptr().freeSpaceAtEnd() + 1, u'b');
         QCOMPARE(a.append(b), u'e' + b);
     }
 
@@ -8855,7 +8855,7 @@ void tst_QString::literals()
     QVERIFY(str.size() == 4);
     QCOMPARE(str.capacity(), 0);
     QVERIFY(str == QLatin1String("abcd"));
-    QVERIFY(!str.data_ptr()->isMutable());
+    QVERIFY(!str.data_ptr().isMutable());
 
     const QChar *s = str.constData();
     QString str2 = str;
@@ -8880,7 +8880,7 @@ void tst_QString::userDefinedLiterals()
         QVERIFY(str.size() == 4);
         QCOMPARE(str.capacity(), 0);
         QVERIFY(str == QLatin1String("abcd"));
-        QVERIFY(!str.data_ptr()->isMutable());
+        QVERIFY(!str.data_ptr().isMutable());
 
         const QChar *s = str.constData();
         QString str2 = str;
@@ -8903,7 +8903,7 @@ void tst_QString::userDefinedLiterals()
         QVERIFY(str.size() == 4);
         QCOMPARE(str.capacity(), 0);
         QVERIFY(str == QLatin1String("abcd"));
-        QVERIFY(!str.data_ptr()->isMutable());
+        QVERIFY(!str.data_ptr().isMutable());
 
         const QChar *s = str.constData();
         QString str2 = str;
@@ -9568,14 +9568,14 @@ void tst_QString::removeIf()
 
     // Test when the string is not shared
     a = "aABbcCDd"_L1;
-    QVERIFY(!a.data_ptr()->needsDetach());
+    QVERIFY(!a.data_ptr().needsDetach());
     a.removeIf(pred);
     QCOMPARE(a, u"ABCD");
 
     // Test when the string is shared
     a = "aABbcCDd"_L1;
     QString b = a;
-    QVERIFY(a.data_ptr()->needsDetach());
+    QVERIFY(a.data_ptr().needsDetach());
     a.removeIf(pred);
     QCOMPARE(a, u"ABCD");
     QCOMPARE(b, "aABbcCDd"_L1);
