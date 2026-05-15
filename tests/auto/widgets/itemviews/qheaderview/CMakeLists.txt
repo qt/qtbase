@@ -11,6 +11,14 @@ if(NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_BUILDING_QT)
     find_package(Qt6BuildInternals REQUIRED COMPONENTS STANDALONE_TEST)
 endif()
 
+set_source_files_properties("../../../shared/resources/testfont.ttf"
+    PROPERTIES QT_RESOURCE_ALIAS "testfont.ttf"
+)
+
+set(testfonts_resource_files
+    "../../../shared/resources/testfont.ttf"
+)
+
 qt_internal_add_test(tst_qheaderview
     SOURCES
         tst_qheaderview.cpp
@@ -20,4 +28,6 @@ qt_internal_add_test(tst_qheaderview
         Qt::GuiPrivate
         Qt::Widgets
         Qt::WidgetsPrivate
+    TESTDATA ${testfonts_resource_files}
+    BUILTIN_TESTDATA
 )

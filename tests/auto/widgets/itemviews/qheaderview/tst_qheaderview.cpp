@@ -14,6 +14,7 @@
 #include <QStyledItemDelegate>
 #include <QtWidgets/private/qheaderview_p.h>
 #include <QtWidgets/private/qapplication_p.h>
+#include <QFontDatabase>
 
 using BoolList = QList<bool>;
 using IntList = QList<int>;
@@ -450,6 +451,14 @@ tst_QHeaderView::tst_QHeaderView()
 
 void tst_QHeaderView::initTestCase()
 {
+    const QString testFontPath = QFINDTESTDATA("testfont.ttf");
+    QVERIFY(!testFontPath.isEmpty());
+    const int fontId = QFontDatabase::addApplicationFont(testFontPath);
+    QVERIFY(fontId >= 0);
+    QStringList families = QFontDatabase::applicationFontFamilies(fontId);
+    QVERIFY(!families.isEmpty());
+    QApplication::setFont(QFont(families.first()));
+
     m_tableview = new QTableView;
     qDebug().noquote().nospace()
             << "default min section size is "
