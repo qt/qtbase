@@ -581,7 +581,7 @@ std::function<QOhosUdmfRecord()> tryMakeDefaultUdmfRecordFactoryFromQMimeDataOrN
     struct Context
     {
         std::vector<UdmfRecordEntryFactory> directEntryFactories;
-        std::map<std::string, std::function<UdmfRecordEntryFactory(const QMimeData &)>> entryMetaFactoryFuncsForProvider;
+        std::vector<UdmfRecordEntryMetaFactory> providerEntries;
     };
 
     auto context = std::make_shared<Context>();
@@ -589,13 +589,8 @@ std::function<QOhosUdmfRecord()> tryMakeDefaultUdmfRecordFactoryFromQMimeDataOrN
     const bool useRecordProvider = optLazyProcessingMimeData != nullptr;
 
     for (auto &recordEntryFactoryEntry : recordEntryMetaFactories) {
-        QOhosOptional<std::string> optUdmfMetaId;
-        if (useRecordProvider && recordEntryFactoryEntry.optUdmfMetaIdFactory)
-            optUdmfMetaId = recordEntryFactoryEntry.optUdmfMetaIdFactory();
-        if (optUdmfMetaId.hasValue()) {
-            context->entryMetaFactoryFuncsForProvider.emplace(
-                optUdmfMetaId.value(),
-                std::move(recordEntryFactoryEntry.metaFactoryFunc));
+        if (useRecordProvider && recordEntryFactoryEntry.optUdmfMetaIdFactory) {
+            context->providerEntries.push_back(std::move(recordEntryFactoryEntry));
         } else {
             context->directEntryFactories.push_back(
                 recordEntryFactoryEntry.metaFactoryFunc(mimeData));
@@ -606,20 +601,31 @@ std::function<QOhosUdmfRecord()> tryMakeDefaultUdmfRecordFactoryFromQMimeDataOrN
         QOhosUdmfRecord record;
         for (const auto &directEntryFactory : context->directEntryFactories)
             directEntryFactory.addEntryToRecord(record);
-        if (!context->entryMetaFactoryFuncsForProvider.empty()) {
+
+        auto entryMetaFactoryFuncsForProvider =
+            std::make_shared<std::map<std::string, std::function<UdmfRecordEntryFactory(const QMimeData &)>>>();
+        for (const auto &providerEntry : context->providerEntries) {
+            auto optUdmfMetaId = providerEntry.optUdmfMetaIdFactory();
+            if (optUdmfMetaId.hasValue()) {
+                entryMetaFactoryFuncsForProvider->emplace(
+                    optUdmfMetaId.value(), providerEntry.metaFactoryFunc);
+            }
+        }
+
+        if (!entryMetaFactoryFuncsForProvider->empty()) {
             auto lazyProcessingMimeData = optLazyProcessingMimeData;
             record.setProviderForDataFetchFunc(
-                getMapKeys(context->entryMetaFactoryFuncsForProvider),
-                [context, lazyProcessingMimeData](const char *type) {
+                getMapKeys(*entryMetaFactoryFuncsForProvider),
+                [entryMetaFactoryFuncsForProvider, lazyProcessingMimeData](const char *type) {
                     qOhosPrintfDebug("%s: got request for data '%s'", Q_FUNC_INFO, type);
 
                     auto typeStr = std::string(type);
                     auto optUdmfRecordEntryFactory = tryEvalInQtThreadWithConsumer<UdmfRecordEntryFactory>(
-                        [context, lazyProcessingMimeData, typeStr](QOhosConsumer<UdmfRecordEntryFactory> resultConsumer) {
+                        [entryMetaFactoryFuncsForProvider, lazyProcessingMimeData, typeStr](QOhosConsumer<UdmfRecordEntryFactory> resultConsumer) {
                             qOhosPrintfDebug("%s: processing request for data '%s' in Qt thread", Q_FUNC_INFO, typeStr.c_str());
-                            auto entryMetaFactoryFuncIter = context->entryMetaFactoryFuncsForProvider.find(typeStr);
+                            auto entryMetaFactoryFuncIter = entryMetaFactoryFuncsForProvider->find(typeStr);
                             resultConsumer(
-                                entryMetaFactoryFuncIter != context->entryMetaFactoryFuncsForProvider.end()
+                                entryMetaFactoryFuncIter != entryMetaFactoryFuncsForProvider->end()
                                     ? entryMetaFactoryFuncIter->second(*lazyProcessingMimeData)
                                     : UdmfRecordEntryFactory::makeDummy());
                             qOhosPrintfDebug("%s: finished processing in Qt thread", Q_FUNC_INFO);
