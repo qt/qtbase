@@ -46,7 +46,7 @@ public:
     static UdmfRecordEntryFactory makeForUdsObjectFactory(
         QOhosSupplier<QOhosUdsObject<RawUdsObject>> udsObjectFactory);
 
-    static UdmfRecordEntryFactory makeForGeneralDataWithMimeType(
+    static UdmfRecordEntryFactory makeForArrayBufferWithMimeType(
         std::string mimeType, QOhosSupplier<QSpan<const std::uint8_t>> dataSupplier);
 
     static UdmfRecordEntryFactory makeDummy();
@@ -421,6 +421,29 @@ std::shared_ptr<::OH_UdmfProperty> createUdmfPropertyForUdmfData(::OH_UdmfData *
     };
 }
 
+std::unique_ptr<::OH_UdsArrayBuffer, void (*)(::OH_UdsArrayBuffer *)> createUdsArrayBuffer()
+{
+    return {
+        QArkUi::callArkUiOrFailOnNullResult(
+            Q_OHOS_NAMED_FUNC(::OH_UdsArrayBuffer_Create)),
+        [](::OH_UdsArrayBuffer *udsArrayBuffer) {
+            QArkUi::callArkUiOrFailOnErrorResult(
+                Q_OHOS_NAMED_FUNC(::OH_UdsArrayBuffer_Destroy),
+                udsArrayBuffer);
+        }
+    };
+}
+
+std::unique_ptr<::OH_UdsArrayBuffer, void (*)(::OH_UdsArrayBuffer *)>
+    createUdsArrayBufferWithData(QSpan<const std::uint8_t> data)
+{
+    auto udsArrayBuffer = createUdsArrayBuffer();
+    QArkUi::callArkUiOrFailOnErrorResult(
+        Q_OHOS_NAMED_FUNC(::OH_UdsArrayBuffer_SetData),
+        udsArrayBuffer.get(), const_cast<std::uint8_t *>(data.data()), data.size());
+    return udsArrayBuffer;
+}
+
 void addGeneralEntryToRecord(std::string mimeType, QSpan<const std::uint8_t> dataBytes, QOhosUdmfRecord &record)
 {
     if (dataBytes.size() == 0) {
@@ -458,15 +481,21 @@ UdmfRecordEntryFactory UdmfRecordEntryFactory::makeForUdsObjectFactory(
         });
 }
 
-UdmfRecordEntryFactory UdmfRecordEntryFactory::makeForGeneralDataWithMimeType(
+UdmfRecordEntryFactory UdmfRecordEntryFactory::makeForArrayBufferWithMimeType(
     std::string mimeType, QOhosSupplier<QSpan<const std::uint8_t>> dataSupplier)
 {
+    auto sharedDataSupplier = QtOhos::moveToSharedPtr(std::move(dataSupplier));
     return UdmfRecordEntryFactory(
-        []() {
-            return nullptr;
+        [mimeType, sharedDataSupplier]() {
+            auto dataSpan = (*sharedDataSupplier)();
+            auto udsArrayBuffer = createUdsArrayBufferWithData(dataSpan);
+            qOhosPrintfDebug(
+                "%s: generated array buffer for OH_UdmfRecordProvider, mimeType='%s', size=%zu",
+                Q_FUNC_INFO, mimeType.c_str(), static_cast<std::size_t>(dataSpan.size()));
+            return udsArrayBuffer.release();
         },
-        [mimeType, dataSupplier = std::move(dataSupplier)](QOhosUdmfRecord &record) {
-            addGeneralEntryToRecord(mimeType, dataSupplier(), record);
+        [mimeType, sharedDataSupplier](QOhosUdmfRecord &record) {
+            addGeneralEntryToRecord(mimeType, (*sharedDataSupplier)(), record);
         });
 }
 
@@ -553,10 +582,12 @@ std::vector<UdmfRecordEntryMetaFactory> makeRecordEntryMetaFactoriesForMimeDataF
         } else {
             recordEntryMetaFactories.emplace_back(
                 UdmfRecordEntryMetaFactory{
-                    {},
+                    [qStrFormat]() {
+                        return tryMapMimeTypeToUtdTypeId(qStrFormat.toStdString());
+                    },
                     [qStrFormat](const QMimeData &mimeData) {
                         auto dataBytes = mimeData.data(qStrFormat);
-                        return UdmfRecordEntryFactory::makeForGeneralDataWithMimeType(
+                        return UdmfRecordEntryFactory::makeForArrayBufferWithMimeType(
                             qStrFormat.toStdString(),
                             [dataBytes]() {
                                 return QSpan<const std::uint8_t>(
