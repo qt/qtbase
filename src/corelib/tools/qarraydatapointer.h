@@ -82,24 +82,14 @@ public:
 
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QArrayDataPointer)
 
-    DataOps &operator*() noexcept
+    DataOps operator*() noexcept
     {
-        return *static_cast<DataOps *>(this);
+        return DataOps(*this);
     }
 
-    DataOps *operator->() noexcept
+    DataOps operator->() noexcept
     {
-        return static_cast<DataOps *>(this);
-    }
-
-    const DataOps &operator*() const noexcept
-    {
-        return *static_cast<const DataOps *>(this);
-    }
-
-    const DataOps *operator->() const noexcept
-    {
-        return static_cast<const DataOps *>(this);
+        return DataOps(*this);
     }
 
     ~QArrayDataPointer()
