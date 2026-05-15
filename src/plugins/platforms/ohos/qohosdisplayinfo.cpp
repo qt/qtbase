@@ -10,7 +10,7 @@ QT_BEGIN_NAMESPACE
 namespace
 {
 
-double mapPixelsToMillimeters(double pixels, double dpi)
+constexpr double mapPixelsToMillimeters(double pixels, double dpi)
 {
     constexpr double millimetersPerInch = 25.4;
     return (pixels / dpi) * millimetersPerInch;
