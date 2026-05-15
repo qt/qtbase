@@ -66,7 +66,7 @@ private:
 
 struct UdmfRecordEntryMetaFactory
 {
-    QOhosOptional<std::string> udmfMetaId;
+    QOhosSupplier<QOhosOptional<std::string>> optUdmfMetaIdFactory;
     std::function<UdmfRecordEntryFactory(const QMimeData &)> metaFactoryFunc;
 };
 
@@ -118,6 +118,14 @@ std::vector<T> getMapKeys(const std::map<T, K> &inputMap)
     for (const auto &mapEntry : inputMap)
         mapKeys.push_back(mapEntry.first);
     return mapKeys;
+}
+
+template<typename T>
+QOhosSupplier<QOhosOptional<T>> makeOptionalValueSupplier(T value)
+{
+    return [value = std::move(value)]() {
+        return makeQOhosOptional(value);
+    };
 }
 
 bool hasQMimeDataPeerType(const char *type)
@@ -498,7 +506,7 @@ std::vector<UdmfRecordEntryMetaFactory> makeRecordEntryMetaFactoriesForMimeDataF
         if (format == mimeTextPlain) {
             recordEntryMetaFactories.emplace_back(
                 UdmfRecordEntryMetaFactory{
-                    makeQOhosOptional<std::string>(QOhosUdsMeta<::OH_UdsPlainText>::udmfMetaId),
+                    makeOptionalValueSupplier<std::string>(QOhosUdsMeta<::OH_UdsPlainText>::udmfMetaId),
                     [](const QMimeData &mimeData) {
                         auto dataText = mimeData.text();
                         return UdmfRecordEntryFactory::makeForUdsObjectFactory<::OH_UdsPlainText>(
@@ -510,7 +518,7 @@ std::vector<UdmfRecordEntryMetaFactory> makeRecordEntryMetaFactoriesForMimeDataF
         } else if (format == mimeTextHtml) {
             recordEntryMetaFactories.emplace_back(
                 UdmfRecordEntryMetaFactory{
-                    makeQOhosOptional<std::string>(QOhosUdsMeta<::OH_UdsHtml>::udmfMetaId),
+                    makeOptionalValueSupplier<std::string>(QOhosUdsMeta<::OH_UdsHtml>::udmfMetaId),
                     [](const QMimeData &mimeData) {
                         auto dataHtml = mimeData.html();
                         return UdmfRecordEntryFactory::makeForUdsObjectFactory<::OH_UdsHtml>(
@@ -522,7 +530,7 @@ std::vector<UdmfRecordEntryMetaFactory> makeRecordEntryMetaFactoriesForMimeDataF
         } else if (format == mimeTextUriList) {
             recordEntryMetaFactories.emplace_back(
                 UdmfRecordEntryMetaFactory{
-                    makeEmptyQOhosOptional(),
+                    {},
                     [](const QMimeData &mimeData) {
                         auto dataUrls = mimeData.urls();
                         return !dataUrls.isEmpty()
@@ -533,7 +541,7 @@ std::vector<UdmfRecordEntryMetaFactory> makeRecordEntryMetaFactoriesForMimeDataF
         } else if (format == mimeAppXQtImage) {
             recordEntryMetaFactories.emplace_back(
                 UdmfRecordEntryMetaFactory{
-                    makeQOhosOptional<std::string>(QOhosUdsMeta<::OH_UdsPixelMap>::udmfMetaId),
+                    makeOptionalValueSupplier<std::string>(QOhosUdsMeta<::OH_UdsPixelMap>::udmfMetaId),
                     [](const QMimeData &mimeData) {
                         auto dataImage = qvariant_cast<QImage>(mimeData.imageData());
                         return UdmfRecordEntryFactory::makeForUdsObjectFactory<::OH_UdsPixelMap>(
@@ -545,7 +553,7 @@ std::vector<UdmfRecordEntryMetaFactory> makeRecordEntryMetaFactoriesForMimeDataF
         } else {
             recordEntryMetaFactories.emplace_back(
                 UdmfRecordEntryMetaFactory{
-                    makeEmptyQOhosOptional(),
+                    {},
                     [qStrFormat](const QMimeData &mimeData) {
                         auto dataBytes = mimeData.data(qStrFormat);
                         return UdmfRecordEntryFactory::makeForGeneralDataWithMimeType(
@@ -581,9 +589,12 @@ std::function<QOhosUdmfRecord()> tryMakeDefaultUdmfRecordFactoryFromQMimeDataOrN
     const bool useRecordProvider = optLazyProcessingMimeData != nullptr;
 
     for (auto &recordEntryFactoryEntry : recordEntryMetaFactories) {
-        if (recordEntryFactoryEntry.udmfMetaId.hasValue() && useRecordProvider) {
+        QOhosOptional<std::string> optUdmfMetaId;
+        if (useRecordProvider && recordEntryFactoryEntry.optUdmfMetaIdFactory)
+            optUdmfMetaId = recordEntryFactoryEntry.optUdmfMetaIdFactory();
+        if (optUdmfMetaId.hasValue()) {
             context->entryMetaFactoryFuncsForProvider.emplace(
-                recordEntryFactoryEntry.udmfMetaId.value(),
+                optUdmfMetaId.value(),
                 std::move(recordEntryFactoryEntry.metaFactoryFunc));
         } else {
             context->directEntryFactories.push_back(
