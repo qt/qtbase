@@ -2677,10 +2677,10 @@ void QString::resize(qsizetype size)
     if (size < 0)
         size = 0;
 
-    if (d->needsDetach() || needsReallocate(*this, size))
+    if (d.needsDetach() || needsReallocate(*this, size))
         reallocData(size, QArrayData::Grow);
     d.size = size;
-    if (d->allocatedCapacity())
+    if (d.allocatedCapacity())
         d.data()[size] = u'\0';
 }
 
@@ -2800,7 +2800,7 @@ void QString::reallocData(qsizetype alloc, QArrayData::AllocationOption option)
     // at the beginning: might shift data pointer outside of allocated space
     const bool cannotUseReallocate = d.freeSpaceAtBegin() > 0;
 
-    if (d->needsDetach() || cannotUseReallocate) {
+    if (d.needsDetach() || cannotUseReallocate) {
         DataPointer dd(alloc, qMin(alloc, d.size), option);
         Q_CHECK_PTR(dd.data());
         if (dd.size > 0)
@@ -2817,7 +2817,7 @@ void QString::reallocGrowData(qsizetype n)
     if (!n)  // expected to always allocate
         n = 1;
 
-    if (d->needsDetach()) {
+    if (d.needsDetach()) {
         DataPointer dd(DataPointer::allocateGrow(d, n, QArrayData::GrowsAtEnd));
         Q_CHECK_PTR(dd.data());
         dd->copyAppend(d.data(), d.data() + d.size);
@@ -2864,7 +2864,7 @@ QString &QString::operator=(const QString &other) noexcept
 QString &QString::operator=(QLatin1StringView other)
 {
     const qsizetype capacityAtEnd = capacity() - d.freeSpaceAtBegin();
-    if (isDetached() && other.size() <= capacityAtEnd) { // assumes d->alloc == 0 -> !isDetached() (sharedNull)
+    if (isDetached() && other.size() <= capacityAtEnd) { // assumes d.alloc == 0 -> !isDetached() (sharedNull)
         d.size = other.size();
         d.data()[other.size()] = 0;
         qt_from_latin1(d.data(), other.latin1(), other.size());
@@ -3115,7 +3115,7 @@ QString& QString::insert(qsizetype i, const QChar *unicode, qsizetype size)
         return *this;
 
     // In case when data points into "this"
-    if (!d->needsDetach() && QtPrivate::q_points_into_range(unicode, *this)) {
+    if (!d.needsDetach() && QtPrivate::q_points_into_range(unicode, *this)) {
         QVarLengthArray copy(unicode, unicode + size);
         insert(i, copy.data(), size);
     } else {
@@ -3480,7 +3480,7 @@ QString &QString::remove(qsizetype pos, qsizetype len)
 
     len = std::min(len, size() - pos);
 
-    if (!d->isShared()) {
+    if (!d.isShared()) {
         d->erase(d.begin() + pos, len);
         d.data()[d.size] = u'\0';
     } else {
@@ -3525,7 +3525,7 @@ static void removeStringImpl(QString &s, const T &needle, Qt::CaseSensitivity cs
         return dst;
     };
 
-    if (!dptr->needsDetach()) {
+    if (!dptr.needsDetach()) {
         auto dst = begin + i;
         dst = copyFunc(dst);
         s.truncate(std::distance(begin, dst));
@@ -3647,7 +3647,7 @@ QString &QString::remove(QChar ch, Qt::CaseSensitivity cs)
     auto begin = d.begin();
     auto first_match = begin + idx;
     auto end = d.end();
-    if (!d->isShared()) {
+    if (!d.isShared()) {
         auto it = std::remove_if(first_match, end, match);
         d->erase(it, std::distance(it, end));
         d.data()[d.size] = u'\0';
@@ -5625,7 +5625,7 @@ QByteArray QString::toLatin1_helper_inplace(QString &s)
     // First, do the in-place conversion. Since isDetached() == true, the data
     // was allocated by QArrayData, so the null terminator must be there.
     qsizetype length = s.size();
-    char16_t *sdata = s.d->data();
+    char16_t *sdata = s.d.data();
     Q_ASSERT(sdata[length] == u'\0');
     qt_to_latin1(reinterpret_cast<uchar *>(sdata), sdata, length + 1);
 
@@ -7000,7 +7000,7 @@ int QString::localeAwareCompare_helper(const QChar *data1, qsizetype length1,
 
 const ushort *QString::utf16() const
 {
-    if (!d->isMutable()) {
+    if (!d.isMutable()) {
         // ensure '\0'-termination for ::fromRawData strings
         const_cast<QString*>(this)->reallocData(d.size, QArrayData::KeepSize);
     }
@@ -7024,7 +7024,7 @@ const ushort *QString::utf16() const
 QString &QString::nullTerminate()
 {
     // ensure '\0'-termination for ::fromRawData strings
-    if (!d->isMutable())
+    if (!d.isMutable())
         *this = QString{constData(), size()};
     return *this;
 }
@@ -7041,7 +7041,7 @@ QString &QString::nullTerminate()
 QString QString::nullTerminated() const &
 {
     // ensure '\0'-termination for ::fromRawData strings
-    if (!d->isMutable())
+    if (!d.isMutable())
         return QString{constData(), size()};
     return *this;
 }
