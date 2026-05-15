@@ -28,15 +28,16 @@ static QMap<Type, QVariant> s_deviceInfo = {};
 
 void init(QMap<Type, QVariant> devinfo)
 {
-    s_deviceInfo = devinfo;
+    s_deviceInfo = std::move(devinfo);
 }
 
 QVariant getProperty(Type prop)
 {
     auto result = s_deviceInfo.value(prop);
-    if (!result.isValid())
+    if (!result.isValid()) {
         qOhosWarning(QtForOhos)
                 << "QOhosDeviceInfo::getProperty cannot obtain value from DeviceInfo map";
+    }
     return result;
 }
 

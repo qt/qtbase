@@ -1537,7 +1537,7 @@ void initDeviceInfo(JsState &jsState)
     for (const auto &propEntry : intPropertiesMap)
         deviceInfo[propEntry.first] = static_cast<int>(deviceInfoObj.get<QNapi::Number>(propEntry.second));
 
-    QOhosDeviceInfo::init(deviceInfo);
+    QOhosDeviceInfo::init(std::move(deviceInfo));
 }
 
 void initAppData(JsState &jsState, QNapi::Object appContext)
