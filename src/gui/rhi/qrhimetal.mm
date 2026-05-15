@@ -81,7 +81,7 @@ QT_BEGIN_NAMESPACE
     Instead, either run the debug build of the application in XCode, by
     generating a \c{.xcodeproj} file via \c{cmake -G Xcode}, or set the
     environment variable \c{METAL_DEVICE_WRAPPER_TYPE=1}. The variable needs to
-    be set early on in the environment, perferably before starting the process;
+    be set early on in the environment, preferably before starting the process;
     attempting to set it at QRhi creation time is not functional in practice.
     (too late probably)
 
@@ -134,7 +134,7 @@ QT_BEGIN_NAMESPACE
     recording a frame, that is, between a \l{QRhi::beginFrame()}{beginFrame()}
     - \l{QRhi::endFrame()}{endFrame()} or
     \l{QRhi::beginOffscreenFrame()}{beginOffscreenFrame()} -
-    \l{QRhi::endOffscreenFrame()}{endOffsrceenFrame()} pair.
+    \l{QRhi::endOffscreenFrame()}{endOffscreenFrame()} pair.
 
     \note The command encoder is only valid while recording a pass, that is,
     between \l{QRhiCommandBuffer::beginPass()} -

@@ -53,7 +53,7 @@ QT_BEGIN_NAMESPACE
     \endcode
 
     By default QRhi creates a QOpenGLContext on its own. This approach works
-    well in most cases, included threaded scenarios, where there is a dedicated
+    well in most cases, including threaded scenarios, where there is a dedicated
     QRhi for each rendering thread. As there will be a QOpenGLContext for each
     QRhi, the OpenGL context requirements (a context can only be current on one
     thread) are satisfied. The implicitly created context is destroyed
@@ -62,7 +62,7 @@ QT_BEGIN_NAMESPACE
     The QSurfaceFormat for the context is specified in \c format. The
     constructor sets this to QSurfaceFormat::defaultFormat() so applications
     that call QSurfaceFormat::setDefaultFormat() with the appropriate settings
-    before the constructor runs will not need to change value of \c format.
+    before the constructor runs will not need to change the value of \c format.
 
     \note Remember to set the depth and stencil buffer sizes to 24 and 8 when
     the renderer relies on depth or stencil testing, either in the global
@@ -136,7 +136,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \variable QRhiGles2InitParams::shareContext
 
-    Optional, the QOpenGLContext to share resource with. QRhi creates its own
+    Optional, the QOpenGLContext to share resources with. QRhi creates its own
     context, and setting this member to a valid QOpenGLContext leads to calling
     \l{QOpenGLContext::setShareContext()}{setShareContext()} with it.
 */

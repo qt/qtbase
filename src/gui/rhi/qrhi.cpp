@@ -499,7 +499,7 @@ Q_LOGGING_CATEGORY(QRHI_LOG_RUB, "qt.rhi.rub")
     \section2 Investigating rendering problems
 
     When the rendering results are not as expected, or the application is
-    experiencing problems, always consider checking with the the native 3D
+    experiencing problems, always consider checking with the native 3D
     APIs' debug and validation facilities. QRhi itself features limited error
     checking since replicating the already existing, vast amount of
     functionality in the underlying layers is not reasonable.
@@ -836,7 +836,7 @@ Q_LOGGING_CATEGORY(QRHI_LOG_RUB, "qt.rhi.rub")
     \value BaseInstance Indicates that instanced draw commands support the \c
     firstInstance argument. When reported as not supported, the firstInstance
     value is ignored and the instance ID starts from 0. In practice this feature
-    will be unsupported with with Metal on older iOS devices, including the iOS
+    will be unsupported with Metal on older iOS devices, including the iOS
     Simulator, and all versions of OpenGL. The latter is due to OpenGL ES not
     supporting draw calls with a base instance at all. Currently QRhi's OpenGL
     backend does not implement the functionality for OpenGL (non-ES) either,
@@ -873,9 +873,11 @@ Q_LOGGING_CATEGORY(QRHI_LOG_RUB, "qt.rhi.rub")
 
     \value IntAttributes Indicates that specifying input attributes with
     signed and unsigned integer types for a shader pipeline is supported. When
-    not supported, build() will succeed but just show a warning message and the
-    values of the target attributes will be broken. In practice this feature
-    will be unsupported with OpenGL ES 2.0 and OpenGL 2.x.
+    not supported,
+    \l{QRhiGraphicsPipeline::create()}{QRhiGraphicsPipeline::create()} will
+    succeed but show a warning message and the values of the target attributes
+    will be broken. In practice this feature will be unsupported with OpenGL ES
+    2.0 and OpenGL 2.x.
 
     \value ScreenSpaceDerivatives Indicates that functions such as dFdx(),
     dFdy(), and fwidth() are supported in shaders. In practice this feature will
@@ -992,15 +994,17 @@ Q_LOGGING_CATEGORY(QRHI_LOG_RUB, "qt.rhi.rub")
     In practice this feature will be unsupported on OpenGL ES.
 
     \value OneDimensionalTextureMipmaps Indicates that generating 1D texture
-    mipmaps are supported. In practice this feature will be unsupported on
+    mipmaps is supported. In practice this feature will be unsupported on
     backends that do not report support for
     \l{OneDimensionalTextures}, Metal, and Direct 3D 12.
 
     \value HalfAttributes Indicates that specifying input attributes with half
     precision (16bit) floating point types for a shader pipeline is supported.
-    When not supported, build() will succeed but just show a warning message
-    and the values of the target attributes will be broken. In practice this
-    feature will be unsupported in some OpenGL ES 2.0 and OpenGL 2.x
+    When not supported,
+    \l{QRhiGraphicsPipeline::create()}{QRhiGraphicsPipeline::create()} will
+    succeed but show a warning message and the values of the target attributes
+    will be broken. In practice this feature will be unsupported in some OpenGL
+    ES 2.0 and OpenGL 2.x
     implementations. Note that while Direct3D 11/12 does support half precision
     input attributes, it does not support the half3 type. The D3D backends pass
     half3 attributes as half4. To ensure cross platform compatibility, half3
@@ -1012,7 +1016,7 @@ Q_LOGGING_CATEGORY(QRHI_LOG_RUB, "qt.rhi.rub")
     \l{OneDimensionalTextures}, and Metal.
 
     \value ThreeDimensionalTextureMipmaps Indicates that generating 3D texture
-    mipmaps are supported. This is typically supported with all backends starting
+    mipmaps is supported. This is typically supported with all backends starting
     with Qt 6.10.
 
     \value MultiView Indicates that multiview, see e.g.
@@ -1084,7 +1088,7 @@ Q_LOGGING_CATEGORY(QRHI_LOG_RUB, "qt.rhi.rub")
     graphics API at run time. In practice this feature can be expected to be
     supported with Direct 3D 12, Vulkan, and Metal, assuming the GPU is modern
     enough to support VRS. To check if D3D12/Vulkan-style image-based VRS is
-    suspported, use VariableRateShadingMapWithTexture instead. When this feature
+    supported, use VariableRateShadingMapWithTexture instead. When this feature
     is reported as supported, there are two possibilities: when
     VariableRateShadingMapWithTexture is also true, then QRhiShadingRateMap
     consumes QRhiTexture objects via the createFrom() overload taking a
@@ -1119,11 +1123,11 @@ Q_LOGGING_CATEGORY(QRHI_LOG_RUB, "qt.rhi.rub")
     With Vulkan and Metal this feature is expected to be reported as supported
     always. This enum value has been introduced in Qt 6.11.
 
-    \value DepthClamp Indicates that enabling depth clamping is supported. When
-    reported as unsupported, which will be the case with OpenGL ES, OpenGL
-    versions before 3.2 without the relevant extension present, and Metal on the
-    iOS Simulator, calling \l{QRhiCommandBuffer::}{setDepthClamp()} with an argument
-    of \c true has no effect. This enum value has been introduced in Qt 6.11.
+    \value [since 6.11] DepthClamp Indicates that enabling depth clamping is
+    supported. When reported as unsupported, which will be the case with OpenGL
+    ES, OpenGL versions before 3.2 without the relevant extension present, and
+    Metal on the iOS Simulator, calling \l{QRhiGraphicsPipeline::setDepthClamp()}
+    with an argument of \c true has no effect.
 
     \value [since 6.12] DrawIndirect Indicates that the
     \l{QRhiCommandBuffer::drawIndirect()}{drawIndirect()}
@@ -2863,8 +2867,8 @@ QRhiTextureRenderTargetDescription::QRhiTextureRenderTargetDescription(const QRh
     only when the \l QRhi::VariableRateShadingMap feature is reported as
     supported.
 
-    When QRhiCommandBuffer::setShadingRate() is also called, the higher of two
-    the shading rates are used for each tile. There is currently no control
+    When QRhiCommandBuffer::setShadingRate() is also called, the higher of the
+    two shading rates is used for each tile. There is currently no control
     offered over the combiner behavior.
 
     \note When the render target had already been built (create() was called
@@ -3180,7 +3184,7 @@ QRhiTextureUploadEntry::QRhiTextureUploadEntry(int layer, int level,
     internally creating a QRhiTextureUploadDescription with a single image
     targeting level 0 for layer 0.
 
-    An example of the the common, simple case of wanting to upload the contents
+    An example of the common, simple case of wanting to upload the contents
     of a QImage to a QRhiTexture with a matching pixel size:
 
     \code
@@ -5090,7 +5094,7 @@ QRhiResource::Type QRhiSampler::resourceType() const
 
     An example is MTLRasterizationRateMap with Metal. Other 3D APIs that use
     textures for image-based VRS do not use this struct since those can function
-    via the QRhiTexture-based overload of QRhiShadingRate::createFrom().
+    via the QRhiTexture-based overload of QRhiShadingRateMap::createFrom().
  */
 
 /*!
@@ -5124,7 +5128,7 @@ QRhiResource::Type QRhiShadingRateMap::resourceType() const
     \return \c true when successful, \c false when not supported.
 
     \note This is functional only when the QRhi::VariableRateShadingMap feature
-    is reported as supported, while QRhi::VariableShadingRateMapWithTexture
+    is reported as supported, while QRhi::VariableRateShadingMapWithTexture
     feature is not. Currently this is true for Metal, assuming variable rate
     shading is supported by the GPU.
 
@@ -5208,7 +5212,7 @@ QRhiResource::Type QRhiRenderPassDescriptor::resourceType() const
     \fn virtual bool QRhiRenderPassDescriptor::isCompatible(const QRhiRenderPassDescriptor *other) const = 0
 
     \return true if the \a other QRhiRenderPassDescriptor is compatible with
-    this one, meaning \c this and \a other can be used interchangebly in
+    this one, meaning \c this and \a other can be used interchangeably in
     QRhiGraphicsPipeline::setRenderPassDescriptor().
 
     The concept of the compatibility of renderpass descriptors is similar to
@@ -5233,7 +5237,7 @@ QRhiResource::Type QRhiRenderPassDescriptor::resourceType() const
     serializedFormat(). This has benefits in certain situations, because it
     allows testing the compatibility of a QRhiRenderPassDescriptor with a
     QRhiGraphicsPipeline even when the QRhiRenderPassDescriptor the pipeline was
-    originally built was is no longer available (but the data returned from its
+    originally built with is no longer available (but the data returned from its
     serializedFormat() still is).
 
     \sa newCompatibleRenderPassDescriptor(), serializedFormat()
@@ -8012,8 +8016,8 @@ QRhiRenderTarget *QRhiSwapChain::currentFrameRenderTarget(StereoTargetBuffer tar
     only when the \l QRhi::VariableRateShadingMap feature is reported as
     supported.
 
-    When QRhiCommandBuffer::setShadingRate() is also called, the higher of two
-    the shading rates are used for each tile. There is currently no control
+    When QRhiCommandBuffer::setShadingRate() is also called, the higher of the
+    two shading rates is used for each tile. There is currently no control
     offered over the combiner behavior.
 
     \note Setting a shading rate map implies that a different, new
@@ -9981,7 +9985,9 @@ void QRhiResourceUpdateBatch::readBackTexture(const QRhiReadbackDescription &rb,
 /*!
    Enqueues a mipmap generation operation for the specified texture \a tex.
 
-   Both 2D and cube textures are supported.
+   2D and cube textures are supported. 1D and 3D textures are supported when
+   the QRhi::OneDimensionalTextureMipmaps or QRhi::ThreeDimensionalTextureMipmaps
+   feature is reported as supported, respectively.
 
    \note The texture must be created with QRhiTexture::MipMapped and
    QRhiTexture::UsedWithGenerateMips.
@@ -10503,8 +10509,8 @@ void QRhiCommandBuffer::setStencilRef(quint32 refValue)
     Call \l QRhi::supportedShadingRates() to check what shading rates are
     supported for a given sample count.
 
-    When both a QRhiShadingRateMap and this function is in use, the higher of
-    two the shading rates are used for each tile. There is currently no control
+    When both a QRhiShadingRateMap and this function are in use, the higher of
+    the two shading rates is used for each tile. There is currently no control
     offered over the combiner behavior.
 
     \since 6.9
@@ -10661,7 +10667,7 @@ void QRhiCommandBuffer::drawIndirect(QRhiBuffer *indirectBuffer,
     \note A \a drawCount value greater than 1 is only natively supported if the
     QRhi::DrawIndirectMulti feature is reported as supported and stride is the default.
     Otherwise, this function emulates multi-draw by recording multiple draw calls,
-    offering no performance benefit over repeated draw() calls.
+    offering no performance benefit over repeated drawIndexed() calls.
 
     \note This function can only be called inside a render pass, meaning
     between a beginPass() and endPass() call.
@@ -10899,7 +10905,7 @@ void QRhiCommandBuffer::endExternal()
     \l{QRhi::endFrame()}{endFrame()}, i.e., with a swapchain, the timing values
     will likely become available asynchronously. The returned value may
     therefore be 0 (e.g., for the first 1-2 frames) or the last known value
-    referring to some previous frame. The value my also
+    referring to some previous frame. The value may also
     become 0 again under certain conditions, such as when resizing the window.
     It can be expected that the most up-to-date available value is retrieved in
     beginFrame() and becomes queriable via this function once beginFrame()
@@ -10912,7 +10918,7 @@ void QRhiCommandBuffer::endExternal()
 
     On the other hand, with offscreen frames the returned value is up-to-date
     once \l{QRhi::endOffscreenFrame()}{endOffscreenFrame()} returns, because
-    offscreen frames reduce GPU pipelining and wait the the commands to be
+    offscreen frames reduce GPU pipelining and wait for the commands to be
     complete.
 
     \note This means that, unlike with swapchain frames, with offscreen frames
@@ -10944,7 +10950,7 @@ double QRhiCommandBuffer::lastCompletedGpuTime()
 
 /*!
     \return the value (typically an offset) \a v aligned to the uniform buffer
-    alignment given by by ubufAlignment().
+    alignment given by ubufAlignment().
  */
 int QRhi::ubufAligned(int v) const
 {
@@ -11527,7 +11533,7 @@ QRhiRenderBuffer *QRhi::newRenderBuffer(QRhiRenderBuffer::Type type,
     \return a new 1D or 2D texture with the specified \a format, \a pixelSize, \a
     sampleCount, and \a flags.
 
-    A 1D texture array must have QRhiTexture::OneDimensional set in \a flags.  This
+    A 1D texture must have QRhiTexture::OneDimensional set in \a flags. This
     function will implicitly set this flag if the \a pixelSize height is 0.
 
     \note \a format specifies the requested internal and external format,
