@@ -1371,7 +1371,11 @@ public:
         std::optional<Qt::ItemFlags> customFlags;
         if constexpr (QRangeModelDetails::hasRowFlags<wrapped_row_type>) {
             const_row_reference row = rowData(index);
-            customFlags = QRangeModelDetails::QRangeModelRowOptions<wrapped_row_type>::flags(row);
+            if (QRangeModelDetails::isValid(row)) {
+                customFlags = QRangeModelDetails::QRangeModelRowOptions<wrapped_row_type>::flags(
+                    QRangeModelDetails::refTo(row)
+                );
+            }
         }
 
         readAt(index, [&customFlags](auto &&ref){
