@@ -1637,8 +1637,11 @@ void QMainWindowLayout::insertToolBar(QToolBar *before, QToolBar *toolbar)
 
 Qt::ToolBarArea QMainWindowLayout::toolBarArea(const QToolBar *toolbar) const
 {
-    QInternal::DockPosition pos = layoutState.toolBarAreaLayout.findToolBar(toolbar);
-    switch (pos) {
+    std::optional<QInternal::DockPosition> pos
+        = layoutState.toolBarAreaLayout.findToolBar(toolbar);
+    if (!pos)
+        return Qt::NoToolBarArea;
+    switch (*pos) {
         case QInternal::LeftDock:   return Qt::LeftToolBarArea;
         case QInternal::RightDock:  return Qt::RightToolBarArea;
         case QInternal::TopDock:    return Qt::TopToolBarArea;

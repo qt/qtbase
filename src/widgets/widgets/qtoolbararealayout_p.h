@@ -22,6 +22,8 @@
 #include <QList>
 #include <QSize>
 #include <QRect>
+#include <array>
+#include <optional>
 
 QT_REQUIRE_CONFIG(toolbar);
 
@@ -130,7 +132,7 @@ class QToolBarAreaLayout
 public:
     QRect rect;
     const QMainWindow *mainWindow;
-    QToolBarAreaLayoutInfo docks[4];
+    std::array<QToolBarAreaLayoutInfo, 4> docks;
     bool visible;
 
     QToolBarAreaLayout(const QMainWindow *win);
@@ -157,7 +159,7 @@ public:
     void insertItem(QInternal::DockPosition pos, QLayoutItem *item);
     void insertItem(QToolBar *before, QLayoutItem *item);
 
-    QInternal::DockPosition findToolBar(const QToolBar *toolBar) const;
+    std::optional<QInternal::DockPosition> findToolBar(const QToolBar *toolBar) const;
     bool toolBarBreak(QToolBar *toolBar) const;
 
     void getStyleOptionInfo(QStyleOptionToolBar *option, QToolBar *toolBar) const;
