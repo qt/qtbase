@@ -200,7 +200,7 @@ public:
         if (first == last)
             return;
 
-        if (first >= d.begin() && first <= d.end()) {
+        if (QtPrivate::q_points_into_range(first, d.begin(), d.end())) {
             QVarLengthArray<T> copy(first, last);
             insert(position, copy.begin(), copy.end());
             return;
