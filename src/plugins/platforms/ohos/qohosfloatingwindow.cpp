@@ -137,7 +137,7 @@ void QOhosFloatingWindow::initialize()
 
     QObject::connect(
         m_view.get(), &QOhosView::externalContentInteractionDetected,
-        &QOhosPlatformWindow::closeAllActivePopups);
+        qWindow, &QOhosPlatformWindow::closeAllActivePopups);
 
     QObject::connect(
         m_view.get(), &QOhosView::windowEvent,
