@@ -37,8 +37,6 @@ protected:
 public:
     typedef typename QArrayDataPointer<T>::parameter_type parameter_type;
 
-    using QArrayDataPointer<T>::QArrayDataPointer;
-
     void copyAppend(const T *b, const T *e) noexcept
     {
         Q_ASSERT(this->isMutable() || b == e);
@@ -224,7 +222,7 @@ public:
             if (it == end)
                 return result;
 
-            QPodArrayOps<T> other(this->size);
+            QArrayDataPointer<T> other(this->size);
             Q_CHECK_PTR(other.data());
             auto dest = other.begin();
             // std::uninitialized_copy will fallback to ::memcpy/memmove()
