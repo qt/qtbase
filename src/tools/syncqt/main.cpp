@@ -216,6 +216,8 @@ public:
 
     const std::string &ssgIncludeDir() const { return m_ssgIncludeDir; }
 
+    const std::string &spiIncludeDir() const { return m_spiIncludeDir; }
+
     const std::string &stagingDir() const { return m_stagingDir; }
 
     const std::string &versionScriptFile() const { return m_versionScriptFile; }
@@ -227,6 +229,8 @@ public:
     const std::regex &rhiHeadersRegex() const { return m_rhiHeadersRegex; }
 
     const std::regex &ssgHeadersRegex() const { return m_ssgHeadersRegex; }
+
+    const std::regex &spiHeadersRegex() const { return m_spiHeadersRegex; }
 
     const std::regex &privateHeadersRegex() const { return m_privateHeadersRegex; }
 
@@ -258,8 +262,10 @@ public:
     {
         std::cout << "Usage: syncqt -sourceDir <dir> -binaryDir <dir> -module <module name>"
                      " -includeDir <dir> -privateIncludeDir <dir> -qpaIncludeDir <dir> -rhiIncludeDir <dir> -ssgIncludeDir <dir>"
+                     " -spiIncludeDir <dir>"
                      " -stagingDir <dir> <-headers <header list>|-all> [-debug]"
                      " [-versionScript <path>] [-qpaHeadersFilter <regex>] [-rhiHeadersFilter <regex>]"
+                     " [-spiHeadersFilter <regex>]"
                      " [-knownModules <module1> <module2>... <moduleN>]"
                      " [-nonQt] [-internal] [-copy]\n"
                      ""
@@ -284,6 +290,9 @@ public:
                      "                                  generated RHI header files.\n"
                      "  -ssgIncludeDir                  Module include directory for the \n"
                      "                                  generated SSG header files.\n"
+                     "  -spiIncludeDir                  Module include directory for the \n"
+                     "                                  generated SPI (semi-private or\n"
+                     "                                  service-provider interface) header files.\n"
                      "  -stagingDir                     Temporary staging directory to collect\n"
                      "                                  artifacts that need to be installed.\n"
                      "  -knownModules                   list of known modules. syncqt uses the\n"
@@ -301,6 +310,9 @@ public:
                      "                                  the list of 'headers'.\n"
                      "  -ssgHeadersFilter               Regex that filters ssg files from.\n"
                      "                                  the list of 'headers'.\n"
+                     "  -spiHeadersFilter               Regex that filters SPI (semi-private or\n"
+                     "                                  service-provider interface) header files\n"
+                     "                                  from the list of 'headers'.\n"
                      "  -publicNamespaceFilter          Symbols that are in the specified\n"
                      "                                  namespace.\n"
                      "                                  are treated as public symbols.\n"
@@ -336,6 +348,7 @@ private:
         std::string qpaHeadersFilter;
         std::string rhiHeadersFilter;
         std::string ssgHeadersFilter;
+        std::string spiHeadersFilter;
         std::string privateHeadersFilter;
         std::string publicNamespaceFilter;
         const std::unordered_map<std::string, CommandLineOption<std::string>> stringArgumentMap = {
@@ -347,11 +360,13 @@ private:
             { "-qpaHeadersFilter", { &qpaHeadersFilter, true } },
             { "-rhiHeadersFilter", { &rhiHeadersFilter, true } },
             { "-ssgHeadersFilter", { &ssgHeadersFilter, true } },
+            { "-spiHeadersFilter", { &spiHeadersFilter, true } },
             { "-includeDir", { &m_includeDir } },
             { "-privateIncludeDir", { &m_privateIncludeDir } },
             { "-qpaIncludeDir", { &m_qpaIncludeDir } },
             { "-rhiIncludeDir", { &m_rhiIncludeDir } },
             { "-ssgIncludeDir", { &m_ssgIncludeDir } },
+            { "-spiIncludeDir", { &m_spiIncludeDir } },
             { "-stagingDir", { &m_stagingDir, true } },
             { "-versionScript", { &m_versionScriptFile, true } },
             { "-publicNamespaceFilter", { &publicNamespaceFilter, true } },
@@ -471,6 +486,9 @@ private:
         if (!ssgHeadersFilter.empty())
             m_ssgHeadersRegex = std::regex(ssgHeadersFilter);
 
+        if (!spiHeadersFilter.empty())
+            m_spiHeadersRegex = std::regex(spiHeadersFilter);
+
         if (!privateHeadersFilter.empty())
             m_privateHeadersRegex = std::regex(privateHeadersFilter);
 
@@ -507,6 +525,7 @@ private:
             &m_sourceDir,         &m_binaryDir,         &m_includeDir,
             &m_installIncludeDir, &m_privateIncludeDir, &m_qpaIncludeDir,
             &m_rhiIncludeDir,     &m_stagingDir,        &m_versionScriptFile,
+            &m_spiIncludeDir,
         };
         for (auto path : paths) {
             if (!path->empty())
@@ -523,6 +542,7 @@ private:
     std::string m_qpaIncludeDir;
     std::string m_rhiIncludeDir;
     std::string m_ssgIncludeDir;
+    std::string m_spiIncludeDir;
     std::string m_stagingDir;
     std::string m_versionScriptFile;
     std::set<std::string> m_knownModules;
@@ -540,6 +560,7 @@ private:
     std::regex m_qpaHeadersRegex;
     std::regex m_rhiHeadersRegex;
     std::regex m_ssgHeadersRegex;
+    std::regex m_spiHeadersRegex;
     std::regex m_privateHeadersRegex;
     std::regex m_publicNamespaceRegex;
 
@@ -611,7 +632,15 @@ class SyncScanner
     size_t m_currentFileLineNumber = 0;
     bool m_currentFileInSourceDir = false;
 
-    enum FileType { PublicHeader = 0, PrivateHeader = 1, QpaHeader = 2, ExportHeader = 4, RhiHeader = 8, SsgHeader = 16 };
+    enum FileType {
+        PublicHeader = 0,
+        PrivateHeader = 1,
+        QpaHeader = 2,
+        ExportHeader = 4,
+        RhiHeader = 8,
+        SsgHeader = 16,
+        SpiHeader = 32
+    };
     unsigned int m_currentFileType = PublicHeader;
 
     int m_criticalChecks = CriticalChecks;
@@ -835,6 +864,9 @@ public:
         if (isHeaderSsg(m_currentFilename))
             m_currentFileType = SsgHeader | PrivateHeader;
 
+        if (isHeaderSpi(m_currentFilename))
+            m_currentFileType = SpiHeader | PrivateHeader;
+
         if (std::regex_match(m_currentFilename, ExportsHeaderRegex))
             m_currentFileType |= ExportHeader;
     }
@@ -874,6 +906,7 @@ public:
         bool isQpa = m_currentFileType & QpaHeader;
         bool isRhi = m_currentFileType & RhiHeader;
         bool isSsg = m_currentFileType & SsgHeader;
+        bool isSpi = m_currentFileType & SpiHeader;
         bool isExport = m_currentFileType & ExportHeader;
         scannerDebug()
             << "processHeader:start: " << headerFile
@@ -882,6 +915,8 @@ public:
             << " isQpa: " << isQpa
             << " isRhi: " << isRhi
             << " isSsg: " << isSsg
+            << " isSpi: " << isSpi
+            << " isExport: " << isExport
             << std::endl;
 
         // Chose the directory where to generate the header aliases or to copy header file if
@@ -893,6 +928,8 @@ public:
             outputDir = m_commandLineArgs->rhiIncludeDir();
         else if (isSsg)
             outputDir = m_commandLineArgs->ssgIncludeDir();
+        else if (isSpi)
+            outputDir = m_commandLineArgs->spiIncludeDir();
         else if (isPrivate)
             outputDir = m_commandLineArgs->privateIncludeDir();
 
@@ -947,7 +984,7 @@ public:
 
             // Collect checks that should skipped for the header file.
             if (m_commandLineArgs->isNonQtModule() || is3rdParty || isQpa || isRhi || isSsg
-                || !m_currentFileInSourceDir || isGenerated) {
+                || isSpi || !m_currentFileInSourceDir || isGenerated) {
                 skipChecks = AllChecks;
             } else {
                 if (std::regex_match(m_currentFilename, GlobalHeaderRegex) || isExport)
@@ -967,7 +1004,7 @@ public:
 
             ParsingResult parsingResult;
             parsingResult.masterInclude = m_currentFileInSourceDir && !isExport && !is3rdParty
-                    && !isQpa && !isRhi && !isSsg && !isPrivate && !isGenerated;
+                    && !isQpa && !isRhi && !isSsg && !isSpi && !isPrivate && !isGenerated;
             if (!parseHeader(headerFile, parsingResult, skipChecks)) {
                 scannerDebug() << "parseHeader failed: " << headerFile << std::endl;
                 return false;
@@ -984,7 +1021,7 @@ public:
             // Add the '#if QT_CONFIG(<feature>)' check for header files that supposed to be
             // included into the module master header only if corresponding feature is enabled.
             bool willBeInModuleMasterHeader = false;
-            if (!isQpa && !isRhi && !isSsg && !isPrivate) {
+            if (!isQpa && !isRhi && !isSsg && !isSpi && !isPrivate) {
                 if (m_currentFilename.find('_') == std::string::npos
                     && parsingResult.masterInclude) {
                     m_masterHeaderContents[m_currentFilename] = parsingResult.requireConfig;
@@ -1287,7 +1324,7 @@ public:
 
             bool skipSymbols =
                     (m_currentFileType & PrivateHeader) || (m_currentFileType & QpaHeader) || (m_currentFileType & RhiHeader)
-                    || (m_currentFileType & SsgHeader);
+                    || (m_currentFileType & SsgHeader) || (m_currentFileType & SpiHeader);
 
             // Parse pragmas
             if (std::regex_match(buffer, MacroRegex)) {
@@ -1478,6 +1515,11 @@ public:
     [[nodiscard]] bool isHeaderSsg(const std::string &headerFileName)
     {
         return std::regex_match(headerFileName, m_commandLineArgs->ssgHeadersRegex());
+    }
+
+    [[nodiscard]] bool isHeaderSpi(const std::string &headerFileName)
+    {
+        return std::regex_match(headerFileName, m_commandLineArgs->spiHeadersRegex());
     }
 
     [[nodiscard]] bool isHeaderPrivate(const std::string &headerFile)
