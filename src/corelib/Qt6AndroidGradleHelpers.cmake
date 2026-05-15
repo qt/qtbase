@@ -1474,6 +1474,10 @@ function(_qt_internal_android_deploy_qt_dependency)
     )
     cmake_parse_arguments(PARSE_ARGV 0 arg "" "${one_value_args}" "")
 
+    if(NOT TARGET "${arg_DEPENDENCY_TARGET}")
+        return()
+    endif()
+
     set(destination "${arg_LIBS_ABI_DIR}/$<TARGET_FILE_NAME:${arg_DEPENDENCY_TARGET}>")
     if("${destination}" IN_LIST ${arg_SEEN_DESTINATIONS_VAR})
         return()
