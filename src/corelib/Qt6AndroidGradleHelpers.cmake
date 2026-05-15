@@ -1835,7 +1835,8 @@ function(_qt_internal_android_generate_libs_xml target deployment_dir)
     set(libs_xml_dst "${deployment_dir}/res/values/libs.xml")
 
     _qt_internal_android_sanitize_target_name(sanitized_target ${target})
-    set(libs_xml_staged "${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/${sanitized_target}_libs.xml")
+    _qt_internal_android_staging_dir(android_staging_dir)
+    set(libs_xml_staged "${android_staging_dir}/${sanitized_target}_libs.xml")
     file(GENERATE OUTPUT "${libs_xml_staged}" CONTENT "${content}")
 
     add_custom_target(${target}_update_libs_xml
