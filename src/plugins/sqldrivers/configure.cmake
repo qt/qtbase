@@ -25,7 +25,10 @@ qt_find_package(PostgreSQL MODULE PROVIDED_TARGETS PostgreSQL::PostgreSQL MODULE
 )
 qt_find_package(Oracle MODULE PROVIDED_TARGETS Oracle::OCI MODULE_NAME sqldrivers QMAKE_LIB oci)
 qt_find_package(ODBC PROVIDED_TARGETS ODBC::ODBC MODULE_NAME sqldrivers QMAKE_LIB odbc)
-qt_find_package(SQLite3 PROVIDED_TARGETS SQLite::SQLite3 MODULE_NAME sqldrivers QMAKE_LIB sqlite3
+qt_find_package(WrapSystemSQLite3
+    PROVIDED_TARGETS WrapSystemSQLite3::WrapSystemSQLite3
+    MODULE_NAME sqldrivers
+    QMAKE_LIB sqlite3
     VCPKG_PORT sqlite3
     VCPKG_ADD_TO_FEATURE sql-sqlite
 )
