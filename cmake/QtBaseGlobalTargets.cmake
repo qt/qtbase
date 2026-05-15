@@ -305,18 +305,32 @@ qt_copy_or_install(FILES
                    ${__private_files}
     DESTINATION "${__GlobalConfig_install_dir}"
 )
+if(QT_WILL_INSTALL)
+    foreach(_private_file ${__private_files})
+        file(COPY "${_private_file}" DESTINATION "${__GlobalConfig_build_dir}")
+    endforeach()
+endif()
 
 # Install our custom platform modules.
 qt_copy_or_install(DIRECTORY cmake/platforms
     DESTINATION "${__GlobalConfig_install_dir}"
 )
+if(QT_WILL_INSTALL)
+    file(COPY "cmake/platforms" DESTINATION "${__GlobalConfig_build_dir}")
+endif()
 
 # Install public config.tests files.
-qt_copy_or_install(DIRECTORY
+set(__qt_internal_public_config_tests
     "config.tests/static_link_order"
     "config.tests/binary_for_strip"
+)
+qt_copy_or_install(DIRECTORY ${__qt_internal_public_config_tests}
     DESTINATION "${__GlobalConfig_install_dir}/config.tests"
 )
+if(QT_WILL_INSTALL)
+    file(COPY ${__qt_internal_public_config_tests}
+        DESTINATION "${__GlobalConfig_build_dir}")
+endif()
 
 # Install qt-internal-strip and qt-internal-ninja files.
 set(__qt_internal_strip_wrapper_programs
