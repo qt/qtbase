@@ -442,6 +442,19 @@ def rerun_failed_testcase(test_basename, testargs: List[str], output_dir: str,
            max_repeats, n_failures)
     return False
 
+def removeprefix(text: str, prefix: str) -> str:
+    """Removes a prefix from a string.
+    Same as str.removeprefix() which was introduced in Python v3.9."""
+    if text.startswith(prefix):
+        return text[len(prefix):]
+    return text[:]
+def removesuffix(text: str, suffix: str) -> str:
+    """Removes a suffix from a string.
+    Same as str.removesuffix() which was introduced in Python v3.9."""
+    if suffix and text.endswith(suffix):
+        return text[:-len(suffix)]
+    return text[:]
+
 # Expecting a text file where each line is formatted as follows:
 # void tst_testClass::testFunction()
 # void tst_testClass::testFunction() const
@@ -470,10 +483,10 @@ def read_modified_functions_file(filename: str, test_basename: str) -> Set[str]:
                 continue
             try:
                 parts = line.split("::")
-                test_class = parts[0].removeprefix("void").strip()
-                test_function = parts[-1].removesuffix(" const").rstrip()
-                test_function = test_function.removesuffix("()").strip()
-                test_function = test_function.removesuffix("_data")
+                test_class = removeprefix(parts[0], "void").strip()
+                test_function = removesuffix(parts[-1], " const").rstrip()
+                test_function = removesuffix(test_function, "()").strip()
+                test_function = removesuffix(test_function, "_data")
                 if test_class.lower() == test_basename.lower():
                     modified_functions.add(test_function)
             except (IndexError, ValueError):
