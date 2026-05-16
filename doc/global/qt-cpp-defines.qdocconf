@@ -1,8 +1,7 @@
 versionsym              = QT_VERSION_STR
 
 defines                += QT_GUI_LIB \
-                          QT_WIDGETS_LIB \
-                          QT_KEYPAD_NAVIGATION
+                          QT_WIDGETS_LIB
 
 excludefiles += \
                 "*_posix.cpp" \
