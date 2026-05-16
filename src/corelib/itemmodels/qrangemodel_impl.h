@@ -1424,6 +1424,11 @@ public:
             using wrapped_value_type = QRangeModelDetails::wrapped_t<value_type>;
 
             const auto readModelData = [&value](QModelRoleData &roleData){
+                if (!QRangeModelDetails::isValid(value)) {
+                    roleData.clearData();
+                    return true;
+                }
+
                 const int role = roleData.role();
                 if (role == Qt::RangeModelDataRole) {
                     // Qt QML support: "modelData" role returns the entire multi-role item.
