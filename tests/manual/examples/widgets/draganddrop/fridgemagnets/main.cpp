@@ -8,9 +8,6 @@
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
-#ifdef QT_KEYPAD_NAVIGATION
-    QApplication::setNavigationMode(Qt::NavigationModeCursorAuto);
-#endif
     DragWidget window;
 
     bool smallScreen = QApplication::arguments().contains(QStringLiteral("-small-screen"));
