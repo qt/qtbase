@@ -1242,29 +1242,29 @@ Q_DECLARE_METATYPE(WidgetType);
 void tst_QItemDelegate::enterKey_data()
 {
     QTest::addColumn<WidgetType>("widget");
-    QTest::addColumn<int>("key");
+    QTest::addColumn<Qt::Key>("key");
     QTest::addColumn<bool>("expectedFocus");
 
-    QTest::newRow("lineedit enter") << LineEdit << int(Qt::Key_Enter) << false;
-    QTest::newRow("lineedit return") << LineEdit << int(Qt::Key_Return) << false;
-    QTest::newRow("lineedit tab") << LineEdit << int(Qt::Key_Tab) << false;
-    QTest::newRow("lineedit backtab") << LineEdit << int(Qt::Key_Backtab) << false;
+    QTest::newRow("lineedit enter") << LineEdit << Qt::Key_Enter << false;
+    QTest::newRow("lineedit return") << LineEdit << Qt::Key_Return << false;
+    QTest::newRow("lineedit tab") << LineEdit << Qt::Key_Tab << false;
+    QTest::newRow("lineedit backtab") << LineEdit << Qt::Key_Backtab << false;
 
-    QTest::newRow("textedit enter") << TextEdit << int(Qt::Key_Enter) << true;
-    QTest::newRow("textedit return") << TextEdit << int(Qt::Key_Return) << true;
-    QTest::newRow("textedit tab") << TextEdit << int(Qt::Key_Tab) << true;
-    QTest::newRow("textedit backtab") << TextEdit << int(Qt::Key_Backtab) << false;
+    QTest::newRow("textedit enter") << TextEdit << Qt::Key_Enter << true;
+    QTest::newRow("textedit return") << TextEdit << Qt::Key_Return << true;
+    QTest::newRow("textedit tab") << TextEdit << Qt::Key_Tab << true;
+    QTest::newRow("textedit backtab") << TextEdit << Qt::Key_Backtab << false;
 
-    QTest::newRow("plaintextedit enter") << PlainTextEdit << int(Qt::Key_Enter) << true;
-    QTest::newRow("plaintextedit return") << PlainTextEdit << int(Qt::Key_Return) << true;
-    QTest::newRow("plaintextedit tab") << PlainTextEdit << int(Qt::Key_Tab) << true;
-    QTest::newRow("plaintextedit backtab") << PlainTextEdit << int(Qt::Key_Backtab) << false;
+    QTest::newRow("plaintextedit enter") << PlainTextEdit << Qt::Key_Enter << true;
+    QTest::newRow("plaintextedit return") << PlainTextEdit << Qt::Key_Return << true;
+    QTest::newRow("plaintextedit tab") << PlainTextEdit << Qt::Key_Tab << true;
+    QTest::newRow("plaintextedit backtab") << PlainTextEdit << Qt::Key_Backtab << false;
 }
 
 void tst_QItemDelegate::enterKey()
 {
     QFETCH(WidgetType, widget);
-    QFETCH(int, key);
+    QFETCH(Qt::Key, key);
     QFETCH(bool, expectedFocus);
 
     QStandardItemModel model;
@@ -1311,7 +1311,7 @@ void tst_QItemDelegate::enterKey()
     QPointer<QWidget> editor = lineEditors.at(0);
     QCOMPARE(editor->hasFocus(), true);
 
-    QTest::keyClick(editor, Qt::Key(key));
+    QTest::keyClick(editor, key);
 
     if (expectedFocus) {
         QVERIFY(!editor.isNull());

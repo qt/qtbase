@@ -508,28 +508,27 @@ void tst_QSplitter::insertWidget()
 
 void tst_QSplitter::setStretchFactor_data()
 {
-    QTest::addColumn<int>("orientation");
+    QTest::addColumn<Qt::Orientation>("orientation");
     QTest::addColumn<int>("widgetIndex");
     QTest::addColumn<int>("stretchFactor");
     QTest::addColumn<int>("expectedHStretch");
     QTest::addColumn<int>("expectedVStretch");
 
-    QTest::newRow("ok01") << int(Qt::Horizontal) << 1 << 2 << 2 << 2;
-    QTest::newRow("ok02") << int(Qt::Horizontal) << 2 << 0 << 0 << 0;
-    QTest::newRow("ok03") << int(Qt::Horizontal) << 3 << 1 << 1 << 1;
-    QTest::newRow("ok04") << int(Qt::Horizontal) << 0 << 7 << 7 << 7;
-    QTest::newRow("ok05") << int(Qt::Vertical) << 0 << 0 << 0 << 0;
-    QTest::newRow("ok06") << int(Qt::Vertical) << 1 << 1 << 1 << 1;
-    QTest::newRow("ok07") << int(Qt::Vertical) << 2 << 2 << 2 << 2;
-    QTest::newRow("ok08") << int(Qt::Vertical) << 3 << 5 << 5 << 5;
-    QTest::newRow("ok09") << int(Qt::Vertical) << -1 << 5 << 0 << 0;
+    QTest::newRow("ok01") << Qt::Horizontal << 1 << 2 << 2 << 2;
+    QTest::newRow("ok02") << Qt::Horizontal << 2 << 0 << 0 << 0;
+    QTest::newRow("ok03") << Qt::Horizontal << 3 << 1 << 1 << 1;
+    QTest::newRow("ok04") << Qt::Horizontal << 0 << 7 << 7 << 7;
+    QTest::newRow("ok05") << Qt::Vertical << 0 << 0 << 0 << 0;
+    QTest::newRow("ok06") << Qt::Vertical << 1 << 1 << 1 << 1;
+    QTest::newRow("ok07") << Qt::Vertical << 2 << 2 << 2 << 2;
+    QTest::newRow("ok08") << Qt::Vertical << 3 << 5 << 5 << 5;
+    QTest::newRow("ok09") << Qt::Vertical << -1 << 5 << 0 << 0;
 }
 
 void tst_QSplitter::setStretchFactor()
 {
-    QFETCH(int, orientation);
-    Qt::Orientation orient = Qt::Orientation(orientation);
-    QSplitter split(orient);
+    QFETCH(Qt::Orientation, orientation);
+    QSplitter split(orientation);
     QWidget *w = new QWidget;
     split.addWidget(w);
     w = new QWidget;
