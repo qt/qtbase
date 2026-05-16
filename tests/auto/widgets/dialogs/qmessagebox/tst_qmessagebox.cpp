@@ -173,18 +173,18 @@ void tst_QMessageBox::overrideDone_data()
 {
     QTest::addColumn<QMessageBox::StandardButton>("button");
     QTest::addColumn<int>("closeAction");
-    QTest::addColumn<int>("result");
+    QTest::addColumn<QMessageBox::StandardButton>("result");
 
-    QTest::newRow("close") << QMessageBox::Help << int(ExecCloseHelper::CloseWindow) << 0;
-    QTest::newRow("yes") << QMessageBox::Yes << int(Qt::Key_Enter) << int(QMessageBox::Yes);
-    QTest::newRow("no") << QMessageBox::No << int(Qt::Key_Enter) << int(QMessageBox::No);
+    QTest::newRow("close") << QMessageBox::Help << int(ExecCloseHelper::CloseWindow) << QMessageBox::NoButton;
+    QTest::newRow("yes") << QMessageBox::Yes << int(Qt::Key_Enter) << QMessageBox::Yes;
+    QTest::newRow("no") << QMessageBox::No << int(Qt::Key_Enter) << QMessageBox::No;
 }
 
 void tst_QMessageBox::overrideDone()
 {
     QFETCH(QMessageBox::StandardButton, button);
     QFETCH(int, closeAction);
-    QFETCH(int, result);
+    QFETCH(QMessageBox::StandardButton, result);
 
     OverridingMessageBox messageBox;
     messageBox.addButton(button);

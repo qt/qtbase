@@ -324,34 +324,34 @@ void tst_QGroupBox::clicked_data()
 {
     QTest::addColumn<bool>("checkable");
     QTest::addColumn<bool>("initialCheck");
-    QTest::addColumn<int>("areaToHit");
+    QTest::addColumn<QStyle::SubControl>("areaToHit");
     QTest::addColumn<int>("clickedCount");
     QTest::addColumn<bool>("finalCheck");
 
-    QTest::newRow("hit nothing, not checkable") << false << false << int(QStyle::SC_None) << 0 << false;
-    QTest::newRow("hit frame, not checkable") << false << false << int(QStyle::SC_GroupBoxFrame) << 0 << false;
-    QTest::newRow("hit content, not checkable") << false << false << int(QStyle::SC_GroupBoxContents) << 0 << false;
-    QTest::newRow("hit label, not checkable") << false << false << int(QStyle::SC_GroupBoxLabel) << 0 << false;
-    QTest::newRow("hit checkbox, not checkable") << false << false << int(QStyle::SC_GroupBoxCheckBox) << 0 << false;
+    QTest::newRow("hit nothing, not checkable") << false << false << QStyle::SC_None << 0 << false;
+    QTest::newRow("hit frame, not checkable") << false << false << QStyle::SC_GroupBoxFrame << 0 << false;
+    QTest::newRow("hit content, not checkable") << false << false << QStyle::SC_GroupBoxContents << 0 << false;
+    QTest::newRow("hit label, not checkable") << false << false << QStyle::SC_GroupBoxLabel << 0 << false;
+    QTest::newRow("hit checkbox, not checkable") << false << false << QStyle::SC_GroupBoxCheckBox << 0 << false;
 
-    QTest::newRow("hit nothing, checkable") << true << true << int(QStyle::SC_None) << 0 << true;
-    QTest::newRow("hit frame, checkable") << true << true << int(QStyle::SC_GroupBoxFrame) << 0 << true;
-    QTest::newRow("hit content, checkable") << true << true << int(QStyle::SC_GroupBoxContents) << 0 << true;
-    QTest::newRow("hit label, checkable") << true << true << int(QStyle::SC_GroupBoxLabel) << 1 << false;
-    QTest::newRow("hit checkbox, checkable") << true << true << int(QStyle::SC_GroupBoxCheckBox) << 1 << false;
+    QTest::newRow("hit nothing, checkable") << true << true << QStyle::SC_None << 0 << true;
+    QTest::newRow("hit frame, checkable") << true << true << QStyle::SC_GroupBoxFrame << 0 << true;
+    QTest::newRow("hit content, checkable") << true << true << QStyle::SC_GroupBoxContents << 0 << true;
+    QTest::newRow("hit label, checkable") << true << true << QStyle::SC_GroupBoxLabel << 1 << false;
+    QTest::newRow("hit checkbox, checkable") << true << true << QStyle::SC_GroupBoxCheckBox << 1 << false;
 
-    QTest::newRow("hit nothing, checkable, but unchecked") << true << false << int(QStyle::SC_None) << 0 << false;
-    QTest::newRow("hit frame, checkable, but unchecked") << true << false << int(QStyle::SC_GroupBoxFrame) << 0 << false;
-    QTest::newRow("hit content, checkable, but unchecked") << true << false << int(QStyle::SC_GroupBoxContents) << 0 << false;
-    QTest::newRow("hit label, checkable, but unchecked") << true << false << int(QStyle::SC_GroupBoxLabel) << 1 << true;
-    QTest::newRow("hit checkbox, checkable, but unchecked") << true << false << int(QStyle::SC_GroupBoxCheckBox) << 1 << true;
+    QTest::newRow("hit nothing, checkable, but unchecked") << true << false << QStyle::SC_None << 0 << false;
+    QTest::newRow("hit frame, checkable, but unchecked") << true << false << QStyle::SC_GroupBoxFrame << 0 << false;
+    QTest::newRow("hit content, checkable, but unchecked") << true << false << QStyle::SC_GroupBoxContents << 0 << false;
+    QTest::newRow("hit label, checkable, but unchecked") << true << false << QStyle::SC_GroupBoxLabel << 1 << true;
+    QTest::newRow("hit checkbox, checkable, but unchecked") << true << false << QStyle::SC_GroupBoxCheckBox << 1 << true;
 }
 
 void tst_QGroupBox::clicked()
 {
     QFETCH(bool, checkable);
     QFETCH(bool, initialCheck);
-    QFETCH(int, areaToHit);
+    QFETCH(QStyle::SubControl, areaToHit);
     QGroupBox testWidget(QLatin1String("Testing Clicked"));
     testWidget.setCheckable(checkable);
     testWidget.setChecked(initialCheck);
@@ -366,7 +366,7 @@ void tst_QGroupBox::clicked()
     option.textAlignment = testWidget.alignment();
 
     QRect rect = testWidget.style()->subControlRect(QStyle::CC_GroupBox, &option,
-                                                    QStyle::SubControl(areaToHit), &testWidget);
+                                                    areaToHit, &testWidget);
 
     if (rect.isValid())
         QTest::mouseClick(&testWidget, Qt::LeftButton, {}, rect.center());
