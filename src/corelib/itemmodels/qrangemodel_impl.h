@@ -2089,6 +2089,8 @@ public:
                                                 >();
                     qCritical("QRangeModel: Cannot compare items of type %s in column %d!",
                               itemtype.name(), m_index.column());
+#else
+                    Q_UNUSED(this);
 #endif
                     return false;
                 } else {
