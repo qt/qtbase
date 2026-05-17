@@ -1405,6 +1405,13 @@ public:
                 f |= Qt::ItemIsDropEnabled;
         }
 
+        if constexpr (QRangeModelDetails::is_owning_or_raw_pointer<row_type>()) {
+            // pointer rows might be null
+            const_row_reference row = rowData(index);
+            if (!QRangeModelDetails::isValid(row))
+                f &= ~Qt::ItemIsDragEnabled;
+        }
+
         if constexpr (isMutable()) {
             // Note: Read-only items are still droppable - we can't know here
             // whether the model will insert data as new rows or children, or if
@@ -1418,6 +1425,12 @@ public:
                         f |= Qt::ItemIsEditable;
                 }
             } else if constexpr (static_column_count <= 0) {
+                using item_type = typename row_traits::item_type;
+                if constexpr (QRangeModelDetails::is_owning_or_raw_pointer<item_type>()) {
+                    // pointer items might be null
+                    if (!readAt(index, [](auto &&i){ return QRangeModelDetails::isValid(i); }))
+                        f &= ~Qt::ItemIsDragEnabled;
+                }
                 f |= Qt::ItemIsEditable;
             } else if constexpr (std::is_reference_v<row_reference> && !std::is_const_v<row_reference>) {
                 // we want to know if the elements in the tuple are const; they'd always be, if
@@ -1427,6 +1440,11 @@ public:
                 if (QRangeModelDetails::isValid(mutableRow)) {
                     row_traits::for_element_at(mutableRow, index.column(), [&f](auto &&ref){
                         using target_type = decltype(ref);
+                        if constexpr (QRangeModelDetails::is_owning_or_raw_pointer<target_type>()) {
+                            // pointer items might be null
+                            if (!QRangeModelDetails::isValid(ref))
+                                f &= ~Qt::ItemIsDragEnabled;
+                        }
                         if constexpr (std::is_const_v<std::remove_reference_t<target_type>>)
                             f &= ~Qt::ItemIsEditable;
                         else if constexpr (std::is_lvalue_reference_v<target_type>)
