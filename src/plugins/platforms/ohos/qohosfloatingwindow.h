@@ -52,6 +52,15 @@ private:
     void internalHijackSystemFocusAsPopup();
     void focusHijackingPopupHidden();
 
+    void handleWindowEvent(QOhosWindowProxy::WindowEvent evt);
+    void handleWindowStatusChange(QOhosWindowProxy::WindowStatus evt);
+    void handleWindowVisibilityChange(bool visible);
+    void handleAvoidAreaChanged(QOhosWindowProxy::AvoidAreaType avoidAreaType,
+                                const QOhosWindowProxy::AvoidArea &systemAvoidArea);
+    void handleWindowRectChanged(const QOhosWindowProxy::RectChangeOptions &rectChangeOptions);
+    void handleSurfaceStatusChanged(const QOhosOptional<QSize> &optSurfaceSize);
+    void handleWindowDisplayIdChanged(QOhosDisplayInfo::JsDisplayId displayId);
+
     std::unique_ptr<QOhosView> m_view;
     QOhosOptional<QOhosWindowProxy::WindowEventType> m_lastWindowEventType;
     QOhosOptional<QOhosWindowProxy::WindowStatusType> m_lastWindowStatusType;
