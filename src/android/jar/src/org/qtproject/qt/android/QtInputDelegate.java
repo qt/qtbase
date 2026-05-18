@@ -580,7 +580,7 @@ class QtInputDelegate implements QtInputConnection.QtInputConnectionListener, Qt
             return;
         try {
             activity.getOnBackInvokedDispatcher().registerOnBackInvokedCallback(
-                    OnBackInvokedDispatcher.PRIORITY_SYSTEM_NAVIGATION_OBSERVER,
+                    OnBackInvokedDispatcher.PRIORITY_DEFAULT,
                     m_backInvokeCallback);
         } catch (IllegalStateException ise) {
             Log.e(TAG, "Failed to register OnBackInvokedCallback: " + ise.getMessage());
