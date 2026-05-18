@@ -710,9 +710,6 @@ void tst_QHeaderView::sectionSize_data()
 
 void tst_QHeaderView::sectionSize()
 {
-#if defined Q_OS_QNX
-    QSKIP("The section size is dpi dependent on QNX");
-#endif
     QFETCH(const IntList, boundsCheck);
     QFETCH(const IntList, defaultSizes);
     QFETCH(int, initialDefaultSize);
@@ -723,8 +720,15 @@ void tst_QHeaderView::sectionSize()
     for (int val : boundsCheck)
         view->sectionSize(val);
 
-    // default size
-    QCOMPARE(view->defaultSectionSize(), initialDefaultSize);
+    // The initial default section size is derived from the style metric
+    // (and therefore the screen DPI), so compare against the live value
+    // instead of a hard-coded one to stay style/DPI independent.
+    const int styleDefaultSize =
+            qMax(view->minimumSectionSize(),
+                 view->style()->pixelMetric(QStyle::PM_HeaderDefaultSectionSizeVertical,
+                                            nullptr, view));
+    QCOMPARE(view->defaultSectionSize(), styleDefaultSize);
+
     for (int def : defaultSizes) {
         view->setDefaultSectionSize(def);
         QCOMPARE(view->defaultSectionSize(), def);
@@ -811,15 +815,15 @@ void tst_QHeaderView::visualIndexAt_data()
 
 void tst_QHeaderView::visualIndexAt()
 {
-#if defined Q_OS_QNX
-    QSKIP("The section size is dpi dependent on QNX");
-#endif
     QFETCH(const IntList, hidden);
     QFETCH(const IntList, from);
     QFETCH(const IntList, to);
     QFETCH(const IntList, coordinate);
     QFETCH(const IntList, visual);
 
+    // The expected coordinates assume a fixed 30px section size, so pin it
+    // to make the test independent of the active style and the screen DPI.
+    view->setDefaultSectionSize(30);
     view->setStretchLastSection(true);
     topLevel->show();
     QVERIFY(QTest::qWaitForWindowExposed(topLevel));
