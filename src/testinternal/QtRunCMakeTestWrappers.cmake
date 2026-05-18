@@ -35,7 +35,7 @@ function(qt_internal_add_RunCMake_test test)
 
     set(android_code "")
     if(ANDROID)
-        qt_internal_get_android_cmake_policy_version_minimum_value(version)
+        qt_internal_get_cmake_policy_version_minimum(ANDROID version)
         string(APPEND android_code "
 # Avoid cmake policy deprecation warnings with older android NDKs appearing in stderr, which
 # causes test failures if the test doesn't set
