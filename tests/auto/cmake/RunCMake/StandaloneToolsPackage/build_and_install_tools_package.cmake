@@ -16,11 +16,12 @@ set(base_name "Garage")
 set(extra_file_base_path "${CMAKE_CURRENT_SOURCE_DIR}/${QT_CMAKE_EXPORT_NAMESPACE}${base_name}")
 
 # Add a C++ tool that should be part of the standalone tools package.
-qt_internal_add_tool(pliers
+qt_get_tool_target_name(pliers_target pliers)
+qt_internal_add_tool(${pliers_target}
     SOURCES
         pliers.cpp
 )
-qt_install(TARGETS pliers
+qt_install(TARGETS ${pliers_target}
     EXPORT "${INSTALL_CMAKE_NAMESPACE}GarageToolsTargets"
     RUNTIME DESTINATION "${QT_INSTALL_BINDIR}"
 )
@@ -33,7 +34,7 @@ qt_internal_add_tools_package(
     EXTRA_CMAKE_INCLUDES
         "${QT_CMAKE_EXPORT_NAMESPACE}${base_name}ToolsExtraInclude.cmake"
     TOOL_TARGETS
-        pliers
+        ${pliers_target}
 )
 
 # Check that we can add third party dependencies to the tools package.
