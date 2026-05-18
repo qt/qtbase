@@ -70,8 +70,6 @@ void QAndroidPlatformVulkanWindow::clearSurface()
         ANativeWindow_release(m_nativeWindow);
         m_nativeWindow = nullptr;
     }
-
-    decrementSurfacesCount();
 }
 
 void QAndroidPlatformVulkanWindow::destroyAndClearSurface()
@@ -124,8 +122,6 @@ VkSurfaceKHR *QAndroidPlatformVulkanWindow::vkSurface()
             qWarning("Failed to create Android VkSurface: %d", err);
 
         sendExpose();
-
-        incrementSurfacesCount();
     }
 
     return &m_vkSurface;

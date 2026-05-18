@@ -95,9 +95,9 @@ namespace QtAndroidAccessibility
     template <typename Func, typename Ret>
     void runInObjectContext(QObject *context, Func &&func, Ret *retVal)
     {
-        if (QAndroidPlatformWindow::surfacesCount() == 0) {
+        if (QGuiApplication::topLevelWindows().isEmpty()) {
             __android_log_print(ANDROID_LOG_WARN, m_qtTag,
-                "Could not run accessibility call in object context, no valid surface.");
+                "Could not run accessibility call in object context, no top-level windows.");
             return;
         }
 
