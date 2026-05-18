@@ -8,12 +8,15 @@
     \brief Demonstrates calling Java and Kotlin code from Qt, and Qt code from Java and Kotlin, in an Android application.
     \ingroup androidplatform
 
-    \image languageexchange_initial.png
+    \image languageexchange_initial.png {Android app showing a prompt and
+           two buttons labeled "Hello Kotlin!" and "Hello Java!"}
 
     Click on one of the buttons to send a string to the Java and Kotlin
     classes and get a modified string back.
 
-    \image languageexchange_response.png
+    \image languageexchange_response.png {Two side-by-side screenshots
+           showing the app response to the Hello Kotlin and Hello Java
+           buttons}
 
     This example demonstrates how to add a custom Java class and a custom Kotlin
     class to an Android
