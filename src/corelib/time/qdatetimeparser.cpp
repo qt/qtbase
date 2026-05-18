@@ -9,6 +9,7 @@
 #include "qdebug.h"
 #include "qlocale.h"
 #include "private/qlocale_p.h"
+#include "private/qlocale_tools_p.h"
 #include "qset.h"
 #include "private/qstringiterator_p.h"
 #include "private/qtenvironmentvariables_p.h"

@@ -760,33 +760,6 @@ QString qt_readEscapedFormatString(QStringView format, qsizetype *idx)
     return result;
 }
 
-/*!
-    \internal
-
-    Counts the number of identical leading characters in \a s.
-
-    If \a s is empty, returns 0.
-
-    Otherwise, returns the number of consecutive \c{s.front()}
-    characters at the start of \a s.
-
-    \code
-    qt_repeatCount(u"a");   // == 1
-    qt_repeatCount(u"ab");  // == 1
-    qt_repeatCount(u"aab"); // == 2
-    \endcode
-*/
-qsizetype qt_repeatCount(QStringView s) noexcept
-{
-    if (s.isEmpty())
-        return 0;
-    const QChar c = s.front();
-    qsizetype j = 1;
-    while (j < s.size() && s.at(j) == c)
-        ++j;
-    return j;
-}
-
 Q_CONSTINIT static const QLocaleData *default_data = nullptr;
 Q_CONSTINIT QBasicAtomicInt QLocalePrivate::s_generation = Q_BASIC_ATOMIC_INITIALIZER(0);
 

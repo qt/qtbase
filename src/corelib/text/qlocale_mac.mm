@@ -3,6 +3,7 @@
 // Qt-Security score:critical reason:data-parser
 
 #include "qlocale_p.h"
+#include "qlocale_tools_p.h"
 
 #include "qstringlist.h"
 #include "qvariant.h"

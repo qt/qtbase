@@ -72,7 +72,7 @@ void qt_doubleToAscii(double d, QLocaleData::DoubleForm form, int precision,
 #endif
 
 // Enough space for the digits before the decimal separator:
-[[nodiscard]] inline int wholePartSpace(double d)
+[[nodiscard]] constexpr inline int wholePartSpace(double d)
 {
     Q_ASSERT(d >= 0); // caller should call qAbs() if needed
     // Optimize for numbers between -512k and 512k - otherwise, use the
@@ -82,7 +82,7 @@ void qt_doubleToAscii(double d, QLocaleData::DoubleForm form, int precision,
 
 // Returns code-point of same kind (UCS2 or UCS4) as zero; digit is 0 through 9
 template <typename UcsInt>
-[[nodiscard]] inline UcsInt unicodeForDigit(uint digit, UcsInt zero)
+[[nodiscard]] constexpr inline UcsInt unicodeForDigit(uint digit, UcsInt zero)
 {
     // Must match QLocaleData::NumericData::digitValue()'s digit-digestion.
     Q_ASSERT(digit < 10);
@@ -96,6 +96,20 @@ template <typename UcsInt>
     // other number system in CLDR has discontinuous digits.
 
     return zero + digit;
+}
+
+// How many copies of s.front() does s start with ? 0 if empty.
+// Intended for parsing ASCII format tokens in format strings,
+// so only works for BMP characters, as that's good enough.
+[[nodiscard]] constexpr inline qsizetype qt_repeatCount(QStringView s) noexcept
+{
+    if (s.isEmpty())
+        return 0;
+    const QChar c = s.front();
+    qsizetype j = 1;
+    while (j < s.size() && s.at(j) == c)
+        ++j;
+    return j;
 }
 
 [[nodiscard]] Q_CORE_EXPORT double qstrntod(const char *s00, qsizetype len,

@@ -738,7 +738,6 @@ QString qt_readEscapedFormatString(QStringView format, qsizetype *idx);
 [[nodiscard]] bool qt_splitLocaleName(QStringView name, QStringView *lang = nullptr,
                                       QStringView *script = nullptr,
                                       QStringView *cntry = nullptr) noexcept;
-[[nodiscard]] qsizetype qt_repeatCount(QStringView s) noexcept;
 
 [[nodiscard]] constexpr inline bool ascii_isspace(uchar c) noexcept
 {
