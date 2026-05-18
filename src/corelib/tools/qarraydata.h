@@ -17,7 +17,7 @@ QT_BEGIN_NAMESPACE
 #if __has_cpp_attribute(gnu::malloc)
 #  define Q_DECL_MALLOCLIKE [[nodiscard, gnu::malloc]]
 #elif Q_CC_MSVC_ONLY
-#  define Q_DECL_MALLOCLIKE __declspec(allocator) __declspec(restrict) [[nodiscard]]
+#  define Q_DECL_MALLOCLIKE [[nodiscard]] __declspec(allocator) __declspec(restrict)
 #else
 #  define Q_DECL_MALLOCLIKE [[nodiscard]]
 #endif
