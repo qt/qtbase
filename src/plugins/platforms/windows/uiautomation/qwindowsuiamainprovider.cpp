@@ -101,6 +101,18 @@ void QWindowsUiaMainProvider::notifyStateChange(QAccessibleStateChangeEvent *eve
                 }
             }
         }
+        if (event->changedStates().expanded) {
+            if (accessible->state().expandable) {
+                if (auto provider = providerForAccessible(accessible)) {
+                    long expandedState = accessible->state().expanded ? ExpandCollapseState_Expanded : ExpandCollapseState_Collapsed;
+
+                    QComVariant oldVal;
+                    QComVariant newVal{expandedState};
+                    UiaRaiseAutomationPropertyChangedEvent(
+                            provider.Get(), UIA_ExpandCollapseExpandCollapseStatePropertyId, oldVal.get(), newVal.get());
+                }
+            }
+        }
         if (event->changedStates().active) {
             if (accessible->role() == QAccessible::Window) {
                 // Notifies window opened/closed.
@@ -376,7 +388,7 @@ HRESULT QWindowsUiaMainProvider::GetPatternProvider(PATTERNID idPattern, IUnknow
                 && accessible->childCount() > 0
                 && accessible->child(0)->role() == QAccessible::PopupMenu)
             || accessible->role() == QAccessible::ComboBox
-            || (accessible->role() == QAccessible::TreeItem && accessible->state().expandable)) {
+            || accessible->state().expandable) {
             *pRetVal = makeComObject<QWindowsUiaExpandCollapseProvider>(id()).Detach();
         }
         break;
