@@ -43,8 +43,6 @@ QComHelper::~QComHelper()
     the thread exits. Note that the last call to CoUninitialize on the
     main thread will always be made during destruction of static
     variables at process exit.
-
-    https://docs.microsoft.com/en-us/windows/apps/desktop/modernize/modernize-packaged-apps
 */
 void qt_win_ensureComInitializedOnThisThread()
 {
