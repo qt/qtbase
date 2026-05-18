@@ -296,11 +296,11 @@ void QOhosFloatingWindow::initialize()
         QObject::connect(
             &view, &QOhosView::avoidAreaChanged,
             qWindow,
-            [&view, this, cachedMap = QMap<QOhosWindowProxy::AvoidAreaType, QOhosWindowProxy::AvoidArea>{}](
+            [&view, this](
                 const QOhosWindowProxy::AvoidAreaType avoidAreaType,
-                const QOhosWindowProxy::AvoidArea &systemAvoidArea) mutable {
+                const QOhosWindowProxy::AvoidArea &systemAvoidArea) {
 
-                const auto &cached = cachedMap[avoidAreaType];
+                const auto &cached = m_avoidAreaCache[avoidAreaType];
 
                 bool actuallyChanged =
                     cached.visible != systemAvoidArea.visible
@@ -310,7 +310,7 @@ void QOhosFloatingWindow::initialize()
                     || cached.topRect != systemAvoidArea.topRect;
 
                 if (actuallyChanged) {
-                    cachedMap[avoidAreaType] = systemAvoidArea;
+                    m_avoidAreaCache[avoidAreaType] = systemAvoidArea;
                     qCDebug(QtForOhos) << "Avoid area changed:"
                         << static_cast<int>(avoidAreaType)
                         << "visible:" << systemAvoidArea.visible

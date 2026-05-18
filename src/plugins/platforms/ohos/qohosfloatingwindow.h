@@ -5,6 +5,7 @@
 #define QOHOSFLOATINGWINDOW_H
 
 #include <QtCore/qglobal.h>
+#include <QtCore/qmap.h>
 #include <napi.h>
 #include <qohosplatformscreen.h>
 #include <qohosplatformwindow.h>
@@ -57,6 +58,7 @@ private:
     QOhosOptional<QRegion> m_windowMask;
     QOhosOptional<QOhosWindowProxy::RectChangeOptions> m_lastRectChangeOptions;
     QOhosOptional<QSize> m_optLastSurfaceSize;
+    QMap<QOhosWindowProxy::AvoidAreaType, QOhosWindowProxy::AvoidArea> m_avoidAreaCache;
 };
 
 QT_END_NAMESPACE
