@@ -70,8 +70,6 @@ public:
     static bool registerNatives(QJniEnvironment &env);
     void onSurfaceChanged(QtJniTypes::Surface surface);
 
-    static int surfacesCount();
-
 protected:
     void setGeometry(const QRect &rect) override;
     void createSurface();
@@ -80,8 +78,6 @@ protected:
     bool blockedByModal() const;
     bool isEmbeddingContainer() const;
     virtual void clearSurface() {}
-    static void incrementSurfacesCount();
-    static void decrementSurfacesCount();
 
     bool m_isRaster;
 

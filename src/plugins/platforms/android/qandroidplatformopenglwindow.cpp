@@ -79,8 +79,6 @@ EGLSurface QAndroidPlatformOpenGLWindow::eglSurface(EGLConfig config)
         }
 
         sendExpose();
-
-        incrementSurfacesCount();
     }
 
     return m_eglSurface;
@@ -116,8 +114,6 @@ void QAndroidPlatformOpenGLWindow::clearSurface()
         ANativeWindow_release(m_nativeWindow);
         m_nativeWindow = nullptr;
     }
-
-    decrementSurfacesCount();
 }
 
 QT_END_NAMESPACE
