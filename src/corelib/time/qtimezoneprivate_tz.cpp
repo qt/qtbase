@@ -779,6 +779,8 @@ class QTzTimeZoneCache
 {
 public:
     QTzTimeZoneCacheEntry fetchEntry(const QByteArray &ianaId);
+    // Set max cost to hold whole IANA DB, since some code iterates it !
+    QTzTimeZoneCache() : m_cache(700) {}
 
 private:
     static QTzTimeZoneCacheEntry findEntry(const QByteArray &ianaId);
@@ -980,6 +982,9 @@ QTzTimeZoneCacheEntry QTzTimeZoneCache::fetchEntry(const QByteArray &ianaId)
     locker.unlock(); // don't parse files under mutex lock
 
     QTzTimeZoneCacheEntry ret = findEntry(ianaId);
+    if (ret.m_tranTimes.isEmpty() && ret.m_posixRule.isEmpty())
+        return ret; // Don't use up cache space with invalid IDs.
+
     auto ptr = std::make_unique<QTzTimeZoneCacheEntry>(ret);
 
     locker.relock();
