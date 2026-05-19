@@ -272,25 +272,38 @@ QVersionNumber QLibraryInfo::version() noexcept
     return QVersionNumber(QT_VERSION_MAJOR, QT_VERSION_MINOR, QT_VERSION_PATCH);
 }
 
+/*!
+    \internal
+
+    Used to look up the prefix path for static builds, where we
+    don't have a standalone QtCore library, or for relative paths
+    coming from qt.conf, which are rooted in the app's location.
+*/
 static QString prefixFromAppDirHelper()
 {
-    if (QCoreApplication::instanceExists()) {
-#ifdef Q_OS_DARWIN
-        CFBundleRef bundleRef = CFBundleGetMainBundle();
-        if (bundleRef) {
-            QCFType<CFURLRef> urlRef = CFBundleCopyBundleURL(bundleRef);
-            if (urlRef) {
-                QCFString path = CFURLCopyFileSystemPath(urlRef, kCFURLPOSIXPathStyle);
-#ifdef Q_OS_MACOS
-                QString bundleContentsDir = QString(path) + "/Contents/"_L1;
-                if (QDir(bundleContentsDir).exists())
-                    return QDir::cleanPath(bundleContentsDir);
+#if defined(Q_OS_DARWIN)
+    // Resolve the app prefix from the app bundle instead of the
+    // executable, as that correctly handles both the main executable
+    // as well as possibly deeply nested helper tools, and lets us
+    // root the app prefix at the base of the bundle. Note that
+    // CFBundleGetMainBundle returns a bundle representation even
+    // for unbundled apps, which is why we can't assume there's a
+    // `Contents` subdirectory in the macOS case.
+    if (CFBundleRef bundleRef = CFBundleGetMainBundle()) {
+        if (QCFType<CFURLRef> urlRef = CFBundleCopyBundleURL(bundleRef)) {
+            QCFString path = CFURLCopyFileSystemPath(urlRef, kCFURLPOSIXPathStyle);
+#if defined(Q_OS_MACOS)
+            QString bundleContentsDir = QString(path) + "/Contents/"_L1;
+            if (QFileInfo::exists(bundleContentsDir))
+                return QDir::cleanPath(bundleContentsDir);
 #else
-                return QDir::cleanPath(QString(path)); // iOS
+            return QDir::cleanPath(QString(path)); // iOS
 #endif // Q_OS_MACOS
-            }
         }
+    }
 #endif // Q_OS_DARWIN
+
+    if (QCoreApplication::instanceExists()) {
         // We make the prefix path absolute to the executable's directory.
         return QCoreApplication::applicationDirPath();
     } else {
