@@ -384,6 +384,12 @@ Q_CONSTINIT static QBasicMutex registeredInterpolatorsMutex;
     Registers a custom interpolator \a func for the template type \c{T}.
     The interpolator has to be registered before the animation is constructed.
     To unregister (and use the default interpolator) set \a func to \nullptr.
+
+    \warning Registering a custom interpolator for one of the Qt built-in types
+    (e.g. \c {int}) will affect all animations on this type that will be created
+    later. This might be an undesired behavior. It is therefore recommended to
+    reset the interpolator to the default value after the desired animations
+    have been created.
  */
 
 /*!
