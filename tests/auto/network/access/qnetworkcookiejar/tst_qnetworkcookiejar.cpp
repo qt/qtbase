@@ -456,7 +456,7 @@ void tst_QNetworkCookieJar::effectiveTLDs_data()
 
     QTest::newRow("yes-wildcard1") << "*.jm" << true;
     QTest::newRow("yes-wildcard1.5") << "anything.jm" << true;
-    QTest::newRow("yes-wildcard2") << "something.kh" << true;
+    QTest::newRow("yes-wildcard2") << "something.ck" << true;
     QTest::newRow("no-wildcard3") << "whatever.uk" << false; // was changed at some point
     QTest::newRow("yes-wildcard4") << "anything.sendai.jp" << true;
     QTest::newRow("yes-wildcard5") << "foo.sch.uk" << true;
