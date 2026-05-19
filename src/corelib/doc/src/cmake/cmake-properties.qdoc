@@ -1192,7 +1192,8 @@ set_target_properties(myapp PROPERTIES
 )
 \endcode
 
-\sa{Qt for Windows - Deployment}, QT_WINDOWS_APP_PROJECT_EXECUTION_LEVEL
+\sa{Qt for Windows - Deployment}, QT_WINDOWS_APP_PROJECT_EXECUTION_LEVEL,
+    QT_WINDOWS_APP_SEGMENT_HEAP
 */
 
 /*!
@@ -1235,7 +1236,49 @@ set_target_properties(myapp PROPERTIES
 )
 \endcode
 
-\sa{Qt for Windows - Deployment}, QT_WINDOWS_APP_PROJECT_IDENTIFIER
+\sa{Qt for Windows - Deployment}, QT_WINDOWS_APP_PROJECT_IDENTIFIER,
+    QT_WINDOWS_APP_SEGMENT_HEAP
+*/
+
+/*!
+\page cmake-target-property-qt-windows-app-segment-heap.html
+\ingroup cmake-properties-qtcore
+\ingroup cmake-target-properties-qtcore
+
+\title QT_WINDOWS_APP_SEGMENT_HEAP
+\target cmake-target-property-QT_WINDOWS_APP_SEGMENT_HEAP
+
+\summary {Opts the application into the Windows Segment Heap via the generated application manifest.}
+
+\cmakepropertysince 6.13
+\cmakepropertywindowsonly
+
+Boolean property that opts the application into the
+\l{https://learn.microsoft.com/windows/win32/sbscs/application-manifests#heaptype}
+{Segment Heap}. When enabled, Qt adds a \c heapType element with the value
+\c SegmentHeap to the application manifest that it automatically generates for
+Windows executables built with \l{qt_add_executable}{qt_add_executable()}.
+
+The Segment Heap is a modern heap implementation that can lower a process's
+memory footprint and improve allocation performance, most notably for
+allocation-heavy and multi-threaded workloads. The impact is workload
+dependent and can be neutral or negative for some applications, so measure
+your application before enabling it in a release.
+
+The property is disabled by default. Set it to \c ON to opt in:
+
+\badcode
+set_target_properties(myapp PROPERTIES
+    QT_WINDOWS_APP_SEGMENT_HEAP ON
+)
+\endcode
+
+If the target already provides a \c{.manifest} file in its sources,
+Qt skips automatic manifest generation and this property has no
+effect.
+
+\sa{Qt for Windows - Deployment}, QT_WINDOWS_APP_PROJECT_IDENTIFIER,
+    QT_WINDOWS_APP_PROJECT_EXECUTION_LEVEL
 */
 
 /*!

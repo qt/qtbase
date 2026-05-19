@@ -8,9 +8,10 @@
       </application>
    </compatibility>
    <asmv3:application>
-     <asmv3:windowsSettings xmlns:ws2="http://schemas.microsoft.com/SMI/2016/WindowsSettings">
+     <asmv3:windowsSettings xmlns:ws2="http://schemas.microsoft.com/SMI/2016/WindowsSettings"
+                            xmlns:ws3="http://schemas.microsoft.com/SMI/2020/WindowsSettings">
        <ws2:longPathAware>true</ws2:longPathAware>
-     </asmv3:windowsSettings>
+@QT_WINDOWS_APP_SEGMENT_HEAP_ELEMENT@     </asmv3:windowsSettings>
    </asmv3:application>
    <trustInfo xmlns="urn:schemas-microsoft-com:asm.v2">
      <security>

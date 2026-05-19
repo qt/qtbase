@@ -116,6 +116,14 @@ function(_qt_internal_finalize_windows_app target)
         endif()
     endif()
 
+    get_target_property(segment_heap "${target}" QT_WINDOWS_APP_SEGMENT_HEAP)
+    if(segment_heap)
+        set(QT_WINDOWS_APP_SEGMENT_HEAP_ELEMENT
+            "       <ws3:heapType>SegmentHeap</ws3:heapType>\n")
+    else()
+        set(QT_WINDOWS_APP_SEGMENT_HEAP_ELEMENT "")
+    endif()
+
     # Call configure_file to substitute Qt-specific @FOO@ values, not ${FOO} values.
     configure_file(
         "${manifest_in}"
