@@ -164,7 +164,7 @@ QT_IMPL_METATYPE_EXTERN(QSslKeyingMaterial)
 
     \sa {Debugging Techniques}
 */
-QDebug operator<<(QDebug debug, QSslKeyingMaterial keying)
+QDebug operator<<(QDebug debug, const QSslKeyingMaterial &keying)
 {
     QDebugStateSaver saver(debug);
     debug.resetFormat().nospace();

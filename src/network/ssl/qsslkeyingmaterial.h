@@ -79,7 +79,7 @@ private:
 
 #ifndef QT_NO_DEBUG_STREAM
 class QDebug;
-Q_NETWORK_EXPORT QDebug operator<<(QDebug debug, QSslKeyingMaterial curve);
+Q_NETWORK_EXPORT QDebug operator<<(QDebug debug, const QSslKeyingMaterial &curve);
 #endif
 
 
