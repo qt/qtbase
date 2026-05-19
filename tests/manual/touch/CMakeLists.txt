@@ -7,7 +7,9 @@
 
 qt_internal_add_manual_test(touch
     SOURCES
+        gestures.cpp gestures.h
         main.cpp
+        mainwindow.cpp mainwindow.h
     LIBRARIES
         Qt::Gui
         Qt::GuiPrivate
