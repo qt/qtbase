@@ -65,8 +65,10 @@ function(qt_generate_qconfig_cpp in_file out_file)
     # Expected output is something like
     #   C:/work/qt/install
     # so it includes a drive letter and forward slashes.
-    if(QT_FEATURE_relocatable)
-        # A relocatable Qt does not need a hardcoded prefix path.
+    if(QT_FEATURE_relocatable AND (NOT APPLE OR BUILD_SHARED_LIBS))
+        # A relocatable Qt does not need a hardcoded prefix path. Unless
+        # we're on an Apple static Qt build, in which case we need the
+        # prefix as a fallback for non-sandboxed application.
         # This makes reproducible builds a closer reality, because we don't embed a CI path
         # into the binaries.
         set(QT_CONFIGURE_PREFIX_PATH_STR "")

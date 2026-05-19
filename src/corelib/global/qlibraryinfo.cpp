@@ -352,6 +352,18 @@ static QString getRelocatablePrefix(QLibraryInfoPrivate::UsageMode usageMode)
     // For static builds, the prefix will be the app directory, unless it's a non-sandboxed Apple app.
     // For regular builds, the prefix will be relative to the location of the QtCore shared library.
 #if defined(QT_STATIC)
+# if defined(Q_OS_APPLE)
+    // The default value for QT_CONFIG(relocatable) for static builds
+    // used to be false, giving end users QT_CONFIGURE_PREFIX_PATH as
+    // the prefix path. We've since changed the default to true for
+    // Apple platforms, since sandboxed applications are always
+    // relocated, even for static builds. To avoid regressions for
+    // those that shipped non-sandboxed apps with static Qt relying
+    // on the previous behavior, we fall back to the Qt configure
+    // prefix for non-sandboxed apps.
+    if (!qt_apple_isSandboxed())
+        return QString::fromLocal8Bit(QT_CONFIGURE_PREFIX_PATH);
+# endif
     prefixPath = prefixFromAppDirHelper();
     if (usageMode == QLibraryInfoPrivate::UsedFromQtBinDir) {
         // For Qt tools in a static build, we must chop off the bin directory.
