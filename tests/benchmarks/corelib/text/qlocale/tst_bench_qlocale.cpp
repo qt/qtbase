@@ -927,6 +927,42 @@ void tst_QLocale::toDateTime_data()
         << "Sonntag 2024 September 01 23-59-58 pm" << "dddd yyyy MMMM dd HH-mm-ss ap"
         << greg << 2000 << "de-DE";
 
+    // Gregorian(ccp-IN)
+    QTest::newRow("d.M.yy h:m:s.z AP t+Gregorian+ccp-IN")
+        << "𑄷.𑄿.𑄸𑄺 𑄷:𑄸:𑄹.𑄺 PM UTC+02:00" << "d.M.yy h:m:s.z AP t"
+        << greg << 2000 << "ccp-IN";
+
+    QTest::newRow("hh&mm&ss.zz A dd/MM/yyyy+Gregorian+ccp-IN")
+        << "𑄶𑄷&𑄶𑄸&𑄶𑄹.𑄺𑄺 PM 𑄶𑄷/𑄶𑄿/𑄸𑄶𑄸𑄺" << "hh&mm&ss.zz A dd/MM/yyyy"
+        << greg << 2000 << "ccp-IN";
+
+    QTest::newRow("ddd d-MMM-yy HmszzzAp tt+Gregorian+ccp-IN")
+        << "𑄢𑄧𑄝𑄨 𑄷-𑄥𑄬𑄛𑄴𑄑𑄬𑄟𑄴𑄝𑄧𑄢𑄴-𑄸𑄺 𑄷𑄸𑄸𑄹𑄺𑄺𑄺pm +0200" << "ddd d-MMM-yy HmszzzAp tt"
+        << greg << 2000 << "ccp-IN";
+
+    QTest::newRow("dddd dd MMMM yyyy ttt+Gregorian+ccp-IN")
+        << "𑄢𑄧𑄝𑄨𑄝𑄢𑄴 𑄶𑄷 𑄥𑄬𑄛𑄴𑄑𑄬𑄟𑄴𑄝𑄧𑄢𑄴 𑄸𑄶𑄸𑄺 +02:00" << "dddd dd MMMM yyyy ttt"
+        << greg << 2000 << "ccp-IN";
+
+    QTest::newRow("yy.M.d hh mm aP tttt+Gregorian+ccp-IN")
+        << "𑄸𑄺.𑄿.𑄷 𑄷𑄷 𑄻𑄿 pm Europe/Berlin" << "yy.M.d hh mm aP tttt"
+        << greg << 2000 << "ccp-IN";
+
+    QTest::newRow("yyyy/MM/dd HH-mm-ss ap+Gregorian+ccp-IN")
+        << "𑄸𑄶𑄸𑄺/𑄶𑄿/𑄶𑄷 𑄸𑄹-𑄻𑄿-𑄻𑄾 pm" << "yyyy/MM/dd HH-mm-ss ap"
+        << greg << 2000 << "ccp-IN";
+
+    QTest::newRow("HH/mm/ss.zzz a ddd yy-MMM-d+Gregorian+ccp-IN")
+        << "𑄷𑄸/𑄶𑄸/𑄶𑄹.𑄺𑄺𑄺 pm 𑄢𑄧𑄝𑄨 𑄸𑄺-𑄥𑄬𑄛𑄴𑄑𑄬𑄟𑄴𑄝𑄧𑄢𑄴-𑄷"
+        << "HH/mm/ss.zzz a ddd yy-MMM-d"
+        << greg << 2000 << "ccp-IN";
+
+    QTest::newRow("dddd yyyy MMMM dd HH-mm-ss ap+Gregorian+ccp-IN")
+        << "𑄢𑄧𑄝𑄨𑄝𑄢𑄴 𑄸𑄶𑄸𑄺 𑄥𑄬𑄛𑄴𑄑𑄬𑄟𑄴𑄝𑄧𑄢𑄴 𑄶𑄷 𑄸𑄹-𑄻𑄿-𑄻𑄾 pm"
+        << "dddd yyyy MMMM dd HH-mm-ss ap"
+       << greg << 2000 << "ccp-IN";
+
+
 #if QT_CONFIG(islamiccivilcalendar)
     // IslamicCivil(C)
 
@@ -984,6 +1020,40 @@ void tst_QLocale::toDateTime_data()
     QTest::newRow("dddd yyyy MMMM dd HH-mm-ss ap+IslamicCivil+de-DE")
         << "Mittwoch 2024 Ramadan 01 23-59-58 pm" << "dddd yyyy MMMM dd HH-mm-ss ap"
         << isci << 2000 << "de-DE";
+
+    // IslamicCivil(ccp-IN)
+    QTest::newRow("d.M.yy h:m:s.z AP t+IslamicCivil+ccp-IN")
+        << "𑄷.𑄿.𑄸𑄺 𑄷:𑄸:𑄹.𑄺 PM UTC+02:00" << "d.M.yy h:m:s.z AP t"
+        << isci << 2000 << "ccp-IN";
+
+    QTest::newRow("hh&mm&ss.zz A dd/MM/yyyy+IslamicCivil+ccp-IN")
+        << "𑄶𑄷&𑄶𑄸&𑄶𑄹.𑄺𑄺 PM 𑄶𑄷/𑄶𑄿/𑄸𑄶𑄸𑄺" << "hh&mm&ss.zz A dd/MM/yyyy"
+        << isci << 2000 << "ccp-IN";
+
+    QTest::newRow("ddd d-MMM-yy HmszzzAp tt+IslamicCivil+ccp-IN")
+        << "𑄝𑄪𑄖𑄴 𑄷-Ram.-𑄸𑄺 𑄷𑄸𑄸𑄹𑄺𑄺𑄺pm +0200" << "ddd d-MMM-yy HmszzzAp tt"
+        << isci << 2000 << "ccp-IN";
+
+    QTest::newRow("dddd dd MMMM yyyy ttt+IslamicCivil+ccp-IN")
+        << "𑄝𑄪𑄖𑄴𑄝𑄢𑄴 𑄶𑄷 𑄢𑄧𑄟𑄴𑄎𑄚𑄴 𑄸𑄶𑄸𑄺 +02:00" << "dddd dd MMMM yyyy ttt"
+        << isci << 2000 << "ccp-IN";
+
+    QTest::newRow("yy.M.d hh mm aP tttt+IslamicCivil+ccp-IN")
+        << "𑄸𑄺.𑄿.𑄷 𑄷𑄷 𑄻𑄿 pm Europe/Berlin" << "yy.M.d hh mm aP tttt"
+        << isci << 2000 << "ccp-IN";
+
+    QTest::newRow("yyyy/MM/dd HH-mm-ss ap+IslamicCivil+ccp-IN")
+        << "𑄸𑄶𑄸𑄺/𑄶𑄿/𑄶𑄷 𑄸𑄹-𑄻𑄿-𑄻𑄾 pm" << "yyyy/MM/dd HH-mm-ss ap"
+        << isci << 2000 << "ccp-IN";
+
+    QTest::newRow("HH/mm/ss.zzz a ddd yy-MMM-d+IslamicCivil+ccp-IN")
+        << "𑄷𑄹/𑄶𑄸/𑄶𑄹.𑄺𑄺𑄺 pm 𑄝𑄪𑄖𑄴 𑄸𑄺-Ram.-𑄷" << "HH/mm/ss.zzz a ddd yy-MMM-d"
+        << isci << 2000 << "ccp-IN";
+
+    QTest::newRow("dddd yyyy MMMM dd HH-mm-ss ap+IslamicCivil+ccp-IN")
+        << "𑄝𑄪𑄖𑄴𑄝𑄢𑄴 𑄸𑄶𑄸𑄺 𑄢𑄧𑄟𑄴𑄎𑄚𑄴 𑄶𑄷 𑄸𑄹-𑄻𑄿-𑄻𑄾 pm"
+        << "dddd yyyy MMMM dd HH-mm-ss ap"
+        << isci << 2000 << "ccp-IN";
 #endif
 
 #if QT_CONFIG(jalalicalendar)
@@ -1056,6 +1126,39 @@ void tst_QLocale::toDateTime_data()
     QTest::newRow("dddd yyyy MMMM dd HH-mm-ss ap+Jalali+de-DE")
         << "Samstag 2024 Āsar 01 23-59-58 pm" << "dddd yyyy MMMM dd HH-mm-ss ap"
         << jali << 2000 << "de-DE";
+
+    // Jalali(ccp-IN)
+    QTest::newRow("d.M.yy h:m:s.z AP t+Jalali+ccp-IN")
+        << "𑄷.𑄿.𑄸𑄺 𑄷:𑄸:𑄹.𑄺 PM UTC+02:00" << "d.M.yy h:m:s.z AP t"
+        << jali << 2000 << "ccp-IN";
+
+    QTest::newRow("hh&mm&ss.zz A dd/MM/yyyy+Jalali+ccp-IN")
+        << "𑄶𑄷&𑄶𑄸&𑄶𑄹.𑄺𑄺 PM 𑄶𑄷/𑄶𑄿/𑄸𑄶𑄸𑄺" << "hh&mm&ss.zz A dd/MM/yyyy"
+        << jali << 2000 << "ccp-IN";
+
+    QTest::newRow("ddd d-MMM-yy HmszzzAp tt+Jalali+ccp-IN")
+        << "𑄥𑄧𑄚𑄨 𑄷-Azar-𑄸𑄺 𑄷𑄸𑄸𑄹𑄺𑄺𑄺pm +0200" << "ddd d-MMM-yy HmszzzAp tt"
+        << jali << 2000 << "ccp-IN";
+
+    QTest::newRow("dddd dd MMMM yyyy ttt+Jalali+ccp-IN")
+        << "𑄥𑄧𑄚𑄨𑄝𑄢𑄴 𑄶𑄷 Azar 𑄸𑄶𑄸𑄺 +02:00" << "dddd dd MMMM yyyy ttt"
+        << jali << 2000 << "ccp-IN";
+
+    QTest::newRow("yy.M.d hh mm aP tttt+Jalali+ccp-IN")
+        << "𑄸𑄺.𑄿.𑄷 𑄷𑄷 𑄻𑄿 pm Europe/Berlin" << "yy.M.d hh mm aP tttt"
+        << jali << 2000 << "ccp-IN";
+
+    QTest::newRow("yyyy/MM/dd HH-mm-ss ap+Jalali+ccp-IN")
+        << "𑄸𑄶𑄸𑄺/𑄶𑄿/𑄶𑄷 𑄸𑄹-𑄻𑄿-𑄻𑄾 pm" << "yyyy/MM/dd HH-mm-ss ap"
+        << jali << 2000 << "ccp-IN";
+
+    QTest::newRow("HH/mm/ss.zzz a ddd yy-MMM-d+Jalali+ccp-IN")
+        << "𑄷𑄹/𑄶𑄸/𑄶𑄹.𑄺𑄺𑄺 pm 𑄥𑄧𑄚𑄨 𑄸𑄺-Azar-𑄷" << "HH/mm/ss.zzz a ddd yy-MMM-d"
+        << jali << 2000 << "ccp-IN";
+
+    QTest::newRow("dddd yyyy MMMM dd HH-mm-ss ap+Jalali+ccp-IN")
+        << "𑄥𑄧𑄚𑄨𑄝𑄢𑄴 𑄸𑄶𑄸𑄺 Azar 𑄶𑄷 𑄸𑄹-𑄻𑄿-𑄻𑄾 pm" << "dddd yyyy MMMM dd HH-mm-ss ap"
+        << jali << 2000 << "ccp-IN";
 #endif
 }
 
