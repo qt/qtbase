@@ -1015,19 +1015,6 @@ void QWaylandDisplay::handleWaylandSync()
     QWindow *activeWindow = mActiveWindows.empty() ? nullptr : mActiveWindows.last()->window();
     if (activeWindow != QGuiApplication::focusWindow())
         QWindowSystemInterface::handleFocusWindowChanged(activeWindow);
-
-    if (!activeWindow) {
-        if (lastInputDevice()) {
-#if QT_CONFIG(clipboard)
-            if (auto *dataDevice = lastInputDevice()->dataDevice())
-                dataDevice->invalidateSelectionOffer();
-#endif
-#if QT_CONFIG(wayland_client_primary_selection)
-            if (auto *device = lastInputDevice()->primarySelectionDevice())
-                device->invalidateSelectionOffer();
-#endif
-        }
-    }
 }
 
 const wl_callback_listener QWaylandDisplay::syncCallbackListener = {
