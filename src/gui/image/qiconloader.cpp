@@ -147,7 +147,14 @@ void QIconLoader::invalidateKey()
 
 QString QIconLoader::themeName() const
 {
-    return m_userTheme.isEmpty() ? m_systemTheme : m_userTheme;
+    if (!m_userTheme.isEmpty())
+        return m_userTheme;
+
+    if (m_systemTheme.isEmpty()) {
+        const QString &themeName = systemThemeName();
+        m_systemTheme = !themeName.isEmpty() ? themeName : fallbackThemeName();
+    }
+    return m_systemTheme;
 }
 
 void QIconLoader::setThemeName(const QString &themeName)
