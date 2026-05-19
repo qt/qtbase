@@ -3,15 +3,13 @@
 // Qt-Security score:significant reason:default
 
 #include "qsslkeyingmaterial.h"
-#include "qtlsbackend_p.h"
-#include "qsslsocket_p.h"
 
 #ifndef QT_NO_DEBUG_STREAM
-#include <QDebug>
+#include <QtCore/qdebug.h>
 #endif
+#include <QtCore/qhashfunctions.h>
 
 QT_BEGIN_NAMESPACE
-
 
 /*!
     \class QSslKeyingMaterial

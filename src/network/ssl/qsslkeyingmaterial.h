@@ -7,10 +7,12 @@
 
 #include <QtNetwork/qtnetworkglobal.h>
 
+#include <QtCore/qbytearray.h>
+#include <QtCore/qcompare.h>
+#include <QtCore/qtypes.h>
+
 QT_REQUIRE_CONFIG(ssl);
 
-#include <QtCore/QString>
-#include <QtCore/QMetaType>
 
 QT_BEGIN_NAMESPACE
 
