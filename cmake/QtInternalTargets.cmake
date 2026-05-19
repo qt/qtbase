@@ -328,6 +328,11 @@ if (MSVC AND NOT CLANG)
             #-Zc:preprocessor # breaks build due to bug in default Windows SDK 10.0.19041
         )
     endif()
+    if (MSVC_VERSION GREATER_EQUAL 1950) # MSVC 2026 / VS 18.0
+        target_compile_options(PlatformCommonInternal INTERFACE
+            "${is_not_clang_cl_start}-await:strict${is_not_clang_cl_end}"
+        )
+    endif()
 
     target_compile_options(PlatformCommonInternal INTERFACE
         -Zc:wchar_t
