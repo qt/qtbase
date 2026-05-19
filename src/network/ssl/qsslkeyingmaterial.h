@@ -30,7 +30,7 @@ public:
 
     bool isValid() const noexcept
     {
-        return !label().isEmpty() && size() > 0;
+        return !label().isEmpty() && requestedSize() > 0;
     }
 
     QByteArray label() const noexcept
@@ -48,7 +48,7 @@ public:
         return keyingValue;
     }
 
-    qsizetype size() const noexcept
+    qsizetype requestedSize() const noexcept
     {
         return keyingValueSize;
     }
@@ -83,7 +83,7 @@ inline size_t qHash(const QSslKeyingMaterial &material, size_t seed = 0)
                       material.label(),
                       material.context(),
                       material.value(),
-                      material.size());
+                      material.requestedSize());
 }
 
 QT_END_NAMESPACE

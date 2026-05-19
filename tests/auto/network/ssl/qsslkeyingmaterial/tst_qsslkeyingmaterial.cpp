@@ -37,21 +37,21 @@ void tst_QSslKeyingMaterial::construction()
     QSslKeyingMaterial entry(QByteArray(), 1);
     QCOMPARE(entry.label(), QByteArray());
     QVERIFY(entry.context().isNull());
-    QCOMPARE(entry.size(), 1);
+    QCOMPARE(entry.requestedSize(), 1);
     QVERIFY(entry.value().isNull());
     QVERIFY(!entry.isValid());
 
     entry = QSslKeyingMaterial(QByteArray("dummy"), 0);
     QCOMPARE(entry.label(), QByteArray("dummy"));
     QVERIFY(entry.context().isNull());
-    QCOMPARE(entry.size(), 0);
+    QCOMPARE(entry.requestedSize(), 0);
     QVERIFY(entry.value().isNull());
     QVERIFY(!entry.isValid());
 
     entry = QSslKeyingMaterial(QByteArray("dummy"), 256);
     QCOMPARE(entry.label(), QByteArray("dummy"));
     QVERIFY(entry.context().isNull());
-    QCOMPARE(entry.size(), 256);
+    QCOMPARE(entry.requestedSize(), 256);
     QVERIFY(entry.value().isNull());
     QVERIFY(entry.isValid());
 
@@ -59,14 +59,14 @@ void tst_QSslKeyingMaterial::construction()
     QCOMPARE(entry.label(), QByteArray("dummy"));
     QVERIFY(!entry.context().isNull());
     QVERIFY(entry.context().isEmpty());
-    QCOMPARE(entry.size(), 256);
+    QCOMPARE(entry.requestedSize(), 256);
     QVERIFY(entry.value().isNull());
     QVERIFY(entry.isValid());
 
     entry = QSslKeyingMaterial(QByteArray("dummy"), 256, QByteArray("ctx"));
     QCOMPARE(entry.label(), QByteArray("dummy"));
     QCOMPARE(entry.context(), QByteArray("ctx"));
-    QCOMPARE(entry.size(), 256);
+    QCOMPARE(entry.requestedSize(), 256);
     QVERIFY(entry.value().isNull());
     QVERIFY(entry.isValid());
 

@@ -1299,7 +1299,7 @@ QSslConfiguration::keyingMaterial(const QSslKeyingMaterial &material) const
     for (const auto &entry : std::as_const(d->keyingMaterial)) {
         if (entry.label() == material.label() &&
             entry.context() == material.context() &&
-            entry.size() == material.size()) {
+            entry.requestedSize() == material.requestedSize()) {
             return entry;
         }
     }

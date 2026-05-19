@@ -134,11 +134,11 @@ QT_IMPL_METATYPE_EXTERN(QSslKeyingMaterial)
     \note The contents of the returned keying material are#
           security-sensitive and must be handled with care.
 
-    \sa label(), context(), size()
+    \sa label(), context(), requestedSize()
 */
 
 /*!
-    \fn int QSslKeyingMaterial::size() const noexcept
+    \fn qsizetype QSslKeyingMaterial::requestedSize() const noexcept
 
     The desired size of the keying material.
 
@@ -164,7 +164,7 @@ QDebug operator<<(QDebug debug, QSslKeyingMaterial keying)
     debug.resetFormat().nospace();
     debug << "QSslKeyingMaterial("
           << keying.label() << ',' << keying.context()
-          << ", requested size: " << keying.size()
+          << ", requested size: " << keying.requestedSize()
           << ", actual size: " << keying.value().size() << ')';
     return debug;
 }
