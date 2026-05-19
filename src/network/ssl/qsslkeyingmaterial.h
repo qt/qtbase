@@ -20,6 +20,7 @@ class QDebug;
 class QSslKeyingMaterial
 {
 public:
+    QSslKeyingMaterial() = default;
     explicit QSslKeyingMaterial(const QByteArray &label, qsizetype size)
         : keyingLabel(label)
         , keyingValueSize(size)
@@ -71,7 +72,7 @@ private:
     QByteArray keyingLabel;
     QByteArray keyingContext;
     QByteArray keyingValue;
-    qsizetype keyingValueSize;
+    qsizetype keyingValueSize = 0;
 
     friend bool comparesEqual(const QSslKeyingMaterial &lhs,
                               const QSslKeyingMaterial &rhs) noexcept

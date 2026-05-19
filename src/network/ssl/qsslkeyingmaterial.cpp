@@ -65,6 +65,16 @@ QT_IMPL_METATYPE_EXTERN(QSslKeyingMaterial)
 */
 
 /*!
+    \fn QSslKeyingMaterial::QSslKeyingMaterial()
+
+    Default-constructs an instance of QSslKeyingMaterial.
+
+    A default instance is never valid.
+
+    \sa isValid()
+*/
+
+/*!
     \fn explicit QSslKeyingMaterial::QSslKeyingMaterial(const QByteArray &label, qsizetype size)
     \fn explicit QSslKeyingMaterial::QSslKeyingMaterial(const QByteArray &label, qsizetype size, const QByteArray &context)
 

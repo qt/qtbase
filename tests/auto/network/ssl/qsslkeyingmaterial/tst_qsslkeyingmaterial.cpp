@@ -34,6 +34,13 @@ private:
 
 void tst_QSslKeyingMaterial::construction()
 {
+    QSslKeyingMaterial def;
+    QVERIFY(def.label().isNull());
+    QVERIFY(def.context().isNull());
+    QVERIFY(def.value().isNull());
+    QCOMPARE(def.requestedSize(), 0);
+    QVERIFY(!def.isValid());
+
     QSslKeyingMaterial entry(QByteArray(), 1);
     QCOMPARE(entry.label(), QByteArray());
     QVERIFY(entry.context().isNull());
