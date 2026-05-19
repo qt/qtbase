@@ -1165,6 +1165,46 @@ bool TlsCryptographSchannel::acquireCredentialsHandle()
                                            &expiration // ptsExpir
     );
 
+#ifdef QT_WIN_SERVER_2016_COMPAT
+    if (status == SEC_E_UNKNOWN_CREDENTIALS) {
+        if (!ciphers.isEmpty()) {
+            qCWarning(lcTlsBackendSchannel,
+                      "Cipher suite restrictions are not supported by the "
+                      "Windows Server 2016 compatibility fallback");
+            setErrorAndEmit(d, QAbstractSocket::SslInternalError, schannelErrorToString(status));
+            return false;
+        }
+
+        SCHANNEL_CRED credentialsV4 = { SCHANNEL_CRED_VERSION,
+                                        certsCount,
+                                        &localCertificate,
+                                        nullptr,
+                                        0,
+                                        nullptr,
+                                        0,
+                                        nullptr,
+                                        protocols,
+                                        0,
+                                        0,
+                                        0,
+                                        SCH_CRED_REVOCATION_CHECK_CHAIN_EXCLUDE_ROOT
+                                                | defaultCredsFlag(),
+                                        0 };
+
+        status = AcquireCredentialsHandle(nullptr, // pszPrincipal (unused)
+                                          const_cast<wchar_t *>(UNISP_NAME), // pszPackage
+                                          isClient ? SECPKG_CRED_OUTBOUND
+                                                   : SECPKG_CRED_INBOUND, // fCredentialUse
+                                          nullptr, // pvLogonID (unused)
+                                          &credentialsV4, // pAuthData
+                                          nullptr, // pGetKeyFn (unused)
+                                          nullptr, // pvGetKeyArgument (unused)
+                                          &credentialHandle, // phCredential
+                                          &expiration // ptsExpir
+        );
+    }
+#endif
+
     if (status != SEC_E_OK) {
         setErrorAndEmit(d, QAbstractSocket::SslInternalError, schannelErrorToString(status));
         return false;
