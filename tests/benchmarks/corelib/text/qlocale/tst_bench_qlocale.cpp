@@ -39,6 +39,8 @@ private Q_SLOTS:
     void toDouble();
     void toDate_data();
     void toDate();
+    void toTime_data();
+    void toTime();
 };
 
 static QString data()
@@ -752,6 +754,44 @@ void tst_QLocale::toDate()
         d = loc.toDate(input, format, calendar, baseYear);
     }
     QVERIFY(d.isValid());
+}
+
+void tst_QLocale::toTime_data()
+{
+    QTest::addColumn<QString>("input");
+    QTest::addColumn<QString>("format");
+    QTest::addColumn<QString>("locale");
+
+    // C locale
+    QTest::newRow("h:m:s.z AP(C)") << "1:2:3.4 PM" << "h:m:s.z AP" << "C";
+    QTest::newRow("hh&mm&ss.zz A(C)") << "01&02&03.44 PM" << "hh&mm&ss.zz A" << "C";
+    QTest::newRow("HmszzzAp(C)") << "1323444pm" << "HmszzzAp" << "C";
+    QTest::newRow("HH/mm/ss.zzz a(C)") << "13/02/03.444 pm" << "HH/mm/ss.zzz a" << "C";
+    QTest::newRow("hh mm aP(C)") << "11 59 pm" << "hh mm aP" << "C";
+    QTest::newRow("HH-mm-ss ap(C)") << "23-59-58 pm" << "HH-mm-ss ap" << "C";
+
+    // de-DE locale
+    QTest::newRow("h:m:s.z AP(de-DE)") << "1:2:3.4 PM" << "h:m:s.z AP" << "de-DE";
+    QTest::newRow("hh&mm&ss.zz A(de-DE)") << "01&02&03.44 PM" << "hh&mm&ss.zz A" << "de-DE";
+    QTest::newRow("HmszzzAp(de-DE)") << "1323444pm" << "HmszzzAp" << "de-DE";
+    QTest::newRow("HH/mm/ss.zzz a(de-DE)") << "13/02/03.444 pm" << "HH/mm/ss.zzz a" << "de-DE";
+    QTest::newRow("hh mm aP(de-DE)") << "11 59 pm" << "hh mm aP" << "de-DE";
+    QTest::newRow("HH-mm-ss ap(de-DE)") << "23-59-58 pm" << "HH-mm-ss ap" << "de-DE";
+}
+
+void tst_QLocale::toTime()
+{
+    QFETCH(QString, input);
+    QFETCH(QString, format);
+    QFETCH(QString, locale);
+
+    QLocale loc(locale);
+
+    QTime t;
+    QBENCHMARK {
+        t = loc.toTime(input, format);
+    }
+    QVERIFY(t.isValid());
 }
 
 QTEST_MAIN(tst_QLocale)
