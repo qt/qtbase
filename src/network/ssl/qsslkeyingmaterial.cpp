@@ -24,6 +24,7 @@ QT_IMPL_METATYPE_EXTERN(QSslKeyingMaterial)
     \ingroup network
     \ingroup ssl
     \inmodule QtNetwork
+    \compares equality
 
     QSslKeyingMaterial represents a request for keying material derived
     from an established TLS connection using the TLS exporter mechanism.
