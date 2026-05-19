@@ -65,7 +65,8 @@ QT_IMPL_METATYPE_EXTERN(QSslKeyingMaterial)
 */
 
 /*!
-    \fn explicit QSslKeyingMaterial::QSslKeyingMaterial(const QByteArray &label, int size, const QByteArray &context) noexcept
+    \fn explicit QSslKeyingMaterial::QSslKeyingMaterial(const QByteArray &label, qsizetype size)
+    \fn explicit QSslKeyingMaterial::QSslKeyingMaterial(const QByteArray &label, qsizetype size, const QByteArray &context)
 
     Constructs a QSslKeyingMaterial object with the given exporter
     \a label, output \a size, and optional \a context.

@@ -20,12 +20,16 @@ class QDebug;
 class QSslKeyingMaterial
 {
 public:
+    explicit QSslKeyingMaterial(const QByteArray &label, qsizetype size)
+        : keyingLabel(label)
+        , keyingValueSize(size)
+    {
+    }
     explicit QSslKeyingMaterial(const QByteArray &label,
                                 qsizetype size,
-                                const QByteArray &context = QByteArray()) noexcept
+                                const QByteArray &context)
         : keyingLabel(label)
         , keyingContext(context)
-        , keyingValue()
         , keyingValueSize(size)
     {
     }
