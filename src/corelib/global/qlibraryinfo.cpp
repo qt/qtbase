@@ -24,7 +24,7 @@
 #  include "private/qcore_mac_p.h"
 #endif // Q_OS_DARWIN
 
-#if QT_CONFIG(relocatable) && QT_CONFIG(dlopen) && !QT_CONFIG(framework)
+#if QT_CONFIG(relocatable) && QT_CONFIG(dlopen)
 #    include <dlfcn.h>
 #endif
 
@@ -312,12 +312,21 @@ static QString prefixFromAppDirHelper()
 }
 
 #if QT_CONFIG(relocatable)
-#if !defined(QT_STATIC) && !(defined(Q_OS_DARWIN) && QT_CONFIG(framework)) \
-        && (QT_CONFIG(dlopen) || defined(Q_OS_WIN))
+#if !defined(QT_STATIC) && (QT_CONFIG(dlopen) || defined(Q_OS_WIN))
 static QString prefixFromQtCoreLibraryHelper(const QString &qtCoreLibraryPath)
 {
     const QString qtCoreLibrary = QDir::fromNativeSeparators(qtCoreLibraryPath);
-    const QString libDir = QFileInfo(qtCoreLibrary).absolutePath();
+    QString libDir = QFileInfo(qtCoreLibrary).absolutePath();
+
+#if QT_CONFIG(framework)
+# if defined(Q_OS_MACOS)
+    // The library in a macOS framework lives in a `Versions/A/` subdirectory
+    libDir += "/../.."_L1;
+# endif
+    // And both macOS and iOS frameworks are `.framework` bundle directories
+    libDir += "/.."_L1;
+#endif
+
     const QString prefixDir = libDir + "/" QT_CONFIGURE_LIBLOCATION_TO_PREFIX_PATH;
     return QDir::cleanPath(prefixDir);
 }
@@ -338,7 +347,7 @@ static QString getRelocatablePrefix(QLibraryInfoPrivate::UsageMode usageMode)
 {
     QString prefixPath;
 
-    // For static builds, the prefix will be the app directory.
+    // For static builds, the prefix will be the app directory, unless it's a non-sandboxed Apple app.
     // For regular builds, the prefix will be relative to the location of the QtCore shared library.
 #if defined(QT_STATIC)
     prefixPath = prefixFromAppDirHelper();
@@ -348,45 +357,6 @@ static QString getRelocatablePrefix(QLibraryInfoPrivate::UsageMode usageMode)
         constexpr size_t binDirLength = binDir.size() + 1;
         prefixPath.chop(binDirLength);
     }
-#elif defined(Q_OS_DARWIN) && QT_CONFIG(framework)
-    Q_UNUSED(usageMode);
-#ifndef QT_LIBINFIX
-    #define QT_LIBINFIX ""
-#endif
-    auto qtCoreBundle = CFBundleGetBundleWithIdentifier(CFSTR("org.qt-project.QtCore" QT_LIBINFIX));
-    if (!qtCoreBundle) {
-        // When running Qt apps over Samba shares, CoreFoundation will fail to find
-        // the Resources directory inside the bundle, This directory is a symlink,
-        // and CF relies on readdir() and dtent.dt_type to detect symlinks, which
-        // does not work reliably for Samba shares. We work around it by manually
-        // looking for the QtCore bundle.
-        auto allBundles = CFBundleGetAllBundles();
-        auto bundleCount = CFArrayGetCount(allBundles);
-        for (int i = 0; i < bundleCount; ++i) {
-            auto bundle = CFBundleRef(CFArrayGetValueAtIndex(allBundles, i));
-            auto url = QCFType<CFURLRef>(CFBundleCopyBundleURL(bundle));
-            auto path = QCFType<CFStringRef>(CFURLCopyFileSystemPath(url, kCFURLPOSIXPathStyle));
-            if (CFStringHasSuffix(path, CFSTR("/QtCore" QT_LIBINFIX ".framework"))) {
-                qtCoreBundle = bundle;
-                break;
-            }
-        }
-    }
-    Q_ASSERT(qtCoreBundle);
-
-    QCFType<CFURLRef> qtCorePath = CFBundleCopyBundleURL(qtCoreBundle);
-    Q_ASSERT(qtCorePath);
-
-    QCFType<CFURLRef> qtCorePathAbsolute = CFURLCopyAbsoluteURL(qtCorePath);
-    Q_ASSERT(qtCorePathAbsolute);
-
-    QCFType<CFURLRef> libDirCFPath = CFURLCreateCopyDeletingLastPathComponent(NULL, qtCorePathAbsolute);
-
-    const QCFString libDirCFString = CFURLCopyFileSystemPath(libDirCFPath, kCFURLPOSIXPathStyle);
-
-    const QString prefixDir = QString(libDirCFString) + "/" QT_CONFIGURE_LIBLOCATION_TO_PREFIX_PATH;
-
-    prefixPath = QDir::cleanPath(prefixDir);
 #elif defined(Q_OS_WASM)
     // Emscripten expects to find shared libraries at the root of the in-memory
     // file system when resolving dependencies for for dlopen() calls. So that's
