@@ -3348,6 +3348,9 @@ void tst_QWindow::childGeometryAfterReparent()
     if (QGuiApplication::platformName() == QStringLiteral("xcb"))
         QSKIP("Behavior currently broken on X11: QTBUG-143664");
 
+    if (isPlatformWayland())
+        QSKIP("Wayland: cannot move windows; geometry's position invalid after reparent");
+
 #ifdef Q_OS_ANDROID
     QSKIP("Fails on Android. QTBUG-105201");
 #endif
