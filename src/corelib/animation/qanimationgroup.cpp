@@ -134,6 +134,12 @@ int QAnimationGroup::indexOfAnimation(QAbstractAnimation *animation) const
 
     \note The group takes ownership of the animation.
 
+//! [animation-loop]
+    \warning This method does not check for animation loops. It's the
+    developer's responsibility to make sure that the added \a animation does not
+    include \c {this} animation group directly or indirectly.
+//! [animation-loop]
+
     \sa removeAnimation()
 */
 void QAnimationGroup::addAnimation(QAbstractAnimation *animation)
@@ -148,6 +154,8 @@ void QAnimationGroup::addAnimation(QAbstractAnimation *animation)
     If \a index is animationCount(), the animation is inserted at the end.
 
     \note The group takes ownership of the animation.
+
+    \include qanimationgroup.cpp animation-loop
 
     \sa takeAnimation(), addAnimation(), indexOfAnimation(), removeAnimation()
 */
