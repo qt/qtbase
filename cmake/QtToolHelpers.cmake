@@ -842,7 +842,14 @@ function(qt_check_if_tools_will_be_built)
         endif()
         if(QT_FORCE_BUILD_TOOLS)
             set(will_build_tools TRUE)
-            set(need_target_rename TRUE)
+            # Target renaming exists so locally built tools (Qt6::moc_native)
+            # don't collide with imported host tools (Qt6::moc). With no host
+            # install in scope there is nothing to collide with, and renaming
+            # would push qt_internal_find_tool into a host-package search
+            # that has nothing to find.
+            if(QT_HOST_PATH OR QT_FORCE_FIND_TOOLS)
+                set(need_target_rename TRUE)
+            endif()
         endif()
     endif()
 
