@@ -205,6 +205,22 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QMacAccessibilityElement);
     return traits;
 }
 
+- (UIAccessibilityExpandedStatus)accessibilityExpandedStatus
+{
+    QAccessibleInterface *iface = QAccessible::accessibleInterface(self.axid);
+    if (!iface || !iface->isValid()) {
+        qWarning() << "invalid accessible interface for: " << self.axid;
+        return UIAccessibilityExpandedStatusUnsupported;
+    }
+
+    QAccessible::State state = iface->state();
+    if (!state.expandable)
+        return UIAccessibilityExpandedStatusUnsupported;
+
+    return state.expanded ? UIAccessibilityExpandedStatusExpanded
+                          : UIAccessibilityExpandedStatusCollapsed;
+}
+
 - (BOOL)accessibilityActivate
 {
     QAccessibleInterface *iface = QAccessible::accessibleInterface(self.axid);
