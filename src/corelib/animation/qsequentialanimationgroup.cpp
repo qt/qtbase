@@ -40,8 +40,25 @@
 #include "qpauseanimation.h"
 
 #include <QtCore/qdebug.h>
+#include <QtCore/qnumeric.h>
 
 QT_BEGIN_NAMESPACE
+
+namespace {
+
+/*!
+    \internal
+    Returns INT_MAX in case of overflow
+*/
+int addSaturating(int a, int b)
+{
+    int r;
+    if (qAddOverflow(a, b, &r))
+        return std::numeric_limits<int>::max();
+    return r;
+}
+
+} // namespace
 
 typedef QList<QAbstractAnimation *>::ConstIterator AnimationListConstIt;
 
@@ -84,14 +101,15 @@ QSequentialAnimationGroupPrivate::AnimationIndex QSequentialAnimationGroupPrivat
         // 2. it ends after msecs
         // 3. it is the last animation (this can happen in case there is at least 1 uncontrolled animation)
         // 4. it ends exactly in msecs and the direction is backwards
-        if (duration == -1 || currentTime < (ret.timeOffset + duration)
-            || (currentTime == (ret.timeOffset + duration) && direction == QAbstractAnimation::Backward)) {
+        const int offsetPlusDuration = addSaturating(ret.timeOffset, duration);
+        if (duration == -1 || currentTime < offsetPlusDuration
+            || (currentTime == offsetPlusDuration && direction == QAbstractAnimation::Backward)) {
             ret.index = i;
             return ret;
         }
 
         // 'animation' has a non-null defined duration and is not the one at time 'msecs'.
-        ret.timeOffset += duration;
+        ret.timeOffset = offsetPlusDuration;
     }
 
     // this can only happen when one of those conditions is true:
@@ -284,7 +302,8 @@ int QSequentialAnimationGroup::duration() const
         if (currentDuration == -1)
             return -1; // Undetermined length
 
-        ret += currentDuration;
+        if (qAddOverflow(ret, currentDuration, &ret))
+            return std::numeric_limits<int>::max();
     }
 
     return ret;
@@ -324,7 +343,9 @@ void QSequentialAnimationGroup::updateCurrentTime(int currentTime)
         d->currentAnimation->setCurrentTime(newCurrentTime);
         if (d->atEnd()) {
             //we make sure that we don't exceed the duration here
-            d->currentTime += QAbstractAnimationPrivate::get(d->currentAnimation)->totalCurrentTime - newCurrentTime;
+            const int diff =
+                    QAbstractAnimationPrivate::get(d->currentAnimation)->totalCurrentTime - newCurrentTime;
+            d->currentTime = addSaturating(d->currentTime, diff);
             stop();
         }
     } else {
@@ -532,17 +553,19 @@ void QSequentialAnimationGroupPrivate::animationRemoved(qsizetype index, QAbstra
     currentTime = 0;
     for (qsizetype i = 0; i < currentAnimationIndex; ++i) {
         const int current = animationActualTotalDuration(i);
-        currentTime += current;
+        currentTime = addSaturating(currentTime, current);
     }
 
     if (currentIndex != -1) {
         //the current animation is not the one being removed
         //so we add its current time to the current time of this group
-        currentTime += QAbstractAnimationPrivate::get(currentAnimation)->totalCurrentTime;
+        const int currAnimTotalTime =
+                QAbstractAnimationPrivate::get(currentAnimation)->totalCurrentTime;
+        currentTime = addSaturating(currentTime, currAnimTotalTime);
     }
 
     //let's also update the total current time
-    totalCurrentTime = currentTime + loopCount * q->duration();
+    totalCurrentTime = addSaturating(currentTime, q->totalDuration());
 }
 
 QT_END_NAMESPACE
