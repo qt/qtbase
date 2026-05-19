@@ -6,6 +6,9 @@
 #define QSSLKEYINGMATERIAL_H
 
 #include <QtNetwork/qtnetworkglobal.h>
+
+QT_REQUIRE_CONFIG(ssl);
+
 #include <QtCore/QString>
 #include <QtCore/QMetaType>
 
