@@ -91,6 +91,13 @@ QT_IMPL_METATYPE_EXTERN(QSslKeyingMaterial)
     The keying material itself is not generated until a TLS handshake
     has completed successfully.
 
+    \note Under TLS 1.2 (RFC 5705), a null context and an empty (non-null)
+    context produce different keying material: the context length field is
+    omitted entirely when no context is present, yielding a different PRF
+    input. Under TLS 1.3 (RFC 8446), an absent context and an empty context
+    are defined to be equivalent and produce the same keying material.
+    Use \l{QByteArray::isNull()} to distinguish them.
+
     \sa isValid(), label(), context(), value()
 */
 
@@ -126,7 +133,8 @@ QT_IMPL_METATYPE_EXTERN(QSslKeyingMaterial)
     application-specific data and helps prevent accidental reuse of
     identical keys across different purposes.
 
-    If no context was specified, an empty QByteArray is returned.
+    If no context was specified, a null/empty QByteArray is returned (see
+   \l{QSslKeyingMaterial::QSslKeyingMaterial()}).
 
     \sa label(), value()
 */
@@ -143,7 +151,7 @@ QT_IMPL_METATYPE_EXTERN(QSslKeyingMaterial)
     backend does not support key exporters, this function returns an
     empty value.
 
-    \note The contents of the returned keying material are#
+    \note The contents of the returned keying material are
           security-sensitive and must be handled with care.
 
     \sa label(), context(), requestedSize()
