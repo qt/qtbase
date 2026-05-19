@@ -48,6 +48,8 @@ public:
     void send_selection(::wl_resource *resource) = delete;
     void sendSelection(DataOffer *offer);
 
+    void clearSelection(::wl_client *client);
+
     void send_enter(uint32_t serial, ::wl_resource *surface, wl_fixed_t x, wl_fixed_t y, ::wl_resource *id) = delete;
     void sendEnter(Surface *surface, const QPoint& position);
 

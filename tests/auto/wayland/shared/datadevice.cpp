@@ -67,6 +67,12 @@ void DataDevice::sendSelection(DataOffer *offer)
     m_sentSelectionOffers << offer;
 }
 
+void DataDevice::clearSelection(wl_client *client)
+{
+    for (auto *resource : resourceMap().values(client))
+        wl_data_device::send_selection(resource->handle, nullptr);
+}
+
 void DataDevice::sendEnter(Surface *surface, const QPoint &position)
 {
     uint serial = m_manager->m_compositor->nextSerial();
