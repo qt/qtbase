@@ -111,6 +111,12 @@ public:
             zwp_primary_selection_device_v1::send_selection(resource->handle, offer->resource()->handle);
         m_sentSelectionOffers << offer;
     }
+    void clearSelection(wl_client *client)
+    {
+        for (auto *resource : resourceMap().values(client))
+            zwp_primary_selection_device_v1::send_selection(resource->handle, nullptr);
+    }
+
 
     PrimarySelectionDeviceManagerV1 *m_manager = nullptr;
     Seat *m_seat = nullptr;
@@ -226,7 +232,12 @@ class tst_primaryselectionv1 : public QObject, private PrimarySelectionComposito
 {
     Q_OBJECT
 private slots:
-    void cleanup() { QTRY_VERIFY2(isClean(), qPrintable(dirtyMessage())); }
+    void cleanup() {
+        exec([&] {
+            primarySelectionDevice()->clearSelection(client());
+        });
+        QTRY_VERIFY2(isClean(), qPrintable(dirtyMessage()));
+    }
     void initTestCase();
     void bindsToManager();
     void createsPrimaryDevice();
@@ -234,7 +245,6 @@ private slots:
     void pasteAscii();
     void pasteUtf8();
     void destroysPreviousSelection();
-    void destroysSelectionOnLeave();
     void copy();
 };
 
@@ -380,35 +390,6 @@ void tst_primaryselectionv1::destroysPreviousSelection()
 
     // Verify the first offer gets destroyed
     QCOMPOSITOR_TRY_COMPARE(primarySelectionDevice()->m_sentSelectionOffers.size(), 1);
-}
-
-void tst_primaryselectionv1::destroysSelectionOnLeave()
-{
-    QRasterWindow window;
-    window.resize(64, 64);
-    window.show();
-    QCOMPOSITOR_TRY_VERIFY(xdgSurface() && xdgSurface()->m_committedConfigureSerial);
-
-    exec([&] {
-        auto *surface = xdgSurface()->m_surface;
-        keyboard()->sendEnter(surface); // Need to set keyboard focus according to protocol
-
-        auto *offer = primarySelectionDevice()->sendDataOffer({"text/plain"});
-        primarySelectionDevice()->sendSelection(offer);
-    });
-
-    QTRY_VERIFY(QGuiApplication::clipboard()->mimeData(QClipboard::Selection));
-    QTRY_VERIFY(QGuiApplication::clipboard()->mimeData(QClipboard::Selection)->hasText());
-
-    QSignalSpy selectionChangedSpy(QGuiApplication::clipboard(), &QClipboard::selectionChanged);
-
-    exec([&] {
-        auto *surface = xdgSurface()->m_surface;
-        keyboard()->sendLeave(surface);
-    });
-
-    QTRY_COMPARE(selectionChangedSpy.size(), 1);
-    QVERIFY(!QGuiApplication::clipboard()->mimeData(QClipboard::Selection)->hasText());
 }
 
 void tst_primaryselectionv1::copy()

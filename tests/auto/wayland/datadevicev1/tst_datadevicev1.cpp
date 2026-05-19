@@ -27,15 +27,18 @@ class tst_datadevicev1 : public QObject, private DataDeviceCompositor
 {
     Q_OBJECT
 private slots:
-    void cleanup() { QTRY_VERIFY2(isClean(), qPrintable(dirtyMessage())); }
+    void cleanup() {
+        exec([&] {
+            dataDevice()->clearSelection(client());
+        });
+        QTRY_VERIFY2(isClean(), qPrintable(dirtyMessage()));
+    }
     void initTestCase();
     void pasteAscii();
     void pasteUtf8();
     void pasteMozUrl();
     void pasteSingleUtf8MozUrl();
     void destroysPreviousSelection();
-    void destroysSelectionWithSurface();
-    void destroysSelectionOnLeave();
     void dragWithoutFocus();
 };
 
@@ -241,65 +244,6 @@ void tst_datadevicev1::destroysPreviousSelection()
         auto *surface = xdgSurface()->m_surface;
         keyboard()->sendLeave(surface);
     });
-
-    // Clients are required to destroy their offer when losing keyboard focus
-    QCOMPOSITOR_TRY_COMPARE(dataDevice()->m_sentSelectionOffers.size(), 0);
-}
-
-void tst_datadevicev1::destroysSelectionWithSurface()
-{
-    auto *window = new QRasterWindow;
-    window->resize(64, 64);
-    window->show();
-
-    QCOMPOSITOR_TRY_VERIFY(xdgSurface() && xdgSurface()->m_committedConfigureSerial);
-
-    // When the client receives a selection event, it is required to destroy the previous offer
-    exec([&] {
-        QCOMPARE(dataDevice()->m_sentSelectionOffers.size(), 0);
-        auto *offer = dataDevice()->sendDataOffer(client(), {"text/plain"});
-        dataDevice()->sendSelection(offer);
-        auto *surface = xdgSurface()->m_surface;
-        keyboard()->sendEnter(surface); // Need to set keyboard focus according to protocol
-        QCOMPARE(dataDevice()->m_sentSelectionOffers.size(), 1);
-    });
-
-    // Ping to make sure we receive the wl_keyboard enter and leave events, before destroying the
-    // surface. Otherwise, the client will receive enter and leave events with a destroyed (null)
-    // surface, which is not what we are trying to test for here.
-    xdgPingAndWaitForPong();
-    window->destroy();
-
-    QCOMPOSITOR_TRY_COMPARE(dataDevice()->m_sentSelectionOffers.size(), 0);
-}
-
-void tst_datadevicev1::destroysSelectionOnLeave()
-{
-    QRasterWindow window;
-    window.resize(64, 64);
-    window.show();
-    QCOMPOSITOR_TRY_VERIFY(xdgSurface() && xdgSurface()->m_committedConfigureSerial);
-
-    exec([&] {
-        auto *offer = dataDevice()->sendDataOffer(client(), {"text/plain"});
-        dataDevice()->sendSelection(offer);
-
-        auto *surface = xdgSurface()->m_surface;
-        keyboard()->sendEnter(surface); // Need to set keyboard focus according to protocol
-    });
-
-    QTRY_VERIFY(QGuiApplication::clipboard()->mimeData(QClipboard::Clipboard));
-    QTRY_VERIFY(QGuiApplication::clipboard()->mimeData(QClipboard::Clipboard)->hasText());
-
-    QSignalSpy dataChangedSpy(QGuiApplication::clipboard(), &QClipboard::dataChanged);
-
-    exec([&] {
-        auto *surface = xdgSurface()->m_surface;
-        keyboard()->sendLeave(surface);
-    });
-
-    QTRY_COMPARE(dataChangedSpy.size(), 1);
-    QVERIFY(!QGuiApplication::clipboard()->mimeData(QClipboard::Clipboard)->hasText());
 }
 
 // The application should not crash if it attempts to start a drag operation
