@@ -654,8 +654,14 @@ int main(void)
 )
 
 # cpp_winrt
+set(_cpp_winrt_compile_options "")
+if(MSVC AND MSVC_VERSION GREATER_EQUAL 1950)
+    list(APPEND _cpp_winrt_compile_options /await:strict)
+endif()
 qt_config_compile_test(cpp_winrt
     LABEL "cpp/winrt"
+    COMPILE_OPTIONS
+        ${_cpp_winrt_compile_options}
     LIBRARIES
         runtimeobject
     CODE
