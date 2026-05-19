@@ -14,6 +14,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 Q_STATIC_LOGGING_CATEGORY(lcQpaScreenUpdates, "qt.qpa.screen.updates", QtCriticalMsg);
 
 class QDxgiVSyncThread : public QThread
@@ -40,6 +42,8 @@ QDxgiVSyncThread::QDxgiVSyncThread(IDXGIOutput *output, float vsyncIntervalMsRep
       vsyncIntervalMsReportedForScreen(vsyncIntervalMsReportedForScreen),
       callback(callback)
 {
+    QThread::setObjectName(u"QDxgiVSyncThread"_s);
+
     DXGI_OUTPUT_DESC desc;
     output->GetDesc(&desc);
     monitor = desc.Monitor;
