@@ -50,9 +50,6 @@ instructions:
       condition: runtime
       env_var: CMAKE_BUILD_OUTPUT_TIMEOUT
       equals_value: null
-
-  - !include "{{qt/qtbase}}/run_early_source_sbom_check.yaml"
-
   - type: ExecuteCommand
     command: "{{.Env.CONFIGURE_ENV_PREFIX}} cmake --build . --parallel -v"
     maxTimeInSeconds: "{{.Env.CMAKE_BUILD_TIMEOUT}}"
