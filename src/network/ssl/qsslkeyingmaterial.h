@@ -15,6 +15,8 @@ namespace QTlsPrivate {
 class TlsCryptographOpenSSL;
 }
 
+class QDebug;
+
 class QSslKeyingMaterial
 {
 public:
@@ -74,14 +76,12 @@ private:
         return qHashMulti(seed, material.keyingLabel, material.keyingContext, material.keyingValue,
                           material.keyingValueSize);
     }
+#ifndef QT_NO_DEBUG_STREAM
+    friend Q_NETWORK_EXPORT QDebug operator<<(QDebug debug, const QSslKeyingMaterial &keying);
+#endif // QT_NO_DEBUG_STREAM
+
     friend class QTlsPrivate::TlsCryptographOpenSSL;
 };
-
-#ifndef QT_NO_DEBUG_STREAM
-class QDebug;
-Q_NETWORK_EXPORT QDebug operator<<(QDebug debug, const QSslKeyingMaterial &curve);
-#endif
-
 
 QT_END_NAMESPACE
 
