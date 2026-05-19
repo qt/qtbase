@@ -23,8 +23,6 @@ instructions:
     variableValue: "{{.Env.ENV_PREFIX}}"
   - !include "{{qt/qtbase}}/call_configure_qtbase.yaml"
 
-  - !include "{{qt/qtbase}}/run_early_source_sbom_check.yaml"
-
   - type: ExecuteCommand
     command: "{{.Env.CONFIGURE_ENV_PREFIX}} cmake --build . --parallel -v"
     maxTimeInSeconds: 6000
