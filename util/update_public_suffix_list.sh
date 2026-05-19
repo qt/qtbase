@@ -2,7 +2,7 @@
 # Copyright (C) 2023 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
-PICK_TO_BRANCHES="6.11 6.10 6.8 6.5 5.15"
+PICK_TO_BRANCHES="6.11 6.8 6.5 5.15"
 UPSTREAM=https://publicsuffix.org/list/public_suffix_list.dat
 
 THIS="util/update_public_suffix_list.sh"
