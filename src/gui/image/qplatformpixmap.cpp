@@ -47,12 +47,15 @@ QPlatformPixmap::QPlatformPixmap(PixelType pixelType, int objectId)
 
 QPlatformPixmap::~QPlatformPixmap()
 {
-    // Sometimes the pixmap cleanup hooks will be called from derived classes, which will
-    // then set is_cached to false. For example, on X11 Qt GUI needs to delete the GLXPixmap
-    // or EGL Pixmap Surface for a given pixmap _before_ the native X11 pixmap is deleted,
-    // otherwise some drivers will leak the GL surface. In this case, QX11PlatformPixmap will
-    // call the cleanup hooks itself before deleting the native pixmap and set is_cached to
-    // false.
+    callDestructionHooks();
+}
+
+// Sometimes derived classes need the cache cleanup / destruction hooks to be executed _before_
+// deleting their native pixmap handles. Such classes can call this function from their own
+// destructor. The is_cached guard ensures the hooks are only executed once even though both the
+// derived and base destructors call this function.
+void QPlatformPixmap::callDestructionHooks()
+{
     if (is_cached) {
         QImagePixmapCleanupHooks::executePlatformPixmapDestructionHooks(this);
         is_cached = false;

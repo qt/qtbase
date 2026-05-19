@@ -4454,7 +4454,6 @@ int QImage::metric(PaintDeviceMetric metric) const
                         trigy += m12;
         // END OF MACRO
 
-static
 bool qt_xForm_helper(const QTransform &trueMat, int xoffset, int type, int depth,
                      uchar *dptr, qsizetype dbpl, int p_inc, int dHeight,
                      const uchar *sptr, qsizetype sbpl, int sWidth, int sHeight)

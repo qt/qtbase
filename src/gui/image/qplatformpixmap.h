@@ -105,6 +105,7 @@ protected:
 
     void setSerialNumber(int serNo);
     void setDetachNumber(int detNo);
+    void callDestructionHooks();
     int w;
     int h;
     int d;
