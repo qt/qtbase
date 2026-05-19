@@ -662,6 +662,27 @@ void tst_QLocale::toDate_data()
     QTest::newRow("dddd yyyy MMMM dd+Gregorian+de-DE")
         << "Sonntag 2024 September 01" << "dddd yyyy MMMM dd" << greg << 2000 << "de-DE";
 
+    QTest::newRow("d.M.yy+Gregorian+ccp-IN")
+        << "𑄷.𑄿.𑄸𑄺" << "d.M.yy" << greg << 2000 << "ccp-IN";
+    QTest::newRow("dd/MM/yyyy+Gregorian+ccp-IN")
+        << "𑄶𑄷/𑄶𑄿/𑄸𑄶𑄸𑄺" << "dd/MM/yyyy" << greg << 2000 << "ccp-IN";
+    QTest::newRow("ddd d-MMM-yy+Gregorian+ccp-IN")
+        << "𑄢𑄧𑄝𑄨 𑄷-𑄥𑄬𑄛𑄴𑄑𑄬𑄟𑄴𑄝𑄧𑄢𑄴-𑄸𑄺" << "ddd d-MMM-yy"
+        << greg << 2000 << "ccp-I";
+    QTest::newRow("dddd dd MMMM yyyy+Gregorian+ccp-IN")
+        << "𑄢𑄧𑄝𑄨𑄝𑄢𑄴 𑄶𑄷 𑄥𑄬𑄛𑄴𑄑𑄬𑄟𑄴𑄝𑄧𑄢𑄴 𑄸𑄶𑄸𑄺" << "dddd dd MMMM yyyy"
+        << greg << 2000 << "ccp-IN";
+   QTest::newRow("yy.M.d+Gregorian+ccp-IN")
+        << "𑄸𑄺.𑄿.𑄷" << "yy.M.d" << greg << 2000 << "ccp-IN";
+    QTest::newRow("yyyy/MM/dd+Gregorian+ccp-IN")
+        << "𑄸𑄶𑄸𑄺/𑄶𑄿/𑄶𑄷" << "yyyy/MM/dd" << greg << 2000 << "ccp-IN";
+    QTest::newRow("ddd yy-MMM-d+Gregorian+ccp-IN")
+        << "𑄢𑄧𑄝𑄨 𑄸𑄺-𑄥𑄬𑄛𑄴𑄑𑄬𑄟𑄴𑄝𑄧𑄢𑄴-𑄷" << "ddd yy-MMM-d"
+        << greg << 2000 << "ccp-I";
+    QTest::newRow("dddd yyyy MMMM dd+Gregorian+ccp-IN")
+        << "𑄢𑄧𑄝𑄨𑄝𑄢𑄴 𑄸𑄶𑄸𑄺 𑄥𑄬𑄛𑄴𑄑𑄬𑄟𑄴𑄝𑄧𑄢𑄴 𑄶𑄷" << "dddd yyyy MMMM dd"
+        << greg << 2000 << "ccp-IN";
+
 #if QT_CONFIG(islamiccivilcalendar)
     const QCalendar isci(QCalendar::System::IslamicCivil);
 
@@ -698,6 +719,25 @@ void tst_QLocale::toDate_data()
         << "Mi. 24-Ram.-1" << "ddd yy-MMM-d" << isci << 2000 << "de-DE";
     QTest::newRow("dddd yyyy MMMM dd+IslamicCivil+de-DE")
         << "Mittwoch 2024 Ramadan 01" << "dddd yyyy MMMM dd" << isci << 2000 << "de-DE";
+
+    QTest::newRow("d.M.yy+IslamicCivil+ccp-IN")
+        << "𑄷.𑄿.𑄸𑄺" << "d.M.yy" << isci << 2000 << "ccp-IN";
+    QTest::newRow("dd/MM/yyyy+IslamicCivil+ccp-IN")
+        << "𑄶𑄷/𑄶𑄿/𑄸𑄶𑄸𑄺" << "dd/MM/yyyy" << isci << 2000 << "ccp-IN";
+    QTest::newRow("ddd d-MMM-yy+IslamicCivil+ccp-IN")
+        << "𑄝𑄪𑄖𑄴 𑄷-Ram.-𑄸𑄺" << "ddd d-MMM-yy" << isci << 2000 << "ccp-IN";
+    QTest::newRow("dddd dd MMMM yyyy+IslamicCivil+ccp-IN")
+        << "𑄝𑄪𑄖𑄴𑄝𑄢𑄴 𑄶𑄷 𑄢𑄧𑄟𑄴𑄎𑄚𑄴 𑄸𑄶𑄸𑄺" << "dddd dd MMMM yyyy"
+        << isci << 2000 << "ccp-N";
+    QTest::newRow("yy.M.d+IslamicCivil+ccp-IN")
+        << "𑄸𑄺.𑄿.𑄷" << "yy.M.d" << isci << 2000 << "ccp-IN";
+    QTest::newRow("yyyy/MM/dd+IslamicCivil+ccp-IN")
+        << "𑄸𑄶𑄸𑄺/𑄶𑄿/𑄶𑄷" << "yyyy/MM/dd" << isci << 2000 << "ccp-IN";
+    QTest::newRow("ddd yy-MMM-d+IslamicCivil+ccp-IN")
+        << "𑄝𑄪𑄖𑄴 𑄸𑄺-Ram.-𑄷" << "ddd yy-MMM-d" << isci << 2000 << "ccp-IN";
+    QTest::newRow("dddd yyyy MMMM dd+IslamicCivil+ccp-IN")
+        << "𑄝𑄪𑄖𑄴𑄝𑄢𑄴 𑄸𑄶𑄸𑄺 𑄢𑄧𑄟𑄴𑄎𑄚𑄴 𑄶𑄷" << "dddd yyyy MMMM dd"
+        << isci << 2000 << "ccp-N";
 #endif
 
 #if QT_CONFIG(jalalicalendar)
@@ -736,6 +776,23 @@ void tst_QLocale::toDate_data()
         << "Sa. 24-Āsar-1" << "ddd yy-MMM-d" << jali << 2000 << "de-DE";
     QTest::newRow("dddd yyyy MMMM dd+Jalali+de-DE")
         << "Samstag 2024 Āsar 01" << "dddd yyyy MMMM dd" << jali << 2000 << "de-DE";
+
+    QTest::newRow("d.M.yy+Jalali+ccp-IN")
+        << "𑄷.𑄿.𑄸𑄺" << "d.M.yy" << jali << 2000 << "ccp-IN";
+    QTest::newRow("dd/MM/yyyy+Jalali+ccp-IN")
+        << "𑄶𑄷/𑄶𑄿/𑄸𑄶𑄸𑄺" << "dd/MM/yyyy" << jali << 2000 << "ccp-IN";
+    QTest::newRow("ddd d-MMM-yy+Jalali+ccp-IN")
+        << "𑄥𑄧𑄚𑄨 𑄷-Azar-𑄸𑄺" << "ddd d-MMM-yy" << jali << 2000 << "ccp-IN";
+    QTest::newRow("dddd dd MMMM yyyy+Jalali+ccp-IN")
+        << "𑄥𑄧𑄚𑄨𑄝𑄢𑄴 𑄶𑄷 Azar 𑄸𑄶𑄸𑄺" << "dddd dd MMMM yyyy" << jali << 2000 << "ccp-IN";
+    QTest::newRow("yy.M.d+Jalali+ccp-IN")
+        << "𑄸𑄺.𑄿.𑄷" << "yy.M.d" << jali << 2000 << "ccp-IN";
+    QTest::newRow("yyyy/MM/d+Jalali+ccp-IN")
+        << "𑄸𑄶𑄸𑄺/𑄶𑄿/𑄶𑄷" << "yyyy/MM/dd" << jali << 2000 << "ccp-IN";
+    QTest::newRow("ddd yy-MMM-d+Jalali+ccp-IN")
+        << "𑄥𑄧𑄚𑄨 𑄸𑄺-Azar-𑄷" << "ddd yy-MMM-d" << jali << 2000 << "ccp-IN";
+    QTest::newRow("dddd yyyy MMMM dd+Jalali+ccp-IN")
+        << "𑄥𑄧𑄚𑄨𑄝𑄢𑄴 𑄸𑄶𑄸𑄺 Azar 𑄶𑄷" << "dddd yyyy MMMM dd" << jali << 2000 << "ccp-IN";
 #endif
 }
 
