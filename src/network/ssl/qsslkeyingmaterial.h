@@ -55,6 +55,14 @@ public:
         return keyingValueSize;
     }
 
+    void swap(QSslKeyingMaterial &other) noexcept
+    {
+        keyingLabel.swap(other.keyingLabel);
+        keyingContext.swap(other.keyingContext);
+        keyingValue.swap(other.keyingValue);
+        std::swap(keyingValueSize, other.keyingValueSize);
+    }
+
 private:
     QByteArray keyingLabel;
     QByteArray keyingContext;
@@ -82,6 +90,8 @@ private:
 
     friend class QTlsPrivate::TlsCryptographOpenSSL;
 };
+
+Q_DECLARE_SHARED(QSslKeyingMaterial)
 
 QT_END_NAMESPACE
 

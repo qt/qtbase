@@ -151,6 +151,11 @@ QT_IMPL_METATYPE_EXTERN(QSslKeyingMaterial)
 */
 
 /*!
+    \fn void QSslKeyingMaterial::swap(QSslKeyingMaterial &other) noexcept
+    \memberswap{keying material}
+*/
+
+/*!
     \fn size_t qHash(const QSslKeyingMaterial &key, size_t seed) noexcept
     \qhashold{QHash}
 */
