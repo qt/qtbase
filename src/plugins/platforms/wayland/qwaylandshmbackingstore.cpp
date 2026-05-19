@@ -347,10 +347,26 @@ QWaylandShmBuffer *QWaylandShmBackingStore::getBuffer(const QSize &size, bool &b
     static const int MAX_AGE = 10 * MAX_BUFFERS;
     bufferWasRecreated = false;
 
-    // Prune buffers that have not been used in a while or with different size.
+    // Prune buffers that have not been used in a while. The front buffer must not be touched
+    // so its data can be copied to new buffers. The back buffer can be pruned but we don't
+    // do it because we will probably need it anyway if the front buffer is used by the compositor.
     for (auto i = mBuffers.size() - 1; i >= 0; --i) {
         QWaylandShmBuffer *buffer = mBuffers[i];
-        if (buffer->age() > MAX_AGE || buffer->size() != size) {
+        if (mBackBuffer == buffer)
+            continue;
+        if (mFrontBuffer == buffer)
+            continue;
+
+        if (buffer->age() > MAX_AGE) {
+            mBuffers.removeAt(i);
+            delete buffer;
+        }
+    }
+
+    // Prune buffers that have mismatching size.
+    for (auto i = mBuffers.size() - 1; i >= 0; --i) {
+        QWaylandShmBuffer *buffer = mBuffers[i];
+        if (buffer->size() != size) {
             mBuffers.removeAt(i);
             if (mBackBuffer == buffer)
                 mBackBuffer = nullptr;
