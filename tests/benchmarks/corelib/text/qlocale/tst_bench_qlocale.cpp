@@ -777,6 +777,16 @@ void tst_QLocale::toTime_data()
     QTest::newRow("HH/mm/ss.zzz a(de-DE)") << "13/02/03.444 pm" << "HH/mm/ss.zzz a" << "de-DE";
     QTest::newRow("hh mm aP(de-DE)") << "11 59 pm" << "hh mm aP" << "de-DE";
     QTest::newRow("HH-mm-ss ap(de-DE)") << "23-59-58 pm" << "HH-mm-ss ap" << "de-DE";
+
+    // ccp-IN locale (non-BMP digits)
+    QTest::newRow("h:m:s.z AP(ccp-IN)") << "𑄷:𑄸:𑄹.𑄺 PM" << "h:m:s.z AP" << "ccp-IN";
+    QTest::newRow("hh&mm&ss.zz A(ccp-IN)")
+        << "𑄶𑄷&𑄶𑄸&𑄶𑄹.𑄺𑄺 PM" << "hh&mm&ss.zz A" << "ccp-IN";
+    QTest::newRow("HmszzzAp(ccp-IN)") << "𑄷𑄸𑄸𑄹𑄺𑄺𑄺pm" << "HmszzzAp" << "ccp-IN";
+    QTest::newRow("HH/mm/ss.zzz a(ccp-IN)")
+        << "𑄷𑄸/𑄶𑄸/𑄶𑄹.𑄺𑄺𑄺 pm" << "HH/mm/ss.zzz a" << "ccp-IN";
+    QTest::newRow("hh mm aP(ccp-IN)") << "𑄷𑄷 𑄻𑄿 pm" << "hh mm aP" << "ccp-IN";
+    QTest::newRow("HH-mm-ss ap(ccp-IN)") << "𑄸𑄹-𑄻𑄿-𑄻𑄾 pm" << "HH-mm-ss ap" << "ccp-IN";
 }
 
 void tst_QLocale::toTime()
