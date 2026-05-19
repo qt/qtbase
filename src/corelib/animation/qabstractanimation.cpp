@@ -119,8 +119,11 @@
 
 #include <QtCore/qmath.h>
 #include <QtCore/qcoreevent.h>
+#include <QtCore/qnumeric.h>
 #include <QtCore/qpointer.h>
 #include <QtCore/qscopedvaluerollback.h>
+
+#include <QtCore/q26numeric.h>
 
 #define DEFAULT_TIMER_INTERVAL 16
 #define PAUSE_TIMER_COARSE_THRESHOLD 2000
@@ -129,6 +132,22 @@ QT_BEGIN_NAMESPACE
 
 typedef QList<QAbstractAnimationTimer*>::ConstIterator TimerListConstIt;
 typedef QList<QAbstractAnimation*>::ConstIterator AnimationListConstIt;
+
+namespace {
+
+/*!
+    \internal
+    Returns INT_MAX in case of overflow.
+*/
+int mulSaturating(int a, int b)
+{
+    int r;
+    if (qMulOverflow(a, b, &r))
+        return std::numeric_limits<int>::max();
+    return r;
+}
+
+} // namespace
 
 /*!
   \class QAbstractAnimationTimer
@@ -577,9 +596,9 @@ void QAnimationTimer::updateAnimationsTime(qint64 delta)
         QScopedValueRollback<bool> guard(insideTick, true);
         for (currentAnimationIdx = 0; currentAnimationIdx < animations.size(); ++currentAnimationIdx) {
             QAbstractAnimation *animation = animations.at(currentAnimationIdx);
-            int elapsed = QAbstractAnimationPrivate::get(animation)->totalCurrentTime
+            qint64 elapsed = QAbstractAnimationPrivate::get(animation)->totalCurrentTime
                           + (animation->direction() == QAbstractAnimation::Forward ? delta : -delta);
-            animation->setCurrentTime(elapsed);
+            animation->setCurrentTime(q26::saturating_cast<int>(elapsed));
         }
         currentAnimationIdx = 0;
     }
@@ -987,7 +1006,8 @@ void QAbstractAnimationPrivate::setState(QAbstractAnimation::State newState)
             q->deleteLater();
 
         if (dura == -1 || loopCount < 0
-            || (oldDirection == QAbstractAnimation::Forward && (oldCurrentTime * (oldCurrentLoop + 1)) == (dura * loopCount))
+            || (oldDirection == QAbstractAnimation::Forward
+                && qint64(oldCurrentTime) * (oldCurrentLoop + 1) == qint64(dura) * loopCount)
             || (oldDirection == QAbstractAnimation::Backward && oldCurrentTime == 0)) {
                 emit q->finished();
         }
@@ -1254,6 +1274,10 @@ QBindable<int> QAbstractAnimation::bindableCurrentLoop() const
     Returns the total and effective duration of the animation, including the
     loop count.
 
+    \note If the loop count is very large, or if the duration of a single loop
+    is too long, the total duration can be too large to fit into an \c {int}.
+    In such case the value is saturated to \c {INT_MAX}.
+
     \sa duration(), currentTime
 */
 int QAbstractAnimation::totalDuration() const
@@ -1264,7 +1288,7 @@ int QAbstractAnimation::totalDuration() const
     int loopcount = loopCount();
     if (loopcount < 0)
         return -1;
-    return dura * loopcount;
+    return mulSaturating(dura, loopcount);
 }
 
 /*!
@@ -1316,7 +1340,8 @@ void QAbstractAnimation::setCurrentTime(int msecs)
     // Calculate new time and loop.
     const int dura = duration();
     const int totalLoopCount = d->loopCount;
-    const int totalDura = dura <= 0 ? dura : ((totalLoopCount < 0) ? -1 : dura * totalLoopCount);
+    const int totalDura = dura <= 0
+            ? dura : ((totalLoopCount < 0) ? -1 : mulSaturating(dura, totalLoopCount));
     if (totalDura != -1)
         msecs = qMin(totalDura, msecs);
 

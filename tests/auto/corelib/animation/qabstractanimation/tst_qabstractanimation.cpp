@@ -21,6 +21,7 @@ private slots:
     void loopCount();
     void state();
     void totalDuration();
+    void finishedNotEmittedOnEarlyStop();
     void avoidJumpAtStart();
     void avoidJumpAtStartWithStop();
     void avoidJumpAtStartWithRunning();
@@ -139,6 +140,33 @@ void tst_QAbstractAnimation::totalDuration()
     QCOMPARE(anim.duration(), 10);
     anim.setLoopCount(5);
     QCOMPARE(anim.totalDuration(), 50);
+
+    // check that it does not overflow
+    const int Max = std::numeric_limits<int>::max();
+    anim.setDuration(Max);
+    QCOMPARE(anim.duration(), Max);
+    QCOMPARE(anim.loopCount(), 5);
+    // 5 * INT_MAX would overflow, but we saturate to INT_MAX
+    QCOMPARE(anim.totalDuration(), Max);
+}
+
+void tst_QAbstractAnimation::finishedNotEmittedOnEarlyStop()
+{
+    // 3 * 1431655766 == 2^32 + 2, which truncates to 2 in a 32-bit int.
+    // In the old implementation of QAbstractAnimationPrivate::setState()
+    // (oldCurrentTime=1) * (oldCurrentLoop+1=2) == 2 matched that
+    // overflowed value, spuriously emitting finished() on a manual stop().
+    TestableQAbstractAnimation anim;
+    anim.setDuration(3);
+    anim.setLoopCount(1431655766);
+
+    QSignalSpy finishedSpy(&anim, &QAbstractAnimation::finished);
+
+    anim.start();
+    anim.setCurrentTime(4); // currentLoop = 1, currentLoopTime = 1
+    anim.stop();            // manual early stop — finished() must NOT fire
+
+    QCOMPARE(finishedSpy.size(), 0);
 }
 
 void tst_QAbstractAnimation::avoidJumpAtStart()
