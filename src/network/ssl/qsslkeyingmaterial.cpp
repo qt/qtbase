@@ -150,6 +150,11 @@ QT_IMPL_METATYPE_EXTERN(QSslKeyingMaterial)
     \sa value()
 */
 
+/*!
+    \fn size_t qHash(const QSslKeyingMaterial &key, size_t seed) noexcept
+    \qhashold{QHash}
+*/
+
 #ifndef QT_NO_DEBUG_STREAM
 /*!
     \relates QSslKeyingMaterial

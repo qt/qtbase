@@ -69,6 +69,11 @@ private:
     }
     Q_DECLARE_EQUALITY_COMPARABLE(QSslKeyingMaterial)
 
+    friend size_t qHash(const QSslKeyingMaterial &material, size_t seed = 0) noexcept
+    {
+        return qHashMulti(seed, material.keyingLabel, material.keyingContext, material.keyingValue,
+                          material.keyingValueSize);
+    }
     friend class QTlsPrivate::TlsCryptographOpenSSL;
 };
 
@@ -77,14 +82,6 @@ class QDebug;
 Q_NETWORK_EXPORT QDebug operator<<(QDebug debug, QSslKeyingMaterial curve);
 #endif
 
-inline size_t qHash(const QSslKeyingMaterial &material, size_t seed = 0)
-{
-    return qHashMulti(seed,
-                      material.label(),
-                      material.context(),
-                      material.value(),
-                      material.requestedSize());
-}
 
 QT_END_NAMESPACE
 
