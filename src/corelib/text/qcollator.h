@@ -48,6 +48,13 @@ private:
 class Q_CORE_EXPORT QCollator
 {
 public:
+    enum class CollationOption {
+        CaseInsensitive = 0x1,
+        IgnorePunctuation = 0x2,
+        NumericSort = 0x4,
+    };
+    Q_DECLARE_FLAGS(CollationOptions, CollationOption)
+
     QCollator();
     explicit QCollator(const QLocale &locale);
     QCollator(const QCollator &);
@@ -71,6 +78,9 @@ public:
 
     void setIgnorePunctuation(bool on);
     bool ignorePunctuation() const;
+
+    void setOptions(CollationOptions options);
+    CollationOptions options() const;
 
     int compare(const QString &s1, const QString &s2) const
     { return compare(QStringView(s1), QStringView(s2)); }
@@ -104,6 +114,7 @@ private:
 
 Q_DECLARE_SHARED(QCollatorSortKey)
 Q_DECLARE_SHARED(QCollator)
+Q_DECLARE_OPERATORS_FOR_FLAGS(QCollator::CollationOptions)
 
 QT_END_NAMESPACE
 

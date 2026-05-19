@@ -43,8 +43,8 @@ void QCollatorPrivate::init()
     // and does case sensitive comparison.
     // UCOL_QUATERNARY is used as default in a few languages such as Japanese to take care of some
     // additional differences in those languages.
-    UColAttributeValue val = (caseSensitivity == Qt::CaseSensitive)
-        ? UCOL_DEFAULT_STRENGTH : UCOL_SECONDARY;
+    UColAttributeValue val = options.testFlag(Opt::CaseInsensitive) ? UCOL_SECONDARY
+                                                                    : UCOL_DEFAULT_STRENGTH;
 
     status = U_ZERO_ERROR;
     ucol_setAttribute(collator, UCOL_STRENGTH, val, &status);
@@ -52,13 +52,15 @@ void QCollatorPrivate::init()
         qWarning("ucol_setAttribute: Case First failed: %d", status);
 
     status = U_ZERO_ERROR;
-    ucol_setAttribute(collator, UCOL_NUMERIC_COLLATION, numericMode ? UCOL_ON : UCOL_OFF, &status);
+    ucol_setAttribute(collator, UCOL_NUMERIC_COLLATION,
+                      options.testFlag(Opt::NumericSort) ? UCOL_ON : UCOL_OFF, &status);
     if (U_FAILURE(status))
         qWarning("ucol_setAttribute: numeric collation failed: %d", status);
 
     status = U_ZERO_ERROR;
     ucol_setAttribute(collator, UCOL_ALTERNATE_HANDLING,
-                      ignorePunctuation ? UCOL_SHIFTED : UCOL_NON_IGNORABLE, &status);
+                      options.testFlag(Opt::IgnorePunctuation) ? UCOL_SHIFTED
+                                                               : UCOL_NON_IGNORABLE, &status);
     if (U_FAILURE(status))
         qWarning("ucol_setAttribute: Alternate handling failed: %d", status);
 
@@ -91,7 +93,7 @@ int QCollator::compare(QStringView s1, QStringView s2) const
                             reinterpret_cast<const UChar *>(s2.data()), s2.size());
     }
 
-    return QtPrivate::compareStrings(s1, s2, d->caseSensitivity);
+    return QtPrivate::compareStrings(s1, s2, caseSensitivity());
 }
 
 QCollatorSortKey QCollator::sortKey(const QString &string) const

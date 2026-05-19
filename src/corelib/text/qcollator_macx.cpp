@@ -35,15 +35,15 @@ void QCollatorPrivate::init()
     if (status != 0)
         qWarning("Couldn't initialize the locale (%d)", int(status));
 
-    UInt32 options = 0;
-    if (caseSensitivity == Qt::CaseInsensitive)
-        options |= kUCCollateCaseInsensitiveMask;
-    if (numericMode)
-        options |= kUCCollateDigitsAsNumberMask | kUCCollateDigitsOverrideMask;
-    if (!ignorePunctuation)
-        options |= kUCCollatePunctuationSignificantMask;
+    UInt32 collationOptions = 0;
+    if (options.testFlag(Opt::CaseInsensitive))
+        collationOptions |= kUCCollateCaseInsensitiveMask;
+    if (options.testFlag(Opt::NumericSort))
+        collationOptions |= kUCCollateDigitsAsNumberMask | kUCCollateDigitsOverrideMask;
+    if (!options.testFlag(Opt::IgnorePunctuation))
+        collationOptions |= kUCCollatePunctuationSignificantMask;
 
-    status = UCCreateCollator(localeRef, 0, options, &collator);
+    status = UCCreateCollator(localeRef, 0, collationOptions, &collator);
     if (status != 0)
         qWarning("Couldn't initialize the collator (%d)", int(status));
 

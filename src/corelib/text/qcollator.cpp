@@ -73,11 +73,34 @@ Q_GLOBAL_STATIC(QThreadStorage<GenerationalCollator>, defaultCollator)
           \c{<locale.h>} header for more information on the system locale.
       \li caseSensitivity() is not supported: only case-sensitive collation
           can be performed.
-      \li numericMode() and ignorePunctuation() are not supported.
+      \li The options set via numericMode(), ignorePunctuation(), and
+          options() are not supported.
     \endlist
 
     The use of any of the unsupported options will cause a warning to be
     printed to the application's output.
+*/
+
+/*!
+    \since 6.13
+    \enum QCollator::CollationOption
+
+    Options that control how strings are compared by \l QCollator.
+
+    The \macos, Windows, and ICU backends support all options, with variations
+    where indicated. On non-\macos Unix (including Linux), if ICU is not
+    available a fallback (POSIX) backend is used, which supports none of
+    these options.
+
+    \value CaseInsensitive      Ignore case differences when comparing strings.
+
+    \value IgnorePunctuation    Ignore punctuation and symbols when comparing strings.
+
+    \value NumericSort          Sort strings containing numbers by their numeric value,
+                                so that for example "file10" sorts after "file9"
+                                instead of between "file1" and "file2".
+
+    \sa setOptions(), options()
 */
 
 /*!
@@ -178,9 +201,7 @@ bool comparesEqual(const QCollator &lhs, const QCollator &rhs) noexcept
     if (!lhs.d || !rhs.d)
         return false;
 
-    return lhs.d->caseSensitivity == rhs.d->caseSensitivity
-        && lhs.d->numericMode == rhs.d->numericMode
-        && lhs.d->ignorePunctuation == rhs.d->ignorePunctuation
+    return lhs.d->options == rhs.d->options
         && lhs.d->locale == rhs.d->locale;
 }
 
@@ -240,7 +261,7 @@ void QCollator::setCaseSensitivity(Qt::CaseSensitivity cs)
         return;
 
     detach();
-    d->caseSensitivity = cs;
+    d->options.setFlag(CollationOption::CaseInsensitive, cs == Qt::CaseInsensitive);
 }
 
 /*!
@@ -257,7 +278,8 @@ void QCollator::setCaseSensitivity(Qt::CaseSensitivity cs)
 */
 Qt::CaseSensitivity QCollator::caseSensitivity() const
 {
-    return d ? d->caseSensitivity : Qt::CaseSensitive;
+    return d && d->options.testFlag(CollationOption::CaseInsensitive) ? Qt::CaseInsensitive
+                                                                      : Qt::CaseSensitive;
 }
 
 /*!
@@ -271,7 +293,7 @@ void QCollator::setNumericMode(bool on)
         return;
 
     detach();
-    d->numericMode = on;
+    d->options.setFlag(CollationOption::NumericSort, on);
 }
 
 /*!
@@ -286,7 +308,7 @@ void QCollator::setNumericMode(bool on)
 */
 bool QCollator::numericMode() const
 {
-    return d ? d->numericMode : false;
+    return d && d->options.testFlag(CollationOption::NumericSort);
 }
 
 /*!
@@ -300,7 +322,7 @@ void QCollator::setIgnorePunctuation(bool on)
         return;
 
     detach();
-    d->ignorePunctuation = on;
+    d->options.setFlag(CollationOption::IgnorePunctuation, on);
 }
 
 /*!
@@ -313,7 +335,31 @@ void QCollator::setIgnorePunctuation(bool on)
 */
 bool QCollator::ignorePunctuation() const
 {
-    return d ? d->ignorePunctuation : false;
+    return d && d->options.testFlag(CollationOption::IgnorePunctuation);
+}
+
+/*!
+    Sets the collation options to \a options.
+    This allows configuring multiple collation settings at once.
+
+    \sa options(), CollationOption
+*/
+void QCollator::setOptions(CollationOptions options)
+{
+    if (d && d->options == options)
+        return;
+    detach();
+    d->options = options;
+}
+
+/*!
+    Returns the collation options currently set on the collator.
+
+    \sa setOptions(), CollationOption
+*/
+QCollator::CollationOptions QCollator::options() const
+{
+    return d ? d->options : CollationOptions{};
 }
 
 /*!

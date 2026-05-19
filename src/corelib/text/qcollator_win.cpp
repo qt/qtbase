@@ -25,15 +25,15 @@ void QCollatorPrivate::init()
     if (isC())
         return;
 
-    if (caseSensitivity == Qt::CaseInsensitive)
+    if (options.testFlag(Opt::CaseInsensitive))
         collator |= NORM_IGNORECASE;
 
     // WINE does not support SORT_DIGITSASNUMBERS :-(
     // (and its std::sort() crashes on bad comparisons, QTBUG-74209)
-    if (numericMode)
+    if (options.testFlag(Opt::NumericSort))
         collator |= SORT_DIGITSASNUMBERS;
 
-    if (ignorePunctuation)
+    if (options.testFlag(Opt::IgnorePunctuation))
         collator |= NORM_IGNORESYMBOLS;
 
     dirty = false;
@@ -54,7 +54,7 @@ int QCollator::compare(QStringView s1, QStringView s2) const
         d = new QCollatorPrivate(QCollatorPrivate(QLocale().collation()));
 
     if (d->isC())
-        return s1.compare(s2, d->caseSensitivity);
+        return s1.compare(s2, caseSensitivity());
 
     d->ensureInitialized();
 

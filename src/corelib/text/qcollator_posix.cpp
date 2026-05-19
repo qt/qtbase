@@ -20,12 +20,12 @@ void QCollatorPrivate::init()
             qWarning("Only the C and system collation locales are supported "
                      "with the POSIX collation implementation");
         }
-        if (caseSensitivity != Qt::CaseSensitive)
+        if (options.testFlag(Opt::CaseInsensitive))
             qWarning("Case insensitive sorting unsupported in the posix collation implementation");
     }
-    if (numericMode)
+    if (options.testFlag(Opt::NumericSort))
         qWarning("Numeric mode unsupported in the posix collation implementation");
-    if (ignorePunctuation)
+    if (options.testFlag(Opt::IgnorePunctuation))
         qWarning("Ignoring punctuation unsupported in the posix collation implementation");
     dirty = false;
 }

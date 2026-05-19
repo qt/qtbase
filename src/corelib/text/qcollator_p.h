@@ -54,11 +54,11 @@ const CollatorType NoCollator = false;
 class QCollatorPrivate
 {
 public:
+    using Opt = QCollator::CollationOption;
+
     QAtomicInt ref = 1;
     QLocale locale;
-    Qt::CaseSensitivity caseSensitivity = Qt::CaseSensitive;
-    bool numericMode = false;
-    bool ignorePunctuation = false;
+    QCollator::CollationOptions options;
     bool dirty = true;
 
     CollatorType collator = NoCollator;
