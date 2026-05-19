@@ -3219,6 +3219,7 @@ void tst_QDateTime::fromStringStringFormat_data()
     QTest::addColumn<int>("baseYear");
     QTest::addColumn<QCalendar>("calendar");
     QTest::addColumn<QDateTime>("expected");
+    using Sys = QCalendar::System;
     const QCalendar greg;
 
     // Indian/Cocos had a transition at the start of 1900, so its Jan 1st starts
@@ -3500,6 +3501,59 @@ void tst_QDateTime::fromStringStringFormat_data()
     QTest::newRow("timezone-tttt-with-offset:+03:00")
             << u"2008-10-13 +03:00 11.50"_s << u"yyyy-MM-dd tttt hh.mm"_s
             << 1900 << greg << QDateTime(); // Offset not valid when zone name expected.
+
+    // Found to fail in some benchmarks, when first added:
+    QTest::newRow("H:m:s.zz ddd d-MMM-yyyy/Gregorian")
+            << u"7:1:4.78 Sun 1-Sep-2024"_s << u"H:m:s.zz ddd d-MMM-yyyy"_s
+            << 2000 << greg << QDateTime(QDate(2024, 9, 1), QTime(7, 1, 4, 780));
+    QTest::newRow("hh:mm:ss.zzz dd.MMM.yyyy/Gregorian")
+            << u"07:01:04.783 01.Sep.2024"_s << u"hh:mm:ss.zzz dd.MMM.yyyy"_s
+            << 2000 << greg << QDateTime(QDate(2024, 9, 1), QTime(7, 1, 4, 783));
+    QTest::newRow("hh:mm AP ddd dd MMM yyyy/Gregorian")
+            << u"07:01 AM Sun 01 Sep 2024"_s << u"hh:mm AP ddd dd MMM yyyy"_s
+            << 2000 << greg << QDateTime(QDate(2024, 9, 1), QTime(7, 1));
+    QTest::newRow("ddd dd MMM yy hh:mm:ss.zzz(Gregorian)")
+            << u"Sun 01 Sep 24 07:01:04.783"_s << u"ddd dd MMM yy hh:mm:ss.zzz"_s
+            << 2000 << greg << QDateTime(QDate(2024, 9, 1), QTime(7, 1, 4, 783));
+    QTest::newRow("hh:mm:ss.zz ddd, dd MMM yyyy/Gregorian")
+            << u"07:01:04.78 Sun, 01 Sep 2024"_s << u"hh:mm:ss.zz ddd, dd MMM yyyy"_s
+            << 2000 << greg << QDateTime(QDate(2024, 9, 1), QTime(7, 1, 4, 780));
+#if QT_CONFIG(islamiccivilcalendar)
+    const QCalendar islam(Sys::IslamicCivil);
+    QTest::newRow("H:m:s.zz ddd d-MMM-yyyy/IslamicCivil")
+            << u"7:1:4.78 Wed 1-Ram.-2024"_s << u"H:m:s.zz ddd d-MMM-yyyy"_s
+            << 2000 << islam << QDateTime(QDate(2024, 9, 1, islam), QTime(7, 1, 4, 780));
+    QTest::newRow("hh:mm:ss.zzz dd.MMM.yyyy/IslamicCivil")
+            << u"07:01:04.783 01.Ram..2024"_s << u"hh:mm:ss.zzz dd.MMM.yyyy"_s
+            << 2000 << islam << QDateTime(QDate(2024, 9, 1, islam), QTime(7, 1, 4, 783));
+    QTest::newRow("hh:mm AP ddd dd MMM yyyy/IslamicCivil")
+            << u"07:01 AM Wed 01 Ram. 2024"_s << u"hh:mm Ap ddd dd MMM yyyy"_s
+            << 2000 << islam << QDateTime(QDate(2024, 9, 1, islam), QTime(7, 1));
+    QTest::newRow("ddd dd MMM yy hh:mm:ss.zzz/IslamicCivil")
+            << u"Wed 01 Ram. 24 07:01:04.783"_s << u"ddd dd MMM yy hh:mm:ss.zzz"_s
+            << 2000 << islam << QDateTime(QDate(2024, 9, 1, islam), QTime(7, 1, 4, 783));
+    QTest::newRow("hh:mm:ss.zz ddd, dd MMM yyyy/IslamicCivil")
+            << u"07:01:04.78 Wed, 01 Ram. 2024"_s << u"hh:mm:ss.zz ddd, dd MMM yyyy"_s
+            << 2000 << islam << QDateTime(QDate(2024, 9, 1, islam), QTime(7, 1, 4, 780));
+#endif
+#if QT_CONFIG(jalalicalendar)
+    const QCalendar farsi(Sys::Jalali);
+    QTest::newRow("H:m:s.zz ddd d-MMM-yyyy/Jalali")
+            << u"7:1:4.78 Sat 1-Aza-2024"_s << u"H:m:s.zz ddd d-MMM-yyyy"_s
+            << 2000 << farsi << QDateTime(QDate(2024, 9, 1, farsi), QTime(7, 1, 4, 780));
+    QTest::newRow("hh:mm:ss.zzz dd.MMM.yyyy/Jalali")
+            << u"07:01:04.783 01.Aza.2024"_s << u"hh:mm:ss.zzz dd.MMM.yyyy"_s
+            << 2000 << farsi << QDateTime(QDate(2024, 9, 1, farsi), QTime(7, 1, 4, 783));
+    QTest::newRow("hh:mm AP ddd dd MMM yyyy/Jalali")
+            << u"07:01 AM Sat 01 Aza 2024"_s << u"hh:mm Ap ddd dd MMM yyyy"_s
+            << 2000 << farsi << QDateTime(QDate(2024, 9, 1, farsi), QTime(7, 1));
+    QTest::newRow("ddd dd MMM yy hh:mm:ss.zzz/Jalali")
+            << u"Sat 01 Aza 24 07:01:04.783"_s << u"ddd dd MMM yy hh:mm:ss.zzz"_s
+            << 2000 << farsi << QDateTime(QDate(2024, 9, 1, farsi), QTime(7, 1, 4, 783));
+    QTest::newRow("hh:mm:ss.zz ddd, dd MMM yyyy/Jalali")
+            << u"07:01:04.78 Sat, 01 Aza 2024"_s << u"hh:mm:ss.zz ddd, dd MMM yyyy"_s
+            << 2000 << farsi << QDateTime(QDate(2024, 9, 1, farsi), QTime(7, 1, 4, 780));
+#endif
 }
 
 void tst_QDateTime::fromStringStringFormat()
