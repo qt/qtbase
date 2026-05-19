@@ -7,6 +7,7 @@
 #include "gestures.h"
 
 #include <QEvent>
+#include <QHash>
 #include <QList>
 #include <QMainWindow>
 #include <QObject>
@@ -20,6 +21,7 @@
 #endif
 
 QT_BEGIN_NAMESPACE
+class QAction;
 class QCheckBox;
 class QLabel;
 class QPaintEvent;
@@ -58,19 +60,76 @@ extern EventTypeVector eventTypes;
 class EventFilter;
 extern EventFilter *globalEventFilter;
 
-class EventFilter : public QObject {
+class TouchTestWidget;
+
+class MainWindow : public QMainWindow
+{
+    Q_OBJECT
+    MainWindow();
+public:
+    // Categories used by the per-bucket counters in the status bar.
+    enum class LogBucket : int {
+        Touch,
+        NativeGesture,
+        Gesture,
+        Wheel,
+        Mouse,
+    };
+    Q_ENUM(LogBucket)
+
+    static MainWindow *createMainWindow();
+
+    QWidget *touchWidget() const;
+    QAction *resetCountersAction() const { return m_resetCountersAction; }
+
+    void setVisible(bool visible) override;
+
+public slots:
+    void appendToLog(const QString &text);
+    void dumpTouchDevices();
+    void updateBucketLabel(MainWindow::LogBucket bucket, int count);
+    void resetBucketLabels();
+
+private slots:
+    void settingsDialog();
+
+private:
+    void updateScreenLabel();
+    void newWindow() { MainWindow::createMainWindow(); }
+
+    TouchTestWidget *m_touchWidget;
+    QPlainTextEdit *m_logTextEdit;
+    QLabel *m_screenLabel;
+    QAction *m_resetCountersAction = nullptr;
+    QList<QLabel *> m_bucketLabels;
+    QStringList m_bucketPrefixes;
+};
+
+class EventFilter : public QObject
+{
     Q_OBJECT
 public:
-    explicit EventFilter(const EventTypeVector &types, QObject *p)
-        : QObject(p), m_types(types) {}
+    explicit EventFilter(const EventTypeVector &types, QObject *p);
 
     bool eventFilter(QObject *, QEvent *) override;
 
+public slots:
+    void resetCounts();
+
 signals:
     void eventReceived(const QString &);
+    void countChanged(MainWindow::LogBucket bucket, int count);
+
+private slots:
+    void flushPending();
 
 private:
+    void incrementCount(MainWindow::LogBucket eb) { ++m_counts[eb]; }
+
     const EventTypeVector m_types;
+    QHash<MainWindow::LogBucket, int> m_counts;
+    QStringList m_pendingMessages;
+    bool m_flushScheduled = false;
 };
 
 class TouchTestWidget : public QWidget {
@@ -80,10 +139,14 @@ public:
     explicit TouchTestWidget(QWidget *parent = nullptr);
 
     bool drawPoints() const { return m_drawPoints; }
+    bool acceptTouch() const { return m_acceptTouch; }
+    bool grabGestures() const { return m_grabGestures; }
 
 public slots:
     void clearPoints();
     void setDrawPoints(bool drawPoints);
+    void setAcceptTouch(bool on) { m_acceptTouch = on; }
+    void setGrabGestures(bool on);
 
 signals:
     void logMessage(const QString &);
@@ -97,7 +160,10 @@ private:
 
     QList<Point> m_points;
     GesturePtrs m_gestures;
+    QList<Qt::GestureType> m_gestureTypes;
     bool m_drawPoints;
+    bool m_acceptTouch;
+    bool m_grabGestures;
 };
 
 #ifdef Q_OS_WIN
@@ -115,32 +181,5 @@ private:
     QCheckBox *m_palmCheckBox;
 };
 #endif // Q_OS_WIN
-
-class MainWindow : public QMainWindow
-{
-    Q_OBJECT
-    MainWindow();
-public:
-    static MainWindow *createMainWindow();
-
-    QWidget *touchWidget() const { return m_touchWidget; }
-
-    void setVisible(bool visible) override;
-
-public slots:
-    void appendToLog(const QString &text);
-    void dumpTouchDevices();
-
-private slots:
-    void settingsDialog();
-
-private:
-    void updateScreenLabel();
-    void newWindow() { MainWindow::createMainWindow(); }
-
-    TouchTestWidget *m_touchWidget;
-    QPlainTextEdit *m_logTextEdit;
-    QLabel *m_screenLabel;
-};
 
 #endif // MAINWINDOW_H

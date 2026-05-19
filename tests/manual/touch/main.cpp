@@ -29,6 +29,15 @@ int main(int argc, char *argv[])
     const QCommandLineOption noMouseLogOption(QStringLiteral("nomouselog"),
                                               QStringLiteral("Do not log mouse events (for testing gestures)."));
     parser.addOption(noMouseLogOption);
+    const QCommandLineOption noGestureLogOption(QStringLiteral("nogesturelog"),
+                                                QStringLiteral("Do not log gesture events."));
+    parser.addOption(noGestureLogOption);
+    const QCommandLineOption noWheelOption(QStringLiteral("nowheel"),
+                                           QStringLiteral("Do not log wheel events."));
+    parser.addOption(noWheelOption);
+    const QCommandLineOption noNativeGestureOption(QStringLiteral("nonative-gesture"),
+                                                   QStringLiteral("Do not log native gesture events."));
+    parser.addOption(noNativeGestureOption);
 
     const QCommandLineOption tapGestureOption(QStringLiteral("tap"), QStringLiteral("Grab tap gesture."));
     parser.addOption(tapGestureOption);
@@ -53,6 +62,13 @@ int main(int argc, char *argv[])
         optGestures.append(Qt::PinchGesture);
     if (parser.isSet(swipeGestureOption))
         optGestures.append(Qt::SwipeGesture);
+    // If no gesture was selected on the command line, default to the full
+    // standard set so the widget grabs them, the gesture event filter logs
+    // them, and TouchTestWidget::handleGestureEvent visualises them.
+    if (optGestures.isEmpty()) {
+        optGestures << Qt::TapGesture << Qt::TapAndHoldGesture
+                    << Qt::PanGesture << Qt::PinchGesture << Qt::SwipeGesture;
+    }
 
     if (!parser.isSet(noMouseLogOption))
         eventTypes << QEvent::MouseButtonPress << QEvent::MouseButtonRelease << QEvent::MouseButtonDblClick;
@@ -60,8 +76,12 @@ int main(int argc, char *argv[])
         eventTypes << QEvent::MouseMove;
     if (!parser.isSet(noTouchLogOption))
         eventTypes << QEvent::TouchBegin << QEvent::TouchUpdate << QEvent::TouchEnd;
-    if (!optGestures.isEmpty())
+    if (!parser.isSet(noGestureLogOption))
         eventTypes << QEvent::Gesture << QEvent::GestureOverride;
+    if (!parser.isSet(noWheelOption))
+        eventTypes << QEvent::Wheel;
+    if (!parser.isSet(noNativeGestureOption))
+        eventTypes << QEvent::NativeGesture;
     if (parser.isSet(globalFilterOption)) {
         globalEventFilter = new EventFilter(eventTypes, &a);
         a.installEventFilter(globalEventFilter);

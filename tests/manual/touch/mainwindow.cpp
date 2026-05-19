@@ -5,11 +5,13 @@
 
 #include <QAction>
 #include <QApplication>
+#include <QCoreApplication>
 #include <QDebug>
 #include <QGestureEvent>
 #include <QLabel>
 #include <QMenu>
 #include <QMenuBar>
+#include <QMetaEnum>
 #include <QMouseEvent>
 #include <QPaintEvent>
 #include <QPainter>
@@ -19,6 +21,7 @@
 #include <QSplitter>
 #include <QStatusBar>
 #include <QTextStream>
+#include <QTimer>
 #include <QToolBar>
 #include <QWindow>
 
@@ -30,11 +33,43 @@
 #  include <QtGui/qpa/qplatformintegration.h>
 #endif
 
+#include <optional>
+
 bool optIgnoreTouch = false;
 QList<Qt::GestureType> optGestures;
 QWidgetList mainWindows;
 EventTypeVector eventTypes;
 EventFilter *globalEventFilter = nullptr;
+
+namespace {
+
+std::optional<MainWindow::LogBucket> eventBucket(QEvent::Type t)
+{
+    using LogBucket = MainWindow::LogBucket;
+    switch (t) {
+    case QEvent::TouchBegin:
+    case QEvent::TouchUpdate:
+    case QEvent::TouchEnd:
+    case QEvent::TouchCancel:
+        return LogBucket::Touch;
+    case QEvent::NativeGesture:
+        return LogBucket::NativeGesture;
+    case QEvent::Gesture:
+    case QEvent::GestureOverride:
+        return LogBucket::Gesture;
+    case QEvent::Wheel:
+        return LogBucket::Wheel;
+    case QEvent::MouseButtonPress:
+    case QEvent::MouseButtonRelease:
+    case QEvent::MouseButtonDblClick:
+    case QEvent::MouseMove:
+        return LogBucket::Mouse;
+    default:
+        return std::nullopt;
+    }
+}
+
+} // namespace
 
 Point::Point(const QPointF &p, PointType t, Qt::MouseEventSource s, QSizeF diameters)
     : pos(p), horizontalDiameter(qMax(2., diameters.width())),
@@ -64,6 +99,11 @@ QColor Point::color() const
     return type == MousePress ? result.lighter() : result;
 }
 
+EventFilter::EventFilter(const EventTypeVector &types, QObject *p)
+    : QObject(p), m_types(types)
+{
+}
+
 bool EventFilter::eventFilter(QObject *o, QEvent *e)
 {
     static int n = 0;
@@ -80,15 +120,43 @@ bool EventFilter::eventFilter(QObject *o, QEvent *e)
             debug << e;
             break;
         }
-        emit eventReceived(message);
+        // Throttle UI updates to 30 Hz. Messages are joined and flushed in a
+        // single appendPlainText to avoid one viewport-scroll repaint per
+        // event, which can become a bottleneck under an event storm.
+        m_pendingMessages.append(message);
+        const std::optional<MainWindow::LogBucket> bucket = eventBucket(e->type());
+        Q_ASSERT(bucket.has_value()); // guaranteed by content of m_types
+        incrementCount(*bucket);
+        if (!m_flushScheduled) {
+            m_flushScheduled = true;
+            QTimer::singleShot(33, this, &EventFilter::flushPending);
+        }
     }
     return false;
 }
 
-TouchTestWidget::TouchTestWidget(QWidget *parent) : QWidget(parent), m_drawPoints(true)
+void EventFilter::flushPending()
+{
+    m_flushScheduled = false;
+    if (!m_pendingMessages.isEmpty()) {
+        emit eventReceived(m_pendingMessages.join(QLatin1Char('\n')));
+        m_pendingMessages.clear();
+    }
+    for (auto it = m_counts.cbegin(); it != m_counts.cend(); ++it)
+        emit countChanged(it.key(), it.value());
+}
+
+void EventFilter::resetCounts()
+{
+    m_counts.clear();
+}
+
+TouchTestWidget::TouchTestWidget(QWidget *parent)
+    : QWidget(parent), m_gestureTypes(optGestures), m_drawPoints(true),
+      m_acceptTouch(!optIgnoreTouch), m_grabGestures(true)
 {
     setAttribute(Qt::WA_AcceptTouchEvents);
-    for (Qt::GestureType t : optGestures)
+    for (Qt::GestureType t : std::as_const(m_gestureTypes))
         grabGesture(t);
 }
 
@@ -106,6 +174,19 @@ void TouchTestWidget::setDrawPoints(bool drawPoints)
     if (m_drawPoints != drawPoints) {
         clearPoints();
         m_drawPoints = drawPoints;
+    }
+}
+
+void TouchTestWidget::setGrabGestures(bool on)
+{
+    if (m_grabGestures == on)
+        return;
+    m_grabGestures = on;
+    for (Qt::GestureType t : std::as_const(m_gestureTypes)) {
+        if (on)
+            grabGesture(t);
+        else
+            ungrabGesture(t);
     }
 }
 
@@ -132,7 +213,7 @@ bool TouchTestWidget::event(QEvent *event)
         }
         Q_FALLTHROUGH();
     case QEvent::TouchEnd:
-        if (optIgnoreTouch)
+        if (!m_acceptTouch)
             event->ignore();
         else
             event->accept();
@@ -249,7 +330,16 @@ MainWindow *MainWindow::createMainWindow()
         eventFilter = new EventFilter(eventTypes, result->touchWidget());
         result->touchWidget()->installEventFilter(eventFilter);
     }
+    // Note: when --global is used, eventFilter is shared across all MainWindow
+    // instances. The per-bucket counters and the Reset Counters action are
+    // therefore shared state, so every window's status-bar labels reflect the
+    // same global counts and any window can reset them.
     QObject::connect(eventFilter, &EventFilter::eventReceived, result, &MainWindow::appendToLog);
+    QObject::connect(eventFilter, &EventFilter::countChanged, result, &MainWindow::updateBucketLabel);
+    QObject::connect(result->resetCountersAction(), &QAction::triggered,
+                     eventFilter, &EventFilter::resetCounts);
+    QObject::connect(result->resetCountersAction(), &QAction::triggered,
+                     result, &MainWindow::resetBucketLabels);
 
     mainWindows.append(result);
     return result;
@@ -277,19 +367,50 @@ MainWindow::MainWindow()
     dumpDeviceAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_D));
     connect(dumpDeviceAction, &QAction::triggered, this, &MainWindow::dumpTouchDevices);
     toolBar->addAction(dumpDeviceAction);
+    toolBar->addSeparator();
     QAction *clearLogAction = fileMenu->addAction(QStringLiteral("Clear Log"));
     clearLogAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_L));
     connect(clearLogAction, &QAction::triggered, m_logTextEdit, &QPlainTextEdit::clear);
     toolBar->addAction(clearLogAction);
+    m_resetCountersAction = fileMenu->addAction(QStringLiteral("Reset Counters"));
+    m_resetCountersAction->setToolTip(
+        QStringLiteral("Reset per-event-type counters in the status bar to zero."));
+    toolBar->addAction(m_resetCountersAction);
+    QAction *clearPointAction = fileMenu->addAction(QStringLiteral("Clear Points"));
+    clearPointAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_P));
+    connect(clearPointAction, &QAction::triggered, m_touchWidget, &TouchTestWidget::clearPoints);
+    toolBar->addAction(clearPointAction);
+    toolBar->addSeparator();
     QAction *toggleDrawPointAction = fileMenu->addAction(QStringLiteral("Draw Points"));
     toggleDrawPointAction->setCheckable(true);
     toggleDrawPointAction->setChecked(m_touchWidget->drawPoints());
     connect(toggleDrawPointAction, &QAction::toggled, m_touchWidget, &TouchTestWidget::setDrawPoints);
     toolBar->addAction(toggleDrawPointAction);
-    QAction *clearPointAction = fileMenu->addAction(QStringLiteral("Clear Points"));
-    clearPointAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_P));
-    connect(clearPointAction, &QAction::triggered, m_touchWidget, &TouchTestWidget::clearPoints);
-    toolBar->addAction(clearPointAction);
+    QAction *synthMouseAction = fileMenu->addAction(QStringLiteral("Synthesize Mouse"));
+    synthMouseAction->setCheckable(true);
+    synthMouseAction->setChecked(
+        QCoreApplication::testAttribute(Qt::AA_SynthesizeMouseForUnhandledTouchEvents));
+    synthMouseAction->setToolTip(
+        QStringLiteral("Toggle Qt::AA_SynthesizeMouseForUnhandledTouchEvents at runtime."));
+    connect(synthMouseAction, &QAction::toggled, qApp, [](bool on) {
+        QCoreApplication::setAttribute(Qt::AA_SynthesizeMouseForUnhandledTouchEvents, on);
+    });
+    toolBar->addAction(synthMouseAction);
+    QAction *acceptTouchAction = fileMenu->addAction(QStringLiteral("Accept Touch"));
+    acceptTouchAction->setCheckable(true);
+    acceptTouchAction->setChecked(m_touchWidget->acceptTouch());
+    acceptTouchAction->setToolTip(
+        QStringLiteral("Call QEvent::accept() (on) or QEvent::ignore() (off) on incoming touch events."));
+    connect(acceptTouchAction, &QAction::toggled, m_touchWidget, &TouchTestWidget::setAcceptTouch);
+    toolBar->addAction(acceptTouchAction);
+    QAction *grabGesturesAction = fileMenu->addAction(QStringLiteral("Grab Gestures"));
+    grabGesturesAction->setCheckable(true);
+    grabGesturesAction->setChecked(m_touchWidget->grabGestures());
+    grabGesturesAction->setToolTip(
+        QStringLiteral("Call grabGesture() / ungrabGesture() for the active gesture set at runtime."));
+    connect(grabGesturesAction, &QAction::toggled, m_touchWidget, &TouchTestWidget::setGrabGestures);
+    toolBar->addAction(grabGesturesAction);
+    toolBar->addSeparator();
     QAction *quitAction = fileMenu->addAction(QStringLiteral("Quit"));
     quitAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_Q));
     connect(quitAction, &QAction::triggered, qApp, &QCoreApplication::quit);
@@ -311,17 +432,47 @@ MainWindow::MainWindow()
     connect(m_touchWidget, &TouchTestWidget::logMessage, this, &MainWindow::appendToLog);
 
     m_logTextEdit->setObjectName(QStringLiteral("LogTextEdit"));
+    m_logTextEdit->setMaximumBlockCount(5000); // cap memory; oldest lines drop off
     mainSplitter->addWidget(m_logTextEdit);
     setCentralWidget(mainSplitter);
 
+    const auto metaLogBucket = QMetaEnum::fromType<LogBucket>();
+    m_bucketLabels.reserve(metaLogBucket.keyCount());
+    m_bucketPrefixes.reserve(metaLogBucket.keyCount());
+    for (int i = 0; i < metaLogBucket.keyCount(); ++i) {
+        QString prefix = QLatin1StringView(metaLogBucket.key(i)) + QStringLiteral(": ");
+        m_bucketPrefixes.append(prefix);
+        auto *label = new QLabel(prefix + QLatin1Char('0'), this);
+        m_bucketLabels.append(label);
+        statusBar()->addPermanentWidget(label);
+    }
     statusBar()->addPermanentWidget(m_screenLabel);
 
     dumpTouchDevices();
 }
 
+QWidget *MainWindow::touchWidget() const
+{
+    return m_touchWidget;
+}
+
 void MainWindow::appendToLog(const QString &text)
 {
     m_logTextEdit->appendPlainText(text);
+}
+
+void MainWindow::updateBucketLabel(MainWindow::LogBucket bucket, int count)
+{
+    const int idx = static_cast<int>(bucket);
+    if (idx < 0 || idx >= m_bucketLabels.size())
+        return;
+    m_bucketLabels[idx]->setText(m_bucketPrefixes[idx] + QString::number(count));
+}
+
+void MainWindow::resetBucketLabels()
+{
+    for (qsizetype i = 0; i < m_bucketLabels.size(); ++i)
+        m_bucketLabels[i]->setText(m_bucketPrefixes[i] + QStringLiteral("0"));
 }
 
 void MainWindow::settingsDialog()
