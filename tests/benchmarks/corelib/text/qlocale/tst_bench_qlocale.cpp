@@ -43,6 +43,8 @@ private Q_SLOTS:
     void toTime();
     void toDateTime_data();
     void toDateTime();
+    void toTimeFormat_data();
+    void toTimeFormat();
 };
 
 static QString data()
@@ -1010,6 +1012,68 @@ void tst_QLocale::toDateTime()
     QVERIFY(dt.isValid());
 }
 
+void tst_QLocale::toTimeFormat_data()
+{
+    QTest::addColumn<QString>("localeName");
+    QTest::addColumn<QLocale::FormatType>("formatType");
+    QTest::addColumn<QString>("string");
+
+    const QTime time(13, 2, 3, 444);
+
+    struct LocaleInput {
+        const char *name;
+    };
+
+    const char *locales[] = {
+        "C",
+        "de-DE"
+    };
+
+    struct FormatInput {
+        const char *name;
+        QLocale::FormatType type;
+    };
+
+    const FormatInput formats[] = {
+        { "LongFormat", QLocale::LongFormat },
+        { "ShortFormat", QLocale::ShortFormat },
+        { "NarrowFormat", QLocale::NarrowFormat }
+    };
+
+    for (const auto &localeData : locales) {
+        const QLocale loc(QString::fromLatin1(localeData));
+
+        for (const auto &formatData : formats) {
+
+            const QString str = loc.toString(time, formatData.type);
+            const QString formatStr = loc.timeFormat(formatData.type);
+            QTest::addRow("%s_%s(%s)", localeData, formatData.name,
+                          formatStr.toLatin1().constData())
+                << QString::fromLatin1(localeData) << formatData.type << str;
+        }
+    }
+}
+
+void tst_QLocale::toTimeFormat()
+{
+    QFETCH(QString, localeName);
+    QFETCH(QLocale::FormatType, formatType);
+    QFETCH(QString, string);
+
+    const QLocale loc(localeName);
+
+    QTime t;
+
+    QBENCHMARK {
+        t = loc.toTime(string, formatType);
+    }
+
+    QEXPECT_FAIL("C_LongFormat(HH:mm:ss t)",
+                 "QTBUG-145605 LongFormat roundtrip fails", Continue);
+    QEXPECT_FAIL("de-DE_LongFormat(HH:mm:ss tttt)",
+                 "QTBUG-145605 LongFormat roundtrip fails", Continue);
+    QVERIFY(t.isValid());
+}
 
 QTEST_MAIN(tst_QLocale)
 
