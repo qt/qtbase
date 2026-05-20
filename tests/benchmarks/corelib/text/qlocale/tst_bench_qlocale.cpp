@@ -1193,6 +1193,7 @@ void tst_QLocale::toTimeFormat_data()
     constexpr QLatin1StringView locales[] = {
         "C"_L1,
         "de-DE"_L1,
+        "ccp-IN"_L1,
     };
 
     struct FormatInput {
@@ -1237,6 +1238,8 @@ void tst_QLocale::toTimeFormat()
     QEXPECT_FAIL("C_LongFormat(HH:mm:ss t)",
                  "QTBUG-145605 LongFormat roundtrip fails", Continue);
     QEXPECT_FAIL("de-DE_LongFormat(HH:mm:ss tttt)",
+                 "QTBUG-145605 LongFormat roundtrip fails", Continue);
+    QEXPECT_FAIL("ccp-IN_LongFormat(h:mm:ss Ap tttt)",
                  "QTBUG-145605 LongFormat roundtrip fails", Continue);
     QVERIFY(t.isValid());
 }
