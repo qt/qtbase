@@ -5243,10 +5243,8 @@ static void testMetaSequenceIteration()
 
     if (listIter.canRandomAccessIterate())
         sortIterable<QMetaSequence::Iterable::RandomAccessIterator>(&listIter);
-    else if (listIter.canReverseIterate())
-        sortIterable<QMetaSequence::Iterable::BidirectionalIterator>(&listIter);
-    else if (listIter.canForwardIterate())
-        return; // std::sort cannot sort with only forward iterators.
+    else if (listIter.canReverseIterate() || listIter.canForwardIterate())
+        return; // std::sort can only sort random access iterators.
     else
         QFAIL("The container has no meaningful iterators");
 
@@ -5449,10 +5447,10 @@ static void testSequentialIteration()
 
     QCOMPARE(listIter.size(), 6);
 
-    if (listIter.canReverseIterate())
-        sortIterable<QSequentialIterable::BidirectionalIterator>(&listIter);
-    else if (listIter.canForwardIterate())
-        return; // std::sort cannot sort with only forward iterators.
+    if (listIter.canRandomAccessIterate())
+        sortIterable<QMetaSequence::Iterable::RandomAccessIterator>(&listIter);
+    else if (listIter.canReverseIterate() || listIter.canForwardIterate())
+        return; // std::sort can only sort random access iterators.
     else
         QFAIL("The container has no meaningful iterators");
 
