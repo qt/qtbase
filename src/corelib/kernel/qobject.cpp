@@ -284,11 +284,11 @@ inline void QObjectPrivate::addConnection(int signal, Connection *c)
     ConnectionList &connectionList = cd->connectionsForSignal(signal);
     if (connectionList.last.loadRelaxed()) {
         Q_ASSERT(connectionList.last.loadRelaxed()->receiver.loadRelaxed());
-        connectionList.last.loadRelaxed()->nextConnectionList.storeRelaxed(c);
+        connectionList.last.loadRelaxed()->nextConnectionList.storeRelease(c);
     } else {
-        connectionList.first.storeRelaxed(c);
+        connectionList.first.storeRelease(c);
     }
-    c->id = ++cd->currentConnectionId;
+    c->id.storeRelease(++cd->currentConnectionId);
     c->prevConnectionList = connectionList.last.loadRelaxed();
     connectionList.last.storeRelaxed(c);
 
@@ -4300,7 +4300,7 @@ void doActivate(QObject *sender, int signal_index, void **argv)
     // during the signal emission are not emitted in this emission.
     uint highestConnectionId = connections->currentConnectionId.loadRelaxed();
     do {
-        QObjectPrivate::Connection *c = list->first.loadRelaxed();
+        QObjectPrivate::Connection *c = list->first.loadAcquire();
         if (!c)
             continue;
 
@@ -4401,7 +4401,7 @@ void doActivate(QObject *sender, int signal_index, void **argv)
                 if (callbacks_enabled && signal_spy_set->slot_end_callback != nullptr)
                     signal_spy_set->slot_end_callback(receiver, method);
             }
-        } while ((c = c->nextConnectionList.loadRelaxed()) != nullptr && c->id <= highestConnectionId);
+        } while ((c = c->nextConnectionList.loadAcquire()) != nullptr && c->id.loadAcquire() <= highestConnectionId);
 
     } while (list != &signalVector->at(-1) &&
         //start over for all signals;
