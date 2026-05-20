@@ -1335,8 +1335,8 @@ qt_feature("coverage"
 # Mark the feature as PRIVATE because we want it to be exported, but we don't want modifications
 # in the public qconfig.h header in a patch release.
 qt_feature("android_16kb_pages" PRIVATE
-    LABEL "Using 16KB page sizes in Android"
-    PURPOSE "Build Android binaries aligned to 16 KB pages."
+    LABEL "16KB page size"
+    PURPOSE "Build Android binaries aligned to 16KB page size."
     CONDITION ANDROID AND (((CMAKE_ANDROID_NDK_VERSION VERSION_GREATER_EQUAL "25.0.0"))
                           AND ((CMAKE_ANDROID_ARCH_ABI STREQUAL "arm64-v8a") OR
                               (CMAKE_ANDROID_ARCH_ABI STREQUAL "x86_64")))
