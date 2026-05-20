@@ -11,12 +11,6 @@ if(NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_BUILDING_QT)
     find_package(Qt6BuildInternals REQUIRED COMPONENTS STANDALONE_TEST)
 endif()
 
-# Collect test data
-file(GLOB_RECURSE test_data
-    RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-    testdata/*
-)
-
 qt_internal_add_test(tst_qzip
     SOURCES
         tst_qzip.cpp

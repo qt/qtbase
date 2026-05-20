@@ -15,7 +15,10 @@
 #include <QXmlStreamReader>
 #include <QBuffer>
 #include <QStack>
-#include <private/qzipreader_p.h>
+
+#if QT_CONFIG(process)
+#  include <QProcess>
+#endif
 
 #include "qc14n.h"
 
@@ -665,9 +668,12 @@ void tst_QXmlStream::initTestCase()
     // suit as a zip archive. So we need to unzip it before running the tests,
     // and also update some files there.
     // We also need to remove the unzipped data during cleanup.
-
+#if !QT_CONFIG(process)
+    QSKIP("Need QProcess to run unzip the XML test suite");
+#else
     // On Android, we cannot unzip at the resource location, so we copy
-    // everything to a temporary directory first.
+    // everything to a temporary directory first. But it will probably fail to
+    // find the unzip utility and skip...
     const QString XML_Test_Suite_dir = QFINDTESTDATA(xmlTestsuiteDir);
     const QString XML_Test_Suite_destDir = m_tempDir.filePath(xmlTestsuiteDir);
     copyDir(XML_Test_Suite_dir, XML_Test_Suite_destDir);
@@ -676,9 +682,39 @@ void tst_QXmlStream::initTestCase()
     const QString filesDir(m_tempDir.filePath(xmlconfDir));
     const QString fileName = filesDir + xmlDatasetName + ".zip";
     QVERIFY(QFile::exists(fileName));
-    QZipReader reader(fileName);
-    QVERIFY(reader.isReadable());
-    QVERIFY(reader.extractAll(filesDir));
+
+    QProcess unzip;
+#ifdef Q_OS_WIN
+    // powershell understands Unix-style separators just fine
+    unzip.start("powershell.exe", { "-command", "Expand-Archive", "-Path", fileName,
+                                    "-DestinationPath", filesDir });
+#else
+    // standard unzip tool
+    unzip.start("unzip", { "-nq", fileName, "-d", filesDir });
+#endif
+    if (!unzip.waitForStarted()) {
+#if defined(Q_OS_MACOS) || defined(Q_OS_WIN)
+        // /usr/bin/unzip comes with macOS and we used powershell on Windows, so
+        // this *must* work
+        QFAIL("Could not run unzip: " + unzip.errorString().toUtf8());
+#endif
+
+        // Python's zipfile module
+        static const char pythonUnzip[] = R"(import sys, zipfile
+zipfile.ZipFile(sys.argv[1], "r").extractall(sys.argv[2])
+)";
+        unzip.start("python3", { "-", fileName, filesDir });
+        unzip.write(pythonUnzip, sizeof(pythonUnzip));
+        unzip.waitForStarted();
+    }
+
+    if (unzip.state() != QProcess::Running)
+        QSKIP("Could not find a tool to unzip the XML test suite");
+
+    unzip.closeWriteChannel();
+    QVERIFY(unzip.waitForFinished(120000)); // 2 minutes
+    QCOMPARE(unzip.readAllStandardError(), QString());
+
     // update files
     const auto files =
             QDir(filesDir + updateFilesDir).entryInfoList(QDir::Files | QDir::NoDotAndDotDot);
@@ -688,6 +724,7 @@ void tst_QXmlStream::initTestCase()
         QFile::remove(destinationPath); // copy will fail if file exists
         QVERIFY(QFile::copy(fileInfo.filePath(), destinationPath));
     }
+#endif
 }
 
 void tst_QXmlStream::cleanupTestCase()
