@@ -90,8 +90,10 @@ namespace QRangeModelDetails
                                            QExplicitlySharedDataPointer, QSharedDataPointer>;
 
     template <typename T>
-    using is_owning_or_raw_pointer = std::disjunction<is_any_shared_ptr<T>, is_any_unique_ptr<T>,
-                                                      std::is_pointer<T>>;
+    using is_any_owning_ptr = std::disjunction<is_any_shared_ptr<T>, is_any_unique_ptr<T>>;
+
+    template <typename T>
+    using is_owning_or_raw_pointer = std::disjunction<is_any_owning_ptr<T>, std::is_pointer<T>>;
 
     template <typename T>
     static auto pointerTo(T&& t) {
@@ -1672,6 +1674,12 @@ public:
                 using value_type = q20::remove_cvref_t<decltype(target)>;
                 using wrapped_value_type = QRangeModelDetails::wrapped_t<value_type>;
                 using multi_role = QRangeModelDetails::is_multi_role<value_type>;
+
+                if constexpr (std::conjunction_v<QRangeModelDetails::is_any_owning_ptr<value_type>,
+                                                 std::is_default_constructible<wrapped_value_type>>) {
+                    if (!QRangeModelDetails::isValid(target))
+                        target.reset(new wrapped_value_type);
+                }
 
                 auto setRangeModelDataRole = [&target, &data]{
                     constexpr auto targetMetaType = QMetaType::fromType<value_type>();
