@@ -1156,6 +1156,7 @@ function(_qt_internal_android_copy_extra_plugins target deployment_dir)
     _qt_internal_android_staging_dir(android_staging_dir)
     set(stamp "${android_staging_dir}/${sanitized_target}_copy_extra_plugins.stamp")
     add_custom_command(OUTPUT "${stamp}"
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${extra_plugins_dst_dir}"
         ${copy_commands}
         COMMAND ${CMAKE_COMMAND} -E touch "${stamp}"
         DEPENDS ${copy_depends} ${target} ${extra_plugin_targets}
@@ -1207,6 +1208,7 @@ function(_qt_internal_android_copy_qml_plugins target deployment_dir)
     _qt_internal_android_staging_dir(android_staging_dir)
     set(stamp "${android_staging_dir}/${sanitized_target}_copy_qml_plugins.stamp")
     add_custom_command(OUTPUT "${stamp}"
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${libs_abi_dir}"
         ${copy_commands}
         COMMAND ${CMAKE_COMMAND} -E touch "${stamp}"
         DEPENDS ${copy_depends}
@@ -1499,6 +1501,8 @@ function(_qt_internal_android_add_dependency_deploy_step)
         return()
     endif()
     _qt_internal_android_get_deploy_command(cmd "${arg_SOURCE}" "${arg_DESTINATION}")
+    get_filename_component(dst_dir "${arg_DESTINATION}" DIRECTORY)
+    list(APPEND ${arg_COPY_COMMANDS_VAR} COMMAND ${CMAKE_COMMAND} -E make_directory "${dst_dir}")
     list(APPEND ${arg_SEEN_DESTINATIONS_VAR} "${arg_DESTINATION}")
     list(APPEND ${arg_COPY_COMMANDS_VAR} COMMAND ${cmd})
     list(APPEND ${arg_COPY_DEPENDS_VAR} "${arg_DEPENDS_ITEM}")
@@ -2072,7 +2076,9 @@ function(_qt_internal_android_create_rcc_bundle target deployment_dir)
 
     set(bundle_rcc "${deployment_dir}/assets/android_rcc_bundle.rcc")
     set(bundle_qrc "${qml_bundle_dir}/android_rcc_bundle.qrc")
+    get_filename_component(bundle_rcc_dir "${bundle_rcc}" DIRECTORY)
     add_custom_command(OUTPUT "${bundle_rcc}"
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${bundle_rcc_dir}"
         COMMAND ${CMAKE_COMMAND} -E chdir "${qml_bundle_dir}"
             "${rcc_path}" --project -o "${bundle_qrc}"
         COMMAND "${rcc_path}" --binary ${extra_args}
