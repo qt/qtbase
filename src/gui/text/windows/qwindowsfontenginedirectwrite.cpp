@@ -1485,9 +1485,7 @@ QImage QWindowsFontEngineDirectWrite::renderColorGlyph(DWRITE_GLYPH_RUN *glyphRu
                     continue;
                 } else if (colorGlyphRun->glyphImageFormat == DWRITE_GLYPH_IMAGE_FORMATS_COLR) {
                     if (ret.isNull()) {
-                        ret = QImage(boundingRect.width() - 1,
-                                     boundingRect.height() - 1,
-                                     QImage::Format_ARGB32_Premultiplied);
+                        ret = QImage(boundingRect.size(), QImage::Format_ARGB32_Premultiplied);
                         ret.fill(0);
                     }
 
@@ -1590,9 +1588,7 @@ QImage QWindowsFontEngineDirectWrite::renderColorGlyph(DWRITE_GLYPH_RUN *glyphRu
                                               0,
                                               &enumerator);
         if (SUCCEEDED(hr)) {
-            ret = QImage(boundingRect.width() - 1,
-                         boundingRect.height() - 1,
-                         QImage::Format_ARGB32_Premultiplied);
+            ret = QImage(boundingRect.size(), QImage::Format_ARGB32_Premultiplied);
             ret.fill(0);
 
             BOOL ok = true;
@@ -1710,10 +1706,7 @@ QImage QWindowsFontEngineDirectWrite::imageForGlyph(glyph_t t,
             return QImage();
         }
 
-        QRect boundingRect = QRect(QPoint(rect.left() - margin,
-                                          rect.top() - margin),
-                                   QPoint(rect.right() + margin,
-                                          rect.bottom() + margin));
+        QRect boundingRect = rect.adjusted(-margin, -margin, margin, margin);
 
         QImage image;
         if (glyphFormat == QFontEngine::Format_ARGB) {
@@ -1728,9 +1721,7 @@ QImage QWindowsFontEngineDirectWrite::imageForGlyph(glyph_t t,
 
         // Not a color glyph, fall back to regular glyph rendering
         if (image.isNull()) {
-            // -1 due to Qt's off-by-one definition of a QRect
-            image = QImage(boundingRect.width() - 1,
-                           boundingRect.height() - 1,
+            image = QImage(boundingRect.size(),
                            glyphFormat == QFontEngine::Format_ARGB
                                ? QImage::Format_ARGB32_Premultiplied
                                : QImage::Format_RGB32);
@@ -1784,8 +1775,8 @@ void QWindowsFontEngineDirectWrite::renderGlyphRun(QImage *destination,
         RECT rect;
         rect.left = boundingRect.left();
         rect.top = boundingRect.top();
-        rect.right = boundingRect.right();
-        rect.bottom = boundingRect.bottom();
+        rect.right = boundingRect.left() + boundingRect.width();
+        rect.bottom = boundingRect.top() + boundingRect.height();
 
         QVarLengthArray<BYTE, 1024> alphaValueArray(size);
         BYTE *alphaValues = alphaValueArray.data();
@@ -2003,7 +1994,7 @@ QRect QWindowsFontEngineDirectWrite::alphaTextureBounds(glyph_t glyph,
         if (FAILED(hr) || rect.left == rect.right || rect.top == rect.bottom)
             return QRect{};
 
-        return QRect(QPoint(rect.left, rect.top), QPoint(rect.right, rect.bottom));
+        return QRect(rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top);
     } else {
         return QRect{};
     }
@@ -2106,8 +2097,8 @@ glyph_metrics_t QWindowsFontEngineDirectWrite::alphaMapBoundingBox(glyph_t glyph
     int margin = glyphMargin(format);
     return glyph_metrics_t(rect.left(),
                            rect.top(),
-                           rect.right() - rect.left() + margin * 2,
-                           rect.bottom() - rect.top() + margin * 2,
+                           rect.width() + margin * 2,
+                           rect.height() + margin * 2,
                            bbox.xoff, bbox.yoff);
 }
 
