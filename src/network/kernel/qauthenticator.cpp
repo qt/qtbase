@@ -367,7 +367,11 @@ bool QAuthenticator::isNull() const
 
 void QAuthenticator::clear()
 {
-    *d = QAuthenticatorPrivate();
+    if (!d)
+        d = new QAuthenticatorPrivate;
+    else
+        *d = QAuthenticatorPrivate();
+
     d->phase = QAuthenticatorPrivate::Done;
 }
 
