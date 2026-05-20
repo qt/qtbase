@@ -514,7 +514,7 @@ public:
         }
         [[nodiscard]] DataRange listEntry(const char16_t *table, qsizetype index) const
         {
-            const char16_t separator = ';';
+            constexpr char16_t separator = u';';
             Index i = 0;
             while (index > 0 && i < size) {
                 if (table[offset + i] == separator)
