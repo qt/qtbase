@@ -46,17 +46,19 @@ endfunction()
 # QT6_INSTALL_PREFIX is set by QtInstallPaths.cmake (via find_package), but not during
 # an internal qtbase build; in that case fall back to CMAKE_INSTALL_PREFIX.
 function(_qt_internal_harmonyos_get_qt_install_dirs
-         install_root_var libs_dir_var plugins_dir_var qml_dir_var)
+         install_root_var libs_dir_var plugins_dir_var qml_dir_var data_dir_var)
     if(QT6_INSTALL_PREFIX)
         set(${install_root_var} "${QT6_INSTALL_PREFIX}" PARENT_SCOPE)
         set(${libs_dir_var}    "${QT6_INSTALL_LIBS}"    PARENT_SCOPE)
         set(${plugins_dir_var} "${QT6_INSTALL_PLUGINS}" PARENT_SCOPE)
         set(${qml_dir_var}     "${QT6_INSTALL_QML}"     PARENT_SCOPE)
+        set(${data_dir_var}    "${QT6_INSTALL_DATA}"    PARENT_SCOPE)
     else()
         set(${install_root_var} "${CMAKE_INSTALL_PREFIX}" PARENT_SCOPE)
         set(${libs_dir_var}    "${INSTALL_LIBDIR}"        PARENT_SCOPE)
         set(${plugins_dir_var} "${INSTALL_PLUGINSDIR}"    PARENT_SCOPE)
         set(${qml_dir_var}     "${INSTALL_QMLDIR}"        PARENT_SCOPE)
+        set(${data_dir_var}    "${INSTALL_DATADIR}"       PARENT_SCOPE)
     endif()
 endfunction()
 
@@ -306,7 +308,8 @@ function(_qt_internal_harmonyos_generate_deployment_settings target)
     # Add Qt installation directories (following androiddeployqt pattern)
     # For cross-compilation: target dirs from current build, host tools from QT_HOST_PATH
     _qt_internal_harmonyos_get_qt_install_dirs(
-        _qt_install_root _qt_install_libs_dir _qt_install_plugins_dir _qt_install_qml_dir)
+        _qt_install_root _qt_install_libs_dir _qt_install_plugins_dir _qt_install_qml_dir
+        _qt_install_data_dir)
     string(APPEND JSON_CONTENT
         ",\n    \"qtLibsDirectory\": \"${_qt_install_root}/${_qt_install_libs_dir}\"")
     string(APPEND JSON_CONTENT
@@ -322,12 +325,10 @@ function(_qt_internal_harmonyos_generate_deployment_settings target)
         string(APPEND JSON_CONTENT ",\n    \"qtHostDirectory\": \"${QT_HOST_PATH}\"")
     endif()
 
-    # Add template source directory (from host build for cross-compilation)
-    if(QT_HOST_PATH)
-        set(TEMPLATE_DIR "${QT_HOST_PATH}/src/harmonyos/templates")
-    else()
-        set(TEMPLATE_DIR "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}/src/harmonyos/templates")
-    endif()
+    # Templates are only built for OHOS, so they live under the target Qt
+    # prefix, not QT_HOST_PATH.
+    set(TEMPLATE_DIR
+        "${_qt_install_root}/${_qt_install_data_dir}/src/harmonyos/templates")
     if(EXISTS "${TEMPLATE_DIR}")
         file(REAL_PATH "${TEMPLATE_DIR}" TEMPLATE_DIR)
         string(APPEND JSON_CONTENT
