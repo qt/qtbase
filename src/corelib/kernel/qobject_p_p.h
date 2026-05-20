@@ -87,7 +87,7 @@ struct QObjectPrivate::Connection : public ConnectionOrSignalVector
     QAtomicInt ref_{
         2
     }; // ref_ is 2 for the use in the internal lists, and for the use in QMetaObject::Connection
-    uint id = 0;
+    QAtomicInteger<uint> id{0};
     ushort method_offset;
     ushort method_relative;
     signed int signal_index : 27; // In signal range (see QObjectPrivate::signalIndex())
