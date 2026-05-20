@@ -163,8 +163,15 @@ function(__qt_internal_set_cmp0156)
         set(default_policy_value NEW)
         set(unsupported_policy_value OLD)
     else()
-        # For other platforms we don't enforce any policy values and keep them as-is.
-        set(default_policy_value "")
+        # For other platforms we honor the user's setting if any, otherwise we
+        # set the policy to OLD to suppress the CMake warning when building Qt.
+        if(policy_value)
+            set(default_policy_value "${policy_value}")
+        elseif(QT_BUILDING_QT)
+            set(default_policy_value "OLD")
+        else()
+            set(default_policy_value "")
+        endif()
         set(unsupported_policy_value "")
     endif()
 
