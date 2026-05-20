@@ -348,25 +348,64 @@ void tst_QKeySequence::standardKeys()
 
 void tst_QKeySequence::keyBindings()
 {
-    const QList<QKeySequence> bindings =
-          QKeySequence::keyBindings(QKeySequence::Copy);
+    {
+        const QList<QKeySequence> bindings =
+              QKeySequence::keyBindings(QKeySequence::Copy);
 
-    QList<QKeySequence> expected;
-    const QKeySequence copy = QKeySequence(QStringLiteral("Copy"));
-    const QKeySequence ctrlC = QKeySequence(QStringLiteral("CTRL+C"));
-    const QKeySequence ctrlInsert = QKeySequence(QStringLiteral("CTRL+INSERT"));
-    switch (m_keyboardScheme) {
-    case QPlatformTheme::MacKeyboardScheme:
-        expected  << ctrlC << copy;
-        break;
-    case QPlatformTheme::WindowsKeyboardScheme:
-        expected  << ctrlC << ctrlInsert << copy;
-        break;
-    default: // X11
-        expected  << ctrlC << ctrlInsert << QKeySequence(QStringLiteral("F16")) << copy;
-        break;
+        QList<QKeySequence> expected;
+        const QKeySequence copy = QKeySequence(QStringLiteral("Copy"));
+        const QKeySequence ctrlC = QKeySequence(QStringLiteral("CTRL+C"));
+        const QKeySequence ctrlInsert = QKeySequence(QStringLiteral("CTRL+INSERT"));
+        switch (m_keyboardScheme) {
+        case QPlatformTheme::MacKeyboardScheme:
+            expected  << ctrlC << copy;
+            break;
+        case QPlatformTheme::WindowsKeyboardScheme:
+            expected  << ctrlC << ctrlInsert << copy;
+            break;
+        default: // X11
+            expected  << ctrlC << ctrlInsert << QKeySequence(QStringLiteral("F16")) << copy;
+            break;
+        }
+        QCOMPARE(bindings, expected);
     }
-    QCOMPARE(bindings, expected);
+
+    // QTBUG-138383: Quit must be empty on Windows (no platform default there);
+    // the Key_Exit action key is added only on platforms that already have Ctrl+Q.
+    {
+        const QList<QKeySequence> quitBindings =
+              QKeySequence::keyBindings(QKeySequence::Quit);
+
+        QList<QKeySequence> expected;
+        if (m_keyboardScheme != QPlatformTheme::WindowsKeyboardScheme) {
+            expected << QKeySequence(QStringLiteral("CTRL+Q"))
+                     << QKeySequence(QStringLiteral("Exit"));
+        }
+        QCOMPARE(quitBindings, expected);
+        QCOMPARE(QKeySequence(QKeySequence::Quit).isEmpty(),
+                 m_keyboardScheme == QPlatformTheme::WindowsKeyboardScheme);
+    }
+
+    // QTBUG-138383: Preferences is empty on Windows/Gnome/plain-X11/CDE;
+    // Key_Settings is added only where a platform default already exists (KDE, Mac).
+    {
+        const QList<QKeySequence> prefBindings =
+              QKeySequence::keyBindings(QKeySequence::Preferences);
+
+        QList<QKeySequence> expected;
+        const QKeySequence settings = QKeySequence(QStringLiteral("Settings"));
+        switch (m_keyboardScheme) {
+        case QPlatformTheme::MacKeyboardScheme:
+            expected << QKeySequence(QStringLiteral("CTRL+,")) << settings;
+            break;
+        case QPlatformTheme::KdeKeyboardScheme:
+            expected << QKeySequence(QStringLiteral("CTRL+SHIFT+,")) << settings;
+            break;
+        default: // Windows, Gnome, plain X11, CDE
+            break;
+        }
+        QCOMPARE(prefBindings, expected);
+    }
 }
 
 void tst_QKeySequence::mnemonic_data()
