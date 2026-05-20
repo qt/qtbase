@@ -204,7 +204,10 @@ void QTextDocumentPrivate::clear()
 {
     Q_Q(QTextDocument);
 
+    QVarLengthArray<QTextCursor, 4> changedCursors;
     for (QTextCursorPrivate *curs : std::as_const(cursors)) {
+        if (!editBlock && curs->position != 0)
+            changedCursors.append(QTextCursor(curs));
         curs->setPosition(0);
         curs->currentCharFormat = -1;
         curs->anchor = 0;
@@ -253,6 +256,9 @@ void QTextDocumentPrivate::clear()
         cursors = oldCursors; // at least recover the cursors
         QT_RETHROW;
     }
+
+    for (const QTextCursor &cursor : std::as_const(changedCursors))
+        emit q->cursorPositionChanged(cursor);
 }
 
 QTextDocumentPrivate::~QTextDocumentPrivate()
