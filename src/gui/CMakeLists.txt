@@ -786,6 +786,7 @@ qt_internal_extend_target(Gui CONDITION QT_FEATURE_harfbuzz AND UIKIT
 qt_internal_extend_target(Gui CONDITION QT_FEATURE_textodfwriter
     SOURCES
         text/qtextodfwriter.cpp text/qtextodfwriter_p.h
+        text/qzipwriter_p.h text/qzip.cpp
 )
 
 qt_internal_extend_target(Gui CONDITION QT_FEATURE_textmarkdownreader

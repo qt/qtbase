@@ -15,6 +15,6 @@ qt_internal_add_test(tst_qzip
     SOURCES
         tst_qzip.cpp
     LIBRARIES
-        Qt::CorePrivate
+        Qt::GuiPrivate
     TESTDATA ${test_data}
 )
