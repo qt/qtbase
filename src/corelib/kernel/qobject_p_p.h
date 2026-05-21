@@ -205,7 +205,7 @@ struct QObjectPrivate::ConnectionData
         newVector->next = nullptr;
         newVector->allocated = size;
 
-        signalVector.storeRelaxed(newVector);
+        signalVector.storeRelease(newVector);
         if (vector) {
             TaggedSignalVector o = nullptr;
             /* No ABA issue here: When adding a node, we only care about the list head, it doesn't
@@ -219,7 +219,8 @@ struct QObjectPrivate::ConnectionData
     }
     int signalVectorCount() const
     {
-        return signalVector.loadAcquire() ? signalVector.loadRelaxed()->count() : -1;
+        SignalVector *v = signalVector.loadAcquire();
+        return v ? v->count() : -1;
     }
 
     static void deleteOrphaned(TaggedSignalVector o);
