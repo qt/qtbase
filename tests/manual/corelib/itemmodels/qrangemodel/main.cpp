@@ -308,9 +308,18 @@ public:
     template <typename ...Args>
     TreeRow &addChild(Args&& ...args)
     {
-        if (!m_children)
+        TreeRow *oldData = nullptr;
+        if (!m_children) {
             m_children.emplace(Tree{});
+            m_children->reserve(10);
+        } else {
+            oldData = m_children->data();
+        }
         TreeRow &res = m_children->emplace_back(args...);
+        // this is why trees of values in an iterator-invalidating container
+        // are a bad idea.
+        if (oldData && oldData != m_children->data())
+            qWarning() << "Reallocated!";
         res.m_parent = this;
         return res;
     }
@@ -322,6 +331,7 @@ public:
     std::optional<Tree> &childRows() { return m_children; }
 
 private:
+    friend struct QRangeModel::RowOptions<TreeRow>;
     QString m_name;
     QString m_title;
 
@@ -351,6 +361,122 @@ namespace std {
     { using type = decltype(get<I>(std::declval<TreeRow>())); };
 }
 
+template <>
+struct QRangeModel::RowOptions<TreeRow>
+{
+    static QStringList mimeTypes() { return {u"application/json"_s}; }
+
+    using Path = QVarLengthArray<int, 32>;
+    static Path makePath(const QModelIndex &index) {
+        // we call with col0 indexes and a parent can never be at another column
+        Q_ASSERT(index.column() == 0);
+        Path path{index.row()};
+        QModelIndex parent = index.parent();
+        while (parent.isValid()) {
+            path.append(parent.row());
+            parent = parent.parent();
+        }
+        std::reverse(path.begin(), path.end());
+        return path;
+    };
+
+    static QJsonArray makeArray(const auto &rows)
+    {
+        QList<std::pair<QVarLengthArray<int, 32>, QJsonObject>> builtObjects;
+
+        std::for_each(rows.rbegin(), rows.rend(), [&](const auto &entry) {
+            const auto &[row, index] = entry;
+            QJsonObject rowObject;
+            if (index.column() == -1) { // full row selected
+                rowObject.insert("name", get<0>(row));
+                rowObject.insert("title", get<1>(row));
+            } else {
+                switch (index.column()) {
+                case 0:
+                    rowObject.insert("name", get<0>(row));
+                    break;
+                case 1:
+                    rowObject.insert("title", get<1>(row));
+                    break;
+                }
+            }
+            Path rowPath = makePath(index.siblingAtColumn(0));
+
+            QJsonArray children;
+            for (auto entry = builtObjects.cbegin(); entry != builtObjects.cend();) {
+                const auto &[builtPath, builtObject] = *entry;
+                if (rowPath.size() < builtPath.size()) {
+                    int i = 0;
+                    while (i < std::min(builtPath.size(), rowPath.size()) && builtPath[i] == rowPath[i])
+                        ++i;
+                    if (i) {
+                        children.append(builtObject);
+                        entry = builtObjects.erase(entry);
+                        continue;
+                    }
+                }
+                ++entry;
+            }
+            if (!children.isEmpty())
+                rowObject.insert("children", children);
+            builtObjects.prepend({rowPath, rowObject});
+        });
+
+        QJsonArray result;
+        for (const auto &[_, object] : builtObjects)
+            result.append(object);
+        return result;
+    }
+
+    static QMimeData *mimeData(const auto &rows)
+    {
+        if (rows.empty())
+            return nullptr;
+
+        QJsonDocument document(makeArray(rows));
+        QByteArray data = document.toJson();
+
+        QMimeData *mimeData = new QMimeData;
+        mimeData->setData(mimeTypes().first(), data);
+        return mimeData;
+    }
+
+    static Tree generateTree(const QJsonArray &array)
+    {
+        Tree tree;
+        for (const auto &value : array) {
+            if (!value.isObject())
+                continue;
+            QJsonObject object = value.toObject();
+            TreeRow treeRow{
+                object["name"].toString(),
+                object["title"].toString()
+            };
+            if (QJsonValue maybeChildren = object["children"]; maybeChildren.isArray())
+                treeRow.m_children = generateTree(maybeChildren.toArray());
+            tree.emplace_back(std::move(treeRow));
+        }
+        return tree;
+    }
+
+    static bool dropMimeData(const QMimeData *data, auto inserter)
+    {
+        QByteArray json = data->data(mimeTypes().first());
+        if (json.isEmpty())
+            return false;
+        QJsonParseError error;
+        QJsonDocument document = QJsonDocument::fromJson(json, &error);
+        if (error.error) {
+            qWarning("Invalid JSON: %s at offset %d", qPrintable(error.errorString()), error.offset);
+            return false;
+        }
+        QJsonArray topObjects = document.array();
+        Tree newTree = generateTree(topObjects);
+        for (auto &newRow : newTree)
+            inserter = std::move(newRow);
+        return true;
+    }
+};
 
 class Object : public QObject
 {
