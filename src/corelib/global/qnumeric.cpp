@@ -340,6 +340,9 @@ Q_CORE_EXPORT quint64 qFloatDistance(double a, double b)
     Example:
 
     \snippet code/src_corelib_global_qglobal.cpp 10
+
+    \note If \c {T} is a \e {signed integral} type, and \a t has the value
+    of \c {std::numeric_limits<T>::min()}, the behavior is undefined.
 */
 
 /*! \fn int qRound(double d)
