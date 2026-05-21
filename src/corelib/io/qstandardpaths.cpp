@@ -85,6 +85,16 @@ using namespace Qt::StringLiterals;
     user-local and system-wide fallbacks. The additional locations are used by
     locate() and locateAll() to find existing files.
 
+    \section3 Sandboxed applications
+
+    For sandboxed applications, system-wide locations typically fall outside
+    the application's sandbox container, and may not exist from the
+    application's point of view, let alone be readable or writable. They are
+    still listed in the platform tables below for symmetry with the
+    non-sandboxed case, and to cover applications that have been granted access
+    through entitlements or user-driven pickers. Callers should not assume that
+    every entry returned by standardLocations() exists or is accessible.
+
     \value DesktopLocation The user's desktop directory. On systems with no
            concept of a desktop, this is the same as HomeLocation. Generic.
     \value DocumentsLocation Directory containing document files. The
