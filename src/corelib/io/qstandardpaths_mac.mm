@@ -165,7 +165,7 @@ QStringList QStandardPaths::standardLocations(StandardLocation type)
 
 #if defined(QT_PLATFORM_UIKIT)
     if (type == PicturesLocation)
-        dirs << writableLocation(PicturesLocation) << "assets-library://"_L1;
+        dirs << "assets-library://"_L1;
 #endif
 
     if (type == GenericDataLocation || type == FontsLocation || type == ApplicationsLocation
