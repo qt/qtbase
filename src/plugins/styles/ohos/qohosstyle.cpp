@@ -1932,7 +1932,7 @@ void QOhosStyle::polish(QWidget *widget)
         widget->setAttribute(Qt::WA_OpaquePaintEvent, false);
     } else if (qobjectIsInstanceOf<QGroupBox>(widget)) {
         QFont font;
-        font.setPixelSize(groupBoxTitleTextFontSize);
+        font.setPointSize(groupBoxTitleTextFontSize);
         font.setBold(true);
         widget->setFont(font);
 
