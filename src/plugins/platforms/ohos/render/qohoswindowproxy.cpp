@@ -755,15 +755,10 @@ void QOhosWindowProxy::setWindowLimits(const QSize &minSize, const QSize &maxSiz
                 constexpr bool isForcible = true;
                 setWindowLimitsArgs.push_back(isForcible);
             }
-            auto setWindowLimitsPromiseOrValue = m_jsScopeData->jsWindowRef->eval(
-                "setWindowLimits(*)", setWindowLimitsArgs);
-
-            if (setWindowLimitsPromiseOrValue.IsPromise()) {
-                QNapi::checkedCast<QNapi::Promise>(setWindowLimitsPromiseOrValue).onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
-            } else {
-                qOhosPrintfWarning("setWindowLimits() didn't return a Promise, ignoring result");
-                taskPromise();
-            }
+            m_jsScopeData->jsWindowRef->evalToPromiseOrRejectOnThrow(
+                "setWindowLimits(*)", setWindowLimitsArgs)
+            .onCatch(QtOhos::makeErrorLoggingJsCallback("setWindowLimits()"))
+            .onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
         },
         Q_FUNC_INFO);
 }
