@@ -407,7 +407,7 @@ QFactoryLoader::~QFactoryLoader()
     }
 #endif
 
-    for (QtPluginInstanceFunction staticInstance : d->usedStaticInstances) {
+    for (QtPluginInstanceFunction staticInstance : std::as_const(d->usedStaticInstances)) {
         if (staticInstance)
             delete staticInstance();
     }
