@@ -1936,13 +1936,14 @@ void QHttpHeaders::clear()
 QDebug operator<<(QDebug debug, const QHttpHeaderRange &range)
 {
     QDebugStateSaver saver(debug);
-    debug.nospace() << "QHttpHeaderRange(bytes=";
+    debug.nospace();
+    debug << "QHttpHeaderRange(bytes=";
     if (range.start())
-        debug.nospace() << *range.start();
-    debug.nospace() << "-";
+        debug << *range.start();
+    debug << '-';
     if (range.end())
-        debug.nospace() << *range.end();
-    debug.nospace() << ")";
+        debug << *range.end();
+    debug << ')';
     return debug;
 }
 #endif
