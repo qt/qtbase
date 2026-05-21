@@ -4289,7 +4289,8 @@ void QXmlStreamWriter::writeCurrentToken(const QXmlStreamReader &reader)
     case QXmlStreamReader::StartElement: {
         // Namespaces must be added before writeStartElement is called so new prefixes are found
         QList<QXmlStreamPrivateTagStack::NamespaceDeclaration> extraNamespaces;
-        for (const auto &namespaceDeclaration : reader.namespaceDeclarations()) {
+        const QXmlStreamNamespaceDeclarations nsDeclarations = reader.namespaceDeclarations();
+        for (const auto &namespaceDeclaration : nsDeclarations) {
             auto &extraNamespace = d->addExtraNamespace(namespaceDeclaration.namespaceUri(),
                                                         namespaceDeclaration.prefix());
             extraNamespaces.append(extraNamespace);
