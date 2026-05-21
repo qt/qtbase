@@ -252,6 +252,14 @@ using namespace Qt::StringLiterals;
          \li "C:/Users/<USER>/AppData/Roaming/Microsoft/Windows/Templates"
     \endtable
 
+    \note On macOS, when the application is sandboxed, the operating system
+    transparently redirects the user's home directory to a per-application
+    container at \c {~/Library/Containers/<BUNDLE-ID>/Data}. The macOS table
+    above still applies, with \c ~ effectively resolving to \c <APPROOT> for
+    user-rooted entries. System-wide fallbacks such as \c{/Library/...},
+    \c{/System/Library/...}, and \c{<APPDIR>/../Resources} are listed for
+    symmetry but are typically not reachable without explicit entitlements.
+
     \table
     \header \li Path type \li Linux and other UNIX operating systems
     \row \li DesktopLocation
