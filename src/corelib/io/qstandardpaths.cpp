@@ -208,7 +208,7 @@ using namespace Qt::StringLiterals;
          \li "~/Public"
          \li "C:/Users/Public"
     \row \li TemplatesLocation
-         \li "~/Templates"
+         \li not supported
          \li "C:/Users/<USER>/AppData/Roaming/Microsoft/Windows/Templates"
     \endtable
 
