@@ -56,6 +56,17 @@ QOhosOptional<T> getOptionalProperty(const QNapi::Object &object, const std::str
 
 QOhosOptional<std::uint32_t> tryGetCodeFromJsBusinessError(const Napi::Error &error);
 
+// On JS business error matching suppressedErrorCode warns and returns, otherwise rethrows.
+// Call from a catch block.
+void rethrowUnlessJsBusinessErrorIs(
+    const Napi::Error &error, std::uint32_t suppressedErrorCode, const char *callerContextName);
+
+// Runs action; on JS business error matching suppressedErrorCode warns and returns, otherwise rethrows.
+// Returns true if action completed, false if error was swallowed.
+bool runIgnoringJsBusinessError(
+    JsState &, std::uint32_t suppressedErrorCode, const char *callerContextName,
+    const std::function<void()> &action);
+
 template<typename T>
 QNapi::Promise adaptAsyncCallResultToJsPromise(
     JsState &jsState, std::function<QNapi::Value(JsState &, T)> promiseValueFactory,

@@ -190,6 +190,30 @@ QOhosOptional<std::uint32_t> tryGetCodeFromJsBusinessError(const Napi::Error &er
         : makeEmptyQOhosOptional();
 }
 
+void rethrowUnlessJsBusinessErrorIs(
+    const Napi::Error &error, std::uint32_t suppressedErrorCode, const char *callerContextName)
+{
+    if (tryGetCodeFromJsBusinessError(error) != suppressedErrorCode)
+        throw;
+
+    qOhosPrintfWarning(
+        "%s: ignored expected JS business error %u",
+        callerContextName, suppressedErrorCode);
+}
+
+bool runIgnoringJsBusinessError(
+    JsState &, std::uint32_t suppressedErrorCode, const char *callerContextName,
+    const std::function<void()> &action)
+{
+    try {
+        action();
+        return true;
+    } catch (const Napi::Error &error) {
+        rethrowUnlessJsBusinessErrorIs(error, suppressedErrorCode, callerContextName);
+        return false;
+    }
+}
+
 }
 
 QT_END_NAMESPACE
