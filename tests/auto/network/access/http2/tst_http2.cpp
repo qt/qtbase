@@ -104,6 +104,7 @@ private slots:
     void authenticationRequired();
 
     void unsupportedAuthenticateChallenge();
+    void ntlmAuthenticateChallengeEmitsFinished();
 
     void h2cAllowedAttribute_data();
     void h2cAllowedAttribute();
@@ -1480,6 +1481,50 @@ void tst_Http2::unsupportedAuthenticateChallenge()
     // received.
     QTRY_VERIFY(serverGotSettingsACK);
 
+}
+
+void tst_Http2::ntlmAuthenticateChallengeEmitsFinished()
+{
+    // QTBUG-143926: a server returning NTLM/Negotiate must still emit finished()
+    clearHTTP2State();
+    serverPort = 0;
+
+    if (defaultConnectionType() == H2Type::h2c)
+        QSKIP("This test requires TLS with ALPN to work");
+
+    ServerPtr targetServer(newServer(defaultServerSettings, defaultConnectionType()));
+    targetServer->setAuthenticationHeader("NTLM");
+
+    QMetaObject::invokeMethod(targetServer.get(), "startServer", Qt::QueuedConnection);
+    runEventLoop();
+
+    QVERIFY(serverPort != 0);
+
+    nRequests = 1;
+
+    QUrl url = requestUrl(defaultConnectionType());
+    url.setPath("/index.html");
+    QNetworkRequest request(url);
+
+    auto reply = std::unique_ptr<QNetworkReply>(manager->get(request));
+
+    bool finishedReceived = false;
+    connect(reply.get(), &QNetworkReply::finished, reply.get(),
+            [&]() { finishedReceived = true; });
+
+    connect(reply.get(), &QNetworkReply::errorOccurred, this,
+            &tst_Http2::replyFinishedWithError, Qt::QueuedConnection);
+
+    reply->ignoreSslErrors();
+
+    runEventLoop();
+    STOP_ON_FAILURE
+
+    QVERIFY2(reply->isFinished(), "QNetworkReply::finished must be emitted for NTLM challenges");
+    QCOMPARE(reply->error(), QNetworkReply::AuthenticationRequiredError);
+    QVERIFY(finishedReceived);
+
+    QTRY_VERIFY(serverGotSettingsACK);
 }
 
 void tst_Http2::h2cAllowedAttribute_data()
