@@ -46,7 +46,7 @@ public:
     }
 
 #ifndef QT_NO_DEBUG_STREAM
-    friend QDebug operator<<(QDebug debug, const QHttpHeaderRange &range);
+    friend Q_NETWORK_EXPORT QDebug operator<<(QDebug debug, const QHttpHeaderRange &range);
 #endif
 
 private:
