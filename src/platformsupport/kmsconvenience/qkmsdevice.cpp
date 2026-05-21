@@ -1372,6 +1372,8 @@ QKmsScreenConfig::QKmsScreenConfig()
     , m_pbuffers(false)
     , m_virtualDesktopLayout(VirtualDesktopLayoutHorizontal)
 {
+    if (qEnvironmentVariableIntValue("QT_QPA_KMS_DISABLE_HWCURSOR"))
+        m_hwCursor = false;
 }
 
 void QKmsScreenConfig::refreshConfig()
