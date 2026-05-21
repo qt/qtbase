@@ -15,16 +15,7 @@ public:
 
 class TestWindowTreeNode;
 
-using OnSubtreeChangedCallback = std::function<void(
-        QWasmWindowTreeNodeChangeType changeType, QWasmWindowTreeNode<TestWindowTreeNode> *parent, TestWindowTreeNode *child)>;
 using SetWindowZOrderCallback = std::function<void(TestWindowTreeNode *window, int z)>;
-
-struct OnSubtreeChangedCallData
-{
-    QWasmWindowTreeNodeChangeType changeType;
-    QWasmWindowTreeNode<TestWindowTreeNode> *parent;
-    TestWindowTreeNode *child;
-};
 
 struct SetWindowZOrderCallData
 {
@@ -35,10 +26,9 @@ struct SetWindowZOrderCallData
 class TestWindowTreeNode final : public QWasmWindowTreeNode<TestWindowTreeNode>
 {
 public:
-    TestWindowTreeNode(OnSubtreeChangedCallback onSubtreeChangedCallback,
-                       SetWindowZOrderCallback setWindowZOrderCallback)
-        : m_onSubtreeChangedCallback(std::move(onSubtreeChangedCallback)),
-          m_setWindowZOrderCallback(std::move(setWindowZOrderCallback))
+    TestWindowTreeNode() = default;
+    explicit TestWindowTreeNode(SetWindowZOrderCallback setWindowZOrderCallback)
+        : m_setWindowZOrderCallback(std::move(setWindowZOrderCallback))
     {
     }
     ~TestWindowTreeNode() final { }
@@ -73,18 +63,15 @@ public:
     Qt::WindowFlags windowFlags() const { return Qt::WindowFlags(); }
 
 protected:
-    void onSubtreeChanged(QWasmWindowTreeNodeChangeType changeType, QWasmWindowTreeNode<TestWindowTreeNode> *parent,
-        TestWindowTreeNode *child) final
+    void setWindowZOrder(TestWindowTreeNode *window, int z) final
     {
-        m_onSubtreeChangedCallback(changeType, parent, child);
+        if (m_setWindowZOrderCallback)
+            m_setWindowZOrderCallback(window, z);
     }
-
-    void setWindowZOrder(TestWindowTreeNode *window, int z) final { m_setWindowZOrderCallback(window, z); }
 
     TestWindowTreeNode *m_parent = nullptr;
     emscripten::val m_containerElement = emscripten::val::undefined();
 
-    OnSubtreeChangedCallback m_onSubtreeChangedCallback;
     SetWindowZOrderCallback m_setWindowZOrderCallback;
     TestQWindow m_qWindow;
 };
@@ -108,11 +95,6 @@ private slots:
 
 void tst_QWasmWindowTreeNode::init() { }
 
-bool operator==(const OnSubtreeChangedCallData &lhs, const OnSubtreeChangedCallData &rhs)
-{
-    return lhs.changeType == rhs.changeType && lhs.parent == rhs.parent && lhs.child == rhs.child;
-}
-
 bool operator==(const SetWindowZOrderCallData &lhs, const SetWindowZOrderCallData &rhs)
 {
     return lhs.window == rhs.window && lhs.z == rhs.z;
@@ -120,47 +102,25 @@ bool operator==(const SetWindowZOrderCallData &lhs, const SetWindowZOrderCallDat
 
 void tst_QWasmWindowTreeNode::nestedWindowStacks()
 {
-    QList<OnSubtreeChangedCallData> calls;
-    OnSubtreeChangedCallback mockOnSubtreeChanged =
-            [&calls](QWasmWindowTreeNodeChangeType changeType, QWasmWindowTreeNode *parent,
-                     QWasmWindow *child) {
-                calls.push_back(OnSubtreeChangedCallData{ changeType, parent, child });
-            };
-    SetWindowZOrderCallback ignoreSetWindowZOrder = [](QWasmWindow *, int) {};
-    TestWindowTreeNode node(mockOnSubtreeChanged, ignoreSetWindowZOrder);
+    TestWindowTreeNode node;
     node.bringToTop();
 
-    OnSubtreeChangedCallback ignoreSubtreeChanged = [](QWasmWindowTreeNodeChangeType,
-                                                       QWasmWindowTreeNode *, QWasmWindow *) {};
-    TestWindowTreeNode node2(ignoreSubtreeChanged, ignoreSetWindowZOrder);
+    TestWindowTreeNode node2;
     node2.setParent(&node);
 
     QCOMPARE(node.childStack().size(), 1u);
     QCOMPARE(node2.childStack().size(), 0u);
     QCOMPARE(node.childStack().topWindow(), &node2);
-    QCOMPARE(calls.size(), 1u);
-    {
-        OnSubtreeChangedCallData expected{ QWasmWindowTreeNodeChangeType::NodeInsertion, &node,
-                                           &node2 };
-        QCOMPARE(calls[0], expected);
-        calls.clear();
-    }
 
-    TestWindowTreeNode node3(ignoreSubtreeChanged, ignoreSetWindowZOrder);
+    TestWindowTreeNode node3;
     node3.setParent(&node);
 
     QCOMPARE(node.childStack().size(), 2u);
     QCOMPARE(node2.childStack().size(), 0u);
     QCOMPARE(node3.childStack().size(), 0u);
     QCOMPARE(node.childStack().topWindow(), &node3);
-    {
-        OnSubtreeChangedCallData expected{ QWasmWindowTreeNodeChangeType::NodeInsertion, &node,
-                                           &node3 };
-        QCOMPARE(calls[0], expected);
-        calls.clear();
-    }
 
-    TestWindowTreeNode node4(ignoreSubtreeChanged, ignoreSetWindowZOrder);
+    TestWindowTreeNode node4;
     node4.setParent(&node);
 
     QCOMPARE(node.childStack().size(), 3u);
@@ -168,12 +128,6 @@ void tst_QWasmWindowTreeNode::nestedWindowStacks()
     QCOMPARE(node3.childStack().size(), 0u);
     QCOMPARE(node4.childStack().size(), 0u);
     QCOMPARE(node.childStack().topWindow(), &node4);
-    {
-        OnSubtreeChangedCallData expected{ QWasmWindowTreeNodeChangeType::NodeInsertion, &node,
-                                           &node4 };
-        QCOMPARE(calls[0], expected);
-        calls.clear();
-    }
 
     node3.bringToTop();
     QCOMPARE(node.childStack().topWindow(), &node3);
@@ -181,46 +135,25 @@ void tst_QWasmWindowTreeNode::nestedWindowStacks()
     node4.setParent(nullptr);
     QCOMPARE(node.childStack().size(), 2u);
     QCOMPARE(node.childStack().topWindow(), &node3);
-    {
-        OnSubtreeChangedCallData expected{ QWasmWindowTreeNodeChangeType::NodeRemoval, &node,
-                                           &node4 };
-        QCOMPARE(calls[0], expected);
-        calls.clear();
-    }
 
     node2.setParent(nullptr);
     QCOMPARE(node.childStack().size(), 1u);
     QCOMPARE(node.childStack().topWindow(), &node3);
-    {
-        OnSubtreeChangedCallData expected{ QWasmWindowTreeNodeChangeType::NodeRemoval, &node,
-                                           &node2 };
-        QCOMPARE(calls[0], expected);
-        calls.clear();
-    }
 
     node3.setParent(nullptr);
     QVERIFY(node.childStack().empty());
     QCOMPARE(node.childStack().topWindow(), nullptr);
-    {
-        OnSubtreeChangedCallData expected{ QWasmWindowTreeNodeChangeType::NodeRemoval, &node,
-                                           &node3 };
-        QCOMPARE(calls[0], expected);
-        calls.clear();
-    }
 }
 
 void tst_QWasmWindowTreeNode::settingChildWindowZOrder()
 {
     QList<SetWindowZOrderCallData> calls;
-    OnSubtreeChangedCallback ignoreSubtreeChanged = [](QWasmWindowTreeNodeChangeType,
-                                                       QWasmWindowTreeNode *, QWasmWindow *) {};
     SetWindowZOrderCallback onSetWindowZOrder = [&calls](QWasmWindow *window, int z) {
         calls.push_back(SetWindowZOrderCallData{ window, z });
     };
-    SetWindowZOrderCallback ignoreSetWindowZOrder = [](QWasmWindow *, int) {};
-    TestWindowTreeNode node(ignoreSubtreeChanged, onSetWindowZOrder);
+    TestWindowTreeNode node(onSetWindowZOrder);
 
-    TestWindowTreeNode node2(ignoreSubtreeChanged, ignoreSetWindowZOrder);
+    TestWindowTreeNode node2;
     node2.setParent(&node);
 
     {
@@ -230,7 +163,7 @@ void tst_QWasmWindowTreeNode::settingChildWindowZOrder()
         calls.clear();
     }
 
-    TestWindowTreeNode node3(ignoreSubtreeChanged, ignoreSetWindowZOrder);
+    TestWindowTreeNode node3;
     node3.setParent(&node);
 
     {
@@ -242,7 +175,7 @@ void tst_QWasmWindowTreeNode::settingChildWindowZOrder()
         calls.clear();
     }
 
-    TestWindowTreeNode node4(ignoreSubtreeChanged, ignoreSetWindowZOrder);
+    TestWindowTreeNode node4;
     node4.setParent(&node);
 
     {

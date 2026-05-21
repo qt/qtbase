@@ -19,31 +19,17 @@ void QWasmWindowTreeNode<Window>::onParentChanged(QWasmWindowTreeNode *previousP
                                           typename QWasmWindowStack<Window>::PositionPreference positionPreference)
 {
     auto *window = asWasmWindow();
-    if (previousParent) {
+    if (previousParent)
         previousParent->m_childStack.removeWindow(window);
-        previousParent->onSubtreeChanged(QWasmWindowTreeNodeChangeType::NodeRemoval, previousParent,
-                                         window);
-    }
 
-    if (currentParent) {
+    if (currentParent)
         currentParent->m_childStack.pushWindow(window, positionPreference);
-        currentParent->onSubtreeChanged(QWasmWindowTreeNodeChangeType::NodeInsertion, currentParent,
-                                        window);
-    }
 }
 
 template<class Window>
 Window *QWasmWindowTreeNode<Window>::asWasmWindow()
 {
     return nullptr;
-}
-
-template<class Window>
-void QWasmWindowTreeNode<Window>::onSubtreeChanged(QWasmWindowTreeNodeChangeType changeType,
-                                           QWasmWindowTreeNode *parent, Window *child)
-{
-    if (parentNode())
-        parentNode()->onSubtreeChanged(changeType, parent, child);
 }
 
 template<class Window>

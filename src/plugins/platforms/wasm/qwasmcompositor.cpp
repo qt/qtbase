@@ -30,15 +30,23 @@ QWasmCompositor::~QWasmCompositor()
     m_isEnabled = false; // prevent frame() from creating a new m_context
 }
 
-void QWasmCompositor::onWindowTreeChanged(QWasmWindowTreeNodeChangeType changeType,
-                                          QWasmWindow *window)
+void QWasmCompositor::onWindowAdded(QWasmWindow *)
+{
+    updateEnabledForWindows();
+}
+
+void QWasmCompositor::onWindowRemoved(QWasmWindow *window)
+{
+    m_requestUpdateWindows.remove(window);
+    updateEnabledForWindows();
+}
+
+void QWasmCompositor::updateEnabledForWindows()
 {
     auto allWindows = screen()->allWindows();
     setEnabled(std::any_of(allWindows.begin(), allWindows.end(), [](QWasmWindow *element) {
         return !element->context2d().isUndefined();
     }));
-    if (changeType == QWasmWindowTreeNodeChangeType::NodeRemoval)
-        m_requestUpdateWindows.remove(window);
 }
 
 void QWasmCompositor::setEnabled(bool enabled)

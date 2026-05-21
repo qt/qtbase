@@ -1279,6 +1279,19 @@ void QWasmWindow::onParentChanged(QWasmWindowTreeNode *previous, QWasmWindowTree
     if (current)
         current->containerElement().call<void>("appendChild", m_decoratedWindow);
     QWasmWindowTreeNode::onParentChanged(previous, current, positionPreference);
+
+    QWasmScreen *screen = platformScreen();
+    if (previous)
+        m_compositor->onWindowRemoved(this);
+    if (current) {
+        m_compositor->onWindowAdded(this);
+
+        // The first top-level window inserted as maximized/fullscreen stays on bottom.
+        const auto state = window()->windowState();
+        const bool isMaxFull = state & (Qt::WindowMaximized | Qt::WindowFullScreen);
+        if (current == screen && screen->topLevelWindowCount() == 1 && isMaxFull)
+            window()->setFlag(Qt::WindowStaysOnBottomHint);
+    }
 }
 
 QT_END_NAMESPACE

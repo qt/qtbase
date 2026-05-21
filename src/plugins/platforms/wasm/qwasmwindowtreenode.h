@@ -15,11 +15,6 @@ class val;
 
 class QWasmWindow;
 
-enum class QWasmWindowTreeNodeChangeType {
-    NodeInsertion,
-    NodeRemoval,
-};
-
 class QWasmWindowTreeNodeBase
 {
 protected:
@@ -40,8 +35,6 @@ protected:
     virtual void onParentChanged(QWasmWindowTreeNode *previous, QWasmWindowTreeNode *current,
                                  typename QWasmWindowStack<Window>::PositionPreference positionPreference);
     virtual Window *asWasmWindow();
-    virtual void onSubtreeChanged(QWasmWindowTreeNodeChangeType changeType,
-                                  QWasmWindowTreeNode *parent, Window *child);
     virtual void setWindowZOrder(Window *window, int z);
 
     void onPositionPreferenceChanged(typename QWasmWindowStack<Window>::PositionPreference positionPreference);

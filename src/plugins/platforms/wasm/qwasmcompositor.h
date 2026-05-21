@@ -20,8 +20,6 @@ QT_BEGIN_NAMESPACE
 class QWasmWindow;
 class QWasmScreen;
 
-enum class QWasmWindowTreeNodeChangeType;
-
 class QWasmCompositor final : public QObject
 {
     Q_OBJECT
@@ -41,10 +39,12 @@ public:
     void requestUpdateWindow(QWasmWindow *window, const QRect &updateRect, UpdateRequestDeliveryType updateType = ExposeEventDelivery);
 
     void handleBackingStoreFlush(QWindow *window, const QRect &updateRect);
-    void onWindowTreeChanged(QWasmWindowTreeNodeChangeType changeType, QWasmWindow *window);
+    void onWindowAdded(QWasmWindow *window);
+    void onWindowRemoved(QWasmWindow *window);
 
 private:
     void frame(const QList<QWasmWindow *> &windows);
+    void updateEnabledForWindows();
 
     void deregisterEventHandlers();
 

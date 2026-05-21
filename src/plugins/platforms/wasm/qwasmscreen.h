@@ -43,6 +43,7 @@ public:
     QWasmCompositor *compositor();
 
     QList<QWasmWindow *> allWindows() const;
+    size_t topLevelWindowCount() const { return childStack().size(); }
 
     QRect geometry() const override;
     int depth() const override;
@@ -71,10 +72,6 @@ public slots:
     void setGeometry(const QRect &rect);
 
 private:
-    // QWasmWindowTreeNode:
-    void onSubtreeChanged(QWasmWindowTreeNodeChangeType changeType, QWasmWindowTreeNode *parent,
-                          QWasmWindow *child) final;
-
     emscripten::val m_container;
     emscripten::val m_intermediateContainer;
     emscripten::val m_shadowContainer;

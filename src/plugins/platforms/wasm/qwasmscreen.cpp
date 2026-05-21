@@ -241,22 +241,6 @@ void QWasmScreen::setGeometry(const QRect &rect)
     resizeMaximizedWindows();
 }
 
-void QWasmScreen::onSubtreeChanged(QWasmWindowTreeNodeChangeType changeType,
-                                   QWasmWindowTreeNode *parent, QWasmWindow *child)
-{
-    Q_UNUSED(parent);
-
-    QWindow *window = child->window();
-    const bool isMaxFull = (window->windowState() & Qt::WindowMaximized) ||
-                           (window->windowState() & Qt::WindowFullScreen);
-    if (changeType == QWasmWindowTreeNodeChangeType::NodeInsertion && parent == this
-        && childStack().size() == 1 && isMaxFull) {
-        window->setFlag(Qt::WindowStaysOnBottomHint);
-    }
-    QWasmWindowTreeNode::onSubtreeChanged(changeType, parent, child);
-    m_compositor->onWindowTreeChanged(changeType, child);
-}
-
 void QWasmScreen::updateQScreenSize()
 {
     double css_width;
