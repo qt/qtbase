@@ -45,95 +45,125 @@ using namespace Qt::StringLiterals;
     methods such as QStandardPaths::writableLocation, QStandardPaths::standardLocations,
     and QStandardPaths::displayName.
 
-    Some of the values in this enum represent a user configuration. Such enum
-    values will return the same paths in different applications, so they could
-    be used to share data with other applications. Other values are specific to
-    this application. Each enum value in the table below describes whether it's
-    application-specific or generic.
-
-    Application-specific directories should be assumed to be unreachable by
-    other applications. Therefore, files placed there might not be readable by
-    other applications, even if run by the same user. On the other hand, generic
-    directories should be assumed to be accessible by all applications run by
-    this user, but should still be assumed to be unreachable by applications by
-    other users.
+    QStandardPaths describes each location along two independent axes:
+    app scope (private to the calling application or shared between
+    applications) and user scope (rooted in the calling user's directories
+    or system-wide). Each enum value below indicates its app scope; the
+    platform tables further down show its user scope.
 
     Data interchange with other users is out of the scope of QStandardPaths.
 
-    \value DesktopLocation Returns the user's desktop directory. This is a generic value.
-           On systems with no concept of a desktop, this is the same as
-           QStandardPaths::HomeLocation.
-    \value DocumentsLocation Returns the directory containing user document files.
-           This is a generic value. The returned path is never empty.
-    \value FontsLocation Returns the directory containing user's fonts. This is a generic value.
-           Note that installing fonts may require additional, platform-specific operations.
-    \value ApplicationsLocation Returns the directory containing the user applications
-           (either executables, application bundles, or shortcuts to them). This is a generic value.
-           Note that installing applications may require additional, platform-specific operations.
-           Files, folders or shortcuts in this directory are platform-specific.
-    \value MusicLocation Returns the directory containing the user's music or other audio files.
-           This is a generic value. If no directory specific for music files exists, a sensible
-           fallback for storing user documents is returned.
-    \value MoviesLocation Returns the directory containing the user's movies and videos.
-           This is a generic value. If no directory specific for movie files exists, a sensible
-           fallback for storing user documents is returned.
-    \value PicturesLocation Returns the directory containing the user's pictures or photos.
-           This is a generic value. If no directory specific for picture files exists, a sensible
-           fallback for storing user documents is returned.
-    \value TempLocation Returns a directory where temporary files can be stored. The returned value
-           might be application-specific, shared among other applications for this user, or even
-           system-wide. The returned path is never empty.
-    \value HomeLocation Returns the user's home directory (the same as QDir::homePath()). On Unix
-           systems, this is equal to the HOME environment variable. This value might be
-           generic or application-specific, but the returned path is never empty.
-    \value AppLocalDataLocation Returns the local settings path on the Windows operating
-           system. On all other platforms, it returns the same value as AppDataLocation.
+    \section2 App scope
+
+    A location is either \e application-specific (private to the calling
+    application) or \e generic (shared between applications run by the
+    same user). Application-specific locations should be assumed to be
+    unreachable by other applications, even when run by the same user.
+
+    \section3 Sandboxed applications
+
+    For sandboxed applications, on platforms such as iOS, Android, or macOS,
+    even generic locations can be rooted in the application's sandbox container
+    (\c{<APPROOT>} in the tables below). In practice this collapses the
+    app-scope distinction, with every location becoming effectively
+    application-specific, and the user's system-wide shared directories reachable
+    only through system-provided pickers, for example, QFileDialog.
+
+    \section2 User scope
+
+    A location is either \e user-local (rooted in the calling user's
+    home or per-user directories) or \e system-wide (populated by the OS
+    or by package managers, shared across users, and usually read-only to
+    applications).
+
+    Querying writableLocation() returns the directory where files should be
+    written, which is typically user-scoped. For application-specific locations
+    it is also scoped to the calling application.
+
+    Querying standardLocations() returns the writable path first (if it can be
+    determined), followed by zero or more additional locations, including both
+    user-local and system-wide fallbacks. The additional locations are used by
+    locate() and locateAll() to find existing files.
+
+    \value DesktopLocation The user's desktop directory. On systems with no
+           concept of a desktop, this is the same as HomeLocation. Generic.
+    \value DocumentsLocation Directory containing document files. The
+           returned path is never empty. Generic.
+    \value FontsLocation Directory containing fonts. Note that installing
+           fonts may require additional, platform-specific operations.
+           Generic.
+    \value ApplicationsLocation Directory containing applications (either
+           executables, application bundles, or shortcuts to them). Note
+           that installing applications may require additional,
+           platform-specific operations. Files, folders, or shortcuts in this
+           directory are platform-specific. Generic.
+    \value MusicLocation Directory containing music or other audio files.
+           If no such directory exists, a sensible fallback for storing
+           documents is returned. Generic.
+    \value MoviesLocation Directory containing movies and videos. If no
+           such directory exists, a sensible fallback for storing documents
+           is returned. Generic.
+    \value PicturesLocation Directory containing pictures or photos. If no
+           such directory exists, a sensible fallback for storing documents
+           is returned. Generic.
+    \value TempLocation Directory where temporary files can be stored. The
+           returned value might be application-specific, shared among other
+           applications for this user, or even system-wide. The returned
+           path is never empty. Varies.
+    \value HomeLocation The user's home directory (the same as
+           QDir::homePath()). On Unix systems, this is equal to the HOME
+           environment variable. The returned path is never empty. Generic.
+    \value AppLocalDataLocation The local data path on Windows. On all
+           other platforms, the same as AppDataLocation. Application-specific.
            This enum value was added in Qt 5.4.
-    \value CacheLocation Returns a directory location where user-specific
-           non-essential (cached) data should be written. This is an application-specific directory.
-           The returned path is never empty.
-    \value GenericCacheLocation Returns a directory location where user-specific non-essential
-           (cached) data, shared across applications, should be written. This is a generic value.
-           Note that the returned path may be empty if the system has no concept of shared cache.
-    \value GenericDataLocation Returns a directory location where persistent
-           data shared across applications can be stored. This is a generic value. The returned
-           path is never empty.
-    \value RuntimeLocation Returns a directory location where runtime communication
-           files should be written, like Unix local sockets. This is a generic value.
-           The returned path may be empty on some systems.
-    \value ConfigLocation Returns a directory location where user-specific
-           configuration files should be written. This may be either a generic value
-           or application-specific, and the returned path is never empty.
-    \value DownloadLocation Returns a directory for user's downloaded files. This is a generic value.
-           If no directory specific for downloads exists, a sensible fallback for storing user
-           documents is returned.
-    \value GenericConfigLocation Returns a directory location where user-specific
-           configuration files shared between multiple applications should be written.
-           This is a generic value and the returned path is never empty.
-    \value AppDataLocation Returns a directory location where persistent
-           application data can be stored. This is an application-specific directory.
-           To obtain a path to store data to be shared with other applications, use
-           QStandardPaths::GenericDataLocation. The returned path is never empty.
-           On the Windows operating system, this returns the roaming path.
+    \value CacheLocation Directory where non-essential (cached) data should
+           be written. The returned path is never empty.
+           Application-specific.
+    \value GenericCacheLocation Directory where non-essential (cached) data
+           shared across applications should be written. Note that the
+           returned path may be empty if the system has no concept of
+           shared cache. Generic.
+    \value GenericDataLocation Directory where persistent data shared
+           across applications can be stored. The returned path is never
+           empty. Generic.
+    \value RuntimeLocation Directory where runtime communication files
+           should be written, like Unix local sockets. The returned path
+           may be empty on some systems. Generic.
+    \value ConfigLocation Directory where configuration files should be
+           written. The returned path is never empty. May be generic or
+           application-specific (see AppConfigLocation and
+           GenericConfigLocation for explicit variants). Varies.
+    \value DownloadLocation Directory for downloaded files. If no such
+           directory exists, a sensible fallback for storing documents is
+           returned. Generic.
+    \value GenericConfigLocation Directory where configuration files shared
+           between multiple applications should be written. The returned
+           path is never empty. Generic.
+    \value AppDataLocation Directory where persistent application data can
+           be stored. To obtain a path to store data to be shared with
+           other applications, use GenericDataLocation. The returned path
+           is never empty. On Windows, this returns the roaming path.
+           Application-specific.
            This enum value was added in Qt 5.4.
-    \value AppConfigLocation Returns a directory location where user-specific
-           configuration files should be written. This is an application-specific directory,
-           and the returned path is never empty.
+    \value AppConfigLocation Directory where configuration files should be
+           written. The returned path is never empty.
+           Application-specific.
            This enum value was added in Qt 5.5.
-    \value PublicShareLocation Returns a directory location where user-specific publicly shared files
-           and directories can be stored. This is a generic value. Note that the returned path may be
+    \value PublicShareLocation Directory where publicly shared files and
+           directories can be stored. Note that the returned path may be
            empty if the system has no concept of a publicly shared location.
+           Generic.
            This enum value was added in Qt 6.4.
-    \value TemplatesLocation Returns a directory location where user-specific
-           template files can be stored. This is a generic value. Note that the returned path may be
-           empty if the system has no concept of a templates location.
+    \value TemplatesLocation Directory where template files can be stored.
+           Note that the returned path may be empty if the system has no
+           concept of a templates location. Generic.
            This enum value was added in Qt 6.4.
-    \value [since 6.7] StateLocation Returns a directory location where user-specific application
-           state data files should be written. This is an application-specific directory,
-           and the returned path is never empty.
-    \value [since 6.7] GenericStateLocation Returns a directory location where shared state data files
-           across applications should be written. This value might be generic or application-specific,
-           but the returned path is never empty.
+    \value [since 6.7] StateLocation Directory where application state data
+           files should be written. The returned path is never empty.
+           Application-specific.
+    \value [since 6.7] GenericStateLocation Directory where shared state
+           data files across applications should be written. The returned
+           path is never empty. Generic.
 
     The following table gives examples of paths on different operating systems.
     The first path is the writable path (unless noted). Other, additional
