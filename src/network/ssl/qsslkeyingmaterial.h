@@ -79,11 +79,10 @@ private:
     }
     Q_DECLARE_EQUALITY_COMPARABLE(QSslKeyingMaterial)
 
-    friend size_t qHash(const QSslKeyingMaterial &material, size_t seed = 0) noexcept
-    {
-        return qHashMulti(seed, material.keyingLabel, material.keyingContext, material.keyingValue,
-                          material.keyingValueSize);
-    }
+    friend size_t qHash(const QSslKeyingMaterial &material) noexcept
+    { return qHash(material, 0); }
+    friend Q_NETWORK_EXPORT size_t qHash(const QSslKeyingMaterial &material, size_t seed) noexcept;
+
 #ifndef QT_NO_DEBUG_STREAM
     friend Q_NETWORK_EXPORT QDebug operator<<(QDebug debug, const QSslKeyingMaterial &keying);
 #endif // QT_NO_DEBUG_STREAM

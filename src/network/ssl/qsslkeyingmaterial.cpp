@@ -156,9 +156,15 @@ QT_IMPL_METATYPE_EXTERN(QSslKeyingMaterial)
 */
 
 /*!
+    \fn size_t qHash(const QSslKeyingMaterial &key) noexcept
     \fn size_t qHash(const QSslKeyingMaterial &key, size_t seed) noexcept
     \qhashold{QHash}
 */
+size_t qHash(const QSslKeyingMaterial &material, size_t seed) noexcept
+{
+    return qHashMulti(seed, material.keyingLabel, material.keyingContext, material.keyingValue,
+                      material.keyingValueSize);
+}
 
 #ifndef QT_NO_DEBUG_STREAM
 /*!
