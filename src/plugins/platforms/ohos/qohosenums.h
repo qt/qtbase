@@ -14,28 +14,6 @@ namespace QtOhos {
 
 namespace enums {
 
-namespace kit {
-
-namespace NotificationKit {
-
-namespace notificationManager {
-
-enum class ContentType {
-    NOTIFICATION_CONTENT_BASIC_TEXT,
-    NOTIFICATION_CONTENT_LONG_TEXT,
-    NOTIFICATION_CONTENT_PICTURE,
-    NOTIFICATION_CONTENT_CONVERSATION,
-    NOTIFICATION_CONTENT_MULTILINE,
-    NOTIFICATION_CONTENT_SYSTEM_LIVE_VIEW,
-    NOTIFICATION_CONTENT_LIVE_VIEW,
-};
-
-}
-
-}
-
-}
-
 namespace ohos {
 
 namespace app {
@@ -116,6 +94,20 @@ enum class SupportWindowMode
 
 }
 
+namespace notificationManager {
+
+enum class ContentType {
+    NOTIFICATION_CONTENT_BASIC_TEXT,
+    NOTIFICATION_CONTENT_LONG_TEXT,
+    NOTIFICATION_CONTENT_PICTURE,
+    NOTIFICATION_CONTENT_CONVERSATION,
+    NOTIFICATION_CONTENT_MULTILINE,
+    NOTIFICATION_CONTENT_SYSTEM_LIVE_VIEW,
+    NOTIFICATION_CONTENT_LIVE_VIEW,
+};
+
+}
+
 namespace window {
 
 namespace WindowCreateParams {
@@ -137,10 +129,10 @@ template<typename Enum>
 struct OhosEnumMeta;
 
 template<>
-struct OhosEnumMeta<enums::kit::NotificationKit::notificationManager::ContentType>
+struct OhosEnumMeta<enums::ohos::notificationManager::ContentType>
 {
-    using Enum = enums::kit::NotificationKit::notificationManager::ContentType;
-    static constexpr const char *fullTypeName = "@kit.NotificationKit.notificationManager.ContentType";
+    using Enum = enums::ohos::notificationManager::ContentType;
+    static constexpr const char *fullTypeName = "@ohos.notificationManager.ContentType";
     static constexpr std::array<std::pair<Enum, const char *>, 7> enumeratorsNames = {{
         {Enum::NOTIFICATION_CONTENT_BASIC_TEXT, "NOTIFICATION_CONTENT_BASIC_TEXT"},
         {Enum::NOTIFICATION_CONTENT_LONG_TEXT, "NOTIFICATION_CONTENT_LONG_TEXT"},

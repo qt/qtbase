@@ -1263,7 +1263,7 @@ void QOhosQpaFunctionsImpl::setOnContinueRequestsHandlerForAbilityInstanceWindow
                                                 if (qtResponse.exitAppOnSourceDeviceAfterMigration.hasValue()) {
                                                     wantParamsObj.set(
                                                         jsState.eval<QNapi::String>(
-                                                            "@kit.AbilityKit.wantConstant.Params.SUPPORT_CONTINUE_SOURCE_EXIT_KEY"),
+                                                            "@ohos.app.ability.wantConstant.Params.SUPPORT_CONTINUE_SOURCE_EXIT_KEY"),
                                                         qtResponse.exitAppOnSourceDeviceAfterMigration.value());
                                                 }
                                             }

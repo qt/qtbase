@@ -257,7 +257,7 @@ QNapi::Object makeJsStatusBarIcon(QtOhos::JsState &jsState, const QIcon &icon)
 QNapi::Object makeJsNotificationContent(
     QtOhos::JsState &jsState, const std::string &title, const std::string &text)
 {
-    using ContentType = QtOhos::enums::kit::NotificationKit::notificationManager::ContentType;
+    using ContentType = QtOhos::enums::ohos::notificationManager::ContentType;
 
     return QNapi::makeObject(
         jsState.env(),
@@ -416,7 +416,7 @@ void QOhosSystemTrayIcon::showMessage(
             auto notificationRequest = makeJsNotificationRequest(
                 jsState, title.toStdString(), msg.toStdString(), icon,
                 msecs > 0 ? makeQOhosOptional(msecs) : makeEmptyQOhosOptional());
-            jsState.eval<QNapi::Promise>("@kit.NotificationKit.notificationManager.publish(*)", {notificationRequest})
+            jsState.eval<QNapi::Promise>("@ohos.notificationManager.publish(*)", {notificationRequest})
             .onCatch(QtOhos::makeErrorLoggingJsCallback("publish()"))
             .onFinally(std::move(continueFunc));
         });
