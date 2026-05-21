@@ -10,6 +10,7 @@
 #include <future>
 #include <mutex>
 #include <napi.h>
+#include <napi/native_api.h>
 #include <optional>
 #include <tuple>
 #include <typeindex>
@@ -21,6 +22,44 @@ QT_BEGIN_NAMESPACE
 namespace QtOhos {
 
 namespace {
+
+constexpr const char *forceLoadJsModulesEnvVariableName = "IO__QT__OHOS__FORCE_LOAD_JS_MODULES";
+
+constexpr const char *napiLoadableModules[] = {
+    "@ohos.abilityAccessCtrl",
+    "@ohos.accessibility",
+    "@ohos.app.ability.AbilityConstant",
+    "@ohos.app.ability.ConfigurationConstant",
+    "@ohos.app.ability.childProcessManager",
+    "@ohos.app.ability.contextConstant",
+    "@ohos.app.ability.wantConstant",
+    "@ohos.arkui.uiExtension",
+    "@ohos.bluetooth.access",
+    "@ohos.bluetooth.connection",
+    "@ohos.bluetooth.socket",
+    "@ohos.bundle.bundleManager",
+    "@ohos.data.uniformTypeDescriptor",
+    "@ohos.deviceInfo",
+    "@ohos.display",
+    "@ohos.file.fileuri",
+    "@ohos.file.picker",
+    "@ohos.font",
+    "@ohos.geoLocationManager",
+    "@ohos.graphics.text",
+    "@ohos.i18n",
+    "@ohos.inputMethod",
+    "@ohos.intl",
+    "@ohos.multimedia.image",
+    "@ohos.multimedia.media",
+    "@ohos.multimodalInput.inputDevice",
+    "@ohos.multimodalInput.pointer",
+    "@ohos.notificationManager",
+    "@ohos.pasteboard",
+    "@ohos.settings",
+    "@ohos.web.webview",
+    "@ohos.wifiManager",
+    "@ohos.window",
+};
 
 class DummyQAbilityPeer : public QAbilityPeer
 {
@@ -182,6 +221,30 @@ QNapi::Symbol getJsWindowsTrackerIsClosingPropSymbol(JsState &jsState)
     return jsState.getJsSymbolForType<SymbolTag>();
 }
 
+bool isNapiLoadableModule(const std::string &moduleName)
+{
+    return std::any_of(
+        std::begin(napiLoadableModules), std::end(napiLoadableModules),
+        [&](const char *name) {
+            return moduleName == name;
+        });
+}
+
+QNapi::Object loadJsModuleViaNapiOrFail(napi_env env, const std::string &moduleName)
+{
+    qOhosPrintfDebug("%s: loading napi module '%s' via napi_load_module()", Q_FUNC_INFO, moduleName.c_str());
+
+    napi_value result = nullptr;
+    auto status = napi_load_module(env, moduleName.c_str(), &result);
+    if (status != napi_ok) {
+        qOhosReportFatalErrorAndAbort(
+            "%s: napi_load_module failed for module '%s' (status=%d)",
+            Q_FUNC_INFO, moduleName.c_str(), static_cast<int>(status));
+    }
+
+    return QNapi::Object(env, result);
+}
+
 class JsStateImpl : public JsState
 {
 public:
@@ -252,6 +315,8 @@ private:
         const std::type_info &enumTypeInfo, OhosEnumInfo (*ohosEnumInfoFactory)());
     std::vector<std::pair<int, double>> resolveOhosEnumEnumerators(const OhosEnumInfo &enumInfo);
 
+    void forceLoadAllJsModulesIfRequested();
+
     pthread_t m_jsThread = {};
     napi_env m_env = nullptr;
     QNapi::Reference<QNapi::Object> m_appLaunchWant;
@@ -259,6 +324,7 @@ private:
     std::shared_ptr<QAbilityPeer> m_defaultQAbilityPeer;
     std::map<std::string, std::shared_ptr<QAbilityPeer>> m_qAbilityPeers;
     std::map<std::string, QNapi::Reference<QNapi::Object>> m_jsModules;
+    std::map<std::string, QNapi::Reference<QNapi::Object>> m_dynamicallyLoadedJsModules;
     std::shared_ptr<AppFunctions> m_appFunctions;
     PreQueuingJsTasksExecutor m_tasksExecutor;
     std::vector<QOhosConsumer<JsState &, QNapi::Object, QNapi::Object>> m_newWantConsumers;
@@ -289,6 +355,8 @@ void JsStateImpl::initInJsThread(
 
 void JsStateImpl::addQAbilityPeerInJsThread(std::shared_ptr<QAbilityPeer> qAbilityPeer)
 {
+    forceLoadAllJsModulesIfRequested();
+
     if (m_appLaunchWant.IsEmpty())
         m_appLaunchWant = Napi::Persistent(qAbilityPeer->launchWant());
 
@@ -352,9 +420,36 @@ napi_env JsStateImpl::env()
     return m_env;
 }
 
+void JsStateImpl::forceLoadAllJsModulesIfRequested()
+{
+    if (qEnvironmentVariableIntValue(forceLoadJsModulesEnvVariableName) == 0)
+        return;
+
+    qOhosPrintfDebug("%s: forcibly loading all JS modules", Q_FUNC_INFO);
+
+    for (const char *name : napiLoadableModules) {
+        if (m_dynamicallyLoadedJsModules.find(name) == m_dynamicallyLoadedJsModules.end()) {
+            auto module = loadJsModuleViaNapiOrFail(m_env, name);
+            m_dynamicallyLoadedJsModules.emplace(
+                name, QNapi::Reference<QNapi::Object>::makePersistentFrom(module));
+        }
+    }
+}
+
 QNapi::Object JsStateImpl::getModule(const std::string &moduleName)
 {
     using namespace std::string_literals;
+
+    auto cachedLoadedModuleIter = m_dynamicallyLoadedJsModules.find(moduleName);
+    if (cachedLoadedModuleIter != m_dynamicallyLoadedJsModules.end())
+        return cachedLoadedModuleIter->second.Value();
+
+    if (isNapiLoadableModule(moduleName)) {
+        auto module = loadJsModuleViaNapiOrFail(m_env, moduleName);
+        m_dynamicallyLoadedJsModules.emplace(
+            moduleName, QNapi::Reference<QNapi::Object>::makePersistentFrom(module));
+        return module;
+    }
 
     auto moduleIter = m_jsModules.find(moduleName);
     if (moduleIter == m_jsModules.end())
@@ -497,14 +592,17 @@ std::tuple<QNapi::Object, std::string> JsStateImpl::extractModuleFromEvalExpr(co
     using namespace std::string_literals;
 
     std::size_t longestModulePrefixSize = 0;
-    for (const auto &moduleEntry : m_jsModules) {
-        const auto &moduleName = moduleEntry.first;
-        if (moduleName.size() > longestModulePrefixSize
-            && expr.compare(0, moduleName.size(), moduleName) == 0
-            && (expr.size() == moduleName.size() || expr[moduleName.size()] == '.')) {
-            longestModulePrefixSize = moduleName.size();
+    auto considerAsLongestPrefix = [&](const std::string &name) {
+        if (name.size() > longestModulePrefixSize
+            && expr.compare(0, name.size(), name) == 0
+            && (expr.size() == name.size() || expr[name.size()] == '.')) {
+            longestModulePrefixSize = name.size();
         }
-    }
+    };
+    for (const char *name : napiLoadableModules)
+        considerAsLongestPrefix(name);
+    for (const auto &moduleEntry : m_jsModules)
+        considerAsLongestPrefix(moduleEntry.first);
 
     if (longestModulePrefixSize == 0) {
         throw QNapi::makeLoggedException(
