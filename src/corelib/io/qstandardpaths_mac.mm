@@ -106,9 +106,6 @@ static QString baseWritableLocation(QStandardPaths::StandardLocation type,
         break;
     case QStandardPaths::ApplicationsLocation:
         break;
-    case QStandardPaths::PublicShareLocation:
-        path = pathForDirectory(NSDocumentDirectory, mask) + "/Public"_L1;
-        break;
 #endif
     case QStandardPaths::FontsLocation:
         path = pathForDirectory(NSLibraryDirectory, mask) + "/Fonts"_L1;

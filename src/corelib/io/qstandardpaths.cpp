@@ -327,7 +327,7 @@ using namespace Qt::StringLiterals;
          \li "<APPROOT>/Library/Preferences/<APPNAME>"
     \row \li PublicShareLocation
          \li not supported
-         \li not supported
+         \li "<APPROOT>/Public"
     \row \li TemplatesLocation
          \li not supported
          \li not supported
