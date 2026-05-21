@@ -259,7 +259,8 @@ void QBasicPlatformVulkanInstance::initInstance(QVulkanInstance *instance, const
         VkInstanceCreateInfo instInfo = {};
         instInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
         instInfo.pApplicationInfo = &appInfo;
-        if (!flags.testFlag(QVulkanInstance::NoPortabilityDrivers)) {
+        if (!flags.testFlag(QVulkanInstance::NoPortabilityDrivers)
+                && m_enabledExtensions.contains("VK_KHR_portability_enumeration")) {
             // With old Vulkan SDKs setting a non-zero flags gives a validation error.
             // Whereas from 1.3.216 on the portability bit is required for MoltenVK to function.
             // Hence the version check.
