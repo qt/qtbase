@@ -8,7 +8,7 @@ export default class QChildProcess extends ChildProcess {
   onStart() {
     hilog.info(LOG_DOMAIN, LOG_TAG, 'QChildProcess::onStart()');
     qpa.runQtChildProcess({
-      modules: QtUtils.getModulesMapForQt(),
+      modulesFactories: QtUtils.getModulesFactoriesMapForQt(),
     });
   }
 }

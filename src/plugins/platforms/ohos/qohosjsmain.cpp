@@ -797,23 +797,24 @@ void handleDefaultQAbilityInstanceStartup(JsState &jsState, std::shared_ptr<QAbi
             : getQtAppArgsFromWant(launchWant));
 }
 
-std::map<std::string, QNapi::Reference<QNapi::Object>> makeJsModulesMap(const QNapi::Object &jsModulesObj)
+std::map<std::string, QNapi::Reference<QNapi::Function>> makeJsModulesFactoriesMap(
+    const QNapi::Object &jsModulesFactoriesObj)
 {
-    std::map<std::string, QNapi::Reference<QNapi::Object>> jsModulesMap;
-    for (const auto &prop : jsModulesObj) {
+    std::map<std::string, QNapi::Reference<QNapi::Function>> jsModulesFactoriesMap;
+    for (const auto &prop : jsModulesFactoriesObj) {
         if (prop.first.IsString()) {
             auto propName = QNapi::checkedCast<QNapi::String>(prop.first);
             QNapi::Value propValue = prop.second;
-            if (propValue.IsObject()) {
-                jsModulesMap.emplace(
+            if (propValue.IsFunction()) {
+                jsModulesFactoriesMap.emplace(
                     propName.Utf8Value(),
-                    Napi::Persistent(
-                        QNapi::checkedCast<QNapi::Object>(propValue)));
+                    QNapi::Reference<QNapi::Function>::makePersistentFrom(
+                        QNapi::checkedCast<QNapi::Function>(propValue)));
             }
         }
     }
 
-    return jsModulesMap;
+    return jsModulesFactoriesMap;
 }
 
 class AppFunctionsImpl : public AppFunctions
@@ -1596,7 +1597,7 @@ void setupQtApplicationImpl(JsState &jsState, QNapi::Object appStartupObj, QtRun
 {
     auto appContext = appStartupObj.get<QNapi::Object>("appContext");
     auto appContextDirs = AppContextDirs::mapFromNapiObject(appContext);
-    auto jsModules = appStartupObj.get<QNapi::Object>("modules");
+    auto jsModulesFactories = appStartupObj.get<QNapi::Object>("modulesFactories");
 
     qOhosPrintfDebug("%s: setting up Qt in %s mode", Q_FUNC_INFO, mapQtRunModeToString(qtRunMode));
 
@@ -1607,7 +1608,8 @@ void setupQtApplicationImpl(JsState &jsState, QNapi::Object appStartupObj, QtRun
 
     currentQtRunMode = qtRunMode;
     QtOhos::initJsThreadState(
-        jsModules.Env(), makeJsModulesMap(jsModules), std::make_shared<AppFunctionsImpl>(), qtRunMode);
+        jsModulesFactories.Env(), makeJsModulesFactoriesMap(jsModulesFactories),
+        std::make_shared<AppFunctionsImpl>(), qtRunMode);
 
     QOhosAppContext::init(appContextDirs.mapToQOhosAppContextProperties());
     initAppData(jsState, appContext);
@@ -1722,7 +1724,7 @@ void runQtChildProcess(const CallbackInfo &cbInfo)
     auto childSetupJson = readChildProcessSetupData();
     auto childSetupObj = QNapi::checkedCast<QNapi::Object>(
         QOhosJsEnv::toNapiValue(cbInfo.Env(), childSetupJson));
-    childSetupObj["modules"] = paramsObj.get<QNapi::Object>("modules");
+    childSetupObj["modulesFactories"] = paramsObj.get<QNapi::Object>("modulesFactories");
 
     setupQtApplicationImpl(cbInfo.jsState(), childSetupObj, QtRunMode::NoUiChildProcess);
 

@@ -21,7 +21,7 @@ export default class QAbilityStage extends AbilityStage {
       QAbilityStage.setupQtApplicationCalled = true;
       qpa.setupQtApplication({
         appContext: appContext,
-        modules: QtUtils.getModulesMapForQt(),
+        modulesFactories: QtUtils.getModulesFactoriesMapForQt(),
         appName: APP_LIBRARY_NAME,
         appArgs: QAbilityStage.appArgs,
         abilityClassName: abilityClassName,

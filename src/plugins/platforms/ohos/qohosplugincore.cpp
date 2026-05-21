@@ -221,15 +221,6 @@ QNapi::Symbol getJsWindowsTrackerIsClosingPropSymbol(JsState &jsState)
     return jsState.getJsSymbolForType<SymbolTag>();
 }
 
-bool isNapiLoadableModule(const std::string &moduleName)
-{
-    return std::any_of(
-        std::begin(napiLoadableModules), std::end(napiLoadableModules),
-        [&](const char *name) {
-            return moduleName == name;
-        });
-}
-
 QNapi::Object loadJsModuleViaNapiOrFail(napi_env env, const std::string &moduleName)
 {
     qOhosPrintfDebug("%s: loading napi module '%s' via napi_load_module()", Q_FUNC_INFO, moduleName.c_str());
@@ -245,13 +236,41 @@ QNapi::Object loadJsModuleViaNapiOrFail(napi_env env, const std::string &moduleN
     return QNapi::Object(env, result);
 }
 
+QNapi::Object loadJsModuleViaEtsFactoryOrFail(
+    const QNapi::Function &etsModuleFactory, const std::string &moduleName)
+{
+    qOhosPrintfDebug("%s: loading napi module '%s' via ets factory", Q_FUNC_INFO, moduleName.c_str());
+
+    auto result = etsModuleFactory.Call({});
+    if (!result.IsObject()) {
+        qOhosReportFatalErrorAndAbort(
+            "%s: ets factory for module '%s' did not return an object",
+            Q_FUNC_INFO, moduleName.c_str());
+    }
+
+    return QNapi::checkedCast<QNapi::Object>(result);
+}
+
+template<typename T>
+std::function<T(JsState &)> makeMemoizingJsValueSupplier(std::function<T(JsState &)> baseJsSupplier)
+{
+    auto memoizedValue = moveToSharedPtr(QNapi::Reference<T>());
+    return [baseJsSupplier = std::move(baseJsSupplier), memoizedValue](JsState &jsState) mutable {
+        if (memoizedValue->IsEmpty()) {
+            *memoizedValue = QNapi::Reference<T>::makePersistentFrom(baseJsSupplier(jsState));
+            baseJsSupplier = nullptr;
+        }
+        return memoizedValue->Value();
+    };
+}
+
 class JsStateImpl : public JsState
 {
 public:
     JsStateImpl() = default;
 
     void initInJsThread(
-        napi_env env, std::map<std::string, QNapi::Reference<QNapi::Object>> &&jsModules,
+        napi_env env, std::map<std::string, QNapi::Reference<QNapi::Function>> &&etsModulesFactories,
         std::shared_ptr<AppFunctions> appFunctions, QtRunMode qtRunMode);
 
     bool isJsThread();
@@ -323,8 +342,7 @@ private:
     QNapi::Reference<QNapi::Object> m_optAppLaunchParam;
     std::shared_ptr<QAbilityPeer> m_defaultQAbilityPeer;
     std::map<std::string, std::shared_ptr<QAbilityPeer>> m_qAbilityPeers;
-    std::map<std::string, QNapi::Reference<QNapi::Object>> m_jsModules;
-    std::map<std::string, QNapi::Reference<QNapi::Object>> m_dynamicallyLoadedJsModules;
+    std::map<std::string, std::function<QNapi::Object(JsState &)>> m_jsModulesFactories;
     std::shared_ptr<AppFunctions> m_appFunctions;
     PreQueuingJsTasksExecutor m_tasksExecutor;
     std::vector<QOhosConsumer<JsState &, QNapi::Object, QNapi::Object>> m_newWantConsumers;
@@ -340,16 +358,39 @@ bool JsStateImpl::isJsThread()
 }
 
 void JsStateImpl::initInJsThread(
-    napi_env env, std::map<std::string, QNapi::Reference<QNapi::Object>> &&jsModules,
+    napi_env env, std::map<std::string, QNapi::Reference<QNapi::Function>> &&etsModulesFactories,
     std::shared_ptr<AppFunctions> appFunctions, QtRunMode qtRunMode)
 {
     m_jsThread = pthread_self();
     m_env = env;
     m_defaultQAbilityPeer = std::make_shared<DummyQAbilityPeer>();
-    m_jsModules = std::move(jsModules);
-    m_jsModules["Global"] = QNapi::Reference<QNapi::Object>::makePersistentFrom(Napi::Env(env).Global());
     m_appFunctions = appFunctions;
     m_qtRunMode = qtRunMode;
+
+    for (const char *moduleName : napiLoadableModules) {
+        m_jsModulesFactories.emplace(
+            moduleName,
+            makeMemoizingJsValueSupplier<QNapi::Object>(
+                [moduleName](JsState &jsState) {
+                    return loadJsModuleViaNapiOrFail(jsState.env(), moduleName);
+                }));
+    }
+    for (auto &etsModulesFactoryEntry : etsModulesFactories) {
+        const std::string &moduleName = etsModulesFactoryEntry.first;
+        auto etsModuleFactory = moveToSharedPtr(std::move(etsModulesFactoryEntry.second));
+        m_jsModulesFactories.emplace(
+            moduleName,
+            makeMemoizingJsValueSupplier<QNapi::Object>(
+                [moduleName, etsModuleFactory](JsState &) {
+                    return loadJsModuleViaEtsFactoryOrFail(etsModuleFactory->Value(), moduleName);
+                }));
+    }
+    m_jsModulesFactories.emplace(
+        "Global",
+        [](JsState &jsState) -> QNapi::Object {
+            return Napi::Env(jsState.env()).Global();
+        });
+
     m_tasksExecutor.setUnderlyingExecutor(makeJsThreadTasksExecutor(this));
 }
 
@@ -427,35 +468,19 @@ void JsStateImpl::forceLoadAllJsModulesIfRequested()
 
     qOhosPrintfDebug("%s: forcibly loading all JS modules", Q_FUNC_INFO);
 
-    for (const char *name : napiLoadableModules) {
-        if (m_dynamicallyLoadedJsModules.find(name) == m_dynamicallyLoadedJsModules.end()) {
-            auto module = loadJsModuleViaNapiOrFail(m_env, name);
-            m_dynamicallyLoadedJsModules.emplace(
-                name, QNapi::Reference<QNapi::Object>::makePersistentFrom(module));
-        }
-    }
+    for (const auto &moduleFactoryEntry : m_jsModulesFactories)
+        getModule(moduleFactoryEntry.first);
 }
 
 QNapi::Object JsStateImpl::getModule(const std::string &moduleName)
 {
     using namespace std::string_literals;
 
-    auto cachedLoadedModuleIter = m_dynamicallyLoadedJsModules.find(moduleName);
-    if (cachedLoadedModuleIter != m_dynamicallyLoadedJsModules.end())
-        return cachedLoadedModuleIter->second.Value();
-
-    if (isNapiLoadableModule(moduleName)) {
-        auto module = loadJsModuleViaNapiOrFail(m_env, moduleName);
-        m_dynamicallyLoadedJsModules.emplace(
-            moduleName, QNapi::Reference<QNapi::Object>::makePersistentFrom(module));
-        return module;
-    }
-
-    auto moduleIter = m_jsModules.find(moduleName);
-    if (moduleIter == m_jsModules.end())
+    auto moduleFactoryIter = m_jsModulesFactories.find(moduleName);
+    if (moduleFactoryIter == m_jsModulesFactories.end())
         throw QNapi::makeLoggedException(m_env, "JS module not found: "s + moduleName);
 
-    return moduleIter->second.Value();
+    return moduleFactoryIter->second(*this);
 }
 
 QNapi::Object JsStateImpl::appLaunchWant()
@@ -599,10 +624,8 @@ std::tuple<QNapi::Object, std::string> JsStateImpl::extractModuleFromEvalExpr(co
             longestModulePrefixSize = name.size();
         }
     };
-    for (const char *name : napiLoadableModules)
-        considerAsLongestPrefix(name);
-    for (const auto &moduleEntry : m_jsModules)
-        considerAsLongestPrefix(moduleEntry.first);
+    for (const auto &moduleFactoryEntry : m_jsModulesFactories)
+        considerAsLongestPrefix(moduleFactoryEntry.first);
 
     if (longestModulePrefixSize == 0) {
         throw QNapi::makeLoggedException(
@@ -840,13 +863,13 @@ bool JsWindowsTracker::isWindowClosing(QNapi::Object jsWindow)
 }
 
 void initJsThreadState(
-    napi_env env, std::map<std::string, QNapi::Reference<QNapi::Object>> &&jsModules,
+    napi_env env, std::map<std::string, QNapi::Reference<QNapi::Function>> &&jsModulesFactories,
     std::shared_ptr<AppFunctions> appFunctions, QtRunMode qtRunMode)
 {
     static JsThreadOpsImpl jsThreadOpsImpl;
     QOhosJsThreadOps::registerInstance(&jsThreadOpsImpl);
 
-    getJsStateImpl().initInJsThread(env, std::move(jsModules), appFunctions, qtRunMode);
+    getJsStateImpl().initInJsThread(env, std::move(jsModulesFactories), appFunctions, qtRunMode);
 }
 
 void addJsQAbilityPeer(std::shared_ptr<QAbilityPeer> qAbilityPeer)

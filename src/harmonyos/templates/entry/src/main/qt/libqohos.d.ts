@@ -6,12 +6,12 @@ import common from '@ohos.app.ability.common';
 import { UIAbility } from '@kit.AbilityKit';
 
 interface QtChildProcessParams {
-  modules: object,
+  modulesFactories: object,
 }
 
 interface QtApplicationSetupParams {
   appContext: common.ApplicationContext,
-  modules: object,
+  modulesFactories: object,
   appName: string,
   appArgs?: Array<string>,
   abilityClassName: string,
