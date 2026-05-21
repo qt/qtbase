@@ -299,14 +299,16 @@ using namespace Qt::StringLiterals;
          \li "<APPROOT>/Library/Caches"
     \row \li StateLocation
          \li "<APPROOT>/files/state"
+         \li "<APPROOT>/Library/Preferences/<APPNAME>/State"
     \row \li GenericStateLocation (there is shared state)
          \li "<APPROOT>/files/state"
+         \li "<APPROOT>/Library/Preferences/State"
     \row \li GenericDataLocation
          \li "<USER>" [*] or "<USER>/<APPNAME>/files"
          \li "<APPROOT>/Library/Application Support"
     \row \li RuntimeLocation
          \li "<APPROOT>/cache"
-         \li not supported
+         \li "<APPROOT>/Library/Application Support"
     \row \li ConfigLocation
          \li "<APPROOT>/files/settings"
          \li "<APPROOT>/Library/Preferences"
