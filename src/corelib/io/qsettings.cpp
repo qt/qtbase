@@ -338,7 +338,7 @@ QStringList QSettingsPrivate::variantListToStringList(const QVariantList &l)
 {
     QStringList result;
     result.reserve(l.size());
-    for (auto v : l)
+    for (const auto &v : l)
         result.append(variantToString(v));
     return result;
 }
