@@ -148,10 +148,10 @@ using namespace Qt::StringLiterals;
          \li "~/Documents"
          \li "C:/Users/<USER>/Documents"
     \row \li FontsLocation
-         \li "/System/Library/Fonts" (not writable)
+         \li "~/Library/Fonts", "/Library/Fonts", "/System/Library/Fonts"
          \li "C:/Windows/Fonts" (not writable)
     \row \li ApplicationsLocation
-         \li "/Applications" (not writable)
+         \li "~/Applications", "/Applications"
          \li "C:/Users/<USER>/AppData/Roaming/Microsoft/Windows/Start Menu/Programs"
     \row \li MusicLocation
          \li "~/Music"
@@ -193,7 +193,7 @@ using namespace Qt::StringLiterals;
          \li "~/Downloads"
          \li "C:/Users/<USER>/Downloads"
     \row \li GenericCacheLocation
-         \li "~/Library/Caches", "/Library/Caches"
+         \li "~/Library/Caches", "/Library/Caches", "/System/Library/Caches"
          \li "C:/Users/<USER>/AppData/Local/cache"
     \row \li GenericStateLocation
          \li "~/Library/Preferences/State"
