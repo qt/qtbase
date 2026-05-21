@@ -37,6 +37,8 @@ QT_BEGIN_NAMESPACE
 
 namespace {
 
+static const int ohosLogicalDpi = 72;
+
 std::shared_ptr<::OH_PixelmapNative> captureScreenPixelmap(
     QtOhos::JsState &, QOhosDisplayInfo::JsDisplayId displayId)
 {
@@ -244,7 +246,8 @@ void QOhosPlatformScreen::setDisplayInfo(const QOhosDisplayInfo &displayInfo)
 
 QDpi QOhosPlatformScreen::logicalDpi() const
 {
-    return QDpi(m_displayInfo.densityDPI, m_displayInfo.densityDPI);
+    qreal lDpi = m_displayInfo.densityPixels * ohosLogicalDpi;
+    return QDpi(lDpi, lDpi);
 }
 
 qreal QOhosPlatformScreen::pixelScalingCoefficient() const
@@ -256,7 +259,7 @@ qreal QOhosPlatformScreen::pixelScalingCoefficient() const
 
 QDpi QOhosPlatformScreen::logicalBaseDpi() const
 {
-    return QDpi(160, 160);
+    return QDpi(ohosLogicalDpi, ohosLogicalDpi);
 }
 
 Qt::ScreenOrientation QOhosPlatformScreen::orientation() const
