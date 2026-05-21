@@ -3601,7 +3601,7 @@ void QRasterPaintEnginePrivate::rasterize(QT_FT_Outline *outline,
     // minimize memory reallocations. However if initial size for
     // raster pool is changed for lower value, reallocations will
     // occur normally.
-    int rasterPoolSize = MINIMUM_POOL_SIZE;
+    unsigned int rasterPoolSize = MINIMUM_POOL_SIZE;
     Q_DECL_UNINITIALIZED uchar rasterPoolOnStack[MINIMUM_POOL_SIZE + 0xf];
     uchar *rasterPoolBase = alignAddress(rasterPoolOnStack, 0xf);
     uchar *rasterPoolOnHeap = nullptr;

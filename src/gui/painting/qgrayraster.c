@@ -1794,7 +1794,7 @@ QT_FT_END_STMNT
 
   static int
   gray_raster_render( QT_FT_Raster                  raster,
-                      const QT_FT_Raster_Params*  params )
+                      QT_FT_Raster_Params*  params )
   {
     const QT_FT_Outline*  outline    = (const QT_FT_Outline*)params->source;
     const QT_FT_Bitmap*   target_map = params->target;
@@ -1920,8 +1920,8 @@ QT_FT_END_STMNT
 
   static void
   gray_raster_reset( QT_FT_Raster  raster,
-                     char*      pool_base,
-                     long       pool_size )
+                     unsigned char*      pool_base,
+                     unsigned long       pool_size )
   {
     PRaster  rast = (PRaster)raster;
 
@@ -1937,7 +1937,7 @@ QT_FT_END_STMNT
                               ( ( sizeof ( TWorker ) + sizeof ( TCell ) - 1 ) &
                                 ~( sizeof ( TCell ) - 1 ) );
         rast->buffer_size = (long)( ( pool_base + pool_size ) -
-                                    (char*)rast->buffer ) &
+                                    (unsigned char*)rast->buffer ) &
                                       ~( sizeof ( TCell ) - 1 );
         rast->band_size   = (int)( rast->buffer_size /
                                      ( sizeof ( TCell ) * 8 ) );
