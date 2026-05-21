@@ -3126,11 +3126,13 @@ void tst_QVariant::compareNumerics_data() const
             return v.metaType().flags() & QMetaType::IsUnsignedEnumeration ?
                         QString::number(v.toULongLong()) :
                         QString::number(v.toLongLong());
+
         switch (v.typeId()) {
+        case QMetaType::QChar:
         case QMetaType::Char16:
-            return QString::number(qvariant_cast<char16_t>(v));
+            return u"0x%1"_s.arg(+qvariant_cast<char16_t>(v));
         case QMetaType::Char32:
-            return QString::number(qvariant_cast<char32_t>(v));
+            return u"0x%1"_s.arg(+qvariant_cast<char32_t>(v));
         case QMetaType::Char:
         case QMetaType::UChar:
             return QString::number(v.toUInt());
@@ -3149,6 +3151,7 @@ void tst_QVariant::compareNumerics_data() const
     };
     addCompareToInvalid(false);
     addCompareToInvalid(true);
+    addCompareToInvalid(QChar(0));
     addCompareToInvalid(char(0));
     addCompareToInvalid(qint8(0));
     addCompareToInvalid(quint8(0));
@@ -3186,6 +3189,8 @@ QT_WARNING_DISABLE_MSVC(4018)   // '<': signed/unsigned mismatch
         else if (value1 > value2)
             order = QPartialOrdering::Greater;
         addComparePairWithResult(value1, value2, order);
+        if constexpr (std::is_same_v<decltype(value1), char16_t>)
+            addComparePairWithResult(QChar(value1), value2, order);
     };
 QT_WARNING_POP
 
@@ -3209,6 +3214,7 @@ QT_WARNING_POP
     };
     addList(std::array{ false, true });
     addList(std::array{ QCborSimpleType{}, QCborSimpleType::False, QCborSimpleType(0xff) });
+    addList(std::array{ QChar(0), QChar(1), QChar(127), QChar(256), QChar(0xffff) });
     addSingleType(char(0));
     addSingleType(char16_t(0));
     addSingleType(char32_t(0));
@@ -3229,6 +3235,8 @@ QT_WARNING_POP
     addList(std::array{ Qt::AlignRight|Qt::AlignHCenter, Qt::AlignCenter|Qt::AlignVCenter });
 
     // heterogeneous
+    addComparePairWithResult(QChar(u'π'), quint8(0xc0), QPartialOrdering::Greater);   // a.k.a. uchar
+    addComparePair(QChar(256), char16_t(256));
     addComparePair(char(0), qint8(-127));
     addComparePair(char(127), qint8(127));
     addComparePair(char(127), quint8(127));

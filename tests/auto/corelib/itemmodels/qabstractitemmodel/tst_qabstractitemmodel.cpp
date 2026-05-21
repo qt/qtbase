@@ -2756,7 +2756,6 @@ void tst_QAbstractItemModel::compareData()
     bool lessThan = OrderingModel::compareData(lhs, rhs, &collator) < 0;
 
     QEXPECT_FAIL("today<now:true", "Comparing QDate with QDateTime compares only QDate", Continue);
-    QEXPECT_FAIL("Á<π:true", "QTBUG-146912: uchar and QChar comare as unordered", Continue);
     QCOMPARE(lessThan, expected);
 }
 
