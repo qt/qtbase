@@ -3404,21 +3404,22 @@ QSettings::Format QSettings::defaultFormat()
     \table
     \header \li Platform         \li Format                       \li Scope       \li Path
     \row    \li{1,2} Windows     \li{1,2} IniFormat               \li UserScope   \li \c FOLDERID_RoamingAppData
-    \row                                                        \li SystemScope \li \c FOLDERID_ProgramData
-    \row    \li{1,2} Unix        \li{1,2} NativeFormat, IniFormat \li UserScope   \li \c $HOME/.config
-    \row                                                        \li SystemScope \li \c /etc/xdg
-    \row    \li{1,2} \macos and iOS   \li{1,2} IniFormat               \li UserScope   \li \c $HOME/.config
-    \row                                                        \li SystemScope \li \c /etc/xdg
+    \row                                                          \li SystemScope \li \c FOLDERID_ProgramData
+    \row    \li{1,2} Unix        \li{1,2} NativeFormat, IniFormat \li UserScope   \li \c $HOME/.config (\c $XDG_CONFIG_HOME)
+    \row                                                          \li SystemScope \li \c /etc/xdg
+    \row    \li{1,2} \macos      \li{1,2} IniFormat               \li UserScope   \li \c $HOME/.config (\c $XDG_CONFIG_HOME)
+    \row                                                          \li SystemScope \li \c /Library/Preferences/Qt
+    \row    \li{1,2} iOS         \li{1,2} IniFormat               \li UserScope   \li \c $HOME/Library/Preferences
+    \row                                                          \li SystemScope \li \c /Library/Preferences/Qt
+    \row    \li{1,2} \macos and iOS \li{1,2} NativeFormat         \li UserScope   \li \c $HOME/Library/Preferences
+    \row                                                          \li SystemScope \li \c /Library/Preferences
     \endtable
 
-    The default UserScope paths on Unix, \macos, and iOS (\c
-    $HOME/.config or $HOME/Settings) can be overridden by the user by setting the
-    \c XDG_CONFIG_HOME environment variable. The default SystemScope
-    paths on Unix, \macos, and iOS (\c /etc/xdg) can be overridden when
-    building the Qt library using the \c configure script's \c
-    -sysconfdir flag (see QLibraryInfo for details).
+    The default SystemScope paths can be overridden when building Qt
+    by passing \c -sysconfdir to the \c configure script (see
+    QLibraryInfo for details).
 
-    Setting the NativeFormat paths on Windows, \macos, and iOS has no
+    \note Setting the NativeFormat paths on Windows, \macos, and iOS has no
     effect.
 
     \warning This function doesn't affect existing QSettings objects.
