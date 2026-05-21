@@ -745,16 +745,20 @@ void tst_QFileDialog2::completionOnLevelAfterRoot()
     }
     if (testDir.isEmpty())
         QSKIP("This test requires to have a unique directory of at least six ascii characters under c:/");
-#elif defined(Q_OS_ANDROID)
-    // Android 11 and above doesn't allow accessing root filesystem as before,
-    // so let's opt int for the app's home.
+#elif defined(Q_OS_ANDROID) || defined(Q_OS_OHOS)
+    // Android 11 and above and OHOS do not allow accessing the root filesystem
+    // as before, so let's opt into the app's home.
     const auto homePaths = QStandardPaths::standardLocations(QStandardPaths::HomeLocation);
     QVERIFY(!homePaths.isEmpty());
     fd.setFilter(QDir::Hidden | QDir::AllDirs | QDir::Files | QDir::System);
     fd.setDirectory(homePaths.first());
-    QDir(homePaths.first()).mkdir("etc");
+    QDir homeDir(homePaths.first());
+    const bool hadEtc = homeDir.exists(QLatin1String("etc"));
+    if (!hadEtc)
+        QVERIFY(homeDir.mkdir(QLatin1String("etc")));
     auto cleanup = qScopeGuard([&]() {
-        QDir(homePaths.first()).rmdir("etc");
+        if (!hadEtc)
+            QDir(homePaths.first()).rmdir(QLatin1String("etc"));
     });
 #else
     fd.setFilter(QDir::Hidden | QDir::AllDirs | QDir::Files | QDir::System);
