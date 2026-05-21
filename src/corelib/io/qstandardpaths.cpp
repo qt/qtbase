@@ -184,10 +184,10 @@ using namespace Qt::StringLiterals;
          \li "~/Library/Application Support"
          \li "C:/Users/<USER>"
     \row \li ConfigLocation
-         \li "~/Library/Preferences"
+         \li "~/Library/Preferences", "/Library/Preferences"
          \li "C:/Users/<USER>/AppData/Local/<APPNAME>", "C:/ProgramData/<APPNAME>"
     \row \li GenericConfigLocation
-         \li "~/Library/Preferences"
+         \li "~/Library/Preferences", "/Library/Preferences"
          \li "C:/Users/<USER>/AppData/Local", "C:/ProgramData"
     \row \li DownloadLocation
          \li "~/Downloads"
@@ -202,7 +202,7 @@ using namespace Qt::StringLiterals;
          \li "~/Library/Application Support/<APPNAME>", "/Library/Application Support/<APPNAME>". "<APPDIR>/../Resources"
          \li "C:/Users/<USER>/AppData/Roaming/<APPNAME>", "C:/ProgramData/<APPNAME>", "<APPDIR>", "<APPDIR>/data", "<APPDIR>/data/<APPNAME>"
     \row \li AppConfigLocation
-         \li "~/Library/Preferences/<APPNAME>"
+         \li "~/Library/Preferences/<APPNAME>", "/Library/Preferences/<APPNAME>"
          \li "C:/Users/<USER>/AppData/Local/<APPNAME>", "C:/ProgramData/<APPNAME>"
     \row \li PublicShareLocation
          \li "~/Public"

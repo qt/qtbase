@@ -167,7 +167,9 @@ QStringList QStandardPaths::standardLocations(StandardLocation type)
 
     if (type == GenericDataLocation || type == FontsLocation || type == ApplicationsLocation
             || type == AppDataLocation || type == AppLocalDataLocation
-            || type == GenericCacheLocation || type == CacheLocation) {
+            || type == GenericCacheLocation || type == CacheLocation
+            || type == ConfigLocation || type == GenericConfigLocation
+            || type == AppConfigLocation) {
         QList<NSSearchPathDomainMask> masks;
         masks << NSLocalDomainMask;
         if (type == FontsLocation || type == GenericCacheLocation)
