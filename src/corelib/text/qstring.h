@@ -244,7 +244,7 @@ class Q_CORE_EXPORT QString
 public:
     typedef QStringPrivate DataPointer;
 
-    constexpr QString() noexcept;
+    constexpr QString() noexcept = default;
     explicit QString(const QChar *unicode, qsizetype size = -1);
     QString(QChar c);
     QString(qsizetype size, QChar c);
@@ -257,15 +257,17 @@ public:
     {}
 #endif
     Q_DECL_CONSTEXPR_DTOR QString(const QString &other) noexcept : d(other.d) {}
-    inline ~QString();
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0) && !defined(QT_BOOTSTRAPPED)
+    Q_DECL_CONSTEXPR_DTOR ~QString() = default;
+#endif
     QString &operator=(QChar c);
     QT_CORE_CONSTEXPR_DTOR_INLINE_SINCE(6, 13)
     QString &operator=(const QString &) noexcept;
     QString &operator=(QLatin1StringView latin1);
-    inline QString(QString &&other) noexcept
-        = default;
+    Q_DECL_CONSTEXPR_DTOR QString(QString &&other) noexcept = default;
+    Q_DECL_CONSTEXPR_DTOR
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QString)
-    void swap(QString &other) noexcept { d.swap(other.d); }
+    constexpr void swap(QString &other) noexcept { d.swap(other.d); }
 
     static constexpr qsizetype maxSize() noexcept
     {
@@ -1138,6 +1140,7 @@ public:
     { return QStringView(*this).isValidUtf16(); }
 
     QString(qsizetype size, Qt::Initialization);
+    Q_DECL_CONSTEXPR_DTOR
     explicit QString(DataPointer &&dd) : d(std::move(dd)) {}
 
 private:
@@ -1468,9 +1471,6 @@ QString QString::fromWCharArray(const wchar_t *string, qsizetype size)
 #endif
     }
 }
-
-constexpr QString::QString() noexcept {}
-QString::~QString() {}
 
 void QString::reserve(qsizetype asize)
 {
@@ -1813,7 +1813,7 @@ qsizetype erase_if(QString &s, Predicate pred)
 namespace Qt {
 inline namespace Literals {
 inline namespace StringLiterals {
-inline QString operator""_s(const char16_t *str, size_t size) noexcept
+Q_DECL_CONSTEXPR_DTOR QString operator""_s(const char16_t *str, size_t size) noexcept
 {
     return QString(QStringPrivate(nullptr, const_cast<char16_t *>(str), qsizetype(size)));
 }
@@ -1843,7 +1843,12 @@ inline QString operator""_qs(const char16_t *str, size_t size) noexcept
 
 namespace QtPrivate {
 template <qsizetype N>
-Q_ALWAYS_INLINE static QStringPrivate qMakeStringPrivate(const char16_t (&literal)[N])
+#if __cpp_constexpr >= 201907L
+consteval
+#else
+Q_ALWAYS_INLINE
+#endif
+static QStringPrivate qMakeStringPrivate(const char16_t (&literal)[N])
 {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
     auto str = const_cast<char16_t *>(literal);
