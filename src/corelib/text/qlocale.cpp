@@ -1452,7 +1452,7 @@ void QLocale::setDefault(const QLocale &locale)
         return; // avoid crash on exit
     if (!defaultLocalePrivate.exists()) {
         // Force it to exist; see QTBUG-83016
-        QLocale ignoreme;
+        [[maybe_unused]] QLocale ignoreme;
         Q_ASSERT(defaultLocalePrivate.exists());
     }
 
