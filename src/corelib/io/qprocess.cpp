@@ -2300,6 +2300,7 @@ void QProcess::startCommand(const QString &command, OpenMode mode)
         return;
     }
     const QString program = args.takeFirst();
+    // AXIVION Next Line Qt-Security-QProcessStart: implementation
     start(program, args, mode);
 }
 
@@ -2631,6 +2632,7 @@ int QProcess::execute(const QString &program, const QStringList &arguments)
 {
     QProcess process;
     process.setProcessChannelMode(ForwardedChannels);
+    // AXIVION Next Line Qt-Security-QProcessStart: implementation
     process.start(program, arguments);
     if (!process.waitForFinished(-1) || process.error() == FailedToStart)
         return -2;
@@ -2662,10 +2664,12 @@ bool QProcess::startDetached(const QString &program,
                              qint64 *pid)
 {
     QProcess process;
+    // AXIVION DISABLE Style Qt-Security-QProcessStart: implementation
     process.setProgram(program);
     process.setArguments(arguments);
     process.setWorkingDirectory(workingDirectory);
     return process.startDetached(pid);
+    // AXIVION ENABLE Style Qt-Security-QProcessStart
 }
 
 /*!
