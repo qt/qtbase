@@ -2933,21 +2933,6 @@ function(_qt_internal_add_library target)
         endif()
     endif()
 
-    if(type_to_create STREQUAL "SHARED"
-            AND NOT QT_BUILDING_QT
-            AND NOT QT6_IS_SHARED_LIBS_BUILD
-            AND NOT QT_NO_SHARED_LIBS_PLATFORM_WARNING
-            AND CMAKE_SYSTEM_NAME MATCHES "^(iOS|tvOS|watchOS|visionOS)$")
-        message(WARNING
-            "Creating a shared library '${target}' on ${CMAKE_SYSTEM_NAME} with a "
-            "statically-built Qt is not supported. Shared libraries on this platform "
-            "cannot be linked to other targets that also use Qt, because each would "
-            "load its own copy of Qt's static libraries, including platform plugins "
-            "that expect to provide 'main'. Consider using a STATIC library instead.\n"
-            "Configure with -DQT_NO_SHARED_LIBS_PLATFORM_WARNING=ON to suppress this warning."
-        )
-    endif()
-
     cmake_policy(PUSH)
     __qt_internal_set_cmp0156()
     add_library(${target} ${type_to_create} ${arg_UNPARSED_ARGUMENTS})
