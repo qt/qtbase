@@ -1151,6 +1151,10 @@ function(_qt_internal_android_copy_non_qt_linked_libs target deployment_dir)
         return()
     endif()
 
+    if(TARGET ${target}_copy_non_qt_linked_libs)
+        return()
+    endif()
+
     set(queue "${target}")
     set(processed "")
     set(linked_libs "")
