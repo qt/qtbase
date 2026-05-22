@@ -669,7 +669,7 @@ int QDate::day() const
 
     Uses \a cal as calendar if supplied, else the Gregorian calendar. Returns 0
     if the date is invalid. Some calendars may give special meaning
-    (e.g. intercallary days) to values greater than 7.
+    (e.g. intercalary days) to values greater than 7.
 
     \sa day(), dayOfYear(), QCalendar::dayOfWeek(), Qt::DayOfWeek
 */

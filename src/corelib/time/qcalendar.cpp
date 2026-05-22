@@ -648,7 +648,7 @@ QString QCalendar::name() const
    year is QCalendar::Unspecified, return the usual number of days for the
    month, in those years that include it.
 
-   Calendars with intercallary days may represent these as extra days of the
+   Calendars with intercalary days may represent these as extra days of the
    preceding month, or as short months separate from the usual ones. In the
    former case, daysInMonth(month, year) should be the number of ordinary days
    in the month, although \c{isDateValid(year, month, day)} might return \c true
@@ -739,7 +739,7 @@ int QCalendarBackend::monthsInYear(int year) const
     the date 2018-04-19 is valid for the Gregorian calendar, but 2018-16-19 and
     2018-04-38 are invalid.
 
-    Calendars with intercallary days may represent these as extra days of the
+    Calendars with intercalary days may represent these as extra days of the
     preceding month or as short months separate from the usual ones. In the
     former case, a \a day value greater than \c{daysInMonth(\a{month},
     \a{year})} may be valid.
@@ -783,9 +783,9 @@ bool QCalendarBackend::hasYearZero() const
 
     This base implementation returns 31, as this is a common case.
 
-    For calendars with intercallary days, although daysInMonth() doesn't include
-    the intercallary days in its count for an individual month,
-    maximumDaysInMonth() should include intercallary days, so that it is the
+    For calendars with intercalary days, although daysInMonth() doesn't include
+    the intercalary days in its count for an individual month,
+    maximumDaysInMonth() should include intercalary days, so that it is the
     maximum value of \c day for which \c{isDateValid(year, month, day)} can be
     true.
 
@@ -849,15 +849,15 @@ int QCalendarBackend::maximumMonthsInYear() const
 
    This is 1 for Monday through 7 for Sunday.
 
-   Calendars with intercallary days may return larger values for these
-   intercallary days. They should avoid using 0 for any special purpose (it is
+   Calendars with intercalary days may return larger values for these
+   intercalary days. They should avoid using 0 for any special purpose (it is
    already used in QDate::dayOfWeek() to mean an invalid date). The calendar
    should treat the numbers used as an \c enum, whose values need not be
    contiguous, nor need they follow closely from the 1 through 7 of the usual
    returns. It suffices that;
    \list
      \li weekDayName() can recognize each such number as identifying a distinct
-         name, that it returns to identify the particular intercallary day; and
+         name, that it returns to identify the particular intercalary day; and
      \li matchCenturyToWeekday() can determine what century adjustment aligns a
          given date within a century to a given day of the week, where this is
          relevant and possible.
@@ -1300,7 +1300,7 @@ int QCalendar::monthsInYear(int year) const
     a valid date in this calendar.
 
     Usually this means 1 <= month <= monthsInYear(year) and 1 <= day <=
-    daysInMonth(month, year). However, calendars with intercallary days or
+    daysInMonth(month, year). However, calendars with intercalary days or
     months may complicate that.
 */
 bool QCalendar::isDateValid(int year, int month, int day) const
@@ -1525,7 +1525,7 @@ QCalendar::YearMonthDay QCalendar::partsFromDate(QDate date) const
     Returns the day of the week number for the given \a date.
 
     Returns zero if the calendar is unable to represent the indicated date.
-    Returns 1 for Monday through 7 for Sunday. Calendars with intercallary days
+    Returns 1 for Monday through 7 for Sunday. Calendars with intercalary days
     may use other numbers to represent these.
 
     \sa partsFromDate(), Qt::DayOfWeek
@@ -1603,7 +1603,7 @@ QString QCalendar::standaloneMonthName(const QLocale &locale, int month, int yea
 
     The days of the week are numbered from 1 for Monday through 7 for
     Sunday. Some calendars may support higher numbers for other days
-    (e.g. intercallary days, that are not part of any week). Returns an empty
+    (e.g. intercalary days, that are not part of any week). Returns an empty
     string if the \a day number is unrecognized.
 
     The name is returned in the form that would normally be used in a full date,
@@ -1624,7 +1624,7 @@ QString QCalendar::weekDayName(const QLocale &locale, int day,
 
     The days of the week are numbered from 1 for Monday through 7 for
     Sunday. Some calendars may support higher numbers for other days
-    (e.g. intercallary days, that are not part of any week). Returns an empty
+    (e.g. intercalary days, that are not part of any week). Returns an empty
     string if the \a day number is unrecognized.
 
     The name is returned in the form that would be used in isolation (for
