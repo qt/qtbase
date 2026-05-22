@@ -206,6 +206,9 @@ public:
     QNapi::Object appLaunchWant() override;
     QOhosOptional<QNapi::Object> optAppLaunchParam() override;
 
+    QNapi::Object defaultWindowStageOrEmpty() override;
+    QNapi::Object defaultUiContextOrEmpty() override;
+
     std::shared_ptr<QAbilityPeer> defaultQAbilityPeer() override;
     std::shared_ptr<QAbilityPeer> tryGetQAbilityPeerByInstanceId(const std::string &instanceId) override;
     std::shared_ptr<QAbilityPeer> tryGetQAbilityPeerByInstance(QNapi::Object qAbility) override;
@@ -370,6 +373,20 @@ QOhosOptional<QNapi::Object> JsStateImpl::optAppLaunchParam()
     return !m_optAppLaunchParam.IsEmpty()
         ? makeQOhosOptional(m_optAppLaunchParam.Value())
         : makeEmptyQOhosOptional();
+}
+
+QNapi::Object JsStateImpl::defaultWindowStageOrEmpty()
+{
+    auto qUiAbilityPeer = QUiAbilityPeer::tryCastFromQAbilityPeerOrNull(m_defaultQAbilityPeer);
+    if (!qUiAbilityPeer)
+        return QNapi::Object();
+
+    return qUiAbilityPeer->windowStage();
+}
+
+QNapi::Object JsStateImpl::defaultUiContextOrEmpty()
+{
+    return m_defaultQAbilityPeer->uiContext();
 }
 
 std::shared_ptr<QAbilityPeer> JsStateImpl::defaultQAbilityPeer()

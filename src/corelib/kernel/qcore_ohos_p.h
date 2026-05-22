@@ -56,6 +56,9 @@ public:
 
     virtual napi_env env() = 0;
 
+    virtual QNapi::Object defaultWindowStageOrEmpty() = 0;
+    virtual QNapi::Object defaultUiContextOrEmpty() = 0;
+
     template<typename T = QNapi::Value>
     T eval(const std::string &expr, const std::vector<QNapi::ValueWrapper> &exprArgs = {});
 
