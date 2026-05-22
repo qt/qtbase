@@ -277,7 +277,7 @@ public:
 
     void parse(const QString &text, const QTextDocument *resourceProvider);
 
-    static int lookupElement(QStringView element);
+    Q_GUI_EXPORT static int lookupElement(QStringView element);
 
     Q_GUI_EXPORT static QString parseEntity(QStringView entity);
 
