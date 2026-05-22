@@ -63,7 +63,6 @@ qt_internal_add_plugin(QOhosPlatformIntegrationPlugin
         qohosplatformfontdatabase.cpp qohosplatformfontdatabase_p.h
         qohosplatformintegration.cpp qohosplatformintegration.h
         qohosplatformnativeinterface.cpp qohosplatformnativeinterface.h
-        qohosplatformoffscreensurface.cpp qohosplatformoffscreensurface.h
         qohosplatformplugin.cpp
         qohosplatformscreen.cpp qohosplatformscreen.h
         qohosplatformservices.cpp qohosplatformservices.h

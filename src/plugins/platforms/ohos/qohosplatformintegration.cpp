@@ -25,6 +25,7 @@
 #include <QtCore/qdebug.h>
 #include <QtCore/qthread.h>
 #include <QtCore/private/qnapi_p.h>
+#include <QtGui/private/qeglpbuffer_p.h>
 #include <QtGui/private/qrhibackingstore_p.h>
 #include <QtCore/private/qohoslogger_p.h>
 #include <QtGui/private/qguiapplication_p.h>
@@ -272,10 +273,11 @@ QOpenGLContext *QOhosPlatformIntegration::createOpenGLContext(EGLContext context
 }
 #endif // QT_NO_OPENGL
 
-QPlatformOffscreenSurface *QOhosPlatformIntegration::createPlatformOffscreenSurface(QOffscreenSurface *) const
+QPlatformOffscreenSurface *
+QOhosPlatformIntegration::createPlatformOffscreenSurface(QOffscreenSurface *surface) const
 {
     auto __dbg = make_QCScopedDebug("QOhosPlatformIntegration::createPlatformOffscreenSurface");
-    return nullptr;
+    return new QEGLPbuffer(m_eglDisplay, surface->requestedFormat(), surface);
 }
 
 bool QOhosPlatformIntegration::hasCapability(Capability cap) const
@@ -289,6 +291,7 @@ bool QOhosPlatformIntegration::hasCapability(Capability cap) const
         case NativeWidgets: return !QtOhos::isOhosNoUiChildMode();
         case OpenGL: return !QtOhos::isOhosNoUiChildMode();
         case ThreadedOpenGL: return !QtOhos::isOhosNoUiChildMode();
+        case OffscreenSurface: return true;
         // TODO: Enable the capability of OpenGLRasterSurface to have emulator
         // working for OHOS. It doesn't work with other rendering options
         case OpenGLOnRasterSurface: {

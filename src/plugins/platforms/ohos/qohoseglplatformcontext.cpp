@@ -6,6 +6,9 @@
 #include "qohosplatformwindow.h"
 #include "render/qohosegl.h"
 
+#include <QtGui/private/qeglpbuffer_p.h>
+#include <QtGui/qsurface.h>
+
 QT_BEGIN_NAMESPACE
 
 QOhosEGLPlatformContext::QOhosEGLPlatformContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display)
@@ -27,6 +30,9 @@ void QOhosEGLPlatformContext::swapBuffers(QPlatformSurface *surface)
 
 EGLSurface QOhosEGLPlatformContext::eglSurfaceForPlatformSurface(QPlatformSurface *surface)
 {
+    if (surface->surface()->surfaceClass() != QSurface::Window)
+        return static_cast<QEGLPbuffer *>(surface)->pbuffer();
+
     auto *ohosWindow = static_cast<QOhosFloatingWindow *>(surface);
     auto *ohosWindowSurface = ohosWindow->ownedSurfaceOrNull();
 
