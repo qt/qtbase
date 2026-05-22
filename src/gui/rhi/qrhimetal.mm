@@ -777,14 +777,11 @@ bool QRhiMetal::isClipDepthZeroToOne() const
 QMatrix4x4 QRhiMetal::clipSpaceCorrMatrix() const
 {
     // depth range 0..1
-    static QMatrix4x4 m;
-    if (m.isIdentity()) {
-        // NB the ctor takes row-major
-        m = QMatrix4x4(1.0f, 0.0f, 0.0f, 0.0f,
-                       0.0f, 1.0f, 0.0f, 0.0f,
-                       0.0f, 0.0f, 0.5f, 0.5f,
-                       0.0f, 0.0f, 0.0f, 1.0f);
-    }
+    // NB the ctor takes row-major
+    static constexpr QMatrix4x4 m(1.0f, 0.0f, 0.0f, 0.0f,
+                                  0.0f, 1.0f, 0.0f, 0.0f,
+                                  0.0f, 0.0f, 0.5f, 0.5f,
+                                  0.0f, 0.0f, 0.0f, 1.0f);
     return m;
 }
 

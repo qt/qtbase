@@ -2833,15 +2833,12 @@ QImage QVulkanWindow::grab()
  */
 QMatrix4x4 QVulkanWindow::clipCorrectionMatrix()
 {
-    Q_D(QVulkanWindow);
-    if (d->m_clipCorrect.isIdentity()) {
-        // NB the ctor takes row-major
-        d->m_clipCorrect = QMatrix4x4(1.0f, 0.0f, 0.0f, 0.0f,
-                                      0.0f, -1.0f, 0.0f, 0.0f,
-                                      0.0f, 0.0f, 0.5f, 0.5f,
-                                      0.0f, 0.0f, 0.0f, 1.0f);
-    }
-    return d->m_clipCorrect;
+    // NB the ctor takes row-major
+    static constexpr QMatrix4x4 m(1.0f, 0.0f, 0.0f, 0.0f,
+                                  0.0f, -1.0f, 0.0f, 0.0f,
+                                  0.0f, 0.0f, 0.5f, 0.5f,
+                                  0.0f, 0.0f, 0.0f, 1.0f);
+    return m;
 }
 
 QT_END_NAMESPACE

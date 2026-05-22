@@ -5468,14 +5468,11 @@ QMatrix4x4 QRhiVulkan::clipSpaceCorrMatrix() const
 {
     // See https://matthewwellings.com/blog/the-new-vulkan-coordinate-system/
 
-    static QMatrix4x4 m;
-    if (m.isIdentity()) {
-        // NB the ctor takes row-major
-        m = QMatrix4x4(1.0f, 0.0f, 0.0f, 0.0f,
-                       0.0f, -1.0f, 0.0f, 0.0f,
-                       0.0f, 0.0f, 0.5f, 0.5f,
-                       0.0f, 0.0f, 0.0f, 1.0f);
-    }
+    // NB the ctor takes row-major
+    static constexpr QMatrix4x4 m(1.0f, 0.0f, 0.0f, 0.0f,
+                                  0.0f, -1.0f, 0.0f, 0.0f,
+                                  0.0f, 0.0f, 0.5f, 0.5f,
+                                  0.0f, 0.0f, 0.0f, 1.0f);
     return m;
 }
 

@@ -144,8 +144,6 @@ public:
     QImage frameGrabTargetImage;
     VkImage frameGrabImage = VK_NULL_HANDLE;
     VkDeviceMemory frameGrabImageMem = VK_NULL_HANDLE;
-
-    QMatrix4x4 m_clipCorrect;
 };
 
 QT_END_NAMESPACE
