@@ -983,7 +983,7 @@ QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionIndex, i
 
 static int weekDayWithinMonth(QCalendar calendar, int year, int month, int day, int weekDay)
 {
-    // TODO: can we adapt this to cope gracefully with intercallary days (day of
+    // TODO: can we adapt this to cope gracefully with intercalary days (day of
     // week > 7) without making it slower for more widely-used calendars ?
     const int maxDay = calendar.daysInMonth(month, year); // 0 if no such month
     day = maxDay > 1 ? qBound(1, day, maxDay) : qMax(1, day);
@@ -1017,7 +1017,7 @@ static QDate actualDate(QDateTimeParser::Sections known, QCalendar calendar, int
     if (actual.isValid() && year % 100 == year2digits && calendar.dayOfWeek(actual) == dayofweek)
         return actual; // The obvious candidate is fine :-)
 
-    if (dayofweek < 1 || dayofweek > 7) // Intercallary (or invalid): ignore
+    if (dayofweek < 1 || dayofweek > 7) // Intercalary (or invalid): ignore
         known &= ~QDateTimeParser::DayOfWeekSectionMask;
 
     // Assuming year > 0 ...
