@@ -14,6 +14,7 @@
         "name": "QAbility",
         "srcEntry": "./ets/qability/QAbility.ets",
         "launchType": "specified",
+        /* %%INSERT_ABILITY_ORIENTATION%% */
         "description": "$string:QAbility_desc",
         "icon": "$media:layered_image",
         "label": "$string:QAbility_label",

@@ -73,6 +73,7 @@ struct Options
     // Module-level metadata from qt_set_harmonyos_module_metadata.
     QString harmonyOsModuleDescription;
     QStringList harmonyOsModuleDeviceTypes;
+    QString harmonyOsAbilityOrientation;
 
     // Test bundle mode
     bool testBundleMode = false;
@@ -282,6 +283,7 @@ static bool readInputConfiguration(Options *options)
     const QJsonArray deviceTypesArray = obj["harmonyos-module-device-types"_L1].toArray();
     for (const QJsonValue &value : deviceTypesArray)
         options->harmonyOsModuleDeviceTypes.append(value.toString());
+    options->harmonyOsAbilityOrientation = obj["harmonyos-ability-orientation"_L1].toString();
 
     // Validate required fields
     if (!options->testBundleMode && options->applicationBinary.isEmpty()) {
@@ -602,6 +604,31 @@ static QString jsonStringEscape(const QString &s)
     return QString::fromUtf8(ba.sliced(2, ba.size() - 4));
 }
 
+// Returns true when value is one of the orientation strings the HarmonyOS
+// module.json5 schema accepts. Anything else gets rejected with a warning and
+// dropped, so a typo never reaches hvigor (which would fail with a less
+// targeted schema error).
+static bool isValidHarmonyOsAbilityOrientation(const QString &value)
+{
+    static const QStringList allowed = {
+        "unspecified"_L1,
+        "landscape"_L1,
+        "portrait"_L1,
+        "follow_recent"_L1,
+        "landscape_inverted"_L1,
+        "portrait_inverted"_L1,
+        "auto_rotation"_L1,
+        "auto_rotation_landscape"_L1,
+        "auto_rotation_portrait"_L1,
+        "auto_rotation_restricted"_L1,
+        "auto_rotation_landscape_restricted"_L1,
+        "auto_rotation_portrait_restricted"_L1,
+        "locked"_L1,
+        "follow_desktop"_L1,
+    };
+    return allowed.contains(value);
+}
+
 struct PromotedReason
 {
     QString id;
@@ -919,6 +946,29 @@ static bool customizeTemplate(const Options &options)
         for (const QString &dt : std::as_const(deviceTypes))
             quotedDeviceTypes.append("\""_L1 + dt + "\""_L1);
         content.replace(deviceTypesSentinel, quotedDeviceTypes.join(", "_L1));
+
+        // Substitute the ability-orientation sentinel. The template ships the
+        // sentinel as a block comment so module.json5 stays valid JSON5 when
+        // the user has not set an orientation; in that case the sentinel line
+        // is dropped entirely. When set, replace it with the orientation field
+        // (matching the surrounding 8-space indentation already in the
+        // template). Unknown values are rejected with a warning rather than
+        // forwarded to hvigor, which would fail with a less targeted error.
+        const QString orientationSentinelLine =
+                "        /* %%INSERT_ABILITY_ORIENTATION%% */\n"_L1;
+        QString orientationReplacement;
+        if (!options.harmonyOsAbilityOrientation.isEmpty()) {
+            if (isValidHarmonyOsAbilityOrientation(options.harmonyOsAbilityOrientation)) {
+                orientationReplacement = "        \"orientation\": \""_L1
+                        + options.harmonyOsAbilityOrientation
+                        + "\",\n"_L1;
+            } else {
+                fprintf(stderr,
+                        "Warning: Ignoring unknown harmonyos-ability-orientation value '%s'\n",
+                        qPrintable(options.harmonyOsAbilityOrientation));
+            }
+        }
+        content.replace(orientationSentinelLine, orientationReplacement);
 
         // Override the ability/launcher icon so qt_set_harmonyos_app_metadata(ICON ...)
         // is reflected on the device home screen, not just in Settings. The

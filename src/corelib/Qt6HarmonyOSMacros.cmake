@@ -282,7 +282,8 @@ function(_qt_internal_harmonyos_generate_deployment_settings target)
             "QT_HARMONYOS_APP_VERSION_NAME;harmonyos-app-version-name;string"
             "QT_HARMONYOS_APP_LABEL;harmonyos-app-label;string"
             "QT_HARMONYOS_APP_ICON;harmonyos-app-icon;path"
-            "QT_HARMONYOS_MODULE_DESCRIPTION;harmonyos-module-description;string")
+            "QT_HARMONYOS_MODULE_DESCRIPTION;harmonyos-module-description;string"
+            "QT_HARMONYOS_ABILITY_ORIENTATION;harmonyos-ability-orientation;string")
         list(GET prop_kv 0 prop_name)
         list(GET prop_kv 1 json_key)
         list(GET prop_kv 2 json_type)
@@ -675,6 +676,7 @@ endif()
 #   qt_set_harmonyos_module_metadata(target
 #       [DESCRIPTION <string-or-$string:ref>]
 #       [DEVICE_TYPES <type> [<type>...]]
+#       [ORIENTATION <orientation>]
 #   )
 #
 # DESCRIPTION accepts a literal string (appears verbatim in the manifest and
@@ -686,6 +688,15 @@ endif()
 # 'phone' is intentionally excluded from the default because of QTFOROH-1076
 # (main window does not restore itself to the desired state after being
 # minimized on phone); revisit once that is fixed.
+#
+# ORIENTATION sets the QAbility's screen-orientation policy. When unset, the
+# generated module.json5 omits the field entirely, which makes the system
+# default ("unspecified", effectively portrait-locked on phones) apply.
+# Accepted values are the strings defined by the HarmonyOS module.json5
+# schema, including "auto_rotation", "auto_rotation_restricted", "landscape",
+# "portrait", "auto_rotation_landscape", "auto_rotation_portrait", and
+# "locked". harmonydeployqt validates the value at HAP build time and warns
+# (rather than aborts) on an unrecognised string.
 function(_qt_internal_set_harmonyos_module_metadata target)
     if(NOT TARGET ${target})
         message(FATAL_ERROR
@@ -693,7 +704,7 @@ function(_qt_internal_set_harmonyos_module_metadata target)
     endif()
 
     set(no_value_options "")
-    set(single_value_options DESCRIPTION)
+    set(single_value_options DESCRIPTION ORIENTATION)
     set(multi_value_options DEVICE_TYPES)
     cmake_parse_arguments(PARSE_ARGV 1 arg
         "${no_value_options}" "${single_value_options}" "${multi_value_options}"
@@ -706,6 +717,10 @@ function(_qt_internal_set_harmonyos_module_metadata target)
     if(arg_DEVICE_TYPES)
         set_target_properties(${target} PROPERTIES
             QT_HARMONYOS_MODULE_DEVICE_TYPES "${arg_DEVICE_TYPES}")
+    endif()
+    if(DEFINED arg_ORIENTATION)
+        set_target_properties(${target} PROPERTIES
+            QT_HARMONYOS_ABILITY_ORIENTATION "${arg_ORIENTATION}")
     endif()
 endfunction()
 
