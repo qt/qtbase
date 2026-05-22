@@ -424,7 +424,7 @@ emscripten::val QWasmAccessibility::createHtmlElement(QAccessibleInterface *ifac
                 setAttribute(element, "aria-checked", "true");
             else
                 setAttribute(element, "aria-checked", "false");
-            addEventListener(iface, element, "change");
+            addEventListener(iface, element, "click");
         } break;
 
         case QAccessible::RadioButton: {
