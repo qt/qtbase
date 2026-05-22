@@ -30,6 +30,7 @@ public:
     inline QMatrix4x4() { setToIdentity(); }
     explicit QMatrix4x4(Qt::Initialization) : flagBits(General) {}
     explicit QMatrix4x4(const float *values);
+    constexpr
     inline QMatrix4x4(float m11, float m12, float m13, float m14,
                       float m21, float m22, float m23, float m24,
                       float m31, float m32, float m33, float m34,
@@ -197,17 +198,18 @@ QT_WARNING_DISABLE_FLOAT_COMPARE
 
 Q_DECLARE_TYPEINFO(QMatrix4x4, Q_PRIMITIVE_TYPE);
 
+constexpr
 inline QMatrix4x4::QMatrix4x4
         (float m11, float m12, float m13, float m14,
          float m21, float m22, float m23, float m24,
          float m31, float m32, float m33, float m34,
          float m41, float m42, float m43, float m44)
+    : m{{m11, m21, m31, m41},
+        {m12, m22, m32, m42},
+        {m13, m23, m33, m43},
+        {m14, m24, m34, m44}},
+      flagBits(General)
 {
-    m[0][0] = m11; m[0][1] = m21; m[0][2] = m31; m[0][3] = m41;
-    m[1][0] = m12; m[1][1] = m22; m[1][2] = m32; m[1][3] = m42;
-    m[2][0] = m13; m[2][1] = m23; m[2][2] = m33; m[2][3] = m43;
-    m[3][0] = m14; m[3][1] = m24; m[3][2] = m34; m[3][3] = m44;
-    flagBits = General;
 }
 
 template <int N, int M>

@@ -551,6 +551,16 @@ void tst_QMatrixNxN::create4x4()
     for (int index = 0; index < 16; ++index)
         QCOMPARE(vals[index], uniqueValues4[index]);
 
+    constexpr QMatrix4x4 m7
+        (1.0f, 2.0f, 3.0f, 4.0f,
+         5.0f, 6.0f, 7.0f, 8.0f,
+         9.0f, 10.0f, 11.0f, 12.0f,
+         13.0f, 14.0f, 15.0f, 16.0f);
+    static_assert(m7.m[0][0] == 1.0f);
+    static_assert(m7.m[0][1] == 5.0f);
+    static_assert(m7.m[3][3] == 16.0f);
+    static_assert(m7.flagBits == QMatrix4x4::General);
+
     QMatrix4x4 m8
         (uniqueValues4[0], uniqueValues4[1], uniqueValues4[2], uniqueValues4[3],
          uniqueValues4[4], uniqueValues4[5], uniqueValues4[6], uniqueValues4[7],
