@@ -1242,7 +1242,7 @@ void QWidgetWindow::handleContextMenuEvent(QContextMenuEvent *e)
         pos = receiver->mapFromGlobal(e->globalPos());
     }
 
-    if (receiver && receiver->isEnabled()) {
+    if (receiver) {
         QContextMenuEvent widgetEvent(e->reason(), pos, globalPos, e->modifiers());
         QGuiApplication::forwardEvent(receiver, &widgetEvent, e);
     }
