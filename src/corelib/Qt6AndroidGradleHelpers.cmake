@@ -331,6 +331,7 @@ function(_qt_internal_android_prepare_gradle_build target)
     _qt_internal_android_copy_extra_plugins(${target} "${deployment_dir}")
     # TODO: don't call qmlimportscanner again at all for multi-ABI external builds.
     _qt_internal_android_parse_qmlimportscanner_output(${target})
+    _qt_internal_android_collect_qt_modules_and_plugins(${target})
     _qt_internal_android_copy_non_qt_linked_libs(${target} "${deployment_dir}")
     _qt_internal_android_copy_qt_dependencies(${target} "${deployment_dir}")
     _qt_internal_android_copy_qml_plugins(${target} "${deployment_dir}")
@@ -1153,7 +1154,12 @@ function(_qt_internal_android_copy_non_qt_linked_libs target deployment_dir)
     set(linked_libs "")
 
     # Queue project plugin targets so that non-Qt libs they link against are deployed.
-    get_target_property(plugin_targets ${target} _qt_android_qml_plugins)
+    get_target_property(qml_plugin_targets ${target} _qt_android_qml_plugins)
+    if(qml_plugin_targets)
+        list(APPEND queue ${qml_plugin_targets})
+    endif()
+
+    get_target_property(plugin_targets ${target} _qt_android_qt_plugins)
     if(plugin_targets)
         list(APPEND queue ${plugin_targets})
     endif()
@@ -1307,7 +1313,7 @@ function(_qt_internal_android_resolve_backing_target target out_var)
 endfunction()
 
 # Collects Qt modules that a target depends on and their associated plugins.
-function(_qt_internal_android_collect_qt_modules_and_plugins target out_qt_modules out_qt_plugins)
+function(_qt_internal_android_collect_qt_modules_and_plugins target)
     set(pending_stack "${target}")
     set(visited "")
     set(collected_modules "")
@@ -1365,8 +1371,9 @@ function(_qt_internal_android_collect_qt_modules_and_plugins target out_qt_modul
 
     list(REMOVE_DUPLICATES collected_modules)
     list(REMOVE_DUPLICATES collected_plugins)
-    set(${out_qt_modules} "${collected_modules}" PARENT_SCOPE)
-    set(${out_qt_plugins} "${collected_plugins}" PARENT_SCOPE)
+
+    set_property(TARGET ${target} PROPERTY _qt_android_qt_modules "${collected_modules}")
+    set_property(TARGET ${target} PROPERTY _qt_android_qt_plugins "${collected_plugins}")
 endfunction()
 
 # Adds a deploy command into commands/depends lists in the caller's scope, skipping duplicates.
@@ -1588,8 +1595,8 @@ function(_qt_internal_android_copy_qt_dependencies target deployment_dir)
     list(APPEND copy_commands COMMAND ${CMAKE_COMMAND} -E make_directory "${libs_abi_dir}")
 
     get_target_property(no_deploy_qt_libs ${target} QT_ANDROID_NO_DEPLOY_QT_LIBS)
-
-    _qt_internal_android_collect_qt_modules_and_plugins(${target} qt_modules qt_plugins)
+    get_target_property(qt_modules ${target} _qt_android_qt_modules)
+    get_target_property(qt_plugins ${target} _qt_android_qt_plugins)
 
     foreach(dep IN LISTS qt_modules qt_plugins)
         _qt_internal_android_process_bundled_jars("${dep}" "${libs_root_dir}"
@@ -1873,15 +1880,11 @@ function(_qt_internal_android_parse_qmlimportscanner_output target)
         endif()
     endforeach()
 
+    list(REMOVE_DUPLICATES qml_modules)
     list(REMOVE_DUPLICATES qml_plugins)
 
-    if(qml_modules)
-        set_property(TARGET ${target} APPEND PROPERTY _qt_android_qml_modules "${qml_modules}")
-    endif()
-
-    if(qml_plugins)
-        set_property(TARGET ${target} APPEND PROPERTY _qt_android_qml_plugins "${qml_plugins}")
-    endif()
+    set_property(TARGET ${target} PROPERTY _qt_android_qml_modules "${qml_modules}")
+    set_property(TARGET ${target} PROPERTY _qt_android_qml_plugins "${qml_plugins}")
 endfunction()
 
 function(_qt_internal_android_create_rcc_bundle target deployment_dir)
