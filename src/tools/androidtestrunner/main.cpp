@@ -144,14 +144,14 @@ static bool execBundletoolCommand(const QStringList &args, QByteArray *output = 
     return execCommand(java, argsFull, output, verbose);
 }
 
-static void setPackagePath(const QString &path)
+static bool setPackagePath(const QString &path)
 {
     if (!g_options.packagePath.isEmpty()) {
         qCritical("Both --aab and --apk options provided. This is not supported.");
-        g_options.helpRequested = true;
-        return;
+        return false;
     }
     g_options.packagePath = path;
+    return true;
 }
 
 static bool execCommand(const QString &command, QByteArray *output = nullptr, bool verbose = true)
@@ -196,13 +196,13 @@ static bool parseOptions()
         } else if (argument.compare("--apk"_L1, Qt::CaseInsensitive) == 0) {
             if (i + 1 == arguments.size())
                 g_options.helpRequested = true;
-            else
-                setPackagePath(arguments.at(++i));
+            else if (!setPackagePath(arguments.at(++i)))
+                return false;
         } else if (argument.compare("--aab"_L1, Qt::CaseInsensitive) == 0) {
             if (i + 1 == arguments.size())
                 g_options.helpRequested = true;
-            else
-                setPackagePath(arguments.at(++i));
+            else if (!setPackagePath(arguments.at(++i)))
+                return false;
         } else if (argument.compare("--activity"_L1, Qt::CaseInsensitive) == 0) {
             if (i + 1 == arguments.size())
                 g_options.helpRequested = true;
@@ -1026,7 +1026,7 @@ int main(int argc, char *argv[])
     }
 
     if (!QFile::exists(g_options.packagePath)) {
-        qCritical("No apk \"%s\" found after running the make command. "
+        qCritical("No package \"%s\" found after running the make command. "
                   "Check the provided path and the make command.",
                   qPrintable(g_options.packagePath));
         return EXIT_ERROR;
@@ -1081,22 +1081,18 @@ int main(int argc, char *argv[])
 
     if (g_options.packagePath.endsWith(".apk"_L1)) {
         const QStringList installArgs = { "install"_L1, "-r"_L1, g_options.packagePath };
-        g_testInfo.isPackageInstalled.store(execAdbCommand(installArgs, nullptr));
-        if (!g_testInfo.isPackageInstalled)
+        if (!execAdbCommand(installArgs, nullptr))
             return EXIT_ERROR;
     } else if (g_options.packagePath.endsWith(".aab"_L1)) {
         QFileInfo aab(g_options.packagePath);
         const auto apksFilePath = aab.absoluteDir().absoluteFilePath(aab.baseName() + ".apks"_L1);
         if (!execBundletoolCommand({ "build-apks"_L1, "--bundle"_L1, g_options.packagePath,
                                      "--output"_L1, apksFilePath, "--local-testing"_L1,
-                                     "--overwrite"_L1 }))
+                                     "--overwrite"_L1 })
+            || !execBundletoolCommand({ "install-apks"_L1, "--apks"_L1, apksFilePath }))
             return EXIT_ERROR;
-
-        if (!execBundletoolCommand({ "install-apks"_L1, "--apks"_L1, apksFilePath }))
-            return EXIT_ERROR;
-
-        g_testInfo.isPackageInstalled.store(true);
     }
+    g_testInfo.isPackageInstalled.store(true);
 
     const QStringList dangerousPermisisons = queryDangerousPermissions();
     for (const auto &permission : g_options.permissions) {
