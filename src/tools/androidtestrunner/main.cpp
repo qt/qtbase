@@ -15,7 +15,6 @@
 #include <QtCore/QThread>
 #include <QtCore/QXmlStreamReader>
 #include <QtCore/QFileInfo>
-#include <QtCore/QSysInfo>
 #include <QtCore/QTemporaryFile>
 
 #include <atomic>
@@ -805,28 +804,19 @@ static bool pullResults()
 
 static QString getAbiLibsPath()
 {
-    QString libsPath = "%1/libs/"_L1.arg(g_options.buildPath);
+    const QString libsPath = "%1/libs/"_L1.arg(g_options.buildPath);
     const QStringList abiArgs = { "shell"_L1, "getprop"_L1, "ro.product.cpu.abi"_L1 };
     QByteArray abi;
-    if (!execAdbCommand(abiArgs, &abi, false)) {
-        QStringList subDirs = QDir(libsPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+    if (execAdbCommand(abiArgs, &abi, false))
+        abi = abi.trimmed();
+    if (abi.isEmpty()) {
+        const QStringList subDirs = QDir(libsPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
         if (!subDirs.isEmpty())
             abi = subDirs.first().toUtf8();
     }
 
-    abi = abi.trimmed();
     if (abi.isEmpty())
-        qWarning() << "Failed to get the libs abi, falling to host architecture";
-
-    QString hostArch = QSysInfo::currentCpuArchitecture();
-    if (hostArch == "x86_64"_L1)
-        abi = "arm64-x86_64";
-    else if (hostArch == "arm64"_L1)
-        abi = "arm64-v8a";
-    else if (hostArch == "i386"_L1)
-        abi = "x86";
-    else
-        abi = "armeabi-v7a";
+        return {};
 
     return libsPath + QString::fromUtf8(abi);
 }
