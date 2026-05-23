@@ -862,7 +862,11 @@ void printLogcatCrash(const QByteArray &logcat)
 
 void analyseLogcat(const QString &timeStamp, int *exitCode)
 {
-    QStringList logcatArgs = { "shell"_L1, "logcat"_L1, "-t"_L1, "'%1'"_L1.arg(timeStamp),
+    // Read all three default buffers explicitly: crashes land in crash,
+    // ANR notices in system, and the test's QtTestLib/Qt output in main.
+    QStringList logcatArgs = { "shell"_L1, "logcat"_L1,
+                               "-b"_L1, "main,system,crash"_L1,
+                               "-t"_L1, "'%1'"_L1.arg(timeStamp),
                                "-v"_L1, "brief"_L1 };
 
     const bool useColor = qEnvironmentVariable("QTEST_ENVIRONMENT") != "ci"_L1;
