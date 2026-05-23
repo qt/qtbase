@@ -13,6 +13,7 @@ add_library(corelib_snippets OBJECT
     qmessageauthenticationcode/main.cpp
     qmetatype/registerConverters.cpp
     qrangemodel/main.cpp
+    qrangemodel/specialize.cpp
     qrangemodeladapter/main.cpp
     qstack/main.cpp
     qstringlist/main.cpp

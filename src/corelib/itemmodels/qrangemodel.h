@@ -57,10 +57,44 @@ public:
     Q_ENUM(DropOperation);
 
     template <typename T>
-    struct RowOptions {};
+    struct RowOptions {
+#ifdef Q_QDOC
+        static constexpr RowCategory rowCategory;
+        static QVariant headerData(int section, int role);
+        static Qt::ItemFlags flags(const T &row);
+
+        static QStringList mimeTypes();
+        static QMimeData *mimeData(const auto &range);
+        static QMimeData *mimeData(const QModelIndex &range);
+        static bool canDropMimeData(const QMimeData *mimeData);
+        static bool canDropMimeData(const QMimeData *mimeData, Qt::DragAction action,
+                                    int row, int column, const QModelIndex &parent);
+        static auto dropMimeData(const QMimeData *mimeData, auto inserter);
+        static auto dropMimeData(const QMimeData *mimeData, Qt::DragAction action,
+                                 int row, int column, const QModelIndex &parent,
+                                 auto inserter);
+#endif
+    };
 
     template <typename T>
-    struct ItemAccess {};
+    struct ItemAccess {
+#ifdef Q_QDOC
+        static QVariant readRole(const T &item, int role);
+        static bool writeRole(T &item, const QVariant &value, int role);
+        static Qt::ItemFlags flags(const T &item);
+
+        static QStringList mimeTypes();
+        static QMimeData *mimeData(const auto &range);
+        static QMimeData *mimeData(const QModelIndex &range);
+        static bool canDropMimeData(const QMimeData *mimeData);
+        static bool canDropMimeData(const QMimeData *mimeData, Qt::DragAction action,
+                                    int row, int column, const QModelIndex &parent);
+        static auto dropMimeData(const QMimeData *mimeData, auto inserter);
+        static auto dropMimeData(const QMimeData *mimeData, Qt::DragAction action,
+                                 int row, int column, const QModelIndex &parent,
+                                 auto inserter);
+#endif
+    };
 
     template <typename Range,
               QRangeModelDetails::if_table_range<Range> = true>
