@@ -838,12 +838,17 @@ void printLogcatCrash(const QByteArray &logcat)
             ndkStackProc.write(crashLogcat);
             ndkStackProc.closeWriteChannel();
 
-            if (ndkStackProc.waitForReadyRead())
-                crashLogcat = ndkStackProc.readAllStandardOutput();
-
-            ndkStackProc.terminate();
-            if (!ndkStackProc.waitForFinished())
+            // Drain ndk-stack to completion so its output isn't truncated.
+            if (ndkStackProc.waitForFinished()) {
+                // Keep the raw dump if ndk-stack produced no output.
+                const QByteArray ndkOutput = ndkStackProc.readAllStandardOutput();
+                if (!ndkOutput.trimmed().isEmpty())
+                    crashLogcat = ndkOutput;
+            } else {
                 qCritical() << "Error: ndk-stack command timed out.";
+                ndkStackProc.kill();
+                ndkStackProc.waitForFinished();
+            }
         } else {
             qCritical() << "Error: failed to run ndk-stack command.";
             return;
