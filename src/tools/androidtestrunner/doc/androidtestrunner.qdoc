@@ -99,7 +99,8 @@
         \li \c {--timeout <seconds>}: Sets the timeout for running the test.
             Defaults to 600 seconds (10 minutes).
         \li \c --skip-install-root: Avoids appending INSTALL_ROOT to the make
-            command and is mainly useful when using \c qmake.
+            command. Only used when \c --make invokes GNU \c make or one of
+            its variants (\c nmake, \c mingw32-make, \c jom).
         \li \c --show-logcat: Prints the logcat output to stdout regardless of
             test failure. Logs are printed in case of failure and can include
             crash stacktraces or ANR events.
@@ -123,7 +124,6 @@
         --path ~/tst_android/build/android-build-tst_openssl \
         --make "cmake --build ~/tst_android/build --target apk" \
         --apk ~/tst_android/build/android-build-tst_openssl/tst_openssl.apk \
-        --skip-install-root \
         testAssets
     \endcode
 */
