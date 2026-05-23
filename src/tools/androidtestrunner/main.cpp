@@ -804,7 +804,9 @@ static bool pullResults()
 
 static QString getAbiLibsPath()
 {
-    const QString libsPath = "%1/libs/"_L1.arg(g_options.buildPath);
+    QString libsPath = "%1/libs/"_L1.arg(g_options.buildPath);
+    if (!QDir(libsPath).exists())
+        libsPath = "%1/app/libs/"_L1.arg(g_options.buildPath);
     const QStringList abiArgs = { "shell"_L1, "getprop"_L1, "ro.product.cpu.abi"_L1 };
     QByteArray abi;
     if (execAdbCommand(abiArgs, &abi, false))
