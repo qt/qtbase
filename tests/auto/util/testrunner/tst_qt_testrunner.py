@@ -448,7 +448,7 @@ class Test_testrunner(unittest.TestCase):
         # Copied from our CI logs. The only relevant option is --aab.
         androidtestrunner_args= [
             '--path', '/home/qt/work/qt/qtdeclarative_standalone_tests/tests/auto/quickcontrols/qquickpopup/android-build-tst_qquickpopup',
-            '--adb', '/opt/android/sdk/platform-tools/adb', '--skip-install-root',
+            '--adb', '/opt/android/sdk/platform-tools/adb',
             '--ndk-stack', '/opt/android/android-ndk-r27c/ndk-stack',
             '--manifest', '/home/qt/work/qt/qtdeclarative_standalone_tests/tests/auto/quickcontrols/qquickpopup/android-build-tst_qquickpopup/app/AndroidManifest.xml',
             '--make', '"/opt/cmake-3.30.5/bin/cmake" --build /home/qt/work/qt/qtdeclarative_standalone_tests --target tst_qquickpopup_make_aab',

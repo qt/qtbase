@@ -240,8 +240,13 @@ static bool parseOptions()
         }
     }
 
-    if (!g_options.skipAddInstallRoot) {
-        // we need to run make INSTALL_ROOT=path install to install the application file(s) first
+    static const QStringList makeNames = {
+        "make"_L1, "gmake"_L1, "nmake"_L1, "mingw32-make"_L1, "jom"_L1,
+    };
+    const QStringList makeParts = QProcess::splitCommand(g_options.makeCommand);
+    const QString makeBaseName = QFileInfo(makeParts.value(0)).baseName();
+    const bool makeIsGnuMakeFamily = makeNames.contains(makeBaseName, Qt::CaseInsensitive);
+    if (!g_options.skipAddInstallRoot && makeIsGnuMakeFamily) {
         g_options.makeCommand = "%1 INSTALL_ROOT=%2 install"_L1
             .arg(g_options.makeCommand)
             .arg(QDir::toNativeSeparators(g_options.buildPath));
@@ -298,6 +303,7 @@ static void printHelp()
              "    --timeout <seconds>: Timeout to run the test. Default is 10 minutes.\n"
              "\n"
              "    --skip-install-root: Do not append INSTALL_ROOT=... to the make command.\n"
+             "                         Only used for GNU make.\n"
              "\n"
              "    --show-logcat: Print Logcat output to stdout. If an ANR occurs during\n"
              "       the test run, logs from the system_server process are included.\n"

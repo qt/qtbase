@@ -139,7 +139,6 @@ function(qt_internal_android_test_runner_arguments target out_test_runner out_te
     set(test_arguments
         "--path" "${android_build_dir}"
         "--adb" "${platform_tools}/adb"
-        "--skip-install-root"
         "--ndk-stack" "${ANDROID_NDK_ROOT}/ndk-stack"
     )
 
