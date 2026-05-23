@@ -6,6 +6,9 @@
 
 
 add_subdirectory(util/testrunner)
+if(ANDROID)
+    add_subdirectory(util/androidtestrunner)
+endif()
 
 set(run_dbus_tests OFF)
 if (QT_FEATURE_dbus)
