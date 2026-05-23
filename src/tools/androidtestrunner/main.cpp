@@ -259,9 +259,6 @@ static bool parseOptions()
             g_options.ndkStackPath = ndkStackPath;
     }
 
-    if (g_options.manifestPath.isEmpty())
-        g_options.manifestPath = g_options.buildPath + "/AndroidManifest.xml"_L1;
-
     return true;
 }
 
@@ -321,6 +318,28 @@ static void printHelp()
 
 static bool processAndroidManifest()
 {
+    if (!g_options.manifestPath.isEmpty()) {
+        if (!QFile::exists(g_options.manifestPath)) {
+            qCritical("--manifest path '%s' does not exist.",
+                      qPrintable(g_options.manifestPath));
+            return false;
+        }
+    } else {
+        const QStringList candidates = {
+            g_options.buildPath + "/AndroidManifest.xml"_L1,
+            g_options.buildPath + "/app/AndroidManifest.xml"_L1
+        };
+        for (const QString &candidate : candidates) {
+            if (QFile::exists(candidate)) {
+                g_options.manifestPath = candidate;
+                break;
+            }
+        }
+    }
+    if (g_options.manifestPath.isEmpty()) {
+        qCritical("Unable to find AndroidManifest.xml at '%s'.", qPrintable(g_options.buildPath));
+        return false;
+    }
     QFile androidManifestXml(g_options.manifestPath);
     if (!androidManifestXml.open(QIODevice::ReadOnly)) {
         qCritical("Unable to read android manifest '%s'", qPrintable(g_options.manifestPath));
@@ -977,11 +996,6 @@ int main(int argc, char *argv[])
     obtainSdkVersion();
 
     g_testInfo.userId = userId();
-
-    if (!QFile::exists(g_options.manifestPath)) {
-        qCritical("Unable to find '%s'.", qPrintable(g_options.manifestPath));
-        return EXIT_ERROR;
-    }
 
     if (!processAndroidManifest())
         return EXIT_ERROR;
