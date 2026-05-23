@@ -136,16 +136,17 @@ static bool execCommand(const QString &program, const QStringList &args,
     return ok;
 }
 
+static QStringList adbArgsWithSerial(const QStringList &args)
+{
+    if (g_options.serial.isEmpty())
+        return args;
+    return QStringList{ "-s"_L1, g_options.serial } + args;
+}
+
 static bool execAdbCommand(const QStringList &args, QByteArray *output = nullptr,
                            bool verbose = true)
 {
-    if (g_options.serial.isEmpty())
-        return execCommand(g_options.adbCommand, args, output, verbose);
-
-    QStringList argsWithSerial = {"-s"_L1, g_options.serial};
-    argsWithSerial.append(args);
-
-    return execCommand(g_options.adbCommand, argsWithSerial, output, verbose);
+    return execCommand(g_options.adbCommand, adbArgsWithSerial(args), output, verbose);
 }
 
 static bool execBundletoolCommand(const QStringList &args, QByteArray *output = nullptr,
@@ -226,6 +227,11 @@ static bool parseOptions()
             g_options.skipAddInstallRoot = true;
         } else if (argument.compare("--show-logcat"_L1, Qt::CaseInsensitive) == 0) {
             g_options.showLogcatOutput = true;
+        } else if (argument.compare("--serial"_L1, Qt::CaseInsensitive) == 0) {
+            if (i + 1 == arguments.size())
+                g_options.helpRequested = true;
+            else
+                g_options.serial = arguments.at(++i);
         } else if (argument.compare("--ndk-stack"_L1, Qt::CaseInsensitive) == 0) {
             if (i + 1 == arguments.size())
                 g_options.helpRequested = true;
@@ -272,7 +278,8 @@ static bool parseOptions()
     if (g_options.helpRequested || g_options.buildPath.isEmpty() || g_options.packagePath.isEmpty())
         return false;
 
-    g_options.serial = qEnvironmentVariable("ANDROID_SERIAL");
+    if (g_options.serial.isEmpty())
+        g_options.serial = qEnvironmentVariable("ANDROID_SERIAL");
     if (g_options.serial.isEmpty())
         g_options.serial = qEnvironmentVariable("ANDROID_DEVICE_SERIAL");
 
@@ -291,7 +298,8 @@ static void printHelp()
     qWarning("Syntax: %s <options> -- [TESTARGS] \n"
              "\n"
              "  Runs a Qt for Android test on an emulator or a device. Specify a device\n"
-             "  using the environment variables ANDROID_SERIAL or ANDROID_DEVICE_SERIAL.\n"
+             "  using --serial, or the environment variables ANDROID_SERIAL\n"
+             "  or ANDROID_DEVICE_SERIAL.\n"
              "  Returns the number of failed tests, -1 on test runner deployment related\n"
              "  failures or zero on success."
              "\n"
@@ -313,6 +321,9 @@ static void printHelp()
              "\n"
              "    --activity <acitvity>: The Activity to run. If missing the first\n"
              "       activity from AndroidManifest.qml file will be used.\n"
+             "\n"
+             "    --serial <serial>: Android device serial. Overrides\n"
+             "       ANDROID_SERIAL / ANDROID_DEVICE_SERIAL.\n"
              "\n"
              "    --timeout <seconds>: Timeout to run the test. Default is 10 minutes.\n"
              "\n"
@@ -698,7 +709,7 @@ static bool setupStdoutLogger()
 
     g_options.stdoutLogger.emplace();
     g_options.stdoutLogger->setProcessChannelMode(QProcess::ForwardedOutputChannel);
-    g_options.stdoutLogger->start(g_options.adbCommand, adbTailCmd);
+    g_options.stdoutLogger->start(g_options.adbCommand, adbArgsWithSerial(adbTailCmd));
     g_testInfo.stdoutLoggerPid.store(g_options.stdoutLogger->processId());
 
     if (!g_options.stdoutLogger->waitForStarted()) {
@@ -1180,10 +1191,13 @@ int main(int argc, char *argv[])
     } else if (g_options.packagePath.endsWith(".aab"_L1)) {
         QFileInfo aab(g_options.packagePath);
         const auto apksFilePath = aab.absoluteDir().absoluteFilePath(aab.baseName() + ".apks"_L1);
+        QStringList installApksArgs = { "install-apks"_L1, "--apks"_L1, apksFilePath };
+        if (!g_options.serial.isEmpty())
+            installApksArgs << "--device-id"_L1 << g_options.serial;
         if (!execBundletoolCommand({ "build-apks"_L1, "--bundle"_L1, g_options.packagePath,
                                      "--output"_L1, apksFilePath, "--local-testing"_L1,
                                      "--overwrite"_L1 })
-            || !execBundletoolCommand({ "install-apks"_L1, "--apks"_L1, apksFilePath }))
+            || !execBundletoolCommand(installApksArgs))
             return EXIT_ERROR;
     }
     g_testInfo.isPackageInstalled.store(true);
