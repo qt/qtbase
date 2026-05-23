@@ -466,19 +466,22 @@ static QStringList queryDangerousPermissions()
     return dangerousPermissions;
 }
 
+static QString deviceOutputFileName(const QString &format, const QString &hostPath)
+{
+    return hostPath.isEmpty() ? "stdout.%1"_L1.arg(format) : QFileInfo(hostPath).fileName();
+}
+
 static void setOutputFile(QString file, QString format)
 {
     if (format.isEmpty())
         format = "txt"_L1;
+    if (file == u'-')
+        file.clear();
 
-    if ((file.isEmpty() || file == u'-')) {
-        if (g_options.outFiles.contains(format)) {
-            file = g_options.outFiles.value(format);
-        } else {
-            file = "stdout.%1"_L1.arg(format);
-            g_options.outFiles[format] = file;
-        }
-        g_options.stdoutFileName = QFileInfo(file).fileName();
+    if (file.isEmpty()) {
+        if (!g_options.outFiles.contains(format))
+            g_options.outFiles.insert(format, QString());
+        g_options.stdoutFileName = deviceOutputFileName(format, g_options.outFiles.value(format));
     } else {
         g_options.outFiles[format] = file;
     }
@@ -526,7 +529,7 @@ static bool parseTestArgs()
 
     QString testAppArgs;
     for (auto it = g_options.outFiles.constBegin(); it != g_options.outFiles.constEnd(); ++it)
-        testAppArgs += "-o %1,%2 "_L1.arg(QFileInfo(it.value()).fileName(), it.key());
+        testAppArgs += "-o %1,%2 "_L1.arg(deviceOutputFileName(it.key(), it.value()), it.key());
 
     testAppArgs += unhandledArgs.join(u' ').trimmed();
     testAppArgs = "\"%1\""_L1.arg(testAppArgs.trimmed());
@@ -636,6 +639,8 @@ static void waitForStarted()
 static bool waitForLoggingStarted()
 {
     using namespace std::chrono_literals;
+    if (g_options.stdoutFileName.isEmpty())
+        return false;
     const QString lsCmd = "ls files/%1 2>/dev/null"_L1.arg(g_options.stdoutFileName);
     const QStringList adbLsCmd = { "shell"_L1, runCommandAsUserArgs(lsCmd) };
     return pollUntil([&]() { return execAdbCommand(adbLsCmd, nullptr, false); },
@@ -644,8 +649,11 @@ static bool waitForLoggingStarted()
 
 static bool setupStdoutLogger()
 {
-    // Start tail to get results to stdout as soon as they're available
-    const QString tailPipeCmd = "tail -n +1 -f files/%1"_L1.arg(g_options.stdoutFileName);
+    // Empty stdoutFileName means file-only output; nothing to stream live.
+    if (g_options.stdoutFileName.isEmpty())
+        return true;
+
+    const QString tailPipeCmd = "tail -n +1 -f 'files/%1'"_L1.arg(g_options.stdoutFileName);
     const QStringList adbTailCmd = { "shell"_L1, runCommandAsUserArgs(tailPipeCmd) };
 
     g_options.stdoutLogger.emplace();
@@ -665,12 +673,8 @@ static bool setupStdoutLogger()
 
 static bool stopStdoutLogger()
 {
-    if (!g_options.stdoutLogger.has_value()) {
-        // In case this ever happens, it setupStdoutLogger() wasn't called, whether
-        // that's on purpose or not, return true since what it does is achieved.
-        qCritical() << "Trying to stop the stdout logger process while it's been uninitialised";
+    if (!g_options.stdoutLogger.has_value())
         return true;
-    }
 
     if (g_options.stdoutLogger->state() == QProcess::NotRunning) {
         // sigHandler already SIGTERM'd the logger; that's expected.
@@ -771,6 +775,8 @@ static bool pullResults()
     using namespace std::chrono_literals;
     for (auto it = g_options.outFiles.constBegin(); it != g_options.outFiles.constEnd(); ++it) {
         const QString filePath = it.value();
+        if (filePath.isEmpty())
+            continue;  // stdout-streamed format so nothing to pull
         const QString fileName = QFileInfo(filePath).fileName();
         QByteArray output;
 
