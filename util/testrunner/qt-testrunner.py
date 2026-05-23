@@ -115,6 +115,7 @@ NON_XML_GENERATING_TESTS = {
     "tst_selftests",
     "tst_QDoc",
     "tst_QDoc_Catch_Generators",
+    "tst_androidtestrunner.py",
 }
 # These are scripts that are used to wrap test execution for special platforms.
 # They need special handling (most times just skipping the wrapper name in argv[]).
