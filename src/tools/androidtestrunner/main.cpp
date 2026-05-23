@@ -830,9 +830,15 @@ void printLogcatCrash(const QByteArray &logcat)
         return;
 
     QByteArray crashLogcat(logcat);
-    if (!g_options.ndkStackPath.isEmpty()) {
+    if (g_options.ndkStackPath.isEmpty()) {
+        qWarning() << "Warning: ndk-stack path not provided and couldn't be deduced "
+                      "using the ANDROID_NDK_ROOT environment variable.";
+    } else if (const QString libsPath = getAbiLibsPath(); libsPath.isEmpty()) {
+        qWarning() << "Warning: could not determine the device ABI, "
+                      "skipping ndk-stack and printing the raw dump.";
+    } else {
         QProcess ndkStackProc;
-        ndkStackProc.start(g_options.ndkStackPath, { "-sym"_L1, getAbiLibsPath() });
+        ndkStackProc.start(g_options.ndkStackPath, { "-sym"_L1, libsPath });
 
         if (ndkStackProc.waitForStarted()) {
             ndkStackProc.write(crashLogcat);
@@ -851,14 +857,12 @@ void printLogcatCrash(const QByteArray &logcat)
             }
         } else {
             qCritical() << "Error: failed to run ndk-stack command.";
-            return;
         }
-    } else {
-        qWarning() << "Warning: ndk-stack path not provided and couldn't be deduced "
-                      "using the ANDROID_NDK_ROOT environment variable.";
     }
 
-    if (!crashLogcat.startsWith("********** Crash dump")) {
+    if (crashLogcat.startsWith("********** Crash dump")) {
+        qDebug().noquote() << crashLogcat.trimmed();
+    } else {
         qDebug() << "[androidtestrunner] ********** BEGIN crash dump **********";
         qDebug().noquote() << crashLogcat.trimmed();
         qDebug() << "[androidtestrunner] ********** END crash dump **********";
