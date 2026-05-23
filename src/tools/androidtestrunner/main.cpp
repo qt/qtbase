@@ -871,6 +871,7 @@ void printLogcatCrash(const QByteArray &logcat)
 
 void analyseLogcat(const QString &timeStamp, int *exitCode)
 {
+    using namespace std::chrono_literals;
     // Read all three default buffers explicitly: crashes land in crash,
     // ANR notices in system, and the test's QtTestLib/Qt output in main.
     QStringList logcatArgs = { "shell"_L1, "logcat"_L1,
@@ -883,7 +884,16 @@ void analyseLogcat(const QString &timeStamp, int *exitCode)
         logcatArgs << "-v"_L1 << "color"_L1;
 
     QByteArray logcat;
-    if (!execAdbCommand(logcatArgs, &logcat, false)) {
+    // debuggerd flushes the "*** *** ***" banner a few seconds after the
+    // test dies; on abnormal exits, re-fetch until it shows up.
+    if (!isTestExitCodeNormal(*exitCode) && !g_testInfo.isTestRunnerInterrupted.load()) {
+        pollUntil([&]() {
+            logcat.clear();
+            return execAdbCommand(logcatArgs, &logcat, false)
+                && logcat.contains("*** *** ***");
+        }, QDeadlineTimer(15s), 250ms);
+    }
+    if (logcat.isEmpty() && !execAdbCommand(logcatArgs, &logcat, false)) {
         qCritical() << "Error: failed to fetch logcat of the test";
         return;
     }
