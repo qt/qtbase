@@ -1116,8 +1116,10 @@ int main(int argc, char *argv[])
     if (!pullRes && isTestExitCodeNormal(exitCode))
         exitCode = EXIT_NORESULTS;
 
-    if (!uninstallTestPackage())
-        return EXIT_ERROR;
+    if (!uninstallTestPackage()) {
+        qWarning("Failed to uninstall test package '%s'. The test exit code is preserved.",
+            qPrintable(g_options.package));
+    }
 
     if (g_testInfo.isTestRunnerInterrupted.load()) {
         qCritical() << "The androidtestrunner was interrupted and the test was cleaned up.";
