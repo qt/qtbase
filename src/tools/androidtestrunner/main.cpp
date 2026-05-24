@@ -79,6 +79,7 @@ struct TestInfo
 
     std::atomic<bool> isPackageInstalled { false };
     std::atomic<bool> isTestRunnerInterrupted { false };
+    std::atomic<qint64> stdoutLoggerPid { 0 };
 };
 
 static TestInfo g_testInfo;
@@ -650,8 +651,10 @@ static bool setupStdoutLogger()
     g_options.stdoutLogger.emplace();
     g_options.stdoutLogger->setProcessChannelMode(QProcess::ForwardedOutputChannel);
     g_options.stdoutLogger->start(g_options.adbCommand, adbTailCmd);
+    g_testInfo.stdoutLoggerPid.store(g_options.stdoutLogger->processId());
 
     if (!g_options.stdoutLogger->waitForStarted()) {
+        g_testInfo.stdoutLoggerPid.store(0);
         qCritical() << "Error: failed to run adb command to fetch stdout test results.";
         g_options.stdoutLogger = std::nullopt;
         return false;
@@ -670,16 +673,20 @@ static bool stopStdoutLogger()
     }
 
     if (g_options.stdoutLogger->state() == QProcess::NotRunning) {
-        // We expect the tail command to be running until we stop it, so if it's
-        // not running it might have been terminated outside of the test runner.
+        // sigHandler already SIGTERM'd the logger; that's expected.
+        if (g_testInfo.isTestRunnerInterrupted.load())
+            return true;
         qCritical() << "The stdout logger process was terminated unexpectedly, "
                        "It might have been terminated by an external process";
         return false;
     }
 
     g_options.stdoutLogger->terminate();
+    g_testInfo.stdoutLoggerPid.store(0);
 
-    if (!g_options.stdoutLogger->waitForFinished()) {
+    if (!g_options.stdoutLogger->waitForFinished(5000)) {
+        g_options.stdoutLogger->kill();
+        g_options.stdoutLogger->waitForFinished();
         qCritical() << "Error: adb test results tail command timed out.";
         return false;
     }
@@ -976,6 +983,12 @@ static bool uninstallTestPackage()
 
 void sigHandler(int signal)
 {
+#if !defined(Q_OS_WIN32)
+    // Reap the adb-tail subprocess so a second SIGINT doesn't orphan it.
+    const qint64 loggerPid = g_testInfo.stdoutLoggerPid.exchange(0);
+    if (loggerPid > 0)
+        ::kill(static_cast<pid_t>(loggerPid), SIGTERM);
+#endif
     std::signal(signal, SIG_DFL);
     if (!g_testInfo.isPackageInstalled.load())
         _exit(EXIT_ERROR);
