@@ -449,7 +449,7 @@ static QStringList queryDangerousPermissions()
      *     perm=PermissionInfo{5f5bfbb android.permission.INTERNET}
      *     flags=0x0
      */
-     const static QRegularExpression regex("^\\s*Permission\\s+\\[([^\\]]+)\\]\\s+\\(([^)]+)\\):"_L1);
+    const static QRegularExpression regex("^\\s*Permission\\s+\\[([^\\]]+)\\]\\s+\\([^)]+\\):"_L1);
     QStringList dangerousPermissions;
     QString currentPerm;
 
@@ -469,10 +469,9 @@ static QStringList queryDangerousPermissions()
             continue;
 
         QString protectionTypes = line.mid(protIndex + 5).trimmed();
-        if (protectionTypes.contains("dangerous"_L1, Qt::CaseInsensitive)) {
+        if (protectionTypes.contains("dangerous"_L1, Qt::CaseInsensitive))
             dangerousPermissions.append(currentPerm);
-            currentPerm.clear();
-        }
+        currentPerm.clear();
     }
 
     return dangerousPermissions;
@@ -1159,13 +1158,13 @@ int main(int argc, char *argv[])
     }
     g_testInfo.isPackageInstalled.store(true);
 
-    const QStringList dangerousPermisisons = queryDangerousPermissions();
+    const QStringList dangerousPermissions = queryDangerousPermissions();
     for (const auto &permission : g_options.permissions) {
-        if (!dangerousPermisisons.contains(permission))
+        if (!dangerousPermissions.contains(permission))
             continue;
 
-        if (!execAdbCommand({ "shell"_L1, "pm"_L1, "grant"_L1, g_options.package, permission },
-                            nullptr)) {
+        if (!execAdbCommand({ "shell"_L1, "pm"_L1, "grant"_L1, "--user"_L1, g_testInfo.userId,
+                              g_options.package, permission }, nullptr)) {
             qWarning("Unable to grant '%s' to '%s'. Probably the Android version mismatch.",
                         qPrintable(permission), qPrintable(g_options.package));
         }
