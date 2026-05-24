@@ -559,15 +559,15 @@ static int getPid(const QString &package)
     QByteArray output;
     const QStringList psArgs = { "shell"_L1, "ps | grep ' %1'"_L1.arg(package) };
     if (!execAdbCommand(psArgs, &output, false))
-        return false;
+        return -1;
 
     const QList<QByteArray> lines = output.split(u'\n');
     if (lines.size() < 1)
-        return false;
+        return -1;
 
     QList<QByteArray> columns = lines.first().simplified().replace(u'\t', u' ').split(u' ');
     if (columns.size() < 3)
-        return false;
+        return -1;
 
     bool ok = false;
     int pid = columns.at(1).toInt(&ok);
