@@ -259,8 +259,6 @@ bool QDomParser::parseProlog()
 {
     Q_ASSERT(reader);
 
-    bool foundDtd = false;
-
     while (!reader->atEnd()) {
         reader->readNext();
 
@@ -296,11 +294,10 @@ bool QDomParser::parseProlog()
             }
             break;
         case QXmlStreamReader::DTD:
-            if (foundDtd) {
+            if constexpr (false) {
+                // ### kept for the translated string
                 domBuilder.fatalError(QDomParser::tr("Multiple DTD sections are not allowed"));
-                return false;
             }
-            foundDtd = true;
 
             if (!domBuilder.startDTD(reader->dtdName().toString(),
                                      reader->dtdPublicId().toString(),
