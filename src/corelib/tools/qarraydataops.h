@@ -244,17 +244,6 @@ public:
         return result;
     }
 
-    struct Span { T *begin; T *end; };
-
-    void copyRanges(std::initializer_list<Span> ranges)
-    {
-        auto it = that()->begin();
-        std::for_each(ranges.begin(), ranges.end(), [&it](const auto &span) {
-            it = std::copy(span.begin, span.end, it);
-        });
-        that()->size = std::distance(that()->begin(), it);
-    }
-
     void assign(T *b, T *e, parameter_type t) noexcept
     {
         Q_ASSERT(b <= e);

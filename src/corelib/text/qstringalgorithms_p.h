@@ -325,8 +325,9 @@ template <typename StringType> struct QStringAlgorithms
             // of "copy" won't have any extra capacity any more)
             const qsizetype sz = d.size - len;
             StringType copy{sz, Qt::Uninitialized};
-            copy.data_ptr()->copyRanges({{begin, toRemove_start},
-                                         {toRemove_start + len, d.end()}});
+            auto dst = copy.data_ptr().begin();
+            dst = std::copy(begin, toRemove_start, dst);
+            dst = std::copy(toRemove_start + len, d.end(), dst);
             src.swap(copy);
         }
     }
