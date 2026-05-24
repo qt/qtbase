@@ -1387,8 +1387,10 @@ public:
             using wrapped_value_type = q20::remove_cvref_t<QRangeModelDetails::wrapped_t<decltype(ref)>>;
             if constexpr (QRangeModelDetails::item_access<wrapped_value_type>::hasFlags) {
                 using ItemAccess = QRangeModelDetails::QRangeModelItemAccess<wrapped_value_type>;
-                customFlags = ItemAccess::flags(ref);
-                return true;
+                if (QRangeModelDetails::isValid(ref)) {
+                    customFlags = ItemAccess::flags(QRangeModelDetails::refTo(ref));
+                    return true;
+                }
             }
             return false;
         });
