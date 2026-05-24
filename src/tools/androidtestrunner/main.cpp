@@ -39,6 +39,7 @@ static constexpr int EXIT_ERROR = 254;
 static constexpr int EXIT_NOEXITCODE = 253; // Failed to transfer exit code from device
 static constexpr int EXIT_ANR        = 252; // Android ANR error (Application Not Responding)
 static constexpr int EXIT_NORESULTS  = 251; // Failed to transfer result files from device
+static constexpr int EXIT_DEVICE_GONE = 250; // Device disconnected mid-test
 
 
 struct Options
@@ -78,6 +79,7 @@ struct TestInfo
 
     std::atomic<bool> isPackageInstalled { false };
     std::atomic<bool> isTestRunnerInterrupted { false };
+    std::atomic<bool> deviceGone { false };
     std::atomic<qint64> stdoutLoggerPid { 0 };
 };
 
@@ -592,6 +594,29 @@ static QString runCommandAsUserArgs(const QString &cmd)
     return "run-as %1 --user %2 %3"_L1.arg(g_options.package, g_testInfo.userId, cmd);
 }
 
+// Returns nullopt when `adb devices` itself failed, so callers don't confuse
+// a transient daemon hiccup with "device disconnected".
+static std::optional<QStringList> runningDevices()
+{
+    QByteArray output;
+    if (!execAdbCommand({ "devices"_L1 }, &output, false))
+        return std::nullopt;
+
+    QStringList devices;
+    for (const QByteArray &line : output.split(u'\n')) {
+        if (line.contains("\tdevice"_L1))
+            devices.append(QString::fromUtf8(line.split(u'\t').first()));
+    }
+
+    return devices;
+}
+
+static bool deviceDisconnected()
+{
+    const auto devices = runningDevices();
+    return devices && !devices->contains(g_options.serial);
+}
+
 static bool isRunning() {
     if (g_testInfo.pid < 1)
         return false;
@@ -605,6 +630,14 @@ static bool isRunning() {
         if (psSuccess)
             break;
         QThread::msleep(250);
+    }
+
+    // An empty serial would mis-attribute every adb hiccup as a disconnect; bail.
+    if (!psSuccess && !g_options.serial.isEmpty()) {
+        if (deviceDisconnected()) {
+            g_testInfo.deviceGone.store(true);
+            return false;
+        }
     }
 
     return psSuccess && output.trimmed() == g_options.package.toUtf8();
@@ -746,20 +779,6 @@ static QString userId()
     return QString::fromUtf8(userId.simplified());
 }
 
-static QStringList runningDevices()
-{
-    QByteArray output;
-    execAdbCommand({ "devices"_L1 }, &output, false);
-
-    QStringList devices;
-    for (const QByteArray &line : output.split(u'\n')) {
-        if (line.contains("\tdevice"_L1))
-            devices.append(QString::fromUtf8(line.split(u'\t').first()));
-    }
-
-    return devices;
-}
-
 static bool adbReadAppFile(const QString &fileName, QByteArray *output,
                            int retries, std::chrono::milliseconds backoff)
 {
@@ -786,6 +805,8 @@ static bool pullResults()
         QByteArray output;
 
         if (!adbReadAppFile(fileName, &output, g_options.resultsPullRetries, 200ms)) {
+            if (deviceDisconnected())
+                g_testInfo.deviceGone.store(true);
             qCritical() << "Error: failed to retrieve test result file %1 (missing or empty)."_L1
                             .arg(fileName);
             return false;
@@ -1019,6 +1040,8 @@ static int testExitCode()
     QByteArray exitCodeOutput;
     if (!adbReadAppFile(u"qtest_last_exit_code"_s, &exitCodeOutput,
                         g_options.resultsPullRetries, 200ms)) {
+        if (deviceDisconnected())
+            g_testInfo.deviceGone.store(true);
         qCritical() << "[androidtestrunner] ERROR in command: adb shell cat"
                        " files/qtest_last_exit_code";
         return EXIT_NOEXITCODE;
@@ -1082,16 +1105,19 @@ int main(int argc, char *argv[])
         return EXIT_ERROR;
     }
 
-    const QStringList devices = runningDevices();
-    if (devices.isEmpty()) {
+    const std::optional<QStringList> devices = runningDevices();
+    if (!devices) {
+        qCritical("Failed to query connected devices via 'adb devices'.");
+        return EXIT_ERROR;
+    } else if (devices->isEmpty()) {
         qCritical("No connected devices or running emulators can be found.");
         return EXIT_ERROR;
-    } else if (!g_options.serial.isEmpty() && !devices.contains(g_options.serial)) {
+    } else if (!g_options.serial.isEmpty() && !devices->contains(g_options.serial)) {
         qCritical("No connected device or running emulator with serial '%s' can be found.",
                   qPrintable(g_options.serial));
         return EXIT_ERROR;
-    } else if (g_options.serial.isEmpty() && devices.size() == 1) {
-        g_options.serial = devices.first();
+    } else if (g_options.serial.isEmpty() && devices->size() == 1) {
+        g_options.serial = devices->first();
     } else if (g_options.serial.isEmpty()) {
         qCritical("Multiple devices connected, set ANDROID_SERIAL or ANDROID_DEVICE_SERIAL.");
         return EXIT_ERROR;
@@ -1180,6 +1206,13 @@ int main(int argc, char *argv[])
 
     waitForFinished();
 
+    if (g_testInfo.deviceGone.load()) {
+        qCritical("[androidtestrunner] Device '%s' became unreachable during the test, "
+                  "result transfer and uninstall skipped.", qPrintable(g_options.serial));
+        stopStdoutLogger();
+        return EXIT_DEVICE_GONE;
+    }
+
     // Post test run
     if (!stopStdoutLogger())
         return EXIT_ERROR;
@@ -1190,6 +1223,11 @@ int main(int argc, char *argv[])
         analyseLogcat(formattedStartTime, &exitCode);
 
     const bool pullRes = pullResults();
+    if (g_testInfo.deviceGone.load()) {
+        qCritical("[androidtestrunner] Device '%s' became unreachable during cleanup, "
+                  "uninstall skipped.", qPrintable(g_options.serial));
+        return EXIT_DEVICE_GONE;
+    }
     if (!pullRes && isTestExitCodeNormal(exitCode))
         exitCode = EXIT_NORESULTS;
 
