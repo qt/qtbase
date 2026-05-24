@@ -93,7 +93,8 @@ static bool isTestExitCodeNormal(const int ec)
 }
 
 static bool execCommand(const QString &program, const QStringList &args,
-                        QByteArray *output = nullptr, bool verbose = false)
+                        QByteArray *output = nullptr, bool verbose = false,
+                        std::chrono::milliseconds timeout = std::chrono::milliseconds(-1))
 {
     const auto command = program + " "_L1 + args.join(u' ');
 
@@ -107,11 +108,13 @@ static bool execCommand(const QString &program, const QStringList &args,
         return false;
     }
 
-    // If the command is not adb, for example, make or ninja, it can take more that
-    // QProcess::waitForFinished() 30 secs, so for that use a higher timeout.
-    const int FinishTimeout = program.endsWith("adb"_L1) ? 30000 : g_options.timeoutSecs * 1000;
-    if (!process.waitForFinished(FinishTimeout)) {
+    const bool finished = timeout.count() < 0
+            ? process.waitForFinished()
+            : process.waitForFinished(static_cast<int>(timeout.count()));
+    if (!finished) {
         qCritical("Execution of command %s timed out.", qPrintable(command));
+        process.kill();
+        process.waitForFinished();
         return false;
     }
 
@@ -155,12 +158,14 @@ static bool setPackagePath(const QString &path)
     return true;
 }
 
-static bool execCommand(const QString &command, QByteArray *output = nullptr, bool verbose = true)
+static bool execCommand(const QString &command, QByteArray *output = nullptr,
+                        bool verbose = true,
+                        std::chrono::milliseconds timeout = std::chrono::milliseconds(-1))
 {
     auto args = QProcess::splitCommand(command);
     const auto program = args.first();
     args.removeOne(program);
-    return execCommand(program, args, output, verbose);
+    return execCommand(program, args, output, verbose, timeout);
 }
 
 static bool parseOptions()
@@ -1059,6 +1064,7 @@ void sigHandler(int signal)
 
 int main(int argc, char *argv[])
 {
+    using namespace std::chrono_literals;
     std::signal(SIGINT,  sigHandler);
     std::signal(SIGTERM, sigHandler);
 
@@ -1075,7 +1081,7 @@ int main(int argc, char *argv[])
     }
 
     QByteArray buildOutput;
-    if (!execCommand(g_options.makeCommand, &buildOutput, true)) {
+    if (!execCommand(g_options.makeCommand, &buildOutput, true, g_options.timeoutSecs * 1s)) {
         qCritical("The APK build command \"%s\" failed\n\n%s",
             qPrintable(g_options.makeCommand), buildOutput.constData());
         return EXIT_ERROR;
