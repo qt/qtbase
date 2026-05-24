@@ -869,6 +869,10 @@ static void printLogcatCrash(const QByteArray &logcat)
     }
 }
 
+// Shortened from debuggerd's full banner so emulator/oem builds that wrap
+// or truncate the line still slice cleanly.
+static constexpr auto crashBannerMarker = "*** *** *** *** *** *** *** ***";
+
 static QByteArray fetchLogcat(const QString &timeStamp, bool waitForDiagnostics)
 {
     using namespace std::chrono_literals;
@@ -878,31 +882,42 @@ static QByteArray fetchLogcat(const QString &timeStamp, bool waitForDiagnostics)
                                "-b"_L1, "main,system,crash"_L1,
                                "-t"_L1, "'%1'"_L1.arg(timeStamp),
                                "-v"_L1, "brief"_L1 };
-
     const bool useColor = qEnvironmentVariable("QTEST_ENVIRONMENT") != "ci"_L1;
     if (useColor)
         logcatArgs << "-v"_L1 << "color"_L1;
 
     QByteArray logcat;
-    // debuggerd flushes the "*** *** ***" banner a few seconds after the
-    // test dies; on abnormal exits, re-fetch until it shows up.
-    if (waitForDiagnostics) {
-        pollUntil([&]() {
-            logcat.clear();
-            return execAdbCommand(logcatArgs, &logcat, false)
-                && logcat.contains("*** *** ***");
-        }, QDeadlineTimer(15s), 250ms);
-    }
-    if (logcat.isEmpty() && !execAdbCommand(logcatArgs, &logcat, false))
+    if (!execAdbCommand(logcatArgs, &logcat, false))
         qCritical() << "Error: failed to fetch logcat of the test";
+
+    if (!waitForDiagnostics)
+        return logcat;
+
+    const QByteArray anrMarker = "ANR in " + g_options.package.toUtf8();
+    if (logcat.contains(crashBannerMarker) || logcat.contains(anrMarker))
+        return logcat;
+
+    // Debuggerd banner and ANR notice land seconds after death; poll for them.
+    QByteArray polled;
+    constexpr auto timeout = 15s;
+    const bool found = pollUntil([&]() {
+        polled.clear();
+        return execAdbCommand(logcatArgs, &polled, false)
+            && (polled.contains(crashBannerMarker) || polled.contains(anrMarker));
+    }, QDeadlineTimer(timeout), 250ms);
+    if (!polled.isEmpty())
+        logcat = std::move(polled);
+    if (!found && !g_testInfo.isTestRunnerInterrupted.load()) {
+        qWarning().noquote() << QString::fromLatin1("[androidtestrunner] No crash banner or "
+            "ANR marker found in logcat within %1s; output below may be incomplete.")
+            .arg(timeout.count());
+    }
     return logcat;
 }
 
 static QByteArray takeCrashDump(QByteArray *logcat)
 {
-    static const QByteArray crashMarker(
-        "*** *** *** *** *** *** *** *** *** *** *** *** *** *** *** ***");
-    const qsizetype idx = logcat->indexOf(crashMarker);
+    const qsizetype idx = logcat->indexOf(crashBannerMarker);
     if (idx == -1)
         return {};
     QByteArray dump = logcat->mid(idx);
@@ -910,9 +925,7 @@ static QByteArray takeCrashDump(QByteArray *logcat)
     return dump;
 }
 
-static QByteArray filterTestLogcat(const QByteArray &logcat,
-                                   int testPid, int systemServerPid,
-                                   bool anrOccurred)
+static QByteArray filterTestLogcat(const QByteArray &logcat, int testPid, int systemServerPid)
 {
     static const QRegularExpression logcatRegEx{
         "(?:^\\x1B\\[[0-9;]*m)?" // color
@@ -935,9 +948,10 @@ static QByteArray filterTestLogcat(const QByteArray &logcat,
         const QString msgType = match.captured(1);
         const QString pidStr = match.captured(2);
         const int capturedPid = pidStr.mid(1, pidStr.size() - 2).trimmed().toInt();
-        if (capturedPid == testPid || msgType == u'F')
-            kept.append(line);
-        else if (anrOccurred && capturedPid == systemServerPid)
+        const bool isFatal = msgType == u'F';
+        const bool isOurTest = capturedPid == testPid;
+        const bool isAnrSource = systemServerPid > 0 && capturedPid == systemServerPid;
+        if (isOurTest || isFatal || isAnrSource)
             kept.append(line);
     }
     return kept.join('\n');
@@ -949,7 +963,8 @@ static void analyseLogcat(const QString &timeStamp, int *exitCode)
                           && !g_testInfo.isTestRunnerInterrupted.load();
     QByteArray logcat = fetchLogcat(timeStamp, wasAbnormal);
     if (logcat.isEmpty()) {
-        qWarning() << "The retrieved logcat is empty";
+        if (g_options.showLogcatOutput)
+            qWarning() << "The retrieved logcat is empty";
         return;
     }
 
@@ -958,9 +973,8 @@ static void analyseLogcat(const QString &timeStamp, int *exitCode)
     const bool anrOccurred = logcat.contains(
         "ANR in %1"_L1.arg(g_options.package).toUtf8());
     if (anrOccurred) {
-        // Rather improbable, but if the test managed to return a non-crash exitcode then overwrite
-        // it to signify that something blew up. Same if we didn't manage to collect an exit code.
-        // Preserve all other exitcodes, they might be useful crash information from the device.
+        // ANR may fire after a clean exit code. Surface it via the exit code,
+        // but preserve other abnormal codes.
         if (isTestExitCodeNormal(*exitCode) || *exitCode == EXIT_NOEXITCODE)
             *exitCode = EXIT_ANR;
         qCritical("[androidtestrunner] An ANR has occurred while running the test '%s';"
@@ -968,22 +982,20 @@ static void analyseLogcat(const QString &timeStamp, int *exitCode)
                   qPrintable(g_options.package));
     }
 
-    int systemServerPid = getPid("system_server"_L1);
-    const QByteArray filtered = filterTestLogcat(logcat, g_testInfo.pid,
-                                                 systemServerPid, anrOccurred);
+    const int systemServerPid = anrOccurred ? getPid("system_server"_L1) : -1;
+    const QByteArray filtered = filterTestLogcat(logcat, g_testInfo.pid, systemServerPid);
 
-    // If we have an unpredictable exitcode, possibly a crash, attempt to print both logcat and the
-    // crash buffer which includes the crash stacktrace that is not included in the default logcat.
+    // Print whenever the caller asked (--show-logcat) or the test exited
+    // abnormally; the crash buffer is only meaningful on abnormal exit.
     const bool testCrashed = !isTestExitCodeNormal(*exitCode)
                           && !g_testInfo.isTestRunnerInterrupted.load();
-    if (testCrashed) {
+    if (g_options.showLogcatOutput || testCrashed) {
         qDebug() << "[androidtestrunner] ********** BEGIN logcat dump **********";
         qDebug().noquote() << filtered.trimmed();
         qDebug() << "[androidtestrunner] ********** END logcat dump **********";
-
-        if (!crashDump.isEmpty())
-            printLogcatCrash(crashDump);
     }
+    if (testCrashed && !crashDump.isEmpty())
+        printLogcatCrash(crashDump);
 }
 
 static QString getCurrentTimeString()
