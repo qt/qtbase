@@ -513,9 +513,6 @@ static bool parseTestArgs()
                 // Use triple literal quotes so that QProcess::splitCommand() in androidjnimain.cpp
                 // keeps quotes characters inside the string.
                 QString quotedArg = QString(arg).replace("\""_L1, "\\\"\\\"\\\""_L1);
-                // Escape single quotes so they don't interfere with the shell command,
-                // and so they get passed to the app as single quote inside the string.
-                quotedArg.replace("'"_L1, "\'"_L1);
                 // Add escaped double quote character so that args with spaces are treated as one.
                 unhandledArgs << " \\\"%1\\\""_L1.arg(quotedArg);
             }
