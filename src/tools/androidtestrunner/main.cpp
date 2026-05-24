@@ -381,9 +381,17 @@ static QString getGradleProjectProperty(const QString &androidBuildDir, const QS
     process.start(gradlew, { "-q"_L1, "--init-script"_L1, scriptPath,
                              "-Pproperty="_L1 + property, "printProjectProperty"_L1 });
 
-    if (!process.waitForFinished(30000))
+    if (!process.waitForFinished()) {
+        qWarning("gradlew '%s' timed out.", qPrintable(property));
+        process.kill();
+        process.waitForFinished();
         return {};
-
+    }
+    if (process.exitCode() != 0) {
+        qWarning("gradlew '%s' exited with %d:\n%s", qPrintable(property),
+                 process.exitCode(), process.readAllStandardError().constData());
+        return {};
+    }
     return QString::fromUtf8(process.readAllStandardOutput()).trimmed();
 }
 
