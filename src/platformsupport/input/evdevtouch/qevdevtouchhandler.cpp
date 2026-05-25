@@ -351,9 +351,9 @@ QEvdevTouchScreenHandler::~QEvdevTouchScreenHandler()
     if (m_fd >= 0)
         QT_CLOSE(m_fd);
 
-    delete d;
-
     unregisterPointingDevice();
+
+    delete d;
 }
 
 bool QEvdevTouchScreenHandler::isFiltered() const
