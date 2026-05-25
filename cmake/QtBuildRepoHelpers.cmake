@@ -437,6 +437,7 @@ macro(qt_build_repo_end)
                 RENAME
                     "config_${repo_name}.opt"
                 DESTINATION ${INSTALL_DATADIR}
+                OPTIONAL
             )
             qt_install(
                 FILES
