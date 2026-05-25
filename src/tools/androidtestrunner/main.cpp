@@ -821,7 +821,11 @@ static bool pullResults()
             qCritical() << "Error: failed to open %1 to write results to host."_L1.arg(filePath);
             return false;
         }
-        out.write(output);
+        if (out.write(output) != output.size()) {
+            qCritical() << "Error: short write of results to %1: %2"_L1
+                            .arg(filePath).arg(out.errorString());
+            return false;
+        }
     }
 
     return true;
