@@ -747,17 +747,20 @@ static void waitForFinished()
 
 static void obtainSdkVersion()
 {
-    // SDK version is necessary, as in SDK 23 pidof is broken, so we cannot obtain the pid.
-    // Also, Logcat cannot filter by pid in SDK 23, so we don't offer the --show-logcat option.
+    // Best-effort: SDK version gates userId() for multi-user, legacyDate formatting,
+    // and ApplicationExitInfo queries. Falling back to defaults is safe.
     QByteArray output;
     const QStringList versionArgs = { "shell"_L1, "getprop"_L1, "ro.build.version.sdk"_L1 };
-    execAdbCommand(versionArgs, &output, false);
+    if (!execAdbCommand(versionArgs, &output, false)) {
+        qWarning() << "Unable to query the SDK version: adb getprop ro.build.version.sdk failed.";
+        return;
+    }
     bool ok = false;
     int sdkVersion = output.toInt(&ok);
     if (ok)
         g_testInfo.sdkVersion = sdkVersion;
     else
-        qCritical() << "Unable to obtain the SDK version of the target.";
+        qWarning("Unable to parse SDK version from adb getprop output: '%s'.", output.constData());
 }
 
 static QString userId()
