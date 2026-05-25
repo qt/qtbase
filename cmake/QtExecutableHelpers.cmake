@@ -166,6 +166,7 @@ function(qt_internal_add_executable name)
         NO_PCH_SOURCES ${arg_NO_PCH_SOURCES}
         NO_UNITY_BUILD_SOURCES ${arg_NO_UNITY_BUILD_SOURCES}
         INCLUDE_DIRECTORIES ${private_includes}
+        SYSTEM_INCLUDE_DIRECTORIES ${arg_SYSTEM_INCLUDE_DIRECTORIES}
         DEFINES ${arg_DEFINES}
         LIBRARIES
             ${arg_LIBRARIES}

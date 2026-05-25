@@ -84,6 +84,8 @@ function(qt_internal_add_app target)
         NO_UNITY_BUILD_SOURCES ${arg_NO_UNITY_BUILD_SOURCES}
         INCLUDE_DIRECTORIES
             ${arg_INCLUDE_DIRECTORIES}
+        SYSTEM_INCLUDE_DIRECTORIES
+            ${arg_SYSTEM_INCLUDE_DIRECTORIES}
         DEFINES
             ${arg_DEFINES}
         LIBRARIES

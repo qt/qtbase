@@ -549,6 +549,8 @@ function(qt_internal_add_test name)
             SOURCES "${arg_SOURCES}"
             INCLUDE_DIRECTORIES
                 ${private_includes}
+            SYSTEM_INCLUDE_DIRECTORIES
+                ${arg_SYSTEM_INCLUDE_DIRECTORIES}
             DEFINES
                 ${arg_DEFINES}
             LIBRARIES
