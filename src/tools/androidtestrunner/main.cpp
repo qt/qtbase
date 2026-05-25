@@ -83,6 +83,10 @@ struct TestInfo
     std::atomic<qint64> stdoutLoggerPid { 0 };
 };
 
+// sigHandler reads/writes these from arbitrary signal contexts.
+static_assert(std::atomic<bool>::is_always_lock_free);
+static_assert(std::atomic<qint64>::is_always_lock_free);
+
 static TestInfo g_testInfo;
 
 // QTest-based processes return 0 if all tests PASSed, or the number of FAILs up to 127.
