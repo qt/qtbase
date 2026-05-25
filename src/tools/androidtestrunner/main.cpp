@@ -569,24 +569,12 @@ static bool parseTestArgs()
 static int getPid(const QString &package)
 {
     QByteArray output;
-    const QStringList psArgs = { "shell"_L1, "ps | grep ' %1'"_L1.arg(package) };
-    if (!execAdbCommand(psArgs, &output, false))
-        return -1;
-
-    const QList<QByteArray> lines = output.split(u'\n');
-    if (lines.size() < 1)
-        return -1;
-
-    QList<QByteArray> columns = lines.first().simplified().replace(u'\t', u' ').split(u' ');
-    if (columns.size() < 3)
+    if (!execAdbCommand({ "shell"_L1, "pidof"_L1, "-s"_L1, package }, &output, false))
         return -1;
 
     bool ok = false;
-    int pid = columns.at(1).toInt(&ok);
-    if (ok)
-        return pid;
-
-    return -1;
+    const int pid = output.simplified().toInt(&ok);
+    return ok && pid > 0 ? pid : -1;
 }
 
 static QString runCommandAsUserArgs(const QString &cmd)
@@ -618,29 +606,24 @@ static bool deviceDisconnected()
 }
 
 static bool isRunning() {
-    if (g_testInfo.pid < 1)
+    if (g_testInfo.deviceGone.load())
         return false;
 
     QByteArray output;
-    const QStringList psArgs = { "shell"_L1, "ps"_L1, "-p"_L1, QString::number(g_testInfo.pid),
-                                 "|"_L1, "grep"_L1, "-o"_L1, " %1$"_L1.arg(g_options.package) };
-    bool psSuccess = false;
-    for (int i = 1; i <= 3; ++i) {
-        psSuccess = execAdbCommand(psArgs, &output, false);
-        if (psSuccess)
-            break;
-        QThread::msleep(250);
-    }
+    const QStringList pidofArgs = { "shell"_L1, "pidof"_L1, "-s"_L1, g_options.package };
+    const bool adbSuccess = execAdbCommand(pidofArgs, &output, false);
 
-    // An empty serial would mis-attribute every adb hiccup as a disconnect; bail.
-    if (!psSuccess && !g_options.serial.isEmpty()) {
-        if (deviceDisconnected()) {
+    // pidof exits 1 (with empty stdout) when the process is gone, but adb
+    // itself failing also looks like that; check the device list to tell
+    // them apart and flag a disconnect when warranted.
+    if (!adbSuccess) {
+        if (!g_options.serial.isEmpty() && deviceDisconnected())
             g_testInfo.deviceGone.store(true);
-            return false;
-        }
+        return false;
     }
 
-    return psSuccess && output.trimmed() == g_options.package.toUtf8();
+    bool ok = false;
+    return output.simplified().toInt(&ok) > 0 && ok;
 }
 
 template <typename Predicate>
