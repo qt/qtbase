@@ -909,8 +909,12 @@ static QByteArray fetchLogcat(const QString &timeStamp, bool waitForDiagnostics)
     // ANR notices in system, and the test's QtTestLib/Qt output in main.
     QStringList logcatArgs = { "shell"_L1, "logcat"_L1,
                                "-b"_L1, "main,system,crash"_L1,
-                               "-t"_L1, "'%1'"_L1.arg(timeStamp),
                                "-v"_L1, "brief"_L1 };
+    // Without a timestamp the time arg is useless; cap by line count instead.
+    if (!timeStamp.isEmpty())
+        logcatArgs << "-t"_L1 << "'%1'"_L1.arg(timeStamp);
+    else
+        logcatArgs << "-t"_L1 << "5000"_L1;
     const bool useColor = qEnvironmentVariable("QTEST_ENVIRONMENT") != "ci"_L1;
     if (useColor)
         logcatArgs << "-v"_L1 << "color"_L1;
@@ -1033,7 +1037,8 @@ static void analyseLogcat(const QString &timeStamp, int *exitCode)
 
 static QString getCurrentTimeString()
 {
-    const QString timeFormat = (g_testInfo.sdkVersion <= 23) ?
+    const bool legacyDate = g_testInfo.sdkVersion > 0 && g_testInfo.sdkVersion <= 23;
+    const QString timeFormat = legacyDate ?
             "%m-%d %H:%M:%S.000"_L1 : "%Y-%m-%d %H:%M:%S.%3N"_L1;
 
     QStringList dateArgs = { "shell"_L1, "date"_L1, "+'%1'"_L1.arg(timeFormat) };
