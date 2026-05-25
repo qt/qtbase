@@ -1059,6 +1059,30 @@
 #  endif
 #endif
 
+#ifndef Q_DECL_NONBLOCKING_FUNCTION
+#  if defined(__cplusplus)
+#    if __has_cpp_attribute(clang::nonblocking)
+#      define Q_DECL_NONBLOCKING_FUNCTION [[clang::nonblocking]]
+#    else
+#      define Q_DECL_NONBLOCKING_FUNCTION
+#    endif
+#  else
+#    define Q_DECL_NONBLOCKING_FUNCTION
+#  endif
+#endif
+
+#ifndef Q_DECL_NONALLOCATING_FUNCTION
+#  if defined(__cplusplus)
+#    if __has_cpp_attribute(clang::nonallocating)
+#      define Q_DECL_NONALLOCATING_FUNCTION [[clang::nonallocating]]
+#    else
+#      define Q_DECL_NONALLOCATING_FUNCTION
+#    endif
+#  else
+#    define Q_DECL_NONALLOCATING_FUNCTION
+#  endif
+#endif
+
 /*
  * Fallback macros to certain compiler features
  */

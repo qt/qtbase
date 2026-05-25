@@ -513,3 +513,33 @@
 
     \sa Q_NODISCARD_CTOR
 */
+
+/*!
+    \macro Q_DECL_NONBLOCKING_FUNCTION
+    \relates <QtCompilerDetection>
+    \since 6.12
+
+    \brief Expands to \c{[[clang::nonblocking]]} on clang compilers that support the feature.
+
+    Declares that the function never blocks on a lock, heap-allocates memory or throws an exception.
+
+    Used by clang's \l{https://clang.llvm.org/docs/FunctionEffectAnalysis.html}{Function Effect Analysis}
+    and \l{https://clang.llvm.org/docs/RealtimeSanitizer.html}{Realtime Sanitizer}.
+
+    \sa Q_DECL_NONALLOCATING_FUNCTION
+*/
+
+/*!
+    \macro Q_DECL_NONALLOCATING_FUNCTION
+    \relates <QtCompilerDetection>
+    \since 6.12
+
+    \brief Expands to \c{[[clang::nonallocating]]} on clang compilers that support the feature.
+
+    Declares that the function never heap-allocates memory or throws an exception.
+
+    Used by clang's \l{https://clang.llvm.org/docs/FunctionEffectAnalysis.html}{Function Effect Analysis}
+    and \l{https://clang.llvm.org/docs/RealtimeSanitizer.html}{Realtime Sanitizer}.
+
+    \sa Q_DECL_NONBLOCKING_FUNCTION
+*/
