@@ -664,17 +664,14 @@ static bool pollUntil(Predicate predicate, QDeadlineTimer deadline,
 static void waitForStarted()
 {
     using namespace std::chrono_literals;
-    const bool started = pollUntil([]() {
+    // Grab the pid for logcat filtering if pidof catches it, but don't block
+    // on a short-lived process that waitForFinished tracks by presence anyway
+    pollUntil([]() {
         const int pid = getPid(g_options.package);
         if (pid > 0)
             g_testInfo.pid = pid;
-        return pid > 0;
+        return pid > 0 || !isRunning();
     }, QDeadlineTimer(10s), 100ms);
-    if (!started && !g_testInfo.isTestRunnerInterrupted.load()) {
-        qWarning("Test process for '%s' never appeared in 'adb shell ps' within 10s. "
-                 "am-start may have failed silently; later steps will likely yield "
-                 "EXIT_NOEXITCODE.", qPrintable(g_options.package));
-    }
 }
 
 static bool waitForLoggingStarted()
@@ -684,8 +681,10 @@ static bool waitForLoggingStarted()
         return false;
     const QString lsCmd = "ls files/%1 2>/dev/null"_L1.arg(g_options.stdoutFileName);
     const QStringList adbLsCmd = { "shell"_L1, runCommandAsUserArgs(lsCmd) };
-    return pollUntil([&]() { return execAdbCommand(adbLsCmd, nullptr, false); },
-                     QDeadlineTimer(5s), 25ms);
+    auto fileExists = [&]() { return execAdbCommand(adbLsCmd, nullptr, false); };
+    // Wait for the output file, but stop early if the test exits first
+    pollUntil([&]() { return fileExists() || !isRunning(); }, QDeadlineTimer(5s), 25ms);
+    return fileExists();
 }
 
 static bool setupStdoutLogger()
@@ -743,8 +742,7 @@ static void waitForFinished()
 {
     using namespace std::chrono_literals;
     const bool finished = pollUntil([]() { return !isRunning(); },
-        QDeadlineTimer(g_options.timeoutSecs * 1s),
-        100ms);
+        QDeadlineTimer(g_options.timeoutSecs * 1s), 100ms);
     if (!finished && !g_testInfo.isTestRunnerInterrupted.load())
         qWarning() << "Timed out while waiting for the test to finish";
 }
@@ -954,6 +952,10 @@ static QByteArray takeCrashDump(QByteArray *logcat)
 
 static QByteArray filterTestLogcat(const QByteArray &logcat, int testPid, int systemServerPid)
 {
+    // No pid to anchor on: return the logcat unfiltered.
+    if (testPid <= 0)
+        return logcat;
+
     static const QRegularExpression logcatRegEx{
         "(?:^\\x1B\\[[0-9;]*m)?" // color
         "(\\w)/"                 // message type  1. capture
