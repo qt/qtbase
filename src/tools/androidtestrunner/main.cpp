@@ -123,13 +123,17 @@ static bool execCommand(const QString &program, const QStringList &args,
     }
 
     const auto stdOut = process.readAllStandardOutput();
+    const auto stdErr = process.readAllStandardError();
     if (output)
         output->append(stdOut);
 
     if (verbose && g_options.verbose)
         fprintf(stdout, "%s\n", stdOut.constData());
 
-    return process.exitCode() == 0;
+    const bool ok = process.exitCode() == 0;
+    if (!ok && !stdErr.isEmpty())
+        qWarning().noquote() << stdErr.trimmed();
+    return ok;
 }
 
 static bool execAdbCommand(const QStringList &args, QByteArray *output = nullptr,
