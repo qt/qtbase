@@ -499,7 +499,7 @@ static bool parseTestArgs()
         const QString &arg = g_options.testArgsList[i].trimmed();
         if (arg == "--"_L1)
             continue;
-        if (arg == "-o"_L1) {
+        if (arg == "-o"_L1 || arg == "--output"_L1) {
             if (i >= g_options.testArgsList.size() - 1)
                 return false; // missing file argument
 
