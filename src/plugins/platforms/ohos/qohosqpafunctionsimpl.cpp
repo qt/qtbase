@@ -337,19 +337,23 @@ QNapi::Object convertStartOptionsToNapiObject(
 std::shared_ptr<void> registerAppContextEnvironmentCallback(
     QtOhos::JsState &jsState, QNapi::Object environmentCallback)
 {
-    auto qAbility = jsState.defaultQAbilityPeer()->qAbility();
-    double environmentCallbackId = qAbility.call<QNapi::Number>(
-        "context.getApplicationContext().on",
+    auto appContextRefPtr = QtOhos::moveToSharedPtr(
+        QNapi::Reference<>::makePersistentFrom(
+            jsState.defaultQAbilityPeer()->qAbility().eval<QNapi::Object>(
+                "context.getApplicationContext()")));
+
+    double environmentCallbackId = appContextRefPtr->call<QNapi::Number>(
+        "on",
         {"environment", environmentCallback});
 
     return std::shared_ptr<void>(
         nullptr,
-        [environmentCallbackId](auto) {
+        [environmentCallbackId, appContextRefPtr](auto) {
             QtOhos::runInJsThreadAndWait(
-                [&](QtOhos::JsState &jsState) {
-                    auto qAbility = jsState.defaultQAbilityPeer()->qAbility();
-                    qAbility.call(
-                        "context.getApplicationContext().off",
+                [&](QtOhos::JsState &) {
+                    auto appContextRef = std::move(*appContextRefPtr);
+                    appContextRef.call(
+                        "off",
                         {"environment", environmentCallbackId});
                 });
         });
